@@ -5,6 +5,7 @@
 #include "BuildInfo.h"
 #include "DesktopIntegration.h"
 #include "DesktopProbe.h"
+#include "FileAssociations.h"
 #include "FileOpenRouter.h"
 #include "FocusDismissPolicy.h"
 #include "InstalledRuntimeGuard.h"
@@ -12,7 +13,6 @@
 #include "SingleInstance.h"
 #include "UiFont.h"
 #include "UiPreferences.h"
-#include "FileAssociations.h"
 #include "UiText.h"
 #include "UpdateController.h"
 #include "WindowActivation.h"
@@ -157,7 +157,8 @@ int main(int argc, char *argv[]) {
     UpdateController updates;
 #endif
     FileAssociations associations;
-    engine.rootContext()->setContextProperty(QStringLiteral("FileAssociationService"), &associations);
+    engine.rootContext()->setContextProperty(QStringLiteral("FileAssociationService"),
+                                             &associations);
     engine.rootContext()->setContextProperty(QStringLiteral("UpdateService"), &updates);
     engine.setInitialProperties({{QStringLiteral("visible"), false}});
     QObject::connect(

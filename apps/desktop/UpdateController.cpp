@@ -15,9 +15,9 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonDocument>
-#include <QNetworkReply>
 #include <QNetworkProxy>
 #include <QNetworkProxyFactory>
+#include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QOperatingSystemVersion>
 #include <QSettings>
@@ -35,16 +35,19 @@ constexpr qsizetype manifestLimit = 256 * 1024;
 constexpr qint64 packageLimit = 2LL * 1024 * 1024 * 1024;
 class UpdateProxyFactory final : public QNetworkProxyFactory {
   public:
-    UpdateProxyFactory(QString mode, QString address) : m_mode(std::move(mode)), m_address(std::move(address)) {}
+    UpdateProxyFactory(QString mode, QString address)
+        : m_mode(std::move(mode)), m_address(std::move(address)) {}
     QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query) override {
         if (m_mode == "system")
             return QNetworkProxyFactory::systemProxyForQuery(query);
         if (m_mode == "none")
             return {QNetworkProxy(QNetworkProxy::NoProxy)};
         const QUrl url(m_address, QUrl::StrictMode);
-        const auto type = url.scheme() == "socks5" ? QNetworkProxy::Socks5Proxy : QNetworkProxy::HttpProxy;
+        const auto type =
+            url.scheme() == "socks5" ? QNetworkProxy::Socks5Proxy : QNetworkProxy::HttpProxy;
         return {QNetworkProxy(type, url.host(), quint16(url.port()))};
     }
+
   private:
     QString m_mode;
     QString m_address;
@@ -222,9 +225,8 @@ QString UpdateController::packageType() const {
 }
 bool UpdateController::canInstall() const {
     return m_trusted && !installedRoot().isEmpty() && m_sessions &&
-           (platform() != "macos" ||
-            (!m_candidate.value("appcast_url").toString().isEmpty() &&
-             m_activeProxyMode == "system"));
+           (platform() != "macos" || (!m_candidate.value("appcast_url").toString().isEmpty() &&
+                                      m_activeProxyMode == "system"));
 }
 QString UpdateController::installReason() const {
     if (!m_trusted)

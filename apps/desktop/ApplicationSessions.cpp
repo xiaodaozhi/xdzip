@@ -572,9 +572,8 @@ void ApplicationSessions::command(const QString &command) {
     }
     if (command == "settings" || command == "about") {
         for (const auto &session : m_sessions) {
-            auto *popup = session->page
-                              ? session->page->findChild<QQuickWindow *>("settingsWindow")
-                              : nullptr;
+            auto *popup = session->page ? session->page->findChild<QQuickWindow *>("settingsWindow")
+                                        : nullptr;
             if (popup && popup->isVisible()) {
                 if (command == "about")
                     popup->setProperty("currentTab", 5);

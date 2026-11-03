@@ -7,10 +7,10 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QLockFile>
+#include <QQmlEngine>
 #include <QSaveFile>
 #include <QStyleHints>
 #include <QTemporaryDir>
-#include <QQmlEngine>
 #include <QtQml/qqml.h>
 
 namespace {
@@ -278,10 +278,12 @@ bool UiPreferences::applyDetails(const QString &theme, double scale, const QStri
         emit errorChanged();
         return false;
     }
-    if (!saveDetails(theme, scale, language, density, recentEnabled, false, trayEnabled, openMode)) {
+    if (!saveDetails(theme, scale, language, density, recentEnabled, false, trayEnabled,
+                     openMode)) {
         if (changeLanguage) {
             initializeUiText(previousLanguage);
-            if (auto *engine = qmlEngine(this)) engine->retranslate();
+            if (auto *engine = qmlEngine(this))
+                engine->retranslate();
         }
         return false;
     }

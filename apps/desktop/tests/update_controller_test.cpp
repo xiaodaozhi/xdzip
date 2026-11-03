@@ -274,25 +274,32 @@ class UpdateControllerTest final : public QObject {
         const QString mirror = QStringLiteral("https://mirror.example.test/prefix");
         QVERIFY(UpdateNetwork::validMirror(mirror));
         QVERIFY(!UpdateNetwork::validMirror(QStringLiteral("http://mirror.example.test")));
-        QVERIFY(!UpdateNetwork::validMirror(QStringLiteral("https://user:secret@mirror.example.test")));
-        QVERIFY(!UpdateNetwork::validMirror(QStringLiteral("https://mirror.example.test/a/%2e%2e/b")));
+        QVERIFY(
+            !UpdateNetwork::validMirror(QStringLiteral("https://user:secret@mirror.example.test")));
+        QVERIFY(
+            !UpdateNetwork::validMirror(QStringLiteral("https://mirror.example.test/a/%2e%2e/b")));
         QVERIFY(UpdateNetwork::validProxy(QStringLiteral("http://127.0.0.1:7890")));
         QVERIFY(UpdateNetwork::validProxy(QStringLiteral("socks5://127.0.0.1:1080")));
         QVERIFY(!UpdateNetwork::validProxy(QStringLiteral("http://user:secret@127.0.0.1:7890")));
         const auto mapped = UpdateNetwork::mapped(QUrl(api), mirror);
         QVERIFY(UpdateNetwork::isMirrorUrl(mapped, mirror));
-        QVERIFY(!UpdateNetwork::isMirrorUrl(QUrl(QStringLiteral("https://evil.example.test/prefix/a")), mirror));
-        QVERIFY(!UpdateNetwork::isMirrorUrl(QUrl(QStringLiteral("https://mirror.example.test/prefix/%2e%2e/evil")), mirror));
+        QVERIFY(!UpdateNetwork::isMirrorUrl(
+            QUrl(QStringLiteral("https://evil.example.test/prefix/a")), mirror));
+        QVERIFY(!UpdateNetwork::isMirrorUrl(
+            QUrl(QStringLiteral("https://mirror.example.test/prefix/%2e%2e/evil")), mirror));
         QTemporaryDir directory;
         Network network;
         configure(network);
         const auto originalResponses = network.responses;
         for (auto it = originalResponses.cbegin(); it != originalResponses.cend(); ++it)
-            network.responses.insert(UpdateNetwork::mapped(QUrl(it.key()), mirror).toString(), it.value());
-        UpdateController updates(nullptr, &network, fixture("network-trust.json"), directory.path(), [] { return true; });
+            network.responses.insert(UpdateNetwork::mapped(QUrl(it.key()), mirror).toString(),
+                                     it.value());
+        UpdateController updates(nullptr, &network, fixture("network-trust.json"), directory.path(),
+                                 [] { return true; });
         updates.configureNetwork("custom", "http://127.0.0.1:7890", mirror);
         QVERIFY(network.proxyFactory());
-        QCOMPARE(network.proxyFactory()->queryProxy(QNetworkProxyQuery(QUrl(api))).first().type(), QNetworkProxy::HttpProxy);
+        QCOMPARE(network.proxyFactory()->queryProxy(QNetworkProxyQuery(QUrl(api))).first().type(),
+                 QNetworkProxy::HttpProxy);
         updates.check();
         QTRY_COMPARE(updates.state(), QStringLiteral("available"));
         QVERIFY(updates.trusted());
@@ -303,7 +310,8 @@ class UpdateControllerTest final : public QObject {
         for (const auto &request : network.requests)
             QVERIFY(UpdateNetwork::isMirrorUrl(request.url(), mirror));
         updates.configureNetwork("none", "", "");
-        QCOMPARE(network.proxyFactory()->queryProxy(QNetworkProxyQuery(QUrl(api))).first().type(), QNetworkProxy::NoProxy);
+        QCOMPARE(network.proxyFactory()->queryProxy(QNetworkProxyQuery(QUrl(api))).first().type(),
+                 QNetworkProxy::NoProxy);
     }
     void invalidNetworkSettingsAreNotPersisted() {
         QTemporaryDir directory;
@@ -314,7 +322,8 @@ class UpdateControllerTest final : public QObject {
         QVERIFY(!prefs.applyNetwork("custom", "http://user:secret@host:42", ""));
         QCOMPARE(prefs.proxyMode(), QStringLiteral("system"));
         QVERIFY(!prefs.applyNetwork("none", "", "http://mirror.example.test"));
-        QVERIFY(prefs.applyNetwork("custom", "socks5://127.0.0.1:1080", "https://mirror.example.test/prefix"));
+        QVERIFY(prefs.applyNetwork("custom", "socks5://127.0.0.1:1080",
+                                   "https://mirror.example.test/prefix"));
         UiPreferences restored;
         QCOMPARE(restored.proxyMode(), QStringLiteral("custom"));
         QCOMPARE(restored.proxyAddress(), QStringLiteral("socks5://127.0.0.1:1080"));

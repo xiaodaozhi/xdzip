@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QObject>
 #include <QHash>
+#include <QObject>
 #include <QStringList>
 
 class FileAssociations final : public QObject {
@@ -11,20 +11,31 @@ class FileAssociations final : public QObject {
     Q_PROPERTY(bool ready READ ready NOTIFY changed)
     Q_PROPERTY(int revision READ revision NOTIFY changed)
     Q_PROPERTY(QString error READ error NOTIFY changed)
-public:
+  public:
     explicit FileAssociations(QObject *parent = nullptr);
-    bool available() const { return m_available; }
-    bool busy() const { return m_busy; }
-    bool ready() const { return m_ready; }
-    int revision() const { return m_revision; }
-    QString error() const { return m_error; }
+    bool available() const {
+        return m_available;
+    }
+    bool busy() const {
+        return m_busy;
+    }
+    bool ready() const {
+        return m_ready;
+    }
+    int revision() const {
+        return m_revision;
+    }
+    QString error() const {
+        return m_error;
+    }
     Q_INVOKABLE bool isDefault(const QString &extension) const;
     Q_INVOKABLE void refresh();
     Q_INVOKABLE void requestChange(const QString &extension, bool enable);
     void nativeFinished(bool success);
-signals:
+  signals:
     void changed();
-private:
+
+  private:
     void setBusy(bool busy);
     void notify();
     bool m_available = false;

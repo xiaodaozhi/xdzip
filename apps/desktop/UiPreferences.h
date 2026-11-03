@@ -62,9 +62,15 @@ class UiPreferences : public QObject {
     QString openMode() const {
         return m_openMode;
     }
-    QString proxyMode() const { return m_proxyMode; }
-    QString proxyAddress() const { return m_proxyAddress; }
-    QString mirrorAddress() const { return m_mirrorAddress; }
+    QString proxyMode() const {
+        return m_proxyMode;
+    }
+    QString proxyAddress() const {
+        return m_proxyAddress;
+    }
+    QString mirrorAddress() const {
+        return m_mirrorAddress;
+    }
     Q_INVOKABLE bool applyDetails(const QString &theme, double textScale, const QString &language,
                                   const QString &density, bool recentEnabled, bool trayEnabled,
                                   const QString &openMode);

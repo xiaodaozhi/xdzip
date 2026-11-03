@@ -4097,8 +4097,8 @@ QtObject {
             if (item->menu())
                 taskMenu = item->menu();
         QVERIFY(taskMenu);
-        controller->m_tasks[17] = {{"id", "17"}, {"kind", "check"}, {"status", "waiting"},
-                                   {"terminal", false}};
+        controller->m_tasks[17] = {
+            {"id", "17"}, {"kind", "check"}, {"status", "waiting"}, {"terminal", false}};
         emit controller->tasksChanged();
         QCOMPARE(controller->activeTaskCount(), 1);
         QCOMPARE(showAction->text(), QStringLiteral("显示主窗口"));
@@ -4160,8 +4160,10 @@ QtObject {
             QTRY_VERIFY(nativeDesktopMenuEntries({}).contains(qtTrId("desktop.settings")));
             QTRY_VERIFY(nativeDesktopMenuEntries({}).contains(qtTrId("desktop.quit")));
             QCOMPARE(systemMenuEntries(), originalSystemMenuEntries);
-            QTRY_VERIFY(nativeDesktopMenuEntries(qtTrId("desktop.file")).contains(qtTrId("desktop.open")));
-            QTRY_VERIFY(nativeDesktopMenuEntries(qtTrId("desktop.help")).contains(qtTrId("desktop.guide")));
+            QTRY_VERIFY(
+                nativeDesktopMenuEntries(qtTrId("desktop.file")).contains(qtTrId("desktop.open")));
+            QTRY_VERIFY(
+                nativeDesktopMenuEntries(qtTrId("desktop.help")).contains(qtTrId("desktop.guide")));
         }
 #endif
 
@@ -4199,8 +4201,10 @@ QtObject {
             QTRY_VERIFY(nativeDesktopMenuEntries({}).contains(qtTrId("desktop.settings")));
             QTRY_VERIFY(nativeDesktopMenuEntries({}).contains(qtTrId("desktop.quit")));
             QCOMPARE(systemMenuEntries(), originalSystemMenuEntries);
-            QTRY_VERIFY(nativeDesktopMenuEntries(qtTrId("desktop.file")).contains(qtTrId("desktop.open")));
-            QTRY_VERIFY(nativeDesktopMenuEntries(qtTrId("desktop.help")).contains(qtTrId("desktop.guide")));
+            QTRY_VERIFY(
+                nativeDesktopMenuEntries(qtTrId("desktop.file")).contains(qtTrId("desktop.open")));
+            QTRY_VERIFY(
+                nativeDesktopMenuEntries(qtTrId("desktop.help")).contains(qtTrId("desktop.guide")));
         }
 #endif
         controller->m_tasks.clear();
@@ -4220,7 +4224,7 @@ QtObject {
         QTemporaryDir profile;
         QVERIFY(profile.isValid());
         test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH",
-                                                        profile.filePath("settings.ini"));
+                                                      profile.filePath("settings.ini"));
         QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
         QSettings persisted(profile.filePath("settings.ini"), QSettings::IniFormat);
         persisted.setValue("locale/language", "en-US");
@@ -4366,7 +4370,8 @@ QtObject {
         QVERIFY(blocker.open(QIODevice::WriteOnly));
         QCOMPARE(blocker.write("owned-canary"), 12);
         blocker.close();
-        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH", blocker.fileName() + "/settings.ini");
+        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH",
+                                              blocker.fileName() + "/settings.ini");
         QVERIFY2(path.valid(), qPrintable(path.error()));
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
@@ -4387,7 +4392,8 @@ QtObject {
         QVERIFY(!prefs->error().isEmpty());
         QVERIFY(settings->isVisible());
         const auto originalLanguage = prefs->activeLanguage();
-        const auto otherLanguage = originalLanguage == "en-US" ? QStringLiteral("zh-CN") : QStringLiteral("en-US");
+        const auto otherLanguage =
+            originalLanguage == "en-US" ? QStringLiteral("zh-CN") : QStringLiteral("en-US");
         QVERIFY(!prefs->applyDetails("system", 1, otherLanguage, "standard", true, true, "tabs"));
         QCOMPARE(prefs->activeLanguage(), originalLanguage);
         QCOMPARE(prefs->language(), QStringLiteral("zh-CN"));
@@ -4656,7 +4662,8 @@ QtObject {
     }
     void settingsRestartConfirmation() {
         QTemporaryDir profile;
-        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH", profile.filePath("settings.ini"));
+        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH",
+                                              profile.filePath("settings.ini"));
         QVERIFY2(path.valid(), qPrintable(path.error()));
         const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
         QVERIFY(initializeUiText(QStringLiteral("zh-CN")));
@@ -5229,14 +5236,16 @@ QtObject {
                     function check() { ++checks } function cancel() { ++cancels }
                     function download() { ++downloads } function downloadAndInstall() { ++installs }
                     function openReleasePage() { ++releases } function openDownloadFolder() { ++opens }
-                })", QUrl());
+                })",
+                            QUrl());
             std::unique_ptr<QObject> service(fixture.create());
             QVERIFY2(service, qPrintable(fixture.errorString()));
             engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
             QVERIFY(!engine.rootObjects().isEmpty());
             auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
             auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
-            QVERIFY(settings && settings->setProperty("updater", QVariant::fromValue(service.get())));
+            QVERIFY(settings &&
+                    settings->setProperty("updater", QVariant::fromValue(service.get())));
             QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
             settings->setProperty("currentTab", 5);
             QVERIFY(QTest::qWaitForWindowExposed(settings));
@@ -5251,60 +5260,88 @@ QtObject {
             auto *open = findVisual(settings->contentItem(), "aboutOpenDownload");
             auto *openSecondary = findVisual(settings->contentItem(), "aboutOpenDownloadSecondary");
             auto *progress = findVisual(settings->contentItem(), "aboutUpdateProgress");
-            QVERIFY(status && check && cancelCheck && cancel && actions && install && recovery && open && openSecondary && progress);
+            QVERIFY(status && check && cancelCheck && cancel && actions && install && recovery &&
+                    open && openSecondary && progress);
             QCOMPARE(install->parentItem(), check->parentItem());
             QCOMPARE(cancel->parentItem(), check->parentItem());
             QVERIFY(!findVisual(settings->contentItem(), "settingsFooter"));
-            const QStringList states{"idle", "checking", "up_to_date", "available", "downloading", "verifying", "downloaded", "waiting_tasks", "preparing", "installing", "error", "recovery_required", "updated", "unavailable"};
+            const QStringList states{"idle",        "checking",   "up_to_date", "available",
+                                     "downloading", "verifying",  "downloaded", "waiting_tasks",
+                                     "preparing",   "installing", "error",      "recovery_required",
+                                     "updated",     "unavailable"};
             QQmlComponent theme(&engine);
             theme.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\n"
                           "QtObject { property bool dark: false; property real factor: 1; "
-                          "onDarkChanged: Ui.Theme.dark = dark; onFactorChanged: Ui.Theme.fontScale = factor }", QUrl());
+                          "onDarkChanged: Ui.Theme.dark = dark; onFactorChanged: "
+                          "Ui.Theme.fontScale = factor }",
+                          QUrl());
             std::unique_ptr<QObject> appearance(theme.create());
             QVERIFY(appearance);
-            for (const bool dark : {false, true}) for (const double scale : {1., 1.25, 1.5}) {
-              appearance->setProperty("dark", dark);
-              appearance->setProperty("factor", scale);
-              for (const auto &state : states) {
-                const bool busy = QStringList{"checking", "downloading", "verifying", "waiting_tasks", "preparing", "installing"}.contains(state);
-                service->setProperty("busy", busy);
-                service->setProperty("downloaded", state == "downloaded");
-                service->setProperty("state", state);
-                QTRY_VERIFY(!status->property("text").toString().isEmpty());
-                QCOMPARE(check->isEnabled(), !busy);
-                QCOMPARE(check->isVisible(), QStringList({"idle", "up_to_date", "updated", "error", "unavailable"}).contains(state));
-                QCOMPARE(cancelCheck->isVisible(), state == "checking");
-                QCOMPARE(cancel->isVisible(), busy && state != "checking" && state != "installing");
-                QCOMPARE(install->isVisible(), state == "available" || state == "downloaded");
-                QCOMPARE(recovery->isVisible(), state == "recovery_required");
-                QCOMPARE(open->isVisible(), false);
-                QCOMPARE(actions->isVisible(), state == "downloaded");
-                if (state == "downloading")
-                    QCOMPARE(cancel->property("text").toString(), qtTrId("update.cancelDownload"));
-                if (state == "checking") {
-                    QCOMPARE(cancelCheck->property("text").toString(), qtTrId("update.cancelCheck"));
-                    QCOMPARE(cancelCheck->mapToScene(QPointF()), check->mapToScene(QPointF()));
-                    QCOMPARE(cancelCheck->size(), check->size());
+            for (const bool dark : {false, true})
+                for (const double scale : {1., 1.25, 1.5}) {
+                    appearance->setProperty("dark", dark);
+                    appearance->setProperty("factor", scale);
+                    for (const auto &state : states) {
+                        const bool busy = QStringList{"checking",      "downloading", "verifying",
+                                                      "waiting_tasks", "preparing",   "installing"}
+                                              .contains(state);
+                        service->setProperty("busy", busy);
+                        service->setProperty("downloaded", state == "downloaded");
+                        service->setProperty("state", state);
+                        QTRY_VERIFY(!status->property("text").toString().isEmpty());
+                        QCOMPARE(check->isEnabled(), !busy);
+                        QCOMPARE(check->isVisible(), QStringList({"idle", "up_to_date", "updated",
+                                                                  "error", "unavailable"})
+                                                         .contains(state));
+                        QCOMPARE(cancelCheck->isVisible(), state == "checking");
+                        QCOMPARE(cancel->isVisible(),
+                                 busy && state != "checking" && state != "installing");
+                        QCOMPARE(install->isVisible(),
+                                 state == "available" || state == "downloaded");
+                        QCOMPARE(recovery->isVisible(), state == "recovery_required");
+                        QCOMPARE(open->isVisible(), false);
+                        QCOMPARE(actions->isVisible(), state == "downloaded");
+                        if (state == "downloading")
+                            QCOMPARE(cancel->property("text").toString(),
+                                     qtTrId("update.cancelDownload"));
+                        if (state == "checking") {
+                            QCOMPARE(cancelCheck->property("text").toString(),
+                                     qtTrId("update.cancelCheck"));
+                            QCOMPARE(cancelCheck->mapToScene(QPointF()),
+                                     check->mapToScene(QPointF()));
+                            QCOMPARE(cancelCheck->size(), check->size());
+                        }
+                        QCOMPARE(
+                            progress->isVisible(),
+                            QStringList({"downloading", "verifying", "preparing"}).contains(state));
+                        if (state == "downloading") {
+                            QTRY_COMPARE(
+                                QQmlProperty::read(progress, "palette.dark").value<QColor>(),
+                                QColor(dark ? "#3264E9" : "#1956FF"));
+                            QTRY_COMPARE(
+                                QQmlProperty::read(progress, "palette.midlight").value<QColor>(),
+                                QColor(dark ? "#384353" : "#DFE4ED"));
+                        }
+                        QCOMPARE(settings->width(), 612);
+                        QTRY_VERIFY(status->property("paintedWidth").toReal() <=
+                                    status->width() + 1);
+                        QTRY_VERIFY(status->property("paintedHeight").toReal() <=
+                                    status->height() + 1);
+                        const auto captures = qEnvironmentVariable("XDZIP_ABOUT_UPDATE_AUDIT");
+                        if (!captures.isEmpty() &&
+                            ((scale == 1. && state == "checking") ||
+                             (scale == 1.5 &&
+                              QStringList{"available", "downloading", "error", "recovery_required"}
+                                  .contains(state)))) {
+                            (state == "checking" ? cancelCheck : check)
+                                ->forceActiveFocus(Qt::TabFocusReason);
+                            QVERIFY(QDir().mkpath(captures));
+                            QVERIFY(visual_audit::save(settings, captures,
+                                                       language + (dark ? "-dark-" : "-light-") +
+                                                           state + (scale == 1. ? "-1" : "")));
+                        }
+                    }
                 }
-                QCOMPARE(progress->isVisible(), QStringList({"downloading", "verifying", "preparing"}).contains(state));
-                if (state == "downloading") {
-                    QTRY_COMPARE(QQmlProperty::read(progress, "palette.dark").value<QColor>(), QColor(dark ? "#3264E9" : "#1956FF"));
-                    QTRY_COMPARE(QQmlProperty::read(progress, "palette.midlight").value<QColor>(), QColor(dark ? "#384353" : "#DFE4ED"));
-                }
-                QCOMPARE(settings->width(), 612);
-                QTRY_VERIFY(status->property("paintedWidth").toReal() <= status->width() + 1);
-                QTRY_VERIFY(status->property("paintedHeight").toReal() <= status->height() + 1);
-                const auto captures = qEnvironmentVariable("XDZIP_ABOUT_UPDATE_AUDIT");
-                if (!captures.isEmpty() &&
-                    ((scale == 1. && state == "checking") ||
-                     (scale == 1.5 && QStringList{"available", "downloading", "error", "recovery_required"}.contains(state)))) {
-                    (state == "checking" ? cancelCheck : check)->forceActiveFocus(Qt::TabFocusReason);
-                    QVERIFY(QDir().mkpath(captures));
-                    QVERIFY(visual_audit::save(settings, captures,
-                        language + (dark ? "-dark-" : "-light-") + state + (scale == 1. ? "-1" : "")));
-                }
-              }
-            }
             appearance->setProperty("factor", 1.);
             appearance->setProperty("dark", false);
             service->setProperty("state", "available");
@@ -5367,11 +5404,15 @@ QtObject {
             auto *copy = findVisual(settings->contentItem(), "aboutCopy");
             QVERIFY(version && license && artwork && copy);
             QCOMPARE(version->property("text").toString(), BuildInfo::version());
-            for (const auto &word : {QStringLiteral("2026 xiaodaozhi"), QStringLiteral("The Qt Company Ltd."), QStringLiteral("Apache-2.0"), QStringLiteral("LGPL-3.0"), QStringLiteral("notices")})
+            for (const auto &word :
+                 {QStringLiteral("2026 xiaodaozhi"), QStringLiteral("The Qt Company Ltd."),
+                  QStringLiteral("Apache-2.0"), QStringLiteral("LGPL-3.0"),
+                  QStringLiteral("notices")})
                 QVERIFY(license->property("text").toString().contains(word));
             QVERIFY(visibleImagesReady(settings->contentItem()));
             QVERIFY(QMetaObject::invokeMethod(copy, "click"));
-            const auto info = QJsonDocument::fromJson(QGuiApplication::clipboard()->text().toUtf8()).object();
+            const auto info =
+                QJsonDocument::fromJson(QGuiApplication::clipboard()->text().toUtf8()).object();
             QCOMPARE(info.value("version").toString(), BuildInfo::version());
             QCOMPARE(info.value("build").toInt(), BuildInfo::buildNumber());
             QVERIFY(!info.contains("path"));
@@ -5381,7 +5422,9 @@ QtObject {
             QQmlComponent theme(&engine);
             theme.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\n"
                           "QtObject { property bool dark: false; property real factor: 1; "
-                          "onDarkChanged: Ui.Theme.dark = dark; onFactorChanged: Ui.Theme.fontScale = factor }", QUrl());
+                          "onDarkChanged: Ui.Theme.dark = dark; onFactorChanged: "
+                          "Ui.Theme.fontScale = factor }",
+                          QUrl());
             std::unique_ptr<QObject> appearance(theme.create());
             QVERIFY(appearance);
             for (const bool dark : {false, true}) {
@@ -5394,7 +5437,8 @@ QtObject {
                     if (!captures.isEmpty()) {
                         QVERIFY(QDir().mkpath(captures));
                         QVERIFY(visual_audit::save(settings, captures,
-                            language + (dark ? "-dark-" : "-light-") + QString::number(scale)));
+                                                   language + (dark ? "-dark-" : "-light-") +
+                                                       QString::number(scale)));
                     }
                 }
             }
@@ -6309,7 +6353,8 @@ QtObject {
         QVERIFY(QTest::qWaitForWindowExposed(settings));
         const QStringList actions{QAccessibleActionInterface::pressAction(),
                                   QAccessibleActionInterface::toggleAction()};
-        auto *preferences = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
         for (const auto &action : actions) {
             for (const auto &name : {QStringLiteral("Tray"), QStringLiteral("Recent")}) {
                 settings->setProperty("currentTab", name == "Tray" ? 1 : 2);
@@ -6320,7 +6365,10 @@ QtObject {
                 QVERIFY(!accessible->text(QAccessible::Name).isEmpty());
                 QSignalSpy clicks(item, SIGNAL(clicked()));
                 QSignalSpy toggles(item, SIGNAL(toggled()));
-                const auto value = [&] { return name == "Tray" ? preferences->trayEnabled() : preferences->recentEnabled(); };
+                const auto value = [&] {
+                    return name == "Tray" ? preferences->trayEnabled()
+                                          : preferences->recentEnabled();
+                };
                 const bool before = value();
                 accessible->actionInterface()->doAction(action);
                 QTRY_COMPARE(value(), !before);
@@ -6390,10 +6438,12 @@ QtObject {
                 function isDefault(extension) { return extension === ".zip" && selected }
                 function refresh() { ++revision }
                 function requestChange(extension, value) { ++requests; if (accept && extension === ".zip") { selected = value; ++revision } }
-            })", QUrl());
+            })",
+                        QUrl());
         std::unique_ptr<QObject> service(fixture.create());
         QVERIFY2(service, qPrintable(fixture.errorString()));
-        engine.rootContext()->setContextProperty(QStringLiteral("FileAssociationService"), service.get());
+        engine.rootContext()->setContextProperty(QStringLiteral("FileAssociationService"),
+                                                 service.get());
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
         QVERIFY(!engine.rootObjects().isEmpty());
         auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
@@ -6425,7 +6475,8 @@ QtObject {
     }
     void settingsNetworkControlsCommitValidatedValues() {
         QTemporaryDir profile;
-        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH", profile.filePath("settings.ini"));
+        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH",
+                                              profile.filePath("settings.ini"));
         QVERIFY2(path.valid(), qPrintable(path.error()));
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
@@ -6453,7 +6504,8 @@ QtObject {
         action = QAccessible::queryAccessibleInterface(custom);
         QVERIFY(action && action->actionInterface());
         action->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
-        QCOMPARE(prefs->proxyMode(), QStringLiteral("none")); // Address is required before committing.
+        QCOMPARE(prefs->proxyMode(),
+                 QStringLiteral("none")); // Address is required before committing.
         QQuickItem *address = nullptr;
         QTRY_VERIFY((address = findVisual(settings->contentItem(), "settingsProxyAddress")));
         address->setProperty("text", "http://invalid");
@@ -6502,27 +6554,34 @@ QtObject {
         prefs->preview(dark ? QStringLiteral("dark") : QStringLiteral("light"), scale);
         const auto restorePreview = qScopeGuard([&] { prefs->cancelPreview(); });
         qreal firstHeight = 0;
-        for (const auto &name : {QStringLiteral("settingsDensity"), QStringLiteral("settingsTextScale"),
-                                 QStringLiteral("settingsLanguage"), QStringLiteral("settingsOpenMode")}) {
-            settings->setProperty("currentTab", name == "settingsLanguage" || name == "settingsOpenMode" ? 1 : 0);
+        for (const auto &name :
+             {QStringLiteral("settingsDensity"), QStringLiteral("settingsTextScale"),
+              QStringLiteral("settingsLanguage"), QStringLiteral("settingsOpenMode")}) {
+            settings->setProperty("currentTab",
+                                  name == "settingsLanguage" || name == "settingsOpenMode" ? 1 : 0);
             QQuickItem *control = nullptr;
             QTRY_VERIFY((control = findVisual(settings->contentItem(), name)));
             QTRY_COMPARE(control->property("font").value<QFont>().pixelSize(), qRound(13 * scale));
             QTRY_VERIFY(qAbs(control->height() - control->property("implicitHeight").toReal()) < 1);
-            if (!firstHeight) firstHeight = control->height();
+            if (!firstHeight)
+                firstHeight = control->height();
             QTRY_VERIFY(qAbs(control->height() - firstHeight) < 1);
             auto *editor = control->property("contentItem").value<QQuickItem *>();
             auto *indicator = control->property("indicator").value<QQuickItem *>();
             QVERIFY(editor && indicator);
             QVERIFY(editor->height() <= control->height());
-            QVERIFY(indicator->y() >= 0 && indicator->y() + indicator->height() <= control->height());
+            QVERIFY(indicator->y() >= 0 &&
+                    indicator->y() + indicator->height() <= control->height());
             const QFontMetricsF metrics(editor->property("font").value<QFont>());
-            QVERIFY2(metrics.horizontalAdvance(editor->property("text").toString()) <= editor->width() + 1,
+            QVERIFY2(metrics.horizontalAdvance(editor->property("text").toString()) <=
+                         editor->width() + 1,
                      qPrintable(name + QStringLiteral(" text clipped")));
         }
         settings->close();
     }
-    void settingsAllPagesLayout_data() { settingsSelectorsHaveConsistentGeometry_data(); }
+    void settingsAllPagesLayout_data() {
+        settingsSelectorsHaveConsistentGeometry_data();
+    }
     void settingsAllPagesLayout() {
         QFETCH(QString, language);
         QFETCH(bool, dark);
@@ -6546,12 +6605,16 @@ QtObject {
         QVERIFY(sidebar->width() >= 144.);
         if (scale == 1.)
             QCOMPARE(sidebar->width(), 144.);
-        QTRY_VERIFY(qAbs(sidebar->mapToScene(QPointF(sidebar->width(), 0)).x() - scroll->mapToScene(QPointF()).x()) < .5);
-        QTRY_VERIFY(qAbs(sidebar->mapToScene(QPointF()).y() - scroll->mapToScene(QPointF()).y()) < .5);
-        const QStringList names{"appearance", "general", "privacy", "associations", "network", "about"};
-        const QStringList pageTitles{qtTrId("settings.tabAppearance"), qtTrId("settings.tabGeneral"),
-                                     qtTrId("settings.tabPrivacy"), qtTrId("settings.tabAssociations"),
-                                     qtTrId("settings.tabNetwork"), qtTrId("settings.tabAbout")};
+        QTRY_VERIFY(qAbs(sidebar->mapToScene(QPointF(sidebar->width(), 0)).x() -
+                         scroll->mapToScene(QPointF()).x()) < .5);
+        QTRY_VERIFY(qAbs(sidebar->mapToScene(QPointF()).y() - scroll->mapToScene(QPointF()).y()) <
+                    .5);
+        const QStringList names{"appearance",   "general", "privacy",
+                                "associations", "network", "about"};
+        const QStringList pageTitles{
+            qtTrId("settings.tabAppearance"), qtTrId("settings.tabGeneral"),
+            qtTrId("settings.tabPrivacy"),    qtTrId("settings.tabAssociations"),
+            qtTrId("settings.tabNetwork"),    qtTrId("settings.tabAbout")};
         for (int tab = 0; tab < names.size(); ++tab) {
             settings->setProperty("currentTab", tab);
             auto *tabButton =
@@ -6595,25 +6658,43 @@ QtObject {
             }
             QQuickItem *firstVisible = nullptr;
             for (auto *child : page->childItems()) {
-                if (child->isVisible()) { firstVisible = child; break; }
+                if (child->isVisible()) {
+                    firstVisible = child;
+                    break;
+                }
             }
-            QVERIFY2(firstVisible && firstVisible->height() > 1, qPrintable(names[tab] + QStringLiteral(" starts with a divider")));
+            QVERIFY2(firstVisible && firstVisible->height() > 1,
+                     qPrintable(names[tab] + QStringLiteral(" starts with a divider")));
             QList<QQuickItem *> pending{page};
             while (!pending.isEmpty()) {
                 auto *item = pending.takeLast();
                 pending.append(item->childItems());
-                if (!item->isVisible() || item->width() <= 0 || !item->property("paintedWidth").isValid())
+                if (!item->isVisible() || item->width() <= 0 ||
+                    !item->property("paintedWidth").isValid())
                     continue;
-                QVERIFY2(item->property("text").toString() != pageTitles[tab], qPrintable(names[tab] + QStringLiteral(" has a duplicate page title")));
+                QVERIFY2(item->property("text").toString() != pageTitles[tab],
+                         qPrintable(names[tab] + QStringLiteral(" has a duplicate page title")));
                 QVERIFY2(item->property("paintedWidth").toReal() <= item->width() + 1,
-                         qPrintable(names[tab] + QStringLiteral(" text exceeds width: ") + item->property("text").toString()));
-                QVERIFY2(item->property("paintedHeight").toReal() <= item->height() + 1,
-                         qPrintable(names[tab] + QStringLiteral(" text exceeds height: ") + item->property("text").toString()));
+                         qPrintable(names[tab] + QStringLiteral(" text exceeds width: ") +
+                                    item->property("text").toString()));
+                if (item->property("paintedHeight").toReal() > item->height() + 1)
+                    qInfo().noquote()
+                        << "Settings layout settling:" << names[tab] << "painted height"
+                        << item->property("paintedHeight").toReal() << "allocated height"
+                        << item->height();
+                QTRY_VERIFY2(item->property("paintedHeight").toReal() <= item->height() + 1,
+                             qPrintable(names[tab] + QStringLiteral(" text exceeds height: ") +
+                                        item->property("text").toString() +
+                                        QStringLiteral(" (painted %1, height %2)")
+                                            .arg(item->property("paintedHeight").toReal())
+                                            .arg(item->height())));
             }
         }
         settings->close();
     }
-    void settingsChromeAndScrollbar_data() { settingsSelectorsHaveConsistentGeometry_data(); }
+    void settingsChromeAndScrollbar_data() {
+        settingsSelectorsHaveConsistentGeometry_data();
+    }
     void settingsChromeAndScrollbar() {
         QFETCH(QString, language);
         QFETCH(bool, dark);
@@ -6621,7 +6702,8 @@ QtObject {
         const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
         QVERIFY(initializeUiText(language));
         QTemporaryDir profile;
-        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH", profile.filePath("settings.ini"));
+        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH",
+                                              profile.filePath("settings.ini"));
         QVERIFY2(path.valid(), qPrintable(path.error()));
         QQmlApplicationEngine engine;
         QQmlComponent fixture(&engine);
@@ -6636,7 +6718,8 @@ QtObject {
                 function download() { ++downloads; busy = true; state = "downloading" }
                 function downloadAndInstall() { ++downloads; busy = true; state = "downloading" }
                 function openReleasePage() {} function openDownloadFolder() {}
-            })", QUrl());
+            })",
+                        QUrl());
         std::unique_ptr<QObject> service(fixture.create());
         QVERIFY2(service, qPrintable(fixture.errorString()));
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
@@ -6665,29 +6748,38 @@ QtObject {
         const auto otherBackground = other->property("background").value<QObject *>();
         QVERIFY(selectedBackground && otherBackground);
         const auto originalCursor = QCursor::pos();
-        const auto restoreCursor = qScopeGuard([&] { if (nativeSystemPointer()) QCursor::setPos(originalCursor); });
+        const auto restoreCursor = qScopeGuard([&] {
+            if (nativeSystemPointer())
+                QCursor::setPos(originalCursor);
+        });
         if (nativeSystemPointer()) {
             settings->requestActivate();
             QVERIFY(QTest::qWaitForWindowActive(settings));
         }
         const auto hoverItem = [settings](QQuickItem *item) {
-            moveTestPointer(settings, item->mapToScene(QPointF(item->width()/2, item->height()/2)).toPoint());
+            moveTestPointer(
+                settings,
+                item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint());
             return item->property("hovered").toBool();
         };
         QTRY_VERIFY_WITH_TIMEOUT(hoverItem(other), 1500);
-        QCOMPARE(otherBackground->property("color").value<QColor>(), QColor(dark ? "#2B374C" : "#EDF2FF"));
+        QCOMPARE(otherBackground->property("color").value<QColor>(),
+                 QColor(dark ? "#2B374C" : "#EDF2FF"));
         QTRY_VERIFY_WITH_TIMEOUT(hoverItem(selected), 1500);
-        QCOMPARE(selectedBackground->property("color").value<QColor>(), QColor(dark ? "#30436A" : "#E7EDFF"));
+        QCOMPARE(selectedBackground->property("color").value<QColor>(),
+                 QColor(dark ? "#30436A" : "#E7EDFF"));
         const auto captures = qEnvironmentVariable("XDZIP_SETTINGS_CHROME_AUDIT");
         if (!captures.isEmpty()) {
             QTRY_VERIFY_WITH_TIMEOUT(hoverItem(other), 1500);
             QVERIFY(QDir().mkpath(captures));
             QVERIFY(visual_audit::save(settings, captures,
-                language + (dark ? "-dark-" : "-light-") + QString::number(scale)));
+                                       language + (dark ? "-dark-" : "-light-") +
+                                           QString::number(scale)));
         }
         auto *aboutTab = findVisual(settings->contentItem(), "settingsTab-5");
         QVERIFY(aboutTab);
-        const auto aboutPos = aboutTab->mapToScene(QPointF(aboutTab->width()/2, aboutTab->height()/2)).toPoint();
+        const auto aboutPos =
+            aboutTab->mapToScene(QPointF(aboutTab->width() / 2, aboutTab->height() / 2)).toPoint();
         moveTestPointer(settings, aboutPos);
         QTest::mouseClick(settings, Qt::LeftButton, Qt::NoModifier, aboutPos);
         QTRY_COMPARE(settings->property("currentTab").toInt(), 5);
@@ -6737,7 +6829,8 @@ QtObject {
         QVERIFY(positionChanges.isValid());
         const auto checkPosition = check->mapToScene(QPointF());
         const qreal checkRight = check->mapToScene(QPointF(check->width(), 0)).x();
-        const auto clickPos = check->mapToScene(QPointF(check->width()/2, check->height()/2)).toPoint();
+        const auto clickPos =
+            check->mapToScene(QPointF(check->width() / 2, check->height() / 2)).toPoint();
         moveTestPointer(settings, clickPos);
         QTest::mousePress(settings, Qt::LeftButton, Qt::NoModifier, clickPos);
         QTest::qWait(30);
@@ -6755,16 +6848,26 @@ QtObject {
         if (!updateCaptures.isEmpty()) {
             QVERIFY(QDir().mkpath(updateCaptures));
             QVERIFY(visual_audit::save(settings, updateCaptures,
-                language + (dark ? "-dark-" : "-light-") + QString::number(scale)));
+                                       language + (dark ? "-dark-" : "-light-") +
+                                           QString::number(scale)));
         }
         QTest::qWait(50);
-        QTRY_VERIFY_WITH_TIMEOUT(qAbs(flick->property("contentHeight").toReal() - initialHeight) < .5, 1000);
+        QTRY_VERIFY_WITH_TIMEOUT(
+            qAbs(flick->property("contentHeight").toReal() - initialHeight) < .5, 1000);
         QTRY_VERIFY_WITH_TIMEOUT(qAbs(bar->property("size").toReal() - initialThumb) < .001, 1000);
         QVERIFY2(thumbChanges.isEmpty(), "scrollbar size changed while starting the update check");
-        QVERIFY2(positionChanges.isEmpty(), qPrintable(QStringLiteral("update check scrolled from %1 to %2 (changes: %3, focus: %4)")
-            .arg(initialPosition).arg(flick->property("contentY").toReal()).arg(positionChanges.size())
-            .arg(settings->activeFocusItem() ? settings->activeFocusItem()->objectName() : QStringLiteral("none"))));
-        const auto cancelPoint = cancelCheck->mapToScene(QPointF(cancelCheck->width()/2, cancelCheck->height()/2)).toPoint();
+        QVERIFY2(
+            positionChanges.isEmpty(),
+            qPrintable(
+                QStringLiteral("update check scrolled from %1 to %2 (changes: %3, focus: %4)")
+                    .arg(initialPosition)
+                    .arg(flick->property("contentY").toReal())
+                    .arg(positionChanges.size())
+                    .arg(settings->activeFocusItem() ? settings->activeFocusItem()->objectName()
+                                                     : QStringLiteral("none"))));
+        const auto cancelPoint =
+            cancelCheck->mapToScene(QPointF(cancelCheck->width() / 2, cancelCheck->height() / 2))
+                .toPoint();
         moveTestPointer(settings, cancelPoint);
         QTest::mousePress(settings, Qt::LeftButton, Qt::NoModifier, cancelPoint);
         QTest::qWait(30);
@@ -6774,7 +6877,8 @@ QtObject {
         QTRY_VERIFY(check->isVisible());
         QVERIFY(!cancelCheck->isVisible());
         QTest::qWait(50);
-        QVERIFY2(positionChanges.isEmpty(), "canceling the update check changed the scroll position");
+        QVERIFY2(positionChanges.isEmpty(),
+                 "canceling the update check changed the scroll position");
         QVERIFY2(thumbChanges.isEmpty(), "canceling the update check changed the scrollbar height");
         service->setProperty("candidateVersion", QStringLiteral("0.1.0-alpha.9"));
         service->setProperty("canInstall", false);
@@ -6785,8 +6889,10 @@ QtObject {
         QCOMPARE(download->mapToScene(QPointF(download->width(), 0)).x(), checkRight);
         if (!updateCaptures.isEmpty())
             QVERIFY(visual_audit::save(settings, updateCaptures,
-                language + (dark ? "-dark-" : "-light-") + QString::number(scale) + "-available"));
-        const auto downloadPoint = download->mapToScene(QPointF(download->width()/2, download->height()/2)).toPoint();
+                                       language + (dark ? "-dark-" : "-light-") +
+                                           QString::number(scale) + "-available"));
+        const auto downloadPoint =
+            download->mapToScene(QPointF(download->width() / 2, download->height() / 2)).toPoint();
         moveTestPointer(settings, downloadPoint);
         QTest::mouseClick(settings, Qt::LeftButton, Qt::NoModifier, downloadPoint);
         QTRY_COMPARE(service->property("downloads").toInt(), 1);
@@ -6796,11 +6902,15 @@ QtObject {
         QCOMPARE(cancelDownload->mapToScene(QPointF(cancelDownload->width(), 0)).x(), checkRight);
         if (!updateCaptures.isEmpty())
             QVERIFY(visual_audit::save(settings, updateCaptures,
-                language + (dark ? "-dark-" : "-light-") + QString::number(scale) + "-downloading"));
+                                       language + (dark ? "-dark-" : "-light-") +
+                                           QString::number(scale) + "-downloading"));
         QTest::qWait(50);
         QVERIFY2(positionChanges.isEmpty(), "starting the download changed the scroll position");
         QVERIFY2(thumbChanges.isEmpty(), "starting the download changed the scrollbar height");
-        const auto cancelDownloadPoint = cancelDownload->mapToScene(QPointF(cancelDownload->width()/2, cancelDownload->height()/2)).toPoint();
+        const auto cancelDownloadPoint =
+            cancelDownload
+                ->mapToScene(QPointF(cancelDownload->width() / 2, cancelDownload->height() / 2))
+                .toPoint();
         moveTestPointer(settings, cancelDownloadPoint);
         QTest::mouseClick(settings, Qt::LeftButton, Qt::NoModifier, cancelDownloadPoint);
         QTRY_COMPARE(service->property("cancels").toInt(), 2);
@@ -6809,14 +6919,20 @@ QtObject {
         QVERIFY2(positionChanges.isEmpty(), "canceling the download changed the scroll position");
         QVERIFY2(thumbChanges.isEmpty(), "canceling the download changed the scrollbar height");
         const QList<QVariantMap> states{
-            {{"state", "up_to_date"}}, {{"state", "error"}, {"error", "network"}},
+            {{"state", "up_to_date"}},
+            {{"state", "error"}, {"error", "network"}},
             {{"state", "error"}, {"error", "unsafe_installation"}},
-            {{"state", "available"}, {"manual", true}}, {{"state", "available"}, {"manual", true}, {"untrusted", true}},
+            {{"state", "available"}, {"manual", true}},
+            {{"state", "available"}, {"manual", true}, {"untrusted", true}},
             {{"state", "downloaded"}, {"manual", true}, {"downloaded", true}},
-            {{"state", "downloading"}, {"busy", true}}, {{"state", "verifying"}, {"busy", true}},
-            {{"state", "waiting_tasks"}, {"busy", true}}, {{"state", "preparing"}, {"busy", true}},
-            {{"state", "installing"}, {"busy", true}}, {{"state", "recovery_required"}, {"downloaded", true}},
-            {{"state", "updated"}}, {{"state", "unavailable"}}};
+            {{"state", "downloading"}, {"busy", true}},
+            {{"state", "verifying"}, {"busy", true}},
+            {{"state", "waiting_tasks"}, {"busy", true}},
+            {{"state", "preparing"}, {"busy", true}},
+            {{"state", "installing"}, {"busy", true}},
+            {{"state", "recovery_required"}, {"downloaded", true}},
+            {{"state", "updated"}},
+            {{"state", "unavailable"}}};
         for (const auto &scenario : states) {
             const auto state = scenario.value("state").toString();
             service->setProperty("busy", scenario.value("busy", false));
@@ -6824,15 +6940,25 @@ QtObject {
             service->setProperty("canInstall", !scenario.value("manual", false).toBool());
             service->setProperty("downloaded", scenario.value("downloaded", false));
             service->setProperty("errorCode", scenario.value("error", "network"));
-            service->setProperty("candidateVersion", QStringLiteral("65535.65535.65535-alpha.65535"));
+            service->setProperty("candidateVersion",
+                                 QStringLiteral("65535.65535.65535-alpha.65535"));
             service->setProperty("state", state);
             QTest::qWait(30);
-            QVERIFY2(flick->property("contentHeight").toReal() + .5 >= pageContent->implicitHeight(), qPrintable(state));
-            QTRY_VERIFY2_WITH_TIMEOUT(qAbs(flick->property("contentHeight").toReal() - initialHeight) < .5,
-                qPrintable(state + QStringLiteral(" content height %1, expected %2").arg(flick->property("contentHeight").toReal()).arg(initialHeight)), 1000);
-            QTRY_VERIFY2_WITH_TIMEOUT(qAbs(bar->property("size").toReal() - initialThumb) < .001, qPrintable(state), 1000);
-            QVERIFY2(thumbChanges.isEmpty(), qPrintable(state + QStringLiteral(" changed the scrollbar size")));
-            QVERIFY2(positionChanges.isEmpty(), qPrintable(state + QStringLiteral(" changed the scroll position")));
+            QVERIFY2(flick->property("contentHeight").toReal() + .5 >=
+                         pageContent->implicitHeight(),
+                     qPrintable(state));
+            QTRY_VERIFY2_WITH_TIMEOUT(
+                qAbs(flick->property("contentHeight").toReal() - initialHeight) < .5,
+                qPrintable(state + QStringLiteral(" content height %1, expected %2")
+                                       .arg(flick->property("contentHeight").toReal())
+                                       .arg(initialHeight)),
+                1000);
+            QTRY_VERIFY2_WITH_TIMEOUT(qAbs(bar->property("size").toReal() - initialThumb) < .001,
+                                      qPrintable(state), 1000);
+            QVERIFY2(thumbChanges.isEmpty(),
+                     qPrintable(state + QStringLiteral(" changed the scrollbar size")));
+            QVERIFY2(positionChanges.isEmpty(),
+                     qPrintable(state + QStringLiteral(" changed the scroll position")));
         }
         auto *flickContent = flick->property("contentItem").value<QQuickItem *>();
         QVERIFY(flickContent);
@@ -6844,12 +6970,14 @@ QtObject {
             QTRY_VERIFY(aboutTab->hasActiveFocus());
             QTest::qWait(30);
             const qreal checkTop = check->mapToItem(flickContent, QPointF()).y();
-            const qreal maximum = std::max(qreal(0), flick->property("contentHeight").toReal() - flick->height());
-            const qreal target = std::clamp(checkTop + (clipped ? check->height() / 4 : -2.), qreal(0), maximum);
+            const qreal maximum =
+                std::max(qreal(0), flick->property("contentHeight").toReal() - flick->height());
+            const qreal target =
+                std::clamp(checkTop + (clipped ? check->height() / 4 : -2.), qreal(0), maximum);
             QVERIFY(flick->setProperty("contentY", target));
             QTest::qWait(30);
             const qreal beforeClick = flick->property("contentY").toReal();
-            const QPointF localPoint(check->width()/2, check->height() * .75);
+            const QPointF localPoint(check->width() / 2, check->height() * .75);
             const auto pointInViewport = check->mapToItem(flick, localPoint);
             QVERIFY(pointInViewport.y() >= 0 && pointInViewport.y() <= flick->height());
             positionChanges.clear();
@@ -6873,13 +7001,15 @@ QtObject {
             QVERIFY2(positionChanges.isEmpty(), "update result changed the scroll position");
         }
         const qreal keyboardTop = check->mapToItem(flickContent, QPointF()).y();
-        const qreal keyboardMaximum = std::max(qreal(0), flick->property("contentHeight").toReal() - flick->height());
-        const qreal keyboardPosition = std::clamp(keyboardTop + check->height()/2 - flick->height()/2,
-                                                  qreal(0), keyboardMaximum);
+        const qreal keyboardMaximum =
+            std::max(qreal(0), flick->property("contentHeight").toReal() - flick->height());
+        const qreal keyboardPosition = std::clamp(
+            keyboardTop + check->height() / 2 - flick->height() / 2, qreal(0), keyboardMaximum);
         QVERIFY(flick->setProperty("contentY", keyboardPosition));
         auto *styleHints = QGuiApplication::styleHints();
         const auto originalTabBehavior = styleHints->tabFocusBehavior();
-        const auto restoreTabBehavior = qScopeGuard([&] { styleHints->setTabFocusBehavior(originalTabBehavior); });
+        const auto restoreTabBehavior =
+            qScopeGuard([&] { styleHints->setTabFocusBehavior(originalTabBehavior); });
         styleHints->setTabFocusBehavior(Qt::TabFocusAllControls);
         check->forceActiveFocus(Qt::TabFocusReason);
         QTRY_VERIFY(check->hasActiveFocus());
@@ -6895,8 +7025,10 @@ QtObject {
         QTRY_COMPARE(service->property("cancels").toInt(), 3);
         QTRY_COMPARE(service->property("state").toString(), QStringLiteral("idle"));
         QTest::qWait(50);
-        QVERIFY2(positionChanges.isEmpty(), "keyboard check or cancellation changed the scroll position");
-        QVERIFY2(thumbChanges.isEmpty(), "keyboard check or cancellation changed the scrollbar height");
+        QVERIFY2(positionChanges.isEmpty(),
+                 "keyboard check or cancellation changed the scroll position");
+        QVERIFY2(thumbChanges.isEmpty(),
+                 "keyboard check or cancellation changed the scrollbar height");
         service->setProperty("canInstall", false);
         service->setProperty("state", "available");
         QTRY_VERIFY(download->isVisible());
@@ -6914,18 +7046,28 @@ QtObject {
         QTRY_COMPARE(service->property("cancels").toInt(), 4);
         QTRY_COMPARE(service->property("state").toString(), QStringLiteral("available"));
         QTest::qWait(50);
-        QVERIFY2(positionChanges.isEmpty(), "keyboard download or cancellation changed the scroll position");
-        QVERIFY2(thumbChanges.isEmpty(), "keyboard download or cancellation changed the scrollbar height");
+        QVERIFY2(positionChanges.isEmpty(),
+                 "keyboard download or cancellation changed the scroll position");
+        QVERIFY2(thumbChanges.isEmpty(),
+                 "keyboard download or cancellation changed the scrollbar height");
         service->setProperty("state", "idle");
         check->forceActiveFocus(Qt::TabFocusReason);
         QTRY_VERIFY(check->hasActiveFocus());
         auto *copy = findVisual(settings->contentItem(), "aboutCopy");
         QVERIFY(copy);
         QTest::keyClick(settings, Qt::Key_Tab);
-        QTRY_VERIFY2_WITH_TIMEOUT(copy->hasActiveFocus(), qPrintable(QStringLiteral("Tab focus is %1 (%2), window active: %3")
-            .arg(settings->activeFocusItem() ? settings->activeFocusItem()->objectName() : QStringLiteral("none"))
-            .arg(settings->activeFocusItem() ? QString::fromLatin1(settings->activeFocusItem()->metaObject()->className()) : QStringLiteral("none"))
-            .arg(settings->isActive())), 1500);
+        QTRY_VERIFY2_WITH_TIMEOUT(
+            copy->hasActiveFocus(),
+            qPrintable(QStringLiteral("Tab focus is %1 (%2), window active: %3")
+                           .arg(settings->activeFocusItem()
+                                    ? settings->activeFocusItem()->objectName()
+                                    : QStringLiteral("none"))
+                           .arg(settings->activeFocusItem()
+                                    ? QString::fromLatin1(
+                                          settings->activeFocusItem()->metaObject()->className())
+                                    : QStringLiteral("none"))
+                           .arg(settings->isActive())),
+            1500);
         QTRY_VERIFY(copy->mapToItem(flick, QPointF()).y() >= -.5 &&
                     copy->mapToItem(flick, QPointF(0, copy->height())).y() <= flick->height() + .5);
         auto *license = findVisual(settings->contentItem(), "aboutLicense");
@@ -6935,9 +7077,11 @@ QtObject {
         QVERIFY(flick->setProperty("contentY", std::clamp(licenseTop, qreal(0), scrollMaximum)));
         QTRY_VERIFY(license->mapToItem(flick, QPointF()).y() >= -.5 &&
                     license->mapToItem(flick, QPointF()).y() < flick->height());
-        QVERIFY(flick->setProperty("contentY", std::clamp(licenseTop + license->height() - flick->height(),
-                                                           qreal(0), scrollMaximum)));
-        QTRY_VERIFY(license->mapToItem(flick, QPointF(0, license->height())).y() <= flick->height() + .5);
+        QVERIFY(flick->setProperty(
+            "contentY",
+            std::clamp(licenseTop + license->height() - flick->height(), qreal(0), scrollMaximum)));
+        QTRY_VERIFY(license->mapToItem(flick, QPointF(0, license->height())).y() <=
+                    flick->height() + .5);
         QVERIFY(license->mapToItem(flick, QPointF(0, license->height())).y() > 0);
         settings->close();
     }
@@ -6954,7 +7098,8 @@ QtObject {
             return;
         }
         QTemporaryDir profile;
-        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH", profile.filePath("settings.ini"));
+        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH",
+                                              profile.filePath("settings.ini"));
         QVERIFY2(path.valid(), qPrintable(path.error()));
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
@@ -6978,8 +7123,9 @@ QtObject {
             auto *content = popup->property("contentItem").value<QQuickItem *>();
             QQuickItem *option = nullptr;
             QTRY_VERIFY((option = findVisual(content, "settingsOpenModeOption-1")));
-            QTest::mouseClick(settings, Qt::LeftButton, Qt::NoModifier,
-                              option->mapToScene(QPointF(option->width()/2, option->height()/2)).toPoint());
+            QTest::mouseClick(
+                settings, Qt::LeftButton, Qt::NoModifier,
+                option->mapToScene(QPointF(option->width() / 2, option->height() / 2)).toPoint());
         } else {
             QTest::keyClick(settings, Qt::Key_End);
             QTest::keyClick(settings, Qt::Key_Return);
@@ -6994,9 +7140,12 @@ QtObject {
         env.insert("XDZIP_OPEN_MODE_CHILD", "1");
         child.setProcessEnvironment(env);
         child.setProcessChannelMode(QProcess::MergedChannels);
-        child.start(QCoreApplication::applicationFilePath(), {QStringLiteral("settingsOpenModeSelectionPersists:") + QString::fromLatin1(QTest::currentDataTag())});
+        child.start(QCoreApplication::applicationFilePath(),
+                    {QStringLiteral("settingsOpenModeSelectionPersists:") +
+                     QString::fromLatin1(QTest::currentDataTag())});
         QVERIFY(child.waitForFinished(20000));
-        QVERIFY2(child.exitStatus() == QProcess::NormalExit && child.exitCode() == 0, child.readAllStandardOutput().constData());
+        QVERIFY2(child.exitStatus() == QProcess::NormalExit && child.exitCode() == 0,
+                 child.readAllStandardOutput().constData());
         sessions.newSession();
         QCOMPARE(sessions.windows().size(), 2);
         QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
@@ -7013,7 +7162,8 @@ QtObject {
         QFETCH(QString, profileLabel);
         QTemporaryDir profile(QDir::tempPath() + "/settings-" + profileLabel + "-XXXXXX");
         QVERIFY(profile.isValid());
-        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH", profile.filePath("settings.ini"));
+        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH",
+                                              profile.filePath("settings.ini"));
         QVERIFY2(path.valid(), qPrintable(path.error()));
         const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
         QVERIFY(initializeUiText(QStringLiteral("zh-CN")));
@@ -7061,7 +7211,8 @@ QtObject {
         child.setProcessChannelMode(QProcess::MergedChannels);
         child.start(QCoreApplication::applicationFilePath(), {"settingsEnglishStartup"});
         QVERIFY(child.waitForFinished(20000));
-        QVERIFY2(child.exitStatus() == QProcess::NormalExit && child.exitCode() == 0, child.readAllStandardOutput().constData());
+        QVERIFY2(child.exitStatus() == QProcess::NormalExit && child.exitCode() == 0,
+                 child.readAllStandardOutput().constData());
     }
     void qtRuntimeTranslations() {
         QTranslator translator;

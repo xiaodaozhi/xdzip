@@ -33,8 +33,8 @@ inline QUrl mapped(const QUrl &original, const QString &mirror) {
     return QUrl(prefix + '/' + original.toString(QUrl::FullyEncoded), QUrl::StrictMode);
 }
 inline bool isMirrorUrl(const QUrl &url, const QString &mirror) {
-    if (mirror.isEmpty() || !validMirror(mirror) || !url.isValid() ||
-        url.scheme() != "https" || !url.userInfo().isEmpty() || url.hasFragment())
+    if (mirror.isEmpty() || !validMirror(mirror) || !url.isValid() || url.scheme() != "https" ||
+        !url.userInfo().isEmpty() || url.hasFragment())
         return false;
     const QUrl base(mirror, QUrl::StrictMode);
     auto prefix = base.path(QUrl::FullyEncoded);

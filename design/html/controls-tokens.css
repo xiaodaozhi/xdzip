@@ -83,6 +83,7 @@
   --settings-sidebar-icon-size: calc(18px * var(--ui-source-factor));
   --settings-sidebar-icon-inset: calc(15px * var(--ui-source-factor));
   --settings-sidebar-icon-gap: calc(10px * var(--ui-source-factor));
+  --settings-sidebar-label-right-inset: calc(14px * var(--ui-source-factor));
   --settings-sidebar-selection-width: calc(3px * var(--ui-source-factor));
   --settings-header-divider-height: calc(1px * var(--ui-source-factor));
   --settings-page-inset: calc(20px * var(--ui-source-factor));

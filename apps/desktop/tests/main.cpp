@@ -12,9 +12,11 @@
 class Setup : public QObject {
     Q_OBJECT
     QTemporaryDir m_profile;
+
   public:
     Setup() {
-        if (!m_profile.isValid()) qFatal("Unable to create isolated UI test profile");
+        if (!m_profile.isValid())
+            qFatal("Unable to create isolated UI test profile");
         qputenv("XDZIP_SETTINGS_PATH", m_profile.filePath("settings.ini").toUtf8());
         QQuickStyle::setStyle(QStringLiteral("Basic"));
         Q_INIT_RESOURCE(ui);
