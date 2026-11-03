@@ -18,13 +18,13 @@
 #include <QJsonDocument>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QTcpServer>
-#include <QTcpSocket>
 #include <QQmlApplicationEngine>
 #include <QQuickItem>
 #include <QQuickStyle>
 #include <QScopeGuard>
 #include <QSignalSpy>
+#include <QTcpServer>
+#include <QTcpSocket>
 #include <QTemporaryDir>
 #include <QtTest>
 #include <cstring>
