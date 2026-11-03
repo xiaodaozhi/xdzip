@@ -22,6 +22,7 @@ import macos_launch_services as ls
 import rar_mapping_materials
 import vendor_notice_materials
 import qt_psl_source
+import cldr_webapp_notices
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -621,6 +622,59 @@ class DeliveryTests(unittest.TestCase):
                     self.assertEqual(archive.extractfile('cldr-owned/'+name).read(), b'owned language fixture')
                 for name in source.ISO639_TABLES:
                     self.assertNotIn('cldr-owned/'+name, archive.getnames())
+
+    @staticmethod
+    def cldr_web_fonts_fixture(root, case=None):
+        inputs = root/'third_party'/cldr_webapp_notices.DIRECTORY
+        inputs.mkdir(parents=True)
+        fonts = {name: ('owned font fixture '+name).encode() for name in cldr_webapp_notices.FONT_FILES}
+        notices = {name: ('owned notice fixture '+name).encode() for name in cldr_webapp_notices.NOTICE_FILES}
+        config = {'schema_version': 1, 'kind': cldr_webapp_notices.DIRECTORY,
+                  'archive_root': cldr_webapp_notices.ARCHIVE_ROOT,
+                  'fonts_directory': cldr_webapp_notices.FONTS_DIRECTORY,
+                  'fonts': {name: hashlib.sha256(data).hexdigest() for name, data in fonts.items()},
+                  'notices': {name: hashlib.sha256(data).hexdigest() for name, data in notices.items()}}
+        (inputs/'sources.json').write_text(json.dumps(config), encoding='utf-8')
+        (inputs/'README.md').write_text('owned fixture', encoding='utf-8')
+        for name, data in notices.items():
+            (inputs/name).write_bytes(b'tampered' if case == 'notice' else data)
+        archive = root/'subset.tar.gz'
+        prefix = cldr_webapp_notices.ARCHIVE_ROOT+'/'+cldr_webapp_notices.FONTS_DIRECTORY+'/'
+        if case == 'extra':
+            fonts['unreviewed.ttf'] = b'owned extra font'
+        if case == 'missing':
+            fonts.pop('glyphicons-halflings-regular.ttf')
+        if case == 'font':
+            fonts['glyphicons-halflings-regular.ttf'] = b'tampered'
+        with tarfile.open(archive, 'w:gz') as tf:
+            for name, data in fonts.items():
+                member = tarfile.TarInfo(prefix+name)
+                if case == 'symlink' and name == 'glyphicons-halflings-regular.ttf':
+                    member.type = tarfile.SYMTYPE; member.linkname = 'elsewhere'
+                    tf.addfile(member)
+                else:
+                    member.size = len(data)
+                    tf.addfile(member, io.BytesIO(data))
+        return archive
+
+    def test_cldr_web_font_notices_are_bound_to_subset_and_license_bytes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); archive = self.cldr_web_fonts_fixture(root)
+            with patch.object(cldr_webapp_notices, 'ROOT', root):
+                record = cldr_webapp_notices.collect(root/'delivery', archive)
+            self.assertEqual(record['font_files'], 6)
+            destination = root/'delivery'/cldr_webapp_notices.DIRECTORY
+            for name in ('README.md', 'sources.json', *cldr_webapp_notices.NOTICE_FILES):
+                self.assertEqual((destination/name).read_bytes(),
+                                 (root/'third_party'/cldr_webapp_notices.DIRECTORY/name).read_bytes())
+
+    def test_cldr_web_font_notices_reject_changed_or_unreviewed_inputs(self):
+        for case in ('font', 'missing', 'extra', 'notice', 'symlink'):
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary); archive = self.cldr_web_fonts_fixture(root, case)
+                with patch.object(cldr_webapp_notices, 'ROOT', root), self.assertRaises(ValueError):
+                    cldr_webapp_notices.collect(root/'delivery', archive)
+                self.assertFalse((root/'delivery'/cldr_webapp_notices.DIRECTORY).exists())
 
     def test_editable_data_sources_reject_missing_or_tampered_inputs(self):
         with tempfile.TemporaryDirectory() as temporary:

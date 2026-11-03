@@ -31,6 +31,10 @@ CLDR 43.1 子集的工具数据还保留文件头日期为 2023-02-14 的 `langu
 
 English: The CLDR 43.1 subset also retains a `language-subtag-registry` tool input dated 2023-02-14 in its header. Of its 8,049 three-letter language subtags, 7,713 match identifiers in the later candidate ISO table above; that cross-version difference is not attributed here. Unicode's update instructions identify this file as the language-subtag registry obtained from IANA. IANA's CC0 statement covers only rights it owns or may sublicense and preserves possible third-party rights. See [#140](https://github.com/xiaodaozhi/xdzip/issues/140#issuecomment-6589292716) for the comparison and limits.
 
+CLDR 43.1 子集还包含网页工具使用的两份 Noto 字体和四份 Glyphicons 文件。源码交付的 `cldr43-webapp-notices/` 单独提供这些文件的版权与许可，收集时逐份核对固定摘要；这些文件不是 xdzip 界面字体，此通知不覆盖其他网页素材。
+
+English: The CLDR 43.1 subset also includes two Noto fonts and four Glyphicons files used by its web tool. The `cldr43-webapp-notices/` directory supplies their copyright and licenses after verifying each pinned file. They are not xdzip interface fonts, and these notices do not cover other web assets.
+
 对 Qt 源码中已有的语言，还可从原 `qlocale_data_p.h` 提取一个供 Qt 生成器读取的有限输入。例如，将 QtBase 归档解包到当前目录后运行 `python3 scripts/derive-qt-locale-code-input.py --qtbase qtbase-everywhere-src-6.8.2 --output build/qt-locale-codes.tsv`。此输入仅覆盖原文件中已有的查找项，不是完整 ISO 639-3 表，也不是上游历史输入；新增语言时可能仍需另行取得代码并核对条款。用固定 Qt 6.8.2 源码、CLDR 46 数据及此派生输入重生成八个源码文件的验证，仅允许生成日期和换行差异。该方法不自动解决 ISO 表的授权或完整对应源码判断。
 
 English: For languages already present in the Qt source, `scripts/derive-qt-locale-code-input.py` extracts a limited input from the original `qlocale_data_p.h`; the command and output location are shown above. This covers only existing lookup keys and is neither the complete ISO 639-3 table nor the historical upstream input. Adding languages may still require separately obtained codes and review of their terms. Regeneration of eight files with the pinned Qt 6.8.2 source, CLDR 46 data and this derived input was checked allowing only generation-date and line-ending differences. This does not by itself settle the ISO table's licensing or establish complete corresponding source.
