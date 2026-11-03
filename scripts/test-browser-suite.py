@@ -208,6 +208,52 @@ class BrowserSuiteTest(unittest.TestCase):
         self.assertIn('"owned_process_records": 0', message)
         self.assertNotIn(str(self.root), message)
 
+    @unittest.skipUnless(sys.platform == 'win32', 'Windows loader behavior only')
+    def test_real_windows_loader_failures_keep_empty_output_and_status(self):
+        compiler = shutil.which('cl')
+        if not compiler:
+            if os.environ.get('CI', '').lower() == 'true':
+                self.fail('MSVC is required for the Windows CI loader fixture')
+            self.skipTest('MSVC compiler is unavailable')
+        fixtures = ROOT / 'tests/fixtures/native'
+        shutil.copy2(fixtures/'windows-loader-failure-dll.c', self.root/'owned-dll.c')
+        shutil.copy2(fixtures/'windows-loader-failure-main.c', self.root/'owned-loader.c')
+        builds = [
+            [compiler, '/nologo', '/MT', '/LD', '/Fe:owned-dll.dll', '/Fo:owned-dll.obj',
+             'owned-dll.c', '/link', '/IMPLIB:owned-dll.lib'],
+            [compiler, '/nologo', '/MT', '/Fe:owned-loader.exe', '/Fo:owned-loader.obj',
+             'owned-loader.c', 'owned-dll.lib'],
+        ]
+        for command in builds:
+            built = subprocess.run(command, cwd=self.root, capture_output=True, timeout=60)
+            self.assertEqual(built.returncode, 0, 'Owned loader fixture compilation failed')
+        missing = self.root/'missing-dll'
+        missing.mkdir()
+        shutil.copy2(self.root/'owned-loader.exe', missing/'owned-loader.exe')
+        env = dict(os.environ, PATH=str(Path(os.environ['SystemRoot'])/'System32'))
+        import ctypes
+        kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+        kernel.SetErrorMode.argtypes = [ctypes.c_uint]
+        kernel.SetErrorMode.restype = ctypes.c_uint
+        previous = kernel.SetErrorMode(0x0001 | 0x0002 | 0x8000)
+        try:
+            for directory, expected in ((self.root, 0xC0000142), (missing, 0xC0000135)):
+                with self.subTest(expected=f'0x{expected:08X}'):
+                    started = time.monotonic()
+                    process = subprocess.run([str(directory/'owned-loader.exe')], cwd=directory,
+                                             env=env, capture_output=True, timeout=10,
+                                             creationflags=subprocess.CREATE_NO_WINDOW)
+                    record = ctest_diagnostics(process.returncode, process.stdout, process.stderr,
+                                               time.monotonic()-started, False, 0)
+                    self.assertEqual(record['exit_code_hex32'], f'0x{expected:08X}')
+                    self.assertEqual((process.stdout, process.stderr), (b'', b''))
+                    self.assertEqual(record['stdout'], {'length': 0, 'unit': 'bytes'})
+                    self.assertEqual(record['stderr'], {'length': 0, 'unit': 'bytes'})
+                    self.assertFalse(record['timeout_marker'])
+                    self.assertNotIn(json.dumps(str(self.root))[1:-1], json.dumps(record))
+        finally:
+            kernel.SetErrorMode(previous)
+
     def test_ctest_outer_timeout_reports_partial_output_without_exposing_it(self):
         timeout = subprocess.TimeoutExpired('ctest', 25, output=b'private fixture path')
         with mock.patch('shutil.which', return_value='ctest'), mock.patch('subprocess.run', side_effect=timeout):
