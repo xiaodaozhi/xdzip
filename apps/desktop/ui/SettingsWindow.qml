@@ -207,9 +207,8 @@ OperationWindow {
                                         Layout.preferredWidth: Theme.settingsSidebarIconSize
                                         Layout.preferredHeight: Theme.settingsSidebarIconSize
                                         fillMode: Image.PreserveAspectFit
-                                        source: tab.index === 5 ? "qrc:/xdzip/assets/info-" + (Theme.dark ? "dark" : "light") + ".png" :
-                                            "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") +
-                                            ["view-list", "settings", "shield", "file-text", "external-open"][tab.index] + ".png"
+                                        source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") +
+                                            ["view-list", "settings", "shield", "settings-associations", "external-open", "settings-about"][tab.index] + ".png"
                                         Accessible.ignored: true
                                     }
                                     Text {

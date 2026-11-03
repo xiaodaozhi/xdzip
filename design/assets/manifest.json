@@ -30277,6 +30277,486 @@
       "format": "icns",
       "source": "file-associations/xdzip-udf-master.svg",
       "sha256": "07bb080793eed280635877f71b0bda9433a6b18fa1965d02d2007d1ed8e2530d"
+    },
+    {
+      "id": "light/settings-about",
+      "file": "svg/light/settings-about.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "category": "tool",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": [
+          "assets/light/settings-about.png"
+        ]
+      },
+      "sha256": "c2c19b9b17e77dbc0e6a68798cf0852c60720ed98ab1dbebb18b0f624dc8ecf9",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "visible_bounds_measurement": "3x librsvg raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "raster/light/settings-about@1x",
+      "file": "png/light/settings-about@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/settings-about.svg",
+      "source_sha256": "c2c19b9b17e77dbc0e6a68798cf0852c60720ed98ab1dbebb18b0f624dc8ecf9",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "29832401bdecceafac6ee0ee7327067c23aa2210b2887889846d8b86737f50e3"
+    },
+    {
+      "id": "raster/light/settings-about@2x",
+      "file": "png/light/settings-about@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/settings-about.svg",
+      "source_sha256": "c2c19b9b17e77dbc0e6a68798cf0852c60720ed98ab1dbebb18b0f624dc8ecf9",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "36e949a01a9fe47c39eb023ade72f832becb67bfc29b4c5f3bb4e90bb3d9ec4a"
+    },
+    {
+      "id": "raster/light/settings-about@3x",
+      "file": "png/light/settings-about@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/settings-about.svg",
+      "source_sha256": "c2c19b9b17e77dbc0e6a68798cf0852c60720ed98ab1dbebb18b0f624dc8ecf9",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "ccbb52a746537fdc6bfa4d7257f153efd2aa1bb2f23bb7bc72ef1181fae21145"
+    },
+    {
+      "id": "light/settings-associations",
+      "file": "svg/light/settings-associations.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "category": "tool",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": [
+          "assets/light/settings-associations.png"
+        ]
+      },
+      "sha256": "42dbcd852dd41eee912b1c7317471300161dee8e355fd0c4cc27f1f369472bf3",
+      "visible_bounds": [
+        4.0,
+        2.0,
+        21.0,
+        22.0
+      ],
+      "visible_bounds_measurement": "3x librsvg raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "raster/light/settings-associations@1x",
+      "file": "png/light/settings-associations@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/settings-associations.svg",
+      "source_sha256": "42dbcd852dd41eee912b1c7317471300161dee8e355fd0c4cc27f1f369472bf3",
+      "visible_bounds": [
+        4.0,
+        2.0,
+        21.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "005839a4f9ec4cf5e414082fb76dac474da85904bacd61261ed8252ac54e4a00"
+    },
+    {
+      "id": "raster/light/settings-associations@2x",
+      "file": "png/light/settings-associations@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/settings-associations.svg",
+      "source_sha256": "42dbcd852dd41eee912b1c7317471300161dee8e355fd0c4cc27f1f369472bf3",
+      "visible_bounds": [
+        4.0,
+        2.0,
+        21.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "d268a2e1aa193b12b62305a1e0edfcc50303eeb61356e1c7df1ed15dd3ebeb3a"
+    },
+    {
+      "id": "raster/light/settings-associations@3x",
+      "file": "png/light/settings-associations@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/settings-associations.svg",
+      "source_sha256": "42dbcd852dd41eee912b1c7317471300161dee8e355fd0c4cc27f1f369472bf3",
+      "visible_bounds": [
+        4.0,
+        2.0,
+        21.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "1d66724fdd19d0f5588fb72d163a61a5134d78322ca9fc5a00d0e3a512732260"
+    },
+    {
+      "id": "dark/settings-about",
+      "file": "svg/dark/settings-about.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "category": "tool",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": [
+          "assets/dark/settings-about.png"
+        ]
+      },
+      "sha256": "71dd64b49041e7cef3ea9b8bf538c095db4baf143afc4e319d16334fc7d9dc3a",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "visible_bounds_measurement": "3x librsvg raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "raster/dark/settings-about@1x",
+      "file": "png/dark/settings-about@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/settings-about.svg",
+      "source_sha256": "71dd64b49041e7cef3ea9b8bf538c095db4baf143afc4e319d16334fc7d9dc3a",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "878b1e094a2475b74fc5480dc5382fa09cff91b2efb38b5e337f9a312bb54fc2"
+    },
+    {
+      "id": "raster/dark/settings-about@2x",
+      "file": "png/dark/settings-about@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/settings-about.svg",
+      "source_sha256": "71dd64b49041e7cef3ea9b8bf538c095db4baf143afc4e319d16334fc7d9dc3a",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "68e4f11b3d68e1f7e3f32e63252dc5fa0a563962cc71056bde5e0fc6abf51308"
+    },
+    {
+      "id": "raster/dark/settings-about@3x",
+      "file": "png/dark/settings-about@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/settings-about.svg",
+      "source_sha256": "71dd64b49041e7cef3ea9b8bf538c095db4baf143afc4e319d16334fc7d9dc3a",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "f4f8d1d908401ec8e27f4fa3c22f283bccc696efafee4e2fa1eccd483be74b4a"
+    },
+    {
+      "id": "dark/settings-associations",
+      "file": "svg/dark/settings-associations.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "category": "tool",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": [
+          "assets/dark/settings-associations.png"
+        ]
+      },
+      "sha256": "82c3090bbc64e18afa4590e3e91981948a0b7a9dc5c6d5735251aa17d850fd37",
+      "visible_bounds": [
+        4.0,
+        2.0,
+        21.0,
+        22.0
+      ],
+      "visible_bounds_measurement": "3x librsvg raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "raster/dark/settings-associations@1x",
+      "file": "png/dark/settings-associations@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/settings-associations.svg",
+      "source_sha256": "82c3090bbc64e18afa4590e3e91981948a0b7a9dc5c6d5735251aa17d850fd37",
+      "visible_bounds": [
+        4.0,
+        2.0,
+        21.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "62bd824ee39f0f1eb82fecb84ce39157cc7f756014032747a6382df65415a384"
+    },
+    {
+      "id": "raster/dark/settings-associations@2x",
+      "file": "png/dark/settings-associations@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/settings-associations.svg",
+      "source_sha256": "82c3090bbc64e18afa4590e3e91981948a0b7a9dc5c6d5735251aa17d850fd37",
+      "visible_bounds": [
+        4.0,
+        2.0,
+        21.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "bd2087e2a468a44c4b867715138e953abdfda75334765f260d2fd94609448220"
+    },
+    {
+      "id": "raster/dark/settings-associations@3x",
+      "file": "png/dark/settings-associations@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/settings-associations.svg",
+      "source_sha256": "82c3090bbc64e18afa4590e3e91981948a0b7a9dc5c6d5735251aa17d850fd37",
+      "visible_bounds": [
+        4.0,
+        2.0,
+        21.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "c882569b9fa4641a3143aa2c9fe61e3ee0aae85ff73721ad7a2a18556cc45337"
     }
   ]
 }
