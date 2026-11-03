@@ -43,7 +43,9 @@ python3 scripts/desktop.py verify --kind all
 4. 宿主清除开发变量后，以 deployed 模式核验全部打包 ELF；不允许回退 SDK。实际文件 SBOM 保持同一版本／提交身份并通过官方 schema。
 5. 在相同无 SDK 镜像的新进程中启用网络，以隔离的 `XDZIP_SETTINGS_PATH` 执行产品 `--update-probe`，实际请求 GitHub HTTPS。必须报告 OpenSSL 后端可用并完成更新检查，单独保留 `.https.json` 与 `.https.log`；网络、证书或 TLS 失败均阻止验证通过。
 
-HTTPS 探针返回非零时，若已生成结构化结果，仍将结果和退出码保留在 `.https.log`；报告缺失、无效或容器前置条件失败时记录明确原因。诊断输出不改变失败状态，不以重试或空报告替代成功检查。
+HTTPS 探针分别记录 OpenSSL 后端、系统 CA 文件与真实 GitHub 请求结果；真实请求成功不单独证明签名验证或原生更新安装。签名解析与 SDK-free 更新闭环由[独立更新回归工作流](../../.github/workflows/update-regression.yml)验证，两类证据不得互相代替。
+
+每次探针尝试的原始日志和结构化报告分别保留为 `.https.attempt-N.log` 与 `.https.attempt-N.json`，最终尝试另保留 `.https.log`；报告缺失、无效、超时及进程退出码均保留失败状态。仅当产品控制器确认匿名 GitHub 发布列表限流，且状态、请求阶段、响应头及诊断记录完整时，才遵照服务端期限或有界退避重试，最多三次尝试和 240 秒等待；期限超过剩余预算、等待中断、TLS／网络失败或其他错误均立即失败，不提前请求、不将限流或空报告视为成功。每次等待决定和实际时长保留在 `.https-waits.json`。
 
 linux-runtime.json 记录实际事件与可执行文件 SHA-256；Xvfb／Qt Quick 软件渲染仅用于运行闭环，不能证明物理 GPU、中文候选窗口、真实读屏或完整桌面安装通过。
 

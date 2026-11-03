@@ -9,8 +9,30 @@ import tempfile
 import unittest
 from unittest.mock import patch
 from deploy_linux import qml_roots, relative_rpath, runtime_origin, tls_requirements, TLS_PLUGIN
-from verify_linux_runtime import check_events, check_https, main as verify_runtime_main
+from verify_linux_runtime import check_events, check_https, run_https_probe, main as verify_runtime_main
 from package_linux import archive_payload
+
+
+def https_success():
+    return {'ssl_supported':True,'ssl_backend':'openssl','state':'up_to_date','error':'',
+            'http_diagnostics_schema':1,'timeout':False,'authorization_present':False,
+            'response_records_truncated':False,'encrypted_connections':1,'https_responses':1,
+            'request_count':1,'http_responses':[{'host':'api.github.com','route':'release_list','status':200}]}
+
+
+def https_limited():
+    return {'ssl_supported':True,'ssl_backend':'openssl','state':'error','error':'rate_limited',
+            'http_diagnostics_schema':1,'timeout':False,'authorization_present':False,
+            'response_records_truncated':False,'confirmed_from_controller':True,
+            'rate_limit_confirmed':True,'request_count':1,
+            'http_responses':[{'status':429,'host':'api.github.com','route':'release_list',
+                               'server_date_epoch':1000,'rate_headers':{'remaining':None,'reset':None,'retry_after':None}}]}
+
+
+def probe_output(record):
+    runtime={'qt_openssl_backend_present':True,'openssl_package_installed':True,
+             'system_ca_bundle_nonempty':True,'ca_package_installed':True}
+    return 'XDZIP_HTTPS_RUNTIME '+json.dumps(runtime)+'\nXDZIP_UPDATE_HTTPS '+json.dumps(record)+'\n'
 
 
 class LinuxDeploymentTests(unittest.TestCase):
@@ -42,7 +64,7 @@ class LinuxDeploymentTests(unittest.TestCase):
     def test_https_probe_preserves_failures_and_never_accepts_missing_report(self):
         helper=Path(__file__).resolve().parents[1]/'apps/desktop/packaging/linux/verify-https-probe.sh'
         self.assertTrue(helper.is_file())
-        good={'ssl_supported':True,'ssl_backend':'openssl','state':'up_to_date','error':''}
+        good=https_success()
         failed={'ssl_supported':True,'ssl_backend':'openssl','state':'error','error':'network'}
         cases=[('success',good,0,0),('failed-with-report',failed,13,13),
                ('failed-without-report',None,13,13),('success-without-report',None,0,1),
@@ -92,13 +114,112 @@ class LinuxDeploymentTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'backend missing'):tls_requirements(sdk,root)
 
     def test_sdk_free_https_evidence_requires_real_success_and_openssl(self):
-        value={'ssl_supported':True,'ssl_backend':'openssl','state':'up_to_date','error':''}
+        value=https_success()
         def output():return 'XDZIP_UPDATE_HTTPS '+json.dumps(value)
         self.assertEqual(check_https(output()),value)
         value['ssl_backend']=''
         with self.assertRaisesRegex(ValueError,'OpenSSL'):check_https(output())
         value['ssl_backend']='openssl';value['state']='error';value['error']='network'
         with self.assertRaisesRegex(ValueError,'GitHub'):check_https(output())
+        for key,invalid in [('timeout',True),('authorization_present',True),('encrypted_connections',0),
+                            ('https_responses',0),('request_count',0),('http_diagnostics_schema',True)]:
+            with self.subTest(key=key):
+                value=https_success();value[key]=invalid
+                with self.assertRaisesRegex(ValueError,'TLS evidence'):check_https(output())
+
+    def test_sdk_free_https_retries_only_confirmed_anonymous_limits_and_preserves_attempts(self):
+        class Clock:
+            now=1000
+            def monotonic(self):return self.now
+            def sleep(self,seconds):self.now+=seconds
+        with tempfile.TemporaryDirectory() as temp:
+            output=Path(temp)/'runtime.json';clock=Clock()
+            first=https_limited();second=https_success()
+            calls=[subprocess.CompletedProcess([],13,stdout=probe_output(first),stderr='limit\n'),
+                   subprocess.CompletedProcess([],0,stdout=probe_output(second),stderr='')]
+            with patch('verify_linux_runtime.subprocess.run',side_effect=calls) as run:
+                actual,count,runtime=run_https_probe(['owned'],output,sleep=clock.sleep,monotonic=clock.monotonic,
+                                             wall_clock=lambda:1000)
+            self.assertEqual((actual,count),(second,2));self.assertEqual(run.call_count,2)
+            self.assertTrue(runtime['system_ca_bundle_nonempty'])
+            self.assertEqual(json.loads(output.with_suffix('.https.attempt-1.json').read_text()),first)
+            self.assertIn('limit',output.with_suffix('.https.attempt-1.log').read_text())
+            self.assertEqual(json.loads(output.with_suffix('.https.json').read_text()),second)
+            wait=json.loads(output.with_suffix('.https-waits.json').read_text())[0]
+            self.assertEqual((wait['delay_seconds'],wait['wait_status']),(60,'finished'))
+
+    def test_sdk_free_https_requires_separate_runtime_capability_record(self):
+        for record,status in [(https_success(),0),(https_limited(),13)]:
+            with self.subTest(status=status),tempfile.TemporaryDirectory() as temp:
+                output=Path(temp)/'runtime.json'
+                result=subprocess.CompletedProcess([],status,stdout='XDZIP_UPDATE_HTTPS '+json.dumps(record)+'\n',stderr='')
+                with patch('verify_linux_runtime.subprocess.run',return_value=result) as run, \
+                     patch('verify_linux_runtime.time.sleep') as sleep:
+                    with self.assertRaises(SystemExit):run_https_probe(['owned'],output)
+                self.assertEqual(run.call_count,1);sleep.assert_not_called()
+                self.assertFalse(output.with_suffix('.https.json').exists())
+
+    def test_sdk_free_https_does_not_retry_network_tls_or_unproven_limits(self):
+        variants=[]
+        for error in ('network','tls','timeout'):
+            value=https_limited();value['error']=error;variants.append(value)
+        for key,value in [('authorization_present',True),('timeout',True),
+                          ('response_records_truncated',True),('confirmed_from_controller',False),
+                          ('ssl_backend',''),('http_diagnostics_schema',True)]:
+            record=https_limited();record[key]=value;variants.append(record)
+        record=https_limited();record['http_responses'][0]['route']='other';variants.append(record)
+        record=https_limited();record['http_responses'][0]['rate_headers']['remaining']='0';variants.append(record)
+        for record in variants:
+            with self.subTest(record=record),tempfile.TemporaryDirectory() as temp:
+                output=Path(temp)/'runtime.json'
+                result=subprocess.CompletedProcess([],13,stdout=probe_output(record),stderr='failure\n')
+                with patch('verify_linux_runtime.subprocess.run',return_value=result) as run, \
+                     patch('verify_linux_runtime.time.sleep') as sleep:
+                    with self.assertRaises(SystemExit):run_https_probe(['owned'],output)
+                self.assertEqual(run.call_count,1);sleep.assert_not_called()
+                self.assertTrue(output.with_suffix('.https.attempt-1.log').exists())
+                self.assertFalse(output.with_suffix('.https.json').exists())
+
+    def test_sdk_free_https_respects_wait_budget_and_short_wait(self):
+        with tempfile.TemporaryDirectory() as temp:
+            output=Path(temp)/'runtime.json';record=https_limited()
+            record['http_responses'][0]['rate_headers'].update(remaining='0',reset='2000')
+            result=subprocess.CompletedProcess([],13,stdout=probe_output(record),stderr='')
+            with patch('verify_linux_runtime.subprocess.run',return_value=result) as run:
+                with self.assertRaisesRegex(SystemExit,'wait_budget_exceeded'):
+                    run_https_probe(['owned'],output,sleep=lambda _:None,wall_clock=lambda:1000)
+            self.assertEqual(run.call_count,1)
+            record=https_limited();result.stdout=probe_output(record)
+            with patch('verify_linux_runtime.subprocess.run',return_value=result) as run:
+                with self.assertRaisesRegex(SystemExit,'wait ended early'):
+                    run_https_probe(['owned'],output,sleep=lambda _:None,monotonic=lambda:1,wall_clock=lambda:1000)
+            self.assertEqual(run.call_count,1)
+
+    def test_sdk_free_https_fails_after_bounded_retries_and_retains_timeouts(self):
+        class Clock:
+            now=0
+            def monotonic(self):return self.now
+            def sleep(self,seconds):self.now+=seconds
+        with tempfile.TemporaryDirectory() as temp:
+            output=Path(temp)/'runtime.json';clock=Clock();record=https_limited()
+            result=subprocess.CompletedProcess([],13,stdout=probe_output(record),stderr='')
+            with patch('verify_linux_runtime.subprocess.run',return_value=result) as run:
+                with self.assertRaisesRegex(SystemExit,'attempt_limit_reached'):
+                    run_https_probe(['owned'],output,sleep=clock.sleep,monotonic=clock.monotonic,
+                                    wall_clock=lambda:1000)
+            self.assertEqual(run.call_count,3);self.assertEqual(clock.now,180)
+            self.assertTrue(output.with_suffix('.https.attempt-3.log').exists())
+            self.assertFalse(output.with_suffix('.https.json').exists())
+        with tempfile.TemporaryDirectory() as temp:
+            output=Path(temp)/'runtime.json'
+            failure=subprocess.TimeoutExpired(['owned'],80,output=b'partial output',stderr=b'partial error')
+            with patch('verify_linux_runtime.subprocess.run',side_effect=failure) as run:
+                with self.assertRaisesRegex(SystemExit,'probe_process_failure'):
+                    run_https_probe(['owned'],output)
+            self.assertEqual(run.call_count,1)
+            log=output.with_suffix('.https.attempt-1.log').read_text()
+            self.assertIn('partial output',log);self.assertIn('partial error',log)
+            self.assertIn('timed out',log)
 
     def test_only_sdk_modules_and_explicit_static_or_optional_modules(self):
         with tempfile.TemporaryDirectory() as temp:
