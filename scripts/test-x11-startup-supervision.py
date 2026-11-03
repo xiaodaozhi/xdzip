@@ -3,6 +3,7 @@
 import importlib.util
 import os
 from pathlib import Path
+import shlex
 import shutil
 import subprocess
 import sys
@@ -72,18 +73,42 @@ class X11SupervisionTests(unittest.TestCase):
         subprocess.run(['cc', '-shared', '-fPIC', '-Wall', '-Wextra', '-Werror',
                         str(fixture), '-o', str(injector), '-ldl'], check=True)
         trace, marker = self.root/'trace', self.root/'inner-started'
+        stages = self.root/'xvfb-stages.log'
+        bin_dir = self.root/'bin'
+        bin_dir.mkdir()
+        # Record only stage names, never command arguments or the X11 cookie.
+        # These wrappers preserve each tool's stdin, stdout and exit status.
+        for name in ('mcookie', 'xauth', 'Xvfb'):
+            executable = shutil.which(name)
+            if not executable:
+                self.fail(name+' is required by xvfb-run')
+            stage = name+(' exec requested' if name == 'Xvfb' else ' started')
+            script = ('#!/bin/sh\n'
+                      'printf "%s\\n" '+shlex.quote(stage)+
+                      ' >> "$XDZIP_TEST_XVFB_STAGES"\n')
+            if name == 'Xvfb':
+                script += 'exec '+shlex.quote(executable)+' "$@"\n'
+            else:
+                script += (shlex.quote(executable)+' "$@"\nstatus=$?\n'
+                           'printf "%s %s\\n" '+shlex.quote(name+' exited')+
+                           ' "$status" >> "$XDZIP_TEST_XVFB_STAGES"\nexit "$status"\n')
+            wrapper = bin_dir/name
+            wrapper.write_text(script, encoding='utf-8')
+            wrapper.chmod(0o700)
         auth = self.root/'Xauthority'
         auth.touch(mode=0o600)
         command = ['xvfb-run', '-a', '-e', str(self.root/'xvfb.log'), '-f', str(auth), sys.executable,
                    '-c', 'from pathlib import Path; import sys; Path(sys.argv[1]).touch()', str(marker)]
         def diagnostics():
             logs = []
-            for name in ('wrapper.log', 'xvfb.log'):
+            for name in ('xvfb-stages.log', 'wrapper.log', 'xvfb.log'):
                 path = self.root/name
                 content = path.read_text(encoding='utf-8', errors='replace') if path.is_file() else '<missing>'
                 logs.append(name+': '+startup.sanitized(content[-4000:]))
             return '\n'.join(logs)
         with mock.patch.dict(os.environ, {'LD_PRELOAD': str(injector),
+                                         'PATH': str(bin_dir)+os.pathsep+os.environ.get('PATH', ''),
+                                         'XDZIP_TEST_XVFB_STAGES': str(stages),
                                          'XDZIP_TEST_XVFB_READY_TRACE': str(trace)}):
             try:
                 code = startup.supervise(command, self.root/'wrapper.log', timeout=5)
@@ -93,6 +118,8 @@ class X11SupervisionTests(unittest.TestCase):
                 self.fail('Xvfb negative control exited '+str(code)+' instead of timing out\n'+diagnostics())
         self.assertTrue(trace.is_file(), 'Xvfb did not record the injected signal\n'+diagnostics())
         self.assertEqual(trace.read_text(encoding='ascii'), 'suppressed\n')
+        self.assertIn('Xvfb exec requested\n', stages.read_text(encoding='utf-8'))
+        self.assertIn('Xvfb preload loaded\n', stages.read_text(encoding='utf-8'))
         self.assertFalse(marker.exists())
 
 

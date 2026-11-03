@@ -8,11 +8,26 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-int kill(pid_t pid, int sig) {
+static int is_xvfb_process(void) {
     char exe[4096] = {0};
     ssize_t n = readlink("/proc/self/exe", exe, sizeof(exe) - 1);
     const char *base = strrchr(exe, '/');
-    if (n > 0 && base && strcmp(base, "/Xvfb") == 0 && sig == SIGUSR1) {
+    return n > 0 && base && strcmp(base, "/Xvfb") == 0;
+}
+
+__attribute__((constructor)) static void trace_xvfb_loaded(void) {
+    const char *stages = getenv("XDZIP_TEST_XVFB_STAGES");
+    if (stages && is_xvfb_process()) {
+        int fd = open(stages, O_WRONLY | O_CREAT | O_APPEND, 0600);
+        if (fd >= 0) {
+            (void)write(fd, "Xvfb preload loaded\n", 20);
+            close(fd);
+        }
+    }
+}
+
+int kill(pid_t pid, int sig) {
+    if (sig == SIGUSR1 && is_xvfb_process()) {
         const char *trace = getenv("XDZIP_TEST_XVFB_READY_TRACE");
         if (trace) {
             int fd = open(trace, O_WRONLY | O_CREAT | O_APPEND, 0600);
