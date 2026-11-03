@@ -208,6 +208,16 @@ class BrowserSuiteTest(unittest.TestCase):
         self.assertIn('"owned_process_records": 0', message)
         self.assertNotIn(str(self.root), message)
 
+    def test_ctest_outer_timeout_reports_partial_output_without_exposing_it(self):
+        timeout = subprocess.TimeoutExpired('ctest', 25, output=b'private fixture path')
+        with mock.patch('shutil.which', return_value='ctest'), mock.patch('subprocess.run', side_effect=timeout):
+            with self.assertRaisesRegex(AssertionError, 'CTest process exceeded outer timeout') as raised:
+                self.assert_ctest_timeout_terminates_processes()
+        message = str(raised.exception)
+        self.assertIn('"outer_process_timeout": true', message)
+        self.assertIn('"unit": "bytes"', message)
+        self.assertNotIn('private fixture path', message)
+
     def assert_ctest_timeout_terminates_processes(self, discovery=False):
         ctest = shutil.which('ctest')
         if not ctest:
