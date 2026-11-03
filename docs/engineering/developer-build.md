@@ -34,6 +34,16 @@ build-dir 与 output-dir 必须使用仓库 build/ 内的独立子目录，以�
 
 各阶段可以单独调用，不隐式补跑前面的准备、构建或测试。缺少前置输入时会报错，先执行相应阶段再重试。每个阶段在开始工作前检查其所需环境，`doctor` 可在不构建或打包的情况下提前查看问题。
 
+Windows 的隐藏控制台在并行构建时可能因无法识别控制台而共用保护锁。对于不需要交互的构建，可显式使用独立控制台包装器，并将输入、输出和错误流全部重定向。例如在 PowerShell 中：
+
+```powershell
+New-Item -ItemType Directory -Force build\isolated-logs | Out-Null
+cmd /c "python scripts\windows_detached_console.py --timeout 7200 -- python scripts\desktop.py build <NUL >build\isolated-logs\desktop.log 2>&1"
+$LASTEXITCODE
+```
+
+该包装器为每次命令创建独立的隐藏控制台，并在超时或监督进程退出时结束其子进程；完成信号缺失时按失败处理。并行构建仍须分别使用不同的 `--build-dir`，包装器不为构建目录提供互斥。原有桌面构建和 `windows_ninja_safety.py` 的依赖检查仍执行，直接包装其他命令不会自动补上该检查。此入口只适用于非交互命令，不支持将提示、密码输入或伪控制台交互交给被包装进程；原有共享控制台锁和未隔离入口的限制保持不变。
+
 `prepare` 核验当前产品格式源码清单。ZIP、TAR/GZIP、7z、RAR、CAB 和光盘容器使用独立 Rust，官方产品源码清单为空，不下载或编译官方 UnRAR、7-Zip 引擎。独立测试参照按各自固定来源准备，与产品运行依赖分开；RAR 有限映射的原始来源通知随打包和对应源码交付保留，见[许可证契约](licensing.md)。`build` 只使用已准备输入，不浮动下载。只测 Rust 时，需要先构建 `xdzip-native-codec`，将 `XDZIP_NATIVE_CODEC` 指向该工作进程，再运行 workspace 测试。原生后端任务闭环另执行 `cargo test -p xdzip-runtime --locked native_backend_tests -- --ignored`，统一 `test` 与 Foundation CI 均强制执行这部分，忽略状态不能记作格式验证通过。源码、流授权及许可边界见[原生后端契约](native-codecs.md)。
 
 | 命令 | 作用与前置条件 |

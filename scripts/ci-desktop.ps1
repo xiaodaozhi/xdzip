@@ -89,6 +89,7 @@ Invoke-Checked python @('scripts/test-native-menus.py')
 Invoke-Checked python @('scripts/test-browser-suite.py')
 if ($IsWindows) {
     Invoke-Checked python @('scripts/test-windows-installer-native.py')
+    Invoke-Checked python @('scripts/test-windows-detached-console.py')
 }
 # Source bytes and installed configuration are evidence, not a Qt rebuild claim.
 Set-CiPhase 'sdk-correspondence'
