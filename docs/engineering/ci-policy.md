@@ -26,6 +26,8 @@ Linux 等待 Openbox 的 `--startup` 回调后才创建 Qt 测试进程，启动
 
 `scripts/test-native-window-manager.py` 检查回执、失败、路径与子进程清理；Linux CI 另运行 `scripts/check-x11-startup.py`，在自有 Openbox 子进程中延迟身份声明后的初始化，分别验证旧身份轮询的预期失败、启动回调后的正常及延迟冷启动。每项使用独立 Xvfb 和新 Qt 进程，保留首窗实际暴露断言、就绪耗时与完整日志。故障注入库只用于这一隔离回归，不进入产品运行库或发布包。
 
+每个冷启动用例在独立进程组中运行，保留包装器、Xvfb 错误输出以及进入用例、窗口管理器就绪、Qt 测试和清理阶段的标记；达到原有外层时限时终止该用例的进程组并保留日志。`scripts/test-x11-startup-supervision.py` 对正常、失败和超时路径检查结果及进程清理，不以这些自检代替真实 X11 回归，也不推断既往超时原因。
+
 专用 Release 工作流是经用户明确授权的例外，允许 Apple Silicon 原生部署、ad-hoc 签名、app.zip 和 DMG 打包及上传。上述 Mac 禁止条件仅约束普通 CI。专用流程必须通过同提交原生回归、包核验并齐备六类资产后才公开，详见[发布协议](release-protocol.md)。
 
 已配置 Documentation、Foundation probes 和 Qt components 三组产品工作流，分别检查文档与资源、无 Qt 核心及诊断桥接、三平台 Qt 产品。检查方法见[验证入口](../qa/README.md)，具体结果绑定提交并记录到 issue 与 Actions 工件。下表定义按变更类型执行的门槛，M3 已加入安全 I/O 和真实 ZIP 解压回归，WP-10 已加入真实 ZIP 创建互操作，正式发行还须按[发行审查流程](../qa/release-review.md)单独确认。

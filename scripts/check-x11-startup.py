@@ -5,6 +5,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import signal
 import subprocess
 import sys
 import time
@@ -19,6 +20,26 @@ def sanitized(value):
     return value.replace(str(ROOT), '<workspace>').replace(str(Path.home()), '<home>')
 
 
+def supervise(command, log, timeout):
+    """Bound a fresh Xvfb process group and retain its output even on timeout."""
+    with log.open('w', encoding='utf-8') as output:
+        process = subprocess.Popen(command, stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
+        try:
+            return process.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            # The process group was created for this one case. Kill it before
+            # waiting so an Xvfb or WM child cannot outlive a timed-out wrapper.
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                print('Timed-out process group did not exit within five seconds', file=output, flush=True)
+            raise
+
+
 def run_case(args):
     output = args.output.resolve()
     env = dict(os.environ, QT_QPA_PLATFORM='xcb', QT_QUICK_BACKEND='software')
@@ -28,6 +49,7 @@ def run_case(args):
     session = process = None
     started = time.monotonic()
     try:
+        print('stage: case entered', flush=True)
         if args.mode == 'identity':
             process = subprocess.Popen(['openbox', '--sm-disable'], env=wm_env,
                                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -43,12 +65,15 @@ def run_case(args):
                 raise ValueError('Negative-control EWMH identity timed out')
         else:
             session = OpenboxSession(wm_env, output.parent).start()
+        print('stage: window manager ready', flush=True)
         setup_ms = round((time.monotonic()-started)*1000)
         test_started = time.monotonic()
         log = output.with_suffix('.log')
+        print('stage: Qt test starting', flush=True)
         result = subprocess.run([str(args.tests.resolve()), 'windowHoverEndsBeforeRestore',
                                  '-o', str(log)+',txt'], env=env, capture_output=True,
                                 text=True, timeout=25)
+        print('stage: Qt test finished', flush=True)
         elapsed_ms = round((time.monotonic()-test_started)*1000)
         text = sanitized(log.read_text(encoding='utf-8'))
         log.write_text(text, encoding='utf-8')
@@ -70,9 +95,11 @@ def run_case(args):
         if not passed:
             raise ValueError('X11 startup regression did not match its expected outcome')
     finally:
+        print('stage: cleanup starting', flush=True)
         if session:
             session.close()
         stop_window_manager(process)
+        print('stage: cleanup finished', flush=True)
 
 
 def main():
@@ -116,12 +143,20 @@ def main():
         for name, mode, delay in cases:
             case_output = cases_dir/(name+'.json')
             case_output.unlink(missing_ok=True)
-            result = subprocess.run(['xvfb-run', '-a', sys.executable, str(Path(__file__).resolve()),
+            xvfb_log = case_output.with_suffix('.xvfb.log')
+            command = ['xvfb-run', '-a', '-e', str(xvfb_log), sys.executable, str(Path(__file__).resolve()),
                 '--inside-x11', '--mode', mode, '--delay-ms', str(delay), '--injector', str(injector),
-                '--tests', str(args.tests.resolve()), '--output', str(case_output)], check=False, timeout=60)
+                '--tests', str(args.tests.resolve()), '--output', str(case_output)]
+            wrapper_log = case_output.with_suffix('.wrapper.log')
+            try:
+                code = supervise(command, wrapper_log, timeout=60)
+            finally:
+                for log in (wrapper_log, xvfb_log):
+                    if log.is_file():
+                        log.write_text(sanitized(log.read_text(encoding='utf-8', errors='replace')), encoding='utf-8')
             if case_output.is_file():
                 reports.append(dict(name=name, **json.loads(case_output.read_text(encoding='utf-8'))))
-            if result.returncode:
+            if code:
                 raise ValueError('Cold X11 startup case failed: '+name)
             print('X11 cold startup verified: '+name, flush=True)
         aggregate['status'] = 'passed'
