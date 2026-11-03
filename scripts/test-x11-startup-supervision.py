@@ -44,10 +44,15 @@ class X11SupervisionTests(unittest.TestCase):
             self.assertIn('child started', log.read_text(encoding='utf-8'))
             child = int(marker.read_text())
             stat = Path('/proc')/str(child)/'stat'
+            def still_running():
+                try:
+                    return stat.read_text().split()[2] != 'Z'
+                except FileNotFoundError:
+                    return False
             deadline = time.monotonic()+5
-            while stat.exists() and stat.read_text().split()[2] != 'Z' and time.monotonic() < deadline:
+            while still_running() and time.monotonic() < deadline:
                 time.sleep(.02)
-            self.assertTrue(not stat.exists() or stat.read_text().split()[2] == 'Z')
+            self.assertFalse(still_running())
             self.assertIsNone(unrelated.poll())
         finally:
             unrelated.terminate()

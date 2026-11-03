@@ -151,7 +151,8 @@ def main():
             try:
                 code = supervise(command, wrapper_log, timeout=60)
             finally:
-                for log in (wrapper_log, xvfb_log):
+                for log in (wrapper_log, xvfb_log, case_output.with_suffix('.log'),
+                            case_output.with_suffix('.console.log')):
                     if log.is_file():
                         log.write_text(sanitized(log.read_text(encoding='utf-8', errors='replace')), encoding='utf-8')
             if case_output.is_file():
