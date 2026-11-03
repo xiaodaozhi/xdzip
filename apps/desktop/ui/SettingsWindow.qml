@@ -68,7 +68,7 @@ OperationWindow {
     // Mouse focus and automatic focus restoration must not reposition the page.
     onActiveFocusItemChanged: if (visible && activeFocusItem && activeFocusItem !== pageLoader) {
         const focusedItem = activeFocusItem;
-        const updateButtonWithoutKeyboardNavigation = focusedItem.objectName === "aboutCheckUpdate" &&
+        const updateButtonWithoutKeyboardNavigation = ["aboutCheckUpdate", "aboutCancelCheck"].includes(focusedItem.objectName) &&
             (focusedItem.focusReason === Qt.MouseFocusReason || focusedItem.focusReason === Qt.OtherFocusReason);
         if (!updateButtonWithoutKeyboardNavigation) Qt.callLater(() => {
             if (root.visible && root.activeFocusItem === focusedItem) root.revealFocus(pageScroll);
@@ -78,13 +78,6 @@ OperationWindow {
     width: Theme.settingsLogicalWidth
     requestedHeight: Math.min(Theme.settingsClientHeight, Screen.desktopAvailableHeight - 80)
 
-    component PageTitle: Text {
-        Layout.fillWidth: true
-        color: Theme.text
-        font.pixelSize: Math.round(Theme.settingsTitleSize * Theme.fontScale)
-        font.bold: true
-        wrapMode: Text.Wrap
-    }
     component SectionTitle: Text {
         Layout.fillWidth: true
         color: Theme.text
@@ -268,8 +261,6 @@ OperationWindow {
         ColumnLayout {
             objectName: "settingsPage-appearance"
             spacing: Theme.settingsPageSectionGap
-            PageTitle { text: qsTrId("settings.tabAppearance") }
-            PageSeparator {}
             SectionTitle { text: qsTrId("settings.theme") }
             RowLayout {
                 Layout.fillWidth: true
@@ -342,8 +333,6 @@ OperationWindow {
         ColumnLayout {
             objectName: "settingsPage-general"
             spacing: Theme.settingsPageSectionGap
-            PageTitle { text: qsTrId("settings.tabGeneral") }
-            PageSeparator {}
             SettingsSelectRow {
                 Layout.fillWidth: true; controlName: "settingsOpenMode"
                 label: qsTrId("sessions.openMode"); description: qsTrId("settings.openDescription")
@@ -373,8 +362,6 @@ OperationWindow {
         ColumnLayout {
             objectName: "settingsPage-privacy"
             spacing: Theme.settingsPageSectionGap
-            PageTitle { text: qsTrId("settings.tabPrivacy") }
-            PageSeparator {}
             SettingsToggle {
                 Layout.fillWidth: true; objectName: "settingsRecent"
                 text: qsTrId("settings.recent"); description: qsTrId("settings.recentDescription")
@@ -410,7 +397,6 @@ OperationWindow {
         ColumnLayout {
             objectName: "settingsPage-associations"
             spacing: Theme.settingsPageSectionGap
-            PageTitle { text: qsTrId("settings.tabAssociations") }
             PageNote { text: qsTrId("settings.associationDescription") }
             GridLayout {
                 Layout.fillWidth: true; columns: 2; columnSpacing: 12; rowSpacing: 8
@@ -439,8 +425,6 @@ OperationWindow {
         ColumnLayout {
             objectName: "settingsPage-network"
             spacing: Theme.settingsPageSectionGap
-            PageTitle { text: qsTrId("settings.tabNetwork") }
-            PageSeparator {}
             SectionTitle { text: qsTrId("settings.proxy") }
             ColumnLayout {
                 Layout.fillWidth: true; spacing: 2
@@ -486,9 +470,9 @@ OperationWindow {
             readonly property real updateActionHeight: Math.max(cancelUpdate.implicitHeight, installUpdate.implicitHeight,
                                                                 recoveryUpdate.implicitHeight, openUpdate.implicitHeight)
             readonly property real updateReserveHeight: Math.max(
-                Math.max(updateMeasurements.statusHeight, checkUpdate.implicitHeight)
+                Math.max(updateMeasurements.statusHeight, updateActionSlot.implicitHeight)
                     + Theme.aboutUpdateProgressHeight + updateActionHeight + Theme.settingsPageSectionGap * 2,
-                Math.max(updateMeasurements.installStatusHeight, checkUpdate.implicitHeight)
+                Math.max(updateMeasurements.installStatusHeight, updateActionSlot.implicitHeight)
                     + updateMeasurements.noteHeight + updateActionHeight + Theme.settingsPageSectionGap * 2)
             Item {
                 id: updateMeasurements
@@ -535,7 +519,7 @@ OperationWindow {
                             qsTrId("update.preview")]
                     delegate: Text {
                         required property string modelData
-                        width: Math.max(1, updateSection.width - checkUpdate.implicitWidth - updateStatusRow.spacing)
+                        width: Math.max(1, updateSection.width - updateActionSlot.implicitWidth - updateStatusRow.spacing)
                         text: modelData
                         font.pixelSize: Math.round(Theme.settingsNoteSize * Theme.fontScale)
                         textFormat: Text.PlainText
@@ -549,7 +533,7 @@ OperationWindow {
                     model: [qsTrId("update.available").arg("65535.65535.65535-alpha.65535"), qsTrId("update.downloaded")]
                     delegate: Text {
                         required property string modelData
-                        width: Math.max(1, updateSection.width - checkUpdate.implicitWidth - updateStatusRow.spacing)
+                        width: Math.max(1, updateSection.width - updateActionSlot.implicitWidth - updateStatusRow.spacing)
                         text: modelData
                         font.pixelSize: Math.round(Theme.settingsNoteSize * Theme.fontScale)
                         textFormat: Text.PlainText
@@ -575,7 +559,6 @@ OperationWindow {
                 id: aboutBeforeUpdate
                 Layout.fillWidth: true
                 spacing: Theme.settingsPageSectionGap
-                PageTitle { text: qsTrId("settings.tabAbout") }
                 RowLayout {
                     Layout.fillWidth: true; spacing: 16
                     Image {
@@ -603,7 +586,31 @@ OperationWindow {
                     id: updateStatusRow
                     Layout.fillWidth: true
                     PageNote { id: updateStatus; objectName: "aboutUpdateStatus"; text: root.updateMessage(); color: root.updateState === "error" || root.updateState === "recovery_required" ? Theme.menuDanger : Theme.textSecondary }
-                    OperationButton { id: checkUpdate; objectName: "aboutCheckUpdate"; text: qsTrId("update.check"); enabled: root.updater && !root.updater.busy; onClicked: root.updater.check() }
+                    Item {
+                        id: updateActionSlot
+                        Layout.preferredWidth: implicitWidth
+                        Layout.preferredHeight: implicitHeight
+                        Layout.alignment: Qt.AlignTop
+                        implicitWidth: Math.max(checkUpdate.implicitWidth, cancelCheck.implicitWidth)
+                        implicitHeight: Math.max(checkUpdate.implicitHeight, cancelCheck.implicitHeight)
+                        OperationButton {
+                            id: checkUpdate
+                            objectName: "aboutCheckUpdate"
+                            anchors.fill: parent
+                            visible: root.updateState !== "checking"
+                            enabled: root.updater && !root.updater.busy
+                            text: qsTrId("update.check")
+                            onClicked: root.updater.check()
+                        }
+                        OperationButton {
+                            id: cancelCheck
+                            objectName: "aboutCancelCheck"
+                            anchors.fill: parent
+                            visible: root.updater && root.updateState === "checking"
+                            text: qsTrId("update.cancelCheck")
+                            onClicked: root.updater.cancel()
+                        }
+                    }
                 }
                 ProgressBar {
                     objectName: "aboutUpdateProgress"; Layout.fillWidth: true
@@ -618,11 +625,15 @@ OperationWindow {
                     text: root.updater && !root.updater.trusted ? qsTrId("update.unsigned") : qsTrId("update.manual")
                 }
                 RowLayout {
+                    objectName: "aboutUpdateActions"
                     Layout.fillWidth: true
+                    visible: root.updater && ((root.updater.busy && !["checking", "installing"].includes(root.updateState)) ||
+                                             ["available", "downloaded", "recovery_required"].includes(root.updateState) ||
+                                             root.updater.downloaded)
                     OperationButton {
                         id: cancelUpdate
                         objectName: "aboutCancelUpdate"
-                        visible: root.updater && root.updater.busy && root.updateState !== "installing"
+                        visible: root.updater && root.updater.busy && !["checking", "installing"].includes(root.updateState)
                         text: qsTrId("update.cancel"); onClicked: root.updater.cancel()
                     }
                     OperationButton {

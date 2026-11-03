@@ -58,7 +58,10 @@ def main():
         page.mouse.move(0, 0)
         for tab in ('appearance', 'general', 'privacy', 'associations', 'network', 'about'):
             page.locator('#settings-tab-' + tab).click()
-            expect(page.locator('.settings-pane')).to_have_attribute('data-tab', tab)
+            pane = page.locator('.settings-pane')
+            expect(pane).to_have_attribute('data-tab', tab)
+            assert pane.locator(':scope > h1').count() == 0
+            assert pane.evaluate('node => node.firstElementChild.tagName') != 'HR'
             assert page.locator('.settings-sidebar').bounding_box()['y'] == page.locator('.settings-pane').bounding_box()['y']
             assert abs(page.locator('.settings-sidebar').bounding_box()['x'] + page.locator('.settings-sidebar').bounding_box()['width'] - page.locator('.settings-pane').bounding_box()['x']) < 1
         page.locator('#settings-tab-appearance').click()
@@ -82,7 +85,24 @@ def main():
         page.locator('#setting-mirror-address').fill('https://mirror.example.com')
         page.locator('#setting-mirror-address').dispatch_event('change')
         page.locator('#settings-tab-about').click()
+        check = page.locator('#about-check-update')
+        expect(check).to_be_visible()
+        check.scroll_into_view_if_needed()
+        action_before = check.bounding_box()
+        scroll_before = page.locator('.settings-pane').evaluate('node => node.scrollTop')
+        check.click()
+        cancel_check = page.locator('#about-cancel-check')
+        expect(cancel_check).to_be_visible()
+        expect(page.locator('#about-check-update')).to_have_count(0)
+        expect(page.locator('#about-cancel-update')).to_have_count(0)
+        expect(page.locator('#about-update-section .settings-about-actions')).to_have_count(0)
+        action_during = cancel_check.bounding_box()
+        scroll_during = page.locator('.settings-pane').evaluate('node => node.scrollTop')
+        assert all(abs(action_before[key] - action_during[key]) < 1 for key in ('x', 'y', 'width', 'height')), (action_before, action_during, scroll_before, scroll_during)
+        assert page.locator('.settings-pane').evaluate('node => node.scrollTop') == scroll_before
+        cancel_check.click()
         expect(page.locator('#about-check-update')).to_be_visible()
+        assert page.locator('.settings-pane').evaluate('node => node.scrollTop') == scroll_before
         page.evaluate('window.XdzipAboutUpdatePreview({state:"available",canInstall:true})')
         expect(page.locator('#about-install-update')).to_be_visible()
         modal.locator('.os-close').click()

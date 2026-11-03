@@ -534,6 +534,7 @@
     "update.unsigned": "The update source could not be verified. Download it manually from the release page.",
     "update.manual": "This copy requires manual installation of updates.",
     "update.cancel": "Cancel",
+    "update.cancelCheck": "Cancel Check",
     "update.install": "Download and Install",
     "update.download": "Download Update",
     "update.release": "Open Release Page",

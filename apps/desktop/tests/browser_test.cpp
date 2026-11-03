@@ -5057,10 +5057,12 @@ QtObject {
             QQuickItem *status = nullptr;
             QTRY_VERIFY((status = findVisual(settings->contentItem(), "aboutUpdateStatus")));
             auto *check = findVisual(settings->contentItem(), "aboutCheckUpdate");
+            auto *cancelCheck = findVisual(settings->contentItem(), "aboutCancelCheck");
             auto *cancel = findVisual(settings->contentItem(), "aboutCancelUpdate");
+            auto *actions = findVisual(settings->contentItem(), "aboutUpdateActions");
             auto *install = findVisual(settings->contentItem(), "aboutInstallUpdate");
             auto *progress = findVisual(settings->contentItem(), "aboutUpdateProgress");
-            QVERIFY(status && check && cancel && install && progress);
+            QVERIFY(status && check && cancelCheck && cancel && actions && install && progress);
             QVERIFY(!findVisual(settings->contentItem(), "settingsFooter"));
             const QStringList states{"idle", "checking", "up_to_date", "available", "downloading", "verifying", "downloaded", "waiting_tasks", "preparing", "installing", "error", "recovery_required", "updated", "unavailable"};
             QQmlComponent theme(&engine);
@@ -5079,18 +5081,28 @@ QtObject {
                 service->setProperty("state", state);
                 QTRY_VERIFY(!status->property("text").toString().isEmpty());
                 QCOMPARE(check->isEnabled(), !busy);
-                QCOMPARE(cancel->isVisible(), busy && state != "installing");
+                QCOMPARE(check->isVisible(), state != "checking");
+                QCOMPARE(cancelCheck->isVisible(), state == "checking");
+                QCOMPARE(cancel->isVisible(), busy && state != "checking" && state != "installing");
+                QCOMPARE(actions->isVisible(), (busy && state != "checking" && state != "installing") ||
+                         QStringList({"available", "downloaded", "recovery_required"}).contains(state));
+                if (state == "checking") {
+                    QCOMPARE(cancelCheck->property("text").toString(), qtTrId("update.cancelCheck"));
+                    QCOMPARE(cancelCheck->mapToScene(QPointF()), check->mapToScene(QPointF()));
+                    QCOMPARE(cancelCheck->size(), check->size());
+                }
                 QCOMPARE(progress->isVisible(), QStringList({"downloading", "verifying", "preparing"}).contains(state));
                 QCOMPARE(settings->width(), 612);
                 QTRY_VERIFY(status->property("paintedWidth").toReal() <= status->width() + 1);
                 QTRY_VERIFY(status->property("paintedHeight").toReal() <= status->height() + 1);
                 const auto captures = qEnvironmentVariable("XDZIP_ABOUT_UPDATE_AUDIT");
-                if (!captures.isEmpty() && scale == 1.5 &&
-                    QStringList{"available", "downloading", "error", "recovery_required"}.contains(state)) {
-                    check->forceActiveFocus(Qt::TabFocusReason);
+                if (!captures.isEmpty() &&
+                    ((scale == 1. && state == "checking") ||
+                     (scale == 1.5 && QStringList{"available", "downloading", "error", "recovery_required"}.contains(state)))) {
+                    (state == "checking" ? cancelCheck : check)->forceActiveFocus(Qt::TabFocusReason);
                     QVERIFY(QDir().mkpath(captures));
                     QVERIFY(visual_audit::save(settings, captures,
-                        language + (dark ? "-dark-" : "-light-") + state));
+                        language + (dark ? "-dark-" : "-light-") + state + (scale == 1. ? "-1" : "")));
                 }
               }
             }
@@ -5110,8 +5122,11 @@ QtObject {
             QCOMPARE(service->property("checks").toInt(), 1);
             service->setProperty("state", "checking");
             service->setProperty("busy", true);
-            QVERIFY(QMetaObject::invokeMethod(cancel, "click"));
+            QVERIFY(QMetaObject::invokeMethod(cancelCheck, "click"));
             QCOMPARE(service->property("cancels").toInt(), 1);
+            service->setProperty("state", "downloading");
+            QVERIFY(QMetaObject::invokeMethod(cancel, "click"));
+            QCOMPARE(service->property("cancels").toInt(), 2);
             settings->close();
             owner->close();
         }
@@ -6320,6 +6335,9 @@ QtObject {
         QTRY_VERIFY(qAbs(sidebar->mapToScene(QPointF(sidebar->width(), 0)).x() - scroll->mapToScene(QPointF()).x()) < .5);
         QTRY_VERIFY(qAbs(sidebar->mapToScene(QPointF()).y() - scroll->mapToScene(QPointF()).y()) < .5);
         const QStringList names{"appearance", "general", "privacy", "associations", "network", "about"};
+        const QStringList pageTitles{qtTrId("settings.tabAppearance"), qtTrId("settings.tabGeneral"),
+                                     qtTrId("settings.tabPrivacy"), qtTrId("settings.tabAssociations"),
+                                     qtTrId("settings.tabNetwork"), qtTrId("settings.tabAbout")};
         for (int tab = 0; tab < names.size(); ++tab) {
             settings->setProperty("currentTab", tab);
             QQuickItem *page = nullptr;
@@ -6327,12 +6345,18 @@ QtObject {
             QTRY_VERIFY(page->width() > 0);
             QTest::qWait(30);
             QVERIFY2(page->width() <= scroll->width() + 1, qPrintable(names[tab]));
+            QQuickItem *firstVisible = nullptr;
+            for (auto *child : page->childItems()) {
+                if (child->isVisible()) { firstVisible = child; break; }
+            }
+            QVERIFY2(firstVisible && firstVisible->height() > 1, qPrintable(names[tab] + QStringLiteral(" starts with a divider")));
             QList<QQuickItem *> pending{page};
             while (!pending.isEmpty()) {
                 auto *item = pending.takeLast();
                 pending.append(item->childItems());
                 if (!item->isVisible() || item->width() <= 0 || !item->property("paintedWidth").isValid())
                     continue;
+                QVERIFY2(item->property("text").toString() != pageTitles[tab], qPrintable(names[tab] + QStringLiteral(" has a duplicate page title")));
                 QVERIFY2(item->property("paintedWidth").toReal() <= item->width() + 1,
                          qPrintable(names[tab] + QStringLiteral(" text exceeds width: ") + item->property("text").toString()));
                 QVERIFY2(item->property("paintedHeight").toReal() <= item->height() + 1,
@@ -6358,9 +6382,10 @@ QtObject {
                 property string state: "idle"; property string candidateVersion: ""
                 property string errorCode: "network"; property real progress: 0.42
                 property bool busy: false; property bool trusted: true; property bool canInstall: true
-                property bool downloaded: false; property int checks: 0
+                property bool downloaded: false; property int checks: 0; property int cancels: 0
                 function check() { ++checks; busy = true; state = "checking" }
-                function cancel() {} function download() {} function downloadAndInstall() {}
+                function cancel() { ++cancels; busy = false; state = "idle" }
+                function download() {} function downloadAndInstall() {}
                 function openReleasePage() {} function openDownloadFolder() {}
             })", QUrl());
         std::unique_ptr<QObject> service(fixture.create());
@@ -6392,16 +6417,21 @@ QtObject {
         QVERIFY(selectedBackground && otherBackground);
         const auto originalCursor = QCursor::pos();
         const auto restoreCursor = qScopeGuard([&] { if (nativeSystemPointer()) QCursor::setPos(originalCursor); });
-        moveTestPointer(settings, other->mapToScene(QPointF(other->width()/2, other->height()/2)).toPoint());
-        QTRY_VERIFY(other->property("hovered").toBool());
+        if (nativeSystemPointer()) {
+            settings->requestActivate();
+            QVERIFY(QTest::qWaitForWindowActive(settings));
+        }
+        const auto hoverItem = [settings](QQuickItem *item) {
+            moveTestPointer(settings, item->mapToScene(QPointF(item->width()/2, item->height()/2)).toPoint());
+            return item->property("hovered").toBool();
+        };
+        QTRY_VERIFY_WITH_TIMEOUT(hoverItem(other), 1500);
         QCOMPARE(otherBackground->property("color").value<QColor>(), QColor(dark ? "#2B374C" : "#EDF2FF"));
-        moveTestPointer(settings, selected->mapToScene(QPointF(selected->width()/2, selected->height()/2)).toPoint());
-        QTRY_VERIFY(selected->property("hovered").toBool());
+        QTRY_VERIFY_WITH_TIMEOUT(hoverItem(selected), 1500);
         QCOMPARE(selectedBackground->property("color").value<QColor>(), QColor(dark ? "#30436A" : "#E7EDFF"));
         const auto captures = qEnvironmentVariable("XDZIP_SETTINGS_CHROME_AUDIT");
         if (!captures.isEmpty()) {
-            moveTestPointer(settings, other->mapToScene(QPointF(other->width()/2, other->height()/2)).toPoint());
-            QTRY_VERIFY(other->property("hovered").toBool());
+            QTRY_VERIFY_WITH_TIMEOUT(hoverItem(other), 1500);
             QVERIFY(QDir().mkpath(captures));
             QVERIFY(visual_audit::save(settings, captures,
                 language + (dark ? "-dark-" : "-light-") + QString::number(scale)));
@@ -6412,8 +6442,12 @@ QtObject {
         moveTestPointer(settings, aboutPos);
         QTest::mouseClick(settings, Qt::LeftButton, Qt::NoModifier, aboutPos);
         QTRY_COMPARE(settings->property("currentTab").toInt(), 5);
+        QVERIFY(settings->setProperty("requestedHeight", 420));
+        QTRY_COMPARE(settings->height(), 420);
         QQuickItem *check = nullptr;
         QTRY_VERIFY((check = findVisual(settings->contentItem(), "aboutCheckUpdate")));
+        auto *cancelCheck = findVisual(settings->contentItem(), "aboutCancelCheck");
+        QVERIFY(cancelCheck);
         auto *scroll = findVisual(settings->contentItem(), "settingsScroll");
         auto *bar = findVisual(settings->contentItem(), "settingsVerticalScrollBar");
         auto *pageContent = findVisual(settings->contentItem(), "settingsPageContent");
@@ -6438,6 +6472,7 @@ QtObject {
         QSignalSpy positionChanges(flick, SIGNAL(contentYChanged()));
         QVERIFY(thumbChanges.isValid());
         QVERIFY(positionChanges.isValid());
+        const auto checkPosition = check->mapToScene(QPointF());
         const auto clickPos = check->mapToScene(QPointF(check->width()/2, check->height()/2)).toPoint();
         moveTestPointer(settings, clickPos);
         QTest::mousePress(settings, Qt::LeftButton, Qt::NoModifier, clickPos);
@@ -6447,6 +6482,17 @@ QtObject {
         QVERIFY2(!movedOnPress, "pressing check update changed the scroll position");
         QTRY_COMPARE(service->property("state").toString(), QStringLiteral("checking"));
         QTRY_COMPARE(service->property("checks").toInt(), 1);
+        QTRY_VERIFY(cancelCheck->isVisible());
+        QVERIFY(!check->isVisible());
+        QCOMPARE(cancelCheck->mapToScene(QPointF()), checkPosition);
+        QCOMPARE(cancelCheck->mapToScene(QPointF()), check->mapToScene(QPointF()));
+        QCOMPARE(cancelCheck->size(), check->size());
+        const auto updateCaptures = qEnvironmentVariable("XDZIP_SETTINGS_UPDATE_AUDIT");
+        if (!updateCaptures.isEmpty()) {
+            QVERIFY(QDir().mkpath(updateCaptures));
+            QVERIFY(visual_audit::save(settings, updateCaptures,
+                language + (dark ? "-dark-" : "-light-") + QString::number(scale)));
+        }
         QTest::qWait(50);
         QTRY_VERIFY_WITH_TIMEOUT(qAbs(flick->property("contentHeight").toReal() - initialHeight) < .5, 1000);
         QTRY_VERIFY_WITH_TIMEOUT(qAbs(bar->property("size").toReal() - initialThumb) < .001, 1000);
@@ -6454,6 +6500,18 @@ QtObject {
         QVERIFY2(positionChanges.isEmpty(), qPrintable(QStringLiteral("update check scrolled from %1 to %2 (changes: %3, focus: %4)")
             .arg(initialPosition).arg(flick->property("contentY").toReal()).arg(positionChanges.size())
             .arg(settings->activeFocusItem() ? settings->activeFocusItem()->objectName() : QStringLiteral("none"))));
+        const auto cancelPoint = cancelCheck->mapToScene(QPointF(cancelCheck->width()/2, cancelCheck->height()/2)).toPoint();
+        moveTestPointer(settings, cancelPoint);
+        QTest::mousePress(settings, Qt::LeftButton, Qt::NoModifier, cancelPoint);
+        QTest::qWait(30);
+        QTest::mouseRelease(settings, Qt::LeftButton, Qt::NoModifier, cancelPoint);
+        QTRY_COMPARE(service->property("cancels").toInt(), 1);
+        QTRY_COMPARE(service->property("state").toString(), QStringLiteral("idle"));
+        QTRY_VERIFY(check->isVisible());
+        QVERIFY(!cancelCheck->isVisible());
+        QTest::qWait(50);
+        QVERIFY2(positionChanges.isEmpty(), "canceling the update check changed the scroll position");
+        QVERIFY2(thumbChanges.isEmpty(), "canceling the update check changed the scrollbar height");
         const QList<QVariantMap> states{
             {{"state", "up_to_date"}}, {{"state", "error"}, {"error", "network"}},
             {{"state", "error"}, {"error", "unsafe_installation"}},
@@ -6518,11 +6576,31 @@ QtObject {
             QTest::qWait(30);
             QVERIFY2(positionChanges.isEmpty(), "update result changed the scroll position");
         }
-        QVERIFY(flick->setProperty("contentY", 0));
+        const qreal keyboardTop = check->mapToItem(flickContent, QPointF()).y();
+        const qreal keyboardMaximum = std::max(qreal(0), flick->property("contentHeight").toReal() - flick->height());
+        const qreal keyboardPosition = std::clamp(keyboardTop + check->height()/2 - flick->height()/2,
+                                                  qreal(0), keyboardMaximum);
+        QVERIFY(flick->setProperty("contentY", keyboardPosition));
         auto *styleHints = QGuiApplication::styleHints();
         const auto originalTabBehavior = styleHints->tabFocusBehavior();
         const auto restoreTabBehavior = qScopeGuard([&] { styleHints->setTabFocusBehavior(originalTabBehavior); });
         styleHints->setTabFocusBehavior(Qt::TabFocusAllControls);
+        check->forceActiveFocus(Qt::TabFocusReason);
+        QTRY_VERIFY(check->hasActiveFocus());
+        QTest::qWait(30);
+        positionChanges.clear();
+        thumbChanges.clear();
+        QTest::keyClick(settings, Qt::Key_Return);
+        QTRY_COMPARE(service->property("state").toString(), QStringLiteral("checking"));
+        QTRY_VERIFY(cancelCheck->isVisible());
+        cancelCheck->forceActiveFocus(Qt::TabFocusReason);
+        QTRY_VERIFY(cancelCheck->hasActiveFocus());
+        QTest::keyClick(settings, Qt::Key_Return);
+        QTRY_COMPARE(service->property("cancels").toInt(), 2);
+        QTRY_COMPARE(service->property("state").toString(), QStringLiteral("idle"));
+        QTest::qWait(50);
+        QVERIFY2(positionChanges.isEmpty(), "keyboard check or cancellation changed the scroll position");
+        QVERIFY2(thumbChanges.isEmpty(), "keyboard check or cancellation changed the scrollbar height");
         check->forceActiveFocus(Qt::TabFocusReason);
         QTRY_VERIFY(check->hasActiveFocus());
         auto *copy = findVisual(settings->contentItem(), "aboutCopy");
@@ -6536,8 +6614,13 @@ QtObject {
                     copy->mapToItem(flick, QPointF(0, copy->height())).y() <= flick->height() + .5);
         auto *license = findVisual(settings->contentItem(), "aboutLicense");
         QVERIFY(license);
-        QVERIFY(flick->setProperty("contentY", initialHeight - flick->height()));
-        QTRY_VERIFY(license->mapToItem(flick, QPointF()).y() >= -.5);
+        const qreal licenseTop = license->mapToItem(flickContent, QPointF()).y();
+        const qreal scrollMaximum = std::max(qreal(0), initialHeight - flick->height());
+        QVERIFY(flick->setProperty("contentY", std::clamp(licenseTop, qreal(0), scrollMaximum)));
+        QTRY_VERIFY(license->mapToItem(flick, QPointF()).y() >= -.5 &&
+                    license->mapToItem(flick, QPointF()).y() < flick->height());
+        QVERIFY(flick->setProperty("contentY", std::clamp(licenseTop + license->height() - flick->height(),
+                                                           qreal(0), scrollMaximum)));
         QTRY_VERIFY(license->mapToItem(flick, QPointF(0, license->height())).y() <= flick->height() + .5);
         QVERIFY(license->mapToItem(flick, QPointF(0, license->height())).y() > 0);
         settings->close();

@@ -33,7 +33,7 @@
 | [重名冲突](screens/conflict.png) | E02 等待决策 |
 | [任务进度](screens/progress.png) | T01 执行中 |
 | [部分失败](screens/partial-result.png) | R01 部分未完成 |
-| [设置](sources/settings.html) | S01 六个标签页，外观、通用、隐私、文件关联、网络与关于；[浅色悬停](screens/settings-sidebar-hover-light.png)、[深色悬停](screens/settings-sidebar-hover-dark.png)展示侧栏状态 |
+| [设置](sources/settings.html) | S01 六个标签页；[检查更新中](sources/settings.html?tab=about&update=checking)展示原位取消，[浅色悬停](screens/settings-sidebar-hover-light.png)和[深色悬停](screens/settings-sidebar-hover-dark.png)展示侧栏状态 |
 | [任务状态](screens/task-states.png) | 成功 / 正在停止 / 已取消 |
 | [完整性检查进度](screens/integrity-progress.png) | 复用任务进度布局，只读对象、读取速度与校验阶段 |
 | [创建覆盖确认](screens/create-overwrite.png) | C02 覆盖准入 |

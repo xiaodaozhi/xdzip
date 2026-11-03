@@ -74,6 +74,16 @@ def main():
                             modal.screenshot(path=str(image))
                             records.append(dict(file=image.name, sha256=hashlib.sha256(image.read_bytes()).hexdigest(),
                                                 bounds=modal.bounding_box(), theme=theme, tab='about-details', browser=browser.version))
+                            page.goto(f'http://127.0.0.1:{server.server_port}/design/hifi/sources/settings.html?export=1&theme={theme}&tab=about&update=checking')
+                            frame = page.frame_locator('iframe')
+                            modal = frame.locator('#modal[data-kind=settings]')
+                            frame.locator('#about-cancel-check').wait_for(state='visible')
+                            page.frames[1].evaluate('document.fonts.ready')
+                            page.frames[1].wait_for_function('(theme)=>document.documentElement.dataset.theme===theme', arg=theme)
+                            image = output/f'settings-about-checking-{theme}.png'
+                            modal.screenshot(path=str(image))
+                            records.append(dict(file=image.name, sha256=hashlib.sha256(image.read_bytes()).hexdigest(),
+                                                bounds=modal.bounding_box(), theme=theme, tab='about-checking', browser=browser.version))
                         page.close()
             finally:
                 browser.close()

@@ -534,6 +534,7 @@
     "update.unsigned": "此版本尚未通过更新来源验证，请前往发布页手动下载。",
     "update.manual": "当前运行方式需要手动安装更新。",
     "update.cancel": "取消",
+    "update.cancelCheck": "取消检查",
     "update.install": "下载并安装更新",
     "update.download": "下载更新",
     "update.release": "前往发布页",
