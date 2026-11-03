@@ -20,6 +20,121 @@
     "README.md": "169d98c57567010fd427408b38f2e15db37b515e510d95d6a1919e32a59f6360",
     "unicode-license.txt": "830ec6dd25a943b70a31d74caa56b08b34c35f5c9679fba664c1658712849271"
   },
+  "cldr_web_images": {
+    "directory": "tools/cldr-apps/src/main/webapp",
+    "upstream_commit": "0c0d98c9d1fd2efaa2cb191a6bf2626d9d1e288b",
+    "license_notice": "CLDR-2026-LICENSE.txt",
+    "files": {
+      "STLogo.png": {
+        "sha256": "d44760a1bf36d723d8d19c75177fb9964c728b543904852c5ff43530d49d8986",
+        "git_blob": "998f640345b2f17ef99332b81526fb2b7cdf7772"
+      },
+      "bar0.png": {
+        "sha256": "c12440745a9bac6acec1cc5220bc7af32f296c1cd2999573653230d39881c0a6",
+        "git_blob": "7c48281955f4901de3191049266330be9d098dc1"
+      },
+      "bar1.png": {
+        "sha256": "a0a46daf70a1d35df964adb6daf1e1cd8d9fa8abfc616bb4252f1feae9a30ebf",
+        "git_blob": "90683a25c325081352b54a8f1aaf3fd73963cbfa"
+      },
+      "chat.png": {
+        "sha256": "c2e6af9541b9138a876c4a4f70a21b9fefed178f179ea250f42af4eb69f317f0",
+        "git_blob": "3911eaa5c5be2b2ae60b42c861e36084f1c98189"
+      },
+      "conf.png": {
+        "sha256": "1e8283ee9feb34d69cdc572f25067d05cb93a9665a0c761fe9582b4d280ca61e",
+        "git_blob": "acc8010525b78cbb824f80cde8fbb55f19436c0a"
+      },
+      "conf2.png": {
+        "sha256": "d01e57ec6e241a74d3f71460b1b6decb6cfba3e75ba2b62f41b38d592411bc4f",
+        "git_blob": "4d4252234fec01d01bbcb372d6e5bcc6742218c0"
+      },
+      "disp.png": {
+        "sha256": "c14ed8747ad1f6dd7db96641d4a255e3c1ba31603ba0d22fee0d9e57bf2e6fc7",
+        "git_blob": "c73a3cd23d9df0286504c6d1078c161d078ed3a9"
+      },
+      "dnah.png": {
+        "sha256": "ca380aeb3f0b1a087ae33f3b6e913c4b7047d3ece7625f63fcf22e4be2f5c97c",
+        "git_blob": "2a63a6323b19c266126b0c9000454f05d9bcf3a5"
+      },
+      "example.png": {
+        "sha256": "0e2920ff4a97c29a617ab0cbbfc144eaa968c81e939c6dba4f4983c9c58eb030",
+        "git_blob": "1cac08b682dd98947fb03a5c52d40d42398ed0a5"
+      },
+      "favicon.ico": {
+        "sha256": "3c73e48c9f4155172f24bf31dcb83f741503e9dd959189443eac8fcd38ced600",
+        "git_blob": "aede835a8230f13a229b7dc8718f9430f204e66c"
+      },
+      "flag-d.png": {
+        "sha256": "f170437979f567811ae6e03fafc4d8727ab5fcbcd6c144ea5d2079635ed6b7fe",
+        "git_blob": "1d7b340ec03b5627bb217374445296f294377f5f"
+      },
+      "flag.png": {
+        "sha256": "697f0f5c7a9000802558cee1db32fd9b7b0ca357e3664eaf83819649f51ecb02",
+        "git_blob": "60a72fee072ce791d2112319e647b1dc209a1e39"
+      },
+      "hand.png": {
+        "sha256": "508185495397984c1ee5ec4888d49fa3f67b6216b656e7360460ed186644c93d",
+        "git_blob": "baebf0df92fdee2c4e8f528db2232dedc7c36275"
+      },
+      "hint.png": {
+        "sha256": "ae601a8ffc060272444fef5fbb8bb77b1dbe919446208122edd2eed34d2d96f2",
+        "git_blob": "2a437c2b73687dd5a1e4523b5a808f9367f6b91d"
+      },
+      "loader.gif": {
+        "sha256": "801e37e58361a5295936698fcefb007a982a491fc80d12b3622586597b469763",
+        "git_blob": "e21d92c7548f8fb4271e948eeaaab78204cdefba"
+      },
+      "lock.png": {
+        "sha256": "74c6e8345fa685e7f877170ff932422d6aca3aa7aa921784c024241c0ba68ddb",
+        "git_blob": "fd023c9c2adc8009c009f41e14ae73c33960065b"
+      },
+      "okay.png": {
+        "sha256": "ad9aa3df16c3f47a7f0dec153b319a3f9203a9e0593b6dfd304b25c7d1125baf",
+        "git_blob": "6eccd368058f6dd8d0ede19f0145e1959a256439"
+      },
+      "ques-2.png": {
+        "sha256": "8523acf24e18ab07dfab96c9b2df3380a7138ac609b151e91d5bfb45746ca4b7",
+        "git_blob": "1f9487356ec037ae3ddc6923edde6f1087a620e6"
+      },
+      "ques.png": {
+        "sha256": "8523acf24e18ab07dfab96c9b2df3380a7138ac609b151e91d5bfb45746ca4b7",
+        "git_blob": "1f9487356ec037ae3ddc6923edde6f1087a620e6"
+      },
+      "rado.png": {
+        "sha256": "cfb689c6666f3913632373edd84dc42572300d30c0a47e638c845a9ce744f109",
+        "git_blob": "455992468abcd34775196439b6b3ace2faa3b383"
+      },
+      "radx.png": {
+        "sha256": "191e021b00ee093dd4321ba0f7a4097915f379a4f7d20b2569b239499dba9430",
+        "git_blob": "c0a1180920b719dd4fe86945c739952f826dfbea"
+      },
+      "squo.png": {
+        "sha256": "0c466a5f4d3ff00b1e3263ef26aa5c24bc19fbc2bb20a85406e764c7c6b930c1",
+        "git_blob": "b4a386c613a94aace4bc72ad696182136cc58096"
+      },
+      "star.png": {
+        "sha256": "04c33aca244eeaaca8e42a3ecc12a22b75f6a600fdf4d009861cbfbee8454eeb",
+        "git_blob": "910b146e9eac8fad5b44e4699649c1ac467ff7df"
+      },
+      "stop.png": {
+        "sha256": "e8d3144cf71978a6fe680893959b5596f3baf2ad16ab22c77fc8fbcff0a197a5",
+        "git_blob": "fa91be178df80bacfa84834bdc1b68d420ca9dfb"
+      },
+      "vote.png": {
+        "sha256": "8b12781123eb1fc6405fd863351df2fcfc1514cff76e5ad58a889758c0bac574",
+        "git_blob": "0672b36511ae4c507c7f48d499f639665ac0d552"
+      },
+      "warn.png": {
+        "sha256": "d601b58cb765ce4ce03caad51f6e73b5dbee5642d46577fcac68a51d64ea7b7f",
+        "git_blob": "da2c02ddf8d3a7fbfa9a263b9c03ea0448e52612"
+      },
+      "zoom.png": {
+        "sha256": "54d23d9d6000ac10693c39d92c00183b5e85c3f56a3cab6dfba2d1a744967d11",
+        "git_blob": "3f80a9c2676089d34b38ae855918ea0c36dc6b39"
+      }
+    }
+  },
   "fonts": {
     "LICENSE-Noto.txt": "7d1715c2ceaa82e548db50261d2527ba2412d1344be317df0ebd2f0bd57f5219",
     "NotoSerifNyiakengPuachueHmong-Bold.otf": "bceb003047e669b97baf6a60d83f56ffd0909eb8a15e57ec7590e687ef82c27c",
@@ -35,7 +150,8 @@
     "Glyphicons-MIT.txt": "56b756ee9ccfd0e2f32284e543bd9859d8b59526e9f2990855bac603c7d7c4ec",
     "Noto-OFL-1.1.txt": "b61b405a127fc3a4c5b35849faa41b736f2c91ee05b2818963171b229524a9d0",
     "Noto-Emoji-Apache-2.0.txt": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
-    "Twemoji-CC-BY-4.0.txt": "8ae9438818c26e4873b91d8c6ad620526c011e27e125677f13031eda903f007c"
+    "Twemoji-CC-BY-4.0.txt": "8ae9438818c26e4873b91d8c6ad620526c011e27e125677f13031eda903f007c",
+    "CLDR-2026-LICENSE.txt": "65eb33419e22a297550a811b5b535f5e532f9a7e0114b516c0ea18afd53c3804"
   },
   "glyphicons_mit_reference": "https://github.com/apache/fineract/blob/56fc5476a6fca73c4ea82b24c3a0dad704eeb642/licenses/source/glyphicons.MIT",
   "noto_emoji": {

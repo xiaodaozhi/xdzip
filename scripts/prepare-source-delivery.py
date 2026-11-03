@@ -449,7 +449,7 @@ def rebuild_instructions():
    ICU 数据重建说明，可从所含子集重新生成已验证范围内的 ICU 资源。版本一致
    不证明供应商库由这些材料无补丁构建，也不单独完成许可判断。
    子集网页工具中六份字体、Bootstrap 和 Autosize 脚本、三份有 IBM 版权标记的
-   源码、908 份已匹配的 Noto Emoji 图片及 963 张替代图片的来源和许可补充见
+   源码、27 个匹配固定上游的网页根目录图片、908 份已匹配的 Noto Emoji 图片及 963 张替代图片的来源和许可补充见
    cldr43-webapp-notices/，该目录不覆盖其余网页素材，也不属于 xdzip 界面。
    docs/rfc 中两份 IETF 草案原文的来源及适用范围见项目
    docs/engineering/source-delivery.md；不能将该判断推广到其他文件。
@@ -466,7 +466,7 @@ def rebuild_instructions():
    Matching versions do not prove the supplier built its libraries without patches
    from these inputs or independently establish licensing compliance. See
    cldr43-webapp-notices/ for six web tool fonts, Bootstrap and Autosize scripts,
-   three IBM-marked source files, 908 matched Noto Emoji images and 963 replacement images; these do not
+   three IBM-marked source files, 27 matched web-root images, 908 matched Noto Emoji images and 963 replacement images; these do not
    cover other web assets or imply that xdzip uses them. See
    docs/engineering/source-delivery.md for the two original IETF draft texts in
    docs/rfc; this assessment does not extend to other files. Current Windows

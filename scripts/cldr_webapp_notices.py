@@ -12,6 +12,13 @@ ROOT = Path(__file__).resolve().parents[1]
 DIRECTORY = 'cldr43-webapp-notices'
 ARCHIVE_ROOT = 'cldr-37d524354422f46731db74f3bd6b3f46516c3ced'
 FONTS_DIRECTORY = 'tools/cldr-apps/src/main/webapp/fonts'
+WEBAPP_DIRECTORY = 'tools/cldr-apps/src/main/webapp'
+CLDR_WEB_IMAGES_COMMIT = '0c0d98c9d1fd2efaa2cb191a6bf2626d9d1e288b'
+CLDR_WEB_IMAGE_FILES = frozenset((
+    'STLogo.png', 'bar0.png', 'bar1.png', 'chat.png', 'conf.png', 'conf2.png', 'disp.png',
+    'dnah.png', 'example.png', 'favicon.ico', 'flag-d.png', 'flag.png', 'hand.png', 'hint.png',
+    'loader.gif', 'lock.png', 'okay.png', 'ques-2.png', 'ques.png', 'rado.png', 'radx.png',
+    'squo.png', 'star.png', 'stop.png', 'vote.png', 'warn.png', 'zoom.png'))
 BOOTSTRAP_SCRIPT = 'tools/cldr-apps/src/main/webapp/js/bootstrap.min.js'
 AUTOSIZE_SCRIPT = 'tools/cldr-apps/src/main/webapp/js/autosize.min.js'
 IBM_WEB_SOURCES = frozenset('tools/cldr-apps/src/main/webapp/'+name for name in
@@ -40,7 +47,7 @@ FONT_FILES = frozenset(('LICENSE-Noto.txt', 'NotoSerifNyiakengPuachueHmong-Bold.
                         'NotoSerifNyiakengPuachueHmong-Regular.ttf',
                         *(f'glyphicons-halflings-regular.{extension}'
                           for extension in ('eot', 'svg', 'ttf', 'woff'))))
-NOTICE_FILES = frozenset(('Autosize-MIT.txt', 'Bootstrap-MIT.txt', 'Glyphicons-MIT.txt',
+NOTICE_FILES = frozenset(('Autosize-MIT.txt', 'Bootstrap-MIT.txt', 'CLDR-2026-LICENSE.txt', 'Glyphicons-MIT.txt',
                           'Noto-Emoji-Apache-2.0.txt', 'Noto-OFL-1.1.txt', 'Twemoji-CC-BY-4.0.txt'))
 
 
@@ -117,7 +124,8 @@ def collect(output, subset):
     config = json.loads(inputs['sources.json'])
     replacements = emoji_replacements(config, inputs[REPLACEMENT_FILE])
     emoji = config.get('noto_emoji', {})
-    if not isinstance(emoji, dict):
+    web_images = config.get('cldr_web_images', {})
+    if not isinstance(emoji, dict) or not isinstance(web_images, dict):
         raise ValueError('Unexpected CLDR web notice configuration')
     emoji_files = emoji.get('files', {})
     emoji_2021_files = emoji.get('files_2021', {})
@@ -127,6 +135,17 @@ def collect(output, subset):
             config.get('archive_root') != ARCHIVE_ROOT or config.get('fonts_directory') != FONTS_DIRECTORY or
             config.get('bootstrap_script', {}).get('file') != BOOTSTRAP_SCRIPT or
             config.get('autosize_script', {}).get('file') != AUTOSIZE_SCRIPT or
+            set(web_images) != {'directory', 'upstream_commit', 'license_notice', 'files'} or
+            web_images.get('upstream_commit') != CLDR_WEB_IMAGES_COMMIT or
+            web_images.get('directory') != WEBAPP_DIRECTORY or
+            web_images.get('license_notice') != 'CLDR-2026-LICENSE.txt' or
+            not isinstance(web_images.get('files'), dict) or
+            set(web_images['files']) != CLDR_WEB_IMAGE_FILES or
+            any(not isinstance(record, dict) or set(record) != {'sha256', 'git_blob'} or
+                not isinstance(record.get('sha256'), str) or not isinstance(record.get('git_blob'), str) or
+                not re.fullmatch(r'[0-9a-f]{64}', record.get('sha256', '')) or
+                not re.fullmatch(r'[0-9a-f]{40}', record.get('git_blob', ''))
+                for record in web_images['files'].values()) or
             emoji.get('directory') != EMOJI_DIRECTORY or emoji.get('upstream_commit') != NOTO_EMOJI_COMMIT or
             emoji.get('upstream_commit_2021') != NOTO_EMOJI_2021_COMMIT or
             not emoji_files or not emoji_2021_files or set(emoji_files).intersection(emoji_2021_files) or
@@ -169,6 +188,21 @@ def collect(output, subset):
             if (len(scripts) != 1 or not scripts[0].isfile() or scripts[0].size > 1024 * 1024 or
                     hashlib.sha256(archive.extractfile(scripts[0]).read()).hexdigest() != config[key]['sha256']):
                 raise ValueError('CLDR web script checksum mismatch')
+        web_prefix = ARCHIVE_ROOT + '/' + WEBAPP_DIRECTORY + '/'
+        web_files = [member for member in archive if member.name.startswith(web_prefix) and
+                     '/' not in member.name.removeprefix(web_prefix) and
+                     member.name.lower().endswith(('.png', '.ico', '.gif'))]
+        if (len(web_files) != len(CLDR_WEB_IMAGE_FILES) or any(not member.isfile() for member in web_files) or
+                {member.name.removeprefix(web_prefix) for member in web_files} != CLDR_WEB_IMAGE_FILES):
+            raise ValueError('Unexpected CLDR web image files')
+        for member in web_files:
+            if member.size > 1024 * 1024:
+                raise ValueError('Oversized CLDR web image')
+            data = archive.extractfile(member).read()
+            record = web_images['files'][member.name.removeprefix(web_prefix)]
+            blob = hashlib.sha1(b'blob '+str(len(data)).encode('ascii')+b'\0'+data).hexdigest()
+            if hashlib.sha256(data).hexdigest() != record['sha256'] or blob != record['git_blob']:
+                raise ValueError('CLDR web image checksum mismatch')
         emoji_prefix = ARCHIVE_ROOT + '/' + EMOJI_DIRECTORY + '/'
         images = [member for member in archive if member.name.startswith(emoji_prefix)]
         expected_images = set(emoji_files) | set(replacements)
@@ -189,6 +223,7 @@ def collect(output, subset):
         (destination / name).write_bytes(inputs[name])
     return {'kind': DIRECTORY, 'file': DIRECTORY + '/sources.json', 'font_files': len(FONT_FILES) - 1,
             'bootstrap_script': True, 'autosize_script': True, 'ibm_marked_sources': len(IBM_WEB_SOURCES),
+            'cldr_web_image_files': len(CLDR_WEB_IMAGE_FILES),
             'noto_emoji_files': len(emoji_files),
             'substituted_emoji_files': len(replacements),
-            'scope': 'CLDR 43.1 webapp fonts, Bootstrap/Autosize, three IBM-marked sources and listed emoji only'}
+            'scope': 'CLDR 43.1 webapp fonts, Bootstrap/Autosize, three IBM-marked sources, listed web images and emoji only'}
