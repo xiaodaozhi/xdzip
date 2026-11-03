@@ -26,7 +26,10 @@ int main(int argc, const char *argv[]) {
         NSDictionary *record = @{
             @"xdzip_candidates" : @(count),
             @"selected_in_candidates" : @(included),
-            @"default_bundle_id" : identity ?: [NSNull null]
+            @"has_default_handler" : @(handler != nil),
+            @"default_bundle_id" : identity ?: [NSNull null],
+            @"selected_is_default" :
+                @(handler && [[handler URLByResolvingSymlinksInPath] isEqual:selected])
         };
         NSData *json = [NSJSONSerialization dataWithJSONObject:record
                                                        options:NSJSONWritingSortedKeys
