@@ -36,6 +36,7 @@ CLDR_LANGUAGE_REGISTRY = ISO639_DIRECTORY + 'language-subtag-registry'
 CLDR_STANDARD_DIRECTORY = 'docs/ldml'
 CLDR_STANDARD_PARTS = frozenset(CLDR_STANDARD_DIRECTORY + '/tr35' + suffix + '.md' for suffix in (
     '', '-collation', '-dates', '-general', '-info', '-keyboards', '-numbers', '-personNames'))
+CLDR_DOC_SCREENSHOTS = frozenset(('docs/img/commit-checks.png', 'docs/img/pr-checks.png'))
 
 
 def archive_source(item, cache):
@@ -174,6 +175,8 @@ def collect_icu_data_sources(output, cache):
                 if not CLDR_STANDARD_PARTS.issubset(excluded_standards):
                     raise ValueError('Missing CLDR technical standard parts')
                 files = {member.name for member in members if member.isfile()}
+                if not all(root+'/'+name in files for name in CLDR_DOC_SCREENSHOTS):
+                    raise ValueError('Missing expected CLDR documentation screenshots')
                 retained_identifiers[item['module']] = [name for name in (*CLDR_IDENTIFIER_FILES, CLDR_LANGUAGE_REGISTRY)
                                                         if root+'/'+name in files]
             elif item['module'] == 'icu-cldr-bootstrap-source':
@@ -191,7 +194,8 @@ def collect_icu_data_sources(output, cache):
             root = item['archive_root']
             def include_cldr(path):
                 relative = path.removeprefix(root+'/')
-                return (relative not in ISO639_TABLES and relative != CLDR_STANDARD_DIRECTORY and
+                return (relative not in ISO639_TABLES and relative not in CLDR_DOC_SCREENSHOTS and
+                        relative != CLDR_STANDARD_DIRECTORY and
                         not relative.startswith(CLDR_STANDARD_DIRECTORY+'/'))
             filter_source_tar(source, target, include_cldr,
                               replacements={root+'/'+EMOJI_DIRECTORY+'/'+name: replacement['data']
@@ -201,7 +205,7 @@ def collect_icu_data_sources(output, cache):
                 record['upstream_source_tree'] = record.pop('source_tree')
             record.update(file=name, sha256=digest(target), upstream_file=item['file'],
                           upstream_archive_sha256=item['sha256'], complete_upstream_tree=False,
-                          omitted_files=sorted(ISO639_TABLES | excluded_standards),
+                          omitted_files=sorted(ISO639_TABLES | excluded_standards | CLDR_DOC_SCREENSHOTS),
                           substituted_files=[{'cldr_file': EMOJI_DIRECTORY+'/'+name,
                                               'original_sha256': replacement['original_sha256'],
                                               'sha256': replacement['sha256'], 'source': replacement['source'],
@@ -441,7 +445,7 @@ def rebuild_instructions():
    不要求用户拥有本项目的 Developer ID 私钥。勿关闭 SIP 或系统安全保护。
 6. Linux ICU 的完整许可、ICU4C 73.2 上游源码归档、固定 ICU 可编辑数据源码树、
    CLDR 43.1 源码子集，以及生成工具使用的 ICU 73.1 源码树随目录提供。
-   CLDR 子集排除了五个 ISO 639-3 文件及 docs/ldml 标准文档，并替换了 963 张网页工具图片，
+   CLDR 子集排除了五个 ISO 639-3 文件、docs/ldml 标准文档及两张文档截图，并替换了 963 张网页工具图片，
    不能称为完整源码树。UTS #35 的 43.1 版可从以下地址按权利人条款查阅：
    https://www.unicode.org/reports/tr35/tr35-69/tr35.html
    其他用途需要排除的材料时须另行核对来源和条款。子集的其他文件仍含语言标识符、别名和较早的
@@ -456,7 +460,7 @@ def rebuild_instructions():
    当前 Windows 开发包不交付软件 OpenGL 库。历史包按原有材料和条款处理。
    English: The Linux ICU license, ICU4C 73.2 upstream archive, editable ICU data
    source, CLDR 43.1 subset and ICU 73.1 bootstrap source are included. The CLDR
-   subset omits five ISO 639-3 files and docs/ldml standards documents, replaces 963 web tool
+   subset omits five ISO 639-3 files, docs/ldml standards documents and two documentation screenshots, and replaces 963 web tool
    images, and retains language identifiers, aliases and an earlier language-subtag registry.
    UTS #35 version 43.1 is available under its owner's terms at:
    https://www.unicode.org/reports/tr35/tr35-69/tr35.html

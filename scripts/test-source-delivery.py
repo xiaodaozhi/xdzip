@@ -485,8 +485,10 @@ class DeliveryTests(unittest.TestCase):
                 'anchors': {'data.txt': hashlib.sha256(data).hexdigest()}}
 
     @staticmethod
-    def cldr_data_fixture(cache, extra=None, with_standard=True):
+    def cldr_data_fixture(cache, extra=None, with_standard=True, with_screenshots=True):
         members = {'cldr-owned/'+name: b'owned ISO fixture' for name in source.ISO639_TABLES}
+        if with_screenshots:
+            members.update({'cldr-owned/'+name: b'owned screenshot fixture' for name in source.CLDR_DOC_SCREENSHOTS})
         if with_standard:
             members.update({'cldr-owned/'+name: b'owned standard fixture' for name in source.CLDR_STANDARD_PARTS})
             members['cldr-owned/docs/ldml/images/owned.png'] = b'owned standard image'
@@ -607,7 +609,8 @@ class DeliveryTests(unittest.TestCase):
             self.assertNotIn('url', records[1])
             self.assertFalse(records[1]['complete_upstream_tree'])
             self.assertEqual(set(records[1]['omitted_files']),
-                             source.ISO639_TABLES | source.CLDR_STANDARD_PARTS | {'docs/ldml/images/owned.png'})
+                             source.ISO639_TABLES | source.CLDR_STANDARD_PARTS | source.CLDR_DOC_SCREENSHOTS |
+                             {'docs/ldml/images/owned.png'})
             self.assertTrue(records[1]['file'].endswith('-without-iso6393-and-uts35.tar.gz'))
             self.assertEqual(records[1]['substituted_files'][0]['cldr_file'], cldr_webapp_notices.REPLACEMENT_PATH)
             self.assertEqual(records[1]['identified_language_identifier_files'], [])
@@ -652,6 +655,19 @@ class DeliveryTests(unittest.TestCase):
                 self.assertEqual(archive.extractfile('cldr-owned/'+adjacent).read(), b'keep')
                 self.assertFalse(any(name.startswith('cldr-owned/docs/ldml/') for name in archive.getnames()))
             self.assertNotIn(adjacent, record['omitted_files'])
+
+    def test_cldr_subset_requires_expected_documentation_screenshots(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); cache = root/'cache'; output = root/'delivery'
+            cache.mkdir(); output.mkdir()
+            items = [self.data_source_fixture(cache, 'icu-data-source', 'icu-owned', b'ICU data'),
+                     self.cldr_data_fixture(cache, with_screenshots=False),
+                     self.data_source_fixture(cache, 'icu-cldr-bootstrap-source', 'bootstrap-owned', b'bootstrap')]
+            with patch.object(source, 'configuration', return_value={'icu_data_sources': items}), \
+                 patch.object(source, 'cldr_emoji_replacements', return_value=self.cldr_replacement_fixture()), \
+                 self.assertRaisesRegex(ValueError, 'Missing expected CLDR documentation screenshots'):
+                source.collect_icu_data_sources(output, cache)
+            self.assertEqual(list(output.iterdir()), [])
 
     def test_icu_cldr_manifest_identifies_retained_language_data_and_registry(self):
         with tempfile.TemporaryDirectory() as temporary:
