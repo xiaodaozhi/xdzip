@@ -39,6 +39,10 @@ English: The CLDR 43.1 subset also includes two Noto fonts, four Glyphicons file
 
 English: For languages already present in the Qt source, `scripts/derive-qt-locale-code-input.py` extracts a limited input from the original `qlocale_data_p.h`; the command and output location are shown above. This covers only existing lookup keys and is neither the complete ISO 639-3 table nor the historical upstream input. Adding languages may still require separately obtained codes and review of their terms. Regeneration of eight files with the pinned Qt 6.8.2 source, CLDR 46 data and this derived input was checked allowing only generation-date and line-ending differences. This does not by itself settle the ISO table's licensing or establish complete corresponding source.
 
+在隔离测试中，向 Qt 工具枚举和该派生表手工增加一个私用测试代码，可生成新枚举与代码表；Linux QtCore 重建后的正反向代码查询通过，原始 alpha.8 的隔离副本也完成离屏浏览、取消和解压。该实验没有新增真实语言或 CLDR 区域格式数据，不能替代真实语言输入及其条款核对，也不能证明全部对应源码义务。步骤和首次探针失败的记录见 [#138](https://github.com/xiaodaozhi/xdzip/issues/138#issuecomment-6611169790)。
+
+English: In an isolated test, manually adding a private-use test code to the Qt tool's enum and the derived table generated a new enum and code entry. A rebuilt Linux QtCore passed forward and reverse lookup, and an isolated original alpha.8 copy completed offscreen browsing, cancellation and extraction. This added no real language or CLDR locale-format data, does not replace review of real language inputs and terms, and does not establish all corresponding-source obligations. See [#138](https://github.com/xiaodaozhi/xdzip/issues/138#issuecomment-6611169790) for the steps and the initial probe failure.
+
 另一种方式是自行取得 `iso-codes` 的 ISO 639-2 与 639-3 JSON 数据，再用转换器生成 Qt 可读取的输入。例如，在安装了该数据包的 Linux 环境中执行：
 
 ```sh
