@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Verify registration ownership boundaries and cleanup on failed validations."""
+import importlib.util
 import plistlib
 from pathlib import Path
 import tempfile
@@ -7,8 +8,44 @@ import unittest
 from unittest.mock import patch
 import macos_launch_services as ls
 
+spec = importlib.util.spec_from_file_location('macos_registration',
+                                               Path(__file__).with_name('check-macos-registration.py'))
+registration = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(registration)
+
 
 class RegistrationTests(unittest.TestCase):
+    def test_handler_checks_preserve_existing_defaults_and_restore_absent_ones(self):
+        def state(default, selected, selected_default=False, has_default=None):
+            return {'default_bundle_id': default, 'selected_in_candidates': selected,
+                    'selected_is_default': selected_default,
+                    'has_default_handler': default is not None if has_default is None else has_default}
+        previous = state('existing.handler', False)
+        registration.validate_transition(previous, state('existing.handler', True), previous,
+                                         'Alternate')
+        empty = state(None, False)
+        registration.validate_transition(empty, state(ls.BUNDLE_ID, True, True), empty, 'Alternate')
+        registration.validate_transition(previous, previous, previous, 'None')
+        for before, during, cleaned in [
+                (previous, state(ls.BUNDLE_ID, True), previous),
+                (empty, state(ls.BUNDLE_ID, True, True), state(ls.BUNDLE_ID, False, True)),
+                (empty, state(None, False), empty),
+                (empty, state(ls.BUNDLE_ID, True, True), state(None, True)),
+                (state(ls.BUNDLE_ID, False), state(ls.BUNDLE_ID, True, True),
+                 state(ls.BUNDLE_ID, False)),
+                (state(None, False, has_default=True), state(ls.BUNDLE_ID, True, True),
+                 state(None, False, has_default=True))]:
+            with self.subTest(before=before, during=during, cleaned=cleaned):
+                with self.assertRaises(RuntimeError):
+                    registration.validate_transition(before, during, cleaned, 'Alternate')
+
+    def test_handler_preference_snapshot_detects_temporary_or_persistent_changes(self):
+        registration.validate_preferences(b'prior', b'prior', b'prior')
+        with self.assertRaises(RuntimeError):
+            registration.validate_preferences(b'prior', b'changed', b'prior')
+        with self.assertRaises(RuntimeError):
+            registration.validate_preferences(b'prior', b'prior', b'changed')
+
     def app(self, root, name, identity=ls.BUNDLE_ID):
         app = root/name
         (app/'Contents').mkdir(parents=True)

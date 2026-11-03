@@ -57,7 +57,7 @@ LaunchServices 会记住曾打开过的应用包，构建树中相同 bundle id 
 
 新开发包默认在生成 Info.plist 时写入 `LSHandlerRank=None`，仅保留指定主应用和交付包的 `Alternate`。CMake 参数 `XDZIP_MACOS_HANDLER_RANK` 严格限定这两个值；源码离线重建、源码 Qt 产品验证和 Mac 产品 CI 也显式传入 `None`，避免以后更改默认值使测试副本重新进入候选。[Apple 对 `None` 的定义](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html)保留文件拖入能力，不把该包选为此类型的打开应用。这个设置不影响应用内选择文件或显式指定应用的打开流程，不设置默认关联。
 
-Mac 产品 CI 运行 `scripts/check-macos-registration.py`，通过原生 `NSWorkspace` 的文件候选查询检查新构建包。候选数量与按 bundle id 枚举的注册数量分别判断，不能用后者代替用户实际的“打开方式”候选。
+Mac 产品 CI 运行 `scripts/check-macos-registration.py`，通过原生 `NSWorkspace` 的文件候选查询检查新构建包。候选数量与按 bundle id 枚举的注册数量分别判断，不能用后者代替用户实际的“打开方式”候选。已有默认处理器在临时注册期间须保持，原先没有处理器的类型可由系统临时解析到新候选；全部测试类型在注销后须恢复原来的处理器和候选状态。当前用户的 `LSHandlers` 偏好只在内存中比较注册前、中、后的快照，不输出其内容；其他偏好与系统级规则不在此比较范围。
 
 `scripts/macos_launch_services.py` 只识别 `org.xdzip.desktop`。DMG 重定位、源码离线重建、源码 Qt 产品验证、QtCore 替换和系统文件打开验证在受限 `build/` 范围内记录运行前的注册集合，结束时（含失败）仅撤销新增的测试副本注册，保留原有主应用及其他产品。清理失败使验证命令失败，不能静默写成成功。
 

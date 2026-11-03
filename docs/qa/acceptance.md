@@ -303,9 +303,10 @@ W01-07，欢迎页与打开归档后的标题栏、标签及外观按钮的位�
 - Windows 的九类格式在升级与全新安装后，原生应用枚举均只有一个 xdzip，关联启动器有真实嵌入的品牌图标和产品身份。升级移除自有旧推荐项并保留兼容命令，REG_NONE 标记阻止自动选作默认；核对外部候选、UserChoice／UserChoiceLatest 不变，ZIP 与其他格式的新入口在历史回退后仍可打开。人工另查默认应用设置和 Explorer“打开方式”：只出现一个带品牌应用图标的 xdzip，不能将通用应用方框与文档图标混为一项，也不能以原生 API 枚举代替实际显示。
 - Windows 九个逐格式 ProgID 的类型描述在全新安装、已有中英文设置的升级及语言重启后分别为 `XXX 压缩包`／`XXX archive`。验证便携和隔离设置进程不改注册表，安装身份或任一打开命令不匹配时不改任何描述，保留默认应用与其他候选；写入失败的部分状态须如实登记并检查下次启动重试。人工另核对 Explorer 的实际显示及缓存影响。
 - macOS 逐类型核对 ICNS 已进入 bundle、Viewer 和 None／Alternate 声明，以及原生候选、真实文件打开和默认应用不变；同 UTI 的压缩 TAR 共用图标。Linux 逐类型验证 MIME 候选、真实 GIO 打开和原默认不变，保持系统文件图标，不新增全局 MIME 图标。
+- macOS 在无现成第三方类型声明的隔离环境核对 RAR、CAB、UDF 的文件类型解析与候选；CAB 同时覆盖系统及兼容类型，设置查询使用实际识别的受支持类型。已有默认应用在注册期间保持，原先无处理器的类型允许系统临时解析到新候选，所有测试类型注销后恢复原状态。
 - 浏览器／离屏结果与 Windows Explorer、Finder 的原生显示和人工操作分别登记，不因关联命令或 CI 通过宣称视觉验收通过。
 
-English: Verify each Windows format handler, document icon, real archive dispatch and historical rollback while preserving protected choices and foreign candidates. Check one branded xdzip application candidate, its embedded launcher icon/identity, owned legacy recommendation cleanup and no automatic default takeover; separately inspect actual Settings and Explorer UI. Verify bundled macOS ICNS, Viewer ranks and native handler candidates; compressed TAR may share one UTI. Linux keeps system MIME icons. Native shell visuals and human acceptance remain separate from automated checks.
+English: Verify each Windows format handler, document icon, real archive dispatch and historical rollback while preserving protected choices and foreign candidates. Check one branded xdzip application candidate, its embedded launcher icon/identity, owned legacy recommendation cleanup and no automatic default takeover; separately inspect actual Settings and Explorer UI. Verify bundled macOS ICNS, Viewer ranks and native handler candidates; compressed TAR may share one UTI. On an isolated Mac, verify RAR, CAB and UDF type resolution and candidates, both supported CAB identifiers, preservation of existing defaults, and restoration after cleanup. If no handler existed, the system may temporarily resolve the new candidate. Linux keeps system MIME icons. Native shell visuals and human acceptance remain separate from automated checks.
 
 ## 会话与预发布验收
 

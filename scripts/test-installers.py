@@ -396,21 +396,26 @@ class InstallerTests(unittest.TestCase):
                     expected={'public.zip-archive':'zip','public.tar-archive':'tar',
                         'org.gnu.gnu-zip-tar-archive':'tar-gz','org.gnu.gnu-zip-archive':'gz',
                         'org.7-zip.7-zip-archive':'7z','com.rarlab.rar-archive':'rar',
-                        'com.microsoft.cab-archive':'cab','public.iso-image':'iso','org.xdzip.udf-image':'udf'}
+                        'com.microsoft.cab':'cab','com.microsoft.cab-archive':'cab',
+                        'public.iso-image':'iso','org.xdzip.udf-image':'udf'}
                     observed={}
                     extensions=set()
                     for document in documents:
                         self.assertEqual(document['LSHandlerRank'],requested or 'None')
                         self.assertEqual(document['CFBundleTypeRole'],'Viewer')
-                        self.assertEqual(len(document['LSItemContentTypes']),1)
-                        uti=document['LSItemContentTypes'][0]
-                        self.assertNotIn(uti,observed)
-                        observed[uti]=document['CFBundleTypeIconFile']
+                        self.assertTrue(document['LSItemContentTypes'])
+                        for uti in document['LSItemContentTypes']:
+                            self.assertNotIn(uti,observed)
+                            observed[uti]=document['CFBundleTypeIconFile']
                         extensions.update(document['CFBundleTypeExtensions'])
                     self.assertEqual(observed,{uti:'xdzip-'+icon+'.icns' for uti,icon in expected.items()})
                     self.assertEqual(extensions,set(WINDOWS_ICONS))
                     imported={item['UTTypeIdentifier']:item for item in info['UTImportedTypeDeclarations']}
-                    self.assertEqual(imported['org.xdzip.udf-image']['UTTypeTagSpecification']['public.filename-extension'],['udf'])
+                    for uti,extension in [('com.rarlab.rar-archive','rar'),
+                                          ('com.microsoft.cab-archive','cab'),
+                                          ('org.xdzip.udf-image','udf')]:
+                        self.assertIn('public.data',imported[uti]['UTTypeConformsTo'])
+                        self.assertIn(extension,imported[uti]['UTTypeTagSpecification']['public.filename-extension'])
                     self.assertEqual(info['CFBundleAllowMixedLocalizations'],True)
                     self.assertTrue({'zh-Hans','en'}<=set(info['CFBundleLocalizations']))
 

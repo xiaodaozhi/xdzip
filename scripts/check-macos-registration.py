@@ -9,6 +9,43 @@ import sys
 from macos_launch_services import BUNDLE_ID, LSREGISTER, ROOT, build_copy, transient_registrations
 
 
+def validate_transition(before, during, cleaned, rank, label='fixture'):
+    if during['selected_in_candidates'] != (rank == 'Alternate'):
+        raise RuntimeError('Native handler candidates disagree with the bundle rank: '+label)
+    previous = before['default_bundle_id']
+    if before['has_default_handler'] and (
+            not during['has_default_handler'] or during['default_bundle_id'] != previous or
+            during['selected_is_default'] != before['selected_is_default']):
+        raise RuntimeError('Existing default handler unexpectedly changed: '+label)
+    if (cleaned['has_default_handler'] != before['has_default_handler'] or
+            cleaned['default_bundle_id'] != previous or
+            cleaned['selected_is_default'] != before['selected_is_default'] or
+            cleaned['selected_in_candidates'] != before['selected_in_candidates']):
+        raise RuntimeError('Handler state did not return to its original value after cleanup: '+label)
+
+
+def handler_preferences():
+    domain = 'com.apple.LaunchServices/com.apple.launchservices.secure'
+    result = subprocess.run(['/usr/bin/defaults', 'export', domain, '-'], capture_output=True,
+                            timeout=15)
+    if result.returncode:
+        domains = subprocess.run(['/usr/bin/defaults', 'domains'], capture_output=True, text=True,
+                                 timeout=15)
+        if domains.returncode or domain in {name.strip() for name in domains.stdout.split(',')}:
+            raise RuntimeError('Could not inspect user handler preferences')
+        return plistlib.dumps([], fmt=plistlib.FMT_BINARY)
+    handlers = plistlib.loads(result.stdout).get('LSHandlers', [])
+    if not isinstance(handlers, list):
+        raise RuntimeError('Invalid user handler preferences')
+    # Compare in memory only; preference contents can contain private identifiers.
+    return plistlib.dumps(handlers, fmt=plistlib.FMT_BINARY, sort_keys=True)
+
+
+def validate_preferences(before, during, cleaned):
+    if before != during or before != cleaned:
+        raise RuntimeError('User handler preferences changed during registration')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--app', type=Path, required=True)
@@ -58,6 +95,7 @@ def main():
             raise RuntimeError('Native handler candidate query failed')
         return json.loads(result.stdout)
 
+    preferences_before = handler_preferences()
     before = query(fixture)
     format_before = {name:query(formats/name) for name in format_names}
     with transient_registrations(app):
@@ -65,23 +103,24 @@ def main():
         if registered.returncode:
             raise RuntimeError('Owned test application registration failed')
         after = query(fixture)
-        if after['selected_in_candidates'] != (rank == 'Alternate'):
-            raise RuntimeError('Native handler candidates disagree with the bundle rank')
-        if before['default_bundle_id'] != after['default_bundle_id']:
-            raise RuntimeError('Default document handler unexpectedly changed')
         format_after = {name:query(formats/name) for name in format_names}
-        for name in format_names:
-            if format_after[name]['selected_in_candidates'] != (rank == 'Alternate'):
-                raise RuntimeError('Native format handler candidate disagrees with bundle rank: '+name)
-            if format_before[name]['default_bundle_id'] != format_after[name]['default_bundle_id']:
-                raise RuntimeError('Default format handler unexpectedly changed: '+name)
+        preferences_during = handler_preferences()
     cleaned = query(fixture)
+    format_cleaned = {name:query(formats/name) for name in format_names}
+    preferences_cleaned = handler_preferences()
+    validate_preferences(preferences_before, preferences_during, preferences_cleaned)
+    validate_transition(before, after, cleaned, rank)
+    for name in format_names:
+        validate_transition(format_before[name], format_after[name], format_cleaned[name], rank, name)
     output.write_text(json.dumps({'status': 'passed', 'rank': rank, 'before': before,
         'after_forced_registration': after, 'after_cleanup': cleaned,
-        'format_candidates': {name:{'before':format_before[name], 'after':format_after[name]} for name in format_names},
-        'limits': 'Native document handler query, not visual acceptance of a client application menu.'},
+        'user_handler_preferences_unchanged': True,
+        'format_candidates': {name:{'before':format_before[name], 'after':format_after[name],
+                                     'after_cleanup':format_cleaned[name]} for name in format_names},
+        'limits': 'A previously absent default may be resolved implicitly during registration. '
+                  'Only the current user LSHandlers preference is compared; visual acceptance is separate.'},
         ensure_ascii=False, indent=2)+'\n')
-    print('Native macOS handler rank and unchanged default: passed')
+    print('Native macOS handler rank, existing defaults and cleanup: passed')
 
 
 if __name__ == '__main__':

@@ -7,6 +7,12 @@
 
 namespace {
 UTType *contentType(const QString &extension) {
+    if (extension == QStringLiteral(".cab")) {
+        UTType *preferred = [UTType typeWithFilenameExtension:@"cab"];
+        if ([preferred.identifier isEqualToString:@"com.microsoft.cab"] ||
+            [preferred.identifier isEqualToString:@"com.microsoft.cab-archive"])
+            return preferred;
+    }
     static const QHash<QString, QString> types{
         {".zip", "public.zip-archive"}, {".7z", "org.7-zip.7-zip-archive"},
         {".rar", "com.rarlab.rar-archive"}, {".tar", "public.tar-archive"},
