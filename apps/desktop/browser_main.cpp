@@ -23,6 +23,7 @@
 #include "WindowsAssociationDescriptions.h"
 #include <QApplication>
 #include <QEvent>
+#include <QFontDatabase>
 #include <QIcon>
 #include <QMessageBox>
 #include <QPointer>
@@ -35,6 +36,10 @@
 #include <QSaveFile>
 #include <QSslSocket>
 #include <QTimer>
+#ifdef Q_OS_MACOS
+#include <future>
+#include <system_error>
+#endif
 #include <memory>
 #ifdef XDZIP_NATIVE_UPDATE_FIXTURE
 #include "tests/native_update_fixture.h"
@@ -168,6 +173,17 @@ int main(int argc, char *argv[]) {
 #else
     application.setWindowIcon(QIcon(QStringLiteral(":/xdzip/assets/app-icon.png")));
 #endif
+#ifdef Q_OS_MACOS
+    // Font enumeration can run alongside QML loading; Qt serializes font database access.
+    std::future<void> fontDatabaseWarmup;
+    if (QGuiApplication::platformName() == QStringLiteral("cocoa")) {
+        try {
+            fontDatabaseWarmup = std::async(std::launch::async, [] { QFontDatabase::families(); });
+        } catch (const std::system_error &) {
+            // Qt will initialize the database lazily if a worker cannot be started.
+        }
+    }
+#endif
     QQmlApplicationEngine engine;
 #ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
     UpdateController updates(nullptr, macProductUpdateFixtureTransport(&application));
@@ -190,6 +206,10 @@ int main(int argc, char *argv[]) {
         &engine, &QQmlApplicationEngine::objectCreationFailed, &application,
         [] { QCoreApplication::exit(1); }, Qt::QueuedConnection);
     engine.load(QUrl(QStringLiteral("qrc:/xdzip/ui/Browser.qml")));
+#ifdef Q_OS_MACOS
+    if (fontDatabaseWarmup.valid())
+        fontDatabaseWarmup.wait();
+#endif
     if (engine.rootObjects().isEmpty())
         return 1;
 #ifdef Q_OS_MACOS
