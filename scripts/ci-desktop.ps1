@@ -129,6 +129,9 @@ if ($IsMacOS) {
     Invoke-Checked python @('scripts/check-macos-localization.py', 'build/desktop/apps/desktop/xdzip.app/Contents/Info.plist')
     Invoke-Checked python @('scripts/prepare-association-fixtures.py','--zip','tests/fixtures/zip/normal.zip','--output','build/installer-tests/association-fixtures')
     Invoke-Checked python @('scripts/check-macos-registration.py', '--app', 'build/desktop/apps/desktop/xdzip.app', '--fixture', 'tests/fixtures/zip/normal.zip', '--formats', 'build/installer-tests/association-fixtures', '--output', 'build/review/macos-registration.json')
+    if ($env:GITHUB_ACTIONS -eq 'true' -and $env:RUNNER_ENVIRONMENT -eq 'github-hosted') {
+        Invoke-Checked python @('scripts/check-macos-udf-compatibility.py', '--app', 'build/desktop/apps/desktop/xdzip.app', '--fixture', 'build/installer-tests/association-fixtures/sample.udf', '--candidate-probe', 'build/review/xdzip-launch-services-probe', '--settings-probe', 'build/desktop/apps/desktop/xdzip-macos-association-probe', '--output', 'build/review/macos-udf-compatibility.json')
+    }
 }
 # Foundation independently executes locked workspace Rust tests.
 $browserTests = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-browser-tests' }

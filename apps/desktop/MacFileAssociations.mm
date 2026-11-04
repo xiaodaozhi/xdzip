@@ -7,6 +7,13 @@
 
 namespace {
 UTType *contentType(const QString &extension) {
+    if (extension == QStringLiteral(".udf")) {
+        // An older installed bundle can shadow our corrected UDF declaration.
+        // Use the type macOS actually assigns to .udf files, even if dynamic.
+        UTType *preferred = [UTType typeWithFilenameExtension:@"udf"];
+        if (preferred)
+            return preferred;
+    }
     if (extension == QStringLiteral(".cab")) {
         UTType *preferred = [UTType typeWithFilenameExtension:@"cab"];
         if ([preferred.identifier isEqualToString:@"com.microsoft.cab"] ||

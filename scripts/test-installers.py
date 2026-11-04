@@ -397,17 +397,24 @@ class InstallerTests(unittest.TestCase):
                         'org.gnu.gnu-zip-tar-archive':'tar-gz','org.gnu.gnu-zip-archive':'gz',
                         'org.7-zip.7-zip-archive':'7z','com.rarlab.rar-archive':'rar',
                         'com.microsoft.cab':'cab','com.microsoft.cab-archive':'cab',
-                        'public.iso-image':'iso','org.xdzip.udf-image':'udf'}
+                        'public.iso-image':'iso'}
                     observed={}
                     extensions=set()
+                    udf_documents=0
                     for document in documents:
                         self.assertEqual(document['LSHandlerRank'],requested or 'None')
                         self.assertEqual(document['CFBundleTypeRole'],'Viewer')
-                        self.assertTrue(document['LSItemContentTypes'])
-                        for uti in document['LSItemContentTypes']:
+                        if document['CFBundleTypeIconFile']=='xdzip-udf.icns':
+                            udf_documents+=1
+                            self.assertNotIn('LSItemContentTypes',document)
+                            self.assertEqual(document['CFBundleTypeExtensions'],['udf'])
+                        else:
+                            self.assertTrue(document['LSItemContentTypes'])
+                        for uti in document.get('LSItemContentTypes',[]):
                             self.assertNotIn(uti,observed)
                             observed[uti]=document['CFBundleTypeIconFile']
                         extensions.update(document['CFBundleTypeExtensions'])
+                    self.assertEqual(udf_documents,1)
                     self.assertEqual(observed,{uti:'xdzip-'+icon+'.icns' for uti,icon in expected.items()})
                     self.assertEqual(extensions,set(WINDOWS_ICONS))
                     imported={item['UTTypeIdentifier']:item for item in info['UTImportedTypeDeclarations']}
