@@ -375,6 +375,17 @@ def rebuild_instructions():
    English: The command above derives limited lookup input from Qt's generated source.
    It is neither the complete ISO table nor the historical input; new languages may
    require other codes. It does not resolve licensing or corresponding-source status.
+   要增加具体语言，可解出交付的 CLDR 43.1 子集，使用其中的 language-subtag-registry：
+   python3 scripts/derive-qt-locale-code-input.py --qtbase path/to/qtbase \\
+     --iana path/to/cldr43/tools/cldr-code/src/main/resources/org/unicode/cldr/util/data/language-subtag-registry \\
+     --add-language 'cho,cho,cho,' --output build/qt-locale-codes-with-cho.tsv
+   四个字段为三字母代码、ISO 639-2/B、ISO 639-2/T、双字母代码；空字段必须显式保留。
+   工具不从 IANA 推断 ISO 映射；填写者须核对字段及来源。还须修改 Qt 枚举、提供 CLDR
+   数据并重新生成和编译，不能把有限表称为完整 ISO 表或历史输入。
+   English: The command above combines the delivered registry with explicitly reviewed
+   code fields. IANA presence does not establish ISO mappings; review them independently.
+   Adding a language also requires the Qt enum, CLDR locale data and a rebuild. This
+   remains a limited input rather than the complete ISO table or historical input.
    也可自行取得 iso-codes 的 ISO 639-2 与 639-3 JSON，按来源及许可分别核对后转换：
    python3 scripts/convert-iso-codes-for-qt.py \\
      --iso-639-2 /usr/share/iso-codes/json/iso_639-2.json \\

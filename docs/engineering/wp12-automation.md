@@ -19,6 +19,8 @@ python3 scripts/verify-qt-source-product.py --qt-build build/wp12 \
 
 以下示例假定已按上文在 `build/wp12` 完成一次源码构建，且已取得 CLDR 46 数据和 ISO 639 输入表。Qt 的区域数据生成器要求源码目录名为 `qtbase`；交付脚本解包目录名不同，因此先复制一份供编辑的源码。示例中的 CLDR 路径应包含 `common/main/root.xml`；表可按源码交付说明使用有限派生输入，或自行取得并转换 iso-codes 数据。先分别核对输入来源及许可。
 
+针对具体新增语言，也可按[源码交付说明](source-delivery.md)用交付内 IANA 注册表校验子标签，并在有限表中显式添加经核对的代码字段；IANA 注册本身不会证明 ISO 639-2／3 字段的对应关系。还需按上游规则更新 Qt 枚举及 CLDR 数据，不能只添加表项。
+
 ```sh
 python3 -c "from pathlib import Path; import shutil; shutil.copytree(Path('build/wp12/qt-src/qtbase-everywhere-src-6.8.2'), Path('build/qt-locale-edit/qtbase'))"
 python3 build/qt-locale-edit/qtbase/util/locale_database/cldr2qlocalexml.py path/to/cldr-root build/qt-locale-edit/locale.xml
@@ -38,7 +40,7 @@ cmake --install build/wp12/qt-build/qtbase
 
 不要对已修改源树再次运行 `build-qt-source.py --resume`：该自动化入口有意拒绝未登记的源码改动。上述 CMake 命令使用原有构建目录的配置，并将结果安装到原先的隔离前缀；按实际变更检查接口兼容性和应用替换。有限表不覆盖所有新语言，替代数据也不证明上游历史输入或完整许可状态。
 
-English: After a complete `build/wp12` source build, copy the extracted QtBase tree to a new directory named `qtbase`, as in the first command. Qt's locale generators require that directory name. Give them editable CLDR 46 data and a separately reviewed ISO table, then copy the eight listed generated files into the extracted QtBase build source. Rebuild and install with the two CMake commands above. Do not run `build-qt-source.py --resume` on the modified source: its integrity check intentionally rejects unrecorded modifications. The original source archive and any system Qt installation remain unchanged. The limited table does not cover every new language; alternative data does not prove historical input identity or complete license compliance.
+English: After a complete `build/wp12` source build, copy the extracted QtBase tree to a new directory named `qtbase`, as in the first command. Qt's locale generators require that directory name. Give them editable CLDR 46 data and a separately reviewed ISO table, then copy the eight listed generated files into the extracted QtBase build source. The [source delivery guide](source-delivery.md) also explains how to add an explicitly reviewed language mapping to the limited table and check its subtag in the delivered IANA registry; registration does not verify the ISO 639-2/3 fields. Updating the Qt enum and CLDR data is still necessary. Rebuild and install with the two CMake commands above. Do not run `build-qt-source.py --resume` on the modified source: its integrity check intentionally rejects unrecorded modifications. The original source archive and any system Qt installation remain unchanged. The limited table does not cover every new language; alternative data does not prove historical input identity or complete license compliance.
 
 源码构建要求 Qt Network 的 SSL 功能：Linux 显式启用系统 OpenSSL 并要求其开发库，Windows 和 macOS 使用各自的系统 TLS 后端。安装后检查 Qt Network 生成配置，SSL 缺失或禁用直接失败；配置检查不代替实际网络更新验证。
 

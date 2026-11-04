@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 import re
 
+from iana_language_registry import parse_languages
+
 ROOT = Path(__file__).resolve().parents[1]
 ENTRY = re.compile(
     r'^\s*LanguageCodeEntry\s*\{\s*(\{[^{}]*\})\s*,\s*(\{[^{}]*\})\s*,\s*'
@@ -53,24 +55,80 @@ def derived_table(qt_source):
     return data.encode('utf-8'), entries, len(records)
 
 
+def extend_table(qt_source, iana_text, additions):
+    """Append explicitly specified rows after validating their registry presence.
+
+    IANA registration does not verify that the caller's ISO 639-2/3 field
+    choices are correct. In particular, a three-letter tag can also have a
+    Part 2 code, so no such field is inferred from the tag alone.
+    """
+    base, entries, unique = derived_table(qt_source)
+    file_date, tags = parse_languages(iana_text)
+    rows = {}
+    seen_part3 = set()
+    for line in base.decode('utf-8').splitlines()[1:]:
+        part3, part2b, part2t, part1, unused = line.split('\t')
+        row = (part3, part2b, part2t, part1, unused)
+        rows[part1 or part2b or part3] = row
+        seen_part3.add(part3)
+    if not additions:
+        raise ValueError('At least one explicit language mapping is required')
+    for addition in additions:
+        fields = addition.split(',')
+        if len(fields) != 4:
+            raise ValueError('Language mapping must specify code,part2b,part2t,part1')
+        part3, part2b, part2t, part1 = fields
+        if (not re.fullmatch('[a-z]{3}', part3) or
+                (part2b and not re.fullmatch('[a-z]{3}', part2b)) or
+                (part2t and not re.fullmatch('[a-z]{3}', part2t)) or
+                (part1 and not re.fullmatch('[a-z]{2}', part1)) or
+                bool(part2b) != bool(part2t) or (part2t and part2t != part3)):
+            raise ValueError('Invalid explicit language mapping')
+        if part3 not in tags and (not part1 or part1 not in tags):
+            raise ValueError('Language mapping has no matching IANA subtag')
+        key = part1 or part2b or part3
+        if key in rows or part3 in seen_part3:
+            raise ValueError('Language mapping conflicts with an existing Qt entry')
+        rows[key] = (part3, part2b, part2t, part1, '')
+        seen_part3.add(part3)
+    table = 'Id\tPart2b\tPart2t\tPart1\tUnused\n'
+    table += ''.join('\t'.join(rows[key]) + '\n' for key in sorted(rows))
+    return table.encode('utf-8'), entries, unique, file_date
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--qtbase', type=Path, required=True, help='Unpacked QtBase source directory')
     parser.add_argument('--output', type=Path, required=True, help='New output file under build/')
+    parser.add_argument('--iana', type=Path, help='Delivered IANA language-subtag registry snapshot')
+    parser.add_argument('--add-language', action='append', default=[], metavar='CODE,PART2B,PART2T,PART1',
+                        help='Explicitly reviewed mapping; repeat for additional languages')
     args = parser.parse_args()
     source = args.qtbase/'src/corelib/text/qlocale_data_p.h'
     output = args.output.resolve()
     if not output.is_relative_to((ROOT/'build').resolve()) or output == (ROOT/'build').resolve():
         parser.error('Output must be a new file under this source tree\'s build/ directory')
+    if bool(args.iana) != bool(args.add_language):
+        parser.error('--iana and at least one --add-language must be provided together')
     raw = source.read_bytes()
-    table, entries, unique = derived_table(raw.decode('utf-8'))
+    report = {}
+    if args.iana:
+        registry = args.iana.read_bytes()
+        table, entries, unique, file_date = extend_table(raw.decode('utf-8'), registry.decode('utf-8'),
+                                                         args.add_language)
+        report.update(iana_sha256=hashlib.sha256(registry).hexdigest(), iana_file_date=file_date,
+                      explicit_additions=len(args.add_language),
+                      iso_field_mapping_verified=False)
+    else:
+        table, entries, unique = derived_table(raw.decode('utf-8'))
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open('xb') as stream:
         stream.write(table)
-    print(json.dumps({'qt_source_sha256': hashlib.sha256(raw).hexdigest(),
-                      'derived_sha256': hashlib.sha256(table).hexdigest(),
-                      'source_entries': entries, 'distinct_lookup_keys': unique,
-                      'historical_input_verified': False, 'complete_iso_table': False}))
+    report.update(qt_source_sha256=hashlib.sha256(raw).hexdigest(),
+                  derived_sha256=hashlib.sha256(table).hexdigest(),
+                  source_entries=entries, distinct_lookup_keys=unique,
+                  historical_input_verified=False, complete_iso_table=False)
+    print(json.dumps(report))
 
 
 if __name__ == '__main__':

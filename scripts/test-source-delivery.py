@@ -227,6 +227,67 @@ class DeliveryTests(unittest.TestCase):
         self.assertEqual(derive_locale_codes.derived_table(fixture.replace('\n', '\r\n')),
                          (data, entries, unique))
 
+    def test_derive_qt_locale_codes_adds_only_explicit_registered_mappings(self):
+        qt = '''constexpr std::array<LanguageCodeEntry, 2> languageCodeList {
+    LanguageCodeEntry {{}, {'u', 'n', 'd'}, {'u', 'n', 'd'}, {'u', 'n', 'd'}}, // C
+    LanguageCodeEntry {{'e', 'n'}, {'e', 'n', 'g'}, {'e', 'n', 'g'}, {'e', 'n', 'g'}}, // English
+};
+'''
+        iana, _ = iana_loc_fixture()
+        table, entries, unique, file_date = derive_locale_codes.extend_table(qt, iana, ['xyz,xyz,xyz,'])
+        self.assertEqual((entries, unique, file_date), (2, 2, '2026-09-17'))
+        self.assertEqual(table, b'Id\tPart2b\tPart2t\tPart1\tUnused\n'
+                         b'eng\teng\teng\ten\t\nund\tund\tund\t\t\nxyz\txyz\txyz\t\t\n')
+        without_part2, _, _, _ = derive_locale_codes.extend_table(qt, iana, ['xyz,,,'])
+        self.assertIn(b'xyz\t\t\t\t\n', without_part2)
+        with_two_letter, _, _, _ = derive_locale_codes.extend_table(qt, iana, ['deu,ger,deu,de'])
+        self.assertIn(b'deu\tger\tdeu\tde\t\n', with_two_letter)
+        self.assertNotIn(b'zzz\t', table)
+
+    def test_derive_qt_locale_codes_rejects_implicit_or_conflicting_mappings(self):
+        qt = '''constexpr std::array<LanguageCodeEntry, 1> languageCodeList {
+    LanguageCodeEntry {{'e', 'n'}, {'e', 'n', 'g'}, {'e', 'n', 'g'}, {'e', 'n', 'g'}}, // English
+};
+'''
+        iana, _ = iana_loc_fixture()
+        invalid = [[], ['xyz'], ['xyz,xyz,,'], ['xyz,xyz,abc,'], ['XYZ,xyz,xyz,'],
+                   ['qqq,,,'], ['eng,eng,eng,en'], ['xyz,xyz,xyz,en'],
+                   ['xyz,,,', 'xyz,,,']]
+        for additions in invalid:
+            with self.subTest(additions=additions), self.assertRaises(ValueError):
+                derive_locale_codes.extend_table(qt, iana, additions)
+        with self.assertRaises(ValueError):
+            derive_locale_codes.extend_table(qt, iana + '%%\nType: language\nSubtag: xyz\n', ['xyz,,,'])
+
+    def test_derive_qt_locale_cli_requires_paired_registry_and_explicit_mapping(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root/'qtbase/src/corelib/text/qlocale_data_p.h'
+            source.parent.mkdir(parents=True)
+            source.write_text('''constexpr std::array<LanguageCodeEntry, 1> languageCodeList {
+    LanguageCodeEntry {{'e', 'n'}, {'e', 'n', 'g'}, {'e', 'n', 'g'}, {'e', 'n', 'g'}}, // English
+};
+''', encoding='utf-8')
+            registry = root/'iana.txt'
+            registry.write_text(iana_loc_fixture()[0], encoding='utf-8')
+            output = root/'build/codes.tsv'
+            argv = ['derive', '--qtbase', str(root/'qtbase'), '--output', str(output),
+                    '--iana', str(registry), '--add-language', 'xyz,xyz,xyz,']
+            with patch.object(derive_locale_codes, 'ROOT', root), patch.object(sys, 'argv', argv), \
+                    redirect_stdout(io.StringIO()) as out:
+                derive_locale_codes.main()
+                report = json.loads(out.getvalue())
+                self.assertFalse(report['iso_field_mapping_verified'])
+                self.assertEqual(report['explicit_additions'], 1)
+                before = output.read_bytes()
+                with self.assertRaises(FileExistsError):
+                    derive_locale_codes.main()
+                self.assertEqual(output.read_bytes(), before)
+            with patch.object(derive_locale_codes, 'ROOT', root), \
+                    patch.object(sys, 'argv', argv[:-2]), patch('sys.stderr', new_callable=io.StringIO):
+                with self.assertRaises(SystemExit):
+                    derive_locale_codes.main()
+
     def test_derive_qt_locale_codes_rejects_missing_malformed_and_conflicting_rows(self):
         entry = "    LanguageCodeEntry {{}, {'u', 'n', 'd'}, {'u', 'n', 'd'}, {'u', 'n', 'd'}}, // C\n"
         prefix = 'constexpr std::array<LanguageCodeEntry, 2> languageCodeList {\n'
@@ -1255,6 +1316,9 @@ class DocumentedRuntimeTestInputs(unittest.TestCase):
         self.assertIn('tests/fixtures/native-archives/', document)
         self.assertIn('scripts/convert-iso-codes-for-qt.py', document)
         self.assertIn('scripts/convert-iana-loc-for-qt.py', document)
+        self.assertIn("--add-language 'cho,cho,cho,'", document)
+        self.assertIn('工具不从 IANA 推断 ISO 映射', document)
+        self.assertIn('IANA presence does not establish ISO mappings', document)
         self.assertIn('完整输入会生成完整代码集', document)
         self.assertIn('iso-codes_4.16.0-1_all.deb', document)
         self.assertIn('cafca0a3a1f07b44fbba53ab7a1f1d9755e6b80cc041173afe2b52e53bed97a7', document)

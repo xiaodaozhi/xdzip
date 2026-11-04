@@ -43,6 +43,18 @@ English: Two complete text files in the CLDR 43.1 `docs/rfc` subset, `draft-davi
 
 English: For languages already present in the Qt source, `scripts/derive-qt-locale-code-input.py` extracts a limited input from the original `qlocale_data_p.h`; the command and output location are shown above. This covers only existing lookup keys and is neither the complete ISO 639-3 table nor the historical upstream input. Adding languages may still require separately obtained codes and review of their terms. Regeneration of eight files with the pinned Qt 6.8.2 source, CLDR 46 data and this derived input was checked allowing only generation-date and line-ending differences. This does not by itself settle the ISO table's licensing or establish complete corresponding source.
 
+要在有限输入中增加具体语言，可解出交付的 CLDR 43.1 子集，使用其中 `tools/cldr-code/src/main/resources/org/unicode/cldr/util/data/language-subtag-registry` 校验语言子标签，并明确填写四个代码字段。以下 Choctaw 示例的 ISO 639-2 字段可对照[美国国会图书馆列表](https://www.loc.gov/standards/iso639-2/php/code_list.php)，ISO 639-3 字段可对照[登记机构的数据](https://iso639-3.sil.org/code_tables/download_tables)；末尾空字段表示没有双字母代码：
+
+```sh
+python3 scripts/derive-qt-locale-code-input.py --qtbase path/to/qtbase \
+  --iana path/to/cldr43/tools/cldr-code/src/main/resources/org/unicode/cldr/util/data/language-subtag-registry \
+  --add-language 'cho,cho,cho,' --output build/qt-locale-codes-with-cho.tsv
+```
+
+`--add-language` 可重复，四个字段依次为三字母代码、ISO 639-2/B、ISO 639-2/T、双字母代码；没有的字段留空，两个 ISO 639-2 字段须同时填写或同时留空。工具校验三字母或双字母代码至少有一项存在于 IANA 语言子标签、字段格式及 Qt 查找键不冲突，**不**从 IANA 自动推断或证明各字段属于同一语言或 ISO 字段的对应关系；填写者须自行核对具体映射和来源。新增 Qt 语言还须按照 Qt 上游流程修改 `enumdata.py`、提供该语言的 CLDR 区域数据并重新生成、编译，单独增加这一行不会自动新增语言。派生表不包含完整 ISO 代码表，也不证明历史输入或完整对应源码义务。
+
+English: For a specific additional language, extract the delivered CLDR 43.1 subset and use its `language-subtag-registry` with the command above. The four comma-separated fields are the three-letter code, ISO 639-2/B, ISO 639-2/T and two-letter code; missing fields are empty, and the two Part 2 fields must be supplied together or both left empty. The Choctaw example's Part 2 fields can be checked against the Library of Congress list and its Part 3 field against the registration authority's data linked above. The tool checks that at least one three- or two-letter code is a registered IANA language subtag, validates field syntax and rejects lookup-key conflicts. It does **not** infer or verify that the fields refer to the same language or establish the ISO mappings. The recipient must review each mapping and its source. Adding a Qt language also requires updating `enumdata.py`, supplying its CLDR locale data and regenerating and rebuilding Qt; the row alone does not add a language. This remains a limited derived table, not the complete ISO table or proof of historical input identity or complete corresponding source.
+
 在隔离测试中，向 Qt 工具枚举和该派生表手工增加一个私用测试代码，可生成新枚举与代码表；Linux QtCore 重建后的正反向代码查询通过，原始 alpha.8 的隔离副本也完成离屏浏览、取消和解压。该实验没有新增真实语言或 CLDR 区域格式数据，不能替代真实语言输入及其条款核对，也不能证明全部对应源码义务。步骤和首次探针失败的记录见 [#138](https://github.com/xiaodaozhi/xdzip/issues/138#issuecomment-6611169790)。
 
 English: In an isolated test, manually adding a private-use test code to the Qt tool's enum and the derived table generated a new enum and code entry. A rebuilt Linux QtCore passed forward and reverse lookup, and an isolated original alpha.8 copy completed offscreen browsing, cancellation and extraction. This added no real language or CLDR locale-format data, does not replace review of real language inputs and terms, and does not establish all corresponding-source obligations. See [#138](https://github.com/xiaodaozhi/xdzip/issues/138#issuecomment-6611169790) for the steps and the initial probe failure.
