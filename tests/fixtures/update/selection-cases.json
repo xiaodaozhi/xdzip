@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "comparisons": [
+    ["0.1.0-alpha.8", "0.1.0-alpha.9", -1],
     ["0.1.0-alpha.7", "0.1.0-alpha.8", -1],
     ["0.1.0-alpha.9", "0.1.0-alpha.10", -1],
     ["0.1.0-dev.99", "0.1.0-alpha.1", -1],
@@ -14,6 +15,7 @@
     ["65536.0.0", "0.1.0", 2]
   ],
   "eligibility": [
+    ["v0.1.0-alpha.9", "0.1.0-alpha.8", "alpha", true],
     ["v0.1.0-alpha.8", "0.1.0-alpha.7", "alpha", true],
     ["v0.1.0-beta.1", "0.1.0-alpha.6", "alpha", true],
     ["v0.2.0-alpha.1", "0.1.0-beta.1", "beta", false],
