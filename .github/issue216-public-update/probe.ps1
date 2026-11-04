@@ -336,7 +336,7 @@ public static class ProbeMouse {
     if ($newProcess.Count -ne 1) { throw 'Updated application did not restart.' }
     $newIdentity = (& $app --version-json | Out-String | ConvertFrom-Json)
     if ($LASTEXITCODE -ne 0 -or $newIdentity.version -ne '0.1.0-alpha.9' -or $newIdentity.build -ne 22 -or
-        -not ('6750cc660f99ae71a5f1b16df13fcb7f6f052b35'.StartsWith($newIdentity.revision))) { throw 'Unexpected updated application identity.' }
+        -not ('8b277ac418561b754cf16bd41adefe908285cca6'.StartsWith($newIdentity.revision))) { throw 'Unexpected updated application identity.' }
     if ((Get-Content -LiteralPath $settings -Raw) -notmatch 'sentinel=owned-update-check' -or
         (Get-Content -LiteralPath (Join-Path $installRoot 'owned-sentinel.txt') -Raw).Trim() -ne 'owned-user-file') {
         throw 'Settings or unrelated installed-directory content was not preserved.'

@@ -22,9 +22,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh api repos/xiaodaozhi/xdzip/actions/runs/41808924209 > "$RUNNER_TEMP/source-run.json"
-          python3 -c 'import json,os; x=json.load(open(os.environ["RUNNER_TEMP"]+"/source-run.json")); assert x["head_sha"]=="6750cc660f99ae71a5f1b16df13fcb7f6f052b35" and x["event"]=="workflow_dispatch" and x["path"]==".github/workflows/release.yml"'
-          gh run download 41808924209 --repo xiaodaozhi/xdzip --name release-Windows --dir "$RUNNER_TEMP/packages"
+          gh api repos/xiaodaozhi/xdzip/actions/runs/41841649372 > "$RUNNER_TEMP/source-run.json"
+          python3 -c 'import json,os; x=json.load(open(os.environ["RUNNER_TEMP"]+"/source-run.json")); assert x["head_sha"]=="8b277ac418561b754cf16bd41adefe908285cca6" and x["event"]=="workflow_dispatch" and x["path"]==".github/workflows/release.yml" and x["status"]=="completed" and x["conclusion"]=="success"'
+          gh run download 41841649372 --repo xiaodaozhi/xdzip --name release-Windows --dir "$RUNNER_TEMP/packages"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: dscharrer/innoextract
@@ -67,11 +67,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $run = gh api repos/xiaodaozhi/xdzip/actions/runs/41808924209 | ConvertFrom-Json
-          if ($LASTEXITCODE -ne 0 -or $run.head_sha -ne '6750cc660f99ae71a5f1b16df13fcb7f6f052b35' -or $run.event -ne 'workflow_dispatch' -or $run.path -ne '.github/workflows/release.yml') { throw 'Unexpected source workflow identity' }
+          $run = gh api repos/xiaodaozhi/xdzip/actions/runs/41841649372 | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0 -or $run.head_sha -ne '8b277ac418561b754cf16bd41adefe908285cca6' -or $run.event -ne 'workflow_dispatch' -or $run.path -ne '.github/workflows/release.yml' -or $run.status -ne 'completed' -or $run.conclusion -ne 'success') { throw 'Unexpected source workflow identity or result' }
           $dest = Join-Path $env:RUNNER_TEMP 'issue216-packages'
           New-Item -ItemType Directory -Path $dest | Out-Null
-          gh run download 41808924209 --repo xiaodaozhi/xdzip --name release-Windows --dir $dest
+          gh run download 41841649372 --repo xiaodaozhi/xdzip --name release-Windows --dir $dest
           if ($LASTEXITCODE -ne 0) { throw 'Candidate download failed' }
           gh release download v0.1.0-alpha.8 --repo xiaodaozhi/xdzip --pattern xdzip-0.1.0-alpha.8-windows-x86_64-setup.exe --dir $dest
           if ($LASTEXITCODE -ne 0) { throw 'Original download failed' }
@@ -102,7 +102,7 @@ jobs:
           $release = gh release view v0.1.0-alpha.9 --repo xiaodaozhi/xdzip --json isDraft,isPrerelease,tagName | ConvertFrom-Json
           if ($LASTEXITCODE -ne 0 -or $release.isDraft -or -not $release.isPrerelease -or $release.tagName -ne 'v0.1.0-alpha.9') { throw 'Unexpected public release state' }
           $commit = gh api repos/xiaodaozhi/xdzip/commits/v0.1.0-alpha.9 --jq .sha
-          if ($LASTEXITCODE -ne 0 -or $commit -ne '6750cc660f99ae71a5f1b16df13fcb7f6f052b35') { throw 'Unexpected release commit' }
+          if ($LASTEXITCODE -ne 0 -or $commit -ne '8b277ac418561b754cf16bd41adefe908285cca6') { throw 'Unexpected release commit' }
           $dest = Join-Path $PWD 'build/alpha8-candidate'
           New-Item -ItemType Directory -Path $dest -Force | Out-Null
           gh release download v0.1.0-alpha.8 --repo xiaodaozhi/xdzip --pattern xdzip-0.1.0-alpha.8-windows-x86_64-setup.exe --dir $dest
@@ -150,7 +150,7 @@ jobs:
           $release = gh release view v0.1.0-alpha.9 --repo xiaodaozhi/xdzip --json isDraft,isPrerelease,tagName | ConvertFrom-Json
           if ($LASTEXITCODE -ne 0 -or $release.isDraft -or -not $release.isPrerelease -or $release.tagName -ne 'v0.1.0-alpha.9') { throw 'Unexpected public release state' }
           $commit = gh api repos/xiaodaozhi/xdzip/commits/v0.1.0-alpha.9 --jq .sha
-          if ($LASTEXITCODE -ne 0 -or $commit -ne '6750cc660f99ae71a5f1b16df13fcb7f6f052b35') { throw 'Unexpected release commit' }
+          if ($LASTEXITCODE -ne 0 -or $commit -ne '8b277ac418561b754cf16bd41adefe908285cca6') { throw 'Unexpected release commit' }
       - name: Verify original installed client discovers the signed public candidate
         if: ${{ contains(github.event.head_commit.message, '[public-only]') }}
         shell: pwsh
