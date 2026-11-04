@@ -440,6 +440,12 @@ void BrowserController::pollExternalExport() {
         QTimer::singleShot(50, this, &BrowserController::pollExternalExport);
 }
 void BrowserController::refreshAfterUpdate(const QString &session, const QString &source) {
+    if (m_browsingDetached) {
+        m_updateActive = false;
+        m_archiveOperation.clear();
+        emit changed();
+        return;
+    }
     if (m_closing || m_session != session)
         return;
     if (m_busy) {

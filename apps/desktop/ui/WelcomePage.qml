@@ -9,6 +9,7 @@ Rectangle {
     property bool canOpen: true
     property bool canCreate: true
     property bool busy: false
+    property bool waitingForUpdate: false
     property alias cancellingOpening: openingOverlay.cancelling
     property bool externalOpening: false
     property string message: ""
@@ -253,6 +254,9 @@ Rectangle {
         anchors.fill: parent
         busy: root.busy
         archiveName: root.openingName
+        titleLabel: root.waitingForUpdate ? qsTrId("sessions.waitForArchive") : qsTrId("ui.821ffb8cd6a2")
+        noteLabel: root.waitingForUpdate ? qsTrId("sessions.waitForArchiveNote") : qsTrId("welcome.opening.note")
+        progressLabel: root.waitingForUpdate ? qsTrId("sessions.waitForArchive") : qsTrId("welcome.opening.progress")
         onCancelRequested: root.cancelRequested()
         onDismissed: Qt.callLater(function () { if (root.visible && root.canOpen) root.focusOpen(); })
     }

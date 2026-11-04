@@ -15,6 +15,7 @@
 #include <QTimer>
 #include <QUuid>
 #include <algorithm>
+#include <utility>
 #ifdef Q_OS_MACOS
 void integrateMacTitlebar(QQuickWindow *window);
 #endif
@@ -103,10 +104,12 @@ ApplicationSessions::Session *ApplicationSessions::add(QQuickWindow *window, QOb
         if (session->page && !session->controller->browsingBusy())
             session->page->setProperty("externalFileOpening", false);
         refresh();
+        schedulePendingOpens();
     });
     connect(session->controller, &BrowserController::tasksChanged, this, [this] {
         refresh();
         checkQuit();
+        schedulePendingOpens();
     });
     connect(session->controller, &BrowserController::readyToClose, this, [this, session] {
         if (m_quitting) {
@@ -172,12 +175,13 @@ ApplicationSessions::Session *ApplicationSessions::create(bool newWindow, QQuick
         if (!m_limitDialog) {
             m_limitDialog = new QMessageBox(QMessageBox::Information, QStringLiteral("xdzip"),
                                             qtTrId("sessions.limit"), QMessageBox::Ok);
-            m_limitDialog->setAttribute(Qt::WA_DeleteOnClose);
             m_limitDialog->setWindowModality(Qt::ApplicationModal);
             m_limitDialog->winId();
-            m_limitDialog->windowHandle()->setTransientParent(m_active);
-            m_limitDialog->show();
         }
+        m_limitDialog->setText(qtTrId("sessions.limit"));
+        m_limitDialog->windowHandle()->setTransientParent(m_active);
+        if (!m_limitDialog->isVisible())
+            m_limitDialog->show();
         m_limitDialog->raise();
         m_limitDialog->activateWindow();
         return nullptr;
@@ -214,7 +218,6 @@ void ApplicationSessions::ensureWelcome(QQuickWindow *window) {
     auto *blank = create(false, window);
     if (!blank)
         return;
-    blank->automaticWelcome = true;
     window->setProperty("needsWelcome", false);
     if (oldPage)
         oldPage->setProperty("visible", false);
@@ -244,21 +247,19 @@ void ApplicationSessions::openPath(const QString &path) {
         return;
     const auto identity = key(path);
     for (const auto &session : m_sessions) {
-        if (!session->retiring && session->controller && session->path == identity &&
+        if (!session->closed && !session->retiring && session->controller &&
+            session->path == identity &&
             (session->controller->ready() || session->controller->busy() ||
-             !session->controller->passwordPrompt().isEmpty())) {
-            // A closed page with a task remains a real session and can be reopened.
-            const bool restoring = session->closed;
+             !session->pendingPath.isEmpty() || !session->controller->passwordPrompt().isEmpty())) {
             activate(session.get());
-            if (restoring)
-                retireAutomaticWelcome(session.get());
             return;
         }
     }
     const auto availableWelcome = [](const Session *value) {
         return value && !value->closed && !value->retiring && value->controller &&
-               value->controller->runtimeAvailable() && !value->controller->ready() &&
-               !value->controller->busy() && !value->controller->activeTaskCount() &&
+               value->pendingPath.isEmpty() && value->controller->runtimeAvailable() &&
+               !value->controller->ready() && !value->controller->busy() &&
+               !value->controller->activeTaskCount() &&
                value->controller->passwordPrompt().isEmpty();
     };
     auto *session = current();
@@ -275,31 +276,57 @@ void ApplicationSessions::openPath(const QString &path) {
     if (!session)
         return;
     session->path = identity;
-    session->automaticWelcome = false;
+    session->pendingPath = QFileInfo(path).absoluteFilePath();
     session->page->setProperty("externalFileOpening", true);
-    session->controller->openPath(QFileInfo(path).absoluteFilePath());
+    if (archiveMutationPending(session)) {
+        session->page->setProperty("waitingArchiveName", QFileInfo(path).fileName());
+        session->page->setProperty("waitingArchiveUpdate", true);
+    } else {
+        const auto requested = std::exchange(session->pendingPath, QString{});
+        session->controller->openPath(requested);
+    }
     activate(session);
 }
-void ApplicationSessions::retireAutomaticWelcome(Session *restored) {
-    for (const auto &candidate : m_sessions) {
-        if (candidate.get() == restored || candidate->window != restored->window ||
-            candidate->closed || candidate->retiring || !candidate->automaticWelcome ||
-            !candidate->path.isEmpty() || !candidate->controller || !candidate->page ||
-            candidate->controller->busy() || candidate->controller->ready() ||
-            candidate->controller->activeTaskCount() || !candidate->controller->tasks().isEmpty() ||
-            !candidate->controller->passwordPrompt().isEmpty() ||
-            !candidate->controller->message().isEmpty())
+bool ApplicationSessions::archiveMutationPending(const Session *session) const {
+    return std::any_of(m_sessions.cbegin(), m_sessions.cend(), [&](const auto &other) {
+        return other.get() != session && other->path == session->path && other->controller &&
+               other->controller->archiveMutationPending();
+    });
+}
+void ApplicationSessions::schedulePendingOpens() {
+    if (m_quitting || m_pendingOpenDrainScheduled ||
+        std::none_of(m_sessions.cbegin(), m_sessions.cend(),
+                     [](const auto &session) { return !session->pendingPath.isEmpty(); }))
+        return;
+    m_pendingOpenDrainScheduled = true;
+    QTimer::singleShot(0, this, [this] {
+        m_pendingOpenDrainScheduled = false;
+        if (m_quitting)
+            return;
+        for (const auto &session : m_sessions) {
+            if (session->closed || session->retiring || session->pendingPath.isEmpty() ||
+                !session->controller || !session->page || archiveMutationPending(session.get()))
+                continue;
+            const auto requested = std::exchange(session->pendingPath, QString{});
+            session->page->setProperty("waitingArchiveUpdate", false);
+            session->page->setProperty("waitingArchiveName", QString{});
+            session->controller->openPath(requested);
+        }
+    });
+}
+void ApplicationSessions::cancelPendingOpen(const QString &id) {
+    for (const auto &session : m_sessions) {
+        if (session->id != id || session->closed || session->pendingPath.isEmpty() ||
+            !session->page)
             continue;
-        const auto dialogs = candidate->page->findChildren<QQuickWindow *>();
-        if (std::any_of(dialogs.cbegin(), dialogs.cend(),
-                        [](const auto *dialog) { return dialog->isVisible(); }))
-            continue;
-        candidate->closed = true;
-        candidate->page->setProperty("sessionClosed", true);
-        candidate->page->setProperty("visible", false);
-        reap(candidate.get());
+        session->pendingPath.clear();
+        session->path.clear();
+        session->page->setProperty("waitingArchiveUpdate", false);
+        session->page->setProperty("waitingArchiveName", QString{});
+        session->page->setProperty("externalFileOpening", false);
+        refresh();
+        return;
     }
-    refresh();
 }
 void ApplicationSessions::activate(Session *session, bool reveal) {
     if (!session || session->retiring || !session->window || !session->page)
@@ -458,9 +485,12 @@ void ApplicationSessions::closeTabSet(Session *anchor, const std::vector<Session
     }
     for (auto *value : targets) {
         value->closed = true;
+        value->pendingPath.clear();
         value->page->setProperty("sessionClosed", true);
         value->page->setProperty("visible", false);
         QMetaObject::invokeMethod(value->page, "hideSessionWindows");
+        QMetaObject::invokeMethod(value->page, "resetBrowsingState");
+        value->controller->discardBrowsing();
     }
     if (!next && m_sessions.size() < 32)
         next = create(false, owner);
@@ -519,14 +549,15 @@ void ApplicationSessions::closeWindow(QQuickWindow *window) {
             for (const auto &session : m_sessions)
                 if (session->window == window) {
                     session->closed = true;
+                    session->pendingPath.clear();
                     session->page->setProperty("sessionClosed", true);
                     session->page->setProperty("closedPage", true);
                     session->page->setProperty("visible", session->page == shell);
                     closeWindowDialogs(session.get());
+                    QMetaObject::invokeMethod(session->page, "resetBrowsingState");
+                    session->controller->discardBrowsing();
                     if (session->page != shell)
                         reap(session.get());
-                    else if (session->controller->browsingBusy())
-                        session->controller->cancel();
                 }
             ensureWelcome(window);
             refresh();
@@ -541,8 +572,11 @@ void ApplicationSessions::closeWindow(QQuickWindow *window) {
     for (const auto &session : m_sessions)
         if (session->window == window) {
             session->closed = true;
+            session->pendingPath.clear();
             session->page->setProperty("sessionClosed", true);
             closeWindowDialogs(session.get());
+            QMetaObject::invokeMethod(session->page, "resetBrowsingState");
+            session->controller->discardBrowsing();
             reap(session.get());
         }
     for (auto *candidate : windows())

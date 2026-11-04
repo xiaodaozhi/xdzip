@@ -446,12 +446,13 @@ static QString saveNativeFailureAudit(QQuickWindow *window, const QString &direc
 }
 
 // Diagnose only owned fixture directories; never emit their absolute paths.
-static bool checkedTarget(BrowserController *controller, const QString &fixturePath) {
-    const bool valid = controller->targetCheck().value("valid").toBool();
+static bool checkedTarget(BrowserController *controller, const QString &fixturePath,
+                          bool creation = false) {
+    const auto state = creation ? controller->creationTargetCheck() : controller->targetCheck();
+    const bool valid = state.value("valid").toBool();
     if (valid)
         return true;
-    qWarning().noquote() << "Owned target check:"
-                         << controller->targetCheck().value("errorCode").toString();
+    qWarning().noquote() << "Owned target check:" << state.value("errorCode").toString();
 #ifdef Q_OS_WIN
     QProcess acl;
     const auto quoted = QString(fixturePath).replace("'", "''");
@@ -1982,6 +1983,14 @@ QtObject {
         auto *page = qobject_cast<QQuickItem *>(window->property("activePage").value<QObject *>());
         auto *taskEntry = findVisual(page, "browserTasks");
         QVERIFY(taskEntry && taskEntry->isVisible());
+        sessions.openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        QTRY_VERIFY(QApplication::activeModalWidget());
+        QCOMPARE(sessions.sessionCount(), 32);
+        QCOMPARE(sessions.activeTaskCount(), 32);
+        QCOMPARE(window->property("activePage").value<QObject *>(), page);
+        QVERIFY(page->property("closedPage").toBool());
+        QApplication::activeModalWidget()->close();
+        QTRY_VERIFY(!QApplication::activeModalWidget());
         sessions.showTask(tabs.first().toMap().value("id").toString() + "/1");
         QVERIFY(window->property("activePage").value<QObject *>()->property("closedPage").toBool());
         QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
@@ -2162,6 +2171,11 @@ QtObject {
                     QCOMPARE(item->menu()->title(), qtTrId("desktop.tasks").arg(0));
         }
         QVERIFY(!overlapping);
+        const auto firstResult = first->tasks().first().toMap();
+        QVERIFY2(firstResult.value("status") == "succeeded",
+                 qPrintable(QStringLiteral("First creation task: %1 (%2)")
+                                .arg(firstResult.value("status").toString(),
+                                     firstResult.value("errorCode").toString())));
         QVERIFY(QFileInfo::exists(output.filePath("first.zip")));
         QVERIFY(QFileInfo::exists(output.filePath("second.zip")));
         QVERIFY(!window->findChild<QQuickWindow *>("taskWindow")->isVisible());
@@ -2647,24 +2661,25 @@ QtObject {
         } else {
             sessions.open({archive});
         }
-        const int expected = userCreatedPage || visibleDialog ? 2 : 1;
+        const int expected = userCreatedPage ? 2 : 1;
         QTRY_COMPARE(window->property("sessionTabs").toList().size(), expected);
-        QTRY_COMPARE(sessions.sessionCount(), expected);
+        QTRY_COMPARE(sessions.sessionCount(), expected + 1);
         const auto tabs = window->property("sessionTabs").toList();
         QSet<QString> ids;
         for (const auto &tab : tabs)
             ids.insert(tab.toMap().value("id").toString());
-        QVERIFY(ids.contains(retainedId));
-        QCOMPARE(ids.contains(automaticId), visibleDialog);
+        QVERIFY(!ids.contains(retainedId));
+        QVERIFY(ids.contains(automaticId));
         if (userCreatedPage)
             QVERIFY(ids.contains(userId));
         if (visibleDialog) {
             QVERIFY(settings->isVisible());
             settings->close();
         }
-        QCOMPARE(
-            window->property("activePage").value<QObject *>()->findChild<BrowserController *>(),
-            retained);
+        auto *fresh =
+            window->property("activePage").value<QObject *>()->findChild<BrowserController *>();
+        QVERIFY(fresh && fresh != retained);
+        QTRY_VERIFY(fresh->ready() && !fresh->busy());
         QCOMPARE(sessions.tasks().size(), 1);
         QCOMPARE(sessions.tasks().first().toMap().value("id").toString(), retainedId + "/1");
         QCOMPARE(sessions.activeTaskCount(), activeTask ? 1 : 0);
@@ -2673,6 +2688,255 @@ QtObject {
             retained->m_tasks[1]["terminal"] = true;
             emit retained->tasksChanged();
         }
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+    }
+    void closedBrowsingStateIsDiscarded_data() {
+        QTest::addColumn<bool>("wholeWindow");
+        QTest::addColumn<bool>("retainHistory");
+        QTest::newRow("tab-no-tasks") << false << false;
+        QTest::newRow("tab-history") << false << true;
+        QTest::newRow("tray-no-tasks") << true << false;
+        QTest::newRow("tray-history") << true << true;
+    }
+    void closedBrowsingStateIsDiscarded() {
+        QFETCH(bool, wholeWindow);
+        QFETCH(bool, retainHistory);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(window && preferences);
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        auto *old = window->findChild<BrowserController *>();
+        DesktopIntegration desktop(window, old, preferences, true, [] { return true; });
+        sessions.setDesktop(&desktop);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        const auto archive = QStringLiteral(XDZIP_FIXTURES "/../extract/tree.zip");
+        sessions.openPath(archive);
+        QTRY_VERIFY(old->ready() && !old->busy());
+        const auto directory = old->m_directoryPaths.value(QStringLiteral("照片/"));
+        QVERIFY(!directory.isEmpty());
+        old->navigateDirectory(directory);
+        QTRY_VERIFY(!old->busy() && old->directoryId() == directory);
+        old->sortByColumn(0);
+        QTRY_VERIFY(!old->busy() && old->sortOrder() != 0);
+        old->search(QStringLiteral("说明"));
+        QTRY_VERIFY(!old->busy() && old->searchActive());
+        old->selectAll(true);
+        QVERIFY(old->selectedCount() > 0);
+        auto *oldPage = window->property("activePage").value<QObject *>();
+        oldPage->setProperty("viewMode", "grid");
+        const auto oldId =
+            window->property("sessionTabs").toList().first().toMap().value("id").toString();
+        if (retainHistory) {
+            old->m_tasks[1] = {{"id", "1"}, {"status", "succeeded"}, {"terminal", true}};
+            emit old->tasksChanged();
+            old->search(QStringLiteral("not-present"));
+            QVERIFY(old->busy());
+        }
+        if (wholeWindow) {
+            window->close();
+            QVERIFY(!window->isVisible());
+            desktop.restore();
+        } else {
+            sessions.closeSession(oldId);
+        }
+        if (retainHistory) {
+            QTRY_VERIFY(!old->busy());
+            QCOMPARE(old->directoryId(), QString{});
+            QCOMPARE(old->location(), QString{});
+            QCOMPARE(old->sortOrder(), 0);
+            QCOMPARE(old->selectedCount(), 0);
+            QCOMPARE(old->entries()->rowCount(), 0);
+            QCOMPARE(oldPage->property("viewMode").toString(), QStringLiteral("list"));
+            QCOMPARE(sessions.tasks().first().toMap().value("id").toString(), oldId + "/1");
+        }
+        sessions.openPath(archive);
+        auto *page = window->property("activePage").value<QObject *>();
+        auto *fresh = page->findChild<BrowserController *>();
+        QVERIFY(fresh);
+        QTRY_VERIFY(fresh->ready() && !fresh->busy());
+        QVERIFY(page->property("sessionIdentity").toString() != oldId);
+        QCOMPARE(fresh->directoryId(), QString{});
+        QCOMPARE(fresh->location(), QString{});
+        QCOMPARE(fresh->sortOrder(), 0);
+        QCOMPARE(fresh->selectedCount(), 0);
+        QVERIFY(!fresh->searchActive());
+        QCOMPARE(page->property("viewMode").toString(), QStringLiteral("list"));
+        fresh->selectAll(true);
+        const auto selected = fresh->selectedCount();
+        sessions.openPath(archive);
+        QCOMPARE(window->property("activePage").value<QObject *>(), page);
+        QCOMPARE(fresh->selectedCount(), selected);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+    }
+    void reopeningDuringArchiveUpdateWaitsWithoutCancelling_data() {
+        QTest::addColumn<bool>("wholeWindow");
+        QTest::addColumn<bool>("closeWait");
+        QTest::newRow("closed-tab") << false << false;
+        QTest::newRow("tray-window") << true << false;
+        QTest::newRow("close-waiting-tab") << false << true;
+    }
+    void reopeningDuringArchiveUpdateWaitsWithoutCancelling() {
+        QFETCH(bool, wholeWindow);
+        QFETCH(bool, closeWait);
+        QTemporaryDir fixture;
+        QVERIFY(fixture.isValid());
+        const auto source = fixture.filePath("editable.zip");
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/../extract/stored.zip"), source));
+        QFile beforeFile(source);
+        QVERIFY(beforeFile.open(QIODevice::ReadOnly));
+        const auto before = beforeFile.readAll();
+        beforeFile.close();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(window && preferences);
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        auto *old = window->findChild<BrowserController *>();
+        DesktopIntegration desktop(window, old, preferences, true, [] { return true; });
+        sessions.setDesktop(&desktop);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        sessions.openPath(source);
+        QTRY_VERIFY(old->ready() && !old->busy());
+        QVERIFY(old->m_model.rowAt(0));
+        QFile input(fixture.filePath(old->m_model.rowAt(0)->cells[0]));
+        QVERIFY(input.open(QIODevice::WriteOnly));
+        QVERIFY(input.write("replacement for retained update") > 0);
+        input.close();
+        const auto oldId =
+            window->property("sessionTabs").toList().first().toMap().value("id").toString();
+        old->startUpdate({input.fileName()}, old->sessionId(), old->directoryId(), 0);
+        QTRY_VERIFY_WITH_TIMEOUT(!old->tasks().isEmpty() &&
+                                     old->tasks().first().toMap().value("status") == "waiting",
+                                 10000);
+        const auto task = old->tasks().first().toMap();
+        auto *conflict = window->findChild<QQuickWindow *>("conflictWindow");
+        auto *taskWindow = window->findChild<QQuickWindow *>("taskWindow");
+        QVERIFY(conflict && taskWindow);
+        conflict->close();
+        taskWindow->close();
+        if (wholeWindow) {
+            window->close();
+            QVERIFY(!window->isVisible());
+            desktop.restore();
+        } else {
+            sessions.closeSession(oldId);
+        }
+        QVERIFY(old->archiveMutationPending());
+        QVERIFY(old->m_cancellingTasks.isEmpty());
+        sessions.openPath(source);
+        auto *page = window->property("activePage").value<QObject *>();
+        auto *fresh = page->findChild<BrowserController *>();
+        QVERIFY(fresh && fresh != old);
+        QTRY_VERIFY(page->property("waitingArchiveUpdate").toBool());
+        const auto newId = page->property("sessionIdentity").toString();
+        sessions.cancelPendingOpen(newId);
+        QVERIFY(!page->property("waitingArchiveUpdate").toBool());
+        QVERIFY(old->archiveMutationPending());
+        QVERIFY(old->m_cancellingTasks.isEmpty());
+        sessions.openPath(source);
+        QTRY_VERIFY(page->property("waitingArchiveUpdate").toBool());
+        if (closeWait) {
+            sessions.closeSession(newId);
+            page = window->property("activePage").value<QObject *>();
+            QVERIFY(!page->property("waitingArchiveUpdate").toBool());
+        }
+        sessions.showTask(oldId + '/' + task.value("id").toString());
+        QCOMPARE(window->property("activePage").value<QObject *>(), page);
+        QVERIFY(old->decideTask(task.value("id").toString(), task.value("promptId").toString(), 3,
+                                false));
+        if (closeWait) {
+            QTRY_VERIFY_WITH_TIMEOUT(!old->archiveMutationPending(), 20000);
+            QCoreApplication::processEvents();
+            QCOMPARE(window->property("activePage").value<QObject *>(), page);
+            QVERIFY(!page->property("waitingArchiveUpdate").toBool());
+            QVERIFY(page->findChild<BrowserController *>()->title().isEmpty());
+            sessions.openPath(source);
+            page = window->property("activePage").value<QObject *>();
+            fresh = page->findChild<BrowserController *>();
+        }
+        QTRY_VERIFY_WITH_TIMEOUT(!old->archiveMutationPending() && fresh->ready() && !fresh->busy(),
+                                 20000);
+        QVERIFY(!page->property("waitingArchiveUpdate").toBool());
+        QCOMPARE(fresh->directoryId(), QString{});
+        QCOMPARE(fresh->selectedCount(), 0);
+        QVERIFY(beforeFile.open(QIODevice::ReadOnly));
+        QVERIFY(beforeFile.readAll() != before);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+    }
+    void reopeningDuringExtractionKeepsOriginalTask() {
+        QTemporaryDir target;
+        QVERIFY(target.isValid());
+        QFile existing(target.filePath(QStringLiteral("说明.txt")));
+        QVERIFY(existing.open(QIODevice::WriteOnly));
+        QCOMPARE(existing.write("keep"), 4);
+        existing.close();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(window && preferences);
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        auto *old = window->findChild<BrowserController *>();
+        const auto source = QStringLiteral(XDZIP_FIXTURES "/../extract/stored.zip");
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        sessions.openPath(source);
+        QTRY_VERIFY(old->ready() && !old->busy());
+        const auto oldId =
+            window->property("sessionTabs").toList().first().toMap().value("id").toString();
+        old->prepareExtraction(true);
+        QTRY_VERIFY(!old->busy());
+        old->checkTarget(target.path());
+        QTRY_VERIFY(!old->busy() && old->targetMatches(target.path()));
+        old->startExtraction(target.path(), true, false, 0, false, false);
+        QTRY_VERIFY_WITH_TIMEOUT(!old->tasks().isEmpty() &&
+                                     old->tasks().first().toMap().value("status") == "waiting",
+                                 10000);
+        const auto task = old->tasks().first().toMap();
+        auto *conflict = window->findChild<QQuickWindow *>("conflictWindow");
+        auto *taskWindow = window->findChild<QQuickWindow *>("taskWindow");
+        QVERIFY(conflict && taskWindow);
+        conflict->close();
+        taskWindow->close();
+        sessions.closeSession(oldId);
+        sessions.openPath(source);
+        auto *page = window->property("activePage").value<QObject *>();
+        auto *fresh = page->findChild<BrowserController *>();
+        QVERIFY(fresh && fresh != old);
+        QTRY_VERIFY(fresh->ready() && !fresh->busy());
+        QVERIFY(!page->property("waitingArchiveUpdate").toBool());
+        QCOMPARE(old->activeTaskCount(), 1);
+        QVERIFY(old->m_cancellingTasks.isEmpty());
+        sessions.showTask(oldId + '/' + task.value("id").toString());
+        QCOMPARE(window->property("activePage").value<QObject *>(), page);
+        QVERIFY(old->decideTask(task.value("id").toString(), task.value("promptId").toString(), 1,
+                                false));
+        QTRY_COMPARE_WITH_TIMEOUT(old->activeTaskCount(), 0, 10000);
+        QVERIFY(existing.open(QIODevice::ReadOnly));
+        QCOMPARE(existing.readAll(), QByteArray("keep"));
         QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
         sessions.confirmQuit(false);
         QTRY_VERIFY(!joined.isEmpty());
@@ -2812,10 +3076,14 @@ QtObject {
         sessions.closeWindow(window);
         QVERIFY(!window->isVisible());
         sessions.openPath(archive);
-        QCOMPARE(sessions.activeWindow(), window);
-        QCOMPARE(other->property("sessionTabs").toList(), otherTabs);
-        QCOMPARE(window->property("sessionTabs").toList().first().toMap().value("id").toString(),
-                 retainedId);
+        QCOMPARE(sessions.activeWindow(), other);
+        QCOMPARE(other->property("sessionTabs").toList().size(), otherTabs.size());
+        QCOMPARE(other->property("sessionTabs").toList().first().toMap().value("id"),
+                 otherTabs.first().toMap().value("id"));
+        auto *fresh =
+            other->property("activePage").value<QObject *>()->findChild<BrowserController *>();
+        QVERIFY(fresh && fresh != retained);
+        QTRY_VERIFY(fresh->ready() && !fresh->busy());
         QCOMPARE(sessions.tasks().first().toMap().value("id").toString(), retainedId + "/1");
         QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
         sessions.confirmQuit(false);
@@ -7724,7 +7992,7 @@ QtObject {
         target->setProperty("text", output.path());
         QTRY_VERIFY(!controller->busy());
         controller->checkCreationTarget(output.path());
-        QTRY_VERIFY(!controller->busy() && checkedTarget(controller, output.path()));
+        QTRY_VERIFY(!controller->busy() && checkedTarget(controller, output.path(), true));
         usePassword->setProperty("checked", true);
         password->setProperty("text", QStringLiteral("public fixture"));
         auto *createPassword = QAccessible::queryAccessibleInterface(password);
@@ -7808,7 +8076,7 @@ QtObject {
         name->setProperty("text", QStringLiteral("北境旅行.zip"));
         target->setProperty("text", output.path());
         controller->checkCreationTarget(output.path());
-        QTRY_VERIFY(!controller->busy() && checkedTarget(controller, output.path()));
+        QTRY_VERIFY(!controller->busy() && checkedTarget(controller, output.path(), true));
         auto *volume = findVisual(create->contentItem(), "createVolume");
         auto *unit = findVisual(create->contentItem(), "createVolumeUnit");
         auto *usePassword = findVisual(create->contentItem(), "createUsePassword");
@@ -8186,7 +8454,7 @@ QtObject {
             QTRY_VERIFY(!controller->busy());
             controller->checkCreationTarget(output.path());
             QTRY_VERIFY(!controller->busy());
-            QVERIFY(checkedTarget(controller, output.path()));
+            QVERIFY(checkedTarget(controller, output.path(), true));
             auto *start = findVisual(create->contentItem(), "startCreate");
             QVERIFY(start);
             QTRY_VERIFY(start->isEnabled());
@@ -8312,7 +8580,7 @@ QtObject {
         QTRY_VERIFY(level->isEnabled());
         controller->checkCreationTarget(output.path());
         QTRY_VERIFY(!controller->busy());
-        QVERIFY(checkedTarget(controller, output.path()));
+        QVERIFY(checkedTarget(controller, output.path(), true));
         QTRY_VERIFY(visibleImagesReady(create->contentItem()));
         const auto captures = qEnvironmentVariable("XDZIP_M4_VISUAL_AUDIT");
         if (!captures.isEmpty()) {
@@ -8439,7 +8707,7 @@ QtObject {
         target->setProperty("text", output.path());
         QTRY_VERIFY(!controller->busy());
         controller->checkCreationTarget(output.path());
-        QTRY_VERIFY(!controller->busy() && checkedTarget(controller, output.path()));
+        QTRY_VERIFY(!controller->busy() && checkedTarget(controller, output.path(), true));
         QTRY_VERIFY(start->isEnabled());
         QSignalSpy started(controller, &BrowserController::creationStarted);
         QTest::mouseClick(
@@ -8956,6 +9224,277 @@ QtObject {
         QCOMPARE(resets.count(), 0);
         QCOMPARE(controller->entries()->rowCount(), rows);
         QCOMPARE(controller->selectedCount(), selected);
+        window->close();
+    }
+    void targetChecksKeepLatestPathAndOperationIdentity() {
+        QTemporaryDir first, second, third;
+        QVERIFY(first.isValid() && second.isValid() && third.isValid());
+        BrowserController controller;
+        controller.openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/tree.zip"));
+        QTRY_VERIFY(controller.ready() && !controller.busy());
+        controller.prepareExtraction(true);
+        controller.checkTarget(first.path());
+        QVERIFY(controller.busy());
+        controller.checkCreationTarget(second.path());
+        controller.invalidateTarget();
+        controller.checkTarget(third.path());
+        QTRY_VERIFY_WITH_TIMEOUT(!controller.busy() && controller.targetMatches(third.path()) &&
+                                     controller.creationTargetMatches(second.path()),
+                                 10000);
+        QVERIFY(!controller.targetMatches(first.path()));
+        QVERIFY(!controller.targetMatches(second.path()));
+        QVERIFY(!controller.creationTargetMatches(third.path()));
+        controller.invalidateTarget();
+        controller.checkCreationTarget(third.path());
+        QTRY_VERIFY(!controller.busy() && controller.creationTargetMatches(third.path()));
+        QVERIFY(!controller.targetMatches(third.path()));
+        controller.checkTarget(QString{});
+        QCOMPARE(controller.targetCheck().value("errorCode").toString(),
+                 QStringLiteral("invalid_path"));
+        QVERIFY(!controller.targetMatches(QString{}));
+        controller.checkCreationTarget(QString{});
+        QCOMPARE(controller.creationTargetCheck().value("errorCode").toString(),
+                 QStringLiteral("invalid_path"));
+        QVERIFY(!controller.creationTargetMatches(QString{}));
+        controller.checkTarget(first.filePath("missing"));
+        QTRY_VERIFY(!controller.busy());
+        QVERIFY(!controller.targetCheck().value("valid").toBool());
+        QVERIFY(!controller.targetCheck().value("errorCode").toString().isEmpty());
+        controller.openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        QTRY_VERIFY(controller.ready() && !controller.busy());
+        QVERIFY(!controller.targetMatches(third.path()));
+        QTRY_VERIFY(controller.requestClose());
+    }
+    void staleTargetFailureCannotInvalidateCurrentArchive() {
+        BrowserController controller;
+        controller.openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/tree.zip"));
+        QTRY_VERIFY(controller.ready() && !controller.busy());
+        controller.prepareExtraction(true);
+        const auto session = controller.m_session;
+        const auto rows = controller.entries()->rowCount();
+        const auto previousMessage = controller.message();
+        controller.m_targetRevision = 2;
+        controller.m_targetCheck = {{"path", QStringLiteral("new")}, {"checking", true}};
+        controller.m_activeTarget =
+            BrowserController::TargetRequest{QStringLiteral("old"), session, 1, 1, false};
+        controller.m_result = {};
+        controller.m_result.targetCheck = true;
+        controller.m_pending = 10001;
+        controller.m_busy = true;
+        xdzip::reader::Event event{};
+        event.kind = xdzip::reader::EventKind::Finished;
+        event.request_id = 10001;
+        event.error = rust::String("source_changed");
+        controller.receive(event);
+        QVERIFY(controller.ready());
+        QCOMPARE(controller.entries()->rowCount(), rows);
+        QCOMPARE(controller.message(), previousMessage);
+        QCOMPARE(controller.targetCheck().value("path").toString(), QStringLiteral("new"));
+        QVERIFY(controller.targetCheck().value("checking").toBool());
+
+        controller.m_activeTarget =
+            BrowserController::TargetRequest{QStringLiteral("new"), session, 2, 2, false};
+        controller.m_result.targetCheck = true;
+        controller.m_pending = 10002;
+        controller.m_busy = true;
+        event.request_id = 10002;
+        controller.receive(event);
+        QVERIFY(!controller.ready());
+        QCOMPARE(controller.entries()->rowCount(), 0);
+        QCOMPARE(controller.targetCheck().value("errorCode").toString(),
+                 QStringLiteral("source_changed"));
+        QTRY_VERIFY(controller.requestClose());
+    }
+    void creationTargetCheckKeepsInputActionsAndWelcomeStable() {
+        QTemporaryDir target;
+        QVERIFY(target.isValid());
+        QFile input(target.filePath("input.txt"));
+        QVERIFY(input.open(QIODevice::WriteOnly));
+        QCOMPARE(input.write("input"), 5);
+        input.close();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *create = window->findChild<QQuickWindow *>("createWindow");
+        QVERIFY(window && controller && create);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        QVERIFY(QMetaObject::invokeMethod(create, "configure"));
+        QTRY_VERIFY(create->isVisible() && !controller->busy());
+        const auto selectedInputs = [&] {
+            return engine.newQObject(create).property("inputs").toVariant().toList();
+        };
+        QVERIFY(QMetaObject::invokeMethod(create, "addInputPaths",
+                                          Q_ARG(QVariant, QVariant(QStringList{input.fileName()})),
+                                          Q_ARG(bool, false)));
+        QTRY_VERIFY(!controller->busy() && controller->creationInputs().size() == 1);
+        auto *addFiles = findVisual(create->contentItem(), "createAddFiles");
+        auto *addDirectories = findVisual(create->contentItem(), "createAddDirectories");
+        auto *remove = findVisual(create->contentItem(), "createRemoveInput-0");
+        auto *feedback = findVisual(window->contentItem(), "welcomeFeedbackRow");
+        QVERIFY(addFiles && addDirectories && remove && feedback);
+        QVERIFY(addFiles->isEnabled() && addDirectories->isEnabled() && remove->isEnabled() &&
+                !feedback->isVisible());
+        bool actionsStable = true, feedbackStable = true, sawCheck = false;
+        QObject monitor;
+        for (auto *action : {addFiles, addDirectories, remove})
+            connect(action, &QQuickItem::enabledChanged, &monitor,
+                    [&, action] { actionsStable &= action->isEnabled(); });
+        connect(feedback, &QQuickItem::visibleChanged, &monitor,
+                [&] { feedbackStable &= !feedback->isVisible(); });
+        connect(controller, &BrowserController::changed, &monitor, [&] {
+            if (controller->busy() && controller->creationTargetCheck().value("checking").toBool())
+                sawCheck = true;
+        });
+        const auto previousMessage = controller->message();
+        controller->checkCreationTarget(target.path());
+        QTRY_VERIFY_WITH_TIMEOUT(
+            !controller->busy() && controller->creationTargetMatches(target.path()), 10000);
+        QVERIFY(actionsStable && feedbackStable);
+        controller->invalidateCreationTarget();
+        controller->checkCreationTarget(target.path());
+        QVERIFY(controller->busy());
+        auto *accessible = QAccessible::queryAccessibleInterface(remove);
+        QVERIFY(accessible && accessible->actionInterface());
+        accessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+        QCOMPARE(selectedInputs().size(), 0);
+        QVERIFY(QMetaObject::invokeMethod(create, "addInputPaths",
+                                          Q_ARG(QVariant, QVariant(QStringList{input.fileName()})),
+                                          Q_ARG(bool, false)));
+        QCOMPARE(selectedInputs().size(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() &&
+                                     controller->creationTargetMatches(target.path()) &&
+                                     controller->creationInputs().size() == 1,
+                                 10000);
+        QVERIFY(sawCheck && actionsStable && feedbackStable);
+        QCOMPARE(controller->message(), previousMessage);
+        create->close();
+        window->close();
+    }
+    void extractionTargetChecksAfterEditing_data() {
+        QTest::addColumn<bool>("useEnter");
+        QTest::newRow("focus-loss") << false;
+        QTest::newRow("enter") << true;
+    }
+    void extractionTargetChecksAfterEditing() {
+        QFETCH(bool, useEnter);
+        QTemporaryDir target;
+        QVERIFY(target.isValid());
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *extract = window->findChild<QQuickWindow *>("extractWindow");
+        QVERIFY(window && controller && extract);
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/tree.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        controller->prepareExtraction(true);
+        QTRY_VERIFY(extract->isVisible() && !controller->busy());
+        QVERIFY(QTest::qWaitForWindowExposed(extract));
+        auto *field = findVisual(extract->contentItem(), "extractTarget");
+        auto *status = findVisual(extract->contentItem(), "extractTargetStatusText");
+        auto *start = findVisual(extract->contentItem(), "startExtract");
+        QVERIFY(field && status && start);
+        QVERIFY(!findVisual(extract->contentItem(), "extractCheckTarget"));
+        field->forceActiveFocus();
+        QTRY_VERIFY(field->hasActiveFocus());
+        QTest::keyClick(extract, Qt::Key_A, Qt::ControlModifier);
+        const auto path = QDir::toNativeSeparators(target.path()).toLatin1();
+        for (const char character : path)
+            QTest::keyClick(extract, character);
+        QVERIFY(!start->isEnabled());
+        QTest::keyClick(extract, useEnter ? Qt::Key_Return : Qt::Key_Tab);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->targetMatches(target.path()),
+                                 10000);
+        QTRY_VERIFY(start->isEnabled());
+        QCOMPARE(status->property("text").toString(), qtTrId("ui.059a6ea7ca12"));
+        extract->close();
+        window->close();
+    }
+    void destinationStatusMatchesCreation_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<bool>("dark");
+        QTest::addColumn<double>("scale");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (bool dark : {false, true})
+                for (double scale : {1., 1.25, 1.5})
+                    QTest::newRow(qPrintable(language + (dark ? "-dark-" : "-light-") +
+                                             QString::number(scale)))
+                        << language << dark << scale;
+    }
+    void destinationStatusMatchesCreation() {
+        QFETCH(QString, language);
+        QFETCH(bool, dark);
+        QFETCH(double, scale);
+        QVERIFY(initializeUiText(language));
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QTemporaryDir target;
+        QVERIFY(target.isValid());
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        auto *create = window->findChild<QQuickWindow *>("createWindow");
+        auto *extract = window->findChild<QQuickWindow *>("extractWindow");
+        QVERIFY(window && controller && preferences && create && extract);
+        preferences->preview(dark ? "dark" : "light", scale);
+        const auto restoreAppearance = qScopeGuard([&] { preferences->cancelPreview(); });
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/tree.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QVERIFY(QMetaObject::invokeMethod(create, "configure"));
+        QTRY_VERIFY(create->isVisible() && !controller->busy());
+        auto *creationField = findVisual(create->contentItem(), "createTarget");
+        QVERIFY(creationField);
+        creationField->setProperty("text", target.path());
+        controller->checkCreationTarget(target.path());
+        QTRY_VERIFY(!controller->busy() && controller->creationTargetMatches(target.path()));
+        controller->prepareExtraction(true);
+        QTRY_VERIFY(extract->isVisible() && !controller->busy());
+        auto *extractionField = findVisual(extract->contentItem(), "extractTarget");
+        QVERIFY(extractionField);
+        extractionField->setProperty("text", target.path());
+        controller->checkTarget(target.path());
+        QTRY_VERIFY(!controller->busy() && controller->targetMatches(target.path()));
+        auto *creationStatus = findVisual(create->contentItem(), "createTargetStatus");
+        auto *extractionLabel = findVisual(extract->contentItem(), "extractTargetStatusText");
+        auto *extractionIcon = findVisual(extract->contentItem(), "extractTargetStatusIcon");
+        QVERIFY(creationStatus && extractionLabel && extractionIcon);
+        auto *creationLabel = qvariant_cast<QQuickItem *>(creationStatus->property("labelItem"));
+        auto *creationIcon = qvariant_cast<QQuickItem *>(creationStatus->property("iconItem"));
+        QVERIFY(creationLabel && creationIcon);
+        QCOMPARE(creationLabel->property("text"), extractionLabel->property("text"));
+        QCOMPARE(creationLabel->property("font").value<QFont>().pixelSize(),
+                 extractionLabel->property("font").value<QFont>().pixelSize());
+        QCOMPARE(creationLabel->property("font").value<QFont>().pixelSize(), qRound(12 * scale));
+        QCOMPARE(creationLabel->property("color").value<QColor>(),
+                 extractionLabel->property("color").value<QColor>());
+        QCOMPARE(creationIcon->property("source").toUrl(),
+                 extractionIcon->property("source").toUrl());
+        QVERIFY(creationLabel->height() >= creationLabel->property("contentHeight").toReal());
+        QVERIFY(extractionLabel->height() >= extractionLabel->property("contentHeight").toReal());
+        controller->checkCreationTarget(target.path());
+        controller->checkTarget(target.path());
+        QCOMPARE(creationLabel->property("text"), extractionLabel->property("text"));
+        QCOMPARE(creationLabel->property("text").toString(), qtTrId("ui.2ae4afff62f1"));
+        QTRY_VERIFY(!controller->busy() && controller->targetMatches(target.path()) &&
+                    controller->creationTargetMatches(target.path()));
+        controller->invalidateCreationTarget();
+        controller->invalidateTarget();
+        QCOMPARE(creationLabel->property("text"), extractionLabel->property("text"));
+        QCOMPARE(creationIcon->property("source").toUrl(),
+                 extractionIcon->property("source").toUrl());
+        controller->checkCreationTarget(QString{});
+        controller->checkTarget(QString{});
+        QCOMPARE(creationLabel->property("text"), extractionLabel->property("text"));
+        QCOMPARE(creationIcon->property("source").toUrl(),
+                 extractionIcon->property("source").toUrl());
+        create->close();
+        extract->close();
         window->close();
     }
     void taskModelUpdatesRowsWithoutResettingRetainedTasks() {

@@ -6,13 +6,13 @@
 
 `SingleInstance` 在创建主窗口前用 QLockFile 选举，持锁者才可移除崩溃残留的本地服务器。QLocalServer 使用 UserAccessOption，结构化 JSON 协议版本为 1，限制单条 256 KiB、128 个绝对路径和 32 个连接。后启动者等待主实例就绪，收到请求 ID 对应的确认后退出，15 秒内通信失败明确报错，不创建第二个正常 UI。Windows 根据服务器握手中的 PID 转交本次用户启动的前台激活权限，不设置永久置顶。IPC 不经过命令解释器，不记录用户路径。
 
-`ApplicationSessions` 是 Qt 应用层协调器，不解释格式、授权目录或文件提交。每个会话拥有独立 SessionPage、BrowserController 和 Rust RuntimeConnection，保留查询、选择、目录与浏览状态。窗口只承载页面，标签页不会为每个归档创建隐藏的原生主窗口。文件关联、命令行、原生文件打开事件、打开按钮、最近记录、拖放和创建结果统一提交打开意图。优先复用无归档且无任务的欢迎页，重复路径激活已有会话，多文件请求按顺序接收并激活最后一个。路径规范化只用于 UI 去重，不授予写入权限。
+`ApplicationSessions` 是 Qt 应用层协调器，不解释格式、授权目录或文件提交。每个会话拥有独立 SessionPage、BrowserController 和 Rust RuntimeConnection，打开的页面保留查询、选择、目录与浏览状态。窗口只承载页面，标签页不会为每个归档创建隐藏的原生主窗口。文件关联、命令行、原生文件打开事件、打开按钮、最近记录、拖放和创建结果统一提交打开意图。优先复用无归档且无任务的欢迎页，重复路径只激活尚未关闭的会话，多文件请求按顺序接收并激活最后一个。路径规范化只用于 UI 去重，不授予写入权限。
 
 `desktop/openMode=tabs|windows` 默认 tabs，schema 保持 1，未知字段保留。设置操作成功后立即影响后续打开，不迁移已打开页面。标题栏加号按此设置新建页面或窗口。
 
 标签排序通过稳定会话身份和窗口内目标索引提交，只改变同一窗口未关闭会话的展示顺序，不重排用于任务准入的控制器集合。拖动释放或键盘排序后保持当前活动页、归档、控制器、选择和任务身份，其他窗口与已关闭后台会话的相对顺序不变。关闭非活动标签不切换页面，关闭活动标签优先选择视觉顺序中的右邻，否则选择左邻。无效身份、已关闭会话、越界或退出期间的排序请求忽略；不创建或销毁 Rust 连接。当前仅支持窗口内重排，不支持跨窗口拖放、分离窗口或跨启动恢复顺序。标签栏溢出仅改变可视区域，不能丢弃会话；菜单与键盘激活后保证活动标签可见。
 
-最多保留 32 个存活会话，达到限额明确提示。所有槽均由后台任务保留时，关闭最后浏览页复用原页显示欢迎与全局任务入口，不创建额外运行时。关闭标签或非最后主窗口不取消任务。仍有任务或完成结果的页面保留所属控制器，统一任务菜单使用“会话 UUID/后端任务 ID”，不能把另一个连接中相同数字 ID 当作同一任务。密码、冲突和结果窗口仍由原会话控制器处理。无任务的关闭页面先请求异步关闭，接收线程完成 join 后才从会话集合移除。
+最多保留 32 个存活会话，达到限额明确提示。所有槽均由后台任务保留时，关闭最后浏览页复用原页显示欢迎与全局任务入口，不创建额外运行时。关闭标签或主窗口清除该页的目录、搜索、排序、选择、滚动与视图状态，但不取消后台任务。仍有任务或完成结果的页面保留所属控制器和任务所需数据，统一任务菜单使用“会话 UUID/后端任务 ID”，不能把另一个连接中相同数字 ID 当作同一任务。密码、冲突和结果窗口仍由原会话控制器处理。无任务的关闭页面先请求异步关闭，接收线程完成 join 后才从会话集合移除。
 
 会话关闭后，延迟到达的开始、预检、密码与冲突事件不自动弹窗或抢焦点。任务与请求令牌继续保留，用户从全局任务入口主动打开时再显示原会话的进度和待处理请求，关闭页面不等于取消请求。
 
@@ -70,13 +70,13 @@ English: One normal product process and tray serve each user login session. Each
 
 English: Closing a main window dismisses every owned dialog, including Settings and About, cancels unsaved appearance previews and releases native dialog surfaces. Tray restoration shows only the welcome page. Background task identities and prompt tokens remain owned by their original controllers, and explicit task activation can recreate their windows.
 
-关闭窗口不取消真实后台任务，任务所属会话继续按组合身份保留。正常情况下使用新的空白会话承载起始页。达到 32 个存活会话时暂用已关闭页面的无归档外壳，隐藏旧标题、加载及错误反馈；异步 join 释放槽位后再创建空白会话，不越过上限。该替换不唤出隐藏窗口，不抢走另一窗口焦点。全局任务入口仅显示任务窗口，文件打开请求可以重新显示保留的归档页面。
+关闭窗口不取消真实后台任务，任务所属会话继续按组合身份保留。正常情况下使用新的空白会话承载起始页。达到 32 个存活会话时暂用已关闭页面的无归档外壳，隐藏旧标题、加载及错误反馈；异步 join 释放槽位后再创建空白会话，不越过上限。该替换不唤出隐藏窗口，不抢走另一窗口焦点。全局任务入口仅显示任务窗口；文件打开请求不恢复已关闭的浏览页，而使用新会话重新读取。若同一文件仍在被后台任务修改，新页面显示可取消等待，任务终结后重新读取，取消等待不影响原任务。
 
-English: Closing a tray-resident window clears its browsing tabs and operation drafts; a plain restore shows one welcome tab. Minimizing preserves the window. Background tasks retain their original session/controller identity and remain reachable through the global task entry. A fresh blank session replaces the closed-page shell when capacity permits, without exceeding 32 live sessions, revealing a hidden window or stealing focus. Global task requests show only their task dialog; file requests may reopen the retained archive page. Other open windows are unaffected, and blocking dialogs prevent closing their owner.
+English: Closing a tab or tray-resident window discards its browsing state and drafts; a plain restore shows one welcome tab. Minimizing preserves the window. Background tasks retain their original session/controller identity and remain reachable through the global task entry. A fresh blank session replaces the closed-page shell when capacity permits, without exceeding 32 live sessions, revealing a hidden window or stealing focus. Reopening a closed archive uses a fresh browsing session; an ongoing modification is allowed to finish before the new page reads the file, and cancelling that wait leaves the task running. Other open windows are unaffected, and blocking dialogs prevent closing their owner.
 
-文件打开失败或取消后，未在读取、没有活动任务和密码提示的起始页可再次用于打开；旧路径不作为成功打开的归档身份。重新打开因任务保留的已关闭归档时，仅回收同一窗口中系统自动补建、仍为空且没有任务、错误或可见对话框的起始页。用户主动新建的页面、其他窗口和保留任务的会话不受影响，回收仍经过原有异步退出与 join。
+文件打开失败或取消后，未在读取、没有活动任务和密码提示的起始页可再次用于打开；旧路径不作为成功打开的归档身份。重新打开因任务保留的已关闭归档时优先复用当前空闲起始页，读取新会话，原任务保留独立身份；用户主动新建的其他页面和其他窗口不受影响。取消等待或关闭等待页不能在任务完成后复活该打开请求。
 
-English: After an open fails or is cancelled, an idle welcome page without active work or a password prompt can be reused; the old path is not treated as an opened archive. Reopening a task-retained closed archive retires only an untouched, automatically restored welcome page in the same window, with no task, error or visible dialog. User-created pages, other windows and task-owning sessions remain intact; retirement still follows the asynchronous shutdown and join path.
+English: After an open fails or is cancelled, an idle welcome page without active work or a password prompt can be reused; the old path is not treated as an opened archive. Reopening a closed, task-retained archive uses an idle welcome page and a fresh browsing session while retaining the original task identity. Cancelling or closing a waiting page prevents its queued request from reappearing after the task ends.
 
 用户在打开仍显示进行中时取消，即使后台完成回执已排队，也不能提交该打开结果或显示密码提示。控制器等待原请求结束，查询并关闭可能已建立的后台归档会话；清理期间继续保持忙碌，重复取消不终止清理。清理失败时显示实际错误，不报告取消清理成功；其他已接受的后台任务仍按各自生命周期处理。
 

@@ -15,6 +15,7 @@ OperationWindow {
     width: Theme.operationExtractWidth
     requestedHeight: Math.min(Math.round(unit(Theme.operationExtractClientHeight)), Screen.desktopAvailableHeight - 80)
     title: qsTrId("extract.windowTitle")
+    onVisibleChanged: if (!visible) controller.invalidateTarget()
     escapeClosesWindow: !target.activeFocus
     readonly property string archiveFolder: String(intent.folder || intent.archive || "")
     readonly property string destinationPreview: target.text + (sameFolder.checked && target.text
@@ -29,6 +30,7 @@ OperationWindow {
             finishTargetEditing();
     }
     function configure() {
+        controller.invalidateTarget();
         allFiles = Boolean(intent.all);
         target.text = intent.target || "";
         sameFolder.checked = true;
@@ -105,6 +107,8 @@ OperationWindow {
                                         previewText: root.destinationPreview
                                         Layout.fillWidth: true; Layout.fillHeight: true
                                         Accessible.name: qsTrId("ui.26fa005acb80")
+                                        onTextChanged: if (root.visible) root.controller.invalidateTarget()
+                                        onEditingFinished: if (root.visible) root.controller.checkTarget(text)
                                         Keys.priority: Keys.BeforeItem
                                         Keys.onPressed: (event) => {
                                             if ([Qt.Key_Escape, Qt.Key_Return, Qt.Key_Enter].includes(event.key)) { root.finishTargetEditing(); event.accepted = true; }
@@ -117,7 +121,7 @@ OperationWindow {
                                         objectName: "extractChangeTarget"
                                         verticalInset: 2.5; surfaceColor: Theme.operationButtonSurface; outlineColor: Theme.operationFieldBorder
                                         text: qsTrId("ui.6b01fce4dbea"); labelSize: Math.round(root.unit(Theme.operationBodySize)); baseHeight: root.unit(30); cornerRadius: root.unit(6); horizontalInset: root.unit(17); minimumWidth: root.unit(86)
-                                        enabled: !root.controller.busy || Boolean(root.controller.taskStarting)
+                                        enabled: root.controller.inputActionsEnabled || Boolean(root.controller.taskStarting)
                                         onClicked: { const path = root.controller.chooseTarget(target.text, root); if (path) { target.text = path; root.controller.checkTarget(path); } }
                                     }
                                 }
@@ -132,24 +136,26 @@ OperationWindow {
                                     objectName: "extractTargetStatusIndicator"
                                     Layout.preferredWidth: Theme.operationDestinationIndicatorSlotSize; Layout.preferredHeight: Theme.operationDestinationIndicatorSlotSize
                                     Image {
-                                        anchors.centerIn: parent; visible: root.targetReady
-                                        source: "qrc:/xdzip/assets/success-large.png"
-                                        // The shared 24-unit canvas contains a 20-unit disc.
-                                        width: Theme.operationDestinationIndicatorSize * 24 / 20; height: width
+                                        objectName: "extractTargetStatusIcon"
+                                        anchors.centerIn: parent
+                                        source: root.targetReady ? "qrc:/xdzip/assets/success-large.png" : (Theme.dark ? "qrc:/xdzip/assets/info-dark.png" : "qrc:/xdzip/assets/info-light.png")
+                                        width: 19.2; height: width
+                                        sourceSize: Qt.size(width * Screen.devicePixelRatio, height * Screen.devicePixelRatio)
+                                        Accessible.ignored: true
                                     }
                                 }
                                 Text {
                                     objectName: "extractTargetStatusText"
                                     Layout.fillWidth: true; Layout.minimumHeight: Theme.operationDestinationIndicatorSlotSize
                                     verticalAlignment: Text.AlignVCenter
-                                    text: root.targetState.checking ? qsTrId("ui.2ae4afff62f1") : root.targetReady ? qsTrId("ui.8e70e19bc43d") : root.targetState.error || qsTrId("ui.52edc9a2ae10")
+                                    text: root.targetReady ? qsTrId("ui.059a6ea7ca12") : root.targetState.checking ? qsTrId("ui.2ae4afff62f1") : root.targetState.error || qsTrId("ui.cef0425c5413")
                                     textFormat: Text.PlainText; wrapMode: Text.Wrap
-                                    color: root.targetState.error && !root.targetState.checking && !root.targetReady ? Theme.menuDanger : Theme.textSecondary; font.pixelSize: Math.round(root.unit(Theme.operationBodySize))
+                                    color: Theme.textSecondary; font.pixelSize: Theme.operationCreateNoteSize
+                                    Accessible.role: Accessible.StaticText; Accessible.name: text
                                 }
-                                AppButton { objectName: "extractCheckTarget"; visible: !root.targetReady && !root.targetState.checking; text: qsTrId("ui.ff13dcde38a9"); labelSize: Theme.operationExtractNoteSize; enabled: !root.controller.busy; onClicked: root.controller.checkTarget(target.text) }
                             }
                             Text {
-                                visible: Number(root.targetState.leftovers || 0) > 0
+                                visible: root.targetReady && Number(root.targetState.leftovers || 0) > 0
                                 Layout.fillWidth: true
                                 text: qsTrId("ui.5a1185ab8a19").arg(root.targetState.leftovers)
                                 wrapMode: Text.Wrap; font.pixelSize: Theme.operationExtractNoteSize; color: Theme.textSecondary

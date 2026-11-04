@@ -48,6 +48,10 @@ macOS 创建输出复用 [M3 扩展 ACL 边界](m3-extraction.md#macos-扩展-ac
 
 选择普通文件后，在已有 Rust 元数据工作线程读取当前文件长度，GUI 不读取磁盘或递归目录。InspectInputs 最多 256 路径，返回顺序固定、大小以十进制字节字符串桥接；symlink_metadata 不跟随所选叶链接。摘要使用十进制 MB；零字节是已知大小，目录与失败为未知，不把未知写成零。超过 256 项保留未检查说明，实际创建仍采用原有创建预算。快速编辑合并最新路径集合，过期结果不覆盖新选择；目标检查优先，普通查询按已有取消机制执行。摘要不是预检授权，输入树在任务开始后重新建立。
 
+目标路径检查和输入摘要属于后台准备，不改变添加、移除输入控件的可用外观，也不向起始页发布检查提示。检查期间继续串行化实际请求；创建按钮仅在当前路径的创建检查通过后可用。解压检查使用独立状态，不能以相同路径的创建检查代替，详见[解压契约](m3-extraction.md)。
+
+English: Target checks and input summaries are background preparation: they do not disable the input actions or publish checking text to the welcome page. Requests remain serialized, and creation is enabled only for its own current validated target. Extraction keeps separate validation state and actual writes recheck authority.
+
 六类操作窗口共用 footer 按钮；字段、正文动作、圆形移除与分段组选项复用对应角色组件。外观与字号生成自 layout-scale.json，不由窗口覆盖。真实摘要、控件量测及截图按[验证方法](../qa/README.md)保存到 build/ 或 CI 工件。
 
 ## 验收
