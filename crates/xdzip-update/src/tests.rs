@@ -179,6 +179,32 @@ fn installed_alpha7_recognizes_alpha8_only_with_a_newer_build() {
 }
 
 #[test]
+fn installed_alpha8_recognizes_alpha9_only_with_a_newer_build() {
+    let text = candidate()
+        .to_string()
+        .replace("0.1.0-alpha.7", "0.1.0-alpha.9");
+    let mut value: Value = serde_json::from_str(&text).unwrap();
+    value["build"] = json!(22);
+    let inspect_new = |value: &Value| {
+        inspect_release(
+            &value.to_string(),
+            "0.1.0-alpha.8",
+            21,
+            "alpha",
+            "windows",
+            "x86_64",
+            "exe",
+        )
+    };
+    let result = inspect_new(&value);
+    assert!(result.valid && result.newer, "{result:?}");
+    value["build"] = json!(21);
+    let result = inspect_new(&value);
+    assert!(!result.valid);
+    assert_eq!(result.error, "non_monotonic_build");
+}
+
+#[test]
 fn metadata_mutations_fail_closed() {
     let original = candidate();
     let mut mutations = Vec::new();
