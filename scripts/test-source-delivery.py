@@ -252,6 +252,7 @@ class DeliveryTests(unittest.TestCase):
         iana, _ = iana_loc_fixture()
         invalid = [[], ['xyz'], ['xyz,xyz,,'], ['xyz,xyz,abc,'], ['XYZ,xyz,xyz,'],
                    ['qqq,,,'], ['eng,eng,eng,en'], ['xyz,xyz,xyz,en'],
+                   ['xyz,eng,xyz,'], ['xyz,ger,xyz,', 'deu,ger,deu,de'],
                    ['xyz,,,', 'xyz,,,']]
         for additions in invalid:
             with self.subTest(additions=additions), self.assertRaises(ValueError):

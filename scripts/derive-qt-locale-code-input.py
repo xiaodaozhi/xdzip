@@ -66,11 +66,13 @@ def extend_table(qt_source, iana_text, additions):
     file_date, tags = parse_languages(iana_text)
     rows = {}
     seen_part3 = set()
+    used_codes = set()
     for line in base.decode('utf-8').splitlines()[1:]:
         part3, part2b, part2t, part1, unused = line.split('\t')
         row = (part3, part2b, part2t, part1, unused)
         rows[part1 or part2b or part3] = row
         seen_part3.add(part3)
+        used_codes.update(code for code in (part3, part2b, part2t, part1) if code)
     if not additions:
         raise ValueError('At least one explicit language mapping is required')
     for addition in additions:
@@ -87,10 +89,11 @@ def extend_table(qt_source, iana_text, additions):
         if part3 not in tags and (not part1 or part1 not in tags):
             raise ValueError('Language mapping has no matching IANA subtag')
         key = part1 or part2b or part3
-        if key in rows or part3 in seen_part3:
+        if key in rows or part3 in seen_part3 or any(code in used_codes for code in fields if code):
             raise ValueError('Language mapping conflicts with an existing Qt entry')
         rows[key] = (part3, part2b, part2t, part1, '')
         seen_part3.add(part3)
+        used_codes.update(code for code in fields if code)
     table = 'Id\tPart2b\tPart2t\tPart1\tUnused\n'
     table += ''.join('\t'.join(rows[key]) + '\n' for key in sorted(rows))
     return table.encode('utf-8'), entries, unique, file_date
