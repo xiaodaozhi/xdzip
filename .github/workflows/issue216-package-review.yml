@@ -49,3 +49,34 @@ jobs:
           path: build/issue216-review/
           if-no-files-found: warn
           retention-days: 14
+  actual-upgrade:
+    runs-on: windows-2022
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Fetch the audited candidate and original public installer
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $run = gh api repos/xiaodaozhi/xdzip/actions/runs/41779593888 | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0 -or $run.head_sha -ne 'a3552db52a3db40f967490046a96126c2805f9b3' -or $run.event -ne 'workflow_dispatch' -or $run.path -ne '.github/workflows/release.yml') { throw 'Unexpected source workflow identity' }
+          $dest = Join-Path $env:RUNNER_TEMP 'issue216-packages'
+          New-Item -ItemType Directory -Path $dest | Out-Null
+          gh run download 41779593888 --repo xiaodaozhi/xdzip --name release-Windows --dir $dest
+          if ($LASTEXITCODE -ne 0) { throw 'Candidate download failed' }
+          gh release download v0.1.0-alpha.8 --repo xiaodaozhi/xdzip --pattern xdzip-0.1.0-alpha.8-windows-x86_64-setup.exe --dir $dest
+          if ($LASTEXITCODE -ne 0) { throw 'Original download failed' }
+          Move-Item -LiteralPath (Join-Path $dest 'xdzip-0.1.0-alpha.8-windows-x86_64-setup.exe') -Destination (Join-Path $dest 'alpha8-setup.exe')
+      - name: Direct upgrade with original installer on disposable runner
+        shell: pwsh
+        run: python .github/issue216-review/check-real-installer-upgrade.py
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: issue216-actual-installer-upgrade
+          path: build/issue216-upgrade-review/
+          if-no-files-found: warn
+          retention-days: 14
