@@ -87,6 +87,31 @@ int probeNativeFileDialogQuit(const std::function<void()> &openDialog,
     return result;
 }
 
+bool runOnNativeFullscreenEntry(QWindow *window, const std::function<void()> &action) {
+    if (!window || !window->handle())
+        return false;
+    NSView *view = reinterpret_cast<NSView *>(window->winId());
+    NSWindow *native = view.window;
+    if (!native)
+        return false;
+    const QPointer<QWindow> guarded(window);
+    const auto callback = action;
+    __block bool fired = false;
+    id token = [[NSNotificationCenter defaultCenter]
+        addObserverForName:NSWindowDidEnterFullScreenNotification
+                    object:native
+                     queue:nil
+                usingBlock:^(NSNotification *) {
+                  if (!fired && guarded) {
+                      fired = true;
+                      callback();
+                  }
+                }];
+    QObject::connect(window, &QObject::destroyed,
+                     [token] { [[NSNotificationCenter defaultCenter] removeObserver:token]; });
+    return true;
+}
+
 namespace {
 // A QWindow can acquire a new NSWindow; transition state belongs to the old surface.
 class NativeWindowTransitionObserver final : public QObject {

@@ -23,6 +23,10 @@ class CocoaActivationObserver final : public QObject {
     void watch(NSWindow *native) {
         if (m_native == native)
             return;
+        if (m_window)
+            m_window->setProperty("xdzipCocoaSurfaceGeneration",
+                                  m_window->property("xdzipCocoaSurfaceGeneration").toULongLong() +
+                                      1);
         clear();
         m_native = native;
         if (!native || !m_window)
@@ -64,6 +68,20 @@ class CocoaActivationObserver final : public QObject {
                                                         NSWindowWillExitFullScreenNotification]) {
                                       window->setProperty("xdzipCocoaFullTransition", true);
                                   } else {
+                                      if ([event isEqualToString:
+                                                     NSWindowDidEnterFullScreenNotification]) {
+                                          window->setProperty("xdzipCocoaJustEnteredFullscreen",
+                                                              true);
+                                          const auto generation =
+                                              window->property("xdzipCocoaSurfaceGeneration")
+                                                  .toULongLong();
+                                          QTimer::singleShot(0, window, [window, generation] {
+                                              if (window->property("xdzipCocoaSurfaceGeneration")
+                                                      .toULongLong() == generation)
+                                                  window->setProperty(
+                                                      "xdzipCocoaJustEnteredFullscreen", false);
+                                          });
+                                      }
                                       window->setProperty("xdzipCocoaFullTransition", false);
                                       WindowActivation::cocoaTransitionFinished(window);
                                   }
@@ -77,6 +95,8 @@ class CocoaActivationObserver final : public QObject {
             [[NSNotificationCenter defaultCenter] removeObserver:token];
         [m_tokens removeAllObjects];
         m_native = nil;
+        if (m_window)
+            m_window->setProperty("xdzipCocoaJustEnteredFullscreen", false);
     }
     QPointer<QWindow> m_window;
     NSMutableArray *m_tokens;
@@ -120,4 +140,24 @@ bool cocoaActivationIsMiniaturized(QWindow *window) {
 bool cocoaActivationIsVisible(QWindow *window) {
     NSWindow *native = nativeWindow(window);
     return native && native.visible;
+}
+
+void cocoaRetryFullscreenMinimize(QWindow *window) {
+    NSWindow *native = nativeWindow(window);
+    if (native && native.visible && !native.miniaturized &&
+        (native.styleMask & NSWindowStyleMaskFullScreen)) {
+        const QPointer<QWindow> guarded(window);
+        const auto revealSerial = window->property("xdzipCocoaRevealSerial").toULongLong();
+        const auto surfaceGeneration =
+            window->property("xdzipCocoaSurfaceGeneration").toULongLong();
+        // Qt must first match the actual fullscreen state before it can forward
+        // the same minimize request again. A reentrant reveal supersedes it.
+        window->setWindowState(Qt::WindowFullScreen);
+        if (guarded && guarded->property("xdzipCocoaRevealSerial").toULongLong() == revealSerial &&
+            guarded->property("xdzipCocoaSurfaceGeneration").toULongLong() == surfaceGeneration &&
+            guarded->handle() && guarded->isVisible() &&
+            guarded->windowState() == Qt::WindowFullScreen &&
+            !guarded->property("xdzipWakePending").toBool())
+            guarded->showMinimized();
+    }
 }

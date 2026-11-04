@@ -89,6 +89,7 @@
 void scheduleNativeFileDialogCancellation();
 bool nativeWindowMatchesState(QWindow *window, Qt::WindowState state);
 bool watchNativeWindowTransitions(QWindow *window);
+bool runOnNativeFullscreenEntry(QWindow *window, const std::function<void()> &action);
 void traceNativeWindowState(QWindow *window);
 bool verifyMacDesktopMenus();
 QStringList nativeDesktopMenuEntries(const QString &title);
@@ -4261,6 +4262,56 @@ QtObject {
         QVERIFY(received.first().endsWith(QString::fromUtf8("中文 空格;&.zip")));
     }
 #ifdef Q_OS_MACOS
+    void cocoaMinimizeAtFullscreenEntry_data() {
+        QTest::addColumn<QString>("intervention");
+        QTest::newRow("minimize") << QStringLiteral("none");
+        QTest::newRow("restore-during-retry") << QStringLiteral("restore");
+        QTest::newRow("destroy-during-retry") << QStringLiteral("destroy");
+    }
+    void cocoaMinimizeAtFullscreenEntry() {
+        if (QGuiApplication::platformName() != QStringLiteral("cocoa"))
+            QSKIP("Native fullscreen transitions require Cocoa");
+        QFETCH(QString, intervention);
+        WindowActivation::install(qApp);
+        bool requested = false;
+        bool interruptArmed = false;
+        bool interrupted = false;
+        QWindow window;
+        window.resize(480, 320);
+        window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        QVERIFY(watchNativeWindowTransitions(&window));
+        connect(&window, &QWindow::windowStateChanged, &window, [&](Qt::WindowState state) {
+            if (state == Qt::WindowFullScreen && interruptArmed) {
+                interruptArmed = false;
+                interrupted = true;
+                if (intervention == QStringLiteral("restore"))
+                    WindowActivation::reveal(&window);
+                else
+                    window.destroy();
+            }
+        });
+        QVERIFY(runOnNativeFullscreenEntry(&window, [&] {
+            window.showMinimized();
+            interruptArmed = intervention != QStringLiteral("none");
+            requested = true;
+        }));
+        window.showFullScreen();
+        QTRY_VERIFY(requested);
+        if (intervention == QStringLiteral("destroy")) {
+            QTRY_VERIFY(interrupted);
+            QVERIFY(!window.handle());
+        } else if (intervention == QStringLiteral("restore")) {
+            QTRY_VERIFY(interrupted);
+            QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowFullScreen));
+            QVERIFY(!window.windowStates().testFlag(Qt::WindowMinimized));
+        } else {
+            QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowMinimized));
+            QVERIFY(window.windowStates().testFlag(Qt::WindowMinimized));
+            WindowActivation::reveal(&window);
+            QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowFullScreen));
+        }
+    }
     void nativeTransitionObserverFollowsSurfaceRecreation() {
         if (QGuiApplication::platformName() != QStringLiteral("cocoa"))
             QSKIP("Native transition observation requires Cocoa");
