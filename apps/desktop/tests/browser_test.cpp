@@ -90,6 +90,7 @@ void scheduleNativeFileDialogCancellation();
 bool nativeWindowMatchesState(QWindow *window, Qt::WindowState state);
 bool watchNativeWindowTransitions(QWindow *window);
 bool runOnNativeFullscreenEntry(QWindow *window, const std::function<void()> &action);
+bool runOnNativeDeminiaturize(QWindow *window, const std::function<void()> &action);
 void traceNativeWindowState(QWindow *window);
 bool verifyMacDesktopMenus();
 QStringList nativeDesktopMenuEntries(const QString &title);
@@ -4313,6 +4314,66 @@ QtObject {
             QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowFullScreen));
         }
         if (window.handle()) {
+            QTimer::singleShot(0, &window, [&] { nextTurn = true; });
+            QTRY_VERIFY(nextTurn);
+            window.setWindowState(Qt::WindowNoState);
+            QTRY_VERIFY(cocoaActivationIsVisible(&window) && !cocoaActivationInFlight(&window) &&
+                        !nativeWindowMatchesState(&window, Qt::WindowFullScreen));
+        }
+    }
+    void cocoaMinimizeDuringFullscreenRestore_data() {
+        QTest::addColumn<QString>("intervention");
+        QTest::newRow("minimize") << QStringLiteral("none");
+        QTest::newRow("restore") << QStringLiteral("restore");
+        QTest::newRow("normal") << QStringLiteral("normal");
+        QTest::newRow("maximize") << QStringLiteral("maximize");
+    }
+    void cocoaMinimizeDuringFullscreenRestore() {
+        if (QGuiApplication::platformName() != QStringLiteral("cocoa"))
+            QSKIP("Native fullscreen transitions require Cocoa");
+        QFETCH(QString, intervention);
+        WindowActivation::install(qApp);
+        QWindow window;
+        window.resize(480, 320);
+        window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        QVERIFY(watchNativeWindowTransitions(&window));
+        window.showFullScreen();
+        QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowFullScreen) &&
+                    !cocoaActivationInFlight(&window));
+        window.showMinimized();
+        QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowMinimized));
+
+        bool requested = false;
+        bool enteringAtRequest = false;
+        QVERIFY(runOnNativeDeminiaturize(&window, [&] {
+            enteringAtRequest = window.property("xdzipCocoaFullTransition").toBool();
+            window.showMinimized();
+            if (intervention == QStringLiteral("restore"))
+                WindowActivation::reveal(&window);
+            else if (intervention == QStringLiteral("normal"))
+                window.showNormal();
+            else if (intervention == QStringLiteral("maximize"))
+                window.showMaximized();
+            requested = true;
+        }));
+        WindowActivation::reveal(&window);
+        QTRY_VERIFY(requested);
+        QVERIFY(enteringAtRequest);
+        const auto expected = intervention == QStringLiteral("none")       ? Qt::WindowMinimized
+                              : intervention == QStringLiteral("normal")   ? Qt::WindowNoState
+                              : intervention == QStringLiteral("maximize") ? Qt::WindowMaximized
+                                                                           : Qt::WindowFullScreen;
+        QTRY_VERIFY(nativeStateSettled(&window, expected) && !cocoaActivationInFlight(&window));
+        QTRY_COMPARE(window.windowState(), expected);
+        if (expected == Qt::WindowMinimized) {
+            WindowActivation::reveal(&window);
+            QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowFullScreen) &&
+                        !cocoaActivationInFlight(&window));
+            QTRY_COMPARE(window.windowState(), Qt::WindowFullScreen);
+        }
+        if (window.windowState() == Qt::WindowFullScreen) {
+            bool nextTurn = false;
             QTimer::singleShot(0, &window, [&] { nextTurn = true; });
             QTRY_VERIFY(nextTurn);
             window.setWindowState(Qt::WindowNoState);

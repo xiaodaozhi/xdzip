@@ -147,7 +147,7 @@ if ($IsMacOS) {
     # Exercise the AppKit Quit item and native surface observer under Cocoa.
     $env:QT_QPA_PLATFORM = 'cocoa'
     try {
-        Invoke-Checked $browserTests @('moveConflictsUseFileActionsAndAccessibleApplyAll', 'nativeQuitMenuWithoutTask', 'nativeTransitionObserverFollowsSurfaceRecreation', 'cocoaMinimizeAtFullscreenEntry', '-o', 'build/review/native-sessions-macos-conflict.log,txt')
+        Invoke-Checked $browserTests @('moveConflictsUseFileActionsAndAccessibleApplyAll', 'nativeQuitMenuWithoutTask', 'nativeTransitionObserverFollowsSurfaceRecreation', 'cocoaMinimizeAtFullscreenEntry', 'cocoaMinimizeDuringFullscreenRestore', '-o', 'build/review/native-sessions-macos-conflict.log,txt')
     } finally {
         $env:QT_QPA_PLATFORM = 'offscreen'
     }

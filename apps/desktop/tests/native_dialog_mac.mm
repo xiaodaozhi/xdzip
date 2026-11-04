@@ -87,7 +87,8 @@ int probeNativeFileDialogQuit(const std::function<void()> &openDialog,
     return result;
 }
 
-bool runOnNativeFullscreenEntry(QWindow *window, const std::function<void()> &action) {
+static bool runOnNativeWindowNotification(QWindow *window, NSNotificationName name,
+                                          const std::function<void()> &action) {
     if (!window || !window->handle())
         return false;
     NSView *view = reinterpret_cast<NSView *>(window->winId());
@@ -97,19 +98,26 @@ bool runOnNativeFullscreenEntry(QWindow *window, const std::function<void()> &ac
     const QPointer<QWindow> guarded(window);
     const auto callback = action;
     __block bool fired = false;
-    id token = [[NSNotificationCenter defaultCenter]
-        addObserverForName:NSWindowDidEnterFullScreenNotification
-                    object:native
-                     queue:nil
-                usingBlock:^(NSNotification *) {
-                  if (!fired && guarded) {
-                      fired = true;
-                      callback();
-                  }
-                }];
+    id token = [[NSNotificationCenter defaultCenter] addObserverForName:name
+                                                                 object:native
+                                                                  queue:nil
+                                                             usingBlock:^(NSNotification *) {
+                                                               if (!fired && guarded) {
+                                                                   fired = true;
+                                                                   callback();
+                                                               }
+                                                             }];
     QObject::connect(window, &QObject::destroyed,
                      [token] { [[NSNotificationCenter defaultCenter] removeObserver:token]; });
     return true;
+}
+
+bool runOnNativeFullscreenEntry(QWindow *window, const std::function<void()> &action) {
+    return runOnNativeWindowNotification(window, NSWindowDidEnterFullScreenNotification, action);
+}
+
+bool runOnNativeDeminiaturize(QWindow *window, const std::function<void()> &action) {
+    return runOnNativeWindowNotification(window, NSWindowDidDeminiaturizeNotification, action);
 }
 
 namespace {

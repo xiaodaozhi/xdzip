@@ -52,9 +52,9 @@ Cocoa 路径观察所属 NSWindow 的最小化与全屏转换通知；转换进�
 
 English: The Cocoa activation path observes minimization and fullscreen transitions on the owned NSWindow. A restore remains pending while a native transition is in progress. If Qt reports a minimized request while the observed native window remains visible and exposed with no transition in progress, the ineffective Qt request is cancelled and the saved state is restored. Observers are removed when the native surface is destroyed; an unavailable native window keeps the request pending instead of relying on a fixed delay.
 
-全屏进入完成回调内的最小化请求可能被 Qt 记录而未被 AppKit 接受。仅当同一原生窗口仍可见、保持全屏、没有转换或更新的恢复请求时，在下一次事件循环将 Qt 状态与原生全屏对齐并补发最小化；窗口被销毁、请求已改变或原生窗口不可用时不补发。对齐过程中到达的恢复请求优先，不再执行旧的最小化请求。
+全屏进入期间或进入完成回调内的最小化请求可能被 Qt 后续状态覆盖，或被 Qt 记录而未被 AppKit 接受。记录同一原生窗口的请求，进入完成后如窗口仍可见且没有转换，在下一次事件循环将 Qt 状态与原生全屏对齐并补发最小化。较新的恢复、普通或最大化请求优先；窗口被销毁或原生窗口不可用时不补发。对齐过程中到达的恢复请求也优先，不再执行旧的最小化请求。
 
-English: A minimize requested in the fullscreen-entry callback can be recorded by Qt without AppKit accepting it. On the next event-loop turn, retry only if the same native window remains visible and fullscreen, no transition is active, and the request has not been superseded. First align Qt with the actual fullscreen state, then reissue the minimize; a destroyed or unavailable window, a changed request, or a restore received during alignment cancels the retry.
+English: A minimize requested during fullscreen entry or its completion callback can be overwritten by a later Qt state or recorded without AppKit accepting it. Keep the request for the same native window and, if it remains visible and no transition is active after entry, align Qt with native fullscreen and retry on the next event-loop turn. A newer restore, normal or maximized request takes precedence. A destroyed or unavailable window cancels the retry, as does a restore received during alignment.
 
 密码与退出顺序回归使用真实 AES 等待，覆盖任务通知已建立请求、延迟窗口尚未显示时的同步 Quit，同页、其他会话、其他窗口及选择等待，另以窗口已显示后的真实 posted Quit 作投递对照。必须记录实际通知与投递状态，确认排队密码窗口不覆盖退出决定，返回或等待保留同一令牌，取消后完成全部 join；受控同步通知顺序不能替代某个平台历史事件顺序的证据。
 
