@@ -4260,6 +4260,27 @@ QtObject {
         QCOMPARE(received.size(), 1);
         QVERIFY(received.first().endsWith(QString::fromUtf8("中文 空格;&.zip")));
     }
+#ifdef Q_OS_MACOS
+    void nativeTransitionObserverFollowsSurfaceRecreation() {
+        if (QGuiApplication::platformName() != QStringLiteral("cocoa"))
+            QSKIP("Native transition observation requires Cocoa");
+        QWindow window;
+        window.resize(320, 200);
+        window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        QVERIFY(watchNativeWindowTransitions(&window));
+        // The old native window may disappear while a transition is pending.
+        window.setProperty("xdzipNativeTransition", true);
+        window.destroy();
+        QVERIFY(!window.property("xdzipNativeTransition").toBool());
+        window.create();
+        window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        QVERIFY(watchNativeWindowTransitions(&window));
+        window.showMinimized();
+        QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowMinimized));
+    }
+#endif
     void desktopActivationPreservesWindowState() {
         WindowActivation::install(qApp);
         QQmlApplicationEngine engine;
