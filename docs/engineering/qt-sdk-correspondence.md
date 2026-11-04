@@ -8,7 +8,7 @@ python3 scripts/qt_sdk_correspondence.py \
   --output build/review/qt-sdk-correspondence.json
 ```
 
-默认离线读取 build/source-cache，缺失则失败；显式 --fetch 才按 [固定清单](../../scripts/corresponding-sources.json)下载并校验官方归档。三平台 CI 安装固定 SDK 后运行 --fetch，将 JSON 与其他验证记录一起保留；Mac 仍只上传记录，不部署、签名或打包应用。源码交付收集器传入 --qt-prefix 时，将该记录与补丁、固定清单一起纳入交付哈希，见[源码交付](source-delivery.md)。
+默认离线读取 build/source-cache，缺失则失败；显式 --fetch 才按 [固定清单](../../scripts/corresponding-sources.json)下载并校验官方归档。按需三平台 Qt 工作流安装固定 SDK 后运行 --fetch，将 JSON 与其他验证记录一起保留；Mac 仍只上传记录，不部署、签名或打包应用。源码交付收集器传入 --qt-prefix 时，将该记录与补丁、固定清单一起纳入交付哈希，见[源码交付](source-delivery.md)。
 
 ## 核验层次
 

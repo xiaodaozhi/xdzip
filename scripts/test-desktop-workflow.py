@@ -241,6 +241,18 @@ class WorkflowTests(unittest.TestCase):
         self.assertTrue(all(call.kwargs['env']['QT_QPA_PLATFORM'] == 'offscreen' for call in run.call_args_list))
         self.assertNotIn('QT_QPA_PLATFORM', workflow.env)
         self.assertIn('separate', result['rendering'])
+        self.assertEqual(result['rust_workspace'], 'passed')
+
+    def test_skipped_rust_is_not_reported_as_executed_elsewhere(self):
+        workflow = self.workflow('linux')
+        workflow.args.skip_rust = True
+        self.receipt(workflow)
+        with patch.object(workflow, 'source', return_value=self.source), \
+                patch.object(workflow, 'doctor'), patch.object(workflow, 'run') as run:
+            result = workflow.test()
+        self.assertEqual(result['rust_workspace'], 'not-run')
+        self.assertFalse(any(call.args[0][0] == 'cargo' for call in run.call_args_list))
+        self.assertTrue(any(call.args[0][0] == 'ctest' for call in run.call_args_list))
 
     def test_subscripts_use_the_selected_python_and_same_environment(self):
         workflow = self.workflow('windows')

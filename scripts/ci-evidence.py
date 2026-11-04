@@ -68,7 +68,7 @@ def timings(reader, scope, context):
     expected = {'foundation': {'rust-contracts', 'native-worker', 'rust-tests', 'codec-interop', 'archive-transfers', 'native-bridge'},
                 'qt': {'prepare', 'source-contracts', 'sdk-correspondence', 'settings-compat', 'native-build',
                        'native-integration', 'component-tests', 'browser-repeat', 'resource-metrics', 'visual-default',
-                       'codec-interop', 'visual-density', 'runtime-package', 'deployed-runtime', 'manual-template'}}[scope]
+                       'codec-interop', 'visual-density', 'runtime-package', 'deployed-runtime'}}[scope]
     if scope == 'qt':
         expected |= {'attribution'} if context['platform'] == 'macOS' else {'historical-fixture', 'installer-package', 'installer-lifecycle'}
     require(expected <= phases, 'missing-validation-phase')

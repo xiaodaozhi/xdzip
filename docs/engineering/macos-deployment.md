@@ -1,8 +1,8 @@
 # 本地 macOS 开发 DMG
 
-专用 Release 工作流允许原生部署、必要的 ad-hoc 签名、app.zip 与 DMG 打包及上传，普通 macOS CI 仍保持 SDK 验证策略。同一份已部署、签名并验证的 .app 用于两个发布包，ZIP 解包后另作重定位启动核验，详见[发布协议](release-protocol.md)。
+专用 Release 工作流允许原生部署、必要的 ad-hoc 签名、app.zip 与 DMG 打包及上传，按需 Qt 工作流的 macOS 作业保持 SDK 验证策略。同一份已部署、签名并验证的 .app 用于两个发布包，ZIP 解包后另作重定位启动核验，详见[发布协议](release-protocol.md)。
 
-本地开发 DMG 是允许的开发交付方式，CI 继续只验证 Apple Silicon 原生构建／启动，不自动打包、签名或上传 Mac 应用。本地脚本不安装应用、不改默认关联、不上传文件，不读取发行凭据。
+本地开发 DMG 是允许的开发交付方式；按需 Qt 工作流验证 Apple Silicon 原生构建／启动，不打包、签名或上传 Mac 应用。本地脚本不安装应用、不改默认关联、不上传文件，不读取发行凭据。
 
 ## 制作与核验
 
@@ -17,7 +17,7 @@ python3 scripts/desktop.py package --build-dir build/desktop-dmg --output-dir bu
 python3 scripts/desktop.py verify --build-dir build/desktop-dmg --output-dir build/package-macos --kind all
 ```
 
-各阶段不隐式补跑前序阶段。Qt SDK 默认位于 `.cache/Qt/6.8.2/macos`，其他位置在各命令传入 `--qt-prefix`。普通开发／测试构建默认 `None`；上面的主应用显式选择 `Alternate`，不改变用户默认关联。macOS 本地 package 仅支持 `all`；CI 不允许此打包阶段，也不通过共用入口引入 Mac 应用上传。
+各阶段不隐式补跑前序阶段。Qt SDK 默认位于 `.cache/Qt/6.8.2/macos`，其他位置在各命令传入 `--qt-prefix`。普通开发／测试构建默认 `None`；上面的主应用显式选择 `Alternate`，不改变用户默认关联。macOS 本地 package 仅支持 `all`；按需 Qt 工作流不运行此打包阶段，也不上传 Mac 应用。专用 Release 例外见发布协议。
 
 共用 package 在运行 macdeployqt 前检查原生 arm64、系统 SDK、部署工具、Rust PATH／锁定元数据、Python 校验依赖、Qt 许可与 schema 材料。build、test 允许未提交源码；package 要求干净提交且实际 CLI 身份一致，不能借已有编译缓存绕过。系统编译器、SDK、lipo、codesign 和 hdiutil 由系统工具链提供，不由准备阶段安装。
 

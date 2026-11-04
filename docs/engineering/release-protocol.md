@@ -1,6 +1,6 @@
 # GitHub Release 协议 v1
 
-专用 [Release 工作流](../../.github/workflows/release.yml)由版本标签或手动重跑已有标签触发。普通 macOS CI 仍只进行 SDK 验证；专用发布流程明确允许 Apple Silicon 原生 Qt 部署、必要的 ad-hoc 完整性签名、同一应用的 ZIP 和 DMG 打包与核验。未使用 Developer ID、Apple 公证或 Windows 发行者证书。
+专用 [Release 工作流](../../.github/workflows/release.yml)由版本标签或手动重跑已有标签触发。按需 Qt 工作流的 macOS 作业只进行 SDK 验证；专用发布流程明确允许 Apple Silicon 原生 Qt 部署、必要的 ad-hoc 完整性签名、同一应用的 ZIP 和 DMG 打包与核验。未使用 Developer ID、Apple 公证或 Windows 发行者证书。
 
 完整标签等于 `v` 加 VERSION.json 派生的语义版本。`prerelease_number` 是可选正整数，缺省兼容历史构建号；alpha.1 与 build 14 是不同身份。Windows 数值资源和 macOS CFBundleVersion 仍使用单调递增构建号。公开同一版本的资产不可替换，修订必须使用新版本；草稿可重跑。
 

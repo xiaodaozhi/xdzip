@@ -1,9 +1,5 @@
 name: Qt components
 on:
-  push:
-    branches: [main]
-    tags: ['**']
-  pull_request:
   workflow_dispatch:
 permissions:
   contents: read
@@ -154,7 +150,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
       - name: Save trusted dependency inputs
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.dependency_inputs.outputs.hit != 'true'
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && steps.dependency_inputs.outputs.hit != 'true'
         uses: ./.github/actions/cache-inputs
         with:
           scope: qt

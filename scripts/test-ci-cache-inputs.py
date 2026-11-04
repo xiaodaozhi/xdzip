@@ -55,9 +55,16 @@ class CacheTests(unittest.TestCase):
 
     def test_untrusted_or_non_ci_runs_cannot_seal(self):
         for edits in [{'CI': ''}, {'GITHUB_EVENT_NAME': 'pull_request'},
-                      {'GITHUB_EVENT_NAME': 'workflow_dispatch'}, {'GITHUB_REF': 'refs/heads/coding/owned'}]:
+                      {'GITHUB_EVENT_NAME': 'workflow_dispatch', 'GITHUB_REF': 'refs/heads/coding/owned'},
+                      {'GITHUB_REF': 'refs/heads/coding/owned'}]:
             with self.subTest(edits=edits), self.assertRaises(ValueError):
                 cache.seal(self.plan, self.paths, dict(self.env, **edits))
+
+    def test_manual_main_run_can_save_and_restore_verified_inputs(self):
+        env = dict(self.env, GITHUB_EVENT_NAME='workflow_dispatch')
+        record = cache.seal(self.plan, self.paths, env)
+        self.assertEqual(record['producer_event'], 'workflow_dispatch')
+        self.assertEqual(cache.verify(self.plan, self.paths, record, env), 1)
 
     def test_escape_duplicate_and_credential_roots_are_rejected(self):
         for edits in [{'file': '../credentials'}, {'file': '/outside'}, {'file': 'C:/private'},

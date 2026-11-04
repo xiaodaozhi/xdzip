@@ -14,6 +14,16 @@ from repository_contents import violations
 
 ROOT = Path(__file__).resolve().parents[1]
 
+def markdown_documents(root):
+    # Ask Git for tracked and non-ignored new documents rather than traversing
+    # generated build trees before filtering them out.
+    names = subprocess.check_output(
+        ['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z', '--', '*.md'], cwd=root
+    ).decode('utf-8').split('\0')
+    excluded = {'.git', '.cache', 'dist', '.venv', 'target', 'build'}
+    return sorted(root / name for name in set(names) if name and
+                  not excluded.intersection(Path(name).parts) and (root / name).is_file())
+
 def main():
     failures = violations(ROOT)
     links = 0
@@ -28,10 +38,8 @@ def main():
                 'design/assets/validation.json', 'design/assets/fonts/validation.json',
                 'docs/html/VALIDATION.json', 'docs/html/BROWSER-VALIDATION.json'}:
             failures.append(f'{name}: generated review evidence must not be tracked by Git')
-    documents = sorted(ROOT.rglob('*.md'))
+    documents = markdown_documents(ROOT)
     for path in documents:
-        if any(part in {'.git', '.cache', 'dist', '.venv', 'target', 'build'} for part in path.relative_to(ROOT).parts):
-            continue
         source = re.sub(r'^```[^\n]*\n.*?^```\s*$', '', path.read_text(), flags=re.M | re.S)
         for raw in re.findall(r'!?\[[^\]]*\]\(([^\n)]+)\)', source):
             target = raw.strip().split(' "', 1)[0].strip('<>')

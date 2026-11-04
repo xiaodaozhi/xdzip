@@ -38,7 +38,7 @@ WelcomePage、WelcomeAction 仅表达布局和意图。启动及关闭压缩包�
 
 尺寸取 welcome-reference.json，经 generate-qml-theme.py 进入 Theme；字号放大增长卡片与正文，正文可滚动，键盘聚焦入口时自动滚到可见范围。状态栏和标题区独立增长，不使用 Item.scale。Qt 使用共享 PNG 图标，主按钮为既有深色浅墨图形；不从原稿裁切运行素材。
 
-自动化入口为 tst_welcome.qml、browser_test.cpp 的 welcomeOpensRealArchivesAndReturns 与 scripts/check-qt-welcome.py。三平台 CI 在 DPR 1、1.25、2 检查真实打开、关闭、失败恢复及 36 项几何，菜单同时检查 240 宽、13 字号。离屏结果不代替原生拖放、文件选择器、读屏和输入法人工验收。
+自动化入口为 tst_welcome.qml、browser_test.cpp 的 welcomeOpensRealArchivesAndReturns 与 scripts/check-qt-welcome.py。按需三平台 Qt 工作流在 DPR 1、1.25、2 检查真实打开、关闭、失败恢复及 36 项几何，菜单同时检查 240 宽、13 字号。原生拖放、文件选择器、读屏和输入法按需检查，离屏结果不冒充未执行的桌面操作。
 
 标题栏修订：初版欢迎页中对标题栏的专属样式已撤销。Qt ArchiveTabs 恢复接入前的组件原样，HTML 复用主窗口原有源画布及相同比例；欢迎页只替换正文。旧 PNG 与哈希保持历史记录，新修订为 screens/welcome-titlebar-*.png，源为 design/hifi/sources/welcome.html。回归比较欢迎页与打开压缩包后的标题栏、标签及外观按钮几何，防止空态再次改变应用框架。
 

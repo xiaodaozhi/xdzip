@@ -1,5 +1,5 @@
 name: Verified CI dependency inputs
-description: Restore public dependency downloads, or save them only from trusted main pushes
+description: Restore public dependency downloads, or save them only from trusted main runs
 inputs:
   scope:
     description: foundation or qt
@@ -36,7 +36,7 @@ runs:
       run: python scripts/ci-cache-inputs.py verify --scope "$env:XDZIP_CACHE_SCOPE" --matched-key "$env:XDZIP_MATCHED_CACHE_KEY"
     - name: Freeze trusted dependency inputs
       id: seal
-      if: inputs.mode == 'save' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      if: inputs.mode == 'save' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
       shell: pwsh
       env:
         XDZIP_CACHE_SCOPE: ${{ inputs.scope }}

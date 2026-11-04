@@ -17,7 +17,7 @@ from deployment_audit import ROOT, digest, within
 REPO='xiaodaozhi/xdzip'
 WANTED={'build-version.json','deployment-audit.json','runtime-attribution.json','source-build.cdx.json','artifact-files.cdx.json',
         'qt-sdk-correspondence.json','qt-binary-differences.json','linux-deployment.json','runtime-resources.json','linkage-evidence.json','desktop-performance.json','desktop-input-accessibility.json',
-        'manual-desktop.json','native-redistribution.json','macos-association.json','linux-runtime.json','linux-install-lifecycle.json','windows-install-lifecycle.json',
+        'native-redistribution.json','macos-association.json','linux-runtime.json','linux-install-lifecycle.json','windows-install-lifecycle.json',
         'linux-installer.json','windows-installer.json','settings-compat.json','previous-product.json','build.json',
         'qt-source-build.json','qt-source-product.json'}
 
@@ -79,30 +79,66 @@ def download_records(artifact,output,packages=False):
     return found
 
 
+def require_run(run, names, revision):
+    if (run.get('name') not in names or run.get('head_sha') != revision
+            or run.get('status') != 'completed' or run.get('conclusion') != 'success'):
+        raise ValueError('Wrong, mixed or incomplete CI run')
+
+
+def require_product_jobs(jobs):
+    # A partial rerun may reuse successful jobs from an earlier attempt of the
+    # same run. The latest actual result for each job still has to be successful.
+    latest = {}
+    for job in jobs:
+        name = job.get('name')
+        if not isinstance(name, str) or not job.get('started_at') or not isinstance(job.get('id'), int):
+            raise ValueError('Invalid product job identity')
+        if name not in latest or (job['started_at'], job['id']) > (latest[name]['started_at'], latest[name]['id']):
+            latest[name] = job
+    required = {'qt-plan', 'qt-gate', 'native-qt (ubuntu-24.04)',
+                'native-qt (windows-2022)', 'native-qt (macos-15)'}
+    if (not required <= latest.keys()
+            or any(job.get('status') != 'completed' or job.get('conclusion') != 'success'
+                   for job in latest.values())):
+        raise ValueError('Exact current three-platform product run has not passed')
+
+
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--run',type=int,required=True);p.add_argument('--source-run',type=int)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--run',type=int,required=True)
+    p.add_argument('--foundation-run',type=int,required=True);p.add_argument('--ci-run',type=int,required=True)
+    p.add_argument('--source-run',type=int)
     p.add_argument('--output',type=Path,required=True);p.add_argument('--packages',action='store_true');a=p.parse_args()
     out=a.output.resolve()
     if out.exists() or not within(out,ROOT/'build'):p.error('Use a new build/ directory')
     current=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
-    run=api('actions/runs/'+str(a.run));jobs=api('actions/runs/'+str(a.run)+'/jobs?per_page=100')['jobs']
-    if run.get('name')!='Qt components':raise ValueError('Unexpected product workflow')
-    if run['head_sha']!=current or run['conclusion']!='success' or len(jobs)!=3 or any(j['conclusion']!='success' for j in jobs):raise ValueError('Exact current three-platform product run has not passed')
+    run=api('actions/runs/'+str(a.run));jobs=api('actions/runs/'+str(a.run)+'/jobs?filter=all&per_page=100')['jobs']
+    require_run(run, {'Qt components'}, current)
+    require_product_jobs(jobs)
+    require_run(api('actions/runs/'+str(a.foundation_run)), {'Foundation probes'}, current)
+    require_run(api('actions/runs/'+str(a.ci_run)), {'CI', 'Documentation'}, current)
     out.mkdir(parents=True);receipts=[]
     for category,run_id in [('product',a.run)]+([('qt-source',a.source_run)] if a.source_run else []):
         info=api('actions/runs/'+str(run_id))
-        if info['head_sha']!=current or info['conclusion']!='success':raise ValueError('Mixed or incomplete CI run')
+        require_run(info, {'Qt components'} if category=='product' else {'Qt source runtime validation'}, current)
         for artifact in api('actions/runs/'+str(run_id)+'/artifacts')['artifacts']:
-            name=artifact['name'];platform='macos' if 'macOS' in name else 'windows' if 'Windows' in name else 'linux' if 'Linux' in name else None
+            name=artifact['name']
+            prefixes = ('xdzip-m4-', 'xdzip-checks-') if category=='product' else ('xdzip-qt-source-',)
+            if not name.startswith(prefixes):continue
+            platform='macos' if 'macOS' in name else 'windows' if 'Windows' in name else 'linux' if 'Linux' in name else None
             if not platform:continue
             target=out/platform if category=='product' else out/'source'/platform
             files=download_records(artifact['id'],target,a.packages and category=='product')
+            if category=='product' and not {'build.json','deployment-audit.json'} <= files.keys():
+                raise ValueError('Missing product build or deployment evidence')
+            if category=='product' and a.packages and platform in ('windows','linux'):
+                package = 'xdzip-windows-x64-setup.exe' if platform=='windows' else 'xdzip-ubuntu24.04-amd64.deb'
+                if package not in files:raise ValueError('Requested development installer is missing')
             receipts.append({'category':category,'platform':platform,'artifact_id':artifact['id'],'run_id':run_id,'files':files})
-    checks=api('actions/runs?head_sha='+current+'&event=push&per_page=30')['workflow_runs']
-    required={'Documentation','Foundation probes'}
-    successful={r['name'] for r in checks if r['conclusion']=='success'}
-    if not required<=successful:raise ValueError('Current documentation/foundation checks incomplete')
+    product_platforms=[r['platform'] for r in receipts if r['category']=='product']
+    if len(product_platforms)!=3 or set(product_platforms)!={'macos','windows','linux'}:
+        raise ValueError('Missing or duplicate product platform artifacts')
     report={'schema_version':1,'status':'passed','revision':current,'repository':REPO,'run_id':a.run,'source_run_id':a.source_run,
+            'foundation_run_id':a.foundation_run,'ci_run_id':a.ci_run,
             'all_jobs_succeeded':True,'product_platforms':['macos','windows','linux'],'artifacts':receipts,
             'limits':['CI and artifact records, not human desktop, formal signature or legal approval.']}
     (out/'ci-evidence.json').write_text(json.dumps(report,indent=2)+'\n');print('Collected exact current CI identities and selected bound evidence')

@@ -82,8 +82,8 @@ python3 scripts/run-performance-suite.py --app /path/to/xdzip \
 
 ## 汇总、材料及剩余责任
 
-scripts/collect-wp12-ci.py 从固定项目的精确提交收集 CI 元数据及选定 JSON／开发安装器。令牌仅发送到 GitHub API，不转发到存储重定向；大型工件按范围读取，大小有界，不运行下载的二进制。scripts/prepare-wp12-materials.py 核对 SDK 声明、导入、安装／关联和 SBOM，再把每个上游来源／许可缺口整理为具体审查问题。原始差异和 incomplete 保留，无法从一个哈希推导缺失的发布者构建／签名历史。
+需要复用历史材料收集流程时，`scripts/collect-wp12-ci.py --run <Qt 运行 ID> --foundation-run <Foundation 运行 ID> --ci-run <轻量 CI 运行 ID> --output build/wp12/ci` 显式选择三个成功且与当前提交一致的运行；Qt 和 Foundation 可使用手动运行。收集器核对实际 Qt 作业与三平台工件，不依赖每次 push 自动运行完整矩阵。可选 `--source-run` 指向同提交 Qt 源码验证，`--packages` 另收集 Windows/Linux 开发安装器。令牌仅发送到 GitHub API，不转发到存储重定向；大型工件按范围读取，大小有界，不运行下载的二进制。scripts/prepare-wp12-materials.py 核对 SDK 声明、导入、安装／关联和 SBOM，再把每个上游来源／许可缺口整理为具体审查问题。原始差异和 incomplete 保留，无法从一个哈希推导缺失的发布者构建／签名历史。
 
 scripts/assemble-wp12-evidence.py 自动组装 CI、源码、Qt 替换、性能和三平台包记录，再调用严格门槛，不需要人工拼接 JSON。scripts/wp12-readiness.py 校验每项证据路径、哈希、提交、平台覆盖和类型，拒绝脏构建、混合身份、缺失源码加载标记及不足的采样。所有自动项齐全才输出 automatic_complete=true；release_ready 始终为 false，--require-release-pass 在外部门槛未完时拒绝通过。
 
-最终应交付开发安装器／本地 DMG、源码与通知、同提交 SBOM、性能报告、逐项审查材料和一个汇总报告。自动项完成与正式发行获批分别判断。WP-12 的八项人工验收及支持政策已按所有者结论收口，见 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)与[支持政策](support-policy.md)；后续不因重建证据而要求重复。来源与许可复核继续由[发行审查 #4](https://github.com/xiaodaozhi/xdzip/issues/4)跟踪。新候选或平台扩展仍须按实际变更选择桌面和性能复验，脚本不代替所有者的发行决定或许可复核结论。
+上述汇总工具保留供需要完整历史范围时自愿使用，不是每次提交或候选的必填清单。自动项完成与正式发行获批分别判断。WP-12 的八项人工验收及支持政策已按所有者结论收口，见 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)与[支持政策](support-policy.md)；后续不因重建证据而要求重复。来源与许可复核继续由[发行审查 #4](https://github.com/xiaodaozhi/xdzip/issues/4)跟踪。新候选或平台扩展按实际变更选择桌面和性能复验，脚本不代替所有者的发行决定或许可复核结论。

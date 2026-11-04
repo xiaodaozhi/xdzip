@@ -384,8 +384,6 @@ if ($IsWindows) {
     Invoke-Checked python @('scripts/prepare-association-fixtures.py','--zip','build/desktop/apps/desktop/m2-flat.zip','--output','build/installer-tests/association-fixtures')
     Invoke-Checked pwsh @('-File','scripts/check-windows-install.ps1','-Packages','build/installer-tests/windows-packages','-Fixture','build/desktop/apps/desktop/m2-flat.zip','-Formats','build/installer-tests/association-fixtures','-Output','build/review/windows-install-lifecycle.json')
 }
-Set-CiPhase 'manual-template'
-Invoke-Checked python @('scripts/prepare-private-test.py', '--output', 'build/review/manual-desktop.json')
 $commit = & git rev-parse HEAD
 $distribution = if ($IsMacOS) {
     'Native macOS SDK validation only; no Apple Silicon developer package'

@@ -276,7 +276,7 @@ class Workflow:
         self.run(['ctest', '--test-dir', self.build, '--no-tests=error', '--output-on-failure'], env=env)
         self.build_receipt()
         return {'source': receipt['source'], 'product_sha256': receipt['product_sha256'],
-                'rust_workspace': 'delegated-to-foundation' if self.args.skip_rust else 'passed',
+                'rust_workspace': 'not-run' if self.args.skip_rust else 'passed',
                 'rendering': 'offscreen/software, native desktop acceptance remains separate'}
 
     def package_preflight(self):
@@ -525,7 +525,7 @@ def parser():
     value.add_argument('--install-qt', action='store_true', help='Prepare only, explicitly download pinned Qt if missing')
     value.add_argument('--install-rust', action='store_true', help='Prepare only, install locked toolchain through existing rustup')
     value.add_argument('--packaging', action='store_true', help='Prepare only, download/cache pinned packaging tools and materials')
-    value.add_argument('--skip-rust', action='store_true', help='Test only, delegate Rust tests to a separate Foundation job')
+    value.add_argument('--skip-rust', action='store_true', help='Test only, record Rust workspace tests as not run')
     value.add_argument('--macos-handler-rank', choices=['None', 'Alternate'], default='None')
     value.add_argument('--kind', choices=['runtime', 'installer', 'all'], default='all')
     value.add_argument('--release-distribution', action='store_true', help='Dedicated release only: permit native Apple Silicon deployment, ad-hoc signing and both app ZIP/DMG')

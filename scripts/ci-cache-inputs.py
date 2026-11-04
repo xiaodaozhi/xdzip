@@ -84,12 +84,12 @@ def inventory(selected, paths):
 
 
 def seal(plan, paths, env):
-    if (env.get('CI') != 'true' or env.get('GITHUB_EVENT_NAME') != 'push'
+    if (env.get('CI') != 'true' or env.get('GITHUB_EVENT_NAME') not in ('push', 'workflow_dispatch')
             or env.get('GITHUB_REF') != 'refs/heads/main'):
-        raise ValueError('Only trusted main push may save CI input caches')
+        raise ValueError('Only trusted main runs may save CI input caches')
     return {'schema_version': 1, 'key': plan['key'], 'scope': plan['scope'],
             'host': plan['host'], 'repository': env.get('GITHUB_REPOSITORY', ''),
-            'producer_event': 'push', 'producer_ref': 'refs/heads/main',
+            'producer_event': env['GITHUB_EVENT_NAME'], 'producer_ref': 'refs/heads/main',
             'producer_run': env.get('GITHUB_RUN_ID', ''),
             'files': inventory(plan['root_labels'], paths)}
 
@@ -98,7 +98,7 @@ def verify(plan, paths, record, env):
     if (record.get('schema_version') != 1 or record.get('key') != plan['key']
             or record.get('scope') != plan['scope'] or record.get('host') != plan['host']
             or record.get('repository') != env.get('GITHUB_REPOSITORY', '')
-            or record.get('producer_event') != 'push'
+            or record.get('producer_event') not in ('push', 'workflow_dispatch')
             or record.get('producer_ref') != 'refs/heads/main'):
         raise ValueError('Cache identity or trusted provenance differs')
     files = record.get('files')

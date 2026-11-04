@@ -7,7 +7,7 @@
 | source-build.cdx.json | Cargo 宿主解析的工作区依赖图，含开发／构建工具；声明的 Qt 模块；字体和品牌源文件哈希 | 某个 Rust 包一定静态链接进产品、所有 Qt 插件／内嵌第三方均已识别 |
 | deployment-audit.json | 指定实际工件根的文件 SHA-256、原生二进制导入、SDK／系统／未解析依赖以及实际 CLI 构建身份 | 所有按名称动态加载的 QML／插件、干净安装、系统 ABI、签名或许可证合规 |
 | artifact-files.cdx.json | 实际工件及观察到的外部 SDK 文件，按原生导入建立已知边；绑定源码清单和实际可执行文件版本／提交／dirty | 完整部署组件身份、静态链接归属、Qt 内嵌库许可、正式产品 SBOM 已完成 |
-| manual-desktop.json | 平台和提交已填入、八项均为待验证的人工记录表 | 已执行任何人工操作或通过准入 |
+| 可选桌面记录 | 按实际改动和可用环境记录执行过的桌面检查及限制 | 未执行的操作、其他平台或发行批准 |
 
 源码不把 Cargo 的路径型 opaque ID 写入记录，工作区包不伪造 crates.io purl。工件路径相对于指定根或 Qt SDK 记录，其他外部依赖以内容哈希和文件名标识，不输出私人 SDK 绝对路径。字体使用 OFL-1.1，原创品牌源沿用素材库的 Apache-2.0；声明 Qt 模块不据此推断所有实际部署组件的许可证。
 
@@ -20,7 +20,7 @@
 - 未解析导入、源码与实际二进制版本／提交／dirty 不符、官方 schema 哈希或格式不符、重复／悬空组件引用均阻断相关检查。
 - 原生导入闭合不能替代按名称加载插件的覆盖和干净机器检查。Windows 已部署目录的导入通过也不等于安装器验收。
 
-三平台 CI 保存根目录下的两个 cdx.json、deployment-audit.json 和待填写人工表。macOS 只读取本地编译 .app 与 SDK，仍不运行 macdeployqt、签名、压缩或上传应用包。Linux 通过[独立运行目录](linux-deployment.md)提供 Qt／QML／插件，使用 deployed 核验及无 SDK 容器验证；下载 tar.gz 保留执行位。当前只声明 Ubuntu 24.04、x86_64、X11 基线，不称为通用 Linux 安装器。
+按需三平台 Qt 工作流保存根目录下的两个 cdx.json 和 deployment-audit.json，不自动生成待填写的人工表。macOS 只读取本地编译 .app 与 SDK，普通检查不运行 macdeployqt、签名、压缩或上传应用包。Linux 通过[独立运行目录](linux-deployment.md)提供 Qt／QML／插件，使用 deployed 核验及无 SDK 容器验证；下载 tar.gz 保留执行位。当前只声明 Ubuntu 24.04、x86_64、X11 基线，不称为通用 Linux 安装器。
 
 本地 macOS 示例，先从一致源码重新构建，然后运行：
 

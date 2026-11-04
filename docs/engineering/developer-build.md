@@ -108,7 +108,7 @@ Windows 为 worker 路径加 `.exe`。使用自定义 SDK、build-dir 或 tools-
 
 English: Explicitly prepare the fixed public RAR test data, then pass sources.json.environment, the freshly built worker and the existing public test value to the test child. CAB/optical/basic RAR fixtures ship in the project source; 7z creates its own inputs. The seven public cache files are separate prerequisites. A verified cache supports --archives/--offline; initial fixed downloads are a separate explicit step. Test stages do not implicitly prepare or download these fixture inputs, and the complete ignored runtime selection is retained.
 
-test 仅对子进程启用 offscreen／software，不污染后续命令的桌面环境。日常修改只需按需要重新执行 build 和 test。只验证 Rust 核心仍可执行 `cargo test --workspace --locked`，不需要 Qt。`test --skip-rust` 只用于已经由其他检查负责 Rust 的编排，例如 Foundation probes 已执行同提交 Rust 门槛的 Qt CI，不表示跳过 Qt 测试。
+test 仅对子进程启用 offscreen／software，不污染后续命令的桌面环境。日常修改按变更范围重新构建并验证；只验证 Rust 核心可执行相应 crate 的 `cargo test --locked`，不需要 Qt。`test --skip-rust` 执行 qmllint 与 Qt CTest，但跳过 Rust workspace 和完整原生后端测试，收据将 Rust 记为 `not-run`；需要 Rust 结论时另行执行并记录实际结果。
 
 浏览器测试可直接运行或由现有套件入口分组执行。每个套件进程在项目 `build/test-tmp/` 内创建独立短路径临时根，退出时在测试对象销毁后、Qt 应用销毁前恢复 TEMP、TMP、TMPDIR 并清理；默认设置文件同样隔离。Unix 按实际 sun_path 容量检查临时根加既有 IPC 名称的字节长度，路径过长明确报告前置失败，需缩短检出路径，不转移到项目外或修改产品 IPC。同组辅助进程继承父临时根，保持单实例 IPC 的目录身份，使用私有前置探针并在父进程清理前结束；不同分组不共享。语言重启及打开方式子进程显式传入的测试配置继续共享，不改用新的空配置。运行前实际验证子文件创建、锁、暂存、原子提交与设置读取；失败以 `Fixture precondition` 和非零退出码报告，不跳过测试或放宽窗口隐藏等断言。目录存在及 QTemporaryDir::isValid 不单独证明可写，也不通过调整系统权限使夹具通过。
 
@@ -154,15 +154,19 @@ python3 scripts/desktop.py package --build-dir build/desktop-dmg --output-dir bu
 python3 scripts/desktop.py verify --build-dir build/desktop-dmg --output-dir build/package-macos --kind all
 ```
 
-普通 build 的 macOS handler rank 默认为 `None`，不更改用户默认关联；仅长期保留的主应用或 DMG 输入选择 `Alternate`。macOS 本地 package 只支持 `all`，生成 arm64 开发 DMG 并执行必要 ad-hoc 完整性签名，verify 使用重定位后的 Cocoa／Metal 及真实解压检查。CI 禁止运行 Mac package，不部署、签名、压缩或上传应用包。完整限制与副本注册维护见[Mac 部署指南](macos-deployment.md)。
+普通 build 的 macOS handler rank 默认为 `None`，不更改用户默认关联；仅长期保留的主应用或 DMG 输入选择 `Alternate`。macOS 本地 package 只支持 `all`，生成 arm64 开发 DMG 并执行必要 ad-hoc 完整性签名，verify 使用重定位后的 Cocoa／Metal 及真实解压检查。普通 CI 禁止运行 Mac package，不部署、签名、压缩或上传应用包；专用 Release 例外见[发布协议](release-protocol.md)。完整限制与副本注册维护见[Mac 部署指南](macos-deployment.md)。
 
 部署布局和底层工具分别见[Linux 部署](linux-deployment.md)、[Mac DMG](macos-deployment.md)及[安装与文件关联](installers-associations.md)。Windows/Linux 安装器未正式签名，macOS 未做 Developer ID 签名或公证。安装和运行环境问题使用实际产品与对应平台验证，不以 SDK 下可运行代替独立包核验。
 
 ## 与 CI 的关系
 
-[Qt 工作流](../../.github/workflows/qt-components.yml)通过同一 desktop.py 执行准备、构建、基础测试以及 Windows/Linux 打包和运行时核验。[ci-desktop.ps1](../../scripts/ci-desktop.ps1)保留 CI 专用的重复并发生命周期、性能、视觉、多 DPR、互操作、来源证据及历史安装兼容扩展，不作为开发机日常构建入口。共用阶段不要求 RUNNER_TEMP 或 RUNNER_ARCH；CI 显式传入其路径，普通本地命令使用上述默认目录。
+提交或推送前，先对拟提交的内容执行与变更匹配的本地构建或验证。文档改动运行 `python3 scripts/check-docs.py` 并检查涉及的生成输出；Rust 改动至少检查格式并执行受影响 crate 的构建或测试。涉及隔离格式后端的测试按上文准备实际工作进程和所需夹具。C++、桥接与 QML 改动使用 `python3 scripts/desktop.py build` 构建受影响产品，再执行相关测试；无需为每次改动运行全部格式互操作或重复十次完整浏览器套件。
 
-历史完整产品、真实安装升级／回退及关联生命周期只在一次性 Windows/Linux CI 主机或隔离容器执行，不因统一入口就开放为普通本地 verify 的默认行为。macOS CI 继续使用 SDK 模式部署审计和 Cocoa 启动／文件打开检查，仅保存日志和 JSON。完整门槛与证据边界见[CI 策略](ci-policy.md)。
+新增或修改 QML 窗口时，运行 `python3 scripts/check-window-contracts.py --self-test`、`python3 scripts/check-operation-components.py` 和受影响的双语多字号布局回归。已完成构建后，`python3 scripts/desktop.py test --skip-rust` 可执行完整 Qt 组件与 CTest；也可在配置 Qt SDK 路径和离屏环境后使用 `ctest --test-dir build/desktop -R qt_task_components --output-on-failure` 等现有入口执行相关用例。单选、复选控件变化还要执行 `accessibleRadioActionsCommitSelection`、`accessibleCheckboxActionsCommitIntent` 等与实际改动相符的 QAccessibleActionInterface 回归。
+
+[日常 CI](../../.github/workflows/docs.yml)只运行轻量静态检查，不代替本地产品构建。[Foundation](../../.github/workflows/foundation.yml) 和 [Qt 工作流](../../.github/workflows/qt-components.yml)仅按需手动运行，Qt 工作流通过同一 desktop.py 执行构建、Qt 测试以及 Windows/Linux 打包和运行时核验。[ci-desktop.ps1](../../scripts/ci-desktop.ps1)保留按需运行的重复、视觉、互操作和安装兼容检查，不作为日常本地验证的必选入口。
+
+历史完整产品、真实安装升级／回退及关联生命周期只在一次性 Windows/Linux CI 主机或隔离容器执行，不因统一入口就开放为普通本地 verify 的默认行为。按需 Qt 工作流的 macOS 作业使用 SDK 模式部署审计和 Cocoa 启动／文件打开检查，仅保存日志和 JSON。完整检查与证据边界见[CI 策略](ci-policy.md)。
 
 ## 文件与任务边界
 
@@ -172,7 +176,7 @@ ZIP 在受限 POSIX 条件下可恢复相对符号链接和可执行位，不恢
 
 ## 证据与复验
 
-按[通用验证方法](../qa/README.md)和[桌面清单](../qa/private-test-manual.md)选择受影响项。构建与测试收据分别保存在 build-dir 下的 `desktop-build.json`、`desktop-test.json`，prepare、package 和 verify 回执位于 output-dir 的 `<stage>.json`，并关联底层验证证据。自动化收据记录实际阶段与来源；离屏／软件渲染、原生 Cocoa 检查和人工专项分别登记，不相互替代。既有验收在 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)保留，不因重新生成候选清单而重做。
+按[通用验证方法](../qa/README.md)和[按需桌面验证](../qa/private-test-manual.md)选择受影响项，不要求日常填写人工验收表。构建与测试收据分别保存在 build-dir 下的 `desktop-build.json`、`desktop-test.json`，prepare、package 和 verify 回执位于 output-dir 的 `<stage>.json`，并关联底层验证证据。自动化收据记录实际阶段与来源；离屏／软件渲染、原生 Cocoa 检查和已执行的人工专项分别登记，不相互替代。既有验收在 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)保留，不因重新生成候选清单而重做。
 
 Windows/Linux 工件交付同提交源码和许可通知，Actions 保存 14 天；过期后按身份和锁定输入重建。deployment-audit.json、源码及文件级 CycloneDX 清单用于来源核验，覆盖仍可能为 incomplete，不能当作许可批准。源码重建与 Qt 替换方法见[源码交付](source-delivery.md)及[自动验证契约](wp12-automation.md)。
 

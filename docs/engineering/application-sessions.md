@@ -68,7 +68,9 @@ English: One normal product process and tray serve each user login session. Each
 
 阻塞弹窗期间接收的外部打开保留最后一个激活意图，先激活阻塞窗口，待其关闭后显示对应新窗口，不使隐藏的新窗口失去入口。设置窗口保留实际调用者，不因另一主窗口获得焦点而改变所属关系。
 
-原生回归入口为 `python3 scripts/check-native-sessions.py --tests <browser-tests> --output build/review/native-sessions.json`。Linux 使用 Xvfb 和 Openbox 的真实 X11 窗口管理路径，Windows、macOS 使用系统窗口管理器；脚本只管理自己启动的验证进程。普通 CI 与 Release 共用此入口，原生日志和 JSON 保存在 build/ 或 CI 工件，不能据此宣称完成人工视觉、GPU、输入法或屏幕阅读验收。
+原生回归入口为 `python3 scripts/check-native-sessions.py --tests <browser-tests> --output build/review/native-sessions.json`。Linux 使用 Xvfb 和 Openbox 的真实 X11 窗口管理路径，Windows、macOS 使用系统窗口管理器；脚本只管理自己启动的验证进程。按需 Qt 工作流与 Release 共用此入口，原生日志和 JSON 保存在 build/ 或 CI 工件，不能据此宣称完成未执行的人工视觉、GPU、输入法或屏幕阅读检查。
+
+Linux 在 Openbox 的 `--startup` 回调后才创建 Qt 测试进程；`_NET_SUPPORTING_WM_CHECK` 仅声明窗口管理器身份，不能证明主题和事件处理已经就绪。`scripts/check-x11-startup.py` 与 `scripts/test-x11-startup-supervision.py` 分别检查冷启动就绪和超时清理，保留各自进程日志，不用增加等待或重试代替原有首窗断言。
 
 关闭主窗口与最小化不同。关闭有托盘的最后窗口会清空该窗口所有浏览标签，关闭包括设置在内的全部所属弹窗，已生效的设置保留，销毁其原生窗口资源后再隐藏主窗口；从托盘、Dock 或无文件参数的第二次启动唤出后仅显示一个起始页，不恢复旧标签或附属弹窗。非最后窗口继续关闭并清理自己的浏览标签与附属弹窗，其他窗口不受影响。后台任务及提示令牌仍由原控制器保留，用户明确打开任务时才重新创建对应原生窗口。存在阻塞模态窗口时先激活它，不接受主窗口关闭。
 

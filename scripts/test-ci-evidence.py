@@ -16,7 +16,7 @@ spec.loader.exec_module(ci)
 SOURCE = 'a' * 40
 QT_PHASES = ['prepare', 'source-contracts', 'sdk-correspondence', 'settings-compat', 'native-build',
              'native-integration', 'component-tests', 'browser-repeat', 'resource-metrics', 'visual-default',
-             'codec-interop', 'visual-density', 'runtime-package', 'deployed-runtime', 'manual-template',
+             'codec-interop', 'visual-density', 'runtime-package', 'deployed-runtime',
              'historical-fixture', 'installer-package', 'installer-lifecycle']
 
 

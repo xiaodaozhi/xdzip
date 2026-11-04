@@ -7,8 +7,7 @@
 <p align="center"><strong>先浏览，再解压。</strong><br>面向 macOS、Windows 和 Linux 的开源压缩包管理工具。</p>
 
 <p align="center">
-  <a href="https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml"><img src="https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml/badge.svg?branch=main" alt="Qt 三平台构建"></a>
-  <a href="https://github.com/xiaodaozhi/xdzip/actions/workflows/foundation.yml"><img src="https://github.com/xiaodaozhi/xdzip/actions/workflows/foundation.yml/badge.svg?branch=main" alt="Rust 核心检查"></a>
+  <a href="https://github.com/xiaodaozhi/xdzip/actions/workflows/docs.yml"><img src="https://github.com/xiaodaozhi/xdzip/actions/workflows/docs.yml/badge.svg?branch=main" alt="日常轻量检查"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-blue.svg" alt="Apache License 2.0"></a>
 </p>
 
@@ -68,7 +67,7 @@
 
 预发布通过 [GitHub Releases](https://github.com/xiaodaozhi/xdzip/releases)提供六类下载包与校验清单，公开前仍保留为草稿。Windows 开发包保留应用目录内 VC++ 运行库，不携带 Windows SDK 图形编译库或软件 OpenGL 回退库；Mac 包仅 ad-hoc 完整性签名。发行材料要求与更新协议见[发布说明](docs/engineering/release-protocol.md)。
 
-当前也可从 [GitHub Actions](https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml?query=branch%3Amain) 获取通过检查的 Windows、Linux 开发工件，或从源码构建。选择 main 分支中成功完成的运行，在页面底部 **Artifacts** 下载对应平台工件；下载可能需要登录 GitHub，工件通常保留 14 天。
+可按需手动运行 [Qt components](https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml) 工作流，获取 Windows、Linux 开发工件，或从源码构建。选择对应提交且成功完成的手动运行，在页面底部 **Artifacts** 下载对应平台工件；下载可能需要登录 GitHub，工件通常保留 14 天。日常 CI 不自动生成开发包。
 
 | 平台 | 支持范围 | 开发交付方式 |
 | --- | --- | --- |

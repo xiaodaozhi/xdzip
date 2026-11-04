@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate workflow graphs and retain desktop CI without browser-driven web tests."""
+"""Validate lightweight CI and the separately dispatched desktop workflows."""
 import importlib.util
 from pathlib import Path
 import re
@@ -106,23 +106,51 @@ class WorkflowTests(unittest.TestCase):
             validate_job_env_contexts({'env': {'X': '${{ runner.temp }}/test'}})
         validate_job_env_contexts({'steps': [{'env': {'X': '${{ runner.temp }}/test'}}]})
 
-    def test_default_workflow_gates_match_evidence_producers(self):
+    def test_only_lightweight_workflow_runs_on_pull_requests_and_main(self):
         ordinary = {name for name, value in self.workflows.items()
                     if 'pull_request' in value.get('on', {})}
-        self.assertEqual(ordinary, {'docs.yml', 'foundation.yml', 'qt-components.yml'})
-        self.assertEqual(set(self.plan.SCOPES), {'docs', 'foundation', 'qt'})
-        self.assertEqual(set(self.evidence.JOBS), set(self.plan.SCOPES))
-        for filename, scope in [('docs.yml', 'docs'), ('foundation.yml', 'foundation'),
-                                ('qt-components.yml', 'qt')]:
+        self.assertEqual(ordinary, {'docs.yml'})
+        push_workflows = {name for name, value in self.workflows.items() if 'push' in value.get('on', {})}
+        self.assertEqual(push_workflows, {'docs.yml', 'release.yml'})
+        workflow = self.workflows['docs.yml']
+        self.assertEqual(workflow['name'], 'CI')
+        self.assertEqual(set(workflow['on']), {'push', 'pull_request', 'workflow_dispatch'})
+        self.assertEqual(workflow['on']['push']['branches'], ['main'])
+        self.assertNotIn('tags', workflow['on']['push'])
+        self.assertEqual(set(workflow['jobs']), {'checks'})
+        runs = '\n'.join(step.get('run', '') for step in workflow['jobs']['checks']['steps'])
+        for required in ['cargo fmt --all -- --check', 'clang-format --dry-run --Werror',
+                         'scripts/check-docs.py', 'scripts/check-ui-i18n.py',
+                         'scripts/check-window-contracts.py', 'scripts/check-operation-components.py',
+                         'scripts/test-ci-workflows.py']:
+            self.assertIn(required, runs)
+        for heavy in ['cargo test', 'cmake --build', 'ctest ', 'ci-desktop.ps1',
+                      'check-foundation.ps1', 'ci-evidence.py', 'ci-plan.py']:
+            self.assertNotIn(heavy, runs)
+
+    def test_full_workflows_are_manually_dispatched_and_keep_their_gates(self):
+        for filename, scope in [('foundation.yml', 'foundation'), ('qt-components.yml', 'qt')]:
             with self.subTest(scope=scope):
                 workflow = self.workflows[filename]
-                self.assertIn('push', workflow['on'])
-                self.assertIn('workflow_dispatch', workflow['on'])
+                self.assertEqual(set(workflow['on']), {'workflow_dispatch'})
                 gate = workflow['jobs'][scope + '-gate']
                 self.assertEqual(set(gate['needs']), set(self.evidence.JOBS[scope]))
                 self.assertEqual(gate.get('if'), 'always()')
                 runs = '\n'.join(step.get('run', '') for step in gate['steps'])
                 self.assertIn('ci-evidence.py gate --scope ' + scope, runs)
+                job = workflow['jobs']['bridge' if scope == 'foundation' else 'native-qt']
+                save = [step for step in job['steps'] if step.get('name') == 'Save trusted dependency inputs']
+                self.assertEqual(len(save), 1)
+                self.assertIn("github.event_name == 'workflow_dispatch'", save[0]['if'])
+                self.assertIn("github.ref == 'refs/heads/main'", save[0]['if'])
+
+    def test_release_retains_its_own_native_build_and_tag_trigger(self):
+        workflow = self.workflows['release.yml']
+        self.assertEqual(workflow['on']['push']['tags'], ['v*'])
+        self.assertIn('workflow_dispatch', workflow['on'])
+        native = workflow['jobs']['native']
+        self.assertEqual(set(native['strategy']['matrix']['os']), {'windows-2022', 'macos-15', 'ubuntu-24.04'})
+        self.assertIn('scripts/ci-release.ps1', '\n'.join(step.get('run', '') for step in native['steps']))
 
     def test_workflows_do_not_start_web_browser_tests(self):
         browser_drivers = re.compile(r'playwright|chromium|webdriver|selenium', re.I)
@@ -151,24 +179,23 @@ class WorkflowTests(unittest.TestCase):
                         self.assertNotIn('--html', line)
                         self.assertNotIn('--native-zoom', line)
 
-    def test_docs_use_isolated_pinned_rust_before_rust_tests(self):
-        job = self.workflows['docs.yml']['jobs']['docs']
+    def test_lightweight_ci_uses_isolated_pinned_rust_for_formatting(self):
+        job = self.workflows['docs.yml']['jobs']['checks']
         self.assertNotIn('RUSTUP_HOME', job.get('env', {}))
         steps = job['steps']
         prepare = [i for i, step in enumerate(steps)
                    if step.get('name') == 'Prepare isolated pinned Rust toolchain']
         self.assertEqual(len(prepare), 1)
         step = steps[prepare[0]]
-        self.assertEqual(step['env']['RUSTUP_HOME'], '${{ runner.temp }}/xdzip-docs-rustup')
+        self.assertEqual(step['env']['RUSTUP_HOME'], '${{ runner.temp }}/xdzip-ci-rustup')
         self.assertIn('>> "$GITHUB_ENV"', step['run'])
         self.assertNotIn('continue-on-error', step)
         version = tomllib.loads((ROOT / 'rust-toolchain.toml').read_text(encoding='utf-8'))['toolchain']['channel']
         for required in [f'rustup toolchain install {version} --profile minimal --component rustfmt --component clippy',
-                         f'toolchains/{version}-*/bin/rustc', 'rustup which rustc', '$RUSTUP_HOME',
-                         'cargo clippy --version', 'rustfmt --version']:
+                         f'toolchains/{version}-*/bin/rustc', 'rustup which rustc', '$RUSTUP_HOME']:
             self.assertIn(required, step['run'])
         consumers = [i for i, item in enumerate(steps)
-                     if 'scripts/test-production-update-signing.py' in item.get('run', '')]
+                     if 'cargo fmt --all -- --check' in item.get('run', '')]
         self.assertEqual(len(consumers), 1)
         self.assertLess(prepare[0], consumers[0])
 
@@ -202,6 +229,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn('native-qt', self.workflows['qt-components.yml']['jobs'])
         self.assertEqual(self.evidence.JOBS['qt'], ['qt-plan', 'native-qt'])
         self.assertIn('browser_evidence', (ROOT / 'scripts/ci-evidence.py').read_text(encoding='utf-8'))
+        self.assertNotIn('prepare-private-test.py', source)
 
     def test_macos_attribution_links_run_on_native_macos(self):
         steps = self.workflows['qt-components.yml']['jobs']['native-qt']['steps']

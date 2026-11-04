@@ -4,7 +4,7 @@
 
 - [产品验收要求](acceptance.md)
 - [样本与夹具规则](fixtures.md)
-- [原生桌面与安装人工验证方法](private-test-manual.md)
+- [按需桌面验证方法](private-test-manual.md)
 - [发行审查流程](release-review.md)
 - [CI 策略](../engineering/ci-policy.md)
 - [部署依赖与 SBOM 契约](../engineering/deployment-audit.md)
@@ -23,6 +23,6 @@ English: First-frame menu checks locate sequence and status tags by object name 
 
 截图、日志、逐次测量和机器报告输出到 `build/` 或 `dist/`，按 CI 保留政策上传 [Actions 工件](https://github.com/xiaodaozhi/xdzip/actions)。issue 引用实际运行、提交、工件摘要和限制，不粘贴整个生成报告，不将过期工件或配置成功冒充验证通过。长期发行材料由实际 Release 随包提供，发布仍需明确授权。
 
-本机暂时无法提供无遮挡前台时，可手动调度 [Windows 原生视觉诊断](../../.github/workflows/windows-native-visual.yml)，从一次性 hosted runner 收集菜单与自有窗口图像。方法和限制见 [CI 策略](../engineering/ci-policy.md)。它使用独立的自动化来源记录，保留原生捕获护栏；不得将无人值守结果填成真人点击，也不得将虚拟屏幕当成物理多显示器验收。
+桌面检查按实际改动和可用环境选择，不要求维护者为每次提交填写固定人工验收表。本机暂时无法提供无遮挡前台时，可手动调度 [Windows 原生视觉诊断](../../.github/workflows/windows-native-visual.yml)，从一次性 hosted runner 收集菜单与自有窗口图像。方法和限制见 [CI 策略](../engineering/ci-policy.md)。它使用独立的自动化来源记录，保留原生捕获护栏；不得将无人值守结果填成真人点击，也不得将虚拟屏幕当成物理多显示器验收。
 
 `design/hifi/` 保存设计原稿，`design/assets/` 保存产品素材，`tests/fixtures/` 保存自有可再分发回归输入；它们是持久输入，与实际运行的截图或测量输出不同。内容边界和历史整理方法见[仓库内容管理](../engineering/repository-hygiene.md)。
