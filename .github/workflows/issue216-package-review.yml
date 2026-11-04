@@ -1,0 +1,51 @@
+name: Temporary alpha.9 Windows package review
+on:
+  push:
+    branches: [coding/issue216-package-review]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Check source workflow identity and fetch its Windows artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/xiaodaozhi/xdzip/actions/runs/41779593888 > "$RUNNER_TEMP/source-run.json"
+          python3 -c 'import json,os; x=json.load(open(os.environ["RUNNER_TEMP"]+"/source-run.json")); assert x["head_sha"]=="a3552db52a3db40f967490046a96126c2805f9b3" and x["event"]=="workflow_dispatch" and x["path"]==".github/workflows/release.yml"'
+          gh run download 41779593888 --repo xiaodaozhi/xdzip --name release-Windows --dir "$RUNNER_TEMP/packages"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: dscharrer/innoextract
+          ref: 376a13e7c41cc5528b6088d0dd16ec1b323a8d37
+          path: _review/innoextract
+          persist-credentials: false
+      - name: Build fixed upstream installer parser
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libboost-iostreams-dev libboost-filesystem-dev libboost-date-time-dev libboost-system-dev libboost-program-options-dev liblzma-dev
+          cmake -S _review/innoextract -B "$RUNNER_TEMP/innoextract-build" -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build "$RUNNER_TEMP/innoextract-build" --parallel 3
+      - name: Extract statically and compare complete application payloads
+        run: |
+          set -eu
+          setup="$RUNNER_TEMP/packages/xdzip-0.1.0-alpha.9-windows-x86_64-setup.exe"
+          portable="$RUNNER_TEMP/packages/xdzip-0.1.0-alpha.9-windows-x86_64.zip"
+          test -f "$setup" && test -f "$portable"
+          mkdir -p build/issue216-review
+          sha256sum "$setup" "$portable" | sed "s|$RUNNER_TEMP/packages/||" > build/issue216-review/SHA256SUMS
+          "$RUNNER_TEMP/innoextract-build/innoextract" --extract --output-dir "$RUNNER_TEMP/extracted" "$setup"
+          python3 .github/issue216-review/compare-windows-artifacts.py --installer-app "$RUNNER_TEMP/extracted/app" --portable "$portable" --output build/issue216-review/comparison.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: issue216-windows-package-review
+          path: build/issue216-review/
+          if-no-files-found: warn
+          retention-days: 14
