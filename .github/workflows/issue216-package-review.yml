@@ -22,9 +22,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh api repos/xiaodaozhi/xdzip/actions/runs/41799728828 > "$RUNNER_TEMP/source-run.json"
+          gh api repos/xiaodaozhi/xdzip/actions/runs/41806437106 > "$RUNNER_TEMP/source-run.json"
           python3 -c 'import json,os; x=json.load(open(os.environ["RUNNER_TEMP"]+"/source-run.json")); assert x["head_sha"]=="bdd0002011ec888c7d29dc158b4d27a107b93dce" and x["event"]=="workflow_dispatch" and x["path"]==".github/workflows/release.yml"'
-          gh run download 41799728828 --repo xiaodaozhi/xdzip --name release-Windows --dir "$RUNNER_TEMP/packages"
+          gh run download 41806437106 --repo xiaodaozhi/xdzip --name release-Windows --dir "$RUNNER_TEMP/packages"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: dscharrer/innoextract
@@ -67,11 +67,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $run = gh api repos/xiaodaozhi/xdzip/actions/runs/41799728828 | ConvertFrom-Json
+          $run = gh api repos/xiaodaozhi/xdzip/actions/runs/41806437106 | ConvertFrom-Json
           if ($LASTEXITCODE -ne 0 -or $run.head_sha -ne 'bdd0002011ec888c7d29dc158b4d27a107b93dce' -or $run.event -ne 'workflow_dispatch' -or $run.path -ne '.github/workflows/release.yml') { throw 'Unexpected source workflow identity' }
           $dest = Join-Path $env:RUNNER_TEMP 'issue216-packages'
           New-Item -ItemType Directory -Path $dest | Out-Null
-          gh run download 41799728828 --repo xiaodaozhi/xdzip --name release-Windows --dir $dest
+          gh run download 41806437106 --repo xiaodaozhi/xdzip --name release-Windows --dir $dest
           if ($LASTEXITCODE -ne 0) { throw 'Candidate download failed' }
           gh release download v0.1.0-alpha.8 --repo xiaodaozhi/xdzip --pattern xdzip-0.1.0-alpha.8-windows-x86_64-setup.exe --dir $dest
           if ($LASTEXITCODE -ne 0) { throw 'Original download failed' }
