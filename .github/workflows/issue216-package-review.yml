@@ -22,9 +22,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh api repos/xiaodaozhi/xdzip/actions/runs/41841649372 > "$RUNNER_TEMP/source-run.json"
-          python3 -c 'import json,os; x=json.load(open(os.environ["RUNNER_TEMP"]+"/source-run.json")); assert x["head_sha"]=="8b277ac418561b754cf16bd41adefe908285cca6" and x["event"]=="workflow_dispatch" and x["path"]==".github/workflows/release.yml" and x["status"]=="completed" and x["conclusion"]=="success"'
-          gh run download 41841649372 --repo xiaodaozhi/xdzip --name release-Windows --dir "$RUNNER_TEMP/packages"
+          gh api repos/xiaodaozhi/xdzip/actions/runs/41854744310 > "$RUNNER_TEMP/source-run.json"
+          gh api repos/xiaodaozhi/xdzip/actions/runs/41854744310/jobs > "$RUNNER_TEMP/source-jobs.json"
+          python3 -c 'import json,os; p=os.environ["RUNNER_TEMP"]; x=json.load(open(p+"/source-run.json")); assert x["head_sha"]=="8b277ac418561b754cf16bd41adefe908285cca6" and x["event"]=="push" and x["head_branch"]=="v0.1.0-alpha.9" and x["path"]==".github/workflows/release.yml"; j=[j for j in json.load(open(p+"/source-jobs.json"))["jobs"] if j["name"]=="native (windows-2022)"]; assert len(j)==1 and j[0]["status"]=="completed" and j[0]["conclusion"]=="success"'
+          gh run download 41854744310 --repo xiaodaozhi/xdzip --name release-Windows --dir "$RUNNER_TEMP/packages"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: dscharrer/innoextract
@@ -67,11 +68,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $run = gh api repos/xiaodaozhi/xdzip/actions/runs/41841649372 | ConvertFrom-Json
-          if ($LASTEXITCODE -ne 0 -or $run.head_sha -ne '8b277ac418561b754cf16bd41adefe908285cca6' -or $run.event -ne 'workflow_dispatch' -or $run.path -ne '.github/workflows/release.yml' -or $run.status -ne 'completed' -or $run.conclusion -ne 'success') { throw 'Unexpected source workflow identity or result' }
+          $run = gh api repos/xiaodaozhi/xdzip/actions/runs/41854744310 | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0 -or $run.head_sha -ne '8b277ac418561b754cf16bd41adefe908285cca6' -or $run.event -ne 'push' -or $run.head_branch -ne 'v0.1.0-alpha.9' -or $run.path -ne '.github/workflows/release.yml') { throw 'Unexpected source workflow identity' }
+          $jobs = gh api repos/xiaodaozhi/xdzip/actions/runs/41854744310/jobs | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) { throw 'Source jobs could not be read' }
+          $native = @($jobs.jobs | Where-Object { $_.name -eq 'native (windows-2022)' })
+          if ($native.Count -ne 1 -or $native[0].status -ne 'completed' -or $native[0].conclusion -ne 'success') { throw 'Windows release job did not pass' }
           $dest = Join-Path $env:RUNNER_TEMP 'issue216-packages'
           New-Item -ItemType Directory -Path $dest | Out-Null
-          gh run download 41841649372 --repo xiaodaozhi/xdzip --name release-Windows --dir $dest
+          gh run download 41854744310 --repo xiaodaozhi/xdzip --name release-Windows --dir $dest
           if ($LASTEXITCODE -ne 0) { throw 'Candidate download failed' }
           gh release download v0.1.0-alpha.8 --repo xiaodaozhi/xdzip --pattern xdzip-0.1.0-alpha.8-windows-x86_64-setup.exe --dir $dest
           if ($LASTEXITCODE -ne 0) { throw 'Original download failed' }
