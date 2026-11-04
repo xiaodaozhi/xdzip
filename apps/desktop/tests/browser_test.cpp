@@ -4276,6 +4276,7 @@ QtObject {
         bool requested = false;
         bool interruptArmed = false;
         bool interrupted = false;
+        bool nextTurn = false;
         QWindow window;
         window.resize(480, 320);
         window.show();
@@ -4310,6 +4311,13 @@ QtObject {
             QVERIFY(window.windowStates().testFlag(Qt::WindowMinimized));
             WindowActivation::reveal(&window);
             QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowFullScreen));
+        }
+        if (window.handle()) {
+            QTimer::singleShot(0, &window, [&] { nextTurn = true; });
+            QTRY_VERIFY(nextTurn);
+            window.setWindowState(Qt::WindowNoState);
+            QTRY_VERIFY(cocoaActivationIsVisible(&window) && !cocoaActivationInFlight(&window) &&
+                        !nativeWindowMatchesState(&window, Qt::WindowFullScreen));
         }
     }
     void nativeTransitionObserverFollowsSurfaceRecreation() {

@@ -144,44 +144,61 @@ class NativeWindowTransitionObserver final : public QObject {
                  NSWindowWillMiniaturizeNotification
              ]) {
             [m_tokens
-                addObject:[[NSNotificationCenter defaultCenter]
-                              addObserverForName:name
-                                          object:native
-                                           queue:nil
-                                      usingBlock:^(NSNotification *notification) {
-                                        if (guarded &&
-                                            guarded->property("xdzipTraceActivation").toBool())
-                                            qInfo() << "activation native notification"
-                                                    << QString::fromNSString(notification.name)
-                                                    << "states" << guarded->windowStates()
-                                                    << "miniaturized" << native.miniaturized
-                                                    << "pending"
-                                                    << guarded->property("xdzipWakePending");
-                                        if (guarded)
-                                            guarded->setProperty("xdzipNativeTransition", true);
-                                      }]];
+                addObject:
+                    [[NSNotificationCenter defaultCenter]
+                        addObserverForName:name
+                                    object:native
+                                     queue:nil
+                                usingBlock:^(NSNotification *notification) {
+                                  if (guarded && guarded->property("xdzipTraceActivation").toBool())
+                                      qInfo() << "activation native notification"
+                                              << QString::fromNSString(notification.name)
+                                              << "states" << guarded->windowStates()
+                                              << "miniaturized" << native.miniaturized << "pending"
+                                              << guarded->property("xdzipWakePending");
+                                  if (guarded) {
+                                      const bool mini = [notification.name
+                                          isEqualToString:NSWindowWillMiniaturizeNotification];
+                                      guarded->setProperty(mini ? "xdzipTestMiniTransition"
+                                                                : "xdzipTestFullTransition",
+                                                           true);
+                                      guarded->setProperty("xdzipNativeTransition", true);
+                                  }
+                                }]];
         }
         for (NSNotificationName name in @[
                  NSWindowDidEnterFullScreenNotification, NSWindowDidExitFullScreenNotification,
                  NSWindowDidMiniaturizeNotification, NSWindowDidDeminiaturizeNotification
              ]) {
             [m_tokens
-                addObject:[[NSNotificationCenter defaultCenter]
-                              addObserverForName:name
-                                          object:native
-                                           queue:nil
-                                      usingBlock:^(NSNotification *notification) {
-                                        if (guarded &&
-                                            guarded->property("xdzipTraceActivation").toBool())
-                                            qInfo() << "activation native notification"
-                                                    << QString::fromNSString(notification.name)
-                                                    << "states" << guarded->windowStates()
-                                                    << "miniaturized" << native.miniaturized
-                                                    << "pending"
-                                                    << guarded->property("xdzipWakePending");
-                                        if (guarded)
-                                            guarded->setProperty("xdzipNativeTransition", false);
-                                      }]];
+                addObject:
+                    [[NSNotificationCenter defaultCenter]
+                        addObserverForName:name
+                                    object:native
+                                     queue:nil
+                                usingBlock:^(NSNotification *notification) {
+                                  if (guarded && guarded->property("xdzipTraceActivation").toBool())
+                                      qInfo() << "activation native notification"
+                                              << QString::fromNSString(notification.name)
+                                              << "states" << guarded->windowStates()
+                                              << "miniaturized" << native.miniaturized << "pending"
+                                              << guarded->property("xdzipWakePending");
+                                  if (guarded) {
+                                      const bool mini =
+                                          [notification.name
+                                              isEqualToString:NSWindowDidMiniaturizeNotification] ||
+                                          [notification.name
+                                              isEqualToString:NSWindowDidDeminiaturizeNotification];
+                                      guarded->setProperty(mini ? "xdzipTestMiniTransition"
+                                                                : "xdzipTestFullTransition",
+                                                           false);
+                                      guarded->setProperty(
+                                          "xdzipNativeTransition",
+                                          guarded->property("xdzipTestMiniTransition").toBool() ||
+                                              guarded->property("xdzipTestFullTransition")
+                                                  .toBool());
+                                  }
+                                }]];
         }
         return true;
     }
@@ -208,6 +225,8 @@ class NativeWindowTransitionObserver final : public QObject {
         [m_tokens removeAllObjects];
         m_native = nil;
         if (m_window) {
+            m_window->setProperty("xdzipTestMiniTransition", false);
+            m_window->setProperty("xdzipTestFullTransition", false);
             m_window->setProperty("xdzipNativeTransition", false);
             m_window->setProperty("xdzipNativeWatchedIdentity", QVariant());
         }
