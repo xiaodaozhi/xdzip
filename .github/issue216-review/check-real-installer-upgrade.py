@@ -10,7 +10,7 @@ import winreg
 
 BLOCKED = {'d3dcompiler_47.dll', 'dxcompiler.dll', 'dxil.dll'}
 OLD_HASH = '246e0107c4d1e0c2c64f296042bfcafc4e8f92768c76b50cc9fc80c065a10600'
-NEW_REVISION = 'e98706b96ae4'
+NEW_REVISION = '5c24088ab517'
 
 
 def digest(path):
