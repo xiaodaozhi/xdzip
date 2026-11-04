@@ -19,6 +19,7 @@
       "role": "main",
       "width": "Theme.mainWindowWidth",
       "statusbar_policy": "Welcome and archive pages share a 32-unit minimum status bar, growing by the same task-control metrics for larger text. Both task buttons use the same 16-unit task-list icon from layout-scale.json main.interaction.taskIconSize.",
+      "reopen_wait_policy": "A pending reopen during an archive modification reuses the welcome opening overlay and its existing dimensions; the message identifies the wait and cancellation affects only the new open request.",
       "owned_dialog_policy": "Closing the main window dismisses all its dialogs and releases their native surfaces; retained tasks reopen views only on explicit task activation.",
       "operation_overlay_policy": "Archive edits retain the file page below a transparent blocking overlay using the existing welcome opening card metrics and operation-specific text.",
       "operation_overlay_design": "design/hifi/sources/main.html?operation=add",
@@ -47,7 +48,7 @@
       "role": "operation",
       "width": "Theme.operationExtractWidth",
       "design": "design/html/canvas.html?view=extract",
-      "reason": "原生与正文标题均为解压文件，正文与共享 footer 沿用冻结尺寸",
+      "reason": "原生与正文标题均为解压文件，正文与共享 footer 沿用冻结尺寸；目标状态复用创建窗口的图标与提示，保留原有路径框及同名文件夹布局",
       "header_design": "design/hifi/sources/operation-headers.html",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
       "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."

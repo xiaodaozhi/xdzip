@@ -360,6 +360,7 @@ void BrowserController::openPath(const QString &path) {
     // This comparison only deduplicates UI intents; it grants no output authority.
     const auto key = openKey(path);
     m_createdArchivesToOpen.removeIf([&](const QString &queued) { return openKey(queued) == key; });
+    invalidateTarget();
     m_restoreAfterUpdate = false;
     m_committedQuery = {};
     m_directory.clear();
@@ -379,6 +380,39 @@ void BrowserController::openPath(const QString &path) {
     m_model.replace({});
     replaceDirectories({});
     start(path, 0);
+}
+void BrowserController::discardBrowsing() {
+    if (m_browsingDetached)
+        return;
+    m_browsingDetached = true;
+    m_deferredQuery.reset();
+    invalidateTarget();
+    invalidateCreationTarget();
+    m_creationPreviewPending = false;
+    m_creationPreviewPaths.clear();
+    m_creationInputs.clear();
+    const bool browseRequest = m_busy && !archiveMutationPending() && !m_result.extraction &&
+                               !m_result.creating && !m_result.checking && !m_result.targetCheck &&
+                               !m_result.inputPreview && !m_result.exportManifest;
+    if (browseRequest)
+        cancel();
+    m_committedQuery = {};
+    restoreQuery();
+    m_updateLocation.clear();
+    m_updateSort = 0;
+    m_restoreAfterUpdate = false;
+    m_ready = false;
+    m_total = m_archiveTotal = m_offset = 0;
+    m_navigationLimited = false;
+    m_selectionAnchor.clear();
+    m_model.replace({});
+    replaceDirectories({});
+    m_detail.clear();
+    m_preflightReport.clear();
+    m_result.rows.clear();
+    m_result.directories.clear();
+    emit creationInputsChanged();
+    emit changed();
 }
 void BrowserController::selectRow(int row) {
     if (m_busy || !m_ready)
@@ -758,7 +792,7 @@ void BrowserController::prepareExtraction(bool all, const QStringList &selectors
                           {"samples", samples},
                           {"target", QFileInfo(m_sourcePath).absolutePath()},
                           {"error", QString{}}};
-    m_targetCheck.clear();
+    invalidateTarget();
     emit extractionChanged();
     emit extractionReady();
 }
@@ -801,9 +835,23 @@ void BrowserController::drainCreationUiWhenIdle() {
         return;
     if (!m_createdArchivesToOpen.isEmpty()) {
         requestOpen(m_createdArchivesToOpen.takeFirst());
-    } else if (!m_pendingCreationTarget.isEmpty()) {
-        const auto path = std::exchange(m_pendingCreationTarget, QString{});
-        checkCreationTarget(path);
+    } else if (m_pendingCreationTarget || m_pendingTarget) {
+        const bool creation =
+            !m_pendingTarget || (m_pendingCreationTarget &&
+                                 m_pendingCreationTarget->sequence < m_pendingTarget->sequence);
+        auto &pending = creation ? m_pendingCreationTarget : m_pendingTarget;
+        m_activeTarget = std::exchange(pending, std::nullopt);
+        if (!creation && (!m_ready || m_activeTarget->session != m_session ||
+                          m_extractionIntent.value("session").toString() != m_session)) {
+            finishTargetCheck(QStringLiteral("stale_session"));
+            QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
+            return;
+        }
+        xdzip::reader::Command command{};
+        command.kind = xdzip::reader::CommandKind::CheckTarget;
+        command.session = creation ? 0 : m_activeTarget->session.toULongLong();
+        command.path = rust::String(m_activeTarget->path.toStdString());
+        submit(std::move(command));
     } else if (std::exchange(m_creationPreviewPending, false)) {
         xdzip::reader::Command command{};
         command.kind = xdzip::reader::CommandKind::InspectInputs;
@@ -814,26 +862,7 @@ void BrowserController::drainCreationUiWhenIdle() {
     }
 }
 void BrowserController::checkCreationTarget(const QString &path) {
-    if (!runtimeAvailable() || m_closing)
-        return;
-    if (m_busy) {
-        m_pendingCreationTarget = path;
-        return;
-    }
-    if (QString::fromUtf8(path.toUtf8()) != path || path.contains(QChar::Null)) {
-        m_targetCheck = {
-            {"valid", false}, {"errorCode", "invalid_path"}, {"error", explain("invalid_path")}};
-        emit extractionChanged();
-        return;
-    }
-    m_checkedTarget = QDir::cleanPath(path);
-    m_targetCheck = {{"path", m_checkedTarget}, {"valid", false}, {"checking", true}};
-    emit extractionChanged();
-    xdzip::reader::Command command{};
-    command.kind = xdzip::reader::CommandKind::CheckTarget;
-    command.session = 0;
-    command.path = rust::String(m_checkedTarget.toStdString());
-    submit(std::move(command));
+    queueTargetCheck(path, true);
 }
 void BrowserController::startCreation(const QStringList &inputs, const QString &target,
                                       const QString &name, int method, int level, bool openAfter,
@@ -886,33 +915,85 @@ void BrowserController::startCreation(const QStringList &inputs, const QString &
 }
 bool BrowserController::targetMatches(const QString &path) const {
     return m_targetCheck.value("valid").toBool() &&
+           m_targetCheck.value("session").toString() == m_session &&
+           m_extractionIntent.value("session").toString() == m_session &&
            QDir::cleanPath(path) == m_targetCheck.value("path");
 }
+bool BrowserController::creationTargetMatches(const QString &path) const {
+    return m_creationTargetCheck.value("valid").toBool() &&
+           QDir::cleanPath(path) == m_creationTargetCheck.value("path");
+}
+void BrowserController::invalidateTarget() {
+    ++m_targetRevision;
+    m_pendingTarget.reset();
+    m_targetCheck.clear();
+    emit extractionChanged();
+}
+void BrowserController::invalidateCreationTarget() {
+    ++m_creationTargetRevision;
+    m_pendingCreationTarget.reset();
+    m_creationTargetCheck.clear();
+    emit extractionChanged();
+}
 void BrowserController::checkTarget(const QString &path) {
-    if (m_busy || !m_ready || !runtimeAvailable() ||
-        m_extractionIntent.value("session") != m_session)
+    queueTargetCheck(path, false);
+}
+void BrowserController::queueTargetCheck(const QString &path, bool creation) {
+    if (!runtimeAvailable() ||
+        (!creation && (!m_ready || m_extractionIntent.value("session").toString() != m_session)))
         return;
-    if (QString::fromUtf8(path.toUtf8()) != path || path.contains(QChar::Null)) {
-        m_targetCheck = {
+    auto &revision = creation ? m_creationTargetRevision : m_targetRevision;
+    auto &pending = creation ? m_pendingCreationTarget : m_pendingTarget;
+    auto &state = creation ? m_creationTargetCheck : m_targetCheck;
+    ++revision;
+    pending.reset();
+    if (path.isEmpty() || QString::fromUtf8(path.toUtf8()) != path || path.contains(QChar::Null)) {
+        state = {
             {"valid", false}, {"errorCode", "invalid_path"}, {"error", explain("invalid_path")}};
-        emit extractionChanged();
+    } else {
+        TargetRequest request{QDir::cleanPath(path), creation ? QString{} : m_session, revision,
+                              ++m_targetSequence, creation};
+        pending = request;
+        state = {{"path", request.path}, {"valid", false}, {"checking", true}};
+    }
+    emit extractionChanged();
+    drainCreationUiWhenIdle();
+}
+void BrowserController::finishTargetCheck(const QString &error, quint64 leftovers) {
+    const auto request = std::exchange(m_activeTarget, std::nullopt);
+    if (!request)
+        return;
+    const auto currentRevision = request->creation ? m_creationTargetRevision : m_targetRevision;
+    if (request->revision != currentRevision)
+        return;
+    auto &state = request->creation ? m_creationTargetCheck : m_targetCheck;
+    if (!request->creation && (request->session != m_session ||
+                               m_extractionIntent.value("session").toString() != m_session)) {
+        state = {
+            {"valid", false}, {"errorCode", "stale_session"}, {"error", explain("stale_session")}};
         return;
     }
-    m_checkedTarget = QDir::cleanPath(path);
-    m_targetCheck = {{"path", m_checkedTarget}, {"valid", false}, {"checking", true}};
-    emit extractionChanged();
-    xdzip::reader::Command command{};
-    command.kind = xdzip::reader::CommandKind::CheckTarget;
-    command.session = m_session.toULongLong();
-    command.path = rust::String(m_checkedTarget.toStdString());
-    submit(std::move(command));
+    state = {{"path", request->path},
+             {"session", request->session},
+             {"valid", error.isEmpty()},
+             {"errorCode", error},
+             {"error", error.isEmpty() ? QString{} : explain(error)},
+             {"leftovers", QString::number(leftovers)}};
+}
+void BrowserController::deferActiveTarget() {
+    const auto request = std::exchange(m_activeTarget, std::nullopt);
+    if (!request)
+        return;
+    const auto revision = request->creation ? m_creationTargetRevision : m_targetRevision;
+    auto &pending = request->creation ? m_pendingCreationTarget : m_pendingTarget;
+    if (request->revision == revision && !pending)
+        pending = *request;
 }
 void BrowserController::startExtraction(const QString &target, bool all, bool createFolder,
                                         int conflict, bool allowHighRatio, bool openAfter) {
     if (m_busy || !m_ready || !runtimeAvailable() ||
-        m_extractionIntent.value("session") != m_session ||
-        !m_targetCheck.value("valid").toBool() ||
-        QDir::cleanPath(target) != m_targetCheck.value("path") || conflict < 0 || conflict > 3)
+        m_extractionIntent.value("session") != m_session || !targetMatches(target) ||
+        conflict < 0 || conflict > 3)
         return;
     xdzip::reader::Command command{};
     command.kind = xdzip::reader::CommandKind::Extract;
@@ -1136,6 +1217,8 @@ bool BrowserController::requestClose() {
     if (m_exportCopy)
         m_exportCopy->finish("runtime_closed");
     m_deferredQuery.reset();
+    m_pendingCreationTarget.reset();
+    m_pendingTarget.reset();
     m_openCancellation = OpenCancellation::None;
     m_cancelledOpenSession = 0;
     m_admissionRetry.stop();
@@ -1178,6 +1261,8 @@ void BrowserController::start(const QString &path, int offset, const QString &pa
     command.generation = ++m_generation;
     const QueryState criteria{m_directory, m_location, m_search, m_sort};
     if (m_busy) {
+        if (m_result.targetCheck)
+            deferActiveTarget();
         m_deferredQuery.emplace(DeferredQuery{std::move(command), criteria});
         if (m_waiting) {
             m_admissionRetry.stop();
@@ -1202,7 +1287,9 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
     // Native exports and temporary file opens must not inherit an earlier choice.
     if (command.kind != xdzip::reader::CommandKind::Extract)
         m_pendingOpenAfter = false;
-    m_preflightReport.clear();
+    if (command.kind != xdzip::reader::CommandKind::CheckTarget &&
+        command.kind != xdzip::reader::CommandKind::InspectInputs)
+        m_preflightReport.clear();
     m_result = {};
     m_result.opening = command.kind == xdzip::reader::CommandKind::Open ||
                        command.kind == xdzip::reader::CommandKind::OpenWithPassword;
@@ -1227,13 +1314,12 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
     m_result.closeSession = command.kind == xdzip::reader::CommandKind::CloseSession;
     m_hasPayload = false;
     m_busy = true;
-    m_message = m_result.inputPreview  ? qtTrId("ui.013b4f811abe")
-                : m_result.creating    ? qtTrId("ui.33495b6653c6")
-                : m_result.checking    ? qtTrId("integrity.starting")
-                : m_result.extraction  ? qtTrId("ui.8cf09709f8f6")
-                : m_result.targetCheck ? qtTrId("ui.2ae4afff62f1")
-                : preflight            ? qtTrId("ui.d37d23d13df0")
-                                       : qtTrId("ui.5126629edae6");
+    if (!m_result.targetCheck && !m_result.inputPreview)
+        m_message = m_result.creating     ? qtTrId("ui.33495b6653c6")
+                    : m_result.checking   ? qtTrId("integrity.starting")
+                    : m_result.extraction ? qtTrId("ui.8cf09709f8f6")
+                    : preflight           ? qtTrId("ui.d37d23d13df0")
+                                          : qtTrId("ui.5126629edae6");
     m_waiting.emplace(std::move(command));
     m_admissionAttempts = 0;
     attemptSubmission();
@@ -1277,6 +1363,21 @@ void BrowserController::attemptSubmission() {
                           : result.status == xdzip::reader::Admission::Exhausted
                               ? "identifier_exhausted"
                               : "busy";
+        if (m_result.targetCheck) {
+            finishTargetCheck(QString::fromLatin1(code));
+            m_result = {};
+            emit extractionChanged();
+            emit changed();
+            QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
+            return;
+        }
+        if (m_result.inputPreview) {
+            m_result = {};
+            emit creationInputsChanged();
+            emit changed();
+            QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
+            return;
+        }
         if (m_openCancellation == OpenCancellation::Snapshot ||
             m_openCancellation == OpenCancellation::Closing) {
             finishCancelledOpenCleanup(QString::fromLatin1(code));
@@ -1313,6 +1414,9 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_openCancellation = OpenCancellation::None;
         m_cancelledOpenSession = 0;
         m_result = {};
+        m_activeTarget.reset();
+        invalidateTarget();
+        invalidateCreationTarget();
         m_total = 0;
         m_offset = 0;
         m_session.clear();
@@ -1463,6 +1567,19 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
     // Cancel acknowledgements, stale events and shutdown control never mutate an active page.
     if (!m_pending || event.request_id != m_pending || m_closing)
         return;
+    const bool discardedBrowse =
+        m_browsingDetached && m_openCancellation == OpenCancellation::None &&
+        !m_result.extraction && !m_result.creating && !m_result.checking && !m_result.targetCheck &&
+        !m_result.inputPreview && !m_result.exportManifest && !m_result.closeSession;
+    if (discardedBrowse) {
+        if (event.kind == EventKind::Finished) {
+            m_pending = 0;
+            m_busy = false;
+            m_result = {};
+            emit changed();
+        }
+        return;
+    }
     if (m_openCancellation == OpenCancellation::AwaitingOpen && event.kind != EventKind::Finished)
         return;
     if (event.kind == EventKind::TaskAccepted) {
@@ -1699,7 +1816,6 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                 m_creationInputs = m_result.inputInfo;
                 emit creationInputsChanged();
             }
-            m_message.clear();
             m_result = {};
             emit changed();
             QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
@@ -1725,8 +1841,25 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             m_result = std::move(accumulated);
             return;
         }
+        if (m_result.targetCheck) {
+            const auto error = m_result.error;
+            const bool currentSource = m_activeTarget && !m_activeTarget->creation &&
+                                       m_activeTarget->revision == m_targetRevision &&
+                                       m_activeTarget->session == m_session &&
+                                       m_extractionIntent.value("session").toString() == m_session;
+            finishTargetCheck(error, m_result.leftovers);
+            if (currentSource && (error == "source_changed" || error == "stale_session")) {
+                invalidateSnapshot();
+                m_message = explain(error);
+            }
+            m_result = {};
+            emit changed();
+            emit extractionChanged();
+            QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
+            return;
+        }
         m_message = explain(m_result.error);
-        if (m_result.extraction || m_result.creating || m_result.checking || m_result.targetCheck) {
+        if (m_result.extraction || m_result.creating || m_result.checking) {
             const bool extraction = m_result.extraction;
             const bool creating = m_result.creating;
             const bool updating = m_result.updating;
@@ -1736,14 +1869,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             const QString taskId = m_result.taskId;
             if (updating && taskId.isEmpty())
                 m_archiveOperation.clear();
-            if (m_result.targetCheck)
-                m_targetCheck = {{"path", m_checkedTarget},
-                                 {"valid", m_result.error.isEmpty()},
-                                 {"errorCode", m_result.error},
-                                 {"error", m_message},
-                                 {"leftovers", QString::number(m_result.leftovers)}};
-            else
-                m_extractionIntent.insert("error", m_message);
+            m_extractionIntent.insert("error", m_message);
             if (m_result.error == "source_changed" || m_result.error == "stale_session")
                 invalidateSnapshot();
             m_result = {};

@@ -34,7 +34,11 @@ Qt 桥接只传不含输出能力的目标／任务 DTO，ID 以不透明字符�
 
 提交任务时，Qt 控制器继续使用 busy 串行准入并拒绝重复请求；taskStarting 区分解压／创建任务提交与目录读取。主窗口加载遮罩和普通控件外观使用 browsingBusy，不能把任务提交误画为目录重新读取。browserQueryAvailable 保持提交期间的查询入口外观，实际命令仍经过原有串行请求防护。解压确认的“开始解压”及其他控件在 taskStarting 期间保持正常外观；点击处理和控制器继续用 busy 拦截重复请求，拒绝准入时不闪现禁用色。任务受理后才切换到真实任务窗口，拒绝或失败保留确认窗口和错误说明；不乐观清空目录或提前伪造任务成功。
 
-打开解压确认窗口后的自动目标检查、手动重检，以及创建窗口的目标检查和输入元数据预览也属于操作准备。它们保持已提交的浏览快照，不能触发 browsingBusy 或关闭 browserQueryAvailable，避免主列表遮罩、工具栏禁用色和菜单关闭造成闪烁。busy 仍覆盖完整请求周期，继续保护串行准入；目标检查中的反馈只在操作窗口显示。实际打开归档、切换目录和预检仍使用原有加载状态，失败导致源快照失效时仍清除失效数据。
+打开解压确认窗口后的自动目标检查、编辑后的重检，以及创建窗口的目标检查和输入元数据预览也属于操作准备。它们保持已提交的浏览快照，不能触发 browsingBusy 或关闭 browserQueryAvailable，避免主列表遮罩、工具栏禁用色和菜单关闭造成闪烁。busy 仍覆盖完整请求周期，继续保护串行准入；目标检查中的反馈只在操作窗口显示。实际打开归档、切换目录和预检仍使用原有加载状态，失败导致源快照失效时仍清除失效数据。
+
+解压目标在打开窗口、选择目录及结束编辑时自动检查；创建与解压分别保存检查结果，并以窗口代次、请求、路径和解压会话关联。路径改变立即使旧结果失效，排队或检查期间不能提交；过期回执不能授权新路径或另一窗口。两窗使用相同状态图标和提示，解压保留原有路径布局、同名文件夹与暂存提示。该检查仅供操作准备，真实写入仍按源与目标能力重新验证。
+
+English: Extraction checks its target when the window opens, a folder is chosen or editing finishes. Creation and extraction retain separate results bound to their window generation, request, path and extraction session; an edited or pending target cannot be submitted and stale replies cannot authorize another path or dialog. Both windows share status icons and wording while extraction retains its destination layout and leftover warning. Actual writes still revalidate source and destination authority.
 
 ## ZIP 符号链接安全恢复
 

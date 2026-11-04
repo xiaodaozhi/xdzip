@@ -26,6 +26,7 @@ class ApplicationSessions final : public QObject {
     void setDesktop(DesktopIntegration *desktop);
     void open(const QStringList &paths);
     Q_INVOKABLE void openPath(const QString &path);
+    Q_INVOKABLE void cancelPendingOpen(const QString &id);
     Q_INVOKABLE void newSession();
     Q_INVOKABLE void activateId(const QString &id);
     Q_INVOKABLE void moveTab(const QString &id, int targetIndex);
@@ -85,19 +86,19 @@ class ApplicationSessions final : public QObject {
 
   private:
     struct Session {
-        QString id, path;
+        QString id, path, pendingPath;
         quint64 tabOrder = 0;
         QPointer<QObject> page;
         QPointer<BrowserController> controller;
         QPointer<QQuickWindow> window;
         bool closed = false;
         bool retiring = false;
-        bool automaticWelcome = false;
     };
     Session *add(QQuickWindow *window, QObject *page);
     Session *create(bool newWindow, QQuickWindow *target = nullptr);
     void ensureWelcome(QQuickWindow *window);
-    void retireAutomaticWelcome(Session *restored);
+    bool archiveMutationPending(const Session *session) const;
+    void schedulePendingOpens();
     void cancelPendingActivation();
     Session *current() const;
     std::vector<Session *> visibleTabs(QQuickWindow *window) const;
@@ -124,6 +125,7 @@ class ApplicationSessions final : public QObject {
     bool m_quitting = false, m_wait = false, m_quitEmitted = false, m_restart = false;
     bool m_presentationReady = false;
     bool m_updatePending = false;
+    bool m_pendingOpenDrainScheduled = false;
     bool m_quitDecisionPending = false;
     quint64 m_activationGeneration = 0;
     QList<QMetaObject::Connection> m_modalConnections;

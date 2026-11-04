@@ -15,7 +15,7 @@ OperationWindow {
     width: Theme.operationCreateWidth
     requestedHeight: Math.min(Theme.operationCreateClientHeight, Screen.desktopAvailableHeight - 60)
     title: qsTrId("ui.fe189b616c1d")
-    readonly property bool targetReady: Boolean(controller.targetCheck.valid) && controller.targetMatches(target.text)
+    readonly property bool targetReady: Boolean(controller.creationTargetCheck.valid) && controller.creationTargetMatches(target.text)
     readonly property bool sevenZip: formatGroup.currentIndex === 3
     readonly property bool supportsPasswordAndVolumes: formatGroup.currentIndex === 0 || sevenZip
     readonly property string formatExtension: [".zip", ".tar", ".tar.gz", ".7z"][formatGroup.currentIndex]
@@ -41,7 +41,8 @@ OperationWindow {
         text: "TAR.GZ"
         font.pixelSize: Theme.operationFooterFontSize
     }
-    onClosing: password.text = ""
+    onClosing: { password.text = ""; controller.invalidateCreationTarget(); }
+    onVisibleChanged: if (!visible) controller.invalidateCreationTarget()
     readonly property string inputSummary: inputPanel.inputSummary
     function configure() {
         if (visible) {
@@ -49,6 +50,7 @@ OperationWindow {
             return;
         }
         controller.clearCreationError();
+        controller.invalidateCreationTarget();
         inputs = [];
         formatGroup.currentIndex = 0;
         fileName.text = qsTrId("ui.58ca935c9fbf");
@@ -171,7 +173,8 @@ OperationWindow {
                                                 topPadding: 4
                                                 bottomPadding: 4
                                                 Accessible.name: qsTrId("ui.18e7649764bb")
-                                                onEditingFinished: root.controller.checkCreationTarget(text)
+                                                onTextChanged: if (root.visible) root.controller.invalidateCreationTarget()
+                                                onEditingFinished: if (root.visible) root.controller.checkCreationTarget(text)
                                             }
                                             OperationButton {
                                                 objectName: "createChangeTarget"
@@ -188,9 +191,10 @@ OperationWindow {
                                         }
                                     }
                                     InfoRow {
+                                        objectName: "createTargetStatus"
                                         Layout.fillWidth: true
                                         iconSource: root.targetReady ? "qrc:/xdzip/assets/success-large.png" : (Theme.dark ? "qrc:/xdzip/assets/info-dark.png" : "qrc:/xdzip/assets/info-light.png")
-                                        text: root.targetReady ? qsTrId("ui.059a6ea7ca12") : root.controller.targetCheck.checking ? qsTrId("ui.2ae4afff62f1") : root.controller.targetCheck.error || qsTrId("ui.cef0425c5413")
+                                        text: root.targetReady ? qsTrId("ui.059a6ea7ca12") : root.controller.creationTargetCheck.checking ? qsTrId("ui.2ae4afff62f1") : root.controller.creationTargetCheck.error || qsTrId("ui.cef0425c5413")
                                         labelSize: Theme.operationCreateNoteSize
                                         iconSize: 19.2
                                     }

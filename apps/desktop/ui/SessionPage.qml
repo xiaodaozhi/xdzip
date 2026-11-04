@@ -16,6 +16,8 @@ Item {
     property bool retainShellPage: false
     property bool closedPage: false
     property bool sessionClosed: false
+    property bool waitingArchiveUpdate: false
+    property string waitingArchiveName: ""
     readonly property bool archiveInternalDragging: moveDrag.Drag.active
     readonly property bool archiveTransferActive: moveDrag.Drag.active || moveDrag.promoting || reader.nativeDragActive
     readonly property var contentItem: root
@@ -145,6 +147,26 @@ Item {
         passwordWindow.clearSecret();
         passwordWindow.hide();
     }
+    function resetBrowsingState() {
+        viewMode = "list";
+        inspectorRequested = true;
+        contextEntry = ({});
+        contextDirectoryId = "";
+        contextDirectoryRow = -1;
+        contextDirectoryHasChildren = false;
+        contextDirectoryExpanded = false;
+        pendingDirectorySearchFocus = false;
+        searchSession = "";
+        toolbar.clearSearch();
+        table.contentX = 0;
+        table.contentY = 0;
+        grid.contentX = 0;
+        grid.contentY = 0;
+        directoryTree.contentX = 0;
+        directoryTree.contentY = 0;
+        waitingArchiveUpdate = false;
+        waitingArchiveName = "";
+    }
     function closeWindowDialogs() {
         hideSessionWindows();
         if (settingsWindow.visible) settingsWindow.close();
@@ -186,7 +208,7 @@ Item {
     onWelcomeVisibleChanged: if (uiReady && welcomeVisible) {
         inspectorWindow.close();
         Qt.callLater(() => {
-            if (root.welcomeVisible && welcomePage.canOpen)
+            if (root.visible && !root.sessionClosed && root.welcomeVisible && welcomePage.canOpen)
                 welcomePage.focusOpen();
         });
     }
@@ -501,7 +523,7 @@ Item {
             if (moveDrag.Drag.active && !reader.internalDragCurrent(moveDrag.token)) Qt.callLater(function () { if (moveDrag.Drag.active && !reader.internalDragCurrent(moveDrag.token)) root.cancelTransfer(); });
             if (root.welcomeVisible && !busy && root.welcomeWasBusy)
                 Qt.callLater(() => {
-                    if (root.welcomeVisible && welcomePage.canOpen)
+                    if (root.visible && !root.sessionClosed && root.welcomeVisible && welcomePage.canOpen)
                         welcomePage.focusOpen();
                 });
             root.welcomeWasBusy = root.welcomeVisible && busy && title.length > 0;
@@ -959,15 +981,21 @@ Item {
             visible: root.welcomeVisible
             Layout.fillWidth: true
             Layout.fillHeight: true
-            canOpen: reader.runtimeAvailable && !reader.browsingBusy
-            canCreate: reader.runtimeAvailable && !reader.browsingBusy
-            busy: !root.closedPage && reader.browsingBusy && reader.title.length > 0
+            canOpen: reader.runtimeAvailable && !reader.browsingBusy && !root.waitingArchiveUpdate
+            canCreate: reader.runtimeAvailable && !reader.browsingBusy && !root.waitingArchiveUpdate
+            busy: root.waitingArchiveUpdate || (!root.closedPage && reader.browsingBusy && reader.title.length > 0)
+            waitingForUpdate: root.waitingArchiveUpdate
             externalOpening: !root.closedPage && root.externalFileOpening
-            openingName: reader.title
+            openingName: root.waitingArchiveUpdate ? root.waitingArchiveName : reader.title
             message: root.closedPage || reader.browsingBusy ? "" : reader.message || AppSettings.error
             onOpenRequested: root.dispatchDesktopCommand("open")
             onCreateRequested: createWindow.configure()
-            onCancelRequested: reader.cancel()
+            onCancelRequested: {
+                if (root.waitingArchiveUpdate && root.sessionManager)
+                    root.sessionManager.cancelPendingOpen(root.sessionIdentity);
+                else
+                    reader.cancel();
+            }
             onDragEntered: urls => {
                 dropSupported = reader.canOpenDroppedUrls(urls);
                 dropMessage = dropSupported ? qsTrId("ui.dc3e93fbf81a") : qsTrId("ui.a3c9bc4e63f7");

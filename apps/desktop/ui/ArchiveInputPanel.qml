@@ -127,14 +127,14 @@ Rectangle {
                         text: qsTrId("ui.ad9daebe00dc")
                         primary: true
                         actionIcon: AssetLibrary.fileIcon("", false, false)
-                        enabled: !root.controller.busy
+                        enabled: root.controller.inputActionsEnabled
                         onClicked: root.addInputPaths(root.controller.chooseCreationInputs(false, root.dialogOwner), false)
                     }
                     OperationAction {
                         objectName: root.namePrefix + "AddDirectories"
                         text: qsTrId("ui.45da2d9c85d1")
                         actionIcon: AssetLibrary.fileIcon("", true, false)
-                        enabled: !root.controller.busy
+                        enabled: root.controller.inputActionsEnabled
                         onClicked: root.addInputPaths(root.controller.chooseCreationInputs(true, root.dialogOwner), true)
                     }
                     Item {
@@ -199,7 +199,7 @@ Rectangle {
                             OperationRemoveButton {
                                 objectName: root.namePrefix + "RemoveInput-" + inputRow.index
                                 entryName: inputRow.modelData.name
-                                enabled: !root.controller.busy
+                                enabled: root.controller.inputActionsEnabled
                                 onClicked: root.inputs = root.inputs.filter((_, i) => i !== inputRow.index)
                             }
                         }

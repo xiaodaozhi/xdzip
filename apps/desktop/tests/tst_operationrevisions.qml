@@ -26,9 +26,11 @@ Item {
         property var extractionIntent: ({session: "s", archive: "a.zip", all: true, archiveCount: 9, selectedCount: 2, samples: []})
         property var targetCheck: ({valid: true})
         property bool busy: false
+        property bool inputActionsEnabled: true
         property string sessionId: "s"
         function targetMatches(path) { return true; }
         function checkTarget(path) {}
+        function invalidateTarget() {}
         function chooseTarget(path) { return path; }
     }
     Ui.ExtractWindow { id: extract; owner: ownerWindow; controller: controller }

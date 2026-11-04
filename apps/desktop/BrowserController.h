@@ -98,6 +98,7 @@ class BrowserController : public QObject {
     Q_PROPERTY(QString location READ location NOTIFY changed)
     Q_PROPERTY(bool runtimeAvailable READ runtimeAvailable NOTIFY changed)
     Q_PROPERTY(bool busy READ busy NOTIFY changed)
+    Q_PROPERTY(bool inputActionsEnabled READ inputActionsEnabled NOTIFY changed)
     Q_PROPERTY(bool taskStarting READ taskStarting NOTIFY changed)
     Q_PROPERTY(bool browsingBusy READ browsingBusy NOTIFY changed)
     Q_PROPERTY(QString archiveOperation READ archiveOperation NOTIFY changed)
@@ -115,6 +116,7 @@ class BrowserController : public QObject {
     Q_PROPERTY(int offset READ offset NOTIFY changed)
     Q_PROPERTY(QVariantMap extractionIntent READ extractionIntent NOTIFY extractionChanged)
     Q_PROPERTY(QVariantMap targetCheck READ targetCheck NOTIFY extractionChanged)
+    Q_PROPERTY(QVariantMap creationTargetCheck READ creationTargetCheck NOTIFY extractionChanged)
     Q_PROPERTY(QVariantList tasks READ tasks NOTIFY tasksChanged)
     Q_PROPERTY(bool hasFinishedTasks READ hasFinishedTasks NOTIFY tasksChanged)
     Q_PROPERTY(bool nativeDragActive READ nativeDragActive NOTIFY changed)
@@ -127,6 +129,10 @@ class BrowserController : public QObject {
     std::function<void(const QString &)> openIntent;
     QString sourcePath() const {
         return m_sourcePath;
+    }
+    void discardBrowsing();
+    bool archiveMutationPending() const {
+        return m_updateActive || (m_busy && m_result.updating);
     }
     bool shutdownComplete() const {
         return m_connection->stopped();
@@ -193,6 +199,9 @@ class BrowserController : public QObject {
     bool busy() const {
         return m_busy;
     }
+    bool inputActionsEnabled() const {
+        return runtimeAvailable() && (!m_busy || m_result.targetCheck || m_result.inputPreview);
+    }
     bool ready() const {
         return m_ready;
     }
@@ -240,6 +249,9 @@ class BrowserController : public QObject {
     }
     QVariantMap targetCheck() const {
         return m_targetCheck;
+    }
+    QVariantMap creationTargetCheck() const {
+        return m_creationTargetCheck;
     }
     QVariantList tasks() const;
     bool hasFinishedTasks() const;
@@ -298,6 +310,9 @@ class BrowserController : public QObject {
     Q_INVOKABLE void checkTarget(const QString &path);
     Q_INVOKABLE void checkCreationTarget(const QString &path);
     Q_INVOKABLE bool targetMatches(const QString &path) const;
+    Q_INVOKABLE bool creationTargetMatches(const QString &path) const;
+    Q_INVOKABLE void invalidateTarget();
+    Q_INVOKABLE void invalidateCreationTarget();
     Q_INVOKABLE void startExtraction(const QString &target, bool all, bool createFolder,
                                      int conflict, bool allowHighRatio, bool openAfter);
     Q_INVOKABLE void startArchiveTest();
@@ -385,6 +400,11 @@ class BrowserController : public QObject {
         xdzip::reader::Command command;
         QueryState criteria;
     };
+    struct TargetRequest {
+        QString path, session;
+        quint64 revision = 0, sequence = 0;
+        bool creation = false;
+    };
     std::optional<DeferredQuery> m_deferredQuery;
     quint64 m_generation = 0;
     QueryState m_committedQuery;
@@ -430,6 +450,7 @@ class BrowserController : public QObject {
     void attemptSubmission();
     bool m_busy = false;
     bool m_ready = false;
+    bool m_browsingDetached = false;
     std::shared_ptr<NativeExportState> m_export;
     QPointer<QWindow> m_exportOwner;
     QStringList m_exportSelectors;
@@ -456,9 +477,9 @@ class BrowserController : public QObject {
     bool restoreUpdatedLocation();
     bool m_closing = false;
     bool m_faulted = false;
-    QVariantMap m_extractionIntent, m_targetCheck;
+    QVariantMap m_extractionIntent, m_targetCheck, m_creationTargetCheck;
     QStringList m_extractionSelectors;
-    QString m_extractionDirectory, m_sourcePath, m_checkedTarget;
+    QString m_extractionDirectory, m_sourcePath;
     QMap<quint64, QVariantMap> m_tasks;
     QSet<quint64> m_hiddenFinishedTasks;
     QSet<quint64> m_cancellingTasks;
@@ -472,7 +493,11 @@ class BrowserController : public QObject {
     QVariantList m_creationInputs;
     QStringList m_creationPreviewPaths;
     bool m_creationPreviewPending = false;
-    QString m_pendingCreationTarget;
+    quint64 m_creationTargetRevision = 0, m_targetRevision = 0, m_targetSequence = 0;
+    std::optional<TargetRequest> m_pendingCreationTarget, m_pendingTarget, m_activeTarget;
+    void queueTargetCheck(const QString &path, bool creation);
+    void finishTargetCheck(const QString &error, quint64 leftovers = 0);
+    void deferActiveTarget();
     QStringList m_createdArchivesToOpen;
     void drainCreationUiWhenIdle();
     QVariantMap m_preflightReport;
