@@ -27,6 +27,17 @@ qt_add_qml_module(xdzip-ui-resources
     URI Xdzip.Settings VERSION 1.0
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml/Xdzip/Settings"
     SOURCES UiPreferences.h UiPreferences.cpp UiFonts.h WindowsFrame.h WindowsFrame.cpp BuildInfo.h BuildInfo.cpp)
+# Compile the QML declared in the resource manifest ahead of first launch.
+# Keep the original source resources available for Qt's cache fallback.
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/ui.qrc")
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/ui.qrc" XDZIP_QML_FILES
+    REGEX "<file>ui/[^<]+\\.qml</file>")
+list(TRANSFORM XDZIP_QML_FILES REPLACE "^[ \t]*<file>([^<]+)</file>.*" "\\1")
+if(NOT XDZIP_QML_FILES)
+    message(FATAL_ERROR "No QML files found in ui.qrc")
+endif()
+set_target_properties(xdzip-ui-resources PROPERTIES QT_QMLCACHEGEN_ARGUMENTS "--only-bytecode")
+qt_target_qml_sources(xdzip-ui-resources NO_QMLDIR_TYPES PREFIX "/xdzip" QML_FILES ${XDZIP_QML_FILES})
 target_link_libraries(xdzip-ui-resources PRIVATE Qt6::Core Qt6::Gui Qt6::Qml)
 if(WIN32)
     target_link_libraries(xdzip-ui-resources PRIVATE dwmapi user32)
