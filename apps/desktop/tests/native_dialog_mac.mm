@@ -3,6 +3,7 @@
 #import <AppKit/AppKit.h>
 #include <QDebug>
 #include <QGuiApplication>
+#include <QPlatformSurfaceEvent>
 #include <QPointer>
 #include <QStringList>
 #include <QVariant>
@@ -86,25 +87,39 @@ int probeNativeFileDialogQuit(const std::function<void()> &openDialog,
     return result;
 }
 
-bool watchNativeWindowTransitions(QWindow *window) {
-    if (!window || QGuiApplication::platformName() != QStringLiteral("cocoa"))
-        return false;
-    if (window->property("xdzipNativeStateWatched").toBool())
-        return true;
-    NSView *view = reinterpret_cast<NSView *>(window->winId());
-    NSWindow *native = view.window;
-    if (!native)
-        return false;
-    window->setProperty("xdzipNativeStateWatched", true);
-    window->setProperty("xdzipNativeWatchedIdentity",
-                        QVariant::fromValue<qulonglong>(reinterpret_cast<quintptr>(native)));
-    const QPointer<QWindow> guarded(window);
-    NSMutableArray *tokens = [[NSMutableArray alloc] init];
-    for (NSNotificationName name in @[
-             NSWindowWillEnterFullScreenNotification, NSWindowWillExitFullScreenNotification,
-             NSWindowWillMiniaturizeNotification
-         ]) {
-        [tokens addObject:[[NSNotificationCenter defaultCenter]
+namespace {
+// A QWindow can acquire a new NSWindow; transition state belongs to the old surface.
+class NativeWindowTransitionObserver final : public QObject {
+  public:
+    explicit NativeWindowTransitionObserver(QWindow *window)
+        : QObject(window), m_window(window), m_surfaceAlive(window->handle() != nullptr) {
+        m_tokens = [[NSMutableArray alloc] init];
+        window->installEventFilter(this);
+    }
+    ~NativeWindowTransitionObserver() override {
+        clear();
+        [m_tokens release];
+    }
+    bool watch() {
+        if (!m_surfaceAlive || !m_window || !m_window->handle())
+            return false;
+        NSView *view = reinterpret_cast<NSView *>(m_window->winId());
+        NSWindow *native = view.window;
+        if (native == m_native)
+            return native != nil;
+        clear();
+        if (!native)
+            return false;
+        m_native = native;
+        m_window->setProperty("xdzipNativeWatchedIdentity",
+                              QVariant::fromValue<qulonglong>(reinterpret_cast<quintptr>(native)));
+        const QPointer<QWindow> guarded(m_window);
+        for (NSNotificationName name in @[
+                 NSWindowWillEnterFullScreenNotification, NSWindowWillExitFullScreenNotification,
+                 NSWindowWillMiniaturizeNotification
+             ]) {
+            [m_tokens
+                addObject:[[NSNotificationCenter defaultCenter]
                               addObserverForName:name
                                           object:native
                                            queue:nil
@@ -120,12 +135,13 @@ bool watchNativeWindowTransitions(QWindow *window) {
                                         if (guarded)
                                             guarded->setProperty("xdzipNativeTransition", true);
                                       }]];
-    }
-    for (NSNotificationName name in @[
-             NSWindowDidEnterFullScreenNotification, NSWindowDidExitFullScreenNotification,
-             NSWindowDidMiniaturizeNotification, NSWindowDidDeminiaturizeNotification
-         ]) {
-        [tokens addObject:[[NSNotificationCenter defaultCenter]
+        }
+        for (NSNotificationName name in @[
+                 NSWindowDidEnterFullScreenNotification, NSWindowDidExitFullScreenNotification,
+                 NSWindowDidMiniaturizeNotification, NSWindowDidDeminiaturizeNotification
+             ]) {
+            [m_tokens
+                addObject:[[NSNotificationCenter defaultCenter]
                               addObserverForName:name
                                           object:native
                                            queue:nil
@@ -141,13 +157,56 @@ bool watchNativeWindowTransitions(QWindow *window) {
                                         if (guarded)
                                             guarded->setProperty("xdzipNativeTransition", false);
                                       }]];
+        }
+        return true;
     }
-    QObject::connect(window, &QObject::destroyed, [tokens] {
-        for (id token in tokens)
+
+  protected:
+    bool eventFilter(QObject *, QEvent *event) override {
+        if (event->type() == QEvent::PlatformSurface) {
+            const auto type = static_cast<QPlatformSurfaceEvent *>(event)->surfaceEventType();
+            if (type == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed) {
+                m_surfaceAlive = false;
+                clear();
+            } else if (type == QPlatformSurfaceEvent::SurfaceCreated) {
+                m_surfaceAlive = true;
+            }
+        } else if (event->type() == QEvent::Show || event->type() == QEvent::Expose)
+            watch();
+        return false;
+    }
+
+  private:
+    void clear() {
+        for (id token in m_tokens)
             [[NSNotificationCenter defaultCenter] removeObserver:token];
-        [tokens release];
-    });
-    return true;
+        [m_tokens removeAllObjects];
+        m_native = nil;
+        if (m_window) {
+            m_window->setProperty("xdzipNativeTransition", false);
+            m_window->setProperty("xdzipNativeWatchedIdentity", QVariant());
+        }
+    }
+    QPointer<QWindow> m_window;
+    bool m_surfaceAlive;
+    NSMutableArray *m_tokens;
+    NSWindow *m_native = nil;
+};
+} // namespace
+
+bool watchNativeWindowTransitions(QWindow *window) {
+    if (!window || QGuiApplication::platformName() != QStringLiteral("cocoa"))
+        return false;
+    auto *base = window->property("xdzipNativeTransitionObserver").value<QObject *>();
+    if (base && base->parent() != window)
+        return false;
+    auto *observer = static_cast<NativeWindowTransitionObserver *>(base);
+    if (!observer) {
+        observer = new NativeWindowTransitionObserver(window);
+        window->setProperty("xdzipNativeTransitionObserver",
+                            QVariant::fromValue<QObject *>(observer));
+    }
+    return observer->watch();
 }
 
 void traceNativeWindowState(QWindow *window) {
@@ -171,6 +230,8 @@ void traceNativeWindowState(QWindow *window) {
 }
 
 bool nativeWindowMatchesState(QWindow *window, Qt::WindowState state) {
+    if (!watchNativeWindowTransitions(window))
+        return false;
     NSView *view = reinterpret_cast<NSView *>(window->winId());
     NSWindow *native = view.window;
     if (!native || window->property("xdzipNativeTransition").toBool())
