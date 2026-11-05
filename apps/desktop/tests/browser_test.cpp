@@ -5863,6 +5863,10 @@ QtObject {
                                          qtTrId("update.verificationFailed"));
                         QTRY_COMPARE(statusAccessible->text(QAccessible::Name),
                                      status->property("text").toString());
+                        if (qEnvironmentVariableIsSet("XDZIP_ISSUE165_UIA_HOLD") && !dark &&
+                            scale == 1. &&
+                            (state == "checking" || state == "updated" || state == "error"))
+                            QTest::qWait(2000);
                         QCOMPARE(check->isEnabled(), !busy);
                         QCOMPARE(check->isVisible(), QStringList({"idle", "up_to_date", "updated",
                                                                   "error", "unavailable"})
@@ -7174,7 +7178,13 @@ QtObject {
         const auto restorePreview = qScopeGuard([&] { prefs->cancelPreview(); });
         auto *sidebar = findVisual(settings->contentItem(), "settingsSidebar");
         auto *scroll = findVisual(settings->contentItem(), "settingsScroll");
-        QVERIFY(sidebar && scroll);
+        auto *bar = findVisual(settings->contentItem(), "settingsVerticalScrollBar");
+        QVERIFY(sidebar && scroll && bar);
+        QVERIFY(settings->setProperty("requestedHeight", 420));
+        QTRY_COMPARE(settings->height(), 420);
+        auto *flick = scroll->property("contentItem").value<QQuickItem *>();
+        QVERIFY(flick);
+        int scrollablePages = 0;
         QCOMPARE(settings->width(), 612);
         QVERIFY(sidebar->width() >= 144.);
         if (scale == 1.)
@@ -7220,6 +7230,25 @@ QtObject {
             QTRY_VERIFY(page->width() > 0);
             QTest::qWait(30);
             QVERIFY2(page->width() <= scroll->width() + 1, qPrintable(names[tab]));
+            QTRY_VERIFY(
+                qAbs(bar->mapToItem(scroll, QPointF()).x() + bar->width() - scroll->width()) < 1.);
+            QTRY_VERIFY(qAbs(bar->height() - scroll->height()) < 1.);
+            if (flick->property("contentHeight").toReal() > flick->height() + 1) {
+                ++scrollablePages;
+                QVERIFY(flick->setProperty("contentY", 0));
+                auto *thumb = bar->property("contentItem").value<QQuickItem *>();
+                QVERIFY(thumb);
+                QTRY_VERIFY(thumb->height() > 0 && thumb->height() < bar->height());
+                const auto start =
+                    thumb->mapToScene(QPointF(thumb->width() / 2, thumb->height() / 2)).toPoint();
+                const auto end = start + QPoint(0, qRound((bar->height() - thumb->height()) / 2));
+                QTest::mousePress(settings, Qt::LeftButton, Qt::NoModifier, start);
+                QTest::mouseMove(settings, end, 20);
+                QTest::mouseRelease(settings, Qt::LeftButton, Qt::NoModifier, end);
+                QTRY_VERIFY2(flick->property("contentY").toReal() > 0, qPrintable(names[tab]));
+                QVERIFY2(thumb->mapToScene(QPointF()).y() > start.y() - thumb->height() / 2,
+                         qPrintable(names[tab]));
+            }
             if (tab == 0) {
                 auto *firstCard = findVisual(page, "settingsTheme-0");
                 QVERIFY(firstCard);
@@ -7264,6 +7293,7 @@ QtObject {
                                             .arg(item->height())));
             }
         }
+        QVERIFY2(scrollablePages >= 2, "Expected About and at least one other scrollable page");
         settings->close();
     }
     void settingsChromeAndScrollbar_data() {
@@ -7378,9 +7408,19 @@ QtObject {
             auto *label = findVisual(settings->contentItem(), QString::fromLatin1(name));
             QVERIFY(label);
             const QFontMetricsF metrics(label->property("font").value<QFont>());
-            QTRY_VERIFY2(label->width() + 0.5 >=
-                             metrics.horizontalAdvance(label->property("text").toString()),
-                         name);
+            // Text shaping and QFontMetrics can round a glyph advance differently.
+            // Check the actual QML layout and painted result rather than a second
+            // measurement that can disagree by one logical pixel.
+            QTRY_COMPARE(label->property("lineCount").toInt(), 1);
+            QTRY_VERIFY2(
+                label->property("paintedWidth").toReal() <= label->width() + 0.5,
+                qPrintable(
+                    QStringLiteral("%1: width %2, implicit %3, painted %4, font advance %5")
+                        .arg(QString::fromLatin1(name))
+                        .arg(label->width())
+                        .arg(label->property("implicitWidth").toReal())
+                        .arg(label->property("paintedWidth").toReal())
+                        .arg(metrics.horizontalAdvance(label->property("text").toString()))));
             QVERIFY(label->property("paintedHeight").toReal() <= metrics.height() + 1);
         }
         const auto originalRevision = revisionLabel->property("text").toString();

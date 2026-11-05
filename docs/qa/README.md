@@ -17,6 +17,10 @@ HTML 正文对照保留冻结原稿及哈希。任务入口图标使用已批准
 
 English: First-frame menu checks locate sequence and status tags by object name and verify actual text metrics with the shared, font-scaled insets. Both languages and themes, 100/125/150% font scales, all eight tag/shortcut combinations and submenu arrows remain covered without geometry retries or wider tolerances. HTML body checks retain the frozen artwork and hash, recording its superseded task icon ink while strictly measuring the approved 16-unit SVG size, vertical center and placement. Qt main-window/menu proportions retain logical-size and DPR checks; browser zoom is optional for local HTML review.
 
+Windows 可在构建 Qt 浏览器测试后按需运行 `scripts/check-windows-update-uia.ps1`，传入 `-TestExecutable`、`-QtBin` 和尚不存在的 `-OutputDirectory`。脚本使用隔离测试进程与模拟更新状态，检查中英文更新文字是否可由 Windows UI Automation 读取；输出只放在 `build/`。它不连接真实更新服务，也不代替真实读屏或其他平台检查。
+
+English: On Windows, the optional `check-windows-update-uia.ps1` takes a built browser test executable, a Qt bin directory and a new output directory. It observes bilingual synthetic update states through Windows UI Automation in an isolated test process; it does not exercise a real update service or replace a screen-reader or other-platform check.
+
 ## 状态与证据放在哪里
 
 具体工作、验收结论、未覆盖项和阻塞原因记录在 [GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues)。工作包、缺陷与发行许可复核分开跟踪；同一问题复用既有 issue，不用新文档累积“第几批完成”。WP-12 历史验收保留于 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)，发行许可复核见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4)，不因目录整理重复要求用户验收。
