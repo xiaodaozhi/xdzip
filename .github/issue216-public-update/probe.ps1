@@ -155,6 +155,21 @@ function Wait-AppButton([int]$processId, [string]$pattern, [int]$seconds) {
     Snapshot-Process $processId
     throw 'Expected application button did not appear.'
 }
+function Wait-AppTab([int]$processId, [string]$pattern, [int]$seconds) {
+    $deadline = [DateTime]::UtcNow.AddSeconds($seconds)
+    while ([DateTime]::UtcNow -lt $deadline) {
+        foreach ($element in @(Process-Elements $processId)) {
+            try {
+                $current = $element.Current
+                if ($current.ControlType -eq [System.Windows.Automation.ControlType]::TabItem -and
+                    $current.IsEnabled -and $current.Name -match $pattern) { return $element }
+            } catch [System.Windows.Automation.ElementNotAvailableException] { }
+        }
+        Start-Sleep -Milliseconds 700
+    }
+    Snapshot-Process $processId
+    throw 'Expected application tab did not appear.'
+}
 function Activate-Element($element, [bool]$select = $false) {
     $pattern = $null
     if ($select -and $element.TryGetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern, [ref]$pattern)) {
@@ -337,12 +352,13 @@ public static class ProbeMouse {
     $newIdentity = (& $app --version-json | Out-String | ConvertFrom-Json)
     if ($LASTEXITCODE -ne 0 -or $newIdentity.version -ne '0.1.0-alpha.9' -or $newIdentity.build -ne 22 -or
         -not ('8b277ac418561b754cf16bd41adefe908285cca6'.StartsWith($newIdentity.revision))) { throw 'Unexpected updated application identity.' }
+    Record 'updated-application-restarted'
     if ((Get-Content -LiteralPath $settings -Raw) -notmatch 'sentinel=owned-update-check' -or
         (Get-Content -LiteralPath (Join-Path $installRoot 'owned-sentinel.txt') -Raw).Trim() -ne 'owned-user-file') {
         throw 'Settings or unrelated installed-directory content was not preserved.'
     }
     Activate-Element (Wait-AppButton $newProcess[0].Id '^Settings$' 45)
-    Activate-Element (Wait-AppButton $newProcess[0].Id '^About xdzip$' 30)
+    Activate-Element (Wait-AppTab $newProcess[0].Id '^About$' 30) $true
     Snapshot-Process $newProcess[0].Id
     if (-not ($script:lastSnapshot.name -match 'Update complete\. You are running the new version')) {
         throw 'The restarted application did not display the successful update receipt.'
