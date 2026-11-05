@@ -7250,7 +7250,9 @@ QtObject {
             QQuickItem *page = nullptr;
             QTRY_VERIFY((page = findVisual(settings->contentItem(), "settingsPage-" + names[tab])));
             QTRY_VERIFY(page->width() > 0);
-            QTest::qWait(30);
+            // The previous page's content height can survive the Loader change
+            // until its nested layouts are polished.
+            QVERIFY2(QQuickTest::qWaitForPolish(settings, 3000), qPrintable(names[tab]));
             QVERIFY2(page->width() <= scroll->width() + 1, qPrintable(names[tab]));
             QTRY_VERIFY(
                 qAbs(bar->mapToItem(scroll, QPointF()).x() + bar->width() - scroll->width()) < 1.);
@@ -7267,7 +7269,22 @@ QtObject {
                 QTest::mousePress(settings, Qt::LeftButton, Qt::NoModifier, start);
                 QTest::mouseMove(settings, end, 20);
                 QTest::mouseRelease(settings, Qt::LeftButton, Qt::NoModifier, end);
-                QTRY_VERIFY2(flick->property("contentY").toReal() > 0, qPrintable(names[tab]));
+                if (!QTest::qWaitFor([&] { return flick->property("contentY").toReal() > 0; },
+                                     3000)) {
+                    QFAIL(qPrintable(
+                        QStringLiteral("%1: contentHeight=%2 viewport=%3 bar=%4 thumb=%5 "
+                                       "start=(%6,%7) end=(%8,%9) polishPending=%10")
+                            .arg(names[tab])
+                            .arg(flick->property("contentHeight").toReal())
+                            .arg(flick->height())
+                            .arg(bar->height())
+                            .arg(thumb->height())
+                            .arg(start.x())
+                            .arg(start.y())
+                            .arg(end.x())
+                            .arg(end.y())
+                            .arg(QQuickTest::qIsPolishScheduled(settings))));
+                }
                 QVERIFY2(thumb->mapToScene(QPointF()).y() > start.y() - thumb->height() / 2,
                          qPrintable(names[tab]));
             }
