@@ -5778,6 +5778,10 @@ QtObject {
         QTest::keyClick(host, Qt::Key_Escape);
     }
     void aboutUpdateStateLayoutAndReadOnlyActions() {
+        const bool accessibilityWasActive = QAccessible::isActive();
+        QAccessible::setActive(true);
+        const auto restoreAccessibility =
+            qScopeGuard([&] { QAccessible::setActive(accessibilityWasActive); });
         const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
         for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")}) {
             QVERIFY(initializeUiText(language));
@@ -5819,6 +5823,8 @@ QtObject {
             auto *progress = findVisual(settings->contentItem(), "aboutUpdateProgress");
             QVERIFY(status && check && cancelCheck && cancel && actions && install && recovery &&
                     open && openSecondary && progress);
+            auto *statusAccessible = QAccessible::queryAccessibleInterface(status);
+            QVERIFY(statusAccessible);
             QCOMPARE(install->parentItem(), check->parentItem());
             QCOMPARE(cancel->parentItem(), check->parentItem());
             QVERIFY(!findVisual(settings->contentItem(), "settingsFooter"));
@@ -5846,6 +5852,17 @@ QtObject {
                         service->setProperty("downloaded", state == "downloaded");
                         service->setProperty("state", state);
                         QTRY_VERIFY(!status->property("text").toString().isEmpty());
+                        if (state == "checking")
+                            QTRY_COMPARE(status->property("text").toString(),
+                                         qtTrId("update.checking"));
+                        if (state == "updated")
+                            QTRY_COMPARE(status->property("text").toString(),
+                                         qtTrId("update.updated"));
+                        if (state == "error")
+                            QTRY_COMPARE(status->property("text").toString(),
+                                         qtTrId("update.verificationFailed"));
+                        QTRY_COMPARE(statusAccessible->text(QAccessible::Name),
+                                     status->property("text").toString());
                         QCOMPARE(check->isEnabled(), !busy);
                         QCOMPARE(check->isVisible(), QStringList({"idle", "up_to_date", "updated",
                                                                   "error", "unavailable"})

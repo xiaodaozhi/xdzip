@@ -625,7 +625,13 @@ OperationWindow {
                 RowLayout {
                     id: updateStatusRow
                     Layout.fillWidth: true
-                    PageNote { id: updateStatus; objectName: "aboutUpdateStatus"; text: root.updateMessage(); color: root.updateState === "error" || root.updateState === "recovery_required" ? Theme.menuDanger : Theme.textSecondary }
+                    PageNote {
+                        id: updateStatus
+                        objectName: "aboutUpdateStatus"
+                        text: root.updateMessage()
+                        Accessible.name: text
+                        color: root.updateState === "error" || root.updateState === "recovery_required" ? Theme.menuDanger : Theme.textSecondary
+                    }
                     Item {
                         id: updateActionSlot
                         readonly property real checkWidth: Math.max(checkUpdate.implicitWidth, cancelCheck.implicitWidth)
