@@ -20,6 +20,8 @@
 
 `scripts/desktop.py prepare --install-qt`、`doctor`、`build` 和 `test` 默认共享这些目录。不要为每个开发管线另建 `.cache/Qt`、`.cache/desktop-tools` 或同类目录；只有需要隔离不同 Qt 版本、平台或实验构建时，才显式传入 `--qt-prefix`、`--qt-root` 和 `--tools-dir`。CI 可以把这些参数显式指向 runner 临时目录，但本地默认布局不随 CI 回退路径改变。CMake、Ninja、rustup、Rust 编译器和平台 C++ 编译器属于宿主工具链，按环境预检要求安装和调用，不由 Qt 工具目录复制。
 
+研发周期完成、分支和 worktree 清理后，必须清理该周期在 `build/` 下产生的临时目录和文件。保留 `build/toolchain/` 等仍需复用的共享工具链，删除周期专用构建、诊断和下载暂存；具体规则和手动兜底见[仓库内容与历史管理](repository-hygiene.md#研发周期工件收尾)。
+
 | 平台 | 先准备的系统环境 | Qt SDK 子目录 |
 | --- | --- | --- |
 | macOS | Apple Silicon 原生终端，Xcode Command Line Tools 与有效 macOS SDK | macos |
