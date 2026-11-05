@@ -147,7 +147,9 @@ if ($IsMacOS) {
     # Exercise the AppKit Quit item and native surface observer under Cocoa.
     $env:QT_QPA_PLATFORM = 'cocoa'
     try {
-        Invoke-Checked $browserTests @('moveConflictsUseFileActionsAndAccessibleApplyAll', 'nativeQuitMenuWithoutTask', 'nativeTransitionObserverFollowsSurfaceRecreation', 'cocoaMinimizeAtFullscreenEntry', 'cocoaMinimizeDuringFullscreenRestore', '-o', 'build/review/native-sessions-macos-conflict.log,txt')
+        # The entry test deliberately destroys a full-screen surface. Run it
+        # last so a new full-screen request does not race AppKit cleanup.
+        Invoke-Checked $browserTests @('moveConflictsUseFileActionsAndAccessibleApplyAll', 'nativeQuitMenuWithoutTask', 'nativeTransitionObserverFollowsSurfaceRecreation', 'cocoaMinimizeDuringFullscreenRestore', 'cocoaMinimizeAtFullscreenEntry', '-o', 'build/review/native-sessions-macos-conflict.log,txt')
     } finally {
         $env:QT_QPA_PLATFORM = 'offscreen'
     }
