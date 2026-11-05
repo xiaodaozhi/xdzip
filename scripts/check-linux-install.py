@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import signal
 import subprocess
 import time
 
@@ -13,6 +14,98 @@ def run(args,**kwargs):
     result=subprocess.run(args,capture_output=True,text=True,timeout=40,**kwargs)
     if result.returncode:raise RuntimeError('Installer verification command failed: '+Path(args[0]).name+'\n'+result.stdout+result.stderr)
     return result.stdout.strip()
+
+
+def verify_default_associations(home, env, user, formats, revision):
+    """Exercise GIO default selection in the disposable container's private profile."""
+    if not Path('/.dockerenv').is_file() or os.geteuid() != 0:
+        raise RuntimeError('Default association test requires the disposable root container')
+    config=home/'.config/mimeapps.list'
+    before=config.read_bytes()
+    applications=home/'.local/share/applications'
+    foreign=applications/'xdzip-test-foreign.desktop'
+    foreign_launcher=home/'probe/default-foreign.py'
+    marker=home/'probe/default-foreign.marker'
+    foreign_probe=home/'probe/default-foreign.json'
+    if any(path.exists() for path in (foreign,foreign_launcher,marker,foreign_probe)):
+        raise RuntimeError('Refusing to overwrite default-association test files')
+    mime_types=('application/zip','application/x-tar','application/x-compressed-tar',
+                'application/x-7z-compressed','application/vnd.rar','application/x-rar',
+                'application/vnd.ms-cab-compressed','application/x-iso9660-image','application/x-udf')
+    names=('sample.zip','sample.tar','sample.tar.gz','sample.tgz','sample.7z',
+           'sample.rar','sample.cab','sample.iso','sample.udf')
+    child_env=dict(env)
+    child_env.pop('DBUS_SESSION_BUS_ADDRESS',None)
+    child_env.pop('XDZIP_ASSOCIATION_PROBE',None)
+    bus_pid=None
+    checks=[]
+    def invoke(args, extra_env=None):
+        options=dict(user)
+        options['env']=dict(child_env,**(extra_env or {}))
+        return run(args,**options)
+    def wait_file(path):
+        for _ in range(500):
+            if path.is_file():return
+            time.sleep(.05)
+        raise RuntimeError('Default association evidence did not arrive')
+    def wait_application_exit():
+        for _ in range(100):
+            with open('/run/xdzip/usage.lock') as lock:
+                try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB);return
+                except BlockingIOError:time.sleep(.05)
+        raise RuntimeError('Associated product did not release its usage lock')
+    try:
+        foreign_launcher.write_text('from pathlib import Path\nPath('+repr(str(marker))+').touch()\n')
+        os.chown(foreign_launcher,1000,1000)
+        foreign.write_text('[Desktop Entry]\nType=Application\nName=Foreign test handler\n'
+                           'Exec=/usr/bin/python3 '+str(foreign_launcher)+' %f\nTerminal=false\n'
+                           'MimeType=application/zip;\n')
+        os.chown(foreign,1000,1000)
+        bus=invoke(['dbus-daemon','--session','--fork','--print-address=1','--print-pid=1']).splitlines()
+        if len(bus)!=2:raise RuntimeError('Cannot start private session bus')
+        child_env['DBUS_SESSION_BUS_ADDRESS']=bus[0];bus_pid=int(bus[1])
+        invoke(['gio','mime','application/zip',foreign.name])
+        if foreign.name not in invoke(['gio','mime','application/zip']).splitlines()[0]:
+            raise RuntimeError('Foreign default was not selected')
+        invoke(['gio','open',str(formats/'sample.zip')],{'XDZIP_ASSOCIATION_PROBE':str(foreign_probe)})
+        wait_file(marker)
+        if foreign_probe.exists():raise RuntimeError('Foreign default unexpectedly launched xdzip')
+        for mime in mime_types:
+            invoke(['gio','mime',mime,'xdzip.desktop'])
+            if 'xdzip.desktop' not in invoke(['gio','mime',mime]).splitlines()[0]:
+                raise RuntimeError('xdzip default was not selected: '+mime)
+        for index,name in enumerate(names):
+            target=formats/name
+            probe=home/'probe'/f'default-open-{index}.json'
+            if probe.exists():raise RuntimeError('Refusing existing default association evidence')
+            info=invoke(['gio','info','-a','standard::content-type',str(target)])
+            detected=next((line.strip().split(': ',1)[1] for line in info.splitlines()
+                           if 'standard::content-type:' in line),None)
+            invoke(['gio','open',str(target)],{'XDZIP_ASSOCIATION_PROBE':str(probe)})
+            wait_file(probe)
+            record=json.loads(probe.read_text())
+            if (record.get('event')!='association_open' or record.get('records',0)<1
+                    or record.get('revision')!=revision or record.get('presented_frames',0)<1
+                    or record.get('welcome_frames')!=0):
+                raise RuntimeError('Incorrect default association result: '+name)
+            wait_application_exit()
+            checks.append({'format':name,'content_type':detected,'records':record['records']})
+        invoke(['gio','mime','application/zip',foreign.name])
+        if foreign.name not in invoke(['gio','mime','application/zip']).splitlines()[0]:
+            raise RuntimeError('Changing the default back failed')
+    finally:
+        try:
+            config.write_bytes(before)
+            if config.read_bytes()!=before:
+                raise RuntimeError('Original default settings were not restored')
+        finally:
+            if foreign.exists():foreign.unlink()
+            if foreign_launcher.exists():foreign_launcher.unlink()
+            if bus_pid:
+                try:os.kill(bus_pid,signal.SIGTERM)
+                except ProcessLookupError:pass
+    return {'mime_defaults':len(mime_types),'formats':checks,'foreign_default_control':'passed',
+            'original_defaults_restored':True}
 
 
 def main():
@@ -74,8 +167,10 @@ def main():
                      'sample.7z','sample.rar','sample.cab','sample.iso','sample.udf'):
             verify_open('format-'+name, Path('/formats')/name, expected_records=None)
         phases.append('all-format-candidates-and-defaults')
-        run(['dpkg','--compare-versions',run(['dpkg-query','-W','-f=${Version}','xdzip']),'gt',historical_version])
         current=json.loads((home/'probe/actual-product-upgrade.json').read_text())
+        default_associations=verify_default_associations(home,env,user,Path('/formats'),current['revision'])
+        phases.append('user-default-selection-and-format-dispatch')
+        run(['dpkg','--compare-versions',run(['dpkg-query','-W','-f=${Version}','xdzip']),'gt',historical_version])
         if historical['revision']==current['revision'] or settings.read_bytes()!=original_settings:
             raise RuntimeError('Actual upgrade did not change product revision or modified settings')
         run(['dpkg','-i','/packages/previous.deb']);verify_open('actual-product-rollback')
@@ -122,6 +217,7 @@ def main():
         phases.append('uninstall-preserves-user-data-and-default')
         print('XDZIP_INSTALL '+json.dumps({'status':'passed','platform':'linux','phases':phases,'uid':1000,'records':100000,
             'product_revisions':{'previous':historical['revision'],'current':current['revision']},
+              'default_associations':default_associations,
             'limits':'Xvfb container/GIO, not physical desktop click, GPU, IME, signed release or distribution-wide support.'}))
     finally:display.terminate();display.wait(timeout=10)
 

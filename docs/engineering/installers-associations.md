@@ -90,6 +90,10 @@ macOS 原生启动单独等待 AppKit 的 NSApplicationDidFinishLaunchingNotific
 
 Windows 原生 CI 安装 QA 变体 1、升级 2、回退 1，再安装真正交付包；ShellExecuteEx 按自有注册类打开中文、空格、& 路径，检查默认及 UserChoice 不变、忙时拒绝替换、卸载保留设置／额外文件／其他候选。Linux 在无 SDK／系统 Qt／编译器、无网络容器执行相同 dpkg 生命周期，UID 1000 的产品由 GIO 桌面启动项实际打开十万条目，核对 MIME、默认、锁、卸载和 purge。
 
+Linux 发行验证还在容器的独立用户配置中切换 MIME 默认项，通过 `gio open` 分别打开九个格式样本；另用独立处理程序验证切换确实生效，结束时恢复原默认配置。此检查使用容器内的 GIO 和虚拟显示，不修改维护者的桌面配置，也不代替系统设置界面或其他桌面环境的验证。
+
+English: Linux release validation also changes MIME defaults in an isolated container profile and opens nine format samples with `gio open`. A separate handler checks that the selection takes effect, and the original defaults are restored. This does not exercise a physical desktop or the system settings UI.
+
 QA 变体共用本次核验二进制，只改变测试包版本／目录，验证安装机制，不作为发行工件，也不冒充真实不同产品版本的数据迁移。设置 schema 当前为 1，两平台安装元数据记录它，旧安装器拒绝覆盖声明更新 schema 的安装；未来迁移须同步契约。
 
 后续故障注入只允许 QA 变体 2，在 postinst configure 阶段失败一次；正式产品禁止携带该分支。容器实际验证 half-configured 状态、运行门阻止启动、设置保持，再运行 dpkg --configure -a 恢复并经 GIO 打开真实文件。这是可重复配置失败，不冒充设备掉电。设置兼容检查另编译保留的原始设置组件与当前组件，往返同 schema 配置；原始输入逐文件固定哈希，不依赖旧 main 历史，不冒充完整安装器的数据迁移。
