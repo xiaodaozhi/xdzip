@@ -7395,6 +7395,12 @@ QtObject {
         QTest::mouseRelease(settings, Qt::LeftButton, Qt::NoModifier, thumbEnd);
         QTRY_VERIFY(flick->property("contentY").toReal() > 0);
         QVERIFY(thumb->mapToScene(QPointF()).y() > thumbStart.y() - thumb->height() / 2);
+        if (!captures.isEmpty()) {
+            const auto name = QStringLiteral("about-scroll-") + language +
+                              (dark ? QStringLiteral("-dark-") : QStringLiteral("-light-")) +
+                              QString::number(scale);
+            QVERIFY(visual_audit::save(settings, captures, name));
+        }
         const qreal visibleScroll =
             std::clamp(checkBottom - flick->height() + 2., qreal(0), maxScroll);
         QVERIFY(flick->setProperty("contentY", visibleScroll));
