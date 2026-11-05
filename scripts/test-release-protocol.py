@@ -247,6 +247,10 @@ class ReleaseNotesTests(unittest.TestCase):
             if args[:3] == ['gh', 'release', 'view']:
                 return subprocess.CompletedProcess(args, 1 if current is None else 0,
                     '' if current is None else json.dumps(current))
+            if args[:3] == ['gh', 'release', 'list']:
+                releases = [] if current is None else [dict(
+                    tagName=current['tagName'], isLatest=True, isPrerelease=current['isPrerelease'])]
+                return subprocess.CompletedProcess(args, 0, json.dumps(releases))
             if args[:3] == ['gh', 'release', 'create']:
                 current = copy.deepcopy(self.draft if created_state is None else created_state)
             if args[:3] == ['gh', 'release', 'edit']:
@@ -273,6 +277,12 @@ class ReleaseNotesTests(unittest.TestCase):
         self.assertEqual(self.commands, [])
         self.assertEqual(PUBLISH.load_notes(path, self.version), self.body)
         self.assertNotIn('首个', self.body)
+
+    def test_development_channel_cannot_be_published(self):
+        self.version = dict(display_version='0.1.0-dev.23', channel='development', build=23)
+        with self.assertRaisesRegex(ValueError, 'Development channel'):
+            self.invoke('--check-notes')
+        self.assertEqual(self.commands, [])
 
     def test_new_version_without_notes_cannot_reuse_previous_acceptance(self):
         with self.assertRaises(FileNotFoundError): self.invoke('--check-notes', use_override=False)
@@ -351,13 +361,55 @@ class ReleaseNotesTests(unittest.TestCase):
                           {k: v for k, v in public.items() if k != 'isPrerelease'}, None]
         for state in invalid_states:
             with self.subTest(state=state), self.assertRaisesRegex(ValueError, 'prerelease'):
-                PUBLISH.require_release_state(state, 'v0.1.0-alpha.7', draft=False)
+                PUBLISH.require_release_state(state, 'v0.1.0-alpha.7', draft=False, prerelease=True)
+
+    def test_stable_release_is_published_as_latest_without_prerelease_flag(self):
+        self.version = dict(display_version='0.1.0', channel='stable', build=23)
+        self.body = '# xdzip 0.1.0\n\n稳定版发布说明。\n\nStable release notes.\n'
+        self.notes.write_text(
+            '<!-- xdzip-release {"version":"0.1.0","build":23} -->\n\n'+self.body,
+            encoding='utf-8')
+        self.draft = dict(tagName='v0.1.0', isDraft=True, isPrerelease=False,
+                          assets=[], body=self.body)
+        source = self.make_packages()
+        self.invoke('--tag', 'v0.1.0', '--repository', 'owner/repo', '--directory', str(source),
+                    source=source)
+
+        create_command = next(c for c in self.commands if c[:3] == ['gh', 'release', 'create'])
+        edit_command = next(c for c in self.commands if c[:3] == ['gh', 'release', 'edit'])
+        self.assertNotIn('--prerelease', create_command)
+        self.assertNotIn('--prerelease', edit_command)
+        self.assertIn('--latest', edit_command)
+        self.assertTrue(any(c[:3] == ['gh', 'release', 'list'] for c in self.commands))
+        self.assertFalse(any('--latest=false' in c for c in self.commands))
+        self.assertEqual(sum(c[:3] == ['gh', 'release', 'download'] for c in self.commands), 2)
+
+    def test_stable_release_state_rejects_prerelease_or_wrong_tag(self):
+        valid = dict(tagName='v0.1.0', isDraft=False, isPrerelease=False)
+        PUBLISH.require_release_state(valid, 'v0.1.0', draft=False, prerelease=False)
+        for state in [dict(valid, isPrerelease=True), dict(valid, tagName='v0.1.0-alpha.9'),
+                      dict(valid, isDraft=True)]:
+            with self.subTest(state=state), self.assertRaisesRegex(ValueError, 'stable release'):
+                PUBLISH.require_release_state(state, 'v0.1.0', draft=False, prerelease=False)
+
+    def test_stable_release_must_be_latest(self):
+        with patch.object(PUBLISH, 'gh', return_value=json.dumps([
+                dict(tagName='v0.1.0', isLatest=True, isPrerelease=False)])):
+            PUBLISH.require_latest_stable_release('v0.1.0', 'owner/repo')
+        for releases in [
+                [dict(tagName='v0.1.0', isLatest=False, isPrerelease=False)],
+                [dict(tagName='v0.1.0', isLatest=True, isPrerelease=True)],
+                [dict(tagName='v0.1.1', isLatest=True, isPrerelease=False)]]:
+            with self.subTest(releases=releases), patch.object(PUBLISH, 'gh',
+                    return_value=json.dumps(releases)), self.assertRaisesRegex(ValueError, 'not marked'):
+                PUBLISH.require_latest_stable_release('v0.1.0', 'owner/repo')
 
     def make_packages(self):
         source = self.root/'packages'
         source.mkdir()
         for suffix, _ in TARGETS.values():
-            (source/('xdzip-0.1.0-alpha.7-'+suffix)).write_bytes(b'owned native package')
+            name = 'xdzip-'+self.version['display_version']+'-'+suffix
+            (source/name).write_bytes(b'owned native package')
         manifest = create(source, self.version, 'owner/repo', 'a'*40)
         (source/'release.json').write_text(json.dumps(manifest), encoding='utf-8')
         (source/'SHA256SUMS').write_text(''.join(PUBLISH.sha256(p)+'  '+p.name+'\n' for p in sorted(source.iterdir())))

@@ -8,7 +8,7 @@
 
 说明按平台、实际提交和证据记录中英文验收边界，已有人工验收与未执行项分别保留；阶段进展仍由 issue 管理。初建草稿和公开使用同一份说明快照。草稿重跑若发现其正文与已审阅文件不同，会在上传／删除资产前停止，要求显式对齐输入；公开版本继续拒绝重跑替换资产。`CHANGELOG.md` 只归档实际公开版本，本地开发交付不补造为公开版本史。
 
-发布器在改动草稿资产前回读 GitHub 标签、草稿状态和预发布标记；公开操作后及公开附件复核结束后再次回读，只有目标标签已公开且仍标记为预发布才报告成功。公开后的核对失败时，版本可能已经对外可见，脚本停止并要求所有者处理，不自动撤回、修改或替换已公开版本及资产。
+发布器在改动草稿资产前回读 GitHub 标签、草稿状态和渠道标记。stable 渠道必须保持非预发布状态并成为 GitHub Latest；alpha、beta、rc 渠道必须保持预发布状态且不能取代 Latest。公开操作后及公开附件复核结束后再次核对相应状态，全部符合才报告成功。公开后的核对失败时，版本可能已经对外可见，脚本停止并要求所有者处理，不自动撤回、修改或替换已公开版本及资产。
 
 冻结版本标签前可手动以候选提交 SHA 和 `validate_only=true` 运行同一流水线，实际构建、部署、执行必要的 Mac ad-hoc 完整性签名、核验并汇总附件，保留 release-validation 工件，不创建草稿或公开 Release。验证模式不向汇总步骤传递更新签名密钥或 key ID；汇总器显式禁用更新签名，即使调用环境含有密钥也不使用，并拒绝残留的签名附件或冲突参数。正式发布仍使用版本标签和强制更新签名，不能以提交 SHA 冒充标签。此演练避免首次打包错误发生在不可变标签创建之后。
 
@@ -30,7 +30,7 @@ Windows 每次部署核验使用独立的临时测试副本，保留此前日志
 
 macOS 的应用 ZIP、DMG 与通知材料必须在同一已部署、签名的临时应用仍存活时导出，随后才清理暂存 `.app` 和临时注册。不能在暂存清理后重新部署另一份应用来补 ZIP。
 
-顺序为同提交验证、冻结版本提交、创建并推送不可变标签、三平台构建与独立启动及安装生命周期核验、汇总草稿清单、全部齐备后公开 Pre-release、再次下载并核对所有附件。任何平台失败时草稿保持未公开。发布前后均按 SHA256SUMS 复验。许可来源复核或人工验收未完成时必须在说明中保留限制，不以自动化测试冒充其实际结论。
+顺序为同提交 validation-only 演练、冻结版本提交、创建并推送不可变标签、三平台构建与独立启动及安装生命周期核验、汇总草稿清单、全部齐备后按渠道公开 Release、再次下载并核对所有附件。stable 公开为普通 Release 并显式标记 Latest；alpha、beta、rc 公开为 Pre-release。任何平台失败时草稿保持未公开。发布前后均按 SHA256SUMS 复验。许可来源复核或人工验收未完成时必须在说明中保留限制，不以自动化测试冒充其实际结论。
 
 更新客户端分页获取 GitHub Releases 列表，跳过草稿，校验清单版本，按语义版本、用户允许渠道、平台、架构、包类型选择。不能按发布时间排序判断升级，也不能猜测文件名。预发布不使用排除预发布的 `/releases/latest`。稳定渠道只接收稳定版本，alpha 允许 alpha、beta、rc 和稳定版，beta 不回到 alpha，rc 仅接收 rc 和稳定版；开发版本比较支持 dev。升级的语义版本与单调 build 均须递增。下载后校验大小与 SHA-256，任何缺失或不一致拒绝使用。
 
@@ -58,7 +58,7 @@ macOS 在无秘密的工具链准备步骤中一次安装 `rust-toolchain.toml` 
 
 English: Every immutable release includes schema-v1 release.json and SHA256SUMS. All six native package targets must be present and hash-verified before a draft becomes public. Metadata binds the complete semantic version, channel, monotonic build, tag and full commit to platform/architecture/package requirements and pinned URLs. Clients paginate Releases, compare semantic versions and builds, and never regress from beta/rc to an earlier channel. They must not use publication dates, filename guesses or /releases/latest for prereleases. Installation additionally requires an Ed25519 release.json.sig over exact JSON bytes and a locally embedded trusted public key. macOS uses a separate Sparkle key to sign both the final app.zip and the entire single-candidate appcast, with a short embedded version description and a pinned macos_appcast_url. Full release notes remain in the GitHub Release body; clients do not fetch external release notes. Owner-provided production public keys are versioned with the client and installation helper; test keys must never be embedded. Older clients without these keys first require a manual installation of a version containing them, because downloaded manifests cannot add trust roots. Existing public releases are never retroactively signed or replaced. Validation-only candidates may explicitly report signing_not_configured; publication independently rejects missing or invalid signatures and never changes existing public assets. macOS application code signing remains ad-hoc; update signatures do not impersonate Developer ID or notarization. Incomplete licensing checks and unperformed manual acceptance remain explicit.
 
-Validation-only dispatches accept a candidate commit SHA and build, deploy, sign, verify and assemble the complete attachment set without creating a draft or public Release. Normal publication requires the exact version tag.
+Validation-only dispatches accept a candidate commit SHA and build, deploy, sign, verify and assemble the complete attachment set without creating a draft or public Release. Normal publication requires the exact version tag. Stable channel publication creates a non-prerelease Release and explicitly marks it Latest; alpha, beta and rc remain prereleases and are explicitly kept out of Latest.
 
 The separate production-update acceptance workflow is manually dispatched from main with read-only repository permissions and the protected release-signing environment. Secret-free builds precede strict derivation and comparison of existing production public keys. Native private build-200 to build-201 upgrades retain the committed production roots. Only fixed candidates bound to this run's source, product identity and hashes may be signed; installers and applications execute without secrets. Signed candidates, manifests, feeds and applications remain on the disposable runner. A bounded allowlist collector exports only diagnostic records and rejects signed payloads in result slots. Key matching, signature verification, actual native installation and manual acceptance remain separate outcomes. No tag, draft or release is created, and local tools never retrieve GitHub Secret values.
 
@@ -66,4 +66,4 @@ Each Windows deployment verification uses a fresh test copy and preserves prior 
 
 Release notes come from a reviewed, version-specific Markdown file with matching version/build metadata. Offline notes preflight runs before native builds. Draft creation, retries and publication use the same reviewed body; a changed draft stops publication before any asset mutation. Manual acceptance remains scoped to the recorded platform and commit, in both languages. Missing notes for a new version never inherit old acceptance. Only actually published versions are archived in the changelog.
 
-Before changing draft assets, the publisher reads back the GitHub tag, draft state and prerelease flag. It checks them again after publication and after public attachment verification, and reports success only for the expected public prerelease. A failed public-state check may leave a release already visible; the script stops for owner review and never automatically withdraws, edits or replaces the public release or its assets.
+Before changing draft assets, the publisher reads back the GitHub tag, draft state and channel marker. It checks them again after publication and after public attachment verification, and reports success only for the expected channel state; stable releases must also be marked Latest. A failed public-state check may leave a release already visible; the script stops for owner review and never automatically withdraws, edits or replaces the public release or its assets.

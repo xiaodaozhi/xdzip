@@ -15,12 +15,6 @@
   <a href="#功能亮点">功能</a> / <a href="#格式支持">格式支持</a> / <a href="#获取与安装">获取与安装</a> / <a href="#从源码构建">源码构建</a> / <a href="docs/README.md">文档</a> / <a href="https://github.com/xiaodaozhi/xdzip/issues">反馈</a>
 </p>
 
-> **开发预览**：xdzip 目前处于实验性开发阶段，尚无获批的正式发行版本。试用前请阅读[当前限制](#当前限制)与[已知问题](https://github.com/xiaodaozhi/xdzip/issues)，并为重要文件保留备份。
-
-![xdzip 主界面设计预览](design/hifi/screens/main-capsule-light.png)
-
-<p align="center"><sub>主界面高保真设计参考。图中的图片预览为设计示例，当前产品能力见下文。</sub></p>
-
 ## 功能亮点
 
 - **清晰地浏览内容**：目录树、列表与网格、搜索、全结果排序和文件属性，支持最多十万条物理记录。
@@ -65,15 +59,15 @@
 
 ## 获取与安装
 
-预发布通过 [GitHub Releases](https://github.com/xiaodaozhi/xdzip/releases)提供六类下载包与校验清单，公开前仍保留为草稿。Windows 开发包保留应用目录内 VC++ 运行库，不携带 Windows SDK 图形编译库或软件 OpenGL 回退库；Mac 包仅 ad-hoc 完整性签名。发行材料要求与更新协议见[发布说明](docs/engineering/release-protocol.md)。
+应用安装包与校验清单通过 [GitHub Releases](https://github.com/xiaodaozhi/xdzip/releases)提供。Windows 安装包保留应用目录内 VC++ 运行库，不携带 Windows SDK 图形编译库或软件 OpenGL 回退库；Mac 包使用 ad-hoc 完整性签名。发行材料要求与更新协议见[发布说明](docs/engineering/release-protocol.md)。
 
 可按需手动运行 [Qt components](https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml) 工作流，获取 Windows、Linux 开发工件，或从源码构建。选择对应提交且成功完成的手动运行，在页面底部 **Artifacts** 下载对应平台工件；下载可能需要登录 GitHub，工件通常保留 14 天。日常 CI 不自动生成开发包。
 
-| 平台 | 支持范围 | 开发交付方式 |
+| 平台 | 支持范围 | 发布包与本地构建 |
 | --- | --- | --- |
-| macOS | macOS 14+，Apple Silicon arm64 | 本地构建 `.app`，可按[部署指南](docs/engineering/macos-deployment.md)制作开发 DMG；普通 CI 不提供应用包，专用发布流程提供 app.zip 与 DMG |
-| Windows | 仍受维护的 Windows 11，x86_64 | 当前用户安装器，或含 Qt 运行库的目录包 |
-| Linux | Ubuntu 24.04 LTS，x86_64，X11，glibc 2.39+ | `.deb` 安装包，或保留执行权限的 `.tar.gz` 运行目录 |
+| macOS | macOS 14+，Apple Silicon arm64 | GitHub Releases 提供 app.zip 与 DMG；也可本地构建 `.app` 并按[部署指南](docs/engineering/macos-deployment.md)制作开发 DMG |
+| Windows | 仍受维护的 Windows 11，x86_64 | GitHub Releases 提供当前用户安装器与便携目录包 |
+| Linux | Ubuntu 24.04 LTS，x86_64，X11，glibc 2.39+ | GitHub Releases 提供 `.deb` 安装包与保留执行权限的 `.tar.gz` 运行目录 |
 
 Windows 安装器未签名；本地 macOS DMG 使用必要的 ad-hoc 完整性签名，未做 Developer ID 签名或公证。系统可能提示未验证的发布者。安装与文件关联说明见[安装指南](docs/engineering/installers-associations.md)，完整平台及维护范围见[支持政策](docs/engineering/support-policy.md)。
 
@@ -115,7 +109,7 @@ Windows 在 MSVC x64 开发环境运行，可将 `python3` 换为 `python`；mac
 | 我想了解 | 入口 |
 | --- | --- |
 | 产品设计与技术架构 | [文档导航](docs/README.md)、[软件设计](docs/design/index.md)、[目录与依赖](docs/engineering/repository-layout.md) |
-| 界面与交互 | [高保真原稿](design/hifi/README.md)、[可操作 HTML 设计](design/html/index.html)、[视觉规范](docs/visual/README.md) |
+| 界面与交互 | [视觉规范](docs/visual/README.md)、[交互与界面文档](docs/README.md) |
 | 后续方向与变更 | [工作包路线](docs/planning/backlog.md)、[Issues](https://github.com/xiaodaozhi/xdzip/issues)、[变更日志](CHANGELOG.md) |
 | 参与开发 | [贡献指南](CONTRIBUTING.md)、[开发指南](docs/engineering/development.md)、[行为规范](CODE_OF_CONDUCT.md) |
 

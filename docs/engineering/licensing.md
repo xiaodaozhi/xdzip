@@ -20,7 +20,7 @@ English: Current worker formats use independent Rust; official UnRAR and 7-Zip s
 
 Windows 维护者需要自有开发环境时，可采用符合条件的 Visual Studio Community 免费许可路径。GitHub 标准托管 runner 实际预装的 Enterprise 有独立的托管使用依据，CI 构建与分发不额外要求本机安装 Community IDE。适用依据、Microsoft CRT／SDK 分发条件及下游说明见 [Windows 开发工具与运行库许可](windows-licensing.md)。这些微软组件不适用项目 Apache-2.0 许可，普通运行用户无需安装 Visual Studio。
 
-[实际组件归属流程](runtime-attribution.md)从固定 SDK 的 SPDX 提取模块、第三方、版权与上游许可表达式，并随 Windows/Linux 运行目录交付固定来源的许可文本。上游 licenseConcluded 不代表本项目已选择或批准对应许可分支；未确认归属、源码交付和重链接材料继续阻断正式发行。
+[实际组件归属流程](runtime-attribution.md)从固定 SDK 的 SPDX 提取模块、第三方、版权与上游许可表达式，并随 Windows/Linux 运行目录交付固定来源的许可文本。上游 licenseConcluded 不代表本项目已选择或批准对应许可分支；每个候选均须按实际组件核对来源、通知、对应源码和替换材料。已识别且适用的义务或必需材料若未解决，会阻断该候选发行；上游 NOASSERTION 或机器报告 incomplete 本身不能直接推导为许可冲突，也不能当作豁免。
 
 三张视觉图采用生成式设计工具制作，不是 Bandizip 截图；参考链接只用于说明研究依据。生成式资产不承诺独占性。正式发行的图标、示例图片和字体需独立来源登记，不能直接从设计稿裁剪当作完成资产审计。
 
