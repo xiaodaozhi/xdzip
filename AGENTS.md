@@ -9,6 +9,7 @@
 - 保持领域和格式逻辑独立于 Qt；QML 只表达界面状态和用户意图。
 - 不导入旧实验工作区代码、第三方截图、凭据、用户归档或大型构建产物。
 - 所有层级的 dist/ 及其内容均不提交到 Git；build/、target/ 也只存放本地或 CI 生成产物。
+- 本地依赖统一放在 `build/toolchain/`：Qt 6.8.2 SDK 与 `qmllint` 位于 `build/toolchain/Qt/6.8.2/<平台子目录>`，共享 Python／`aqtinstall` 环境位于 `build/toolchain/desktop-tools`，Qt 下载暂存位于 `build/toolchain/qt-install-tool`。使用 `scripts/desktop.py` 的默认参数，不为不同开发管线另建 `.cache/Qt` 或其他工具链副本；CI 可显式传入 runner 临时目录。
 - macOS 保留 Apple Silicon 原生编译、测试与启动验证；经用户明确要求，可在本地部署 Qt 并生成开发 DMG，允许必需的 ad-hoc 完整性签名，不冒充 Developer ID 或公证。CI 仍不部署、签名、压缩或上传 Apple Silicon 应用包，仅保留日志与 JSON 验证记录。
 - 修改领域、桥接、格式、文件写入或任务语义时，同时更新规范和对应验收条目。
 - 不假装测试、签名或平台验证已经通过；记录实际证据和限制。

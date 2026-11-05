@@ -33,7 +33,7 @@ python3 scripts/collect-notices.py build/review/wp12/notices
 python3 scripts/deployment_audit.py \
   --root build/ui/apps/desktop/xdzip.app \
   --app build/ui/apps/desktop/xdzip.app/Contents/MacOS/xdzip \
-  --qt-prefix .cache/Qt/6.8.2/macos --mode sdk \
+  --qt-prefix build/toolchain/Qt/6.8.2/macos --mode sdk \
   --output build/review/wp12/deployment-audit.json
 python3 scripts/sbom.py \
   --audit build/review/wp12/deployment-audit.json \

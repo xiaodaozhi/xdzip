@@ -84,13 +84,13 @@ Windows 和 macOS 为受支持的文件类型提供对应文档图标，Linux �
 ```sh
 git clone https://github.com/xiaodaozhi/xdzip.git
 cd xdzip
-python3 scripts/desktop.py prepare --install-rust --install-qt --qt-root .cache/Qt
+python3 scripts/desktop.py prepare --install-rust --install-qt --qt-root build/toolchain/Qt
 python3 scripts/desktop.py doctor
 python3 scripts/desktop.py build
 python3 scripts/desktop.py test
 ```
 
-Windows 在 MSVC x64 开发环境运行，可将 `python3` 换为 `python`；macOS 使用 Apple Silicon 原生终端与有效 Xcode Command Line Tools。已有 Qt 时用 `--qt-prefix` 指定 SDK 前缀，无需重新下载。
+Windows 在 MSVC x64 开发环境运行，可将 `python3` 换为 `python`；macOS 使用 Apple Silicon 原生终端与有效 Xcode Command Line Tools。默认本地 Qt SDK 固定在 `build/toolchain/Qt/6.8.2/<平台子目录>`，其中包含 `qmllint`；`aqtinstall` 和共享 Python 工具环境固定在 `build/toolchain/desktop-tools`，下载暂存固定在 `build/toolchain/qt-install-tool`。已有 Qt 时用 `--qt-prefix` 指定 SDK 前缀，无需重新下载。CMake、Ninja、Rust 编译器和平台编译器仍使用系统工具链，不在各管线中重复复制。
 
 同一入口提供 `doctor`、`prepare`、`build`、`test`、`package` 和 `verify`，各阶段独立执行。日常构建允许未提交改动，打包要求干净源码与对应构建身份。环境检查、参数、平台包及完整操作顺序统一见[开发构建指南](docs/engineering/developer-build.md)。单独执行 Rust workspace 测试时，也须先构建隔离格式工作进程并通过 `XDZIP_NATIVE_CODEC` 指定工作进程，再运行 `cargo test --workspace --locked`；统一 `test` 入口会自动提供该路径。
 

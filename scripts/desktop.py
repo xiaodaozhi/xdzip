@@ -57,18 +57,20 @@ class Workflow:
     def __init__(self, args, *, system=None):
         self.args = args
         self.preflights = []
+        self.toolchain = ROOT/'build/toolchain'
         actual = PLATFORMS.get(platform.system())
         if actual is None and system is None:
             raise ValueError('Unsupported native build host')
         self.system = system or actual[0]
         self.platform_spec = next(v for v in PLATFORMS.values() if v[0] == self.system)
-        default_qt = ROOT/'.cache/Qt'/QT_VERSION/self.platform_spec[3]
+        default_qt = self.toolchain/'Qt'/QT_VERSION/self.platform_spec[3]
         self.qt = Path(args.qt_prefix or os.environ.get('XDZIP_QT_PREFIX') or default_qt).resolve()
         self.build = generated_path(args.build_dir)
         self.output = generated_path(args.output_dir)
         # Explicit outside tool caches are allowed for CI ephemeral directories.
         # They only receive a venv when prepare is explicitly selected.
-        self.tools = Path(args.tools_dir).resolve()
+        self.tools = (Path(args.tools_dir).resolve() if args.tools_dir
+                      else self.toolchain/'desktop-tools').resolve()
         if self.tools == ROOT or self.tools in ROOT.parents:
             raise ValueError('Tools directory must be a dedicated environment')
         self.tools_python = self.tools/('Scripts/python.exe' if self.system == 'windows' else 'bin/python')
@@ -205,7 +207,7 @@ class Workflow:
             expected = qt_root/QT_VERSION/self.platform_spec[3]
             if expected != self.qt:
                 raise ValueError('--qt-prefix must match --qt-root/6.8.2/platform-folder when installing Qt')
-            downloads = ROOT/'build/qt-install-tool'
+            downloads = self.toolchain/'qt-install-tool'
             downloads.mkdir(parents=True, exist_ok=True)
             self.run([self.python, '-m', 'aqt', 'install-qt', self.platform_spec[1], 'desktop',
                       QT_VERSION, self.platform_spec[2], '-O', qt_root], cwd=downloads)
@@ -522,7 +524,7 @@ def parser():
     value.add_argument('--qt-root', help='Qt install root, only used by prepare --install-qt')
     value.add_argument('--build-dir', default='build/desktop')
     value.add_argument('--output-dir', default='build/package')
-    value.add_argument('--tools-dir', default='.cache/desktop-tools')
+    value.add_argument('--tools-dir', help='Python tool environment; defaults to build/toolchain/desktop-tools')
     value.add_argument('--configuration', choices=['Debug', 'Release', 'RelWithDebInfo'], default='Release')
     value.add_argument('--jobs', type=int, default=3)
     value.add_argument('--for-stage', choices=['prepare', 'build', 'test', 'package', 'verify'], default='build')

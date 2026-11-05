@@ -17,7 +17,7 @@ python3 scripts/desktop.py package --build-dir build/desktop-dmg --output-dir bu
 python3 scripts/desktop.py verify --build-dir build/desktop-dmg --output-dir build/package-macos --kind all
 ```
 
-各阶段不隐式补跑前序阶段。Qt SDK 默认位于 `.cache/Qt/6.8.2/macos`，其他位置在各命令传入 `--qt-prefix`。普通开发／测试构建默认 `None`；上面的主应用显式选择 `Alternate`，不改变用户默认关联。macOS 本地 package 仅支持 `all`；按需 Qt 工作流不运行此打包阶段，也不上传 Mac 应用。专用 Release 例外见发布协议。
+各阶段不隐式补跑前序阶段。Qt SDK 默认位于 `build/toolchain/Qt/6.8.2/macos`，其他位置在各命令传入 `--qt-prefix`。普通开发／测试构建默认 `None`；上面的主应用显式选择 `Alternate`，不改变用户默认关联。macOS 本地 package 仅支持 `all`；按需 Qt 工作流不运行此打包阶段，也不上传 Mac 应用。专用 Release 例外见发布协议。
 
 共用 package 在运行 macdeployqt 前检查原生 arm64、系统 SDK、部署工具、Rust PATH／锁定元数据、Python 校验依赖、Qt 许可与 schema 材料。build、test 允许未提交源码；package 要求干净提交且实际 CLI 身份一致，不能借已有编译缓存绕过。系统编译器、SDK、lipo、codesign 和 hdiutil 由系统工具链提供，不由准备阶段安装。
 
