@@ -88,7 +88,7 @@ source_inventory = {
                       for p in metadata['packages'] if p['id'] in resolved],
     'rust_dependencies': [{'ref':references[n['id']], 'dependsOn':sorted({references[d['pkg']] for d in n['deps'] if d['pkg'] in references})}
                           for n in metadata['resolve']['nodes'] if n['id'] in references],
-    'rust_runtime_candidates': runtime_candidates(metadata, references),
+    'rust_runtime_candidates': runtime_candidates(metadata, references, host),
     'assets': assets,
     'qt_declared_product_modules': ['Core', 'Gui', 'Network', 'Qml', 'Quick', 'QuickControls2', 'Widgets'],
     'qt_version': '6.8.2',

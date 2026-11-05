@@ -31,7 +31,9 @@ SDK 中实际文件可能与上游构建 SPDX 中的 SHA-1 不同，例如后续
 
 对于从 QML 目录迁移至 `Contents/PlugIns/quick/` 的插件，部署关联允许使用已审计的包内 QML 符号链接定位唯一 SDK 输入。生成和消费记录时均重新核对真实链接、审计目标及文件摘要，再执行相同的字节或 Mach-O 比较；来源缺失保留未验证，多个不同来源或链接变更直接拒绝。不能仅凭同名文件提升归属证据，也不消除上游 SDK 摘要差异或许可审查缺口。
 
-Rust 继续保存完整宿主构建图，并额外从实际静态库入口 xdzip-qt-bridge 沿普通依赖边生成 runtime candidates，排除 build、dev 和 proc-macro 工具及其依赖。这是潜在运行时输入，不能证明每个包的机器码最终保留；链接器裁剪、原生 C/C++ 与编译器运行库还需进一步核验。
+Rust 继续保存完整宿主构建图，并从桌面入口 `xdzip-qt-bridge`、格式工作进程入口 `xdzip-codec-bridge`，以及 Windows／Linux 实际构建的 `xdzip-update-helper` 沿普通依赖边生成 runtime candidates；macOS 不加入独立更新助手根。构建、开发和 proc-macro 工具及其依赖不属于候选。这是潜在运行时输入，不能证明每个包的机器码最终保留；链接器裁剪、原生 C/C++ 与编译器运行库还需进一步核验。
+
+English: Rust runtime candidates follow normal dependencies from the desktop bridge and codec worker bridge, plus the update helper on Windows and Linux. macOS does not include the separate helper root. Build, development and procedural macro tools are excluded; candidates are not proof that machine code survived linking.
 
 Cargo 旧式斜杠分隔的简单许可备选项在源码 CycloneDX 的表达式中转换为 `OR`，并以 `xdzip:cargo_license_raw` 保留上游原文；包含斜杠但无法明确判断优先级的写法直接拒绝。原始构建清单和通知不改写，标准 `AND`、`OR` 和 `WITH` 表达式保持不变。这是格式规范化，不代表已选择许可分支或批准发行。
 

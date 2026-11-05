@@ -86,13 +86,32 @@ class AttributionTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError,'hash mismatch'):license_materials(base/'out',cache)
 
     def test_normal_rust_graph_excludes_build_dev_and_proc_macros(self):
-        packages=[{'id':n,'name':'xdzip-qt-bridge' if n=='root' else n,'source':None if n=='root' else 'registry',
-                   'targets':[{'kind':['proc-macro'] if n=='macro' else ['lib']}]} for n in ['root','runtime','build','dev','macro','macrodep']]
+        root_names={'desktop':'xdzip-qt-bridge','codec':'xdzip-codec-bridge',
+                    'helper':'xdzip-update-helper'}
+        names=['desktop','codec','helper','runtime','codecdep','helperdep',
+               'build','dev','macro','macrodep']
+        packages=[{'id':n,'name':root_names.get(n,n),'source':None if n in root_names else 'registry',
+                   'targets':[{'kind':['proc-macro'] if n=='macro' else ['lib']}]} for n in names]
         def dep(name,kind):return {'pkg':name,'dep_kinds':[{'kind':kind}]}
-        nodes=[{'id':'root','deps':[dep('runtime',None),dep('build','build'),dep('dev','dev'),dep('macro',None)]},
-               {'id':'macro','deps':[dep('macrodep',None)]}]+[{'id':n,'deps':[]} for n in ['runtime','build','dev','macrodep']]
-        result=runtime_candidates({'packages':packages,'resolve':{'nodes':nodes}},{p['id']:p['id'] for p in packages})
-        self.assertEqual(result['packages'],['root','runtime'])
+        nodes=[{'id':'desktop','deps':[dep('runtime',None),dep('build','build'),dep('dev','dev'),dep('macro',None)]},
+               {'id':'codec','deps':[dep('runtime',None),dep('codecdep',None)]},
+               {'id':'helper','deps':[dep('helperdep',None)]},
+               {'id':'macro','deps':[dep('macrodep',None)]}]+[{'id':n,'deps':[]} for n in ['runtime','codecdep','helperdep','build','dev','macrodep']]
+        metadata={'packages':packages,'resolve':{'nodes':nodes}}
+        refs={p['id']:p['id'] for p in packages}
+        for host in ['x86_64-pc-windows-msvc','x86_64-unknown-linux-gnu']:
+            result=runtime_candidates(metadata,refs,host)
+            self.assertEqual(result['packages'],['codec','codecdep','desktop','helper','helperdep','runtime'])
+            self.assertEqual(result['roots'],{'xdzip-qt-bridge':'desktop','xdzip-codec-bridge':'codec',
+                                              'xdzip-update-helper':'helper'})
+        mac=runtime_candidates(metadata,refs,'aarch64-apple-darwin')
+        self.assertEqual(mac['packages'],['codec','codecdep','desktop','runtime'])
+        self.assertNotIn('xdzip-update-helper',mac['roots'])
+        with self.assertRaisesRegex(ValueError,'Unsupported runtime candidate host'):
+            runtime_candidates(metadata,refs,'x86_64-unknown-freebsd')
+        with self.assertRaisesRegex(ValueError,'xdzip-codec-bridge'):
+            runtime_candidates({'packages':[p for p in packages if p['id']!='codec'],
+                                'resolve':{'nodes':nodes}},refs,'aarch64-apple-darwin')
 
 
 if __name__=='__main__':unittest.main()
