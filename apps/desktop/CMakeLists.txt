@@ -7,6 +7,7 @@ endif()
 find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)
 qt_standard_project_setup()
 qt_policy(SET QTP0001 NEW)
+qt_policy(SET QTP0004 NEW)
 add_library(xdzip-password-accessibility STATIC PasswordAccessibility.cpp PasswordAccessibility.h)
 target_link_libraries(xdzip-password-accessibility PRIVATE Qt6::QuickPrivate)
 set(XDZIP_BUILD_INFO_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
@@ -25,6 +26,7 @@ add_dependencies(xdzip-ui-resources xdzip-build-info)
 target_include_directories(xdzip-ui-resources PUBLIC "${XDZIP_BUILD_INFO_DIR}")
 qt_add_qml_module(xdzip-ui-resources
     URI Xdzip.Settings VERSION 1.0
+    DEPENDENCIES QtQuick
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml/Xdzip/Settings"
     SOURCES UiPreferences.h UiPreferences.cpp UiFonts.h WindowsFrame.h WindowsFrame.cpp BuildInfo.h BuildInfo.cpp)
 # Compile the QML declared in the resource manifest ahead of first launch.

@@ -63,6 +63,27 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(workflow.runtime, self.root/'build/package/linux')
         self.assertNotIn('RUNNER_TEMP', workflow.env)
 
+    def test_requested_rust_install_precedes_prepare_preflight(self):
+        workflow = self.workflow('linux')
+        workflow.args.install_rust = True
+        workflow.args.install_qt = False
+        workflow.args.packaging = False
+        events = []
+        with patch.object(desktop.shutil, 'which', return_value='rustup'), \
+                patch.object(workflow, 'run',
+                             side_effect=lambda command, **kwargs: events.append(
+                                 ('run', [str(value) for value in command]))), \
+                patch.object(workflow, 'doctor',
+                             side_effect=lambda stage: events.append(('doctor', stage))), \
+                patch.object(workflow, 'script',
+                             side_effect=lambda name, *args, **kwargs: events.append(
+                                 ('script', name))):
+            workflow.prepare()
+        install = ('run', ['rustup', 'toolchain', 'install', '1.99.0', '--profile', 'minimal',
+                           '--component', 'rustfmt', '--component', 'clippy'])
+        self.assertEqual(events[0], install)
+        self.assertLess(events.index(('doctor', 'prepare')), events.index(('doctor', 'build')))
+
     def test_explicit_qt_prefix_wins_over_environment(self):
         with patch.dict(os.environ, {'XDZIP_QT_PREFIX': '/other-sdk'}):
             self.assertEqual(self.workflow().qt, self.qt)

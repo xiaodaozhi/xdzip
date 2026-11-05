@@ -1,5 +1,3 @@
-import QtQuick
-
 // Shared operation action role. Windows supply intent and state, not geometry.
 AppButton {
     labelSize: Theme.operationFooterFontSize

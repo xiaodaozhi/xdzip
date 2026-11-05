@@ -11,8 +11,8 @@ OperationWindow {
     property int currentTab: 0
     property string pendingProxyMode: "system"
     property bool copiedVersion: false
-    property var updater: typeof UpdateService === "undefined" ? null : UpdateService
-    readonly property var associations: typeof FileAssociationService === "undefined" ? null : FileAssociationService
+    property var updater: typeof UpdateService === "undefined" ? null : UpdateService // qmllint disable unqualified
+    readonly property var associations: typeof FileAssociationService === "undefined" ? null : FileAssociationService // qmllint disable unqualified
     readonly property string updateState: updater ? updater.state : "unavailable"
     readonly property var sidebarLabels: [qsTrId("settings.tabAppearance"), qsTrId("settings.tabGeneral"),
                                            qsTrId("settings.tabPrivacy"), qsTrId("settings.tabAssociations"),
@@ -240,7 +240,7 @@ OperationWindow {
                 contentWidth: availableWidth
                 // Measure the About page independently of the changing update section.
                 contentHeight: root.currentTab === 5 && pageLoader.item ?
-                    pageLoader.item.stablePageHeight + Theme.settingsPageInset + Theme.settingsPageSectionGap +
+                    pageLoader.item["stablePageHeight"] + Theme.settingsPageInset + Theme.settingsPageSectionGap +
                         (settingsError.visible ? settingsError.implicitHeight + Theme.settingsPageSectionGap : 0) :
                     pageContent.implicitHeight
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
@@ -498,7 +498,7 @@ OperationWindow {
             Item {
                 id: updateMeasurements
                 visible: false
-                width: updateSection.width
+                Layout.fillWidth: true
                 property int revision: 0
                 readonly property real actionWidth: {
                     let width = revision * 0;
@@ -543,7 +543,7 @@ OperationWindow {
                         required property string modelData
                         text: modelData
                         textFormat: Text.PlainText
-                        font: checkUpdate.contentItem.font
+                        font: checkUpdate.contentItem["font"]
                     }
                 }
                 Repeater {

@@ -184,11 +184,14 @@ class Workflow:
                 raise ValueError('CMake cached a different Qt SDK; use a new --build-dir for this --qt-prefix')
 
     def prepare(self):
-        self.doctor('prepare')
         if self.args.install_rust:
+            rustup = shutil.which('rustup', path=self.env.get('PATH', ''))
+            if rustup is None:
+                raise ValueError('Install rustup and expose it in PATH before using --install-rust.')
             channel = locked_rust_version()
-            self.run(['rustup', 'toolchain', 'install', channel, '--profile', 'minimal',
+            self.run([rustup, 'toolchain', 'install', channel, '--profile', 'minimal',
                       '--component', 'rustfmt', '--component', 'clippy'])
+        self.doctor('prepare')
         if self.args.install_qt or self.args.packaging:
             if not self.tools_python.is_file():
                 if self.tools.exists() and any(self.tools.iterdir()):

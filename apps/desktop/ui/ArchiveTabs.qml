@@ -371,7 +371,7 @@ Rectangle {
                     if (!pressed || pressedButtons !== Qt.LeftButton)
                         return;
                     const point = mapToItem(root, mouse.x, mouse.y);
-                    if (!reordering && Math.abs(point.x - pressX) >= Qt.styleHints.startDragDistance && root.sessionControls && root.tabs.length > 1) {
+                    if (!reordering && Math.abs(point.x - pressX) >= Application.styleHints.startDragDistance && root.sessionControls && root.tabs.length > 1) {
                         reordering = true;
                         root.beginReorder(capsule.modelData, capsule.index, pressOffset, point.x, point.y);
                     }
