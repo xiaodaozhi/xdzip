@@ -240,7 +240,7 @@ OperationWindow {
                 contentWidth: availableWidth
                 // Measure the About page independently of the changing update section.
                 contentHeight: root.currentTab === 5 && pageLoader.item ?
-                    pageLoader.item["stablePageHeight"] + Theme.settingsPageInset + Theme.settingsPageSectionGap +
+                    pageLoader.implicitHeight + Theme.settingsPageInset + Theme.settingsPageSectionGap +
                         (settingsError.visible ? settingsError.implicitHeight + Theme.settingsPageSectionGap : 0) :
                     pageContent.implicitHeight
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
@@ -489,6 +489,7 @@ OperationWindow {
             spacing: Theme.settingsPageSectionGap
             readonly property real stablePageHeight: aboutBeforeUpdate.implicitHeight + updateReserveHeight +
                                                      aboutAfterUpdate.implicitHeight + Theme.settingsPageSectionGap * 2
+            implicitHeight: stablePageHeight
             readonly property real updateActionHeight: openUpdateSecondary.implicitHeight
             readonly property real updateReserveHeight: Math.max(
                 Math.max(updateMeasurements.statusHeight, updateActionSlot.implicitHeight)
@@ -543,7 +544,7 @@ OperationWindow {
                         required property string modelData
                         text: modelData
                         textFormat: Text.PlainText
-                        font: checkUpdate.contentItem["font"]
+                        font.pixelSize: checkUpdate.labelPixelSize
                     }
                 }
                 Repeater {

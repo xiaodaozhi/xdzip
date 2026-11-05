@@ -16,6 +16,7 @@ Button {
     property real cornerRadius: Theme.controlRadius
     property string explanation: ""
     property real density: 1
+    readonly property real labelPixelSize: Math.round(root.labelSize / Theme.fontScale * root.density) * Theme.fontScale
     hoverEnabled: true
     implicitHeight: Math.max(root.baseHeight * density, contentItem.implicitHeight + root.verticalInset * 2 * density)
     implicitWidth: Math.max(root.minimumWidth, contentItem.implicitWidth + root.horizontalInset * 2 * density)
@@ -37,7 +38,7 @@ Button {
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         color: !root.enabled ? (root.primary ? Theme.accentDisabledText : Theme.textSecondary) : root.primary ? Theme.accentText : root.dangerous ? Theme.menuDanger : Theme.text
-        font.pixelSize: Math.round(root.labelSize / Theme.fontScale * root.density) * Theme.fontScale
+        font.pixelSize: root.labelPixelSize
     }
     background: Rectangle {
         objectName: root.objectName ? root.objectName + "Background" : ""
