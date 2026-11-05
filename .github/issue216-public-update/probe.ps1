@@ -22,6 +22,7 @@ $script:oldProcessId = 0
 $script:outcome = 'failed'
 $script:observations = [System.Collections.Generic.List[object]]::new()
 $script:downloadControl = $null
+$script:screenshotError = ''
 $script:installAcl = [System.Collections.Generic.List[object]]::new()
 
 function Record([string]$name) { $script:events.Add($name); Write-Host $name }
@@ -179,7 +180,7 @@ function Save-SettingsWindow([int]$processId) {
     for ($i = 0; $i -lt $windows.Count; $i++) {
         $window = $windows.Item($i)
         if ($window.Current.Name -ne 'Settings') { continue }
-        $window.SetFocus()
+        try { $window.SetFocus() } catch { }
         Start-Sleep -Seconds 1
         $rectangle = $window.Current.BoundingRectangle
         $width = [int][Math]::Ceiling($rectangle.Width)
@@ -400,6 +401,7 @@ public static class ProbeMouse {
             Save-SettingsWindow $newProcess[0].Id
             Record 'captured-updated-about-window'
         } catch {
+            $script:screenshotError = $_.Exception.Message.Replace($env:RUNNER_TEMP, '<runner-temp>').Replace($env:USERPROFILE, '<profile>').Replace((Get-Location).Path, '<workspace>')
             Record 'updated-about-window-capture-failed'
         }
     }
@@ -419,6 +421,7 @@ public static class ProbeMouse {
         license_page_observed=$script:licenseSeen; platform='windows-2025 hosted runner'; failure=$script:failure;
         last_accessibility_snapshot=$script:lastSnapshot;
         observations=@($script:observations.ToArray()); independent_public_download=$script:downloadControl;
+        screenshot_error=$script:screenshotError;
         install_directory_acl=@($script:installAcl.ToArray());
         limits=@('Disposable Windows Server runner, not Windows 11 human desktop acceptance.',
                  'The published update was not modified or re-signed; no production private key was used.',
