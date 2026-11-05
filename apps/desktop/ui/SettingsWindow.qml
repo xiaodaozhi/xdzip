@@ -543,7 +543,7 @@ OperationWindow {
                         required property string modelData
                         text: modelData
                         textFormat: Text.PlainText
-                        font: checkUpdate.font
+                        font: checkUpdate.contentItem["font"]
                     }
                 }
                 Repeater {
