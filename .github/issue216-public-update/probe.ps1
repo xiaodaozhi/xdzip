@@ -173,13 +173,9 @@ function Wait-AppTab([int]$processId, [string]$pattern, [int]$seconds) {
 }
 function Save-SettingsWindow([int]$processId) {
     Add-Type -AssemblyName System.Drawing
-    $condition = [System.Windows.Automation.PropertyCondition]::new(
-        [System.Windows.Automation.AutomationElement]::ProcessIdProperty, $processId)
-    $windows = [System.Windows.Automation.AutomationElement]::RootElement.FindAll(
-        [System.Windows.Automation.TreeScope]::Children, $condition)
-    for ($i = 0; $i -lt $windows.Count; $i++) {
-        $window = $windows.Item($i)
-        if ($window.Current.Name -ne 'Settings') { continue }
+    foreach ($window in @(Process-Elements $processId)) {
+        if ($window.Current.ControlType -ne [System.Windows.Automation.ControlType]::Window -or
+            $window.Current.Name -ne 'Settings') { continue }
         try { $window.SetFocus() } catch { }
         Start-Sleep -Seconds 1
         $rectangle = $window.Current.BoundingRectangle
