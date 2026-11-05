@@ -35,7 +35,8 @@ Invoke-Checked $codecPython @('scripts/check-rar7-genuine-fixture.py', '--self-t
 Invoke-Checked $codecPython @('scripts/prepare-native-codecs.py')
 Set-CiPhase 'native-worker'
 Invoke-Checked cmake @('-S', '.', '-B', 'build/foundation', '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release', '-DXDZIP_BUILD_QT_PROBE=OFF')
-Invoke-Checked cmake @('--build', 'build/foundation', '--target', 'xdzip-native-codec', '--parallel', '2')
+Invoke-Checked cmake @('--build', 'build/foundation', '--target', 'xdzip-native-codec', 'xdzip-native-unicode-test', '--parallel', '2')
+Invoke-Checked ctest @('--test-dir', 'build/foundation', '-V', '-R', '^native_unicode_')
 $env:XDZIP_NATIVE_CODEC = Join-Path (Get-Location) $(if ($IsWindows) { 'build/foundation/tools/native-codec/xdzip-native-codec.exe' } else { 'build/foundation/tools/native-codec/xdzip-native-codec' })
 $env:XDZIP_NATIVE_CODEC_WORKER = $env:XDZIP_NATIVE_CODEC
 $env:XDZIP_CAB_BACKEND = 'rust'

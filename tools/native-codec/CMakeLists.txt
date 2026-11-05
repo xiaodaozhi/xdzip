@@ -27,3 +27,22 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/RustStaticLibrary.cmake")
 xdzip_rust_library(xdzip-codec-rust xdzip-codec-bridge xdzip_codec_bridge "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 target_include_directories(xdzip-native-codec PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../crates/xdzip-codec-bridge/include")
 target_link_libraries(xdzip-native-codec PRIVATE xdzip-codec-rust)
+
+if(BUILD_TESTING)
+  add_library(xdzip-native-unicode-worker OBJECT main.cpp)
+  target_compile_features(xdzip-native-unicode-worker PRIVATE cxx_std_17)
+  target_compile_definitions(xdzip-native-unicode-worker PRIVATE main=xdzip_worker_main)
+  add_executable(xdzip-native-unicode-test
+    ../../crates/xdzip-codec-native/tests/unicode_conversion.cpp
+    $<TARGET_OBJECTS:xdzip-native-unicode-worker>)
+  target_include_directories(xdzip-native-unicode-test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+  target_compile_features(xdzip-native-unicode-test PRIVATE cxx_std_17)
+  target_link_libraries(xdzip-native-unicode-test PRIVATE Threads::Threads)
+  add_test(NAME native_unicode_conversion COMMAND xdzip-native-unicode-test)
+
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  add_test(NAME native_unicode_protocol
+    COMMAND "${Python3_EXECUTABLE}"
+      "${CMAKE_CURRENT_SOURCE_DIR}/../../crates/xdzip-codec-native/tests/unicode_protocol.py"
+      "$<TARGET_FILE:xdzip-native-codec>")
+endif()
