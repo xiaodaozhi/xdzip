@@ -5863,6 +5863,10 @@ QtObject {
                                          qtTrId("update.verificationFailed"));
                         QTRY_COMPARE(statusAccessible->text(QAccessible::Name),
                                      status->property("text").toString());
+                        if (qEnvironmentVariableIsSet("XDZIP_ISSUE165_UIA_HOLD") && !dark &&
+                            scale == 1. &&
+                            (state == "checking" || state == "updated" || state == "error"))
+                            QTest::qWait(2000);
                         QCOMPARE(check->isEnabled(), !busy);
                         QCOMPARE(check->isVisible(), QStringList({"idle", "up_to_date", "updated",
                                                                   "error", "unavailable"})
