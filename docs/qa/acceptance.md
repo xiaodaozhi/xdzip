@@ -10,9 +10,9 @@ English: RELEASE-MAC-EVIDENCE runs a real Cocoa/Metal resource probe against the
 
 | 场景 | 操作与判定 |
 | --- | --- |
-| RELEASE-VALIDATION-UNSIGNED | validate_only 汇总步骤不接收更新签名密钥或 key ID；即使调用环境注入自有测试密钥，也不生成清单签名或 appcast，并拒绝残留签名附件及与强制签名冲突的参数。正式发行路径仍强制验证完整更新签名，不以演练通过代替生产密钥或安装升级验收 |
+| RELEASE-VALIDATION-UNSIGNED | 本地候选汇总的 `--validation-only` 模式不接收更新签名密钥或 key ID；即使调用环境注入自有测试密钥，也不生成清单签名或 appcast，并拒绝残留签名附件及与强制签名冲突的参数。该模式不属于 Release 工作流，正式发行路径只使用单次手动运行并强制验证完整更新签名 |
 
-English: RELEASE-VALIDATION-UNSIGNED prevents validation assembly from receiving workflow signing inputs or producing update signatures, including with injected fixture keys, and rejects stale signing attachments and contradictory flags. Production signing and upgrade acceptance remain separate.
+English: RELEASE-VALIDATION-UNSIGNED applies only to local `--validation-only` candidate assembly. It prevents that mode from receiving signing inputs or producing update signatures, including with injected fixture keys, and rejects stale signing attachments and contradictory flags. The Release workflow has no validation-only dispatch; production signing and upgrade acceptance remain separate.
 
 ## 标题区、任务历史与拖动提示
 

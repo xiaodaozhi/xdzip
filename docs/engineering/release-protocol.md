@@ -1,6 +1,6 @@
 # GitHub Release 协议 v1
 
-专用 [Release 工作流](../../.github/workflows/release.yml)由版本标签或手动重跑已有标签触发。按需 Qt 工作流的 macOS 作业只进行 SDK 验证；专用发布流程明确允许 Apple Silicon 原生 Qt 部署、必要的 ad-hoc 完整性签名、同一应用的 ZIP 和 DMG 打包与核验。未使用 Developer ID、Apple 公证或 Windows 发行者证书。
+专用 [Release 工作流](../../.github/workflows/release.yml)只由 `workflow_dispatch` 手动触发，并要求输入已有版本标签。创建或移动标签不会自动再触发一轮发行构建，因此同一提交的三平台 native 只在该手动运行中执行一次，汇总步骤复用同一运行的工件。按需 Qt 工作流的 macOS 作业只进行 SDK 验证；专用发布流程明确允许 Apple Silicon 原生 Qt 部署、必要的 ad-hoc 完整性签名、同一应用的 ZIP 和 DMG 打包与核验。未使用 Developer ID、Apple 公证或 Windows 发行者证书。
 
 完整标签等于 `v` 加 VERSION.json 派生的语义版本。`prerelease_number` 是可选正整数，缺省兼容历史构建号；alpha.1 与 build 14 是不同身份。Windows 数值资源和 macOS CFBundleVersion 仍使用单调递增构建号。公开同一版本的资产不可替换，修订必须使用新版本；草稿可重跑。
 
@@ -10,9 +10,9 @@
 
 发布器在改动草稿资产前回读 GitHub 标签、草稿状态和渠道标记。stable 渠道必须保持非预发布状态并成为 GitHub Latest；alpha、beta、rc 渠道必须保持预发布状态且不能取代 Latest。公开操作后及公开附件复核结束后再次核对相应状态，全部符合才报告成功。公开后的核对失败时，版本可能已经对外可见，脚本停止并要求所有者处理，不自动撤回、修改或替换已公开版本及资产。
 
-冻结版本标签前可手动以候选提交 SHA 和 `validate_only=true` 运行同一流水线，实际构建、部署、执行必要的 Mac ad-hoc 完整性签名、核验并汇总附件，保留 release-validation 工件，不创建草稿或公开 Release。验证模式不向汇总步骤传递更新签名密钥或 key ID；汇总器显式禁用更新签名，即使调用环境含有密钥也不使用，并拒绝残留的签名附件或冲突参数。正式发布仍使用版本标签和强制更新签名，不能以提交 SHA 冒充标签。此演练避免首次打包错误发生在不可变标签创建之后。
+正式发布前在本地完成与提交匹配的构建、契约和版本说明预检。正式发布只使用版本标签执行一次手动工作流；该运行先创建草稿，再并行执行三平台 native 与契约检查，最后由汇总步骤复用已上传工件并使用受保护环境完成签名和公开。不要为同一提交先运行验证工作流再重跑正式发布，否则会重新构建 native。正式发布仍要求版本标签和生产更新签名，不能以提交 SHA 冒充标签。
 
-English: Validation-only assembly receives no update-signing keys or key ID from the workflow and explicitly disables update signing even if the caller environment contains keys. It rejects stale signing attachments and conflicting signing requirements. Production publication still requires the version tag and authenticated update signatures; macOS ad-hoc integrity signing remains separate.
+English: The Release workflow is a single manual dispatch for an existing version tag. It builds native packages once, uploads them as run artifacts, and reuses those artifacts in the final assembly and publication job. Local build, contract and notes checks happen before the tag is created; a separate validation run must not be followed by another release run for the same commit.
 
 发行契约作业先构建同提交的隔离格式工作进程，再通过 `XDZIP_NATIVE_CODEC` 与 `XDZIP_NATIVE_CODEC_WORKER` 运行 Rust workspace 测试。只运行 Cargo 测试不能证明需要真实工作进程的路径已执行；原生三平台作业继续分别验证实际应用、部署与安装生命周期。
 
@@ -32,7 +32,7 @@ Windows 每次部署核验使用独立的临时测试副本，保留此前日志
 
 macOS 的应用 ZIP、DMG 与通知材料必须在同一已部署、签名的临时应用仍存活时导出，随后才清理暂存 `.app` 和临时注册。不能在暂存清理后重新部署另一份应用来补 ZIP。
 
-顺序为同提交 validation-only 演练、冻结版本提交、创建并推送不可变标签、三平台构建与独立启动及安装生命周期核验、汇总草稿清单、全部齐备后按渠道公开 Release、再次下载并核对所有附件。stable 公开为普通 Release 并显式标记 Latest；alpha、beta、rc 公开为 Pre-release。任何平台失败时草稿保持未公开。发布前后均按 SHA256SUMS 复验。许可来源复核或人工验收未完成时必须在说明中保留限制，不以自动化测试冒充其实际结论。
+顺序为本地预检、冻结版本提交、创建标签、手动启动一次 Release 工作流、三平台构建与独立启动及安装生命周期核验、汇总草稿清单、全部齐备后按渠道公开 Release、再次下载并核对所有附件。stable 公开为普通 Release 并显式标记 Latest；alpha、beta、rc 公开为 Pre-release。任何平台失败时草稿保持未公开。发布前后均按 SHA256SUMS 复验。许可来源复核或人工验收未完成时必须在说明中保留限制，不以自动化测试冒充其实际结论。
 
 更新客户端分页获取 GitHub Releases 列表，跳过草稿，校验清单版本，按语义版本、用户允许渠道、平台、架构、包类型选择。不能按发布时间排序判断升级，也不能猜测文件名。预发布不使用排除预发布的 `/releases/latest`。稳定渠道只接收稳定版本，alpha 允许 alpha、beta、rc 和稳定版，beta 不回到 alpha，rc 仅接收 rc 和稳定版；开发版本比较支持 dev。升级的语义版本与单调 build 均须递增。下载后校验大小与 SHA-256，任何缺失或不一致拒绝使用。
 
@@ -48,7 +48,7 @@ macOS 原生阶段在最终 app.zip 定名后，通过 `xdzip-update-tool sign-a
 
 发布脚本先在移除两份私钥环境变量的子进程中构建签名工具，仅已编译的工具进程接收签名私钥；Cargo build script、编译器和依赖解析不获得发布签名权限。
 
-正式原生签名与汇总阶段绑定受保护的 `release-signing` GitHub environment，所有者须配置匹配的秘密和环境保护规则。Mac 私钥只注入原生构建后的独立归档签名步骤，构建阶段不接收。validate_only 使用 `release-validation` 环境，不要求生产密钥；专用更新回归使用自己的临时测试密钥。配置环境和生产信任根是实际发布前提，不由普通 CI 自动创建。
+正式原生签名与汇总阶段绑定受保护的 `release-signing` GitHub environment，所有者须配置匹配的秘密和环境保护规则。Mac 私钥只注入原生构建后的独立归档签名步骤，构建阶段不接收。配置环境和生产信任根是实际发布前提，不由普通 CI 自动创建。
 
 [生产更新验收](../../.github/workflows/production-update-acceptance.yml)是另一个仅手动执行、固定 `main` 和 `contents: read` 的入口，使用同一 `release-signing` 环境及其所有者审批，不调用 Release 工作流，也不创建标签、草稿或发行。先在无秘密步骤编译工具，再在独立步骤派生已有私钥对应的公钥，与本次提交中的两份公钥和公开 key ID 严格比较；条目存在不能代替匹配成功。三平台私有旧版 200 与新版 201 保留生产公钥，构建不接收秘密。签名步骤仅接受本次源码提交、私有产品身份及完整哈希绑定的固定候选，随后在无秘密进程中执行原生升级、失败恢复和普通重启。没有任意输入清单、资产、远端工件或发布参数。
 
@@ -56,13 +56,13 @@ macOS 在无秘密的工具链准备步骤中一次安装 `rust-toolchain.toml` 
 
 生产验收的安装包、原始清单、签名、appcast 和应用仅留在一次性 runner 内，不上传；有界收集器只上传明确允许的日志、状态、身份及哈希记录，并拒绝签名附件误入结果槽。生产密钥匹配、签名验证、实际安装及人工桌面验收分别记录。macOS 使用原生 Apple Silicon 和实际 `SUPublicEDKey` 核对；Windows Server 的夹具仍不代替 Windows 11 人工验收。此流程不会读取 GitHub Secret 的值到本地，也不授权发布。
 
-`prepare-release.py --require-update-signature` 在缺少任一密钥、签名或原生归档元数据时停止；`publish-release.py` 独立复验清单、同候选 feed 与归档后才上传。validate_only 可以生成明确标记 signing_not_configured 的候选，`update-readiness.json` 不作为授权依据，也不把未签名演练称为可安装更新。签名、appcast 和状态附件均进入完整 SHA256SUMS。已有公开版本不补传或替换这些新附件。
+`prepare-release.py --require-update-signature` 在缺少任一密钥、签名或原生归档元数据时停止；`publish-release.py` 独立复验清单、同候选 feed 与归档后才上传。签名、appcast 和状态附件均进入完整 SHA256SUMS。已有公开版本不补传或替换这些新附件。
 
-English: Every immutable release includes schema-v1 release.json and SHA256SUMS. All six native package targets must be present and hash-verified before a draft becomes public. Metadata binds the complete semantic version, channel, monotonic build, tag and full commit to platform/architecture/package requirements and pinned URLs. Clients paginate Releases, compare semantic versions and builds, and never regress from beta/rc to an earlier channel. They must not use publication dates, filename guesses or /releases/latest for prereleases. Installation additionally requires an Ed25519 release.json.sig over exact JSON bytes and a locally embedded trusted public key. macOS uses a separate Sparkle key to sign both the final app.zip and the entire single-candidate appcast, with a short embedded version description and a pinned macos_appcast_url. Full release notes remain in the GitHub Release body; clients do not fetch external release notes. Owner-provided production public keys are versioned with the client and installation helper; test keys must never be embedded. Older clients without these keys first require a manual installation of a version containing them, because downloaded manifests cannot add trust roots. Existing public releases are never retroactively signed or replaced. Validation-only candidates may explicitly report signing_not_configured; publication independently rejects missing or invalid signatures and never changes existing public assets. macOS application code signing remains ad-hoc; update signatures do not impersonate Developer ID or notarization. Incomplete licensing checks and unperformed manual acceptance remain explicit.
+English: Every immutable release includes schema-v1 release.json and SHA256SUMS. All six native package targets must be present and hash-verified before a draft becomes public. Metadata binds the complete semantic version, channel, monotonic build, tag and full commit to platform/architecture/package requirements and pinned URLs. Clients paginate Releases, compare semantic versions and builds, and never regress from beta/rc to an earlier channel. They must not use publication dates, filename guesses or /releases/latest for prereleases. Installation additionally requires an Ed25519 release.json.sig over exact JSON bytes and a locally embedded trusted public key. macOS uses a separate Sparkle key to sign both the final app.zip and the entire single-candidate appcast, with a short embedded version description and a pinned macos_appcast_url. Full release notes remain in the GitHub Release body; clients do not fetch external release notes. Owner-provided production public keys are versioned with the client and installation helper; test keys must never be embedded. Older clients without these keys first require a manual installation of a version containing them, because downloaded manifests cannot add trust roots. Existing public releases are never retroactively signed or replaced. Publication independently rejects missing or invalid signatures and never changes existing public assets. macOS application code signing remains ad-hoc; update signatures do not impersonate Developer ID or notarization. Incomplete licensing checks and unperformed manual acceptance remain explicit.
 
 As of 2026-11-05, the owner has directed that historical corresponding-source archives be withdrawn from GitHub Releases and Actions artifacts and that future release workflows stop creating or uploading them. `scripts/prepare-source-delivery.py` remains available for local review; release assembly and publication reject archives whose names contain `corresponding-source`. This policy does not change component licenses or establish that corresponding-source, relinking or other obligations are satisfied. Release review must continue to resolve those obligations for the actual distribution; if required conditions have no other feasible delivery path, distribution of the affected binaries must be blocked. GitHub's automatically generated source snapshots for tags in the public repository are outside these Release attachments.
 
-Validation-only dispatches accept a candidate commit SHA and build, deploy, sign, verify and assemble the complete attachment set without creating a draft or public Release. Normal publication requires the exact version tag. Stable channel publication creates a non-prerelease Release and explicitly marks it Latest; alpha, beta and rc remain prereleases and are explicitly kept out of Latest.
+The Release workflow accepts an existing version tag through one manual dispatch. It builds, deploys, verifies and assembles the complete attachment set once, then publishes from the same run artifacts. Stable channel publication creates a non-prerelease Release and explicitly marks it Latest; alpha, beta and rc remain prereleases and are explicitly kept out of Latest.
 
 The separate production-update acceptance workflow is manually dispatched from main with read-only repository permissions and the protected release-signing environment. Secret-free builds precede strict derivation and comparison of existing production public keys. Native private build-200 to build-201 upgrades retain the committed production roots. Only fixed candidates bound to this run's source, product identity and hashes may be signed; installers and applications execute without secrets. Signed candidates, manifests, feeds and applications remain on the disposable runner. A bounded allowlist collector exports only diagnostic records and rejects signed payloads in result slots. Key matching, signature verification, actual native installation and manual acceptance remain separate outcomes. No tag, draft or release is created, and local tools never retrieve GitHub Secret values.
 

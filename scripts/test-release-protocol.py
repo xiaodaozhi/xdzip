@@ -29,19 +29,16 @@ PREPARE = importlib.util.module_from_spec(PREPARE_SPEC)
 PREPARE_SPEC.loader.exec_module(PREPARE)
 
 
-class ValidationOnlyWorkflowTests(unittest.TestCase):
-    def test_validation_workflow_does_not_expose_production_signing_inputs(self):
+class SingleRunReleaseWorkflowTests(unittest.TestCase):
+    def test_release_workflow_has_one_manual_entry_and_reuses_native_artifacts(self):
         workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/release.yml').read_text(encoding='utf-8')
-        marker = '      - name: Assemble complete immutable release\n'
-        self.assertEqual(workflow.count(marker), 1)
-        step = workflow.split(marker, 1)[1].split('\n      - name:', 1)[0]
-        for name in ['XDZIP_UPDATE_SIGNING_KEY_HEX', 'XDZIP_SPARKLE_SIGNING_KEY_HEX']:
-            self.assertIn(f"{name}: ${{{{ !inputs.validate_only && secrets.{name} || '' }}}}", step)
-        self.assertIn("XDZIP_UPDATE_KEY_ID: ${{ !inputs.validate_only && vars.XDZIP_UPDATE_KEY_ID || '' }}", step)
-        self.assertRegex(step, re.compile(
-            r'if \[ "\$VALIDATE_ONLY" = true \]; then\s+'
-            r'UPDATE_ARGS\+=\(--validation-only\)\s+else\s+'
-            r'UPDATE_ARGS\+=\(--require-update-signature\)\s+fi'))
+        self.assertNotIn('  push:', workflow)
+        self.assertNotIn('validate_only', workflow)
+        self.assertEqual(workflow.count('      - name: Assemble complete immutable release\n'), 1)
+        self.assertIn('environment: release-signing', workflow)
+        self.assertIn('python3 scripts/prepare-release.py --packages build/packages --output build/public-release --repository "$GITHUB_REPOSITORY" --require-update-signature', workflow)
+        self.assertIn('python3 scripts/publish-release.py --directory build/public-release --notes-file "$NOTES" --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"', workflow)
+        self.assertNotIn('release-validation', workflow)
 
     def test_release_workflow_does_not_build_or_upload_corresponding_source_archives(self):
         workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/release.yml').read_text(encoding='utf-8')

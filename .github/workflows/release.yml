@@ -1,18 +1,11 @@
 name: Release
 on:
-  push:
-    tags: ['v*']
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing version tag, or commit SHA for validation only
+        description: Existing version tag to build and publish
         required: true
         type: string
-      validate_only:
-        description: Build and verify all assets without creating a Release
-        required: false
-        default: false
-        type: boolean
 permissions:
   contents: read
 concurrency:
@@ -37,7 +30,6 @@ jobs:
           NOTES="release-policy/release-notes/$VERSION.md"
           python3 scripts/publish-release.py --check-notes --notes-file "$NOTES"
       - name: Keep a draft until all native packages pass
-        if: ${{ !inputs.validate_only }}
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
@@ -47,7 +39,7 @@ jobs:
           python3 scripts/publish-release.py --draft-only --notes-file "$NOTES" --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
   native:
     needs: draft
-    environment: ${{ inputs.validate_only && 'release-validation' || 'release-signing' }}
+    environment: release-signing
     strategy:
       fail-fast: false
       matrix:
@@ -67,7 +59,7 @@ jobs:
         shell: pwsh
         run: ./scripts/ci-release.ps1
       - name: Sign the final immutable macOS update archive
-        if: runner.os == 'macOS' && !inputs.validate_only
+        if: runner.os == 'macOS'
         env:
           XDZIP_SPARKLE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_SPARKLE_SIGNING_KEY_HEX }}
         run: python3 scripts/sign-macos-update.py --directory build/release-assets
@@ -124,7 +116,7 @@ jobs:
           python3 scripts/test-release-updates.py
   publish:
     needs: [draft, native, contracts]
-    environment: ${{ inputs.validate_only && 'release-validation' || 'release-signing' }}
+    environment: release-signing
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -145,31 +137,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
-          VALIDATE_ONLY: ${{ inputs.validate_only || false }}
-          XDZIP_UPDATE_KEY_ID: ${{ !inputs.validate_only && vars.XDZIP_UPDATE_KEY_ID || '' }}
-          XDZIP_UPDATE_SIGNING_KEY_HEX: ${{ !inputs.validate_only && secrets.XDZIP_UPDATE_SIGNING_KEY_HEX || '' }}
-          XDZIP_SPARKLE_SIGNING_KEY_HEX: ${{ !inputs.validate_only && secrets.XDZIP_SPARKLE_SIGNING_KEY_HEX || '' }}
+          XDZIP_UPDATE_KEY_ID: ${{ vars.XDZIP_UPDATE_KEY_ID }}
+          XDZIP_UPDATE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_UPDATE_SIGNING_KEY_HEX }}
+          XDZIP_SPARKLE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_SPARKLE_SIGNING_KEY_HEX }}
         run: |
           mkdir -p build/packages
           find build/downloaded/release-Windows build/downloaded/release-Linux build/downloaded/release-macOS -maxdepth 1 -type f -exec cp {} build/packages/ \;
           VERSION=$(python3 -c 'import runpy; print(runpy.run_path("scripts/sync-version.py")["version_info"]()["display_version"])')
           NOTES="release-policy/release-notes/$VERSION.md"
           rustup toolchain install 1.99.0 --profile minimal
-          UPDATE_ARGS=()
-          if [ "$VALIDATE_ONLY" = true ]; then
-            UPDATE_ARGS+=(--validation-only)
-          else
-            UPDATE_ARGS+=(--require-update-signature)
-          fi
-          python3 scripts/prepare-release.py --packages build/packages --output build/public-release --repository "$GITHUB_REPOSITORY" "${UPDATE_ARGS[@]}"
-          if [ "$VALIDATE_ONLY" != true ]; then
-            python3 scripts/publish-release.py --directory build/public-release --notes-file "$NOTES" --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
-          fi
-      - name: Preserve the complete validated candidate
-        if: ${{ inputs.validate_only }}
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: release-validation
-          path: build/public-release/*
-          if-no-files-found: error
-          retention-days: 30
+          python3 scripts/prepare-release.py --packages build/packages --output build/public-release --repository "$GITHUB_REPOSITORY" --require-update-signature
+          python3 scripts/publish-release.py --directory build/public-release --notes-file "$NOTES" --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
