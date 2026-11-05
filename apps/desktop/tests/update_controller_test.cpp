@@ -23,6 +23,8 @@
 #include <QQuickStyle>
 #include <QScopeGuard>
 #include <QSignalSpy>
+#include <QSslCertificate>
+#include <QSslConfiguration>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QTemporaryDir>
@@ -438,6 +440,57 @@ class UpdateControllerTest final : public QObject {
         QCOMPARE(response.value("rate_headers").toObject().value("retry_after").toString(),
                  QStringLiteral("60"));
         reply->deleteLater();
+    }
+    void temporaryMirrorTlsProbe() {
+        const auto proxy = qEnvironmentVariable("XDZIP_ISSUE165_MIRROR_PROXY");
+        const auto certificatePath = qEnvironmentVariable("XDZIP_ISSUE165_MIRROR_CA");
+        const auto mode = qEnvironmentVariable("XDZIP_ISSUE165_MIRROR_MODE", "custom");
+        const auto mirror = qEnvironmentVariable("XDZIP_ISSUE165_MIRROR_BASE",
+                                                 "https://mirror.example.test/prefix");
+        if ((mode == "custom" && proxy.isEmpty()) || certificatePath.isEmpty())
+            QSKIP("Explicit isolated mirror and test CA required");
+        QFile certificateFile(certificatePath);
+        QVERIFY(certificateFile.open(QIODevice::ReadOnly));
+        const auto certificates = QSslCertificate::fromData(certificateFile.readAll());
+        QVERIFY(!certificates.isEmpty());
+        const auto previous = QSslConfiguration::defaultConfiguration();
+        auto configuration = previous;
+        auto authorities = configuration.caCertificates();
+        const auto negative = qEnvironmentVariable("XDZIP_ISSUE165_MIRROR_NEGATIVE");
+        if (negative != "tls")
+            authorities.append(certificates);
+        configuration.setCaCertificates(authorities);
+        QSslConfiguration::setDefaultConfiguration(configuration);
+        const auto restore =
+            qScopeGuard([&] { QSslConfiguration::setDefaultConfiguration(previous); });
+        QTemporaryDir cache;
+        QVERIFY(cache.isValid());
+        QNetworkAccessManager network;
+        UpdateController updates(nullptr, &network, fixture("network-trust.json"), cache.path(),
+                                 [] { return true; });
+        updates.configureNetwork(mode, proxy, mirror);
+        updates.check();
+        QTRY_VERIFY_WITH_TIMEOUT(!updates.busy(), 30000);
+        qInfo() << "mirror check:" << updates.state() << updates.errorCode() << updates.trusted();
+        if (negative == "tls") {
+            QCOMPARE(updates.state(), QStringLiteral("error"));
+            QCOMPARE(updates.errorCode(), QStringLiteral("tls"));
+            QVERIFY(!updates.trusted());
+            return;
+        }
+        QCOMPARE(updates.state(), QStringLiteral("available"));
+        QVERIFY(updates.trusted());
+        updates.download();
+        QTRY_VERIFY_WITH_TIMEOUT(!updates.busy(), 30000);
+        qInfo() << "mirror download:" << updates.state() << updates.errorCode();
+        if (negative == "hash") {
+            QCOMPARE(updates.state(), QStringLiteral("error"));
+            QCOMPARE(updates.errorCode(), QStringLiteral("download_hash"));
+            QVERIFY(!updates.downloaded());
+            return;
+        }
+        QCOMPARE(updates.state(), QStringLiteral("downloaded"));
+        QVERIFY(updates.downloaded());
     }
     void updateProbeDiagnosticsRemainBoundedAndDoNotExposeRequests() {
         UpdateProbeDiagnostics diagnostics;
