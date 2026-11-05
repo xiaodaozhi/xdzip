@@ -27,7 +27,7 @@ python3 scripts/desktop.py package --kind all
 python3 scripts/desktop.py verify --kind all
 ```
 
-默认构建目录为 build/desktop，交付输出为 build/package，Qt SDK 默认 `.cache/Qt/6.8.2/gcc_64`；其他位置在各阶段传入共用参数。`package --kind runtime` 生成运行目录与审计材料；随后在同一 output-dir 执行 `package --kind installer`，生成 tar.gz 与 .deb。默认 `all` 依次完成两部分。底层 [deploy_linux.py](../../scripts/deploy_linux.py)、[package_linux.py](../../scripts/package_linux.py)和 [verify_linux_runtime.py](../../scripts/verify_linux_runtime.py)保留平台逻辑，需要定位故障时参考各自 `--help`。
+默认构建目录为 build/desktop，交付输出为 build/package，Qt SDK 默认 `build/toolchain/Qt/6.8.2/gcc_64`；其他位置在各阶段传入共用参数。`package --kind runtime` 生成运行目录与审计材料；随后在同一 output-dir 执行 `package --kind installer`，生成 tar.gz 与 .deb。默认 `all` 依次完成两部分。底层 [deploy_linux.py](../../scripts/deploy_linux.py)、[package_linux.py](../../scripts/package_linux.py)和 [verify_linux_runtime.py](../../scripts/verify_linux_runtime.py)保留平台逻辑，需要定位故障时参考各自 `--help`。
 
 部署只在原生 Linux x86_64 执行，不覆盖既有目录。打包前预检 qmlimportscanner、ldd、patchelf、dpkg-query 与安装器所需的 dpkg-deb；这些构建工具不进入产品。运行容器验证另外需要 Docker 和可访问的 daemon，其构建只针对固定 Ubuntu 镜像和记录的 OS 包。Docker 缺失不阻止普通 build／test，verify 则明确失败，不把未执行隔离检查写成通过。普通 verify 不在宿主安装 .deb 或修改文件关联，安装生命周期仍由一次性 CI 环境执行。
 

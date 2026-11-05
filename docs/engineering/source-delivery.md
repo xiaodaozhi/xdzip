@@ -8,9 +8,9 @@ scripts/prepare-source-delivery.py 从干净提交收集项目源码、Cargo.loc
 
 ```sh
 python3 scripts/prepare-source-delivery.py --output build/review/source-delivery \
-  --qt-prefix .cache/Qt/6.8.2/macos
+  --qt-prefix build/toolchain/Qt/6.8.2/macos
 python3 scripts/verify-source-delivery.py --delivery build/review/source-delivery \
-  --qt-prefix .cache/Qt/6.8.2/macos --output build/review/source-rebuild
+  --qt-prefix build/toolchain/Qt/6.8.2/macos --output build/review/source-rebuild
 ```
 
 Qt 运行时模块归档为 qtbase、qtdeclarative、qtsvg、qttranslations，另交付构建所需的 qtshadertools、qttools 及固定 Rust 标准库源码组件，来自 [Qt 官方 6.8.2 归档](https://download.qt.io/archive/qt/6.8/6.8.2/submodules/)。官方 .sha256 值固定于 scripts/corresponding-sources.json；缓存与下载均重新校验，下载先写 partial，再验证后提交。只检查归档目录，不自动解包第三方路径。Cargo vendor 使用 --locked，保留 registry 校验与构建依赖，不执行第三方构建脚本。

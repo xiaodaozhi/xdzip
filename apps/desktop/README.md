@@ -24,7 +24,7 @@ python3 scripts/desktop.py test
 
 ```sh
 cmake -S . -B build/ui-debug -G Ninja -DCMAKE_BUILD_TYPE=Debug \
-  -DXDZIP_BUILD_DESKTOP_PREVIEW=ON -DCMAKE_PREFIX_PATH=/path/to/Qt/6.8.2/gcc_64
+  -DXDZIP_BUILD_DESKTOP_PREVIEW=ON -DCMAKE_PREFIX_PATH=build/toolchain/Qt/6.8.2/gcc_64
 cmake --build build/ui-debug
 ctest --test-dir build/ui-debug --output-on-failure
 ```

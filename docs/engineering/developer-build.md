@@ -8,6 +8,20 @@
 
 先安装 Python 3.10+、Git、CMake 3.24+、Ninja、rustup 和平台编译器／SDK。Rust 版本读取根目录 rust-toolchain.toml，Qt 固定为 6.8.2，依赖与更新规则见[工具链策略](toolchain.md)。命令均在仓库根目录执行。Windows 可将示例中的 `python3` 改为可调用的 `python`，并在 x64 MSVC 开发环境运行。
 
+## 本地工具链目录
+
+统一入口的本地依赖只使用 `build/toolchain/`，该目录及其内容被 Git 忽略，不提交到仓库：
+
+| 内容 | 固定目录 | 说明 |
+| --- | --- | --- |
+| Qt SDK 6.8.2 | `build/toolchain/Qt/6.8.2/<平台子目录>` | `<平台子目录>` 为 `macos`、`msvc2022_64` 或 `gcc_64`，`qmllint`、`qmake`、CMake 配置和 Qt 运行库都来自这里 |
+| Python 工具环境 | `build/toolchain/desktop-tools` | `aqtinstall`、打包和校验脚本使用的固定虚拟环境 |
+| Qt 下载暂存 | `build/toolchain/qt-install-tool` | 仅保存 Qt 安装器下载和临时输入 |
+
+`scripts/desktop.py prepare --install-qt`、`doctor`、`build` 和 `test` 默认共享这些目录。不要为每个开发管线另建 `.cache/Qt`、`.cache/desktop-tools` 或同类目录；只有需要隔离不同 Qt 版本、平台或实验构建时，才显式传入 `--qt-prefix`、`--qt-root` 和 `--tools-dir`。CI 可以把这些参数显式指向 runner 临时目录，但本地默认布局不随 CI 回退路径改变。CMake、Ninja、rustup、Rust 编译器和平台 C++ 编译器属于宿主工具链，按环境预检要求安装和调用，不由 Qt 工具目录复制。
+
+研发周期完成、分支和 worktree 清理后，必须清理该周期在 `build/` 下产生的临时目录和文件。保留 `build/toolchain/` 等仍需复用的共享工具链，删除周期专用构建、诊断和下载暂存；具体规则和手动兜底见[仓库内容与历史管理](repository-hygiene.md#研发周期工件收尾)。
+
 | 平台 | 先准备的系统环境 | Qt SDK 子目录 |
 | --- | --- | --- |
 | macOS | Apple Silicon 原生终端，Xcode Command Line Tools 与有效 macOS SDK | macos |
@@ -22,10 +36,10 @@ Windows 可按 [Community 免费许可路径](windows-licensing.md)准备自有�
 
 | 参数 | 默认值与用途 |
 | --- | --- |
-| `--qt-prefix` | 先取环境变量 `XDZIP_QT_PREFIX`，否则使用 `.cache/Qt/6.8.2/<平台子目录>`；应指向 SDK 前缀而不是 bin 目录 |
+| `--qt-prefix` | 先取环境变量 `XDZIP_QT_PREFIX`，否则使用 `build/toolchain/Qt/6.8.2/<平台子目录>`；应指向 SDK 前缀而不是 bin 目录 |
 | `--build-dir` | `build/desktop`，CMake 构建与测试目录 |
 | `--output-dir` | `build/package`，交付工件与验证输出目录 |
-| `--tools-dir` | `.cache/desktop-tools`，隔离的 Python 工具环境与准备材料 |
+| `--tools-dir` | `build/toolchain/desktop-tools`，隔离的 Python 工具环境与准备材料 |
 | `--configuration` | `Release`，也可显式选择开发所需的构建配置 |
 
 build-dir 与 output-dir 必须使用仓库 build/ 内的独立子目录，以匹配底层打包和验证工具的输出边界。同一次分阶段运行应保持上述参数一致。显式 `--qt-prefix` 优先于环境变量；不需要全局修改 CMAKE_PREFIX_PATH。入口为子进程准备 Qt 与工具搜索环境，普通桌面启动不要沿用离屏测试变量。生成物只写入忽略的 build/、target/、dist/ 或工具缓存，不提交 Git。
@@ -62,16 +76,16 @@ $LASTEXITCODE
 首次准备固定 Qt 与 Rust 工具链：
 
 ```sh
-python3 scripts/desktop.py prepare --install-rust --install-qt --qt-root .cache/Qt
+python3 scripts/desktop.py prepare --install-rust --install-qt --qt-root build/toolchain/Qt
 python3 scripts/desktop.py doctor --for-stage build
 python3 scripts/desktop.py build
 ```
 
-`--install-rust` 使用已安装的 rustup 准备仓库锁定的工具链，不替代 rustup 安装。`--install-qt` 显式下载固定 Qt SDK；已有 SDK 时无需重新下载，直接将其路径交给每个阶段：
+`--install-rust` 使用已安装的 rustup 准备仓库锁定的工具链，不替代 rustup 安装。`--install-qt` 显式下载固定 Qt SDK；默认安装到 `build/toolchain/Qt`，已有 SDK 时无需重新下载，直接将其路径交给每个阶段：
 
 ```sh
-python3 scripts/desktop.py doctor --qt-prefix /path/to/Qt/6.8.2/gcc_64
-python3 scripts/desktop.py build --qt-prefix /path/to/Qt/6.8.2/gcc_64
+python3 scripts/desktop.py doctor --qt-prefix build/toolchain/Qt/6.8.2/gcc_64
+python3 scripts/desktop.py build --qt-prefix build/toolchain/Qt/6.8.2/gcc_64
 ```
 
 完成构建后，显式准备完整 `native_backend_tests` 批次使用的公共测试输入。CAB、ISO/UDF 和基础 RAR 夹具位于 `tests/fixtures/cab-iso/` 与 `tests/fixtures/native-archives/`，随项目源码保留；7z 测试使用刚构建的 Rust worker 创建自己的包。这一 runtime 批次不要求官方 7-Zip／UnRAR 工具或挂载映像，Foundation 的其他互操作参照另按[原生后端契约](native-codecs.md)执行。

@@ -8,10 +8,10 @@ function Checked([string]$Program, [string[]]$Arguments) {
     & $Program @Arguments
     if ($LASTEXITCODE -ne 0) { throw "$Program failed: $LASTEXITCODE" }
 }
-$cacheRoot = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { Join-Path (Get-Location) '.cache' }
+$cacheRoot = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { Join-Path (Get-Location) 'build/toolchain' }
 $qtFolder = if ($IsMacOS) { 'macos' } elseif ($IsWindows) { 'msvc2022_64' } else { 'gcc_64' }
 $qt = Join-Path $cacheRoot "Qt/6.8.2/$qtFolder"
-$tools = Join-Path $cacheRoot 'xdzip-desktop-tools'
+$tools = Join-Path $cacheRoot 'desktop-tools'
 $shared = @('--qt-prefix', $qt, '--tools-dir', $tools, '--build-dir', 'build/desktop', '--output-dir', 'build/review')
 # ci-desktop already completed the shared native session/activation regression.
 if ($IsMacOS) {

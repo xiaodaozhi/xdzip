@@ -25,10 +25,11 @@ function Save-ComponentLogs {
         Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' "build/review/diagnostics/ctest-$Label.log"
     }
 }
-# RUNNER_TEMP is an optional CI cache location, never a local prerequisite.
-$cacheRoot = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { Join-Path (Get-Location) '.cache' }
+# RUNNER_TEMP is an optional CI cache location. Local fallback uses the same
+# build/toolchain layout as desktop.py instead of creating a second tool cache.
+$cacheRoot = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { Join-Path (Get-Location) 'build/toolchain' }
 $qtRoot = if ($QtRoot) { $QtRoot } else { Join-Path $cacheRoot 'Qt' }
-$qtEnvironment = if ($ToolsDirectory) { $ToolsDirectory } else { Join-Path $cacheRoot 'xdzip-desktop-tools' }
+$qtEnvironment = if ($ToolsDirectory) { $ToolsDirectory } else { Join-Path $cacheRoot 'desktop-tools' }
 $qtHost = if ($IsMacOS) { 'mac' } elseif ($IsWindows) { 'windows' } else { 'linux' }
 $qtFolder = if ($IsMacOS) { 'macos' } elseif ($IsWindows) { 'msvc2022_64' } else { 'gcc_64' }
 if ($IsWindows) {

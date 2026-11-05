@@ -4,7 +4,7 @@ WP-12 的源码材料以官方归档的实际字节为准，不以相同版本�
 
 ```sh
 python3 scripts/qt_sdk_correspondence.py \
-  --qt-prefix .cache/Qt/6.8.2/macos \
+  --qt-prefix build/toolchain/Qt/6.8.2/macos \
   --output build/review/qt-sdk-correspondence.json
 ```
 

@@ -25,6 +25,31 @@
 
 维护能力、资源上限、窗口尺寸或构建流程时，以代码、锁定配置和权威规范核对 README 及对应工程入口；明确区分当前实现与后续设计。已有人工验收不因重新生成 pending 模板而重置，工作包完成也不代替发行许可复核。移除执行报告后，将链接改为真实 issue／工件或通用验证方法，不把方法页继续标成某次报告。文档中的常量尽量引用权威配置，避免复制出另一套尺寸或能力表。
 
+## 研发周期工件收尾
+
+`build/` 只保存本地和 CI 的构建、测试、诊断、工具缓存与证据，不属于源码输入。每个研发周期开始时，在 issue 或工作记录中记下本周期新增的 `build/` 路径；周期完成后按以下顺序收尾：
+
+1. 合并提交并确认远端分支状态。
+2. 删除已合并的本地和远端分支，移除不再使用的 Git worktree；仍被 `git worktree list` 引用的目录不得清理。
+3. 删除本周期专用的 `build/` 临时目录和文件，保留仍需复验的回执、固定本地工具链和下一周期明确复用的构建目录。
+4. 重新执行 `git status --short`，确认没有把临时输出、日志或凭据留在源码目录。
+
+推荐先预览，再执行明确授权的删除：
+
+```sh
+python3 scripts/cleanup-build.py --path build/<cycle-directory>
+python3 scripts/cleanup-build.py --path build/<cycle-directory> --apply --yes
+```
+
+未能在周期结束时清理的目录，使用手动兜底按年龄扫描。扫描只选择命名为临时管线目录、未被活动 worktree 使用且不属于受保护共享目录的内容，默认只预览：
+
+```sh
+python3 scripts/cleanup-build.py --stale-days 30
+python3 scripts/cleanup-build.py --stale-days 30 --apply --yes
+```
+
+受保护目录包括 `build/desktop`、`build/package`、`build/review`、`build/toolchain` 和 `build/test-tmp`。脚本拒绝清理这些目录以及活动 worktree 的父目录。自动扫描无法识别的临时目录时，使用明确的 `--path`；不使用 `rm -rf build`、`Remove-Item -Recurse build` 或等价的整目录删除。GitHub 托管 runner 是临时环境，手动 Actions 运行不能清理开发者本机的 `build/`，本地脚本是该兜底约定的执行入口。
+
 ## 历史整理
 
 历史重写只在所有者明确授权后进行，属于共享 main 不强制推送约定的显式例外；日常提交继续禁止强推。先同步远端、保存原始 tip、制作全部 refs 的可恢复 Git bundle 和最新文件树备份，再整理当前内容。对源码、测试、资源和设计输入逐文件核对对象哈希及模式，检查允许变化的文件清单，不以“构建通过”代替文件完整性证明。

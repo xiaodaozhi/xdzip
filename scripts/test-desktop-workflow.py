@@ -63,6 +63,15 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(workflow.runtime, self.root/'build/package/linux')
         self.assertNotIn('RUNNER_TEMP', workflow.env)
 
+    def test_default_toolchain_is_shared_under_build(self):
+        args = desktop.parser().parse_args([
+            'doctor', '--build-dir', str(self.root/'build/doctor'),
+            '--output-dir', str(self.root/'build/output'),
+        ])
+        workflow = desktop.Workflow(args, system='linux')
+        self.assertEqual(workflow.qt, self.root/'build/toolchain/Qt/6.8.2/gcc_64')
+        self.assertEqual(workflow.tools, self.root/'build/toolchain/desktop-tools')
+
     def test_requested_rust_install_precedes_prepare_preflight(self):
         workflow = self.workflow('linux')
         workflow.args.install_rust = True
