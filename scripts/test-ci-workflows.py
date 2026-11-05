@@ -111,7 +111,7 @@ class WorkflowTests(unittest.TestCase):
                     if 'pull_request' in value.get('on', {})}
         self.assertEqual(ordinary, {'docs.yml'})
         push_workflows = {name for name, value in self.workflows.items() if 'push' in value.get('on', {})}
-        self.assertEqual(push_workflows, {'docs.yml', 'release.yml'})
+        self.assertEqual(push_workflows, {'docs.yml'})
         workflow = self.workflows['docs.yml']
         self.assertEqual(workflow['name'], 'CI')
         self.assertEqual(set(workflow['on']), {'push', 'pull_request', 'workflow_dispatch'})
@@ -144,10 +144,11 @@ class WorkflowTests(unittest.TestCase):
                 self.assertIn("github.event_name == 'workflow_dispatch'", save[0]['if'])
                 self.assertIn("github.ref == 'refs/heads/main'", save[0]['if'])
 
-    def test_release_retains_its_own_native_build_and_tag_trigger(self):
+    def test_release_uses_one_manual_dispatch_and_its_own_native_build(self):
         workflow = self.workflows['release.yml']
-        self.assertEqual(workflow['on']['push']['tags'], ['v*'])
-        self.assertIn('workflow_dispatch', workflow['on'])
+        self.assertEqual(set(workflow['on']), {'workflow_dispatch'})
+        self.assertIn('tag', workflow['on']['workflow_dispatch']['inputs'])
+        self.assertNotIn('validate_only', workflow['on']['workflow_dispatch']['inputs'])
         native = workflow['jobs']['native']
         self.assertEqual(set(native['strategy']['matrix']['os']), {'windows-2022', 'macos-15', 'ubuntu-24.04'})
         self.assertIn('scripts/ci-release.ps1', '\n'.join(step.get('run', '') for step in native['steps']))
