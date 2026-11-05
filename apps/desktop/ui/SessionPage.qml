@@ -1808,7 +1808,7 @@ Item {
                                 property bool transferStarted: false
                                 onPressed: mouse => { pressedAt = Qt.point(mouse.x, mouse.y); transferStarted = false; }
                                 onPositionChanged: mouse => {
-                                    if (pressed && (pressedButtons & Qt.LeftButton) && !transferStarted && Math.hypot(mouse.x - pressedAt.x, mouse.y - pressedAt.y) >= Qt.styleHints.startDragDistance) {
+                                    if (pressed && (pressedButtons & Qt.LeftButton) && !transferStarted && Math.hypot(mouse.x - pressedAt.x, mouse.y - pressedAt.y) >= Application.styleHints.startDragDistance) {
                                         transferStarted = true;
                                         root.beginTransfer(this, cell.row, mouse);
                                     }
@@ -1952,7 +1952,7 @@ Item {
                                 property bool transferStarted: false
                                 onPressed: mouse => { pressedAt = Qt.point(mouse.x, mouse.y); transferStarted = false; }
                                 onPositionChanged: mouse => {
-                                    if (pressed && (pressedButtons & Qt.LeftButton) && !transferStarted && Math.hypot(mouse.x - pressedAt.x, mouse.y - pressedAt.y) >= Qt.styleHints.startDragDistance) {
+                                    if (pressed && (pressedButtons & Qt.LeftButton) && !transferStarted && Math.hypot(mouse.x - pressedAt.x, mouse.y - pressedAt.y) >= Application.styleHints.startDragDistance) {
                                         transferStarted = true;
                                         root.beginTransfer(this, gridEntry.index, mouse);
                                     }

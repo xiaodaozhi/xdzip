@@ -2,13 +2,15 @@
 
 #include "protocol.hpp"
 #include <algorithm>
-#include <codecvt>
+#include <cstddef>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <limits>
-#include <locale>
 #include <mutex>
 #include <new>
+#include <stdexcept>
+#include <string_view>
 #ifdef _WIN32
 #define NOMINMAX
 #include <fcntl.h>
@@ -112,21 +114,100 @@ void ack() {
     if (!receive(Ack).empty())
         throw Failure{2};
 }
+namespace {
+void append_utf8(std::string &output, std::uint32_t scalar) {
+    if (scalar > 0x10ffff || (scalar >= 0xd800 && scalar <= 0xdfff))
+        throw std::range_error("invalid Unicode scalar");
+    if (scalar <= 0x7f) {
+        output.push_back(char(scalar));
+    } else if (scalar <= 0x7ff) {
+        output.push_back(char(0xc0 | (scalar >> 6)));
+        output.push_back(char(0x80 | (scalar & 0x3f)));
+    } else if (scalar <= 0xffff) {
+        output.push_back(char(0xe0 | (scalar >> 12)));
+        output.push_back(char(0x80 | ((scalar >> 6) & 0x3f)));
+        output.push_back(char(0x80 | (scalar & 0x3f)));
+    } else {
+        output.push_back(char(0xf0 | (scalar >> 18)));
+        output.push_back(char(0x80 | ((scalar >> 12) & 0x3f)));
+        output.push_back(char(0x80 | ((scalar >> 6) & 0x3f)));
+        output.push_back(char(0x80 | (scalar & 0x3f)));
+    }
+}
+
+std::uint32_t next_scalar(std::string_view input, std::size_t &position) {
+    const auto first = static_cast<std::uint8_t>(input[position++]);
+    if (first <= 0x7f)
+        return first;
+
+    std::uint32_t scalar;
+    std::size_t continuation_count;
+    std::uint32_t minimum;
+    if (first >= 0xc2 && first <= 0xdf) {
+        scalar = first & 0x1f;
+        continuation_count = 1;
+        minimum = 0x80;
+    } else if (first >= 0xe0 && first <= 0xef) {
+        scalar = first & 0x0f;
+        continuation_count = 2;
+        minimum = 0x800;
+    } else if (first >= 0xf0 && first <= 0xf4) {
+        scalar = first & 0x07;
+        continuation_count = 3;
+        minimum = 0x10000;
+    } else {
+        throw std::range_error("invalid UTF-8");
+    }
+    if (continuation_count > input.size() - position)
+        throw std::range_error("truncated UTF-8");
+    for (std::size_t i = 0; i < continuation_count; ++i) {
+        const auto next = static_cast<std::uint8_t>(input[position++]);
+        if ((next & 0xc0) != 0x80)
+            throw std::range_error("invalid UTF-8 continuation");
+        scalar = (scalar << 6) | (next & 0x3f);
+    }
+    if (scalar < minimum || scalar > 0x10ffff || (scalar >= 0xd800 && scalar <= 0xdfff))
+        throw std::range_error("invalid UTF-8 scalar");
+    return scalar;
+}
+} // namespace
 std::string utf8(const std::wstring &value) {
-#if WCHAR_MAX <= 0xffff
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> conversion;
-#else
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> conversion;
-#endif
-    return conversion.to_bytes(value);
+    std::string output;
+    output.reserve(value.size());
+    for (std::size_t i = 0; i < value.size(); ++i) {
+        std::uint32_t scalar = static_cast<std::uint32_t>(value[i]);
+        if constexpr (sizeof(wchar_t) == 2) {
+            if (scalar >= 0xd800 && scalar <= 0xdbff) {
+                if (i + 1 == value.size())
+                    throw std::range_error("truncated UTF-16 surrogate pair");
+                const auto low = static_cast<std::uint32_t>(value[++i]);
+                if (low < 0xdc00 || low > 0xdfff)
+                    throw std::range_error("invalid UTF-16 surrogate pair");
+                scalar = 0x10000 + ((scalar - 0xd800) << 10) + (low - 0xdc00);
+            } else if (scalar >= 0xdc00 && scalar <= 0xdfff) {
+                throw std::range_error("unpaired UTF-16 low surrogate");
+            }
+        }
+        append_utf8(output, scalar);
+    }
+    return output;
 }
 std::wstring wide(const std::string &value) {
-#if WCHAR_MAX <= 0xffff
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> conversion;
-#else
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> conversion;
-#endif
-    return conversion.from_bytes(value);
+    std::wstring output;
+    output.reserve(value.size());
+    for (std::size_t position = 0; position < value.size();) {
+        const auto scalar = next_scalar(value, position);
+        if constexpr (sizeof(wchar_t) == 2) {
+            if (scalar > 0xffff) {
+                const auto adjusted = scalar - 0x10000;
+                output.push_back(static_cast<wchar_t>(0xd800 + (adjusted >> 10)));
+                output.push_back(static_cast<wchar_t>(0xdc00 + (adjusted & 0x3ff)));
+                continue;
+            }
+        }
+        output.push_back(static_cast<wchar_t>(scalar));
+    }
+    return output;
 }
 size_t read_source(uint64_t offset, void *data, size_t size) {
     std::lock_guard<std::recursive_mutex> guard(io_mutex);
