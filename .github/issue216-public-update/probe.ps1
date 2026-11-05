@@ -170,6 +170,36 @@ function Wait-AppTab([int]$processId, [string]$pattern, [int]$seconds) {
     Snapshot-Process $processId
     throw 'Expected application tab did not appear.'
 }
+function Save-SettingsWindow([int]$processId) {
+    Add-Type -AssemblyName System.Drawing
+    $condition = [System.Windows.Automation.PropertyCondition]::new(
+        [System.Windows.Automation.AutomationElement]::ProcessIdProperty, $processId)
+    $windows = [System.Windows.Automation.AutomationElement]::RootElement.FindAll(
+        [System.Windows.Automation.TreeScope]::Children, $condition)
+    for ($i = 0; $i -lt $windows.Count; $i++) {
+        $window = $windows.Item($i)
+        if ($window.Current.Name -ne 'Settings') { continue }
+        $window.SetFocus()
+        Start-Sleep -Seconds 1
+        $rectangle = $window.Current.BoundingRectangle
+        $width = [int][Math]::Ceiling($rectangle.Width)
+        $height = [int][Math]::Ceiling($rectangle.Height)
+        if ($rectangle.IsEmpty -or $width -lt 1 -or $height -lt 1 -or $width -gt 4096 -or $height -gt 4096) {
+            throw 'Settings screenshot has unexpected dimensions.'
+        }
+        $bitmap = [System.Drawing.Bitmap]::new($width, $height)
+        $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+        try {
+            $graphics.CopyFromScreen([int]$rectangle.X, [int]$rectangle.Y, 0, 0, $bitmap.Size)
+            $bitmap.Save((Join-Path $records 'updated-about.png'), [System.Drawing.Imaging.ImageFormat]::Png)
+        } finally {
+            $graphics.Dispose()
+            $bitmap.Dispose()
+        }
+        return
+    }
+    throw 'Settings window was not found for screenshot.'
+}
 function Activate-Element($element, [bool]$select = $false) {
     $pattern = $null
     if ($select -and $element.TryGetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern, [ref]$pattern)) {
@@ -359,15 +389,27 @@ public static class ProbeMouse {
     }
     Activate-Element (Wait-AppButton $newProcess[0].Id '^Settings$' 45)
     Activate-Element (Wait-AppTab $newProcess[0].Id '^About$' 30) $true
+    Start-Sleep -Seconds 2
     Snapshot-Process $newProcess[0].Id
-    if (-not ($script:lastSnapshot.name -match 'Update complete\. You are running the new version')) {
-        throw 'The restarted application did not display the successful update receipt.'
+    $receiptAccessible = [bool]($script:lastSnapshot.name -match 'Update complete\. You are running the new version')
+    if ($receiptAccessible) {
+        Record 'restart-and-update-receipt-verified'
+    } else {
+        Record 'update-receipt-not-exposed-through-accessibility'
+        try {
+            Save-SettingsWindow $newProcess[0].Id
+            Record 'captured-updated-about-window'
+        } catch {
+            Record 'updated-about-window-capture-failed'
+        }
     }
-    Record 'restart-and-update-receipt-verified'
     $script:stage = 'payload'
     & python .github/issue216-public-update/verify-payload.py $installRoot $records
     if ($LASTEXITCODE -ne 0) { throw 'Updated payload does not match the published portable package.' }
     Record 'all-published-payload-files-verified'
+    if (-not $receiptAccessible) {
+        throw 'The restarted application did not expose its update receipt through accessibility.'
+    }
     $script:outcome = 'passed'
 } catch {
     $script:failure = $_.Exception.Message.Replace($env:RUNNER_TEMP, '<runner-temp>').Replace($env:USERPROFILE, '<profile>').Replace((Get-Location).Path, '<workspace>')
