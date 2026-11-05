@@ -23,6 +23,7 @@
 #include <QQuickStyle>
 #include <QScopeGuard>
 #include <QSignalSpy>
+#include <QSslSocket>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QTemporaryDir>
@@ -438,6 +439,42 @@ class UpdateControllerTest final : public QObject {
         QCOMPARE(response.value("rate_headers").toObject().value("retry_after").toString(),
                  QStringLiteral("60"));
         reply->deleteLater();
+    }
+    void updateRequestsReachConfiguredHttpProxy() {
+        if (!QSslSocket::supportsSsl())
+            QSKIP("The active Qt platform has no TLS backend");
+        const QList<QPair<QString, QByteArray>> cases{
+            {QString{}, QByteArrayLiteral("CONNECT api.github.com:443 HTTP/1.1")},
+            {QStringLiteral("https://mirror.example.test/prefix"),
+             QByteArrayLiteral("CONNECT mirror.example.test:443 HTTP/1.1")}};
+        for (const auto &scenario : cases) {
+            QTcpServer proxy;
+            QVERIFY(proxy.listen(QHostAddress::LocalHost));
+            QByteArray request;
+            connect(&proxy, &QTcpServer::newConnection, &proxy, [&] {
+                auto *client = proxy.nextPendingConnection();
+                connect(client, &QTcpSocket::readyRead, client, [&, client] {
+                    request += client->readAll();
+                    if (request.contains("\r\n\r\n")) {
+                        client->write("HTTP/1.1 502 Bad Gateway\r\nContent-Length: 0\r\n"
+                                      "Connection: close\r\n\r\n");
+                        client->disconnectFromHost();
+                    }
+                });
+            });
+            QNetworkAccessManager network;
+            UpdateController updates(nullptr, &network, fixture("network-trust.json"), {},
+                                     [] { return true; });
+            updates.configureNetwork(QStringLiteral("custom"),
+                                     QStringLiteral("http://127.0.0.1:%1").arg(proxy.serverPort()),
+                                     scenario.first);
+            updates.check();
+            QTRY_VERIFY_WITH_TIMEOUT(request.contains("\r\n\r\n"), 10000);
+            QCOMPARE(request.left(request.indexOf("\r\n")), scenario.second);
+            QTRY_COMPARE_WITH_TIMEOUT(updates.state(), QStringLiteral("error"), 10000);
+            QCOMPARE(updates.errorCode(), QStringLiteral("network"));
+            QVERIFY(!updates.trusted());
+        }
     }
     void updateProbeDiagnosticsRemainBoundedAndDoNotExposeRequests() {
         UpdateProbeDiagnostics diagnostics;
