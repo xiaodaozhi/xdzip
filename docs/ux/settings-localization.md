@@ -20,6 +20,10 @@ English: Windows installed per-format association descriptions follow the applic
 
 设置正文的竖向滚动条位于视口右侧，轨道覆盖视口高度；滑块随滚动移动，也可拖动控制正文滚动。
 
+关于页版本信息的标签列按实际文案和字号自适应，值列使用剩余宽度并可换行；新增字段应使用相同布局。
+
+English: The About version-information grid sizes its label column to the actual labels and font size. Values use the remaining width and can wrap; new fields use the same layout.
+
 English: The settings content's vertical scrollbar sits at the right edge and spans the viewport; its thumb follows the scroll position and can be dragged to scroll.
 
 所有产品静态文字通过 `resources/i18n/zh-CN.json` 和 `en-US.json` 的稳定 ID 引用；QML 使用 `qsTrId`，C++ 使用 `qtTrId`。协议码、文件名、路径和用户内容不翻译。语言默认简体中文，支持 English (US)；字号支持 100%、125%、150%，历史 200% 读取为 150%。系统文件选择器遵循系统语言，独立于应用语言。macOS 包声明 zh-Hans、en 并允许混合本地化，Qt 标准控件按系统 locale 加载可用翻译，不修改用户的 AppleLanguages。

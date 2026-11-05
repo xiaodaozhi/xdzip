@@ -110,6 +110,9 @@ OperationWindow {
         textFormat: Text.PlainText
         wrapMode: Text.Wrap
     }
+    component VersionLabel: PageNote {
+        Layout.fillWidth: false
+    }
     component PageSeparator: Rectangle {
         Layout.fillWidth: true
         implicitHeight: 1
@@ -744,14 +747,14 @@ OperationWindow {
                 SectionTitle { text: qsTrId("settings.versionTitle") }
                 GridLayout {
                     Layout.fillWidth: true; columns: 2; columnSpacing: 16; rowSpacing: 6
-                    PageNote { text: qsTrId("about.version") }
+                    VersionLabel { objectName: "aboutLabel-version"; text: qsTrId("about.version") }
                     PageNote { objectName: "aboutValue-1"; text: BuildInfo.version; color: Theme.text }
-                    PageNote { text: qsTrId("about.build") }
+                    VersionLabel { objectName: "aboutLabel-build"; text: qsTrId("about.build") }
                     PageNote { text: String(BuildInfo.buildNumber); color: Theme.text }
-                    PageNote { text: qsTrId("about.revision") }
+                    VersionLabel { objectName: "aboutLabel-revision"; text: qsTrId("about.revision") }
                     PageNote { text: BuildInfo.revision === "unknown" ? qsTrId("about.unknown") : BuildInfo.revision; color: Theme.text }
-                    PageNote { text: qsTrId("about.runtime") }
-                    PageNote { text: "Qt " + BuildInfo.qtVersion + ", " + BuildInfo.platform + ", " + BuildInfo.architecture; color: Theme.text }
+                    VersionLabel { objectName: "aboutLabel-runtime"; text: qsTrId("about.runtime") }
+                    PageNote { objectName: "aboutValue-runtime"; text: "Qt " + BuildInfo.qtVersion + ", " + BuildInfo.platform + ", " + BuildInfo.architecture; color: Theme.text }
                 }
                 OperationButton {
                     objectName: "aboutCopy"

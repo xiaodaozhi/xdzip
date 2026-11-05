@@ -7370,6 +7370,25 @@ QtObject {
         auto *bar = findVisual(settings->contentItem(), "settingsVerticalScrollBar");
         auto *pageContent = findVisual(settings->contentItem(), "settingsPageContent");
         QVERIFY(scroll && bar && pageContent);
+        auto *runtimeValue = findVisual(settings->contentItem(), "aboutValue-runtime");
+        auto *revisionLabel = findVisual(settings->contentItem(), "aboutLabel-revision");
+        QVERIFY(runtimeValue && revisionLabel);
+        for (const auto *name : {"aboutLabel-version", "aboutLabel-build", "aboutLabel-revision",
+                                 "aboutLabel-runtime"}) {
+            auto *label = findVisual(settings->contentItem(), QString::fromLatin1(name));
+            QVERIFY(label);
+            const QFontMetricsF metrics(label->property("font").value<QFont>());
+            QTRY_VERIFY2(label->width() + 0.5 >=
+                             metrics.horizontalAdvance(label->property("text").toString()),
+                         name);
+            QVERIFY(label->property("paintedHeight").toReal() <= metrics.height() + 1);
+        }
+        const auto originalRevision = revisionLabel->property("text").toString();
+        const auto originalValueX = runtimeValue->mapToItem(pageContent, QPointF()).x();
+        QVERIFY(revisionLabel->setProperty("text", QStringLiteral("Additional field label")));
+        QTRY_VERIFY(runtimeValue->mapToItem(pageContent, QPointF()).x() > originalValueX + 1);
+        QVERIFY(revisionLabel->setProperty("text", originalRevision));
+        QTRY_VERIFY(qAbs(runtimeValue->mapToItem(pageContent, QPointF()).x() - originalValueX) < 1);
         auto *flick = scroll->property("contentItem").value<QQuickItem *>();
         QVERIFY(flick);
         QTRY_VERIFY(flick->property("contentHeight").toReal() > flick->height());
