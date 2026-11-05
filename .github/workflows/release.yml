@@ -27,14 +27,24 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.tag || github.ref_name }}
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          path: release-policy
       - name: Validate version-specific reviewed notes
-        run: python3 scripts/publish-release.py --check-notes
+        run: |
+          VERSION=$(python3 -c 'import runpy; print(runpy.run_path("scripts/sync-version.py")["version_info"]()["display_version"])')
+          NOTES="release-policy/release-notes/$VERSION.md"
+          python3 scripts/publish-release.py --check-notes --notes-file "$NOTES"
       - name: Keep a draft until all native packages pass
         if: ${{ !inputs.validate_only }}
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
-        run: python3 scripts/publish-release.py --draft-only --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
+        run: |
+          VERSION=$(python3 -c 'import runpy; print(runpy.run_path("scripts/sync-version.py")["version_info"]()["display_version"])')
+          NOTES="release-policy/release-notes/$VERSION.md"
+          python3 scripts/publish-release.py --draft-only --notes-file "$NOTES" --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
   native:
     needs: draft
     environment: ${{ inputs.validate_only && 'release-validation' || 'release-signing' }}
@@ -84,14 +94,14 @@ jobs:
             build/release-package/*.json
             build/release-package/*.log
           retention-days: 30
-  source:
+  contracts:
     needs: draft
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.tag || github.ref_name }}
+          ref: ${{ github.sha }}
       - name: Check version and release contracts
         run: |
           python3 scripts/sync-version.py --check
@@ -99,9 +109,9 @@ jobs:
           python3 scripts/test-release-protocol.py
           rustup toolchain install 1.99.0 --profile minimal --component rustfmt --component clippy
           python3 scripts/prepare-native-codecs.py
-          cmake -S . -B build/release-source-worker -G Ninja -DCMAKE_BUILD_TYPE=Release -DXDZIP_BUILD_QT_PROBE=OFF
-          cmake --build build/release-source-worker --target xdzip-native-codec --parallel 2
-          export XDZIP_NATIVE_CODEC="$GITHUB_WORKSPACE/build/release-source-worker/tools/native-codec/xdzip-native-codec"
+          cmake -S . -B build/release-contract-worker -G Ninja -DCMAKE_BUILD_TYPE=Release -DXDZIP_BUILD_QT_PROBE=OFF
+          cmake --build build/release-contract-worker --target xdzip-native-codec --parallel 2
+          export XDZIP_NATIVE_CODEC="$GITHUB_WORKSPACE/build/release-contract-worker/tools/native-codec/xdzip-native-codec"
           export XDZIP_NATIVE_CODEC_WORKER="$XDZIP_NATIVE_CODEC"
           export XDZIP_CAB_BACKEND=rust
           cargo test --workspace --locked
@@ -112,18 +122,8 @@ jobs:
           cargo test -p xdzip-runtime --locked optical_backend_tests -- --ignored
           cargo clippy --workspace --all-targets --locked -- -D warnings
           python3 scripts/test-release-updates.py
-          python3 scripts/prepare-source-delivery.py --output build/release-source
-          mkdir -p build/release-assets
-          VERSION=$(python3 -c 'import runpy; print(runpy.run_path("scripts/sync-version.py")["version_info"]()["display_version"])')
-          tar -C build/release-source -czf "build/release-assets/xdzip-$VERSION-corresponding-source.tar.gz" .
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: release-source
-          path: build/release-assets/*
-          if-no-files-found: error
-          retention-days: 30
   publish:
-    needs: [draft, native, source]
+    needs: [draft, native, contracts]
     environment: ${{ inputs.validate_only && 'release-validation' || 'release-signing' }}
     runs-on: ubuntu-24.04
     permissions:
@@ -133,6 +133,10 @@ jobs:
         with:
           ref: ${{ inputs.tag || github.ref_name }}
           persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          path: release-policy
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: release-*
@@ -147,7 +151,9 @@ jobs:
           XDZIP_SPARKLE_SIGNING_KEY_HEX: ${{ !inputs.validate_only && secrets.XDZIP_SPARKLE_SIGNING_KEY_HEX || '' }}
         run: |
           mkdir -p build/packages
-          find build/downloaded/release-Windows build/downloaded/release-Linux build/downloaded/release-macOS build/downloaded/release-source -maxdepth 1 -type f -exec cp {} build/packages/ \;
+          find build/downloaded/release-Windows build/downloaded/release-Linux build/downloaded/release-macOS -maxdepth 1 -type f -exec cp {} build/packages/ \;
+          VERSION=$(python3 -c 'import runpy; print(runpy.run_path("scripts/sync-version.py")["version_info"]()["display_version"])')
+          NOTES="release-policy/release-notes/$VERSION.md"
           rustup toolchain install 1.99.0 --profile minimal
           UPDATE_ARGS=()
           if [ "$VALIDATE_ONLY" = true ]; then
@@ -157,7 +163,7 @@ jobs:
           fi
           python3 scripts/prepare-release.py --packages build/packages --output build/public-release --repository "$GITHUB_REPOSITORY" "${UPDATE_ARGS[@]}"
           if [ "$VALIDATE_ONLY" != true ]; then
-            python3 scripts/publish-release.py --directory build/public-release --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
+            python3 scripts/publish-release.py --directory build/public-release --notes-file "$NOTES" --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
           fi
       - name: Preserve the complete validated candidate
         if: ${{ inputs.validate_only }}

@@ -14,7 +14,7 @@
 
 English: Validation-only assembly receives no update-signing keys or key ID from the workflow and explicitly disables update signing even if the caller environment contains keys. It rejects stale signing attachments and conflicting signing requirements. Production publication still requires the version tag and authenticated update signatures; macOS ad-hoc integrity signing remains separate.
 
-对应源码作业先构建同提交的隔离格式工作进程，再通过 `XDZIP_NATIVE_CODEC` 与 `XDZIP_NATIVE_CODEC_WORKER` 运行 Rust workspace 测试。只运行 Cargo 测试不能证明需要真实工作进程的路径已执行；原生三平台作业继续分别验证实际应用、部署与安装生命周期。
+发行契约作业先构建同提交的隔离格式工作进程，再通过 `XDZIP_NATIVE_CODEC` 与 `XDZIP_NATIVE_CODEC_WORKER` 运行 Rust workspace 测试。只运行 Cargo 测试不能证明需要真实工作进程的路径已执行；原生三平台作业继续分别验证实际应用、部署与安装生命周期。
 
 Windows 每次部署核验使用独立的临时测试副本，保留此前日志；重复核验不复用或删除已有目录，产品运行目录不包含测试 DLL。
 
@@ -26,7 +26,9 @@ Windows 每次部署核验使用独立的临时测试副本，保留此前日志
 | macos、arm64 | app.zip、dmg | macOS 14.0 |
 | linux、x86_64 | tar.gz、deb | Ubuntu 24.04、glibc 2.39、X11 |
 
-六类包必须齐备，清单校验拒绝缺包、重复目标、不一致渠道、可变下载地址、错误字节数或哈希。对应源码、Rust vendor、Qt 原始源码与补丁、重建说明、平台通知和许可、SBOM 以同版本附件提供。Windows 使用 app-local VC++ 运行库，不随包分发 Windows SDK 图形编译库。
+六类包必须齐备，清单校验拒绝缺包、重复目标、不一致渠道、可变下载地址、错误字节数或哈希。发行附件包含平台通知、许可、SBOM 和部署／验证材料，不包含对应源码压缩包。Windows 使用 app-local VC++ 运行库，不随包分发 Windows SDK 图形编译库。
+
+自 2026-11-05 起，所有者决定从 GitHub Releases 和 Actions 工件中撤下历史对应源码压缩包，并停止后续发行流程生成或上传此类压缩包。`scripts/prepare-source-delivery.py` 仍可用于本地审查；发布清单器和发布器拒绝文件名含 `corresponding-source` 的归档。该发布政策不改变任何组件的适用许可，也不表示对应源码、重链接或其他义务已经满足。发行审查必须针对实际交付继续处理这些义务；若条款要求的条件没有其他可行交付方式，应阻止受影响二进制的分发。GitHub 公共仓库自动生成的标签源码快照不属于这些 Release 附件。
 
 macOS 的应用 ZIP、DMG 与通知材料必须在同一已部署、签名的临时应用仍存活时导出，随后才清理暂存 `.app` 和临时注册。不能在暂存清理后重新部署另一份应用来补 ZIP。
 
@@ -57,6 +59,8 @@ macOS 在无秘密的工具链准备步骤中一次安装 `rust-toolchain.toml` 
 `prepare-release.py --require-update-signature` 在缺少任一密钥、签名或原生归档元数据时停止；`publish-release.py` 独立复验清单、同候选 feed 与归档后才上传。validate_only 可以生成明确标记 signing_not_configured 的候选，`update-readiness.json` 不作为授权依据，也不把未签名演练称为可安装更新。签名、appcast 和状态附件均进入完整 SHA256SUMS。已有公开版本不补传或替换这些新附件。
 
 English: Every immutable release includes schema-v1 release.json and SHA256SUMS. All six native package targets must be present and hash-verified before a draft becomes public. Metadata binds the complete semantic version, channel, monotonic build, tag and full commit to platform/architecture/package requirements and pinned URLs. Clients paginate Releases, compare semantic versions and builds, and never regress from beta/rc to an earlier channel. They must not use publication dates, filename guesses or /releases/latest for prereleases. Installation additionally requires an Ed25519 release.json.sig over exact JSON bytes and a locally embedded trusted public key. macOS uses a separate Sparkle key to sign both the final app.zip and the entire single-candidate appcast, with a short embedded version description and a pinned macos_appcast_url. Full release notes remain in the GitHub Release body; clients do not fetch external release notes. Owner-provided production public keys are versioned with the client and installation helper; test keys must never be embedded. Older clients without these keys first require a manual installation of a version containing them, because downloaded manifests cannot add trust roots. Existing public releases are never retroactively signed or replaced. Validation-only candidates may explicitly report signing_not_configured; publication independently rejects missing or invalid signatures and never changes existing public assets. macOS application code signing remains ad-hoc; update signatures do not impersonate Developer ID or notarization. Incomplete licensing checks and unperformed manual acceptance remain explicit.
+
+As of 2026-11-05, the owner has directed that historical corresponding-source archives be withdrawn from GitHub Releases and Actions artifacts and that future release workflows stop creating or uploading them. `scripts/prepare-source-delivery.py` remains available for local review; release assembly and publication reject archives whose names contain `corresponding-source`. This policy does not change component licenses or establish that corresponding-source, relinking or other obligations are satisfied. Release review must continue to resolve those obligations for the actual distribution; if required conditions have no other feasible delivery path, distribution of the affected binaries must be blocked. GitHub's automatically generated source snapshots for tags in the public repository are outside these Release attachments.
 
 Validation-only dispatches accept a candidate commit SHA and build, deploy, sign, verify and assemble the complete attachment set without creating a draft or public Release. Normal publication requires the exact version tag. Stable channel publication creates a non-prerelease Release and explicitly marks it Latest; alpha, beta and rc remain prereleases and are explicitly kept out of Latest.
 

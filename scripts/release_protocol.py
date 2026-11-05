@@ -25,6 +25,12 @@ def sha256(path):
     return result.hexdigest()
 
 
+def reject_corresponding_source_archives(paths):
+    for path in paths:
+        if 'corresponding-source' in Path(path).name.casefold():
+            raise ValueError('Corresponding-source archives are not accepted as release assets')
+
+
 def semantic_version(value, allow_development=False):
     channels = 'dev|alpha|beta|rc' if allow_development else 'alpha|beta|rc'
     match = re.fullmatch(r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-('+channels+r')\.([1-9]\d*))?', value)
@@ -60,6 +66,8 @@ def release_tag_eligible(tag, current, current_channel):
 
 
 def validate(manifest, directory=None):
+    if directory is not None:
+        reject_corresponding_source_archives(Path(directory).iterdir())
     if manifest.get('schema_version') != 1 or manifest.get('product') != 'xdzip':
         raise ValueError('Unsupported release manifest')
     version = manifest['version']

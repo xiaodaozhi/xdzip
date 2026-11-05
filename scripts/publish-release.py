@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 import runpy
 import subprocess
-from release_protocol import sha256, validate
+from release_protocol import reject_corresponding_source_archives, sha256, validate
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -81,6 +81,8 @@ def main():
         return
     if not args.tag or not args.repository:
         parser.error('--tag and --repository are required for publishing')
+    if args.directory:
+        reject_corresponding_source_archives(args.directory.resolve().iterdir())
     work = ROOT/'build/release-publish'
     work.mkdir(parents=True, exist_ok=True)
     notes = work/'notes.md'

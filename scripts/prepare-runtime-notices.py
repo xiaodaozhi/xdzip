@@ -21,7 +21,7 @@ report={'scope':'Reference declarations for installed Qt SDK, including unused m
         'qt_version':'6.8.2','source_commits':config['source_commits'],
         'source_commit_scope':config['source_commit_scope'],
         'corresponding_source_url':'https://download.qt.io/archive/qt/6.8/6.8.2/single/qt-everywhere-src-6.8.2.tar.xz',
-        'source_delivery':'URL only; corresponding-source archive delivery and relinking obligations require release review.',
+        'source_delivery':'URL only; no corresponding-source archive is attached to releases under owner policy; applicable source and relinking obligations remain release checks.',
         'upstream_documents':documents,'packages':list(packages.values()),'extracted_license_texts':extracted,
         'license_materials':materials,'psl_source_material':psl_source,'tika_materials':tika_materials,
         'licensing_decision':'No automatic license selection or compliance approval.'}

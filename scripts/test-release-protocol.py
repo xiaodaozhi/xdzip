@@ -18,7 +18,7 @@ import tarfile
 import tomllib
 import unittest
 from unittest.mock import patch
-from release_protocol import TARGETS, create, select, validate
+from release_protocol import TARGETS, create, reject_corresponding_source_archives, select, validate
 from release_evidence import compare_macho_sections, macho_sections, verify_bindings
 
 SPEC = importlib.util.spec_from_file_location('publish_release', Path(__file__).with_name('publish-release.py'))
@@ -42,6 +42,15 @@ class ValidationOnlyWorkflowTests(unittest.TestCase):
             r'if \[ "\$VALIDATE_ONLY" = true \]; then\s+'
             r'UPDATE_ARGS\+=\(--validation-only\)\s+else\s+'
             r'UPDATE_ARGS\+=\(--require-update-signature\)\s+fi'))
+
+    def test_release_workflow_does_not_build_or_upload_corresponding_source_archives(self):
+        workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/release.yml').read_text(encoding='utf-8')
+        self.assertNotIn('prepare-source-delivery.py', workflow)
+        self.assertNotIn('corresponding-source.tar.gz', workflow)
+        self.assertNotIn('release-source', workflow)
+        self.assertIn('needs: [draft, native, contracts]', workflow)
+        self.assertGreaterEqual(workflow.count('--notes-file "$NOTES"'), 2)
+        self.assertIn('path: release-policy', workflow)
 
 
 class ProductionUpdateWorkflowTests(unittest.TestCase):
@@ -221,6 +230,15 @@ class ReleaseProtocolTests(unittest.TestCase):
         asset = self.directory/self.manifest['assets'][0]['filename']
         asset.write_bytes(b'tampered')
         with self.assertRaises(ValueError): validate(self.manifest, self.directory)
+
+    def test_corresponding_source_archives_are_rejected_from_release_directories(self):
+        archive = self.directory/'xdzip-0.1.0-alpha.1-corresponding-source.tar.gz'
+        archive.write_bytes(b'large source package')
+        with self.assertRaisesRegex(ValueError, 'not accepted as release assets'):
+            validate(self.manifest, self.directory)
+        archive.unlink()
+        with self.assertRaisesRegex(ValueError, 'not accepted as release assets'):
+            reject_corresponding_source_archives([self.directory/'renamed-corresponding-source.zip'])
 
 
 class ReleaseNotesTests(unittest.TestCase):

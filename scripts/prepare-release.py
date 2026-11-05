@@ -10,7 +10,7 @@ import shutil
 import subprocess
 import tarfile
 import zipfile
-from release_protocol import TARGETS, create, sha256
+from release_protocol import TARGETS, create, reject_corresponding_source_archives, sha256
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -106,6 +106,7 @@ def main():
     for value in (args.packages, args.output):
         if not value.resolve().is_relative_to(ROOT/'build'):
             raise ValueError('Release staging belongs under build/')
+    reject_corresponding_source_archives(args.packages.iterdir())
     version = runpy.run_path(str(ROOT/'scripts/sync-version.py'))['version_info']()
     if args.platform:
         stage(args.packages, args.output, args.platform, version['display_version'])

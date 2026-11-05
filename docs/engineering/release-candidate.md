@@ -1,14 +1,14 @@
 # 发行候选材料契约
 
-每个候选绑定干净源码提交、产品版本和实际包哈希。材料生成不自动创建 GitHub Release、标签或上传包，也不批准许可选择；具体状态记录在候选对应 issue。正式签名与公证不作为门槛。
+每个候选绑定干净源码提交、产品版本和实际包哈希。材料生成不自动创建 GitHub Release、标签或上传包，也不批准许可选择；具体状态记录在候选对应 issue。正式签名与公证不作为门槛。按 2026-11-05 所有者政策，发行附件不提供对应源码压缩包；本地源码收集和审阅工具继续保留。
 
 ## 交付内容
 
-固定干净提交后生成 Windows x86_64 ZIP／安装器、macOS arm64 app ZIP／DMG、Ubuntu 24.04 x86_64 tar.gz／deb，并收集同提交的项目源码、Rust vendor、Qt 固定源码与补丁、通知、实际文件 SBOM、构建和生命周期回执。候选总清单记录相对文件路径、SHA-256、大小、平台、构建版本和源码提交；不将不同提交的包拼成一个候选。
+固定干净提交后生成 Windows x86_64 ZIP／安装器、macOS arm64 app ZIP／DMG、Ubuntu 24.04 x86_64 tar.gz／deb，并收集通知、实际文件 SBOM、构建和生命周期回执。对应源码包可在本地单独审阅，不作为候选 Release 或 Actions 工件提供。候选总清单记录相对文件路径、SHA-256、大小、平台、构建版本和源码提交；不将不同提交的包拼成一个候选。
 
 按需 Qt 工作流的 macOS 作业只保留日志与 JSON。经所有者明确授权，专用 Release 工作流可在 Apple Silicon runner 部署 Qt、执行必要的 ad-hoc 签名，并从同一应用导出 app ZIP 与 DMG，验证完整性和无 SDK 搜索路径下的重定位启动；本地开发 DMG 仍遵循已有授权。Windows/Linux 的开发包由实际成功的按需 Qt 运行获取，不把 QA-only 安装器当作产品。历史完整源码 Qt／性能记录只作为历史材料引用，不改写提交，也不要求人工验收重做。
 
-源码包的离线重建与实际启动另行核验；这不等于完全可复现的上游 SDK 二进制或已批准许可。macOS DMG 部署后字节与 SDK 模式 CI 字节有差异，两套 SBOM 保留各自审计范围，不混作同一工件。
+本地源码交付的离线重建与实际启动另行核验；这不等于完全可复现的上游 SDK 二进制或已批准许可。源码包撤下不消除组件许可及重链接义务；如实际条款要求的交付条件无法通过其他方式满足，不得发布受影响二进制。macOS DMG 部署后字节与 SDK 模式 CI 字节有差异，两套 SBOM 保留各自审计范围，不混作同一工件。
 
 ## 许可与来源核对
 
@@ -38,7 +38,7 @@ English: The 110 differences in the published alpha.8 macOS materials refer to 6
 
 English: Dedicated macOS Release packaging captures a Cocoa/Metal resource probe, SDK-source correspondence and difference analysis while the final deployment exists, with conventional source/file SBOM names. Link inputs bind the compiled image; resources and audit bind the deployed image. `release-deployment-evidence.json` reuses the established Mach-O comparator for exact section bytes, addresses, flags, zero-fill sizes, UUID and normalized imports while preserving distinct whole-file hashes. Load-command layout, LINKEDIT and signatures remain outside that equivalence claim. Invalid bounds, mixed identities or changed sections/UUID/imports fail. A single probe grants no reference-performance, manual-visual or license approval; original gaps and incomplete status remain.
 
-Qt 动态链接、通知及对应源码／替换材料是核对依据，不自动消除其他许可义务；参见 [Qt 官方义务说明](https://www.qt.io/development/open-source-lgpl-obligations)。Windows 再分发逐文件对照 [Visual Studio 2022 官方可分发清单](https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution)，并保留工具链及 DLL 来源，不能以“来自 Qt SDK”代替具体授权。字体按现有 OFL 材料，项目原创按 Apache-2.0，生成式图标按来源说明分别登记。
+Qt 动态链接、通知及本地保留的源码／替换材料是核对依据，不自动消除其他许可义务；参见 [Qt 官方义务说明](https://www.qt.io/development/open-source-lgpl-obligations)。Windows 再分发逐文件对照 [Visual Studio 2022 官方可分发清单](https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution)，并保留工具链及 DLL 来源，不能以“来自 Qt SDK”代替具体授权。字体按现有 OFL 材料，项目原创按 Apache-2.0，生成式图标按来源说明分别登记。对应源码压缩包不作为发行附件提供，若实际许可条件无法在其他方式下满足，须阻止相关二进制分发。
 
 剩余问题必须具体到组件／文件、平台、原始声明、技术核对结果、可接受的补证方式和责任角色，不笼统要求购买商业 Qt、开发者账号或证书。对未经批准的许可选择保留待确认，不代替所有者接受条款。
 
