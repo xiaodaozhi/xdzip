@@ -79,6 +79,7 @@ def main():
     shutil.copytree(args.root, root)
     shutil.copyfile(args.tests, root/'xdzip-browser-tests.exe')
     shutil.copyfile(args.qt_prefix/'bin/Qt6Test.dll', root/'Qt6Test.dll')
+    shutil.copyfile(args.qt_prefix/'bin/Qt6QuickTest.dll', root/'Qt6QuickTest.dll')
     shutil.copyfile(args.qt_prefix/'plugins/platforms/qoffscreen.dll', root/'platforms/qoffscreen.dll')
     # The harness is separate from the package; test-only DLLs never enter it.
     env = os.environ.copy()

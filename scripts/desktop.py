@@ -476,9 +476,10 @@ class Workflow:
                     'limits': 'Ad-hoc integrity only, no Developer ID or notarization'}
         runtime = self.runtime_receipt()
         if self.system == 'windows':
-            required = [self.tests, self.qt/'bin/Qt6Test.dll', self.qt/'plugins/platforms/qoffscreen.dll']
+            required = [self.tests, self.qt/'bin/Qt6Test.dll', self.qt/'bin/Qt6QuickTest.dll',
+                        self.qt/'plugins/platforms/qoffscreen.dll']
             if not all(path.is_file() for path in required):
-                raise ValueError('Windows runtime verification needs the built browser tests and matching Qt Test/offscreen SDK inputs')
+                raise ValueError('Windows runtime verification needs the built browser tests and matching Qt Test, Quick Test and offscreen SDK inputs')
         elif not (self.build/'apps/desktop/m2-flat.zip').is_file():
             raise ValueError('Linux runtime verification needs the owned m2-flat.zip fixture; run build and test first')
         if self.args.kind == 'all':
