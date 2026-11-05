@@ -24,10 +24,13 @@ function ContractSnapshot($format) {
     $id = 'xdzip.Archive.'+$format.ToUpperInvariant()
     $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey("Software\Classes\.$format\OpenWithProgids")
     if (!$key) { throw 'Missing candidates' }
-    try { $candidates = @($key.GetValueNames() | Sort-Object | ForEach-Object { "$_/$($key.GetValueKind($_))" }) }
+    try {
+        $names = @($key.GetValueNames() | Sort-Object)
+        $candidates = @($names | ForEach-Object { "$_/$($key.GetValueKind($_))" })
+    }
     finally { $key.Close() }
-    if ($candidates -notcontains 'xdzip.QAForeign/None' -or $candidates -notcontains "$id/None") {
-        throw "Missing test application candidate: $format"
+    if ($names -notcontains 'xdzip.QAForeign' -or $names -notcontains $id) {
+        throw "Missing test application candidate: $format ($($names -join ','))"
     }
     return (@{icon=(Get-Item "$classes\$id\DefaultIcon").GetValue('');command=(Get-Item "$classes\$id\shell\open\command").GetValue('');candidates=$candidates} | ConvertTo-Json -Compress)
 }
