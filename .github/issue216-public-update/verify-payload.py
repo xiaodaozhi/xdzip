@@ -19,7 +19,7 @@ url = 'https://github.com/xiaodaozhi/xdzip/releases/download/v0.1.0-alpha.9/' + 
 with urllib.request.urlopen(url, timeout=90) as response:
     data = response.read(128*1024*1024+1)
 digest = hashlib.sha256(data).hexdigest()
-if len(data) > 128*1024*1024 or digest != '__PUBLIC_PORTABLE_SHA256__':
+if len(data) > 128*1024*1024 or digest != '932fd4b08f083c460d73cdbb226ff40b0f4792a3172a8a4b8a106f322df17bfa':
     raise ValueError('Published archive identity differs')
 import io
 count = 0

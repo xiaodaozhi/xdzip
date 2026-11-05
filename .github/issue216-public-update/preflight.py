@@ -17,7 +17,7 @@ url = 'https://github.com/xiaodaozhi/xdzip/releases/download/v0.1.0-alpha.9/' + 
 with urllib.request.urlopen(url, timeout=120) as response:
     data = response.read(128 * 1024 * 1024 + 1)
 archive_hash = hashlib.sha256(data).hexdigest()
-if len(data) > 128 * 1024 * 1024 or archive_hash != '__PUBLIC_PORTABLE_SHA256__':
+if len(data) > 128 * 1024 * 1024 or archive_hash != '932fd4b08f083c460d73cdbb226ff40b0f4792a3172a8a4b8a106f322df17bfa':
     raise RuntimeError('Published portable package identity differs')
 
 blocked = {'d3dcompiler_47.dll', 'dxcompiler.dll', 'dxil.dll'}
@@ -33,7 +33,7 @@ with zipfile.ZipFile(io.BytesIO(data)) as archive:
     if license_hash != '8099dc3cf9502c335da829e5c755948a12e3e6de490eb492a99deb673d883d8b':
         raise RuntimeError('Runtime license differs from original alpha.8')
     app_hash = hashlib.sha256(app).hexdigest()
-    if app_hash != '__PUBLIC_APP_SHA256__':
+    if app_hash != 'c58f7c65249c35b687e9b7333bba632194de3f2c45892eba0c36149b9f045204':
         raise RuntimeError('Published application identity differs')
 
 records = Path('build/public-update-records')
