@@ -9782,6 +9782,7 @@ QtObject {
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
         QVERIFY(!engine.rootObjects().isEmpty());
         auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
         auto *controller = window->findChild<BrowserController *>();
         auto *extract = window->findChild<QQuickWindow *>("extractWindow");
         QVERIFY(window && controller && extract);
@@ -9809,6 +9810,89 @@ QtObject {
         QCOMPARE(status->property("text").toString(), qtTrId("ui.059a6ea7ca12"));
         extract->close();
         window->close();
+    }
+    void extractionRejectsPermissionDeniedTarget() {
+#ifdef Q_OS_WIN
+        QTemporaryDir owned;
+        QVERIFY(owned.isValid());
+        const auto denied = owned.filePath("denied");
+        QVERIFY(QDir().mkdir(denied));
+        // Deny file/directory creation only on this owned temporary directory.
+        // Keep WRITE_DAC available so the exact test ACE can be removed on exit.
+        const QString principal = QStringLiteral("*S-1-1-0");
+        const auto removeDeny = [&] {
+            return QProcess::execute(QStringLiteral("icacls.exe"),
+                                     {denied, QStringLiteral("/remove:d"), principal}) == 0;
+        };
+        QVERIFY(QProcess::execute(QStringLiteral("icacls.exe"),
+                                  {denied, QStringLiteral("/deny"),
+                                   principal + QStringLiteral(":(WD,AD)")}) == 0);
+        bool denyPresent = true;
+        const auto restoreAcl = qScopeGuard([&] {
+            if (denyPresent && !removeDeny())
+                qWarning() << "Could not restore the owned temporary directory ACL";
+        });
+        QFile probe(QDir(denied).filePath("write-probe"));
+        QVERIFY(!probe.open(QIODevice::WriteOnly | QIODevice::NewOnly));
+        QVERIFY(!probe.exists());
+
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        auto *controller = window->findChild<BrowserController *>();
+        auto *extract = window->findChild<QQuickWindow *>("extractWindow");
+        QVERIFY(window && controller && extract);
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/tree.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        controller->prepareExtraction(true);
+        QTRY_VERIFY(extract->isVisible() && !controller->busy());
+        QVERIFY(QTest::qWaitForWindowExposed(extract));
+        auto *field = findVisual(extract->contentItem(), "extractTarget");
+        auto *status = findVisual(extract->contentItem(), "extractTargetStatusText");
+        auto *start = findVisual(extract->contentItem(), "startExtract");
+        QVERIFY(field && status && start);
+        field->forceActiveFocus();
+        QTRY_VERIFY(field->hasActiveFocus());
+        QVERIFY(field->setProperty("text", denied));
+        QVERIFY(!start->isEnabled());
+        QTest::keyClick(extract, Qt::Key_Tab);
+        QTRY_VERIFY_WITH_TIMEOUT(
+            !controller->busy() && !controller->targetCheck().value("checking").toBool() &&
+                !controller->targetCheck().value("errorCode").toString().isEmpty(),
+            10000);
+        QCOMPARE(controller->targetCheck().value("path").toString(), QDir::cleanPath(denied));
+        QCOMPARE(controller->targetCheck().value("errorCode").toString(),
+                 QStringLiteral("output_io"));
+        QVERIFY(!controller->targetMatches(denied));
+        QVERIFY(!start->isEnabled());
+        QCOMPARE(status->property("text").toString(),
+                 controller->targetCheck().value("error").toString());
+        QVERIFY(!status->property("text").toString().isEmpty());
+        const auto tasks = controller->taskModel()->rowCount();
+        controller->startExtraction(denied, true, false, 0, false, false);
+        QCOMPARE(controller->taskModel()->rowCount(), tasks);
+        QVERIFY(!controller->busy());
+
+        QVERIFY(removeDeny());
+        denyPresent = false;
+        QVERIFY(probe.open(QIODevice::WriteOnly | QIODevice::NewOnly));
+        probe.close();
+        QVERIFY(probe.remove());
+        field->forceActiveFocus();
+        QTRY_VERIFY(field->hasActiveFocus());
+        QVERIFY(field->setProperty("text", owned.path()));
+        QVERIFY(!start->isEnabled());
+        QTest::keyClick(extract, Qt::Key_Tab);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->targetMatches(owned.path()),
+                                 10000);
+        QTRY_VERIFY(start->isEnabled());
+        extract->close();
+        window->close();
+#else
+        QSKIP("Windows ACL fixture required");
+#endif
     }
     void destinationStatusMatchesCreation_data() {
         QTest::addColumn<QString>("language");
