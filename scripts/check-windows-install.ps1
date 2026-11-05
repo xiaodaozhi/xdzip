@@ -4,6 +4,7 @@ $ErrorActionPreference = 'Stop'
 if ($env:CI -ne 'true' -or $env:RUNNER_OS -ne 'Windows') { throw 'Disposable Windows CI only' }
 . "$PSScriptRoot/windows-installer-paths.ps1"
 . "$PSScriptRoot/windows-association-handlers.ps1"
+. "$PSScriptRoot/windows-settings-uia.ps1"
 $classes = 'HKCU:\Software\Classes'
 $extensions = @('zip','tar','tgz','gz','7z','rar','cab','iso','udf')
 $formatFiles = @{zip='sample.zip';tar='sample.tar';tgz='sample.tgz';gz='sample.tar.gz';'7z'='sample.7z';rar='sample.rar';cab='sample.cab';iso='sample.iso';udf='sample.udf'}
@@ -228,6 +229,19 @@ function Test-InstalledDescriptionStartup {
         if ($command -ne ('"'+(Join-Path $testRoot 'xdzip-association.exe')+'" -- "%1"')) { throw 'Owned open command changed before description test' }
         $ownedContracts[$extension] = @{ icon=$icon; command=$command }
     }
+    $verifyContracts = {
+        foreach ($extension in $extensions) {
+            $progid = Get-ProgId $extension
+            if ((Get-Item "$classes\$progid\DefaultIcon").GetValue('') -ne $ownedContracts[$extension].icon -or
+                (Get-Item "$classes\$progid\shell\open\command").GetValue('') -ne $ownedContracts[$extension].command) {
+                throw 'Description sync changed an icon or command'
+            }
+            $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey("Software\Classes\.$extension\OpenWithProgids")
+            try { if (!$key -or $key.GetValueNames() -notcontains 'xdzip.QAForeign' -or $key.GetValueNames() -notcontains $progid) { throw 'Description sync changed application candidates' } }
+            finally { if ($key) { $key.Close() } }
+        }
+        Assert-Default
+    }
     $savedEnv = @{}
     foreach ($name in @('XDZIP_SETTINGS_PATH','XDZIP_LANGUAGE','XDZIP_ASSOCIATION_PROBE')) {
         $savedEnv[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
@@ -277,18 +291,40 @@ function Test-InstalledDescriptionStartup {
                     Start-Sleep -Milliseconds 100
                 }
                 if (!$matched) { throw "Installed description startup did not match: $($scenario.name)" }
-                foreach ($extension in $extensions) {
-                    $progid = Get-ProgId $extension
-                    if ((Get-Item "$classes\$progid\DefaultIcon").GetValue('') -ne $ownedContracts[$extension].icon -or
-                        (Get-Item "$classes\$progid\shell\open\command").GetValue('') -ne $ownedContracts[$extension].command) {
-                        throw 'Description sync changed an icon or command'
-                    }
-                    $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey("Software\Classes\.$extension\OpenWithProgids")
-                    try { if (!$key -or $key.GetValueNames() -notcontains 'xdzip.QAForeign' -or $key.GetValueNames() -notcontains $progid) { throw 'Description sync changed application candidates' } }
-                    finally { if ($key) { $key.Close() } }
-                }
-                Assert-Default
+                & $verifyContracts
                 $phases.Add('description-startup-'+$scenario.name)
+                if ($scenario.name -eq 'installed-zh') {
+                    # Drive the actual installed process, without changing the
+                    # profile or registrations behind the application's back.
+                    Initialize-XdzipSettingsUia
+                    $zh = Get-Content 'resources/i18n/zh-CN.json' -Raw -Encoding utf8 | ConvertFrom-Json
+                    $en = Get-Content 'resources/i18n/en-US.json' -Raw -Encoding utf8 | ConvertFrom-Json
+                    Open-XdzipSettingsGeneral $active $zh
+                    $switches = @(
+                        @{ from=$zh; to=$en; option=$zh.messages.'language.enUS'; language='en-US'; suffix=' archive' },
+                        @{ from=$en; to=$zh; option=$en.messages.'language.zhCN'; language='zh-CN'; suffix=' 压缩包' }
+                    )
+                    foreach ($switch in $switches) {
+                        Select-XdzipUiLanguage $active $switch.from $switch.option
+                        $null = Wait-XdzipOwnedUiElement $active $switch.to.messages.'settings.language' 'ControlType.ComboBox'
+                        $matched = $false
+                        for ($i=0; $i -lt 150; $i++) {
+                            $active.Refresh()
+                            if ($active.HasExited) { throw 'Installed product exited during language switch' }
+                            $matched = (Get-Content -LiteralPath $profile -Raw -Encoding utf8) -match
+                                ('(?m)^language='+[regex]::Escape($switch.language)+'\r?$')
+                            foreach ($extension in $extensions) {
+                                $actual = (Get-Item "$classes\$(Get-ProgId $extension)").GetValue('')
+                                if ($actual -cne ($extension.ToUpperInvariant()+$switch.suffix)) { $matched = $false }
+                            }
+                            if ($matched) { break }
+                            Start-Sleep -Milliseconds 100
+                        }
+                        if (!$matched) { throw "Live language switch did not synchronize all descriptions: $($switch.language)" }
+                        & $verifyContracts
+                        $phases.Add('description-live-'+$switch.language)
+                    }
+                }
             } finally {
                 if ($active) {
                     $active.Refresh()
