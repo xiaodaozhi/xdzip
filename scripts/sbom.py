@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
 from urllib.parse import quote
 import uuid
 
@@ -12,6 +13,16 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def properties(**values):
     return [{'name':'xdzip:'+name, 'value':str(value)} for name,value in values.items()]
+
+
+def cargo_license_expression(value):
+    """Convert Cargo's legacy slash-separated alternatives without guessing precedence."""
+    if '/' not in value:
+        return value
+    parts = value.split('/')
+    if len(parts) < 2 or any(not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9.+-]*', part) for part in parts):
+        raise ValueError('Unsupported legacy Cargo license expression: '+value)
+    return ' OR '.join(parts)
 
 
 def base(version, revision, scope):
@@ -37,7 +48,10 @@ def source_bom(inventory):
         if package.get('source_kind') == 'registry':
             component['purl'] = f'pkg:cargo/{quote(package["name"],safe="")}@{quote(package["version"],safe="")}'
         if package['license']:
-            component['licenses'] = [{'expression':package['license']}]
+            expression = cargo_license_expression(package['license'])
+            component['licenses'] = [{'expression':expression}]
+            if expression != package['license']:
+                component['properties'] += properties(cargo_license_raw=package['license'])
         bom['components'].append(component)
     bom['metadata']['lifecycles'] = [{'phase':'build'}]
     bom['dependencies'] = inventory['rust_dependencies']

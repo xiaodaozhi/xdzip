@@ -33,6 +33,10 @@ SDK 中实际文件可能与上游构建 SPDX 中的 SHA-1 不同，例如后续
 
 Rust 继续保存完整宿主构建图，并额外从实际静态库入口 xdzip-qt-bridge 沿普通依赖边生成 runtime candidates，排除 build、dev 和 proc-macro 工具及其依赖。这是潜在运行时输入，不能证明每个包的机器码最终保留；链接器裁剪、原生 C/C++ 与编译器运行库还需进一步核验。
 
+Cargo 旧式斜杠分隔的简单许可备选项在源码 CycloneDX 的表达式中转换为 `OR`，并以 `xdzip:cargo_license_raw` 保留上游原文；包含斜杠但无法明确判断优先级的写法直接拒绝。原始构建清单和通知不改写，标准 `AND`、`OR` 和 `WITH` 表达式保持不变。这是格式规范化，不代表已选择许可分支或批准发行。
+
+English: Simple legacy Cargo license alternatives separated by slashes are written with SPDX `OR` in the source CycloneDX, while `xdzip:cargo_license_raw` retains the original. Ambiguous slash expressions are rejected; standard `AND`, `OR` and `WITH` expressions and the original inventory remain unchanged. This is format normalization, not a license selection or release approval.
+
 ## 执行与交付
 
 ```sh

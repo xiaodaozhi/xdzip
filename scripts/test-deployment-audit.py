@@ -31,6 +31,32 @@ class AuditTests(unittest.TestCase):
         component, = source_bom(inventory)['components']
         self.assertEqual(component['licenses'], [{'expression': 'Apache-2.0 AND UnRAR'}])
 
+    def test_source_bom_converts_legacy_cargo_alternatives_and_keeps_raw_value(self):
+        inventory = {'version_source': {'build': 1}, 'display_version': '1.0.0',
+                     'revision': 'a'*40, 'dirty': False,
+                     'rust_packages': [
+                         {'name': 'legacy', 'version': '1.0.0', 'license': 'MIT/Apache-2.0',
+                          'bom_ref': 'cargo:legacy', 'source_kind': 'registry'},
+                         {'name': 'combined', 'version': '1.0.0',
+                          'license': '(Apache-2.0 OR MIT) AND BSD-3-Clause',
+                          'bom_ref': 'cargo:combined', 'source_kind': 'registry'},
+                         {'name': 'exception', 'version': '1.0.0',
+                          'license': 'Apache-2.0 WITH LLVM-exception',
+                          'bom_ref': 'cargo:exception', 'source_kind': 'registry'}],
+                     'rust_dependencies': [], 'qt_declared_product_modules': [],
+                     'qt_version': '6.8.2', 'assets': []}
+        legacy, combined, exception = source_bom(inventory)['components']
+        self.assertEqual(legacy['licenses'], [{'expression': 'MIT OR Apache-2.0'}])
+        self.assertIn({'name': 'xdzip:cargo_license_raw', 'value': 'MIT/Apache-2.0'},
+                      legacy['properties'])
+        self.assertEqual(combined['licenses'],
+                         [{'expression': '(Apache-2.0 OR MIT) AND BSD-3-Clause'}])
+        self.assertEqual(exception['licenses'],
+                         [{'expression': 'Apache-2.0 WITH LLVM-exception'}])
+        inventory['rust_packages'][0]['license'] = '(MIT/Apache-2.0) AND BSD-3-Clause'
+        with self.assertRaisesRegex(ValueError, 'Unsupported legacy Cargo license expression'):
+            source_bom(inventory)
+
     def test_native_tool_parsers_preserve_missing_imports_and_spaces(self):
         self.assertEqual(audit.windows_imports('    Qt6Core.dll\n  KERNEL32.dll\n  delay.dll\n Summary'), ['KERNEL32.dll','Qt6Core.dll','delay.dll'])
         self.assertEqual(audit.mac_imports('binary:\n\t@rpath/QtCore.framework/QtCore (compatibility version 6.0.0, current version 6.8.2)'), ['@rpath/QtCore.framework/QtCore'])
