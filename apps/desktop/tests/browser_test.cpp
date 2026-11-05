@@ -74,6 +74,7 @@
 #include <QTextStream>
 #include <QTimer>
 #include <QUuid>
+#include <QtQuickTest/quicktest.h>
 #include <QtTest>
 #include <atomic>
 #include <thread>
@@ -380,6 +381,27 @@ static void moveTestPointer(QQuickWindow *window, const QPoint &position) {
     if (nativeSystemPointer())
         QCursor::setPos(window->mapToGlobal(position));
     QTest::mouseMove(window, position);
+}
+
+// Keep a test-owned window above an obstruction without manipulating the
+// obstructing application. Only Windows native pointer tests use this fallback.
+static bool promoteObscuredHoverTarget(QQuickWindow *window, QQuickItem *item) {
+#ifdef Q_OS_WIN
+    if (QGuiApplication::platformName() == QStringLiteral("windows")) {
+        const auto center = item->mapToScene(QPointF(item->width() / 2, item->height() / 2));
+        if (QGuiApplication::topLevelAt(window->mapToGlobal(center.toPoint())) != window) {
+            window->setFlag(Qt::WindowStaysOnTopHint, true);
+            window->show();
+            window->raise();
+            window->requestActivate();
+            return true;
+        }
+    }
+#else
+    Q_UNUSED(window)
+    Q_UNUSED(item)
+#endif
+    return false;
 }
 
 static QJsonObject failureItemGeometry(QQuickItem *item) {
@@ -7296,6 +7318,53 @@ QtObject {
         QVERIFY2(scrollablePages >= 2, "Expected About and at least one other scrollable page");
         settings->close();
     }
+    void settingsHoverRecoversFromOwnedObstruction() {
+#ifdef Q_OS_WIN
+        if (QGuiApplication::platformName() != QStringLiteral("windows"))
+            QSKIP("Windows native pointer and window stacking required");
+        const auto originalCursor = QCursor::pos();
+        const auto restoreCursor = qScopeGuard([&] { QCursor::setPos(originalCursor); });
+        QQmlEngine engine;
+        QQmlComponent component(&engine);
+        component.setData(
+            "import QtQuick.Controls\n"
+            "Button { width: 120; height: 40; hoverEnabled: true; text: 'Owned fixture' }",
+            QUrl());
+        std::unique_ptr<QObject> object(component.create());
+        QVERIFY2(object, qPrintable(component.errorString()));
+        auto *button = qobject_cast<QQuickItem *>(object.get());
+        QVERIFY(button);
+        QQuickWindow window;
+        window.resize(320, 160);
+        button->setParentItem(window.contentItem());
+        button->setPosition(QPointF(40, 40));
+        window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        const QPoint target(100, 60);
+        QQuickWindow obstruction;
+        obstruction.setFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+        obstruction.resize(80, 80);
+        obstruction.setPosition(window.mapToGlobal(target) - QPoint(40, 40));
+        obstruction.show();
+        obstruction.raise();
+        QVERIFY(QTest::qWaitForWindowExposed(&obstruction));
+        QTRY_COMPARE(QGuiApplication::topLevelAt(window.mapToGlobal(target)), &obstruction);
+        QVERIFY(promoteObscuredHoverTarget(&window, button));
+        QTRY_COMPARE(QGuiApplication::topLevelAt(window.mapToGlobal(target)), &window);
+        QVERIFY(!promoteObscuredHoverTarget(&window, button));
+        moveTestPointer(&window, QPoint(10, 10));
+        QTRY_VERIFY(!button->property("hovered").toBool());
+        moveTestPointer(&window, target);
+        QTRY_VERIFY(QCursor::pos() == window.mapToGlobal(target) &&
+                    QGuiApplication::topLevelAt(QCursor::pos()) == &window &&
+                    button->property("hovered").toBool());
+        QTRY_VERIFY(!window.property("xdzipHoverRestoring").toBool());
+        moveTestPointer(&window, QPoint(10, 10));
+        QTRY_VERIFY(!button->property("hovered").toBool());
+#else
+        QSKIP("Windows native pointer and window stacking required");
+#endif
+    }
     void settingsChromeAndScrollbar_data() {
         settingsSelectorsHaveConsistentGeometry_data();
     }
@@ -7358,20 +7427,109 @@ QtObject {
         });
         if (nativeSystemPointer()) {
             settings->requestActivate();
-            QVERIFY(QTest::qWaitForWindowActive(settings));
+            // Windows can report stale Qt activation after another process
+            // takes the foreground. The actual pointer hit is checked below.
+            if (QGuiApplication::platformName() != QStringLiteral("windows"))
+                QVERIFY(QTest::qWaitForWindowActive(settings));
         }
+        const bool promoted = promoteObscuredHoverTarget(settings, other);
+        if (promoted)
+            qInfo() << "Promoted the owned settings test window above an obscured hover target";
+        auto *tabContent = other->property("contentItem").value<QQuickItem *>();
+        QVERIFY(tabContent);
+        QQuickItem *tabLabel = nullptr;
+        for (auto *child : tabContent->childItems()) {
+            if (child->property("text").toString() == qtTrId("settings.tabGeneral")) {
+                tabLabel = child;
+                break;
+            }
+        }
+        QVERIFY(tabLabel);
+        QTRY_COMPARE(tabLabel->property("font").value<QFont>().pixelSize(), qRound(13 * scale));
+        QTRY_VERIFY(qAbs(header->height() - header->implicitHeight()) < 1);
+        QTRY_VERIFY(qAbs(sidebar->width() -
+                         std::max(qreal(144),
+                                  qreal(57) + settings->property("sidebarWordWidth").toReal())) <
+                    1);
+        QVERIFY(QQuickTest::qWaitForPolish(settings, 3000));
+        QVERIFY(!QQuickTest::qIsPolishScheduled(settings));
+        QCOMPARE(other->height(), other->implicitHeight());
+        QCOMPARE(other->y(), selected->y() + selected->height());
+        class HoverTrace final : public QObject {
+          public:
+            QQuickWindow *window = nullptr;
+            QQuickItem *selected = nullptr;
+            QQuickItem *other = nullptr;
+            QJsonArray events;
+            bool eventFilter(QObject *watched, QEvent *event) override {
+                if (watched != window || event->type() != QEvent::MouseMove)
+                    return false;
+                const auto *mouse = static_cast<QMouseEvent *>(event);
+                const auto global = QCursor::pos();
+                if (events.size() == 24)
+                    events.removeAt(0);
+                events.append(QJsonObject{
+                    {"local", QJsonArray{mouse->position().x(), mouse->position().y()}},
+                    {"global_delta", QJsonArray{mouse->globalPosition().x() - global.x(),
+                                                mouse->globalPosition().y() - global.y()}},
+                    {"spontaneous", event->spontaneous()},
+                    {"selected_hovered", selected->property("hovered").toBool()},
+                    {"other_hovered", other->property("hovered").toBool()}});
+                return false;
+            }
+        } trace;
+        trace.window = settings;
+        trace.selected = selected;
+        trace.other = other;
+        qApp->installEventFilter(&trace);
+        const auto removeTrace = qScopeGuard([&] { qApp->removeEventFilter(&trace); });
         const auto hoverItem = [settings](QQuickItem *item) {
-            moveTestPointer(
-                settings,
-                item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint());
-            return item->property("hovered").toBool();
+            const auto point =
+                item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint();
+            moveTestPointer(settings, point);
+            return item->property("hovered").toBool() &&
+                   (!nativeSystemPointer() ||
+                    (QCursor::pos() == settings->mapToGlobal(point) &&
+                     QGuiApplication::topLevelAt(QCursor::pos()) == settings));
         };
-        QTRY_VERIFY_WITH_TIMEOUT(hoverItem(other), 1500);
+        const auto hoverFailure = [settings, &trace](QQuickItem *item) {
+            const auto scene = item->mapToScene(QPointF(item->width() / 2, item->height() / 2));
+            const auto expected = settings->mapToGlobal(scene.toPoint());
+            const auto actual = QCursor::pos();
+            const auto local = item->mapFromScene(settings->mapFromGlobal(actual));
+            const QJsonObject state{
+                {"target", failureItemGeometry(item)},
+                {"target_hovered", item->property("hovered").toBool()},
+                {"target_enabled", item->isEnabled()},
+                {"target_contains_pointer", item->contains(local)},
+                {"pointer_matches_target", actual == expected},
+                {"pointer_delta", QJsonArray{actual.x() - expected.x(), actual.y() - expected.y()}},
+                {"events", trace.events},
+                {"hover_restoring", settings->property("xdzipHoverRestoring").toBool()},
+                {"hover_refresh_pending", settings->property("xdzipHoverRefreshPending").toBool()}};
+            return saveNativeFailureAudit(
+                settings, qEnvironmentVariable("XDZIP_SETTINGS_HOVER_FAILURE_AUDIT"),
+                "settings-sidebar", state);
+        };
+        if (!QTest::qWaitFor([&] { return hoverItem(other); }, 1500)) {
+            const auto failure = hoverFailure(other);
+            QFAIL(qPrintable(failure));
+        }
+#ifdef Q_OS_WIN
+        if (QGuiApplication::platformName() == QStringLiteral("windows"))
+            QTRY_VERIFY(!settings->property("xdzipHoverRestoring").toBool());
+#endif
         QCOMPARE(otherBackground->property("color").value<QColor>(),
                  QColor(dark ? "#2B374C" : "#EDF2FF"));
-        QTRY_VERIFY_WITH_TIMEOUT(hoverItem(selected), 1500);
+        if (!QTest::qWaitFor([&] { return hoverItem(selected); }, 1500)) {
+            const auto failure = hoverFailure(selected);
+            QFAIL(qPrintable(failure));
+        }
+        QTRY_VERIFY_WITH_TIMEOUT(!other->property("hovered").toBool(), 1500);
         QCOMPARE(selectedBackground->property("color").value<QColor>(),
                  QColor(dark ? "#30436A" : "#E7EDFF"));
+        moveTestPointer(settings, QPoint(settings->width() - 8, header->height() / 2));
+        QTRY_VERIFY_WITH_TIMEOUT(!selected->property("hovered").toBool(), 1500);
         const auto captures = qEnvironmentVariable("XDZIP_SETTINGS_CHROME_AUDIT");
         if (!captures.isEmpty()) {
             QTRY_VERIFY_WITH_TIMEOUT(hoverItem(other), 1500);

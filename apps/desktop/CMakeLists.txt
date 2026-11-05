@@ -231,7 +231,7 @@ if(BUILD_TESTING)
     add_dependencies(xdzip-browser-tests xdzip-m2-fixtures)
     target_compile_definitions(xdzip-browser-tests PRIVATE XDZIP_FIXTURES="${PROJECT_SOURCE_DIR}/tests/fixtures/zip" XDZIP_M2_FIXTURE="${XDZIP_M2_FIXTURE}" XDZIP_M2_HIERARCHICAL="${XDZIP_M2_HIERARCHICAL}")
     target_link_libraries(xdzip-browser-tests PRIVATE xdzip-reader-rust
-        Qt6::Widgets Qt6::Network Qt6::Quick Qt6::QuickControls2 Qt6::Test)
+        Qt6::Widgets Qt6::Network Qt6::Quick Qt6::QuickControls2 Qt6::QuickTest Qt6::Test)
     add_test(NAME qt_zip_browser COMMAND Python3::Interpreter
         "${PROJECT_SOURCE_DIR}/scripts/run-browser-suite.py"
         --executable "$<TARGET_FILE:xdzip-browser-tests>"
