@@ -12,4 +12,3 @@ with utf8_console():
     subprocess.run(['cmake','-S',str(root),'-B',str(out),'-G','Ninja','-DCMAKE_BUILD_TYPE=Release',f'-DCMAKE_PREFIX_PATH={qt}','-DXDZIP_BUILD_DESKTOP_PREVIEW=ON','-DXDZIP_BUILD_QT_PROBE=ON','-DBUILD_TESTING=ON'],check=True)
     subprocess.run(['cmake','--build',str(out),'--target','xdzip-update-tests','--parallel','3'],check=True)
     check_dependencies(out,require_compiled=True)
-
