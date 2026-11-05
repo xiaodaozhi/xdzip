@@ -1175,6 +1175,17 @@ class DeliveryTests(unittest.TestCase):
             copyright_notice = output/'xdzip-COPYRIGHT.txt'
             self.assertEqual(copyright_notice.read_bytes(), (ROOT/'COPYRIGHT').read_bytes())
             self.assertEqual(hashes['xdzip-COPYRIGHT.txt'], hashlib.sha256(copyright_notice.read_bytes()).hexdigest())
+            qt_notice = output/'Qt-6.8.2/README.md'
+            self.assertIn('This software is based in part on the work of the FreeType Team.',
+                          qt_notice.read_text(encoding='utf-8'))
+            self.assertIn('本软件部分基于 FreeType 团队的工作。', qt_notice.read_text(encoding='utf-8'))
+            self.assertIn('This software is based in part on the work of the Independent JPEG Group.',
+                          qt_notice.read_text(encoding='utf-8'))
+            self.assertIn('本软件部分基于 Independent JPEG Group 的工作。', qt_notice.read_text(encoding='utf-8'))
+            self.assertIn('This software includes code derived from Imlib2.',
+                          qt_notice.read_text(encoding='utf-8'))
+            self.assertIn('本软件包含源自 Imlib2 的代码。', qt_notice.read_text(encoding='utf-8'))
+            self.assertEqual(hashes['Qt-6.8.2/README.md'], hashlib.sha256(qt_notice.read_bytes()).hexdigest())
             for name in ['README.md', 'sources.json', 'UnRAR-7.3.1-license.txt']:
                 path = 'rar-wire-mappings/'+name
                 self.assertEqual(hashes[path], hashlib.sha256((output/path).read_bytes()).hexdigest())

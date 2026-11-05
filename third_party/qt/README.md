@@ -4,6 +4,12 @@ xdzip dynamically links Qt 6.8.2 Core, Gui, Network, Qml, Quick, QuickControls2 
 
 Qt is available under commercial terms or applicable LGPL/GPL terms. For the runtime modules listed above, this distribution uses the LGPL-3.0 option. The LGPL-3.0 and its referenced GPL-3.0 license texts accompany this notice. Qt's bundled third-party components may have different licenses; their source declarations and license texts are provided in `Qt-runtime/` within the same notices directory. Qt build and test tools are not application runtime features.
 
+This software is based in part on the work of the FreeType Team.
+
+This software is based in part on the work of the Independent JPEG Group.
+
+This software includes code derived from Imlib2.
+
 Qt's original source archive: https://download.qt.io/archive/qt/6.8/6.8.2/single/qt-everywhere-src-6.8.2.tar.xz
 
 Version-specific corresponding-source materials, including the application source, fixed Qt module archives, applicable patches and rebuild instructions, are provided through the project release channel: https://github.com/xiaodaozhi/xdzip/releases
@@ -23,6 +29,12 @@ These notices identify the applicable licensing and source materials; they do no
 # Qt 6.8.2 运行时许可说明
 
 xdzip 动态链接 Qt 6.8.2 的 Core、Gui、Network、Qml、Quick、QuickControls2、Widgets，以及应用所需的 QML 模块和平台插件。Qt 版权属于 The Qt Company Ltd. 及其他贡献者。上述运行时模块采用 LGPL-3.0 分支，同目录附带 LGPL-3.0 和其引用的 GPL-3.0 许可原文。Qt 内嵌的第三方组件可能使用其他许可，同一 notices 目录下的 `Qt-runtime/` 提供对应声明和许可文本。
+
+本软件部分基于 FreeType 团队的工作。
+
+本软件部分基于 Independent JPEG Group 的工作。
+
+本软件包含源自 Imlib2 的代码。
 
 上方列出 Qt 原始源码、项目发行页和许可入口。对应版本的源码材料包括应用源码、固定 Qt 模块归档、适用补丁和重建说明。用户可以构建并使用接口兼容的修改版 Qt；修改 macOS 应用副本后可能需要重新进行本地 ad-hoc 完整性签名，xdzip 不要求用户持有项目的私有签名密钥，也不限制为调试 Qt 修改而进行的逆向工程。本说明不能单独证明所有第三方源码及再分发义务已经完成。
 
