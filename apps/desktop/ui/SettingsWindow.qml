@@ -241,7 +241,7 @@ OperationWindow {
                         (settingsError.visible ? settingsError.implicitHeight + Theme.settingsPageSectionGap : 0) :
                     pageContent.implicitHeight
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                ScrollBar.vertical: ScrollBar { objectName: "settingsVerticalScrollBar" }
+                ScrollBar.vertical.objectName: "settingsVerticalScrollBar"
                 ColumnLayout {
                     id: pageContent
                     objectName: "settingsPageContent"

@@ -7379,6 +7379,22 @@ QtObject {
             check->mapToItem(initialFlickContent, QPointF(0, check->height())).y();
         const qreal maxScroll =
             std::max(qreal(0), flick->property("contentHeight").toReal() - flick->height());
+        QVERIFY(maxScroll > 0);
+        QTRY_VERIFY(qAbs(bar->mapToItem(scroll, QPointF()).x() + bar->width() - scroll->width()) <
+                    1.);
+        QTRY_VERIFY(qAbs(bar->height() - scroll->height()) < 1.);
+        QVERIFY(flick->setProperty("contentY", 0));
+        auto *thumb = bar->property("contentItem").value<QQuickItem *>();
+        QVERIFY(thumb);
+        QTRY_VERIFY(thumb->height() > 6 && thumb->height() < bar->height());
+        const auto thumbStart =
+            thumb->mapToScene(QPointF(thumb->width() / 2, thumb->height() / 2)).toPoint();
+        const auto thumbEnd = thumbStart + QPoint(0, qRound((bar->height() - thumb->height()) / 2));
+        QTest::mousePress(settings, Qt::LeftButton, Qt::NoModifier, thumbStart);
+        QTest::mouseMove(settings, thumbEnd, 20);
+        QTest::mouseRelease(settings, Qt::LeftButton, Qt::NoModifier, thumbEnd);
+        QTRY_VERIFY(flick->property("contentY").toReal() > 0);
+        QVERIFY(thumb->mapToScene(QPointF()).y() > thumbStart.y() - thumb->height() / 2);
         const qreal visibleScroll =
             std::clamp(checkBottom - flick->height() + 2., qreal(0), maxScroll);
         QVERIFY(flick->setProperty("contentY", visibleScroll));

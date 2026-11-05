@@ -18,6 +18,10 @@ English: Windows installed per-format association descriptions follow the applic
 
 关于页的更新状态文字同时作为原生辅助功能名称，随检查、下载、安装、成功或失败状态及语言变化同步更新；辅助技术读取的文字与界面显示一致。
 
+设置正文的竖向滚动条位于视口右侧，轨道覆盖视口高度；滑块随滚动移动，也可拖动控制正文滚动。
+
+English: The settings content's vertical scrollbar sits at the right edge and spans the viewport; its thumb follows the scroll position and can be dragged to scroll.
+
 所有产品静态文字通过 `resources/i18n/zh-CN.json` 和 `en-US.json` 的稳定 ID 引用；QML 使用 `qsTrId`，C++ 使用 `qtTrId`。协议码、文件名、路径和用户内容不翻译。语言默认简体中文，支持 English (US)；字号支持 100%、125%、150%，历史 200% 读取为 150%。系统文件选择器遵循系统语言，独立于应用语言。macOS 包声明 zh-Hans、en 并允许混合本地化，Qt 标准控件按系统 locale 加载可用翻译，不修改用户的 AppleLanguages。
 
 验收覆盖六个标签、无 footer、各入口及跨会话关于页、即时保存与重开、保存失败回滚、语言即时切换、主题和字号、九类关联的系统确认与刷新、代理与镜像输入、更新各状态、两种语言及 150% 字号。必须通过 QAccessibleActionInterface 实际操作单选和开关，检查模型、互斥及事件；各平台真实桌面和系统默认应用行为按需检查，HTML 与组件测试不冒充未执行的桌面操作。测试截图和证据仅写 build/ 或 CI 工件。
