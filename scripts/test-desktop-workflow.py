@@ -304,7 +304,7 @@ class WorkflowTests(unittest.TestCase):
         workflow = self.workflow('windows')
         workflow.args.kind = 'runtime'
         workflow.output.mkdir(parents=True)
-        for required in (workflow.tests, workflow.qt/'bin/Qt6Test.dll',
+        for required in (workflow.tests, workflow.qt/'bin/Qt6Test.dll', workflow.qt/'bin/Qt6QuickTest.dll',
                          workflow.qt/'plugins/platforms/qoffscreen.dll'):
             required.parent.mkdir(parents=True, exist_ok=True)
             required.write_bytes(b'fixture')
@@ -321,6 +321,19 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(len(set(directories)), 2)
         self.assertTrue(all(path.parent == workflow.output and not path.exists() for path in directories))
         self.assertEqual(evidence.read_text(), 'previous evidence')
+
+    def test_windows_verification_rejects_missing_quick_test_library(self):
+        workflow = self.workflow('windows')
+        workflow.args.kind = 'runtime'
+        for required in (workflow.tests, workflow.qt/'bin/Qt6Test.dll',
+                         workflow.qt/'plugins/platforms/qoffscreen.dll'):
+            required.parent.mkdir(parents=True, exist_ok=True)
+            required.write_bytes(b'fixture')
+        with patch.object(workflow, 'doctor'), patch.object(workflow, 'runtime_receipt', return_value={'source': self.source}), \
+                patch.object(workflow, 'script') as script:
+            with self.assertRaisesRegex(ValueError, 'Quick Test'):
+                workflow.verify()
+            script.assert_not_called()
 
     def test_all_verification_rejects_receipt_from_another_platform(self):
         workflow = self.workflow('linux')
