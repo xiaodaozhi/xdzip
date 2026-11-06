@@ -14,6 +14,9 @@ OperationWindow {
     property var updater: typeof UpdateService === "undefined" ? null : UpdateService // qmllint disable unqualified
     readonly property var associations: typeof FileAssociationService === "undefined" ? null : FileAssociationService // qmllint disable unqualified
     readonly property string updateState: updater ? updater.state : "unavailable"
+    property string updatePlatform: Qt.platform.os
+    readonly property bool manualUpdate: updater && ["available", "downloaded"].includes(updateState) && !updater.canInstall
+    readonly property bool macosManualUpdate: manualUpdate && updatePlatform === "osx"
     readonly property var sidebarLabels: [qsTrId("settings.tabAppearance"), qsTrId("settings.tabGeneral"),
                                            qsTrId("settings.tabPrivacy"), qsTrId("settings.tabAssociations"),
                                            qsTrId("settings.tabNetwork"), qsTrId("settings.tabAbout")]
@@ -86,7 +89,8 @@ OperationWindow {
     onActiveFocusItemChanged: if (visible && activeFocusItem && activeFocusItem !== pageLoader) {
         const focusedItem = activeFocusItem;
         const updateButtonWithoutKeyboardNavigation = ["aboutCheckUpdate", "aboutCancelCheck", "aboutCancelUpdate",
-            "aboutInstallUpdate", "aboutRecoveryUpdate", "aboutOpenDownload", "aboutOpenDownloadSecondary"].includes(focusedItem.objectName) &&
+            "aboutInstallUpdate", "aboutRecoveryUpdate", "aboutOpenDownload", "aboutOpenDownloadSecondary",
+            "aboutOpenReleaseSecondary"].includes(focusedItem.objectName) &&
             (focusedItem.focusReason === Qt.MouseFocusReason || focusedItem.focusReason === Qt.OtherFocusReason);
         if (!updateButtonWithoutKeyboardNavigation) Qt.callLater(() => {
             if (root.visible && root.activeFocusItem === focusedItem) root.revealFocus(pageScroll);
@@ -587,7 +591,7 @@ OperationWindow {
                     id: noteMeasures
                     onItemAdded: updateMeasurements.revision++
                     onItemRemoved: updateMeasurements.revision++
-                    model: [qsTrId("update.manual"), qsTrId("update.unsigned")]
+                    model: [qsTrId("update.manual"), qsTrId("update.manualMacos"), qsTrId("update.unsigned")]
                     delegate: Text {
                         required property string modelData
                         width: Math.max(1, updateSection.width)
@@ -722,18 +726,31 @@ OperationWindow {
                     Accessible.name: qsTrId("update.progress")
                 }
                 PageNote {
+                    id: updateNote
+                    objectName: "aboutUpdateNote"
                     visible: root.updater && ["available", "downloaded"].includes(root.updateState) && !root.updater.canInstall
-                    text: root.updater && !root.updater.trusted ? qsTrId("update.unsigned") : qsTrId("update.manual")
+                    text: root.updater && !root.updater.trusted ? qsTrId("update.unsigned") :
+                          root.macosManualUpdate ? qsTrId("update.manualMacos") : qsTrId("update.manual")
                 }
                 RowLayout {
                     objectName: "aboutUpdateActions"
                     Layout.fillWidth: true
                     visible: root.updater && root.updater.downloaded &&
-                             !(root.updateState === "downloaded" && !root.updater.canInstall)
+                             !(root.updateState === "downloaded" && !root.updater.canInstall) ||
+                             root.macosManualUpdate && root.updater.trusted
                     Item { Layout.fillWidth: true }
+                    OperationButton {
+                        id: openReleaseSecondary
+                        objectName: "aboutOpenReleaseSecondary"
+                        visible: root.macosManualUpdate && root.updater.trusted
+                        text: qsTrId("update.release")
+                        onClicked: root.updater.openReleasePage()
+                    }
                     OperationButton {
                         id: openUpdateSecondary
                         objectName: "aboutOpenDownloadSecondary"
+                        visible: root.updater && root.updater.downloaded &&
+                                 !(root.updateState === "downloaded" && !root.updater.canInstall)
                         text: qsTrId("update.openDownload")
                         onClicked: root.updater.openDownloadFolder()
                     }

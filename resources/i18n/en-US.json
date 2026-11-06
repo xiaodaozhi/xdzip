@@ -530,6 +530,7 @@
     "update.progress": "Updating archive",
     "update.unsigned": "The update source could not be verified. Download it manually from the release page.",
     "update.manual": "This copy requires manual installation of updates.",
+    "update.manualMacos": "The installation identity, proxy settings, or update source do not meet the requirements for automatic installation. Download the DMG for this release from the release page. To use app.zip, extract xdzip.app and move it out of the download folder first, then quit xdzip and replace the copy in Applications. Downloading does not complete installation; an unnotarized build may trigger a macOS security warning.",
     "update.cancel": "Cancel",
     "update.cancelCheck": "Cancel Check",
     "update.cancelDownload": "Cancel Download",

@@ -5829,6 +5829,7 @@ QtObject {
             auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
             QVERIFY(settings &&
                     settings->setProperty("updater", QVariant::fromValue(service.get())));
+            QVERIFY(settings->setProperty("updatePlatform", "osx"));
             QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
             settings->setProperty("currentTab", 5);
             QVERIFY(QTest::qWaitForWindowExposed(settings));
@@ -5842,9 +5843,11 @@ QtObject {
             auto *recovery = findVisual(settings->contentItem(), "aboutRecoveryUpdate");
             auto *open = findVisual(settings->contentItem(), "aboutOpenDownload");
             auto *openSecondary = findVisual(settings->contentItem(), "aboutOpenDownloadSecondary");
+            auto *openReleaseSecondary = findVisual(settings->contentItem(), "aboutOpenReleaseSecondary");
+            auto *note = findVisual(settings->contentItem(), "aboutUpdateNote");
             auto *progress = findVisual(settings->contentItem(), "aboutUpdateProgress");
             QVERIFY(status && check && cancelCheck && cancel && actions && install && recovery &&
-                    open && openSecondary && progress);
+                    open && openSecondary && openReleaseSecondary && note && progress);
             auto *statusAccessible = QAccessible::queryAccessibleInterface(status);
             QVERIFY(statusAccessible);
             QCOMPARE(install->parentItem(), check->parentItem());
@@ -5900,7 +5903,19 @@ QtObject {
                                  state == "available" || state == "downloaded");
                         QCOMPARE(recovery->isVisible(), state == "recovery_required");
                         QCOMPARE(open->isVisible(), false);
-                        QCOMPARE(actions->isVisible(), state == "downloaded");
+                        QCOMPARE(actions->isVisible(), state == "downloaded" ||
+                                                           (state == "available" && service->property("trusted").toBool() &&
+                                                            !service->property("canInstall").toBool()));
+                        QCOMPARE(openReleaseSecondary->isVisible(),
+                                 (state == "available" || state == "downloaded") &&
+                                 service->property("trusted").toBool() &&
+                                 !service->property("canInstall").toBool());
+                        QCOMPARE(note->isVisible(), (state == "available" || state == "downloaded") &&
+                                                       !service->property("canInstall").toBool());
+                        if ((state == "available" || state == "downloaded") &&
+                            service->property("trusted").toBool() &&
+                            !service->property("canInstall").toBool())
+                            QCOMPARE(note->property("text").toString(), qtTrId("update.manualMacos"));
                         if (state == "downloading")
                             QCOMPARE(cancel->property("text").toString(),
                                      qtTrId("update.cancelDownload"));
@@ -5971,6 +5986,9 @@ QtObject {
             QTRY_VERIFY(open->isVisible());
             QVERIFY(QMetaObject::invokeMethod(open, "click"));
             QCOMPARE(service->property("opens").toInt(), 1);
+            QTRY_VERIFY(openReleaseSecondary->isVisible());
+            QVERIFY(QMetaObject::invokeMethod(openReleaseSecondary, "click"));
+            QCOMPARE(service->property("releases").toInt(), 2);
             service->setProperty("canInstall", true);
             QTRY_VERIFY(install->isVisible() && openSecondary->isVisible());
             QCOMPARE(install->property("text").toString(), qtTrId("update.installNow"));
@@ -13471,6 +13489,64 @@ QtObject {
         QCOMPARE(controller->selectedCount(), selected);
         QCOMPARE(controller->directoryId(), QString());
         QTest::keyClick(window, Qt::Key_Escape);
+    }
+    void directoryNavigationKeepsCommittedPresentation_data() {
+        QTest::addColumn<QString>("view");
+        QTest::addColumn<QString>("activation");
+        for (const auto &view : {QStringLiteral("list"), QStringLiteral("grid")})
+            for (const auto &activation : {QStringLiteral("click"), QStringLiteral("double-click"),
+                                           QStringLiteral("keyboard")})
+                QTest::newRow(qPrintable(view + "-" + activation)) << view << activation;
+    }
+    void directoryNavigationKeepsCommittedPresentation() {
+        QFETCH(QString, view);
+        QFETCH(QString, activation);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/navigation.zip"));
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 5000);
+        QVERIFY(window->setProperty("viewMode", view));
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *tree = findVisual(window->contentItem(), "directoryTree");
+        auto *loading = findVisual(window->contentItem(), "archiveLoadingOverlay");
+        QVERIFY(tree && loading && !loading->isVisible());
+        auto *disclosure = findVisual(window->contentItem(), "directoryDisclosure-d1");
+        QVERIFY(disclosure);
+        QTest::mouseClick(
+            window, Qt::LeftButton, Qt::NoModifier,
+            disclosure->mapToScene(QPointF(disclosure->width() / 2, disclosure->height() / 2))
+                .toPoint());
+        QQuickItem *target = nullptr;
+        QTRY_VERIFY((target = findVisual(window->contentItem(), "directory-d2")));
+        QSignalSpy loadingChanges(loading, &QQuickItem::visibleChanged);
+        const auto targetPoint = target->mapToScene(QPointF(80, target->height() / 2)).toPoint();
+        if (activation == "click") {
+            QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, targetPoint);
+        } else if (activation == "double-click") {
+            QTest::mouseDClick(window, Qt::LeftButton, Qt::NoModifier, targetPoint);
+        } else {
+            auto *selection = qobject_cast<QItemSelectionModel *>(
+                tree->property("selectionModel").value<QObject *>());
+            QVERIFY(selection);
+            const auto matches = controller->directories()->match(
+                controller->directories()->index(0, 0), Qt::UserRole,
+                target->property("nodeId"), 1, Qt::MatchRecursive);
+            QCOMPARE(matches.size(), 1);
+            selection->setCurrentIndex(matches.first(), QItemSelectionModel::NoUpdate);
+            tree->forceActiveFocus();
+            QTest::keyClick(window, Qt::Key_Return);
+        }
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 5000);
+        QCOMPARE(controller->location(), QStringLiteral("photos/2026/"));
+        QCOMPARE(controller->total(), 2);
+        QVERIFY(!loading->isVisible());
+        QCOMPARE(loadingChanges.count(), 0);
+        QVERIFY(findVisual(window->contentItem(),
+                           view == "grid" ? "grid-entry-0" : "entry-0-0"));
     }
     void treeExpansionAndColumnInteraction() {
         QQmlApplicationEngine engine;
