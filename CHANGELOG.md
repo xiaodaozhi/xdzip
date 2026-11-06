@@ -2,6 +2,14 @@
 
 ## 未发布
 
+## 0.1.0
+
+- 发布首个稳定版，提供 Windows、macOS 和 Linux 的原生安装包或便携包，并支持符合条件的安装版主动更新。
+- 改进设置窗口滚动布局、更新状态辅助功能和系统代理支持，修复原生悬停问题。
+- 修复第三方通知收集，规范源码 SBOM 的许可证表达式及 Rust 运行时候选依赖图。
+
+平台支持、已知限制及发行材料见[发布说明](release-notes/0.1.0.md)和 [GitHub Release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.1.0)。
+
 ## 0.1.0-alpha.9
 
 - Windows 安装器和便携包不再携带三份 Windows SDK 图形编译 DLL，更新安装时清理旧版随包文件。
