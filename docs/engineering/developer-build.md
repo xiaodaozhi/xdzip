@@ -2,7 +2,7 @@
 
 本文是三平台环境准备、构建、测试、打包和验证的统一入口。共用编排由 [scripts/desktop.py](../../scripts/desktop.py) 实现；平台文档仅补充部署布局、工具行为和系统限制，不再另维护一套日常命令。
 
-开发构建仍标记实验性。能力和限制见根目录 [README](../../README.md)，支持范围见[支持政策](support-policy.md)。工作包开发与验收完成不代表正式发行获批，许可来源与再分发义务在[发行审查 #4](https://github.com/xiaodaozhi/xdzip/issues/4)跟踪。
+开发构建仍标记实验性，不能当作正式 Release 安装包。能力和限制见根目录 [README](../../README.md)，支持范围见[支持政策](support-policy.md)。正式 `v0.1.0` 的历史发行审查见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)；未来版本须按具体候选重新建立发行审查记录。
 
 ## 环境与入口
 

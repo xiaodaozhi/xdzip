@@ -61,7 +61,9 @@
 
 ## 获取与安装
 
-应用安装包与校验清单通过 [GitHub Releases](https://github.com/xiaodaozhi/xdzip/releases)提供。Windows 安装包保留应用目录内 VC++ 运行库，不携带 Windows SDK 图形编译库或软件 OpenGL 回退库；Mac 包使用 ad-hoc 完整性签名。发行材料要求与更新协议见[发布说明](docs/engineering/release-protocol.md)。
+当前稳定版为 [`v0.1.0`](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.1.0)，build 23。应用安装包、便携包、校验清单和平台材料通过 [GitHub Releases](https://github.com/xiaodaozhi/xdzip/releases)提供。Windows 安装包保留应用目录内 VC++ 运行库，不携带 Windows SDK 图形编译库或软件 OpenGL 回退库；Mac 包使用 ad-hoc 完整性签名。发行材料要求与更新协议见[发布说明](docs/engineering/release-protocol.md)。
+
+正式 Release 不提供单独的对应源码压缩包；源码交付脚本只用于本地审查和重建验证，具体边界见[源码交付说明](docs/engineering/source-delivery.md)。这不改变组件许可或可能适用的源码、重链接和通知义务。GitHub 为标签自动生成的源码快照不属于 Release 附件。
 
 可按需手动运行 [Qt components](https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml) 工作流，获取 Windows、Linux 开发工件，或从源码构建。选择对应提交且成功完成的手动运行，在页面底部 **Artifacts** 下载对应平台工件；下载可能需要登录 GitHub，工件通常保留 14 天。日常 CI 不自动生成开发包。
 
@@ -125,4 +127,4 @@ Windows 在 MSVC x64 开发环境运行，可将 `python3` 换为 `python`；mac
 
 Windows 包中的 Microsoft 运行库保留各自原始条款，安装器展示 VC++ 运行库协议，便携包附带同一文本与双语说明。普通用户无需安装 Visual Studio；开发者的 Community 免费许可、GitHub 托管构建依据及再分发要求见 [Windows 许可说明](docs/engineering/windows-licensing.md)。
 
-组件来源与再分发义务按实际发布包逐版核对，复核记录见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4)，不因源码开源或 CI 通过而自动批准后续发行。
+`v0.1.0` 的组件来源与再分发复核记录见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)，两项历史发行审查已关闭。未来版本仍须绑定新的候选提交、实际包和校验清单重新审查，不因源码开源、已有 Release 或 CI 通过而自动批准后续发行。

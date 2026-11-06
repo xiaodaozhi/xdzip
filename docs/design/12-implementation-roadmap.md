@@ -2,7 +2,7 @@
 
 ## 1. 当前实现与后续设计
 
-当前产品已实现双句柄运行时、Qt 控制器、十万条有界查询、ZIP／TAR／TAR.GZ 浏览与创建／解压，以及设置、系统集成和开发安装器。能力限制以根目录 [README](../../README.md)及对应工程契约为准；WP-12 开发与验收完成记录见 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)，发行许可复核另见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4)。
+当前产品已实现双句柄运行时、Qt 控制器、十万条有界查询、ZIP／TAR／TAR.GZ 浏览与创建／解压，以及设置、系统集成和开发安装器。`v0.1.0` stable 已公开，能力限制以根目录 [README](../../README.md)及对应工程契约为准；WP-12 开发与验收完成记录见 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)，`v0.1.0` 发行许可与收尾见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)。
 
 实际目录及依赖见[仓库结构](../engineering/repository-layout.md)。查询和索引目前在 runtime 中，平台文件授权与提交在 io 中；独立索引／平台 crate、磁盘索引、内容预览及插件宿主仍为后续设计，不能从目标模块图推断它们已存在。
 

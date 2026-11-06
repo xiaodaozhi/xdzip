@@ -1,6 +1,6 @@
 # 原生运行库来源与通知
 
-本契约覆盖实际包中的非 Qt 原生运行库，与[运行时归属](runtime-attribution.md)及[对应源码](source-delivery.md)共同使用。源版本、文件身份、许可条件和实际履约分别核对，不能将供应方文件哈希当作许可批准。候选结论和剩余补证登记在 [#4](https://github.com/xiaodaozhi/xdzip/issues/4)，证据只生成到 build/ 或 CI 工件。
+本契约覆盖实际包中的非 Qt 原生运行库，与[运行时归属](runtime-attribution.md)及[对应源码](source-delivery.md)共同使用。源版本、文件身份、许可条件和实际履约分别核对，不能将供应方文件哈希当作许可批准。`v0.1.0` 的历史候选结论和补证记录在 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 与 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)；未来候选使用新的发行 issue，证据只生成到 build/ 或 CI 工件。
 
 | 组件 | 原始依据与交付材料 | 核对边界 |
 | --- | --- | --- |

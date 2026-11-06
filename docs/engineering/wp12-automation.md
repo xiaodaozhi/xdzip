@@ -86,4 +86,4 @@ python3 scripts/run-performance-suite.py --app /path/to/xdzip \
 
 scripts/assemble-wp12-evidence.py 自动组装 CI、源码、Qt 替换、性能和三平台包记录，再调用严格门槛，不需要人工拼接 JSON。scripts/wp12-readiness.py 校验每项证据路径、哈希、提交、平台覆盖和类型，拒绝脏构建、混合身份、缺失源码加载标记及不足的采样。所有自动项齐全才输出 automatic_complete=true；release_ready 始终为 false，--require-release-pass 在外部门槛未完时拒绝通过。
 
-上述汇总工具保留供需要完整历史范围时自愿使用，不是每次提交或候选的必填清单。自动项完成与正式发行获批分别判断。WP-12 的八项人工验收及支持政策已按所有者结论收口，见 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)与[支持政策](support-policy.md)；后续不因重建证据而要求重复。来源与许可复核继续由[发行审查 #4](https://github.com/xiaodaozhi/xdzip/issues/4)跟踪。新候选或平台扩展按实际变更选择桌面和性能复验，脚本不代替所有者的发行决定或许可复核结论。
+上述汇总工具保留供需要完整历史范围时自愿使用，不是每次提交或候选的必填清单。自动项完成与正式发行获批分别判断。WP-12 的八项人工验收及支持政策已按所有者结论收口，见 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)与[支持政策](support-policy.md)；后续不因重建证据而要求重复。`v0.1.0` 的来源与许可复核见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)，未来候选须建立新的发行 issue。新候选或平台扩展按实际变更选择桌面和性能复验，脚本不代替所有者的发行决定或许可复核结论。

@@ -1,6 +1,6 @@
 # 文档导航
 
-文档保存通用规则、设计和可复用方法。具体阶段进度与验收记录见 [Issues](https://github.com/xiaodaozhi/xdzip/issues)，执行证据见 [Actions](https://github.com/xiaodaozhi/xdzip/actions)或本地工件，不在 docs 累积报告。
+文档保存通用规则、设计和可复用方法。当前最新稳定版为 [`v0.1.0`](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.1.0)，具体阶段进度与验收记录见 [Issues](https://github.com/xiaodaozhi/xdzip/issues)，执行证据见 [Actions](https://github.com/xiaodaozhi/xdzip/actions)或本地工件，不在 docs 累积报告。
 
 | 领域 | 入口 |
 | --- | --- |
@@ -29,9 +29,9 @@
 - 7z 后端：流式方法图、共享算法、创建、重写和密码封装见[读写规格](engineering/independent-rust-codecs.md#7z读写规格)，来源与参考分析分工见[7z 实现依据](engineering/sevenzip-format-sources.md)。产品固定使用 Rust，官方 7-Zip 源码不进入产品编译或部署。
 - CAB 后端：只读容器、共享算法和完整帧工作计量见[自研规格](engineering/independent-rust-codecs.md#cab只读规格)，规范版本与参考分析边界见[来源记录](engineering/cab-format-sources.md)。产品固定使用 Rust，官方 Cab 处理器及 CAB 专用 LZX/Quantum 不进入构建，没有失败回退。
 - 修改界面：先读视觉规范与流程，原稿位于 design/hifi，行为参照 ux 文档；HTML 示例与 Qt 实际能力分别核对。
-- 准备交付：按源码、部署、安装契约及发行手册复验，区分开发验收与发行许可复核。支持范围以[已批准政策](engineering/support-policy.md)为准，不以 CI runner 名称推断。
+- 准备交付：按源码、部署、安装契约及发行手册复验，区分开发验收与发行许可复核。正式 Release 不附带对应源码压缩包，源码交付脚本只用于本地审查和重建验证。支持范围以[已批准政策](engineering/support-policy.md)为准，不以 CI runner 名称推断。
 
-新缺陷与任务先查重并记录到 issue。已完成的 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)不承接后续新待办；发行许可复核见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4)，文件输入与 macOS ACL 修复的范围及验证见 [#6](https://github.com/xiaodaozhi/xdzip/issues/6)。这些入口用于查阅实际状态，本文不复制执行报告。
+新缺陷与任务先查重并记录到 issue。已完成的 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)不承接后续新待办；`v0.1.0` 的历史发行许可复核见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)，文件输入与 macOS ACL 修复的范围及验证见 [#6](https://github.com/xiaodaozhi/xdzip/issues/6)。这些入口用于查阅实际状态，未来候选须建立新的发行 issue，本文不复制执行报告。
 
 ## 文档权威
 

@@ -1,8 +1,8 @@
-# 实验安装器与文件关联
+# 安装器与文件关联
 
 逐格式图标素材及平台映射见[文件关联图标规范](../visual/file-association-icons.md)。Linux 保留系统 MIME 图标，安装不改变默认选择或现有注册范围。
 
-提供 Windows x64 当前用户安装器、Ubuntu 24.04 amd64 X11 的 .deb，以及按明确需求制作的[本地 macOS 开发 DMG](macos-deployment.md)。它们仍是实验性开发交付；WP-12 开发与验收完成不代表发行许可复核获批。个人开源发行不要求付费证书、Developer ID 或公证，macOS 保留必要 ad-hoc 完整性签名；CI 不部署或上传 Mac 应用。支持范围见[支持政策](support-policy.md)。
+本页描述本地开发和按需验证产物：Windows x64 当前用户安装器、Ubuntu 24.04 amd64 X11 的 .deb，以及按明确需求制作的[本地 macOS 开发 DMG](macos-deployment.md)。这些本地产物仍是实验性开发交付，不能替代正式 Release。正式 `v0.1.0` 的平台包由专用 Release 工作流生成和验证，另遵循[发布协议](release-protocol.md)。个人开源发行不要求付费证书、Developer ID 或公证，macOS 保留必要 ad-hoc 完整性签名；普通 CI 不部署或上传 Mac 应用。支持范围见[支持政策](support-policy.md)。
 
 ## 共用构建入口
 
