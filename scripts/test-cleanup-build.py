@@ -49,6 +49,16 @@ class CleanupBuildTests(unittest.TestCase):
         candidates = cleanup.stale_candidates(30, {active.resolve()})
         self.assertEqual([path for path, _ in candidates], [old])
 
+    def test_main_worktree_does_not_protect_build_children(self):
+        cycle = self.build / "issue230-cycle"
+        active = cycle / "nested-worktree"
+        cycle.mkdir()
+        active.mkdir()
+
+        self.assertEqual(cleanup.explicit_candidates([cycle], {self.root.resolve()}), [cycle])
+        self.assertEqual(cleanup.explicit_candidates([cycle], {active.resolve()}), [])
+        self.assertEqual(cleanup.explicit_candidates([active], {active.resolve()}), [])
+
     def test_remove_deletes_only_selected_target(self):
         cycle = self.build / "issue230-cycle"
         cycle.mkdir()

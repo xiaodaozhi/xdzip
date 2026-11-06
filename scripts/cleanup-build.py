@@ -76,16 +76,21 @@ def worktree_paths() -> set[Path]:
         text=True,
         check=True,
     )
+    repo_root = ROOT.resolve()
     paths = set()
     for line in result.stdout.splitlines():
         if line.startswith("worktree "):
-            paths.add(Path(line[9:]).resolve())
+            path = Path(line[9:]).resolve()
+            if path != repo_root:
+                paths.add(path)
     return paths
 
 
 def is_active_worktree(path: Path, worktrees: set[Path]) -> bool:
     resolved = path.resolve()
-    return any(resolved == item or resolved.is_relative_to(item) or item.is_relative_to(resolved)
+    repo_root = ROOT.resolve()
+    return any(item != repo_root and
+               (resolved == item or resolved.is_relative_to(item) or item.is_relative_to(resolved))
                for item in worktrees)
 
 
