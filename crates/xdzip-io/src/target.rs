@@ -518,13 +518,14 @@ pub struct SetCommitError {
     pub rollback_failed: bool,
 }
 impl Workspace {
-    /// Publish a plan-validated relative symbolic link, exclusively, under a held no-follow
-    /// parent. This never opens its target or replaces an existing object. Call only after
-    /// all ordinary output has committed; Windows link privileges are not assumed.
+    /// Publish a plan-validated relative symbolic link target, exclusively, under a held
+    /// no-follow parent. The target may contain normalized `.` or `..` components, but the
+    /// caller must have resolved it against the frozen output graph first. This never opens
+    /// its target or replaces an existing object; Windows link privileges are not assumed.
     pub fn commit_symlink(
         &mut self,
         path: &PortablePath,
-        target: &PortablePath,
+        target: &str,
     ) -> Result<CommitReceipt, OutputError> {
         #[cfg(not(unix))]
         {
@@ -543,10 +544,7 @@ impl Workspace {
                 change();
             }
             self.grant.revalidate_parent(path, &parent)?;
-            parent
-                .dir
-                .symlink(target.display(), leaf)
-                .map_err(failure)?;
+            parent.dir.symlink(target, leaf).map_err(failure)?;
             let recorded = self.record(&format!("committed-link {}\n", path.display()));
             Ok(CommitReceipt {
                 cleanup_warning: recorded.is_err(),
@@ -1062,11 +1060,8 @@ mod link_tests {
         let mut work = grant.workspace(1).unwrap();
         std::os::unix::fs::symlink(&sentinel, root.0.join("link")).unwrap();
         assert!(
-            work.commit_symlink(
-                &PortablePath::parse("link").unwrap(),
-                &PortablePath::parse("safe").unwrap()
-            )
-            .is_err()
+            work.commit_symlink(&PortablePath::parse("link").unwrap(), "safe")
+                .is_err()
         );
         assert_eq!(fs::read(sentinel).unwrap(), b"unchanged");
         work.cleanup().unwrap();
@@ -1085,11 +1080,8 @@ mod link_tests {
             std::os::unix::fs::symlink(external, base.join("safe")).unwrap();
         }));
         assert!(
-            work.commit_symlink(
-                &PortablePath::parse("safe/link").unwrap(),
-                &PortablePath::parse("file").unwrap()
-            )
-            .is_err()
+            work.commit_symlink(&PortablePath::parse("safe/link").unwrap(), "file")
+                .is_err()
         );
         assert_eq!(fs::read_dir(&outside.0).unwrap().count(), 0);
         assert_eq!(fs::read_dir(root.0.join("old-safe")).unwrap().count(), 0);

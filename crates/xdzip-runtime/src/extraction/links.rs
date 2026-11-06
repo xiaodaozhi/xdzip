@@ -19,6 +19,51 @@ impl DecodedSink for Target {
     }
 }
 
+/// Validate a ZIP link target without treating `.` and `..` as output names.
+/// They are resolved against the link's parent below, then the resulting path
+/// is checked against the frozen archive graph.
+pub(super) fn validate_target(target: &str) -> Result<(), &'static str> {
+    if target.is_empty() || target.len() > 4096 || target.starts_with('/') || target.contains('\\')
+    {
+        return Err(if target.len() > 4096 {
+            "resource_limit"
+        } else {
+            "unsupported_link"
+        });
+    }
+    let parts: Vec<_> = target.split('/').collect();
+    if parts.len() > 64 {
+        return Err("resource_limit");
+    }
+    for part in parts {
+        if matches!(part, "." | "..") {
+            continue;
+        }
+        if PortablePath::parse(part).is_none() {
+            return Err("unsupported_link");
+        }
+    }
+    Ok(())
+}
+
+fn normalize_target(base: &[String], target: &str) -> Result<Vec<String>, &'static str> {
+    validate_target(target)?;
+    let mut parts = base.to_vec();
+    for component in target.split('/') {
+        match component {
+            "." => {}
+            ".." => {
+                parts.pop().ok_or("unsupported_link")?;
+            }
+            component => parts.push(component.to_owned()),
+        }
+        if parts.len() > 64 || parts.iter().map(String::len).sum::<usize>() + parts.len() > 4096 {
+            return Err("resource_limit");
+        }
+    }
+    Ok(parts)
+}
+
 pub(super) fn prepare(
     archive: &Archive,
     planned: &mut [Planned],
@@ -67,8 +112,9 @@ pub(super) fn prepare_decoded(
             .filter(|n| *n <= 4 * 1024 * 1024)
             .ok_or("resource_limit")?;
         let target = String::from_utf8(bytes).map_err(|_| "unsupported_link")?;
-        // Deliberately conservative: no absolute, dot/parent, device, ambiguous or control components.
-        PortablePath::parse(&target).ok_or("unsupported_link")?;
+        // Standard macOS bundles use parent-relative targets. They are safe only
+        // after normalization against the link parent and graph resolution below.
+        validate_target(&target)?;
         p.link_target = Some(target);
     }
     // Exact spelling is required: aliases/duplicate records cannot silently retarget a link.
@@ -111,8 +157,7 @@ fn resolve(
                 if followed > 64 {
                     return Err("unsupported_link");
                 }
-                let mut next = parts[..at].to_vec();
-                next.extend(target.split('/').map(str::to_owned));
+                let mut next = normalize_target(&parts[..at], target)?;
                 next.extend_from_slice(&parts[at + 1..]);
                 if next.len() > 64
                     || next.iter().map(String::len).sum::<usize>() + next.len() > 4096
@@ -162,5 +207,39 @@ mod tests {
             resolve(&PortablePath::parse("l65").unwrap(), &nodes, &cancel),
             Err("cancelled")
         );
+    }
+
+    #[test]
+    fn parent_relative_bundle_targets_are_normalized_inside_the_archive_graph() {
+        let cancel = Cancellation::default();
+        let mut nodes = BTreeMap::new();
+        for directory in [
+            "Demo.app",
+            "Demo.app/Contents",
+            "Demo.app/Contents/PlugIns",
+            "Demo.app/Contents/PlugIns/quick",
+            "Demo.app/Contents/Resources",
+            "Demo.app/Contents/Resources/qml",
+            "Demo.app/Contents/Resources/qml/QtQml",
+        ] {
+            nodes.insert(directory.into(), (true, None));
+        }
+        nodes.insert(
+            "Demo.app/Contents/PlugIns/quick/plugin".into(),
+            (false, None),
+        );
+        nodes.insert(
+            "Demo.app/Contents/Resources/qml/QtQml/plugin".into(),
+            (false, Some("../../../PlugIns/quick/plugin")),
+        );
+        let link = PortablePath::parse("Demo.app/Contents/Resources/qml/QtQml/plugin").unwrap();
+        assert!(resolve(&link, &nodes, &cancel).is_ok());
+
+        nodes.insert(
+            "Demo.app/Contents/Resources/qml/QtQml/escape".into(),
+            (false, Some("../../../../../../outside")),
+        );
+        let escape = PortablePath::parse("Demo.app/Contents/Resources/qml/QtQml/escape").unwrap();
+        assert_eq!(resolve(&escape, &nodes, &cancel), Err("unsupported_link"));
     }
 }

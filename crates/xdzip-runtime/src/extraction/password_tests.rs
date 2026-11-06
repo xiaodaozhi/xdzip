@@ -438,6 +438,53 @@ fn encrypted_link_graph_is_authenticated_before_any_output_and_restores_executab
 
 #[cfg(unix)]
 #[test]
+fn macos_bundle_parent_relative_links_are_restored_after_graph_validation() {
+    let source = Target::new();
+    let target = Target::new();
+    let archive = generated(
+        &source,
+        &archive_bytes(
+            &[
+                (
+                    "Demo.app/Contents/PlugIns/quick/plugin",
+                    b"bundle plugin\n",
+                    None,
+                    false,
+                ),
+                (
+                    "Demo.app/Contents/Resources/qml/QtQml/plugin",
+                    b"../../../PlugIns/quick/plugin",
+                    None,
+                    true,
+                ),
+            ],
+            0,
+        ),
+    );
+    let done = execute(&archive, target.options(), &Control::default(), |_| {});
+    assert_eq!(done.status, Status::Succeeded, "{}", done.error);
+    assert_eq!(
+        std::fs::read_link(
+            target
+                .0
+                .join("Demo.app/Contents/Resources/qml/QtQml/plugin")
+        )
+        .unwrap(),
+        std::path::Path::new("../../../PlugIns/quick/plugin")
+    );
+    assert_eq!(
+        std::fs::read(
+            target
+                .0
+                .join("Demo.app/Contents/Resources/qml/QtQml/plugin")
+        )
+        .unwrap(),
+        b"bundle plugin\n"
+    );
+}
+
+#[cfg(unix)]
+#[test]
 fn source_change_at_encrypted_link_commit_keeps_authenticated_files_and_omits_the_link() {
     let source = Target::new();
     let target = Target::new();

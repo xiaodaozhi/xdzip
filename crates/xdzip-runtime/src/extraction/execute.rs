@@ -219,7 +219,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                 pending_file = Some(entry.size);
                 // Payload was fully decoded and CRC checked before output admission. Source
                 // identity is rechecked above; no untrusted link is ever used as a write path.
-                let link_target = PortablePath::parse(link_target).ok_or("unsupported_link")?;
+                super::links::validate_target(link_target)?;
                 control.begin_commit()?;
                 stats.status = Status::Committing;
                 emit(&mut stats, start, publish);
@@ -229,7 +229,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                     .map_err(|_| "source_changed")
                     .and_then(|_| {
                         workspace
-                            .commit_symlink(&planned.path, &link_target)
+                            .commit_symlink(&planned.path, link_target)
                             .map_err(output)
                     });
                 let cancelled = control.end_commit(false);
