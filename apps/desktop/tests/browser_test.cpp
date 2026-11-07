@@ -5814,6 +5814,7 @@ QtObject {
                     property string state: "idle"; property string candidateVersion: "99.20.12-preview.123"
                     property string errorCode: "verification_hash"; property real progress: 0.42
                     property bool busy: false; property bool trusted: true; property bool canInstall: true
+                    property string installReason: "manual_install"
                     property bool downloaded: false; property int checks: 0; property int cancels: 0
                     property int downloads: 0; property int installs: 0; property int releases: 0; property int opens: 0
                     function check() { ++checks } function cancel() { ++cancels }
@@ -5843,7 +5844,8 @@ QtObject {
             auto *recovery = findVisual(settings->contentItem(), "aboutRecoveryUpdate");
             auto *open = findVisual(settings->contentItem(), "aboutOpenDownload");
             auto *openSecondary = findVisual(settings->contentItem(), "aboutOpenDownloadSecondary");
-            auto *openReleaseSecondary = findVisual(settings->contentItem(), "aboutOpenReleaseSecondary");
+            auto *openReleaseSecondary =
+                findVisual(settings->contentItem(), "aboutOpenReleaseSecondary");
             auto *note = findVisual(settings->contentItem(), "aboutUpdateNote");
             auto *progress = findVisual(settings->contentItem(), "aboutUpdateProgress");
             QVERIFY(status && check && cancelCheck && cancel && actions && install && recovery &&
@@ -5903,19 +5905,24 @@ QtObject {
                                  state == "available" || state == "downloaded");
                         QCOMPARE(recovery->isVisible(), state == "recovery_required");
                         QCOMPARE(open->isVisible(), false);
-                        QCOMPARE(actions->isVisible(), state == "downloaded" ||
-                                                           (state == "available" && service->property("trusted").toBool() &&
-                                                            !service->property("canInstall").toBool()));
+                        QCOMPARE(actions->isVisible(),
+                                 state == "downloaded" ||
+                                     (state == "available" &&
+                                      service->property("trusted").toBool() &&
+                                      !service->property("canInstall").toBool()));
                         QCOMPARE(openReleaseSecondary->isVisible(),
                                  (state == "available" || state == "downloaded") &&
-                                 service->property("trusted").toBool() &&
-                                 !service->property("canInstall").toBool());
-                        QCOMPARE(note->isVisible(), (state == "available" || state == "downloaded") &&
-                                                       !service->property("canInstall").toBool());
+                                     service->property("trusted").toBool() &&
+                                     !service->property("canInstall").toBool());
+                        QCOMPARE(note->isVisible(),
+                                 (state == "available" || state == "downloaded") &&
+                                     !service->property("canInstall").toBool());
                         if ((state == "available" || state == "downloaded") &&
                             service->property("trusted").toBool() &&
                             !service->property("canInstall").toBool())
-                            QCOMPARE(note->property("text").toString(), qtTrId("update.manualMacos"));
+                            QCOMPARE(note->property("text").toString(),
+                                     qtTrId("update.manualMacos")
+                                         .arg(qtTrId("update.manualMacosIdentity")));
                         if (state == "downloading")
                             QCOMPARE(cancel->property("text").toString(),
                                      qtTrId("update.cancelDownload"));
@@ -5956,6 +5963,38 @@ QtObject {
                                                            state + (scale == 1. ? "-1" : "")));
                         }
                     }
+                    service->setProperty("busy", false);
+                    service->setProperty("trusted", true);
+                    service->setProperty("canInstall", false);
+                    const QList<QPair<QString, const char *>> reasons{
+                        {"manual_install", "update.manualMacosIdentity"},
+                        {"macos_missing_appcast", "update.manualMacosFeed"},
+                        {"macos_proxy", "update.manualMacosProxy"},
+                        {"preview", "update.manualMacosSession"}};
+                    for (const auto &reason : reasons) {
+                        service->setProperty("installReason", reason.first);
+                        for (const auto &state :
+                             {QStringLiteral("available"), QStringLiteral("downloaded")}) {
+                            service->setProperty("downloaded", state == "downloaded");
+                            service->setProperty("state", state);
+                            QTRY_VERIFY(note->isVisible());
+                            QTRY_COMPARE(note->property("text").toString(),
+                                         qtTrId("update.manualMacos").arg(qtTrId(reason.second)));
+                            QTRY_VERIFY(note->height() + 1 >=
+                                        note->property("contentHeight").toReal());
+                            QTRY_VERIFY(note->width() + 1 >=
+                                        note->property("contentWidth").toReal());
+                            QVERIFY(openReleaseSecondary->isVisible());
+                            const auto captures = qEnvironmentVariable("XDZIP_ABOUT_UPDATE_AUDIT");
+                            if (!captures.isEmpty() && scale == 1.5 && state == "downloaded") {
+                                QVERIFY(QDir().mkpath(captures));
+                                QVERIFY(visual_audit::save(
+                                    settings, captures,
+                                    language + (dark ? "-dark-" : "-light-") + reason.first));
+                            }
+                        }
+                    }
+                    service->setProperty("canInstall", true);
                 }
             appearance->setProperty("factor", 1.);
             appearance->setProperty("dark", false);
@@ -7420,6 +7459,7 @@ QtObject {
                 property string state: "idle"; property string candidateVersion: ""
                 property string errorCode: "network"; property real progress: 0.42
                 property bool busy: false; property bool trusted: true; property bool canInstall: true
+                property string installReason: "manual_install"
                 property bool downloaded: false; property int checks: 0; property int cancels: 0; property int downloads: 0
                 function check() { ++checks; busy = true; state = "checking" }
                 function cancel() { const checking = state === "checking"; ++cancels; busy = false; state = checking ? "idle" : "available" }
@@ -12025,8 +12065,12 @@ QtObject {
                 QVERIFY(value.toMap().value("kind") != "move");
             controller->sortByColumn(0);
             QVERIFY(controller->browsingBusy());
-            QVERIFY(loading->isVisible());
+            QVERIFY(!loading->isVisible());
+            QCOMPARE(loadingChanges.count(), 0);
             QTRY_VERIFY(!controller->busy() && !loading->isVisible());
+            QCOMPARE(loadingChanges.count(), 0);
+            QCOMPARE(controller->directoryId(), directory);
+            QCOMPARE(controller->total(), total);
             QTRY_VERIFY(controller->requestClose());
         }
     }
@@ -13490,6 +13534,39 @@ QtObject {
         QCOMPARE(controller->directoryId(), QString());
         QTest::keyClick(window, Qt::Key_Escape);
     }
+    void emptyQueryKeepsCommittedPresentation() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller && QTest::qWaitForWindowExposed(window));
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/navigation.zip"));
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 5000);
+        int emptyRow = -1;
+        for (int row = 0; row < controller->entries()->rowCount(); ++row)
+            if (controller->entries()->data(controller->entries()->index(row, 0)).toString() ==
+                "empty")
+                emptyRow = row;
+        QVERIFY(emptyRow >= 0);
+        controller->enterDirectory(emptyRow);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->total() == 0, 5000);
+        auto *overlay = findVisual(window->contentItem(), "archiveLoadingOverlay");
+        auto *state = findVisual(window->contentItem(), "archiveEmptyState");
+        QVERIFY(overlay && state && overlay->isVisible() && state->isVisible());
+        QSignalSpy overlayChanges(overlay, &QQuickItem::visibleChanged);
+        QSignalSpy stateChanges(state, &QQuickItem::visibleChanged);
+        bool sawBusy = false;
+        connect(controller, &BrowserController::changed, &engine,
+                [&] { sawBusy |= controller->browsingBusy(); });
+        controller->search(QStringLiteral("missing"));
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->searchActive(), 5000);
+        QVERIFY(sawBusy);
+        QCOMPARE(controller->total(), 0);
+        QCOMPARE(overlayChanges.count(), 0);
+        QCOMPARE(stateChanges.count(), 0);
+        QVERIFY(overlay->isVisible() && state->isVisible());
+    }
     void directoryNavigationKeepsCommittedPresentation_data() {
         QTest::addColumn<QString>("view");
         QTest::addColumn<QString>("activation");
@@ -13514,8 +13591,8 @@ QtObject {
         auto *tree = findVisual(window->contentItem(), "directoryTree");
         auto *loading = findVisual(window->contentItem(), "archiveLoadingOverlay");
         QVERIFY(tree && loading && !loading->isVisible());
-        auto *disclosure = findVisual(window->contentItem(), "directoryDisclosure-d1");
-        QVERIFY(disclosure);
+        QQuickItem *disclosure = nullptr;
+        QTRY_VERIFY((disclosure = findVisual(window->contentItem(), "directoryDisclosure-d1")));
         QTest::mouseClick(
             window, Qt::LeftButton, Qt::NoModifier,
             disclosure->mapToScene(QPointF(disclosure->width() / 2, disclosure->height() / 2))
@@ -13533,8 +13610,8 @@ QtObject {
                 tree->property("selectionModel").value<QObject *>());
             QVERIFY(selection);
             const auto matches = controller->directories()->match(
-                controller->directories()->index(0, 0), Qt::UserRole,
-                target->property("nodeId"), 1, Qt::MatchRecursive);
+                controller->directories()->index(0, 0), Qt::UserRole, target->property("nodeId"), 1,
+                Qt::MatchRecursive);
             QCOMPARE(matches.size(), 1);
             selection->setCurrentIndex(matches.first(), QItemSelectionModel::NoUpdate);
             tree->forceActiveFocus();
@@ -13545,8 +13622,7 @@ QtObject {
         QCOMPARE(controller->total(), 2);
         QVERIFY(!loading->isVisible());
         QCOMPARE(loadingChanges.count(), 0);
-        QVERIFY(findVisual(window->contentItem(),
-                           view == "grid" ? "grid-entry-0" : "entry-0-0"));
+        QVERIFY(findVisual(window->contentItem(), view == "grid" ? "grid-entry-0" : "entry-0-0"));
     }
     void treeExpansionAndColumnInteraction() {
         QQmlApplicationEngine engine;

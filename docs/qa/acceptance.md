@@ -47,6 +47,7 @@ English: RELEASE-VALIDATION-UNSIGNED applies only to local `--validation-only` c
 - 密码与更新等待并存时，通过真实主程序的系统 Quit 路由进入退出确认，点击返回后原任务与请求令牌不变，取消并退出后所有 Rust join 完成且没有安装交接。另核验文件选择器和不相关模态窗口仍阻挡退出，不能以直接调用会话接口代替桌面入口回归。While password and update waiting coexist, exercise the real main program's system Quit route and Return/Cancel buttons. Preserve the task/token on Return; require all joins and no install handoff on cancellation. File selectors and unrelated modals remain blocking; a direct session call does not cover the desktop route.
 - macOS 密码和冲突任务提示期间核对应用菜单的退出项及 Command-Q，通过退出确认返回后任务和提示身份不变；不相关模态窗口及文件选择器仍阻挡退出，期间触发的退出不能在模态关闭后延迟执行。On macOS, check the application-menu Quit item and Command-Q during password and conflict task prompts. Return preserves the task and prompt identity; unrelated modals and file selectors still block Quit, including after they close.
 - 关于页覆盖全部状态，关闭重开保持任务，取消显式执行；检查中英文、浅深色、三档字号和窄屏滚动，复用操作控件。生产密钥和真实平台未验证项独立列出，普通 CI 不部署/签名/上传 Mac 应用包。
+- macOS 手动回退分别覆盖安装身份不合格、无 appcast、非系统代理及无可交接会话，显示实际首先未满足的条件并保留发布页和下载位置；双语、浅深色及三档字号下说明完整可读。下载完成不得显示为安装完成。
 
 T01～T18 的权威映射见 design/requirements-traceability.md。以下是可复用的验收规格，不表示本次已执行或均未执行。实际结果在对应 issue 和工件记录，既有人工结论见 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)；新候选按受影响项复验，不创建假的 pass 报告。
 
@@ -212,6 +213,7 @@ W01-07，欢迎页与打开归档后的标题栏、标签及外观按钮的位�
 ### 解压任务提交的视觉稳定性
 
 - 实际点击“开始解压”时，主窗口工具栏与文件列表保持既有状态，不短暂显示目录加载遮罩；解压窗口“更改”按钮不切换禁用样式。
+- 目录、搜索或排序查询期间，已提交的非空列表／网格与空结果均保持可见，直到新结果提交；核对遮罩可见性、最终目录、查询结果以及 busy／取消行为。
 - 开始动作立即防重入，重复调用只创建一个任务；受理后切换任务窗口，失败保留确认内容。
 - 真实打开／切换目录、搜索与预检仍遵守原有请求准入和加载反馈，任务提交不重置模型或清空选择。
 

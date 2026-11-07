@@ -26,6 +26,8 @@ Windows/Linux 将最多 2 GiB 的包流式写入私有更新缓存，同时核�
 
 macOS 使用固定 Sparkle 2.10.0，通过薄 Objective-C++ 用户驱动把状态送入统一关于页。feed 和归档由 Sparkle 原生验证，feed 只包含已选定的同一个候选；不声称 Sparkle 执行了额外 SHA-256。只读 DMG、App Translocation、未登记的 .app 或缺少更新公钥均提供手动安装入口。普通 CI 不因引入 Sparkle 而部署、签名或上传 Mac 应用包。
 
+手动回退展示当前首先未满足的条件：安装身份、会话、缺少自动更新源或非系统代理。安装身份不合格仅表示整组身份检查未通过，不推测具体是哪一项；多个条件同时不满足时仍可能需要依次处理。关于页提供同版本发布页和 DMG 指引，下载 app.zip 后说明解压、退出旧版及替换应用；下载成功不等于安装成功。English: Manual fallback identifies the first unmet installation identity, session, feed or proxy condition. An identity failure does not guess which individual identity check failed, and other conditions may also be unmet. About links to the release and explains manual DMG or app.zip installation; download is not installation.
+
 ## 安装交接与恢复
 
 下载期间原有任务继续运行。选择下载安装后有活动任务则等待，用户可取消等待并暂缓更新，不隐式取消任务或密码请求。助手准备完成后 `prepareForUpdate` 拒绝活动任务、任务启动与模态交互；进入交接后禁止新会话和新任务，所有 Rust 连接完成清理及 join 才发送安装提交。交接不使用“立即重启旧程序”路径。

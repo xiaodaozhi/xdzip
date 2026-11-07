@@ -155,6 +155,28 @@ class UpdateControllerTest final : public QObject {
     }
 
   private slots:
+    void installationReasonsPreserveTheAutomaticInstallGate() {
+        using Controller = UpdateController;
+        QCOMPARE(Controller::installationReason(false, true, true, true, true, true), "unsigned");
+        QCOMPARE(Controller::installationReason(true, false, true, true, true, true),
+                 "manual_install");
+        QCOMPARE(Controller::installationReason(true, true, false, true, true, true), "preview");
+        QCOMPARE(Controller::installationReason(true, true, true, true, false, true),
+                 "macos_missing_appcast");
+        QCOMPARE(Controller::installationReason(true, true, true, true, true, false),
+                 "macos_proxy");
+        for (const bool trusted : {false, true})
+            for (const bool installed : {false, true})
+                for (const bool sessions : {false, true})
+                    for (const bool macos : {false, true})
+                        for (const bool feed : {false, true})
+                            for (const bool systemProxy : {false, true})
+                                QCOMPARE(Controller::installationReason(
+                                             trusted, installed, sessions, macos, feed, systemProxy)
+                                             .isEmpty(),
+                                         trusted && installed && sessions &&
+                                             (!macos || (feed && systemProxy)));
+    }
 #ifdef Q_OS_MACOS
     void nativeDriverCancellationAndOneShotCommit() {
         Network network;

@@ -17,6 +17,12 @@ OperationWindow {
     property string updatePlatform: Qt.platform.os
     readonly property bool manualUpdate: updater && ["available", "downloaded"].includes(updateState) && !updater.canInstall
     readonly property bool macosManualUpdate: manualUpdate && updatePlatform === "osx"
+    function macosManualMessage(reason) {
+        const reasonText = reason === "macos_missing_appcast" ? qsTrId("update.manualMacosFeed") :
+                           reason === "macos_proxy" ? qsTrId("update.manualMacosProxy") :
+                           reason === "preview" ? qsTrId("update.manualMacosSession") : qsTrId("update.manualMacosIdentity");
+        return qsTrId("update.manualMacos").arg(reasonText);
+    }
     readonly property var sidebarLabels: [qsTrId("settings.tabAppearance"), qsTrId("settings.tabGeneral"),
                                            qsTrId("settings.tabPrivacy"), qsTrId("settings.tabAssociations"),
                                            qsTrId("settings.tabNetwork"), qsTrId("settings.tabAbout")]
@@ -591,7 +597,9 @@ OperationWindow {
                     id: noteMeasures
                     onItemAdded: updateMeasurements.revision++
                     onItemRemoved: updateMeasurements.revision++
-                    model: [qsTrId("update.manual"), qsTrId("update.manualMacos"), qsTrId("update.unsigned")]
+                    model: [qsTrId("update.manual"), qsTrId("update.unsigned"),
+                            root.macosManualMessage("manual_install"), root.macosManualMessage("macos_missing_appcast"),
+                            root.macosManualMessage("macos_proxy"), root.macosManualMessage("preview")]
                     delegate: Text {
                         required property string modelData
                         width: Math.max(1, updateSection.width)
@@ -730,7 +738,7 @@ OperationWindow {
                     objectName: "aboutUpdateNote"
                     visible: root.updater && ["available", "downloaded"].includes(root.updateState) && !root.updater.canInstall
                     text: root.updater && !root.updater.trusted ? qsTrId("update.unsigned") :
-                          root.macosManualUpdate ? qsTrId("update.manualMacos") : qsTrId("update.manual")
+                          root.macosManualUpdate ? root.macosManualMessage(root.updater.installReason) : qsTrId("update.manual")
                 }
                 RowLayout {
                     objectName: "aboutUpdateActions"
