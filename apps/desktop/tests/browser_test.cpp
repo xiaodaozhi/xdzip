@@ -7960,7 +7960,8 @@ QtObject {
                          copy->mapToItem(flick, QPointF(0, copy->height())).y() <=
                              flick->height() + .5,
                      qPrintable(QStringLiteral("Copy button top %1, bottom %2, viewport height %3, "
-                                               "contentY %4, content height %5, active focus %6")
+                                               "contentY %4, content height %5, active focus %6, "
+                                               "focus reason %7")
                                     .arg(copy->mapToItem(flick, QPointF()).y())
                                     .arg(copy->mapToItem(flick, QPointF(0, copy->height())).y())
                                     .arg(flick->height())
@@ -7968,7 +7969,41 @@ QtObject {
                                     .arg(flick->property("contentHeight").toReal())
                                     .arg(settings->activeFocusItem()
                                              ? settings->activeFocusItem()->objectName()
-                                             : QStringLiteral("none"))));
+                                             : QStringLiteral("none"))
+                                    .arg(copy->property("focusReason").toInt())));
+        auto *updateNote = findVisual(settings->contentItem(), "aboutUpdateNote");
+        QVERIFY(updateNote);
+        service->setProperty("state", "available");
+        QTRY_VERIFY(updateNote->isVisible());
+        QVERIFY(QQuickTest::qWaitForPolish(settings, 3000));
+        QTest::qWait(30);
+        const qreal copyTop = copy->mapToItem(flickContent, QPointF()).y();
+        QVERIFY(flick->setProperty("contentY", copyTop - 4));
+        QTRY_VERIFY(qAbs(copy->mapToItem(flick, QPointF()).y() - 4) < .5);
+        QVERIFY(copy->hasActiveFocus());
+        QCOMPARE(copy->property("focusReason").toInt(), int(Qt::TabFocusReason));
+        service->setProperty("state", "idle");
+        QTRY_VERIFY(!updateNote->isVisible());
+        QTRY_VERIFY(copy->mapToItem(flickContent, QPointF()).y() < copyTop - 1);
+        QTRY_VERIFY2(copy->mapToItem(flick, QPointF()).y() >= -.5,
+                     "keyboard focus moved above the viewport when the update note collapsed");
+        const qreal collapsedCopyTop = copy->mapToItem(flickContent, QPointF()).y();
+        aboutTab->forceActiveFocus(Qt::OtherFocusReason);
+        QTRY_VERIFY(aboutTab->hasActiveFocus());
+        copy->forceActiveFocus(Qt::MouseFocusReason);
+        QTRY_VERIFY(copy->hasActiveFocus());
+        QCOMPARE(copy->property("focusReason").toInt(), int(Qt::MouseFocusReason));
+        QTest::qWait(30);
+        service->setProperty("state", "available");
+        QTRY_VERIFY(updateNote->isVisible());
+        QTRY_VERIFY(copy->mapToItem(flickContent, QPointF()).y() > collapsedCopyTop + 1);
+        const qreal expandedCopyTop = copy->mapToItem(flickContent, QPointF()).y();
+        QVERIFY(flick->setProperty("contentY", expandedCopyTop - 4));
+        const qreal mouseScroll = flick->property("contentY").toReal();
+        service->setProperty("state", "idle");
+        QTRY_VERIFY(copy->mapToItem(flickContent, QPointF()).y() < expandedCopyTop - 1);
+        QTest::qWait(30);
+        QCOMPARE(flick->property("contentY").toReal(), mouseScroll);
         auto *license = findVisual(settings->contentItem(), "aboutLicense");
         QVERIFY(license);
         const qreal licenseTop = license->mapToItem(flickContent, QPointF()).y();

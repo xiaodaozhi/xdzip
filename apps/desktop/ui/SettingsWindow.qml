@@ -768,6 +768,18 @@ OperationWindow {
                 id: aboutAfterUpdate
                 Layout.fillWidth: true
                 spacing: Theme.settingsPageSectionGap
+                // Update messages can resize after keyboard focus has moved here.
+                onYChanged: {
+                    const item = root.activeFocusItem;
+                    if (root.visible && item &&
+                            (item.focusReason === Qt.TabFocusReason || item.focusReason === Qt.BacktabFocusReason)) {
+                        let ancestor = item;
+                        while (ancestor && ancestor !== aboutAfterUpdate) ancestor = ancestor.parent;
+                        if (ancestor === aboutAfterUpdate) Qt.callLater(() => {
+                            if (root.visible && root.activeFocusItem === item) root.revealFocus(pageScroll);
+                        });
+                    }
+                }
                 PageSeparator {}
                 SectionTitle { text: qsTrId("settings.versionTitle") }
                 GridLayout {
