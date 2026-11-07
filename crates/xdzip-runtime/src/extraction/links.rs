@@ -1,7 +1,7 @@
 //! ZIP symbolic links are data until every target resolves inside the selected output graph.
 use super::plan::Planned;
 use crate::Archive;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, VecDeque};
 use xdzip_codec_api::{
     Cancellation,
     payload::{DecodeError, DecodedSink},
@@ -17,6 +17,32 @@ impl DecodedSink for Target {
         self.0.extend_from_slice(bytes);
         Ok(())
     }
+}
+
+/// Validate a ZIP link target without treating `.` and `..` as output names.
+/// They are resolved in filesystem order against the frozen archive graph below.
+pub(super) fn validate_target(target: &str) -> Result<(), &'static str> {
+    if target.is_empty() || target.len() > 4096 || target.starts_with('/') || target.contains('\\')
+    {
+        return Err(if target.len() > 4096 {
+            "resource_limit"
+        } else {
+            "unsupported_link"
+        });
+    }
+    let parts: Vec<_> = target.split('/').collect();
+    if parts.len() > 64 {
+        return Err("resource_limit");
+    }
+    for part in parts {
+        if matches!(part, "." | "..") {
+            continue;
+        }
+        if PortablePath::parse(part).is_none() {
+            return Err("unsupported_link");
+        }
+    }
+    Ok(())
 }
 
 pub(super) fn prepare(
@@ -67,8 +93,9 @@ pub(super) fn prepare_decoded(
             .filter(|n| *n <= 4 * 1024 * 1024)
             .ok_or("resource_limit")?;
         let target = String::from_utf8(bytes).map_err(|_| "unsupported_link")?;
-        // Deliberately conservative: no absolute, dot/parent, device, ambiguous or control components.
-        PortablePath::parse(&target).ok_or("unsupported_link")?;
+        // Standard macOS bundles use parent-relative targets. Resolve them with
+        // every link prefix in filesystem order before admitting any output.
+        validate_target(&target)?;
         p.link_target = Some(target);
     }
     // Exact spelling is required: aliases/duplicate records cannot silently retarget a link.
@@ -98,39 +125,55 @@ fn resolve(
     nodes: &BTreeMap<String, (bool, Option<&str>)>,
     cancel: &Cancellation,
 ) -> Result<(), &'static str> {
-    let mut parts = path.parts().to_vec();
+    let mut resolved = Vec::<String>::new();
+    let mut pending: VecDeque<String> = path.parts().iter().cloned().collect();
     let mut followed = 0;
-    loop {
+    while let Some(component) = pending.pop_front() {
         cancel.check().map_err(|_| "cancelled")?;
-        let mut replaced = false;
-        for at in 0..parts.len() {
-            let name = parts[..=at].join("/");
-            let (directory, target) = nodes.get(&name).ok_or("unsupported_link")?;
-            if let Some(target) = target {
-                followed += 1;
-                if followed > 64 {
-                    return Err("unsupported_link");
-                }
-                let mut next = parts[..at].to_vec();
-                next.extend(target.split('/').map(str::to_owned));
-                next.extend_from_slice(&parts[at + 1..]);
-                if next.len() > 64
-                    || next.iter().map(String::len).sum::<usize>() + next.len() > 4096
-                {
-                    return Err("resource_limit");
-                }
-                parts = next;
-                replaced = true;
-                break;
+        match component.as_str() {
+            "." => {}
+            ".." => {
+                resolved.pop().ok_or("unsupported_link")?;
             }
-            if at + 1 < parts.len() && !directory {
-                return Err("unsupported_link");
+            _ => {
+                let name = resolved
+                    .iter()
+                    .map(String::as_str)
+                    .chain([component.as_str()])
+                    .collect::<Vec<_>>()
+                    .join("/");
+                let (directory, target) = nodes.get(&name).ok_or("unsupported_link")?;
+                if let Some(target) = target {
+                    followed += 1;
+                    if followed > 64 {
+                        return Err("unsupported_link");
+                    }
+                    validate_target(target)?;
+                    for part in target.split('/').rev() {
+                        pending.push_front(part.to_owned());
+                    }
+                } else {
+                    if !pending.is_empty() && !directory {
+                        return Err("unsupported_link");
+                    }
+                    resolved.push(component);
+                }
             }
         }
-        if !replaced {
-            return Ok(());
+        let count = resolved.len() + pending.len();
+        if count > 64
+            || resolved
+                .iter()
+                .chain(pending.iter())
+                .map(String::len)
+                .sum::<usize>()
+                + count
+                > 4096
+        {
+            return Err("resource_limit");
         }
     }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -162,5 +205,71 @@ mod tests {
             resolve(&PortablePath::parse("l65").unwrap(), &nodes, &cancel),
             Err("cancelled")
         );
+    }
+
+    #[test]
+    fn parent_relative_bundle_targets_are_normalized_inside_the_archive_graph() {
+        let cancel = Cancellation::default();
+        let mut nodes = BTreeMap::new();
+        for directory in [
+            "Demo.app",
+            "Demo.app/Contents",
+            "Demo.app/Contents/PlugIns",
+            "Demo.app/Contents/PlugIns/quick",
+            "Demo.app/Contents/Resources",
+            "Demo.app/Contents/Resources/qml",
+            "Demo.app/Contents/Resources/qml/QtQml",
+        ] {
+            nodes.insert(directory.into(), (true, None));
+        }
+        nodes.insert(
+            "Demo.app/Contents/PlugIns/quick/plugin".into(),
+            (false, None),
+        );
+        nodes.insert(
+            "Demo.app/Contents/Resources/qml/QtQml/plugin".into(),
+            (false, Some("../../../PlugIns/quick/plugin")),
+        );
+        let link = PortablePath::parse("Demo.app/Contents/Resources/qml/QtQml/plugin").unwrap();
+        assert!(resolve(&link, &nodes, &cancel).is_ok());
+
+        nodes.insert(
+            "Demo.app/Contents/Resources/qml/QtQml/escape".into(),
+            (false, Some("../../../../../../outside")),
+        );
+        let escape = PortablePath::parse("Demo.app/Contents/Resources/qml/QtQml/escape").unwrap();
+        assert_eq!(resolve(&escape, &nodes, &cancel), Err("unsupported_link"));
+    }
+
+    #[test]
+    fn parent_after_a_link_is_resolved_after_following_that_link() {
+        let cancel = Cancellation::default();
+        let mut nodes = BTreeMap::new();
+        nodes.insert("dir".into(), (true, None));
+        nodes.insert("dir/alias".into(), (false, Some("..")));
+        nodes.insert("dir/link".into(), (false, Some("alias/../../outside")));
+        nodes.insert("outside".into(), (false, None));
+        assert_eq!(
+            resolve(&PortablePath::parse("dir/link").unwrap(), &nodes, &cancel),
+            Err("unsupported_link")
+        );
+
+        nodes.insert("dir/alias".into(), (false, Some("subdir")));
+        nodes.insert("dir/subdir".into(), (true, None));
+        nodes.insert("dir/link".into(), (false, Some("alias/../file")));
+        nodes.insert("dir/file".into(), (false, None));
+        assert_eq!(
+            resolve(&PortablePath::parse("dir/link").unwrap(), &nodes, &cancel),
+            Ok(())
+        );
+
+        for target in ["file/../file", "missing/../file", "file/."] {
+            nodes.insert("dir/link".into(), (false, Some(target)));
+            assert_eq!(
+                resolve(&PortablePath::parse("dir/link").unwrap(), &nodes, &cancel),
+                Err("unsupported_link"),
+                "{target}"
+            );
+        }
     }
 }
