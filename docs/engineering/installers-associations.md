@@ -4,6 +4,8 @@
 
 本页描述本地开发和按需验证产物：Windows x64 当前用户安装器、Ubuntu 24.04 amd64 X11 的 .deb，以及按明确需求制作的[本地 macOS 开发 DMG](macos-deployment.md)。这些本地产物仍是实验性开发交付，不能替代正式 Release。正式 `v0.1.0` 的平台包由专用 Release 工作流生成和验证，另遵循[发布协议](release-protocol.md)。个人开源发行不要求付费证书、Developer ID 或公证，macOS 保留必要 ad-hoc 完整性签名；普通 CI 不部署或上传 Mac 应用。支持范围见[支持政策](support-policy.md)。
 
+macOS 手动更新时优先使用对应 Release 的 DMG；使用 app.zip 时，先解压并将 xdzip.app 移出下载目录，退出正在运行的旧版，再替换“应用程序”中的副本。下载不代表安装完成，未公证包可能触发系统安全提示。具体回退条件见[软件更新契约](software-update.md)。English: For a manual macOS update, prefer the matching release DMG. For app.zip, extract and move xdzip.app out of Downloads, quit the old copy, then replace the application in Applications. Download is not installation, and an unnotarized package may trigger a system warning.
+
 ## 共用构建入口
 
 环境准备与操作顺序统一见[开发构建指南](developer-build.md)。已有同提交的干净构建与测试后，使用 `python3 scripts/desktop.py prepare --packaging` 准备锁定材料，再执行 package 和 verify，不直接把 CI 全量脚本用于日常构建。

@@ -224,21 +224,25 @@ QString UpdateController::packageType() const {
     return QStringLiteral("app.zip");
 }
 bool UpdateController::canInstall() const {
-    return m_trusted && !installedRoot().isEmpty() && m_sessions &&
-           (platform() != "macos" || (!m_candidate.value("appcast_url").toString().isEmpty() &&
-                                      m_activeProxyMode == "system"));
+    return installReason().isEmpty();
 }
 QString UpdateController::installReason() const {
-    if (!m_trusted)
+    return installationReason(
+        m_trusted, !installedRoot().isEmpty(), !m_sessions.isNull(), platform() == "macos",
+        !m_candidate.value("appcast_url").toString().isEmpty(), m_activeProxyMode == "system");
+}
+QString UpdateController::installationReason(bool trusted, bool installed, bool hasSessions,
+                                             bool macos, bool hasAppcast, bool usesSystemProxy) {
+    if (!trusted)
         return QStringLiteral("unsigned");
-    if (installedRoot().isEmpty())
+    if (!installed)
         return QStringLiteral("manual_install");
-    if (!m_sessions)
+    if (!hasSessions)
         return QStringLiteral("preview");
-    if (platform() == "macos" && m_candidate.value("appcast_url").toString().isEmpty())
-        return QStringLiteral("manual_install");
-    if (platform() == "macos" && m_activeProxyMode != "system")
-        return QStringLiteral("manual_install");
+    if (macos && !hasAppcast)
+        return QStringLiteral("macos_missing_appcast");
+    if (macos && !usesSystemProxy)
+        return QStringLiteral("macos_proxy");
     return {};
 }
 void UpdateController::setState(const QString &state, const QString &error) {
