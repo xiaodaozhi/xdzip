@@ -7956,8 +7956,19 @@ QtObject {
                                     : QStringLiteral("none"))
                            .arg(settings->isActive())),
             1500);
-        QTRY_VERIFY(copy->mapToItem(flick, QPointF()).y() >= -.5 &&
-                    copy->mapToItem(flick, QPointF(0, copy->height())).y() <= flick->height() + .5);
+        QTRY_VERIFY2(copy->mapToItem(flick, QPointF()).y() >= -.5 &&
+                         copy->mapToItem(flick, QPointF(0, copy->height())).y() <=
+                             flick->height() + .5,
+                     qPrintable(QStringLiteral("Copy button top %1, bottom %2, viewport height %3, "
+                                               "contentY %4, content height %5, active focus %6")
+                                    .arg(copy->mapToItem(flick, QPointF()).y())
+                                    .arg(copy->mapToItem(flick, QPointF(0, copy->height())).y())
+                                    .arg(flick->height())
+                                    .arg(flick->property("contentY").toReal())
+                                    .arg(flick->property("contentHeight").toReal())
+                                    .arg(settings->activeFocusItem()
+                                             ? settings->activeFocusItem()->objectName()
+                                             : QStringLiteral("none"))));
         auto *license = findVisual(settings->contentItem(), "aboutLicense");
         QVERIFY(license);
         const qreal licenseTop = license->mapToItem(flickContent, QPointF()).y();
