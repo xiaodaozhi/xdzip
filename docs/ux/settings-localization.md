@@ -18,6 +18,8 @@ English: Windows installed per-format association descriptions follow the applic
 
 关于页的更新状态文字同时作为原生辅助功能名称，随检查、下载、安装、成功或失败状态及语言变化同步更新；辅助技术读取的文字与界面显示一致。
 
+macOS 手动更新说明显示当前首先未满足的安装条件，并保留发布页和下载位置；多个条件可能同时不满足，安装身份失败不推测具体原因。说明覆盖同版本 DMG 与 app.zip 手动替换，且明确下载不等于安装。English: macOS manual-update guidance shows the first unmet installation condition and retains release-page and download-location actions. Several conditions can be unmet; an identity failure does not identify a specific underlying cause. The guidance covers the matching DMG and manual app.zip replacement without treating download as installation.
+
 设置正文的竖向滚动条位于视口右侧，轨道覆盖视口高度；滑块随滚动移动，也可拖动控制正文滚动。
 
 关于页版本信息的标签列按实际文案和字号自适应，值列使用剩余宽度并可换行；新增字段应使用相同布局。

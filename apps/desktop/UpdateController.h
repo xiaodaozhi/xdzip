@@ -56,6 +56,8 @@ class UpdateController final : public QObject {
         return !m_packagePath.isEmpty();
     }
     QString installReason() const;
+    static QString installationReason(bool trusted, bool installed, bool hasSessions, bool macos,
+                                      bool hasAppcast, bool usesSystemProxy);
     Q_INVOKABLE void check();
     Q_INVOKABLE void cancel();
     Q_INVOKABLE void download();

@@ -6,8 +6,9 @@ import base64
 import configparser
 import ctypes
 import hashlib
+import http.client
 from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler, SimpleHTTPRequestHandler, ThreadingHTTPServer
 import importlib.util
 import json
 import os
@@ -23,6 +24,7 @@ import tarfile
 import threading
 import time
 import uuid
+from urllib.parse import urlsplit
 
 from deployment_audit import audit, mac_rpaths, native
 from desktop_environment import locked_rust_version
@@ -405,6 +407,34 @@ class Handler(SimpleHTTPRequestHandler):
             dump(Path(self.directory)/'http-requests.json',self.server.evidence[-64:])
 
 
+class OwnedFallbackProxy(BaseHTTPRequestHandler):
+    """Forward only this run's loopback fixture; never act as a general proxy."""
+    def log_message(self,*_):pass
+    def do_GET(self):
+        target=urlsplit(self.path)
+        try: port=target.port
+        except ValueError:
+            self.send_error(403);return
+        parts=target.path.split('/')
+        if (target.scheme!='http' or target.hostname!='127.0.0.1' or
+                port!=self.server.target_port or len(parts)!=3 or parts[:2]!=['','session'] or
+                parts[2] in ('','.','..') or '%' in parts[2] or '\\' in parts[2] or
+                target.query or target.fragment or target.username or target.password):
+            self.send_error(403);return
+        connection=http.client.HTTPConnection('127.0.0.1',self.server.target_port,timeout=30)
+        try:
+            connection.request('GET',target.path)
+            response=connection.getresponse()
+            self.send_response(response.status)
+            self.send_header('Content-Length',response.getheader('Content-Length','0'))
+            self.end_headers()
+            shutil.copyfileobj(response,self.wfile)
+            with self.server.evidence_lock:
+                self.server.evidence.append(dict(path=target.path,status=response.status))
+        finally:
+            connection.close()
+
+
 def same_roles(left,right):
     # kLSRolesAll is a query over a role set, not a separately restorable slot.
     return all(left[str(role)]==right[str(role)] for role in (2,4,8))
@@ -684,7 +714,7 @@ def main():
             for path in session.glob('*.json'):
                 if path.name in leaves or path.name.startswith(('200-','201-','native-')):path.unlink()
             config=json.loads((session/'configuration.json').read_bytes())
-            config.update(scenario=name,reuse_profile=True)
+            config.update(scenario=name,reuse_profile=True,fallback_loopback=False)
             dump(session/'configuration.json',config)
         stage='ordinary_old_recovery'
         change_scenario('recovery')
@@ -698,6 +728,63 @@ def main():
         dump(session/'stop.json',{'owned':True})
         if old.wait(timeout=20)!=0:raise RuntimeError('Recovery product did not exit normally')
         dump(output/'ordinary-recovery-verification.json',recovered)
+        if not args.production_trust:
+            # These scenarios sign only an owned test candidate. Production
+            # acceptance never creates a new candidate or sees test authority.
+            original_manifest=(session/'release.json').read_bytes()
+            original_signature=(session/'release.json.sig').read_bytes()
+            no_feed=dict(manifest);no_feed.pop('macos_appcast_url',None)
+            shutil.copyfile(archive,session/archive.name)
+            for case,reason in [('fallback-no-appcast','macos_missing_appcast'),
+                                ('fallback-proxy','macos_proxy')]:
+                stage=case
+                change_scenario(case)
+                if case=='fallback-no-appcast':
+                    dump(session/'release.json',no_feed)
+                    sign_env=environment();sign_env['XDZIP_UPDATE_SIGNING_KEY_HEX']=SEED
+                    run([signing,'sign','--manifest',session/'release.json',
+                         '--keyring',output/'source/resources/update-trust.json',
+                         '--key-id','owned-fixture','--output',session/'fallback-no-appcast.sig'],env=sign_env)
+                    shutil.copyfile(session/'fallback-no-appcast.sig',session/'release.json.sig')
+                else:
+                    (session/'release.json').write_bytes(original_manifest)
+                    (session/'release.json.sig').write_bytes(original_signature)
+                proxy=ThreadingHTTPServer(('127.0.0.1',0),OwnedFallbackProxy)
+                proxy.target_port=server.server_port;proxy.evidence=[];proxy.evidence_lock=threading.Lock()
+                proxy_thread=threading.Thread(target=proxy.serve_forever,daemon=True);proxy_thread.start()
+                try:
+                    config=json.loads((session/'configuration.json').read_bytes())
+                    config.update(fallback_loopback=True,fallback_server=address+'/session/',
+                                  fallback_proxy='http://127.0.0.1:'+str(proxy.server_port))
+                    config['routes'][base+archive.name]=archive.name
+                    dump(session/'configuration.json',config)
+                    old=subprocess.Popen([str(executable)],env=launch_env,stdout=log,stderr=subprocess.STDOUT)
+                    await_json(session/'200-started.json',process=old,session=session)
+                    dump(session/'upgrade.json',{'owned':True})
+                    fallback=await_json(session/(case+'.json'),timeout=240,process=old,session=session)
+                    if old.wait(timeout=30)!=0:raise RuntimeError('Fallback product did not quit normally')
+                    quit_record=await_json(session/'200-normal-quit.json',session=session)
+                    if (fallback['state']!='downloaded' or not fallback['downloaded'] or
+                        not fallback['trusted'] or fallback['can_install'] or fallback['install_reason']!=reason or
+                        fallback['candidate_version']!=manifest['version'] or fallback['update_pending'] or
+                        not fallback['about_check_clicked'] or not fallback['about_download_clicked'] or
+                        not fallback['release_button_visible'] or not fallback['download_button_visible'] or
+                        not quit_record['all_rust_joined'] or quit_record['barriers']!=0):
+                        raise RuntimeError('Real product fallback did not preserve its authenticated manual state')
+                    requests=list(proxy.evidence)
+                    expected={'/session/releases.json','/session/release.json','/session/release.json.sig',
+                              '/session/'+archive.name}
+                    if case=='fallback-proxy' and ({r['path'] for r in requests}!=expected or
+                                                   any(r['status']!=200 for r in requests)):
+                        raise RuntimeError('Custom proxy did not carry every owned fallback request')
+                    if case=='fallback-no-appcast' and requests:
+                        raise RuntimeError('System-proxy scenario unexpectedly used the owned custom proxy')
+                    dump(output/(case+'-verification.json'),dict(status='passed',result=fallback,quit=quit_record,
+                         proxy_requests=requests,scope='Real product, test-key signed candidate; fixture maps pinned URLs to loopback HTTP'))
+                finally:
+                    proxy.shutdown();proxy.server_close();proxy_thread.join(timeout=5)
+            (session/'release.json').write_bytes(original_manifest)
+            (session/'release.json.sig').write_bytes(original_signature)
         stage='committed_native_replacement_failure'
         change_scenario('immutable-replacement')
         old=subprocess.Popen([str(executable)],env=launch_env,stdout=log,stderr=subprocess.STDOUT)
