@@ -12111,8 +12111,12 @@ QtObject {
                 QVERIFY(value.toMap().value("kind") != "move");
             controller->sortByColumn(0);
             QVERIFY(controller->browsingBusy());
-            QVERIFY(loading->isVisible());
+            QVERIFY(!loading->isVisible());
+            QCOMPARE(loadingChanges.count(), 0);
             QTRY_VERIFY(!controller->busy() && !loading->isVisible());
+            QCOMPARE(loadingChanges.count(), 0);
+            QCOMPARE(controller->directoryId(), directory);
+            QCOMPARE(controller->total(), total);
             QTRY_VERIFY(controller->requestClose());
         }
     }
@@ -13575,6 +13579,96 @@ QtObject {
         QCOMPARE(controller->selectedCount(), selected);
         QCOMPARE(controller->directoryId(), QString());
         QTest::keyClick(window, Qt::Key_Escape);
+    }
+    void emptyQueryKeepsCommittedPresentation() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller && QTest::qWaitForWindowExposed(window));
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/navigation.zip"));
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 5000);
+        int emptyRow = -1;
+        for (int row = 0; row < controller->entries()->rowCount(); ++row)
+            if (controller->entries()->data(controller->entries()->index(row, 0)).toString() ==
+                "empty")
+                emptyRow = row;
+        QVERIFY(emptyRow >= 0);
+        controller->enterDirectory(emptyRow);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->total() == 0, 5000);
+        auto *overlay = findVisual(window->contentItem(), "archiveLoadingOverlay");
+        auto *state = findVisual(window->contentItem(), "archiveEmptyState");
+        QVERIFY(overlay && state && overlay->isVisible() && state->isVisible());
+        QSignalSpy overlayChanges(overlay, &QQuickItem::visibleChanged);
+        QSignalSpy stateChanges(state, &QQuickItem::visibleChanged);
+        bool sawBusy = false;
+        connect(controller, &BrowserController::changed, &engine,
+                [&] { sawBusy |= controller->browsingBusy(); });
+        controller->search(QStringLiteral("missing"));
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->searchActive(), 5000);
+        QVERIFY(sawBusy);
+        QCOMPARE(controller->total(), 0);
+        QCOMPARE(overlayChanges.count(), 0);
+        QCOMPARE(stateChanges.count(), 0);
+        QVERIFY(overlay->isVisible() && state->isVisible());
+    }
+    void directoryNavigationKeepsCommittedPresentation_data() {
+        QTest::addColumn<QString>("view");
+        QTest::addColumn<QString>("activation");
+        for (const auto &view : {QStringLiteral("list"), QStringLiteral("grid")})
+            for (const auto &activation : {QStringLiteral("click"), QStringLiteral("double-click"),
+                                           QStringLiteral("keyboard")})
+                QTest::newRow(qPrintable(view + "-" + activation)) << view << activation;
+    }
+    void directoryNavigationKeepsCommittedPresentation() {
+        QFETCH(QString, view);
+        QFETCH(QString, activation);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/navigation.zip"));
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 5000);
+        QVERIFY(window->setProperty("viewMode", view));
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *tree = findVisual(window->contentItem(), "directoryTree");
+        auto *loading = findVisual(window->contentItem(), "archiveLoadingOverlay");
+        QVERIFY(tree && loading && !loading->isVisible());
+        QQuickItem *disclosure = nullptr;
+        QTRY_VERIFY((disclosure = findVisual(window->contentItem(), "directoryDisclosure-d1")));
+        QTest::mouseClick(
+            window, Qt::LeftButton, Qt::NoModifier,
+            disclosure->mapToScene(QPointF(disclosure->width() / 2, disclosure->height() / 2))
+                .toPoint());
+        QQuickItem *target = nullptr;
+        QTRY_VERIFY((target = findVisual(window->contentItem(), "directory-d2")));
+        QSignalSpy loadingChanges(loading, &QQuickItem::visibleChanged);
+        const auto targetPoint = target->mapToScene(QPointF(80, target->height() / 2)).toPoint();
+        if (activation == "click") {
+            QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, targetPoint);
+        } else if (activation == "double-click") {
+            QTest::mouseDClick(window, Qt::LeftButton, Qt::NoModifier, targetPoint);
+        } else {
+            auto *selection = qobject_cast<QItemSelectionModel *>(
+                tree->property("selectionModel").value<QObject *>());
+            QVERIFY(selection);
+            const auto matches = controller->directories()->match(
+                controller->directories()->index(0, 0), Qt::UserRole, target->property("nodeId"), 1,
+                Qt::MatchRecursive);
+            QCOMPARE(matches.size(), 1);
+            selection->setCurrentIndex(matches.first(), QItemSelectionModel::NoUpdate);
+            tree->forceActiveFocus();
+            QTest::keyClick(window, Qt::Key_Return);
+        }
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 5000);
+        QCOMPARE(controller->location(), QStringLiteral("photos/2026/"));
+        QCOMPARE(controller->total(), 2);
+        QVERIFY(!loading->isVisible());
+        QCOMPARE(loadingChanges.count(), 0);
+        QVERIFY(findVisual(window->contentItem(), view == "grid" ? "grid-entry-0" : "entry-0-0"));
     }
     void treeExpansionAndColumnInteraction() {
         QQmlApplicationEngine engine;

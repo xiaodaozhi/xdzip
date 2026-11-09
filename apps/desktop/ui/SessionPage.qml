@@ -2038,19 +2038,19 @@ Item {
                         objectName: "archiveLoadingOverlay"
                         anchors.fill: parent
                         color: Theme.surface
-                        visible: !root.archiveOperationVisible && (reader.browsingBusy || !reader.ready || reader.total === 0)
+                        visible: !root.archiveOperationVisible && (!reader.ready || reader.total === 0)
                         opacity: 0.95
                     }
                     ColumnLayout {
                         objectName: "archiveEmptyState"
                         anchors.centerIn: parent
                         width: Math.min(parent.width - 60, 460)
-                        visible: !root.archiveOperationVisible && (reader.browsingBusy || !reader.ready || reader.total === 0)
+                        visible: !root.archiveOperationVisible && (!reader.ready || reader.total === 0)
                         spacing: Theme.mainUnits(16)
                         Text {
                             objectName: "archiveEmptyTitle"
                             Layout.fillWidth: true
-                            text: reader.browsingBusy ? qsTrId("ui.86b6d0d63062")
+                            text: reader.browsingBusy && !reader.ready ? qsTrId("ui.86b6d0d63062")
                                 : !reader.ready ? qsTrId("ui.ced325d6e7d0")
                                 : reader.searchActive ? qsTrId("ui.4031b1da2311")
                                 : reader.archiveTotal === 0 ? qsTrId("browser.emptyArchive")
