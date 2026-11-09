@@ -114,6 +114,18 @@ class Network final : public QNetworkAccessManager {
                 : QString{};
         const bool safe = !name.isEmpty() && QFileInfo(name).fileName() == name &&
                           !name.contains('\\') && name != "." && name != "..";
+        if (safe && config.value("fallback_loopback").toBool()) {
+            const QUrl base(config.value("fallback_server").toString());
+            if (base.scheme() != "http" || base.host() != "127.0.0.1" || base.port() <= 0 ||
+                base.path() != "/session/" || !base.userInfo().isEmpty() || base.hasQuery() ||
+                base.hasFragment()) {
+                failure("fallback_loopback_origin");
+                return new Reply(request, {}, this);
+            }
+            QNetworkRequest mapped(request);
+            mapped.setUrl(base.resolved(QUrl(QString::fromUtf8(QUrl::toPercentEncoding(name)))));
+            return QNetworkAccessManager::createRequest(operation, mapped, data);
+        }
         return new Reply(request, safe ? directory() + '/' + name : QString{}, this);
     }
 };
@@ -136,6 +148,9 @@ QJsonObject snapshot(UpdateController *updates, UiPreferences *settings) {
             {"error", updates->errorCode()},
             {"trusted", updates->trusted()},
             {"can_install", updates->canInstall()},
+            {"install_reason", updates->installReason()},
+            {"downloaded", updates->downloaded()},
+            {"candidate_version", updates->candidateVersion()},
             {"install_root", macUpdateInstallRoot()},
             {"settings_path", uiSettingsPath()},
             {"settings_override", qEnvironmentVariable("XDZIP_SETTINGS_PATH")},
@@ -263,6 +278,17 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
         initialPage ? initialPage->property("sessionIdentity").toString() : QString{};
     const auto prefix = QString::number(BuildInfo::buildNumber());
     const auto scenario = config.value("scenario").toString("success");
+    const bool fallback = scenario == "fallback-no-appcast" || scenario == "fallback-proxy";
+    if (scenario == "fallback-proxy") {
+        const QUrl proxy(config.value("fallback_proxy").toString());
+        if (proxy.scheme() != "http" || proxy.host() != "127.0.0.1" || proxy.port() <= 0 ||
+            !proxy.userInfo().isEmpty() || !proxy.path().isEmpty() || proxy.hasQuery() ||
+            proxy.hasFragment()) {
+            failure("fallback_proxy_origin");
+            return;
+        }
+        updates->configureNetwork("custom", proxy.toString(), {});
+    }
     const auto taskRecord = [=] {
         QVariantMap task;
         if (state->working)
@@ -323,8 +349,7 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
         } else if (scenario == "immutable-replacement") {
             // Only this fresh installed app root is locked, after Sparkle has
             // prepared its unprivileged helper. Native commit remains unchanged.
-            struct stat before {
-            }, after{};
+            struct stat before{}, after{};
             const auto path = QFile::encodeName(installed);
             const bool owned = ::lstat(path.constData(), &before) == 0 && S_ISDIR(before.st_mode) &&
                                before.st_uid == ::geteuid();
@@ -384,7 +409,8 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
             sessions->requestQuit();
             return;
         }
-        if (!oldProduct() || state->install || !QFileInfo::exists(directory() + "/upgrade.json"))
+        if (!oldProduct() || (!fallback && state->install) ||
+            !QFileInfo::exists(directory() + "/upgrade.json"))
             return;
         if (scenario == "recovery")
             return;
@@ -606,6 +632,48 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
         QScopedValueRollback<bool> pressing(state->clicking, true);
         if (!state->check) {
             state->check = click(about, about->findChild<QQuickItem *>("aboutCheckUpdate"));
+            return;
+        }
+        if (fallback && (updates->state() == "available" || updates->state() == "downloaded")) {
+            if (state->stopping)
+                return;
+            const auto reason =
+                scenario == "fallback-proxy" ? "macos_proxy" : "macos_missing_appcast";
+            auto *note = about->findChild<QQuickItem *>("aboutUpdateNote");
+            auto *release = about->findChild<QQuickItem *>("aboutOpenReleaseSecondary");
+            auto *open = about->findChild<QQuickItem *>("aboutOpenDownload");
+            const auto reasonId =
+                scenario == "fallback-proxy" ? "update.manualMacosProxy" : "update.manualMacosFeed";
+            const auto expected = qtTrId("update.manualMacos").arg(qtTrId(reasonId));
+            if (!updates->trusted() || updates->canInstall() ||
+                updates->installReason() != reason || !note || !note->isVisible() ||
+                note->property("text").toString() != expected || !release ||
+                !release->isVisible()) {
+                failure("fallback_authenticated_reason_or_guidance");
+                return;
+            }
+            if (!state->install && updates->state() == "available") {
+                state->install = click(about, about->findChild<QQuickItem *>("aboutInstallUpdate"));
+                return;
+            }
+            if (state->install && updates->state() == "downloaded") {
+                if (!updates->downloaded() || !open || !open->isVisible() ||
+                    sessions->updatePending() ||
+                    macUpdateInstallRoot() != config.value("install_root").toString()) {
+                    failure("fallback_download_or_handoff");
+                    return;
+                }
+                auto result = snapshot(updates, settings);
+                result.insert("about_check_clicked", state->check);
+                result.insert("about_download_clicked", state->install);
+                result.insert("guidance", note->property("text").toString());
+                result.insert("release_button_visible", release->isVisible());
+                result.insert("download_button_visible", open->isVisible());
+                result.insert("update_pending", sessions->updatePending());
+                write(scenario + ".json", result);
+                state->stopping = true;
+                sessions->requestQuit();
+            }
             return;
         }
         if (!state->install && updates->state() == "available") {
