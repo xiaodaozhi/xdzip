@@ -127,9 +127,16 @@ def main():
         expect(page.locator('#about-install-update')).to_have_text(messages['update.install'])
         page.evaluate('window.XdzipAboutUpdatePreview({state:"available",trusted:false,canInstall:false})')
         expect(page.locator('#about-install-update')).to_have_text(messages['update.release'])
-        page.evaluate('window.XdzipAboutUpdatePreview({state:"downloaded",trusted:true,canInstall:false,downloaded:true})')
+        page.evaluate('window.XdzipAboutUpdatePreview({state:"downloaded",trusted:true,canInstall:false,downloaded:true,packageType:"app.zip"})')
         expect(page.locator('#about-open-update')).to_have_text(messages['update.openDownload'])
-        expect(page.locator('#about-update-section .settings-about-actions')).to_have_count(0)
+        expect(page.locator('#about-update-note')).to_have_text(messages['update.manualMacos'].replace('%1', messages['update.manualMacosIdentity']))
+        for reason, key in [('macos_missing_appcast', 'update.manualMacosFeed'),
+                            ('macos_proxy', 'update.manualMacosProxy'),
+                            ('preview', 'update.manualMacosSession')]:
+            page.evaluate('(reason) => window.XdzipAboutUpdatePreview({state:"downloaded",trusted:true,canInstall:false,downloaded:true,packageType:"app.zip",installReason:reason})', reason)
+            expect(page.locator('#about-update-note')).to_have_text(messages['update.manualMacos'].replace('%1', messages[key]))
+        expect(page.locator('#about-open-release-secondary')).to_have_text(messages['update.release'])
+        expect(page.locator('#about-update-section .settings-about-actions')).to_have_count(1)
         page.evaluate('window.XdzipAboutUpdatePreview({state:"downloaded",trusted:true,canInstall:true,downloaded:true})')
         expect(page.locator('#about-install-update')).to_have_text(messages['update.installNow'])
         expect(page.locator('#about-open-update-secondary')).to_have_text(messages['update.openDownload'])
