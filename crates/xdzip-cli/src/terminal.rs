@@ -122,11 +122,13 @@ impl Drop for Echo {
     }
 }
 pub fn line(prompt: &str, secret: bool, limit: usize) -> Result<Zeroizing<String>> {
+    // Disable echo before publishing the prompt: a fast terminal user (or PTY)
+    // can otherwise send secret bytes between the prompt and the mode change.
+    let mode = Echo::hide(secret)?;
     if !prompt.is_empty() {
         eprint!("{prompt}");
         io::stderr().flush()?;
     }
-    let mode = Echo::hide(secret)?;
     #[cfg(windows)]
     if io::stdin().is_terminal() {
         let result = console_line(secret, limit);
