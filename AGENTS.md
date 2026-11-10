@@ -37,3 +37,5 @@
 复选控件统一使用 IntentCheckBox（SelectionCheck、OperationCheck 基于此），辅助功能 press/toggle 必须调用原生 click，使 nextCheckState、toggled 和 clicked 与鼠标一致；须提供可读名称，并核对实际选择模型与设置草稿。
 
 专用 Release 工作流经用户明确授权，可在 Apple Silicon runner 原生部署 Qt、作必要的 ad-hoc 完整性签名、打包并上传 app.zip 和 DMG。普通 CI 仍仅保留日志与 JSON，不部署或上传 Mac 应用包。发布顺序与不可变资产要求以 docs/engineering/release-protocol.md 为准。
+
+发行流程不得生成或上传对应源码压缩包；不要为了常规发行验收自行运行源码交付收集器，即使输出仅在本地也不例外。仅在用户针对源码收集另行明确要求时才运行该收集器，仍不得违反用户规定的上传限制。GitHub 自动提供的标签源码快照与项目上传的发行附件分开说明，不得声称前者由发行流水线生成或上传。许可复核应针对实际组件与具体义务，机器报告的通用待复核标记不是已确认的缺陷。
