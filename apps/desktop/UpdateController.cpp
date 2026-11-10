@@ -174,6 +174,7 @@ void UpdateController::applyNetworkConfiguration() {
     if (!m_networkConfigured)
         return;
     m_activeProxyMode = m_proxyMode;
+    m_activeProxyAddress = m_proxyAddress;
     m_activeMirror = m_mirrorAddress;
     m_network->setProxyFactory(new UpdateProxyFactory(m_proxyMode, m_proxyAddress));
 }
@@ -258,10 +259,11 @@ bool UpdateController::canInstall() const {
 QString UpdateController::installReason() const {
     return installationReason(
         m_trusted, !installedRoot().isEmpty(), !m_sessions.isNull(), platform() == "macos",
-        !m_candidate.value("appcast_url").toString().isEmpty(), m_activeProxyMode == "system");
+        !m_candidate.value("appcast_url").toString().isEmpty(),
+        UpdateNetwork::macosAutomaticProxy(m_activeProxyMode, m_activeProxyAddress));
 }
 QString UpdateController::installationReason(bool trusted, bool installed, bool hasSessions,
-                                             bool macos, bool hasAppcast, bool usesSystemProxy) {
+                                             bool macos, bool hasAppcast, bool hasNativeTransport) {
     if (!trusted)
         return QStringLiteral("unsigned");
     if (!installed)
@@ -270,7 +272,7 @@ QString UpdateController::installationReason(bool trusted, bool installed, bool 
         return QStringLiteral("preview");
     if (macos && !hasAppcast)
         return QStringLiteral("macos_missing_appcast");
-    if (macos && !usesSystemProxy)
+    if (macos && !hasNativeTransport)
         return QStringLiteral("macos_proxy");
     return {};
 }
@@ -723,26 +725,29 @@ void UpdateController::startInstallation() {
     m_waitTasks.stop();
 #ifdef Q_OS_MACOS
     setState("preparing");
-    m_candidate.insert("transport_mirror", m_activeMirror);
-    startMacUpdate(this, m_candidate, [this](QString error) {
-        if (!error.isEmpty()) {
-            setState("error", error);
-            return;
-        }
-        if (!rememberInstallation()) {
-            cancelMacUpdate();
-            setState("error", "handoff_receipt");
-            return;
-        }
-        if (!m_sessions->prepareForUpdate()) {
-            QSettings settings(updateStatePath(), QSettings::IniFormat);
-            settings.remove("update/pending");
-            settings.sync();
-            cancelMacUpdate();
-            setState("error", "busy");
-            return;
-        }
-    });
+    const MacUpdateTransport transport{m_activeProxyMode, m_activeProxyAddress, m_activeMirror};
+    startMacUpdate(
+        this, m_candidate,
+        [this](QString error) {
+            if (!error.isEmpty()) {
+                setState("error", error);
+                return;
+            }
+            if (!rememberInstallation()) {
+                cancelMacUpdate();
+                setState("error", "handoff_receipt");
+                return;
+            }
+            if (!m_sessions->prepareForUpdate()) {
+                QSettings settings(updateStatePath(), QSettings::IniFormat);
+                settings.remove("update/pending");
+                settings.sync();
+                cancelMacUpdate();
+                setState("error", "busy");
+                return;
+            }
+        },
+        transport);
 #else
     if (!ensureCache() || m_packagePath.isEmpty()) {
         setState("error", "cache");

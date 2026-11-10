@@ -13,9 +13,9 @@ English: CLI updates target their own installation. Standalone managed updates u
 
 每页最多 100 条，最多 10 页，每次响应最多 8 MiB，清单最多 256 KiB，签名最多 4 KiB。原始请求只允许 HTTPS 和明确登记的 GitHub/CDN 主机；用户配置镜像时传输地址允许该 HTTPS 镜像站点，重定向最多 5 次；元数据有 15 秒无数据超时和 30 秒总上限，下载有 30 秒无数据超时及一小时总上限。内存 ETag 缓存最多 24 项，304 只复用先前成功响应。离线、TLS、超时、限流、截断、缺包和清单错误均为失败，不等同于“已是最新”。重复点击不发起并行更新。
 
-更新使用设置中的系统代理、直连或自定义 HTTP/SOCKS5 代理，地址不含凭据。可选镜像必须是 HTTPS，且不含凭据、查询或片段；构造方式为镜像地址后拼接完整原始 GitHub HTTPS 地址。原始 URL 仍需通过固定主机白名单，镜像和重定向不会改变已签名清单的内容、校验、候选身份或安装门。配置在当前更新操作结束后用于下一次操作。macOS Sparkle 原生更新使用系统代理；选择直连或自定义代理时退化为经 Qt 下载和手动安装，避免自动安装绕过代理设置。
+更新使用设置中的系统代理、直连或自定义 HTTP/SOCKS5 代理，地址不含凭据。可选镜像必须是 HTTPS，且不含凭据、查询或片段；构造方式为镜像地址后拼接完整原始 GitHub HTTPS 地址。原始 URL 仍需通过固定主机白名单，镜像和重定向不会改变已签名清单的内容、校验、候选身份或安装门。配置在当前更新操作结束后用于下一次操作。macOS Sparkle 原生更新支持系统代理和无凭据的自定义 HTTP CONNECT／SOCKS5 代理。每个原生更新实例在启动前复制已验证的代理配置，feed 与归档使用同一会话策略；显式代理失败时禁止回退直连。选择直连时仍使用经 Qt 验证的手动下载，尚未开放原生自动安装，避免把空的原生代理数组误当作禁用系统代理。
 
-Update transport supports system, direct, or custom HTTP/SOCKS5 proxy settings and an optional HTTPS mirror. The mirror receives the complete original GitHub HTTPS URL after its base address. Original URL validation, authenticated manifests, package verification, and installation gates remain in force. A running operation keeps its transport settings. Sparkle uses the system proxy; other modes offer a verified manual download.
+Update transport supports system, direct, or custom HTTP/SOCKS5 proxy settings and an optional HTTPS mirror. The mirror receives the complete original GitHub HTTPS URL after its base address. Original URL validation, authenticated manifests, package verification, and installation gates remain in force. A running operation keeps its transport settings. Sparkle supports system and credential-free custom HTTP CONNECT/SOCKS5 proxies through a per-instance policy frozen before startup. Both feed and archive use that policy; explicit proxy failure cannot fall back to direct connections. Direct mode retains verified manual downloads until its override of conflicting system/PAC settings is independently validated.
 
 HTTP 429 表示限流。HTTP 403 只有在剩余额度为零、有效秒数的 Retry-After，或 GitHub JSON 错误消息明确表示限流时才归为限流；其他 403 保留为网络失败，不推断配额耗尽。产品不自动重试，也不读取 GitHub 凭据。匿名额度按请求源 IP 共享，CI 的仓库读取权限不能改变匿名请求额度。
 
@@ -29,9 +29,9 @@ HTTP 429 is a rate-limit failure. HTTP 403 is classified as rate-limited only wh
 
 Windows/Linux 将最多 2 GiB 的包流式写入私有更新缓存，同时核对长度和 SHA-256，成功提交后才允许交给助手。取消或校验失败不产生可安装状态。便携包、dirty、开发/源码或身份不明的构建只提供检查与下载。自动覆盖还要求 Release 配置和有效提交身份，不把无 Git 身份的源码归档构建当作安装版。安装身份须同时匹配系统安装记录、运行路径及随包标记。
 
-macOS 使用固定 Sparkle 2.10.0，通过薄 Objective-C++ 用户驱动把状态送入统一关于页。feed 和归档由 Sparkle 原生验证，feed 只包含已选定的同一个候选；不声称 Sparkle 执行了额外 SHA-256。只读 DMG、App Translocation、未登记的 .app 或缺少更新公钥均提供手动安装入口。普通 CI 不因引入 Sparkle 而部署、签名或上传 Mac 应用包。
+macOS 使用固定 Sparkle 2.10.0 和 `xdzip-proxy.1` 受限代理扩展，通过薄 Objective-C++ 用户驱动把状态送入统一关于页。框架主库与 Ed25519 从锁定源码和补丁以 Apple Silicon 原生编译，资源、安装助手和签名工具保留锁定官方 SDK 来源；派生框架不声称与上游 SDK 字节相同。feed 和归档由 Sparkle 原生验证，feed 只包含已选定的同一个候选；不声称 Sparkle 执行了额外 SHA-256。只读 DMG、App Translocation、未登记的 .app 或缺少更新公钥均提供手动安装入口。普通 CI 不因引入 Sparkle 而部署、签名或上传 Mac 应用包。
 
-手动回退展示当前首先未满足的条件：安装身份、会话、缺少自动更新源或非系统代理。安装身份不合格仅表示整组身份检查未通过，不推测具体是哪一项；多个条件同时不满足时仍可能需要依次处理。关于页提供同版本发布页和 DMG 指引，下载 app.zip 后说明解压、退出旧版及替换应用；下载成功不等于安装成功。English: Manual fallback identifies the first unmet installation identity, session, feed or proxy condition. An identity failure does not guess which individual identity check failed, and other conditions may also be unmet. About links to the release and explains manual DMG or app.zip installation; download is not installation.
+手动回退展示当前首先未满足的条件：安装身份、会话、缺少自动更新源或暂不支持原生安装的直连模式。安装身份不合格仅表示整组身份检查未通过，不推测具体是哪一项；多个条件同时不满足时仍可能需要依次处理。关于页提供同版本发布页和 DMG 指引，下载 app.zip 后说明解压、退出旧版及替换应用；下载成功不等于安装成功。English: Manual fallback identifies the first unmet installation identity, session, feed or unsupported direct-mode condition. An identity failure does not guess which individual identity check failed, and other conditions may also be unmet. About links to the release and explains manual DMG or app.zip installation; download is not installation.
 
 ## 安装交接与恢复
 

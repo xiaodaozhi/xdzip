@@ -15,6 +15,7 @@ import unittest
 from unittest.mock import patch
 
 import sparkle_bundle as sparkle
+import sparkle_build
 
 image = runpy.run_path(str(Path(__file__).with_name('test-macos-attribution.py')))['image']
 
@@ -284,12 +285,20 @@ class SparkleBundleTests(unittest.TestCase):
         patch('sparkle_bundle.configuration', return_value=self.spec).start()
         self.write(self.sdk/'LICENSE', b'fixture legal notice')
         framework = self.sdk/'Sparkle.framework/Versions/B'
-        self.write(framework/'Resources/Info.plist', plistlib.dumps({'CFBundleShortVersionString': '2.10.0'}))
+        self.write(framework/'Resources/Info.plist', plistlib.dumps({
+            'CFBundleShortVersionString': '2.10.0',
+            'XdzipFrameworkBuildVariant': self.spec['framework_build']['variant']}))
         self.write(framework/'Headers/SPUUpdater.h', b'fixture SDK header')
         for relative in ('Sparkle', 'Autoupdate', 'Updater.app/Contents/MacOS/Updater',
                          'XPCServices/Downloader.xpc/Contents/MacOS/Downloader'):
             self.write(framework/relative, image())
         self.write(self.app/'Contents/Info.plist', plistlib.dumps({'SUPublicEDKey': 'fixture-only-public-key'}))
+        self.build_record = dict(sparkle_build.inputs(self.spec),
+            library_sha256=sparkle.checksum(framework/'Sparkle'),
+            files={p.relative_to(self.sdk).as_posix(): sparkle.checksum(p)
+                   for p in framework.rglob('*') if p.is_file()})
+        self.write(self.sdk/'xdzip-sdk.json', json.dumps({
+            'sha256': self.spec['sdk']['sha256'], 'framework_build': self.build_record}).encode())
 
     def write(self, path, data):
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -314,6 +323,7 @@ class SparkleBundleTests(unittest.TestCase):
     def test_notice_identity_is_pinned(self):
         files = sparkle.write_notice(self.sdk, self.root/'notices')
         self.assertEqual(files[0].read_bytes(), b'fixture legal notice')
+        self.assertEqual(json.loads(files[2].read_bytes()), self.build_record)
         self.write(self.sdk/'LICENSE', b'changed notice')
         with self.assertRaisesRegex(ValueError, 'identity differs'):
             sparkle.write_notice(self.sdk, self.root/'other')
@@ -342,11 +352,30 @@ class SparkleBundleTests(unittest.TestCase):
             return {'files': [{'path': relative, 'sha256': sparkle.checksum(path)}]}
         sparkle.attribute(report, self.app, self.sdk, audit())
         self.assertEqual(report['gaps'], [])
-        self.assertEqual(report['files'][0]['owners'], ['sparkle:Sparkle@2.10.0'])
+        self.assertEqual(report['files'][0]['owners'], ['sparkle:Sparkle@2.10.0-xdzip-proxy.1'])
         self.assertNotIn(str(self.sdk), json.dumps(report))
         path.write_bytes(image(b'changed executable'))
         with self.assertRaisesRegex(ValueError, 'differ'):
             sparkle.attribute(copy.deepcopy(report), self.app, self.sdk, audit())
+
+    def test_unpatched_sdk_and_changed_helper_cannot_satisfy_proxy_build_identity(self):
+        marker = self.sdk/'xdzip-sdk.json'
+        original = marker.read_bytes()
+        marker.write_text(json.dumps({'sha256': self.spec['sdk']['sha256']}))
+        with self.assertRaisesRegex(ValueError, 'identity differs'):
+            sparkle.validate_sdk(self.sdk)
+        marker.write_bytes(original)
+        self.write(self.sdk/'Sparkle.framework/Versions/B/Autoupdate', image(b'changed helper'))
+        with self.assertRaisesRegex(ValueError, 'file identity differs'):
+            sparkle.validate_sdk(self.sdk)
+
+    def test_missing_receipt_files_cannot_be_admitted_as_a_complete_sdk(self):
+        record = copy.deepcopy(self.build_record)
+        record['files'].pop('Sparkle.framework/Versions/B/Autoupdate')
+        self.write(self.sdk/'xdzip-sdk.json', json.dumps({
+            'sha256': self.spec['sdk']['sha256'], 'framework_build': record}).encode())
+        with self.assertRaisesRegex(ValueError, 'incomplete'):
+            sparkle.validate_sdk(self.sdk)
 
     def test_signing_uses_final_asset_and_fails_on_missing_package(self):
         with patch.dict(os.environ, {'XDZIP_SPARKLE_SIGNING_KEY_HEX': ''}):

@@ -533,7 +533,7 @@
     "update.manualMacos": "%1 Download the DMG for this release from the release page. To use app.zip, extract xdzip.app and move it out of the download folder first, then quit xdzip and replace the copy in Applications. Downloading does not complete installation; an unnotarized build may trigger a macOS security warning.",
     "update.manualMacosIdentity": "This copy does not meet the installation identity requirements for automatic updates.",
     "update.manualMacosFeed": "This release has no available macOS automatic update feed.",
-    "update.manualMacosProxy": "The current proxy mode does not support automatic installation on macOS. Select the system proxy in settings and try again.",
+    "update.manualMacosProxy": "Direct mode does not yet support automatic installation on macOS. Select the system proxy or a custom proxy in settings and try again.",
     "update.manualMacosSession": "The current session cannot perform automatic installation.",
     "update.cancel": "Cancel",
     "update.cancelCheck": "Cancel Check",

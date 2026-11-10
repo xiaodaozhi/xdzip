@@ -61,7 +61,7 @@ class UpdateController final : public QObject {
     }
     QString installReason() const;
     static QString installationReason(bool trusted, bool installed, bool hasSessions, bool macos,
-                                      bool hasAppcast, bool usesSystemProxy);
+                                      bool hasAppcast, bool hasNativeTransport);
     Q_INVOKABLE void check();
     Q_INVOKABLE void cancel();
     Q_INVOKABLE void download();
@@ -112,7 +112,7 @@ class UpdateController final : public QObject {
     QByteArray m_manifest, m_signature;
     QString m_state = QStringLiteral("idle"), m_error, m_packagePath;
     QString m_proxyMode = QStringLiteral("system"), m_proxyAddress, m_mirrorAddress;
-    QString m_activeProxyMode = QStringLiteral("system"), m_activeMirror;
+    QString m_activeProxyMode = QStringLiteral("system"), m_activeProxyAddress, m_activeMirror;
     bool m_networkConfigured = false;
     qreal m_progress = -1;
     bool m_trusted = false, m_installAfterDownload = false;

@@ -219,6 +219,26 @@ class UpdateControllerTest final : public QObject {
                                          trusted && installed && sessions &&
                                              (!macos || (feed && systemProxy)));
     }
+    void macosCustomProxyRetainsTheOtherInstallationGates() {
+        for (const auto &address :
+             {QStringLiteral("http://127.0.0.1:7890"), QStringLiteral("socks5://127.0.0.1:1080")}) {
+            const bool supported = UpdateNetwork::macosAutomaticProxy("custom", address);
+            QVERIFY(supported);
+            QCOMPARE(UpdateController::installationReason(true, true, true, true, true, supported),
+                     QString{});
+            QCOMPARE(UpdateController::installationReason(false, true, true, true, true, supported),
+                     "unsigned");
+            QCOMPARE(UpdateController::installationReason(true, false, true, true, true, supported),
+                     "manual_install");
+            QCOMPARE(UpdateController::installationReason(true, true, true, true, false, supported),
+                     "macos_missing_appcast");
+        }
+        QVERIFY(UpdateNetwork::macosAutomaticProxy("system", {}));
+        QVERIFY(!UpdateNetwork::macosAutomaticProxy("none", {}));
+        QVERIFY(!UpdateNetwork::macosAutomaticProxy("custom", {}));
+        QVERIFY(!UpdateNetwork::macosAutomaticProxy("custom", "http://user:secret@host:42"));
+        QVERIFY(!UpdateNetwork::macosAutomaticProxy("custom", "https://host:443"));
+    }
 #ifdef Q_OS_MACOS
     void nativeDriverCancellationAndOneShotCommit() {
         Network network;

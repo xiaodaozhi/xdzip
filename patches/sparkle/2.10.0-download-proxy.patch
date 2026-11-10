@@ -1,0 +1,106 @@
+--- a/Sparkle/SPUUpdater.h
++++ b/Sparkle/SPUUpdater.h
+@@ -24,0 +25,5 @@
++// xdzip downstream API. Only the framework library is rebuilt; installer IPC
++// and the pinned upstream helpers remain unchanged.
++#define SPU_XDZIP_DOWNLOAD_PROXY_API 1
++
++
+@@ -48,0 +54,10 @@
++
++/**
++ Configure an explicit HTTP CONNECT or SOCKS5 proxy before startUpdater.
++ Call on the main thread. nil retains system proxy settings. URLs must contain
++ only a host and explicit port, without credentials. Unsupported configurations
++ fail without starting network traffic. This immutable instance setting applies
++ to both feed and archive downloads. Downloader XPC is unsupported for this API.
++ */
++- (BOOL)xdzip_setDownloadProxyURL:(nullable NSURL *)proxyURL error:(NSError * _Nullable __autoreleasing * _Nullable)error;
++
+--- a/Sparkle/SUHost.h
++++ b/Sparkle/SUHost.h
+@@ -23,0 +24 @@
++@property (nonatomic, copy, nullable) NSURL *xdzipDownloadProxyURL;
+--- a/Sparkle/SPUUpdater.m
++++ b/Sparkle/SPUUpdater.m
+@@ -145,0 +146,27 @@
++- (BOOL)xdzip_setDownloadProxyURL:(NSURL * _Nullable)proxyURL error:(NSError * __autoreleasing *)error
++{
++    BOOL valid = NSThread.isMainThread && !_startedUpdater;
++    if (proxyURL != nil) {
++        NSString *scheme = proxyURL.scheme.lowercaseString;
++        long long port = proxyURL.port.longLongValue;
++        valid = valid && ([scheme isEqualToString:@"http"] || [scheme isEqualToString:@"socks5"]) &&
++            proxyURL.host.length > 0 && port > 0 && port <= 65535 &&
++            proxyURL.user == nil && proxyURL.password == nil && proxyURL.query == nil &&
++            proxyURL.fragment == nil && (proxyURL.path.length == 0 || [proxyURL.path isEqualToString:@"/"]) &&
++            !SPUXPCServiceIsEnabled(SUEnableDownloaderServiceKey);
++        if (@available(macOS 14.0, *)) {
++        } else {
++            valid = NO;
++        }
++    }
++    if (!valid) {
++        if (error != NULL) {
++            *error = [NSError errorWithDomain:SUSparkleErrorDomain code:SUInvalidUpdaterError
++                userInfo:@{NSLocalizedDescriptionKey: @"The explicit update proxy is unsupported or cannot be changed after starting the updater."}];
++        }
++        return NO;
++    }
++    _host.xdzipDownloadProxyURL = proxyURL;
++    return YES;
++}
++
+--- a/Sparkle/SPUDownloadDriver.m
++++ b/Sparkle/SPUDownloadDriver.m
+@@ -111 +111 @@
+-            _downloader = [[SPUDownloader alloc] initWithDelegate:self];
++            _downloader = [[SPUDownloader alloc] initWithDelegate:self proxyURL:host.xdzipDownloadProxyURL];
+--- a/Downloader/SPUDownloader.h
++++ b/Downloader/SPUDownloader.h
+@@ -19,0 +20 @@
++- (instancetype)initWithDelegate:(id <SPUDownloaderDelegate>)delegate proxyURL:(nullable NSURL *)proxyURL;
+--- a/Downloader/SPUDownloader.m
++++ b/Downloader/SPUDownloader.m
+@@ -14,0 +15,2 @@
++#import <Network/Network.h>
++#import <Network/NSURLSession+Network.h>
+@@ -35,0 +38 @@
++    NSURL *_proxyURL;
+@@ -46,0 +50,5 @@
++{
++    return [self initWithDelegate:delegate proxyURL:nil];
++}
++
++- (instancetype)initWithDelegate:(id <SPUDownloaderDelegate>)delegate proxyURL:(NSURL * _Nullable)proxyURL
+@@ -50,0 +59 @@
++        _proxyURL = [proxyURL copy];
+@@ -82,0 +92,25 @@
++    NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
++    if (_proxyURL != nil) {
++        if (@available(macOS 14.0, *)) {
++            NSString *host = _proxyURL.host;
++            if ([host hasPrefix:@"["] && [host hasSuffix:@"]"]) {
++                host = [host substringWithRange:NSMakeRange(1, host.length - 2)];
++            }
++            nw_endpoint_t endpoint = nw_endpoint_create_host(host.UTF8String, _proxyURL.port.stringValue.UTF8String);
++            nw_proxy_config_t proxy = [_proxyURL.scheme.lowercaseString isEqualToString:@"http"]
++                ? nw_proxy_config_create_http_connect(endpoint, nil)
++                : nw_proxy_config_create_socksv5(endpoint);
++            if (proxy == nil) {
++                [_delegate downloaderDidFailWithError:[NSError errorWithDomain:SUSparkleErrorDomain code:SUDownloadError
++                    userInfo:@{NSLocalizedDescriptionKey: @"The update proxy configuration could not be created."}]];
++                return;
++            }
++            // A failed explicit proxy must never bypass the user's network choice.
++            nw_proxy_config_set_failover_allowed(proxy, false);
++            configuration.proxyConfigurations = @[proxy];
++        } else {
++            [_delegate downloaderDidFailWithError:[NSError errorWithDomain:SUSparkleErrorDomain code:SUDownloadError
++                userInfo:@{NSLocalizedDescriptionKey: @"The explicit update proxy requires macOS 14 or later."}]];
++            return;
++        }
++    }
+@@ -84 +118 @@
+-        sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
++        sessionWithConfiguration:configuration

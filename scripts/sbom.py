@@ -67,6 +67,11 @@ def source_bom(inventory):
                                   {'type':'vcs', 'url':dependency['source']['url']}],
             'properties':properties(evidence='pinned native SDK declaration; deployed files require separate attribution',
                                     sdk_sha256=dependency['sdk']['sha256'], source_sha256=dependency['source']['sha256'])})
+        if dependency.get('framework_build'):
+            bom['components'][-1]['properties'] += properties(
+                build_variant=dependency['framework_build']['variant'],
+                patch_sha256=dependency['framework_build']['patch_sha256'],
+                build_method=dependency['framework_build']['method'])
     for asset in inventory['assets']:
         item = {'type':'file', 'bom-ref':'asset:'+asset['path'], 'name':asset['path'],
                 'hashes':[{'alg':'SHA-256','content':asset['sha256']} ]}

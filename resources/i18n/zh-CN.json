@@ -533,7 +533,7 @@
     "update.manualMacos": "%1 建议前往发布页下载同版本的 DMG。若使用 app.zip，解压出 xdzip.app 后先将它移出下载目录，再退出当前 xdzip，将应用替换到“应用程序”文件夹。下载完成不代表安装完成，未公证的开发包可能触发 macOS 安全提示。",
     "update.manualMacosIdentity": "当前运行的副本不满足自动更新的安装身份要求。",
     "update.manualMacosFeed": "此版本没有可用的 macOS 自动更新源。",
-    "update.manualMacosProxy": "当前代理模式不支持 macOS 自动安装，请在设置中选择系统代理后重试。",
+    "update.manualMacosProxy": "直连模式暂不支持 macOS 自动安装，请在设置中选择系统代理或自定义代理后重试。",
     "update.manualMacosSession": "当前会话无法执行自动安装。",
     "update.cancel": "取消",
     "update.cancelCheck": "取消检查",
