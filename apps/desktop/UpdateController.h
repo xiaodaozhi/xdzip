@@ -52,6 +52,10 @@ class UpdateController final : public QObject {
         return m_trusted;
     }
     bool canInstall() const;
+    static QJsonObject cliInstallationInfo();
+    int candidateBuild() const {
+        return m_candidate.value("build").toInt();
+    }
     bool downloaded() const {
         return !m_packagePath.isEmpty();
     }
@@ -74,6 +78,12 @@ class UpdateController final : public QObject {
         QByteArray etag, bytes;
     };
     using FetchCallback = std::function<void(QByteArray, QString)>;
+    static QString localInstalledRoot();
+    int acquireCliUsage();
+    void releaseCliUsage();
+    bool writeCliStatus();
+    bool m_cliCommitted = false;
+    int m_cliUsage = -1;
     void setState(const QString &state, const QString &error = {});
     void fetch(const QUrl &url, qsizetype limit, FetchCallback callback);
     void fetchPage(int page);

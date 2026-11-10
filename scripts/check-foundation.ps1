@@ -46,6 +46,11 @@ $env:XDZIP_METADATA_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/macos-metad
 $env:XDZIP_LEGACY_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/legacy-name-interop'
 Set-CiPhase 'rust-tests'
 Invoke-Checked cargo @('test', '--workspace', '--locked')
+Invoke-Checked cargo @('build', '-p', 'xdzip-cli', '--locked')
+$cliBinary = if ($IsWindows) { 'target/debug/xdzip.exe' } else { 'target/debug/xdzip' }
+Invoke-Checked $codecPython @('scripts/check-cli.py', '--binary', $cliBinary, '--worker', $env:XDZIP_NATIVE_CODEC, '--output', 'build/review/cli')
+Invoke-Checked $codecPython @('scripts/test-cli-release.py')
+
 Invoke-Checked cargo @('build', '-p', 'xdzip-m3-probe', '-p', 'xdzip-m4-probe', '-p', 'xdzip-optical-probe', '-p', 'xdzip-cab-probe', '--locked')
 $rustCodecEvidence = 'build/review/independent-rust-codecs'
 New-Item -ItemType Directory -Path $rustCodecEvidence -Force | Out-Null

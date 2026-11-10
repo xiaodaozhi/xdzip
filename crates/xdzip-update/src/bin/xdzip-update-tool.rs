@@ -250,7 +250,7 @@ fn run() -> Result<(), String> {
                 .verify_strict(&bytes, &Signature::from_bytes(&signature))
                 .map_err(|_| "archive_signature_mismatch")?;
         }
-        "sign" => {
+        "sign" | "sign-cli" => {
             if options.len() != 4 {
                 return Err("invalid_arguments".into());
             }
@@ -263,7 +263,12 @@ fn run() -> Result<(), String> {
             let key = signing_key("XDZIP_UPDATE_SIGNING_KEY_HEX")?;
             let envelope = serde_json::to_vec_pretty(&json!({"schema_version":1,"algorithm":"ed25519",
                 "key_id":required(&options,"--key-id")?,"signature":hex(&key.sign(&bytes).to_bytes())})).map_err(|_| "serialization_failed")?;
-            let error = xdzip_update::verify_manifest(
+            let verify = if command.ends_with("-cli") {
+                xdzip_update::verify_cli_manifest
+            } else {
+                xdzip_update::verify_manifest
+            };
+            let error = verify(
                 &bytes,
                 std::str::from_utf8(&envelope).map_err(|_| "serialization_failed")?,
                 keyring,
@@ -273,7 +278,7 @@ fn run() -> Result<(), String> {
             }
             write_new(required(&options, "--output")?, &envelope)?;
         }
-        "verify" => {
+        "verify" | "verify-cli" => {
             if options.len() != 3 {
                 return Err("invalid_arguments".into());
             }
@@ -283,7 +288,12 @@ fn run() -> Result<(), String> {
             )?;
             let envelope = bounded_file(required(&options, "--signature")?, 4096)?;
             let keyring = bounded_file(required(&options, "--keyring")?, 64 * 1024)?;
-            let error = xdzip_update::verify_manifest(
+            let verify = if command.ends_with("-cli") {
+                xdzip_update::verify_cli_manifest
+            } else {
+                xdzip_update::verify_manifest
+            };
+            let error = verify(
                 &bytes,
                 std::str::from_utf8(&envelope).map_err(|_| "invalid_signature_envelope")?,
                 std::str::from_utf8(&keyring).map_err(|_| "invalid_trust_keyring")?,

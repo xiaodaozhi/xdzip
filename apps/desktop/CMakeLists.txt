@@ -82,6 +82,25 @@ if(WIN32)
 endif()
 # Keep the internal target stable while using the product name on every platform.
 set_target_properties(xdzip-browser PROPERTIES OUTPUT_NAME xdzip)
+set(XDZIP_CLI_PROFILE debug)
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(XDZIP_CLI_PROFILE release)
+endif()
+set(XDZIP_CLI_BUILD "${CMAKE_BINARY_DIR}/cli")
+set(XDZIP_CLI_BUNDLE "${CMAKE_CURRENT_BINARY_DIR}/cli")
+if(APPLE)
+    set(XDZIP_CLI_BUNDLE "${CMAKE_CURRENT_BINARY_DIR}/xdzip.app/Contents/Helpers/cli")
+endif()
+add_custom_target(xdzip-command
+    COMMAND "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/scripts/cli.py" build
+        --build-dir "${XDZIP_CLI_BUILD}" --profile "${XDZIP_CLI_PROFILE}"
+        --codec "$<TARGET_FILE:xdzip-native-codec>"
+    COMMAND "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/scripts/cli.py" bundle
+        --build-dir "${XDZIP_CLI_BUILD}" --output "${XDZIP_CLI_BUNDLE}"
+    DEPENDS xdzip-native-codec
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" VERBATIM)
+add_dependencies(xdzip-browser xdzip-command)
+
 # Linker evidence remains a local/CI artifact. It does not change optimization,
 # safety checks or runtime behavior, and is not a complete license attribution.
 if(APPLE)
@@ -143,7 +162,7 @@ qt_add_qml_module(xdzip-browser
     URI Xdzip.Native VERSION 1.0
     DEPENDENCIES QtQml.Models
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml/Xdzip/Native"
-    SOURCES BrowserController.h BrowserController.cpp RuntimeConnection.h RuntimeConnection.cpp DesktopIntegration.h DesktopIntegration.cpp ApplicationSessions.h ApplicationSessions.cpp SingleInstance.h SingleInstance.cpp UpdateController.h UpdateController.cpp UpdateHandoff.h UpdateHandoff.cpp FileAssociations.h FileAssociations.cpp)
+    SOURCES CliRequestBroker.h CliRequestBroker.cpp BrowserController.h BrowserController.cpp RuntimeConnection.h RuntimeConnection.cpp DesktopIntegration.h DesktopIntegration.cpp ApplicationSessions.h ApplicationSessions.cpp SingleInstance.h SingleInstance.cpp UpdateController.h UpdateController.cpp UpdateHandoff.h UpdateHandoff.cpp FileAssociations.h FileAssociations.cpp)
 target_link_libraries(xdzip-browser PRIVATE xdzip-reader-rust
     Qt6::Widgets Qt6::Network Qt6::Quick Qt6::QuickControls2 ${CMAKE_DL_LIBS})
 include(${PROJECT_SOURCE_DIR}/cmake/UpdateHelper.cmake)
@@ -245,6 +264,7 @@ if(BUILD_TESTING)
     set_tests_properties(qt_zip_browser PROPERTIES TIMEOUT 240)
     add_test(NAME qt_browser_load COMMAND xdzip-browser --smoke-test)
     add_executable(xdzip-update-tests tests/update_controller_test.cpp
+        CliRequestBroker.cpp CliRequestBroker.h
         UpdateController.cpp UpdateController.h UpdateHandoff.cpp UpdateHandoff.h
         BrowserController.cpp BrowserController.h RuntimeConnection.cpp RuntimeConnection.h
         DesktopIntegration.cpp DesktopIntegration.h ApplicationSessions.cpp ApplicationSessions.h

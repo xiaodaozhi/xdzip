@@ -14,6 +14,11 @@ TARGETS = {
     ('linux', 'x86_64', 'tar.gz'): ('linux-x86_64.tar.gz', {'distribution': 'ubuntu', 'version': '24.04', 'glibc': '2.39', 'display_server': 'X11'}),
     ('linux', 'x86_64', 'deb'): ('ubuntu24.04-x86_64.deb', {'distribution': 'ubuntu', 'version': '24.04', 'glibc': '2.39', 'display_server': 'X11'}),
 }
+CLI_TARGETS = {
+    ('windows', 'x86_64', 'zip'): ('windows-x86_64.zip', {'windows': '11'}),
+    ('macos', 'arm64', 'tar.gz'): ('macos-arm64.tar.gz', {'macos': '14.0'}),
+    ('linux', 'x86_64', 'tar.gz'): ('linux-x86_64.tar.gz', {'distribution': 'ubuntu', 'version': '24.04', 'glibc': '2.39'}),
+}
 CHANNEL_ORDER = {'alpha': 0, 'beta': 1, 'rc': 2, 'stable': 3}
 
 
@@ -66,6 +71,19 @@ def release_tag_eligible(tag, current, current_channel):
 
 
 def validate(manifest, directory=None):
+    return _validate(manifest, directory, TARGETS, 'xdzip')
+
+
+def validate_cli(manifest, directory=None):
+    if manifest.get('component') != 'cli' or manifest.get('repository') != 'xiaodaozhi/xdzip':
+        raise ValueError('Invalid CLI component or publisher')
+    expected = {'schema_version','product','component','version','channel','build','tag','commit','repository','assets'}
+    if set(manifest) != expected:
+        raise ValueError('Unknown or missing CLI manifest field')
+    return _validate(manifest, directory, CLI_TARGETS, 'xdzip-cli')
+
+
+def _validate(manifest, directory, targets, prefix):
     if directory is not None:
         reject_corresponding_source_archives(Path(directory).iterdir())
     if manifest.get('schema_version') != 1 or manifest.get('product') != 'xdzip':
@@ -85,11 +103,11 @@ def validate(manifest, directory=None):
     seen = set()
     for asset in manifest['assets']:
         target = (asset['platform'], asset['architecture'], asset['package_type'])
-        if target in seen or target not in TARGETS:
+        if target in seen or target not in targets:
             raise ValueError('Duplicate or unsupported target')
         seen.add(target)
-        suffix, requirements = TARGETS[target]
-        name = 'xdzip-' + version + '-' + suffix
+        suffix, requirements = targets[target]
+        name = prefix + '-' + version + '-' + suffix
         if asset['filename'] != name or asset['minimum_system'] != requirements:
             raise ValueError('Asset identity or minimum system mismatch')
         url = f'https://github.com/{repository}/releases/download/v{version}/{name}'
@@ -101,7 +119,7 @@ def validate(manifest, directory=None):
             path = Path(directory) / name
             if path.is_symlink() or not path.is_file() or path.stat().st_size != asset['bytes'] or sha256(path) != asset['sha256']:
                 raise ValueError('Missing or corrupted release asset')
-    if seen != set(TARGETS):
+    if seen != set(targets):
         raise ValueError('Incomplete cross-platform release')
     appcast = manifest.get('macos_appcast_url', '')
     if appcast and appcast != f'https://github.com/{repository}/releases/download/v{version}/appcast.xml':
@@ -110,16 +128,28 @@ def validate(manifest, directory=None):
 
 
 def create(directory, version, repository, commit):
+    return _create(directory, version, repository, commit, False)
+
+
+def create_cli(directory, version, repository, commit):
+    return _create(directory, version, repository, commit, True)
+
+
+def _create(directory, version, repository, commit, cli):
     display = version['display_version']
     result = dict(schema_version=1, product='xdzip', version=display, channel=version['channel'],
                   build=version['build'], tag='v'+display, commit=commit, repository=repository, assets=[])
-    for (platform, architecture, package_type), (suffix, requirements) in TARGETS.items():
-        name = f'xdzip-{display}-{suffix}'
+    if cli:
+        result['component'] = 'cli'
+    targets = CLI_TARGETS if cli else TARGETS
+    prefix = 'xdzip-cli' if cli else 'xdzip'
+    for (platform, architecture, package_type), (suffix, requirements) in targets.items():
+        name = f'{prefix}-{display}-{suffix}'
         path = Path(directory)/name
         result['assets'].append(dict(filename=name, platform=platform, architecture=architecture,
             package_type=package_type, minimum_system=requirements, bytes=path.stat().st_size,
             sha256=sha256(path), url=f'https://github.com/{repository}/releases/download/v{display}/{name}'))
-    return validate(result, directory)
+    return validate_cli(result, directory) if cli else validate(result, directory)
 
 
 def select(manifest, current, allowed_channels, platform, architecture, package_type):

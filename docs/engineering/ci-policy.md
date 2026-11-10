@@ -28,6 +28,8 @@ Qt 按需运行的 `test --skip-rust` 将 Rust workspace 标记为未执行。�
 
 Foundation 和 Qt 使用固定输入缓存，缓存仅包含 Cargo 下载、pip 下载和固定 Qt 对应源码归档，不包含已编译产品、安装的 Qt SDK、测试结论或凭据。可信 main 的手动运行可保存经过哈希封存的缓存；其他分支仅恢复并核验。缓存命中不能代替重新执行检查。
 
+Foundation 在三平台原生构建并执行无 Qt 的 CLI 回归，清除显示会话和 Qt 搜索路径，保留 JSON 回执。Qt 构建同时验证私有 CLI 布局及同用户更新交接。独立包生成要求同一可执行文件、worker 哈希和构建身份的通过回执；三平台 CLI 发行包及独立签名清单仅由已授权的 Release 流程产出。普通 macOS CI 仍只上传日志与 JSON。English: Native CLI checks run without Qt/display settings and bind receipts to both binaries. CLI release assets and signatures remain part of the separately authorized Release workflow.
+
 Windows 和 Linux 的 Qt 手动运行上传实验性开发包和验证工件，通常保留 14 天；macOS 普通检查仅保留日志和 JSON，不部署、签名或上传应用包。日常 CI 不生成这些开发包。按需开发 DMG 和专用 Release 的例外见[Mac 部署](macos-deployment.md)和[发布协议](release-protocol.md)。
 
 ## 视觉、桌面与发行

@@ -62,6 +62,8 @@ void SingleInstance::release() {
     m_accepting = false;
     m_handler = {};
     m_pending.clear();
+    m_pendingCli.clear();
+    m_cliHandler = {};
     if (m_server.isListening())
         m_server.close();
     for (auto *socket : m_server.findChildren<QLocalSocket *>())
@@ -71,7 +73,7 @@ void SingleInstance::release() {
     m_lock.reset();
 }
 SingleInstance::Result SingleInstance::start(const QStringList &paths, const QString &nameSpace,
-                                             int testTimeoutMs) {
+                                             int testTimeoutMs, const QString &cliRequest) {
     if (m_lock)
         return Failed;
     m_accepting = true;
@@ -95,6 +97,8 @@ SingleInstance::Result SingleInstance::start(const QStringList &paths, const QSt
             return Failed;
         connect(&m_server, &QLocalServer::newConnection, this, &SingleInstance::accept,
                 Qt::UniqueConnection);
+        if (!cliRequest.isEmpty())
+            m_pendingCli.append(cliRequest);
         return Primary;
     }
     QElapsedTimer timer;
@@ -111,7 +115,8 @@ SingleInstance::Result SingleInstance::start(const QStringList &paths, const QSt
     if (socket.state() != QLocalSocket::ConnectedState)
         return Failed;
     const auto hello = QJsonDocument::fromJson(readLine(socket, timer, timeoutMs)).object();
-    if (hello.value("protocol").toInt() != 1)
+    if (hello.value("protocol").toInt() != 1 ||
+        (!cliRequest.isEmpty() && hello.value("cli_protocol").toInt() != 1))
         return Failed;
 #ifdef Q_OS_WIN
     const auto pid = hello.value("pid").toString().toULong();
@@ -125,7 +130,8 @@ SingleInstance::Result SingleInstance::start(const QStringList &paths, const QSt
         values.append(QFileInfo(path).absoluteFilePath());
     }
     const auto id = QUuid::createUuid().toString(QUuid::WithoutBraces);
-    const auto request = packet({{"protocol", 1}, {"id", id}, {"paths", values}});
+    const auto request =
+        packet({{"protocol", 1}, {"id", id}, {"paths", values}, {"cli_request", cliRequest}});
     if (request.size() > MaxBytes || socket.write(request) != request.size())
         return Failed;
     socket.flush();
@@ -139,14 +145,21 @@ void SingleInstance::attach(std::function<void(const QStringList &)> handler) {
     for (const auto &paths : pending)
         m_handler(paths);
 }
+void SingleInstance::attachCli(std::function<void(const QString &)> handler) {
+    m_cliHandler = std::move(handler);
+    const auto pending = std::exchange(m_pendingCli, {});
+    for (const auto &directory : pending)
+        m_cliHandler(directory);
+}
 void SingleInstance::accept() {
     while (auto *socket = m_server.nextPendingConnection()) {
         if (m_server.findChildren<QLocalSocket *>().size() > 32) {
             socket->deleteLater();
             continue;
         }
-        socket->write(packet(
-            {{"protocol", 1}, {"pid", QString::number(QCoreApplication::applicationPid())}}));
+        socket->write(packet({{"protocol", 1},
+                              {"cli_protocol", 1},
+                              {"pid", QString::number(QCoreApplication::applicationPid())}}));
         auto *timeout = new QTimer(socket);
         timeout->setSingleShot(true);
         connect(timeout, &QTimer::timeout, socket, &QLocalSocket::abort);
@@ -162,6 +175,11 @@ void SingleInstance::accept() {
             const auto request = QJsonDocument::fromJson(socket->readLine(MaxBytes + 1)).object();
             const auto id = request.value("id").toString();
             const auto values = request.value("paths");
+            const auto cli = request.value("cli_request").toString();
+            const bool cliValid =
+                (!request.contains("cli_request") || request.value("cli_request").isString()) &&
+                (cli.isEmpty() ||
+                 (cli.size() <= 4096 && QFileInfo(cli).isAbsolute() && !cli.contains(QChar::Null)));
             bool valid = request.value("protocol").toInt() == 1 && id.size() == 36 &&
                          values.isArray() && values.toArray().size() <= 128;
             QStringList paths;
@@ -171,15 +189,23 @@ void SingleInstance::accept() {
                          QFileInfo(path).isAbsolute();
                 paths.append(path);
             }
-            valid &= m_accepting && (m_handler || m_pending.size() < 128);
+            valid &= cliValid && m_accepting &&
+                     (cli.isEmpty() ? bool(m_handler || m_pending.size() < 128)
+                                    : bool(m_cliHandler || m_pendingCli.size() < 128));
             if (valid && !m_seen.contains(id)) {
                 m_seen.append(id);
                 if (m_seen.size() > 128)
                     m_seen.removeFirst();
-                if (m_handler)
+                if (!cli.isEmpty()) {
+                    if (m_cliHandler)
+                        m_cliHandler(cli);
+                    else
+                        m_pendingCli.append(cli);
+                } else if (m_handler) {
                     m_handler(paths);
-                else
+                } else {
                     m_pending.append(paths);
+                }
             }
             socket->write(packet({{"id", id}, {"accepted", valid}}));
             socket->disconnectFromServer();

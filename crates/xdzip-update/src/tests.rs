@@ -15,7 +15,7 @@ fn candidate() -> Value {
         ("linux", "x86_64", "tar.gz"),
         ("linux", "x86_64", "deb"),
     ] {
-        let (suffix, requirements) = target(platform, architecture, package_type).unwrap();
+        let (suffix, requirements) = target(platform, architecture, package_type, false).unwrap();
         let filename = format!("xdzip-{version}-{suffix}");
         assets.push(json!({"filename":filename,"platform":platform,"architecture":architecture,"package_type":package_type,
             "minimum_system":requirements,"bytes":12,"sha256":"ab".repeat(32),
@@ -305,5 +305,80 @@ fn publisher_signature_authenticates_exact_bytes_and_local_key() {
     assert_eq!(
         verify_manifest(&bytes, &envelope, &weak.to_string()),
         "invalid_trust_keyring"
+    );
+}
+
+#[test]
+fn cli_signature_targets_and_legacy_desktop_contract_remain_separate() {
+    let mut cli = candidate();
+    cli.as_object_mut().unwrap().remove("macos_appcast_url");
+    cli["component"] = json!("cli");
+    let mut assets = vec![];
+    for (platform, architecture, package_type) in [
+        ("windows", "x86_64", "zip"),
+        ("linux", "x86_64", "tar.gz"),
+        ("macos", "arm64", "tar.gz"),
+    ] {
+        let (suffix, requirements) = target(platform, architecture, package_type, true).unwrap();
+        let filename = format!("xdzip-cli-0.1.0-alpha.7-{suffix}");
+        assets.push(json!({"filename":filename,"platform":platform,"architecture":architecture,"package_type":package_type,"minimum_system":requirements,"bytes":12,"sha256":"ab".repeat(32),"url":format!("https://github.com/{REPOSITORY}/releases/download/v0.1.0-alpha.7/{filename}")}));
+    }
+    cli["assets"] = json!(assets);
+    let inspect = |value: &Value| {
+        inspect_cli_release(
+            &value.to_string(),
+            "0.1.0-alpha.6",
+            19,
+            "alpha",
+            "macos",
+            "arm64",
+        )
+    };
+    assert!(inspect(&cli).newer);
+    assert!(
+        !super::inspect_release(
+            &cli.to_string(),
+            "0.1.0-alpha.6",
+            19,
+            "alpha",
+            "macos",
+            "arm64",
+            "app.zip"
+        )
+        .valid
+    );
+    assert!(!inspect(&candidate()).valid);
+    let key = SigningKey::from_bytes(&[71; 32]);
+    let bytes = cli.to_string().into_bytes();
+    let envelope = json!({"schema_version":1,"algorithm":"ed25519","key_id":"cli-fixture","signature":hex(&key.sign(&bytes).to_bytes())}).to_string();
+    let keys = json!({"schema_version":1,"keys":[{"key_id":"cli-fixture","public_key":hex(key.verifying_key().as_bytes())}]}).to_string();
+    assert_eq!(verify_cli_manifest(&bytes, &envelope, &keys), "");
+    assert!(!verify_manifest(&bytes, &envelope, &keys).is_empty());
+    let mut changed = bytes.clone();
+    changed.push(b' ');
+    assert_eq!(
+        verify_cli_manifest(&changed, &envelope, &keys),
+        "signature_mismatch"
+    );
+    assert_eq!(
+        verify_cli_manifest(&bytes, &envelope, "{\"schema_version\":1,\"keys\":[]}"),
+        "untrusted_signing_key"
+    );
+    let mut incomplete = cli.clone();
+    incomplete["assets"].as_array_mut().unwrap().pop();
+    assert!(!inspect(&incomplete).valid);
+    let mut wrong = cli.clone();
+    wrong["assets"][0]["filename"] = json!("../xdzip.exe");
+    assert!(!inspect(&wrong).valid);
+    assert!(
+        !inspect_cli_release(
+            &cli.to_string(),
+            "0.1.0-alpha.6",
+            20,
+            "alpha",
+            "macos",
+            "arm64"
+        )
+        .valid
     );
 }

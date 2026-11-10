@@ -49,4 +49,10 @@ if ($IsMacOS) {
     $packages = 'build/review'
 }
 $platform = if ($IsMacOS) { 'macos' } elseif ($IsWindows) { 'windows' } else { 'linux' }
+$cliBuild = if ($IsMacOS) { 'build/release-desktop/cli' } else { 'build/desktop/cli' }
+Checked python @('scripts/cli.py', 'test', '--build-dir', $cliBuild)
+Checked python @('scripts/cli.py', 'package', '--build-dir', $cliBuild, '--output', "$packages/cli-package")
+$cliReceipt = Get-Content -LiteralPath "$packages/cli-package/cli-package.json" -Raw -Encoding utf8 | ConvertFrom-Json
+Copy-Item -LiteralPath "$packages/cli-package/$($cliReceipt.file)" -Destination $packages
+Copy-Item -LiteralPath "$packages/cli-package/cli-package.json" -Destination $packages
 Checked python @('scripts/prepare-release.py', '--packages', $packages, '--output', 'build/release-assets', '--platform', $platform)

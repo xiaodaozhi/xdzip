@@ -3,6 +3,7 @@
 #include "AssociationProbe.h"
 #include "BrowserController.h"
 #include "BuildInfo.h"
+#include "CliRequestBroker.h"
 #include "DesktopIntegration.h"
 #include "DesktopProbe.h"
 #include "FileAssociations.h"
@@ -40,6 +41,8 @@
 #include <future>
 #include <system_error>
 #endif
+#include <cstdio>
+#include <cstring>
 #include <memory>
 #ifdef XDZIP_NATIVE_UPDATE_FIXTURE
 #include "tests/native_update_fixture.h"
@@ -64,6 +67,14 @@ void showMacWindowAfterLaunch(QQuickWindow *window);
 int main(int argc, char *argv[]) {
     if (BuildInfo::printVersionIfRequested(argc, argv))
         return 0;
+    if (argc == 2 && std::strcmp(argv[1], "--cli-installation-json") == 0) {
+        QCoreApplication core(argc, argv);
+        const auto bytes =
+            QJsonDocument(UpdateController::cliInstallationInfo()).toJson(QJsonDocument::Compact);
+        std::fwrite(bytes.constData(), 1, size_t(bytes.size()), stdout);
+        std::fputc('\n', stdout);
+        return 0;
+    }
     QApplication application(argc, argv);
     installPasswordAccessibility();
     application.setApplicationName(QStringLiteral("xdzip"));
@@ -79,9 +90,13 @@ int main(int argc, char *argv[]) {
     const auto probeArgument = literalPaths ? -1 : args.indexOf(QStringLiteral("--desktop-probe"));
     const auto updateProbeArgument =
         literalPaths ? -1 : args.indexOf(QStringLiteral("--update-probe"));
+    const auto cliArgument = literalPaths ? -1 : args.indexOf(QStringLiteral("--cli-request"));
+    if (cliArgument >= 0 && cliArgument + 1 >= args.size())
+        return 2;
+    const auto cliRequest = cliArgument >= 0 ? args.at(cliArgument + 1) : QString{};
     const bool smokeTest = !literalPaths && args.contains(QStringLiteral("--smoke-test"));
     QStringList startupPaths;
-    if (!smokeTest && probeArgument < 0 && updateProbeArgument < 0) {
+    if (!smokeTest && probeArgument < 0 && updateProbeArgument < 0 && cliArgument < 0) {
         const auto start = literalPaths ? args.indexOf(QStringLiteral("--")) + 1 : 1;
         for (int i = start; i < args.size(); ++i) {
             if (literalPaths || !args.at(i).startsWith(QLatin1Char('-')))
@@ -92,7 +107,7 @@ int main(int argc, char *argv[]) {
     const bool interactive = !smokeTest && probeArgument < 0 && updateProbeArgument < 0 &&
                              qEnvironmentVariableIsEmpty("XDZIP_ASSOCIATION_PROBE");
     if (interactive) {
-        const auto election = instance.start(startupPaths);
+        const auto election = instance.start(startupPaths, {}, 15000, cliRequest);
         if (election == SingleInstance::Forwarded)
             return 0;
         if (election == SingleInstance::Failed) {
@@ -319,6 +334,7 @@ int main(int argc, char *argv[]) {
             Qt::QueuedConnection);
         fileOpens.attach([&](const QString &path) { sessions->openPath(path); });
         instance.attach([&](const QStringList &paths) { sessions->open(paths); });
+        installCliRequests(&instance, &updates, sessions.get());
     }
     std::unique_ptr<DesktopProbe> probe;
 #ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE

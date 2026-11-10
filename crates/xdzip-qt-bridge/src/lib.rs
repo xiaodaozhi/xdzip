@@ -1,5 +1,7 @@
 //! Product cxx boundary: unique command and blocking event handles, no GUI archive calls.
+mod cli;
 mod update;
+use cli::{cli_request_read, cli_request_write, cli_status_write};
 
 use xdzip_domain::identity::EntryId;
 use xdzip_runtime::service;
@@ -191,6 +193,9 @@ mod ffi {
         task: TaskSnapshot,
     }
     extern "Rust" {
+        fn cli_request_read(directory: &str, root: &str) -> String;
+        fn cli_request_write(directory: &str, root: &str, result: &str) -> bool;
+        fn cli_status_write(root: &str, result: &str) -> bool;
         type Runtime;
         type CommandClient;
         type EventReceiver;
@@ -600,6 +605,11 @@ impl EventReceiver {
         self.stamp(&mut event);
         event.request_id = value.request;
         match value.payload {
+            // Headless commands are never submitted through this Qt adapter.
+            service::Payload::Catalog { .. } | service::Payload::Selected { .. } => {
+                event.kind = ffi::EventKind::Finished;
+                event.error = "invalid_command".into();
+            }
             service::Payload::ExportManifest(rows) => {
                 event.kind = ffi::EventKind::ExportManifest;
                 self.export_request = value.request;

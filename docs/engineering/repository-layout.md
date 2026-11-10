@@ -5,6 +5,7 @@
 | 目录 | 所有权与依赖规则 |
 | --- | --- |
 | apps/desktop | Qt/QML、薄 C++ 控制器、模型、设置与系统交互；通过 bridge 访问核心 |
+| crates/xdzip-cli | 无 Qt 的参数、终端、JSON、管理式安装与更新宿主，直接依赖 runtime、安全 I/O 和更新核心，不解释格式 |
 | crates/xdzip-domain | 纯类型与不变量；不得依赖 Qt 或具体 codec |
 | crates/xdzip-codec-api | 能力、借用输入、编码输出和取消契约；依赖 domain |
 | crates/xdzip-compression | 无第三方生产依赖的共享 Deflate/Deflate64/GZIP、LZMA/LZMA2、BZip2、PPMd7、MSZIP、LZX、Quantum 算法与封装，不拥有路径或发布能力；独立实现规则见[契约](independent-rust-codecs.md) |

@@ -27,3 +27,6 @@ TAR.GZ 缺少逐项压缩大小，高压缩比准入使用所选声明总量与�
 必须覆盖系统 tar／Python tarfile 双向互操作，长路径、Unicode、空目录、重复项、PAX/GNU、特殊项、路径逃逸、截断、CRC、资源限额、取消及旧文件保护；Qt 真实创建、重开与解压复用现有任务和冲突窗口。实际证据只生成到 build/ 或 CI 工件。
 
 桌面操作与辅助功能按[通用验证方法](../qa/README.md)选择受影响项复验，原生自动化与离屏检查不代替人工专项。具体执行结果和限制记录于对应 issue，既有桌面验收见 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)，不在本契约保留单轮权限或环境阻塞。`v0.1.0` 的历史发行许可复核见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)，未来候选须建立新的发行 issue。
+
+
+CLI 创建入口接受 .tgz 作为 .tar.gz 的同格式名称别名，复用相同 GZIP 编码、验证和提交，不引入独立 GZIP 文件模式。English: CLI creation accepts .tgz as an alias for .tar.gz using the same GZIP encoding, validation and commit; standalone non-TAR GZIP is not added.

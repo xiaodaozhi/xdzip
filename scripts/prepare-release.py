@@ -10,7 +10,7 @@ import shutil
 import subprocess
 import tarfile
 import zipfile
-from release_protocol import TARGETS, create, reject_corresponding_source_archives, sha256
+from release_protocol import TARGETS, create, create_cli, reject_corresponding_source_archives, sha256
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -85,6 +85,15 @@ def stage(source, output, platform, version):
                 if path.is_file(): archive.write(path, path.relative_to(source/'windows'))
         with zipfile.ZipFile(target) as archive:
             if archive.testzip() is not None: raise ValueError('Portable ZIP integrity failure')
+    cli = json.loads((source/'cli-package.json').read_text(encoding='utf-8'))
+    cli_path = source/cli['file']
+    if (cli['identity']['dirty'] or cli['source']['dirty'] or cli['source']['commit'] != revision or not cli.get('verification_sha256') or cli['identity']['version'] != version
+            or cli['identity']['revision'] != revision[:12]
+            or cli['identity']['configuration'] != 'release'
+            or cli_path.name != cli['file'] or cli_path.is_symlink()
+            or cli_path.stat().st_size != cli['bytes'] or sha256(cli_path) != cli['sha256']):
+        raise ValueError('CLI package does not match the verified release identity')
+    shutil.copy2(cli_path, output/cli_path.name)
     materials = output/f'xdzip-{version}-{platform}-materials.tar.gz'
     materials_archive(source, materials)
 
@@ -113,7 +122,7 @@ def main():
         return
     if args.validation_only:
         for directory in (args.packages, args.output):
-            for name in ('release.json.sig', 'appcast.xml', 'macos-update.json'):
+            for name in ('release.json.sig', 'cli-release.json.sig', 'appcast.xml', 'macos-update.json'):
                 path = directory/name
                 if path.exists() or path.is_symlink():
                     raise ValueError('Validation-only candidate contains update signing material')
@@ -127,15 +136,19 @@ def main():
     else:
         from release_updates import prepare_appcast
         appcast_signed = prepare_appcast(args.output, manifest, required=args.require_update_signature)
+    cli_manifest = create_cli(args.output, version, args.repository, revision)
+    (args.output/'cli-release.json').write_text(json.dumps(cli_manifest, indent=2)+'\n', encoding='utf-8')
     (args.output/'release.json').write_text(json.dumps(manifest, indent=2)+'\n', encoding='utf-8')
     if args.validation_only:
         manifest_signed = False
+        cli_signed = False
     else:
         from release_updates import sign_manifest
         manifest_signed = sign_manifest(args.output, key_id=args.update_key_id, required=args.require_update_signature)
+        cli_signed = sign_manifest(args.output, key_id=args.update_key_id, required=args.require_update_signature, component="cli")
     (args.output/'update-readiness.json').write_text(json.dumps(dict(schema_version=1,
-        signed_manifest=manifest_signed, signed_appcast=appcast_signed,
-        status='authenticated' if manifest_signed and appcast_signed else 'signing_not_configured'), indent=2)+'\n', encoding='utf-8')
+        signed_manifest=manifest_signed, signed_appcast=appcast_signed, signed_cli_manifest=cli_signed,
+        status='authenticated' if manifest_signed and appcast_signed and cli_signed else 'signing_not_configured'), indent=2)+'\n', encoding='utf-8')
     files = sorted(path for path in args.output.iterdir() if path.is_file() and path.name != 'SHA256SUMS')
     (args.output/'SHA256SUMS').write_text(''.join(f'{sha256(path)}  {path.name}\n' for path in files), encoding='utf-8')
     print('Complete immutable release manifest verified: ' + manifest['tag'])

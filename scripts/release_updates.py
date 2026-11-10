@@ -126,7 +126,7 @@ def prepare_appcast(directory: Path, manifest: dict, *, required: bool = False, 
 
 
 def sign_manifest(directory: Path, *, key_id: str | None, required: bool = False,
-                  tool: Path | None = None, keyring: Path | None = None) -> bool:
+                  tool: Path | None = None, keyring: Path | None = None, component: str = "desktop") -> bool:
     """Sign exact JSON bytes and independently reverify before creating checksums."""
     configured = bool(os.environ.get('XDZIP_UPDATE_SIGNING_KEY_HEX')) and bool(key_id)
     if not configured:
@@ -136,10 +136,12 @@ def sign_manifest(directory: Path, *, key_id: str | None, required: bool = False
     if not re.fullmatch('[A-Za-z0-9_-]{1,64}', key_id):
         raise ValueError('Invalid update key ID')
     keyring = keyring or ROOT / 'resources/update-trust.json'
-    arguments = ['--manifest', str(directory / 'release.json'), '--keyring', str(keyring)]
-    signature = directory / 'release.json.sig'
-    run_tool(['sign', *arguments, '--key-id', key_id, '--output', str(signature)], tool)
-    run_tool(['verify', *arguments, '--signature', str(signature)], tool)
+    name = 'cli-release.json' if component == 'cli' else 'release.json'
+    suffix = '-cli' if component == 'cli' else ''
+    arguments = ['--manifest', str(directory / name), '--keyring', str(keyring)]
+    signature = directory / (name + '.sig')
+    run_tool(['sign'+suffix, *arguments, '--key-id', key_id, '--output', str(signature)], tool)
+    run_tool(['verify'+suffix, *arguments, '--signature', str(signature)], tool)
     return True
 
 
@@ -168,3 +170,15 @@ def verify_release_updates(directory: Path, manifest: dict, *, tool: Path | None
     archive = directory / metadata['filename']
     run_tool(['verify-archive', '--archive', str(archive), '--public-key', str(public_key),
               '--signature', metadata['ed_signature']], tool)
+
+
+def verify_cli_updates(directory: Path, desktop_manifest: dict, *, tool: Path | None = None,
+                       keyring: Path | None = None) -> None:
+    from release_protocol import validate_cli
+    manifest = validate_cli(json.loads((directory/'cli-release.json').read_bytes()), directory)
+    for field in ('version','channel','build','tag','commit','repository'):
+        if manifest[field] != desktop_manifest[field]:
+            raise ValueError('CLI and desktop release identities disagree')
+    run_tool(['verify-cli','--manifest',str(directory/'cli-release.json'),
+              '--signature',str(directory/'cli-release.json.sig'),
+              '--keyring',str(keyring or ROOT/'resources/update-trust.json')], tool)

@@ -1,11 +1,18 @@
 // apps/desktop/UpdateController.cpp
 
 #include "UpdateController.h"
+#ifdef Q_OS_MACOS
+#include <fcntl.h>
+#include <sys/file.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
 #include "ApplicationSessions.h"
 #include "BuildInfo.h"
 #include "UiText.h"
 #include "UpdateHandoff.h"
 #include "UpdateNetwork.h"
+#include "xdzip-qt-bridge/src/lib.rs.h"
 #include "xdzip-qt-bridge/src/update.rs.h"
 #include <QCoreApplication>
 #include <QCryptographicHash>
@@ -127,6 +134,7 @@ UpdateController::UpdateController(QObject *parent, QNetworkAccessManager *trans
         restoreInstallationResult();
 }
 UpdateController::~UpdateController() {
+    releaseCliUsage();
     ++m_generation;
     if (m_reply)
         m_reply->abort();
@@ -185,6 +193,9 @@ QString UpdateController::platform() const {
 #endif
 }
 QString UpdateController::installedRoot() const {
+    return localInstalledRoot();
+}
+QString UpdateController::localInstalledRoot() {
     const auto revision = BuildInfo::revision();
     const bool knownRevision =
         revision.size() == 12 && std::all_of(revision.cbegin(), revision.cend(), [](QChar value) {
@@ -216,6 +227,24 @@ QString UpdateController::installedRoot() const {
 #endif
     return {};
 }
+QJsonObject UpdateController::cliInstallationInfo() {
+    const bool installed = !localInstalledRoot().isEmpty();
+#ifdef Q_OS_WIN
+    const auto package = installed ? "exe" : "zip";
+#elif defined(Q_OS_LINUX)
+    const auto package = installed ? "deb" : "tar.gz";
+#else
+    const auto package = "app.zip";
+#endif
+    return {{"schema_version", 1},
+            {"installed", installed},
+            {"package_type", package},
+            {"identity", QJsonObject{{"product", "xdzip"},
+                                     {"version", BuildInfo::version()},
+                                     {"build", BuildInfo::buildNumber()},
+                                     {"revision", BuildInfo::revision()},
+                                     {"dirty", BuildInfo::dirty()}}}};
+}
 QString UpdateController::packageType() const {
     if (platform() == "windows")
         return installedRoot().isEmpty() ? "zip" : "exe";
@@ -246,9 +275,18 @@ QString UpdateController::installationReason(bool trusted, bool installed, bool 
     return {};
 }
 void UpdateController::setState(const QString &state, const QString &error) {
+    if (state == "error" || state == "available" || state == "cancelled" ||
+        state == "recovery_required")
+        releaseCliUsage();
     const bool wasBusy = busy();
     m_state = state;
     m_error = error;
+    if (!writeCliStatus() && m_cliCommitted) {
+        m_cliCommitted = false;
+        m_state = "recovery_required";
+        m_error = "handoff_receipt";
+        releaseCliUsage();
+    }
     if (wasBusy && !busy())
         applyNetworkConfiguration();
     emit changed();
@@ -671,7 +709,13 @@ void UpdateController::startInstallation() {
         setState("error", "closing");
         return;
     }
-    if (m_sessions->activeTaskCount()) {
+    const auto cliUsage = acquireCliUsage();
+    if (cliUsage < 0) {
+        m_waitTasks.stop();
+        setState("error", "installation_root");
+        return;
+    }
+    if (m_sessions->activeTaskCount() || cliUsage == 0) {
         setState("waiting_tasks");
         m_waitTasks.start();
         return;
@@ -730,15 +774,21 @@ void UpdateController::startInstallation() {
 #endif
 }
 void UpdateController::finishPreparation() {
+    m_cliCommitted = true;
     setState("installing");
+    if (m_state != "installing")
+        return;
     // Every Rust connection has joined. macOS retains its normal quit barrier
     // until the provider commits, before Sparkle's install reply can terminate it.
     emit exitBarrierReached();
 #ifdef Q_OS_MACOS
-    if (!commitMacUpdate())
+    if (!commitMacUpdate()) {
+        m_cliCommitted = false;
         setState("recovery_required", "handoff");
+    }
 #else
     if (!m_handoff || !m_handoff->commit()) {
+        m_cliCommitted = false;
         setState("recovery_required", "handoff");
         return;
     }
@@ -789,6 +839,7 @@ void UpdateController::restoreInstallationResult() {
     }
     const auto pending = QJsonDocument::fromJson(bytes).object();
     m_candidate = {{"version", pending.value("version")},
+                   {"build", pending.value("build")},
                    {"release_url", pending.value("release_url")}};
 #ifdef Q_OS_MACOS
     if (pending.value("kind") == "sparkle") {
@@ -838,6 +889,7 @@ void UpdateController::restoreInstallationResult() {
     setState("updated");
 }
 void UpdateController::cancel() {
+    releaseCliUsage();
     if (m_state == "installing" || (m_sessions && m_sessions->updatePending()))
         return;
     ++m_generation;
@@ -869,4 +921,73 @@ void UpdateController::openReleasePage() {
 void UpdateController::openDownloadFolder() {
     if (downloaded())
         QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(m_packagePath).absolutePath()));
+}
+
+int UpdateController::acquireCliUsage() {
+#ifdef Q_OS_MACOS
+    if (m_cliUsage >= 0)
+        return 1;
+    const auto settingsOverride = qEnvironmentVariable("XDZIP_SETTINGS_PATH");
+    const auto root =
+        settingsOverride.isEmpty()
+            ? QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "/xdzip/cli"
+            : QFileInfo(settingsOverride).absolutePath() + "/cli";
+    if (!QDir().mkpath(root))
+        return -1;
+    const auto path = QFile::encodeName(root + "/desktop-usage.lock");
+    // Owned no-follow descriptor, retained across preparation/commit. flock
+    // shares the CLI's occupancy protocol; closing releases the exclusion.
+    const int fd = ::open(path.constData(), O_RDWR | O_CREAT | O_NOFOLLOW | O_CLOEXEC, 0600);
+    if (fd < 0)
+        return -1;
+    struct stat info {};
+    if (::fstat(fd, &info) != 0 || !S_ISREG(info.st_mode) || info.st_uid != ::geteuid() ||
+        info.st_nlink != 1 || (info.st_mode & 0022)) {
+        ::close(fd);
+        return -1;
+    }
+    if (::flock(fd, LOCK_EX | LOCK_NB) != 0) {
+        const bool busy = errno == EWOULDBLOCK || errno == EAGAIN;
+        ::close(fd);
+        return busy ? 0 : -1;
+    }
+    m_cliUsage = fd;
+#endif
+    return 1;
+}
+void UpdateController::releaseCliUsage() {
+#ifdef Q_OS_MACOS
+    if (m_cliUsage >= 0)
+        ::close(m_cliUsage);
+#endif
+    m_cliUsage = -1;
+}
+
+bool UpdateController::writeCliStatus() {
+    const auto settingsOverride = qEnvironmentVariable("XDZIP_SETTINGS_PATH");
+    const auto root =
+        settingsOverride.isEmpty()
+            ? QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "/xdzip/cli"
+            : QFileInfo(settingsOverride).absolutePath() + "/cli";
+    if (!QDir(root).exists() && (!m_cliCommitted || !QDir().mkpath(root)))
+        return !m_cliCommitted;
+    const auto reason = m_state == "available" ? installReason() : QString{};
+    const auto status =
+        m_state == "available" && !reason.isEmpty()            ? QStringLiteral("manual_install")
+        : m_state == "updated"                                 ? QStringLiteral("installed")
+        : m_state == "error" || m_state == "recovery_required" ? QStringLiteral("recovery")
+                                                               : m_state;
+    const auto bytes = QJsonDocument(QJsonObject{{"schema_version", 1},
+                                                 {"status", status},
+                                                 {"install_gate", m_cliCommitted},
+                                                 {"error_code", m_error},
+                                                 {"install_reason", reason},
+                                                 {"target_version", candidateVersion()},
+                                                 {"target_build", candidateBuild()},
+                                                 {"current_version", BuildInfo::version()},
+                                                 {"current_build", BuildInfo::buildNumber()}})
+                           .toJson(QJsonDocument::Compact);
+    const auto rootBytes = root.toUtf8();
+    return xdzip::reader::cli_status_write({rootBytes.constData(), size_t(rootBytes.size())},
+                                           {bytes.constData(), size_t(bytes.size())});
 }

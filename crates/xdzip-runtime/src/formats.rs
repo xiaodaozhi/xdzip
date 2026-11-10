@@ -102,7 +102,7 @@ fn detect_optical(source: &mut dyn ReadSource) -> Result<Option<Format>, ScanErr
 }
 pub(crate) fn creation_format(name: &str) -> Option<Format> {
     let name = name.to_ascii_lowercase();
-    if name.ends_with(".tar.gz") {
+    if name.ends_with(".tar.gz") || name.ends_with(".tgz") {
         Some(Format::TarGzip)
     } else if name.ends_with(".tar") {
         Some(Format::Tar)

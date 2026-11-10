@@ -49,6 +49,8 @@ pub struct Inspection {
 struct Manifest {
     schema_version: u32,
     product: String,
+    #[serde(default)]
+    component: String,
     version: String,
     channel: String,
     build: u32,
@@ -159,7 +161,31 @@ fn target(
     platform: &str,
     architecture: &str,
     package_type: &str,
+    cli: bool,
 ) -> Option<(&'static str, BTreeMap<String, String>)> {
+    if cli {
+        let (suffix, requirements): (&str, &[(&str, &str)]) =
+            match (platform, architecture, package_type) {
+                ("windows", "x86_64", "zip") => ("windows-x86_64.zip", &[("windows", "11")]),
+                ("macos", "arm64", "tar.gz") => ("macos-arm64.tar.gz", &[("macos", "14.0")]),
+                ("linux", "x86_64", "tar.gz") => (
+                    "linux-x86_64.tar.gz",
+                    &[
+                        ("distribution", "ubuntu"),
+                        ("version", "24.04"),
+                        ("glibc", "2.39"),
+                    ],
+                ),
+                _ => return None,
+            };
+        return Some((
+            suffix,
+            requirements
+                .iter()
+                .map(|(k, v)| ((*k).to_owned(), (*v).to_owned()))
+                .collect(),
+        ));
+    }
     let (suffix, requirements): (&str, &[(&str, &str)]) =
         match (platform, architecture, package_type) {
             ("windows", "x86_64", "zip") => ("windows-x86_64.zip", &[("windows", "11")]),
@@ -196,11 +222,17 @@ fn target(
 }
 
 fn manifest(json: &str) -> Result<Manifest, &'static str> {
+    manifest_for(json, false)
+}
+fn manifest_for(json: &str, cli: bool) -> Result<Manifest, &'static str> {
     if json.len() > MANIFEST_LIMIT {
         return Err("manifest_too_large");
     }
     let manifest: Manifest = serde_json::from_str(json).map_err(|_| "invalid_manifest_json")?;
-    if manifest.schema_version != 1 || manifest.product != "xdzip" {
+    if manifest.schema_version != 1
+        || manifest.product != "xdzip"
+        || manifest.component != if cli { "cli" } else { "" }
+    {
         return Err("unsupported_manifest");
     }
     let parsed = version(&manifest.version, false).ok_or("invalid_release_version")?;
@@ -214,18 +246,26 @@ fn manifest(json: &str) -> Result<Manifest, &'static str> {
     {
         return Err("release_identity_mismatch");
     }
-    if manifest.assets.len() != 6 {
+    if manifest.assets.len() != if cli { 3 } else { 6 } {
         return Err("incomplete_release");
     }
     let mut seen = std::collections::BTreeSet::new();
     for asset in &manifest.assets {
-        let (suffix, requirements) =
-            target(&asset.platform, &asset.architecture, &asset.package_type)
-                .ok_or("unsupported_target")?;
+        let (suffix, requirements) = target(
+            &asset.platform,
+            &asset.architecture,
+            &asset.package_type,
+            cli,
+        )
+        .ok_or("unsupported_target")?;
         if !seen.insert((&asset.platform, &asset.architecture, &asset.package_type)) {
             return Err("duplicate_target");
         }
-        let expected = format!("xdzip-{}-{suffix}", manifest.version);
+        let expected = format!(
+            "xdzip{}-{}-{suffix}",
+            if cli { "-cli" } else { "" },
+            manifest.version
+        );
         if asset.filename != expected
             || asset.minimum_system != requirements
             || asset.bytes == 0
@@ -238,6 +278,9 @@ fn manifest(json: &str) -> Result<Manifest, &'static str> {
         {
             return Err("asset_identity_mismatch");
         }
+    }
+    if cli && !manifest.macos_appcast_url.is_empty() {
+        return Err("invalid_appcast_url");
     }
     if !manifest.macos_appcast_url.is_empty()
         && manifest.macos_appcast_url
@@ -262,8 +305,60 @@ pub fn inspect_release(
     architecture: &str,
     package_type: &str,
 ) -> Inspection {
+    inspect_for(
+        json,
+        current,
+        current_build,
+        current_channel,
+        platform,
+        architecture,
+        package_type,
+        false,
+    )
+}
+
+/// Inspect an independent CLI release without changing the legacy desktop six-target contract.
+pub fn inspect_cli_release(
+    json: &str,
+    current: &str,
+    current_build: u32,
+    current_channel: &str,
+    platform: &str,
+    architecture: &str,
+) -> Inspection {
+    inspect_for(
+        json,
+        current,
+        current_build,
+        current_channel,
+        platform,
+        architecture,
+        if platform == "windows" {
+            "zip"
+        } else {
+            "tar.gz"
+        },
+        true,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn inspect_for(
+    json: &str,
+    current: &str,
+    current_build: u32,
+    current_channel: &str,
+    platform: &str,
+    architecture: &str,
+    package_type: &str,
+    cli: bool,
+) -> Inspection {
     let result = (|| {
-        let parsed = manifest(json)?;
+        let parsed = if cli {
+            manifest_for(json, true)?
+        } else {
+            manifest(json)?
+        };
         let current_version = version(current, true).ok_or("invalid_current_version")?;
         if channel_rank(current_channel) != Some(current_version.3)
             || !(1..=65535).contains(&current_build)
@@ -353,12 +448,21 @@ fn valid_key_id(value: &str) -> bool {
 /// An empty return means success; all failures are stable nonempty error codes.
 /// An empty production keyring deliberately disables authenticated installation.
 pub fn verify_manifest(bytes: &[u8], envelope_json: &str, keyring_json: &str) -> String {
+    verify_for(bytes, envelope_json, keyring_json, false)
+}
+
+/// Authenticate a complete CLI manifest with the same locally embedded trust root.
+pub fn verify_cli_manifest(bytes: &[u8], envelope_json: &str, keyring_json: &str) -> String {
+    verify_for(bytes, envelope_json, keyring_json, true)
+}
+
+fn verify_for(bytes: &[u8], envelope_json: &str, keyring_json: &str, cli: bool) -> String {
     let result = (|| {
         if bytes.len() > MANIFEST_LIMIT {
             return Err("manifest_too_large");
         }
         let json = std::str::from_utf8(bytes).map_err(|_| "invalid_manifest_json")?;
-        manifest(json)?;
+        manifest_for(json, cli)?;
         if envelope_json.len() > 4096 || keyring_json.len() > KEYRING_LIMIT {
             return Err("signature_metadata_too_large");
         }

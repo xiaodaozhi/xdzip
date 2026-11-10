@@ -2,6 +2,8 @@
 
 逐格式图标素材及平台映射见[文件关联图标规范](../visual/file-association-icons.md)。Linux 保留系统 MIME 图标，安装不改变默认选择或现有注册范围。
 
+桌面包将命令行程序放在独立的 `cli/` 目录，macOS 位于 `Contents/Helpers/cli/`，保留原 GUI 与文件关联入口。Windows 安装器提供默认关闭的当前用户 PATH 选项，检测同名命令冲突；卸载只撤销本安装目录。Mac/Linux 显式运行私有 CLI 的 `setup`，独立 CLI 包也通过 `setup` 安装用户级版本目录和稳定启动入口，不改 Shell 配置。撤销用 `setup --remove`，保留版本目录供核查。详见 [CLI 安装契约](command-line.md#构建与命令安装)。English: Desktop and standalone CLI entry registration is explicit and user scoped. Existing commands are preserved, and shell startup files are never edited.
+
 本页描述本地开发和按需验证产物：Windows x64 当前用户安装器、Ubuntu 24.04 amd64 X11 的 .deb，以及按明确需求制作的[本地 macOS 开发 DMG](macos-deployment.md)。这些本地产物仍是实验性开发交付，不能替代正式 Release。正式 `v0.1.0` 的平台包由专用 Release 工作流生成和验证，另遵循[发布协议](release-protocol.md)。个人开源发行不要求付费证书、Developer ID 或公证，macOS 保留必要 ad-hoc 完整性签名；普通 CI 不部署或上传 Mac 应用。支持范围见[支持政策](support-policy.md)。
 
 macOS 手动更新时优先使用对应 Release 的 DMG；使用 app.zip 时，先解压并将 xdzip.app 移出下载目录，退出正在运行的旧版，再替换“应用程序”中的副本。下载不代表安装完成，未公证包可能触发系统安全提示。具体回退条件见[软件更新契约](software-update.md)。English: For a manual macOS update, prefer the matching release DMG. For app.zip, extract and move xdzip.app out of Downloads, quit the old copy, then replace the application in Applications. Download is not installation, and an unnotarized package may trigger a system warning.

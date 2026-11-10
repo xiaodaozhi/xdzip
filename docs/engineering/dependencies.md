@@ -1,5 +1,17 @@
 # 依赖与格式后端准入
 
+## CLI 前端与 HTTPS
+
+CLI 将锁文件中的 clap 4.6.7 提升为实际产品前端依赖，仅启用 std、help、usage、error-context、suggestions、string，不启用 derive 或终端颜色。新增 ureq 3.5.1，关闭默认特性，仅启用 native-tls-no-default、socks-proxy，显式选择 NativeTls 与系统信任根；不引入默认 GZIP 解码、Cookie、JSON 辅助、外部 curl 或 Qt 网络运行依赖。serde、serde_json、zeroize、sha2、getrandom 及平台绑定复用已有锁定版本。
+
+ureq 与 ureq-proto 来源为 [algesten/ureq](https://github.com/algesten/ureq)，许可选择 MIT。关键传递输入为 native-tls 0.2.18、ureq-proto 0.7.1、http 1.5.0、httparse 1.10.1；完整版本、特性和目标闭包以 Cargo.lock 和 host-filtered Cargo metadata 为准。Windows 使用 schannel 0.1.30，macOS 使用 security-framework 3.7.0 与系统框架，Linux 使用 openssl 0.10.82／openssl-sys 0.9.118 与系统 OpenSSL 3。RustCrypto der／PKI 类型只用于通用 TLS 封装，不解释归档格式。
+
+Native TLS 的 Linux 构建通过 pkg-config 查找系统 OpenSSL，不启用 vendored，不下载或编译一份私有 OpenSSL；Mac/Windows 使用系统 TLS。必要的 Cargo 构建脚本、原生链接、目标条件和已知公告按实际锁定版本检查，查询记录留在本地／CI，摘要登记 CLI issue，不将单次无匹配公告写成永久安全保证。CLI 自有终端、信号与 OS 查询 FFI 限定在平台适配模块，失败拒绝操作，密码容器沿用归零约束。
+
+包内通知分别从 CLI 与 worker 的普通依赖闭包收集，排除 build/dev/proc-macro 作为运行归属证据。桌面运行归属增加 CLI 根。Windows 公共启动器单独静态链接编译器 CRT，使入口在版本化 app-local DLL 尚未加载时可启动；实际载荷和 worker 继续携带固定 VC++ 运行库及原始许可，不携带 SDK 图形库。依赖来源、静态／动态机器码保留和许可义务仍以实际发行材料复核。
+
+English: CLI uses the existing pinned clap and ureq 3.5.1 with defaults disabled, Native TLS/system trust and SOCKS only. It adds no Qt, external curl, cookie or archive-codec dependency. Target-filtered TLS uses Schannel, Apple Security.framework or system OpenSSL 3 without vendored OpenSSL. Cargo.lock/metadata, bounded native FFI, exact-version advisory evidence and actual notices define admission; no advisory match is not a permanent safety guarantee. The Windows PATH launcher alone uses static CRT, while payload/worker app-local VC++ runtime and supplier terms remain bundled.
+
 首次添加任何依赖，记录用途、替代方案、版本、来源、许可证、传递依赖、特性、原生构建行为、已知漏洞和维护情况。仅有 crate 名称不算准入完成。当前不列虚构的已审计版本。
 
 | 候选方向 | 必须验证 |

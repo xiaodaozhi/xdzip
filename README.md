@@ -19,6 +19,7 @@
 
 ## 功能亮点
 
+- **命令行运行**：独立 Rust CLI 提供版本、列举、解压、创建、添加、测试和主动更新，支持 JSON 与脚本调用，不依赖 Qt 或显示会话。当前可从源码构建，命令、安装与更新边界见[CLI 契约](docs/engineering/command-line.md)。
 - **清晰地浏览内容**：目录树、列表与网格、搜索、全结果排序和文件属性，支持最多十万条物理记录。
 - **按需要解压**：选择文件或文件夹，确认目标与重名策略，查看真实进度，随时请求取消；已完成的文件有明确结果记录。
 - **文件拖放**：文件列表右键打开与双击一致，支持拖出所选文件和目录，拖入本地文件后确认添加到当前目录，以及将所选项目拖到列表文件夹或目录树进行包内移动。普通单文件 ZIP、TAR、TAR.GZ、7z 使用完整校验后的安全替换，加密与分卷包暂不支持添加和移动，RAR、CAB、ISO、UDF 只读，并显示拒绝原因。平台传输与验收边界见[文件拖放契约](docs/engineering/archive-transfers.md)。
@@ -82,6 +83,19 @@ Windows 和 macOS 为受支持的文件类型提供对应文档图标，Linux �
 ## 从源码构建
 
 界面采用 **Qt Quick/QML + 薄 C++ 适配层**，格式、查询与任务由 **Rust 核心**负责，核心不依赖 Qt。
+
+只构建命令行版时，无需准备 Qt，使用同一锁定 Rust 与平台编译工具链：
+
+```sh
+python3 scripts/cli.py build
+python3 scripts/cli.py test
+build/cli/bin/xdzip --help
+build/cli/bin/xdzip list archive.zip --json
+build/cli/bin/xdzip extract archive.zip -C output
+```
+
+Windows 命令加 `.exe`。独立 Linux CLI 运行需要系统 OpenSSL 3 与证书，构建还需 libssl-dev、pkg-config。桌面构建也包含私有 CLI；终端命令入口由用户显式启用，GUI 图标和文件关联保持原行为。已公开的旧版附件不因这项实现自动增加 CLI 包。
+
 
 使用 Python 3.10+、Git、CMake 3.24+、Ninja、rustup 和平台编译器／SDK。统一入口负责准备仓库锁定的 Rust 与 Qt 6.8.2，先检查环境，再构建和测试：
 

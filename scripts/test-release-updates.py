@@ -15,14 +15,14 @@ import unittest
 from unittest.mock import patch
 import xml.etree.ElementTree as ET
 
-from release_protocol import TARGETS, compare_versions, create, release_tag_eligible, semantic_version, sha256
+from release_protocol import CLI_TARGETS, TARGETS, compare_versions, create, release_tag_eligible, semantic_version, sha256
 from release_updates import ROOT, SPARKLE, appcast_bytes, build_signing_tool, prepare_appcast, run_tool, sign_manifest, verify_release_updates
 
 
 class UpdatePublishingTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.tool = ROOT/'target/debug'/('xdzip-update-tool.exe' if os.name == 'nt' else 'xdzip-update-tool')
+        cls.tool = Path(os.environ.get('CARGO_TARGET_DIR', ROOT/'target')).resolve()/'debug'/('xdzip-update-tool.exe' if os.name == 'nt' else 'xdzip-update-tool')
         subprocess.run(['cargo', 'build', '--locked', '--quiet', '-p', 'xdzip-update', '--bin', 'xdzip-update-tool'],
                        cwd=ROOT, check=True)
 
@@ -113,6 +113,8 @@ class UpdatePublishingTests(unittest.TestCase):
             version = runpy.run_path(str(ROOT/'scripts/sync-version.py'))['version_info']()['display_version']
             for suffix, _ in TARGETS.values():
                 (packages/f'xdzip-{version}-{suffix}').write_bytes(b'owned package fixture')
+            for suffix, _ in CLI_TARGETS.values():
+                (packages/f'xdzip-cli-{version}-{suffix}').write_bytes(b'owned CLI fixture')
             environment = dict(os.environ, XDZIP_UPDATE_SIGNING_KEY_HEX='2a'*32,
                                XDZIP_SPARKLE_SIGNING_KEY_HEX='2b'*32, XDZIP_UPDATE_KEY_ID='fixture-only')
             command = [sys.executable, str(ROOT/'scripts/prepare-release.py'), '--packages', str(packages),
@@ -122,7 +124,8 @@ class UpdatePublishingTests(unittest.TestCase):
             readiness = json.loads((output/'update-readiness.json').read_text(encoding='utf-8'))
             self.assertFalse(readiness['signed_manifest'])
             self.assertFalse(readiness['signed_appcast'])
-            for name in ['release.json.sig', 'appcast.xml', 'macos-update.json']:
+            self.assertFalse(readiness['signed_cli_manifest'])
+            for name in ['release.json.sig', 'cli-release.json.sig', 'appcast.xml', 'macos-update.json']:
                 self.assertFalse((output/name).exists(), name)
             conflict = subprocess.run(command + ['--require-update-signature'], cwd=ROOT, env=environment,
                                       capture_output=True, text=True)
@@ -131,7 +134,7 @@ class UpdatePublishingTests(unittest.TestCase):
                                       capture_output=True, text=True)
             self.assertNotEqual(platform.returncode, 0)
             for directory in [packages, output]:
-                for name in ['release.json.sig', 'appcast.xml', 'macos-update.json']:
+                for name in ['release.json.sig', 'cli-release.json.sig', 'appcast.xml', 'macos-update.json']:
                     (directory/name).write_bytes(b'stale signing fixture')
                     stale = subprocess.run(command, cwd=ROOT, env=environment, capture_output=True, text=True)
                     self.assertNotEqual(stale.returncode, 0, name)

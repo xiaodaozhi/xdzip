@@ -4269,6 +4269,31 @@ QtObject {
         QVERIFY(
             preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
     }
+    void singleInstanceCliIntentRemainsSeparateFromFileOpening() {
+        const auto nameSpace = QUuid::createUuid().toString();
+        const auto directory = QDir::current().absoluteFilePath("cli-intent-" + nameSpace);
+        SingleInstance owner;
+        QCOMPARE(owner.start({}, nameSpace, 15000, directory), SingleInstance::Primary);
+        QStringList intents;
+        QStringList paths;
+        owner.attach([&](const QStringList &values) { paths += values; });
+        owner.attachCli([&](const QString &value) { intents.append(value); });
+        QCOMPARE(intents, QStringList{directory});
+        QProcess client;
+        client.start(QCoreApplication::applicationFilePath(),
+                     {"--instance-cli-client", nameSpace, directory});
+        QTRY_COMPARE_WITH_TIMEOUT(client.state(), QProcess::NotRunning, 20000);
+        QCOMPARE(client.exitCode(), 0);
+        QCOMPARE(intents, (QStringList{directory, directory}));
+        QVERIFY(paths.isEmpty());
+        owner.stopAccepting();
+        QProcess rejected;
+        rejected.start(QCoreApplication::applicationFilePath(),
+                       {"--instance-cli-client", nameSpace, directory});
+        QTRY_COMPARE_WITH_TIMEOUT(rejected.state(), QProcess::NotRunning, 20000);
+        QCOMPARE(rejected.exitCode(), 1);
+        QCOMPARE(intents.size(), 2);
+    }
     void singleInstanceStructuredForwarding() {
         const auto nameSpace = QUuid::createUuid().toString();
         SingleInstance owner;
@@ -14947,6 +14972,13 @@ int main(int argc, char **argv) {
             return 2;
         }
         return 0;
+    }
+    if (application.arguments().value(1) == "--instance-cli-client") {
+        SingleInstance instance;
+        return instance.start({}, application.arguments().value(2), 15000,
+                              application.arguments().value(3)) == SingleInstance::Forwarded
+                   ? 0
+                   : 1;
     }
     if (application.arguments().value(1) == "--instance-client") {
         SingleInstance instance;

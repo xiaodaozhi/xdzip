@@ -273,6 +273,7 @@ class Workflow:
         if not self.args.skip_rust:
             self.run(['cargo', 'test', '--workspace', '--locked'], env=env)
             self.run(['cargo', 'test', '-p', 'xdzip-runtime', '--locked', 'native_backend_tests', '--', '--ignored'], env=env)
+        self.script('cli.py', 'test', '--build-dir', self.build/'cli', env=env)
         self.script('check-ui-i18n.py', env=env)
         self.script('check-window-contracts.py', '--self-test', env=env)
         self.script('check-operation-components.py', env=env)
@@ -331,6 +332,9 @@ class Workflow:
             shutil.copy2(self.app.parent/'xdzip-update-helper.exe', self.runtime/'xdzip-update-helper.exe')
             shutil.copy2(self.app.parent/'xdzip-native-codec.exe', self.runtime/'xdzip-native-codec.exe')
             shutil.copy2(self.app.parent/'xdzip-association.exe', self.runtime/'xdzip-association.exe')
+            shutil.copytree(self.app.parent/'cli', self.runtime/'cli')
+            for runtime_file in (self.runtime_tools/'runtime').glob('*.dll'):
+                shutil.copy2(runtime_file, self.runtime/'cli'/runtime_file.name)
             for icon in WINDOWS_ICONS.values():
                 shutil.copy2(ROOT/'design/assets/file-associations'/f'xdzip-{icon}.ico', self.runtime)
             self.script('deploy_windows.py', '--root', self.runtime, '--qt-prefix', self.qt,

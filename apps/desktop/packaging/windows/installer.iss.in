@@ -22,6 +22,7 @@ SetupMutex=Local\xdzip.desktop.installing
 CloseApplications=no
 RestartApplications=no
 ChangesAssociations=yes
+ChangesEnvironment=yes
 UninstallLogMode=append
 WizardStyle=modern
 DisableWelcomePage=no
@@ -49,6 +50,9 @@ chinesesimplified.ModifiedInstalledFiles=旧版安装文件已被修改或无法
 english.InstalledFilesCleanupFailed=Installation completed, but some obsolete files could not be removed. Close programs using the installation directory and run Setup again.
 chinesesimplified.InstalledFilesCleanupFailed=安装已完成，但部分旧文件未能清理。请关闭占用安装目录的程序后重新运行安装程序。
 
+[Tasks]
+Name: "clipath"; Description: "Add xdzip CLI to user PATH / 将命令加入用户 PATH"; Flags: unchecked
+
 [Files]
 @MANIFEST_FILES@
 Source: "@PAYLOAD@\*"; DestDir: "@RUNTIME_DIR@"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -57,6 +61,7 @@ Source: "@PAYLOAD@\*"; DestDir: "@RUNTIME_DIR@"; Flags: ignoreversion recursesub
 Name: "{userprograms}\xdzip"; Filename: "@RUNTIME_DIR@\xdzip.exe"
 
 [Registry]
+Root: HKCU; Subkey: "Environment"; ValueType: expandsz; ValueName: "Path"; ValueData: "{code:CliUserPath}"; Tasks: clipath; Check: CliPathSafe
 Root: HKCU; Subkey: "Software\Classes\xdzip.Archive"; ValueType: string; ValueData: "xdzip archive"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\xdzip.Archive\DefaultIcon"; ValueType: string; ValueData: """@RUNTIME_DIR@\xdzip-zip.ico"",0"
 Root: HKCU; Subkey: "Software\Classes\xdzip.Archive\shell\open\command"; ValueType: string; ValueData: """@RUNTIME_DIR@\xdzip.exe"" -- ""%1"""
@@ -111,4 +116,47 @@ begin
     if not Result then
       SuppressibleMsgBox(ExpandConstant('{cm:UpdateAlreadyRunning}'), mbError, MB_OK, IDOK);
   end;
+end;
+
+function CliPathSafe(): Boolean;
+var Existing: String;
+begin
+  Existing := FileSearch('xdzip.exe', GetEnv('PATH'));
+  Result := (Existing = '') or
+    (CompareText(Existing, ExpandConstant('{app}\xdzip.exe')) = 0) or
+    (CompareText(Existing, ExpandConstant('{app}\cli\xdzip.exe')) = 0);
+  if not Result then
+    Log('CLI PATH registration skipped because another xdzip command is already available.');
+end;
+
+function CliUserPath(Param: String): String;
+var Existing, Entry: String;
+begin
+  RegQueryStringValue(HKCU, 'Environment', 'Path', Existing);
+  Entry := ExpandConstant('{app}\cli');
+  if Pos(';' + Lowercase(Entry) + ';', ';' + Lowercase(Existing) + ';') > 0 then
+    Result := Existing
+  else if Existing = '' then
+    Result := Entry
+  else
+    Result := Entry + ';' + Existing;
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var Existing, Entry, Item, Updated: String; At: Integer;
+begin
+  if CurUninstallStep <> usPostUninstall then exit;
+  if not RegQueryStringValue(HKCU, 'Environment', 'Path', Existing) then exit;
+  Entry := ExpandConstant('{app}\cli');
+  Updated := '';
+  while Existing <> '' do begin
+    At := Pos(';', Existing);
+    if At = 0 then begin Item := Existing; Existing := ''; end
+    else begin Item := Copy(Existing, 1, At - 1); Delete(Existing, 1, At); end;
+    if CompareText(Item, Entry) <> 0 then begin
+      if Updated <> '' then Updated := Updated + ';';
+      Updated := Updated + Item;
+    end;
+  end;
+  RegWriteExpandStringValue(HKCU, 'Environment', 'Path', Updated);
 end;

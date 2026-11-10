@@ -362,3 +362,17 @@ English: Verify each Windows format handler, document icon, real archive dispatc
 | NATIVE-12 | RAR 未知尺寸与已知空文件，经真实 worker、运行时分页、大小双向排序、Qt 选择、预检及输出任务 | 未知标记与 0 分开，双语状态及大小汇总不误导，未知项排序靠后，虚拟目录不能因汇总提前返回而获得预检；未知项在解码、密码请求和暂存之前拒绝 |
 | NATIVE-13 | 旧密码的 OS 字符投影、现代时间本地日历及辅助工作计量，经实际平台回调和真实 worker | Rust 保留格式决策与预算，薄 C++ 仅提供 OS 原语；秘密缓冲清除，类型化错误不丢失，辅助工作不计作解码产量；各平台实际证据独立登记 |
 | NATIVE-14 | 从跨至少三卷文件的各 CAB 卷打开，其中逻辑前卷指向文件起始卷；核对独立已知原文，另试缺卷、错误来源、截断及取消 | 正向卷序和所有文件片段完整核验，非紧邻前卷必须属于实际持续文件的起始卷；异常不发布部分索引或文件，既有紧邻前卷样例继续支持 |
+
+
+## CLI，AC-04 / AC-05 / AC-06 / AC-07 / AC-11 / AC-12 / AC-14
+
+| 场景 | 操作与判定 |
+| --- | --- |
+| CLI-INTERFACE | 无 Qt／显示会话执行裸命令、双语帮助、版本、别名、字面路径、JSON、管道与错误参数，核对唯一结果对象、稳定退出码、未知大小及重名物理身份 |
+| CLI-ARCHIVE | ZIP、TAR、TAR.GZ／TGZ、7z 创建／添加／选择解压，独立读取输出字节；覆盖密码、文件名加密、分卷、只读拒绝、过滤、源保护、路径歧义与失败前零写入 |
+| CLI-CANCEL | 真实终止信号和冲突／密码等待，核对协作取消、终态、join、实际提交统计及暂存清理，不用强杀替代正常取消 |
+| CLI-INSTALL | 自有临时位置安装、稳定启动器转发、已有入口拒绝、已改入口保护及登记移除；实际用户 PATH、系统安装授权和真人终端操作分别记录 |
+| CLI-UPDATE | 私有签名和原生可执行夹具验证清单分离、篡改、离线／限流／超时错误、摘要和长度、暂存、自检、原子指针、并发互斥及恢复；模拟传输不写成实际 HTTPS 验收 |
+| CLI-DESKTOP | 同用户有界 IPC 不变为文件打开，关闭时拒绝；原有桌面更新复验候选和全部任务屏障，CLI 占用不被安装破坏，交接不冒称已安装；无 GUI 身份查询不消费回执 |
+
+English: CLI acceptance covers real headless interfaces and archive bytes, cancellation/cleanup, owned installation and launch forwarding, private signed/native update transactions and failure recovery, plus bounded desktop IPC and task barriers. Mock transport is not real HTTPS evidence, handoff is not installation, and automated/native/manual outcomes remain distinct.

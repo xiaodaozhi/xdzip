@@ -120,6 +120,10 @@ def deploy(app,sdk,output,notices):
         copied.append({'source':'qt-sdk/'+source.relative_to(sdk).as_posix() if within(source,sdk) else 'product',
                        'path':dest.relative_to(output).as_posix()})
     copy(app,output/'bin/xdzip')
+    cli = app.parent/'cli'
+    if not (cli/'xdzip').is_file():
+        raise ValueError('Desktop build lacks its independent CLI')
+    shutil.copytree(cli, output/'cli')
     helper = app.with_name('xdzip-update-helper')
     if not helper.is_file() or helper.is_symlink() or not native(helper, 'linux'):
         raise ValueError('Expected standalone native update helper beside application')

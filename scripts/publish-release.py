@@ -108,8 +108,9 @@ def main():
     if not args.directory: raise ValueError('Missing complete asset directory')
     directory = args.directory.resolve()
     manifest = validate(json.loads((directory/'release.json').read_text(encoding='utf-8')), directory)
-    from release_updates import verify_release_updates
+    from release_updates import verify_release_updates, verify_cli_updates
     verify_release_updates(directory, manifest)
+    verify_cli_updates(directory, manifest)
     if manifest['tag'] != args.tag or manifest['repository'] != args.repository:
         raise ValueError('Release identity mismatch')
     expected = {}

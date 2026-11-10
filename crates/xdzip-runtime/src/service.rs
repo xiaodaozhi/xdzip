@@ -17,6 +17,24 @@ pub const MAX_EVENT_BYTES: usize = 8 * 1024 * 1024;
 
 /// Owned bounded commands. Source paths are user-selected inputs, never output authority.
 pub enum Command {
+    /// Enumerate physical metadata independently of GUI directory listings.
+    Catalog {
+        /// Immutable archive session.
+        session: u64,
+        /// Physical offset.
+        offset: u64,
+    },
+    /// Resolve exact paths and IDs inside the current immutable source.
+    SelectMembers {
+        /// Immutable archive session.
+        session: u64,
+        /// Effective archive-relative paths.
+        members: Vec<String>,
+        /// Physical IDs used to disambiguate duplicates.
+        entry_ids: Vec<u64>,
+        /// Existing archive directory for an add operation, empty for root.
+        directory: String,
+    },
     /// Move frozen selected entries to an archive directory.
     Move {
         /// Immutable source session.
@@ -127,6 +145,16 @@ pub enum Command {
 impl Command {
     fn bytes(&self) -> usize {
         match self {
+            Self::SelectMembers {
+                members,
+                entry_ids,
+                directory,
+                ..
+            } => {
+                members.iter().map(String::len).sum::<usize>()
+                    + entry_ids.len() * 8
+                    + directory.len()
+            }
             Self::PublishExport { source, target } => source.capacity() + target.capacity(),
             Self::Update { options, .. } => options.bytes(),
             Self::Move { options, .. } => options.bytes(),
@@ -149,6 +177,18 @@ impl Command {
     }
     fn bounded(&self) -> bool {
         match self {
+            Self::SelectMembers {
+                members,
+                entry_ids,
+                directory,
+                ..
+            } => {
+                members.len().saturating_add(entry_ids.len()) <= xdzip_codec_api::MAX_ENTRIES
+                    && directory.len() <= 4096
+                    && members
+                        .iter()
+                        .all(|path| path.len() <= 4096 && !path.contains('\0'))
+            }
             Self::PublishExport { source, target } => [source, target]
                 .iter()
                 .all(|p| !p.contains('\0') && p.len() <= 4096 && Path::new(p).is_absolute()),
@@ -235,6 +275,22 @@ pub struct InputInfo {
 /// The sole payload event for one accepted request. Finished follows it exactly once.
 #[derive(Debug)]
 pub enum Payload {
+    /// Headless page retaining physical identity and effective names.
+    Catalog {
+        /// Source session.
+        session: u64,
+        /// Physical record count.
+        total: u64,
+        /// Bounded metadata page.
+        entries: Vec<crate::catalog::PhysicalEntry>,
+    },
+    /// Resolved selectors; no target authority is conferred.
+    Selected {
+        /// Physical or navigation identities.
+        selected: Vec<String>,
+        /// Resolved existing directory identity.
+        directory: String,
+    },
     /// Frozen relative export names without host paths or destination authority.
     ExportManifest(Vec<crate::extraction::ExportEntry>),
     /// Metadata in the same order as the bounded selected input paths.
@@ -288,6 +344,18 @@ impl Payload {
     /// Count retained string bytes for end-to-end mailbox admission (containers separately bounded).
     pub fn bytes(&self) -> usize {
         match self {
+            Self::Catalog { entries, .. } => entries
+                .iter()
+                .map(|entry| {
+                    entry.display_name.len()
+                        + entry.path.as_ref().map_or(0, String::len)
+                        + std::mem::size_of::<crate::catalog::PhysicalEntry>()
+                })
+                .sum(),
+            Self::Selected {
+                selected,
+                directory,
+            } => selected.iter().map(|id| id.len() + 24).sum::<usize>() + directory.len(),
             Self::ExportManifest(entries) => entries.iter().map(|e| e.name.capacity() + 32).sum(),
             Self::Page {
                 rows,
@@ -567,6 +635,15 @@ where
 impl Client {
     /// Nonblocking normal admission: at most 128 accepted requests, bounded strings/IDs.
     pub fn submit(&self, command: Command) -> Result<u64, Rejection> {
+        self.submit_inner(command, false)
+    }
+    /// Serialize admission for a headless host. This waits only for the short
+    /// state mutex, never filesystem work or queue capacity; full/closed queues
+    /// retain the same rejection semantics as nonblocking GUI admission.
+    pub fn submit_wait(&self, command: Command) -> Result<u64, Rejection> {
+        self.submit_inner(command, true)
+    }
+    fn submit_inner(&self, command: Command, wait: bool) -> Result<u64, Rejection> {
         if !command.bounded() {
             return Err(Rejection::Invalid);
         }
@@ -574,16 +651,20 @@ impl Client {
         if self.0.admission_closed.load(Ordering::Acquire) {
             return Err(Rejection::Closed);
         }
-        let mut state = match self.0.state.try_lock() {
-            Ok(state) => state,
-            Err(TryLockError::WouldBlock) => {
-                return Err(if self.0.admission_closed.load(Ordering::Acquire) {
-                    Rejection::Closed
-                } else {
-                    Rejection::Busy
-                });
+        let mut state = if wait {
+            self.0.lock()
+        } else {
+            match self.0.state.try_lock() {
+                Ok(state) => state,
+                Err(TryLockError::WouldBlock) => {
+                    return Err(if self.0.admission_closed.load(Ordering::Acquire) {
+                        Rejection::Closed
+                    } else {
+                        Rejection::Busy
+                    });
+                }
+                Err(TryLockError::Poisoned(_)) => panic!("runtime mutex poisoned"),
             }
-            Err(TryLockError::Poisoned(_)) => panic!("runtime mutex poisoned"),
         };
         if state.shutdown.is_some() || !state.receiver_alive {
             return Err(Rejection::Closed);
@@ -740,6 +821,34 @@ fn execute(
     };
     let (session, directory, text, offset, sort, query, generation, revision, replace_navigation) =
         match command {
+            Command::Catalog { session, offset } => {
+                let current = archive
+                    .as_ref()
+                    .filter(|a| a.key().session.get() == session)
+                    .ok_or("stale_session")?;
+                return Ok(Payload::Catalog {
+                    session,
+                    total: current.len() as u64,
+                    entries: current.catalog(offset, 128, control).map_err(fail)?,
+                });
+            }
+            Command::SelectMembers {
+                session,
+                members,
+                entry_ids,
+                directory,
+            } => {
+                let current = archive
+                    .as_ref()
+                    .filter(|a| a.key().session.get() == session)
+                    .ok_or("stale_session")?;
+                let selected = current.resolve_members(&members, &entry_ids, control)?;
+                let directory = current.resolve_directory(&directory, control)?;
+                return Ok(Payload::Selected {
+                    selected,
+                    directory,
+                });
+            }
             Command::PublishExport { source, target } => {
                 return shared
                     .enqueue_task(

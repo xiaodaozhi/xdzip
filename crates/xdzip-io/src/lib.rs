@@ -19,15 +19,48 @@ pub use target::{
 /// Open a source without allowing a special file to block the caller.
 /// Unix uses a nonblocking classification open before normal reads.
 pub fn open_regular_readonly(path: &std::path::Path) -> std::io::Result<std::fs::File> {
+    open_regular(path, false)
+}
+
+/// Read fixed host metadata without following a leaf symlink or reparse point.
+/// This classifies a source only; callers still own directory authorization,
+/// publisher authentication, version validation and bounded reads.
+pub fn open_regular_nofollow(path: &std::path::Path) -> std::io::Result<std::fs::File> {
+    open_regular(path, true)
+}
+
+fn open_regular(path: &std::path::Path, nofollow: bool) -> std::io::Result<std::fs::File> {
     let mut options = std::fs::OpenOptions::new();
     options.read(true);
     #[cfg(unix)]
     {
         use rustix::fs::OFlags;
         use std::os::unix::fs::OpenOptionsExt;
-        options.custom_flags(OFlags::NONBLOCK.bits() as i32);
+        let flags = OFlags::NONBLOCK
+            | if nofollow {
+                OFlags::NOFOLLOW
+            } else {
+                OFlags::empty()
+            };
+        options.custom_flags(flags.bits() as i32);
+    }
+    #[cfg(windows)]
+    if nofollow {
+        use std::os::windows::fs::OpenOptionsExt;
+        // FILE_FLAG_OPEN_REPARSE_POINT classifies the leaf itself, never its target.
+        options.custom_flags(0x00200000);
     }
     let file = options.open(path)?;
+    #[cfg(windows)]
+    if nofollow {
+        use std::os::windows::fs::MetadataExt;
+        if file.metadata()?.file_attributes() & 0x400 != 0 {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "reparse point is not fixed metadata",
+            ));
+        }
+    }
     if !file.metadata()?.is_file() {
         return Err(std::io::Error::new(
             std::io::ErrorKind::InvalidInput,

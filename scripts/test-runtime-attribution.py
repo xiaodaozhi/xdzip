@@ -87,8 +87,8 @@ class AttributionTests(unittest.TestCase):
 
     def test_normal_rust_graph_excludes_build_dev_and_proc_macros(self):
         root_names={'desktop':'xdzip-qt-bridge','codec':'xdzip-codec-bridge',
-                    'helper':'xdzip-update-helper'}
-        names=['desktop','codec','helper','runtime','codecdep','helperdep',
+                    'helper':'xdzip-update-helper','cli':'xdzip-cli'}
+        names=['desktop','codec','helper','cli','runtime','codecdep','helperdep',
                'build','dev','macro','macrodep']
         packages=[{'id':n,'name':root_names.get(n,n),'source':None if n in root_names else 'registry',
                    'targets':[{'kind':['proc-macro'] if n=='macro' else ['lib']}]} for n in names]
@@ -96,16 +96,17 @@ class AttributionTests(unittest.TestCase):
         nodes=[{'id':'desktop','deps':[dep('runtime',None),dep('build','build'),dep('dev','dev'),dep('macro',None)]},
                {'id':'codec','deps':[dep('runtime',None),dep('codecdep',None)]},
                {'id':'helper','deps':[dep('helperdep',None)]},
+               {'id':'cli','deps':[dep('runtime',None)]},
                {'id':'macro','deps':[dep('macrodep',None)]}]+[{'id':n,'deps':[]} for n in ['runtime','codecdep','helperdep','build','dev','macrodep']]
         metadata={'packages':packages,'resolve':{'nodes':nodes}}
         refs={p['id']:p['id'] for p in packages}
         for host in ['x86_64-pc-windows-msvc','x86_64-unknown-linux-gnu']:
             result=runtime_candidates(metadata,refs,host)
-            self.assertEqual(result['packages'],['codec','codecdep','desktop','helper','helperdep','runtime'])
-            self.assertEqual(result['roots'],{'xdzip-qt-bridge':'desktop','xdzip-codec-bridge':'codec',
+            self.assertEqual(result['packages'],['cli','codec','codecdep','desktop','helper','helperdep','runtime'])
+            self.assertEqual(result['roots'],{'xdzip-qt-bridge':'desktop','xdzip-codec-bridge':'codec','xdzip-cli':'cli',
                                               'xdzip-update-helper':'helper'})
         mac=runtime_candidates(metadata,refs,'aarch64-apple-darwin')
-        self.assertEqual(mac['packages'],['codec','codecdep','desktop','runtime'])
+        self.assertEqual(mac['packages'],['cli','codec','codecdep','desktop','runtime'])
         self.assertNotIn('xdzip-update-helper',mac['roots'])
         with self.assertRaisesRegex(ValueError,'Unsupported runtime candidate host'):
             runtime_candidates(metadata,refs,'x86_64-unknown-freebsd')

@@ -4,6 +4,7 @@
 
 | 领域 | 入口 |
 | --- | --- |
+| 命令行 | [独立 CLI、脚本接口与安装更新](engineering/command-line.md) |
 | 产品与架构 | [设计总览](design/index.md)、[架构决策](design/architecture-decisions.md)、[需求追踪](design/requirements-traceability.md) |
 | 界面规范 | [严格设计规范](visual/design-standard.md)、[设计流程](visual/design-workflow.md)、[逻辑尺寸](visual/layout-scale.json)、[视觉参数](visual/tokens.json) |
 | 高保真与素材 | [原稿入口](../design/hifi/README.md)、[可操作 HTML 设计](../design/html/README.md)、[素材目录](../design/assets/index.html) |

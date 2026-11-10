@@ -16,9 +16,10 @@ class SingleInstance final : public QObject {
     enum Result { Primary, Forwarded, Failed };
     explicit SingleInstance(QObject *parent = nullptr);
     ~SingleInstance() override;
-    Result start(const QStringList &paths, const QString &nameSpace = {},
-                 int testTimeoutMs = 15000);
+    Result start(const QStringList &paths, const QString &nameSpace = {}, int testTimeoutMs = 15000,
+                 const QString &cliRequest = {});
     void attach(std::function<void(const QStringList &)> handler);
+    void attachCli(std::function<void(const QString &)> handler);
     void stopAccepting() {
         m_accepting = false;
     }
@@ -30,6 +31,8 @@ class SingleInstance final : public QObject {
     std::unique_ptr<QLockFile> m_lock;
     QList<QStringList> m_pending;
     QStringList m_seen;
+    QStringList m_pendingCli;
+    std::function<void(const QString &)> m_cliHandler;
     std::function<void(const QStringList &)> m_handler;
     bool m_accepting = true;
 };

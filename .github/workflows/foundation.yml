@@ -51,7 +51,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y zip
+          sudo apt-get install -y zip libssl-dev pkg-config
       - name: Check native Rust and C++ bridge
         shell: pwsh
         run: ./scripts/check-foundation.ps1
@@ -75,6 +75,7 @@ jobs:
             build/review/ci-timings.json
             build/review/ci-cache-foundation.json
             build/review/foundation-ctest.log
+            build/review/cli/report.json
           if-no-files-found: ignore
           retention-days: 14
 

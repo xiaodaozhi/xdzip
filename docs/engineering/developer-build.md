@@ -2,6 +2,8 @@
 
 本文是三平台环境准备、构建、测试、打包和验证的统一入口。共用编排由 [scripts/desktop.py](../../scripts/desktop.py) 实现；平台文档仅补充部署布局、工具行为和系统限制，不再另维护一套日常命令。
 
+独立命令行版使用 `python3 scripts/cli.py build`、`test` 和 `package`，无需 Qt、X11 或图形会话。Linux 编译另需 `libssl-dev pkg-config`，运行使用系统 OpenSSL 与证书。桌面构建自动生成私有 CLI 目录。命令、安装与受信更新见 [CLI 契约](command-line.md)。English: The standalone CLI build/test/package entry requires no Qt or display server; desktop builds also include the private CLI directory.
+
 开发构建仍标记实验性，不能当作正式 Release 安装包。能力和限制见根目录 [README](../../README.md)，支持范围见[支持政策](support-policy.md)。正式 `v0.1.0` 的历史发行审查见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)；未来版本须按具体候选重新建立发行审查记录。
 
 ## 环境与入口

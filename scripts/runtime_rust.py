@@ -4,7 +4,7 @@
 def runtime_candidates(metadata, references, host):
     packages = {p['id']:p for p in metadata['packages']}
     nodes = {n['id']:n for n in metadata['resolve']['nodes']}
-    root_names = ['xdzip-qt-bridge', 'xdzip-codec-bridge']
+    root_names = ['xdzip-qt-bridge', 'xdzip-codec-bridge', 'xdzip-cli']
     if '-windows-' in host or '-linux-' in host:
         root_names.append('xdzip-update-helper')
     elif not host.endswith('-apple-darwin'):
@@ -25,5 +25,5 @@ def runtime_candidates(metadata, references, host):
     return {'root':references[roots['xdzip-qt-bridge']],
             'roots':{name:references[key] for name,key in roots.items()},
             'packages':sorted(references[k] for k in selected),
-            'evidence':'Host-filtered normal dependency graph rooted at the desktop bridge, codec worker bridge and applicable update helper; excludes build/dev/proc-macro edges.',
+            'evidence':'Host-filtered normal dependency graph rooted at the desktop bridge, independent CLI, codec worker bridge and applicable update helper; excludes build/dev/proc-macro edges.',
             'limit':'Candidate runtime inputs, not proof of final retained machine code; linker dead stripping and native/compiler runtime require separate review.'}

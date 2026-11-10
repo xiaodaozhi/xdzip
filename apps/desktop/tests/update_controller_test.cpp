@@ -1,6 +1,8 @@
 // apps/desktop/tests/update_controller_test.cpp
 
 #include "ApplicationSessions.h"
+#include "CliRequestBroker.h"
+#include "SingleInstance.h"
 #include "UiFont.h"
 #include "UiPreferences.h"
 #include "UiText.h"
@@ -155,6 +157,46 @@ class UpdateControllerTest final : public QObject {
     }
 
   private slots:
+    void cliHandoffChecksCandidateWithoutClaimingInstallation() {
+        QTemporaryDir directory;
+        const auto previous = qgetenv("XDZIP_SETTINGS_PATH");
+        const auto restore = qScopeGuard([&] { qputenv("XDZIP_SETTINGS_PATH", previous); });
+        qputenv("XDZIP_SETTINGS_PATH", directory.filePath("settings.ini").toUtf8());
+        const auto request = directory.filePath("cli/cache/desktop-" + QString(32, 'a'));
+        QVERIFY(QDir().mkpath(request));
+        QFile input(request + "/request.json");
+        QVERIFY(input.open(QIODevice::WriteOnly));
+        const QByteArray bytes =
+            R"({"schema_version":1,"action":"update","candidate_version":"9.0.0"})";
+        QCOMPARE(input.write(bytes), bytes.size());
+        input.close();
+        Network network;
+        configure(network);
+        UpdateController updates(nullptr, &network, fixture("network-trust.json"),
+                                 directory.filePath("download"), [] { return true; });
+        QQmlApplicationEngine engine;
+        UiPreferences preferences;
+        ApplicationSessions sessions(&engine, &preferences);
+        updates.setSessions(&sessions);
+        SingleInstance instance;
+        QCOMPARE(instance.start({}, directory.path(), 1000, request), SingleInstance::Primary);
+        installCliRequests(&instance, &updates, &sessions);
+        QFile result(request + "/result.json");
+        QTRY_VERIFY(result.exists());
+        QVERIFY(result.open(QIODevice::ReadOnly));
+        const auto reply = QJsonDocument::fromJson(result.readAll()).object();
+        QCOMPARE(reply.value("status").toString(), "handed_off");
+        QCOMPARE(reply.value("error_code").toString(), "");
+        QTRY_COMPARE(updates.state(), "available");
+        QVERIFY(updates.trusted());
+        QVERIFY(!updates.canInstall());
+        QCOMPARE(network.requests.size(), 3);
+        QFile status(directory.filePath("cli/desktop-update-status.json"));
+        QVERIFY(status.open(QIODevice::ReadOnly));
+        const auto receipt = QJsonDocument::fromJson(status.readAll()).object();
+        QCOMPARE(receipt.value("status").toString(), "manual_install");
+        QVERIFY(!receipt.value("install_gate").toBool());
+    }
     void installationReasonsPreserveTheAutomaticInstallGate() {
         using Controller = UpdateController;
         QCOMPARE(Controller::installationReason(false, true, true, true, true, true), "unsigned");
