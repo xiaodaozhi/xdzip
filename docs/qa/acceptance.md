@@ -373,6 +373,6 @@ English: Verify each Windows format handler, document icon, real archive dispatc
 | CLI-CANCEL | 真实终止信号和冲突／密码等待，核对协作取消、终态、join、实际提交统计及暂存清理，不用强杀替代正常取消 |
 | CLI-INSTALL | 自有临时位置安装、稳定启动器转发、已有入口拒绝、已改入口保护及登记移除；实际用户 PATH、系统安装授权和真人终端操作分别记录 |
 | CLI-UPDATE | 私有签名和原生可执行夹具验证清单分离、篡改、离线／限流／超时错误、摘要和长度、暂存、自检、原子指针、并发互斥及恢复；模拟传输不写成实际 HTTPS 验收 |
-| CLI-DESKTOP | 同用户有界 IPC 不变为文件打开，关闭时拒绝；原有桌面更新复验候选和全部任务屏障，CLI 占用不被安装破坏，交接不冒称已安装；无 GUI 身份查询不消费回执 |
+| CLI-DESKTOP | 同用户有界 IPC 不变为文件打开，关闭时拒绝；原有桌面更新复验候选和全部任务屏障，CLI 占用不被安装破坏，交接不冒称已安装；无 GUI 身份查询不消费回执；Mac 普通上下文仅位于 Resources，重复构建无旧标记残留，实际原生签名及固定 GUI 上下文解析通过 |
 
 English: CLI acceptance covers real headless interfaces and archive bytes, cancellation/cleanup, owned installation and launch forwarding, private signed/native update transactions and failure recovery, plus bounded desktop IPC and task barriers. Mock transport is not real HTTPS evidence, handoff is not installation, and automated/native/manual outcomes remain distinct.

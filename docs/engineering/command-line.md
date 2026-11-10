@@ -54,6 +54,8 @@ build/cli/bin/xdzip --help
 
 该入口使用仓库锁定的 Rust、CMake、平台 C++ 工具链及现有隔离 worker，无需安装 Qt。Windows 打包还需通过既有 prepare-windows-runtime.py 准备固定、附带原许可的 app-local VC++ 运行库。Qt 的统一构建入口也构建 CLI 并放入私有 cli 目录，GUI 可执行文件、应用图标与关联入口不改名。
 
+macOS 的内置 CLI 可执行文件位于 `Contents/Helpers/cli/`，普通上下文 JSON 位于 `Contents/Resources/xdzip-cli-context.json`，由应用资源签名封装。CLI 只在固定的 Contents／Helpers／cli 布局查找该资源，继续核对 schema、desktop kind 与固定 GUI 相对路径；缺少标记按便携身份处理，非法标记拒绝。重复构建清除 Helpers 下的旧生成标记，不能通过放宽签名验证解决布局错误。English: Bundled macOS CLI executables stay under Helpers/cli, while their context JSON is sealed as a Resources file. Lookup requires the fixed bundle layout and existing identity/target checks; missing context remains portable and invalid context fails. Rebuilding removes the obsolete generated marker from Helpers without relaxing signature checks.
+
 独立包展开后运行 bin/xdzip，Windows 加 .exe。运行 `bin/xdzip setup` 显式安装用户级稳定入口及版本化运行目录。Unix 默认入口为 ~/.local/bin，Windows 默认位于用户 LocalAppData 下的 xdzip/cli/bin；管理目录使用平台用户数据位置。--bin-dir 和 --install-dir 可显式指定位置。用户自行将目录加入 PATH，工具不修改 Shell 启动文件。已有入口或登记文件一律拒绝覆盖。
 
 管理式身份要求有效的 installation.json；目录恰好名为 versions 而没有登记文件时仍视为便携运行。English: Managed identity requires its installation marker; a directory named versions alone remains portable.

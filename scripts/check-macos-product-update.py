@@ -58,7 +58,8 @@ def run(arguments, log=None, *, env=None, input_data=None):
                             input=input_data, capture_output=True)
     if log:
         with Path(log).open('ab') as stream:
-            stream.write(result.stdout+result.stderr)
+            data = (result.stdout+result.stderr).replace(str(ROOT).encode(), b'<workspace>')
+            stream.write(data.replace(str(Path.home()).encode(), b'<user>'))
     if result.returncode:
         raise RuntimeError('Owned Mac product command failed: '+Path(str(arguments[0])).name)
     return result.stdout
@@ -118,6 +119,7 @@ def deploy(source, build, qt, sdk, destination, log):
     for driver in (destination/'Contents/PlugIns/sqldrivers').glob('*.dylib'):
         if driver.name != 'libqsqlite.dylib': driver.unlink()
     builder = module(ROOT/'scripts/build-macos-dmg.py', 'owned_mac_product_builder')
+    builder.checked = checked
     builder.configure_translation_path(destination)
     optimize_bundle(destination)
     for path in {p.resolve() for p in destination.rglob('*') if p.is_file() and native(p, 'macos')}:

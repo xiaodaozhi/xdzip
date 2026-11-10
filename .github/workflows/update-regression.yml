@@ -88,6 +88,8 @@ jobs:
           python3 -m aqt install-qt mac desktop 6.8.2 clang_64 --outputdir '${{ runner.temp }}/Qt'
       - name: Check production-signing admission with test keys only
         run: python3 scripts/test-production-update-signing.py
+      - name: Check native CLI code and resource sealing
+        run: python3 scripts/test-cli-bundle.py
       - name: Verify the actual native Sparkle proxy transport
         run: |
           python3 scripts/prepare-sparkle.py --output build/toolchain/Sparkle/2.10.0-xdzip-proxy.1
