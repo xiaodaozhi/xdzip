@@ -59,6 +59,7 @@ class DesktopProbe final : public QObject {
         std::fflush(stdout);
     }
     int m_idleMs = 1500, m_browseMs = 0, m_targetAttempts = 0;
+    bool m_createFolder = false;
     void scheduleReopenAfterClose() {
         QTimer::singleShot(0, this, [this] {
             if (m_phase != Phase::ClosingForCancel || m_controller->busy())
@@ -161,7 +162,7 @@ class DesktopProbe final : public QObject {
             m_phase = Phase::Extract;
             m_stage.restart();
             emitEvent(QStringLiteral("extract_requested"));
-            m_controller->startExtraction(m_extractTarget, true, false, 0, false, false);
+            m_controller->startExtraction(m_extractTarget, true, m_createFolder, 0, false, false);
         } else if (m_phase == Phase::Extract && !m_controller->tasks().isEmpty() &&
                    m_controller->tasks().first().toMap().value("terminal").toBool()) {
             const auto task = m_controller->tasks().first().toMap();
@@ -209,6 +210,8 @@ class DesktopProbe final : public QObject {
             return ok && value >= 0 && value <= maximum ? value : fallback;
         };
         if (qEnvironmentVariable("XDZIP_PROBE_OPERATION") == QStringLiteral("extract")) {
+            m_createFolder =
+                qEnvironmentVariable("XDZIP_PROBE_CREATE_FOLDER") == QStringLiteral("1");
             m_extractTarget = qEnvironmentVariable("XDZIP_PROBE_EXTRACT_TARGET");
             const QDir target(m_extractTarget);
             if (m_extractTarget.isEmpty() || !QDir::isAbsolutePath(m_extractTarget) ||

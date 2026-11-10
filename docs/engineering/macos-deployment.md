@@ -47,6 +47,8 @@ ARM64 的已修改 Mach-O 需要有效代码目录，因此复制／重写后使
 
 核验脚本只读挂载镜像，核对 Applications 链接，复制到含中文与空格的隔离目录，递归确认 arm64、Basic 样式及每个原生文件和应用包的严格签名，移除 SDK／QML／插件搜索环境后以 Cocoa／Metal 启动关闭。再由镜像内真实产品打开自行生成的 ZIP，执行查询、排序、解压与退出，独立核对 Unicode、空文件、空目录和全部输出字节，并检查实际首帧的构建身份、架构及 Metal 后端。随后仅在核验副本修改 QtCore 的 Mach-O 库身份并重新 ad-hoc 签名，再检查架构、样式、签名及启动。该测试证明部署允许修改镜像替换，不冒充从对应源码重建 Qt、任意 ABI 兼容或法律履约批准。
 
+app.zip 核验还使用产品的默认同名文件夹选项解压整个应用，与 `ditto` 输出逐项比较文件字节、链接目标及安全文件权限，再对解压后的真实应用执行深层严格签名检查和 Cocoa／Metal 启动。外层目录不能以 `.app` 结尾；临时应用和本次新增注册在验证结束时清理。此检查不改变签名信任或公证边界。
+
 本机仍安装 SDK，导入核验和清除环境不能代替另一台干净 Mac。Finder 拖入、系统打开方式、默认选择、Gatekeeper、真实重启和签名公证继续按[人工清单](../qa/private-test-manual.md)验收。
 
 原生菜单编辑命令和 Qt 标准控件需要系统 locale 的 qtbase 翻译。打包除复制 `Contents/Resources/translations/qtbase_*.qm` 外，还须在 `Contents/Resources/qt.conf` 的 `[Paths]` 设置 `Translations = Resources/translations`，保留已有插件与 QML 路径，并在完整性签名前完成写入。重定位启动门槛同时检查原生编辑 responder 和应用菜单角色，不能只在 SDK 开发目录验证。
