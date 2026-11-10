@@ -10699,6 +10699,58 @@ QtObject {
         QVERIFY(field->property("text").toString().isEmpty());
         QVERIFY(!QFile::exists(exiting.filePath("owned.txt")));
     }
+    void appZipDefaultFolderMatchesPreviewAndOutput() {
+#ifndef Q_OS_UNIX
+        QSKIP("ZIP symbolic link restoration is supported on POSIX only");
+#else
+        QTemporaryDir source, target;
+        QVERIFY(source.isValid() && target.isValid());
+        const auto archive = source.filePath(QStringLiteral("xdzip-0.1.2-macos-arm64.app.zip"));
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/../extract/unix_bundle.zip"), archive));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(archive);
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        controller->prepareExtraction(true);
+        auto *extract = window->findChild<QQuickWindow *>("extractWindow");
+        QVERIFY(extract);
+        QTRY_VERIFY(extract->isVisible());
+        auto *targetField = findVisual(extract->contentItem(), "extractTarget");
+        auto *folder = findVisual(extract->contentItem(), "extractSameFolder");
+        auto *openAfter = findVisual(extract->contentItem(), "extractOpenAfter");
+        auto *start = findVisual(extract->contentItem(), "startExtract");
+        QVERIFY(targetField && folder && openAfter && start);
+        QCOMPARE(folder->property("checked").toBool(), true);
+        const auto expectedName = QStringLiteral("xdzip-0.1.2-macos-arm64");
+        QCOMPARE(controller->extractionIntent().value("folder").toString(), expectedName);
+        targetField->setProperty("text", target.path());
+        openAfter->setProperty("checked", false);
+        controller->checkTarget(target.path());
+        QTRY_VERIFY(!controller->busy() && checkedTarget(controller, target.path()));
+        QTRY_COMPARE(extract->property("destinationPreview").toString(),
+                     target.filePath(expectedName));
+        QTRY_VERIFY(start->isEnabled());
+        QTest::mouseClick(
+            extract, Qt::LeftButton, Qt::NoModifier,
+            start->mapToScene(QPointF(start->width() / 2, start->height() / 2)).toPoint());
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->tasks().isEmpty() &&
+                                     controller->tasks().first().toMap().value("terminal").toBool(),
+                                 10000);
+        const auto task = controller->tasks().first().toMap();
+        QCOMPARE(task.value("status").toString(), QStringLiteral("succeeded"));
+        QCOMPARE(task.value("target").toString(), target.filePath(expectedName));
+        QVERIFY(
+            QFileInfo(target.filePath(expectedName + "/Demo.app/Contents/MacOS/demo")).isFile());
+        QVERIFY(!QFileInfo::exists(target.filePath(expectedName + ".app")));
+        controller->requestClose();
+        QTRY_VERIFY(controller->requestClose());
+#endif
+    }
     void unixBundleExtractionThroughNativeController() {
 #ifndef Q_OS_UNIX
         QSKIP("ZIP symbolic link restoration is supported on POSIX only");

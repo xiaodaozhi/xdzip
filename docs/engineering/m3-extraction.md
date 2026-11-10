@@ -6,6 +6,10 @@
 
 所有输出先通过共享 portable 名称解析器，拒绝路径穿越、绝对路径、保留设备名、非法字符和歧义组件。任务准备阶段冻结选择：根目录全量解压包括全部物理记录；所选目录展开全部后代；所选文件去除当前目录前缀。浏览器根目录列表仍仅显示直属文件和文件夹。常见 Unicode NFD／小写等价名称按首个拼写映射，普通文件别名进入冲突流程；文件与目录冲突、父目录歧义在创建目标对象前拒绝。该比较不是所有文件系统名称规则的完整模拟，最终排他创建仍由原生文件系统裁决。
 
+默认的同名文件夹由宿主从归档名称派生，界面预览和实际输出使用同一名称。去除归档扩展名后若以 `.app` 结尾，还要去除此后缀，大小写不敏感，避免 macOS Finder 将普通外层文件夹误认成应用包；例如 `demo.app.zip` 解压到 `demo/`，其内部原有的 `demo.app` 名称和内容不变。去除后为空时使用 `archive`，派生目录仍经过 portable 名称检查和目标授权。该规则同样适用于已支持的复合扩展名及分卷归档，不改变未勾选同名文件夹时的输出路径。
+
+English: The default archive-named wrapper and its UI preview share one host-derived name. After removing the archive suffix, a case-insensitive `.app` suffix is also removed so Finder sees an ordinary directory; an empty result becomes `archive`. The app inside retains its original name and bytes. Normal path and target authorization checks still apply.
+
 用户选择的目标目录通过 `xdzip-io::Grant` 转为持有目录句柄的能力。子目录逐组件 no-follow 打开，保留并复核父链身份。POSIX 目标须属于当前有效用户且不能向组或其他用户开放写权限；Windows 检查重解析点、所有者和 DACL，修改权限只允许当前用户、SYSTEM、Administrators 和继承用途的 Creator Owner。其他 SID 可以具有 FILE_GENERIC_READ／FILE_GENERIC_EXECUTE 的只读、枚举及执行权限，GENERIC_READ／GENERIC_EXECUTE 使用相同的文件权限边界；写入、创建、追加、删除、删除子项、改所有者、改 ACL、GENERIC_WRITE／GENERIC_ALL 及未知位仍拒绝，有效与仅继承 ACE 同样检查。这样可接受个人目录已有的只读观察账户，而不会将外部可写目录判为安全。Windows 输出沿用目标的只读共享权限，不承诺对已有只读账户隐藏文件内容，也不修改用户目录 ACL。链接、特殊对象、外部所有者和外部可写目标继续拒绝。
 
 私有工作目录以系统随机 128-bit 名字排他创建，POSIX 目录 0700、文件 0600。阶段文件使用宿主生成的顺序号，不使用归档提供的临时路径。真实解码字节逐块计量：单文件 8 GiB、单任务 20 GiB；声明压缩比高于 1000:1 且输出大于 1 MiB 时须显式允许，硬字节限额保持不变。每个解码器使用固定缓冲区，解压数据不整体积累到内存。

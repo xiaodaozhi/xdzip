@@ -313,6 +313,34 @@ fn declared_links_have_explicit_diagnostic_before_output_admission() {
 
 #[cfg(unix)]
 #[test]
+fn app_zip_same_folder_is_a_normal_directory_containing_the_real_bundle() {
+    let source = Target::new();
+    let path = source.0.join("xdzip-0.1.2-macos-arm64.app.zip");
+    std::fs::copy(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/extract/unix_bundle.zip"),
+        &path,
+    )
+    .unwrap();
+    let archive = Archive::open(&path, &Cancellation::default()).unwrap();
+    assert_eq!(archive.output_folder(), "xdzip-0.1.2-macos-arm64");
+    let target = Target::new();
+    let mut options = target.options();
+    options.create_folder = true;
+    let done = execute(&archive, options, &Control::default(), |_| {});
+    assert_eq!(done.status, Status::Succeeded, "{}", done.error);
+    let folder = target.0.join("xdzip-0.1.2-macos-arm64");
+    assert_eq!(Path::new(&done.target), folder);
+    assert!(!target.0.join("xdzip-0.1.2-macos-arm64.app").exists());
+    let app = folder.join("Demo.app/Contents");
+    assert!(app.join("MacOS/demo").is_file());
+    assert_eq!(
+        std::fs::read_link(app.join("Frameworks/F.framework/Versions/Current")).unwrap(),
+        Path::new("A")
+    );
+}
+
+#[cfg(unix)]
+#[test]
 fn unix_bundle_links_and_safe_executable_modes_are_restored_after_regular_files() {
     use std::os::unix::fs::PermissionsExt;
     let target = Target::new();

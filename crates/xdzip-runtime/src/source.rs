@@ -569,6 +569,16 @@ fn source_name(path: &std::path::Path) -> &str {
     } else {
         stem
     };
+    // A wrapper ending in .app is treated as an application bundle by Finder,
+    // even though the actual application is inside that wrapper.
+    let stem = if stem
+        .get(stem.len().saturating_sub(4)..)
+        .is_some_and(|suffix| suffix.eq_ignore_ascii_case(".app"))
+    {
+        &stem[..stem.len() - 4]
+    } else {
+        stem
+    };
     if stem.is_empty() { "archive" } else { stem }
 }
 #[cfg(test)]
@@ -582,6 +592,12 @@ mod tests {
             ("archive.tgz", "archive"),
             ("archive.tar", "archive"),
             ("archive.zip", "archive"),
+            ("xdzip-0.1.2-macos-arm64.app.zip", "xdzip-0.1.2-macos-arm64"),
+            ("示例.APP.ZIP", "示例"),
+            ("中文.zip", "中文"),
+            ("示例.app.tar.gz", "示例"),
+            (".app.zip", "archive"),
+            ("archive.application.zip", "archive.application"),
             ("archive.7z", "archive"),
             ("archive.part01.rar", "archive"),
             (".tar.gz", "archive"),
