@@ -12,7 +12,9 @@ This software includes code derived from Imlib2.
 
 Qt's original source archive: https://download.qt.io/archive/qt/6.8/6.8.2/single/qt-everywhere-src-6.8.2.tar.xz
 
-Version-specific corresponding-source materials, including the application source, fixed Qt module archives, applicable patches and rebuild instructions, are provided through the project release channel: https://github.com/xiaodaozhi/xdzip/releases
+The application source and version tags are available in the project repository: https://github.com/xiaodaozhi/xdzip
+
+Build and Qt replacement documentation: https://github.com/xiaodaozhi/xdzip/blob/main/docs/engineering/source-delivery.md
 
 Qt licensing: https://doc.qt.io/qt-6.8/licensing.html
 
@@ -22,7 +24,7 @@ For the 54 ordinary Qt 6.8.2 translation source files used by the published alph
 
 Qt's locale-data generator refers to the ISO 639-3 code tables maintained by SIL: https://iso639-3.sil.org/. Qt's generated locale data includes language-code entries. Consult the code-table terms separately: https://iso639-3.sil.org/code_tables/download_tables. This attribution does not establish permission to redistribute the full tables.
 
-The application uses shared Qt libraries. The corresponding-source materials describe how to rebuild the application and use an interface-compatible modified Qt. A modified macOS bundle may require a new local ad-hoc integrity signature; xdzip does not require the user's possession of the project's private signing key or impose a restriction on debugging modifications to the Qt libraries.
+The application uses shared Qt libraries. The linked documentation describes how to rebuild the application and use an interface-compatible modified Qt. A modified macOS bundle may require a new local ad-hoc integrity signature; xdzip does not require the user's possession of the project's private signing key or impose a restriction on debugging modifications to the Qt libraries.
 
 These notices identify the applicable licensing and source materials; they do not by themselves establish that every third-party source or redistribution obligation has been satisfied.
 
@@ -36,7 +38,7 @@ xdzip 动态链接 Qt 6.8.2 的 Core、Gui、Network、Qml、Quick、QuickContro
 
 本软件包含源自 Imlib2 的代码。
 
-上方列出 Qt 原始源码、项目发行页和许可入口。对应版本的源码材料包括应用源码、固定 Qt 模块归档、适用补丁和重建说明。用户可以构建并使用接口兼容的修改版 Qt；修改 macOS 应用副本后可能需要重新进行本地 ad-hoc 完整性签名，xdzip 不要求用户持有项目的私有签名密钥，也不限制为调试 Qt 修改而进行的逆向工程。本说明不能单独证明所有第三方源码及再分发义务已经完成。
+上方列出 Qt 原始源码、项目仓库和构建及 Qt 替换文档入口。用户可以构建并使用接口兼容的修改版 Qt；修改 macOS 应用副本后可能需要重新进行本地 ad-hoc 完整性签名，xdzip 不要求用户持有项目的私有签名密钥，也不限制为调试 Qt 修改而进行的逆向工程。本说明不能单独证明所有第三方源码及再分发义务已经完成。
 
 Qt 区域数据生成器引用由 SIL 维护的 ISO 639-3 代码表，Qt 生成的区域数据包含语言代码条目，来源为 https://iso639-3.sil.org/。代码表条款须另见 https://iso639-3.sil.org/code_tables/download_tables；本署名不表示已获完整表格再分发许可。
 
