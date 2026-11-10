@@ -2,7 +2,11 @@
 
 **发行边界，2026-11-05：**按所有者决定，此收集器仅供本地审查和重建验证，不再把对应源码压缩包作为 GitHub Release 或 Actions 工件提供。公开历史 Release 和仍可下载的发行 Actions 工件中的对应源码包已撤下，后续发布流程禁止生成或上传。该决定不改变组件许可，不表示对应源码、重链接或其他许可义务已满足；GitHub 公共仓库自动生成的标签源码快照不属于这些 Release 附件。
 
+常规发行及其验收不得自行运行此收集器，也不得在本地生成对应源码包；只有用户针对源码收集另行明确要求时才可运行，上传限制仍然适用。许可复核针对实际组件和具体义务进行，不将机器报告中的通用待复核标记直接认定为实际缺陷。
+
 **Release boundary, 2026-11-05:** By owner direction, this collector is for local review and rebuild verification only. Corresponding-source archives are no longer provided as GitHub Release or Actions artifacts. Historical public Release assets and still-downloadable release Actions artifacts containing these archives have been withdrawn, and future release workflows reject their generation or upload. This decision does not change component licenses or establish that corresponding-source, relinking or other obligations are satisfied. GitHub's automatically generated source snapshots for tags in the public repository are outside these Release attachments.
+
+Routine release and acceptance must not run this collector or generate corresponding-source archives locally. Run it only when the user explicitly requests source collection; the upload restriction still applies. License review must identify the actual components and obligations rather than treating generic machine-generated review flags as established defects.
 
 scripts/prepare-source-delivery.py 从干净提交收集项目源码、Cargo.lock 对应的完整 Rust vendor 输入、固定 Qt 6.8.2 模块源码归档和重建／替换说明。所有产物位于 build/，不把下载地址称为已交付源码，不自动批准开源许可分支。
 
