@@ -546,7 +546,7 @@ impl Usage {
         #[cfg(windows)]
         {
             use windows_sys::Win32::{Foundation::*, System::Threading::*};
-            let mut handle = std::ptr::null_mut();
+            let mut handle: HANDLE = std::ptr::null_mut();
             if matches!(context()?, Context::Desktop(_)) {
                 #[allow(unsafe_code)]
                 // SAFETY: fixed terminated mutex names, no borrowed data survives calls.

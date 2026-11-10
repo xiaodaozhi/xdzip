@@ -505,6 +505,9 @@ fn status(context: &Context) -> Result<Response> {
     }
 }
 fn activate(root: &Path, archive: &Path, candidate: &Candidate) -> Result<Value> {
+    if terminal::interrupted() {
+        return Err("cancelled".into());
+    }
     let _lock = installation::UpdateLock::acquire(root)?;
     let previous = installation::read_json(&root.join(installation::POINTER))?;
     if previous["identity"]["build"].as_u64().unwrap_or(u64::MAX)
@@ -553,6 +556,11 @@ fn activate(root: &Path, archive: &Path, candidate: &Candidate) -> Result<Value>
         return Err("payload_identity_mismatch".into());
     }
     let (runtime, identity) = installation::install_version(root, &source)?;
+    // Cancellation is accepted before the single activation commit. A signal
+    // after that point cannot undo a version already selected by new processes.
+    if terminal::interrupted() {
+        return Err("cancelled".into());
+    }
     let prepared = json!({"schema_version":1,"status":"prepared","identity":identity,"previous":previous,"runtime":runtime});
     installation::write_json(&root.join("update-result.json"), &prepared, true)?;
     installation::write_json(
@@ -565,6 +573,7 @@ fn activate(root: &Path, archive: &Path, candidate: &Candidate) -> Result<Value>
     Ok(receipt)
 }
 pub fn run(matches: &ArgMatches, interactive: bool, chinese: bool) -> Result<Response> {
+    let usage = installation::Usage::acquire()?;
     let context = installation::context()?;
     if matches.get_flag("status") {
         return status(&context);
@@ -653,6 +662,7 @@ pub fn run(matches: &ArgMatches, interactive: bool, chinese: bool) -> Result<Res
             }
         }
         if desktop_install {
+            drop(usage);
             return desktop::request("update", Some(&candidate.inspection.version));
         }
     }
@@ -665,13 +675,21 @@ pub fn run(matches: &ArgMatches, interactive: bool, chinese: bool) -> Result<Res
     };
     let archive = download(&transport, &candidate, &target)?;
     installation::atomic(
-        &target.join("cli-release.json"),
+        &target.join(if desktop_install {
+            "release.json"
+        } else {
+            "cli-release.json"
+        }),
         &candidate.manifest,
         false,
         false,
     )?;
     installation::atomic(
-        &target.join("cli-release.json.sig"),
+        &target.join(if desktop_install {
+            "release.json.sig"
+        } else {
+            "cli-release.json.sig"
+        }),
         candidate.signature.as_bytes(),
         false,
         false,

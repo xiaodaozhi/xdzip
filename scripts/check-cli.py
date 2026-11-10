@@ -214,7 +214,8 @@ def check(binary, worker, output, payload=None):
             if kind == 'RAR':
                 assert (work/('readonly-output-'+kind)/'sample.txt').read_bytes() == b'RAR newest algorithm verification sample'
             else:
-                assert (work/('readonly-output-'+kind)/'hello.txt').read_bytes() == b'xdzip read-only archive fixture\n'
+                expected_name = 'HELLO.TXT' if kind == 'ISO' else 'hello.txt'
+                assert (work/('readonly-output-'+kind)/expected_name).read_bytes() == b'xdzip read-only archive fixture\n'
             invoke('add',copied,source,code=1)
             assert hashlib.sha256(copied.read_bytes()).hexdigest() == before
         record('cab_rar_iso_udf_readonly_commands_and_unchanged_rejection')

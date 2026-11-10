@@ -98,6 +98,13 @@ pub(crate) fn ensure_directory(path: &Path) -> Result<PathBuf> {
 }
 
 fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -> Result<Response> {
+    // Keep the installed payload occupied even for setup/gui handoffs. Update
+    // manages its own guard so installation can begin after explicit handoff.
+    let _usage = if matches!(name, "version" | "update") {
+        None
+    } else {
+        Some(installation::Usage::acquire()?)
+    };
     match name {
         "version" => {
             return Ok(Response::success(
@@ -111,7 +118,6 @@ fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -
         "update" => return update::run(matches, interactive, chinese),
         _ => {}
     }
-    let _usage = installation::Usage::acquire()?;
     let archive = absolute(
         matches
             .get_one::<String>("archive")
@@ -274,17 +280,19 @@ fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -
 /// Run one CLI invocation and return its documented process exit code.
 pub fn run() -> i32 {
     let arguments: Vec<OsString> = std::env::args_os().collect();
-    let explicit_language = arguments
+    let boundary = arguments
         .iter()
-        .take_while(|arg| *arg != "--")
-        .find_map(|arg| {
-            arg.to_str()
-                .and_then(|value| value.strip_prefix("--language="))
-                .map(|value| value == "zh-CN")
-        });
+        .position(|arg| arg == "--")
+        .unwrap_or(arguments.len());
+    let options = &arguments[..boundary];
+    let explicit_language = options.iter().find_map(|arg| {
+        arg.to_str()
+            .and_then(|value| value.strip_prefix("--language="))
+            .map(|value| value == "zh-CN")
+    });
     let chinese = explicit_language
         .or_else(|| {
-            arguments
+            options
                 .windows(2)
                 .find(|p| p[0] == "--language")
                 .map(|p| p[1] == "zh-CN")
@@ -295,10 +303,7 @@ pub fn run() -> i32 {
                 .find_map(|name| std::env::var(name).ok().filter(|v| !v.is_empty()))
                 .is_some_and(|v| v.starts_with("zh"))
         });
-    let json_mode = arguments
-        .iter()
-        .take_while(|arg| *arg != "--")
-        .any(|arg| arg == "--json");
+    let json_mode = options.iter().any(|arg| arg == "--json");
     let mut command = args::command(chinese);
     let matches = match command.clone().try_get_matches_from(arguments) {
         Ok(matches) => matches,
