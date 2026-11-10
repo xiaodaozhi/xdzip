@@ -59,6 +59,8 @@ pub fn installation_info() -> Result<Value> {
         || info["identity"]["product"] != "xdzip"
         || info["identity"]["version"] != env!("XDZIP_DISPLAY_VERSION")
         || info["identity"]["build"].as_u64() != Some(env!("XDZIP_BUILD").parse().unwrap())
+        || info["identity"]["revision"] != env!("XDZIP_REVISION")
+        || info["identity"]["dirty"].as_bool() != Some(env!("XDZIP_DIRTY") == "true")
     {
         return Err("installation_mismatch".into());
     }

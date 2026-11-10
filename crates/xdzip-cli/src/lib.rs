@@ -98,13 +98,6 @@ pub(crate) fn ensure_directory(path: &Path) -> Result<PathBuf> {
 }
 
 fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -> Result<Response> {
-    // Keep the installed payload occupied even for setup/gui handoffs. Update
-    // manages its own guard so installation can begin after explicit handoff.
-    let _usage = if matches!(name, "version" | "update") {
-        None
-    } else {
-        Some(installation::Usage::acquire()?)
-    };
     match name {
         "version" => {
             return Ok(Response::success(
@@ -343,6 +336,19 @@ pub fn run() -> i32 {
     let interactive = terminal::interactive()
         && !matches.get_flag("json")
         && !matches.get_flag("non-interactive");
+    // A blocked stdout pipe still keeps this installed executable alive. Hold
+    // occupancy through result emission; desktop handoff acknowledges promptly
+    // and lets its existing installation barrier wait for this process to exit.
+    let _usage = if name == "version" {
+        None
+    } else {
+        match installation::Usage::acquire() {
+            Ok(usage) => Some(usage),
+            Err(error) => {
+                return Response::failure(name, error).emit(matches.get_flag("json"), chinese);
+            }
+        }
+    };
     let result = execute(name, sub, interactive, chinese)
         .unwrap_or_else(|error| Response::failure(name, error));
     result.emit(matches.get_flag("json"), chinese)

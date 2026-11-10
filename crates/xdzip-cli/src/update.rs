@@ -551,6 +551,7 @@ fn activate(root: &Path, archive: &Path, candidate: &Candidate) -> Result<Value>
         || payload.identity["dirty"] != false
         || payload.identity["configuration"] != "release"
         || payload.identity["distribution"] != "release"
+        || payload.identity["channel"] != manifest["channel"]
         || payload.identity["revision"].as_str()
             != manifest["commit"].as_str().and_then(|s| s.get(..12))
     {
@@ -574,7 +575,6 @@ fn activate(root: &Path, archive: &Path, candidate: &Candidate) -> Result<Value>
     Ok(receipt)
 }
 pub fn run(matches: &ArgMatches, interactive: bool, chinese: bool) -> Result<Response> {
-    let usage = installation::Usage::acquire()?;
     let context = installation::context()?;
     if matches.get_flag("status") {
         return status(&context);
@@ -664,7 +664,6 @@ pub fn run(matches: &ArgMatches, interactive: bool, chinese: bool) -> Result<Res
             }
         }
         if desktop_install {
-            drop(usage);
             return desktop::request("update", Some(&candidate.inspection.version));
         }
     }

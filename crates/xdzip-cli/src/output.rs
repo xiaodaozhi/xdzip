@@ -20,6 +20,11 @@ impl Failure {
             | "authorization_required"
             | "manual_install"
             | "desktop_unavailable"
+            | "installation_busy"
+            | "invalid_installation"
+            | "unsafe_installation"
+            | "installation_mismatch"
+            | "user_directory_unavailable"
             | "command_conflict" => 3,
             _ => 1,
         };

@@ -211,6 +211,10 @@ pub fn payload(path: &Path) -> Result<PayloadManifest> {
         serde_json::from_slice(&read_bytes(&path.join(PAYLOAD), 256 * 1024)?)?;
     if manifest.schema_version != 1
         || manifest.product != "xdzip"
+        || manifest.identity["product"] != "xdzip"
+        || manifest.identity["component"] != "cli"
+        || manifest.identity["platform"] != std::env::consts::OS
+        || manifest.identity["architecture"] != std::env::consts::ARCH
         || manifest.files.len() > 2048
         || manifest.files.len() < 3
     {
@@ -327,6 +331,8 @@ fn self_check(directory: &Path, expected: &Value) -> Result<Value> {
     }
     let actual: Value = serde_json::from_slice(&identity.stdout)?;
     for key in [
+        "product",
+        "component",
         "version",
         "build",
         "revision",
@@ -357,6 +363,97 @@ pub fn current_identity(root: &Path) -> Result<Value> {
     self_check(&directory, &manifest.identity)
 }
 
+#[cfg(windows)]
+fn retired_records(directory: &Path) -> Result<Vec<Value>> {
+    let index = directory.join("retired.json");
+    if !exists_leaf(&index)? {
+        return Ok(vec![]);
+    }
+    let record = read_json(&index)?;
+    if record["schema_version"] != 1 || record["product"] != "xdzip" {
+        return Err("command_conflict".into());
+    }
+    let files = record["files"].as_array().ok_or("command_conflict")?;
+    if files.len() > 64 {
+        return Err("resource_limit".into());
+    }
+    let mut names = std::collections::BTreeSet::new();
+    for file in files {
+        let name = file["file"].as_str().ok_or("command_conflict")?;
+        let nonce = name.strip_suffix(".exe").ok_or("command_conflict")?;
+        let sha = file["sha256"].as_str().ok_or("command_conflict")?;
+        if nonce.len() != 32
+            || !nonce.bytes().all(|b| b.is_ascii_hexdigit())
+            || sha.len() != 64
+            || !sha.bytes().all(|b| b.is_ascii_hexdigit())
+            || !names.insert(name.to_ascii_lowercase())
+        {
+            return Err("command_conflict".into());
+        }
+    }
+    Ok(files.clone())
+}
+#[cfg(windows)]
+fn cleanup_retired(bin: &Path) -> Result<()> {
+    let directory = bin.join(".xdzip-retired");
+    if !exists_leaf(&directory)? {
+        return Ok(());
+    }
+    xdzip_io::Grant::for_creation(&directory).map_err(|_| Failure::new("unsafe_target"))?;
+    let files = retired_records(&directory)?;
+    let mut retained = vec![];
+    for record in &files {
+        let path = directory.join(record["file"].as_str().unwrap());
+        if !exists_leaf(&path)? {
+            continue;
+        }
+        if record["sha256"].as_str() != Some(&digest(&path)?) {
+            return Err("command_conflict".into());
+        }
+        match fs::remove_file(path) {
+            Ok(()) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::PermissionDenied => {
+                retained.push(record.clone())
+            }
+            Err(error) => return Err(error.into()),
+        }
+    }
+    if retained != files {
+        write_json(
+            &directory.join("retired.json"),
+            &json!({"schema_version":1,"product":"xdzip","files":retained}),
+            true,
+        )?;
+    }
+    Ok(())
+}
+#[cfg(windows)]
+fn retire_launcher(bin: &Path, entry: &Path, sha: &Value) -> Result<PathBuf> {
+    let directory = ensure_directory(&bin.join(".xdzip-retired"))?;
+    cleanup_retired(bin)?;
+    let mut files = retired_records(&directory)?;
+    if files.len() >= 64 {
+        return Err("resource_limit".into());
+    }
+    let name = format!("{}.exe", random_id()?);
+    let target = directory.join(&name);
+    if exists_leaf(&target)? {
+        return Err("command_conflict".into());
+    }
+    files.push(json!({"file":name,"sha256":sha}));
+    // Windows retains the waiting launcher's image. Only the hash-checked owned
+    // entry is moved within the authorized command directory. Commit its bounded
+    // receipt first: a failed rename preserves the live registration, and the
+    // next explicit setup can discard the receipt for an absent retired file.
+    write_json(
+        &directory.join("retired.json"),
+        &json!({"schema_version":1,"product":"xdzip","files":files}),
+        true,
+    )?;
+    fs::rename(entry, &target)?;
+    Ok(target)
+}
+
 pub fn setup(matches: &ArgMatches) -> Result<Response> {
     let root = if let Some(path) = matches.get_one::<String>("install-dir") {
         absolute(path)?
@@ -384,11 +481,26 @@ pub fn setup(matches: &ArgMatches) -> Result<Response> {
         xdzip_io::Grant::for_creation(&bin).map_err(|_| Failure::new("unsafe_target"))?;
         // Only exact, previously hashed registration files are removed. Payload
         // versions and user data are deliberately retained for active processes.
-        fs::remove_file(&entry)?;
+        let retained: Option<PathBuf> = match fs::remove_file(&entry) {
+            Ok(()) => None,
+            Err(error) => {
+                #[cfg(windows)]
+                {
+                    if error.kind() != std::io::ErrorKind::PermissionDenied {
+                        return Err(error.into());
+                    }
+                    Some(retire_launcher(&bin, &entry, &own["launcher_sha256"])?)
+                }
+                #[cfg(not(windows))]
+                {
+                    return Err(error.into());
+                }
+            }
+        };
         fs::remove_file(&registration)?;
         return Ok(Response::success(
             "setup",
-            json!({"removed":true}),
+            json!({"removed":true,"retained_launcher":retained}),
             "Command registration removed.".into(),
         ));
     }
@@ -396,6 +508,8 @@ pub fn setup(matches: &ArgMatches) -> Result<Response> {
         return Err("command_conflict".into());
     }
     ensure_directory(&bin)?;
+    #[cfg(windows)]
+    cleanup_retired(&bin)?;
     let exe = std::env::current_exe()?;
     let context = context()?;
     let mut record = json!({"schema_version":1,"product":"xdzip"});

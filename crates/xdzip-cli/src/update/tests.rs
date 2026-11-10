@@ -212,6 +212,19 @@ fn native_payload_install_switches_pointer_after_validation_and_keeps_old_runtim
         false,
     )
     .unwrap();
+    let original = fs::read(source.join(installation::PAYLOAD)).unwrap();
+    let mut wrong_target: Value = serde_json::from_slice(&original).unwrap();
+    wrong_target["identity"]["architecture"] = json!("unsupported-architecture");
+    fs::write(
+        source.join(installation::PAYLOAD),
+        serde_json::to_vec(&wrong_target).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        installation::payload(&source).err().unwrap().code,
+        "invalid_payload"
+    );
+    fs::write(source.join(installation::PAYLOAD), original).unwrap();
     let archive_name = if cfg!(windows) {
         "owned.zip"
     } else {

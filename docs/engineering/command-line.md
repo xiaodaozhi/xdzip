@@ -58,6 +58,8 @@ build/cli/bin/xdzip --help
 
 管理式身份要求有效的 installation.json；目录恰好名为 versions 而没有登记文件时仍视为便携运行。English: Managed identity requires its installation marker; a directory named versions alone remains portable.
 
+Windows 撤销正在运行的启动器时，将哈希仍匹配的自有副本移到同一命令目录的私有 .xdzip-retired 子目录，入口立即撤销，结果记录 retained_launcher。后续显式 setup 只按有界回执回收哈希仍匹配且已退出的副本，修改过的文件保留并拒绝覆盖；保留版本目录中的 CLI 可重新执行 setup 恢复入口。English: Windows may retain an active, hash-verified launcher in a private sibling directory. A later explicit setup reaps only recorded, unchanged and unlocked copies; the retained versioned CLI can restore registration.
+
 版本身份的 distribution 区分 source 与 release。普通源码构建即使使用 Release 配置并保持干净，也只保留检查与下载；只有专用 Release 管线标记的发行身份、有效管理式安装和受信目标签名共同满足时才自动替换。English: Clean Release-mode source builds remain check/download-only; automatic replacement additionally requires release distribution identity, a managed installation and an authenticated target.
 
 桌面安装器的 Windows PATH 选项默认不勾选，并拒绝与其他 xdzip 命令冲突。Mac/Linux 可运行桌面包私有 CLI 的 setup；它只登记桌面安装内的 CLI，不复制出独立可升级核心。`setup --remove` 只删除经哈希确认、属于本工具的入口和登记文件。版本目录及恢复资料保留，不删除用户输入或仍可能被进程使用的运行目录。
@@ -72,7 +74,7 @@ CLI 使用固定公开 GitHub Releases、渠道与单调 build 规则。CLI 三�
 
 网络使用系统证书，默认读取标准代理环境变量，--proxy 选择无凭据 HTTP／SOCKS5，--no-proxy 直连，--mirror 选择无凭据、无查询和片段的 HTTPS 前缀。原始 GitHub 地址、重定向主机、响应大小、超时和下载预算继续有界。网络、TLS、离线、限流与无兼容新版本分别报告，不自动轮询或重试。
 
-独立更新在用户拥有的私有目录暂存，以同一归档运行时安全解包，验证完整固定文件清单及每文件摘要，运行新版 --version-json 自检后才切换版本指针。事务互斥，回执绑定目标身份；失败保持原指针或明确进入恢复状态，不伪造自动回滚。
+独立更新在用户拥有的私有目录暂存，以同一归档运行时安全解包，验证完整固定文件清单及每文件摘要，核对产品、组件、本机平台架构和签名清单渠道，运行新版 --version-json 自检后才切换版本指针。事务互斥，回执绑定目标身份；失败保持原指针或明确进入恢复状态，不伪造自动回滚。English: Payload and self-check identities must match the CLI product/component, native host target and signed channel before activation.
 
 桌面检查与下载只查询主程序的无 GUI 安装身份入口，不创建 QApplication 或消费安装回执。安装意图通过原有同用户单实例通道传递，只接受有界请求目录和候选版本；不接受任意命令、包文件或信任根。请求／结果文件复用 Rust 原生目录授权与安全提交。桌面控制器独立重新检查并核对候选，复用关于页、安装器、Sparkle 与全部任务 join 屏障。桌面 CLI 任务也持有安装占用保护，安装不能破坏它们。
 

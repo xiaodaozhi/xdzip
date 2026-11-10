@@ -277,8 +277,16 @@ def check(binary, worker, output, payload=None, install_fixture=False):
             assert protected.returncode == 3 and launcher.exists()
             launcher.write_bytes(original)
             remove = subprocess.run([str(launcher),'setup','--remove','--bin-dir',str(bin_dir),'--json'],capture_output=True,env=env,timeout=30)
-            assert remove.returncode == 0 and not launcher.exists()
+            assert remove.returncode == 0 and not launcher.exists(), remove.stdout[:1500]
             assert (install_dir/'current.json').is_file()
+            if os.name == 'nt':
+                pointer = json.loads((install_dir/'current.json').read_text())
+                installed = install_dir/'versions'/pointer['runtime']/'bin'/binary.name
+                restored = subprocess.run([str(installed),'setup','--bin-dir',str(bin_dir),'--json'],capture_output=True,env=env,timeout=30)
+                assert restored.returncode == 0, restored.stdout[:1500]
+                assert not list((bin_dir/'.xdzip-retired').glob('*.exe'))
+                removed = subprocess.run([str(installed),'setup','--remove','--bin-dir',str(bin_dir),'--json'],capture_output=True,env=env,timeout=30)
+                assert removed.returncode == 0 and not launcher.exists(), removed.stdout[:1500]
             record('managed_install_launcher_collision_and_owned_removal')
         report = dict(schema_version=1,status='passed',identity=identity,platform=platform_name(),headless=True,imports=imports,executable_sha256=hashlib.sha256(binary.read_bytes()).hexdigest(),worker_sha256=hashlib.sha256(worker.read_bytes()).hexdigest(),results=results)
     except Exception as error:
