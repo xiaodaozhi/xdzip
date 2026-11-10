@@ -61,7 +61,7 @@
 
 ## 获取与安装
 
-当前稳定版为 [`v0.1.0`](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.1.0)，build 23。应用安装包、便携包、校验清单和平台材料通过 [GitHub Releases](https://github.com/xiaodaozhi/xdzip/releases)提供。Windows 安装包保留应用目录内 VC++ 运行库，不携带 Windows SDK 图形编译库或软件 OpenGL 回退库；Mac 包使用 ad-hoc 完整性签名。发行材料要求与更新协议见[发布说明](docs/engineering/release-protocol.md)。
+当前稳定版为 [`v0.1.3`](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.1.3)，build 26。应用安装包、便携包、校验清单和平台材料通过 [GitHub Releases](https://github.com/xiaodaozhi/xdzip/releases)提供。Windows 安装包保留应用目录内 VC++ 运行库，不携带 Windows SDK 图形编译库或软件 OpenGL 回退库；Mac 包使用 ad-hoc 完整性签名。发行材料要求与更新协议见[发布说明](docs/engineering/release-protocol.md)。
 
 正式 Release 不提供单独的对应源码压缩包；源码交付脚本只用于本地审查和重建验证，具体边界见[源码交付说明](docs/engineering/source-delivery.md)。这不改变组件许可或可能适用的源码、重链接和通知义务。GitHub 为标签自动生成的源码快照不属于 Release 附件。
 

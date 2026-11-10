@@ -2,6 +2,12 @@
 
 ## 未发布
 
+## 0.1.3
+
+- 修复 `.app` 归档默认同名文件夹被 macOS Finder 误认为损坏应用的问题。
+
+平台支持和验收范围见[发布说明](release-notes/0.1.3.md)和 [GitHub Release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.1.3)。
+
 ## 0.1.2
 
 - 保留目录切换、搜索和排序期间的列表状态，减少界面闪烁。
