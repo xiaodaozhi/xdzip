@@ -186,6 +186,7 @@ def check(binary, worker, output, payload=None):
         corrupt = work/'unsafe.zip'
         with zipfile.ZipFile(corrupt,'w') as writer:
             writer.writestr('../escape',b'never publish')
+        assert b'[warning]' in command('list',corrupt).stdout
         invoke('extract',corrupt,'-C',work/'unsafe-output',code=1)
         assert not (work/'escape').exists()
         for suffix in ['rar','cab','iso','udf']:
@@ -211,6 +212,7 @@ def check(binary, worker, output, payload=None):
             verified = invoke('test',copied,code=1 if kind == 'UDF' else 0)
             if kind == 'UDF':
                 assert verified['error_code'] == 'unsupported_feature'
+                assert b'files committed' in command('--language','en-US','test',copied,code=1).stderr
             if kind == 'RAR':
                 assert (work/('readonly-output-'+kind)/'sample.txt').read_bytes() == b'RAR newest algorithm verification sample'
             else:

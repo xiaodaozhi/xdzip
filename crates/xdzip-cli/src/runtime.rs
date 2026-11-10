@@ -176,10 +176,11 @@ impl Runtime {
                         use std::fmt::Write;
                         let _ = writeln!(
                             text,
-                            "{:>6} {:>12} {}{}",
+                            "{:>6} {:>12} {}{}{}",
                             entry.id,
                             entry.size.map_or("?".into(), |n| n.to_string()),
                             if entry.encrypted { "[encrypted] " } else { "" },
+                            if entry.warning { "[warning] " } else { "" },
                             entry.display_name
                         );
                         rows.push(json!({"id":entry.id, "path":entry.path, "display_name":entry.display_name, "size":entry.size, "packed_size":entry.packed_size, "method":entry.method, "directory":entry.directory, "link":entry.link, "payload_supported":entry.payload_supported, "encrypted":entry.encrypted, "warning":entry.warning}));

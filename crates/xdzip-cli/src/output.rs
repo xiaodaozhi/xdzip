@@ -108,12 +108,34 @@ impl Response {
                 .map_err(io::Error::other)
                 .and_then(|_| writeln!(io::stdout().lock()))
         } else if self.exit != 0 {
-            writeln!(
-                io::stderr().lock(),
-                "xdzip: {} ({})",
-                explanation(&self.error_code, chinese),
-                self.error_code
-            )
+            let mut stderr = io::stderr().lock();
+            let printed = if self.error_code.is_empty() {
+                writeln!(stderr, "{}", self.text)
+            } else {
+                writeln!(
+                    stderr,
+                    "xdzip: {} ({})",
+                    explanation(&self.error_code, chinese),
+                    self.error_code
+                )
+            };
+            printed.and_then(|_| {
+                if self.text.is_empty()
+                    && let Some(committed) = self.summary["committed_files"].as_u64()
+                {
+                    let skipped = self.summary["skipped_files"].as_u64().unwrap_or(0);
+                    if chinese {
+                        writeln!(
+                            stderr,
+                            "已提交 {committed} 个文件，已跳过 {skipped} 个文件。"
+                        )
+                    } else {
+                        writeln!(stderr, "{committed} files committed, {skipped} skipped.")
+                    }
+                } else {
+                    Ok(())
+                }
+            })
         } else {
             writeln!(io::stdout().lock(), "{}", self.text)
         };

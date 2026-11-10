@@ -5,6 +5,7 @@ if(NOT XDZIP_MACOS_HANDLER_RANK MATCHES "^(None|Alternate)$")
 endif()
 
 find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)
+find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
 qt_standard_project_setup()
 qt_policy(SET QTP0001 NEW)
 qt_policy(SET QTP0004 NEW)
@@ -92,10 +93,10 @@ if(APPLE)
     set(XDZIP_CLI_BUNDLE "${CMAKE_CURRENT_BINARY_DIR}/xdzip.app/Contents/Helpers/cli")
 endif()
 add_custom_target(xdzip-command
-    COMMAND "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/scripts/cli.py" build
+    COMMAND Python3::Interpreter "${PROJECT_SOURCE_DIR}/scripts/cli.py" build
         --build-dir "${XDZIP_CLI_BUILD}" --profile "${XDZIP_CLI_PROFILE}"
         --codec "$<TARGET_FILE:xdzip-native-codec>"
-    COMMAND "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/scripts/cli.py" bundle
+    COMMAND Python3::Interpreter "${PROJECT_SOURCE_DIR}/scripts/cli.py" bundle
         --build-dir "${XDZIP_CLI_BUILD}" --output "${XDZIP_CLI_BUNDLE}"
     DEPENDS xdzip-native-codec
     WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" VERBATIM)
@@ -227,7 +228,6 @@ if(BUILD_TESTING)
         set_target_properties(xdzip-macos-association-probe PROPERTIES OBJCXX_STANDARD 17 OBJCXX_STANDARD_REQUIRED ON)
     endif()
     target_include_directories(xdzip-browser-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-    find_package(Python3 REQUIRED COMPONENTS Interpreter)
     set(XDZIP_M2_FIXTURE "${CMAKE_CURRENT_BINARY_DIR}/m2-flat.zip")
     add_custom_command(OUTPUT "${XDZIP_M2_FIXTURE}"
         COMMAND Python3::Interpreter "${PROJECT_SOURCE_DIR}/scripts/generate-m2-fixture.py" --output "${XDZIP_M2_FIXTURE}"
