@@ -1,6 +1,6 @@
 # 文档导航
 
-文档保存通用规则、设计和可复用方法。当前最新稳定版为 [`v0.1.0`](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.1.0)，具体阶段进度与验收记录见 [Issues](https://github.com/xiaodaozhi/xdzip/issues)，执行证据见 [Actions](https://github.com/xiaodaozhi/xdzip/actions)或本地工件，不在 docs 累积报告。
+文档保存通用规则、设计和可复用方法。当前最新稳定版为 [`v0.1.2`](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.1.2)，具体阶段进度与验收记录见 [Issues](https://github.com/xiaodaozhi/xdzip/issues)，执行证据见 [Actions](https://github.com/xiaodaozhi/xdzip/actions)或本地工件，不在 docs 累积报告。
 
 | 领域 | 入口 |
 | --- | --- |

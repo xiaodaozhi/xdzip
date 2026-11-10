@@ -2,6 +2,14 @@
 
 ## 未发布
 
+## 0.1.2
+
+- 保留目录切换、搜索和排序期间的列表状态，减少界面闪烁。
+- 改进 macOS 更新无法自动安装时的说明和手动安装指引。
+- 修复 macOS ZIP 中安全的父相对符号链接解压，并更正 Qt 运行时通知。
+
+平台支持和验收范围见[发布说明](release-notes/0.1.2.md)和 [GitHub Release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.1.2)。
+
 ## 0.1.0
 
 - 发布首个稳定版，提供 Windows、macOS 和 Linux 的原生安装包或便携包，并支持符合条件的安装版主动更新。
