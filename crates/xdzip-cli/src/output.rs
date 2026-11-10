@@ -198,7 +198,7 @@ fn explanation(code: &str, chinese: bool) -> &'static str {
 }
 
 pub fn identity() -> Value {
-    json!({"product":"xdzip", "component":"cli", "version":env!("XDZIP_DISPLAY_VERSION"), "build":env!("XDZIP_BUILD").parse::<u32>().unwrap(), "revision":env!("XDZIP_REVISION"), "dirty":env!("XDZIP_DIRTY")=="true", "channel":env!("XDZIP_CHANNEL"), "configuration":env!("XDZIP_CONFIGURATION"), "platform":std::env::consts::OS, "architecture":std::env::consts::ARCH})
+    json!({"product":"xdzip", "component":"cli", "version":env!("XDZIP_DISPLAY_VERSION"), "build":env!("XDZIP_BUILD").parse::<u32>().unwrap(), "revision":env!("XDZIP_REVISION"), "dirty":env!("XDZIP_DIRTY")=="true", "channel":env!("XDZIP_CHANNEL"), "configuration":env!("XDZIP_CONFIGURATION"), "distribution":env!("XDZIP_DISTRIBUTION"), "platform":std::env::consts::OS, "architecture":std::env::consts::ARCH})
 }
 pub fn version_text() -> String {
     format!(

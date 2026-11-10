@@ -90,6 +90,7 @@ def stage(source, output, platform, version):
     if (cli['identity']['dirty'] or cli['source']['dirty'] or cli['source']['commit'] != revision or not cli.get('verification_sha256') or cli['identity']['version'] != version
             or cli['identity']['revision'] != revision[:12]
             or cli['identity']['configuration'] != 'release'
+            or cli['identity'].get('distribution') != 'release'
             or cli_path.name != cli['file'] or cli_path.is_symlink()
             or cli_path.stat().st_size != cli['bytes'] or sha256(cli_path) != cli['sha256']):
         raise ValueError('CLI package does not match the verified release identity')

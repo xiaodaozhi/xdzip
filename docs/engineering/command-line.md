@@ -23,7 +23,7 @@ xdzip update --status
 xdzip gui archive.zip
 ```
 
-不带参数显示帮助。`version`、`--version` 和 `--version-json` 使用 VERSION.json 与构建时 Git 身份；旧版版本字符串及 JSON 的 product、version、build、revision、dirty 字段保留，CLI 额外说明 component、channel、configuration、platform、architecture。`--language zh-CN|en-US` 选择帮助和结果语言，默认依据桌面语言环境变量；公共标识与错误码为英文。`l`、`x`、`c`、`a`、`t` 分别是 list、extract、create、add、test 的别名。`--` 之后作为字面文件参数。
+不带参数显示帮助。`version`、`--version` 和 `--version-json` 使用 VERSION.json 与构建时 Git 身份；旧版版本字符串及 JSON 的 product、version、build、revision、dirty 字段保留，CLI 额外说明 component、channel、configuration、distribution、platform、architecture。`--language zh-CN|en-US` 选择帮助和结果语言，默认依据桌面语言环境变量；公共标识与错误码为英文。`l`、`x`、`c`、`a`、`t` 分别是 list、extract、create、add、test 的别名。`--` 之后作为字面文件参数。
 
 所有业务命令接受 `--json`。stdout 只输出一个 JSON 对象，字段固定为 schema_version（1）、command、status、error_code、data、summary、warnings。未知大小使用 null。列表 data 包含 format 和 entries；每条保留 id、path、display_name、size、packed_size、method、directory、link、payload_supported、encrypted、warning。path 是冻结的有效名称，异常或未解析名称为 null；display_name 只用于转义展示。任务 summary 包含实际读取、解码、校验、提交、跳过、目录与分卷计数，并保留清理警告及不确定结果。
 
@@ -57,6 +57,8 @@ build/cli/bin/xdzip --help
 独立包展开后运行 bin/xdzip，Windows 加 .exe。运行 `bin/xdzip setup` 显式安装用户级稳定入口及版本化运行目录。Unix 默认入口为 ~/.local/bin，Windows 默认位于用户 LocalAppData 下的 xdzip/cli/bin；管理目录使用平台用户数据位置。--bin-dir 和 --install-dir 可显式指定位置。用户自行将目录加入 PATH，工具不修改 Shell 启动文件。已有入口或登记文件一律拒绝覆盖。
 
 管理式身份要求有效的 installation.json；目录恰好名为 versions 而没有登记文件时仍视为便携运行。English: Managed identity requires its installation marker; a directory named versions alone remains portable.
+
+版本身份的 distribution 区分 source 与 release。普通源码构建即使使用 Release 配置并保持干净，也只保留检查与下载；只有专用 Release 管线标记的发行身份、有效管理式安装和受信目标签名共同满足时才自动替换。English: Clean Release-mode source builds remain check/download-only; automatic replacement additionally requires release distribution identity, a managed installation and an authenticated target.
 
 桌面安装器的 Windows PATH 选项默认不勾选，并拒绝与其他 xdzip 命令冲突。Mac/Linux 可运行桌面包私有 CLI 的 setup；它只登记桌面安装内的 CLI，不复制出独立可升级核心。`setup --remove` 只删除经哈希确认、属于本工具的入口和登记文件。版本目录及恢复资料保留，不删除用户输入或仍可能被进程使用的运行目录。
 

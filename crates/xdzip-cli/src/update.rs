@@ -550,6 +550,7 @@ fn activate(root: &Path, archive: &Path, candidate: &Candidate) -> Result<Value>
         || payload.identity["build"] != candidate.inspection.build
         || payload.identity["dirty"] != false
         || payload.identity["configuration"] != "release"
+        || payload.identity["distribution"] != "release"
         || payload.identity["revision"].as_str()
             != manifest["commit"].as_str().and_then(|s| s.get(..12))
     {
@@ -634,6 +635,7 @@ pub fn run(matches: &ArgMatches, interactive: bool, chinese: bool) -> Result<Res
     if !matches.get_flag("download") {
         if env!("XDZIP_DIRTY") == "true"
             || env!("XDZIP_CONFIGURATION") != "release"
+            || env!("XDZIP_DISTRIBUTION") != "release"
             || env!("XDZIP_REVISION") == "unknown"
         {
             return Err("manual_install".into());

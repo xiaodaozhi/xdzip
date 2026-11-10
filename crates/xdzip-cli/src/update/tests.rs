@@ -164,7 +164,7 @@ fn native_payload_install_switches_pointer_after_validation_and_keeps_old_runtim
     let root = temporary();
     let source = crate::ensure_directory(&root.join("source")).unwrap();
     let bin = crate::ensure_directory(&source.join("bin")).unwrap();
-    let identity = json!({"product":"xdzip","component":"cli","version":"65535.65535.65535","build":env!("XDZIP_BUILD").parse::<u32>().unwrap()+1,"revision":"ab".repeat(6),"dirty":false,"channel":"stable","configuration":"release","platform":std::env::consts::OS,"architecture":std::env::consts::ARCH});
+    let identity = json!({"product":"xdzip","component":"cli","version":"65535.65535.65535","build":env!("XDZIP_BUILD").parse::<u32>().unwrap()+1,"revision":"ab".repeat(6),"dirty":false,"channel":"stable","configuration":"release","distribution":"release","platform":std::env::consts::OS,"architecture":std::env::consts::ARCH});
     let cpp = root.join("fixture.cpp");
     fs::write(
         &cpp,
@@ -176,13 +176,11 @@ fn native_payload_install_switches_pointer_after_validation_and_keeps_old_runtim
     let binary = bin.join(installation::executable("xdzip"));
     let compiled = if cfg!(windows) {
         Command::new("cl")
-            .args([
-                "/nologo",
-                "/EHsc",
-                "fixture.cpp",
-                "/Fe:bin\\xdzip.exe",
-                "/Fo:fixture.obj",
-            ])
+            .args(["/nologo", "/MT", "/EHsc", "fixture.cpp", "/Fo:fixture.obj"])
+            .arg(format!(
+                "/Fe:{}",
+                binary.strip_prefix(&root).unwrap().display()
+            ))
             .current_dir(&root)
             .output()
     } else {

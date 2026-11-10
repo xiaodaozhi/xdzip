@@ -333,6 +333,7 @@ fn self_check(directory: &Path, expected: &Value) -> Result<Value> {
         "dirty",
         "channel",
         "configuration",
+        "distribution",
         "platform",
         "architecture",
     ] {

@@ -2,6 +2,7 @@
 
 # Dedicated publishing pipeline. Ordinary CI keeps its SDK-only macOS policy.
 $ErrorActionPreference = 'Stop'
+$env:XDZIP_CLI_RELEASE_BUILD = '1'
 & ./scripts/ci-desktop.ps1
 if ($LASTEXITCODE -ne 0) { throw 'Native desktop validation failed' }
 function Checked([string]$Program, [string[]]$Arguments) {

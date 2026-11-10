@@ -52,9 +52,19 @@ fn main() {
         ("XDZIP_REVISION", revision),
         ("XDZIP_DIRTY", dirty.to_string()),
         ("XDZIP_CONFIGURATION", env::var("PROFILE").unwrap()),
+        (
+            "XDZIP_DISTRIBUTION",
+            if env::var("XDZIP_CLI_RELEASE_BUILD").as_deref() == Ok("1") {
+                "release"
+            } else {
+                "source"
+            }
+            .to_owned(),
+        ),
     ] {
         println!("cargo:rustc-env={name}={value}");
     }
+    println!("cargo:rerun-if-env-changed=XDZIP_CLI_RELEASE_BUILD");
     // Re-evaluate tracked/untracked state like the desktop's always-run identity target.
     println!(
         "cargo:rerun-if-changed={}",
