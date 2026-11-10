@@ -75,7 +75,34 @@ fn temporary() -> PathBuf {
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../build/test-tmp")
         .join(format!("cli-update-{}", installation::random_id().unwrap()));
-    crate::ensure_directory(&path).unwrap()
+    fs::create_dir_all(&path).unwrap();
+    #[cfg(windows)]
+    {
+        let user = Command::new("whoami")
+            .args(["/user", "/fo", "csv", "/nh"])
+            .output()
+            .unwrap();
+        assert!(user.status.success());
+        let sid = String::from_utf8_lossy(&user.stdout)
+            .trim()
+            .rsplit(',')
+            .next()
+            .unwrap()
+            .trim_matches('"')
+            .to_owned();
+        assert!(sid.starts_with("S-1-"));
+        assert!(
+            Command::new("icacls")
+                .arg(&path)
+                .args(["/inheritance:r", "/grant:r"])
+                .arg(format!("*{sid}:(OI)(CI)F"))
+                .stdout(std::process::Stdio::null())
+                .status()
+                .unwrap()
+                .success()
+        );
+    }
+    crate::ensure_directory(&path.canonicalize().unwrap()).unwrap()
 }
 #[test]
 fn exact_signed_selection_network_errors_and_host_validation() {

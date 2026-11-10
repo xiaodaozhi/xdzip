@@ -204,7 +204,10 @@ pub fn line(prompt: &str, secret: bool, limit: usize) -> Result<Zeroizing<String
             }
         };
         if count < 0 {
-            continue;
+            if io::Error::last_os_error().kind() == io::ErrorKind::Interrupted {
+                continue;
+            }
+            return Err("input_io".into());
         }
         if count == 0 || byte == b'\n' {
             break;

@@ -87,6 +87,32 @@ mod tests {
                     .as_nanos()
             ));
         std::fs::create_dir_all(&root).unwrap();
+        #[cfg(windows)]
+        {
+            let user = std::process::Command::new("whoami")
+                .args(["/user", "/fo", "csv", "/nh"])
+                .output()
+                .unwrap();
+            assert!(user.status.success());
+            let sid = String::from_utf8_lossy(&user.stdout)
+                .trim()
+                .rsplit(',')
+                .next()
+                .unwrap()
+                .trim_matches('"')
+                .to_owned();
+            assert!(sid.starts_with("S-1-"));
+            assert!(
+                std::process::Command::new("icacls")
+                    .arg(&root)
+                    .args(["/inheritance:r", "/grant:r"])
+                    .arg(format!("*{sid}:(OI)(CI)F"))
+                    .stdout(std::process::Stdio::null())
+                    .status()
+                    .unwrap()
+                    .success()
+            );
+        }
         let root = root.canonicalize().unwrap();
         let directory = root.join(format!("desktop-{}", "a".repeat(32)));
         std::fs::create_dir(&directory).unwrap();

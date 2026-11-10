@@ -22,6 +22,10 @@ def check(binary, worker, output, payload=None):
     output.mkdir(parents=True, exist_ok=True)
     work = output/('cases-'+str(os.getpid())+'-'+str(time.time_ns()))
     work.mkdir(mode=0o700)
+    if os.name == 'nt':
+        import csv
+        sid = next(csv.reader([subprocess.check_output(['whoami','/user','/fo','csv','/nh'],text=True).strip()]))[1]
+        subprocess.run(['icacls',str(work),'/inheritance:r','/grant:r','*'+sid+':(OI)(CI)F'],stdout=subprocess.DEVNULL,check=True)
     env = os.environ.copy()
     for key in ['DISPLAY','WAYLAND_DISPLAY','QT_PLUGIN_PATH','QT_QPA_PLATFORM_PLUGIN_PATH',
                 'QML_IMPORT_PATH','QML2_IMPORT_PATH','LD_LIBRARY_PATH','DYLD_LIBRARY_PATH']:
@@ -135,6 +139,9 @@ def check(binary, worker, output, payload=None):
             assert hashlib.sha256(archive.read_bytes()).hexdigest() == before
         wrong = invoke('test',work/'encrypted.zip','--password-stdin',stdin=b'wrong\n',code=1)
         assert wrong['status'] == 'failed'
+        with (work/'unreadable-stdin').open('wb') as unreadable:
+            refused = subprocess.run([str(binary),'test',str(work/'encrypted.zip'),'--password-stdin','--json'],stdin=unreadable,capture_output=True,env=env,timeout=10)
+            assert refused.returncode == 3 and json.loads(refused.stdout)['error_code'] == 'interaction_required'
         record('password_stdin_aes_header_encryption_and_edit_rejection')
         if os.name != 'nt':
             import errno
