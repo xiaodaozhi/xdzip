@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import signal
+import shutil
 import subprocess
 import tarfile
 import time
@@ -15,7 +16,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def check(binary, worker, output, payload=None):
+def check(binary, worker, output, payload=None, install_fixture=False):
     binary, worker, output = binary.resolve(), worker.resolve(), output.resolve()
     if not output.is_relative_to(ROOT/'build') or output == ROOT/'build':
         raise ValueError('CLI evidence must be under build/')
@@ -63,6 +64,15 @@ def check(binary, worker, output, payload=None):
             assert 'Qt6' not in data and 'QtCore' not in data and 'Sparkle' not in data
             imports[name] = 'no-qt-or-sparkle-imports'
         identity = json.loads(command('--version-json').stdout)
+        if install_fixture:
+            payload = work/'installation-fixture'
+            fixture_bin = payload/'bin';fixture_bin.mkdir(parents=True)
+            fixture_files = [(binary,binary.name),(worker,worker.name),(binary.parent/('xdzip-launcher.exe' if os.name=='nt' else 'xdzip-launcher'),'xdzip-launcher.exe' if os.name=='nt' else 'xdzip-launcher')]
+            files = []
+            for source, name in fixture_files:
+                shutil.copy2(source,fixture_bin/name)
+                files.append(dict(path='bin/'+name,sha256=hashlib.sha256((fixture_bin/name).read_bytes()).hexdigest(),executable=True))
+            (payload/'cli-payload.json').write_text(json.dumps(dict(schema_version=1,product='xdzip',identity=identity,files=files))+'\n')
         assert command('--version').stdout.startswith(('xdzip '+identity['version']).encode())
         assert b'Examples' in command('--help','--language','en-US').stdout
         assert '示例'.encode() in command('--language','zh-CN','--help').stdout
@@ -230,6 +240,10 @@ def check(binary, worker, output, payload=None):
         record('cab_rar_iso_udf_readonly_commands_and_unchanged_rejection')
 
         assert invoke('update','--status',code=3)['error_code'] == 'manual_install'
+        portable_bin = work/'versions/portable/bin';portable_bin.mkdir(parents=True)
+        portable = portable_bin/binary.name;shutil.copy2(binary,portable)
+        portable_status = subprocess.run([str(portable),'update','--status','--json'],capture_output=True,env=env,timeout=10)
+        assert portable_status.returncode == 3 and json.loads(portable_status.stdout)['error_code'] == 'manual_install'
         assert invoke('update','--check','--proxy','http://user:secret@localhost',code=2)['error_code'] == 'invalid_proxy'
         record('portable_update_and_proxy_credential_rejection')
         if os.name != 'nt':
@@ -286,8 +300,9 @@ def main():
     parser.add_argument('--worker',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--payload',type=Path)
+    parser.add_argument('--install-fixture',action='store_true',help='Test setup using owned copies of these native binaries, without creating a release archive')
     args = parser.parse_args()
-    check(args.binary,args.worker,args.output,args.payload)
+    check(args.binary,args.worker,args.output,args.payload,args.install_fixture)
 
 
 if __name__ == '__main__':

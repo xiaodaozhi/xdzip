@@ -56,6 +56,8 @@ build/cli/bin/xdzip --help
 
 独立包展开后运行 bin/xdzip，Windows 加 .exe。运行 `bin/xdzip setup` 显式安装用户级稳定入口及版本化运行目录。Unix 默认入口为 ~/.local/bin，Windows 默认位于用户 LocalAppData 下的 xdzip/cli/bin；管理目录使用平台用户数据位置。--bin-dir 和 --install-dir 可显式指定位置。用户自行将目录加入 PATH，工具不修改 Shell 启动文件。已有入口或登记文件一律拒绝覆盖。
 
+管理式身份要求有效的 installation.json；目录恰好名为 versions 而没有登记文件时仍视为便携运行。English: Managed identity requires its installation marker; a directory named versions alone remains portable.
+
 桌面安装器的 Windows PATH 选项默认不勾选，并拒绝与其他 xdzip 命令冲突。Mac/Linux 可运行桌面包私有 CLI 的 setup；它只登记桌面安装内的 CLI，不复制出独立可升级核心。`setup --remove` 只删除经哈希确认、属于本工具的入口和登记文件。版本目录及恢复资料保留，不删除用户输入或仍可能被进程使用的运行目录。
 
 稳定启动器不经过 Shell 转义，在 Unix exec 实际 CLI，在 Windows 等待控制台子进程并转发取消及退出码。当前运行目录由原子 current.json 指针选择；初次安装、新版自检或文件提交失败不能产生已安装成功的结果。

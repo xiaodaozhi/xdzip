@@ -188,11 +188,12 @@ def main():
     parser.add_argument('--codec', type=Path)
     parser.add_argument('--output', type=Path)
     parser.add_argument('--runtime', type=Path)
+    parser.add_argument('--install-fixture', action='store_true')
     args = parser.parse_args()
     if args.stage == 'build':
         build(args)
     elif args.stage == 'test':
-        run(['python3' if os.name != 'nt' else 'python', ROOT/'scripts/check-cli.py', '--binary', generated(args.build_dir)/'bin'/exe('xdzip'), '--worker', generated(args.build_dir)/'bin'/exe('xdzip-native-codec'), '--output', args.output or generated(args.build_dir)/'verification'])
+        run(['python3' if os.name != 'nt' else 'python', ROOT/'scripts/check-cli.py', '--binary', generated(args.build_dir)/'bin'/exe('xdzip'), '--worker', generated(args.build_dir)/'bin'/exe('xdzip-native-codec'), '--output', args.output or generated(args.build_dir)/'verification', *(['--install-fixture'] if args.install_fixture else [])])
     elif args.output is None:
         parser.error('--output is required for bundle/package')
     elif args.stage == 'bundle':

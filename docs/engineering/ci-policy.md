@@ -30,6 +30,8 @@ Foundation 和 Qt 使用固定输入缓存，缓存仅包含 Cargo 下载、pip 
 
 Foundation 在三平台原生构建并执行无 Qt 的 CLI 回归，清除显示会话和 Qt 搜索路径，保留 JSON 回执。Qt 构建同时验证私有 CLI 布局及同用户更新交接。独立包生成要求同一可执行文件、worker 哈希和构建身份的通过回执；三平台 CLI 发行包及独立签名清单仅由已授权的 Release 流程产出。普通 macOS CI 仍只上传日志与 JSON。English: Native CLI checks run without Qt/display settings and bind receipts to both binaries. CLI release assets and signatures remain part of the separately authorized Release workflow.
 
+Foundation 的 CLI 检查使用统一构建入口和实际二进制，另验证用户级入口的创建、运行、防覆盖与撤销。安装夹具只复制自有测试二进制，不生成发行归档，不部署桌面应用，上传内容仅限 JSON 回执。English: Foundation also exercises owned command registration/removal with native binaries and private update fixtures, without creating release archives or deploying a desktop bundle.
+
 Windows 和 Linux 的 Qt 手动运行上传实验性开发包和验证工件，通常保留 14 天；macOS 普通检查仅保留日志和 JSON，不部署、签名或上传应用包。日常 CI 不生成这些开发包。按需开发 DMG 和专用 Release 的例外见[Mac 部署](macos-deployment.md)和[发布协议](release-protocol.md)。
 
 ## 视觉、桌面与发行

@@ -174,7 +174,11 @@ pub fn context_for(exe: &Path) -> Result<Context> {
         && versions.file_name().is_some_and(|n| n == "versions")
         && let Some(root) = versions.parent()
     {
-        let marker = read_json(&root.join("installation.json"))?;
+        let marker_path = root.join("installation.json");
+        if !exists_leaf(&marker_path)? {
+            return Ok(Context::Portable);
+        }
+        let marker = read_json(&marker_path)?;
         if marker["schema_version"] == 1
             && marker["product"] == "xdzip"
             && marker["component"] == "cli"

@@ -174,24 +174,36 @@ fn native_payload_install_switches_pointer_after_validation_and_keeps_old_runtim
     )
     .unwrap();
     let binary = bin.join(installation::executable("xdzip"));
-    let compile_status = if cfg!(windows) {
+    let compiled = if cfg!(windows) {
         Command::new("cl")
-            .args(["/nologo", "/EHsc"])
-            .arg(&cpp)
-            .arg(format!("/Fe:{}", binary.display()))
+            .args([
+                "/nologo",
+                "/EHsc",
+                "fixture.cpp",
+                "/Fe:bin\\xdzip.exe",
+                "/Fo:fixture.obj",
+            ])
             .current_dir(&root)
-            .stdout(std::process::Stdio::null())
-            .status()
+            .output()
     } else {
         Command::new("c++")
             .arg(&cpp)
             .arg("-o")
             .arg(&binary)
             .current_dir(&root)
-            .status()
+            .output()
     }
     .unwrap();
-    assert!(compile_status.success());
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&compiled.stdout),
+        String::from_utf8_lossy(&compiled.stderr)
+    )
+    .replace(&*root.to_string_lossy(), "<owned fixture>");
+    assert!(
+        compiled.status.success(),
+        "native fixture compilation failed: {diagnostics}"
+    );
     for name in ["xdzip-native-codec", "xdzip-launcher"] {
         fs::copy(&binary, bin.join(installation::executable(name))).unwrap();
     }
@@ -202,7 +214,12 @@ fn native_payload_install_switches_pointer_after_validation_and_keeps_old_runtim
         false,
     )
     .unwrap();
-    let archive = root.join("owned.tar.gz");
+    let archive_name = if cfg!(windows) {
+        "owned.zip"
+    } else {
+        "owned.tar.gz"
+    };
+    let archive = root.join(archive_name);
     let mut runtime = crate::runtime::Runtime::new(false, false, false).unwrap();
     let response = runtime
         .task(
@@ -213,7 +230,7 @@ fn native_payload_install_switches_pointer_after_validation_and_keeps_old_runtim
                     source.join(installation::PAYLOAD).to_str().unwrap().into(),
                 ],
                 target: root.to_str().unwrap().into(),
-                name: "owned.tar.gz".into(),
+                name: archive_name.into(),
                 method: 8,
                 level: 1,
                 conflict: xdzip_runtime::extraction::ConflictPolicy::Ask,
