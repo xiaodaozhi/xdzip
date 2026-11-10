@@ -94,11 +94,11 @@ tar 的测试传递依赖含 filetime 0.2.29（MIT 或 Apache-2.0），复用既
 
 ## macOS 更新提供者
 
-Mac 更新集成锁定 Sparkle 2.10.0，SDK、源码归档及完整许可正文的哈希统一见
+Mac 更新集成锁定 Sparkle 2.10.0 和 `xdzip-proxy.1` 代理扩展，SDK、源码归档、补丁及完整许可正文的哈希统一见
 [依赖配置](../../scripts/sparkle-dependency.json)。它只负责应用更新，不参与归档解码。
 官方 SDK 原始许可包含 MIT、BSD-2-Clause 和 Zlib 授权正文，随 Mac notices 保留；
 本地对应源码收集器保留锁定源码与 SDK 原始归档，支持离线准备和动态框架重链接；按发行协议，此压缩包不作为 Release 或 Actions 下载附件提供。
-SDK 与实际部署包的字节或 arm64 分片对照分别记录，不宣称已重建上游二进制。
+框架主库的 67 个上游 Objective-C 单元与 10 个 Ed25519 C 单元使用 Apple Silicon 原生 Clang 从锁定源码和[受限补丁](../../patches/sparkle/2.10.0-download-proxy.patch)编译，保留上游构建特性和安装 IPC。资源、安装助手和签名工具继续来自官方 SDK，不宣称已从源码重建这些二进制。派生框架记录独立 variant、源码／补丁／构建器摘要和逐文件构建回执；部署归属及 SBOM 区分此来源与官方 SDK 字节。构建方法见[补丁维护说明](../../patches/sparkle/README.md)。
 
 按需 Qt 工作流的 Mac 作业外部链接 SDK，不部署框架。专用打包在临时副本嵌入框架，删除非沙盒应用
 未启用的 XPC 服务，保留必要安装助手。裁剪、重定位后按助手、framework、应用顺序

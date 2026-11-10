@@ -84,6 +84,9 @@ jobs:
           CARGO_NET_OFFLINE: 'true'
           XDZIP_VENDOR_INTEGRATION: '1'
         run: python scripts/test-source-delivery.py DeliveryTests.test_vendor_config_real_cargo
+      - name: Verify native Sparkle proxy transport
+        if: runner.os == 'macOS'
+        run: python3 scripts/check-macos-proxy.py --output build/review/macos-proxy
       - name: Collect test diagnostics
         if: always()
         shell: pwsh
@@ -135,6 +138,9 @@ jobs:
             build/review/add-dialog*/*.json
             build/review/browser-timings/**
             build/review/diagnostics/*.log
+            build/review/macos-proxy/*.json
+            build/review/macos-proxy/*.log
+            build/toolchain/Sparkle/*-build.log
             build/review/diagnostics/*.json
             build/review/diagnostics/result-ui/*.json
           if-no-files-found: warn

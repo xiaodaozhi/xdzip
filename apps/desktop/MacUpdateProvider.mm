@@ -24,6 +24,9 @@
 #include <QTemporaryDir>
 #endif
 #import <Sparkle/Sparkle.h>
+#if SPU_XDZIP_DOWNLOAD_PROXY_API != 1
+#error The pinned xdzip Sparkle download proxy API is required.
+#endif
 #include <cstdint>
 #include <memory>
 #include <utility>
@@ -34,6 +37,7 @@
   @public
     QPointer<UpdateController> owner;
     QJsonObject candidate;
+    MacUpdateTransport transport;
     std::function<void(QString)> prepared;
     std::function<void()> deferredQuit;
     SPUUpdater *updater;
@@ -223,7 +227,7 @@ void observeInstaller(const QString &path, InstallerObservation completion) {
     return native(macProductUpdateFixtureFeed(candidate));
 #else
     const auto original = QUrl(candidate.value("appcast_url").toString());
-    return native(UpdateNetwork::mapped(original, candidate.value("transport_mirror").toString()).toString());
+    return native(UpdateNetwork::mapped(original, transport.mirror).toString());
 #endif
 }
 - (BOOL)updaterShouldPromptForPermissionToCheckForUpdates:(SPUUpdater *)sender {
@@ -280,7 +284,7 @@ void observeInstaller(const QString &path, InstallerObservation completion) {
                                   {"original_request_url", original},
                                   {"mapped_request_url", text(request.URL.absoluteString)}});
 #else
-    const auto mirror = candidate.value("transport_mirror").toString();
+    const auto mirror = transport.mirror;
     const QUrl originalUrl(original, QUrl::StrictMode);
     const auto mapped = UpdateNetwork::mapped(originalUrl, mirror);
     const bool valid = accepted && original == candidate.value("asset_url").toString() &&
@@ -518,14 +522,20 @@ QString macUpdateInstallRoot() {
     return path;
 }
 void startMacUpdate(UpdateController *owner, const QJsonObject &candidate,
-                    std::function<void(QString)> prepared) {
+                    std::function<void(QString)> prepared, const MacUpdateTransport &transport) {
     if (updateSessionBlocked()) {
         prepared("update_busy");
+        return;
+    }
+    if (!UpdateNetwork::macosAutomaticProxy(transport.proxyMode, transport.proxyAddress) ||
+        !UpdateNetwork::validMirror(transport.mirror)) {
+        prepared("native_update");
         return;
     }
     driver = [[XdzipUpdateDriver alloc] init];
     driver->owner = owner;
     driver->candidate = candidate;
+    driver->transport = transport;
     driver->prepared = std::move(prepared);
     const auto framework = [NSBundle bundleForClass:SPUUpdater.class];
     const auto helper = [framework.executableURL.URLByDeletingLastPathComponent
@@ -547,6 +557,21 @@ void startMacUpdate(UpdateController *owner, const QJsonObject &candidate,
     driver->updater.automaticallyChecksForUpdates = NO;
     driver->updater.automaticallyDownloadsUpdates = NO;
     NSError *error = nil;
+    NSURL *proxyURL = transport.proxyMode == "custom"
+                         ? [NSURL URLWithString:native(transport.proxyAddress)]
+                         : nil;
+    if ((transport.proxyMode == "custom" && proxyURL == nil) ||
+        ![driver->updater xdzip_setDownloadProxyURL:proxyURL error:&error]) {
+        [driver failure];
+        driver->updater = nil;
+        return;
+    }
+#ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
+    macProductUpdateFixtureEvent("transport-configured",
+                                 {{"mode", transport.proxyMode},
+                                  {"proxy_scheme", proxyURL ? text(proxyURL.scheme) : QString{}},
+                                  {"explicit_proxy", proxyURL != nil}});
+#endif
     if (![driver->updater startUpdater:&error]) {
 #ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
         macProductUpdateFixtureEvent("start-error", fixtureError(error));

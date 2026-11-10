@@ -35,7 +35,7 @@ def sdk_from_build(app):
     raise ValueError('Mac build has no pinned Sparkle SDK receipt')
 
 
-def validate_sdk(sdk):
+def validate_sdk(sdk, *, require_proxy=True):
     spec = configuration()
     if (checksum(sdk/'LICENSE') != spec['license_sha256'] or
             not (sdk/'Sparkle.framework/Versions/B/Headers/SPUUpdater.h').is_file()):
@@ -43,6 +43,29 @@ def validate_sdk(sdk):
     info = plistlib.loads((sdk/'Sparkle.framework/Versions/B/Resources/Info.plist').read_bytes())
     if info.get('CFBundleShortVersionString') != spec['version']:
         raise ValueError('Sparkle SDK version differs')
+    if require_proxy:
+        import sparkle_build
+        marker = sdk/'xdzip-sdk.json'
+        if marker.is_symlink() or not marker.is_file():
+            raise ValueError('Sparkle framework build receipt missing')
+        receipt = json.loads(marker.read_bytes())
+        build = receipt.get('framework_build', {})
+        expected = sparkle_build.inputs(spec)
+        if (receipt.get('sha256') != spec['sdk']['sha256'] or
+                any(build.get(name) != value for name, value in expected.items()) or
+                info.get('XdzipFrameworkBuildVariant') != expected['variant'] or
+                build.get('library_sha256') != checksum(sdk/'Sparkle.framework/Versions/B/Sparkle')):
+            raise ValueError('Sparkle framework build identity differs')
+        files = build.get('files', {})
+        required = {'Sparkle.framework/Versions/B/' + suffix for suffix in (
+            'Sparkle', 'Headers/SPUUpdater.h', 'Autoupdate', 'Updater.app/Contents/MacOS/Updater')}
+        if not required.issubset(files):
+            raise ValueError('Sparkle framework receipt is incomplete')
+        for relative, expected_sha in files.items():
+            path = sdk/relative
+            if (not path.resolve().is_relative_to(sdk.resolve()) or path.is_symlink() or
+                    not path.is_file() or checksum(path) != expected_sha):
+                raise ValueError('Sparkle framework file identity differs')
 
 
 def write_notice(sdk, output):
@@ -52,7 +75,9 @@ def write_notice(sdk, output):
     target.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(sdk/'LICENSE', target/'LICENSE')
     (target/'provenance.json').write_text(json.dumps(spec, indent=2)+'\n', encoding='utf-8')
-    return [target/'LICENSE', target/'provenance.json']
+    receipt = json.loads((sdk/'xdzip-sdk.json').read_bytes())['framework_build']
+    (target/'framework-build.json').write_text(json.dumps(receipt, indent=2)+'\n', encoding='utf-8')
+    return [target/'LICENSE', target/'provenance.json', target/'framework-build.json']
 
 
 def collect_sources(output, cache):
@@ -171,7 +196,7 @@ def attribute(report, app, sdk, audit):
     from macos_attribution import compare_images
     validate_sdk(sdk)
     spec = configuration()
-    owner = 'sparkle:Sparkle@'+spec['version']
+    owner = 'sparkle:Sparkle@'+spec['framework_build']['variant']
     records, owned = [], set()
     for item in audit['files']:
         relative = item['path']
@@ -201,11 +226,12 @@ def attribute(report, app, sdk, audit):
     report['files'] += records
     report['gaps'] = [g for g in report['gaps'] if not (
         g.get('kind') == 'native-outside-qt-attribution' and g.get('file') in owned)]
-    report['components'].append({'ref': owner, 'name': 'Sparkle', 'version': spec['version'],
+    report['components'].append({'ref': owner, 'name': 'Sparkle', 'version': spec['framework_build']['variant'],
         'repository': 'sparkle', 'license_declared': spec['license'],
         'license_concluded_by_upstream': spec['license'], 'copyright': 'See bundled Sparkle LICENSE',
         'source': 'https://github.com/sparkle-project/Sparkle/tree/'+spec['version']})
     report['dependencies'].append({'ref': owner, 'dependsOn': []})
     report['sparkle'] = dict(spec, files=len(records),
-        limitation='SDK-to-arm64 section comparison, not a claim that upstream binaries were rebuilt.')
+        framework_receipt=json.loads((sdk/'xdzip-sdk.json').read_bytes())['framework_build'],
+        limitation='Framework library rebuilt from pinned source and proxy patch; helpers, resources and tools retain their upstream SDK origin.')
     return report

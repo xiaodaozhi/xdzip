@@ -197,3 +197,11 @@ ZIP 在受限 POSIX 条件下可恢复相对符号链接和可执行位，不恢
 Windows/Linux 工件交付同提交源码和许可通知，Actions 保存 14 天；过期后按身份和锁定输入重建。deployment-audit.json、源码及文件级 CycloneDX 清单用于来源核验，覆盖仍可能为 incomplete，不能当作许可批准。源码重建与 Qt 替换方法见[源码交付](source-delivery.md)及[自动验证契约](wp12-automation.md)。
 
 所有构建、截图、量测、报告与包只保留为忽略的本地或 CI 工件。不要把生成的 pending 表、离屏检查或部分 SBOM 写成干净环境与全部发行门槛通过。
+
+## macOS 更新框架
+
+原生构建通过 `prepare-sparkle.py` 准备 `build/toolchain/Sparkle/2.10.0-xdzip-proxy.1`。框架主库从锁定上游源码和代理补丁编译，安装助手、资源及签名工具保留官方 SDK 来源，详见[依赖契约](dependencies.md#macos-更新提供者)。已有有效构建回执可复用，旧官方 SDK 不能代替带代理接口的派生框架。CI 可显式指定临时 SDK 目录。
+
+`python3 scripts/prepare-sparkle.py --output build/toolchain/Sparkle/2.10.0-xdzip-proxy.1` 使用现有 Xcode Command Line Tools 或 Xcode 的原生 Clang，不需要另建 Qt SDK。原始 SDK 和源码归档缓存于 `build/source-cache/`，离线时可分别传入 `--archive` 和 `--source-archive`。构建不执行下载源码中的脚本，不修改系统代理，也不读取生产签名密钥。
+
+English: The macOS updater framework library is rebuilt natively from pinned Sparkle source and the bounded proxy patch. Helpers, resources and signing tools retain their pinned upstream SDK origin. Valid per-file receipts permit reuse; the unmodified SDK cannot satisfy the proxy API contract. Native Clang from Command Line Tools or Xcode is sufficient. This preparation does not collect project source-delivery archives or access production signing authority.

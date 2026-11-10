@@ -141,10 +141,26 @@ pub enum Context {
 pub fn context() -> Result<Context> {
     context_for(&std::env::current_exe()?)
 }
+fn desktop_context_path(bin: &Path) -> Option<PathBuf> {
+    #[cfg(target_os = "macos")]
+    {
+        let helpers = bin.parent()?;
+        let contents = helpers.parent()?;
+        (bin.file_name()? == "cli"
+            && helpers.file_name()? == "Helpers"
+            && contents.file_name()? == "Contents")
+            .then(|| contents.join("Resources").join(CONTEXT))
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        Some(bin.join(CONTEXT))
+    }
+}
 pub fn context_for(exe: &Path) -> Result<Context> {
     let bin = exe.parent().ok_or("invalid_installation")?;
-    let context_path = bin.join(CONTEXT);
-    if exists_leaf(&context_path)? {
+    if let Some(context_path) = desktop_context_path(bin)
+        && exists_leaf(&context_path)?
+    {
         let context = read_json(&context_path)?;
         if context["schema_version"] != 1 || context["kind"] != "desktop" {
             return Err("invalid_installation".into());
@@ -189,6 +205,107 @@ pub fn context_for(exe: &Path) -> Result<Context> {
         return Err("invalid_installation".into());
     }
     Ok(Context::Portable)
+}
+
+#[cfg(test)]
+mod context_tests {
+    use super::*;
+
+    struct Desktop {
+        root: PathBuf,
+        bin: PathBuf,
+        gui: PathBuf,
+        marker: PathBuf,
+    }
+    impl Desktop {
+        fn new() -> Self {
+            let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../../build/test-tmp")
+                .join(format!("cli-context-{}", random_id().unwrap()));
+            let (bin, gui, marker) = if cfg!(target_os = "macos") {
+                let contents = root.join("Owned.app/Contents");
+                (
+                    contents.join("Helpers/cli"),
+                    contents.join("MacOS/xdzip"),
+                    contents.join("Resources").join(CONTEXT),
+                )
+            } else {
+                (
+                    root.join("cli"),
+                    root.join(executable("xdzip")),
+                    root.join("cli").join(CONTEXT),
+                )
+            };
+            fs::create_dir_all(&bin).unwrap();
+            fs::create_dir_all(gui.parent().unwrap()).unwrap();
+            fs::create_dir_all(marker.parent().unwrap()).unwrap();
+            fs::write(&gui, b"owned GUI target").unwrap();
+            Self {
+                root,
+                bin,
+                gui,
+                marker,
+            }
+        }
+        fn write(&self) {
+            let relative = if cfg!(target_os = "macos") {
+                "../../MacOS/xdzip"
+            } else if cfg!(windows) {
+                "../xdzip.exe"
+            } else {
+                "../xdzip"
+            };
+            fs::write(
+                &self.marker,
+                serde_json::to_vec(&json!({
+                    "schema_version": 1, "kind": "desktop", "desktop_relative": relative
+                }))
+                .unwrap(),
+            )
+            .unwrap();
+        }
+        fn context(&self) -> Result<Context> {
+            context_for(&self.bin.join(executable("xdzip")))
+        }
+    }
+    impl Drop for Desktop {
+        fn drop(&mut self) {
+            fs::remove_dir_all(&self.root).unwrap();
+        }
+    }
+
+    #[test]
+    fn desktop_context_resolves_only_the_fixed_target_and_identity() {
+        let fixture = Desktop::new();
+        assert!(matches!(fixture.context().unwrap(), Context::Portable));
+        fixture.write();
+        assert!(matches!(fixture.context().unwrap(), Context::Desktop(path)
+            if path == fs::canonicalize(&fixture.gui).unwrap()));
+        for value in [
+            json!({"schema_version": 2, "kind": "desktop", "desktop_relative": "../../MacOS/xdzip"}),
+            json!({"schema_version": 1, "kind": "desktop", "desktop_relative": "../foreign"}),
+        ] {
+            fs::write(&fixture.marker, serde_json::to_vec(&value).unwrap()).unwrap();
+            assert_eq!(fixture.context().unwrap_err().code, "invalid_installation");
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn macos_context_requires_resources_and_the_helpers_bundle_layout() {
+        let fixture = Desktop::new();
+        fixture.write();
+        fs::rename(&fixture.marker, fixture.bin.join(CONTEXT)).unwrap();
+        assert!(matches!(fixture.context().unwrap(), Context::Portable));
+        fixture.write();
+        let contents = fixture.bin.parent().unwrap().parent().unwrap();
+        let moved = contents.with_file_name("Other");
+        fs::rename(contents, &moved).unwrap();
+        assert!(matches!(
+            context_for(&moved.join("Helpers/cli/xdzip")).unwrap(),
+            Context::Portable
+        ));
+    }
 }
 
 #[derive(Serialize, Deserialize)]

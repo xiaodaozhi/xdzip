@@ -7,8 +7,14 @@
 class UpdateController;
 class QObject;
 QString macUpdateInstallRoot();
+struct MacUpdateTransport {
+    QString proxyMode = QStringLiteral("system");
+    QString proxyAddress;
+    QString mirror;
+};
 void startMacUpdate(UpdateController *owner, const QJsonObject &candidate,
-                    std::function<void(QString)> prepared);
+                    std::function<void(QString)> prepared,
+                    const MacUpdateTransport &transport = {});
 bool commitMacUpdate();
 bool macUpdateInstallationCommitted();
 // Runs synchronously after actual native commitment, before invoking Sparkle's

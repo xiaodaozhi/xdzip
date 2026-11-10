@@ -81,12 +81,20 @@ def build(args):
 def bundle(args):
     directory = generated(args.build_dir)
     output = generated(args.output)
+    context = output/'xdzip-cli-context.json'
+    if platform.system() == 'Darwin':
+        if output.name != 'cli' or output.parent.name != 'Helpers' or output.parent.parent.name != 'Contents':
+            raise ValueError('Mac desktop CLI requires Contents/Helpers/cli')
+        context = generated(output.parent.parent/'Resources')/'xdzip-cli-context.json'
     output.mkdir(parents=True, exist_ok=True)
     for path in (directory/'bin').iterdir():
         if path.is_file():
             shutil.copy2(path, output/path.name)
     relative = {'Darwin':'../../MacOS/xdzip', 'Windows':'../xdzip.exe', 'Linux':'../xdzip'}[platform.system()]
-    (output/'xdzip-cli-context.json').write_text(json.dumps(dict(schema_version=1, kind='desktop', desktop_relative=relative))+'\n')
+    context.parent.mkdir(parents=True, exist_ok=True)
+    context.write_text(json.dumps(dict(schema_version=1, kind='desktop', desktop_relative=relative))+'\n')
+    if platform.system() == 'Darwin':
+        (output/'xdzip-cli-context.json').unlink(missing_ok=True)
 
 
 def notices(output):

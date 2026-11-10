@@ -76,6 +76,7 @@ Invoke-Checked python @('scripts/check-window-contracts.py','--self-test','--out
 Invoke-Checked python @('scripts/check-operation-components.py')
 Assert-CleanSources
 Invoke-Checked python @('scripts/test-installers.py')
+Invoke-Checked python @('scripts/test-cli-bundle.py')
 Invoke-Checked python @('scripts/test-source-delivery.py')
 Invoke-Checked python @('scripts/test-qt-sdk-correspondence.py')
 Invoke-Checked python @('scripts/test-deployment-audit.py')

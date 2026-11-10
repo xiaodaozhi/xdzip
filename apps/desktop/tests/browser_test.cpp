@@ -6012,10 +6012,29 @@ QtObject {
                             QVERIFY(openReleaseSecondary->isVisible());
                             const auto captures = qEnvironmentVariable("XDZIP_ABOUT_UPDATE_AUDIT");
                             if (!captures.isEmpty() && scale == 1.5 && state == "downloaded") {
+                                auto *scroll =
+                                    findVisual(settings->contentItem(), "settingsScroll");
+                                auto *flickable =
+                                    scroll ? scroll->property("contentItem").value<QQuickItem *>()
+                                           : nullptr;
+                                QVERIFY(flickable);
+                                const auto previousY = flickable->property("contentY").toReal();
+                                const auto noteY =
+                                    note->mapToItem(flickable, QPointF{}).y() + previousY;
+                                const auto maximumY =
+                                    qMax(qreal(0), flickable->property("contentHeight").toReal() -
+                                                       flickable->height());
+                                QVERIFY(flickable->setProperty("contentY",
+                                                               qBound(qreal(0), noteY, maximumY)));
+                                QTRY_VERIFY(note->mapToItem(flickable, QPointF{}).y() >= -1);
+                                QTRY_VERIFY(note->mapToItem(flickable, QPointF{}).y() +
+                                                note->height() <=
+                                            flickable->height() + 1);
                                 QVERIFY(QDir().mkpath(captures));
                                 QVERIFY(visual_audit::save(
                                     settings, captures,
                                     language + (dark ? "-dark-" : "-light-") + reason.first));
+                                QVERIFY(flickable->setProperty("contentY", previousY));
                             }
                         }
                     }
