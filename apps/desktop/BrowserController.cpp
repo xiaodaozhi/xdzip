@@ -1,5 +1,6 @@
 #include "BrowserController.h"
 #include "NativeDialogPolicy.h"
+#include "PreviewImages.h"
 #include "UiText.h"
 #include "rust/cxx.h"
 #include "xdzip-qt-bridge/src/lib.rs.h"
@@ -24,18 +25,30 @@
 #include <vector>
 
 int ArchiveTableModel::rowCount(const QModelIndex &parent) const {
-    return parent.isValid()
-               ? 0
-               : static_cast<int>(m_rows.size()); // bounded by the admitted 100,000-row snapshot
+    return parent.isValid() ? 0 : paged() ? m_pagedCount : static_cast<int>(m_rows.size());
 }
 int ArchiveTableModel::columnCount(const QModelIndex &parent) const {
     return parent.isValid() ? 0 : 5;
 }
 QVariant ArchiveTableModel::data(const QModelIndex &index, int role) const {
-    if (!index.isValid() || index.row() < 0 || index.row() >= m_rows.size() || index.column() < 0 ||
+    if (!index.isValid() || index.row() < 0 || index.row() >= rowCount() || index.column() < 0 ||
         index.column() >= 5)
         return {};
-    const auto &row = m_rows.at(index.row());
+    const auto *loaded = rowAt(index.row());
+    if (!loaded) {
+        if (paged()) {
+            int offset = index.row() / 128 * 128;
+            while (m_cache.contains(offset))
+                ++offset;
+            emit pageNeeded(offset);
+        }
+        if (role == Qt::UserRole + 2)
+            return rangeSelected(index.row());
+        if (role == Qt::UserRole + 6)
+            return false;
+        return {};
+    }
+    const auto &row = *loaded;
     if (role == Qt::DisplayRole)
         return row.cells.at(index.column());
     if (role == Qt::UserRole)
@@ -43,7 +56,7 @@ QVariant ArchiveTableModel::data(const QModelIndex &index, int role) const {
     if (role == Qt::UserRole + 1)
         return row.directory;
     if (role == Qt::UserRole + 2)
-        return m_selected.contains(row.id);
+        return paged() ? rangeSelected(index.row()) : m_selected.contains(row.id);
     if (role == Qt::UserRole + 3)
         return row.navigable;
     if (role == Qt::UserRole + 4)
@@ -62,6 +75,11 @@ QHash<int, QByteArray> ArchiveTableModel::roleNames() const {
 }
 void ArchiveTableModel::replace(QList<BrowserRow> rows) {
     beginResetModel();
+    m_pagedCount = -1;
+    m_cache.clear();
+    m_cacheOrder.clear();
+    m_ranges.clear();
+    m_queryIdentity.clear();
     m_rows = std::move(rows);
     ++m_selectionRevision;
     m_selected.clear();
@@ -69,12 +87,20 @@ void ArchiveTableModel::replace(QList<BrowserRow> rows) {
 }
 
 const BrowserRow *ArchiveTableModel::rowAt(int row) const {
+    if (paged()) {
+        auto found = m_cache.constFind(row);
+        return found == m_cache.cend() ? nullptr : &found.value();
+    }
     return row >= 0 && row < m_rows.size() ? &m_rows[row] : nullptr;
 }
 void ArchiveTableModel::select(int row) {
     const auto *item = rowAt(row);
     if (!item)
         return;
+    if (paged()) {
+        setRange(row, row, !rangeSelected(row));
+        return;
+    }
     ++m_selectionRevision;
     if (m_selected.contains(item->id))
         m_selected.remove(item->id);
@@ -85,17 +111,27 @@ void ArchiveTableModel::select(int row) {
 
 bool ArchiveTableModel::isSelected(int row) const {
     const auto *item = rowAt(row);
-    return item && m_selected.contains(item->id);
+    return paged() ? rangeSelected(row) : item && m_selected.contains(item->id);
 }
 void ArchiveTableModel::selectOnly(int row) {
     const auto *item = rowAt(row);
     if (!item)
         return;
+    if (paged()) {
+        m_ranges.clear();
+        setRange(row, row, true);
+        return;
+    }
     ++m_selectionRevision;
     m_selected = {item->id};
     emit dataChanged(index(0, 0), index(rowCount() - 1, 4), {Qt::UserRole + 2});
 }
 void ArchiveTableModel::selectAll(bool selected) {
+    if (paged()) {
+        m_ranges.clear();
+        setRange(0, m_pagedCount - 1, selected);
+        return;
+    }
     ++m_selectionRevision;
     m_selected.clear();
     if (selected)
@@ -105,13 +141,123 @@ void ArchiveTableModel::selectAll(bool selected) {
         emit dataChanged(index(0, 0), index(rowCount() - 1, 4), {Qt::UserRole + 2});
 }
 void ArchiveTableModel::selectRange(int first, int last) {
-    if (!rowAt(first) || !rowAt(last))
+    if (first < 0 || last < 0 || first >= rowCount() || last >= rowCount() ||
+        (!paged() && (!rowAt(first) || !rowAt(last))))
         return;
+    if (paged()) {
+        m_ranges.clear();
+        setRange(std::min(first, last), std::max(first, last), true);
+        return;
+    }
     ++m_selectionRevision;
     m_selected.clear();
     for (int row = std::min(first, last); row <= std::max(first, last); ++row)
         m_selected.insert(m_rows.at(row).id);
     emit dataChanged(index(0, 0), index(rowCount() - 1, 4), {Qt::UserRole + 2});
+}
+
+void ArchiveTableModel::replacePaged(int total, QList<BrowserRow> rows, const QString &identity) {
+    replace({});
+    beginResetModel();
+    m_pagedCount = total;
+    m_queryIdentity = identity;
+    for (int i = 0; i < rows.size(); ++i) {
+        m_cache.insert(i, std::move(rows[i]));
+        m_cacheOrder.enqueue(i);
+    }
+    endResetModel();
+}
+void ArchiveTableModel::installPage(int offset, QList<BrowserRow> rows) {
+    if (!paged() || offset < 0 || offset + rows.size() > m_pagedCount)
+        return;
+    for (int i = 0; i < rows.size(); ++i) {
+        const int row = offset + i;
+        if (!m_cache.contains(row))
+            m_cacheOrder.enqueue(row);
+        m_cache.insert(row, std::move(rows[i]));
+    }
+    while (m_cache.size() > 1024)
+        m_cache.remove(m_cacheOrder.dequeue());
+    if (m_pagedCount)
+        emit dataChanged(index(0, 0), index(m_pagedCount - 1, 4));
+}
+QList<int> ArchiveTableModel::cachedRows() const {
+    if (paged())
+        return m_cache.keys();
+    QList<int> result;
+    result.reserve(m_rows.size());
+    for (int row = 0; row < m_rows.size(); ++row)
+        result.append(row);
+    return result;
+}
+bool ArchiveTableModel::rangeSelected(int row) const {
+    for (const auto &range : m_ranges) {
+        if (range.first > row)
+            return false;
+        if (range.second >= row)
+            return true;
+    }
+    return false;
+}
+void ArchiveTableModel::setRange(int first, int last, bool selected) {
+    if (first < 0 || last < first || last >= m_pagedCount)
+        return;
+    QList<QPair<int, int>> ranges;
+    for (const auto &range : m_ranges) {
+        if (range.second < first || range.first > last)
+            ranges.append(range);
+        else {
+            if (range.first < first)
+                ranges.append({range.first, first - 1});
+            if (range.second > last)
+                ranges.append({last + 1, range.second});
+        }
+    }
+    if (selected)
+        ranges.append({first, last});
+    std::sort(ranges.begin(), ranges.end());
+    QList<QPair<int, int>> merged;
+    for (const auto &range : ranges) {
+        if (!merged.isEmpty() && range.first <= merged.last().second + 1)
+            merged.last().second = std::max(merged.last().second, range.second);
+        else
+            merged.append(range);
+    }
+    if (merged.size() > 4096)
+        return;
+    m_ranges = std::move(merged);
+    ++m_selectionRevision;
+    emit dataChanged(index(0, 0), index(rowCount() - 1, 4), {Qt::UserRole + 2});
+}
+int ArchiveTableModel::selectedCount() const {
+    if (!paged())
+        return m_selected.size();
+    int count = 0;
+    for (const auto &range : m_ranges)
+        count += range.second - range.first + 1;
+    return count;
+}
+QStringList ArchiveTableModel::selectedIds() const {
+    if (!paged())
+        return m_selected.values();
+    QStringList result;
+    for (const auto &range : m_ranges)
+        result.append(
+            QStringLiteral("q%1:%2:%3").arg(m_queryIdentity).arg(range.first).arg(range.second));
+    return result;
+}
+QStringList ArchiveTableModel::physicalSelectedIds() const {
+    if (!paged())
+        return selectedIds();
+    QStringList ids;
+    for (int row : cachedRows())
+        if (rangeSelected(row)) {
+            const auto *item = rowAt(row);
+            if (!item->physical)
+                return {};
+            ids.append(item->id);
+        }
+    return ids.size() == selectedCount() ? ids : QStringList{};
 }
 
 int TaskListModel::rowCount(const QModelIndex &parent) const {
@@ -164,6 +310,11 @@ void TaskListModel::sync(const QVariantList &snapshots) {
 BrowserController::BrowserController(QObject *parent)
     : QObject(parent), m_model(this), m_taskModel(this), m_directories(this),
       m_connection(std::make_unique<RuntimeConnection>(this)) {
+    connect(&m_model, &ArchiveTableModel::pageNeeded, this, [this](int offset) {
+        if (m_desiredPage < 0)
+            m_desiredPage = offset;
+        QTimer::singleShot(0, this, &BrowserController::drainPage);
+    });
     connect(this, &BrowserController::tasksChanged, this, [this] { m_taskModel.sync(tasks()); });
     m_directories.setItemRoleNames({{Qt::DisplayRole, "nodeName"},
                                     {Qt::UserRole, "nodeId"},
@@ -193,6 +344,7 @@ BrowserController::BrowserController(QObject *parent)
             m_ready = false;
             m_model.replace({});
             replaceDirectories({});
+            clearContentPreview();
             m_detail.clear();
             m_preflightReport.clear();
             for (auto &task : m_tasks) {
@@ -217,6 +369,7 @@ BrowserController::BrowserController(QObject *parent)
     });
 }
 BrowserController::~BrowserController() {
+    PreviewImages::remove(m_contentPreview.value("image").toString());
     if (m_export) {
         m_export->cancelled = true;
         m_export->changed.notify_all();
@@ -368,6 +521,7 @@ void BrowserController::openPath(const QString &path) {
     m_search.clear();
     m_sort = 0;
     m_navigationLimited = false;
+    clearContentPreview();
     m_detail.clear();
     m_title = QFileInfo(path).fileName();
     m_sourcePath = path;
@@ -405,8 +559,10 @@ void BrowserController::discardBrowsing() {
     m_total = m_archiveTotal = m_offset = 0;
     m_navigationLimited = false;
     m_selectionAnchor.clear();
+    m_selectionAnchorRow = -1;
     m_model.replace({});
     replaceDirectories({});
+    clearContentPreview();
     m_detail.clear();
     m_preflightReport.clear();
     m_result.rows.clear();
@@ -415,18 +571,21 @@ void BrowserController::discardBrowsing() {
     emit changed();
 }
 void BrowserController::selectRow(int row) {
-    if (m_busy || !m_ready)
+    if ((m_busy && !m_result.pageFetch && !m_result.contentPreview) || !m_ready)
         return;
     const auto *item = m_model.rowAt(row);
     if (!item)
         return;
     m_selectionAnchor = item->id;
+    m_selectionAnchorRow = row;
     m_model.select(row);
     showRowDetail(row);
     m_preflightReport.clear();
     emit changed();
 }
 void BrowserController::showRowDetail(int row) {
+    m_deferredDetailRow = -1;
+    clearContentPreview();
     const auto *item = m_model.rowAt(row);
     if (!item || m_model.selectedCount() == 0) {
         m_detail.clear();
@@ -443,10 +602,16 @@ void BrowserController::updateSelectionSummary() const {
         return;
     m_summaryRevision = m_model.selectionRevision();
     m_summaryPhysical = true;
-    bool summaryKnown = true;
+    bool summaryKnown =
+        !m_model.paged() || m_model.physicalSelectedIds().size() == m_model.selectedCount();
+    if (!summaryKnown) {
+        m_summaryPhysical = false;
+        m_summaryBytes = QStringLiteral("—");
+        return;
+    }
     std::vector<std::uint64_t> sizes;
     sizes.reserve(static_cast<std::size_t>(m_model.selectedCount()));
-    for (int row = 0; row < m_model.rowCount(); ++row) {
+    for (int row : m_model.cachedRows()) {
         if (!m_model.isSelected(row))
             continue;
         const auto *item = m_model.rowAt(row);
@@ -488,21 +653,24 @@ void BrowserController::closeArchive() {
     submit(std::move(command));
 }
 void BrowserController::selectOnlyRow(int row) {
-    if (m_busy || !m_ready || !m_model.rowAt(row))
+    if ((m_busy && !m_result.pageFetch && !m_result.contentPreview) || !m_ready ||
+        !m_model.rowAt(row))
         return;
     m_selectionAnchor = m_model.rowAt(row)->id;
+    m_selectionAnchorRow = row;
     m_model.selectOnly(row);
     showRowDetail(row);
     m_preflightReport.clear();
     emit changed();
 }
 void BrowserController::selectRangeTo(int row) {
-    if (m_busy || !m_ready || !m_model.rowAt(row))
+    if ((m_busy && !m_result.pageFetch && !m_result.contentPreview) || !m_ready ||
+        !m_model.rowAt(row))
         return;
-    int anchor = row;
-    bool foundAnchor = false;
-    for (int index = 0; index < m_model.rowCount(); ++index)
-        if (m_model.rowAt(index)->id == m_selectionAnchor) {
+    int anchor = m_model.paged() && m_selectionAnchorRow >= 0 ? m_selectionAnchorRow : row;
+    bool foundAnchor = m_model.paged() && m_selectionAnchorRow >= 0;
+    for (int index : m_model.cachedRows())
+        if (!foundAnchor && m_model.rowAt(index)->id == m_selectionAnchor) {
             anchor = index;
             foundAnchor = true;
             break;
@@ -515,7 +683,8 @@ void BrowserController::selectRangeTo(int row) {
     emit changed();
 }
 void BrowserController::selectForContext(int row) {
-    if (m_busy || !m_ready || !m_model.rowAt(row))
+    if ((m_busy && !m_result.pageFetch && !m_result.contentPreview) || !m_ready ||
+        !m_model.rowAt(row))
         return;
     if (!m_model.isSelected(row)) {
         selectOnlyRow(row);
@@ -527,14 +696,24 @@ void BrowserController::selectForContext(int row) {
     emit changed();
 }
 void BrowserController::selectAll(bool selected) {
-    if (m_busy || !m_ready)
+    if ((m_busy && !m_result.pageFetch && !m_result.contentPreview) || !m_ready)
         return;
     m_model.selectAll(selected);
     m_selectionAnchor.clear();
-    if (selected && m_model.rowCount() > 0)
-        showRowDetail(m_model.rowCount() - 1);
-    else
+    m_selectionAnchorRow = -1;
+    m_deferredDetailRow = -1;
+    if (selected && m_model.rowCount() > 0) {
+        const int last = m_model.rowCount() - 1;
+        showRowDetail(last);
+        if (m_model.paged() && !m_model.rowAt(last)) {
+            m_deferredDetailRow = last;
+            m_desiredPage = last;
+            QTimer::singleShot(0, this, &BrowserController::drainPage);
+        }
+    } else {
+        clearContentPreview();
         m_detail.clear();
+    }
     m_preflightReport.clear();
     emit changed();
 }
@@ -542,7 +721,7 @@ void BrowserController::copySelection(bool includeArchivePath) {
     if (m_busy || !m_ready)
         return;
     QStringList names;
-    for (int row = 0; row < m_model.rowCount(); ++row) {
+    for (int row : m_model.cachedRows()) {
         if (!m_model.isSelected(row))
             continue;
         const auto *item = m_model.rowAt(row);
@@ -552,13 +731,18 @@ void BrowserController::copySelection(bool includeArchivePath) {
             name.chop(1);
         names.append(includeArchivePath ? display : name.section('/', -1));
     }
+    if (m_model.paged() && names.size() != m_model.selectedCount()) {
+        m_message = explain("resource_limit");
+        emit changed();
+        return;
+    }
     if (!names.empty())
         QGuiApplication::clipboard()->setText(names.join('\n'));
 }
 void BrowserController::openContextEntry(const QString &session, const QString &entry) {
     if (session != m_session || m_busy || !m_ready)
         return;
-    for (int row = 0; row < m_model.rowCount(); ++row) {
+    for (int row : m_model.cachedRows()) {
         const auto *item = m_model.rowAt(row);
         const auto identity = item->navigationId.isEmpty() ? item->id : item->navigationId;
         if (identity == entry) {
@@ -774,8 +958,23 @@ void BrowserController::prepareExtraction(bool all, const QStringList &selectors
     if (!all && m_extractionSelectors.isEmpty())
         return;
     m_extractionDirectory = selectors.isEmpty() ? m_directory : QString{};
+    if (!all && std::any_of(m_extractionSelectors.cbegin(), m_extractionSelectors.cend(),
+                            [](const QString &id) { return id.startsWith('q'); })) {
+        xdzip::reader::Command command{};
+        command.kind = xdzip::reader::CommandKind::FreezeSelection;
+        command.session = m_session.toULongLong();
+        for (const auto &id : m_extractionSelectors)
+            command.selectors.push_back(rust::String(id.toStdString()));
+        submit(std::move(command));
+        return;
+    }
+    presentExtractionIntent(all);
+}
+void BrowserController::presentExtractionIntent(bool all) {
     QVariantList samples;
-    for (int i = 0; i < m_model.rowCount() && samples.size() < 3; ++i) {
+    for (int i : m_model.cachedRows()) {
+        if (samples.size() >= 3)
+            break;
         const auto *row = m_model.rowAt(i);
         if (all || m_extractionSelectors.contains(row->id))
             samples.append(
@@ -1020,6 +1219,11 @@ void BrowserController::startArchiveTest() {
     submit(std::move(command));
 }
 void BrowserController::cancelTask(const QString &id) {
+    if (id == QStringLiteral("preview")) {
+        clearContentPreview();
+        emit changed();
+        return;
+    }
     if (id == QStringLiteral("open")) {
         m_openPasswordPrompt.clear();
         emit tasksChanged();
@@ -1054,6 +1258,20 @@ bool BrowserController::submitPassword(const QString &id, const QString &prompt,
                                        const QString &password) {
     if (!runtimeAvailable() || password.size() > 1024)
         return false;
+    if (id == QStringLiteral("preview")) {
+        if (m_busy || !m_previewEntry || m_openPasswordPrompt.value("taskId") != "preview" ||
+            prompt.isEmpty() || m_openPasswordPrompt.value("promptId") != prompt)
+            return false;
+        const quint64 entry = m_previewEntry;
+        auto bytes = password.toUtf8();
+        const auto clear = qScopeGuard([&] { bytes.fill('\0'); });
+        if (bytes.size() > 1024 || QString::fromUtf8(bytes) != password)
+            return false;
+        m_openPasswordPrompt.clear();
+        emit tasksChanged();
+        startContentPreview(entry, password, true);
+        return true;
+    }
     if (id == QStringLiteral("open")) {
         if (m_busy || prompt.isEmpty() || m_openPasswordPrompt.value("promptId") != prompt)
             return false;
@@ -1116,7 +1334,7 @@ void BrowserController::inspectSelection() {
     xdzip::reader::Command command{};
     command.kind = xdzip::reader::CommandKind::Preflight;
     command.session = m_session.toULongLong();
-    for (const auto &id : m_model.selectedIds())
+    for (const auto &id : m_model.physicalSelectedIds())
         command.selected.push_back(id.toULongLong());
     submit(std::move(command), true);
 }
@@ -1135,8 +1353,10 @@ void BrowserController::invalidateSnapshot() {
     m_session.clear();
     m_navigationLimited = false;
     m_selectionAnchor.clear();
+    m_selectionAnchorRow = -1;
     m_model.replace({});
     replaceDirectories({});
+    clearContentPreview();
     m_detail.clear();
 }
 void BrowserController::cancel() {
@@ -1230,6 +1450,71 @@ bool BrowserController::requestClose() {
     emit changed();
     return false;
 }
+void BrowserController::clearContentPreview() {
+    PreviewImages::remove(m_contentPreview.value("image").toString());
+    if (m_busy && m_result.contentPreview && m_pending)
+        m_connection->cancel(m_pending);
+    if (m_openPasswordPrompt.value("taskId") == "preview") {
+        m_openPasswordPrompt.clear();
+        emit tasksChanged();
+    }
+    m_previewEntry = 0;
+    m_previewAttempts = 0;
+    m_contentPreview.clear();
+}
+void BrowserController::requestPreview(const QString &id) {
+    if (!canPreview() || id != m_detail.value("id").toString())
+        return;
+    clearContentPreview();
+    startContentPreview(id.toULongLong());
+}
+void BrowserController::startContentPreview(quint64 entry, const QString &password, bool supplied) {
+    if (!entry || m_busy || !m_ready || !runtimeAvailable())
+        return;
+    if (!supplied)
+        m_previewAttempts = 0;
+    m_previewEntry = entry;
+    m_contentPreview = {{"state", "loading"}};
+    xdzip::reader::Command command{};
+    command.kind = xdzip::reader::CommandKind::Preview;
+    command.session = m_session.toULongLong();
+    command.offset = entry;
+    command.all = supplied;
+    auto secret = password.toUtf8();
+    command.password = rust::String(secret.constData(), static_cast<std::size_t>(secret.size()));
+    secret.fill('\0');
+    submit(std::move(command));
+}
+void BrowserController::drainPage() {
+    if (m_desiredPage < 0 || m_busy || !m_ready || !runtimeAvailable() || !m_model.paged())
+        return;
+    const int offset = std::exchange(m_desiredPage, -1);
+    if (m_model.rowAt(offset))
+        return;
+    fetchPage(offset);
+}
+void BrowserController::fetchPage(int offset) {
+    if (offset < 0 || offset >= m_model.rowCount())
+        return;
+    xdzip::reader::Command command{};
+    command.kind = xdzip::reader::CommandKind::Browse;
+    command.session = m_session.toULongLong();
+    command.directory = rust::String(m_committedQuery.directory.toStdString());
+    command.text = rust::String(m_committedQuery.search.toStdString());
+    command.sort = static_cast<std::uint8_t>(m_committedQuery.sort);
+    command.offset = static_cast<std::uint64_t>(offset);
+    command.query = m_pageQuery;
+    command.generation = m_pageGeneration;
+    command.revision = m_pageRevision;
+    submit(std::move(command));
+    m_result.pageFetch = true;
+    m_result.offset = offset;
+    m_result.generation = m_pageGeneration;
+    m_result.criteria = m_committedQuery;
+    m_result.query = m_pageQuery;
+    m_result.revision = m_pageRevision;
+    m_result.session = m_session;
+}
 void BrowserController::start(const QString &path, int offset, const QString &password,
                               bool withPassword) {
     if (m_updateActive || (m_busy && m_result.updating))
@@ -1277,6 +1562,7 @@ void BrowserController::start(const QString &path, int offset, const QString &pa
         emit changed();
         return;
     }
+    clearContentPreview();
     m_detail.clear();
     submit(std::move(command));
     m_result.criteria = criteria;
@@ -1294,6 +1580,10 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
     m_result.opening = command.kind == xdzip::reader::CommandKind::Open ||
                        command.kind == xdzip::reader::CommandKind::OpenWithPassword;
     m_result.preflight = preflight;
+    m_result.freezeSelection = command.kind == xdzip::reader::CommandKind::FreezeSelection;
+    m_result.contentPreview = command.kind == xdzip::reader::CommandKind::Preview;
+    m_result.pageFetch =
+        command.kind == xdzip::reader::CommandKind::Browse && command.query != 0 && m_model.paged();
     m_result.extraction = command.kind == xdzip::reader::CommandKind::Extract ||
                           command.kind == xdzip::reader::CommandKind::OpenEntry;
     m_result.updating = command.kind == xdzip::reader::CommandKind::Update ||
@@ -1425,6 +1715,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_ready = false;
         m_model.replace({});
         replaceDirectories({});
+        clearContentPreview();
         m_detail.clear();
         m_preflightReport.clear();
         m_openPasswordPrompt.clear();
@@ -1618,6 +1909,26 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
     } else if (event.kind == EventKind::TargetChecked) {
         m_result.leftovers = event.total;
         m_hasPayload = true;
+    } else if (event.kind == EventKind::Selected) {
+        if (!m_result.freezeSelection || event.selectors.size() > 100000) {
+            m_result.error = "invalid_selection";
+            return;
+        }
+        for (const auto &id : event.selectors)
+            m_result.frozenSelectors.append(text(id));
+        m_hasPayload = true;
+    } else if (event.kind == EventKind::Preview) {
+        if (!m_result.contentPreview || event.session != m_session.toULongLong() ||
+            event.content_entry != m_previewEntry || event.content.size() > 4 * 1024 * 1024 ||
+            event.content_kind < 1 || event.content_kind > 3) {
+            m_result.error = "stale_query";
+            return;
+        }
+        m_result.previewEntry = event.content_entry;
+        m_result.previewKind = event.content_kind;
+        m_result.previewBytes = QByteArray(reinterpret_cast<const char *>(event.content.data()),
+                                           static_cast<qsizetype>(event.content.size()));
+        m_hasPayload = true;
     } else if (event.kind == EventKind::Page) {
         if (m_deferredQuery)
             return; // superseded generation never adds rows or commits
@@ -1634,14 +1945,16 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             event.directories.size() > limits.directories ||
             event.offset + event.rows.size() > event.total ||
             (event.rows.empty() && event.offset < event.total) ||
-            event.offset != static_cast<quint64>(m_result.rows.size())) {
+            event.offset !=
+                static_cast<quint64>(m_result.pageFetch ? m_result.offset : m_result.rows.size())) {
             m_result.error = "resource_limit";
             return;
         }
         if (!m_result.query) {
             m_result.query = event.query;
             m_result.revision = event.revision;
-            m_result.rows.reserve(static_cast<qsizetype>(event.total));
+            m_result.rows.reserve(
+                static_cast<qsizetype>(std::min<std::uint64_t>(event.total, 1024)));
         }
         m_result.replaceDirectories = m_result.replaceDirectories || event.replace_directories;
         m_result.navigationLimited = event.navigation_limited;
@@ -1659,7 +1972,8 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_updateAllowed = event.update_allowed;
         m_editRestriction = event.edit_restriction;
         m_archiveFolder = text(event.folder_name);
-        m_result.offset = 0;
+        if (!m_result.pageFetch)
+            m_result.offset = 0;
         m_result.session = QString::number(event.session);
         const bool nativeFormat =
             QStringList{QStringLiteral("7z"), QStringLiteral("RAR"), QStringLiteral("CAB"),
@@ -1791,17 +2105,23 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_deferredQuery.reset();
         if (!event.error.empty())
             m_result.error = text(event.error);
-        if (m_result.opening &&
+        if ((m_result.opening || m_result.contentPreview) &&
             (m_result.error == "password_required" || m_result.error == "wrong_password" ||
              m_result.error == "password_or_integrity")) {
-            if (m_openPasswordGeneration == std::numeric_limits<quint64>::max()) {
+            if (m_openPasswordGeneration == std::numeric_limits<quint64>::max() ||
+                (m_result.contentPreview && ++m_previewAttempts > 10)) {
                 m_result.error = "resource_limit";
             } else {
-                m_openPasswordPrompt = {{"taskId", QStringLiteral("open")},
-                                        {"promptId", QString::number(++m_openPasswordGeneration)},
-                                        {"name", m_title},
-                                        {"kind", QStringLiteral("open")},
-                                        {"retry", m_result.error != "password_required"}};
+                m_openPasswordPrompt = {
+                    {"taskId",
+                     m_result.contentPreview ? QStringLiteral("preview") : QStringLiteral("open")},
+                    {"promptId", QString::number(++m_openPasswordGeneration)},
+                    {"name", m_result.contentPreview ? m_detail.value("name") : QVariant(m_title)},
+                    {"kind",
+                     m_result.contentPreview ? QStringLiteral("preview") : QStringLiteral("open")},
+                    {"retry", m_result.error != "password_required"}};
+                if (m_result.contentPreview)
+                    m_contentPreview = {{"state", "password"}};
                 m_result = {};
                 m_message.clear();
                 emit changed();
@@ -1811,6 +2131,46 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         }
         if (!m_hasPayload && m_result.error.isEmpty())
             m_result.error = "runtime_unavailable";
+        if (m_result.freezeSelection) {
+            if (m_result.error.isEmpty()) {
+                m_extractionSelectors = std::move(m_result.frozenSelectors);
+                m_result = {};
+                presentExtractionIntent(false);
+            } else {
+                m_message = explain(m_result.error);
+                m_result = {};
+                emit changed();
+            }
+            return;
+        }
+        if (m_result.contentPreview) {
+            if (m_previewEntry && m_detail.value("id").toString().toULongLong() == m_previewEntry) {
+                if (!m_result.error.isEmpty()) {
+                    const auto code = m_result.error;
+                    const QString message =
+                        code == "preview_limit" || code == "resource_limit"
+                            ? qtTrId("preview.limit")
+                        : code == "preview_encoding"    ? qtTrId("preview.encoding")
+                        : code == "preview_unsupported" ? qtTrId("preview.unsupported")
+                                                        : explain(code);
+                    m_contentPreview = {{"state", "error"}, {"message", message}};
+                } else if (m_result.previewKind == 1)
+                    m_contentPreview = {{"state", "text"},
+                                        {"text", QString::fromUtf8(m_result.previewBytes)}};
+                else {
+                    const QString url = PreviewImages::store(std::move(m_result.previewBytes),
+                                                             m_result.previewKind);
+                    m_contentPreview =
+                        url.isEmpty()
+                            ? QVariantMap{{"state", "error"}, {"message", qtTrId("preview.limit")}}
+                            : QVariantMap{{"state", "image"}, {"image", url}};
+                }
+            }
+            m_result = {};
+            emit changed();
+            QTimer::singleShot(0, this, &BrowserController::drainPage);
+            return;
+        }
         if (m_result.inputPreview) {
             if (m_result.previewPaths == m_creationPreviewPaths && m_result.error.isEmpty()) {
                 m_creationInputs = m_result.inputInfo;
@@ -1821,11 +2181,27 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
             return;
         }
+        if (m_result.pageFetch) {
+            if (m_result.error.isEmpty()) {
+                m_model.installPage(m_result.offset, std::move(m_result.rows));
+                m_summaryRevision = std::numeric_limits<quint64>::max();
+                if (m_deferredDetailRow >= 0 && m_model.rowAt(m_deferredDetailRow)) {
+                    showRowDetail(m_deferredDetailRow);
+                    m_deferredDetailRow = -1;
+                    emit changed();
+                }
+            } else if (m_result.error == "source_changed" || m_result.error == "stale_session")
+                invalidateSnapshot();
+            m_result = {};
+            QTimer::singleShot(0, this, &BrowserController::drainPage);
+            return;
+        }
         // Fetch bounded transport batches until the current query is complete. The model
         // commits once, preserving row identity and avoiding visible paging or partial sorts.
         if (m_result.error.isEmpty() && !m_result.preflight && !m_result.closeSession &&
             !m_result.extraction && !m_result.creating && !m_result.checking &&
-            !m_result.targetCheck && m_result.rows.size() < m_result.total) {
+            !m_result.targetCheck && m_result.total <= 1024 &&
+            m_result.rows.size() < m_result.total) {
             xdzip::reader::Command command{};
             command.kind = xdzip::reader::CommandKind::Browse;
             command.session = m_result.session.toULongLong();
@@ -1895,8 +2271,10 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             restoreQuery();
             m_total = m_archiveTotal = m_offset = 0;
             m_selectionAnchor.clear();
+            m_selectionAnchorRow = -1;
             m_model.replace({});
             replaceDirectories({});
+            clearContentPreview();
             m_detail.clear();
             m_preflightReport.clear();
             m_result = {};
@@ -1938,7 +2316,22 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                 replaceDirectories(m_ready ? m_result.directories : QList<DirectoryRow>{});
             m_navigationLimited = m_ready && m_result.navigationLimited;
             m_selectionAnchor.clear();
-            m_model.replace(m_ready ? std::move(m_result.rows) : QList<BrowserRow>{});
+            m_selectionAnchorRow = -1;
+            m_desiredPage = -1;
+            m_deferredDetailRow = -1;
+            m_selectionAnchorRow = -1;
+            m_pageQuery = m_result.query;
+            m_pageGeneration = m_result.generation;
+            m_pageRevision = m_result.revision;
+            if (m_result.total > 1024)
+                m_model.replacePaged(m_result.total, std::move(m_result.rows),
+                                     QStringLiteral("%1.%2.%3")
+                                         .arg(m_pageQuery)
+                                         .arg(m_pageGeneration)
+                                         .arg(m_pageRevision));
+            else
+                m_model.replace(m_ready ? std::move(m_result.rows) : QList<BrowserRow>{});
+            clearContentPreview();
             m_detail.clear();
             m_total = m_ready ? m_result.total : 0;
             m_offset = m_ready ? m_result.offset : 0;

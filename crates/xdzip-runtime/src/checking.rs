@@ -34,6 +34,9 @@ impl Job {
 impl Archive {
     /// Freeze the existing input identity; checking does not resolve output paths or selectors.
     pub(crate) fn check_job(&self, cancel: &Cancellation) -> Result<Job, &'static str> {
+        if self.disk.is_some() {
+            return Err("resource_limit");
+        }
         cancel.check().map_err(|_| "cancelled")?;
         Ok(Job {
             source: self.source.fork().map_err(|_| "source_changed")?,

@@ -16,9 +16,9 @@
 | WP-10 / M4 创建 ZIP（开发与三平台自动化验收完成） | WP-07/09 | 输入树预检、整体发布、参考工具互操作；取消保留旧归档 |
 | WP-11 / M4 TAR/GZIP（已实现，平台验收按实际证据） | WP-05/07/10 | 组合能力、流式扫描、未知总量、特殊项拒绝及双向互操作 |
 | WP-12 / M5 私测准备（开发与验收完成） | WP-03～11 | 10 项自动门槛通过，八项人工验收完成，支持政策已批准；[WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)收口，`v0.1.0` 发行许可和收尾分别在 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 与 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)登记；未来候选须建立新发行 issue |
-| WP-13 / M6 索引/预览 | WP-12 | 百万条预算、磁盘索引、受限预览与清理 |
-| WP-14 / M7 额外格式 | WP-12 | [AES-256 ZIP 密码解压 #11](https://github.com/xiaodaozhi/xdzip/issues/11)与[分卷 ZIP 读取 #20](https://github.com/xiaodaozhi/xdzip/issues/20)已实现，支持 Store／Deflate，不依赖 WP-13；7z／RAR及其他加密方式继续分别准入、逐项声明 |
-| WP-15 / M8 外部 SDK | WP-12 | 两个独立协议实现、越权测试、平台沙箱；未达标不启用 |
+| WP-13 / M6 索引/预览 | WP-12 | [百万条 ZIP/ZIP64、磁盘索引与按需浏览](../engineering/large-index.md)、[主动受限预览](../engineering/content-preview.md)与清理；交付和适用验收由 [#265](https://github.com/xiaodaozhi/xdzip/issues/265)跟踪 |
+| WP-14 / M7 额外格式 | WP-12 | ZIP AES-256／分卷、7z、RAR、CAB、ISO／UDF 的当前实现按 [README](../../README.md)、[格式契约](../engineering/native-codecs.md)及[自研边界](../engineering/independent-rust-codecs.md)逐项声明，不因工作包名称承诺完整格式特性；新增算法仍单独准入 |
+| WP-15 / M8 外部 SDK | WP-12 | [独立只读试验](../engineering/sdk-trial.md)：两个独立协议实现、越权测试、平台沙箱；未达标不启用，产品发现／安装与完整 SDK 后续单独交付；本试验由 [#265](https://github.com/xiaodaozhi/xdzip/issues/265)跟踪 |
 | WP-16 / M9 稳定发行 | WP-13～15 中实际纳入项 | 稳定能力完整验收、许可与支持政策，沿用未正式签名的开源发行方式 |
 
 每个 issue 写需求 ID、依赖、产物、测试、范围外事项及证据链接。新问题建立或复用独立 issue；不要把后续缺陷累积成已完成工作包的待办。WP-16 不以编号强制纳入尚未准备好的格式，删减能力须更新版本声明。

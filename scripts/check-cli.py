@@ -113,6 +113,13 @@ def check(binary, worker, output, payload=None, install_fixture=False):
         invoke('create',work/'literal.zip','--','--input.txt')
         assert invoke('list',work/'literal.zip')['data']['entries'][0]['path'] == '--input.txt'
         duplicate = ROOT/'tests/fixtures/zip/normal.zip'
+        complete = invoke('list', duplicate)['data']['entries']
+        page = invoke('list', duplicate, '--offset', '1', '--limit', '1')['data']
+        assert page['entries'] == complete[1:2] and page['offset'] == 1
+        assert page['total'] == len(complete) and page['next_offset'] == 2
+        assert invoke('list', duplicate, '--offset', str(len(complete)))['data']['entries'] == []
+        assert invoke('list', duplicate, '--limit', '0', code=2)['error_code'] == 'invalid_arguments'
+        record('bounded_physical_listing_pages_and_argument_limits')
         assert invoke('extract',duplicate,'notes.txt','-C',work/'ambiguous',code=1)['error_code'] == 'ambiguous_member'
         assert not (work/'ambiguous').exists()
         invoke('extract',duplicate,'--entry-id','3','-C',work/'physical')

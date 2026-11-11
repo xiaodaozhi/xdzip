@@ -33,6 +33,8 @@ xdzip gui archive.zip
 
 list 返回物理记录，重名不合并。extract 的成员参数是包内完整、精确、区分大小写的有效路径，使用正斜杠，目录递归展开并保留根目录以下层级。精确重名返回 ambiguous_member，使用 --entry-id 选择物理记录。任何未匹配、外来 ID 或歧义先于目标目录创建失败。首版不解释通配符，不支持将归档从 stdin 读取或将解压内容发送到 stdout。
 
+大包列举使用 `list archive.zip --offset 999872 --limit 128 --json`，offset 从 0 开始，limit 为 1～4096；只指定 offset 时默认 128。JSON data 同时返回 offset、total 和可为空的 next_offset，summary.entries 是本次返回数。普通单文件 ZIP/ZIP64 可索引一百万条；未指定分页时整体列举最多十万条，JSON 行与文本累计最多 16MiB，超限返回 resource_limit，不输出被误认为完整清单的前缀。分页不改变物理 ID，详见[大索引](large-index.md)。English: Explicit list pages use zero-based `--offset` and `--limit 1..4096` (128 by default when offset is supplied), returning total/next_offset. Unpaged responses are bounded to 100,000 records and 16MiB of serialized rows plus text; oversized results fail atomically. Million-record ZIP indexing and stable physical IDs remain available through bounded pages.
+
 extract 默认输出到当前目录，`-C` 指定缺失目录时，从最近已存在的安全父目录逐级获得授权，不使用无条件递归建目录。目标、源身份、链接、Unicode／大小写碰撞、暂存、校验及提交继续遵守[安全解压](m3-extraction.md)和[文件名编码](filename-encoding.md)。默认询问重名；`--conflict ask|skip|rename|overwrite` 显式选择策略。`--allow-high-ratio` 只确认高压缩比，不取消硬资源限制。
 
 create 依据 .zip、.tar、.tar.gz、.tgz、.7z 扩展名选择现有后端，目标父目录须已存在。`--level store|fast|normal|best` 对应现有四档级别，默认为 normal；TAR 仅打包。`--encrypt` 仅用于 ZIP／7z，7z 另可使用 --encrypt-names、--solid；--volume-size 接受正整数字节及 KiB、MiB、GiB 后缀，分卷只用于 ZIP／7z。格式不适用的参数明确拒绝。

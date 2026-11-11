@@ -1,13 +1,25 @@
 name: Foundation probes
 on:
   workflow_dispatch:
+    inputs:
+      sdk_only:
+        description: Run only the standalone SDK preflight, without claiming a Foundation gate
+        type: boolean
+        required: false
+        default: false
+run-name: ${{ inputs.sdk_only && 'SDK preflight' || 'Foundation probes' }}
 permissions:
   contents: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
+  sdk-preflight:
+    if: inputs.sdk_only
+    uses: ./.github/workflows/sdk-trial.yml
+
   foundation-plan:
+    if: ${{ !inputs.sdk_only }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -29,7 +41,7 @@ jobs:
 
   bridge:
     needs: foundation-plan
-    if: always() && !cancelled() && (needs.foundation-plan.result != 'success' || needs.foundation-plan.outputs.run_heavy != 'false')
+    if: always() && !inputs.sdk_only && !cancelled() && (needs.foundation-plan.result != 'success' || needs.foundation-plan.outputs.run_heavy != 'false')
     env:
       PIP_CACHE_DIR: ${{ github.workspace }}/build/ci-input-cache/pip
     strategy:
@@ -55,6 +67,8 @@ jobs:
       - name: Check native Rust and C++ bridge
         shell: pwsh
         run: ./scripts/check-foundation.ps1
+      - name: Verify independent SDK peers and fail-closed native sandbox gate
+        run: python3 scripts/sdk-trial.py test
       - name: Collect raw foundation diagnostics
         if: always()
         shell: pwsh
@@ -76,6 +90,8 @@ jobs:
             build/review/ci-cache-foundation.json
             build/review/foundation-ctest.log
             build/review/cli/report.json
+            build/review/sdk-trial/*.json
+            build/review/sdk-trial/*.log
           if-no-files-found: ignore
           retention-days: 14
 
@@ -97,7 +113,7 @@ jobs:
 
   rar7-official-reference:
     needs: foundation-plan
-    if: always() && !cancelled() && (needs.foundation-plan.result != 'success' || needs.foundation-plan.outputs.run_heavy != 'false')
+    if: always() && !inputs.sdk_only && !cancelled() && (needs.foundation-plan.result != 'success' || needs.foundation-plan.outputs.run_heavy != 'false')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -128,6 +144,7 @@ jobs:
           retention-days: 14
 
   cpp-format:
+    if: ${{ !inputs.sdk_only }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -139,7 +156,7 @@ jobs:
           /tmp/xdzip-format/bin/clang-format --dry-run --Werror tools/bridge-probe/smoke.cpp tools/toolchain-probe/main.cpp tools/process-metrics/main.cpp tools/launch-services-probe/main.mm tools/native-codec/*.cpp tools/native-codec/*.hpp crates/xdzip-codec-bridge/include/*.hpp apps/desktop/*.cpp apps/desktop/*.h apps/desktop/tests/*.cpp tests/fixtures/native/*.c
 
   foundation-gate:
-    if: always()
+    if: always() && !inputs.sdk_only
     needs: [foundation-plan, bridge, rar7-official-reference, cpp-format]
     runs-on: ubuntu-24.04
     timeout-minutes: 5

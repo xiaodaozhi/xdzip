@@ -47,6 +47,7 @@ impl Seek for Input<'_> {
 }
 impl ReadSource for Input<'_> {}
 struct PayloadRecord {
+    id: u64,
     central: record::Record,
     effective_name: Vec<u8>,
     boundary: u64,
@@ -127,6 +128,7 @@ impl PayloadCodec for ZipCodec {
                 .copied()
                 .unwrap_or(directory.central_offset);
             records.push(PayloadRecord {
+                id: expected.id.get(),
                 boundary,
                 central,
                 effective_name: expected.name_bytes().to_vec(),
@@ -135,6 +137,101 @@ impl PayloadCodec for ZipCodec {
         remaining.set(INPUT_LIMIT);
         Ok(Box::new(ZipPayload {
             input,
+            records,
+            output: vec![0; BLOCK],
+        }))
+    }
+}
+impl ZipCodec {
+    /// Validate a bounded selected snapshot against every central-directory record, then
+    /// decode only selected payloads. All local offsets participate in overlap checks.
+    pub fn open_selected_payload<'a>(
+        &self,
+        source: &'a mut dyn ReadSource,
+        snapshot: &[Entry],
+        control: &'a Cancellation,
+    ) -> Result<Box<dyn PayloadReader + 'a>, DecodeError> {
+        check(control)?;
+        if snapshot.len() > xdzip_codec_api::MAX_ENTRIES {
+            return Err(DecodeError::Limit);
+        }
+        let expected: std::collections::BTreeMap<_, _> =
+            snapshot.iter().map(|e| (e.id.get(), e)).collect();
+        if expected.len() != snapshot.len() {
+            return Err(DecodeError::Integrity);
+        }
+        let limits = ScanLimits {
+            entries: xdzip_codec_api::MAX_INDEX_ENTRIES,
+            total_name_bytes: 128 * 1024 * 1024,
+            display_name_bytes: 128 * 1024 * 1024,
+            read_bytes: 256 * 1024 * 1024,
+            ..Default::default()
+        };
+        let mut offsets = Vec::new();
+        let mut selected = Vec::new();
+        let mut ordinal = 0;
+        let mut retained = 0;
+        let directory = record::visit_directory(
+            source,
+            control,
+            limits,
+            xdzip_codec_api::MAX_INDEX_ENTRIES,
+            256 * 1024 * 1024,
+            &mut |record| {
+                ordinal += 1;
+                offsets.push(record.local_offset);
+                if let Some(entry) = expected.get(&ordinal) {
+                    retained += std::mem::size_of::<PayloadRecord>()
+                        + record.name.len()
+                        + record.extra.len()
+                        + record.comment.len()
+                        + entry.name_bytes().len();
+                    if retained > 64 * 1024 * 1024 {
+                        return Err(ScanError::Limit);
+                    }
+                    if !matches_snapshot(entry, &record) {
+                        return Err(ScanError::SourceChanged);
+                    }
+                    selected.push((ordinal, record, entry.name_bytes().to_vec()));
+                }
+                Ok(())
+            },
+        )
+        .map_err(scan_error)?;
+        if selected.len() != snapshot.len() {
+            return Err(DecodeError::Integrity);
+        }
+        offsets.sort_unstable();
+        check(control)?;
+        if offsets
+            .iter()
+            .any(|at| *at < directory.base_offset || *at >= directory.central_offset)
+            || offsets.windows(2).any(|pair| pair[0] == pair[1])
+        {
+            return Err(DecodeError::Integrity);
+        }
+        let mut records = Vec::with_capacity(selected.len());
+        for (id, central, effective_name) in selected {
+            let at = offsets
+                .binary_search(&central.local_offset)
+                .map_err(|_| DecodeError::Integrity)?;
+            let boundary = offsets
+                .get(at + 1)
+                .copied()
+                .unwrap_or(directory.central_offset);
+            records.push(PayloadRecord {
+                id,
+                central,
+                effective_name,
+                boundary,
+            });
+        }
+        Ok(Box::new(ZipPayload {
+            input: Input {
+                source,
+                control,
+                remaining: Rc::new(Cell::new(INPUT_LIMIT)),
+            },
             records,
             output: vec![0; BLOCK],
         }))
@@ -166,6 +263,10 @@ impl PayloadReader for ZipPayload<'_> {
             .checked_sub(1)
             .and_then(|index| usize::try_from(index).ok())
             .ok_or(DecodeError::Integrity)?;
+        let index = self
+            .records
+            .binary_search_by_key(&(index as u64 + 1), |record| record.id)
+            .map_err(|_| DecodeError::Integrity)?;
         let record = self.records.get(index).ok_or(DecodeError::Integrity)?;
         let central = &record.central;
         if expected.name_bytes() != record.effective_name || !matches_snapshot(expected, central) {
@@ -503,6 +604,36 @@ mod tests {
                 .join(format!("{name}.zip")),
         )
         .unwrap()
+    }
+    #[test]
+    fn selected_payload_keeps_original_noncontiguous_physical_ids() {
+        let bytes = include_bytes!("../../../tests/fixtures/zip/normal.zip");
+        let control = Cancellation::default();
+        let rows = ZipCodec
+            .scan(&mut Cursor::new(bytes), &control, ScanLimits::default())
+            .unwrap();
+        let mut source = Cursor::new(bytes);
+        let selected = [rows[1].clone(), rows[3].clone()];
+        let mut decoder = ZipCodec
+            .open_selected_payload(&mut source, &selected, &control)
+            .unwrap();
+        for entry in &selected {
+            let mut actual = Memory(Vec::new());
+            decoder.decode(entry, &mut actual, &control).unwrap();
+            let mut full_source = Cursor::new(bytes);
+            let mut full = ZipCodec
+                .open_payload(&mut full_source, &rows, &control)
+                .unwrap();
+            let mut expected = Memory(Vec::new());
+            full.decode(entry, &mut expected, &control).unwrap();
+            assert_eq!(actual.0, expected.0);
+            assert!(!actual.0.is_empty());
+        }
+        let mut missing = Memory(Vec::new());
+        assert_eq!(
+            decoder.decode(&rows[2], &mut missing, &control),
+            Err(DecodeError::Integrity)
+        );
     }
     fn set16(bytes: &mut [u8], at: usize, value: u16) {
         bytes[at..at + 2].copy_from_slice(&value.to_le_bytes());

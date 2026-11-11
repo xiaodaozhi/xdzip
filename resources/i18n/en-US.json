@@ -223,7 +223,6 @@
     "ui.d63e300f62a9": "Start extraction",
     "ui.f3c5fe4dd2da": "File preview",
     "ui.0b4ff2491b1d": "Close file preview and properties",
-    "ui.1248c3b87f73": "Content preview is unavailable for this type",
     "ui.3d997d4452fc": "Select a file to view its properties",
     "ui.ce2a58ab4ccf": "No file selected",
     "ui.43850dc99c15": "Properties of the focused entry",
@@ -700,6 +699,19 @@
     "settings.associationFailed": "Could not change the default application. Please try again in your system settings.",
     "settings.chooseDefaultApp": "Choose another application",
     "settings.desktopApplications": "Desktop applications (*.desktop)",
-    "settings.chooseDefaultAppDescription": "Choose another application to open this file type."
+    "settings.chooseDefaultAppDescription": "Choose another application to open this file type.",
+    "preview.action": "Preview content",
+    "preview.again": "Preview again",
+    "preview.hint": "Choose Preview to view supported text or images.",
+    "preview.loading": "Reading and verifying…",
+    "preview.unsupported": "Inline preview is unavailable for this file.",
+    "preview.encoding": "This text is not valid UTF-8 or BOM-marked UTF-16.",
+    "preview.limit": "The file or decoding work exceeds the preview limits.",
+    "preview.imageFailed": "The image could not be decoded.",
+    "preview.passwordTitle": "Preview password",
+    "preview.passwordHeading": "Enter a password to preview",
+    "preview.passwordDescription": "This encrypted file needs a password before previewing.",
+    "preview.passwordPrivacy": "Your password is used only for this preview and is not saved. Closing this window cancels the preview.",
+    "preview.continue": "Continue preview"
   }
 }

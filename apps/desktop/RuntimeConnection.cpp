@@ -16,10 +16,14 @@ bool isPayload(const xdzip::reader::Event &event) {
     return event.kind == EventKind::Page || event.kind == EventKind::Preflight ||
            event.kind == EventKind::Snapshot || event.kind == EventKind::TaskUpdate ||
            event.kind == EventKind::TaskAccepted || event.kind == EventKind::TargetChecked ||
-           event.kind == EventKind::Inputs || event.kind == EventKind::ExportManifest;
+           event.kind == EventKind::Inputs || event.kind == EventKind::ExportManifest ||
+           event.kind == EventKind::Preview || event.kind == EventKind::Selected;
 }
 std::size_t payloadBytes(const xdzip::reader::Event &event) {
-    std::size_t bytes = event.error.size() + event.report.declared_bytes.size();
+    std::size_t bytes =
+        event.error.size() + event.report.declared_bytes.size() + event.content.size();
+    for (const auto &selector : event.selectors)
+        bytes += selector.size() + sizeof(rust::String);
     bytes += event.inputs.size() * sizeof(xdzip::reader::InputInfo);
     for (const auto &row : event.rows)
         bytes += row.name.size() + row.id.size() + row.navigation_id.size();

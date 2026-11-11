@@ -2,12 +2,18 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Xdzip.Settings 1.0
 
 Rectangle {
     id: panel
     required property var detail
     required property var sizeFormatter
     required property var iconForFile
+    property var preview: ({})
+    property bool canPreview: false
+    readonly property bool imageProviderReady: PreviewImages.ready()
+    signal previewRequested(string id)
+    signal previewCancelled
     property int selectionCount: 0
     property bool showCloseAction: true
     property bool canExtract: false
@@ -78,23 +84,95 @@ Rectangle {
                 color: Theme.canvas
                 border.color: Theme.border
                 ColumnLayout {
-                    anchors.centerIn: parent
-                    width: parent.width - Theme.mainUnits(32)
-                    spacing: Theme.mainUnits(14)
-                    Image {
-                        Layout.alignment: Qt.AlignHCenter
-                        Layout.preferredWidth: Theme.mainUnits(64)
-                        Layout.preferredHeight: Theme.mainUnits(64)
-                        source: panel.iconForFile(panel.detail.name || "", panel.detail.directory || false)
-                        fillMode: Image.PreserveAspectFit
-                    }
-                    Text {
+                    anchors.fill: parent
+                    anchors.margins: Theme.contentPreviewInset
+                    spacing: Theme.contentPreviewGap
+                    Item {
                         Layout.fillWidth: true
-                        text: panel.detail.id ? qsTrId("ui.1248c3b87f73") : qsTrId("ui.3d997d4452fc")
-                        font.pixelSize: Theme.mainPropertySize
-                        color: Theme.textSecondary
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.Wrap
+                        Layout.fillHeight: true
+                        clip: true
+                        ColumnLayout {
+                            anchors.centerIn: parent
+                            width: parent.width
+                            spacing: Theme.contentPreviewGap
+                            visible: !panel.preview.state || panel.preview.state === "loading" || panel.preview.state === "password" || panel.preview.state === "error"
+                            Image {
+                                visible: !panel.preview.state
+                                Layout.alignment: Qt.AlignHCenter
+                                Layout.preferredWidth: Theme.contentPreviewIconSize
+                                Layout.preferredHeight: Theme.contentPreviewIconSize
+                                source: panel.iconForFile(panel.detail.name || "", panel.detail.directory || false)
+                                fillMode: Image.PreserveAspectFit
+                            }
+                            BusyIndicator {
+                                Layout.alignment: Qt.AlignHCenter
+                                visible: panel.preview.state === "loading"
+                                running: visible
+                                implicitWidth: Theme.contentPreviewSpinnerSize
+                                implicitHeight: implicitWidth
+                                Accessible.name: qsTrId("preview.loading")
+                            }
+                            Text {
+                                Layout.fillWidth: true
+                                text: panel.preview.message || (panel.preview.state === "loading" ? qsTrId("preview.loading") : panel.preview.state === "password" ? qsTrId("preview.passwordDescription") : panel.detail.id ? qsTrId("preview.hint") : qsTrId("ui.3d997d4452fc"))
+                                textFormat: Text.PlainText
+                                font.pixelSize: Theme.mainPropertySize
+                                color: panel.preview.state === "error" ? Theme.menuDanger : Theme.textSecondary
+                                horizontalAlignment: Text.AlignHCenter
+                                wrapMode: Text.Wrap
+                            }
+                        }
+                        ScrollView {
+                            objectName: "contentPreviewTextScroll"
+                            anchors.fill: parent
+                            visible: panel.preview.state === "text"
+                            contentWidth: availableWidth
+                            TextArea {
+                                objectName: "contentPreviewText"
+                                text: visible ? panel.preview.text || "" : ""
+                                textFormat: TextEdit.PlainText
+                                readOnly: true
+                                selectByMouse: true
+                                wrapMode: TextEdit.Wrap
+                                color: Theme.text
+                                font.family: Theme.userDataFontFamily
+                                font.pixelSize: Theme.mainPropertySize
+                                padding: 0
+                                background: null
+                                Accessible.name: qsTrId("preview.action")
+                            }
+                        }
+                        Image {
+                            id: contentImage
+                            objectName: "contentPreviewImage"
+                            anchors.fill: parent
+                            visible: panel.preview.state === "image"
+                            source: visible && panel.imageProviderReady ? panel.preview.image || "" : ""
+                            sourceSize: Qt.size(Theme.contentPreviewImageSample, Theme.contentPreviewImageSample)
+                            asynchronous: true
+                            cache: false
+                            fillMode: Image.PreserveAspectFit
+                            Accessible.name: panel.detail.name || qsTrId("preview.action")
+                        }
+                        Text {
+                            anchors.fill: parent
+                            visible: panel.preview.state === "image" && contentImage.status === Image.Error
+                            text: qsTrId("preview.imageFailed")
+                            textFormat: Text.PlainText
+                            wrapMode: Text.Wrap
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            color: Theme.menuDanger
+                            font.pixelSize: Theme.mainPropertySize
+                        }
+                    }
+                    ArchiveAction {
+                        objectName: "contentPreviewAction"
+                        Layout.alignment: Qt.AlignHCenter
+                        visible: Boolean(panel.detail.id) && !Boolean(panel.detail.directory)
+                        text: panel.preview.state === "loading" || panel.preview.state === "password" ? qsTrId("common.cancel") : panel.preview.state ? qsTrId("preview.again") : qsTrId("preview.action")
+                        enabled: panel.canPreview || panel.preview.state === "loading" || panel.preview.state === "password"
+                        onClicked: panel.preview.state === "loading" || panel.preview.state === "password" ? panel.previewCancelled() : panel.previewRequested(String(panel.detail.id))
                     }
                 }
             }
@@ -160,7 +238,7 @@ Rectangle {
                     columnSpacing: Theme.mainUnits(10)
                     Layout.fillWidth: true
                     visible: panel.selectionCount > 0
-                    Layout.minimumHeight: Math.max(Theme.mainUnits(32), Theme.mainPropertySize * 1.6 + Theme.mainUnits(8))
+                    Layout.minimumHeight: Math.max(Theme.contentPreviewSpinnerSize, Theme.mainPropertySize * 1.6 + Theme.mainUnits(8))
                     Text {
                         text: parent.modelData.label
                         color: Theme.textSecondary

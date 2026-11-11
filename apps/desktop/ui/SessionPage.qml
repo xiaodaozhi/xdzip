@@ -189,6 +189,7 @@ Item {
     readonly property var globalTaskModel: sessionManager ? (visible ? sessionManager.taskModel : null) : reader.taskModel
     readonly property int globalActiveTaskCount: sessionManager ? sessionManager.activeTaskCount : reader.activeTaskCount
     onVisibleChanged: if (!visible) {
+        reader.cancelContentPreview();
         if (taskMenu) taskMenu.close();
         if (moveDrag && moveDrag.Drag.active) root.cancelTransfer();
     }
@@ -633,6 +634,7 @@ Item {
     Window {
         id: inspectorWindow
         objectName: "inspectorWindow"
+        onClosing: reader.cancelContentPreview()
         transientParent: root.windowHost
         title: qsTrId("ui.801948f7646f")
         width: 360
@@ -650,12 +652,16 @@ Item {
             showCloseAction: false
             anchors.fill: parent
             detail: reader.detail
+            preview: reader.contentPreview
+            canPreview: reader.canPreview
+            onPreviewRequested: id => reader.requestPreview(id)
+            onPreviewCancelled: reader.cancelContentPreview()
             selectionCount: reader.selectedCount
             sizeFormatter: root.formatSize
             iconForFile: root.fileIcon
             canExtract: reader.ready && !reader.browsingBusy
             onExtractRequested: id => reader.prepareExtraction(false, [id])
-            onCloseRequested: inspectorWindow.close()
+            onCloseRequested: { reader.cancelContentPreview(); inspectorWindow.close(); }
         }
     }
     Connections {
@@ -2089,12 +2095,16 @@ Item {
                 Layout.maximumWidth: Math.round(Theme.inspectorWidth)
                 Layout.fillHeight: true
                 detail: reader.detail
+            preview: reader.contentPreview
+            canPreview: reader.canPreview
+            onPreviewRequested: id => reader.requestPreview(id)
+            onPreviewCancelled: reader.cancelContentPreview()
                 selectionCount: reader.selectedCount
                 sizeFormatter: root.formatSize
                 iconForFile: root.fileIcon
                 canExtract: reader.ready && !reader.browsingBusy
                 onExtractRequested: id => reader.prepareExtraction(false, [id])
-                onCloseRequested: root.inspectorRequested = false
+                onCloseRequested: { reader.cancelContentPreview(); root.inspectorRequested = false; }
             }
         }
         Rectangle {

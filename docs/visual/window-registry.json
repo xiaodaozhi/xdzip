@@ -25,7 +25,8 @@
       "operation_overlay_design": "design/hifi/sources/main.html?operation=add",
       "task_menu_policy": "Task rows show an operation-specific shared icon, archive filename, backend sequence tag, then status tag. Both tags reuse CommandMenuTag; operation names remain accessible without a visible text prefix.",
       "reason": "主窗口独立密度与最小尺寸，胶囊标签支持按稳定身份关闭、关闭其他和关闭右侧，文件操作按钮采用固定尺寸与间距，列宽在本次运行各窗口共享，大小列排序箭头位于右对齐标题左侧，其他列位于标题右侧，均保留 6 逻辑像素间距，选框到文件图标槽的留白为 12 逻辑像素，图标、文件名和名称表头同步左移，关闭窗口清除标签并保留后台任务入口，包内移动复用文件行和树行既有密度，拖入高亮及拒绝说明见 design/hifi/sources/archive-move.html。CAB、ISO、UDF 只读接入沿用格式徽标及欢迎页既有字号和间距，不增加创建选项或窗口",
-      "design": "design/hifi/sources/main.html"
+      "design": "design/hifi/sources/main.html",
+      "content_preview_policy": "用户点击预览后，在现有属性卡内显示已校验纯文本或受大小、像素限制的 PNG/JPEG。复用现有卡片、主窗口与菜单密度，来源切换、取消和关闭立即清空内容。独立依据 design/hifi/sources/content-preview.html。"
     },
     "Preview": {
       "parent": "ApplicationWindow",
@@ -84,7 +85,8 @@
       "role": "operation",
       "width": "Theme.passwordLogicalWidth",
       "reason": "打开加密目录、解压与只读检查共用应用模态密码请求，491 宽，内容自适应，最高 600，固定共享 footer。打开请求使用独立身份且取消只取消打开，不创建任务。关闭会话保留任务请求，主动进入全局任务后显示。退出确认及取消清理期间暂停所有会话的密码显示，返回或选择等待后仅恢复仍有效的请求，尺寸与高保真依据不变",
-      "design": "design/hifi/sources/password-extraction.html"
+      "design": "design/hifi/sources/password-extraction.html",
+      "content_preview_policy": "预览密码沿用 P02 尺寸、字段和共享 footer，仅增加任务类型对应的双语文案。"
     },
     "PreflightWindow": {
       "parent": "OperationWindow",
@@ -132,7 +134,8 @@
       "object_name": "inspectorWindow",
       "width": 360,
       "height": 600,
-      "reason": "大字号时的独立属性查看器，可调整大小，无操作 footer"
+      "reason": "大字号时的独立属性查看器，可调整大小，无操作 footer",
+      "content_preview_policy": "沿用 360×600 可调整大小的属性查看器，在同一 InspectorPanel 中承载主动预览，不增加窗口或 footer，尺寸依据与主窗口卡片相同。"
     }
   },
   "native_dialogs": {

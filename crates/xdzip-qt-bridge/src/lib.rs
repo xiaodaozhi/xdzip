@@ -22,6 +22,8 @@ mod ffi {
         request_id: u64,
     }
     enum CommandKind {
+        FreezeSelection,
+        Preview,
         Open,
         OpenWithPassword,
         Browse,
@@ -155,6 +157,8 @@ mod ffi {
         password_retry: bool,
     }
     enum EventKind {
+        Selected,
+        Preview,
         Page,
         Preflight,
         Snapshot,
@@ -188,6 +192,10 @@ mod ffi {
         directories: Vec<Directory>,
         replace_directories: bool,
         navigation_limited: bool,
+        content: Vec<u8>,
+        content_kind: u8,
+        content_entry: u64,
+        selectors: Vec<String>,
         report: PreflightReport,
         error: String,
         task: TaskSnapshot,
@@ -219,7 +227,7 @@ mod ffi {
 /// Read-only resource admission shared with the Qt receiver; no filesystem work.
 pub fn metadata_limits() -> ffi::MetadataLimits {
     ffi::MetadataLimits {
-        entries: xdzip_codec_api::MAX_ENTRIES as u64,
+        entries: xdzip_codec_api::MAX_INDEX_ENTRIES as u64,
         directories: xdzip_runtime::navigation::MAX_DIRECTORIES as u64,
         directory_bytes: xdzip_runtime::navigation::MAX_DIRECTORY_BYTES as u64,
         rows_per_batch: 128,
@@ -301,7 +309,10 @@ impl CommandClient {
     pub fn submit(&self, command: ffi::Command) -> ffi::Submission {
         // Move the ABI-owned secret into zeroizing storage before any rejection.
         // It never becomes a progress field, debug string or retained event.
-        let header_open = command.kind == ffi::CommandKind::OpenWithPassword;
+        let header_open = matches!(
+            command.kind,
+            ffi::CommandKind::OpenWithPassword | ffi::CommandKind::Preview
+        );
         let empty_password = command.password.is_empty() || header_open;
         let (candidate, opening_password) = if header_open {
             let secret = match xdzip_runtime::extraction::Password::new(command.password) {
@@ -342,7 +353,7 @@ impl CommandClient {
             || command.selected.len() > 128
             || command.sort > 12
             || command.selectors.len() > xdzip_codec_api::MAX_ENTRIES
-            || command.selectors.iter().any(|s| s.len() > 21)
+            || command.selectors.iter().any(|s| s.len() > 96)
             || command
                 .selectors
                 .iter()
@@ -353,6 +364,15 @@ impl CommandClient {
             return admission(Err(Rejection::Invalid));
         }
         let value = match command.kind {
+            ffi::CommandKind::FreezeSelection => Command::FreezeSelection {
+                session: command.session,
+                selectors: command.selectors,
+            },
+            ffi::CommandKind::Preview => Command::Preview {
+                session: command.session,
+                entry: command.offset,
+                password: if command.all { opening_password } else { None },
+            },
             ffi::CommandKind::PublishExport => Command::PublishExport {
                 source: command.text,
                 target: command.path,
@@ -582,6 +602,10 @@ impl EventReceiver {
             directories: Vec::new(),
             replace_directories: false,
             navigation_limited: false,
+            content: Vec::new(),
+            content_kind: 0,
+            content_entry: 0,
+            selectors: Vec::new(),
             error: String::new(),
             task: empty_task(),
             report: ffi::PreflightReport {
@@ -605,10 +629,21 @@ impl EventReceiver {
         self.stamp(&mut event);
         event.request_id = value.request;
         match value.payload {
+            service::Payload::Preview(content) => {
+                event.kind = ffi::EventKind::Preview;
+                event.session = content.session;
+                event.content_entry = content.entry;
+                event.content_kind = content.kind;
+                event.content = content.bytes;
+            }
             // Headless commands are never submitted through this Qt adapter.
-            service::Payload::Catalog { .. } | service::Payload::Selected { .. } => {
+            service::Payload::Catalog { .. } => {
                 event.kind = ffi::EventKind::Finished;
                 event.error = "invalid_command".into();
+            }
+            service::Payload::Selected { selected, .. } => {
+                event.kind = ffi::EventKind::Selected;
+                event.selectors = selected;
             }
             service::Payload::ExportManifest(rows) => {
                 event.kind = ffi::EventKind::ExportManifest;

@@ -2,12 +2,14 @@
 pub mod catalog;
 pub mod checking;
 pub mod creation;
+mod disk_index;
 mod exporting;
 pub mod extraction;
 mod formats;
 mod index;
 pub mod listing;
 pub mod navigation;
+pub mod preview;
 pub mod query;
 pub mod service;
 mod source;
@@ -35,6 +37,8 @@ pub struct Archive {
     cached_query: Option<query::QuerySnapshot>,
     next_query: u64,
     rows: Arc<Vec<Entry>>,
+    disk: Option<disk_index::DiskIndex>,
+    payload_subset: bool,
     key: QueryKey,
     directories: Option<Vec<navigation::Directory>>,
 }
@@ -53,22 +57,24 @@ impl Archive {
         control.check()?;
         let mut source = source::Source::open(path, control)?;
         let mut format = formats::detect(&mut source)?;
-        let scanned = formats::codec(format).scan_with_password(
-            &mut source,
-            control,
-            formats::limits(format),
-            password.as_ref().map(extraction::Password::expose),
-        );
+        let scanned = if format == xdzip_codec_api::Format::Zip {
+            Self::scan_zip(&mut source, control)
+        } else {
+            formats::codec(format)
+                .scan_with_password(
+                    &mut source,
+                    control,
+                    formats::limits(format),
+                    password.as_ref().map(extraction::Password::expose),
+                )
+                .map(|rows| (rows, None))
+        };
         // Preserve validated self-extracting ZIP sources without using the suffix.
         // Budget/cancel/unsupported failures are authoritative and never retried.
         let scanned = if format == xdzip_codec_api::Format::Tar
             && matches!(&scanned, Err(ScanError::Invalid))
         {
-            match formats::codec(xdzip_codec_api::Format::Zip).scan(
-                &mut source,
-                control,
-                formats::limits(xdzip_codec_api::Format::Zip),
-            ) {
+            match Self::scan_zip(&mut source, control) {
                 Ok(rows) => {
                     format = xdzip_codec_api::Format::Zip;
                     Ok(rows)
@@ -80,7 +86,7 @@ impl Archive {
         };
         control.check()?;
         source.validate()?;
-        let rows = scanned?;
+        let (rows, disk) = scanned?;
         if source.is_split()
             && !matches!(
                 format,
@@ -101,7 +107,10 @@ impl Archive {
             generation: QueryGeneration::try_from(1).map_err(|_| ScanError::Limit)?,
             revision: SnapshotRevision::try_from(1).map_err(|_| ScanError::Limit)?,
         };
-        let directories = match navigation::build(&rows, control) {
+        let directories = match disk.as_ref().map_or_else(
+            || navigation::build(&rows, control),
+            |disk| disk.directories(control),
+        ) {
             Ok(nodes) => Some(nodes),
             Err(ScanError::Limit) => None,
             Err(error) => return Err(error),
@@ -122,6 +131,7 @@ impl Archive {
                     | xdzip_codec_api::Format::Iso
                     | xdzip_codec_api::Format::Udf
             )) << 2);
+        let edit_restriction = edit_restriction | (u8::from(disk.is_some()) << 2);
         let update_allowed = edit_restriction == 0;
         Ok(Self {
             update_allowed,
@@ -134,7 +144,144 @@ impl Archive {
             cached_query: None,
             next_query: 0,
             rows: Arc::new(rows),
+            disk,
+            payload_subset: false,
             key,
+        })
+    }
+    fn scan_zip(
+        source: &mut source::Source,
+        control: &Cancellation,
+    ) -> Result<(Vec<Entry>, Option<disk_index::DiskIndex>), ScanError> {
+        let mut rows = Vec::new();
+        let mut disk = None;
+        let mut retained = 0;
+        let limits = xdzip_codec_api::ScanLimits {
+            entries: xdzip_codec_api::MAX_INDEX_ENTRIES,
+            total_name_bytes: 128 * 1024 * 1024,
+            display_name_bytes: 128 * 1024 * 1024,
+            read_bytes: 512 * 1024 * 1024,
+            ..Default::default()
+        };
+        xdzip_codec_zip::ZipCodec.scan_index(source, control, limits, &mut |entry| {
+            retained += std::mem::size_of::<Entry>() + entry.name_capacity();
+            if disk.is_none()
+                && (retained > disk_index::HOT_BYTES || rows.len() >= xdzip_codec_api::MAX_ENTRIES)
+            {
+                let mut builder = disk_index::Builder::new()?;
+                for entry in rows.drain(..) {
+                    control.check()?;
+                    builder.push(&entry)?;
+                }
+                rows.shrink_to_fit();
+                disk = Some(builder);
+            }
+            if let Some(builder) = disk.as_mut() {
+                builder.push(&entry)?;
+            } else {
+                rows.push(entry);
+            }
+            Ok(())
+        })?;
+        Ok((rows, disk.map(disk_index::Builder::finish).transpose()?))
+    }
+    /// Private metadata bytes held on disk for this session, reclaimed when the session drops.
+    pub fn index_disk_bytes(&self) -> u64 {
+        self.disk.as_ref().map_or(0, disk_index::DiskIndex::bytes)
+    }
+    /// Copy one validated physical record without retaining the whole disk index in memory.
+    pub fn entry(&self, id: u64) -> Result<Entry, ScanError> {
+        self.source.validate()?;
+        if let Some(disk) = &self.disk {
+            disk.get(id)
+        } else {
+            id.checked_sub(1)
+                .and_then(|n| usize::try_from(n).ok())
+                .and_then(|n| self.rows.get(n))
+                .cloned()
+                .ok_or(ScanError::Invalid)
+        }
+    }
+    fn task_view(
+        &self,
+        selected: &[String],
+        all: bool,
+        directory: &str,
+        control: &Cancellation,
+    ) -> Result<Self, &'static str> {
+        let disk = self.disk.as_ref().ok_or("invalid_selection")?;
+        if all && self.len() > xdzip_codec_api::MAX_ENTRIES {
+            return Err("resource_limit");
+        }
+        let mut ids = std::collections::BTreeSet::new();
+        let mut prefixes = std::collections::BTreeSet::new();
+        for selector in selected {
+            control.check().map_err(|_| "cancelled")?;
+            if selector.starts_with('d') {
+                prefixes.insert(
+                    self.index_prefix(selector)
+                        .map_err(|_| "invalid_selection")?,
+                );
+            } else {
+                let id = selector.parse::<u64>().map_err(|_| "invalid_selection")?;
+                let entry = disk.get(id).map_err(|_| "invalid_selection")?;
+                ids.insert(id);
+                if entry.directory {
+                    prefixes.insert(entry.name_bytes().to_vec());
+                }
+            }
+        }
+        let context = if directory.is_empty() || directory.starts_with('d') {
+            0
+        } else {
+            directory.parse().map_err(|_| "invalid_selection")?
+        };
+        let mut rows = Vec::new();
+        let mut bytes = 0;
+        let mut unresolved = false;
+        disk.each(control, &mut |entry| {
+            unresolved |= entry.name_encoding == xdzip_codec_api::names::NameEncoding::Unresolved;
+            let descendant = entry
+                .name_bytes()
+                .iter()
+                .enumerate()
+                .filter(|(_, b)| **b == b'/')
+                .any(|(at, _)| prefixes.contains(&entry.name_bytes()[..=at]));
+            if all || ids.contains(&entry.id.get()) || entry.id.get() == context || descendant {
+                bytes += std::mem::size_of::<Entry>() + entry.name_capacity();
+                if rows.len() >= xdzip_codec_api::MAX_ENTRIES || bytes > disk_index::HOT_BYTES {
+                    return Err(ScanError::Limit);
+                }
+                rows.push(entry.clone());
+            }
+            Ok(())
+        })
+        .map_err(|e| {
+            if e == ScanError::Cancelled {
+                "cancelled"
+            } else {
+                "resource_limit"
+            }
+        })?;
+        if !prefixes.is_empty() && unresolved {
+            return Err("unsupported_entry");
+        }
+        Ok(Self {
+            source: self.source.fork().map_err(|_| "source_changed")?,
+            password: self.password.clone(),
+            format: self.format,
+            update_allowed: false,
+            edit_restriction: self.edit_restriction,
+            index: index::DirectoryIndex {
+                children: std::collections::BTreeMap::new(),
+            },
+            cached_query: None,
+            next_query: 0,
+            rows: Arc::new(rows),
+            disk: None,
+            payload_subset: true,
+            key: self.key,
+            directories: self.directories.clone(),
         })
     }
     /// Display suggestion for the same-folder extraction option, never output authority.
@@ -151,11 +298,13 @@ impl Archive {
     }
     /// Exact physical count, including duplicate names and explicit directories.
     pub fn len(&self) -> usize {
-        self.rows.len()
+        self.disk
+            .as_ref()
+            .map_or(self.rows.len(), disk_index::DiskIndex::len)
     }
     /// Whether this is a valid empty archive.
     pub fn is_empty(&self) -> bool {
-        self.rows.is_empty()
+        self.len() == 0
     }
     /// Immutable identity associated with every page of this scan.
     pub fn key(&self) -> QueryKey {
@@ -168,7 +317,27 @@ impl Archive {
         control: &Cancellation,
     ) -> Result<xdzip_extract_plan::Report, ScanError> {
         self.source.validate()?;
-        let result = xdzip_extract_plan::inspect(&self.rows, selected, control)?;
+        let view;
+        let rows = if self.disk.is_some() {
+            if selected.len() > 128 {
+                return Err(ScanError::Limit);
+            }
+            let ids = selected
+                .iter()
+                .map(|id| id.get().to_string())
+                .collect::<Vec<_>>();
+            view = self.task_view(&ids, false, "", control).map_err(|e| {
+                if e == "cancelled" {
+                    ScanError::Cancelled
+                } else {
+                    ScanError::Limit
+                }
+            })?;
+            view.rows.as_ref()
+        } else {
+            self.rows.as_ref()
+        };
+        let result = xdzip_extract_plan::inspect(rows, selected, control)?;
         self.source.validate()?;
         Ok(result)
     }
@@ -199,6 +368,9 @@ impl Archive {
         control.check()?;
         let request = PageRequest::new(self.key, offset, limit).map_err(|_| ScanError::Limit)?;
         if directory.len() > 4096 || text.len() > 1024 || sort > 12 {
+            return Err(ScanError::Limit);
+        }
+        if self.disk.is_some() {
             return Err(ScanError::Limit);
         }
         let mut rows = self.matching_physical(directory, text, control)?;
@@ -268,6 +440,16 @@ impl Archive {
         Ok(rows)
     }
 
+    fn index_prefix(&self, directory: &str) -> Result<Vec<u8>, ScanError> {
+        if self.disk.is_some() && !directory.is_empty() && !directory.starts_with('d') {
+            let entry = self.entry(directory.parse().map_err(|_| ScanError::Invalid)?)?;
+            if !entry.directory || entry.warning || !entry.name_bytes().ends_with(b"/") {
+                return Err(ScanError::Invalid);
+            }
+            return Ok(entry.name_bytes().to_vec());
+        }
+        Ok(self.directory_prefix(directory)?.to_vec())
+    }
     fn directory_prefix(&self, directory: &str) -> Result<&[u8], ScanError> {
         let prefix = if directory.is_empty() {
             &[][..]
@@ -288,11 +470,9 @@ impl Archive {
             let id = directory.parse::<u64>().map_err(|_| ScanError::Invalid)?;
             let entry = self
                 .rows
-                .get(
-                    id.checked_sub(1)
-                        .and_then(|at| usize::try_from(at).ok())
-                        .ok_or(ScanError::Invalid)?,
-                )
+                .binary_search_by_key(&id, |e| e.id.get())
+                .ok()
+                .and_then(|at| self.rows.get(at))
                 .filter(|entry| entry.id.get() == id)
                 .filter(|entry| {
                     entry.directory && !entry.warning && entry.name_bytes().ends_with(b"/")
@@ -304,6 +484,9 @@ impl Archive {
     }
     /// Return at most 256 references without copying the complete index.
     pub fn page(&self, offset: u64, limit: u64) -> Result<&[Entry], ScanError> {
+        if self.disk.is_some() {
+            return Err(ScanError::Limit);
+        }
         let request = PageRequest::new(self.key, offset, limit).map_err(|_| ScanError::Limit)?;
         let start = usize::try_from(request.offset()).map_err(|_| ScanError::Limit)?;
         if start > self.rows.len() {

@@ -359,6 +359,11 @@ QtObject {
     readonly property real inspectorCollapseWidth: 928
     readonly property real mainControlRadius: 6.4
     readonly property real mainToolbarRadius: 4.800000000000001
+    readonly property real contentPreviewInset: mainUnits(12)
+    readonly property real contentPreviewGap: mainUnits(8)
+    readonly property real contentPreviewIconSize: mainUnits(48)
+    readonly property real contentPreviewSpinnerSize: mainUnits(32)
+    readonly property int contentPreviewImageSample: 512
     readonly property real mainStatusbarHeight: 32
     readonly property real mainTaskIconSize: 16
     readonly property real mainStatusbarHorizontalInset: 14

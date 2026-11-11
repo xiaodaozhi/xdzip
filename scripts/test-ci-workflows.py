@@ -135,7 +135,13 @@ class WorkflowTests(unittest.TestCase):
                 self.assertEqual(set(workflow['on']), {'workflow_dispatch'})
                 gate = workflow['jobs'][scope + '-gate']
                 self.assertEqual(set(gate['needs']), set(self.evidence.JOBS[scope]))
-                self.assertEqual(gate.get('if'), 'always()')
+                self.assertEqual(gate.get('if'), 'always() && !inputs.sdk_only' if scope == 'foundation' else 'always()')
+                if scope == 'foundation':
+                    self.assertEqual(workflow['on']['workflow_dispatch']['inputs']['sdk_only']['default'], 'false')
+                    self.assertEqual(workflow['jobs']['sdk-preflight']['uses'], './.github/workflows/sdk-trial.yml')
+                    self.assertEqual(workflow['jobs']['sdk-preflight']['if'], 'inputs.sdk_only')
+                    for name in self.evidence.JOBS[scope]:
+                        self.assertIn('!inputs.sdk_only', workflow['jobs'][name]['if'])
                 runs = '\n'.join(step.get('run', '') for step in gate['steps'])
                 self.assertIn('ci-evidence.py gate --scope ' + scope, runs)
                 job = workflow['jobs']['bridge' if scope == 'foundation' else 'native-qt']

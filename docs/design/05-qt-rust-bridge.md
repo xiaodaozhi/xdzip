@@ -116,3 +116,13 @@ CMake 构建 Qt 应用，Cargo 构建 Rust 静态库和 cxx 生成产物。使�
 密码响应使用独立 `respond_password(task, prompt, password)` 控制入口，不加入普通 `Command`。cxx 边界将传入字符串先移入解压专用的零化容器，再判断当前任务、提示、取消与容量准入；拒绝也消费并清理秘密。Qt 只在同步调用中临时持有有界 UTF-8 缓冲，不发送带密码的 queued signal。创建与解压密码的规则分别校验，不能因复用窗口控件而混同。
 
 `TaskSnapshot` 的 `password_prompt_id`、`password_prompt_name`、`password_retry` 与重名 `prompt_id` 分开。`waiting_password` 只描述等待，不含秘密或摘要。GUI 依据任务和提示的精确字符串 ID 提交响应，防止重复、过期和跨类型响应。取消／退出唤醒等待，原生菜单与任务窗口使用同一等待状态。协议、认证和清理边界见[密码解压契约](../engineering/password-extraction.md)。
+
+## 大索引与受限预览切片
+
+当前产品页上限 128 行及 64KiB 名称字节，不能把上表概念上限 256 当成实现参数。大查询只携带逻辑总行数与按需页，Qt 最多缓存 1024 行；逐页请求携带 session、query、generation、revision、offset，回执与唯一 Finished 均匹配才可应用，旧页不能替换新查询或选择。物理 ID 不随排序或磁盘存储变化。
+
+`FreezeSelection` 接收会话和有界查询范围 selector，Rust 校验完整查询身份、来源和任务预算后返回拥有的 `Selected` ID 列表，再结束请求。Qt 必须在展示解压确认之前完成冻结；确认窗不持有会随用户排序改变含义的 q-range。范围和页均不携带文件授权，详见[大索引契约](../engineering/large-index.md)。
+
+`Preview` 接收会话、单物理条目和可选解码密码，沿用请求取消；有限 `Preview` 结果含内容类型、entry ID 和拥有的 bytes，计入 Rust 事件与 C++ mailbox 字节预算。只有完整成功终态、请求／会话／条目仍匹配时才展示。密码失败复用宿主密码窗口并限次重试，不在普通事件回传秘密。Qt 用 plain text 或每引擎受控异步 image provider 显示，token 不携带数据 URL 或路径；选择、查询、隐藏、关闭和取消撤销内容，见[预览契约](../engineering/content-preview.md)。
+
+English: Implemented pages are limited to 128 rows/64KiB names with a 1024-row Qt cache. Full session/query/generation/revision/offset identities reject stale pages. FreezeSelection validates bounded ranges and returns owned stable IDs before extraction confirmation. Preview returns only bounded verified bytes, accounted in both queues, and applies only to the still-current request/session/entry. Passwords remain host-controlled; plain text and opaque asynchronous image tokens are invalidated on lifecycle changes.

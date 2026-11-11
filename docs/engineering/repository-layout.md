@@ -18,8 +18,10 @@
 | crates/xdzip-codec-native、tools/native-codec | Rust 7z／RAR／光盘／CAB 后端的隔离工作进程，薄 C++ 仅提供协议及系统日历、编码服务；Native 独立核验预计费输出与辅助工作；I/O 边界见[契约](native-codecs.md) |
 | crates/xdzip-extract-plan | 元数据预检与有界报告；不拥有目标授权或写入能力 |
 | crates/xdzip-io | 输入树、原生授权与身份、安全暂存和文件提交 |
-| crates/xdzip-runtime | 会话、内存索引、查询、选择、创建／解压任务和调度 |
+| crates/xdzip-runtime | 会话、有界内存／磁盘索引、查询、选择、受限预览、创建／解压任务和调度 |
 | crates/xdzip-qt-bridge | cxx 类型桥接、双句柄及生命周期；依赖 runtime |
+| crates/xdzip-plugin-protocol | 仅 std 的有界 CBOR/framing；不拥有路径、进程或 Qt 权力 |
+| crates/xdzip-plugin-host、examples/sdk | 独立只读 SDK 试验、受控 I/O、原生沙箱门禁及独立 Python peer；不进入产品格式发现与运行闭包 |
 | tools | 独立桥接、格式、I/O 与进程计数探针，不作为 GUI 产品入口 |
 | scripts、.github | 生成、检查、部署工具与 CI、协作模板 |
 | release-notes | 可审阅的版本专属发布说明及 version/build 元数据，不存执行报告或生成包 |
@@ -27,7 +29,7 @@
 | docs | 持久设计、工程契约与可复用验证方法；不累积执行报告 |
 | third_party | 随代码保留的第三方来源与许可材料 |
 
-独立 xdzip-index、xdzip-platform、xdzip-plugin-host 及外部格式一致性工具属于后续架构规划；目前索引在 runtime、平台文件操作在 io 与桌面适配层实现。测试主要随 Rust 模块、apps/desktop/tests 和 scripts 的检查工具维护，不创建无实现空壳。
+独立 xdzip-index、xdzip-platform 和完整外部格式一致性工具属于后续架构规划；目前索引在 runtime、平台文件操作在 io 与桌面适配层实现。已存在的 plugin-host 仅为[只读 SDK 试验](sdk-trial.md)，不等同于完整插件生态。测试主要随 Rust 模块、apps/desktop/tests 和 scripts 的检查工具维护，不创建无实现空壳。
 
 CAB 产品固定使用 Rust，官方 Cab 处理器和 CAB 专用 LZX/Quantum 不进入编译清单。调用链继续使用同一个隔离工作进程，不新增产品可执行文件，没有测试开关或失败回退。完整帧工作预付由 codec-api 定义，容器持有每帧额度，Native 接收端和 runtime 分别核验自己的额度与输出限制，见[自研契约](independent-rust-codecs.md#cab只读规格)。
 

@@ -42,15 +42,32 @@ pub(crate) struct QuerySnapshot {
     text: String,
     sort: u8,
     rows: Vec<RowRef>,
+    disk: Option<crate::disk_index::DiskQuery>,
+}
+/// Owned metadata for one bounded result page, independent of the index storage.
+pub enum QueryRow {
+    /// Physical identity and metadata.
+    Physical(xdzip_codec_api::Entry),
+    /// Navigation identity without output authority.
+    Directory(crate::navigation::Directory),
+}
+impl QueryRow {
+    /// Escaped archive-relative display path.
+    pub fn path(&self) -> &str {
+        match self {
+            Self::Physical(e) => &e.display_name,
+            Self::Directory(d) => &d.path,
+        }
+    }
 }
 /// A complete identity and bounded slice of one worker-owned result.
-pub struct QueryPage<'a> {
+pub struct QueryPage {
     /// Stable across all batches of this query.
     pub key: QueryKey,
     /// Total presentation rows before transport slicing.
     pub total: usize,
     /// Borrowed rows, copied only when published across the native boundary.
-    pub rows: Vec<ListingRow<'a>>,
+    pub rows: Vec<QueryRow>,
 }
 /// Validated at the worker boundary, with a complete continuation identity.
 pub struct QueryRequest<'a> {
@@ -68,12 +85,90 @@ pub struct QueryRequest<'a> {
     pub generation: u64,
 }
 impl Archive {
+    /// Freeze logical ranges against the complete immutable query identity.
+    /// Returned selectors retain the independent 100,000-item task limit.
+    pub(crate) fn resolve_query_selectors(
+        &self,
+        selected: &[String],
+        control: &Cancellation,
+    ) -> Result<Vec<String>, &'static str> {
+        let mut result = std::collections::BTreeSet::new();
+        for selector in selected {
+            control.check().map_err(|_| "cancelled")?;
+            let Some(range) = selector.strip_prefix('q') else {
+                result.insert(selector.clone());
+                continue;
+            };
+            let mut fields = range.split(':');
+            let identity = fields.next().ok_or("invalid_selection")?;
+            let first = fields
+                .next()
+                .and_then(|n| n.parse::<usize>().ok())
+                .ok_or("invalid_selection")?;
+            let last = fields
+                .next()
+                .and_then(|n| n.parse::<usize>().ok())
+                .ok_or("invalid_selection")?;
+            if fields.next().is_some()
+                || first > last
+                || last - first >= xdzip_codec_api::MAX_ENTRIES
+            {
+                return Err("resource_limit");
+            }
+            let cache = self.cached_query.as_ref().ok_or("stale_query")?;
+            if identity
+                != format!(
+                    "{}.{}.{}",
+                    cache.key.query.get(),
+                    cache.key.generation.get(),
+                    cache.key.revision.get()
+                )
+            {
+                return Err("stale_query");
+            }
+            let total = cache.disk.as_ref().map_or(cache.rows.len(), |q| q.total);
+            if last >= total {
+                return Err("invalid_selection");
+            }
+            let mut offset = first;
+            while offset <= last {
+                control.check().map_err(|_| "cancelled")?;
+                if let Some(disk) = &cache.disk {
+                    let page = disk.page(offset).map_err(|_| "resource_limit")?;
+                    for token in page.into_iter().take(last - offset + 1) {
+                        result.insert(
+                            if let Some(at) = crate::disk_index::navigation_token(token) {
+                                format!("d{}", at + 1)
+                            } else {
+                                token.to_string()
+                            },
+                        );
+                        offset += 1;
+                    }
+                } else {
+                    match cache.rows[offset] {
+                        RowRef::Physical(at) => {
+                            result.insert((at + 1).to_string());
+                        }
+                        RowRef::Directory(at) => {
+                            result.insert(format!("d{}", at + 1));
+                        }
+                    }
+                    offset += 1;
+                }
+                if result.len() > xdzip_codec_api::MAX_ENTRIES {
+                    return Err("resource_limit");
+                }
+            }
+        }
+        Ok(result.into_iter().collect())
+    }
     /// A missing expected identity starts a new result. Continuations supply its exact key.
     pub fn query_page(
         &mut self,
         request: QueryRequest<'_>,
         control: &Cancellation,
-    ) -> Result<QueryPage<'_>, QueryError> {
+    ) -> Result<QueryPage, QueryError> {
         let QueryRequest {
             directory,
             text,
@@ -112,11 +207,27 @@ impl Archive {
                 generation,
                 ..self.key
             };
-            let rows = self
-                .listing_rows(directory, text, sort, control)?
-                .into_iter()
-                .map(RowRef::from_row)
-                .collect();
+            let (rows, disk) = if let Some(index) = &self.disk {
+                let prefix = self.index_prefix(directory)?;
+                (
+                    Vec::new(),
+                    Some(index.query(
+                        &prefix,
+                        text,
+                        sort,
+                        self.directories.as_deref().unwrap_or_default(),
+                        control,
+                    )?),
+                )
+            } else {
+                (
+                    self.listing_rows(directory, text, sort, control)?
+                        .into_iter()
+                        .map(RowRef::from_row)
+                        .collect(),
+                    None,
+                )
+            };
             self.source.validate()?;
             control.check()?;
             self.cached_query = Some(QuerySnapshot {
@@ -125,24 +236,56 @@ impl Archive {
                 text: text.into(),
                 sort,
                 rows,
+                disk,
             });
             self.next_query = id;
         }
         let cache = self.cached_query.as_ref().expect("validated query");
         let request = PageRequest::new(cache.key, offset, 128).map_err(|_| ScanError::Limit)?;
-        if offset > cache.rows.len() as u64 {
+        let total = cache.disk.as_ref().map_or(cache.rows.len(), |q| q.total);
+        if offset > total as u64 {
             return Err(ScanError::Limit.into());
         }
         let mut rows = Vec::new();
         let mut bytes = 0;
-        for &row in cache
-            .rows
-            .iter()
-            .skip(request.offset() as usize)
-            .take(usize::from(request.limit()))
-        {
+        let tokens = cache
+            .disk
+            .as_ref()
+            .map(|q| q.page(offset as usize))
+            .transpose()?;
+        let candidates = if let Some(tokens) = tokens {
+            tokens
+                .into_iter()
+                .map(|token| {
+                    if let Some(at) = crate::disk_index::navigation_token(token) {
+                        Ok(QueryRow::Directory(
+                            self.directories
+                                .as_ref()
+                                .and_then(|d| d.get(at))
+                                .ok_or(ScanError::Invalid)?
+                                .clone(),
+                        ))
+                    } else {
+                        Ok(QueryRow::Physical(
+                            self.disk.as_ref().ok_or(ScanError::Invalid)?.get(token)?,
+                        ))
+                    }
+                })
+                .collect::<Result<Vec<_>, ScanError>>()?
+        } else {
+            cache
+                .rows
+                .iter()
+                .skip(request.offset() as usize)
+                .take(usize::from(request.limit()))
+                .map(|row| match row.resolve(self) {
+                    ListingRow::Physical(e) => QueryRow::Physical(e.clone()),
+                    ListingRow::Directory(d) => QueryRow::Directory(d.clone()),
+                })
+                .collect()
+        };
+        for row in candidates {
             control.check()?;
-            let row = row.resolve(self);
             let next = bytes + row.path().len();
             if !rows.is_empty() && next > MAX_BATCH_NAME_BYTES {
                 break;
@@ -153,9 +296,10 @@ impl Archive {
             bytes = next;
             rows.push(row);
         }
+        self.source.validate()?;
         Ok(QueryPage {
             key: cache.key,
-            total: cache.rows.len(),
+            total,
             rows,
         })
     }
@@ -169,6 +313,55 @@ mod tests {
     use super::*;
     use std::path::PathBuf;
     use std::sync::atomic::{AtomicU64, Ordering};
+    #[test]
+    fn logical_selection_freezes_query_identity_and_resolves_sorted_rows() {
+        let (_owned, path) = owned(&zip64_fixture::archive(1200));
+        let control = Cancellation::default();
+        let mut archive = Archive::open(&path, &control).unwrap();
+        let page = archive
+            .query_page(
+                QueryRequest {
+                    directory: "",
+                    text: "",
+                    sort: 2,
+                    offset: 0,
+                    expected: None,
+                    generation: 1,
+                },
+                &control,
+            )
+            .unwrap();
+        let identity = format!(
+            "{}.{}.{}",
+            page.key.query.get(),
+            page.key.generation.get(),
+            page.key.revision.get()
+        );
+        let selected = format!("q{identity}:127:129");
+        assert_eq!(
+            archive
+                .resolve_query_selectors(std::slice::from_ref(&selected), &control)
+                .unwrap(),
+            ["1071", "1072", "1073"]
+        );
+        archive
+            .query_page(
+                QueryRequest {
+                    directory: "",
+                    text: "1199",
+                    sort: 0,
+                    offset: 0,
+                    expected: None,
+                    generation: 2,
+                },
+                &control,
+            )
+            .unwrap();
+        assert_eq!(
+            archive.resolve_query_selectors(&[selected], &control),
+            Err("stale_query")
+        );
+    }
     struct Owned(PathBuf);
     impl Drop for Owned {
         fn drop(&mut self) {

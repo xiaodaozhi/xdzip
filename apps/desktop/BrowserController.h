@@ -3,7 +3,9 @@
 #include "RuntimeConnection.h"
 #include <QAbstractListModel>
 #include <QAbstractTableModel>
+#include <QMap>
 #include <QObject>
+#include <QQueue>
 #include <QSet>
 #include <QStandardItemModel>
 #include <QStringList>
@@ -16,7 +18,7 @@
 #include <limits>
 #include <memory>
 
-// Transport batches are bounded; Qt commits a complete query of at most 100,000 rows.
+// A bounded display page; large queries retain logical rows independently of this cache.
 struct BrowserRow {
     QString id;
     QStringList cells;
@@ -39,23 +41,38 @@ class ArchiveTableModel final : public QAbstractTableModel {
     QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
     void replace(QList<BrowserRow> rows);
+    void replacePaged(int total, QList<BrowserRow> rows, const QString &identity);
+    void installPage(int offset, QList<BrowserRow> rows);
+    bool paged() const {
+        return m_pagedCount >= 0;
+    }
+    QList<int> cachedRows() const;
+    QStringList physicalSelectedIds() const;
+    int cachedCount() const {
+        return paged() ? m_cache.size() : m_rows.size();
+    }
     const BrowserRow *rowAt(int row) const;
     void select(int row);
     bool isSelected(int row) const;
     void selectOnly(int row);
     void selectAll(bool selected);
     void selectRange(int first, int last);
-    QStringList selectedIds() const {
-        return m_selected.values();
-    }
+    QStringList selectedIds() const;
     quint64 selectionRevision() const {
         return m_selectionRevision;
     }
-    int selectedCount() const {
-        return m_selected.size();
-    }
+    int selectedCount() const;
+  signals:
+    void pageNeeded(int offset) const;
 
   private:
+    int m_pagedCount = -1;
+    QMap<int, BrowserRow> m_cache;
+    QQueue<int> m_cacheOrder;
+    QList<QPair<int, int>> m_ranges;
+    QString m_queryIdentity;
+    bool rangeSelected(int row) const;
+    void setRange(int first, int last, bool selected);
     QList<BrowserRow> m_rows;
     QSet<QString> m_selected;
     quint64 m_selectionRevision = 0;
@@ -90,6 +107,8 @@ class BrowserController : public QObject {
     Q_PROPERTY(int sortOrder READ sortOrder NOTIFY changed)
     Q_PROPERTY(QVariantMap preflightReport READ preflightReport NOTIFY changed)
     Q_PROPERTY(QVariantMap detail READ detail NOTIFY changed)
+    Q_PROPERTY(QVariantMap contentPreview READ contentPreview NOTIFY changed)
+    Q_PROPERTY(bool canPreview READ canPreview NOTIFY changed)
     Q_PROPERTY(int selectedCount READ selectedCount NOTIFY changed)
     Q_PROPERTY(bool canUpdateArchive READ canUpdateArchive NOTIFY changed)
     Q_PROPERTY(QString addDropMessage READ addDropMessage NOTIFY changed)
@@ -163,6 +182,19 @@ class BrowserController : public QObject {
     int sortOrder() const {
         return m_sort;
     }
+    QVariantMap contentPreview() const {
+        return m_contentPreview;
+    }
+    bool canPreview() const {
+        return m_ready && !m_busy && runtimeAvailable() && m_model.selectedCount() == 1 &&
+               !m_detail.value("directory").toBool() && !m_detail.value("id").toString().isEmpty();
+    }
+    Q_INVOKABLE void requestPreview(const QString &id);
+    void clearContentPreview();
+    Q_INVOKABLE void cancelContentPreview() {
+        clearContentPreview();
+        emit changed();
+    }
     Q_INVOKABLE void navigateDirectory(const QString &id);
     Q_INVOKABLE QStringList directoryAncestors(const QString &id) const;
     // Columns 0..4 toggle ascending/descending; -1 restores archive order.
@@ -182,9 +214,10 @@ class BrowserController : public QObject {
     bool browsingBusy() const {
         // Operation preparation and drag manifests keep the committed browser snapshot.
         return m_updateActive || (m_busy && m_result.updating) ||
-               (m_busy && (m_closing || m_faulted ||
-                           (!taskStarting() && !m_result.targetCheck && !m_result.inputPreview &&
-                            !m_result.exportManifest)));
+               (m_busy &&
+                (m_closing || m_faulted ||
+                 (!taskStarting() && !m_result.targetCheck && !m_result.inputPreview &&
+                  !m_result.exportManifest && !m_result.pageFetch && !m_result.contentPreview)));
     }
     QString archiveOperation() const {
         return runtimeAvailable() && browsingBusy() ? m_archiveOperation : QString{};
@@ -367,6 +400,13 @@ class BrowserController : public QObject {
     };
     struct Result {
         bool opening = false;
+        bool freezeSelection = false;
+        QStringList frozenSelectors;
+        bool contentPreview = false;
+        quint64 previewEntry = 0;
+        quint8 previewKind = 0;
+        QByteArray previewBytes;
+        bool pageFetch = false;
         bool preflight = false;
         bool extraction = false;
         bool creating = false;
@@ -409,6 +449,17 @@ class BrowserController : public QObject {
     quint64 m_generation = 0;
     QueryState m_committedQuery;
     void restoreQuery();
+    void fetchPage(int offset);
+    void presentExtractionIntent(bool all);
+    void startContentPreview(quint64 entry, const QString &password = {}, bool supplied = false);
+    QVariantMap m_contentPreview;
+    quint64 m_previewEntry = 0;
+    int m_previewAttempts = 0;
+    void drainPage();
+    int m_desiredPage = -1;
+    int m_selectionAnchorRow = -1;
+    int m_deferredDetailRow = -1;
+    quint64 m_pageQuery = 0, m_pageGeneration = 0, m_pageRevision = 0;
     void invalidateSnapshot();
     void showRowDetail(int row);
     void updateSelectionSummary() const;

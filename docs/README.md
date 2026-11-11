@@ -19,7 +19,7 @@
 | 界面规范 | [严格设计规范](visual/design-standard.md)、[设计流程](visual/design-workflow.md)、[逻辑尺寸](visual/layout-scale.json)、[视觉参数](visual/tokens.json) |
 | 高保真与素材 | [原稿入口](../design/hifi/README.md)、[可操作 HTML 设计](../design/html/README.md)、[素材目录](../design/assets/index.html) |
 | 交互契约 | [主窗口](ux/main-window-components.md)、[任务窗口](ux/task-windows.md)、[密码解压](ux/password-extraction.md)、[系统集成](ux/desktop-integration.md)、[设置与国际化](ux/settings-localization.md)、[中文术语](ux/chinese-terminology.md) |
-| 浏览与任务 | [运行时](engineering/m1-runtime.md)、[只读索引](engineering/m2-readonly.md)、[浏览契约](engineering/readonly-browser.md)、[解压预检](engineering/extraction-preflight.md) |
+| 浏览与任务 | [运行时](engineering/m1-runtime.md)、[只读索引](engineering/m2-readonly.md)、[大归档索引](engineering/large-index.md)、[主动预览](engineering/content-preview.md)、[浏览契约](engineering/readonly-browser.md)、[解压预检](engineering/extraction-preflight.md) |
 | 文件与格式 | [文件名编码](engineering/filename-encoding.md)、[分卷与临时打开](engineering/archive-opening.md)、[文件拖放与修改](engineering/archive-transfers.md)、[完整性检查](engineering/archive-checking.md)、[安全解压](engineering/m3-extraction.md)、[密码解压](engineering/password-extraction.md)、[ZIP 创建](engineering/m4-creation.md)、[TAR/GZIP](engineering/m4-tar-gzip.md)、[CAB 来源与实现依据](engineering/cab-format-sources.md) |
 | 工具链与依赖 | [工具链策略](engineering/toolchain.md)、[依赖准入](engineering/dependencies.md)、[cxx 桥接依据](engineering/cxx-admission.md)、[许可](engineering/licensing.md)、[Windows 许可](engineering/windows-licensing.md) |
 | 构建与验证 | [统一构建入口](engineering/developer-build.md)、[开发指南](engineering/development.md)、[Qt 应用模块](../apps/desktop/README.md)、[CI 策略](engineering/ci-policy.md)、[验证方法](qa/README.md) |
@@ -33,8 +33,9 @@
 ## 按任务阅读
 
 - 使用与构建：先读根目录 [README](../README.md)和[开发构建指南](engineering/developer-build.md)，使用同一入口分阶段准备、构建、测试、打包与验证；平台部署文档只补充差异，Qt 应用文档说明模块与低层调试。
-- 修改核心：按[实际模块目录](engineering/repository-layout.md)定位，再读对应浏览、预检、创建或解压契约；设计中的外部 SDK、磁盘索引和内容预览仍属于后续能力。
+- 修改核心：按[实际模块目录](engineering/repository-layout.md)定位，再读对应浏览、预检、创建或解压契约；大归档索引和主动预览按对应工程契约声明范围，外部 SDK 的目标协议与宿主设计另见格式扩展规范。
 - 隔离格式工作进程：Rust 7z/RAR/CAB/ISO/UDF 的受控流、工作进程和许可边界见[格式后端契约](engineering/native-codecs.md)，产品不编译官方 UnRAR/7-Zip 来源，不将格式名称等同于全部特性已验收。
+- 外部扩展：独立[只读 SDK 试验](engineering/sdk-trial.md)包含两个独立协议实现、受控 I/O 和沙箱门禁；桌面与 CLI 不自动启用第三方包。
 - 自研 Rust 后端：独立实现来源、逐格式替代与生产依赖退出门槛见[自研格式与算法契约](engineering/independent-rust-codecs.md)。
 - 宿主日历与编码：格式无关的可选 `ReadSource` 服务、OS 回调、借用与秘密缓冲边界见[宿主平台服务](engineering/host-platform-services.md)。
 - 7z 后端：流式方法图、共享算法、创建、重写和密码封装见[读写规格](engineering/independent-rust-codecs.md#7z读写规格)，来源与参考分析分工见[7z 实现依据](engineering/sevenzip-format-sources.md)。产品固定使用 Rust，官方 7-Zip 源码不进入产品编译或部署。

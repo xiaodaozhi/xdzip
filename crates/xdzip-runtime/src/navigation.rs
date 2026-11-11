@@ -26,17 +26,35 @@ pub struct Directory {
 
 /// Build complete explicit/implicit navigation or fail before exposing any nodes.
 pub fn build(rows: &[Entry], control: &Cancellation) -> Result<Vec<Directory>, ScanError> {
+    build_from(
+        &mut |visit| {
+            for entry in rows {
+                visit(entry)?;
+            }
+            Ok(())
+        },
+        control,
+    )
+}
+
+type EntryWalk<'a> =
+    dyn FnMut(&mut dyn FnMut(&Entry) -> Result<(), ScanError>) -> Result<(), ScanError> + 'a;
+
+pub(crate) fn build_from(
+    each: &mut EntryWalk<'_>,
+    control: &Cancellation,
+) -> Result<Vec<Directory>, ScanError> {
     control.check()?;
     let mut nodes: Vec<Directory> = Vec::new();
     let mut ids = BTreeMap::<Vec<u8>, usize>::new();
     let mut bytes = 0;
-    for entry in rows {
+    each(&mut |entry| {
         control.check()?;
         if entry.warning || entry.name_bytes().contains(&b'\\') {
-            continue;
+            return Ok(());
         }
         let Ok(path) = std::str::from_utf8(entry.name_bytes()) else {
-            continue;
+            return Ok(());
         };
         if path
             .strip_suffix('/')
@@ -44,7 +62,7 @@ pub fn build(rows: &[Entry], control: &Cancellation) -> Result<Vec<Directory>, S
             .split('/')
             .any(|s| s.is_empty() || s == "." || s == "..")
         {
-            continue;
+            return Ok(());
         }
         let mut parent = 0;
         let mut start = 0;
@@ -77,10 +95,11 @@ pub fn build(rows: &[Entry], control: &Cancellation) -> Result<Vec<Directory>, S
             parent = nodes[index].id;
             start = end + 1;
         }
-    }
+        Ok(())
+    })?;
     // Count warned descendants too, without decoding their names. No known node
     // exceeds 64 levels, so deeper prefixes cannot match and need not be examined.
-    for entry in rows {
+    each(&mut |entry| {
         control.check()?;
         for (end, _) in entry
             .name_bytes()
@@ -95,7 +114,8 @@ pub fn build(rows: &[Entry], control: &Cancellation) -> Result<Vec<Directory>, S
                 nodes[index].count += 1;
             }
         }
-    }
+        Ok(())
+    })?;
     Ok(nodes)
 }
 

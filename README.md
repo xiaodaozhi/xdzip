@@ -35,8 +35,9 @@
 
 ## 使用 xdzip
 
-打开压缩包后可以先浏览目录、搜索和排序，再选择需要的文件解压。界面提供列表与网格视图、文件属性，以及中文（简体）和 English (US)、浅色和深色主题、字号与密度设置。索引最多处理十万条物理记录。
+打开压缩包后可以先浏览目录、搜索和排序，再选择需要的文件解压。界面提供列表与网格视图、文件属性，以及中文（简体）和 English (US)、浅色和深色主题、字号与密度设置。普通单文件 ZIP/ZIP64 最多索引一百万条物理记录，其他格式和分卷路径保持十万条上限。大包的任务与修改边界见[大归档索引](docs/engineering/large-index.md)。
 
+- **内容预览：**在属性卡主动预览受限的纯文本、PNG 和 JPEG，完整解码及校验后显示，可取消；格式、大小和解码预算见[预览说明](docs/engineering/content-preview.md)。
 - **解压和打开：**选择目标位置与重名策略，查看进度并可请求取消。双击普通文件会先将副本解压到私有临时目录，再交给系统打开；修改副本不会写回压缩包，缓存会在七天后的后续打开操作中清理。
 - **创建和修改：**可创建 ZIP、TAR、TAR.GZ 和 7z。支持对符合条件的普通单文件压缩包添加文件、替换文件和包内移动；也可从列表拖出文件，或拖入文件后确认添加。具体格式和限制见下表。
 - **检查：**可在后台测试整包，不写出文件。TAR、ISO 和 UDF 只检查结构与可读性，不提供逐文件内容校验保证。详见[完整性检查](docs/engineering/archive-checking.md)。
@@ -60,7 +61,7 @@
 - ZIP 的 AES-256 只加密内容，文件名仍可见；不支持 AES-128／192 或传统 ZipCrypto。分卷读取支持 `.zip.001` 及 PKZIP `.z01` 等命名，创建使用编号分卷。详见[密码解压](docs/engineering/password-extraction.md)和[分卷打开](docs/engineering/archive-opening.md)。
 - 7z 修改通过重建完成，保留及新增文件内容的工作集上限为 512 MiB；新建使用流式输入，不受此重建限制。加密和分卷的 ZIP、7z 不支持修改。详见[归档修改](docs/engineering/archive-transfers.md)。
 - RAR、CAB、ISO 和 UDF 为只读格式。ISO／UDF 映像用于读取文件，不会被挂载或执行。格式覆盖和资源限制分别见 [RAR 契约](docs/engineering/rar-format-sources.md)和[格式后端契约](docs/engineering/native-codecs.md)。
-- 暂不支持独立的非 TAR GZIP、稀疏 TAR、文件内容预览和第三方扩展。旧编码文件名会尝试识别，但短名称或混合编码无法保证唯一识别，详见[文件名编码](docs/engineering/filename-encoding.md)。
+- 暂不支持独立的非 TAR GZIP、稀疏 TAR 和第三方扩展。旧编码文件名会尝试识别，但短名称或混合编码无法保证唯一识别，详见[文件名编码](docs/engineering/filename-encoding.md)。
 
 ## 命令行
 

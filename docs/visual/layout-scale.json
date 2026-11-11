@@ -78,6 +78,21 @@
       "corner_preference": "Round on supported Windows 11 builds, OS default otherwise",
       "shadow": "DWM non-client rendering",
       "caption_controls": "Existing QML caption controls"
+    },
+    "content_preview": {
+      "card": "existing mainPreviewHeight/mainPreviewRadius",
+      "inset": 12,
+      "gap": 8,
+      "text_size": "mainPropertySize",
+      "image_maximum_decoded_pixels": 4194304,
+      "image_maximum_dimension": 4096,
+      "image_display_sample": [
+        512,
+        512
+      ],
+      "reference": "design/hifi/sources/content-preview.html",
+      "iconSize": 48,
+      "spinnerSize": 32
     }
   },
   "operation": {

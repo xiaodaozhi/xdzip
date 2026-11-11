@@ -454,3 +454,88 @@ fn unix_links_fail_explicitly_without_windows_privilege_or_file_substitution() {
     ));
     assert_eq!(std::fs::read_dir(&target.0).unwrap().count(), 0);
 }
+
+#[test]
+#[ignore = "Run with an explicitly generated XDZIP_LARGE_INDEX_FIXTURE"]
+fn million_record_product_index_and_selected_safe_output() {
+    use crate::query::QueryRequest;
+    use std::io::{Seek, SeekFrom, Write};
+    let path = std::path::PathBuf::from(
+        std::env::var_os("XDZIP_LARGE_INDEX_FIXTURE").expect("owned fixture required"),
+    );
+    let control = Cancellation::default();
+    let mut archive = Archive::open(&path, &control).unwrap();
+    assert_eq!(archive.len(), 1_000_000);
+    assert!(archive.rows.is_empty());
+    assert!(archive.index_disk_bytes() > 0);
+    let first = archive
+        .query_page(
+            QueryRequest {
+                directory: "",
+                text: "",
+                sort: 2,
+                offset: 0,
+                expected: None,
+                generation: 1,
+            },
+            &control,
+        )
+        .unwrap();
+    let total = first.total;
+    let key = first.key;
+    let last = archive
+        .query_page(
+            QueryRequest {
+                directory: "",
+                text: "",
+                sort: 2,
+                offset: total as u64 - 1,
+                expected: Some(key),
+                generation: 1,
+            },
+            &control,
+        )
+        .unwrap();
+    assert_eq!(last.rows.len(), 1);
+    let target = Target::new();
+    let mut options = target.options();
+    options.all = false;
+    options.selected = vec!["1000000".into()];
+    let job = archive.extraction_job(options, &control).unwrap();
+    assert!(job.subset);
+    assert_eq!(job.rows.len(), 1);
+    let mut result = None;
+    run(job, 1, &Control::default(), &mut |snapshot| {
+        result = Some(snapshot)
+    });
+    let result = result.unwrap();
+    assert_eq!(result.status, Status::Succeeded);
+    assert!(target.0.join("item-999999.txt").is_file());
+    let mut options = target.options();
+    options.all = true;
+    assert!(matches!(
+        archive.extraction_job(options, &control),
+        Err("resource_limit")
+    ));
+    let copy = target.0.join("changed.zip");
+    std::fs::copy(&path, &copy).unwrap();
+    let mut changed = Archive::open(&copy, &control).unwrap();
+    let mut file = std::fs::OpenOptions::new().write(true).open(&copy).unwrap();
+    file.seek(SeekFrom::End(0)).unwrap();
+    file.write_all(&[0]).unwrap();
+    assert!(
+        changed
+            .query_page(
+                QueryRequest {
+                    directory: "",
+                    text: "",
+                    sort: 0,
+                    offset: 0,
+                    expected: None,
+                    generation: 1
+                },
+                &control
+            )
+            .is_err()
+    );
+}

@@ -153,16 +153,21 @@ impl Runtime {
         }
         Err("invalid_runtime_reply".into())
     }
-    pub fn list(&mut self) -> Result<Response> {
+    pub fn list(&mut self, start: Option<u64>, page_limit: Option<u64>) -> Result<Response> {
         let mut rows = vec![];
         let mut text = String::new();
-        let mut offset = 0;
+        let paged = start.is_some() || page_limit.is_some();
+        let start = start.unwrap_or(0);
+        let limit = page_limit.unwrap_or(if paged { 128 } else { 100_000 });
+        let mut offset = start;
+        let mut retained_bytes = 0usize;
+        let mut total;
         loop {
             let results = self.call(Command::Catalog {
                 session: self.session,
                 offset,
             })?;
-            let mut total = 0;
+            total = 0;
             for payload in results {
                 if let Payload::Catalog {
                     entries,
@@ -171,8 +176,15 @@ impl Runtime {
                 } = payload
                 {
                     total = count;
-                    offset += entries.len() as u64;
-                    for entry in entries {
+                    // Response owns its JSON and human text. Require explicit
+                    // paging rather than materializing a million Value objects.
+                    if !paged && total > 100_000 {
+                        return Err("resource_limit".into());
+                    }
+                    for entry in entries
+                        .into_iter()
+                        .take((limit - rows.len() as u64) as usize)
+                    {
                         use std::fmt::Write;
                         let _ = writeln!(
                             text,
@@ -183,20 +195,28 @@ impl Runtime {
                             if entry.warning { "[warning] " } else { "" },
                             entry.display_name
                         );
-                        rows.push(json!({"id":entry.id, "path":entry.path, "display_name":entry.display_name, "size":entry.size, "packed_size":entry.packed_size, "method":entry.method, "directory":entry.directory, "link":entry.link, "payload_supported":entry.payload_supported, "encrypted":entry.encrypted, "warning":entry.warning}));
+                        let value = json!({"id":entry.id, "path":entry.path, "display_name":entry.display_name, "size":entry.size, "packed_size":entry.packed_size, "method":entry.method, "directory":entry.directory, "link":entry.link, "payload_supported":entry.payload_supported, "encrypted":entry.encrypted, "warning":entry.warning});
+                        retained_bytes += serde_json::to_vec(&value)
+                            .map_err(|_| Failure::new("invalid_runtime_reply"))?
+                            .len();
+                        if retained_bytes + text.len() > 16 * 1024 * 1024 {
+                            return Err("resource_limit".into());
+                        }
+                        rows.push(value);
+                        offset += 1;
                     }
                 }
             }
-            if offset >= total {
+            if offset >= total || rows.len() as u64 >= limit {
                 break;
             }
         }
         let mut response = Response::success(
             "list",
-            json!({"format":self.format,"entries":rows}),
+            json!({"format":self.format,"offset":start,"total":total,"next_offset":if offset < total { Some(offset) } else { None },"entries":rows}),
             text.trim_end().into(),
         );
-        response.summary = json!({"entries":offset});
+        response.summary = json!({"entries":offset - start});
         Ok(response)
     }
     pub fn task(&mut self, command: &str, intent: Command) -> Result<Response> {
