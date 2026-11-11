@@ -14,7 +14,7 @@ mkdir build/sdk-example/output
 target/debug/xdzip-plugin-host read build/sdk-example/owned-package/manifest.json build/sdk-example/owned.xdp 0 build/sdk-example/output
 ```
 
-Windows 使用 `python` 和 `.exe`。`test` 构建原生参考程序，执行 Rust framing 回归、独立 Python 互通、恶意协议、取消、源变化、冲突与内核权限回归。Python 只由编译为测试的受信 conformance 入口启动；发布宿主不接受解释器、参数、shell 或“不使用沙箱”开关。例子只在 `build/` 生成自有包、manifest 与 XDP1，不触发发行或第三方下载。日志去除工作区／用户主目录，JSON 绑定提交、dirty 状态和二进制哈希，均为本地／CI 工件。Foundation 的同一原生矩阵调用此入口；独立 [SDK trial 工作流](../../.github/workflows/sdk-trial.yml)用于先收敛沙箱平台兼容，不重复运行无关格式与 Qt 管线。Windows 证明的是拒绝执行。
+Windows 使用 `python` 和 `.exe`。`test` 构建原生参考程序，执行 Rust framing 回归、独立 Python 互通、恶意协议、取消、源变化、冲突与内核权限回归。Python 只由编译为测试的受信 conformance 入口启动；发布宿主不接受解释器、参数、shell 或“不使用沙箱”开关。例子只在 `build/` 生成自有包、manifest 与 XDP1，不触发发行或第三方下载。日志去除工作区／用户主目录，JSON 绑定提交、dirty 状态和二进制哈希，均为本地／CI 工件。Foundation 的同一原生矩阵调用此入口；独立 [SDK trial 工作流](../../.github/workflows/sdk-trial.yml)用于先收敛沙箱平台兼容，不重复运行无关格式与 Qt 管线。新工作流尚未进入默认分支时，可通过既有 Foundation 入口选择 `sdk_only=true` 调用同一可复用工作流；该模式跳过完整 Foundation gate，不产生完整 Foundation 结论。Windows 证明的是拒绝执行。
 
 English: `test` runs both independent peers and adversarial/native checks. Python is launched only by the test-compiled trusted harness; the shipped host has no interpreter, argument, shell or unsandboxed execution option. The owned example and sanitized, source/binary-bound evidence stay under `build/`. Foundation invokes the same entry point; Windows verifies refusal.
 
