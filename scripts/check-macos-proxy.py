@@ -204,48 +204,46 @@ def check(sdk, output, system_conflicts=False):
         results.append(result)
         if system_conflicts:
             helper = compile_helper(temporary, run)
-            with OwnedUpdateProxy(server.server_port, 'http', ('/feed', '/archive'), host=DIRECT_HOST) as proxy:
-                state['pac_script'] = ('function FindProxyForURL(url, host) { return host === "'+DIRECT_HOST+
-                    '" ? "PROXY 127.0.0.1:'+str(proxy.server.server_address[1])+'" : "DIRECT"; }').encode()
-                pac_url = 'http://127.0.0.1:'+str(server.server_port)+'/proxy.pac?owned='+uuid.uuid4().hex
-                fixture = OwnedSystemProxy(helper, proxy.server.server_address[1], pac_url)
-                try:
-                    with fixture:
-                        origin = 'http://'+DIRECT_HOST+':'+str(server.server_port)
-                        for profile in ('static', 'pac'):
-                            fixture.apply(profile)
-                            for mode in ('system', 'direct'):
-                                with proxy.lock:
-                                    proxy.evidence.clear()
-                                result = exercise(profile+'-'+mode, mode, None, origin)
-                                owned = [r for r in proxy.evidence if r['owned_target']]
-                                success(result, owned, mode == 'direct')
-                                result.update(profile=profile, proxy_requests=owned,
-                                              system_profile_verified=True, pac_requests=state['pac_requests'])
-                                conflict_results.append(result)
-                            for mode in ('system', 'direct'):
-                                with proxy.lock:
-                                    proxy.evidence.clear()
-                                tls_server.accepts = 0
-                                result = exercise(profile+'-'+mode+'-untrusted-tls', mode, None,
-                                    'https://'+DIRECT_HOST+':'+str(tls_server.server_port))
-                                owned = [r for r in proxy.evidence if r['owned_target']]
-                                if mode == 'system':
-                                    if not owned or tls_server.accepts:
-                                        raise RuntimeError('System HTTPS control did not use the active proxy')
-                                elif (owned or not tls_server.accepts or
-                                      not any(e['domain'] == 'NSURLErrorDomain' and e['code'] in (-1200, -1202, -1203)
-                                              for e in result['errors'])):
-                                    raise RuntimeError('Direct HTTPS did not bypass the proxy with TLS trust intact')
-                                if result['outcome'] != 'updater_error' or result['origin_requests']:
-                                    raise RuntimeError('Untrusted HTTPS reached appcast content')
-                                result.update(profile=profile, proxy_requests=owned,
-                                              tls_connections=tls_server.accepts, system_profile_verified=True)
-                                conflict_results.append(result)
-                            fixture.verify(profile)
-                finally:
-                    restoration = fixture.records
-                    (output/'system-policy-restoration.json').write_text(json.dumps(restoration, indent=2)+'\n')
+            # Each policy and origin gets a fresh, functioning proxy endpoint.
+            # A refused CONNECT would test system failover/cache behavior rather
+            # than whether this updater's direct policy overrides the system.
+            for profile in ('static', 'pac'):
+                for protocol, port in (('http', server.server_port), ('https', tls_server.server_port)):
+                    with OwnedUpdateProxy(port, 'http', ('/feed', '/archive'), host=DIRECT_HOST) as proxy:
+                        state['pac_script'] = ('function FindProxyForURL(url, host) { return host === "'+DIRECT_HOST+
+                            '" ? "PROXY 127.0.0.1:'+str(proxy.server.server_address[1])+'" : "DIRECT"; }').encode()
+                        pac_url = 'http://127.0.0.1:'+str(server.server_port)+'/proxy.pac?owned='+uuid.uuid4().hex
+                        fixture = OwnedSystemProxy(helper, proxy.server.server_address[1], pac_url)
+                        try:
+                            with fixture:
+                                origin = protocol+'://'+DIRECT_HOST+':'+str(port)
+                                fixture.apply(profile)
+                                for mode in ('system', 'direct'):
+                                    with proxy.lock:
+                                        proxy.evidence.clear()
+                                    tls_server.accepts = 0
+                                    name = profile+'-'+mode+('-untrusted-tls' if protocol == 'https' else '')
+                                    result = exercise(name, mode, None, origin)
+                                    owned = [r for r in proxy.evidence if r['owned_target']]
+                                    result.update(proxy_requests=owned, profile=profile, tls_connections=tls_server.accepts,
+                                                  pac_requests=state['pac_requests'])
+                                    (output/('observed-'+result['case']+'.json')).write_text(json.dumps(result, indent=2)+'\n')
+                                    if protocol == 'http':
+                                        success(result, owned, mode == 'direct')
+                                    else:
+                                        if (bool(owned) if mode == 'direct' else not owned):
+                                            raise RuntimeError('HTTPS routing differs from the active transport policy')
+                                        if (not tls_server.accepts or result['outcome'] != 'updater_error' or
+                                                result['origin_requests'] or
+                                                not any(e['domain'] == 'NSURLErrorDomain' and e['code'] in (-1200, -1202, -1203)
+                                                        for e in result['errors'])):
+                                            raise RuntimeError('Untrusted HTTPS was not rejected with TLS trust intact')
+                                    result['system_profile_verified'] = True
+                                    conflict_results.append(result)
+                                fixture.verify(profile)
+                        finally:
+                            restoration.extend(fixture.records)
+                            (output/'system-policy-restoration.json').write_text(json.dumps(restoration, indent=2)+'\n')
     finally:
         tls_server.shutdown()
         tls_server.server_close()
