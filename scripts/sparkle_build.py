@@ -155,7 +155,7 @@ def build(source, sdk, work, spec, log):
                  '-compatibility_version', '1.6', '-current_version', '2.10.0',
                  '-o', library] + [target for target, _, _ in results]
     for framework in ('Foundation', 'AppKit', 'CoreFoundation', 'CoreGraphics', 'IOKit',
-                      'Security', 'ServiceManagement', 'SystemConfiguration', 'WebKit', 'Network'):
+                      'Security', 'ServiceManagement', 'SystemConfiguration', 'WebKit', 'Network', 'CFNetwork'):
         arguments += ['-framework', framework]
     checked(arguments + ['-lcompression'])
     shutil.copyfile(source / 'Sparkle/SPUUpdater.h', sdk / 'Sparkle.framework/Versions/B/Headers/SPUUpdater.h')

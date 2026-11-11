@@ -15,9 +15,9 @@
     "sha256": "cf43af1f26a921a8dc0be80834b9c3038bea5fd645708d26375126cbc57c316b"
   },
   "framework_build": {
-    "variant": "2.10.0-xdzip-proxy.1",
+    "variant": "2.10.0-xdzip-proxy.2",
     "patch": "patches/sparkle/2.10.0-download-proxy.patch",
-    "patch_sha256": "d0e1a92a3b7af93fd6917d0bf1a52fb6a119e252245894ec85ed8d8cf5ebde7e",
+    "patch_sha256": "4b061a17fc8cc9fccb13018bd88d57178796b689dfc2b4d4da98c96615a93e07",
     "method": "Native arm64 framework library and Ed25519 from pinned source; resources, installer helpers and signing tools from pinned official SDK"
   }
 }

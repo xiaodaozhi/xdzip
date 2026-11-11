@@ -91,9 +91,12 @@ jobs:
       - name: Check native CLI code and resource sealing
         run: python3 scripts/test-cli-bundle.py
       - name: Verify the actual native Sparkle proxy transport
+        env:
+          XDZIP_ISOLATED_UPDATE_FIXTURE: '1'
         run: |
-          python3 scripts/prepare-sparkle.py --output build/toolchain/Sparkle/2.10.0-xdzip-proxy.1
-          python3 scripts/check-macos-proxy.py --output build/update-regression/macos-proxy
+          python3 scripts/prepare-sparkle.py --output build/toolchain/Sparkle/2.10.0-xdzip-proxy.2
+          python3 scripts/test-system-proxy-fixture.py
+          python3 scripts/check-macos-proxy.py --output build/update-regression/macos-proxy --system-conflicts
       - name: Real owned old-to-new native Sparkle updater regression
         if: ${{ inputs.platform != 'macos' || !inputs.macos_product_only }}
         run: python3 scripts/check-macos-update.py --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos' --output build/update-regression/macos

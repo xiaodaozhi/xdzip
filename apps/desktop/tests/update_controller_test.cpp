@@ -222,7 +222,7 @@ class UpdateControllerTest final : public QObject {
     void macosCustomProxyRetainsTheOtherInstallationGates() {
         for (const auto &address :
              {QStringLiteral("http://127.0.0.1:7890"), QStringLiteral("socks5://127.0.0.1:1080")}) {
-            const bool supported = UpdateNetwork::macosAutomaticProxy("custom", address);
+            const bool supported = UpdateNetwork::macosAutomaticTransport("custom", address);
             QVERIFY(supported);
             QCOMPARE(UpdateController::installationReason(true, true, true, true, true, supported),
                      QString{});
@@ -233,11 +233,23 @@ class UpdateControllerTest final : public QObject {
             QCOMPARE(UpdateController::installationReason(true, true, true, true, false, supported),
                      "macos_missing_appcast");
         }
-        QVERIFY(UpdateNetwork::macosAutomaticProxy("system", {}));
-        QVERIFY(!UpdateNetwork::macosAutomaticProxy("none", {}));
-        QVERIFY(!UpdateNetwork::macosAutomaticProxy("custom", {}));
-        QVERIFY(!UpdateNetwork::macosAutomaticProxy("custom", "http://user:secret@host:42"));
-        QVERIFY(!UpdateNetwork::macosAutomaticProxy("custom", "https://host:443"));
+        QVERIFY(UpdateNetwork::macosAutomaticTransport("system", {}));
+        QVERIFY(UpdateNetwork::macosAutomaticTransport("none", {}));
+        QVERIFY(!UpdateNetwork::macosAutomaticTransport("unknown", {}));
+        QVERIFY(!UpdateNetwork::macosAutomaticTransport("custom", {}));
+        QVERIFY(!UpdateNetwork::macosAutomaticTransport("custom", "http://user:secret@host:42"));
+        QVERIFY(!UpdateNetwork::macosAutomaticTransport("custom", "https://host:443"));
+    }
+    void macosDirectTransportRetainsAllIndependentInstallationGates() {
+        const bool supported = UpdateNetwork::macosAutomaticTransport("none", {});
+        for (const bool trusted : {false, true})
+            for (const bool installed : {false, true})
+                for (const bool sessions : {false, true})
+                    for (const bool feed : {false, true})
+                        QCOMPARE(UpdateController::installationReason(trusted, installed, sessions,
+                                                                      true, feed, supported)
+                                     .isEmpty(),
+                                 trusted && installed && sessions && feed);
     }
 #ifdef Q_OS_MACOS
     void nativeDriverCancellationAndOneShotCommit() {

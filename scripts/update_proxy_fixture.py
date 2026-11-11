@@ -9,15 +9,17 @@ import time
 from urllib.parse import urlsplit
 
 HOST = 'xdzip-owned-proxy.invalid'
+DIRECT_HOST = 'xdzip-owned-direct.invalid'
 
 
 class OwnedUpdateProxy:
-    def __init__(self, target_port, scheme='http', paths=()):
-        if scheme not in ('http', 'socks5') or not 0 < target_port < 65536:
+    def __init__(self, target_port, scheme='http', paths=(), host=HOST):
+        if scheme not in ('http', 'socks5') or not 0 < target_port < 65536 or host not in (HOST, DIRECT_HOST):
             raise ValueError('Invalid owned proxy configuration')
         self.scheme = scheme
         self.target_port = target_port
         self.paths = frozenset(paths)
+        self.host = host
         self.evidence = []
         self.lock = threading.Lock()
         owner = self
@@ -26,7 +28,7 @@ class OwnedUpdateProxy:
             daemon_threads = True
 
             def handle_error(self, *_):
-                owner.record('rejected', 0)
+                owner.record('rejected', 0, owned_target=False)
 
         class Handler(socketserver.StreamRequestHandler):
             def handle(self):
@@ -44,15 +46,15 @@ class OwnedUpdateProxy:
     def address(self):
         return self.scheme + '://127.0.0.1:' + str(self.server.server_address[1])
 
-    def record(self, transport, status, path=None):
+    def record(self, transport, status, path=None, owned_target=True):
         with self.lock:
-            item = {'transport': transport, 'status': status}
+            item = {'transport': transport, 'status': status, 'owned_target': owned_target}
             if path is not None:
                 item['path'] = path
             self.evidence.append(item)
 
     def valid_target(self, host, port):
-        return host in (HOST, '127.0.0.1') and port == self.target_port
+        return host in (self.host, '127.0.0.1') and port == self.target_port
 
     def tunnel(self, connection):
         # Both proxy protocols map only the fixed fixture host/port to loopback.
@@ -88,7 +90,7 @@ class OwnedUpdateProxy:
             if (not self.valid_target(target.hostname, target.port) or
                     target.username or target.password or target.path or target.query or target.fragment):
                 handler.wfile.write(b'HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\n\r\n')
-                self.record('http-connect', 403)
+                self.record('http-connect', 403, owned_target=target.hostname in (self.host, '127.0.0.1'))
                 return
             handler.wfile.write(b'HTTP/1.1 200 Connection Established\r\n\r\n')
             self.record('http-connect', 200)
@@ -99,7 +101,7 @@ class OwnedUpdateProxy:
                     target.username or target.password or target.query or target.fragment or
                     target.path not in self.paths):
                 handler.wfile.write(b'HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\n\r\n')
-                self.record('http-get', 403)
+                self.record('http-get', 403, owned_target=target.hostname in (self.host, '127.0.0.1'))
                 return
             connection = http.client.HTTPConnection('127.0.0.1', self.target_port, timeout=30)
             try:
@@ -137,7 +139,7 @@ class OwnedUpdateProxy:
         port = struct.unpack('!H', read(2))[0]
         if not self.valid_target(host, port):
             handler.wfile.write(b'\x05\x02\x00\x01\x7f\x00\x00\x01\x00\x00')
-            self.record('socks5', 403)
+            self.record('socks5', 403, owned_target=host in (self.host, '127.0.0.1'))
             return
         handler.wfile.write(b'\x05\x00\x00\x01\x7f\x00\x00\x01' + struct.pack('!H', self.target_port))
         self.record('socks5', 200)

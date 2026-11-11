@@ -3,7 +3,7 @@
 # A build-time SDK stays external in ordinary native CI. Only the explicitly
 # authorized deployment path embeds and signs the framework in a distributable.
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
-set(XDZIP_SPARKLE_SDK "${PROJECT_SOURCE_DIR}/build/toolchain/Sparkle/2.10.0-xdzip-proxy.1" CACHE PATH "Pinned Sparkle SDK with source-built proxy support")
+set(XDZIP_SPARKLE_SDK "${PROJECT_SOURCE_DIR}/build/toolchain/Sparkle/2.10.0-xdzip-proxy.2" CACHE PATH "Pinned Sparkle SDK with source-built proxy support")
 execute_process(COMMAND "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/scripts/prepare-sparkle.py"
     --output "${XDZIP_SPARKLE_SDK}" COMMAND_ERROR_IS_FATAL ANY OUTPUT_QUIET)
 execute_process(COMMAND "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/scripts/prepare-sparkle.py"

@@ -1,40 +1,60 @@
 --- a/Sparkle/SPUUpdater.h
 +++ b/Sparkle/SPUUpdater.h
-@@ -24,0 +25,5 @@
+@@ -24,0 +25,11 @@
 +// xdzip downstream API. Only the framework library is rebuilt; installer IPC
 +// and the pinned upstream helpers remain unchanged.
-+#define SPU_XDZIP_DOWNLOAD_PROXY_API 1
++#define SPU_XDZIP_DOWNLOAD_PROXY_API 2
++
++typedef NS_ENUM(NSUInteger, SPUXdzipDownloadProxyMode) {
++    SPUXdzipDownloadProxySystem,
++    SPUXdzipDownloadProxyDirect,
++    SPUXdzipDownloadProxyCustom
++};
 +
 +
-@@ -48,0 +54,10 @@
+@@ -48,0 +60,14 @@
 +
 +/**
-+ Configure an explicit HTTP CONNECT or SOCKS5 proxy before startUpdater.
-+ Call on the main thread. nil retains system proxy settings. URLs must contain
-+ only a host and explicit port, without credentials. Unsupported configurations
-+ fail without starting network traffic. This immutable instance setting applies
-+ to both feed and archive downloads. Downloader XPC is unsupported for this API.
++ Configure immutable system, direct, or HTTP CONNECT/SOCKS5 transport before
++ startUpdater on the main thread. Only custom mode accepts a proxy URL, containing
++ a host and explicit port without credentials. Direct mode disables session
++ proxies and PAC/WPAD. Unsupported configurations fail before network traffic.
++ The policy applies to feed and archive downloads. Non-system Downloader XPC is
++ unsupported. No trust or TLS configuration is accepted by this API.
 + */
++- (BOOL)xdzip_setDownloadProxyMode:(SPUXdzipDownloadProxyMode)mode proxyURL:(nullable NSURL *)proxyURL error:(NSError * _Nullable __autoreleasing * _Nullable)error;
++
++// Compatibility entry point: nil means system, never direct.
 +- (BOOL)xdzip_setDownloadProxyURL:(nullable NSURL *)proxyURL error:(NSError * _Nullable __autoreleasing * _Nullable)error;
 +
 --- a/Sparkle/SUHost.h
 +++ b/Sparkle/SUHost.h
-@@ -23,0 +24 @@
+@@ -23,0 +24,2 @@
 +@property (nonatomic, copy, nullable) NSURL *xdzipDownloadProxyURL;
++@property (nonatomic) BOOL xdzipDownloadDirect;
 --- a/Sparkle/SPUUpdater.m
 +++ b/Sparkle/SPUUpdater.m
-@@ -145,0 +146,27 @@
+@@ -145,0 +146,37 @@
 +- (BOOL)xdzip_setDownloadProxyURL:(NSURL * _Nullable)proxyURL error:(NSError * __autoreleasing *)error
 +{
-+    BOOL valid = NSThread.isMainThread && !_startedUpdater;
++    return [self xdzip_setDownloadProxyMode:proxyURL == nil ? SPUXdzipDownloadProxySystem : SPUXdzipDownloadProxyCustom proxyURL:proxyURL error:error];
++}
++
++- (BOOL)xdzip_setDownloadProxyMode:(SPUXdzipDownloadProxyMode)mode proxyURL:(NSURL * _Nullable)proxyURL error:(NSError * __autoreleasing *)error
++{
++    BOOL valid = NSThread.isMainThread && !_startedUpdater &&
++        (mode == SPUXdzipDownloadProxySystem || mode == SPUXdzipDownloadProxyDirect || mode == SPUXdzipDownloadProxyCustom) &&
++        ((mode == SPUXdzipDownloadProxyCustom) == (proxyURL != nil));
 +    if (proxyURL != nil) {
 +        NSString *scheme = proxyURL.scheme.lowercaseString;
 +        long long port = proxyURL.port.longLongValue;
 +        valid = valid && ([scheme isEqualToString:@"http"] || [scheme isEqualToString:@"socks5"]) &&
 +            proxyURL.host.length > 0 && port > 0 && port <= 65535 &&
 +            proxyURL.user == nil && proxyURL.password == nil && proxyURL.query == nil &&
-+            proxyURL.fragment == nil && (proxyURL.path.length == 0 || [proxyURL.path isEqualToString:@"/"]) &&
-+            !SPUXPCServiceIsEnabled(SUEnableDownloaderServiceKey);
++            proxyURL.fragment == nil && (proxyURL.path.length == 0 || [proxyURL.path isEqualToString:@"/"]);
++    }
++    if (mode != SPUXdzipDownloadProxySystem) {
++        valid = valid && !SPUXPCServiceIsEnabled(SUEnableDownloaderServiceKey);
 +        if (@available(macOS 14.0, *)) {
 +        } else {
 +            valid = NO;
@@ -43,11 +63,12 @@
 +    if (!valid) {
 +        if (error != NULL) {
 +            *error = [NSError errorWithDomain:SUSparkleErrorDomain code:SUInvalidUpdaterError
-+                userInfo:@{NSLocalizedDescriptionKey: @"The explicit update proxy is unsupported or cannot be changed after starting the updater."}];
++                userInfo:@{NSLocalizedDescriptionKey: @"The update transport is unsupported or cannot be changed after starting the updater."}];
 +        }
 +        return NO;
 +    }
 +    _host.xdzipDownloadProxyURL = proxyURL;
++    _host.xdzipDownloadDirect = mode == SPUXdzipDownloadProxyDirect;
 +    return YES;
 +}
 +
@@ -55,29 +76,43 @@
 +++ b/Sparkle/SPUDownloadDriver.m
 @@ -111 +111 @@
 -            _downloader = [[SPUDownloader alloc] initWithDelegate:self];
-+            _downloader = [[SPUDownloader alloc] initWithDelegate:self proxyURL:host.xdzipDownloadProxyURL];
++            _downloader = [[SPUDownloader alloc] initWithDelegate:self proxyURL:host.xdzipDownloadProxyURL direct:host.xdzipDownloadDirect];
 --- a/Downloader/SPUDownloader.h
 +++ b/Downloader/SPUDownloader.h
 @@ -19,0 +20 @@
-+- (instancetype)initWithDelegate:(id <SPUDownloaderDelegate>)delegate proxyURL:(nullable NSURL *)proxyURL;
++- (instancetype)initWithDelegate:(id <SPUDownloaderDelegate>)delegate proxyURL:(nullable NSURL *)proxyURL direct:(BOOL)direct;
 --- a/Downloader/SPUDownloader.m
 +++ b/Downloader/SPUDownloader.m
-@@ -14,0 +15,2 @@
+@@ -14,0 +15,3 @@
 +#import <Network/Network.h>
 +#import <Network/NSURLSession+Network.h>
-@@ -35,0 +38 @@
++#import <CFNetwork/CFNetwork.h>
+@@ -35,0 +39,2 @@
 +    NSURL *_proxyURL;
-@@ -46,0 +50,5 @@
++    BOOL _direct;
+@@ -46,0 +52,5 @@
 +{
-+    return [self initWithDelegate:delegate proxyURL:nil];
++    return [self initWithDelegate:delegate proxyURL:nil direct:NO];
 +}
 +
-+- (instancetype)initWithDelegate:(id <SPUDownloaderDelegate>)delegate proxyURL:(NSURL * _Nullable)proxyURL
-@@ -50,0 +59 @@
++- (instancetype)initWithDelegate:(id <SPUDownloaderDelegate>)delegate proxyURL:(NSURL * _Nullable)proxyURL direct:(BOOL)direct
+@@ -50,0 +61,2 @@
 +        _proxyURL = [proxyURL copy];
-@@ -82,0 +92,25 @@
++        _direct = direct;
+@@ -82,0 +95,36 @@
 +    NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
-+    if (_proxyURL != nil) {
++    if (_direct) {
++        // A non-nil, explicit dictionary overrides system settings. An empty
++        // proxyConfigurations array would instead retain the system policy.
++        configuration.connectionProxyDictionary = @{
++            (__bridge NSString *)kCFNetworkProxiesHTTPEnable: @0,
++            (__bridge NSString *)kCFNetworkProxiesHTTPSEnable: @0,
++            (__bridge NSString *)kCFNetworkProxiesSOCKSEnable: @0,
++            (__bridge NSString *)kCFNetworkProxiesFTPEnable: @0,
++            (__bridge NSString *)kCFNetworkProxiesProxyAutoConfigEnable: @0,
++            (__bridge NSString *)kCFNetworkProxiesProxyAutoDiscoveryEnable: @0
++        };
++    } else if (_proxyURL != nil) {
 +        if (@available(macOS 14.0, *)) {
 +            NSString *host = _proxyURL.host;
 +            if ([host hasPrefix:@"["] && [host hasSuffix:@"]"]) {
@@ -101,6 +136,6 @@
 +            return;
 +        }
 +    }
-@@ -84 +118 @@
+@@ -84 +132 @@
 -        sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
 +        sessionWithConfiguration:configuration

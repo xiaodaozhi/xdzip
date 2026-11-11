@@ -225,7 +225,9 @@ QString macProductUpdateFixtureFeed(const QJsonObject &candidate) {
     const QUrl url(target);
     const bool ownedHost = url.host() == "127.0.0.1" ||
                            (config.value("native_proxy").toBool() &&
-                            url.host() == "xdzip-owned-proxy.invalid");
+                            url.host() == "xdzip-owned-proxy.invalid") ||
+                           (config.value("native_direct").toBool() &&
+                            url.host() == "xdzip-owned-direct.invalid");
     if (!oldProduct() || candidate.value("appcast_url") != config.value("fixed_appcast_url") ||
         candidate.value("asset_url") != config.value("fixed_asset_url") ||
         candidate.value("version") != "0.2.0-alpha.2" || candidate.value("build").toInt() != 201 ||
@@ -241,7 +243,9 @@ QString macProductUpdateFixtureAsset(const QJsonObject &candidate, const QString
     const QUrl url(target);
     const bool ownedHost = url.host() == "127.0.0.1" ||
                            (config.value("native_proxy").toBool() &&
-                            url.host() == "xdzip-owned-proxy.invalid");
+                            url.host() == "xdzip-owned-proxy.invalid") ||
+                           (config.value("native_direct").toBool() &&
+                            url.host() == "xdzip-owned-direct.invalid");
     if (!oldProduct() || candidate.value("appcast_url") != config.value("fixed_appcast_url") ||
         candidate.value("asset_url") != config.value("fixed_asset_url") ||
         requestUrl != candidate.value("asset_url").toString() ||
@@ -284,8 +288,8 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
         initialPage ? initialPage->property("sessionIdentity").toString() : QString{};
     const auto prefix = QString::number(BuildInfo::buildNumber());
     const auto scenario = config.value("scenario").toString("success");
-    const bool fallback = scenario == "fallback-no-appcast" || scenario == "fallback-direct";
-    if (scenario == "fallback-direct")
+    const bool fallback = scenario == "fallback-no-appcast";
+    if (oldProduct() && scenario == "direct-upgrade")
         updates->configureNetwork("none", {}, {});
     if (oldProduct() && scenario == "proxy-upgrade") {
         const QUrl proxy(config.value("native_proxy_address").toString());
@@ -418,10 +422,14 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
             sessions->requestQuit();
             return;
         }
-        if (oldProduct() && scenario == "proxy-upgrade" && state->install && updates->busy() &&
+        if (oldProduct() && (scenario == "proxy-upgrade" || scenario == "direct-upgrade") &&
+            state->install && updates->busy() &&
             !state->transportChanged) {
             state->transportChanged = true;
-            updates->configureNetwork("none", {}, {});
+            if (scenario == "direct-upgrade")
+                updates->configureNetwork("custom", "http://127.0.0.1:1", {});
+            else
+                updates->configureNetwork("none", {}, {});
             write("proxy-settings-deferred.json", {{"changed_while_busy", true},
                                                      {"can_install", updates->canInstall()}});
         }
@@ -653,13 +661,11 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
         if (fallback && (updates->state() == "available" || updates->state() == "downloaded")) {
             if (state->stopping)
                 return;
-            const auto reason =
-                scenario == "fallback-direct" ? "macos_proxy" : "macos_missing_appcast";
+            const auto reason = "macos_missing_appcast";
             auto *note = about->findChild<QQuickItem *>("aboutUpdateNote");
             auto *release = about->findChild<QQuickItem *>("aboutOpenReleaseSecondary");
             auto *open = about->findChild<QQuickItem *>("aboutOpenDownload");
-            const auto reasonId =
-                scenario == "fallback-direct" ? "update.manualMacosProxy" : "update.manualMacosFeed";
+            const auto reasonId = "update.manualMacosFeed";
             const auto expected = qtTrId("update.manualMacos").arg(qtTrId(reasonId));
             if (!updates->trusted() || updates->canInstall() ||
                 updates->installReason() != reason || !note || !note->isVisible() ||

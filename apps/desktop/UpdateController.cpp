@@ -260,7 +260,7 @@ QString UpdateController::installReason() const {
     return installationReason(
         m_trusted, !installedRoot().isEmpty(), !m_sessions.isNull(), platform() == "macos",
         !m_candidate.value("appcast_url").toString().isEmpty(),
-        UpdateNetwork::macosAutomaticProxy(m_activeProxyMode, m_activeProxyAddress));
+        UpdateNetwork::macosAutomaticTransport(m_activeProxyMode, m_activeProxyAddress));
 }
 QString UpdateController::installationReason(bool trusted, bool installed, bool hasSessions,
                                              bool macos, bool hasAppcast, bool hasNativeTransport) {

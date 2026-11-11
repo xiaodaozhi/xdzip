@@ -31,7 +31,9 @@ from macos_bundle import optimize_bundle, validate_optimized_bundle
 from sparkle_bundle import embed, signing_metadata
 from update_fixture import ROOT, KEYRING, SEED, PUBLIC, digest, dump
 from release_updates import appcast_bytes, verify_release_updates
-from update_proxy_fixture import HOST as PROXY_HOST, OwnedUpdateProxy
+from update_proxy_fixture import HOST as PROXY_HOST, DIRECT_HOST, OwnedUpdateProxy
+from system_proxy_fixture import OwnedSystemProxy, compile_helper
+from contextlib import nullcontext
 
 PRODUCT = 'org.xdzip.desktop'
 LSREGISTER = '/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister'
@@ -114,7 +116,8 @@ def deploy(source, build, qt, sdk, destination, log):
         raise RuntimeError('Private product must retain formal identity and Alternate document handlers')
     # The only transport exception belongs to this private, signed test build.
     info['NSAppTransportSecurity'] = {'NSAllowsLocalNetworking': True,
-        'NSExceptionDomains': {PROXY_HOST: {'NSExceptionAllowsInsecureHTTPLoads': True}}}
+        'NSExceptionDomains': {PROXY_HOST: {'NSExceptionAllowsInsecureHTTPLoads': True},
+                               DIRECT_HOST: {'NSExceptionAllowsInsecureHTTPLoads': True}}}
     info_path.write_bytes(plistlib.dumps(info, sort_keys=False))
     for driver in (destination/'Contents/PlugIns/sqldrivers').glob('*.dylib'):
         if driver.name != 'libqsqlite.dylib': driver.unlink()
@@ -689,7 +692,7 @@ def main():
             for path in session.glob('*.json'):
                 if path.name in leaves or path.name.startswith(('200-','201-','native-')):path.unlink()
             config=json.loads((session/'configuration.json').read_bytes())
-            config.update(scenario=name,reuse_profile=True,fallback_loopback=False,native_proxy=False,
+            config.update(scenario=name,reuse_profile=True,fallback_loopback=False,native_proxy=False,native_direct=False,
                           loopback_appcast_url=address+'/owned/appcast.xml',
                           loopback_asset_url=address+'/owned/'+archive.name)
             dump(session/'configuration.json',config)
@@ -712,80 +715,98 @@ def main():
             original_signature=(session/'release.json.sig').read_bytes()
             no_feed=dict(manifest);no_feed.pop('macos_appcast_url',None)
             shutil.copyfile(archive,session/archive.name)
-            for case,reason in [('fallback-no-appcast','macos_missing_appcast'),
-                                ('fallback-direct','macos_proxy')]:
-                stage=case
-                change_scenario(case)
-                if case=='fallback-no-appcast':
-                    dump(session/'release.json',no_feed)
-                    sign_env=environment();sign_env['XDZIP_UPDATE_SIGNING_KEY_HEX']=SEED
-                    run([signing,'sign','--manifest',session/'release.json',
-                         '--keyring',output/'source/resources/update-trust.json',
-                         '--key-id','owned-fixture','--output',session/'fallback-no-appcast.sig'],env=sign_env)
-                    shutil.copyfile(session/'fallback-no-appcast.sig',session/'release.json.sig')
-                else:
-                    (session/'release.json').write_bytes(original_manifest)
-                    (session/'release.json.sig').write_bytes(original_signature)
-                config=json.loads((session/'configuration.json').read_bytes())
-                config.update(fallback_loopback=True,fallback_server=address+'/session/')
-                config['routes'][base+archive.name]=archive.name
-                dump(session/'configuration.json',config)
-                old=subprocess.Popen([str(executable)],env=launch_env,stdout=log,stderr=subprocess.STDOUT)
-                await_json(session/'200-started.json',process=old,session=session)
-                dump(session/'upgrade.json',{'owned':True})
-                fallback=await_json(session/(case+'.json'),timeout=240,process=old,session=session)
-                if old.wait(timeout=30)!=0:raise RuntimeError('Fallback product did not quit normally')
-                quit_record=await_json(session/'200-normal-quit.json',session=session)
-                if (fallback['state']!='downloaded' or not fallback['downloaded'] or
-                    not fallback['trusted'] or fallback['can_install'] or fallback['install_reason']!=reason or
-                    fallback['candidate_version']!=manifest['version'] or fallback['update_pending'] or
-                    not fallback['about_check_clicked'] or not fallback['about_download_clicked'] or
-                    not fallback['release_button_visible'] or not fallback['download_button_visible'] or
-                    not quit_record['all_rust_joined'] or quit_record['barriers']!=0):
-                    raise RuntimeError('Real product fallback did not preserve its authenticated manual state')
-                dump(output/(case+'-verification.json'),dict(status='passed',result=fallback,quit=quit_record,
-                     scope='Real product, test-key signed candidate; fixture maps pinned URLs to loopback HTTP'))
+            case,reason='fallback-no-appcast','macos_missing_appcast'
+            stage=case
+            change_scenario(case)
+            dump(session/'release.json',no_feed)
+            sign_env=environment();sign_env['XDZIP_UPDATE_SIGNING_KEY_HEX']=SEED
+            run([signing,'sign','--manifest',session/'release.json',
+                 '--keyring',output/'source/resources/update-trust.json',
+                 '--key-id','owned-fixture','--output',session/'fallback-no-appcast.sig'],env=sign_env)
+            shutil.copyfile(session/'fallback-no-appcast.sig',session/'release.json.sig')
+            config=json.loads((session/'configuration.json').read_bytes())
+            config.update(fallback_loopback=True,fallback_server=address+'/session/')
+            config['routes'][base+archive.name]=archive.name
+            dump(session/'configuration.json',config)
+            old=subprocess.Popen([str(executable)],env=launch_env,stdout=log,stderr=subprocess.STDOUT)
+            await_json(session/'200-started.json',process=old,session=session)
+            dump(session/'upgrade.json',{'owned':True})
+            fallback=await_json(session/(case+'.json'),timeout=240,process=old,session=session)
+            if old.wait(timeout=30)!=0:raise RuntimeError('Fallback product did not quit normally')
+            quit_record=await_json(session/'200-normal-quit.json',session=session)
+            if (fallback['state']!='downloaded' or not fallback['downloaded'] or
+                not fallback['trusted'] or fallback['can_install'] or fallback['install_reason']!=reason or
+                fallback['candidate_version']!=manifest['version'] or fallback['update_pending'] or
+                not fallback['about_check_clicked'] or not fallback['about_download_clicked'] or
+                not fallback['release_button_visible'] or not fallback['download_button_visible'] or
+                not quit_record['all_rust_joined'] or quit_record['barriers']!=0):
+                raise RuntimeError('Real product fallback did not preserve its authenticated manual state')
+            dump(output/(case+'-verification.json'),dict(status='passed',result=fallback,quit=quit_record,
+                 scope='Real product, test-key signed candidate; fixture maps pinned URLs to loopback HTTP'))
             (session/'release.json').write_bytes(original_manifest)
             (session/'release.json.sig').write_bytes(original_signature)
-        proxy_upgrades=[]
-        for scheme in ('http','socks5'):
+        def complete_transport_upgrade(direct,scheme,proxy):
+            nonlocal old
+            with server.evidence_lock:server.evidence=[]
+            old=subprocess.Popen([str(executable)],env=launch_env,stdout=log,stderr=subprocess.STDOUT)
+            await_json(session/'200-started.json',process=old,session=session)
+            dump(session/'upgrade.json',{'owned':True})
+            restarted=await_json(session/'201-started.json',timeout=240,session=session)
+            if old.wait(timeout=30)!=0:raise RuntimeError('Proxy update host did not exit normally')
+            proxy_barrier=await_json(session/'200-exit-barrier.json',session=session)
+            transport=await_json(session/'native-transport-configured.json',session=session)
+            deferred=await_json(session/'proxy-settings-deferred.json',session=session)
+            with server.evidence_lock:all_origin_requests=list(server.evidence)
+            origin_requests=[r for r in all_origin_requests if urlsplit(r['path']).path!='/proxy.pac']
+            proxy_requests=[r for r in proxy.evidence if r['owned_target']]
+            expected_transport={'mode':'none','proxy_scheme':'','explicit_proxy':False} if direct else {'mode':'custom','proxy_scheme':scheme,'explicit_proxy':True}
+            required={'/session/releases.json','/session/release.json','/session/release.json.sig',
+                      '/owned/appcast.xml','/owned/'+archive.name}
+            if (transport!=expected_transport or
+                restarted['state']!='updated' or restarted['build']!=201 or restarted['error'] or
+                restarted['pid']==old.pid or not proxy_barrier['about_install_clicked'] or
+                proxy_barrier['active_tasks']!=0 or not deferred['changed_while_busy'] or not deferred['can_install'] or
+                {r['path'] for r in origin_requests}!=required or any(r['status']!=200 for r in origin_requests) or
+                (bool(proxy_requests) if direct else len(proxy_requests)<5) or any(r['status']!=200 for r in proxy_requests)):
+                raise RuntimeError('Native proxy upgrade, immutable transport or real request evidence differs')
+            dump(session/'stop.json',{'owned':True});stop_pid(restarted['pid'])
+            helpers=wait_owned_helpers(proxy_barrier['native_exit']['installer_pids_at_ready'],installed)
+            verification=dict(status='passed',scheme=scheme,new=restarted,barrier=proxy_barrier,
+                              native_transport=transport,deferred_settings=deferred,
+                              origin_requests=origin_requests,proxy_requests=proxy_requests,helper_observation=helpers,
+                              pac_requests=[r for r in all_origin_requests if urlsplit(r['path']).path=='/proxy.pac'])
+            return verification
+        proxy_upgrades=[];direct_upgrade=None
+        system_helper=compile_helper(output,lambda arguments,name:run(arguments,output/(name+'.log')))
+        for scheme in ('http','socks5','direct'):
+            direct=scheme=='direct'
             stage='native-proxy-upgrade-'+scheme
-            change_scenario('proxy-upgrade')
-            with OwnedUpdateProxy(server.server_port,scheme,
+            change_scenario('direct-upgrade' if direct else 'proxy-upgrade')
+            with OwnedUpdateProxy(server.server_port,'http' if direct else scheme,
                     ('/session/releases.json','/session/release.json','/session/release.json.sig',
-                     '/owned/appcast.xml','/owned/'+archive.name)) as proxy:
+                     '/owned/appcast.xml','/owned/'+archive.name),host=DIRECT_HOST if direct else PROXY_HOST) as proxy:
                 config=json.loads((session/'configuration.json').read_bytes())
-                config.update(native_proxy=True,native_proxy_address=proxy.address,
+                host=DIRECT_HOST if direct else PROXY_HOST
+                config.update(native_proxy=not direct,native_direct=direct,native_proxy_address=proxy.address,
                               fallback_loopback=True,fallback_server=address+'/session/',
-                              loopback_appcast_url='http://'+PROXY_HOST+':'+str(server.server_port)+'/owned/appcast.xml',
-                              loopback_asset_url='http://'+PROXY_HOST+':'+str(server.server_port)+'/owned/'+archive.name)
+                              loopback_appcast_url='http://'+host+':'+str(server.server_port)+'/owned/appcast.xml',
+                              loopback_asset_url='http://'+host+':'+str(server.server_port)+'/owned/'+archive.name)
                 dump(session/'configuration.json',config)
-                with server.evidence_lock:server.evidence=[]
-                old=subprocess.Popen([str(executable)],env=launch_env,stdout=log,stderr=subprocess.STDOUT)
-                await_json(session/'200-started.json',process=old,session=session)
-                dump(session/'upgrade.json',{'owned':True})
-                restarted=await_json(session/'201-started.json',timeout=240,session=session)
-                if old.wait(timeout=30)!=0:raise RuntimeError('Proxy update host did not exit normally')
-                proxy_barrier=await_json(session/'200-exit-barrier.json',session=session)
-                transport=await_json(session/'native-transport-configured.json',session=session)
-                deferred=await_json(session/'proxy-settings-deferred.json',session=session)
-                with server.evidence_lock:origin_requests=list(server.evidence)
-                required={'/session/releases.json','/session/release.json','/session/release.json.sig',
-                          '/owned/appcast.xml','/owned/'+archive.name}
-                if (transport!={'mode':'custom','proxy_scheme':scheme,'explicit_proxy':True} or
-                    restarted['state']!='updated' or restarted['build']!=201 or restarted['error'] or
-                    restarted['pid']==old.pid or not proxy_barrier['about_install_clicked'] or
-                    proxy_barrier['active_tasks']!=0 or not deferred['changed_while_busy'] or not deferred['can_install'] or
-                    {r['path'] for r in origin_requests}!=required or any(r['status']!=200 for r in origin_requests) or
-                    len(proxy.evidence)<5 or any(r['status']!=200 for r in proxy.evidence)):
-                    raise RuntimeError('Native proxy upgrade, immutable transport or real request evidence differs')
-                dump(session/'stop.json',{'owned':True});stop_pid(restarted['pid'])
-                helpers=wait_owned_helpers(proxy_barrier['native_exit']['installer_pids_at_ready'],installed)
-                verification=dict(status='passed',scheme=scheme,new=restarted,barrier=proxy_barrier,
-                                  native_transport=transport,deferred_settings=deferred,
-                                  origin_requests=origin_requests,proxy_requests=list(proxy.evidence),helper_observation=helpers)
-                proxy_upgrades.append(verification)
-                dump(output/('proxy-'+scheme+'-verification.json'),verification)
+                pac_url=address+'/proxy.pac?owned='+uuid.uuid4().hex
+                if direct:
+                    (output/'proxy.pac').write_text('function FindProxyForURL(url,host) { return host === "'+
+                        DIRECT_HOST+'" ? "PROXY 127.0.0.1:'+str(proxy.server.server_address[1])+'" : "DIRECT"; }')
+                system=OwnedSystemProxy(system_helper,proxy.server.server_address[1],pac_url) if direct else nullcontext()
+                with system:
+                    if direct:system.apply('pac')
+                    native_transport_result=complete_transport_upgrade(direct,scheme,proxy)
+                    if direct:system.verify('pac')
+                if direct:
+                    direct_upgrade=dict(native_transport_result,system_policy=system.records)
+                    dump(output/'direct-upgrade-verification.json',direct_upgrade)
+                else:
+                    proxy_upgrades.append(native_transport_result)
+                    dump(output/('proxy-'+scheme+'-verification.json'),native_transport_result)
                 require_owned(installed,applications)
                 shutil.rmtree(installed)
                 shutil.copytree(products['old']['app'],installed,symlinks=True)
@@ -946,7 +967,7 @@ def main():
                     archive_transport=redirect,
                     interrupted_handoff=interruption_record,ordinary_recovery=recovered,ordinary_quit=ordinary_quit_record,
                     native_replacement_failure=replacement_failure,native_failure_recovery=failed_recovery,
-                    proxy_upgrades=proxy_upgrades,
+                    proxy_upgrades=proxy_upgrades,direct_upgrade=direct_upgrade,
                     password_waiting=password_waiting,waiting_cancelled=waiting_cancelled,password_completed=password_completed,
                     limits=['Busy install request/cancel use controller calls while the real password window is application-modal; the final install uses About input.',
                             'The post-commit failure uses one owned UF_IMMUTABLE inode; system authorization, other OS failures and real-user desktop acceptance remain separate.',

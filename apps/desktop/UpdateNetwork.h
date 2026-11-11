@@ -12,8 +12,8 @@ inline bool validProxy(const QString &text) {
            !url.hasFragment() && url.port(-1) > 0 && url.port(-1) <= 65535 &&
            (url.path().isEmpty() || url.path() == "/");
 }
-inline bool macosAutomaticProxy(const QString &mode, const QString &address) {
-    return mode == "system" || (mode == "custom" && validProxy(address));
+inline bool macosAutomaticTransport(const QString &mode, const QString &address) {
+    return mode == "system" || mode == "none" || (mode == "custom" && validProxy(address));
 }
 inline bool validMirror(const QString &text) {
     if (text.isEmpty())
