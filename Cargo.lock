@@ -1708,7 +1708,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-bridge-probe"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "cxx",
  "cxx-build",
@@ -1716,7 +1716,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-cab-probe"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "serde_json",
  "xdzip-codec-api",
@@ -1725,7 +1725,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-cli"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "clap",
  "ed25519-dalek",
@@ -1746,7 +1746,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-codec-7z"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "aes",
  "getrandom 0.4.2",
@@ -1760,7 +1760,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-codec-api"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "chardetng",
  "encoding_rs",
@@ -1769,7 +1769,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-codec-bridge"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "cxx",
  "cxx-build",
@@ -1782,7 +1782,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-codec-cab"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "xdzip-codec-api",
  "xdzip-compression",
@@ -1791,7 +1791,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-codec-native"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "xdzip-codec-api",
  "xdzip-domain",
@@ -1800,7 +1800,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-codec-optical"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "xdzip-codec-api",
  "xdzip-compression",
@@ -1809,7 +1809,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-codec-rar"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "aes",
  "xdzip-codec-api",
@@ -1821,7 +1821,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-codec-tar"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "flate2",
  "tar",
@@ -1832,7 +1832,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-codec-zip"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "aes",
  "constant_time_eq",
@@ -1851,14 +1851,14 @@ dependencies = [
 
 [[package]]
 name = "xdzip-compression"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "flate2",
 ]
 
 [[package]]
 name = "xdzip-crypto"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "sha2",
  "zeroize",
@@ -1866,11 +1866,11 @@ dependencies = [
 
 [[package]]
 name = "xdzip-domain"
-version = "0.1.3"
+version = "0.2.0"
 
 [[package]]
 name = "xdzip-extract-plan"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "xdzip-codec-api",
  "xdzip-domain",
@@ -1878,7 +1878,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-io"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "cap-fs-ext",
  "cap-std",
@@ -1893,7 +1893,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-m2-probe"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "xdzip-codec-api",
  "xdzip-runtime",
@@ -1901,7 +1901,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-m3-probe"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "xdzip-runtime",
  "zeroize",
@@ -1909,7 +1909,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-m4-probe"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "xdzip-runtime",
  "zeroize",
@@ -1917,7 +1917,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-optical-probe"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "serde_json",
  "xdzip-codec-api",
@@ -1926,7 +1926,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-qt-bridge"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "cxx",
  "cxx-build",
@@ -1939,7 +1939,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-runtime"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "flate2",
  "libc",
@@ -1957,7 +1957,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-update"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "base64ct",
  "ed25519-dalek",
@@ -1970,7 +1970,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-update-helper"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "libc",
  "serde",
