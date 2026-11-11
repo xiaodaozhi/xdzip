@@ -22,7 +22,7 @@ python3 scripts/desktop.py prepare --install-qt
 python3 scripts/prepare-qt-network.py --qt-prefix build/toolchain/Qt/6.8.2/macos --check-only
 ```
 
-Windows 将末尾平台目录改为 `msvc2022_64`，Linux 改为 `gcc_64`。需要原生平台编译器、CMake 3.24+、Ninja、Perl、make（Windows 为 nmake）和 OpenSSL 命令行工具；构建脚本使用 CMake 的 `--fresh`，实际要求 CMake 3.24+。Ubuntu 还需 `zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libzstd-dev`，以保留 SDK 的核心构建特性。macOS 只构建 arm64，最低部署目标保持 14.0；这不代表已在 macOS 14 验证。
+Windows 将末尾平台目录改为 `msvc2022_64`，Linux 改为 `gcc_64`。需要原生平台编译器、CMake 3.24+、Ninja、Perl、make（Windows 为 nmake）和 OpenSSL 命令行工具；构建脚本使用 CMake 的 `--fresh`，实际要求 CMake 3.24+。Ubuntu 还需 `zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libzstd-dev libkrb5-dev`，以保留 SDK 的核心构建特性。macOS 只构建 arm64，最低部署目标保持 14.0；这不代表已在 macOS 14 验证。
 
 入口校验源码和补丁摘要，精确匹配补丁上下文，从 QtBase 根配置只构建 Network 及必需的构建依赖。只替换 QtNetwork，不安装重建的 QtCore。必须保留原库所有导出符号、对原 QtCore 的符号兼容性及全部 QtNetwork 功能开关。TLS、DTLS、OCSP 等原有功能不能因安全修复被移除。macOS 框架作必要 ad-hoc 完整性签名，不宣称 Developer ID 或公证。
 

@@ -470,7 +470,8 @@ import sys
 root = Path.cwd()
 names = json.loads(os.environ['XDZIP_RELEASE_TEST_NAMES'])
 args = sys.argv[1:]
-stage = 'after' if args == ['--after'] else (args[1] if args[0] == 'scripts/desktop.py' else args[0])
+stage = ('after' if args == ['--after'] else args[1] if args[0] == 'scripts/desktop.py'
+         else 'cli-'+args[1] if args[0] == 'scripts/cli.py' else args[0])
 with (root/'calls.jsonl').open('a', encoding='utf-8') as stream:
     stream.write(json.dumps(dict(stage=stage, args=args,
         environment={name: os.environ.get(name) for name in names}))+'\\n')
@@ -487,6 +488,11 @@ if stage == 'scripts/prepare-rar-rust-fixtures.py':
     (output/'sources.json').write_text(json.dumps(dict(status='prepared', environment=environment)))
 elif stage == 'test' and os.environ['XDZIP_RELEASE_TEST_CASE'] == 'test-failure':
     raise SystemExit(23)
+elif stage == 'cli-package':
+    output = root/args[args.index('--output')+1]
+    output.mkdir(parents=True)
+    (output/'owned-cli.tar.gz').write_bytes(b'owned CLI fixture')
+    (output/'cli-package.json').write_text(json.dumps(dict(file='owned-cli.tar.gz')))
 ''', encoding='utf-8')
 
         def literal(value):
@@ -502,7 +508,7 @@ $nativePython = '''+literal(sys.executable)+'''
 $capture = '''+literal(capture)+'''
 function python { & $nativePython $capture @args }
 $failed = $false
-try { & ./scripts/ci-release.ps1 } catch { $failed = $true }
+try { & ./scripts/ci-release.ps1 } catch { $failed = $true; [Console]::Error.WriteLine($_.Exception.Message) }
 & $nativePython $capture --after
 if ($failed) { exit 1 }
 ''', encoding='utf-8')
@@ -525,7 +531,8 @@ if ($failed) { exit 1 }
         result, calls, directory = self.run_release('success')
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual([call['stage'] for call in calls], [
-            'build', 'scripts/prepare-rar-rust-fixtures.py', 'test', 'package', 'verify', 'scripts/prepare-release.py'])
+            'build', 'scripts/prepare-rar-rust-fixtures.py', 'test', 'package', 'verify',
+            'cli-test', 'cli-package', 'scripts/prepare-release.py'])
         test = calls[2]
         sources = json.loads((directory/'build/release-rar-fixtures/sources.json').read_text())
         for name, value in sources['environment'].items():
@@ -534,6 +541,8 @@ if ($failed) { exit 1 }
         self.assertNotIn('--skip-rust', test['args'])
         self.assertIn('--release-distribution', test['args'])
         self.assertEqual(calls[3]['environment'], calls[-1]['environment'])
+        self.assertEqual(calls[5]['args'][1:4], ['test', '--build-dir', 'build/release-desktop/cli'])
+        self.assertEqual((directory/'build/release-package/owned-cli.tar.gz').read_bytes(), b'owned CLI fixture')
 
     def test_fixture_preparation_failure_prevents_tests_and_packages(self):
         result, calls, _ = self.run_release('prepare-failure')

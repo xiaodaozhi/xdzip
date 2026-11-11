@@ -12,7 +12,7 @@
 
 ## 本地工具链目录
 
-`prepare` 会在原 SDK 中构建并验证 QtNetwork 安全补丁，修复 CVE-2026-116337 与 CVE-2026-105946，其他运行模块不被重建库替换。另需 Perl、make（Windows 为 nmake）和 OpenSSL 命令行工具；Ubuntu 需 `zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libzstd-dev`。源码、生成声明及构建缓存统一在 `build/`，默认复用 `build/toolchain/qt-network-security/<平台>`。输入和实际库摘要不匹配时，产品构建与打包直接失败，重新运行 `prepare`；来源、ABI、TLS 功能及失败恢复见[补丁维护说明](../../patches/qt/README.md)。
+`prepare` 会在原 SDK 中构建并验证 QtNetwork 安全补丁，修复 CVE-2026-116337 与 CVE-2026-105946，其他运行模块不被重建库替换。另需 Perl、make（Windows 为 nmake）和 OpenSSL 命令行工具；Ubuntu 需 `zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libzstd-dev libkrb5-dev`。源码、生成声明及构建缓存统一在 `build/`，默认复用 `build/toolchain/qt-network-security/<平台>`。输入和实际库摘要不匹配时，产品构建与打包直接失败，重新运行 `prepare`；来源、ABI、TLS 功能及失败恢复见[补丁维护说明](../../patches/qt/README.md)。
 
 English: Preparation builds and verifies the pinned QtNetwork security variant in the existing SDK, retaining the original QtCore and other modules. Perl, make/nmake and the OpenSSL command-line tool are required; Ubuntu additionally needs the development packages listed above. Hash-bound receipts prevent building or packaging with an unprepared or changed library. See the patch maintenance guide for source, ABI, TLS and rollback details.
 

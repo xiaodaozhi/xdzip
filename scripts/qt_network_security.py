@@ -237,6 +237,7 @@ def run(arguments, log):
     log.parent.mkdir(parents=True, exist_ok=True)
     log.write_bytes(raw)
     if result.returncode:
+        print(raw.decode(errors='replace')[-6000:], file=sys.stderr, flush=True)
         raise ValueError('QtNetwork command failed; inspect '+log.name)
     return result.stdout.decode(errors='replace')
 
@@ -294,6 +295,7 @@ def openssl_headers(config, cache, work):
         raw = (result.stdout+result.stderr).replace(str(ROOT).encode(), b'<workspace>').replace(str(Path.home()).encode(), b'<user>')
         (work/('headers-'+label+'.log')).write_bytes(raw)
         if result.returncode:
+            print(raw.decode(errors='replace')[-6000:], file=sys.stderr, flush=True)
             raise ValueError('OpenSSL declaration generation failed: '+label)
     data = dict(source_sha256=item['sha256'], target=target,
                 headers={p.relative_to(directory).as_posix(): digest(p) for p in (directory/'include').rglob('*.h')})
