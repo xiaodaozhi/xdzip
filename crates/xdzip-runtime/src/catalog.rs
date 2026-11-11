@@ -49,8 +49,19 @@ impl Archive {
         }
         control.check()?;
         self.source.validate()?;
-        let result = self
-            .page(offset, limit)?
+        let owned;
+        let page = if let Some(disk) = &self.disk {
+            if offset > self.len() as u64 {
+                return Err(ScanError::Limit);
+            }
+            owned = (offset..(offset + limit).min(self.len() as u64))
+                .map(|at| disk.get(at + 1))
+                .collect::<Result<Vec<_>, _>>()?;
+            &owned[..]
+        } else {
+            self.page(offset, limit)?
+        };
+        let result = page
             .iter()
             .map(|entry| PhysicalEntry {
                 id: entry.id.get(),
@@ -87,13 +98,32 @@ impl Archive {
         }
         self.source.validate().map_err(|_| "source_changed")?;
         let mut by_path: BTreeMap<String, Vec<u64>> = BTreeMap::new();
-        for entry in self.rows.iter() {
-            control.check().map_err(|_| "cancelled")?;
-            if let Some(name) = path(entry) {
-                by_path
+        let requested: BTreeSet<&str> = members
+            .iter()
+            .map(|name| name.strip_suffix('/').unwrap_or(name))
+            .collect();
+        let mut visit = |entry: &xdzip_codec_api::Entry| -> Result<(), ScanError> {
+            control.check()?;
+            if let Some(name) = path(entry)
+                && requested.contains(name.trim_end_matches('/'))
+            {
+                let ids = by_path
                     .entry(name.trim_end_matches('/').to_owned())
-                    .or_default()
-                    .push(entry.id.get());
+                    .or_default();
+                if ids.len() < 2 {
+                    ids.push(entry.id.get());
+                }
+            }
+            Ok(())
+        };
+        if !members.is_empty() {
+            if let Some(disk) = &self.disk {
+                disk.each(control, &mut visit)
+                    .map_err(|_| "source_changed")?;
+            } else {
+                for entry in self.rows.iter() {
+                    visit(entry).map_err(|_| "cancelled")?;
+                }
             }
         }
         let mut selected = BTreeSet::new();
@@ -118,11 +148,7 @@ impl Archive {
             }
         }
         for &id in entry_ids {
-            let found = id
-                .checked_sub(1)
-                .and_then(|at| usize::try_from(at).ok())
-                .and_then(|at| self.rows.get(at))
-                .is_some_and(|entry| entry.id.get() == id);
+            let found = self.entry(id).is_ok();
             if !found {
                 return Err("invalid_entry_id");
             }

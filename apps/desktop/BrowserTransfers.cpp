@@ -57,7 +57,7 @@ QString BrowserController::beginInternalDrag(int row, QWindow *owner) {
     m_moveSelectionRevision = m_model.selectionRevision();
     m_moveSelectors = m_model.selectedIds();
     m_moveFolders.clear();
-    for (int i = 0; i < m_model.rowCount(); ++i) {
+    for (int i : m_model.cachedRows()) {
         const auto *entry = m_model.rowAt(i);
         if (entry && entry->directory && m_model.isSelected(i)) {
             auto path = entry->path;
@@ -77,7 +77,7 @@ bool BrowserController::internalDragCurrent(const QString &token) const {
 QVariantMap BrowserController::internalDragPreview(const QString &token) const {
     if (!internalDragCurrent(token))
         return {};
-    for (int row = 0; row < m_model.rowCount(); ++row) {
+    for (int row : m_model.cachedRows()) {
         const auto *entry = m_model.rowAt(row);
         if (entry && entry->id == m_moveAnchor)
             return {{"name", entry->cells[0]},
@@ -151,7 +151,7 @@ void BrowserController::exportInternalDrag(const QString &token, QWindow *owner)
     if (!internalDragCurrent(token))
         return;
     int row = -1;
-    for (int i = 0; i < m_model.rowCount(); ++i)
+    for (int i : m_model.cachedRows())
         if (m_model.rowAt(i)->id == m_moveAnchor) {
             row = i;
             break;

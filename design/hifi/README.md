@@ -8,6 +8,8 @@
 
 ## 主界面与解压确认
 
+[内容预览状态稿](sources/content-preview.html)复用主窗口属性卡，提供主动加载、纯文本、PNG/JPEG、密码等待与失败状态的双语、浅深色和多字号参考。数据与解码限制见[预览契约](../../docs/engineering/content-preview.md)，原生窗口验收独立于 HTML 稿。
+
 | 原稿 | 状态 |
 | --- | --- |
 | [主窗口，浅色](screens/main-capsule-light.png) | 当前胶囊标签修订 |

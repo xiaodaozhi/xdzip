@@ -105,7 +105,7 @@ impl Options {
             && self
                 .selected
                 .iter()
-                .all(|id| !id.is_empty() && id.len() <= 21)
+                .all(|id| !id.is_empty() && id.len() <= if id.starts_with('q') { 96 } else { 21 })
             && (self.all || !self.selected.is_empty())
     }
     pub(crate) fn bytes(&self) -> usize {
@@ -352,6 +352,13 @@ impl Archive {
         options: &Options,
         cancel: &Cancellation,
     ) -> Result<Vec<ExportEntry>, &'static str> {
+        if self.disk.is_some() {
+            let mut options = options.clone();
+            options.selected = self.resolve_query_selectors(&options.selected, cancel)?;
+            return self
+                .task_view(&options.selected, options.all, &options.directory, cancel)?
+                .export_manifest(&options, cancel);
+        }
         self.source.validate().map_err(|_| "source_changed")?;
         let planned = plan::prepare(self, options, cancel)?;
         let mut entries = std::collections::BTreeMap::<String, ExportEntry>::new();
@@ -391,9 +398,15 @@ impl Archive {
     }
     pub(crate) fn export_job(
         &self,
-        options: Options,
+        mut options: Options,
         cancel: &Cancellation,
     ) -> Result<Job, &'static str> {
+        if self.disk.is_some() {
+            options.selected = self.resolve_query_selectors(&options.selected, cancel)?;
+            return self
+                .task_view(&options.selected, options.all, &options.directory, cancel)?
+                .export_job(options, cancel);
+        }
         self.export_manifest(&options, cancel)?;
         let cache = std::path::PathBuf::from(&options.target);
         let mut job = self.extraction_job(options, cancel)?;
@@ -411,9 +424,18 @@ impl Archive {
     /// Freeze selectors and input identity without creating a destination object.
     pub(crate) fn extraction_job(
         &self,
-        options: Options,
+        mut options: Options,
         cancel: &Cancellation,
     ) -> Result<Job, &'static str> {
+        if self.disk.is_some() {
+            options.selected = self.resolve_query_selectors(&options.selected, cancel)?;
+            return self
+                .task_view(&options.selected, options.all, &options.directory, cancel)?
+                .extraction_job(options, cancel);
+        }
+        if self.payload_subset && self.rows.iter().any(|e| e.link) {
+            return Err("unsupported_link");
+        }
         self.source.validate().map_err(|_| "source_changed")?;
         let source = self.source.fork().map_err(|_| "source_changed")?;
         let planned = plan::prepare(self, &options, cancel)?;
@@ -425,6 +447,7 @@ impl Archive {
             password: self.password.clone(),
             format: self.format,
             rows: Arc::clone(&self.rows),
+            subset: self.payload_subset,
             planned,
             options,
             session: self.key.session.get(),
@@ -439,12 +462,7 @@ impl Archive {
         cache: &std::path::Path,
         cancel: &Cancellation,
     ) -> Result<Job, &'static str> {
-        let index = entry
-            .checked_sub(1)
-            .and_then(|n| usize::try_from(n).ok())
-            .ok_or("invalid_selection")?;
-        self.rows
-            .get(index)
+        Some(self.entry(entry).map_err(|_| "invalid_selection")?)
             .filter(|r| {
                 r.id.get() == entry
                     && !r.directory

@@ -13,7 +13,8 @@ mod tests;
 pub use identity::{FileIdentity, FileVersion};
 pub use input::{InputEntry, InputError, InputReader, InputTree};
 pub use target::{
-    ArchiveUpdate, CommitReceipt, ExistingFile, Grant, SetCommitError, Stage, Workspace,
+    ArchiveUpdate, CommitReceipt, ExistingFile, Grant, ScratchSpace, SetCommitError, Stage,
+    Workspace,
 };
 
 /// Open a source without allowing a special file to block the caller.

@@ -142,6 +142,10 @@ for name, value in [('gutter',24), ('gap',12), ('iconSize',20), ('controlRadius'
     lines.append(f'    readonly property real {name}: {value}')
 lines.append(f'    readonly property real mainControlRadius: {tokens["radius"]["control"] * layout["main"]["density"]}')
 lines.append(f'    readonly property real mainToolbarRadius: {tokens["radius"]["toolbar"] * layout["main"]["density"]}')
+for key in ['inset', 'gap', 'iconSize', 'spinnerSize']:
+    value = layout['main']['content_preview'][key]
+    lines.append(f'    readonly property real contentPreview{key[0].upper() + key[1:]}: mainUnits({value})')
+lines.append(f'    readonly property int contentPreviewImageSample: {layout["main"]["content_preview"]["image_display_sample"][0]}')
 for key, value in layout['main']['interaction'].items():
     lines.append(f'    readonly property real main{key[0].upper() + key[1:]}: {value}')
 for key, value in layout['main']['titlebar'].items():

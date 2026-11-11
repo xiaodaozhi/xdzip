@@ -17,6 +17,22 @@ pub const MAX_EVENT_BYTES: usize = 8 * 1024 * 1024;
 
 /// Owned bounded commands. Source paths are user-selected inputs, never output authority.
 pub enum Command {
+    /// Freeze a bounded logical query selection before presenting an output decision.
+    FreezeSelection {
+        /// Current immutable source session.
+        session: u64,
+        /// Complete query identities and inclusive logical ranges.
+        selectors: Vec<String>,
+    },
+    /// Decode a user-requested bounded content preview without writing files.
+    Preview {
+        /// Current source session.
+        session: u64,
+        /// Physical record identity.
+        entry: u64,
+        /// Optional one-operation content secret.
+        password: Option<crate::extraction::Password>,
+    },
     /// Enumerate physical metadata independently of GUI directory listings.
     Catalog {
         /// Immutable archive session.
@@ -145,6 +161,10 @@ pub enum Command {
 impl Command {
     fn bytes(&self) -> usize {
         match self {
+            Self::FreezeSelection { selectors, .. } => {
+                selectors.iter().map(|s| s.capacity() + 24).sum()
+            }
+            Self::Preview { password, .. } => password.as_ref().map_or(0, |p| p.expose().len()),
             Self::SelectMembers {
                 members,
                 entry_ids,
@@ -177,6 +197,13 @@ impl Command {
     }
     fn bounded(&self) -> bool {
         match self {
+            Self::FreezeSelection { selectors, .. } => {
+                !selectors.is_empty()
+                    && selectors.len() <= 100_000
+                    && selectors.iter().all(|s| s.len() <= 96)
+                    && selectors.iter().map(String::len).sum::<usize>() <= 4 * 1024 * 1024
+            }
+            Self::Preview { entry, .. } => *entry > 0,
             Self::SelectMembers {
                 members,
                 entry_ids,
@@ -275,6 +302,8 @@ pub struct InputInfo {
 /// The sole payload event for one accepted request. Finished follows it exactly once.
 #[derive(Debug)]
 pub enum Payload {
+    /// Complete authenticated preview. Its bounded bytes participate in mailbox backpressure.
+    Preview(crate::preview::Content),
     /// Headless page retaining physical identity and effective names.
     Catalog {
         /// Source session.
@@ -344,6 +373,9 @@ impl Payload {
     /// Count retained string bytes for end-to-end mailbox admission (containers separately bounded).
     pub fn bytes(&self) -> usize {
         match self {
+            Self::Preview(content) => {
+                content.bytes.capacity() + std::mem::size_of::<crate::preview::Content>()
+            }
             Self::Catalog { entries, .. } => entries
                 .iter()
                 .map(|entry| {
@@ -821,6 +853,32 @@ fn execute(
     };
     let (session, directory, text, offset, sort, query, generation, revision, replace_navigation) =
         match command {
+            Command::FreezeSelection { session, selectors } => {
+                let current = archive
+                    .as_ref()
+                    .filter(|a| a.key().session.get() == session)
+                    .ok_or("stale_session")?;
+                current.source.validate().map_err(|_| "source_changed")?;
+                let selected = current.resolve_query_selectors(&selectors, control)?;
+                current.source.validate().map_err(|_| "source_changed")?;
+                return Ok(Payload::Selected {
+                    selected,
+                    directory: String::new(),
+                });
+            }
+            Command::Preview {
+                session,
+                entry,
+                password,
+            } => {
+                let current = archive
+                    .as_ref()
+                    .filter(|a| a.key().session.get() == session)
+                    .ok_or("stale_session")?;
+                return current
+                    .preview(entry, password.as_ref(), control)
+                    .map(Payload::Preview);
+            }
             Command::Catalog { session, offset } => {
                 let current = archive
                     .as_ref()
@@ -1093,7 +1151,7 @@ fn execute(
             .rows
             .into_iter()
             .map(|listing| match listing {
-                crate::listing::ListingRow::Physical(entry) => Row {
+                crate::query::QueryRow::Physical(entry) => Row {
                     id: entry.id.get(),
                     navigation_id: 0,
                     name: entry.display_name.clone(),
@@ -1106,7 +1164,7 @@ fn execute(
                     encrypted: entry.encrypted,
                     warning: entry.warning,
                 },
-                crate::listing::ListingRow::Directory(node) => Row {
+                crate::query::QueryRow::Directory(node) => Row {
                     id: 0,
                     navigation_id: node.id,
                     name: node.path.clone(),

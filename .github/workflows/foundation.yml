@@ -55,6 +55,8 @@ jobs:
       - name: Check native Rust and C++ bridge
         shell: pwsh
         run: ./scripts/check-foundation.ps1
+      - name: Verify independent SDK peers and fail-closed native sandbox gate
+        run: python3 scripts/sdk-trial.py test
       - name: Collect raw foundation diagnostics
         if: always()
         shell: pwsh
@@ -76,6 +78,8 @@ jobs:
             build/review/ci-cache-foundation.json
             build/review/foundation-ctest.log
             build/review/cli/report.json
+            build/review/sdk-trial/*.json
+            build/review/sdk-trial/*.log
           if-no-files-found: ignore
           retention-days: 14
 

@@ -223,7 +223,6 @@
     "ui.d63e300f62a9": "开始解压",
     "ui.f3c5fe4dd2da": "文件预览",
     "ui.0b4ff2491b1d": "关闭文件预览与属性",
-    "ui.1248c3b87f73": "此类型暂不支持内容预览",
     "ui.3d997d4452fc": "选择文件查看属性",
     "ui.ce2a58ab4ccf": "未选择文件",
     "ui.43850dc99c15": "以下为当前焦点条目的属性",
@@ -700,6 +699,19 @@
     "settings.associationFailed": "无法更改默认应用，请在系统中重试。",
     "settings.chooseDefaultApp": "选择其他应用",
     "settings.desktopApplications": "桌面应用 (*.desktop)",
-    "settings.chooseDefaultAppDescription": "选择打开此文件类型的其他应用。"
+    "settings.chooseDefaultAppDescription": "选择打开此文件类型的其他应用。",
+    "preview.action": "预览内容",
+    "preview.again": "重新预览",
+    "preview.hint": "点击预览，查看支持的文本或图片。",
+    "preview.loading": "正在读取并校验…",
+    "preview.unsupported": "此文件不支持内嵌预览。",
+    "preview.encoding": "无法以 UTF-8 或带标记的 UTF-16 显示此文本。",
+    "preview.limit": "文件或解码工作量超过预览限制。",
+    "preview.imageFailed": "图片无法解码，内容未显示。",
+    "preview.passwordTitle": "预览密码",
+    "preview.passwordHeading": "输入密码以预览",
+    "preview.passwordDescription": "此文件已加密，需要密码才能预览。",
+    "preview.passwordPrivacy": "密码仅用于本次预览，不会保存。关闭此窗口将取消预览。",
+    "preview.continue": "继续预览"
   }
 }

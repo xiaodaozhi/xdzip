@@ -786,6 +786,241 @@ impl Drop for Workspace {
         let _ = self.clean();
     }
 }
+
+/// Ephemeral host metadata storage anchored below a held system-temporary directory.
+/// Files are private capabilities and never published. Drop removes only known files
+/// and the verified empty directory; unfamiliar objects are retained on cleanup failure.
+pub struct ScratchSpace {
+    dir: Option<Arc<Dir>>,
+    parent: Dir,
+    name: String,
+    identity: FileIdentity,
+    ordinal: u64,
+    lease: Option<File>,
+    lease_identity: FileIdentity,
+}
+impl ScratchSpace {
+    /// Allocate a fresh unpredictable directory; no archive-controlled path is accepted.
+    pub fn new() -> Result<Self, OutputError> {
+        let parent = Dir::open_ambient_dir(std::env::temp_dir(), cap_std::ambient_authority())
+            .map_err(failure)?;
+        Self::new_in(parent)
+    }
+    fn new_in(parent: Dir) -> Result<Self, OutputError> {
+        Self::reap(&parent, std::time::Duration::from_secs(7 * 24 * 60 * 60))?;
+        let mut random = [0; 16];
+        getrandom::fill(&mut random).map_err(|_| OutputError::Io)?;
+        let name = format!(
+            "xdzip-index-{}",
+            random
+                .iter()
+                .map(|b| format!("{b:02x}"))
+                .collect::<String>()
+        );
+        parent
+            .create_dir_with(&name, &private_builder())
+            .map_err(failure)?;
+        let dir = parent.open_dir_nofollow(&name).map_err(failure)?;
+        #[cfg(windows)]
+        {
+            use cap_std::fs::OpenOptionsExt;
+            use windows_sys::Win32::Storage::FileSystem::{FILE_GENERIC_READ, WRITE_DAC};
+            let mut options = OpenOptions::new();
+            options
+                .read(true)
+                .maybe_dir(true)
+                .follow(FollowSymlinks::No)
+                .access_mode(FILE_GENERIC_READ | WRITE_DAC);
+            private::secure_temporary_directory(
+                &dir.open_with(".", &options).map_err(failure)?.into_std(),
+            )?;
+        }
+        let file = directory_file(&dir)?;
+        private::check_confidential(&file, true)?;
+        let identity = FileIdentity::read(&file).map_err(failure)?;
+        let mut options = private_options();
+        options.read(true).write(true).create_new(true);
+        let mut lease = dir
+            .open_with("lease", &options)
+            .map_err(failure)?
+            .into_std();
+        private::check_confidential(&lease, false)?;
+        lease.write_all(&random).map_err(failure)?;
+        lease.try_lock().map_err(|_| OutputError::Io)?;
+        let lease_identity = FileIdentity::read(&lease).map_err(failure)?;
+        Ok(Self {
+            dir: Some(Arc::new(dir)),
+            parent,
+            name,
+            identity,
+            ordinal: 0,
+            lease: Some(lease),
+            lease_identity,
+        })
+    }
+    fn reap(parent: &Dir, age: std::time::Duration) -> Result<(), OutputError> {
+        let mut count = 0;
+        for item in parent.entries().map_err(failure)?.take(4096) {
+            let Ok(item) = item else {
+                continue;
+            };
+            let name = item.file_name();
+            let Some(hex) = name.to_str().and_then(|s| s.strip_prefix("xdzip-index-")) else {
+                continue;
+            };
+            if hex.len() != 32 || !hex.bytes().all(|c| c.is_ascii_hexdigit()) {
+                continue;
+            }
+            let Ok(dir) = parent.open_dir_nofollow(&name) else {
+                continue;
+            };
+            let Ok(handle) = directory_file(&dir) else {
+                continue;
+            };
+            if private::check_confidential(&handle, true).is_err() {
+                continue;
+            }
+            count += 1;
+            let mut options = private_options();
+            options.read(true).write(true);
+            let Ok(mut lease) = dir.open_with("lease", &options).map(|f| f.into_std()) else {
+                continue;
+            };
+            if private::check_confidential(&lease, false).is_err()
+                || lease.metadata().map_or(true, |m| m.len() != 16)
+                || !lease
+                    .metadata()
+                    .and_then(|m| m.modified())
+                    .ok()
+                    .and_then(|t| std::time::SystemTime::now().duration_since(t).ok())
+                    .is_some_and(|elapsed| elapsed >= age)
+                || lease.try_lock().is_err()
+            {
+                continue;
+            }
+            let mut marker = [0; 16];
+            if lease.read_exact(&mut marker).is_err()
+                || marker
+                    .iter()
+                    .map(|b| format!("{b:02x}"))
+                    .collect::<String>()
+                    != hex
+            {
+                continue;
+            }
+            let mut files = Vec::new();
+            let mut known = true;
+            for file in dir.entries().map_err(failure)?.take(130) {
+                let Ok(file) = file else {
+                    known = false;
+                    break;
+                };
+                let filename = file.file_name();
+                if filename == "lease" {
+                    continue;
+                }
+                if filename
+                    .to_str()
+                    .and_then(|s| s.strip_suffix(".part"))
+                    .and_then(|s| s.parse::<u64>().ok())
+                    .is_none()
+                {
+                    known = false;
+                    break;
+                }
+                let Ok(file) = dir.open_with(&filename, &options).map(|f| f.into_std()) else {
+                    known = false;
+                    break;
+                };
+                if private::check_confidential(&file, false).is_err() {
+                    known = false;
+                    break;
+                }
+                files.push((
+                    filename.to_string_lossy().into_owned(),
+                    FileIdentity::read(&file).map_err(failure)?,
+                ));
+            }
+            if !known || files.len() > 128 {
+                continue;
+            }
+            let lease_id = FileIdentity::read(&lease).map_err(failure)?;
+            for (filename, identity) in files {
+                remove_known(&dir, &filename, identity)?;
+            }
+            drop(lease);
+            remove_known(&dir, "lease", lease_id)?;
+            drop(handle);
+            #[cfg(windows)]
+            dir.remove_open_dir().map_err(failure)?;
+            #[cfg(not(windows))]
+            {
+                drop(dir);
+                parent.remove_dir(&name).map_err(failure)?;
+            }
+            count -= 1;
+        }
+        if count >= 256 {
+            return Err(OutputError::Limit);
+        }
+        Ok(())
+    }
+    /// Create a private read/write scratch file. The owner must outlive these stages.
+    pub fn file(&mut self) -> Result<Stage, OutputError> {
+        self.ordinal = self.ordinal.checked_add(1).ok_or(OutputError::Limit)?;
+        let dir = self.dir.as_ref().ok_or(OutputError::Io)?;
+        private::check_confidential(&directory_file(dir)?, true)?;
+        let name = format!("{}.part", self.ordinal);
+        let mut options = private_options();
+        options.write(true).read(true).create_new(true);
+        let file = dir.open_with(&name, &options).map_err(failure)?.into_std();
+        private::check_confidential(&file, false)?;
+        let identity = FileIdentity::read(&file).map_err(failure)?;
+        Ok(Stage {
+            file: Some(file),
+            dir: Arc::clone(dir),
+            identity,
+            name,
+            published: false,
+            sealed: None,
+        })
+    }
+    /// Remove the verified empty scratch directory after its files have been dropped.
+    pub fn cleanup(mut self) -> Result<(), OutputError> {
+        self.clean()
+    }
+    fn clean(&mut self) -> Result<(), OutputError> {
+        let Some(dir) = self.dir.as_ref() else {
+            return Ok(());
+        };
+        if Arc::strong_count(dir) != 1 {
+            return Err(OutputError::Io);
+        }
+        let current = self.parent.open_dir_nofollow(&self.name).map_err(failure)?;
+        if FileIdentity::read(&directory_file(&current)?).map_err(failure)? != self.identity {
+            return Err(OutputError::TargetChanged);
+        }
+        drop(current);
+        self.lease.take();
+        remove_known(dir, "lease", self.lease_identity)?;
+        let dir = Arc::try_unwrap(self.dir.take().ok_or(OutputError::Io)?)
+            .map_err(|_| OutputError::Io)?;
+        #[cfg(windows)]
+        {
+            dir.remove_open_dir().map_err(failure)
+        }
+        #[cfg(not(windows))]
+        {
+            drop(dir);
+            self.parent.remove_dir(&self.name).map_err(failure)
+        }
+    }
+}
+impl Drop for ScratchSpace {
+    fn drop(&mut self) {
+        let _ = self.clean();
+    }
+}
 /// One private ordinary file. Dropping it never removes a published destination.
 pub struct Stage {
     file: Option<File>,
@@ -856,6 +1091,14 @@ impl std::io::Seek for Stage {
             .as_mut()
             .ok_or_else(|| io::Error::other("closed stage"))?
             .seek(position)
+    }
+}
+impl Read for Stage {
+    fn read(&mut self, bytes: &mut [u8]) -> io::Result<usize> {
+        self.file
+            .as_mut()
+            .ok_or_else(|| io::Error::other("closed stage"))?
+            .read(bytes)
     }
 }
 impl Write for Stage {
@@ -1086,5 +1329,52 @@ mod link_tests {
         assert_eq!(fs::read_dir(&outside.0).unwrap().count(), 0);
         assert_eq!(fs::read_dir(root.0.join("old-safe")).unwrap().count(), 0);
         work.cleanup().unwrap();
+    }
+}
+
+#[cfg(test)]
+mod scratch_tests {
+    use super::*;
+    #[test]
+    fn leases_protect_live_indexes_and_reclaim_only_verified_crash_files() {
+        let root = std::env::temp_dir().join(format!(
+            "xdzip-scratch-test-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir(&root).unwrap();
+        let parent = Dir::open_ambient_dir(&root, cap_std::ambient_authority()).unwrap();
+        let mut space = ScratchSpace::new_in(parent.try_clone().unwrap()).unwrap();
+        let name = space.name.clone();
+        let mut file = space.file().unwrap();
+        file.write_all(b"owned metadata").unwrap();
+        ScratchSpace::reap(&parent, std::time::Duration::ZERO).unwrap();
+        assert!(parent.open_dir_nofollow(&name).is_ok());
+        // Emulate a process crash by closing all handles while retaining known files.
+        file.published = true;
+        drop(file);
+        space.lease.take();
+        space.dir.take();
+        drop(space);
+        ScratchSpace::reap(&parent, std::time::Duration::ZERO).unwrap();
+        assert!(parent.open_dir_nofollow(&name).is_err());
+        let mut space = ScratchSpace::new_in(parent.try_clone().unwrap()).unwrap();
+        let name = space.name.clone();
+        let dir = space.dir.as_ref().unwrap();
+        let mut options = private_options();
+        options.write(true).create_new(true);
+        let unknown = dir.open_with("keep-unknown", &options).unwrap().into_std();
+        let identity = FileIdentity::read(&unknown).unwrap();
+        drop(unknown);
+        space.lease.take();
+        ScratchSpace::reap(&parent, std::time::Duration::ZERO).unwrap();
+        assert!(parent.open_dir_nofollow(&name).is_ok());
+        remove_known(space.dir.as_ref().unwrap(), "keep-unknown", identity).unwrap();
+        space.cleanup().unwrap();
+        drop(parent);
+        std::fs::remove_dir(root).unwrap();
     }
 }

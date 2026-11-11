@@ -78,8 +78,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .and_then(|value| value.parse::<u64>().ok())
         });
     println!(
-        "{{\"physical_rows\":{},\"listing_rows\":{total},\"received_rows\":{count},\"batches\":{batches},\"open_ms\":{open_ms:.3},\"sort_ms\":{sort_ms:.3},\"continuations_ms\":{batches_ms:.3},\"search_ms\":{search_ms:.3},\"search_matches\":{found},\"peak_rss_kib\":{}}}",
+        "{{\"physical_rows\":{},\"index_disk_bytes\":{},\"listing_rows\":{total},\"received_rows\":{count},\"batches\":{batches},\"open_ms\":{open_ms:.3},\"sort_ms\":{sort_ms:.3},\"continuations_ms\":{batches_ms:.3},\"search_ms\":{search_ms:.3},\"search_matches\":{found},\"peak_rss_kib\":{}}}",
         archive.len(),
+        archive.index_disk_bytes(),
         peak_kib.map_or("null".into(), |value| value.to_string())
     );
     Ok(())

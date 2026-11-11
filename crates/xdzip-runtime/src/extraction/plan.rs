@@ -16,6 +16,7 @@ pub(crate) struct Job {
     pub password: Option<super::Password>,
     pub format: xdzip_codec_api::Format,
     pub rows: Arc<Vec<Entry>>,
+    pub subset: bool,
     pub planned: Vec<Planned>,
     pub options: Options,
     pub session: u64,
@@ -33,6 +34,12 @@ pub(crate) fn prepare(
     options: &Options,
     cancel: &Cancellation,
 ) -> Result<Vec<Planned>, &'static str> {
+    let mut resolved = options.clone();
+    resolved.selected = archive.resolve_query_selectors(&options.selected, cancel)?;
+    let options = &resolved;
+    if archive.disk.is_some() {
+        return Err("resource_limit");
+    }
     if !options.bounded() {
         return Err("invalid_options");
     }
@@ -56,9 +63,10 @@ pub(crate) fn prepare(
                 );
             } else {
                 let number = id.parse::<u64>().map_err(|_| "invalid_selection")?;
-                let entry = number
-                    .checked_sub(1)
-                    .and_then(|n| usize::try_from(n).ok())
+                let entry = archive
+                    .rows
+                    .binary_search_by_key(&number, |e| e.id.get())
+                    .ok()
                     .and_then(|n| archive.rows.get(n))
                     .filter(|e| e.id.get() == number)
                     .ok_or("invalid_selection")?;

@@ -506,6 +506,345 @@ class BrowserTest : public QObject {
     QTemporaryDir m_settingsProfile;
     Q_OBJECT
   private slots:
+    void pagedModelKeepsLogicalRowsAndSelectionWithinItsCacheBudget() {
+        ArchiveTableModel model;
+        auto page = [](int first, int count) {
+            QList<BrowserRow> rows;
+            for (int i = 0; i < count; ++i) {
+                BrowserRow row;
+                row.id = QString::number(first + i + 1);
+                row.cells = {QStringLiteral("item-%1.txt").arg(first + i), "0", "0", "TXT", ""};
+                rows.append(row);
+            }
+            return rows;
+        };
+        model.replacePaged(1000000, page(0, 128), "12.3.1");
+        QCOMPARE(model.rowCount(), 1000000);
+        QSignalSpy missing(&model, &ArchiveTableModel::pageNeeded);
+        QVERIFY(!model.data(model.index(999999, 0), Qt::DisplayRole).isValid());
+        QVERIFY(!missing.isEmpty());
+        model.installPage(999936, page(999936, 64));
+        QCOMPARE(model.data(model.index(999999, 0), Qt::DisplayRole).toString(), "item-999999.txt");
+        model.selectOnly(999999);
+        QCOMPARE(model.selectedCount(), 1);
+        QCOMPARE(model.physicalSelectedIds(), QStringList{"1000000"});
+        model.selectAll(true);
+        QCOMPARE(model.selectedCount(), 1000000);
+        model.select(999999);
+        QCOMPARE(model.selectedCount(), 999999);
+        QCOMPARE(model.selectedIds(), QStringList{"q12.3.1:0:999998"});
+        for (int i = 1; i < 12; ++i)
+            model.installPage(i * 128, page(i * 128, 128));
+        QVERIFY(model.cachedCount() <= 1024);
+        QCOMPARE(model.selectedCount(), 999999);
+        model.replace({});
+        QCOMPARE(model.rowCount(), 0);
+        QCOMPARE(model.selectedCount(), 0);
+        QVERIFY(model.selectedIds().isEmpty());
+    }
+    void realLargeArchiveFetchesDistantRowsAndReplacesItsQuery() {
+        const auto fixture = qEnvironmentVariable("XDZIP_LARGE_INDEX_FIXTURE");
+        if (fixture.isEmpty())
+            QSKIP("Owned large-index fixture was not requested");
+        QVERIFY(QFile::exists(fixture));
+        BrowserController controller;
+        controller.openPath(fixture);
+        QTRY_VERIFY_WITH_TIMEOUT(controller.ready() && !controller.busy(), 15000);
+        QCOMPARE(controller.archiveTotal(), 1000000);
+        auto *model = qobject_cast<ArchiveTableModel *>(controller.entries());
+        QVERIFY(model && model->paged());
+        QVERIFY(model->cachedCount() <= 1024);
+        const int last =
+            model->rowCount() - 2; // The final physical-order row is the implicit directory.
+        model->data(model->index(last, 0), Qt::DisplayRole);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller.busy() && model->rowAt(last), 10000);
+        QVERIFY(model->cachedCount() <= 1024);
+        QCOMPARE(model->rowAt(last)->id, "1000000");
+        for (int offset = 128; offset <= 1024; offset += 128) {
+            model->data(model->index(offset, 0), Qt::DisplayRole);
+            QTRY_VERIFY_WITH_TIMEOUT(!controller.busy() && model->rowAt(offset), 10000);
+        }
+        const int finalRow = model->rowCount() - 1;
+        QVERIFY(!model->rowAt(finalRow));
+        controller.selectAll(true);     // Starts an uncached detail lookup for the last row.
+        controller.selectOnlyRow(1024); // A newer user intent must win that race.
+        const auto selectedId = model->rowAt(1024)->id;
+        QTRY_VERIFY_WITH_TIMEOUT(!controller.busy() && model->rowAt(finalRow), 10000);
+        QCOMPARE(controller.detail().value("id").toString(), selectedId);
+        model->data(model->index(last, 0), Qt::DisplayRole);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller.busy() && model->rowAt(last), 10000);
+        controller.selectOnlyRow(last);
+        QCOMPARE(controller.selectedCount(), 1);
+        QVERIFY(controller.canPreflight());
+        QSignalSpy extraction(&controller, &BrowserController::extractionReady);
+        controller.prepareExtraction(false);
+        QTRY_VERIFY(!controller.busy());
+        QCOMPARE(extraction.count(), 1);
+        QCOMPARE(controller.m_extractionSelectors, QStringList{"1000000"});
+        controller.search("099999");
+        QTRY_VERIFY_WITH_TIMEOUT(!controller.busy() && controller.total() == 1, 10000);
+        QCOMPARE(model->rowCount(), 1);
+        QCOMPARE(controller.selectedCount(), 0);
+        QCOMPARE(controller.m_extractionSelectors, QStringList{"1000000"});
+    }
+
+    void inlineContentPreviewUsesTheRealRuntimeAndClearsOnSelection() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        auto *model = qobject_cast<ArchiveTableModel *>(controller->entries());
+        QVERIFY(model);
+        int row = -1;
+        for (int index : model->cachedRows())
+            if (model->rowAt(index)->id == "3")
+                row = index;
+        QVERIFY(row >= 0);
+        controller->selectOnlyRow(row);
+        QVERIFY(controller->canPreview());
+        auto *action = findVisual(window->contentItem(), "contentPreviewAction");
+        QTRY_VERIFY(action && action->isVisible() && action->isEnabled());
+        QVERIFY(QQuickTest::qWaitForPolish(window, 3000));
+        QSignalSpy clicked(action, SIGNAL(clicked()));
+        const auto center =
+            action->mapToScene(QPointF(action->width() / 2, action->height() / 2)).toPoint();
+        QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, center);
+        QCOMPARE(clicked.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 10000);
+        QCOMPARE(controller->contentPreview().value("state").toString(), "text");
+        QVERIFY(!controller->contentPreview().value("text").toString().isEmpty());
+        auto *text = findVisual(window->contentItem(), "contentPreviewText");
+        QVERIFY(text);
+        QCOMPARE(text->property("textFormat").toInt(), 0);
+        QVERIFY(text->property("readOnly").toBool());
+        QCOMPARE(text->property("text").toString(),
+                 controller->contentPreview().value("text").toString());
+        controller->selectAll(false);
+        QVERIFY(controller->contentPreview().isEmpty());
+        QVERIFY(controller->detail().isEmpty());
+    }
+    void verifiedRasterPreviewLoadsAsynchronouslyFromAnOpaqueToken_data() {
+        QTest::addColumn<QString>("extension");
+        for (const auto *extension : {"zip", "tar", "tar.gz", "7z"})
+            QTest::newRow(extension) << QString::fromLatin1(extension);
+    }
+    void verifiedRasterPreviewLoadsAsynchronouslyFromAnOpaqueToken() {
+        QFETCH(QString, extension);
+        QTemporaryDir fixture;
+        QVERIFY(fixture.isValid());
+        const auto png = fixture.filePath("owned.png");
+        const auto jpeg = fixture.filePath("owned.jpg");
+        const auto broken = fixture.filePath("owned-broken.png");
+        const auto textPath = fixture.filePath("owned.txt");
+        QFile textFile(textPath);
+        QVERIFY(textFile.open(QIODevice::WriteOnly));
+        QCOMPARE(textFile.write("owned preview\n"), qint64(14));
+        textFile.close();
+        QImage original(64, 32, QImage::Format_RGB32);
+        original.fill(QColor("#3492bd"));
+        QVERIFY(original.save(png, "PNG"));
+        QVERIFY(original.save(jpeg, "JPEG"));
+        QFile complete(png), truncated(broken);
+        QVERIFY(complete.open(QIODevice::ReadOnly) && truncated.open(QIODevice::WriteOnly));
+        QVERIFY(truncated.write(complete.read(48)) ==
+                48); // Valid dimensions, incomplete pixel stream.
+        truncated.close();
+        complete.close();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        const int method = extension == "tar" ? 0 : extension == "7z" ? 32 : 8;
+        controller->startCreation({png, jpeg, broken, textPath}, fixture.path(),
+                                  "owned-images." + extension, method, 6, false);
+        QTRY_VERIFY_WITH_TIMEOUT(
+            controller->ready() && !controller->busy() && controller->archiveTotal() == 4, 15000);
+        auto *model = qobject_cast<ArchiveTableModel *>(controller->entries());
+        QVERIFY(model);
+        for (int row = 0; row < 4; ++row) {
+            controller->selectOnlyRow(row);
+            controller->requestPreview(controller->detail().value("id").toString());
+            QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 10000);
+            if (model->rowAt(row)->cells[0].endsWith(".txt")) {
+                QCOMPARE(controller->contentPreview().value("text").toString(), "owned preview\n");
+                controller->cancelContentPreview();
+                continue;
+            }
+            QCOMPARE(controller->contentPreview().value("state").toString(), "image");
+            const auto source = controller->contentPreview().value("image").toString();
+            QVERIFY(source.startsWith("image://contentpreview/"));
+            QVERIFY(!source.contains(fixture.path()));
+            auto *image = findVisual(window->contentItem(), "contentPreviewImage");
+            QVERIFY(image);
+            const bool invalid = model->rowAt(row)->cells[0].contains("broken");
+            QTRY_COMPARE_WITH_TIMEOUT(image->property("status").toInt(), invalid ? 3 : 1, 10000);
+            QVERIFY(image->property("sourceSize").toSize().width() <= 512);
+            controller->cancelContentPreview();
+            QTRY_VERIFY(image->property("source").toUrl().isEmpty());
+        }
+    }
+    void encryptedContentPreviewRetriesAndCancelsTheHostPrompt() {
+        QTemporaryDir fixture;
+        QVERIFY(fixture.isValid());
+        QFile file(fixture.filePath("owned.txt"));
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QCOMPARE(file.write("owned preview\n"), qint64(14));
+        file.close();
+        const auto secret = QStringLiteral("owned preview fixture secret");
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->startCreation({file.fileName()}, fixture.path(), "encrypted-preview.zip", 8, 6,
+                                  false, 0, secret);
+        QTRY_VERIFY_WITH_TIMEOUT(
+            controller->ready() && !controller->busy() && controller->archiveTotal() == 1, 10000);
+        controller->selectOnlyRow(0);
+        const auto entry = controller->detail().value("id").toString();
+        controller->requestPreview(entry);
+        QTRY_COMPARE(controller->passwordPrompt().value("kind").toString(), "preview");
+        const auto prompt = controller->passwordPrompt().value("promptId").toString();
+        QVERIFY(controller->submitPassword("preview", prompt, "incorrect owned fixture"));
+        QTRY_VERIFY(!controller->busy() && !controller->passwordPrompt().isEmpty());
+        QVERIFY(controller->passwordPrompt().value("retry").toBool());
+        QVERIFY(!controller->submitPassword("preview", prompt, secret));
+        QVERIFY(controller->submitPassword(
+            "preview", controller->passwordPrompt().value("promptId").toString(), secret));
+        QTRY_VERIFY(!controller->busy());
+        QCOMPARE(controller->contentPreview().value("text").toString(), "owned preview\n");
+        controller->requestPreview(entry);
+        QTRY_COMPARE(controller->passwordPrompt().value("kind").toString(), "preview");
+        controller->cancelTask("preview");
+        QVERIFY(controller->passwordPrompt().isEmpty());
+        QVERIFY(controller->contentPreview().isEmpty());
+        QVERIFY(controller->ready());
+    }
+    void contentPreviewNativeLayoutAcceptance() {
+        const auto directory = qEnvironmentVariable("XDZIP_PREVIEW_LAYOUT_AUDIT");
+        if (!nativeSystemPointer() || directory.isEmpty())
+            QSKIP("Opt-in native content preview layout evidence");
+        QVERIFY(QDir().mkpath(directory));
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText("zh-CN"); });
+        QTemporaryDir fixture;
+        QVERIFY(fixture.isValid());
+        const auto textPath = fixture.filePath("owned.txt");
+        QFile textFile(textPath);
+        QVERIFY(textFile.open(QIODevice::WriteOnly));
+        QVERIFY(textFile.write("Owned plain text\n中文预览，<b>保持纯文本</b>\n") > 0);
+        textFile.close();
+        const auto pngPath = fixture.filePath("owned.png");
+        QImage original(320, 180, QImage::Format_RGB32);
+        original.fill(QColor("#3492bd"));
+        QVERIFY(original.save(pngPath, "PNG"));
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")}) {
+            QVERIFY(initializeUiText(language));
+            QQmlApplicationEngine engine;
+            engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+            QVERIFY(!engine.rootObjects().isEmpty());
+            auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+            auto *preferences =
+                engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+            QVERIFY(window && preferences);
+            QVERIFY(preferences->saveDetails("light", 1, language, "standard", false, false, false,
+                                             "tabs"));
+            auto *controller = window->findChild<BrowserController *>();
+            QVERIFY(controller);
+            controller->startCreation({textPath, pngPath}, fixture.path(), language + ".zip", 0, 6,
+                                      false);
+            QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy() &&
+                                         controller->archiveTotal() == 2,
+                                     15000);
+            auto *page =
+                qobject_cast<QQuickItem *>(window->property("activePage").value<QObject *>());
+            if (!page)
+                page = window->findChild<QQuickItem *>("sessionPage");
+            QVERIFY(page);
+            auto *model = qobject_cast<ArchiveTableModel *>(controller->entries());
+            QVERIFY(model);
+            for (bool dark : {false, true})
+                for (double scale : {1., 1.25, 1.5}) {
+                    preferences->preview(dark ? "dark" : "light", scale);
+                    window->resize(1024, 700);
+                    QVERIFY(page->setProperty("inspectorRequested", true));
+                    QVERIFY(QTest::qWaitForWindowExposed(window));
+                    for (int row = 0; row < 2; ++row) {
+                        controller->selectOnlyRow(row);
+                        controller->requestPreview(controller->detail().value("id").toString());
+                        QTRY_VERIFY(!controller->busy());
+                        const auto state = controller->contentPreview().value("state").toString();
+                        QVERIFY(state == "text" || state == "image");
+                        auto *card = findVisual(page, "previewContent");
+                        auto *action = findVisual(page, "contentPreviewAction");
+                        QVERIFY(card && action);
+                        QVERIFY(QQuickTest::qWaitForPolish(window, 3000));
+                        const auto position = action->mapToItem(card, QPointF());
+                        QVERIFY(position.y() >= 0 &&
+                                position.y() + action->height() <= card->height() + .5);
+                        QVERIFY(position.x() >= 0 &&
+                                position.x() + action->width() <= card->width() + .5);
+                        const auto scene = language + (dark ? "-dark-" : "-light-") +
+                                           QString::number(scale) + "-" + state;
+                        QVERIFY(visual_audit::save(window, directory, scene));
+                    }
+                    const auto scene =
+                        language + (dark ? "-dark-" : "-light-") + QString::number(scale);
+                    // These are presentation fixtures. The separate real runtime
+                    // tests cover password, retry, integrity and cancellation.
+                    for (const auto *state : {"loading", "error"}) {
+                        controller->m_contentPreview = {{"state", state},
+                                                        {"message", state == QStringLiteral("error")
+                                                                        ? qtTrId("preview.limit")
+                                                                        : QString{}}};
+                        emit controller->changed();
+                        QVERIFY(visual_audit::save(window, directory, scene + "-" + state));
+                    }
+                    controller->cancelContentPreview();
+                    auto *menu = page->findChild<QObject *>("archiveMoreMenu");
+                    QVERIFY(menu && QMetaObject::invokeMethod(menu, "open"));
+                    QTRY_VERIFY(menu->property("visible").toBool());
+                    QCOMPARE(menu->property("width").toDouble(), 240.0 * scale);
+                    QCOMPARE(menu->property("font").value<QFont>().pixelSize(), qRound(13 * scale));
+                    QCOMPARE(window->width(), 1024);
+                    QVERIFY(visual_audit::save(window, directory, scene + "-menu"));
+                    QVERIFY(QMetaObject::invokeMethod(menu, "close"));
+                    controller->m_openPasswordPrompt = {{"taskId", "preview"},
+                                                        {"promptId", "layout-owned"},
+                                                        {"kind", "preview"},
+                                                        {"name", "owned.txt"},
+                                                        {"retry", false}};
+                    emit controller->tasksChanged();
+                    auto *password = window->findChild<QQuickWindow *>("passwordWindow");
+                    QVERIFY(password);
+                    QTRY_VERIFY(password->isVisible());
+                    QVERIFY(visual_audit::save(password, directory, scene + "-password"));
+                    password->close();
+                    QVERIFY(controller->passwordPrompt().isEmpty());
+                    window->resize(832, 544);
+                    QTRY_VERIFY(!page->property("inspectorVisible").toBool());
+                    QVERIFY(QMetaObject::invokeMethod(page, "toggleInspector"));
+                    auto *inspector = window->findChild<QQuickWindow *>("inspectorWindow");
+                    QVERIFY(inspector);
+                    QTRY_VERIFY(inspector->isVisible());
+                    controller->requestPreview(controller->detail().value("id").toString());
+                    QTRY_VERIFY(!controller->busy());
+                    QVERIFY(visual_audit::save(inspector, directory,
+                                               language + (dark ? "-dark-" : "-light-") +
+                                                   QString::number(scale) + "-separate"));
+                    inspector->close();
+                    QVERIFY(controller->contentPreview().isEmpty());
+                }
+        }
+    }
     void desktopProbeWaitsForCloseBeforeReopening() {
         BrowserController controller;
         QQuickWindow window;
@@ -13189,8 +13528,9 @@ QtObject {
         QCOMPARE(controller->total(), 100000);
         QCOMPARE(controller->archiveTotal(), 100000);
         QCOMPARE(controller->entries()->rowCount(), 100000);
-        QCOMPARE(controller->entries()->data(controller->entries()->index(99999, 0)).toString(),
-                 "item-099999.txt");
+        QTRY_COMPARE_WITH_TIMEOUT(
+            controller->entries()->data(controller->entries()->index(99999, 0)).toString(),
+            QStringLiteral("item-099999.txt"), 10000);
         QVERIFY(QTest::qWaitForWindowExposed(window));
         // Model publication and TableView incubation are distinct events. Wait
         // for a real visible cell, not a fixed 50ms delay on a shared runner.
@@ -13207,7 +13547,7 @@ QtObject {
         controller->selectAll(true);
         QCOMPARE(controller->selectedCount(), 100000);
         QVERIFY(!controller->canPreflight());
-        QCOMPARE(controller->selectedBytes(), "0");
+        QCOMPARE(controller->selectedBytes(), QString::fromUtf8("—"));
         elapsed.restart();
         controller->sortByColumn(0);
         QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 20000);

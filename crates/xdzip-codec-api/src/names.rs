@@ -148,32 +148,87 @@ fn resolve_internal(
     if rows.len() != legacy.len() {
         return Err(ScanError::Invalid);
     }
-    let mut detector = EncodingDetector::new(Iso2022JpDetection::Deny);
-    let mut sample = 0usize;
+    let mut sample = NameSample::default();
     for (row, allowed) in rows.iter().zip(legacy) {
         control.check()?;
-        if *allowed
-            && row.name_encoding != NameEncoding::Unresolved
-            && row.decoded_name.is_none()
-            && std::str::from_utf8(&row.raw_name).is_err()
-        {
-            if sample + row.raw_name.len() + 1 > 1024 * 1024 {
-                break;
-            }
-            detector.feed(&row.raw_name, false);
-            detector.feed(b"\n", false);
-            sample += row.raw_name.len() + 1;
-        }
+        sample.observe(row, *allowed);
     }
-    detector.feed(b"", true);
-    let encoding = guess(&detector, zip);
+    let resolution = sample.finish(zip);
     let mut text_bytes = 0usize;
     for (row, allowed) in rows.iter_mut().zip(legacy) {
         control.check()?;
+        resolution.resolve(row, *allowed, cab_separators, limits, &mut text_bytes)?;
+    }
+    Ok(())
+}
+
+/// Archive-wide bounded name sampling, independent of metadata storage.
+pub struct NameSample {
+    detector: EncodingDetector,
+    bytes: usize,
+    full: bool,
+}
+impl Default for NameSample {
+    fn default() -> Self {
+        Self {
+            detector: EncodingDetector::new(Iso2022JpDetection::Deny),
+            bytes: 0,
+            full: false,
+        }
+    }
+}
+impl NameSample {
+    /// Observe complete unlabelled names in physical order, up to the shared 1 MiB limit.
+    pub fn observe(&mut self, row: &Entry, allowed: bool) {
+        if self.full
+            || !allowed
+            || row.name_encoding == NameEncoding::Unresolved
+            || row.decoded_name.is_some()
+            || std::str::from_utf8(&row.raw_name).is_ok()
+        {
+            return;
+        }
+        if self.bytes + row.raw_name.len() + 1 > 1024 * 1024 {
+            self.full = true;
+            return;
+        }
+        self.detector.feed(&row.raw_name, false);
+        self.detector.feed(b"\n", false);
+        self.bytes += row.raw_name.len() + 1;
+    }
+    /// Freeze the same encoding decision for every record in a second streaming pass.
+    pub fn finish(mut self, zip: bool) -> NameResolution {
+        self.detector.feed(b"", true);
+        NameResolution {
+            encoding: guess(&self.detector, zip),
+            sampled: self.bytes != 0,
+            zip,
+        }
+    }
+}
+/// Immutable archive-level name decision. Does not authorize an output path.
+pub struct NameResolution {
+    encoding: &'static str,
+    sampled: bool,
+    zip: bool,
+}
+impl NameResolution {
+    /// Resolve one record and charge all retained display/decoded bytes to the caller's total.
+    pub fn resolve(
+        &self,
+        row: &mut Entry,
+        allowed: bool,
+        cab_separators: bool,
+        limits: ScanLimits,
+        text_bytes: &mut usize,
+    ) -> Result<(), ScanError> {
+        let encoding = self.encoding;
+        let zip = self.zip;
+        let allowed = &allowed;
         if row.name_encoding != NameEncoding::Unresolved && row.decoded_name.is_none() {
             match std::str::from_utf8(&row.raw_name) {
                 Ok(_) if !*allowed || row.raw_name.is_ascii() => {}
-                Ok(text) if sample == 0 => {
+                Ok(text) if !self.sampled => {
                     row.decoded_name = Some(text.to_owned());
                     row.name_encoding = NameEncoding::UnmarkedUtf8;
                 }
@@ -219,15 +274,24 @@ fn resolve_internal(
         row.warning |= warning;
         row.display_name = text;
         let decoded = row.decoded_name.as_ref().map_or(0, String::len);
-        text_bytes = text_bytes
+        *text_bytes = text_bytes
             .checked_add(row.decoded_name.as_ref().map_or(0, String::capacity))
             .and_then(|n| n.checked_add(row.display_name.capacity()))
             .ok_or(ScanError::Limit)?;
-        if decoded > limits.name_bytes || text_bytes > limits.display_name_bytes {
+        if decoded > limits.name_bytes || *text_bytes > limits.display_name_bytes {
             return Err(ScanError::Limit);
         }
+        Ok(())
     }
-    Ok(())
+}
+
+/// Recover an admitted static encoding label from private metadata storage.
+pub fn encoding_label(label: &str) -> Option<&'static str> {
+    if label == "CP437" {
+        Some("CP437")
+    } else {
+        Encoding::for_label(label.as_bytes()).map(Encoding::name)
+    }
 }
 
 #[cfg(test)]

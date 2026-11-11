@@ -127,7 +127,10 @@ fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -
         runtime.open(path_text(&archive)?)?;
     }
     match name {
-        "list" => runtime.list(),
+        "list" => runtime.list(
+            matches.get_one::<u64>("offset").copied(),
+            matches.get_one::<u64>("limit").copied(),
+        ),
         "test" => runtime.task(
             name,
             Command::Check {

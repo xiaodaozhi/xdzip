@@ -163,6 +163,30 @@ pub(crate) fn read_directory(
     control: &Cancellation,
     limits: ScanLimits,
 ) -> Result<Directory, ScanError> {
+    let mut records = Vec::new();
+    let mut directory = visit_directory(
+        source,
+        control,
+        limits,
+        xdzip_codec_api::MAX_ENTRIES,
+        MAX_DIRECTORY,
+        &mut |record| {
+            records.push(record);
+            Ok(())
+        },
+    )?;
+    directory.records = records;
+    Ok(directory)
+}
+
+pub(crate) fn visit_directory(
+    source: &mut dyn ReadSource,
+    control: &Cancellation,
+    limits: ScanLimits,
+    max_entries: usize,
+    max_directory: u64,
+    visitor: &mut dyn FnMut(Record) -> Result<(), ScanError>,
+) -> Result<Directory, ScanError> {
     control.check()?;
     let mut source = Budget {
         source,
@@ -170,12 +194,20 @@ pub(crate) fn read_directory(
         remaining: limits.read_bytes,
         failure: None,
     };
-    let result = parse_directory(&mut source, control, limits);
+    let result = parse_directory(
+        &mut source,
+        control,
+        limits,
+        max_entries,
+        max_directory,
+        visitor,
+    );
     match source.failure {
         Some(error) => Err(error),
         None => result,
     }
 }
+
 struct Footer {
     count: u64,
     size: u64,
@@ -312,6 +344,9 @@ fn parse_directory(
     source: &mut Budget<'_>,
     control: &Cancellation,
     limits: ScanLimits,
+    max_entries: usize,
+    max_directory: u64,
+    visitor: &mut dyn FnMut(Record) -> Result<(), ScanError>,
 ) -> Result<Directory, ScanError> {
     let source_length = source.seek(SeekFrom::End(0)).map_err(io_error)?;
     if source_length < 22 {
@@ -332,9 +367,7 @@ fn parse_directory(
     let end_offset = source_length - tail_size as u64 + end as u64;
     let comment = tail[end + 22..].to_vec();
     let footer = footer(source, &tail[end..end + 22], end_offset, control)?;
-    if footer.count > limits.entries.min(xdzip_codec_api::MAX_ENTRIES) as u64
-        || footer.size > MAX_DIRECTORY
-    {
+    if footer.count > limits.entries.min(max_entries) as u64 || footer.size > max_directory {
         return Err(ScanError::Limit);
     }
     if footer
@@ -358,7 +391,7 @@ fn parse_directory(
         .seek(SeekFrom::Start(central_offset))
         .map_err(io_error)?;
     let mut stream = BufReader::with_capacity(64 * 1024, (&mut *source).take(footer.size));
-    let mut records = Vec::with_capacity(footer.count as usize);
+    let mut first_local = None::<u64>;
     let mut position = central_offset;
     let mut names = 0usize;
     for _ in 0..footer.count {
@@ -391,7 +424,8 @@ fn parse_directory(
             .checked_add(base_offset)
             .filter(|at| *at < central_offset)
             .ok_or(ScanError::Invalid)?;
-        records.push(Record {
+        first_local = Some(first_local.map_or(local_offset, |at| at.min(local_offset)));
+        visitor(Record {
             name,
             extra,
             comment,
@@ -408,7 +442,7 @@ fn parse_directory(
             internal_attributes: n16(&fixed, 36),
             external_attributes: n32(&fixed, 38),
             central_wide_sizes: n32(&fixed, 20) == u32::MAX || n32(&fixed, 24) == u32::MAX,
-        });
+        })?;
         position = next;
     }
     if position != footer.records_end {
@@ -425,7 +459,7 @@ fn parse_directory(
     }
     drop(stream);
     if base_offset != 0
-        && let Some(local) = records.iter().map(|record| record.local_offset).min()
+        && let Some(local) = first_local
     {
         // Bind an inferred prefix correction to an actual local record. A
         // corrupted directory offset alone must not invent an SFX prefix.
@@ -437,7 +471,7 @@ fn parse_directory(
     }
     control.check()?;
     Ok(Directory {
-        records,
+        records: Vec::new(),
         comment,
         central_offset,
         central_size: footer.size,

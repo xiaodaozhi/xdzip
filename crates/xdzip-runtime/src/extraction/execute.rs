@@ -84,12 +84,20 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
         job.source.validate().map_err(|_| "source_changed")?;
         let mut interaction = Interaction::with_password(job.password.clone());
         let mut source = job.source.fork().map_err(|_| "source_changed")?;
-        let opened = crate::formats::codec(job.format).open_payload_with_password(
-            source.file(),
-            &job.rows,
-            &control.cancel,
-            job.password.as_ref().map(super::Password::expose),
-        );
+        let opened = if job.subset {
+            xdzip_codec_zip::ZipCodec.open_selected_payload(
+                source.file(),
+                &job.rows,
+                &control.cancel,
+            )
+        } else {
+            crate::formats::codec(job.format).open_payload_with_password(
+                source.file(),
+                &job.rows,
+                &control.cancel,
+                job.password.as_ref().map(super::Password::expose),
+            )
+        };
         job.source.validate().map_err(|_| "source_changed")?;
         let mut decoder = opened.map_err(decoding)?;
         if job.links_pending {

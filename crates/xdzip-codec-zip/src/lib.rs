@@ -8,6 +8,7 @@ mod payload;
 pub(crate) mod record;
 mod rewrite;
 pub mod split;
+mod streaming;
 mod writer;
 #[cfg(test)]
 use std::io::{Read, Seek, SeekFrom};
@@ -29,60 +30,70 @@ impl MetadataCodec for ZipCodec {
         let mut decoded_bytes = 0usize;
         for record in directory.records {
             control.check()?;
-            let utf8 = record.utf8();
-            let encrypted = record.encrypted();
-            let directory = record.is_dir();
-            let unicode = names::unicode_path(&record.name, utf8, &record.extra);
-            let (decoded_name, name_encoding) = match unicode {
-                Ok(Some(name)) => (
-                    Some(name),
-                    xdzip_codec_api::names::NameEncoding::UnicodePath,
-                ),
-                Ok(None) => (None, xdzip_codec_api::names::NameEncoding::Utf8),
-                Err(()) => (None, xdzip_codec_api::names::NameEncoding::Unresolved),
-            };
-            let decoded_len = decoded_name.as_ref().map_or(0, String::len);
-            decoded_bytes = decoded_bytes
-                .checked_add(decoded_len)
-                .ok_or(ScanError::Limit)?;
-            if decoded_len > limits.name_bytes || decoded_bytes > limits.display_name_bytes {
-                return Err(ScanError::Limit);
-            }
-            let unix_type = matches!(record.version_made_by >> 8, 3 | 19)
-                .then_some((record.external_attributes >> 16) & 0o170000);
-            let warning =
-                unix_type.is_some_and(|kind| !matches!(kind, 0 | 0o040000 | 0o100000 | 0o120000));
-            legacy.push(!utf8);
-            let id = u64::try_from(rows.len())
-                .ok()
-                .and_then(|n| n.checked_add(1))
-                .and_then(|n| EntryId::try_from(n).ok())
-                .ok_or(ScanError::Limit)?;
-            rows.push(Entry {
-                format: xdzip_codec_api::Format::Zip,
-                id,
-                raw_name: record.name,
-                decoded_name,
-                name_encoding,
-                display_name: String::new(),
-                directory,
-                link: unix_type == Some(0o120000),
-                unix_mode: unix_type.map_or(0, |_| record.external_attributes >> 16),
-                size: record.size,
-                size_known: true,
-                packed_size: record.packed_size,
-                method: record.method,
-                modified_dos: validated_dos(record.modified_dos),
-                encrypted,
-                password_supported: encrypted
-                    && record.method == 99
-                    && aes::supported(record::ExtraFields::new(&record.extra), record.crc),
-                warning,
-            });
+            let (entry, allowed) = metadata(record, rows.len(), limits, &mut decoded_bytes)?;
+            legacy.push(allowed);
+            rows.push(entry);
         }
         xdzip_codec_api::names::resolve(&mut rows, &legacy, true, control, limits)?;
         Ok(rows)
     }
+}
+
+pub(crate) fn metadata(
+    record: record::Record,
+    index: usize,
+    limits: ScanLimits,
+    decoded_bytes: &mut usize,
+) -> Result<(Entry, bool), ScanError> {
+    let utf8 = record.utf8();
+    let encrypted = record.encrypted();
+    let directory = record.is_dir();
+    let unicode = names::unicode_path(&record.name, utf8, &record.extra);
+    let (decoded_name, name_encoding) = match unicode {
+        Ok(Some(name)) => (
+            Some(name),
+            xdzip_codec_api::names::NameEncoding::UnicodePath,
+        ),
+        Ok(None) => (None, xdzip_codec_api::names::NameEncoding::Utf8),
+        Err(()) => (None, xdzip_codec_api::names::NameEncoding::Unresolved),
+    };
+    let decoded_len = decoded_name.as_ref().map_or(0, String::len);
+    *decoded_bytes = decoded_bytes
+        .checked_add(decoded_len)
+        .ok_or(ScanError::Limit)?;
+    if decoded_len > limits.name_bytes || *decoded_bytes > limits.display_name_bytes {
+        return Err(ScanError::Limit);
+    }
+    let unix_type = matches!(record.version_made_by >> 8, 3 | 19)
+        .then_some((record.external_attributes >> 16) & 0o170000);
+    let warning = unix_type.is_some_and(|kind| !matches!(kind, 0 | 0o040000 | 0o100000 | 0o120000));
+    let id = u64::try_from(index)
+        .ok()
+        .and_then(|n| n.checked_add(1))
+        .and_then(|n| EntryId::try_from(n).ok())
+        .ok_or(ScanError::Limit)?;
+    let entry = Entry {
+        format: xdzip_codec_api::Format::Zip,
+        id,
+        raw_name: record.name,
+        decoded_name,
+        name_encoding,
+        display_name: String::new(),
+        directory,
+        link: unix_type == Some(0o120000),
+        unix_mode: unix_type.map_or(0, |_| record.external_attributes >> 16),
+        size: record.size,
+        size_known: true,
+        packed_size: record.packed_size,
+        method: record.method,
+        modified_dos: validated_dos(record.modified_dos),
+        encrypted,
+        password_supported: encrypted
+            && record.method == 99
+            && aes::supported(record::ExtraFields::new(&record.extra), record.crc),
+        warning,
+    };
+    Ok((entry, !utf8))
 }
 
 // Preserve valid local timestamp bits; invalid components remain unknown.

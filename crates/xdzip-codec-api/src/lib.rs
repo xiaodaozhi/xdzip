@@ -75,8 +75,11 @@ impl Cancellation {
     }
 }
 
-/// Physical-record admission shared by codecs, indexes and the native model.
+/// Default record/task admission; streaming ZIP indexing has a separate larger bound.
 pub const MAX_ENTRIES: usize = 100_000;
+
+/// Streaming ZIP metadata admission. Write/task limits remain independent.
+pub const MAX_INDEX_ENTRIES: usize = 1_000_000;
 
 /// Bounded M2 metadata admission; sizes never grant payload decode capability.
 #[derive(Clone, Copy)]

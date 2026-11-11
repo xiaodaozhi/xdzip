@@ -1,5 +1,15 @@
 # 依赖与格式后端准入
 
+## 外部 SDK 试验
+
+独立试验宿主复用锁定的 serde 1.0.229、serde_json 1.0.154、sha2 0.10.9、getrandom 0.4.2、libc 0.2.190 与 tempfile 3.27.0，不新增第三方版本或格式／CBOR 库。协议 crate 仅使用 std，自有有界 CBOR 与独立 Python stdlib peer 依据 RFC 8949 互通。宿主不链接 Qt、不进入桌面和 CLI 运行闭包，也不改变正式发行材料。
+
+tempfile 从既有锁文件提升为试验的直接依赖，用于保留经校验的私有可执行副本，替代自行维护通用临时目录实现；安全输出仍复用 xdzip-io，不把 tempfile 当作提交授权。来源为 [Stebalien/tempfile](https://github.com/Stebalien/tempfile)，许可 MIT 或 Apache-2.0，默认特性与 fastrand、getrandom、once_cell、rustix／windows-sys 等实际目标闭包以 Cargo.lock／metadata 为准，沿用已有锁定版本，没有下载构建脚本或新增 C 库。已有基础库的用途、来源和许可继续适用；本轮不把历史公告查询当成新安全结论。测试与门禁见 [SDK 试验](sdk-trial.md)，Windows 未有 AppContainer 实现时固定拒绝。
+
+English: The standalone trial reuses existing locked serde/JSON, SHA-256, randomness, libc and tempfile versions; it adds no external codec/CBOR library or desktop/CLI runtime dependency. Std-only bounded CBOR interoperates with an independent Python implementation. tempfile owns the verified executable copy, never output authority; its MIT/Apache upstream and actual target feature closure remain part of dependency notices. No historical advisory query is claimed as current assurance. Unsupported sandbox platforms refuse execution.
+
+包成员访问复用已准入 cap-std／cap-fs-ext 4.0.3 的精确版本与既有特性，以持有的目录逐层 no-follow 打开，避免字符串检查后重新按环境路径打开的竞争。两者沿用既有安全 I/O 的来源、MIT 或 Apache-2.0 许可、传递版本与原生行为，不新增第三方版本。English: Package admission reuses the existing pinned capability-directory libraries for held, component-by-component no-follow access.
+
 ## CLI 前端与 HTTPS
 
 CLI 将锁文件中的 clap 4.6.7 提升为实际产品前端依赖，仅启用 std、help、usage、error-context、suggestions、string，不启用 derive 或终端颜色。新增 ureq 3.5.1，关闭默认特性，仅启用 native-tls-no-default、socks-proxy，显式选择 NativeTls 与系统信任根；不引入默认 GZIP 解码、Cookie、JSON 辅助、外部 curl 或 Qt 网络运行依赖。serde、serde_json、zeroize、sha2、getrandom 及平台绑定复用已有锁定版本。

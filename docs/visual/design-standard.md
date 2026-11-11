@@ -2,6 +2,12 @@
 
 本规范约束界面创作、HTML 设计交付和 Qt 实现。尺寸换算以 [layout-scale.json](layout-scale.json) 为准；颜色、共享控件和目录树分别以 [tokens.json](tokens.json)、[controls.json](controls.json)、[directory-tree.json](directory-tree.json) 为准。原稿量测保存在 [qt-main-reference.json](qt-main-reference.json)，不以实现结果反向改写原图。
 
+## 主动内容预览
+
+[内容状态稿](../../design/hifi/sources/content-preview.html)沿用现有属性卡的宽度、高度、圆角、主窗口密度与文字角色。内距、间距、图标和加载指示参数由 layout-scale.json 的 main.content_preview 生成。用户点击共享 ArchiveAction 后才读取内容；加载、密码等待、纯文本、图片和错误均在卡片内切换，取消动作固定可达。文本为纯文本且可选择，图片保持比例，不增加浏览器、HTML、SVG 或外部链接执行入口。主窗口与独立属性查看器复用同一 InspectorPanel，关闭预览或更换条目立即清空。密码窗口沿用 P02 和共享 footer，仅按预览任务切换文案。主窗口及菜单的既有比例仍须同时复验。
+
+English: Explicit content previews reuse the existing inspector card and its density, typography and geometry. Shared generated parameters define its insets, gaps, icon and busy indicator. Loading, password, plain text, bounded raster images and errors occupy the same card. Cancellation remains reachable. Both inspector presentations share the component; closing or changing entries clears the content. The password prompt retains P02 geometry and shared controls. Main-window/menu proportions remain independently checked.
+
 ## 界面字体与用户数据
 
 Qt 启动时保存系统默认字体家族，再安装内置的 Noto Sans SC 衍生子集作为固定界面文案字体。文件名、归档名、目录名、路径以及包含这些内容的提示和编辑字段优先使用保存的系统字体；缺少字形时由 Qt 和平台继续回退。含文件名的复合提示可整段使用系统字体，静态占位和操作文字保留界面字体。文字显示、目录树宽度及拖动预览测量须使用对应的相同字体；字号仍遵从现有逻辑尺寸和辅助字号，不因系统 DPI 调整组件逻辑尺寸。HTML 审阅示例仍使用内置子集；用户数据的实际字形与文字宽度以运行平台为准，结构尺寸按同一逻辑规范核验。

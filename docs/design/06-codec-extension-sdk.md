@@ -4,7 +4,7 @@
 
 **内置源码级扩展**实现 Rust SDK，随产品构建，使用 Cargo feature 挑选后端。Rust 编译器 ABI 不稳定，不将它们做成任意版本可加载的 `.so/.dylib/.dll`。
 
-**进程级扩展**是后续设计：外部扩展通过版本化线协议由 `xdzip-plugin-host` 适配为同一格式接口，可以独立发布。该第三方协议与宿主尚未实现；计划中的线协议与 Qt 的 cxx 接口无关，外部进程不能创建 Qt 对象或弹出自己的密码窗口。
+**进程级扩展**通过版本化线协议由 `xdzip-plugin-host` 承接。目前有独立、显式启动的[只读 SDK 试验](../engineering/sdk-trial.md)，包含有界 framing、broker、Rust／独立 Python peer 与平台门禁；尚未接入产品格式发现、安装或发行。下文完整能力仍是后续目标，不因试验存在就自动开放。线协议与 Qt 的 cxx 接口无关，外部进程不能创建 Qt 对象或弹出自己的密码窗口。
 
 官方原生后端也可使用工作进程协议，以隔离内存错误；“官方”不免除输入检查。第三方发布在沙箱验证阶段前默认不可执行。
 
@@ -98,6 +98,8 @@ manifest 草案示例（哈希/签名由包清单提供；仅演示字段，不�
 安装包作为不可信归档由同一安全提取服务解包到暂存目录，验证清单/签名/平台后原子发布。签名说明发布者身份，不能证明代码安全。用户第一次启用能看到来源、格式和权限；协议兼容和权限变更需要重新评估，不能静默继承旧授权。
 
 ## 6. 线协议 v1 草案
+
+当前只读试验的精确数字 schema、已实现消息及更严格的单块信用见[试验契约](../engineering/sdk-trial.md#线协议与状态)。本节其余消息不自动属于已协商能力。English: The trial contract defines the implemented numeric schema and stricter single-block credit; the remaining draft capabilities are not advertised.
 
 传输为私有继承 IPC 管道；不监听 TCP，不创建公开端口。双向帧是 `u32 little-endian 长度 + CBOR 对象`。在分配前检查长度；每帧最大 1MiB，数据消息中 bytes 最大 256KiB。CBOR 深度最大 16，不允许无界长度、重复关键字段或未知必需消息种类。
 

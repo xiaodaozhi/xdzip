@@ -1925,6 +1925,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-plugin-host"
+version = "0.2.0"
+dependencies = [
+ "cap-fs-ext",
+ "cap-std",
+ "getrandom 0.4.2",
+ "libc",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
+ "xdzip-domain",
+ "xdzip-io",
+ "xdzip-plugin-protocol",
+]
+
+[[package]]
+name = "xdzip-plugin-protocol"
+version = "0.2.0"
+
+[[package]]
 name = "xdzip-qt-bridge"
 version = "0.2.0"
 dependencies = [

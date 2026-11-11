@@ -25,7 +25,7 @@ impl MoveOptions {
             && self
                 .selected
                 .iter()
-                .all(|id| !id.is_empty() && id.len() <= 21)
+                .all(|id| !id.is_empty() && id.len() <= if id.starts_with('q') { 96 } else { 21 })
     }
     pub(crate) fn bytes(&self) -> usize {
         self.selected
@@ -48,9 +48,10 @@ impl Moves {
 impl Archive {
     pub(crate) fn move_job(
         &self,
-        options: MoveOptions,
+        mut options: MoveOptions,
         cancel: &Cancellation,
     ) -> Result<Job, &'static str> {
+        options.selected = self.resolve_query_selectors(&options.selected, cancel)?;
         if !options.bounded() {
             return Err("invalid_options");
         }

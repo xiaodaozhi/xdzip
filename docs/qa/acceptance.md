@@ -382,3 +382,33 @@ English: Verify each Windows format handler, document icon, real archive dispatc
 | CLI-DESKTOP | 同用户有界 IPC 不变为文件打开，关闭时拒绝；原有桌面更新复验候选和全部任务屏障，CLI 占用不被安装破坏，交接不冒称已安装；无 GUI 身份查询不消费回执；Mac 普通上下文仅位于 Resources，重复构建无旧标记残留，实际原生签名及固定 GUI 上下文解析通过 |
 
 English: CLI acceptance covers real headless interfaces and archive bytes, cancellation/cleanup, owned installation and launch forwarding, private signed/native update transactions and failure recovery, plus bounded desktop IPC and task barriers. Mock transport is not real HTTPS evidence, handoff is not installation, and automated/native/manual outcomes remain distinct.
+
+
+## 大索引与主动预览
+
+| 条目 | 必要检查与通过条件 |
+| --- | --- |
+| INDEX-MILLION | 真实百万条 ZIP64，含中文、长名、重复名与嵌套目录；物理数量和展示数量分别核对，读取全部结果批次，记录扫描／排序／检索及峰值内存和磁盘字节，不将单机结果推广为全平台保证 |
+| INDEX-PAGES | Qt 保留完整逻辑行数，远距离跳转、搜索和排序可用，驻留最多 1024 行；会话、查询、代际、修订或偏移失配时拒绝旧页，切换查询清空旧选择 |
+| INDEX-SELECTION | 跨页选择和全选覆盖完整当前查询，缓存回收后选择保持；解压确认前冻结为稳定身份，查询改变后使用冻结集合；超出任务限制时整体拒绝，不提交部分选择 |
+| INDEX-OUTPUT | 从大索引选择实际普通文件，经负载完整性及认证和既有安全授权输出；源变化、重复偏移、超限、取消、链接及不支持的整包操作明确失败，原有文件保持 |
+| INDEX-CLEANUP | 正常关闭、替换查询、失败和取消清理已知私有文件；七天回收保留活动租约、未知对象、链接与身份失配对象，不清理用户内容 |
+| CONTENT-PREVIEW | 点击共享动作后完整校验真实文本、PNG 和 JPEG，保持纯文本语义；不支持类型、编码、尺寸、像素、输入及算法工作超限拒绝，不显示部分内容，不启动外部应用 |
+| PREVIEW-LIFETIME | 密码缺失、错误、正确及认证损坏，取消和关闭密码窗口、更换条目、隐藏页面和关闭会话清空内容；迟到结果不能恢复内容，事件及 Qt mailbox 实际计入内容字节 |
+| PREVIEW-VISUAL | 主窗口与独立属性查看器的中英文、浅深色、100%／125%／150% 字号，文本、图片、错误和取消动作可读可达；保留主窗口和菜单比例，实际原生观察与自动功能检查分开记录 |
+
+English: Large-index acceptance covers real million-record ZIP64 data, complete logical results with a 1,024-row Qt cache, full query identities, frozen cross-page selection, actual safe selected-file output and private leased cleanup. Explicit preview acceptance covers authenticated plain text and bounded PNG/JPEG, resource failures, password/cancel/close/source-change lifecycles, real mailbox accounting and bilingual multi-size native visual checks. Logs and measurements remain artifacts rather than repository reports.
+
+## 外部 SDK 只读试验
+
+按 [SDK 试验契约](../engineering/sdk-trial.md)执行 `scripts/sdk-trial.py test`，独立于产品第三方启用与发行。
+
+| 条目 | 必要检查与通过条件 |
+| --- | --- |
+| SDK-WIRE | Rust 与独立 Python 互通实际元数据、多块内容及宿主摘要；非最短整数、重复键、不定长、无效 UTF-8、过深／过长、未知必需字段与不兼容版本明确拒绝 |
+| SDK-BROKER | 来源／操作／sink 身份、序号、越界与溢出、重复 token、不安全路径、旧信用、错误摘要均失败；不向 peer 交付宿主文件路径或输出句柄 |
+| SDK-COMMIT | 源变化、目标冲突、缺失或重复终态、崩溃、迟到数据和取消不发布文件；暂存与目录清理，已有目标保持；最终源复核、正常关闭及 EOF 后才提交 |
+| SDK-PACKAGE | 未知权限、路径逃逸与摘要失配拒绝；实际执行副本被验证并私有保存，环境与继承句柄受限，不能绕过沙箱或改用 shell |
+| SDK-KERNEL | 对自有读／写文件、回环监听器和 self-exec 先作正向对照，再验证真实内核拒绝；绑定实际平台、策略与二进制身份，资源与响应监督有效，未实现平台执行失败且产品第三方保持禁用 |
+
+English: The standalone SDK trial requires independent wire/content interoperability, bounded adversarial decoding and I/O, source/target protection and cleanup across abnormal completion/cancellation, strict verified packages, and real kernel read/write/network/descendant denial with positive controls. Unimplemented platforms must refuse execution. Evidence never implies product plugin enablement or release approval.
