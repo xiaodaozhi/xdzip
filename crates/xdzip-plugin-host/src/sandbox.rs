@@ -282,6 +282,8 @@ mod linux {
         let allowed = [
             libc::SYS_read,
             libc::SYS_write,
+            libc::SYS_readv,
+            libc::SYS_writev,
             libc::SYS_close,
             libc::SYS_fstat,
             libc::SYS_lseek,

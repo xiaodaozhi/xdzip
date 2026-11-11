@@ -1,0 +1,37 @@
+name: SDK trial
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sdk:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install pinned Rust
+        run: rustup toolchain install 1.99.0 --profile minimal --component rustfmt --component clippy
+      - name: Verify bounded protocol and native sandbox gate
+        run: python scripts/sdk-trial.py test
+      - name: Diagnose only the owned Linux peer after failure
+        if: failure() && runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends strace
+          python3 scripts/sdk-trial.py example --output-dir build/sdk-diagnostic
+          timeout 90s strace -f -s 32 -e trace='!fcntl' -e status=failed -o build/review/sdk-trial/linux-syscalls.log target/debug/xdzip-plugin-host scan build/sdk-diagnostic/owned-package/manifest.json build/sdk-diagnostic/owned.xdp
+      - name: Retain only logs and JSON
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: sdk-trial-${{ runner.os }}-${{ runner.arch }}
+          path: |
+            build/review/sdk-trial/*.log
+            build/review/sdk-trial/*.json
+          if-no-files-found: error
+          retention-days: 14

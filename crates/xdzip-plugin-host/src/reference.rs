@@ -257,6 +257,33 @@ fn run() -> Result<(), Error> {
         }
     }
 }
+#[cfg(unix)]
+#[allow(unsafe_code)]
+fn fork_allowed() -> bool {
+    // SAFETY: the trusted audit child performs only async-signal-safe _exit.
+    // The parent waits only for this owned PID. This deliberately bypasses the
+    // std::process helper pipe so its denial cannot mask an allowed raw fork.
+    unsafe {
+        let pid = libc::fork();
+        if pid < 0 {
+            return false;
+        }
+        if pid == 0 {
+            libc::_exit(0);
+        }
+        let mut status = 0;
+        while libc::waitpid(pid, &mut status, 0) < 0 {
+            if std::io::Error::last_os_error().raw_os_error() != Some(libc::EINTR) {
+                break;
+            }
+        }
+        true
+    }
+}
+#[cfg(not(unix))]
+fn fork_allowed() -> bool {
+    false
+}
 fn audit(args: &[String]) -> bool {
     use std::{
         io::Read,
@@ -290,11 +317,12 @@ fn audit(args: &[String]) -> bool {
             .status()
             .is_ok_and(|s| s.success())
     });
+    let fork = fork_allowed();
     println!(
-        "{{\"read_denied\":{},\"write_denied\":{},\"network_denied\":{},\"descendant_denied\":{}}}",
-        !read, !write, !network, !descendant
+        "{{\"read_denied\":{},\"write_denied\":{},\"network_denied\":{},\"descendant_denied\":{},\"fork_denied\":{}}}",
+        !read, !write, !network, !descendant, !fork
     );
-    !read && !write && !network && !descendant
+    !read && !write && !network && !descendant && !fork
 }
 fn main() {
     let args: Vec<_> = std::env::args().skip(1).collect();

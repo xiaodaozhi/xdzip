@@ -36,6 +36,8 @@ Windows 和 Linux 的 Qt 手动运行上传实验性开发包和验证工件，�
 
 普通开发与发行验收不自动生成项目源码归档，也不调用源码交付收集器。源码收集必须有所有者单独明确要求；GitHub 标签自带的源码快照与项目流水线附件分开说明。English: Development/release validation does not automatically archive the project source or invoke the corresponding-source collector. Source collection requires separate explicit owner authorization; GitHub's tag snapshots remain distinct from uploaded pipeline assets.
 
+[SDK trial](../../.github/workflows/sdk-trial.yml)同样仅手动运行，先执行独立只读协议与原生内核门禁，不下载 Qt、不部署应用，仅上传日志和 JSON。SDK 平台失败优先用该入口收敛；Foundation 与 Qt 中仍适用的其他证据按验证方法复用。English: The manual SDK trial checks only protocol/kernel boundaries before heavy pipelines, retaining logs/JSON without Qt or deployment. Reuse unaffected Foundation/Qt evidence.
+
 ## 视觉、桌面与发行
 
 根据改动先运行自动化并由执行者尽量检查实际应用或截图。输入法、真实读屏、系统对话框、窗口装饰、物理多显示器及真实 GPU 等场景按需检查；没有执行或没有对应环境时记录限制，不要求每次由维护者完成固定人工清单，也不把离屏、合成输入或虚拟显示器记为真人或物理设备通过。方法见[桌面验证](../qa/private-test-manual.md)。

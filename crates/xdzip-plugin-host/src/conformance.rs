@@ -210,6 +210,7 @@ fn native_kernel_gate_and_owned_permission_attacks() {
         "write_denied",
         "network_denied",
         "descendant_denied",
+        "fork_denied",
     ] {
         assert_eq!(admitted[field], false);
     }
@@ -256,6 +257,7 @@ fn native_kernel_gate_and_owned_permission_attacks() {
         "write_denied",
         "network_denied",
         "descendant_denied",
+        "fork_denied",
     ] {
         assert_eq!(audit[field], true, "{field}");
     }
