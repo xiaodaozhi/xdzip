@@ -3,6 +3,7 @@
 FROM xdzip-update-regression
 RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake ninja-build patchelf pkg-config libssl-dev python3-venv git \
+    perl openssl zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libzstd-dev \
     libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-0 \
     libxcb1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
     libxcb-render0 libxcb-render-util0 libxcb-shape0 libxcb-randr0 \
@@ -13,3 +14,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN python3 -m venv /opt/aqt \
     && /opt/aqt/bin/pip install aqtinstall==3.3.0 \
     && /opt/aqt/bin/python -m aqt install-qt linux desktop 6.8.2 linux_gcc_64 --outputdir /opt/Qt
+COPY scripts ./scripts
+COPY patches/qt ./patches/qt
+RUN python3 scripts/prepare-qt-network.py --qt-prefix /opt/Qt/6.8.2/gcc_64

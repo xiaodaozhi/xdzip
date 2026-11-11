@@ -34,6 +34,7 @@ jobs:
       - name: Check documentation and generated sources
         run: |
           python3 scripts/sync-version.py --check
+          python3 scripts/test-qt-network-security.py
           python3 scripts/check-docs.py
           python3 scripts/test-check-docs.py
           python3 scripts/check-ui-i18n.py
@@ -46,7 +47,7 @@ jobs:
       - name: Check Rust and C++ formatting
         run: |
           cargo fmt --all -- --check
-          build/ci-check-tools/bin/clang-format --dry-run --Werror tools/bridge-probe/smoke.cpp tools/toolchain-probe/main.cpp tools/process-metrics/main.cpp tools/launch-services-probe/main.mm tools/native-codec/*.cpp tools/native-codec/*.hpp crates/xdzip-codec-bridge/include/*.hpp apps/desktop/*.cpp apps/desktop/*.h apps/desktop/tests/*.cpp tests/fixtures/native/*.c
+          build/ci-check-tools/bin/clang-format --dry-run --Werror tools/bridge-probe/smoke.cpp tools/toolchain-probe/main.cpp tools/process-metrics/main.cpp tools/launch-services-probe/main.mm tools/native-codec/*.cpp tools/native-codec/*.hpp tools/qt-network-security/*.cpp crates/xdzip-codec-bridge/include/*.hpp apps/desktop/*.cpp apps/desktop/*.h apps/desktop/tests/*.cpp tests/fixtures/native/*.c
       - name: Check workflow contracts
         run: build/ci-check-tools/bin/python scripts/test-ci-workflows.py
       - name: Check whitespace

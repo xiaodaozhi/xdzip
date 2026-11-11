@@ -225,6 +225,8 @@ def collect(prefix, cache, fetch=False):
         raise ValueError('SDK configuration inventory missing')
     patches = [patch_status(prefix, item, cache/next(a['file'] for a in config['archives'] if a['module'] == item['module'])) for item in config.get('sdk_patches', [])
                if (prefix/item['sdk_path']).exists()]
+    from qt_network_security import identity as network_identity
+    network = network_identity(prefix, required=False)
     return {'schema_version': 2, 'status': 'evidence-collected-not-build-equivalence',
             'qt_version': config['qt_version'],
             'revision': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
@@ -232,6 +234,7 @@ def collect(prefix, cache, fetch=False):
             'source_config_sha256': digest(ROOT/'scripts/corresponding-sources.json'),
             'modules': modules, 'installed_configuration': inputs,
             'consumer_patches': patches,
+            'network_security': network,
             'license_text_provenance': json.loads((ROOT/'scripts/qt-license-sources.json').read_text())['source_commits'],
             'license_provenance_scope': 'License text retrieval commits only; source commits and archive markers are recorded per module.',
             'gaps': ['SDK source SPDX covers declared files only; omitted/generated files and source changes require review.',

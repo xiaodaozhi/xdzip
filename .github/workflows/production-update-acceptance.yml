@@ -57,6 +57,7 @@ jobs:
           python scripts/prepare-windows-runtime.py --output build/windows-runtime
           python -m pip install aqtinstall==3.3.0
           python -m aqt install-qt windows desktop 6.8.2 win64_msvc2022_64 --outputdir '${{ runner.temp }}/Qt'
+          python scripts/prepare-qt-network.py --qt-prefix '${{ runner.temp }}/Qt/6.8.2/msvc2022_64'
       - name: Build private real old and new products with production public roots
         shell: pwsh
         env:
@@ -111,6 +112,7 @@ jobs:
           rustup toolchain install 1.99.0 --profile minimal --component rustfmt --component clippy
           python3 -m pip install aqtinstall==3.3.0
           python3 -m aqt install-qt mac desktop 6.8.2 clang_64 --outputdir '${{ runner.temp }}/Qt'
+          python3 scripts/prepare-qt-network.py --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos'
       - name: Check native archive admission without production secrets
         run: python3 scripts/test-production-update-signing.py
       - name: Build private real old and new apps with production public roots

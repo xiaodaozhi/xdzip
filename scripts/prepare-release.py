@@ -43,6 +43,8 @@ def materials_archive(source, output):
 
 
 def stage(source, output, platform, version):
+    from qt_network_materials import verify_package
+    verify_package(source)
     receipt = json.loads((source/'verify.json').read_text(encoding='utf-8'))
     if receipt.get('status') != 'passed' or receipt.get('platform') != platform:
         raise ValueError('Native package verification did not pass')

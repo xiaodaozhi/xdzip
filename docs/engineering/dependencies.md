@@ -92,6 +92,12 @@ tar 的测试传递依赖含 filetime 0.2.29（MIT 或 Apache-2.0），复用既
 2026-10-15 对 tar 0.4.46、filetime 0.2.29、flate2 1.1.10 执行 OSV 精确版本查询，未返回公告；查询原文只保存在 build/review/wp11。此结果不等于无漏洞保证。双向互操作、坏输入、配额、取消和三平台验证必须实际运行，证据入口见 [WP-11 契约](m4-tar-gzip.md)。
 
 
+## QtNetwork 安全派生库
+
+桌面 Qt 6.8.2 的 Network 动态库使用 `6.8.2-xdzip-network.1`，从固定 QtBase 归档应用五份原样官方补丁，修复 CVE-2026-116337 与 CVE-2026-105946。范围是 HTTP/CONNECT 状态行及头部接收限制和认证解析边界，不更换 QtCore、其他模块或 TLS 插件。保留原有功能开关、导出符号及对原 SDK QtCore 的导入兼容性。源码、顺序、摘要、许可、替换及真实输入验证见[维护说明](../../patches/qt/README.md)。生产继续采用 LGPL-3.0 动态链接路径，上游 GPL-only 测试不发行；OpenSSL 3.5.9 仅生成编译声明，不构建或分发新密码库。实际包的来源、通知与重链接条件仍单独复核。
+
+English: QtNetwork alone uses the pinned `6.8.2-xdzip-network.1` source build with five unmodified official patches for CVE-2026-116337 and CVE-2026-105946. Other SDK modules and TLS backends retain their provenance. Features, exports and imports against the installed QtCore are checked. Production retains LGPL dynamic linking; upstream GPL-only tests and build-time OpenSSL declaration generation do not add distributed executables or crypto libraries.
+
 ## macOS 更新提供者
 
 Mac 更新集成锁定 Sparkle 2.10.0 和 `xdzip-proxy.2` 代理扩展，SDK、源码归档、补丁及完整许可正文的哈希统一见

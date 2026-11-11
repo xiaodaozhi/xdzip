@@ -60,6 +60,14 @@ def source_bom(inventory):
             'name':'Qt '+module, 'version':inventory['qt_version'],
             'properties':properties(evidence='declared CMake module; transitive and plugin licenses require deployment review')})
     for dependency in inventory.get('native_dependencies', []):
+        if dependency.get('source_build') and dependency['name'] == 'QtNetwork':
+            bom['components'].append({'type':'library', 'bom-ref':'declared-native-QtNetwork',
+                'name':'QtNetwork', 'version':dependency['version'],
+                'licenses':[{'expression':dependency['license']}],
+                'externalReferences':[{'type':'distribution', 'url':dependency['source']['url']}],
+                'properties':properties(evidence=dependency['scope'], build_variant=dependency['variant'],
+                    source_sha256=dependency['source']['sha256'], network_sha256=dependency['network_sha256'])})
+            continue
         bom['components'].append({'type':'library', 'bom-ref':'declared-native-'+dependency['name'],
             'name':dependency['name'], 'version':dependency['version'],
             'licenses':[{'expression':dependency['license']}],
@@ -125,6 +133,10 @@ def artifact_bom(audit, source, attribution=None):
             raise ValueError('Attribution and audited artifact identities differ')
         bom['metadata']['properties'] += properties(attribution_completeness='incomplete', attribution_gaps=len(attribution['gaps']),
             attribution_canonical_sha256=hashlib.sha256(json.dumps(attribution,sort_keys=True,separators=(',',':')).encode()).hexdigest())
+        if attribution.get('network_security'):
+            network = attribution['network_security']
+            bom['metadata']['properties'] += properties(qt_network_variant=network['variant'],
+                qt_network_sha256=network['network_sha256'], qt_network_inputs_sha256=network['inputs_sha256'])
         for p in attribution['components']:
             c={'type':'library','bom-ref':'runtime:'+p['ref'],'name':p['name'],
                 'properties':properties(evidence='SDK upstream SPDX; not a licensing decision', upstream_ref=p['ref'],
