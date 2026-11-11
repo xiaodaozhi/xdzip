@@ -1461,8 +1461,8 @@ class DisposableBundleTests(unittest.TestCase):
         return app, binary, core
 
     def test_dmg_builder_preserves_image_and_evidence_but_removes_stage_on_success_or_failure(self):
-        for failed in [False, True]:
-            with self.subTest(failed=failed), tempfile.TemporaryDirectory() as temp:
+        for failed, release_distribution in [(False, False), (True, False), (False, True)]:
+            with self.subTest(failed=failed, release=release_distribution), tempfile.TemporaryDirectory() as temp:
                 root = Path(temp).resolve();source, binary, core = self.bundle(root/'input')
                 output = root/'build/package.dmg';qt = root/'qt';revision = 'a'*12
                 identity = 'xdzip (development, '+revision+')'
@@ -1476,9 +1476,12 @@ class DisposableBundleTests(unittest.TestCase):
                     if '--version' in command:return identity
                     if 'rev-parse' in command:return revision
                     if len(command)>1 and Path(str(command[1])).name == 'collect-notices.py':
+                        self.assertEqual(command[command.index('--qt-prefix')+1], qt)
                         notices = Path(command[2]);notices.mkdir(parents=True, exist_ok=True)
                         (notices/'build-inventory.json').write_text(json.dumps({'display_version':'0.1.0','version_source':{'build':1}}))
                         (notices/'source-build.cdx.json').write_text('{}')
+                        network = notices/'Qt-network-security';network.mkdir()
+                        (network/'build-receipt.json').write_bytes(b'owned verified QtNetwork receipt')
                     if len(command)>1 and Path(str(command[1])).name == 'runtime_attribution.py':
                         self.assertTrue(staged.is_dir())
                         self.assertTrue((output.parent/'deployment-audit.json').is_file())
@@ -1487,6 +1490,8 @@ class DisposableBundleTests(unittest.TestCase):
                         self.assertTrue(staged.is_dir())
                         if command[1] == 'create':output.write_bytes(b'owned image')
                         elif failed:raise ValueError('owned verify failure')
+                    if str(command[0]) == 'ditto':
+                        Path(command[-1]).write_bytes(b'owned application archive')
                     return ''
                 def optimize(app):
                     self.assertEqual(app, staged)
@@ -1515,10 +1520,14 @@ class DisposableBundleTests(unittest.TestCase):
                     if failed:
                         with self.assertRaisesRegex(ValueError,'owned verify failure'):mac.build(source,qt,output)
                     else:
-                        report = mac.build(source,qt,output)
+                        report = mac.build(source,qt,output,release_distribution=release_distribution)
                         self.assertEqual(report['sha256'],digest(output))
                         self.assertEqual(report['bundle_optimization'], optimization)
                         self.assertEqual(report['bundle'], bundle_validation)
+                        if release_distribution:
+                            self.assertTrue(output.with_suffix('.app.zip').is_file())
+                            self.assertEqual((output.parent/'notices/Qt-network-security/build-receipt.json').read_bytes(),
+                                             b'owned verified QtNetwork receipt')
                 self.assertEqual(phases, ['optimize', 'sign', 'validate'])
                 self.assertFalse(staged.exists())
                 self.assertTrue(output.is_file())

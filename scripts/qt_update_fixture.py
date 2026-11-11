@@ -228,7 +228,7 @@ def prepare(output, sdk, session, *, production_trust=False):
             folder=source/'build'/label;folder.mkdir()
             payload=folder/'payload'
             notices=folder/'notices'
-            checked([sys.executable,source/'scripts/collect-notices.py',notices])
+            checked([sys.executable,source/'scripts/collect-notices.py',notices,'--qt-prefix',sdk])
             if sys.platform=='win32':
                 payload.mkdir()
                 for name in ('xdzip.exe','xdzip-update-helper.exe','xdzip-association.exe'):
