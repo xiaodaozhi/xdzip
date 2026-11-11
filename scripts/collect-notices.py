@@ -38,7 +38,7 @@ notice_files += codec_files
 native_dependencies += codec_dependencies
 if sys.platform == 'darwin':
     from sparkle_bundle import configuration, write_notice
-    sparkle_sdk = arguments.sparkle_sdk or root/'build/desktop/_deps/sparkle-2.10.0'
+    sparkle_sdk = arguments.sparkle_sdk or root/'build/toolchain/Sparkle'/configuration()['framework_build']['variant']
     notice_files += write_notice(sparkle_sdk.resolve(), out)
     native_dependencies.append(configuration())
 shutil.copyfile(root / 'LICENSE', out / 'xdzip-Apache-2.0.txt')

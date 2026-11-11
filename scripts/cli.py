@@ -175,7 +175,7 @@ def package(args):
     target = {'Darwin':'macos-arm64.tar.gz','Windows':'windows-x86_64.zip','Linux':'linux-x86_64.tar.gz'}[platform.system()]
     archive = output/f'xdzip-cli-{identity["version"]}-{target}'
     if target.endswith('.zip'):
-        with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as writer:
+        with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, strict_timestamps=False) as writer:
             for path in sorted(payload.rglob('*')):
                 if path.is_file():
                     writer.write(path, path.relative_to(payload))

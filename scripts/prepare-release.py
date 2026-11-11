@@ -82,7 +82,7 @@ def stage(source, output, platform, version):
         # The runtime was already audited byte-for-byte. Include its complete
         # relative tree, with no SDK tools or developer filesystem locations.
         target = output/f'xdzip-{version}-windows-x86_64.zip'
-        with zipfile.ZipFile(target, 'w', zipfile.ZIP_DEFLATED) as archive:
+        with zipfile.ZipFile(target, 'w', zipfile.ZIP_DEFLATED, strict_timestamps=False) as archive:
             for path in sorted((source/'windows').rglob('*')):
                 if path.is_file(): archive.write(path, path.relative_to(source/'windows'))
         with zipfile.ZipFile(target) as archive:

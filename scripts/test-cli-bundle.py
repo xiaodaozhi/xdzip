@@ -3,6 +3,7 @@
 import argparse
 import importlib.util
 import json
+import os
 from pathlib import Path
 import plistlib
 import shutil
@@ -10,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import zipfile
 from unittest.mock import patch
 
 import cli
@@ -56,6 +58,41 @@ class DesktopBundleTests(unittest.TestCase):
                 if system == 'Darwin':
                     self.assertFalse((output/marker.name).exists())
                     self.assertEqual(len(list(output.iterdir())), 3)
+
+    def test_windows_package_preserves_bytes_with_pre_1980_runtime_timestamps(self):
+        directory = self.root/'build/cli'
+        (directory/'bin').mkdir(parents=True)
+        for name in ('xdzip', 'xdzip-launcher', 'xdzip-native-codec'):
+            path = directory/'bin'/cli.exe(name)
+            path.write_bytes(b'owned program')
+            os.utime(path, (283996800, 283996800))
+        identity = {'version': '0.2.0'}
+        (directory/'identity.json').write_text(json.dumps(identity))
+        (directory/'verification').mkdir()
+        (directory/'verification/report.json').write_text(json.dumps({
+            'status': 'passed', 'identity': identity,
+            'executable_sha256': cli.digest(directory/'bin'/cli.exe('xdzip')),
+            'worker_sha256': cli.digest(directory/'bin'/cli.exe('xdzip-native-codec'))}))
+        runtime = self.root/'build/runtime'
+        runtime.mkdir()
+        for name in ('owned-crt.dll', 'Microsoft-VC-runtime-license.rtf'):
+            (runtime/name).write_bytes(b'owned runtime material')
+            os.utime(runtime/name, (283996800, 283996800))
+        (self.root/'scripts').mkdir()
+        (self.root/'scripts/windows-runtime.json').write_text(json.dumps({
+            'files': {'owned-crt.dll': cli.digest(runtime/'owned-crt.dll')},
+            'license_sha256': cli.digest(runtime/'Microsoft-VC-runtime-license.rtf')}))
+        output = self.root/'build/package'
+        with patch.object(cli.platform, 'system', return_value='Windows'), \
+                patch.object(cli, 'run', side_effect=[json.dumps(identity), 'a'*40, '']), \
+                patch.object(cli, 'notices'):
+            cli.package(argparse.Namespace(build_dir=directory, output=output, runtime=runtime))
+        with zipfile.ZipFile(output/'xdzip-cli-0.2.0-windows-x86_64.zip') as archive:
+            self.assertIsNone(archive.testzip())
+            for name in ('xdzip', 'xdzip-launcher', 'xdzip-native-codec'):
+                relative = 'bin/'+cli.exe(name)
+                self.assertEqual(archive.read(relative), b'owned program')
+                self.assertEqual(archive.getinfo(relative).date_time, (1980, 1, 1, 0, 0, 0))
 
     @unittest.skipUnless(sys.platform == 'darwin' and shutil.which('xcrun') and shutil.which('codesign'),
                          'Native macOS compiler and signing tools required')
