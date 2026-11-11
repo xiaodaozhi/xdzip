@@ -439,4 +439,3 @@ def prepare(prefix, work, cache, parallel=3):
             replacement.unlink(missing_ok=True)
     finally:
         lock.unlink(missing_ok=True)
-

@@ -33,3 +33,5 @@ third_party/qt-tika-mimetypes/TIKA-NOTICE.txt -text -whitespace
 third_party/qt-tika-mimetypes/OGL-UK-3.0.txt -text -whitespace
 # Preserve the pinned CLDR web font notice bytes on every platform.
 third_party/cldr43-webapp-notices/*.txt -text -whitespace
+# Official security patches are hash-pinned raw downloads, including diff context.
+patches/qt/6.8.2-network/*.diff -text -whitespace
