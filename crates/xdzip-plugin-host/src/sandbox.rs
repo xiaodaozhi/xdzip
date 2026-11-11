@@ -284,6 +284,7 @@ mod linux {
             libc::SYS_write,
             libc::SYS_readv,
             libc::SYS_writev,
+            libc::SYS_ppoll,
             libc::SYS_close,
             libc::SYS_fstat,
             libc::SYS_lseek,
@@ -336,7 +337,12 @@ mod linux {
             push(0x06, 0, 0, ALLOW);
         }
         #[cfg(target_arch = "x86_64")]
-        for call in [libc::SYS_arch_prctl, libc::SYS_readlink, libc::SYS_access] {
+        for call in [
+            libc::SYS_arch_prctl,
+            libc::SYS_readlink,
+            libc::SYS_access,
+            libc::SYS_poll,
+        ] {
             push(0x15, 0, 1, call as u32);
             push(0x06, 0, 0, ALLOW);
         }
