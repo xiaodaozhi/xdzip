@@ -2,6 +2,15 @@
 
 ## 未发布
 
+## 0.2.0
+
+- macOS 安装版支持通过自定义 HTTP CONNECT/SOCKS5 代理和直连模式进行原生更新。
+- 提供 Windows、macOS 和 Linux 独立 CLI，支持归档操作、JSON 输出、显式命令注册及受签名清单保护的更新。
+- QtNetwork 应用官方补丁修复 CVE-2026-116337 和 CVE-2026-105946，保留完整补丁、来源与替换说明。
+- 修正 macOS 包内 CLI 元数据位置，使其作为普通资源纳入应用完整性签名。
+
+平台支持和验收范围见[发布说明](release-notes/0.2.0.md)和 [GitHub Release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.2.0)。
+
 ## 0.1.3
 
 - 修复 `.app` 归档默认同名文件夹被 macOS Finder 误认为损坏应用的问题。

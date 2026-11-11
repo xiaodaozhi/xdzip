@@ -79,10 +79,10 @@ Before changing draft assets, the publisher reads back the GitHub tag, draft sta
 
 ## 独立 CLI 附件
 
-未来完整发行额外提供 `xdzip-cli-<version>-windows-x86_64.zip`、`xdzip-cli-<version>-macos-arm64.tar.gz`、`xdzip-cli-<version>-linux-x86_64.tar.gz`。三者由同提交的原生 CLI 构建与验证产生，保留 worker、实际运行依赖与通知，身份须为干净 Release。普通 CI 不因新增 CLI 而部署或上传 Mac 应用包。
+从 v0.2.0 起，完整发行额外提供 `xdzip-cli-<version>-windows-x86_64.zip`、`xdzip-cli-<version>-macos-arm64.tar.gz`、`xdzip-cli-<version>-linux-x86_64.tar.gz`。三者由同提交的原生 CLI 构建与验证产生，保留 worker、实际运行依赖与通知，身份须为干净 Release。普通 CI 不因新增 CLI 而部署或上传 Mac 应用包。
 
 CLI 使用 `cli-release.json` 与 `cli-release.json.sig`。清单 schema_version=1、product=xdzip、component=cli，version、channel、build、tag、commit、repository 与桌面清单完全一致。assets 只包含上述三个目标，字段与 desktop asset 相同；Mac 包型为 tar.gz，Linux 最低系统不含 display_server，其他系统、架构和大小／摘要要求不变。固定发布者仍为 xiaodaozhi/xdzip。
 
 桌面 release.json 继续恰好六类包，不加入 component 或 CLI 条目。旧客户端忽略新增独立附件。CLI 清单签名复用内置 Ed25519 信任根，签署和独立验证使用 sign-cli／verify-cli，覆盖精确原始字节。完整汇总和发布在签名、身份、三个 CLI 包及全部校验和齐备后才能公开。已公开旧版本不补传、改写或替换附件。
 
-English: Future complete releases add three native CLI archives and separately signed cli-release.json metadata. Component cli shares the desktop version/channel/build/tag/full-commit/repository identity and the existing embedded Ed25519 trust roots. Its assets contain exactly Windows x86_64 zip, Apple Silicon macOS tar.gz and Ubuntu x86_64 tar.gz; Linux has no display requirement. The legacy desktop manifest remains exactly six targets, without a component field. CLI publication independently verifies original-byte signatures, all three packages and complete checksums. Existing public assets remain immutable; ordinary CI gains no permission to deploy/upload Mac applications.
+English: Complete releases starting with v0.2.0 include three native CLI archives and separately signed cli-release.json metadata. Component cli shares the desktop version/channel/build/tag/full-commit/repository identity and the existing embedded Ed25519 trust roots. Its assets contain exactly Windows x86_64 zip, Apple Silicon macOS tar.gz and Ubuntu x86_64 tar.gz; Linux has no display requirement. The legacy desktop manifest remains exactly six targets, without a component field. CLI publication independently verifies original-byte signatures, all three packages and complete checksums. Existing public assets remain immutable; ordinary CI gains no permission to deploy/upload Mac applications.

@@ -19,7 +19,7 @@
 
 ## 下载安装
 
-当前稳定版是 [xdzip 0.1.3，build 26](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.1.3)。在发布页选择与你的系统对应的文件：
+当前稳定版是 [xdzip 0.2.0，build 27](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.2.0)。在发布页选择与你的系统对应的文件：
 
 | 系统 | 支持范围 | 下载选择 |
 | --- | --- | --- |
@@ -27,11 +27,11 @@
 | macOS | macOS 14 及以上，Apple Silicon | `.dmg`，或 `.app.zip` 应用包 |
 | Linux | Ubuntu 24.04 LTS，x86_64，X11，glibc 2.39 及以上 | `.deb` 安装包，或 `.tar.gz` 运行目录 |
 
-发布页还提供校验清单和第三方组件材料。Windows 安装器未签署发行者证书，macOS 包使用 ad-hoc 完整性签名，未使用 Developer ID 签名或公证，系统可能显示安全提示。安装不会更改默认应用；文件关联和手动安装步骤见[安装指南](docs/engineering/installers-associations.md)。
+桌面包以 `xdzip-0.2.0-` 开头，独立[命令行客户端](#命令行)的包以 `xdzip-cli-0.2.0-` 开头。发布页还提供校验清单和第三方组件材料。Windows 安装器未签署发行者证书，macOS 包使用 ad-hoc 完整性签名，未使用 Developer ID 签名或公证，系统可能显示安全提示。安装不会更改默认应用；文件关联和手动安装步骤见[安装指南](docs/engineering/installers-associations.md)。
 
-应用的“关于 xdzip”可由用户主动检查更新。自动安装取决于有效的发布签名和安装身份，便携包及开发构建需要手动安装；详见[更新说明](docs/engineering/software-update.md)。其他系统、架构和桌面环境的范围见[支持政策](docs/engineering/support-policy.md)。
+应用的“关于 xdzip”可由用户主动检查更新。macOS 安装版的原生更新支持系统代理、自定义 HTTP CONNECT/SOCKS5 代理和直连设置。自动安装取决于有效的发布签名和安装身份，便携包及开发构建需要手动安装；详见[更新说明](docs/engineering/software-update.md)。旧版客户端首次升级的方式见[本版发布说明](release-notes/0.2.0.md)。其他系统、架构和桌面环境的范围见[支持政策](docs/engineering/support-policy.md)。
 
-**版本说明：**本页的桌面功能说明基于当前源码，发布包以对应版本的发布说明为准。当前源码还包含独立命令行工具，0.1.3 已发布附件不包含该工具。源码构建属于实验性开发版本。
+**版本说明：**本页的功能说明基于当前源码，发布包以对应版本的发布说明为准。源码构建属于实验性开发版本。
 
 ## 使用 xdzip
 
@@ -64,7 +64,7 @@
 
 ## 命令行
 
-当前源码提供无需 Qt 或图形会话的独立 Rust CLI，可列举、解压、创建、添加和测试归档，也支持 JSON 输出。它尚未包含在 0.1.3 的发布附件中，可按下面的源码步骤构建：
+稳定版提供无需 Qt 或图形会话的独立 Rust CLI，可列举、解压、创建、添加和测试归档，也支持 JSON 输出。下载对应系统的 `xdzip-cli-0.2.0-` 包，解包后运行 `bin/xdzip --help`，Windows 使用 `bin/xdzip.exe`。也可按下面的源码步骤构建：
 
 ```sh
 git clone https://github.com/xiaodaozhi/xdzip.git
