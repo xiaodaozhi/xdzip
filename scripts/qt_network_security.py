@@ -16,8 +16,11 @@ MACOS_NETWORK_TOOLS = ('libexec/qmlimportscanner', 'libexec/qmlcachegen', 'bin/q
 BUILDER_FILES = ('scripts/qt_network_security.py', 'scripts/prepare-qt-network.py',
                  'scripts/check-qt-network.py', 'tools/qt-network-security/CMakeLists.txt',
                  'tools/qt-network-security/main.cpp', 'scripts/update_proxy_fixture.py',
+                 'tools/qt-network-security/linux-abi-retain.cpp',
+                 'tools/qt-network-security/retain-linux-abi.cmake',
                  'scripts/qt_sdk_correspondence.py',
-                 'scripts/corresponding-sources.json', 'scripts/qt-patches/clang-arm-acle.patch')
+                 'scripts/corresponding-sources.json', 'scripts/qt-patches/clang-arm-acle.patch',
+                 'scripts/windows_ninja_safety.py')
 
 
 def digest(path):
@@ -41,6 +44,10 @@ def configuration():
         path = ROOT/patch['file']
         if not path.resolve().is_relative_to(ROOT/'patches/qt') or digest(path) != patch['sha256']:
             raise ValueError('Qt security patch identity mismatch')
+    for item in data.get('compatibility_files', []):
+        path = ROOT/item['file']
+        if not path.resolve().is_relative_to(ROOT/'tools/qt-network-security') or digest(path) != item['sha256']:
+            raise ValueError('Qt ABI retention input identity mismatch')
     inputs = {name: digest(ROOT/name) for name in BUILDER_FILES}
     inputs.update({x['file']: x['sha256'] for x in data['patches']})
     inputs['scripts/qt-network-security.json'] = digest(ROOT/'scripts/qt-network-security.json')
@@ -64,7 +71,7 @@ def features(prefix):
     files = [base/'qtnetwork-config.h', base/'6.8.2/QtNetwork/private/qtnetwork-config_p.h']
     result = {}
     for path in files:
-        for name, value in re.findall(r'^\s*#\s*define\s+QT_FEATURE_(\w+)\s+(-?1)\s*$', path.read_text(), re.M):
+        for name, value in re.findall(r'^\s*#\s*define\s+QT_FEATURE_(\w+)\s+(-?1)\s*$', path.read_text(encoding='utf-8'), re.M):
             if name in result and result[name] != value:
                 raise ValueError('Conflicting QtNetwork feature')
             result[name] = value
@@ -81,7 +88,7 @@ def core_features(prefix):
                  '6.8.2/QtCore/private/qtcore-config_p.h'):
         path = base/name
         if path.is_file():
-            result.update(re.findall(r'^\s*#\s*define\s+QT_FEATURE_(\w+)\s+(-?1)\s*$', path.read_text(), re.M))
+            result.update(re.findall(r'^\s*#\s*define\s+QT_FEATURE_(\w+)\s+(-?1)\s*$', path.read_text(encoding='utf-8'), re.M))
     return result
 
 
@@ -103,6 +110,7 @@ def identity(prefix, *, required=True):
             data.get('core_features') != core_features(prefix) or
             data.get('network_sha256') != digest(library(prefix, 'Network')) or
             data.get('patches') != config['patches'] or data.get('features') != features(prefix) or
+            data.get('compatibility_files') != config.get('compatibility_files', []) or
             data['verification'].get('network_sha256') != data.get('network_sha256') or
             data['verification'].get('status') != 'passed'):
         raise ValueError('QtNetwork security receipt differs from its inputs or actual SDK binaries')
@@ -185,7 +193,7 @@ def prepare_source(config, source, cache, work):
     directory = work/source['file'].removesuffix('.tar.xz')
     prefix = directory.name+'/'
     patches = [ROOT/x['file'] for x in config['patches']]
-    names = {m[0] for path in patches for m in re.findall(r'^diff --git a/(\S+) b/(\S+)$', path.read_text(), re.M)}
+    names = {m[0] for path in patches for m in re.findall(r'^diff --git a/(\S+) b/(\S+)$', path.read_text(encoding='utf-8'), re.M)}
     with tarfile.open(archive) as stream:
         changed = {name: stream.extractfile(prefix+name).read() for name in names}
         for path in patches:
@@ -304,7 +312,7 @@ def openssl_headers(config, cache, work):
             raise ValueError('OpenSSL declaration generation failed: '+label)
     data = dict(source_sha256=item['sha256'], target=target,
                 headers={p.relative_to(directory).as_posix(): digest(p) for p in (directory/'include').rglob('*.h')})
-    record.write_text(json.dumps(data, indent=2)+'\n')
+    record.write_text(json.dumps(data, indent=2)+'\n', encoding='utf-8')
     return directory/'include'
 
 
@@ -334,9 +342,8 @@ def check_abi(prefix, built):
 def build(prefix, work, source, parallel, headers):
     expected_features = features(prefix)
     existing_core = core_features(prefix)
-    # The Linux SDK's RelWithDebInfo build emits exported constexpr metadata
-    # omitted by a plain Release GCC build. Retain its mode and separate debug
-    # setting rather than exempting missing symbols from the ABI check.
+    # Match the Linux SDK's release-with-debug mode. Compiler-specific constant
+    # retention is handled separately; the complete export check stays intact.
     linux_debug = sys.platform == 'linux' and existing_core.get('separate_debug_info') == '1'
     mode = 'RelWithDebInfo' if linux_debug else 'Release'
     flags = ['-DCMAKE_BUILD_TYPE='+mode, '-DQT_BUILD_TESTS=OFF', '-DQT_BUILD_EXAMPLES=OFF',
@@ -351,7 +358,9 @@ def build(prefix, work, source, parallel, headers):
             flags += ['-DFEATURE_'+name+'='+('ON' if existing_core[name] == '1' else 'OFF')]
     if sys.platform == 'linux':
         flags += ['-DFEATURE_separate_debug_info='+('ON' if linux_debug else 'OFF'),
-                  '-DCMAKE_SHARED_LINKER_FLAGS=-Wl,--undefined=__bss_start -Wl,--undefined=_edata -Wl,--undefined=_end']
+                  '-DCMAKE_SHARED_LINKER_FLAGS=-Wl,--undefined=__bss_start -Wl,--undefined=_edata -Wl,--undefined=_end',
+                  '-DCMAKE_PROJECT_INCLUDE:FILEPATH='+(ROOT/'tools/qt-network-security/retain-linux-abi.cmake').as_posix(),
+                  '-DXDZIP_QT_NETWORK_ABI_SOURCE:FILEPATH='+(ROOT/'tools/qt-network-security/linux-abi-retain.cpp').as_posix()]
     if sys.platform == 'darwin':
         flags += ['-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
                   '-DQT_FORCE_WARN_APPLE_SDK_AND_XCODE_CHECK=ON']
@@ -429,15 +438,17 @@ def prepare(prefix, work, cache, parallel=3):
             verification = json.loads((work/'verification/result.json').read_bytes())
             data = dict(schema_version=1, variant=config['variant'], inputs_sha256=inputs,
                         source_sha256=source['sha256'], patches=config['patches'],
+                        compatibility_files=config.get('compatibility_files', []),
                         core_sha256=digest(library(prefix, 'Core')), network_sha256=digest(network),
                         core_features=core_features(prefix),
                         upstream_network_sha256=original_sha, features=features(prefix), abi=abi,
                         sdk_tools=[dict(sdk_path=tool.relative_to(prefix).as_posix(), upstream_sha256=upstream,
                                         sha256=digest(tool), seal='ad-hoc, build tool only')
                                    for tool, _, upstream in tools_before],
-                        configure_flags=[x.replace(str(work), '<build>') for x in flags], verification=verification)
+                        configure_flags=[scrub(x.replace(str(work), '<build>').encode()).decode() for x in flags],
+                        verification=verification)
             temporary = prefix/(RECEIPT+'.new')
-            temporary.write_text(json.dumps(data, indent=2)+'\n')
+            temporary.write_text(json.dumps(data, indent=2)+'\n', encoding='utf-8')
             os.replace(temporary, prefix/RECEIPT)
             return identity(prefix)
         except BaseException:

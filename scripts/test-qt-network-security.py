@@ -27,6 +27,7 @@ class SecurityBuildTests(unittest.TestCase):
     def record(self):
         return dict(schema_version=1, variant=self.config['variant'], inputs_sha256=self.inputs,
                     source_sha256=self.source['sha256'], patches=self.config['patches'],
+                    compatibility_files=self.config.get('compatibility_files', []),
                     core_sha256='1'*64, network_sha256='2'*64, features={'http':'1','ssl':'1'},
                     core_features={'system_zlib':'1'},
                     verification={'status':'passed','network_sha256':'2'*64})
@@ -65,7 +66,7 @@ class SecurityBuildTests(unittest.TestCase):
             path.write_text(json.dumps(original))
             self.assertEqual(security.identity(self.root), original)
             for key in ('variant', 'inputs_sha256', 'source_sha256', 'core_sha256', 'network_sha256',
-                        'features', 'core_features', 'patches', 'verification'):
+                        'features', 'core_features', 'patches', 'compatibility_files', 'verification'):
                 data = copy.deepcopy(original); data[key] = None
                 path.write_text(json.dumps(data))
                 with self.subTest(key=key), self.assertRaises(ValueError):
@@ -197,6 +198,17 @@ class SecurityBuildTests(unittest.TestCase):
         patch_file.write_text('changed')
         with self.assertRaisesRegex(ValueError, 'patch missing or changed'):
             materials.verify_package(self.root)
+
+    def test_notice_collection_uses_utf8_under_windows_default_encoding(self):
+        original_open = Path.open
+        def legacy_open(path, mode='r', buffering=-1, encoding=None, errors=None, newline=None):
+            if 'b' not in mode and encoding in (None, 'locale'):
+                encoding = 'cp1252'
+            return original_open(path, mode, buffering, encoding, errors, newline)
+        with patch.object(Path, 'open', new=legacy_open), patch.object(materials, 'identity', return_value=self.record()):
+            materials.collect(self.root/'sdk', self.root/'notices')
+        text = (self.root/'notices/Qt-network-security/README.md').read_text(encoding='utf-8')
+        self.assertIn('安全补丁', text)
 
 
 if __name__ == '__main__':

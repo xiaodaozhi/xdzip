@@ -96,7 +96,9 @@ tar 的测试传递依赖含 filetime 0.2.29（MIT 或 Apache-2.0），复用既
 
 桌面 Qt 6.8.2 的 Network 动态库使用 `6.8.2-xdzip-network.1`，从固定 QtBase 归档应用五份原样官方补丁，修复 CVE-2026-116337 与 CVE-2026-105946。范围是 HTTP/CONNECT 状态行及头部接收限制和认证解析边界，不更换 QtCore、其他模块或 TLS 插件。保留原有功能开关、导出符号及对原 SDK QtCore 的导入兼容性。源码、顺序、摘要、许可、替换及真实输入验证见[维护说明](../../patches/qt/README.md)。生产继续采用 LGPL-3.0 动态链接路径，上游 GPL-only 测试不发行；OpenSSL 3.5.9 仅生成编译声明，不构建或分发新密码库。实际包的来源、通知与重链接条件仍单独复核。
 
-English: QtNetwork alone uses the pinned `6.8.2-xdzip-network.1` source build with five unmodified official patches for CVE-2026-116337 and CVE-2026-105946. Other SDK modules and TLS backends retain their provenance. Features, exports and imports against the installed QtCore are checked. Production retains LGPL dynamic linking; upstream GPL-only tests and build-time OpenSSL declaration generation do not add distributed executables or crypto libraries.
+Linux 另加入受摘要约束的原始 ABI 保留单元，显式实例化 SDK 已有的内建类型常量，保留原导出而不增加网络行为；源码和 Apache-2.0 通知随材料提供。五份官方补丁不改写，其他平台的产品库不注入该单元。
+
+English: QtNetwork alone uses the pinned `6.8.2-xdzip-network.1` source build with five unmodified official patches for CVE-2026-116337 and CVE-2026-105946. Linux also retains the SDK's builtin constexpr exports through a hash-pinned original instantiation unit, with source and Apache-2.0 notices; it adds no networking behavior and is not injected into other platforms' product libraries. Other SDK modules and TLS backends retain their provenance. Features, exports and imports against the installed QtCore are checked. Production retains LGPL dynamic linking; upstream GPL-only tests and build-time OpenSSL declaration generation do not add distributed executables or crypto libraries.
 
 ## macOS 更新提供者
 

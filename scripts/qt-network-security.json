@@ -35,5 +35,19 @@
       "url": "https://download.qt.io/archive/qt/6.8/CVE-2026-105946-qtbase-6.8-0003.diff",
       "sha256": "fc3c3d21b1f0234d6488e3d95f482e2ce464372fc7dfc15fde80b20632ccacfb"
     }
+  ],
+  "compatibility_files": [
+    {
+      "file": "tools/qt-network-security/linux-abi-retain.cpp",
+      "sha256": "1b382a704f457bf12a4d2225a3b57d97b89dd3f98ee6776438603f84b7bfd287",
+      "scope": "Linux only, retain SDK-exported builtin constexpr metadata, no executable behavior",
+      "license": "Apache-2.0"
+    },
+    {
+      "file": "tools/qt-network-security/retain-linux-abi.cmake",
+      "sha256": "a6d65b29ebb451e21a7f783fefebe5e89242d7a45b0e98145608c26bef3e75b9",
+      "scope": "Linux only, retain SDK-exported builtin constexpr metadata, no executable behavior",
+      "license": "Apache-2.0"
+    }
   ]
 }

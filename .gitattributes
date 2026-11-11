@@ -35,3 +35,5 @@ third_party/qt-tika-mimetypes/OGL-UK-3.0.txt -text -whitespace
 third_party/cldr43-webapp-notices/*.txt -text -whitespace
 # Official security patches are hash-pinned raw downloads, including diff context.
 patches/qt/6.8.2-network/*.diff -text -whitespace
+tools/qt-network-security/linux-abi-retain.cpp text eol=lf
+tools/qt-network-security/retain-linux-abi.cmake text eol=lf

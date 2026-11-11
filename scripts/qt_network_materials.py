@@ -4,6 +4,7 @@ from pathlib import Path
 import shutil
 import re
 import subprocess
+import sys
 
 from qt_network_security import ROOT, configuration, digest, identity
 
@@ -15,21 +16,22 @@ def collect(prefix, notices):
     target.mkdir(parents=True, exist_ok=True)
     paths = []
     revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
-    for relative in ['patches/qt/README.md', 'scripts/qt-network-security.json'] + [p['file'] for p in config['patches']]:
+    for relative in ['patches/qt/README.md', 'scripts/qt-network-security.json'] + [p['file'] for p in config['patches']+config.get('compatibility_files', [])]:
         destination = target/Path(relative).name
         shutil.copyfile(ROOT/relative, destination)
         if destination.suffix == '.md':
             def absolute_link(match):
                 path = (ROOT/relative).parent/match[1]
                 return '](https://github.com/xiaodaozhi/xdzip/blob/'+revision+'/'+path.resolve().relative_to(ROOT).as_posix()+')'
-            destination.write_text(re.sub(r'\]\(((?!https?://)[^)]+)\)', absolute_link, destination.read_text()), encoding='utf-8')
+            destination.write_text(re.sub(r'\]\(((?!https?://)[^)]+)\)', absolute_link, destination.read_text(encoding='utf-8')), encoding='utf-8')
         paths.append(destination)
     receipt = target/'build-receipt.json'
     receipt.write_text(json.dumps(record, indent=2)+'\n', encoding='utf-8')
     paths.append(receipt)
     return paths, dict(name='QtNetwork', version=config['qt_version'], variant=config['variant'],
-                       license='LGPL-3.0-only', source_build=True,
-                       source=source, patches=config['patches'], network_sha256=record['network_sha256'],
+                       license='LGPL-3.0-only AND Apache-2.0' if sys.platform == 'linux' else 'LGPL-3.0-only', source_build=True,
+                       source=source, patches=config['patches'], compatibility_files=config.get('compatibility_files', []),
+                       network_sha256=record['network_sha256'],
                        receipt='Qt-network-security/build-receipt.json',
                        scope='Only QtNetwork rebuilt; QtCore and other SDK modules retain their existing provenance')
 
@@ -45,10 +47,11 @@ def verify_package(source):
     config, upstream, inputs = configuration()
     if (record.get('variant') != config['variant'] or record.get('inputs_sha256') != inputs or
             record.get('source_sha256') != upstream['sha256'] or record.get('patches') != config['patches'] or
+            record.get('compatibility_files') != config.get('compatibility_files', []) or
             record.get('verification', {}).get('status') != 'passed' or
             record['verification'].get('network_sha256') != record.get('network_sha256')):
         raise ValueError('Release requires the pinned verified QtNetwork security build')
-    for patch in config['patches']:
+    for patch in config['patches']+config.get('compatibility_files', []):
         if digest(target/Path(patch['file']).name) != patch['sha256']:
             raise ValueError('Modified QtNetwork source patch missing or changed')
     attribution = json.loads((source/'runtime-attribution.json').read_bytes())

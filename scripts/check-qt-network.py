@@ -35,13 +35,13 @@ def check(qt, source, output):
         # logs too, before raising or leaving evidence in the build directory.
         log = output/'authentication.log'
         if log.exists():
-            content = log.read_text(errors='replace')
+            content = log.read_text(encoding='utf-8', errors='replace')
             for path, replacement in ((ROOT, '<workspace>'), (Path.home(), '<user>')):
                 content = content.replace(str(path), replacement).replace(path.as_posix(), replacement)
-            log.write_text(content)
+            log.write_text(content, encoding='utf-8')
     if result.returncode:
         raise ValueError('Official patched Qt authentication regression failed')
-    authentication = (output/'authentication.log').read_text(errors='replace')
+    authentication = (output/'authentication.log').read_text(encoding='utf-8', errors='replace')
     if 'ntlmMalformedTargetInfo' not in authentication or 'ntlmV2KnownVectors' not in authentication:
         raise ValueError('Official NTLM regression did not execute the required controls')
     state = {'mode': 'valid'}
@@ -100,7 +100,7 @@ def check(qt, source, output):
             params['proxy_port'] = proxy
         if ca is not None:
             params['ca'] = str(ca)
-        path = output/(name+'-input.json'); path.write_text(json.dumps(params))
+        path = output/(name+'-input.json'); path.write_text(json.dumps(params), encoding='utf-8')
         process = subprocess.run([str(output/'probe'/('xdzip-qt-network-security'+suffix)), str(path)],
                                  env=environment, capture_output=True, timeout=10)
         if process.returncode:
@@ -128,9 +128,9 @@ def check(qt, source, output):
         certificate = output/'tls'
         certificate.mkdir(exist_ok=True)
         (certificate/'leaf.cnf').write_text('[extensions]\nsubjectAltName=DNS:'+DIRECT_HOST+',IP:127.0.0.1\n'
-            'extendedKeyUsage=serverAuth\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\n')
+            'extendedKeyUsage=serverAuth\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\n', encoding='utf-8')
         (certificate/'ca.cnf').write_text('[req]\nprompt=no\ndistinguished_name=dn\nx509_extensions=ca\n'
-            '[dn]\nCN=xdzip-owned-test-ca\n[ca]\nbasicConstraints=critical,CA:TRUE\nkeyUsage=critical,keyCertSign,cRLSign\n')
+            '[dn]\nCN=xdzip-owned-test-ca\n[ca]\nbasicConstraints=critical,CA:TRUE\nkeyUsage=critical,keyCertSign,cRLSign\n', encoding='utf-8')
         commands = [ ['openssl', 'req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '1',
                       '-config', certificate/'ca.cnf', '-keyout', certificate/'ca.key', '-out', certificate/'ca.pem'],
                      ['openssl', 'req', '-newkey', 'rsa:2048', '-nodes', '-subj', '/CN='+DIRECT_HOST,
@@ -169,7 +169,7 @@ def check(qt, source, output):
     report = dict(status='passed', network_sha256=expected_digest, cases=cases,
                   authentication='Patched upstream QAuthenticator suite, including malformed NTLM and known vectors',
                   scope='Actual SDK binary, bounded owned HTTP/CONNECT/TLS services, per-request test CA only; no system network/trust changes')
-    (output/'result.json').write_text(json.dumps(report, indent=2)+'\n')
+    (output/'result.json').write_text(json.dumps(report, indent=2)+'\n', encoding='utf-8')
     return report
 
 
