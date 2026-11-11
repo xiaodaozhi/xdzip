@@ -352,7 +352,7 @@ class SparkleBundleTests(unittest.TestCase):
             return {'files': [{'path': relative, 'sha256': sparkle.checksum(path)}]}
         sparkle.attribute(report, self.app, self.sdk, audit())
         self.assertEqual(report['gaps'], [])
-        self.assertEqual(report['files'][0]['owners'], ['sparkle:Sparkle@2.10.0-xdzip-proxy.1'])
+        self.assertEqual(report['files'][0]['owners'], ['sparkle:Sparkle@2.10.0-xdzip-proxy.2'])
         self.assertNotIn(str(self.sdk), json.dumps(report))
         path.write_bytes(image(b'changed executable'))
         with self.assertRaisesRegex(ValueError, 'differ'):

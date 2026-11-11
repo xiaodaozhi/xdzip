@@ -48,7 +48,7 @@ English: RELEASE-VALIDATION-UNSIGNED applies only to local `--validation-only` c
 - 密码与更新等待并存时，通过真实主程序的系统 Quit 路由进入退出确认，点击返回后原任务与请求令牌不变，取消并退出后所有 Rust join 完成且没有安装交接。另核验文件选择器和不相关模态窗口仍阻挡退出，不能以直接调用会话接口代替桌面入口回归。While password and update waiting coexist, exercise the real main program's system Quit route and Return/Cancel buttons. Preserve the task/token on Return; require all joins and no install handoff on cancellation. File selectors and unrelated modals remain blocking; a direct session call does not cover the desktop route.
 - macOS 密码和冲突任务提示期间核对应用菜单的退出项及 Command-Q，通过退出确认返回后任务和提示身份不变；不相关模态窗口及文件选择器仍阻挡退出，期间触发的退出不能在模态关闭后延迟执行。On macOS, check the application-menu Quit item and Command-Q during password and conflict task prompts. Return preserves the task and prompt identity; unrelated modals and file selectors still block Quit, including after they close.
 - 关于页覆盖全部状态，关闭重开保持任务，取消显式执行；检查中英文、浅深色、三档字号和窄屏滚动，复用操作控件。生产密钥和真实平台未验证项独立列出，普通 CI 不部署/签名/上传 Mac 应用包。
-- macOS 手动回退分别覆盖安装身份不合格、无 appcast、直连模式及无可交接会话，显示实际首先未满足的条件并保留发布页和下载位置；双语、浅深色及三档字号下说明完整可读。下载完成不得显示为安装完成。
+- macOS 手动回退分别覆盖安装身份不合格、无 appcast、无效网络配置及无可交接会话，显示实际首先未满足的条件并保留发布页和下载位置；双语、浅深色及三档字号下说明完整可读。下载完成不得显示为安装完成。
 
 T01～T18 的权威映射见 design/requirements-traceability.md。以下是可复用的验收规格，不表示本次已执行或均未执行。实际结果在对应 issue 和工件记录，既有人工结论见 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)；新候选按受影响项复验，不创建假的 pass 报告。
 
@@ -270,7 +270,7 @@ W01-07，欢迎页与打开归档后的标题栏、标签及外观按钮的位�
 - 浅深色设计稿、HTML 与 Qt 的标题下分隔线、侧栏悬停色和图标左边距一致；在两种语言及 100/125/150% 字号下，以鼠标点击检查更新并切换更新状态时，正文滚动位置和滚动条滑块高度均保持不变；键盘导航仍能显示视口外的控件，底部许可内容仍可到达。
 - 双向修改语言立即更新界面、原生菜单与托盘菜单，包括应用菜单中的关于／设置／退出、任务子菜单和提示，不中断运行任务，不弹出重启确认；写入失败保持先前语言，系统自带菜单项仍遵循系统语言。清空最近记录立即生效且不删除原文件。
 - 各支持类型显示系统实际默认应用，系统拒绝或取消后状态不伪造；验证 Windows 系统确认、macOS 内容类型、Linux MIME，以及共享的复合扩展。
-- 验证直连、系统、自定义代理和 HTTPS 镜像的输入校验、持久化、更新流量、失败提示与签名验证；活动更新保持原配置。macOS 系统代理和自定义 HTTP CONNECT／SOCKS5 支持原生安装，直连使用验证后的手动下载。核对 feed 与归档的真实代理命中、显式代理失败无直连回退、活动更新的配置快照，以及签名、任务退出和恢复；单纯下载成功不证明代理生效。
+- 验证直连、系统、自定义代理和 HTTPS 镜像的输入校验、持久化、更新流量、失败提示与签名验证；活动更新保持原配置。macOS 系统、直连及自定义 HTTP CONNECT／SOCKS5 均支持原生安装。一次性 hosted runner 的静态系统代理和 PAC 对照须先证明系统模式的 feed／归档真实命中代理，再证明直连零命中，并核对 HTTPS 连接去向、不可信 TLS 拒绝及原设置恢复。核对自定义代理失败无直连回退、真实产品直连升级和活动配置快照，以及签名、任务退出和恢复；单纯下载成功不证明代理生效。
 - 创建压缩包的空添加列表没有引导占位文字，保留添加入口、列表边框及摘要。
 
 ## 原生菜单与托盘

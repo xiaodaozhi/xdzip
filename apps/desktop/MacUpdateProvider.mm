@@ -24,7 +24,7 @@
 #include <QTemporaryDir>
 #endif
 #import <Sparkle/Sparkle.h>
-#if SPU_XDZIP_DOWNLOAD_PROXY_API != 1
+#if SPU_XDZIP_DOWNLOAD_PROXY_API != 2
 #error The pinned xdzip Sparkle download proxy API is required.
 #endif
 #include <cstdint>
@@ -527,7 +527,7 @@ void startMacUpdate(UpdateController *owner, const QJsonObject &candidate,
         prepared("update_busy");
         return;
     }
-    if (!UpdateNetwork::macosAutomaticProxy(transport.proxyMode, transport.proxyAddress) ||
+    if (!UpdateNetwork::macosAutomaticTransport(transport.proxyMode, transport.proxyAddress) ||
         !UpdateNetwork::validMirror(transport.mirror)) {
         prepared("native_update");
         return;
@@ -560,8 +560,11 @@ void startMacUpdate(UpdateController *owner, const QJsonObject &candidate,
     NSURL *proxyURL = transport.proxyMode == "custom"
                          ? [NSURL URLWithString:native(transport.proxyAddress)]
                          : nil;
+    const auto proxyMode = transport.proxyMode == "none"     ? SPUXdzipDownloadProxyDirect
+                           : transport.proxyMode == "custom" ? SPUXdzipDownloadProxyCustom
+                                                              : SPUXdzipDownloadProxySystem;
     if ((transport.proxyMode == "custom" && proxyURL == nil) ||
-        ![driver->updater xdzip_setDownloadProxyURL:proxyURL error:&error]) {
+        ![driver->updater xdzip_setDownloadProxyMode:proxyMode proxyURL:proxyURL error:&error]) {
         [driver failure];
         driver->updater = nil;
         return;

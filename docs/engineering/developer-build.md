@@ -200,8 +200,10 @@ Windows/Linux 工件交付同提交源码和许可通知，Actions 保存 14 天
 
 ## macOS 更新框架
 
-原生构建通过 `prepare-sparkle.py` 准备 `build/toolchain/Sparkle/2.10.0-xdzip-proxy.1`。框架主库从锁定上游源码和代理补丁编译，安装助手、资源及签名工具保留官方 SDK 来源，详见[依赖契约](dependencies.md#macos-更新提供者)。已有有效构建回执可复用，旧官方 SDK 不能代替带代理接口的派生框架。CI 可显式指定临时 SDK 目录。
+原生构建通过 `prepare-sparkle.py` 准备 `build/toolchain/Sparkle/2.10.0-xdzip-proxy.2`。框架主库从锁定上游源码和代理补丁编译，安装助手、资源及签名工具保留官方 SDK 来源，详见[依赖契约](dependencies.md#macos-更新提供者)。已有有效构建回执可复用，旧官方 SDK 不能代替带代理接口的派生框架。CI 可显式指定临时 SDK 目录。
 
-`python3 scripts/prepare-sparkle.py --output build/toolchain/Sparkle/2.10.0-xdzip-proxy.1` 使用现有 Xcode Command Line Tools 或 Xcode 的原生 Clang，不需要另建 Qt SDK。原始 SDK 和源码归档缓存于 `build/source-cache/`，离线时可分别传入 `--archive` 和 `--source-archive`。构建不执行下载源码中的脚本，不修改系统代理，也不读取生产签名密钥。
+`python3 scripts/prepare-sparkle.py --output build/toolchain/Sparkle/2.10.0-xdzip-proxy.2` 使用现有 Xcode Command Line Tools 或 Xcode 的原生 Clang，不需要另建 Qt SDK。原始 SDK 和源码归档缓存于 `build/source-cache/`，离线时可分别传入 `--archive` 和 `--source-archive`。构建不执行下载源码中的脚本，不修改系统代理，也不读取生产签名密钥。
 
 English: The macOS updater framework library is rebuilt natively from pinned Sparkle source and the bounded proxy patch. Helpers, resources and signing tools retain their pinned upstream SDK origin. Valid per-file receipts permit reuse; the unmodified SDK cannot satisfy the proxy API contract. Native Clang from Command Line Tools or Xcode is sufficient. This preparation does not collect project source-delivery archives or access production signing authority.
+
+`check-macos-proxy.py` 默认只运行自有回环下载器检查。`--system-conflicts` 仅供专项工作流中的一次性 hosted Apple Silicon runner 使用，受限助手暂存、恢复并核验系统代理和固定测试域名的 hosts 设置；禁止在本机添加该参数。English: Default transport probes use owned loopback services only. The system-conflict option is restricted to disposable hosted Apple Silicon runners with verified proxy and hosts restoration; do not enable it locally.
