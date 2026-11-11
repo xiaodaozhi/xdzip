@@ -79,6 +79,7 @@ Invoke-Checked python @('scripts/test-installers.py')
 Invoke-Checked python @('scripts/test-cli-bundle.py')
 Invoke-Checked python @('scripts/test-source-delivery.py')
 Invoke-Checked python @('scripts/test-qt-sdk-correspondence.py')
+Invoke-Checked python @('scripts/test-qt-network-security.py')
 Invoke-Checked python @('scripts/test-deployment-audit.py')
 Invoke-Checked python @('scripts/test-linux-deployment.py')
 Invoke-Checked python @('scripts/test-windows-deployment.py')
@@ -315,13 +316,15 @@ Copy-Item 'build/desktop/apps/desktop/*.png' 'build/review'
 Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'build/review'
 Set-CiPhase 'runtime-package'
 if ($IsMacOS) {
-    Invoke-Checked python @('scripts/collect-notices.py', 'build/review/notices')
+    Invoke-Checked python @('scripts/collect-notices.py', 'build/review/notices', '--qt-prefix', $qtPrefix)
     Invoke-Checked python @('scripts/prepare-runtime-notices.py', '--qt-prefix', $qtPrefix, '--output', 'build/review/notices/Qt-runtime')
     Copy-Item 'build/review/notices/source-build.cdx.json' 'build/review/source-build.cdx.json'
 } else {
     Invoke-Checked python (@('scripts/desktop.py', 'package', '--kind', 'runtime') + $shared)
     Copy-Item 'docs/engineering/developer-build.md' 'build/review/README.md'
-    Invoke-Checked git @('archive', '--format=tar', '-o', 'build/review/xdzip-source.tar', 'HEAD')
+    if ($env:XDZIP_CLI_RELEASE_BUILD -ne '1') {
+        Invoke-Checked git @('archive', '--format=tar', '-o', 'build/review/xdzip-source.tar', 'HEAD')
+    }
     Set-CiPhase 'historical-fixture'
     Invoke-Checked python @('scripts/prepare-previous-product.py', '--qt-prefix', $qtPrefix, '--output', 'build/previous-product', '--notices', 'build/review/notices')
     Copy-Item 'build/previous-product/previous-product.json' 'build/review/previous-product.json'

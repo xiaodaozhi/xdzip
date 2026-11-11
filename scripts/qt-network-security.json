@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "qt_version": "6.8.2",
+  "variant": "6.8.2-xdzip-network.1",
+  "source_module": "qtbase",
+  "openssl_headers": {
+    "file": "openssl-3.5.9.tar.gz",
+    "url": "https://github.com/openssl/openssl/releases/download/openssl-3.5.9/openssl-3.5.9.tar.gz",
+    "sha256": "603f5602e2eef00d77fbd429d34dcd5822bb301757a1bc9cdb24c670f1eb859a",
+    "scope": "Build-time generated OpenSSL 3 declarations only; no OpenSSL library is built or distributed"
+  },
+  "patches": [
+    {
+      "file": "patches/qt/6.8.2-network/CVE-2026-116337-qtbase-6.8-0002.diff",
+      "url": "https://download.qt.io/archive/qt/6.8/CVE-2026-116337-qtbase-6.8-0002.diff",
+      "sha256": "f307349b325982cb068b45384b760e2e71a1a1789d4ef0b37d61eac39792f8be"
+    },
+    {
+      "file": "patches/qt/6.8.2-network/CVE-2026-116337-qtbase-6.8-0001.diff",
+      "url": "https://download.qt.io/archive/qt/6.8/CVE-2026-116337-qtbase-6.8-0001.diff",
+      "sha256": "aa7965835e416126e42f98e05c97780d2f1d1926b34c937c07d6f62826045b9b"
+    },
+    {
+      "file": "patches/qt/6.8.2-network/CVE-2026-105946-qtbase-6.8-0001.diff",
+      "url": "https://download.qt.io/archive/qt/6.8/CVE-2026-105946-qtbase-6.8-0001.diff",
+      "sha256": "c87d428ff0f64f7ddbe8de06afccae0b6c71e506b2e1699b08ac890d6c51561c"
+    },
+    {
+      "file": "patches/qt/6.8.2-network/CVE-2026-105946-qtbase-6.8-0002.diff",
+      "url": "https://download.qt.io/archive/qt/6.8/CVE-2026-105946-qtbase-6.8-0002.diff",
+      "sha256": "24385d704582d54adcf433bde23bf87e69f18b55cd9f9114a53af8fac3a0761d"
+    },
+    {
+      "file": "patches/qt/6.8.2-network/CVE-2026-105946-qtbase-6.8-0003.diff",
+      "url": "https://download.qt.io/archive/qt/6.8/CVE-2026-105946-qtbase-6.8-0003.diff",
+      "sha256": "fc3c3d21b1f0234d6488e3d95f482e2ce464372fc7dfc15fde80b20632ccacfb"
+    }
+  ]
+}

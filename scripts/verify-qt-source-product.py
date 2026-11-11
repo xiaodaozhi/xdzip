@@ -18,6 +18,7 @@ def main():
     if out.exists() or not within(out,ROOT/'build'):p.error('Use a new build/ directory')
     with transient_registrations(out):
         out.mkdir(parents=True);report=json.loads((a.qt_build/'qt-source-build.json').read_text())
+        subprocess.run([sys.executable, str(ROOT/'scripts/prepare-qt-network.py'), '--qt-prefix', str(qt)], check=True)
         configure=['cmake','-S',str(ROOT),'-B',str(out/'compiled'),'-G','Ninja','-DCMAKE_BUILD_TYPE=Release','-DXDZIP_BUILD_DESKTOP_PREVIEW=ON','-DCMAKE_PREFIX_PATH='+str(qt)]
         if sys.platform=='darwin':configure+=['-DCMAKE_OSX_ARCHITECTURES=arm64','-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0','-DXDZIP_MACOS_HANDLER_RANK=None']
         env=dict(os.environ,QT_PLUGIN_PATH=str(qt/'plugins'),QML_IMPORT_PATH=str(qt/'qml'),QT_QPA_PLATFORM='offscreen',QT_QUICK_BACKEND='software')

@@ -4,6 +4,12 @@
 
 | 场景 | 操作与判定 |
 | --- | --- |
+| QT-NETWORK-SECURITY | 固定源码、五份官方补丁和构建器身份，保留原 Network 功能与导出、对原 QtCore 的导入。实际加载候选库，超限状态行、未终止响应头、分片和 CONNECT 在夹具取消前拒绝，正常响应、合法长头、各行终止形式、受信测试 CA 与 CONNECT TLS 可用，不受信证书仍拒绝；执行上游认证坏输入与正常向量。失败恢复原 SDK；缺失、陈旧回执、替换库或 SDK 工具、来源补丁缺失及仅文件名归属均不得进入产品/发行。记录实际平台，macOS 14 无环境时继续未验证，不由其他系统代填 |
+
+English: QT-NETWORK-SECURITY binds source, patches, features and ABI to the actual library. Bounded HTTP/CONNECT/TLS and upstream authentication controls verify early rejection and legitimate behavior. Failed preparation restores the SDK, and changed/missing receipts, tools, patches or filename-only provenance prevent delivery. Platform coverage remains explicit; other macOS versions do not prove macOS 14 execution.
+
+| 场景 | 操作与判定 |
+| --- | --- |
 | RELEASE-MAC-EVIDENCE | 专用 Release 在部署应用仍存在时实际运行 Cocoa／Metal 资源探针，并核对审计、版本和源码提交；链接输入绑定对应编译应用，复用既有 Mach-O 比较器核对节字节、地址、标志、零填充大小、UUID及归一化导入版本。签名／加载命令布局和LINKEDIT保留独立范围。负向检查拒绝变化节／UUID／导入、截断／越界、错误架构及混合资源／链接／SDK 身份；检查 SDK 对应、差异分析、来源／文件 SBOM 和总回执确实进入同包材料。原始 gaps／incomplete、参考机预算和真人视觉分别保留，自动结果不代填人工通过 |
 
 English: RELEASE-MAC-EVIDENCE runs a real Cocoa/Metal resource probe against the deployed candidate, reuses exact section/address/flag, zero-fill, UUID and normalized import comparison to bind compiled link inputs, rejects changed or mixed/boundedness-invalid evidence, and checks the same-package SDK, difference and SBOM records. Signing/load-command layout and LINKEDIT, original gaps, reference budgets and human visual acceptance remain separate.

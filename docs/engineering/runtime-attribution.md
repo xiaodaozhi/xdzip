@@ -41,6 +41,8 @@ English: Simple legacy Cargo license alternatives separated by slashes are writt
 
 ## 执行与交付
 
+QtNetwork 的已知安全派生库在文件记录中增加 `network_security_variant`，报告同时保留完整、重新核验过的构建回执。上游 SDK 摘要差异仍保留，发行复核使用固定源码、完整补丁、构建回执与部署转换证据解释该差异。发布暂存要求最终 Network 的归属与这些字节相连，文件名匹配不能通过。源码与工件 SBOM 分别标记派生身份；不会把全局 incomplete 改写成许可批准。English: The patched Network carries its own variant and verified receipt. Upstream checksum differences remain visible, and release staging requires a deployed-byte link rather than a filename match. The global incomplete status remains separate from concrete release review.
+
 ```sh
 python3 scripts/prepare-runtime-notices.py --qt-prefix /path/to/Qt/6.8.2/gcc_64 \
   --output build/review/notices/Qt-runtime

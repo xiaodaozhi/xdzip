@@ -6,6 +6,13 @@ endif()
 
 find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)
 find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
+get_filename_component(XDZIP_QT_SDK_PREFIX "${Qt6_DIR}/../../.." ABSOLUTE)
+execute_process(COMMAND "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/scripts/prepare-qt-network.py"
+    --qt-prefix "${XDZIP_QT_SDK_PREFIX}" --check-only
+    RESULT_VARIABLE XDZIP_QT_NETWORK_SECURITY_STATUS OUTPUT_QUIET ERROR_QUIET)
+if(NOT XDZIP_QT_NETWORK_SECURITY_STATUS EQUAL 0)
+    message(FATAL_ERROR "Prepare the pinned QtNetwork security build with scripts/prepare-qt-network.py before configuring the desktop")
+endif()
 qt_standard_project_setup()
 qt_policy(SET QTP0001 NEW)
 qt_policy(SET QTP0004 NEW)

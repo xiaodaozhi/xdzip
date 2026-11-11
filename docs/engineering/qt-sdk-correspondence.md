@@ -23,6 +23,8 @@ qt-license-sources.json 的 source_commits 仅表示许可文本的固定取回�
 
 ## 结果解释与发行边界
 
+QtNetwork 安全派生库另记录 `network_security`，其回执绑定补丁、构建器、原 QtCore 与实际 QtNetwork 摘要、功能及真实传输验证。工具读取回执时重新核对实际 SDK 字节。该项证明限定在修改库，不将上游 SPDX 改写为派生库证明，也不改变其他模块的未覆盖事实。输入与维护方法见[Qt 补丁说明](../../patches/qt/README.md)。English: `network_security` separately binds the patched Network build to current SDK binaries and executed checks; upstream SPDX and all other modules retain their original evidence boundaries.
+
 模块是否提供源码 SPDX、匹配／缺失／未覆盖数量、配置和补丁状态均以本次生成的 JSON 为准，不把某个 SDK 的观测推广到其他 SDK。没有逐文件声明时不能推断对应通过，必须保留具体缺口。
 
 报告状态固定为 evidence-collected-not-build-equivalence。[实际 Qt 源码构建和加载／替换](wp12-automation.md#qt-源码与兼容替换)已有独立流程，但不能由此推断原 SDK 的字节级重现。完整工具链与系统 SDK 材料、未覆盖／生成文件、运行库来源及许可履约尚未全部核清时，不宣称全部对应源码义务已履行，不宣称字节级可重复构建。既有[运行时归属](runtime-attribution.md)的 incomplete、许可选择及平台运行库复核继续保留。

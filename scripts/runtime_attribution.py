@@ -115,6 +115,9 @@ def attribute(audit, root, sdk, deployment=None):
     if audit['status'] != 'passed':
         raise ValueError('Cannot attribute failed deployment audit')
     packages, dependencies, index, documents, extracted = load_qt(sdk)
+    from qt_network_security import identity as network_identity, library as sdk_library
+    network = network_identity(sdk, required=False)
+    network_path = sdk_library(sdk, 'Network').resolve() if network else None
     provenance = {p['path']: p for p in (deployment or {}).get('sdk_files', [])}
     by_name = {}
     for relative in index:
@@ -185,6 +188,8 @@ def attribute(audit, root, sdk, deployment=None):
             files.append({'path': relative if external else 'artifact/' + relative,
                 'sha256': item['sha256'], 'sdk_path': source, 'sdk_sha256': sdk_hash,
                 'evidence': evidence, 'owners': owners, 'upstream_checksums': checks})
+            if network and sdk_file.resolve() == network_path:
+                files[-1]['network_security_variant'] = network['variant']
             if evidence == 'filename-only-unverified-rewrite':
                 gaps.append({'kind': 'unverified-rewrite', 'file': relative})
             if any(not c['matches_sdk'] for c in checks):
@@ -206,7 +211,7 @@ def attribute(audit, root, sdk, deployment=None):
     return {'schema_version': 1, 'status': 'evidence-generated-release-review-required',
         'identity': audit['identity'], 'platform': audit['platform'], 'mode': audit['mode'],
         'qt_version': QT_VERSION, 'audit_sha256': hashlib.sha256(json.dumps(audit,sort_keys=True,separators=(',',':')).encode()).hexdigest(),
-        'upstream_documents': documents, 'files': files,
+        'upstream_documents': documents, 'files': files, 'network_security': network,
         'components': [packages[k] for k in sorted(selected)],
         'dependencies': [{'ref': k, 'dependsOn': sorted(dependencies.get(k, set()) & selected)} for k in sorted(selected)],
         'gaps': gaps, 'extracted_license_texts': {k: v for k, v in extracted.items() if k.split(':')[0] in {packages[s]['repository'] for s in selected}},

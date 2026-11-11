@@ -16,6 +16,7 @@ import uuid
 from desktop_environment import PYTHON_PACKAGES, QT_VERSION, check_environment, locked_rust_version
 from association_types import WINDOWS_ICONS
 from windows_ninja_safety import check_dependencies, utf8_console
+from qt_network_security import identity as qt_network_identity
 
 ROOT = Path(__file__).resolve().parents[1]
 TOOL_PACKAGES = tuple(name+'=='+version for name, version in PYTHON_PACKAGES.items())
@@ -168,8 +169,11 @@ class Workflow:
 
     def sdk_identity(self):
         qmake = self.qt/'bin'/('qmake.exe' if self.system == 'windows' else 'qmake')
+        network = qt_network_identity(self.qt)
         return {'prefix_key': hashlib.sha256(str(self.qt).encode()).hexdigest(),
-                'version': QT_VERSION, 'qmake_sha256': digest(qmake)}
+                'version': QT_VERSION, 'qmake_sha256': digest(qmake),
+                'network_security': {name: network[name] for name in
+                                     ('variant', 'inputs_sha256', 'core_sha256', 'network_sha256')}}
 
     def check_cached_sdk(self, *, configured=False):
         cache = self.build/'CMakeCache.txt'
@@ -211,6 +215,7 @@ class Workflow:
             downloads.mkdir(parents=True, exist_ok=True)
             self.run([self.python, '-m', 'aqt', 'install-qt', self.platform_spec[1], 'desktop',
                       QT_VERSION, self.platform_spec[2], '-O', qt_root], cwd=downloads)
+        self.script('prepare-qt-network.py', '--qt-prefix', self.qt)
         self.doctor('build')
         self.run(['cargo', 'fetch', '--locked'])
         self.script('prepare-native-codecs.py')
@@ -314,7 +319,7 @@ class Workflow:
 
     def notices(self):
         notices = self.output/'notices'
-        self.script('collect-notices.py', notices)
+        self.script('collect-notices.py', notices, '--qt-prefix', self.qt)
         self.script('prepare-runtime-notices.py', '--qt-prefix', self.qt, '--output', notices/'Qt-runtime')
         if self.system == 'windows':
             from native_runtime_materials import installer_notices

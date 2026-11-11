@@ -17,6 +17,7 @@ root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('output', type=Path)
 parser.add_argument('--sparkle-sdk', type=Path)
+parser.add_argument('--qt-prefix', type=Path)
 arguments = parser.parse_args()
 out = arguments.output
 out.mkdir(parents=True, exist_ok=True)
@@ -26,6 +27,11 @@ notice_files.extend(out/item['file'] for item in native_materials['files'])
 rar_mapping_files, rar_mapping_record = collect_rar_mapping_materials(out)
 notice_files += rar_mapping_files
 native_dependencies = []
+if arguments.qt_prefix:
+    from qt_network_materials import collect as collect_network
+    network_files, network_dependency = collect_network(arguments.qt_prefix.resolve(), out)
+    notice_files += network_files
+    native_dependencies.append(network_dependency)
 from native_codec_materials import notices as codec_notices
 codec_files, codec_dependencies = codec_notices(out)
 notice_files += codec_files

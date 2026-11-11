@@ -23,6 +23,9 @@ class WorkflowTests(unittest.TestCase):
         # policy. The explicit CI guard cases below set CI=true themselves.
         patch.dict(os.environ, {'CI': ''}).start()
         patch.object(desktop, 'ROOT', self.root).start()
+        self.network_identity = {'variant': 'owned-fixture', 'inputs_sha256': '1'*64,
+                                 'core_sha256': '2'*64, 'network_sha256': '3'*64}
+        patch.object(desktop, 'qt_network_identity', return_value=self.network_identity).start()
         self.qt = self.root/'sdk'
         for name in ['qmake', 'qmake.exe']:
             path = self.qt/'bin'/name
@@ -134,6 +137,14 @@ class WorkflowTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'configuration or native platform'):
                 workflow.build_receipt()
 
+    def test_network_replacement_invalidates_previous_build_receipt(self):
+        workflow = self.workflow('linux')
+        self.receipt(workflow)
+        self.network_identity['network_sha256'] = '4'*64
+        with patch.object(workflow, 'source', return_value=self.source):
+            with self.assertRaisesRegex(ValueError, 'Qt SDK differs'):
+                workflow.build_receipt()
+
     def test_cached_cmake_sdk_cannot_silently_use_a_different_prefix(self):
         workflow = self.workflow('linux')
         workflow.build.mkdir(parents=True)
@@ -224,6 +235,8 @@ class WorkflowTests(unittest.TestCase):
         (workflow.app.parent/'xdzip-update-helper.exe').write_bytes(b'updater fixture')
         (workflow.app.parent/'xdzip-native-codec.exe').write_bytes(b'codec fixture')
         (workflow.app.parent/'xdzip-association.exe').write_bytes(b'association fixture')
+        (workflow.app.parent/'cli').mkdir()
+        (workflow.app.parent/'cli/xdzip.exe').write_bytes(b'CLI fixture')
         notices = workflow.output/'notices'
         notices.mkdir(parents=True)
         (notices/'source-license.txt').write_text('source')
