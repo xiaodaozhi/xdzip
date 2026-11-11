@@ -2,7 +2,7 @@
 
 逐格式图标素材及平台映射见[文件关联图标规范](../visual/file-association-icons.md)。Linux 保留系统 MIME 图标，安装不改变默认选择或现有注册范围。
 
-桌面包将命令行程序放在独立的 `cli/` 目录，macOS 位于 `Contents/Helpers/cli/`，保留原 GUI 与文件关联入口。Windows 安装器提供默认关闭的当前用户 PATH 选项，检测同名命令冲突；卸载只撤销本安装目录。Mac/Linux 显式运行私有 CLI 的 `setup`，独立 CLI 包也通过 `setup` 安装用户级版本目录和稳定启动入口，不改 Shell 配置。撤销用 `setup --remove`，保留版本目录供核查。详见 [CLI 安装契约](command-line.md#构建与命令安装)。English: Desktop and standalone CLI entry registration is explicit and user scoped. Existing commands are preserved, and shell startup files are never edited.
+当前源码构建的桌面包将命令行程序放在独立的 `cli/` 目录，macOS 位于 `Contents/Helpers/cli/`，保留原 GUI 与文件关联入口。该功能不追溯加入已发布的旧版附件。Windows 安装器提供默认关闭的当前用户 PATH 选项，检测同名命令冲突；卸载只撤销本安装目录。Mac/Linux 显式运行私有 CLI 的 `setup`，独立 CLI 包也通过 `setup` 安装用户级版本目录和稳定启动入口，不改 Shell 配置。撤销用 `setup --remove`，保留版本目录供核查。详见 [CLI 安装契约](command-line.md#构建与命令安装)。English: Current source builds register desktop and standalone CLI entries explicitly and per user; existing releases do not gain these assets retroactively. Existing commands are preserved, and shell startup files are never edited.
 
 本页描述本地开发和按需验证产物：Windows x64 当前用户安装器、Ubuntu 24.04 amd64 X11 的 .deb，以及按明确需求制作的[本地 macOS 开发 DMG](macos-deployment.md)。这些本地产物仍是实验性开发交付，不能替代正式 Release。正式 `v0.1.0` 的平台包由专用 Release 工作流生成和验证，另遵循[发布协议](release-protocol.md)。个人开源发行不要求付费证书、Developer ID 或公证，macOS 保留必要 ad-hoc 完整性签名；普通 CI 不部署或上传 Mac 应用。支持范围见[支持政策](support-policy.md)。
 
@@ -80,7 +80,7 @@ macOS 的 RAR、CAB 和 UDF 导入类型声明均须符合 `public.data`，使�
 
 English: Windows registers per-extension icons and ProgIDs without changing defaults or UserChoice. The existing shared ProgID remains available; a small launcher delegates new format handlers to it so a legacy rollback uses the restored application. Existing user choices may retain the old ZIP icon until the user reselects xdzip. macOS uses per-type ICNS with the existing Viewer rank, sharing TAR.GZ for the compressed-TAR UTI. Its imported RAR, CAB and UDF types conform to `public.data`. CAB claims both the system and compatibility identifiers, and Settings uses the recognized preferred identifier when it is one of those two. The UDF Viewer uses the `.udf` extension without `LSItemContentTypes`, so files remain discoverable when an older installed bundle shadows the corrected UTI. Apple has deprecated this extension declaration key; verify it on supported macOS versions. Settings queries and changes the type actually recognized for `.udf`, falling back to the existing identifier if unavailable. When no handler existed, Launch Services may implicitly resolve a new candidate as the current handler; removing the temporary registration should restore the original state. This is distinct from the application writing a user preference. Linux keeps system MIME icons. GZ remains limited to TAR.GZ content.
 
-FileOpenRouter 在 QML 前接收 [QFileOpenEvent](https://doc.qt.io/qt-6.8/qfileopenevent.html)，只接受本地文件，等控制器空闲后复用真实打开与激活。命令行 -- 后都作为文件路径，避免误解为诊断开关。待处理意图最多 128 个，不抢占活跃任务。现有产品仍为单个真实会话，多输入串行打开并显示最后一个；不宣称跨进程单实例或多会话标签已实现。
+FileOpenRouter 在 QML 前接收 [QFileOpenEvent](https://doc.qt.io/qt-6.8/qfileopenevent.html)，只接受本地文件并复用应用的打开与激活路由。GUI 命令行 `--` 后作为文件路径，避免误解为诊断开关。待处理意图最多 128 个，不抢占活跃任务。同一登录会话的正常产品进程共用一个实例；多文件请求按顺序打开并激活最后一个，标签和窗口行为见[应用会话契约](application-sessions.md)。
 
 启动参数在加载 QML 前入队，主窗口先隐藏，附接控制器时立即提交首个可用请求，不再要求窗口已可见。主窗口在初始事件队列中显示，允许平台启动事件走同一处理路径；外部打开期间先隐藏欢迎入口再改变会话，避免首帧或替换会话闪现欢迎页。取消／失败恢复欢迎页，成功显示真实列表，详见[读取状态](../ux/welcome-opening.md)。
 

@@ -44,7 +44,7 @@
 
 ### 创建压缩包与能力
 
-ZIP 只显示四档压缩级别，默认 2-正常压缩；不另设算法控件。TAR 仅打包，TAR.GZ 使用 GZIP 0／1／6／9，两者禁用并清空密码与分卷参数。格式变化更新扩展名。空输入/空名称/空保存位置禁用创建。ZIP 创建提供 AES-256 密码及编号分卷，受支持 AES-256 的读取与密码解压按[密码交互](password-extraction.md)实现；[编号与 PKZIP 分卷读取](../engineering/archive-opening.md)沿用相同任务和密码路径；其他加密及 RAR／7z 创建不支持。
+原型中的 ZIP 显示四档压缩级别，默认 2-正常压缩，不另设算法控件。TAR 仅打包，TAR.GZ 使用 GZIP 0／1／6／9，两者禁用并清空密码与分卷参数。格式变化更新扩展名。空输入/空名称/空保存位置禁用创建。原型的格式选项不等同于当前产品的完整能力：产品支持 ZIP 和 7z 的受限创建、密码与分卷，RAR 不支持创建；实际边界见[格式后端](../engineering/native-codecs.md)、[密码交互](password-extraction.md)和[分卷契约](../engineering/archive-opening.md)。
 
 ### 视觉与适配
 

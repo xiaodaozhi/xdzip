@@ -1,6 +1,16 @@
 # 文档导航
 
-文档保存通用规则、设计和可复用方法。当前最新稳定版为 [`v0.1.3`](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.1.3)，具体阶段进度与验收记录见 [Issues](https://github.com/xiaodaozhi/xdzip/issues)，执行证据见 [Actions](https://github.com/xiaodaozhi/xdzip/actions)或本地工件，不在 docs 累积报告。
+文档保存当前源码的通用设计、实现契约和可复用方法。用户安装入口与版本区别见根目录 [README](../README.md)，具体版本以[发布页](https://github.com/xiaodaozhi/xdzip/releases)为准。进度与验收结论记录在 [Issues](https://github.com/xiaodaozhi/xdzip/issues)，执行证据保存在 [Actions](https://github.com/xiaodaozhi/xdzip/actions)或本地工件，不在 docs 累积报告。
+
+## 从哪里开始
+
+- **安装和使用：**阅读 [README](../README.md)、[安装与文件关联](engineering/installers-associations.md)和[支持政策](engineering/support-policy.md)。当前源码的[命令行工具](engineering/command-line.md)不自动包含在旧版发布附件中。
+- **构建和贡献：**从[开发构建指南](engineering/developer-build.md)准备环境，按[仓库结构](engineering/repository-layout.md)定位代码，再按[验证方法](qa/README.md)选择检查。
+- **修改产品行为：**先查下方的浏览、任务、格式和交互契约，区分当前实现、设计和未验证内容。
+- **修改界面：**先读[视觉规范](visual/design-standard.md)和[设计流程](visual/design-workflow.md)，再查高保真原稿及相关交互契约。
+- **准备发行：**阅读[发布协议](engineering/release-protocol.md)与[发行审查流程](qa/release-review.md)，具体候选的证据和决定以 issue 为准。
+
+## 主题索引
 
 | 领域 | 入口 |
 | --- | --- |
