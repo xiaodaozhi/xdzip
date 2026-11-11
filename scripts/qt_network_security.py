@@ -227,13 +227,18 @@ def prepare_source(config, source, cache, work):
     return directory
 
 
+def scrub(raw):
+    for path, replacement in ((ROOT, b'<workspace>'), (Path.home(), b'<user>')):
+        raw = raw.replace(str(path).encode(), replacement).replace(path.as_posix().encode(), replacement)
+    return raw
+
+
 def run(arguments, log):
     environment = dict(os.environ)
     for secret in ('XDZIP_UPDATE_SIGNING_KEY_HEX', 'XDZIP_SPARKLE_SIGNING_KEY_HEX'):
         environment.pop(secret, None)
     result = subprocess.run(list(map(str, arguments)), capture_output=True, env=environment)
-    raw = (result.stdout+result.stderr).replace(str(ROOT).encode(), b'<workspace>')
-    raw = raw.replace(str(Path.home()).encode(), b'<user>')
+    raw = scrub(result.stdout+result.stderr)
     log.parent.mkdir(parents=True, exist_ok=True)
     log.write_bytes(raw)
     if result.returncode:
@@ -292,7 +297,7 @@ def openssl_headers(config, cache, work):
     for label, command in [('configure', ['perl', 'Configure', target, 'no-tests', 'no-asm']),
                            ('generate', ['nmake' if sys.platform == 'win32' else 'make', 'build_generated'])]:
         result = subprocess.run(command, cwd=directory, env=environment, capture_output=True)
-        raw = (result.stdout+result.stderr).replace(str(ROOT).encode(), b'<workspace>').replace(str(Path.home()).encode(), b'<user>')
+        raw = scrub(result.stdout+result.stderr)
         (work/('headers-'+label+'.log')).write_bytes(raw)
         if result.returncode:
             print(raw.decode(errors='replace')[-6000:], file=sys.stderr, flush=True)
@@ -328,16 +333,25 @@ def check_abi(prefix, built):
 
 def build(prefix, work, source, parallel, headers):
     expected_features = features(prefix)
-    flags = ['-DCMAKE_BUILD_TYPE=Release', '-DQT_BUILD_TESTS=OFF', '-DQT_BUILD_EXAMPLES=OFF',
+    existing_core = core_features(prefix)
+    # The Linux SDK's RelWithDebInfo build emits exported constexpr metadata
+    # omitted by a plain Release GCC build. Retain its mode and separate debug
+    # setting rather than exempting missing symbols from the ABI check.
+    linux_debug = sys.platform == 'linux' and existing_core.get('separate_debug_info') == '1'
+    mode = 'RelWithDebInfo' if linux_debug else 'Release'
+    flags = ['-DCMAKE_BUILD_TYPE='+mode, '-DQT_BUILD_TESTS=OFF', '-DQT_BUILD_EXAMPLES=OFF',
              '-DBUILD_WITH_PCH=OFF', '-DWARNINGS_ARE_ERRORS=OFF', '-DCMAKE_POLICY_VERSION_MINIMUM=3.16',
              '-DCMAKE_INSTALL_PREFIX='+str(work/'stage'), '-DFEATURE_openssl=ON',
              '-DFEATURE_openssl_runtime=ON', '-DOPENSSL_INCLUDE_DIR='+str(headers)]
     flags += ['-DFEATURE_'+name+'=OFF' for name in ('gui', 'widgets', 'sql', 'xml', 'dbus', 'concurrent', 'testlib', 'printsupport')]
     flags += ['-DFEATURE_'+name+'='+('ON' if value == '1' else 'OFF') for name, value in sorted(expected_features.items())]
-    existing_core = core_features(prefix)
-    for name in ('system_zlib', 'system_pcre2', 'icu', 'glib', 'zstd'):
+    for name in ('system_zlib', 'system_pcre2', 'icu', 'glib', 'zstd', 'reduce_exports',
+                 'reduce_relocations', 'use_bfd_linker', 'use_gold_linker', 'use_lld_linker', 'use_mold_linker'):
         if name in existing_core:
             flags += ['-DFEATURE_'+name+'='+('ON' if existing_core[name] == '1' else 'OFF')]
+    if sys.platform == 'linux':
+        flags += ['-DFEATURE_separate_debug_info='+('ON' if linux_debug else 'OFF'),
+                  '-DCMAKE_SHARED_LINKER_FLAGS=-Wl,--undefined=__bss_start -Wl,--undefined=_edata -Wl,--undefined=_end']
     if sys.platform == 'darwin':
         flags += ['-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
                   '-DQT_FORCE_WARN_APPLE_SDK_AND_XCODE_CHECK=ON']

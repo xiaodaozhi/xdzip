@@ -23,8 +23,8 @@ def check(qt, source, output):
     environment['QT_PLUGIN_PATH'] = str(qt/'plugins')
     suffix = '.exe' if sys.platform == 'win32' else ''
     run(['cmake', '-S', ROOT/'tools/qt-network-security', '-B', output/'probe', '-G', 'Ninja',
-         '-DCMAKE_BUILD_TYPE=Release', '-DCMAKE_PREFIX_PATH='+str(qt),
-         '-DQTBASE_SOURCE='+str(source)], output/'probe-configure.log')
+         '-DCMAKE_BUILD_TYPE=Release', '-DCMAKE_PREFIX_PATH='+qt.as_posix(),
+         '-DQTBASE_SOURCE:PATH='+source.as_posix()], output/'probe-configure.log')
     run(['cmake', '--build', output/'probe', '--parallel', '2'], output/'probe-build.log')
     try:
         result = subprocess.run([str(output/'probe'/('xdzip-qt-authentication-tests'+suffix)),

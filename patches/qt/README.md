@@ -36,6 +36,10 @@ macOS 的 `qmlimportscanner`、`qmlcachegen` 和 `qmllint` 原有供应商签名
 
 ## 许可与安装信息
 
+Linux 读取原 SDK 的 separate-debug 配置，采用相应的 `RelWithDebInfo` 构建并保留链接器选择和已导出的边界符号；这避免编译模式差异移除原有 constexpr 元数据。原库导出必须完整保留，不能以“私有符号”名义跳过 ABI 失败。Windows 探针将源码参数作为规范化 CMake PATH 传入，避免反斜线被解释为转义。
+
+English: Linux retains the SDK's separate-debug build mode, linker selection and exported boundary symbols; missing exports remain fatal. Windows probe source paths use a normalized CMake PATH to avoid backslash escape errors.
+
 QtNetwork 生产源码使用其原有 LGPL-3.0/GPL/商业多重授权，本项目继续选择动态链接的 LGPL-3.0 路径。原文及 Qt 第三方通知随 `notices/Qt-6.8.2` 和 `Qt-runtime` 提供；保留补丁中的作者和版权。补丁内上游测试文件单独标有 GPL-3.0-only，它们仅用于开发验证，不进入应用或发行材料中的可执行文件。
 
 修改库的完整源码可由材料内的固定 QtBase 下载地址与这里的五份补丁获得，构建入口、配置和对应标签公开可取，不提供额外的对应源码压缩包。替换库后的部署、重链接、macOS 本地完整性签名与应用重签方法见

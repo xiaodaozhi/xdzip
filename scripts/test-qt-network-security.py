@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Fail-closed source patching, SDK identity and release provenance contracts."""
 import copy
+import contextlib
 import hashlib
+import io
 import json
 import importlib.util
 import os
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import subprocess
 import tempfile
 import unittest
@@ -127,6 +129,27 @@ class SecurityBuildTests(unittest.TestCase):
                 check.check(self.root/'sdk', self.root/'source', output)
         self.assertNotIn(str(security.ROOT), (output/'authentication.log').read_text())
         self.assertIn('<workspace>', (output/'authentication.log').read_text())
+
+    def test_windows_paths_reach_cmake_without_backslash_escapes(self):
+        spec = importlib.util.spec_from_file_location('network_check_paths', security.ROOT/'scripts/check-qt-network.py')
+        check = importlib.util.module_from_spec(spec); spec.loader.exec_module(check)
+        with patch.object(check, 'run', side_effect=ValueError('captured configure')) as run:
+            with self.assertRaisesRegex(ValueError, 'captured configure'):
+                check.check(self.root/'sdk', PureWindowsPath('C:/a/owned/qtbase'), self.root/'probe-output')
+        self.assertIn('-DQTBASE_SOURCE:PATH=C:/a/owned/qtbase', run.call_args.args[0])
+
+    def test_failed_commands_redact_both_windows_path_forms(self):
+        raw = b'C:\\Users\\owned\\xdzip\\src.cpp C:/Users/owned/xdzip/src.cpp C:/Users/owned/tmp'
+        with patch.object(security, 'ROOT', PureWindowsPath('C:/Users/owned/xdzip')), \
+                patch.object(security.Path, 'home', return_value=PureWindowsPath('C:/Users/owned')), \
+                patch.object(security.subprocess, 'run', return_value=subprocess.CompletedProcess([], 1, raw, b'')), \
+                contextlib.redirect_stderr(io.StringIO()) as console:
+            with self.assertRaisesRegex(ValueError, 'command failed'):
+                security.run(['owned-command'], self.root/'failure.log')
+        for content in [(self.root/'failure.log').read_text(), console.getvalue()]:
+            self.assertNotIn('owned', content)
+            self.assertIn('<workspace>', content)
+            self.assertIn('<user>', content)
 
     def test_abi_rejects_removed_exports_and_new_unavailable_core_imports(self):
         sdk, candidate = self.root/'sdk', self.root/'candidate'
