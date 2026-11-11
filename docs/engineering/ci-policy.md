@@ -34,6 +34,8 @@ Foundation 的 CLI 检查使用统一构建入口和实际二进制，另验证�
 
 Windows 和 Linux 的 Qt 手动运行上传实验性开发包和验证工件，通常保留 14 天；macOS 普通检查仅保留日志和 JSON，不部署、签名或上传应用包。日常 CI 不生成这些开发包。按需开发 DMG 和专用 Release 的例外见[Mac 部署](macos-deployment.md)和[发布协议](release-protocol.md)。
 
+普通开发与发行验收不自动生成项目源码归档，也不调用源码交付收集器。源码收集必须有所有者单独明确要求；GitHub 标签自带的源码快照与项目流水线附件分开说明。English: Development/release validation does not automatically archive the project source or invoke the corresponding-source collector. Source collection requires separate explicit owner authorization; GitHub's tag snapshots remain distinct from uploaded pipeline assets.
+
 ## 视觉、桌面与发行
 
 根据改动先运行自动化并由执行者尽量检查实际应用或截图。输入法、真实读屏、系统对话框、窗口装饰、物理多显示器及真实 GPU 等场景按需检查；没有执行或没有对应环境时记录限制，不要求每次由维护者完成固定人工清单，也不把离屏、合成输入或虚拟显示器记为真人或物理设备通过。方法见[桌面验证](../qa/private-test-manual.md)。

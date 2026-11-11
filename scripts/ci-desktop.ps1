@@ -322,9 +322,6 @@ if ($IsMacOS) {
 } else {
     Invoke-Checked python (@('scripts/desktop.py', 'package', '--kind', 'runtime') + $shared)
     Copy-Item 'docs/engineering/developer-build.md' 'build/review/README.md'
-    if ($env:XDZIP_CLI_RELEASE_BUILD -ne '1') {
-        Invoke-Checked git @('archive', '--format=tar', '-o', 'build/review/xdzip-source.tar', 'HEAD')
-    }
     Set-CiPhase 'historical-fixture'
     Invoke-Checked python @('scripts/prepare-previous-product.py', '--qt-prefix', $qtPrefix, '--output', 'build/previous-product', '--notices', 'build/review/notices')
     Copy-Item 'build/previous-product/previous-product.json' 'build/review/previous-product.json'
