@@ -15,9 +15,12 @@
 #include <bcrypt.h>
 #include <sddl.h>
 #else
+#include <cerrno>
 #include <fcntl.h>
 #include <spawn.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
+#include <thread>
 #include <unistd.h>
 #ifdef __APPLE__
 #include <stdlib.h>
@@ -171,6 +174,20 @@ inline bool launch(const fs::path &executable, const std::string &action,
     char *args[] = {app.data(), flag, manifest.data(), nullptr};
     pid_t pid = 0;
     const bool ok = posix_spawn(&pid, app.c_str(), nullptr, nullptr, args, environ) == 0;
+    if (ok) {
+        // File managers keep this module loaded. Reap forwarded clients as well
+        // as the long-lived primary process without changing the host's SIGCHLD.
+        try {
+            std::thread([pid] {
+                int status = 0;
+                while (waitpid(pid, &status, 0) < 0 && errno == EINTR) {
+                }
+            }).detach();
+        } catch (...) {
+            // The operation was already launched. Never report a rejection that
+            // could cause it to be submitted twice when thread resources run out.
+        }
+    }
 #endif
     if (!ok) {
         std::error_code error;

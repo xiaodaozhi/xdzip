@@ -26,6 +26,9 @@
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QtTest>
+#ifdef Q_OS_UNIX
+#include <signal.h>
+#endif
 
 class UrlRecorder : public QObject {
     Q_OBJECT
@@ -83,6 +86,27 @@ class ShellTest : public QObject {
         QCOMPARE(ShellActionRequest::parse(read).paths, QStringList{path});
         QVERIFY(!QFile::exists(QString::fromUtf8(native.u8string().c_str())));
     }
+#ifdef Q_OS_UNIX
+    void nativeLaunchReapsForwardingClients() {
+        QTemporaryDir source;
+        const auto pidFile = source.filePath("client.pid");
+        test_environment::ScopedVariable pidOutput("XDZIP_SHELL_TEST_PID", pidFile);
+        QVERIFY(pidOutput.valid());
+        const auto script = source.filePath("client");
+        write(script, "#!/bin/sh\nprintf '%s' \"$$\" > \"$XDZIP_SHELL_TEST_PID\"\n"
+                      "rm -- \"$2\"\nrmdir -- \"${2%/*}\"\n");
+        QVERIFY(QFile::setPermissions(script, QFileDevice::ReadOwner | QFileDevice::WriteOwner |
+                                                  QFileDevice::ExeOwner));
+        QVERIFY(xdzip_shell::launch(xdzip_shell::fs::u8path(script.toUtf8().toStdString()),
+                                    "choose", {xdzip_shell::fs::temp_directory_path()}));
+        QTRY_VERIFY(QFile::exists(pidFile));
+        QFile output(pidFile);
+        QVERIFY(output.open(QIODevice::ReadOnly));
+        const auto pid = output.readAll().toLongLong();
+        QVERIFY(pid > 0);
+        QTRY_VERIFY(kill(pid_t(pid), 0) < 0 && errno == ESRCH);
+    }
+#endif
     void quickCreationAndPartialBatchFailure() {
         UrlRecorder opened;
         QDesktopServices::setUrlHandler("file", &opened, "opened");
