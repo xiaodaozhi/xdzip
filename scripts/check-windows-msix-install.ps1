@@ -152,16 +152,24 @@ public static class XdzipPackageOrigin {
         [XdzipMsixActivation]::Close()
     }
     $result.checks.about_update_channels_in_both_languages = 'passed'
-    # Use the OS file contract and inspect an actual entry in the owned ZIP.
+    # Invoke the package's actual Open With handler and inspect an owned ZIP entry.
     $archiveName = 'xdzip msix fixture.zip'
     $archivePath = Join-Path $env:RUNNER_TEMP $archiveName
     if (Test-Path -LiteralPath $archivePath) { throw 'File activation fixture already exists' }
     Copy-Item -LiteralPath 'tests/fixtures/zip/normal.zip' -Destination $archivePath
     $activationProcess = $null
     try {
-        $processId = [XdzipMsixActivation]::Open(($installed.PackageFamilyName + '!App'), $archivePath)
-        $activationProcess = Get-Process -Id $processId -ErrorAction Stop
-        if ([XdzipMsixActivation]::PackageName($activationProcess.Handle) -ne $installed.PackageFullName) { throw 'File activation has the wrong package identity' }
+        [XdzipMsixActivation]::OpenAssociated($appId, $exe, $archivePath)
+        for ($attempt = 0; $attempt -lt 150 -and !$activationProcess; $attempt++) {
+            foreach ($candidate in @(Get-Process -Name xdzip -ErrorAction SilentlyContinue)) {
+                try {
+                    if ([XdzipMsixActivation]::PackageName($candidate.Handle) -eq $installed.PackageFullName) { $activationProcess = $candidate; break }
+                } catch [System.InvalidOperationException] {}
+                  catch [System.ComponentModel.Win32Exception] {}
+            }
+            if (!$activationProcess) { Start-Sleep -Milliseconds 100 }
+        }
+        if (!$activationProcess) { throw 'File handler did not start the installed package' }
         $null = Wait-XdzipOwnedUiElement $activationProcess $archiveName 'ControlType.TabItem'
         $null = Wait-XdzipOwnedUiElement $activationProcess 'empty.txt' 'ControlType.CheckBox'
     } finally {
@@ -169,7 +177,6 @@ public static class XdzipPackageOrigin {
             $activationProcess.Refresh()
             if (!$activationProcess.HasExited) { $activationProcess.Kill(); $activationProcess.WaitForExit() }
         }
-        [XdzipMsixActivation]::Close()
     }
     $result.checks.file_activation_and_archive_contents = 'passed'
     Remove-AppxPackage -Package $installed.PackageFullName
