@@ -22,6 +22,29 @@ Copy-Item -LiteralPath $packagePath -Destination $signedPath
 $certificate = $null
 $trusted = $null
 $installed = $null
+$extensionsToCheck = @('zip','tar','tgz','gz','7z','rar','cab','iso','udf')
+function Get-DefaultSnapshot([string]$extension) {
+    $rootKey = [Microsoft.Win32.Registry]::ClassesRoot.OpenSubKey('.' + $extension)
+    try { $default = if ($rootKey) { $rootKey.GetValue('') } else { $null } }
+    finally { if ($rootKey) { $rootKey.Close() } }
+    $choiceKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.' + $extension + '\UserChoice')
+    try {
+        $progId = if ($choiceKey) { $choiceKey.GetValue('ProgId') } else { $null }
+        $hash = if ($choiceKey) { $choiceKey.GetValue('Hash') } else { $null }
+    } finally { if ($choiceKey) { $choiceKey.Close() } }
+    $latestKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.' + $extension + '\UserChoiceLatest\ProgId')
+    $latest = [ordered]@{}
+    try { if ($latestKey) { foreach ($name in ($latestKey.GetValueNames() | Sort-Object)) { $latest[$name] = $latestKey.GetValue($name) } } }
+    finally { if ($latestKey) { $latestKey.Close() } }
+    return ([ordered]@{ default=$default; progId=$progId; hash=$hash; latest=$latest } | ConvertTo-Json -Compress)
+}
+$defaultsBefore = @{}
+foreach ($extension in $extensionsToCheck) { $defaultsBefore[$extension] = Get-DefaultSnapshot $extension }
+function Assert-DefaultsUnchanged {
+    foreach ($extension in $extensionsToCheck) {
+        if ((Get-DefaultSnapshot $extension) -ne $defaultsBefore[$extension]) { throw "Default file association changed: $extension" }
+    }
+}
 $result = [ordered]@{
     status = 'failed'
     test_revision = (& git rev-parse HEAD).Trim()
@@ -42,6 +65,8 @@ try {
     if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Thumbprint -ne $certificate.Thumbprint) { throw 'Test package signature is not trusted' }
     $result.checks.test_signature = 'passed'
     Add-AppxPackage -Path $signedPath
+    Assert-DefaultsUnchanged
+    $result.checks.install_preserves_defaults = 'passed'
     $installed = Get-AppxPackage -Name $identityName
     if (@($installed).Count -ne 1 -or $installed.Publisher -ne $subject) { throw 'Installed package identity differs from the fixture' }
     $result.checks.install_identity = 'passed'
@@ -152,6 +177,37 @@ public static class XdzipPackageOrigin {
         [XdzipMsixActivation]::Close()
     }
     $result.checks.about_update_channels_in_both_languages = 'passed'
+    # A fresh packaged process must retain its saved language and run at the
+    # same time as the independent portable channel.
+    $portableActive = $null
+    $packagedActive = $null
+    try {
+        $env:XDZIP_LANGUAGE = 'en-US'
+        $env:XDZIP_SETTINGS_PATH = Join-Path $env:RUNNER_TEMP 'xdzip-msix-ci-settings.ini'
+        $portableActive = Start-Process -FilePath $portable -PassThru
+        Remove-Item Env:XDZIP_LANGUAGE -ErrorAction SilentlyContinue
+        Remove-Item Env:XDZIP_SETTINGS_PATH -ErrorAction SilentlyContinue
+        $processId = [XdzipMsixActivation]::Start($appId, '')
+        $packagedActive = Get-Process -Id $processId -ErrorAction Stop
+        if ($portableActive.Id -eq $packagedActive.Id -or
+            [XdzipMsixActivation]::PackageName($portableActive.Handle) -ne '' -or
+            [XdzipMsixActivation]::PackageName($packagedActive.Handle) -ne $installed.PackageFullName) {
+            throw 'Portable and packaged processes do not have distinct channel identities'
+        }
+        $null = Wait-XdzipOwnedUiElement $portableActive $en.messages.'settings.title' 'ControlType.Button'
+        $null = Wait-XdzipOwnedUiElement $packagedActive $en.messages.'settings.title' 'ControlType.Button'
+        $portableActive.Refresh()
+        if ($portableActive.HasExited) { throw 'Portable process did not coexist with the package' }
+    } finally {
+        foreach ($owned in @($portableActive, $packagedActive)) {
+            if ($owned) {
+                $owned.Refresh()
+                if (!$owned.HasExited) { $owned.Kill(); $owned.WaitForExit() }
+            }
+        }
+        [XdzipMsixActivation]::Close()
+    }
+    $result.checks.saved_language_and_portable_coexistence = 'passed'
     # Invoke the package's actual Open With handler and inspect an owned ZIP entry.
     $archiveName = 'xdzip msix fixture.zip'
     $archivePath = Join-Path $env:RUNNER_TEMP $archiveName
@@ -224,6 +280,8 @@ public static class XdzipPackageOrigin {
     $result.checks.file_activation_and_archive_contents = 'passed'
     Remove-AppxPackage -Package $installed.PackageFullName
     if (Get-AppxPackage -Name $identityName) { throw 'Test package remains installed' }
+    Assert-DefaultsUnchanged
+    $result.checks.uninstall_preserves_defaults = 'passed'
     $installed = $null
     $result.checks.uninstall = 'passed'
     $result.status = 'passed'
