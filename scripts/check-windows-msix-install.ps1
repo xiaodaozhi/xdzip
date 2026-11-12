@@ -65,15 +65,22 @@ public static class XdzipPackageOrigin {
     $result.checks.staged_origin = $origin
     $exe = Join-Path $installed.InstallLocation 'xdzip.exe'
     if (!(Test-Path -LiteralPath $exe -PathType Leaf)) { throw 'Installed product executable is missing' }
-    $env:QT_QPA_PLATFORM = 'offscreen'
-    $env:QT_QUICK_BACKEND = 'software'
+    Add-Type -Path 'scripts/windows-msix-activation.cs'
+    $appId = $installed.PackageFamilyName + '!App'
     foreach ($check in @(@('--smoke-test', 0), @('--register-shell-integration', 13))) {
-        $process = Start-Process -FilePath $exe -ArgumentList $check[0] -PassThru
-        if (!$process.WaitForExit(60000)) {
-            $process.Kill()
-            throw 'Installed product check timed out'
+        $process = $null
+        try {
+            $processId = [XdzipMsixActivation]::Start($appId, $check[0])
+            $process = Get-Process -Id $processId -ErrorAction Stop
+            if (!$process.WaitForExit(60000)) { throw 'Installed product check timed out' }
+            if ($process.ExitCode -ne $check[1]) { throw "Installed product check $($check[0]) failed with exit code $($process.ExitCode)" }
+        } finally {
+            if ($process) {
+                $process.Refresh()
+                if (!$process.HasExited) { $process.Kill(); $process.WaitForExit() }
+            }
+            [XdzipMsixActivation]::Close()
         }
-        if ($process.ExitCode -ne $check[1]) { throw "Installed product check $($check[0]) failed with exit code $($process.ExitCode)" }
     }
     $result.checks.installed_smoke = 'passed'
     $result.checks.packaged_shell_registration_rejected = 'passed'
@@ -86,42 +93,64 @@ public static class XdzipPackageOrigin {
     if (Test-Path -LiteralPath $env:XDZIP_SETTINGS_PATH) { throw 'Test settings already exist' }
     $portable = Join-Path (Split-Path -Parent $packagePath) 'windows/xdzip.exe'
     if (!(Test-Path -LiteralPath $portable -PathType Leaf)) { throw 'Audited portable control is missing' }
-    foreach ($case in @(@{ name='portable'; executable=$portable; updateVisible=$true }, @{ name='msix'; executable=$exe; updateVisible=$false })) {
-      foreach ($language in @('en-US', 'zh-CN')) {
+    function Assert-AboutUpdate($active, $catalog, [bool]$expected) {
+        $about = Wait-XdzipOwnedUiElement $active $catalog.messages.'settings.tabAbout' 'ControlType.TabItem'
+        $about.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
+        $null = Wait-XdzipOwnedUiElement $active $catalog.messages.'about.copy' 'ControlType.Button'
+        $condition = [System.Windows.Automation.PropertyCondition]::new(
+            [System.Windows.Automation.AutomationElement]::NameProperty, $catalog.messages.'update.check')
+        $updateVisible = $false
+        foreach ($handle in [XdzipOwnedSettingsUia]::Windows([uint32]$active.Id)) {
+            $window = [System.Windows.Automation.AutomationElement]::FromHandle($handle)
+            if (!$window) { continue }
+            foreach ($item in $window.FindAll([System.Windows.Automation.TreeScope]::Descendants, $condition)) {
+                if ($item.Current.ProcessId -eq $active.Id -and !$item.Current.IsOffscreen) { $updateVisible = $true }
+            }
+        }
+        if ($updateVisible -ne $expected) { throw 'About update visibility differs from the expected channel' }
+    }
+    foreach ($language in @('en-US', 'zh-CN')) {
         $env:XDZIP_LANGUAGE = $language
         $catalog = Get-Content "resources/i18n/$language.json" -Raw -Encoding utf8 | ConvertFrom-Json
         $active = $null
         try {
-            $active = Start-Process -FilePath $case.executable -PassThru
+            $active = Start-Process -FilePath $portable -PassThru
+            if ([XdzipMsixActivation]::PackageName($active.Handle) -ne '') { throw 'Portable control unexpectedly has package identity' }
             $settingsButton = Wait-XdzipOwnedUiElement $active $catalog.messages.'settings.title' 'ControlType.Button'
             $settingsButton.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
-            $about = Wait-XdzipOwnedUiElement $active $catalog.messages.'settings.tabAbout' 'ControlType.TabItem'
-            $about.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
-            $null = Wait-XdzipOwnedUiElement $active $catalog.messages.'about.copy' 'ControlType.Button'
-            $condition = [System.Windows.Automation.PropertyCondition]::new(
-                [System.Windows.Automation.AutomationElement]::NameProperty, $catalog.messages.'update.check')
-            $updateVisible = $false
-            foreach ($handle in [XdzipOwnedSettingsUia]::Windows([uint32]$active.Id)) {
-                $window = [System.Windows.Automation.AutomationElement]::FromHandle($handle)
-                if (!$window) { continue }
-                foreach ($item in $window.FindAll([System.Windows.Automation.TreeScope]::Descendants, $condition)) {
-                    if ($item.Current.ProcessId -eq $active.Id -and !$item.Current.IsOffscreen) {
-                        $updateVisible = $true
-                    }
-                }
-            }
-            if ($updateVisible -ne $case.updateVisible) { throw "About update visibility differs for $($case.name), $language" }
+            Assert-AboutUpdate $active $catalog $true
         } finally {
             if ($active) {
                 $active.Refresh()
                 if (!$active.HasExited) { $active.Kill(); $active.WaitForExit() }
             }
         }
-      }
+    }
+    Remove-Item Env:XDZIP_LANGUAGE -ErrorAction SilentlyContinue
+    Remove-Item Env:XDZIP_SETTINGS_PATH -ErrorAction SilentlyContinue
+    $active = $null
+    try {
+        $processId = [XdzipMsixActivation]::Start($appId, '')
+        $active = Get-Process -Id $processId -ErrorAction Stop
+        if ([XdzipMsixActivation]::PackageName($active.Handle) -ne $installed.PackageFullName) { throw 'Activated product has the wrong package identity' }
+        $zh = Get-Content 'resources/i18n/zh-CN.json' -Raw -Encoding utf8 | ConvertFrom-Json
+        $en = Get-Content 'resources/i18n/en-US.json' -Raw -Encoding utf8 | ConvertFrom-Json
+        Open-XdzipSettingsGeneral $active $zh
+        Assert-AboutUpdate $active $zh $false
+        $general = Wait-XdzipOwnedUiElement $active $zh.messages.'settings.tabGeneral' 'ControlType.TabItem'
+        $general.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
+        Select-XdzipUiLanguage $active $zh $zh.messages.'language.enUS'
+        $null = Wait-XdzipOwnedUiElement $active $en.messages.'settings.tabGeneral' 'ControlType.TabItem'
+        Assert-AboutUpdate $active $en $false
+    } finally {
+        if ($active) {
+            $active.Refresh()
+            if (!$active.HasExited) { $active.Kill(); $active.WaitForExit() }
+        }
+        [XdzipMsixActivation]::Close()
     }
     $result.checks.about_update_channels_in_both_languages = 'passed'
     # Use the OS file contract and inspect an actual entry in the owned ZIP.
-    Add-Type -Path 'scripts/windows-msix-activation.cs'
     $archiveName = 'xdzip msix fixture.zip'
     $archivePath = Join-Path $env:RUNNER_TEMP $archiveName
     if (Test-Path -LiteralPath $archivePath) { throw 'File activation fixture already exists' }
@@ -130,6 +159,7 @@ public static class XdzipPackageOrigin {
     try {
         $processId = [XdzipMsixActivation]::Open(($installed.PackageFamilyName + '!App'), $archivePath)
         $activationProcess = Get-Process -Id $processId -ErrorAction Stop
+        if ([XdzipMsixActivation]::PackageName($activationProcess.Handle) -ne $installed.PackageFullName) { throw 'File activation has the wrong package identity' }
         $null = Wait-XdzipOwnedUiElement $activationProcess $archiveName 'ControlType.TabItem'
         $null = Wait-XdzipOwnedUiElement $activationProcess 'empty.txt' 'ControlType.CheckBox'
     } finally {
