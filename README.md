@@ -4,7 +4,9 @@
 
 <h1 align="center">xdzip</h1>
 
-<p align="center"><strong>先浏览，再解压。</strong><br>适用于 macOS、Windows 和 Linux 的开源压缩包管理工具。</p>
+<p align="center"><strong>打包与解压，都简单一点。</strong></p>
+
+<p align="center">xdzip 是一款开源跨平台压缩包管理工具。它使用 Rust 实现格式处理，无需依赖外部解压程序；支持浏览和搜索包内文件、选择性解压，以及加密、分卷和受支持格式的包内修改。<br>支持 ZIP、7z、RAR、TAR、CAB、ISO/UDF 等格式，适用于 Windows、macOS 和 Linux。</p>
 
 <p align="center">
   <a href="https://github.com/xiaodaozhi/xdzip/actions/workflows/docs.yml"><img src="https://github.com/xiaodaozhi/xdzip/actions/workflows/docs.yml/badge.svg?branch=main" alt="日常检查"></a>
@@ -31,17 +33,17 @@
 
 应用的“关于 xdzip”可由用户主动检查更新。macOS 安装版的原生更新支持系统代理、自定义 HTTP CONNECT/SOCKS5 代理和直连设置。自动安装取决于有效的发布签名和安装身份，便携包及开发构建需要手动安装；详见[更新说明](docs/engineering/software-update.md)。旧版客户端首次升级的方式见[本版发布说明](release-notes/0.2.0.md)。其他系统、架构和桌面环境的范围见[支持政策](docs/engineering/support-policy.md)。
 
-**版本说明：**本页的功能说明基于当前源码，发布包以对应版本的发布说明为准。源码构建属于实验性开发版本。
+**版本说明**：本页的功能说明基于当前源码，发布包以对应版本的发布说明为准。源码构建属于实验性开发版本。
 
 ## 使用 xdzip
 
 打开压缩包后可以先浏览目录、搜索和排序，再选择需要的文件解压。界面提供列表与网格视图、文件属性，以及中文（简体）和 English (US)、浅色和深色主题、字号与密度设置。普通单文件 ZIP/ZIP64 最多索引一百万条物理记录，其他格式和分卷路径保持十万条上限。大包的任务与修改边界见[大归档索引](docs/engineering/large-index.md)。
 
-- **内容预览：**在属性卡主动预览受限纯文本、常见栅格图片和静态 SVG，macOS 还支持 HEIC／HEIF。完整读取及校验后显示，可取消；格式、大小和解码预算见[预览说明](docs/engineering/content-preview.md)。
-- **解压和打开：**选择目标位置与重名策略，查看进度并可请求取消。双击普通文件会先将副本解压到私有临时目录，再交给系统打开；修改副本不会写回压缩包，缓存会在七天后的后续打开操作中清理。
-- **创建和修改：**可创建 ZIP、TAR、TAR.GZ 和 7z。支持对符合条件的普通单文件压缩包添加文件、替换文件和包内移动；也可从列表拖出文件，或拖入文件后确认添加。具体格式和限制见下表。
-- **检查：**可在后台测试整包，不写出文件。TAR、ISO 和 UDF 只检查结构与可读性，不提供逐文件内容校验保证。详见[完整性检查](docs/engineering/archive-checking.md)。
-- **多个归档：**默认在新标签页打开，也可设置为新窗口。同一登录会话共用应用进程和托盘，关闭浏览页面后后台任务仍可从任务入口访问。
+- **内容预览**：在属性卡主动预览受限纯文本、常见栅格图片和静态 SVG，macOS 还支持 HEIC／HEIF。完整读取及校验后显示，可取消；格式、大小和解码预算见[预览说明](docs/engineering/content-preview.md)。
+- **解压和打开**：选择目标位置与重名策略，查看进度并可请求取消。双击普通文件会先将副本解压到私有临时目录，再交给系统打开；修改副本不会写回压缩包，缓存会在七天后的后续打开操作中清理。
+- **创建和修改**：可创建 ZIP、TAR、TAR.GZ 和 7z。支持对符合条件的普通单文件压缩包添加文件、替换文件和包内移动；也可从列表拖出文件，或拖入文件后确认添加。具体格式和限制见下表。
+- **检查**：可在后台测试整包，不写出文件。TAR、ISO 和 UDF 只检查结构与可读性，不提供逐文件内容校验保证。详见[完整性检查](docs/engineering/archive-checking.md)。
+- **多个归档**：默认在新标签页打开，也可设置为新窗口。同一登录会话共用应用进程和托盘，关闭浏览页面后后台任务仍可从任务入口访问。
 
 创建或添加时会排除 `.DS_Store` 文件及 `__MACOSX`、`_MACOSX` 目录。解压时执行路径检查、目标授权、重名处理和暂存，支持的格式还会校验内容；特殊对象和链接的处理因格式与平台而异，详见[安全解压契约](docs/engineering/m3-extraction.md)。
 
