@@ -121,9 +121,9 @@ def build(root, audit_path, output, name, publisher, report):
         actual = {item.filename.replace('\\', '/').casefold(): item for item in files}
         if len(actual) != len(files) or set(actual) != set(expected) | {'appxblockmap.xml', '[content_types].xml'}:
             raise ValueError('MSIX contents do not match the staging directory')
-        for name, expected_hash in expected.items():
+        for member_name, expected_hash in expected.items():
             value = hashlib.sha256()
-            with archive.open(actual[name]) as source:
+            with archive.open(actual[member_name]) as source:
                 for block in iter(lambda: source.read(1024 * 1024), b''):
                     value.update(block)
             if value.hexdigest() != expected_hash:

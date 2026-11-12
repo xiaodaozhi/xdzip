@@ -87,6 +87,9 @@ class MsixTests(unittest.TestCase):
             report = json.loads((folder / 'report.json').read_text(encoding='utf-8'))
             self.assertFalse(report['signed'])
             self.assertEqual(report['sha256'], digest(folder / 'app.msix'))
+            self.assertEqual(report['name'], 'xdzip.Test')
+            self.assertEqual(report['publisher'], 'CN=test')
+            self.assertEqual(report['version'], '1.0.27.0')
 
 
 if __name__ == '__main__':

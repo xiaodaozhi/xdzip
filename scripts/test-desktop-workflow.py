@@ -9,6 +9,7 @@ import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
+import zipfile
 
 import desktop
 
@@ -345,6 +346,28 @@ class WorkflowTests(unittest.TestCase):
             workflow.verify_hashes(items)
         with self.assertRaisesRegex(ValueError, 'changed or is missing'):
             workflow.verify_hashes([{'file': '../outside', 'sha256': 'a'*64}])
+
+    def test_msix_verify_checks_manifest_and_unsigned_menu_policy(self):
+        package = self.root/'test.msix'
+        template = ('<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10">'
+                    '<Identity Name="xdzip.Test" Publisher="CN=test" Version="1.0.27.0" '
+                    'ProcessorArchitecture="x64"/>{}</Package>')
+        def write_manifest(extra='', signature=False):
+            with zipfile.ZipFile(package, 'w') as archive:
+                archive.writestr('AppxManifest.xml', template.format(extra))
+                if signature:
+                    archive.writestr('AppxSignature.p7x', b'fixture')
+        report = {'name': 'xdzip.Test', 'publisher': 'CN=test', 'version': '1.0.27.0'}
+        write_manifest()
+        desktop.verify_msix_identity(package, report)
+        with self.assertRaisesRegex(ValueError, 'identity'):
+            desktop.verify_msix_identity(package, {**report, 'name': 'wrong'})
+        write_manifest('<Extension Category="windows.fileExplorerContextMenus"/>')
+        with self.assertRaisesRegex(ValueError, 'context menu'):
+            desktop.verify_msix_identity(package, report)
+        write_manifest(signature=True)
+        with self.assertRaisesRegex(ValueError, 'signature'):
+            desktop.verify_msix_identity(package, report)
 
     def test_verify_does_not_require_current_checkout_to_match_package(self):
         workflow = self.workflow()

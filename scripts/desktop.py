@@ -12,6 +12,8 @@ import subprocess
 import sys
 import urllib.request
 import uuid
+import xml.etree.ElementTree as ET
+import zipfile
 
 from desktop_environment import PYTHON_PACKAGES, QT_VERSION, check_environment, image_plugins, locked_rust_version
 from association_types import WINDOWS_ICONS
@@ -52,6 +54,29 @@ def label(path):
         return path.resolve().relative_to(ROOT).as_posix()
     except ValueError:
         return path.name
+
+
+def verify_msix_identity(path, report):
+    """Compare the receipt to the actual unsigned package, not just its filename."""
+    try:
+        with zipfile.ZipFile(path) as package:
+            names = [name.replace('\\', '/').casefold() for name in package.namelist()]
+            if len(names) != len(set(names)) or 'appxsignature.p7x' in names:
+                raise ValueError('MSIX contains duplicate entries or a signature')
+            root = ET.fromstring(package.read('AppxManifest.xml'))
+            if package.testzip() is not None:
+                raise ValueError('MSIX CRC verification failed')
+    except (OSError, zipfile.BadZipFile, ET.ParseError, KeyError) as error:
+        raise ValueError('Cannot inspect MSIX package identity') from error
+    ns = '{http://schemas.microsoft.com/appx/manifest/foundation/windows10}'
+    identity = root.find(ns + 'Identity')
+    if (identity is None or identity.get('Name') != report.get('name') or
+            identity.get('Publisher') != report.get('publisher') or
+            identity.get('Version') != report.get('version') or
+            identity.get('ProcessorArchitecture') != 'x64' or
+            any(element.get('Category', '').casefold() == 'windows.fileexplorercontextmenus'
+                for element in root.iter())):
+        raise ValueError('MSIX identity or context menu differs from the receipt')
 
 
 class Workflow:
@@ -514,6 +539,7 @@ class Workflow:
                     receipt['artifacts'][0]['file'] != report.get('package') or
                     receipt['artifacts'][0]['sha256'] != report.get('sha256')):
                 raise ValueError('MSIX report does not identify the verified package')
+            verify_msix_identity(self.output/report['package'], report)
             return {'source': runtime['source'], 'artifacts': receipt['artifacts'],
                     'limits': 'Unsigned experimental package; no installation or Store certification'}
         if self.args.kind not in ('runtime', 'all'):
