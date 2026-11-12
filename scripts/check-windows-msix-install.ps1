@@ -27,7 +27,7 @@ $result = [ordered]@{
     revision = (& git rev-parse HEAD).Trim()
     platform = 'Windows Server hosted runner'
     checks = [ordered]@{}
-    limitations = @('Self-signed sideload only; not Store or Windows 11 desktop acceptance.', 'File activation, coexistence and UI visuals are not exercised by this check.')
+    limitations = @('Self-signed sideload only; not Store or Windows 11 desktop acceptance.', 'File activation, coexistence and visual appearance are not exercised by this check.')
 }
 try {
     $certificate = New-SelfSignedCertificate -Type CodeSigningCert -Subject $subject -CertStoreLocation 'Cert:\CurrentUser\My' -KeyExportPolicy NonExportable -NotAfter (Get-Date).AddDays(2)
@@ -75,6 +75,49 @@ public static class XdzipPackageOrigin {
     }
     $result.checks.installed_smoke = 'passed'
     $result.checks.packaged_shell_registration_rejected = 'passed'
+    # Observe the installed product's About page, not a synthetic QML fixture.
+    # Only windows owned by this test process are inspected or terminated.
+    . "$PSScriptRoot/windows-settings-uia.ps1"
+    Initialize-XdzipSettingsUia
+    $env:QT_QPA_PLATFORM = 'windows'
+    $env:XDZIP_SETTINGS_PATH = Join-Path $env:RUNNER_TEMP 'xdzip-msix-ci-settings.ini'
+    if (Test-Path -LiteralPath $env:XDZIP_SETTINGS_PATH) { throw 'Test settings already exist' }
+    $portable = Join-Path (Split-Path -Parent $packagePath) 'windows/xdzip.exe'
+    if (!(Test-Path -LiteralPath $portable -PathType Leaf)) { throw 'Audited portable control is missing' }
+    foreach ($case in @(@{ name='portable'; executable=$portable; updateVisible=$true }, @{ name='msix'; executable=$exe; updateVisible=$false })) {
+      foreach ($language in @('en-US', 'zh-CN')) {
+        $env:XDZIP_LANGUAGE = $language
+        $catalog = Get-Content "resources/i18n/$language.json" -Raw -Encoding utf8 | ConvertFrom-Json
+        $active = $null
+        try {
+            $active = Start-Process -FilePath $case.executable -PassThru
+            $settingsButton = Wait-XdzipOwnedUiElement $active $catalog.messages.'settings.title' 'ControlType.Button'
+            $settingsButton.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+            $about = Wait-XdzipOwnedUiElement $active $catalog.messages.'settings.tabAbout' 'ControlType.TabItem'
+            $about.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
+            $null = Wait-XdzipOwnedUiElement $active $catalog.messages.'about.copy' 'ControlType.Button'
+            $condition = [System.Windows.Automation.PropertyCondition]::new(
+                [System.Windows.Automation.AutomationElement]::NameProperty, $catalog.messages.'update.check')
+            $updateVisible = $false
+            foreach ($handle in [XdzipOwnedSettingsUia]::Windows([uint32]$active.Id)) {
+                $window = [System.Windows.Automation.AutomationElement]::FromHandle($handle)
+                if (!$window) { continue }
+                foreach ($item in $window.FindAll([System.Windows.Automation.TreeScope]::Descendants, $condition)) {
+                    if ($item.Current.ProcessId -eq $active.Id -and !$item.Current.IsOffscreen) {
+                        $updateVisible = $true
+                    }
+                }
+            }
+            if ($updateVisible -ne $case.updateVisible) { throw "About update visibility differs for $($case.name), $language" }
+        } finally {
+            if ($active) {
+                $active.Refresh()
+                if (!$active.HasExited) { $active.Kill(); $active.WaitForExit() }
+            }
+        }
+      }
+    }
+    $result.checks.about_update_channels_in_both_languages = 'passed'
     Remove-AppxPackage -Package $installed.PackageFullName
     if (Get-AppxPackage -Name $identityName) { throw 'Test package remains installed' }
     $installed = $null

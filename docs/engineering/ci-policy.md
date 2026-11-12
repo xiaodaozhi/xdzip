@@ -46,7 +46,7 @@ Foundation 的 `image_only=true` 在原生 macOS 用系统 sips／ImageIO 转换
 
 [Windows 原生视觉诊断](../../.github/workflows/windows-native-visual.yml)可手动采集自有窗口和菜单图像；它是一次性 hosted runner 自动诊断，不代表真人点击或物理显示器验收。[Qt 源码验证](../../.github/workflows/qt-source.yml)及更新专项工作流同样按各自的手动入口执行。
 
-[Windows MSIX 生命周期](../../.github/workflows/windows-msix.yml)在一次性 GitHub 托管 Windows Server 中构建实验包，以临时自签名证书签署测试副本，检查侧载安装、声明、产品启动、经典菜单注册拒绝和卸载，并清理证书。该工作流仅手动运行，不使用真实商店签名或修改开发者电脑；服务器侧载结果不代表 Windows 11 桌面、商店来源、文件激活或人工视觉验收。English: The hosted MSIX lifecycle uses a temporary self-signed test copy and records only the checks actually executed; Store, Windows 11, file activation and visual acceptance remain separate.
+[Windows MSIX 生命周期](../../.github/workflows/windows-msix.yml)在一次性 GitHub 托管 Windows Server 中构建实验包，以临时自签名证书签署测试副本，检查侧载安装、声明、产品启动、中英文关于页的更新入口、经典菜单注册拒绝和卸载，并清理证书。该工作流仅手动运行，不使用真实商店签名或修改开发者电脑；服务器侧载结果不代表 Windows 11 桌面、商店来源、文件激活或人工视觉验收。English: The hosted MSIX lifecycle uses a temporary self-signed test copy and records only the checks actually executed; Store, Windows 11, file activation and visual acceptance remain separate.
 
 [Release 工作流](../../.github/workflows/release.yml)独立处理三平台发行构建、包验证、签名和不可变资产，继续遵循[发布协议](release-protocol.md)。发布必须有所有者对具体结果的授权；未执行的检查及许可复核限制如实记录。普通 CI 成功、手动工作流成功和正式发行批准是不同结论。
 
