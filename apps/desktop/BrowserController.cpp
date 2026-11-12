@@ -1,4 +1,5 @@
 #include "BrowserController.h"
+#include "ImagePreviewProtocol.h"
 #include "NativeDialogPolicy.h"
 #include "PreviewImages.h"
 #include "UiText.h"
@@ -1918,9 +1919,12 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             m_result.frozenSelectors.append(text(id));
         m_hasPayload = true;
     } else if (event.kind == EventKind::Preview) {
+        const bool previewText = event.content_kind == 1;
+        const bool previewImage = !ImagePreview::format(event.content_kind).isEmpty();
+        const auto previewLimit = previewText ? qsizetype(256 * 1024) : ImagePreview::EncodedLimit;
         if (!m_result.contentPreview || event.session != m_session.toULongLong() ||
-            event.content_entry != m_previewEntry || event.content.size() > 4 * 1024 * 1024 ||
-            event.content_kind < 1 || event.content_kind > 3) {
+            event.content_entry != m_previewEntry || event.content.size() > size_t(previewLimit) ||
+            (!previewText && !previewImage)) {
             m_result.error = "stale_query";
             return;
         }

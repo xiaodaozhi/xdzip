@@ -26,7 +26,7 @@ BASE = ['-DFEATURE_system_'+f+'=OFF' for f in ['zlib', 'pcre2', 'doubleconversio
 BASE += ['-DFEATURE_'+f+'=OFF' for f in ['brotli', 'dbus', 'icu', 'sql_mysql', 'sql_odbc', 'sql_psql', 'sql_mimer']]
 TOOLS = ['-DFEATURE_'+f+'=OFF' for f in ['assistant', 'designer', 'distancefieldgenerator', 'kmap2qmap', 'pixeltool', 'qdbus', 'qdoc', 'qtattributionsscanner', 'qtplugininfo', 'clang', 'clangcpp']]
 TOOLS += ['-DCMAKE_DISABLE_FIND_PACKAGE_WrapLibClang=ON']
-ORDER = ['qtbase', 'qtshadertools', 'qtsvg', 'qtdeclarative', 'qttools', 'qttranslations']
+ORDER = ['qtbase', 'qtshadertools', 'qtsvg', 'qtimageformats', 'qtdeclarative', 'qttools', 'qttranslations']
 
 
 def qtbase_flags(platform):
@@ -167,6 +167,8 @@ def main():
         else:
             flags += [f'-DCMAKE_PREFIX_PATH={install}']
             if name == 'qttools': flags += TOOLS
+            if name == 'qtimageformats':
+                flags += ['-DFEATURE_system_tiff=OFF', '-DFEATURE_system_webp=OFF', '-DFEATURE_jasper=OFF', '-DFEATURE_mng=OFF']
         configure = ['cmake', '-S', source, '-B', build, '-G', 'Ninja']+flags
         log = output/(name+'-build.log')
         check_dependencies(build)

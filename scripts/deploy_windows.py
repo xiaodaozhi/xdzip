@@ -119,12 +119,23 @@ def main():
     root = args.root.resolve()
     if not within(root, ROOT/'build') or root == ROOT/'build' or not (root/'xdzip.exe').is_file():
         parser.error('Use an application staging directory under build/')
+    binaries = [str(root/'xdzip.exe')]
+    if not args.qa_historical_revision:
+        preview = root/'xdzip-image-preview.exe'
+        if not preview.is_file() or preview.is_symlink():
+            raise ValueError('Expected isolated image preview worker beside application')
+        binaries.append(str(preview))
     subprocess.run([str(args.qt_prefix/'bin/windeployqt.exe'), '--release', '--no-compiler-runtime',
                     '--no-opengl-sw',
                     '--no-system-d3d-compiler', '--no-system-dxc-compiler',
                     '--skip-plugin-types', 'qmltooling', '--qmldir', str(args.qml_dir),
-                    '--qmlimport', str(args.qml_import), str(root/'xdzip.exe')], check=True)
+                    '--qmlimport', str(args.qml_import), *binaries], check=True)
     removed = prune(root)
+    if not args.qa_historical_revision:
+        offscreen = args.qt_prefix/'plugins/platforms/qoffscreen.dll'
+        if not offscreen.is_file() or offscreen.is_symlink():
+            raise ValueError('Image preview requires the SDK offscreen platform plugin')
+        shutil.copy2(offscreen, root/'platforms/qoffscreen.dll')
     require_no_sdk_graphics(root)
     copy_runtime(args.runtime, root)
     require_no_software_opengl(root)

@@ -144,3 +144,13 @@ Windows 构建引入 Inno Setup 6.7.3，仅用于编译自有运行目录的当�
 选择同一 Rust 检测器避免 Qt、系统 iconv 和 Windows 代码页分裂规则；自行维护 CJK 统计模型或调用外部解压工具都会扩大实现与部署边界。chardetng 上游标记为被动维护，版本与模型变化需重跑独立文件名样本。ZIP CP437 是固定单字节映射，依据[Unicode CP437 表](https://www.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/PC/CP437.TXT)，不引入平台 API；测试原始字节另由 Python 标准库生成。检测是启发式结果，不作为路径授权或内容校验证据。
 
 2026-10-24 对六个新增锁定包执行 OSV 精确版本查询，响应未返回公告，原始响应只保存在本地工件。这是定向核对，不是无漏洞保证。准入同时检查实际 Cargo features、来源及许可全文，回归范围与资源和失败规则见[文件名编码契约](filename-encoding.md)；三平台构建、内容互操作和实际结果在对应 issue/CI 登记。
+
+## Qt 图片预览模块
+
+沿用固定 Qt 6.8.2，增加官方 qtimageformats 模块，源码提交、归档摘要见[组件配置](../../scripts/corresponding-sources.json)。使用 qwebp、qtiff、qtga、qicns；macOS 另使用 qmacheif 调用系统 ImageIO，不引入 libheif／libavif 或额外图片后端。GIF、BMP、ICO／CUR、JPEG 复用 QtGui，SVG 复用既有 QtSvg，但不开放不受限资源加载。
+
+该固定模块自带 libwebp 1.5.0 和 libtiff 4.7.0，实际 SDK SPDX 标记其归属；COPYING／COPYRIGHT 原文通过固定提交和 SHA-256 收集，不把通用 NOASSERTION 标记等同于已确认许可缺陷。动态 Qt 模块沿用现有许可路线，第三方通知按具体交付组件保留。精确版本依赖查询、三平台解码／坏输入／部署结果留在 issue 和工件，不据一次未返回公告的查询宣称无漏洞。
+
+图片运行库经固定 helper 使用，原图、像素、工作进程、输入输出及失败限制见[预览契约](content-preview.md)。默认准备补齐已有工具链，构建前检查插件，部署验证实际 helper；不新增另一套 Qt SDK。
+
+English: The official pinned Qt 6.8.2 image-formats add-on supplies WebP, TIFF, TGA and ICNS; Apple's HEIF plugin uses system ImageIO. QtGui/QtSvg supply the other approved formats. No independent HEIF/AVIF backend is introduced. The add-on bundles libwebp 1.5.0 and libtiff 4.7.0; exact source pins, upstream file ownership and complete notices are retained. Actual native validation and dependency-query limitations remain evidence rather than blanket assurance.

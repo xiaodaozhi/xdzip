@@ -1,8 +1,8 @@
 #include "PreviewImages.h"
-#include <QBuffer>
+#include "ImagePreviewProcess.h"
 #include <QCoreApplication>
+#include <QDir>
 #include <QHash>
-#include <QImageReader>
 #include <QMutex>
 #include <QMutexLocker>
 #include <QQmlEngine>
@@ -20,8 +20,10 @@ QMutex mutex;
 QHash<QString, EncodedImage> images;
 qsizetype retainedBytes = 0;
 QSemaphore decoders(2);
-constexpr qsizetype MaximumEncodedBytes = 4 * 1024 * 1024;
-constexpr qsizetype MaximumPendingBytes = 8 * 1024 * 1024;
+bool current(const QString &id) {
+    QMutexLocker lock(&mutex);
+    return images.contains(id);
+}
 class Provider final : public QQuickImageProvider {
   public:
     Provider()
@@ -38,27 +40,30 @@ class Provider final : public QQuickImageProvider {
                 return {};
             input = found.value();
         }
-        decoders.acquire();
+        while (!decoders.tryAcquire(1, 50)) {
+            if (!current(id)) {
+                input.bytes.fill('\0');
+                return {};
+            }
+        }
         struct Release {
             ~Release() {
                 decoders.release();
             }
         } release;
-        QBuffer buffer(&input.bytes);
-        if (!buffer.open(QIODevice::ReadOnly))
-            return {};
-        QImageReader reader(&buffer, input.kind == 2 ? QByteArray("png") : QByteArray("jpeg"));
-        reader.setAutoDetectImageFormat(false);
-        reader.setDecideFormatFromContent(false);
-        const QSize original = reader.size();
-        if (!original.isValid() || original.width() > 4096 || original.height() > 4096 ||
-            qint64(original.width()) * original.height() > 4194304)
-            return {};
-        reader.setScaledSize(original.scaled(QSize(512, 512), Qt::KeepAspectRatio));
-        QImage image = reader.read();
+        const auto worker = QDir(QCoreApplication::applicationDirPath())
+                                .filePath(
+#ifdef Q_OS_WIN
+                                    "xdzip-image-preview.exe"
+#else
+                                    "xdzip-image-preview"
+#endif
+                                );
+        QImage image = current(id) ? ImagePreview::render(worker, input.bytes, input.kind,
+                                                          [id] { return current(id); })
+                                   : QImage{};
         input.bytes.fill('\0');
-        if (image.isNull() || reader.error() != QImageReader::UnknownError || image.width() > 512 ||
-            image.height() > 512)
+        if (image.isNull())
             return {};
         if (size)
             *size = image.size();
@@ -71,10 +76,11 @@ PreviewImages *PreviewImages::create(QQmlEngine *engine, QJSEngine *) {
     return new PreviewImages;
 }
 QString PreviewImages::store(QByteArray bytes, int kind) {
-    if ((kind != 2 && kind != 3) || bytes.isEmpty() || bytes.size() > MaximumEncodedBytes)
+    if (ImagePreview::format(kind).isEmpty() || bytes.isEmpty() ||
+        bytes.size() > ImagePreview::EncodedLimit)
         return {};
     QMutexLocker lock(&mutex);
-    if (retainedBytes + bytes.size() > MaximumPendingBytes)
+    if (retainedBytes + bytes.size() > ImagePreview::PendingLimit)
         return {};
     const QString token = QUuid::createUuid().toString(QUuid::WithoutBraces);
     retainedBytes += bytes.size();

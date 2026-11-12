@@ -18,6 +18,9 @@ function Assert-CleanSources {
 function Save-ComponentLogs {
     param([string]$Label)
     New-Item -ItemType Directory -Force 'build/review/diagnostics' | Out-Null
+    if (Test-Path 'build/desktop/apps/desktop/image-preview-tests.log') {
+        Copy-Item 'build/desktop/apps/desktop/image-preview-tests.log' "build/review/diagnostics/image-preview-$Label.log"
+    }
     if (Test-Path 'build/desktop/apps/desktop/qml-tests.log') {
         Copy-Item 'build/desktop/apps/desktop/qml-tests.log' "build/review/diagnostics/qml-$Label.log"
     }

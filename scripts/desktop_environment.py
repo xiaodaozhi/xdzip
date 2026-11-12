@@ -18,6 +18,15 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 QT_VERSION = "6.8.2"
+
+def image_plugins(system):
+    names = ['qgif', 'qico', 'qjpeg', 'qsvg', 'qwebp', 'qtiff', 'qtga', 'qicns']
+    if system == 'macos':
+        names.append('qmacheif')
+    prefix, suffix = {'macos': ('lib', '.dylib'), 'linux': ('lib', '.so'),
+                      'windows': ('', '.dll')}[system]
+    return [prefix + name + suffix for name in names]
+
 STAGES = {"prepare", "build", "test", "package", "verify"}
 PYTHON_PACKAGES = {"jsonschema": "4.23.0", "referencing": "0.36.2"}
 RUST_HOSTS = {
@@ -269,7 +278,7 @@ def _check_qt(qt: Path | None, system: str, stage: str, add, run, which) -> None
         add("qt." + relative, (qt / relative).is_dir(), "Reinstall the Qt Quick desktop SDK; required " + relative + " directory is missing.")
     # The shared build always enables BUILD_TESTING. Test and QuickTest must be
     # present before CMake runs, not discovered only after a costly SDK install.
-    for module in ["Core", "Gui", "Qml", "Quick", "QuickControls2", "Widgets", "Test", "QuickTest"]:
+    for module in ["Core", "Gui", "Svg", "Qml", "Quick", "QuickControls2", "Widgets", "Test", "QuickTest"]:
         config = qt / "lib/cmake" / ("Qt6" + module) / ("Qt6" + module + "Config.cmake")
         add("qt.cmake." + module, config.is_file(),
             "Install the complete Qt 6.8.2 desktop SDK, including the " + module + " development module.")
@@ -278,6 +287,12 @@ def _check_qt(qt: Path | None, system: str, stage: str, add, run, which) -> None
     plugin = {"macos": "libqcocoa.dylib", "windows": "qwindows.dll", "linux": "libqxcb.so"}[system]
     add("qt.platform-plugin", (qt / "plugins/platforms" / plugin).is_file(),
         "Install the native desktop Qt platform plugin for this host.")
+    offscreen = {'macos': 'libqoffscreen.dylib', 'linux': 'libqoffscreen.so', 'windows': 'qoffscreen.dll'}[system]
+    add('qt.offscreen-plugin', (qt/'plugins/platforms'/offscreen).is_file(),
+        'Install the offscreen Qt platform plugin required by the private image worker.')
+    for name in image_plugins(system):
+        add('qt.image.' + name, (qt/'plugins/imageformats'/name).is_file(),
+            'Run desktop.py prepare --install-qt to install the pinned Qt image formats module.')
     core = {"macos": "lib/QtCore.framework/Versions/A/QtCore", "windows": "bin/Qt6Core.dll",
             "linux": "lib/libQt6Core.so.6"}[system]
     add("qt.core", (qt / core).is_file(), "Install a complete native Qt desktop runtime, including QtCore.")

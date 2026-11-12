@@ -116,6 +116,7 @@ def build(source, qt, output, release_distribution=False):
     with temporary_bundle_path(app), transient_registrations(stage):
         shutil.copytree(source, app, symlinks=True)
         checked([qt/'bin/macdeployqt', app, '-always-overwrite', '-no-strip',
+                 '-executable='+str(app/'Contents/MacOS/xdzip-image-preview'),
                  '-qmldir='+str(ROOT/'apps/desktop/ui'),
                  '-qmlimport='+str(source.parents[2]/'qml'), '-verbose=1'])
         sparkle = embed_sparkle(sparkle_sdk, app, installable=release_distribution)

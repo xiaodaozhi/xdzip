@@ -79,6 +79,10 @@ class WindowsDeploymentTests(unittest.TestCase):
             (base/'scripts').mkdir()
             (base/'scripts/windows-runtime.json').write_text('{}')
             (root/'xdzip.exe').write_bytes(b'owned')
+            (root/'xdzip-image-preview.exe').write_bytes(b'owned preview worker')
+            offscreen = base/'qt/plugins/platforms/qoffscreen.dll'
+            offscreen.parent.mkdir(parents=True)
+            offscreen.write_bytes(b'owned offscreen plugin')
             (root/'share').mkdir()
             for relative in ('styles/qmodernwindowsstyle.dll',
                     'platforms/qwindows.dll', 'qml/QtQuick/Controls/Basic/qmldir',
@@ -97,6 +101,8 @@ class WindowsDeploymentTests(unittest.TestCase):
             self.assertIn('--no-opengl-sw', deploy.call_args.args[0])
             self.assertIn('--no-system-d3d-compiler', deploy.call_args.args[0])
             self.assertIn('--no-system-dxc-compiler', deploy.call_args.args[0])
+            self.assertIn(str((root/'xdzip-image-preview.exe').resolve()), deploy.call_args.args[0])
+            self.assertEqual((root/'platforms/qoffscreen.dll').read_bytes(), b'owned offscreen plugin')
             self.assertFalse((root/'opengl32sw.dll').exists())
             self.assertEqual([], json.loads((root/'share/deployment.json').read_text())['graphics_fallbacks'])
 

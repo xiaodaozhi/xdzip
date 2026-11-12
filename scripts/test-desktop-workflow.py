@@ -96,6 +96,25 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(events[0], install)
         self.assertLess(events.index(('doctor', 'prepare')), events.index(('doctor', 'build')))
 
+    def test_existing_sdk_adds_image_formats_without_downloading_the_base_again(self):
+        workflow = self.workflow('linux')
+        workflow.qt = self.root/'build/toolchain/Qt/6.8.2/gcc_64'
+        (workflow.qt/'bin').mkdir(parents=True)
+        (workflow.qt/'bin/qmake').write_bytes(b'owned qmake')
+        workflow.args.install_qt = True
+        workflow.args.install_rust = False
+        workflow.args.packaging = False
+        commands = []
+        with patch.object(workflow, 'run', side_effect=lambda command, **kwargs: commands.append(([str(x) for x in command], kwargs))), \
+                patch.object(workflow, 'doctor'), patch.object(workflow, 'script'):
+            workflow.prepare()
+        downloads = [(command, kwargs) for command, kwargs in commands if 'install-qt' in command]
+        self.assertEqual(len(downloads), 1)
+        command, kwargs = downloads[0]
+        self.assertIn('--noarchives', command)
+        self.assertEqual(command[-2:], ['--modules', 'qtimageformats'])
+        self.assertEqual(kwargs['cwd'], workflow.toolchain/'qt-install-tool')
+
     def test_explicit_qt_prefix_wins_over_environment(self):
         with patch.dict(os.environ, {'XDZIP_QT_PREFIX': '/other-sdk'}):
             self.assertEqual(self.workflow().qt, self.qt)
@@ -234,6 +253,7 @@ class WorkflowTests(unittest.TestCase):
         self.receipt(workflow)
         (workflow.app.parent/'xdzip-update-helper.exe').write_bytes(b'updater fixture')
         (workflow.app.parent/'xdzip-native-codec.exe').write_bytes(b'codec fixture')
+        (workflow.app.parent/'xdzip-image-preview.exe').write_bytes(b'image worker fixture')
         (workflow.app.parent/'xdzip-association.exe').write_bytes(b'association fixture')
         (workflow.app.parent/'cli').mkdir()
         (workflow.app.parent/'cli/xdzip.exe').write_bytes(b'CLI fixture')
@@ -262,6 +282,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual((workflow.runtime/'share/notices/source-license.txt').read_text(), 'source')
         self.assertEqual((workflow.runtime/'xdzip-update-helper.exe').read_bytes(), b'updater fixture')
         self.assertEqual((workflow.runtime/'xdzip-native-codec.exe').read_bytes(), b'codec fixture')
+        self.assertEqual((workflow.runtime/'xdzip-image-preview.exe').read_bytes(), b'image worker fixture')
         self.assertEqual((workflow.runtime/'xdzip-association.exe').read_bytes(), b'association fixture')
         for icon_id in WINDOWS_ICONS.values():
             self.assertEqual((workflow.runtime/f'xdzip-{icon_id}.ico').read_bytes(), b'fixture icon')

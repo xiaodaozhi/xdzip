@@ -102,11 +102,13 @@ class EnvironmentTests(unittest.TestCase):
             "windows": ["bin/windeployqt.exe", "bin/Qt6Core.dll", "plugins/platforms/qwindows.dll"],
             "linux": ["lib/libQt6Core.so.6", "plugins/platforms/libqxcb.so"],
         }[self.system]
+        files += ['plugins/imageformats/' + name for name in environment.image_plugins(self.system)]
+        files += ['plugins/platforms/' + {'macos': 'libqoffscreen.dylib', 'linux': 'libqoffscreen.so', 'windows': 'qoffscreen.dll'}[self.system]]
         for relative in files:
             path = self.qt / relative
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(b"owned-fixture")
-        for module in ["Core", "Gui", "Qml", "Quick", "QuickControls2", "Widgets", "Test", "QuickTest"]:
+        for module in ["Core", "Gui", "Svg", "Qml", "Quick", "QuickControls2", "Widgets", "Test", "QuickTest"]:
             path = self.qt / "lib/cmake" / ("Qt6" + module) / ("Qt6" + module + "Config.cmake")
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text("# owned fixture\n")
@@ -236,6 +238,11 @@ class EnvironmentTests(unittest.TestCase):
         (self.qt / "libexec/qmlimportscanner").unlink()
         (self.qt / "plugins/platforms/libqcocoa.dylib").unlink()
         self.assertTrue({"qt.libexec/qmlimportscanner", "qt.platform-plugin"} <= self.failed(self.check()))
+
+    def test_missing_image_plugin_fails_before_cmake(self):
+        self.qt_sdk()
+        (self.qt/'plugins/imageformats/libqwebp.dylib').unlink()
+        self.assertIn('qt.image.libqwebp.dylib', self.failed(self.check()))
 
     def test_partial_qt_development_modules_fail_before_cmake(self):
         self.qt_sdk()

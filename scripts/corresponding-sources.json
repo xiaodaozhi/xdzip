@@ -26,6 +26,13 @@
       "source_commit": "e59eaa7dbc09fbf885b1c5a69d93b7e2fb1c7ce3"
     },
     {
+      "module": "qtimageformats",
+      "file": "qtimageformats-everywhere-src-6.8.2.tar.xz",
+      "url": "https://download.qt.io/archive/qt/6.8/6.8.2/submodules/qtimageformats-everywhere-src-6.8.2.tar.xz",
+      "sha256": "d2a1bbb84707b8a0aec29227b170be00f04383fbf2361943596d09e7e443c8e1",
+      "source_commit": "20d46d1fa669191d8f855ba8ac1c35719bace83a"
+    },
+    {
       "module": "qttranslations",
       "file": "qttranslations-everywhere-src-6.8.2.tar.xz",
       "url": "https://download.qt.io/archive/qt/6.8/6.8.2/submodules/qttranslations-everywhere-src-6.8.2.tar.xz",

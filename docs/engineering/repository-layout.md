@@ -34,3 +34,7 @@
 CAB 产品固定使用 Rust，官方 Cab 处理器和 CAB 专用 LZX/Quantum 不进入编译清单。调用链继续使用同一个隔离工作进程，不新增产品可执行文件，没有测试开关或失败回退。完整帧工作预付由 codec-api 定义，容器持有每帧额度，Native 接收端和 runtime 分别核验自己的额度与输出限制，见[自研契约](independent-rust-codecs.md#cab只读规格)。
 
 依赖设计见[系统架构](../design/02-system-architecture.md)。避免 domain 反向引用 runtime、codec 直接通知 QML，以及平台层决定 UI 文案。生成绑定、样本、报告和构建输出进入 build/、target/ 或 dist/，不提交到源码目录。历史兼容测试的持久输入另见[安装与关联](installers-associations.md#兼容基线的长期输入)。
+
+`tools/image-preview/` 是 QtGui／QtSvg 的私有静态图片工作进程，输入为已验证的有界内容，输出为有界 RGBA，不持有归档和输出路径。平台支持及失败行为见[预览契约](content-preview.md)。
+
+English: `tools/image-preview/` isolates approved image decoding behind bounded, verified bytes and RGBA replies; it never receives archive or destination paths.

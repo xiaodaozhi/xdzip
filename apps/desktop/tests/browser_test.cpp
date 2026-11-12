@@ -8,6 +8,7 @@
 #include "DesktopProbe.h"
 #include "FileOpenRouter.h"
 #include "FocusDismissPolicy.h"
+#include "ImagePreviewProtocol.h"
 #include "NativeDialogPolicy.h"
 #include "PasswordAccessibility.h"
 #include "SingleInstance.h"
@@ -687,6 +688,103 @@ class BrowserTest : public QObject {
             const bool invalid = model->rowAt(row)->cells[0].contains("broken");
             QTRY_COMPARE_WITH_TIMEOUT(image->property("status").toInt(), invalid ? 3 : 1, 10000);
             QVERIFY(image->property("sourceSize").toSize().width() <= 512);
+            controller->cancelContentPreview();
+            QTRY_VERIFY(image->property("source").toUrl().isEmpty());
+        }
+    }
+    void expandedImagesUseVerifiedArchiveBytesAndTheSharedInspector() {
+        QTemporaryDir fixture;
+        QVERIFY(fixture.isValid());
+        QStringList files;
+        QImage source(320, 180, QImage::Format_RGB32);
+        source.fill(QColor("#3492bd"));
+        for (const auto &extension : {QStringLiteral("bmp"), QStringLiteral("webp"),
+                                      QStringLiteral("tiff"), QStringLiteral("jfif")}) {
+            const auto path = fixture.filePath("owned." + extension);
+            QVERIFY(
+                source.save(path, extension == "jfif" ? "jpeg" : extension.toLatin1().constData()));
+            files.append(path);
+        }
+        QImage large(2048, 1536, QImage::Format_RGB32);
+        large.fill(QColor("#3492bd"));
+        const auto largePath = fixture.filePath("owned-large.bmp");
+        QVERIFY(large.save(largePath, "bmp"));
+        QVERIFY(QFileInfo(largePath).size() > 8 * 1024 * 1024);
+        QVERIFY(QFileInfo(largePath).size() <= ImagePreview::EncodedLimit);
+        files.append(largePath);
+#ifdef Q_OS_MACOS
+        for (const auto &extension : {QStringLiteral("heic"), QStringLiteral("heif")}) {
+            const auto path = fixture.filePath("owned." + extension);
+            QVERIFY(
+                QFile::copy(QStringLiteral(XDZIP_FIXTURES "/../preview/owned-wide.heic"), path));
+            files.append(path);
+        }
+#endif
+        for (const auto &name : {QStringLiteral("owned.svg"), QStringLiteral("blocked.svg")}) {
+            const auto path = fixture.filePath(name);
+            QFile svg(path);
+            QVERIFY(svg.open(QIODevice::WriteOnly));
+            const QByteArray content =
+                name == "owned.svg"
+                    ? QByteArray("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 180'>"
+                                 "<rect width='320' height='180' fill='#3492bd'/>"
+                                 "<circle cx='160' cy='90' r='60' fill='#ffd56a'/></svg>")
+                    : QByteArray("<svg width='320' height='180'><image href='owned.bmp' "
+                                 "width='320' height='180'/></svg>");
+            QCOMPARE(svg.write(content), qint64(content.size()));
+            svg.close();
+            files.append(path);
+        }
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->startCreation(files, fixture.path(), "expanded-images.zip", 8, 6, false);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy() &&
+                                     controller->archiveTotal() == files.size(),
+                                 15000);
+        auto *page = qobject_cast<QQuickItem *>(window->property("activePage").value<QObject *>());
+        if (!page)
+            page = window->findChild<QQuickItem *>("sessionPage");
+        QVERIFY(page);
+        QVERIFY(page->setProperty("inspectorRequested", true));
+        window->resize(1024, 700);
+        auto *model = qobject_cast<ArchiveTableModel *>(controller->entries());
+        QVERIFY(model);
+        const auto audit = qEnvironmentVariable("XDZIP_IMAGE_PREVIEW_AUDIT");
+        if (!audit.isEmpty()) {
+            QVERIFY(nativeSystemPointer());
+            QVERIFY(QDir().mkpath(audit));
+            QVERIFY(QTest::qWaitForWindowExposed(window));
+        }
+        for (int row = 0; row < files.size(); ++row) {
+            controller->selectOnlyRow(row);
+            controller->requestPreview(controller->detail().value("id").toString());
+            QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 10000);
+            QCOMPARE(controller->contentPreview().value("state").toString(), "image");
+            auto *image = findVisual(window->contentItem(), "contentPreviewImage");
+            QVERIFY(image);
+            const auto name = model->rowAt(row)->cells[0];
+            QTRY_COMPARE_WITH_TIMEOUT(image->property("status").toInt(),
+                                      name == "blocked.svg" ? 3 : 1, 10000);
+            if (name != "blocked.svg") {
+                // sourceSize is the QML request bound. Verify the actual fitted
+                // image ratio, rather than expecting that property to be rewritten.
+                QTRY_VERIFY(image->property("paintedHeight").toDouble() > 0);
+                const auto ratio = image->property("paintedWidth").toDouble() /
+                                   image->property("paintedHeight").toDouble();
+                QVERIFY(qAbs(ratio - (name == "owned-large.bmp" ? 4. / 3. : 16. / 9.)) < .01);
+                QVERIFY(image->property("paintedWidth").toDouble() <= image->width() + .5);
+                QVERIFY(image->property("paintedHeight").toDouble() <= image->height() + .5);
+            }
+            if (!audit.isEmpty()) {
+                QVERIFY(QQuickTest::qWaitForPolish(window, 3000));
+                const auto capture = window->grabWindow();
+                QVERIFY(!capture.isNull());
+                QVERIFY(capture.save(QDir(audit).filePath(name + ".png")));
+            }
             controller->cancelContentPreview();
             QTRY_VERIFY(image->property("source").toUrl().isEmpty());
         }
@@ -13178,7 +13276,7 @@ QtObject {
             std::this_thread::yield();
         }
         QCOMPARE(connection.statistics().peakQueued, std::size_t(256));
-        QVERIFY(connection.statistics().peakBytes <= 8 * 1024 * 1024);
+        QVERIFY(connection.statistics().peakBytes <= ImagePreview::EventQueueLimit);
         connection.shutdown();
         connection.shutdown();
         QTRY_COMPARE_WITH_TIMEOUT(disconnected.count(), 1, 5000);

@@ -13,7 +13,7 @@ import sys
 import urllib.request
 import uuid
 
-from desktop_environment import PYTHON_PACKAGES, QT_VERSION, check_environment, locked_rust_version
+from desktop_environment import PYTHON_PACKAGES, QT_VERSION, check_environment, image_plugins, locked_rust_version
 from association_types import WINDOWS_ICONS
 from windows_ninja_safety import check_dependencies, utf8_console
 from qt_network_security import identity as qt_network_identity
@@ -214,7 +214,18 @@ class Workflow:
             downloads = self.toolchain/'qt-install-tool'
             downloads.mkdir(parents=True, exist_ok=True)
             self.run([self.python, '-m', 'aqt', 'install-qt', self.platform_spec[1], 'desktop',
-                      QT_VERSION, self.platform_spec[2], '-O', qt_root], cwd=downloads)
+                      QT_VERSION, self.platform_spec[2], '-O', qt_root,
+                      '--modules', 'qtimageformats'], cwd=downloads)
+        if self.args.install_qt and any(not (self.qt/'plugins/imageformats'/p).is_file()
+                                       for p in image_plugins(self.system)):
+            qt_root = Path(self.args.qt_root).resolve() if self.args.qt_root else self.qt.parents[1]
+            if qt_root/QT_VERSION/self.platform_spec[3] != self.qt:
+                raise ValueError('--qt-prefix must match --qt-root/6.8.2/platform-folder when installing image formats')
+            downloads = self.toolchain/'qt-install-tool'
+            downloads.mkdir(parents=True, exist_ok=True)
+            self.run([self.python, '-m', 'aqt', 'install-qt', self.platform_spec[1], 'desktop',
+                      QT_VERSION, self.platform_spec[2], '-O', qt_root,
+                      '--noarchives', '--modules', 'qtimageformats'], cwd=downloads)
         self.script('prepare-qt-network.py', '--qt-prefix', self.qt)
         self.doctor('build')
         self.run(['cargo', 'fetch', '--locked'])
@@ -275,6 +286,8 @@ class Workflow:
         receipt = self.build_receipt()
         env = dict(self.env, QT_QPA_PLATFORM='offscreen', QT_QUICK_BACKEND='software')
         env['XDZIP_NATIVE_CODEC'] = str(self.app.parent / ('xdzip-native-codec.exe' if self.system == 'windows' else 'xdzip-native-codec'))
+        self.script('check-image-preview.py', '--worker', self.app.parent / ('xdzip-image-preview.exe' if self.system == 'windows' else 'xdzip-image-preview'),
+                    '--output', self.output/'image-preview.json', env=env)
         if not self.args.skip_rust:
             self.run(['cargo', 'test', '--workspace', '--locked'], env=env)
             self.run(['cargo', 'test', '-p', 'xdzip-runtime', '--locked', 'native_backend_tests', '--', '--ignored'], env=env)
@@ -336,6 +349,7 @@ class Workflow:
             shutil.copy2(self.app, self.runtime/'xdzip.exe')
             shutil.copy2(self.app.parent/'xdzip-update-helper.exe', self.runtime/'xdzip-update-helper.exe')
             shutil.copy2(self.app.parent/'xdzip-native-codec.exe', self.runtime/'xdzip-native-codec.exe')
+            shutil.copy2(self.app.parent/'xdzip-image-preview.exe', self.runtime/'xdzip-image-preview.exe')
             shutil.copy2(self.app.parent/'xdzip-association.exe', self.runtime/'xdzip-association.exe')
             shutil.copytree(self.app.parent/'cli', self.runtime/'cli')
             for runtime_file in (self.runtime_tools/'runtime').glob('*.dll'):
@@ -505,6 +519,8 @@ class Workflow:
                     installer.get('source') != runtime.get('source')):
                 raise ValueError('Installer and runtime package identities differ')
             self.verify_hashes(installer['artifacts'])
+        self.script('check-image-preview.py', '--worker', self.runtime/('xdzip-image-preview.exe' if self.system == 'windows' else 'bin/xdzip-image-preview'),
+                    '--output', self.output/'image-preview-deployed.json', env=self.deployed_env())
         if self.system == 'windows':
             # Each invocation owns a fresh harness; retain earlier evidence and
             # keep the verifier's refusal to reuse or delete an existing tree.

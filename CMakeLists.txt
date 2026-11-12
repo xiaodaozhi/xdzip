@@ -47,5 +47,6 @@ endif()
 
 option(XDZIP_BUILD_DESKTOP_PREVIEW "Build the Qt component development preview" OFF)
 if(XDZIP_BUILD_DESKTOP_PREVIEW)
+    add_subdirectory(tools/image-preview)
     add_subdirectory(apps/desktop)
 endif()

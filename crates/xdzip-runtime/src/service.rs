@@ -12,8 +12,10 @@ use xdzip_domain::query::QueryKey;
 
 /// Maximum accepted normal requests not yet delivered to the receiver as finished.
 pub const MAX_OUTSTANDING: usize = 128;
-/// Maximum owned page/report string bytes retained in the Rust event queue.
-pub const MAX_EVENT_BYTES: usize = 8 * 1024 * 1024;
+/// Maximum owned event payload bytes, including one complete bounded image.
+pub const MAX_EVENT_BYTES: usize = 32 * 1024 * 1024;
+/// Command admission retains its original independent memory budget.
+const MAX_COMMAND_BYTES: usize = 8 * 1024 * 1024;
 
 /// Owned bounded commands. Source paths are user-selected inputs, never output authority.
 pub enum Command {
@@ -702,7 +704,7 @@ impl Client {
             return Err(Rejection::Closed);
         }
         if state.outstanding.len() >= MAX_OUTSTANDING
-            || state.command_bytes + bytes > MAX_EVENT_BYTES
+            || state.command_bytes + bytes > MAX_COMMAND_BYTES
         {
             return Err(Rejection::Busy);
         }
@@ -1373,6 +1375,44 @@ mod tests {
                 .filter(|e| matches!(e.payload, Payload::ShutdownReady))
                 .count(),
             1
+        );
+    }
+    #[test]
+    fn a_complete_maximum_preview_crosses_the_bounded_event_queue() {
+        let (client, mut receiver) = spawn(|_, _| {
+            Ok(Payload::Preview(crate::preview::Content {
+                session: 1,
+                entry: 1,
+                kind: 5,
+                bytes: vec![0; crate::preview::IMAGE_BYTES],
+            }))
+        })
+        .unwrap();
+        let id = submit(&client, || Command::Snapshot);
+        let mut observed = false;
+        while let Some(event) = receiver.receive() {
+            if event.request != id {
+                continue;
+            }
+            match event.payload {
+                Payload::Preview(content) => {
+                    assert_eq!(content.bytes.len(), crate::preview::IMAGE_BYTES);
+                    assert!(Payload::Preview(content).bytes() <= MAX_EVENT_BYTES);
+                    observed = true;
+                }
+                Payload::Finished(error) => {
+                    assert_eq!(error, "");
+                    break;
+                }
+                _ => (),
+            }
+        }
+        assert!(observed);
+        client.shutdown();
+        assert!(
+            drain(receiver)
+                .iter()
+                .any(|e| matches!(e.payload, Payload::ShutdownReady))
         );
     }
     #[test]

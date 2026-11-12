@@ -4,7 +4,7 @@
 
 ## 主动内容预览
 
-[内容状态稿](../../design/hifi/sources/content-preview.html)沿用现有属性卡的宽度、高度、圆角、主窗口密度与文字角色。内距、间距、图标和加载指示参数由 layout-scale.json 的 main.content_preview 生成。用户点击共享 ArchiveAction 后才读取内容；加载、密码等待、纯文本、图片和错误均在卡片内切换，取消动作固定可达。文本为纯文本且可选择，图片保持比例，不增加浏览器、HTML、SVG 或外部链接执行入口。主窗口与独立属性查看器复用同一 InspectorPanel，关闭预览或更换条目立即清空。密码窗口沿用 P02 和共享 footer，仅按预览任务切换文案。主窗口及菜单的既有比例仍须同时复验。
+[内容状态稿](../../design/hifi/sources/content-preview.html)沿用现有属性卡的宽度、高度、圆角、主窗口密度与文字角色。内距、间距、图标和加载指示参数由 layout-scale.json 的 main.content_preview 生成。用户点击共享 ArchiveAction 后才读取内容；加载、密码等待、纯文本、图片和错误均在卡片内切换，取消动作固定可达。文本为纯文本且可选择，图片保持比例，栅格与受限静态 SVG 均通过同一图片槽显示，不增加浏览器、HTML 或外部链接执行入口；SVG 在受限工作进程内栅格化，不把原文交给 QML。主窗口与独立属性查看器复用同一 InspectorPanel，关闭预览或更换条目立即清空。密码窗口沿用 P02 和共享 footer，仅按预览任务切换文案。主窗口及菜单的既有比例仍须同时复验。
 
 English: Explicit content previews reuse the existing inspector card and its density, typography and geometry. Shared generated parameters define its insets, gaps, icon and busy indicator. Loading, password, plain text, bounded raster images and errors occupy the same card. Cancellation remains reachable. Both inspector presentations share the component; closing or changing entries clears the content. The password prompt retains P02 geometry and shared controls. Main-window/menu proportions remain independently checked.
 
