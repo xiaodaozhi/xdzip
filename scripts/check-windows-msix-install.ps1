@@ -27,7 +27,7 @@ $result = [ordered]@{
     revision = (& git rev-parse HEAD).Trim()
     platform = 'Windows Server hosted runner'
     checks = [ordered]@{}
-    limitations = @('Self-signed sideload only; not Store or Windows 11 desktop acceptance.', 'File activation, coexistence and visual appearance are not exercised by this check.')
+    limitations = @('Self-signed sideload only; not Store or Windows 11 desktop acceptance.', 'Full installer coexistence and visual appearance are not exercised by this check.')
 }
 try {
     $certificate = New-SelfSignedCertificate -Type CodeSigningCert -Subject $subject -CertStoreLocation 'Cert:\CurrentUser\My' -KeyExportPolicy NonExportable -NotAfter (Get-Date).AddDays(2)
@@ -118,6 +118,25 @@ public static class XdzipPackageOrigin {
       }
     }
     $result.checks.about_update_channels_in_both_languages = 'passed'
+    # Use the OS file contract and inspect an actual entry in the owned ZIP.
+    Add-Type -Path 'scripts/windows-msix-activation.cs'
+    $archiveName = 'xdzip msix fixture.zip'
+    $archivePath = Join-Path $env:RUNNER_TEMP $archiveName
+    if (Test-Path -LiteralPath $archivePath) { throw 'File activation fixture already exists' }
+    Copy-Item -LiteralPath 'tests/fixtures/zip/normal.zip' -Destination $archivePath
+    $activationProcess = $null
+    try {
+        $processId = [XdzipMsixActivation]::Open(($installed.PackageFamilyName + '!App'), $archivePath)
+        $activationProcess = Get-Process -Id $processId -ErrorAction Stop
+        $null = Wait-XdzipOwnedUiElement $activationProcess $archiveName 'ControlType.TabItem'
+        $null = Wait-XdzipOwnedUiElement $activationProcess 'empty.txt' 'ControlType.Text'
+    } finally {
+        if ($activationProcess) {
+            $activationProcess.Refresh()
+            if (!$activationProcess.HasExited) { $activationProcess.Kill(); $activationProcess.WaitForExit() }
+        }
+    }
+    $result.checks.file_activation_and_archive_contents = 'passed'
     Remove-AppxPackage -Package $installed.PackageFullName
     if (Get-AppxPackage -Name $identityName) { throw 'Test package remains installed' }
     $installed = $null
