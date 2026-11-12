@@ -367,6 +367,7 @@ class ShellTest : public QObject {
         QFETCH(bool, tray);
         QQmlApplicationEngine engine;
         UiPreferences settings;
+        QVERIFY(settings.applyDetails("light", 1., "zh-CN", "standard", false, tray, "tabs"));
         ApplicationSessions sessions(&engine, &settings);
         QQuickWindow *main = nullptr;
         if (hasMain) {

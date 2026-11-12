@@ -10,9 +10,10 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#include <windows.h>
+
 #include <bcrypt.h>
 #include <sddl.h>
-#include <windows.h>
 #else
 #include <fcntl.h>
 #include <spawn.h>
