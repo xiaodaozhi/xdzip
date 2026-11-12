@@ -161,8 +161,4 @@ begin
   RegWriteExpandStringValue(HKCU, 'Environment', 'Path', Updated);
 end;
 
-[Run]
-Filename: "{app}\xdzip.exe"; Parameters: "--sync-shell-integration"; Flags: runhidden waituntilterminated
-
-[UninstallRun]
-Filename: "{app}\xdzip.exe"; Parameters: "--uninstall-shell-integration"; Flags: runhidden waituntilterminated; RunOnceId: "xdzip-shell-remove"
+@SHELL_HOOKS@

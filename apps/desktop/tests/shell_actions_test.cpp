@@ -259,11 +259,18 @@ class ShellTest : public QObject {
     }
 #ifdef Q_OS_WIN
     void executableCapabilityMatchesNativeShellProtocol() {
+        const auto product =
+            xdzip_shell::fs::path(QStringLiteral(XDZIP_SHELL_PRODUCT).toStdWString());
+        const auto command = L"\"" + product.wstring() + L"\" -- \"%1\"";
+        QVERIFY(xdzip_shell::commandTargetsExecutable(command, product));
+        QVERIFY(!xdzip_shell::commandTargetsExecutable(command + L" --extra", product));
         QVERIFY(xdzip_shell::supportsShellProtocol(
             xdzip_shell::fs::path(QStringLiteral(XDZIP_SHELL_PRODUCT).toStdWString())));
         QTemporaryDir source;
         const auto incompatible = source.filePath("old.exe");
         write(incompatible, "owned unsupported executable fixture");
+        QVERIFY(!xdzip_shell::commandTargetsExecutable(
+            command, xdzip_shell::fs::path(incompatible.toStdWString())));
         QVERIFY(!xdzip_shell::supportsShellProtocol(
             xdzip_shell::fs::path(incompatible.toStdWString())));
     }

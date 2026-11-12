@@ -3,6 +3,11 @@
 #include <shlobj.h>
 
 int wmain(int argc, wchar_t **argv) {
+    if (argc == 3 && std::wstring(argv[1]) == L"--registered-target")
+        return xdzip_shell::registeredTargetMatches(argv[2]) &&
+                       xdzip_shell::supportsShellProtocol(argv[2])
+                   ? 0
+                   : 1;
     if (argc != 2)
         return 2;
     const auto initialized = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);

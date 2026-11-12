@@ -125,10 +125,14 @@ def render(payload,audit,output,chinese,qa=None,legacy=False):
         'ASSOCIATION_CODE':'' if legacy else association_code(),
         'MANIFEST_FILES':'' if legacy else (f'Source: "{manifest_path}"; DestName: "xdzip-package-files.txt"; Flags: dontcopy\n'
             f'Source: "{manifest_path}"; DestDir: "{{app}}"; DestName: "{MANIFEST_NAME}"; Flags: ignoreversion'),
-        'CLEANUP_CODE':'' if legacy else (ROOT/'apps/desktop/packaging/windows/installed-files.iss').read_text(encoding='utf-8')}
+        'CLEANUP_CODE':'' if legacy else (ROOT/'apps/desktop/packaging/windows/installed-files.iss').read_text(encoding='utf-8'),
+        'SHELL_HOOKS':'' if legacy else ('[Run]\n'
+            'Filename: "{app}\\xdzip.exe"; Parameters: "--sync-shell-integration"; Flags: runhidden waituntilterminated\n\n'
+            '[UninstallRun]\n'
+            'Filename: "{app}\\xdzip.exe"; Parameters: "--uninstall-shell-integration"; Flags: runhidden waituntilterminated; RunOnceId: "xdzip-shell-remove"')}
     text=(ROOT/'apps/desktop/packaging/windows/installer.iss.in').read_text(encoding='utf-8')
     for name,value in values.items():
-        if name not in ('ASSOCIATIONS','ASSOCIATION_CODE','MANIFEST_FILES','CLEANUP_CODE') and any(c in value for c in ['"','\r','\n']):raise ValueError('Unsafe installer substitution')
+        if name not in ('ASSOCIATIONS','ASSOCIATION_CODE','MANIFEST_FILES','CLEANUP_CODE','SHELL_HOOKS') and any(c in value for c in ['"','\r','\n']):raise ValueError('Unsafe installer substitution')
         text=text.replace('@'+name+'@',value)
     return text,{'runtime_id':runtime,'identity':identity,'executable_sha256':digest(payload/'xdzip.exe'),'qa_fixture':qa is not None or legacy,'layout':'legacy-qa' if legacy else 'flat',
         'executable_relative_path':('versions/'+runtime+'/' if legacy else '')+'xdzip.exe',

@@ -426,7 +426,7 @@ endif()
 
 if(BUILD_TESTING AND WIN32)
     add_executable(xdzip-windows-shell-test shell/WindowsMenuTest.cpp)
-    target_link_libraries(xdzip-windows-shell-test PRIVATE shell32 ole32 uuid advapi32 bcrypt)
+    target_link_libraries(xdzip-windows-shell-test PRIVATE shell32 ole32 uuid advapi32 bcrypt version)
     add_dependencies(xdzip-windows-shell-test xdzip-shell-extension)
     add_test(NAME native_windows_shell_menu COMMAND xdzip-windows-shell-test "$<TARGET_FILE:xdzip-shell-extension>")
 elseif(BUILD_TESTING AND UNIX AND NOT APPLE)

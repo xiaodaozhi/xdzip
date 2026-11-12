@@ -215,6 +215,7 @@ function Test-ShellIntegration {
     if ($facts.Values -contains $false) {
         throw ('Installed shell registration mismatch: ' + ($facts | ConvertTo-Json -Compress))
     }
+    Test-ShellTarget 0
     $exe = Join-Path $testRoot 'xdzip.exe'
     # Simulate a retained registration for an older owned DLL after an upgrade.
     (Get-Item $classKey).SetValue('', (Join-Path (Split-Path $library) 'xdzip-shell-0000000000000000.dll'))
@@ -224,6 +225,12 @@ function Test-ShellIntegration {
     if ($restored.ExitCode -ne 0 -or !(Test-Path $menuKey)) { throw 'Owned shell registration failed' }
     Assert-Default
     $phases.Add('shell-registration-disable-restore-preserves-defaults')
+}
+function Test-ShellTarget([int]$ExpectedCode) {
+    $probe = (Resolve-Path 'build/desktop/apps/desktop/xdzip-windows-shell-test.exe').Path
+    $arguments = @('--registered-target', ('"' + (Join-Path $testRoot 'xdzip.exe') + '"'))
+    $result = Start-Process -FilePath $probe -ArgumentList $arguments -Wait -PassThru
+    if ($result.ExitCode -ne $ExpectedCode) { throw 'Shell extension accepted an inactive application target or rejected the installed target' }
 }
 function Test-InstalledDescriptionStartup {
     # This runs only on the disposable CI host, against the installation owned
@@ -399,6 +406,8 @@ try {
     if ($historical.revision -eq $current.revision -or $historical.version -eq $current.version -or [Convert]::ToBase64String([IO.File]::ReadAllBytes($settings)) -ne $settingsBefore) { throw 'Full product upgrade did not change version/revision or preserve settings' }
     Test-InstalledDescriptionStartup
     Invoke-Installer (Join-Path $Packages 'previous.exe') 'actual-product-rollback'; Test-AssociatedOpen 'actual-product-rollback'
+    Test-ShellTarget 1
+    $phases.Add('shell-rejects-retained-new-executable-after-historical-rollback')
     Test-FormatDispatch 'historical-rollback' @('zip','tgz') $historical.revision
     if ([Convert]::ToBase64String([IO.File]::ReadAllBytes($settings)) -ne $settingsBefore -or !(Select-String -Path $sentinel -SimpleMatch 'keep user data' -Quiet)) { throw 'Full product rollback lost user data' }
     Invoke-Installer (Join-Path $Packages 'qa1.exe') 'install'; Test-AssociatedOpen 'install'

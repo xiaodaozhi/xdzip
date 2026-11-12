@@ -157,10 +157,11 @@ class Menu final : public IShellExtInit, public IContextMenu {
             auto root = xdzip_shell::fs::path(path).parent_path();
             if (root.filename() == L"shell")
                 root = root.parent_path();
-            if (!xdzip_shell::supportsShellProtocol(root / L"xdzip.exe"))
+            const auto executable = root / L"xdzip.exe";
+            if (!xdzip_shell::registeredTargetMatches(executable) ||
+                !xdzip_shell::supportsShellProtocol(executable))
                 return HRESULT_FROM_WIN32(ERROR_REVISION_MISMATCH);
-            return xdzip_shell::launch(root / L"xdzip.exe", entries[index].action, paths,
-                                       archiveCandidates)
+            return xdzip_shell::launch(executable, entries[index].action, paths, archiveCandidates)
                        ? S_OK
                        : E_FAIL;
         } catch (...) {

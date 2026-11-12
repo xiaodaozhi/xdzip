@@ -43,6 +43,37 @@ inline bool protocolMarker(const fs::path &path) {
     return file.gcount() == 2 && value[0] == '1' && value[1] == '\n';
 }
 #ifdef _WIN32
+inline bool commandTargetsExecutable(const std::wstring &command, const fs::path &executable) {
+    if (command.empty() || command.front() != L'"')
+        return false;
+    const auto end = command.find(L'"', 1);
+    if (end == std::wstring::npos || command.substr(end + 1) != L" -- \"%1\"")
+        return false;
+    std::error_code error;
+    return fs::equivalent(fs::path(command.substr(1, end - 1)), executable, error) && !error;
+}
+inline bool registeredTargetMatches(const fs::path &executable) {
+    // A legacy rollback may retain the former root executable. Only the
+    // self-owned application command identifies the active installation target.
+    constexpr auto key = L"Software\\Classes\\Applications\\xdzip.exe\\shell\\open\\command";
+    DWORD size = 0;
+    if (RegGetValueW(HKEY_CURRENT_USER, key, nullptr, RRF_RT_REG_SZ, nullptr, nullptr, &size) !=
+            ERROR_SUCCESS ||
+        size < sizeof(wchar_t) || size > 65536 || size % sizeof(wchar_t))
+        return false;
+    std::wstring command(size / sizeof(wchar_t), L'\0');
+    if (RegGetValueW(HKEY_CURRENT_USER, key, nullptr, RRF_RT_REG_SZ, nullptr, command.data(),
+                     &size) != ERROR_SUCCESS ||
+        size < sizeof(wchar_t) || size % sizeof(wchar_t))
+        return false;
+    command.resize(size / sizeof(wchar_t));
+    if (command.back() != 0)
+        return false;
+    command.pop_back();
+    if (command.find(L'\0') != std::wstring::npos)
+        return false;
+    return commandTargetsExecutable(command, executable);
+}
 inline bool supportsShellProtocol(const fs::path &executable) {
     DWORD ignored = 0;
     const auto size = GetFileVersionInfoSizeW(executable.c_str(), &ignored);

@@ -294,6 +294,8 @@ class InstallerTests(unittest.TestCase):
             self.assertIn('DestDir: "{app}"; Flags: ignoreversion recursesubdirs',text)
             self.assertIn('Filename: "{app}\\xdzip.exe"',text)
             self.assertIn('UninstallDisplayIcon={app}\\xdzip.exe',text)
+            self.assertIn('Parameters: "--sync-shell-integration"',text)
+            self.assertIn('Parameters: "--uninstall-shell-integration"',text)
             self.assertNotIn('{app}\\versions\\',text)
             self.assertIn('install-manifest.txt',text)
             self.assertIn('ValueName: "Location"; ValueData: "{app}"',text)
@@ -312,6 +314,8 @@ class InstallerTests(unittest.TestCase):
             self.assertNotIn('NoOpenWith',legacy)
             self.assertNotIn('PreventSilentDefault',legacy)
             self.assertNotIn('xdzip.Archive.ZIP',legacy)
+            self.assertNotIn('--sync-shell-integration',legacy)
+            self.assertNotIn('--uninstall-shell-integration',legacy)
 
     def test_windows_rejects_missing_or_changed_format_icon(self):
         with tempfile.TemporaryDirectory() as temp:
