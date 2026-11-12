@@ -116,6 +116,10 @@ class InstallerTests(unittest.TestCase):
             (root/'xdzip-association.exe').write_bytes(b'MZowned association launcher')
             for icon_id in WINDOWS_ICONS.values():
                 shutil.copy2(ROOT/'design/assets/file-associations'/f'xdzip-{icon_id}.ico', root)
+        else:
+            extension=root/'lib/nautilus/libxdzip-nautilus.so'
+            extension.parent.mkdir(parents=True)
+            extension.write_bytes(b'\x7fELFowned Nautilus extension')
         (root/'share').mkdir();(root/'share/deployment.json').write_text(json.dumps({'system_packages':['libc6:amd64','libxcb1:amd64']}))
         (root/'xdzip').write_text('#!/bin/sh\n');(root/'xdzip').chmod(0o755)
         audit={'status':'passed','platform':platform,'mode':'deployed','identity':{'version':'0.1.0-dev.1','build':1,'revision':'a'*12,'dirty':False},
@@ -172,6 +176,10 @@ class InstallerTests(unittest.TestCase):
             base=Path(temp);root,audit=self.payload(base,'linux');stage=base/'stage';r=linux.package_tree(root,audit,stage)
             control=(stage/'DEBIAN/control').read_text()
             self.assertIn('libssl3t64',control);self.assertIn('ca-certificates',control)
+            self.assertIn('libnautilus-extension4',control)
+            self.assertEqual((stage/'usr/share/xdzip/shell-protocol').read_text(),'1\n')
+            self.assertEqual((stage/'usr/lib/x86_64-linux-gnu/nautilus/extensions-4/libxdzip-nautilus.so').read_bytes(),
+                             (root/'lib/nautilus/libxdzip-nautilus.so').read_bytes())
             self.assertIn('~dev.1+git',r['version'])
             self.assertIn('libc6 (>= 2.39)',(stage/'DEBIAN/control').read_text(encoding='utf-8'))
             source_entry=configparser.ConfigParser(interpolation=None)
@@ -286,6 +294,8 @@ class InstallerTests(unittest.TestCase):
             self.assertIn('DestDir: "{app}"; Flags: ignoreversion recursesubdirs',text)
             self.assertIn('Filename: "{app}\\xdzip.exe"',text)
             self.assertIn('UninstallDisplayIcon={app}\\xdzip.exe',text)
+            self.assertIn('Parameters: "--sync-shell-integration"',text)
+            self.assertIn('Parameters: "--uninstall-shell-integration"',text)
             self.assertNotIn('{app}\\versions\\',text)
             self.assertIn('install-manifest.txt',text)
             self.assertIn('ValueName: "Location"; ValueData: "{app}"',text)
@@ -304,6 +314,8 @@ class InstallerTests(unittest.TestCase):
             self.assertNotIn('NoOpenWith',legacy)
             self.assertNotIn('PreventSilentDefault',legacy)
             self.assertNotIn('xdzip.Archive.ZIP',legacy)
+            self.assertNotIn('--sync-shell-integration',legacy)
+            self.assertNotIn('--uninstall-shell-integration',legacy)
 
     def test_windows_rejects_missing_or_changed_format_icon(self):
         with tempfile.TemporaryDirectory() as temp:

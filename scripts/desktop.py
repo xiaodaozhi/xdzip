@@ -354,6 +354,7 @@ class Workflow:
             shutil.copy2(self.app.parent/'xdzip-native-codec.exe', self.runtime/'xdzip-native-codec.exe')
             shutil.copy2(self.app.parent/'xdzip-image-preview.exe', self.runtime/'xdzip-image-preview.exe')
             shutil.copy2(self.app.parent/'xdzip-association.exe', self.runtime/'xdzip-association.exe')
+            shutil.copy2(self.app.parent/'xdzip-shell.dll', self.runtime/'xdzip-shell.dll')
             shutil.copytree(self.app.parent/'cli', self.runtime/'cli')
             for runtime_file in (self.runtime_tools/'runtime').glob('*.dll'):
                 shutil.copy2(runtime_file, self.runtime/'cli'/runtime_file.name)

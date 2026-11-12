@@ -2,7 +2,7 @@ import QtQuick
 
 Window {
     id: root
-    required property Window owner
+    property Window owner: null
     property bool allowMinimize: false
     property bool escapeClosesWindow: true
     // Constraints depend on requested geometry, never the constrained height.
@@ -35,12 +35,13 @@ Window {
 
     function present() {
         // Reopening preserves view state and uses the owner's current display.
-        screen = owner.screen;
+        if (owner) screen = owner.screen;
         applyRequestedHeight();
-        x = Math.max(Screen.virtualX, Math.min(owner.x + (owner.width - width) / 2,
-                     Screen.virtualX + Screen.width - width));
-        y = Math.max(Screen.virtualY, Math.min(owner.y + (owner.height - height) / 2,
-                     Screen.virtualY + Screen.height - height));
+        const area = { x: Screen.virtualX, y: Screen.virtualY, width: Screen.desktopAvailableWidth, height: Screen.desktopAvailableHeight };
+        const centerX = owner ? owner.x + owner.width / 2 : area.x + area.width / 2;
+        const centerY = owner ? owner.y + owner.height / 2 : area.y + area.height / 2;
+        x = Math.max(area.x, Math.min(centerX - width / 2, area.x + area.width - width));
+        y = Math.max(area.y, Math.min(centerY - height / 2, area.y + area.height - height));
         show();
         raise();
         requestActivate();

@@ -200,6 +200,42 @@ function Test-FormatDispatch($Label, $Which, $Revision) {
     Assert-Default
     $phases.Add($Label+'-format-dispatch')
 }
+function Test-ShellIntegration {
+    $classKey = "$classes\CLSID\{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}\InprocServer32"
+    $menuKey = "$classes\AllFilesystemObjects\shellex\ContextMenuHandlers\xdzip"
+    $manifest = Get-Content (Join-Path $testRoot 'shell/integration.json') -Raw | ConvertFrom-Json
+    $library = [IO.Path]::GetFullPath((Join-Path $testRoot ('shell/' + $manifest.file)))
+    $facts = [ordered]@{
+        class_exists = (Test-Path $classKey)
+        menu_exists = (Test-Path $menuKey)
+        class_matches = (Test-Path $classKey) -and (Get-Item $classKey).GetValue('') -eq $library
+        menu_matches = (Test-Path $menuKey) -and (Get-Item $menuKey).GetValue('') -eq '{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}'
+        dll_hash_matches = (Get-FileHash $library -Algorithm SHA256).Hash.ToLowerInvariant() -eq $manifest.sha256
+    }
+    if ($facts.Values -contains $false) {
+        throw ('Installed shell registration mismatch: ' + ($facts | ConvertTo-Json -Compress))
+    }
+    Test-ShellTarget 0
+    $exe = Join-Path $testRoot 'xdzip.exe'
+    # Simulate a retained registration for an older owned DLL after an upgrade.
+    $ownedClass = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Classes\CLSID\{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}\InprocServer32', $true)
+    if (!$ownedClass) { throw 'Owned shell class cannot be opened for the upgrade fixture' }
+    try {
+        $ownedClass.SetValue('', (Join-Path (Split-Path $library) 'xdzip-shell-0000000000000000.dll'), [Microsoft.Win32.RegistryValueKind]::String)
+    } finally { $ownedClass.Close() }
+    $removed = Start-Process -FilePath $exe -ArgumentList '--uninstall-shell-integration' -Wait -PassThru
+    if ($removed.ExitCode -ne 0 -or (Test-Path $menuKey) -or (Test-Path $classKey)) { throw 'Owned shell removal failed' }
+    $restored = Start-Process -FilePath $exe -ArgumentList '--sync-shell-integration' -Wait -PassThru
+    if ($restored.ExitCode -ne 0 -or !(Test-Path $menuKey)) { throw 'Owned shell registration failed' }
+    Assert-Default
+    $phases.Add('shell-registration-disable-restore-preserves-defaults')
+}
+function Test-ShellTarget([int]$ExpectedCode) {
+    $probe = (Resolve-Path 'build/desktop/apps/desktop/xdzip-windows-shell-test.exe').Path
+    $arguments = @('--registered-target', ('"' + (Join-Path $testRoot 'xdzip.exe') + '"'))
+    $result = Start-Process -FilePath $probe -ArgumentList $arguments -Wait -PassThru
+    if ($result.ExitCode -ne $ExpectedCode) { throw 'Shell extension accepted an inactive application target or rejected the installed target' }
+}
 function Test-InstalledDescriptionStartup {
     # This runs only on the disposable CI host, against the installation owned
     # by this script. Never overwrite an existing user profile.
@@ -366,6 +402,7 @@ try {
     Set-Content $nestedSentinel 'keep nested user data'
     $historical = Get-Content (Join-Path $evidenceRoot 'historical-product-install.json') -Raw | ConvertFrom-Json
     Invoke-Installer (Join-Path $Packages 'product.exe') 'actual-product-upgrade'; Test-AssociatedOpen 'actual-product-upgrade'
+    Test-ShellIntegration
     if (!(Test-Path $legacyExe) -or !(Test-Path $nestedSentinel)) { throw 'Legacy migration deleted files without an ownership manifest' }
     $phases.Add('legacy-to-flat-entrypoints-and-untracked-files-preserved')
     $current = Get-Content (Join-Path $evidenceRoot 'actual-product-upgrade.json') -Raw | ConvertFrom-Json
@@ -373,6 +410,8 @@ try {
     if ($historical.revision -eq $current.revision -or $historical.version -eq $current.version -or [Convert]::ToBase64String([IO.File]::ReadAllBytes($settings)) -ne $settingsBefore) { throw 'Full product upgrade did not change version/revision or preserve settings' }
     Test-InstalledDescriptionStartup
     Invoke-Installer (Join-Path $Packages 'previous.exe') 'actual-product-rollback'; Test-AssociatedOpen 'actual-product-rollback'
+    Test-ShellTarget 1
+    $phases.Add('shell-rejects-retained-new-executable-after-historical-rollback')
     Test-FormatDispatch 'historical-rollback' @('zip','tgz') $historical.revision
     if ([Convert]::ToBase64String([IO.File]::ReadAllBytes($settings)) -ne $settingsBefore -or !(Select-String -Path $sentinel -SimpleMatch 'keep user data' -Quiet)) { throw 'Full product rollback lost user data' }
     Invoke-Installer (Join-Path $Packages 'qa1.exe') 'install'; Test-AssociatedOpen 'install'
@@ -455,6 +494,7 @@ try {
     Invoke-Installer (Join-Path $Packages 'qa1.exe') 'rollback'; Test-AssociatedOpen 'rollback'
     Invoke-Installer (Join-Path $Packages 'product.exe') 'production-package'; Test-AssociatedOpen 'production-package'
     Invoke-Installer (Join-Path $testRoot 'unins000.exe') 'uninstall'
+    if (Test-Path "$classes\AllFilesystemObjects\shellex\ContextMenuHandlers\xdzip") { throw 'Owned shell menu remains after uninstall' }
     for ($i=0; $i -lt 200 -and (Test-Path "$classes\xdzip.Archive"); $i++) { Start-Sleep -Milliseconds 50 }
     if (Test-Path "$classes\xdzip.Archive") { throw 'Owned ProgID remains' }
     if (Test-Path "$classes\Applications\xdzip-association.exe") { throw 'Owned association launcher registration remains' }

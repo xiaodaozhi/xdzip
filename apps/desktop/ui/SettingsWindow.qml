@@ -12,6 +12,7 @@ OperationWindow {
     property string pendingProxyMode: "system"
     property bool copiedVersion: false
     property var updater: typeof UpdateService === "undefined" ? null : UpdateService // qmllint disable unqualified
+    readonly property var shellIntegration: typeof ShellIntegrationService === "undefined" ? null : ShellIntegrationService // qmllint disable unqualified
     readonly property var associations: typeof FileAssociationService === "undefined" ? null : FileAssociationService // qmllint disable unqualified
     readonly property string updateState: updater ? updater.state : "unavailable"
     property string updatePlatform: Qt.platform.os
@@ -380,6 +381,16 @@ OperationWindow {
                 selectedIndex: AppSettings.language === "en-US" ? 1 : 0
                 onSelectionRequested: index => root.commit(AppSettings.savedTheme, AppSettings.savedTextScale, index ? "en-US" : "zh-CN", AppSettings.savedDensity, AppSettings.recentEnabled, AppSettings.trayEnabled, AppSettings.openMode)
             }
+            PageSeparator {}
+            SettingsToggle {
+                Layout.fillWidth: true; objectName: "settingsShellIntegration"
+                text: qsTrId("shell.integrationLabel")
+                description: root.shellIntegration && root.shellIntegration.available ? qsTrId("shell.integrationDescription") : qsTrId("shell.integrationUnavailable")
+                enabled: !!root.shellIntegration && root.shellIntegration.available
+                value: root.shellIntegration ? root.shellIntegration.enabled : false
+                onSelectionRequested: value => root.shellIntegration.setEnabled(value)
+            }
+            PageNote { visible: !!root.shellIntegration && root.shellIntegration.error.length > 0; text: root.shellIntegration ? root.shellIntegration.error : ""; color: Theme.menuDanger }
             PageSeparator {}
             SettingsToggle {
                 Layout.fillWidth: true; objectName: "settingsTray"

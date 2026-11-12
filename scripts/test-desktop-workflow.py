@@ -255,6 +255,7 @@ class WorkflowTests(unittest.TestCase):
         (workflow.app.parent/'xdzip-native-codec.exe').write_bytes(b'codec fixture')
         (workflow.app.parent/'xdzip-image-preview.exe').write_bytes(b'image worker fixture')
         (workflow.app.parent/'xdzip-association.exe').write_bytes(b'association fixture')
+        (workflow.app.parent/'xdzip-shell.dll').write_bytes(b'shell extension fixture')
         (workflow.app.parent/'cli').mkdir()
         (workflow.app.parent/'cli/xdzip.exe').write_bytes(b'CLI fixture')
         notices = workflow.output/'notices'
@@ -284,6 +285,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual((workflow.runtime/'xdzip-native-codec.exe').read_bytes(), b'codec fixture')
         self.assertEqual((workflow.runtime/'xdzip-image-preview.exe').read_bytes(), b'image worker fixture')
         self.assertEqual((workflow.runtime/'xdzip-association.exe').read_bytes(), b'association fixture')
+        self.assertEqual((workflow.runtime/'xdzip-shell.dll').read_bytes(), b'shell extension fixture')
         for icon_id in WINDOWS_ICONS.values():
             self.assertEqual((workflow.runtime/f'xdzip-{icon_id}.ico').read_bytes(), b'fixture icon')
         self.assertEqual((workflow.runtime/'share/notices/Microsoft-VC-runtime/LICENSE.txt').read_text(), 'CRT notice')

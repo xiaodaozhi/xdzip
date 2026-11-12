@@ -324,6 +324,7 @@ mod tests {
             selected: vec![],
             directory: String::new(),
             create_folder: false,
+            shell_layout: 0,
             conflict: ConflictPolicy::Ask,
             allow_high_ratio: false,
         };
@@ -394,6 +395,7 @@ mod tests {
             selected: vec![],
             directory: String::new(),
             create_folder: false,
+            shell_layout: 0,
             conflict: ConflictPolicy::Ask,
             allow_high_ratio: false,
         };

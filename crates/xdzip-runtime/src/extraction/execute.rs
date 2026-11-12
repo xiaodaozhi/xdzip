@@ -154,12 +154,18 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
         };
         grant = Some(root.clone());
         stats.leftovers = root.leftover_count().map_err(output)? as u64;
-        let target = if job.options.create_folder {
+        let smart_wrapper = job.options.shell_layout == 1 && !single_top_directory(&job);
+        let target = if job.options.create_folder || smart_wrapper || job.options.shell_layout == 2
+        {
             let name = PortablePath::parse(job.source.name()).ok_or("unsafe_folder_name")?;
             if name.parts().len() != 1 {
                 return Err("unsafe_folder_name");
             }
-            root.subdirectory(&name).map_err(output)?
+            if job.options.shell_layout != 0 {
+                root.unique_subdirectory(&name).map_err(output)?
+            } else {
+                root.subdirectory(&name).map_err(output)?
+            }
         } else {
             root
         };
@@ -1055,6 +1061,7 @@ mod meter_tests {
                         selected: vec![],
                         directory: String::new(),
                         create_folder: false,
+                        shell_layout: 0,
                         conflict: ConflictPolicy::Ask,
                         allow_high_ratio: false,
                     },
@@ -1064,4 +1071,22 @@ mod meter_tests {
             initial(&job, 1)
         }
     }
+}
+
+/// Complete, validated output paths include implicit directories. A sole root
+/// file is not a directory, and no prefix is stripped from archive contents.
+fn single_top_directory(job: &Job) -> bool {
+    let mut top: Option<&str> = None;
+    for item in &job.planned {
+        let parts = item.path.parts();
+        if parts.len() == 1 && !job.rows[item.index].directory {
+            return false;
+        }
+        match top {
+            None => top = Some(&parts[0]),
+            Some(value) if value != parts[0] => return false,
+            _ => {}
+        }
+    }
+    top.is_some()
 }

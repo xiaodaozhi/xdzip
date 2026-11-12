@@ -160,3 +160,5 @@ begin
   end;
   RegWriteExpandStringValue(HKCU, 'Environment', 'Path', Updated);
 end;
+
+@SHELL_HOOKS@

@@ -154,3 +154,9 @@ Windows 构建引入 Inno Setup 6.7.3，仅用于编译自有运行目录的当�
 图片运行库经固定 helper 使用，原图、像素、工作进程、输入输出及失败限制见[预览契约](content-preview.md)。默认准备补齐已有工具链，构建前检查插件，部署验证实际 helper；不新增另一套 Qt SDK。
 
 English: The official pinned Qt 6.8.2 image-formats add-on supplies WebP, TIFF, TGA and ICNS; Apple's HEIF plugin uses system ImageIO. QtGui/QtSvg supply the other approved formats. No independent HEIF/AVIF backend is introduced. The add-on bundles libwebp 1.5.0 and libtiff 4.7.0; exact source pins, upstream file ownership and complete notices are retained. Actual native validation and dependency-query limitations remain evidence rather than blanket assurance.
+
+## 文件管理器菜单适配
+
+Windows 扩展仅依赖 Windows SDK 系统 API 与静态 MSVC 运行库，macOS 服务 helper 仅依赖系统 AppKit 和 C++ 标准库，均不把 Qt 或格式库加载到文件管理器宿主。Ubuntu 24.04 使用发行版的 `libnautilus-extension4` 与 GLib/GObject/GIO，构建依赖 `libnautilus-extension-dev`，不将 Files 主程序作为产品组件。
+
+[Nautilus 46.0 的 MenuProvider 头文件](https://github.com/GNOME/nautilus/blob/46.0/libnautilus-extension/nautilus-menu-provider.h)声明 GNU Library General Public License 2 或后续版本；新扩展只使用该公开接口并动态连接系统库，选择后续 LGPL-3.0 条款。实际系统包版本与来源由 Linux 部署审计记录，不随产品复制一套 Nautilus/GLib。产品自有适配代码、接口使用与完整 Nautilus 应用的许可分别判断；正式候选仍按其真实运行材料复核，不由接口编译成功推定发行许可通过。

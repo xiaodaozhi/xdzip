@@ -2,6 +2,7 @@
 
 #pragma once
 #include "BrowserController.h"
+#include "ShellActionRequest.h"
 #include <QPointer>
 #include <QQuickWindow>
 #include <memory>
@@ -13,6 +14,7 @@ class QMessageBox;
 
 class ApplicationSessions final : public QObject {
     Q_OBJECT
+    Q_PROPERTY(bool shellTrayAvailable READ shellTrayAvailable NOTIFY sessionsChanged)
     Q_PROPERTY(QVariantList tasks READ tasks NOTIFY tasksChanged)
     Q_PROPERTY(bool hasFinishedTasks READ hasFinishedTasks NOTIFY tasksChanged)
     Q_PROPERTY(QAbstractItemModel *taskModel READ taskModel CONSTANT)
@@ -25,6 +27,12 @@ class ApplicationSessions final : public QObject {
     void adopt(QQuickWindow *window);
     void setDesktop(DesktopIntegration *desktop);
     void open(const QStringList &paths);
+    bool shellAction(const QJsonObject &request);
+    bool shellTrayAvailable() const;
+    bool ownsTaskPrompt(QQuickWindow *window) const;
+    Q_INVOKABLE void showMainWindow();
+    Q_SLOT void checkShellWindows();
+    Q_SLOT void shellAvailabilityChanged();
     Q_INVOKABLE void openPath(const QString &path);
     Q_INVOKABLE void cancelPendingOpen(const QString &id);
     Q_INVOKABLE void newSession();
@@ -91,6 +99,7 @@ class ApplicationSessions final : public QObject {
         QPointer<QObject> page;
         QPointer<BrowserController> controller;
         QPointer<QQuickWindow> window;
+        bool operationOnly = false;
         bool closed = false;
         bool retiring = false;
     };
@@ -122,6 +131,7 @@ class ApplicationSessions final : public QObject {
     QList<QPointer<QQuickWindow>> m_windows;
     std::vector<std::unique_ptr<Session>> m_sessions;
     TaskListModel m_tasks;
+    QHash<QString, QByteArray> m_shellRequests;
     bool m_quitting = false, m_wait = false, m_quitEmitted = false, m_restart = false;
     bool m_presentationReady = false;
     bool m_updatePending = false;

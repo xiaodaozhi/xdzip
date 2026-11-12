@@ -7,6 +7,7 @@ OperationWindow {
     id: root
     objectName: "createWindow"
     required property var controller
+    signal submitting()
     property alias inputs: inputPanel.inputs
     readonly property real density: Theme.operationCreateDensity
     function unit(value: real): real {
@@ -64,6 +65,13 @@ OperationWindow {
         password.text = "";
         present();
         controller.checkCreationTarget(target.text);
+    }
+    function configureSelection(items: var, targetPath: string, name: string, seven: bool) {
+        inputs = items;
+        target.text = targetPath;
+        formatGroup.currentIndex = seven ? 3 : 0;
+        fileName.text = name;
+        controller.checkCreationTarget(targetPath);
     }
     function addInputPaths(paths: var, directory: bool) {
         inputPanel.addInputPaths(paths, directory);
@@ -412,6 +420,7 @@ OperationWindow {
                 enabled: root.inputs.length > 0 && root.validName && root.targetReady && root.optionsValid && !root.controller.busy
                 onClicked: {
                     const method = formatGroup.currentIndex === 1 || (root.supportsPasswordAndVolumes && level.currentIndex === 0) ? 0 : root.sevenZip ? 32 : 8;
+                    root.submitting();
                     root.controller.startCreation(root.inputs.map(item => item.path), target.text, fileName.text.trim(), method, formatGroup.currentIndex === 2 && level.currentIndex === 0 ? 0 : [6, 1, 6, 9][level.currentIndex], false, root.volumeBytes, root.supportsPasswordAndVolumes && usePassword.checked ? password.text : "", root.sevenZip && solid.checked, root.sevenZip && usePassword.checked && encryptHeader.checked);
                     password.text = "";
                 }

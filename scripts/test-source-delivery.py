@@ -1452,7 +1452,9 @@ class DisposableBundleTests(unittest.TestCase):
         app = root/'xdzip.app'
         binary = app/'Contents/MacOS/xdzip'
         core = app/'Contents/Frameworks/QtCore.framework/Versions/A/QtCore'
-        for path, data in [(binary, b'owned executable'), (core, b'original core')]:
+        preview = app/'Contents/MacOS/xdzip-image-preview'
+        for path, data in [(binary, b'owned executable'), (core, b'original core'),
+                           (preview, b'owned image worker')]:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
         (app/'Contents/Info.plist').write_bytes(plistlib.dumps({
@@ -1460,11 +1462,17 @@ class DisposableBundleTests(unittest.TestCase):
             'CFBundleDocumentTypes': [{'LSHandlerRank': 'Alternate', 'CFBundleTypeRole': 'Viewer'}]}))
         return app, binary, core
 
+    def preview_sdk(self, root):
+        plugin = root/'plugins/platforms/libqoffscreen.dylib'
+        plugin.parent.mkdir(parents=True)
+        plugin.write_bytes(b'owned offscreen plugin')
+        return root
+
     def test_dmg_builder_preserves_image_and_evidence_but_removes_stage_on_success_or_failure(self):
         for failed, release_distribution in [(False, False), (True, False), (False, True)]:
             with self.subTest(failed=failed, release=release_distribution), tempfile.TemporaryDirectory() as temp:
                 root = Path(temp).resolve();source, binary, core = self.bundle(root/'input')
-                output = root/'build/package.dmg';qt = root/'qt';revision = 'a'*12
+                output = root/'build/package.dmg';qt = self.preview_sdk(root/'qt');revision = 'a'*12
                 identity = 'xdzip (development, '+revision+')'
                 protected = {path: digest(path) for path in [binary, core, source/'Contents/Info.plist']}
                 staged = output.parent/'package-stage/xdzip.app'
@@ -1538,7 +1546,7 @@ class DisposableBundleTests(unittest.TestCase):
     def test_dmg_optimization_failure_stops_before_signing_and_discards_stage(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp).resolve();source, binary, core = self.bundle(root/'input')
-            output = root/'build/package.dmg';qt = root/'qt';revision = 'a'*12
+            output = root/'build/package.dmg';qt = self.preview_sdk(root/'qt');revision = 'a'*12
             protected = {path:digest(path) for path in [binary,core,source/'Contents/Info.plist']}
             def checked(command, **_):
                 if str(command[0]) == 'lipo':return 'arm64'

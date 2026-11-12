@@ -146,6 +146,10 @@ class BrowserController : public QObject {
   public:
     explicit BrowserController(QObject *parent = nullptr);
     std::function<void(const QString &)> openIntent;
+    bool shellOperation = false;
+    QString sourceGroup() const {
+        return m_sourceGroup;
+    }
     QString sourcePath() const {
         return m_sourcePath;
     }
@@ -347,7 +351,8 @@ class BrowserController : public QObject {
     Q_INVOKABLE void invalidateTarget();
     Q_INVOKABLE void invalidateCreationTarget();
     Q_INVOKABLE void startExtraction(const QString &target, bool all, bool createFolder,
-                                     int conflict, bool allowHighRatio, bool openAfter);
+                                     int conflict, bool allowHighRatio, bool openAfter,
+                                     int shellLayout = 0);
     Q_INVOKABLE void startArchiveTest();
     Q_INVOKABLE void cancelTask(const QString &id);
     Q_INVOKABLE bool decideTask(const QString &id, const QString &prompt, int policy, bool all);
@@ -558,7 +563,7 @@ class BrowserController : public QObject {
     QString m_search;
     QString m_title;
     QString m_format;
-    QString m_archiveFolder;
+    QString m_archiveFolder, m_sourceGroup;
     QString m_message;
     QString m_session;
     int m_total = 0;

@@ -123,6 +123,16 @@ QString text(const QString &command) {
     const auto translate = labels.value(command, nullptr);
     return translate ? translate() : QString{};
 }
+QString taskStateText(const QString &status) {
+    static const QHash<QString, const char *> labels{
+        {"queued", "ui.d6f766f2adf5"},     {"preparing", "ui.b53be09930f4"},
+        {"running", "ui.dc9591e56d50"},    {"verifying", "ui.784f9b54ae2b"},
+        {"waiting", "ui.8fb3a3261b43"},    {"waiting_password", "password.waiting"},
+        {"committing", "ui.a1a1720d3eb5"}, {"cancelling", "ui.72eea71385de"},
+        {"cleaning", "ui.718b6372d7fb"},   {"succeeded", "ui.f28461bb49c8"},
+        {"failed", "ui.6707de42c29d"},     {"cancelled", "ui.a37778f17c5f"}};
+    return qtTrId(labels.value(status, "ui.b53be09930f4"));
+}
 bool ownedWindow(QWindow *window, QWindow *main) {
     if (!qobject_cast<QQuickWindow *>(window) || window->type() != Qt::Window)
         return false;
@@ -158,7 +168,8 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
       m_trayMenu(std::make_unique<QMenu>()), m_availability(std::move(availability)),
       m_interactive(interactive) {
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
-    window->setProperty("desktopShell", QVariant::fromValue(static_cast<QObject *>(this)));
+    if (window)
+        window->setProperty("desktopShell", QVariant::fromValue(static_cast<QObject *>(this)));
     m_tray.setContextMenu(m_trayMenu.get());
     add(m_trayMenu.get(), "show");
     add(m_trayMenu.get(), "open");
@@ -233,8 +244,11 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
     for (auto *menu : m_taskMenus)
         connect(menu, &QMenu::aboutToShow, this, [this, menu] { rebuildTasks(menu); });
     connect(m_trayMenu.get(), &QMenu::aboutToShow, this, &DesktopIntegration::syncActions);
-    connect(controller, &BrowserController::changed, this, &DesktopIntegration::syncActions);
-    connect(controller, &BrowserController::tasksChanged, this, &DesktopIntegration::syncActions);
+    if (controller)
+        connect(controller, &BrowserController::changed, this, &DesktopIntegration::syncActions);
+    if (controller)
+        connect(controller, &BrowserController::tasksChanged, this,
+                &DesktopIntegration::syncActions);
     m_menuLanguage = settings->activeLanguage();
     connect(settings, &UiPreferences::savedChanged, this, [this] {
         retranslateMenus();
@@ -256,8 +270,11 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
         Q_UNUSED(reason);
 #endif
             });
-    connect(window, &QWindow::activeChanged, this, &DesktopIntegration::syncActions);
-    connect(window, &QQuickWindow::activeFocusItemChanged, this, &DesktopIntegration::syncActions);
+    if (window)
+        connect(window, &QWindow::activeChanged, this, &DesktopIntegration::syncActions);
+    if (window)
+        connect(window, &QQuickWindow::activeFocusItemChanged, this,
+                &DesktopIntegration::syncActions);
     connect(QGuiApplication::clipboard(), &QClipboard::dataChanged, this,
             &DesktopIntegration::syncActions);
     connect(qGuiApp, &QGuiApplication::applicationStateChanged, this,
@@ -306,15 +323,20 @@ DesktopIntegration::~DesktopIntegration() {
 }
 void DesktopIntegration::setSessions(ApplicationSessions *sessions) {
     m_sessions = sessions;
+    connect(sessions, &ApplicationSessions::tasksChanged, this, &DesktopIntegration::syncActions);
+    connect(this, &DesktopIntegration::availabilityChanged, sessions,
+            &ApplicationSessions::shellAvailabilityChanged);
 }
 void DesktopIntegration::bind(QQuickWindow *window, BrowserController *controller) {
     m_window = window;
     m_controller = controller;
     window->setProperty("desktopShell", QVariant::fromValue(static_cast<QObject *>(this)));
-    connect(controller, &BrowserController::changed, this, &DesktopIntegration::syncActions,
-            Qt::UniqueConnection);
-    connect(controller, &BrowserController::tasksChanged, this, &DesktopIntegration::syncActions,
-            Qt::UniqueConnection);
+    if (controller)
+        connect(controller, &BrowserController::changed, this, &DesktopIntegration::syncActions,
+                Qt::UniqueConnection);
+    if (controller)
+        connect(controller, &BrowserController::tasksChanged, this,
+                &DesktopIntegration::syncActions, Qt::UniqueConnection);
     syncActions();
 }
 bool DesktopIntegration::nativeMenuAvailable() const {
@@ -360,7 +382,13 @@ bool DesktopIntegration::textEditor() const {
     return inputMethod(item, "selectAll()") && item->property("text").isValid();
 }
 bool DesktopIntegration::enabled(const QString &command) const {
-    if (!m_window || !m_controller || !m_settings)
+    if (!m_settings)
+        return false;
+    if (m_sessions && !m_window)
+        return (command == "quit" && taskPromptMayQuit()) ||
+               (QStringList{"show", "quit", "open", "new", "settings", "about"}.contains(command) &&
+                !blocked());
+    if (!m_window || !m_controller)
         return false;
     if (command == "quit" || command == "show" || command == "closeWindow")
         return true;
@@ -430,7 +458,8 @@ void DesktopIntegration::execute(const QString &command) {
         auto *window = QGuiApplication::modalWindow();
         if (!window)
             window = QGuiApplication::focusWindow();
-        (window ? window : m_window.data())->close();
+        if (window || m_window)
+            (window ? window : m_window.data())->close();
         return;
     }
 #ifdef Q_OS_MACOS
@@ -462,19 +491,15 @@ void DesktopIntegration::execute(const QString &command) {
 }
 bool DesktopIntegration::taskPromptMayQuit() const {
     auto *modal = qobject_cast<QQuickWindow *>(QGuiApplication::modalWindow());
-    if (m_sessions && !QApplication::activeModalWidget() && modal &&
-        (modal->objectName() == QStringLiteral("passwordWindow") ||
-         modal->objectName() == QStringLiteral("conflictWindow")))
-        for (auto *owner : m_sessions->windows())
-            if (owner->findChildren<QQuickWindow *>().contains(modal))
-                return true;
-    return false;
+    return m_sessions && !QApplication::activeModalWidget() && modal &&
+           (modal->objectName() == "passwordWindow" || modal->objectName() == "conflictWindow") &&
+           m_sessions->ownsTaskPrompt(modal);
 }
 bool DesktopIntegration::nativeQuitMenuAllowed() const {
-    return m_window && m_controller && (!blocked() || taskPromptMayQuit());
+    return (m_sessions || (m_window && m_controller)) && (!blocked() || taskPromptMayQuit());
 }
 void DesktopIntegration::requestQuit() {
-    if (!m_window || !m_controller)
+    if (!m_sessions && (!m_window || !m_controller))
         return;
     // A task prompt may be superseded by the global quit decision. Other
     // modals retain their normal protection, including native file selectors.
@@ -482,7 +507,6 @@ void DesktopIntegration::requestQuit() {
         restore();
         return;
     }
-    restore();
     if (m_sessions)
         m_sessions->requestQuit();
     else
@@ -505,6 +529,10 @@ void DesktopIntegration::hideWindows() {
     hideForTray(m_window);
 }
 void DesktopIntegration::restore() {
+    if (!m_window && m_sessions) {
+        m_sessions->showMainWindow();
+        return;
+    }
     if (!m_window)
         return;
     if (auto *modal = QApplication::activeModalWidget()) {
@@ -559,9 +587,8 @@ void DesktopIntegration::retranslateMenus() {
             rebuildTasks(menu);
 }
 void DesktopIntegration::syncActions() {
-    if (!m_controller || !m_window)
-        return;
-    if (m_session != m_controller->sessionId() || m_controller->browsingBusy()) {
+    if (m_controller && m_window &&
+        (m_session != m_controller->sessionId() || m_controller->browsingBusy())) {
         m_session = m_controller->sessionId();
         m_trayMenu->close();
         if (m_bar)
@@ -571,25 +598,26 @@ void DesktopIntegration::syncActions() {
     for (auto *item : m_actions) {
         const auto command = item->data().toString();
         item->setEnabled(enabled(command));
-        if (command == "list" || command == "grid")
+        if (m_window && (command == "list" || command == "grid"))
             item->setChecked(m_window->property("viewMode") == command);
-        if (command == "inspector")
+        if (m_window && command == "inspector")
             item->setChecked(m_window->property("desktopInspectorVisible").toBool());
     }
-    const auto count = m_sessions ? m_sessions->activeTaskCount() : m_controller->activeTaskCount();
+    const auto count = m_sessions     ? m_sessions->activeTaskCount()
+                       : m_controller ? m_controller->activeTaskCount()
+                                      : 0;
     for (auto *menu : m_taskMenus) {
         menu->setTitle(text("tasks").arg(count));
         if (menu->isVisible()) {
-            const auto tasks = m_sessions ? m_sessions->tasks() : m_controller->tasks();
+            const auto tasks = m_sessions     ? m_sessions->tasks()
+                               : m_controller ? m_controller->tasks()
+                                              : QVariantList{};
             for (auto *item : menu->actions()) {
                 for (const auto &value : tasks) {
                     const auto task = value.toMap();
                     if (item->data() != task.value("id"))
                         continue;
-                    QString state;
-                    QMetaObject::invokeMethod(m_window, "taskStateLabel",
-                                              Q_RETURN_ARG(QString, state),
-                                              Q_ARG(QString, task.value("status").toString()));
+                    const auto state = taskStateText(task.value("status").toString());
                     item->setText(
                         text("task").arg(text(task.value("kind") == "move"      ? "moveTask"
                                               : task.value("kind") == "check"   ? "checkTask"
@@ -615,16 +643,16 @@ void DesktopIntegration::syncActions() {
 }
 void DesktopIntegration::rebuildTasks(QMenu *menu) {
     menu->clear();
-    const auto tasks = m_sessions ? m_sessions->tasks() : m_controller->tasks();
+    const auto tasks = m_sessions     ? m_sessions->tasks()
+                       : m_controller ? m_controller->tasks()
+                                      : QVariantList{};
     if (tasks.isEmpty()) {
         menu->addAction(text("noTasks"))->setEnabled(false);
         return;
     }
     for (const auto &value : tasks) {
         const auto task = value.toMap();
-        QString state;
-        QMetaObject::invokeMethod(m_window, "taskStateLabel", Q_RETURN_ARG(QString, state),
-                                  Q_ARG(QString, task.value("status").toString()));
+        const auto state = taskStateText(task.value("status").toString());
         auto *item = menu->addAction(
             text("task").arg(text(task.value("kind") == "move"      ? "moveTask"
                                   : task.value("kind") == "check"   ? "checkTask"
@@ -637,7 +665,8 @@ void DesktopIntegration::rebuildTasks(QMenu *menu) {
         item->setIcon(statusIcon(task.value("status").toString()));
         item->setEnabled(!blocked());
         connect(item, &QAction::triggered, this, [this, id = task.value("id")] {
-            restore();
+            if (!m_sessions)
+                restore();
             if (!blocked()) {
                 if (m_sessions)
                     m_sessions->showTask(id.toString());
@@ -662,7 +691,10 @@ void DesktopIntegration::rebuildRecent() {
             if (!enabled("open"))
                 return;
             restore();
-            m_controller->requestOpen(path);
+            if (m_sessions)
+                m_sessions->openPath(path);
+            else if (m_controller)
+                m_controller->requestOpen(path);
         });
     }
 }

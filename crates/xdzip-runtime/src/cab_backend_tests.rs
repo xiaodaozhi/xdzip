@@ -104,6 +104,7 @@ impl Fixture {
                 .collect(),
             directory: String::new(),
             create_folder: false,
+            shell_layout: 0,
             conflict: ConflictPolicy::Overwrite,
             allow_high_ratio: false,
         }

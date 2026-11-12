@@ -981,6 +981,7 @@ fn tar_and_gzip_use_the_same_safe_creation_extraction_rename_and_cancel_barriers
             selected: vec![],
             directory: String::new(),
             create_folder: false,
+            shell_layout: 0,
             conflict: ConflictPolicy::Ask,
             allow_high_ratio: false,
         };
@@ -1044,6 +1045,7 @@ fn gzip_ratio_requires_explicit_intent_and_opt_in_still_uses_the_safe_output_job
         selected: vec![],
         directory: String::new(),
         create_folder: false,
+        shell_layout: 0,
         conflict: ConflictPolicy::Ask,
         allow_high_ratio: false,
     };

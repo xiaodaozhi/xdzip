@@ -143,6 +143,15 @@ def main():
                            'qml/QtQuick/Controls/Basic/qmldir', 'translations/qt_zh_CN.qm')
     if any(not (root/path).is_file() for path in required):
         raise ValueError('Required Basic/native/translation runtime missing')
+    if not args.qa_historical_revision:
+        shell = root/'xdzip-shell.dll'
+        if not shell.is_file() or shell.is_symlink():
+            raise ValueError('Windows deployment requires the native context menu extension')
+        shell_hash = digest(shell)
+        shell_dir = root/'shell'; shell_dir.mkdir(exist_ok=True)
+        shell_name = 'xdzip-shell-'+shell_hash[:16]+'.dll'
+        shell.rename(shell_dir/shell_name)
+        (shell_dir/'integration.json').write_text(json.dumps({'schema_version':1,'file':shell_name,'sha256':shell_hash},sort_keys=True)+'\n')
     helper_record = update_helper_deployment(root, args.qa_historical_revision)
     (root/'share/deployment.json').write_text(json.dumps({
         'schema_version': 1, 'quick_style': 'Basic', 'removed': removed,

@@ -80,6 +80,8 @@ class WindowsDeploymentTests(unittest.TestCase):
             (base/'scripts/windows-runtime.json').write_text('{}')
             (root/'xdzip.exe').write_bytes(b'owned')
             (root/'xdzip-image-preview.exe').write_bytes(b'owned preview worker')
+            shell_bytes = b'owned shell extension'
+            (root/'xdzip-shell.dll').write_bytes(shell_bytes)
             offscreen = base/'qt/plugins/platforms/qoffscreen.dll'
             offscreen.parent.mkdir(parents=True)
             offscreen.write_bytes(b'owned offscreen plugin')
@@ -103,6 +105,12 @@ class WindowsDeploymentTests(unittest.TestCase):
             self.assertIn('--no-system-dxc-compiler', deploy.call_args.args[0])
             self.assertIn(str((root/'xdzip-image-preview.exe').resolve()), deploy.call_args.args[0])
             self.assertEqual((root/'platforms/qoffscreen.dll').read_bytes(), b'owned offscreen plugin')
+            shell = json.loads((root/'shell/integration.json').read_text())
+            library = root/'shell'/shell['file']
+            self.assertEqual(library.read_bytes(), shell_bytes)
+            self.assertEqual(audit.digest(library), shell['sha256'])
+            self.assertEqual(shell['file'], 'xdzip-shell-'+shell['sha256'][:16]+'.dll')
+            self.assertFalse((root/'xdzip-shell.dll').exists())
             self.assertFalse((root/'opengl32sw.dll').exists())
             self.assertEqual([], json.loads((root/'share/deployment.json').read_text())['graphics_fallbacks'])
 
