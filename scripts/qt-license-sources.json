@@ -3,7 +3,8 @@
   "source_commits": {
     "qtbase": "f1136de66638060b8a1ab9bc0cdf1a91dcb5ec01",
     "qtdeclarative": "75534f3e7fff24ed7ccb364e2ed9950a73da879f",
-    "qtsvg": "e59eaa7dbc09fbf885b1c5a69d93b7e2fb1c7ce3"
+    "qtsvg": "e59eaa7dbc09fbf885b1c5a69d93b7e2fb1c7ce3",
+    "qtimageformats": "20d46d1fa669191d8f855ba8ac1c35719bace83a"
   },
   "licenses": [
     {
@@ -221,6 +222,16 @@
       "id": "libpng-2.0",
       "url": "https://raw.githubusercontent.com/qt/qtbase/f1136de66638060b8a1ab9bc0cdf1a91dcb5ec01/LICENSES/libpng-2.0.txt",
       "sha256": "7317e078e2d3b5d7ba5a6159e650945153262b44b76f6700f8e9edb261c5143e"
+    },
+    {
+      "id": "libtiff",
+      "url": "https://raw.githubusercontent.com/qt/qtimageformats/20d46d1fa669191d8f855ba8ac1c35719bace83a/src/3rdparty/libtiff/COPYRIGHT",
+      "sha256": "fbd6fed7938541d2c809c0826225fc85e551fdbfa8732b10f0c87e0847acafd7"
+    },
+    {
+      "id": "libwebp",
+      "url": "https://raw.githubusercontent.com/qt/qtimageformats/20d46d1fa669191d8f855ba8ac1c35719bace83a/src/3rdparty/libwebp/COPYING",
+      "sha256": "5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf"
     }
   ],
   "source_commit_scope": "Pinned license-text retrieval commits, not SDK build commits. Use corresponding-sources.json for archive commit markers."

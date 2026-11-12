@@ -23,6 +23,45 @@ IDENTITY = {'version': '0.1.0-dev.9', 'build': 9, 'revision': '0123456789ab', 'd
 
 
 class DmgVerificationTests(unittest.TestCase):
+    def test_private_preview_has_offscreen_before_macdeploy_scans_libraries(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            app = root/'stage/xdzip.app'
+            source = root/'desktop/apps/desktop/xdzip.app'
+            qt = root/'sdk'
+            preview = app/'Contents/MacOS/xdzip-image-preview'
+            offscreen = qt/'plugins/platforms/libqoffscreen.dylib'
+            preview.parent.mkdir(parents=True)
+            preview.write_bytes(b'owned worker')
+            with patch.object(verify.macdmg, 'checked') as checked:
+                with self.assertRaisesRegex(ValueError, 'offscreen plugin'):
+                    verify.macdmg.deploy_qt(app, qt, source)
+                checked.assert_not_called()
+            offscreen.parent.mkdir(parents=True)
+            offscreen.write_bytes(b'owned offscreen plugin')
+            def deploy(command):
+                staged = app/'Contents/PlugIns/platforms/libqoffscreen.dylib'
+                self.assertEqual(staged.read_bytes(), offscreen.read_bytes())
+                self.assertEqual(command[0], qt/'bin/macdeployqt')
+                self.assertIn('-executable='+str(preview), command)
+                return ''
+            with patch.object(verify.macdmg, 'checked', side_effect=deploy):
+                verify.macdmg.deploy_qt(app, qt, source)
+
+    def test_deployed_preview_check_cannot_inherit_sdk_search_paths(self):
+        inherited = {'QT_PLUGIN_PATH': '/owned/sdk/plugins', 'QML_IMPORT_PATH': '/owned/sdk/qml',
+                     'DYLD_LIBRARY_PATH': '/owned/sdk/lib', 'QT_QPA_PLATFORM': 'cocoa'}
+        app, record = Path('/owned/xdzip.app'), Path('/owned/build/image-preview-deployed.json')
+        with patch.dict(os.environ, inherited), patch.object(verify.macdmg, 'checked') as checked:
+            verify.macdmg.verify_image_preview(app, record)
+        command = checked.call_args.args[0]
+        self.assertEqual(command[-3:], [app/'Contents/MacOS/xdzip-image-preview', '--output', record])
+        env = checked.call_args.kwargs['env']
+        for key in inherited.keys()-{'QT_QPA_PLATFORM'}:
+            self.assertNotIn(key, env)
+        self.assertEqual(env['QT_QPA_PLATFORM'], 'offscreen')
+        self.assertEqual(env['PATH'], '/usr/bin:/bin:/usr/sbin:/sbin')
+
     def test_release_archive_survives_disposable_application_cleanup(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp).resolve()

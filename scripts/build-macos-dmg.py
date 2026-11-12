@@ -95,6 +95,29 @@ def export_release_app(app, output):
     shutil.copytree(app/'Contents/Resources/notices', notices)
 
 
+def deploy_qt(app, qt, source):
+    preview = app/'Contents/MacOS/xdzip-image-preview'
+    offscreen = qt/'plugins/platforms/libqoffscreen.dylib'
+    if any(not p.is_file() or p.is_symlink() for p in (preview, offscreen)):
+        raise ValueError('Image preview requires its worker and the SDK offscreen plugin')
+    # Qt 6.8 macdeployqt selects only Cocoa. Stage offscreen first so its normal
+    # bundle library scan also relocates the plugin's Qt framework imports.
+    destination = app/'Contents/PlugIns/platforms'/offscreen.name
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(offscreen, destination)
+    checked([qt/'bin/macdeployqt', app, '-always-overwrite', '-no-strip',
+             '-executable='+str(preview), '-qmldir='+str(ROOT/'apps/desktop/ui'),
+             '-qmlimport='+str(source.parents[2]/'qml'), '-verbose=1'])
+
+
+def verify_image_preview(app, output):
+    env = {k: v for k, v in os.environ.items()
+           if not k.startswith(('QT_', 'QML_', 'QML2_', 'DYLD_', 'XDZIP_'))}
+    env.update(PATH='/usr/bin:/bin:/usr/sbin:/sbin', QT_QPA_PLATFORM='offscreen')
+    checked([sys.executable, ROOT/'scripts/check-image-preview.py',
+             '--worker', app/'Contents/MacOS/xdzip-image-preview', '--output', output], env=env)
+
+
 def build(source, qt, output, release_distribution=False):
     if sys.platform != 'darwin':
         raise ValueError('DMG requires native macOS')
@@ -115,9 +138,7 @@ def build(source, qt, output, release_distribution=False):
     app = stage/'xdzip.app'
     with temporary_bundle_path(app), transient_registrations(stage):
         shutil.copytree(source, app, symlinks=True)
-        checked([qt/'bin/macdeployqt', app, '-always-overwrite', '-no-strip',
-                 '-qmldir='+str(ROOT/'apps/desktop/ui'),
-                 '-qmlimport='+str(source.parents[2]/'qml'), '-verbose=1'])
+        deploy_qt(app, qt, source)
         sparkle = embed_sparkle(sparkle_sdk, app, installable=release_distribution)
         sparkle_metadata = signing_metadata(sparkle, checked)
         # macdeployqt copies every SQL driver when QML's optional LocalStorage pulls
@@ -161,6 +182,7 @@ def build(source, qt, output, release_distribution=False):
             raise ValueError('DMG application still has external dependencies')
         if checked([binary, '--version']).strip() != identity:
             raise ValueError('Deployment changed the product identity')
+        verify_image_preview(app, output.parent/'image-preview-deployed.json')
         inventory = json.loads((notices/'build-inventory.json').read_text(encoding='utf-8'))
         report['identity'] = {'version': inventory['display_version'], 'build': inventory['version_source']['build'],
                               'revision': revision, 'dirty': False}

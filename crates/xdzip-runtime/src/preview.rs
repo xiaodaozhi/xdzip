@@ -6,8 +6,8 @@ use xdzip_codec_api::{Cancellation, ReadSource, ScanError};
 
 /// Maximum complete text content, before UTF decoding.
 pub const TEXT_BYTES: usize = 256 * 1024;
-/// Maximum encoded PNG/JPEG content.
-pub const IMAGE_BYTES: usize = 4 * 1024 * 1024;
+/// Maximum complete encoded image content. Rendering has a separate pixel budget.
+pub const IMAGE_BYTES: usize = 16 * 1024 * 1024;
 const WORK_BYTES: u64 = 64 * 1024 * 1024;
 
 /// Complete verified content, with the source session and physical identity.
@@ -16,7 +16,7 @@ pub struct Content {
     pub session: u64,
     /// Physical identity, independent of display order.
     pub entry: u64,
-    /// 1 is UTF-8 plain text, 2 is PNG, 3 is JPEG. Other types are rejected.
+    /// 1 is plain text; image kinds 2..12 are fixed by the preview bridge contract.
     pub kind: u8,
     /// Bounded bytes. Text is never interpreted as markup.
     pub bytes: Vec<u8>,
@@ -124,7 +124,16 @@ fn profile(name: &str) -> Option<(u8, usize)> {
         "txt" | "md" | "log" | "json" | "csv" | "tsv" | "toml" | "yaml" | "yml" | "ini" | "xml"
         | "rs" | "c" | "cpp" | "h" | "py" => Some((1, TEXT_BYTES)),
         "png" => Some((2, IMAGE_BYTES)),
-        "jpg" | "jpeg" => Some((3, IMAGE_BYTES)),
+        "jpg" | "jpeg" | "jfif" | "jpe" => Some((3, IMAGE_BYTES)),
+        "gif" => Some((4, IMAGE_BYTES)),
+        "bmp" => Some((5, IMAGE_BYTES)),
+        "ico" | "cur" => Some((6, IMAGE_BYTES)),
+        "webp" => Some((7, IMAGE_BYTES)),
+        "tif" | "tiff" => Some((8, IMAGE_BYTES)),
+        "tga" => Some((9, IMAGE_BYTES)),
+        "icns" => Some((10, IMAGE_BYTES)),
+        "svg" => Some((11, IMAGE_BYTES)),
+        "heic" | "heif" if cfg!(target_os = "macos") => Some((12, IMAGE_BYTES)),
         _ => None,
     }
 }
@@ -164,6 +173,56 @@ fn text(bytes: &[u8]) -> Result<Vec<u8>, &'static str> {
     Ok(text.into_bytes())
 }
 fn image_dimensions(kind: u8, bytes: &[u8]) -> Result<(), &'static str> {
+    if kind > 3 {
+        let valid = match kind {
+            4 => bytes.starts_with(b"GIF87a") || bytes.starts_with(b"GIF89a"),
+            5 => bytes.starts_with(b"BM"),
+            6 => bytes.starts_with(&[0, 0, 1, 0]) || bytes.starts_with(&[0, 0, 2, 0]),
+            7 => bytes.starts_with(b"RIFF") && bytes.get(8..12) == Some(b"WEBP"),
+            8 => [b"II*\0", b"MM\0*", b"II+\0", b"MM\0+"]
+                .iter()
+                .any(|s| bytes.starts_with(*s)),
+            9 => bytes.len() >= 18 && bytes[2] == 2,
+            10 => bytes.starts_with(b"icns"),
+            // XML structure, resources and complexity are checked before SVG rendering.
+            11 => std::str::from_utf8(bytes).is_ok(),
+            12 if cfg!(target_os = "macos") => {
+                // HEIF admission never permits an AVIF/AVIS brand, even under a renamed suffix.
+                if bytes.get(4..8) != Some(b"ftyp") || bytes.len() < 16 {
+                    false
+                } else {
+                    let length = u32::from_be_bytes(bytes[..4].try_into().unwrap()) as usize;
+                    length >= 16
+                        && length <= bytes.len()
+                        && length <= 4096
+                        && (length - 16).is_multiple_of(4)
+                        && !bytes[8..length]
+                            .windows(4)
+                            .any(|b| matches!(b, b"avif" | b"avis"))
+                        && std::iter::once(&bytes[8..12])
+                            .chain(
+                                bytes[16..length]
+                                    .as_chunks::<4>()
+                                    .0
+                                    .iter()
+                                    .map(|b| b.as_slice()),
+                            )
+                            .any(|b| {
+                                matches!(
+                                    b,
+                                    b"heic" | b"heix" | b"hevc" | b"hevx" | b"mif1" | b"msf1"
+                                )
+                            })
+                }
+            }
+            _ => false,
+        };
+        return if valid {
+            Ok(())
+        } else {
+            Err("preview_unsupported")
+        };
+    }
     let (width, height) = if kind == 2 {
         if bytes.len() < 33 || !bytes.starts_with(b"\x89PNG\r\n\x1a\n\0\0\0\rIHDR") {
             return Err("preview_unsupported");
@@ -216,9 +275,9 @@ fn image_dimensions(kind: u8, bytes: &[u8]) -> Result<(), &'static str> {
     };
     if width == 0
         || height == 0
-        || width > 4096
-        || height > 4096
-        || u64::from(width) * u64::from(height) > 4_194_304
+        || width > 16384
+        || height > 16384
+        || u64::from(width) * u64::from(height) > 33_554_432
     {
         return Err("preview_limit");
     }
@@ -300,6 +359,43 @@ impl Archive {
 mod tests {
     use super::*;
     #[test]
+    fn fixed_image_kinds_reject_foreign_formats_and_gate_heif_by_platform() {
+        for (name, kind) in [
+            ("owned.jfif", 3),
+            ("owned.jpe", 3),
+            ("owned.GIF", 4),
+            ("owned.bmp", 5),
+            ("owned.cur", 6),
+            ("owned.webp", 7),
+            ("owned.tif", 8),
+            ("owned.tga", 9),
+            ("owned.icns", 10),
+            ("owned.svg", 11),
+        ] {
+            assert_eq!(profile(name), Some((kind, IMAGE_BYTES)));
+        }
+        for extension in ["avif", "raw", "psd", "exr", "pdf", "svgz"] {
+            assert!(profile(&format!("owned.{extension}")).is_none());
+        }
+        assert_eq!(profile("owned.heif").is_some(), cfg!(target_os = "macos"));
+        assert!(image_dimensions(4, b"GIF89a").is_ok());
+        assert!(image_dimensions(4, b"RIFF1234WEBP").is_err());
+        assert!(image_dimensions(7, b"RIFF1234WEBP").is_ok());
+        assert!(image_dimensions(7, b"GIF89a").is_err());
+        let mut heif = b"\0\0\0\x18ftypheic\0\0\0\0mif1heic".to_vec();
+        assert_eq!(
+            image_dimensions(12, &heif).is_ok(),
+            cfg!(target_os = "macos")
+        );
+        heif[20..24].copy_from_slice(b"avif");
+        assert!(image_dimensions(12, &heif).is_err());
+        let mut png = b"\x89PNG\r\n\x1a\n\0\0\0\rIHDR".to_vec();
+        png.extend_from_slice(&4032u32.to_be_bytes());
+        png.extend_from_slice(&3024u32.to_be_bytes());
+        png.extend([0; 9]);
+        assert!(image_dimensions(2, &png).is_ok());
+    }
+    #[test]
     fn text_is_strict_plain_data_and_limits_include_skipped_work() {
         assert_eq!(
             text(b"<script>example</script>").unwrap(),
@@ -309,7 +405,7 @@ mod tests {
         assert!(text(&[0xff]).is_err());
         assert!(text(b"binary\0").is_err());
         assert!(profile("archive.html").is_none());
-        assert!(profile("image.svg").is_none());
+        assert_eq!(profile("image.svg"), Some((11, IMAGE_BYTES)));
         let mut sink = Sink {
             bytes: zeroize::Zeroizing::new(Vec::new()),
             limit: 3,
@@ -385,8 +481,8 @@ mod tests {
     #[test]
     fn images_reject_oversize_headers_and_non_raster_formats() {
         let mut png = b"\x89PNG\r\n\x1a\n\0\0\0\rIHDR".to_vec();
-        png.extend_from_slice(&4096u32.to_be_bytes());
-        png.extend_from_slice(&4096u32.to_be_bytes());
+        png.extend_from_slice(&16384u32.to_be_bytes());
+        png.extend_from_slice(&16384u32.to_be_bytes());
         png.extend([0; 9]);
         assert_eq!(image_dimensions(2, &png), Err("preview_limit"));
         assert_eq!(image_dimensions(2, b"<svg>"), Err("preview_unsupported"));

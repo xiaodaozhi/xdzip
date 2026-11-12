@@ -1,4 +1,5 @@
 #include "RuntimeConnection.h"
+#include "ImagePreviewProtocol.h"
 #include <QElapsedTimer>
 #include <QPointer>
 #include <QScopeGuard>
@@ -9,7 +10,7 @@
 
 namespace {
 constexpr std::size_t MailboxCapacity = 256;
-constexpr std::size_t MailboxBytes = 8 * 1024 * 1024;
+constexpr std::size_t MailboxBytes = ImagePreview::EventQueueLimit;
 std::atomic<int> liveReceivers{0};
 bool isPayload(const xdzip::reader::Event &event) {
     using xdzip::reader::EventKind;

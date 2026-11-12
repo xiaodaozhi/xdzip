@@ -38,6 +38,8 @@ Windows 和 Linux 的 Qt 手动运行上传实验性开发包和验证工件，�
 
 [SDK trial](../../.github/workflows/sdk-trial.yml)同样仅手动运行，先执行独立只读协议与原生内核门禁，不下载 Qt、不部署应用，仅上传日志和 JSON。Foundation 的 `sdk_only=true` 手动选项调用同一 SDK 工作流，并跳过完整 Foundation 作业与 gate，不能据此声称完整 Foundation 通过。SDK 平台失败优先用该入口收敛；Foundation 与 Qt 中仍适用的其他证据按验证方法复用。English: The manual SDK trial checks only protocol/kernel boundaries before heavy pipelines, retaining logs/JSON without Qt or deployment. Reuse unaffected Foundation/Qt evidence.
 
+Foundation 的 `image_only=true` 在原生 macOS 用系统 sips／ImageIO 转换固定自有 HEIC，并通过同一共享工具链准备方法安装固定 Qt，单独编译真实图片工作进程及测试对照。对照不施加限制的 Qt 读取器，以及逐项省略一个限制的真实进程代码，区分系统／插件能力与资源预算；测试拦截器不进入产品构建。`--verify-worker` 另要求真实父进程和默认工作进程对两个输入的尺寸／像素正确，运行时文件额度以内可增长且超额返回 EFBIG，否则此检查失败。此入口不构建桌面应用、不部署或签名，只保存 JSON 和日志，不把观察成功或受影响组件回归等同于完整产品／Foundation 通过。两个 preflight 选项不能同时选择。English: The image-only preflight compares owned HEIC through system ImageIO, Qt and the actual worker with diagnostic-only limit controls. Its worker regression requires correct pixels/dimensions through the production parent and default worker, plus a real file-budget boundary. It reuses the pinned shared SDK and retains JSON/logs, without desktop deployment or claiming a full Foundation/product pass. It is mutually exclusive with SDK-only mode.
+
 ## 视觉、桌面与发行
 
 根据改动先运行自动化并由执行者尽量检查实际应用或截图。输入法、真实读屏、系统对话框、窗口装饰、物理多显示器及真实 GPU 等场景按需检查；没有执行或没有对应环境时记录限制，不要求每次由维护者完成固定人工清单，也不把离屏、合成输入或虚拟显示器记为真人或物理设备通过。方法见[桌面验证](../qa/private-test-manual.md)。

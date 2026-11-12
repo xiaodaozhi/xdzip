@@ -71,7 +71,7 @@ T01～T18 的权威映射见 design/requirements-traceability.md。以下是可�
 | AC-09 / T09 | 固定参考机冷/热启动、空闲、多任务、真实 I/O | 输出全进程树及完整包数据，与预算比较并说明误差 |
 | AC-10 / T10/T13 | 无 Qt 核心测试；后续两个独立外部扩展互通 | 依赖单向、能力驱动；越权/异常帧被拒绝且宿主继续运行 |
 | AC-11 / T11 | 默认使用、错误、诊断导出 | 无默认网络传输，不包含秘密/完整路径 |
-| AC-12 / T12/T18 | 干净机安装、更新、卸载及 Qt 依赖验证 | 无开发机隐式依赖，必要 ad-hoc 完整性和未正式签名说明、来源与许可材料齐全，活跃任务不被破坏 |
+| AC-12 / T12/T18 | 干净机安装、更新、卸载及 Qt 依赖验证 | 无开发机隐式依赖；交付包含图片工作进程及 offscreen，清除 SDK 搜索覆盖后真实解码通过；必要 ad-hoc 完整性和未正式签名说明、来源与许可材料齐全，活跃任务不被破坏 |
 | AC-13 / T14 | 超大图像/文本、HTML/可执行内容触发预览 | 资源受限、不自动执行、关闭后清理；仅 M6+ |
 | AC-14 / T15 | 索引后改变源、磁盘满、发布前后终止进程 | 不报假成功，不删除已提交/用户后改文件，恢复明确 |
 | AC-15 / T17 | 元数据/名称/帧/恢复日志 fuzz 与最小回归样本 | 无越界/不受控资源增长，失败可诊断，修复有回归 |
@@ -393,11 +393,11 @@ English: CLI acceptance covers real headless interfaces and archive bytes, cance
 | INDEX-SELECTION | 跨页选择和全选覆盖完整当前查询，缓存回收后选择保持；解压确认前冻结为稳定身份，查询改变后使用冻结集合；超出任务限制时整体拒绝，不提交部分选择 |
 | INDEX-OUTPUT | 从大索引选择实际普通文件，经负载完整性及认证和既有安全授权输出；源变化、重复偏移、超限、取消、链接及不支持的整包操作明确失败，原有文件保持 |
 | INDEX-CLEANUP | 正常关闭、替换查询、失败和取消清理已知私有文件；七天回收保留活动租约、未知对象、链接与身份失配对象，不清理用户内容 |
-| CONTENT-PREVIEW | 点击共享动作后完整校验真实文本、PNG 和 JPEG，保持纯文本语义；不支持类型、编码、尺寸、像素、输入及算法工作超限拒绝，不显示部分内容，不启动外部应用 |
+| CONTENT-PREVIEW | 点击共享动作后完整校验真实文本与声明支持的图片，保持纯文本语义；SVG 合并 XML／CDATA 文本分段后仍拒绝外部 CSS 引用，合法内部片段保持可用；macOS 系统 HEIC 在有界运行时文件额度内解码，额度以内可增长、超额拒绝，应用不导出条目副本；不支持类型、编码、尺寸、像素、输入及算法工作超限拒绝，不显示部分内容，不启动外部应用 |
 | PREVIEW-LIFETIME | 密码缺失、错误、正确及认证损坏，取消和关闭密码窗口、更换条目、隐藏页面和关闭会话清空内容；迟到结果不能恢复内容，事件及 Qt mailbox 实际计入内容字节 |
 | PREVIEW-VISUAL | 主窗口与独立属性查看器的中英文、浅深色、100%／125%／150% 字号，文本、图片、错误和取消动作可读可达；保留主窗口和菜单比例，实际原生观察与自动功能检查分开记录 |
 
-English: Large-index acceptance covers real million-record ZIP64 data, complete logical results with a 1,024-row Qt cache, full query identities, frozen cross-page selection, actual safe selected-file output and private leased cleanup. Explicit preview acceptance covers authenticated plain text and bounded PNG/JPEG, resource failures, password/cancel/close/source-change lifecycles, real mailbox accounting and bilingual multi-size native visual checks. Logs and measurements remain artifacts rather than repository reports.
+English: Large-index acceptance covers real million-record ZIP64 data, complete logical results with a 1,024-row Qt cache, full query identities, frozen cross-page selection, actual safe selected-file output and private leased cleanup. Explicit preview acceptance covers authenticated plain text, bounded raster formats, a static resource-free SVG subset (including joined XML/CDATA style text) and macOS-only HEIC/HEIF, resource failures, password/cancel/close/source-change lifecycles, real mailbox accounting and bilingual multi-size native visual checks. Logs and measurements remain artifacts rather than repository reports.
 
 ## 外部 SDK 只读试验
 
@@ -412,3 +412,13 @@ English: Large-index acceptance covers real million-record ZIP64 data, complete 
 | SDK-KERNEL | 对自有读／写文件、回环监听器和 self-exec 先作正向对照，再验证真实内核拒绝；绑定实际平台、策略与二进制身份，资源与响应监督有效，未实现平台执行失败且产品第三方保持禁用 |
 
 English: The standalone SDK trial requires independent wire/content interoperability, bounded adversarial decoding and I/O, source/target protection and cleanup across abnormal completion/cancellation, strict verified packages, and real kernel read/write/network/descendant denial with positive controls. Unimplemented platforms must refuse execution. Evidence never implies product plugin enablement or release approval.
+
+### 图片预览扩展
+
+- 实际解码 PNG/JPEG/JFIF、GIF 首帧、BMP、ICO/CUR、WebP、TIFF 第一页、TGA、ICNS 和 SVG，核对输出像素与比例；macOS 使用系统能力验证 HEIC／HEIF，其他平台验证拒绝，AVIF 等未授权格式继续拒绝。
+- 使用透明图片、12MP 照片及 JPEG 方向元数据，核对缩略尺寸、透明度和朝向；坏输入、伪装类型、巨大尺寸和截断数据不得成为可显示的成功结果。
+- SVG 覆盖普通图形、样式、内部 use／渐变、文本与 metadata，拒绝文件／网络／相对引用、CSS import／转义、嵌入图像、实体、脚本、事件、动画、外来元素及深度／元素超限。
+- 对实际私有进程验证硬时限、取消、异常退出、超长／尾随／尺寸不符响应。通过完整归档、Rust 准入、桥接、提供器到 QML 的新增格式回归，并继续核对密码与选择失效清理。
+- 默认工具链准备能为既有 SDK 补装 qtimageformats，doctor 提前发现缺失插件。构建后和 Windows／Linux 部署后运行实际 helper 的格式与最小解码检查；源码、通知、运行库归属及打包交接匹配新增 Qt 模块。布局未改时复用有效比例证据，实际新增图片仍须观察显示。
+
+English: Expanded previews require actual format/first-frame/first-page decoding, alpha/orientation and phone-size samples, resource-free static SVG, macOS system HEIF and refusal elsewhere. Validate bounded worker replies, deadlines, cancellation, abnormal exit and real archive-to-QML delivery. Missing plugins must fail before heavy builds; deployed Windows/Linux workers must prove their own plugin closure. Reuse unaffected layout evidence while observing newly rendered images.

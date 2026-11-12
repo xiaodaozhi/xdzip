@@ -15,8 +15,9 @@ Qt 控制器仅保留一个待准入命令。短暂 Busy 在事件循环中以 1
 ## 有界传输
 
 - 普通 outstanding 最多 128，直到 receiver 取走 Finished 才释放名额。每项预留两个事件位置，终态不被数据挤掉。
-- Rust 数据事件累计字符串预算 8 MiB，超过预算暂停发布；取消/关闭可唤醒等待并改发 cancelled 终态。单事件超限返回 resource_limit。
-- Qt mailbox 最多 256 个事件、8 MiB 字符串，其中普通数据最多 128 个位置，其余为终态/控制保留；不会为每条 Rust 事件生成一个 Qt callback。
+- Rust 数据事件累计内容预算 32 MiB，包含最多 16 MiB 图片和其容器，超过预算暂停发布；取消/关闭可唤醒等待并改发 cancelled 终态。单事件超限返回 resource_limit。
+- Rust 命令累计内容仍限 8 MiB，超限拒绝准入，不受图片事件预算扩大影响。
+- Qt mailbox 最多 256 个事件、32 MiB 内容字节，其中普通数据最多 128 个位置，其余为终态/控制保留；不会为每条 Rust 事件生成一个 Qt callback。
 - 一个通知链按每轮最多 32 个事件、约 4 ms 的时间预算 drain，未结束则投递下一轮；单事件处理不可抢占。队列空时不再调度，接收线程由条件变量阻塞。
 - Open 的 Page 额外携带完整有界目录索引（至多 32,768 节点、名称和前缀共 4 MiB），由 `replace_directories` 标识替换；空索引也明确替换。Browse 不重复发送索引，`navigation_limited` 明确索引降级。Rust 计入名称和前缀字节，Qt mailbox 还计入桥接生成的节点/父 ID 字符串；节点容器和深度另设上限。只有对应请求的成功 Finished 后才一起应用新页面与目录模型。
 - Page 的 `total` 是当前列表行数，`archive_total` 独立保留物理归档记录数。普通浏览只列当前目录的直属文件和目录，搜索递归返回物理匹配。缺少显式记录的目录使用 `navigation_id` 和 `physical=false`；Qt 行键为 `dN`，原始物理 ID 保持独立，虚拟节点不可提交 Preflight。完整路径保留在行元数据中，显示名称按普通浏览／搜索分别使用 basename／全路径。

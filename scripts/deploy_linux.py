@@ -135,6 +135,10 @@ def deploy(app,sdk,output,notices):
     if not codec.is_file() or codec.is_symlink() or not native(codec, 'linux'):
         raise ValueError('Expected isolated native codec worker beside application')
     copy(codec,output/'bin/xdzip-native-codec')
+    preview = app.with_name('xdzip-image-preview')
+    if not preview.is_file() or preview.is_symlink() or not native(preview, 'linux'):
+        raise ValueError('Expected isolated image preview worker beside application')
+    copy(preview,output/'bin/xdzip-image-preview')
     for name in roots:
         source=sdk/'qml'/name
         for item in source.rglob('*'):

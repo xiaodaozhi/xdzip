@@ -30,13 +30,14 @@ set_property(SOURCE BuildInfo.cpp APPEND PROPERTY OBJECT_DEPENDS
     "${XDZIP_BUILD_INFO_DIR}/BuildVersion.h")
 qt_add_resources(ui_resources ui.qrc)
 add_library(xdzip-ui-resources STATIC ${ui_resources})
+add_dependencies(xdzip-ui-resources xdzip-image-preview)
 add_dependencies(xdzip-ui-resources xdzip-build-info)
 target_include_directories(xdzip-ui-resources PUBLIC "${XDZIP_BUILD_INFO_DIR}")
 qt_add_qml_module(xdzip-ui-resources
     URI Xdzip.Settings VERSION 1.0
     DEPENDENCIES QtQuick
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml/Xdzip/Settings"
-    SOURCES PreviewImages.h PreviewImages.cpp UiPreferences.h UiPreferences.cpp UiFonts.h WindowsFrame.h WindowsFrame.cpp BuildInfo.h BuildInfo.cpp)
+    SOURCES PreviewImages.h PreviewImages.cpp ImagePreviewProcess.h ImagePreviewProcess.cpp UiPreferences.h UiPreferences.cpp UiFonts.h WindowsFrame.h WindowsFrame.cpp BuildInfo.h BuildInfo.cpp)
 # Compile the QML declared in the resource manifest ahead of first launch.
 # Keep the original source resources available for Qt's cache fallback.
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/ui.qrc")
@@ -77,6 +78,7 @@ find_package(Qt6 6.8 REQUIRED COMPONENTS Widgets Network)
 include(${PROJECT_SOURCE_DIR}/cmake/RustStaticLibrary.cmake)
 xdzip_rust_library(xdzip-reader-rust xdzip-qt-bridge xdzip_qt_bridge)
 qt_add_executable(xdzip-browser browser_main.cpp)
+add_dependencies(xdzip-browser xdzip-image-preview)
 target_sources(xdzip-browser PRIVATE WindowsAssociationDescriptions.cpp WindowsAssociationDescriptions.h)
 if(WIN32)
     target_link_libraries(xdzip-browser PRIVATE shell32 shlwapi)
@@ -217,6 +219,20 @@ if(BUILD_TESTING)
     target_include_directories(xdzip-association-description-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
     find_package(Qt6 6.8 REQUIRED COMPONENTS Test)
     target_link_libraries(xdzip-association-description-tests PRIVATE Qt6::Core Qt6::Test)
+    add_executable(xdzip-image-fault tests/image_preview_fault.cpp)
+    target_include_directories(xdzip-image-fault PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+    target_link_libraries(xdzip-image-fault PRIVATE Qt6::Core)
+    add_executable(xdzip-image-tests tests/image_preview_test.cpp ImagePreviewProcess.cpp)
+    target_include_directories(xdzip-image-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+    target_link_libraries(xdzip-image-tests PRIVATE Qt6::Gui Qt6::Test)
+    target_compile_definitions(xdzip-image-tests PRIVATE
+        XDZIP_IMAGE_FIXTURES="${PROJECT_SOURCE_DIR}/tests/fixtures/preview"
+        XDZIP_IMAGE_WORKER="$<TARGET_FILE:xdzip-image-preview>"
+        XDZIP_IMAGE_FAULT_WORKER="$<TARGET_FILE:xdzip-image-fault>")
+    add_dependencies(xdzip-image-tests xdzip-image-preview xdzip-image-fault)
+    add_test(NAME qt_image_preview COMMAND xdzip-image-tests
+        -o "${CMAKE_CURRENT_BINARY_DIR}/image-preview-tests.log,txt" -o -,txt)
+    set_tests_properties(qt_image_preview PROPERTIES TIMEOUT 90)
     if(WIN32)
         target_link_libraries(xdzip-association-description-tests PRIVATE shell32)
     endif()
@@ -314,7 +330,7 @@ if(BUILD_TESTING)
     add_test(NAME qt_updates COMMAND xdzip-update-tests -v1 -o "${CMAKE_CURRENT_BINARY_DIR}/update-tests.log,txt")
     set_tests_properties(qt_updates PROPERTIES TIMEOUT 60)
 endif()
-foreach(target xdzip-browser xdzip-browser-tests xdzip-update-tests xdzip-association-description-tests xdzip-macos-association-probe)
+foreach(target xdzip-browser xdzip-browser-tests xdzip-update-tests xdzip-association-description-tests xdzip-macos-association-probe xdzip-image-tests xdzip-image-fault)
     if(TARGET ${target})
         if(MSVC)
             target_compile_options(${target} PRIVATE /W4 /WX /utf-8)

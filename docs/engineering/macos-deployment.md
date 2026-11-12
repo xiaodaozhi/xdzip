@@ -21,6 +21,10 @@ python3 scripts/desktop.py verify --build-dir build/desktop-dmg --output-dir bui
 
 共用 package 在运行 macdeployqt 前检查原生 arm64、系统 SDK、部署工具、Rust PATH／锁定元数据、Python 校验依赖、Qt 许可与 schema 材料。build、test 允许未提交源码；package 要求干净提交且实际 CLI 身份一致，不能借已有编译缓存绕过。系统编译器、SDK、lipo、codesign 和 hdiutil 由系统工具链提供，不由准备阶段安装。
 
+图片工作进程同样由 macdeployqt 重定位。Qt 6.8 的默认平台插件选择只包含 Cocoa，打包脚本须在扫描应用库之前显式复制 offscreen 插件，使其 Qt framework 依赖一起处理；缺少插件或工作进程时拒绝打包。完整性签名与导入审计之后，清除 Qt／QML／DYLD 搜索覆盖，使用应用内真实图片工作进程核对格式集合及自有 PNG 解码，回执为 `image-preview-deployed.json`。脚本单元检查不等同于实际部署包验收。
+
+English: macdeployqt relocates the private image worker. Because Qt 6.8 selects only Cocoa by default, staging explicitly includes offscreen before the bundle library scan. Missing inputs refuse packaging. After integrity signing and import auditing, the actual bundled worker verifies its formats and an owned PNG without SDK search overrides. Script unit checks do not establish deployed-package acceptance.
+
 底层 [build-macos-dmg.py](../../scripts/build-macos-dmg.py)和 [verify-macos-dmg.py](../../scripts/verify-macos-dmg.py)继续负责镜像与原生验证细节；需要故障定位时使用各自 `--help`，不另外维护日常步骤。底层输出路径必须位于 build/ 且尚不存在。DMG 输入的文档类型必须全部声明 `Viewer/Alternate`，否则要求重新构建，不在原包上改写 plist 或签名。macdeployqt 扫描实际 QML，部署 Qt frameworks、插件和 QML；补充 Qt 系统控件翻译、项目通知、Rust 上游通知、字体许可、源码 SBOM 和固定 Qt 许可材料。保留 framework 内部符号链接，拒绝逃逸应用目录的链接；移除开发机绝对 RPATH，递归检查全部原生导入只解析到应用或系统。构建身份不能为 dirty 或 unknown，必须匹配当前干净提交以绑定实际通知。
 
 Qt 可选 QML LocalStorage 引入 QtSql 后，部署工具会顺带复制数据库驱动。本项目不提供服务器数据库能力，因此移除除内置 SQLite 外的驱动，避免 PostgreSQL、ODBC、Mimer 等 SDK 外部客户端依赖进入镜像；移除列表写入回执，不把 unresolved 导入隐藏为通过。
