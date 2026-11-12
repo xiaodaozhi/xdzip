@@ -46,13 +46,17 @@ function Assert-DefaultsUnchanged {
         if ((Get-DefaultSnapshot $extension) -ne $defaultsBefore[$extension]) { throw "Default file association changed: $extension" }
     }
 }
+$osInfo = Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
 $result = [ordered]@{
     status = 'failed'
     test_revision = (& git rev-parse HEAD).Trim()
     package_revision = (Get-Content (Join-Path (Split-Path -Parent $packagePath) 'package-msix.json') -Raw | ConvertFrom-Json).source.revision
-    platform = 'Windows Server hosted runner'
+    platform = 'Windows hosted runner'
+    runner_image = $env:ImageOS
+    os_build = $osInfo.CurrentBuildNumber
+    os_architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
     checks = [ordered]@{}
-    limitations = @('Self-signed sideload only; not Store or Windows 11 desktop acceptance.', 'Full installer coexistence and visual appearance are not exercised by this check.')
+    limitations = @('Self-signed sideload only; not Store, Windows 11 x64 native or visual acceptance.', 'Full installer coexistence is not exercised by this check.')
 }
 try {
     $certificate = New-SelfSignedCertificate -Type CodeSigningCert -Subject $subject -CertStoreLocation 'Cert:\CurrentUser\My' -KeyExportPolicy NonExportable -NotAfter (Get-Date).AddDays(2)
@@ -239,7 +243,7 @@ public static class XdzipPackageOrigin {
             [XdzipMsixActivation]::Close()
         }
         $result.checks.installed_edition_coexistence = 'passed'
-        $result.limitations = @('Self-signed sideload only; not Store or Windows 11 desktop acceptance.', 'Visual appearance is not exercised by this check.')
+        $result.limitations = @('Self-signed sideload only; not Store, Windows 11 x64 native or visual acceptance.')
     }
     # Invoke the package's actual Open With handler and inspect an owned ZIP entry.
     $archiveName = 'xdzip msix fixture.zip'
