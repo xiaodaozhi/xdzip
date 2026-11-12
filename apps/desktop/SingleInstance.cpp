@@ -1,6 +1,7 @@
 // apps/desktop/SingleInstance.cpp
 
 #include "SingleInstance.h"
+#include "BuildInfo.h"
 #include "ShellActionRequest.h"
 #include <QCoreApplication>
 #include <QCryptographicHash>
@@ -30,7 +31,8 @@ QString identity() {
         return {};
     // AppLocalDataLocation is per user, SessionId separates interactive logons.
     return QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) +
-           QString::number(session);
+           QString::number(session) +
+           (BuildInfo::packaged() ? QStringLiteral(":packaged") : QString{});
 #else
     return QString::number(geteuid()) + ':' + qEnvironmentVariable("XDG_SESSION_ID") + ':' +
            qEnvironmentVariable("DISPLAY") + ':' + qEnvironmentVariable("WAYLAND_DISPLAY") + ':' +

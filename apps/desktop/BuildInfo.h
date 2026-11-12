@@ -15,6 +15,7 @@ class BuildInfo : public QObject {
     Q_PROPERTY(QString platform READ platform CONSTANT)
     Q_PROPERTY(QString configuration READ configuration CONSTANT)
     Q_PROPERTY(QString architecture READ architecture CONSTANT)
+    Q_PROPERTY(bool packaged READ packaged CONSTANT)
   public:
     explicit BuildInfo(QObject *parent = nullptr) : QObject(parent) {}
     static QString version();
@@ -26,6 +27,7 @@ class BuildInfo : public QObject {
     static QString platform();
     static QString architecture();
     static QString configuration();
+    static bool packaged();
     static bool printVersionIfRequested(int argc, char **argv);
     Q_INVOKABLE void copyVersionInfo() const;
 };

@@ -392,6 +392,10 @@ void UpdateController::fetch(const QUrl &url, qsizetype limit, FetchCallback cal
             });
 }
 void UpdateController::check() {
+    if (BuildInfo::packaged()) {
+        setState("error", "unsupported_channel");
+        return;
+    }
     if (busy())
         return;
     applyNetworkConfiguration();

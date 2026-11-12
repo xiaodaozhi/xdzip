@@ -6542,6 +6542,13 @@ QtObject {
             auto *artwork = findVisual(settings->contentItem(), "aboutArtwork");
             auto *copy = findVisual(settings->contentItem(), "aboutCopy");
             QVERIFY(version && license && artwork && copy);
+            auto *update = findVisual(settings->contentItem(), "aboutCheckUpdate");
+            QVERIFY(update && update->isVisible());
+            QVERIFY(settings->setProperty("showAppUpdates", false));
+            QTRY_VERIFY(!update->isVisible());
+            QVERIFY(version->isVisible());
+            QVERIFY(settings->setProperty("showAppUpdates", true));
+            QTRY_VERIFY(update->isVisible());
             QCOMPARE(version->property("text").toString(), BuildInfo::version());
             for (const auto &word :
                  {QStringLiteral("2026 xiaodaozhi"), QStringLiteral("The Qt Company Ltd."),
@@ -6571,8 +6578,12 @@ QtObject {
                 for (const double scale : {1., 1.25, 1.5}) {
                     appearance->setProperty("factor", scale);
                     QTest::qWait(30);
+                    QVERIFY(settings->setProperty("showAppUpdates", false));
+                    QTRY_VERIFY(!update->isVisible());
                     QVERIFY(license->width() > 0);
                     QVERIFY(license->height() >= license->implicitHeight() - 1);
+                    QVERIFY(settings->setProperty("showAppUpdates", true));
+                    QTRY_VERIFY(update->isVisible());
                     if (!captures.isEmpty()) {
                         QVERIFY(QDir().mkpath(captures));
                         QVERIFY(visual_audit::save(settings, captures,

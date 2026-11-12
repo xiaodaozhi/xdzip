@@ -1,5 +1,9 @@
 # 用户主动更新契约
 
+Windows MSIX 包身份下关于页不显示应用内更新区域，更新控制器也拒绝发起现有 GitHub 更新检查。商店交付时由 Microsoft Store 管理更新；侧载包不获得本应用的自动更新承诺。身份查询异常按包身份处理，避免误用安装器更新。现有普通安装与其他平台行为不变。
+
+English: The About page and update controller disable the existing updater for packaged Windows processes. Store updates are managed by Microsoft Store; sideloaded packages do not gain an in-app automatic updater. An identity-query failure fails closed.
+
 独立 CLI 和桌面包内的 CLI 按[命令行契约](command-line.md)更新当前安装。独立 CLI 使用单独签名清单和管理式版本目录，桌面 CLI 通过同用户单实例通道提交候选意图，桌面控制器再次验证。accepted 只表示 handed_off，实际成功仍要求回执及运行身份。Windows/Linux 安装占用扩展到 CLI 任务，macOS 通过共享使用锁、提交门和持久状态保护 CLI；已有任务不被隐式取消。命令行无 GUI 身份查询不创建 QApplication，也不读取后清除安装回执。
 
 English: CLI updates target their own installation. Standalone managed updates use a separate signed manifest; bundled CLI requests use same-user IPC and independent desktop candidate verification. Acceptance means handed_off, never installation success. CLI tasks participate in platform occupancy barriers, including the macOS shared lock and persistent commit gate. Headless identity queries do not create QApplication or consume receipts.

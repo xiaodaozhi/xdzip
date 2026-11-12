@@ -54,7 +54,9 @@ void installCliRequests(SingleInstance *instance, UpdateController *updates,
         const auto candidate = request.value("candidate_version").toString();
         if (request.value("schema_version").toInt() == 1 && request.value("action") == "update" &&
             !candidate.isEmpty() && candidate.size() <= 80) {
-            if (updates->busy() || !state->expected.isEmpty()) {
+            if (BuildInfo::packaged()) {
+                result.insert("error_code", "unsupported_channel");
+            } else if (updates->busy() || !state->expected.isEmpty()) {
                 result.insert("error_code", "update_busy");
             } else {
                 state->expected = candidate;

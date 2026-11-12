@@ -94,6 +94,7 @@ Invoke-Checked python @('scripts/test-native-runtime-materials.py')
 Invoke-Checked python @('scripts/test-native-menus.py')
 Invoke-Checked python @('scripts/test-browser-suite.py')
 if ($IsWindows) {
+    Invoke-Checked python @('scripts/test-windows-msix.py')
     Invoke-Checked python @('scripts/test-windows-installer-native.py')
     Invoke-Checked python @('scripts/test-windows-ninja-safety.py')
     Invoke-Checked python @('scripts/test-windows-detached-console.py')

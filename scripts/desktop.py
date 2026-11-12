@@ -441,6 +441,19 @@ class Workflow:
             files = [archive, artifact]
         return {'source': self.source(), 'artifacts': self.hashes(files)}
 
+    def msix_package(self):
+        if self.system != 'windows':
+            raise ValueError('MSIX packaging requires a native Windows host')
+        if not self.args.msix_name or not self.args.msix_publisher:
+            raise ValueError('Provide the MSIX identity name and publisher explicitly')
+        self.runtime_receipt(current_source=True)
+        artifact = self.output/'xdzip-windows-x64.msix'
+        self.script('build-windows-msix.py', '--root', self.runtime,
+                    '--audit', self.output/'deployment-audit.json', '--output', artifact,
+                    '--name', self.args.msix_name, '--publisher', self.args.msix_publisher,
+                    '--report', self.output/'windows-msix.json')
+        return {'source': self.source(), 'artifacts': self.hashes([artifact])}
+
     def hashes(self, files):
         return [{'file': path.relative_to(self.output).as_posix(), 'sha256': digest(path),
                  'bytes': path.stat().st_size} for path in files]
@@ -476,13 +489,35 @@ class Workflow:
             self.save('package-runtime', self.runtime_package())
         if self.args.kind in ('installer', 'all'):
             self.save('package-installer', self.installer_package())
+        if self.args.kind == 'msix':
+            self.save('package-msix', self.msix_package())
         if self.require_clean() != source:
             raise ValueError('Source changed during packaging; use a new output directory and rebuild')
         return {'source': self.source(), 'kind': self.args.kind}
 
     def verify(self):
+        if self.args.kind == 'msix':
+            if self.system != 'windows':
+                raise ValueError('MSIX verification requires a native Windows host')
+            runtime = self.runtime_receipt(current_source=True)
+            receipt_path = self.output/'package-msix.json'
+            report_path = self.output/'windows-msix.json'
+            receipt = json.loads(receipt_path.read_text(encoding='utf-8'))
+            report = json.loads(report_path.read_text(encoding='utf-8'))
+            if (receipt.get('status') != 'passed' or receipt.get('source') != runtime.get('source') or
+                    report.get('status') != 'passed' or report.get('signed') is not False or
+                    report.get('modern_context_menu') is not False or
+                    report.get('audit_sha256') != digest(self.output/'deployment-audit.json')):
+                raise ValueError('MSIX receipt, unsigned channel or runtime audit differs')
+            self.verify_hashes(receipt['artifacts'])
+            if (len(receipt['artifacts']) != 1 or
+                    receipt['artifacts'][0]['file'] != report.get('package') or
+                    receipt['artifacts'][0]['sha256'] != report.get('sha256')):
+                raise ValueError('MSIX report does not identify the verified package')
+            return {'source': runtime['source'], 'artifacts': receipt['artifacts'],
+                    'limits': 'Unsigned experimental package; no installation or Store certification'}
         if self.args.kind not in ('runtime', 'all'):
-            raise ValueError('Verify supports --kind runtime or all')
+            raise ValueError('Verify supports --kind runtime, msix or all')
         if self.system == 'macos' and os.environ.get('CI', '').lower() == 'true' and not self.args.release_distribution:
             raise ValueError('macOS CI does not validate a deployed application or DMG')
         self.doctor('verify')
@@ -562,7 +597,9 @@ def parser():
     value.add_argument('--packaging', action='store_true', help='Prepare only, download/cache pinned packaging tools and materials')
     value.add_argument('--skip-rust', action='store_true', help='Test only, record Rust workspace tests as not run')
     value.add_argument('--macos-handler-rank', choices=['None', 'Alternate'], default='None')
-    value.add_argument('--kind', choices=['runtime', 'installer', 'all'], default='all')
+    value.add_argument('--kind', choices=['runtime', 'installer', 'msix', 'all'], default='all')
+    value.add_argument('--msix-name', help='Explicit MSIX package identity name')
+    value.add_argument('--msix-publisher', help='Explicit MSIX publisher distinguished name')
     value.add_argument('--release-distribution', action='store_true', help='Dedicated release only: permit native Apple Silicon deployment, ad-hoc signing and both app ZIP/DMG')
     return value
 

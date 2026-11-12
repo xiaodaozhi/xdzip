@@ -194,6 +194,22 @@ python3 scripts/desktop.py verify --build-dir build/desktop-dmg --output-dir bui
 
 ZIP 在受限 POSIX 条件下可恢复相对符号链接和可执行位，不恢复特权位、扩展属性或原始修改时间，不代表应用包安装或签名验证。来源与目标必须满足[安全解压契约](m3-extraction.md)。崩溃暂存只提示并保留供检查，不自动恢复或删除未知内容。
 
+## Windows MSIX 实验构建
+
+MSIX 复用同一提交的 Windows Release 桌面构建、测试与已审计运行目录。先按本文完成 `prepare --packaging`、`build`、`test`，再使用相同参数执行：
+
+```powershell
+python scripts/desktop.py package --kind runtime
+python scripts/desktop.py package --kind msix --msix-name xdzip.Development --msix-publisher 'CN=xdzip development'
+python scripts/desktop.py verify --kind msix
+```
+
+身份示例仅供本地开发，正式商店身份必须与 Partner Center 提供的名称和发布者一致。输出位于 `build/package/xdzip-windows-x64.msix`，仅是未签名实验包，不可直接视为可分发的侧载包或已通过商店认证。正常侧载需要与发布者匹配、设备信任的签名。Windows 11 的受限未签名开发测试模式另要求发布者包含指定 OID，含可执行文件时通常还需要管理员权限；上面的示例身份不满足该模式。脚本不创建证书、不签名、不安装、不提交商店。包的技术最低系统为 Windows 10 22H2 x64，不构成新增平台支持承诺。版本 `1.0.<产品 build>.0` 与显示版本分离，必须在 build 用尽前重新确定商店版本策略。
+
+构建要求干净来源、匹配的构建与测试回执、已审计的完整运行目录和支持 MSIX 的 Windows SDK MakeAppx。脚本复核运行目录及其 MSIX 更新能力标记，在独立暂存生成清单和品牌图标，打包后逐文件核对内容并记录摘要；不会覆盖已有包或暂存。包清单声明九类既有扩展和 full-trust 桌面入口，不声明右键扩展。许可、真实安装、文件关联、卸载、商店签名和 Windows 10／11 实际验收须分别完成，不由打包成功推定。
+
+English: Experimental Windows x64 MSIX packaging reuses a clean, tested and audited runtime, requires explicit package identity and produces an unsigned package with per-file verification. It does not sign, install or submit the app. The manifest targets Windows 10 22H2 as a technical minimum without expanding the support policy; Store certification, licensing and native installation acceptance remain separate.
+
 ## 证据与复验
 
 按[通用验证方法](../qa/README.md)和[按需桌面验证](../qa/private-test-manual.md)选择受影响项，不要求日常填写人工验收表。构建与测试收据分别保存在 build-dir 下的 `desktop-build.json`、`desktop-test.json`，prepare、package 和 verify 回执位于 output-dir 的 `<stage>.json`，并关联底层验证证据。自动化收据记录实际阶段与来源；离屏／软件渲染、原生 Cocoa 检查和已执行的人工专项分别登记，不相互替代。既有验收在 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)保留，不因重新生成候选清单而重做。

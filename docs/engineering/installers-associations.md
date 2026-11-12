@@ -1,5 +1,9 @@
 # 安装器与文件关联
 
+实验性 Windows MSIX 使用包清单声明同一组扩展作为打开方式候选，不覆盖用户默认选择。包身份下不读取普通安装版的关联注册来显示其管理状态；用户通过 Windows 系统设置管理默认应用。实际文件激活、图标、共存和卸载行为待目标系统验收，见[MSIX 构建](developer-build.md#windows-msix-实验构建)。
+
+English: Experimental MSIX declares file types in its manifest without taking defaults. Packaged processes do not treat another installation's association registration as their own; users manage defaults in Windows Settings. Native activation, icons, coexistence and uninstall remain to be verified.
+
 逐格式图标素材及平台映射见[文件关联图标规范](../visual/file-association-icons.md)。Linux 保留系统 MIME 图标，安装不改变默认选择或现有注册范围。
 
 当前源码构建的桌面包将命令行程序放在独立的 `cli/` 目录，macOS 位于 `Contents/Helpers/cli/`，保留原 GUI 与文件关联入口。该功能不追溯加入已发布的旧版附件。Windows 安装器提供默认关闭的当前用户 PATH 选项，检测同名命令冲突；卸载只撤销本安装目录。Mac/Linux 显式运行私有 CLI 的 `setup`，独立 CLI 包也通过 `setup` 安装用户级版本目录和稳定启动入口，不改 Shell 配置。撤销用 `setup --remove`，保留版本目录供核查。详见 [CLI 安装契约](command-line.md#构建与命令安装)。English: Current source builds register desktop and standalone CLI entries explicitly and per user; existing releases do not gain these assets retroactively. Existing commands are preserved, and shell startup files are never edited.

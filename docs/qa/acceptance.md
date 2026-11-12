@@ -1,5 +1,16 @@
 # 验收执行计划
 
+## Windows MSIX，AC-04 / AC-07 / AC-12
+
+| 用例 | 操作与判定 |
+| --- | --- |
+| MSIX-PACK | 同提交干净构建和测试后，从审计运行目录生成实验包，核对身份、版本、清单、完整文件哈希，拒绝更改文件、旧产品更新策略和输出覆盖；不把未签名包当作发行包 |
+| MSIX-CHANNEL | 商店签名和侧载包的关于页均无应用内更新，更新控制器不访问既有更新服务；普通安装版保留更新入口。检查与现有安装版共存、单实例交接、设置和文件关联 |
+| MSIX-SHELL | 当前包未登记现代菜单。未来实现时分别核验 Store、Developer、Enterprise、None 和查询失败，侧载不启用；Windows 11 Explorer 真实显示及 Windows 10 行为单独记录 |
+| MSIX-LIFECYCLE | 在实际目标系统验证安装、打开归档、拖放、工作进程、关联、更新和卸载，核对默认选择与用户数据；许可、商店认证及人工验收各自记录 |
+
+English: MSIX acceptance separates audited packaging and channel behavior from real installation, Explorer, licensing and Store certification. The current experimental package registers no modern context menu.
+
 ## 文件管理器操作，AC-04 / AC-06 / AC-07 / AC-08 / AC-12
 
 | 用例 | 操作与判定 |

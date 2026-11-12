@@ -2,7 +2,9 @@
 
 标签右键菜单提供“关闭、关闭其他、关闭右侧”，Shift+F10 或菜单键作用于焦点标签。右击不切换当前页，命令冻结标签稳定身份，仅按该标签所属窗口的当前视觉顺序操作，不能影响其他窗口。重排、窗口尺寸变化、目标消失或进入模态操作时关闭菜单；没有对应目标时禁用批量项。批量关闭一次提交，保留未被关闭的当前页，否则切换到锚点标签，避免逐页闪切。最后一页关闭后恢复起始页，任务和结果继续留在全局任务入口。
 
-一个用户登录会话仅运行一个正常产品进程，共用一个托盘和应用菜单。版本查询在创建 GUI 前返回；烟测、桌面探针和测试使用独立路径，不连接真实用户实例。
+同一用户登录会话内，普通安装和便携进程共用单实例、托盘和应用菜单。Windows 包身份使用独立的单实例命名空间，不向普通安装进程转发请求，避免商店包启动后落入普通版的更新界面；两种进程并存时各自持有托盘。现有安装更新门仍保守约束两者，并存、设置和关联须在实际安装环境验证。版本查询在创建 GUI 前返回；烟测、桌面探针和测试使用独立路径，不连接真实用户实例。
+
+English: Windows packaged processes use a separate single-instance namespace from unpackaged installations, preventing Store launches from being forwarded to an updater-enabled instance. Existing installation gates remain conservative; actual coexistence requires native verification.
 
 `SingleInstance` 在创建主窗口前用 QLockFile 选举，持锁者才可移除崩溃残留的本地服务器。QLocalServer 使用 UserAccessOption，结构化 JSON 协议版本为 1，限制单条 256 KiB、128 个绝对路径和 32 个连接。后启动者等待主实例就绪，收到请求 ID 对应的确认后退出，15 秒内通信失败明确报错，不创建第二个正常 UI。Windows 根据服务器握手中的 PID 转交本次用户启动的前台激活权限，不设置永久置顶。IPC 不经过命令解释器，不记录用户路径。
 

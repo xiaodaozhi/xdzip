@@ -12,6 +12,7 @@ OperationWindow {
     property string pendingProxyMode: "system"
     property bool copiedVersion: false
     property var updater: typeof UpdateService === "undefined" ? null : UpdateService // qmllint disable unqualified
+    property bool showAppUpdates: !BuildInfo.packaged
     readonly property var shellIntegration: typeof ShellIntegrationService === "undefined" ? null : ShellIntegrationService // qmllint disable unqualified
     readonly property var associations: typeof FileAssociationService === "undefined" ? null : FileAssociationService // qmllint disable unqualified
     readonly property string updateState: updater ? updater.state : "unavailable"
@@ -508,8 +509,9 @@ OperationWindow {
         ColumnLayout {
             objectName: "settingsPage-about"
             spacing: Theme.settingsPageSectionGap
-            readonly property real stablePageHeight: aboutBeforeUpdate.implicitHeight + updateReserveHeight +
-                                                     aboutAfterUpdate.implicitHeight + Theme.settingsPageSectionGap * 2
+            readonly property real stablePageHeight: aboutBeforeUpdate.implicitHeight +
+                (root.showAppUpdates ? updateReserveHeight + Theme.settingsPageSectionGap : 0) +
+                aboutAfterUpdate.implicitHeight + Theme.settingsPageSectionGap
             readonly property real updateActionHeight: openUpdateSecondary.implicitHeight
             readonly property real updateReserveHeight: Math.max(
                 Math.max(updateMeasurements.statusHeight, updateActionSlot.implicitHeight)
@@ -641,11 +643,12 @@ OperationWindow {
                         PageNote { visible: BuildInfo.channel !== "stable" || BuildInfo.dirty; text: (BuildInfo.channel !== "stable" ? qsTrId("about.development") : "") + (BuildInfo.dirty ? "\n" + qsTrId("about.modified") : "") }
                     }
                 }
-                PageSeparator {}
-                SectionTitle { text: qsTrId("settings.updateTitle") }
+                PageSeparator { visible: root.showAppUpdates }
+                SectionTitle { visible: root.showAppUpdates; text: qsTrId("settings.updateTitle") }
             }
             ColumnLayout {
                 id: updateSection
+                visible: root.showAppUpdates
                 Layout.fillWidth: true
                 spacing: Theme.settingsPageSectionGap
                 RowLayout {

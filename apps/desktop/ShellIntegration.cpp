@@ -1,4 +1,5 @@
 #include "ShellIntegration.h"
+#include "BuildInfo.h"
 #include "UiPreferences.h"
 #include <QCoreApplication>
 #include <QCryptographicHash>
@@ -132,6 +133,10 @@ bool ShellIntegration::apply(bool value) {
 }
 
 bool ShellIntegration::registerExplicitly(bool value) {
+#ifdef Q_OS_WIN
+    if (BuildInfo::packaged())
+        return false;
+#endif
 #if !defined(Q_OS_MACOS) && !defined(Q_OS_WIN)
     if (!available())
         return false;

@@ -1,4 +1,5 @@
 #include "FileAssociations.h"
+#include "BuildInfo.h"
 #include "UiText.h"
 
 #include <QCoreApplication>
@@ -46,7 +47,7 @@ FileAssociations::FileAssociations(QObject *parent) : QObject(parent) {
 #elif defined(Q_OS_WIN)
     QSettings installed(QStringLiteral("HKEY_CURRENT_USER\\Software\\RegisteredApplications"),
                         QSettings::NativeFormat);
-    m_available = installed.value(QStringLiteral("xdzip")).isValid();
+    m_available = !BuildInfo::packaged() && installed.value(QStringLiteral("xdzip")).isValid();
 #elif defined(Q_OS_UNIX)
     m_available = !QStandardPaths::findExecutable(QStringLiteral("xdg-mime")).isEmpty() &&
                   !QStandardPaths::locate(QStandardPaths::ApplicationsLocation,

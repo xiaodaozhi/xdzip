@@ -4,6 +4,14 @@
 
 当前工作包的实际平台验证与剩余项见 [#270](https://github.com/xiaodaozhi/xdzip/issues/270)。源码能力不追溯加入既有发布附件。
 
+实验性 MSIX 构建不登记右键菜单，既不把经典 `IContextMenu` 伪装成现代菜单，也不让侧载包启用现代菜单。Windows 11 现代菜单需要包身份、清单中的 COM 与文件管理器扩展，以及新的 `IExplorerCommand` 实现；现有实现不能直接复用为现代入口。未来若实现，除要求扩展所在包的系统签名类型为 Store，还须有可靠的安装来源判断以排除侧载；查询失败及 Developer、Enterprise、None 均不启用，并分别测试 Explorer 实际显示、设置开关和现有请求协议。Store 签名不单独证明安装途径，商店签名包也可能被复制侧载；无法可靠区分时不能启用现代菜单。Windows 10 没有 Windows 11 的现代菜单。具体实现与真实商店包验证不属于当前评估结论。
+
+English: The experimental MSIX registers no context menu. A future Windows 11 modern menu requires packaged COM registration, IExplorerCommand, a Store signature and a reliable installation-channel check that excludes sideloading. Store signature kind alone does not prove installation through the Store; fail closed if the channel cannot be determined. Actual Explorer and package validation remain separate.
+
+候选来源接口为 [GetStagedPackageOrigin](https://learn.microsoft.com/en-us/windows/win32/api/appmodel/nf-appmodel-getstagedpackageorigin) 的 `PackageOrigin_Store`。它报告暂存包来源，而不是本文已验证的逐用户安装记录；同包多用户、Store 签名包复制侧载和升级等情形必须实测后才能决定是否足以满足侧载禁用要求。Explorer 内的扩展还须识别自己的包，不能把 Explorer 进程当作 xdzip 包查询。查询失败或结果不确定时隐藏入口。
+
+English: GetStagedPackageOrigin and PackageOrigin_Store are candidates for further investigation, not yet proof of a per-user installation channel. Test copied Store-signed packages, multiple users and upgrades, and identify the extension's own package rather than Explorer's process.
+
 ## 选择与输出
 
 压缩提供快捷 ZIP、7z、创建确认及多选逐项 ZIP。单个普通文件保留完整名称，例如 `a.txt.zip`；文件夹使用 `foo.zip`；同目录多选合包使用所在目录名。跨目录合包进入独立创建窗口确认目标。快捷创建采用正常级别，不加密、不分卷，目标重名使用现有询问机制。

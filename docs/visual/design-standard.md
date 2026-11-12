@@ -43,6 +43,8 @@ English: The tab close button retains its square hit area and centered position,
 
 ### 设置窗口分类修订
 
+Windows MSIX 包身份的关于页省略更新标题、分隔线和整个更新区域，版本信息直接沿用其后的共享分组间距。窗口尺寸、字号和其他内容沿用既有规范，不按渠道改变缩放或密度。English: Windows MSIX About omits the update heading, divider and controls; the remaining groups use the existing window dimensions, typography and spacing.
+
 设置与关于共用一个 612 逻辑像素宽的非模态窗口，客户区首选高度 532，受屏幕可用高度约束。共享 OperationHeader 底部有 1 逻辑单位分隔线，下方为左侧导航和独立滚动的右侧页面；左栏基准宽 144、正常行高 40、图标槽 18，图标距侧栏左边 15，首行贴齐顶部，选中背景与右侧分隔线相接。辅助字号增大时，左栏按实际最宽单词和图文间距适当增宽，英文在单词之间换行；行按内容增长并允许滚动。未选中项悬停使用共享 controlHover 颜色，浅深主题均与侧栏底色区分。页面内距 20，分组间距 16。实际参数以 layout-scale.json 的 operation.settings 为准，不从截图、DPR 或审阅倍率推导。
 
 六个页面依次为外观、通用、隐私、文件关联、网络和关于。设置窗口不再使用 footer 或保存、取消、完成按钮；提交成功的变更即时生效，失败时保持已生效值并显示原因。关于页面保留版本、许可证和用户主动更新；所有关于入口打开该页，不再创建独立关于窗口。主题卡片、设置图标、品牌和已有状态素材继续复用原资源，不重复生成未变化切图。
