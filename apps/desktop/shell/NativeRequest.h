@@ -67,7 +67,8 @@ inline std::string randomHex() {
     }
     return result;
 }
-inline fs::path requestFile(const std::string &action, const std::vector<fs::path> &paths) {
+inline fs::path requestFile(const std::string &action, const std::vector<fs::path> &paths,
+                            bool archiveCandidates = false) {
     if (paths.empty() || paths.size() > 128)
         return {};
     const auto token = randomHex();
@@ -75,8 +76,9 @@ inline fs::path requestFile(const std::string &action, const std::vector<fs::pat
         return {};
     const auto id = token.substr(0, 8) + '-' + token.substr(8, 4) + '-' + token.substr(12, 4) +
                     '-' + token.substr(16, 4) + '-' + token.substr(20);
-    std::string bytes = "{\"schema_version\":1,\"id\":" + jsonString(id) +
-                        ",\"action\":" + jsonString(action) + ",\"paths\":[";
+    std::string bytes =
+        "{\"schema_version\":1,\"id\":" + jsonString(id) + ",\"action\":" + jsonString(action) +
+        ",\"archive_candidates\":" + (archiveCandidates ? "true" : "false") + ",\"paths\":[";
     for (const auto &path : paths) {
         if (!path.is_absolute() || path.u8string().size() > 4096)
             return {};
@@ -152,8 +154,8 @@ inline fs::path requestFile(const std::string &action, const std::vector<fs::pat
     return file;
 }
 inline bool launch(const fs::path &executable, const std::string &action,
-                   const std::vector<fs::path> &paths) {
-    const auto file = requestFile(action, paths);
+                   const std::vector<fs::path> &paths, bool archiveCandidates = false) {
+    const auto file = requestFile(action, paths, archiveCandidates);
     if (file.empty())
         return false;
 #ifdef _WIN32

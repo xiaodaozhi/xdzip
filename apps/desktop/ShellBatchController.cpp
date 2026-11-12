@@ -1,16 +1,13 @@
 #include "ShellBatchController.h"
+#include "shell/MenuModel.h"
 #include <QDesktopServices>
 #include <QFileInfo>
-#include <QRegularExpression>
 #include <QTimer>
 #include <QUrl>
 
 namespace {
 bool archiveCandidate(const QString &path) {
-    static const QRegularExpression suffix(
-        R"(\.(zip|7z|rar|tar|tgz|gz|cab|iso|udf|z\d\d|[r-z]\d\d|(?:zip|7z)\.\d{3})$)",
-        QRegularExpression::CaseInsensitiveOption);
-    return !QFileInfo(path).isDir() && suffix.match(path).hasMatch();
+    return xdzip_shell::archiveCandidate(xdzip_shell::fs::u8path(path.toUtf8().toStdString()));
 }
 QString base(const QStringList &paths) {
     const auto name = paths.size() == 1
@@ -44,7 +41,8 @@ QVariantList ShellBatchController::actions() const {
     append("create", qtTrId("shell.create"));
     if (m_request.paths.size() > 1)
         append("separate-zip", qtTrId("shell.separateZip"));
-    if (std::all_of(m_request.paths.begin(), m_request.paths.end(), archiveCandidate)) {
+    if (m_request.archiveCandidates ||
+        std::all_of(m_request.paths.begin(), m_request.paths.end(), archiveCandidate)) {
         append("extract-here", qtTrId("shell.extractHere"));
         append("extract-smart", qtTrId("shell.extractSmart"));
         append("extract-separate", qtTrId("shell.extractSeparate"));

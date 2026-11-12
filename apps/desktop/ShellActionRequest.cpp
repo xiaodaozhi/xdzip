@@ -22,8 +22,9 @@ ShellActionRequest ShellActionRequest::parse(const QJsonObject &value) {
     const auto action = value.value("action").toString();
     const auto paths = value.value("paths");
     if (value.value("schema_version").toInt() != 1 || QUuid(id).isNull() || id.size() != 36 ||
-        !actions.contains(action) || !paths.isArray() || paths.toArray().isEmpty() ||
-        paths.toArray().size() > 128 ||
+        !actions.contains(action) ||
+        (value.contains("archive_candidates") && !value.value("archive_candidates").isBool()) ||
+        !paths.isArray() || paths.toArray().isEmpty() || paths.toArray().size() > 128 ||
         QJsonDocument(value).toJson(QJsonDocument::Compact).size() > 256 * 1024)
         return {};
     for (const auto &item : paths.toArray()) {
@@ -38,12 +39,14 @@ ShellActionRequest ShellActionRequest::parse(const QJsonObject &value) {
     }
     result.id = id;
     result.action = action;
+    result.archiveCandidates = value.value("archive_candidates").toBool();
     return result;
 }
 QJsonObject ShellActionRequest::json() const {
     return {{"schema_version", 1},
             {"id", id},
             {"action", action},
+            {"archive_candidates", archiveCandidates},
             {"paths", QJsonArray::fromStringList(paths)}};
 }
 QJsonObject ShellActionRequest::readFile(const QString &file) {

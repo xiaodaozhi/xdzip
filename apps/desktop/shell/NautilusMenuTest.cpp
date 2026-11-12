@@ -14,6 +14,12 @@ static void fileInterface(gpointer value, gpointer) {
     static_cast<NautilusFileInfoInterface *>(value)->get_location = [](NautilusFileInfo *file) {
         return G_FILE(g_object_ref(reinterpret_cast<TestFile *>(file)->location));
     };
+    static_cast<NautilusFileInfoInterface *>(value)->get_mime_type = [](NautilusFileInfo *file) {
+        auto *name = g_file_get_basename(reinterpret_cast<TestFile *>(file)->location);
+        const bool archive = name && g_str_has_suffix(name, ".opaque");
+        g_free(name);
+        return g_strdup(archive ? "application/zip" : "application/octet-stream");
+    };
 }
 G_DEFINE_TYPE_WITH_CODE(TestFile, test_file, G_TYPE_OBJECT,
                         G_IMPLEMENT_INTERFACE(NAUTILUS_TYPE_FILE_INFO, fileInterface))
@@ -96,6 +102,7 @@ int main(int argc, char **argv) {
     if (!check({"file:///tmp/xdzip-test.txt"}, 3) || !check({"file:///tmp/xdzip-test.zip"}, 7) ||
         !check({"file:///tmp/xdzip-test.zip", "file:///tmp/xdzip-test.7z"}, 8) ||
         !check({"file:///tmp/xdzip-test.zip", "file:///tmp/xdzip-test.txt"}, 4) ||
+        !check({"file:///tmp/xdzip-test.opaque"}, 7) ||
         !check({"smb://example.invalid/archive.zip"}, 0) || !check({}, 0) ||
         !check(std::vector<std::string>(129, "file:///tmp/xdzip-test.txt"), 0))
         return 1;

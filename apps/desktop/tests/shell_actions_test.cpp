@@ -78,6 +78,32 @@ class ShellTest : public QObject {
         for (int i = 0; i < 129; ++i)
             tooMany << source.filePath(QString::number(i));
         QVERIFY(!request("zip", tooMany).valid());
+        auto hinted = request("choose", {path}).json();
+        hinted.insert("archive_candidates", true);
+        const auto hintedManifest = xdzip_shell::requestFile(
+            "choose", {xdzip_shell::fs::u8path(path.toUtf8().toStdString())}, true);
+        const auto hintedRead = ShellActionRequest::parse(
+            ShellActionRequest::readFile(QString::fromUtf8(hintedManifest.u8string().c_str())));
+        QVERIFY(hintedRead.archiveCandidates);
+        ShellBatchController hintedBatch;
+        hintedBatch.begin(ShellActionRequest::parse(hinted));
+        QCOMPARE(hintedBatch.actions().size(), 7);
+        hintedBatch.choose("extract-here");
+        QTRY_VERIFY_WITH_TIMEOUT(hintedBatch.finished(), 10000);
+        QCOMPARE(hintedBatch.results().first().toMap().value("status").toString(),
+                 QString("failed"));
+        hinted.insert("archive_candidates", "true");
+        QVERIFY(!ShellActionRequest::parse(hinted).valid());
+        for (const auto &name : {"part.zip.1024", "part.7z.0001", "part.z1023", "part.s24"}) {
+            const auto candidate = source.filePath(name);
+            ShellBatchController batch;
+            batch.begin(request("choose", {candidate}));
+            QCOMPARE(batch.actions().size(), 7);
+            QCOMPARE(xdzip_shell::menu({xdzip_shell::fs::u8path(candidate.toUtf8().toStdString())},
+                                       false)
+                         .size(),
+                     size_t(7));
+        }
         const auto native =
             xdzip_shell::requestFile("zip", {xdzip_shell::fs::u8path(path.toUtf8().toStdString())});
         QVERIFY(!native.empty());

@@ -1,5 +1,6 @@
 #include "NativeRequest.h"
 #import <AppKit/AppKit.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 @interface XdzipService : NSObject
 - (void)openSelection:(NSPasteboard *)pasteboard userData:(NSString *)data error:(NSString **)error;
@@ -28,15 +29,19 @@
                 [pasteboard readObjectsForClasses:@[ [NSURL class] ]
                                           options:@{NSPasteboardURLReadingFileURLsOnlyKey : @YES}];
             std::vector<xdzip_shell::fs::path> paths;
+            bool archiveCandidates = true;
             for (NSURL *url in urls) {
                 if (![url isFileURL]) {
                     paths.clear();
                     break;
                 }
                 paths.emplace_back([[url path] fileSystemRepresentation]);
+                UTType *type = nil;
+                [url getResourceValue:&type forKey:NSURLContentTypeKey error:nil];
+                archiveCandidates &= [type conformsToType:UTTypeArchive];
             }
             if (!xdzip_shell::launch([[app executableURL] fileSystemRepresentation], "choose",
-                                     paths) &&
+                                     paths, archiveCandidates) &&
                 error)
                 *error = @"xdzip could not accept the selected files. Select up to 128 local items "
                          @"and try again.";

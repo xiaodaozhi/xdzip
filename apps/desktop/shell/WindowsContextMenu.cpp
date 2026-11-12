@@ -28,6 +28,7 @@ class Menu final : public IShellExtInit, public IContextMenu {
     std::atomic<ULONG> refs{1};
     std::vector<xdzip_shell::fs::path> paths;
     std::vector<xdzip_shell::MenuEntry> entries;
+    bool archiveCandidates = false;
 
   public:
     Menu() {
@@ -83,6 +84,19 @@ class Menu final : public IShellExtInit, public IContextMenu {
                 paths.emplace_back(path);
             }
         ReleaseStgMedium(&medium);
+        archiveCandidates =
+            !paths.empty() && std::all_of(paths.begin(), paths.end(), [](const auto &path) {
+                std::error_code error;
+                if (xdzip_shell::fs::is_directory(path, error))
+                    return false;
+                if (xdzip_shell::archiveCandidate(path))
+                    return true;
+                wchar_t mime[128]{};
+                DWORD size = sizeof(mime);
+                return RegGetValueW(HKEY_CLASSES_ROOT, path.extension().c_str(), L"Content Type",
+                                    RRF_RT_REG_SZ, nullptr, mime, &size) == ERROR_SUCCESS &&
+                       xdzip_shell::archiveMime(xdzip_shell::fs::path(mime).u8string());
+            });
         return paths.empty() ? E_INVALIDARG : S_OK;
     }
     HRESULT STDMETHODCALLTYPE QueryContextMenu(HMENU parent, UINT index, UINT first, UINT last,
@@ -95,7 +109,7 @@ class Menu final : public IShellExtInit, public IContextMenu {
                          nullptr, &enabled, &size);
             if (!enabled)
                 return MAKE_HRESULT(SEVERITY_SUCCESS, 0, 0);
-            entries = xdzip_shell::menu(paths, english());
+            entries = xdzip_shell::menu(paths, english(), archiveCandidates);
             if (entries.empty() || last < first || last - first + 1 < entries.size())
                 return E_FAIL;
             const auto submenu = CreatePopupMenu();
@@ -143,8 +157,10 @@ class Menu final : public IShellExtInit, public IContextMenu {
             auto root = xdzip_shell::fs::path(path).parent_path();
             if (root.filename() == L"shell")
                 root = root.parent_path();
-            return xdzip_shell::launch(root / L"xdzip.exe", entries[index].action, paths) ? S_OK
-                                                                                          : E_FAIL;
+            return xdzip_shell::launch(root / L"xdzip.exe", entries[index].action, paths,
+                                       archiveCandidates)
+                       ? S_OK
+                       : E_FAIL;
         } catch (...) {
             return E_FAIL;
         }

@@ -26,11 +26,13 @@ std::pair<bool, bool> preferences() {
 struct Invocation {
     std::vector<xdzip_shell::fs::path> paths;
     std::string action;
+    bool archiveCandidates;
 };
 void activate(NautilusMenuItem *, gpointer data) {
     const auto *call = static_cast<Invocation *>(data);
     try {
-        if (!xdzip_shell::launch("/usr/bin/xdzip", call->action, call->paths))
+        if (!xdzip_shell::launch("/usr/bin/xdzip", call->action, call->paths,
+                                 call->archiveCandidates))
             g_warning("xdzip: could not hand off the selected operation");
     } catch (...) {
         g_warning("xdzip: invalid operation selection");
@@ -42,6 +44,7 @@ GList *items(NautilusMenuProvider *, GList *files) {
         if (!enabled)
             return nullptr;
         std::vector<xdzip_shell::fs::path> paths;
+        bool archiveCandidates = true;
         for (auto *it = files; it; it = it->next) {
             if (paths.size() == 128)
                 return nullptr;
@@ -52,8 +55,12 @@ GList *items(NautilusMenuProvider *, GList *files) {
                 return nullptr;
             paths.emplace_back(path);
             g_free(path);
+            auto *mime = nautilus_file_info_get_mime_type(NAUTILUS_FILE_INFO(it->data));
+            archiveCandidates &= xdzip_shell::archiveCandidate(paths.back()) ||
+                                 (mime && xdzip_shell::archiveMime(mime));
+            g_free(mime);
         }
-        const auto commands = xdzip_shell::menu(paths, english);
+        const auto commands = xdzip_shell::menu(paths, english, archiveCandidates);
         if (commands.empty())
             return nullptr;
         auto *root = nautilus_menu_item_new(
@@ -62,7 +69,7 @@ GList *items(NautilusMenuProvider *, GList *files) {
         for (const auto &command : commands) {
             auto *item = nautilus_menu_item_new(("xdzip::" + command.action).c_str(),
                                                 command.label.c_str(), nullptr, nullptr);
-            auto *call = new Invocation{paths, command.action};
+            auto *call = new Invocation{paths, command.action, archiveCandidates};
             g_signal_connect_data(
                 item, "activate", G_CALLBACK(activate), call,
                 [](gpointer data, GClosure *) { delete static_cast<Invocation *>(data); },

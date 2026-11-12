@@ -60,6 +60,8 @@ OperationWindow {
                             Text {
                                 Layout.fillWidth: true
                                 text: modelData.name
+                                Accessible.role: Accessible.StaticText
+                                Accessible.name: text
                                 textFormat: Text.PlainText
                                 font.family: Theme.userDataFontFamily
                                 font.pixelSize: Theme.operationFooterFontSize
@@ -76,6 +78,8 @@ OperationWindow {
                                 text: ({ succeeded: qsTrId("shell.status.succeeded"), failed: qsTrId("shell.status.failed"), cancelled: qsTrId("shell.status.cancelled"), "not-run": qsTrId("shell.status.not-run"), duplicate: qsTrId("shell.status.duplicate") })[modelData.status] + (modelData.error ? ": " + modelData.error : "")
                                 textFormat: Text.PlainText
                                 font.pixelSize: Theme.operationFooterNoteSize
+                                Accessible.role: Accessible.StaticText
+                                Accessible.name: text
                                 color: modelData.status === "failed" ? Theme.menuDanger : Theme.textSecondary
                                 wrapMode: Text.Wrap
                             }
