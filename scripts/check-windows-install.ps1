@@ -204,11 +204,16 @@ function Test-ShellIntegration {
     $classKey = "$classes\CLSID\{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}\InprocServer32"
     $menuKey = "$classes\AllFilesystemObjects\shellex\ContextMenuHandlers\xdzip"
     $manifest = Get-Content (Join-Path $testRoot 'shell/integration.json') -Raw | ConvertFrom-Json
-    $library = Join-Path $testRoot ('shell/' + $manifest.file)
-    if (!(Test-Path $classKey) -or (Get-Item $classKey).GetValue('') -ne $library -or
-        !(Test-Path $menuKey) -or (Get-Item $menuKey).GetValue('') -ne '{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}' -or
-        (Get-FileHash $library -Algorithm SHA256).Hash.ToLowerInvariant() -ne $manifest.sha256) {
-        throw 'Installed shell extension does not match its manifest and owned registration'
+    $library = [IO.Path]::GetFullPath((Join-Path $testRoot ('shell/' + $manifest.file)))
+    $facts = [ordered]@{
+        class_exists = (Test-Path $classKey)
+        menu_exists = (Test-Path $menuKey)
+        class_matches = (Test-Path $classKey) -and (Get-Item $classKey).GetValue('') -eq $library
+        menu_matches = (Test-Path $menuKey) -and (Get-Item $menuKey).GetValue('') -eq '{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}'
+        dll_hash_matches = (Get-FileHash $library -Algorithm SHA256).Hash.ToLowerInvariant() -eq $manifest.sha256
+    }
+    if ($facts.Values -contains $false) {
+        throw ('Installed shell registration mismatch: ' + ($facts | ConvertTo-Json -Compress))
     }
     $exe = Join-Path $testRoot 'xdzip.exe'
     $removed = Start-Process -FilePath $exe -ArgumentList '--uninstall-shell-integration' -Wait -PassThru

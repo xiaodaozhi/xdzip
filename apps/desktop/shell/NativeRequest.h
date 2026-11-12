@@ -14,6 +14,7 @@
 
 #include <bcrypt.h>
 #include <sddl.h>
+#include <winver.h>
 #else
 #include <cerrno>
 #include <fcntl.h>
@@ -32,6 +33,32 @@ extern char **environ;
 
 namespace xdzip_shell {
 namespace fs = std::filesystem;
+inline bool protocolMarker(const fs::path &path) {
+    std::error_code error;
+    if (fs::symlink_status(path, error).type() != fs::file_type::regular)
+        return false;
+    std::ifstream file(path, std::ios::binary);
+    char value[3]{};
+    file.read(value, sizeof(value));
+    return file.gcount() == 2 && value[0] == '1' && value[1] == '\n';
+}
+#ifdef _WIN32
+inline bool supportsShellProtocol(const fs::path &executable) {
+    DWORD ignored = 0;
+    const auto size = GetFileVersionInfoSizeW(executable.c_str(), &ignored);
+    if (!size || size > 1024 * 1024)
+        return false;
+    std::vector<unsigned char> bytes(size);
+    if (!GetFileVersionInfoW(executable.c_str(), 0, size, bytes.data()))
+        return false;
+    void *value = nullptr;
+    UINT length = 0;
+    return VerQueryValueW(bytes.data(), L"\\StringFileInfo\\040904b0\\XdzipShellProtocol", &value,
+                          &length) &&
+           value && length >= 2 && length <= 4 && static_cast<const wchar_t *>(value)[0] == L'1' &&
+           static_cast<const wchar_t *>(value)[1] == 0;
+}
+#endif
 inline std::string jsonString(const std::string &value) {
     const char *hex = "0123456789abcdef";
     std::string out = "\"";

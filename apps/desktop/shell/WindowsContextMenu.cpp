@@ -157,6 +157,8 @@ class Menu final : public IShellExtInit, public IContextMenu {
             auto root = xdzip_shell::fs::path(path).parent_path();
             if (root.filename() == L"shell")
                 root = root.parent_path();
+            if (!xdzip_shell::supportsShellProtocol(root / L"xdzip.exe"))
+                return HRESULT_FROM_WIN32(ERROR_REVISION_MISMATCH);
             return xdzip_shell::launch(root / L"xdzip.exe", entries[index].action, paths,
                                        archiveCandidates)
                        ? S_OK

@@ -27,7 +27,15 @@ bool installed() {
     return matches || app == "/Applications/xdzip.app" ||
            app == QDir::homePath() + "/Applications/xdzip.app";
 #elif defined(Q_OS_WIN)
-    return QFile::exists(QCoreApplication::applicationDirPath() + "/install-manifest.txt");
+    QSettings install("HKEY_CURRENT_USER\\Software\\xdzip\\Install", QSettings::NativeFormat);
+    const auto directory = QFileInfo(QCoreApplication::applicationDirPath()).canonicalFilePath();
+    const auto location = install.value("Location").toString();
+    return !directory.isEmpty() && !location.isEmpty() && QFileInfo(location).isAbsolute() &&
+           install.value("InstallId")
+                   .toString()
+                   .compare("56DF0D26-2B26-40C4-9E85-FF0F8C8937CA", Qt::CaseInsensitive) == 0 &&
+           QFileInfo(location).canonicalFilePath().compare(directory, Qt::CaseInsensitive) == 0 &&
+           QFile::exists(directory + "/install-manifest.txt");
 #else
     const auto dir = QCoreApplication::applicationDirPath();
     return dir.startsWith("/opt/xdzip/versions/") &&

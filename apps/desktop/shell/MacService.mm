@@ -1,3 +1,4 @@
+#include "MacCapability.h"
 #include "NativeRequest.h"
 #import <AppKit/AppKit.h>
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
@@ -18,8 +19,8 @@
                                                            encoding:NSUTF8StringEncoding
                                                               error:nil]
                 stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];
-            const auto app = [NSBundle bundleWithPath:appPath];
-            if (![[app bundleIdentifier] isEqualToString:@"org.xdzip.desktop"]) {
+            const auto executable = xdzip_shell::desktopExecutable(appPath);
+            if (!executable) {
                 if (error)
                     *error = @"xdzip is unavailable. Open the installed application to repair its "
                              @"service.";
@@ -40,8 +41,8 @@
                 [url getResourceValue:&type forKey:NSURLContentTypeKey error:nil];
                 archiveCandidates &= [type conformsToType:UTTypeArchive];
             }
-            if (!xdzip_shell::launch([[app executableURL] fileSystemRepresentation], "choose",
-                                     paths, archiveCandidates) &&
+            if (!xdzip_shell::launch([executable fileSystemRepresentation], "choose", paths,
+                                     archiveCandidates) &&
                 error)
                 *error = @"xdzip could not accept the selected files. Select up to 128 local items "
                          @"and try again.";

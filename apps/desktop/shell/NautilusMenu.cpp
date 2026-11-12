@@ -31,6 +31,10 @@ struct Invocation {
 void activate(NautilusMenuItem *, gpointer data) {
     const auto *call = static_cast<Invocation *>(data);
     try {
+        if (!xdzip_shell::protocolMarker("/usr/share/xdzip/shell-protocol")) {
+            g_warning("xdzip: installed application does not support shell actions");
+            return;
+        }
         if (!xdzip_shell::launch("/usr/bin/xdzip", call->action, call->paths,
                                  call->archiveCandidates))
             g_warning("xdzip: could not hand off the selected operation");

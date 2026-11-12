@@ -79,6 +79,8 @@ def package_tree(payload,audit,stage,qa=None,failure=None,legacy=False,historica
         shutil.copy2(shell,extensions/'libxdzip-nautilus.so')
     share=stage/'usr/share';(share/'applications').mkdir(parents=True)
     if historical_record is None:
+        protocol=share/'xdzip/shell-protocol';protocol.parent.mkdir(parents=True)
+        protocol.write_text('1\n')
         policy=share/'polkit-1/actions';policy.mkdir(parents=True)
         shutil.copy2(ROOT/'apps/desktop/packaging/linux/org.xdzip.update.policy',policy/'org.xdzip.update.policy')
     desktop=installed_desktop_entry((ROOT/'apps/desktop/packaging/linux/xdzip.desktop').read_text(encoding='utf-8'))

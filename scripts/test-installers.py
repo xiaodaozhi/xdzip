@@ -177,6 +177,7 @@ class InstallerTests(unittest.TestCase):
             control=(stage/'DEBIAN/control').read_text()
             self.assertIn('libssl3t64',control);self.assertIn('ca-certificates',control)
             self.assertIn('libnautilus-extension4',control)
+            self.assertEqual((stage/'usr/share/xdzip/shell-protocol').read_text(),'1\n')
             self.assertEqual((stage/'usr/lib/x86_64-linux-gnu/nautilus/extensions-4/libxdzip-nautilus.so').read_bytes(),
                              (root/'lib/nautilus/libxdzip-nautilus.so').read_bytes())
             self.assertIn('~dev.1+git',r['version'])

@@ -84,12 +84,42 @@ int main(int argc, char *argv[]) {
     application.setApplicationName(QStringLiteral("xdzip"));
     Q_INIT_RESOURCE(ui);
     WindowActivation::install(&application);
+    const auto args = application.arguments();
+    // Setup invokes these metadata-only commands while it owns the update gate.
+    // Exact command matching keeps normal file and task launches behind the guard.
+    const bool shellIntegrationCommand =
+        args.size() == 2 &&
+        (args.at(1) == "--register-shell-integration" ||
+         args.at(1) == "--remove-shell-integration" || args.at(1) == "--sync-shell-integration" ||
+         args.at(1) == "--uninstall-shell-integration");
+    if (shellIntegrationCommand) {
+        if (!initializeUiText())
+            return 5;
+        UiPreferences preferences;
+        ShellIntegration integration(&preferences);
+        const bool desired =
+            args.at(1) == "--register-shell-integration" ||
+            (args.at(1) == "--sync-shell-integration" && preferences.shellEnabled());
+        if (!integration.registerExplicitly(desired))
+            return 13;
+        if ((args.at(1) == "--register-shell-integration" ||
+             args.at(1) == "--remove-shell-integration") &&
+            !preferences.setShellEnabled(desired))
+            return 13;
+        return 0;
+    }
     InstalledRuntimeGuard installedRuntime;
-    if (!installedRuntime.acquire())
+    if (!installedRuntime.acquire()) {
+        if (args.size() == 3 && args.at(1) == "--shell-request") {
+            ShellActionRequest::readFile(args.at(2));
+            if (initializeUiText())
+                QMessageBox::critical(nullptr, QStringLiteral("xdzip"),
+                                      qtTrId("sessions.unavailable"));
+        }
         return 11;
+    }
     FileOpenRouter fileOpens;
     application.installEventFilter(&fileOpens);
-    const auto args = application.arguments();
     const bool literalPaths = args.contains(QStringLiteral("--"));
     const auto probeArgument = literalPaths ? -1 : args.indexOf(QStringLiteral("--desktop-probe"));
     const auto updateProbeArgument =
@@ -121,25 +151,6 @@ int main(int argc, char *argv[]) {
             if (literalPaths || !args.at(i).startsWith(QLatin1Char('-')))
                 startupPaths.append(QFileInfo(args.at(i)).absoluteFilePath());
         }
-    }
-    if (!literalPaths &&
-        (args.contains("--register-shell-integration") ||
-         args.contains("--remove-shell-integration") || args.contains("--sync-shell-integration") ||
-         args.contains("--uninstall-shell-integration"))) {
-        if (!initializeUiText())
-            return 5;
-        UiPreferences preferences;
-        ShellIntegration integration(&preferences);
-        const bool desired =
-            args.contains("--register-shell-integration") ||
-            (args.contains("--sync-shell-integration") && preferences.shellEnabled());
-        if (!integration.registerExplicitly(desired))
-            return 13;
-        if ((args.contains("--register-shell-integration") ||
-             args.contains("--remove-shell-integration")) &&
-            !preferences.setShellEnabled(desired))
-            return 13;
-        return 0;
     }
     const auto shellProbe = shellLaunch && !qEnvironmentVariableIsEmpty("XDZIP_SETTINGS_PATH")
                                 ? qEnvironmentVariable("XDZIP_SHELL_PROBE")

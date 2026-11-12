@@ -13,6 +13,7 @@
 #include <QApplication>
 #include <QDesktopServices>
 #include <QFile>
+#include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QProcess>
@@ -23,6 +24,7 @@
 #include <QQuickItem>
 #include <QQuickStyle>
 #include <QScopeGuard>
+#include <QSettings>
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QtTest>
@@ -68,6 +70,15 @@ class ShellTest : public QObject {
         write(path, "payload");
         auto req = request("zip", {path});
         QVERIFY(req.valid());
+        const auto marker = source.filePath("protocol");
+        const auto nativeMarker = xdzip_shell::fs::u8path(marker.toUtf8().toStdString());
+        QVERIFY(!xdzip_shell::protocolMarker(nativeMarker));
+        write(marker, "1\n");
+        QVERIFY(xdzip_shell::protocolMarker(nativeMarker));
+        write(marker, "2\n");
+        QVERIFY(!xdzip_shell::protocolMarker(nativeMarker));
+        write(marker, "1\nextra");
+        QVERIFY(!xdzip_shell::protocolMarker(nativeMarker));
         auto bad = req.json();
         bad.insert("action", "exec");
         QVERIFY(!ShellActionRequest::parse(bad).valid());
@@ -246,6 +257,49 @@ class ShellTest : public QObject {
         QCOMPARE(result.value("statuses").toArray(), QJsonArray{"succeeded"});
         QVERIFY(QFile::exists(path + ".zip"));
     }
+#ifdef Q_OS_WIN
+    void executableCapabilityMatchesNativeShellProtocol() {
+        QVERIFY(xdzip_shell::supportsShellProtocol(
+            xdzip_shell::fs::path(QStringLiteral(XDZIP_SHELL_PRODUCT).toStdWString())));
+        QTemporaryDir source;
+        const auto incompatible = source.filePath("old.exe");
+        write(incompatible, "owned unsupported executable fixture");
+        QVERIFY(!xdzip_shell::supportsShellProtocol(
+            xdzip_shell::fs::path(incompatible.toStdWString())));
+    }
+    void portableManifestDoesNotConferInstalledIdentity() {
+        UiPreferences settings;
+        ShellIntegration integration(&settings);
+        const auto directory = QCoreApplication::applicationDirPath();
+        QSettings install("HKEY_CURRENT_USER\\Software\\xdzip\\Install", QSettings::NativeFormat);
+        if (QFileInfo(install.value("Location").toString())
+                .canonicalFilePath()
+                .compare(QFileInfo(directory).canonicalFilePath(), Qt::CaseInsensitive) == 0)
+            QSKIP("Test directory is already registered as an installation");
+        QFile manifest(directory + "/install-manifest.txt");
+        if (manifest.exists())
+            QSKIP("Preserving an existing deployment manifest");
+        QVERIFY(manifest.open(QIODevice::WriteOnly | QIODevice::NewOnly));
+        const auto remove = qScopeGuard([&] { manifest.remove(); });
+        manifest.close();
+        test_environment::ScopedVariable noSettings("XDZIP_SETTINGS_PATH", QString());
+        test_environment::ScopedVariable noLanguage("XDZIP_LANGUAGE", QString());
+        QVERIFY(noSettings.valid() && noLanguage.valid());
+        QVERIFY(!integration.available());
+    }
+    void registrationMaintenanceDoesNotAdmitNormalLaunchDuringInstall() {
+        const auto gate = CreateMutexW(nullptr, FALSE, L"Local\\xdzip.desktop.updating");
+        QVERIFY(gate);
+        const auto release = qScopeGuard([&] { CloseHandle(gate); });
+        QProcess process;
+        process.start(QStringLiteral(XDZIP_SHELL_PRODUCT), {"--sync-shell-integration"});
+        QVERIFY(process.waitForFinished(15000));
+        QCOMPARE(process.exitCode(), 13); // The undeployed build has no integration manifest.
+        process.start(QStringLiteral(XDZIP_SHELL_PRODUCT), {"--smoke-test"});
+        QVERIFY(process.waitForFinished(15000));
+        QCOMPARE(process.exitCode(), 11);
+    }
+#endif
     void shellSettingsAccessibleActionsUpdateTheRealModel() {
         QQmlApplicationEngine engine;
         auto *settings = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
