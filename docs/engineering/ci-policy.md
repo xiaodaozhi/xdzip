@@ -52,7 +52,7 @@ Foundation 的 `image_only=true` 在原生 macOS 用系统 sips／ImageIO 转换
 
 重验可选 GitHub 托管 `windows-11-arm`，以 Windows 11 的 x64 仿真运行同一 x64 包。结果必须标明系统与架构，不代表 x64 原生环境、ARM64 原生构建或新增支持承诺。English: The Windows 11 ARM hosted option exercises the x64 package under emulation; it is not a native x64 or ARM64 build or a support commitment.
 
-[MSIX 与安装版共存检查](../../.github/workflows/windows-msix-coexistence.yml)复用通过同一来源约束的构建和运行时审计，在一次性托管主机生成当前用户安装器，并检查安装版与 MSIX 的同时运行、相互卸载及默认关联。该检查不修改维护者电脑，也不替代目标 Windows 11 与商店验收。English: The hosted coexistence check reconstructs an audited installer payload and tests the installed and MSIX channels on a disposable runner; it is not Windows 11 or Store acceptance.
+[MSIX 与安装版共存检查](../../.github/workflows/windows-msix-coexistence.yml)复用通过同一来源约束的构建和运行时审计，在一次性托管主机生成当前用户安装器，并检查安装版与 MSIX 的同时运行、相互卸载及默认关联。可选择 Windows Server 或 Windows 11 ARM 的 x64 仿真；该检查不修改维护者电脑，也不替代 Windows 11 x64 原生与商店验收。English: The hosted coexistence check reconstructs an audited installer payload and tests both channels on disposable Windows Server or Windows 11 ARM with x64 emulation; it is not native x64 or Store acceptance.
 
 [Release 工作流](../../.github/workflows/release.yml)独立处理三平台发行构建、包验证、签名和不可变资产，继续遵循[发布协议](release-protocol.md)。发布必须有所有者对具体结果的授权；未执行的检查及许可复核限制如实记录。普通 CI 成功、手动工作流成功和正式发行批准是不同结论。
 

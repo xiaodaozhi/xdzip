@@ -28,7 +28,15 @@ function Assert-Defaults {
         if ((Get-Default $extension) -ne $defaults[$extension]) { throw "Default file association changed: $extension" }
     }
 }
-$result = [ordered]@{ status='failed'; checks=[ordered]@{}; limitations=@('Hosted Windows Server with self-signed MSIX; Windows 11 and Store remain separate.') }
+$osInfo = Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
+$result = [ordered]@{
+    status='failed'
+    runner_image=$env:ImageOS
+    os_build=$osInfo.CurrentBuildNumber
+    os_architecture=[System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
+    checks=[ordered]@{}
+    limitations=@('Self-signed MSIX; Store, Windows 11 x64 native and visual acceptance remain separate.')
+}
 $failure = $null
 $exe = Join-Path $installRoot 'xdzip.exe'
 $uninstaller = Join-Path $installRoot 'unins000.exe'

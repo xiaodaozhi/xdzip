@@ -10,12 +10,17 @@ on:
         description: Full commit SHA of that build
         required: true
         type: string
+      runner:
+        description: Disposable hosted Windows test environment
+        type: choice
+        default: windows-2022
+        options: [windows-2022, windows-11-arm]
 permissions:
   contents: read
   actions: read
 jobs:
   coexistence:
-    runs-on: windows-2022
+    runs-on: ${{ inputs.runner }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
