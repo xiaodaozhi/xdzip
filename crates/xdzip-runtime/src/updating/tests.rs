@@ -226,6 +226,7 @@ fn export_manifest_deduplicates_parent_and_child_and_keeps_empty_directories() {
         selected: vec!["1".into(), "3".into()],
         directory: "".into(),
         create_folder: false,
+        shell_layout: 0,
         conflict: ConflictPolicy::Ask,
         allow_high_ratio: false,
     };

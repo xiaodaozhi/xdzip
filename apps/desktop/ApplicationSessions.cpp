@@ -2,12 +2,14 @@
 
 #include "ApplicationSessions.h"
 #include "DesktopIntegration.h"
+#include "ShellBatchController.h"
 #include "UiPreferences.h"
 #include "WindowActivation.h"
 #include <QApplication>
 #include <QDialog>
 #include <QDir>
 #include <QFileInfo>
+#include <QJsonDocument>
 #include <QMessageBox>
 #include <QQmlComponent>
 #include <QQmlEngine>
@@ -235,6 +237,10 @@ void ApplicationSessions::newSession() {
 }
 void ApplicationSessions::open(const QStringList &paths) {
     if (paths.isEmpty()) {
+        if (!m_active) {
+            showMainWindow();
+            return;
+        }
         if (m_desktop)
             m_desktop->restore();
         return;
@@ -256,10 +262,10 @@ void ApplicationSessions::openPath(const QString &path) {
         }
     }
     const auto availableWelcome = [](const Session *value) {
-        return value && !value->closed && !value->retiring && value->controller &&
-               value->pendingPath.isEmpty() && value->controller->runtimeAvailable() &&
-               !value->controller->ready() && !value->controller->busy() &&
-               !value->controller->activeTaskCount() &&
+        return value && !value->operationOnly && !value->closed && !value->retiring &&
+               value->controller && value->pendingPath.isEmpty() &&
+               value->controller->runtimeAvailable() && !value->controller->ready() &&
+               !value->controller->busy() && !value->controller->activeTaskCount() &&
                value->controller->passwordPrompt().isEmpty();
     };
     auto *session = current();
@@ -598,6 +604,8 @@ void ApplicationSessions::closeWindowDialogs(Session *session) {
 }
 void ApplicationSessions::command(const QString &command) {
     if (!m_active)
+        showMainWindow();
+    if (!m_active)
         return;
     if (command == "closeArchive") {
         if (auto *session = current())
@@ -638,8 +646,14 @@ QVariantList ApplicationSessions::tasks() const {
 int ApplicationSessions::activeTaskCount() const {
     int count = 0;
     for (const auto &session : m_sessions)
-        if (session->controller)
+        if (session->controller) {
             count += session->controller->activeTaskCount();
+            if (session->operationOnly && !session->controller->activeTaskCount()) {
+                auto *batch = session->page->findChild<ShellBatchController *>();
+                if (batch && batch->active())
+                    ++count;
+            }
+        }
     return count;
 }
 void ApplicationSessions::showTask(const QString &identity) {
@@ -711,12 +725,19 @@ void ApplicationSessions::requestQuit() {
         emit readyToQuit();
         return;
     }
-    if (m_quitting || !m_active)
+    if (m_quitting)
         return;
     if (activeTaskCount()) {
         m_wait = false;
         setQuitDecisionPending(true);
-        if (!QMetaObject::invokeMethod(m_active, "presentQuit"))
+        QObject *presenter = m_active.data();
+        if (!presenter)
+            for (const auto &session : m_sessions)
+                if (session->operationOnly && session->page) {
+                    presenter = session->page;
+                    break;
+                }
+        if (!presenter || !QMetaObject::invokeMethod(presenter, "presentQuit"))
             setQuitDecisionPending(false);
         return;
     }
@@ -727,7 +748,8 @@ void ApplicationSessions::requestRestart() {
     requestQuit();
 }
 bool ApplicationSessions::prepareForUpdate() {
-    if (m_quitting || QApplication::activeModalWidget() || QGuiApplication::modalWindow())
+    if (m_quitting || activeTaskCount() || QApplication::activeModalWidget() ||
+        QGuiApplication::modalWindow())
         return false;
     for (const auto &session : m_sessions)
         if (session->controller &&
@@ -739,9 +761,13 @@ bool ApplicationSessions::prepareForUpdate() {
     setQuitDecisionPending(true);
     cancelPendingActivation();
     emit closing();
-    for (const auto &session : m_sessions)
+    for (const auto &session : m_sessions) {
+        if (session->operationOnly && session->page)
+            if (auto *batch = session->page->findChild<ShellBatchController *>())
+                batch->cancel();
         if (session->controller)
             session->controller->requestClose();
+    }
     checkQuit();
     return true;
 }
@@ -756,9 +782,13 @@ void ApplicationSessions::confirmQuit(bool wait) {
     m_quitting = true;
     setQuitDecisionPending(true);
     emit closing();
-    for (const auto &session : m_sessions)
+    for (const auto &session : m_sessions) {
+        if (session->operationOnly && session->page)
+            if (auto *batch = session->page->findChild<ShellBatchController *>())
+                batch->cancel();
         if (session->controller)
             session->controller->requestClose();
+    }
     checkQuit();
 }
 void ApplicationSessions::checkQuit() {
@@ -777,4 +807,85 @@ void ApplicationSessions::checkQuit() {
         window->close();
     }
     emit readyToQuit();
+}
+
+bool ApplicationSessions::shellTrayAvailable() const {
+    return m_desktop && m_desktop->trayAvailable();
+}
+void ApplicationSessions::showMainWindow() {
+    if (m_quitting)
+        return;
+    m_presentationReady = true;
+    if (!m_active)
+        activate(create(true));
+    else
+        WindowActivation::reveal(m_active);
+}
+bool ApplicationSessions::ownsTaskPrompt(QQuickWindow *window) const {
+    for (const auto &session : m_sessions)
+        if (session->page && session->page->findChildren<QQuickWindow *>().contains(window))
+            return true;
+    return false;
+}
+bool ApplicationSessions::shellAction(const QJsonObject &value) {
+    const auto request = ShellActionRequest::parse(value);
+    if (!request.valid() || m_quitting || m_updatePending)
+        return false;
+    const auto bytes = QJsonDocument(request.json()).toJson(QJsonDocument::Compact);
+    if (m_shellRequests.contains(request.id))
+        return m_shellRequests.value(request.id) == bytes;
+    if (m_sessions.size() >= 32)
+        return false;
+    QQmlComponent component(m_engine, QUrl("qrc:/xdzip/ui/ShellHost.qml"));
+    auto *page =
+        component.createWithInitialProperties({{"sessionManager", QVariant::fromValue(this)}});
+    if (!page) {
+        qWarning() << component.errors();
+        return false;
+    }
+    page->setParent(this);
+    auto *session = add(nullptr, page);
+    if (!session) {
+        page->deleteLater();
+        return false;
+    }
+    session->operationOnly = true;
+    auto *batch = page->findChild<ShellBatchController *>();
+    if (!batch)
+        return false;
+    connect(batch, &ShellBatchController::changed, this, [this] {
+        refresh();
+        checkQuit();
+    });
+    connect(page, SIGNAL(dismissed()), this, SLOT(checkShellWindows()));
+    if (m_shellRequests.size() >= 128)
+        m_shellRequests.erase(m_shellRequests.begin());
+    m_shellRequests.insert(request.id, bytes);
+    // Connections and task ownership exist before any operation can submit.
+    QMetaObject::invokeMethod(page, "begin");
+    batch->begin(request);
+    return true;
+}
+void ApplicationSessions::checkShellWindows() {
+    emit sessionsChanged();
+    if (m_quitting)
+        return;
+    bool anyVisible = false;
+    for (const auto &session : m_sessions) {
+        if (!session->operationOnly || !session->page || session->retiring)
+            continue;
+        bool visible = false;
+        QMetaObject::invokeMethod(session->page, "visibleWindows", Q_RETURN_ARG(bool, visible));
+        anyVisible |= visible;
+        auto *batch = session->page->findChild<ShellBatchController *>();
+        if (!visible && batch && !batch->active()) {
+            session->closed = true;
+            reap(session.get());
+        } else if (!visible && batch && batch->active() && !shellTrayAvailable()) {
+            QMetaObject::invokeMethod(session->page, "showCurrent");
+            anyVisible = true;
+        }
+    }
+    if (!m_active && !shellTrayAvailable() && !activeTaskCount() && !anyVisible)
+        requestQuit();
 }

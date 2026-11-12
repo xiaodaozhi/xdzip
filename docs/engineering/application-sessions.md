@@ -93,3 +93,7 @@ English: Cancelling while opening is still shown as pending must not commit a qu
 更新交接使用独立 `prepareForUpdate` 屏障，不复用立即重启。存在任务、任务启动或模态交互时拒绝交接；下载可继续，等待可取消。接受后关闭新意图入口并清理全部 Rust 连接，所有 join 完成仅发 `readyForUpdate`，不提前退出。更新提供者在释放安装提交之前发出退出屏障信号，主程序此时才解除正常退出拦截。安装提交失败时保留关于页恢复入口，用户可正常退出，不启动旧版本自动重启。详细行为见[主动更新](software-update.md)。
 
 English: Updates use a distinct prepareForUpdate barrier. Active/starting tasks and modal interaction reject handoff. Once accepted, new work is blocked and every Rust connection joins before readyForUpdate. The provider releases the application's normal quit interceptor only after this barrier and before committing installation. Failed handoff keeps a recovery entry and permits explicit exit without blindly restarting the old application.
+
+## 文件管理器操作会话
+
+[文件管理器右键操作](shell-actions.md)使用不含浏览页和主窗口的操作会话，共用既有复合任务身份、串行准入和退出 join 屏障。冷启动仅加载独立操作宿主；已运行实例不切换标签或恢复主窗口。批次准备与等待输入期间计入全局活动数，创建成功不进入浏览打开队列。显式显示主窗口时再创建浏览窗口。

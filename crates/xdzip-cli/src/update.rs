@@ -536,6 +536,7 @@ fn activate(root: &Path, archive: &Path, candidate: &Candidate) -> Result<Value>
                 selected: vec![],
                 directory: String::new(),
                 create_folder: false,
+                shell_layout: 0,
                 conflict: xdzip_runtime::extraction::ConflictPolicy::Ask,
                 allow_high_ratio: false,
             },

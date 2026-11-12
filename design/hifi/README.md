@@ -107,3 +107,5 @@ P01 解压元数据预检修订：[设计源](sources/preflight.html)、[浅色]
 起始页当前采用顶部固定布局，[打开失败状态](sources/welcome.html?error=1)显示红色反馈与警告图标，错误增长不推动上方内容。旧 welcome-titlebar PNG 保留原稿，当前正文与错误样式由可编辑源及 welcome-reference.json 定义。
 
 顶部布局的新图稿为 [浅色](screens/welcome-top-light.png)、[深色](screens/welcome-top-dark.png)、[最小窗口](screens/welcome-top-narrow.png)与[错误反馈](screens/welcome-top-error.png)。使用 scripts/export-welcome-design.py 从同一可编辑源导出；旧居中图稿与哈希保持历史记录，导出图不替代独立量测。
+
+[文件管理器独立操作](sources/shell-actions.html)展示 macOS 服务入口后的动作选择和批次结果，沿用 491 逻辑宽度、最高 600 的操作窗口及固定 footer。Windows 与 Ubuntu 的入口使用系统原生菜单，其像素外观由平台决定。

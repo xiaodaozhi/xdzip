@@ -11,11 +11,15 @@
 #include "FocusDismissPolicy.h"
 #include "InstalledRuntimeGuard.h"
 #include "PasswordAccessibility.h"
+#include "ShellActionRequest.h"
+#include "ShellIntegration.h"
+#include "ShellProbe.h"
 #include "SingleInstance.h"
 #include "UiFont.h"
 #include "UiPreferences.h"
 #include "UiText.h"
 #include "UpdateController.h"
+#include <QUuid>
 #ifdef Q_OS_LINUX
 #include "UpdateProbeDiagnostics.h"
 #endif
@@ -95,19 +99,62 @@ int main(int argc, char *argv[]) {
         return 2;
     const auto cliRequest = cliArgument >= 0 ? args.at(cliArgument + 1) : QString{};
     const bool smokeTest = !literalPaths && args.contains(QStringLiteral("--smoke-test"));
+    const auto shellArgument = literalPaths ? -1 : args.indexOf(QStringLiteral("--shell-request"));
+    QJsonObject shellRequest;
+    if (shellArgument >= 0) {
+        if (shellArgument + 1 < args.size())
+            shellRequest = ShellActionRequest::readFile(args.at(shellArgument + 1));
+        if (shellRequest.isEmpty()) {
+            if (!initializeUiText())
+                return 5;
+            QMessageBox::critical(nullptr, QStringLiteral("xdzip"),
+                                  qtTrId("shell.requestRejected"));
+            return 2;
+        }
+    }
+    const bool shellLaunch = !shellRequest.isEmpty();
     QStringList startupPaths;
-    if (!smokeTest && probeArgument < 0 && updateProbeArgument < 0 && cliArgument < 0) {
+    if (!smokeTest && probeArgument < 0 && updateProbeArgument < 0 && cliArgument < 0 &&
+        !shellLaunch) {
         const auto start = literalPaths ? args.indexOf(QStringLiteral("--")) + 1 : 1;
         for (int i = start; i < args.size(); ++i) {
             if (literalPaths || !args.at(i).startsWith(QLatin1Char('-')))
                 startupPaths.append(QFileInfo(args.at(i)).absoluteFilePath());
         }
     }
+    if (!literalPaths &&
+        (args.contains("--register-shell-integration") ||
+         args.contains("--remove-shell-integration") || args.contains("--sync-shell-integration") ||
+         args.contains("--uninstall-shell-integration"))) {
+        if (!initializeUiText())
+            return 5;
+        UiPreferences preferences;
+        ShellIntegration integration(&preferences);
+        const bool desired =
+            args.contains("--register-shell-integration") ||
+            (args.contains("--sync-shell-integration") && preferences.shellEnabled());
+        if (!integration.registerExplicitly(desired))
+            return 13;
+        if ((args.contains("--register-shell-integration") ||
+             args.contains("--remove-shell-integration")) &&
+            !preferences.setShellEnabled(desired))
+            return 13;
+        return 0;
+    }
+    const auto shellProbe = shellLaunch && !qEnvironmentVariableIsEmpty("XDZIP_SETTINGS_PATH")
+                                ? qEnvironmentVariable("XDZIP_SHELL_PROBE")
+                                : QString{};
+    const auto instanceNamespace =
+        shellProbe.isEmpty()
+            ? QString{}
+            : QStringLiteral("shell-probe-") +
+                  qEnvironmentVariable("XDZIP_SHELL_NAMESPACE", QUuid::createUuid().toString());
     SingleInstance instance;
     const bool interactive = !smokeTest && probeArgument < 0 && updateProbeArgument < 0 &&
                              qEnvironmentVariableIsEmpty("XDZIP_ASSOCIATION_PROBE");
     if (interactive) {
-        const auto election = instance.start(startupPaths, {}, 15000, cliRequest);
+        const auto election =
+            instance.start(startupPaths, instanceNamespace, 15000, cliRequest, shellRequest);
         if (election == SingleInstance::Forwarded)
             return 0;
         if (election == SingleInstance::Failed) {
@@ -200,6 +247,10 @@ int main(int argc, char *argv[]) {
     }
 #endif
     QQmlApplicationEngine engine;
+    auto *settings = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+    ShellIntegration shellIntegration(settings);
+    engine.rootContext()->setContextProperty(QStringLiteral("ShellIntegrationService"),
+                                             &shellIntegration);
 #ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
     UpdateController updates(nullptr, macProductUpdateFixtureTransport(&application));
 #elif defined(XDZIP_NATIVE_UPDATE_FIXTURE)
@@ -220,25 +271,29 @@ int main(int argc, char *argv[]) {
     QObject::connect(
         &engine, &QQmlApplicationEngine::objectCreationFailed, &application,
         [] { QCoreApplication::exit(1); }, Qt::QueuedConnection);
-    engine.load(QUrl(QStringLiteral("qrc:/xdzip/ui/Browser.qml")));
+    if (!shellLaunch)
+        engine.load(QUrl(QStringLiteral("qrc:/xdzip/ui/Browser.qml")));
 #ifdef Q_OS_MACOS
     if (fontDatabaseWarmup.valid())
         fontDatabaseWarmup.wait();
 #endif
-    if (engine.rootObjects().isEmpty())
+    if (!shellLaunch && engine.rootObjects().isEmpty())
         return 1;
 #ifdef Q_OS_MACOS
-    integrateMacTitlebar(qobject_cast<QQuickWindow *>(engine.rootObjects().first()));
+    if (!shellLaunch)
+        integrateMacTitlebar(qobject_cast<QQuickWindow *>(engine.rootObjects().first()));
 #endif
-    auto *controller = engine.rootObjects().first()->findChild<BrowserController *>();
-    if (!controller)
+    auto *mainWindow =
+        shellLaunch ? nullptr : qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+    auto *controller = mainWindow ? mainWindow->findChild<BrowserController *>() : nullptr;
+    if (!shellLaunch && !controller)
         return 1;
-    auto *mainWindow = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
     if (!interactive)
         fileOpens.attach(controller, mainWindow);
-    installAssociationProbe(controller, mainWindow);
+    if (controller)
+        installAssociationProbe(controller, mainWindow);
     AppQuitGuard guard;
-    guard.window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+    guard.window = mainWindow;
     guard.controller = controller;
     application.installEventFilter(&guard);
 #ifdef Q_OS_MACOS
@@ -276,7 +331,6 @@ int main(int argc, char *argv[]) {
     if (!interactive)
         QObject::connect(controller, &BrowserController::readyToClose, &application,
                          &QApplication::quit, Qt::QueuedConnection);
-    auto *settings = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
 #ifdef Q_OS_WIN
     if (interactive && qEnvironmentVariableIsEmpty("XDZIP_SETTINGS_PATH") &&
         qEnvironmentVariableIsEmpty("XDZIP_LANGUAGE")) {
@@ -297,12 +351,15 @@ int main(int argc, char *argv[]) {
     };
     QObject::connect(settings, &UiPreferences::savedChanged, &updates, configureUpdateNetwork);
     configureUpdateNetwork();
+    if (interactive)
+        shellIntegration.refresh();
     DesktopIntegration desktop(mainWindow, controller, settings, interactive);
     std::unique_ptr<ApplicationSessions> sessions;
     if (interactive) {
         QApplication::setQuitOnLastWindowClosed(false);
         sessions = std::make_unique<ApplicationSessions>(&engine, settings);
-        sessions->adopt(mainWindow);
+        if (mainWindow)
+            sessions->adopt(mainWindow);
         sessions->setDesktop(&desktop);
         updates.setSessions(sessions.get());
         QObject::connect(sessions.get(), &ApplicationSessions::closing, &instance,
@@ -335,6 +392,10 @@ int main(int argc, char *argv[]) {
         fileOpens.attach([&](const QString &path) { sessions->openPath(path); });
         instance.attach([&](const QStringList &paths) { sessions->open(paths); });
         installCliRequests(&instance, &updates, sessions.get());
+        if (!shellProbe.isEmpty())
+            installShellProbe(sessions.get(), shellProbe);
+        instance.attachShell(
+            [&](const QJsonObject &request) { return sessions->shellAction(request); });
     }
     std::unique_ptr<DesktopProbe> probe;
 #ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
@@ -414,9 +475,11 @@ int main(int argc, char *argv[]) {
     // Allow queued platform launch events to join the same startup intent path.
     // Do not wait for archive I/O: large files show the cancellable loading card.
 #ifdef Q_OS_MACOS
-    showMacWindowAfterLaunch(mainWindow);
+    if (mainWindow)
+        showMacWindowAfterLaunch(mainWindow);
 #else
-    QTimer::singleShot(0, mainWindow, &QWindow::show);
+    if (mainWindow)
+        QTimer::singleShot(0, mainWindow, &QWindow::show);
 #endif
     const auto result = application.exec();
 #ifdef Q_OS_MACOS

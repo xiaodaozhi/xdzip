@@ -48,6 +48,7 @@ UiPreferences::UiPreferences(QObject *parent) : QObject(parent) {
         m_savedDensity = m_density = density == "compact" ? density : QStringLiteral("standard");
         m_openMode =
             settings.value("desktop/openMode").toString() == "windows" ? "windows" : "tabs";
+        m_shellEnabled = settings.value("desktop/shellEnabled", true).toBool();
         m_trayEnabled = settings.value("desktop/trayEnabled", true).toBool();
         m_recentEnabled = settings.value("privacy/recentEnabled", true).toBool();
         const auto proxyMode = settings.value("network/proxyMode", "system").toString();
@@ -144,6 +145,7 @@ bool UiPreferences::save(const QString &theme, double scale, const QString &lang
     settings.setValue("locale/language", language);
     settings.setValue("appearance/density", m_savedDensity);
     settings.setValue("privacy/recentEnabled", m_recentEnabled);
+    settings.setValue("desktop/shellEnabled", m_shellEnabled);
     settings.setValue("desktop/trayEnabled", m_trayEnabled);
     settings.setValue("desktop/openMode", m_openMode);
     settings.setValue("network/proxyMode", m_proxyMode);
@@ -331,4 +333,13 @@ bool UiPreferences::clearRecentArchives() {
     emit errorChanged();
     emit recentChanged();
     return true;
+}
+
+bool UiPreferences::setShellEnabled(bool value) {
+    const auto old = m_shellEnabled;
+    m_shellEnabled = value;
+    if (save(m_savedTheme, m_savedScale, m_language))
+        return true;
+    m_shellEnabled = old;
+    return false;
 }

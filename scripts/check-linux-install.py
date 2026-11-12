@@ -158,6 +158,12 @@ def main():
         historical=json.loads((home/'probe/historical-product-install.json').read_text())
         historical_version=run(['dpkg-query','-W','-f=${Version}','xdzip'])
         run(['dpkg','-i','/packages/product.deb']);verify_open('actual-product-upgrade')
+        extension=Path('/usr/lib/x86_64-linux-gnu/nautilus/extensions-4/libxdzip-nautilus.so')
+        launcher=Path('/usr/bin/xdzip').read_text()
+        runtime=Path(launcher.split('exec "',1)[1].split('"',1)[0]).parent
+        if not extension.is_file() or extension.read_bytes()!=(runtime/'lib/nautilus/libxdzip-nautilus.so').read_bytes():
+            raise RuntimeError('Nautilus registration differs from installed runtime')
+        phases.append('nautilus-owned-extension-installed')
         for mime in mime_types:
             if run(['xdg-mime','query','default',mime],**user)!='other.desktop':
                 raise RuntimeError('Format default handler changed: '+mime)
@@ -174,6 +180,7 @@ def main():
         if historical['revision']==current['revision'] or settings.read_bytes()!=original_settings:
             raise RuntimeError('Actual upgrade did not change product revision or modified settings')
         run(['dpkg','-i','/packages/previous.deb']);verify_open('actual-product-rollback')
+        if extension.exists():raise RuntimeError('Historical rollback retained the newer Nautilus extension')
         if settings.read_bytes()!=original_settings or sentinel.read_text()!='keep user data':
             raise RuntimeError('Actual product rollback lost settings or user data')
         run(['dpkg','-i','/packages/qa1.deb']);verify_open('install')
@@ -210,6 +217,7 @@ def main():
         run(['dpkg','-i','/packages/qa1.deb']);verify_open('rollback')
         run(['dpkg','-i','/packages/product.deb']);verify_open('production-package')
         run(['dpkg','--remove','xdzip']);run(['dpkg','--purge','xdzip'])
+        if extension.exists():raise RuntimeError('Owned Nautilus extension remains after uninstall')
         if Path('/usr/bin/xdzip').exists() or Path('/usr/share/applications/xdzip.desktop').exists():raise RuntimeError('Installed entry points remain')
         if sentinel.read_text()!='keep user data' or 'theme=dark' not in settings.read_text():raise RuntimeError('User data removed')
         for mime in mime_types:

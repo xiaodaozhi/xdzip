@@ -148,7 +148,7 @@ if ($IsWindows) {
 if ($IsLinux) {
     Invoke-Checked python @('scripts/check-x11-startup.py', '--tests', $browserTests, '--output', 'build/review/x11-startup.json')
 }
-Invoke-Checked python @('scripts/check-native-sessions.py', '--tests', $browserTests, '--output', 'build/review/native-sessions.json')
+Invoke-Checked python @('scripts/check-native-sessions.py', '--tests', $browserTests, '--shell-tests', $(if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-shell-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-shell-tests' }), '--output', 'build/review/native-sessions.json')
 if ($IsMacOS) {
     # Exercise the AppKit Quit item and native surface observer under Cocoa.
     $env:QT_QPA_PLATFORM = 'cocoa'

@@ -8,6 +8,8 @@
 
 macOS 手动更新时优先使用对应 Release 的 DMG；使用 app.zip 时，先解压并将 xdzip.app 移出下载目录，退出正在运行的旧版，再替换“应用程序”中的副本。下载不代表安装完成，未公证包可能触发系统安全提示。具体回退条件见[软件更新契约](software-update.md)。English: For a manual macOS update, prefer the matching release DMG. For app.zip, extract and move xdzip.app out of Downloads, quit the old copy, then replace the application in Applications. Download is not installation, and an unnotarized package may trigger a system warning.
 
+系统右键菜单、独立操作宿主和自有注册生命周期见[文件管理器操作契约](shell-actions.md)。右键入口不打开浏览主窗口，完成后默认不打开目标文件夹。
+
 ## 共用构建入口
 
 环境准备与操作顺序统一见[开发构建指南](developer-build.md)。已有同提交的干净构建与测试后，使用 `python3 scripts/desktop.py prepare --packaging` 准备锁定材料，再执行 package 和 verify，不直接把 CI 全量脚本用于日常构建。

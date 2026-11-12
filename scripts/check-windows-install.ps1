@@ -200,6 +200,24 @@ function Test-FormatDispatch($Label, $Which, $Revision) {
     Assert-Default
     $phases.Add($Label+'-format-dispatch')
 }
+function Test-ShellIntegration {
+    $classKey = "$classes\CLSID\{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}\InprocServer32"
+    $menuKey = "$classes\AllFilesystemObjects\shellex\ContextMenuHandlers\xdzip"
+    $manifest = Get-Content (Join-Path $testRoot 'shell/integration.json') -Raw | ConvertFrom-Json
+    $library = Join-Path $testRoot ('shell/' + $manifest.file)
+    if (!(Test-Path $classKey) -or (Get-Item $classKey).GetValue('') -ne $library -or
+        !(Test-Path $menuKey) -or (Get-Item $menuKey).GetValue('') -ne '{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}' -or
+        (Get-FileHash $library -Algorithm SHA256).Hash.ToLowerInvariant() -ne $manifest.sha256) {
+        throw 'Installed shell extension does not match its manifest and owned registration'
+    }
+    $exe = Join-Path $testRoot 'xdzip.exe'
+    $removed = Start-Process -FilePath $exe -ArgumentList '--uninstall-shell-integration' -Wait -PassThru
+    if ($removed.ExitCode -ne 0 -or (Test-Path $menuKey) -or (Test-Path $classKey)) { throw 'Owned shell removal failed' }
+    $restored = Start-Process -FilePath $exe -ArgumentList '--sync-shell-integration' -Wait -PassThru
+    if ($restored.ExitCode -ne 0 -or !(Test-Path $menuKey)) { throw 'Owned shell registration failed' }
+    Assert-Default
+    $phases.Add('shell-registration-disable-restore-preserves-defaults')
+}
 function Test-InstalledDescriptionStartup {
     # This runs only on the disposable CI host, against the installation owned
     # by this script. Never overwrite an existing user profile.
@@ -366,6 +384,7 @@ try {
     Set-Content $nestedSentinel 'keep nested user data'
     $historical = Get-Content (Join-Path $evidenceRoot 'historical-product-install.json') -Raw | ConvertFrom-Json
     Invoke-Installer (Join-Path $Packages 'product.exe') 'actual-product-upgrade'; Test-AssociatedOpen 'actual-product-upgrade'
+    Test-ShellIntegration
     if (!(Test-Path $legacyExe) -or !(Test-Path $nestedSentinel)) { throw 'Legacy migration deleted files without an ownership manifest' }
     $phases.Add('legacy-to-flat-entrypoints-and-untracked-files-preserved')
     $current = Get-Content (Join-Path $evidenceRoot 'actual-product-upgrade.json') -Raw | ConvertFrom-Json
@@ -455,6 +474,7 @@ try {
     Invoke-Installer (Join-Path $Packages 'qa1.exe') 'rollback'; Test-AssociatedOpen 'rollback'
     Invoke-Installer (Join-Path $Packages 'product.exe') 'production-package'; Test-AssociatedOpen 'production-package'
     Invoke-Installer (Join-Path $testRoot 'unins000.exe') 'uninstall'
+    if (Test-Path "$classes\AllFilesystemObjects\shellex\ContextMenuHandlers\xdzip") { throw 'Owned shell menu remains after uninstall' }
     for ($i=0; $i -lt 200 -and (Test-Path "$classes\xdzip.Archive"); $i++) { Start-Sleep -Milliseconds 50 }
     if (Test-Path "$classes\xdzip.Archive") { throw 'Owned ProgID remains' }
     if (Test-Path "$classes\Applications\xdzip-association.exe") { throw 'Owned association launcher registration remains' }

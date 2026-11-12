@@ -17,6 +17,7 @@ class UiPreferences : public QObject {
     Q_PROPERTY(QString density READ density NOTIFY appearanceChanged)
     Q_PROPERTY(QString savedDensity READ savedDensity NOTIFY savedChanged)
     Q_PROPERTY(bool recentEnabled READ recentEnabled NOTIFY savedChanged)
+    Q_PROPERTY(bool shellEnabled READ shellEnabled NOTIFY savedChanged)
     Q_PROPERTY(bool trayEnabled READ trayEnabled NOTIFY savedChanged)
     Q_PROPERTY(QString openMode READ openMode NOTIFY savedChanged)
     Q_PROPERTY(QString proxyMode READ proxyMode NOTIFY savedChanged)
@@ -24,6 +25,7 @@ class UiPreferences : public QObject {
     Q_PROPERTY(QString mirrorAddress READ mirrorAddress NOTIFY savedChanged)
     QString m_openMode = QStringLiteral("tabs");
     bool m_trayEnabled = true;
+    bool m_shellEnabled = true;
     QString m_density = QStringLiteral("standard");
     QString m_savedDensity = QStringLiteral("standard");
     bool m_recentEnabled = true;
@@ -56,6 +58,10 @@ class UiPreferences : public QObject {
     bool recentEnabled() const {
         return m_recentEnabled;
     }
+    bool shellEnabled() const {
+        return m_shellEnabled;
+    }
+    bool setShellEnabled(bool value);
     bool trayEnabled() const {
         return m_trayEnabled;
     }

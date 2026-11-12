@@ -231,6 +231,35 @@ impl Grant {
         child.validate()?;
         Ok(child)
     }
+    /// Reserve a new child exclusively; an existing directory is never reused.
+    /// The authorized parent stays pinned and every acquired child is revalidated.
+    pub fn unique_subdirectory(
+        self: &Arc<Self>,
+        name: &PortablePath,
+    ) -> Result<Arc<Grant>, OutputError> {
+        if name.parts().len() != 1 {
+            return Err(OutputError::UnsafeTarget);
+        }
+        let base = &name.parts()[0];
+        for index in 0..10_000 {
+            self.validate()?;
+            let text = if index == 0 {
+                base.clone()
+            } else {
+                format!("{base} ({})", index + 1)
+            };
+            let candidate = PortablePath::parse(&text).ok_or(OutputError::Limit)?;
+            match self.dir.create_dir_with(&text, &private_builder()) {
+                Ok(()) => {
+                    self.created_directories.fetch_add(1, Ordering::Relaxed);
+                    return self.subdirectory(&candidate);
+                }
+                Err(error) if error.kind() == io::ErrorKind::AlreadyExists => continue,
+                Err(error) => return Err(failure(error)),
+            }
+        }
+        Err(OutputError::Limit)
+    }
     /// Examine an existing ordinary leaf, refusing links, special objects and hard links.
     pub fn existing(&self, path: &PortablePath) -> Result<Option<ExistingFile>, OutputError> {
         let parent = self.parent(path, true)?;

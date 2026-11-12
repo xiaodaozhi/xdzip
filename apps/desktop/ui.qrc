@@ -96,6 +96,9 @@
     <file>ui/InfoRow.qml</file>
     <file>ui/AppButton.qml</file>
     <file>ui/OperationWindow.qml</file>
+    <file>ui/OperationTasks.qml</file>
+    <file>ui/ShellHost.qml</file>
+    <file>ui/ShellActionsWindow.qml</file>
     <file>ui/OperationConfirmationWindow.qml</file>
     <file alias="assets/light/status-partial-success.png">../../design/assets/png/light/status-partial-success@3x.png</file>
     <file alias="assets/light/status-skipped.png">../../design/assets/png/light/status-skipped@3x.png</file>

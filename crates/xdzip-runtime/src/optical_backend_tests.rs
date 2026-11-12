@@ -145,6 +145,7 @@ impl Fixture {
             selected: vec![selected.id.get().to_string()],
             directory: String::new(),
             create_folder: false,
+            shell_layout: 0,
             conflict: ConflictPolicy::Overwrite,
             allow_high_ratio: false,
         }

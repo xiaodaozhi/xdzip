@@ -72,6 +72,11 @@ def package_tree(payload,audit,stage,qa=None,failure=None,legacy=False,historica
     bindir=stage/'usr/bin';bindir.mkdir(parents=True)
     launcher=bindir/'xdzip'
     launcher.write_text('#!/bin/sh\nexec "/opt/xdzip/versions/'+runtime_id+'/xdzip" "$@"\n');launcher.chmod(0o755)
+    shell=payload/'lib/nautilus/libxdzip-nautilus.so'
+    if historical_record is None:
+        if not shell.is_file() or shell.is_symlink():raise ValueError('Nautilus extension missing from audited payload')
+        extensions=stage/'usr/lib/x86_64-linux-gnu/nautilus/extensions-4';extensions.mkdir(parents=True)
+        shutil.copy2(shell,extensions/'libxdzip-nautilus.so')
     share=stage/'usr/share';(share/'applications').mkdir(parents=True)
     if historical_record is None:
         policy=share/'polkit-1/actions';policy.mkdir(parents=True)
@@ -88,7 +93,7 @@ def package_tree(payload,audit,stage,qa=None,failure=None,legacy=False,historica
     manifest=json.loads((payload/'share/deployment.json').read_text(encoding='utf-8'))
     packages={p.removesuffix(':amd64') for p in manifest['system_packages']}
     if any(not re.fullmatch(r'[a-z0-9][a-z0-9+.-]*',p) for p in packages):raise ValueError('Invalid runtime dependency')
-    packages.update(['desktop-file-utils','shared-mime-info','xdg-utils','util-linux','pkexec','apt','libssl3t64','ca-certificates'])
+    packages.update(['libnautilus-extension4','desktop-file-utils','shared-mime-info','xdg-utils','util-linux','pkexec','apt','libssl3t64','ca-certificates'])
     depends=', '.join('libc6 (>= 2.39)' if p=='libc6' else p for p in sorted(packages))
     (control/'control').write_text(f'Package: xdzip\nVersion: {version}\nArchitecture: amd64\nMaintainer: xdzip contributors <noreply@xdzip.invalid>\nSection: utils\nPriority: optional\nX-Xdzip-Settings-Schema: 1\nDepends: {depends}\nDescription: Experimental ZIP and TAR archive manager\n Ubuntu 24.04 x86_64 X11 developer installer, unsigned; release review pending.\n')
     hook=(ROOT/'apps/desktop/packaging/linux/package-hook.sh').read_text(encoding='utf-8')

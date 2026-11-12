@@ -21,6 +21,7 @@ impl Target {
             selected: vec![],
             directory: String::new(),
             create_folder: false,
+            shell_layout: 0,
             conflict: ConflictPolicy::Ask,
             allow_high_ratio: false,
         }
@@ -538,4 +539,53 @@ fn million_record_product_index_and_selected_safe_output() {
             )
             .is_err()
     );
+}
+
+#[test]
+fn shell_smart_layout_and_exclusive_wrappers_preserve_contents() {
+    let a = archive("stored.zip");
+    let target = Target::new();
+    let mut options = target.options();
+    options.shell_layout = 1;
+    let first = execute(&a, options.clone(), &Control::default(), |_| {});
+    assert_eq!(first.status, Status::Succeeded, "{}", first.error);
+    assert_ne!(Path::new(&first.target), target.0);
+    let second = execute(&a, options, &Control::default(), |_| {});
+    assert_eq!(second.status, Status::Succeeded, "{}", second.error);
+    assert_ne!(first.target, second.target);
+    assert!(second.target.ends_with(" (2)"));
+    // The complete bundle snapshot has a single implicit root directory.
+    let bundle = archive("unix_bundle.zip");
+    let output = Target::new();
+    let mut smart = output.options();
+    smart.shell_layout = 1;
+    let done = execute(&bundle, smart, &Control::default(), |_| {});
+    #[cfg(unix)]
+    {
+        assert_eq!(done.status, Status::Succeeded, "{}", done.error);
+        assert_eq!(Path::new(&done.target), output.0);
+        assert!(output.0.join("Demo.app/Contents/MacOS/demo").is_file());
+    }
+    #[cfg(windows)]
+    assert_eq!(done.error, "unsupported_link");
+}
+
+#[test]
+fn shell_layout_rejects_unknown_modes_and_partial_selection() {
+    let a = archive("stored.zip");
+    let target = Target::new();
+    let mut options = target.options();
+    options.shell_layout = 3;
+    assert!(matches!(
+        a.extraction_job(options.clone(), &Cancellation::default()),
+        Err("invalid_options")
+    ));
+    options.shell_layout = 1;
+    options.all = false;
+    options.selected = vec!["1".into()];
+    assert!(matches!(
+        a.extraction_job(options, &Cancellation::default()),
+        Err("invalid_options")
+    ));
+    assert_eq!(std::fs::read_dir(&target.0).unwrap().count(), 0);
 }

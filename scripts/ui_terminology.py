@@ -12,7 +12,7 @@ def inspect(messages):
     for key, value in messages.items():
         for text in value.values() if isinstance(value, dict) else [value]:
             for noun in policy['forbidden_ui_nouns']:
-                inspected = text
+                inspected = '' if noun == '压缩文件' and policy.get('approved_message_texts', {}).get(key) == text else text
                 if noun == '压缩文件':
                     for prefix in policy['allowed_compress_verb_prefixes']:
                         inspected = inspected.replace(prefix + noun, '')

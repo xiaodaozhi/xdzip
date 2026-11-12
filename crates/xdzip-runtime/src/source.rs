@@ -383,6 +383,13 @@ impl Source {
     pub fn display_path(&self) -> &std::path::Path {
         &self.name
     }
+    pub fn group_key(&self) -> String {
+        self.parts
+            .iter()
+            .map(|part| format!("{:?}", part.version.protected_identity))
+            .collect::<Vec<_>>()
+            .join(":")
+    }
     pub fn is_split(&self) -> bool {
         self.split
     }

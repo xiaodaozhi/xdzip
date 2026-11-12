@@ -6,7 +6,8 @@
       "parent": "Window",
       "role": "base",
       "height_constraint_policy": "动态客户区高度变化时先放宽必要的上下限，再设置目标高度，最后恢复固定上下限；尺寸使用原有逻辑单位",
-      "reason": "平台装饰与固定客户区约束"
+      "reason": "平台装饰与固定客户区约束",
+      "owner_policy": "Owner is optional for shell operations. Ownerless windows center on their selected screen; prompts belong to the visible operation window."
     },
     "OperationConfirmationWindow": {
       "parent": "OperationWindow",
@@ -86,7 +87,8 @@
       "width": "Theme.passwordLogicalWidth",
       "reason": "打开加密目录、解压与只读检查共用应用模态密码请求，491 宽，内容自适应，最高 600，固定共享 footer。打开请求使用独立身份且取消只取消打开，不创建任务。关闭会话保留任务请求，主动进入全局任务后显示。退出确认及取消清理期间暂停所有会话的密码显示，返回或选择等待后仅恢复仍有效的请求，尺寸与高保真依据不变",
       "design": "design/hifi/sources/password-extraction.html",
-      "content_preview_policy": "预览密码沿用 P02 尺寸、字段和共享 footer，仅增加任务类型对应的双语文案。"
+      "content_preview_policy": "预览密码沿用 P02 尺寸、字段和共享 footer，仅增加任务类型对应的双语文案。",
+      "shell_cancel_policy": "独立批次中的密码取消路由到批次取消，停止剩余项并保留已提交输出；普通会话沿用原任务取消。"
     },
     "PreflightWindow": {
       "parent": "OperationWindow",
@@ -104,7 +106,8 @@
       "version_labels_policy": "The About version-information grid sizes its label column to the label text; the value column receives remaining width and wraps as needed.",
       "header_design": "design/hifi/sources/operation-headers.html",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
-      "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."
+      "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group.",
+      "shell_integration_policy": "文件管理器集成开关复用通用设置的共享 SettingsToggle，持久化成功后刷新自有注册。"
     },
     "QuitWindow": {
       "parent": "OperationConfirmationWindow",
@@ -126,6 +129,15 @@
       "header_design": "design/hifi/sources/operation-headers.html",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
       "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."
+    },
+    "ShellActionsWindow": {
+      "parent": "OperationWindow",
+      "role": "operation",
+      "width": "Theme.operationProgressWidth",
+      "reason": "右键服务操作选择、批次准备及结果，共享任务密度，正文滚动与固定 footer，主窗口不创建。",
+      "design": "design/hifi/sources/shell-actions.html",
+      "header_design": "design/hifi/sources/shell-actions.html",
+      "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content."
     }
   },
   "inline_windows": {

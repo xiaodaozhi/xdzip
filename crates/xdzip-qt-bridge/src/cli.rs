@@ -41,6 +41,29 @@ pub(super) fn cli_request_read(directory: &str, root: &str) -> String {
     })();
     result.unwrap_or_default()
 }
+pub(super) fn shell_request_read(directory: &str, root: &str) -> String {
+    let read = (|| {
+        let path = Path::new(directory);
+        let parent = Path::new(root);
+        let leaf = path.file_name()?.to_str()?.strip_prefix("xdzip-shell-")?;
+        if leaf.len() != 32
+            || !leaf.bytes().all(|b| b.is_ascii_hexdigit())
+            || path.parent()?.canonicalize().ok()? != parent.canonicalize().ok()?
+        {
+            return None;
+        }
+        let grant = xdzip_io::Grant::for_creation(path).ok()?;
+        let file = xdzip_io::open_regular_nofollow(&path.join("request.json")).ok()?;
+        let mut bytes = vec![];
+        file.take(256 * 1024 + 1).read_to_end(&mut bytes).ok()?;
+        if bytes.len() > 256 * 1024 {
+            return None;
+        }
+        grant.validate().ok()?;
+        String::from_utf8(bytes).ok()
+    })();
+    read.unwrap_or_default()
+}
 fn write(directory: &str, root: &str, name: &str, result: &str, request: bool) -> bool {
     let written = (|| {
         if result.len() > 16384 {

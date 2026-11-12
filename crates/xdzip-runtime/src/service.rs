@@ -346,6 +346,8 @@ pub enum Payload {
         format: xdzip_codec_api::Format,
         /// Host-derived same-folder name, revalidated by the output grant.
         folder_name: String,
+        /// Opaque identity of the complete source volume group.
+        source_group: String,
         /// At most 128 owned display rows.
         rows: Vec<Row>,
         /// Complete bounded navigation, sent only when opening a new session.
@@ -395,9 +397,11 @@ impl Payload {
                 rows,
                 navigation,
                 folder_name,
+                source_group,
                 ..
             } => {
                 folder_name.len()
+                    + source_group.len()
                     + rows.iter().map(|row| row.name.len()).sum::<usize>()
                     + navigation
                         .iter()
@@ -1098,6 +1102,7 @@ fn execute(
     let archive_total = archive.len() as u64;
     let format = archive.format();
     let folder_name = archive.output_folder().to_owned();
+    let source_group = archive.source.group_key();
     let navigation = replace_navigation.then(|| archive.directories().unwrap_or(&[]).to_vec());
     let navigation_limited = archive.directories().is_none();
     let generation = if generation == 0 {
@@ -1147,6 +1152,7 @@ fn execute(
         archive_total,
         format,
         folder_name,
+        source_group,
         navigation,
         navigation_limited,
         rows: page
@@ -1337,10 +1343,11 @@ mod tests {
                 archive_total: 1,
                 format: xdzip_codec_api::Format::Zip,
                 folder_name: "archive".into(),
+                source_group: "test".into(),
                 rows: vec![Row {
                     id: 1,
                     navigation_id: 0,
-                    name: "x".repeat(MAX_EVENT_BYTES / 2 - "archive".len()),
+                    name: "x".repeat(MAX_EVENT_BYTES / 2 - "archive".len() - "test".len()),
                     size: 0,
                     size_known: true,
                     packed_size: 0,

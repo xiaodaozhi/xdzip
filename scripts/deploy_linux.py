@@ -120,6 +120,10 @@ def deploy(app,sdk,output,notices):
         copied.append({'source':'qt-sdk/'+source.relative_to(sdk).as_posix() if within(source,sdk) else 'product',
                        'path':dest.relative_to(output).as_posix()})
     copy(app,output/'bin/xdzip')
+    shell = app.with_name('libxdzip-nautilus.so')
+    if not shell.is_file() or shell.is_symlink():
+        raise ValueError('Linux deployment requires the native Nautilus context menu extension')
+    copy(shell,output/'lib/nautilus/libxdzip-nautilus.so')
     cli = app.parent/'cli'
     if not (cli/'xdzip').is_file():
         raise ValueError('Desktop build lacks its independent CLI')

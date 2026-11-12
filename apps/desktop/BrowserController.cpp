@@ -1190,10 +1190,11 @@ void BrowserController::deferActiveTarget() {
         pending = *request;
 }
 void BrowserController::startExtraction(const QString &target, bool all, bool createFolder,
-                                        int conflict, bool allowHighRatio, bool openAfter) {
+                                        int conflict, bool allowHighRatio, bool openAfter,
+                                        int shellLayout) {
     if (m_busy || !m_ready || !runtimeAvailable() ||
         m_extractionIntent.value("session") != m_session || !targetMatches(target) ||
-        conflict < 0 || conflict > 3)
+        conflict < 0 || conflict > 3 || shellLayout < 0 || shellLayout > 2)
         return;
     xdzip::reader::Command command{};
     command.kind = xdzip::reader::CommandKind::Extract;
@@ -1205,6 +1206,7 @@ void BrowserController::startExtraction(const QString &target, bool all, bool cr
             command.selectors.push_back(rust::String(id.toStdString()));
     command.all = all;
     command.create_folder = createFolder;
+    command.shell_layout = static_cast<std::uint8_t>(shellLayout);
     command.conflict = static_cast<std::uint8_t>(conflict);
     command.allow_high_ratio = allowHighRatio;
     m_pendingOpenAfter = openAfter;
@@ -1829,7 +1831,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             QTimer::singleShot(0, this,
                                [this, session, source] { refreshAfterUpdate(session, source); });
         }
-        if (text(t.kind) == "create" && firstSuccess) {
+        if (text(t.kind) == "create" && firstSuccess && !shellOperation) {
             m_createdArchivesToOpen.append(text(t.target));
             QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
         }
@@ -1976,6 +1978,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_updateAllowed = event.update_allowed;
         m_editRestriction = event.edit_restriction;
         m_archiveFolder = text(event.folder_name);
+        m_sourceGroup = text(event.source_group);
         if (!m_result.pageFetch)
             m_result.offset = 0;
         m_result.session = QString::number(event.session);

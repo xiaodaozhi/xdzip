@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleIdentifier</key><string>org.xdzip.shell-service</string>
+<key>CFBundleExecutable</key><string>xdzip-shell-service</string>
+<key>CFBundleName</key><string>xdzip</string>
+<key>CFBundlePackageType</key><string>APPL</string>
+<key>LSUIElement</key><true/>
+<key>NSServices</key><array><dict>
+<key>NSMenuItem</key><dict><key>default</key><string>Open with xdzip</string></dict>
+<key>NSMessage</key><string>openSelection</string>
+<key>NSPortName</key><string>org.xdzip.shell-service</string>
+<key>NSSendTypes</key><array><string>NSFilenamesPboardType</string><string>public.file-url</string></array>
+<key>NSRequiredContext</key><dict><key>NSApplicationIdentifier</key><string>com.apple.finder</string></dict>
+</dict></array>
+</dict></plist>

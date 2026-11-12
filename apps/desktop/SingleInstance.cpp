@@ -1,6 +1,7 @@
 // apps/desktop/SingleInstance.cpp
 
 #include "SingleInstance.h"
+#include "ShellActionRequest.h"
 #include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QDir>
@@ -62,6 +63,8 @@ void SingleInstance::release() {
     m_accepting = false;
     m_handler = {};
     m_pending.clear();
+    m_pendingShell.clear();
+    m_shellHandler = {};
     m_pendingCli.clear();
     m_cliHandler = {};
     if (m_server.isListening())
@@ -73,7 +76,8 @@ void SingleInstance::release() {
     m_lock.reset();
 }
 SingleInstance::Result SingleInstance::start(const QStringList &paths, const QString &nameSpace,
-                                             int testTimeoutMs, const QString &cliRequest) {
+                                             int testTimeoutMs, const QString &cliRequest,
+                                             const QJsonObject &shellRequest) {
     if (m_lock)
         return Failed;
     m_accepting = true;
@@ -97,6 +101,8 @@ SingleInstance::Result SingleInstance::start(const QStringList &paths, const QSt
             return Failed;
         connect(&m_server, &QLocalServer::newConnection, this, &SingleInstance::accept,
                 Qt::UniqueConnection);
+        if (!shellRequest.isEmpty())
+            m_pendingShell.append(shellRequest);
         if (!cliRequest.isEmpty())
             m_pendingCli.append(cliRequest);
         return Primary;
@@ -116,7 +122,8 @@ SingleInstance::Result SingleInstance::start(const QStringList &paths, const QSt
         return Failed;
     const auto hello = QJsonDocument::fromJson(readLine(socket, timer, timeoutMs)).object();
     if (hello.value("protocol").toInt() != 1 ||
-        (!cliRequest.isEmpty() && hello.value("cli_protocol").toInt() != 1))
+        (!cliRequest.isEmpty() && hello.value("cli_protocol").toInt() != 1) ||
+        (!shellRequest.isEmpty() && hello.value("shell_protocol").toInt() != 1))
         return Failed;
 #ifdef Q_OS_WIN
     const auto pid = hello.value("pid").toString().toULong();
@@ -130,8 +137,11 @@ SingleInstance::Result SingleInstance::start(const QStringList &paths, const QSt
         values.append(QFileInfo(path).absoluteFilePath());
     }
     const auto id = QUuid::createUuid().toString(QUuid::WithoutBraces);
-    const auto request =
-        packet({{"protocol", 1}, {"id", id}, {"paths", values}, {"cli_request", cliRequest}});
+    const auto request = packet({{"protocol", 1},
+                                 {"id", id},
+                                 {"paths", values},
+                                 {"cli_request", cliRequest},
+                                 {"shell_action", shellRequest}});
     if (request.size() > MaxBytes || socket.write(request) != request.size())
         return Failed;
     socket.flush();
@@ -144,6 +154,12 @@ void SingleInstance::attach(std::function<void(const QStringList &)> handler) {
     const auto pending = std::exchange(m_pending, {});
     for (const auto &paths : pending)
         m_handler(paths);
+}
+void SingleInstance::attachShell(std::function<bool(const QJsonObject &)> handler) {
+    m_shellHandler = std::move(handler);
+    const auto pending = std::exchange(m_pendingShell, {});
+    for (const auto &request : pending)
+        m_shellHandler(request);
 }
 void SingleInstance::attachCli(std::function<void(const QString &)> handler) {
     m_cliHandler = std::move(handler);
@@ -159,6 +175,7 @@ void SingleInstance::accept() {
         }
         socket->write(packet({{"protocol", 1},
                               {"cli_protocol", 1},
+                              {"shell_protocol", 1},
                               {"pid", QString::number(QCoreApplication::applicationPid())}}));
         auto *timeout = new QTimer(socket);
         timeout->setSingleShot(true);
@@ -176,6 +193,8 @@ void SingleInstance::accept() {
             const auto id = request.value("id").toString();
             const auto values = request.value("paths");
             const auto cli = request.value("cli_request").toString();
+            const auto shell = request.value("shell_action").toObject();
+            const bool hasShell = !shell.isEmpty();
             const bool cliValid =
                 (!request.contains("cli_request") || request.value("cli_request").isString()) &&
                 (cli.isEmpty() ||
@@ -189,14 +208,24 @@ void SingleInstance::accept() {
                          QFileInfo(path).isAbsolute();
                 paths.append(path);
             }
-            valid &= cliValid && m_accepting &&
-                     (cli.isEmpty() ? bool(m_handler || m_pending.size() < 128)
-                                    : bool(m_cliHandler || m_pendingCli.size() < 128));
+            valid &=
+                (!hasShell ||
+                 (cli.isEmpty() && paths.isEmpty() && ShellActionRequest::parse(shell).valid())) &&
+                (!request.contains("shell_action") || request.value("shell_action").isObject()) &&
+                cliValid && m_accepting &&
+                (!hasShell || m_shellHandler || m_pendingShell.size() < 32) &&
+                (cli.isEmpty() ? bool(m_handler || m_pending.size() < 128)
+                               : bool(m_cliHandler || m_pendingCli.size() < 128));
             if (valid && !m_seen.contains(id)) {
                 m_seen.append(id);
                 if (m_seen.size() > 128)
                     m_seen.removeFirst();
-                if (!cli.isEmpty()) {
+                if (hasShell) {
+                    if (m_shellHandler)
+                        valid = m_shellHandler(shell);
+                    else
+                        m_pendingShell.append(shell);
+                } else if (!cli.isEmpty()) {
                     if (m_cliHandler)
                         m_cliHandler(cli);
                     else

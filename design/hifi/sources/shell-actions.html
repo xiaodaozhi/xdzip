@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>文件管理器独立操作</title>
+<style>
+:root{--surface:#fff;--text:#141827;--secondary:#667085;--border:#dce2ec;--accent:#1956ff;--hover:#f4f6fa;--scale:1}
+*{box-sizing:border-box}body{margin:0;padding:32px;background:#e8ebf0;color:var(--text);font:calc(13px * var(--scale)) system-ui}
+body.dark{background:#171b25;--surface:#242a38;--text:#f1f4fa;--secondary:#a9b2c5;--border:#485469;--hover:#30384a}
+nav{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:24px}a{color:var(--accent)}
+.window{width:491px;max-width:100%;max-height:600px;margin:auto;background:var(--surface);border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;overflow:hidden}
+.native{padding:12px;border-bottom:1px solid var(--border);font-size:12px;text-align:center}
+header{display:flex;gap:16px;padding:20px 24px;min-height:96px;align-items:center}header img{width:48px;height:48px}h1{font-size:calc(20px * var(--scale));margin:0 0 6px}p{margin:0;color:var(--secondary);line-height:1.5}
+main{overflow:auto;padding:0 24px 24px;display:flex;flex-direction:column;gap:12px}button{font:inherit;color:inherit;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:7px 12px;text-align:left;cursor:pointer}button:hover{background:var(--hover)}button:active{background:var(--border)}button:disabled{color:var(--secondary);cursor:default}footer{border-top:1px solid var(--border);padding:16px 24px;display:flex;justify-content:flex-end}.state{padding:12px 0;border-bottom:1px solid var(--border)}.state strong{display:block;margin-bottom:6px}
+</style>
+<nav><a href="?">操作选择</a><a href="?state=result">批次结果</a><a href="?lang=en">English</a><a href="?theme=dark">深色</a><a href="?scale=1.5">150% 字号</a><span>491 逻辑宽度，最高 600，复用操作窗口及共享 footer。</span></nav>
+<section class="window"><div class="native">用 xdzip 打开</div><header><img src="../../assets/png/light/archive-add@2x.png" alt=""><div><h1>用 xdzip 打开</h1><p>已选择 2 项</p></div></header><main></main><footer><button>关闭</button></footer></section>
+<script>
+const q=new URLSearchParams(location.search),english=q.get('lang')==='en',result=q.get('state')==='result';document.body.classList.toggle('dark',q.get('theme')==='dark');document.documentElement.style.setProperty('--scale',['1','1.25','1.5'].includes(q.get('scale'))?q.get('scale'):'1');
+const labels=english?['Add to "Projects.zip"','Add to "Projects.7z"','Add to archive...','Add to separate "file/folder name.zip" archives','Extract here','Auto-extract to separate folders','Extract each archive to a separate folder','Extract to folder...']:['添加到“项目.zip”','添加到“项目.7z”','添加到压缩文件...','添加到单独的“文件/文件夹名.zip”','解压到当前文件夹','自动解压到单独的文件夹','解压每个压缩文件到单独的文件夹','解压到指定文件夹...'];
+document.querySelector('h1').textContent=result?(english?'Operation results':'操作结果'):(english?'Open with xdzip':'用 xdzip 打开');document.querySelector('p').textContent=result?(english?'1 succeeded, 1 failed, 0 cancelled or not run':'成功 1 项，失败 1 项，取消或未执行 0 项'):(english?'2 selected items':'已选择 2 项');document.querySelector('footer button').textContent=english?'Close':'关闭';const main=document.querySelector('main');if(result){for(const [name,state]of [['Project.zip',english?'Completed':'已完成'],['Notes.zip',english?'Failed: source changed':'失败：来源已变化']]){const row=document.createElement('div');row.className='state';const title=document.createElement('strong');title.textContent=name;const note=document.createElement('p');note.textContent=state;row.append(title,note);main.append(row)}}else for(const label of labels){const button=document.createElement('button');button.textContent=label;button.onclick=()=>{document.querySelector('p').textContent=english?'Design preview, no files are processed.':'设计预览，不处理实际文件。'};main.append(button)}
+</script></html>

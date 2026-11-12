@@ -1,7 +1,7 @@
 //! Product cxx boundary: unique command and blocking event handles, no GUI archive calls.
 mod cli;
 mod update;
-use cli::{cli_request_read, cli_request_write, cli_status_write};
+use cli::{cli_request_read, cli_request_write, cli_status_write, shell_request_read};
 
 use xdzip_domain::identity::EntryId;
 use xdzip_runtime::service;
@@ -71,6 +71,7 @@ mod ffi {
         password: String,
         all: bool,
         create_folder: bool,
+        shell_layout: u8,
         conflict: u8,
         allow_high_ratio: bool,
     }
@@ -184,6 +185,7 @@ mod ffi {
         edit_restriction: u8,
         format: String,
         folder_name: String,
+        source_group: String,
         query: u64,
         generation: u64,
         revision: u64,
@@ -201,6 +203,7 @@ mod ffi {
         task: TaskSnapshot,
     }
     extern "Rust" {
+        fn shell_request_read(directory: &str, root: &str) -> String;
         fn cli_request_read(directory: &str, root: &str) -> String;
         fn cli_request_write(directory: &str, root: &str, result: &str) -> bool;
         fn cli_status_write(root: &str, result: &str) -> bool;
@@ -415,6 +418,7 @@ impl CommandClient {
                     selected: command.selectors,
                     directory: command.directory,
                     create_folder: false,
+                    shell_layout: 0,
                     conflict: xdzip_runtime::extraction::ConflictPolicy::Ask,
                     allow_high_ratio: false,
                 };
@@ -501,6 +505,7 @@ impl CommandClient {
                         selected: command.selectors,
                         directory: command.directory,
                         create_folder: command.create_folder,
+                        shell_layout: command.shell_layout,
                         conflict,
                         allow_high_ratio: command.allow_high_ratio,
                     },
@@ -594,6 +599,7 @@ impl EventReceiver {
             edit_restriction: 4,
             format: String::new(),
             folder_name: String::new(),
+            source_group: String::new(),
             query: 0,
             generation: 0,
             revision: 0,
@@ -660,6 +666,7 @@ impl EventReceiver {
                 edit_restriction,
                 format,
                 folder_name,
+                source_group,
                 key,
                 rows,
                 navigation,
@@ -674,6 +681,7 @@ impl EventReceiver {
                 event.edit_restriction = edit_restriction;
                 event.format = format.label().into();
                 event.folder_name = folder_name;
+                event.source_group = source_group;
                 event.query = key.query.get();
                 event.generation = key.generation.get();
                 event.revision = key.revision.get();
@@ -931,6 +939,7 @@ mod tests {
                 password: String::new(),
                 all: false,
                 create_folder: false,
+                shell_layout: 0,
                 conflict: 0,
                 allow_high_ratio: false,
             }
@@ -1040,6 +1049,7 @@ mod tests {
             password: String::new(),
             all: false,
             create_folder: false,
+            shell_layout: 0,
             conflict: 0,
             allow_high_ratio: false,
         };

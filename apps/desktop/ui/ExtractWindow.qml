@@ -10,6 +10,10 @@ OperationWindow {
     property var intent: controller.extractionIntent
     property var targetState: controller.targetCheck
     property bool allFiles: true
+    property bool shellMode: false
+    property int shellArchiveCount: 1
+    property var shellSubmit: null
+    property int shellLayout: 2
     readonly property real density: Theme.operationExtractDensity
     function unit(value: real): real { return value * density; }
     width: Theme.operationExtractWidth
@@ -36,7 +40,7 @@ OperationWindow {
         sameFolder.checked = true;
         conflict.currentIndex = 0;
         highRatio.checked = false;
-        openAfter.checked = true;
+        openAfter.checked = !shellMode;
         present();
         controller.checkTarget(target.text);
     }
@@ -129,7 +133,7 @@ OperationWindow {
                             OperationCheck {
                                 density: root.density; spacing: Theme.operationDestinationIndicatorGap
                                 indicatorSlotSize: Theme.operationDestinationIndicatorSlotSize
-                                id: sameFolder; objectName: "extractSameFolder"; Layout.fillWidth: true; text: qsTrId("ui.82e9111f1c4f"); checked: true }
+                                id: sameFolder; visible: !root.shellMode; objectName: "extractSameFolder"; Layout.fillWidth: true; text: qsTrId("ui.82e9111f1c4f"); checked: true }
                             RowLayout {
                                 Layout.fillWidth: true; spacing: Theme.operationDestinationIndicatorGap
                                 Item {
@@ -162,7 +166,19 @@ OperationWindow {
                             }
                         }
                     }
+                    ColumnLayout {
+                        visible: root.shellMode
+                        Layout.fillWidth: true
+                        Text { Layout.fillWidth: true; text: qsTrId("shell.selection").arg(root.shellArchiveCount); wrapMode: Text.Wrap; color: Theme.text; font.pixelSize: Theme.operationFooterFontSize }
+                        OperationSelect {
+                            Layout.fillWidth: true
+                            model: [qsTrId("shell.layoutHere"), qsTrId("shell.layoutSmart"), qsTrId("shell.layoutSeparate")]
+                            currentIndex: root.shellLayout
+                            onActivated: index => root.shellLayout = index
+                        }
+                    }
                     Rectangle {
+                        visible: !root.shellMode
                         objectName: "extractScopeCard"
                         Layout.fillWidth: true; implicitHeight: scopeContent.implicitHeight + root.unit(32)
                         color: Theme.surface; radius: root.unit(Theme.operationFieldRadius); border.color: Theme.operationCardBorder
@@ -253,7 +269,7 @@ OperationWindow {
                 objectName: "startExtract"
                 text: qsTrId("ui.d63e300f62a9"); primary: true
                 enabled: root.targetReady && (!root.controller.busy || Boolean(root.controller.taskStarting)) && root.intent.session === root.controller.sessionId
-                onClicked: { if (!root.controller.busy) root.controller.startExtraction(target.text, root.allFiles, sameFolder.checked, conflict.currentIndex, highRatio.checked, openAfter.checked); }
+                onClicked: { if (!root.controller.busy) { if (root.shellSubmit) root.shellSubmit(target.text, root.shellLayout, conflict.currentIndex, highRatio.checked, openAfter.checked); else root.controller.startExtraction(target.text, root.allFiles, sameFolder.checked, conflict.currentIndex, highRatio.checked, openAfter.checked); } }
             }
         }
     }

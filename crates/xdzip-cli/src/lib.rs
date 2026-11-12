@@ -157,6 +157,7 @@ fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -
                         selected,
                         directory: String::new(),
                         create_folder: false,
+                        shell_layout: 0,
                         conflict: policy(matches),
                         allow_high_ratio: matches.get_flag("allow-high-ratio"),
                     },

@@ -30,6 +30,7 @@ CASES = ['windowHoverEndsBeforeRestore', 'windowHoverSensorsEndBeforeRestore',
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--tests', type=Path, required=True)
+    parser.add_argument('--shell-tests', type=Path)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--inside-x11', action='store_true', help=argparse.SUPPRESS)
     args = parser.parse_args()
@@ -44,7 +45,8 @@ def main():
     env['QT_QPA_PLATFORM'] = {'win32': 'windows', 'darwin': 'cocoa', 'linux': 'xcb'}[sys.platform]
     if sys.platform == 'linux' and not args.inside_x11:
         subprocess.run(['xvfb-run', '-a', sys.executable, str(Path(__file__).resolve()),
-                        '--tests', str(args.tests.resolve()), '--output', str(output), '--inside-x11'],
+                        '--tests', str(args.tests.resolve()), '--output', str(output), '--inside-x11',
+                        *(['--shell-tests', str(args.shell_tests.resolve())] if args.shell_tests else [])],
                        env=env, check=True, timeout=180)
         return
     window_manager = None
@@ -66,6 +68,21 @@ def main():
                       window_manager_ready_ms=window_manager.ready_ms if window_manager else None,
                       cases=CASES, timed_out=timed_out,
                       limits='Native window/session automation. Not manual visual, GPU, IME or screen-reader acceptance.')
+        if args.shell_tests and result.returncode == 0:
+            shell_log = output.with_name('shell-native.log')
+            shell_env = dict(env, XDZIP_SHELL_CAPTURE_DIR=str(output.parent/'shell-native-scenes'))
+            shell_cases = ['shellLayoutMatrix', 'shellSettingsAccessibleActionsUpdateTheRealModel',
+                           'hostHasNoMainWindowAndDeduplicates']
+            shell_result = subprocess.run([str(args.shell_tests.resolve()), *shell_cases,
+                                           '-o', str(shell_log)+',txt'], env=shell_env,
+                                          capture_output=True, text=True, timeout=90)
+            shell_log.write_text(sanitized(shell_log.read_text(encoding='utf-8', errors='replace')
+                                          if shell_log.exists() else shell_result.stdout+shell_result.stderr), encoding='utf-8')
+            report['shell_cases'] = shell_cases
+            report['shell_status'] = 'passed' if shell_result.returncode == 0 else 'failed'
+            if shell_result.returncode:
+                report['status'] = 'failed'
+                result = shell_result
         output.write_text(json.dumps(report, indent=2)+'\n', encoding='utf-8')
         if result.returncode: raise ValueError('Native session regression failed; inspect its log')
     finally:

@@ -18,7 +18,7 @@
 | 产品与架构 | [设计总览](design/index.md)、[架构决策](design/architecture-decisions.md)、[需求追踪](design/requirements-traceability.md) |
 | 界面规范 | [严格设计规范](visual/design-standard.md)、[设计流程](visual/design-workflow.md)、[逻辑尺寸](visual/layout-scale.json)、[视觉参数](visual/tokens.json) |
 | 高保真与素材 | [原稿入口](../design/hifi/README.md)、[可操作 HTML 设计](../design/html/README.md)、[素材目录](../design/assets/index.html) |
-| 交互契约 | [主窗口](ux/main-window-components.md)、[任务窗口](ux/task-windows.md)、[密码解压](ux/password-extraction.md)、[系统集成](ux/desktop-integration.md)、[设置与国际化](ux/settings-localization.md)、[中文术语](ux/chinese-terminology.md) |
+| 交互契约 | [主窗口](ux/main-window-components.md)、[任务窗口](ux/task-windows.md)、[密码解压](ux/password-extraction.md)、[系统集成](ux/desktop-integration.md)、[文件管理器右键操作](engineering/shell-actions.md)、[设置与国际化](ux/settings-localization.md)、[中文术语](ux/chinese-terminology.md) |
 | 浏览与任务 | [运行时](engineering/m1-runtime.md)、[只读索引](engineering/m2-readonly.md)、[大归档索引](engineering/large-index.md)、[主动预览](engineering/content-preview.md)、[浏览契约](engineering/readonly-browser.md)、[解压预检](engineering/extraction-preflight.md) |
 | 文件与格式 | [文件名编码](engineering/filename-encoding.md)、[分卷与临时打开](engineering/archive-opening.md)、[文件拖放与修改](engineering/archive-transfers.md)、[完整性检查](engineering/archive-checking.md)、[安全解压](engineering/m3-extraction.md)、[密码解压](engineering/password-extraction.md)、[ZIP 创建](engineering/m4-creation.md)、[TAR/GZIP](engineering/m4-tar-gzip.md)、[CAB 来源与实现依据](engineering/cab-format-sources.md) |
 | 工具链与依赖 | [工具链策略](engineering/toolchain.md)、[依赖准入](engineering/dependencies.md)、[cxx 桥接依据](engineering/cxx-admission.md)、[许可](engineering/licensing.md)、[Windows 许可](engineering/windows-licensing.md) |

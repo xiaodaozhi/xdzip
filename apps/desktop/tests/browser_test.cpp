@@ -1,3 +1,4 @@
+#include "ShellBatchController.h"
 // apps/desktop/tests/browser_test.cpp
 
 #include "../BuildInfo.h"
@@ -7040,6 +7041,7 @@ QtObject {
                      ? QFontDatabase::systemFont(QFontDatabase::GeneralFont).family()
                      : systemFontFamily);
         QCOMPARE(QGuiApplication::font().family(), QStringLiteral("Xdzip Design Sans SC"));
+        qmlRegisterType<ShellBatchController>("Xdzip.Native", 1, 0, "ShellBatchController");
         qmlRegisterType<BrowserController>("Xdzip.Native", 1, 0, "BrowserController");
     }
     void init() {

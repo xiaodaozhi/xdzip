@@ -89,6 +89,8 @@ pub struct Options {
     pub directory: String,
     /// Derive one archive-named child grant under the selected directory.
     pub create_folder: bool,
+    /// 0: legacy, 1: smart wrapper, 2: exclusive archive-named wrapper.
+    pub shell_layout: u8,
     /// Initial ordinary-file conflict policy.
     pub conflict: ConflictPolicy,
     /// Permit declared ratios above 1000:1, retaining all hard byte limits.
@@ -96,7 +98,9 @@ pub struct Options {
 }
 impl Options {
     pub(crate) fn bounded(&self) -> bool {
-        !self.target.is_empty()
+        self.shell_layout <= 2
+            && (self.shell_layout == 0 || (self.all && self.directory.is_empty()))
+            && !self.target.is_empty()
             && self.target.len() <= 4096
             && !self.target.contains('\0')
             && std::path::Path::new(&self.target).is_absolute()
@@ -476,6 +480,7 @@ impl Archive {
             selected: vec![entry.to_string()],
             directory: String::new(),
             create_folder: false,
+            shell_layout: 0,
             conflict: ConflictPolicy::Ask,
             allow_high_ratio: false,
         };
