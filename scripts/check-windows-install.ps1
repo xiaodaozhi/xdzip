@@ -218,7 +218,11 @@ function Test-ShellIntegration {
     Test-ShellTarget 0
     $exe = Join-Path $testRoot 'xdzip.exe'
     # Simulate a retained registration for an older owned DLL after an upgrade.
-    (Get-Item $classKey).SetValue('', (Join-Path (Split-Path $library) 'xdzip-shell-0000000000000000.dll'))
+    $ownedClass = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Classes\CLSID\{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}\InprocServer32', $true)
+    if (!$ownedClass) { throw 'Owned shell class cannot be opened for the upgrade fixture' }
+    try {
+        $ownedClass.SetValue('', (Join-Path (Split-Path $library) 'xdzip-shell-0000000000000000.dll'), [Microsoft.Win32.RegistryValueKind]::String)
+    } finally { $ownedClass.Close() }
     $removed = Start-Process -FilePath $exe -ArgumentList '--uninstall-shell-integration' -Wait -PassThru
     if ($removed.ExitCode -ne 0 -or (Test-Path $menuKey) -or (Test-Path $classKey)) { throw 'Owned shell removal failed' }
     $restored = Start-Process -FilePath $exe -ArgumentList '--sync-shell-integration' -Wait -PassThru
