@@ -72,6 +72,8 @@ public static class XdzipPackageOrigin {
         try {
             $processId = [XdzipMsixActivation]::Start($appId, $check[0])
             $process = Get-Process -Id $processId -ErrorAction Stop
+            $processHandle = $process.Handle
+            if ([XdzipMsixActivation]::PackageName($processHandle) -ne $installed.PackageFullName) { throw 'Activated check has the wrong package identity' }
             if (!$process.WaitForExit(60000)) { throw 'Installed product check timed out' }
             if ($process.ExitCode -ne $check[1]) { throw "Installed product check $($check[0]) failed with exit code $($process.ExitCode)" }
         } finally {
