@@ -179,7 +179,7 @@ class ImagePreviewTest final : public QObject {
         const auto image =
             render("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 32'>"
                    "<metadata><owned xmlns='urn:owned'>ignored</owned></metadata>"
-                   "<style>.paint {fill:url(#color)}</style><defs>"
+                   "<style>.paint {fill:u<![CDATA[rl(#color)]]>}</style><defs>"
                    "<linearGradient id='color'><stop stop-color='#123456'/></linearGradient>"
                    "<rect id='shape' width='64' height='32'/></defs>"
                    "<use href='#shape' class='paint'/><text x='2' y='12'>SVG</text></svg>",
@@ -198,6 +198,12 @@ class ImagePreviewTest final : public QObject {
             "<rect width='64' height='32' fill='url(file:///owned.png)'/>");
         QTest::newRow("css-import") << QByteArray("<style>@import 'owned.css';</style>");
         QTest::newRow("css-escape") << QByteArray("<style>u\\72l(owned.png)</style>");
+        QTest::newRow("css-cdata-split")
+            << QByteArray("<style>rect{fill:u<![CDATA[rl(file:///owned.png)]]>}</style>");
+        QTest::newRow("css-comment-split")
+            << QByteArray("<style>rect{fill:ur<!-- owned -->l(file:///owned.png)}</style>");
+        QTest::newRow("css-nested-element")
+            << QByteArray("<style>rect{fill:u<g/>rl(file:///owned.png)}</style>");
         QTest::newRow("script") << QByteArray("<script>owned</script>");
         QTest::newRow("event") << QByteArray("<rect onload='owned' width='64' height='32'/>");
         QTest::newRow("foreign") << QByteArray("<foreignObject>owned</foreignObject>");

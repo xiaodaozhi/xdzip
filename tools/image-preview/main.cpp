@@ -108,6 +108,7 @@ QByteArray svg(const QByteArray &input) {
     QByteArray output;
     QXmlStreamWriter writer(&output);
     int depth = 0, count = 0, ignoredMetadata = 0, styleDepth = 0;
+    QString styleText;
     bool root = false;
     while (!reader.atEnd()) {
         const auto token = reader.readNext();
@@ -115,7 +116,7 @@ QByteArray svg(const QByteArray &input) {
             token == QXmlStreamReader::ProcessingInstruction)
             return {};
         if (token == QXmlStreamReader::StartElement) {
-            if (++depth > 64 || ++count > 8192 || reader.attributes().size() > 64)
+            if (++depth > 64 || ++count > 8192 || reader.attributes().size() > 64 || styleDepth)
                 return {};
             if (ignoredMetadata)
                 continue;
@@ -163,8 +164,15 @@ QByteArray svg(const QByteArray &input) {
                 }
             }
         } else if (token == QXmlStreamReader::EndElement) {
-            if (styleDepth == depth)
+            if (styleDepth == depth) {
+                // XML comments and CDATA may divide one CSS token. Validate the
+                // complete text that the renderer receives, never each chunk.
+                if (!css(styleText))
+                    return {};
+                writer.writeCharacters(styleText);
+                styleText.clear();
                 styleDepth = 0;
+            }
             if (ignoredMetadata) {
                 if (ignoredMetadata == depth)
                     ignoredMetadata = 0;
@@ -174,9 +182,13 @@ QByteArray svg(const QByteArray &input) {
             --depth;
         } else if (token == QXmlStreamReader::Characters && !ignoredMetadata) {
             const auto text = reader.text().toString();
-            if (styleDepth && !css(text))
-                return {};
-            writer.writeCharacters(text);
+            if (styleDepth) {
+                styleText += text;
+                if (styleText.size() > ImagePreview::EncodedLimit)
+                    return {};
+            } else {
+                writer.writeCharacters(text);
+            }
         }
         if (output.size() > ImagePreview::EncodedLimit)
             return {};
