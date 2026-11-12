@@ -11,6 +11,11 @@ constexpr int SourceDimension = 16384;
 constexpr int ThumbnailSide = 512;
 constexpr qsizetype OutputLimit = ThumbnailSide * ThumbnailSide * 4;
 constexpr int DeadlineMs = 5000;
+#ifdef Q_OS_MACOS
+constexpr qint64 RuntimeFileLimit = 16 * 1024 * 1024;
+#else
+constexpr qint64 RuntimeFileLimit = 0;
+#endif
 inline void append32(QByteArray &out, quint32 value) {
     char bytes[4];
     qToLittleEndian(value, bytes);

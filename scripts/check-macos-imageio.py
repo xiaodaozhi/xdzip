@@ -29,7 +29,10 @@ def qt_probe(directory, install):
     for name, source in [('worker', ROOT/'tools/image-preview/main.cpp'),
                          ('control', ROOT/'apps/desktop/tests/macos_image_limits_probe.cpp')]:
         binary = directory/name
-        result = subprocess.run([*flags, str(source), '-o', str(binary)], capture_output=True, text=True)
+        sources = [str(source)]
+        if name == 'control':
+            sources.append(str(ROOT/'apps/desktop/ImagePreviewProcess.cpp'))
+        result = subprocess.run([*flags, *sources, '-o', str(binary)], capture_output=True, text=True)
         log = (result.stdout+result.stderr).replace(str(ROOT), '<workspace>').replace(str(Path.home()), '<home>')
         (directory/(name+'-build.log')).write_text(log)
         if result.returncode:
@@ -40,25 +43,69 @@ def qt_probe(directory, install):
     result = subprocess.run([str(binaries['control']), *map(str, fixtures)], capture_output=True,
                             timeout=20, env=env, check=True)
     control = json.loads(result.stdout)
+    result = subprocess.run([str(binaries['control']), 'parent', str(binaries['worker']), *map(str, fixtures)],
+                            capture_output=True, timeout=20, env=env, check=True)
+    parent = json.loads(result.stdout)
+    result = subprocess.run([str(binaries['control']), 'file-boundary'], capture_output=True,
+                            timeout=10, env=env, check=True)
+    boundary = json.loads(result.stdout)
+    parent_env = {k: v for k, v in env.items() if k in ('SystemRoot', 'WINDIR', 'PATH', 'LD_LIBRARY_PATH',
+                                                     'DYLD_LIBRARY_PATH', 'DYLD_FRAMEWORK_PATH',
+                                                     'QT_PLUGIN_PATH', 'QT_QPA_PLATFORM')}
     records = []
     for source in fixtures:
         payload = source.read_bytes()
         request = b'XIP1'+struct.pack('<II', 12, len(payload))+payload
         profiles = {}
-        for profile in ('product', 'all', 'as', 'fsize', 'nofile', 'cpu'):
-            command = [str(binaries['worker'])] if profile == 'product' else [str(binaries['control']), 'worker-'+profile]
-            result = subprocess.run(command, input=request, capture_output=True, timeout=10, env=env)
+        for profile in ('product', 'all', 'as', 'fsize', 'fsize64k', 'fsize1m', 'fsize16m',
+                        'fsize64m', 'fsize128m', 'fsize512m', 'nofile', 'cpu', 'parent-environment',
+                        'parent-with-home', 'parent-with-tmpdir'):
+            inherited = profile == 'product' or profile.startswith('parent-')
+            command = [str(binaries['worker'])] if inherited else [str(binaries['control']), 'worker-'+profile]
+            child_env = parent_env.copy() if profile.startswith('parent-') else env
+            extra = {'parent-with-home': 'HOME', 'parent-with-tmpdir': 'TMPDIR'}.get(profile)
+            if extra and extra in env:
+                child_env[extra] = env[extra]
+            result = subprocess.run(command, input=request, capture_output=True, timeout=10, env=child_env)
             valid = result.returncode == 0 and result.stdout.startswith(b'XIR1') and len(result.stdout) >= 16
             dimensions = list(struct.unpack('<III', result.stdout[4:16])) if valid else None
             if dimensions:
                 width, height, length = dimensions
                 valid = 0 < width <= 512 and 0 < height <= 512 and length == width*height*4 and len(result.stdout) == length+16
             diagnostic = result.stderr.decode('utf-8', errors='replace').replace(str(ROOT), '<workspace>')
+            pixel = None
+            if valid:
+                at = 16 + ((height//2)*width + width//2)*4
+                pixel = list(result.stdout[at:at+4])
             profiles[profile] = {'exit_code': result.returncode, 'decoded': valid,
-                                 'dimensions': dimensions, 'diagnostic': diagnostic[:4096]}
+                                 'dimensions': dimensions, 'pixel': pixel, 'diagnostic': diagnostic[:4096]}
         records.append({'fixture': source.name, 'profiles': profiles})
-    return {'qt': '6.8.2', 'unrestricted_qt_reader': control, 'worker_limits': records,
+    return {'qt': '6.8.2', 'unrestricted_qt_reader': control, 'parent_renderer': parent,
+            'runtime_file_boundary': boundary, 'worker_limits': records,
             'scope': 'Standalone actual worker and one-limit-at-a-time diagnostic; no desktop application build.'}
+
+
+def verified_worker(probe):
+    boundary = probe['runtime_file_boundary']
+    if not (0 < boundary['limit'] <= 16*1024*1024 and boundary['at_limit_allowed']
+            and boundary['over_limit_refused']):
+        return False
+    def owned_pixel(pixel):
+        return pixel is not None and len(pixel) == 4 and pixel[3] == 255 and all(
+            abs(a-b) <= 8 for a, b in zip(pixel[:3], (52, 146, 189)))
+    expected = ((512, 288), (512, 384))
+    if len(probe['parent_renderer']) != 2 or len(probe['worker_limits']) != 2:
+        return False
+    for parent, worker, size in zip(probe['parent_renderer'], probe['worker_limits'], expected):
+        if not (parent['decoded'] and (parent['width'], parent['height']) == size
+                and owned_pixel(parent.get('pixel'))):
+            return False
+        for name in ('product', 'parent-environment'):
+            result = worker['profiles'][name]
+            if not (result['decoded'] and tuple(result['dimensions'][:2]) == size
+                    and owned_pixel(result.get('pixel'))):
+                return False
+    return True
 
 
 def main():
@@ -66,12 +113,13 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--qt-probe', action='store_true')
     parser.add_argument('--install-qt', action='store_true')
+    parser.add_argument('--verify-worker', action='store_true')
     args = parser.parse_args()
     output = args.output.resolve()
     if platform.system() != 'Darwin' or not output.is_relative_to(ROOT/'build'):
         parser.error('Use native macOS and keep observations under build/')
-    if args.install_qt and not args.qt_probe:
-        parser.error('--install-qt requires --qt-probe')
+    if (args.install_qt or args.verify_worker) and not args.qt_probe:
+        parser.error('--install-qt/--verify-worker requires --qt-probe')
     output.parent.mkdir(parents=True, exist_ok=True)
     env = {k: v for k, v in os.environ.items()
            if not k.startswith(('QT_', 'QML_', 'DYLD_', 'XDZIP_'))}
@@ -103,8 +151,12 @@ def main():
         directory = output.parent/'qt-image-probe'
         directory.mkdir(exist_ok=True)
         record['qt_probe'] = qt_probe(directory, args.install_qt)
+        if args.verify_worker:
+            record['worker_regression_status'] = 'passed' if verified_worker(record['qt_probe']) else 'failed'
     output.write_text(json.dumps(record, indent=2)+'\n')
     print(json.dumps(record))
+    if args.verify_worker and record['worker_regression_status'] != 'passed':
+        raise SystemExit('Actual image-worker or file-budget regression failed')
 
 
 if __name__ == '__main__':

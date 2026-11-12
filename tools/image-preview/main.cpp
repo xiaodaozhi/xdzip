@@ -61,7 +61,10 @@ bool limits() {
     addressSpace += info.virtual_size;
 #endif
     const rlimit space{rlim_t(addressSpace), rlim_t(addressSpace)};
-    const rlimit cpu{3, 3}, core{0, 0}, files{0, 0}, descriptors{64, 64};
+    // ImageIO may grow file-backed runtime resources even for in-memory HEIC.
+    // Keep a finite macOS per-file allowance; archive payloads remain stdin-only.
+    const auto fileLimit = rlim_t(ImagePreview::RuntimeFileLimit);
+    const rlimit cpu{3, 3}, core{0, 0}, files{fileLimit, fileLimit}, descriptors{64, 64};
     return setrlimit(RLIMIT_AS, &space) == 0 && setrlimit(RLIMIT_CPU, &cpu) == 0 &&
            setrlimit(RLIMIT_CORE, &core) == 0 && setrlimit(RLIMIT_FSIZE, &files) == 0 &&
            setrlimit(RLIMIT_NOFILE, &descriptors) == 0;

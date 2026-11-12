@@ -1,12 +1,36 @@
 // Standalone diagnostic only. It compiles the real worker with an OS-call
 // interceptor to omit one limit at a time; product builds never include it.
+#include "ImagePreviewProcess.h"
+#include <QFile>
 #include <QJsonObject>
+#include <cerrno>
+#include <csignal>
 #include <cstring>
 #include <sys/resource.h>
+#include <unistd.h>
 
 namespace {
 const char *omittedLimit = "";
 int imageProbeSetLimit(int resource, const rlimit *limit) {
+    if (resource == RLIMIT_FSIZE) {
+        rlim_t replacement = 0;
+        if (std::strcmp(omittedLimit, "fsize64k") == 0)
+            replacement = 64 * 1024;
+        else if (std::strcmp(omittedLimit, "fsize1m") == 0)
+            replacement = 1024 * 1024;
+        else if (std::strcmp(omittedLimit, "fsize16m") == 0)
+            replacement = 16 * 1024 * 1024;
+        else if (std::strcmp(omittedLimit, "fsize64m") == 0)
+            replacement = 64 * 1024 * 1024;
+        else if (std::strcmp(omittedLimit, "fsize128m") == 0)
+            replacement = 128 * 1024 * 1024;
+        else if (std::strcmp(omittedLimit, "fsize512m") == 0)
+            replacement = 512 * 1024 * 1024;
+        if (replacement) {
+            const rlimit bounded{replacement, replacement};
+            return ::setrlimit(resource, &bounded);
+        }
+    }
     if (std::strcmp(omittedLimit, "all") == 0 ||
         (resource == RLIMIT_AS && std::strcmp(omittedLimit, "as") == 0) ||
         (resource == RLIMIT_FSIZE && std::strcmp(omittedLimit, "fsize") == 0) ||
@@ -32,6 +56,43 @@ int main(int argc, char **argv) {
     QGuiApplication application(argc, argv);
     QImageReader::setAllocationLimit(128);
     QJsonArray records;
+    if (argc == 2 && std::strcmp(argv[1], "file-boundary") == 0) {
+        if (!limits())
+            return 2;
+        std::signal(SIGXFSZ, SIG_IGN);
+        FILE *file = tmpfile();
+        if (!file)
+            return 2;
+        const bool allowed = ftruncate(fileno(file), ImagePreview::RuntimeFileLimit) == 0;
+        errno = 0;
+        const bool refused =
+            ftruncate(fileno(file), ImagePreview::RuntimeFileLimit + 1) != 0 && errno == EFBIG;
+        fclose(file);
+        const auto record = QJsonDocument(QJsonObject{{"limit", ImagePreview::RuntimeFileLimit},
+                                                      {"at_limit_allowed", allowed},
+                                                      {"over_limit_refused", refused}})
+                                .toJson(QJsonDocument::Compact);
+        fwrite(record.data(), 1, size_t(record.size()), stdout);
+        return allowed && refused ? 0 : 2;
+    }
+    if (argc >= 4 && std::strcmp(argv[1], "parent") == 0) {
+        for (int i = 3; i < argc; ++i) {
+            QFile file(QString::fromUtf8(argv[i]));
+            if (!file.open(QIODevice::ReadOnly))
+                return 2;
+            const auto image = ImagePreview::render(QString::fromUtf8(argv[2]), file.readAll(), 12,
+                                                    [] { return true; });
+            const auto pixel = image.isNull() ? QColor() : image.pixelColor(image.rect().center());
+            records.append(QJsonObject{
+                {"decoded", !image.isNull()},
+                {"width", image.width()},
+                {"height", image.height()},
+                {"pixel", QJsonArray{pixel.red(), pixel.green(), pixel.blue(), pixel.alpha()}}});
+        }
+        const auto result = QJsonDocument(records).toJson(QJsonDocument::Compact);
+        return fwrite(result.data(), 1, size_t(result.size()), stdout) == size_t(result.size()) ? 0
+                                                                                                : 2;
+    }
     for (int i = 1; i < argc; ++i) {
         QImageReader reader(QString::fromUtf8(argv[i]), "heic");
         reader.setAutoDetectImageFormat(false);

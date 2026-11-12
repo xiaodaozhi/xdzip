@@ -8,7 +8,7 @@ on:
         required: false
         default: false
       image_only:
-        description: Observe native macOS ImageIO only, without claiming a Foundation gate
+        description: Run only macOS image decoding diagnostics, without a Foundation gate
         type: boolean
         required: false
         default: false
@@ -32,7 +32,7 @@ jobs:
         run: test '${{ inputs.sdk_only }}' != 'true'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Compare native ImageIO, Qt and individual worker limits
-        run: python3 scripts/check-macos-imageio.py --qt-probe --install-qt --output build/review/macos-imageio.json
+        run: python3 scripts/check-macos-imageio.py --qt-probe --install-qt --verify-worker --output build/review/macos-imageio.json
       - name: Retain native capability observations only
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
