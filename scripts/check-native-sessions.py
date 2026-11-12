@@ -72,7 +72,8 @@ def main():
             shell_log = output.with_name('shell-native.log')
             shell_env = dict(env, XDZIP_SHELL_CAPTURE_DIR=str(output.parent/'shell-native-scenes'))
             shell_cases = ['shellLayoutMatrix', 'shellSettingsAccessibleActionsUpdateTheRealModel',
-                           'hostHasNoMainWindowAndDeduplicates']
+                           'hostHasNoMainWindowAndDeduplicates', 'independentPasswordRetry',
+                           'independentTaskLifecycle']
             shell_result = subprocess.run([str(args.shell_tests.resolve()), *shell_cases,
                                            '-o', str(shell_log)+',txt'], env=shell_env,
                                           capture_output=True, text=True, timeout=90)

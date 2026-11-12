@@ -1,4 +1,5 @@
 #include "ApplicationSessions.h"
+#include "DesktopIntegration.h"
 #include "PasswordAccessibility.h"
 #include "ShellBatchController.h"
 #include "ShellIntegration.h"
@@ -315,6 +316,114 @@ class ShellTest : public QObject {
         QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
         sessions.confirmQuit(false);
         QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
+    }
+    void independentPasswordRetry() {
+        QQmlApplicationEngine engine;
+        UiPreferences settings;
+        ApplicationSessions sessions(&engine, &settings);
+        QTemporaryDir source;
+        const auto archive = source.filePath("encrypted.zip");
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_SHELL_FIXTURES "/password-retry.zip"), archive));
+        QVERIFY(sessions.shellAction(request("extract-here", {archive}).json()));
+        auto *batch = sessions.findChild<ShellBatchController *>();
+        auto *prompt = sessions.findChild<QQuickWindow *>("passwordWindow");
+        auto *progress = sessions.findChild<QQuickWindow *>("taskWindow");
+        QVERIFY(batch && prompt && progress);
+        QTRY_VERIFY_WITH_TIMEOUT(prompt->isVisible(), 10000);
+        QCOMPARE(prompt->transientParent(), progress);
+        const auto first = batch->reader()->passwordPrompt();
+        const auto task = first.value("taskId").toString();
+        const auto token = first.value("promptId").toString();
+        QVERIFY(
+            batch->reader()->submitPassword(task, token, QStringLiteral("wrong owned fixture")));
+        QTRY_VERIFY_WITH_TIMEOUT(batch->reader()->passwordPrompt().value("retry").toBool(), 10000);
+        const auto retry = batch->reader()->passwordPrompt();
+        QVERIFY(retry.value("promptId").toString() != token);
+        QVERIFY(!batch->reader()->submitPassword(task, token, QStringLiteral("ignored")));
+        QVERIFY(batch->reader()->submitPassword(task, retry.value("promptId").toString(),
+                                                QStringLiteral(" owned AES 密码 ")));
+        QTRY_VERIFY_WITH_TIMEOUT(batch->finished(), 10000);
+        QCOMPARE(batch->results().first().toMap().value("status").toString(), QString("succeeded"));
+        QFile output(source.filePath("owned.txt"));
+        QVERIFY(output.open(QIODevice::ReadOnly));
+        QCOMPARE(output.readAll(), QByteArray("owned AES payload\n"));
+        QCOMPARE(sessions.windows().size(), 0);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
+    }
+    void independentTaskLifecycle_data() {
+        QTest::addColumn<bool>("hasMain");
+        QTest::addColumn<bool>("hidden");
+        QTest::addColumn<bool>("tray");
+        QTest::newRow("cold-no-tray") << false << false << false;
+        QTest::newRow("existing-main") << true << false << false;
+        QTest::newRow("hidden-main-tray") << true << true << true;
+        QTest::newRow("standalone-tray") << false << false << true;
+    }
+    void independentTaskLifecycle() {
+        QFETCH(bool, hasMain);
+        QFETCH(bool, hidden);
+        QFETCH(bool, tray);
+        QQmlApplicationEngine engine;
+        UiPreferences settings;
+        ApplicationSessions sessions(&engine, &settings);
+        QQuickWindow *main = nullptr;
+        if (hasMain) {
+            engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+            QVERIFY(!engine.rootObjects().isEmpty());
+            main = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+            sessions.adopt(main);
+            main->show();
+        }
+        DesktopIntegration desktop(main, main ? main->findChild<BrowserController *>() : nullptr,
+                                   &settings, true, [tray] { return tray; });
+        sessions.setDesktop(&desktop);
+        if (hidden)
+            desktop.hideToTray();
+        const bool visible = main && main->isVisible();
+        const auto page = main ? main->property("activePage") : QVariant{};
+        QTemporaryDir source;
+        const auto input = source.filePath("owned.txt");
+        write(input, "new input");
+        write(input + ".zip", "keep original target");
+        QVERIFY(sessions.shellAction(request("zip", {input}).json()));
+        auto *batch = sessions.findChild<ShellBatchController *>();
+        QVERIFY(batch);
+        auto *host = batch->parent();
+        auto *progress = host->findChild<QQuickWindow *>("taskWindow");
+        auto *conflict = host->findChild<QQuickWindow *>("conflictWindow");
+        auto *quit = host->findChild<QQuickWindow *>("quitWindow");
+        QVERIFY(progress && conflict && quit);
+        QTRY_VERIFY_WITH_TIMEOUT(conflict->isVisible(), 10000);
+        QCOMPARE(conflict->transientParent(), progress);
+        conflict->close();
+        progress->close();
+        if (tray) {
+            QTRY_VERIFY(!progress->isVisible());
+            QVERIFY(!quit->isVisible());
+            const auto identity = sessions.tasks().last().toMap().value("id").toString();
+            sessions.showTask(identity);
+            QTRY_VERIFY(progress->isVisible());
+            QTRY_VERIFY(conflict->isVisible());
+            conflict->close();
+        } else {
+            QTRY_VERIFY(quit->isVisible());
+            QVERIFY(progress->isVisible());
+            QVERIFY(QMetaObject::invokeMethod(quit, "waitRequested"));
+            QTRY_VERIFY(!quit->isVisible());
+        }
+        QCOMPARE(sessions.windows().size(), hasMain ? 1 : 0);
+        if (main) {
+            QCOMPARE(main->isVisible(), visible);
+            QCOMPARE(main->property("activePage"), page);
+        }
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
+        QFile original(input + ".zip");
+        QVERIFY(original.open(QIODevice::ReadOnly));
+        QCOMPARE(original.readAll(), QByteArray("keep original target"));
     }
 };
 int main(int argc, char **argv) {
