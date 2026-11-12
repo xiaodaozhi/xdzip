@@ -7,11 +7,13 @@ concurrency:
   group: windows-msix-${{ github.run_id }}
   cancel-in-progress: false
 jobs:
-  lifecycle:
+  build:
     runs-on: windows-2022
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check artifact verification guardrails
+        run: python scripts/test-msix-ci.py
       - name: Build and verify experimental package
         shell: pwsh
         run: |
@@ -34,17 +36,48 @@ jobs:
           Invoke-Desktop @('package', '--kind', 'runtime')
           Invoke-Desktop @('package', '--kind', 'msix', '--msix-name', 'xdzip.MsixCI', '--msix-publisher', 'CN=xdzip MSIX CI')
           Invoke-Desktop @('verify', '--kind', 'msix')
-      - name: Install and remove on the disposable host
-        shell: pwsh
-        run: ./scripts/check-windows-msix-install.ps1 -Package build/msix-ci-package/xdzip-windows-x64.msix -Output build/msix-ci-package/lifecycle.json
+      - name: Preserve the unsigned same-run test input
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: windows-msix-input-${{ github.sha }}
+          overwrite: true
+          path: |
+            build/msix-ci-package/xdzip-windows-x64.msix
+            build/msix-ci-package/windows-msix.json
+            build/msix-ci-package/package-msix.json
+          if-no-files-found: error
+          retention-days: 14
       - name: Preserve evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: windows-msix-lifecycle-${{ github.sha }}
+          name: windows-msix-build-${{ github.sha }}-${{ github.run_attempt }}
           path: |
             build/msix-ci-package/*.json
             build/msix-ci-desktop/desktop-*.json
             build/msix-ci-desktop/Testing/Temporary/LastTest.log
+          if-no-files-found: warn
+          retention-days: 14
+  lifecycle:
+    needs: build
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: windows-msix-input-${{ github.sha }}
+          path: build/msix-ci-package
+      - name: Verify input and prepare portable control
+        run: python scripts/extract-msix-ci.py
+      - name: Install and remove on the disposable host
+        shell: powershell
+        run: ./scripts/check-windows-msix-install.ps1 -Package build/msix-ci-package/xdzip-windows-x64.msix -Output build/msix-ci-package/lifecycle.json
+      - name: Preserve lifecycle evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: windows-msix-lifecycle-${{ github.sha }}-${{ github.run_attempt }}
+          path: build/msix-ci-package/lifecycle.json
           if-no-files-found: warn
           retention-days: 14
