@@ -135,13 +135,19 @@ class WorkflowTests(unittest.TestCase):
                 self.assertEqual(set(workflow['on']), {'workflow_dispatch'})
                 gate = workflow['jobs'][scope + '-gate']
                 self.assertEqual(set(gate['needs']), set(self.evidence.JOBS[scope]))
-                self.assertEqual(gate.get('if'), 'always() && !inputs.sdk_only' if scope == 'foundation' else 'always()')
+                self.assertEqual(gate.get('if'), 'always() && !inputs.sdk_only && !inputs.image_only' if scope == 'foundation' else 'always()')
                 if scope == 'foundation':
                     self.assertEqual(workflow['on']['workflow_dispatch']['inputs']['sdk_only']['default'], 'false')
+                    self.assertEqual(workflow['on']['workflow_dispatch']['inputs']['image_only']['default'], 'false')
                     self.assertEqual(workflow['jobs']['sdk-preflight']['uses'], './.github/workflows/sdk-trial.yml')
-                    self.assertEqual(workflow['jobs']['sdk-preflight']['if'], 'inputs.sdk_only')
+                    self.assertEqual(workflow['jobs']['sdk-preflight']['if'], 'inputs.sdk_only && !inputs.image_only')
+                    image = workflow['jobs']['image-preflight']
+                    self.assertEqual(image['if'], 'inputs.image_only')
+                    self.assertEqual(image['runs-on'], 'macos-15')
+                    self.assertIn('check-macos-imageio.py', '\n'.join(s.get('run', '') for s in image['steps']))
                     for name in self.evidence.JOBS[scope]:
                         self.assertIn('!inputs.sdk_only', workflow['jobs'][name]['if'])
+                        self.assertIn('!inputs.image_only', workflow['jobs'][name]['if'])
                 runs = '\n'.join(step.get('run', '') for step in gate['steps'])
                 self.assertIn('ci-evidence.py gate --scope ' + scope, runs)
                 job = workflow['jobs']['bridge' if scope == 'foundation' else 'native-qt']
