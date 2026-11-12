@@ -187,6 +187,25 @@ public static class XdzipPackageOrigin {
         }
         if (!$activationProcess) {
             $result.checks.shell_handler_process = 'not_observed'
+            $dialogElements = [System.Collections.Generic.List[object]]::new()
+            foreach ($dialog in @(Get-Process -Name OpenWith -ErrorAction SilentlyContinue)) {
+                foreach ($handle in [XdzipOwnedSettingsUia]::Windows([uint32]$dialog.Id)) {
+                    try {
+                        $window = [System.Windows.Automation.AutomationElement]::FromHandle($handle)
+                        if (!$window) { continue }
+                        $all = $window.FindAll([System.Windows.Automation.TreeScope]::Descendants,
+                            [System.Windows.Automation.Condition]::TrueCondition)
+                        foreach ($entry in $all) {
+                            $name = $entry.Current.Name
+                            if ($name -and $name.Length -le 80 -and $name -notmatch '[\\/]') {
+                                $dialogElements.Add(@{ name=$name; type=$entry.Current.ControlType.ProgrammaticName; offscreen=$entry.Current.IsOffscreen })
+                                if ($dialogElements.Count -ge 40) { break }
+                            }
+                        }
+                    } catch [System.Windows.Automation.ElementNotAvailableException] {}
+                }
+            }
+            $result.checks.open_with_dialog_elements = @($dialogElements.ToArray())
             throw 'File handler did not start the installed package'
         }
         $null = Wait-XdzipOwnedUiElement $activationProcess $archiveName 'ControlType.TabItem'
