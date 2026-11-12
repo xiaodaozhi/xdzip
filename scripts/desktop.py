@@ -189,15 +189,7 @@ class Workflow:
             if value and not value.endswith('-NOTFOUND') and not Path(value).resolve().is_relative_to(self.qt):
                 raise ValueError('CMake cached a different Qt SDK; use a new --build-dir for this --qt-prefix')
 
-    def prepare(self):
-        if self.args.install_rust:
-            rustup = shutil.which('rustup', path=self.env.get('PATH', ''))
-            if rustup is None:
-                raise ValueError('Install rustup and expose it in PATH before using --install-rust.')
-            channel = locked_rust_version()
-            self.run([rustup, 'toolchain', 'install', channel, '--profile', 'minimal',
-                      '--component', 'rustfmt', '--component', 'clippy'])
-        self.doctor('prepare')
+    def prepare_tools_and_qt(self):
         if self.args.install_qt or self.args.packaging:
             if not self.tools_python.is_file():
                 if self.tools.exists() and any(self.tools.iterdir()):
@@ -226,6 +218,17 @@ class Workflow:
             self.run([self.python, '-m', 'aqt', 'install-qt', self.platform_spec[1], 'desktop',
                       QT_VERSION, self.platform_spec[2], '-O', qt_root,
                       '--noarchives', '--modules', 'qtimageformats'], cwd=downloads)
+
+    def prepare(self):
+        if self.args.install_rust:
+            rustup = shutil.which('rustup', path=self.env.get('PATH', ''))
+            if rustup is None:
+                raise ValueError('Install rustup and expose it in PATH before using --install-rust.')
+            channel = locked_rust_version()
+            self.run([rustup, 'toolchain', 'install', channel, '--profile', 'minimal',
+                      '--component', 'rustfmt', '--component', 'clippy'])
+        self.doctor('prepare')
+        self.prepare_tools_and_qt()
         self.script('prepare-qt-network.py', '--qt-prefix', self.qt)
         self.doctor('build')
         self.run(['cargo', 'fetch', '--locked'])
