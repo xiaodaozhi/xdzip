@@ -216,6 +216,8 @@ function Test-ShellIntegration {
         throw ('Installed shell registration mismatch: ' + ($facts | ConvertTo-Json -Compress))
     }
     $exe = Join-Path $testRoot 'xdzip.exe'
+    # Simulate a retained registration for an older owned DLL after an upgrade.
+    (Get-Item $classKey).SetValue('', (Join-Path (Split-Path $library) 'xdzip-shell-0000000000000000.dll'))
     $removed = Start-Process -FilePath $exe -ArgumentList '--uninstall-shell-integration' -Wait -PassThru
     if ($removed.ExitCode -ne 0 -or (Test-Path $menuKey) -or (Test-Path $classKey)) { throw 'Owned shell removal failed' }
     $restored = Start-Process -FilePath $exe -ArgumentList '--sync-shell-integration' -Wait -PassThru

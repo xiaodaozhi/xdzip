@@ -102,6 +102,11 @@ bool ShellIntegration::apply(bool value) {
     const auto previous = classes.value(classKey + "/Default").toString();
     if (!previous.isEmpty() && QFileInfo(previous).absolutePath() != QFileInfo(dll).absolutePath())
         return false;
+    if (!previous.isEmpty()) {
+        const auto oldName = QFileInfo(previous).fileName();
+        if (!oldName.startsWith("xdzip-shell-") || !oldName.endsWith(".dll"))
+            return false;
+    }
     if (value) {
         classes.setValue(classKey + "/Default", dll);
         classes.setValue(classKey + "/ThreadingModel", "Apartment");
@@ -109,7 +114,7 @@ bool ShellIntegration::apply(bool value) {
     } else {
         if (classes.value(menuKey + "/Default") == clsid)
             classes.remove(menuKey);
-        if (previous == dll)
+        if (!previous.isEmpty())
             classes.remove("CLSID/" + clsid);
     }
     classes.sync();
