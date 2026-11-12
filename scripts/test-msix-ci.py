@@ -5,6 +5,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -57,14 +58,32 @@ class ArtifactTests(unittest.TestCase):
         self.assertEqual((self.folder / 'windows/xdzip.exe').read_bytes(), b'owned fixture, not executable')
 
     def test_wrong_revision_and_modified_bytes_are_rejected(self):
-        with patch.dict(os.environ, {'GITHUB_SHA': 'b' * 40}):
-            with self.assertRaisesRegex(ValueError, 'receipt'):
-                extract.main()
+        receipt_path = self.folder / 'package-msix.json'
+        receipt = json.loads(receipt_path.read_text(encoding='utf-8'))
+        receipt['source']['revision'] = 'b' * 40
+        receipt_path.write_text(json.dumps(receipt), encoding='utf-8')
+        with self.assertRaisesRegex(ValueError, 'receipt'):
+            extract.main()
+        receipt['source']['revision'] = 'a' * 40
+        receipt_path.write_text(json.dumps(receipt), encoding='utf-8')
         with self.package.open('ab') as target:
             target.write(b'tampered')
         with self.assertRaisesRegex(ValueError, 'bytes'):
             extract.main()
         self.assertFalse((self.folder / 'windows').exists())
+
+    def test_recheck_allows_only_explicit_test_changes(self):
+        old, current = 'a' * 40, 'b' * 40
+        def run_with_change(path):
+            results = [subprocess.CompletedProcess([], 0),
+                       subprocess.CompletedProcess([], 0, (path + '\0').encode())]
+            with patch.object(extract.subprocess, 'run', side_effect=results):
+                extract.validate_source_revision(old, current)
+        run_with_change('scripts/check-windows-msix-install.ps1')
+        with self.assertRaisesRegex(ValueError, 'inputs changed'):
+            run_with_change('scripts/build-windows-msix.py')
+        with self.assertRaisesRegex(ValueError, 'Invalid source revision'):
+            extract.validate_source_revision('not-a-revision', current)
 
     def test_local_execution_is_rejected(self):
         with patch.dict(os.environ, {'GITHUB_ACTIONS': 'false'}):

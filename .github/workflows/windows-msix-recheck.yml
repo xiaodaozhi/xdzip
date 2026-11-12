@@ -1,0 +1,45 @@
+name: Windows MSIX lifecycle recheck
+on:
+  workflow_dispatch:
+    inputs:
+      source_run_id:
+        description: Run ID containing the verified unsigned MSIX build
+        required: true
+        type: string
+      source_revision:
+        description: Full commit SHA of that build
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: read
+jobs:
+  lifecycle:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: windows-msix-input-${{ inputs.source_revision }}
+          path: build/msix-ci-package
+          run-id: ${{ inputs.source_run_id }}
+          github-token: ${{ github.token }}
+      - name: Verify producer and allowed changes
+        shell: pwsh
+        env:
+          SOURCE_REVISION: ${{ inputs.source_revision }}
+        run: python scripts/extract-msix-ci.py --source-revision $env:SOURCE_REVISION
+      - name: Install and remove on the disposable host
+        shell: powershell
+        run: ./scripts/check-windows-msix-install.ps1 -Package build/msix-ci-package/xdzip-windows-x64.msix -Output build/msix-ci-package/lifecycle.json
+      - name: Preserve lifecycle evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: windows-msix-recheck-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: build/msix-ci-package/lifecycle.json
+          if-no-files-found: warn
+          retention-days: 14

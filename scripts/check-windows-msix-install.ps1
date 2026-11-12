@@ -24,7 +24,8 @@ $trusted = $null
 $installed = $null
 $result = [ordered]@{
     status = 'failed'
-    revision = (& git rev-parse HEAD).Trim()
+    test_revision = (& git rev-parse HEAD).Trim()
+    package_revision = (Get-Content (Join-Path (Split-Path -Parent $packagePath) 'package-msix.json') -Raw | ConvertFrom-Json).source.revision
     platform = 'Windows Server hosted runner'
     checks = [ordered]@{}
     limitations = @('Self-signed sideload only; not Store or Windows 11 desktop acceptance.', 'Full installer coexistence and visual appearance are not exercised by this check.')
@@ -59,7 +60,8 @@ public static class XdzipPackageOrigin {
 '@
     $origin = -1
     $errorCode = [XdzipPackageOrigin]::GetStagedPackageOrigin($installed.PackageFullName, [ref]$origin)
-    if ($errorCode -ne 0 -or $origin -eq 3) { throw 'Cannot establish that the test package is not Store-origin' }
+    # Unknown or other origin values do not establish the side-load channel.
+    if ($errorCode -ne 0 -or $origin -notin @(5, 6)) { throw 'Cannot establish a developer-signed or line-of-business test package origin' }
     $result.checks.staged_origin = $origin
     $exe = Join-Path $installed.InstallLocation 'xdzip.exe'
     if (!(Test-Path -LiteralPath $exe -PathType Leaf)) { throw 'Installed product executable is missing' }
