@@ -13,12 +13,15 @@ from desktop import verify_msix_identity
 
 RECHECK_FILES = frozenset({
     '.github/workflows/windows-msix-recheck.yml',
+    '.github/workflows/windows-msix-coexistence.yml',
     '.github/workflows/windows-msix.yml',
     'docs/engineering/ci-policy.md',
     'scripts/check-windows-msix-install.ps1',
     'scripts/windows-msix-activation.cs',
     'scripts/extract-msix-ci.py',
     'scripts/test-msix-ci.py',
+    'scripts/prepare-msix-coexistence.py',
+    'scripts/check-windows-msix-coexistence.ps1',
 })
 
 

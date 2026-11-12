@@ -50,6 +50,8 @@ Foundation 的 `image_only=true` 在原生 macOS 用系统 sips／ImageIO 转换
 
 仅测试脚本或该工作流有变化时，可手动运行 [MSIX 生命周期重验](../../.github/workflows/windows-msix-recheck.yml)，指定原构建的运行 ID 和完整提交。重验核对包摘要、生产回执和提交祖先关系，并仅允许明确列出的测试及文档文件发生变化；产品或打包输入发生变化必须重新构建。结果分别标识构建提交与测试提交，不将旧包记为新产品构建。English: A manual recheck may reuse a verified package from an earlier run only when all intervening changes are explicitly allowed test or documentation files; product or packaging changes require a rebuild.
 
+[MSIX 与安装版共存检查](../../.github/workflows/windows-msix-coexistence.yml)复用通过同一来源约束的构建和运行时审计，在一次性托管主机生成当前用户安装器，并检查安装版与 MSIX 的同时运行、相互卸载及默认关联。该检查不修改维护者电脑，也不替代目标 Windows 11 与商店验收。English: The hosted coexistence check reconstructs an audited installer payload and tests the installed and MSIX channels on a disposable runner; it is not Windows 11 or Store acceptance.
+
 [Release 工作流](../../.github/workflows/release.yml)独立处理三平台发行构建、包验证、签名和不可变资产，继续遵循[发布协议](release-protocol.md)。发布必须有所有者对具体结果的授权；未执行的检查及许可复核限制如实记录。普通 CI 成功、手动工作流成功和正式发行批准是不同结论。
 
 日志、截图、测试输入副本和生成报告仅放在 `build/`、`dist/` 或 Actions 工件中。项目源文件、设计规格和测试代码保留版本管理；实际工作进展与结果登记在 GitHub issue。

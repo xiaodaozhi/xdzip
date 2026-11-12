@@ -23,6 +23,7 @@ def module(name, filename):
 
 extract = module('extract_msix_ci', 'extract-msix-ci.py')
 build = module('build_msix_ci_fixture', 'build-windows-msix.py')
+coexistence = module('prepare_msix_coexistence', 'prepare-msix-coexistence.py')
 
 
 class ArtifactTests(unittest.TestCase):
@@ -89,6 +90,32 @@ class ArtifactTests(unittest.TestCase):
         with patch.dict(os.environ, {'GITHUB_ACTIONS': 'false'}):
             with self.assertRaisesRegex(ValueError, 'hosted CI only'):
                 extract.main()
+
+    def prepare_installer_fixture(self):
+        extract.main()
+        executable = self.folder / 'windows/xdzip.exe'
+        audit = {'status': 'passed', 'platform': 'windows', 'mode': 'deployed',
+                 'identity': {'revision': 'a' * 12, 'dirty': False},
+                 'files': [{'path': 'xdzip.exe', 'sha256': hashlib.sha256(executable.read_bytes()).hexdigest()}]}
+        audit_path = Path('build/msix-ci-evidence/msix-ci-package/deployment-audit.json')
+        audit_path.parent.mkdir(parents=True)
+        audit_path.write_text(json.dumps(audit), encoding='utf-8')
+        self.report['audit_sha256'] = hashlib.sha256(audit_path.read_bytes()).hexdigest()
+        (self.folder / 'windows-msix.json').write_text(json.dumps(self.report), encoding='utf-8')
+        return executable
+
+    def test_installer_payload_reconstruction(self):
+        self.prepare_installer_fixture()
+        coexistence.main()
+        self.assertEqual((self.folder / 'installer-runtime/xdzip.exe').read_bytes(), b'owned fixture, not executable')
+        self.assertFalse((self.folder / 'installer-runtime/AppxManifest.xml').exists())
+
+    def test_installer_payload_tampering_is_rejected(self):
+        executable = self.prepare_installer_fixture()
+        executable.write_bytes(b'tampered')
+        with self.assertRaisesRegex(ValueError, 'payload changed'):
+            coexistence.main()
+        self.assertTrue((self.folder / 'installer-runtime').exists())
 
 
 if __name__ == '__main__':

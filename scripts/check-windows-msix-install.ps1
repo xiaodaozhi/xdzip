@@ -1,7 +1,8 @@
 # Install only the owned, self-signed CI fixture on a disposable hosted runner.
 param(
     [Parameter(Mandatory=$true)][string]$Package,
-    [Parameter(Mandatory=$true)][string]$Output
+    [Parameter(Mandatory=$true)][string]$Output,
+    [string]$InstalledExecutable
 )
 $ErrorActionPreference = 'Stop'
 if ($env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows') {
@@ -208,6 +209,38 @@ public static class XdzipPackageOrigin {
         [XdzipMsixActivation]::Close()
     }
     $result.checks.saved_language_and_portable_coexistence = 'passed'
+    if ($InstalledExecutable) {
+        $installedControl = $null
+        $packagedControl = $null
+        try {
+            $installedControl = Start-Process -FilePath $InstalledExecutable -PassThru
+            $processId = [XdzipMsixActivation]::Start($appId, '')
+            $packagedControl = Get-Process -Id $processId -ErrorAction Stop
+            if ($installedControl.Id -eq $packagedControl.Id -or
+                [XdzipMsixActivation]::PackageName($installedControl.Handle) -ne '' -or
+                [XdzipMsixActivation]::PackageName($packagedControl.Handle) -ne $installed.PackageFullName) {
+                throw 'Installed and packaged processes do not have distinct channel identities'
+            }
+            $null = Wait-XdzipOwnedUiElement $packagedControl $en.messages.'settings.title' 'ControlType.Button'
+            for ($attempt = 0; $attempt -lt 150; $attempt++) {
+                $installedControl.Refresh()
+                if ($installedControl.HasExited) { throw 'Installed process exited while the package was running' }
+                if (@([XdzipOwnedSettingsUia]::Windows([uint32]$installedControl.Id)).Count -gt 0) { break }
+                Start-Sleep -Milliseconds 100
+            }
+            if ($attempt -eq 150) { throw 'Installed process did not create a window' }
+        } finally {
+            foreach ($owned in @($installedControl, $packagedControl)) {
+                if ($owned) {
+                    $owned.Refresh()
+                    if (!$owned.HasExited) { $owned.Kill(); $owned.WaitForExit() }
+                }
+            }
+            [XdzipMsixActivation]::Close()
+        }
+        $result.checks.installed_edition_coexistence = 'passed'
+        $result.limitations = @('Self-signed sideload only; not Store or Windows 11 desktop acceptance.', 'Visual appearance is not exercised by this check.')
+    }
     # Invoke the package's actual Open With handler and inspect an owned ZIP entry.
     $archiveName = 'xdzip msix fixture.zip'
     $archivePath = Join-Path $env:RUNNER_TEMP $archiveName

@@ -1,0 +1,66 @@
+name: Windows MSIX installer coexistence
+on:
+  workflow_dispatch:
+    inputs:
+      source_run_id:
+        description: Run ID containing the verified MSIX build
+        required: true
+        type: string
+      source_revision:
+        description: Full commit SHA of that build
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: read
+jobs:
+  coexistence:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: windows-msix-input-${{ inputs.source_revision }}
+          path: build/msix-ci-package
+          run-id: ${{ inputs.source_run_id }}
+          github-token: ${{ github.token }}
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: windows-msix-build-${{ inputs.source_revision }}-1
+          path: build/msix-ci-evidence
+          run-id: ${{ inputs.source_run_id }}
+          github-token: ${{ github.token }}
+      - name: Verify source and reconstruct audited runtime
+        shell: pwsh
+        env:
+          SOURCE_REVISION: ${{ inputs.source_revision }}
+        run: |
+          python scripts/extract-msix-ci.py --source-revision $env:SOURCE_REVISION
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python scripts/prepare-msix-coexistence.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Prepare pinned installer compiler
+        shell: pwsh
+        run: ./scripts/prepare-windows-installer.ps1 -OutputDirectory build/installer-toolchain
+      - name: Build the owned comparison installer
+        shell: pwsh
+        run: |
+          python scripts/build-windows-installer.py --root build/msix-ci-package/installer-runtime --audit build/msix-ci-evidence/msix-ci-package/deployment-audit.json --iscc build/installer-toolchain/compiler/ISCC.exe --chinese build/installer-toolchain/ChineseSimplified.isl --output build/msix-ci-package/owned-setup.exe --report build/msix-ci-package/owned-setup.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Test installed and packaged channels together
+        shell: powershell
+        run: ./scripts/check-windows-msix-coexistence.ps1
+      - name: Preserve coexistence evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: windows-msix-coexistence-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            build/msix-ci-package/owned-setup.json
+            build/msix-ci-package/lifecycle.json
+            build/msix-ci-package/coexistence.json
+          if-no-files-found: warn
+          retention-days: 14
