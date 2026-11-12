@@ -129,7 +129,7 @@ public static class XdzipPackageOrigin {
         $processId = [XdzipMsixActivation]::Open(($installed.PackageFamilyName + '!App'), $archivePath)
         $activationProcess = Get-Process -Id $processId -ErrorAction Stop
         $null = Wait-XdzipOwnedUiElement $activationProcess $archiveName 'ControlType.TabItem'
-        $null = Wait-XdzipOwnedUiElement $activationProcess 'empty.txt' 'ControlType.Text'
+        $null = Wait-XdzipOwnedUiElement $activationProcess 'empty.txt' 'ControlType.CheckBox'
     } finally {
         if ($activationProcess) {
             $activationProcess.Refresh()
