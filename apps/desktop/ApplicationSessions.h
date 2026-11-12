@@ -32,6 +32,7 @@ class ApplicationSessions final : public QObject {
     bool ownsTaskPrompt(QQuickWindow *window) const;
     Q_INVOKABLE void showMainWindow();
     Q_SLOT void checkShellWindows();
+    Q_SLOT void shellAvailabilityChanged();
     Q_INVOKABLE void openPath(const QString &path);
     Q_INVOKABLE void cancelPendingOpen(const QString &id);
     Q_INVOKABLE void newSession();

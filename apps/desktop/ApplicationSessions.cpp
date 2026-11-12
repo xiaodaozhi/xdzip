@@ -866,6 +866,20 @@ bool ApplicationSessions::shellAction(const QJsonObject &value) {
     batch->begin(request);
     return true;
 }
+void ApplicationSessions::shellAvailabilityChanged() {
+    if (!shellTrayAvailable() && !m_quitting) {
+        for (const auto &session : m_sessions) {
+            if (!session->operationOnly || !session->page || session->retiring)
+                continue;
+            auto *batch = session->page->findChild<ShellBatchController *>();
+            bool visible = false;
+            QMetaObject::invokeMethod(session->page, "visibleWindows", Q_RETURN_ARG(bool, visible));
+            if (!visible && batch && (batch->active() || !batch->results().isEmpty()))
+                QMetaObject::invokeMethod(session->page, "showCurrent");
+        }
+    }
+    checkShellWindows();
+}
 void ApplicationSessions::checkShellWindows() {
     emit sessionsChanged();
     if (m_quitting)

@@ -84,6 +84,7 @@ void ShellBatchController::choose(const QString &action) {
             std::all_of(m_request.paths.begin(), m_request.paths.end(),
                         [&](const QString &p) { return QFileInfo(p).absolutePath() == target; });
         if (action == "create" || !sameParent) {
+            m_configuredCreation = true;
             m_stage = Configuring;
             QVariantList inputs;
             for (const auto &path : m_request.paths)
@@ -244,6 +245,12 @@ void ShellBatchController::step() {
         return;
     }
     if (m_stage == Submitting) {
+        if (m_configuredCreation) {
+            m_stage = Configuring;
+            emit changed();
+            emit creationRejected();
+            return;
+        }
         // A rejected submission has no task receipt; never fabricate completion.
         record("failed",
                m_reader.creationError().isEmpty() ? m_reader.message() : m_reader.creationError());

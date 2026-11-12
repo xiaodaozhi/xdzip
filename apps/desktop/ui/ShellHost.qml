@@ -43,6 +43,11 @@ Item {
             createWindow.configureSelection(inputs, target, name, sevenZip);
         }
         onConfigureExtract: { panel.hide(); extractWindow.configure(); }
+        onCreationRejected: {
+            if (!root.userHidden && !root.sessionManager.quitDecisionPending) {
+                panel.hide(); createWindow.present();
+            }
+        }
         onShowTask: id => {
             panel.hide(); createWindow.close(); extractWindow.close();
             if (!root.userHidden && !root.sessionManager.quitDecisionPending) operations.showTask(id);

@@ -46,6 +46,7 @@ class ShellBatchController : public QObject {
     void configureCreate(const QVariantList &inputs, const QString &target, const QString &name,
                          bool sevenZip);
     void configureExtract();
+    void creationRejected();
     void showTask(const QString &id);
     void showSummary();
 
@@ -66,4 +67,5 @@ class ShellBatchController : public QObject {
     int m_index = 0, m_layout = 2, m_conflict = 0;
     bool m_scheduled = false, m_cancelled = false, m_highRatio = false, m_openAfter = false;
     bool m_chooseTarget = false;
+    bool m_configuredCreation = false;
 };

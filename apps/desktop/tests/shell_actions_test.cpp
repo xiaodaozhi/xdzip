@@ -163,6 +163,24 @@ class ShellTest : public QObject {
         extract.openTarget(0);
         QCOMPARE(opened.count, 1);
     }
+    void configuredCreationCanRetryRejectedSubmission() {
+        QTemporaryDir source;
+        const auto input = source.filePath("one.txt");
+        write(input, "owned input");
+        ShellBatchController batch;
+        batch.begin(request("create", {input}));
+        batch.configuringCreation();
+        batch.reader()->startCreation({input}, source.path(), "../bad.zip", 8, 6, false);
+        QTRY_VERIFY(!batch.active());
+        QVERIFY(!batch.finished());
+        QVERIFY(!batch.reader()->creationError().isEmpty());
+        QVERIFY(batch.results().isEmpty());
+        batch.configuringCreation();
+        batch.reader()->startCreation({input}, source.path(), "one.zip", 8, 6, false);
+        QTRY_VERIFY_WITH_TIMEOUT(batch.finished(), 10000);
+        QCOMPARE(batch.results().size(), 1);
+        QCOMPARE(batch.results().first().toMap().value("status").toString(), QString("succeeded"));
+    }
     void forwardsShellRequestsToExistingInstance() {
         const auto space = "shell-test-" + QUuid::createUuid().toString(QUuid::WithoutBraces);
         SingleInstance primary;
@@ -400,6 +418,40 @@ class ShellTest : public QObject {
         QCOMPARE(sessions.windows().size(), 0);
         QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
         sessions.confirmQuit(false);
+        QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
+    }
+    void trayLossRetainsHiddenBatchResultUntilClosed() {
+        QQmlApplicationEngine engine;
+        UiPreferences settings;
+        QVERIFY(settings.applyDetails("light", 1., "zh-CN", "standard", false, true, "tabs"));
+        ApplicationSessions sessions(&engine, &settings);
+        bool available = true;
+        DesktopIntegration desktop(nullptr, nullptr, &settings, true, [&] { return available; });
+        sessions.setDesktop(&desktop);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        QTemporaryDir source;
+        const auto input = source.filePath("owned.txt");
+        write(input, "owned input");
+        write(input + ".zip", "keep original target");
+        QVERIFY(sessions.shellAction(request("zip", {input}).json()));
+        auto *batch = sessions.findChild<ShellBatchController *>();
+        auto *progress = sessions.findChild<QQuickWindow *>("taskWindow");
+        auto *conflict = sessions.findChild<QQuickWindow *>("conflictWindow");
+        auto *panel = sessions.findChild<QQuickWindow *>("shellActionsWindow");
+        QVERIFY(batch && progress && conflict && panel);
+        QTRY_VERIFY_WITH_TIMEOUT(conflict->isVisible(), 10000);
+        conflict->close();
+        progress->close();
+        QTRY_VERIFY(!progress->isVisible());
+        batch->cancel();
+        QTRY_VERIFY_WITH_TIMEOUT(batch->finished(), 10000);
+        QVERIFY(!panel->isVisible());
+        available = false;
+        desktop.refresh();
+        QTRY_VERIFY(panel->isVisible());
+        QCOMPARE(sessions.windows().size(), 0);
+        QCOMPARE(joined.count(), 0);
+        panel->close();
         QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
     }
     void independentTaskLifecycle_data() {

@@ -325,7 +325,7 @@ void DesktopIntegration::setSessions(ApplicationSessions *sessions) {
     m_sessions = sessions;
     connect(sessions, &ApplicationSessions::tasksChanged, this, &DesktopIntegration::syncActions);
     connect(this, &DesktopIntegration::availabilityChanged, sessions,
-            &ApplicationSessions::checkShellWindows);
+            &ApplicationSessions::shellAvailabilityChanged);
 }
 void DesktopIntegration::bind(QQuickWindow *window, BrowserController *controller) {
     m_window = window;
