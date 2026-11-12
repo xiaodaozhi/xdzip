@@ -38,6 +38,11 @@ public static class XdzipMsixActivation {
         [PreserveSig] int SetAppID([MarshalAs(UnmanagedType.LPWStr)] string appId);
         [PreserveSig] int GetAppID(out IntPtr appId);
     }
+    [ComImport, Guid("71e806fb-8dee-46fc-bf8c-7748a8a1ae13"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    private interface IObjectWithProgID {
+        [PreserveSig] int SetProgID([MarshalAs(UnmanagedType.LPWStr)] string progId);
+        [PreserveSig] int GetProgID(out IntPtr progId);
+    }
     [ComImport, Guid("b63ea76d-1f85-456f-a19c-48159efa858b"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     private interface IShellItemArray {
         [PreserveSig] int BindToHandler(IntPtr bindContext, ref Guid handler, ref Guid iid, out IntPtr value);
@@ -53,6 +58,22 @@ public static class XdzipMsixActivation {
     private static extern int SHAssocEnumHandlers(string extension, uint filter, out IEnumAssocHandlers handlers);
     [DllImport("kernel32.dll", CharSet=CharSet.Unicode)]
     private static extern int GetPackageFullName(IntPtr process, ref uint length, StringBuilder name);
+    [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
+    private struct ShellExecuteInfo {
+        public uint size, mask;
+        public IntPtr window;
+        public string verb, file, parameters, directory;
+        public int show;
+        public IntPtr instance, idList;
+        public string className;
+        public IntPtr classKey;
+        public uint hotKey;
+        public IntPtr icon, process;
+    }
+    [DllImport("shell32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
+    private static extern bool ShellExecuteExW(ref ShellExecuteInfo info);
+    [DllImport("kernel32.dll")]
+    private static extern bool CloseHandle(IntPtr handle);
 
     private static IApplicationActivationManager CreateManager() {
         if (manager != null) throw new InvalidOperationException("An activation is already in progress");
@@ -84,7 +105,7 @@ public static class XdzipMsixActivation {
         return name.ToString();
     }
 
-    public static void OpenAssociated(string appId, string executable, string path) {
+    public static string OpenAssociated(string appId, string executable, string path) {
         var itemIid = new Guid("43826d1e-e718-42ee-bc55-a1e261c37bfe");
         var arrayIid = new Guid("b63ea76d-1f85-456f-a19c-48159efa858b");
         var dataHandler = new Guid("b8c0bd9f-ed24-455c-83e6-d5390c4fe8c4");
@@ -124,7 +145,15 @@ public static class XdzipMsixActivation {
                 }
             }
             if (selected == null) throw new InvalidOperationException("Installed package has no matching file handler");
+            string progId = "";
+            var withProgId = selected as IObjectWithProgID;
+            IntPtr rawProgId = IntPtr.Zero;
+            try {
+                if (withProgId != null && withProgId.GetProgID(out rawProgId) == 0 && rawProgId != IntPtr.Zero)
+                    progId = Marshal.PtrToStringUni(rawProgId);
+            } finally { if (rawProgId != IntPtr.Zero) Marshal.FreeCoTaskMem(rawProgId); }
             Marshal.ThrowExceptionForHR(selected.Invoke(data));
+            return progId;
         } finally {
             if (selected != null) Marshal.ReleaseComObject(selected);
             if (handlers != null) Marshal.ReleaseComObject(handlers);
@@ -133,6 +162,19 @@ public static class XdzipMsixActivation {
             if (items != IntPtr.Zero) Marshal.Release(items);
             if (item != IntPtr.Zero) Marshal.Release(item);
         }
+    }
+
+    public static void OpenWithProgId(string progId, string path) {
+        if (String.IsNullOrWhiteSpace(progId)) throw new InvalidOperationException("Selected handler has no ProgID");
+        var info = new ShellExecuteInfo();
+        info.size = (uint)Marshal.SizeOf(typeof(ShellExecuteInfo));
+        info.mask = 0x541; // explicit class, process handle, synchronous dispatch, no error UI
+        info.verb = "open";
+        info.file = path;
+        info.className = progId;
+        info.show = 1;
+        if (!ShellExecuteExW(ref info)) throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+        if (info.process != IntPtr.Zero) CloseHandle(info.process);
     }
 
     public static void Close() {

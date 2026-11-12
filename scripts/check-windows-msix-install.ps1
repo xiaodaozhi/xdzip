@@ -174,9 +174,14 @@ public static class XdzipPackageOrigin {
     $result.checks.packaged_archive_read = 'passed'
     $activationProcess = $null
     try {
-        [XdzipMsixActivation]::OpenAssociated($appId, $exe, $archivePath)
+        $progId = [XdzipMsixActivation]::OpenAssociated($appId, $exe, $archivePath)
         $result.checks.shell_handler_invoke = 'returned_success'
-        for ($attempt = 0; $attempt -lt 150 -and !$activationProcess; $attempt++) {
+        $result.checks.shell_handler_progid = if ($progId) { 'present' } else { 'unavailable' }
+        for ($attempt = 0; $attempt -lt 300 -and !$activationProcess; $attempt++) {
+            if ($attempt -eq 150 -and $progId) {
+                [XdzipMsixActivation]::OpenWithProgId($progId, $archivePath)
+                $result.checks.shell_progid_invoke = 'returned_success'
+            }
             foreach ($candidate in @(Get-Process -Name xdzip -ErrorAction SilentlyContinue)) {
                 try {
                     if ([XdzipMsixActivation]::PackageName($candidate.Handle) -eq $installed.PackageFullName) { $activationProcess = $candidate; break }
