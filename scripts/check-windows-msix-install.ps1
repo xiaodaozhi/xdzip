@@ -135,6 +135,7 @@ public static class XdzipPackageOrigin {
             $activationProcess.Refresh()
             if (!$activationProcess.HasExited) { $activationProcess.Kill(); $activationProcess.WaitForExit() }
         }
+        [XdzipMsixActivation]::Close()
     }
     $result.checks.file_activation_and_archive_contents = 'passed'
     Remove-AppxPackage -Package $installed.PackageFullName

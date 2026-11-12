@@ -3,6 +3,7 @@ using System;
 using System.Runtime.InteropServices;
 
 public static class XdzipMsixActivation {
+    private static object manager;
     [ComImport, Guid("2e941141-7f97-4756-ba1d-9decde894a3d"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     private interface IApplicationActivationManager {
         [PreserveSig]
@@ -24,10 +25,10 @@ public static class XdzipMsixActivation {
         out IntPtr items);
 
     public static uint Open(string appId, string path) {
+        if (manager != null) throw new InvalidOperationException("An activation is already in progress");
         var itemIid = new Guid("43826d1e-e718-42ee-bc55-a1e261c37bfe");
         var arrayIid = new Guid("b63ea76d-1f85-456f-a19c-48159efa858b");
         IntPtr item = IntPtr.Zero, items = IntPtr.Zero;
-        object manager = null;
         try {
             Marshal.ThrowExceptionForHR(SHCreateItemFromParsingName(path, IntPtr.Zero, ref itemIid, out item));
             Marshal.ThrowExceptionForHR(SHCreateShellItemArrayFromShellItem(item, ref arrayIid, out items));
@@ -37,10 +38,19 @@ public static class XdzipMsixActivation {
             Marshal.ThrowExceptionForHR(((IApplicationActivationManager)manager).ActivateForFile(appId, items, "open", out processId));
             if (processId == 0) throw new InvalidOperationException("File activation returned no process");
             return processId;
+        } catch {
+            Close();
+            throw;
         } finally {
-            if (manager != null) Marshal.ReleaseComObject(manager);
             if (items != IntPtr.Zero) Marshal.Release(items);
             if (item != IntPtr.Zero) Marshal.Release(item);
+        }
+    }
+
+    public static void Close() {
+        if (manager != null) {
+            Marshal.ReleaseComObject(manager);
+            manager = null;
         }
     }
 }
