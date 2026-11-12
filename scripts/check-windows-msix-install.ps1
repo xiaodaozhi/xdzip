@@ -157,9 +157,25 @@ public static class XdzipPackageOrigin {
     $archivePath = Join-Path $env:RUNNER_TEMP $archiveName
     if (Test-Path -LiteralPath $archivePath) { throw 'File activation fixture already exists' }
     Copy-Item -LiteralPath 'tests/fixtures/zip/normal.zip' -Destination $archivePath
+    $directProcess = $null
+    try {
+        $processId = [XdzipMsixActivation]::Start($appId, ('"' + $archivePath + '"'))
+        $directProcess = Get-Process -Id $processId -ErrorAction Stop
+        if ([XdzipMsixActivation]::PackageName($directProcess.Handle) -ne $installed.PackageFullName) { throw 'Archive check has the wrong package identity' }
+        $null = Wait-XdzipOwnedUiElement $directProcess $archiveName 'ControlType.TabItem'
+        $null = Wait-XdzipOwnedUiElement $directProcess 'empty.txt' 'ControlType.CheckBox'
+    } finally {
+        if ($directProcess) {
+            $directProcess.Refresh()
+            if (!$directProcess.HasExited) { $directProcess.Kill(); $directProcess.WaitForExit() }
+        }
+        [XdzipMsixActivation]::Close()
+    }
+    $result.checks.packaged_archive_read = 'passed'
     $activationProcess = $null
     try {
         [XdzipMsixActivation]::OpenAssociated($appId, $exe, $archivePath)
+        $result.checks.shell_handler_invoke = 'returned_success'
         for ($attempt = 0; $attempt -lt 150 -and !$activationProcess; $attempt++) {
             foreach ($candidate in @(Get-Process -Name xdzip -ErrorAction SilentlyContinue)) {
                 try {
@@ -169,7 +185,10 @@ public static class XdzipPackageOrigin {
             }
             if (!$activationProcess) { Start-Sleep -Milliseconds 100 }
         }
-        if (!$activationProcess) { throw 'File handler did not start the installed package' }
+        if (!$activationProcess) {
+            $result.checks.shell_handler_process = 'not_observed'
+            throw 'File handler did not start the installed package'
+        }
         $null = Wait-XdzipOwnedUiElement $activationProcess $archiveName 'ControlType.TabItem'
         $null = Wait-XdzipOwnedUiElement $activationProcess 'empty.txt' 'ControlType.CheckBox'
     } finally {
@@ -185,7 +204,16 @@ public static class XdzipPackageOrigin {
     $result.checks.uninstall = 'passed'
     $result.status = 'passed'
 } finally {
-    if ($installed) { Remove-AppxPackage -Package $installed.PackageFullName -ErrorAction Continue }
+    if ($installed) {
+        try {
+            Remove-AppxPackage -Package $installed.PackageFullName -ErrorAction Stop
+            if (Get-AppxPackage -Name $identityName) { throw 'Test package remains after cleanup' }
+            $result.checks.cleanup_uninstall = 'passed'
+        } catch {
+            $result.checks.cleanup_uninstall = 'failed'
+            $result.status = 'failed'
+        }
+    }
     if ($trusted -and $certificate) {
         $trusted.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
         $trusted.Remove([System.Security.Cryptography.X509Certificates.X509Certificate2]::new($certificate.RawData))
