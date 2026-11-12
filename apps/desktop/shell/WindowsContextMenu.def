@@ -1,0 +1,4 @@
+LIBRARY xdzip-shell
+EXPORTS
+    DllGetClassObject PRIVATE
+    DllCanUnloadNow PRIVATE

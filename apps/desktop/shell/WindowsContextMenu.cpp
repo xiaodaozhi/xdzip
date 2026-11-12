@@ -240,8 +240,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID) {
     }
     return TRUE;
 }
-extern "C" __declspec(dllexport) HRESULT WINAPI DllGetClassObject(REFCLSID id, REFIID iid,
-                                                                  void **value) {
+STDAPI DllGetClassObject(REFCLSID id, REFIID iid, void **value) {
     if (id != ClassId)
         return CLASS_E_CLASSNOTAVAILABLE;
     auto *factory = new (std::nothrow) Factory;
@@ -251,6 +250,6 @@ extern "C" __declspec(dllexport) HRESULT WINAPI DllGetClassObject(REFCLSID id, R
     factory->Release();
     return result;
 }
-extern "C" __declspec(dllexport) HRESULT WINAPI DllCanUnloadNow() {
+STDAPI DllCanUnloadNow() {
     return objects == 0 ? S_OK : S_FALSE;
 }

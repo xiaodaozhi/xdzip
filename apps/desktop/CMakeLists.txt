@@ -370,7 +370,7 @@ foreach(shell_test xdzip-browser-tests xdzip-update-tests)
 endforeach()
 
 if(WIN32)
-    add_library(xdzip-shell-extension SHARED shell/WindowsContextMenu.cpp)
+    add_library(xdzip-shell-extension SHARED shell/WindowsContextMenu.cpp shell/WindowsContextMenu.def)
     set_target_properties(xdzip-shell-extension PROPERTIES OUTPUT_NAME xdzip-shell)
     target_link_libraries(xdzip-shell-extension PRIVATE shell32 ole32 uuid advapi32 bcrypt)
     if(MSVC)
