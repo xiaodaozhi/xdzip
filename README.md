@@ -4,7 +4,9 @@
 
 <h1 align="center">xdzip</h1>
 
-<p align="center"><strong>先浏览，再解压。</strong><br>适用于 macOS、Windows 和 Linux 的开源压缩包管理工具。</p>
+<p align="center"><strong>打包与解压，都简单一点。</strong></p>
+
+<p align="center">xdzip 是一款开源跨平台压缩包管理工具。它使用 Rust 实现格式处理，无需依赖外部解压程序；支持浏览和搜索包内文件、选择性解压，以及加密、分卷和受支持格式的包内修改。<br>支持 ZIP、7z、RAR、TAR、CAB、ISO/UDF 等格式，适用于 Windows、macOS 和 Linux。</p>
 
 <p align="center">
   <a href="https://github.com/xiaodaozhi/xdzip/actions/workflows/docs.yml"><img src="https://github.com/xiaodaozhi/xdzip/actions/workflows/docs.yml/badge.svg?branch=main" alt="日常检查"></a>
