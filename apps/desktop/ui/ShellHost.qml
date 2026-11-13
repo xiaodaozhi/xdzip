@@ -39,7 +39,6 @@ Item {
         id: batch
         onConfigureCreate: (inputs, target, name, sevenZip) => {
             panel.hide();
-            createWindow.configure();
             createWindow.configureSelection(inputs, target, name, sevenZip);
         }
         onConfigureExtract: { panel.hide(); extractWindow.configure(); }
@@ -79,8 +78,8 @@ Item {
         shellMode: true
         shellArchiveCount: batch.archiveCount
         shellSubmit: (target, layout, conflict, highRatio, openAfter) => {
-            batch.configureExtraction(target, layout, conflict, highRatio, openAfter);
             extractWindow.close();
+            batch.configureExtraction(target, layout, conflict, highRatio, openAfter);
         }
         onClosing: Qt.callLater(() => root.dismissed())
     }

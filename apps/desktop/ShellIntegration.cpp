@@ -12,6 +12,7 @@
 #include <QSettings>
 #include <QStandardPaths>
 #ifdef Q_OS_MACOS
+#include "MacFinderIntegration.h"
 #include "MacShellService.h"
 #endif
 namespace {
@@ -25,7 +26,7 @@ bool installed() {
                      "/Library/Services/xdzip.service/Contents/Resources/application.txt");
     const bool matches = registered.open(QIODevice::ReadOnly) &&
                          QString::fromUtf8(registered.readAll()).trimmed() == app;
-    return matches || app == "/Applications/xdzip.app" ||
+    return matches || macFinderIntegrationConfigured() || app == "/Applications/xdzip.app" ||
            app == QDir::homePath() + "/Applications/xdzip.app";
 #elif defined(Q_OS_WIN)
     QSettings install("HKEY_CURRENT_USER\\Software\\xdzip\\Install", QSettings::NativeFormat);
@@ -125,7 +126,12 @@ bool ShellIntegration::apply(bool value) {
     options.sync();
     return classes.status() == QSettings::NoError && options.status() == QSettings::NoError;
 #elif defined(Q_OS_MACOS)
-    return updateMacShellService(value);
+    if (!updateMacShellService(value))
+        return false;
+    if (updateMacFinderIntegration(value, m_settings->activeLanguage()))
+        return true;
+    updateMacShellService(enabled());
+    return false;
 #else
     Q_UNUSED(value)
     return true; // Nautilus reads the same per-user persisted setting at menu creation.

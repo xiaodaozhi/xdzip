@@ -16,6 +16,10 @@
 #include <QTimer>
 #include <QUuid>
 #include <utility>
+#ifdef Q_OS_MACOS
+#include <Security/AuthSession.h>
+#include <Security/SecBase.h>
+#endif
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
 #else
@@ -33,6 +37,15 @@ QString identity() {
     return QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) +
            QString::number(session) +
            (BuildInfo::packaged() ? QStringLiteral(":packaged") : QString{});
+#elif defined(Q_OS_MACOS)
+    SecuritySessionId session = noSecuritySession;
+    // LaunchServices helpers need not inherit SECURITYSESSIONID. Query the
+    // caller's real login session; failure refuses election rather than joining
+    // another session or creating an environment-dependent second instance.
+    if (SessionGetInfo(callerSecuritySession, &session, nullptr) != errSecSuccess ||
+        session == noSecuritySession)
+        return {};
+    return QString::number(geteuid()) + ':' + QString::number(session);
 #else
     return QString::number(geteuid()) + ':' + qEnvironmentVariable("XDG_SESSION_ID") + ':' +
            qEnvironmentVariable("DISPLAY") + ':' + qEnvironmentVariable("WAYLAND_DISPLAY") + ':' +

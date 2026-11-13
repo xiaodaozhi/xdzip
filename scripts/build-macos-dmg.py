@@ -13,6 +13,7 @@ from deployment_audit import audit, digest, mac_rpaths, native, within
 from sbom import artifact_bom
 from macos_launch_services import temporary_bundle_path, transient_registrations
 from macos_bundle import optimize_bundle, validate_optimized_bundle
+from macos_finder import sign_finder
 from macos_attribution import deployment_record
 from sparkle_bundle import (attribute as attribute_sparkle, embed as embed_sparkle,
                             sdk_from_build, signing_metadata, sign_helpers)
@@ -67,6 +68,7 @@ def sign_local(app, sparkle_metadata=None, work=None):
             if work is None:
                 raise ValueError('Sparkle helper signing needs a private work directory')
             sign_helpers(sparkle, sparkle_metadata, checked, work)
+    sign_finder(app, checked)
     checked(['codesign', '--force', '--sign', '-', '--timestamp=none', app])
     checked(['codesign', '--verify', '--deep', '--strict', app])
 

@@ -12,6 +12,7 @@ header{display:flex;gap:16px;padding:20px 24px;min-height:96px;align-items:cente
 main{overflow:auto;padding:0 24px 24px;display:flex;flex-direction:column;gap:12px}button{font:inherit;color:inherit;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:7px 12px;text-align:left;cursor:pointer}button:hover{background:var(--hover)}button:active{background:var(--border)}button:disabled{color:var(--secondary);cursor:default}footer{border-top:1px solid var(--border);padding:16px 24px;display:flex;justify-content:flex-end}.state{padding:12px 0;border-bottom:1px solid var(--border)}.state strong{display:block;margin-bottom:6px}
 </style>
 <nav><a href="?">操作选择</a><a href="?state=result">批次结果</a><a href="?lang=en">English</a><a href="?theme=dark">深色</a><a href="?scale=1.5">150% 字号</a><span>491 逻辑宽度，最高 600，复用操作窗口及共享 footer。</span></nav>
+<p>Finder Sync 直接显示相同动作的系统动态子菜单，菜单尺寸由 macOS 决定。本页展示保留的服务回退面板及共享批次结果。</p>
 <section class="window"><div class="native">用 xdzip 打开</div><header><img src="../../assets/png/light/archive-add@2x.png" alt=""><div><h1>用 xdzip 打开</h1><p>已选择 2 项</p></div></header><main></main><footer><button>关闭</button></footer></section>
 <script>
 const q=new URLSearchParams(location.search),english=q.get('lang')==='en',result=q.get('state')==='result';document.body.classList.toggle('dark',q.get('theme')==='dark');document.documentElement.style.setProperty('--scale',['1','1.25','1.5'].includes(q.get('scale'))?q.get('scale'):'1');

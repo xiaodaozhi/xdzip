@@ -3,6 +3,8 @@
 #include <string>
 namespace xdzip_shell {
 inline std::string text(bool english, const std::string &id) {
+    if (id == "shell.finderHandoffFailed") return english ? "The operation could not be handed off. Use Finder Services → Open with xdzip." : "无法交接操作，请使用 Finder 的“服务 → 用 xdzip 打开”。";
+    if (id == "shell.finderRequestRejected") return english ? "The operation was rejected. Open xdzip to repair its Finder integration, or use Services." : "操作未被接纳，请打开 xdzip 修复 Finder 集成，或使用服务入口。";
     if (id == "shell.title") return english ? "Open with xdzip" : "用 xdzip 打开";
     if (id == "shell.addNamed") return english ? "Add to \"%1\"" : "添加到“%1”";
     if (id == "shell.create") return english ? "Add to archive..." : "添加到压缩文件...";

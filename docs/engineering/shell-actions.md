@@ -1,8 +1,28 @@
 # 文件管理器操作与独立任务宿主
 
-系统入口将选择和动作交给同一登录会话的桌面进程。Windows 使用经典 `IContextMenu`，位于 Windows 11 的“显示更多选项”。Ubuntu 24.04 Files 使用 Nautilus 4.0 菜单扩展。macOS 使用 Finder 的“服务 → 用 xdzip 打开”，进入独立操作面板；Services 不支持动态子菜单，不使用 Finder Sync 模拟通用文件操作。
+系统入口将选择和动作交给同一登录会话的桌面进程。Windows 使用经典 `IContextMenu`，位于 Windows 11 的“显示更多选项”。Ubuntu 24.04 Files 使用 Nautilus 4.0 菜单扩展。macOS 使用 Finder Sync 的“用 xdzip 打开”动态子菜单，保留“服务 → 用 xdzip 打开”及独立操作面板作为回退。
 
 当前工作包的实际平台验证与剩余项见 [#270](https://github.com/xiaodaozhi/xdzip/issues/270)。源码能力不追溯加入既有发布附件。
+
+Finder Sync 的零付费实现与本机验证见 [#273](https://github.com/xiaodaozhi/xdzip/issues/273)。Apple 将 Finder Sync 定位于同步应用，本项目接受其用于通用压缩菜单的适用性限制，不据此宣称 App Store 审核可接受。本机 ad-hoc 完整性签名不要求付费账号、Developer ID、App Groups 或公证，也不提供 Gatekeeper 发行者信任。依据为 [Finder Sync 扩展文档](https://developer.apple.com/library/archive/documentation/General/Conceptual/ExtensibilityPG/Finder.html)。
+
+## macOS Finder Sync
+
+`Contents/PlugIns/xdzip-finder-sync.appex` 是不链接 Qt、Rust 或格式库的原生扩展。菜单覆盖全部本地 Finder 目录，观察根为 `/`，仅处理 Finder 提供的选择，不遍历目录，不添加工具栏、徽标或同步任务。单选普通项提供三项创建操作，多选增加逐项 ZIP，全部为归档候选时再增加四项解压操作。空选择、非本地 URL 或超过 128 项时不生成菜单。原生菜单使用系统尺寸，独立操作继续使用共享正常密度窗口。
+
+扩展只读独立 JSON 配置，位于用户 Application Support 下的 `xdzip/finder-sync.json`，包含当前应用位置、开关、语言、登记修订与本机随机交接令牌。文件限 8 KiB、当前用户所有、0600 普通文件，写入使用原子替换，拒绝链接和外来配置。它不是 CFPreferences 文件。沙箱仅增加该精确文件的只读临时例外，不共享整个用户目录、不使用 App Groups 或网络监听。路径 entitlement 必须以 `/` 起始，见 [Apple 临时例外规范](https://developer.apple.com/library/archive/documentation/Miscellaneous/Reference/EntitlementKeyReference/Chapters/AppSandboxTemporaryExceptionEntitlements.html)。
+
+Finder 不保留菜单项的 `representedObject`，因此扩展通过单调递增 tag 保留一个有界选择快照，旧菜单 tag 失效后不能对应新选择。扩展通过显式 `NSWorkspace` 目标向 `Contents/Helpers/xdzip-shell-relay.app` 发送 `xdzip-shell://v1/` 的 base64url JSON 事件，不能依赖沙箱调用者的启动参数。relay 为不链接 Qt 的独立原生应用，先校验当前用户私有配置中的随机令牌，再验证 URL、UUID、动作、路径与 JSON 边界，保持 UUID，调用现有私有请求文件与单实例入口；接纳失败显示原生错误。令牌不进入请求文件、桌面协议或产品日志，外部构造的无令牌或错误令牌 URL 不执行文件操作。URL 仅用于本机交接。
+
+扩展按固定 bundle 布局定位所属应用，不在沙箱中读取外层应用元数据。relay 每次重新读取外层 `Info.plist`，同时要求产品身份、`XdzipShellProtocol=1`、`XdzipFinderSyncProtocol=1` 和合法可执行文件名，回退或不兼容目标拒绝执行。仍加载的旧扩展可能暂时保留菜单，点击必须被 relay 拒绝；服务入口独立核对其原有协议。
+
+安装版首次启动登记自有 appex 与服务，系统设置中的 Finder 扩展仍需用户启用。设置开关同步管理两种入口，语言只切换扩展菜单，系统服务标题遵循系统语言。重复保存设置不重复添加未变化的 appex，避免断开 Finder 连接；内容摘要变化或登记缺失才重新登记。关闭时仅撤销本应用精确路径的登记，保留禁用配置；旧副本卸载不禁用较新应用的配置。显式登记的开发副本关闭后仍可通过设置重新启用，未经登记的开发副本不自动启用。
+
+更新可能受 Finder 持有旧扩展实例影响，必要时在系统设置中关闭再启用自有扩展，不强制结束 Finder。回退和卸载只操作自有登记及文件，不改变默认文件关联。Services 的可见位置由系统管理，可能提升到右键菜单顶层。
+
+English: macOS offers a native Finder Sync submenu plus the existing Service/panel fallback. The Qt-free sandboxed extension retains a bounded selection snapshot by menu tag and sends a local URL event to its explicit native relay. The relay authenticates the private same-user random token, validates the current desktop protocols and preserves the UUID through the existing private manifest/single-instance handoff. Only one dedicated same-user configuration file receives a read-only sandbox exception. Registration is idempotent for unchanged bundles; settings, language, upgrades, rollback and exact-path removal preserve foreign registrations and default handlers. System enablement remains user-controlled. Local ad-hoc signing needs no paid account, App Groups or notarization and confers no Gatekeeper trust; Finder Sync's documented synchronization-oriented scope remains a distribution limitation.
+
+## Windows 应用包边界
 
 实验性 MSIX 构建不登记右键菜单，既不把经典 `IContextMenu` 伪装成现代菜单，也不让侧载包启用现代菜单。Windows 11 现代菜单需要包身份、清单中的 COM 与文件管理器扩展，以及新的 `IExplorerCommand` 实现；现有实现不能直接复用为现代入口。未来若实现，除要求扩展所在包的系统签名类型为 Store，还须有可靠的安装来源判断以排除侧载；查询失败及 Developer、Enterprise、None 均不启用，并分别测试 Explorer 实际显示、设置开关和现有请求协议。Store 签名不单独证明安装途径，商店签名包也可能被复制侧载；无法可靠区分时不能启用现代菜单。Windows 10 没有 Windows 11 的现代菜单。具体实现与真实商店包验证不属于当前评估结论。
 
@@ -13,6 +33,10 @@ English: The experimental MSIX registers no context menu. A future Windows 11 mo
 English: GetStagedPackageOrigin and PackageOrigin_Store are candidates for further investigation, not yet proof of a per-user installation channel. Test copied Store-signed packages, multiple users and upgrades, and identify the extension's own package rather than Explorer's process.
 
 ## 选择与输出
+
+右键创建确认直接检查预填的源目录或指定目标，不先检查默认下载目录，避免不相关的 macOS 隐私访问等待阻塞操作。正常主窗口创建仍使用默认目标。
+
+English: Shell creation checks its prefilled target directly, without touching the default Downloads directory first. Normal main-window creation retains its default target.
 
 压缩提供快捷 ZIP、7z、创建确认及多选逐项 ZIP。单个普通文件保留完整名称，例如 `a.txt.zip`；文件夹使用 `foo.zip`；同目录多选合包使用所在目录名。跨目录合包进入独立创建窗口确认目标。快捷创建采用正常级别，不加密、不分卷，目标重名使用现有询问机制。
 
@@ -35,6 +59,10 @@ English: GetStagedPackageOrigin and PackageOrigin_Store are candidates for furth
 
 `OperationTasks` 为浏览入口和独立入口共享进度、结果、密码及冲突窗口。顶层 `OperationWindow` 允许没有 owner；有 owner 时跟随调用窗口，无 owner 时约束在所选屏幕。模态提示绑定实际操作窗口，退出确认复用 `OperationConfirmationWindow`。布局、共享控件、双语和辅助功能仍遵循[视觉流程](../visual/design-workflow.md)。
 
+macOS 单实例身份使用当前用户与 Security 框架的实际登录会话 ID，查询失败拒绝选举，不依赖 helper 可能缺失的环境变量。普通启动、Finder relay 和服务入口因此进入同一登录会话的实例，见 [SessionGetInfo](https://developer.apple.com/documentation/security/sessions)。
+
+English: On macOS, single-instance election uses the current user and the actual Security session ID, failing closed on query errors. LaunchServices helpers and the desktop must not derive different identities from missing environment variables.
+
 ## 批次、完成与退出
 
 批次逐项记录实际成功、失败、取消、未执行与卷组去重。单项失败继续处理其余项目；取消停止后续项目，并向正在准备或运行的任务发送既有取消意图。已经提交的输出保留，不声称整批回滚。准备、等待密码、冲突、取消和清理仍计入全局活动数及退出屏障。
@@ -55,4 +83,4 @@ Windows 的自有 CLSID 与菜单处理器写入 HKCU。运行目录包含按内
 
 Ubuntu 的原生扩展随安装包登记到 Nautilus 4.0 扩展目录，读取同一用户设置。运行中的 Files 可能继续持有旧模块，重开 Files 后更新，不自动结束文件管理器。独立运行目录不自动写入系统扩展目录，需显式安装对应集成组件。
 
-English: File-manager actions use the elected desktop process and standalone operation windows. Windows provides a classic context submenu, Ubuntu Files a Nautilus 4.0 submenu, and macOS a Finder Service followed by an operation panel. Smart extraction avoids a redundant wrapper only for a single top-level directory; forced wrappers are reserved exclusively. Batches run sequentially, continue after individual failures and retain committed outputs when cancelled. Shell creation never opens the resulting archive in the browser, and folder opening defaults off. Request validation, task admission, passwords, conflicts, cancellation and asynchronous joins reuse the existing safety contracts. Helpers check the installed protocol capability before launching, including after a rollback. Windows also verifies that its registered application command identifies the target file, rejecting a retained newer executable after rollback to the legacy layout. Registration-only commands run inside the installation transaction without admitting normal application launches; a manifest alone never confers installed identity on a portable copy. Installation owns only its registrations and does not change default file associations. Actual platform verification remains recorded in the linked issue.
+English: File-manager actions use the elected desktop process and standalone operation windows. Windows provides a classic context submenu, Ubuntu Files a Nautilus 4.0 submenu, and macOS a Finder Sync submenu with a Service/panel fallback. Smart extraction avoids a redundant wrapper only for a single top-level directory; forced wrappers are reserved exclusively. Batches run sequentially, continue after individual failures and retain committed outputs when cancelled. Shell creation never opens the resulting archive in the browser, and folder opening defaults off. Request validation, task admission, passwords, conflicts, cancellation and asynchronous joins reuse the existing safety contracts. Helpers check the installed protocol capability before launching, including after a rollback. Windows also verifies that its registered application command identifies the target file, rejecting a retained newer executable after rollback to the legacy layout. Registration-only commands run inside the installation transaction without admitting normal application launches; a manifest alone never confers installed identity on a portable copy. Installation owns only its registrations and does not change default file associations. Actual platform verification remains recorded in the linked issue.

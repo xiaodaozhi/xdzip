@@ -3,6 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>XdzipShellProtocol</key><integer>1</integer>
+    <key>XdzipFinderSyncProtocol</key><integer>1</integer>
     <key>SUPublicEDKey</key><string>${XDZIP_SPARKLE_PUBLIC_KEY_BASE64}</string>
     <key>SUEnableAutomaticChecks</key><false/>
     <key>SUAutomaticallyUpdate</key><false/>
