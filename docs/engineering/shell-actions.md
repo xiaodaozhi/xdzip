@@ -8,7 +8,7 @@ Finder Sync 的零付费实现与本机验证见 [#273](https://github.com/xiaod
 
 ## macOS Finder Sync
 
-`Contents/PlugIns/xdzip-finder-sync.appex` 是不链接 Qt、Rust 或格式库的原生扩展。菜单限于用户主目录和 `/Volumes` 中 Finder 提供的文件选择，不添加工具栏、徽标或同步任务。单选普通项提供三项创建操作，多选增加逐项 ZIP，全部为归档候选时再增加四项解压操作。空选择、非本地 URL 或超过 128 项时不生成菜单。原生菜单使用系统尺寸，独立操作继续使用共享正常密度窗口。
+`Contents/PlugIns/xdzip-finder-sync.appex` 是不链接 Qt、Rust 或格式库的原生扩展。菜单覆盖全部本地 Finder 目录，观察根为 `/`，仅处理 Finder 提供的选择，不遍历目录，不添加工具栏、徽标或同步任务。单选普通项提供三项创建操作，多选增加逐项 ZIP，全部为归档候选时再增加四项解压操作。空选择、非本地 URL 或超过 128 项时不生成菜单。原生菜单使用系统尺寸，独立操作继续使用共享正常密度窗口。
 
 扩展只读独立 JSON 配置，位于用户 Application Support 下的 `xdzip/finder-sync.json`，包含当前应用位置、开关、语言与登记修订。文件限 8 KiB、当前用户所有、0600 普通文件，写入使用原子替换，拒绝链接和外来配置。它不是 CFPreferences 文件。沙箱仅增加该精确文件的只读临时例外，不共享整个用户目录、不使用 App Groups 或网络监听。路径 entitlement 必须以 `/` 起始，见 [Apple 临时例外规范](https://developer.apple.com/library/archive/documentation/Miscellaneous/Reference/EntitlementKeyReference/Chapters/AppSandboxTemporaryExceptionEntitlements.html)。
 

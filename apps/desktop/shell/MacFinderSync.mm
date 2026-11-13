@@ -9,9 +9,9 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
-        auto *home = [NSURL fileURLWithPath:xdzip_shell::finderHome() isDirectory:YES];
+        // Observe Finder contexts only; no directory traversal or badge work.
         [FIFinderSyncController defaultController].directoryURLs =
-            [NSSet setWithObjects:home, [NSURL fileURLWithPath:@"/Volumes" isDirectory:YES], nil];
+            [NSSet setWithObject:[NSURL fileURLWithPath:@"/" isDirectory:YES]];
     }
     return self;
 }
