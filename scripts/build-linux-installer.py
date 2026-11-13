@@ -97,7 +97,7 @@ def package_tree(payload,audit,stage,qa=None,failure=None,legacy=False,historica
     if any(not re.fullmatch(r'[a-z0-9][a-z0-9+.-]*',p) for p in packages):raise ValueError('Invalid runtime dependency')
     packages.update(['libnautilus-extension4','desktop-file-utils','shared-mime-info','xdg-utils','util-linux','pkexec','apt','libssl3t64','ca-certificates'])
     depends=', '.join('libc6 (>= 2.39)' if p=='libc6' else p for p in sorted(packages))
-    (control/'control').write_text(f'Package: xdzip\nVersion: {version}\nArchitecture: amd64\nMaintainer: xdzip contributors <noreply@xdzip.invalid>\nSection: utils\nPriority: optional\nX-Xdzip-Settings-Schema: 1\nDepends: {depends}\nDescription: Experimental ZIP and TAR archive manager\n Ubuntu 24.04 x86_64 X11 developer installer, unsigned; release review pending.\n')
+    (control/'control').write_text(f'Package: xdzip\nVersion: {version}\nArchitecture: amd64\nMaintainer: xiaodaozhi <noreply@xdzip.invalid>\nSection: utils\nPriority: optional\nX-Xdzip-Settings-Schema: 1\nDepends: {depends}\nDescription: Experimental ZIP and TAR archive manager\n Ubuntu 24.04 x86_64 X11 developer installer, unsigned; release review pending.\n')
     hook=(ROOT/'apps/desktop/packaging/linux/package-hook.sh').read_text(encoding='utf-8')
     for name in ['preinst','prerm','postinst','postrm']:
         path=control/name
