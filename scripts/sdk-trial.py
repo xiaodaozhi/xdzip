@@ -56,7 +56,7 @@ def main():
         package.mkdir(exist_ok=True)
         shutil.copy2(binary, package / f'peer{suffix}')
         shutil.copy2(ROOT / 'LICENSE', package / 'LICENSE')
-        manifest = {'manifest_version': 1, 'plugin_id': 'org.xdzip.sdk.reference', 'version': '0.1.0', 'author': 'xdzip contributors',
+        manifest = {'manifest_version': 1, 'plugin_id': 'org.xdzip.sdk.reference', 'version': '0.1.0', 'author': 'xiaodaozhi',
                     'protocol_majors': [1], 'targets': [f'{platform.system().lower().replace("darwin", "macos")}-{platform.machine().lower().replace("arm64", "aarch64").replace("amd64", "x86_64")}'],
                     'entrypoint': f'peer{suffix}', 'sha256': digest(binary), 'formats': ['xdp1'],
                     'permissions': {'broker_source_read': True, 'broker_output_write': True, 'network': False},
