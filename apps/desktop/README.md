@@ -37,7 +37,7 @@ macOS 的 `XDZIP_MACOS_HANDLER_RANK` 仅接受 `None`、`Alternate`，普通开�
 
 Rust 核心负责格式、查询、任务及输出安全，QML 只表达状态和用户意图。浏览器通过正式双句柄运行时、事件线程及有界 mailbox 接收数据；退出等待异步 shutdown 屏障，不在 GUI 线程同步 join。诊断探针不承担产品请求。
 
-界面复用共享窗口、按钮、菜单和选择控件。视觉参数由 `docs/visual` 生成，运行 `python3 scripts/generate-qml-theme.py --check` 检查同步；新窗口先登记窗口契约。产品设置支持主题、100/125/150% 字号及中文 (简体)／English (US)，保存与重启规则见[设置与国际化](../../docs/ux/settings-localization.md)。开发测试用 `XDZIP_SETTINGS_PATH` 隔离配置，`XDZIP_LANGUAGE` 指定进程语言；它们不是产品设置入口。
+界面复用共享窗口、按钮、菜单和选择控件。视觉参数由 `specs/visual` 生成，运行 `python3 scripts/generate-qml-theme.py --check` 检查同步；新窗口先登记窗口契约。产品设置支持主题、100/125/150% 字号及中文 (简体)／English (US)，保存与重启规则见[设置与国际化](../../docs/ux/settings-localization.md)。开发测试用 `XDZIP_SETTINGS_PATH` 隔离配置，`XDZIP_LANGUAGE` 指定进程语言；它们不是产品设置入口。
 
 格式与安全边界见[只读浏览](../../docs/engineering/readonly-browser.md)、[预检](../../docs/engineering/extraction-preflight.md)、[安全解压](../../docs/engineering/m3-extraction.md)、[ZIP 创建](../../docs/engineering/m4-creation.md)及[TAR/GZIP](../../docs/engineering/m4-tar-gzip.md)。内容预览、额外格式和第三方扩展不因设计稿存在便视为实现。
 

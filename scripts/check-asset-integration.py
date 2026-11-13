@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ASSET_ROOT = ROOT / 'design/assets'
 QUOTED = re.compile(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'')
 
-HIGH_RES_ICONS = set(json.loads((ROOT / 'docs/visual/operation-assets.json').read_text())['icons'])
+HIGH_RES_ICONS = set(json.loads((ROOT / 'specs/visual/operation-assets.json').read_text())['icons'])
 
 
 def require(condition, message):

@@ -27,9 +27,9 @@ def main():
         expect(modal.locator('.settings-nav-item')).to_have_count(6)
         expect(modal.locator('.modal-footer')).to_have_count(0)
         assert not modal.get_by_role('button', name='完成').count()
-        layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
-        palette = json.loads((ROOT / 'docs/visual/tokens.json').read_text())
-        controls = json.loads((ROOT / 'docs/visual/controls.json').read_text())
+        layout = json.loads((ROOT / 'specs/visual/layout-scale.json').read_text())
+        palette = json.loads((ROOT / 'specs/visual/tokens.json').read_text())
+        controls = json.loads((ROOT / 'specs/visual/controls.json').read_text())
         ratio = layout['main']['source_to_logical'][0] / layout['main']['source_to_logical'][1]
         assert abs(modal.bounding_box()['width'] * ratio - 612) < 1
         def rgb(value):

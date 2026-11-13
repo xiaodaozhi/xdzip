@@ -1,8 +1,8 @@
 # xdzip 仓库工作约定
 
-开始前阅读 README.md、docs/README.md 和当前任务涉及的规范。当前基线为 Qt Quick + 薄 C++ + Rust；高保真原稿统一位于 design/hifi；视觉规范与 tokens 位于 docs/visual。框架选型变更须通过架构决策流程。
+开始前阅读 README.md、docs/README.md 和当前任务涉及的规范。当前基线为 Qt Quick + 薄 C++ + Rust；高保真原稿统一位于 design/hifi；视觉规范位于 docs/visual，机器可读参数位于 specs/visual。框架选型变更须通过架构决策流程。
 
-界面创作与修正必须先读 docs/visual/design-standard.md、docs/visual/design-workflow.md；密度与单位以 docs/visual/layout-scale.json 为准。主窗口和菜单必须同时测量比例，不得把 DPR、浏览器缩放或截图物理像素写入组件逻辑尺寸。
+界面创作与修正必须先读 docs/visual/design-standard.md、docs/visual/design-workflow.md；密度与单位以 specs/visual/layout-scale.json 为准。主窗口和菜单必须同时测量比例，不得把 DPR、浏览器缩放或截图物理像素写入组件逻辑尺寸。
 
 产品能力与边界以 README 及 docs/engineering 的实现契约为准。任务进度、验收记录和阶段结论使用 GitHub issue；docs 只保留通用、持久文档，生成证据只保留为本地／CI 工件。桌面人工验收按需执行并单独登记，阶段状态以实际验收证据为准。当前开发包保持实验性，工作包完成不自动批准正式发行。
 
@@ -27,7 +27,7 @@
 - 文本信息使用逗号、句号或换行分隔，不使用中点。测试截图、量测数据和验证报告只生成到 build/ 或 dist/，不提交到 Git；设计原稿、素材、规格和测试代码继续纳入版本管理。
 - 操作窗口使用共享 OperationButton、OperationFooterButton、OperationFrame、OperationSelect 和 OperationSegmentedGroup；禁止在窗口中覆盖 footer 按钮的圆角、字号、颜色、描边和密度。
 
-新增或修改任何 QML 窗口（含内联 Window）必须先登记 docs/visual/window-registry.json，明确尺寸依据、例外理由与高保真入口；退出、重启等确认窗口必须复用 OperationConfirmationWindow。提交前运行窗口契约、共享控件和双语多字号布局检查；功能检查通过不能代替视觉验收，禁止将未执行的原生视觉检查记为通过。
+新增或修改任何 QML 窗口（含内联 Window）必须先登记 specs/visual/window-registry.json，明确尺寸依据、例外理由与高保真入口；退出、重启等确认窗口必须复用 OperationConfirmationWindow。提交前运行窗口契约、共享控件和双语多字号布局检查；功能检查通过不能代替视觉验收，禁止将未执行的原生视觉检查记为通过。
 
 自定义单选控件统一使用 IntentRadioButton，将鼠标、键盘和原生辅助功能 press/toggle 路由到同一选择模型；不得仅翻转 checked。回归必须执行 QAccessibleActionInterface 并核对实际行为和互斥状态。
 

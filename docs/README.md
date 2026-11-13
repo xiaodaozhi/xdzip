@@ -1,6 +1,6 @@
 # 文档导航
 
-文档保存当前源码的通用设计、实现契约和可复用方法。用户安装入口与版本区别见根目录 [README](../README.md)，具体版本以[发布页](https://github.com/xiaodaozhi/xdzip/releases)为准。进度与验收结论记录在 [Issues](https://github.com/xiaodaozhi/xdzip/issues)，执行证据保存在 [Actions](https://github.com/xiaodaozhi/xdzip/actions)或本地工件，不在 docs 累积报告。
+文档保存当前源码的通用设计、实现契约和可复用方法。`docs/` 只存放 Markdown 与必要图片；供生成器、产品资源和检查工具使用的机器可读输入位于 `specs/`，按视觉、术语和工程依赖分类。用户安装入口与版本区别见根目录 [README](../README.md)，具体版本以[发布页](https://github.com/xiaodaozhi/xdzip/releases)为准。进度与验收结论记录在 [Issues](https://github.com/xiaodaozhi/xdzip/issues)，执行证据保存在 [Actions](https://github.com/xiaodaozhi/xdzip/actions)或本地工件，不在 docs 累积报告。
 
 ## 从哪里开始
 
@@ -17,7 +17,7 @@
 | --- | --- |
 | 命令行 | [独立 CLI、脚本接口与安装更新](engineering/command-line.md) |
 | 产品与架构 | [设计总览](design/index.md)、[架构决策](design/architecture-decisions.md)、[需求追踪](design/requirements-traceability.md) |
-| 界面规范 | [严格设计规范](visual/design-standard.md)、[设计流程](visual/design-workflow.md)、[逻辑尺寸](visual/layout-scale.json)、[视觉参数](visual/tokens.json) |
+| 界面规范 | [严格设计规范](visual/design-standard.md)、[设计流程](visual/design-workflow.md)、[逻辑尺寸](../specs/visual/layout-scale.json)、[视觉参数](../specs/visual/tokens.json) |
 | 高保真与素材 | [原稿入口](../design/hifi/README.md)、[可操作 HTML 设计](../design/html/README.md)、[素材目录](../design/assets/index.html) |
 | 交互契约 | [主窗口](ux/main-window-components.md)、[任务窗口](ux/task-windows.md)、[密码解压](ux/password-extraction.md)、[系统集成](ux/desktop-integration.md)、[文件管理器右键操作](engineering/shell-actions.md)、[设置与国际化](ux/settings-localization.md)、[中文术语](ux/chinese-terminology.md) |
 | 浏览与任务 | [运行时](engineering/m1-runtime.md)、[只读索引](engineering/m2-readonly.md)、[大归档索引](engineering/large-index.md)、[主动预览](engineering/content-preview.md)、[浏览契约](engineering/readonly-browser.md)、[解压预检](engineering/extraction-preflight.md) |

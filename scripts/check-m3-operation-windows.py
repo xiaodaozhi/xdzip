@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--input', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
 args = parser.parse_args()
-layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text(encoding='utf-8'))['operation']
+layout = json.loads((ROOT / 'specs/visual/layout-scale.json').read_text(encoding='utf-8'))['operation']
 checks = []
 
 
@@ -57,7 +57,7 @@ for name, kind, title in [('extract-options', 'extract', '解压文件'),
 
 # Destination geometry comes from the independent source measurements, rather
 # than copying the QML constants into the expected values.
-source = json.loads((ROOT / 'docs/visual/extract-reference.json').read_text(encoding='utf-8'))
+source = json.loads((ROOT / 'specs/visual/extract-reference.json').read_text(encoding='utf-8'))
 ratio = source['source_to_logical'][0] / source['source_to_logical'][1]
 capture = json.loads((args.input / 'extract-selected.json').read_text(encoding='utf-8'))
 named = {n['name']: n for n in capture['nodes'] if n.get('name') and n['visible']}

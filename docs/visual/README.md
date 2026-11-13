@@ -1,10 +1,10 @@
 # xdzip 视觉规范
 
-规范入口：[界面设计规范](design-standard.md)、[强制设计流程](design-workflow.md)、[密度与单位契约](layout-scale.json)。主窗口与菜单比例的复验按[通用方法](../qa/README.md)记录。
+规范入口：[界面设计规范](design-standard.md)、[强制设计流程](design-workflow.md)、[密度与单位契约](../../specs/visual/layout-scale.json)。主窗口与菜单比例的复验按[通用方法](../qa/README.md)记录。
 
 当前原稿见 [design/hifi](../../design/hifi/README.md)，可操作 HTML 交付见 [design/html](../../design/html/README.md)。未采用的早期提案不作为当前基线；不要依赖已整理的 main 历史查找旧稿，当前原稿以此目录及清单为准。
 
-`tokens.json` 保存主题与通用实现参数。主窗口几何和字号从独立冻结的 [qt-main-reference.json](qt-main-reference.json) 生成，依据高保真原稿及已验收 HTML 的量测，按 1024/1548 等比换算；此前 1280 宽的基准折算为正常密度。取整、实际截图和未实现能力按[验证方法](../qa/README.md)分别记录；实现参数不能反过来充当设计验收基准。
+[tokens.json](../../specs/visual/tokens.json) 保存主题与通用实现参数，视觉机器可读输入统一位于 `specs/visual/`。主窗口几何和字号从独立冻结的 [qt-main-reference.json](../../specs/visual/qt-main-reference.json) 生成，依据高保真原稿及已验收 HTML 的量测，按 1024/1548 等比换算；此前 1280 宽的基准折算为正常密度。取整、实际截图和未实现能力按[验证方法](../qa/README.md)分别记录；实现参数不能反过来充当设计验收基准。
 
 ## 调研依据与转化
 
@@ -84,7 +84,7 @@ HTML 照片预览从分栏标题下边缘直接开始，顶边与文件列表表
 
 ## 目录树 B 组件修订（2026-10-12）
 
-新增三张正式图板定义多级展开、节点交互和导航边界，见[目录树规格](../ux/directory-tree.md)。26 张原像素切片进入统一 `assets/reference`，分支圆点、实心状态图标与分段转轮使用两主题 SVG 与三倍率 PNG。连接线、状态背景、焦点与文字按[独立组件参数](directory-tree.json)动态绘制；参数不自动覆盖现有全局 tokens。当前图板为放大视觉说明，精确逻辑尺寸与源像素矩形分别记录。HTML 与 Qt 已接入递归目录、连接线及隐藏当前分支标记；专用边界图标／骨架仍为设计资源，完整深色组件图板待补齐。
+新增三张正式图板定义多级展开、节点交互和导航边界，见[目录树规格](../ux/directory-tree.md)。26 张原像素切片进入统一 `assets/reference`，分支圆点、实心状态图标与分段转轮使用两主题 SVG 与三倍率 PNG。连接线、状态背景、焦点与文字按[独立组件参数](../../specs/visual/directory-tree.json)动态绘制；参数不自动覆盖现有全局 tokens。当前图板为放大视觉说明，精确逻辑尺寸与源像素矩形分别记录。HTML 与 Qt 已接入递归目录、连接线及隐藏当前分支标记；专用边界图标／骨架仍为设计资源，完整深色组件图板待补齐。
 
 ## 当前主稿的工具栏修订（2026-10-12）
 
@@ -110,4 +110,4 @@ HTML 照片预览从分栏标题下边缘直接开始，顶边与文件列表表
 
 ## 可操作控件规范
 
-[controls.json](controls.json)定义菜单四列、行高、圆角、颜色、焦点和提示时序；[directory-tree.json](directory-tree.json)定义目录层级。两份规格生成 HTML 控件参数和 QML Theme，通过检查避免手工复制尺寸与主题。主稿的逻辑 / 源像素比例从 `display-spec.js` 读取；[组件审阅页](../../design/html/components.html)采用 1:1 逻辑尺寸，主画布仍使用源坐标。功能清单与输入契约在[主窗口组件说明](../ux/main-window-components.md)，真实渲染与行为按[验证方法](../qa/README.md)保存到对应 issue 与工件。
+[controls.json](../../specs/visual/controls.json)定义菜单四列、行高、圆角、颜色、焦点和提示时序；[directory-tree.json](../../specs/visual/directory-tree.json)定义目录层级。两份规格生成 HTML 控件参数和 QML Theme，通过检查避免手工复制尺寸与主题。主稿的逻辑 / 源像素比例从 `display-spec.js` 读取；[组件审阅页](../../design/html/components.html)采用 1:1 逻辑尺寸，主画布仍使用源坐标。功能清单与输入契约在[主窗口组件说明](../ux/main-window-components.md)，真实渲染与行为按[验证方法](../qa/README.md)保存到对应 issue 与工件。

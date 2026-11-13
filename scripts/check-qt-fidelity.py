@@ -13,8 +13,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def audit(directory):
-    reference = json.loads((ROOT / 'docs/visual/qt-main-reference.json').read_text(encoding='utf-8'))
-    layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text(encoding='utf-8'))
+    reference = json.loads((ROOT / 'specs/visual/qt-main-reference.json').read_text(encoding='utf-8'))
+    layout = json.loads((ROOT / 'specs/visual/layout-scale.json').read_text(encoding='utf-8'))
     scale = reference['logical_width'] / reference['source_window'][2]
     geometry = {key: value * scale for key, value in reference['source_geometry'].items()}
     # Preserve the frozen artwork and apply its explicitly documented selection

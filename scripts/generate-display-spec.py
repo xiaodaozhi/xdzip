@@ -11,8 +11,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args()
-    layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
-    reference = json.loads((ROOT / 'docs/visual/qt-main-reference.json').read_text())
+    layout = json.loads((ROOT / 'specs/visual/layout-scale.json').read_text())
+    reference = json.loads((ROOT / 'specs/visual/qt-main-reference.json').read_text())
     sizes = {'password': (None, [780, 900]), 'quit': (None, [780, 900]), 'restart': (None, [780, 900]), 'about': (None, [780, 900]), 'welcome': ('welcome-top-light.png', [1586, 992]),
              'welcome-narrow': ('welcome-top-narrow.png', [1296, 875]),
              'main': ('main-capsule-light.png', [1586, 992]),
@@ -25,14 +25,14 @@ def main():
              'settings': ('settings.png', [1092, 1440]),
              'preflight': ('preflight-light.png', [634, 497]),
              'empty': (None, [1586, 992]), 'damaged': (None, [1586, 992])}
-    settings = json.loads((ROOT / 'docs/visual/settings-reference.json').read_text())
-    preflight = json.loads((ROOT / 'docs/visual/preflight-reference.json').read_text())
+    settings = json.loads((ROOT / 'specs/visual/settings-reference.json').read_text())
+    preflight = json.loads((ROOT / 'specs/visual/preflight-reference.json').read_text())
     sizes['preflight'] = (Path(preflight['light_source_image']).name, preflight['source_size'])
     # The frozen settings reference remains historical; the live reviewer uses the new artboard.
     sizes['settings'] = ('settings-appearance-light.png', [742, 678])
     main_ratio = layout['main']['source_to_logical']
     operation_ratio = layout['operation']['source_to_logical']
-    spec = dict(operationHeader=layout['operation']['header'], taskMenuMaximumHeight=layout['controls']['task_menu_maximum_height'], password=json.loads((ROOT / 'docs/visual/password-reference.json').read_text()), about=json.loads((ROOT / 'docs/visual/about-reference.json').read_text()), version=2, logicalWindowWidth=main_ratio[0],
+    spec = dict(operationHeader=layout['operation']['header'], taskMenuMaximumHeight=layout['controls']['task_menu_maximum_height'], password=json.loads((ROOT / 'specs/visual/password-reference.json').read_text()), about=json.loads((ROOT / 'specs/visual/about-reference.json').read_text()), version=2, logicalWindowWidth=main_ratio[0],
                 windowsCaption=layout['main']['interaction'],
                 sourceWindow=reference['source_window'],
                 sourceToLogical=main_ratio[0] / main_ratio[1],
@@ -49,7 +49,7 @@ def main():
     spec['views']['settings']['darkSource'] = '../hifi/screens/settings-appearance-dark.png'
     spec['views']['welcome']['darkSource'] = '../hifi/screens/welcome-top-dark.png'
     spec['views']['main']['darkSource'] = '../hifi/screens/main-capsule-dark.png'
-    output = ('"use strict";\n// Generated from docs/visual/layout-scale.json; never infer logical size from DPR.\n'
+    output = ('"use strict";\n// Generated from specs/visual/layout-scale.json; never infer logical size from DPR.\n'
               'window.XDZIP_DISPLAY_SPEC = Object.freeze(' + json.dumps(spec, indent=4) + ');\n')
     path = ROOT / 'design/html/display-spec.js'
     if args.check:

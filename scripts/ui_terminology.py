@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-POLICY = ROOT / 'docs/ux/chinese-terminology.json'
+POLICY = ROOT / 'specs/ux/chinese-terminology.json'
 
 
 def inspect(messages):

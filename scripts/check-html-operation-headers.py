@@ -17,7 +17,7 @@ def main():
     parser.add_argument('--output', type=Path, default=ROOT / 'build/review/operation-headers')
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
-    spec = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
+    spec = json.loads((ROOT / 'specs/visual/layout-scale.json').read_text())
     common = spec['operation']['header']
     records, errors, requests = [], [], []
     with sync_playwright() as p:
