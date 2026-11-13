@@ -285,6 +285,8 @@ W01-07，欢迎页与打开归档后的标题栏、标签及外观按钮的位�
 
 - PE 子系统检查要求产品 `xdzip.exe` 为 GUI，诊断与测试程序保留 console；部署后的 windows 平台启动检查仍执行。
 - Windows 主窗口没有额外系统标题栏，设置右侧的最小化、最大化／还原与关闭按钮可执行；双击标题空白区域切换最大化，关闭仍等待运行时退出。边角使用原生命中测试，窗口保留可缩放边框、DWM 阴影和受支持系统的圆角；检查 WS_CAPTION／WS_THICKFRAME、非客户区渲染及客户区 1024×622，外部装饰由桌面合成截图单独核对。贴靠、原生拖动和多显示器行为按需验证。
+- 原生客户区计算覆盖 WM_NCCALCSIZE 的单个 RECT 和 NCCALCSIZE_PARAMS 两种形式，均保留自定义标题区及系统边框；Windows 10 实际窗口显示单独验证。
+- English: Verify both RECT and NCCALCSIZE_PARAMS forms of WM_NCCALCSIZE retain the integrated titlebar and native borders; validate actual Windows 10 presentation separately.
 - 权限回归在自有临时目录上加入 Everyone 的只读／执行权限，完成阶段文件、父目录、发布及清理，再分别加入写入、删除、改所有者、改 ACL、泛型写入和仅继承写入，确认输出前拒绝且旧内容不变。外部所有者、链接与特殊对象限制不变。现有用户目录 ACL 不被改写。
 - 本地／CI 日志、量测及截图保存在 build/ 下或短期 CI 工件，实际平台结论以对应执行记录为准；不把本轮开发验证记为未执行的平台验收。
 
