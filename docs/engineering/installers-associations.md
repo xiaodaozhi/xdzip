@@ -139,3 +139,5 @@ English: Windows protocol and real Qt update fixtures include the required assoc
 设置页按当前系统查询显示九类关联。macOS 使用 NSWorkspace 的内容类型接口，并在关闭时由用户选取替代应用；开发副本按 None 等级禁用关联操作。Windows 打开系统默认应用页面并在返回后重查，只读系统关联，不修改 UserChoice。Linux 用 xdg-mime 查询与修改用户 MIME 默认，安装包声明 xdg-utils 依赖；移除关联时由用户选择已安装的替代桌面项。复合扩展可能共享系统类型；取消、系统拒绝或查询失败不显示伪造的成功。真实系统 UI 和多桌面环境行为须单独验收。
 
 English: Settings query operating-system defaults for each supported type. macOS requests changes through NSWorkspace, Windows opens the system default-app page, and Linux uses the user MIME configuration. Disabling a macOS or Linux association selects an alternative application. Composite extensions may share a system type. Native acceptance remains separate from automated checks.
+
+自动识别语言模式在 Windows 安装器中按当前用户的系统界面语言解析：中文各区域使用中文描述，其余以英文兜底；显式中文或英文选择优先。安装器不将自动识别改写为固定语言，应用启动后按自身系统语言解析并同步自有描述。English: Windows Setup resolves automatic mode from the current user’s Windows UI language, uses Chinese descriptions for Chinese variants and English otherwise, and respects explicit selections without rewriting the saved mode. Application startup resolves its own system UI language and synchronizes verified owned descriptions.
