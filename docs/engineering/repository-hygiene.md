@@ -15,7 +15,7 @@
 
 `docs/` 只保存 Markdown 和必要的图片素材；机器可读的视觉参数、术语与依赖清单集中在 `specs/`，由相关生成和检查入口读取。`scripts/repository_contents.py` 检查 Git 索引中的目录边界。
 
-对应源码收集器仅用于本地审查和重建核验，不作为 GitHub Release 或 Actions 下载附件；具体发行边界见[发布协议](release-protocol.md)。
+对应源码收集器只在用户针对源码收集另行明确要求时用于本地审查和重建核验，常规发行及验收不运行；不作为 GitHub Release 或 Actions 下载附件，具体边界见[发布协议](release-protocol.md)。
 
 `design/html` 是可操作高保真设计，`docs/html` 是 Markdown 派生阅读版，二者用途不同。后者默认生成到 `build/docs-html/`；前者的源文件与必要素材继续维护。历史设计原稿与永久依赖来源材料不按“二进制”或“生成”一刀切删除。
 

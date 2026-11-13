@@ -1,4 +1,5 @@
 #pragma once
+#include "UiLanguage.h"
 #include <QCoreApplication>
 #include <QFile>
 #include <QJsonDocument>
@@ -79,9 +80,8 @@ inline bool initializeUiText(const QString &forcedLanguage = {}) {
     if (language.isEmpty() && settings.value(QStringLiteral("schemaVersion"), 1).toInt() == 1 &&
         settings.status() == QSettings::NoError)
         language =
-            settings.value(QStringLiteral("locale/language"), QStringLiteral("zh-CN")).toString();
-    if (language != QStringLiteral("en-US"))
-        language = QStringLiteral("zh-CN");
+            settings.value(QStringLiteral("locale/language"), QStringLiteral("auto")).toString();
+    language = resolveUiLanguage(language.isEmpty() ? QStringLiteral("auto") : language);
     // Qt-owned controls use the OS language, independently of the product locale.
     static QPointer<QTranslator> systemTranslator;
     static QPointer<UiTranslator> activeTranslator;

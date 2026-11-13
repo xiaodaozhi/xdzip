@@ -28,7 +28,11 @@ English: The About version-information grid sizes its label column to the actual
 
 English: The settings content's vertical scrollbar sits at the right edge and spans the viewport; its thumb follows the scroll position and can be dragged to scroll.
 
-所有产品静态文字通过 `resources/i18n/zh-CN.json` 和 `en-US.json` 的稳定 ID 引用；QML 使用 `qsTrId`，C++ 使用 `qtTrId`。协议码、文件名、路径和用户内容不翻译。语言默认简体中文，支持 English (US)；字号支持 100%、125%、150%，历史 200% 读取为 150%。系统文件选择器遵循系统语言，独立于应用语言。macOS 包声明 zh-Hans、en 并允许混合本地化，Qt 标准控件按系统 locale 加载可用翻译，不修改用户的 AppleLanguages。
+所有产品静态文字通过 `resources/i18n/zh-CN.json` 和 `en-US.json` 的稳定 ID 引用；QML 使用 `qsTrId`，C++ 使用 `qtTrId`。协议码、文件名、路径和用户内容不翻译。语言选项依次为“自动识别”、“中文 (简体)”、“English (US)”，默认选中“自动识别”。持久化 `locale/language` 为 `auto`、`zh-CN` 或 `en-US`，实际生效语言独立解析。自动模式读取 `QLocale::system().uiLanguages()` 的首选项，所有中文区域使用简体中文，所有英文区域使用 English (US)，其他语言或空列表以 English (US) 兜底；不受应用通过 `QLocale::setDefault()` 设置的数字区域影响。每次启动重新解析自动模式，切回自动与手动选择均即时生效；保存失败恢复之前的实际语言与选择模式。后续语言在共享支持列表及两种界面选项中扩展，本次不增加历史设置迁移。
+
+字号支持 100%、125%、150%，历史 200% 读取为 150%。系统文件选择器遵循系统语言，独立于应用语言。macOS 包声明 zh-Hans、en 并允许混合本地化，Qt 标准控件按系统 locale 加载可用翻译，不修改用户的 AppleLanguages。
+
+English: Language options are Auto-detect, 中文 (简体), and English (US), with Auto-detect selected by default. The stored `auto`, `zh-CN`, or `en-US` selection is separate from the effective locale. Automatic mode uses the first system UI language: any Chinese variant resolves to Simplified Chinese, English variants resolve to English (US), and unsupported or missing languages fall back to English (US). Application numeric-locale changes do not affect detection. Automatic mode resolves on each startup; selection changes apply immediately and failed saves restore the previous mode and effective language. No historical-profile migration is added.
 
 验收覆盖六个标签、无 footer、各入口及跨会话关于页、即时保存与重开、保存失败回滚、语言即时切换、主题和字号、九类关联的系统确认与刷新、代理与镜像输入、更新各状态、两种语言及 150% 字号。必须通过 QAccessibleActionInterface 实际操作单选和开关，检查模型、互斥及事件；各平台真实桌面和系统默认应用行为按需检查，HTML 与组件测试不冒充未执行的桌面操作。测试截图和证据仅写 build/ 或 CI 工件。
 

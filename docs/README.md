@@ -4,7 +4,7 @@
 
 ## 从哪里开始
 
-- **安装和使用**：阅读 [README](../README.md)、[安装与文件关联](engineering/installers-associations.md)和[支持政策](engineering/support-policy.md)。当前源码的[命令行工具](engineering/command-line.md)不自动包含在旧版发布附件中。
+- **安装和使用**：阅读 [README](../README.md)、[安装与文件关联](engineering/installers-associations.md)和[支持政策](engineering/support-policy.md)。[命令行工具](engineering/command-line.md)自 `v0.2.0` 起提供独立发布包，旧版附件保持原样。
 - **隐私与数据处理**：面向用户的[隐私政策](../PRIVACY.md)与 [English 版本](../PRIVACY.en.md)，工程实现边界见[数据生命周期与诊断](engineering/privacy.md)。
 - **构建和贡献**：从[开发构建指南](engineering/developer-build.md)准备环境，按[仓库结构](engineering/repository-layout.md)定位代码，再按[验证方法](qa/README.md)选择检查。
 - **修改产品行为**：先查下方的浏览、任务、格式和交互契约，区分当前实现、设计和未验证内容。
@@ -42,7 +42,7 @@
 - 7z 后端：流式方法图、共享算法、创建、重写和密码封装见[读写规格](engineering/independent-rust-codecs.md#7z读写规格)，来源与参考分析分工见[7z 实现依据](engineering/sevenzip-format-sources.md)。产品固定使用 Rust，官方 7-Zip 源码不进入产品编译或部署。
 - CAB 后端：只读容器、共享算法和完整帧工作计量见[自研规格](engineering/independent-rust-codecs.md#cab只读规格)，规范版本与参考分析边界见[来源记录](engineering/cab-format-sources.md)。产品固定使用 Rust，官方 Cab 处理器及 CAB 专用 LZX/Quantum 不进入构建，没有失败回退。
 - 修改界面：先读视觉规范与流程，原稿位于 design/hifi，行为参照 ux 文档；HTML 示例与 Qt 实际能力分别核对。
-- 准备交付：按源码、部署、安装契约及发行手册复验，区分开发验收与发行许可复核。正式 Release 不附带对应源码压缩包，源码交付脚本只用于本地审查和重建验证。支持范围以[已批准政策](engineering/support-policy.md)为准，不以 CI runner 名称推断。
+- 准备交付：按部署、安装契约及发行手册复验，区分开发验收与发行许可复核。正式 Release 不生成或附带对应源码压缩包；常规发行验收不运行源码交付收集器，仅在用户针对源码收集另行明确要求时用于本地审查或重建验证。支持范围以[已批准政策](engineering/support-policy.md)为准，不以 CI runner 名称推断。
 
 新缺陷与任务先查重并记录到 issue。已完成的 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)不承接后续新待办；`v0.1.0` 的历史发行许可复核见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)，文件输入与 macOS ACL 修复的范围及验证见 [#6](https://github.com/xiaodaozhi/xdzip/issues/6)。这些入口用于查阅实际状态，未来候选须建立新的发行 issue，本文不复制执行报告。
 

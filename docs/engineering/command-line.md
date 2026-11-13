@@ -2,7 +2,7 @@
 
 CLI 是独立的 Rust 宿主，通过同一个 `xdzip-runtime` 服务调用格式和安全 I/O，不依赖 Qt、QML 或显示会话。7z、RAR、CAB、ISO、UDF 继续使用随包提供的隔离工作进程，不搜索 PATH 中的替代解包工具。平台和架构沿用[支持政策](support-policy.md)，独立 Linux CLI 不要求 X11；运行需要系统 OpenSSL 3 和证书，构建另需 libssl-dev、pkg-config。
 
-当前公开旧版不因本契约增加附件。新 CLI 的源码构建、安装和验证由本页说明，未来发行按[发布协议](release-protocol.md)生成独立资产。具体实现与验收进度登记在 [#254](https://github.com/xiaodaozhi/xdzip/issues/254)。
+自 `v0.2.0` 起，正式发行提供三平台独立 CLI 包，桌面包也包含私有 CLI；更早版本的附件不会因此改变。下载入口见[发布页](https://github.com/xiaodaozhi/xdzip/releases)，源码构建、安装与更新边界见下文及[发布协议](release-protocol.md)。具体实现与验收进度登记在 [#254](https://github.com/xiaodaozhi/xdzip/issues/254)。
 
 ## 使用与输出
 

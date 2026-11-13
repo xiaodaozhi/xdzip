@@ -50,7 +50,7 @@ English: Creation and extraction password fields expose an explicit UI label ind
 
 验收要求覆盖原始 AES 字段／CRC／描述符／ZIP64、同名物理记录、正确和错误密码、认证破坏、混合文件、不同密码、空密码／控制字符、重试资源累计、满队列、取消／退出唤醒、来源变化、旧目标保护、链接和执行权限，以及独立 7-Zip 双向字节核对。界面检查分别覆盖实际控制器闭环、可访问动作、双语多字号、浅深色、DPR 与原生窗口。自动化不等于系统读屏人工验收。
 
-English: Independent Rust 7z and official UnRAR handle their respective password profiles inside the isolated worker. Encrypted directories require a bounded OpenWithPassword request before any metadata is published. The private session and its admitted tasks retain zeroizing secret containers; events, settings and logs never contain passwords. Existing task prompts and cancellation remain in use. Only 7z creation supports encrypted filenames, requiring a creation password. Encrypted 7z and all RAR archives reject edits.
+English: Independent Rust 7z and RAR backends handle their respective password profiles inside the isolated worker. Encrypted directories require a bounded OpenWithPassword request before any metadata is published. The private session and its admitted tasks retain zeroizing secret containers; events, settings and logs never contain passwords. Existing task prompts and cancellation remain in use. Only 7z creation supports encrypted filenames, requiring a creation password. Encrypted 7z and all RAR archives reject edits.
 
 RAR 未取得可信密码验证值时，加密头或内容的解码完整性失败同样使用 `password_or_integrity`；已验证匹配的可信 verifier、明文头校验和非密码类失败仍保留各自分类。历史单条密码及平台字符投影规则见[RAR 实现依据](rar-format-sources.md)。未知尺寸在解码和密码交互之前拒绝，不为不可输出的条目额外索取秘密。
 

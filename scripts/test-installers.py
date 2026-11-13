@@ -268,9 +268,10 @@ class InstallerTests(unittest.TestCase):
             self.assertNotIn('Software\\Classes\\.001\\',text)
             self.assertNotIn('Software\\Classes\\.img\\',text)
             self.assertIn("GetIniString('General', 'schemaVersion', '1', Profile)",text)
-            self.assertIn("GetIniString('locale', 'language', 'zh-CN', Profile)",text)
+            self.assertIn("GetIniString('locale', 'language', 'auto', Profile)",text)
+            self.assertIn("((GetUILanguage and $3FF) = $04)", text)
             self.assertIn("Result := '' + Param + ' archive'",text)
-            self.assertIn("Result := '' + Param + ' 压缩包';",text)
+            self.assertIn("Result := '' + Param + ' 压缩包'",text)
             self.assertNotIn('@ASSOCIATION_DESCRIPTION_',text)
             for line in text.splitlines():
                 if '\\OpenWithProgids' in line:

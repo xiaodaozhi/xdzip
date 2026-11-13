@@ -141,11 +141,11 @@ Qt 使用 OperationButton、OperationFooterButton、OperationFrame、OperationSe
 
 完整性检查沿用任务进度的 491 宽、自适应客户区高（最高 600）、20 标题、13 正文、共享 footer 和正常密度。高保真原稿为 screens/integrity-progress.png，冻结依据见 integrity-reference.json。保持标题区、对象路径、渐变进度条、已读取字节与文件数、三列指标、当前文件、说明与 footer 的同一布局；仅替换操作名称、蓝色文档勾选插图、检查对象、平均读取、读取并校验和取消检查。禁止再使用单独的浏览器原生 progress 条或不同尺寸的检查卡片。
 
-HTML 复用 taskProgressBody、taskProgressFooter 和进度样式；Qt IntegrityWindow 继承 TaskWindow。检查是只读语义，终态不显示目标保存统计或打开输出目录动作。预览必须明确标记为未执行实际校验，不启用尚未实现的真实工具栏命令。浅深色、未知总量、长路径、辅助字号、关闭与取消均沿用共享契约。
+HTML 复用 taskProgressBody、taskProgressFooter 和进度样式；Qt IntegrityWindow 继承 TaskWindow。检查是只读语义，终态不显示目标保存统计或打开输出目录动作。组件开发预览必须明确标记为未执行实际校验；主窗口的真实工具栏命令按[检查契约](../engineering/archive-checking.md)启用。浅深色、未知总量、长路径、辅助字号、关闭与取消均沿用共享契约。
 
 Qt 固定行高必须同时作为布局的行槽高度，不能再把额外字体 leading 算进固定行槽。百分比行槽为 24，字节与文件数行槽为 18；路径卡片标题与指标保持既定行高，多行指标按实际行数增高。默认字号下，三类进度窗口的正文说明完整显示；小屏幕或辅助字号下正文可滚动，footer 仍固定可达。
 
-每个主窗口当前各持有一个 ExtractWindow、CreateWindow 和 TaskWindow，均为操作系统独立窗口。解压／创建的进度与结果是 TaskWindow 的不同状态；选择其他任务时同一窗口更新内容，并不是为四个状态各新建一扇窗口。完整性检查预览是另一个独立系统窗口，主窗口真实检查命令保持禁用。详见 [任务窗口契约](../ux/task-windows.md)。
+每个主窗口当前各持有一个 ExtractWindow、CreateWindow 和 TaskWindow，均为操作系统独立窗口。解压、创建和真实完整性检查的进度与结果复用 TaskWindow；选择其他任务时同一窗口更新内容，并不是为每种状态新建窗口。组件开发预览另用 IntegrityWindow，不执行真实检查。详见[任务窗口契约](../ux/task-windows.md)。
 
 ## 2026-10-15 操作与选择修订
 

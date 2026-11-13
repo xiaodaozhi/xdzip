@@ -8,6 +8,9 @@
   "body_size": 13,
   "note_size": 12,
   "maximum_height": 720,
+  "default_language_selection": "auto",
+  "language_selections": ["auto", "zh-CN", "en-US"],
+  "fallback_language": "en-US",
   "languages": [
     "zh-CN",
     "en-US"

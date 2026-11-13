@@ -110,6 +110,7 @@
       "header_design": "design/hifi/sources/operation-headers.html",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
       "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group.",
+      "language_policy": "语言下拉框依次为自动识别、中文 (简体)、English (US)，默认自动识别，保留已保存的选择模式；沿用共享 SettingsSelectRow 和 OperationSelect 的内容测量与字号规则，不改变窗口尺寸或密度。",
       "shell_integration_policy": "文件管理器集成开关复用通用设置的共享 SettingsToggle，持久化成功后刷新自有注册。",
       "packaged_about_policy": "Windows 包身份不显示关于页更新标题、分隔线和操作，剩余区域按现有逻辑尺寸与分组间距重新排列。"
     },
