@@ -71,10 +71,12 @@ def verify_msix_identity(path, report):
     ns = '{http://schemas.microsoft.com/appx/manifest/foundation/windows10}'
     identity = root.find(ns + 'Identity')
     publisher_display_name = root.find(ns + 'Properties/' + ns + 'PublisherDisplayName')
+    languages = [element.get('Language') for element in root.findall(ns + 'Resources/' + ns + 'Resource')]
     if (identity is None or identity.get('Name') != report.get('name') or
             identity.get('Publisher') != report.get('publisher') or
             publisher_display_name is None or not report.get('publisher_display_name') or
             publisher_display_name.text != report.get('publisher_display_name') or
+            ('languages' in report and languages != report['languages']) or
             identity.get('Version') != report.get('version') or
             identity.get('ProcessorArchitecture') != 'x64' or
             any(element.get('Category', '').casefold() == 'windows.fileexplorercontextmenus'
