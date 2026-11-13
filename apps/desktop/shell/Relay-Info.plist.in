@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleIdentifier</key><string>org.xdzip.shell-relay</string>
+<key>CFBundleExecutable</key><string>xdzip-shell-relay</string>
+<key>CFBundleName</key><string>xdzip Finder Relay</string>
+<key>CFBundlePackageType</key><string>APPL</string>
+<key>CFBundleShortVersionString</key><string>@PROJECT_VERSION@</string>
+<key>CFBundleVersion</key><string>@XDZIP_BUILD_NUMBER@</string>
+<key>LSMinimumSystemVersion</key><string>14.0</string>
+<key>LSUIElement</key><true/>
+<key>NSPrincipalClass</key><string>NSApplication</string>
+<key>CFBundleURLTypes</key><array><dict>
+<key>CFBundleURLName</key><string>org.xdzip.shell-action</string>
+<key>CFBundleURLSchemes</key><array><string>xdzip-shell</string></array>
+</dict></array>
+</dict></plist>

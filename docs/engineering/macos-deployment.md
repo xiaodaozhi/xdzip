@@ -57,6 +57,23 @@ app.zip 核验还使用产品的默认同名文件夹选项解压整个应用，
 
 原生菜单编辑命令和 Qt 标准控件需要系统 locale 的 qtbase 翻译。打包除复制 `Contents/Resources/translations/qtbase_*.qm` 外，还须在 `Contents/Resources/qt.conf` 的 `[Paths]` 设置 `Translations = Resources/translations`，保留已有插件与 QML 路径，并在完整性签名前完成写入。重定位启动门槛同时检查原生编辑 responder 和应用菜单角色，不能只在 SDK 开发目录验证。
 
+## 本机 Finder Sync 签名与启用
+
+Finder Sync 使用同一应用内的原生 appex 与独立 relay，服务 helper 继续保留。完整签名顺序是原生映像、framework 及专用 helper、带精确沙箱 entitlement 的 appex、relay bundle、外层应用，最后严格验证整个嵌套包。不得在 appex 签名后再次用无 entitlement 的通用签名覆盖它。普通 CI 构建不隐式签名或启用扩展。
+
+需要本机 Finder 验证时，先完成默认原生构建，再显式执行：
+
+```sh
+python3 scripts/sign-macos-finder.py --app build/desktop/apps/desktop/xdzip.app --output build/review/finder-signing.json
+build/desktop/apps/desktop/xdzip.app/Contents/MacOS/xdzip --register-shell-integration
+```
+
+签名脚本仅接受仓库 `build/` 下自有应用及输出，不部署 Qt、不创建 DMG、不读取发行凭据。其回执只证明 ad-hoc 完整性与嵌套严格校验，不证明 Developer ID、公证、Gatekeeper 信任或发行许可。应用须保留原始位置，在系统设置的登录项与扩展中启用 xdzip 的 Finder 扩展。系统版本不同，设置路径和菜单排列可能不同；仅登记成功不等于菜单或操作验收通过。
+
+结束临时验证前，用同一应用的 `--remove-shell-integration` 撤销自有服务和扩展登记，核对初始状态后只清理本次创建的配置及临时 LaunchServices 登记。不要修改其他应用或默认文件关联。若应用已被 Finder 加载，更新后可在系统设置中关闭再开启自有扩展，不重启 Finder。交接和回退边界见[文件管理器操作](shell-actions.md)。
+
+English: Local Finder validation explicitly signs the built application with ad-hoc integrity signatures, preserving the appex's exact sandbox entitlements before sealing the outer bundle. It needs no paid account or App Groups and does not deploy, package or notarize the app. Explicit registration and user-controlled system enablement are separate from real menu/action verification. Remove only this validation's owned registrations and configuration when finished; preserve other apps and default handlers.
+
 ## 开发与核验副本的打开方式注册
 
 LaunchServices 会记住曾打开过的应用包，构建树中相同 bundle id 的多个副本可能同时出现在系统或 Codex 的“打开方式”菜单。不要为此删除系统数据库、重启 Finder、删除验证包或更改用户默认关联。

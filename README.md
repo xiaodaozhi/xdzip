@@ -44,7 +44,7 @@
 - **创建和修改**：可创建 ZIP、TAR、TAR.GZ 和 7z。支持对符合条件的普通单文件压缩包添加文件、替换文件和包内移动；也可从列表拖出文件，或拖入文件后确认添加。具体格式和限制见下表。
 - **检查**：可在后台测试整包，不写出文件。TAR、ISO 和 UDF 只检查结构与可读性，不提供逐文件内容校验保证。详见[完整性检查](docs/engineering/archive-checking.md)。
 - **多个归档**：默认在新标签页打开，也可设置为新窗口。同一登录会话共用应用进程和托盘，关闭浏览页面后后台任务仍可从任务入口访问。
-- **文件管理器操作**：Windows 经典右键菜单、Ubuntu Files 子菜单及 macOS Finder 服务可直接压缩或解压。操作使用独立窗口，默认不打开主窗口或目标目录；支持逐项 ZIP、智能解压目录与批次取消。入口和安装范围见[文件管理器操作](docs/engineering/shell-actions.md)。
+- **文件管理器操作**：Windows 经典右键菜单、Ubuntu Files 子菜单及 macOS Finder Sync 动态子菜单可直接压缩或解压，macOS 保留 Finder 服务作为回退。操作使用独立窗口，默认不打开主窗口或目标目录；支持逐项 ZIP、智能解压目录与批次取消。入口、系统启用及安装范围见[文件管理器操作](docs/engineering/shell-actions.md)。
 
 创建或添加时会排除 `.DS_Store` 文件及 `__MACOSX`、`_MACOSX` 目录。解压时执行路径检查、目标授权、重名处理和暂存，支持的格式还会校验内容；特殊对象和链接的处理因格式与平台而异，详见[安全解压契约](docs/engineering/m3-extraction.md)。
 

@@ -36,6 +36,7 @@ jobs:
           python3 scripts/sync-version.py --check
           python3 scripts/test-qt-network-security.py
           python3 scripts/test-windows-msix.py
+          python3 scripts/test-macos-finder.py
           python3 scripts/check-docs.py
           python3 scripts/test-check-docs.py
           python3 scripts/check-ui-i18n.py

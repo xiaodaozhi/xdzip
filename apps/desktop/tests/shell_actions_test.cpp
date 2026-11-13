@@ -122,6 +122,18 @@ class ShellTest : public QObject {
             ShellActionRequest::readFile(QString::fromUtf8(native.u8string().c_str()));
         QCOMPARE(ShellActionRequest::parse(read).paths, QStringList{path});
         QVERIFY(!QFile::exists(QString::fromUtf8(native.u8string().c_str())));
+        const auto forwarded =
+            xdzip_shell::requestFile("zip", {xdzip_shell::fs::u8path(path.toUtf8().toStdString())},
+                                     false, req.id.toStdString());
+        QVERIFY(!forwarded.empty());
+        QCOMPARE(ShellActionRequest::parse(
+                     ShellActionRequest::readFile(QString::fromUtf8(forwarded.u8string().c_str())))
+                     .id,
+                 req.id);
+        QVERIFY(xdzip_shell::requestFile("zip",
+                                         {xdzip_shell::fs::u8path(path.toUtf8().toStdString())},
+                                         false, "00000000-0000-0000-0000-000000000000")
+                    .empty());
     }
 #ifdef Q_OS_UNIX
     void nativeLaunchReapsForwardingClients() {
@@ -193,6 +205,15 @@ class ShellTest : public QObject {
         QCOMPARE(batch.results().first().toMap().value("status").toString(), QString("succeeded"));
     }
     void forwardsShellRequestsToExistingInstance() {
+#ifdef Q_OS_MACOS
+        const bool hadSession = qEnvironmentVariableIsSet("SECURITYSESSIONID");
+        const auto priorSession = qgetenv("SECURITYSESSIONID");
+        const auto restoreSession = qScopeGuard([&] {
+            hadSession ? qputenv("SECURITYSESSIONID", priorSession)
+                       : qunsetenv("SECURITYSESSIONID");
+        });
+        qputenv("SECURITYSESSIONID", "owned-parent-environment");
+#endif
         const auto space = "shell-test-" + QUuid::createUuid().toString(QUuid::WithoutBraces);
         SingleInstance primary;
         QCOMPARE(primary.start({}, space), SingleInstance::Primary);
@@ -205,6 +226,12 @@ class ShellTest : public QObject {
             xdzip_shell::requestFile("choose", {xdzip_shell::fs::temp_directory_path()});
         QVERIFY(!manifest.empty());
         QProcess client;
+#ifdef Q_OS_MACOS
+        auto clientEnvironment = QProcessEnvironment::systemEnvironment();
+        clientEnvironment.remove("SECURITYSESSIONID");
+        clientEnvironment.insert("DISPLAY", "owned-helper-environment");
+        client.setProcessEnvironment(clientEnvironment);
+#endif
         client.start(
             QCoreApplication::applicationFilePath(),
             {"--shell-instance-client", space, QString::fromUtf8(manifest.u8string().c_str())});
@@ -414,34 +441,88 @@ class ShellTest : public QObject {
         sessions.confirmQuit(false);
         QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
     }
+    void hostHasNoMainWindowAndDeduplicates_data() {
+        QTest::addColumn<bool>("direct");
+        QTest::newRow("service-panel") << false;
+        QTest::newRow("direct-create") << true;
+    }
     void hostHasNoMainWindowAndDeduplicates() {
+        QFETCH(bool, direct);
         QQmlApplicationEngine engine;
         UiPreferences settings;
         ApplicationSessions sessions(&engine, &settings);
         QTemporaryDir source;
         const auto file = source.filePath("one.txt");
         write(file, "one");
-        const auto req = request("choose", {file});
+        const auto req = request(direct ? "create" : "choose", {file});
         QVERIFY(sessions.shellAction(req.json()));
         QVERIFY(sessions.shellAction(req.json()));
         QCOMPARE(sessions.sessionCount(), 1);
         QCOMPARE(sessions.windows().size(), 0);
         auto *panel = sessions.findChild<QQuickWindow *>("shellActionsWindow");
         QVERIFY(panel);
-        QVERIFY(panel->isVisible());
+        QCOMPARE(panel->isVisible(), !direct);
         QCOMPARE(panel->width(), 491);
         QVERIFY(!panel->transientParent());
         auto *batch = sessions.findChild<ShellBatchController *>();
         QVERIFY(batch);
-        batch->choose("create");
+        QStringList checkedTargets;
+        const auto targetConnection =
+            connect(batch->reader(), &BrowserController::extractionChanged, this, [&] {
+                const auto path = batch->reader()->creationTargetCheck().value("path").toString();
+                if (!path.isEmpty())
+                    checkedTargets.append(path);
+            });
+        const auto disconnectTarget = qScopeGuard([&] { disconnect(targetConnection); });
+        if (!direct)
+            batch->choose("create");
         auto *create = sessions.findChild<QQuickWindow *>("createWindow");
         QVERIFY(create);
         QVERIFY(create->isVisible());
         QCOMPARE(create->width(), 491);
         QCOMPARE(create->property("inputs").toList().size(), 1);
+        QTRY_VERIFY2_WITH_TIMEOUT(
+            batch->reader()->creationTargetMatches(source.path()),
+            qPrintable(QString::fromUtf8(
+                QJsonDocument::fromVariant(batch->reader()->creationTargetCheck()).toJson())),
+            5000);
+        QVERIFY(create->property("targetReady").toBool());
+        if (!direct) {
+            QVERIFY(!checkedTargets.isEmpty());
+            for (const auto &path : checkedTargets)
+                QCOMPARE(path, source.path());
+        }
         auto changed = req.json();
         changed.insert("action", "zip");
         QVERIFY(!sessions.shellAction(changed));
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
+    }
+    void configuredExtractionFooterPreservesTargetRecheck() {
+        QQmlApplicationEngine engine;
+        UiPreferences settings;
+        ApplicationSessions sessions(&engine, &settings);
+        QTemporaryDir source;
+        const auto archive = source.filePath("one.zip");
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_SHELL_FIXTURES "/tree.zip"), archive));
+        QVERIFY(sessions.shellAction(request("extract-to", {archive}).json()));
+        auto *batch = sessions.findChild<ShellBatchController *>();
+        auto *window = sessions.findChild<QQuickWindow *>("extractWindow");
+        QVERIFY(batch && window);
+        QTRY_VERIFY(window->isVisible() && window->property("targetReady").toBool());
+        auto *start = window->findChild<QQuickItem *>("startExtract");
+        QVERIFY(start && start->isEnabled());
+        auto *accessible = QAccessible::queryAccessibleInterface(start);
+        QVERIFY(accessible && accessible->actionInterface());
+        accessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+        QTRY_VERIFY_WITH_TIMEOUT(batch->finished(), 10000);
+        QCOMPARE(batch->results().size(), 1);
+        const auto result = batch->results().first().toMap();
+        QCOMPARE(result.value("status").toString(), QString("succeeded"));
+        QVERIFY(QFileInfo(result.value("target").toString()).isDir());
+        QVERIFY(!window->isVisible());
+        QCOMPARE(sessions.windows().size(), 0);
         QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
         sessions.confirmQuit(false);
         QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);

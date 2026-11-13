@@ -46,6 +46,9 @@ OperationWindow {
     onVisibleChanged: if (!visible) controller.invalidateCreationTarget()
     readonly property string inputSummary: inputPanel.inputSummary
     function configure() {
+        configureTarget(controller.defaultTargetDirectory());
+    }
+    function configureTarget(initialTarget: string) {
         if (visible) {
             present();
             return;
@@ -55,7 +58,7 @@ OperationWindow {
         inputs = [];
         formatGroup.currentIndex = 0;
         fileName.text = qsTrId("ui.58ca935c9fbf");
-        target.text = controller.defaultTargetDirectory();
+        target.text = initialTarget;
         level.currentIndex = 2;
         volume.currentIndex = 0;
         volumeUnit.currentIndex = 2;
@@ -67,6 +70,7 @@ OperationWindow {
         controller.checkCreationTarget(target.text);
     }
     function configureSelection(items: var, targetPath: string, name: string, seven: bool) {
+        configureTarget(targetPath);
         inputs = items;
         target.text = targetPath;
         formatGroup.currentIndex = seven ? 3 : 0;

@@ -738,6 +738,8 @@
     "shell.integrationDescription": "Provide standalone archive actions without opening the main window.",
     "shell.integrationUnavailable": "This copy has no registered integration. Portable copies require explicit integration setup.",
     "shell.integrationFailed": "Could not update integration. Check the installation location and permissions.",
-    "shell.requestRejected": "Could not accept the file manager action. Select up to 128 local files or folders and try again."
+    "shell.requestRejected": "Could not accept the file manager action. Select up to 128 local files or folders and try again.",
+    "shell.finderHandoffFailed": "The operation could not be handed off. Use Finder Services → Open with xdzip.",
+    "shell.finderRequestRejected": "The operation was rejected. Open xdzip to repair its Finder integration, or use Services."
   }
 }

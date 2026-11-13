@@ -125,15 +125,37 @@ inline std::string randomHex() {
     }
     return result;
 }
+inline bool validRequestIdentity(const std::string &value) {
+    if (value.size() != 36)
+        return false;
+    bool nonzero = false;
+    for (size_t i = 0; i < value.size(); ++i) {
+        if (i == 8 || i == 13 || i == 18 || i == 23) {
+            if (value[i] != '-')
+                return false;
+        } else {
+            const auto c = value[i];
+            if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')))
+                return false;
+            nonzero |= c != '0';
+        }
+    }
+    return nonzero;
+}
 inline fs::path requestFile(const std::string &action, const std::vector<fs::path> &paths,
-                            bool archiveCandidates = false) {
+                            bool archiveCandidates = false,
+                            const std::string &requestIdentity = {}) {
     if (paths.empty() || paths.size() > 128)
+        return {};
+    if (!requestIdentity.empty() && !validRequestIdentity(requestIdentity))
         return {};
     const auto token = randomHex();
     if (token.empty())
         return {};
-    const auto id = token.substr(0, 8) + '-' + token.substr(8, 4) + '-' + token.substr(12, 4) +
-                    '-' + token.substr(16, 4) + '-' + token.substr(20);
+    const auto id = requestIdentity.empty() ? token.substr(0, 8) + '-' + token.substr(8, 4) + '-' +
+                                                  token.substr(12, 4) + '-' + token.substr(16, 4) +
+                                                  '-' + token.substr(20)
+                                            : requestIdentity;
     std::string bytes =
         "{\"schema_version\":1,\"id\":" + jsonString(id) + ",\"action\":" + jsonString(action) +
         ",\"archive_candidates\":" + (archiveCandidates ? "true" : "false") + ",\"paths\":[";
@@ -212,8 +234,9 @@ inline fs::path requestFile(const std::string &action, const std::vector<fs::pat
     return file;
 }
 inline bool launch(const fs::path &executable, const std::string &action,
-                   const std::vector<fs::path> &paths, bool archiveCandidates = false) {
-    const auto file = requestFile(action, paths, archiveCandidates);
+                   const std::vector<fs::path> &paths, bool archiveCandidates = false,
+                   const std::string &requestIdentity = {}) {
+    const auto file = requestFile(action, paths, archiveCandidates, requestIdentity);
     if (file.empty())
         return false;
 #ifdef _WIN32

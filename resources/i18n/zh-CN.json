@@ -738,6 +738,8 @@
     "shell.integrationDescription": "提供压缩、解压的独立操作入口，不打开主窗口。",
     "shell.integrationUnavailable": "此副本未注册系统集成。便携版需显式安装集成。",
     "shell.integrationFailed": "无法更新系统集成，请检查安装位置和权限。",
-    "shell.requestRejected": "无法接纳文件管理器操作。请选择不超过 128 个本地文件或文件夹后重试。"
+    "shell.requestRejected": "无法接纳文件管理器操作。请选择不超过 128 个本地文件或文件夹后重试。",
+    "shell.finderHandoffFailed": "无法交接操作，请使用 Finder 的“服务 → 用 xdzip 打开”。",
+    "shell.finderRequestRejected": "操作未被接纳，请打开 xdzip 修复 Finder 集成，或使用服务入口。"
   }
 }

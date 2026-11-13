@@ -108,4 +108,4 @@ P01 解压元数据预检修订：[设计源](sources/preflight.html)、[浅色]
 
 顶部布局的新图稿为 [浅色](screens/welcome-top-light.png)、[深色](screens/welcome-top-dark.png)、[最小窗口](screens/welcome-top-narrow.png)与[错误反馈](screens/welcome-top-error.png)。使用 scripts/export-welcome-design.py 从同一可编辑源导出；旧居中图稿与哈希保持历史记录，导出图不替代独立量测。
 
-[文件管理器独立操作](sources/shell-actions.html)展示 macOS 服务入口后的动作选择和批次结果，沿用 491 逻辑宽度、最高 600 的操作窗口及固定 footer。Windows 与 Ubuntu 的入口使用系统原生菜单，其像素外观由平台决定。
+[文件管理器独立操作](sources/shell-actions.html)展示 macOS 服务回退后的动作选择和批次结果，沿用 491 逻辑宽度、最高 600 的操作窗口及固定 footer。Finder Sync 的直接入口与 Windows、Ubuntu 一样使用系统原生动态子菜单，动作与该原稿相同，尺寸及外观由平台决定；无需新增 QML 窗口或修改操作窗口密度。
