@@ -327,6 +327,58 @@ public static class XdzipPackageOrigin {
         }
     }
     $result.checks.file_activation_and_archive_contents = 'passed'
+    # Advance only the manifest version of the owned package, keeping all
+    # product bytes intact. This exercises MSIX update mechanics, not a new release.
+    $upgradePath = Join-Path (Split-Path -Parent $outputPath) 'upgrade-ci-fixture.msix'
+    $signedUpgrade = Join-Path (Split-Path -Parent $outputPath) 'signed-upgrade-ci-fixture.msix'
+    $makeappx = Join-Path $tools[0].Directory.FullName 'makeappx.exe'
+    if (!(Test-Path -LiteralPath $makeappx) -or (Test-Path -LiteralPath $signedUpgrade)) {
+        throw 'Upgrade tool is missing or signed fixture already exists'
+    }
+    & python scripts/prepare-msix-upgrade.py --package $packagePath --receipt (Join-Path (Split-Path -Parent $packagePath) 'windows-msix.json') --output $upgradePath --makeappx $makeappx
+    if ($LASTEXITCODE -ne 0) { throw 'Cannot prepare the owned version upgrade fixture' }
+    $upgradeReceipt = Get-Content -LiteralPath ([IO.Path]::ChangeExtension($upgradePath, '.json')) -Raw | ConvertFrom-Json
+    if ($upgradeReceipt.old_version -ne $installed.Version.ToString()) { throw 'Upgrade source version differs' }
+    Copy-Item -LiteralPath $upgradePath -Destination $signedUpgrade
+    & $tools[0].FullName sign /fd SHA256 /sha1 $certificate.Thumbprint $signedUpgrade
+    if ($LASTEXITCODE -ne 0) { throw 'Upgrade fixture signing failed' }
+    $upgradeSignature = Get-AuthenticodeSignature -LiteralPath $signedUpgrade
+    if ($upgradeSignature.Status -ne 'Valid' -or $upgradeSignature.SignerCertificate.Thumbprint -ne $certificate.Thumbprint) {
+        throw 'Upgrade fixture does not have the owned test signature'
+    }
+    Add-AppxPackage -Path $signedUpgrade
+    $installed = Get-AppxPackage -Name $identityName
+    if (@($installed).Count -ne 1 -or $installed.Version.ToString() -ne $upgradeReceipt.new_version) {
+        throw 'Upgraded package version differs'
+    }
+    Assert-DefaultsUnchanged
+    $upgradedProcess = $null
+    try {
+        $processId = [XdzipMsixActivation]::Start($appId, '')
+        $upgradedProcess = Get-Process -Id $processId -ErrorAction Stop
+        if ([XdzipMsixActivation]::PackageName($upgradedProcess.Handle) -ne $installed.PackageFullName) {
+            throw 'Upgrade check activated a different package'
+        }
+        Open-XdzipSettingsGeneral $upgradedProcess $en
+        Assert-AboutUpdate $upgradedProcess $en $false
+    } finally {
+        if ($upgradedProcess) {
+            $upgradedProcess.Refresh()
+            if (!$upgradedProcess.HasExited) { $upgradedProcess.Kill(); $upgradedProcess.WaitForExit() }
+        }
+        [XdzipMsixActivation]::Close()
+    }
+    $result.checks.manifest_version_upgrade = [ordered]@{
+        status='passed'
+        old_version=$upgradeReceipt.old_version
+        new_version=$upgradeReceipt.new_version
+        fixture_role=$upgradeReceipt.role
+        source_sha256=$upgradeReceipt.source_sha256
+        signed_fixture_sha256=(Get-FileHash -LiteralPath $signedUpgrade -Algorithm SHA256).Hash.ToLowerInvariant()
+        saved_language='passed'
+        about_update_hidden='passed'
+        defaults_unchanged='passed'
+    }
     Remove-AppxPackage -Package $installed.PackageFullName
     if (Get-AppxPackage -Name $identityName) { throw 'Test package remains installed' }
     Assert-DefaultsUnchanged
@@ -335,9 +387,14 @@ public static class XdzipPackageOrigin {
     $result.checks.uninstall = 'passed'
     $result.status = 'passed'
 } finally {
-    if ($installed) {
+    if ($installed -or $certificate) {
         try {
-            Remove-AppxPackage -Package $installed.PackageFullName -ErrorAction Stop
+            foreach ($ownedPackage in @(Get-AppxPackage -Name $identityName)) {
+                if ($ownedPackage.Name -ne $identityName -or $ownedPackage.Publisher -ne $subject) {
+                    throw 'Unexpected package found during fixture cleanup'
+                }
+                Remove-AppxPackage -Package $ownedPackage.PackageFullName -ErrorAction Stop
+            }
             if (Get-AppxPackage -Name $identityName) { throw 'Test package remains after cleanup' }
             $result.checks.cleanup_uninstall = 'passed'
         } catch {

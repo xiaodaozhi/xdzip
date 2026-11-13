@@ -20,6 +20,8 @@ RECHECK_FILES = frozenset({
     'scripts/check-windows-msix-install.ps1',
     'scripts/msix-origin-probe.py',
     'scripts/test-msix-origin-probe.py',
+    'scripts/prepare-msix-upgrade.py',
+    'scripts/test-msix-upgrade.py',
     'scripts/windows-msix-activation.cs',
     'scripts/extract-msix-ci.py',
     'scripts/test-msix-ci.py',
