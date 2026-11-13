@@ -2,6 +2,44 @@
 #include <iostream>
 #include <shlobj.h>
 
+// Redirect this process to an empty, volatile key so the fixture does not
+// depend on or modify the user's Explorer menu preference.
+class MenuRegistryFixture {
+    HKEY key = nullptr;
+    std::wstring path;
+    bool created = false;
+    bool overridden = false;
+
+  public:
+    bool initialize() {
+        const auto token = xdzip_shell::randomHex();
+        if (token.empty())
+            return false;
+        path = L"Software\\xdzip-menu-test-" + std::wstring(token.begin(), token.end());
+        DWORD disposition = 0;
+        if (RegCreateKeyExW(HKEY_CURRENT_USER, path.c_str(), 0, nullptr, REG_OPTION_VOLATILE,
+                            KEY_ALL_ACCESS, nullptr, &key, &disposition) != ERROR_SUCCESS)
+            return false;
+        if (disposition != REG_CREATED_NEW_KEY) {
+            RegCloseKey(key);
+            key = nullptr;
+            path.clear();
+            return false;
+        }
+        created = true;
+        overridden = RegOverridePredefKey(HKEY_CURRENT_USER, key) == ERROR_SUCCESS;
+        return overridden;
+    }
+    ~MenuRegistryFixture() {
+        if (overridden)
+            RegOverridePredefKey(HKEY_CURRENT_USER, nullptr);
+        if (key)
+            RegCloseKey(key);
+        if (created)
+            RegDeleteKeyW(HKEY_CURRENT_USER, path.c_str());
+    }
+};
+
 int wmain(int argc, wchar_t **argv) {
     if (argc == 3 && std::wstring(argv[1]) == L"--registered-target")
         return xdzip_shell::registeredTargetMatches(argv[2]) &&
@@ -33,6 +71,11 @@ int wmain(int argc, wchar_t **argv) {
     for (const auto &path : {one, two, text}) {
         std::ofstream file(path);
         file << "fixture";
+    }
+    MenuRegistryFixture registry;
+    if (!registry.initialize()) {
+        std::cerr << "Could not isolate the menu test registry\n";
+        return 1;
     }
     int checks = 0;
     const auto check = [&](const std::vector<xdzip_shell::fs::path> &paths, UINT expected) {

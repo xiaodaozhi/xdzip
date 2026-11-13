@@ -32,6 +32,14 @@ English: The experimental MSIX registers no context menu. A future Windows 11 mo
 
 English: GetStagedPackageOrigin and PackageOrigin_Store are candidates for further investigation, not yet proof of a per-user installation channel. Test copied Store-signed packages, multiple users and upgrades, and identify the extension's own package rather than Explorer's process.
 
+需要采集来源对照时，在当前用户已注册目标包的 Windows 环境运行以下只读诊断；包名称仅为示例，输出必须是 `build/` 下尚不存在的 JSON 文件。诊断同时记录系统签名类型、暂存来源和匿名化包完整名称摘要，拒绝没有唯一登记版本的结果。场景参数是执行者标签，不证明安装途径；系统查询失败、未知值或相同返回值均不能单独批准启用菜单。无需修改证书、安装或系统设置。
+
+```powershell
+python scripts/msix-origin-probe.py --name xdzip.Example --scenario store-install --output build/store-origin-observation.json
+```
+
+English: The read-only probe records the current user's unique package registration, signature kind, staged origin and a hashed full name in a new JSON file under `build/`. The scenario is only a caller-supplied label. No value or API failure establishes the per-user installation channel or enables the menu.
+
 ## 选择与输出
 
 右键创建确认直接检查预填的源目录或指定目标，不先检查默认下载目录，避免不相关的 macOS 隐私访问等待阻塞操作。正常主窗口创建仍使用默认目标。

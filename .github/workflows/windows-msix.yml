@@ -13,7 +13,13 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Check artifact verification guardrails
-        run: python scripts/test-msix-ci.py
+        run: |
+          python scripts/test-msix-ci.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python scripts/test-msix-origin-probe.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python scripts/test-msix-upgrade.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Build and verify experimental package
         shell: pwsh
         run: |
@@ -34,7 +40,7 @@ jobs:
           Invoke-Desktop @('build')
           Invoke-Desktop @('test', '--skip-rust')
           Invoke-Desktop @('package', '--kind', 'runtime')
-          Invoke-Desktop @('package', '--kind', 'msix', '--msix-name', 'xdzip.MsixCI', '--msix-publisher', 'CN=xdzip MSIX CI')
+          Invoke-Desktop @('package', '--kind', 'msix', '--msix-name', 'xdzip.MsixCI', '--msix-publisher', 'CN=xdzip MSIX CI', '--msix-publisher-display-name', 'xdzip')
           Invoke-Desktop @('verify', '--kind', 'msix')
       - name: Preserve the unsigned same-run test input
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

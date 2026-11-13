@@ -70,8 +70,11 @@ def verify_msix_identity(path, report):
         raise ValueError('Cannot inspect MSIX package identity') from error
     ns = '{http://schemas.microsoft.com/appx/manifest/foundation/windows10}'
     identity = root.find(ns + 'Identity')
+    publisher_display_name = root.find(ns + 'Properties/' + ns + 'PublisherDisplayName')
     if (identity is None or identity.get('Name') != report.get('name') or
             identity.get('Publisher') != report.get('publisher') or
+            publisher_display_name is None or not report.get('publisher_display_name') or
+            publisher_display_name.text != report.get('publisher_display_name') or
             identity.get('Version') != report.get('version') or
             identity.get('ProcessorArchitecture') != 'x64' or
             any(element.get('Category', '').casefold() == 'windows.fileexplorercontextmenus'
@@ -469,13 +472,14 @@ class Workflow:
     def msix_package(self):
         if self.system != 'windows':
             raise ValueError('MSIX packaging requires a native Windows host')
-        if not self.args.msix_name or not self.args.msix_publisher:
-            raise ValueError('Provide the MSIX identity name and publisher explicitly')
+        if not self.args.msix_name or not self.args.msix_publisher or not self.args.msix_publisher_display_name:
+            raise ValueError('Provide the MSIX identity name, publisher and publisher display name explicitly')
         self.runtime_receipt(current_source=True)
         artifact = self.output/'xdzip-windows-x64.msix'
         self.script('build-windows-msix.py', '--root', self.runtime,
                     '--audit', self.output/'deployment-audit.json', '--output', artifact,
                     '--name', self.args.msix_name, '--publisher', self.args.msix_publisher,
+                    '--publisher-display-name', self.args.msix_publisher_display_name,
                     '--report', self.output/'windows-msix.json')
         return {'source': self.source(), 'artifacts': self.hashes([artifact])}
 
@@ -626,6 +630,7 @@ def parser():
     value.add_argument('--kind', choices=['runtime', 'installer', 'msix', 'all'], default='all')
     value.add_argument('--msix-name', help='Explicit MSIX package identity name')
     value.add_argument('--msix-publisher', help='Explicit MSIX publisher distinguished name')
+    value.add_argument('--msix-publisher-display-name', help='Explicit MSIX publisher display name')
     value.add_argument('--release-distribution', action='store_true', help='Dedicated release only: permit native Apple Silicon deployment, ad-hoc signing and both app ZIP/DMG')
     return value
 
