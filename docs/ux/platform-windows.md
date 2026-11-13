@@ -1,44 +1,44 @@
-# 平台窗口与标题栏规范
+# Platform windows and title bars
 
-xdzip 的操作界面使用独立顶层窗口，不使用附着主窗口的 sheet 或在主窗口内部绘制的遮罩面板。独立窗口不等于独立进程，也不要求每个辅助窗口占一个任务栏入口。下拉菜单、工具提示保持轻量 Popup，不属于操作窗口。
+xdzip operation interfaces use standalone top-level windows, not sheets attached to the main window or overlay panels drawn inside it. A standalone window does not imply a separate process or a taskbar entry for every auxiliary window. Dropdown menus and tooltips remain lightweight Popups and are not operation windows.
 
-## 窗口契约
+## Window contract
 
-| 窗口 | 与主窗口的关系 | 关闭 / Escape | 最小化 / 最大化 |
+| Window | Relationship to main window | Close / Escape | Minimize / maximize |
 | --- | --- | --- | --- |
-| 解压、新建、打开文件 | 有 transient owner；阻塞所属主窗口 | 放弃当前表单，不开始写入 | 禁用 / 禁用 |
-| 同名冲突 | 阻塞所属主窗口，任务等待决策 | 取消当前任务，经过停止与清理，再显示结果；绝不默认覆盖 | 禁用 / 禁用 |
-| 已有压缩包覆盖确认 | 阻塞所属主窗口 | 返回新建表单；正式实现保留草稿 | 禁用 / 禁用 |
-| 任务进度 | 非模态；允许继续浏览所属压缩包 | 仅关闭详情，任务继续；任务入口可重新打开 | 收起 / 禁用 |
-| 任务结果、设置 | 非模态 | 关闭窗口，恢复合理焦点 | 禁用 / 禁用 |
+| Extract, create, open file | Has a transient owner; blocks its main window | Discard current form without starting writes | Disabled / disabled |
+| Name conflict | Blocks its main window; task waits for a decision | Cancel the current task, stop and clean up, then show result; never overwrite by default | Disabled / disabled |
+| Existing archive overwrite confirmation | Blocks its main window | Return to creation form; implementation preserves draft | Disabled / disabled |
+| Task progress | Nonmodal; browsing its archive may continue | Close details only; task continues and can be reopened from task entry | Minimize / disabled |
+| Task results, settings | Nonmodal | Close window and restore appropriate focus | Disabled / disabled |
 
-取消任务是明确的任务命令，独立于关闭进度窗口。任务在后台结束时，不抢夺前台焦点；详情已打开时更新结果，否则更新任务入口。应用退出仍按任务退出策略处理，不能把主窗口关闭直接映射为辅助窗口关闭。
+Cancelling a task is an explicit task command independent of closing its progress window. Background completion does not steal foreground focus; update open details or otherwise update the task entry. Application exit still follows task-exit policy; closing the main window cannot directly map to closing auxiliary windows.
 
-## 平台外观
+## Platform appearance
 
-- macOS：使用系统装饰标题栏，红黄绿控件位于左上角；不以自绘彩色圆点替代原生控件。固定尺寸操作窗保留红色关闭，禁用不可用的最小化、缩放按钮；进度窗允许收起。实际按钮可用状态由 AppKit/Qt 的窗口能力共同决定，并在真机验收。主窗口保持正常缩放、最小化及全屏能力。
-- Windows：允许自定义标题栏，图标和标题靠左，最小化、最大化、关闭靠右。可用按钮应支持系统菜单、键盘访问、高对比模式和命中区域；主窗口保留系统缩放、拖动与贴靠能力，固定尺寸操作窗不允许最大化。
-- Linux：允许自定义标题栏；原型展示右侧按钮布局，正式产品尊重桌面环境约定。首批支持 X11；后续若扩展 Wayland，须单独验证；不可用功能以禁用状态表达。自绘装饰无法可靠适配的环境回退服务端装饰。
+- macOS: use a system-decorated title bar with red, yellow and green controls at upper left; do not substitute custom-colored dots for native controls. Fixed-size operation windows retain red Close and disable unavailable minimize/zoom; progress windows can minimize. Actual button availability depends on AppKit/Qt window capabilities and is accepted on a real device. The main window retains normal resize, minimize and fullscreen capabilities.
+- Windows: custom title bars are allowed, with icon/title left and minimize/maximize/close right. Available buttons support system menu, keyboard access, high contrast and hit areas. The main window retains system resize, dragging and snapping; fixed-size operation windows cannot maximize.
+- Linux: custom title bars are allowed; the prototype shows buttons at right, while the product respects desktop environment conventions. Initial support is X11; future Wayland expansion needs separate verification. Unavailable features appear disabled. Environments where custom decoration cannot adapt reliably fall back to server-side decoration.
 
-操作窗口各自有标题、边框、阴影和可拖动标题栏；背后的主窗口不加网页式变暗或模糊。初次打开居中于所属窗口所在显示器的可用区域；恢复位置必须夹取到可见屏幕内。标题栏不能被工具栏或内容覆盖。
+Each operation window has its own title, border, shadow and draggable title bar; the main window behind it is not dimmed or blurred like a webpage. Initial opening centers within the available area of the owner's display. Restored positions must be clamped to visible screens. Toolbars or content must not cover the title bar.
 
-## Qt Quick 实现约束
+## Qt Quick implementation constraints
 
-每个操作窗口使用独立 `Window` / `QQuickWindow`，指定 `transientParent`。阻塞决策设置 `Qt.WindowModal`，任务详情、结果与设置使用 `Qt.NonModal`。禁止以 QML `Popup` 充当顶层操作窗，禁止在 macOS 设置无边框并手绘交通灯。文件选择器作为独立系统选择窗口打开，不附着为 sheet；若原生适配无法提供该模式，应明确实现平台适配并验收。
+Each operation window uses a standalone `Window` / `QQuickWindow` with `transientParent`. Blocking decisions use `Qt.WindowModal`; task details, results and settings use `Qt.NonModal`. Do not use QML `Popup` as a top-level operation window or make macOS frameless and draw traffic lights. File pickers open as standalone system windows, not sheets; if native integration cannot provide this mode, explicitly implement and accept platform adaptation.
 
-Windows/Linux 自绘标题栏需要真正的平台窗口移动、调整尺寸和系统菜单支持，不以 QML 手动修改位置模拟系统拖动。`WindowController` 负责窗口生命周期、所有权、关闭请求和任务视图重开；任务由核心持有，销毁视图不能销毁正在执行的任务。窗口状态跨线程只通过已定义桥接事件更新。
+Custom Windows/Linux title bars need actual platform window movement, resizing and system-menu support, not simulated system dragging by manually changing QML positions. `WindowController` handles window lifecycle, ownership, close requests and reopening task views. The core owns tasks; destroying a view cannot destroy an active task. Cross-thread window state updates use only defined bridge events.
 
-## 原型证据与限制
+## Prototype evidence and limits
 
-HTML 原型模拟独立窗口外观、标题栏拖动、阻塞或非阻塞交互及关闭语义。顶部“平台”选择器用于对照 macOS、Windows、Linux；不属于产品设置。浏览器 `dialog` 仍在同一浏览器页面内，不能提供真正的原生窗口、系统按钮、系统最小化、任务栏或多显示器行为。收起任务窗口通过隐藏详情模拟。
+The HTML prototype simulates standalone window appearance, title-bar dragging, blocking/nonblocking interactions and close semantics. The top “Platform” selector compares macOS, Windows and Linux and is not a product setting. Browser `dialog` remains in one browser page and cannot provide actual native windows, system buttons, system minimization, taskbar or multi-display behavior. Minimizing a task window is simulated by hiding details.
 
-原型主窗口的平台控制区为外观示意；覆盖确认返回新建时仍重置示例表单，正式实现必须保留草稿。这些限制不能作为完成原生验收的证据。
+Platform controls on the prototype main window are appearance illustrations. Returning from overwrite confirmation to creation still resets the example form; the product implementation must preserve the draft. These limitations cannot serve as evidence of completed native acceptance.
 
-## 实机验收门槛
+## Real-device acceptance criteria
 
-1. 各操作窗是独立平台窗口，正确关联主窗口；不生成 sheet，无网页式遮罩。
-2. 红绿灯/右侧按钮的顺序、禁用状态、关闭请求符合平台和窗口能力；标题与系统按钮在不同字体、缩放下不重叠。
-3. 窗口拖动、屏幕边界、多显示器、125%/150%/200% 缩放，以及深浅主题正常。
-4. 关闭任务详情后任务继续，任务入口可重开；关闭冲突窗口必须安全停止，不覆盖文件。
-5. 所属窗口的模态限制、焦点恢复、键盘导航、读屏标题与系统快捷键有效；其他压缩包窗口不被无故阻塞。
-6. Windows 系统菜单／贴靠和 Linux X11 分别验证；Wayland 不在首批支持范围。既有 Qt 实机结论见 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)，本清单用于后续受影响项复验，不重置已完成验收。
+1. Each operation window is a standalone platform window correctly associated with its main window, with no sheet or webpage-style overlay.
+2. Traffic lights/right-side button order, disabled state and close requests match platform and window capabilities; titles and system buttons do not overlap at different font sizes and scales.
+3. Window dragging, screen boundaries, multiple displays, 125%/150%/200% scaling and light/dark themes work correctly.
+4. Closing task details leaves the task running and the task entry can reopen it; closing a conflict window safely stops without overwriting files.
+5. Owner modality, focus restoration, keyboard navigation, screen-reader titles and system shortcuts work; unrelated archive windows are not unnecessarily blocked.
+6. Verify Windows system menu/snapping and Linux X11 separately; Wayland is outside initial support. Existing Qt real-device conclusions are in [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5). This list is for rechecking affected items later and does not reset completed acceptance.

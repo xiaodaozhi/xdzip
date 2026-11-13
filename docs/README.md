@@ -1,53 +1,55 @@
-# 文档导航
+# Documentation index
 
-文档保存当前源码的通用设计、实现契约和可复用方法。`docs/` 只存放 Markdown 与必要图片；供生成器、产品资源和检查工具使用的机器可读输入位于 `specs/`，按视觉、术语和工程依赖分类。用户安装入口与版本区别见根目录 [README](../README.md)，具体版本以[发布页](https://github.com/xiaodaozhi/xdzip/releases)为准。进度与验收结论记录在 [Issues](https://github.com/xiaodaozhi/xdzip/issues)，执行证据保存在 [Actions](https://github.com/xiaodaozhi/xdzip/actions)或本地工件，不在 docs 累积报告。
+[English](README.md) | [简体中文](zh-CN/README.md)
 
-## 从哪里开始
+These documents describe the current source tree's general design, implementation contracts, and reusable methods. `docs/` contains only Markdown and necessary images. Machine-readable inputs for generators, product resources, and checks are organized under `specs/` by visual design, terminology, and engineering dependencies. See the root [README](../README.md) for installation and version distinctions, and the [releases](https://github.com/xiaodaozhi/xdzip/releases) for individual versions. Progress and acceptance conclusions are tracked in [issues](https://github.com/xiaodaozhi/xdzip/issues); evidence is kept in [Actions](https://github.com/xiaodaozhi/xdzip/actions) or local artifacts rather than accumulated in docs.
 
-- **安装和使用**：阅读 [README](../README.md)、[安装与文件关联](engineering/installers-associations.md)和[支持政策](engineering/support-policy.md)。[命令行工具](engineering/command-line.md)自 `v0.2.0` 起提供独立发布包，旧版附件保持原样。
-- **隐私与数据处理**：面向用户的[隐私政策](../PRIVACY.md)与 [English 版本](../PRIVACY.en.md)，工程实现边界见[数据生命周期与诊断](engineering/privacy.md)。
-- **构建和贡献**：从[开发构建指南](engineering/developer-build.md)准备环境，按[仓库结构](engineering/repository-layout.md)定位代码，再按[验证方法](qa/README.md)选择检查。
-- **修改产品行为**：先查下方的浏览、任务、格式和交互契约，区分当前实现、设计和未验证内容。
-- **修改界面**：先读[视觉规范](visual/design-standard.md)和[设计流程](visual/design-workflow.md)，再查高保真原稿及相关交互契约。
-- **准备发行**：阅读[发布协议](engineering/release-protocol.md)与[发行审查流程](qa/release-review.md)，具体候选的证据和决定以 issue 为准。
+## Where to start
 
-## 主题索引
+- **Install and use:** Read the [README](../README.md), [installation and file associations](engineering/installers-associations.md), and [support policy](engineering/support-policy.md). The [command-line tool](engineering/command-line.md) has a separate release package starting with `v0.2.0`; earlier release assets remain unchanged.
+- **Privacy and data handling:** See the user-facing [Privacy Policy](../PRIVACY.en.md) and its [Chinese version](../PRIVACY.md); engineering boundaries are in [data lifecycle and diagnostics](engineering/privacy.md).
+- **Build and contribute:** Prepare your environment with the [developer build guide](engineering/developer-build.md), find code using the [repository layout](engineering/repository-layout.md), and select checks from [verification](qa/README.md).
+- **Change product behavior:** Consult the browsing, task, format, and interaction contracts below, distinguishing current implementation from design and unverified behavior.
+- **Change the interface:** Read the [visual standard](visual/design-standard.md) and [design workflow](visual/design-workflow.md), then consult the high-fidelity sources and relevant interaction contracts.
+- **Prepare a release:** Read the [release protocol](engineering/release-protocol.md) and [release review process](qa/release-review.md). Evidence and decisions for each candidate belong in its issue.
 
-| 领域 | 入口 |
+## Topic index
+
+| Area | Entry points |
 | --- | --- |
-| 命令行 | [独立 CLI、脚本接口与安装更新](engineering/command-line.md) |
-| 产品与架构 | [设计总览](design/index.md)、[架构决策](design/architecture-decisions.md)、[需求追踪](design/requirements-traceability.md) |
-| 界面规范 | [严格设计规范](visual/design-standard.md)、[设计流程](visual/design-workflow.md)、[逻辑尺寸](../specs/visual/layout-scale.json)、[视觉参数](../specs/visual/tokens.json) |
-| 高保真与素材 | [原稿入口](../design/hifi/README.md)、[可操作 HTML 设计](../design/html/README.md)、[素材目录](../design/assets/index.html) |
-| 交互契约 | [主窗口](ux/main-window-components.md)、[任务窗口](ux/task-windows.md)、[密码解压](ux/password-extraction.md)、[系统集成](ux/desktop-integration.md)、[文件管理器右键操作](engineering/shell-actions.md)、[设置与国际化](ux/settings-localization.md)、[中文术语](ux/chinese-terminology.md) |
-| 浏览与任务 | [运行时](engineering/m1-runtime.md)、[只读索引](engineering/m2-readonly.md)、[大归档索引](engineering/large-index.md)、[主动预览](engineering/content-preview.md)、[浏览契约](engineering/readonly-browser.md)、[解压预检](engineering/extraction-preflight.md) |
-| 文件与格式 | [文件名编码](engineering/filename-encoding.md)、[分卷与临时打开](engineering/archive-opening.md)、[文件拖放与修改](engineering/archive-transfers.md)、[完整性检查](engineering/archive-checking.md)、[安全解压](engineering/m3-extraction.md)、[密码解压](engineering/password-extraction.md)、[ZIP 创建](engineering/m4-creation.md)、[TAR/GZIP](engineering/m4-tar-gzip.md)、[CAB 来源与实现依据](engineering/cab-format-sources.md) |
-| 工具链与依赖 | [工具链策略](engineering/toolchain.md)、[依赖准入](engineering/dependencies.md)、[cxx 桥接依据](engineering/cxx-admission.md)、[许可](engineering/licensing.md)、[Windows 许可](engineering/windows-licensing.md) |
-| 构建与验证 | [统一构建入口](engineering/developer-build.md)、[开发指南](engineering/development.md)、[Qt 应用模块](../apps/desktop/README.md)、[CI 策略](engineering/ci-policy.md)、[验证方法](qa/README.md) |
-| 部署与来源 | [部署核验](engineering/deployment-audit.md)、[运行时归属](engineering/runtime-attribution.md)、[原生库材料](engineering/native-runtime-materials.md)、[Linux 部署](engineering/linux-deployment.md)、[Mac DMG](engineering/macos-deployment.md)、[安装与关联](engineering/installers-associations.md) |
-| 源码与候选 | [对应源码](engineering/source-delivery.md)、[SDK 对应核验](engineering/qt-sdk-correspondence.md)、[自动证据汇总](engineering/wp12-automation.md)、[候选材料](engineering/release-candidate.md) |
-| 版本与发行 | [版本机制](engineering/versioning.md)、[主动更新](engineering/software-update.md)、[发布协议](engineering/release-protocol.md)、[应用会话](engineering/application-sessions.md)、[支持政策](engineering/support-policy.md)、[发行审查流程](qa/release-review.md)、[发布手册](engineering/release-runbook.md) |
-| 执行与风险 | [工作包路线](planning/backlog.md)、[风险控制](planning/risks.md)、[就绪评审方法](planning/readiness.md) |
-| 仓库管理 | [内容与历史管理](engineering/repository-hygiene.md)、[目录与依赖](engineering/repository-layout.md)、[贡献指南](../CONTRIBUTING.md)、[变更日志](../CHANGELOG.md) |
-| 开源协作 | [治理](../GOVERNANCE.md)、[行为规范](../CODE_OF_CONDUCT.md)、[安全政策](../SECURITY.md) |
+| Command line | [Standalone CLI, scripting interface, installation and updates](engineering/command-line.md) |
+| Product and architecture | [Design overview](design/index.md), [architecture decisions](design/architecture-decisions.md), [requirements traceability](design/requirements-traceability.md) |
+| Interface standards | [Strict design standard](visual/design-standard.md), [design workflow](visual/design-workflow.md), [logical dimensions](../specs/visual/layout-scale.json), [visual parameters](../specs/visual/tokens.json) |
+| High-fidelity design and assets | [Design sources](../design/hifi/README.md), [interactive HTML design](../design/html/README.md), [asset catalog](../design/assets/index.html) |
+| Interaction contracts | [Main window](ux/main-window-components.md), [task windows](ux/task-windows.md), [password extraction](ux/password-extraction.md), [desktop integration](ux/desktop-integration.md), [file-manager actions](engineering/shell-actions.md), [settings and localization](ux/settings-localization.md), [Chinese terminology](ux/chinese-terminology.md) |
+| Browsing and tasks | [Runtime](engineering/m1-runtime.md), [read-only index](engineering/m2-readonly.md), [large archive index](engineering/large-index.md), [preview](engineering/content-preview.md), [browser contract](engineering/readonly-browser.md), [extraction preflight](engineering/extraction-preflight.md) |
+| Files and formats | [Filename encoding](engineering/filename-encoding.md), [split archives and temporary opening](engineering/archive-opening.md), [drag-and-drop and modification](engineering/archive-transfers.md), [integrity checks](engineering/archive-checking.md), [safe extraction](engineering/m3-extraction.md), [password extraction](engineering/password-extraction.md), [ZIP creation](engineering/m4-creation.md), [TAR/GZIP](engineering/m4-tar-gzip.md), [CAB sources and implementation basis](engineering/cab-format-sources.md) |
+| Toolchains and dependencies | [Toolchain policy](engineering/toolchain.md), [dependency admission](engineering/dependencies.md), [cxx bridge rationale](engineering/cxx-admission.md), [licenses](engineering/licensing.md), [Windows licenses](engineering/windows-licensing.md) |
+| Build and verification | [Unified build entry point](engineering/developer-build.md), [development guide](engineering/development.md), [Qt application modules](../apps/desktop/README.md), [CI policy](engineering/ci-policy.md), [verification](qa/README.md) |
+| Deployment and provenance | [Deployment audit](engineering/deployment-audit.md), [runtime attribution](engineering/runtime-attribution.md), [native library materials](engineering/native-runtime-materials.md), [Linux deployment](engineering/linux-deployment.md), [Mac DMG](engineering/macos-deployment.md), [installation and associations](engineering/installers-associations.md) |
+| Source and candidates | [Corresponding source](engineering/source-delivery.md), [SDK correspondence](engineering/qt-sdk-correspondence.md), [automated evidence collection](engineering/wp12-automation.md), [candidate materials](engineering/release-candidate.md) |
+| Versions and releases | [Versioning](engineering/versioning.md), [updates](engineering/software-update.md), [release protocol](engineering/release-protocol.md), [application sessions](engineering/application-sessions.md), [support policy](engineering/support-policy.md), [release review](qa/release-review.md), [release runbook](engineering/release-runbook.md) |
+| Execution and risks | [Work package roadmap](planning/backlog.md), [risk controls](planning/risks.md), [readiness review method](planning/readiness.md) |
+| Repository management | [Content and history management](engineering/repository-hygiene.md), [layout and dependencies](engineering/repository-layout.md), [contributing guide](../CONTRIBUTING.md), [changelog](../CHANGELOG.md) |
+| Open-source collaboration | [Governance](../GOVERNANCE.md), [code of conduct](../CODE_OF_CONDUCT.md), [security policy](../SECURITY.md) |
 
-## 按任务阅读
+## Reading by task
 
-- 使用与构建：先读根目录 [README](../README.md)和[开发构建指南](engineering/developer-build.md)，使用同一入口分阶段准备、构建、测试、打包与验证；平台部署文档只补充差异，Qt 应用文档说明模块与低层调试。
-- 修改核心：按[实际模块目录](engineering/repository-layout.md)定位，再读对应浏览、预检、创建或解压契约；大归档索引和主动预览按对应工程契约声明范围，外部 SDK 的目标协议与宿主设计另见格式扩展规范。
-- 隔离格式工作进程：Rust 7z/RAR/CAB/ISO/UDF 的受控流、工作进程和许可边界见[格式后端契约](engineering/native-codecs.md)，产品不编译官方 UnRAR/7-Zip 来源，不将格式名称等同于全部特性已验收。
-- 外部扩展：独立[只读 SDK 试验](engineering/sdk-trial.md)包含两个独立协议实现、受控 I/O 和沙箱门禁；桌面与 CLI 不自动启用第三方包。
-- 自研 Rust 后端：独立实现来源、逐格式替代与生产依赖退出门槛见[自研格式与算法契约](engineering/independent-rust-codecs.md)。
-- 宿主日历与编码：格式无关的可选 `ReadSource` 服务、OS 回调、借用与秘密缓冲边界见[宿主平台服务](engineering/host-platform-services.md)。
-- 7z 后端：流式方法图、共享算法、创建、重写和密码封装见[读写规格](engineering/independent-rust-codecs.md#7z读写规格)，来源与参考分析分工见[7z 实现依据](engineering/sevenzip-format-sources.md)。产品固定使用 Rust，官方 7-Zip 源码不进入产品编译或部署。
-- CAB 后端：只读容器、共享算法和完整帧工作计量见[自研规格](engineering/independent-rust-codecs.md#cab只读规格)，规范版本与参考分析边界见[来源记录](engineering/cab-format-sources.md)。产品固定使用 Rust，官方 Cab 处理器及 CAB 专用 LZX/Quantum 不进入构建，没有失败回退。
-- 修改界面：先读视觉规范与流程，原稿位于 design/hifi，行为参照 ux 文档；HTML 示例与 Qt 实际能力分别核对。
-- 准备交付：按部署、安装契约及发行手册复验，区分开发验收与发行许可复核。正式 Release 不生成或附带对应源码压缩包；常规发行验收不运行源码交付收集器，仅在用户针对源码收集另行明确要求时用于本地审查或重建验证。支持范围以[已批准政策](engineering/support-policy.md)为准，不以 CI runner 名称推断。
+- **Use and build:** Start with the root [README](../README.md) and [developer build guide](engineering/developer-build.md). Use the same entry point for preparation, building, testing, packaging, and verification. Platform deployment documents describe differences; the Qt application document explains modules and low-level debugging.
+- **Change the core:** Find the relevant code in the [repository layout](engineering/repository-layout.md), then read the appropriate browsing, preflight, creation, or extraction contracts. The large archive index and preview scopes are defined in their respective engineering contracts. The target protocol and host design for the external SDK are described in the format extension specification.
+- **Isolate format workers:** See the [format backend contract](engineering/native-codecs.md) for controlled streams, worker processes, and licensing boundaries for Rust 7z/RAR/CAB/ISO/UDF. The product does not compile official UnRAR/7-Zip sources; a format name does not imply that every feature has passed acceptance.
+- **External extensions:** The standalone [read-only SDK trial](engineering/sdk-trial.md) includes two independent protocol implementations, controlled I/O, and a sandbox gate. The desktop application and CLI do not automatically enable third-party packages.
+- **In-house Rust backends:** See the [in-house formats and algorithms contract](engineering/independent-rust-codecs.md) for sources, per-format replacement, and criteria for removing production dependencies.
+- **Host calendar and encoding:** See [host platform services](engineering/host-platform-services.md) for optional format-independent `ReadSource` services, OS callbacks, borrowing, and secret-buffer boundaries.
+- **7z backend:** See the [read/write specification](engineering/independent-rust-codecs.md#7z读写规格) for streaming method graphs, shared algorithms, creation, rewriting, and password wrapping, and the [7z implementation basis](engineering/sevenzip-format-sources.md) for sources and reference analysis. The product uses Rust; official 7-Zip sources are not compiled into or deployed with it.
+- **CAB backend:** See the [in-house specification](engineering/independent-rust-codecs.md#cab只读规格) for the read-only container, shared algorithms, and full-frame work accounting, and the [source record](engineering/cab-format-sources.md) for specification versions and reference-analysis boundaries. The product uses Rust; official CAB handlers and CAB-specific LZX/Quantum are not built into it, and there is no fallback on failure.
+- **Change the interface:** Read the visual standard and workflow first. High-fidelity sources are in `design/hifi`; behavior is described in the UX documents. Verify HTML examples and actual Qt capabilities separately.
+- **Prepare delivery:** Recheck against deployment and installation contracts and the release runbook, keeping development acceptance separate from release licensing review. Official releases do not generate or include a corresponding-source archive. Routine release acceptance does not run the source delivery collector; it is used for local review or rebuild verification only when the user explicitly requests source collection. Supported scope follows the [approved policy](engineering/support-policy.md), not CI runner names.
 
-新缺陷与任务先查重并记录到 issue。已完成的 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)不承接后续新待办；`v0.1.0` 的历史发行许可复核见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)，文件输入与 macOS ACL 修复的范围及验证见 [#6](https://github.com/xiaodaozhi/xdzip/issues/6)。这些入口用于查阅实际状态，未来候选须建立新的发行 issue，本文不复制执行报告。
+Check for duplicates and track new defects and tasks in issues. Completed [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5) does not absorb new follow-up work. Historical release license reviews for `v0.1.0` are in [#4](https://github.com/xiaodaozhi/xdzip/issues/4) and [#53](https://github.com/xiaodaozhi/xdzip/issues/53); file-input and macOS ACL fix scope and validation are in [#6](https://github.com/xiaodaozhi/xdzip/issues/6). Consult those issues for actual status. Future candidates require new release issues; this document does not duplicate execution reports.
 
-## 文档权威
+## Documentation authority
 
-需求以 design/01 为准；领域与任务以 design/03、08 为准；桥接以 design/05 为准；格式扩展以 design/06 为准；视觉以已确认原稿和 tokens 为准。工程文档补充实施边界，不另定义冲突协议。候选、未实现与未验证内容保持明确标记，不因文档存在便写成已实现。
+Requirements are defined in design/01; domain and tasks in design/03 and 08; the bridge in design/05; format extensions in design/06; and visuals in the approved artwork and tokens. Engineering documents supplement implementation boundaries and do not define conflicting protocols. Candidate, unimplemented, and unverified content must remain clearly labeled; a document's existence does not make a feature implemented.
 
-设计 Markdown 是阅读版的源。执行 `python3 scripts/build-design-html.py` 可在忽略的 `build/docs-html/` 生成多页与单文件 HTML；生成物不提交到 Git。
+The Chinese design Markdown under `docs/zh-CN/design/` is the source for the Chinese HTML reading edition. Run `python3 scripts/build-design-html.py` to generate multipage and single-file HTML under ignored `build/docs-html/`; generated output is not committed to Git.

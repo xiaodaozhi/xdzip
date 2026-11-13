@@ -1,97 +1,97 @@
-# xdzip：04 Qt Quick 界面设计
+# xdzip: 04 Qt Quick interface design
 
-项目于 2026-10-11 建立正式视觉基线，参见 [高保真设计交付](../visual/README.md)。图片表达目标视觉；尺寸与颜色以 tokens 和组件规范为实现依据。图片预览仍按既定路线在 M6 交付。
+The project established its formal visual baseline on 2026-10-11; see the [high-fidelity design deliverables](../visual/README.md). Images express the visual target; tokens and component specifications govern implementation dimensions and colors. Image preview remains scheduled for M6 under the established roadmap.
 
-## 1. 信息结构
+## 1. Information architecture
 
-主窗口由顶部命令区、会话标签、侧边目录树、中心虚拟文件列表和底部任务区组成。首版允许多个归档会话，开始可用单标签实现，再在模型不变的情况下开放多标签。全局任务区独立于标签页，用户可查看其他会话的任务。
+The main window consists of a top command area, session tabs, a side directory tree, a central virtual file list, and a bottom task area. The first version permits multiple archive sessions; it can begin with a single tab and expose multiple tabs later without changing the model. The global task area is independent of tabs, so users can view tasks from other sessions.
 
-| 页面/组件 | 内容 | 主要动作 |
+| Page/component | Content | Primary actions |
 |---|---|---|
-| 欢迎页 | 打开、新建、可选最近记录 | 拖入/选文件；最近记录默认仅本地且可关闭 |
-| 归档页 | 标题、格式、索引状态、目录树、文件表格 | 搜索、排序、多选、解压、查看详情 |
-| 创建面板 | 输入列表、格式、目标、压缩选项 | 增删输入、预检、创建 |
-| 解压面板 | 范围、目标、同名目录、冲突和大小摘要 | 查看风险、启动 |
-| 冲突对话框 | 现有项和新项信息、当前风险 | 跳过、改名、覆盖、应用于本任务 |
-| 任务抽屉 | 状态、实际吞吐、已完成数量、取消 | 展开结果、重试失败项（重新规划） |
-| 详情面板 | 原始/展示路径、大小、格式属性、安全提示 | 复制安全展示文本 |
-| 设置/扩展页 | 外观、限额、隐私、版本与能力 | 只在需要时管理扩展 |
+| Welcome page | Open, create, optional recent items | Drop/select a file; recent items are local by default and can be disabled |
+| Archive page | Title, format, index state, directory tree, file table | Search, sort, select multiple, extract, inspect details |
+| Creation panel | Inputs, format, destination, compression options | Add/remove inputs, preflight, create |
+| Extraction panel | Scope, destination, same-name directory, conflict and size summary | Review risks, start |
+| Conflict dialog | Existing and new item information, current risk | Skip, rename, overwrite, apply to this task |
+| Task drawer | State, actual throughput, completed count, cancellation | Expand results, retry failures through replanning |
+| Details panel | Raw/display paths, sizes, format attributes, security notices | Copy safely displayed text |
+| Settings/extensions page | Appearance, limits, privacy, version and capabilities | Manage extensions only when needed |
 
-应用菜单暴露主要动作。错误首先呈现在任务/会话相邻位置；需要决策时才使用模态对话框。常规完成不用打断当前输入。没有结果、扫描中、损坏、权限拒绝和格式未支持各有独立状态，不复用一个“加载失败”。
+The application menu exposes primary actions. Errors appear first near the relevant task/session; modal dialogs are used only when a decision is required. Routine completion does not interrupt current input. Empty results, scanning, corruption, permission denial, and unsupported formats have distinct states instead of sharing one “Load failed” message.
 
-## 2. 视觉和组件
+## 2. Visual design and components
 
-使用 Qt Quick Controls 2 的可替换控件层和统一 tokens，不依赖某个平台主题偶然的颜色。产品风格为简洁桌面工具：中性色背景、清晰层级、有限强调色、细分隔线、克制圆角；内容密度允许“标准/紧凑”。
+Use a replaceable Qt Quick Controls 2 control layer and shared tokens, without relying on incidental colors from a platform theme. The style is a clean desktop utility: neutral backgrounds, clear hierarchy, limited accent colors, thin separators, and restrained corner radii. Content density supports “Standard” and “Compact.”
 
-| Token 类别 | 初始规范 |
+| Token category | Initial specification |
 |---|---|
-| 色彩 | background/surface/raised/text/secondary/border/accent/error/warning/success/focus，浅深色分别定义 |
-| 间距 | 4/8/12/16/24/32 逻辑像素 |
-| 行高 | 标准 40、紧凑 32；高字号时由文本高度提高，不能裁字 |
-| 圆角 | 控件 8、面板 12、独立操作窗口遵从平台；平台标题栏遵从系统 |
-| 字体 | 固定界面文案采用内置 Noto Sans SC 衍生子集；文件名、目录名和路径优先使用启动时保存的系统默认字体，缺字由平台回退，不嵌入完整 CJK 字体包 |
-| 动效 | 100～180ms 的透明度/状态转换；系统减少动态效果时关闭 |
-| 可访问性 | 正文普通文本对比度目标至少 4.5:1，焦点和选中态可由非颜色线索识别 |
+| Color | background/surface/raised/text/secondary/border/accent/error/warning/success/focus, defined separately for light and dark themes |
+| Spacing | 4/8/12/16/24/32 logical pixels |
+| Row height | Standard 40, compact 32; increase for larger text without clipping |
+| Corner radius | Controls 8, panels 12; independent operation windows follow the platform, and platform title bars follow the system |
+| Font | Fixed UI text uses a bundled Noto Sans SC derived subset. Filenames, directory names, and paths prefer the system default font captured at startup; missing glyphs use platform fallback. Do not bundle a full CJK font package |
+| Motion | 100–180 ms opacity/state transitions; disable when the system requests reduced motion |
+| Accessibility | Ordinary body text targets at least 4.5:1 contrast; focus and selection are identifiable through non-color cues |
 
-组件库拟包含 `AppButton`、`SearchField`、`ArchiveTable`、`EntryDelegate`、`TaskCard`、`InlineMessage`、`PlanSummary`、`ConflictDialog` 和 `PasswordDialog`。控件有 busy/disabled/focus/hover/error 状态。圆角、字号和颜色禁止分散硬编码；图标来自审计过许可证的一个集合。
+The planned component library includes `AppButton`, `SearchField`, `ArchiveTable`, `EntryDelegate`, `TaskCard`, `InlineMessage`, `PlanSummary`, `ConflictDialog`, and `PasswordDialog`. Controls have busy/disabled/focus/hover/error states. Corner radii, font sizes, and colors must not be hard-coded in scattered locations; icons come from one license-audited set.
 
-## 3. C++ 对象边界
+## 3. C++ object boundaries
 
-| QObject/模型 | 对 QML 暴露 | 内部责任 |
+| QObject/model | Exposed to QML | Internal responsibility |
 |---|---|---|
-| `ApplicationController` | 打开、新建、会话列表、退出状态 | Qt 文件授权、命令关联、应用生命周期 |
-| `ArchiveController` | 格式、索引状态、查询、选择、能力 | QueryGeneration、快照身份、请求合并 |
-| `ArchiveListModel` | name/size/type/modified/selected/status 等角色 | 页缓存、占位行、准确的模型变更信号 |
-| `DirectoryTreeModel` | 已发现目录和子项状态 | 懒加载，不一次构造全目录树 |
-| `TaskListModel` | 任务摘要、进度、可取消、等待原因 | 按 TaskId+sequence 合并事件 |
-| `SettingsController` | 主题、密度、平台设置 | 验证值并生成核心策略快照 |
+| `ApplicationController` | Open, create, session list, exit state | Qt file authorization, command correlation, application lifecycle |
+| `ArchiveController` | Format, index state, queries, selection, capabilities | QueryGeneration, snapshot identity, request coalescing |
+| `ArchiveListModel` | Roles such as name/size/type/modified/selected/status | Page cache, placeholder rows, accurate model-change signals |
+| `DirectoryTreeModel` | Discovered directories and child state | Lazy loading, without building the entire tree at once |
+| `TaskListModel` | Task summaries, progress, cancellability, waiting reasons | Merge events by TaskId+sequence |
+| `SettingsController` | Theme, density, platform settings | Validate values and produce a core policy snapshot |
 
-QML 不获取 Rust 裸指针，不访问真实输出文件，不解释协议帧。C++ 不判断一个 ZIP 条目是否安全。`data()` 不发同步 Rust 查询，不读文件；缓存未命中返回占位值并合并异步请求。
+QML does not receive raw Rust pointers, access actual output files, or interpret protocol frames. C++ does not decide whether a ZIP entry is safe. `data()` does not make synchronous Rust queries or read files; cache misses return placeholders and coalesce asynchronous requests.
 
-列表页默认 128 行，最多缓存 8 页，共 1024 行；核心页大小上限 256。预取仅保留邻近一页，快速滚动取消旧预取。缓存键带 QueryId 和 revision。获取页面后在 GUI 线程批量 `dataChanged`；换查询时受控 reset，普通选择变化使用角色定向更新，避免每次重建所有 delegate。
+The list defaults to 128 rows per page and caches at most eight pages, for 1,024 rows. Core pages have a maximum size of 256. Prefetch keeps only one adjacent page; rapid scrolling cancels old prefetches. Cache keys include QueryId and revision. After receiving a page, batch `dataChanged` on the GUI thread. Use controlled reset for query changes and role-targeted updates for ordinary selection changes, avoiding a full delegate rebuild each time.
 
-优先使用 TableView 的行列虚拟化实现；必须实测 delegate 数和销毁行为。不能为了表格外观把整个模型转换成 QML 数组或 Repeater。超长文件名省略显示，完整内容按需提示；工具提示也不加载所有字段。
+Prefer TableView row/column virtualization and measure delegate counts and destruction behavior. Do not convert the entire model into a QML array or Repeater for table styling. Elide long filenames and reveal the full content on demand; tooltips must not load every field either.
 
-## 4. 事件和交互
+## 4. Events and interaction
 
-搜索普通输入采用 120ms 初始防抖；输入法 composing 时不提交中间拼音串，commit 后触发。每次查询条件改变递增 generation，响应在进入模型前校验会话、QueryId、generation 和 revision。点击排序合并重复点击，显示已请求方向及加载反馈。
+Ordinary search input initially uses a 120 ms debounce. Do not submit intermediate pinyin strings while an IME is composing; trigger after commit. Increment generation whenever query conditions change, and validate session, QueryId, generation, and revision before a response enters the model. Coalesce repeated sort clicks and show the requested direction and loading feedback.
 
-| 动作 | macOS | Windows/Linux | 范围 |
+| Action | macOS | Windows/Linux | Scope |
 |---|---|---|---|
-| 打开 | ⌘O | Ctrl+O | 全局 |
-| 新建 | ⌘N | Ctrl+N | 全局 |
-| 全选当前结果 | ⌘A | Ctrl+A | 文件列表；文本输入保留编辑含义 |
-| 搜索 | ⌘F | Ctrl+F | 当前归档 |
-| 多选切换 | ⌘点击 | Ctrl 点击 | 文件列表 |
-| 连续范围 | Shift 点击/方向键 | 相同 | 当前查询快照 |
-| 导航 | 方向键、Home/End，适配 Mac 键盘映射 | 方向键、Home/End | 列表 |
-| 解压 | 菜单/工具栏及可配置快捷键 | 相同 | 已准备计划 |
-| 取消/关闭弹窗 | Escape | Escape | 最内层可取消交互，不自动取消所有任务 |
+| Open | ⌘O | Ctrl+O | Global |
+| New | ⌘N | Ctrl+N | Global |
+| Select all current results | ⌘A | Ctrl+A | File list; text inputs retain editing semantics |
+| Search | ⌘F | Ctrl+F | Current archive |
+| Toggle selection | ⌘ click | Ctrl click | File list |
+| Contiguous range | Shift click/arrow keys | Same | Current query snapshot |
+| Navigate | Arrow keys, Home/End, adapted to Mac keyboard mappings | Arrow keys, Home/End | List |
+| Extract | Menu/toolbar and configurable shortcut | Same | Prepared plan |
+| Cancel/close dialog | Escape | Escape | Innermost cancellable interaction; does not automatically cancel all tasks |
 
-不设置冲突系统快捷键；主菜单快捷键使用 Qt 标准键和平台约定。列表 Enter 显示详情或进入目录，不直接执行内部文件。双击文件仅在明确启用受限预览后触发预览，否则显示详情。
+Do not assign conflicting system shortcuts; main-menu shortcuts use Qt standard keys and platform conventions. Enter in the list shows details or enters a directory; it does not directly execute an internal file. Double-clicking a file triggers preview only when restricted preview is explicitly enabled; otherwise, it shows details.
 
-外部文件拖入可以打开或添加压缩输入；向外拖拽涉及生成临时文件和异步拖放，在 v0.2 单独验证，MVP 不伪装支持。来自浏览器的 URL 不自动下载。
+External files dragged in can open archives or be added as compression inputs. Dragging out involves temporary file creation and asynchronous drag-and-drop and is separately verified in v0.2; the MVP must not pretend to support it. URLs from browsers are not downloaded automatically.
 
-## 5. 跨平台体验
+## 5. Cross-platform experience
 
-macOS 使用系统菜单栏、原生文件选择、标准标题栏和 Dock 行为；首版直接分发签名公证包，若采用 Mac App Store，文件授权/插件政策作为单独发行配置。Windows 支持 per-monitor DPI 和 Unicode 路径，不把 Windows 外观强加给 Mac。Linux 处理 Wayland/X11 和文件选择门户能力，缺失集成时仍有明确可用路径。
+macOS uses the system menu bar, native file selection, standard title bar, and Dock behavior. The initial plan is to distribute signed and notarized packages directly; if the Mac App Store is adopted, file authorization and plugin policy are separate release configurations. Windows supports per-monitor DPI and Unicode paths without imposing Windows appearance on Mac. Linux handles Wayland/X11 and file-selection portal capabilities, with a clear usable path even when integration is unavailable.
 
-显示统一的“无法输出此名称”，详情解释当前文件系统限制。系统路径不以 POSIX 字符串拼接；Qt 返回的平台路径由适配层转换为授权对象。路径显示方向和双向控制字符必须安全处理，文件图标/文本不能被恶意名字伪造成操作控件。
+Display a consistent “Cannot output this name,” with details explaining current filesystem restrictions. Do not concatenate system paths as POSIX strings; the adapter converts platform paths returned by Qt into authorization objects. Handle displayed path direction and bidirectional control characters safely; malicious names must not make file icons/text impersonate controls.
 
-## 6. 无障碍和输入
+## 6. Accessibility and input
 
-列表行提供可读名称、类型、大小、选择态及逻辑行号；未知大小读为“未知”。任务提供阶段和实际进度；事件按低频节奏播报，不能每 100ms 读一次百分比。对话框有明确默认按钮，危险覆盖不能靠默认 Enter 确认。
+List rows provide readable names, types, sizes, selection states, and logical row numbers; unknown size is read as “Unknown.” Tasks provide their phase and actual progress. Announcements are rate-limited rather than reading a percentage every 100 ms. Dialogs have explicit default buttons; dangerous overwrites cannot be confirmed by pressing Enter by default.
 
-关闭面板后恢复焦点。键盘可到达所有按钮、标签、筛选和冲突操作；焦点不能落入不可见 delegate。使用 Qt 可访问性接口验证 VoiceOver、Narrator 和目标 Linux 读屏，而非只看属性写得齐不齐。
+Restore focus after closing a panel. All buttons, tabs, filters, and conflict actions are keyboard reachable; focus must not enter an invisible delegate. Verify VoiceOver, Narrator, and the target Linux screen reader through Qt accessibility interfaces rather than merely checking that properties are populated.
 
-验收包括中文拼音/五笔候选、组合文本、RTL 名称、emoji、100%／125%／150% 字号（200% 仅作历史压力场景）、125%/150% DPI、深浅色和减少动态效果。原型里的程序化中文搜索不算输入法验收。
+Acceptance covers Chinese pinyin/Wubi candidates, composing text, RTL names, emoji, 100%/125%/150% font sizes (200% is a historical stress scenario only), 125%/150% DPI, light/dark themes, and reduced motion. Programmatic Chinese search in a prototype does not count as IME acceptance.
 
-## 7. 密码与错误
+## 7. Passwords and errors
 
-密码框禁用自动完成、剪贴板建议和日志。提交后 QML 属性尽快清空，C++ 转移到短生命周期秘密对象；Qt/系统输入法内部复制无法保证全部擦除，因此不宣称绝对零残留。默认不持久记住密码。
+Password fields disable autocomplete, clipboard suggestions, and logging. Clear the QML property promptly after submission; C++ transfers the secret to a short-lived secret object. Copies inside Qt/system input methods cannot all be guaranteed erased, so do not claim absolute zero residue. Passwords are not remembered persistently by default.
 
-错误码由核心给出，Qt 使用翻译目录形成文案；插件不能直接提供富文本错误页。允许复制脱敏诊断：软件版本、格式、错误码、匿名 TaskId，不带密码、内容或完整路径。
+The core supplies error codes; Qt forms messages using translation catalogs. Plugins cannot directly supply rich-text error pages. Sanitized diagnostics may be copied: software version, format, error code, and anonymous TaskId, without passwords, content, or full paths.
 
-## 独立操作窗口
+## Independent operation windows
 
-解压、新建、冲突、任务、结果和设置均使用独立顶层窗口，不使用主窗口内遮罩或 macOS sheet。macOS 使用原生左上角系统按钮，Windows/Linux 可自定义标题栏并保留系统窗口行为。所有权、模态范围、关闭与取消语义、原型边界及实机验收以[平台窗口规范](../ux/platform-windows.md)为准。
+Extraction, creation, conflicts, tasks, results, and settings all use independent top-level windows rather than main-window overlays or macOS sheets. macOS uses native system buttons at the upper left. Windows/Linux may customize the title bar while retaining system window behavior. See the [platform window specification](../ux/platform-windows.md) for ownership, modality, close and cancel semantics, prototype boundaries, and actual-device acceptance.

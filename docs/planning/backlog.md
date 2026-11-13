@@ -1,28 +1,28 @@
-# 实施路线与工作包
+# Implementation roadmap and work packages
 
-本页维护工作包依赖和持久的交付边界，具体进度、验收记录与阻塞项由 [Issues](https://github.com/xiaodaozhi/xdzip/issues)管理，不在此追加批次报告。开发工作包与正式发行审查分开，状态以对应 issue 及实际证据为准。
+This page maintains work-package dependencies and durable delivery boundaries. Specific progress, acceptance records and blockers are managed in [Issues](https://github.com/xiaodaozhi/xdzip/issues), not appended here as batch reports. Development work packages and formal release reviews are separate; status follows the relevant issue and actual evidence.
 
-| ID / 阶段 | 依赖 | 交付与可验收退出条件 |
+| ID / milestone | Dependencies | Deliverables and testable exit criteria |
 | --- | --- | --- |
-| WP-01 / M0 工具链与依赖（开发基线完成） | 许可证方向 | 开发版本锁定、桥接与三平台构建验证已完成；支持维护政策已批准，`v0.1.0` 历史发行许可复核记录见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53) |
-| WP-02 / M1 核心骨架（已实现） | WP-01 开发工具链 | 纯 Rust 领域/运行时与产品 cxx 双句柄；核心测试不需 Qt |
-| WP-03 / M1 生命周期（已实现） | WP-02 | 双句柄、背压、事件唤醒、重复关闭/满队列测试；终态一次 |
-| WP-04 / M1 视觉组件（骨架已实现） | WP-01 开发工具链 | tokens、独立窗口、主题、文字缩放与布局检查；示例任务明确标识；原生焦点／DPI 与桌面专项按受影响项复验，既有结论见 WP-12 issue |
-| WP-05 / M2 ZIP 只读（已实现） | WP-02/03 | 真实探测/元数据/能力；损坏输入不崩溃，打开不解压 |
-| WP-06 / M2 查询与选择（已实现） | WP-05 | 传输批次/排序/搜索/身份；十万条、旧响应丢弃、IME 通过 |
-| WP-07 / M3 安全文件层（开发与自动化验收完成） | WP-02 | 三平台授权根、拒绝链接逃逸、暂存/提交回执及故障测试 |
-| WP-08 / M3 首个真实闭环（开发与自动化验收完成） | WP-04/05/06/07 | 打开 ZIP→冻结选择→授权目标→校验→整文件发布→摘要；受控冲突保护旧文件 |
-| WP-09 / M3 冲突与取消（开发与自动化验收完成） | WP-08 | 重名/源变化/磁盘满、cancel 与 commit 竞争和恢复均可解释 |
-| WP-10 / M4 创建 ZIP（开发与三平台自动化验收完成） | WP-07/09 | 输入树预检、整体发布、参考工具互操作；取消保留旧归档 |
-| WP-11 / M4 TAR/GZIP（已实现，平台验收按实际证据） | WP-05/07/10 | 组合能力、流式扫描、未知总量、特殊项拒绝及双向互操作 |
-| WP-12 / M5 私测准备（开发与验收完成） | WP-03～11 | 10 项自动门槛通过，八项人工验收完成，支持政策已批准；[WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)收口，`v0.1.0` 发行许可和收尾分别在 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 与 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)登记；未来候选须建立新发行 issue |
-| WP-13 / M6 索引/预览 | WP-12 | [百万条 ZIP/ZIP64、磁盘索引与按需浏览](../engineering/large-index.md)、[主动受限预览](../engineering/content-preview.md)与清理；交付和适用验收由 [#265](https://github.com/xiaodaozhi/xdzip/issues/265)跟踪 |
-| WP-14 / M7 额外格式 | WP-12 | ZIP AES-256／分卷、7z、RAR、CAB、ISO／UDF 的当前实现按 [README](../../README.md)、[格式契约](../engineering/native-codecs.md)及[自研边界](../engineering/independent-rust-codecs.md)逐项声明，不因工作包名称承诺完整格式特性；新增算法仍单独准入 |
-| WP-15 / M8 外部 SDK | WP-12 | [独立只读试验](../engineering/sdk-trial.md)：两个独立协议实现、越权测试、平台沙箱；未达标不启用，产品发现／安装与完整 SDK 后续单独交付；本试验由 [#265](https://github.com/xiaodaozhi/xdzip/issues/265)跟踪 |
-| WP-16 / M9 稳定发行 | WP-13～15 中实际纳入项 | 稳定能力完整验收、许可与支持政策，沿用未正式签名的开源发行方式 |
+| WP-01 / M0 toolchain and dependencies (development baseline complete) | Licensing direction | Locked development versions, bridge and three-platform build verification complete; support and maintenance policy approved. Historical `v0.1.0` release licensing reviews are in [#4](https://github.com/xiaodaozhi/xdzip/issues/4) and [#53](https://github.com/xiaodaozhi/xdzip/issues/53) |
+| WP-02 / M1 core skeleton (implemented) | WP-01 development toolchain | Pure Rust domain/runtime and product cxx dual handles; core tests do not require Qt |
+| WP-03 / M1 lifecycle (implemented) | WP-02 | Dual handles, backpressure, event wakeups, repeated-close/full-queue tests; terminal state exactly once |
+| WP-04 / M1 visual components (skeleton implemented) | WP-01 development toolchain | Tokens, standalone windows, themes, text scaling and layout checks; example tasks explicitly marked. Reverify native focus/DPI and desktop checks as affected; existing conclusions are in the WP-12 issue |
+| WP-05 / M2 ZIP read-only (implemented) | WP-02/03 | Real detection, metadata and capabilities; corrupt input does not crash; opening does not extract |
+| WP-06 / M2 query and selection (implemented) | WP-05 | Transfer batches, sorting, search and identity; 100,000 entries, stale response rejection and IME pass |
+| WP-07 / M3 safe file layer (development and automated acceptance complete) | WP-02 | Authorized roots on three platforms, link-escape rejection, staging/publication receipts and fault tests |
+| WP-08 / M3 first real end-to-end flow (development and automated acceptance complete) | WP-04/05/06/07 | Open ZIP → freeze selection → authorize target → verify → publish complete files → summary; controlled conflicts protect old files |
+| WP-09 / M3 conflicts and cancellation (development and automated acceptance complete) | WP-08 | Explainable name collisions, source changes, disk-full behavior, cancel/commit races and recovery |
+| WP-10 / M4 ZIP creation (development and three-platform automated acceptance complete) | WP-07/09 | Input-tree preflight, whole-archive publication and reference-tool interoperability; cancellation preserves old archive |
+| WP-11 / M4 TAR/GZIP (implemented, platform acceptance follows actual evidence) | WP-05/07/10 | Combined capabilities, streaming scan, unknown totals, special-entry rejection and two-way interoperability |
+| WP-12 / M5 private-test readiness (development and acceptance complete) | WP-03–11 | Ten automated gates passed, eight manual checks complete and support policy approved; [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5) closed, `v0.1.0` release permission and closeout recorded in [#4](https://github.com/xiaodaozhi/xdzip/issues/4) and [#53](https://github.com/xiaodaozhi/xdzip/issues/53). Future candidates require a new release issue |
+| WP-13 / M6 indexing and preview | WP-12 | [Million-entry ZIP/ZIP64, disk indexing and on-demand browsing](../engineering/large-index.md), [explicit bounded preview](../engineering/content-preview.md) and cleanup; delivery and applicable acceptance tracked in [#265](https://github.com/xiaodaozhi/xdzip/issues/265) |
+| WP-14 / M7 additional formats | WP-12 | Declare current ZIP AES-256/volumes, 7z, RAR, CAB and ISO/UDF implementation individually according to [README](../../README.md), the [format contract](../engineering/native-codecs.md) and [independent implementation boundary](../engineering/independent-rust-codecs.md). A work-package name does not promise full format features; new algorithms need separate admission |
+| WP-15 / M8 external SDK | WP-12 | [Independent read-only trial](../engineering/sdk-trial.md): two independent protocol implementations, authorization-boundary tests and platform sandboxes. Do not enable if requirements are unmet; product discovery/installation and a complete SDK are separate future deliveries. Trial tracked in [#265](https://github.com/xiaodaozhi/xdzip/issues/265) |
+| WP-16 / M9 stable release | Items actually included from WP-13–15 | Complete acceptance of stable capabilities, licensing and support policy; retain the open-source distribution approach without formal signing |
 
-每个 issue 写需求 ID、依赖、产物、测试、范围外事项及证据链接。新问题建立或复用独立 issue；不要把后续缺陷累积成已完成工作包的待办。WP-16 不以编号强制纳入尚未准备好的格式，删减能力须更新版本声明。
+Each issue records requirement IDs, dependencies, artifacts, tests, exclusions and evidence links. Create or reuse a separate issue for new problems; do not accumulate later defects as pending work on a completed package. WP-16 numbering does not force inclusion of formats that are not ready; capability reductions require updating version declarations.
 
-后续 WP-13～15 的开发可基于已完成的 WP-12 推进；实际公开发行仍执行[发行复核流程](../qa/release-review.md)。
+Development of WP-13–15 may proceed from the completed WP-12 baseline. Actual public releases still follow the [release review process](../qa/release-review.md).
 
-WP-14 的首个切片为[AES-256 ZIP 密码解压](../engineering/password-extraction.md)，包含密码交互、认证后发布、错误重试与取消。后续[分卷 ZIP](../engineering/archive-opening.md)支持连续编号卷及 PKZIP 卷，沿用密码和安全任务路径。实际进展、互操作与三平台验证结论由 [#11](https://github.com/xiaodaozhi/xdzip/issues/11)和 [#20](https://github.com/xiaodaozhi/xdzip/issues/20)跟踪，不等待 WP-13 完成；其他格式和加密方式仍单独准入。
+The first WP-14 slice is [AES-256 ZIP password extraction](../engineering/password-extraction.md), including password interaction, publication after authentication, error retry and cancellation. Subsequent [split ZIP](../engineering/archive-opening.md) supports consecutive numbered and PKZIP volumes through the same password and safe task paths. Progress, interoperability and three-platform verification are tracked in [#11](https://github.com/xiaodaozhi/xdzip/issues/11) and [#20](https://github.com/xiaodaozhi/xdzip/issues/20), without waiting for WP-13. Other formats and encryption methods require separate admission.

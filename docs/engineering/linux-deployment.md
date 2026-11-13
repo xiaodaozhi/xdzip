@@ -1,25 +1,25 @@
-# Linux 独立运行目录与验证
+# Linux standalone runtime directory and verification
 
-当前开发部署基线为 Ubuntu 24.04、x86_64、X11。目标是脱离开发 Qt SDK 运行当前产品，不据此承诺其他发行版、旧 glibc、Wayland 或完整安装器支持。macOS CI 保持原生编译、测试与启动验证，本地开发 DMG 按[Mac 部署指南](macos-deployment.md)处理，不受本流程影响。
+The current development deployment baseline is Ubuntu 24.04, x86_64, and X11. The goal is running the current product without the development Qt SDK; this does not promise other distributions, older glibc, Wayland, or complete installer support. macOS CI retains native build, test, and startup verification. Local development DMGs follow the [Mac deployment guide](macos-deployment.md) and are unaffected by this flow.
 
-## 布局和生成
+## Layout and generation
 
-`scripts/deploy_linux.py` 只接受可信自有 ELF 和明确的 Qt 6.8.2 SDK，在新的 build/ 或 dist/ 目录生成：
+`scripts/deploy_linux.py` accepts only trusted project-owned ELF files and an explicitly specified Qt 6.8.2 SDK, creating a new build/ or dist/ directory:
 
-- `xdzip` 为启动入口，使用当前目录的库、插件和 QML，不继承开发 SDK 搜索路径。
-- `bin/xdzip` 为产品，旁边 `qt.conf` 将 Qt 路径改为相对布局。
-- `lib/` 为实际导入的 Qt／SDK 共享库，`qml/` 为扫描得到的 Qt QML 模块根目录，保留控件样式及实现子模块。
-- `plugins/` 包含 xcb、离屏验证、图片、图标、平台输入、xcb 图形集成和必需的 `tls/libqopensslbackend.so`；缺少 OpenSSL 后端时部署失败。不把 EGLFS、帧缓冲或 Wayland 平台插件作为已验证交付。
-- `translations/` 保留 Qt 标准控件翻译，`share/notices/` 交付当前通知和源码依赖材料。
-- `share/deployment.json` 记录 QML、系统运行依赖、复制的 SDK 库和边界，README.md 提供使用方法。
+- `xdzip` is the launcher, using local libraries, plugins, and QML without inheriting development SDK search paths.
+- `bin/xdzip` is the product; adjacent `qt.conf` uses relative Qt paths.
+- `lib/` contains actually imported Qt/SDK shared libraries; `qml/` is the scanned Qt QML module root, retaining control styles and implementation submodules.
+- `plugins/` contains xcb, offscreen verification, image, icon, platform input, xcb graphics integration, and required `tls/libqopensslbackend.so`; deployment fails without the OpenSSL backend. EGLFS, framebuffer, and Wayland platform plugins are not described as verified delivery.
+- `translations/` retains Qt standard-control translations; `share/notices/` delivers current notices and source dependency materials.
+- `share/deployment.json` records QML, system runtime dependencies, copied SDK libraries, and boundaries; README.md provides usage.
 
-扫描器使用固定 Qt 版本的 [qmlimportscanner](https://doc.qt.io/qt-6.8/qtqml-tooling-qmlimportscanner.html)。Xdzip.Settings／Xdzip.Native 是产品内建注册模块，不复制开发静态库。缺少普通依赖、QML 路径逃逸 SDK、同名库冲突或未知外部库均失败。原生导入递归收集只复制 SDK 库，不捎带宿主 glibc 或图形驱动；系统依赖按实际 Debian 包归属列出。
+The scanner uses pinned-Qt [qmlimportscanner](https://doc.qt.io/qt-6.8/qtqml-tooling-qmlimportscanner.html). Xdzip.Settings/Xdzip.Native are built-in registered modules; development static libraries are not copied. Missing ordinary dependencies, QML paths escaping the SDK, same-name library conflicts, and unknown external libraries fail. Recursive native-import collection copies only SDK libraries, not host glibc or graphics drivers; system dependencies are listed by actual Debian package ownership.
 
-HTTPS 另显式要求 Ubuntu 的 `libssl3t64` 与 `ca-certificates`，验证 `libssl.so.3`、`libcrypto.so.3` 的系统包归属及非空系统 CA 信任库。Qt OpenSSL 后端可能在运行时加载这些库，不能仅凭 ldd 推断依赖完整。部署清单保留已安装的二进制包版本、源包与源包版本；安装器声明两项依赖，实际文件 SBOM 将其记录为必需 OS 包，不把系统库打包进应用。
+HTTPS additionally requires Ubuntu `libssl3t64` and `ca-certificates`. Verify system-package ownership of `libssl.so.3` and `libcrypto.so.3` and a nonempty system CA trust store. The Qt OpenSSL backend may load these libraries at runtime, so ldd alone cannot establish complete dependencies. The deployment manifest records installed binary package versions, source packages, and source-package versions. Installers declare both dependencies; the actual-file SBOM records them as required OS packages without bundling system libraries in the app.
 
-每个 ELF 使用 patchelf 设置相对 `$ORIGIN` RPATH，插件按自身目录到 lib/ 的相对距离计算。Qt 的路径重定向按 [qt.conf 官方规则](https://doc.qt.io/qt-6.8/qt-conf.html)执行，允许整个目录迁移。库保持动态链接和可替换，不限制用户更换兼容 Qt。通用 Linux 部署边界见 [Qt Linux 部署说明](https://doc.qt.io/qt-6.8/linux-deployment.html)。
+patchelf sets relative `$ORIGIN` RPATH on every ELF, calculating each plugin's relative distance to lib/. Qt path redirection follows [official qt.conf rules](https://doc.qt.io/qt-6.8/qt-conf.html), allowing relocation of the entire directory. Libraries remain dynamically linked and replaceable; compatible Qt replacement is not restricted. See [Qt Linux deployment](https://doc.qt.io/qt-6.8/linux-deployment.html) for general boundaries.
 
-日常使用[统一构建入口](developer-build.md)分阶段生成和核验；先完成同配置 build／test 与打包准备，再执行：
+Use the [unified build entry point](developer-build.md) in stages for routine generation and verification. Complete same-configuration build/test and packaging preparation first, then run:
 
 ```sh
 python3 scripts/desktop.py doctor --for-stage package
@@ -27,34 +27,34 @@ python3 scripts/desktop.py package --kind all
 python3 scripts/desktop.py verify --kind all
 ```
 
-默认构建目录为 build/desktop，交付输出为 build/package，Qt SDK 默认 `build/toolchain/Qt/6.8.2/gcc_64`；其他位置在各阶段传入共用参数。`package --kind runtime` 生成运行目录与审计材料；随后在同一 output-dir 执行 `package --kind installer`，生成 tar.gz 与 .deb。默认 `all` 依次完成两部分。底层 [deploy_linux.py](../../scripts/deploy_linux.py)、[package_linux.py](../../scripts/package_linux.py)和 [verify_linux_runtime.py](../../scripts/verify_linux_runtime.py)保留平台逻辑，需要定位故障时参考各自 `--help`。
+The default build directory is build/desktop, delivery output is build/package, and Qt SDK is `build/toolchain/Qt/6.8.2/gcc_64`; pass shared options at each stage for other locations. `package --kind runtime` generates the runtime directory and audit materials; then `package --kind installer` with the same output-dir generates tar.gz and .deb. Default `all` performs both in order. Underlying [deploy_linux.py](../../scripts/deploy_linux.py), [package_linux.py](../../scripts/package_linux.py), and [verify_linux_runtime.py](../../scripts/verify_linux_runtime.py) retain platform logic; consult their `--help` for troubleshooting.
 
-部署只在原生 Linux x86_64 执行，不覆盖既有目录。打包前预检 qmlimportscanner、ldd、patchelf、dpkg-query 与安装器所需的 dpkg-deb；这些构建工具不进入产品。运行容器验证另外需要 Docker 和可访问的 daemon，其构建只针对固定 Ubuntu 镜像和记录的 OS 包。Docker 缺失不阻止普通 build／test，verify 则明确失败，不把未执行隔离检查写成通过。普通 verify 不在宿主安装 .deb 或修改文件关联，安装生命周期仍由一次性 CI 环境执行。
+Deployment runs only on native Linux x86_64 and does not overwrite existing directories. Packaging preflight checks qmlimportscanner, ldd, patchelf, dpkg-query, and installer-required dpkg-deb; these build tools do not enter the product. Container runtime verification additionally requires Docker and an accessible daemon, with builds limited to the pinned Ubuntu image and recorded OS packages. Missing Docker does not block ordinary build/test, but verify fails explicitly; an unexecuted isolation check is not recorded as passed. Ordinary verify does not install .deb on the host or change file associations; installation lifecycle remains a disposable CI check.
 
-## 脱离 SDK 的自动化证据
+## Automated evidence without the SDK
 
-容器基于固定 digest 的 Ubuntu 24.04，安装实际 OS 运行依赖和 Xvfb／字体／locale 测试支持，不安装 Qt、Rust 或编译器，并再次检查其不存在。容器不挂载开发 SDK 或整个源码树，只挂载只读产品目录、单独的自有十万条目 ZIP 和验证脚本。归档运行验证关闭网络、禁止提权，仅临时配置目录可写。
+The container uses Ubuntu 24.04 pinned by digest and installs actual OS runtime dependencies plus Xvfb/font/locale test support, but not Qt, Rust, or a compiler, and checks their absence again. It mounts neither the development SDK nor the complete source tree, only the read-only product directory, a separate project-owned 100,000-entry ZIP, and verification scripts. Archive runtime verification disables networking and privilege escalation; only the temporary configuration directory is writable.
 
-应用被挂载到带空格的新路径，在清除开发搜索变量后，经启动入口检查：
+Mount the application under a new path containing spaces. After clearing development search variables, use the launcher to check:
 
-1. 实际 `--version` 可运行。
-2. X11 下真实 QML 窗口启动并安全关闭。
-3. 原生产品探针完成首帧、十万条目读取、活动请求取消与退出，计数和取消结果须符合契约。
-4. 宿主清除开发变量后，以 deployed 模式核验全部打包 ELF；不允许回退 SDK。实际文件 SBOM 保持同一版本／提交身份并通过官方 schema。
-5. 在相同无 SDK 镜像的新进程中启用网络，以隔离的 `XDZIP_SETTINGS_PATH` 执行产品 `--update-probe`，实际请求 GitHub HTTPS。必须报告 OpenSSL 后端可用并完成更新检查，单独保留 `.https.json` 与 `.https.log`；网络、证书或 TLS 失败均阻止验证通过。
+1. Actual `--version` runs.
+2. A real QML window starts and closes safely under X11.
+3. The native product probe completes first frame, 100,000-entry reading, active-request cancellation, and exit; counts and cancellation outcomes satisfy the contract.
+4. After clearing host development variables, verify all packaged ELFs in deployed mode with no SDK fallback. The actual-file SBOM retains the same version/commit identity and passes the official schema.
+5. Enable networking in a new process from the same SDK-free image, run product `--update-probe` with isolated `XDZIP_SETTINGS_PATH`, and actually request GitHub HTTPS. It must report an available OpenSSL backend and complete the update check; retain separate `.https.json` and `.https.log`. Network, certificate, or TLS failures block verification.
 
-HTTPS 探针分别记录 OpenSSL 后端、系统 CA 文件与真实 GitHub 请求结果；真实请求成功不单独证明签名验证或原生更新安装。签名解析与 SDK-free 更新闭环由[独立更新回归工作流](../../.github/workflows/update-regression.yml)验证，两类证据不得互相代替。
+The HTTPS probe separately records OpenSSL backend, system CA file, and actual GitHub request results. A successful real request alone does not establish signature verification or native update installation. Signature parsing and SDK-free update workflows are verified by the [separate update regression workflow](../../.github/workflows/update-regression.yml); these evidence types cannot replace each other.
 
-每次探针尝试的原始日志和结构化报告分别保留为 `.https.attempt-N.log` 与 `.https.attempt-N.json`，最终尝试另保留 `.https.log`；报告缺失、无效、超时及进程退出码均保留失败状态。仅当产品控制器确认匿名 GitHub 发布列表限流，且状态、请求阶段、响应头及诊断记录完整时，才遵照服务端期限或有界退避重试，最多三次尝试和 240 秒等待；期限超过剩余预算、等待中断、TLS／网络失败或其他错误均立即失败，不提前请求、不将限流或空报告视为成功。每次等待决定和实际时长保留在 `.https-waits.json`。
+Retain raw logs and structured reports for each probe attempt as `.https.attempt-N.log` and `.https.attempt-N.json`, plus `.https.log` for the final attempt. Missing/invalid reports, timeouts, and process exit codes retain failure status. Retry only when the product controller confirms anonymous GitHub release-list rate limiting and status, request phase, response headers, and diagnostics are complete. Follow the server deadline or bounded backoff, with at most three attempts and 240 seconds of waiting. A deadline exceeding remaining budget, interrupted wait, TLS/network failure, or another error fails immediately. Do not request early or treat rate limiting or empty reports as success. Record each wait decision and actual duration in `.https-waits.json`.
 
-再次使用同一输出路径前，上一轮报告和日志会移入同目录下以报告名命名的 `.history` 目录，每轮使用独立子目录。新一轮中途失败时，不保留上一轮的成功报告在当前输出路径，避免混淆两次运行；历史工件仍可单独核对。
+Before reusing an output path, move the previous report and logs to a `.history` directory named for the report in the same parent, with a separate subdirectory per run. If a new run fails midway, the old success report does not remain at the current output path, avoiding confusion; historical artifacts remain independently inspectable.
 
-linux-runtime.json 记录实际事件与可执行文件 SHA-256；Xvfb／Qt Quick 软件渲染仅用于运行闭环，不能证明物理 GPU、中文候选窗口、真实读屏或完整桌面安装通过。
+linux-runtime.json records actual events and executable SHA-256. Xvfb/Qt Quick software rendering establishes only the runtime flow, not physical GPU, Chinese candidate windows, real screen readers, or complete desktop installation.
 
-## 下载交付与剩余门槛
+## Download delivery and remaining gates
 
-CI 生成 xdzip-linux-x86_64.tar.gz 并记录 SHA-256 和可执行文件哈希。tar.gz 保留执行权限，避免 Actions ZIP 解压丢失入口执行位；归档路径、UID/GID 和时间规范化，不写入私人目录。下载后解压并运行目录内 `./xdzip`，不能只搬走 bin/xdzip。原始 linux/ 不重复上传。
+CI generates xdzip-linux-x86_64.tar.gz and records SHA-256 and executable hashes. tar.gz preserves executable permissions, avoiding launcher permission loss from Actions ZIP extraction. Archive paths, UID/GID, and timestamps are normalized without private directories. After download, extract and run `./xdzip` inside the directory; do not move only bin/xdzip. The raw linux/ directory is not uploaded again.
 
-该节生成的 `build/package` 运行目录、tar.gz 和 .deb 是实验性开发交付，不自动安装或修改默认关联；正式 Release 的 Ubuntu tar.gz 和 .deb 由专用 Release 工作流生成，并按[发布协议](release-protocol.md)提供。平台范围以[支持政策](support-policy.md)为准，其他发行版与桌面、Wayland 等扩展另建 issue。已有桌面验收保留于 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)，后续变更按受影响项复验真实输入法／读屏及干净安装升级卸载，不因重建目录重复要求既有验收。`v0.1.0` 的历史组件审查见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)，目录运行通过不自动完成未来发行门槛。
+The `build/package` runtime directory, tar.gz, and .deb generated here are experimental development deliverables and do not automatically install or change default associations. Official Release Ubuntu tar.gz and .deb are generated by the dedicated Release workflow and supplied under the [release protocol](release-protocol.md). Platform scope follows the [support policy](support-policy.md); other distributions/desktops, Wayland, and related expansions need separate issues. Existing desktop acceptance remains in [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5). Reverify affected real IME/screen-reader and clean install/upgrade/uninstall checks for later changes; rebuilding a directory alone does not require repeating existing acceptance. Historical `v0.1.0` component review is in [#4](https://github.com/xiaodaozhi/xdzip/issues/4) and [#53](https://github.com/xiaodaozhi/xdzip/issues/53); successful directory execution does not automatically complete future release gates.
 
-Ubuntu .deb 的安装／升级／回退／卸载、运行锁与桌面 MIME 自动验证见[安装与关联](installers-associations.md)，运行容器的通过不替代真实桌面专项与发行许可复核。
+See [installation and associations](installers-associations.md) for Ubuntu .deb install/upgrade/rollback/uninstall, runtime locks, and desktop MIME automation. Passing the runtime container does not replace real desktop checks or release license review.

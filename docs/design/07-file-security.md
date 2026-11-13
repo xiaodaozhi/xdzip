@@ -1,100 +1,100 @@
-# xdzip：07 文件安全、权限和输出事务
+# xdzip: 07 File security, permissions, and output transactions
 
-## 1. 威胁模型
+## 1. Threat model
 
-归档、文件名、大小、CRC、压缩数据、扩展元数据、恢复日志和第三方扩展均不可信。主要威胁包括路径逃逸、覆盖重要文件、链接攻击、解压炸弹、解析器内存错误、错误名称映射、部分写入伪装成功、密码泄漏及扩展越权。
+Archives, filenames, sizes, CRCs, compressed data, extension metadata, recovery logs, and third-party extensions are untrusted. Major threats include path escape, overwriting important files, link attacks, archive bombs, parser memory errors, incorrect name mappings, partial writes masquerading as success, password leaks, and extension privilege abuse.
 
-可信边界是签名宿主、经过审查的平台文件层和用户授权。第三方代码不属于可信计算基。此设计不承诺抵御已控制同一用户账户或内核的攻击者；一个拥有同等权限并持续移动目录/读取内存的进程，不受普通文件权限防御。对不可信多人可写目标，默认要求改用用户私有子目录或拒绝安全覆盖模式。
+The trust boundary consists of the signed host, reviewed platform file layer, and user authorization. Third-party code is outside the trusted computing base. This design does not promise protection from an attacker who already controls the same user account or kernel; ordinary file permissions do not defend against an equally privileged process continuously moving directories or reading memory. For untrusted, multi-user-writable destinations, require a user-private subdirectory by default or reject safe-overwrite mode.
 
-## 2. 源和目标授权
+## 2. Source and destination authorization
 
-用户选择源/目标后由平台层打开并保存文件身份和句柄。授权绑定文件/目录对象，不只绑定展示字符串。SourceRef/TargetRef 仅在宿主内使用；扩展获得操作令牌。源只读，不自动请求全盘访问。读取其他分卷需先识别和获得用户授权，不能按归档提供的绝对路径寻找文件。
+After the user selects a source/destination, the platform layer opens it and retains file identity and handles. Authorization binds to file/directory objects, not just display strings. SourceRef/TargetRef remain within the host; extensions receive operation tokens. Sources are read-only and do not automatically request full-disk access. Other volumes must be identified and authorized by the user before reading; do not locate files using absolute paths supplied by an archive.
 
-压缩包首次打开和后续来源复核统一使用普通文件打开边界，在打开所得的同一句柄上检查对象类型，不依赖先查路径类型再阻塞打开。Unix 使用非阻塞分类打开，拒绝 FIFO、设备、目录等特殊对象；用户选择的源路径可以通过符号链接指向普通文件，但后续仍须核对来源身份和版本。该检查不是原子内容快照，也不保证普通文件 I/O 在固定时间内完成。
+Initial archive opening and subsequent source checks use the same regular-file opening boundary, checking object type on the handle actually opened rather than checking a path type before a potentially blocking open. Unix uses nonblocking classification opens and rejects FIFOs, devices, directories, and other special objects. A user-selected source path may follow a symbolic link to a regular file, but source identity and version must still be checked later. This check is not an atomic content snapshot and does not guarantee that regular-file I/O finishes within a fixed time.
 
-目标目录必须存在且有足够权限，或由宿主在已授权父目录内创建。工作目录使用安全随机名、排他创建和最小权限，不从归档名称生成可预测临时文件。所有输出和日志工作目录位于授权目标内，方便同卷提交；跨卷输出不能称为原子 rename。
+The destination directory must exist and have sufficient permissions, or be created by the host within an authorized parent. Working directories use secure random names, exclusive creation, and minimum permissions; temporary names are not predictably derived from archive names. Output and log working directories are inside the authorized destination to allow same-volume commits; cross-volume output cannot be described as atomic rename.
 
-私有输出检查覆盖目标根、父链、暂存目录和待替换文件，不以 POSIX mode 位替代平台 ACL 检查。macOS 要求当前有效用户所有权、组和其他用户无 mode 写权限，普通文件只有一个硬链接；允许已知的拒绝规则和外部只读权限，修改权限仅允许明确匹配当前有效用户 UID 的主体，组主体不视为当前用户。有效及仅继承的外部修改权限、未知权限和无法核实的 ACL 均拒绝。暂存文件在已核实的私有目录内排他创建，继承规则由目录 ACL 检查约束。检查不改写用户 ACL，原有只读共享权限可能继承到输出，不承诺对共享账户保密。
+Private-output checks cover the destination root, parent chain, staging directory, and file to be replaced. POSIX mode bits do not replace platform ACL checks. On macOS, require ownership by the current effective user, no group or other-user mode write permissions, and exactly one hard link for regular files. Known deny rules and external read-only permissions are allowed. Modification permissions may be granted only to a principal explicitly matching the current effective user UID; group principals are not treated as the current user. Reject effective or inheritance-only external modification permissions, unknown permissions, and unverifiable ACLs. Create staging files exclusively in verified private directories, with inheritance constrained by directory ACL checks. Checks do not rewrite user ACLs; existing read-only sharing may be inherited by output, so confidentiality from shared accounts is not promised.
 
-## 3. 路径处理流水线
+## 3. Path processing pipeline
 
-1. 保存原始路径与编码来源；去掉展示歧义不等于接受输出路径。
-2. 按格式规则解析分隔符，拒绝绝对路径、驱动器前缀、UNC、设备路径、NUL 和父级逃逸。
-3. 形成组件列表，拒绝空/非法组件和平台保留名；`.` 可按定义规范化，但不能先盲目删除 `..` 再宣称安全。
-4. 建立平台候选输出名，检查组件长度、总路径、大小写和 Unicode 文件系统等价性。
-5. 检查同一计划内部的重复路径、文件/目录冲突及现有磁盘冲突。
-6. 用户决策后，在真正打开/提交时重新验证对象身份和类型，执行句柄相对 I/O。
+1. Preserve raw paths and encoding origins; removing display ambiguity does not mean accepting an output path.
+2. Parse separators according to format rules and reject absolute paths, drive prefixes, UNC, device paths, NUL, and parent escapes.
+3. Form component lists and reject empty/invalid components and platform-reserved names. `.` may be normalized as specified, but `..` cannot be blindly removed and then declared safe.
+4. Form platform candidate output names and check component lengths, total paths, case, and Unicode filesystem equivalence.
+5. Check duplicate paths and file/directory conflicts within the plan and conflicts on disk.
+6. After user decisions, revalidate object identity and type at actual open/commit and perform handle-relative I/O.
 
-Windows 特别处理 `CON/NUL/COM1` 等保留名、尾随空格/点、冒号 ADS、`\\?\\`/设备前缀和大小写碰撞。POSIX 允许的反斜杠/冒号也不能用一条通用字符串规则假设 Windows 可写。长路径支持按平台能力显式启用并测试。
+Windows requires special handling of reserved names such as `CON/NUL/COM1`, trailing spaces/dots, colon ADS, `\\?\\`/device prefixes, and case collisions. A single generic string rule cannot assume that backslashes/colons allowed on POSIX are writable on Windows. Enable and test long paths explicitly according to platform capabilities.
 
-规范化只用于碰撞分析和展示，不随意改变原始名。`A.txt/a.txt`、NFC/NFD 等价名、重复 ZIP 记录等生成冲突组。默认等待决定或跳过，不能以“最后一个覆盖前一个”为默认。改名策略保留可追踪映射，扩展不能修改映射。
+Normalization is for collision analysis and display; do not arbitrarily change original names. `A.txt/a.txt`, NFC/NFD-equivalent names, and duplicate ZIP records form conflict groups. Default to waiting for a decision or skipping, not “the last one overwrites the previous one.” Rename policies retain traceable mappings; extensions cannot modify them.
 
-## 4. 防链接和竞态
+## 4. Link and race protection
 
-POSIX 以目录句柄和 `openat` 类调用逐组件遍历，拒绝跟随符号链接；Linux 可在可用时使用 `openat2` 的 beneath/no-symlink 约束，但仍需其他平台后端。Windows 使用句柄相对/可验证打开、reparse point 检查及 file ID；不把 `canonicalize + string starts_with` 当安全算法。
+On POSIX, traverse components using directory handles and `openat`-style calls, refusing to follow symbolic links. Linux may use `openat2` beneath/no-symlink constraints where available, but other platforms still need backends. Windows uses handle-relative/verifiable opens, reparse-point checks, and file IDs; `canonicalize + string starts_with` is not a security algorithm.
 
-POSIX ZIP 符号链接按 [安全解压契约](../engineering/m3-extraction.md) 的选中范围闭合图校验、普通输出完成后排他发布；不跟随链接写入。其他符号链接、硬链接、junction、设备、FIFO、socket 或 setuid/setgid 不恢复。已有目标若为链接/特殊对象则拒绝普通覆盖。所有暂存文件排他创建，句柄保留至提交；扫描与提交间的目标变化重新走冲突决策。
+POSIX ZIP symbolic links are validated as a closed graph within the selected scope under the [safe extraction contract](../engineering/m3-extraction.md), then exclusively published after regular outputs finish; writes do not follow links. Other symbolic links, hard links, junctions, devices, FIFOs, sockets, and setuid/setgid are not restored. Reject ordinary overwrite when an existing destination is a link or special object. Create all staging files exclusively and retain handles until commit; destination changes between scan and commit return to conflict resolution.
 
-仅目录句柄不能保证其路径永远不被有权限者移动。平台层需定义“授权对象下”的语义，检测目标/父节点身份变化；普通多人可写树不满足安全覆盖要求时拒绝或转到私有新子目录。不得声称 `O_NOFOLLOW` 能单独消除全部目录移动竞态。
+Directory handles alone cannot guarantee that an authorized party will never move their paths. The platform layer must define “under the authorized object” and detect destination/parent identity changes. Reject a normal multi-user-writable tree that cannot satisfy safe overwrite, or move to a new private subdirectory. Do not claim that `O_NOFOLLOW` alone eliminates all directory-movement races.
 
-平台安全实现须以原生对抗测试验收：在检查和打开间置换链接、目录、大小写别名与 reparse point；不能用内存 mock 代替全部验证。
+Platform security implementations require native adversarial acceptance tests: swap links, directories, case aliases, and reparse points between check and open. In-memory mocks cannot replace all verification.
 
-## 5. 按文件事务解压
+## 5. Per-file extraction transactions
 
 ```text
-计划与授权检查
-  -> 受控暂存文件
-  -> 解码并计量实际字节
-  -> 校验内容/认证/预期结构
-  -> 检查取消及目标冲突
-  -> 更新事务日志
-  -> 原子发布单文件
-  -> 记录已提交项
-  -> 清理暂存
+Plan and authorization checks
+  -> Controlled staging file
+  -> Decode and meter actual bytes
+  -> Verify content/authentication/expected structure
+  -> Check cancellation and destination conflicts
+  -> Update transaction log
+  -> Atomically publish one file
+  -> Record committed item
+  -> Clean staging
 ```
 
-后端写入受限 Sink，宿主掌握暂存句柄；CRC/认证失败、配额、磁盘满和取消都不把当前半文件发布。缺少格式校验的文件可按后端能力完成，但摘要不声称已做不存在的 CRC。模式为普通安全读写位，时间戳在提交后尽力恢复，失败作为警告。
+The backend writes to a constrained Sink; the host owns the staging handle. CRC/authentication failure, quota exhaustion, full disk, and cancellation never publish the current partial file. Files without format checks may complete according to backend capabilities, but the summary does not claim a nonexistent CRC was checked. Modes use ordinary safe read/write bits; timestamps are restored on a best-effort basis after commit, with failures reported as warnings.
 
-默认不覆盖：使用平台“目标不存在才发布”原语，不能先 exists 再普通 rename。用户允许覆盖时，重新检查目标是预期普通文件，使用同卷替换原语；不先删除旧文件。Windows 被其他程序打开或防病毒占用时可失败，提示重试，不转为非原子截断。平台不提供所需原语时返回能力/安全错误。
+Do not overwrite by default: use a platform “publish only if destination absent” primitive, not exists followed by ordinary rename. When the user permits overwrite, recheck that the destination is the expected regular file and use a same-volume replacement primitive; do not delete the old file first. On Windows, another program or antivirus may hold the file; report failure and offer retry, without switching to non-atomic truncation. If the platform lacks the required primitive, return a capability/security error.
 
-覆盖授权针对该映射路径，原子替换保证新内容整体出现，不天然提供“仅当目标 inode/内容从检查时完全不变才替换”的比较交换语义。普通平台原语无法排除检查后另一个程序的修改；对需要严格避免此类覆盖的场景，采用不覆盖/改名/新私有目录模式，或仅在平台确有可验证条件替换能力时开放。路径安全与并发编辑保护是两项不同保证。
+Overwrite authorization applies to the mapped path. Atomic replacement makes new content appear as a whole but does not inherently provide compare-and-swap semantics that replace only if the destination inode/content is unchanged since the check. Ordinary platform primitives cannot exclude another program changing it after the check. To strictly avoid this kind of overwrite, use no-overwrite/rename/new-private-directory modes, or enable conditional replacement only where the platform actually provides a verifiable primitive. Path safety and protection against concurrent editing are separate guarantees.
 
-目录和多个文件不是一次整体事务。失败/取消保留已提交项，并精确报告；清理不会删除这些项。首版不提供假想的一键回滚。未来“新目录整体发布”只能在不存在目标、同卷和支持目录原子 rename 的条件下作为独立模式。
+Directories and multiple files are not one whole transaction. Failure/cancellation retains committed items and reports them accurately; cleanup does not delete them. The first version does not offer imaginary one-click rollback. A future “publish a new directory as a whole” is a separate mode limited to an absent destination, same volume, and atomic directory rename support.
 
-## 6. 新建归档事务
+## 6. Archive creation transactions
 
-临时归档位于最终目标同目录，写完 footer/目录、flush、关闭及必要校验后，再执行目标不存在发布或用户批准替换。失败/取消保留原有归档；未发布临时归档删除或登记可恢复遗留。不能把“写完最后一个文件”当归档已经可用。
+The temporary archive is in the final destination directory. After writing the footer/directory, flushing, closing, and required verification, publish only if the destination is absent or perform a user-approved replacement. Failure/cancellation preserves the existing archive; unpublished temporary archives are deleted or recorded as recoverable leftovers. Finishing the last input file does not mean the archive is ready.
 
-发布可见原子性和断电持久性不同。启用 durable 模式时按平台能力同步文件与目录/事务记录；默认至少保证不发布半成品，不宣称所有磁盘/网络文件系统都能抵御断电。网络盘和不支持原语的文件系统明确降级或拒绝相应模式，并纳入测试。
+Atomic publication visibility differs from power-loss durability. Durable mode synchronizes files and directories/transaction records according to platform capabilities. The default guarantees at least that incomplete output is not published; it does not claim all disks/network filesystems withstand power loss. Network drives and filesystems lacking required primitives explicitly downgrade or reject the relevant mode and are included in testing.
 
-## 7. 配额和归档炸弹
+## 7. Quotas and archive bombs
 
-宿主在实际写入处计量，不相信归档声明。初始限额见 [常量](glossary.md)：单文件 8GiB、任务 20GiB、扫描条目 100 万、单字段 64KiB、格式组合 4 层。超限在当前文件发布前停止；用户提高限额需重新规划并检查剩余空间，不用一个对话框无限自动放行。
+The host meters actual writes and does not trust archive declarations. Initial limits are in [constants](glossary.md): 8 GiB per file, 20 GiB per task, one million scanned entries, 64 KiB per field, and four format layers. Stop before publishing the current file when a limit is exceeded. Raising a limit requires replanning and checking remaining space; one dialog cannot authorize unlimited automatic continuation.
 
-压缩比大于 1000:1 产生风险提示，但绝对实际字节、索引数量、解码内存和工作预算才是硬保护。零压缩长度、未知大小和格式欺骗不能绕过计量。高压缩比合法内容可以经用户明确提高相应策略处理。
+Compression ratios above 1000:1 produce a risk notice, but hard protection comes from absolute actual bytes, index count, decode memory, and work budgets. Zero compressed length, unknown sizes, and format deception cannot bypass metering. Legitimate high-ratio content may be processed after the user explicitly increases the relevant policy.
 
-固实/流式归档即使只选一个小项也可能解码大量前置内容，计量“解码字节”和“输出字节”分别显示。CPU/时间限制以取消和工作进程监督实施；原生阻塞解析无法合作取消时需要隔离，不能靠 UI 进度停止表示工作已停止。
+Solid/streaming archives may decode much preceding content even when only one small item is selected; meter and display “decoded bytes” separately from “output bytes.” CPU/time limits are enforced through cancellation and worker supervision. Native blocking parsing that cannot cooperate with cancellation needs isolation; a stopped UI progress indicator does not prove work has stopped.
 
-## 8. 预览和外部打开
+## 8. Preview and external opening
 
-预览仅显式触发：文本上限 1MiB，图像压缩内容上限 20MiB且解码像素上限 40MP，须在读取头后、分配像素前检查。图像解码库也处理不可信数据，应审计并考虑隔离。外部临时打开上限默认 100MiB；超出需明确操作，不自动全包展开。
+Preview is explicitly initiated only. Text is limited to 1 MiB; compressed image content is limited to 20 MiB and decoded pixels to 40 MP, checked after reading the header and before allocating pixels. Image decoders also process untrusted data and should be audited and considered for isolation. The default external temporary-open limit is 100 MiB; exceeding it requires an explicit action, and whole archives are not automatically unpacked.
 
-私有临时目录排他创建；文件不赋执行位，不跟随链接，不继承危险 xattr/ADS。用户确认后调用系统关联应用，不执行 shell。不渲染活动 HTML/SVG 脚本/宏。macOS 不主动剥离已有 quarantine，Windows 不主动清除已有下载标记；新的标记传播由平台验证，不声称同一规则适用于全部格式。
+Private temporary directories are created exclusively. Files are not given executable bits, links are not followed, and dangerous xattr/ADS are not inherited. After user confirmation, invoke the system-associated application, not a shell. Do not render active HTML/SVG scripts/macros. macOS does not proactively strip existing quarantine; Windows does not proactively clear existing download marks. New mark propagation requires platform verification, and the same rule is not claimed for every format.
 
-临时文件可能被外部应用占用，无法删除时登记期限并下次清理。只清理本应用创建且身份验证通过的工作目录，不用一个宽泛路径通配符递归删除。
+External applications may hold temporary files. If deletion fails, record a deadline and clean up later. Clean only working directories created by this application whose identities are verified; do not recursively delete using a broad path wildcard.
 
-## 9. 密码、内容和日志
+## 9. Passwords, content, and logs
 
-秘密限会话/任务阶段生存，默认不写磁盘；使用可零化缓冲，减少字符串复制，不通过普通事件/错误/trace 传递。操作系统输入法、GUI 内部缓存和后端复制可能留下残留，因此只承诺合理的最小化和清理策略。
+Secrets live only for the session/task phase, are not written to disk by default, use zeroizable buffers, minimize string copies, and do not pass through ordinary events/errors/traces. OS input methods, GUI internal caches, and backend copies may leave residue; promise only reasonable minimization and cleanup.
 
-日志默认含版本、匿名 ID、错误码、阶段、计数和耗时。不含文件内容、密码、完整路径、归档注释或任意插件原文。用户导出详细诊断时预览内容并本地保存，上传需另行显式行为；产品不自带默认遥测。
+Logs contain version, anonymous IDs, error codes, phases, counts, and durations by default. They contain no file contents, passwords, full paths, archive comments, or arbitrary plugin text. When a user exports detailed diagnostics, preview them and save locally; upload requires a separate explicit action. The product has no default telemetry.
 
-## 10. 异常终止与恢复
+## 10. Abnormal termination and recovery
 
-启动时发现工作目录，先验证目录所属、随机任务标识、文件身份、日志版本和授权可用性。日志视为不可信：路径仍要通过相同安全验证。状态无法确定时显示待处理遗留，不自动重新解压/覆盖。
+When finding a working directory at startup, first verify ownership, random task ID, file identities, log version, and authorization availability. Treat logs as untrusted; paths must pass the same security checks. If state cannot be determined, show pending leftovers and do not automatically re-extract/overwrite.
 
-`prepared` 但未发布文件可安全删除；发布已发生而日志终态未写入时检查目标身份/校验记录，标为“可能已完成，请确认”，不能简单删目标。旧文件替换后的恢复不承诺还原旧内容。清理权限不足产生可操作提示。
+A `prepared` but unpublished file may be safely deleted. If publication occurred but the terminal log state was not written, inspect destination identity/checksum records and mark it “Possibly completed; please confirm”; do not simply delete the destination. Recovery after replacing an old file does not promise to restore old content. Insufficient cleanup permissions produce an actionable notice.
 
-## 11. 安全测试门槛
+## 11. Security test gates
 
-路径逃逸、链接/reparse 竞态、目录别名碰撞、重复记录、ZIP64、未知大小、CRC/认证错误、磁盘满、无空间日志、目标变化、进程 kill、恢复日志损坏、插件超长帧和拒绝取消均为发布阻断用例。所有安全失败要验证目标外文件无变化和当前半文件未发布，而非仅断言返回了错误码。
+Path escape, link/reparse races, directory alias collisions, duplicate records, ZIP64, unknown sizes, CRC/authentication errors, full disk, insufficient space for logs, destination changes, process kill, corrupt recovery logs, oversized plugin frames, and refusal to cancel are release-blocking cases. Every security failure must verify that files outside the destination are unchanged and the current partial file was not published, rather than merely asserting an error code.

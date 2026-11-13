@@ -1,76 +1,76 @@
-# xdzip：09 性能设计与基准
+# xdzip: 09 Performance design and benchmarks
 
-## 1. 指标边界
+## 1. Metric boundaries
 
-性能目标是用户可感知的打开/查询延迟、真实吞吐、低空闲开销、可控任务峰值和完整分发体积。Rust 并不自动保证这些指标，Qt 也不能由一台 Linux 云环境推出所有 Mac 表现。
+Performance goals are user-perceived open/query latency, actual throughput, low idle overhead, bounded task peaks, and complete distribution size. Rust does not automatically guarantee these metrics, and one Linux cloud environment cannot establish performance on every Mac.
 
-现有证据：Qt 6.8.2 Linux 软件渲染原型启动准备标记 P50 158ms、峰值 PSS 中位数 81.9MiB、预热 Home/End 参考像素匹配 P50 15.3ms；只含 C++ 程序和 Rust 库的 0.80MiB 不含 Qt。该原型使用十万条固定数据及模拟任务。既不是生产基线，也不是冷缓存、真实解压或物理显示器延迟。
+Existing evidence: a Qt 6.8.2 Linux software-rendered prototype recorded startup-ready marker P50 of 158 ms, median peak PSS of 81.9 MiB, and warmed Home/End reference-pixel match P50 of 15.3 ms. The 0.80 MiB figure for only the C++ executable and Rust library excludes Qt. The prototype used 100,000 fixed records and simulated tasks. It is neither a production baseline nor cold-cache, real extraction, or physical-display latency evidence.
 
-## 2. 参考机和初始预算
+## 2. Reference machine and initial budgets
 
-参考配置目标：Apple Silicon Mac、16GiB RAM、本地 SSD、60Hz 显示器、系统默认字体、真实 GPU、Release 构建及必要 ad-hoc 完整性。实际采样须绑定机器型号、系统、后端与提交；现有自动测量方法见[自动验证契约](../engineering/wp12-automation.md#性能与资源证据)。以下为工程预算，不因已有某次宿主观测而成为所有支持设备的性能保证。
+Target reference configuration: Apple Silicon Mac, 16 GiB RAM, local SSD, 60 Hz display, system default font, real GPU, Release build, and required ad-hoc integrity signing. Actual samples must identify machine model, system, backend, and commit; see the [automated verification contract](../engineering/wp12-automation.md#性能与资源证据) for existing measurement methods. These are engineering budgets, not performance guarantees for all supported devices based on a single host observation.
 
-| 场景 | 初始目标 | 测量条件 |
+| Scenario | Initial target | Measurement conditions |
 |---|---|---|
-| 空窗口可交互 | 重复启动 P95 ≤ 500ms；首次文件缓存条件单独报告 | 不加载归档；启动到可交互帧，至少 30 次 |
-| 10 万条 ZIP 元数据准备 | P95 ≤ 1s | 本地 SSD、目录已在 OS 缓存；CRC 内容不在此阶段读取 |
-| 已建索引查询到可见 | P95 ≤ 80ms | 10 万条、中文/长名、搜索和排序；含桥接/绘制 |
-| 预热可见页跳转 | P95 ≤ 50ms | 真实 GPU，独立采集输入与帧时间 |
-| UI 调度 | GUI 连续阻塞 P95 ≤ 8ms | 大任务并行浏览；单次长阻塞另记录最大值 |
-| 空窗口内存 | 进程树物理内存目标 ≤ 150MiB | macOS 使用 footprint/可用等价指标；不冒称 PSS |
-| 10 万条仅浏览 | 目标 ≤ 256MiB | 全进程树，无解码字典/预览，至少 30s 稳定 |
-| 空闲 CPU | 单核计平均 ≤ 0.5% | 稳定 10s 后采样 60s，无任务/动效/诊断 |
-| 取消请求反馈 | P95 ≤ 50ms | 不含已停止判断 |
-| 合作流式任务停止 | P95 ≤ 250ms | 本地 I/O、支持块级取消；工作进程上限另见 08 |
-| 归档吞吐 | GUI 产品相对同核心无 UI 驱动损失 ≤ 10% | 同输入、算法、线程、级别、缓存和输出设备 |
-| Mac 单架构分发 | 压缩下载目标 ≤ 100MiB，安装 ≤ 250MiB | 包括 Qt/QML、Rust、平台插件、声明和资源 |
+| Empty window interactive | Repeated-start P95 ≤ 500 ms; report first-file-cache conditions separately | No archive loaded; startup to interactive frame, at least 30 runs |
+| Prepare 100,000 ZIP metadata entries | P95 ≤ 1 s | Local SSD, directory already in OS cache; CRC content not read at this stage |
+| Indexed query to visible | P95 ≤ 80 ms | 100,000 entries, Chinese/long names, search and sort; includes bridge/rendering |
+| Warm visible-page jump | P95 ≤ 50 ms | Real GPU, separately capture input and frame times |
+| UI scheduling | GUI continuous blocking P95 ≤ 8 ms | Browse while a large task runs; separately record maximum single long block |
+| Empty-window memory | Process-tree physical memory target ≤ 150 MiB | macOS footprint or available equivalent; do not call it PSS |
+| Browse 100,000 entries only | Target ≤ 256 MiB | Entire process tree, no decode dictionary/preview, stable for at least 30 s |
+| Idle CPU | Average ≤ 0.5% of one core | Sample 60 s after 10 s stabilization, without tasks/motion/diagnostics |
+| Cancellation request feedback | P95 ≤ 50 ms | Excludes determination that work has stopped |
+| Cooperative streaming task stop | P95 ≤ 250 ms | Local I/O, block-level cancellation supported; worker limit separately in 08 |
+| Archive throughput | GUI product loses ≤ 10% relative to the same core driven without UI | Same input, algorithm, threads, level, cache, and output device |
+| Single-architecture Mac distribution | Compressed download target ≤ 100 MiB, installed ≤ 250 MiB | Includes Qt/QML, Rust, platform plugins, declarations, and resources |
 
-首次启动/系统缓存变化、网络文件系统、巨大目录和高字典模式不套用上述温缓存数字。Windows/Linux 建立各自基线和预算；不同平台物理内存指标不直接做一个排名。
+Do not apply these warm-cache figures to first launch/system-cache changes, network filesystems, huge directories, or high-dictionary modes. Windows/Linux establish their own baselines and budgets; physical-memory metrics across platforms are not ranked directly.
 
-## 3. 内存模型
+## 3. Memory model
 
-`总占用 = Qt/字体/GPU + 热元数据 + 查询索引 + 页缓存 + 活跃任务(字典+流缓冲) + 工作进程 + 暂存管理`。
+`Total = Qt/fonts/GPU + hot metadata + query index + page cache + active tasks (dictionaries + stream buffers) + workers + staging management`.
 
-优化优先级：不要创建十万个 GUI 对象；不要重复复制路径；不要一次传所有条目；限制 query snapshot 和结果页；减少后端内部线程/字典；最后才考虑不必要的 unsafe 或自定义 allocator。
+Optimization priorities: do not create 100,000 GUI objects; avoid redundant path copies; do not transfer every entry at once; bound query snapshots and result pages; reduce backend internal threads/dictionaries; only then consider unnecessary unsafe code or a custom allocator.
 
-元数据使用紧凑记录和字符串池/共享缓冲；原始路径和展示路径按需分开。索引热数据预算默认 128MiB，64MiB 时准备转入磁盘后端；迁移本身有峰值预算，不先复制完整索引两份。大型搜索/排序外部化或给出明确资源错误，不能 OOM 后才提示。
+Metadata uses compact records and string pools/shared buffers. Raw and display paths are separated on demand. The default hot-index budget is 128 MiB; prepare to migrate to a disk backend at 64 MiB. Migration has its own peak budget and does not first duplicate the entire index. Externalize large searches/sorts or return explicit resource errors rather than waiting for OOM.
 
-普通单文件 ZIP/ZIP64 当前使用[百万条流式索引](../engineering/large-index.md)，64 MiB 热元数据或十万条阈值后转盘；Qt 大查询最多缓存 1024 行，传输批次默认 128。其他格式和分卷路径仍限十万条。最多 1024 行的查询按批收集后一次提交，大查询保留完整逻辑行数并按需获取。每个格式和查询的资源准入独立执行，不能只放大常量。查询最多保留当前快照及已被计划/任务引用的必要旧快照；用户连续搜索有取消和回收。失败结果写有界分页结果存储，不把所有错误字符串堆进 UI。
+Regular single-file ZIP/ZIP64 currently uses a [million-entry streaming index](../engineering/large-index.md), switching to disk after 64 MiB hot metadata or 100,000 entries. Qt caches at most 1,024 rows for large queries, with a default transfer batch of 128. Other formats and split-volume paths remain limited to 100,000 entries. Queries of at most 1,024 rows are collected in batches and committed once; large queries retain their complete logical row count and fetch on demand. Resource admission is separate for each format and query; merely enlarging constants is insufficient. Retain at most the current query snapshot plus old snapshots needed by plans/tasks; repeated searches support cancellation and reclamation. Failure results use bounded paged result storage rather than accumulating every error string in the UI.
 
-## 4. 吞吐和 I/O
+## 4. Throughput and I/O
 
-先选高质量成熟 codec，避免为“快”自写 ZIP/Deflate。流缓冲初始 256KiB，测试 64/256/1024KiB；复用缓冲但不能把含秘密缓冲放回普通池。文件读取、解码和输出校验可流水线，但 credit/队列有上限。
+Choose high-quality mature codecs first; do not write ZIP/Deflate from scratch merely to be “fast.” Initial stream buffers are 256 KiB; test 64/256/1024 KiB. Reuse buffers but do not return secret-containing buffers to ordinary pools. File reads, decoding, and output verification may be pipelined, with bounded credits/queues.
 
-ZIP 按独立项并行需要评估源 seek 和目标文件数；TAR/固实 7z 通常顺序解码。小文件工作负载瓶颈可能是创建/同步/日志，不是压缩算法。durable 模式、磁盘缓存及安全校验成本在报告中单独标注，不为了好看关闭默认安全。
+Parallel independent ZIP entries require evaluation of source seeks and destination file counts; TAR/solid 7z generally decode sequentially. Small-file workloads may bottleneck on creation, synchronization, or logging rather than compression algorithms. Report durable mode, disk cache, and security-check costs separately; do not disable default safety to improve numbers.
 
-后端内部线程参与全局预算。创建模式的“更小”可能更慢/高内存，UI 显示提示。第三方 broker 复制的额外成本先实测；只有受控共享内存的所有权、边界和复用证明齐全后，才替换普通块传输。
+Backend internal threads participate in the global budget. “Smaller” creation mode may be slower/use more memory; the UI warns users. Measure the additional cost of third-party broker copies first. Replace ordinary block transfer only after ownership, boundaries, and reuse of controlled shared memory are proven.
 
-## 5. 基准工作负载
+## 5. Benchmark workloads
 
-| 编号 | 工作负载 | 观察点 |
+| ID | Workload | Observe |
 |---|---|---|
-| B01 | 空窗口、首次/重复启动 | 可交互帧、字体、加载模块、峰值 |
-| B02 | 10 万与 100 万目录记录，CJK/长名/重复名 | 扫描、索引转盘、查询、排序、峰值 |
-| B03 | 一个 4GiB 低可压缩文件 | 流吞吐、缓冲、取消；明确生成和缓存条件 |
-| B04 | 10 万个小文件与深目录 | 路径预检、创建成本、日志和清理 |
-| B05 | 高可压缩数据、恶意声明大小 | 配额、CPU、实际输出限制 |
-| B06 | TAR.GZ 选尾部小项、固实格式 | 顺序解码放大、进度、取消 |
-| B07 | 两任务并行浏览/搜索 | UI 延迟、公平、CPU/内存额度 |
-| B08 | 空闲、窗口失焦、主题切换 | CPU 定时器、GPU、内存留存 |
-| B09 | 工作进程/安装包 | 全进程树、IPC、完整部署体积 |
+| B01 | Empty window, first/repeated starts | Interactive frame, fonts, loaded modules, peaks |
+| B02 | 100,000 and one million directory records, CJK/long/duplicate names | Scan, index migration to disk, query, sort, peaks |
+| B03 | One 4 GiB low-compressibility file | Stream throughput, buffers, cancellation; specify generation and cache conditions |
+| B04 | 100,000 small files and deep directories | Path preflight, creation cost, logs, cleanup |
+| B05 | Highly compressible data, malicious declared sizes | Quotas, CPU, actual output limits |
+| B06 | Small tail entry in TAR.GZ, solid formats | Sequential decode amplification, progress, cancellation |
+| B07 | Two tasks with concurrent browsing/search | UI latency, fairness, CPU/memory budgets |
+| B08 | Idle, unfocused window, theme switching | CPU timers, GPU, retained memory |
+| B09 | Workers/installer | Entire process tree, IPC, full deployed size |
 
-真实吞吐测试的配额随预先声明工作负载配置调整，不通过运行时偷偷无限放行。基准输入带生成脚本、尺寸、SHA-256、命名分布和许可证；不可提交真实用户内容。
+Configure quotas for throughput tests according to the declared workload in advance; do not secretly permit unlimited runtime output. Benchmark inputs include generation scripts, sizes, SHA-256, naming distribution, and licenses. Do not commit real user content.
 
-## 6. 测量方法
+## 6. Measurement methods
 
-release、符号独立保存；记录提交、工具链、Qt 模块、features、签名状态、机器、OS、电源模式、字体、显示 DPI、GPU 和缓存条件。冷文件缓存和重复进程启动分别命名，不在所有平台强行清系统缓存。
+Use Release builds and save symbols separately. Record commit, toolchain, Qt modules, features, signing status, machine, OS, power mode, font, display DPI, GPU, and cache conditions. Name cold-file-cache and repeated-process-start conditions separately; do not forcibly clear system caches on every platform.
 
-macOS 使用 Instruments/系统内存与帧工具，Windows 使用 ETW/性能分析工具，Linux 使用 perf、PSS/USS 和呈现追踪。时间来自单调时钟；输入、命令接受、后端、模型应用和帧呈现分别打点。打印“ui_ready”只算语义准备，不算首帧。
+Use Instruments/system memory and frame tools on macOS, ETW/performance tools on Windows, and perf, PSS/USS, and presentation tracing on Linux. Use a monotonic clock. Instrument input, command acceptance, backend, model application, and frame presentation separately. Printing `ui_ready` establishes semantic readiness only, not a first frame.
 
-至少 30 次启动/交互样本报告中位数、P95、最大值与样本数。吞吐长任务至少 5 次，报告分布，不假装五样本尾延迟稳定。参考 CLI 按同算法/级别/线程比较；不同库比较用作机会发现，不直接归因 UI。
+Report median, P95, maximum, and sample count for at least 30 startup/interaction samples. Run long throughput tasks at least five times and report the distribution; do not pretend five-sample tail latency is stable. Compare a reference CLI using the same algorithm/level/thread count; comparisons across libraries identify opportunities and are not directly attributed to the UI.
 
-## 7. 回归处理
+## 7. Regression handling
 
-稳定专用机以 10% 延迟/内存、5% 吞吐变化作为复测触发，不在共享云 runner 上以单次波动阻断所有 PR。一次复现后定位 CPU/heap/I/O/帧/字典来源，验证同条件前后差异。架构和安全优化优先；禁止用减校验、缩减测试数据或隐藏进程降低指标。
+On stable dedicated machines, 10% latency/memory changes and 5% throughput changes trigger retesting. Do not block every PR based on one fluctuation on a shared cloud runner. After reproduction, locate the CPU/heap/I/O/frame/dictionary source and verify before/after under identical conditions. Prioritize architectural and security optimization; do not reduce checks, shrink test data, or hide processes to improve metrics.
 
-常规 CI 跑功能和粗资源上限；每夜/发布前参考机跑全套。优化 PR 附原始数据和适用范围，说明是否改变算法、压缩结果或磁盘持久性。
+Routine CI runs functional checks and coarse resource ceilings; reference machines run the full suite nightly/before release. Optimization PRs include raw data and applicability, stating whether algorithms, compression results, or disk durability changed.

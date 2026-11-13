@@ -1,24 +1,24 @@
-# 界面设计与修正流程
+# UI design and correction workflow
 
-本流程在界面创作前执行，不等到实现完成后补写。规范入口为 [界面设计规范](design-standard.md)。
+Perform this workflow before creating UI, not as documentation after implementation. The specification entry is the [UI design standard](design-standard.md).
 
-1. **确定目标与环境。** 列出功能、真实数据和缺失能力，明确平台、逻辑窗口、辅助字号、菜单及独立窗口的尺寸范围；记录系统缩放、审阅倍率与 DPR；使用 HTML 原型时再记录浏览器页面缩放。
-2. **先确定参数。** 在权威 JSON 中定义组件尺寸、字号、槽位、内边距、对齐边和状态。明确此次变更的密度边界，例如主窗口 0.8、菜单 1、独立操作窗口 1。新增硬编码必须有对应规范值或明确说明。
-3. **冻结独立依据。** 保存原图哈希和量测坐标。尺寸政策可以显式修订；原图和历史证据不得为了让检查通过而替换。维护可追溯的修订记录，验收脚本不能只把运行参数与自身比较。
-4. **先检查组合关系。** 设计按钮、表格、树和菜单时同步检查字号比例、行高比例、图标比例和交互状态；至少同时展示一个下拉菜单、一个右键菜单和一个子菜单。同一操作窗分别从主窗口和独立入口打开，核验最终窗口宽度、正文、footer 和控件尺寸相同。使用 HTML 原型时，应先对照原稿冻结参数，再作为 Qt 的实现依据。
-5. **统一生成与实现。** 由规范生成 HTML 展示契约和共享参数、Qt Theme；Qt 使用逻辑布局和真实字体尺寸。仅替换主题颜色或素材不能代替尺寸对照。
-6. **测量并修正。** 同一逻辑宽度逐区核验标题栏、标签、工具栏、面包屑、目录树、表头、文件行、预览、底栏与菜单。检查坐标、字体、图标可见范围、基线、内边距和 hover／focus；修正后重新采集对应证据。
-7. **验证缩放与行为。** 检查 Qt 高 DPR、窄窗口和辅助字号；按需复核 HTML 时另检查浏览器 100%／125% 与 DPR 1／1.25／2。真实点击展开／折叠，键盘进入／退出子菜单，验证禁用项、选择状态、边缘位置和焦点归还；排除 Qt 回收池中未显示的对象。
-8. **交付与准入。** 更新受影响的规范、功能映射、生成文件、自动检查和差异记录。提交、推送前完成本地相关验证；三平台完整检查按需触发，尚未验证的原生装饰和未实现能力保留为明确条目，不补画假状态。
+1. **Define goals and environment.** List functionality, real data and missing capabilities. Specify platform and dimension ranges for logical windows, accessibility font sizes, menus and standalone windows. Record system scaling, review scale and DPR; also record browser page zoom when using an HTML prototype.
+2. **Define parameters first.** Define component dimensions, font sizes, slots, padding, alignment edges and states in authoritative JSON. State the density boundaries of the change, such as main window 0.8, menu 1 and standalone operation window 1. New hardcoding needs a corresponding specification value or explicit explanation.
+3. **Freeze independent references.** Save original image hashes and measurement coordinates. Size policies may be explicitly revised, but original images and historical evidence must not be replaced to make checks pass. Maintain traceable revision records; acceptance scripts must not merely compare runtime parameters to themselves.
+4. **Check composition first.** When designing buttons, tables, trees and menus, simultaneously check font, row-height and icon proportions and interaction states; show at least one dropdown, context menu and submenu together. Open the same operation window from the main window and standalone entry separately and verify equal final window width, body, footer and control dimensions. For HTML prototypes, freeze parameters against the original before using them as the Qt implementation basis.
+5. **Generate and implement consistently.** Generate HTML display contracts and shared parameters and Qt Theme from specifications. Qt uses logical layouts and actual font sizes. Replacing theme colors or assets alone does not replace dimensional comparison.
+6. **Measure and correct.** At the same logical width, check title bar, tabs, toolbar, breadcrumbs, directory tree, table headers, file rows, preview, bottom bar and menus by region. Check coordinates, fonts, visible icon bounds, baselines, padding and hover/focus; recollect affected evidence after correction.
+7. **Verify scaling and behavior.** Check Qt high DPR, narrow windows and accessibility font sizes. For optional HTML review also check browser 100%/125% zoom and DPR 1/1.25/2. Actually click to expand/collapse and use the keyboard to enter/leave submenus; verify disabled items, selection, edge positions and focus return. Exclude objects not displayed in Qt's recycle pool.
+8. **Deliver and admit.** Update affected specifications, feature mappings, generated files, automated checks and difference records. Complete relevant local verification before commit and push. Run complete three-platform checks as needed; leave unverified native decorations and unimplemented capabilities explicit rather than drawing fake states.
 
-界面变更记录实际采用的规范、参数与倍率、主窗口和菜单量测、已验证交互及剩余差异，无须填写固定人工问卷。
+Record the specifications, parameters and scales actually used, main-window and menu measurements, verified interactions and remaining differences. A fixed manual questionnaire is not required.
 
-## 窗口登记与强制检查
+## Window registration and mandatory checks
 
-所有独立 QML 窗口及内联 Window 登记在 [窗口清单](../../specs/visual/window-registry.json)，包括抽象基类、产品操作窗、独立属性窗口和开发预览。新增窗口未登记、继承改变、尺寸偏离冻结表达式、确认窗口自行覆盖字号或高度、可滚动正文缺失均使 `check-window-contracts.py --self-test` 失败。检查从源码发现窗口，不再依赖人工维护的固定文件列表。系统原生选择器的例外在清单中说明，不能借例外绕过应用窗口登记。
+Register every standalone QML window and inline Window in the [window registry](../../specs/visual/window-registry.json), including abstract base classes, product operation windows, standalone properties windows and development previews. Unregistered new windows, changed inheritance, dimensions differing from frozen expressions, confirmation windows overriding font size or height, and missing scrollable bodies all fail `check-window-contracts.py --self-test`. The check discovers windows from source rather than relying on a manually maintained fixed list. Exceptions for system-native pickers are described in the registry and cannot bypass registration of application windows.
 
-退出和重启确认统一使用 OperationConfirmationWindow。参数来自 layout-scale.json 的 operation.confirmation，不使用旧默认 612 宽或按字号跳变的固定高度。短文案按内容自适应，长正文或小屏幕滚动，footer 固定可达。所有 footer 按钮仍由共享组件决定外观；长翻译允许按钮内换行，动作保持一行。
+Exit and restart confirmation use OperationConfirmationWindow. Parameters come from operation.confirmation in layout-scale.json, not the old default 612 width or fixed heights that jump with font size. Short copy sizes to content; long bodies or small screens scroll, with the footer always reachable. Shared components still determine all footer-button appearance. Long translations may wrap within a button while actions remain in one row.
 
-静态登记检查接入日常 CI，Qt 运行时几何及交互检查在本地或按需三平台 Qt 工作流执行。Qt 检查覆盖退出、停止、重启，中英文，浅深色，100/125/150% 字号，以及小屏幕正文滚动；按需 Qt 工作流覆盖 DPR 1/1.25/2。HTML 实际布局可按需在本地独立量测，不作为日常 CI 门槛，也不能冒充未执行的 Qt 或原生视觉检查。静态检查包含历史大尺寸、遗漏窗口、固定高度和丢失滚动的破坏性变体验证。
+Static registry checks run in daily CI; Qt runtime geometry and interaction checks run locally or in the on-demand three-platform Qt workflow. Qt checks cover exit, stop and restart, Chinese/English, light/dark, 100/125/150% font sizes and small-screen body scrolling. The on-demand workflow covers DPR 1/1.25/2. Actual HTML layout may be measured separately locally as needed, but is not a daily CI gate and cannot stand in for unperformed Qt or native visual checks. Static checks include mutation verification for historical oversized dimensions, omitted windows, fixed heights and missing scrolling.
 
-窗口变更分别记录功能与实际执行的视觉检查，具备条件时由执行者采集截图及尺寸。不能因为真实退出任务已通过，就写成退出窗口样式已验收；不能因为源码清单完整，就写成全部平台视觉已通过。原生菜单、系统装饰和未具备的设备继续保留明确限制，不要求维护者重复填写固定人工验收表。
+Record function and actual visual checks separately for window changes, collecting screenshots and dimensions where possible. A passing real exit task does not mean the exit window's appearance has been accepted; a complete source registry does not mean visuals passed on all platforms. Retain explicit limitations for native menus, system decorations and unavailable devices without requiring maintainers to repeatedly fill a fixed manual acceptance form.

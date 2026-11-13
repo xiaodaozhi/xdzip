@@ -1,12 +1,12 @@
-# 本地 macOS 开发 DMG
+# Local macOS development DMG
 
-专用 Release 工作流允许原生部署、必要的 ad-hoc 签名、app.zip 与 DMG 打包及上传，按需 Qt 工作流的 macOS 作业保持 SDK 验证策略。同一份已部署、签名并验证的 .app 用于两个发布包，ZIP 解包后另作重定位启动核验，详见[发布协议](release-protocol.md)。
+The dedicated Release workflow permits native deployment, necessary ad-hoc signing, app.zip and DMG packaging, and uploads. The on-demand Qt workflow's macOS job retains SDK verification. One deployed, signed, verified .app is used for both release packages; the unzipped ZIP also receives relocated startup verification. See the [release protocol](release-protocol.md).
 
-本地开发 DMG 是允许的开发交付方式；按需 Qt 工作流验证 Apple Silicon 原生构建／启动，不打包、签名或上传 Mac 应用。本地脚本不安装应用、不改默认关联、不上传文件，不读取发行凭据。
+A local development DMG is an allowed development deliverable. The on-demand Qt workflow verifies native Apple Silicon build/startup without packaging, signing, or uploading a Mac app. Local scripts do not install the application, change default associations, upload files, or read release credentials.
 
-## 制作与核验
+## Build and verify
 
-环境预检和阶段参数以[开发构建指南](developer-build.md)为准。先准备打包工具，从干净提交构建独立 Release 主应用，再依次打包和验证：
+Environment preflight and stage options follow the [developer build guide](developer-build.md). Prepare packaging tools, build a separate Release primary app from a clean commit, then package and verify:
 
 ```sh
 python3 scripts/desktop.py prepare --packaging
@@ -17,82 +17,78 @@ python3 scripts/desktop.py package --build-dir build/desktop-dmg --output-dir bu
 python3 scripts/desktop.py verify --build-dir build/desktop-dmg --output-dir build/package-macos --kind all
 ```
 
-各阶段不隐式补跑前序阶段。Qt SDK 默认位于 `build/toolchain/Qt/6.8.2/macos`，其他位置在各命令传入 `--qt-prefix`。普通开发／测试构建默认 `None`；上面的主应用显式选择 `Alternate`，不改变用户默认关联。macOS 本地 package 仅支持 `all`；按需 Qt 工作流不运行此打包阶段，也不上传 Mac 应用。专用 Release 例外见发布协议。
+Stages do not implicitly rerun predecessors. The default Qt SDK is `build/toolchain/Qt/6.8.2/macos`; pass `--qt-prefix` to each command for another location. Ordinary development/test builds default to `None`; the primary app above explicitly selects `Alternate` without changing user defaults. Local macOS package supports only `all`. The on-demand Qt workflow does not run packaging or upload Mac apps; see the release protocol for the dedicated Release exception.
 
-共用 package 在运行 macdeployqt 前检查原生 arm64、系统 SDK、部署工具、Rust PATH／锁定元数据、Python 校验依赖、Qt 许可与 schema 材料。build、test 允许未提交源码；package 要求干净提交且实际 CLI 身份一致，不能借已有编译缓存绕过。系统编译器、SDK、lipo、codesign 和 hdiutil 由系统工具链提供，不由准备阶段安装。
+Before macdeployqt, shared package checks native arm64, system SDK, deployment tools, Rust PATH/pinned metadata, Python validation dependencies, and Qt license/schema materials. build and test permit uncommitted source; package requires a clean commit and matching actual CLI identity and cannot bypass these with compilation caches. System compiler, SDK, lipo, codesign, and hdiutil are supplied by the system toolchain, not installed by preparation.
 
-图片工作进程同样由 macdeployqt 重定位。Qt 6.8 的默认平台插件选择只包含 Cocoa，打包脚本须在扫描应用库之前显式复制 offscreen 插件，使其 Qt framework 依赖一起处理；缺少插件或工作进程时拒绝打包。完整性签名与导入审计之后，清除 Qt／QML／DYLD 搜索覆盖，使用应用内真实图片工作进程核对格式集合及自有 PNG 解码，回执为 `image-preview-deployed.json`。脚本单元检查不等同于实际部署包验收。
+macdeployqt also relocates the image worker. Qt 6.8's default platform-plugin selection includes only Cocoa, so the packaging script explicitly copies offscreen before scanning app libraries to process its Qt framework dependencies. Missing plugins or workers refuse packaging. After integrity signing and import auditing, clear Qt/QML/DYLD search overrides and verify the actual bundled image worker's format set and an owned PNG decode; the receipt is `image-preview-deployed.json`. Script unit checks do not establish deployed-package acceptance.
 
-English: macdeployqt relocates the private image worker. Because Qt 6.8 selects only Cocoa by default, staging explicitly includes offscreen before the bundle library scan. Missing inputs refuse packaging. After integrity signing and import auditing, the actual bundled worker verifies its formats and an owned PNG without SDK search overrides. Script unit checks do not establish deployed-package acceptance.
+Underlying [build-macos-dmg.py](../../scripts/build-macos-dmg.py) and [verify-macos-dmg.py](../../scripts/verify-macos-dmg.py) retain image and native-verification details. Use their `--help` for troubleshooting rather than maintaining separate routine steps. Underlying output paths must be new and inside build/. Every document type in the DMG input must declare `Viewer/Alternate`; otherwise rebuild rather than rewriting plist or signatures on the original bundle. macdeployqt scans actual QML and deploys Qt frameworks, plugins, and QML. Add Qt system-control translations, project notices, Rust upstream notices, font licenses, source SBOM, and pinned Qt license materials. Retain framework-internal symlinks and reject links escaping the app. Remove developer-machine absolute RPATHs and recursively check that all native imports resolve only to the app or system. Build identity must be neither dirty nor unknown and must match the current clean commit to bind actual notices.
 
-底层 [build-macos-dmg.py](../../scripts/build-macos-dmg.py)和 [verify-macos-dmg.py](../../scripts/verify-macos-dmg.py)继续负责镜像与原生验证细节；需要故障定位时使用各自 `--help`，不另外维护日常步骤。底层输出路径必须位于 build/ 且尚不存在。DMG 输入的文档类型必须全部声明 `Viewer/Alternate`，否则要求重新构建，不在原包上改写 plist 或签名。macdeployqt 扫描实际 QML，部署 Qt frameworks、插件和 QML；补充 Qt 系统控件翻译、项目通知、Rust 上游通知、字体许可、源码 SBOM 和固定 Qt 许可材料。保留 framework 内部符号链接，拒绝逃逸应用目录的链接；移除开发机绝对 RPATH，递归检查全部原生导入只解析到应用或系统。构建身份不能为 dirty 或 unknown，必须匹配当前干净提交以绑定实际通知。
+Qt optional QML LocalStorage brings in QtSql, so deployment also copies database drivers. The project has no server-database capability; remove drivers other than built-in SQLite to avoid PostgreSQL, ODBC, Mimer, and other SDK-external clients in the image. Record removals in the receipt and do not hide unresolved imports as passes.
 
-Qt 可选 QML LocalStorage 引入 QtSql 后，部署工具会顺带复制数据库驱动。本项目不提供服务器数据库能力，因此移除除内置 SQLite 外的驱动，避免 PostgreSQL、ODBC、Mimer 等 SDK 外部客户端依赖进入镜像；移除列表写入回执，不把 unresolved 导入隐藏为通过。
+## Architecture and style trimming
 
-## 架构与样式精简
+Development DMGs deliver Apple Silicon `arm64` only. Main-program CMake architecture settings do not constrain Qt SDK files copied by macdeployqt, so recursively inspect every Mach-O in the app, including frameworks, dynamic libraries, plugins, and QML native plugins. Trim dual-architecture files to `arm64` only in the newly created packaging copy. Missing `arm64`, unrecognized architectures, or remaining extra slices fail packaging; main-executable architecture does not replace nested checks. Trim before RPATH rewriting and recursive ad-hoc signing.
 
-开发 DMG 只交付 Apple Silicon `arm64`。主程序的 CMake 架构设置不能约束 macdeployqt 复制的 Qt SDK 文件，因此部署后必须递归检查应用中的全部 Mach-O，包括 framework、动态库、插件及 QML 原生插件。双架构文件仅在新建的打包副本中裁剪为 `arm64`；缺少 `arm64`、无法识别的架构或裁剪后仍含其他分片均使打包失败，不以主程序架构代替嵌套检查。裁剪必须先于 RPATH 重写与递归 ad-hoc 签名。
+The product uses Qt Quick Controls `Basic`. Deployment removes only explicitly listed non-Basic styles and dedicated imports/implementation plugins, retaining Basic, shared controls, Templates, and actual QML dependencies. Do not shrink by deleting unknown modules. Unexpected style layouts, missing retained dependencies, or unused-style remnants fail auditing. Product-style or Qt SDK changes require synchronized trimming rules and tests. Size reduction does not omit Qt licensing, corresponding-source materials, system translations, or necessary runtime plugins.
 
-产品固定使用 Qt Quick Controls 的 `Basic` 样式。部署只移除明确列出的非 Basic 样式及其专用导入／实现插件，保留 Basic、共享控件、Templates 和实际 QML 依赖，不通过删除未知模块缩减体积。非预期的样式布局、缺失的保留依赖或残留的未使用样式应使审计失败；更换产品样式或 Qt SDK 时须同步更新裁剪规则和测试。Qt 许可、对应源码材料、系统翻译与必要运行插件不因体积精简而省略。
+Optimize only the newly staged app under bounded `build/`, not the input primary app, Qt SDK, or source. Receipts retain architecture/style checks, trimmed binaries and removal lists, and actual logical app bytes before/after optimization with framework, plugin, QML, and other categories. Bytes are counted from actual file content without double-counting symlinks; they are not Finder disk usage or UDZO image size. Final DMG size is recorded separately. Version-specific comparisons, verification conclusions, and remaining work go in issues; raw measurements remain local artifacts.
 
-优化仅作用于受限 `build/` 下新建的暂存应用，不修改输入主应用、Qt SDK 或源码。回执保留架构与样式检查结果、裁剪的二进制与移除清单，以及部署后优化前、优化后的应用逻辑字节数和 framework、插件、QML 等分类大小。该数字按实际文件内容统计，符号链接不重复计入，不等于 Finder 磁盘占用或 UDZO 镜像体积；最终 DMG 大小另行记录。具体版本的前后对比、验证结论和剩余项登记在 issue，原始测量只保留为本地工件。
+`scripts/test-macos-bundle.py` uses small project-owned fixtures in cross-platform CI to verify architecture recognition, copy-only operation, symlink boundaries, style retention/removal, and failures without macOS deployment tools. It does not replace final package verification. DMG checks must recursively confirm only `arm64` in all native files and contract-compliant styles after copying from the mounted image, and execute SDK search isolation and Cocoa/Metal flows below.
 
-`scripts/test-macos-bundle.py` 使用自有小型夹具在跨平台 CI 验证架构识别、只操作副本、符号链接边界、样式保留／移除及失败行为，不依赖 macOS 部署工具。它不能替代最终包核验：DMG 验证还须对挂载后复制的应用再次递归确认所有原生文件仅含 `arm64`、样式集合符合契约，并执行下述 SDK 搜索路径隔离及 Cocoa／Metal 流程。
+## Image and runtime verification
 
-## 镜像与运行核验
+The UDZO-compressed image contains xdzip.app, an Applications link, and installation instructions; run hdiutil verify. Quit old versions normally before dragging into Applications. There is no updater or task migration during installation in this flow. Settings and recent items remain in user directories and are not automatically deleted when removing the app.
 
-镜像提供 xdzip.app、Applications 链接和安装说明，使用 UDZO 压缩并执行 hdiutil verify。拖入 Applications 前应正常退出旧版，未提供自动更新器或安装中的任务迁移。设置、最近记录位于用户目录，移除应用不自动删除这些数据。
+Keep deployment-verification JSON and a CycloneDX file-level SBOM beside the image, bound to the same-commit source inventory, final native-file SHA-256 values, and import relationships. The SBOM remains incomplete; file enumeration is not exact component attribution or license approval. Keep the inventory outside the image to avoid recursive self-hashing.
 
-镜像旁保留部署核验 JSON 和 CycloneDX 文件级 SBOM，绑定同提交源码清单、最终原生文件 SHA-256 和导入关系。SBOM 继续标记 incomplete，不将文件枚举当作精确组件归属或许可批准；清单位于镜像外，避免自包含哈希递归。
+The new staged `xdzip.app` exists only during deployment, signing, image creation, and verification and is automatically reclaimed on both success and failure. DMG, JSON, SBOM, and instructions remain; the input primary app is unchanged. No loose staged bundle remains for the system to rediscover.
 
-打包暂存目录中的新 `xdzip.app` 只在部署、签名、镜像制作及核验期间存在，结束时自动回收，失败时也执行清理。DMG、JSON、SBOM 与说明继续保留，输入主应用不受影响，不留下可被系统再次发现的松散暂存包。
+Modified ARM64 Mach-O files need valid code directories, so use local ad-hoc signing after copying/rewriting and verify nested code. **This is not Developer ID signing or notarization and does not imply Gatekeeper trust.** Under the [personal open-source release policy](release-runbook.md), formal signing and notarization are not mandatory release conditions; dependency, license, security, and actual-package verification remain required. Do not disable SIP or delete global user security policies.
 
-ARM64 的已修改 Mach-O 需要有效代码目录，因此复制／重写后使用 ad-hoc 本地签名，并验证嵌套代码。**这不属于 Developer ID 签名，也未公证，不表示 Gatekeeper 信任。** 按[个人开源发行政策](release-runbook.md)，正式签名与公证不是发行硬性条件，依赖、许可、安全与实际包验证仍须满足。 不关闭 SIP，不删除用户全局安全策略。
+The verification script mounts the image read-only, checks the Applications link, copies to an isolated path with Chinese characters and spaces, and recursively checks arm64, Basic styles, and strict signatures on every native file and the bundle. It launches and closes using Cocoa/Metal after clearing SDK/QML/plugin search variables. The actual product from the image opens a self-generated ZIP, performs query, sort, extraction, and exit, independently verifies Unicode, empty files/directories, and every output byte, and checks build identity, architecture, and Metal backend at the actual first frame. Then, only in the verification copy, modify QtCore Mach-O library identity and re-sign ad-hoc, then recheck architecture, style, signatures, and startup. This proves deployed modification/replacement is allowed; it does not prove Qt was rebuilt from corresponding source, arbitrary ABI compatibility, or legal compliance approval.
 
-核验脚本只读挂载镜像，核对 Applications 链接，复制到含中文与空格的隔离目录，递归确认 arm64、Basic 样式及每个原生文件和应用包的严格签名，移除 SDK／QML／插件搜索环境后以 Cocoa／Metal 启动关闭。再由镜像内真实产品打开自行生成的 ZIP，执行查询、排序、解压与退出，独立核对 Unicode、空文件、空目录和全部输出字节，并检查实际首帧的构建身份、架构及 Metal 后端。随后仅在核验副本修改 QtCore 的 Mach-O 库身份并重新 ad-hoc 签名，再检查架构、样式、签名及启动。该测试证明部署允许修改镜像替换，不冒充从对应源码重建 Qt、任意 ABI 兼容或法律履约批准。
+app.zip verification also uses the product's default same-name folder option to extract the entire app, compares file bytes, link targets, and safe permissions item by item against `ditto`, then runs deep strict signature checks and Cocoa/Metal startup on the extracted real app. The outer directory must not end in `.app`. Temporary apps and registrations newly created during the check are cleaned afterward. This does not change signature-trust or notarization boundaries.
 
-app.zip 核验还使用产品的默认同名文件夹选项解压整个应用，与 `ditto` 输出逐项比较文件字节、链接目标及安全文件权限，再对解压后的真实应用执行深层严格签名检查和 Cocoa／Metal 启动。外层目录不能以 `.app` 结尾；临时应用和本次新增注册在验证结束时清理。此检查不改变签名信任或公证边界。
+The local machine still has an SDK; import checks and environment clearing do not replace a separate clean Mac. Finder drag-in, system Open With, default selection, Gatekeeper, real restart, and signing/notarization remain subject to the [manual checklist](../qa/private-test-manual.md).
 
-本机仍安装 SDK，导入核验和清除环境不能代替另一台干净 Mac。Finder 拖入、系统打开方式、默认选择、Gatekeeper、真实重启和签名公证继续按[人工清单](../qa/private-test-manual.md)验收。
+Native menu edit commands and Qt standard controls need system-locale qtbase translations. In addition to copying `Contents/Resources/translations/qtbase_*.qm`, packaging sets `Translations = Resources/translations` in `[Paths]` of `Contents/Resources/qt.conf`, retains existing plugin/QML paths, and writes it before integrity signing. Relocated startup gates check both native edit responders and application menu roles; SDK development-directory checks alone are insufficient.
 
-原生菜单编辑命令和 Qt 标准控件需要系统 locale 的 qtbase 翻译。打包除复制 `Contents/Resources/translations/qtbase_*.qm` 外，还须在 `Contents/Resources/qt.conf` 的 `[Paths]` 设置 `Translations = Resources/translations`，保留已有插件与 QML 路径，并在完整性签名前完成写入。重定位启动门槛同时检查原生编辑 responder 和应用菜单角色，不能只在 SDK 开发目录验证。
+## Local Finder Sync signing and enablement
 
-## 本机 Finder Sync 签名与启用
+Finder Sync uses a native appex and independent relay inside the same app; the service helper remains. Complete signing order is native images, frameworks and dedicated helpers, appex with exact sandbox entitlements, relay bundle, and outer app, followed by strict verification of the nested bundle. Do not overwrite a signed appex afterward with generic signing lacking entitlements. Ordinary CI builds do not implicitly sign or enable the extension.
 
-Finder Sync 使用同一应用内的原生 appex 与独立 relay，服务 helper 继续保留。完整签名顺序是原生映像、framework 及专用 helper、带精确沙箱 entitlement 的 appex、relay bundle、外层应用，最后严格验证整个嵌套包。不得在 appex 签名后再次用无 entitlement 的通用签名覆盖它。普通 CI 构建不隐式签名或启用扩展。
-
-需要本机 Finder 验证时，先完成默认原生构建，再显式执行：
+For local Finder verification, complete the default native build, then explicitly run:
 
 ```sh
 python3 scripts/sign-macos-finder.py --app build/desktop/apps/desktop/xdzip.app --output build/review/finder-signing.json
 build/desktop/apps/desktop/xdzip.app/Contents/MacOS/xdzip --register-shell-integration
 ```
 
-签名脚本仅接受仓库 `build/` 下自有应用及输出，不部署 Qt、不创建 DMG、不读取发行凭据。其回执只证明 ad-hoc 完整性与嵌套严格校验，不证明 Developer ID、公证、Gatekeeper 信任或发行许可。应用须保留原始位置，在系统设置的登录项与扩展中启用 xdzip 的 Finder 扩展。系统版本不同，设置路径和菜单排列可能不同；仅登记成功不等于菜单或操作验收通过。
+The signing script accepts only project-owned apps and output under repository `build/`; it does not deploy Qt, create a DMG, or read release credentials. Its receipt establishes ad-hoc integrity and strict nested verification only, not Developer ID, notarization, Gatekeeper trust, or release licensing. The app must remain at its original location. Enable xdzip's Finder extension in system Settings under login items and extensions. Settings paths and menu layouts may vary by OS version; successful registration does not establish menu/action acceptance.
 
-结束临时验证前，用同一应用的 `--remove-shell-integration` 撤销自有服务和扩展登记，核对初始状态后只清理本次创建的配置及临时 LaunchServices 登记。不要修改其他应用或默认文件关联。若应用已被 Finder 加载，更新后可在系统设置中关闭再开启自有扩展，不重启 Finder。交接和回退边界见[文件管理器操作](shell-actions.md)。
+Before ending temporary verification, use the same app's `--remove-shell-integration` to revoke owned service and extension registrations. After checking the initial state, clean only configuration and temporary LaunchServices registrations created by this work. Do not alter other apps or default associations. If Finder has loaded the app, disable and re-enable the owned extension in system Settings after updates rather than restarting Finder. See [file-manager actions](shell-actions.md) for handoff and rollback boundaries.
 
-English: Local Finder validation explicitly signs the built application with ad-hoc integrity signatures, preserving the appex's exact sandbox entitlements before sealing the outer bundle. It needs no paid account or App Groups and does not deploy, package or notarize the app. Explicit registration and user-controlled system enablement are separate from real menu/action verification. Remove only this validation's owned registrations and configuration when finished; preserve other apps and default handlers.
+## Open With registration for development and verification copies
 
-## 开发与核验副本的打开方式注册
+LaunchServices remembers app bundles opened previously; multiple copies of the same bundle ID in a build tree may appear in system or Codex Open With menus. Do not delete the system database, restart Finder, delete verification packages, or change user defaults for this reason.
 
-LaunchServices 会记住曾打开过的应用包，构建树中相同 bundle id 的多个副本可能同时出现在系统或 Codex 的“打开方式”菜单。不要为此删除系统数据库、重启 Finder、删除验证包或更改用户默认关联。
+New development bundles default to `LSHandlerRank=None` in generated Info.plist; only the chosen primary app and delivered package retain `Alternate`. CMake option `XDZIP_MACOS_HANDLER_RANK` strictly allows these two values. Offline source rebuilds, source Qt product verification, and Mac product CI explicitly pass `None` so future default changes cannot reintroduce test copies as candidates. [Apple's definition of `None`](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html) retains file drag-in without selecting the bundle as an open handler for the type. It does not affect in-app file selection or explicit application opening and does not set defaults.
 
-新开发包默认在生成 Info.plist 时写入 `LSHandlerRank=None`，仅保留指定主应用和交付包的 `Alternate`。CMake 参数 `XDZIP_MACOS_HANDLER_RANK` 严格限定这两个值；源码离线重建、源码 Qt 产品验证和 Mac 产品 CI 也显式传入 `None`，避免以后更改默认值使测试副本重新进入候选。[Apple 对 `None` 的定义](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html)保留文件拖入能力，不把该包选为此类型的打开应用。这个设置不影响应用内选择文件或显式指定应用的打开流程，不设置默认关联。
+Mac product CI runs `scripts/check-macos-registration.py` to query file candidates for the new bundle through native `NSWorkspace`. Candidate count and registrations enumerated by bundle ID are evaluated separately; the latter does not replace actual user-facing Open With candidates. Existing default handlers must remain during temporary registration. Types with no prior handler may resolve temporarily to a new candidate; all tested types must regain original handlers and candidate states after deregistration. Current-user `LSHandlers` preferences are compared only as in-memory snapshots before, during, and after registration; their contents are not output. Other preferences and system-level rules are outside this comparison.
 
-Mac 产品 CI 运行 `scripts/check-macos-registration.py`，通过原生 `NSWorkspace` 的文件候选查询检查新构建包。候选数量与按 bundle id 枚举的注册数量分别判断，不能用后者代替用户实际的“打开方式”候选。已有默认处理器在临时注册期间须保持，原先没有处理器的类型可由系统临时解析到新候选；全部测试类型在注销后须恢复原来的处理器和候选状态。当前用户的 `LSHandlers` 偏好只在内存中比较注册前、中、后的快照，不输出其内容；其他偏好与系统级规则不在此比较范围。
+`scripts/macos_launch_services.py` recognizes only `org.xdzip.desktop`. DMG relocation, offline source rebuild, source Qt product verification, QtCore replacement, and system-file-open verification record pre-run registrations within bounded `build/` and, on completion or failure, deregister only newly added test copies. Existing primary apps and other products remain. Cleanup failure fails verification rather than being silently reported as success.
 
-`scripts/macos_launch_services.py` 只识别 `org.xdzip.desktop`。DMG 重定位、源码离线重建、源码 Qt 产品验证、QtCore 替换和系统文件打开验证在受限 `build/` 范围内记录运行前的注册集合，结束时（含失败）仅撤销新增的测试副本注册，保留原有主应用及其他产品。清理失败使验证命令失败，不能静默写成成功。
+DMG relocation and QtCore replacement retain delivered bundles' original document declarations and verification but copy only to new, nonexistent `.app` paths under `build/`. Automatically reclaim the newly created bundle after verification or failure, freezing necessary hashes inside its scope. JSON, logs, the pre-replacement primary bundle, DMG, and source Qt remain. Cleanup does not accept existing apps or symlinks and does not retrospectively delete historical verification bundles. Old `Alternate` bundles that were merely deregistered may be rediscovered and registered by the system or other apps; permanent nonrecurrence cannot be guaranteed. If old bundles must be retained, they may be placed into verifiable, restorable backups before handling loose copies under explicit authorization.
 
-DMG 重定位和 QtCore 替换保留交付包的原始文档声明与校验流程，但只允许复制到尚不存在的 `build/` 内新 `.app` 路径。验证结束或失败后自动回收这次新建的包，先在作用域内冻结所需哈希，JSON、日志及替换前的主包、DMG 和源码 Qt 保留。该清理不接受已有应用或符号链接，不追溯删除历史验证包。单独退注册的旧 `Alternate` 包仍可能被系统或其他应用重新发现并注册，不能保证永久不复发；需要保留旧包时可归入可校验、可还原的备份，再按明确授权处理松散副本。
-
-历史残留用以下工具预览，再显式应用；`--keep` 必须指定仍存在且身份正确的主应用，可以是当前开发构建或 Applications 中的安装版：
+Preview historical leftovers with the following tool, then explicitly apply. `--keep` must name an existing correctly identified primary app, either the current development build or an installation in Applications:
 
 ```sh
 python3 scripts/cleanup-macos-open-with.py --keep build/ui-release/apps/desktop/xdzip.app
 python3 scripts/cleanup-macos-open-with.py --keep build/ui-release/apps/desktop/xdzip.app --apply
 ```
 
-工具只撤销本仓库 `build/` 内其他 xdzip 副本及同身份失效路径的注册，不删除包、修改签名或设置默认 ZIP 应用；不同产品、Applications 中的其他安装和构建树外路径不自动处理。解析符号链接后越界的路径不清理。完成后重新核对注册集合，只保留指定主开发包；构建树外有多个安装时单独列为未处理，不冒充全局已去重。
+The tool deregisters only other xdzip copies within this repository's `build/` and invalid paths with the same identity. It does not delete bundles, alter signatures, or set the default ZIP app. Different products, other Applications installations, and paths outside the build tree are not handled automatically. Paths resolving outside scope through symlinks are not cleaned. Recheck registrations afterward, retaining only the specified primary development bundle. If multiple installations exist outside the build tree, list them separately as unhandled; do not claim global deduplication.
 
-具体清理进度、数量与运行结论记录在对应 issue，例如[开发副本维护 #7](https://github.com/xiaodaozhi/xdzip/issues/7)，生成 JSON 和原生探针结果仅存本地／CI 工件。
+Record cleanup progress, counts, and run conclusions in the relevant issue, such as [development-copy maintenance #7](https://github.com/xiaodaozhi/xdzip/issues/7). Generated JSON and native probe results remain local/CI artifacts only.

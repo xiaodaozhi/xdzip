@@ -1,20 +1,20 @@
-# M2 完整 ZIP 只读浏览契约
+# M2 complete read-only ZIP browsing contract
 
-本契约定义根目录直属项、搜索后代、稳定物理身份及目录优先类型排序；只读浏览不写出文件、不解码内容、不声称 CRC 完整性。实际验收和测量按 issue／Actions 登记。
+This contract defines direct root entries, descendant search, stable physical identity, and directory-first type sorting. Read-only browsing writes no files, decodes no content, and makes no CRC integrity claim. Actual acceptance and measurements are recorded in issues/Actions.
 
-当前普通 ZIP 的大索引与 Qt 按需模型见[大归档索引](large-index.md)。本页保留十万条 M2 基线与查询身份要求，后续扩大量级不取消其错误、取消和身份回归。
+See [large archive indexing](large-index.md) for the current regular ZIP large index and on-demand Qt model. This page retains the M2 100,000-entry baseline and query-identity requirements; later scale expansion does not remove error, cancellation, or identity regressions.
 
-## 本阶段边界
+## Phase boundaries
 
-- ZIP／ZIP64 元数据，最多 100,000 条物理记录；分卷由[分卷读取主机](archive-opening.md)转换后读取，编解码器继续拒绝原始多磁盘元数据。
-- 单名 4 KiB，原始名称合计 16 MiB，解码及转义显示名合计 16 MiB，读取合计 64 MiB，扫描缓冲 256 KiB。声明的 64 位大小保持精确整数。
-- 目录索引最多 32,768 节点、64 层、名称与前缀合计 4 MiB；超限丢弃整个导航索引并解释降级，不发布半棵树。
-- 目录直属索引与查询结果复用；同一查询的传输批次不重新过滤或排序；单批名称另限 64 KiB。界面仍完整显示当前目录，没有分页按钮。
-- 页面验证会话、查询 ID、GUI 代际、快照修订和偏移。改变查询取消旧工作并合并最新意图，旧响应不能替换新结果。
-- 来源的长度、修改时间、Unix 设备／inode、Windows 卷号／文件索引在扫描前后、查询及预检边界检查；异常返回 source_changed，Qt 查询和预检都会清除失效列表、选择、目录树与详情，重新打开取得新会话。此检查是尽力检测，不是文件系统原子快照或安全写入授权。
+- ZIP/ZIP64 metadata, at most 100,000 physical records. Split volumes are read after conversion by the [split-volume host](archive-opening.md); the codec still rejects raw multidisk metadata.
+- 4 KiB per name, 16 MiB total raw names, 16 MiB total decoded and escaped display names, 64 MiB total reads, and 256 KiB scan buffer. Declared 64-bit sizes remain exact integers.
+- Directory index: at most 32,768 nodes, 64 levels, and 4 MiB total names/prefixes. On overage discard the entire navigation index and explain degraded behavior; do not publish half a tree.
+- Reuse direct-directory indexes and query results; transport batches for the same query do not refilter or resort. Each batch separately limits names to 64 KiB. The UI still displays the complete current directory without pagination buttons.
+- Pages validate session, query ID, GUI generation, snapshot revision, and offset. Query changes cancel old work and coalesce the latest intent; stale responses cannot replace new results.
+- Check source length, modification time, Unix device/inode, and Windows volume number/file index before and after scanning and at query and preflight boundaries. On source_changed, Qt queries and preflight clear the invalid list, selection, directory tree, and details; reopen to obtain a new session. This is best-effort detection, not a filesystem atomic snapshot or secure-write authorization.
 
-## 验收退出条件
+## Acceptance exit criteria
 
-真实生成的十万条 ZIP64 归档完成扫描、全结果排序、检索、目录导航、完整 Qt 列表与选择；所有批次共享查询身份。验证损坏 ZIP64、分卷、名称／显示／读取预算、取消、过期响应、源文件修改与替换。保存实际耗时、资源、事件队列和委托数量；按需进行三平台构建或 Apple Silicon 开发包验证时分别登记实际结果。
+A genuinely generated 100,000-entry ZIP64 completes scanning, full-result sorting, retrieval, directory navigation, complete Qt list, and selection; every batch shares query identity. Verify damaged ZIP64, split volumes, name/display/read budgets, cancellation, stale responses, source modifications, and replacements. Retain actual duration, resources, event queue, and delegate counts. When three-platform builds or Apple Silicon development packages are verified on demand, record actual results separately.
 
-CI 查询使用仓库工作流运行列表，按 head_sha 和实际事件筛选；日常检查随 push／PR 触发，Foundation 和 Qt 完整检查按需手动触发。具体结果与未执行范围登记在对应 issue，不以其他事件的空结果推断检查状态。
+CI queries use the repository workflow run list filtered by head_sha and actual event. Routine checks run on push/PR; full Foundation and Qt checks are manual on demand. Record actual results and unexecuted scope in the relevant issue; an empty result for a different event does not establish check status.

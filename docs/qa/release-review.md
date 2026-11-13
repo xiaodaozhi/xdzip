@@ -1,27 +1,27 @@
-# 发行许可复核流程
+# Release licensing review
 
-本页定义每个候选可复用的许可来源与再分发复核方法，不登记某一候选的进度或审批结果。`v0.1.0` 的历史复核与发行收尾分别记录于 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)，两项已关闭；未来候选须为具体版本建立新的发行 issue。工作包完成、自动检查成功和正式发行批准是不同结论。
+This page defines reusable provenance and redistribution review methods for each candidate; it does not record progress or approvals for a particular candidate. Historical `v0.1.0` review and release closeout are recorded in [#4](https://github.com/xiaodaozhi/xdzip/issues/4) and [#53](https://github.com/xiaodaozhi/xdzip/issues/53), both closed. Future candidates require a new release issue for the specific version. Completing work packages, passing automated checks and approving a formal release are separate conclusions.
 
-## 候选与输入
+## Candidate and inputs
 
-审查绑定明确的版本、完整提交 SHA、源码包、各平台实际安装包和 SHA-256。提供同提交的 SBOM、来源与通知、离线重建及适用的 Qt 源码和替换验证；性能和桌面检查按实际变更选择，记录已执行的结果及未覆盖范围。源树或包发生变化时重新评估受影响项，不能混用不同提交的二进制与历史报告。机器报告的 `automatic_complete` 和 `release_ready` 不因 issue 关闭或文档整理而改写。
+Bind review to an explicit version, full commit SHA, source package, actual installers for each platform and SHA-256. Provide same-commit SBOM, provenance and notices, offline rebuild and applicable Qt source and replacement verification. Select performance and desktop checks according to actual changes, recording results and uncovered scope. Reassess affected items if source tree or packages change; do not mix binaries and historical reports from different commits. Machine report `automatic_complete` and `release_ready` values are not rewritten because an issue closes or documentation is reorganized.
 
-## 评审项目
+## Review items
 
-| 编号 | 范围 | 所需结论 |
+| ID | Scope | Required conclusion |
 | --- | --- | --- |
-| RR-01 | 许可来源与再分发义务 | 实际交付的 Qt、Rust、原生库、字体及图标的来源、适用许可、通知、对应源码及替换材料逐项核对；修补缺失材料后重建实际候选及校验和 |
+| RR-01 | License provenance and redistribution obligations | Individually check provenance, applicable licenses, notices, corresponding source and replacement materials for actually delivered Qt, Rust, native libraries, fonts and icons. After repairing missing materials, rebuild the actual candidate and checksums. |
 
-项目维护者负责汇总与跟踪。资源或条件不可用时，在 issue 如实登记未执行和限制，不自动视为通过或豁免，不要求购买审查服务或付费签名身份。已有有效人工验收不因材料整理而失效。
+The maintainer consolidates and tracks results. When resources or conditions are unavailable, honestly record unperformed work and limitations in the issue; do not automatically treat them as passed or waived, and do not require purchasing review services or a paid signing identity. Valid existing manual acceptance does not expire merely because materials are reorganized.
 
-## 记录和交接
+## Records and handoff
 
-许可核对遵循[运行时归属](../engineering/runtime-attribution.md)、[对应源码](../engineering/source-delivery.md)及[SDK 对应核验](../engineering/qt-sdk-correspondence.md)。哈希对应不等于取得再分发许可或复现上游构建历史，补充通知不代表旧包已经包含通知，禁止改写已交付包及原校验和。
+Licensing checks follow [runtime attribution](../engineering/runtime-attribution.md), [corresponding source](../engineering/source-delivery.md) and [SDK correspondence verification](../engineering/qt-sdk-correspondence.md). Matching hashes do not grant redistribution rights or reproduce upstream build history. Adding notices does not mean old packages contained them. Never rewrite delivered packages or their original checksums.
 
-每个复核结论注明编号、候选、实际执行范围与限制。来源声明、适用许可、通知及对应源码缺口分别登记，缺失内容不以文件哈希或自动检查结果替代。
+Each review conclusion records its ID, candidate, actual scope and limitations. Record gaps in provenance claims, applicable licenses, notices and corresponding source separately; file hashes or automated checks do not substitute for missing content.
 
-## 发行决定
+## Release decision
 
-系统范围和维护方式遵循[支持政策](../engineering/support-policy.md)。实际发行前复查依赖安全、未解决缺陷、通知、源码、工件和哈希，并按[发布手册](../engineering/release-runbook.md)处理评审结论与已知限制。未经所有者对具体结果的批准，不创建 Release、标签或公开上传安装包。
+System scope and maintenance follow the [support policy](../engineering/support-policy.md). Before actual release, review dependency security, unresolved defects, notices, source, artifacts and hashes; handle findings and known limitations according to the [release runbook](../engineering/release-runbook.md). Do not create a Release or tag or publicly upload installers without the owner's approval of the specific results.
 
-付费开发者账号、签名证书、Developer ID 和公证不要求；macOS 保留必要的 ad-hoc 完整性签名，Windows 使用未签名安装器。这不批准未完成的许可复核。
+Paid developer accounts, signing certificates, Developer ID and notarization are not required. macOS retains necessary ad-hoc integrity signing and Windows uses an unsigned installer. This does not approve an incomplete licensing review.

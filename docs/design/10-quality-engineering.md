@@ -1,87 +1,87 @@
-# xdzip：10 编码规范、注释和质量工程
+# xdzip: 10 Coding conventions, comments, and quality engineering
 
-## 1. 总原则
+## 1. General principles
 
-以明确的数据所有权、小而有语义的接口、可预测资源使用和可验证行为为主。可读性不等于把所有代码抽象成框架；性能不等于默认 unsafe。优化有测量证据，复杂边界有测试与注释。
+Prioritize explicit data ownership, small meaningful interfaces, predictable resource use, and verifiable behavior. Readability does not mean abstracting all code into a framework; performance does not mean unsafe by default. Optimizations require measurements, and complex boundaries require tests and comments.
 
-业务状态只在一个位置决定，错误不吞掉，外部输入不使用 panic 处理。跨语言、文件、并发、加密和解析边界比普通 UI 文案需要更严格审查。格式贡献者不能通过新增一个适配器改变默认安全政策。
+Decide business state in one place, do not swallow errors, and do not handle external input with panic. Cross-language, file, concurrency, cryptography, and parsing boundaries require stricter review than ordinary UI text. Adding a format adapter cannot change default security policy.
 
-## 2. Rust 规范
+## 2. Rust conventions
 
-- workspace 统一 edition、工具链、lints 和依赖；发行版锁 Cargo.lock。新增 crate 明确职责和依赖方向。
-- 使用 rustfmt，Clippy 按发布验证目标无警告。`allow` 必须局部且说明原因，不能全局关闭索引/错误相关 lint。
-- 公共 API 有 rustdoc，说明参数、返回、错误、资源所有权、线程要求和重要复杂度。内部明显 getter 不写重复注释。
-- 外部数量/偏移使用 checked arithmetic 和 checked conversion；ID 使用 newtype，不让 SessionId 和 TaskId 混用。
-- 生产关键路径禁止无依据的 `unwrap/expect`；不变量可以局部 `expect`，但需解释不变量来源并覆盖测试。测试代码可用 unwrap 使失败直接可读。
-- `Option` 表示未知，`Result` 表示失败；不以空列表、0 或空字符串掩盖损坏。领域错误不依赖 UI 文案。
-- 默认禁止 unsafe；平台 I/O/FFI 的必要 unsafe 放在小模块，逐块写 `SAFETY`，注明指针、长度、别名、生命周期和线程前提。
-- 不跨 await/阻塞 I/O 持有普通锁；关键区短且顺序一致。公共类型不盲目实现 Clone/Send/Sync。
-- 用借用、Arc 不可变数据和批处理减少复制；普通循环通常优于难读的多层 iterator 组合。数据大小明确后才考虑结构布局和缓存优化。
+- Unify edition, toolchain, lints, and dependencies across the workspace; releases lock Cargo.lock. New crates have explicit responsibilities and dependency directions.
+- Use rustfmt; Clippy has no warnings for release verification targets. `allow` must be local and explained; do not globally disable indexing/error lints.
+- Public APIs have rustdoc describing parameters, returns, errors, resource ownership, threading requirements, and important complexity. Do not repeat obvious internal getters in comments.
+- Use checked arithmetic and conversion for external counts/offsets. IDs use newtypes so SessionId and TaskId cannot be mixed.
+- Avoid unjustified `unwrap/expect` on production critical paths. A local `expect` may express an invariant, but its source must be explained and tested. Tests may use unwrap to make failures directly readable.
+- `Option` means unknown and `Result` means failure; empty lists, zero, or empty strings do not hide corruption. Domain errors do not depend on UI text.
+- Unsafe is forbidden by default. Necessary unsafe for platform I/O/FFI belongs in small modules, with a `SAFETY` explanation for each block covering pointer, length, aliasing, lifetime, and thread prerequisites.
+- Do not hold ordinary locks across await/blocking I/O; keep critical sections short and ordered consistently. Do not blindly implement Clone/Send/Sync for public types.
+- Reduce copies using borrowing, immutable Arc data, and batching. Ordinary loops are usually preferable to unreadable nested iterator combinations. Consider layout and cache optimization only after data sizes are known.
 
-注释示例（接口示意，尚未实现）：
+Comment example (illustrative interface, not yet implemented):
 
 ```rust
-/// 将已校验的暂存文件发布为计划中的目标。
+/// Publish a validated staging file to the planned destination.
 ///
-/// 调用者必须持有提交许可；取消只能在发布前或发布后生效。
-/// 目标变化返回 Conflict，不删除原目标，也不重试成截断写入。
-/// 成功后所有权转为已提交项，清理流程不得再次删除它。
+/// The caller must hold a commit permit; cancellation takes effect before or after publication.
+/// A changed destination returns Conflict without deleting it or retrying with a truncating write.
+/// On success ownership transfers to the committed item; cleanup must not delete it.
 fn publish_verified_file(/* typed parameters */) -> Result<CommitReceipt, CommitError>;
 ```
 
-有意义的内部注释解释“为什么需要提交许可”或“为什么不能根据归档大小分配缓冲”，不写“这里增加计数器”这类复述。
+Meaningful internal comments explain why a commit permit is needed or why buffers must not be allocated from an archive-declared size; they do not restate “increment the counter here.”
 
-## 3. C++/Qt 规范
+## 3. C++/Qt conventions
 
-C++17、RAII、clang-format、显式 ownership。Qt QObject 父子管理和智能指针只能选定一致的所有权方案，避免一个对象同时被 parent 和 unique_ptr 删除。模型对象只在 GUI 线程更新，工作结果用值对象跨线程。
+Use C++17, RAII, clang-format, and explicit ownership. Choose a consistent ownership scheme for Qt QObject parent-child management and smart pointers; do not let both a parent and unique_ptr delete an object. Model objects are updated only on the GUI thread; worker results cross threads as value objects.
 
-Qt connect 明确接收 context 和连接类型，避免捕获可能失效的裸 `this`；QPointer 只辅助生存检测，不作为跨线程竞态的万能锁。析构不执行无限 join，shutdown 协议先唤醒接收线程。
+Qt connect specifies the receiving context and connection type to avoid capturing a potentially invalid raw `this`. QPointer assists lifetime checks but is not a universal lock against cross-thread races. Destructors do not perform unbounded joins; the shutdown protocol wakes the receiver first.
 
-不在 C++ 中复制 Rust 的路径、配额和格式逻辑。不把所有请求挤进一个处理任意 JSON 的巨型函数。窄化到 `int/qsizetype` 前验证长度，原始字节不通过 QString 有损转换后再当文件名使用。
+Do not duplicate Rust path, quota, or format logic in C++. Do not squeeze every request into one giant function handling arbitrary JSON. Validate lengths before narrowing to `int/qsizetype`; do not lossily convert raw bytes through QString and then use them as filenames.
 
-使用 clang-tidy 的选定规则集，并对 FFI 生成代码排除自动修复。异常边界、Qt 非异常路径与 Rust Result 在桥接处统一，异常不穿越 Rust。
+Use a selected clang-tidy ruleset and exclude generated FFI code from automatic fixes. Exception boundaries, Qt non-exception paths, and Rust Result are unified at the bridge; exceptions do not cross into Rust.
 
-## 4. QML 规范
+## 4. QML conventions
 
-组件按职责和语义命名；必须属性使用 required property，明确角色类型。视觉 token 集中，状态使用声明式绑定。禁止在 onChanged 中形成循环写属性，禁止每帧调用业务接口。
+Name components by responsibility and semantics. Use required property for mandatory properties and specify role types. Centralize visual tokens and use declarative state bindings. Do not form property-write cycles in onChanged or call business interfaces every frame.
 
-列表 delegate 不读取磁盘、不解析归档、不拼 HTML、不在 component completed 中为每行启动 timer。业务动作通过控制器，长计算离开 GUI 线程。使用 qmllint、格式化工具和 QML 测试；Qt 版本不同可能影响 lint，工具与运行库一起锁定。
+List delegates do not read disks, parse archives, assemble HTML, or start a timer per row on component completion. Business actions go through controllers; long computations leave the GUI thread. Use qmllint, formatting tools, and QML tests. Different Qt versions may affect lint, so lock tools together with the runtime.
 
-所有可见字符串走翻译，含数量的字符串使用复数规则。字段、时间、字节按用户 locale 显示；原始协议值不随 locale 改变。
+All visible strings go through translation, including plural rules for quantities. Fields, times, and bytes are displayed according to user locale; raw protocol values do not change with locale.
 
-## 5. 测试层次
+## 5. Test layers
 
-| 层次 | 内容 | 失败关注点 |
+| Layer | Content | Failure concerns |
 |---|---|---|
-| 领域单元/性质测试 | ID、选择区间、快照、状态机、预算 | 不是镜像实现，而是不可违反的性质 |
-| Codec 互操作 | 参考工具生成→产品读取，产品创建→参考读取 | Unicode、ZIP64、重复项、未知大小、流截断 |
-| 原生文件系统集成 | 平台句柄、原子发布、链接、碰撞、权限 | 目标外无变化、旧目标完整、半文件未发布 |
-| 并发/故障注入 | cancel/commit、队列满、关应用、崩溃 | 不死锁、不重复任务、终态一次、资源释放 |
-| 桥接边界 | Unicode、长度、对象失效、跨线程、shutdown | 内存所有权、整数窄化、过期事件 |
-| GUI 场景 | 键鼠、IME、焦点、读屏、缩放 | 用户能完成操作，不只比较截图 |
-| 性能 | 参考机数据与全进程树 | 有可重现工作负载与误差说明 |
-| 分发 | 安装、首次运行、更新、卸载、Qt 替换 | 依赖完整、签名有效、无开发机隐式路径 |
+| Domain unit/property tests | IDs, selection ranges, snapshots, state machine, budgets | Invariants that must not be violated, not mirrors of the implementation |
+| Codec interoperability | Reference tool creates → product reads; product creates → reference reads | Unicode, ZIP64, duplicates, unknown sizes, truncated streams |
+| Native filesystem integration | Platform handles, atomic publication, links, collisions, permissions | Nothing outside the destination changes, old target remains intact, partial files are not published |
+| Concurrency/fault injection | cancel/commit, full queues, app close, crashes | No deadlocks or duplicate tasks; terminal state once; resources released |
+| Bridge boundary | Unicode, lengths, invalidated objects, cross-thread use, shutdown | Memory ownership, integer narrowing, stale events |
+| GUI scenarios | Keyboard/mouse, IME, focus, screen readers, scaling | Users can complete actions, not just screenshot comparisons |
+| Performance | Reference-machine data and full process tree | Reproducible workload and uncertainty explanation |
+| Distribution | Install, first run, update, uninstall, Qt replacement | Complete dependencies, valid signatures, no implicit developer-machine paths |
 
-为性质测试定义：对任意查询变换，选择身份不被行号替换；重复 Cancel 不增加写入；失败项永不变已提交；计划内部输出映射不冲突；实际计量不小于成功写入字节；旧 generation 不改变新模型。
+Properties include: selection identities are not replaced by row numbers under any query transformation; repeated Cancel does not add writes; failed items never become committed; output mappings within a plan do not conflict; actual accounting is at least the successfully written bytes; an old generation cannot change the new model.
 
-## 6. 安全和模糊测试
+## 6. Security and fuzzing
 
-对魔数探测、ZIP/TAR 元数据、名称解析、CBOR 帧、manifest、恢复日志、输出映射和状态消息进行 fuzz。限制 fuzz 进程的 CPU/内存/临时写入；发现崩溃保留最小化样本。使用 sanitizer 的原生后端和桥接测试；Rust Miri 仅覆盖适用的小模块。
+Fuzz magic detection, ZIP/TAR metadata, name parsing, CBOR frames, manifests, recovery logs, output mappings, and state messages. Limit fuzz-process CPU/memory/temporary writes; retain minimized crash samples. Use sanitizers for native backend and bridge tests. Rust Miri covers only applicable small modules.
 
-种子包括截断、溢出、重复关键字段、未知类型、超长字符串、层递归、CRC 错误、ZIP64 边界、目录/文件重名和特殊链接。回归样本自建或授权，避免重新分发来源不清的恶意程序。
+Seeds include truncation, overflow, duplicate key fields, unknown types, oversized strings, layer recursion, CRC errors, ZIP64 boundaries, directory/file name collisions, and special links. Regression samples must be self-generated or authorized; avoid redistributing malware of unclear origin.
 
-安全问题不在公开 issue 里要求上传机密归档。项目设置 SECURITY.md 和 GitHub Security Advisory 私人披露入口；报告方式和当前支持版本以 SECURITY.md 为准。修复优先补验证边界和回归，不只屏蔽一个样本 hash。
+Do not request confidential archives in public security issues. The project provides SECURITY.md and a private GitHub Security Advisory disclosure entry; SECURITY.md governs reporting and supported versions. Fixes first strengthen verification boundaries and regressions rather than blocking only one sample hash.
 
-## 7. CI 和合入门槛
+## 7. CI and merge gates
 
-每个 PR：文档/链接、Rust fmt/Clippy/核心测试、C++ format/选定 tidy、qmllint、目标平台编译、相关集成测试。核心逻辑三平台测试，GUI 至少主参考平台；只改 prose 不运行整个 codec 性能集。
+Every PR: documentation/links, Rust fmt/Clippy/core tests, C++ format/selected tidy, qmllint, target-platform builds, and relevant integration tests. Test core logic on three platforms and the GUI on at least the primary reference platform. Prose-only changes do not run the entire codec performance suite.
 
-夜间：长 fuzz、故障测试、真实文件系统/GUI 集成、参考机基准、依赖漏洞与许可证清单。发行前：三平台包、必要 ad-hoc 完整性及未正式签名说明、全套互操作、升级/卸载、泄漏/安全、完整体积和 SBOM。
+Nightly: long fuzzing, fault tests, real filesystem/GUI integration, reference-machine benchmarks, dependency vulnerability checks, and license inventory. Before release: three-platform packages, required ad-hoc integrity and disclosure of lack of formal signing, full interoperability, upgrades/uninstall, leak/security checks, complete size, and SBOM.
 
-漏洞工具报告结合实际可达性评估；不因依赖“编译能过”就豁免安全修复。unsafe、文件提交、加密、插件协议和平台沙箱的变更须说明所有权、前提及失败行为，并执行相应的边界与回归测试。
+Assess vulnerability-tool reports against actual reachability; a dependency compiling successfully does not exempt it from security fixes. Changes to unsafe, file commits, encryption, plugin protocols, and platform sandboxes must explain ownership, prerequisites, and failure behavior and run corresponding boundary and regression tests.
 
-## 8. 贡献和文档维护
+## 8. Contribution and documentation maintenance
 
-PR 描述写触发条件、变化后行为、测试和边界；复杂格式附能力变更和样本。代码里记机制和不变量，设计文档记跨模块决定，ADR 记选型理由；不在三处抄同一段随时过期的实现。
+PR descriptions identify the trigger, resulting behavior, tests, and boundaries; complex formats include capability changes and samples. Code records mechanisms and invariants, design documents record cross-module decisions, and ADRs record selection rationale. Do not copy the same implementation text into three places where it can quickly become stale.
 
-对公共 API 文档覆盖和必要安全注释设检查；不按注释行数评分。不引入与实现逐行同构的测试，也不为纯颜色改动写大量快照。性能复杂化需证明收益，并让维护者能从局部代码理解资源与错误路径。
+Check public API documentation coverage and necessary security comments; do not score comment line counts. Do not add tests that mirror implementation line by line or large numbers of snapshots for color-only changes. Performance complexity requires demonstrated benefit and must let maintainers understand resource and error paths from local code.

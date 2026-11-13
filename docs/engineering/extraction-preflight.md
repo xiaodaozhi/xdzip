@@ -1,46 +1,44 @@
-# 解压预检：元数据阶段
+# Extraction preflight: metadata phase
 
-本模块提供元数据预检规则。没有授权目标、解码、写入、暂存或提交能力。
+This module provides metadata preflight rules. It has no destination authorization, decoding, writing, staging, or commit capability.
 
-## 实现与边界
+## Implementation and boundaries
 
-`xdzip-extract-plan` 只依赖领域与元数据接口，无 Qt、格式解析器或额外第三方依赖。输入是会话快照、物理 EntryId 集合和取消信号，输出仅为有界报告；不返回可供写入的路径或“安全批准”标记。`xdzip-runtime` 持有快照，Qt 通过工作线程桥接调用它。
+`xdzip-extract-plan` depends only on domain and metadata interfaces, without Qt, format parsers, or additional third-party dependencies. Input is a session snapshot, a set of physical EntryIds, and cancellation; output is only a bounded report, not paths usable for writing or a “safety approved” flag. `xdzip-runtime` holds the snapshot; Qt calls it through the worker-thread bridge.
 
-选择上限 128 个物理 ID，必须非空并且全部属于当前快照。选择目录时按原始名称的斜杠边界展开所有后代，不受搜索、分页或当前目录范围影响；目录和子项同时选中只计一次。同名物理记录不按路径合并。统计中的目录只计显式记录，不合成目录对象。
+Selection is limited to 128 physical IDs, must be nonempty, and all IDs must belong to the current snapshot. Selecting a directory expands all descendants using slash boundaries in original names, independent of search, pagination, or current directory scope. Selecting a directory and child counts the child once. Same-name physical records are not merged by path. Directory statistics count only explicit records and do not synthesize directory objects.
 
-预检通过 M1 正式命令/事件服务执行，复用有界准入和独立取消通道。结果不替换浏览页或清空选择。改变选择、查询或会话时清空旧报告并关闭结果窗，避免把旧选择结果用于新操作。报告只对应扫描时元数据；本阶段不重新验证源文件内容或身份。
+Preflight runs through the M1 production command/event service, reusing bounded admission and independent cancellation. Results do not replace the browsing page or clear selection. Changing selection, query, or session clears the old report and closes the result window, preventing old-selection results from being used for new operations. Reports correspond only to metadata at scan time; this stage does not revalidate source content or identity.
 
-## 已执行规则
+## Rules performed
 
-- 名称必须可解析为 UTF-8，最多 4 KiB、64 个组件、每个组件最多 255 字节；不修复或改写原始名称。
-- 拒绝绝对路径、空组件、`.`、`..`、反斜杠、冒号、控制/双向控制字符、Windows 非法字符及组件尾随空格/点。
-- 拒绝 Windows 常见设备名（含扩展名形式及 COM/LPT 上标数字），保守应用跨平台可移植名称子集。
-- 报告已有元数据警告、未支持的加密以及非 Store/Deflate 方法；严格识别为受支持 AES-256 的条目单独提示解压时需要密码，不将方法 99 再误报为未知压缩方法。这里只按声明能力筛选，不执行解密、认证或解码。TAR/TAR.GZ 的能力映射见[格式契约](m4-tar-gzip.md)。
-- 检查精确重名、Unicode 小写比较产生的碰撞、大小写不同的父目录别名，以及两种插入顺序下的文件/目录冲突。隐式父目录可被同名显式目录补充；重复显式目录记录仍报冲突。
-- 声明单文件大于 8 GiB、总量大于 20 GiB 或整数溢出产生问题；声明压缩比超过 1000:1 产生复核提示。目录声明大小不计入输出字节。
+- Names must resolve to UTF-8, at most 4 KiB, 64 components, and 255 bytes per component; original names are not repaired or rewritten.
+- Reject absolute paths, empty components, `.`, `..`, backslashes, colons, control/bidirectional controls, Windows-invalid characters, and trailing spaces/dots in components.
+- Reject common Windows device names, including extension forms and superscript COM/LPT digits, conservatively applying a cross-platform portable-name subset.
+- Report existing metadata warnings, unsupported encryption, and non-Store/Deflate methods. Entries strictly identified as supported AES-256 separately warn that extraction needs a password; method 99 is not incorrectly reported as an unknown compression method. This filters declared capability only and does not decrypt, authenticate, or decode. See the [format contract](m4-tar-gzip.md) for TAR/TAR.GZ capability mapping.
+- Check exact duplicate names, collisions from Unicode lowercase comparison, parent-directory aliases differing in case, and file/directory conflicts in both insertion orders. An implicit parent directory may be supplemented by an explicit directory of the same name; duplicate explicit directory records still conflict.
+- Declared per-file size above 8 GiB, total above 20 GiB, or integer overflow produce findings; declared compression ratio above 1000:1 prompts review. Declared directory sizes do not count toward output bytes.
 
-Unicode 小写比较不是完整大小写折叠或 NFC/NFD 文件系统等价规则。任何非 ASCII 组件都使报告标记“需要目标文件系统复核”。没有问题的报告也不能授权输出。
+Unicode lowercase comparison is not full case folding or NFC/NFD filesystem equivalence. Any non-ASCII component marks the report “Requires destination filesystem review.” Even a report with no findings does not authorize output.
 
-## 资源与失败
+## Resources and failures
 
-最多检查 100,000 条快照记录，选中/展开名称累计不超过 4 MiB；碰撞索引存储的比较键与原拼写累计不超过 8 MiB（不包含容器开销）。组件遍历深度固定有界，外层逐记录检查取消。报告完整统计问题数量，但跨桥接最多传 64 条代表问题，内容只有物理记录 ID 和稳定原因，无任意归档错误文本。
+Check at most 100,000 snapshot records; selected/expanded names total at most 4 MiB. Comparison keys and original spelling stored in the collision index total at most 8 MiB, excluding container overhead. Component traversal depth is bounded, and cancellation is checked for each outer record. Reports count all findings, but at most 64 representative issues cross the bridge, containing only physical record IDs and stable reasons, not arbitrary archive error text.
 
-空选择、外来 ID、索引限额或取消返回错误，不返回部分成功报告。总量溢出显示“无法计算”，不截断成零。基础问题只报告，不自动覆盖、改名、忽略或跳过。
+Empty selection, foreign IDs, index limits, or cancellation return errors rather than partially successful reports. Overflowing totals display “Cannot calculate” rather than truncating to zero. Basic findings are only reported; they do not automatically overwrite, rename, ignore, or skip.
 
-未知原始大小报告稳定原因 `unknown_size`，`declared_bytes=None` 表示总量不可知，和已知空文件的 `Some(0)` 分开。未知本身不产生伪造的超总量或未知压缩方法问题；实际整数溢出仍产生总量限额问题。输出任务另行拒绝未知尺寸记录，不进入解码、暂存或密码交互。
+Unknown uncompressed sizes report the stable reason `unknown_size`. `declared_bytes=None` means an unknown total and is distinct from `Some(0)` for a known empty file. Unknown values do not fabricate total-size or unknown-method findings; actual integer overflow still produces a total-limit finding. Output tasks separately reject unknown-size records before decoding, staging, or password interaction.
 
-English: Unknown uncompressed sizes produce `unknown_size` and an unknown declared total, distinct from a known empty file. Unknown values do not fabricate a size-overflow or compression-method finding. Actual arithmetic overflow remains a total-limit finding. Output tasks reject unknown-size records before decoding, staging or password interaction.
+## Desktop entry point
 
-## 桌面入口
+Select entries and click “Extraction preflight.” Results use an independent non-modal top-level `OperationWindow`, with the main window as transient owner and the native title bar retained; macOS traffic-light buttons are not drawn by the application. Closing results closes only that window. Main-window closure uses cooperative cancellation and does not wait for workers on the GUI thread.
 
-选中条目后点击“解压预检”。结果使用 `OperationWindow` 独立非模态顶层窗口，绑定主窗口为 transient owner，保留原生标题栏；不绘制 macOS 红绿灯。关闭结果只关闭该窗口；主窗口关闭时复用协作取消，不在 GUI 线程等待工作线程。
+## Boundary with actual extraction
 
-## 与真实解压的边界
+[Actual safe extraction](m3-extraction.md) independently implements output accounting, CRC/structural verification, destination authorization, platform path rechecks, conflicts, staging, and file commits. It is not limited to preflight's 128 selections and supports plans for 100,000 physical records and virtual-directory selections. A preflight report is not reused as write permission. Starting a task must reacquire destination authorization, revalidate sources, and check actual content under the [file security specification](../design/07-file-security.md). Native failure behavior and current known defects are tracked by the relevant contracts and issues.
 
-[真实安全解压](m3-extraction.md)已独立实现输出计量、CRC／结构验证、目标授权、平台路径复核、冲突、暂存与文件提交，不限于预检的 128 条选择，支持十万条物理记录的计划及虚拟目录选择。预检报告不复用为写入许可；启动任务仍须按[文件安全规范](../design/07-file-security.md)重新获得目标授权、复核来源并校验实际内容。原生失败行为与当前已知缺陷按对应契约及 issue 跟踪。
+## Window and result presentation
 
-## 窗口与结果呈现
+Preflight uses a shared operation window 491 logical pixels wide, with a body adapting to content, a maximum client-area height of 600, a scrollable long issue list, and an accessible fixed footer. Data and metadata-phase authorization boundaries are unchanged. See [preflight parameters](../../specs/visual/preflight-reference.json) for parameters and design source.
 
-预检使用 491 逻辑像素宽的共享操作窗口，正文随内容自适应，最大客户区高度 600，超长问题列表滚动且 footer 固定可达。数据和元数据阶段的授权边界保持不变。参数与设计源见 [预检参数](../../specs/visual/preflight-reference.json)。
-
-2026-10-15 预检说明位置修订：将“此报告仅检查元数据……”移到可滚动正文末尾，采用 12 号说明文字。footer 不再承载这段说明，仅保留返回操作，其高度与同字号的共享纯操作 footer 一致，不随报告长短变化。
+Preflight explanation placement was revised on 2026-10-15: move “This report checks metadata only…” to the end of the scrollable body using 12-point explanatory text. The footer no longer carries this explanation; it retains only the Back action and matches the height of a shared action-only footer at the same font size, independent of report length.

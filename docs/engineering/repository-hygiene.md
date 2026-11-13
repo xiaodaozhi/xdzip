@@ -1,81 +1,83 @@
-# 仓库内容与历史管理
+# Repository content and history management
 
-源码仓库保存理解、构建和维护产品所需的持久输入。任务进度与验收结论由 issue 管理，运行输出由本地或 CI 工件管理，不把“已经生成”作为提交依据。
+The source repository retains durable inputs needed to understand, build, and maintain the product. Issues manage task progress and acceptance conclusions; local or CI artifacts manage execution output. “Generated” alone is not a reason to commit.
 
-## 内容归属
+## Content ownership
 
-| 内容 | 位置 | Git 规则 |
+| Content | Location | Git rule |
 | --- | --- | --- |
-| 产品源码、测试代码、自有最小回归夹具 | apps、crates、tools、tests、resources | 保留，夹具须有明确用途与再分发依据 |
-| 设计原稿、运行素材、字体、参数与必要来源清单 | design、specs | 保留，是可维护输入，不是执行证据 |
-| 设计、架构决策、接口契约、构建方法、支持政策、通用测试方法 | docs | 保留，更新现行规则，不累积每日或每批执行结论 |
-| 任务范围、进展、验收摘要、审批、阻塞与后续责任 | GitHub Issues、Milestones | 引用精确提交和 Actions 运行，已完成工作包与新缺陷分开 |
-| 截图、测量、日志、阶段报告、生成阅读版、构建和开发包 | build、target、dist、Actions artifacts | 不提交，遵循证据保留期限 |
-| 获批发行的应用包、通知、SBOM、校验和 | GitHub Release 附件 | 经明确发布授权后交付，不提交大型发行产物到源码树；不提供对应源码压缩包 |
+| Product source, test code, project-owned minimal regression fixtures | apps, crates, tools, tests, resources | Retain; fixtures need explicit purposes and redistribution basis |
+| Design sources, runtime assets, fonts, parameters, necessary provenance inventories | design, specs | Retain as maintainable inputs, not execution evidence |
+| Design, architecture decisions, interface contracts, build methods, support policy, general test methods | docs | Retain and update current rules; do not accumulate daily or per-batch execution conclusions |
+| Task scope, progress, acceptance summaries, approvals, blockers, follow-up ownership | GitHub Issues, Milestones | Cite exact commits and Actions runs; separate completed work packages from new defects |
+| Screenshots, measurements, logs, stage reports, generated reading editions, builds, development packages | build, target, dist, Actions artifacts | Do not commit; follow evidence retention periods |
+| Approved release packages, notices, SBOMs, checksums | GitHub Release attachments | Deliver after explicit publication authorization; do not commit large release artifacts to source; do not provide corresponding-source archives |
 
-`docs/` 只保存 Markdown 和必要的图片素材；机器可读的视觉参数、术语与依赖清单集中在 `specs/`，由相关生成和检查入口读取。`scripts/repository_contents.py` 检查 Git 索引中的目录边界。
+`docs/` holds only Markdown and necessary image assets. Machine-readable visual parameters, terminology, and dependency inventories are centralized in `specs/` and read by relevant generation/check entry points. `scripts/repository_contents.py` checks Git index directory boundaries.
 
-对应源码收集器只在用户针对源码收集另行明确要求时用于本地审查和重建核验，常规发行及验收不运行；不作为 GitHub Release 或 Actions 下载附件，具体边界见[发布协议](release-protocol.md)。
+Use the corresponding-source collector for local review and rebuild verification only when the user separately and explicitly requests source collection. Routine release and acceptance do not run it; it is not a GitHub Release or Actions download attachment. See the [release protocol](release-protocol.md).
 
-`design/html` 是可操作高保真设计，`docs/html` 是 Markdown 派生阅读版，二者用途不同。后者默认生成到 `build/docs-html/`；前者的源文件与必要素材继续维护。历史设计原稿与永久依赖来源材料不按“二进制”或“生成”一刀切删除。
+`design/html` is an interactive high-fidelity design; `docs/html` is a Markdown-derived reading edition, serving a different purpose. The latter is generated under `build/docs-html/` by default; the former's source and necessary assets remain maintained. Historical design originals and durable dependency provenance materials are not categorically deleted merely because they are binary or generated.
 
-## 日常检查
+## Routine checks
 
-新增文档先判断它在任务结束后是否仍能指导开发者。如果只回答某次“执行了什么、通过几项、仍待谁处理”，将结论写到 issue，保留必要摘要和证据链接；可复用方法提炼进规范。空白报告模板可保留，填好的实例不提交。
+Before adding documentation, decide whether it will still guide developers after the task. If it answers only what ran, how many passed, or who remains responsible for one execution, record conclusions in an issue with necessary summaries and evidence links; extract reusable methods into specifications. Blank report templates may be retained, but completed instances are not committed.
 
-`check-docs.py` 对 Git 索引执行内容边界检查，防止强制暂存恢复生成物；文档变更还要检查本地链接、JSON、设计生成输出和相关测试。大文件不能用改名绕过规则：产品必需素材应说明用途，其余放工件或发行附件。记录中不包含凭据、完整私人路径或用户文件。
+`check-docs.py` checks content boundaries against the Git index to prevent force-staging generated output. Documentation changes also check local links, JSON, generated design output, and relevant tests. Renaming large files does not bypass rules: explain necessary product assets; put others in artifacts or release attachments. Records contain no credentials, complete private paths, or user files.
 
-维护能力、资源上限、窗口尺寸或构建流程时，以代码、锁定配置和权威规范核对 README 及对应工程入口；明确区分当前实现与后续设计。已有人工验收不因重新生成 pending 模板而重置，工作包完成也不代替发行许可复核。移除执行报告后，将链接改为真实 issue／工件或通用验证方法，不把方法页继续标成某次报告。文档中的常量尽量引用权威配置，避免复制出另一套尺寸或能力表。
+When maintaining capabilities, resource limits, window dimensions, or build flows, check README and engineering entry points against code, pinned configuration, and authoritative specifications, clearly distinguishing implementation from future design. Existing manual acceptance is not reset by generating pending templates; work-package completion does not replace release licensing review. After removing execution reports, update links to actual issues/artifacts or general verification methods rather than continuing to label method pages as a particular report. Prefer references to authoritative configuration for constants instead of duplicating sizes or capability tables.
 
-## Issue 修复的分支交接
+## Branch handoff for issue fixes
 
-开始或恢复工作时，先查看对应 issue 的正文及最新进展、相关开放或已合并的 PR、分支和远端状态，并对照现有代码确认已完成内容及剩余范围。已有可用修复时在其基础上继续，不因上下文中断、换设备或提交 SHA 不同重新实现。验证前也先查看适用的现有构建、工件和检查结果。具体工作仍按授权连续推进，不为这些检查另设审批或固定表格。
+When starting or resuming work, inspect the issue body and latest progress, related open/merged PRs, branches, and remote state, then compare current code to identify completed and remaining scope. Continue from usable fixes rather than reimplementing because context was interrupted, devices changed, or commit SHAs differ. Before verification, inspect applicable existing builds, artifacts, and checks. Continue authorized work without introducing separate approvals or fixed forms for these checks.
 
-同一工作包明确一个主要执行者和主要交付分支，需要 PR 时优先复用既有 PR；关联的多个 issue 可以共用入口，但分别记录范围和结果。跨设备并行时在 issue 记录必要的分工、交付入口及交接状态，例如一方修复和集成、另一方进行平台验证；若验证发现需要修改的重叠范围，先同步现有进展，避免各自重复实现。issue 评论不是跨设备互斥锁，发现已重复开工时停止重复部分，比较并整合已有成果。
+Each work package has one primary executor and delivery branch. Reuse an existing PR where needed; related issues may share an entry point but record scope and results separately. For cross-device parallel work, record necessary roles, delivery entry points, and handoff status in issues, for example one party fixes/integrates while another verifies a platform. If verification reveals overlapping changes are needed, synchronize progress first to avoid duplicate implementations. Issue comments are not cross-device locks; if duplication occurs, stop overlapping work and compare/integrate existing results.
 
-确需新建或拆分分支／PR 时，先说明原因，在已有成果上整理，并通过代码、测试、文档和适用证据的差异核对确认迁移完整，再关闭被替代入口；提交哈希不同本身不代表功能不同。远端出现并发改动时先同步并判断影响，避免覆盖其他设备的进展。只在交接、范围或状态变化时更新相关记录，日志和汇报保留结论及必要证据链接，不反复粘贴完整输出。
+When a new or split branch/PR is actually needed, explain why, organize it on existing work, and compare code, tests, documentation, and applicable evidence to confirm complete migration before closing superseded entry points. Different commit hashes alone do not imply different functionality. Synchronize and assess concurrent remote changes before proceeding so other devices' progress is not overwritten. Update related records on handoff, scope, or status changes only; logs and reports keep conclusions and necessary evidence links without repeatedly pasting full output.
 
-有明确 issue 范围的源码、测试或产品行为修复，先在 `coding/` 前缀的临时分支完成。临时分支名称应包含 issue 编号或可识别的工作范围，不能把待交接的产品修复只留在共享 `main` 的未提交工作区。一个分支可以承载同一工作包中相互关联的多个 issue，但 issue 必须分别记录各自的范围、验证和提交关系。
+For source, test, or product-behavior fixes with explicit issue scope, work first on a temporary branch with the `coding/` prefix. Branch names contain the issue number or recognizable scope. Do not leave product fixes awaiting handoff only as uncommitted changes on shared `main`. A branch may cover related issues in one work package, but issues separately record their scopes, verification, and commit relationships.
 
-在报告修复完成前，执行与改动匹配的本地构建和验证，将源码、测试和必要的设计输入提交并推送到该临时分支，再把提交 SHA、分支名、实际验证结果和未完成项追加到对应 issue，使修复有可审阅、可恢复的远端交接点。推送不等于合并、发行批准或平台人工验收通过。
+Before reporting a fix complete, perform local builds and verification appropriate to the change, commit and push source, tests, and necessary design inputs to the temporary branch, then append commit SHA, branch name, actual verification, and unfinished items to the issue, creating a reviewable, recoverable remote handoff. Pushing is not merging, release approval, or a platform manual-acceptance pass.
 
-完成分支交接后，再将修复按项目约定集成到 `main`，或通过 Pull Request 合并。合并后按下文的研发周期工件收尾规则清理临时分支和 worktree；issue 仍有未完成的平台验收时，保留开放状态，不以分支已推送替代验收结论。
+After branch handoff, integrate the fix into `main` under project convention or merge through a Pull Request. Clean temporary branches and worktrees under the cycle cleanup rules below. Keep issues open when platform acceptance remains; a pushed branch does not replace acceptance conclusions.
 
-## 研发周期工件收尾
+<a id="研发周期工件收尾"></a>
 
-`build/` 只保存本地和 CI 的构建、测试、诊断、工具缓存与证据，不属于源码输入。每个研发周期开始时，在 issue 或工作记录中记下本周期新增的 `build/` 路径；周期完成后按以下顺序收尾：
+## Development-cycle artifact cleanup
 
-1. 合并提交并确认远端分支状态。
-2. 删除已合并的本地和远端分支，移除不再使用的 Git worktree；仍被 `git worktree list` 引用的目录不得清理。
-3. 删除本周期专用的 `build/` 临时目录和文件，保留仍需复验的回执、固定本地工具链和下一周期明确复用的构建目录。
-4. 重新执行 `git status --short`，确认没有把临时输出、日志或凭据留在源码目录。
+`build/` holds only local/CI builds, tests, diagnostics, tool caches, and evidence; it is not source input. At each development-cycle start, record newly created `build/` paths in the issue or work record. On completion:
 
-推荐先预览，再执行明确授权的删除：
+1. Merge commits and confirm remote branch status.
+2. Delete merged local and remote branches and remove unused Git worktrees; directories still referenced by `git worktree list` must not be cleaned.
+3. Remove this cycle's dedicated `build/` temporary directories and files, retaining receipts still needed for reverification, pinned local toolchains, and build directories explicitly reused next cycle.
+4. Run `git status --short` again to ensure temporary output, logs, and credentials were not left in the source directory.
+
+Preview first, then perform explicitly authorized deletion:
 
 ```sh
 python3 scripts/cleanup-build.py --path build/<cycle-directory>
 python3 scripts/cleanup-build.py --path build/<cycle-directory> --apply --yes
 ```
 
-未能在周期结束时清理的目录，使用手动兜底按年龄扫描。扫描只选择命名为临时管线目录、未被活动 worktree 使用且不属于受保护共享目录的内容，默认只预览：
+For directories not cleaned at cycle end, manually scan by age as a fallback. Scans select only named temporary pipeline directories not used by active worktrees and not protected shared directories; default is preview:
 
 ```sh
 python3 scripts/cleanup-build.py --stale-days 30
 python3 scripts/cleanup-build.py --stale-days 30 --apply --yes
 ```
 
-受保护目录包括 `build/desktop`、`build/package`、`build/review`、`build/toolchain` 和 `build/test-tmp`。脚本拒绝清理这些目录以及活动 worktree 的父目录。自动扫描无法识别的临时目录时，使用明确的 `--path`；不使用 `rm -rf build`、`Remove-Item -Recurse build` 或等价的整目录删除。GitHub 托管 runner 是临时环境，手动 Actions 运行不能清理开发者本机的 `build/`，本地脚本是该兜底约定的执行入口。
+Protected directories include `build/desktop`, `build/package`, `build/review`, `build/toolchain`, and `build/test-tmp`. The script refuses to clean these and parents of active worktrees. Use explicit `--path` for temporary directories automatic scans cannot identify. Do not use `rm -rf build`, `Remove-Item -Recurse build`, or equivalent whole-directory deletion. GitHub-hosted runners are temporary and manual Actions runs cannot clean a developer's local `build/`; the local script is this fallback's entry point.
 
-## 历史整理
+## History cleanup
 
-历史重写只在所有者明确授权后进行，属于共享 main 不强制推送约定的显式例外；日常提交继续禁止强推。先同步远端、保存原始 tip、制作全部 refs 的可恢复 Git bundle 和最新文件树备份，再整理当前内容。对源码、测试、资源和设计输入逐文件核对对象哈希及模式，检查允许变化的文件清单，不以“构建通过”代替文件完整性证明。
+Rewrite history only with explicit owner authorization, as an exception to the shared-main no-force-push policy; routine commits still prohibit force pushes. First synchronize remote, save the original tip, create a recoverable Git bundle of all refs and a latest file-tree backup, then organize current content. Verify object hashes and modes file by file for source, tests, resources, and design inputs and check the allowlist of changes; passing builds do not prove file completeness.
 
-用独立克隆核对新 main 的完整树、可达对象、文档与必需检查。更新远端必须使用精确旧 tip 的 `--force-with-lease`；远端有并发提交即停止覆盖，先备份并整合。不得使用无条件 `--force` 或顺带删除未经授权的其他分支。
+Use an independent clone to check the complete new main tree, reachable objects, documentation, and required checks. Remote updates require `--force-with-lease` using the exact old tip. If concurrent remote commits appear, stop overwriting, back up, and integrate first. Do not use unconditional `--force` or delete other unauthorized branches incidentally.
 
-新起点、旧 tip、备份摘要、内容迁移去向及验证结论记录在本次维护 issue，不把清理报告重新提交到 docs。历史执行证据保留原始身份，不把旧 SHA 全局替换成新 SHA。其他分支、PR refs、服务端缓存和既有克隆可能仍引用旧对象，不能声称 main 重写已物理擦除所有远端副本。
+Record the new starting point, old tip, backup digests, content migration destinations, and verification conclusions in the maintenance issue; do not recommit cleanup reports to docs. Retain original identities for historical evidence rather than globally replacing old SHAs with new ones. Other branches, PR refs, server caches, and existing clones may still reference old objects; do not claim a main rewrite physically erased all remote copies.
 
-## 既有克隆迁移
+## Migrating existing clones
 
-推荐在另一个目录重新克隆，并先保留旧克隆和未提交工作。不要将旧 main 合并回新 main，否则会重新引入被清除的历史。确有未合入工作时，在备份后逐项重放或应用补丁并复验；不要直接推送旧分支覆盖新起点。
+Prefer recloning in another directory, first retaining the old clone and uncommitted work. Do not merge old main back into new main or removed history returns. For unmerged work, back up, replay individual changes or apply patches, and reverify. Do not directly push old branches over the new starting point.
 
-本地旧对象或 reflog 的回收独立进行，确认备份可恢复后才考虑清理。备份不是新的公开分支、标签或 Release 附件，不应重新上传到已清理的仓库。
+Reclaim local old objects or reflogs separately and only after confirming backups are recoverable. Backups are not new public branches, tags, or Release attachments and should not be reuploaded to the cleaned repository.

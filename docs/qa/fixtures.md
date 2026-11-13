@@ -1,13 +1,13 @@
-# 测试样本规范
+# Test sample specification
 
-样本必须自行生成、明确授权或来自许可清晰的测试集；不得提交用户真实归档、密码、个人路径或来源不明的恶意程序。第三方样本登记来源 URL、许可证和允许再分发的依据。
+Samples must be self-generated, explicitly authorized or drawn from a test set with clear licensing. Never commit users' real archives, passwords, personal paths or malware of unknown origin. Record source URL, license and redistribution basis for third-party samples.
 
-每个 fixture 记录 ID、生成方法/工具版本、SHA256、格式特性、期望条目/字节/错误和关联验收编号。优先可生成的小样本；大负载记录确定性种子、数量、大小分布和生成命令，避免将 GB 文件提交 Git。
+Each fixture records an ID, generation method/tool version, SHA-256, format characteristics, expected entries/bytes/errors and associated acceptance IDs. Prefer small generatable samples. For large workloads record deterministic seeds, counts, size distributions and generation commands rather than committing gigabyte files to Git.
 
-最小集合：空归档、单文件、中文/emoji/RTL、重复名、大小写和 Unicode 归一化碰撞、长路径、ZIP64、CRC 错误、截断、未知大小、特殊 TAR 项、绝对/父路径、ADS、符号链接和重解析点。归档炸弹使用受控小配额模拟，测试进程限 CPU/内存/临时空间。
+The minimum set includes empty archives, single files, Chinese/emoji/RTL, duplicate names, case and Unicode normalization collisions, long paths, ZIP64, CRC errors, truncation, unknown sizes, special TAR entries, absolute/parent paths, ADS, symlinks and reparse points. Simulate archive bombs with controlled small quotas and limit test process CPU, memory and temporary storage.
 
-参考工具至少包含一个独立实现并记录版本。不能让产品生成器与读取器共享同一错误而自证兼容。文件系统竞态必须在目标 OS 原生执行，模拟路径字符串测试不能替代。
+Reference tools must include at least one independent implementation and record its version. A product generator and reader must not self-certify compatibility by sharing the same error. File-system races must run natively on the target OS; simulated path-string tests do not replace them.
 
-ZIP 链接与权限夹具由 scripts/generate-extract-fixtures.py 生成：unix_bundle.zip 为自制 Framework 多级链接、普通资源及可执行文件；另以 app bundle 风格的父相对链接覆盖 `../` 归一化；link_*.zip 覆盖越界、反斜杠、空内容、NUL、设备名、悬空、循环、链接父目录写入、超长内容与坏 CRC。所有夹具均为小型合成数据，应用程序内容不会执行；真实第三方归档及其解压结果仅用于本地验证，不入库。
+`scripts/generate-extract-fixtures.py` generates ZIP link and permission fixtures. `unix_bundle.zip` contains a synthetic Framework with multi-level links, ordinary resources and an executable. An app-bundle-style parent-relative link separately covers `../` normalization. `link_*.zip` covers escapes, backslashes, empty content, NUL, device names, dangling and cyclic links, writes through link parents, overlong content and bad CRC. All are small synthetic fixtures; application contents are not executed. Real third-party archives and extracted outputs are used only for local verification and are not committed.
 
-密码重试使用[固定自有输入](../../tests/fixtures/extract/README.md)，保存生成源码、精确摘要及预期验证结果；固定盐只用于避免错误密码断言的随机碰撞，产品随机创建和双向互操作必须另外执行。加密大负载、认证损坏及源变化由测试现场生成到本地临时目录或 build/，不提交生成证据或用户密码。
+Password retries use [pinned owned inputs](../../tests/fixtures/extract/README.md), retaining generator source, exact digests and expected verification results. Fixed salts only prevent random collisions in wrong-password assertions; product random creation and two-way interoperability must be tested separately. Large encrypted workloads, corrupted authentication and source changes are generated during tests into local temporary directories or `build/`; generated evidence and user passwords are not committed.

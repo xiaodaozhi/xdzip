@@ -1,61 +1,61 @@
-# xdzip：需求、设计与验收追踪
+# xdzip: Requirements, design, and acceptance traceability
 
-需求 ID 的唯一来源为 [01](01-product-requirements.md)。下表对应最终产品；后期需求不算首版已经完成。测试编号是计划中的验收套件，不是当前仓库已有测试。
+The sole source of requirement IDs is [01](01-product-requirements.md). The table targets the final product; later requirements are not considered complete in the first version. Test IDs identify planned acceptance suites, not tests already present in the repository.
 
-## 1. 追踪矩阵
+## 1. Traceability matrix
 
-| 需求 | 主要设计 | 验收套件 | 首次交付/门槛 |
+| Requirement | Main design | Acceptance suite | Initial delivery/gate |
 |---|---|---|---|
-| P01 浏览不自动解压 | [03](03-domain-data.md)、[04](04-qt-quick-ui.md) | T01 打开只读及临时目录无变化 | M2，v0.1 |
-| P02 浏览/查询/选择 | [03](03-domain-data.md)、[04](04-qt-quick-ui.md)、[09](09-performance.md) | T02 身份、查询快照、十万条、过期页面 | M2，v0.1；百万条 M6 |
-| P03 选择性解压/冲突 | [03](03-domain-data.md)、[07](07-file-security.md)、[08](08-task-scheduling.md) | T03 计划范围、重复记录、覆盖/跳过/改名、磁盘结果 | M3，v0.1 |
-| P04 创建归档 | [06](06-codec-extension-sdk.md)、[07](07-file-security.md) | T04 ZIP/TAR/TAR.GZ 双向互操作与旧文件保护 | M4，v0.1 |
-| P05 能力驱动 | [05](05-qt-rust-bridge.md)、[06](06-codec-extension-sdk.md) | T05 实际特性、伪造操作、禁用原因 | M2～M4；其他能力 M7 |
-| P06 有界任务/取消 | [05](05-qt-rust-bridge.md)、[08](08-task-scheduling.md) | T06 满队列、资源 lease、取消/提交/关闭竞争 | M1/M3，v0.1 |
-| P07 安全防护 | [07](07-file-security.md)、[06](06-codec-extension-sdk.md) | T07 原生链接竞态、路径逃逸、配额、特殊项 | 所有写入阶段阻断 |
-| P08 现代可访问 UI | [04](04-qt-quick-ui.md) | T08 三平台键鼠、IME、DPI、读屏和焦点 | M5 基础；v1.0 完整矩阵 |
-| P09 低资源 | [09](09-performance.md)、[08](08-task-scheduling.md) | T09 实际进程树、GPU、启动、吞吐、完整体积 | M5 建基线，M9 预算退出 |
-| P10 解耦/格式扩展 | [02](02-system-architecture.md)、[06](06-codec-extension-sdk.md) | T10 无 Qt 核心、依赖方向、第三格式样例 | M1/M4，源码 SDK；外部 M8 |
-| P11 隐私/密码 | [04](04-qt-quick-ui.md)、[07](07-file-security.md) | T11 无默认联网、脱敏、秘密生命周期 | M5 隐私；秘密能力 M7 |
-| P12 可审计发行 | [10](10-quality-engineering.md)、[11](11-build-release.md) | T12 锁定依赖、SBOM、必要 ad-hoc 完整性及未正式签名说明、干净机、许可材料 | M5 私测包，M9 正式发行 |
-| P13 第三方扩展 | [06](06-codec-extension-sdk.md)、[11](11-build-release.md) | T13 独立实现互通、权限变更、拒绝越权/拒绝取消 | M8 试验；M9 满足沙箱门槛 |
-| P14 受限预览 | [04](04-qt-quick-ui.md)、[07](07-file-security.md) | T14 超大图像/文本、活动内容、临时文件清理 | M6，v0.2+ |
-| P15 可恢复错误 | [05](05-qt-rust-bridge.md)、[07](07-file-security.md)、[08](08-task-scheduling.md) | T15 错误分类、源变化、磁盘满、崩溃恢复 | M3～M5，v0.1 |
+| P01 Browse without automatic extraction | [03](03-domain-data.md), [04](04-qt-quick-ui.md) | T01 Read-only open and no changes in temporary directory | M2, v0.1 |
+| P02 Browse/query/select | [03](03-domain-data.md), [04](04-qt-quick-ui.md), [09](09-performance.md) | T02 Identity, query snapshots, 100,000 entries, stale pages | M2, v0.1; one million in M6 |
+| P03 Selective extraction/conflicts | [03](03-domain-data.md), [07](07-file-security.md), [08](08-task-scheduling.md) | T03 Plan scope, duplicate records, overwrite/skip/rename, disk results | M3, v0.1 |
+| P04 Archive creation | [06](06-codec-extension-sdk.md), [07](07-file-security.md) | T04 Bidirectional ZIP/TAR/TAR.GZ interoperability and old-file protection | M4, v0.1 |
+| P05 Capability-driven | [05](05-qt-rust-bridge.md), [06](06-codec-extension-sdk.md) | T05 Actual features, forged operations, disabled reasons | M2–M4; other capabilities M7 |
+| P06 Bounded tasks/cancellation | [05](05-qt-rust-bridge.md), [08](08-task-scheduling.md) | T06 Full queues, resource leases, cancellation/commit/shutdown races | M1/M3, v0.1 |
+| P07 Security protections | [07](07-file-security.md), [06](06-codec-extension-sdk.md) | T07 Native link races, path escape, quotas, special entries | Blocking for all write stages |
+| P08 Modern accessible UI | [04](04-qt-quick-ui.md) | T08 Three-platform keyboard/mouse, IME, DPI, screen readers, and focus | M5 basics; full matrix v1.0 |
+| P09 Low resource use | [09](09-performance.md), [08](08-task-scheduling.md) | T09 Actual process tree, GPU, startup, throughput, complete size | M5 baseline, M9 budget exit |
+| P10 Decoupling/format extensions | [02](02-system-architecture.md), [06](06-codec-extension-sdk.md) | T10 Core without Qt, dependency direction, third-format example | M1/M4 source SDK; external M8 |
+| P11 Privacy/passwords | [04](04-qt-quick-ui.md), [07](07-file-security.md) | T11 No default networking, redaction, secret lifetimes | M5 privacy; secret capability M7 |
+| P12 Auditable releases | [10](10-quality-engineering.md), [11](11-build-release.md) | T12 Locked dependencies, SBOM, required ad-hoc integrity and lack-of-formal-signing disclosure, clean machine, license materials | M5 private-test package, M9 official release |
+| P13 Third-party extensions | [06](06-codec-extension-sdk.md), [11](11-build-release.md) | T13 Independent interoperability, permission changes, rejection of unauthorized actions/refusal to cancel | M8 trial; sandbox gate in M9 |
+| P14 Limited preview | [04](04-qt-quick-ui.md), [07](07-file-security.md) | T14 Oversized images/text, active content, temporary-file cleanup | M6, v0.2+ |
+| P15 Recoverable errors | [05](05-qt-rust-bridge.md), [07](07-file-security.md), [08](08-task-scheduling.md) | T15 Error categories, source changes, full disk, crash recovery | M3–M5, v0.1 |
 
-## 2. 横向门槛
+## 2. Cross-cutting gates
 
-| 套件 | 适用范围 | 必须检查的实际结果 |
+| Suite | Scope | Actual results to check |
 |---|---|---|
-| T16 桥接所有权与生命周期 | M1及每次桥接调整 | 重复关闭、receiver唤醒、对象销毁后无回调、无泄漏/越界 |
-| T17 格式互操作与 fuzz | 每个新格式/特性 | 独立参考实现互通，损坏内容不发布，超额输入受限 |
-| T18 安装更新与回退 | 每个发行渠道 | 干净机能运行、包依赖齐全、更新不覆盖活跃插件、旧版可恢复 |
+| T16 Bridge ownership and lifecycle | M1 and every bridge change | Repeated close, receiver wakeup, no callbacks after object destruction, no leaks/out-of-bounds |
+| T17 Format interoperability and fuzzing | Every new format/feature | Interoperate with independent references, do not publish corrupt content, bound excessive input |
+| T18 Installation, update, and rollback | Every distribution channel | Runs on a clean machine, complete dependencies, updates do not overwrite active plugins, old version recoverable |
 
-新增格式至少覆盖 T05、T07、T10、T17；新增输出操作至少覆盖 T03/T04、T06、T07、T15；新增发行平台至少覆盖 T08、T09、T12、T16、T18。
+A new format covers at least T05, T07, T10, and T17. A new output action covers at least T03/T04, T06, T07, and T15. A new release platform covers at least T08, T09, T12, T16, and T18.
 
-## 3. 代表性端到端场景
+## 3. Representative end-to-end scenarios
 
-1. **普通 ZIP**：拖入 → 显示目录 → 中文查询 → 范围多选 → 选新目录 → 解压 → 内容与参考一致。
-2. **搜索范围**：过滤后无选择 → “全部解压”仍是整个归档；“解压搜索结果”单独显示范围并固定快照。
-3. **重复/碰撞名**：两个记录映射同名 → 宿主提示 → 改名/跳过后结果可追踪，没有最后一项偷偷覆盖。
-4. **取消提交**：提交屏障前取消不发布当前项；屏障后取消保留已提交项；终态只出现一次。
-5. **恶意路径**：包含 `../`、绝对名、ADS、链接和 reparse 替换 → 全部按平台政策拒绝，授权目录外无变化。
-6. **源变化**：索引后修改源文件 → 启动/读取检测失效 → 停止并说明需重开，没有“成功”摘要。
-7. **新建覆盖旧归档**：写入中磁盘满/取消 → 旧归档校验不变，临时遗留可定位清理。
-8. **工作进程失控**：乱序帧、超长帧、拒绝取消或越权读写 → 终止扩展，宿主可继续处理其他会话。
-9. **异常终止**：发布前/后注入 kill → 下次恢复不自动覆盖或删用户文件，状态不确定时明确提示。
+1. **Regular ZIP:** Drop → display directory → Chinese query → range-select multiple entries → choose a new directory → extract → content matches reference.
+2. **Search scope:** Filter with no selection → “Extract all” still means the entire archive; “Extract search results” separately shows scope and freezes a snapshot.
+3. **Duplicate/colliding names:** Two records map to the same name → host prompts → renamed/skipped results are traceable, with no silent last-item overwrite.
+4. **Cancel commit:** Cancellation before the commit barrier does not publish the current item; after the barrier it retains committed items. A terminal state appears once.
+5. **Malicious paths:** `../`, absolute names, ADS, links, and reparse substitutions → reject according to platform policy; no changes outside the authorized directory.
+6. **Source changes:** Modify the source after indexing → start/read detects invalidation → stop and explain reopening is needed; no “success” summary.
+7. **Create over an old archive:** Full disk/cancellation during writing → old archive checksum remains unchanged; temporary leftovers can be located and cleaned.
+8. **Runaway worker:** Out-of-order/oversized frames, refusal to cancel, or unauthorized reads/writes → terminate the extension; host continues other sessions.
+9. **Abnormal termination:** Inject kill before/after publication → next recovery does not automatically overwrite or delete user files; explicitly report uncertain state.
 
-## 4. 设计风险清单
+## 4. Design risk register
 
-| 风险 | 缓解和验证 | 触发后的范围调整 |
+| Risk | Mitigation and verification | Scope adjustment after trigger |
 |---|---|---|
-| cxx/CMake 三平台集成 | M1 最小桥接、生成头、线程/所有权测试 | 先修桥接；必要时新 ADR 替代，保持领域不变 |
-| 文件系统安全语义差异 | 各平台原生竞态和原子原语验证 | 不安全目标拒绝或只写新私有目录 |
-| Qt 运行时与许可成本 | 最小部署、完整体积、实际模块审查 | 去除未用模块；静态链接需独立审批流程与 ADR |
-| Codec 能力不完整 | 特性矩阵、互操作、候选版本审计 | 限制支持表，不吞掉不支持项 |
-| 大索引/结果内存 | 紧凑存储、预算、磁盘后端、查询取消 | 到限额明确拒绝，不无限增长 |
-| 插件沙箱平台缺口 | 权限攻击测试、工作进程限额 | 第三方禁用，内置源码扩展继续可用 |
-| 断电/网络盘持久性 | 故障注入、durable 模式、平台能力说明 | 不宣称全目录事务/绝对断电保障 |
+| cxx/CMake integration on three platforms | M1 minimal bridge, generated headers, thread/ownership tests | Fix bridge first; replace through a new ADR if necessary while retaining domain |
+| Filesystem security semantic differences | Native race and atomic-primitive verification per platform | Reject unsafe destinations or write only into a new private directory |
+| Qt runtime and licensing costs | Minimal deployment, complete size, actual module review | Remove unused modules; static linking needs separate approval and ADR |
+| Incomplete codec capabilities | Feature matrix, interoperability, candidate-version audit | Restrict support table; do not suppress unsupported cases |
+| Large-index/result memory | Compact storage, budgets, disk backend, query cancellation | Explicitly reject at limits; do not grow indefinitely |
+| Platform gaps in plugin sandboxing | Permission attack tests, worker limits | Disable third parties; built-in source extensions remain available |
+| Power-loss/network-disk durability | Fault injection, durable mode, platform capability descriptions | Do not claim whole-directory transactions or absolute power-loss protection |
 
-## 5. 完成定义
+## 5. Definition of done
 
-需求完成需设计落地、对应验收通过、能力文档更新，并在真实发布配置中可用。只有 mock、静态截图、解析成功或接口名字存在不算完成。设计检查只能验证文档一致性，不能替代 T01～T18。
+A requirement is complete only when its design is implemented, corresponding acceptance passes, capability documentation is updated, and it is usable in the actual release configuration. Mocks, static screenshots, parse success, or an interface name alone do not count. Design checks can verify document consistency but cannot replace T01–T18.

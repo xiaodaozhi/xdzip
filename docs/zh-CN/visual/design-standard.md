@@ -1,0 +1,280 @@
+# 界面设计规范
+
+本规范约束界面创作、HTML 设计交付和 Qt 实现。尺寸换算以 [layout-scale.json](../../../specs/visual/layout-scale.json) 为准；颜色、共享控件和目录树分别以 [tokens.json](../../../specs/visual/tokens.json)、[controls.json](../../../specs/visual/controls.json)、[directory-tree.json](../../../specs/visual/directory-tree.json) 为准。原稿量测保存在 [qt-main-reference.json](../../../specs/visual/qt-main-reference.json)，不以实现结果反向改写原图。
+
+## 主动内容预览
+
+[内容状态稿](../../../design/hifi/sources/content-preview.html)沿用现有属性卡的宽度、高度、圆角、主窗口密度与文字角色。内距、间距、图标和加载指示参数由 layout-scale.json 的 main.content_preview 生成。用户点击共享 ArchiveAction 后才读取内容；加载、密码等待、纯文本、图片和错误均在卡片内切换，取消动作固定可达。文本为纯文本且可选择，图片保持比例，栅格与受限静态 SVG 均通过同一图片槽显示，不增加浏览器、HTML 或外部链接执行入口；SVG 在受限工作进程内栅格化，不把原文交给 QML。主窗口与独立属性查看器复用同一 InspectorPanel，关闭预览或更换条目立即清空。密码窗口沿用 P02 和共享 footer，仅按预览任务切换文案。主窗口及菜单的既有比例仍须同时复验。
+
+English: Explicit content previews reuse the existing inspector card and its density, typography and geometry. Shared generated parameters define its insets, gaps, icon and busy indicator. Loading, password, plain text, bounded raster images and errors occupy the same card. Cancellation remains reachable. Both inspector presentations share the component; closing or changing entries clears the content. The password prompt retains P02 geometry and shared controls. Main-window/menu proportions remain independently checked.
+
+## 界面字体与用户数据
+
+Qt 启动时保存系统默认字体家族，再安装内置的 Noto Sans SC 衍生子集作为固定界面文案字体。文件名、归档名、目录名、路径以及包含这些内容的提示和编辑字段优先使用保存的系统字体；缺少字形时由 Qt 和平台继续回退。含文件名的复合提示可整段使用系统字体，静态占位和操作文字保留界面字体。文字显示、目录树宽度及拖动预览测量须使用对应的相同字体；字号仍遵从现有逻辑尺寸和辅助字号，不因系统 DPI 调整组件逻辑尺寸。HTML 审阅示例仍使用内置子集；用户数据的实际字形与文字宽度以运行平台为准，结构尺寸按同一逻辑规范核验。
+
+English: Qt captures the platform's default font family before installing the bundled Noto Sans SC derivative for fixed interface text. Archive names, filenames, directory names, paths and text fields or messages containing them prefer the captured system family and retain Qt's platform fallback. Measurements for directory names and drag previews use the same family as their displayed text. Existing logical sizes and accessibility scaling remain authoritative; the HTML review examples continue using the bundled subset, while user-data glyphs and text widths depend on the runtime platform.
+
+## 单位与密度
+
+1. 所有交付值使用逻辑像素：HTML 的 CSS px、Qt 的 device-independent pixel。截图物理像素除以 DPR 后才能和设计值比较。素材的 1×／2×／3×仅决定采样清晰度，不改变图标槽尺寸。
+2. 主窗口此前 1280 宽的基准按 125% 处理，折算到 100% 使用 `1 / 1.25 = 0.8`。新默认客户区为 1024×622；最小客户区为 832×544，预览收起阈值为 928。标题区、工具栏、分栏、文件列表、目录树、底栏的空间尺寸和字号都执行这次密度校正。
+3. 弹出菜单与提示采用正常密度，不再跟随主窗口密度一起缩小。菜单默认 240 宽、最小 32 行高、13 字号、18 图标槽。主列表目标约 12.57，Qt 取 13；菜单／列表字号比例必须落在 0.95～1.10。不能只检查各自的参数而漏掉相互比例。
+4. 主原稿内部客户区 1548×940 是量测坐标。HTML 主画布换算比例为 `1024 / 1548`；菜单的 CSS 源坐标反向换算，最终保持上述逻辑尺寸。普通操作窗口沿用 `1280 / 1548`。解压原稿采用单独的 `819.2 / 1548` 映射，窗口约 491 宽；这是修正独立入口比嵌入入口大 25% 的明确密度调整。各入口必须共用同一最终逻辑尺寸，不能在嵌入和独立展示时分别指定组件字号。
+5. 浏览器审阅倍率、浏览器页面缩放、系统缩放和 DPR 都不得写入组件尺寸参数。Qt 不通过 `Item.scale`、窗口截图缩小或额外 1.25 系数实现密度校正；由规范参数生成真实布局与整数 pixelSize。
+6. 1 逻辑像素分隔线与焦点描边保留规范值，原生系统窗口装饰由操作系统负责。空间尺寸保留小数；结构边界和窗口尺寸按最近整数取整，Qt 字号在密度换算后、辅助字号放大前取整。
+
+## 标题区修订
+
+主标题栏采用 48 逻辑像素高度；标签采用 32 高、16 圆角的悬浮胶囊，上下各留 8。活动标签使用完整边框，不与工具栏相连。标签关闭、加号、设置按钮与标题栏共享垂直中心。辅助字号放大时先增高胶囊，再保留上下相等留白。此修订替代原图的底部吸附标签，原图保持存档。
+
+活动标签字重 600，非活动标签字重 400，无活动描边，仅悬停使用共享底色。标签宽度在既有首选宽度与 112 的最小宽度之间均分可用空间，字号放大时宽度上限与下限随之增长。超出后使用不显示滚动条的横向视口，保留新建、双向滚动和标签列表入口，设置及系统按钮不被挤压。滚轮、触控板、键盘切换、菜单激活与拖动边缘滚动共用同一有界视口；活动标签在打开、切换、关闭和尺寸变化后完整可见，用户主动滚动不被拉回。窗口内拖动显示浮动胶囊与插入标记，释放后按稳定会话身份排序，Escape 或输入取消放弃拖动。参数来自 layout-scale.json 的 titlebar，不从截图像素推导。
+
+标签关闭按钮保持既有正方形命中区域与居中位置，悬停及按下背景的圆角为宽高的一半，形成圆形。主窗口只有一个普通、空闲且无错误的起始页时隐藏该按钮；加载、错误或多标签状态下仍按既有规则显示，归档标签的关闭行为不变。隐藏的按钮不得获得键盘焦点或作为可见辅助功能操作。
+
+English: The tab close button retains its square hit area and centered position, with a circular hover and pressed background. Hide it for a single ordinary, idle welcome page without an error; preserve the existing visibility rules for loading, error, multiple tabs and archives. The hidden button must not receive keyboard focus or appear as a visible accessibility action.
+
+起始页加载卡片的正文可滚动，“取消加载”使用共享 OperationFooterButton，在卡片右下固定操作区中显示。加载不是解压，不复用“取消解压”文案。取消发出后显示取消中并禁用重复提交，加载结束后恢复起始页焦点。卡片逻辑宽度 360、内距 24，保留既有半透明遮罩与共享按钮尺寸，不覆盖 footer 按钮样式。
+
+已打开压缩包的修改等待复用该卡片参数，背景采用 layout-scale.json 的 operation_overlay 透明政策，原文件页继续显示且阻止重复操作。标题、说明、进度辅助名称和取消按钮按真实添加或包内移动命名，任务清理和目录刷新完成后恢复操作。取消请求已接纳时立即关闭失效的重名与密码提示，进度窗显示取消中并继续跟随真实终态；重名窗口绑定具体任务及提示令牌，切换任务或令牌失效时关闭。
+
+当前[浅色主窗口](../../../design/hifi/screens/main-capsule-light.png)、[深色主窗口](../../../design/hifi/screens/main-capsule-dark.png)和[多级目录图](../../../design/hifi/screens/directory-tree-capsule.png)同步此标题区，来自[可编辑设计源](../../../design/hifi/sources/main.html)。旧主窗口与目录树原图在画廊历史区保存，原有独立量测、SHA-256 和切片来源保持不变；当前设计导出不用于替代独立几何验收。
+
+## 组件规则
+
+### 设置窗口分类修订
+
+无 owner 的托盘设置和关于窗口复用共享屏幕居中策略，以当前显示器的可用区域和完整原生边框定位；原生窗口创建及高度确定后重新居中，避免指针位于通知区时沿用右下角位置。窗口尺寸、字号与密度仍沿用设置规范。
+
+English: Ownerless tray Settings and About use shared screen centering against the current display's work area and the complete native frame. Recenter after native creation and height adjustment, retaining the existing settings dimensions, typography and density.
+
+Windows MSIX 包身份的关于页省略更新标题、分隔线和整个更新区域，版本信息直接沿用其后的共享分组间距。窗口尺寸、字号和其他内容沿用既有规范，不按渠道改变缩放或密度。English: Windows MSIX About omits the update heading, divider and controls; the remaining groups use the existing window dimensions, typography and spacing.
+
+设置与关于共用一个 612 逻辑像素宽的非模态窗口，客户区首选高度 532，受屏幕可用高度约束。共享 OperationHeader 底部有 1 逻辑单位分隔线，下方为左侧导航和独立滚动的右侧页面；左栏基准宽 144、正常行高 40、图标槽 18，图标距侧栏左边 15，首行贴齐顶部，选中背景与右侧分隔线相接。辅助字号增大时，左栏按实际最宽单词和图文间距适当增宽，英文在单词之间换行；行按内容增长并允许滚动。未选中项悬停使用共享 controlHover 颜色，浅深主题均与侧栏底色区分。页面内距 20，分组间距 16。实际参数以 layout-scale.json 的 operation.settings 为准，不从截图、DPR 或审阅倍率推导。
+
+六个页面依次为外观、通用、隐私、文件关联、网络和关于。设置窗口不再使用 footer 或保存、取消、完成按钮；提交成功的变更即时生效，失败时保持已生效值并显示原因。关于页面保留版本、许可证和用户主动更新；所有关于入口打开该页，不再创建独立关于窗口。主题卡片、设置图标、品牌和已有状态素材继续复用原资源，不重复生成未变化切图。
+
+正文不重复显示与侧栏相同的页面标题，也不保留标题下的分隔线；实际设置分组标题及分组之间的分隔线保留。关于页的更新主要操作与状态同一行、右侧对齐：检查中显示“取消检查”，发现版本后显示下载、下载安装或发布页入口，下载中显示“取消下载”，下载完成后显示安装或打开下载位置。检查与取消检查保持相同位置和尺寸，进度条位于状态行下方；需要同时提供下载目录的次要操作时靠右排列。
+
+English: Settings and About share a 612-unit non-modal window with a 532-unit preferred client height, bounded by the available screen. A one-unit divider below the header precedes a sidebar with a 144-unit base width and an independently scrolling page; the first row touches the top, its icon begins 15 units from the sidebar edge, and the selection reaches the right divider. At larger text sizes, the sidebar grows to fit the widest word and the icon spacing; English labels wrap between words and rows may grow or scroll. Unselected rows use the shared controlHover color, distinct from the sidebar in both themes. The six pages are Appearance, General, Privacy, File associations, Network and About. Pages omit duplicate sidebar titles and their separators while retaining section headings and separators. Update actions align to the right of the status: Cancel Check during checking; download, install or release page when an update is available; Cancel Download during download; and install or open the download location after completion. Check and Cancel Check share the same position and size. Progress appears beneath the status; any secondary download-location action is right aligned. There is no settings footer; successful changes take effect immediately, and failures retain the applied value and show an error. Existing unchanged artwork is reused.
+
+每个组件必须明确尺寸、字号、图标槽、内边距、对齐边、命中区域、状态和数据来源。禁止只交付默认状态。按钮必须覆盖 normal、hover、pressed、focus、disabled、busy；菜单必须覆盖键盘选中、子菜单、checked、disabled、边缘翻转和滚动；目录树必须覆盖子层级、叶节点、折叠当前路径、深层滚动和长名称；文件列表必须覆盖表头／内容同边对齐、排序、多选、空态和未知数据。
+
+数字列同边右对齐，类型列同边左对齐。面包屑与预览标题区高度、字号、文字基线一致；预览顶边与文件表头顶边一致。图标按槽居中，文字按字体度量对齐。所有图标使用统一素材库，不从带底色截图中临时裁切。
+
+文件列表选框右边缘到文件图标槽的留白为 12 逻辑像素，来自 layout-scale.json 的 fileSelectionGap。此修订将原稿约 21.17 的空白收紧，文件图标、名称文字及“名称”表头同步左移，保留原有图标槽、图文间距和其他列边界；冻结原稿及原始量测不改写。
+
+主窗口正常密度校正与辅助字号放大是两个独立步骤。当前字号选项为 100%／125%／150%，旧 200% 设置按 150% 读取。辅助字号增加时可增高、滚动或打开独立详情窗口，不能用缩小文字抵消选择；测试直接注入 200% 只表示历史压力场景，不表示产品仍提供该选项。任何视觉例外必须记录理由和验证范围。
+
+## 验收门槛
+
+HTML 与 Qt 必须在同一逻辑宽度下对比；原稿只裁去外背景并按明确比例展示。几何误差最多 1 逻辑像素，文字／图标垂直中心误差最多 0.5，要求共线的分栏顶边误差最多 0.01。截图报告必须写明提交、平台、渲染后端、浏览器缩放、审阅倍率、DPR 和逻辑窗口尺寸。
+
+按需进行 HTML 对照时验证 100%／125% 浏览器页面缩放及 DPR 1／1.25／2；对应的 Qt 测量验证高 DPR 下窗口、字体、菜单仍使用相同逻辑参数。验证工具不能用 CSS zoom 冒充真实浏览器页面缩放，也不能把离屏截图写成原生桌面窗口验收。检查数不是视觉还原百分比。
+
+变更按 [界面设计流程](design-workflow.md) 执行；规范、生成输出、实际坐标、截图和交互证据缺一项时，不能标记完整验收。
+
+## 主窗口交互修订
+
+主工具栏图文间距固定为 6；图标独占按钮时在内容框居中。列表／网格／排序按钮采用固定 28×28 圆角方形，标题区间距固定为 6.4，面包屑吸收剩余空间。面包屑按钮正常高度为 28，上下留白；菜单与调用按钮间隔 4，底部菜单向上展开。树行不显示文件数，左边选中边平直、指示线全高，子节点不使用四边描边。树宽按已展开节点的真实文字度量计算。修订后的交互与量测按[验证方法](../qa/README.md)登记。
+
+## 操作窗口与任务状态素材
+
+### 共享图标标题区
+
+创建、添加、解压、任务及结果、冲突和设置窗口统一使用 OperationHeader，关于内容位于设置页，完整性检查随 TaskWindow 继承。图标槽为48×48，标题20、副标题13，左右内距24、上下20、图文间距16、标题与副标题间距6，正常高度基准96。图标保持原素材比例并居中，不使用窗口自己的 canvas／artwork 尺寸覆盖。标题与副标题均为纯文本，浅深色沿用 text／textSecondary，字号只按应用辅助字号变化。长文案或大字号使标题区按同一字体度量公式增高，不缩小字、不覆盖正文或footer。
+
+参数唯一来源为 [operation.header](../../../specs/visual/layout-scale.json)，独立状态稿为 [operation-headers.html](../../../design/hifi/sources/operation-headers.html)，窗口对应关系在 [window-registry.json](../../../specs/visual/window-registry.json)。本修订替代旧的各窗图标槽、关于页居中品牌标题24及窗口专用header高度；原始图片、哈希和历史量测不改写。密码、预检、退出／重启确认等文字型标题区不凭空加入装饰图标，也不修改其既有安全交互。主窗口与菜单密度仍分别量测。
+
+English: Create, add, extract, task/result, conflict, and settings windows share OperationHeader; About is a settings tab; integrity checks inherit it. The common policy is a 48×48 logical icon slot, 20-unit title, 13-unit subtitle, 24-unit horizontal and 20-unit vertical padding, 16-unit icon gap, 6-unit text gap and 96-unit normal height baseline. Text is plain and grows using common font metrics for larger fonts or long content. Icons preserve aspect ratio. This supersedes per-window header sizing and the centered 24-unit about branding while preserving historical references. Text-only prompts keep their roles, and main-window/menu density remains separate.
+
+操作窗口中的拉链插图共用 scripts/zipper_assets.py 的结构与完整清单，采用两列交错的圆角齿牙、低对比织带、独立拉头和镂空拉环。齿牙与金属件使用克制的高光；仅在素材内等比缩放并按底色选择配色，不改变文档轮廓、图标槽或 UI 密度。新增插图消费者必须登记到 ZIPPER_ICONS，素材检查核对浅深色完整性和 HTML 内联渐变标识的一致性。
+
+| 现行图标 | 拉链配色与素材内布局 |
+| --- | --- |
+| archive-add | 银白色，保留蓝色文档与添加徽标 |
+| existing-archive | 银白色，按较高文档轮廓等比放大并居中 |
+| archive-warning | 暖白金属与棕色织带，配合琥珀色警告文档 |
+
+file-archive 保留文件类型家族原有的简洁平面符号，使用赭色横齿与矩形拉环，浅深色沿用同一符号色。其生成定义、SVG 与各倍率 PNG 保持原有样式。
+
+形状在统一 24 单位矢量画布内定义，标题区仍使用共享 48 逻辑像素槽；浅深色 SVG 与 1×／2×／3× PNG 从同一定义生成，archive-add 和 file-archive 另保留 9× 导出。品牌及文件关联图标沿用品牌标志定义；历史原稿及参考切片保持原样。
+
+English: Operation-window zipper illustrations share the geometry and inventory in scripts/zipper_assets.py: two interlocking rows of rounded teeth, a low-contrast tape, a separate slider and an open pull tab. Archive-add and existing-archive use silver; archive-warning uses warm metal and brown tape. File-archive retains its original flat ochre teeth and rectangular pull tab, using the same symbol color in both themes; its source and exports preserve that established file-category style. Scaling and centering stay inside each 24-unit asset, preserving document silhouettes, icon slots and UI density. New illustration consumers must join ZIPPER_ICONS; asset checks verify themed completeness and compatible inline gradient IDs. Light/dark SVGs and 1x/2x/3x PNGs share one source; archive-add and file-archive retain 9x exports. Brand and association icons retain their signature definitions. Historical artwork and source crops remain unchanged.
+
+普通独立窗口沿用 1280／1548 源坐标换算，宽度约 612；进度原稿映射为 819.2／1548，正常宽度为 491、客户区随内容自适应，最高 600；标题 20、正文 13，footer 仍使用共享 13／12 字号。操作窗口随当前审阅上下文换回源坐标，不能因从解压窗进入进度窗而再次缩小。解压使用 [extract-reference.json](../../../specs/visual/extract-reference.json) 冻结的原稿哈希、量测和映射，宽度 491、标题 20、正文 13、路径框约 35 高、内嵌更改按钮约 69×24。Qt 直接使用真实布局尺寸，不用 Item.scale 或截图缩小。HTML 将正常尺寸换回当前审阅上下文的源坐标，独立和嵌入入口最终尺寸必须相同。
+
+解压目标与重名卡片为均匀底色，范围卡片为浅色标题带与白色正文；浅色卡片 #F4F6FA、边框 #DFE5EF、路径与下拉框边框 #DCE2EC，深色对应值见 tokens.json。路径图标、可编辑路径和“更改”按钮共享一个边框。复选框使用统一素材库的选中图形。所有操作窗口复用 xdzip 内建下拉组件，覆盖选中、禁用、键盘导航、Escape、焦点返回及边缘翻转。菜单保持与调用控件 4 逻辑像素间距。
+
+所有 footer 的按钮文字为 13、辅助文字为 12、图标槽为 16 逻辑像素，由 layout-scale.json 生成；正文单独滚动，footer 固定可达。字体、颜色与 1 逻辑像素描边不随嵌入／独立入口变化。实际对照按[验证方法](../qa/README.md)登记。
+
+解压目标卡片的“创建同名文件夹”和目标检查反馈使用同一 24 图标槽、16 可见标记与 8 图文间距；标记光学中心共线，文字起点相同，各行文字与标记垂直居中。检查中或失败时仍保留图标槽，文字不向左跳动。“更改”按钮右侧留白等于其上下留白，按路径框与实际按钮高度之差的一半计算；辅助字号增大时保持这一关系。
+
+任务结果圆盘采用 [status-icons.json](../../../specs/visual/status-icons.json) 的纯色填充与白色语义标记，24 单位画布、20 可见直径；没有渐变、高光、细边或阴影。浅深色 SVG 和 1×／2×／3× PNG 同步导出。既有原稿与参考切片保留历史像素，不改写为新风格。实际验证按[通用方法](../qa/README.md)登记。
+
+## 根目录与文件项交互
+
+目录树顶部“压缩包”与面包屑标题共享垂直中心；普通目录浏览只显示直属文件和目录，树入口为“根目录”。完整归档路径保留在数据中，普通列表显示末级名称，搜索结果显示完整路径。树悬停没有浮动提示；完整路径保留可访问描述。父层竖线中心 X 与父节点展开箭头中心 X 一致。
+
+列表悬停覆盖整行全部列，选中填充优先。网格左右内边距为 16，卡片槽 144×124、槽间留白 12、图标槽 40；复选框位于卡片内部左上 8×8，悬停可见，选中后常驻。辅助字号放大时槽位按真实字体需求增长。预览面板重新打开按钮同样为 28×28。菜单阴影参数半径 12、下移 4，Qt 使用共享九宫格 PNG，兼容软件与 GPU 渲染；HTML 使用同源参数的 CSS 模糊阴影。验证首次菜单完整帧中正文与阴影同步出现，以及实际像素与浅深色状态。深色分裂按钮分隔线使用深色 border 色。
+
+新建 ZIP 使用 C01 原稿的三段结构与白色内部面板，正常宽度 491，标题 20、正文 13、说明 12；字段与正文按钮高 28，输入行高 38，footer 按钮高 32、字号 13。客户区最高 736，较小桌面仅滚动正文，footer 固定可达。Qt 与 HTML 同时使用这组逻辑参数。TAR／TAR.GZ 使用已有格式分段；TAR 禁用级别，两者禁用密码与分卷，切换清空不适用选项并同步扩展名；目录选择项的总字节待后台扫描，不用示例数值代替真实预检。实际功能及对照按[验证方法](../qa/README.md)登记。
+
+## 操作控件复用与创建窗口修订
+
+[create-reference.json](../../../specs/visual/create-reference.json) 固定 C01 原图哈希、控件裁剪坐标与当前修订。操作按钮、输入框、下拉框及 footer 按钮的圆角统一为 5，浅色描边 #DCE2EC、深色 #485469，普通中性按钮底色 #FAFBFD。正文动作高 28、footer 动作高 32；footer 的文字 13、说明 12，不再由每扇窗口覆盖形状、描边、字体、颜色与密度。危险动作仍使用语义危险色，焦点不增加额外描边。
+
+设置窗口的密度、文字大小、语言和打开方式下拉框共用相同逻辑高度：不低于正文按钮高度，文字需要更多空间时使用文字高度加 8，确保大字号不裁切。可编辑输入框的文本选区使用现有 accent 背景和 accentText 前景，浅深色均保持可读；主窗口搜索、操作字段和可编辑下拉框以及 HTML 示例遵循同一颜色关系，不改变未选中文字与占位文字。
+
+English: All four settings selectors share the same logical height, at least the body-button height or the text height plus 8. Editable text selections use the existing accent background and accentText foreground in both themes. Search, operation fields, editable selectors and the HTML prototype follow the same contrast policy without changing unselected or placeholder text.
+
+Qt 使用 OperationButton、OperationFooterButton、OperationFrame、OperationSelect、OperationRemoveButton 和 OperationSegmentedGroup。窗口仅提供文字、数据、状态与操作；共享组件承担所有外观与行为。HTML 使用同一生成参数及共用样式、分段组选项生成器。下拉图标槽为 18，槽右边到控件右边为 6；HTML 下拉描边以 inset outline 绘制，避免浏览器对分数 CSS border 向下取整后移动图标。
+
+创建列表使用 28 命中区域与 24 图标槽的圆形减号，来自统一素材库；文件大小靠右。压缩格式是一条连续分段 radio group，等宽、零间距、单一外描边，禁用格式不接受鼠标或键盘选择。文件摘要读取后台普通文件元数据，三个原稿同名夹具的实际大小为 8.4、6.2、12.8 MB，显示“3 个文件，27.4 MB”。目录总量保留未知，开始任务时重新冻结输入树。
+
+信息分隔使用逗号、句号、换行或明确标签，不使用中点。此规则约束当前界面和维护文档，不改写既有高保真位图；历史截图和捕获 JSON 不进入当前源码树。共享控件规则由 scripts/check-operation-components.py 约束；实际量测、交互与限制按[验证方法](../qa/README.md)登记。
+
+## 结果与创建高级选项
+
+结果窗口宽 491，客户区按正文与 footer 的实际高度计算，最高 600；标题 20、副标题 14、卡片标题 15、正文 13、说明 12、结果数字 28。R01 只保留一个左对齐标题区；统计标签在数字上方，未完成卡片与目标位置使用均匀淡色外层和白色内部面板。卡片圆角 6、内距 12、间距 10，明细行高至少 56；处理明细的展开标记、标题和记录数共享垂直中心。详见 result-reference.json。footer 延续全局共享参数，不另设字号或圆角。
+
+创建窗口删除独立算法行，四档级别默认 2-正常压缩；分卷预设及自定义输入、单位框使用 OperationSelect 同一描边与箭头槽。自定义输入为空或无效时禁用创建，不用默认值替代。密码启用复选框与密码字段的禁用、输入、错误和清空状态必须覆盖。高级选项沿用 C01 的字段 28 高、正文 13、说明 12；增加控件只增长可滚动正文，不扩大 UI 到 125%。新增高保真原稿位于 design/hifi/screens/create-options.png 和 result-details.png，组件切片位于统一素材库的 reference/，运行控件使用已有透明图标。
+
+截图、量测及对照报告只保存到忽略的 build/ 或 dist/，CI 工件短期保留；源码仓库只保存设计原稿、素材、规范参数和检查代码。不可用已经删除的历史实现截图作为测试输入或设计权威。
+
+## 完整性检查与系统窗口
+
+完整性检查沿用任务进度的 491 宽、自适应客户区高（最高 600）、20 标题、13 正文、共享 footer 和正常密度。高保真原稿为 screens/integrity-progress.png，冻结依据见 integrity-reference.json。保持标题区、对象路径、渐变进度条、已读取字节与文件数、三列指标、当前文件、说明与 footer 的同一布局；仅替换操作名称、蓝色文档勾选插图、检查对象、平均读取、读取并校验和取消检查。禁止再使用单独的浏览器原生 progress 条或不同尺寸的检查卡片。
+
+HTML 复用 taskProgressBody、taskProgressFooter 和进度样式；Qt IntegrityWindow 继承 TaskWindow。检查是只读语义，终态不显示目标保存统计或打开输出目录动作。组件开发预览必须明确标记为未执行实际校验；主窗口的真实工具栏命令按[检查契约](../engineering/archive-checking.md)启用。浅深色、未知总量、长路径、辅助字号、关闭与取消均沿用共享契约。
+
+Qt 固定行高必须同时作为布局的行槽高度，不能再把额外字体 leading 算进固定行槽。百分比行槽为 24，字节与文件数行槽为 18；路径卡片标题与指标保持既定行高，多行指标按实际行数增高。默认字号下，三类进度窗口的正文说明完整显示；小屏幕或辅助字号下正文可滚动，footer 仍固定可达。
+
+每个主窗口当前各持有一个 ExtractWindow、CreateWindow 和 TaskWindow，均为操作系统独立窗口。解压、创建和真实完整性检查的进度与结果复用 TaskWindow；选择其他任务时同一窗口更新内容，并不是为每种状态新建窗口。组件开发预览另用 IntegrityWindow，不执行真实检查。详见[任务窗口契约](../ux/task-windows.md)。
+
+## 2026-10-15 操作与选择修订
+
+本节替代历史原稿中的进度、结果和重名窗口尺寸；原始 PNG、哈希与裁剪依据继续保留，不通过缩放截图改变尺寸。当前修订状态稿见 [操作窗口与按钮状态](../../../design/hifi/operation-revisions.html)。
+
+- 解压、创建、进度、结果及文件已存在窗口统一为 491 逻辑像素宽。任务正文加 footer 决定窗口高度，最高 600，明细列表自身最高 168；收起明细后恢复实际内容高度。重名窗口正文按 0.8 的正常密度换算，标题 20、正文 13、说明 12，最高 560，footer 使用共享控件且固定可达。大字号只增长内容或滚动。
+- 压缩格式为连续 radio 分段组。仅第一个选项保留左侧两个圆角，最后一个保留右侧两个圆角，中间所有角为直角，选中、hover、pressed、focus 均不得改变此规则。
+- 所有蓝色按钮通过共享 tokens 区分 normal、hover、pressed、disabled。按下使用 accentPressed，禁用使用 accentDisabled 和 accentDisabledText，不以整体透明度或灰蓝混合代替；键盘按下与鼠标按下使用同一状态。
+- 解压目标字段在外部点击、Escape、Return 和数字键盘 Enter 后退出编辑焦点，不启动解压；第一次 Escape 保留窗口，后续 Escape 按窗口规则关闭。范围标题与右侧次要数量分栏排布，整行保留单一 radio 命中区域。
+- 全选和逐项选择共用焦点详情语义，全选聚焦当前列表最后一项，取消全选清空详情。未选择时隐藏四项属性和预览解压动作。预览解压按钮必须保留 hover、pressed、focus 和 disabled。
+- 状态栏任务数表示可重开的任务历史数，活动任务数单独用于提示与退出屏障；完成后不能显示成零任务。任务菜单复用 240 宽、13 字号和最小 32 行高，依次显示操作图标、文件名、序号标签和状态标签，不再显示“创建任务”等类型前缀。创建、解压、检查、添加、移动和导出使用共享素材库的对应图标。序号和状态共用 CommandMenuTag，内距与圆角来自 controls.json；序号使用中性色，状态保留语义色。文件名让出标签空间并省略长名称，无障碍名称保留操作类型、序号、文件名和状态。历史最多 64 项，菜单超高可滚动，键盘导航及触发可重开对应任务。
+
+English: Task menu rows show an operation icon, archive filename, sequence tag and status tag. Visible operation prefixes are removed, while accessible names retain the operation and task identity. Both tags share the same component and geometry; filenames elide before either tag overlaps.
+
+起始页与压缩文件页的任务按钮共用相同的内部布局，右边距为 `layout-scale.json` 中的 14 逻辑像素；切换页面时按钮、图标、箭头和菜单锚点保持水平对齐。右边距不随字体倍率或设备像素比换算为组件尺寸。
+
+English: The welcome and archive pages share the task button's internal layout and the 14 logical-pixel right inset in `layout-scale.json`. The button, icon, disclosure and menu anchor stay horizontally aligned when switching pages, independently of text scale and device pixel ratio.
+
+标签文字的实际宽高直接绑定当前字体的隐式尺寸，位置由外框与文字尺寸同步计算，保证菜单打开或字号变化后的首个渲染帧仍与标签外框居中，不等待后续布局补正。首帧检查同时核对文字尺寸、共享内距和中心位置。
+
+English: Tag text width and height bind directly to the current font's implicit metrics, with positions calculated from the tag and text dimensions so the first rendered frame remains centered after opening the menu or changing font size. First-frame checks verify text size, shared insets and centers without waiting for later layout correction.
+- 菜单中的不可用动作保留禁用状态，不显示原因副行、hint 或 tooltip，准确原因仅供辅助功能描述读取。未选中时“解压所选”和“解压元数据预检”沿用此规则。真实操作失败与安全错误仍在对应任务或字段中明确显示。
+
+主窗口格式标记显示内容探测结果 ZIP、TAR、TAR.GZ、7z 或 RAR。最小宽度 32，左右各留 6 逻辑像素，宽度随真实文字度量增长；不得把较长格式名放进 ZIP 的固定宽度标签。主窗口与菜单字号比例仍遵循既有门槛。C01 创建窗在原有分段组中增加 7z，四个格式均分既有宽度；组的最小宽度来自 TAR.GZ 的真实文字度量乘以四，再加既有 track 内距。大字号翻译空间不足时左侧选项标签换行，不压缩字号或扩大窗口。固实和文件名加密使用 OperationCheck，新增内容由正文滚动承载，footer 固定可达。
+
+## 2026-10-15 焦点与系统标题栏修订
+
+所有产品窗口统一取消焦点专用 outline、光晕、加粗或变色描边；正常边框、hover、pressed、disabled、checked 和菜单当前项背景继续保留。共享 focusWidth 为 0，不使用截图物理像素调整。此规则替代历史原稿和规范中对焦点描边的要求。
+
+外部点击先退出原控件焦点，点击目标仍正常执行；Escape 第一次退出当前控件，后续按窗口规则关闭；Return 和数字键盘 Enter 先完成控件既有提交或激活，再退出焦点。弹出菜单保留方向键和逐层关闭，最终关闭后退出触发控件焦点。Tab 顺序、快捷键及辅助访问语义保留，程序主动打开窗口后的合理焦点恢复不变。Qt 统一策略只处理应用自己的 Quick 窗口，系统文件选择器沿用平台行为。
+
+窗口标题仅显示任务或归档名称，移除“ — xdzip”后缀；无归档时主窗口标题为 xdzip。macOS 红绿灯中心与既有 48 高标题栏的中心一致；AppKit 后续调整大小、激活、布局或退出全屏后需重新对齐。验证必须直接测量布局结果，不得先纠正再测量。
+
+## 2026-10-15 预检与列表边界修订
+
+解压元数据预检按 [preflight-reference.json](../../../specs/visual/preflight-reference.json) 的 491 宽、20 标题、13 正文、12 说明、6 卡片圆角和 20 正文内距实现。高度随实际内容变化，最高 600；正文独立滚动，footer 使用共享 OperationFooter 与 OperationFooterButton。原生标题固定为“解压预检”，结论标题反映真实报告状态。独立设计入口为 [P01](../../../design/hifi/sources/preflight.html)。
+
+主列表分隔线占 1 逻辑单位，行色块上留 1、下留 2，使上一色块到线与线到下一色块的可见空隙均为 1；保留原有行高、字号及菜单密度。预览显示与关闭动作直接锚定标题区右边缘并使用相同内距，避免 RowLayout 的空间分配造成位置偏差。HTML 同步行色块和边界，不修改历史主窗口原图。
+
+2026-10-15 预检说明位置修订：将“此报告仅检查元数据……”移到可滚动正文末尾，采用 12 号说明文字。footer 不再承载这段说明，仅保留返回操作，其高度与同字号的共享纯操作 footer 一致，不随报告长短变化。
+
+主工具栏的打开、新建、测试、更多、解压及解压菜单触发器不显示 hover tooltip；保持文字和无障碍名称，其他位置的必要提示沿用共享控件。任务准入期间开始解压按钮保持正常蓝色外观，重复提交由意图处理与控制器拦截，错误时留在确认窗口。此次仅修订交互状态，不改变主窗口 0.8／菜单 1 的尺寸参数。
+
+中文界面统一使用[中文术语规范](../ux/chinese-terminology.md)及其 JSON 配置：容器称“压缩包”，大小属性为“压缩大小”，范围为“全部内容”“所选文件和文件夹”。当前高保真文字修订见[术语状态稿](../../../design/hifi/terminology.html)；历史原图和文字墨迹坐标保留，不把文案修订当作几何容差调整。
+
+## 2026-10-15 操作控件描边校正
+
+C01 原稿的输入框和中性按钮为轻量浅灰描边，原共享浅色值 #C9D1E0 偏深，现统一为 #DCE2EC。原稿直线边界取样区域与旧值保存在 create-reference.json，不覆盖原始位图或哈希。Qt 与 HTML 从 tokens.json 同步生成，创建、解压、设置、任务、结果、预检、重名与退出窗口共用此修订。设置主题卡片未选中边框也使用该角色，选中蓝色保持不变。深色描边 #485469、卡片分隔、菜单及错误／危险状态保持原角色。描边仍为 1 逻辑像素，不改变密度、圆角、焦点或窗口尺寸。
+
+分段组外框半径 5、内侧填充半径 4，填充仅内缩一条 1 逻辑像素描边。Qt 两端使用开启抗锯齿的常规圆角矩形，向内侧延长并裁出直角接缝，避免单独圆角在软件与 GPU 后端出现曲线差异；HTML 不再在 border 内重复添加 padding。两端选中、hover 和 pressed 均检查实际曲线像素，内部接缝仍为直角。
+
+## 2026-10-16 读取与创建完成修订
+
+欢迎页正文使用 [读取遮罩契约](../ux/welcome-opening.md) 的共享参数，不覆盖标题栏。未知总量使用持续活动进度条与真实阶段说明，不模拟百分比。操作字段 placeholder 统一为 textSecondary，深色密码提示不得沿用浅色系统默认色。创建完成只在应用内自动打开受支持的结果，不自动展示系统目录；创建结果标签为“已保存”。
+
+## 2026-10-16 Windows 主窗口修订
+
+Windows 主窗口隐藏额外的系统标题栏，在既有设置按钮右侧依次显示最小化、最大化／还原和关闭按钮。正常标题区仍为 48 逻辑像素，三个按钮各宽 46、与标题区等高，图标使用统一素材库的 18 槽；还原图形复用错开 3 的最大化素材。颜色由 tokens.json 的 captionCloseHover／captionClosePressed 和既有文字、画布及中性按钮角色生成。设置按钮原右内距移到窗口控制组左侧。参数在 layout-scale.json，不随 DPR 或截图尺寸改变。
+
+Ubuntu X11 主窗口将窗口控制整合到同一标题区，普通状态使用 10 逻辑单位圆角，三个控制各占 36，圆形底色为 28，控制组距窗口右侧 6，边缘调整命中区为 6；参数来自 layout-scale.json。透明窗口背景配合标题栏和状态栏的抗锯齿圆角绘制，保留边缘透明度渐变。标题空白拖动、双击及八方向缩放调用窗口系统，最大化和全屏使用直角。操作窗口继续使用系统装饰；系统阴影与窗口管理器能力另行验证。对应原稿入口为 [Ubuntu 标题区](../../../design/hifi/sources/main.html?platform=linux)。
+
+English: The Ubuntu X11 main window integrates its caption controls, with a 10-unit normal-state corner radius, three 36-unit control slots, 28-unit circular backgrounds, a 6-unit right inset for the controls and a 6-unit resize edge. A transparent window and antialiased titlebar and status bar corners preserve edge alpha. Titlebar movement, double-click and eight-direction resize use the window system; maximized and fullscreen states have square corners. Operation windows keep system decorations. Window-manager shadows and behavior require separate native checks.
+
+标题空白区域拖动调用 startSystemMove，双击切换最大化／还原；Windows 保留 WS_CAPTION／WS_THICKFRAME，只将原生标题栏区域纳入客户区；四边与四角由原生命中测试处理，最大化使用系统工作区与原生缩放边距。DWM 提供系统边框、阴影及受支持 Windows 11 上的圆角，不用 QML 圆角矩形或阴影代替。窗口按钮沿用正常键盘焦点和可访问名称，关闭走既有任务决策与异步退出屏障。操作窗口继续保留系统装饰，macOS 的原生红绿灯不变。HTML Windows 原稿同步按钮槽位，装饰示意不在浏览器中执行系统窗口操作。
+
+Qt 自动化同时核对标题区、按钮几何、字号与菜单／列表比例，DPR 1／1.25／2 保持逻辑尺寸。原生 Windows 启动、最大化／还原与退出单独执行；离屏结果不等于 Windows 拖动贴靠、系统缩放、输入法或辅助功能的完整人工验收。
+
+Windows 原生边框保留系统 caption 与缩放行为，取消 FramelessWindowHint 和 QML 边缘缩放层。WindowsFrame 使用公开 Qt 接口和 Win32，不再同步 Qt 私有客户区边距。首次绑定普通窗口时保持请求的逻辑客户区，后续边框重应用不重复初始尺寸补偿；普通 PMv2、PassThrough 且无局部缩放覆盖时，跨屏按待处理客户区调整量和目标 DPI 边框协商外框尺寸，其他配置交回 Qt。原生最小／最大跟踪尺寸使用 HWND 当前 DPI 和相同边框度量，不能使用跨屏拖动期间尚未更新的 Qt 屏幕倍率；只接管跟踪尺寸，保留系统最大化位置与尺寸。存在全局缩放覆盖时，跟踪约束仍交回 Qt。DWM 扩展与还原顶部保留 1 个原生设备像素，原生缩放度量从窗口 DPI 对应的系统指标读取；这些是 Win32 边界参数，不写入 QML 逻辑尺寸。暗色外框随主题更新，DPI、系统主题与合成变化后重新应用。Qt 升级须重跑相关尺寸与窗口状态回归；物理双屏拖动和原生视觉按需检查，未执行时记录限制。圆角属性不受支持或合成不可用时沿用系统能力，不宣称跨版本具有同样装饰。
+
+回归同时检查原生窗口样式、DWM 非客户区渲染、可查询的圆角偏好与可见边框、实际客户区尺寸，以及最大化／还原、最小化和关闭。contentItem 截图无法证明外部边框与阴影；桌面合成截图和状态记录分别保存到 build/，不以内部画布截图替代原生装饰验收。
+
+全屏模式沿用系统无标题栏的客户区计算，不保留普通窗口的 1 个原生设备像素顶部边框，不提供边缘拉伸命中。否则 Qt 在最小化恢复时会因客户区未覆盖完整屏幕而误判普通状态。普通与最大化窗口继续保留既定系统边框、圆角能力和阴影规则；这些 Win32 参数不写入 QML 逻辑尺寸。
+
+历史重启确认保留共享窗口规范；设置的语言更改现已即时生效，不触发该确认。创建压缩包的添加列表为空时保留空白列表框，不显示引导占位文案，添加按钮与下方真实摘要继续保留。
+
+## 原生桌面菜单
+
+应用内菜单的柔和阴影由 controls.json 的 menuShadowAsset 生成共享九宫格 PNG，首帧与菜单正文同步显示，不在弹出时通过 Canvas 生成模糊像素。浅深色和 100%／125%／150% 辅助字号有独立资源，200% 保留测试资源；阴影半径和偏移不随 DPR 改变。
+
+macOS 顶部系统菜单和全平台托盘菜单使用平台原生绘制，字体、行高、选中效果与可访问行为由系统决定，不套用应用内弹出菜单的 240 宽或 32 行高。设计与行为按[桌面集成规范](../ux/desktop-integration.md)核验；应用主窗口密度及标题栏参数保持不变。
+
+## 2026-10-19 确认窗口正常密度
+
+退出、停止任务和历史重启确认共用 [operation.confirmation](../../../specs/visual/layout-scale.json)：客户区宽 491、标题 20、正文 13、内容内距 24、段间距 12，最高 600，并受可用屏幕高度约束。高度由真实正文与共享 footer 决定，禁止使用 270/540 等分档固定高度，禁止从旧默认操作窗的 612/25/16 套用。正文滚动，footer 不随正文移动。三按钮在英文 150% 字号下允许文字在按钮内换行并增加共享行高，不减字号、不越界、不改为纵向三个按钮。停止时维持相同几何政策且禁用决策按钮。
+
+[独立状态稿](../../../design/hifi/sources/confirmations.html)与 HTML 的 quit/restart 入口同步。SettingsWindow 的 612 宽及独立属性查看器的 360 宽属于各自已登记的不同用途，不作为同类确认窗尺寸不一致处理。关于内容已合并到设置窗口，不再注册独立 AboutWindow。完整窗口清单与例外理由见 [window-registry.json](../../../specs/visual/window-registry.json)。
+
+## 密码解压请求
+
+PasswordWindow 按 [password-reference.json](../../../specs/visual/password-reference.json) 和 [P02 独立稿](../../../design/hifi/sources/password-extraction.html) 采用 491 宽、最高 600、24 正文内距、20 标题、13 正文和 12 说明。原生标题栏保持平台绘制，不更改主窗口标题栏。正文滚动、共享 footer 固定，输入框复用 OperationField 与 OperationFrame，显示／隐藏动作和 footer 使用共享按钮。普通、hover、pressed、disabled、pending、错误重试与浅深色均使用既有角色；不新增 outline、不覆盖 footer 外观。密码清理、请求身份、取消及空密码规则见[交互契约](../ux/password-extraction.md)。
+
+起始页正文从欢迎区域顶部固定 28 逻辑像素开始，仅水平方向居中，不按正文总高度垂直居中。错误反馈追加在格式提示下方，不能改变标题、说明、主操作和拖放区域的坐标；长消息自然增高并由正文容器滚动。反馈文字使用共享危险色，配 18 逻辑像素的 status-warning 语义图标，图文间距 8、顶部间距 10；可访问角色为 AlertMessage，图标不重复朗读。参数见 welcome-reference.json。
+
+## 归档添加确认
+
+UpdateWindow 以 C01 [创建原稿](../../../design/hifi/screens/create.png)为独立依据，采用 491 逻辑宽度、20 标题、13 正文、12 说明与共享 footer。图标标题区下分“添加文件”“添加位置”“添加选项”三块浅底卡片，各有白色内部面板；内容左右 18、卡片内距 13、内部面板内距 10，卡片间距 10。目标压缩包与包内目录采用只读字段，重名策略沿用共享下拉。高度按正文加 footer 自适应，上限 736，同时受屏幕可用高度约束；正文独立滚动，footer 固定可达。
+
+创建和添加共用 ArchiveInputPanel，使用原 C01 文件图标、名称、右对齐大小与圆形减号，保留既有创建控件身份。来源列表采用虚拟化视图，空态和行高基准为 38，视口最高 148；大字号按真实字体增高行，不修改 28 命中和 24 图形的共享移除角色。可继续添加文件或文件夹、去重和移除，普通文件大小由有界后台摘要提供，目录总量保持未知。隐藏窗口不更新或抢占另一个窗口的摘要，元数据更新不改变选择路径。
+
+权威参数位于 layout-scale.json 的 operation.adding，并复用现有 create 和共享控件参数，独立映射见 [add-reference.json](../../../specs/visual/add-reference.json)。[可编辑设计稿](../../../design/hifi/sources/archive-add.html)支持中英文、浅深色、100%/125%/150% 字号、长名称与空选择。HTML、Qt 分别核对卡片、控件、滚动和 footer，主窗口与菜单比例继续单独测量，不能用离屏通过代替原生桌面验收。
+
+## 包内移动状态
+
+包内拖动不改变主窗口、菜单或行高比例。目标使用已有列表 selection 和树 treeSelectionColor，反馈使用 tooltipSurface/tooltipText、tooltipMaxWidth、tooltipPadding 和 mainBodySize，最多四行并在客户区内翻转/约束，不增加固定操作窗口。无效目标显示具体拒绝原因，源行保留既有选择色。复用进度和冲突窗口的尺寸，文件冲突分支提供跳过、改名、替换及应用到后续冲突。状态板见 [archive-move.html](../../../design/hifi/sources/archive-move.html)。
+
+文件拖动一旦超过系统阈值，即显示跟随指针的图标与名称卡片，不等待目标目录。单项显示文件类型图标和名称，多项增加选中数量，名称按纯文本并从中间省略；目标说明最多四行。卡片无输入处理，不遮挡投放检测，允许／禁止投放仍由目标光标及具体文字说明。指针右下偏移 16，客户区边界约束，取消或结束立即清除。卡片最大宽 280、图标 24、内距 10、间距 8、圆角 8，使用共享提示色与菜单文字，辅助字号增大文字及最大宽度。权威参数见 [drag-preview.json](../../../specs/visual/drag-preview.json)，独立状态稿见 [archive-drag.html](../../../design/hifi/sources/archive-drag.html)。
+
+外部复制交由平台拖放会话：Windows Shell 与 Linux QDrag 使用 64 逻辑单位透明预览、48 图标及多选数量徽标；计数超过 99 显示 99+。仅位图存储按窗口 DPR 取样，不改变逻辑尺寸。Mac 保留 AppKit 原生文件 promise 图像与系统反馈。原生系统光标表达复制或拒绝，不把外部复制画成包内移动；没有收到成功结果前不显示已完成。原生图像准备失败保留安全传输与系统默认光标，不降级内容校验。参考 [Windows Shell 拖动反馈](https://learn.microsoft.com/en-us/windows/win32/shell/dataobject)与 [Qt 6.8 QDrag](https://doc.qt.io/qt-6.8/qdrag.html)。
+
+English: Internal file drags immediately show a pointer-following type icon, plain-text elided name and multi-selection count, plus the existing bounded target explanation. The input-transparent card uses shared tooltip colors and menu fonts, a 280-unit maximum width, 24-unit icon, 10-unit padding, 8-unit gap and radius, and a 16-unit pointer offset. Cancellation and completion clear it. Windows Shell and Linux QDrag use a transparent 64-unit native image with a 48-unit icon and count badge; only bitmap sampling uses DPR. AppKit retains native promise images. Native cursors retain copy/refusal semantics, and image setup failure preserves the existing transfer path.
+
+解压确认窗口的原生与正文标题均为“解压文件”，英文为“Extract files”；工具栏“解压”动作名称保持独立翻译项，不与窗口标题共用。窗口尺寸、正文与 footer 不因标题修订改变。
+
+标题区与其首个正文分组之间统一使用 operation.header.bodyGap，当前为 0 个逻辑像素。标题区自身已包含底部留白，正文不得再叠加旧 hero 的外部间距。卡片内距、正文段落及设置分组间距保留在正文容器内部。Qt 和 HTML 均测量标题区下边界到首个正文分组上边界，覆盖任务运行与三种终态。
+
+English: The first body group follows the shared header with a 0-unit bodyGap. Header padding already supplies the separation; legacy hero gaps must not be added again. Card insets and paragraph or settings-section spacing remain inside the body group. Qt and HTML measure this boundary, including running and terminal task views.
+
+## 关于页许可提示
+
+设置的关于页在可滚动正文中列出 xdzip 原创代码和 Qt 的版权声明、xdzip 许可及 Qt 所选 LGPL-3.0 分支，并指向随附 notices 中的 GPL-3.0 与 LGPL-3.0 原文。复用文字角色与换行，不增加新的窗口或 footer；HTML 与 Qt 使用同一中英文文案。
+
+English: The scrollable About settings page identifies the copyrights of xdzip original code and Qt, the xdzip license and Qt's selected LGPL-3.0 option, and points to the bundled GPL-3.0 and LGPL-3.0 texts. It retains the existing text role and wrapping, without a separate window or footer; HTML and Qt share the same bilingual copy.
+
+## 操作窗口的动态高度
+
+操作窗口的目标客户区高度仍按各窗口既有的内容、字号及可用屏幕表达式计算。动态调整时先放宽朝目标方向的高度约束，再设置目标高度，最后将上下限恢复为目标值，避免系统按旧限制拒绝调整；完成后窗口仍是固定客户区高度。窗口重开、内容变化及平台迟到的几何回调继续使用同一逻辑单位，不引入屏幕缩放系数或新尺寸参数。运行时几何检查不能代替原生桌面视觉验收。
+
+English: Each operation window keeps its existing content-, font- and screen-based target client height. During a change, widen the relevant constraint first, set the target height, then restore both fixed limits; this avoids asking the platform to resize against stale constraints. Reopening, content changes and late native geometry callbacks retain the same logical units, without introducing display-scale multipliers or new size tokens. Runtime geometry checks do not replace native visual acceptance.

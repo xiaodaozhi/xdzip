@@ -1,89 +1,87 @@
-# WP-10 创建 ZIP 实现契约
+# WP-10 ZIP creation implementation contract
 
-本工作包实现从明确选择的文件与目录创建新 ZIP；默认 2-正常压缩，使用 Deflate 6；支持 Store 与 Deflate 1／6／9、WinZip AES-256 内容加密和编号分卷。TAR/GZIP 的扩展见 [WP-11](m4-tar-gzip.md)，AES-256 读取见[密码解压](password-extraction.md)；分卷读取见[分卷契约](archive-opening.md)，普通单文件归档的显式添加使用[文件拖放与修改契约](archive-transfers.md)，不复用新建归档的源保护例外。输入授权、暂存、校验、重名决策和最终保存由宿主负责，格式层只接收条目、可读输入与可写输出。
+This work package creates new ZIP archives from explicitly selected files and directories. The default is level 2, normal compression, using Deflate 6. It supports Store and Deflate 1/6/9, WinZip AES-256 content encryption, and numbered volumes. See [WP-11](m4-tar-gzip.md) for TAR/GZIP, [password extraction](password-extraction.md) for AES-256 reading, and the [split-volume contract](archive-opening.md) for split reading. Explicit addition to ordinary single-file archives uses the [drag-and-drop and modification contract](archive-transfers.md) and does not reuse the source-protection exception for new archives. The host owns input authorization, staging, verification, conflict decisions, and final saving; the format layer receives entries, readable input, and writable output only.
 
-## 输入树与预算
+## Input tree and budgets
 
-选择项必须为绝对路径的普通文件或目录。去重同一路径，并去除已选择目录内部的重复选择；目录递归保留根目录名称，空目录写入显式记录。拒绝链接、重解析点、设备等特殊对象，拒绝不可移植名称与大小写碰撞。根目录句柄按共同父目录合并，最多 128 个；条目最多 100,000，深度最多 64，名称总量最多 16 MiB，每文件最多 8 GiB，输入总量最多 20 GiB。只持有有限根句柄和当前读取文件，不为每个条目持有一个文件描述符。
+Selections must be absolute paths to regular files or directories. Deduplicate the same path and selections already inside selected directories. Recursion retains the root directory name; empty directories produce explicit records. Reject links, reparse points, devices and other special objects, nonportable names, and case collisions. Merge root directory handles by common parent, at most 128. Limits are 100,000 entries, 64 levels, 16 MiB total names, 8 GiB per file, and 20 GiB total input. Hold only bounded root handles and the current input file, not one file descriptor per entry.
 
-输入父目录的系统别名先归一到同一位置，所选叶对象不跟随链接；打开根后绑定并复核目录身份。目录发现使用根句柄下的 no-follow 遍历，保存目录身份与过滤后的子项清单、文件身份／长度／修改时间。编码前后和保存前复核；打开每个文件与读到 EOF 时复核文件版本。新增、删除、改名、链接替换和可观察内容修改失败为来源变化。身份／时间戳复核是尽力检测，不是原子内容快照，不能保证识别同账户刻意恢复元数据的编辑。
+Normalize system aliases of input parents to the same location first; do not follow selected leaf links. After opening roots, bind and recheck directory identities. Directory discovery uses no-follow traversal beneath root handles, retaining directory identity and filtered child inventories and file identity/length/modification time. Recheck before and after encoding and before saving; recheck each file version on open and EOF. Additions, deletion, rename, link replacement, and observable content changes fail as source changes. Identity/timestamp checks are best effort, not an atomic content snapshot, and cannot guarantee detection of same-account edits that deliberately restore metadata.
 
-除下述 macOS 元数据外，创建保留用户选择的全部普通输入，已有目标压缩包、旧分卷和其他目录内的同名文件均按普通输入处理，不能因其与目标路径重合而提前拒绝或静默排除。输入树另外过滤本次已创建、身份匹配的私有暂存工作目录，不能按 `.xdzip-*` 或目标文件名称通配过滤。目录路径别名先归一并与持有句柄身份核对；显式选择私有工作目录及其目录别名继续拒绝。
+Except for macOS metadata below, creation retains every selected regular input. Existing destination archives, old volumes, and same-name files in other directories are ordinary inputs and cannot be rejected early or silently excluded because they coincide with the target path. The input tree separately filters the private staging work directory created by this operation when identity matches; do not wildcard-filter `.xdzip-*` or the destination filename. Normalize directory aliases and verify held-handle identity. Explicit selection of the private work directory or its aliases remains rejected.
 
-编码只写入私有暂存文件，完整校验通过后才进入最终重名守卫。目标也参与输入时，正常显示重名提示，禁止覆盖该输入，允许使用新名称或取消；仅选择旧目标文件也沿用同一流程，其原字节包含在新名称的压缩包中。直接覆盖参数或绕过界面的覆盖回答均返回 `protected_source`，原文件保持不变。归档过程中不重新递归发现新增文件，最终压缩包在保存阶段才发布，不把正在增长的暂存文件归档进自身。
+Encoding writes only private staging files and enters the final conflict guard after full verification. If the destination also participates as input, show the normal conflict prompt, forbid overwriting that input, and allow a new name or cancellation. The same flow applies when only the old target file is selected: its original bytes are included in the newly named archive. Direct overwrite parameters or overwrite responses bypassing the UI return `protected_source`, preserving the original. Do not recursively rediscover added files during archiving. Publish the final archive only when saving, and never archive the growing staging file into itself.
 
-重名窗口保持既定逻辑宽度与共享 footer；标题和保护说明在正文可用宽度内换行，辅助字号不能通过扩大布局最小宽度造成横向裁切。正文超高时滚动，决策按钮保持可达。
+The name-conflict window retains its established logical width and shared footer. Titles and protection text wrap within available body width; accessibility font sizes must not enlarge the layout minimum width and cause horizontal clipping. An overheight body scrolls while decision buttons remain reachable.
 
-## macOS 元数据输入过滤
+<a id="macos-元数据输入过滤"></a>
 
-创建 ZIP、AES-256 ZIP、编号分卷 ZIP、TAR 和 TAR.GZ，以及向普通归档添加文件，共用 Rust `InputTree::scan_for_archive` 策略。在全部宿主平台，按完整末级名称精确匹配并排除普通文件 `.DS_Store`，以及目录 `__MACOSX`、`_MACOSX` 的整棵子树，覆盖显式选择与目录递归。名称区分大小写，不扩大为 `._*`、隐藏文件或名称前缀通配；同名普通 `_MACOSX`／`__MACOSX` 文件仍作为输入。显式选择被排除目录及其后代时，后代不因重复选择重新加入。所选及发现的链接、重解析点和特殊对象继续遵循原 no-follow 拒绝规则，不通过过滤获得读取权限。
+## macOS metadata input filtering
 
-仅从本次归档输入中排除，不删除或修改主机原文件，也不清理原归档的既有记录。因过滤元数据才变空的目录及其空祖先不写入；真正的空目录和零字节普通文件继续保留。过滤后没有有效条目时，在编码与重名提示前以 `empty_input` 失败，现有结果窗口显示“排除 macOS 元数据后，没有可压缩的文件或文件夹。”，不发布新包、不修改已有归档。选择摘要仍是有界元数据预览，最终有效内容由后台任务扫描决定，不在 GUI 递归扫描。
+ZIP, AES-256 ZIP, numbered ZIP volumes, TAR, TAR.GZ creation, and addition to regular archives share Rust `InputTree::scan_for_archive` policy. On every host platform, exact case-sensitive leaf-name matches exclude regular files `.DS_Store` and entire directory subtrees `__MACOSX` and `_MACOSX` at all levels, including explicitly selected roots and recursive traversal. This does not expand to `._*`, hidden files, or prefix wildcards. Regular files named `_MACOSX`/`__MACOSX` remain inputs. Descendants of explicitly selected excluded directories are not re-added by duplicate selection. Selected/discovered links, reparse points, and special objects retain existing no-follow rejection and gain no read authority from filtering.
 
-冻结与保存前复核使用同一过滤策略。元数据的内容及存在性变化不使有效输入失败，普通条目及被裁剪目录中的普通子项变化仍触发来源变化。扫描预算同时约束最终被裁剪的普通目录，不能借过滤绕过条目和名称预算。解压、临时打开、包内移动和 macOS 文件承诺发布不应用新增输入过滤；普通 `InputTree::scan` 保留所有内容。
+Filtering applies only to this archive's inputs; host originals are not deleted or modified, and existing archive records are not cleaned. Directories made empty solely by metadata filtering and their empty ancestors are not written. Truly empty directories and zero-byte regular files remain. If no effective entries remain, fail with `empty_input` before encoding or conflict prompts. The existing result window displays “No files or folders remain to compress after excluding macOS metadata.” Do not publish a new archive or modify an existing one. Selection summaries remain bounded metadata previews; background task scanning determines final effective content without recursive GUI scanning.
 
-English: Creation and addition use the same Rust input policy on every host platform. Exact `.DS_Store` regular files and `__MACOSX`/`_MACOSX` directory subtrees are excluded at every depth, including selected roots. Matching is case-sensitive and does not cover `._*` or other hidden files. Host files and existing archive records are preserved. Directories made empty solely by filtering are pruned recursively; genuinely empty directories and zero-byte files remain valid. When no entries remain, `empty_input` fails before encoding or conflict handling, with a translated explanation and no archive publication or replacement. Source validation uses the same filtered membership while retaining ordinary source-change and scan-budget checks. Extraction and external publication keep all selected archive content.
+Use the same filtering for frozen membership and before-save revalidation. Metadata content or presence changes do not fail effective inputs, but changes to ordinary entries and ordinary children of pruned directories still trigger source changes. Scan budgets also constrain ordinary directories eventually pruned; filtering cannot bypass entry/name budgets. Extraction, temporary opening, internal moves, and macOS file-promise publication do not apply new-input filtering. Ordinary `InputTree::scan` retains all content.
 
-## 格式接口与校验
+## Format interface and verification
 
-编码接口独立于 Qt 和文件路径。宿主提供有序的不可变条目列表及按序号打开的只读流；格式层写入宿主流并报告实际处理字节。ZIP 采用独立 Rust 记录写入器与共享 Deflate 后端，固定 UTF-8 名称、普通文件／目录权限，不保留特权位。大条目和中央目录自动使用 ZIP64。来源大小必须与冻结值一致，失败留下的暂存流不具有发布资格。
+The encoding interface is independent of Qt and file paths. The host provides an ordered immutable entry list and read-only streams opened by ordinal. The format layer writes to host streams and reports actual processed bytes. ZIP uses an independent Rust record writer and shared Deflate backend, with fixed UTF-8 names and regular file/directory permissions, without privilege bits. Large entries and central directories automatically use ZIP64. Source sizes must match frozen values; failed staging streams are not eligible for publication.
 
-写完数据、结束压缩流、写完中央目录后，宿主重新扫描暂存 ZIP，并逐条解码检查头、大小、CRC 和流终止。条目名、类型、大小必须与冻结输入树一致。校验与来源复核通过后才允许整体保存；不把仅能列目录视为归档完整性证明。读取、压缩、写出及校验均在后台重任务线程执行，定期检查取消。
+After data and compression-stream completion and writing the central directory, the host rescans the staged ZIP and decodes every entry, checking headers, sizes, CRC, and stream termination. Entry names, types, and sizes must match the frozen input tree. Whole-archive saving is permitted only after verification and source revalidation; listing a directory alone is not archive integrity proof. Reading, compression, writing, and verification run on the background heavy-task thread with periodic cancellation checks.
 
-## 暂存、冲突与整体保存
+## Staging, conflicts, and whole-archive saving
 
-使用 M3 已验证的目录授权、同卷私有暂存和整体文件提交原语。默认询问重名，支持使用新名称或替换已确认的普通文件；不覆盖目录、链接、特殊对象或参与输入的文件身份。重名决策绑定任务与提示 ID，提交前再次复核现有目标。文件系统不能提供所需原语时失败，不以复制／删除模拟原子保存。
+Use M3-verified directory authorization, private same-volume staging, and whole-file commit primitives. Name conflicts default to Ask, with a new name or replacement of a confirmed regular file supported. Do not overwrite directories, links, special objects, or file identities participating as inputs. Conflict decisions bind task and prompt IDs; recheck existing targets before commit. If the filesystem lacks the required primitive, fail without simulating atomic save via copy/delete.
 
-macOS 创建输出复用 [M3 扩展 ACL 边界](m3-extraction.md#macos-扩展-acl-控制)，允许不向外部主体授予修改能力的拒绝／只读 ACL，拒绝外部有效或仅继承修改权限；目标根、暂存目录、新建父目录和已有输出均按共享边界检查。不改写用户 ACL，也不保证对既有只读共享账户隐藏压缩包内容。
+macOS creation output reuses the [M3 extended ACL boundary](m3-extraction.md#macos-扩展-acl-控制), permitting deny/read-only ACLs that grant no external modification authority while rejecting external effective or inheritance-only modification permissions. Check destination roots, staging directories, new parents, and existing outputs under shared rules. Do not rewrite user ACLs or promise to hide archive content from existing read-only shared accounts.
 
-不分卷时创建任务整体保存一个 ZIP。校验或保存前取消，移除本次已知暂存文件，现有归档保持不变；不能把已经写出的输入条目计为已经保存的文件。取消与最终提交共享既有门闩；提交许可获得前取消胜出，许可获得后整体提交结果胜出。成功提交后到达的取消不把成功改成取消。清理失败保留可恢复材料并标记警告，不删除陌生暂存目录。
+Without splitting, a creation task saves one ZIP as a whole. Cancellation before verification or saving removes known staging files and preserves existing archives; already written input entries cannot be counted as saved files. Cancellation and final commit share the existing gate: cancellation wins before a commit permit; after the permit, the whole commit outcome wins. Cancellation after successful commit does not change success to canceled. Cleanup failure retains recoverable materials with a warning and does not delete unfamiliar staging directories.
 
-## 任务与界面
+## Tasks and interface
 
-创建与解压共用有界后台任务通道、控制与退出机制。任务快照明确区分创建／解压及总量是否已知；扫描阶段显示未知总量，扫描完成后使用冻结文件数与大小。写入过程中显示实际输入读取量、输出写入量与当前文件；校验阶段单独标明，不能把校验字节再次计为输入读取量。
+Creation and extraction share bounded background task channels, control, and exit mechanisms. Task snapshots distinguish creation/extraction and whether totals are known. Scanning displays unknown totals; after scanning, use frozen file counts and sizes. During writing show actual input reads, output writes, and current file. Identify verification separately; do not count verified bytes again as input reads.
 
-新建窗口按高保真原稿与 HTML 布局实现，复用路径框、内建下拉、复选框、按钮与 footer。添加文件、添加目录、移除、名称、目标、Store／Deflate、级别、打开完成结果均可操作。级别为 0-不压缩、1-快速压缩、2-正常压缩、3-最大压缩，默认 2；分别映射 Store／Deflate 1／6／9。算法不另设控件。分卷和密码为真实创建参数；TAR/TAR.GZ 在 [WP-11](m4-tar-gzip.md) 中复用此安全创建闭环，格式专属能力按其契约控制。运行窗口使用修正后的正常密度，关闭窗口后任务继续；任务可在状态栏重新打开，并可取消和处理重名。
+The creation window follows high-fidelity artwork and HTML layout, reusing path fields, built-in dropdowns, checkboxes, buttons, and footers. Add file, add directory, remove, name, destination, Store/Deflate, level, and opening completed results are operable. Levels are 0 no compression, 1 fast, 2 normal, and 3 maximum, default 2, mapping to Store/Deflate 1/6/9. There is no separate algorithm control. Split volumes and passwords are real creation parameters. TAR/TAR.GZ reuse this safe-creation flow under [WP-11](m4-tar-gzip.md), with format-specific capabilities controlled by that contract. The task window uses corrected normal density. Tasks continue when the window closes and can be reopened from the status bar, canceled, and used to resolve conflicts.
 
-## 选择摘要与共用控件
+## Selection summaries and shared controls
 
-选择普通文件后，在已有 Rust 元数据工作线程读取当前文件长度，GUI 不读取磁盘或递归目录。InspectInputs 最多 256 路径，返回顺序固定、大小以十进制字节字符串桥接；symlink_metadata 不跟随所选叶链接。摘要使用十进制 MB；零字节是已知大小，目录与失败为未知，不把未知写成零。超过 256 项保留未检查说明，实际创建仍采用原有创建预算。快速编辑合并最新路径集合，过期结果不覆盖新选择；目标检查优先，普通查询按已有取消机制执行。摘要不是预检授权，输入树在任务开始后重新建立。
+After regular-file selection, the existing Rust metadata worker reads current file lengths; the GUI does not read disk or recursively scan directories. InspectInputs accepts at most 256 paths, returns fixed input order, and bridges sizes as decimal byte strings; symlink_metadata does not follow selected leaf links. Summaries use decimal MB. Zero-byte files have known size; directories and failures are unknown, not zero. More than 256 entries retain an unchecked-items explanation; actual creation still uses existing budgets. Rapid edits coalesce the newest path set; stale results do not replace new selections. Target checks have priority, and ordinary queries use existing cancellation. Summaries are not preflight authorization; the task rebuilds the input tree after start.
 
-目标路径检查和输入摘要属于后台准备，不改变添加、移除输入控件的可用外观，也不向起始页发布检查提示。检查期间继续串行化实际请求；创建按钮仅在当前路径的创建检查通过后可用。解压检查使用独立状态，不能以相同路径的创建检查代替，详见[解压契约](m3-extraction.md)。
+Target checks and input summaries are background preparation. They do not change the enabled appearance of add/remove controls or publish checking hints to the welcome page. Actual requests remain serial; Create is enabled only after the current path's creation check succeeds. Extraction has independent check state; a creation check for the same path cannot substitute. See the [extraction contract](m3-extraction.md).
 
-English: Target checks and input summaries are background preparation: they do not disable the input actions or publish checking text to the welcome page. Requests remain serialized, and creation is enabled only for its own current validated target. Extraction keeps separate validation state and actual writes recheck authority.
+Six operation-window types share footer buttons; fields, body actions, circular remove, and segmented-group options reuse corresponding role components. Appearance and font sizes are generated from layout-scale.json, not overridden by windows. Save actual summary, control measurements, and screenshots under build/ or CI artifacts following [verification](../qa/README.md).
 
-六类操作窗口共用 footer 按钮；字段、正文动作、圆形移除与分段组选项复用对应角色组件。外观与字号生成自 layout-scale.json，不由窗口覆盖。真实摘要、控件量测及截图按[验证方法](../qa/README.md)保存到 build/ 或 CI 工件。
+## Acceptance
 
-## 验收
+Cover metadata root entries, nested directories, mixed selections, multi-level metadata-only directories, truly empty directories, encryption and numbered volumes, and no new output with old output retained when filtering leaves nothing. Verify real Store/Deflate, Unicode names, empty files/directories, writing, reopening, and extraction interoperability; independently verify content, CRC, and directories using Python zipfile. Verify source changes, name collisions, links/special objects, output inside the input tree, original destination bytes included when explicitly selected or discovered in a directory, parent paths and case/Unicode aliases, same-name input in another directory, normal rename when only an old target is selected, input-identity overwrite protection, verification failures, conflict changes, and cancellation preserving the old archive. Build core/bridge/Qt and check background lifecycle on three platforms, with actual captures at normal density and high DPR. Record actual input size, duration, resources, and verification cost; do not infer compression ratios from level alone.
 
-覆盖元数据根项、嵌套目录、混选、仅含元数据的多层目录、真正空目录、加密与编号分卷，以及过滤后为空时没有新输出且保留旧输出。真实 Store／Deflate、Unicode 名称、空文件与空目录的写入、重新打开和解压互操作；独立 Python zipfile 验证内容、CRC 与目录。验证来源变化、名称碰撞、链接／特殊对象、输出在输入树内、显式或目录发现的旧目标字节完整入包、父路径及大小写／Unicode 别名、异目录同名输入、仅选旧目标后的正常改名、输入身份覆盖保护、校验失败、重名变化与取消保留旧归档。三平台核心／桥接／Qt 构建与后台生命周期检查，正常密度及高 DPR 实际捕获。性能记录实际输入量、耗时、资源与校验开销，不由压缩级别推定压缩率。
+## AES-256 content encryption
 
-## AES-256 内容加密
+When “Enter password” is enabled, passwords must be nonempty, 1–128 UTF-8 bytes; reject control characters and invalid Unicode without trimming leading/trailing spaces. Use independent WinZip AE-2 AES-256 wrapping, OS random salt, and admitted general AES/PBKDF2/HMAC libraries. Do not implement cryptographic primitives yourself or fall back to ZipCrypto. Encrypt every regular file, including empty files, with CRC field zero and authentication code written last. Ordinary directory records and filenames remain visible; do not claim filename encryption. See the [in-house format contract](independent-rust-codecs.md) for parameters.
 
-启用“输入密码”后，密码不能为空，接受 1–128 个 UTF-8 字节，拒绝控制字符及无效 Unicode；不修剪前后空格。使用独立 WinZip AE-2 AES-256 封装，随机盐来自操作系统，AES、PBKDF2、HMAC 使用已准入通用密码学库，禁止自行实现密码学原语或退回 ZipCrypto。每个普通文件（包括空文件）都加密，CRC 字段为零，最后写入认证码；普通目录记录和文件名仍可见，不宣称文件名加密。具体参数见[自研格式契约](independent-rust-codecs.md)。
+The source encoding interface only borrows passwords and has no file-path or commit authority. Rust password containers always display `[REDACTED]` in Debug and zeroize on scope exit; queued cancellation, rejection, and exit also trigger zeroization. Passwords do not enter snapshots, logs, configuration, command lines, or recovery logs. Clear Qt/HTML password fields on close, cancel, or submission. Historical copies in Qt/browser and system memory cannot all be guaranteed erased; zeroizing Rust containers is not whole-process secure erasure.
 
-源码编码接口仅借用密码，没有文件路径与提交权限。Rust 密码容器在 Debug 中固定显示 `[REDACTED]`，离开作用域时归零；队列取消、拒绝和退出同样触发归零。密码不进入快照、日志、配置、命令行或恢复日志。Qt／HTML 密码框关闭、取消或提交后清空；Qt/浏览器及系统内存中的历史副本无法保证擦除，不能把 Rust 容器归零表述为全进程安全擦除。
+Post-write verification decrypts each entry into a bounded discard sink, reads EOF to verify authentication and stream termination, and checks frozen input name, type, and size. Wrong passwords, corruption, or cancellation never publish. Independent 7-Zip decoding is an interoperability gate. Supported AES-256 results automatically open in the application like ordinary ZIP and can enter actual password extraction. Numbered volumes automatically open their first part in the application; neither automatically opens the system folder.
 
-写后校验逐项解密到有界丢弃接收端，读到 EOF 验证认证码与流终止，同时对照冻结输入的名称、类型和大小；错误密码、内容破坏或取消均不发布。独立 7-Zip 解码是互操作门槛。受支持的 AES-256 结果与普通 ZIP 一样在应用内自动打开，可进入真实密码解压；编号分卷在应用内自动打开首卷，均不自动打开系统文件夹。
+## Split-volume parameters and publication
 
-## 分卷参数与发布
+Dropdown options are no split, 3MB, 4MB, 5MB, 10MB, 20MB, 25MB (Gmail), 100MB, 300MB, 650MB (CD), 700MB (CD), 4GB (FAT32), 4.7GB (DVE), and Custom. MB/GB use decimal bytes. Custom turns the shared dropdown into a positive-integer input with bytes, KB, MB, and GB units. Empty, zero, nonnumeric, or over 24 GiB is invalid. At most 1,024 volumes; do not publish if actual compressed output exceeds the volume-count budget.
 
-下拉选项：不分卷、3MB、4MB、5MB、10MB、20MB、25MB (Gmail)、100MB、300MB、650MB (CD)、700MB (CD)、4GB (FAT32)、4.7GB (DVE)、自定义。MB/GB 使用十进制字节。自定义将统一下拉改为可输入正整数，右侧单位为字节、KB、MB、GB；空值、零、非数字或超出 24 GiB 无效。最多 1024 卷；实际压缩结果超出卷数预算时不发布。
+Byte-split names are `.zip.001`, `.zip.002`, and so on; the last volume may be smaller. This is 7-Zip-compatible numbered splitting, not multidisk-header `.z01`. Finish and verify the complete ZIP first, then split to private files using a fixed 64 KiB buffer and synchronize/close each volume. Memory and open regular-file counts do not grow linearly with volume count. Staging may require both full ZIP and volume copies: complete ZIP output is limited to 24 GiB, volume copies need at most the same space, and worst-case staging is approximately 48 GiB. Task write counts do not double-count split copying as archive size.
 
-格式为字节分卷 `.zip.001`、`.zip.002` 等，最后一卷可较小。这是 7-Zip 兼容的编号分卷，不是带多磁盘头的 `.z01` 格式。先写完并验证完整 ZIP，再用固定 64 KiB 缓冲分割到私有文件，每卷同步后关闭句柄。内存和已打开普通文件数量不随卷数线性增长；暂存磁盘最多需要完整 ZIP 加分卷副本，完整 ZIP 写出上限为 24 GiB，分卷副本另需不超过完整 ZIP 的空间，暂存最坏约 48 GiB；任务写出计数不把分卷复制重复计算为归档大小。
+Split creation retains user-selected old volumes, base `.zip`, `.zip.1025`, and other regular inputs, applies the same macOS metadata exclusions, and filters identity-matching private staging directories. Existing output volumes use group conflict rename or cancellation at final save, without early failure merely because old volumes are inputs. Do not overwrite old volumes or input file identities.
 
-分卷同样保留用户选择的旧卷、基名 `.zip`、`.zip.1025` 和其他普通输入，应用相同的 macOS 元数据排除，并过滤身份匹配的私有暂存目录。已有输出卷在最终保存时按整组冲突规则改名或取消，不因旧卷参与输入而提前失败；不覆盖旧卷或参与输入的文件身份。
+Preflight every destination in the group. If old volumes exist, support renaming the entire group or canceling; overwrite is disabled. After obtaining the commit permit, publish volumes individually with no-replace. Multiple files have no common atomic visibility point; do not claim a multi-file atomic transaction. Later failure rolls back only volumes published by this task whose identities still match. Concurrently created old files remain unchanged; rollback failure explicitly reports recovery warnings and uncertain outcomes. Cancellation wins before the commit permit; afterward, finish according to whole-group commit/rollback outcomes without leaving a partial volume set disguised as success.
 
-整组预检所有目标，存在旧卷时支持整组改名或取消；覆盖动作禁用。取得提交许可后逐卷进行 no-replace 发布；多个文件没有共同原子可见点，不声称多文件原子事务。后续失败只回滚本次发布且身份仍匹配的卷；并发创建的旧文件保持不变，回滚失败明确标记恢复警告与结果不确定。取消在提交许可前胜出，许可后按整组提交／回滚结果结束，不留下伪装为成功的部分卷集。
+## Result records and interface
 
-## 结果记录与界面
+The result window follows [result design parameters](../../specs/visual/result-reference.json), retaining the title, three-column statistics, unfinished card, and destination location; expanded details use supplementary artwork and shared icons. The body scrolls and the footer remains fixed. Logical control dimensions are unaffected by DPR or browser zoom.
 
-结果窗口采用 [结果原稿参数](../../specs/visual/result-reference.json)，标题、三列统计、未完成卡片与目标位置沿用原稿；展开明细使用补充原稿和统一图标。正文滚动、footer 固定，控件逻辑尺寸不受 DPR 或浏览器缩放影响。
+Record status for each real file completed, explicitly skipped, or failed; do not infer success from progress ratios. Snapshots use a shared bounded record list retaining the latest 128 items, with names at most 1,024 UTF-8 bytes each and an omitted count. Statistics always cover all files. Creation records describe actual published archives/volumes; failure does not count inputs read as saved. Records exist only in the current in-memory task and are not persisted across launches by default.
 
-每个真实文件完成、明确跳过或失败时记录状态，不从进度比例推算成功。快照通过共享有界记录列表保存最近 128 项，每项名称最多 1024 UTF-8 字节，显示省略数量；统计始终覆盖全部文件。创建记录描述实际发布归档／分卷，失败不把已读取输入算成已保存。记录仅存于当前内存任务，默认不跨启动持久化。
+On the first successful terminal state for a task ID after creating a supported archive, Qt places the final committed path in a serial open queue. After current reading/admission ends, open it automatically in the application. Failure, cancellation, and duplicate terminal states do not open it. When a user explicitly opens the same file, compare Qt canonical paths with normalized native separators, case-insensitively on Windows, and consume the pending automatic-open intent. This comparison only deduplicates UI intent and grants no output authority. Deduplication avoids another open invalidating new-session and extraction intents. Numbered-volume output likewise opens its first part; the [split-volume host](archive-opening.md) verifies and reads the complete set, explicitly reporting missing volumes. Result windows retain actual output files and volume counts and no longer require an external reader.
 
-成功创建受支持归档后，Qt 按任务 ID 的首次成功终态，将最终提交路径放入串行打开队列；等待当前读取／准入结束后自动在应用中打开。失败、取消和重复终态不触发打开。用户显式打开同一文件时，以 Qt 规范路径比较并统一原生分隔符（Windows 同时忽略大小写），消费尚未执行的自动打开意图。此比较仅用于界面意图去重，不授予输出权限。去重可避免再次打开导致新会话与解压意图失效。编号分卷输出同样自动打开首卷，由[分卷读取主机](archive-opening.md)验证并读取完整卷组；缺卷时明确报错。结果窗口保留真实输出文件与卷数，不再要求外部读取器。
+Completion behavior was revised on 2026-10-16: creation does not automatically invoke the system file manager, and the creation window removes its auto-open-directory option. The old startCreation openAfter parameter is ignored. Both task acceptance and terminal paths prohibit creation tasks from automatically opening system directories. Successful results continue through the in-application open queue using existing encrypted and numbered-volume reading. Result statistics use the “Saved” label. See the [UI contract](../ux/welcome-opening.md).
 
-2026-10-16 完成行为修订：创建不自动调用系统文件管理器，创建窗口移除目录自动打开选项。旧 startCreation 的 openAfter 参数忽略；任务接受及终态两条路径均禁止创建任务自动打开系统目录。成功结果沿用应用内打开队列，加密与编号分卷使用现有读取能力。结果统计使用“已保存”标签。详见 [界面契约](../ux/welcome-opening.md)。
-
-来自[系统右键](shell-actions.md)的创建任务携带独立完成策略，成功结果不进入应用内自动打开队列。单项和多项创建均显示真实独立结果，只有用户主动点击结果中的目录操作才交给系统文件管理器。
+Creation tasks from [system context menus](shell-actions.md) carry a separate completion policy: successful results do not enter the in-application auto-open queue. Single and multiple creations show real independent results; only an explicit user click on a result's directory action invokes the system file manager.

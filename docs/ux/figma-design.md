@@ -1,57 +1,57 @@
-# Figma 功能设计工作稿
+# Figma functional design draft
 
-设计文件：[xdzip — v0.1 产品设计与交互规范](https://www.figma.com/design/ib4gjPbNSFNpaOI1ld3zaF)。
+Design file: [xdzip — v0.1 product design and interaction specification](https://www.figma.com/design/ib4gjPbNSFNpaOI1ld3zaF).
 
-后续功能细化在[仓库交互原型](prototype-spec.md)继续，保留本文件作为设计探索记录。
+Further functional detail continues in the [repository interaction prototype](prototype-spec.md); this file remains a record of design exploration.
 
-状态：功能设计初稿，尚未完成全部视觉复核和原型连线，不作为最终开发验收基线。早期视觉方向图已不在 docs/visual。本文只说明当时探索文件的结构和局限，当前原稿以 [design/hifi](../../design/hifi/README.md)及视觉规范为准，不将下述历史待办作为当前 Qt 产品缺陷。
+Status: initial functional design, without complete visual review or prototype links. It is not the final development acceptance baseline. Early visual direction images are no longer in docs/visual. This page describes the structure and limitations of the historical exploration; current originals are in [design/hifi](../../design/hifi/README.md) and the visual specifications. Do not treat the historical tasks below as current Qt product defects.
 
-## 文件内容
+## File contents
 
-- 00 设计规范与需求映射：范围说明、需求对应、按钮和输入框组件。
-- 01 v0.1 核心流程：11 张界面，涵盖打开、浏览、选择、搜索、解压、任务、结果、新建、深色主题和设置。
-- 02 异常与边界状态：9 张界面，涵盖读取、空压缩包、无结果、不支持、冲突、权限、取消、部分失败和源变化。
+- 00 Design specification and requirements mapping: scope, requirements, button and input components.
+- 01 v0.1 core flows: 11 screens covering open, browse, selection, search, extraction, tasks, results, creation, dark theme and settings.
+- 02 Error and boundary states: 9 screens covering loading, empty archive, no results, unsupported features, conflicts, permissions, cancellation, partial failure and source changes.
 
-已建立 16 个组件变体、6 个文字样式及 57 个变量（含原始色值、主题语义和尺寸）。Starter 方案采用独立 Light/Dark 单模式集合。文字、控件和布局为可编辑图层，没有用完整截图替代界面图层。首版属性面板不包含后续版本的图像预览。
+The file contains 16 component variants, 6 text styles and 57 variables including raw colors, theme semantics and dimensions. The Starter plan uses separate Light/Dark single-mode collections. Text, controls and layouts are editable layers, not full screenshots standing in for UI layers. The first property panel does not contain later image preview.
 
-## 画板索引
+## Artboard index
 
-| 编号 | 界面 | 需求 | Figma 节点 |
+| ID | Screen | Requirements | Figma node |
 | --- | --- | --- | --- |
-| F01 | 打开与新建 | P01、P04 | 4:2 |
-| F02 | 浏览压缩包，无选择 | P01、P02、P08 | 4:22 |
-| F03 | 选择 3 个文件 | P02、P03 | 4:134 |
-| F04 | 搜索与选择范围 | P02 | 4:246 |
-| F05 | 解压确认 | P03、P07 | 4:321 |
-| F06 | 解压进行中 | P06 | 4:351 |
-| F07 | 解压完成 | P03、P15 | 4:374 |
-| F08 | 创建压缩包 | P04、P05 | 4:398 |
-| F09 | 创建压缩包进行中 | P04、P06 | 4:432 |
-| F10 | 深色浏览 | P08 | 4:454 |
-| F11 | 设置 | P08、P11 | 4:566 |
-| S01 | 读取目录 | P01、P02 | 6:2 |
-| S02 | 空压缩包 | P01、P02 | 6:23 |
-| S03 | 搜索无结果 | P02 | 6:41 |
-| S04 | 不支持的加密特性 | P05 | 6:59 |
-| S05 | 重名冲突 | P03、P07 | 6:80 |
-| S06 | 目标不可写 | P07、P15 | 6:110 |
-| S07 | 正在停止与清理 | P06 | 6:131 |
-| S08 | 部分失败与重试 | P15 | 6:150 |
-| S09 | 源文件变化 | P15 | 6:172 |
+| F01 | Open and create | P01, P04 | 4:2 |
+| F02 | Browse archive, no selection | P01, P02, P08 | 4:22 |
+| F03 | Select 3 files | P02, P03 | 4:134 |
+| F04 | Search and selection scope | P02 | 4:246 |
+| F05 | Confirm extraction | P03, P07 | 4:321 |
+| F06 | Extraction in progress | P06 | 4:351 |
+| F07 | Extraction complete | P03, P15 | 4:374 |
+| F08 | Create archive | P04, P05 | 4:398 |
+| F09 | Creation in progress | P04, P06 | 4:432 |
+| F10 | Dark browsing | P08 | 4:454 |
+| F11 | Settings | P08, P11 | 4:566 |
+| S01 | Reading directory | P01, P02 | 6:2 |
+| S02 | Empty archive | P01, P02 | 6:23 |
+| S03 | No search results | P02 | 6:41 |
+| S04 | Unsupported encryption feature | P05 | 6:59 |
+| S05 | Name conflict | P03, P07 | 6:80 |
+| S06 | Destination not writable | P07, P15 | 6:110 |
+| S07 | Stopping and cleaning up | P06 | 6:131 |
+| S08 | Partial failure and retry | P15 | 6:150 |
+| S09 | Source file changed | P15 | 6:172 |
 
-在文件 URL 后加 `?node-id=4-134` 可直接定位对应画板。各画板下方附入口、行为、恢复路径和 AC 验收编号；工程需求 P09/P10/P12 仍通过测试及发行证据验收，不由图片证明。
+Append `?node-id=4-134` to the file URL to locate an artboard. Each has entry, behavior, recovery path and AC acceptance IDs below it. Engineering requirements P09/P10/P12 remain subject to test and release evidence, not proof by image.
 
-## 历史探索的检查与局限
+## Historical exploration checks and limitations
 
-已检查浏览、解压确认、新建面板及按钮组件的代表性截图；已修正组件实例标签缩放错位、核心流程多行文字高度和状态栏间距。节点返回结果确认核心流程包含 47 个组件实例，异常页包含 19 个组件实例。
+Representative screenshots of browsing, extraction confirmation, creation and button components were checked. Corrections addressed component-instance label scaling misalignment, multi-line core-flow text height and status-bar spacing. Node results confirmed 47 component instances in core flows and 19 on error pages.
 
-当时未完成的设计探索：
+Design exploration not completed at the time:
 
-- 模态窗口标题栏存在文字裁切迹象，需要检查布局边界并修正。
-- 异常页、深色页、规范页和其余流程页尚未完成逐页视觉验收。
-- 原型跳转尚未连接；输入、复选和范围选项当前只表示设计状态，不是可操作表单。
-- 文件行、新建输入清单等尚需进一步组件化；工具栏入口、格式切换、单选/多选及错误恢复的所有分支需补充精确交互。
-- 取消完成、创建完成、损坏文件等状态需要进一步展开；现有 20 张画板不代表所有 v0.1 状态已经覆盖。
-- 需补原生文件选择器、系统菜单与各平台键盘标注，以及窄窗口/字体缩放布局。
+- Modal title-bar text appeared clipped and needed layout-boundary review and correction.
+- Error, dark, specification and remaining flow pages had not received page-by-page visual acceptance.
+- Prototype transitions were not connected; inputs, checkboxes and scope choices represented design states, not operational forms.
+- File rows, creation input lists and others needed further componentization; toolbar entries, format switching, single/multiple selection and error recovery needed precise interaction branches.
+- Cancellation completion, creation completion and damaged-file states needed further development; 20 artboards did not cover every v0.1 state.
+- Native file pickers, system menus, platform keyboard labels and narrow-window/font-scaling layouts needed to be added.
 
-2026-10-11 的编辑过程中触发 Figma Starter MCP 调用额度限制，剩余复核和原型连线暂停。继续编辑前先核对当前节点，保留已有组件和变量，不重复创建文件。
+Figma Starter MCP call limits were reached during editing on 2026-10-11, pausing remaining review and prototype connections. Before further editing, check current nodes, preserve existing components and variables, and do not recreate the file.

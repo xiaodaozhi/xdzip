@@ -1,32 +1,31 @@
-# WP-11 TAR/GZIP 实现契约
+# WP-11 TAR/GZIP implementation contract
 
-本契约定义 TAR／TAR.GZ 的浏览、创建和安全解压边界，平台执行结果与人工验收在 issue／CI 工件登记。沿用 [M3 安全解压](m3-extraction.md)与 [WP-10 创建](m4-creation.md)的输入授权、暂存、冲突、取消及整体提交。
+This contract defines TAR/TAR.GZ browsing, creation, and safe extraction boundaries. Platform results and manual acceptance are recorded in issues/CI artifacts. It retains input authorization, staging, conflicts, cancellation, and whole-archive commit from [M3 safe extraction](m3-extraction.md) and [WP-10 creation](m4-creation.md).
 
-## 范围与能力
+## Scope and capabilities
 
-支持 TAR、TAR.GZ 浏览、创建和安全解压。TAR 为容器，GZIP 为一层压缩过滤器，按内容探测，不按后缀选择读取后端。ZIP 行为保持兼容。当前不启用独立 GZIP 单文件创建、嵌套自动展开、加密或分卷 TAR。
+TAR and TAR.GZ browsing, creation, and safe extraction are supported. TAR is a container and GZIP one compression filter; reading probes content instead of selecting a backend by extension. ZIP behavior remains compatible. Standalone single-file GZIP creation, automatic nested expansion, encryption, and split TAR are not enabled.
 
-TAR 头、数字、PAX、流式编码与重写由独立 Rust 记录层实现；GZIP 封装、CRC-32、Deflate 的 LZ77 与 Huffman 由共享 `xdzip-compression` 实现。`tar` 和 `flate2` 仅用于开发测试参照，不进入这两个 crate 的生产依赖闭包。规格、来源及限制见[自研格式契约](independent-rust-codecs.md)。
+TAR headers, numbers, PAX, streaming encoding, and rewriting use an independent Rust record layer. GZIP framing, CRC-32, and Deflate LZ77/Huffman use shared `xdzip-compression`. `tar` and `flate2` are development-test references only and do not enter production dependency closures of these crates. See the [in-house format contract](independent-rust-codecs.md) for specifications, sources, and limits.
 
-TAR 接受普通文件与目录，解析 PAX 路径及 GNU 长名称。符号链接、硬链接、设备、FIFO、稀疏和未知类型不能解压。所有输出名称继续经过 PortablePath 与宿主冲突预检，格式库不获得文件路径或 unpack 权限。目录权限、所有者与特殊 mode 不恢复。日期作为展示元数据，不承诺恢复。
+TAR accepts regular files and directories and parses PAX paths and GNU long names. Symbolic links, hard links, devices, FIFOs, sparse files, and unknown types cannot be extracted. All output names still pass PortablePath and host conflict preflight; format libraries receive no file paths or unpack authority. Directory permissions, owners, and special modes are not restored. Dates are display metadata without restoration guarantees.
 
-## 有界流式处理
+## Bounded streaming
 
-文件名的传统编码、GNU 长名称及 PAX UTF-8/BINARY 声明按[编码契约](filename-encoding.md)统一解析。完整扫描后才发布索引，扫描期间条目数与总量未知。元数据沿用 100,000 条、单名称 4096 字节及累计名称预算；流式来源的编码输入和解码工作各最高 24 GiB，单个 GNU／PAX 扩展头最多 64 KiB，每条最多四个扩展头。全局 PAX 仅接受无文件语义的 comment 注释（兼容 git archive），按记录声明长度完整校验后丢弃，不继承到条目。全局 path、size、mtime、linkpath、稀疏及未知字段仍明确拒绝；GNU 长链接与稀疏变体不在支持范围内。全局注释同样计入每条最多四个扩展头及流字节预算，不使未完成的局部扩展变为有效。常见的前置 ./ 在 TAR 名称中规范化，根目录标记不作为输出项。顺序流的读取与跳过同样检查取消和字节预算，不以 seek 绕过损坏流检查。GZIP 必须读至 EOF 验证 CRC 与 ISIZE，多 member 仅作为同一连续 TAR 字节流；尾部非零垃圾、截断及损坏均失败。拒绝未经验证的部分索引。
+Legacy filename encodings, GNU long names, and PAX UTF-8/BINARY declarations are uniformly resolved under the [encoding contract](filename-encoding.md). Publish indexes only after complete scanning; entry counts and totals are unknown during scanning. Metadata retains limits of 100,000 entries, 4,096 bytes per name, and cumulative name budgets. Streaming source encoded input and decode work are each at most 24 GiB; a GNU/PAX extension header is at most 64 KiB, with at most four extension headers per entry. Global PAX accepts only comment text without file semantics, for git archive compatibility. It is fully checked against declared record length and discarded rather than inherited by entries. Global path, size, mtime, linkpath, sparse, and unknown fields remain explicitly rejected; GNU long links and sparse variants are unsupported. Global comments also count toward the four-header-per-entry and stream-byte budgets and do not make unfinished local extensions valid. Normalize common leading `./` in TAR names; root markers are not output entries. Sequential reads and skips also check cancellation and byte budgets; seeking cannot bypass corrupted-stream checks. GZIP must reach EOF and verify CRC and ISIZE. Multiple members form only one continuous TAR byte stream. Nonzero trailing garbage, truncation, and corruption fail. Unverified partial indexes are rejected.
 
-TAR.GZ 缺少逐项压缩大小，高压缩比准入使用所选声明总量与整份冻结来源大小比较；超过 1000 倍且大于 1 MiB 仍需明确允许，允许也不绕过扫描工作和输出配额。元数据预检不伪造逐项压缩比。
+TAR.GZ lacks per-entry compressed sizes. High-ratio admission compares selected declared total against the complete frozen source size. Above 1000:1 and 1 MiB still requires explicit permission, which does not bypass scan-work or output quotas. Metadata preflight does not invent per-entry compression ratios.
 
-解压按物理顺序处理选择，跳过未选内容仍计量并可取消，不承诺随机读取。PayloadReader 只获得来源与宿主 sink；来源版本在扫描、解码和提交边界仍由宿主验证。每条提交和整体创建失败语义沿用现有安全 I/O 契约。
+Extraction processes selected entries in physical order. Skipping unselected content is metered and cancellable; random reads are not promised. PayloadReader receives only the source and host sink. The host still verifies source versions at scan, decode, and commit boundaries. Per-entry commit and whole-creation failure semantics follow the existing secure I/O contract.
 
-## 创建与界面
+## Creation and interface
 
-创建窗口启用已有 TAR、TAR.GZ 分段，不改变窗口密度。格式切换同步扩展名；TAR 禁用压缩级别，两个 TAR 格式都禁用密码及分卷并清空相关值。TAR.GZ 使用 GZIP 0／1／6／9 级别。逐条压缩后大小未知，显示为横线，不伪装成 0 字节。同名目标文件夹由 Rust 从来源名称统一生成，经有界桥接用于预览；TAR.GZ 去掉整个复合扩展名，大小写一致处理，空基名回退 archive。UI 不自行推导另一套目标，最终仍由 PortablePath 与授权根复验。主窗口格式标记按真实格式和文字宽度自适应，TAR 日期以 UTC 展示，日期超出既有显示范围时保留未知。创建对 Unicode／长路径显式写 PAX UTF-8 path，大文件写 PAX size，避免参考读取器的本地编码猜测；冻结输入树、流式写入、终止 TAR/GZIP、重新扫描及逐项解码校验，验证成功后才整体发布。冲突改名保留完整复合扩展名。
+The creation window enables existing TAR and TAR.GZ segments without changing density. Format switches update extensions. TAR disables compression level; both TAR formats disable and clear password and split-volume values. TAR.GZ uses GZIP levels 0/1/6/9. Compressed size per entry is unknown and displayed as a dash, not 0 bytes. Rust uniformly derives the archive-named target folder from the source name and provides it through the bounded bridge for preview. TAR.GZ removes the complete compound extension case-insensitively; an empty basename falls back to archive. The UI does not derive another target; PortablePath and the authorized root revalidate it. Main-window format tags adapt to actual format and text width. TAR dates display in UTC and remain unknown outside the existing display range. Creation explicitly writes PAX UTF-8 paths for Unicode/long names and PAX size for large files, avoiding reference readers' local-encoding guesses. Freeze the input tree, stream output, terminate TAR/GZIP, rescan, and decode/verify every entry; publish as a whole only after success. Conflict renaming retains the complete compound extension.
 
-## 验证与限制
+## Verification and limits
 
-必须覆盖系统 tar／Python tarfile 双向互操作，长路径、Unicode、空目录、重复项、PAX/GNU、特殊项、路径逃逸、截断、CRC、资源限额、取消及旧文件保护；Qt 真实创建、重开与解压复用现有任务和冲突窗口。实际证据只生成到 build/ 或 CI 工件。
+Cover bidirectional interoperability with system tar/Python tarfile, long paths, Unicode, empty directories, duplicates, PAX/GNU, special entries, path escape, truncation, CRC, resource limits, cancellation, and old-file protection. Real Qt creation, reopening, and extraction reuse existing task and conflict windows. Actual evidence is generated only under build/ or CI artifacts.
 
-桌面操作与辅助功能按[通用验证方法](../qa/README.md)选择受影响项复验，原生自动化与离屏检查不代替人工专项。具体执行结果和限制记录于对应 issue，既有桌面验收见 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)，不在本契约保留单轮权限或环境阻塞。`v0.1.0` 的历史发行许可复核见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)，未来候选须建立新的发行 issue。
+Choose affected desktop and accessibility reverification under [general verification](../qa/README.md); native automation and offscreen checks do not replace manual checks. Actual results and limitations go in the relevant issue. Existing desktop acceptance is in [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5); one-off permission or environment blockers are not retained in this contract. Historical `v0.1.0` release license review is in [#4](https://github.com/xiaodaozhi/xdzip/issues/4) and [#53](https://github.com/xiaodaozhi/xdzip/issues/53); future candidates need new release issues.
 
-
-CLI 创建入口接受 .tgz 作为 .tar.gz 的同格式名称别名，复用相同 GZIP 编码、验证和提交，不引入独立 GZIP 文件模式。English: CLI creation accepts .tgz as an alias for .tar.gz using the same GZIP encoding, validation and commit; standalone non-TAR GZIP is not added.
+The CLI creation entry accepts .tgz as a same-format alias for .tar.gz, using the same GZIP encoding, verification, and commit. It does not add standalone non-TAR GZIP mode.

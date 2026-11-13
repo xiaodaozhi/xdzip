@@ -1,25 +1,25 @@
-# 系统支持与维护政策
+# System support and maintenance policy
 
-项目所有者于 2026-10-19 批准首批支持政策，`v0.1.0` 于 2026-11-06 公开。当前版本与下载见[发布页](https://github.com/xiaodaozhi/xdzip/releases)。本文确定支持范围，不修改应用最低版本检查，不将 CI 宿主或未附环境明细的用户验收扩大为全部系统版本保证。人工专项已按用户结论完成，无需重复。
+The project owner approved the initial support policy on 2026-10-19, and `v0.1.0` was released publicly on 2026-11-06. See the [releases page](https://github.com/xiaodaozhi/xdzip/releases) for current versions and downloads. This document defines support scope; it does not change minimum-version checks or extend CI host results or user acceptance without environment details into guarantees for all system versions. The manual review was completed according to the user's conclusion and need not be repeated.
 
-## 首批支持范围
+## Initial support scope
 
-| 平台 | 首批支持范围 | 当前工程依据与边界 |
+| Platform | Initial support | Engineering evidence and limits |
 | --- | --- | --- |
-| macOS | macOS 14 及以上，Apple Silicon arm64 | 当前部署目标 14.0，原生 CI 和本地开发 DMG；不提供 Intel 或 Universal 包，不承诺所有未来系统版本 |
-| Windows | 仍受 Microsoft 维护的 Windows 11，x86_64 | MSVC 构建、当前用户安装器、实际安装／升级／回退／卸载 CI；Server CI 不替代对所有 Windows 11 版本的支持声明，不提供 ARM64 包 |
-| Linux | Ubuntu 24.04 LTS x86_64，X11，glibc 2.39 及以上 | 当前 .deb 和无 Qt SDK 的隔离运行验证；不宣称任意发行版、较旧 glibc、Wayland 或 ARM64 可用 |
+| macOS | macOS 14 or later, Apple Silicon arm64 | Deployment target 14.0, native CI and local development DMG; no Intel or Universal package and no promise for every future system version |
+| Windows | Windows 11 x86_64 versions still maintained by Microsoft | MSVC build, per-user installer, actual installation/upgrade/rollback/uninstall CI; Server CI does not establish support for every Windows 11 version; no ARM64 package |
+| Linux | Ubuntu 24.04 LTS x86_64, X11, glibc 2.39 or later | Current .deb and isolated runtime verification without the Qt SDK; no claim for arbitrary distributions, older glibc, Wayland or ARM64 |
 
-Mac 最低版本取当前项目部署目标，不反向采用旧设计中未验证的 13。Windows 10 的常规支持已于 2025-10-14 结束，不列为首批承诺范围；LTSC／ESU 不自动纳入。依据：[Microsoft 生命周期说明](https://learn.microsoft.com/en-us/lifecycle/announcements/windows-10-end-of-support)。Qt 自身支持矩阵只是依赖边界，不等同于 xdzip 实际验证，见 [Qt 6.8 支持平台](https://doc.qt.io/qt-6.8/supported-platforms.html)。
+The Mac minimum follows the current deployment target, not the unverified version 13 in older designs. Standard support for Windows 10 ended 2025-10-14 and is not in the initial commitment; LTSC and ESU are not automatically included. See [Microsoft's lifecycle announcement](https://learn.microsoft.com/en-us/lifecycle/announcements/windows-10-end-of-support). Qt's own support matrix defines a dependency boundary, not actual xdzip verification; see [Qt 6.8 supported platforms](https://doc.qt.io/qt-6.8/supported-platforms.html).
 
-## 维护方式
+## Maintenance
 
-个人项目采取尽力维护，不设付费服务、固定响应 SLA 或未经执行的安全承诺。优先维护最新公开稳定版，开发预览可能发生兼容变化；新版本说明列出已知问题和回退方式，遇到安全问题可撤回受影响下载。桌面应用支持用户从关于页主动检查并交接更新，不增加后台轮询或静默更新器。当前源码中的 CLI 也提供主动更新命令，其适用身份与已发布附件的区别见[命令行契约](command-line.md)。
+This personal project is maintained on a best-effort basis, without paid service, a fixed response SLA or unperformed security commitments. The latest public stable release takes priority; development previews may introduce compatibility changes. Release notes list known issues and rollback options, and affected downloads may be withdrawn when security problems arise. The desktop application lets users initiate update checks and handoff from About, without background polling or a silent updater. The current source also provides a CLI update command; see the [command-line contract](command-line.md) for eligible identities and distinctions from released assets.
 
-候选仍固定 Qt 6.8.2 和现有 Rust/Cargo 锁定版本。冻结用于复验，不等于宣布旧补丁无漏洞或永久有免费 LTS 更新。维护者在每次公开发布前检查 Qt 官方安全通告及可取得的开源更新，优先评估受维护的公开版本；若当前依赖有影响本项目且未修复的安全问题，暂停相关发布。升级 Qt 必须复验源码、模块许可、Windows 私有接口、动态替换、三平台构建及实际菜单／窗口行为，不购买商业维护作为前置条件。
+Candidates remain pinned to Qt 6.8.2 and the existing locked Rust/Cargo versions. Freezing supports repeatable verification; it does not declare older patches vulnerability-free or promise permanent free LTS updates. Before every public release the maintainer checks official Qt security advisories and available open-source updates, prioritizing evaluation of maintained public versions. If the current dependency has an unpatched security issue affecting this project, the affected release is paused. A Qt upgrade requires revalidation of source, module licensing, Windows private interfaces, dynamic replacement, three-platform builds and actual menu/window behavior; purchasing commercial maintenance is not a prerequisite.
 
-## 批准范围与变更
+## Approved scope and changes
 
-本次批准首批平台范围、只维护最新公开版本的尽力维护方式、无固定响应时限及实验性开发构建标记。`v0.1.0` 的实际发行结果另由 Release 和历史审查 issue 记录；本政策不把一次发布扩大为所有系统版本的性能保证。后续扩大架构、系统或发行渠道时，补充实现与验证再更新本政策，见 [ADR-011](../design/architecture-decisions.md#adr-011首批支持范围与个人项目维护政策)。
+Approval covers the initial platforms, best-effort maintenance of only the latest public release, no fixed response time and experimental labeling of development builds. Actual `v0.1.0` release results are recorded separately in the Release and historical review issues; this policy does not extend one release into performance guarantees for all system versions. Expansion to architectures, systems or distribution channels requires implementation and verification before updating this policy; see [ADR-011](../design/architecture-decisions.md#adr-011首批支持范围与个人项目维护政策).
 
-正式签名、公证、付费账号已由用户取消，不重新要求。漏洞反馈按[安全政策](../../SECURITY.md)处理。
+The user has cancelled formal signing, notarization and paid-account requirements; do not request them again. Report vulnerabilities according to the [security policy](../../SECURITY.md).

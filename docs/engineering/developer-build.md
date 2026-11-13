@@ -1,62 +1,60 @@
-# 开发构建与平台验证
+# Development builds and platform verification
 
-本文是三平台环境准备、构建、测试、打包和验证的统一入口。共用编排由 [scripts/desktop.py](../../scripts/desktop.py) 实现；平台文档仅补充部署布局、工具行为和系统限制，不再另维护一套日常命令。
+This is the unified entry point for preparing, building, testing, packaging, and verifying environments on three platforms. Shared orchestration is implemented by [scripts/desktop.py](../../scripts/desktop.py). Platform documents supplement deployment layouts, tool behavior, and system limits rather than maintaining separate routine commands.
 
-独立命令行版使用 `python3 scripts/cli.py build`、`test` 和 `package`，无需 Qt、X11 或图形会话。Linux 编译另需 `libssl-dev pkg-config`，运行使用系统 OpenSSL 与证书。桌面构建自动生成私有 CLI 目录。命令、安装与受信更新见 [CLI 契约](command-line.md)。English: The standalone CLI build/test/package entry requires no Qt or display server; desktop builds also include the private CLI directory.
+The standalone CLI uses `python3 scripts/cli.py build`, `test`, and `package` without Qt, X11, or a graphical session. Linux compilation also requires `libssl-dev pkg-config`; runtime uses system OpenSSL and certificates. Desktop builds automatically create a private CLI directory. See the [CLI contract](command-line.md) for commands, installation, and trusted-update boundaries.
 
-开发构建仍标记实验性，不能当作正式 Release 安装包。能力和限制见根目录 [README](../../README.md)，支持范围见[支持政策](support-policy.md)。正式 `v0.1.0` 的历史发行审查见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)；未来版本须按具体候选重新建立发行审查记录。
+Development builds remain experimental and are not official Release installers. See the root [README](../../README.md) for capabilities and limits and the [support policy](support-policy.md) for supported scope. Historical `v0.1.0` release review is in [#4](https://github.com/xiaodaozhi/xdzip/issues/4) and [#53](https://github.com/xiaodaozhi/xdzip/issues/53); future versions require new review records for their specific candidates.
 
-## 环境与入口
+## Environment and entry points
 
-先安装 Python 3.10+、Git、CMake 3.24+、Ninja、rustup 和平台编译器／SDK。Rust 版本读取根目录 rust-toolchain.toml，Qt 固定为 6.8.2，依赖与更新规则见[工具链策略](toolchain.md)。命令均在仓库根目录执行。Windows 可将示例中的 `python3` 改为可调用的 `python`，并在 x64 MSVC 开发环境运行。
+First install Python 3.10+, Git, CMake 3.24+, Ninja, rustup, and the platform compiler/SDK. The Rust version comes from root rust-toolchain.toml; Qt is pinned to 6.8.2. See [toolchain policy](toolchain.md) for dependency and update rules. Run commands from the repository root. On Windows, replace `python3` in examples with an available `python` and use an x64 MSVC development environment.
 
-## 本地工具链目录
+## Local toolchain directories
 
-`prepare` 会在原 SDK 中构建并验证 QtNetwork 安全补丁，修复 CVE-2026-116337 与 CVE-2026-105946，其他运行模块不被重建库替换。另需 Perl、make（Windows 为 nmake）和 OpenSSL 命令行工具；Ubuntu 需 `zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libzstd-dev libkrb5-dev`。源码、生成声明及构建缓存统一在 `build/`，默认复用 `build/toolchain/qt-network-security/<平台>`。输入和实际库摘要不匹配时，产品构建与打包直接失败，重新运行 `prepare`；来源、ABI、TLS 功能及失败恢复见[补丁维护说明](../../patches/qt/README.md)。
+`prepare` builds and verifies a security-patched QtNetwork in the existing SDK for CVE-2026-116337 and CVE-2026-105946; other runtime modules are not replaced by the rebuilt library. Perl, make (nmake on Windows), and the OpenSSL command-line tool are also required. Ubuntu requires `zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libzstd-dev libkrb5-dev`. Source, generated declarations, and build caches stay under `build/`, defaulting to reuse of `build/toolchain/qt-network-security/<platform>`. Product build and packaging fail immediately if input and actual library digests do not match; rerun `prepare`. See [patch maintenance notes](../../patches/qt/README.md) for provenance, ABI, TLS functionality, and failure recovery.
 
-English: Preparation builds and verifies the pinned QtNetwork security variant in the existing SDK, retaining the original QtCore and other modules. Perl, make/nmake and the OpenSSL command-line tool are required; Ubuntu additionally needs the development packages listed above. Hash-bound receipts prevent building or packaging with an unprepared or changed library. See the patch maintenance guide for source, ABI, TLS and rollback details.
+Local dependencies for the unified entry point use only `build/toolchain/`, which Git ignores and does not commit:
 
-统一入口的本地依赖只使用 `build/toolchain/`，该目录及其内容被 Git 忽略，不提交到仓库：
-
-| 内容 | 固定目录 | 说明 |
+| Content | Fixed directory | Notes |
 | --- | --- | --- |
-| Qt SDK 6.8.2 | `build/toolchain/Qt/6.8.2/<平台子目录>` | `<平台子目录>` 为 `macos`、`msvc2022_64` 或 `gcc_64`，`qmllint`、`qmake`、CMake 配置和 Qt 运行库都来自这里 |
-| Python 工具环境 | `build/toolchain/desktop-tools` | `aqtinstall`、打包和校验脚本使用的固定虚拟环境 |
-| Qt 下载暂存 | `build/toolchain/qt-install-tool` | 仅保存 Qt 安装器下载和临时输入 |
+| Qt SDK 6.8.2 | `build/toolchain/Qt/6.8.2/<platform-subdirectory>` | `<platform-subdirectory>` is `macos`, `msvc2022_64`, or `gcc_64`; qmllint, qmake, CMake configuration, and Qt runtimes come from here |
+| Python tool environment | `build/toolchain/desktop-tools` | Fixed virtual environment for aqtinstall, packaging, and verification scripts |
+| Qt download staging | `build/toolchain/qt-install-tool` | Qt installer downloads and temporary inputs only |
 
-`scripts/desktop.py prepare --install-qt`、`doctor`、`build` 和 `test` 默认共享这些目录。不要为每个开发管线另建 `.cache/Qt`、`.cache/desktop-tools` 或同类目录；只有需要隔离不同 Qt 版本、平台或实验构建时，才显式传入 `--qt-prefix`、`--qt-root` 和 `--tools-dir`。CI 可以把这些参数显式指向 runner 临时目录，但本地默认布局不随 CI 回退路径改变。CMake、Ninja、rustup、Rust 编译器和平台 C++ 编译器属于宿主工具链，按环境预检要求安装和调用，不由 Qt 工具目录复制。
+`scripts/desktop.py prepare --install-qt`, `doctor`, `build`, and `test` share these locations by default. Do not create separate `.cache/Qt`, `.cache/desktop-tools`, or similar copies for each development pipeline. Pass `--qt-prefix`, `--qt-root`, and `--tools-dir` explicitly only when isolating different Qt versions, platforms, or experimental builds. CI may explicitly point these to runner temporary directories, but CI fallback paths do not change local defaults. CMake, Ninja, rustup, Rust, and the platform C++ compiler belong to the host toolchain and are installed/invoked under environment preflight requirements, not copied by the Qt tool directory.
 
-研发周期完成、分支和 worktree 清理后，必须清理该周期在 `build/` 下产生的临时目录和文件。保留 `build/toolchain/` 等仍需复用的共享工具链，删除周期专用构建、诊断和下载暂存；具体规则和手动兜底见[仓库内容与历史管理](repository-hygiene.md#研发周期工件收尾)。
+After an R&D cycle and cleanup of branches and worktrees, remove temporary directories and files created under `build/` for that cycle. Retain reusable shared toolchains such as `build/toolchain/`; remove cycle-specific builds, diagnostics, and download staging. See [repository content and history management](repository-hygiene.md#研发周期工件收尾) for rules and manual fallback.
 
-| 平台 | 先准备的系统环境 | Qt SDK 子目录 |
+| Platform | System environment to prepare first | Qt SDK subdirectory |
 | --- | --- | --- |
-| macOS | Apple Silicon 原生终端，Xcode Command Line Tools 与有效 macOS SDK | macos |
-| Windows | MSVC 2022 x64 C++ 工具与 Windows SDK，x64 Developer PowerShell／命令行 | msvc2022_64 |
-| Ubuntu 24.04 | x86_64 C++ 编译器，OpenGL、EGL、xkbcommon 开发包和 X11 运行库 | gcc_64 |
+| macOS | Native Apple Silicon terminal, Xcode Command Line Tools, and valid macOS SDK | macos |
+| Windows | MSVC 2022 x64 C++ tools and Windows SDK, x64 Developer PowerShell/command line | msvc2022_64 |
+| Ubuntu 24.04 | x86_64 C++ compiler, OpenGL/EGL/xkbcommon development packages, and X11 runtime libraries | gcc_64 |
 
-macOS 可用 `xcode-select --install` 准备命令行工具。Ubuntu 基础开发包包含 `libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libnautilus-extension-dev pkg-config`；打包还需要 patchelf 与 Debian 包工具，隔离运行验证另需可连接的 Docker。Windows 仅安装 Visual Studio 但未进入开发环境时，cl、link、rc 或 dumpbin 仍可能不可用，预检会指出实际缺失项。共用入口不自动安装系统编译器、SDK 或需要管理员权限的系统包。
+On macOS, `xcode-select --install` prepares command-line tools. Ubuntu base development packages include `libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libnautilus-extension-dev pkg-config`; packaging also needs patchelf and Debian package tools, and isolated runtime verification needs accessible Docker. Merely installing Visual Studio on Windows without entering a development environment may leave cl, link, rc, or dumpbin unavailable; preflight identifies the actual missing tools. The shared entry point does not automatically install system compilers, SDKs, or system packages requiring administrator privileges.
 
-Windows 可按 [Community 免费许可路径](windows-licensing.md)准备自有开发工具，阅读并接受该版本条款；只装 Build Tools 或 VC_redist 不单独证明资格。GitHub 标准托管 runner 的 Enterprise 使用及相应再分发另有公开依据，不要求维护者为托管构建购买 Enterprise 或在本机安装 Community IDE，也不将该依据用于自托管机器。现有 2019 工具无需为许可复核而卸载；本地替代配置与当前 2022 发行 SDK 的兼容性须分别验证。
+Windows developers may prepare their own tools under the [Community free-license path](windows-licensing.md), reading and accepting that version's terms. Build Tools or VC_redist alone does not establish eligibility. Enterprise use and associated redistribution on GitHub standard hosted runners have separate public authority; maintainers need not buy Enterprise for hosted builds or install a Community IDE locally, and that authority does not apply to self-hosted machines. Existing 2019 tools need not be uninstalled for license review; compatibility of local alternatives with the current 2022 release SDK must be verified separately.
 
-所有命令共用以下参数：
+All commands share these options:
 
-| 参数 | 默认值与用途 |
+| Option | Default and purpose |
 | --- | --- |
-| `--qt-prefix` | 先取环境变量 `XDZIP_QT_PREFIX`，否则使用 `build/toolchain/Qt/6.8.2/<平台子目录>`；应指向 SDK 前缀而不是 bin 目录 |
-| `--build-dir` | `build/desktop`，CMake 构建与测试目录 |
-| `--output-dir` | `build/package`，交付工件与验证输出目录 |
-| `--tools-dir` | `build/toolchain/desktop-tools`，隔离的 Python 工具环境与准备材料 |
-| `--configuration` | `Release`，也可显式选择开发所需的构建配置 |
+| `--qt-prefix` | First `XDZIP_QT_PREFIX`, otherwise `build/toolchain/Qt/6.8.2/<platform-subdirectory>`; points to the SDK prefix, not bin |
+| `--build-dir` | `build/desktop`, CMake build and test directory |
+| `--output-dir` | `build/package`, deliverable artifact and verification output directory |
+| `--tools-dir` | `build/toolchain/desktop-tools`, isolated Python tools and preparation materials |
+| `--configuration` | `Release`; another development configuration may be selected explicitly |
 
-build-dir 与 output-dir 必须使用仓库 build/ 内的独立子目录，以匹配底层打包和验证工具的输出边界。同一次分阶段运行应保持上述参数一致。显式 `--qt-prefix` 优先于环境变量；不需要全局修改 CMAKE_PREFIX_PATH。入口为子进程准备 Qt 与工具搜索环境，普通桌面启动不要沿用离屏测试变量。生成物只写入忽略的 build/、target/、dist/ 或工具缓存，不提交 Git。
+build-dir and output-dir must be independent subdirectories inside repository build/ to match underlying packaging and verification output boundaries. Keep the same options across stages of one run. Explicit `--qt-prefix` takes precedence over the environment variable; global CMAKE_PREFIX_PATH changes are unnecessary. The entry point prepares Qt and tool search environments for subprocesses. Ordinary desktop launches should not inherit offscreen-test variables. Generated output goes only into ignored build/, target/, dist/, or tool caches and is not committed.
 
-## 分阶段执行
+## Staged execution
 
-各阶段可以单独调用，不隐式补跑前面的准备、构建或测试。缺少前置输入时会报错，先执行相应阶段再重试。每个阶段在开始工作前检查其所需环境，`doctor` 可在不构建或打包的情况下提前查看问题。
+Stages can run independently and do not implicitly rerun previous preparation, build, or test stages. Missing prerequisites produce errors; run the corresponding stage and retry. Each stage checks its required environment before work; `doctor` previews problems without building or packaging.
 
-Windows 的受保护构建按现有控制台内的进程协调，独立控制台可以并行，共享同一现有控制台的构建依次执行。构建期间不得由其他代码将受保护进程从该控制台分离或重新附加。无控制台进程自行创建的临时控制台供其自身和子进程使用，外部进程不得主动附加。旧版脚本对无窗口句柄的控制台使用统一回退锁，不能与新版协调，运行中的旧版构建结束前请不要在同一无窗口控制台启动新版构建。不能确定进程列表时会停止，不改变代码页。
+Protected Windows builds coordinate processes within their existing console. Separate consoles may run in parallel; builds sharing one existing console run sequentially. During a build, other code must not detach or reattach protected processes from that console. A temporary console created by a process without one is for that process and its children; outside processes must not attach. Older scripts use a common fallback lock for consoles without window handles and cannot coordinate with newer scripts; do not start a new-version build in the same windowless console until an older build finishes. If process lists cannot be determined, stop without changing the code page.
 
-对于不需要交互的构建，也可显式使用独立控制台包装器，并将输入、输出和错误流全部重定向。例如在 PowerShell 中：
+For noninteractive builds, an independent-console wrapper may be used explicitly with stdin, stdout, and stderr fully redirected. For example, in PowerShell:
 
 ```powershell
 New-Item -ItemType Directory -Force build\isolated-logs | Out-Null
@@ -64,22 +62,22 @@ cmd /c "python scripts\windows_detached_console.py --timeout 7200 -- python scri
 $LASTEXITCODE
 ```
 
-该包装器为每次命令创建独立的隐藏控制台，并在超时或监督进程退出时结束其子进程；完成信号缺失时按失败处理。并行构建仍须分别使用不同的 `--build-dir`，包装器不为构建目录提供互斥。原有桌面构建和 `windows_ninja_safety.py` 的依赖检查仍执行，直接包装其他命令不会自动补上该检查。此入口只适用于非交互命令，不支持将提示、密码输入或伪控制台交互交给被包装进程。
+The wrapper creates an independent hidden console per command and terminates children on timeout or supervisor exit; missing completion signals fail. Parallel builds still require separate `--build-dir` values; the wrapper does not lock build directories. Existing desktop-build and `windows_ninja_safety.py` dependency checks still run, but wrapping other commands does not add them automatically. This entry is only for noninteractive commands; prompts, password input, and pseudoconsole interaction are unsupported.
 
-`prepare` 核验当前产品格式源码清单。ZIP、TAR/GZIP、7z、RAR、CAB 和光盘容器使用独立 Rust，官方产品源码清单为空，不下载或编译官方 UnRAR、7-Zip 引擎。独立测试参照按各自固定来源准备，与产品运行依赖分开；RAR 有限映射的原始来源通知随打包和对应源码交付保留，见[许可证契约](licensing.md)。`build` 只使用已准备输入，不浮动下载。只测 Rust 时，需要先构建 `xdzip-native-codec`，将 `XDZIP_NATIVE_CODEC` 指向该工作进程，再运行 workspace 测试。原生后端任务闭环另执行 `cargo test -p xdzip-runtime --locked native_backend_tests -- --ignored`，统一 `test` 与 Foundation CI 均强制执行这部分，忽略状态不能记作格式验证通过。源码、流授权及许可边界见[原生后端契约](native-codecs.md)。
+`prepare` verifies the current product format-source inventory. ZIP, TAR/GZIP, 7z, RAR, CAB, and optical containers use independent Rust; the official product source list is empty and official UnRAR/7-Zip engines are not downloaded or compiled. Independent test references are prepared from their own pinned sources and separated from product runtime dependencies. Original source notices for limited RAR mappings remain in packaging and corresponding-source delivery; see the [license contract](licensing.md). `build` uses prepared inputs only and does not download floating versions. For Rust-only testing, first build `xdzip-native-codec`, point `XDZIP_NATIVE_CODEC` to that worker, then run workspace tests. The native backend task flow additionally runs `cargo test -p xdzip-runtime --locked native_backend_tests -- --ignored`; both unified `test` and Foundation CI require it. An ignored status is not a passed format check. See the [native backend contract](native-codecs.md) for source, stream authorization, and licensing boundaries.
 
-| 命令 | 作用与前置条件 |
+| Command | Purpose and prerequisites |
 | --- | --- |
-| `doctor --for-stage build` | 检查 PATH、锁定 Rust、Qt、编译器、SDK 和版本；默认检查 build 所需环境 |
-| `prepare` | 准备共用工具和依赖；下载／安装 Qt、Rust 工具链及打包材料须使用下面的显式开关 |
-| `build` | 配置并构建真实产品、测试与诊断程序；依赖环境应已就绪，允许源码有未提交改动 |
-| `test` | 默认执行 Rust workspace 测试、qmllint 和 CTest；要求已完成同配置构建，允许未提交改动 |
-| `package` | 部署运行时、收集许可与来源材料、执行部署审计并生成所选工件；要求干净源码、同提交构建与测试收据及打包工具 |
-| `verify` | 核验已有运行时或包，不重新构建，不安装产品、不改默认文件关联；依赖待核验工件与平台验证环境 |
+| `doctor --for-stage build` | Check PATH, pinned Rust, Qt, compiler, SDK, and versions; checks build environment by default |
+| `prepare` | Prepare shared tools and dependencies; downloading/installing Qt, Rust toolchains, and packaging materials requires explicit switches below |
+| `build` | Configure and build real product, tests, and diagnostics; environment must be prepared, uncommitted source changes permitted |
+| `test` | Run Rust workspace tests, qmllint, and CTest by default; requires a completed same-configuration build, uncommitted changes permitted |
+| `package` | Deploy runtime, collect licensing/provenance materials, audit deployment, and produce selected artifacts; requires clean source, same-commit build/test receipts, and packaging tools |
+| `verify` | Verify an existing runtime or package without rebuilding, installing the product, or changing default associations; requires the artifact and platform verification environment |
 
-预检报告区分必需缺失、版本不符与当前阶段不需要的工具，不用 Docker 或 Inno Setup 缺失阻止普通开发构建。打包预检会实际检查 Rust/Cargo 调用与锁定依赖元数据，避免到许可收集阶段才发现 PATH 或依赖缓存缺失。失败的命令和验证限制保留在本地／CI 输出中，不把部分完成写成通过。
+Preflight distinguishes required missing tools, version mismatches, and tools unnecessary for the current stage; missing Docker or Inno Setup does not block ordinary development builds. Packaging preflight actually checks Rust/Cargo invocation and locked dependency metadata so PATH or dependency-cache problems are not discovered only during license collection. Failed commands and verification limits remain in local/CI output; partial completion is not reported as a pass.
 
-首次准备固定 Qt 与 Rust 工具链：
+First prepare the pinned Qt and Rust toolchains:
 
 ```sh
 python3 scripts/desktop.py prepare --install-rust --install-qt --qt-root build/toolchain/Qt
@@ -87,28 +85,28 @@ python3 scripts/desktop.py doctor --for-stage build
 python3 scripts/desktop.py build
 ```
 
-`--install-rust` 使用已安装的 rustup 准备仓库锁定的工具链，不替代 rustup 安装。`--install-qt` 显式下载固定 Qt SDK；默认安装到 `build/toolchain/Qt`，已有 SDK 时无需重新下载，直接将其路径交给每个阶段：
+`--install-rust` uses installed rustup to prepare the repository-pinned toolchain; it does not install rustup. `--install-qt` explicitly downloads the pinned Qt SDK to `build/toolchain/Qt` by default. An existing SDK does not need to be downloaded again; pass its path to each stage:
 
 ```sh
 python3 scripts/desktop.py doctor --qt-prefix build/toolchain/Qt/6.8.2/gcc_64
 python3 scripts/desktop.py build --qt-prefix build/toolchain/Qt/6.8.2/gcc_64
 ```
 
-完成构建后，显式准备完整 `native_backend_tests` 批次使用的公共测试输入。CAB、ISO/UDF 和基础 RAR 夹具位于 `tests/fixtures/cab-iso/` 与 `tests/fixtures/native-archives/`，随项目源码保留；7z 测试使用刚构建的 Rust worker 创建自己的包。这一 runtime 批次不要求官方 7-Zip／UnRAR 工具或挂载映像，Foundation 的其他互操作参照另按[原生后端契约](native-codecs.md)执行。
+After building, explicitly prepare public test inputs for the complete `native_backend_tests` batch. CAB, ISO/UDF, and basic RAR fixtures are retained in project source under `tests/fixtures/cab-iso/` and `tests/fixtures/native-archives/`. 7z tests create their own archives with the freshly built Rust worker. This runtime batch does not require official 7-Zip/UnRAR tools or mounted images; other Foundation interoperability references follow the [native backend contract](native-codecs.md).
 
-首次获取固定公共 RAR PPM、旧密码等输入时，显式执行：
+For the first acquisition of pinned public RAR PPM, legacy-password, and other inputs, explicitly run:
 
 ```sh
 python3 scripts/prepare-rar-rust-fixtures.py --output build/native-test-inputs
 ```
 
-已有经大小和 SHA-256 核对的固定缓存时，显式采用离线模式，替换缓存路径并保留清单规定的 `junrar/` 子目录布局：
+With an existing pinned cache verified by size and SHA-256, explicitly use offline mode, replacing the cache path and retaining the manifest's `junrar/` subdirectory layout:
 
 ```sh
 python3 scripts/prepare-rar-rust-fixtures.py --output build/native-test-inputs --archives /path/to/fixed-rar-cache --offline
 ```
 
-准备器的固定来源和通知见 `scripts/rar-rust-fixtures.json` 与其公共兼容清单，输出 `sources.json.environment` 使用源码根目录相对路径。当前对应源码交付不包含这七个公共缓存文件；Cargo 的 `--offline` 不会补齐它们。准备器不会导出 shell 环境，完整 `test` 前按下面的明确交接启动子进程：
+Pinned sources and notices are in `scripts/rar-rust-fixtures.json` and its public compatibility inventory. Output `sources.json.environment` uses paths relative to the source root. Current corresponding-source delivery does not contain these seven public cache files; Cargo `--offline` does not supply them. The preparer does not export shell environment variables. Before complete `test`, start a child process using the explicit handoff below:
 
 ```sh
 python3 -c "
@@ -124,33 +122,29 @@ subprocess.run([sys.executable, 'scripts/desktop.py', 'test', *sys.argv[2:]], en
 " build/desktop/tools/native-codec/xdzip-native-codec
 ```
 
-Windows 为 worker 路径加 `.exe`。使用自定义 SDK、build-dir 或 tools-dir 时，将同一组参数附在 worker 路径后，例如 `--qt-prefix /path/to/Qt/6.8.2/gcc_64`，并将 worker 路径调整到实际构建目录。`XDZIP_CAB_BACKEND=rust` 对应固定 Rust CAB 专项；`password` 是公共 fixture 既有的测试值，只交给测试子进程。该交接保留默认 workspace 测试和完整 ignored 批次，不下载输入或隐式构建 worker。
+On Windows, add `.exe` to the worker path. With a custom SDK, build-dir, or tools-dir, append the same options after the worker path, for example `--qt-prefix /path/to/Qt/6.8.2/gcc_64`, and adjust the worker path to the actual build directory. `XDZIP_CAB_BACKEND=rust` selects the fixed Rust CAB check; `password` is an existing public fixture test value passed only to the test child. This handoff retains default workspace tests and the complete ignored batch; it neither downloads inputs nor implicitly builds the worker.
 
-English: Explicitly prepare the fixed public RAR test data, then pass sources.json.environment, the freshly built worker and the existing public test value to the test child. CAB/optical/basic RAR fixtures ship in the project source; 7z creates its own inputs. The seven public cache files are separate prerequisites. A verified cache supports --archives/--offline; initial fixed downloads are a separate explicit step. Test stages do not implicitly prepare or download these fixture inputs, and the complete ignored runtime selection is retained.
+`test` enables offscreen/software only for children and does not contaminate later desktop commands. For routine changes, rebuild and verify according to impact. Rust-core-only verification can run `cargo test --locked` for the affected crate without Qt. `test --skip-rust` runs qmllint and Qt CTest but skips the Rust workspace and complete native backend tests; receipts mark Rust `not-run`. When a Rust conclusion is needed, execute it separately and record actual results.
 
-test 仅对子进程启用 offscreen／software，不污染后续命令的桌面环境。日常修改按变更范围重新构建并验证；只验证 Rust 核心可执行相应 crate 的 `cargo test --locked`，不需要 Qt。`test --skip-rust` 执行 qmllint 与 Qt CTest，但跳过 Rust workspace 和完整原生后端测试，收据将 Rust 记为 `not-run`；需要 Rust 结论时另行执行并记录实际结果。
+Browser tests may run directly or in groups through the existing suite entry point. Each suite process creates a unique short temporary root under project `build/test-tmp/`. On exit, after test objects are destroyed and before Qt application destruction, restore TEMP, TMP, and TMPDIR and clean up. Default settings files are also isolated. Unix checks the byte length of the temporary root plus existing IPC name against actual sun_path capacity. A path that is too long explicitly fails the fixture precondition; shorten the checkout path rather than moving outside the project or changing product IPC. Auxiliary processes in a group inherit the parent temporary root to preserve single-instance IPC directory identity, use private preflight probes, and finish before parent cleanup. Different groups do not share roots. Language-restart and open-mode children explicitly passed test configuration continue sharing it rather than using a new empty configuration. Before running, actually verify child-file creation, locks, staging, atomic commits, and settings readback. Failure reports `Fixture precondition` and a nonzero exit; do not skip tests or weaken window-hiding assertions. Directory existence and QTemporaryDir::isValid alone do not prove writability, and system permissions are not modified to make fixtures pass.
 
-浏览器测试可直接运行或由现有套件入口分组执行。每个套件进程在项目 `build/test-tmp/` 内创建独立短路径临时根，退出时在测试对象销毁后、Qt 应用销毁前恢复 TEMP、TMP、TMPDIR 并清理；默认设置文件同样隔离。Unix 按实际 sun_path 容量检查临时根加既有 IPC 名称的字节长度，路径过长明确报告前置失败，需缩短检出路径，不转移到项目外或修改产品 IPC。同组辅助进程继承父临时根，保持单实例 IPC 的目录身份，使用私有前置探针并在父进程清理前结束；不同分组不共享。语言重启及打开方式子进程显式传入的测试配置继续共享，不改用新的空配置。运行前实际验证子文件创建、锁、暂存、原子提交与设置读取；失败以 `Fixture precondition` 和非零退出码报告，不跳过测试或放宽窗口隐藏等断言。目录存在及 QTemporaryDir::isValid 不单独证明可写，也不通过调整系统权限使夹具通过。
+Test configuration paths use `tests/test_environment` scoped save/restore. Windows retains wide-character values and distinguishes unset from explicitly empty entries in the system environment block; Unix retains original environment bytes. The MSVC CRT setter deletes empty values, so the native environment block is restored separately. Check empty-value presence through the helper's processValue or QProcessEnvironment rather than promising Qt's CRT empty/null distinction. This helper is restricted to the serial test main thread: set before relevant engines/workers are created, restore after destruction/join. It is not for product code or concurrent environment changes. ASCII, Chinese, and ANSI-unrepresentable characters require checking actual files at the original path, language-restoration children, and window/draft preservation on failure. Automated results remain separate from real-person settings operations.
 
-测试中的配置路径使用 `tests/test_environment` 作用域保存和恢复，Windows 保持宽字符值，并在系统环境块中区分未设置和显式空值；Unix 保留原环境字节。MSVC CRT 的设置 API 会删除空值，原生环境块另行恢复，因此空值的存在性使用 helper 的 processValue 或 QProcessEnvironment 检查，不以 Qt 的 CRT 空值／null 区别作保证。该 helper 仅限串行测试主线程，在相关引擎／工作线程创建前设置，在销毁／join 后恢复，不用于产品代码或并发环境修改。ASCII、中文及 ANSI 不可表示字符须核对原路径实际文件、语言恢复子进程和失败时窗口／草稿保留。自动化结果仍与真人设置操作分开记录。
+The real product uses the name `xdzip` on every platform. Default build entry points:
 
-English: Browser suite processes use unique short roots under project build/test-tmp. Unix checks the byte budget for the existing IPC name against sun_path capacity; an overlong checkout fails the fixture precondition rather than changing product IPC or using an external directory. Auxiliary children retain the parent's temp identity for IPC, with private preflight probes and teardown before parent cleanup. Different shards remain isolated. Restore variables and clean fixtures after test teardown, before Qt application destruction. Probes cover child writes, locking, staging, atomic commit and settings readback, and fixture failures remain nonzero failures. Scoped overrides preserve Unicode paths and absent versus empty values in the native environment; MSVC's CRT setter deletes empty entries, so use processValue or QProcessEnvironment for empty presence. Mutate overrides only on the serial fixture main thread, before related engines/workers and after teardown/join. Explicit settings restart children retain their shared profile. These checks do not replace native manual acceptance or change product configuration semantics.
-
-真实产品在所有平台统一使用 `xdzip` 名称。默认构建后的入口为：
-
-| 平台 | 入口 |
+| Platform | Entry point |
 | --- | --- |
 | macOS | `build/desktop/apps/desktop/xdzip.app/Contents/MacOS/xdzip` |
 | Windows | `build/desktop/apps/desktop/xdzip.exe` |
 | Linux | `build/desktop/apps/desktop/xdzip` |
 
-组件示例 `xdzip-ui-preview` 不用于真实文件验收。更换 build-dir 后相应调整路径；版本、渠道、提交与 dirty 状态由实际构建身份记录。应用模块与低层 CMake 调试见[Qt 开发应用](../../apps/desktop/README.md)。
+The `xdzip-ui-preview` component example is not for real-file acceptance. Adjust paths after changing build-dir. Actual build identity records version, channel, commit, and dirty state. See the [Qt development application](../../apps/desktop/README.md) for modules and low-level CMake debugging.
 
-## 打包与验证
+## Packaging and verification
 
-test 与 package 会检查构建收据、源码指纹、配置、SDK 身份及实际产品文件；修改源码或切换配置后先重新 build。打包前提交待交付源码，再从该干净提交构建和测试。package 不通过忽略脏状态、修改产物身份或沿用旧报告来绕过检查。许可材料、Rust 元数据与实际 CLI 版本必须对应这次源码。已有打包目录的使用与覆盖限制由各平台底层工具检查，重建候选时优先使用新的 output-dir，避免混入旧文件。
+`test` and `package` check build receipts, source fingerprints, configuration, SDK identity, and actual product files. Rebuild first after source or configuration changes. Commit deliverable source before packaging, then build and test from that clean commit. package must not bypass checks by ignoring dirty state, changing artifact identity, or reusing old reports. License materials, Rust metadata, and actual CLI version must match this source. Platform tools check use and overwrite restrictions for existing package directories. Prefer a new output-dir for rebuilt candidates to avoid old-file mixing.
 
-Windows／Linux 先准备打包工具，再执行统一阶段：
+On Windows/Linux, prepare packaging tools, then run the unified stages:
 
 ```sh
 python3 scripts/desktop.py prepare --packaging
@@ -161,9 +155,9 @@ python3 scripts/desktop.py package --kind all
 python3 scripts/desktop.py verify --kind all
 ```
 
-`prepare --packaging` 准备隔离 Python 校验依赖、锁定许可正文和 schema 缓存，以及平台打包材料；Windows 包括固定 CRT 和 Inno Setup。系统工具仍由开发者预先安装。`package --kind runtime` 只准备部署运行目录及其审计材料；随后可用同一 output-dir 执行 `package --kind installer`，从已核验运行目录生成安装器，Linux 同时生成保留执行权限的 tar.gz。`--kind all` 为默认值，在一次命令内依次完成这两部分。Windows 打包使用 Release 或 RelWithDebInfo，不部署 Debug Qt 库；Windows 提供部署目录和当前用户安装器，Linux 提供运行目录、tar.gz 和 .deb。Windows 核验需要同配置的浏览测试程序和 Qt Test／offscreen 测试输入，Linux 核验需要构建测试生成的 m2-flat.zip；测试文件不会进入产品目录。verify 的 `--kind runtime` 核验运行时，默认 `--kind all` 核验已选交付工件；普通核验不执行安装、升级／回退或用户文件关联变更。
+`prepare --packaging` prepares isolated Python validation dependencies, pinned license texts and schema caches, and platform packaging materials; Windows includes pinned CRT and Inno Setup. Developers still install system tools first. `package --kind runtime` prepares only the deployed runtime directory and audit materials. The same output-dir can then run `package --kind installer` to create an installer from the verified runtime; Linux also creates a tar.gz preserving executable permissions. `--kind all` is the default and performs both in one command. Windows packaging uses Release or RelWithDebInfo, without deploying Debug Qt libraries. Windows provides a deployed directory and per-user installer; Linux provides a runtime directory, tar.gz, and .deb. Windows verification requires a same-configuration browser test executable and Qt Test/offscreen test inputs. Linux verification requires m2-flat.zip generated by build tests. Test files do not enter the product directory. verify `--kind runtime` verifies the runtime; default `--kind all` verifies selected deliverables. Ordinary verification does not install, upgrade/roll back, or change user file associations.
 
-macOS DMG 须单独选择允许注册文档候选的主构建，避免普通开发／测试副本进入“打开方式”：
+A macOS DMG requires a separately selected primary build permitted to register as a document-handler candidate, preventing ordinary development/test copies from entering “Open With”:
 
 ```sh
 python3 scripts/desktop.py prepare --packaging
@@ -174,29 +168,31 @@ python3 scripts/desktop.py package --build-dir build/desktop-dmg --output-dir bu
 python3 scripts/desktop.py verify --build-dir build/desktop-dmg --output-dir build/package-macos --kind all
 ```
 
-普通 build 的 macOS handler rank 默认为 `None`，不更改用户默认关联；仅长期保留的主应用或 DMG 输入选择 `Alternate`。macOS 本地 package 只支持 `all`，生成 arm64 开发 DMG 并执行必要 ad-hoc 完整性签名，verify 使用重定位后的 Cocoa／Metal 及真实解压检查。普通 CI 禁止运行 Mac package，不部署、签名、压缩或上传应用包；专用 Release 例外见[发布协议](release-protocol.md)。完整限制与副本注册维护见[Mac 部署指南](macos-deployment.md)。
+Ordinary macOS build handler rank defaults to `None` and does not change user defaults; select `Alternate` only for a long-lived primary app or DMG input. Local macOS package supports only `all`, producing an arm64 development DMG with necessary ad-hoc integrity signing. verify checks relocated Cocoa/Metal and real extraction. Ordinary CI must not run Mac package or deploy, sign, compress, or upload an app package; see the [release protocol](release-protocol.md) for the dedicated Release exception. See the [Mac deployment guide](macos-deployment.md) for full limits and copy-registration maintenance.
 
-部署布局和底层工具分别见[Linux 部署](linux-deployment.md)、[Mac DMG](macos-deployment.md)及[安装与文件关联](installers-associations.md)。Windows/Linux 安装器未正式签名，macOS 未做 Developer ID 签名或公证。安装和运行环境问题使用实际产品与对应平台验证，不以 SDK 下可运行代替独立包核验。
+See [Linux deployment](linux-deployment.md), [Mac DMG](macos-deployment.md), and [installation and file associations](installers-associations.md) for layouts and underlying tools. Windows/Linux installers are not formally signed; macOS has neither Developer ID signing nor notarization. Diagnose installation/runtime issues using the actual product and relevant platform verification; running under the SDK does not establish standalone-package verification.
 
-## 与 CI 的关系
+## Relationship to CI
 
-提交或推送前，先对拟提交的内容执行与变更匹配的本地构建或验证。文档改动运行 `python3 scripts/check-docs.py` 并检查涉及的生成输出；Rust 改动至少检查格式并执行受影响 crate 的构建或测试。涉及隔离格式后端的测试按上文准备实际工作进程和所需夹具。C++、桥接与 QML 改动使用 `python3 scripts/desktop.py build` 构建受影响产品，再执行相关测试；无需为每次改动运行全部格式互操作或重复十次完整浏览器套件。
+Before committing or pushing, run local builds or verification appropriate to the proposed content. Documentation changes run `python3 scripts/check-docs.py` and check affected generated output. Rust changes check formatting and at least build or test affected crates. Tests involving isolated format backends prepare the actual worker and required fixtures as described above. C++, bridge, and QML changes build the affected product with `python3 scripts/desktop.py build`, then run relevant tests. Every change does not require all format interoperability or ten repeated complete browser-suite rounds.
 
-新增或修改 QML 窗口时，运行 `python3 scripts/check-window-contracts.py --self-test`、`python3 scripts/check-operation-components.py` 和受影响的双语多字号布局回归。已完成构建后，`python3 scripts/desktop.py test --skip-rust` 可执行完整 Qt 组件与 CTest；也可在配置 Qt SDK 路径和离屏环境后使用 `ctest --test-dir build/desktop -R qt_task_components --output-on-failure` 等现有入口执行相关用例。单选、复选控件变化还要执行 `accessibleRadioActionsCommitSelection`、`accessibleCheckboxActionsCommitIntent` 等与实际改动相符的 QAccessibleActionInterface 回归。
+When adding or changing a QML window, run `python3 scripts/check-window-contracts.py --self-test`, `python3 scripts/check-operation-components.py`, and affected bilingual multi-font-size layout regressions. After a build, `python3 scripts/desktop.py test --skip-rust` runs full Qt component and CTest checks. Alternatively, after configuring Qt SDK paths and offscreen environment, run relevant cases through existing entry points such as `ctest --test-dir build/desktop -R qt_task_components --output-on-failure`. Radio/checkbox changes also execute QAccessibleActionInterface regressions appropriate to the change, such as `accessibleRadioActionsCommitSelection` and `accessibleCheckboxActionsCommitIntent`.
 
-[日常 CI](../../.github/workflows/docs.yml)只运行轻量静态检查，不代替本地产品构建。[Foundation](../../.github/workflows/foundation.yml) 和 [Qt 工作流](../../.github/workflows/qt-components.yml)仅按需手动运行，Qt 工作流通过同一 desktop.py 执行构建、Qt 测试以及 Windows/Linux 打包和运行时核验。[ci-desktop.ps1](../../scripts/ci-desktop.ps1)保留按需运行的重复、视觉、互操作和安装兼容检查，不作为日常本地验证的必选入口。
+[Routine CI](../../.github/workflows/docs.yml) runs lightweight static checks only and does not replace local product builds. [Foundation](../../.github/workflows/foundation.yml) and the [Qt workflow](../../.github/workflows/qt-components.yml) run manually on demand. Qt uses the same desktop.py for builds, Qt tests, and Windows/Linux packaging and runtime verification. [ci-desktop.ps1](../../scripts/ci-desktop.ps1) retains on-demand repetition, visual, interoperability, and installation-compatibility checks and is not mandatory for routine local verification.
 
-历史完整产品、真实安装升级／回退及关联生命周期只在一次性 Windows/Linux CI 主机或隔离容器执行，不因统一入口就开放为普通本地 verify 的默认行为。按需 Qt 工作流的 macOS 作业使用 SDK 模式部署审计和 Cocoa 启动／文件打开检查，仅保存日志和 JSON。完整检查与证据边界见[CI 策略](ci-policy.md)。
+Historical full-product, real install upgrade/rollback, and association lifecycles run only on disposable Windows/Linux CI hosts or isolated containers; the unified entry point does not make them default ordinary local verify behavior. The macOS job in the on-demand Qt workflow uses SDK-mode deployment audit and Cocoa startup/file-open checks, retaining only logs and JSON. See [CI policy](ci-policy.md) for full checks and evidence boundaries.
 
-## 文件与任务边界
+## File and task boundaries
 
-打开只浏览，不自动解压。普通同名文件支持询问、跳过、改名及明确替换；内容校验和同步后才整文件发布。提交前取消或写入失败保留旧文件，早前已提交的解压项继续保留。关闭任务窗口仅隐藏详情，退出由活动任务决策和异步 shutdown 屏障处理。
+Opening browses only; it does not automatically extract. Regular same-name files support Ask, Skip, Rename, and explicit Replace. Publish a whole file only after content verification and synchronization. Cancellation before commit or write failure preserves the old file; previously committed extracted entries remain. Closing a task window only hides details. Exit uses the active-task decision and asynchronous shutdown barrier.
 
-ZIP 在受限 POSIX 条件下可恢复相对符号链接和可执行位，不恢复特权位、扩展属性或原始修改时间，不代表应用包安装或签名验证。来源与目标必须满足[安全解压契约](m3-extraction.md)。崩溃暂存只提示并保留供检查，不自动恢复或删除未知内容。
+ZIP can restore relative symbolic links and executable bits under restricted POSIX conditions but not privilege bits, extended attributes, or original modification times. This does not establish app-bundle installation or signature verification. Source and destination must satisfy the [safe extraction contract](m3-extraction.md). Crash staging is only reported and retained for inspection; unknown content is not automatically recovered or deleted.
 
-## Windows MSIX 实验构建
+<a id="windows-msix-实验构建"></a>
 
-MSIX 复用同一提交的 Windows Release 桌面构建、测试与已审计运行目录。先按本文完成 `prepare --packaging`、`build`、`test`，再使用相同参数执行：
+## Experimental Windows MSIX build
+
+MSIX reuses the Windows Release desktop build, tests, and audited runtime directory from the same commit. Complete `prepare --packaging`, `build`, and `test` as above, then run with the same options:
 
 ```powershell
 python scripts/desktop.py package --kind runtime
@@ -204,30 +200,24 @@ python scripts/desktop.py package --kind msix --msix-name xdzip.Development --ms
 python scripts/desktop.py verify --kind msix
 ```
 
-身份示例仅供本地开发，正式商店身份的包名称、发布者和发布者显示名称必须与 Partner Center 提供的值一致。输出位于 `build/package/xdzip-windows-x64.msix`，仅是未签名实验包，不可直接视为可分发的侧载包或已通过商店认证。正常侧载需要与发布者匹配、设备信任的签名。Windows 11 的受限未签名开发测试模式另要求发布者包含指定 OID，含可执行文件时通常还需要管理员权限；上面的示例身份不满足该模式。脚本不创建证书、不签名、不安装、不提交商店。包的技术最低系统为 Windows 10 22H2 x64，不构成新增平台支持承诺。版本 `1.0.<产品 build>.0` 与显示版本分离，必须在 build 用尽前重新确定商店版本策略。
+The example identity is for local development only. A formal Store identity's package name, publisher, and publisher display name must match Partner Center. Output is `build/package/xdzip-windows-x64.msix`, an unsigned experimental package, not automatically a distributable sideload package or Store-certified. Normal sideloading requires a device-trusted signature matching the publisher. Windows 11's restricted unsigned development mode additionally requires a specified publisher OID and, for executable content, typically administrator rights; the example identity does not meet that mode. Scripts do not create certificates, sign, install, or submit to the Store. The technical minimum is Windows 10 22H2 x64 and does not expand supported-platform commitments. Version `1.0.<product build>.0` is separate from display version; Store version policy must be revisited before build numbers are exhausted.
 
-构建要求干净来源、匹配的构建与测试回执、已审计的完整运行目录和支持 MSIX 的 Windows SDK MakeAppx。脚本复核运行目录及其 MSIX 更新能力标记，在独立暂存生成清单和品牌图标，打包后逐文件核对内容并记录摘要；不会覆盖已有包或暂存。包清单声明九类既有扩展和 full-trust 桌面入口，不声明右键扩展。许可、真实安装、文件关联、卸载、商店签名和 Windows 10／11 实际验收须分别完成，不由打包成功推定。
+Building requires clean source, matching build/test receipts, a fully audited runtime directory, and an MSIX-capable Windows SDK MakeAppx. Scripts recheck the runtime and MSIX update-capability marker, generate manifest and brand icons in separate staging, compare every packaged file, and record hashes. They do not overwrite existing packages or staging. The manifest declares nine existing extension types and a full-trust desktop entry point, not a context-menu extension. Licensing, real installation, associations, uninstall, Store signing, and actual Windows 10/11 acceptance must be completed separately and are not inferred from successful packaging.
 
-English: Experimental Windows x64 MSIX packaging reuses a clean, tested and audited runtime and requires the explicit package name, publisher and publisher display name to match Partner Center. It produces an unsigned package with per-file verification and does not sign, install or submit the app. The manifest targets Windows 10 22H2 as a technical minimum without expanding the support policy; Store certification, licensing and native installation acceptance remain separate.
+The MSIX manifest explicitly declares `en-US` and `zh-CN` to match built-in English and Simplified Chinese catalogs; receipts record and verify the language list. This MakeAppx flow does not automatically convert Qt translation resources into package language declarations. Partner Center's “Languages supported by the package” reflects the uploaded package; after correcting source, rebuild and replace the draft package to update it. “Additional Store listing languages” are configured independently and cannot substitute for manifest declarations. See [Microsoft's manifest language documentation](https://learn.microsoft.com/windows/apps/design/globalizing/manage-language-and-region).
 
-MSIX 清单显式声明 `en-US` 和 `zh-CN`，与应用内置的英文、简体中文目录对应，回执同时记录并校验语言列表。Qt 自有翻译资源不会由本项目的 MakeAppx 流程自动转换为包语言声明。Partner Center 的“软件包中支持的语言”以已上传包为准，修正源码后须重新构建并替换草稿中的包才会更新；“其他 Store 一览语言”可独立配置，不能代替包清单声明。参见 [Microsoft 清单语言说明](https://learn.microsoft.com/windows/apps/design/globalizing/manage-language-and-region)。
+## Evidence and reverification
 
-English: The MSIX manifest explicitly declares en-US and zh-CN to match the built-in catalogs; its receipt records and verifies the language list. The custom MakeAppx pipeline does not infer these declarations from Qt translations. Partner Center reads the uploaded package, so rebuild and replace it after changing declarations. Additional Store listing languages are configured separately.
+Select affected checks under [general verification](../qa/README.md) and [on-demand desktop verification](../qa/private-test-manual.md); routine work does not require a manual acceptance form. Build and test receipts are `desktop-build.json` and `desktop-test.json` under build-dir. Prepare, package, and verify receipts are `<stage>.json` under output-dir and link underlying evidence. Automation receipts record actual stages and sources. Offscreen/software rendering, native Cocoa checks, and performed manual checks are recorded separately and do not substitute for one another. Existing acceptance remains in [#5](https://github.com/xiaodaozhi/xdzip/issues/5) and is not repeated merely because a candidate inventory is regenerated.
 
-## 证据与复验
+Windows/Linux artifact delivery includes same-commit source and license notices; Actions retains artifacts for 14 days. After expiry, rebuild using identities and pinned inputs. deployment-audit.json and source/file-level CycloneDX inventories support provenance verification but may remain incomplete and cannot establish license approval. See [source delivery](source-delivery.md) and the [automated verification contract](wp12-automation.md) for source rebuilding and Qt replacement.
 
-按[通用验证方法](../qa/README.md)和[按需桌面验证](../qa/private-test-manual.md)选择受影响项，不要求日常填写人工验收表。构建与测试收据分别保存在 build-dir 下的 `desktop-build.json`、`desktop-test.json`，prepare、package 和 verify 回执位于 output-dir 的 `<stage>.json`，并关联底层验证证据。自动化收据记录实际阶段与来源；离屏／软件渲染、原生 Cocoa 检查和已执行的人工专项分别登记，不相互替代。既有验收在 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)保留，不因重新生成候选清单而重做。
+Builds, screenshots, measurements, reports, and packages remain only as ignored local or CI artifacts. Do not describe generated pending forms, offscreen checks, or partial SBOMs as clean-environment and complete release-gate passes.
 
-Windows/Linux 工件交付同提交源码和许可通知，Actions 保存 14 天；过期后按身份和锁定输入重建。deployment-audit.json、源码及文件级 CycloneDX 清单用于来源核验，覆盖仍可能为 incomplete，不能当作许可批准。源码重建与 Qt 替换方法见[源码交付](source-delivery.md)及[自动验证契约](wp12-automation.md)。
+## macOS update framework
 
-所有构建、截图、量测、报告与包只保留为忽略的本地或 CI 工件。不要把生成的 pending 表、离屏检查或部分 SBOM 写成干净环境与全部发行门槛通过。
+Native builds use `prepare-sparkle.py` to prepare `build/toolchain/Sparkle/2.10.0-xdzip-proxy.2`. The framework's main library is compiled from pinned upstream source and the proxy patch; installation helpers, resources, and signing tools retain official SDK provenance. See the [dependency contract](dependencies.md#macos-更新提供者). Valid build receipts may be reused; an old official SDK cannot replace the derived framework with proxy interfaces. CI may explicitly select a temporary SDK directory.
 
-## macOS 更新框架
+`python3 scripts/prepare-sparkle.py --output build/toolchain/Sparkle/2.10.0-xdzip-proxy.2` uses native Clang from existing Xcode Command Line Tools or Xcode and needs no separate Qt SDK. Original SDK and source archives are cached in `build/source-cache/`; offline operation may pass `--archive` and `--source-archive` separately. The build does not execute scripts from downloaded source, modify system proxies, access production signing keys, or collect project source-delivery archives.
 
-原生构建通过 `prepare-sparkle.py` 准备 `build/toolchain/Sparkle/2.10.0-xdzip-proxy.2`。框架主库从锁定上游源码和代理补丁编译，安装助手、资源及签名工具保留官方 SDK 来源，详见[依赖契约](dependencies.md#macos-更新提供者)。已有有效构建回执可复用，旧官方 SDK 不能代替带代理接口的派生框架。CI 可显式指定临时 SDK 目录。
-
-`python3 scripts/prepare-sparkle.py --output build/toolchain/Sparkle/2.10.0-xdzip-proxy.2` 使用现有 Xcode Command Line Tools 或 Xcode 的原生 Clang，不需要另建 Qt SDK。原始 SDK 和源码归档缓存于 `build/source-cache/`，离线时可分别传入 `--archive` 和 `--source-archive`。构建不执行下载源码中的脚本，不修改系统代理，也不读取生产签名密钥。
-
-English: The macOS updater framework library is rebuilt natively from pinned Sparkle source and the bounded proxy patch. Helpers, resources and signing tools retain their pinned upstream SDK origin. Valid per-file receipts permit reuse; the unmodified SDK cannot satisfy the proxy API contract. Native Clang from Command Line Tools or Xcode is sufficient. This preparation does not collect project source-delivery archives or access production signing authority.
-
-`check-macos-proxy.py` 默认只运行自有回环下载器检查。`--system-conflicts` 仅供专项工作流中的一次性 hosted Apple Silicon runner 使用，受限助手暂存、恢复并核验系统代理和固定测试域名的 hosts 设置；禁止在本机添加该参数。English: Default transport probes use owned loopback services only. The system-conflict option is restricted to disposable hosted Apple Silicon runners with verified proxy and hosts restoration; do not enable it locally.
+`check-macos-proxy.py` defaults to project-owned loopback downloader checks only. `--system-conflicts` is restricted to disposable hosted Apple Silicon runners in a dedicated workflow. A constrained helper stages, restores, and verifies system proxy and fixed test-domain hosts settings. Do not add this flag locally.

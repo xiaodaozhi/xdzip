@@ -1,41 +1,39 @@
-# 仓库目录与依赖
+# Repository layout and dependencies
 
-当前产品模块以根目录 Cargo.toml 和 CMakeLists.txt 为准。下表描述实际目录；架构设计中的未来拆分不代表已有独立 crate。
+Current product modules are defined by root Cargo.toml and CMakeLists.txt. This table describes actual directories; future splits in architecture designs do not imply existing independent crates.
 
-| 目录 | 所有权与依赖规则 |
+| Directory | Ownership and dependency rules |
 | --- | --- |
-| apps/desktop | Qt/QML、薄 C++ 控制器、模型、设置与系统交互；通过 bridge 访问核心 |
-| crates/xdzip-cli | 无 Qt 的参数、终端、JSON、管理式安装与更新宿主，直接依赖 runtime、安全 I/O 和更新核心，不解释格式 |
-| crates/xdzip-domain | 纯类型与不变量；不得依赖 Qt 或具体 codec |
-| crates/xdzip-codec-api | 能力、借用输入、编码输出和取消契约；依赖 domain |
-| crates/xdzip-compression | 无第三方生产依赖的共享 Deflate/Deflate64/GZIP、LZMA/LZMA2、BZip2、PPMd7、MSZIP、LZX、Quantum 算法与封装，不拥有路径或发布能力；独立实现规则见[契约](independent-rust-codecs.md) |
-| crates/xdzip-crypto | 格式无关、固定内存的可清除敏感状态 SHA/HMAC 与 BLAKE 哈希，复用已准入基础原语；不解释归档密码或决定发布 |
-| crates/xdzip-codec-zip、xdzip-codec-tar | ZIP、TAR/GZIP 格式实现；不获取任意输出路径 |
-| crates/xdzip-codec-7z | 自研 7z 容器、方法图、过滤器、AES 组合、流式创建及有界重写，不拥有文件路径 |
-| crates/xdzip-codec-cab | 自研 CAB 只读容器，使用宿主授权卷和共享算法；保留原始名称、UTF-8 声明及普通重名记录，不自行发现卷或发布输出；见[自研契约](independent-rust-codecs.md#cab只读规格)与[来源](cab-format-sources.md) |
-| crates/xdzip-codec-optical | 自研 ISO9660/Joliet/Rock Ridge/UDF 只读解析与内容流，不拥有文件路径 |
-| crates/xdzip-codec-bridge | 隔离工作进程到 Rust 7z、CAB 和光盘后端的共享薄 CXX 边界，复用授权流、取消、有界输入、输出与暂存协议，不提供文件路径 |
-| crates/xdzip-codec-native、tools/native-codec | Rust 7z／RAR／光盘／CAB 后端的隔离工作进程，薄 C++ 仅提供协议及系统日历、编码服务；Native 独立核验预计费输出与辅助工作；I/O 边界见[契约](native-codecs.md) |
-| crates/xdzip-extract-plan | 元数据预检与有界报告；不拥有目标授权或写入能力 |
-| crates/xdzip-io | 输入树、原生授权与身份、安全暂存和文件提交 |
-| crates/xdzip-runtime | 会话、有界内存／磁盘索引、查询、选择、受限预览、创建／解压任务和调度 |
-| crates/xdzip-qt-bridge | cxx 类型桥接、双句柄及生命周期；依赖 runtime |
-| crates/xdzip-plugin-protocol | 仅 std 的有界 CBOR/framing；不拥有路径、进程或 Qt 权力 |
-| crates/xdzip-plugin-host、examples/sdk | 独立只读 SDK 试验、受控 I/O、原生沙箱门禁及独立 Python peer；不进入产品格式发现与运行闭包 |
-| tools | 独立桥接、格式、I/O 与进程计数探针，不作为 GUI 产品入口 |
-| scripts、.github | 生成、检查、部署工具与 CI、协作模板 |
-| release-notes | 可审阅的版本专属发布说明及 version/build 元数据，不存执行报告或生成包 |
-| design/hifi、design/html、design/assets | 高保真原稿、可操作设计及运行素材输入 |
-| docs | Markdown 格式的持久设计、工程契约与可复用验证方法，以及必要图片；不累积执行报告 |
-| specs | 机器可读的视觉、术语与依赖清单；供产品资源、生成器和检查工具使用 |
-| third_party | 随代码保留的第三方来源与许可材料 |
+| apps/desktop | Qt/QML, thin C++ controllers, models, settings, and system interaction; accesses the core through the bridge |
+| crates/xdzip-cli | Qt-free arguments, terminal, JSON, managed installation, and update host; directly depends on runtime, secure I/O, and update core without interpreting formats |
+| crates/xdzip-domain | Pure types and invariants; must not depend on Qt or concrete codecs |
+| crates/xdzip-codec-api | Capability, borrowed input, encoding output, and cancellation contracts; depends on domain |
+| crates/xdzip-compression | Shared Deflate/Deflate64/GZIP, LZMA/LZMA2, BZip2, PPMd7, MSZIP, LZX, and Quantum algorithms/wrapping without third-party production dependencies or path/publication authority; see the [contract](independent-rust-codecs.md) |
+| crates/xdzip-crypto | Format-independent fixed-memory SHA/HMAC and BLAKE hashes with zeroizable sensitive state, reusing admitted primitives; does not interpret archive passwords or decide publication |
+| crates/xdzip-codec-zip, xdzip-codec-tar | ZIP and TAR/GZIP implementations; no arbitrary output paths |
+| crates/xdzip-codec-7z | In-house 7z container, method graphs, filters, AES composition, streaming creation, and bounded rewriting without file-path ownership |
+| crates/xdzip-codec-cab | In-house read-only CAB container using host-authorized volumes and shared algorithms; preserves raw names, UTF-8 declarations, and ordinary duplicate-name records without discovering volumes or publishing output. See the [contract](independent-rust-codecs.md#cab只读规格) and [sources](cab-format-sources.md) |
+| crates/xdzip-codec-optical | In-house read-only ISO9660/Joliet/Rock Ridge/UDF parsing and content streams without file-path ownership |
+| crates/xdzip-codec-bridge | Shared thin CXX boundary from isolated worker to Rust 7z, CAB, and optical backends, reusing authorized streams, cancellation, bounded input, output, and staging protocol without file paths |
+| crates/xdzip-codec-native, tools/native-codec | Isolated worker for Rust 7z/RAR/optical/CAB backends; thin C++ supplies protocol and system calendar/encoding services only. Native independently checks prepaid output and auxiliary work; see the [I/O contract](native-codecs.md) |
+| crates/xdzip-extract-plan | Metadata preflight and bounded reports without destination authorization or write capability |
+| crates/xdzip-io | Input trees, native authorization and identity, secure staging, and file commits |
+| crates/xdzip-runtime | Sessions, bounded memory/disk indexes, queries, selection, bounded preview, creation/extraction tasks, and scheduling |
+| crates/xdzip-qt-bridge | cxx type bridge, dual handles, and lifecycle; depends on runtime |
+| crates/xdzip-plugin-protocol | std-only bounded CBOR/framing without path, process, or Qt authority |
+| crates/xdzip-plugin-host, examples/sdk | Independent read-only SDK trial, controlled I/O, native sandbox gates, and independent Python peer; outside product format discovery and runtime closure |
+| tools | Independent bridge, format, I/O, and process-count probes, not GUI product entry points |
+| scripts, .github | Generation, checking, deployment tools, CI, and collaboration templates |
+| release-notes | Reviewable version-specific release notes and version/build metadata; no execution reports or generated packages |
+| design/hifi, design/html, design/assets | High-fidelity originals, interactive designs, and runtime asset inputs |
+| docs | Durable Markdown design, engineering contracts, reusable verification methods, and necessary images; no accumulated execution reports |
+| specs | Machine-readable visual, terminology, and dependency inventories for product resources, generators, and checks |
+| third_party | Third-party sources and license materials retained with code |
 
-独立 xdzip-index、xdzip-platform 和完整外部格式一致性工具属于后续架构规划；目前索引在 runtime、平台文件操作在 io 与桌面适配层实现。已存在的 plugin-host 仅为[只读 SDK 试验](sdk-trial.md)，不等同于完整插件生态。测试主要随 Rust 模块、apps/desktop/tests 和 scripts 的检查工具维护，不创建无实现空壳。
+Independent xdzip-index, xdzip-platform, and complete external-format conformance tools are future architecture. Current indexing is in runtime, and platform file operations are implemented in io and desktop adapters. Existing plugin-host is only a [read-only SDK trial](sdk-trial.md), not a complete plugin ecosystem. Tests are primarily maintained with Rust modules, apps/desktop/tests, and scripts checks; empty unimplemented shells are not created.
 
-CAB 产品固定使用 Rust，官方 Cab 处理器和 CAB 专用 LZX/Quantum 不进入编译清单。调用链继续使用同一个隔离工作进程，不新增产品可执行文件，没有测试开关或失败回退。完整帧工作预付由 codec-api 定义，容器持有每帧额度，Native 接收端和 runtime 分别核验自己的额度与输出限制，见[自研契约](independent-rust-codecs.md#cab只读规格)。
+CAB uses fixed Rust product routing. Official Cab handlers and CAB-specific LZX/Quantum do not enter compilation. Calls continue through the same isolated worker, without new product executables, test switches, or failure fallback. Complete-frame prepaid work is defined by codec-api; containers hold per-frame credit, and Native receivers and runtime independently verify their allowances and output limits. See the [in-house contract](independent-rust-codecs.md#cab只读规格).
 
-依赖设计见[系统架构](../design/02-system-architecture.md)。避免 domain 反向引用 runtime、codec 直接通知 QML，以及平台层决定 UI 文案。生成绑定、样本、报告和构建输出进入 build/、target/ 或 dist/，不提交到源码目录。历史兼容测试的持久输入另见[安装与关联](installers-associations.md#兼容基线的长期输入)。
+See [system architecture](../design/02-system-architecture.md) for dependency design. Avoid domain reverse dependencies on runtime, codecs notifying QML directly, and platform layers deciding UI wording. Generated bindings, samples, reports, and build output go under build/, target/, or dist/, not source directories. See [installation and associations](installers-associations.md#兼容基线的长期输入) for durable historical-compatibility inputs.
 
-`tools/image-preview/` 是 QtGui／QtSvg 的私有静态图片工作进程，输入为已验证的有界内容，输出为有界 RGBA，不持有归档和输出路径。平台支持及失败行为见[预览契约](content-preview.md)。
-
-English: `tools/image-preview/` isolates approved image decoding behind bounded, verified bytes and RGBA replies; it never receives archive or destination paths.
+`tools/image-preview/` is a private QtGui/QtSvg static-image worker. Input is bounded verified content and output bounded RGBA; it holds no archive or destination paths. See the [preview contract](content-preview.md) for platform support and failure behavior.

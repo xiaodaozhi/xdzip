@@ -1,0 +1,112 @@
+# 用户主动更新契约
+
+Windows MSIX 包身份下关于页不显示应用内更新区域，更新控制器也拒绝发起现有 GitHub 更新检查。商店交付时由 Microsoft Store 管理更新；侧载包不获得本应用的自动更新承诺。身份查询异常按包身份处理，避免误用安装器更新。现有普通安装与其他平台行为不变。
+
+English: The About page and update controller disable the existing updater for packaged Windows processes. Store updates are managed by Microsoft Store; sideloaded packages do not gain an in-app automatic updater. An identity-query failure fails closed.
+
+独立 CLI 和桌面包内的 CLI 按[命令行契约](command-line.md)更新当前安装。独立 CLI 使用单独签名清单和管理式版本目录，桌面 CLI 通过同用户单实例通道提交候选意图，桌面控制器再次验证。accepted 只表示 handed_off，实际成功仍要求回执及运行身份。Windows/Linux 安装占用扩展到 CLI 任务，macOS 通过共享使用锁、提交门和持久状态保护 CLI；已有任务不被隐式取消。命令行无 GUI 身份查询不创建 QApplication，也不读取后清除安装回执。
+
+English: CLI updates target their own installation. Standalone managed updates use a separate signed manifest; bundled CLI requests use same-user IPC and independent desktop candidate verification. Acceptance means handed_off, never installation success. CLI tasks participate in platform occupancy barriers, including the macOS shared lock and persistent commit gate. Headless identity queries do not create QApplication or consume receipts.
+
+
+关于页通过应用级 `UpdateController` 检查公开版本。关闭关于页不取消检查或下载，再次打开仍显示同一状态。检查只由用户主动触发，不在启动时轮询，不自动安装。产品窗口继续复用关于页和共享操作控件。
+
+## 选择、网络与隐私
+
+客户端只读取固定仓库 `xiaodaozhi/xdzip` 的公开 [Releases API](https://docs.github.com/en/rest/releases/releases)，不使用凭据，不上传文件名、归档内容、密码、最近记录或设置。GitHub 与其下载 CDN 会收到网络连接信息及包含应用版本的 User-Agent。点击发布页或下载目录使用系统打开接口。
+
+每页最多 100 条，最多 10 页，每次响应最多 8 MiB，清单最多 256 KiB，签名最多 4 KiB。原始请求只允许 HTTPS 和明确登记的 GitHub/CDN 主机；用户配置镜像时传输地址允许该 HTTPS 镜像站点，重定向最多 5 次；元数据有 15 秒无数据超时和 30 秒总上限，下载有 30 秒无数据超时及一小时总上限。内存 ETag 缓存最多 24 项，304 只复用先前成功响应。离线、TLS、超时、限流、截断、缺包和清单错误均为失败，不等同于“已是最新”。重复点击不发起并行更新。
+
+更新使用设置中的系统代理、直连或自定义 HTTP/SOCKS5 代理，地址不含凭据。可选镜像必须是 HTTPS，且不含凭据、查询或片段；构造方式为镜像地址后拼接完整原始 GitHub HTTPS 地址。原始 URL 仍需通过固定主机白名单，镜像和重定向不会改变已签名清单的内容、校验、候选身份或安装门。配置在当前更新操作结束后用于下一次操作。macOS Sparkle 原生更新支持系统、直连和无凭据的自定义 HTTP CONNECT／SOCKS5 三种模式。每个原生更新实例在启动前复制已验证的模式和代理地址，feed 与归档使用同一会话策略；自定义代理失败时禁止回退直连。直连在 URLSession 的代理字典中将 HTTP、HTTPS、SOCKS、FTP、PAC 和自动发现开关显式设为数值 0；nil 字典或空的现代代理数组仍代表系统默认，不能用作直连。TLS 信任、发布签名及独立安装门保持原有约束。
+
+Update transport supports system, direct, or custom HTTP/SOCKS5 proxy settings and an optional HTTPS mirror. The mirror receives the complete original GitHub HTTPS URL after its base address. Original URL validation, authenticated manifests, package verification, and installation gates remain in force. A running operation keeps its transport settings. Sparkle freezes an explicit system, direct or credential-free custom HTTP CONNECT/SOCKS5 policy before startup for both feed and archive. Custom proxy failure cannot fall back to direct. Direct mode explicitly sets every static proxy, PAC and discovery flag to numeric zero in the session proxy dictionary; nil dictionaries and empty modern proxy arrays retain system defaults. TLS trust, signatures and independent installation gates remain unchanged.
+
+HTTP 429 表示限流。HTTP 403 只有在剩余额度为零、有效秒数的 Retry-After，或 GitHub JSON 错误消息明确表示限流时才归为限流；其他 403 保留为网络失败，不推断配额耗尽。产品不自动重试，也不读取 GitHub 凭据。匿名额度按请求源 IP 共享，CI 的仓库读取权限不能改变匿名请求额度。
+
+HTTP 429 is a rate-limit failure. HTTP 403 is classified as rate-limited only when the remaining quota is zero, a valid seconds-based Retry-After is present, or the GitHub JSON message explicitly identifies a rate limit. Other 403 responses remain network failures. The product neither retries automatically nor reads GitHub credentials; workflow repository permissions do not raise its anonymous, source-IP quota.
+
+无 Qt Rust 核心按语义版本、渠道和单调 build 选择，验证固定仓库、完整六类包、架构、包型、最低系统契约和同候选身份。稳定版只接收稳定版；alpha 可接收 alpha、beta、rc、stable；beta 不接收 alpha；rc 只接收 rc、stable；dev 可检查公开版本。语义版本和 build 都必须递增，不按发布时间推断。客户端再检查当前系统支持范围和 Releases 资产字节数。
+
+## 信任与下载
+
+`release.json.sig` 验证清单原始字节，信任根编入客户端和安装助手，不能从下载内容或请求中增加。JSON 元数据进入字符串 FFI 前先验证 UTF-8，非法编码明确失败，不能通过替换字符改变待验签原字节。签名格式、独立 Sparkle 密钥、密钥交付顺序和不可变资产要求见[发布协议](release-protocol.md)。缺签名或未知公钥只提供官方发布页手动下载；错误签名明确失败。生产公钥尚未配置时不允许自动覆盖。
+
+Windows/Linux 将最多 2 GiB 的包流式写入私有更新缓存，同时核对长度和 SHA-256，成功提交后才允许交给助手。取消或校验失败不产生可安装状态。便携包、dirty、开发/源码或身份不明的构建只提供检查与下载。自动覆盖还要求 Release 配置和有效提交身份，不把无 Git 身份的源码归档构建当作安装版。安装身份须同时匹配系统安装记录、运行路径及随包标记。
+
+macOS 使用固定 Sparkle 2.10.0 和 `xdzip-proxy.2` 受限代理扩展，通过薄 Objective-C++ 用户驱动把状态送入统一关于页。框架主库与 Ed25519 从锁定源码和补丁以 Apple Silicon 原生编译，资源、安装助手和签名工具保留锁定官方 SDK 来源；派生框架不声称与上游 SDK 字节相同。feed 和归档由 Sparkle 原生验证，feed 只包含已选定的同一个候选；不声称 Sparkle 执行了额外 SHA-256。只读 DMG、App Translocation、未登记的 .app 或缺少更新公钥均提供手动安装入口。普通 CI 不因引入 Sparkle 而部署、签名或上传 Mac 应用包。
+
+手动回退展示当前首先未满足的条件：安装身份、会话、缺少自动更新源或无效的网络配置。安装身份不合格仅表示整组身份检查未通过，不推测具体是哪一项；多个条件同时不满足时仍可能需要依次处理。关于页提供同版本发布页和 DMG 指引，下载 app.zip 后说明解压、退出旧版及替换应用；下载成功不等于安装成功。English: Manual fallback identifies the first unmet installation identity, session, feed or valid network-configuration condition. An identity failure does not guess which individual identity check failed, and other conditions may also be unmet. About links to the release and explains manual DMG or app.zip installation; download is not installation.
+
+## 安装交接与恢复
+
+下载期间原有任务继续运行。选择下载安装后有活动任务则等待，用户可取消等待并暂缓更新，不隐式取消任务或密码请求。助手准备完成后 `prepareForUpdate` 拒绝活动任务、任务启动与模态交互；进入交接后禁止新会话和新任务，所有 Rust 连接完成清理及 join 才发送安装提交。交接不使用“立即重启旧程序”路径。
+
+Windows 仅从登记的当前用户安装根复制独立无 Qt 助手到私有缓存，助手独立复验签名、大小和哈希，等待已捕获主进程退出后交给现有 Inno 安装器，保留交互许可确认。安装门阻止替换期间再次启动。
+
+安装根未通过安全检查时，关于页明确提示检查安装目录权限或从发布页手动安装，不将该拒绝归为网络故障；原有目录和身份检查不因此放宽。English: When the installation root fails its safety check, About identifies the installation folder and offers a manual update from the release page without classifying the rejection as a network failure. Directory and identity checks remain unchanged.
+
+Ubuntu 安装版使用固定 `/usr/libexec/xdzip-update-helper`，普通用户协调器仅通过固定参数调用 polkit。root 助手将包复制到 root 私有暂存后重新验签及核对 xdzip 包名、架构、版本，只允许固定 APT 操作，不接受命令、任意包名或目标目录，不使用 sudo shell。授权取消与缺少认证代理返回独立状态。dpkg 未配置不报告成功，不自动回滚或启动旧程序。新版以原用户重启时保留有界白名单中的 XDG 设置、数据、缓存与状态目录及桌面语言，不继承动态加载器、Qt SDK 或测试环境覆盖；这些变量不传入 root 的安装命令。
+
+macOS 在全部 join 完成后才释放 Sparkle 安装回调；主程序仅在 provider 已标记实际 committed 后、调用 SDK 安装回复前同步释放退出拦截，不能在 join 屏障上提前允许末窗自动退出。提交失败或取消后，普通退出继续等待原生 helper 观察门；Sparkle 负责实际归档替换和重启。取消不会留下下次退出时安装的计划。Framework、XPC 与 helper 单独保留所需签名参数和 entitlements，不能套用通用重签规则。
+
+On macOS, completing every Rust join is necessary but does not itself commit installation. The provider marks the native installation committed, synchronously releases the application's quit interceptor, then invokes Sparkle's install reply. A failed or cancelled handoff retains the ordinary quit/helper observation barrier and cannot enable automatic last-window exit early.
+
+Sparkle 的取消回复在异步更新周期中处理，周期结束不等同于独立安装进程已经退出。未提交安装时，普通退出路径先请求取消，等待周期结束，再通过系统 `/bin/ps` 只读观察与本应用框架路径精确匹配的 Autoupdate 进程，确认其结束后才释放退出拦截。准备完成时先记录匹配的安装进程，观察失败不当作退出许可，不终止安装助手，也不记录无关进程信息。准备失败后的重试同样等待旧安装助手结束，不能替换尚未完成退出观察的更新驱动。已经提交的安装由 Sparkle 按原生流程退出和重启。
+
+Windows/Linux 的事务使用随机 ID 和固定名称的 ready/proceed/cancel/result 文件。客户端在退出前把事务、目标身份和缓存目录保存到设置旁独立 `update-state.ini`，不混入设置配置。助手先原子写成功结果，再释放门和重启。下次启动限制回执路径与大小，核对事务及当前版本/build/安装身份；失败、缺回执或身份不符显示恢复入口，不自动重试安装。恢复记录缺少有效候选地址时仍可打开固定的官方发布列表。缓存材料保留供用户修复，公开证据不得含私人完整路径。
+
+macOS 在释放 Sparkle 安装前保存目标版本/build 的本地尝试记录。重开时以实际运行身份和可靠安装标记判断完成或需要恢复；此记录不赋予安装权限，也不代替 Sparkle 验签。
+
+## 验证边界
+
+Mac 单平台诊断可只运行完整产品链；全平台模式始终运行 Sparkle 六场景与完整产品链，不采纳跳过六场景的诊断选项。
+
+原生下载器的系统冲突检查只在带隔离标记的一次性 hosted Apple Silicon runner 暂时启用自有静态代理和 PAC。先要求系统模式的 feed／归档实际命中代理，再要求直连零命中；HTTPS 对照核对连接去向并保留不可信证书拒绝。受限助手保存和核验恢复该服务完整代理设置及固定测试域名的 hosts 内容，EOF 与超时也恢复。本机不修改代理、DNS 或证书信任。完整产品链另外执行受控 PAC 下直连安装、普通重启和活动更新配置快照；下载器检查不能代替安装证据。
+
+English: Real system-conflict probes are restricted to explicitly disposable hosted Apple Silicon runners. Owned static proxies and PAC require positive system-mode feed/archive hits followed by zero direct-mode hits; HTTPS controls also verify connection routing and untrusted-certificate rejection. A bounded helper restores and verifies the original service proxy configuration and hosts content on completion, EOF or timeout. Local runs never change system networking or trust. A separate product chain exercises direct installation under PAC, ordinary restart and immutable active settings.
+
+A macOS-only diagnostic run may select only the full product chain. All-platform verification always runs both the six Sparkle cases and the full product chain, ignoring that diagnostic option.
+
+Mac 无 SDK HTTPS 验收使用同一个已部署探针及匿名真实更新请求。记录只保存状态码、Qt 错误和白名单限流响应头，不保存原始错误正文、源 IP 或凭据。确认限流后，验收驱动最多启动三次探针，按 Retry-After 与配额重置时间中较晚者等待；缺少可用主配额重置时间时拒绝提前重试，已确认的其他限流使用至少 60 秒的递增退避。累计等待最多 3700 秒，超预算明确失败，保留每轮结果和实际等待记录。每次请求原有超时、TLS、响应大小、成功状态和 SDK 隔离要求保持；失败重试不合并成一次通过。此退避只用于专用验收驱动，不能作为产品后台重试或最终专项跳过条件。
+
+The SDK-free Mac HTTPS regression restarts the same deployed probe for at most three anonymous checks. It records only whitelisted HTTP/rate-limit diagnostics, retains every attempt and actual wait, respects the later Retry-After/quota-reset deadline, and fails rather than retrying early when the cumulative 3700-second wait budget is insufficient. Other confirmed limits use increasing backoff of at least 60 seconds. TLS, per-request timeouts, response bounds, successful controller state and SDK isolation remain mandatory. This acceptance-only retry policy does not add product polling or allow all-platform verification to skip HTTPS or the six native cases.
+
+核心夹具覆盖渠道、dev、乱序分页、缺包、错误签名、最低系统和身份冲突；网络夹具覆盖取消、重复点击、限流、TLS、响应上限、ETag 与损坏下载；会话回归核对任务保留和所有 join 后交接。真实三平台旧版到新版、授权取消、再次启动、安装失败/恢复、设置/关联保留以及无 SDK HTTPS 需要隔离平台实证，不能由单元测试或 CI 编译替代。Mac 完整更新必须在 Apple Silicon 原生环境执行。具体完成状态及证据由 issue 跟踪。
+
+[专用原生更新回归](../../../.github/workflows/update-regression.yml)仅手动调度，不携带生产秘密，不上传应用包。默认验证全部平台，也可选择单个平台定位故障，各选择使用独立队列；最终验收仍要求同提交的全平台结果。Windows 在一次性 GitHub runner、Linux 在专用容器先使用拥有的 C 协议产品和真实 Inno/APT 验证助手取消、失败及恢复。另一条私有 Qt 升级链路编译两个真实 `browser_main`/QML 版本，通过实际关于页鼠标输入，执行清单与包验证、退出 join、Inno/APT、普通用户单实例重启和回执恢复，并核对设置、未知设置键、现有默认关联及安装目录的无关文件保留。Linux 将构建 SDK 和运行容器分开，运行容器没有编译器或 Qt SDK，并使用自定义 XDG 目录；Windows Server CI 仅在私有宏下替换最低系统判断，不替代 Windows 11 原生验收。该链路替换公开 GitHub URL 的网络 transport，生产 HTTPS/TLS 则单独通过无 SDK 运行验证。
+
+[生产签名专项](../../../.github/workflows/production-update-acceptance.yml)在所有者授权后使用受保护环境的已有密钥，沿用真实 Qt 产品升级与异常恢复链，保留已提交的生产公钥。准备阶段不签名，独立签名步骤先严格匹配公开信任根，再核验本次固定候选；执行阶段拒绝秘密环境。它不提供任意资产签名或发布接口，签名候选只存于一次性 runner，公开工件仅含有界的诊断与摘要。此专项和原测试密钥回归分别记录，实际执行才算通过，密钥匹配也不等于安装成功。具体约束见[发布协议](release-protocol.md)。English: The separately authorized production-signing workflow retains committed production roots and separates secret-free preparation, fixed-candidate protected signing and secret-free native execution. Signed candidates stay on the disposable runner; only bounded diagnostics are exported. Production key matching, test-key regressions and actual native upgrade outcomes are recorded independently, without publication.
+
+增强场景延迟包下载完成事件，启动真实 AES Check 直到等待密码，再验证更新进入等待任务。密码窗保持原生应用模态，此时夹具通过 controller 调用取消更新等待，并在证据中明确标记该步骤未使用关于页鼠标；取消后同任务及密码令牌保持，再通过输入法提交事件及密码确认按钮完成 Check，最后从关于页再次安装。另一轮在更新与密码等待并存时向真实主程序投递系统 Quit，点击实际退出窗口的返回、取消并退出，核对同任务／令牌、所有 join、零安装交接以及同旧安装正常重开后再升级。实体桌面和真人输入按需检查并单独记录，许可复核和发行授权仍分别处理。
+
+另有双会话组件回归，经 AppQuitGuard、DesktopIntegration 和全会话路由进入同一退出窗口，核对 AES 等待任务的返回／取消及 join。只允许受管理会话自己的密码／冲突模态被退出确认覆盖，原生 QWidget 模态仍阻挡退出。该组件检查与完整主程序在更新等待期间的系统 Quit、原生安装回归分别记录。
+
+Mac 完整产品夹具在首次投递系统 Quit 前，须实际观察同一工作会话的密码窗已可见、已 exposed、属于该主窗口且正是应用模态窗，任务与密码令牌仍一致；不能把 Rust 已产生密码请求等同于延迟呈现的窗口已经就绪。达到前提后仅投递一次 Quit，继续验证真实返回、模态恢复、取消和全部 join。超时时先冻结当前进度，再执行清理；清理期间后来生成的退出结果不能覆盖失败结论。
+
+Before its first system Quit, the full Mac product fixture must observe the owned working-session password window as visible, exposed and the current application modal, with the same task/prompt tokens and host window. A Rust password request alone does not prove that deferred presentation has completed. The fixture posts Quit once, retains the real Return/modal-restoration/Cancel/join requirements, and freezes timeout diagnostics before cleanup. Results generated later during cleanup cannot turn the timed-out scenario into a pass.
+
+Windows 私有安装回归在新 `xdzip.exe` 复制完成、其余文件尚未开始复制时暂停真实 Inno，核对新程序身份并再次启动真实 Qt 程序，要求启动门返回 11、没有可见窗口及新会话，再放行复制并完成原有升级验收。测试观察门时立即关闭自己的句柄，不能替安装器维持门的生命周期。新旧均为 Qt 6.8.2，此回归不建立原子应用包或跨 Qt 版本迁移保证，生产安装模板不添加暂停逻辑。
+
+The private Windows regression pauses real Inno after replacing `xdzip.exe` and before copying the remaining files, checks the new identity and starts the actual Qt program. It requires gate exit 11 without visible windows or new sessions before resuming and completing the existing upgrade checks. Observation handles are closed immediately so the test cannot prolong the gate's lifetime. Both sides use Qt 6.8.2; this does not establish atomic bundle replacement or migration between Qt versions. The production installer template contains no pause.
+
+Mac 单独命名的私有 Qt 应用使用真实关于页、双会话 join、Sparkle、签名 app.zip 和新 build 重启，覆盖 feed/归档篡改和取消；仅候选发现使用 loopback 替身，公开 GitHub 清单与渠道另外由更新核心和网络回归验证。测试密钥只在私有副本中注入，生产资源不改。只有实际运行产出的证据能登记为通过。
+
+Windows 助手专项另外驱动真实 Inno 许可页的取消按钮及私有 InitializeSetup 失败注入，要求安装日志明确到达该路径，旧身份保留、没有重启且安装门释放。Linux 通过真实 pkexec 分别验证策略拒绝、无认证代理、标准 D-Bus 代理返回 Cancelled；取消代理仅服务固定测试 UID、action 和本次请求，不接收密码、不授予权限。成功升级另核对 ZIP、TAR、GZip 的既有默认关联。自动驱动许可按钮与测试代理不构成人工许可确认或系统桌面认证代理验收。
+
+Windows/Linux 完整 Qt 回归分别提交真实 Inno 初始化失败包和一次 postinst 失败包，记录实际请求、事务、失败回执及门释放，禁止失败后自动重启。恢复轮以普通主程序启动，私有网络工厂返回空值，让默认控制器构造函数从真实默认缓存消费回执；要求恢复状态、同一实际安装身份、无新任务／安装交接／自动重试，设置和 ZIP／TAR／GZip 默认关联保留。Linux postinst 失败可能已经写入新版，必须如实验证新版与 dpkg 半配置状态，不将其称为旧版保留；仅夹具显式修复 APT 配置并重置独立成功场景，不把这个测试动作描述成产品自动回滚。
+
+The full Windows/Linux Qt regressions submit an actual failing Inno setup or a one-time postinst failure, retain the real transaction/receipt and require gate release without automatic restart. An ordinary main-program restart uses the default controller constructor and cache to restore recovery, without fixture transport, new work or automatic retry. Settings and ZIP/TAR/GZip defaults must survive. A failed Linux postinst can leave the new payload half configured; evidence must name that actual identity and dpkg state. Explicit fixture repair/reset before an independent successful upgrade is never product rollback.
+
+Mac 完整产品回归还区分两类恢复：在 join／commit 边界主动取消交接，以及真实 commit 后对本次拥有的旧 app 根设置可撤销 UF_IMMUTABLE，使原生替换遇到文件系统拒绝。后一场景必须记录实际安装提交、精确 helper PID 自行结束和该 helper 的权限失败日志，不能用取消交接代替安装失败。标志恢复须核对拥有范围、UID、dev/inode 和原 flags；不使用 sudo、不杀安装助手、不伪造结果。两类恢复均以旧版普通启动读取持久尝试记录验证。具体是否执行成功仍以实际 Apple Silicon 工件为准。
+
+The full-main regressions exercise system Quit while update and AES password waiting coexist, then click the actual Return/Cancel controls and verify task identity, every join, no install handoff and ordinary restart. Controller calls while the password prompt is modal are explicitly labelled; an input-method commit event is not a physical IME acceptance test. Windows additionally tests real Inno license cancellation and owned initialization failure. Linux uses real pkexec for policy denial, missing agent and a fixed-purpose D-Bus cancellation agent; it never obtains a password or grants authority. These do not replace manual license or desktop authentication acceptance. macOS distinguishes pre-commit interruption from committed replacement failure using an owned immutable app root, exact helper observations and native permission-error logs. It restores the original flags only after checking ownership and filesystem identity, without sudo, killing helpers or fabricating receipts. Executed Apple Silicon evidence determines the result.
+
+Mac 另有完整产品链回归，以两份干净 Release 源码身份构建真实主程序，保留正式 bundle ID、安装标记和 Alternate 文档类型，安装到一次性 runner 的独有 Applications 路径。旧版通过真实关于页和更新控制器完成清单认证、Sparkle 安装及 join 交接，新版普通启动核对安装身份、更新回执、默认配置目录、设置和未知键、单实例，以及 LaunchServices 的 ZIP 默认处理器。私有网络接点仅映射固定元数据 URL、已认证 feed URL 和精确归档 URL；签名仍真实验证，无 SDK HTTPS 单独执行。该回归使用原用户 HOME 和默认配置路径，不以测试路径注入代替重启恢复。
+
+The dedicated native workflow defaults to all platforms and also supports a separate queue for a selected diagnostic platform; final acceptance still requires all platforms on the same commit. The Windows/Linux regression additionally builds two private real Qt products, clicks About, runs native installers and verifies ordinary single-instance restart, receipt recovery and preserved settings/associations. Its enhanced scenario starts a real AES Check waiting for a password, cancels update waiting while preserving that task/token, enters the password through an input-method event and clicks confirmation before upgrading. Cancellation is explicitly a controller call because the real application-modal password window blocks About pointer input. A separate two-session component regression clicks the actual quit window: returning preserves the waiting AES Check and password token, while cancelling and quitting cancels that same task, clears its prompt and emits readiness exactly once after every Rust join, without update handoff. This does not replace full-main-program quit during update waiting or native installation acceptance. Fixture transport retains production signature/hash policies; SDK-free HTTPS is tested separately. Linux uses custom XDG directories in a runtime without build tools or the Qt SDK. The private Windows Server minimum-system override does not validate Windows 11 acceptance. Manual desktop/license/authorization acceptance remains separate; only executed native results count as passed.
+
+A separate macOS product regression builds two clean Release identities with the real main program, formal bundle ID, installation markers and Alternate document types in an owned Applications path on a disposable runner. Actual About input and UpdateController authentication precede native Sparkle installation and the join barrier. Ordinary new startup verifies installed identity, update receipt restoration, the default profile, persistent and unknown settings, single-instance behavior and LaunchServices ZIP defaults. Private transport maps fixed metadata URLs, the authenticated feed URL and the exact archive URL while retaining real signature validation; SDK-free HTTPS remains separate. The original user HOME and default settings path are used without a test profile override.
+
+Sparkle cancellation is asynchronous, and finishing its update cycle does not prove that its separate installer has exited. Before an uncommitted normal quit, the application requests cancellation, waits for the cycle, then uses the system `/bin/ps` read-only interface to confirm that the Autoupdate process matching its own exact framework path has ended. The matching installer is observed at readiness. Inspection errors never grant exit permission, no installer is killed, and unrelated process information is not logged. Retries after preparation errors also wait for the old installer to exit before replacing its update driver. Committed installation keeps Sparkle's native quit and relaunch flow.
+
+English: Updates are user-initiated from About, with app-wide state and explicit cancellation. Fixed public GitHub endpoints receive connection metadata and the application version, never archive data, paths, passwords or settings. The Qt-independent core validates immutable six-target manifests, semantic version/channel progression, monotonic builds and exact-byte Ed25519 signatures. Invalid UTF-8 metadata fails before string FFI without rewriting authenticated bytes. Portable, dirty, development or unknown installations remain manual; automatic replacement also requires Release configuration and a valid source revision. Windows/Linux stream-check size/SHA-256 and independently reverify in standalone helpers. Sparkle 2.10.0 validates the signed single-candidate feed and archive on Apple Silicon. Installation waits for tasks and every Rust join; no new work enters after handoff. Fixed privilege boundaries, installation gates and transaction receipts prevent false success or blind restarts. Linux relaunch preserves bounded XDG profile directories and desktop locale only for the ordinary user, excluding loader, SDK and test overrides. Manual recovery falls back to the fixed official releases list when candidate metadata is unavailable. Production trust roots must be provisioned before release. Native isolated upgrade and SDK-free HTTPS evidence remain distinct from automated component checks.

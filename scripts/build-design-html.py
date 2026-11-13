@@ -24,7 +24,7 @@ from lxml import etree, html
 
 
 PROJECT = Path(__file__).resolve().parents[1]
-SOURCE = PROJECT / "docs" / "design"
+SOURCE = PROJECT / "docs" / "zh-CN" / "design"
 TEMPLATES = Path(__file__).resolve().parent / "design-html"
 ORDER = ["index"] + sorted(p.stem for p in SOURCE.glob("[0-9][0-9]-*.md")) + [
     "architecture-decisions", "requirements-traceability", "glossary"

@@ -1,23 +1,23 @@
-# 简体中文界面术语
+# Simplified Chinese UI terminology
 
-面向用户的中文文案以[术语配置](../../specs/ux/chinese-terminology.json)为准。Qt 静态文案继续使用 resources/i18n/zh-CN.json 的稳定 ID，HTML、当前高保真设计与用户说明同步采用下表；工程和格式文档可以使用技术术语。此次不改变组件尺寸、主窗口 0.8／菜单 1 的密度、DPR 或缩放参数。
+User-facing Chinese copy follows the [terminology configuration](../../specs/ux/chinese-terminology.json). Qt static text retains stable IDs in resources/i18n/zh-CN.json. HTML, current high-fidelity designs and user documentation follow the table below; engineering and format documents may use technical terminology. This change does not alter component dimensions, main-window 0.8/menu 1 density, DPR or scaling parameters.
 
-| 语义 | 统一用语 | 使用示例 |
+| Meaning | Standard Chinese wording | Example use |
 | --- | --- | --- |
-| ZIP、TAR 等容器文件 | 压缩包 | 压缩包名称、空压缩包、压缩包信息 |
-| 完整动作名称 | 打开压缩包、创建压缩包、解压 | 工具栏已有明确上下文时可简写“打开”“新建” |
-| 包内对象 | 文件、文件夹、内容 | 所选文件和文件夹、全部内容 |
-| 文件属性 | 原始大小、压缩大小 | 表头、预览属性、排序菜单使用同一名称 |
-| 按物理条目顺序恢复排序 | 按原始顺序排列 | 与按名称、大小排序区分 |
+| Container file such as ZIP or TAR | 压缩包 | 压缩包名称, 空压缩包, 压缩包信息 |
+| Full action names | 打开压缩包, 创建压缩包, 解压 | “打开” and “新建” may be shortened where the toolbar context is already clear |
+| Objects within an archive | 文件, 文件夹, 内容 | 所选文件和文件夹, 全部内容 |
+| File properties | 原始大小, 压缩大小 | Use the same names in column headers, preview properties and sort menus |
+| Restore physical entry order | 按原始顺序排列 | Distinguish from sorting by name or size |
 
-“档案文件”不作为产品术语。“归档”“归档文件”“归档格式”仅用于工程规范、格式说明或公共 API 语境，不混入普通中文界面。TAR 即使只打包不压缩，界面仍使用“压缩包”，其具体压缩能力通过格式和压缩级别表达。
+“档案文件” is not product terminology. “归档”, “归档文件” and “归档格式” are restricted to engineering specifications, format descriptions or public API contexts and do not appear in ordinary Chinese UI. Even when TAR only packs without compression, the UI uses “压缩包”; actual compression capability is expressed by format and compression level.
 
-“压缩文件”仅可作为动作，例如“正在压缩文件”，不作为容器名称。“压缩后”不再作为属性名称，统一为“压缩大小”。创建窗口默认名称为“新建压缩包.zip”，这不意味着修改已有文件名。
+“压缩文件” may only describe an action, such as “正在压缩文件”, not a container. “压缩后” is no longer a property name; use “压缩大小”. The creation window's default is “新建压缩包.zip”; this does not rename an existing file.
 
-用户提供的名称、路径、压缩包内部文件名、协议字段、代码标识和历史高保真图像不做术语替换。英文保留标准的 archive，按自身语法表达；“全部内容”为 All contents；英文大小属性保留适合窄表头的 Compressed 简写，表示 compressed size。不得按中文词汇替换英文代码标识。
+Do not replace terminology in user-provided names or paths, filenames inside archives, protocol fields, code identifiers or historical high-fidelity images. English retains the standard word “archive” according to English grammar; “全部内容” is “All contents”. English size properties retain “Compressed” as an abbreviation for compressed size suitable for narrow headers. Do not replace English code identifiers according to Chinese vocabulary.
 
-当前高保真文案修订见[术语状态稿](../../design/hifi/terminology.html)。原图、哈希及文字墨迹测量保持历史依据；[正文量测脚本](../../scripts/check-html-body.py)仅通过显式的历史标签映射核验新文案，不修改几何目标或容差。标签变长后仍需验证主窗口、表头、预览与菜单均完整显示。
+See the current [terminology state design](../../design/hifi/terminology.html). Original images, hashes and text-ink measurements remain historical evidence. The [body measurement script](../../scripts/check-html-body.py) verifies new copy only through explicit historical label mappings, without changing geometry targets or tolerances. Longer labels still require verification that the main window, headers, preview and menus display completely.
 
-运行 `python3 scripts/check-ui-i18n.py` 同时检查两份语言资源及中文术语。检查只针对产品静态文案，允许明确的“压缩文件”动词用法，不限制用户内容或工程术语。
+Run `python3 scripts/check-ui-i18n.py` to check both language resources and Chinese terminology. The check applies only to static product copy, permits the explicitly allowed verb use of “压缩文件”, and does not restrict user content or engineering terms.
 
-系统文件管理器入口按所有者在 [#270](https://github.com/xiaodaozhi/xdzip/issues/270) 确认的菜单名称，保留“添加到压缩文件...”及“解压每个压缩文件到单独的文件夹”。配置只对这两个稳定 ID 的完整文字登记例外，不扩大其他中文容器名称的允许范围。
+As confirmed by the owner in [#270](https://github.com/xiaodaozhi/xdzip/issues/270), system file-manager entries retain “添加到压缩文件...” and “解压每个压缩文件到单独的文件夹”. The configuration registers exceptions only for the complete text of these two stable IDs; it does not broaden permitted Chinese container names elsewhere.
