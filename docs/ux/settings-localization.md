@@ -1,5 +1,9 @@
 # 设置窗口与界面语言
 
+没有可见主窗口时，从托盘打开的设置和关于窗口没有 owner，按指针所在显示器的可用区域居中。复用 OperationWindow 的屏幕居中路径，在原生窗口创建及高度确定后再次定位，完整原生边框保持在工作区内；高度上限取选定 QScreen 的实际可用高度，保留既有屏幕留白，不使用虚拟桌面合并范围推导位置或高度，不恢复隐藏或最小化的主窗口。已有 owner 的入口继续跟随调用窗口，窗口尺寸和密度不变。
+
+English: Ownerless Settings and About windows opened from the tray center their complete native frame in the work area of the screen containing the pointer. They reuse OperationWindow's screen placement before and after native creation and height adjustment. The height cap uses the selected QScreen's actual work area with the existing margin, rather than the combined virtual desktop, without restoring a hidden or minimized main window. Owned entry points retain their owner placement, dimensions and density.
+
 设置使用非模态独立系统窗口，标题栏、应用菜单和托盘复用同一个可见窗口。左侧依次为外观、通用、隐私、文件关联、网络和关于；所有关于入口打开同一设置窗口的关于页。窗口逻辑宽度为 612，客户区高度为 532，屏幕空间不足时限制高度，侧栏和正文分别滚动。侧栏与正文相接，顶部不留额外空隙。窗口没有 footer、保存或取消按钮。设计源和各状态图见[设置设计](../../design/hifi/sources/settings.html)，尺寸令牌见[布局规范](../../specs/visual/layout-scale.json)。
 
 主题、字号、列表密度、语言、打开方式、托盘和最近记录开关在操作时写入并生效；关闭窗口不会撤销已成功的更改。语言即时刷新产品文字、应用提供的原生菜单及托盘菜单，运行中的任务不受影响；系统自带菜单项遵循系统语言。打开方式影响后续所有打开入口和标题栏加号，不迁移已打开的会话。清空最近记录立即执行，不删除原文件。清空失败与设置写入失败均在页面显示错误，保留既有数据和实际设置。多选框基于 IntentCheckBox，主题和代理单选基于 IntentRadioButton；鼠标、键盘及原生辅助功能 press/toggle 必须提交同一个选择意图，并核对模型，不得只更改图形。下拉框继续使用 OperationSelect，选择确定后提交一次。

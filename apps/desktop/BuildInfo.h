@@ -34,4 +34,5 @@ class BuildInfo : public QObject {
     static bool printVersionIfRequested(int argc, char **argv);
     Q_INVOKABLE void copyVersionInfo() const;
     Q_INVOKABLE void centerOnScreen(QWindow *window, QWindow *owner = nullptr) const;
+    Q_INVOKABLE int availableScreenHeight(QWindow *window) const;
 };

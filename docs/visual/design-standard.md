@@ -43,6 +43,10 @@ English: The tab close button retains its square hit area and centered position,
 
 ### 设置窗口分类修订
 
+无 owner 的托盘设置和关于窗口复用共享屏幕居中策略，以当前显示器的可用区域和完整原生边框定位；原生窗口创建及高度确定后重新居中，避免指针位于通知区时沿用右下角位置。窗口尺寸、字号与密度仍沿用设置规范。
+
+English: Ownerless tray Settings and About use shared screen centering against the current display's work area and the complete native frame. Recenter after native creation and height adjustment, retaining the existing settings dimensions, typography and density.
+
 Windows MSIX 包身份的关于页省略更新标题、分隔线和整个更新区域，版本信息直接沿用其后的共享分组间距。窗口尺寸、字号和其他内容沿用既有规范，不按渠道改变缩放或密度。English: Windows MSIX About omits the update heading, divider and controls; the remaining groups use the existing window dimensions, typography and spacing.
 
 设置与关于共用一个 612 逻辑像素宽的非模态窗口，客户区首选高度 532，受屏幕可用高度约束。共享 OperationHeader 底部有 1 逻辑单位分隔线，下方为左侧导航和独立滚动的右侧页面；左栏基准宽 144、正常行高 40、图标槽 18，图标距侧栏左边 15，首行贴齐顶部，选中背景与右侧分隔线相接。辅助字号增大时，左栏按实际最宽单词和图文间距适当增宽，英文在单词之间换行；行按内容增长并允许滚动。未选中项悬停使用共享 controlHover 颜色，浅深主题均与侧栏底色区分。页面内距 20，分组间距 16。实际参数以 layout-scale.json 的 operation.settings 为准，不从截图、DPR 或审阅倍率推导。
