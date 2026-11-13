@@ -18,7 +18,9 @@ English: Saving a language change immediately updates the existing menu bar, app
 
 托盘可用时关闭最后主窗口会清除该窗口的浏览标签与操作窗草稿，再隐藏窗口；再次显示仅保留一个起始页。后台任务及其会话身份继续保留，从全局任务入口主动打开。最小化不清除标签。模态窗口或文件选择器存在时先激活阻塞窗口。明确退出、系统退出和重启绕过隐藏，继续现有任务确认与异步 join；取消退出恢复驻留策略。关闭托盘先恢复隐藏主窗口。无托盘时恢复正常关闭，运行中托盘消失且窗口隐藏时恢复主窗口。macOS Dock 保留，点击 Dock、文件关联重新打开均可恢复。测试探针以明确退出语义完成，不依赖驻留设置。
 
-托盘图标从现有品牌标志提取单色字形，macOS 为模板图标，Windows 按任务栏主题切换黑白图标，Linux 使用黑白双层字形兼容独立面板主题，并提供多尺寸位图。图标不做闪烁或持续动画。
+托盘图标从现有品牌标志提取字形，macOS 为模板图标，Windows 与 Linux 使用白色填充、深色描边的双层字形兼容深浅及有色系统栏背景，并提供多尺寸位图。Windows 不依赖应用主题或注册表主题读数，系统主题信息缺失时也保留对比度。图标不做闪烁或持续动画。
+
+English: Tray glyphs derive from the existing brand mark. macOS uses a template icon; Windows and Linux use white ink with a dark outline and multiple raster sizes to remain legible on light, dark and colored panels. Windows does not depend on the application theme or registry theme readings, including when system theme information is unavailable. Icons do not blink or animate continuously.
 
 “显示”菜单在“文件预览与属性”之后保留不可折叠的分隔线，将 AppKit 自动追加的全屏命令独立分组，避免系统全屏图标使预览项额外预留图标列。预览项与列表、网格的文字起点对齐，勾选标记仍由系统绘制；不靠空格、固定宽度或自绘菜单补偿。HTML／高保真交互稿只表达应用命令，系统追加项由原生桌面验证。
 

@@ -312,6 +312,10 @@ W01-07，欢迎页与打开归档后的标题栏、标签及外观按钮的位�
 
 ## 原生菜单与托盘
 
+Windows 托盘图标的白色填充与深色描边须在深色、浅色及有色背景上均可辨认，覆盖现有全部位图尺寸；修改应用主题、刷新及关闭再启用托盘后保持相同对比度，不依赖注册表主题读取成功。自动像素对照须能拒绝深色背景上的旧纯黑图标，实际系统通知区观察单独记录。
+
+English: Verify the Windows tray glyph's white fill and dark outline on light, dark and colored backgrounds at every supplied raster size, across application theme changes, refreshes and tray disable/re-enable. Registry theme availability must not determine legibility. Pixel checks must reject the former black-only glyph on dark backgrounds; record actual notification-area observation separately.
+
 自定义单选控件须使用 QAccessibleActionInterface 实际执行 press 和 toggle，覆盖主题、创建格式、重复激活和禁用项；检查选择模型、真实主题、代理、格式扩展名及所有选中状态一致，设置变更成功后持久化。只测试鼠标点击或只检查 Accessible.checked 不算该项通过。
 
 复选控件须实际执行 QAccessible press/toggle，核对设置实际值与失败回滚、列表单选与全选三态、重复切换和禁用项；原生树中设置开关须有完整名称。

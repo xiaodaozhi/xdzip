@@ -79,6 +79,7 @@
 #include <QtQuickTest/quicktest.h>
 #include <QtTest>
 #include <atomic>
+#include <cmath>
 #include <thread>
 #ifdef Q_OS_WIN
 #ifndef NOMINMAX
@@ -5442,6 +5443,71 @@ QtObject {
         QVERIFY(blocker.open(QIODevice::ReadOnly));
         QCOMPARE(blocker.readAll(), QByteArray("owned-canary"));
         settings->close();
+    }
+    void desktopTrayIconContrast() {
+#ifdef Q_OS_MACOS
+        QSKIP("macOS template icons are colored by the system status bar");
+#else
+        QTemporaryDir profile;
+        test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH",
+                                                      profile.filePath("settings.ini"));
+        QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
+        const bool previousQuit = QApplication::quitOnLastWindowClosed();
+        const auto restoreQuit =
+            qScopeGuard([&] { QApplication::setQuitOnLastWindowClosed(previousQuit); });
+        UiPreferences preferences;
+        DesktopIntegration desktop(nullptr, nullptr, &preferences, false);
+        const auto luminance = [](const QColor &color) {
+            const auto linear = [](double value) {
+                return value <= 0.04045 ? value / 12.92 : std::pow((value + 0.055) / 1.055, 2.4);
+            };
+            return 0.2126 * linear(color.redF()) + 0.7152 * linear(color.greenF()) +
+                   0.0722 * linear(color.blueF());
+        };
+        const auto visiblePixels = [&](const QImage &image, const QColor &background) {
+            int visible = 0;
+            const auto base = luminance(background);
+            for (int y = 0; y < image.height(); ++y)
+                for (int x = 0; x < image.width(); ++x) {
+                    const auto ink = image.pixelColor(x, y);
+                    const auto alpha = ink.alphaF();
+                    const auto blended =
+                        QColor::fromRgbF(ink.redF() * alpha + background.redF() * (1 - alpha),
+                                         ink.greenF() * alpha + background.greenF() * (1 - alpha),
+                                         ink.blueF() * alpha + background.blueF() * (1 - alpha));
+                    const auto light = luminance(blended);
+                    if ((qMax(light, base) + 0.05) / (qMin(light, base) + 0.05) >= 3)
+                        ++visible;
+                }
+            return visible;
+        };
+        const QColor dark("#202020");
+        // This negative control reproduces the unreadable glyph without changing
+        // the user's Windows personalization or relying on the host's theme.
+        const QImage previousIcon(":/xdzip/assets/tray-black-22.png");
+        QVERIFY(!previousIcon.isNull());
+        QCOMPARE(visiblePixels(previousIcon, dark), 0);
+        for (const auto &theme :
+             {QStringLiteral("light"), QStringLiteral("dark"), QStringLiteral("system")}) {
+            for (const bool enabled : {false, true}) {
+                QVERIFY(
+                    preferences.saveDetails(theme, 1, "en-US", "standard", true, false, enabled));
+                desktop.refresh();
+                const auto icon = desktop.trayIcon();
+                QVERIFY(!icon.isNull());
+                QVERIFY(!icon.isMask());
+                for (const int size : {16, 20, 22, 24, 32, 44, 48, 64}) {
+                    const auto image = icon.pixmap(QSize(size, size), 1).toImage();
+                    QCOMPARE(image.size(), QSize(size, size));
+                    for (const auto &background : {QColor(Qt::white), dark, QColor("#18382d")})
+                        QVERIFY2(visiblePixels(image, background) >= size * size / 50,
+                                 qPrintable(QStringLiteral("%1px tray glyph on %2 (%3)")
+                                                .arg(size)
+                                                .arg(background.name(), theme)));
+                }
+            }
+        }
+#endif
     }
     void desktopTraySettingsCompatibility() {
         QTemporaryDir profile;
