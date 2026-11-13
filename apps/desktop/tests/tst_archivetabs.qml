@@ -7,6 +7,7 @@ import "../ui" as Ui
 Item {
     id: surface
     width: 1024; height: 600
+    property color savedWindowColor
     Ui.ArchiveTabs {
         id: bar
         width: surface.width
@@ -27,8 +28,35 @@ Item {
         function populate(count, selected) {
             bar.tabs = Array.from({length:count}, (_, index) => ({id:"tab"+index,title:"archive-"+index+".zip",selected:index === selected}));
         }
-        function init() { Ui.Theme.fontScale=1; Ui.Theme.dark=false; bar.width=1024; bar.windowsControls=false; bar.integratedTitlebar=false; bar.idleWelcome=false; moves.clear(); windowDrags.clear(); populate(3,0); }
-        function cleanup() { bar.cancelReorder(); Ui.Theme.fontScale=1; }
+        function init() { surface.savedWindowColor=surface.Window.window.color; Ui.Theme.fontScale=1; Ui.Theme.dark=false; bar.width=1024; bar.windowsControls=false; bar.linuxControls=false; bar.integratedTitlebar=false; bar.idleWelcome=false; bar.frameCornerRadius=0; moves.clear(); windowDrags.clear(); populate(3,0); }
+        function cleanup() { surface.Window.window.color=surface.savedWindowColor; bar.cancelReorder(); Ui.Theme.fontScale=1; }
+        function test_linux_rounded_corner_alpha() {
+            surface.Window.window.color="#ff00ff";
+            bar.width=400;
+            bar.windowsControls=true;
+            bar.linuxControls=true;
+            bar.frameCornerRadius=Ui.Theme.mainLinuxCornerRadius;
+            compare(bar.topLeftRadius,Ui.Theme.mainLinuxCornerRadius);
+            verify(waitForRendering(bar));
+            let image=grabImage(surface);
+            compare(image.red(0,0),255);
+            compare(image.green(0,0),0);
+            compare(image.blue(0,0),255);
+            const edge=Math.ceil(bar.frameCornerRadius*Screen.devicePixelRatio);
+            for (const right of [false,true]) {
+                let partial=false;
+                for (let y=0; y<edge; ++y)
+                    for (let x=0; x<edge; ++x) {
+                        const green=image.green(right ? Math.ceil(bar.width*Screen.devicePixelRatio)-1-x : x,y);
+                        if (green>0 && green<Math.round(Ui.Theme.canvas.g*255)-1) partial=true;
+                    }
+                verify(partial,"rounded titlebar edge must blend with its background");
+            }
+            bar.frameCornerRadius=0;
+            verify(waitForRendering(bar));
+            image=grabImage(surface);
+            compare(image.green(0,0),Math.round(Ui.Theme.canvas.g*255));
+        }
         function test_close_hover_is_circular_data() {
             const rows=[];
             for (const dark of [false,true])

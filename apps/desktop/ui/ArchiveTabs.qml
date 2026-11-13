@@ -14,6 +14,8 @@ Rectangle {
     property bool idleWelcome: false
     property bool integratedTitlebar: false
     property bool windowsControls: false
+    property bool linuxControls: false
+    property real frameCornerRadius: 0
     property bool maximized: false
     property bool canOpen: true
     property bool canClose: false
@@ -37,6 +39,7 @@ Rectangle {
         }
     ]
     readonly property int tabCount: displayedTabs.length
+    readonly property real captionRightInset: linuxControls ? Theme.mainLinuxCaptionRightInset : 0
     readonly property real capsuleHeight: Math.max(Theme.mainTabHeight, Math.ceil(Theme.mainTabSize * 1.6 + 8))
     readonly property real preferredTabWidth: Theme.mainTabWidth * Math.min(1.5, Theme.fontScale)
     readonly property real minimumTabWidth: Theme.mainTabMinimumWidth * Math.min(1.5, Theme.fontScale)
@@ -230,7 +233,15 @@ Rectangle {
         onActivated: root.cancelReorder()
     }
     color: Theme.canvas
+    radius: frameCornerRadius
+    antialiasing: frameCornerRadius > 0
     implicitHeight: Math.max(Theme.mainTitleHeight, capsuleHeight + 2 * Theme.mainTabTopInset)
+    Rectangle {
+        anchors.bottom: parent.bottom
+        width: parent.width
+        height: root.frameCornerRadius
+        color: root.color
+    }
     Item {
         anchors.fill: parent
         visible: !root.windowsControls
@@ -602,7 +613,7 @@ Rectangle {
         id: settingsButton
         objectName: "archiveSettings"
         anchors.right: parent.right
-        anchors.rightMargin: Theme.mainSettingsRightInset + (root.windowsControls ? captionControls.width : 0)
+        anchors.rightMargin: Theme.mainSettingsRightInset + (root.windowsControls ? captionControls.width + root.captionRightInset : 0)
         anchors.verticalCenter: parent.verticalCenter
         width: Theme.mainSettingsSize
         height: Theme.mainSettingsSize
@@ -616,10 +627,12 @@ Rectangle {
         id: captionControls
         objectName: "windowCaptionControls"
         anchors.right: parent.right
+        anchors.rightMargin: root.captionRightInset
         height: root.height
         visible: root.windowsControls
         WindowCaptionButton {
             objectName: "windowMinimize"
+            linuxStyle: root.linuxControls
             height: captionControls.height
             captionAction: "minimize"
             text: qsTrId("window.minimize")
@@ -627,6 +640,7 @@ Rectangle {
         }
         WindowCaptionButton {
             objectName: "windowMaximize"
+            linuxStyle: root.linuxControls
             height: captionControls.height
             captionAction: root.maximized ? "restore" : "maximize"
             text: root.maximized ? qsTrId("window.restore") : qsTrId("window.maximize")
@@ -634,6 +648,7 @@ Rectangle {
         }
         WindowCaptionButton {
             objectName: "windowClose"
+            linuxStyle: root.linuxControls
             height: captionControls.height
             captionAction: "close"
             text: qsTrId("window.close")

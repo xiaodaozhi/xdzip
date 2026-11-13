@@ -148,6 +148,8 @@ for key in ['inset', 'gap', 'iconSize', 'spinnerSize']:
 lines.append(f'    readonly property int contentPreviewImageSample: {layout["main"]["content_preview"]["image_display_sample"][0]}')
 for key, value in layout['main']['interaction'].items():
     lines.append(f'    readonly property real main{key[0].upper() + key[1:]}: {value}')
+for key, value in layout['main']['linux_frame'].items():
+    lines.append(f'    readonly property real mainLinux{key[0].upper() + key[1:]}: {value}')
 for key, value in layout['main']['titlebar'].items():
     if key.startswith('tab_') and key not in ('tab_height', 'tab_vertical_inset', 'tab_radius'):
         name = 'main' + ''.join(part.title() for part in key.split('_'))

@@ -463,7 +463,7 @@ Item {
     }
     QuitWindow {
         id: quitWindow
-        owner: root.windowHost
+        owner: root.windowHost && root.windowHost.visible && root.windowHost.visibility !== Window.Minimized ? root.windowHost : null
         onClosing: if (!stopping && !root.waitBeforeExit) {
             if (root.sessionManager)
                 root.sessionManager.cancelQuit();
@@ -808,6 +808,8 @@ Item {
             onTabMoved: (identity, index) => root.sessionManager.moveTab(identity, index)
             integratedTitlebar: root.integratedTitlebar
             windowsControls: root.windowsTitlebar
+            linuxControls: root.windowHost.linuxTitlebar
+            frameCornerRadius: root.windowHost.linuxFrameRadius
             maximized: root.visibility === Window.Maximized
             canOpen: root.sessionManager !== null || (reader.runtimeAvailable && !reader.browsingBusy)
             canClose: reader.ready && !reader.browsingBusy
@@ -1972,6 +1974,13 @@ Item {
             Layout.fillWidth: true
             implicitHeight: Math.ceil(Math.max(Theme.mainStatusbarHeight, statusActions.implicitHeight + 4))
             color: Theme.surface
+            radius: root.windowHost.linuxFrameRadius
+            antialiasing: root.windowHost.linuxFrameRadius > 0
+            Rectangle {
+                width: parent.width
+                height: root.windowHost.linuxFrameRadius
+                color: parent.color
+            }
             Rectangle {
                 width: parent.width
                 height: 1

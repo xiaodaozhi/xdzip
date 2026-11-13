@@ -392,6 +392,11 @@ QtObject {
     readonly property real mainCaptionButtonWidth: 46
     readonly property real mainCaptionIconSize: 18
     readonly property real mainCaptionRestoreOffset: 3
+    readonly property real mainLinuxCornerRadius: 10
+    readonly property real mainLinuxResizeEdge: 6
+    readonly property real mainLinuxCaptionWidth: 36
+    readonly property real mainLinuxCaptionSize: 28
+    readonly property real mainLinuxCaptionRightInset: 6
     readonly property real mainTabMinimumWidth: 112
     readonly property real mainTabGap: 6.4
     readonly property real mainTabControlSize: 28

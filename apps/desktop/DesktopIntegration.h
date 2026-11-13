@@ -1,5 +1,6 @@
 #pragma once
 #include <QHash>
+#include <QIcon>
 #include <QKeySequence>
 #include <QObject>
 #include <QPointer>
@@ -47,6 +48,9 @@ class DesktopIntegration final : public QObject {
     QString trayToolTip() const {
         return m_tray.toolTip();
     }
+    QIcon trayIcon() const {
+        return m_tray.icon();
+    }
   signals:
     void availabilityChanged();
 
@@ -82,6 +86,7 @@ class DesktopIntegration final : public QObject {
     bool m_interactive = true;
     bool m_available = false;
     bool m_hidden = false;
+    bool m_trayInteraction = false;
     QString m_iconVariant;
     QString m_menuLanguage;
     QString m_session;

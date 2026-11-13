@@ -1,0 +1,3 @@
+101 ICON "@XDZIP_APP_ICON_ICO@"
+102 ICON "@PROJECT_SOURCE_DIR@/design/assets/file-associations/xdzip-zip.ico"
+103 ICON "@PROJECT_SOURCE_DIR@/design/assets/file-associations/xdzip-7z.ico"

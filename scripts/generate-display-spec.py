@@ -33,7 +33,7 @@ def main():
     main_ratio = layout['main']['source_to_logical']
     operation_ratio = layout['operation']['source_to_logical']
     spec = dict(operationHeader=layout['operation']['header'], taskMenuMaximumHeight=layout['controls']['task_menu_maximum_height'], password=json.loads((ROOT / 'specs/visual/password-reference.json').read_text()), about=json.loads((ROOT / 'specs/visual/about-reference.json').read_text()), version=2, logicalWindowWidth=main_ratio[0],
-                windowsCaption=layout['main']['interaction'],
+                windowsCaption=layout['main']['interaction'], linuxFrame=layout['main']['linux_frame'],
                 sourceWindow=reference['source_window'],
                 sourceToLogical=main_ratio[0] / main_ratio[1],
                 operationSourceToLogical=operation_ratio[0] / operation_ratio[1],

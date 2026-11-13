@@ -33,7 +33,7 @@ class UiPreferences : public QObject {
     QString m_savedTheme = QStringLiteral("system");
     double m_scale = 1;
     double m_savedScale = 1;
-    QString m_language = QStringLiteral("zh-CN");
+    QString m_language = QStringLiteral("auto");
     QString m_error;
     QString m_proxyMode = QStringLiteral("system");
     QString m_proxyAddress;

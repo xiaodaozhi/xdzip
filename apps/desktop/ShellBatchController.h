@@ -14,6 +14,7 @@ class ShellBatchController : public QObject {
     Q_PROPERTY(QVariantList results READ results NOTIFY changed)
     Q_PROPERTY(QString summary READ summary NOTIFY changed)
     Q_PROPERTY(int archiveCount READ archiveCount NOTIFY changed)
+    Q_PROPERTY(bool creating READ creating NOTIFY changed)
   public:
     explicit ShellBatchController(QObject *parent = nullptr);
     BrowserController *reader() {
@@ -26,6 +27,10 @@ class ShellBatchController : public QObject {
     }
     bool choosing() const {
         return m_stage == Choosing;
+    }
+    bool creating() const {
+        return m_request.action == "zip" || m_request.action == "7z" ||
+               m_request.action == "create" || m_request.action == "separate-zip";
     }
     int archiveCount() const {
         return m_request.paths.size();
@@ -55,7 +60,8 @@ class ShellBatchController : public QObject {
     void schedule();
     void step();
     void next();
-    void record(const QString &status, const QString &error = {}, const QString &target = {});
+    void record(const QString &status, const QString &error = {}, const QString &target = {},
+                bool cleanupWarning = false, bool outcomeUncertain = false);
     void accepted(const QString &id);
     BrowserController m_reader;
     ShellActionRequest m_request;
