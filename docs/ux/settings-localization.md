@@ -6,6 +6,12 @@
 
 设置持久化使用 schema 1，保留未知键，包含网络代理和镜像地址，不存放密码。保存持有独立配置锁，先在同目录暂存完整 INI，原子更新备份及主文件。读取失败、超过 1 MiB、非法或更高 schema、符号链接、备份或提交失败均拒绝覆盖原文件。设置应用失败时恢复运行中状态。最近路径独立保存在同目录 recent.json，最多 20 条、去重并限制读取为 64 KiB，文件仅用户可读写；关闭记录开关停止新增，清空入口删除已有记录。
 
+暂存阶段将原始字节保存为只读输入快照，复制全部键值到另一份全新的候选 INI，再写入变更，不就地重写刚生成的快照。schema 校验与未知键保留继续执行，备份保留原始字节。
+
+Windows 原子替换若因读句柄未共享删除权限等短暂占用而重命名失败，最多重试四次，退避共 75 ms，不含文件 I/O 时间。重试持续持有配置锁，使用同一份待提交字节和新的暂存文件，不处理 GUI 事件，不回退为原地覆盖；持续占用或其他错误仍保留原文件及已生效设置并报告失败。
+
+English: Staging parses an immutable snapshot of the original bytes and copies all keys into a separate new candidate INI. It retains schema validation, unknown keys and the original backup bytes without rewriting the freshly created snapshot. Windows rename failures receive at most four retries with 75 ms of total backoff, excluding I/O time. The profile lock remains held, each attempt stages the same bytes afresh, and no GUI events are processed. Direct overwrite remains disabled. Persistent contention and other errors preserve the original file and applied settings and report failure.
+
 文件关联显示系统当前默认应用。macOS 通过系统默认应用接口请求更改，取消或失败后重新查询，不假定用户已同意；关闭关联时由用户选择其他应用。CAB 优先查询系统识别的受支持类型，避免显示与实际文件不同的默认应用。开发副本不注册可选处理器，故不提供修改。Windows 打开系统的默认应用设置，由用户确认选择，不写入受保护的 UserChoice。Linux 使用桌面环境的 MIME 设置，关闭时由用户选择已安装的其他桌面应用。`.tar.gz` 与 `.tgz` 可共享同一系统类型，关联变化可能同时影响两项；Windows 按最终 `.gz` 扩展名关联。系统拒绝、未安装或用户取消时，界面以实际查询结果为准。安装和卸载本身仍不擅自修改默认选择，详见[安装与关联](../engineering/installers-associations.md)。
 
 Windows 安装版的逐格式文件关联描述跟随应用的中文／English 选择，语言成功更改时同步；安装或升级也读取已保存的语言。应用只更新确认属于当前安装的九个 ProgID 描述，不修改默认处理器；系统或其他应用拥有的类型名称、缓存和其他平台的显示不受此设置直接控制。同步前提及失败边界见[安装与文件关联](../engineering/installers-associations.md)。

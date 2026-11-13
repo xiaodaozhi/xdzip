@@ -1,5 +1,6 @@
 import QtQuick
 import QtTest
+import Xdzip.Settings 1.0
 import "../ui" as Ui
 
 Item {
@@ -53,10 +54,14 @@ Item {
                 const before = control.value;
                 verify(control.Accessible.name.length > 0);
                 control.requestToggle();
+                compare(AppSettings.error, "", name + " change failed");
                 tryCompare(control, "value", !before);
+                compare(TestFixture.storedBoolean(name), !before, name + " persisted change");
                 compare(control.checked, !before);
                 control.requestToggle();
+                compare(AppSettings.error, "", name + " restore failed");
                 tryCompare(control, "value", before);
+                compare(TestFixture.storedBoolean(name), before, name + " persisted restore");
                 compare(control.checked, before);
             }
             settings.close();
