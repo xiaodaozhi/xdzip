@@ -106,6 +106,7 @@ Windows 使用 MSVC x64 开发环境；macOS 使用 Apple Silicon 原生终端�
 | 需要了解 | 入口 |
 | --- | --- |
 | 项目文档、架构和格式契约 | [文档导航](docs/README.md) |
+| 隐私与数据处理 | [隐私政策](PRIVACY.md)、[Privacy Policy](PRIVACY.en.md) |
 | 构建、目录与测试 | [开发指南](docs/engineering/development.md)、[仓库结构](docs/engineering/repository-layout.md)、[验证方法](docs/qa/README.md) |
 | 版本变化和待办 | [变更日志](CHANGELOG.md)、[工作包路线](docs/planning/backlog.md)、[Issues](https://github.com/xiaodaozhi/xdzip/issues) |
 | 贡献 | [贡献指南](CONTRIBUTING.md)、[行为规范](CODE_OF_CONDUCT.md) |
