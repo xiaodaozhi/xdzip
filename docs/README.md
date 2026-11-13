@@ -5,6 +5,7 @@
 ## 从哪里开始
 
 - **安装和使用**：阅读 [README](../README.md)、[安装与文件关联](engineering/installers-associations.md)和[支持政策](engineering/support-policy.md)。当前源码的[命令行工具](engineering/command-line.md)不自动包含在旧版发布附件中。
+- **隐私与数据处理**：面向用户的[隐私政策](../PRIVACY.md)与 [English 版本](../PRIVACY.en.md)，工程实现边界见[数据生命周期与诊断](engineering/privacy.md)。
 - **构建和贡献**：从[开发构建指南](engineering/developer-build.md)准备环境，按[仓库结构](engineering/repository-layout.md)定位代码，再按[验证方法](qa/README.md)选择检查。
 - **修改产品行为**：先查下方的浏览、任务、格式和交互契约，区分当前实现、设计和未验证内容。
 - **修改界面**：先读[视觉规范](visual/design-standard.md)和[设计流程](visual/design-workflow.md)，再查高保真原稿及相关交互契约。
