@@ -1,6 +1,6 @@
 # Documentation index
 
-[English](README.md) | [简体中文](zh-CN/README.md)
+English | [简体中文](zh-CN/README.md)
 
 These documents describe the current source tree's general design, implementation contracts, and reusable methods. `docs/` contains only Markdown and necessary images. Machine-readable inputs for generators, product resources, and checks are organized under `specs/` by visual design, terminology, and engineering dependencies. See the root [README](../README.md) for installation and version distinctions, and the [releases](https://github.com/xiaodaozhi/xdzip/releases) for individual versions. Progress and acceptance conclusions are tracked in [issues](https://github.com/xiaodaozhi/xdzip/issues); evidence is kept in [Actions](https://github.com/xiaodaozhi/xdzip/actions) or local artifacts rather than accumulated in docs.
 

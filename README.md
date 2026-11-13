@@ -13,7 +13,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-blue.svg" alt="Apache License 2.0"></a>
 </p>
 
-<p align="center"><a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a></p>
+<p align="center">English | <a href="README.zh-CN.md">简体中文</a></p>
 
 <p align="center">
   <a href="#download-and-install">Download</a> / <a href="#using-xdzip">Using xdzip</a> / <a href="#format-support">Format support</a> / <a href="#build-from-source">Build from source</a> / <a href="docs/README.md">Documentation</a> / <a href="https://github.com/xiaodaozhi/xdzip/issues">Feedback</a>

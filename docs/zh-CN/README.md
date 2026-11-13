@@ -1,6 +1,6 @@
 # 文档导航
 
-[English](../README.md) | [简体中文](README.md)
+[English](../README.md) | 简体中文
 
 文档保存当前源码的通用设计、实现契约和可复用方法。`docs/` 只存放 Markdown 与必要图片；供生成器、产品资源和检查工具使用的机器可读输入位于 `specs/`，按视觉、术语和工程依赖分类。用户安装入口与版本区别见根目录 [README](../../README.zh-CN.md)，具体版本以[发布页](https://github.com/xiaodaozhi/xdzip/releases)为准。进度与验收结论记录在 [Issues](https://github.com/xiaodaozhi/xdzip/issues)，执行证据保存在 [Actions](https://github.com/xiaodaozhi/xdzip/actions)或本地工件，不在 docs 累积报告。
 
