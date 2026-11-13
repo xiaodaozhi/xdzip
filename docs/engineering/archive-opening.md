@@ -56,4 +56,4 @@ English: CAB uses header-specified names rather than concatenated numbered parts
 验收覆盖成功自动隐藏、失败保留、取消、密码重试、重复文件名、Unicode 和
 特殊字符、关闭页面后任务路由、临时目录安全和退出清理策略。
 
-English: 7z numbered parts form one authorized byte stream. RAR partN and legacy volume names preserve physical boundaries supplied through ReadSource::volume_lengths; UnRAR cannot select arbitrary host paths. Every part is version checked and protected from output overwrite. Encrypted directory opens publish no partial metadata and retain secrets only in their session and admitted tasks.
+English: 7z numbered parts form one authorized byte stream. RAR partN and legacy volume names preserve physical boundaries supplied through ReadSource::volume_lengths; the isolated Rust backend cannot select arbitrary host paths. Every part is version checked and protected from output overwrite. Encrypted directory opens publish no partial metadata and retain secrets only in their session and admitted tasks.

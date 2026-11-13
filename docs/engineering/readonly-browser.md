@@ -45,7 +45,7 @@ English: Reading resolves filename encodings in the Rust snapshot: explicit ZIP 
 | 独立目录索引 | 32,768 节点、64 层 |
 | 目录名称与完整前缀合计 | 4 MiB |
 
-显示转义和桥接复制另占空间；上述不是进程 RSS 或耗时保证。普通内存快照的元数据驻留 Rust 内存；直属索引保留行身份，查询结果缓存只存排序后的索引。十万条测量按[验证方法](../qa/README.md)绑定提交、平台与负载记录，不宣称百万条能力。扫描前后检查长度和修改时间，只能尽力检测变动，不能替代原子快照。
+显示转义和桥接复制另占空间；上述不是进程 RSS 或耗时保证。普通内存快照的元数据驻留 Rust 内存；直属索引保留行身份，查询结果缓存只存排序后的索引。十万条测量按[验证方法](../qa/README.md)绑定提交、平台与负载记录，不能单独证明百万条场景的结果。扫描前后检查长度和修改时间，只能尽力检测变动，不能替代原子快照。
 
 取消在读取和遍历边界检查，不能打断操作系统阻塞读取。关闭忙碌主窗口先请求停止，收到完成通知后关闭，不在 GUI 线程 join。控制器意外销毁也不使后台任务引用悬空。正常窗口关闭和应用 Quit 已统一经过 M1 shutdown 屏障；创建与解压共用该退出屏障；写失败和暂存清理按各写入契约处理。强制终止后只报告可疑暂存，不自动恢复、覆盖或删除未知内容，不承诺全目录事务或设备掉电安全。
 
@@ -65,7 +65,7 @@ English: Reading resolves filename encodings in the Rust snapshot: explicit ZIP 
 - 这是单工作线程、有界的版本化查询。页面携带完整 QueryKey，Qt 合并最新意图并取消旧工作；过期请求或不匹配的会话、查询、代际、修订和偏移均不能替换当前视图。偏移越界返回错误，空结果属于 Ready。目录跳转与搜索从第一页开始。
 - 已有快照时，目录、排序或搜索查询期间保持该快照的列表／网格或空状态，直到新结果提交；不因 busy 短暂切换整块遮罩。初次打开未就绪归档仍显示加载状态，控制器继续执行原有串行准入、取消和源变化检查。English: Queries retain the last committed rows or empty state until a new snapshot commits. Initial loading and controller admission, cancellation and source checks remain in force.
 - 单击行或复选框切换当前查询多选，以物理 ID 区分同名记录，隐式目录使用独立的 dN 行键。查询成功或新会话替换模型后清空选择及详情；内部传输批次不影响已合成列表，界面不分页。详情显示最近激活条目的元数据，和复选框集合分别表达焦点与选择。全选以当前完整列表最后一行作为详情焦点，与逐项选中到最后一行的行为一致；取消全部选择清空详情。没有选择时隐藏原始大小、压缩大小、修改日期、压缩方法与解压焦点条目的动作，不展示误导的空属性。
-- 列表大小以 B/KiB/MiB/GiB 显示，数值转换仅用于近似显示；模型和 Rust 保留原始整数。文件图标表示类型，详情卡片不是内容预览。
+- 列表大小以 B/KiB/MiB/GiB 显示，数值转换仅用于近似显示；模型和 Rust 保留原始整数。文件图标表示类型，详情卡片显示属性，并可按[预览契约](content-preview.md)主动请求受限内容预览。
 - 未知原始大小携带独立 `size_known=false`，列表中的原始大小显示 `—`，状态说明尺寸未知；已知空文件仍显示 0。选中汇总大小未知时，底栏只显示已选数量，不显示分隔符或占位符，控制器仍保留未知状态；汇总大小已知时继续显示大小。大小升降序均将未知项置于已知项之后，同组保持身份顺序。物理未知项可请求元数据预检以查看拒绝原因，含虚拟目录的选择仍不能预检。未知尺寸不会变成输出授权或解码预算。
 
 English: An unknown uncompressed size has an explicit flag, displays a dash in the file size column, and sorts after known sizes in both directions. When the selection total is unknown, the status bar shows only the selection count while the controller retains the unknown state; known totals remain visible, including zero. Physical unknown-size records may be inspected for the preflight refusal reason; virtual-directory selections retain their existing preflight restriction. Unknown sizes never grant output or decoding credit.

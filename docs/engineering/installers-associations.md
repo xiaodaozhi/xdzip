@@ -6,7 +6,7 @@ English: Experimental MSIX declares file types in its manifest without taking de
 
 逐格式图标素材及平台映射见[文件关联图标规范](../visual/file-association-icons.md)。Linux 保留系统 MIME 图标，安装不改变默认选择或现有注册范围。
 
-当前源码构建的桌面包将命令行程序放在独立的 `cli/` 目录，macOS 位于 `Contents/Helpers/cli/`，保留原 GUI 与文件关联入口。该功能不追溯加入已发布的旧版附件。Windows 安装器提供默认关闭的当前用户 PATH 选项，检测同名命令冲突；卸载只撤销本安装目录。Mac/Linux 显式运行私有 CLI 的 `setup`，独立 CLI 包也通过 `setup` 安装用户级版本目录和稳定启动入口，不改 Shell 配置。撤销用 `setup --remove`，保留版本目录供核查。详见 [CLI 安装契约](command-line.md#构建与命令安装)。English: Current source builds register desktop and standalone CLI entries explicitly and per user; existing releases do not gain these assets retroactively. Existing commands are preserved, and shell startup files are never edited.
+自 `v0.2.0` 起的桌面包及当前源码构建将命令行程序放在独立的 `cli/` 目录，macOS 位于 `Contents/Helpers/cli/`，保留原 GUI 与文件关联入口。更早版本的附件不追溯加入该功能。Windows 安装器提供默认关闭的当前用户 PATH 选项，检测同名命令冲突；卸载只撤销本安装目录。Mac/Linux 显式运行私有 CLI 的 `setup`，独立 CLI 包也通过 `setup` 安装用户级版本目录和稳定启动入口，不改 Shell 配置。撤销用 `setup --remove`，保留版本目录供核查。详见 [CLI 安装契约](command-line.md#构建与命令安装)。English: Desktop releases from `v0.2.0` and current source builds contain a private CLI. Desktop and standalone CLI entry registration is explicit and user scoped; earlier releases do not gain these assets retroactively. Existing commands are preserved, and shell startup files are never edited.
 
 本页描述本地开发和按需验证产物：Windows x64 当前用户安装器、Ubuntu 24.04 amd64 X11 的 .deb，以及按明确需求制作的[本地 macOS 开发 DMG](macos-deployment.md)。这些本地产物仍是实验性开发交付，不能替代正式 Release。正式 `v0.1.0` 的平台包由专用 Release 工作流生成和验证，另遵循[发布协议](release-protocol.md)。个人开源发行不要求付费证书、Developer ID 或公证，macOS 保留必要 ad-hoc 完整性签名；普通 CI 不部署或上传 Mac 应用。支持范围见[支持政策](support-policy.md)。
 
@@ -80,7 +80,7 @@ build-linux-installer.py 从同一核验目录生成 .deb，私有暂存目录�
 
 主应用和交付包的 Info.plist 以 Viewer／Alternate 声明文档和 ICNS，[不声明默认所有权](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html)。开发和测试构建默认使用 Viewer／None，不进入系统打开方式候选；主开发包或交付构建须显式设置 `-DXDZIP_MACOS_HANDLER_RANK=Alternate`。默认应用由用户和 Launch Services 决定，不主动修改默认应用。开发验证副本的临时注册按[Mac 维护方法](macos-deployment.md)收尾，保留已有应用与用户默认选择。
 
-CAB、ISO、UDF 加入同一只读 Viewer 声明；CAB 和 UDF 的导入类型按各自扩展名与 MIME 声明，ISO 使用 `public.iso-image`。不增加 `.img` 或通用 `public.disk-image` 文档处理器；格式支持仍由实际内容识别及[官方后端契约](native-codecs.md)约束。
+CAB、ISO、UDF 加入同一只读 Viewer 声明；CAB 和 UDF 的导入类型按各自扩展名与 MIME 声明，ISO 使用 `public.iso-image`。不增加 `.img` 或通用 `public.disk-image` 文档处理器；格式支持仍由实际内容识别及[格式后端契约](native-codecs.md)约束。
 
 各类型声明使用对应的 bundle ICNS；系统将 `.tar.gz` 和 `.tgz` 识别为同一个压缩 TAR 类型时共享 TAR.GZ 图标。GZ 候选仍只支持 TAR.GZ 内容。Finder 缓存、选定默认应用和系统类型识别影响实际显示，原生显示与人工验收单独记录。
 
