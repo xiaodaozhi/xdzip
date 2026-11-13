@@ -82,6 +82,7 @@ class ArtifactTests(unittest.TestCase):
             with patch.object(extract.subprocess, 'run', side_effect=results):
                 extract.validate_source_revision(old, current)
         run_with_change('scripts/check-windows-msix-install.ps1')
+        run_with_change('scripts/msix-origin-probe.py')
         with self.assertRaisesRegex(ValueError, 'inputs changed'):
             run_with_change('scripts/build-windows-msix.py')
         with self.assertRaisesRegex(ValueError, 'Invalid source revision'):

@@ -93,6 +93,18 @@ public static class XdzipPackageOrigin {
     # Unknown or other origin values do not establish the side-load channel.
     if ($errorCode -ne 0 -or $origin -notin @(5, 6)) { throw 'Cannot establish a developer-signed or line-of-business test package origin' }
     $result.checks.staged_origin = $origin
+    # This observes the disposable test package; it does not classify a Store install.
+    $originObservationPath = Join-Path (Split-Path -Parent $outputPath) 'origin-observation.json'
+    & python scripts/msix-origin-probe.py --name $identityName --scenario self-signed-sideload --output $originObservationPath
+    if ($LASTEXITCODE -ne 0) { throw 'Read-only package origin observation failed' }
+    $originObservation = Get-Content -LiteralPath $originObservationPath -Raw | ConvertFrom-Json
+    if ($originObservation.staged_origin_api_status -ne 0 -or
+        $originObservation.staged_origin_value -ne $origin -or
+        $originObservation.signature_kind -ne $installed.SignatureKind.ToString() -or
+        $originObservation.scenario_label_is_evidence -ne $false) {
+        throw 'Package origin observations disagree'
+    }
+    $result.checks.origin_observation = $originObservation
     $exe = Join-Path $installed.InstallLocation 'xdzip.exe'
     if (!(Test-Path -LiteralPath $exe -PathType Leaf)) { throw 'Installed product executable is missing' }
     Add-Type -Path 'scripts/windows-msix-activation.cs'
