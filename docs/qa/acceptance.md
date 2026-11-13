@@ -314,6 +314,10 @@ W01-07，欢迎页与打开归档后的标题栏、标签及外观按钮的位�
 
 ## 原生菜单与托盘
 
+设置定位回归将指针置于各可用显示器的右下角，使用无 owner 的真实设置窗口，分别打开及重新打开外观和关于页。中英文、浅深色及 100%／125%／150% 字号下，完整原生边框须在实际 QScreen::availableGeometry 内并居中；已有主窗口不得被恢复。原生几何结果与实际托盘菜单操作分别记录。
+
+English: With the pointer at each available display's bottom-right corner, open and reopen ownerless Settings and About in both languages, both themes and all three text scales. The complete native frame must fit and center within QScreen::availableGeometry, without restoring the main window. Record native geometry separately from actual tray-menu interaction.
+
 Windows 托盘图标的白色填充与深色描边须在深色、浅色及有色背景上均可辨认，覆盖现有全部位图尺寸；修改应用主题、刷新及关闭再启用托盘后保持相同对比度，不依赖注册表主题读取成功。自动像素对照须能拒绝深色背景上的旧纯黑图标，实际系统通知区观察单独记录。
 
 English: Verify the Windows tray glyph's white fill and dark outline on light, dark and colored backgrounds at every supplied raster size, across application theme changes, refreshes and tray disable/re-enable. Registry theme availability must not determine legibility. Pixel checks must reject the former black-only glyph on dark backgrounds; record actual notification-area observation separately.
