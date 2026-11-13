@@ -27,6 +27,7 @@
       "white",
       "contrast"
     ],
+    "windows": "white fill with dark outline, independent of application/system themes and registry availability",
     "linux": "dual-tone, independent of application theme"
   },
   "menuOrder": [

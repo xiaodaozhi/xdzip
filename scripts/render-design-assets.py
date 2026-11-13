@@ -63,7 +63,7 @@ def main() -> None:
         if unknown:
             parser.error(f'Unknown canonical icon names: {sorted(unknown)}')
         vectors = [entry for entry in vectors if Path(entry['file']).stem in selected]
-    hero = json.loads((ROOT.parents[1] / 'docs/visual/operation-assets.json').read_text())
+    hero = json.loads((ROOT.parents[1] / 'specs/visual/operation-assets.json').read_text())
     hero_names = set(hero['icons'])
     manifest['assets'] = [entry for entry in manifest['assets'] if entry['kind'] != 'vector-rasterization'
                           or args.hero_only and entry['scale'] != hero['scale']

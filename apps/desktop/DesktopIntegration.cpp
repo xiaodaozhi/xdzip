@@ -17,8 +17,6 @@
 #include <QQmlEngine>
 #include <QQuickItem>
 #include <QQuickWindow>
-#include <QSettings>
-#include <QStyleHints>
 #include <QTimer>
 #include <QUrl>
 #include <algorithm>
@@ -262,8 +260,6 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
         if (m_recent && m_recent->isVisible())
             rebuildRecent();
     });
-    connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, this,
-            &DesktopIntegration::updateIcon);
     connect(&m_tray, &QSystemTrayIcon::activated, this,
             [this](QSystemTrayIcon::ActivationReason reason) {
                 Q_UNUSED(this);
@@ -737,25 +733,14 @@ void DesktopIntegration::rebuildWindows() {
     }
 }
 void DesktopIntegration::updateIcon() {
-    bool dark = QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark;
-#ifdef Q_OS_WIN
-    // Windows taskbar appearance is independent of the application's theme.
-    QSettings desktop(
-        QStringLiteral(
-            "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"),
-        QSettings::NativeFormat);
-    dark = desktop.value(QStringLiteral("SystemUsesLightTheme"), 1).toInt() == 0;
-#endif
     QIcon icon;
 #ifdef Q_OS_MACOS
     const auto variant = QStringLiteral("black");
-#elif defined(Q_OS_WIN)
-    const auto variant = dark ? QStringLiteral("white") : QStringLiteral("black");
 #else
-    // Linux panels need not share the app palette. A dual-tone glyph works on both.
+    // The taskbar/panel background can differ from both app and system themes.
+    // White ink with a dark outline stays visible without a theme-read fallback.
     const auto variant = QStringLiteral("contrast");
 #endif
-    Q_UNUSED(dark);
     if (m_iconVariant == variant)
         return;
     m_iconVariant = variant;

@@ -15,7 +15,7 @@
 
 ## 窗口登记与强制检查
 
-所有独立 QML 窗口及内联 Window 登记在 [窗口清单](window-registry.json)，包括抽象基类、产品操作窗、独立属性窗口和开发预览。新增窗口未登记、继承改变、尺寸偏离冻结表达式、确认窗口自行覆盖字号或高度、可滚动正文缺失均使 `check-window-contracts.py --self-test` 失败。检查从源码发现窗口，不再依赖人工维护的固定文件列表。系统原生选择器的例外在清单中说明，不能借例外绕过应用窗口登记。
+所有独立 QML 窗口及内联 Window 登记在 [窗口清单](../../specs/visual/window-registry.json)，包括抽象基类、产品操作窗、独立属性窗口和开发预览。新增窗口未登记、继承改变、尺寸偏离冻结表达式、确认窗口自行覆盖字号或高度、可滚动正文缺失均使 `check-window-contracts.py --self-test` 失败。检查从源码发现窗口，不再依赖人工维护的固定文件列表。系统原生选择器的例外在清单中说明，不能借例外绕过应用窗口登记。
 
 退出和重启确认统一使用 OperationConfirmationWindow。参数来自 layout-scale.json 的 operation.confirmation，不使用旧默认 612 宽或按字号跳变的固定高度。短文案按内容自适应，长正文或小屏幕滚动，footer 固定可达。所有 footer 按钮仍由共享组件决定外观；长翻译允许按钮内换行，动作保持一行。
 

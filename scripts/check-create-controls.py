@@ -10,7 +10,7 @@ p = argparse.ArgumentParser(description=__doc__)
 p.add_argument('--input', type=Path, required=True)
 p.add_argument('--output', type=Path, required=True)
 args = p.parse_args()
-reference = json.loads((ROOT/'docs/visual/create-reference.json').read_text(encoding="utf-8"))
+reference = json.loads((ROOT/'specs/visual/create-reference.json').read_text(encoding="utf-8"))
 assert hashlib.sha256((ROOT/reference['source']).read_bytes()).hexdigest() == reference['sha256']
 contract = reference['reviewed_control_contract']
 checks = []

@@ -36,9 +36,11 @@ class ContentsTests(unittest.TestCase):
             (root/'.gitignore').write_text('build/\ndocs/html/\n')
             good = ['crates/core/src/lib.rs', 'tests/fixtures/owned.zip',
                     'design/hifi/screens/original.png', 'design/html/app.js',
-                    'docs/qa/acceptance.md', 'docs/design/architecture-decisions.md']
+                    'docs/qa/acceptance.md', 'docs/design/architecture-decisions.md',
+                    'docs/images/main-window.png', 'specs/visual/tokens.json']
             bad = ['build/test/report.md', 'docs/html/index.html', 'docs/qa/results.json',
-                   'docs/qa/private-test-readiness.md', 'design/assets/preview/contact.png']
+                   'docs/qa/private-test-readiness.md', 'design/assets/preview/contact.png',
+                   'docs/visual/tokens.json', 'docs/visual/index.html']
             for name in good + bad:
                 path = root/name;path.parent.mkdir(parents=True, exist_ok=True);path.write_bytes(b'owned input')
             subprocess.run(['git', 'add', '-f', *good], cwd=root, check=True)

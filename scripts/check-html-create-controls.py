@@ -21,7 +21,7 @@ def main():
     server = ReviewHTTPServer(('127.0.0.1',0),partial(Quiet,directory=str(ROOT)))
     Thread(target=server.serve_forever,daemon=True).start()
     checks,envs,errors,external = [],[],[],[]
-    reference = json.loads((ROOT/'docs/visual/create-reference.json').read_text(encoding="utf-8"))
+    reference = json.loads((ROOT/'specs/visual/create-reference.json').read_text(encoding="utf-8"))
     def check(name,actual,expected,tolerance=1):
         passed = abs(actual-expected)<=tolerance if isinstance(actual,(int,float)) and isinstance(expected,(int,float)) else actual==expected
         checks.append(dict(name=name,actual=actual,expected=expected,passed=passed))

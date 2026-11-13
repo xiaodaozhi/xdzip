@@ -13,7 +13,7 @@ from brand_assets import brand_shapes, master_svg
 from association_types import WINDOWS_ICONS, MACOS_ICONS
 
 ROOT = Path(__file__).resolve().parents[1]
-SPEC_PATH = ROOT / 'docs/visual/file-association-icons.json'
+SPEC_PATH = ROOT / 'specs/visual/file-association-icons.json'
 SPEC = json.loads(SPEC_PATH.read_text(encoding='utf-8'))
 ASSETS = ROOT / 'design/assets/file-associations'
 NS = 'http://www.w3.org/2000/svg'
@@ -116,7 +116,7 @@ def asset_entries() -> list[dict]:
         'purpose': 'file-association', 'format_id': icon['id'],
         'extensions': icon['extensions'], 'profile': profile,
         'source': '../../scripts/association_icon_assets.py',
-        'brand_source': 'brand/mark.svg', 'specification': '../../docs/visual/file-association-icons.json',
+        'brand_source': 'brand/mark.svg', 'specification': '../../specs/visual/file-association-icons.json',
         'usage': 'file-association-source',
         'sha256': hashlib.sha256((ASSETS / name).read_bytes()).hexdigest(),
     } for icon, profile, _, name in source_specs()] + [{

@@ -1,5 +1,6 @@
 #pragma once
 #include <QHash>
+#include <QIcon>
 #include <QKeySequence>
 #include <QObject>
 #include <QPointer>
@@ -46,6 +47,9 @@ class DesktopIntegration final : public QObject {
     }
     QString trayToolTip() const {
         return m_tray.toolTip();
+    }
+    QIcon trayIcon() const {
+        return m_tray.icon();
     }
   signals:
     void availabilityChanged();

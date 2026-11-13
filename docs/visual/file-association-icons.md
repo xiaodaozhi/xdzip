@@ -1,6 +1,6 @@
 # 文件关联图标
 
-系统文件图标沿用 xdzip 的折角文档、连续曲率徽章、四条交错带与开放 U 形标记。设计入口为[高保真审阅页](../../design/hifi/sources/file-association-icons.html)，参数来源为 [file-association-icons.json](file-association-icons.json)，文档图标源和产品所需平台容器统一位于 [file-associations](../../design/assets/file-associations)。默认应用仍由用户选择。
+系统文件图标沿用 xdzip 的折角文档、连续曲率徽章、四条交错带与开放 U 形标记。设计入口为[高保真审阅页](../../design/hifi/sources/file-association-icons.html)，参数来源为 [file-association-icons.json](../../specs/visual/file-association-icons.json)，文档图标源和产品所需平台容器统一位于 [file-associations](../../design/assets/file-associations)。默认应用仍由用户选择。
 
 ## 形状与识别
 
@@ -12,7 +12,7 @@
 
 16、24 像素采用放大的徽章和简化纸张，32 像素采用稍小的徽章；这三档省去标签与大图阴影，保留品牌标记的原始宽高比。此时无法仅靠图标可靠地区分全部格式，尤其是同色的 GZIP 家族，文件名／类型列承担精确识别。48 像素起使用带标签母版，长标签在 64 像素以上更易读。各尺寸直接从矢量渲染，不把 1024 PNG 连续缩小。
 
-界面中的 24 单位图标、主窗口和菜单密度继续遵循 [layout-scale.json](layout-scale.json)。本素材不新增 QML 窗口，也不改变主窗口或菜单的逻辑尺寸。平台 PNG 尺寸是图像采样尺寸，不能写入 QML 组件逻辑几何。
+界面中的 24 单位图标、主窗口和菜单密度继续遵循 [layout-scale.json](../../specs/visual/layout-scale.json)。本素材不新增 QML 窗口，也不改变主窗口或菜单的逻辑尺寸。平台 PNG 尺寸是图像采样尺寸，不能写入 QML 组件逻辑几何。
 
 ## 格式与平台映射
 

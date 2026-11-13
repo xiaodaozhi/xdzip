@@ -2563,15 +2563,15 @@
       "preview_image_top": 241
     },
     "directory-tree-B": {
-      "reason": "目录树 B 已确认组件替换旧主稿目录行；40/20/18/14/12 逻辑参数来自 docs/visual/directory-tree.json，原始主稿与比较保留。",
-      "source": "docs/visual/directory-tree.json",
+      "reason": "目录树 B 已确认组件替换旧主稿目录行；40/20/18/14/12 逻辑参数来自 specs/visual/directory-tree.json，原始主稿与比较保留。",
+      "source": "specs/visual/directory-tree.json",
       "scope": "Only directory rows, folder slots and disclosure ink; titlebar, toolbar, list and preview retain existing anchors.",
       "target_basis": "Tree starts at the existing (31,336) inset; rows=40, root-to-hierarchy gap=4, left inset=12, disclosure slot=24, folder slot=20. Canvas conversion is 1548/1280; glyph visible bounds come from independent 3x asset alpha."
     },
     "qt-interaction-sync": "2026-10-13：按 layout-scale.json 同步 Qt 交互修订：固定 28 方形按钮、居中图标与预览关闭按钮；原稿像素和旧测量保留，当前几何由独立逻辑规范核验。",
     "file-selection-gap": {
       "reason": "选框到文件图标槽的留白收紧为 12 逻辑像素，文件图标、文件名和名称表头同步左移。其他列边界、图标尺寸、图文间距及冻结原稿保持不变。",
-      "source": "docs/visual/layout-scale.json",
+      "source": "specs/visual/layout-scale.json",
       "previous_gap_source_pixels": 32,
       "gap_logical_pixels": 12,
       "translation_x_source_pixels": -13.859375,
@@ -2579,24 +2579,24 @@
     },
     "task-history-disclosure-pair": {
       "reason": "#59 要求在任务按钮文字右侧增加上下箭头。双字形替换旧单箭头，旧原稿墨迹和量测保留；按独立逻辑规范严格检查槽宽、双字形尺寸、重叠、中心、顺序及按钮内位置。",
-      "source": "docs/visual/layout-scale.json",
+      "source": "specs/visual/layout-scale.json",
       "validation": "scripts/check-html-body.py taskDisclosure checks",
       "source_comparison": "record-only for the superseded single-arrow ink; all other source targets and tolerances remain unchanged"
     },
     "shared-task-entry-icon-size": {
       "reason": "#70 将起始页和压缩文件页的任务列表图标统一为 16×16 逻辑像素。保留旧原稿哈希、图标墨迹区域及原始容差，当前两页按独立逻辑规范量测，不再要求较小的新图标匹配旧墨迹范围。",
-      "source": "docs/visual/layout-scale.json main.interaction.taskIconSize",
+      "source": "specs/visual/layout-scale.json main.interaction.taskIconSize",
       "validation": "scripts/check-html-body.py taskEntry checks",
       "source_comparison": "record-only for the resized task-list ink; all other source targets and tolerances remain unchanged"
     },
     "shared-task-entry-right-alignment": {
       "reason": "#78 统一起始页与压缩文件页任务按钮的右侧内距和内部布局；保持冻结原稿及原始量测，按逻辑参数核对按钮与图标的两页位置。",
-      "source": "docs/visual/layout-scale.json main.interaction.statusbarHorizontalInset",
+      "source": "specs/visual/layout-scale.json main.interaction.statusbarHorizontalInset",
       "validation": "scripts/check-html-body.py taskEntry rightInset and iconInset checks"
     },
     "shared-statusbar-height": {
       "reason": "#63 将欢迎页与浏览页 footer 统一为 layout-scale.json 的 statusbarHeight。保持窗口与冻结原稿身份，底部状态栏顶边、内容区底边和底部锚定项目随新高度平移。",
-      "source": "docs/visual/layout-scale.json",
+      "source": "specs/visual/layout-scale.json",
       "validation": "scripts/check-html-body.py uses the archived footer bottom edge and authoritative logical height; no tolerance expansion"
     }
   },

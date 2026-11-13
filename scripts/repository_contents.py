@@ -31,6 +31,9 @@ def violations(root):
             failures.append(f'{name}: generated content or retired task report belongs in artifacts/issues')
         elif name.startswith('docs/qa/') and not name.endswith('.md'):
             failures.append(f'{name}: QA execution output must not be tracked')
+        elif name.startswith('docs/') and PurePosixPath(name).suffix.lower() not in {
+                '.md', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'}:
+            failures.append(f'{name}: docs/ only accepts Markdown and necessary image assets')
         files.append((name, oid))
     if files:
         sizes = subprocess.check_output(['git', 'cat-file', '--batch-check=%(objectsize)'],

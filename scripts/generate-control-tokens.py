@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / 'docs/visual/controls.json'
+SOURCE = ROOT / 'specs/visual/controls.json'
 
 
 def main():
@@ -14,21 +14,21 @@ def main():
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args()
     tokens = json.loads(SOURCE.read_text())
-    tree = json.loads((ROOT / 'docs/visual/directory-tree.json').read_text())
-    palette = json.loads((ROOT / 'docs/visual/tokens.json').read_text())
-    layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
+    tree = json.loads((ROOT / 'specs/visual/directory-tree.json').read_text())
+    palette = json.loads((ROOT / 'specs/visual/tokens.json').read_text())
+    layout = json.loads((ROOT / 'specs/visual/layout-scale.json').read_text())
     ratio = layout['main']['source_to_logical']
     source_factor = ratio[1] / ratio[0]
-    javascript = '// Generated from docs/visual/controls.json; edit the specification.\n'
+    javascript = '// Generated from specs/visual/controls.json; edit the specification.\n'
     javascript += 'window.XDZIP_CONTROL_TOKENS = Object.freeze(' + json.dumps(tokens, ensure_ascii=False) + ');\n'
-    main_reference = json.loads((ROOT / 'docs/visual/qt-main-reference.json').read_text())
+    main_reference = json.loads((ROOT / 'specs/visual/qt-main-reference.json').read_text())
     tab_tokens = dict(layout['main']['titlebar'], tab_preferred_width=main_reference['source_geometry']['tabWidth'] / source_factor)
     javascript += 'window.XDZIP_TAB_TOKENS = Object.freeze(' + json.dumps(tab_tokens, ensure_ascii=False) + ');\n'
     declarations = ['/* Generated logical tokens; artboards convert them to source coordinates. */', ':root {',
                     f'  --ui-source-factor: {source_factor};',
                     f'  --main-density: {layout["main"]["density"]};',
                     '  --tree-source-factor: calc(var(--ui-source-factor) * var(--main-density));']
-    welcome = json.loads((ROOT / 'docs/visual/welcome-reference.json').read_text())
+    welcome = json.loads((ROOT / 'specs/visual/welcome-reference.json').read_text())
     for key, value in layout['main']['titlebar'].items():
         if key.startswith('tab_') and isinstance(value, (int, float)):
             name = key.replace('_', '-')
@@ -50,7 +50,7 @@ def main():
     for name, value in layout['operation']['confirmation'].items():
         key = re.sub(r'(?<!^)(?=[A-Z])', '-', name).lower()
         declarations.append(f'  --confirmation-{key}: {value};')
-    password = json.loads((ROOT / 'docs/visual/password-reference.json').read_text())
+    password = json.loads((ROOT / 'specs/visual/password-reference.json').read_text())
     for name, value in password.items():
         if name != 'schema_version' and isinstance(value, (int, float)):
             declarations.append(f'  --password-{name.replace("_", "-")}: {value};')

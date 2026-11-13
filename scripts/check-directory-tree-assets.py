@@ -17,7 +17,7 @@ REPORT_ROOT = ROOT / 'build/review/directory-tree'
 
 def main():
     manifest = json.loads((ASSETS / 'manifest.json').read_text())
-    spec = json.loads((ROOT / 'docs/visual/directory-tree.json').read_text())
+    spec = json.loads((ROOT / 'specs/visual/directory-tree.json').read_text())
     catalog = json.loads((ROOT / 'design/hifi/catalog.json').read_text())
     # Design inventories are source contracts. Never depend on a previous test
     # run's baseline/report: a clean checkout must validate independently.
@@ -118,7 +118,7 @@ def main():
                 'root_files_only', 'navigation_limited', 'read_failed', 'hidden_current'}
     assert required <= set(spec['states']), 'Missing handoff state'
     assert spec['status'] == 'core-interactions-integrated'
-    layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
+    layout = json.loads((ROOT / 'specs/visual/layout-scale.json').read_text())
     ratio = layout['main']['source_to_logical']
     assert spec['coordinate_mapping']['source_to_logical_ratio'] == ratio
     source_to_logical = ratio[0] / ratio[1]

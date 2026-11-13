@@ -20,7 +20,7 @@
   "footer_font_size": 13,
   "footer_note_size": 12,
   "hero": "document-check",
-  "layout_contract": "docs/visual/layout-scale.json",
+  "layout_contract": "specs/visual/layout-scale.json",
   "notes": [
     "Operation semantics change; shared progress geometry and density remain fixed",
     "Native window decorations excluded from Qt content capture",

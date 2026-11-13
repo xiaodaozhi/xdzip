@@ -50,7 +50,7 @@ def main():
             if not resolved.is_relative_to(ROOT) or not resolved.exists():
                 failures.append(f'{path.relative_to(ROOT)}: missing or external local target {target}')
             links += 1
-    json_files = list((ROOT / 'docs').rglob('*.json'))
+    json_files = list((ROOT / 'specs').rglob('*.json'))
     for path in json_files:
         try:
             json.loads(path.read_text())
