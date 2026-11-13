@@ -1,6 +1,6 @@
 # W01 主窗口欢迎页，高保真候选
 
-高保真设计已确认，现已接入[正式 HTML 审阅入口](../../design/html/index.html?view=welcome&zoom=1)。Qt 已接入真实打开与新建，桌面人工验收另行登记。设计入口见[欢迎页状态稿](../../design/hifi/sources/welcome.html)，参数见 [welcome-reference.json](../visual/welcome-reference.json)。颜色、主窗口密度沿用现有 tokens 和 layout-scale，不调整全局规范。四张 PNG 为代码绘制的设计原稿导出，不是产品运行截图。
+高保真设计已确认，现已接入[正式 HTML 审阅入口](../../design/html/index.html?view=welcome&zoom=1)。Qt 已接入真实打开与新建，桌面人工验收另行登记。设计入口见[欢迎页状态稿](../../design/hifi/sources/welcome.html)，参数见 [welcome-reference.json](../../specs/visual/welcome-reference.json)。颜色、主窗口密度沿用现有 tokens 和 layout-scale，不调整全局规范。四张 PNG 为代码绘制的设计原稿导出，不是产品运行截图。
 
 ## 信息与布局
 

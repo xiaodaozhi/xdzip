@@ -2,7 +2,7 @@
 
 本页保留 2026-10-11 首个只读目录扫描的历史准入，不批准解压、创建或第三方插件执行。当前 ZIP 元数据已迁移至[独立 Rust 记录层](independent-rust-codecs.md)，rawzip 仅作为开发测试参照；以下历史选择不代表当前生产依赖。
 
-采用 [rawzip 0.5.2](https://github.com/nickbabcock/rawzip)，精确版本和校验和见[锁定清单](zip-metadata-dependencies.json)及根目录 Cargo.lock。关闭默认特性，显式启用 std；无运行时依赖、无 build.rs。上游 MIT 许可全文保存在 [third_party/rawzip/LICENSE](../../third_party/rawzip/LICENSE)，随使用该依赖的发行产物保留。
+采用 [rawzip 0.5.2](https://github.com/nickbabcock/rawzip)，精确版本和校验和见[锁定清单](../../specs/engineering/zip-metadata-dependencies.json)及根目录 Cargo.lock。关闭默认特性，显式启用 std；无运行时依赖、无 build.rs。上游 MIT 许可全文保存在 [third_party/rawzip/LICENSE](../../third_party/rawzip/LICENSE)，随使用该依赖的发行产物保留。
 
 历史准入审阅过 README、Cargo 配置和目录读取相关源码。选择理由：可对借用的 Read + Seek 输入逐条读取中央目录，保留物理顺序和同名条目，宿主可限制读取字节及累计名称大小。只读扫描选型时评估过 zip 9.0.1，其按名称建立索引的读取结构不适合保留物理重复记录。后续曾另行引入 zip-rs 9.0.3 用于 AES 写入，未以该写入依赖替换只读物理索引。当前独立实现继续保留这些物理索引契约。
 

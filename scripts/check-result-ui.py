@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--input', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
 args = parser.parse_args()
-reference = json.loads((ROOT/'docs/visual/result-reference.json').read_text(encoding='utf-8'))
+reference = json.loads((ROOT/'specs/visual/result-reference.json').read_text(encoding='utf-8'))
 assert hashlib.sha256((ROOT/reference['source']).read_bytes()).hexdigest() == reference['sha256']
 checks = []
 

@@ -86,6 +86,8 @@ Windows 使用 `python` 并为可执行文件加 `.exe`。Linux 运行需要系�
 
 桌面界面使用 Qt Quick/QML，通过薄 C++ 层连接 Rust 核心。格式、查询和任务逻辑独立于 Qt；7z、RAR、CAB、ISO 和 UDF 使用隔离工作进程。
 
+项目文档位于 `docs/`，供生成和检查使用的视觉参数、术语及依赖清单位于 `specs/`，高保真设计原稿位于 `design/hifi/`。
+
 准备 Python 3.10+、Git、CMake 3.24+、Ninja、rustup 和平台编译器／SDK，然后获取源码并构建。如果已按上面的命令行步骤克隆，直接从 `prepare` 开始：
 
 ```sh
@@ -106,6 +108,7 @@ Windows 使用 MSVC x64 开发环境；macOS 使用 Apple Silicon 原生终端�
 | 需要了解 | 入口 |
 | --- | --- |
 | 项目文档、架构和格式契约 | [文档导航](docs/README.md) |
+| 隐私与数据处理 | [隐私政策](PRIVACY.md)、[Privacy Policy](PRIVACY.en.md) |
 | 构建、目录与测试 | [开发指南](docs/engineering/development.md)、[仓库结构](docs/engineering/repository-layout.md)、[验证方法](docs/qa/README.md) |
 | 版本变化和待办 | [变更日志](CHANGELOG.md)、[工作包路线](docs/planning/backlog.md)、[Issues](https://github.com/xiaodaozhi/xdzip/issues) |
 | 贡献 | [贡献指南](CONTRIBUTING.md)、[行为规范](CODE_OF_CONDUCT.md) |

@@ -10,7 +10,7 @@ OUTPUT = ROOT / 'dist/html-operation-review'
 
 
 def main():
-    spec = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())['operation']
+    spec = json.loads((ROOT / 'specs/visual/layout-scale.json').read_text())['operation']
     OUTPUT.mkdir(parents=True, exist_ok=True)
     checks, errors, requests = [], [], []
 

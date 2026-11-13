@@ -26,7 +26,8 @@
 | scripts、.github | 生成、检查、部署工具与 CI、协作模板 |
 | release-notes | 可审阅的版本专属发布说明及 version/build 元数据，不存执行报告或生成包 |
 | design/hifi、design/html、design/assets | 高保真原稿、可操作设计及运行素材输入 |
-| docs | 持久设计、工程契约与可复用验证方法；不累积执行报告 |
+| docs | Markdown 格式的持久设计、工程契约与可复用验证方法，以及必要图片；不累积执行报告 |
+| specs | 机器可读的视觉、术语与依赖清单；供产品资源、生成器和检查工具使用 |
 | third_party | 随代码保留的第三方来源与许可材料 |
 
 独立 xdzip-index、xdzip-platform 和完整外部格式一致性工具属于后续架构规划；目前索引在 runtime、平台文件操作在 io 与桌面适配层实现。已存在的 plugin-host 仅为[只读 SDK 试验](sdk-trial.md)，不等同于完整插件生态。测试主要随 Rust 模块、apps/desktop/tests 和 scripts 的检查工具维护，不创建无实现空壳。

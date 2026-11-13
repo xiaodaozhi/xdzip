@@ -149,7 +149,7 @@ def main():
     parser.add_argument('--native-zoom', action='store_true', help='Also check real 100/125% zoom using a private Xvfb display')
     args = parser.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
-    reference = json.loads((ROOT / 'docs/visual/password-reference.json').read_text())
+    reference = json.loads((ROOT / 'specs/visual/password-reference.json').read_text())
     source = ROOT / reference['source']
     assert hashlib.sha256(source.read_bytes()).hexdigest() == reference['source_sha256'], 'Password design source changed without a reviewed reference update'
     records, errors = [], []

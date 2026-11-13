@@ -43,6 +43,7 @@ class ArtifactTests(unittest.TestCase):
         sha = hashlib.sha256(self.package.read_bytes()).hexdigest()
         self.report = {'status': 'passed', 'name': 'xdzip.MsixCI', 'publisher': 'CN=xdzip MSIX CI',
                        'publisher_display_name': 'xdzip',
+                       'languages': list(build.LANGUAGES),
                        'version': '1.0.27.0', 'signed': False, 'modern_context_menu': False,
                        'sha256': sha}
         receipt = {'status': 'passed', 'source': {'revision': 'a' * 40, 'dirty': False},

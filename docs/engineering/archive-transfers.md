@@ -76,7 +76,7 @@ RAR 使用独立 Rust 只读后端，不提供添加、替换或包内移动。�
 
 English: List and grid name tooltips are suppressed throughout internal dragging, native handoff and the native gesture, cancelling the old dwell timer. Windows OLE return, AppKit's drag-end callback and QDrag exec return end the gesture independently of asynchronous copying. Re-enabling a source tooltip requires a fresh pointer position and a new full stationary-hover delay, preventing cached source hover from reviving it.
 
-拖动预览只表达冻结的源名称、图标和选中数量，不读取或解压内容，不授予目标写入权限。内部预览从有效拖动令牌取值，跨出窗口后清除内部覆盖层并交给原生复制反馈。Windows IDataObject 为 Shell 图像保留有界、线程安全的私有 HGLOBAL 格式，并单独持有唯一 DragContext 流的 COM 引用而不读取或复制其内容，GetData 返回独立引用；禁止覆盖文件描述符、内容流和首选动作。失败不改变原有安全输出与取消语义。原生图像使用非预乘 BGRA 交给 Shell，位图所有权在初始化调用时移交，COM／GDI 准备失败沿用系统光标。具体样式见 [拖动规范](../visual/drag-preview.json)。
+拖动预览只表达冻结的源名称、图标和选中数量，不读取或解压内容，不授予目标写入权限。内部预览从有效拖动令牌取值，跨出窗口后清除内部覆盖层并交给原生复制反馈。Windows IDataObject 为 Shell 图像保留有界、线程安全的私有 HGLOBAL 格式，并单独持有唯一 DragContext 流的 COM 引用而不读取或复制其内容，GetData 返回独立引用；禁止覆盖文件描述符、内容流和首选动作。失败不改变原有安全输出与取消语义。原生图像使用非预乘 BGRA 交给 Shell，位图所有权在初始化调用时移交，COM／GDI 准备失败沿用系统光标。具体样式见 [拖动规范](../../specs/visual/drag-preview.json)。
 
 English: Drag previews describe only the frozen name, type and selection count. They neither extract content nor authorize writes. A valid internal token supplies the preview; native copy handoff clears the internal overlay. Windows stores bounded private Shell HGLOBAL feedback formats under a lock and retains one named DragContext COM stream without reading its contents, returning independent references. Descriptors, archive-content streams and the preferred action cannot be replaced. Straight-alpha image bytes and bitmap ownership pass to the Shell helper; image setup failure preserves existing safe transfer and cancellation semantics.
 

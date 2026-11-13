@@ -31,8 +31,8 @@ def main():
     parser.add_argument('--print-checks', action='store_true', help='Emit ASCII JSON for native CI log review')
     args = parser.parse_args()
     captures = {p.stem: json.loads(p.read_text(encoding='utf-8')) for p in sorted(args.input.glob('*.json'))}
-    tokens = json.loads((ROOT / 'docs/visual/tokens.json').read_text(encoding='utf-8'))
-    reference = json.loads((ROOT / 'docs/visual/qt-main-reference.json').read_text(encoding='utf-8'))
+    tokens = json.loads((ROOT / 'specs/visual/tokens.json').read_text(encoding='utf-8'))
+    reference = json.loads((ROOT / 'specs/visual/qt-main-reference.json').read_text(encoding='utf-8'))
     scale = reference['logical_width'] / reference['source_window'][2]
     pane_size = round(reference['source_type']['paneTitle'] * scale)
     checks = []
@@ -170,7 +170,7 @@ def main():
             shutil.copyfile(source, destination)
             files[source.name] = hashlib.sha256(source.read_bytes()).hexdigest()
     inputs = ['apps/desktop/ui/' + p.name for p in (ROOT / 'apps/desktop/ui').glob('*.qml')]
-    inputs += ['design/hifi/screens/main-light.png', 'design/hifi/screens/progress.png', 'docs/visual/tokens.json']
+    inputs += ['design/hifi/screens/main-light.png', 'design/hifi/screens/progress.png', 'specs/visual/tokens.json']
     environment = {key: light[key] for key in ['os', 'architecture', 'qt', 'platform', 'requestedQuickBackend', 'dpr']}
     report = dict(status='differences_found' if any(c['passed'] is False for c in checks) else 'incomplete' if any(c['passed'] is None for c in checks) else 'measured_checks_pass', environment=environment,
                   product_commit=args.product_commit or subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True, encoding='utf-8').strip(), checks=checks,

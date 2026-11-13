@@ -41,6 +41,6 @@ English: Unknown uncompressed sizes produce `unknown_size` and an unknown declar
 
 ## 窗口与结果呈现
 
-预检使用 491 逻辑像素宽的共享操作窗口，正文随内容自适应，最大客户区高度 600，超长问题列表滚动且 footer 固定可达。数据和元数据阶段的授权边界保持不变。参数与设计源见 [预检参数](../visual/preflight-reference.json)。
+预检使用 491 逻辑像素宽的共享操作窗口，正文随内容自适应，最大客户区高度 600，超长问题列表滚动且 footer 固定可达。数据和元数据阶段的授权边界保持不变。参数与设计源见 [预检参数](../../specs/visual/preflight-reference.json)。
 
 2026-10-15 预检说明位置修订：将“此报告仅检查元数据……”移到可滚动正文末尾，采用 12 号说明文字。footer 不再承载这段说明，仅保留返回操作，其高度与同字号的共享纯操作 footer 一致，不随报告长短变化。

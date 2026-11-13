@@ -10,7 +10,7 @@ parser.add_argument('--input', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
 args = parser.parse_args()
 root = Path(__file__).resolve().parents[1]
-reference = json.loads((root/'docs/visual/create-reference.json').read_text(encoding='utf-8'))
+reference = json.loads((root/'specs/visual/create-reference.json').read_text(encoding='utf-8'))
 if hashlib.sha256((root/reference['source']).read_bytes()).hexdigest() != reference['sha256']:
     raise ValueError('Creation hifi source changed without review')
 checks = []

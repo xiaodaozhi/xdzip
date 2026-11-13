@@ -157,7 +157,7 @@ def main():
     current = next(item for item in catalog['screens'] if 'design/hifi/'+item['file'] == SOURCES['main'])
     check("current main design hash", report["sources"]["main"]["sha256"] == current['sha256'])
     check("independent source window", independent["window"] == SOURCE_WINDOW)
-    token_width = json.loads((ROOT / "docs/visual/tokens.json").read_text())["size"]["initialWindow"][0]
+    token_width = json.loads((ROOT / "specs/visual/tokens.json").read_text())["size"]["initialWindow"][0]
     check("declared logical width", token_width == LOGICAL_WIDTH, actual=token_width, expected=LOGICAL_WIDTH)
     offline = (ROOT / "dist/xdzip-hifi-design.html").read_text()
     check("offline display contract embedded", "window.XDZIP_DISPLAY_SPEC" in offline)

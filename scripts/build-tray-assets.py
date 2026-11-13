@@ -13,7 +13,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--browser', help='Optional Chromium executable')
     args = parser.parse_args()
-    spec = json.loads((ROOT/'docs/visual/desktop-integration.json').read_text())['icon']
+    spec = json.loads((ROOT/'specs/visual/desktop-integration.json').read_text())['icon']
     mark = (ROOT/'design/assets/brand/mark.svg').read_text()
     paths = mark[mark.index('<path'):mark.rindex('</svg>')]
     output = ROOT/'design/assets/tray'

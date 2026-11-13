@@ -79,7 +79,7 @@ English: Welcome and archive pages share a 32-unit minimum status bar and the sa
 
 English: Sort indicators precede the right-aligned original and compressed size labels and follow the other labels, with a 6-unit gap. Their default columns grow to fit the measured labels and indicators; manually narrowed columns elide labels without overlapping adjacent columns.
 
-文件类别图标按 [扩展名提示表](../visual/file-types.json)生成 Qt 和 HTML 选择器，覆盖办公文档、表格、演示、音频、视频、压缩包、安装包、字体与磁盘镜像。后缀不区分大小写，未知类别使用通用文档图标。这只说明外观，不表示文件内容可信或该归档格式已经获得浏览、创建或解压支持。
+文件类别图标按 [扩展名提示表](../../specs/visual/file-types.json)生成 Qt 和 HTML 选择器，覆盖办公文档、表格、演示、音频、视频、压缩包、安装包、字体与磁盘镜像。后缀不区分大小写，未知类别使用通用文档图标。这只说明外观，不表示文件内容可信或该归档格式已经获得浏览、创建或解压支持。
 
 实际鼠标与键盘驱动检查各入口、菜单避让、子菜单往返、选择保持、焦点恢复、禁用保护、标签隔离、视图切换与目录层级。浅深色、三种平台装饰、正常 / 大字号和缩放下截取真实控件画面；初始主窗口的标题栏、工具栏、文件列表与预览既有对齐不以菜单改造为由回退。
 

@@ -210,6 +210,10 @@ python scripts/desktop.py verify --kind msix
 
 English: Experimental Windows x64 MSIX packaging reuses a clean, tested and audited runtime and requires the explicit package name, publisher and publisher display name to match Partner Center. It produces an unsigned package with per-file verification and does not sign, install or submit the app. The manifest targets Windows 10 22H2 as a technical minimum without expanding the support policy; Store certification, licensing and native installation acceptance remain separate.
 
+MSIX 清单显式声明 `en-US` 和 `zh-CN`，与应用内置的英文、简体中文目录对应，回执同时记录并校验语言列表。Qt 自有翻译资源不会由本项目的 MakeAppx 流程自动转换为包语言声明。Partner Center 的“软件包中支持的语言”以已上传包为准，修正源码后须重新构建并替换草稿中的包才会更新；“其他 Store 一览语言”可独立配置，不能代替包清单声明。参见 [Microsoft 清单语言说明](https://learn.microsoft.com/windows/apps/design/globalizing/manage-language-and-region)。
+
+English: The MSIX manifest explicitly declares en-US and zh-CN to match the built-in catalogs; its receipt records and verifies the language list. The custom MakeAppx pipeline does not infer these declarations from Qt translations. Partner Center reads the uploaded package, so rebuild and replace it after changing declarations. Additional Store listing languages are configured separately.
+
 ## 证据与复验
 
 按[通用验证方法](../qa/README.md)和[按需桌面验证](../qa/private-test-manual.md)选择受影响项，不要求日常填写人工验收表。构建与测试收据分别保存在 build-dir 下的 `desktop-build.json`、`desktop-test.json`，prepare、package 和 verify 回执位于 output-dir 的 `<stage>.json`，并关联底层验证证据。自动化收据记录实际阶段与来源；离屏／软件渲染、原生 Cocoa 检查和已执行的人工专项分别登记，不相互替代。既有验收在 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)保留，不因重新生成候选清单而重做。

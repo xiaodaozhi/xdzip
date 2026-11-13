@@ -109,9 +109,9 @@ def main():
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
     sources = {p.stem: p.read_text(encoding="utf-8") for p in (ROOT/'apps/desktop/ui').glob('*.qml')}
-    registry = json.loads((ROOT/'docs/visual/window-registry.json').read_text(encoding="utf-8"))
+    registry = json.loads((ROOT/'specs/visual/window-registry.json').read_text(encoding="utf-8"))
     errors = inspect(sources, registry)
-    confirmation = json.loads((ROOT/'docs/visual/layout-scale.json').read_text(encoding="utf-8"))['operation']['confirmation']
+    confirmation = json.loads((ROOT/'specs/visual/layout-scale.json').read_text(encoding="utf-8"))['operation']['confirmation']
     for key, expected in {'logicalWidth':491, 'titleSize':20, 'bodySize':13, 'contentInset':24}.items():
         if confirmation.get(key) != expected:
             errors.append(f'Confirmation {key}: differs from approved normal-density baseline {expected}')

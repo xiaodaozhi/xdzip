@@ -23,7 +23,7 @@ class Quiet(SimpleHTTPRequestHandler):
 
 
 def main():
-    reference = json.loads((ROOT / 'docs/visual/integrity-reference.json').read_text(encoding='utf-8'))
+    reference = json.loads((ROOT / 'specs/visual/integrity-reference.json').read_text(encoding='utf-8'))
     assert hashlib.sha256((ROOT / reference['source']).read_bytes()).hexdigest() == reference['sha256']
     OUTPUT.mkdir(parents=True, exist_ok=True)
     server = ReviewHTTPServer(('127.0.0.1', 0), partial(Quiet, directory=str(ROOT)))

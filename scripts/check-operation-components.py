@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 failures = []
-registry = json.loads((ROOT/'docs/visual/window-registry.json').read_text(encoding="utf-8"))
+registry = json.loads((ROOT/'specs/visual/window-registry.json').read_text(encoding="utf-8"))
 windows = [name for name, policy in registry['windows'].items() if policy['role'] in {'operation', 'confirmation'}] + ['OperationConfirmationWindow']
 for name in windows:
     text = (ROOT/'apps/desktop/ui'/f'{name}.qml').read_text(encoding="utf-8")
@@ -33,7 +33,7 @@ for folder in ['apps', 'crates', 'design/html', 'scripts', 'tools']:
             if '\u00b7' in path.read_text(encoding="utf-8"):
                 failures.append(f'{path.relative_to(ROOT)}: middle-dot delimiter in maintained source')
 # Explicit user-approved normal-density policy, independent of captured pixels.
-layout = json.loads((ROOT/'docs/visual/layout-scale.json').read_text(encoding="utf-8"))
+layout = json.loads((ROOT/'specs/visual/layout-scale.json').read_text(encoding="utf-8"))
 widths = layout['operation']['logical_widths']
 for role in ['extract', 'create', 'progress', 'result', 'conflict']:
     if widths[role] != 491:

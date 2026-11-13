@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--input', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
 args = parser.parse_args()
-spec = json.loads((ROOT / 'docs/visual/welcome-reference.json').read_text(encoding="utf-8"))
+spec = json.loads((ROOT / 'specs/visual/welcome-reference.json').read_text(encoding="utf-8"))
 checks = []
 for name, size in [('welcome-light', spec['window']), ('welcome-dark', spec['window']), ('welcome-minimum', spec['minimum_window']), ('welcome-dark-minimum', spec['minimum_window'])]:
     data = json.loads((args.input / (name + '.json')).read_text(encoding="utf-8"))

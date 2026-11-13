@@ -1,6 +1,6 @@
 # 欢迎页读取遮罩与创建完成行为
 
-2026-10-16 修订，参数源为 [welcome-reference.json](../visual/welcome-reference.json)，动态高保真入口为 [欢迎页读取状态](../../design/hifi/sources/welcome.html?opening=1)。沿用主窗口、菜单和欢迎页的逻辑单位，标题栏不变。
+2026-10-16 修订，参数源为 [welcome-reference.json](../../specs/visual/welcome-reference.json)，动态高保真入口为 [欢迎页读取状态](../../design/hifi/sources/welcome.html?opening=1)。沿用主窗口、菜单和欢迎页的逻辑单位，标题栏不变。
 
 欢迎页打开真实压缩包时，在正文上方居中显示浮动卡片及半透明遮罩。卡片正常宽 360、内距 24、间距 12、圆角 8、标题 16，窄窗口按可用宽度约束；文件名中间省略，状态说明可换行，取消按钮始终可达。浅深色均复用共享主题，辅助字号沿用全局设置。
 

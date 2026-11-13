@@ -1002,7 +1002,7 @@
         "folder"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
     },
@@ -1015,7 +1015,7 @@
         "chevron-down"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
     },
@@ -1028,7 +1028,7 @@
         "chevron-right"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
     },
@@ -1039,7 +1039,7 @@
       "implementation": "native-geometry",
       "icon_names": [],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1050,7 +1050,7 @@
       "implementation": "native-geometry",
       "icon_names": [],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1064,7 +1064,7 @@
         "chevron-right"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1079,7 +1079,7 @@
         "chevron-right"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1092,7 +1092,7 @@
         "folder"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1105,7 +1105,7 @@
         "folder"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1119,7 +1119,7 @@
         "chevron-down"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1132,7 +1132,7 @@
         "folder"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1146,7 +1146,7 @@
         "chevron-right"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1157,7 +1157,7 @@
       "implementation": "native-geometry",
       "icon_names": [],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1172,7 +1172,7 @@
         "chevron-right"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1186,7 +1186,7 @@
         "chevron-down"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1200,7 +1200,7 @@
         "tree-spinner"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "design-reference-only",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1213,7 +1213,7 @@
         "folder"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1226,7 +1226,7 @@
         "folder"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1240,7 +1240,7 @@
         "tree-info"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "design-reference-only",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1254,7 +1254,7 @@
         "tree-warning"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "design-reference-only",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1269,7 +1269,7 @@
         "tree-active-branch"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1282,7 +1282,7 @@
         "tree-active-branch"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "core-interactions-integrated",
       "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
     },
@@ -1293,7 +1293,7 @@
       "implementation": "native-geometry",
       "icon_names": [],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "design-reference-only",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
@@ -1306,7 +1306,7 @@
         "tree-spinner"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "design-reference-only",
       "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
     },
@@ -1319,7 +1319,7 @@
         "tree-info"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "design-reference-only",
       "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
     },
@@ -1332,7 +1332,7 @@
         "tree-warning"
       ],
       "spec": "../../docs/ux/directory-tree.md",
-      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "geometry_spec": "../../specs/visual/directory-tree.json",
       "integration_status": "design-reference-only",
       "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
     }
@@ -24125,7 +24125,7 @@
       "border": 32,
       "inset": 24,
       "usage": "runtime-and-design",
-      "source": "../../docs/visual/controls.json",
+      "source": "../../specs/visual/controls.json",
       "source_sha256": "9a65b445ca21e3ea5785163f879d10f8243f3292fc97a54a6d923dfc6a3512bf",
       "sha256": "e5bc62b162e808ed0bc82a4794ff003652bd5c26c9b1c5f4958d4c56ff38dafa"
     },
@@ -24142,7 +24142,7 @@
       "border": 34,
       "inset": 24,
       "usage": "runtime-and-design",
-      "source": "../../docs/visual/controls.json",
+      "source": "../../specs/visual/controls.json",
       "source_sha256": "9a65b445ca21e3ea5785163f879d10f8243f3292fc97a54a6d923dfc6a3512bf",
       "sha256": "c8ed08c9c8ce3d4de6676fbed34dcc5402badcc7d0336ccf0f8af001843ab970"
     },
@@ -24159,7 +24159,7 @@
       "border": 36,
       "inset": 24,
       "usage": "runtime-and-design",
-      "source": "../../docs/visual/controls.json",
+      "source": "../../specs/visual/controls.json",
       "source_sha256": "9a65b445ca21e3ea5785163f879d10f8243f3292fc97a54a6d923dfc6a3512bf",
       "sha256": "04e3b6d3d6578654523fb784c2eb68510424770bb5d6e6c7bd5a37de0ea11f9b"
     },
@@ -24176,7 +24176,7 @@
       "border": 40,
       "inset": 24,
       "usage": "runtime-and-design",
-      "source": "../../docs/visual/controls.json",
+      "source": "../../specs/visual/controls.json",
       "source_sha256": "9a65b445ca21e3ea5785163f879d10f8243f3292fc97a54a6d923dfc6a3512bf",
       "sha256": "8b3db8a6c76adb3c4e572ed5ebcec6837190b6ec817a6575cb40a8e701dcb3ed"
     },
@@ -24193,7 +24193,7 @@
       "border": 32,
       "inset": 24,
       "usage": "runtime-and-design",
-      "source": "../../docs/visual/controls.json",
+      "source": "../../specs/visual/controls.json",
       "source_sha256": "9a65b445ca21e3ea5785163f879d10f8243f3292fc97a54a6d923dfc6a3512bf",
       "sha256": "65aa4a03bd61bd56704c4adb0b7db6dd0bd07346172cd25d826185b8c52159e8"
     },
@@ -24210,7 +24210,7 @@
       "border": 34,
       "inset": 24,
       "usage": "runtime-and-design",
-      "source": "../../docs/visual/controls.json",
+      "source": "../../specs/visual/controls.json",
       "source_sha256": "9a65b445ca21e3ea5785163f879d10f8243f3292fc97a54a6d923dfc6a3512bf",
       "sha256": "c97b8876fe751dd23a4602d267ba0cf2d4c9956c49288c7a07a69ed5ed6a7e33"
     },
@@ -24227,7 +24227,7 @@
       "border": 36,
       "inset": 24,
       "usage": "runtime-and-design",
-      "source": "../../docs/visual/controls.json",
+      "source": "../../specs/visual/controls.json",
       "source_sha256": "9a65b445ca21e3ea5785163f879d10f8243f3292fc97a54a6d923dfc6a3512bf",
       "sha256": "c241d940b7c01b6b72dde252e33e26fd84c680dfeed83deffb678a1ad492f6c1"
     },
@@ -24244,7 +24244,7 @@
       "border": 40,
       "inset": 24,
       "usage": "runtime-and-design",
-      "source": "../../docs/visual/controls.json",
+      "source": "../../specs/visual/controls.json",
       "source_sha256": "9a65b445ca21e3ea5785163f879d10f8243f3292fc97a54a6d923dfc6a3512bf",
       "sha256": "950f56c27dd2b708b17926b8f145528f57c6d0312c8671b57e6d5a8c2b1e9a8f"
     },
@@ -29588,7 +29588,7 @@
       "profile": "master",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "ab9c26eb16407684aca94768f675db165854be28b9434224e4c5add7d2abe023"
     },
@@ -29604,7 +29604,7 @@
       "profile": "tiny",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "eccbcfb33dde1eff36003d5d7a11c729f9dfe77de9b3a828fb111f2206600104"
     },
@@ -29620,7 +29620,7 @@
       "profile": "small",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "89e9b422553397cc205f8fce98b444c513df152c663fe69f2051566962ce3bb3"
     },
@@ -29636,7 +29636,7 @@
       "profile": "master",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "ac0620ede085decd926a26c5065fbe53b0a9c2a2004f29512807dfaab4ae20b2"
     },
@@ -29652,7 +29652,7 @@
       "profile": "tiny",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "88d7c4990dcde8d86ab144d87001577c2858025f7cbdff1bb4263a8e63981f73"
     },
@@ -29668,7 +29668,7 @@
       "profile": "small",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "e6beb5f04d84e1420d0787a61a441cd7bafb1e6fb52ee97265c6158d50795896"
     },
@@ -29684,7 +29684,7 @@
       "profile": "master",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "c191ecd0175c8236bbff6bccb9f653a34c9e152a60c463014b53bba255b07234"
     },
@@ -29700,7 +29700,7 @@
       "profile": "tiny",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "ec1d153e93387a4986581f597df01a29285d05593131e1f30f605d1456083143"
     },
@@ -29716,7 +29716,7 @@
       "profile": "small",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "48e67dff23dc12a6086eb3cdffeba2fff7cf6b9029f40e15c1d2e2d6c262727f"
     },
@@ -29732,7 +29732,7 @@
       "profile": "master",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "c288a566c166523197e8a502f7eadb8f963836457d9e0b4dc8fd5c35d34275bc"
     },
@@ -29748,7 +29748,7 @@
       "profile": "tiny",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "fa3f0588d332ebffd5d380eeeda70928dc5494e153de7abf9d90e885bf7d2440"
     },
@@ -29764,7 +29764,7 @@
       "profile": "small",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "7c433788bae884ee728e70466d13936f5b61a86852be2b079b76cb4204dfee6e"
     },
@@ -29780,7 +29780,7 @@
       "profile": "master",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "7e2393b55c07da566cf771694605333c82d588f1c276fa91e8ad0c2575518678"
     },
@@ -29796,7 +29796,7 @@
       "profile": "tiny",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "53d2a4a2fc490301c910f7cdafcdbddcd5de00494d2f340e6061301c0fb20562"
     },
@@ -29812,7 +29812,7 @@
       "profile": "small",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "723dcc4e3fc76ccebd0117c8807dc3d56694fff22cba85ac64a159423cc1fb74"
     },
@@ -29828,7 +29828,7 @@
       "profile": "master",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "ac632ad5febef305925d06751825cca90300e3108af71fd61f9df24301dc8e99"
     },
@@ -29844,7 +29844,7 @@
       "profile": "tiny",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "6db31d4227e1e26bc8203ec843431edce118f91cc89e15d67349de5f48a9080e"
     },
@@ -29860,7 +29860,7 @@
       "profile": "small",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "c8dbd025dc3cca898ea7434716057c02b7fc017bb2e6e063a9ef07ba440d4703"
     },
@@ -29876,7 +29876,7 @@
       "profile": "master",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "8e70ef77fad288bfedc036c72dc04cadcc92171e01cbce501810a7ab174114ba"
     },
@@ -29892,7 +29892,7 @@
       "profile": "tiny",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "9d97e248d6c6fe3cd127861d69250c262cf6f60674ed08918aabe442650c8131"
     },
@@ -29908,7 +29908,7 @@
       "profile": "small",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "8b43fc2596bbcb0149a92ac465ae12e491d50f49c1f3d782a4c1480fa3b787cd"
     },
@@ -29924,7 +29924,7 @@
       "profile": "master",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "8d15d207c687786a30b3fe48bc5922329e64d34145015b940487b938121a2e20"
     },
@@ -29940,7 +29940,7 @@
       "profile": "tiny",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "3f15fd98b1e84040321d6669fd676782b16c7a8624e70792f5728a321a350546"
     },
@@ -29956,7 +29956,7 @@
       "profile": "small",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "35a21dbb22e28fb4a58ba9cbae041946911a20f5d4d31b586fed7c2b941fa321"
     },
@@ -29972,7 +29972,7 @@
       "profile": "master",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "292544102484484f73db29786479799ad88f6f90dcee16852975c948bec13b0a"
     },
@@ -29988,7 +29988,7 @@
       "profile": "tiny",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "f7d02f6d3b2fd2313f566d677591f1b768e46fc80b721c9f5bd091f4be694f39"
     },
@@ -30004,7 +30004,7 @@
       "profile": "small",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "1b48566bf8699d2c366bfd0a9c71c6bdec398d63e6877c6813ddf7b1b74ceaa6"
     },
@@ -30020,7 +30020,7 @@
       "profile": "master",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "029eaf0b267e8164a6328566174801c4217d3b0d925356247f05062ff34db4b7"
     },
@@ -30036,7 +30036,7 @@
       "profile": "tiny",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "73f73ede8f9fd373effb952bdc691b1e64aec1ab54af7e2878f0e788eec2e3d4"
     },
@@ -30052,7 +30052,7 @@
       "profile": "small",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "8df68829e6d52e9c6ad06a88ff46e5695c2bd6be5787fae5d61f826fe5897c53"
     },
@@ -30066,7 +30066,7 @@
       "profile": "master",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "046278f45b4cd0c1fa77c8eb0dbb5d36620cab05a21e6c20fa7daf2a96ec6728"
     },
@@ -30080,7 +30080,7 @@
       "profile": "tiny",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "03fe546811e56ef352b60c4f0f014382857e1949f167adefbf1002dd4247da70"
     },
@@ -30094,7 +30094,7 @@
       "profile": "small",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
-      "specification": "../../docs/visual/file-association-icons.json",
+      "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
       "sha256": "112eb0b0c6cdc74f0ab7802ea4f39fc20b5ab079aabb9b4613e34559deb5bdbc"
     },

@@ -31,7 +31,7 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     server = ReviewHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
     Thread(target=server.serve_forever, daemon=True).start()
-    spec = json.loads((ROOT/'docs/visual/settings-reference.json').read_text())
+    spec = json.loads((ROOT/'specs/visual/settings-reference.json').read_text())
     records = []
     try:
         with sync_playwright() as p:

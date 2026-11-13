@@ -16,6 +16,7 @@ from deployment_audit import digest
 from installer_payload import verify_payload
 
 ROOT = Path(__file__).resolve().parents[1]
+LANGUAGES = ('en-US', 'zh-CN')
 NS = 'http://schemas.microsoft.com/appx/manifest/foundation/windows10'
 UAP = 'http://schemas.microsoft.com/appx/manifest/uap/windows10'
 RESCAP = 'http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities'
@@ -50,7 +51,8 @@ def manifest(name, publisher, build, publisher_display_name):
     ET.SubElement(deps, tag(NS, 'TargetDeviceFamily'), Name='Windows.Desktop',
                   MinVersion='10.0.19045.0', MaxVersionTested='10.0.22000.0')
     resources = ET.SubElement(package, tag(NS, 'Resources'))
-    ET.SubElement(resources, tag(NS, 'Resource'), Language='en-us')
+    for language in LANGUAGES:
+        ET.SubElement(resources, tag(NS, 'Resource'), Language=language)
     apps = ET.SubElement(package, tag(NS, 'Applications'))
     app = ET.SubElement(apps, tag(NS, 'Application'), Id='App', Executable='xdzip.exe',
                         EntryPoint='Windows.FullTrustApplication')
@@ -137,7 +139,7 @@ def build(root, audit_path, output, name, publisher, report, publisher_display_n
         'publisher': publisher, 'publisher_display_name': publisher_display_name,
         'version': f"1.0.{identity['build']}.0",
         'signed': False, 'store_submission': False, 'modern_context_menu': False,
-        'minimum_windows_build': 19045}, indent=2) + '\n', encoding='utf-8')
+        'minimum_windows_build': 19045, 'languages': list(LANGUAGES)}, indent=2) + '\n', encoding='utf-8')
 
 
 def main():

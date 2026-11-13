@@ -234,7 +234,7 @@ def main():
             if not loaded_font:
                 failures.append('Embedded comparison font did not load')
             # Approved floating-title revision moves top-anchored content; footer stays fixed.
-            layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
+            layout = json.loads((ROOT / 'specs/visual/layout-scale.json').read_text())
             numerator, denominator = layout['main']['source_to_logical']
             source_factor = denominator / numerator
             footer_target = spec['dom_rect_targets']['.statusbar']

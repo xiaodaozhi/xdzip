@@ -353,16 +353,20 @@ class WorkflowTests(unittest.TestCase):
                     '<Identity Name="xdzip.Test" Publisher="CN=test" Version="1.0.27.0" '
                     'ProcessorArchitecture="x64"/><Properties>'
                     '<PublisherDisplayName>Test Publisher</PublisherDisplayName>'
-                    '</Properties>{}</Package>')
+                    '</Properties><Resources><Resource Language="en-US"/>'
+                    '<Resource Language="zh-CN"/></Resources>{}</Package>')
         def write_manifest(extra='', signature=False):
             with zipfile.ZipFile(package, 'w') as archive:
                 archive.writestr('AppxManifest.xml', template.format(extra))
                 if signature:
                     archive.writestr('AppxSignature.p7x', b'fixture')
         report = {'name': 'xdzip.Test', 'publisher': 'CN=test', 'version': '1.0.27.0',
-                  'publisher_display_name': 'Test Publisher'}
+                  'publisher_display_name': 'Test Publisher', 'languages': ['en-US', 'zh-CN']}
         write_manifest()
         desktop.verify_msix_identity(package, report)
+        desktop.verify_msix_identity(package, {key: value for key, value in report.items() if key != 'languages'})
+        with self.assertRaisesRegex(ValueError, 'identity'):
+            desktop.verify_msix_identity(package, {**report, 'languages': ['en-US']})
         with self.assertRaisesRegex(ValueError, 'identity'):
             desktop.verify_msix_identity(package, {**report, 'name': 'wrong'})
         with self.assertRaisesRegex(ValueError, 'identity'):

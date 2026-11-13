@@ -6,7 +6,7 @@
 
 7z 返回 `password_or_integrity` 时，同一密码窗显示“密码不匹配或加密数据损坏，请重试。”，英文为“The password does not match or the encrypted data is damaged. Try again.”。它不能确认密码一定错误，也不意味着重新输入必能修复损坏；用户仍可取消。任务重试沿用现有限额，达到上限仍保留这一不确定错误分类，不显示成已证实的密码验证失败。
 
-PasswordWindow 使用应用模态和现有系统标题栏，客户区宽 491，最高 600，并受当前屏幕可用高度约束。标题 20、正文 13、说明 12，正文随内容增长或独立滚动，footer 固定可达。尺寸来自 [password-reference.json](../visual/password-reference.json)，高保真依据为 [P02 独立状态稿](../../design/hifi/sources/password-extraction.html)。中英文、浅深色、100%／125%／150% 字号使用同一几何政策。
+PasswordWindow 使用应用模态和现有系统标题栏，客户区宽 491，最高 600，并受当前屏幕可用高度约束。标题 20、正文 13、说明 12，正文随内容增长或独立滚动，footer 固定可达。尺寸来自 [password-reference.json](../../specs/visual/password-reference.json)，高保真依据为 [P02 独立状态稿](../../design/hifi/sources/password-extraction.html)。中英文、浅深色、100%／125%／150% 字号使用同一几何政策。
 
 窗口显示当前加密条目的名称、密码输入框、显示／隐藏密码动作与当前任务范围说明。显示动作使用明确文字和可读名称，不增加包含密码的提示。输入默认为掩码；提交后、取消、窗口关闭或请求 ID 改变时，清空输入并恢复掩码。密码不写入设置、剪贴板、日志、任务快照或报告。UI 的字符串清理不宣称可擦除 Qt 内存中的所有历史副本，底层秘密容器的生命周期由运行时契约约束。
 

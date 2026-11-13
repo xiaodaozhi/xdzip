@@ -73,7 +73,7 @@ def component_reference_coverage():
         'reference': f'reference/{name}.png', 'component': 'directory-tree',
         'title': title, 'implementation': implementation, 'icon_names': icons,
         'spec': '../../docs/ux/directory-tree.md',
-        'geometry_spec': '../../docs/visual/directory-tree.json',
+        'geometry_spec': '../../specs/visual/directory-tree.json',
         'integration_status': ('design-reference-only' if name in {
             'tree-loading', 'tree-nav-limit', 'tree-read-failed', 'tree-skeleton',
             'tree-loading-glyph', 'tree-info-glyph', 'tree-error-glyph'}

@@ -4,7 +4,7 @@
 
 三张当前图板位于 [多级展开](../../design/hifi/screens/directory-tree-capsule.png)、[节点与交互状态](../../design/hifi/screens/directory-tree-states.png)、[空态与导航边界](../../design/hifi/screens/directory-tree-boundaries.png)。[统一画廊](../../design/hifi/index.html#components)展示整幅图板，[素材库](../../design/assets/index.html#directory-tree)提供逐项切图。多级展开图从[可编辑设计源](../../design/hifi/sources/main.html?tree=expanded)导出，标题栏同步当前胶囊标签；图板中的顶部和中央列表仅提供上下文，不重新定义标题栏、工具栏或文件表格。[历史多级展开原图](../../design/hifi/screens/directory-tree.png)保持原样，继续作为 26 张切片的来源及独立量测依据。
 
-图板采用放大展示，每张卡片的局部比例不完全相同。图片中的文字、圆角和像素尺寸不能直接当作控件尺寸；[组件参数](../visual/directory-tree.json)明确记录落地的逻辑尺寸，资产清单单独记录原图裁剪的物理坐标。实现采用 1024 逻辑宽度及统一源画布变换，不能把这一组新组件再整体放大。
+图板采用放大展示，每张卡片的局部比例不完全相同。图片中的文字、圆角和像素尺寸不能直接当作控件尺寸；[组件参数](../../specs/visual/directory-tree.json)明确记录落地的逻辑尺寸，资产清单单独记录原图裁剪的物理坐标。实现采用 1024 逻辑宽度及统一源画布变换，不能把这一组新组件再整体放大。
 
 Qt 直接使用下表的逻辑值。现有 HTML 主稿采用 1548 源像素窗口映射到 1024 逻辑像素，转换遵循 [display-spec.js](../../design/html/display-spec.js)：`source CSS = logical / (1024/1548)`。因此 32 行高对应 48.375 源 CSS 像素，11.2 字号对应 16.93125，16 图标槽对应 24.1875，12.8 缩进对应 19.35。预览缩放在换算之后统一作用于整个窗口；DPR 只决定采样密度和线条对齐，不参与逻辑尺寸换算。
 

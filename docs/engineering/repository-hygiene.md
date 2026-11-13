@@ -7,11 +7,13 @@
 | 内容 | 位置 | Git 规则 |
 | --- | --- | --- |
 | 产品源码、测试代码、自有最小回归夹具 | apps、crates、tools、tests、resources | 保留，夹具须有明确用途与再分发依据 |
-| 设计原稿、运行素材、字体、参数与必要来源清单 | design、docs/visual | 保留，是可维护输入，不是执行证据 |
+| 设计原稿、运行素材、字体、参数与必要来源清单 | design、specs | 保留，是可维护输入，不是执行证据 |
 | 设计、架构决策、接口契约、构建方法、支持政策、通用测试方法 | docs | 保留，更新现行规则，不累积每日或每批执行结论 |
 | 任务范围、进展、验收摘要、审批、阻塞与后续责任 | GitHub Issues、Milestones | 引用精确提交和 Actions 运行，已完成工作包与新缺陷分开 |
 | 截图、测量、日志、阶段报告、生成阅读版、构建和开发包 | build、target、dist、Actions artifacts | 不提交，遵循证据保留期限 |
 | 获批发行的应用包、通知、SBOM、校验和 | GitHub Release 附件 | 经明确发布授权后交付，不提交大型发行产物到源码树；不提供对应源码压缩包 |
+
+`docs/` 只保存 Markdown 和必要的图片素材；机器可读的视觉参数、术语与依赖清单集中在 `specs/`，由相关生成和检查入口读取。`scripts/repository_contents.py` 检查 Git 索引中的目录边界。
 
 对应源码收集器仅用于本地审查和重建核验，不作为 GitHub Release 或 Actions 下载附件；具体发行边界见[发布协议](release-protocol.md)。
 

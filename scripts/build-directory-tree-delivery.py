@@ -27,11 +27,11 @@ def image(path, label, width=None, height=None):
 
 def generate():
     manifest = json.loads((ROOT / 'design/assets/manifest.json').read_text())
-    spec = json.loads((ROOT / 'docs/visual/directory-tree.json').read_text())
+    spec = json.loads((ROOT / 'specs/visual/directory-tree.json').read_text())
     catalog = json.loads((OUTPUT_ROOT / 'catalog.json').read_text())
     records = {item['file']: item for item in manifest['assets']}
-    files = {ROOT / 'docs/ux/directory-tree.md', ROOT / 'docs/visual/directory-tree.json',
-             ROOT / 'docs/visual/tokens.json', ROOT / 'LICENSE'}
+    files = {ROOT / 'docs/ux/directory-tree.md', ROOT / 'specs/visual/directory-tree.json',
+             ROOT / 'specs/visual/tokens.json', ROOT / 'LICENSE'}
     boards = []
     for entry in catalog['screens']:
         if entry.get('component') != 'directory-tree' or entry['group'] == 'historical':
@@ -84,7 +84,7 @@ def generate():
 <nav><a href="#boards">正式图板</a><a href="#geometry">规范</a><a href="#behavior">行为与状态</a><a href="#cuts">逐项切图</a><a href="#icons">共享透明图标</a></nav>
 <p>多级目录图使用当前胶囊标题栏，来自 <a href="sources/main.html?tree=expanded">可编辑设计源</a>。图板比例不同，组件规则参见规范；26 张切片继续绑定 <a href="screens/directory-tree.png">历史目录树原图</a>，不更换其像素或来源哈希。当前图不作为独立量测依据，完整深色状态与边界图板仍待补齐。</p>
 <h2 id="boards">正式图板</h2><div class="boards">''' + ''.join(boards) + '''</div>
-<h2 id="geometry">组件规范</h2><p>设计参数与大字号规则见 <a href="../../docs/visual/directory-tree.json">目录树规范</a>；各主题共享形状，颜色遵循主题参数。文件夹保持自然比例，运行控件按统一逻辑槽绘制。</p>
+<h2 id="geometry">组件规范</h2><p>设计参数与大字号规则见 <a href="../../specs/visual/directory-tree.json">目录树规范</a>；各主题共享形状，颜色遵循主题参数。文件夹保持自然比例，运行控件按统一逻辑槽绘制。</p>
 <h2 id="behavior">行为与状态</h2><p>有无子目录决定箭头；运行树不显示计数；原稿中的数字保留其设计参考身份。只有文件或为空的叶子都没有箭头，同层级保留空槽。方向键焦点、展开、当前目录及文件复选框状态相互独立。</p>
 <div class="table-wrap"><table><thead><tr><th>操作</th><th>结果</th></tr></thead><tbody>''' + event_rows + '''</tbody></table></div><p>索引完整后发布目录树。空压缩包的文件列表为空；只有根文件时列表正常显示。导航索引超限仍可使用根目录和搜索；读取失败提供重新打开，不假装空目录。</p>
 <details><summary>16 种规定状态</summary><div class="table-wrap"><table><tbody>''' + state_rows + '''</tbody></table></div></details>
@@ -164,7 +164,7 @@ def package(path, page, files):
             ledger.append(record)
         extras = {
             'xdzip-directory-tree.html': standalone(page),
-            'README.txt': 'xdzip 目录树 B 设计与素材交付\n打开 xdzip-directory-tree.html 查看全部内嵌图片。\n正式图板与切片保留原像素；组件行、连接线和文字动态绘制。\n规格位于 docs/ux/directory-tree.md 与 docs/visual/directory-tree.json。\n包外辅助 Markdown 链接已转换为仓库链接，正文不变。\nHTML 示例与 Qt 只读树已接入核心交互；边界提示图标与骨架仍待接入。\n原创内容采用 Apache-2.0，见 LICENSE。\n',
+            'README.txt': 'xdzip 目录树 B 设计与素材交付\n打开 xdzip-directory-tree.html 查看全部内嵌图片。\n正式图板与切片保留原像素；组件行、连接线和文字动态绘制。\n规格位于 docs/ux/directory-tree.md 与 specs/visual/directory-tree.json。\n包外辅助 Markdown 链接已转换为仓库链接，正文不变。\nHTML 示例与 Qt 只读树已接入核心交互；边界提示图标与骨架仍待接入。\n原创内容采用 Apache-2.0，见 LICENSE。\n',
         }
         for name, content in extras.items():
             payload = content.encode('utf-8')

@@ -24,6 +24,12 @@ class MsixTests(unittest.TestCase):
         identity = package.find(msix.tag(msix.NS, 'Identity'))
         self.assertEqual(identity.attrib['Version'], '1.0.27.0')
         self.assertEqual(identity.attrib['ProcessorArchitecture'], 'x64')
+        languages = [item.get('Language') for item in package.findall(
+            msix.tag(msix.NS, 'Resources') + '/' + msix.tag(msix.NS, 'Resource'))]
+        self.assertEqual(languages, ['en-US', 'zh-CN'])
+        catalogs = {json.loads(path.read_text(encoding='utf-8'))['locale']
+                    for path in (ROOT / 'resources/i18n').glob('*.json')}
+        self.assertEqual(set(languages), catalogs)
         self.assertEqual(package.find(msix.tag(msix.NS, 'Properties')).find(
             msix.tag(msix.NS, 'PublisherDisplayName')).text, '测试 & Publisher')
         extensions = {item.text for item in package.iter(msix.tag(msix.UAP, 'FileType'))}
@@ -97,6 +103,7 @@ class MsixTests(unittest.TestCase):
             self.assertEqual(report['name'], 'xdzip.Test')
             self.assertEqual(report['publisher'], 'CN=test')
             self.assertEqual(report['publisher_display_name'], 'Test Publisher')
+            self.assertEqual(report['languages'], ['en-US', 'zh-CN'])
             self.assertEqual(report['version'], '1.0.27.0')
 
 

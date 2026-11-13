@@ -15,8 +15,8 @@ import tempfile
 from threading import Thread
 
 ROOT = Path(__file__).resolve().parents[1]
-REFERENCE = json.loads((ROOT / 'docs/visual/add-reference.json').read_text(encoding='utf-8'))
-PALETTE = json.loads((ROOT / 'docs/visual/tokens.json').read_text(encoding='utf-8'))
+REFERENCE = json.loads((ROOT / 'specs/visual/add-reference.json').read_text(encoding='utf-8'))
+PALETTE = json.loads((ROOT / 'specs/visual/tokens.json').read_text(encoding='utf-8'))
 
 
 def qt_cases(directory):

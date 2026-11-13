@@ -22,7 +22,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 def main():
-    reference = json.loads((ROOT / 'docs/visual/extract-reference.json').read_text())
+    reference = json.loads((ROOT / 'specs/visual/extract-reference.json').read_text())
     assert sha256((ROOT / reference['source']).read_bytes()).hexdigest() == reference['sha256']
     source_ratio = reference['source_to_logical'][0] / reference['source_to_logical'][1]
     OUTPUT.mkdir(parents=True, exist_ok=True)

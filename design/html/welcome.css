@@ -1,4 +1,4 @@
-/* W01 logical dimensions from docs/visual/welcome-reference.json.
+/* W01 logical dimensions from specs/visual/welcome-reference.json.
    Only source artboards multiply by ui-source-factor; DPR is never a layout input. */
 .welcome-mode .toolbar,.welcome-mode .workspace { display:none; }
 .welcome-mode .window { container-type:inline-size; }

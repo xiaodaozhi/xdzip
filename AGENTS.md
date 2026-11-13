@@ -1,8 +1,8 @@
 # xdzip 仓库工作约定
 
-开始前阅读 README.md、docs/README.md 和当前任务涉及的规范。当前基线为 Qt Quick + 薄 C++ + Rust；高保真原稿统一位于 design/hifi；视觉规范与 tokens 位于 docs/visual。框架选型变更须通过架构决策流程。
+开始前阅读 README.md、docs/README.md 和当前任务涉及的规范。当前基线为 Qt Quick + 薄 C++ + Rust；高保真原稿统一位于 design/hifi；视觉规范位于 docs/visual，机器可读参数位于 specs/visual。框架选型变更须通过架构决策流程。
 
-界面创作与修正必须先读 docs/visual/design-standard.md、docs/visual/design-workflow.md；密度与单位以 docs/visual/layout-scale.json 为准。主窗口和菜单必须同时测量比例，不得把 DPR、浏览器缩放或截图物理像素写入组件逻辑尺寸。
+界面创作与修正必须先读 docs/visual/design-standard.md、docs/visual/design-workflow.md；密度与单位以 specs/visual/layout-scale.json 为准。主窗口和菜单必须同时测量比例，不得把 DPR、浏览器缩放或截图物理像素写入组件逻辑尺寸。
 
 产品能力与边界以 README 及 docs/engineering 的实现契约为准。任务进度、验收记录和阶段结论使用 GitHub issue；docs 只保留通用、持久文档，生成证据只保留为本地／CI 工件。桌面人工验收按需执行并单独登记，阶段状态以实际验收证据为准。当前开发包保持实验性，工作包完成不自动批准正式发行。
 
@@ -14,6 +14,7 @@
 - 修改领域、桥接、格式、文件写入或任务语义时，同时更新规范和对应验收条目。
 - 不假装测试、签名或平台验证已经通过；记录实际证据和限制。
 - 验收按 `docs/qa/README.md` 确定本次必要的检查和通过条件，只执行用户明确要求、适用规范强制要求及验证本次风险所必需的检查。复用仍适用的构建、工件和验证证据，重验影响结果的部分；失败优先重试受影响项。执行者自行追加的录像、平台或重复轮次不得自动变成交付门槛；历史评论中的建议不等于用户或规范新增要求。真实必需条件不得擅自降低，满足条件并记录限制后继续收尾。
+- 小型改动禁止因新建工作树、缺少现成构建或习惯使用默认构建入口，自动扩大为首次完整构建。先核对并复用适用的现有构建与证据，优先增量构建受影响目标并执行必要的定向检查；确有用户明确要求、规范强制要求或受影响风险无法以定向检查覆盖时，才执行相应完整构建，并说明原因。
 - 高成本管线前先用最小检查收敛受影响依赖、平台兼容及打包交接风险，覆盖真实入口与默认参数；候选准备完成后再冻结发行，不用完整发行逐错调试。
 - 源码修复须核对共享边界、相关调用点及交接链路，以能揭示原缺陷的最小回归确认，再重跑受影响项。
 - 执行命令先核对实际入口；使用工件前须等待生成或下载成功，并核对身份与完整性。
@@ -26,7 +27,7 @@
 - 文本信息使用逗号、句号或换行分隔，不使用中点。测试截图、量测数据和验证报告只生成到 build/ 或 dist/，不提交到 Git；设计原稿、素材、规格和测试代码继续纳入版本管理。
 - 操作窗口使用共享 OperationButton、OperationFooterButton、OperationFrame、OperationSelect 和 OperationSegmentedGroup；禁止在窗口中覆盖 footer 按钮的圆角、字号、颜色、描边和密度。
 
-新增或修改任何 QML 窗口（含内联 Window）必须先登记 docs/visual/window-registry.json，明确尺寸依据、例外理由与高保真入口；退出、重启等确认窗口必须复用 OperationConfirmationWindow。提交前运行窗口契约、共享控件和双语多字号布局检查；功能检查通过不能代替视觉验收，禁止将未执行的原生视觉检查记为通过。
+新增或修改任何 QML 窗口（含内联 Window）必须先登记 specs/visual/window-registry.json，明确尺寸依据、例外理由与高保真入口；退出、重启等确认窗口必须复用 OperationConfirmationWindow。提交前运行窗口契约、共享控件和双语多字号布局检查；功能检查通过不能代替视觉验收，禁止将未执行的原生视觉检查记为通过。
 
 自定义单选控件统一使用 IntentRadioButton，将鼠标、键盘和原生辅助功能 press/toggle 路由到同一选择模型；不得仅翻转 checked。回归必须执行 QAccessibleActionInterface 并核对实际行为和互斥状态。
 

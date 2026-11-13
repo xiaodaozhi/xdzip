@@ -65,7 +65,7 @@ NON_REFERENCE_NAMES.update({'file-document', 'file-spreadsheet', 'file-presentat
                             'file-audio', 'file-video', 'file-archive', 'file-installer',
                             'file-font', 'file-disk'})
 
-HIGH_RES_ICONS = set(json.loads((Path(__file__).resolve().parents[1] / 'docs/visual/operation-assets.json').read_text())['icons'])
+HIGH_RES_ICONS = set(json.loads((Path(__file__).resolve().parents[1] / 'specs/visual/operation-assets.json').read_text())['icons'])
 
 
 def digest(path: Path) -> str:
@@ -257,7 +257,7 @@ def main() -> None:
         elif kind == 'menu-shadow-rasterization':
             assert entry['theme'] in ('light', 'dark'), entry['file']
             assert entry['font_scale'] in (1, 1.25, 1.5, 2), entry['file']
-            assert entry['source'] == '../../docs/visual/controls.json', entry['file']
+            assert entry['source'] == '../../specs/visual/controls.json', entry['file']
             assert entry['source_sha256'] == hashlib.sha256((ROOT / entry['source']).read_bytes()).hexdigest(), entry['file']
             with Image.open(ROOT / entry['file']) as image:
                 assert list(image.size) == entry['size'] and image.mode == 'RGBA', entry['file']

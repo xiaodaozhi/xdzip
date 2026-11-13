@@ -58,7 +58,7 @@ with sync_playwright() as playwright:
         page.evaluate('document.fonts.ready')
         assert page.evaluate('document.fonts.check(\'600 20px "Xdzip Design Sans SC"\', "北境旅行.zip")')
         assert page.evaluate('[...document.fonts].some(f => f.family === "Xdzip Design Sans SC" && f.status === "loaded")')
-        layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
+        layout = json.loads((ROOT / 'specs/visual/layout-scale.json').read_text())
         title = layout['main']['titlebar']
         factor = 1548 / 1024
         title_delta = title['height'] * factor - 57
