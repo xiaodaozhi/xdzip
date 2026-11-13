@@ -162,11 +162,18 @@ void ShellBatchController::accepted(const QString &id) {
     schedule();
 }
 void ShellBatchController::record(const QString &status, const QString &error,
-                                  const QString &target) {
+                                  const QString &target, bool cleanupWarning,
+                                  bool outcomeUncertain) {
+    const auto destination =
+        target.isEmpty()
+            ? (m_target.isEmpty() ? QFileInfo(m_jobs.at(m_index).first()).absolutePath() : m_target)
+            : target;
     m_results.append(QVariantMap{{"name", base(m_jobs.at(m_index))},
                                  {"status", status},
                                  {"error", error},
-                                 {"target", target}});
+                                 {"target", destination},
+                                 {"cleanupWarning", cleanupWarning},
+                                 {"outcomeUncertain", outcomeUncertain}});
 }
 void ShellBatchController::schedule() {
     if (m_scheduled)
@@ -187,7 +194,8 @@ void ShellBatchController::step() {
             if (task.value("id") != m_task || !task.value("terminal").toBool())
                 continue;
             record(task.value("status").toString(), task.value("error").toString(),
-                   task.value("target").toString());
+                   task.value("target").toString(), task.value("cleanupWarning").toBool(),
+                   task.value("outcomeUncertain").toBool());
             ++m_index;
             next();
             return;

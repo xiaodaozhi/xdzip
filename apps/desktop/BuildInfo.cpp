@@ -1,10 +1,14 @@
 #include "BuildInfo.h"
 #include "BuildVersion.h"
 #include <QClipboard>
+#include <QCursor>
 #include <QGuiApplication>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QScreen>
 #include <QSysInfo>
+#include <QWindow>
+#include <algorithm>
 #include <cstdio>
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -48,6 +52,36 @@ bool BuildInfo::packaged() {
 #else
     return false;
 #endif
+}
+bool BuildInfo::linuxX11() {
+#ifdef Q_OS_LINUX
+    return QGuiApplication::platformName() == QStringLiteral("xcb");
+#else
+    return false;
+#endif
+}
+void BuildInfo::centerOnScreen(QWindow *window, QWindow *owner) const {
+    if (!window)
+        return;
+    auto *screen =
+        owner && owner->screen() ? owner->screen() : QGuiApplication::screenAt(QCursor::pos());
+    if (!screen)
+        screen = window->screen() ? window->screen() : QGuiApplication::primaryScreen();
+    if (!screen)
+        return;
+    if (window->screen() != screen)
+        window->setScreen(screen);
+    const auto area = screen->availableGeometry();
+    const auto margins = window->frameMargins();
+    const QSize frame(window->width() + margins.left() + margins.right(),
+                      window->height() + margins.top() + margins.bottom());
+    const auto x = area.x() + qMax(0, (area.width() - frame.width()) / 2);
+    const auto y = area.y() + qMax(0, (area.height() - frame.height()) / 2);
+    window->setFramePosition(QPoint(x, y));
+}
+int BuildInfo::availableScreenHeight(QWindow *window) const {
+    auto *screen = window && window->screen() ? window->screen() : QGuiApplication::primaryScreen();
+    return screen ? screen->availableGeometry().height() : 0;
 }
 bool BuildInfo::printVersionIfRequested(int argc, char **argv) {
     if (argc != 2)

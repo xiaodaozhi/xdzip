@@ -1,5 +1,7 @@
 #include "MenuModel.h"
+#include <array>
 #include <atomic>
+#include <cwctype>
 #include <new>
 #include <shlobj.h>
 
@@ -8,6 +10,52 @@ namespace {
 const CLSID ClassId{0x731d9a38, 0x549e, 0x4cde, {0xb3, 0x5b, 0x6e, 0xb3, 0xa2, 0xc8, 0x8b, 0x71}};
 std::atomic<long> objects{0};
 HMODULE module = nullptr;
+HBITMAP iconBitmap(HICON icon, int width, int height) {
+    if (!icon || width <= 0 || height <= 0)
+        return nullptr;
+    BITMAPINFO info{};
+    info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    info.bmiHeader.biWidth = width;
+    info.bmiHeader.biHeight = -height;
+    info.bmiHeader.biPlanes = 1;
+    info.bmiHeader.biBitCount = 32;
+    info.bmiHeader.biCompression = BI_RGB;
+    void *pixels = nullptr;
+    const auto bitmap = CreateDIBSection(nullptr, &info, DIB_RGB_COLORS, &pixels, nullptr, 0);
+    if (!bitmap)
+        return nullptr;
+    const auto dc = CreateCompatibleDC(nullptr);
+    if (!dc) {
+        DeleteObject(bitmap);
+        return nullptr;
+    }
+    const auto previous = SelectObject(dc, bitmap);
+    const bool drawn = previous && previous != HGDI_ERROR &&
+                       DrawIconEx(dc, 0, 0, icon, width, height, 0, nullptr, DI_NORMAL);
+    if (previous && previous != HGDI_ERROR)
+        SelectObject(dc, previous);
+    DeleteDC(dc);
+    if (!drawn) {
+        DeleteObject(bitmap);
+        return nullptr;
+    }
+    return bitmap;
+}
+UINT insertionIndex(HMENU menu, UINT fallback) {
+    const int count = GetMenuItemCount(menu);
+    for (int i = 0; i < count; ++i) {
+        wchar_t text[512]{};
+        if (!GetMenuStringW(menu, UINT(i), text, int(std::size(text)), MF_BYPOSITION))
+            continue;
+        std::wstring normalized;
+        for (const auto ch : std::wstring(text))
+            if (ch != L'&')
+                normalized += wchar_t(std::towlower(ch));
+        if (normalized.rfind(L"open with", 0) == 0 || normalized.rfind(L"打开方式", 0) == 0)
+            return UINT(i);
+    }
+    return fallback;
+}
 std::wstring wide(const std::string &text) {
     const auto size = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, text.data(),
                                           int(text.size()), nullptr, 0);
@@ -29,12 +77,41 @@ class Menu final : public IShellExtInit, public IContextMenu {
     std::vector<xdzip_shell::fs::path> paths;
     std::vector<xdzip_shell::MenuEntry> entries;
     bool archiveCandidates = false;
+    // A menu instance owns its bitmaps until Explorer releases the COM object.
+    std::array<HBITMAP, 4> icons{};
+    void prepareIcons() {
+        const auto foreground = GetForegroundWindow();
+        const auto dpi = foreground ? GetDpiForWindow(foreground) : GetDpiForSystem();
+        const auto width = GetSystemMetricsForDpi(SM_CXMENUCHECK, dpi);
+        const auto height = GetSystemMetricsForDpi(SM_CYMENUCHECK, dpi);
+        for (int i = 0; i < 3; ++i) {
+            if (icons[size_t(i)])
+                continue;
+            const auto icon = static_cast<HICON>(
+                LoadImageW(module, MAKEINTRESOURCEW(101 + i), IMAGE_ICON, width, height, 0));
+            if (icon) {
+                icons[size_t(i)] = iconBitmap(icon, width, height);
+                DestroyIcon(icon);
+            }
+        }
+        if (!icons[3]) {
+            SHSTOCKICONINFO stock{};
+            stock.cbSize = sizeof(stock);
+            if (SUCCEEDED(SHGetStockIconInfo(SIID_FOLDER, SHGSI_ICON | SHGSI_SMALLICON, &stock))) {
+                icons[3] = iconBitmap(stock.hIcon, width, height);
+                DestroyIcon(stock.hIcon);
+            }
+        }
+    }
 
   public:
     Menu() {
         ++objects;
     }
     ~Menu() {
+        for (const auto bitmap : icons)
+            if (bitmap)
+                DeleteObject(bitmap);
         --objects;
     }
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, void **value) override {
@@ -115,19 +192,32 @@ class Menu final : public IShellExtInit, public IContextMenu {
             const auto submenu = CreatePopupMenu();
             if (!submenu)
                 return E_OUTOFMEMORY;
+            prepareIcons();
             for (size_t i = 0; i < entries.size(); ++i) {
                 auto label = wide(entries[i].label);
                 for (size_t at = 0; (at = label.find(L'&', at)) != std::wstring::npos; at += 2)
                     label.insert(at, 1, L'&');
-                AppendMenuW(submenu, MF_STRING, first + UINT(i), label.c_str());
+                if (!AppendMenuW(submenu, MF_STRING, first + UINT(i), label.c_str())) {
+                    DestroyMenu(submenu);
+                    return E_FAIL;
+                }
+                MENUITEMINFOW child{};
+                child.cbSize = sizeof(child);
+                child.fMask = MIIM_BITMAP;
+                child.hbmpItem = entries[i].action == "7z"                     ? icons[2]
+                                 : entries[i].action.rfind("extract-", 0) == 0 ? icons[3]
+                                                                               : icons[1];
+                if (child.hbmpItem)
+                    SetMenuItemInfoW(submenu, UINT(i), TRUE, &child);
             }
             MENUITEMINFOW item{};
             item.cbSize = sizeof(item);
-            item.fMask = MIIM_STRING | MIIM_SUBMENU;
+            item.fMask = MIIM_STRING | MIIM_SUBMENU | (icons[0] ? MIIM_BITMAP : 0);
+            item.hbmpItem = icons[0];
             item.hSubMenu = submenu;
             auto title = wide(xdzip_shell::text(english(), "shell.title"));
             item.dwTypeData = title.data();
-            if (!InsertMenuItemW(parent, index, TRUE, &item)) {
+            if (!InsertMenuItemW(parent, insertionIndex(parent, index), TRUE, &item)) {
                 DestroyMenu(submenu);
                 return E_FAIL;
             }

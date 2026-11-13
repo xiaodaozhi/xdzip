@@ -20,9 +20,6 @@ bool validTheme(const QString &theme) {
 bool validScale(double scale) {
     return scale == 1 || scale == 1.25 || scale == 1.5;
 }
-bool validLanguage(const QString &language) {
-    return language == "zh-CN" || language == "en-US";
-}
 bool atomicWrite(const QString &path, const QByteArray &bytes) {
     QSaveFile output(path);
     output.setDirectWriteFallback(false);
@@ -38,9 +35,9 @@ UiPreferences::UiPreferences(QObject *parent) : QObject(parent) {
     const auto theme = settings.value("appearance/theme", "system").toString();
     const auto storedScale = settings.value("appearance/textScale", 1).toDouble();
     const auto scale = storedScale == 2 ? 1.5 : storedScale;
-    const auto language = settings.value("locale/language", "zh-CN").toString();
+    const auto language = settings.value("locale/language", "auto").toString();
     if (settings.status() == QSettings::NoError && schema == 1 && validTheme(theme) &&
-        validScale(scale) && validLanguage(language)) {
+        validScale(scale) && validUiLanguageSelection(language)) {
         m_savedTheme = m_theme = theme;
         m_savedScale = m_scale = scale;
         m_language = language;
@@ -101,7 +98,7 @@ void UiPreferences::cancelPreview() {
     previewDensity(m_savedDensity);
 }
 bool UiPreferences::save(const QString &theme, double scale, const QString &language) {
-    if (!validTheme(theme) || !validScale(scale) || !validLanguage(language))
+    if (!validTheme(theme) || !validScale(scale) || !validUiLanguageSelection(language))
         return false;
     const auto path = uiSettingsPath();
     // Keep the previous profile recoverable. Failure preserves the draft and the
@@ -273,9 +270,12 @@ QStringList UiPreferences::recentArchives() const {
 bool UiPreferences::applyDetails(const QString &theme, double scale, const QString &language,
                                  const QString &density, bool recentEnabled, bool trayEnabled,
                                  const QString &openMode) {
-    const bool changeLanguage = language != activeLanguage();
+    if (!validUiLanguageSelection(language))
+        return false;
+    const auto resolvedLanguage = resolveUiLanguage(language);
+    const bool changeLanguage = resolvedLanguage != activeLanguage();
     const auto previousLanguage = activeLanguage();
-    if (changeLanguage && (!validLanguage(language) || !initializeUiText(language))) {
+    if (changeLanguage && !initializeUiText(resolvedLanguage)) {
         m_error = qtTrId("ui.c43b29d7cbdf");
         emit errorChanged();
         return false;

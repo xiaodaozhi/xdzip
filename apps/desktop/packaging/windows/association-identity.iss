@@ -29,17 +29,18 @@ begin
 end;
 
 { Qt uses LocalAppData/xdzip/xdzip/settings.ini for this application's profile.
-  Only a supported schema and the known English locale change the default.
+  Automatic mode follows the user's Windows UI language, with English fallback.
   No profile is created or modified by the installer. }
 function AssociationDescription(Param: String): String;
 var Profile, Language: String;
 begin
   Profile := ExpandConstant('{localappdata}\xdzip\xdzip\settings.ini');
-  Language := 'zh-CN';
+  Language := 'auto';
   if GetIniString('General', 'schemaVersion', '1', Profile) = '1' then
-    Language := GetIniString('locale', 'language', 'zh-CN', Profile);
-  if Language = 'en-US' then
-    Result := @ASSOCIATION_DESCRIPTION_EN@
+    Language := GetIniString('locale', 'language', 'auto', Profile);
+  if (Language = 'zh-CN') or
+     ((Language = 'auto') and ((GetUILanguage and $3FF) = $04)) then
+    Result := @ASSOCIATION_DESCRIPTION_ZH@
   else
-    Result := @ASSOCIATION_DESCRIPTION_ZH@;
+    Result := @ASSOCIATION_DESCRIPTION_EN@;
 end;

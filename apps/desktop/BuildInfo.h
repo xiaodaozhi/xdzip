@@ -1,5 +1,6 @@
 #pragma once
 #include <QObject>
+#include <QWindow>
 #include <QtQml/qqmlregistration.h>
 
 class BuildInfo : public QObject {
@@ -16,6 +17,7 @@ class BuildInfo : public QObject {
     Q_PROPERTY(QString configuration READ configuration CONSTANT)
     Q_PROPERTY(QString architecture READ architecture CONSTANT)
     Q_PROPERTY(bool packaged READ packaged CONSTANT)
+    Q_PROPERTY(bool linuxX11 READ linuxX11 CONSTANT)
   public:
     explicit BuildInfo(QObject *parent = nullptr) : QObject(parent) {}
     static QString version();
@@ -28,6 +30,9 @@ class BuildInfo : public QObject {
     static QString architecture();
     static QString configuration();
     static bool packaged();
+    static bool linuxX11();
     static bool printVersionIfRequested(int argc, char **argv);
     Q_INVOKABLE void copyVersionInfo() const;
+    Q_INVOKABLE void centerOnScreen(QWindow *window, QWindow *owner = nullptr) const;
+    Q_INVOKABLE int availableScreenHeight(QWindow *window) const;
 };

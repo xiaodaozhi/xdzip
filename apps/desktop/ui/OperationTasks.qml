@@ -9,9 +9,13 @@ Item {
     property bool automaticPresentation: true
     property bool presentationBlocked: false
     property bool preventOrphanedClose: false
+    property bool centerOnScreen: false
+    property var shellBatch: null
     property var cancelHandler: null
     property string activeTaskId: ""
     property var taskSnapshot: ({})
+    property var batchSnapshot: null
+    readonly property var presentationSnapshot: batchSnapshot || taskSnapshot
     readonly property alias taskWindow: taskWindow
     readonly property alias conflictWindow: conflictWindow
     readonly property alias passwordWindow: passwordWindow
@@ -80,12 +84,42 @@ Item {
         if (!task) return;
         if (id !== activeTaskId) conflictWindow.close();
         activeTaskId = id;
+        batchSnapshot = null;
         taskSnapshot = task;
         taskWindow.present();
         if (root.controller.runtimeAvailable && !taskSnapshot.cancelRequested && taskSnapshot.status === "waiting" && taskSnapshot.promptId)
             conflictWindow.presentPrompt(true);
         if (taskSnapshot.status === "waiting_password" && taskSnapshot.passwordPromptId)
             passwordWindow.revealPrompt();
+    }
+    function showBatchResult(present: bool) {
+        if (!shellBatch || !shellBatch.results.length) return;
+        const results = shellBatch.results;
+        if (results.length === 1 && taskSnapshot.id && taskSnapshot.terminal &&
+                taskSnapshot.status === results[0].status) {
+            batchSnapshot = null;
+        } else {
+            const successes = results.filter(r => r.status === "succeeded");
+            const failures = results.filter(r => r.status === "failed");
+            const cancelled = results.filter(r => r.status === "cancelled" || r.status === "not-run");
+            const details = results.map(r => ({name: r.name, size: null,
+                status: r.status === "succeeded" ? "completed" : r.status === "duplicate" ? "skipped" : "unfinished",
+                statusLabel: ({succeeded: qsTrId("shell.status.succeeded"), failed: qsTrId("shell.status.failed"), cancelled: qsTrId("shell.status.cancelled"), "not-run": qsTrId("shell.status.not-run"), duplicate: qsTrId("shell.status.duplicate")})[r.status],
+                reason: r.error || ""}));
+            batchSnapshot = {id: "shell-batch", kind: shellBatch.creating ? "create" : "extract",
+                creating: shellBatch.creating, terminal: true,
+                status: failures.length ? "failed" : cancelled.length ? "cancelled" : "succeeded",
+                archive: results[0].name, target: successes.length ? successes[0].target : results[0].target,
+                files: results.length, outputParts: successes.length, committedFiles: successes.length,
+                skippedFiles: results.filter(r => r.status === "duplicate").length,
+                failedCount: failures.length,
+                cancelledCount: results.filter(r => r.status === "cancelled").length,
+                notRunCount: results.filter(r => r.status === "not-run").length, details: details,
+                error: failures.length ? failures[0].error : "", batchResults: results.length > 1,
+                cleanupWarning: results.some(r => r.cleanupWarning),
+                outcomeUncertain: results.some(r => r.outcomeUncertain)};
+        }
+        if (present) taskWindow.present();
     }
     function taskFraction(): real {
         const t = taskSnapshot;
@@ -132,37 +166,44 @@ Item {
     }
     TaskWindow {
         id: taskWindow
+        centerOnScreen: root.centerOnScreen
         onClosing: close => {
             if (root.preventOrphanedClose && !terminal) { close.accepted = false; root.orphanedClose(); }
         }
         owner: root.owner
-        archiveName: root.taskSnapshot.archive || root.controller.extractionIntent.archive || ""
-        destination: taskWindow.checking ? root.taskSnapshot.source || "" : root.taskSnapshot.target || root.controller.extractionIntent.target || ""
+        archiveName: root.presentationSnapshot.archive || root.controller.extractionIntent.archive || ""
+        destination: taskWindow.checking ? root.presentationSnapshot.source || "" : root.presentationSnapshot.target || root.controller.extractionIntent.target || ""
         currentFile: root.taskSnapshot.current || qsTrId("ui.f07335163e36")
         currentFileUserData: Boolean(root.taskSnapshot.current)
         fraction: root.taskFraction()
-        creating: root.taskSnapshot.creating || false
-        operationKind: root.taskSnapshot.kind || (creating ? "create" : "extract")
+        creating: root.presentationSnapshot.creating || false
+        operationKind: root.presentationSnapshot.kind || (creating ? "create" : "extract")
         totalKnown: root.taskSnapshot.totalKnown || false
         stopping: root.taskSnapshot.cancelRequested === true || ["cancelling", "cleaning"].includes(root.taskSnapshot.status)
-        taskStatus: root.taskStatus(root.taskSnapshot)
+        taskStatus: root.taskStatus(root.presentationSnapshot)
         phaseSummary: taskWindow.checking && taskStatus === "running" ? qsTrId("integrity.running") : root.phaseLabel(taskStatus)
-        errorSummary: root.taskSnapshot.error || ""
-        cleanupWarning: root.taskSnapshot.cleanupWarning || false
-        outcomeUncertain: root.taskSnapshot.outcomeUncertain || false
+        errorSummary: root.presentationSnapshot.error || ""
+        cleanupWarning: root.presentationSnapshot.cleanupWarning || false
+        outcomeUncertain: root.presentationSnapshot.outcomeUncertain || false
         processedSummary: taskWindow.checking ? qsTrId("integrity.processed").arg(root.formatSize(root.taskSnapshot.readBytes || "0")).arg(root.formatSize(root.taskSnapshot.verifiedBytes || "0")) : taskWindow.creating ? qsTrId("ui.a1c9c21cfbef").arg(root.formatSize(root.taskSnapshot.decodedBytes || "0")).arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")) : qsTrId("ui.8bce13df4816").arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")).arg(root.formatSize(root.taskSnapshot.committedBytes || "0"))
         fileCountSummary: taskWindow.checking ? qsTrId("integrity.files").arg(root.taskSnapshot.verifiedFiles || "0").arg(root.taskSnapshot.files || "0") : taskWindow.creating ? qsTrId("ui.1f43814c240b").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.terminal ? qsTrId("ui.b61825c80ed6") : qsTrId("ui.483f8dd01321")) : qsTrId("ui.ed52971e9256").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.skippedFiles || "0")
-        resultSummary: taskWindow.checking ? qsTrId("integrity.result").arg(root.taskSnapshot.verifiedFiles || "0").arg(Math.max(0, Number(root.taskSnapshot.files || 0) - Number(root.taskSnapshot.verifiedFiles || 0))) : qsTrId("ui.51fe7c80c764").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.skippedFiles || "0").arg(root.taskSnapshot.createdDirectories || "0")
-        resultTask: root.taskSnapshot
+        resultSummary: taskWindow.checking ? qsTrId("integrity.result").arg(root.presentationSnapshot.verifiedFiles || "0").arg(Math.max(0, Number(root.presentationSnapshot.files || 0) - Number(root.presentationSnapshot.verifiedFiles || 0))) : qsTrId("ui.51fe7c80c764").arg(root.presentationSnapshot.committedFiles || "0").arg(root.presentationSnapshot.skippedFiles || "0").arg(root.presentationSnapshot.createdDirectories || "0")
+        resultTask: root.presentationSnapshot
         speedSummary: root.averageSpeed()
         remainingSummary: root.remainingTime()
         onCancelRequested: root.cancelCurrent()
-        onOpenOutputRequested: root.controller.openOutput(root.activeTaskId)
+        onOpenOutputRequested: {
+            if (root.batchSnapshot && root.shellBatch) {
+                const index = root.shellBatch.results.findIndex(r => r.status === "succeeded" && !!r.target);
+                if (index >= 0) root.shellBatch.openTarget(index);
+            } else root.controller.openOutput(root.activeTaskId);
+        }
         onConflictRequested: conflictWindow.presentPrompt(true)
         onPasswordRequested: passwordWindow.revealPrompt()
     }
     ConflictWindow {
         id: conflictWindow
+        centerOnScreen: root.centerOnScreen
         owner: root.owner || (taskWindow.visible ? taskWindow : null)
         task: root.taskSnapshot
         decisionsAvailable: root.controller.runtimeAvailable
@@ -175,6 +216,7 @@ Item {
     }
     PasswordWindow {
         id: passwordWindow
+        centerOnScreen: root.centerOnScreen
         owner: root.owner || (taskWindow.visible ? taskWindow : null)
         controller: root.controller
         cancelHandler: root.cancelHandler

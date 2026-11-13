@@ -14,6 +14,7 @@ body { min-width:1586px; font-size:18px; background:var(--canvas); }
 .reviewbar,.review-footer { display:none; }
 .stage { width:1586px; max-width:none; margin:0; padding:30px 18px 22px 20px; }
 .window { width:1548px; height:940px; min-height:940px; border-radius:14px; box-shadow:0 8px 26px #1e2a4010; }
+body[data-platform="linux"] .window { border-radius:calc(var(--linux-cornerRadius) * var(--ui-source-factor) * 1px); overflow:hidden; }
 /* Source-space anchors are recorded independently in header-reference.json. */
 .titlebar {
     --tab-capsule-height:max(var(--tab-height), calc((13px * 1.6 * var(--settings-text-scale,1) + 8px) * var(--ui-source-factor)));
@@ -227,6 +228,28 @@ body[data-platform="windows"] .desktop-caption-controls>span {
     justify-content:center;
 }
 body[data-platform="windows"] .desktop-caption-controls svg {
+    width:calc(var(--captionIconSize) * var(--ui-source-factor) * 1px);
+    height:calc(var(--captionIconSize) * var(--ui-source-factor) * 1px);
+}
+body[data-platform="linux"] .titlebar {
+    padding-right:calc(var(--linux-captionRightInset) * var(--ui-source-factor) * 1px);
+    grid-template-columns:68px 128px minmax(0,1fr) 0px 40px calc(3 * var(--linux-captionWidth) * var(--ui-source-factor) * 1px);
+    column-gap:16px;
+}
+body[data-platform="linux"] .desktop-caption-controls {
+    height:100%;
+    gap:0;
+    color:var(--text);
+}
+body[data-platform="linux"] .desktop-caption-controls>span {
+    width:calc(var(--linux-captionWidth) * var(--ui-source-factor) * 1px);
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:radial-gradient(circle closest-side, var(--ui-control-hover) 99%, transparent 100%) center / calc(var(--linux-captionSize) * var(--ui-source-factor) * 1px) calc(var(--linux-captionSize) * var(--ui-source-factor) * 1px) no-repeat;
+}
+body[data-platform="linux"] .desktop-caption-controls svg {
     width:calc(var(--captionIconSize) * var(--ui-source-factor) * 1px);
     height:calc(var(--captionIconSize) * var(--ui-source-factor) * 1px);
 }

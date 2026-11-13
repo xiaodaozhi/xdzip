@@ -43,6 +43,10 @@ English: The tab close button retains its square hit area and centered position,
 
 ### 设置窗口分类修订
 
+无 owner 的托盘设置和关于窗口复用共享屏幕居中策略，以当前显示器的可用区域和完整原生边框定位；原生窗口创建及高度确定后重新居中，避免指针位于通知区时沿用右下角位置。窗口尺寸、字号与密度仍沿用设置规范。
+
+English: Ownerless tray Settings and About use shared screen centering against the current display's work area and the complete native frame. Recenter after native creation and height adjustment, retaining the existing settings dimensions, typography and density.
+
 Windows MSIX 包身份的关于页省略更新标题、分隔线和整个更新区域，版本信息直接沿用其后的共享分组间距。窗口尺寸、字号和其他内容沿用既有规范，不按渠道改变缩放或密度。English: Windows MSIX About omits the update heading, divider and controls; the remaining groups use the existing window dimensions, typography and spacing.
 
 设置与关于共用一个 612 逻辑像素宽的非模态窗口，客户区首选高度 532，受屏幕可用高度约束。共享 OperationHeader 底部有 1 逻辑单位分隔线，下方为左侧导航和独立滚动的右侧页面；左栏基准宽 144、正常行高 40、图标槽 18，图标距侧栏左边 15，首行贴齐顶部，选中背景与右侧分隔线相接。辅助字号增大时，左栏按实际最宽单词和图文间距适当增宽，英文在单词之间换行；行按内容增长并允许滚动。未选中项悬停使用共享 controlHover 颜色，浅深主题均与侧栏底色区分。页面内距 20，分组间距 16。实际参数以 layout-scale.json 的 operation.settings 为准，不从截图、DPR 或审阅倍率推导。
@@ -205,7 +209,11 @@ C01 原稿的输入框和中性按钮为轻量浅灰描边，原共享浅色值 
 
 Windows 主窗口隐藏额外的系统标题栏，在既有设置按钮右侧依次显示最小化、最大化／还原和关闭按钮。正常标题区仍为 48 逻辑像素，三个按钮各宽 46、与标题区等高，图标使用统一素材库的 18 槽；还原图形复用错开 3 的最大化素材。颜色由 tokens.json 的 captionCloseHover／captionClosePressed 和既有文字、画布及中性按钮角色生成。设置按钮原右内距移到窗口控制组左侧。参数在 layout-scale.json，不随 DPR 或截图尺寸改变。
 
-标题空白区域拖动调用 startSystemMove，双击切换最大化／还原；Windows 保留 WS_CAPTION／WS_THICKFRAME，只将原生标题栏区域纳入客户区；四边与四角由原生命中测试处理，最大化使用系统工作区与原生缩放边距。DWM 提供系统边框、阴影及受支持 Windows 11 上的圆角，不用 QML 圆角矩形或阴影代替。窗口按钮沿用正常键盘焦点和可访问名称，关闭走既有任务决策与异步退出屏障。操作窗口继续保留系统装饰，macOS 的原生红绿灯与 Linux 装饰不变。HTML Windows 原稿同步按钮槽位，装饰示意不在浏览器中执行系统窗口操作。
+Ubuntu X11 主窗口将窗口控制整合到同一标题区，普通状态使用 10 逻辑单位圆角，三个控制各占 36，圆形底色为 28，控制组距窗口右侧 6，边缘调整命中区为 6；参数来自 layout-scale.json。透明窗口背景配合标题栏和状态栏的抗锯齿圆角绘制，保留边缘透明度渐变。标题空白拖动、双击及八方向缩放调用窗口系统，最大化和全屏使用直角。操作窗口继续使用系统装饰；系统阴影与窗口管理器能力另行验证。对应原稿入口为 [Ubuntu 标题区](../../design/hifi/sources/main.html?platform=linux)。
+
+English: The Ubuntu X11 main window integrates its caption controls, with a 10-unit normal-state corner radius, three 36-unit control slots, 28-unit circular backgrounds, a 6-unit right inset for the controls and a 6-unit resize edge. A transparent window and antialiased titlebar and status bar corners preserve edge alpha. Titlebar movement, double-click and eight-direction resize use the window system; maximized and fullscreen states have square corners. Operation windows keep system decorations. Window-manager shadows and behavior require separate native checks.
+
+标题空白区域拖动调用 startSystemMove，双击切换最大化／还原；Windows 保留 WS_CAPTION／WS_THICKFRAME，只将原生标题栏区域纳入客户区；四边与四角由原生命中测试处理，最大化使用系统工作区与原生缩放边距。DWM 提供系统边框、阴影及受支持 Windows 11 上的圆角，不用 QML 圆角矩形或阴影代替。窗口按钮沿用正常键盘焦点和可访问名称，关闭走既有任务决策与异步退出屏障。操作窗口继续保留系统装饰，macOS 的原生红绿灯不变。HTML Windows 原稿同步按钮槽位，装饰示意不在浏览器中执行系统窗口操作。
 
 Qt 自动化同时核对标题区、按钮几何、字号与菜单／列表比例，DPR 1／1.25／2 保持逻辑尺寸。原生 Windows 启动、最大化／还原与退出单独执行；离屏结果不等于 Windows 拖动贴靠、系统缩放、输入法或辅助功能的完整人工验收。
 

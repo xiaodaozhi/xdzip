@@ -70,6 +70,10 @@ English: Shell creation checks its prefilled target directly, without touching t
 macOS 单实例身份使用当前用户与 Security 框架的实际登录会话 ID，查询失败拒绝选举，不依赖 helper 可能缺失的环境变量。普通启动、Finder relay 和服务入口因此进入同一登录会话的实例，见 [SessionGetInfo](https://developer.apple.com/documentation/security/sessions)。
 
 English: On macOS, single-instance election uses the current user and the actual Security session ID, failing closed on query errors. LaunchServices helpers and the desktop must not derive different identities from missing environment variables.
+右键创建与解压沿用 `TaskWindow` 的进度和结果，不切换独立的简化结果窗。批次使用同一结果布局呈现每项状态及实际错误，提交前失败没有任务回执时仅创建结果视图，不虚构任务。右键操作窗口按当前显示器可用区域居中，提示仍关联实际调用窗口。Windows 经典菜单优先放在可识别的“打开方式”之前，无法识别时保留系统指定位置；入口及操作使用应用、格式与系统文件夹图标。
+
+Shell creation and extraction reuse the `TaskWindow` progress and result views. Batches show each actual status and error in that same layout; pre-submission failures create only a presentation, not a task receipt. Shell windows center in the current display's available area and prompts retain their operation owner. The classic Windows menu precedes a recognizable Open With entry when available, otherwise retaining the system-provided insertion position; entries use application, format and system folder icons.
+
 
 ## 批次、完成与退出
 

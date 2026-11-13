@@ -603,16 +603,13 @@ void ApplicationSessions::closeWindowDialogs(Session *session) {
     }
 }
 void ApplicationSessions::command(const QString &command) {
-    if (!m_active)
-        showMainWindow();
-    if (!m_active)
-        return;
-    if (command == "closeArchive") {
-        if (auto *session = current())
-            closeSession(session->id);
-        return;
-    }
     if (command == "settings" || command == "about") {
+        if (m_traySettings && m_traySettings->isVisible()) {
+            if (command == "about")
+                m_traySettings->setProperty("currentTab", 5);
+            WindowActivation::reveal(m_traySettings);
+            return;
+        }
         for (const auto &session : m_sessions) {
             auto *popup = session->page ? session->page->findChild<QQuickWindow *>("settingsWindow")
                                         : nullptr;
@@ -623,6 +620,30 @@ void ApplicationSessions::command(const QString &command) {
                 return;
             }
         }
+        if (!m_active || !m_active->isVisible() || m_active->visibility() == QWindow::Minimized) {
+            if (!m_traySettings) {
+                QQmlComponent component(m_engine, QUrl("qrc:/xdzip/ui/SettingsWindow.qml"));
+                auto *settings = qobject_cast<QQuickWindow *>(component.create());
+                if (!settings) {
+                    qWarning() << component.errors();
+                    return;
+                }
+                settings->QObject::setParent(this);
+                m_traySettings = settings;
+            }
+            QMetaObject::invokeMethod(m_traySettings, "configureTab",
+                                      Q_ARG(QVariant, command == "about" ? 5 : 0));
+            return;
+        }
+    }
+    if (!m_active)
+        showMainWindow();
+    if (!m_active)
+        return;
+    if (command == "closeArchive") {
+        if (auto *session = current())
+            closeSession(session->id);
+        return;
     }
     if (auto *session = current())
         QMetaObject::invokeMethod(session->page, "runDesktopCommand", Q_ARG(QVariant, command));
@@ -730,13 +751,18 @@ void ApplicationSessions::requestQuit() {
     if (activeTaskCount()) {
         m_wait = false;
         setQuitDecisionPending(true);
-        QObject *presenter = m_active.data();
+        QObject *presenter =
+            m_active && m_active->isVisible() && m_active->visibility() != QWindow::Minimized
+                ? m_active.data()
+                : nullptr;
         if (!presenter)
             for (const auto &session : m_sessions)
                 if (session->operationOnly && session->page) {
                     presenter = session->page;
                     break;
                 }
+        if (!presenter)
+            presenter = m_active.data();
         if (!presenter || !QMetaObject::invokeMethod(presenter, "presentQuit"))
             setQuitDecisionPending(false);
         return;
@@ -862,7 +888,8 @@ bool ApplicationSessions::shellAction(const QJsonObject &value) {
         m_shellRequests.erase(m_shellRequests.begin());
     m_shellRequests.insert(request.id, bytes);
     // Connections and task ownership exist before any operation can submit.
-    QMetaObject::invokeMethod(page, "begin");
+    if (request.action == "choose")
+        QMetaObject::invokeMethod(page, "begin");
     batch->begin(request);
     return true;
 }

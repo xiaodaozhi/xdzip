@@ -17,10 +17,9 @@
 #include <QQmlEngine>
 #include <QQuickItem>
 #include <QQuickWindow>
-#include <QSettings>
-#include <QStyleHints>
 #include <QTimer>
 #include <QUrl>
+#include <algorithm>
 
 #ifdef Q_OS_MACOS
 bool macNativeEditorActive();
@@ -171,6 +170,9 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
     if (window)
         window->setProperty("desktopShell", QVariant::fromValue(static_cast<QObject *>(this)));
     m_tray.setContextMenu(m_trayMenu.get());
+    connect(m_trayMenu.get(), &QMenu::aboutToShow, this, [this] { m_trayInteraction = true; });
+    connect(m_trayMenu.get(), &QMenu::aboutToHide, this,
+            [this] { QTimer::singleShot(0, this, [this] { m_trayInteraction = false; }); });
     add(m_trayMenu.get(), "show");
     add(m_trayMenu.get(), "open");
     add(m_trayMenu.get(), "new");
@@ -258,8 +260,6 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
         if (m_recent && m_recent->isVisible())
             rebuildRecent();
     });
-    connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, this,
-            &DesktopIntegration::updateIcon);
     connect(&m_tray, &QSystemTrayIcon::activated, this,
             [this](QSystemTrayIcon::ActivationReason reason) {
                 Q_UNUSED(this);
@@ -283,7 +283,14 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
 #ifdef Q_OS_MACOS
                 if (m_hidden && state == Qt::ApplicationActive)
                     QTimer::singleShot(0, this, [this] {
-                        if (m_hidden && !m_trayMenu->isVisible())
+                        const auto windows = QGuiApplication::topLevelWindows();
+                        const bool settingsVisible = std::any_of(
+                            windows.cbegin(), windows.cend(), [](const QWindow *window) {
+                                return window && window->isVisible() &&
+                                       window->objectName() == "settingsWindow";
+                            });
+                        if (m_hidden && !m_trayInteraction && !m_trayMenu->isVisible() &&
+                            !settingsVisible && (!m_sessions || !m_sessions->isClosing()))
                             restore();
                     });
 #else
@@ -480,7 +487,10 @@ void DesktopIntegration::execute(const QString &command) {
                                            : "https://github.com/xiaodaozhi/xdzip/issues"));
         return;
     }
-    restore();
+    // Settings and About are independent windows. A tray command must not
+    // revive a hidden browser just to find their presenter.
+    if (!(m_sessions && (command == "settings" || command == "about")))
+        restore();
     if (blocked())
         return;
     if (m_sessions)
@@ -723,25 +733,14 @@ void DesktopIntegration::rebuildWindows() {
     }
 }
 void DesktopIntegration::updateIcon() {
-    bool dark = QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark;
-#ifdef Q_OS_WIN
-    // Windows taskbar appearance is independent of the application's theme.
-    QSettings desktop(
-        QStringLiteral(
-            "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"),
-        QSettings::NativeFormat);
-    dark = desktop.value(QStringLiteral("SystemUsesLightTheme"), 1).toInt() == 0;
-#endif
     QIcon icon;
 #ifdef Q_OS_MACOS
     const auto variant = QStringLiteral("black");
-#elif defined(Q_OS_WIN)
-    const auto variant = dark ? QStringLiteral("white") : QStringLiteral("black");
 #else
-    // Linux panels need not share the app palette. A dual-tone glyph works on both.
+    // The taskbar/panel background can differ from both app and system themes.
+    // White ink with a dark outline stays visible without a theme-read fallback.
     const auto variant = QStringLiteral("contrast");
 #endif
-    Q_UNUSED(dark);
     if (m_iconVariant == variant)
         return;
     m_iconVariant = variant;

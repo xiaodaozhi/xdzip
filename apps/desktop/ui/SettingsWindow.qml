@@ -7,6 +7,7 @@ import Xdzip.Settings 1.0
 OperationWindow {
     id: root
     objectName: "settingsWindow"
+    centerOnScreen: !owner
     title: qsTrId("settings.title")
     property int currentTab: 0
     property string pendingProxyMode: "system"
@@ -106,7 +107,7 @@ OperationWindow {
     }
     onCurrentTabChanged: if (currentTab === 3 && associations) associations.refresh()
     width: Theme.settingsLogicalWidth
-    requestedHeight: Math.min(Theme.settingsClientHeight, Screen.desktopAvailableHeight - 80)
+    requestedHeight: Math.min(Theme.settingsClientHeight, root.screenAvailableHeight - 80)
 
     component SectionTitle: Text {
         Layout.fillWidth: true
@@ -378,9 +379,9 @@ OperationWindow {
             SettingsSelectRow {
                 Layout.fillWidth: true; controlName: "settingsLanguage"
                 label: qsTrId("settings.language"); description: qsTrId("settings.languageDescription")
-                options: [qsTrId("language.zhCN"), qsTrId("language.enUS")]
-                selectedIndex: AppSettings.language === "en-US" ? 1 : 0
-                onSelectionRequested: index => root.commit(AppSettings.savedTheme, AppSettings.savedTextScale, index ? "en-US" : "zh-CN", AppSettings.savedDensity, AppSettings.recentEnabled, AppSettings.trayEnabled, AppSettings.openMode)
+                options: [qsTrId("language.auto"), qsTrId("language.zhCN"), qsTrId("language.enUS")]
+                selectedIndex: ["auto", "zh-CN", "en-US"].indexOf(AppSettings.language)
+                onSelectionRequested: index => root.commit(AppSettings.savedTheme, AppSettings.savedTextScale, ["auto", "zh-CN", "en-US"][index], AppSettings.savedDensity, AppSettings.recentEnabled, AppSettings.trayEnabled, AppSettings.openMode)
             }
             PageSeparator {}
             SettingsToggle {

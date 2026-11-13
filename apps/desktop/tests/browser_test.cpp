@@ -79,6 +79,7 @@
 #include <QtQuickTest/quicktest.h>
 #include <QtTest>
 #include <atomic>
+#include <cmath>
 #include <thread>
 #ifdef Q_OS_WIN
 #ifndef NOMINMAX
@@ -5093,6 +5094,83 @@ QtObject {
         controller->requestClose();
         QTRY_VERIFY(controller->requestClose());
     }
+    void automaticLanguageResolution_data() {
+        QTest::addColumn<QString>("selection");
+        QTest::addColumn<QStringList>("systemLanguages");
+        QTest::addColumn<QString>("expected");
+        QTest::newRow("simplified")
+            << QString("auto") << QStringList{"zh-Hans-CN"} << QString("zh-CN");
+        QTest::newRow("traditional")
+            << QString("auto") << QStringList{"zh-Hant-TW"} << QString("zh-CN");
+        QTest::newRow("english-us")
+            << QString("auto") << QStringList{"en-Latn-US"} << QString("en-US");
+        QTest::newRow("english-gb") << QString("auto") << QStringList{"en-GB"} << QString("en-US");
+        QTest::newRow("unsupported")
+            << QString("auto") << QStringList{"ja-JP", "zh-CN"} << QString("en-US");
+        QTest::newRow("missing") << QString("auto") << QStringList{} << QString("en-US");
+        QTest::newRow("invalid-system")
+            << QString("auto") << QStringList{"invalid"} << QString("en-US");
+        QTest::newRow("manual-chinese")
+            << QString("zh-CN") << QStringList{"en-US"} << QString("zh-CN");
+        QTest::newRow("manual-english")
+            << QString("en-US") << QStringList{"zh-CN"} << QString("en-US");
+        QTest::newRow("invalid-selection")
+            << QString("invalid") << QStringList{"zh-CN"} << QString("en-US");
+    }
+    void automaticLanguageResolution() {
+        QFETCH(QString, selection);
+        QFETCH(QStringList, systemLanguages);
+        QFETCH(QString, expected);
+        QCOMPARE(resolveUiLanguage(selection, systemLanguages), expected);
+    }
+    void automaticLanguageStartupAndPersistence() {
+        QTemporaryDir profile;
+        QVERIFY(profile.isValid());
+        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH",
+                                              profile.filePath("settings.ini"));
+        test_environment::ScopedVariable languageOverride("XDZIP_LANGUAGE", QString());
+        QVERIFY2(path.valid(), qPrintable(path.error()));
+        QVERIFY2(languageOverride.valid(), qPrintable(languageOverride.error()));
+        const auto restore = qScopeGuard([] { initializeUiText("zh-CN"); });
+        const auto systemLanguages = QLocale::system().uiLanguages();
+        const auto detected = resolveUiLanguage("auto", systemLanguages);
+        // A manual translation changes QLocale's default; detection must still
+        // read the system UI preference on the next startup or auto selection.
+        QVERIFY(initializeUiText(detected == "zh-CN" ? "en-US" : "zh-CN"));
+        QVERIFY(initializeUiText());
+        UiPreferences preferences;
+        QCOMPARE(preferences.language(), QStringLiteral("auto"));
+        QCOMPARE(preferences.activeLanguage(), detected);
+        QVERIFY(preferences.error().isEmpty());
+        for (const auto &selection : {QString("en-US"), QString("zh-CN"), QString("auto")}) {
+            QVERIFY(
+                preferences.applyDetails("system", 1, selection, "standard", true, true, "tabs"));
+            QCOMPARE(preferences.language(), selection);
+            QCOMPARE(preferences.activeLanguage(), resolveUiLanguage(selection));
+            UiPreferences restored;
+            QCOMPARE(restored.language(), selection);
+            QVERIFY(initializeUiText());
+            QCOMPARE(restored.activeLanguage(), resolveUiLanguage(selection));
+        }
+        QCOMPARE(QLocale::system().uiLanguages(), systemLanguages);
+        for (const auto &overrideValue :
+             {QString("zh-CN"), QString("en-US"), QString("auto"), QString("invalid")}) {
+            test_environment::ScopedVariable forced("XDZIP_LANGUAGE", overrideValue);
+            QVERIFY2(forced.valid(), qPrintable(forced.error()));
+            QVERIFY(initializeUiText());
+            QCOMPARE(preferences.activeLanguage(), resolveUiLanguage(overrideValue));
+            QCOMPARE(preferences.language(), QStringLiteral("auto"));
+        }
+        QVERIFY(initializeUiText(detected == "zh-CN" ? "en-US" : "zh-CN"));
+        const auto originalLanguage = preferences.activeLanguage();
+        QLockFile lock(profile.filePath("settings.ini.xdzip-lock"));
+        QVERIFY(lock.tryLock());
+        QVERIFY(!preferences.applyDetails("system", 1, "auto", "standard", true, true, "tabs"));
+        QCOMPARE(preferences.activeLanguage(), originalLanguage);
+        QCOMPARE(preferences.language(), QStringLiteral("auto"));
+        UiPreferences unchanged;
+        QCOMPARE(unchanged.language(), QStringLiteral("auto"));
+    }
     void nativeEditRoleTranslationsFollowMenuLanguage() {
         for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")}) {
             UiTranslator translator(nullptr);
@@ -5174,7 +5252,7 @@ QtObject {
             originalSystemMenuEntries = systemMenuEntries();
         }
 #endif
-        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 1)));
+        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 2)));
         QTRY_COMPARE(preferences->activeLanguage(), QStringLiteral("en-US"));
         QTRY_COMPARE(settings->title(), QStringLiteral("Settings"));
         QCOMPARE(desktop.action("show"), showAction);
@@ -5211,7 +5289,7 @@ QtObject {
 
         QLockFile lock(path + QStringLiteral(".xdzip-lock"));
         QVERIFY(lock.tryLock());
-        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 0)));
+        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 1)));
         QCOMPARE(preferences->activeLanguage(), QStringLiteral("en-US"));
         QCOMPARE(settings->title(), QStringLiteral("Settings"));
         QCOMPARE(showAction->text(), QStringLiteral("Show Main Window"));
@@ -5223,7 +5301,7 @@ QtObject {
         }
 #endif
         lock.unlock();
-        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 0)));
+        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 1)));
         QTRY_COMPARE(preferences->activeLanguage(), QStringLiteral("zh-CN"));
         QCOMPARE(showAction->text(), QStringLiteral("显示主窗口"));
         QCOMPARE(settingsAction->text(), QStringLiteral("设置…"));
@@ -5253,10 +5331,16 @@ QtObject {
         emit controller->tasksChanged();
         QVERIFY(QMetaObject::invokeMethod(taskMenu, "aboutToShow"));
         QCOMPARE(taskMenu->actions().first()->text(), QStringLiteral("暂无任务"));
-        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 1)));
+        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 2)));
         QTRY_COMPARE(preferences->activeLanguage(), QStringLiteral("en-US"));
         QCOMPARE(taskMenu->actions().first()->text(), QStringLiteral("No Tasks"));
         QCOMPARE(taskMenu->title(), QStringLiteral("Tasks (Active tasks: 0)"));
+        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 0)));
+        QTRY_COMPARE(preferences->language(), QStringLiteral("auto"));
+        QCOMPARE(preferences->activeLanguage(), resolveUiLanguage("auto"));
+        QCOMPARE(showAction->text(), qtTrId("desktop.show"));
+        QCOMPARE(settingsAction->text(), qtTrId("desktop.settings"));
+        QCOMPARE(controller->activeTaskCount(), 0);
         settings->close();
     }
     void desktopNativeEnglishStartupMenu() {
@@ -5438,10 +5522,75 @@ QtObject {
             originalLanguage == "en-US" ? QStringLiteral("zh-CN") : QStringLiteral("en-US");
         QVERIFY(!prefs->applyDetails("system", 1, otherLanguage, "standard", true, true, "tabs"));
         QCOMPARE(prefs->activeLanguage(), originalLanguage);
-        QCOMPARE(prefs->language(), QStringLiteral("zh-CN"));
+        QCOMPARE(prefs->language(), QStringLiteral("auto"));
         QVERIFY(blocker.open(QIODevice::ReadOnly));
         QCOMPARE(blocker.readAll(), QByteArray("owned-canary"));
         settings->close();
+    }
+    void desktopTrayIconContrast() {
+#ifdef Q_OS_MACOS
+        QSKIP("macOS template icons are colored by the system status bar");
+#else
+        QTemporaryDir profile;
+        test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH",
+                                                      profile.filePath("settings.ini"));
+        QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
+        const bool previousQuit = QApplication::quitOnLastWindowClosed();
+        const auto restoreQuit =
+            qScopeGuard([&] { QApplication::setQuitOnLastWindowClosed(previousQuit); });
+        UiPreferences preferences;
+        DesktopIntegration desktop(nullptr, nullptr, &preferences, false);
+        const auto luminance = [](const QColor &color) {
+            const auto linear = [](double value) {
+                return value <= 0.04045 ? value / 12.92 : std::pow((value + 0.055) / 1.055, 2.4);
+            };
+            return 0.2126 * linear(color.redF()) + 0.7152 * linear(color.greenF()) +
+                   0.0722 * linear(color.blueF());
+        };
+        const auto visiblePixels = [&](const QImage &image, const QColor &background) {
+            int visible = 0;
+            const auto base = luminance(background);
+            for (int y = 0; y < image.height(); ++y)
+                for (int x = 0; x < image.width(); ++x) {
+                    const auto ink = image.pixelColor(x, y);
+                    const auto alpha = ink.alphaF();
+                    const auto blended =
+                        QColor::fromRgbF(ink.redF() * alpha + background.redF() * (1 - alpha),
+                                         ink.greenF() * alpha + background.greenF() * (1 - alpha),
+                                         ink.blueF() * alpha + background.blueF() * (1 - alpha));
+                    const auto light = luminance(blended);
+                    if ((qMax(light, base) + 0.05) / (qMin(light, base) + 0.05) >= 3)
+                        ++visible;
+                }
+            return visible;
+        };
+        const QColor dark("#202020");
+        // This negative control reproduces the unreadable glyph without changing
+        // the user's Windows personalization or relying on the host's theme.
+        const QImage previousIcon(":/xdzip/assets/tray-black-22.png");
+        QVERIFY(!previousIcon.isNull());
+        QCOMPARE(visiblePixels(previousIcon, dark), 0);
+        for (const auto &theme :
+             {QStringLiteral("light"), QStringLiteral("dark"), QStringLiteral("system")}) {
+            for (const bool enabled : {false, true}) {
+                QVERIFY(
+                    preferences.saveDetails(theme, 1, "en-US", "standard", true, false, enabled));
+                desktop.refresh();
+                const auto icon = desktop.trayIcon();
+                QVERIFY(!icon.isNull());
+                QVERIFY(!icon.isMask());
+                for (const int size : {16, 20, 22, 24, 32, 44, 48, 64}) {
+                    const auto image = icon.pixmap(QSize(size, size), 1).toImage();
+                    QCOMPARE(image.size(), QSize(size, size));
+                    for (const auto &background : {QColor(Qt::white), dark, QColor("#18382d")})
+                        QVERIFY2(visiblePixels(image, background) >= size * size / 50,
+                                 qPrintable(QStringLiteral("%1px tray glyph on %2 (%3)")
+                                                .arg(size)
+                                                .arg(background.name(), theme)));
+                }
+            }
+        }
+#endif
     }
     void desktopTraySettingsCompatibility() {
         QTemporaryDir profile;
@@ -5719,7 +5868,18 @@ QtObject {
         settings->setProperty("currentTab", 1);
         QQuickItem *choice = nullptr;
         QTRY_VERIFY((choice = findVisual(settings->contentItem(), "settingsLanguage")));
-        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 1)));
+        QCOMPARE(prefs->language(), QStringLiteral("auto"));
+        QCOMPARE(choice->property("currentIndex").toInt(), 0);
+        QCOMPARE(choice->property("count").toInt(), 3);
+        QCOMPARE(choice->property("currentText").toString(), qtTrId("language.auto"));
+        QString optionText;
+        QVERIFY(QMetaObject::invokeMethod(choice, "textAt", Q_RETURN_ARG(QString, optionText),
+                                          Q_ARG(int, 1)));
+        QCOMPARE(optionText, qtTrId("language.zhCN"));
+        QVERIFY(QMetaObject::invokeMethod(choice, "textAt", Q_RETURN_ARG(QString, optionText),
+                                          Q_ARG(int, 2)));
+        QCOMPARE(optionText, QStringLiteral("English (US)"));
+        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 2)));
         QTRY_COMPARE(prefs->language(), QStringLiteral("en-US"));
         QTRY_COMPARE(prefs->activeLanguage(), QStringLiteral("en-US"));
         QTRY_COMPARE(settings->title(), QStringLiteral("Settings"));
@@ -5729,6 +5889,17 @@ QtObject {
         settings->close();
         UiPreferences restored;
         QCOMPARE(restored.language(), QStringLiteral("en-US"));
+        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
+        settings->setProperty("currentTab", 1);
+        QTRY_VERIFY((choice = findVisual(settings->contentItem(), "settingsLanguage")));
+        QCOMPARE(choice->property("currentIndex").toInt(), 2);
+        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 0)));
+        QTRY_COMPARE(prefs->language(), QStringLiteral("auto"));
+        QTRY_COMPARE(prefs->activeLanguage(), resolveUiLanguage("auto"));
+        QTRY_COMPARE(choice->property("currentIndex").toInt(), 0);
+        settings->close();
+        UiPreferences automatic;
+        QCOMPARE(automatic.language(), QStringLiteral("auto"));
     }
     void nativeMenuFirstFrame_data() {
         QTest::addColumn<QString>("kind");
@@ -7727,6 +7898,24 @@ QtObject {
             QVERIFY2(metrics.horizontalAdvance(editor->property("text").toString()) <=
                          editor->width() + 1,
                      qPrintable(name + QStringLiteral(" text clipped")));
+            if (name == QStringLiteral("settingsLanguage")) {
+                auto *popup = control->property("popup").value<QObject *>();
+                QVERIFY(popup && QMetaObject::invokeMethod(popup, "open"));
+                for (int index = 0; index < 3; ++index) {
+                    QQuickItem *label = nullptr;
+                    QTRY_VERIFY((label = findVisual(
+                                     settings->contentItem(),
+                                     QStringLiteral("settingsLanguageOption-%1Label").arg(index))));
+                    QVERIFY(!label->property("truncated").toBool());
+                }
+                const auto captures = qEnvironmentVariable("XDZIP_VISUAL_AUDIT");
+                if (!captures.isEmpty())
+                    QVERIFY(visual_audit::save(settings, captures,
+                                               QStringLiteral("language-%1-%2-%3")
+                                                   .arg(language, dark ? "dark" : "light")
+                                                   .arg(qRound(scale * 100))));
+                QVERIFY(QMetaObject::invokeMethod(popup, "close"));
+            }
         }
         settings->close();
     }
@@ -8614,7 +8803,7 @@ QtObject {
         settings->setProperty("currentTab", 1);
         QQuickItem *language = nullptr;
         QTRY_VERIFY((language = findVisual(settings->contentItem(), "settingsLanguage")));
-        QVERIFY(QMetaObject::invokeMethod(language, "activateOption", Q_ARG(QVariant, 1)));
+        QVERIFY(QMetaObject::invokeMethod(language, "activateOption", Q_ARG(QVariant, 2)));
         QTRY_COMPARE(prefs->activeLanguage(), QStringLiteral("en-US"));
         settings->close();
         UiPreferences restored;

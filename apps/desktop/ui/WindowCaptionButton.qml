@@ -4,16 +4,23 @@ import QtQuick.Controls
 Button {
     id: root
     required property string captionAction
+    property bool linuxStyle: false
     readonly property color faceColor: down ? (captionAction === "close" ? Theme.captionClosePressed : Theme.controlPressed)
                                            : hovered ? (captionAction === "close" ? Theme.captionCloseHover : Theme.controlHover) : Theme.canvas
     readonly property string iconTheme: captionAction === "close" && (hovered || down) ? "dark/" : Theme.dark ? "dark/" : "light/"
-    width: Theme.mainCaptionButtonWidth
+    width: linuxStyle ? Theme.mainLinuxCaptionWidth : Theme.mainCaptionButtonWidth
     hoverEnabled: true
     focusPolicy: Qt.StrongFocus
     padding: 0
     Accessible.name: text
     CommandTooltip { requested: root.hovered && !root.down; text: root.text }
-    background: Rectangle { color: root.faceColor }
+    background: Rectangle {
+        anchors.centerIn: parent
+        width: root.linuxStyle ? Theme.mainLinuxCaptionSize : root.width
+        height: root.linuxStyle ? Theme.mainLinuxCaptionSize : root.height
+        radius: root.linuxStyle ? width / 2 : 0
+        color: root.linuxStyle && !root.hovered && !root.down ? Theme.controlHover : root.faceColor
+    }
     contentItem: Item {
         Item {
             anchors.centerIn: parent
@@ -37,7 +44,7 @@ Button {
                     y: Theme.mainCaptionRestoreOffset
                     width: parent.width - y
                     height: width
-                    color: root.faceColor
+                    color: root.linuxStyle && !root.hovered && !root.down ? Theme.controlHover : root.faceColor
                     Image {
                         anchors.fill: parent
                         source: "qrc:/xdzip/assets/" + root.iconTheme + "maximize.png"

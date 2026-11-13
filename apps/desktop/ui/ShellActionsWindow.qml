@@ -11,7 +11,7 @@ OperationWindow {
     signal dismissed()
     width: Theme.operationProgressWidth
     requestedHeight: Math.min(Math.ceil(content.implicitHeight + footer.implicitHeight), Theme.operationResultClientHeight, Screen.desktopAvailableHeight - 80)
-    title: batch.finished ? qsTrId("shell.resultTitle") : qsTrId("shell.title")
+    title: qsTrId("shell.title")
     onClosing: root.dismissed()
     ColumnLayout {
         anchors.fill: parent
@@ -51,40 +51,6 @@ OperationWindow {
                         }
                     }
                     BusyIndicator { visible: root.batch.active; running: visible; Layout.alignment: Qt.AlignHCenter }
-                    Repeater {
-                        model: root.batch.results
-                        ColumnLayout {
-                            required property var modelData
-                            required property int index
-                            Layout.fillWidth: true
-                            Text {
-                                Layout.fillWidth: true
-                                text: modelData.name
-                                Accessible.role: Accessible.StaticText
-                                Accessible.name: text
-                                textFormat: Text.PlainText
-                                font.family: Theme.userDataFontFamily
-                                font.pixelSize: Theme.operationFooterFontSize
-                                color: Theme.text
-                                wrapMode: Text.WrapAnywhere
-                            }
-                            OperationButton {
-                                visible: modelData.status === "succeeded" && !!modelData.target
-                                text: qsTrId("ui.aee023c587c7")
-                                onClicked: root.batch.openTarget(index)
-                            }
-                            Text {
-                                Layout.fillWidth: true
-                                text: ({ succeeded: qsTrId("shell.status.succeeded"), failed: qsTrId("shell.status.failed"), cancelled: qsTrId("shell.status.cancelled"), "not-run": qsTrId("shell.status.not-run"), duplicate: qsTrId("shell.status.duplicate") })[modelData.status] + (modelData.error ? ": " + modelData.error : "")
-                                textFormat: Text.PlainText
-                                font.pixelSize: Theme.operationFooterNoteSize
-                                Accessible.role: Accessible.StaticText
-                                Accessible.name: text
-                                color: modelData.status === "failed" ? Theme.menuDanger : Theme.textSecondary
-                                wrapMode: Text.Wrap
-                            }
-                        }
-                    }
                 }
             }
         }

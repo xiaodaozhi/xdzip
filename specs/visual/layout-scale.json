@@ -79,6 +79,13 @@
       "shadow": "DWM non-client rendering",
       "caption_controls": "Existing QML caption controls"
     },
+    "linux_frame": {
+      "cornerRadius": 10,
+      "resizeEdge": 6,
+      "captionWidth": 36,
+      "captionSize": 28,
+      "captionRightInset": 6
+    },
     "content_preview": {
       "card": "existing mainPreviewHeight/mainPreviewRadius",
       "inset": 12,

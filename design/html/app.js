@@ -1487,17 +1487,20 @@ function showSettings(tab = "appearance") {
     const icons = [icon("view-list"), icon("settings"), icon("shield"), icon("file-text"), icon("external-open"), icon("info")];
     const queryLanguage = new URLSearchParams(location.search).get("lang");
     if (!savedSettingsDemo) savedSettingsDemo = {
-        theme:state.theme, textScale:1, language:queryLanguage === "en-US" ? "en-US" : "zh-CN",
+        theme:state.theme, textScale:1, language:"auto",
         density:"standard", recent:state.recent, tray:true, openMode:"tabs", proxyMode:"system",
         proxyAddress:"", mirrorAddress:"", associations:{}
     };
     const prefs = savedSettingsDemo;
-    document.documentElement.lang = prefs.language;
-    activeSettingsLanguage = prefs.language;
+    const resolvedLanguage = prefs.language === "auto"
+        ? ((queryLanguage || navigator.language).toLowerCase().split("-")[0] === "zh" ? "zh-CN" : "en-US")
+        : prefs.language;
+    document.documentElement.lang = resolvedLanguage;
+    activeSettingsLanguage = resolvedLanguage;
     document.documentElement.style.setProperty("--settings-text-scale",prefs.textScale);
     document.documentElement.dataset.listDensity = prefs.density;
     document.documentElement.style.setProperty("--list-density-factor",prefs.density === "compact" ? .8 : 1);
-    const t = id => window.XDZIP_UI_MESSAGES[prefs.language].messages[id] || id;
+    const t = id => window.XDZIP_UI_MESSAGES[resolvedLanguage].messages[id] || id;
     const label = (id) => esc(t(id));
     const row = (id, description, selectId, options, current) => `<div class="settings-detail-row"><div><strong>${label(id)}</strong><p>${label(description)}</p></div><select class="field-select" id="${selectId}" aria-label="${label(id)}">${options.map(([v,n])=>`<option value="${esc(v)}"${String(v)===String(current)?" selected":""}>${esc(n)}</option>`).join("")}</select></div>`;
     const toggle = (id, title, description, checked) => `<label class="settings-toggle-row"><span><strong>${esc(title)}</strong>${description?`<small>${esc(description)}</small>`:""}</span><input type="checkbox" role="switch" id="${esc(id)}"${checked?" checked":""}><span class="settings-switch" aria-hidden="true"></span></label>`;
@@ -1511,7 +1514,7 @@ function showSettings(tab = "appearance") {
     } else if (tab === "general") {
         body =
             row("sessions.openMode","settings.openDescription","setting-open-mode",[["tabs",t("sessions.tabs")],["windows",t("sessions.windows")]],prefs.openMode) + separator +
-            row("settings.language","settings.languageDescription","setting-language",[["zh-CN",t("language.zhCN")],["en-US",t("language.enUS")]],prefs.language) + separator +
+            row("settings.language","settings.languageDescription","setting-language",[["auto",t("language.auto")],["zh-CN",t("language.zhCN")],["en-US",t("language.enUS")]],prefs.language) + separator +
             toggle("tray-enabled",t("settings.trayLabel"),t("settings.trayDescription"),prefs.tray);
     } else if (tab === "privacy") {
         body = toggle("recent-enabled",t("settings.recent"),t("settings.recentDescription"),prefs.recent) + separator +
@@ -1926,6 +1929,8 @@ function setCanvasLogicalScale(view) {
     const spec = window.XDZIP_DISPLAY_SPEC;
     for (const key of ["captionButtonWidth", "captionIconSize"])
         document.documentElement.style.setProperty(`--${key}`, spec.windowsCaption[key]);
+    for (const key of ["cornerRadius", "captionWidth", "captionSize", "captionRightInset"])
+        document.documentElement.style.setProperty(`--linux-${key}`, spec.linuxFrame[key]);
     const main = ["main", "welcome", "welcome-narrow", "empty", "damaged"].includes(view);
     document.documentElement.style.setProperty("--ui-source-factor", 1 / (spec.views[view]?.sourceToLogical ?? (main ? spec.sourceToLogical : spec.operationSourceToLogical)));
 }
