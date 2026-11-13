@@ -351,17 +351,24 @@ class WorkflowTests(unittest.TestCase):
         package = self.root/'test.msix'
         template = ('<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10">'
                     '<Identity Name="xdzip.Test" Publisher="CN=test" Version="1.0.27.0" '
-                    'ProcessorArchitecture="x64"/>{}</Package>')
+                    'ProcessorArchitecture="x64"/><Properties>'
+                    '<PublisherDisplayName>Test Publisher</PublisherDisplayName>'
+                    '</Properties>{}</Package>')
         def write_manifest(extra='', signature=False):
             with zipfile.ZipFile(package, 'w') as archive:
                 archive.writestr('AppxManifest.xml', template.format(extra))
                 if signature:
                     archive.writestr('AppxSignature.p7x', b'fixture')
-        report = {'name': 'xdzip.Test', 'publisher': 'CN=test', 'version': '1.0.27.0'}
+        report = {'name': 'xdzip.Test', 'publisher': 'CN=test', 'version': '1.0.27.0',
+                  'publisher_display_name': 'Test Publisher'}
         write_manifest()
         desktop.verify_msix_identity(package, report)
         with self.assertRaisesRegex(ValueError, 'identity'):
             desktop.verify_msix_identity(package, {**report, 'name': 'wrong'})
+        with self.assertRaisesRegex(ValueError, 'identity'):
+            desktop.verify_msix_identity(package, {**report, 'publisher_display_name': 'wrong'})
+        with self.assertRaisesRegex(ValueError, 'identity'):
+            desktop.verify_msix_identity(package, {**report, 'publisher_display_name': None})
         write_manifest('<Extension Category="windows.fileExplorerContextMenus"/>')
         with self.assertRaisesRegex(ValueError, 'context menu'):
             desktop.verify_msix_identity(package, report)

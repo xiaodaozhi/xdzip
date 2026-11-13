@@ -34,7 +34,7 @@ jobs:
           Invoke-Desktop @('build')
           Invoke-Desktop @('test', '--skip-rust')
           Invoke-Desktop @('package', '--kind', 'runtime')
-          Invoke-Desktop @('package', '--kind', 'msix', '--msix-name', 'xdzip.MsixCI', '--msix-publisher', 'CN=xdzip MSIX CI')
+          Invoke-Desktop @('package', '--kind', 'msix', '--msix-name', 'xdzip.MsixCI', '--msix-publisher', 'CN=xdzip MSIX CI', '--msix-publisher-display-name', 'xdzip')
           Invoke-Desktop @('verify', '--kind', 'msix')
       - name: Preserve the unsigned same-run test input
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

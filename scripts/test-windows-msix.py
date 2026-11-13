@@ -19,11 +19,13 @@ spec.loader.exec_module(msix)
 
 class MsixTests(unittest.TestCase):
     def test_manifest_contains_associations_but_no_shell_menu(self):
-        data = msix.manifest('xdzip.Development', 'CN=xdzip development', 27)
+        data = msix.manifest('xdzip.Development', 'CN=xdzip development', 27, '测试 & Publisher')
         package = ET.fromstring(data)
         identity = package.find(msix.tag(msix.NS, 'Identity'))
         self.assertEqual(identity.attrib['Version'], '1.0.27.0')
         self.assertEqual(identity.attrib['ProcessorArchitecture'], 'x64')
+        self.assertEqual(package.find(msix.tag(msix.NS, 'Properties')).find(
+            msix.tag(msix.NS, 'PublisherDisplayName')).text, '测试 & Publisher')
         extensions = {item.text for item in package.iter(msix.tag(msix.UAP, 'FileType'))}
         self.assertEqual(extensions, {'.' + ext for ext in msix.WINDOWS_ICONS})
         self.assertNotIn(b'fileExplorerContextMenus', data)
@@ -35,7 +37,12 @@ class MsixTests(unittest.TestCase):
                                        ('xdzip.test', 'CN=test', 0), ('xdzip.test', 'CN=test', 65536)]:
             with self.subTest(name=name, publisher=publisher, build=build):
                 with self.assertRaises(ValueError):
-                    msix.manifest(name, publisher, build)
+                    msix.manifest(name, publisher, build, 'test')
+
+    def test_invalid_publisher_display_name_is_rejected(self):
+        for display in ('', '  ', 'a' * 257, 'bad\x01name', '\ud800'):
+            with self.subTest(display=repr(display)), self.assertRaises(ValueError):
+                msix.manifest('xdzip.Test', 'CN=test', 27, display)
 
     def test_old_product_and_tampered_runtime_are_rejected(self):
         build_dir = ROOT / 'build'
@@ -55,11 +62,11 @@ class MsixTests(unittest.TestCase):
             with patch.object(msix.subprocess, 'run', return_value=result):
                 with self.assertRaisesRegex(ValueError, 'update policy'):
                     msix.build(runtime, audit_path, folder / 'app.msix', 'xdzip.Test',
-                               'CN=test', folder / 'report.json')
+                               'CN=test', folder / 'report.json', 'Test Publisher')
             app.write_bytes(b'tampered')
             with self.assertRaisesRegex(ValueError, 'payload changed'):
                 msix.build(runtime, audit_path, folder / 'app.msix', 'xdzip.Test',
-                           'CN=test', folder / 'report.json')
+                           'CN=test', folder / 'report.json', 'Test Publisher')
 
     @unittest.skipUnless(os.name == 'nt', 'requires native Windows SDK')
     def test_makeappx_roundtrip_with_owned_fixture(self):
@@ -83,12 +90,13 @@ class MsixTests(unittest.TestCase):
                 return real_run(command, **kwargs)
             with patch.object(msix.subprocess, 'run', side_effect=run):
                 msix.build(runtime, audit_path, folder / 'app.msix', 'xdzip.Test',
-                           'CN=test', folder / 'report.json')
+                           'CN=test', folder / 'report.json', 'Test Publisher')
             report = json.loads((folder / 'report.json').read_text(encoding='utf-8'))
             self.assertFalse(report['signed'])
             self.assertEqual(report['sha256'], digest(folder / 'app.msix'))
             self.assertEqual(report['name'], 'xdzip.Test')
             self.assertEqual(report['publisher'], 'CN=test')
+            self.assertEqual(report['publisher_display_name'], 'Test Publisher')
             self.assertEqual(report['version'], '1.0.27.0')
 
 

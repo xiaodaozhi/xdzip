@@ -38,10 +38,11 @@ class ArtifactTests(unittest.TestCase):
         self.folder.mkdir(parents=True)
         self.package = self.folder / 'xdzip-windows-x64.msix'
         with zipfile.ZipFile(self.package, 'w') as archive:
-            archive.writestr('AppxManifest.xml', build.manifest('xdzip.MsixCI', 'CN=xdzip MSIX CI', 27))
+            archive.writestr('AppxManifest.xml', build.manifest('xdzip.MsixCI', 'CN=xdzip MSIX CI', 27, 'xdzip'))
             archive.writestr('xdzip.exe', b'owned fixture, not executable')
         sha = hashlib.sha256(self.package.read_bytes()).hexdigest()
         self.report = {'status': 'passed', 'name': 'xdzip.MsixCI', 'publisher': 'CN=xdzip MSIX CI',
+                       'publisher_display_name': 'xdzip',
                        'version': '1.0.27.0', 'signed': False, 'modern_context_menu': False,
                        'sha256': sha}
         receipt = {'status': 'passed', 'source': {'revision': 'a' * 40, 'dirty': False},
