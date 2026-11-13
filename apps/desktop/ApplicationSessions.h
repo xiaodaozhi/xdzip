@@ -127,6 +127,7 @@ class ApplicationSessions final : public QObject {
     QQmlEngine *m_engine;
     UiPreferences *m_settings;
     QPointer<DesktopIntegration> m_desktop;
+    QPointer<QQuickWindow> m_traySettings;
     QPointer<QQuickWindow> m_active;
     QList<QPointer<QQuickWindow>> m_windows;
     std::vector<std::unique_ptr<Session>> m_sessions;

@@ -35,7 +35,8 @@ int wmain(int argc, wchar_t **argv) {
         file << "fixture";
     }
     int checks = 0;
-    const auto check = [&](const std::vector<xdzip_shell::fs::path> &paths, UINT expected) {
+    const auto check = [&](const std::vector<xdzip_shell::fs::path> &paths, UINT expected,
+                           bool withOpenWith = false) {
         std::vector<PIDLIST_ABSOLUTE> ids;
         for (const auto &path : paths)
             ids.push_back(ILCreateFromPathW(path.c_str()));
@@ -56,9 +57,24 @@ int wmain(int argc, wchar_t **argv) {
             ok = SUCCEEDED(init->Initialize(nullptr, data, nullptr));
         const auto popup = CreatePopupMenu();
         if (ok) {
-            const auto result = menu->QueryContextMenu(popup, 0, 1000, 2000, 0);
+            if (withOpenWith)
+                ok = AppendMenuW(popup, MF_STRING, 99, L"Open wit&h") != FALSE;
+            const auto result = menu->QueryContextMenu(popup, withOpenWith ? 1 : 0, 1000, 2000, 0);
             ok = SUCCEEDED(result) && HRESULT_CODE(result) == expected &&
-                 GetMenuItemCount(popup) == 1;
+                 GetMenuItemCount(popup) == (withOpenWith ? 2 : 1);
+            MENUITEMINFOW rootItem{};
+            rootItem.cbSize = sizeof(rootItem);
+            rootItem.fMask = MIIM_SUBMENU | MIIM_BITMAP;
+            ok = ok && GetMenuItemInfoW(popup, 0, TRUE, &rootItem) && rootItem.hSubMenu &&
+                 rootItem.hbmpItem && GetMenuItemCount(rootItem.hSubMenu) == int(expected);
+            for (UINT i = 0; ok && i < expected; ++i) {
+                MENUITEMINFOW child{};
+                child.cbSize = sizeof(child);
+                child.fMask = MIIM_BITMAP;
+                ok = GetMenuItemInfoW(rootItem.hSubMenu, i, TRUE, &child) && child.hbmpItem;
+            }
+            if (withOpenWith)
+                ok = ok && GetMenuItemID(popup, 1) == 99;
             wchar_t verb[64]{};
             ok = ok &&
                  SUCCEEDED(menu->GetCommandString(0, GCS_VERBW, nullptr,
@@ -79,8 +95,8 @@ int wmain(int argc, wchar_t **argv) {
         ++checks;
         return ok;
     };
-    const bool passed =
-        check({text}, 3) && check({one}, 7) && check({one, two}, 8) && check({one, text}, 4);
+    const bool passed = check({text}, 3) && check({one}, 7) && check({one, two}, 8) &&
+                        check({one, text}, 4) && check({one}, 7, true);
     for (const auto &path : {one, two, text, marker})
         xdzip_shell::fs::remove(path);
     xdzip_shell::fs::remove(root);

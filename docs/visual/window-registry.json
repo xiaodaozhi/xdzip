@@ -7,7 +7,7 @@
       "role": "base",
       "height_constraint_policy": "动态客户区高度变化时先放宽必要的上下限，再设置目标高度，最后恢复固定上下限；尺寸使用原有逻辑单位",
       "reason": "平台装饰与固定客户区约束",
-      "owner_policy": "Owner is optional for shell operations. Ownerless windows center on their selected screen; prompts belong to the visible operation window."
+      "owner_policy": "Owner is optional for shell operations. Shell windows center their native frame in the selected screen's available geometry; prompts belong to the visible operation window."
     },
     "OperationConfirmationWindow": {
       "parent": "OperationWindow",
@@ -19,6 +19,8 @@
       "parent": "ApplicationWindow",
       "role": "main",
       "width": "Theme.mainWindowWidth",
+      "linux_frame_policy": "Ubuntu X11 integrates window controls in the titlebar and draws antialiased transparent corners in normal state, with system move and resize; maximized and fullscreen states use square corners.",
+      "linux_frame_design": "design/hifi/sources/main.html?platform=linux",
       "statusbar_policy": "Welcome and archive pages share a 32-unit minimum status bar, growing by the same task-control metrics for larger text. Both task buttons use the same 16-unit task-list icon from layout-scale.json main.interaction.taskIconSize.",
       "reopen_wait_policy": "A pending reopen during an archive modification reuses the welcome opening overlay and its existing dimensions; the message identifies the wait and cancellation affects only the new open request.",
       "owned_dialog_policy": "Closing the main window dismisses all its dialogs and releases their native surfaces; retained tasks reopen views only on explicit task activation.",
@@ -136,7 +138,7 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationProgressWidth",
-      "reason": "右键服务操作选择、批次准备及结果，共享任务密度，正文滚动与固定 footer，主窗口不创建。",
+      "reason": "右键服务操作选择与批次准备，共享任务密度，正文滚动与固定 footer；进度和结果使用 TaskWindow，主窗口不创建。",
       "design": "design/hifi/sources/shell-actions.html",
       "header_design": "design/hifi/sources/shell-actions.html",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content."

@@ -21,6 +21,7 @@
 #include <QStyleHints>
 #include <QTimer>
 #include <QUrl>
+#include <algorithm>
 
 #ifdef Q_OS_MACOS
 bool macNativeEditorActive();
@@ -171,6 +172,9 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
     if (window)
         window->setProperty("desktopShell", QVariant::fromValue(static_cast<QObject *>(this)));
     m_tray.setContextMenu(m_trayMenu.get());
+    connect(m_trayMenu.get(), &QMenu::aboutToShow, this, [this] { m_trayInteraction = true; });
+    connect(m_trayMenu.get(), &QMenu::aboutToHide, this,
+            [this] { QTimer::singleShot(0, this, [this] { m_trayInteraction = false; }); });
     add(m_trayMenu.get(), "show");
     add(m_trayMenu.get(), "open");
     add(m_trayMenu.get(), "new");
@@ -283,7 +287,14 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
 #ifdef Q_OS_MACOS
                 if (m_hidden && state == Qt::ApplicationActive)
                     QTimer::singleShot(0, this, [this] {
-                        if (m_hidden && !m_trayMenu->isVisible())
+                        const auto windows = QGuiApplication::topLevelWindows();
+                        const bool settingsVisible = std::any_of(
+                            windows.cbegin(), windows.cend(), [](const QWindow *window) {
+                                return window && window->isVisible() &&
+                                       window->objectName() == "settingsWindow";
+                            });
+                        if (m_hidden && !m_trayInteraction && !m_trayMenu->isVisible() &&
+                            !settingsVisible && (!m_sessions || !m_sessions->isClosing()))
                             restore();
                     });
 #else
@@ -480,7 +491,10 @@ void DesktopIntegration::execute(const QString &command) {
                                            : "https://github.com/xiaodaozhi/xdzip/issues"));
         return;
     }
-    restore();
+    // Settings and About are independent windows. A tray command must not
+    // revive a hidden browser just to find their presenter.
+    if (!(m_sessions && (command == "settings" || command == "about")))
+        restore();
     if (blocked())
         return;
     if (m_sessions)

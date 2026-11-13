@@ -1,10 +1,12 @@
 import QtQuick
+import Xdzip.Settings 1.0
 
 Window {
     id: root
     property Window owner: null
     property bool allowMinimize: false
     property bool escapeClosesWindow: true
+    property bool centerOnScreen: false
     // Constraints depend on requested geometry, never the constrained height.
     property int requestedHeight: Math.min(720, Screen.desktopAvailableHeight - 80)
     transientParent: owner
@@ -31,12 +33,23 @@ Window {
     Component.onCompleted: applyRequestedHeight()
     onRequestedHeightChanged: Qt.callLater(applyRequestedHeight)
     // Cocoa can deliver an older resize after the content limits have changed.
-    onHeightChanged: if (visible && height !== requestedHeight) Qt.callLater(applyRequestedHeight)
+    onHeightChanged: if (visible) {
+        if (height !== requestedHeight) Qt.callLater(applyRequestedHeight);
+        if (centerOnScreen) Qt.callLater(() => { if (root.visible) BuildInfo.centerOnScreen(root, root.owner || root); });
+    }
 
     function present() {
         // Reopening preserves view state and uses the owner's current display.
         if (owner) screen = owner.screen;
         applyRequestedHeight();
+        if (centerOnScreen) {
+            BuildInfo.centerOnScreen(root, owner);
+            show();
+            BuildInfo.centerOnScreen(root, owner);
+            raise();
+            requestActivate();
+            return;
+        }
         const area = { x: Screen.virtualX, y: Screen.virtualY, width: Screen.desktopAvailableWidth, height: Screen.desktopAvailableHeight };
         const centerX = owner ? owner.x + owner.width / 2 : area.x + area.width / 2;
         const centerY = owner ? owner.y + owner.height / 2 : area.y + area.height / 2;

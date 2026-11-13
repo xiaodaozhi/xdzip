@@ -80,6 +80,10 @@ int main(int argc, char *argv[]) {
         return 0;
     }
     QApplication application(argc, argv);
+#ifdef Q_OS_LINUX
+    if (BuildInfo::linuxX11())
+        QQuickWindow::setDefaultAlphaBuffer(true);
+#endif
     installPasswordAccessibility();
     application.setApplicationName(QStringLiteral("xdzip"));
     Q_INIT_RESOURCE(ui);

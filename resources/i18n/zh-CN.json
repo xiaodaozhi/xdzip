@@ -714,7 +714,6 @@
     "preview.passwordPrivacy": "密码仅用于本次预览，不会保存。关闭此窗口将取消预览。",
     "preview.continue": "继续预览",
     "shell.title": "用 xdzip 打开",
-    "shell.resultTitle": "操作结果",
     "shell.addNamed": "添加到“%1”",
     "shell.create": "添加到压缩文件...",
     "shell.separateZip": "添加到单独的“文件/文件夹名.zip”",

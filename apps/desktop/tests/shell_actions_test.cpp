@@ -24,6 +24,7 @@
 #include <QQuickItem>
 #include <QQuickStyle>
 #include <QScopeGuard>
+#include <QScreen>
 #include <QSettings>
 #include <QSignalSpy>
 #include <QTemporaryDir>
@@ -527,6 +528,206 @@ class ShellTest : public QObject {
         sessions.confirmQuit(false);
         QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
     }
+    void shellResultsReuseTaskWindow() {
+        QQmlApplicationEngine engine;
+        UiPreferences settings;
+        ApplicationSessions sessions(&engine, &settings);
+        QTemporaryDir source;
+        const auto input = source.filePath("owned.txt");
+        write(input, "owned input");
+        QVERIFY(sessions.shellAction(request("zip", {input}).json()));
+        auto *batch = sessions.findChild<ShellBatchController *>();
+        auto *task = sessions.findChild<QQuickWindow *>("taskWindow");
+        auto *panel = sessions.findChild<QQuickWindow *>("shellActionsWindow");
+        QVERIFY(batch && task && panel);
+        QTRY_VERIFY_WITH_TIMEOUT(batch->finished(), 15000);
+        QTRY_VERIFY(task->isVisible());
+        QVERIFY(task->screen());
+        QTRY_VERIFY(qAbs(task->frameGeometry().center().x() -
+                         task->screen()->availableGeometry().center().x()) <= 2);
+        QTRY_VERIFY(qAbs(task->frameGeometry().center().y() -
+                         task->screen()->availableGeometry().center().y()) <= 2);
+        QVERIFY(!panel->isVisible());
+        QCOMPARE(task->property("taskStatus").toString(), QString("succeeded"));
+        QVERIFY(task->property("creating").toBool());
+        QVERIFY(QFile::exists(input + ".zip"));
+        QCOMPARE(sessions.windows().size(), 0);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
+    }
+    void shellRejectedSubmissionUsesTaskResult() {
+        QQmlApplicationEngine engine;
+        UiPreferences settings;
+        ApplicationSessions sessions(&engine, &settings);
+        QTemporaryDir source;
+        QVERIFY(sessions.shellAction(request("zip", {source.filePath("missing.txt")}).json()));
+        auto *batch = sessions.findChild<ShellBatchController *>();
+        auto *task = sessions.findChild<QQuickWindow *>("taskWindow");
+        auto *panel = sessions.findChild<QQuickWindow *>("shellActionsWindow");
+        QVERIFY(batch && task && panel);
+        QTRY_VERIFY_WITH_TIMEOUT(batch->finished(), 15000);
+        QTRY_VERIFY(task->isVisible());
+        QVERIFY(!panel->isVisible());
+        QCOMPARE(task->property("taskStatus").toString(), QString("failed"));
+        QVERIFY(!task->property("errorSummary").toString().isEmpty());
+        QCOMPARE(sessions.windows().size(), 0);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
+    }
+    void mixedBatchUsesTaskResultCounts() {
+        QQmlApplicationEngine engine;
+        UiPreferences settings;
+        ApplicationSessions sessions(&engine, &settings);
+        QTemporaryDir source;
+        const auto input = source.filePath("owned.txt");
+        write(input, "owned input");
+        QVERIFY(sessions.shellAction(
+            request("separate-zip", {source.filePath("missing.txt"), input}).json()));
+        auto *batch = sessions.findChild<ShellBatchController *>();
+        auto *task = sessions.findChild<QQuickWindow *>("taskWindow");
+        QVERIFY(batch && task);
+        QTRY_VERIFY_WITH_TIMEOUT(batch->finished(), 15000);
+        QTRY_VERIFY(task->isVisible());
+        const auto result = task->property("resultTask").toMap();
+        QVERIFY(result.value("batchResults").toBool());
+        QCOMPARE(result.value("committedFiles").toInt(), 1);
+        QCOMPARE(result.value("failedCount").toInt(), 1);
+        QCOMPARE(result.value("details").toList().size(), 2);
+        QCOMPARE(task->property("taskStatus").toString(), QString("failed"));
+        QVERIFY(QFile::exists(input + ".zip"));
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
+    }
+    void trayCommandsDoNotOpenMainWindow() {
+        QQmlApplicationEngine engine;
+        auto *settings = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(settings);
+        QVERIFY(settings->applyDetails("light", 1., "zh-CN", "standard", false, true, "tabs"));
+        ApplicationSessions sessions(&engine, settings);
+        DesktopIntegration desktop(nullptr, nullptr, settings, true, [] { return true; });
+        sessions.setDesktop(&desktop);
+        desktop.execute("settings");
+        auto *popup =
+            sessions.findChild<QQuickWindow *>("settingsWindow", Qt::FindDirectChildrenOnly);
+        QVERIFY(popup);
+        QTRY_VERIFY(popup->isVisible());
+        QVERIFY(sessions.windows().isEmpty());
+        desktop.execute("about");
+        QTRY_COMPARE(popup->property("currentTab").toInt(), 5);
+        QVERIFY(sessions.windows().isEmpty());
+        popup->close();
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        desktop.execute("quit");
+        QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
+        QVERIFY(sessions.windows().isEmpty());
+    }
+    void trayCommandsKeepHiddenMainWindowHidden() {
+        QQmlApplicationEngine engine;
+        auto *settings = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(settings);
+        QVERIFY(settings->applyDetails("light", 1., "zh-CN", "standard", false, true, "tabs"));
+        ApplicationSessions sessions(&engine, settings);
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *main = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(main);
+        sessions.adopt(main);
+        DesktopIntegration desktop(main, main->findChild<BrowserController *>(), settings, true,
+                                   [] { return true; });
+        sessions.setDesktop(&desktop);
+        desktop.hideToTray();
+        QTRY_VERIFY(!main->isVisible());
+        desktop.execute("settings");
+        auto *popup =
+            sessions.findChild<QQuickWindow *>("settingsWindow", Qt::FindDirectChildrenOnly);
+        QVERIFY(popup);
+        QTRY_VERIFY(popup->isVisible());
+        QVERIFY(!main->isVisible());
+        desktop.execute("about");
+        QTRY_COMPARE(popup->property("currentTab").toInt(), 5);
+        QVERIFY(!main->isVisible());
+        popup->close();
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        desktop.execute("quit");
+        QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
+        QVERIFY(!main->isVisible());
+    }
+    void trayQuitWithActiveShellTaskKeepsMainHidden() {
+        QQmlApplicationEngine engine;
+        auto *settings = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(settings);
+        QVERIFY(settings->applyDetails("light", 1., "zh-CN", "standard", false, true, "tabs"));
+        ApplicationSessions sessions(&engine, settings);
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *main = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(main);
+        sessions.adopt(main);
+        DesktopIntegration desktop(main, main->findChild<BrowserController *>(), settings, true,
+                                   [] { return true; });
+        sessions.setDesktop(&desktop);
+        desktop.hideToTray();
+        QTRY_VERIFY(!main->isVisible());
+        QTemporaryDir source;
+        const auto input = source.filePath("owned.txt");
+        write(input, "owned input");
+        write(input + ".zip", "existing target");
+        QVERIFY(sessions.shellAction(request("zip", {input}).json()));
+        auto *batch = sessions.findChild<ShellBatchController *>();
+        QVERIFY(batch);
+        auto *conflict = batch->parent()->findChild<QQuickWindow *>("conflictWindow");
+        auto *quit = batch->parent()->findChild<QQuickWindow *>("quitWindow");
+        QVERIFY(conflict && quit);
+        QTRY_VERIFY_WITH_TIMEOUT(conflict->isVisible(), 10000);
+        desktop.execute("quit");
+        QTRY_VERIFY(quit->isVisible());
+        QVERIFY(!main->isVisible());
+        QVERIFY(sessions.quitDecisionPending());
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
+        QVERIFY(!main->isVisible());
+    }
+    void trayCommandsKeepMinimizedMainMinimized() {
+        QQmlApplicationEngine engine;
+        auto *settings = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(settings);
+        QVERIFY(settings->applyDetails("light", 1., "zh-CN", "standard", false, true, "tabs"));
+        ApplicationSessions sessions(&engine, settings);
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *main = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(main);
+        sessions.adopt(main);
+        DesktopIntegration desktop(main, main->findChild<BrowserController *>(), settings, true,
+                                   [] { return true; });
+        sessions.setDesktop(&desktop);
+        main->showMinimized();
+        QTRY_COMPARE(main->visibility(), QWindow::Minimized);
+        desktop.execute("settings");
+        auto *popup =
+            sessions.findChild<QQuickWindow *>("settingsWindow", Qt::FindDirectChildrenOnly);
+        QVERIFY(popup);
+        QTRY_VERIFY(popup->isVisible());
+        QCOMPARE(main->visibility(), QWindow::Minimized);
+        desktop.execute("about");
+        QTRY_COMPARE(popup->property("currentTab").toInt(), 5);
+        QCOMPARE(main->visibility(), QWindow::Minimized);
+        popup->close();
+        auto *quit = main->findChild<QQuickWindow *>("quitWindow");
+        QVERIFY(quit);
+        QVERIFY(QMetaObject::invokeMethod(main, "presentQuit"));
+        QTRY_VERIFY(quit->isVisible());
+        QCOMPARE(quit->transientParent(), nullptr);
+        QCOMPARE(main->visibility(), QWindow::Minimized);
+        quit->close();
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        desktop.execute("quit");
+        QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
+    }
     void independentPasswordRetry() {
         QQmlApplicationEngine engine;
         UiPreferences settings;
@@ -590,10 +791,11 @@ class ShellTest : public QObject {
         QVERIFY(!panel->isVisible());
         available = false;
         desktop.refresh();
-        QTRY_VERIFY(panel->isVisible());
+        QTRY_VERIFY(progress->isVisible());
+        QVERIFY(!panel->isVisible());
         QCOMPARE(sessions.windows().size(), 0);
         QCOMPARE(joined.count(), 0);
-        panel->close();
+        progress->close();
         QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
     }
     void independentTaskLifecycle_data() {
@@ -673,8 +875,10 @@ class ShellTest : public QObject {
 };
 int main(int argc, char **argv) {
     test_environment::Runtime fixtures(QString::fromUtf8(XDZIP_TEST_TEMP_ROOT));
-    if (!fixtures.valid())
+    if (!fixtures.valid()) {
+        qWarning().noquote() << fixtures.error();
         return 2;
+    }
     QApplication app(argc, argv);
     app.setQuitOnLastWindowClosed(false);
     if (app.arguments().value(1) == "--shell-instance-client") {

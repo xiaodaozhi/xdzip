@@ -20,11 +20,12 @@ English: MSIX acceptance separates audited packaging and channel behavior from r
 | SHELL-LAYOUT | 当前目录、智能目录、强制逐包和指定目标分别核对实际输出；隐式顶层目录参与智能判断，包内层级不剥除，新增包装目录遇已有文件、目录或链接均编号，完整分卷组只执行一次 |
 | SHELL-LIFECYCLE | 密码重试、冲突、创建提交拒绝后修改并重试、全局排队、单项失败后继续及整批取消，结果区分成功、失败与未执行；关闭任务至托盘后可重开，无托盘先等待或取消，最后窗口关闭后全部 Rust join；默认不浏览新包、不自动打开文件夹，显式打开按钮可用 |
 | SHELL-INSTALL | 三平台检查注册、设置关闭、升级、回退和卸载，只移除自有入口、不改变默认打开方式；安装事务持锁时纯注册命令可完成，普通启动仍被拒绝；扩展被文件管理器占用时保留安全更新行为，不向不兼容程序交接，回退后重新读取能力；Windows 回退旧分版本布局后拒绝仍保留的新版根目录程序，历史安装夹具不调用不存在的右键维护命令；便携包即使带有清单也不自动注册；macOS 服务可见性与系统设置分别记录 |
-| SHELL-VISUAL | 在三个目标平台实际检查入口和独立窗口；窗口契约、共享控件、中英文、浅深色和三档字号通过，主窗口与菜单比例保持；原生辅助功能 press/toggle 更新实际单选、复选模型 |
+| SHELL-VISUAL | 在三个目标平台实际检查入口和独立窗口；创建、解压进度与结果复用 TaskWindow，单项失败和批次状态可读，右键窗口在当前显示器可用区域居中；Windows 经典菜单核对位置、入口与各动作图标；窗口契约、共享控件、中英文、浅深色和三档字号通过，主窗口与菜单比例保持；原生辅助功能 press/toggle 更新实际单选、复选模型 |
 | FINDER-SYNC | 在实际 macOS 中启用 ad-hoc appex，包含主目录之外的自有临时目录，普通单选、归档单选、多选及混合选择分别核对 3/7/8/4 项动态动作；真实点击经过 relay 完成压缩与解压，核对输出字节、独立窗口及不自动打开目录；tag-only 交接和过期选择、URL/JSON 边界、缺失或错误令牌的拒绝、UUID 保持及回退能力分别回归 |
 | FINDER-INSTALL | 关闭与重新启用、语言切换和重复保存后菜单状态正确，未变化的扩展不重复登记断开连接；只撤销自有精确路径，旧副本不禁用新配置；原生 Service 面板仍能单独操作；嵌套 ad-hoc 严格校验及 entitlement 与允许列表一致，付费账号、App Groups、公证和其他 macOS 版本不得由本机结果代填 |
 
 English: Finder Sync acceptance covers real dynamic 3/7/8/4-action menus, relay execution and output bytes, independent windows, tag-only/stale-selection handling, bounded requests, missing/incorrect token rejection and preserved identities. Exercise disable/re-enable, language and idempotent registration, rollback, owned removal and the Service fallback. Record actual macOS and signing scope separately from paid signing, notarization or other OS versions.
+
 
 实际执行记录在对应 issue 与本地或 CI 工件。原生自动化、人工桌面操作及缺少的平台环境分别记录，不互相代填。
 
@@ -316,6 +317,10 @@ W01-07，欢迎页与打开归档后的标题栏、标签及外观按钮的位�
 复选控件须实际执行 QAccessible press/toggle，核对设置实际值与失败回滚、列表单选与全选三态、重复切换和禁用项；原生树中设置开关须有完整名称。
 
 按[桌面集成契约](../ux/desktop-integration.md)验证 macOS 顶部菜单角色与标准快捷键，文本焦点编辑与文件选择命令分离，最近记录隐私，托盘默认开关与即时生效，关闭后驻留及任务详情恢复，退出取消／等待／清理，文件关联与 Dock 恢复，无托盘及托盘消失回退。自动测试不代替真实系统栏、系统缩放、读屏与 Linux 桌面验证，结果只记录在 build/ 或 CI 工件。
+
+从各平台托盘打开设置或关于时，核对已有主窗口保持隐藏、保持最小化或不被创建；无任务退出时不显示主窗口，有任务时只显示必要的退出确认。Ubuntu X11 主窗口核对应用内标题栏、正常状态四角圆角及平滑边缘、窗口拖动和八方向缩放，以及最大化／还原后的边框和控件；原生视觉检查与自动布局测试分别记录。
+
+English: Tray Settings, About and Exit must not create or restore the main window; active tasks still require the shared quit decision. Check the Ubuntu X11 integrated titlebar, all four smooth normal-state corners, system move and eight resize directions, and maximize/restore. Record native visual checks separately from automated layout tests.
 
 ## 只读压缩包检查
 

@@ -17,6 +17,7 @@ ColumnLayout {
         const saved = entries.filter(e => e.status === "completed");
         if (!saved.length) return qsTrId("ui.c58cdccacf5f");
         const names = saved.slice(0, 3).map(e => e.name.replace(/.*\//, "")).join(qsTrId("common.listSeparator"));
+        if (task.batchResults) return names + (total > 3 ? qsTrId("ui.afa336b07774", Number(total)) : "");
         const bytes = Number(task.creating ? task.writtenBytes || 0 : task.committedBytes || 0);
         const amount = bytes >= 1000000 ? (bytes / 1000000).toFixed(1) + " MB" : bytes >= 1000 ? (bytes / 1000).toFixed(1) + " KB" : bytes + " B";
         return qsTrId("ui.f4d4c82e77ea").arg(names).arg(total > 3 ? qsTrId("ui.afa336b07774", Number(total)) : "").arg(amount);
@@ -28,11 +29,17 @@ ColumnLayout {
         color: Theme.operationCard; border.color: Theme.operationCardBorder; radius: Theme.operationResultCardRadius
         GridLayout {
             id: counts
-            columns: Theme.fontScale > 1.35 ? 1 : 3
+            columns: Theme.fontScale > 1.35 ? 1 : root.task.batchResults ? 2 : 3
             columnSpacing: 0; rowSpacing: Theme.operationResultCardGap
             anchors.fill: parent; anchors.margins: Theme.operationResultCardInset
             Repeater {
-                model: [
+                model: root.task.batchResults ? [
+                    {label: qsTrId("shell.status.succeeded"), value: root.task.committedFiles || 0, icon: "status-partial-success"},
+                    {label: qsTrId("ui.6707de42c29d"), value: root.task.failedCount || 0, icon: "status-warning"},
+                    {label: qsTrId("shell.status.cancelled"), value: root.task.cancelledCount || 0, icon: "status-warning"},
+                    {label: qsTrId("shell.status.not-run"), value: root.task.notRunCount || 0, icon: "status-warning"},
+                    {label: qsTrId("shell.status.duplicate"), value: root.task.skippedFiles || 0, icon: "status-skipped"}
+                ] : [
                     {label: root.task.creating ? qsTrId("ui.0e65135b7f52") : qsTrId("ui.053461ce86d2"), value: root.task.creating ? root.task.outputParts || 0 : root.task.committedFiles || 0, icon: "status-partial-success"},
                     {label: qsTrId("ui.fc50a99caae0"), value: root.task.skippedFiles || 0, icon: "status-skipped"},
                     {label: qsTrId("ui.6707de42c29d"), value: root.task.creating ? root.task.status === "succeeded" ? 0 : 1 : root.remaining, icon: "status-warning"}
@@ -52,7 +59,7 @@ ColumnLayout {
                         }
                         Text { Layout.alignment: Qt.AlignHCenter; Layout.preferredHeight: Math.round(Theme.operationResultCountSize); text: metric.modelData.value; font.pixelSize: Math.round(Theme.operationResultCountSize); verticalAlignment: Text.AlignVCenter; lineHeight: Math.round(Theme.operationResultCountSize); lineHeightMode: Text.FixedHeight; font.bold: true; color: Theme.text }
                     }
-                    Rectangle { visible: Theme.fontScale <= 1.35 && metric.index < 2; anchors.right: parent.right; height: parent.height; width: 1; color: Theme.operationCardBorder }
+                    Rectangle { visible: Theme.fontScale <= 1.35 && (root.task.batchResults ? metric.index % 2 === 0 && metric.index < 4 : metric.index < 2); anchors.right: parent.right; height: parent.height; width: 1; color: Theme.operationCardBorder }
                 }
             }
         }

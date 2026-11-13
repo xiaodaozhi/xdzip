@@ -42,6 +42,10 @@ Heavy-task snapshots retain their originating request ID before `TaskAccepted` a
 
 系统 Quit、应用菜单与托盘的显式退出经过同一桌面路由。受管理会话自己的密码与冲突提示允许被全会话退出确认覆盖；选择返回保留原任务和请求令牌，取消并退出仍等待所有连接清理与 join。原生文件选择器、其他模态控件及不属于受管理窗口的提示继续阻挡退出请求并保持前台，不能用通用模态检查误吞密码等待期间的退出，也不能直接绕过确认取消任务。
 
+托盘的设置与关于直接显示共享设置窗口；主窗口隐藏、最小化或不存在时使用独立实例，不创建或恢复主窗口。托盘退出直接进入全局退出路由，任务等待时仍使用共享退出确认；“显示主窗口”可显式恢复或创建浏览窗口。
+
+Tray Settings and About show the shared settings window directly. When the main window is hidden, minimized or absent they use a standalone instance without creating or restoring it. Tray Exit uses the global quit route and the shared confirmation for active tasks; Show explicitly restores or creates a browser window.
+
 The application sets `quitDecisionPending` before presenting its quit confirmation. Queued and explicitly reopened password prompts in every session and window defer to this decision. Returning or choosing to wait resumes only a still-valid task and prompt token. Cancellation, cleanup and joins keep presentation paused. This state does not hide or cancel existing requests or change explicit task access after closing a session.
 
 System Quit, application-menu and tray quit share the desktop route. An owned password or conflict prompt in a managed session may be superseded by the global quit confirmation. Returning preserves the task and prompt token; cancelling and quitting still waits for every cleanup and Rust join. Native file selectors, other modal controls and prompts outside managed windows retain their blocking behavior.

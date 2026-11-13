@@ -146,6 +146,13 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
         "captionIconSize": 18,
         "captionRestoreOffset": 3
     },
+    "linuxFrame": {
+        "cornerRadius": 10,
+        "resizeEdge": 6,
+        "captionWidth": 36,
+        "captionSize": 28,
+        "captionRightInset": 6
+    },
     "sourceWindow": [
         20,
         30,

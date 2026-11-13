@@ -714,7 +714,6 @@
     "preview.passwordPrivacy": "Your password is used only for this preview and is not saved. Closing this window cancels the preview.",
     "preview.continue": "Continue preview",
     "shell.title": "Open with xdzip",
-    "shell.resultTitle": "Operation results",
     "shell.addNamed": "Add to \"%1\"",
     "shell.create": "Add to archive...",
     "shell.separateZip": "Add to separate \"file/folder name.zip\" archives",
