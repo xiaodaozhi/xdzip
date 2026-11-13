@@ -7,6 +7,7 @@ import Xdzip.Settings 1.0
 OperationWindow {
     id: root
     objectName: "settingsWindow"
+    centerOnScreen: !owner
     title: qsTrId("settings.title")
     property int currentTab: 0
     property string pendingProxyMode: "system"
@@ -106,7 +107,7 @@ OperationWindow {
     }
     onCurrentTabChanged: if (currentTab === 3 && associations) associations.refresh()
     width: Theme.settingsLogicalWidth
-    requestedHeight: Math.min(Theme.settingsClientHeight, Screen.desktopAvailableHeight - 80)
+    requestedHeight: Math.min(Theme.settingsClientHeight, root.screenAvailableHeight - 80)
 
     component SectionTitle: Text {
         Layout.fillWidth: true

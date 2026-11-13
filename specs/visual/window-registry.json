@@ -5,7 +5,7 @@
     "OperationWindow": {
       "parent": "Window",
       "role": "base",
-      "height_constraint_policy": "动态客户区高度变化时先放宽必要的上下限，再设置目标高度，最后恢复固定上下限；尺寸使用原有逻辑单位",
+      "height_constraint_policy": "动态客户区高度变化时先放宽必要的上下限，再设置目标高度，最后恢复固定上下限；尺寸使用原有逻辑单位。展示前选定显示器并刷新 screenAvailableHeight，供设置窗口沿用既有高度政策限制到实际工作区。",
       "reason": "平台装饰与固定客户区约束",
       "owner_policy": "Owner is optional for shell operations. Shell windows center their native frame in the selected screen's available geometry; prompts belong to the visible operation window."
     },
@@ -101,6 +101,7 @@
     "SettingsWindow": {
       "parent": "OperationWindow",
       "role": "settings",
+        "placement_policy": "无 owner 的托盘设置和关于窗口按指针所在显示器的可用区域居中，原生窗口创建及高度确定后再次定位；高度按实际 QScreen 可用工作区限制，不取虚拟桌面合并高度，完整原生边框必须留在可用区域内。",
       "width": "Theme.settingsLogicalWidth",
       "reason": "设置与关于共用 612 宽窗口，六个左侧标签，首项贴齐顶部及右分隔线；侧栏基准宽 144，大字号按最长单词增宽；正文独立滚动，无固定 footer，变更即时提交。",
       "design": "design/hifi/sources/settings.html",
