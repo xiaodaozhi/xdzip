@@ -2154,6 +2154,125 @@ QtObject {
             popup->close();
         }
     }
+    void taskPathAndResultSummary_data() {
+        operationHeadersUseSharedGeometry_data();
+    }
+    void taskPathAndResultSummary() {
+        QFETCH(QString, language);
+        QFETCH(double, factor);
+        QFETCH(bool, dark);
+        const auto restore = qScopeGuard([] { initializeUiText("zh-CN"); });
+        QVERIFY(initializeUiText(language));
+        QQmlApplicationEngine engine;
+        QQmlComponent component(&engine);
+        component.setData(
+            "import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\nUi.TaskWindow { "
+            "archiveName: 'sample.zip'; destination: 'output'; currentFile: 'short.txt'; "
+            "fraction: .5; totalKnown: true; stopping: false; property real factor: 1; "
+            "property bool dark: false; onFactorChanged: Ui.Theme.fontScale = factor; "
+            "onDarkChanged: Ui.Theme.dark = dark }",
+            QUrl());
+        std::unique_ptr<QObject> object(component.create());
+        QVERIFY2(object, qPrintable(component.errorString()));
+        auto *window = qobject_cast<QQuickWindow *>(object.get());
+        QVERIFY(window);
+        window->setProperty("factor", factor);
+        window->setProperty("dark", dark);
+        window->show();
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *card = findVisual(window->contentItem(), "currentFileCard");
+        QVERIFY(card);
+        auto *label = qobject_cast<QQuickItem *>(card->property("valueItem").value<QObject *>());
+        QVERIFY(label);
+        QTRY_VERIFY(card->height() > 0 && label->width() > 0);
+        QTRY_COMPARE(window->height(), window->property("requestedHeight").toInt());
+        const auto cardHeight = card->height();
+        const auto windowHeight = window->height();
+        const auto bodyHeight =
+            findVisual(window->contentItem(), "taskBodyContent")->implicitHeight();
+        const auto longPath = QStringLiteral("目录/日本語/").repeated(40) +
+                              QStringLiteral("<b>很长的文件名</b>").repeated(20) + ".txt";
+        for (const auto &path : {longPath, QStringLiteral("short.txt"), longPath}) {
+            window->setProperty("currentFile", path);
+            QTRY_COMPARE(label->property("truncated").toBool(), path == longPath);
+            QCOMPARE(label->property("lineCount").toInt(), 1);
+            QCOMPARE(label->property("text").toString(), path);
+            QCOMPARE(label->property("textFormat").toInt(), int(Qt::PlainText));
+            auto *accessible = QAccessible::queryAccessibleInterface(label);
+            QVERIFY(accessible);
+            QCOMPARE(accessible->text(QAccessible::Name), path);
+            QCOMPARE(card->height(), cardHeight);
+            QCOMPARE(findVisual(window->contentItem(), "taskBodyContent")->implicitHeight(),
+                     bodyHeight);
+            QCOMPARE(window->property("requestedHeight").toInt(), windowHeight);
+            QCOMPARE(window->height(), windowHeight);
+        }
+        const auto output = qEnvironmentVariable("XDZIP_TASK_PATH_AUDIT");
+        const auto scene = language + QString::number(factor) + QString::number(dark);
+        auto *viewport = findVisual(window->contentItem(), "taskScroll")
+                             ->property("contentItem")
+                             .value<QQuickItem *>();
+        QVERIFY(viewport);
+        viewport->setProperty(
+            "contentY",
+            std::max(0., viewport->property("contentHeight").toDouble() - viewport->height()));
+        if (!output.isEmpty()) {
+            QVERIFY(QDir().mkpath(output));
+            QVERIFY(visual_audit::save(window, output, "progress-" + scene));
+        }
+        window->setProperty("taskStatus", "succeeded");
+        auto *panel = findVisual(window->contentItem(), "taskResultPanel");
+        auto *caption = findVisual(panel, "resultSavedCaption");
+        QVERIFY(panel && caption);
+        const QVariantList details{
+            QVariantMap{{"name", "kept-file.txt"}, {"status", "completed"}, {"size", "1234"}}};
+        for (const int count : {0, 1, 2, 127}) {
+            window->setProperty("resultTask",
+                                QVariantMap{{"id", "summary"},
+                                            {"kind", "extract"},
+                                            {"status", count == 2 ? "failed" : "succeeded"},
+                                            {"committedFiles", QString::number(count)},
+                                            {"files", 130},
+                                            {"target", "output"},
+                                            {"committedBytes", "1234567"},
+                                            {"skippedFiles", 1},
+                                            {"details", count ? details : QVariantList{}},
+                                            {"omittedDetails", count > 1 ? count - 1 : 0}});
+            const auto expected =
+                language == "zh-CN"
+                    ? QStringLiteral("已处理 %1 个文件").arg(count)
+                    : QString("Processed %1 file%2").arg(count).arg(count == 1 ? "" : "s");
+            QCOMPARE(caption->property("text").toString(), expected);
+            QCOMPARE(caption->property("font").value<QFont>().family(),
+                     QGuiApplication::font().family());
+        }
+        auto *toggle = findVisual(panel, "resultDetailsToggle");
+        QVERIFY(toggle);
+        QCOMPARE(toggle->property("recordCount").toInt(), 1);
+        toggle->forceActiveFocus(Qt::TabFocusReason);
+        QTest::keyClick(window, Qt::Key_Space);
+        QTRY_VERIFY(panel->property("expanded").toBool());
+        QTRY_COMPARE(window->height(), window->property("requestedHeight").toInt());
+        auto *footer = findVisual(window->contentItem(), "taskFooter");
+        QVERIFY(footer);
+        QVERIFY(footer->mapToItem(window->contentItem(), QPointF(0, footer->height())).y() <=
+                window->height() + .1);
+        viewport->setProperty(
+            "contentY",
+            std::max(0., viewport->property("contentHeight").toDouble() - viewport->height()));
+        if (!output.isEmpty())
+            QVERIFY(visual_audit::save(window, output, "result-" + scene));
+        window->setProperty("resultTask", QVariantMap{{"creating", true},
+                                                      {"outputParts", 1},
+                                                      {"writtenBytes", "1234"},
+                                                      {"details", details}});
+        QVERIFY(caption->property("text").toString().contains("kept-file.txt"));
+        window->setProperty("resultTask", QVariantMap{{"kind", "extract"},
+                                                      {"batchResults", true},
+                                                      {"committedFiles", 1},
+                                                      {"details", details}});
+        QCOMPARE(caption->property("text").toString(), "kept-file.txt");
+    }
     void operationWindowHeightTransitionsKeepValidBounds() {
         QQmlApplicationEngine engine;
         QQmlComponent component(&engine);
@@ -13311,7 +13430,8 @@ QtObject {
                     controller->tasks().first().toMap().value("terminal").toBool());
         const auto taskData = controller->tasks().first().toMap();
         QCOMPARE(taskData.value("status").toString(), "failed");
-        QCOMPARE(taskData.value("committedFiles").toString(), "2");
+        QVERIFY2(taskData.value("committedFiles").toString() == "2",
+                 qPrintable(taskData.value("errorCode").toString()));
         QCOMPARE(taskData.value("errorCode").toString(), "integrity_error");
         QCOMPARE(taskData.value("details").toList().size(), 3);
         QVERIFY(QFileInfo::exists(target.filePath(QStringLiteral("冰川湖.jpg"))));
@@ -13320,6 +13440,8 @@ QtObject {
         auto *task = window->findChild<QQuickWindow *>("taskWindow");
         QVERIFY(task);
         QTRY_VERIFY(task->isVisible() && visibleImagesReady(task->contentItem()));
+        QCOMPARE(findVisual(task->contentItem(), "resultSavedCaption")->property("text").toString(),
+                 QStringLiteral("已处理 2 个文件"));
         const auto output = qEnvironmentVariable("XDZIP_RESULT_AUDIT");
         const auto capture = [&](const QString &name) {
             return output.isEmpty() ||

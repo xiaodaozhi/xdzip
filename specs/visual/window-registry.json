@@ -61,6 +61,8 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationProgressWidth",
+      "current_file_policy": "进行中的当前文件使用单行、中间省略，完整路径保留在文本数据与辅助功能名称中；相同状态和字号下路径长度不改变卡片或窗口高度。普通解压结果摘要仅显示 committedFiles 的数量，创建结果、批次汇总及展开明细保留原行为。",
+      "content_design": "design/hifi/sources/task-windows.html",
       "reason": "复用既有解压进度尺寸，承载真实只读完整性检查及其密码等待和结果。临时打开任务在系统接受打开后自动隐藏，失败保留并可重试打开文件，更新归档和外部拖放沿用同一任务尺寸与独立操作类型，不把准备完成宣称为系统复制完成，包内移动沿用归档更新的校验及结果布局，保留独立移动任务标识。TAR、ISO 和 UDF 的无文件内容校验和说明复用既有可换行 footer，不改变窗口尺寸",
       "design": "design/html/canvas.html?view=progress",
       "header_design": "design/hifi/sources/operation-headers.html",

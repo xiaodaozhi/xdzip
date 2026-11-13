@@ -1127,8 +1127,40 @@ function applyConflict(policy, resume = true) {
 }
 // All task kinds share one card hierarchy. Callers supply semantics and actions;
 // sizing, colors, spacing and typography stay in the common progress selectors.
+function setProgressFile(value) {
+    const label = $("#progress-file");
+    if (!label) return;
+    label.dataset.fullPath = value;
+    label.setAttribute("aria-label", value);
+    const context = document.createElement("canvas").getContext("2d");
+    context.font = getComputedStyle(label).font;
+    const characters = Array.from(value);
+    let low = 0, high = characters.length;
+    const shortened = count => characters.slice(0, Math.ceil(count / 2)).join("") + "…" + characters.slice(characters.length - Math.floor(count / 2)).join("");
+    if (context.measureText(value).width <= label.clientWidth) {
+        label.textContent = value;
+        return;
+    }
+    while (low < high) {
+        const count = Math.ceil((low + high) / 2);
+        if (context.measureText(shortened(count)).width <= label.clientWidth) low = count;
+        else high = count - 1;
+    }
+    label.textContent = shortened(low);
+}
 function taskProgressBody(p) {
     const percent = Math.max(0, Math.min(100, Number(p.progress) || 0));
+    requestAnimationFrame(() => {
+        const label = $("#progress-file");
+        if (!label) return;
+        const observer = new ResizeObserver(() => {
+            if (label.isConnected) setProgressFile(label.dataset.fullPath);
+            else observer.disconnect();
+        });
+        label.dataset.fullPath ??= label.textContent;
+        observer.observe(label);
+        setProgressFile(label.dataset.fullPath);
+    });
     return `<div class="modal-content">
         <section class="path-card"><h2>${esc(p.scopeHeading)}</h2><div>${icon("folder")}<span>${esc(p.scopeValue)}</span></div></section>
         <section class="progress-card">
@@ -1203,8 +1235,7 @@ function updateProgress() {
             ? "progress-image"
             : fileIcon(t.items[done]),
     );
-    $("#progress-file").textContent =
-        (t.status === "stopping" ? "停止中：" : "") + t.items[done].name;
+    setProgressFile((t.status === "stopping" ? "停止中：" : "") + t.items[done].name);
 }
 function runTimer() {
     clearInterval(timer);
@@ -1281,12 +1312,11 @@ function showResult() {
     const successCount = created ? (ok ? 1 : 0) : t.completed.length;
     const failedCount = created ? (ok ? 0 : 1) : t.failed.length;
     const reason = cancel ? "任务已安全停止。可以重新规划未完成项。" : t.result === "source" ? "压缩包在读取后被修改。请重新打开并重新选择内容。" : "目标磁盘空间不足，请释放空间或更改位置后重试。";
-    const saved = t.completed.slice(0, 3).map(e=>e.name).join("、") + (t.completed.length > 3 ? ` 等 ${t.completed.length} 个文件` : "");
     dialog(
         header(title, ok ? created ? "压缩包已完成校验并保存。" : "所选内容已处理完成。" : created ? "临时压缩包未发布，原有文件保持不变。" : "已保留成功解压的文件。", ok ? "status-success" : cancel ? "cancelled-large" : "document-warning") +
         `<div class="modal-content result-content"><div class="result-counts"><div><span>${icon("status-partial-success")}${created ? "已保存" : "成功"}</span><b>${successCount}</b></div><div><span>${icon("status-skipped")}跳过</span><b>${created ? 0 : t.skipped.length}</b></div><div><span>${icon(cancel ? "status-stopped" : "status-warning")}未完成</span><b>${failedCount}</b></div></div>
         ${!ok ? `<section class="result-card"><h2>未完成的文件</h2><div class="result-inner">${t.failed.map(e=>resultFileRow(e,"unfinished",cancel ? "未完成" : t.result === "source" ? "源文件已变化" : "空间不足")).join("")}</div><div class="result-warning">${icon("status-warning")}<span>${reason}</span></div></section>` : ""}
-        <section class="result-card"><h2>目标位置</h2><div class="result-location result-inner">${icon("folder")}<div><strong>${esc(t.target)}</strong><p>${created ? "压缩包已校验并保存。" : "已保存：" + (saved ? esc(saved) + "（" + bytes(t.completed.reduce((n,e)=>n+e.size,0)) + "）" : "尚未保存文件")}</p></div></div></section>
+        <section class="result-card"><h2>目标位置</h2><div class="result-location result-inner">${icon("folder")}<div><strong>${esc(t.target)}</strong><p>${created ? "压缩包已校验并保存。" : `已处理 ${successCount} 个文件`}</p></div></div></section>
         <details class="result-details result-card"><summary>${icon("chevron-right")}<strong>查看处理明细</strong><span>${t.completed.length + t.failed.length + t.skipped.length} 个文件</span></summary><div class="result-list result-inner">${t.completed.map(e=>resultFileRow(e,"completed")).join("")}${t.failed.map(e=>resultFileRow(e,"unfinished")).join("")}${t.skipped.map(id=>resultFileRow(byId.get(id),"skipped")).join("")}</div></details></div>` +
         footer(cancelButton("关闭") + '<button id="reveal-result" class="button">打开目标文件夹</button>' + (t.result === "source" ? '<button id="reopen-result" class="button primary">重新打开</button>' : !ok && failedCount ? '<button id="retry-result" class="button primary">重试未完成项</button>' : ""), ok ? "已完成校验并保存。" : "重试将仅处理未完成的文件，并重新确认目标位置。", "info"),
         "result", "R01"

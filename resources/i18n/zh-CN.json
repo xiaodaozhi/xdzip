@@ -233,6 +233,10 @@
     "ui.9abb78dabe17": "解压当前焦点条目",
     "ui.2ec7e443b1c7": "移除 %1",
     "ui.c58cdccacf5f": "尚未保存文件",
+    "result.processedFiles": {
+      "one": "已处理 %n 个文件",
+      "other": "已处理 %n 个文件"
+    },
     "ui.f4d4c82e77ea": "已保存：%1%2（%3）",
     "ui.afa336b07774": {
       "one": " 等 %n 个文件",

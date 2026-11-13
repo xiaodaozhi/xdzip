@@ -250,4 +250,6 @@ The scrollable About settings page identifies copyrights of xdzip original code 
 
 ## Dynamic operation-window height
 
+The [task path and result revision](../../design/hifi/sources/task-windows.html) keeps the running Current file slot on one line with middle elision and the full plain-text accessible name. Path length alone does not resize its card or window. Ordinary extraction result captions contain only the committed file count, independent of retained detail records; creation, batch summaries and expandable details keep their existing behavior. Existing logical dimensions, density and larger-font adaptation remain authoritative.
+
 Each operation window retains its existing target client height based on content, font and available screen. During adjustment, first widen the constraint in the target direction, set target height, then restore both bounds to the target, avoiding platform refusal under stale constraints. The client height remains fixed afterward. Reopening, content changes and late platform geometry callbacks use the same logical units without screen-scale multipliers or new size parameters. Runtime geometry checks do not replace native desktop visual acceptance.

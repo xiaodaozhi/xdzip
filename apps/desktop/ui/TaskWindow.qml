@@ -124,6 +124,7 @@ OperationWindow {
                     }
                     TaskPathCard { density: root.density;
                         Layout.fillWidth: true; objectName: "currentFileCard"
+                        singleLine: !root.terminal
                         heading: root.terminal ? root.checking ? qsTrId("ui.7c5569c38a3c") : qsTrId("ui.bb7ef73495dd") : qsTrId("ui.33e19add5200")
                         value: root.checking && root.terminal ? root.resultSummary : root.outcomeUncertain ? qsTrId("ui.e43731762133") : root.terminal ? root.resultSummary : root.currentFile
                         valueUserData: !root.terminal && !root.outcomeUncertain && root.currentFileUserData
