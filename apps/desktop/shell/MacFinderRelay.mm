@@ -11,7 +11,7 @@
     if (!rejected) {
         try {
             for (NSURL *url in urls) {
-                auto *request = xdzip_shell::finderRequestFromURL(url);
+                auto *request = xdzip_shell::finderRequestFromURL(url, preferences.handoffToken);
                 if (!request) {
                     rejected = true;
                     continue;

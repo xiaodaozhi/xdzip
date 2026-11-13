@@ -10,9 +10,9 @@ Finder Sync 的零付费实现与本机验证见 [#273](https://github.com/xiaod
 
 `Contents/PlugIns/xdzip-finder-sync.appex` 是不链接 Qt、Rust 或格式库的原生扩展。菜单覆盖全部本地 Finder 目录，观察根为 `/`，仅处理 Finder 提供的选择，不遍历目录，不添加工具栏、徽标或同步任务。单选普通项提供三项创建操作，多选增加逐项 ZIP，全部为归档候选时再增加四项解压操作。空选择、非本地 URL 或超过 128 项时不生成菜单。原生菜单使用系统尺寸，独立操作继续使用共享正常密度窗口。
 
-扩展只读独立 JSON 配置，位于用户 Application Support 下的 `xdzip/finder-sync.json`，包含当前应用位置、开关、语言与登记修订。文件限 8 KiB、当前用户所有、0600 普通文件，写入使用原子替换，拒绝链接和外来配置。它不是 CFPreferences 文件。沙箱仅增加该精确文件的只读临时例外，不共享整个用户目录、不使用 App Groups 或网络监听。路径 entitlement 必须以 `/` 起始，见 [Apple 临时例外规范](https://developer.apple.com/library/archive/documentation/Miscellaneous/Reference/EntitlementKeyReference/Chapters/AppSandboxTemporaryExceptionEntitlements.html)。
+扩展只读独立 JSON 配置，位于用户 Application Support 下的 `xdzip/finder-sync.json`，包含当前应用位置、开关、语言、登记修订与本机随机交接令牌。文件限 8 KiB、当前用户所有、0600 普通文件，写入使用原子替换，拒绝链接和外来配置。它不是 CFPreferences 文件。沙箱仅增加该精确文件的只读临时例外，不共享整个用户目录、不使用 App Groups 或网络监听。路径 entitlement 必须以 `/` 起始，见 [Apple 临时例外规范](https://developer.apple.com/library/archive/documentation/Miscellaneous/Reference/EntitlementKeyReference/Chapters/AppSandboxTemporaryExceptionEntitlements.html)。
 
-Finder 不保留菜单项的 `representedObject`，因此扩展通过单调递增 tag 保留一个有界选择快照，旧菜单 tag 失效后不能对应新选择。扩展通过显式 `NSWorkspace` 目标向 `Contents/Helpers/xdzip-shell-relay.app` 发送 `xdzip-shell://v1/` 的 base64url JSON 事件，不能依赖沙箱调用者的启动参数。relay 为不链接 Qt 的独立原生应用，验证 URL、UUID、动作、路径与 JSON 边界后，保持 UUID，调用现有私有请求文件与单实例入口；接纳失败显示原生错误。URL 仅用于本机交接。
+Finder 不保留菜单项的 `representedObject`，因此扩展通过单调递增 tag 保留一个有界选择快照，旧菜单 tag 失效后不能对应新选择。扩展通过显式 `NSWorkspace` 目标向 `Contents/Helpers/xdzip-shell-relay.app` 发送 `xdzip-shell://v1/` 的 base64url JSON 事件，不能依赖沙箱调用者的启动参数。relay 为不链接 Qt 的独立原生应用，先校验当前用户私有配置中的随机令牌，再验证 URL、UUID、动作、路径与 JSON 边界，保持 UUID，调用现有私有请求文件与单实例入口；接纳失败显示原生错误。令牌不进入请求文件、桌面协议或产品日志，外部构造的无令牌或错误令牌 URL 不执行文件操作。URL 仅用于本机交接。
 
 扩展按固定 bundle 布局定位所属应用，不在沙箱中读取外层应用元数据。relay 每次重新读取外层 `Info.plist`，同时要求产品身份、`XdzipShellProtocol=1`、`XdzipFinderSyncProtocol=1` 和合法可执行文件名，回退或不兼容目标拒绝执行。仍加载的旧扩展可能暂时保留菜单，点击必须被 relay 拒绝；服务入口独立核对其原有协议。
 
@@ -20,7 +20,7 @@ Finder 不保留菜单项的 `representedObject`，因此扩展通过单调递�
 
 更新可能受 Finder 持有旧扩展实例影响，必要时在系统设置中关闭再启用自有扩展，不强制结束 Finder。回退和卸载只操作自有登记及文件，不改变默认文件关联。Services 的可见位置由系统管理，可能提升到右键菜单顶层。
 
-English: macOS offers a native Finder Sync submenu plus the existing Service/panel fallback. The Qt-free sandboxed extension retains a bounded selection snapshot by menu tag and sends a local URL event to its explicit native relay. The relay validates the current desktop protocols and preserves the UUID through the existing private manifest/single-instance handoff. Only one dedicated same-user configuration file receives a read-only sandbox exception. Registration is idempotent for unchanged bundles; settings, language, upgrades, rollback and exact-path removal preserve foreign registrations and default handlers. System enablement remains user-controlled. Local ad-hoc signing needs no paid account, App Groups or notarization and confers no Gatekeeper trust; Finder Sync's documented synchronization-oriented scope remains a distribution limitation.
+English: macOS offers a native Finder Sync submenu plus the existing Service/panel fallback. The Qt-free sandboxed extension retains a bounded selection snapshot by menu tag and sends a local URL event to its explicit native relay. The relay authenticates the private same-user random token, validates the current desktop protocols and preserves the UUID through the existing private manifest/single-instance handoff. Only one dedicated same-user configuration file receives a read-only sandbox exception. Registration is idempotent for unchanged bundles; settings, language, upgrades, rollback and exact-path removal preserve foreign registrations and default handlers. System enablement remains user-controlled. Local ad-hoc signing needs no paid account, App Groups or notarization and confers no Gatekeeper trust; Finder Sync's documented synchronization-oriented scope remains a distribution limitation.
 
 ## Windows 应用包边界
 

@@ -23,6 +23,7 @@ bool writeMacFinderConfiguration(const QString &application, const QString &path
         QFileInfo(parent.filePath()).ownerId() != getuid())
         return false;
     const QFileInfo existing(path);
+    QString handoffToken;
     if (existing.exists() || existing.isSymLink()) {
         if (!existing.isFile() || existing.isSymLink() || existing.ownerId() != getuid() ||
             existing.size() > 8192)
@@ -37,18 +38,25 @@ bool writeMacFinderConfiguration(const QString &application, const QString &path
         // Removing an older copy must not disable a newer, active installation.
         if (!enabled && original.value("application") != application)
             return true;
+        if (original.value("application") == application)
+            handoffToken = original.value("handoff_token").toString();
     }
+    if (!xdzip_shell::validFinderToken(handoffToken.toNSString()))
+        handoffToken = QString::fromStdString(xdzip_shell::randomHex() + xdzip_shell::randomHex());
+    if (!xdzip_shell::validFinderToken(handoffToken.toNSString()))
+        return false;
     const auto bytes = QJsonDocument(QJsonObject{{"schema_version", 1},
                                                  {"product", "org.xdzip.finder-sync"},
                                                  {"application", application},
                                                  {"enabled", enabled},
                                                  {"extension_revision", revision},
+                                                 {"handoff_token", handoffToken},
                                                  {"language", language}})
                            .toJson(QJsonDocument::Compact);
     if (bytes.size() > 8192)
         return false;
     // Atomic replacement never falls back to writing through an existing leaf.
-    // The file contains only menu preferences; no user archive data is shared.
+    // Only integration metadata and the local handoff secret are shared here.
     QSaveFile output(path);
     output.setDirectWriteFallback(false);
     return output.open(QIODevice::WriteOnly) &&

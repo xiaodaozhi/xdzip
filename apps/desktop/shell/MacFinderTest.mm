@@ -11,6 +11,13 @@ int main(int argc, char **argv) {
     if (argc != 3)
         return 2;
     @autoreleasepool {
+        NSString *token = [@"" stringByPaddingToLength:64 withString:@"a" startingAtIndex:0];
+        const auto encode = [&](NSDictionary *request) {
+            return xdzip_shell::finderRequestURL(request, token);
+        };
+        const auto decode = [&](NSURL *url) {
+            return xdzip_shell::finderRequestFromURL(url, token);
+        };
         int checks = 0, failures = 0;
         const auto check = [&](bool pass, const char *name) {
             ++checks;
@@ -72,8 +79,8 @@ int main(int argc, char **argv) {
             check(menu.numberOfItems == 1 && submenu.numberOfItems == expected,
                   "dynamic menu count");
             for (NSMenuItem *item in submenu.itemArray) {
-                auto *url = xdzip_shell::finderRequestURL(item.representedObject);
-                auto *request = xdzip_shell::finderRequestFromURL(url);
+                auto *url = encode(item.representedObject);
+                auto *request = decode(url);
                 check(request && [request isEqual:item.representedObject], "menu relay roundtrip");
             }
             return submenu;
@@ -102,26 +109,43 @@ int main(int argc, char **argv) {
               "local selection only");
         NSMutableDictionary *request = [xdzip_shell::finderRequest(@"zip", @[ file ]) mutableCopy];
         NSString *identity = request[@"id"];
-        check([xdzip_shell::finderRequestFromURL(xdzip_shell::finderRequestURL(request))[@"id"]
-                  isEqual:identity],
-              "identity preserved");
+        auto *authenticated = encode(request);
+        check(!xdzip_shell::finderRequestFromURL(authenticated, nil), "missing receiver token");
+        check(!xdzip_shell::finderRequestFromURL(authenticated, [@"" stringByPaddingToLength:64
+                                                                                  withString:@"b"
+                                                                             startingAtIndex:0]),
+              "wrong receiver token");
+        check(!xdzip_shell::finderRequestURL(request, @"invalid"), "invalid sender token");
+        auto *unauthenticated = [NSJSONSerialization dataWithJSONObject:request
+                                                                options:0
+                                                                  error:nil];
+        NSString *forgedPayload = [unauthenticated base64EncodedStringWithOptions:0];
+        forgedPayload = [[[forgedPayload stringByReplacingOccurrencesOfString:@"+" withString:@"-"]
+            stringByReplacingOccurrencesOfString:@"/"
+                                      withString:@"_"] stringByReplacingOccurrencesOfString:@"="
+                                                                                 withString:@""];
+        auto *forged =
+            [NSURL URLWithString:[@"xdzip-shell://v1/" stringByAppendingString:forgedPayload]];
+        check(!decode(forged), "public URL without token rejected");
+
+        check([decode(encode(request))[@"id"] isEqual:identity], "identity preserved");
         request[@"id"] = @"00000000-0000-0000-0000-000000000000";
-        check(!xdzip_shell::finderRequestURL(request), "null identity");
+        check(!encode(request), "null identity");
         request[@"id"] = identity;
         request[@"action"] = @"unknown";
-        check(!xdzip_shell::finderRequestURL(request), "unknown action");
+        check(!encode(request), "unknown action");
         request[@"action"] = @"zip";
         request[@"schema_version"] = @YES;
-        check(!xdzip_shell::finderRequestURL(request), "boolean schema rejected");
+        check(!encode(request), "boolean schema rejected");
         request[@"schema_version"] = @1;
         request[@"paths"] = @[ @"relative" ];
-        check(!xdzip_shell::finderRequestURL(request), "relative path");
+        check(!encode(request), "relative path");
         request[@"paths"] = @[ [NSString stringWithFormat:@"/a%Cb", (unichar)0] ];
-        check(!xdzip_shell::finderRequestURL(request), "embedded null");
+        check(!encode(request), "embedded null");
         auto *many = [NSMutableArray new];
         for (int i = 0; i < 128; ++i)
             [many addObject:file];
-        check(xdzip_shell::finderRequestURL(xdzip_shell::finderRequest(@"zip", many)), "128 paths");
+        check(encode(xdzip_shell::finderRequest(@"zip", many)), "128 paths");
         [many addObject:file];
         check(!xdzip_shell::finderRequest(@"zip", many), "129 paths");
         auto *large = [NSMutableArray new];
@@ -129,14 +153,13 @@ int main(int argc, char **argv) {
         for (int i = 0; i < 128; ++i)
             [large addObject:longPath];
         request[@"paths"] = large;
-        check(!xdzip_shell::finderRequestURL(request), "256 KiB JSON bound");
+        check(!encode(request), "256 KiB JSON bound");
         for (NSString *url in @[
                  @"xdzip-shell://v2/e30", @"https://v1/e30", @"xdzip-shell://v1/@@",
                  @"xdzip-shell://v1/e30?query=1", @"xdzip-shell://user@v1/e30",
                  @"xdzip-shell://v1/e30#fragment"
              ]) {
-            check(!xdzip_shell::finderRequestFromURL([NSURL URLWithString:url]),
-                  "malformed envelope");
+            check(!decode([NSURL URLWithString:url]), "malformed envelope");
         }
         NSString *config = [root stringByAppendingPathComponent:@"finder-sync.json"];
         const auto write = [&](bool enabled, const QString &language) {
@@ -146,10 +169,17 @@ int main(int argc, char **argv) {
         check(write(true, "en-US"), "write preferences");
         auto prefs = xdzip_shell::finderPreferences(app, config);
         check(prefs.enabled && prefs.english, "enabled language");
+        check(xdzip_shell::validFinderToken(prefs.handoffToken), "private token generated");
+        NSString *initialToken = prefs.handoffToken;
+
         check(!xdzip_shell::finderPreferences(@"/foreign.app", config).enabled,
               "foreign installation");
         check(write(false, "zh-CN") && !xdzip_shell::finderPreferences(app, config).enabled,
               "disable immediately");
+        check(xdzip_shell::finderTokensEqual(
+                  initialToken, xdzip_shell::finderPreferences(app, config).handoffToken),
+              "same installation keeps token");
+
         check(xdzip_shell::finderPreferences(app, config).valid,
               "explicit integration remains configurable after disable");
         check(write(true, "zh-CN"), "re-enable");

@@ -46,10 +46,30 @@ inline bool finderCompatible(NSString *app) {
         dictionaryWithContentsOfFile:[app stringByAppendingPathComponent:@"Contents/Info.plist"]];
     return finderSchema(info[@"XdzipFinderSyncProtocol"]);
 }
+inline bool validFinderToken(id value) {
+    if (![value isKindOfClass:[NSString class]] || [value length] != 64 ||
+        ![value canBeConvertedToEncoding:NSASCIIStringEncoding])
+        return false;
+    const char *bytes = [value UTF8String];
+    for (int i = 0; i < 64; ++i)
+        if (!((bytes[i] >= '0' && bytes[i] <= '9') || (bytes[i] >= 'a' && bytes[i] <= 'f')))
+            return false;
+    return true;
+}
+inline bool finderTokensEqual(id left, id right) {
+    if (!validFinderToken(left) || !validFinderToken(right))
+        return false;
+    const char *a = [left UTF8String], *b = [right UTF8String];
+    unsigned char difference = 0;
+    for (int i = 0; i < 64; ++i)
+        difference |= static_cast<unsigned char>(a[i] ^ b[i]);
+    return difference == 0;
+}
 struct FinderPreferences {
     bool enabled = false;
     bool english = false;
     bool valid = false;
+    NSString *handoffToken = nil;
 };
 inline FinderPreferences finderPreferences(NSString *app,
                                            NSString *path = finderConfigurationPath()) {
@@ -70,9 +90,13 @@ inline FinderPreferences finderPreferences(NSString *app,
         ![[value[@"application"] stringByResolvingSymlinksInPath]
             isEqual:[app stringByResolvingSymlinksInPath]] ||
         !value[@"enabled"] ||
-        CFGetTypeID((__bridge CFTypeRef)value[@"enabled"]) != CFBooleanGetTypeID())
+        CFGetTypeID((__bridge CFTypeRef)value[@"enabled"]) != CFBooleanGetTypeID() ||
+        !validFinderToken(value[@"handoff_token"]))
         return {};
-    return {[value[@"enabled"] boolValue], [value[@"language"] isEqual:@"en-US"], true};
+    return {[value[@"enabled"] boolValue],
+            [value[@"language"] isEqual:@"en-US"],
+            true,
+            value[@"handoff_token"]};
 }
 inline NSDictionary *finderRequest(NSString *action, NSArray<NSURL *> *urls) {
     if (urls.count == 0 || urls.count > 128)
@@ -121,10 +145,12 @@ inline bool validFinderRequest(id value) {
             return false;
     return true;
 }
-inline NSURL *finderRequestURL(NSDictionary *request) {
-    if (!validFinderRequest(request))
+inline NSURL *finderRequestURL(NSDictionary *request, NSString *token) {
+    if (!validFinderRequest(request) || !validFinderToken(token))
         return nil;
-    auto *data = [NSJSONSerialization dataWithJSONObject:request options:0 error:nil];
+    NSMutableDictionary *envelope = [request mutableCopy];
+    envelope[@"handoff_token"] = token;
+    auto *data = [NSJSONSerialization dataWithJSONObject:envelope options:0 error:nil];
     if (!data || data.length > finderRequestLimit)
         return nil;
     NSString *encoded = [data base64EncodedStringWithOptions:0];
@@ -134,7 +160,7 @@ inline NSURL *finderRequestURL(NSDictionary *request) {
     encoded = [encoded stringByReplacingOccurrencesOfString:@"=" withString:@""];
     return [NSURL URLWithString:[@"xdzip-shell://v1/" stringByAppendingString:encoded]];
 }
-inline NSDictionary *finderRequestFromURL(NSURL *url) {
+inline NSDictionary *finderRequestFromURL(NSURL *url, NSString *token) {
     if (![url.scheme isEqual:@"xdzip-shell"] || ![url.host isEqual:@"v1"] || url.query ||
         url.fragment || url.user || url.password || url.port || url.path.length < 2 ||
         url.path.length > (finderRequestLimit + 2) / 3 * 4 + 1)
@@ -154,7 +180,13 @@ inline NSDictionary *finderRequestFromURL(NSURL *url) {
     if (!data || data.length > finderRequestLimit)
         return nil;
     id value = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-    return validFinderRequest(value) ? value : nil;
+    if (![value isKindOfClass:[NSDictionary class]] ||
+        !finderTokensEqual(value[@"handoff_token"], token))
+        return nil;
+    // The private file and desktop single-instance packet never carry this secret.
+    NSMutableDictionary *request = [value mutableCopy];
+    [request removeObjectForKey:@"handoff_token"];
+    return validFinderRequest(request) ? request : nil;
 }
 inline NSMenu *finderMenu(NSArray<NSURL *> *urls, bool english, id target, SEL action) {
     auto *snapshot = finderRequest(@"zip", urls);

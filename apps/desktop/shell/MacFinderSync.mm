@@ -26,7 +26,7 @@
 - (void)runAction:(NSMenuItem *)item {
     NSString *app = xdzip_shell::finderContainingApp(NSBundle.mainBundle.bundlePath);
     const auto preferences = xdzip_shell::finderPreferences(app);
-    auto *url = xdzip_shell::finderRequestURL(menuSession_.request(item));
+    auto *url = xdzip_shell::finderRequestURL(menuSession_.request(item), preferences.handoffToken);
     if (!preferences.enabled)
         return;
     const auto failed = ^{
