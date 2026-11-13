@@ -14,7 +14,7 @@ English: Task rows use an operation icon followed by the archive filename, backe
 
 HTML 的检查按钮运行明确标注的界面演示。关闭或返回浏览保留演示状态，重新打开显示当前进度；取消结束演示，终态不得继续推进。完成、取消使用同一结构和 footer。对象路径、读取字节、文件数、读取速度、剩余估算、阶段和当前条目是数据槽位，不在 UI 中扫描、读取或解压文件。真正后端接入前不能把示例数字当成校验结果。
 
-窗口的宽度、密度、字号、圆角、边框、进度条、图标槽和说明对齐来自 [视觉规范](../visual/design-standard.md)与 [冻结原稿](../visual/integrity-reference.json)。未知总量不显示确定百分比；大字号允许正文滚动，footer 保持可达。关闭不会发出取消信号；取消动作显式发出取消请求。检查终态不得显示已保存文件或打开目标文件夹。
+窗口的宽度、密度、字号、圆角、边框、进度条、图标槽和说明对齐来自 [视觉规范](../visual/design-standard.md)与 [冻结原稿](../../specs/visual/integrity-reference.json)。未知总量不显示确定百分比；大字号允许正文滚动，footer 保持可达。关闭不会发出取消信号；取消动作显式发出取消请求。检查终态不得显示已保存文件或打开目标文件夹。
 
 高保真原稿为 [完整性检查进度](../../design/hifi/screens/integrity-progress.png)，运行图标为统一素材库的 document-check。原稿裁剪只作参考，动态界面使用共享组件。
 

@@ -86,6 +86,8 @@ Windows 使用 `python` 并为可执行文件加 `.exe`。Linux 运行需要系�
 
 桌面界面使用 Qt Quick/QML，通过薄 C++ 层连接 Rust 核心。格式、查询和任务逻辑独立于 Qt；7z、RAR、CAB、ISO 和 UDF 使用隔离工作进程。
 
+项目文档位于 `docs/`，供生成和检查使用的视觉参数、术语及依赖清单位于 `specs/`，高保真设计原稿位于 `design/hifi/`。
+
 准备 Python 3.10+、Git、CMake 3.24+、Ninja、rustup 和平台编译器／SDK，然后获取源码并构建。如果已按上面的命令行步骤克隆，直接从 `prepare` 开始：
 
 ```sh

@@ -32,7 +32,7 @@ def main():
     target = ROOT/'design/hifi/screens' if args.write_design else output
     server = ReviewHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
     Thread(target=server.serve_forever, daemon=True).start()
-    spec = json.loads((ROOT/'docs/visual/welcome-reference.json').read_text(encoding='utf-8'))
+    spec = json.loads((ROOT/'specs/visual/welcome-reference.json').read_text(encoding='utf-8'))
     checks, errors = [], []
     try:
         with sync_playwright() as p:

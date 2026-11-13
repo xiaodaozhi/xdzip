@@ -2,7 +2,7 @@
 
 [文件关联图标设计](sources/file-association-icons.html)提供 10 个格式与通用后备图标的浅深背景和实际尺寸审阅。母版、光学规则与后续系统映射见[图标规范](../../docs/visual/file-association-icons.md)。
 
-[完整图片画廊](index.html)，[原稿清单与 SHA-256](catalog.json)，[统一素材库](../assets/index.html)，[颜色尺寸规范](../../docs/visual/tokens.json)
+[完整图片画廊](index.html)，[原稿清单与 SHA-256](catalog.json)，[统一素材库](../assets/index.html)，[颜色尺寸规范](../../specs/visual/tokens.json)
 
 页面原稿、当前可编辑修订与目录树 B 组件图板统一放在 `screens/`，按页面功能命名。主窗口、独立解压确认与各操作状态共同构成当前视觉依据；不再按交付批次拆成不同目录。原始生成式设计图与可编辑源导出图在清单中区分，功能边界和精确几何仍以对应规范为准。
 
@@ -51,7 +51,7 @@
 | [节点与交互状态](screens/directory-tree-states.png) | 折叠 / 展开、空 / 非空叶子、当前 / 悬停 / 焦点、长名称、大字号 |
 | [空态与导航边界](screens/directory-tree-boundaries.png) | 读取、空归档、根文件、超限、失败、隐藏当前目录 |
 
-[集中查看图板与切图](directory-tree.html)，[交互与接入规格](../../docs/ux/directory-tree.md)，[逻辑参数](../../docs/visual/directory-tree.json)，[实际交付检查（本地／CI 工件）](../../docs/qa/README.md)。B 为已确认的目录树修订。多级目录图已同步当前标题栏，其余状态图不包含标题栏；26 张原像素切片继续绑定[历史目录树图](screens/directory-tree.png)。图板比例不同，HTML 示例与 Qt 只读目录树已接入核心交互，专用边界图标／骨架与完整深色状态图板仍待补齐；既有人工专项以 [WP-12 issue](https://github.com/xiaodaozhi/xdzip/issues/5)结论为准，不以图板交付替代实际验收。
+[集中查看图板与切图](directory-tree.html)，[交互与接入规格](../../docs/ux/directory-tree.md)，[逻辑参数](../../specs/visual/directory-tree.json)，[实际交付检查（本地／CI 工件）](../../docs/qa/README.md)。B 为已确认的目录树修订。多级目录图已同步当前标题栏，其余状态图不包含标题栏；26 张原像素切片继续绑定[历史目录树图](screens/directory-tree.png)。图板比例不同，HTML 示例与 Qt 只读目录树已接入核心交互，专用边界图标／骨架与完整深色状态图板仍待补齐；既有人工专项以 [WP-12 issue](https://github.com/xiaodaozhi/xdzip/issues/5)结论为准，不以图板交付替代实际验收。
 
 ## 原稿与素材的职责
 
@@ -74,7 +74,7 @@
 
 ## 当前交互与尺寸修订
 
-[操作窗口、按钮与任务状态修订](operation-revisions.html)覆盖 2026-10-15 的 491 逻辑像素统一宽度、动态结果高度、分段圆角、按下和禁用状态、重名正常密度及任务菜单。原始位图继续作为历史依据；当前行为及参数以该状态稿、docs/visual/layout-scale.json 和设计规范的修订段为准。
+[操作窗口、按钮与任务状态修订](operation-revisions.html)覆盖 2026-10-15 的 491 逻辑像素统一宽度、动态结果高度、分段圆角、按下和禁用状态、重名正常密度及任务菜单。原始位图继续作为历史依据；当前行为及参数以该状态稿、specs/visual/layout-scale.json 和设计规范的修订段为准。
 
 ## W01 欢迎页候选
 
@@ -84,7 +84,7 @@
 
 S01 当前设置窗口的[可编辑设计源](sources/settings.html)包含外观、通用、隐私、文件关联、网络和关于六页。各页提供浅色与深色图稿；网络另有自定义代理状态，关于页另有滚动后的版本信息和许可状态。窗口不设底部 footer，设置在操作后生效。[设置契约](../../docs/ux/settings-localization.md)说明各平台行为和失败处理。运行 `python scripts/export-settings-design.py --write-design` 可导出图稿，再更新 catalog 哈希和画廊。原始 settings-current 图及量测参数保留为历史依据，不作为当前设置布局。
 
-P01 解压元数据预检修订：[设计源](sources/preflight.html)、[浅色](screens/preflight-body-note-light.png)、[深色](screens/preflight-body-note-dark.png)，参数见 [preflight-reference.json](../../docs/visual/preflight-reference.json)。客户区 491 逻辑像素宽，按内容自适应，最高 600，使用共享操作 footer。
+P01 解压元数据预检修订：[设计源](sources/preflight.html)、[浅色](screens/preflight-body-note-light.png)、[深色](screens/preflight-body-note-dark.png)，参数见 [preflight-reference.json](../../specs/visual/preflight-reference.json)。客户区 491 逻辑像素宽，按内容自适应，最高 600，使用共享操作 footer。
 
 预检的元数据边界说明位于可滚动正文末尾，footer 仅放返回按钮并保持共享操作栏高度；原 footer 含说明的浅深色稿保留在历史画廊。
 
@@ -102,7 +102,7 @@ P01 解压元数据预检修订：[设计源](sources/preflight.html)、[浅色]
 
 [退出与重启确认状态稿](sources/confirmations.html)覆盖退出、正在停止及重启确认，采用共享 491 宽、20 标题、13 正文和内容自适应高度。中英文、大字号、正文滚动与 footer 规则见[窗口规范](../../docs/visual/design-standard.md)。
 
-[密码解压，P02](sources/password-extraction.html)冻结输入、错误重试与提交中三种状态。采用 491 宽、20 标题、13 正文、12 说明和固定共享 footer，密码字段在截图时保持为空。参数见 [password-reference.json](../../docs/visual/password-reference.json)，真实行为见[密码解压交互](../../docs/ux/password-extraction.md)。
+[密码解压，P02](sources/password-extraction.html)冻结输入、错误重试与提交中三种状态。采用 491 宽、20 标题、13 正文、12 说明和固定共享 footer，密码字段在截图时保持为空。参数见 [password-reference.json](../../specs/visual/password-reference.json)，真实行为见[密码解压交互](../../docs/ux/password-extraction.md)。
 
 起始页当前采用顶部固定布局，[打开失败状态](sources/welcome.html?error=1)显示红色反馈与警告图标，错误增长不推动上方内容。旧 welcome-titlebar PNG 保留原稿，当前正文与错误样式由可编辑源及 welcome-reference.json 定义。
 

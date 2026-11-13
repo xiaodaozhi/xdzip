@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
-    spec = json.loads((ROOT / 'docs/visual/status-icons.json').read_text())
+    spec = json.loads((ROOT / 'specs/visual/status-icons.json').read_text())
     checks = []
     for name, icon in spec['icons'].items():
         for theme in ['light', 'dark']:

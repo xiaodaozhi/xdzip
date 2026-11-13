@@ -27,14 +27,14 @@ def main():
         modal = page.locator('dialog[open][data-kind=preflight]')
         expect(modal).to_be_visible()
         factor = page.evaluate("parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ui-source-factor'))")
-        spec = json.loads((ROOT/'docs/visual/preflight-reference.json').read_text())
+        spec = json.loads((ROOT/'specs/visual/preflight-reference.json').read_text())
         assert abs(modal.bounding_box()['width']/factor-spec['logical_width'])<1
         assert abs(modal.locator('h1').evaluate('e=>parseFloat(getComputedStyle(e).fontSize)')/factor-spec['title_size'])<.1
         expect(modal.locator('.os-title')).to_have_text('解压预检')
         expect(modal.locator('.preflight-body .preflight-note')).to_contain_text('此报告仅检查元数据')
         expect(modal.locator('.modal-footer .ready-label')).to_have_count(0)
         footer = modal.locator('.modal-footer')
-        expected_height = json.loads((ROOT/'docs/visual/layout-scale.json').read_text())['operation']['components']['footerHeight']
+        expected_height = json.loads((ROOT/'specs/visual/layout-scale.json').read_text())['operation']['components']['footerHeight']
         assert abs(footer.bounding_box()['height']/factor-expected_height)<1
         height = footer.bounding_box()['height']
         modal.locator('.preflight-note').evaluate('e=>e.textContent=e.textContent.repeat(20)')

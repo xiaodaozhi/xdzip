@@ -36,7 +36,7 @@ def main():
     output = ROOT/'build/review/hifi-titlebars'
     output.mkdir(parents=True, exist_ok=True)
     target = ROOT/'design/hifi/screens' if args.write_design else output
-    spec = json.loads((ROOT/'docs/visual/layout-scale.json').read_text())
+    spec = json.loads((ROOT/'specs/visual/layout-scale.json').read_text())
     factor = spec['main']['source_to_logical'][0]/spec['main']['source_to_logical'][1]
     server = ReviewHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
     Thread(target=server.serve_forever, daemon=True).start()

@@ -24,7 +24,7 @@ class PlanTests(unittest.TestCase):
         self.assertTrue(self.root.resolve().is_relative_to(parent.resolve()))
         self.git('init', '-q', '-b', 'main')
         self.paths = ['docs/README.md', 'README.md', 'docs/engineering/ci-policy.md', 'docs/qa/release-review.md',
-                      'docs/visual/tokens.json', 'docs/visual/layout-scale.json', 'docs/ux/main-window-components.md',
+                      'specs/visual/tokens.json', 'specs/visual/layout-scale.json', 'docs/ux/main-window-components.md',
                       'apps/desktop/qml/Main.qml', 'design/assets/fonts/owned.ttf', 'resources/i18n/zh-CN.json',
                       'Cargo.lock', 'CMakeLists.txt', 'crates/owned/src/lib.rs', '.github/workflows/owned.yml']
         for name in self.paths:

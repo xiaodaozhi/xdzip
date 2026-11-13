@@ -23,9 +23,9 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 def main():
-    spec = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
-    controls = json.loads((ROOT / 'docs/visual/controls.json').read_text())
-    reference = json.loads((ROOT / 'docs/visual/qt-main-reference.json').read_text())
+    spec = json.loads((ROOT / 'specs/visual/layout-scale.json').read_text())
+    controls = json.loads((ROOT / 'specs/visual/controls.json').read_text())
+    reference = json.loads((ROOT / 'specs/visual/qt-main-reference.json').read_text())
     assert spec['main']['previous_logical_width'] * spec['main']['density'] == 1024
     assert spec['main']['logical_window'] == [1024, 622]
     assert reference['logical_width'] == 1024

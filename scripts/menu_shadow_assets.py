@@ -12,7 +12,7 @@ ROOT = REPO / 'design/assets'
 
 
 def menu_shadow_entries(check=False):
-    controls = json.loads((REPO / 'docs/visual/controls.json').read_text(encoding='utf-8'))
+    controls = json.loads((REPO / 'specs/visual/controls.json').read_text(encoding='utf-8'))
     spec = controls['menuShadowAsset']
     entries = []
     for theme in ('light', 'dark'):
@@ -44,8 +44,8 @@ def menu_shadow_entries(check=False):
                 'file': target.relative_to(ROOT).as_posix(), 'kind': 'menu-shadow-rasterization',
                 'theme': theme, 'font_scale': scale, 'size': list(pixels.size),
                 'border': edge, 'inset': spec['inset'], 'usage': 'runtime-and-design',
-                'source': '../../docs/visual/controls.json',
-                'source_sha256': hashlib.sha256((REPO / 'docs/visual/controls.json').read_bytes()).hexdigest(),
+                'source': '../../specs/visual/controls.json',
+                'source_sha256': hashlib.sha256((REPO / 'specs/visual/controls.json').read_bytes()).hexdigest(),
                 'sha256': hashlib.sha256(target.read_bytes()).hexdigest(),
             })
     return entries

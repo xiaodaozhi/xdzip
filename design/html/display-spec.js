@@ -1,5 +1,5 @@
 "use strict";
-// Generated from docs/visual/layout-scale.json; never infer logical size from DPR.
+// Generated from specs/visual/layout-scale.json; never infer logical size from DPR.
 window.XDZIP_DISPLAY_SPEC = Object.freeze({
     "operationHeader": {
         "normalHeight": 96,
