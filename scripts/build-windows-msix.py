@@ -28,11 +28,15 @@ def tag(namespace, name):
     return '{' + namespace + '}' + name
 
 
-def manifest(name, publisher, build):
+def manifest(name, publisher, build, publisher_display_name):
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9.-]{2,49}', name) or name.endswith('.'):
         raise ValueError('Invalid package identity name')
     if not publisher.startswith('CN=') or any(ord(c) < 32 for c in publisher) or len(publisher) > 512:
         raise ValueError('Publisher must be an explicit certificate subject')
+    if (not publisher_display_name.strip() or len(publisher_display_name) > 256 or
+            any(ord(c) < 32 or 0xD800 <= ord(c) <= 0xDFFF or ord(c) in (0xFFFE, 0xFFFF)
+                for c in publisher_display_name)):
+        raise ValueError('Invalid publisher display name')
     if type(build) is not int or not 1 <= build <= 65535:
         raise ValueError('Product build must fit the MSIX version')
     package = ET.Element(tag(NS, 'Package'), {'IgnorableNamespaces': 'uap rescap'})
@@ -40,7 +44,7 @@ def manifest(name, publisher, build):
                   Version=f'1.0.{build}.0', ProcessorArchitecture='x64')
     props = ET.SubElement(package, tag(NS, 'Properties'))
     ET.SubElement(props, tag(NS, 'DisplayName')).text = 'xdzip'
-    ET.SubElement(props, tag(NS, 'PublisherDisplayName')).text = 'xdzip'
+    ET.SubElement(props, tag(NS, 'PublisherDisplayName')).text = publisher_display_name
     ET.SubElement(props, tag(NS, 'Logo')).text = 'Assets\\logo50.png'
     deps = ET.SubElement(package, tag(NS, 'Dependencies'))
     ET.SubElement(deps, tag(NS, 'TargetDeviceFamily'), Name='Windows.Desktop',
@@ -73,7 +77,7 @@ def sdk_tool():
     return candidates[0]
 
 
-def build(root, audit_path, output, name, publisher, report):
+def build(root, audit_path, output, name, publisher, report, publisher_display_name):
     root, audit_path, output, report = (p.resolve() for p in (root, audit_path, output, report))
     build_root = (ROOT / 'build').resolve()
     if any(not p.is_relative_to(build_root) or p == build_root for p in (root, output, report)):
@@ -95,7 +99,7 @@ def build(root, audit_path, output, name, publisher, report):
             any(product_identity.get(key) != identity.get(key)
                 for key in ('version', 'build', 'revision', 'dirty'))):
         raise ValueError('Audited product does not provide the MSIX update policy')
-    content = manifest(name, publisher, identity.get('build'))
+    content = manifest(name, publisher, identity.get('build'), publisher_display_name)
     stage = output.parent / (output.stem + '-stage')
     if stage.exists() or stage == root or stage.is_relative_to(root):
         raise ValueError('MSIX staging directory exists or overlaps the audited runtime')
@@ -130,7 +134,8 @@ def build(root, audit_path, output, name, publisher, report):
                 raise ValueError('MSIX payload differs from audited staging')
     report.write_text(json.dumps({'schema_version': 1, 'status': 'passed', 'package': output.name,
         'sha256': digest(output), 'audit_sha256': digest(audit_path), 'name': name,
-        'publisher': publisher, 'version': f"1.0.{identity['build']}.0",
+        'publisher': publisher, 'publisher_display_name': publisher_display_name,
+        'version': f"1.0.{identity['build']}.0",
         'signed': False, 'store_submission': False, 'modern_context_menu': False,
         'minimum_windows_build': 19045}, indent=2) + '\n', encoding='utf-8')
 
@@ -141,8 +146,10 @@ def main():
         parser.add_argument('--' + arg, type=Path, required=True)
     parser.add_argument('--name', required=True)
     parser.add_argument('--publisher', required=True)
+    parser.add_argument('--publisher-display-name', required=True)
     args = parser.parse_args()
-    build(args.root, args.audit, args.output, args.name, args.publisher, args.report)
+    build(args.root, args.audit, args.output, args.name, args.publisher, args.report,
+          args.publisher_display_name)
 
 
 if __name__ == '__main__':
