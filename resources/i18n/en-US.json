@@ -233,6 +233,10 @@
     "ui.9abb78dabe17": "Extract the focused entry",
     "ui.2ec7e443b1c7": "Remove %1",
     "ui.c58cdccacf5f": "No files saved",
+    "result.processedFiles": {
+      "one": "Processed %n file",
+      "other": "Processed %n files"
+    },
     "ui.f4d4c82e77ea": "Saved: %1%2 (%3)",
     "ui.afa336b07774": {
       "one": " (%n file in total)",
