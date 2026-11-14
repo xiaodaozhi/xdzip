@@ -144,6 +144,10 @@ pub enum Format {
     Lz4,
     /// TAR behind standard LZ4 frames.
     TarLz4,
+    /// One ordinary file in standard Zstandard frames.
+    Zstd,
+    /// TAR behind standard Zstandard frames, including TZST naming.
+    TarZstd,
     /// Independent Rust 7z behind the isolated codec worker.
     SevenZip,
     /// Independent Rust RAR read-only backend in the isolated codec worker.
@@ -236,7 +240,9 @@ impl Entry {
             | Format::Xz
             | Format::TarXz
             | Format::Lz4
-            | Format::TarLz4 => !self.warning && !self.link,
+            | Format::TarLz4
+            | Format::Zstd
+            | Format::TarZstd => !self.warning && !self.link,
             Format::SevenZip | Format::Rar | Format::Cab | Format::Iso | Format::Udf => {
                 !self.warning && !self.link && (!self.encrypted || self.password_supported)
             }

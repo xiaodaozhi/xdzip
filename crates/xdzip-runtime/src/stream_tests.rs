@@ -133,6 +133,27 @@ fn ordinary_streams_browse_check_and_extract_real_content() {
             phrase.clone(),
         ),
         ("empty.lz4", Format::Lz4, "empty", vec![]),
+        ("phrase.zst", Format::Zstd, "phrase", phrase.clone()),
+        (
+            "phrase-no-checksum.zst",
+            Format::Zstd,
+            "phrase-no-checksum",
+            phrase.clone(),
+        ),
+        (
+            "phrase-unknown-size.zst",
+            Format::Zstd,
+            "phrase-unknown-size",
+            phrase.clone(),
+        ),
+        ("empty.zst", Format::Zstd, "empty", vec![]),
+        ("multiple.zst", Format::Zstd, "multiple", phrase.repeat(2)),
+        (
+            "leading-skip.zst",
+            Format::Zstd,
+            "leading-skip",
+            phrase.clone(),
+        ),
         ("multiple.lz4", Format::Lz4, "multiple", phrase.repeat(2)),
         (
             "leading-skip.lz4",
@@ -171,6 +192,7 @@ fn tar_compositions_reuse_the_container_and_stay_read_only() {
         ("files.tlz", Format::TarLzip),
         ("files.txz", Format::TarXz),
         ("files.tar.lz4", Format::TarLz4),
+        ("files.tar.zst", Format::TarZstd),
     ] {
         verify(
             name,
@@ -219,6 +241,7 @@ fn identified_compressed_tar_damage_never_downgrades_to_an_ordinary_file() {
         "bad-header.tlz",
         "bad-header.txz",
         "bad-header.tar.lz4",
+        "bad-header.tar.zst",
     ] {
         assert!(
             matches!(
@@ -237,6 +260,7 @@ fn changed_stream_payload_cannot_publish_a_file_even_if_source_timestamps_are_re
         ("known-size.lzma", 5),
         ("phrase-crc64.xz", 10),
         ("phrase.lz4", 6),
+        ("phrase.zst", 8),
         (
             "phrase.lz",
             std::fs::read(fixture("phrase.lz")).unwrap().len() - 20,

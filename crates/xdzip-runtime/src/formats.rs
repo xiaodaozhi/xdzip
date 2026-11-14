@@ -37,6 +37,12 @@ pub(crate) fn codec(format: Format) -> &'static dyn Codec {
         Format::TarLz4 => &TarCodec {
             filter: Filter::Lz4,
         },
+        Format::Zstd => &StreamCodec {
+            format: Format::Zstd,
+        },
+        Format::TarZstd => &TarCodec {
+            filter: Filter::Zstd,
+        },
         Format::Bzip2 => &StreamCodec {
             format: Format::Bzip2,
         },
@@ -110,10 +116,11 @@ pub(crate) fn detect(
         compressed_format(source, control, Filter::Xz, Format::Xz)?
     } else if matches!(
         u32::from_le_bytes(magic[..4].try_into().expect("fixed slice")),
-        0x184d2204 | 0x184c2102 | 0x184d2a50..=0x184d2a5f
+        0x184d2204 | 0x184c2102 | 0xfd2fb528 | 0x184d2a50..=0x184d2a5f
     ) {
         match framed_magic(source, control)? {
             0x184d2204 => compressed_format(source, control, Filter::Lz4, Format::Lz4)?,
+            0xfd2fb528 => compressed_format(source, control, Filter::Zstd, Format::Zstd)?,
             _ => return Err(ScanError::Unsupported),
         }
     } else if magic[..3] == *b"BZh" {
@@ -185,7 +192,7 @@ fn compressed_format(
     filter: Filter,
     ordinary: Format,
 ) -> Result<Format, ScanError> {
-    let input_limit = if filter == Filter::Lz4 {
+    let input_limit = if matches!(filter, Filter::Lz4 | Filter::Zstd) {
         8 * 1024 * 1024
     } else if filter == Filter::Bzip2 {
         2 * 1024 * 1024
@@ -313,6 +320,35 @@ pub(crate) fn limits(format: Format) -> xdzip_codec_api::ScanLimits {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn shared_skippable_prefix_routes_each_frame_family_without_cross_format_concatenation() {
+        use std::io::Cursor;
+        let zstd = include_bytes!("../../../tests/fixtures/streams/phrase.zst");
+        let lz4 = include_bytes!("../../../tests/fixtures/streams/phrase.lz4");
+        let prefix = 0x184d2a50u32
+            .to_le_bytes()
+            .into_iter()
+            .chain([0; 4])
+            .collect::<Vec<_>>();
+        let cancel = Default::default();
+        for (data, format) in [
+            (zstd.as_slice(), Format::Zstd),
+            (lz4.as_slice(), Format::Lz4),
+        ] {
+            let mut source = Cursor::new([prefix.as_slice(), data].concat());
+            assert_eq!(detect(&mut source, &cancel), Ok(format));
+        }
+        for data in [
+            [zstd.as_slice(), lz4.as_slice()].concat(),
+            [lz4.as_slice(), zstd.as_slice()].concat(),
+        ] {
+            let mut source = Cursor::new(data);
+            match detect(&mut source, &cancel) {
+                Ok(mut format) => assert!(scan(&mut format, &mut source, &cancel, None).is_err()),
+                Err(error) => assert_eq!(error, ScanError::Invalid),
+            }
+        }
+    }
     #[test]
     fn lz4_discovery_bounds_shared_skippable_prefix_and_refuses_legacy() {
         use std::io::Cursor;

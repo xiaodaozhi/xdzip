@@ -68,6 +68,7 @@ impl StreamCodec {
             Format::Lzip => Ok(Filter::Lzip),
             Format::Xz => Ok(Filter::Xz),
             Format::Lz4 => Ok(Filter::Lz4),
+            Format::Zstd => Ok(Filter::Zstd),
             _ => Err(ScanError::Unsupported),
         }
     }
@@ -77,6 +78,7 @@ impl StreamCodec {
             Format::Bzip2 => 12,
             Format::Xz => 95,
             Format::Lz4 => 256,
+            Format::Zstd => 93,
             _ => 14,
         }
     }
@@ -249,12 +251,14 @@ impl CreationCodec for StreamCodec {
         cancel: &Cancellation,
         progress: &mut dyn FnMut(EncodeProgress<'_>),
     ) -> Result<(), EncodeError> {
-        if !matches!(self.format, Format::Gzip | Format::Xz | Format::Lz4)
-            || !self
-                .format
-                .descriptor()
-                .write_methods
-                .contains(&settings.method)
+        if !matches!(
+            self.format,
+            Format::Gzip | Format::Xz | Format::Lz4 | Format::Zstd
+        ) || !self
+            .format
+            .descriptor()
+            .write_methods
+            .contains(&settings.method)
             || !self
                 .format
                 .descriptor()

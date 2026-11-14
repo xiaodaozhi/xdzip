@@ -185,9 +185,47 @@ var creationFormats = [
         ],
         "encryption": [],
         "volumes": []
+    },
+    {
+        "id": "zstd",
+        "label": "ZSTD",
+        "suffix": ".zst",
+        "container": "single-file",
+        "methods": [
+            "zstd"
+        ],
+        "methodIds": [
+            93
+        ],
+        "levels": [
+            1,
+            6,
+            9
+        ],
+        "encryption": [],
+        "volumes": []
+    },
+    {
+        "id": "tar-zstd",
+        "label": "TAR.ZST",
+        "suffix": ".tar.zst",
+        "container": "tar",
+        "methods": [
+            "zstd"
+        ],
+        "methodIds": [
+            93
+        ],
+        "levels": [
+            1,
+            6,
+            9
+        ],
+        "encryption": [],
+        "volumes": []
     }
 ];
-var associationSuffixes = [".zip", ".zipx", ".xpi", ".apk", ".ipa", ".cbz", ".tar", ".tar.gz", ".tgz", ".7z", ".gz", ".bz2", ".bz", ".tar.bz2", ".tar.bz", ".tbz", ".tbz2", ".lzma", ".tar.lzma", ".tlz", ".lz", ".tar.lz", ".xz", ".tar.xz", ".txz", ".lz4", ".tar.lz4", ".rar", ".cab", ".iso", ".udf"];
-var formatLabels = ["ZIP", "TAR", "TAR.GZ", "7z", "GZIP", "BZip2", "TAR.BZ2", "LZMA", "TAR.LZMA", "Lzip", "TAR.LZ", "XZ", "TAR.XZ", "LZ4", "TAR.LZ4", "RAR", "CAB", "ISO", "UDF"];
+var associationSuffixes = [".zip", ".zipx", ".xpi", ".apk", ".ipa", ".cbz", ".tar", ".tar.gz", ".tgz", ".7z", ".gz", ".bz2", ".bz", ".tar.bz2", ".tar.bz", ".tbz", ".tbz2", ".lzma", ".tar.lzma", ".tlz", ".lz", ".tar.lz", ".xz", ".tar.xz", ".txz", ".lz4", ".tar.lz4", ".zst", ".tar.zst", ".tzst", ".rar", ".cab", ".iso", ".udf"];
+var formatLabels = ["ZIP", "TAR", "TAR.GZ", "7z", "GZIP", "BZip2", "TAR.BZ2", "LZMA", "TAR.LZMA", "Lzip", "TAR.LZ", "XZ", "TAR.XZ", "LZ4", "TAR.LZ4", "ZSTD", "TAR.ZST", "RAR", "CAB", "ISO", "UDF"];
 var structureOnlyFormats = ["TAR", "LZMA", "TAR.LZMA", "ISO", "UDF"];
-var declaredCheckFormats = ["XZ", "TAR.XZ", "LZ4", "TAR.LZ4"];
+var declaredCheckFormats = ["XZ", "TAR.XZ", "LZ4", "TAR.LZ4", "ZSTD", "TAR.ZST"];

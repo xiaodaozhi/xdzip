@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "creation_methods": {"store": 0, "copy": 0, "deflate": 8, "lzma2": 32, "lz4": 256},
+  "creation_methods": {"store": 0, "copy": 0, "deflate": 8, "lzma2": 32, "lz4": 256, "zstd": 93},
   "formats": [
     {
       "id": "zip", "rust_variant": "Zip", "label": "ZIP", "container": "zip", "filters": [], "worker_id": null,
@@ -242,6 +242,27 @@
       "creation_suffixes": [".tar.lz4"], "shell_mime_types": ["application/x-lz4-compressed-tar"],
       "extensions": [
         {"suffix": ".tar.lz4", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "archive"}
+      ]
+    },
+    {
+      "id": "zstd", "rust_variant": "Zstd", "label": "ZSTD", "container": "single-file", "filters": ["zstd"], "worker_id": null,
+      "check_kind": "format_declared_checks", "creation_levels": [1, 6, 9],
+      "read_methods": ["zstd"], "write_methods": ["zstd"], "rewrite": false,
+      "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [".zst"], "shell_mime_types": ["application/zstd"],
+      "extensions": [
+        {"suffix": ".zst", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+      ]
+    },
+    {
+      "id": "tar-zstd", "rust_variant": "TarZstd", "label": "TAR.ZST", "container": "tar", "filters": ["zstd"], "worker_id": null,
+      "check_kind": "format_declared_checks", "creation_levels": [1, 6, 9],
+      "read_methods": ["zstd"], "write_methods": ["zstd"], "rewrite": false,
+      "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [".tar.zst", ".tzst"], "shell_mime_types": ["application/x-zstd-compressed-tar"],
+      "extensions": [
+        {"suffix": ".tar.zst", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "archive"},
+        {"suffix": ".tzst", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": null}
       ]
     },
     {

@@ -28,6 +28,9 @@ def main():
     shutil.copyfile(ROOT / 'tests/fixtures/streams/files.tar.lz4', output / 'sample.tar.lz4')
     for suffix in ['tar.xz', 'txz']:
         shutil.copyfile(ROOT / 'tests/fixtures/streams/files.txz', output / ('sample.' + suffix))
+    shutil.copyfile(ROOT / 'tests/fixtures/streams/phrase.zst', output / 'sample.zst')
+    for suffix in ['tar.zst','tzst']:
+        shutil.copyfile(ROOT / 'tests/fixtures/streams/files.tar.zst', output / ('sample.' + suffix))
     content = b'xdzip association fixture\n'
     (output / 'sample.gz').write_bytes(gzip.compress(content, mtime=0))
     for name, mode in [('sample.tar', 'w'), ('sample.tar.gz', 'w:gz')]:

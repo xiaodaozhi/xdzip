@@ -4,7 +4,7 @@
 
 检查强度分为三类：`supported_content` 验证支持的内容，`structure_and_readability` 不承诺内容校验和，`format_declared_checks` 验证流声明的校验，但允许格式中无校验和的配置。生成的界面说明和 CLI 结果须保留此区别。创建方法编号只能解析到该格式已准入的写方法，登记读过滤器不能隐式启用写入。
 
-`creation_methods` 为方法名指定宿主传输编号，`creation_levels` 按格式限定级别，生成的界面选项与 Rust 描述同时携带这两项。CLI、GUI 和宿主解析同一份登记，不再假定压缩方法只能是 Deflate 或 LZMA2。Store、Copy 保留编号 0，Deflate 保留 8，LZMA2 保留 32；LZ4 使用宿主编号 256，仅在其容器内解释，不代表 ZIP 方法。只读配置没有创建级别。生成器拒绝缺失或格式内歧义的方法编号及非法级别。
+`creation_methods` 为方法名指定宿主传输编号，`creation_levels` 按格式限定级别，生成的界面选项与 Rust 描述同时携带这两项。CLI、GUI 和宿主解析同一份登记，不再假定压缩方法只能是 Deflate 或 LZMA2。Store、Copy 保留编号 0，Deflate 保留 8，LZMA2 保留 32；Zstandard 使用宿主编号 93，LZ4 使用 256，仅在其容器内解释，不代表 ZIP 方法。只读配置没有创建级别。生成器拒绝缺失或格式内歧义的方法编号及非法级别。
 
 修改规格后运行 `python3 scripts/generate-format-registry.py`，生成 Rust 格式描述、C++ 拖放与 Shell 候选、JavaScript 界面选项以及 Python 安装图标映射。`--check` 只检查，缺失或过期输出明确失败。`python3 scripts/test-format-registry.py` 检查矛盾能力、重复标识和后缀、生成语言中的非法值及过期消费者；日常 CI 执行这两项检查。
 

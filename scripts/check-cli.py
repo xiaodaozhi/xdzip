@@ -136,6 +136,7 @@ def check(binary, worker, output, payload=None, install_fixture=False):
             ('phrase.bz2','supported_content','phrase'), ('phrase.lzma','structure_and_readability','phrase'),
             ('phrase.lz','supported_content','phrase'), ('files.tbz2','supported_content','hello.txt'),
             ('files.tar.lzma','structure_and_readability','hello.txt'), ('files.tlz','supported_content','hello.txt'),
+            ('phrase.zst','format_declared_checks','phrase'), ('files.tar.zst','format_declared_checks','hello.txt'),
             ('phrase.lz4','format_declared_checks','phrase'), ('files.tar.lz4','format_declared_checks','hello.txt'),
             ('phrase-crc64.xz','format_declared_checks','phrase-crc64'), ('files.txz','format_declared_checks','hello.txt'),
             ('zipx-deflate64.zipx','supported_content','hello.txt'), ('zipx-bzip2.zipx','supported_content','hello.txt'),
@@ -192,6 +193,32 @@ def check(binary, worker, output, payload=None, install_fixture=False):
             assert invoke('create',refused,single,'--level','store',code=2)['error_code']=='unsupported_options'
             assert not refused.exists()
         record('lz4_standard_frame_levels_and_tar_composition')
+        zstd_source=work/'zstd-source'
+        zstd_source.mkdir()
+        zstd_single=zstd_source/'data.bin'
+        zstd_single.write_bytes(b'CLI real Zstandard payload for independent decoding\n'*12000)
+        for suffix in ['zst','tar.zst','tzst']:
+            for level in ['fast','normal','best']:
+                archive=work/('created-'+level+'.'+suffix)
+                invoke('create',archive,zstd_single if suffix=='zst' else zstd_source,'--level',level)
+                invoke('test',archive)
+                reference=os.environ.get('XDZIP_ZSTD_REFERENCE_PYTHON')
+                if reference:
+                    decoded=subprocess.run([reference,'-c',"import compression.zstd as z,sys; assert z.zstd_version_info==(1,5,7); sys.stdout.buffer.write(z.decompress(open(sys.argv[1],'rb').read()))",str(archive)],capture_output=True,check=True).stdout
+                    if suffix=='zst':
+                        assert decoded==zstd_single.read_bytes()
+                    else:
+                        import io
+                        with tarfile.open(fileobj=io.BytesIO(decoded),mode='r:') as independent:
+                            assert independent.extractfile(zstd_source.name+'/'+zstd_single.name).read()==zstd_single.read_bytes()
+                target=work/('created-output-'+suffix+'-'+level)
+                invoke('extract',archive,'-C',target)
+                assert (target/('created-'+level if suffix=='zst' else zstd_source.name+'/'+zstd_single.name)).read_bytes()==zstd_single.read_bytes()
+            refused=work/('store-refused.'+suffix)
+            assert invoke('create',refused,zstd_single,'--level','store',code=2)['error_code']=='unsupported_options'
+            assert not refused.exists()
+        record('zstandard_real_multiblock_levels_and_tar_compositions')
+
 
         invoke('create',work/'literal.zip','--','--input.txt')
         assert invoke('list',work/'literal.zip')['data']['entries'][0]['path'] == '--input.txt'

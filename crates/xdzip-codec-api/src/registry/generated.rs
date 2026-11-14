@@ -9,6 +9,7 @@ pub(super) static CREATION_METHODS: &[(&str, u16)] = &[
     ("deflate", 8),
     ("lzma2", 32),
     ("lz4", 256),
+    ("zstd", 93),
 ];
 
 #[rustfmt::skip]
@@ -467,6 +468,66 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         worker_id: None,
     },
     FormatDescriptor {
+        format: Format::Zstd,
+        id: "zstd",
+        label: "ZSTD",
+        container: "single-file",
+        filters: &[
+            "zstd",
+        ],
+        read_methods: &[
+            "zstd",
+        ],
+        write_methods: &[
+            "zstd",
+        ],
+        read_encryption: &[],
+        write_encryption: &[],
+        read_volumes: &[],
+        write_volumes: &[],
+        creation_suffixes: &[
+            ".zst",
+        ],
+        rewrite: false,
+        creation_levels: &[1, 6, 9],
+        check_kind: "format_declared_checks",
+        extensions: &[
+            ".zst",
+        ],
+        worker_id: None,
+    },
+    FormatDescriptor {
+        format: Format::TarZstd,
+        id: "tar-zstd",
+        label: "TAR.ZST",
+        container: "tar",
+        filters: &[
+            "zstd",
+        ],
+        read_methods: &[
+            "zstd",
+        ],
+        write_methods: &[
+            "zstd",
+        ],
+        read_encryption: &[],
+        write_encryption: &[],
+        read_volumes: &[],
+        write_volumes: &[],
+        creation_suffixes: &[
+            ".tar.zst",
+            ".tzst",
+        ],
+        rewrite: false,
+        creation_levels: &[1, 6, 9],
+        check_kind: "format_declared_checks",
+        extensions: &[
+            ".tar.zst",
+            ".tzst",
+        ],
+        worker_id: None,
+    },
+    FormatDescriptor {
         format: Format::Rar,
         id: "rar",
         label: "RAR",
@@ -597,9 +658,11 @@ pub(super) fn descriptor(format: Format) -> &'static FormatDescriptor {
         Format::TarXz => &DESCRIPTORS[12],
         Format::Lz4 => &DESCRIPTORS[13],
         Format::TarLz4 => &DESCRIPTORS[14],
-        Format::Rar => &DESCRIPTORS[15],
-        Format::Cab => &DESCRIPTORS[16],
-        Format::Iso => &DESCRIPTORS[17],
-        Format::Udf => &DESCRIPTORS[18],
+        Format::Zstd => &DESCRIPTORS[15],
+        Format::TarZstd => &DESCRIPTORS[16],
+        Format::Rar => &DESCRIPTORS[17],
+        Format::Cab => &DESCRIPTORS[18],
+        Format::Iso => &DESCRIPTORS[19],
+        Format::Udf => &DESCRIPTORS[20],
     }
 }

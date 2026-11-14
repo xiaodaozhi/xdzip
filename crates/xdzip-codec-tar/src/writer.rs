@@ -132,7 +132,7 @@ impl CreationCodec for TarCodec {
         let declaration = self.format().descriptor();
         if !matches!(
             self.filter,
-            Filter::Identity | Filter::Gzip | Filter::Xz | Filter::Lz4
+            Filter::Identity | Filter::Gzip | Filter::Xz | Filter::Lz4 | Filter::Zstd
         ) || settings.password.is_some()
             || settings.solid
             || settings.encrypt_headers

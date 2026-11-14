@@ -50,6 +50,8 @@ fn single_file_creation_browsing_checking_and_extraction_preserve_bytes() {
         (true, Format::Xz, "xz", 32),
         (false, Format::Lz4, "lz4", 256),
         (true, Format::Lz4, "lz4", 256),
+        (false, Format::Zstd, "zst", 93),
+        (true, Format::Zstd, "zst", 93),
     ] {
         let fixture = Fixture::new();
         let input = fixture.0.join(if empty {
@@ -68,6 +70,12 @@ fn single_file_creation_browsing_checking_and_extraction_preserve_bytes() {
         let file = std::fs::File::open(&created.target).unwrap();
         if format == Format::Gzip {
             flate2::read::MultiGzDecoder::new(file)
+                .read_to_end(&mut independent)
+                .unwrap();
+        } else if format == Format::Zstd {
+            let packed = file.metadata().unwrap().len();
+            xdzip_codec_stream::zstd::ZstdReader::new(file, packed, 128 << 20)
+                .unwrap()
                 .read_to_end(&mut independent)
                 .unwrap();
         } else if format == Format::Lz4 {
@@ -130,31 +138,34 @@ fn single_file_creation_browsing_checking_and_extraction_preserve_bytes() {
 }
 
 #[test]
-fn gzip_directory_or_multiple_inputs_do_not_publish_an_archive() {
-    for multiple in [false, true] {
-        let fixture = Fixture::new();
-        let mut job = fixture.job(8);
-        if multiple {
-            job.options.inputs = vec![
-                fixture
-                    .0
-                    .join("输入/文件.txt")
-                    .to_string_lossy()
-                    .into_owned(),
-                fixture
-                    .0
-                    .join("输入/empty.bin")
-                    .to_string_lossy()
-                    .into_owned(),
-            ];
+fn ordinary_stream_directories_or_multiple_inputs_never_publish_an_archive() {
+    for (suffix, method) in [("gz", 8), ("xz", 32), ("lz4", 256), ("zst", 93)] {
+        for multiple in [false, true] {
+            let fixture = Fixture::new();
+            let mut job = fixture.job(method);
+            if multiple {
+                job.options.inputs = vec![
+                    fixture
+                        .0
+                        .join("输入/文件.txt")
+                        .to_string_lossy()
+                        .into_owned(),
+                    fixture
+                        .0
+                        .join("输入/empty.bin")
+                        .to_string_lossy()
+                        .into_owned(),
+                ];
+            }
+            job.options.name = format!("refused.{suffix}");
+            let result = execute(job, &Control::default(), |_| {});
+            assert_eq!(result.status, Status::Failed);
+            assert_eq!(result.error, "unsupported_feature");
+            assert!(!fixture.0.join(format!("output/refused.{suffix}")).exists());
         }
-        job.options.name = "refused.gz".into();
-        let result = execute(job, &Control::default(), |_| {});
-        assert_eq!(result.status, Status::Failed);
-        assert_eq!(result.error, "unsupported_feature");
-        assert!(!fixture.0.join("output/refused.gz").exists());
     }
 }
+
 struct Fixture(PathBuf);
 impl Fixture {
     fn new() -> Self {
@@ -1120,6 +1131,7 @@ fn tar_and_gzip_use_the_same_safe_creation_extraction_rename_and_cancel_barriers
         (".tar.gz", 8, Format::TarGzip),
         (".tar.xz", 32, Format::TarXz),
         (".tar.lz4", 256, Format::TarLz4),
+        (".tar.zst", 93, Format::TarZstd),
     ] {
         let f = Fixture::new();
         let mut job = f.job(method);

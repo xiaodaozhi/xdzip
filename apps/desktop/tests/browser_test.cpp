@@ -9184,7 +9184,7 @@ QtObject {
         formats->setProperty("currentIndex", 3);
         QCOMPARE(create->width(), 491);
         QTRY_VERIFY(formats->width() > 0);
-        QCOMPARE(formats->property("count").toInt(), 9);
+        QCOMPARE(formats->property("count").toInt(), 11);
         for (int index = 0; index < formats->property("count").toInt(); ++index) {
             formats->setProperty("currentIndex", index);
             auto *label =
@@ -9348,6 +9348,12 @@ QtObject {
             QTest::newRow(qPrintable("tar-lz4-" + language))
                 << QStringLiteral("tar-lz4") << QStringLiteral("tar.lz4")
                 << QStringLiteral("TAR.LZ4") << language;
+            QTest::newRow(qPrintable("zstd-" + language))
+                << QStringLiteral("zstd") << QStringLiteral("zst") << QStringLiteral("ZSTD")
+                << language;
+            QTest::newRow(qPrintable("tar-zstd-" + language))
+                << QStringLiteral("tar-zstd") << QStringLiteral("tar.zst")
+                << QStringLiteral("TAR.ZST") << language;
         }
     }
     void singleStreamCreationUsesStableCapability() {
@@ -9487,7 +9493,7 @@ QtObject {
         usePassword->setProperty("checked", false);
         QTRY_COMPARE(password->property("text").toString(), QString{});
         QTRY_VERIFY(start->isEnabled());
-        QCOMPARE(group->property("count").toInt(), 9);
+        QCOMPARE(group->property("count").toInt(), 11);
         group->forceActiveFocus(Qt::TabFocusReason);
         QTest::keyClick(create, Qt::Key_Down);
         QCOMPARE(group->property("currentIndex").toInt(), 1);
@@ -9623,8 +9629,9 @@ QtObject {
         QTRY_VERIFY(formats->width() > 0);
         QTRY_VERIFY(formats->width() <= 608);
         for (const auto &format :
-             {"ZIP", "TAR", "TAR.GZ", "7z", "GZIP", "BZip2", "TAR.BZ2", "LZMA", "TAR.LZMA", "Lzip",
-              "TAR.LZ", "XZ", "TAR.XZ", "LZ4", "TAR.LZ4", "RAR", "CAB", "ISO", "UDF"}) {
+             {"ZIP",     "TAR",      "TAR.GZ",  "7z",     "GZIP", "BZip2",  "TAR.BZ2",
+              "LZMA",    "TAR.LZMA", "Lzip",    "TAR.LZ", "XZ",   "TAR.XZ", "LZ4",
+              "TAR.LZ4", "ZSTD",     "TAR.ZST", "RAR",    "CAB",  "ISO",    "UDF"}) {
             auto *badge =
                 findVisual(window->contentItem(), "welcomeFormat-" + QString::fromLatin1(format));
             QVERIFY(badge && badge->isVisible());
@@ -9639,7 +9646,8 @@ QtObject {
         for (const auto &format :
              {QStringLiteral("TAR"), QStringLiteral("LZMA"), QStringLiteral("TAR.LZMA"),
               QStringLiteral("ISO"), QStringLiteral("UDF"), QStringLiteral("XZ"),
-              QStringLiteral("TAR.XZ"), QStringLiteral("LZ4"), QStringLiteral("TAR.LZ4")}) {
+              QStringLiteral("TAR.XZ"), QStringLiteral("LZ4"), QStringLiteral("TAR.LZ4"),
+              QStringLiteral("ZSTD"), QStringLiteral("TAR.ZST")}) {
             task->setProperty("resultTask", QVariantMap{{"kind", "check"}, {"format", format}});
             QVERIFY(QMetaObject::invokeMethod(task, "present"));
             QTRY_VERIFY(task->isVisible());
@@ -9647,7 +9655,7 @@ QtObject {
             QVERIFY(footer);
             QCOMPARE(footer->property("note").toString(),
                      format == "TAR" ? qtTrId("integrity.tarNote")
-                     : format.contains("XZ") || format.contains("LZ4")
+                     : format.contains("XZ") || format.contains("LZ4") || format.contains("ZST")
                          ? qtTrId("integrity.declaredCheckNote")
                          : qtTrId("integrity.structuralNote").arg(format));
             auto *hint = qobject_cast<QQuickItem *>(footer->property("hint").value<QObject *>());
@@ -9678,6 +9686,7 @@ QtObject {
             {"files.tar.lzma", "TAR.LZMA"}, {"files.tlz", "TAR.LZ"},
             {"phrase-crc64.xz", "XZ"},      {"files.txz", "TAR.XZ"},
             {"phrase.lz4", "LZ4"},          {"files.tar.lz4", "TAR.LZ4"},
+            {"phrase.zst", "ZSTD"},         {"files.tar.zst", "TAR.ZST"},
             {"zipx-deflate64.zipx", "ZIP"}, {"zipx-bzip2.zipx", "ZIP"},
             {"zipx-lzma.zipx", "ZIP"},      {"zipx-xz.zipx", "ZIP"}};
         for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
@@ -9715,7 +9724,8 @@ QtObject {
         QCOMPARE(row->cells[0], leaf);
         QCOMPARE(row->cells[2].isEmpty(), tar);
         const auto method =
-            format.contains("LZ4")                                 ? QStringLiteral("LZ4")
+            format.contains("ZST")                                 ? QStringLiteral("Zstandard")
+            : format.contains("LZ4")                               ? QStringLiteral("LZ4")
             : fixture.contains("deflate64")                        ? QStringLiteral("Deflate64")
             : format.contains("XZ") || fixture.contains("zipx-xz") ? QStringLiteral("XZ")
             : format.contains("BZ") || format == "BZip2" || fixture.contains("zipx-bzip2")

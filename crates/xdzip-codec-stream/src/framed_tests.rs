@@ -138,6 +138,7 @@ fn filtered_payload_rechecks_changed_checksum_or_size_after_metadata() {
         ("phrase.bz2", Format::Bzip2, 10),
         ("known-size.lzma", Format::Lzma, 5),
         ("phrase.lz4", Format::Lz4, 6),
+        ("phrase.zst", Format::Zstd, 8),
         ("phrase.lz", Format::Lzip, sample("phrase.lz").len() - 20),
     ] {
         let codec = StreamCodec { format };
@@ -168,6 +169,7 @@ fn all_filtered_profiles_enforce_actual_output_limit_and_midstream_cancellation(
         ("phrase.lz", Filter::Lzip),
         ("phrase-crc64.xz", Filter::Xz),
         ("phrase.lz4", Filter::Lz4),
+        ("phrase.zst", Filter::Zstd),
     ] {
         for (limit, good) in [(144, true), (143, false)] {
             let cancel = Cancellation::default();
@@ -193,7 +195,7 @@ fn all_filtered_profiles_enforce_actual_output_limit_and_midstream_cancellation(
 }
 
 #[test]
-fn lz4_preserves_terminal_host_errors_and_never_retries_failed_sources() {
+fn framed_filters_preserve_terminal_host_errors_and_never_retry_failed_sources() {
     use std::cell::Cell;
     use std::io::{self, Read, Seek, SeekFrom};
     struct Fault<'a> {
@@ -213,24 +215,26 @@ fn lz4_preserves_terminal_host_errors_and_never_retries_failed_sources() {
         }
     }
     impl xdzip_codec_api::ReadSource for Fault<'_> {}
-    for kind in [
-        io::ErrorKind::Interrupted,
-        io::ErrorKind::Unsupported,
-        io::ErrorKind::OutOfMemory,
-        io::ErrorKind::Other,
-    ] {
-        let calls = Cell::new(0);
-        let mut source = Fault {
-            source: Cursor::new(sample("phrase.lz4")),
-            calls: &calls,
-            kind,
-        };
-        let cancel = Cancellation::default();
-        let mut stream =
-            ControlledStream::new(&mut source, &cancel, Filter::Lz4, 1 << 20, 1 << 20).unwrap();
-        assert!(stream.read(&mut [0]).is_err());
-        assert_eq!(stream.failure(), Some(ScanError::Io));
-        assert!(stream.read(&mut [0]).is_err());
-        assert_eq!(calls.get(), 1);
+    for (name, filter) in [("phrase.lz4", Filter::Lz4), ("phrase.zst", Filter::Zstd)] {
+        for kind in [
+            io::ErrorKind::Interrupted,
+            io::ErrorKind::Unsupported,
+            io::ErrorKind::OutOfMemory,
+            io::ErrorKind::Other,
+        ] {
+            let calls = Cell::new(0);
+            let mut source = Fault {
+                source: Cursor::new(sample(name)),
+                calls: &calls,
+                kind,
+            };
+            let cancel = Cancellation::default();
+            let mut stream =
+                ControlledStream::new(&mut source, &cancel, filter, 1 << 20, 1 << 20).unwrap();
+            assert!(stream.read(&mut [0]).is_err());
+            assert_eq!(stream.failure(), Some(ScanError::Io));
+            assert!(stream.read(&mut [0]).is_err());
+            assert_eq!(calls.get(), 1);
+        }
     }
 }

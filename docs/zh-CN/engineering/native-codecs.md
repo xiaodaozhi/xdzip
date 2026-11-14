@@ -8,7 +8,7 @@ CAB 产品固定执行独立 Rust 路由，没有测试开关、官方处理器�
 
 统一准备入口运行 `scripts/prepare-native-codecs.py`。[产品源码清单](../../../scripts/native-codec-sources.json)当前为空，准备步骤不下载或解包官方格式源码；离线构建同样不需要 UnRAR 或 7-Zip 归档。通用来源工具保留有界解包及摘要校验，用于明确声明的来源材料，不能据缓存内容自动加入产品。
 
-产品不编译或链接官方 UnRAR、7-Zip 容器、算法、通用设施、文件适配器或格式注册表，7z、RAR、CAB、ISO、UDF 均固定使用 Rust，没有运行失败回退。CMake 内部的 `XDZIP_7Z_BACKEND=rust`、`XDZIP_RAR_BACKEND=rust` 与 `XDZIP_CAB_BACKEND=rust` 记录固定身份。生成的 `native-codec-source-list.txt` 完整记录七个项目自有胶水文件，门禁核对路径与集合，拒绝官方来源和已退出的 `host_file.cpp` 重新进入。`platform_time.cpp` 与 `platform_encoding.cpp` 仅将 OS 本地日历和字符集映射交回 Rust，不解释归档时间格式或密码字节规则。共享 LZ4/XXH32、Deflate/Deflate64、LZMA、BZip2、PPMd、LZX、Quantum 按实际格式复用，不重复引入格式库。
+产品不编译或链接官方 UnRAR、7-Zip 容器、算法、通用设施、文件适配器或格式注册表，7z、RAR、CAB、ISO、UDF 均固定使用 Rust，没有运行失败回退。CMake 内部的 `XDZIP_7Z_BACKEND=rust`、`XDZIP_RAR_BACKEND=rust` 与 `XDZIP_CAB_BACKEND=rust` 记录固定身份。生成的 `native-codec-source-list.txt` 完整记录七个项目自有胶水文件，门禁核对路径与集合，拒绝官方来源和已退出的 `host_file.cpp` 重新进入。`platform_time.cpp` 与 `platform_encoding.cpp` 仅将 OS 本地日历和字符集映射交回 Rust，不解释归档时间格式或密码字节规则。共享 Zstandard/FSE/Huffman/XXH64、LZ4/XXH32、Deflate/Deflate64、LZMA、BZip2、PPMd、LZX、Quantum 按实际格式复用，不重复引入格式库。
 
 来源对应材料随实际部署版本交付，不能只交付下载链接。历史构建与独立官方参考工具继续按各自原始条款处理，当前产品源码清单为空不改变既有交付材料的义务。
 

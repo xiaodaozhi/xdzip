@@ -103,6 +103,9 @@ mod tests {
             ("archive.TXZ", Some(Format::TarXz)),
             ("archive.LZ4", Some(Format::Lz4)),
             ("archive.TAR.LZ4", Some(Format::TarLz4)),
+            ("archive.ZST", Some(Format::Zstd)),
+            ("archive.TAR.ZST", Some(Format::TarZstd)),
+            ("archive.TZST", Some(Format::TarZstd)),
             ("archive.rar", None),
             ("archive.cab", None),
             ("archive.iso", None),
@@ -147,6 +150,18 @@ mod tests {
             assert_eq!(declaration.worker_id, None);
         }
         assert_eq!(Format::Zip.descriptor().creation_method(256), None);
+        for format in [Format::Zstd, Format::TarZstd] {
+            let declaration = format.descriptor();
+            assert_eq!(declaration.creation_method(93), Some("zstd"));
+            assert_eq!(declaration.creation_method_id("zstd"), Some(93));
+            assert_eq!(declaration.creation_method(0), None);
+            assert_eq!(declaration.creation_method(8), None);
+            assert_eq!(declaration.creation_levels, [1, 6, 9]);
+            assert_eq!(declaration.check_kind, "format_declared_checks");
+            assert!(!declaration.rewrite);
+            assert_eq!(declaration.worker_id, None);
+        }
+        assert_eq!(Format::Zip.descriptor().creation_method(93), None);
         for format in [Format::Xz, Format::TarXz] {
             assert_eq!(format.descriptor().creation_method(32), Some("lzma2"));
             assert_eq!(format.descriptor().creation_method(0), None);

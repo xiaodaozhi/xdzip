@@ -1991,7 +1991,10 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         for (const auto &row : event.rows) {
             const bool lz4 =
                 m_format == QStringLiteral("LZ4") || m_format == QStringLiteral("TAR.LZ4");
-            const auto method = lz4 && row.method == 256            ? QStringLiteral("LZ4")
+            const bool zstd =
+                m_format == QStringLiteral("ZSTD") || m_format == QStringLiteral("TAR.ZST");
+            const auto method = zstd && row.method == 93            ? QStringLiteral("Zstandard")
+                                : lz4 && row.method == 256          ? QStringLiteral("LZ4")
                                 : nativeFormat                      ? m_format
                                 : m_format == QStringLiteral("TAR") ? qtTrId("ui.695e3ecda20b")
                                 : row.method == 0                   ? QStringLiteral("Store")

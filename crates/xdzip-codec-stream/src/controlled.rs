@@ -2,6 +2,7 @@
 use crate::framed::{FramedReader, Kind, lzma_alone};
 use crate::lz4::Lz4Reader;
 use crate::xz::XzReader;
+use crate::zstd::ZstdReader;
 use std::io::{self, Read, SeekFrom};
 use xdzip_codec_api::{Cancellation, ReadSource, ScanError};
 use xdzip_compression::GzipReader;
@@ -36,6 +37,8 @@ pub enum Filter {
     Xz,
     /// Standard LZ4 frames, with declared checks, linking and skippable frames.
     Lz4,
+    /// Zstandard standard frames with bounded history, entropy and declared checks.
+    Zstd,
 }
 
 struct Input<'a> {
@@ -135,6 +138,10 @@ impl<'a> ControlledStream<'a> {
             ),
             Filter::Lz4 => Box::new(
                 Lz4Reader::new(input, length, FILTER_MEMORY_LIMIT)
+                    .map_err(|error| scan_error(&error))?,
+            ),
+            Filter::Zstd => Box::new(
+                ZstdReader::new(input, length, FILTER_MEMORY_LIMIT)
                     .map_err(|error| scan_error(&error))?,
             ),
             Filter::Bzip2 => Box::new(FramedReader::new(
