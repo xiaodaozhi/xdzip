@@ -9631,9 +9631,9 @@ QtObject {
         QTRY_VERIFY(formats->width() > 0);
         QTRY_VERIFY(formats->width() <= 608);
         for (const auto &format :
-             {"ZIP",     "TAR",      "TAR.GZ",  "7z",     "GZIP", "BZip2",  "TAR.BZ2",
-              "LZMA",    "TAR.LZMA", "Lzip",    "TAR.LZ", "XZ",   "TAR.XZ", "LZ4",
-              "TAR.LZ4", "ZSTD",     "TAR.ZST", "RAR",    "CAB",  "ISO",    "UDF"}) {
+             {"ZIP",      "TAR",  "TAR.GZ", "7z",  "GZIP",   "BZip2", "TAR.BZ2", "LZMA",
+              "TAR.LZMA", "Lzip", "TAR.LZ", "XZ",  "TAR.XZ", "LZ4",   "TAR.LZ4", "ZSTD",
+              "TAR.ZST",  "DEB",  "RAR",    "CAB", "ISO",    "UDF"}) {
             auto *badge =
                 findVisual(window->contentItem(), "welcomeFormat-" + QString::fromLatin1(format));
             QVERIFY(badge && badge->isVisible());
@@ -9649,7 +9649,7 @@ QtObject {
              {QStringLiteral("TAR"), QStringLiteral("LZMA"), QStringLiteral("TAR.LZMA"),
               QStringLiteral("ISO"), QStringLiteral("UDF"), QStringLiteral("XZ"),
               QStringLiteral("TAR.XZ"), QStringLiteral("LZ4"), QStringLiteral("TAR.LZ4"),
-              QStringLiteral("ZSTD"), QStringLiteral("TAR.ZST")}) {
+              QStringLiteral("ZSTD"), QStringLiteral("TAR.ZST"), QStringLiteral("DEB")}) {
             task->setProperty("resultTask", QVariantMap{{"kind", "check"}, {"format", format}});
             QVERIFY(QMetaObject::invokeMethod(task, "present"));
             QTRY_VERIFY(task->isVisible());
@@ -9657,7 +9657,8 @@ QtObject {
             QVERIFY(footer);
             QCOMPARE(footer->property("note").toString(),
                      format == "TAR" ? qtTrId("integrity.tarNote")
-                     : format.contains("XZ") || format.contains("LZ4") || format.contains("ZST")
+                     : format.contains("XZ") || format.contains("LZ4") || format.contains("ZST") ||
+                             format == "DEB"
                          ? qtTrId("integrity.declaredCheckNote")
                          : qtTrId("integrity.structuralNote").arg(format));
             auto *hint = qobject_cast<QQuickItem *>(footer->property("hint").value<QObject *>());
@@ -9756,6 +9757,85 @@ QtObject {
         QFile actual(QDir(destination).filePath(leaf));
         QVERIFY(actual.open(QIODevice::ReadOnly));
         QCOMPARE(actual.readAll(), QByteArray("abracadabra abracadabra\n").repeated(6));
+    }
+    void debViewsUseSharedBrowserAndTasks_data() {
+        QTest::addColumn<QString>("fixture");
+        QTest::addColumn<QString>("method");
+        QTest::addColumn<QString>("language");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")}) {
+            QTest::newRow(qPrintable("zstd-" + language))
+                << QStringLiteral("control-gz-data-zst.deb") << QStringLiteral("Zstandard")
+                << language;
+            QTest::newRow(qPrintable("lzma-" + language))
+                << QStringLiteral("control-zst-data-lzma.deb") << QStringLiteral("LZMA")
+                << language;
+        }
+    }
+    void debViewsUseSharedBrowserAndTasks() {
+        QFETCH(QString, fixture);
+        QFETCH(QString, method);
+        QFETCH(QString, language);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir owned;
+        QVERIFY(owned.isValid());
+        const auto source = QDir(QStringLiteral(XDZIP_FIXTURES)).filePath("../deb/" + fixture);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        QVERIFY(controller->canOpenDroppedUrls({QUrl::fromLocalFile(source)}));
+        controller->openPath(source);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        QCOMPARE(controller->formatLabel(), QStringLiteral("DEB"));
+        QCOMPARE(controller->archiveTotal(), 9);
+        QVERIFY(!controller->canUpdateArchive());
+        QCOMPARE(controller->m_model.rowCount(), 3);
+        QStringList roots;
+        for (int at = 0; at < controller->m_model.rowCount(); ++at)
+            roots << controller->m_model.rowAt(at)->cells[0];
+        roots.sort();
+        QCOMPARE(roots, QStringList({"control", "data", "members"}));
+        QSignalSpy checked(controller, &BrowserController::archiveTestStarted);
+        controller->startArchiveTest();
+        QTRY_COMPARE(checked.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        for (const auto &needle : {QStringLiteral("hello.txt"), QStringLiteral("debian-binary")}) {
+            controller->search(needle);
+            QTRY_VERIFY(!controller->busy());
+            QTRY_COMPARE(controller->m_model.rowCount(), 1);
+            const auto *row = controller->m_model.rowAt(0);
+            QVERIFY(row);
+            const bool raw = needle == "debian-binary";
+            QCOMPARE(row->cells[0], raw ? QStringLiteral("members/debian-binary")
+                                        : QStringLiteral("data/usr/share/xdzip/hello.txt"));
+            QCOMPARE(row->method, raw ? QStringLiteral("Store") : method);
+            QCOMPARE(row->cells[2].isEmpty(), !raw);
+            const auto entry = row->id;
+            const auto destination = owned.filePath(needle);
+            QVERIFY(QDir().mkpath(destination));
+            controller->prepareExtraction(false, {entry});
+            QTRY_VERIFY(!controller->busy());
+            controller->checkTarget(destination);
+            QTRY_VERIFY(!controller->busy() && controller->targetMatches(destination));
+            QSignalSpy extracted(controller, &BrowserController::extractionStarted);
+            controller->startExtraction(destination, false, false, 0, false, false);
+            QTRY_COMPARE(extracted.count(), 1);
+            QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0,
+                                     10000);
+            QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                     QStringLiteral("succeeded"));
+            QFile actual(
+                QDir(destination)
+                    .filePath(raw ? "members/debian-binary" : "data/usr/share/xdzip/hello.txt"));
+            QVERIFY(actual.open(QIODevice::ReadOnly));
+            QCOMPARE(actual.readAll(), raw ? QByteArray("2.0\n")
+                                           : QByteArray("abracadabra abracadabra\n").repeated(6));
+        }
     }
     void readonlyFormatsUseSharedBrowserAndTasks_data() {
         QTest::addColumn<QString>("fixture");
@@ -15117,6 +15197,8 @@ QtObject {
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
         QVERIFY(!engine.rootObjects().isEmpty());
         auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        // This fixture compares the light reference palette, independent of OS theme.
+        window->setProperty("darkMode", false);
         auto *controller = window->findChild<BrowserController *>();
         controller->openPath(QStringLiteral(XDZIP_FIXTURES "/visual-main.zip"));
         QTRY_VERIFY(controller->ready() && !controller->busy());

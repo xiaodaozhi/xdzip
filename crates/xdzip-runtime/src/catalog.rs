@@ -15,8 +15,8 @@ pub struct PhysicalEntry {
     pub display_name: String,
     /// Declared uncompressed size, distinct from unknown.
     pub size: Option<u64>,
-    /// Declared compressed size.
-    pub packed_size: u64,
+    /// Declared compressed size, absent for a child sharing a compressed TAR stream.
+    pub packed_size: Option<u64>,
     /// Container-specific method identifier.
     pub method: u16,
     /// Explicit directory record.
@@ -68,7 +68,7 @@ impl Archive {
                 path: path(entry),
                 display_name: entry.display_name.clone(),
                 size: entry.size_known.then_some(entry.size),
-                packed_size: entry.packed_size,
+                packed_size: entry.packed_size_known().then_some(entry.packed_size),
                 method: entry.method,
                 directory: entry.directory,
                 link: entry.link,

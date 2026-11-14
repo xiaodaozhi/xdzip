@@ -3,6 +3,7 @@ mod record;
 mod rewrite;
 mod writer;
 use std::io::Read;
+use std::{cell::Cell, rc::Rc};
 use xdzip_codec_api::payload::{DecodeError, DecodedSink, PayloadCodec, PayloadReader};
 use xdzip_codec_api::{
     Cancellation, Entry, Format, MetadataCodec, ReadSource, ScanError, ScanLimits,
@@ -56,9 +57,93 @@ impl TarCodec {
         control: &Cancellation,
         limits: ScanLimits,
     ) -> Result<(Vec<Entry>, Vec<u64>), ScanError> {
+        self.inspect_metered(source, control, limits, None)
+    }
+    fn inspect_metered(
+        &self,
+        source: &mut dyn ReadSource,
+        control: &Cancellation,
+        limits: ScanLimits,
+        budget: Option<Rc<Cell<u64>>>,
+    ) -> Result<(Vec<Entry>, Vec<u64>), ScanError> {
         let mut stream = self.stream(source, control, limits.read_bytes)?;
+        if let Some(budget) = budget {
+            stream = stream.with_output_budget(budget);
+        }
         let result = scan(&mut stream, self.format(), limits);
         stream.failure().map_or(result, Err)
+    }
+    /// Scan nested TAR content against an additional aggregate decoded-work budget.
+    pub fn scan_with_budget(
+        &self,
+        source: &mut dyn ReadSource,
+        control: &Cancellation,
+        limits: ScanLimits,
+        budget: Rc<Cell<u64>>,
+    ) -> Result<Vec<Entry>, ScanError> {
+        self.inspect_metered(source, control, limits, Some(budget))
+            .map(|(rows, _)| rows)
+    }
+    fn verified_payload(
+        &self,
+        source: &mut dyn ReadSource,
+        snapshot: &[Entry],
+        control: &Cancellation,
+        budget: Option<Rc<Cell<u64>>>,
+    ) -> Result<(Vec<Entry>, Vec<u64>), DecodeError> {
+        let limits = ScanLimits {
+            read_bytes: STREAM_LIMIT,
+            ..ScanLimits::default()
+        };
+        let (rows, offsets) = self
+            .inspect_metered(source, control, limits, budget)
+            .map_err(decode_error)?;
+        if rows.as_slice() != snapshot {
+            return Err(DecodeError::Integrity);
+        }
+        Ok((rows, offsets))
+    }
+    /// Own a restricted inner source and share separate preparation/delivery quotas.
+    pub fn open_payload_owned<'a>(
+        &self,
+        source: Box<dyn ReadSource + 'a>,
+        snapshot: &[Entry],
+        control: &'a Cancellation,
+        preparation: Rc<Cell<u64>>,
+        delivery: Rc<Cell<u64>>,
+    ) -> Result<Box<dyn PayloadReader + 'a>, DecodeError> {
+        let (rows, reader) = self.index_payload_owned(source, control, preparation, delivery)?;
+        if rows.as_slice() != snapshot {
+            return Err(DecodeError::Integrity);
+        }
+        Ok(reader)
+    }
+    /// Scan and retain an owned nested reader; the parent validates its combined snapshot.
+    pub fn index_payload_owned<'a>(
+        &self,
+        mut source: Box<dyn ReadSource + 'a>,
+        control: &'a Cancellation,
+        preparation: Rc<Cell<u64>>,
+        delivery: Rc<Cell<u64>>,
+    ) -> Result<(Vec<Entry>, Box<dyn PayloadReader + 'a>), DecodeError> {
+        let limits = ScanLimits {
+            read_bytes: STREAM_LIMIT,
+            ..ScanLimits::default()
+        };
+        let (rows, offsets) = self
+            .inspect_metered(source.as_mut(), control, limits, Some(preparation))
+            .map_err(decode_error)?;
+        let stream = Stream::new_owned(source, control, self.filter, STREAM_LIMIT, STREAM_LIMIT)
+            .map_err(decode_error)?
+            .with_output_budget(delivery);
+        Ok((
+            rows.clone(),
+            Box::new(Reader {
+                stream,
+                rows,
+                offsets,
+            }),
+        ))
     }
 }
 fn skip(stream: &mut Stream<'_>, mut count: u64) -> Result<(), ScanError> {
@@ -371,16 +456,7 @@ impl PayloadCodec for TarCodec {
         snapshot: &[Entry],
         control: &'a Cancellation,
     ) -> Result<Box<dyn PayloadReader + 'a>, DecodeError> {
-        let limits = ScanLimits {
-            read_bytes: STREAM_LIMIT,
-            ..ScanLimits::default()
-        };
-        let (rows, offsets) = self
-            .inspect(source, control, limits)
-            .map_err(decode_error)?;
-        if rows.len() != snapshot.len() || rows.iter().zip(snapshot).any(|(a, b)| a != b) {
-            return Err(DecodeError::Integrity);
-        }
+        let (rows, offsets) = self.verified_payload(source, snapshot, control, None)?;
         Ok(Box::new(Reader {
             stream: self
                 .stream(source, control, STREAM_LIMIT)
@@ -480,6 +556,74 @@ mod tests {
             ],
             data: vec![vec![], b"payload".to_vec(), vec![]],
         }
+    }
+    #[test]
+    fn owned_nested_readers_share_preparation_and_delivery_budgets() {
+        let work = encoded(false).len() as u64;
+        for gzip in [false, true] {
+            let codec = TarCodec {
+                filter: if gzip { Filter::Gzip } else { Filter::Identity },
+            };
+            let bytes = encoded(gzip);
+            let control = Cancellation::default();
+            let mut source = Cursor::new(&bytes);
+            let (rows, offsets) = codec
+                .inspect(&mut source, &control, ScanLimits::default())
+                .unwrap();
+            let preparation = Rc::new(Cell::new(2 * work));
+            let first_work = offsets[1] + rows[1].size;
+            let delivery = Rc::new(Cell::new(2 * first_work - 1));
+            let mut first = codec
+                .open_payload_owned(
+                    Box::new(Cursor::new(bytes.clone())),
+                    &rows,
+                    &control,
+                    preparation.clone(),
+                    delivery.clone(),
+                )
+                .unwrap();
+            let mut second = codec
+                .open_payload_owned(
+                    Box::new(Cursor::new(bytes)),
+                    &rows,
+                    &control,
+                    preparation.clone(),
+                    delivery.clone(),
+                )
+                .unwrap();
+            assert_eq!(preparation.get(), 0);
+            let mut sink = Sink(vec![]);
+            first.decode(&rows[1], &mut sink, &control).unwrap();
+            assert_eq!(sink.0, b"payload");
+            assert_eq!(delivery.get(), first_work - 1);
+            assert_eq!(
+                second.decode(&rows[1], &mut Sink(vec![]), &control),
+                Err(DecodeError::Limit)
+            );
+            delivery.set(1 << 20);
+            assert!(
+                second
+                    .decode(&rows[1], &mut Sink(vec![]), &control)
+                    .is_err()
+            );
+        }
+    }
+    #[test]
+    fn nested_metadata_cannot_publish_rows_after_aggregate_work_is_exhausted() {
+        let bytes = encoded(false);
+        let budget = Rc::new(Cell::new(2 * bytes.len() as u64 - 1));
+        let control = Cancellation::default();
+        let codec = TarCodec {
+            filter: Filter::Identity,
+        };
+        let mut source = Cursor::new(bytes);
+        codec
+            .scan_with_budget(&mut source, &control, ScanLimits::default(), budget.clone())
+            .unwrap();
+        assert_eq!(
+            codec.scan_with_budget(&mut source, &control, ScanLimits::default(), budget),
+            Err(ScanError::Limit)
+        );
     }
     #[test]
     fn read_only_tar_filters_reject_encoding_and_rewrite_before_touching_streams() {

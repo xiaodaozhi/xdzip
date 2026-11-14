@@ -5,6 +5,7 @@ use xdzip_codec_api::{
     encode::{CreationCodec, RewriteCodec},
     payload::PayloadCodec,
 };
+use xdzip_codec_deb::DebCodec;
 use xdzip_codec_native::NativeCodec;
 use xdzip_codec_stream::{
     StreamCodec,
@@ -17,9 +18,11 @@ impl Codec for ZipCodec {}
 impl Codec for TarCodec {}
 impl Codec for NativeCodec {}
 impl Codec for StreamCodec {}
+impl Codec for DebCodec {}
 pub(crate) fn codec(format: Format) -> &'static dyn Codec {
     match format {
         Format::Zip => &ZipCodec,
+        Format::Deb => &DebCodec,
         Format::Tar => &TarCodec {
             filter: Filter::Identity,
         },
@@ -142,6 +145,8 @@ pub(crate) fn detect(
         || magic == *b"Rar!\x1a\x07\x01\x00"
     {
         Format::Rar
+    } else if magic == *b"!<arch>\n" || magic == *b"!<thin>\n" {
+        Format::Deb
     } else if magic[..4] == *b"MSCF" {
         Format::Cab
     } else {

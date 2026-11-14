@@ -1,0 +1,16 @@
+[package]
+name = "xdzip-codec-deb"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+xdzip-codec-api = { path = "../xdzip-codec-api" }
+xdzip-codec-stream = { path = "../xdzip-codec-stream" }
+xdzip-codec-tar = { path = "../xdzip-codec-tar" }
+xdzip-domain = { path = "../xdzip-domain" }
+
+[lints]
+workspace = true

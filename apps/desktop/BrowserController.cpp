@@ -1991,8 +1991,9 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         for (const auto &row : event.rows) {
             const bool lz4 =
                 m_format == QStringLiteral("LZ4") || m_format == QStringLiteral("TAR.LZ4");
-            const bool zstd =
-                m_format == QStringLiteral("ZSTD") || m_format == QStringLiteral("TAR.ZST");
+            const bool zstd = m_format == QStringLiteral("ZSTD") ||
+                              m_format == QStringLiteral("TAR.ZST") ||
+                              m_format == QStringLiteral("DEB");
             const auto method = zstd && row.method == 93            ? QStringLiteral("Zstandard")
                                 : lz4 && row.method == 256          ? QStringLiteral("LZ4")
                                 : nativeFormat                      ? m_format
@@ -2036,7 +2037,10 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             m_result.rows.append(
                 {text(row.id),
                  {name, row.physical && row.size_known ? QString::number(row.size) : QString{},
-                  row.physical && !unknownPacked ? QString::number(row.packed_size) : QString{},
+                  row.physical && !unknownPacked &&
+                          !(m_format == QStringLiteral("DEB") && row.method != 0)
+                      ? QString::number(row.packed_size)
+                      : QString{},
                   type, modified},
                  row.directory,
                  row.directory && !row.warning,

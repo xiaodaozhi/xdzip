@@ -1,6 +1,6 @@
 # Isolated format worker contract
 
-7z, RAR, CAB, and ISO/UDF use [independent Rust backends](independent-rust-codecs.md) through a shared thin CXX boundary in the same isolated worker. ZIP, TAR, and TAR.GZ use in-process Rust backends. The product does not search user PATH for alternatives or invoke external command-line extractors.
+7z, RAR, CAB, and ISO/UDF use [independent Rust backends](independent-rust-codecs.md) through a shared thin CXX boundary in the same isolated worker. ZIP, TAR, compressed streams and DEB use in-process Rust backends. The product does not search user PATH for alternatives or invoke external command-line extractors.
 
 CAB always uses the independent Rust route in the product, without test switches, official handlers, or failure fallback. See the [in-house contract](independent-rust-codecs.md#cab只读规格) for complete frames, shared algorithms, and resource boundaries, and [CAB sources](cab-format-sources.md) for provenance and reference-analysis roles.
 

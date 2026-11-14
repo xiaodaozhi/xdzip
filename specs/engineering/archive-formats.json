@@ -266,6 +266,16 @@
       ]
     },
     {
+      "id": "deb", "rust_variant": "Deb", "label": "DEB", "container": "deb", "filters": [], "worker_id": null,
+      "check_kind": "format_declared_checks", "creation_levels": [],
+      "read_methods": ["store", "tar", "gzip", "xz", "zstd", "bzip2", "lzma"], "write_methods": [], "rewrite": false,
+      "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [], "shell_mime_types": ["application/vnd.debian.binary-package"],
+      "extensions": [
+        {"suffix": ".deb", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+      ]
+    },
+    {
       "id": "rar", "rust_variant": "Rar", "label": "RAR", "container": "rar", "filters": [], "worker_id": 4,
       "check_kind": "supported_content",
       "creation_levels": [],

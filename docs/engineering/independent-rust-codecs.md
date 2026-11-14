@@ -24,6 +24,8 @@ Official RAR technical descriptions are incomplete. Decoder algorithm gaps must 
 
 ## TAR record specification
 
+DEB's read-only common-ar envelope composes these same TAR and controlled filter implementations through owned bounded sub-sources. Its raw/control/data export views, shared input/decoded quotas and snapshot projection follow the [DEB contract](deb-containers.md). No package installer, script execution or third-party archive runtime is introduced.
+
 The independent record layer is `xdzip-codec-tar/src/record.rs`. Layout follows [POSIX pax ustar and pax interchange formats](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/pax.html); GNU extensions follow the [GNU tar format description](https://www.gnu.org/software/tar/manual/html_node/Standard.html). Reference library internals and private APIs are not used.
 
 - Records are 512 bytes. Header checksums use the unsigned-byte sum with the eight checksum-field bytes treated as spaces. Name, size, time, type, and ustar prefix are read at specified offsets. The prefix position in a GNU header is not a ustar path prefix.

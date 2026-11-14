@@ -1790,6 +1790,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-deb"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-codec-stream",
+ "xdzip-codec-tar",
+ "xdzip-domain",
+]
+
+[[package]]
 name = "xdzip-codec-native"
 version = "0.2.0"
 dependencies = [
@@ -1980,6 +1990,7 @@ dependencies = [
  "unicode-normalization",
  "winapi-util",
  "xdzip-codec-api",
+ "xdzip-codec-deb",
  "xdzip-codec-native",
  "xdzip-codec-stream",
  "xdzip-codec-tar",

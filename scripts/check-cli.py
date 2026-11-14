@@ -236,6 +236,32 @@ def check(binary, worker, output, payload=None, install_fixture=False):
         shutil.copyfile(work/'zeros.gz',unknown)
         assert invoke('list',unknown)['data']['entries']==[]
         record('zero_filled_ordinary_streams_keep_named_files')
+        deb=ROOT/'tests/fixtures/deb/control-gz-data-zst.deb'
+        entries=invoke('list',deb)['data']['entries']
+        assert len(entries)==9 and [entry['id'] for entry in entries]==list(range(1,10))
+        assert all(entry['packed_size'] is not None if entry['method']==0 else entry['packed_size'] is None for entry in entries)
+        assert invoke('test',deb)['data']['check_kind']=='format_declared_checks'
+        deb_target=work/'deb-all'
+        invoke('extract',deb,'-C',deb_target)
+        assert (deb_target/'members/debian-binary').read_bytes()==b'2.0\n'
+        assert (deb_target/'control/control').read_bytes().startswith(b'Package: xdzip-owned-fixture\n')
+        assert (deb_target/'control/postinst').read_bytes()==b'#!/bin/sh\necho owned-test-only\n'
+        assert (deb_target/'data/usr/share/xdzip/hello.txt').read_bytes()==phrase
+        assert (deb_target/'data/usr/share/xdzip/资料.txt').read_bytes()==b'owned UTF-8 content\n'
+        assert (deb_target/'data/usr/share/xdzip/empty.bin').read_bytes()==b''
+        deb_selected=work/'deb-selected'
+        invoke('extract',deb,'data/','-C',deb_selected)
+        assert (deb_selected/'data/usr/share/xdzip/hello.txt').read_bytes()==phrase
+        assert not (deb_selected/'members').exists() and not (deb_selected/'control').exists()
+        duplicate_deb=ROOT/'tests/fixtures/deb/duplicates.deb'
+        matching=[entry for entry in invoke('list',duplicate_deb)['data']['entries'] if entry['path']=='data/usr/share/xdzip/hello.txt']
+        assert len(matching)==2 and matching[0]['id']!=matching[1]['id']
+        invoke('extract',duplicate_deb,'--entry-id',matching[1]['id'],'-C',work/'deb-physical')
+        assert (work/'deb-physical/data/usr/share/xdzip/hello.txt').read_bytes()==b'second physical record\n'
+        before=hashlib.sha256(deb.read_bytes()).hexdigest()
+        invoke('add',deb,source,code=1)
+        assert hashlib.sha256(deb.read_bytes()).hexdigest()==before
+        record('deb_raw_and_nested_views_physical_selection_and_readonly_boundary')
 
 
 

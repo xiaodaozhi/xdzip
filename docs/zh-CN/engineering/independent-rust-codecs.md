@@ -22,6 +22,8 @@ RAR 官方技术说明不完整，解码算法缺口须记录并进行专项许�
 
 ## TAR 记录规格
 
+DEB 的只读普通 ar 外层通过拥有式受限子源复用同一套 TAR 与受控过滤器实现，原始、control、data 导出视图、共享输入及解码预算和快照投影见 [DEB 契约](deb-containers.md)。不引入软件包安装器、脚本执行或第三方格式运行时。
+
 独立记录层位于 `xdzip-codec-tar/src/record.rs`。布局依据 [POSIX pax 的 ustar 与 pax 交换格式](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/pax.html)，GNU 扩展参见 [GNU tar 格式说明](https://www.gnu.org/software/tar/manual/html_node/Standard.html)。不引用参考库的内部实现或私有 API。
 
 - 记录为 512 字节，头校验使用无符号字节和，并把校验字段的八个字节视为空格。名称、大小、时间、类型和 ustar 前缀按规定偏移读取。GNU 头的前缀位置不是 ustar 路径前缀。

@@ -148,6 +148,8 @@ pub enum Format {
     Zstd,
     /// TAR behind standard Zstandard frames, including TZST naming.
     TarZstd,
+    /// Debian common-ar envelope with raw members and nested control/data TAR views.
+    Deb,
     /// Independent Rust 7z behind the isolated codec worker.
     SevenZip,
     /// Independent Rust RAR read-only backend in the isolated codec worker.
@@ -209,6 +211,13 @@ pub struct Entry {
 }
 
 impl Entry {
+    /// Whether a record has its own declared packed span. Filtered TAR children
+    /// share a stream; DEB's raw ar members still have exact stored sizes.
+    pub fn packed_size_known(&self) -> bool {
+        let descriptor = self.format.descriptor();
+        !(descriptor.container == "tar" && !descriptor.filters.is_empty()
+            || self.format == Format::Deb && self.method != 0)
+    }
     /// Effective archive-relative name. Never use escaped display text as a path.
     pub fn name_bytes(&self) -> &[u8] {
         self.decoded_name
@@ -242,7 +251,8 @@ impl Entry {
             | Format::Lz4
             | Format::TarLz4
             | Format::Zstd
-            | Format::TarZstd => !self.warning && !self.link,
+            | Format::TarZstd
+            | Format::Deb => !self.warning && !self.link,
             Format::SevenZip | Format::Rar | Format::Cab | Format::Iso | Format::Udf => {
                 !self.warning && !self.link && (!self.encrypted || self.password_supported)
             }
@@ -297,6 +307,16 @@ impl std::fmt::Display for ScanError {
     }
 }
 impl std::error::Error for ScanError {}
+impl ScanError {
+    /// Preserve a host adapter's typed failure, without treating bare I/O kinds as codec errors.
+    pub fn from_source_error(error: &std::io::Error) -> Self {
+        error
+            .get_ref()
+            .and_then(|error| error.downcast_ref::<Self>())
+            .copied()
+            .unwrap_or(Self::Io)
+    }
+}
 
 /// Internal source extension point; future extraction will use a separate host-owned sink.
 pub trait MetadataCodec {

@@ -25,7 +25,7 @@ xdzip gui archive.zip
 
 不带参数显示帮助。`version`、`--version` 和 `--version-json` 使用 VERSION.json 与构建时 Git 身份；旧版版本字符串及 JSON 的 product、version、build、revision、dirty 字段保留，CLI 额外说明 component、channel、configuration、distribution、platform、architecture。`--language zh-CN|en-US` 选择帮助和结果语言，默认依据桌面语言环境变量；公共标识与错误码为英文。`l`、`x`、`c`、`a`、`t` 分别是 list、extract、create、add、test 的别名。`--` 之后作为字面文件参数。
 
-所有业务命令接受 `--json`。stdout 只输出一个 JSON 对象，字段固定为 schema_version（1）、command、status、error_code、data、summary、warnings。未知大小使用 null。列表 data 包含 format 和 entries；每条保留 id、path、display_name、size、packed_size、method、directory、link、payload_supported、encrypted、warning。path 是冻结的有效名称，异常或未解析名称为 null；display_name 只用于转义展示。任务 summary 包含实际读取、解码、校验、提交、跳过、目录与分卷计数，并保留清理警告及不确定结果。
+所有业务命令接受 `--json`。stdout 只输出一个 JSON 对象，字段固定为 schema_version（1）、command、status、error_code、data、summary、warnings。未知大小使用 null，包括共享压缩 TAR 流的子项；原始 DEB ar 成员保留精确压缩尺寸。列表 data 包含 format 和 entries；每条保留 id、path、display_name、size、packed_size、method、directory、link、payload_supported、encrypted、warning。path 是冻结的有效名称，异常或未解析名称为 null；display_name 只用于转义展示。任务 summary 包含实际读取、解码、校验、提交、跳过、目录与分卷计数，并保留清理警告及不确定结果。
 
 进度、错误和交互提示写入 stderr。JSON、非终端或 `--non-interactive` 禁止询问，缺少密码或冲突决定时取消等待中的任务，等待清理后返回 interaction_required。退出码为 0（成功或明确交接）、1（失败、部分完成或清理警告）、2（参数错误）、3（缺少交互、授权或安装条件）、130（已确认取消）。显式 skip 是已执行的策略，跳过数量仍单独报告。取消未被接纳且提交已完成时保留真实完成结果。
 

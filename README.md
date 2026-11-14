@@ -65,6 +65,7 @@ Open an archive to browse its directories, search and sort entries, and select f
 | LZ4, TAR.LZ4 | Standard frames, independent/linked blocks, concatenation and declared checks | LZ4 levels 1/6/9, ordinary LZ4 with one regular file | Not supported |
 | Zstandard, TAR.ZST (including `.tzst`) | Standard frames, admitted windows, Huffman/FSE, repeat offsets and declared checks | Zstandard levels 1/6/9, ordinary Zstandard with one regular file | Not supported |
 | 7z | Passwords, encrypted filenames, solid archives, and numbered volumes | Encryption, solid archives, and numbered volumes | Eligible unencrypted, non-split archives |
+| DEB | Common ar members, control/data TAR views, admitted GZIP/XZ/Zstandard/BZip2/LZMA profiles | Not supported | Not supported |
 | RAR | Legacy, RAR5, and RAR 7 format extensions, including passwords, solid and split archives | Not supported | Not supported |
 | CAB | Store, MSZip, Quantum, LZX, and volumes in the same directory | Not supported | Not supported |
 | ISO, UDF | ISO9660, Joliet, Rock Ridge, and UDF | Not supported | Not supported |
@@ -74,6 +75,7 @@ Open an archive to browse its directories, search and sort entries, and select f
 - XZ verifies each declared content check; streams declaring None provide structure/readability checks only. ZIPX reading supports the listed ZIP methods; PPMd, JPEG and WavPack variants remain unsupported. Additional ZIP methods are read-only and do not extend AES profiles or enable ZIPX creation.
 - Modifying 7z rebuilds the archive, with a 512 MiB working-set limit for retained and added content. New archives use streaming input and are not subject to this rebuild limit. Encrypted and split ZIP and 7z archives cannot be modified. See [archive modification](docs/engineering/archive-transfers.md).
 - RAR, CAB, ISO, and UDF are read-only. ISO/UDF images are read as files; they are not mounted or executed. See the [RAR contract](docs/engineering/rar-format-sources.md) and [format backend contract](docs/engineering/native-codecs.md) for format coverage and resource limits.
+- DEB exposes `members/`, `control/` and `data/` as export views. Extracting all includes raw members and expanded content; no installation or script execution occurs. Control accepts none/GZIP/XZ/Zstandard, data additionally BZip2/LZMA. Checks validate container readability and declared checks, without package authentication. See the [DEB contract](docs/engineering/deb-containers.md).
 - Large ZIP archives using the disk-backed index do not currently support whole-archive testing or modification. Selected regular files can still be extracted within task limits; see [large archive indexing](docs/engineering/large-index.md).
 - Sparse TAR and third-party extensions are not currently supported. Ordinary GZIP and ZIP-derived XPI/APK/IPA/CBZ candidates follow the [single-file stream contract](docs/engineering/single-file-streams.md). Legacy filename encodings are detected where possible, but short names and mixed encodings cannot be identified uniquely in every case; see [filename encoding](docs/engineering/filename-encoding.md).
 

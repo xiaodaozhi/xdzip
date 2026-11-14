@@ -1,6 +1,6 @@
 # 隔离格式工作进程契约
 
-7z、RAR、CAB 与 ISO/UDF 使用[独立 Rust 后端](independent-rust-codecs.md)，通过共享的薄 CXX 边界复用同一隔离工作进程。ZIP、TAR、TAR.GZ 使用进程内 Rust 后端。产品不从用户 PATH 查找替代工具，也不运行外部命令行解包。
+7z、RAR、CAB 与 ISO/UDF 使用[独立 Rust 后端](independent-rust-codecs.md)，通过共享的薄 CXX 边界复用同一隔离工作进程。ZIP、TAR、压缩流及 DEB 使用进程内 Rust 后端。产品不从用户 PATH 查找替代工具，也不运行外部命令行解包。
 
 CAB 产品固定执行独立 Rust 路由，没有测试开关、官方处理器或失败回退。完整帧、共享算法和资源边界见[自研契约](independent-rust-codecs.md#cab只读规格)，来源及参考分析角色见[CAB 格式来源](cab-format-sources.md)。
 

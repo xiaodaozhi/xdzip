@@ -2,6 +2,8 @@
 pub mod catalog;
 pub mod checking;
 pub mod creation;
+#[cfg(test)]
+mod deb_tests;
 mod disk_index;
 mod exporting;
 pub mod extraction;
