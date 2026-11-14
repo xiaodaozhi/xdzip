@@ -21,6 +21,8 @@ HTTPS 另显式要求 Ubuntu 的 `libssl3t64` 与 `ca-certificates`，验证 `li
 
 每个 ELF 使用 patchelf 设置相对 `$ORIGIN` RPATH，插件按自身目录到 lib/ 的相对距离计算。Qt 的路径重定向按 [qt.conf 官方规则](https://doc.qt.io/qt-6.8/qt-conf.html)执行，允许整个目录迁移。库保持动态链接和可替换，不限制用户更换兼容 Qt。通用 Linux 部署边界见 [Qt Linux 部署说明](https://doc.qt.io/qt-6.8/linux-deployment.html)。
 
+相对 RPATH 改写后，部署移除无用的原生符号表，并核对每个 ELF 的 DT_NEEDED 和 RPATH／RUNPATH 项保持不变。`symbol_stripping` 逐文件记录工具版本、前后哈希和字节数，SDK 输入及原始构建二进制不变。需要保留符号的诊断副本可对底层部署脚本传入 `--keep-symbols`。最终 SDK 归属与应用摘要对应转换后的文件。这是载荷体积优化，不代表已经测得内存或吞吐提升。
+
 日常使用[统一构建入口](developer-build.md)分阶段生成和核验；先完成同配置 build／test 与打包准备，再执行：
 
 ```sh

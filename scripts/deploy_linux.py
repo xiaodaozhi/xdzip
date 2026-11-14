@@ -170,7 +170,26 @@ def relocate_cli_context(cli):
     context.write_text(json.dumps(record)+'\n')
 
 
-def deploy(app,sdk,output,notices):
+def strip_runtime(root, files):
+    """Strip only copied ELF files, retaining dynamic imports and relative RPATHs."""
+    files=sorted(files)
+    if root.is_symlink() or any(p.is_symlink() or not p.is_file() or not within(p,root) for p in files):
+        raise ValueError('Symbol stripping requires files inside the generated runtime')
+    version=command('strip','--version').splitlines()[0]
+    def linkage(path):
+        return [line.strip() for line in command('readelf','-d',str(path)).splitlines()
+                if any(tag in line for tag in ('(NEEDED)','(RPATH)','(RUNPATH)'))]
+    records=[]
+    for path in files:
+        imports=linkage(path);before=digest(path);size=path.stat().st_size
+        command('strip','--strip-unneeded',str(path))
+        if linkage(path)!=imports:raise ValueError('Symbol stripping changed runtime linkage')
+        records.append({'path':path.relative_to(root).as_posix(),'input_sha256':before,
+                        'artifact_sha256':digest(path),'before_bytes':size,'after_bytes':path.stat().st_size})
+    return {'tool_version':version,'files':records}
+
+
+def deploy(app,sdk,output,notices,*,strip_symbols=True):
     if sys.platform!='linux' or platform.machine()!='x86_64':raise ValueError('Deployment requires native Linux x86_64')
     app,sdk,output=app.resolve(),sdk.resolve(),output.resolve()
     if not within(output,ROOT/'build') and not within(output,ROOT/'dist'):
@@ -265,6 +284,7 @@ def deploy(app,sdk,output,notices):
         command('patchelf','--set-rpath',relative_rpath(binary,output),str(binary))
         if command('patchelf','--print-rpath',str(binary)).strip()!=relative_rpath(binary,output):
             raise ValueError('Relocatable RPATH verification failed')
+    stripped=strip_runtime(output,inspected) if strip_symbols else None
     (output/'bin/qt.conf').write_text('[Paths]\nPrefix=..\nLibraries=lib\nPlugins=plugins\nQmlImports=qml\nTranslations=translations\n')
     launcher=output/'xdzip'
     launcher.write_text('''#!/bin/sh
@@ -283,6 +303,7 @@ exec "$xdzip_dir/bin/xdzip" "$@"
     shutil.copy2(ROOT/'apps/desktop/packaging/linux/README.md',output/'README.md')
     report={'schema_version':1,'baseline':'Ubuntu 24.04 x86_64, X11','qt':'6.8.2',
             'quick_style':'Basic','removed_qml':removed_qml,
+            'symbol_stripping':stripped,
             'entry':'xdzip','executable':'bin/xdzip','qml_roots':roots,'optional_native_modules_omitted':omitted,
             'patched_elf_files':len(inspected),'copied_libraries':[x for x in copied if x['path'].startswith('lib/')],
             'system_packages':sorted(packages),'system_libraries':sorted(system_libraries),
@@ -295,7 +316,9 @@ exec "$xdzip_dir/bin/xdzip" "$@"
     for group in ['qml','plugins','translations']:
         for path in (output/group).rglob('*'):
             if path.is_file():origins[path.relative_to(output).as_posix()] = path.relative_to(output).as_posix()
-    report['application_transform'] = {'source_sha256':digest(app),'artifact_sha256':digest(output/'bin/xdzip'),'kind':'relative RPATH rewrite by patchelf','tool_version':command('patchelf','--version').strip()}
+    report['application_transform'] = {'source_sha256':digest(app),'artifact_sha256':digest(output/'bin/xdzip'),
+        'kind':'relative RPATH rewrite by patchelf'+('; strip --strip-unneeded' if strip_symbols else ''),
+        'tool_version':command('patchelf','--version').strip()}
     report['sdk_files'] = [{'path':path,'sdk_path':source,'sdk_sha256':digest(sdk/source),
                             'artifact_sha256':digest(output/path)} for path,source in sorted(origins.items())]
     (output/'share/deployment.json').write_text(json.dumps(report,indent=2)+'\n')
@@ -306,8 +329,9 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--app',type=Path,required=True);parser.add_argument('--qt-prefix',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True);parser.add_argument('--notices',type=Path,required=True)
+    parser.add_argument('--keep-symbols',action='store_true',help='Keep native symbol tables in a diagnostic deployment copy')
     args=parser.parse_args()
-    try:report=deploy(args.app,args.qt_prefix,args.output,args.notices)
+    try:report=deploy(args.app,args.qt_prefix,args.output,args.notices,strip_symbols=not args.keep_symbols)
     except (ValueError,OSError,subprocess.SubprocessError) as error:raise SystemExit(str(error))
     print(f'Linux runtime directory: {report["patched_elf_files"]} relocated ELF files, {len(report["system_packages"])} OS packages')
 

@@ -8,7 +8,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
-from deploy_linux import qml_roots, relative_rpath, runtime_origin, tls_requirements, TLS_PLUGIN, prune_qml, relocate_cli_context
+from deploy_linux import qml_roots, relative_rpath, runtime_origin, tls_requirements, TLS_PLUGIN, prune_qml, relocate_cli_context, strip_runtime
 from verify_linux_runtime import check_events, check_https, run_https_probe, main as verify_runtime_main
 from package_linux import archive_payload
 
@@ -36,6 +36,30 @@ def probe_output(record):
 
 
 class LinuxDeploymentTests(unittest.TestCase):
+    def test_stripping_records_bytes_and_hashes_without_changing_dynamic_linkage(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);binary=root/'owned';binary.write_bytes(b'owned unstripped binary')
+            dynamic=' 0x01 (NEEDED) Shared library: [libc.so.6]\n 0x1d (RUNPATH) Library runpath: [$ORIGIN/../lib]\n'
+            def command(*args):
+                if args==('strip','--version'):return 'owned strip version\n'
+                if args[:2]==('readelf','-d'):return dynamic
+                self.assertEqual(args,('strip','--strip-unneeded',str(binary)))
+                binary.write_bytes(b'owned stripped');return ''
+            with patch('deploy_linux.command',side_effect=command):report=strip_runtime(root,[binary])
+            self.assertEqual(report['files'][0]['before_bytes'],len(b'owned unstripped binary'))
+            self.assertEqual(report['files'][0]['after_bytes'],len(b'owned stripped'))
+            self.assertNotEqual(report['files'][0]['input_sha256'],report['files'][0]['artifact_sha256'])
+
+    def test_stripping_refuses_outside_files_before_running_tools_and_detects_changed_imports(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base=Path(temp);root=base/'runtime';root.mkdir();outside=base/'outside';outside.touch()
+            with patch('deploy_linux.command') as command:
+                with self.assertRaisesRegex(ValueError,'inside'):strip_runtime(root,[outside])
+                command.assert_not_called()
+            binary=root/'owned';binary.write_bytes(b'owned')
+            with patch('deploy_linux.command',side_effect=['strip version','(NEEDED) old','','(NEEDED) new']):
+                with self.assertRaisesRegex(ValueError,'linkage'):strip_runtime(root,[binary])
+
     def test_desktop_cli_relocation_requires_its_exact_context_and_no_duplicate(self):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp);context=root/'xdzip-cli-context.json'

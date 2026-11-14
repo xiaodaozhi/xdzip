@@ -21,6 +21,8 @@ HTTPS additionally requires Ubuntu `libssl3t64` and `ca-certificates`. Verify sy
 
 patchelf sets relative `$ORIGIN` RPATH on every ELF, calculating each plugin's relative distance to lib/. Qt path redirection follows [official qt.conf rules](https://doc.qt.io/qt-6.8/qt-conf.html), allowing relocation of the entire directory. Libraries remain dynamically linked and replaceable; compatible Qt replacement is not restricted. See [Qt Linux deployment](https://doc.qt.io/qt-6.8/linux-deployment.html) for general boundaries.
 
+After relative RPATH rewriting, deployment strips unneeded native symbol tables and verifies that every DT_NEEDED and RPATH/RUNPATH entry is unchanged. It records tool version, before/after hashes and byte counts for each ELF in `symbol_stripping`; SDK inputs and original build binaries remain untouched. For a diagnostic copy, the underlying deploy script accepts `--keep-symbols`. Final SDK attribution and application hashes describe the transformed files. This reduces package bytes, not a measured memory or throughput improvement.
+
 Use the [unified build entry point](developer-build.md) in stages for routine generation and verification. Complete same-configuration build/test and packaging preparation first, then run:
 
 ```sh
