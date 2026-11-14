@@ -138,6 +138,11 @@ impl Archive {
             ) << 2);
         let edit_restriction = edit_restriction | (u8::from(!format.descriptor().rewrite) << 2);
         let edit_restriction = edit_restriction | (u8::from(disk.is_some()) << 2);
+        let edit_restriction = edit_restriction
+            | (u8::from(
+                format == xdzip_codec_api::Format::Zip
+                    && rows.iter().any(|row| !matches!(row.method, 0 | 8)),
+            ) << 2);
         let update_allowed = edit_restriction == 0;
         Ok(Self {
             update_allowed,

@@ -70,7 +70,7 @@ footer{margin-top:28px;border-top:1px solid var(--line);padding-top:18px;font-si
 <p>沿用折角文档与编织标记，以格式名称为主、辅助色为辅。<br>10 个格式图标与 1 个通用后备图标，共用一套形状与留白。</p></div>
 <div class="toolbar"><button id="theme" aria-pressed="false">深色背景</button><button id="selected" aria-pressed="false">选中背景</button></div></header>
 <div class="grid">'''
-    foot = '''</div><div class="principles"><div><strong>品牌一致</strong><p>纸张、折角与品牌标记复用现有几何，格式标签全部使用矢量轮廓。</p></div><div><strong>小尺寸做减法</strong><p>16 / 24 / 32 px 省去微字，扩大标记。文件名承担精确的格式识别。</p></div><div><strong>同族有联系</strong><p>TAR.GZ、TGZ、GZ 共用青绿色。GZ 图标不代表支持独立 GZIP。</p></div></div></section>
+    foot = '''</div><div class="principles"><div><strong>品牌一致</strong><p>纸张、折角与品牌标记复用现有几何，格式标签全部使用矢量轮廓。</p></div><div><strong>小尺寸做减法</strong><p>16 / 24 / 32 px 省去微字，扩大标记。文件名承担精确的格式识别。</p></div><div><strong>同族有联系</strong><p>TAR.GZ、TGZ、GZ 共用青绿色。GZ 图标覆盖独立 GZIP 及 TAR.GZ 外层，实际能力由内容和格式契约决定。</p></div></div></section>
 <section class="sizes"><h2>按实际尺寸检查</h2><p class="hint">浏览器 100% 下按 CSS 像素显示，保持透明边缘，不把预览倍率写进图标几何。48 px 起保留标签，长标签优先在 64 px 以上阅读。</p><div class="table"><div class="size-row size-head"><strong>格式</strong><span>16</span><span>24</span><span>32</span><span>48</span><span>64</span><span>128</span></div>'''
     end = '''</div></section><footer><p>Windows 和 macOS 使用各自可识别的文档图标，Linux 保留系统 MIME 图标。Explorer 和 Finder 的原生显示需单独验收。</p>
 <p><a href="../../../docs/visual/file-association-icons.md">设计与映射规范</a><a href="../../assets/index.html">统一素材库</a><a href="../index.html">高保真总览</a></p></footer></main>

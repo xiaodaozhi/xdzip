@@ -406,6 +406,7 @@ pub struct LzmaReader<R> {
     range: Option<Range>,
     expected: Option<u64>,
     member: bool,
+    end_marker: Option<bool>,
     decoded: u64,
     pending: (usize, usize),
     ended: bool,
@@ -434,6 +435,27 @@ impl<R: Read> LzmaReader<R> {
     ) -> io::Result<Self> {
         Self::construct(source, packed_limit, None, properties, memory_limit, true)
     }
+    /// A sized raw stream whose container explicitly requires or forbids EOS.
+    /// This does not weaken the packed/output assertions of the normal reader.
+    pub fn new_with_end_marker(
+        source: R,
+        packed: u64,
+        expected: u64,
+        properties: &[u8],
+        memory_limit: u64,
+        required: bool,
+    ) -> io::Result<Self> {
+        let mut reader = Self::construct(
+            source,
+            packed,
+            Some(expected),
+            properties,
+            memory_limit,
+            false,
+        )?;
+        reader.end_marker = Some(required);
+        Ok(reader)
+    }
     fn construct(
         source: R,
         packed: u64,
@@ -457,6 +479,7 @@ impl<R: Read> LzmaReader<R> {
             range: None,
             expected,
             member,
+            end_marker: None,
             decoded: 0,
             pending: (0, 0),
             ended: false,
@@ -493,6 +516,9 @@ impl<R: Read> LzmaReader<R> {
         }
         let range = self.range.as_mut().ok_or_else(invalid)?;
         if self.expected.is_some() && range.complete(&self.input) {
+            if self.end_marker == Some(true) {
+                return Err(invalid());
+            }
             self.ended = true;
             return Ok(());
         }
@@ -500,6 +526,7 @@ impl<R: Read> LzmaReader<R> {
             token(&mut self.models, &self.dictionary, range, &mut self.input)?,
             Token::End
         ) || !range.complete(&self.input)
+            || self.end_marker == Some(false)
         {
             return Err(invalid());
         }

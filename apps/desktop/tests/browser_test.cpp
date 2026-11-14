@@ -9184,7 +9184,7 @@ QtObject {
         formats->setProperty("currentIndex", 3);
         QCOMPARE(create->width(), 491);
         QTRY_VERIFY(formats->width() > 0);
-        QCOMPARE(formats->property("count").toInt(), 5);
+        QCOMPARE(formats->property("count").toInt(), 7);
         for (int index = 0; index < formats->property("count").toInt(); ++index) {
             formats->setProperty("currentIndex", index);
             auto *label =
@@ -9328,7 +9328,29 @@ QtObject {
         QVERIFY(controller->passwordPrompt().isEmpty());
         QTRY_VERIFY(!passwordWindow->isVisible());
     }
-    void gzipCreationUsesStableCapabilityAndSingleFileAdmission() {
+    void singleStreamCreationUsesStableCapability_data() {
+        QTest::addColumn<QString>("formatId");
+        QTest::addColumn<QString>("suffix");
+        QTest::addColumn<QString>("label");
+        QTest::addColumn<QString>("language");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")}) {
+            QTest::newRow(qPrintable("gzip-" + language))
+                << QStringLiteral("gzip") << QStringLiteral("gz") << QStringLiteral("GZIP")
+                << language;
+            QTest::newRow(qPrintable("xz-" + language))
+                << QStringLiteral("xz") << QStringLiteral("xz") << QStringLiteral("XZ") << language;
+            QTest::newRow(qPrintable("tar-xz-" + language))
+                << QStringLiteral("tar-xz") << QStringLiteral("tar.xz") << QStringLiteral("TAR.XZ")
+                << language;
+        }
+    }
+    void singleStreamCreationUsesStableCapability() {
+        QFETCH(QString, formatId);
+        QFETCH(QString, suffix);
+        QFETCH(QString, label);
+        QFETCH(QString, language);
+        QVERIFY(initializeUiText(language));
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
         QTemporaryDir input;
         QTemporaryDir output;
         QVERIFY(input.isValid() && output.isValid());
@@ -9348,7 +9370,7 @@ QtObject {
         QTRY_VERIFY(create->isVisible() && !controller->busy());
         int gzipIndex = -1;
         QVERIFY(QMetaObject::invokeMethod(create, "formatIndex", Q_RETURN_ARG(int, gzipIndex),
-                                          Q_ARG(QString, QStringLiteral("gzip"))));
+                                          Q_ARG(QString, formatId)));
         QVERIFY(gzipIndex >= 0);
         auto *format = findVisual(create->contentItem(), "createFormat");
         auto *name = findVisual(create->contentItem(), "createName");
@@ -9357,20 +9379,20 @@ QtObject {
         auto *level = findVisual(create->contentItem(), "createLevel");
         QVERIFY(format && name && target && start && level);
         format->setProperty("currentIndex", gzipIndex);
-        level->setProperty("currentIndex", 0);
-        QTRY_COMPARE(create->property("formatId").toString(), QStringLiteral("gzip"));
+        level->setProperty("currentIndex", formatId == "gzip" ? 0 : 1);
+        QTRY_COMPARE(level->property("count").toInt(), formatId == "gzip" ? 4 : 3);
+        QTRY_COMPARE(create->property("formatId").toString(), formatId);
         QVERIFY(QMetaObject::invokeMethod(create, "addInputPaths",
                                           Q_ARG(QVariant, QVariant(QStringList{input.path()})),
                                           Q_ARG(bool, true)));
         QTRY_COMPARE(create->property("inputs").toList().size(), 1);
-        QVERIFY(!create->property("inputsValid").toBool());
-        QVERIFY(!start->isEnabled());
+        QCOMPARE(create->property("inputsValid").toBool(), formatId == "tar-xz");
         create->setProperty("inputs", QVariantList{});
         QVERIFY(QMetaObject::invokeMethod(create, "addInputPaths",
                                           Q_ARG(QVariant, QVariant(QStringList{source})),
                                           Q_ARG(bool, false)));
         QTRY_VERIFY(create->property("inputsValid").toBool());
-        name->setProperty("text", QStringLiteral("renamed.gz"));
+        name->setProperty("text", (QStringLiteral("renamed.") + suffix));
         target->setProperty("text", output.path());
         QTRY_VERIFY(!controller->busy());
         controller->checkCreationTarget(output.path());
@@ -9385,9 +9407,9 @@ QtObject {
         QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
                  QStringLiteral("succeeded"));
         QTRY_VERIFY(controller->ready() && !controller->busy());
-        QCOMPARE(controller->formatLabel(), QStringLiteral("GZIP"));
+        QCOMPARE(controller->formatLabel(), label);
         QCOMPARE(controller->archiveTotal(), 1);
-        QVERIFY(QFileInfo::exists(output.filePath(QStringLiteral("renamed.gz"))));
+        QVERIFY(QFileInfo::exists(output.filePath((QStringLiteral("renamed.") + suffix))));
     }
     void creationControlsMatchReviewedSource() {
         const bool accessibilityWasActive = QAccessible::isActive();
@@ -9459,7 +9481,7 @@ QtObject {
         usePassword->setProperty("checked", false);
         QTRY_COMPARE(password->property("text").toString(), QString{});
         QTRY_VERIFY(start->isEnabled());
-        QCOMPARE(group->property("count").toInt(), 5);
+        QCOMPARE(group->property("count").toInt(), 7);
         group->forceActiveFocus(Qt::TabFocusReason);
         QTest::keyClick(create, Qt::Key_Down);
         QCOMPARE(group->property("currentIndex").toInt(), 1);
@@ -9594,8 +9616,9 @@ QtObject {
         QVERIFY(formats);
         QTRY_VERIFY(formats->width() > 0);
         QTRY_VERIFY(formats->width() <= 608);
-        for (const auto &format : {"ZIP", "TAR", "TAR.GZ", "7z", "GZIP", "BZip2", "TAR.BZ2", "LZMA",
-                                   "TAR.LZMA", "Lzip", "TAR.LZ", "RAR", "CAB", "ISO", "UDF"}) {
+        for (const auto &format :
+             {"ZIP", "TAR", "TAR.GZ", "7z", "GZIP", "BZip2", "TAR.BZ2", "LZMA", "TAR.LZMA", "Lzip",
+              "TAR.LZ", "XZ", "TAR.XZ", "RAR", "CAB", "ISO", "UDF"}) {
             auto *badge =
                 findVisual(window->contentItem(), "welcomeFormat-" + QString::fromLatin1(format));
             QVERIFY(badge && badge->isVisible());
@@ -9609,15 +9632,17 @@ QtObject {
         task->setProperty("archiveName", "readonly-image.iso");
         for (const auto &format :
              {QStringLiteral("TAR"), QStringLiteral("LZMA"), QStringLiteral("TAR.LZMA"),
-              QStringLiteral("ISO"), QStringLiteral("UDF")}) {
+              QStringLiteral("ISO"), QStringLiteral("UDF"), QStringLiteral("XZ"),
+              QStringLiteral("TAR.XZ")}) {
             task->setProperty("resultTask", QVariantMap{{"kind", "check"}, {"format", format}});
             QVERIFY(QMetaObject::invokeMethod(task, "present"));
             QTRY_VERIFY(task->isVisible());
             auto *footer = findVisual(task->contentItem(), "taskFooter");
             QVERIFY(footer);
             QCOMPARE(footer->property("note").toString(),
-                     format == "TAR" ? qtTrId("integrity.tarNote")
-                                     : qtTrId("integrity.structuralNote").arg(format));
+                     format == "TAR"         ? qtTrId("integrity.tarNote")
+                     : format.contains("XZ") ? qtTrId("integrity.declaredCheckNote")
+                                             : qtTrId("integrity.structuralNote").arg(format));
             auto *hint = qobject_cast<QQuickItem *>(footer->property("hint").value<QObject *>());
             auto *label =
                 hint ? qobject_cast<QQuickItem *>(hint->property("labelItem").value<QObject *>())
@@ -9641,8 +9666,12 @@ QtObject {
         QTest::addColumn<QString>("format");
         QTest::addColumn<QString>("language");
         const QList<QPair<QString, QString>> formats{
-            {"phrase.bz2", "BZip2"},   {"phrase.lzma", "LZMA"},        {"phrase.lz", "Lzip"},
-            {"files.tbz2", "TAR.BZ2"}, {"files.tar.lzma", "TAR.LZMA"}, {"files.tlz", "TAR.LZ"}};
+            {"phrase.bz2", "BZip2"},        {"phrase.lzma", "LZMA"},
+            {"phrase.lz", "Lzip"},          {"files.tbz2", "TAR.BZ2"},
+            {"files.tar.lzma", "TAR.LZMA"}, {"files.tlz", "TAR.LZ"},
+            {"phrase-crc64.xz", "XZ"},      {"files.txz", "TAR.XZ"},
+            {"zipx-deflate64.zipx", "ZIP"}, {"zipx-bzip2.zipx", "ZIP"},
+            {"zipx-lzma.zipx", "ZIP"},      {"zipx-xz.zipx", "ZIP"}};
         for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
             for (const auto &[fixture, format] : formats)
                 QTest::newRow(qPrintable(fixture + "-" + language))
@@ -9673,11 +9702,17 @@ QtObject {
         const auto *row = controller->m_model.rowAt(0);
         QVERIFY(row);
         const bool tar = format.startsWith("TAR.");
-        const auto leaf = tar ? QStringLiteral("hello.txt") : QStringLiteral("phrase");
+        const auto leaf =
+            tar || format == "ZIP" ? QStringLiteral("hello.txt") : fixture.section('.', 0, 0);
         QCOMPARE(row->cells[0], leaf);
         QCOMPARE(row->cells[2].isEmpty(), tar);
-        QCOMPARE(row->method, format.contains("BZ") || format == "BZip2" ? QStringLiteral("BZip2")
-                                                                         : QStringLiteral("LZMA"));
+        const auto method =
+            fixture.contains("deflate64")                          ? QStringLiteral("Deflate64")
+            : format.contains("XZ") || fixture.contains("zipx-xz") ? QStringLiteral("XZ")
+            : format.contains("BZ") || format == "BZip2" || fixture.contains("zipx-bzip2")
+                ? QStringLiteral("BZip2")
+                : QStringLiteral("LZMA");
+        QCOMPARE(row->method, method);
         const auto entry = row->id;
         QSignalSpy checked(controller, &BrowserController::archiveTestStarted);
         controller->startArchiveTest();

@@ -165,6 +165,7 @@ fn all_filtered_profiles_enforce_actual_output_limit_and_midstream_cancellation(
         ("phrase.bz2", Filter::Bzip2),
         ("phrase.lzma", Filter::Lzma),
         ("phrase.lz", Filter::Lzip),
+        ("phrase-crc64.xz", Filter::Xz),
     ] {
         for (limit, good) in [(144, true), (143, false)] {
             let cancel = Cancellation::default();

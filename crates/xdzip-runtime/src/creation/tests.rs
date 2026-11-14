@@ -41,9 +41,14 @@ fn gzip_empty_tar_precedence_requires_a_fully_zero_decoded_stream() {
 }
 
 #[test]
-fn gzip_creation_browsing_checking_and_extraction_preserve_single_file_bytes() {
+fn single_file_creation_browsing_checking_and_extraction_preserve_bytes() {
     use std::io::Read;
-    for empty in [false, true] {
+    for (empty, format, suffix, method) in [
+        (false, Format::Gzip, "gz", 8),
+        (true, Format::Gzip, "gz", 8),
+        (false, Format::Xz, "xz", 32),
+        (true, Format::Xz, "xz", 32),
+    ] {
         let fixture = Fixture::new();
         let input = fixture.0.join(if empty {
             "输入/empty.bin"
@@ -51,20 +56,29 @@ fn gzip_creation_browsing_checking_and_extraction_preserve_single_file_bytes() {
             "输入/文件.txt"
         });
         let expected = std::fs::read(&input).unwrap();
-        let mut job = fixture.job(8);
+        let mut job = fixture.job(method);
         job.options.inputs = vec![input.to_string_lossy().into_owned()];
-        job.options.name = "重新命名.bin.gz".into();
+        job.options.name = format!("重新命名.bin.{suffix}");
         assert!(job.options.bounded());
         let created = execute(job, &Control::default(), |_| {});
         assert_eq!(created.status, Status::Succeeded, "{}", created.error);
         let mut independent = Vec::new();
-        flate2::read::MultiGzDecoder::new(std::fs::File::open(&created.target).unwrap())
-            .read_to_end(&mut independent)
-            .unwrap();
+        let file = std::fs::File::open(&created.target).unwrap();
+        if format == Format::Gzip {
+            flate2::read::MultiGzDecoder::new(file)
+                .read_to_end(&mut independent)
+                .unwrap();
+        } else {
+            let packed = file.metadata().unwrap().len();
+            xdzip_codec_stream::xz::XzReader::new(file, packed, 128 << 20)
+                .unwrap()
+                .read_to_end(&mut independent)
+                .unwrap();
+        }
         assert_eq!(independent, expected);
         let cancel = Cancellation::default();
         let archive = crate::Archive::open(Path::new(&created.target), &cancel).unwrap();
-        assert_eq!(archive.format, Format::Gzip);
+        assert_eq!(archive.format, format);
         assert!(!archive.update_allowed);
         assert_eq!(archive.rows.len(), 1);
         assert_eq!(archive.rows[0].name_bytes(), "重新命名.bin".as_bytes());

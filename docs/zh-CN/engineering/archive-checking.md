@@ -41,3 +41,5 @@ English: Older RAR encrypted records request a password separately for each entr
 包含未知原始大小的归档仍可浏览；整包检查的总量标为未知，并在打开 payload 或请求密码前以 `unsupported_feature` 失败，已验证和解码产量保持实际值。未知大小不按空文件验证，也不将内部 sentinel 用作进度分母。
 
 English: Archives with unknown uncompressed sizes remain browsable. Whole-archive checks report an unknown total and fail with `unsupported_feature` before opening payloads or requesting passwords. Actual decoded and verified counters are retained; unknown values are never verified as empty files or used as progress totals.
+
+XZ 和 TAR.XZ 使用 `format_declared_checks`，须验证声明的 CRC32、CRC64、SHA-256 和结构字段；声明 None 的流没有内容校验和。界面须说明此区别，不承诺每份输入都有内容校验和。新增未加密 ZIP 方法 9、12、14、95 仍须满足精确解码尺寸及外层 ZIP CRC，LZMA 数据描述符配置须有 EOS。未知方法可展示，但不能计为内容验证成功。

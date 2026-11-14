@@ -46,9 +46,9 @@ pub struct Options {
     pub inputs: Vec<String>,
     /// Existing, explicitly selected output directory.
     pub target: String,
-    /// Portable basename ending in .zip, .tar, .tar.gz or .7z, never a subpath.
+    /// Portable basename with a registered creation suffix, never a subpath.
     pub name: String,
-    /// ZIP method: 0 Store or 8 Deflate.
+    /// Registered creation method: 0 Store/Copy, 8 Deflate, or 32 LZMA2.
     pub method: u16,
     /// Deflate level: 1 quick, 6 balanced, 9 smaller.
     pub level: u8,
@@ -84,17 +84,10 @@ impl Options {
             && (creation_format(&self.name) == Some(Format::SevenZip)
                 || (!self.solid && !self.encrypt_headers))
             && (!self.encrypt_headers || self.password.is_some())
-            && (creation_format(&self.name) != Some(Format::Tar) || self.method == 0)
-            && (!matches!(
-                creation_format(&self.name),
-                Some(Format::TarGzip | Format::Gzip)
-            ) || self.method == 8)
             && PortablePath::parse(&self.name).is_some_and(|p| p.parts().len() == 1)
-            && (if creation_format(&self.name) == Some(Format::SevenZip) {
-                [0, 32].contains(&self.method)
-            } else {
-                [0, 8].contains(&self.method)
-            })
+            && creation_format(&self.name)
+                .and_then(|format| format.descriptor().creation_method(self.method))
+                .is_some()
             && ([1, 6, 9].contains(&self.level)
                 || (matches!(
                     creation_format(&self.name),
@@ -403,15 +396,10 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                 EncodeSettings {
                     solid: job.options.solid,
                     encrypt_headers: job.options.encrypt_headers,
-                    method: if job.options.method == 0 && format == Format::SevenZip {
-                        "copy"
-                    } else if job.options.method == 0 {
-                        "store"
-                    } else if format == Format::SevenZip {
-                        "lzma2"
-                    } else {
-                        "deflate"
-                    },
+                    method: format
+                        .descriptor()
+                        .creation_method(job.options.method)
+                        .ok_or("unsupported_feature")?,
                     level: job.options.level,
                     password: job.options.password.as_ref().map(Password::expose),
                 },
@@ -519,7 +507,8 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                     } else {
                         input.name.clone()
                     };
-                    if (format != Format::Gzip && row.raw_name != expected.as_bytes())
+                    if (format.descriptor().container != "single-file"
+                        && row.raw_name != expected.as_bytes())
                         || row.directory != input.directory
                         || row.size != input.size
                     {

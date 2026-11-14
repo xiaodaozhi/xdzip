@@ -6,6 +6,7 @@ use xdzip_codec_api::{
         CreationCodec, EncodeError, EncodeInput, EncodeOutput, EncodeProgress, EncodeSettings,
     },
 };
+use xdzip_codec_stream::xz::XzWriter;
 use xdzip_compression::GzipWriter;
 
 fn write_record(
@@ -129,19 +130,33 @@ impl CreationCodec for TarCodec {
         cancel: &Cancellation,
         progress: &mut dyn FnMut(EncodeProgress<'_>),
     ) -> Result<(), EncodeError> {
-        if !matches!(self.filter, Filter::Identity | Filter::Gzip)
+        if !matches!(self.filter, Filter::Identity | Filter::Gzip | Filter::Xz)
             || settings.password.is_some()
-            || ![0, 1, 6, 9].contains(&settings.level)
+            || (![1, 6, 9].contains(&settings.level)
+                && !(self.filter != Filter::Xz && settings.level == 0))
             || settings.method
-                != if self.filter == Filter::Gzip {
-                    "deflate"
-                } else {
-                    "store"
+                != match self.filter {
+                    Filter::Gzip => "deflate",
+                    Filter::Xz => "lzma2",
+                    _ => "store",
                 }
         {
             return Err(EncodeError::Unsupported);
         }
-        if self.filter == Filter::Gzip {
+        if self.filter == Filter::Xz {
+            let mut encoder =
+                XzWriter::new(output, settings.level, 128 << 20).map_err(|error| {
+                    if error.kind() == std::io::ErrorKind::OutOfMemory {
+                        EncodeError::Limit
+                    } else {
+                        EncodeError::Output
+                    }
+                })?;
+            write_tar(&mut encoder, input, cancel, progress)?;
+            cancel.check().map_err(|_| EncodeError::Cancelled)?;
+            encoder.finish().map_err(|_| EncodeError::Output)?;
+            Ok(())
+        } else if self.filter == Filter::Gzip {
             let mut encoder =
                 GzipWriter::new(output, settings.level).map_err(|_| EncodeError::Invalid)?;
             write_tar(&mut encoder, input, cancel, progress)?;

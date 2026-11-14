@@ -421,10 +421,10 @@ class InstallerTests(unittest.TestCase):
                             udf_documents+=1
                             self.assertNotIn('LSItemContentTypes',document)
                             self.assertEqual(document['CFBundleTypeExtensions'],['udf'])
-                        elif set(document['CFBundleTypeExtensions']) <= {'bz2','bz','tbz','tbz2','lzma','tlz','lz'}:
+                        elif set(document['CFBundleTypeExtensions']) <= {'bz2','bz','tbz','tbz2','lzma','tlz','lz','xz','txz'}:
                             self.assertNotIn('LSItemContentTypes',document)
                             self.assertEqual(document['CFBundleTypeIconFile'],'xdzip-archive.icns')
-                        elif set(document['CFBundleTypeExtensions']) <= {'xpi','apk','ipa','cbz'}:
+                        elif set(document['CFBundleTypeExtensions']) <= {'zipx','xpi','apk','ipa','cbz'}:
                             self.assertNotIn('LSItemContentTypes',document)
                             self.assertEqual(document['CFBundleTypeIconFile'],'xdzip-zip.icns')
                         else:

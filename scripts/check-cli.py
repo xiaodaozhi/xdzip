@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import gzip
 import json
+import lzma
 import os
 from pathlib import Path
 import signal
@@ -135,6 +136,9 @@ def check(binary, worker, output, payload=None, install_fixture=False):
             ('phrase.bz2','supported_content','phrase'), ('phrase.lzma','structure_and_readability','phrase'),
             ('phrase.lz','supported_content','phrase'), ('files.tbz2','supported_content','hello.txt'),
             ('files.tar.lzma','structure_and_readability','hello.txt'), ('files.tlz','supported_content','hello.txt'),
+            ('phrase-crc64.xz','format_declared_checks','phrase-crc64'), ('files.txz','format_declared_checks','hello.txt'),
+            ('zipx-deflate64.zipx','supported_content','hello.txt'), ('zipx-bzip2.zipx','supported_content','hello.txt'),
+            ('zipx-lzma.zipx','supported_content','hello.txt'), ('zipx-xz.zipx','supported_content','hello.txt'),
         ]:
             archive = ROOT/'tests/fixtures/streams'/name
             listed = invoke('list',archive)['data']['entries']
@@ -149,6 +153,23 @@ def check(binary, worker, output, payload=None, install_fixture=False):
             assert invoke('create',refused,single,code=2)['error_code'] == 'unsupported_format'
             assert not refused.exists()
         record('bzip2_lzma_lzip_and_tar_filters_read_only')
+        for suffix in ['xz','tar.xz','txz']:
+            for level in ['fast','normal','best']:
+                archive=work/('created-'+level+'.'+suffix)
+                invoke('create',archive,single if suffix=='xz' else source,'--level',level)
+                invoke('test',archive)
+                if suffix=='xz':
+                    assert lzma.decompress(archive.read_bytes())==single.read_bytes()
+                else:
+                    with tarfile.open(archive,'r:xz') as independent:
+                        assert independent.extractfile(source.name+'/'+single.name).read()==single.read_bytes()
+                target=work/('created-output-'+suffix+'-'+level)
+                invoke('extract',archive,'-C',target)
+                assert (target/('created-'+level if suffix=='xz' else source.name+'/'+single.name)).read_bytes()==single.read_bytes()
+            refused=work/('store-refused.'+suffix)
+            assert invoke('create',refused,single,'--level','store',code=2)['error_code']=='unsupported_options'
+            assert not refused.exists()
+        record('xz_txz_lzma2_levels_and_independent_readers')
         invoke('create',work/'literal.zip','--','--input.txt')
         assert invoke('list',work/'literal.zip')['data']['entries'][0]['path'] == '--input.txt'
         duplicate = ROOT/'tests/fixtures/zip/normal.zip'

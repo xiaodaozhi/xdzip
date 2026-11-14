@@ -37,7 +37,7 @@
     {"id": "cab", "label": "CAB", "family": "cab", "extensions": [".cab"], "name": "CAB 安装归档"},
     {"id": "iso", "label": "ISO", "family": "iso", "extensions": [".iso"], "name": "ISO 光盘映像"},
     {"id": "udf", "label": "UDF", "family": "udf", "extensions": [".udf"], "name": "UDF 光盘映像"},
-    {"id": "archive", "label": "", "family": "generic", "extensions": [".bz2", ".bz", ".tar.bz2", ".tar.bz", ".tbz", ".tbz2", ".lzma", ".tar.lzma", ".tlz", ".lz", ".tar.lz"], "name": "通用归档后备"}
+    {"id": "archive", "label": "", "family": "generic", "extensions": [".bz2", ".bz", ".tar.bz2", ".tar.bz", ".tbz", ".tbz2", ".lzma", ".tar.lzma", ".tlz", ".lz", ".tar.lz", ".xz", ".tar.xz", ".txz"], "name": "通用归档后备"}
   ],
   "excluded_associations": [".img", ".001", ".rNN", ".zNN"],
   "review": {"backgrounds": ["#f5f5f3", "#20242d", "#e6eeff"], "sizes": [16, 24, 32, 48, 64, 128, 256], "native_acceptance": "separate"}

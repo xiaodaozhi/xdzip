@@ -344,6 +344,9 @@ mod tests {
 }
 
 #[cfg(test)]
+mod zipx_tests;
+
+#[cfg(test)]
 #[path = "../../../tests/support/legacy_names.rs"]
 mod legacy_fixture;
 #[cfg(test)]

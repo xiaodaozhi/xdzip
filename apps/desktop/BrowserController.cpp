@@ -1072,22 +1072,18 @@ void BrowserController::startCreation(const QStringList &inputs, const QString &
     const auto validText = [](const QString &value) {
         return !value.contains(QChar::Null) && QString::fromUtf8(value.toUtf8()) == value;
     };
-    const bool sevenZip = name.endsWith(QStringLiteral(".7z"), Qt::CaseInsensitive);
-    if ((method != 0 && method != (sevenZip ? 32 : 8)) ||
-        (level != 1 && level != 6 && level != 9 &&
-         !((name.endsWith(QStringLiteral(".gz"), Qt::CaseInsensitive) ||
-            name.endsWith(QStringLiteral(".tgz"), Qt::CaseInsensitive)) &&
-           level == 0)) ||
-        !validText(target) || !validText(name) ||
-        std::any_of(inputs.cbegin(), inputs.cend(),
-                    [&](const QString &path) { return !validText(path); })) {
+    // Only validate transport ranges here. The Rust registry and creation
+    // admission own format, method, level and option compatibility.
+    if (method < 0 || method > 65535 || level < 0 || level > 255 || !validText(target) ||
+        !validText(name) || std::any_of(inputs.cbegin(), inputs.cend(), [&](const QString &path) {
+            return !validText(path);
+        })) {
         m_creationError = explain("invalid_path");
         emit extractionChanged();
         return;
     }
     if (volumeBytes > 24ULL * 1024 * 1024 * 1024 || !validText(password) ||
-        password.toUtf8().size() > 128 || (!sevenZip && (solid || encryptHeaders)) ||
-        (encryptHeaders && password.isEmpty()) ||
+        password.toUtf8().size() > 128 ||
         std::any_of(password.cbegin(), password.cend(),
                     [](QChar c) { return c.category() == QChar::Other_Control; })) {
         m_creationError = explain("invalid_creation_options");
@@ -1997,8 +1993,10 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                                 : m_format == QStringLiteral("TAR") ? qtTrId("ui.695e3ecda20b")
                                 : row.method == 0                   ? QStringLiteral("Store")
                                 : row.method == 8                   ? QStringLiteral("Deflate")
+                                : row.method == 9                   ? QStringLiteral("Deflate64")
                                 : row.method == 12                  ? QStringLiteral("BZip2")
                                 : row.method == 14                  ? QStringLiteral("LZMA")
+                                : row.method == 95                  ? QStringLiteral("XZ")
                                                                     : QString::number(row.method);
             QStringList status;
             if (row.directory)

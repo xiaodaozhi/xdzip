@@ -1855,6 +1855,7 @@ dependencies = [
  "rawzip",
  "sha1",
  "xdzip-codec-api",
+ "xdzip-codec-stream",
  "xdzip-compression",
  "xdzip-domain",
  "zeroize",

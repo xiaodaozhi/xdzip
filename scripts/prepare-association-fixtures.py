@@ -22,6 +22,10 @@ def main():
     shutil.copyfile(args.zip, output / 'sample.zip')
     for suffix in ['xpi', 'apk', 'ipa', 'cbz']:
         shutil.copyfile(args.zip, output / ('sample.' + suffix))
+    shutil.copyfile(ROOT / 'tests/fixtures/streams/zipx-deflate64.zipx', output / 'sample.zipx')
+    shutil.copyfile(ROOT / 'tests/fixtures/streams/phrase-crc64.xz', output / 'sample.xz')
+    for suffix in ['tar.xz', 'txz']:
+        shutil.copyfile(ROOT / 'tests/fixtures/streams/files.txz', output / ('sample.' + suffix))
     content = b'xdzip association fixture\n'
     (output / 'sample.gz').write_bytes(gzip.compress(content, mtime=0))
     for name, mode in [('sample.tar', 'w'), ('sample.tar.gz', 'w:gz')]:

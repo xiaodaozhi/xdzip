@@ -13,6 +13,10 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         read_methods: &[
             "store",
             "deflate",
+            "deflate64",
+            "bzip2",
+            "lzma",
+            "xz",
         ],
         write_methods: &[
             "store",
@@ -38,6 +42,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         check_kind: "supported_content",
         extensions: &[
             ".zip",
+            ".zipx",
             ".xpi",
             ".apk",
             ".ipa",
@@ -320,6 +325,68 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         worker_id: None,
     },
     FormatDescriptor {
+        format: Format::Xz,
+        id: "xz",
+        label: "XZ",
+        container: "single-file",
+        filters: &[
+            "xz",
+        ],
+        read_methods: &[
+            "lzma2",
+            "delta",
+            "bcj",
+        ],
+        write_methods: &[
+            "lzma2",
+        ],
+        read_encryption: &[],
+        write_encryption: &[],
+        read_volumes: &[],
+        write_volumes: &[],
+        creation_suffixes: &[
+            ".xz",
+        ],
+        rewrite: false,
+        check_kind: "format_declared_checks",
+        extensions: &[
+            ".xz",
+        ],
+        worker_id: None,
+    },
+    FormatDescriptor {
+        format: Format::TarXz,
+        id: "tar-xz",
+        label: "TAR.XZ",
+        container: "tar",
+        filters: &[
+            "xz",
+        ],
+        read_methods: &[
+            "lzma2",
+            "delta",
+            "bcj",
+        ],
+        write_methods: &[
+            "lzma2",
+        ],
+        read_encryption: &[],
+        write_encryption: &[],
+        read_volumes: &[],
+        write_volumes: &[],
+        creation_suffixes: &[
+            ".tar.xz",
+            ".txz",
+        ],
+        rewrite: false,
+        check_kind: "format_declared_checks",
+        extensions: &[
+            ".tar.xz",
+            ".txz",
+        ],
+        worker_id: None,
+    },
+    FormatDescriptor {
         format: Format::Rar,
         id: "rar",
         label: "RAR",
@@ -442,9 +509,11 @@ pub(super) fn descriptor(format: Format) -> &'static FormatDescriptor {
         Format::TarLzma => &DESCRIPTORS[8],
         Format::Lzip => &DESCRIPTORS[9],
         Format::TarLzip => &DESCRIPTORS[10],
-        Format::Rar => &DESCRIPTORS[11],
-        Format::Cab => &DESCRIPTORS[12],
-        Format::Iso => &DESCRIPTORS[13],
-        Format::Udf => &DESCRIPTORS[14],
+        Format::Xz => &DESCRIPTORS[11],
+        Format::TarXz => &DESCRIPTORS[12],
+        Format::Rar => &DESCRIPTORS[13],
+        Format::Cab => &DESCRIPTORS[14],
+        Format::Iso => &DESCRIPTORS[15],
+        Format::Udf => &DESCRIPTORS[16],
     }
 }

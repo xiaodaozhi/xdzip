@@ -26,7 +26,9 @@ XZ 能力须遵循 [Tukaani 格式 1.2.1](https://tukaani.org/xz/xz-file-format-
 
 验证块填充、声明的内容校验（None、CRC32、CRC64 或 SHA-256）、索引各记录与实际未填充尺寸和解码尺寸、索引填充和 CRC、流尾反向尺寸、标志、CRC 和魔数，以及串联流和四字节全零流填充。None 没有内容校验和，不得展示为内容校验保证。流数和每流块数分别限制为十万，固定解析和过滤缓冲计入 128 MiB 工作内存准入，并保留取消及独立输入输出预算。失败后流不可继续，完整验证及源检查前解码内容只能保留在宿主暂存区。创建须执行真实 LZMA2 压缩，使用有界且独立重置的块并声明内容校验和；独立工具解码并核对输出后才能认定编码器验收通过。
 
-ZIPX 沿用 ZIP 记录语法与物理身份。按 [APPNOTE 6.3.10](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT) 分方法准入，包括 BZip2 12、LZMA 14、XZ 95。LZMA 属性头与独立 LZMA 不同，通用标志第 1 位控制 EOS 要求。仍须验证精确负载范围、本地与中央记录一致性、描述符、解码尺寸和 ZIP CRC。没有已验证实现的方法保持逐记录不支持，后缀不能启用其他算法或加密配置。
+ZIPX 沿用 ZIP 记录语法与物理身份。按 [APPNOTE 6.3.10](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT) 分方法准入，包括 BZip2 12、LZMA 14、XZ 95。LZMA 属性头与独立 LZMA 不同，通用标志第 1 位控制 EOS 要求。已准入的数据描述符配置必须使用 EOS，本地记录已知尺寸时可省略。仍须验证精确负载范围、本地与中央记录一致性、描述符、解码尺寸和 ZIP CRC。没有已验证实现的方法保持逐记录不支持，后缀不能启用其他算法或加密配置。
+
+XZ（`.xz`）和 TAR.XZ（`.tar.xz`、`.txz`）按上述配置提供浏览、检查和提取。创建使用 CRC64、不超过 16 MiB 的独立块以及 LZMA2 1/6/9 级，拒绝级别 0、密码和分卷。普通 XZ 仅接受一个普通输入文件，虚拟输出名称来自宿主文件名；TAR.XZ 通过既有 TAR 写入器接受普通文件和目录，两者均不支持修改。ZIPX 将 `.zipx` 登记为 ZIP 候选，在既有 Store/Deflate 之外读取未加密方法 9、12、14、95。新增方法不能启用修改，也不扩展既有 AES-256 Store/Deflate 组合。PPMd I、JPEG 和 WavPack 仍明确不支持。
 
 ## 新增只读过滤器的准入契约
 

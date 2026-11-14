@@ -81,10 +81,10 @@ class ShellTest : public QObject {
         candidate("archive.TAR.GZ", true, true);
         candidate("archive.TGZ", true, true);
         candidate("archive.gz", true, true);
-        for (const auto &suffix : {"XPI", "APK", "IPA", "CBZ"})
+        for (const auto &suffix : {"ZIPX", "XPI", "APK", "IPA", "CBZ"})
             candidate(QStringLiteral("archive.") + suffix, true, true);
         for (const auto &suffix : {"bz2", "bz", "tar.bz2", "tar.bz", "tbz", "tbz2", "lzma",
-                                   "tar.lzma", "tlz", "lz", "tar.lz"})
+                                   "tar.lzma", "tlz", "lz", "tar.lz", "xz", "tar.xz", "txz"})
             candidate(QStringLiteral("archive.") + suffix, true, true);
         candidate("archive.7z.001", true, true);
         candidate("archive.zip.exe", false, false);

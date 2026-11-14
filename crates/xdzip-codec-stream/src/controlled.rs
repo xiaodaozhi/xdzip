@@ -1,5 +1,6 @@
 //! Shared cancellation and byte admission for sequential filters and containers.
 use crate::framed::{FramedReader, Kind, lzma_alone};
+use crate::xz::XzReader;
 use std::io::{self, Read, SeekFrom};
 use xdzip_codec_api::{Cancellation, ReadSource, ScanError};
 use xdzip_compression::GzipReader;
@@ -30,6 +31,8 @@ pub enum Filter {
     Lzma,
     /// Concatenated Lzip v1 members, including all trailer fields.
     Lzip,
+    /// XZ streams, including declared checks, complete indexes and zero padding.
+    Xz,
 }
 
 struct Input<'a> {
@@ -123,6 +126,10 @@ impl<'a> ControlledStream<'a> {
         let reader: Box<dyn Read + 'a> = match filter {
             Filter::Identity => Box::new(input),
             Filter::Gzip => Box::new(GzipReader::new(input)),
+            Filter::Xz => Box::new(
+                XzReader::new(input, length, FILTER_MEMORY_LIMIT)
+                    .map_err(|error| scan_error(&error))?,
+            ),
             Filter::Bzip2 => Box::new(FramedReader::new(
                 input,
                 length,

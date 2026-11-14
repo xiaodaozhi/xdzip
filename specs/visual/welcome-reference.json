@@ -16,7 +16,7 @@
   "titlebar_height": 48,
   "statusbar_height": 32,
   "content_width": 608,
-  "supported_formats": ["ZIP", "TAR", "TAR.GZ", "7z", "GZIP", "BZip2", "TAR.BZ2", "LZMA", "TAR.LZMA", "Lzip", "TAR.LZ", "RAR", "CAB", "ISO", "UDF"],
+  "supported_formats": ["ZIP", "TAR", "TAR.GZ", "7z", "GZIP", "BZip2", "TAR.BZ2", "LZMA", "TAR.LZMA", "Lzip", "TAR.LZ", "XZ", "TAR.XZ", "RAR", "CAB", "ISO", "UDF"],
   "format_badge_policy": "Format badges come from the built-in registry and wrap within the existing 608 logical-pixel content column. Preserve font, inset and gap; additional rows participate in the existing vertical scroller. Verify every label at the minimum window and enlarged text. Creation choices remain independently capability-driven.",
   "content_top_inset": 28,
   "feedback_icon_size": 18,

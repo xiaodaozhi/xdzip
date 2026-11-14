@@ -479,3 +479,5 @@ English: The standalone SDK trial requires independent wire/content interoperabi
 - 默认工具链准备能为既有 SDK 补装 qtimageformats，doctor 提前发现缺失插件。构建后和 Windows／Linux 部署后运行实际 helper 的格式与最小解码检查；源码、通知、运行库归属及打包交接匹配新增 Qt 模块。布局未改时复用有效比例证据，实际新增图片仍须观察显示。
 
 English: Expanded previews require actual format/first-frame/first-page decoding, alpha/orientation and phone-size samples, resource-free static SVG, macOS system HEIF and refusal elsewhere. Validate bounded worker replies, deadlines, cancellation, abnormal exit and real archive-to-QML delivery. Missing plugins must fail before heavy builds; deployed Windows/Linux workers must prove their own plugin closure. Reuse unaffected layout evidence while observing newly rendered images.
+
+`FORMAT-XZ-ZIPX`：XZ 验证声明的各类校验、规范尺寸、支持的过滤链、实际块与索引一致、流尾、填充、串联、取消、有界输入输出和内存、失败后不可继续。真实 LZMA2 写入器须在每个可选级别经独立读取验证，包括多块。XZ/TXZ 及支持的 ZIPX 方法须通过 runtime、CLI、Qt 的浏览、检查、提取、精确记录身份和输出保护检查。自动核对分方法拒绝、LZMA EOS 标志、只读修改边界、可选校验说明及双语多字号布局。

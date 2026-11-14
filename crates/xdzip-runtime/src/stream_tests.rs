@@ -99,8 +99,47 @@ fn ordinary_streams_browse_check_and_extract_real_content() {
         ("phrase.lz", Format::Lzip, "phrase", phrase.clone()),
         ("empty.lz", Format::Lzip, "empty", vec![]),
         ("multiple.lz", Format::Lzip, "multiple", phrase.repeat(2)),
+        ("phrase-none.xz", Format::Xz, "phrase-none", phrase.clone()),
+        (
+            "phrase-crc32.xz",
+            Format::Xz,
+            "phrase-crc32",
+            phrase.clone(),
+        ),
+        (
+            "phrase-crc64.xz",
+            Format::Xz,
+            "phrase-crc64",
+            phrase.clone(),
+        ),
+        (
+            "phrase-sha256.xz",
+            Format::Xz,
+            "phrase-sha256",
+            phrase.clone(),
+        ),
+        ("empty.xz", Format::Xz, "empty", vec![]),
+        ("multiple.xz", Format::Xz, "multiple", phrase.repeat(2)),
+        ("multiblock.xz", Format::Xz, "multiblock", phrase.repeat(4)),
     ] {
         verify(name, format, output_name, &expected);
+    }
+}
+#[test]
+fn zipx_methods_check_and_extract_without_granting_modification() {
+    for method in ["deflate64", "bzip2", "lzma", "xz"] {
+        for descriptor in [false, true] {
+            let name = format!(
+                "zipx-{method}{}.zipx",
+                if descriptor { "-descriptor" } else { "" }
+            );
+            verify(
+                &name,
+                Format::Zip,
+                "hello.txt",
+                &b"abracadabra abracadabra\n".repeat(6),
+            );
+        }
     }
 }
 #[test]
@@ -109,6 +148,7 @@ fn tar_compositions_reuse_the_container_and_stay_read_only() {
         ("files.tbz2", Format::TarBzip2),
         ("files.tar.lzma", Format::TarLzma),
         ("files.tlz", Format::TarLzip),
+        ("files.txz", Format::TarXz),
     ] {
         verify(
             name,
@@ -151,7 +191,12 @@ fn weak_lzma_discovery_cannot_supersede_valid_tar_or_zip_sfx() {
 
 #[test]
 fn identified_compressed_tar_damage_never_downgrades_to_an_ordinary_file() {
-    for name in ["bad-header.tbz2", "bad-header.tar.lzma", "bad-header.tlz"] {
+    for name in [
+        "bad-header.tbz2",
+        "bad-header.tar.lzma",
+        "bad-header.tlz",
+        "bad-header.txz",
+    ] {
         assert!(
             matches!(
                 Archive::open(&fixture(name), &Cancellation::default()),
@@ -167,6 +212,7 @@ fn changed_stream_payload_cannot_publish_a_file_even_if_source_timestamps_are_re
     for (name, at) in [
         ("phrase.bz2", 10),
         ("known-size.lzma", 5),
+        ("phrase-crc64.xz", 10),
         (
             "phrase.lz",
             std::fs::read(fixture("phrase.lz")).unwrap().len() - 20,

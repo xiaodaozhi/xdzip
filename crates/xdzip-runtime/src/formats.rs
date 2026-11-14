@@ -29,6 +29,8 @@ pub(crate) fn codec(format: Format) -> &'static dyn Codec {
         Format::Gzip => &StreamCodec {
             format: Format::Gzip,
         },
+        Format::Xz => &StreamCodec { format: Format::Xz },
+        Format::TarXz => &TarCodec { filter: Filter::Xz },
         Format::Bzip2 => &StreamCodec {
             format: Format::Bzip2,
         },
@@ -98,6 +100,8 @@ pub(crate) fn detect(
     source.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
     Ok(if magic[..2] == [0x1f, 0x8b] {
         compressed_format(source, control, Filter::Gzip, Format::Gzip)?
+    } else if magic[..6] == *b"\xfd7zXZ\0" {
+        compressed_format(source, control, Filter::Xz, Format::Xz)?
     } else if magic[..3] == *b"BZh" {
         compressed_format(source, control, Filter::Bzip2, Format::Bzip2)?
     } else if magic[..4] == *b"LZIP" {

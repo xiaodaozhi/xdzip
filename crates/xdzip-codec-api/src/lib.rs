@@ -136,6 +136,10 @@ pub enum Format {
     Lzip,
     /// TAR behind Lzip v1, read only.
     TarLzip,
+    /// One XZ stream file, including concatenated streams.
+    Xz,
+    /// TAR over XZ, including TXZ naming.
+    TarXz,
     /// Independent Rust 7z behind the isolated codec worker.
     SevenZip,
     /// Independent Rust RAR read-only backend in the isolated codec worker.
@@ -213,7 +217,7 @@ impl Entry {
                 if self.encrypted {
                     self.password_supported
                 } else {
-                    matches!(self.method, 0 | 8)
+                    matches!(self.method, 0 | 8 | 9 | 12 | 14 | 95)
                 }
             }
             Format::Tar
@@ -224,7 +228,9 @@ impl Entry {
             | Format::Lzma
             | Format::TarLzma
             | Format::Lzip
-            | Format::TarLzip => !self.warning && !self.link,
+            | Format::TarLzip
+            | Format::Xz
+            | Format::TarXz => !self.warning && !self.link,
             Format::SevenZip | Format::Rar | Format::Cab | Format::Iso | Format::Udf => {
                 !self.warning && !self.link && (!self.encrypted || self.password_supported)
             }

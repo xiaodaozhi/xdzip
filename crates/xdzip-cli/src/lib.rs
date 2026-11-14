@@ -196,6 +196,7 @@ fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -
                 .ok_or_else(|| Failure::usage("unsupported_format"))?;
             let seven = format == xdzip_codec_api::Format::SevenZip;
             let tar = format == xdzip_codec_api::Format::Tar;
+            let lzma2_only = format.descriptor().write_methods == ["lzma2"];
             let gzip = matches!(
                 format,
                 xdzip_codec_api::Format::Gzip | xdzip_codec_api::Format::TarGzip
@@ -203,9 +204,9 @@ fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -
             if (matches.get_flag("solid") || matches.get_flag("encrypt-names")) && !seven {
                 return Err(Failure::usage("unsupported_options"));
             }
-            if (tar || gzip)
-                && (matches.get_flag("encrypt")
-                    || matches.get_one::<String>("volume-size").is_some())
+            if (format.descriptor().write_encryption.is_empty() && matches.get_flag("encrypt"))
+                || (format.descriptor().write_volumes.is_empty()
+                    && matches.get_one::<String>("volume-size").is_some())
             {
                 return Err(Failure::usage("unsupported_options"));
             }
@@ -231,9 +232,12 @@ fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -
                 );
             }
             let level = matches.get_one::<String>("level").unwrap().as_str();
+            if lzma2_only && level == "store" {
+                return Err(Failure::usage("unsupported_options"));
+            }
             let method = if tar || level == "store" && !gzip {
                 0
-            } else if seven {
+            } else if seven || lzma2_only {
                 32
             } else {
                 8

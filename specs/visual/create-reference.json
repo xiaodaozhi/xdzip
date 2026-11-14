@@ -16,7 +16,7 @@
     "The format group reserves four times the measured TAR.GZ label width plus its existing track insets; option labels wrap only when enlarged translated text would otherwise overflow a segment",
     "Selected-input count and empty-state layout are functional additions",
     "Native OS titlebar is outside client bounds; body may scroll on short screens",
-    "2026-11-14: the format field uses the shared select control and generated stable capability IDs. ZIP, TAR, TAR.GZ, 7z and single-file GZIP share the existing field dimensions and accessibility scaling; the original bitmap and source coordinates are retained."
+    "2026-11-14: the format field uses the shared select control and generated stable capability IDs. ZIP, TAR, TAR.GZ, 7z, TAR.XZ and single-file GZIP/XZ share the existing field dimensions and accessibility scaling; the original bitmap and source coordinates are retained."
   ],
   "source_controls": {
     "add_file_button": [

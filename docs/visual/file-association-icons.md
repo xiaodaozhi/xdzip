@@ -30,7 +30,7 @@ The UI's 24-unit icons and main-window/menu density continue to follow [layout-s
 | `udf` | UDF | `.udf` | Cyan-blue |
 | `archive` | None | Fallback for recognized archives without a dedicated icon | Neutral gray-blue |
 
-This table states design intent, not a uniform cross-platform registry. Where possible filename mapping prioritizes full `.tar.gz` before `.gz`; systems recognizing only the final extension may show GZ for both. Do not promise all platforms can distinguish compound suffixes automatically. The GZ icon denotes an extension only: the project still supports TAR.GZ contents rather than standalone GZIP extraction.
+This table states design intent, not a uniform cross-platform registry. Where possible filename mapping prioritizes full `.tar.gz` before `.gz`; systems recognizing only the final extension may show GZ for both. Do not promise all platforms can distinguish compound suffixes automatically. The GZ icon denotes an extension shared by standalone GZIP and the TAR.GZ outer stream; actual reading remains governed by content validation and format contracts.
 
 Encryption and volume splitting are archive states, not inferred from extension icons; do not draw locks or success marks. Recognized ZIP, 7z and RAR volumes may reuse their family in-app, without registering generic `.001`, `.rNN`, `.zNN` or `.img`. ISO/UDF icons do not imply mounting or execution. A matching extension alone does not establish valid archive contents.
 

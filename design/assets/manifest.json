@@ -30073,7 +30073,10 @@
         ".tar.lzma",
         ".tlz",
         ".lz",
-        ".tar.lz"
+        ".tar.lz",
+        ".xz",
+        ".tar.xz",
+        ".txz"
       ],
       "profile": "master",
       "source": "../../scripts/association_icon_assets.py",
@@ -30099,7 +30102,10 @@
         ".tar.lzma",
         ".tlz",
         ".lz",
-        ".tar.lz"
+        ".tar.lz",
+        ".xz",
+        ".tar.xz",
+        ".txz"
       ],
       "profile": "tiny",
       "source": "../../scripts/association_icon_assets.py",
@@ -30125,7 +30131,10 @@
         ".tar.lzma",
         ".tlz",
         ".lz",
-        ".tar.lz"
+        ".tar.lz",
+        ".xz",
+        ".tar.xz",
+        ".txz"
       ],
       "profile": "small",
       "source": "../../scripts/association_icon_assets.py",

@@ -22,9 +22,10 @@ OperationWindow {
     readonly property var selectedFormat: formatChoices[formatGroup.currentIndex] || formatChoices[0]
     readonly property string formatId: selectedFormat.id
     readonly property bool sevenZip: formatId === "7z"
+    readonly property bool lzma2Only: selectedFormat.methods.length === 1 && selectedFormat.methods[0] === "lzma2"
     readonly property bool supportsPasswordAndVolumes: selectedFormat.encryption.length > 0 && selectedFormat.volumes.length > 0
     readonly property string formatExtension: selectedFormat.suffix
-    readonly property bool inputsValid: inputs.length > 0 && (formatId !== "gzip" || (inputs.length === 1 && !inputs[0].directory))
+    readonly property bool inputsValid: inputs.length > 0 && (selectedFormat.container !== "single-file" || (inputs.length === 1 && !inputs[0].directory))
     function formatIndex(id: string): int {
         return formatChoices.findIndex(choice => choice.id === id);
     }
@@ -287,6 +288,7 @@ OperationWindow {
                                                 solid.checked = false;
                                                 encryptHeader.checked = false;
                                                 password.text = "";
+                                                level.currentIndex = root.lzma2Only ? 1 : 2;
                                             }
 
                                         }
@@ -305,7 +307,7 @@ OperationWindow {
                                             density: root.density
                                             implicitHeight: Math.max(Theme.operationCreateFieldHeight, contentItem.implicitHeight + 8)
                                             currentIndex: 2
-                                            model: [qsTrId("ui.114918a8e262"), qsTrId("ui.0ab258fe71f4"), qsTrId("ui.64209bb8c4df"), qsTrId("ui.bd60ad0e564e")]
+                                            model: root.lzma2Only ? [qsTrId("ui.0ab258fe71f4"), qsTrId("ui.64209bb8c4df"), qsTrId("ui.bd60ad0e564e")] : [qsTrId("ui.114918a8e262"), qsTrId("ui.0ab258fe71f4"), qsTrId("ui.64209bb8c4df"), qsTrId("ui.bd60ad0e564e")]
                                         }
                                         Text {
                                             Layout.maximumWidth: root.optionLabelMaximumWidth
@@ -343,7 +345,7 @@ OperationWindow {
                                     }
                                     Text {
                                         Layout.fillWidth: true
-                                        text: root.formatId === "tar" ? qsTrId("ui.a823dd053540") : root.formatId === "tar-gzip" ? qsTrId("ui.8de83aec57d2") : root.formatId === "gzip" ? qsTrId("create.gzipSingleFile") : volume.currentIndex === 13 && root.volumeBytes < 0 ? qsTrId("ui.58e4aeca8ddc") : volume.currentIndex > 0 ? (root.sevenZip ? qsTrId("create.sevenZipVolumes") : qsTrId("ui.17f715707e84")) : root.sevenZip ? qsTrId("create.sevenZipMethod") : qsTrId("ui.13e4af7e4901")
+                                        text: root.formatId === "tar" ? qsTrId("ui.a823dd053540") : root.formatId === "tar-gzip" ? qsTrId("ui.8de83aec57d2") : root.selectedFormat.container === "single-file" ? qsTrId("create.singleFileStream").arg(root.selectedFormat.label) : root.lzma2Only ? qsTrId("create.lzma2Method") : volume.currentIndex === 13 && root.volumeBytes < 0 ? qsTrId("ui.58e4aeca8ddc") : volume.currentIndex > 0 ? (root.sevenZip ? qsTrId("create.sevenZipVolumes") : qsTrId("ui.17f715707e84")) : root.sevenZip ? qsTrId("create.sevenZipMethod") : qsTrId("ui.13e4af7e4901")
                                         font.pixelSize: Theme.operationCreateNoteSize
                                         color: Theme.textSecondary
                                     }
@@ -423,9 +425,9 @@ OperationWindow {
                 primary: true
                 enabled: root.inputsValid && root.validName && root.targetReady && root.optionsValid && !root.controller.busy
                 onClicked: {
-                    const method = root.formatId === "tar" || (root.supportsPasswordAndVolumes && level.currentIndex === 0) ? 0 : root.sevenZip ? 32 : 8;
+                    const method = root.formatId === "tar" || (root.supportsPasswordAndVolumes && level.currentIndex === 0) ? 0 : root.sevenZip || root.lzma2Only ? 32 : 8;
                     root.submitting();
-                    root.controller.startCreation(root.inputs.map(item => item.path), target.text, fileName.text.trim(), method, (root.formatId === "tar-gzip" || root.formatId === "gzip") && level.currentIndex === 0 ? 0 : [6, 1, 6, 9][level.currentIndex], false, root.volumeBytes, root.supportsPasswordAndVolumes && usePassword.checked ? password.text : "", root.sevenZip && solid.checked, root.sevenZip && usePassword.checked && encryptHeader.checked);
+                    root.controller.startCreation(root.inputs.map(item => item.path), target.text, fileName.text.trim(), method, root.lzma2Only ? [1, 6, 9][level.currentIndex] : (root.formatId === "tar-gzip" || root.formatId === "gzip") && level.currentIndex === 0 ? 0 : [6, 1, 6, 9][level.currentIndex], false, root.volumeBytes, root.supportsPasswordAndVolumes && usePassword.checked ? password.text : "", root.sevenZip && solid.checked, root.sevenZip && usePassword.checked && encryptHeader.checked);
                     password.text = "";
                 }
             }

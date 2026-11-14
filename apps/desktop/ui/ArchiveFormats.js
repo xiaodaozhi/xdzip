@@ -5,6 +5,7 @@ var creationFormats = [
         "id": "zip",
         "label": "ZIP",
         "suffix": ".zip",
+        "container": "zip",
         "methods": [
             "store",
             "deflate"
@@ -20,6 +21,7 @@ var creationFormats = [
         "id": "tar",
         "label": "TAR",
         "suffix": ".tar",
+        "container": "tar",
         "methods": [
             "store"
         ],
@@ -30,6 +32,7 @@ var creationFormats = [
         "id": "tar-gzip",
         "label": "TAR.GZ",
         "suffix": ".tar.gz",
+        "container": "tar",
         "methods": [
             "deflate"
         ],
@@ -40,6 +43,7 @@ var creationFormats = [
         "id": "7z",
         "label": "7z",
         "suffix": ".7z",
+        "container": "7z",
         "methods": [
             "copy",
             "lzma2"
@@ -55,13 +59,37 @@ var creationFormats = [
         "id": "gzip",
         "label": "GZIP",
         "suffix": ".gz",
+        "container": "single-file",
         "methods": [
             "deflate"
         ],
         "encryption": [],
         "volumes": []
+    },
+    {
+        "id": "xz",
+        "label": "XZ",
+        "suffix": ".xz",
+        "container": "single-file",
+        "methods": [
+            "lzma2"
+        ],
+        "encryption": [],
+        "volumes": []
+    },
+    {
+        "id": "tar-xz",
+        "label": "TAR.XZ",
+        "suffix": ".tar.xz",
+        "container": "tar",
+        "methods": [
+            "lzma2"
+        ],
+        "encryption": [],
+        "volumes": []
     }
 ];
-var associationSuffixes = [".zip", ".xpi", ".apk", ".ipa", ".cbz", ".tar", ".tar.gz", ".tgz", ".7z", ".gz", ".bz2", ".bz", ".tar.bz2", ".tar.bz", ".tbz", ".tbz2", ".lzma", ".tar.lzma", ".tlz", ".lz", ".tar.lz", ".rar", ".cab", ".iso", ".udf"];
-var formatLabels = ["ZIP", "TAR", "TAR.GZ", "7z", "GZIP", "BZip2", "TAR.BZ2", "LZMA", "TAR.LZMA", "Lzip", "TAR.LZ", "RAR", "CAB", "ISO", "UDF"];
+var associationSuffixes = [".zip", ".zipx", ".xpi", ".apk", ".ipa", ".cbz", ".tar", ".tar.gz", ".tgz", ".7z", ".gz", ".bz2", ".bz", ".tar.bz2", ".tar.bz", ".tbz", ".tbz2", ".lzma", ".tar.lzma", ".tlz", ".lz", ".tar.lz", ".xz", ".tar.xz", ".txz", ".rar", ".cab", ".iso", ".udf"];
+var formatLabels = ["ZIP", "TAR", "TAR.GZ", "7z", "GZIP", "BZip2", "TAR.BZ2", "LZMA", "TAR.LZMA", "Lzip", "TAR.LZ", "XZ", "TAR.XZ", "RAR", "CAB", "ISO", "UDF"];
 var structureOnlyFormats = ["TAR", "LZMA", "TAR.LZMA", "ISO", "UDF"];
+var declaredCheckFormats = ["XZ", "TAR.XZ"];

@@ -4,11 +4,12 @@
     {
       "id": "zip", "rust_variant": "Zip", "label": "ZIP", "container": "zip", "filters": [], "worker_id": null,
       "check_kind": "supported_content",
-      "read_methods": ["store", "deflate"], "write_methods": ["store", "deflate"], "rewrite": true,
+      "read_methods": ["store", "deflate", "deflate64", "bzip2", "lzma", "xz"], "write_methods": ["store", "deflate"], "rewrite": true,
       "read_encryption": ["winzip-aes256"], "write_encryption": ["winzip-aes256"], "read_volumes": ["numbered", "pkzip"], "write_volumes": ["numbered"],
       "creation_suffixes": [".zip"], "shell_mime_types": ["application/zip", "application/x-xpinstall", "application/vnd.android.package-archive", "application/vnd.comicbook+zip", "application/x-cbz"],
       "extensions": [
         {"suffix": ".zip", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": "zip"},
+        {"suffix": ".zipx", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": null},
         {"suffix": ".xpi", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": null},
         {"suffix": ".apk", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": null},
         {"suffix": ".ipa", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": null},
@@ -119,6 +120,92 @@
       "creation_suffixes": [], "shell_mime_types": ["application/x-lzip-compressed-tar"],
       "extensions": [
         {"suffix": ".tar.lz", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "archive"}
+      ]
+    },
+    {
+      "id": "xz",
+      "rust_variant": "Xz",
+      "label": "XZ",
+      "container": "single-file",
+      "filters": [
+        "xz"
+      ],
+      "worker_id": null,
+      "check_kind": "format_declared_checks",
+      "read_methods": [
+        "lzma2",
+        "delta",
+        "bcj"
+      ],
+      "write_methods": [
+        "lzma2"
+      ],
+      "rewrite": false,
+      "read_encryption": [],
+      "write_encryption": [],
+      "read_volumes": [],
+      "write_volumes": [],
+      "creation_suffixes": [
+        ".xz"
+      ],
+      "shell_mime_types": [
+        "application/x-xz"
+      ],
+      "extensions": [
+        {
+          "suffix": ".xz",
+          "drop": true,
+          "shell": true,
+          "windows_icon": "archive",
+          "macos_icon": "archive"
+        }
+      ]
+    },
+    {
+      "id": "tar-xz",
+      "rust_variant": "TarXz",
+      "label": "TAR.XZ",
+      "container": "tar",
+      "filters": [
+        "xz"
+      ],
+      "worker_id": null,
+      "check_kind": "format_declared_checks",
+      "read_methods": [
+        "lzma2",
+        "delta",
+        "bcj"
+      ],
+      "write_methods": [
+        "lzma2"
+      ],
+      "rewrite": false,
+      "read_encryption": [],
+      "write_encryption": [],
+      "read_volumes": [],
+      "write_volumes": [],
+      "creation_suffixes": [
+        ".tar.xz",
+        ".txz"
+      ],
+      "shell_mime_types": [
+        "application/x-xz-compressed-tar"
+      ],
+      "extensions": [
+        {
+          "suffix": ".tar.xz",
+          "drop": true,
+          "shell": true,
+          "windows_icon": null,
+          "macos_icon": "archive"
+        },
+        {
+          "suffix": ".txz",
+          "drop": true,
+          "shell": true,
+          "windows_icon": "archive",
+          "macos_icon": "archive"
+        }
       ]
     },
     {

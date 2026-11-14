@@ -11,7 +11,8 @@ use std::io::{self, Read, Seek, SeekFrom};
 use std::rc::Rc;
 use xdzip_codec_api::payload::{DecodeError, DecodedSink, PayloadCodec, PayloadReader};
 use xdzip_codec_api::{Cancellation, Entry, ReadSource, ScanError, ScanLimits};
-use xdzip_compression::{Crc32, DeflateReader};
+use xdzip_codec_stream::xz::XzReader;
+use xdzip_compression::{Bzip2Reader, Crc32, DeflateReader, LzmaReader};
 
 const BLOCK: usize = 128 * 1024;
 const INPUT_LIMIT: u64 = 20 * 1024 * 1024 * 1024;
@@ -19,6 +20,16 @@ struct Input<'a> {
     source: &'a mut dyn ReadSource,
     control: &'a Cancellation,
     remaining: Rc<Cell<u64>>,
+}
+fn source_error(error: io::Error) -> io::Error {
+    if let Some(value) = error
+        .get_ref()
+        .and_then(|value| value.downcast_ref::<ScanError>())
+    {
+        io::Error::other(*value)
+    } else {
+        io::Error::other(ScanError::Io)
+    }
 }
 impl Read for Input<'_> {
     fn read(&mut self, bytes: &mut [u8]) -> io::Result<usize> {
@@ -31,8 +42,12 @@ impl Read for Input<'_> {
         let count = loop {
             self.control.check().map_err(io::Error::other)?;
             match self.source.read(&mut bytes[..bound]) {
-                Err(error) if error.kind() == io::ErrorKind::Interrupted => continue,
-                result => break result?,
+                Err(error)
+                    if error.kind() == io::ErrorKind::Interrupted && error.get_ref().is_none() =>
+                {
+                    continue;
+                }
+                result => break result.map_err(source_error)?,
             }
         };
         self.remaining.set(remaining - count as u64);
@@ -42,7 +57,7 @@ impl Read for Input<'_> {
 impl Seek for Input<'_> {
     fn seek(&mut self, position: SeekFrom) -> io::Result<u64> {
         self.control.check().map_err(io::Error::other)?;
-        self.source.seek(position)
+        self.source.seek(position).map_err(source_error)
     }
 }
 impl ReadSource for Input<'_> {}
@@ -254,7 +269,7 @@ impl PayloadReader for ZipPayload<'_> {
         password: Option<&str>,
     ) -> Result<(), DecodeError> {
         check(control)?;
-        if expected.warning || !matches!(expected.method, 0 | 8 | 99) {
+        if expected.warning || !matches!(expected.method, 0 | 8 | 9 | 12 | 14 | 95 | 99) {
             return Err(DecodeError::Unsupported);
         }
         let index = expected
@@ -332,11 +347,13 @@ impl PayloadReader for ZipPayload<'_> {
             return Err(DecodeError::Integrity);
         }
         {
-            let mut payload: Box<dyn Read + '_> = if central.method == 0 {
-                Box::new(&mut range)
-            } else {
-                Box::new(DeflateReader::new(&mut range, central.packed_size))
-            };
+            let mut payload = method_reader(
+                &mut range,
+                central.method,
+                central.flags,
+                central.packed_size,
+                central.size,
+            )?;
             read_to_sink(
                 &mut payload,
                 &mut self.output,
@@ -350,6 +367,68 @@ impl PayloadReader for ZipPayload<'_> {
             return Err(DecodeError::Integrity);
         }
         check(control)
+    }
+}
+
+// Method framing stays inside the already authorized physical ZIP payload span.
+fn method_reader<'a, R: Read + 'a>(
+    mut source: R,
+    method: u16,
+    flags: u16,
+    packed: u64,
+    size: u64,
+) -> Result<Box<dyn Read + 'a>, DecodeError> {
+    const MEMORY: u64 = 128 << 20;
+    let reader: Box<dyn Read + 'a> = match method {
+        0 => Box::new(source),
+        8 => Box::new(DeflateReader::new(source, packed)),
+        9 => Box::new(DeflateReader::new_deflate64(source, packed)),
+        12 => Box::new(Bzip2Reader::new(source, packed, size, MEMORY).map_err(decoder_error)?),
+        14 => {
+            // A descriptor defers local sizes. This profile requires an EOS
+            // marker, matching the independently verified streaming writers.
+            if flags & 8 != 0 && flags & 2 == 0 {
+                return Err(DecodeError::Unsupported);
+            }
+            let mut header = [0; 9];
+            if packed < header.len() as u64 {
+                return Err(DecodeError::Integrity);
+            }
+            source.read_exact(&mut header[..4]).map_err(read_error)?;
+            if u16::from_le_bytes([header[2], header[3]]) != 5 {
+                return Err(DecodeError::Unsupported);
+            }
+            source.read_exact(&mut header[4..]).map_err(read_error)?;
+            Box::new(
+                LzmaReader::new_with_end_marker(
+                    source,
+                    packed - 9,
+                    size,
+                    &header[4..],
+                    MEMORY,
+                    flags & 2 != 0,
+                )
+                .map_err(decoder_error)?,
+            )
+        }
+        95 => Box::new(XzReader::new(source, packed, MEMORY).map_err(decoder_error)?),
+        _ => return Err(DecodeError::Unsupported),
+    };
+    Ok(Box::new(DecoderRead(reader)))
+}
+struct DecoderRead<'a>(Box<dyn Read + 'a>);
+impl Read for DecoderRead<'_> {
+    fn read(&mut self, bytes: &mut [u8]) -> io::Result<usize> {
+        self.0
+            .read(bytes)
+            .map_err(|error| io::Error::other(decoder_error(error)))
+    }
+}
+fn decoder_error(error: io::Error) -> DecodeError {
+    match error.kind() {
+        io::ErrorKind::OutOfMemory => DecodeError::Limit,
+        io::ErrorKind::Unsupported => DecodeError::Unsupported,
+        _ => read_error(error),
     }
 }
 
@@ -567,6 +646,12 @@ fn scan_error(error: ScanError) -> DecodeError {
 pub(super) fn read_error(error: io::Error) -> DecodeError {
     if let Some(value) = error
         .get_ref()
+        .and_then(|error| error.downcast_ref::<DecodeError>())
+    {
+        return *value;
+    }
+    if let Some(value) = error
+        .get_ref()
         .and_then(|error| error.downcast_ref::<ScanError>())
     {
         return scan_error(*value);
@@ -590,6 +675,70 @@ mod tests {
     use super::*;
     use std::io::Cursor;
     use xdzip_codec_api::{MetadataCodec, ScanLimits};
+    #[test]
+    fn method_errors_never_reclassify_or_retry_terminal_host_failures() {
+        struct Fault {
+            calls: Rc<Cell<usize>>,
+            kind: io::ErrorKind,
+            typed: Option<ScanError>,
+        }
+        impl Read for Fault {
+            fn read(&mut self, _: &mut [u8]) -> io::Result<usize> {
+                self.calls.set(self.calls.get() + 1);
+                assert_eq!(self.calls.get(), 1, "terminal source was retried");
+                Err(if let Some(value) = self.typed {
+                    io::Error::new(self.kind, value)
+                } else {
+                    io::Error::new(self.kind, "host source fault")
+                })
+            }
+        }
+        impl Seek for Fault {
+            fn seek(&mut self, _: SeekFrom) -> io::Result<u64> {
+                Err(io::ErrorKind::Unsupported.into())
+            }
+        }
+        impl ReadSource for Fault {}
+        let control = Cancellation::default();
+        for method in [0, 8, 9, 12, 14, 95] {
+            for (kind, typed, expected) in [
+                (io::ErrorKind::Unsupported, None, DecodeError::SourceIo),
+                (io::ErrorKind::OutOfMemory, None, DecodeError::SourceIo),
+                (
+                    io::ErrorKind::Interrupted,
+                    Some(ScanError::Cancelled),
+                    DecodeError::Cancelled,
+                ),
+                (
+                    io::ErrorKind::Interrupted,
+                    Some(ScanError::Limit),
+                    DecodeError::Limit,
+                ),
+            ] {
+                let calls = Rc::new(Cell::new(0));
+                let mut source = Fault {
+                    calls: calls.clone(),
+                    kind,
+                    typed,
+                };
+                let input = Input {
+                    source: &mut source,
+                    control: &control,
+                    remaining: Rc::new(Cell::new(1024)),
+                };
+                let error = match method_reader(input, method, 2, 100, 144) {
+                    Err(error) => error,
+                    Ok(mut reader) => read_error(reader.read(&mut [0; 32]).unwrap_err()),
+                };
+                assert_eq!(error, expected, "method {method}");
+                assert_eq!(calls.get(), 1);
+            }
+        }
+        assert!(matches!(
+            method_reader(Cursor::new([]), 14, 8, 9, 0),
+            Err(DecodeError::Unsupported)
+        ));
+    }
     struct Memory(Vec<u8>);
     impl DecodedSink for Memory {
         fn write_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {

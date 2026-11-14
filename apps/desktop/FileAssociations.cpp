@@ -29,6 +29,7 @@ namespace {
 const QHash<QString, QStringList> &extensions() {
     static const QHash<QString, QStringList> value{
         {".zip", {"application/zip"}},
+        {".zipx", {"application/zip"}},
         {".xpi", {"application/x-xpinstall"}},
         {".apk", {"application/vnd.android.package-archive"}},
         {".ipa", {"application/zip"}},
@@ -50,6 +51,9 @@ const QHash<QString, QStringList> &extensions() {
         {".tlz", {"application/x-lzma-compressed-tar"}},
         {".lz", {"application/lzip", "application/x-lzip"}},
         {".tar.lz", {"application/x-lzip-compressed-tar"}},
+        {".xz", {"application/x-xz"}},
+        {".tar.xz", {"application/x-xz-compressed-tar"}},
+        {".txz", {"application/x-xz-compressed-tar"}},
         {".cab", {"application/vnd.ms-cab-compressed", "application/x-cab"}},
         {".iso", {"application/x-iso9660-image"}},
         {".udf", {"application/x-udf"}}};

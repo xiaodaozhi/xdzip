@@ -38,6 +38,20 @@ pub struct FormatDescriptor {
     pub worker_id: Option<u8>,
 }
 
+impl FormatDescriptor {
+    /// Resolve existing host creation method IDs only within this format's profile.
+    pub fn creation_method(&self, id: u16) -> Option<&'static str> {
+        let method = match id {
+            0 if self.write_methods.contains(&"copy") => "copy",
+            0 => "store",
+            8 => "deflate",
+            32 => "lzma2",
+            _ => return None,
+        };
+        self.write_methods.contains(&method).then_some(method)
+    }
+}
+
 /// Enumerate built-in declarations without loading a runtime specification or external backend.
 pub fn formats() -> &'static [FormatDescriptor] {
     generated::DESCRIPTORS
@@ -79,6 +93,9 @@ mod tests {
             ("archive.tgz", Some(Format::TarGzip)),
             ("archive.7Z", Some(Format::SevenZip)),
             ("archive.gz", Some(Format::Gzip)),
+            ("archive.XZ", Some(Format::Xz)),
+            ("archive.TAR.XZ", Some(Format::TarXz)),
+            ("archive.TXZ", Some(Format::TarXz)),
             ("archive.rar", None),
             ("archive.cab", None),
             ("archive.iso", None),
@@ -102,6 +119,8 @@ mod tests {
             (Format::TarLzma, None),
             (Format::Lzip, None),
             (Format::TarLzip, None),
+            (Format::Xz, None),
+            (Format::TarXz, None),
             (Format::SevenZip, Some(7)),
             (Format::Rar, Some(4)),
             (Format::Cab, Some(8)),
@@ -111,6 +130,13 @@ mod tests {
             assert_eq!(format.descriptor().worker_id, worker);
         }
         assert_eq!(Format::TarGzip.descriptor().filters, ["gzip"]);
+        for format in [Format::Xz, Format::TarXz] {
+            assert_eq!(format.descriptor().creation_method(32), Some("lzma2"));
+            assert_eq!(format.descriptor().creation_method(0), None);
+            assert_eq!(format.descriptor().creation_method(8), None);
+            assert!(!format.descriptor().rewrite);
+            assert_eq!(format.descriptor().check_kind, "format_declared_checks");
+        }
         for format in [
             Format::Rar,
             Format::Cab,
