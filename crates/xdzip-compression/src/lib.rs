@@ -20,6 +20,7 @@ mod quantum;
 mod raw;
 mod stream_io;
 mod xxhash;
+mod xxhash64;
 pub use byte_filter::{ByteFilter, ByteFilterKind};
 pub use bzip2::{Bzip2Reader, bzip2_memory_required};
 pub use gzip::{GzipReader, GzipWriter};
@@ -35,6 +36,7 @@ pub use ppmd7::{Ppmd7Reader, ppmd7_memory_required};
 pub use quantum::QuantumDecoder;
 pub use raw::{DeflateReader, DeflateWriter};
 pub use xxhash::{Xxh32, xxhash32};
+pub use xxhash64::{Xxh64, xxhash64};
 
 /// Incremental IEEE CRC-32 used by ZIP and GZIP containers.
 #[derive(Clone, Copy, Debug)]
