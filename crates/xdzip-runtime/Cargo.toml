@@ -13,6 +13,7 @@ xdzip-codec-tar = { path = "../xdzip-codec-tar" }
 xdzip-codec-deb = { path = "../xdzip-codec-deb" }
 xdzip-codec-asar = { path = "../xdzip-codec-asar" }
 xdzip-codec-uu = { path = "../xdzip-codec-uu" }
+xdzip-codec-aescrypt = { path = "../xdzip-codec-aescrypt" }
 xdzip-codec-stream = { path = "../xdzip-codec-stream" }
 xdzip-codec-zip = { path = "../xdzip-codec-zip" }
 xdzip-codec-native = { path = "../xdzip-codec-native" }

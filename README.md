@@ -68,6 +68,7 @@ Open an archive to browse its directories, search and sort entries, and select f
 | DEB | Common ar members, control/data TAR views, admitted GZIP/XZ/Zstandard/BZip2/LZMA profiles | Not supported | Not supported |
 | ASAR | Stored files/directories, shared payload ranges and declared file/block SHA-256 | Not supported | Not supported |
 | Z, TAR.Z (including `.taz`) | Unix compress LZW, 9–16-bit dictionaries and admitted CLEAR/alignment profiles | Not supported | Not supported |
+| AES Crypt (`.aes`) | Versions 0–3, opening password, full ciphertext HMAC and version-specific length rules | Not supported | Not supported |
 | UU/UUE, XXE | Traditional counted lines and admitted begin-base64 envelopes, including multiple members | Not supported | Not supported |
 | RAR | Legacy, RAR5, and RAR 7 format extensions, including passwords, solid and split archives | Not supported | Not supported |
 | CAB | Store, MSZip, Quantum, LZX, and volumes in the same directory | Not supported | Not supported |
@@ -84,6 +85,8 @@ Open an archive to browse its directories, search and sort entries, and select f
 - Opening or extracting read-only ASAR does not launch its application. External `unpacked` data and declared links are visible but unsupported; no adjacent directory access or executable-mode restoration is granted. Optional hashes detect corruption, and hashless records provide structure/readability only. See the [ASAR contract](docs/engineering/asar-containers.md).
 - Large ZIP archives using the disk-backed index do not currently support whole-archive testing or modification. Selected regular files can still be extracted within task limits; see [large archive indexing](docs/engineering/large-index.md).
 - Sparse TAR and third-party extensions are not currently supported. Ordinary GZIP and ZIP-derived XPI/APK/IPA/CBZ candidates follow the [single-file stream contract](docs/engineering/single-file-streams.md). Legacy filename encodings are detected where possible, but short names and mixed encodings cannot be identified uniquely in every case; see [filename encoding](docs/engineering/filename-encoding.md).
+
+- AES Crypt requires an opening password before metadata is published. All ciphertext MACs must pass; versions 0–2 leave the final length modulo unauthenticated, and extensions grant no authority. See the [AES Crypt contract](docs/engineering/aescrypt-envelopes.md).
 
 ## Command line
 

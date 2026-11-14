@@ -59,3 +59,5 @@ English: The explicit `password_or_integrity` error represents an unverifiable 7
 旧式 RAR 加密条目缺少可可靠区分错误密码与损坏内容的验证值，因此每个加密条目解码前分别请求密码，不能把前一条密码直接套用到可能使用不同秘密的下一条。RAR5 和受支持的其他格式继续任务内复用。旧 RAR 的 CRC 或头部损坏仍作为完整性失败，不冒充已确认的错误密码。
 
 English: Older RAR encrypted records request a password separately for each entry because their checks cannot reliably distinguish a wrong cached secret from corruption. RAR5 retains task-local reuse. Legacy CRC or header damage remains an integrity failure, never a claimed password-verifier mismatch.
+
+AES Crypt 0–3 版虽然不加密文件名，仍须打开密码，完整密文认证后才发布精确大小的元数据。检查、预览、导出通过现有秘密槽保留该会话密码，不另设逐条目提示。0 版验证歧义、1–3 版会话密钥验证，以及旧版未认证长度和扩展字段，遵循 [AES Crypt 契约](aescrypt-envelopes.md)。

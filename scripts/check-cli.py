@@ -380,6 +380,31 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
         invoke('list',ROOT/'tests/fixtures/compress/bad-header.Z',code=1)
         record('unix_compress_real_lzw_empty_streams_tar_and_readonly_boundary')
 
+        for version in range(4):
+            for profile in ['phrase','empty','tail17','unicode']:
+                encrypted=ROOT/'tests/fixtures/aescrypt'/f'v{version}-{profile}.aes'
+                secret=('owned-資料-🔑' if profile=='unicode' else 'owned-aes-fixture').encode()+b'\n'
+                assert invoke('list',encrypted,code=3)['error_code']=='interaction_required'
+                wrong=invoke('list',encrypted,'--password-stdin',stdin=b'incorrect\n',code=1)
+                assert wrong['error_code'] in ['wrong_password','password_or_integrity']
+                listed=invoke('list',encrypted,'--password-stdin',stdin=secret)['data']
+                assert listed['format']=='AES Crypt' and len(listed['entries'])==1
+                row=listed['entries'][0]
+                expected=b'' if profile=='empty' else bytes(range(17)) if profile=='tail17' else phrase
+                assert row['size']==len(expected) and row['packed_size']==encrypted.stat().st_size
+                assert invoke('test',encrypted,'--password-stdin',stdin=secret)['data']['check_kind']=='format_declared_checks'
+                target=work/f'aes-{version}-{profile}'
+                result=command('extract',encrypted,'--entry-id',row['id'],'-C',target,'--password-stdin','--json',stdin=secret)
+                assert secret.strip() not in result.stdout+result.stderr
+                assert (target/encrypted.stem).read_bytes()==expected
+                before=hashlib.sha256(encrypted.read_bytes()).hexdigest()
+                invoke('add',encrypted,source,code=3)
+                assert hashlib.sha256(encrypted.read_bytes()).hexdigest()==before
+        damaged=work/'damaged.aes';data=bytearray((ROOT/'tests/fixtures/aescrypt/v3-phrase.aes').read_bytes());data[-1]^=1;damaged.write_bytes(data)
+        assert invoke('extract',damaged,'-C',work/'aes-unpublished','--password-stdin',stdin=b'owned-aes-fixture\n',code=1)['status']=='failed'
+        assert not (work/'aes-unpublished').exists()
+        record('aescrypt_all_versions_opening_credentials_authenticated_selection_and_readonly_boundary')
+
 
 
         check_desktop_worker(binary,worker,work,env,source/'你好.txt')

@@ -96,6 +96,9 @@ impl Seek for Source<'_> {
     }
 }
 impl ReadSource for Source<'_> {
+    fn source_name_hint(&self) -> Option<&str> {
+        self.source.source_name_hint()
+    }
     fn volume_lengths(&self) -> Option<&[u64]> {
         self.source.volume_lengths()
     }

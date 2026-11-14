@@ -9642,10 +9642,10 @@ QtObject {
         QTRY_VERIFY(formats->width() > 0);
         QTRY_VERIFY(formats->width() <= 608);
         for (const auto &format :
-             {"ZIP",     "TAR",      "TAR.GZ",  "7z",     "GZIP", "BZip2",  "TAR.BZ2",
-              "LZMA",    "TAR.LZMA", "Lzip",    "TAR.LZ", "XZ",   "TAR.XZ", "LZ4",
-              "TAR.LZ4", "ZSTD",     "TAR.ZST", "DEB",    "ASAR", "UU",     "XXE",
-              "Z",       "TAR.Z",    "RAR",     "CAB",    "ISO",  "UDF"}) {
+             {"ZIP",     "TAR",      "TAR.GZ",    "7z",     "GZIP", "BZip2",  "TAR.BZ2",
+              "LZMA",    "TAR.LZMA", "Lzip",      "TAR.LZ", "XZ",   "TAR.XZ", "LZ4",
+              "TAR.LZ4", "ZSTD",     "TAR.ZST",   "DEB",    "ASAR", "UU",     "XXE",
+              "Z",       "TAR.Z",    "AES Crypt", "RAR",    "CAB",  "ISO",    "UDF"}) {
             auto *badge =
                 findVisual(window->contentItem(), "welcomeFormat-" + QString::fromLatin1(format));
             QVERIFY(badge && badge->isVisible());
@@ -9676,7 +9676,7 @@ QtObject {
               QStringLiteral("TAR.XZ"), QStringLiteral("LZ4"), QStringLiteral("TAR.LZ4"),
               QStringLiteral("ZSTD"), QStringLiteral("TAR.ZST"), QStringLiteral("DEB"),
               QStringLiteral("ASAR"), QStringLiteral("UU"), QStringLiteral("XXE"),
-              QStringLiteral("Z"), QStringLiteral("TAR.Z")}) {
+              QStringLiteral("Z"), QStringLiteral("TAR.Z"), QStringLiteral("AES Crypt")}) {
             task->setProperty("resultTask", QVariantMap{{"kind", "check"}, {"format", format}});
             QVERIFY(QMetaObject::invokeMethod(task, "present"));
             QTRY_VERIFY(task->isVisible());
@@ -9685,7 +9685,7 @@ QtObject {
             QCOMPARE(footer->property("note").toString(),
                      format == "TAR" ? qtTrId("integrity.tarNote")
                      : format.contains("XZ") || format.contains("LZ4") || format.contains("ZST") ||
-                             format == "DEB" || format == "ASAR"
+                             format == "DEB" || format == "ASAR" || format == "AES Crypt"
                          ? qtTrId("integrity.declaredCheckNote")
                          : qtTrId("integrity.structuralNote").arg(format));
             auto *hint = qobject_cast<QQuickItem *>(footer->property("hint").value<QObject *>());
@@ -9863,6 +9863,83 @@ QtObject {
                 expected.append(static_cast<char>(value));
         }
         QCOMPARE(actual.readAll(), expected);
+    }
+    void aesCryptUsesOpeningPasswordAndSharedTasks_data() {
+        QTest::addColumn<QString>("fixture");
+        QTest::addColumn<QString>("language");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (int version = 0; version < 4; ++version)
+                for (const auto &profile : {"phrase", "empty", "unicode"}) {
+                    const auto fixture = QStringLiteral("v%1-%2.aes").arg(version).arg(profile);
+                    QTest::newRow(qPrintable(fixture + "-" + language)) << fixture << language;
+                }
+    }
+    void aesCryptUsesOpeningPasswordAndSharedTasks() {
+        QFETCH(QString, fixture);
+        QFETCH(QString, language);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir output;
+        QVERIFY(output.isValid());
+        const auto source = QDir(QStringLiteral(XDZIP_FIXTURES)).filePath("../aescrypt/" + fixture);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        QVERIFY(controller->canOpenDroppedUrls({QUrl::fromLocalFile(source)}));
+        controller->openPath(source);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->passwordPrompt().isEmpty(), 10000);
+        QVERIFY(!controller->ready());
+        QCOMPARE(controller->entries()->rowCount(), 0);
+        const auto first = controller->passwordPrompt();
+        QCOMPARE(first.value("taskId").toString(), QStringLiteral("open"));
+        QVERIFY(controller->submitPassword("open", first.value("promptId").toString(),
+                                           "incorrect fixture"));
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->passwordPrompt().isEmpty(), 10000);
+        const auto retry = controller->passwordPrompt();
+        QVERIFY(retry.value("retry").toBool());
+        QVERIFY(retry.value("promptId") != first.value("promptId"));
+        QCOMPARE(controller->entries()->rowCount(), 0);
+        const auto secret = fixture.contains("unicode") ? QString::fromUtf8("owned-資料-🔑")
+                                                        : QStringLiteral("owned-aes-fixture");
+        QVERIFY(!controller->submitPassword("open", first.value("promptId").toString(), secret));
+        QVERIFY(controller->submitPassword("open", retry.value("promptId").toString(), secret));
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        QVERIFY(controller->passwordPrompt().isEmpty());
+        QCOMPARE(controller->formatLabel(), QStringLiteral("AES Crypt"));
+        QCOMPARE(controller->archiveTotal(), 1);
+        QVERIFY(!controller->canUpdateArchive());
+        controller->startUpdate({source}, controller->sessionId(), controller->directoryId(), 0);
+        QCOMPARE(controller->addDropMessage(), qtTrId("edit.readOnlyFormat").arg("AES Crypt"));
+        QSignalSpy checked(controller, &BrowserController::archiveTestStarted);
+        controller->startArchiveTest();
+        QTRY_COMPARE(checked.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        QVERIFY(controller->passwordPrompt().isEmpty());
+        const auto *row = controller->m_model.rowAt(0);
+        QVERIFY(row);
+        QCOMPARE(row->method, QStringLiteral("Store"));
+        const auto entry = row->id;
+        controller->prepareExtraction(false, {entry});
+        QTRY_VERIFY(!controller->busy());
+        controller->checkTarget(output.path());
+        QTRY_VERIFY(!controller->busy() && controller->targetMatches(output.path()));
+        QSignalSpy extracted(controller, &BrowserController::extractionStarted);
+        controller->startExtraction(output.path(), false, false, 0, false, false);
+        QTRY_COMPARE(extracted.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        QVERIFY(controller->passwordPrompt().isEmpty());
+        QFile actual(QDir(output.path()).filePath(QFileInfo(fixture).completeBaseName()));
+        QVERIFY(actual.open(QIODevice::ReadOnly));
+        QCOMPARE(actual.readAll(), fixture.contains("empty")
+                                       ? QByteArray()
+                                       : QByteArray("abracadabra abracadabra\n").repeated(6));
     }
     void asarArchivesUseSharedBrowserAndTasks_data() {
         QTest::addColumn<QString>("fixture");

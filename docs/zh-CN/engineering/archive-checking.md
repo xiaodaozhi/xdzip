@@ -47,3 +47,5 @@ English: Older RAR encrypted records request a password separately for each entr
 English: Archives with unknown uncompressed sizes remain browsable. Whole-archive checks report an unknown total and fail with `unsupported_feature` before opening payloads or requesting passwords. Actual decoded and verified counters are retained; unknown values are never verified as empty files or used as progress totals.
 
 XZ 和 TAR.XZ 使用 `format_declared_checks`，须验证声明的 CRC32、CRC64、SHA-256 和结构字段；声明 None 的流没有内容校验和。界面须说明此区别，不承诺每份输入都有内容校验和。新增未加密 ZIP 方法 9、12、14、95 仍须满足精确解码尺寸及外层 ZIP CRC，LZMA 数据描述符配置须有 EOS。未知方法可展示，但不能计为内容验证成功。
+
+AES Crypt 使用 `format_declared_checks` 和保留的打开密码。元数据准入及实际任务解码都必须通过完整密文 HMAC。0–2 版不认证尾部长度模值，扩展字段也未认证。检查成功仅表示格式声明的检查通过，范围见 [AES Crypt 契约](aescrypt-envelopes.md)。

@@ -308,6 +308,17 @@
       ]
     },
     {
+      "id": "aes-crypt", "rust_variant": "AesCrypt", "label": "AES Crypt", "container": "encrypted-single-file", "filters": [], "worker_id": null,
+      "check_kind": "format_declared_checks",
+      "creation_levels": [],
+      "read_methods": ["store"], "write_methods": [], "rewrite": false,
+      "read_encryption": ["aescrypt-v0", "aescrypt-v1", "aescrypt-v2", "aescrypt-v3"], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [], "shell_mime_types": [],
+      "extensions": [
+        {"suffix": ".aes", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": null}
+      ]
+    },
+    {
       "id": "asar", "rust_variant": "Asar", "label": "ASAR", "container": "asar", "filters": [], "worker_id": null,
       "check_kind": "format_declared_checks", "creation_levels": [],
       "read_methods": ["store", "sha256"], "write_methods": [], "rewrite": false,

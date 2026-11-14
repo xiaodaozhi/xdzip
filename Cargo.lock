@@ -1760,6 +1760,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-aescrypt"
+version = "0.2.0"
+dependencies = [
+ "aes",
+ "constant_time_eq",
+ "xdzip-codec-api",
+ "xdzip-crypto",
+ "xdzip-domain",
+ "zeroize",
+]
+
+[[package]]
 name = "xdzip-codec-api"
 version = "0.2.0"
 dependencies = [
@@ -2009,6 +2021,7 @@ dependencies = [
  "libc",
  "unicode-normalization",
  "winapi-util",
+ "xdzip-codec-aescrypt",
  "xdzip-codec-api",
  "xdzip-codec-asar",
  "xdzip-codec-deb",

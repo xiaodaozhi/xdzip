@@ -109,6 +109,9 @@ impl Read for Counted<'_> {
     }
 }
 impl xdzip_codec_api::ReadSource for Counted<'_> {
+    fn source_name_hint(&self) -> Option<&str> {
+        xdzip_codec_api::ReadSource::source_name_hint(self.source)
+    }
     fn volume_lengths(&self) -> Option<&[u64]> {
         xdzip_codec_api::ReadSource::volume_lengths(self.source)
     }

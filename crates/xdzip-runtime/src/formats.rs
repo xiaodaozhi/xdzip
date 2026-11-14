@@ -1,5 +1,6 @@
 //! Built-in capability routing. The host retains all paths and source authority.
 use std::io::{Read, SeekFrom};
+use xdzip_codec_aescrypt::AesCryptCodec;
 use xdzip_codec_api::{
     Format, MetadataCodec, ReadSource, ScanError,
     encode::{CreationCodec, RewriteCodec},
@@ -23,11 +24,13 @@ impl Codec for StreamCodec {}
 impl Codec for DebCodec {}
 impl Codec for AsarCodec {}
 impl Codec for UuCodec {}
+impl Codec for AesCryptCodec {}
 pub(crate) fn codec(format: Format) -> &'static dyn Codec {
     match format {
         Format::Zip => &ZipCodec,
         Format::Deb => &DebCodec,
         Format::Asar => &AsarCodec,
+        Format::AesCrypt => &AesCryptCodec,
         Format::Compress => &StreamCodec {
             format: Format::Compress,
         },
@@ -149,7 +152,17 @@ pub(crate) fn detect(
         return Err(ScanError::Invalid);
     }
     source.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
-    Ok(if magic[..2] == [0x1f, 0x9d] {
+    Ok(if magic[..3] == *b"AES" {
+        if recognized_tar(source, control)? {
+            match AesCryptCodec::probe_header(source, control) {
+                Ok(()) => Format::AesCrypt,
+                Err(ScanError::Invalid | ScanError::Unsupported) => Format::Tar,
+                Err(error) => return Err(error),
+            }
+        } else {
+            Format::AesCrypt
+        }
+    } else if magic[..2] == [0x1f, 0x9d] {
         compressed_format(source, control, Filter::Compress, Format::Compress)?
     } else if magic[..2] == [0x1f, 0x8b] {
         compressed_format(source, control, Filter::Gzip, Format::Gzip)?

@@ -20,6 +20,26 @@ pub enum NameEncoding {
     /// Explicit declaration is damaged, or strict decoding failed.
     Unresolved,
 }
+/// Derive a virtual ordinary-file basename from the authorized host hint only.
+/// Suffix matching grants no input path or output authorization.
+pub fn single_file_name(hint: Option<&str>, suffixes: &[&str]) -> String {
+    hint.and_then(|name| {
+        let lower = name.to_ascii_lowercase();
+        let suffix = suffixes
+            .iter()
+            .filter(|suffix| lower.ends_with(**suffix))
+            .max_by_key(|suffix| suffix.len())?;
+        let stem = name.get(..name.len().checked_sub(suffix.len())?)?;
+        (!stem.is_empty()
+            && stem != "."
+            && stem != ".."
+            && !stem
+                .chars()
+                .any(|c| c.is_control() || matches!(c, '/' | '\\' | ':')))
+        .then(|| stem.to_owned())
+    })
+    .unwrap_or_else(|| "content".into())
+}
 
 /// ZIP's original DOS default. This fixed character map is independent of the host locale.
 const CP437_HIGH: [char; 128] = [

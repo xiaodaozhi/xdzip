@@ -160,6 +160,8 @@ pub enum Format {
     Compress,
     /// TAR behind Unix compress, including TAZ naming.
     TarCompress,
+    /// Password-admitted AES Crypt v0-v3 single-file envelope, read only.
+    AesCrypt,
     /// Independent Rust 7z behind the isolated codec worker.
     SevenZip,
     /// Independent Rust RAR read-only backend in the isolated codec worker.
@@ -268,7 +270,12 @@ impl Entry {
             | Format::Xxe
             | Format::Compress
             | Format::TarCompress => !self.warning && !self.link,
-            Format::SevenZip | Format::Rar | Format::Cab | Format::Iso | Format::Udf => {
+            Format::AesCrypt
+            | Format::SevenZip
+            | Format::Rar
+            | Format::Cab
+            | Format::Iso
+            | Format::Udf => {
                 !self.warning && !self.link && (!self.encrypted || self.password_supported)
             }
         }
@@ -296,7 +303,7 @@ pub enum ScanError {
     Cancelled,
     /// File size or modification time changed during the scan.
     SourceChanged,
-    /// Header encryption requires a secret before metadata can be published.
+    /// Admission requires a secret before metadata can be published.
     PasswordRequired,
     /// A header password verifier rejected the provided secret.
     WrongPassword,
@@ -342,7 +349,7 @@ pub trait MetadataCodec {
         control: &Cancellation,
         limits: ScanLimits,
     ) -> Result<Vec<Entry>, ScanError>;
-    /// Scan encrypted headers with a borrowed, host-owned secret.
+    /// Scan password-dependent metadata with a borrowed, host-owned secret.
     fn scan_with_password(
         &self,
         source: &mut dyn ReadSource,

@@ -68,6 +68,7 @@
 | DEB | 普通 ar 成员、control/data TAR 视图，已准入 GZIP/XZ/Zstandard/BZip2/LZMA 配置 | 不支持 | 不支持 |
 | ASAR | 存储文件与目录、共享载荷区间及声明的文件/块 SHA-256 | 不支持 | 不支持 |
 | Z、TAR.Z（包括 `.taz`） | Unix compress LZW、9–16 位字典及已准入 CLEAR/对齐配置 | 不支持 | 不支持 |
+| AES Crypt（`.aes`） | 0–3 版，打开密码、完整密文 HMAC 和逐版本长度规则 | 不支持 | 不支持 |
 | UU/UUE、XXE | 传统计数行与已准入 begin-base64 封装，包括多成员 | 不支持 | 不支持 |
 | RAR | 支持旧版、RAR5 和 RAR 7 格式扩展，包括密码、固实及分卷 | 不支持 | 不支持 |
 | CAB | 支持 Store、MSZip、Quantum、LZX 和同目录分卷 | 不支持 | 不支持 |
@@ -84,6 +85,8 @@
 - 浏览或提取只读 ASAR 不启动其中的应用。外置 `unpacked` 数据和声明的链接可见但不支持提取，不授予相邻目录访问或可执行权限恢复能力。可选摘要检查损坏，无摘要条目只提供结构与可读性检查，详见 [ASAR 契约](docs/zh-CN/engineering/asar-containers.md)。
 - 进入磁盘索引的大型 ZIP 暂不支持整包测试或修改，所选普通文件仍可按任务上限解压；详见[大归档索引](docs/zh-CN/engineering/large-index.md)。
 - 暂不支持稀疏 TAR 和第三方扩展。普通 GZIP 及 XPI/APK/IPA/CBZ 候选遵循[单文件流契约](docs/zh-CN/engineering/single-file-streams.md)。旧编码文件名会尝试识别，但短名称或混合编码无法保证唯一识别，详见[文件名编码](docs/zh-CN/engineering/filename-encoding.md)。
+
+- AES Crypt 在发布元数据前必须提供打开密码并验证完整密文认证码。0–2 版的尾部长度模值未认证，扩展字段不授予权限。详见 [AES Crypt 契约](docs/zh-CN/engineering/aescrypt-envelopes.md)。
 
 ## 命令行
 

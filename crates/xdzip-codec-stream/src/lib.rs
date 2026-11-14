@@ -40,26 +40,12 @@ pub struct StreamInfo {
 }
 const STREAM_LIMIT: u64 = 24 * 1024 * 1024 * 1024;
 fn candidate(source: &dyn ReadSource, format: Format) -> String {
-    source
-        .source_name_hint()
-        .and_then(|name| {
-            let suffix = format
-                .descriptor()
-                .extensions
-                .iter()
-                .filter(|suffix| name.to_ascii_lowercase().ends_with(**suffix))
-                .max_by_key(|suffix| suffix.len())?;
-            let stem = name.get(..name.len().checked_sub(suffix.len())?)?;
-            (!stem.is_empty()
-                && stem != "."
-                && stem != ".."
-                && !stem
-                    .chars()
-                    .any(|c| c.is_control() || matches!(c, '/' | '\\' | ':')))
-            .then(|| stem.to_owned())
-        })
-        .unwrap_or_else(|| "content".into())
+    xdzip_codec_api::names::single_file_name(
+        source.source_name_hint(),
+        format.descriptor().extensions,
+    )
 }
+
 impl StreamCodec {
     /// Resolve the admitted single-file outer filter without granting paths.
     pub fn filter(&self) -> Result<Filter, ScanError> {

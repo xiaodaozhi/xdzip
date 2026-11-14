@@ -18,6 +18,7 @@ tests/fixtures/uu/*.uue binary
 tests/fixtures/uu/*.xxe binary
 tests/fixtures/compress/*.Z binary
 tests/fixtures/compress/*.taz binary
+tests/fixtures/aescrypt/*.aes binary
 # Keep the upstream license byte-for-byte, including its original whitespace.
 design/assets/fonts/OFL.txt -text -whitespace
 # Historical source fixtures are verified by SHA-256, including original LF bytes.

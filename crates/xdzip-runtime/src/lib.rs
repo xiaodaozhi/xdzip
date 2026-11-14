@@ -1,5 +1,7 @@
 //! First read-only session service. Called only on a bounded background worker.
 #[cfg(test)]
+mod aescrypt_tests;
+#[cfg(test)]
 mod asar_tests;
 pub mod catalog;
 pub mod checking;
@@ -58,7 +60,7 @@ impl Archive {
     pub fn open(path: &Path, control: &Cancellation) -> Result<Self, ScanError> {
         Self::open_with_password(path, control, None)
     }
-    /// Open encrypted headers without exposing a partial metadata snapshot.
+    /// Admit password-dependent archives without exposing a partial metadata snapshot.
     pub fn open_with_password(
         path: &Path,
         control: &Cancellation,
