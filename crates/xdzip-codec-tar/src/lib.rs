@@ -7,13 +7,14 @@ use xdzip_codec_api::payload::{DecodeError, DecodedSink, PayloadCodec, PayloadRe
 use xdzip_codec_api::{
     Cancellation, Entry, Format, MetadataCodec, ReadSource, ScanError, ScanLimits,
 };
-use xdzip_codec_stream::controlled::{ControlledStream as Stream, Filter};
+use xdzip_codec_stream::controlled::ControlledStream as Stream;
+pub use xdzip_codec_stream::controlled::Filter;
 use xdzip_domain::identity::EntryId;
 
 /// TAR container, optionally behind exactly one GZIP filter.
 pub struct TarCodec {
-    /// Decode/encode GZIP before/after the TAR container.
-    pub gzip: bool,
+    /// Outer filter; creation and rewrite accept only Identity and Gzip.
+    pub filter: Filter,
 }
 const EXTENSION_LIMIT: u64 = 64 * 1024;
 const STREAM_LIMIT: u64 = 24 * 1024 * 1024 * 1024;
@@ -27,23 +28,24 @@ pub fn recognizes_header(bytes: &[u8]) -> bool {
         })
 }
 impl TarCodec {
+    /// Container capability for this specific filter.
+    pub const fn format(&self) -> Format {
+        match self.filter {
+            Filter::Identity => Format::Tar,
+            Filter::Gzip => Format::TarGzip,
+            Filter::Bzip2 => Format::TarBzip2,
+            Filter::Lzma => Format::TarLzma,
+            Filter::Lzip => Format::TarLzip,
+        }
+    }
+
     fn stream<'a>(
         &self,
         source: &'a mut dyn ReadSource,
         control: &'a Cancellation,
         limit: u64,
     ) -> Result<Stream<'a>, ScanError> {
-        Stream::new(
-            source,
-            control,
-            if self.gzip {
-                Filter::Gzip
-            } else {
-                Filter::Identity
-            },
-            limit,
-            limit,
-        )
+        Stream::new(source, control, self.filter, limit, limit)
     }
     fn inspect(
         &self,
@@ -52,7 +54,7 @@ impl TarCodec {
         limits: ScanLimits,
     ) -> Result<(Vec<Entry>, Vec<u64>), ScanError> {
         let mut stream = self.stream(source, control, limits.read_bytes)?;
-        let result = scan(&mut stream, self.gzip, limits);
+        let result = scan(&mut stream, self.format(), limits);
         stream.failure().map_or(result, Err)
     }
 }
@@ -129,7 +131,7 @@ fn validate_global_comments(mut data: &[u8]) -> Result<(), ScanError> {
 }
 fn scan(
     stream: &mut Stream<'_>,
-    gzip: bool,
+    format: Format,
     limits: ScanLimits,
 ) -> Result<(Vec<Entry>, Vec<u64>), ScanError> {
     let mut rows = Vec::new();
@@ -311,13 +313,18 @@ fn scan(
             unix_mode: 0,
             size,
             size_known: true,
-            packed_size: if gzip { 0 } else { size },
-            method: if gzip { 8 } else { 0 },
+            packed_size: if format == Format::Tar { size } else { 0 },
+            method: match format {
+                Format::Tar => 0,
+                Format::TarBzip2 => 12,
+                Format::TarLzma | Format::TarLzip => 14,
+                _ => 8,
+            },
             modified_dos: modified,
             encrypted: false,
             password_supported: false,
             warning,
-            format: if gzip { Format::TarGzip } else { Format::Tar },
+            format,
         });
         skip(stream, padded(size)?)?;
         extensions = 0;
@@ -421,7 +428,8 @@ mod tests {
     use super::*;
     use std::io::{self, Cursor, SeekFrom, Write};
     use xdzip_codec_api::encode::{
-        CreationCodec, EncodeEntry, EncodeError, EncodeInput, EncodeSettings,
+        CreationCodec, EncodeEntry, EncodeError, EncodeInput, EncodeSettings, RewriteCodec,
+        RewriteInput,
     };
     struct Inputs {
         entries: Vec<EncodeEntry>,
@@ -467,27 +475,73 @@ mod tests {
             data: vec![vec![], b"payload".to_vec(), vec![]],
         }
     }
+    #[test]
+    fn read_only_tar_filters_reject_encoding_and_rewrite_before_touching_streams() {
+        for filter in [Filter::Bzip2, Filter::Lzma, Filter::Lzip] {
+            let settings = EncodeSettings {
+                method: "store",
+                level: 6,
+                solid: false,
+                encrypt_headers: false,
+                password: None,
+            };
+            let cancel = Cancellation::default();
+            let mut output = vec![];
+            let codec = TarCodec { filter };
+            assert_eq!(
+                codec.encode(&input(), &mut output, settings, &cancel, &mut |_| {}),
+                Err(EncodeError::Unsupported)
+            );
+            assert!(output.is_empty());
+            let additions = Inputs {
+                entries: vec![],
+                data: vec![],
+            };
+            let mut stage = Cursor::new(vec![]);
+            assert_eq!(
+                codec.rewrite(
+                    &mut Cursor::new(b"invalid source"),
+                    RewriteInput {
+                        keep: &[],
+                        renames: &[],
+                        additions: &additions,
+                        settings
+                    },
+                    &mut stage,
+                    &cancel,
+                    &mut |_| {}
+                ),
+                Err(EncodeError::Unsupported)
+            );
+            assert!(stage.get_ref().is_empty());
+        }
+    }
     fn encoded(gzip: bool) -> Vec<u8> {
         let mut bytes = Vec::new();
-        TarCodec { gzip }
-            .encode(
-                &input(),
-                &mut bytes,
-                EncodeSettings {
-                    solid: false,
-                    encrypt_headers: false,
-                    method: if gzip { "deflate" } else { "store" },
-                    level: 6,
-                    password: None,
-                },
-                &Cancellation::default(),
-                &mut |_| {},
-            )
-            .unwrap();
+        TarCodec {
+            filter: if gzip { Filter::Gzip } else { Filter::Identity },
+        }
+        .encode(
+            &input(),
+            &mut bytes,
+            EncodeSettings {
+                solid: false,
+                encrypt_headers: false,
+                method: if gzip { "deflate" } else { "store" },
+                level: 6,
+                password: None,
+            },
+            &Cancellation::default(),
+            &mut |_| {},
+        )
+        .unwrap();
         bytes
     }
     fn scan_bytes(bytes: Vec<u8>, gzip: bool) -> Result<Vec<Entry>, ScanError> {
-        TarCodec { gzip }.scan(
+        TarCodec {
+            filter: if gzip { Filter::Gzip } else { Filter::Identity },
+        }
+        .scan(
             &mut Cursor::new(bytes),
             &Cancellation::default(),
             ScanLimits::default(),
@@ -547,7 +601,9 @@ mod tests {
             } else {
                 plain.clone()
             };
-            let codec = TarCodec { gzip };
+            let codec = TarCodec {
+                filter: if gzip { Filter::Gzip } else { Filter::Identity },
+            };
             let cancel = Cancellation::default();
             let mut source = Cursor::new(bytes);
             let rows = codec
@@ -620,9 +676,11 @@ mod tests {
         }
         for gzip in [false, true] {
             assert_eq!(
-                TarCodec { gzip }
-                    .scan(&mut Broken, &Cancellation::default(), ScanLimits::default())
-                    .unwrap_err(),
+                TarCodec {
+                    filter: if gzip { Filter::Gzip } else { Filter::Identity }
+                }
+                .scan(&mut Broken, &Cancellation::default(), ScanLimits::default())
+                .unwrap_err(),
                 ScanError::Io
             );
         }
@@ -640,7 +698,9 @@ mod tests {
     fn unicode_long_names_empty_records_and_sequential_selected_payloads() {
         for gzip in [false, true] {
             let mut source = Cursor::new(encoded(gzip));
-            let codec = TarCodec { gzip };
+            let codec = TarCodec {
+                filter: if gzip { Filter::Gzip } else { Filter::Identity },
+            };
             let cancel = Cancellation::default();
             let rows = codec
                 .scan(&mut source, &cancel, ScanLimits::default())
@@ -684,9 +744,11 @@ mod tests {
         let cancel = Cancellation::default();
         cancel.cancel();
         assert_eq!(
-            TarCodec { gzip: false }
-                .scan(&mut Cursor::new(&bytes), &cancel, ScanLimits::default())
-                .unwrap_err(),
+            TarCodec {
+                filter: Filter::Identity
+            }
+            .scan(&mut Cursor::new(&bytes), &cancel, ScanLimits::default())
+            .unwrap_err(),
             ScanError::Cancelled
         );
         for limits in [
@@ -704,9 +766,11 @@ mod tests {
             },
         ] {
             assert_eq!(
-                TarCodec { gzip: false }
-                    .scan(&mut Cursor::new(&bytes), &Cancellation::default(), limits)
-                    .unwrap_err(),
+                TarCodec {
+                    filter: Filter::Identity
+                }
+                .scan(&mut Cursor::new(&bytes), &Cancellation::default(), limits)
+                .unwrap_err(),
                 ScanError::Limit
             );
         }
@@ -738,7 +802,9 @@ mod tests {
             bytes.resize(1536, 0);
             let mut source = Cursor::new(bytes);
             let cancel = Cancellation::default();
-            let codec = TarCodec { gzip: false };
+            let codec = TarCodec {
+                filter: Filter::Identity,
+            };
             let rows = codec
                 .scan(&mut source, &cancel, ScanLimits::default())
                 .unwrap();
@@ -792,16 +858,18 @@ mod tests {
             .unwrap();
         let mut members = empty.repeat(1000);
         members.extend(encoded(true));
-        let error = TarCodec { gzip: true }
-            .scan(
-                &mut Cursor::new(members),
-                &Cancellation::default(),
-                ScanLimits {
-                    read_bytes: 1024,
-                    ..Default::default()
-                },
-            )
-            .unwrap_err();
+        let error = TarCodec {
+            filter: Filter::Gzip,
+        }
+        .scan(
+            &mut Cursor::new(members),
+            &Cancellation::default(),
+            ScanLimits {
+                read_bytes: 1024,
+                ..Default::default()
+            },
+        )
+        .unwrap_err();
         assert_eq!(error, ScanError::Limit);
         let mut header = tar::Header::new_gnu();
         header.set_path("extension").unwrap();
@@ -818,38 +886,42 @@ mod tests {
         let mut inputs = input();
         inputs.entries[1].size += 1;
         assert!(
-            TarCodec { gzip: false }
-                .encode(
-                    &inputs,
-                    &mut Vec::new(),
-                    EncodeSettings {
-                        solid: false,
-                        encrypt_headers: false,
-                        method: "store",
-                        level: 6,
-                        password: None
-                    },
-                    &Cancellation::default(),
-                    &mut |_| {}
-                )
-                .is_err()
+            TarCodec {
+                filter: Filter::Identity
+            }
+            .encode(
+                &inputs,
+                &mut Vec::new(),
+                EncodeSettings {
+                    solid: false,
+                    encrypt_headers: false,
+                    method: "store",
+                    level: 6,
+                    password: None
+                },
+                &Cancellation::default(),
+                &mut |_| {}
+            )
+            .is_err()
         );
         assert!(
-            TarCodec { gzip: true }
-                .encode(
-                    &input(),
-                    &mut Vec::new(),
-                    EncodeSettings {
-                        solid: false,
-                        encrypt_headers: false,
-                        method: "deflate",
-                        level: 6,
-                        password: Some("secret")
-                    },
-                    &Cancellation::default(),
-                    &mut |_| {}
-                )
-                .is_err()
+            TarCodec {
+                filter: Filter::Gzip
+            }
+            .encode(
+                &input(),
+                &mut Vec::new(),
+                EncodeSettings {
+                    solid: false,
+                    encrypt_headers: false,
+                    method: "deflate",
+                    level: 6,
+                    password: Some("secret")
+                },
+                &Cancellation::default(),
+                &mut |_| {}
+            )
+            .is_err()
         );
     }
 }

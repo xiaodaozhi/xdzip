@@ -213,7 +213,7 @@ def validate_runtime_assets() -> None:
     icons = {icon['id']: icon for icon in SPEC['icons']}
     total = 0
     for suffix, ids, platform in [('ico', WINDOWS_ICONS.values(), 'default'), ('icns', MACOS_ICONS, 'macos')]:
-        for icon_id in ids:
+        for icon_id in dict.fromkeys(ids):
             path = ASSETS / f'xdzip-{icon_id}.{suffix}'
             with Image.open(path) as container:
                 if suffix == 'ico':

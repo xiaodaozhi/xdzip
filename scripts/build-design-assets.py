@@ -332,7 +332,17 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true', help='Verify generated SVGs and gallery without rewriting files')
     parser.add_argument('--metadata-only', action='store_true', help='Refresh runtime usage and gallery while preserving all image bytes and raster records')
+    parser.add_argument('--refresh-association-icons', action='store_true',
+                        help='With --metadata-only, admit explicitly exported and validated ICO/ICNS updates')
     args = parser.parse_args()
+    if args.refresh_association_icons:
+        if not args.metadata_only:
+            parser.error('--refresh-association-icons requires --metadata-only')
+        import importlib.util
+        specification = importlib.util.spec_from_file_location('association_icon_build', REPO / 'scripts/build-association-icons.py')
+        module = importlib.util.module_from_spec(specification)
+        specification.loader.exec_module(module)
+        module.validate_runtime_assets()
     if args.metadata_only:
         args.check = True  # Build expected descriptors without recropping or drawing.
     for folder in ('reference', 'demo', 'svg/light', 'svg/dark', 'png/light', 'png/dark', 'preview'):
@@ -360,6 +370,9 @@ def main() -> None:
             if item['kind'] == 'association-icon-source' and item['file'] in recorded:
                 # These independently generated vector sources have no tracked
                 # raster receipts; refreshing them must preserve runtime PNGs.
+                recorded[item['file']].update(item)
+            if (args.refresh_association_icons and item['kind'] == 'association-icon-platform'
+                    and item['file'] in recorded):
                 recorded[item['file']].update(item)
             if item['file'] not in recorded and item['kind'] in ('tray-vector', 'tray-rasterization', 'menu-shadow-rasterization', 'association-icon-source', 'association-icon-platform'):
                 existing['assets'].append(item)

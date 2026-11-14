@@ -189,13 +189,18 @@ Rectangle {
                         }
                     }
                 }
-                RowLayout {
+                Flow {
                     objectName: "welcomeFormats"
                     Layout.topMargin: root.width < 900 ? 18 : 22
                     Layout.alignment: Qt.AlignHCenter
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    Layout.maximumWidth: Theme.welcomeContentWidth
                     spacing: 8
                     Text {
                         text: qsTrId("ui.68e2f0d4ff9a")
+                        height: implicitHeight + 6
+                        verticalAlignment: Text.AlignVCenter
                         font.pixelSize: 11 * Theme.fontScale
                         color: Theme.textSecondary
                     }

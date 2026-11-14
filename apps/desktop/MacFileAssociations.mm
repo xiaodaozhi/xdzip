@@ -7,11 +7,6 @@
 
 namespace {
 UTType *contentType(const QString &extension) {
-    if (extension == QStringLiteral(".xpi") || extension == QStringLiteral(".apk") ||
-        extension == QStringLiteral(".ipa") || extension == QStringLiteral(".cbz")) {
-        // Preserve the extension's package identity instead of changing every ZIP default.
-        return [UTType typeWithFilenameExtension:extension.mid(1).toNSString()];
-    }
     if (extension == QStringLiteral(".udf")) {
         // An older installed bundle can shadow our corrected UDF declaration.
         // Use the type macOS actually assigns to .udf files, even if dynamic.
@@ -33,7 +28,12 @@ UTType *contentType(const QString &extension) {
         {".cab", "com.microsoft.cab-archive"}, {".iso", "public.iso-image"},
         {".udf", "org.xdzip.udf-image"}};
     const QString identifier = types.value(extension);
-    return identifier.isEmpty() ? nil : [UTType typeWithIdentifier:identifier.toNSString()];
+    if (identifier.isEmpty()) {
+        // Additional registered suffixes use the type assigned to their final
+        // extension. This grants no new package execution or decoding behavior.
+        return [UTType typeWithFilenameExtension:extension.mid(extension.lastIndexOf('.') + 1).toNSString()];
+    }
+    return [UTType typeWithIdentifier:identifier.toNSString()];
 }
 void finish(QPointer<FileAssociations> service, bool success) {
     if (service)

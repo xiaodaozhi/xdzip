@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "implemented-html-and-qt-manual-acceptance-pending",
+  "status": "dimension-and-behavior-contract",
   "units": "CSS px / Qt device-independent pixels",
   "source": "../../design/hifi/sources/welcome.html",
   "theme_source": "tokens.json",
@@ -16,8 +16,8 @@
   "titlebar_height": 48,
   "statusbar_height": 32,
   "content_width": 608,
-  "supported_formats": ["ZIP", "TAR", "TAR.GZ", "7z", "RAR", "CAB", "ISO", "UDF"],
-  "format_badge_policy": "Read-only formats use the existing supported-open badges; creation stays ZIP/TAR/TAR.GZ/7z. Preserve badge font, inset and gap and verify all eight at the minimum window and enlarged text.",
+  "supported_formats": ["ZIP", "TAR", "TAR.GZ", "7z", "GZIP", "BZip2", "TAR.BZ2", "LZMA", "TAR.LZMA", "Lzip", "TAR.LZ", "RAR", "CAB", "ISO", "UDF"],
+  "format_badge_policy": "Format badges come from the built-in registry and wrap within the existing 608 logical-pixel content column. Preserve font, inset and gap; additional rows participate in the existing vertical scroller. Verify every label at the minimum window and enlarged text. Creation choices remain independently capability-driven.",
   "content_top_inset": 28,
   "feedback_icon_size": 18,
   "feedback_gap": 8,

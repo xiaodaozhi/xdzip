@@ -14,6 +14,8 @@ pub mod query;
 pub mod service;
 mod source;
 mod source_cab;
+#[cfg(test)]
+mod stream_tests;
 mod task_interaction;
 pub mod updating;
 use std::path::Path;
@@ -57,43 +59,38 @@ impl Archive {
         control.check()?;
         let mut source = source::Source::open(path, control)?;
         let mut format = formats::detect(&mut source, control)?;
+        let tar_identified = format == xdzip_codec_api::Format::Tar
+            && formats::recognized_tar(&mut source, control)?;
         let scanned = if format == xdzip_codec_api::Format::Zip {
             Self::scan_zip(&mut source, control)
-        } else if format == xdzip_codec_api::Format::Gzip {
-            let info = xdzip_codec_stream::GzipCodec.inspect(
+        } else {
+            formats::scan(
+                &mut format,
                 &mut source,
                 control,
-                formats::limits(format),
-            )?;
-            // Empty TAR consists of at least two zero blocks. Require the full
-            // decoded stream to be zero, rather than guessing from its prefix.
-            if info.all_zero && info.entry.size >= 1024 {
-                format = xdzip_codec_api::Format::TarGzip;
-                formats::codec(format)
-                    .scan(&mut source, control, formats::limits(format))
-                    .map(|rows| (rows, None))
-            } else {
-                Ok((vec![info.entry], None))
-            }
-        } else {
-            formats::codec(format)
-                .scan_with_password(
-                    &mut source,
-                    control,
-                    formats::limits(format),
-                    password.as_ref().map(extraction::Password::expose),
-                )
-                .map(|rows| (rows, None))
+                password.as_ref().map(extraction::Password::expose),
+            )
+            .map(|rows| (rows, None))
         };
         // Preserve validated self-extracting ZIP sources without using the suffix.
         // Budget/cancel/unsupported failures are authoritative and never retried.
         let scanned = if format == xdzip_codec_api::Format::Tar
+            && !tar_identified
             && matches!(&scanned, Err(ScanError::Invalid))
         {
             match Self::scan_zip(&mut source, control) {
                 Ok(rows) => {
                     format = xdzip_codec_api::Format::Zip;
                     Ok(rows)
+                }
+                Err(ScanError::Invalid) => {
+                    if let Some(candidate) = formats::detect_lzma(&mut source, control)? {
+                        format = candidate;
+                        formats::scan(&mut format, &mut source, control, None)
+                            .map(|rows| (rows, None))
+                    } else {
+                        scanned
+                    }
                 }
                 Err(_) => scanned,
             }

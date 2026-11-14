@@ -18,6 +18,48 @@ const RAW2: &[u8] = &[
 fn expected() -> Vec<u8> {
     b"abracadabra abracadabra\n".repeat(6)
 }
+
+#[test]
+fn lzma_eos_member_preserves_trailer_without_weakening_full_span() {
+    let mut bytes = RAW1.to_vec();
+    bytes.extend_from_slice(b"following trailer");
+    let mut reader = LzmaReader::new_member(
+        std::io::Cursor::new(&bytes),
+        bytes.len() as u64,
+        &PROPS,
+        1 << 20,
+    )
+    .unwrap();
+    let mut out = Vec::new();
+    reader.read_to_end(&mut out).unwrap();
+    assert_eq!(out, expected());
+    assert_eq!(reader.consumed_bytes(), RAW1.len() as u64);
+    let mut source = reader.into_member_source().unwrap();
+    assert_eq!(source.position(), RAW1.len() as u64);
+    let mut tail = Vec::new();
+    source.read_to_end(&mut tail).unwrap();
+    assert_eq!(tail, b"following trailer");
+    for size in [Some(144), None] {
+        let mut strict =
+            LzmaReader::new(bytes.as_slice(), bytes.len() as u64, size, &PROPS, 1 << 20).unwrap();
+        assert!(strict.read_to_end(&mut Vec::new()).is_err());
+    }
+}
+
+#[test]
+fn lzma_member_cannot_recover_unfinished_or_poisoned_source() {
+    let reader = LzmaReader::new_member(RAW1, RAW1.len() as u64, &PROPS, 1 << 20).unwrap();
+    assert!(reader.into_member_source().is_err());
+    let mut reader = LzmaReader::new_member(RAW1, RAW1.len() as u64, &PROPS, 1 << 20).unwrap();
+    assert!(reader.finish().is_err());
+    assert!(reader.read(&mut [0]).is_err());
+    assert!(reader.into_member_source().is_err());
+    let mut reader =
+        LzmaReader::new_member(&RAW1[..RAW1.len() - 1], RAW1.len() as u64, &PROPS, 1 << 20)
+            .unwrap();
+    assert!(reader.read_to_end(&mut Vec::new()).is_err());
+    assert!(reader.into_member_source().is_err());
+}
 struct Singles<'a>(&'a [u8]);
 impl Read for Singles<'_> {
     fn read(&mut self, output: &mut [u8]) -> io::Result<usize> {

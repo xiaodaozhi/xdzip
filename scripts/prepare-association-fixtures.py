@@ -30,6 +30,13 @@ def main():
             item.size = len(content)
             archive.addfile(item, io.BytesIO(content))
     shutil.copyfile(output / 'sample.tar.gz', output / 'sample.tgz')
+    for fixture, suffixes in [
+        ('phrase.bz2', ['bz2', 'bz']), ('files.tbz2', ['tar.bz2', 'tar.bz', 'tbz', 'tbz2']),
+        ('phrase.lzma', ['lzma']), ('files.tar.lzma', ['tar.lzma', 'tlz']),
+        ('phrase.lz', ['lz']), ('files.tlz', ['tar.lz']),
+    ]:
+        for suffix in suffixes:
+            shutil.copyfile(ROOT / 'tests/fixtures/streams' / fixture, output / ('sample.' + suffix))
     for source, name in [
         ('crates/xdzip-codec-7z/tests/fixtures/copy.7z', 'sample.7z'),
         ('tests/fixtures/native-archives/rar7-store-small.rar', 'sample.rar'),

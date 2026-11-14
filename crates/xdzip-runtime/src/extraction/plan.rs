@@ -191,15 +191,18 @@ pub(crate) fn prepare(
     }
     // GZIP has no per-entry compressed sizes. Use the immutable whole-source
     // size for a conservative selected-output ratio gate; work quotas still apply.
-    if matches!(
-        archive.format,
-        xdzip_codec_api::Format::TarGzip
-            | xdzip_codec_api::Format::SevenZip
-            | xdzip_codec_api::Format::Rar
-            | xdzip_codec_api::Format::Cab
-            | xdzip_codec_api::Format::Iso
-            | xdzip_codec_api::Format::Udf
-    ) && !options.allow_high_ratio
+    if (archive.format.descriptor().container == "tar"
+        && !archive.format.descriptor().filters.is_empty()
+        || matches!(
+            archive.format,
+            xdzip_codec_api::Format::TarGzip
+                | xdzip_codec_api::Format::SevenZip
+                | xdzip_codec_api::Format::Rar
+                | xdzip_codec_api::Format::Cab
+                | xdzip_codec_api::Format::Iso
+                | xdzip_codec_api::Format::Udf
+        ))
+        && !options.allow_high_ratio
         && declared > 1024 * 1024
         && declared > archive.source.length().saturating_mul(1000)
     {

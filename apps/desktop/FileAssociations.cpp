@@ -39,6 +39,17 @@ const QHash<QString, QStringList> &extensions() {
         {".tar.gz", {"application/x-compressed-tar"}},
         {".tgz", {"application/x-compressed-tar"}},
         {".gz", {"application/gzip", "application/x-gzip"}},
+        {".bz2", {"application/x-bzip2", "application/x-bzip", "application/bzip2"}},
+        {".bz", {"application/x-bzip2", "application/x-bzip", "application/bzip2"}},
+        {".tar.bz2", {"application/x-bzip2-compressed-tar", "application/x-bzip-compressed-tar"}},
+        {".tar.bz", {"application/x-bzip2-compressed-tar", "application/x-bzip-compressed-tar"}},
+        {".tbz", {"application/x-bzip2-compressed-tar", "application/x-bzip-compressed-tar"}},
+        {".tbz2", {"application/x-bzip2-compressed-tar", "application/x-bzip-compressed-tar"}},
+        {".lzma", {"application/x-lzma"}},
+        {".tar.lzma", {"application/x-lzma-compressed-tar"}},
+        {".tlz", {"application/x-lzma-compressed-tar"}},
+        {".lz", {"application/lzip", "application/x-lzip"}},
+        {".tar.lz", {"application/x-lzip-compressed-tar"}},
         {".cab", {"application/vnd.ms-cab-compressed", "application/x-cab"}},
         {".iso", {"application/x-iso9660-image"}},
         {".udf", {"application/x-udf"}}};
@@ -98,8 +109,7 @@ void FileAssociations::refresh() {
     notify();
 #elif defined(Q_OS_WIN)
     for (auto it = extensions().cbegin(); it != extensions().cend(); ++it) {
-        const QString ext =
-            it.key() == QStringLiteral(".tar.gz") ? QStringLiteral(".gz") : it.key();
+        const QString ext = QStringLiteral(".") + it.key().section('.', -1);
         DWORD size = 0;
         AssocQueryStringW(ASSOCF_NONE, ASSOCSTR_PROGID, reinterpret_cast<LPCWSTR>(ext.utf16()),
                           nullptr, nullptr, &size);

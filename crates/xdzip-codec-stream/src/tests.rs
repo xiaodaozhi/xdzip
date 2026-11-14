@@ -1,4 +1,7 @@
 use super::*;
+const GZIP: StreamCodec = StreamCodec {
+    format: Format::Gzip,
+};
 use std::io::{Cursor, Seek, SeekFrom, Write};
 
 fn reference(data: &[u8]) -> Vec<u8> {
@@ -26,13 +29,13 @@ fn independent_members_and_empty_stream_have_observed_sizes() {
         let expected = parts.concat();
         let cancel = Cancellation::default();
         let mut source = Cursor::new(encoded);
-        let rows = GzipCodec
+        let rows = GZIP
             .scan(&mut source, &cancel, ScanLimits::default())
             .unwrap();
         assert_eq!(rows[0].size, expected.len() as u64);
         assert_eq!(rows[0].raw_name, b"content");
         assert!(rows[0].payload_supported());
-        let mut reader = GzipCodec.open_payload(&mut source, &rows, &cancel).unwrap();
+        let mut reader = GZIP.open_payload(&mut source, &rows, &cancel).unwrap();
         let mut sink = Sink::default();
         reader.decode(&rows[0], &mut sink, &cancel).unwrap();
         assert_eq!(sink.0, expected);
@@ -62,7 +65,7 @@ fn crc_isize_truncation_and_trailing_bytes_never_publish_metadata() {
     broken.push(member);
     for bytes in broken {
         assert_eq!(
-            GzipCodec.scan(
+            GZIP.scan(
                 &mut Cursor::new(bytes),
                 &Cancellation::default(),
                 ScanLimits::default()
@@ -102,7 +105,7 @@ fn virtual_names_use_only_safe_host_basename_and_escape_display() {
         ("文档.gz", "文档"),
         ("a\u{202e}.gz", "a\u{202e}"),
     ] {
-        let rows = GzipCodec
+        let rows = GZIP
             .scan(
                 &mut Named {
                     bytes: Cursor::new(reference(b"x")),
@@ -167,13 +170,13 @@ fn cancellation_names_and_record_admission_are_enforced() {
         },
     ] {
         assert_eq!(
-            GzipCodec.scan(&mut Cursor::new(reference(b"x")), &cancel, limits),
+            GZIP.scan(&mut Cursor::new(reference(b"x")), &cancel, limits),
             Err(ScanError::Limit)
         );
     }
     cancel.cancel();
     assert_eq!(
-        GzipCodec.scan(
+        GZIP.scan(
             &mut Cursor::new(reference(b"x")),
             &cancel,
             ScanLimits::default()
@@ -191,10 +194,10 @@ fn payload_rechecks_integrity_snapshot_and_sink_failures() {
     }
     let cancel = Cancellation::default();
     let mut source = Cursor::new(reference(b"abc"));
-    let rows = GzipCodec
+    let rows = GZIP
         .scan(&mut source, &cancel, ScanLimits::default())
         .unwrap();
-    let mut reader = GzipCodec.open_payload(&mut source, &rows, &cancel).unwrap();
+    let mut reader = GZIP.open_payload(&mut source, &rows, &cancel).unwrap();
     assert_eq!(
         reader.decode(&rows[0], &mut Rejected, &cancel),
         Err(DecodeError::Output)
@@ -206,7 +209,7 @@ fn payload_rechecks_integrity_snapshot_and_sink_failures() {
     drop(reader);
     let len = source.get_ref().len();
     source.get_mut()[len - 8] ^= 1;
-    let mut reader = GzipCodec.open_payload(&mut source, &rows, &cancel).unwrap();
+    let mut reader = GZIP.open_payload(&mut source, &rows, &cancel).unwrap();
     assert_eq!(
         reader.decode(&rows[0], &mut Sink::default(), &cancel),
         Err(DecodeError::Integrity)
@@ -215,7 +218,7 @@ fn payload_rechecks_integrity_snapshot_and_sink_failures() {
     let mut rows = rows;
     rows[0].directory = true;
     assert!(matches!(
-        GzipCodec.open_payload(&mut source, &rows, &cancel),
+        GZIP.open_payload(&mut source, &rows, &cancel),
         Err(DecodeError::Integrity)
     ));
 }
@@ -257,15 +260,14 @@ fn encoded_streams_are_readable_by_independent_reference_at_all_levels() {
         for level in [0, 1, 6, 9] {
             let mut encoded = Vec::new();
             let mut work = 0;
-            GzipCodec
-                .encode(
-                    &input(&bytes),
-                    &mut encoded,
-                    settings(level),
-                    &Cancellation::default(),
-                    &mut |p| work = p.input_bytes,
-                )
-                .unwrap();
+            GZIP.encode(
+                &input(&bytes),
+                &mut encoded,
+                settings(level),
+                &Cancellation::default(),
+                &mut |p| work = p.input_bytes,
+            )
+            .unwrap();
             let mut decoded = Vec::new();
             flate2::read::MultiGzDecoder::new(encoded.as_slice())
                 .read_to_end(&mut decoded)
@@ -291,7 +293,7 @@ fn multiple_files_directories_and_unsupported_options_fail_before_output() {
     ] {
         let mut out = Vec::new();
         assert_eq!(
-            GzipCodec.encode(
+            GZIP.encode(
                 &source,
                 &mut out,
                 settings(6),
@@ -319,7 +321,7 @@ fn multiple_files_directories_and_unsupported_options_fail_before_output() {
     ] {
         let mut out = Vec::new();
         assert_eq!(
-            GzipCodec.encode(
+            GZIP.encode(
                 &input(b"x"),
                 &mut out,
                 option,
@@ -337,7 +339,7 @@ fn creation_detects_input_growth_shrinkage_and_cancellation() {
         let mut source = input(b"abc");
         source.entries[0].size = size;
         assert_eq!(
-            GzipCodec.encode(
+            GZIP.encode(
                 &source,
                 &mut Vec::new(),
                 settings(6),
@@ -351,8 +353,26 @@ fn creation_detects_input_growth_shrinkage_and_cancellation() {
     cancel.cancel();
     let mut out = Vec::new();
     assert_eq!(
-        GzipCodec.encode(&input(b"abc"), &mut out, settings(6), &cancel, &mut |_| {}),
+        GZIP.encode(&input(b"abc"), &mut out, settings(6), &cancel, &mut |_| {}),
         Err(EncodeError::Cancelled)
     );
     assert!(out.is_empty());
+}
+
+#[test]
+fn read_only_filtered_streams_cannot_be_created_as_gzip() {
+    for format in [Format::Bzip2, Format::Lzma, Format::Lzip] {
+        let mut output = Vec::new();
+        assert_eq!(
+            StreamCodec { format }.encode(
+                &input(b"content"),
+                &mut output,
+                settings(6),
+                &Cancellation::default(),
+                &mut |_| {}
+            ),
+            Err(EncodeError::Unsupported)
+        );
+        assert!(output.is_empty());
+    }
 }

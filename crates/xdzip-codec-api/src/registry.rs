@@ -28,6 +28,10 @@ pub struct FormatDescriptor {
     pub write_volumes: &'static [&'static str],
     /// Output suffix candidates; the host still validates the entire basename.
     pub creation_suffixes: &'static [&'static str],
+    /// Read entry-point suffixes; content validation remains authoritative.
+    pub extensions: &'static [&'static str],
+    /// Meaning of successful whole-content checking, without claiming absent checksums.
+    pub check_kind: &'static str,
     /// Eligible records may be rewritten; actual archives can forbid modification.
     pub rewrite: bool,
     /// Fixed private worker identifier, absent for in-process backends.
@@ -92,6 +96,12 @@ mod tests {
             (Format::Tar, None),
             (Format::TarGzip, None),
             (Format::Gzip, None),
+            (Format::Bzip2, None),
+            (Format::TarBzip2, None),
+            (Format::Lzma, None),
+            (Format::TarLzma, None),
+            (Format::Lzip, None),
+            (Format::TarLzip, None),
             (Format::SevenZip, Some(7)),
             (Format::Rar, Some(4)),
             (Format::Cab, Some(8)),
@@ -101,7 +111,18 @@ mod tests {
             assert_eq!(format.descriptor().worker_id, worker);
         }
         assert_eq!(Format::TarGzip.descriptor().filters, ["gzip"]);
-        for format in [Format::Rar, Format::Cab, Format::Iso, Format::Udf] {
+        for format in [
+            Format::Rar,
+            Format::Cab,
+            Format::Iso,
+            Format::Udf,
+            Format::Bzip2,
+            Format::TarBzip2,
+            Format::Lzma,
+            Format::TarLzma,
+            Format::Lzip,
+            Format::TarLzip,
+        ] {
             assert!(format.descriptor().write_methods.is_empty());
             assert!(!format.descriptor().rewrite);
         }

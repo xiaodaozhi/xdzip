@@ -49,11 +49,13 @@ python scripts/build-association-icons.py --check --check-runtime
 # 导出到本地工件，使用已有 Pillow、Playwright 环境与 Chromium。
 python scripts/build-association-icons.py --export build/file-association-icons
 python scripts/build-association-icons.py --check --export build/file-association-icons
+# 将本次需要的 ICO/ICNS 导出复制到规范素材目录后，校验并刷新清单。
+python scripts/build-design-assets.py --metadata-only --refresh-association-icons
 ```
 
 `XDZIP_CHROMIUM` 可指定已有 Chromium／Edge 路径。SVG 母版、小尺寸源、规范和高保真审阅页纳入版本管理；素材源在主 [manifest.json](../../../design/assets/manifest.json) 中登记。生成入口是 [build-association-icons.py](../../../scripts/build-association-icons.py)，组合定义见 [association_icon_assets.py](../../../scripts/association_icon_assets.py)。
 
-导出工件每格式包含 16 至 1024 像素的通用与 macOS PNG，以及 ICO 和 ICNS。产品使用的九份 ICO、九份 ICNS 与矢量源同放 `file-associations/`；ZIP 容器保留迁移前原字节，其他容器来自相应导出。普通构建直接读取这些容器，不依赖浏览器。临时 PNG、完整导出、联系表和回执保留在 `build/` 或 `dist/`。
+导出工件每格式包含 16 至 1024 像素的通用与 macOS PNG，以及 ICO 和 ICNS。产品 ICO、ICNS 由格式能力表登记，与矢量源同放 `file-associations/`；ZIP 容器保留迁移前原字节，其他容器来自相应导出。普通构建直接读取这些容器，不依赖浏览器。临时 PNG、完整导出、联系表和回执保留在 `build/` 或 `dist/`。
 
 ## 验证与验收
 

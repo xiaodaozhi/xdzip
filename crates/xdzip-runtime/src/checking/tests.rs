@@ -235,21 +235,27 @@ fn tar_and_gzip_check_one_complete_stream_without_writing() {
     for gzip in [false, true] {
         let temp = Temp::new();
         let mut bytes = Vec::new();
-        xdzip_codec_tar::TarCodec { gzip }
-            .encode(
-                &input,
-                &mut bytes,
-                EncodeSettings {
-                    solid: false,
-                    encrypt_headers: false,
-                    method: if gzip { "deflate" } else { "store" },
-                    level: 6,
-                    password: None,
-                },
-                &Cancellation::default(),
-                &mut |_| {},
-            )
-            .unwrap();
+        xdzip_codec_tar::TarCodec {
+            filter: if gzip {
+                xdzip_codec_tar::Filter::Gzip
+            } else {
+                xdzip_codec_tar::Filter::Identity
+            },
+        }
+        .encode(
+            &input,
+            &mut bytes,
+            EncodeSettings {
+                solid: false,
+                encrypt_headers: false,
+                method: if gzip { "deflate" } else { "store" },
+                level: 6,
+                password: None,
+            },
+            &Cancellation::default(),
+            &mut |_| {},
+        )
+        .unwrap();
         let archive = temp.archive(&bytes);
         let done = execute(&archive, &Control::default(), |_| {});
         assert_eq!(done.status, Status::Succeeded);

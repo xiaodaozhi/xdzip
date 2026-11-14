@@ -9,11 +9,18 @@ WINDOWS_ICONS = {
     'tgz': 'tgz',
     '7z': '7z',
     'gz': 'gz',
+    'bz2': 'archive',
+    'bz': 'archive',
+    'tbz': 'archive',
+    'tbz2': 'archive',
+    'lzma': 'archive',
+    'tlz': 'archive',
+    'lz': 'archive',
     'rar': 'rar',
     'cab': 'cab',
     'iso': 'iso',
     'udf': 'udf',
 }
-MACOS_ICONS = ('zip', 'tar', 'tar-gz', '7z', 'gz', 'rar', 'cab', 'iso', 'udf')
-ASSOCIATION_FIXTURES = ('sample.zip', 'sample.xpi', 'sample.apk', 'sample.ipa', 'sample.cbz', 'sample.tar', 'sample.tar.gz', 'sample.tgz', 'sample.7z', 'sample.gz', 'sample.rar', 'sample.cab', 'sample.iso', 'sample.udf')
-SHELL_MIME_TYPES = ('application/zip', 'application/x-xpinstall', 'application/vnd.android.package-archive', 'application/vnd.comicbook+zip', 'application/x-cbz', 'application/x-tar', 'application/x-compressed-tar', 'application/x-7z-compressed', 'application/gzip', 'application/x-gzip', 'application/vnd.rar', 'application/x-rar', 'application/x-rar-compressed', 'application/vnd.ms-cab-compressed', 'application/x-cab', 'application/x-iso9660-image', 'application/x-udf')
+MACOS_ICONS = ('zip', 'tar', 'tar-gz', '7z', 'gz', 'archive', 'rar', 'cab', 'iso', 'udf')
+ASSOCIATION_FIXTURES = ('sample.zip', 'sample.xpi', 'sample.apk', 'sample.ipa', 'sample.cbz', 'sample.tar', 'sample.tar.gz', 'sample.tgz', 'sample.7z', 'sample.gz', 'sample.bz2', 'sample.bz', 'sample.tar.bz2', 'sample.tar.bz', 'sample.tbz', 'sample.tbz2', 'sample.lzma', 'sample.tar.lzma', 'sample.tlz', 'sample.lz', 'sample.tar.lz', 'sample.rar', 'sample.cab', 'sample.iso', 'sample.udf')
+SHELL_MIME_TYPES = ('application/zip', 'application/x-xpinstall', 'application/vnd.android.package-archive', 'application/vnd.comicbook+zip', 'application/x-cbz', 'application/x-tar', 'application/x-compressed-tar', 'application/x-7z-compressed', 'application/gzip', 'application/x-gzip', 'application/x-bzip2', 'application/x-bzip', 'application/bzip2', 'application/x-bzip2-compressed-tar', 'application/x-bzip-compressed-tar', 'application/x-lzma', 'application/x-lzma-compressed-tar', 'application/lzip', 'application/x-lzip', 'application/x-lzip-compressed-tar', 'application/vnd.rar', 'application/x-rar', 'application/x-rar-compressed', 'application/vnd.ms-cab-compressed', 'application/x-cab', 'application/x-iso9660-image', 'application/x-udf')

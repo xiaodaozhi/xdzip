@@ -54,7 +54,7 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
         format: job.format.label(),
         creating: false,
         // TAR/GZIP scanning checks the entire stream before reporting verified records.
-        total_known: !matches!(job.format, Format::Tar | Format::TarGzip)
+        total_known: job.format.descriptor().container != "tar"
             && job.rows.iter().all(|row| row.directory || row.size_known),
         id,
         session: job.session,
@@ -237,7 +237,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         let mut source = job.source.fork().map_err(|_| "source_changed")?;
         stats.status = Status::Running;
         emit(&mut stats, start, publish);
-        let checked = if !matches!(job.format, Format::Tar | Format::TarGzip) {
+        let checked = if job.format.descriptor().container != "tar" {
             let mut ignore_progress = |_: u64| {};
             let mut input = Counted {
                 source: &mut source,

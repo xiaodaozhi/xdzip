@@ -877,14 +877,14 @@ function showWelcome() {
     state.selected.clear();
     setWelcomeMode(true);
     const shortcut = document.body.dataset.platform === "macos" ? "⌘ " : "Ctrl+";
-    $("#welcome").innerHTML = `<div class="welcome-content"><div class="welcome-identity">${icon("app-mark")}<span>xdzip</span></div><h1>打包与解压，都简单一点。</h1><p class="welcome-subtitle">浏览压缩包，解压需要的文件。也能轻松打包，方便保存与分享。</p><div class="welcome-actions"><button class="welcome-action primary" id="welcome-open">${icon("folderOpen")}<span><strong>打开压缩包</strong><small>浏览内容，选择需要解压的文件</small><span class="welcome-shortcut">${shortcut}O</span></span></button><button class="welcome-action" id="welcome-create">${icon("new")}<span><strong>创建压缩包</strong><small>添加文件或文件夹，创建压缩包</small><span class="welcome-shortcut">${shortcut}N</span></span></button></div><div class="welcome-drop" id="welcome-drop">${icon("archive-grey")}<span>也可以将压缩包拖到这里</span></div><div class="welcome-formats"><span>支持打开</span><b>ZIP</b><b>TAR</b><b>TAR.GZ</b><b>GZIP</b><b>7z</b><b>RAR</b><b>CAB</b><b>ISO</b><b>UDF</b></div><div class="welcome-feedback" role="alert" hidden><span class="welcome-feedback-icon" aria-hidden="true">${icon("status-warning")}</span><span class="welcome-feedback-text"></span></div></div>`;
+    $("#welcome").innerHTML = `<div class="welcome-content"><div class="welcome-identity">${icon("app-mark")}<span>xdzip</span></div><h1>打包与解压，都简单一点。</h1><p class="welcome-subtitle">浏览压缩包，解压需要的文件。也能轻松打包，方便保存与分享。</p><div class="welcome-actions"><button class="welcome-action primary" id="welcome-open">${icon("folderOpen")}<span><strong>打开压缩包</strong><small>浏览内容，选择需要解压的文件</small><span class="welcome-shortcut">${shortcut}O</span></span></button><button class="welcome-action" id="welcome-create">${icon("new")}<span><strong>创建压缩包</strong><small>添加文件或文件夹，创建压缩包</small><span class="welcome-shortcut">${shortcut}N</span></span></button></div><div class="welcome-drop" id="welcome-drop">${icon("archive-grey")}<span>也可以将压缩包拖到这里</span></div><div class="welcome-formats"><span>支持打开</span><b>ZIP</b><b>TAR</b><b>TAR.GZ</b><b>7z</b><b>GZIP</b><b>BZip2</b><b>TAR.BZ2</b><b>LZMA</b><b>TAR.LZMA</b><b>Lzip</b><b>TAR.LZ</b><b>RAR</b><b>CAB</b><b>ISO</b><b>UDF</b></div><div class="welcome-feedback" role="alert" hidden><span class="welcome-feedback-icon" aria-hidden="true">${icon("status-warning")}</span><span class="welcome-feedback-text"></span></div></div>`;
     $("#welcome-open").onclick = openPicker;
     $("#welcome-create").onclick = showCreate;
     const resetDrop = () => {
         $("#welcome-drop").classList.remove("drag-over");
         $("#welcome-drop span").textContent = "也可以将压缩包拖到这里";
     };
-    const validName = name => /\.(zip|xpi|apk|ipa|cbz|tar|tar\.gz|tgz|gz|7z|rar|cab|iso|udf)$/i.test(name);
+    const validName = name => /\.(zip|xpi|apk|ipa|cbz|tar|tar\.gz|tgz|gz|bz2|bz|tar\.bz2|tar\.bz|tbz|tbz2|lzma|tar\.lzma|tlz|lz|tar\.lz|7z|rar|cab|iso|udf)$/i.test(name);
     const dragKind = transfer => {
         const items = [...(transfer?.items || [])];
         if (items.length !== 1 || items[0].kind !== "file" || items[0].webkitGetAsEntry?.()?.isDirectory) return "invalid";

@@ -35,6 +35,14 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
             ".zip",
         ],
         rewrite: true,
+        check_kind: "supported_content",
+        extensions: &[
+            ".zip",
+            ".xpi",
+            ".apk",
+            ".ipa",
+            ".cbz",
+        ],
         worker_id: None,
     },
     FormatDescriptor {
@@ -57,6 +65,10 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
             ".tar",
         ],
         rewrite: true,
+        check_kind: "structure_and_readability",
+        extensions: &[
+            ".tar",
+        ],
         worker_id: None,
     },
     FormatDescriptor {
@@ -82,6 +94,11 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
             ".tgz",
         ],
         rewrite: true,
+        check_kind: "supported_content",
+        extensions: &[
+            ".tar.gz",
+            ".tgz",
+        ],
         worker_id: None,
     },
     FormatDescriptor {
@@ -119,6 +136,10 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
             ".7z",
         ],
         rewrite: true,
+        check_kind: "supported_content",
+        extensions: &[
+            ".7z",
+        ],
         worker_id: Some(7),
     },
     FormatDescriptor {
@@ -143,6 +164,159 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
             ".gz",
         ],
         rewrite: false,
+        check_kind: "supported_content",
+        extensions: &[
+            ".gz",
+        ],
+        worker_id: None,
+    },
+    FormatDescriptor {
+        format: Format::Bzip2,
+        id: "bzip2",
+        label: "BZip2",
+        container: "single-file",
+        filters: &[
+            "bzip2",
+        ],
+        read_methods: &[
+            "bzip2",
+        ],
+        write_methods: &[],
+        read_encryption: &[],
+        write_encryption: &[],
+        read_volumes: &[],
+        write_volumes: &[],
+        creation_suffixes: &[],
+        rewrite: false,
+        check_kind: "supported_content",
+        extensions: &[
+            ".bz2",
+            ".bz",
+        ],
+        worker_id: None,
+    },
+    FormatDescriptor {
+        format: Format::TarBzip2,
+        id: "tar-bzip2",
+        label: "TAR.BZ2",
+        container: "tar",
+        filters: &[
+            "bzip2",
+        ],
+        read_methods: &[
+            "bzip2",
+        ],
+        write_methods: &[],
+        read_encryption: &[],
+        write_encryption: &[],
+        read_volumes: &[],
+        write_volumes: &[],
+        creation_suffixes: &[],
+        rewrite: false,
+        check_kind: "supported_content",
+        extensions: &[
+            ".tar.bz2",
+            ".tar.bz",
+            ".tbz",
+            ".tbz2",
+        ],
+        worker_id: None,
+    },
+    FormatDescriptor {
+        format: Format::Lzma,
+        id: "lzma",
+        label: "LZMA",
+        container: "single-file",
+        filters: &[
+            "lzma",
+        ],
+        read_methods: &[
+            "lzma",
+        ],
+        write_methods: &[],
+        read_encryption: &[],
+        write_encryption: &[],
+        read_volumes: &[],
+        write_volumes: &[],
+        creation_suffixes: &[],
+        rewrite: false,
+        check_kind: "structure_and_readability",
+        extensions: &[
+            ".lzma",
+        ],
+        worker_id: None,
+    },
+    FormatDescriptor {
+        format: Format::TarLzma,
+        id: "tar-lzma",
+        label: "TAR.LZMA",
+        container: "tar",
+        filters: &[
+            "lzma",
+        ],
+        read_methods: &[
+            "lzma",
+        ],
+        write_methods: &[],
+        read_encryption: &[],
+        write_encryption: &[],
+        read_volumes: &[],
+        write_volumes: &[],
+        creation_suffixes: &[],
+        rewrite: false,
+        check_kind: "structure_and_readability",
+        extensions: &[
+            ".tar.lzma",
+            ".tlz",
+        ],
+        worker_id: None,
+    },
+    FormatDescriptor {
+        format: Format::Lzip,
+        id: "lzip",
+        label: "Lzip",
+        container: "single-file",
+        filters: &[
+            "lzip",
+        ],
+        read_methods: &[
+            "lzma",
+        ],
+        write_methods: &[],
+        read_encryption: &[],
+        write_encryption: &[],
+        read_volumes: &[],
+        write_volumes: &[],
+        creation_suffixes: &[],
+        rewrite: false,
+        check_kind: "supported_content",
+        extensions: &[
+            ".lz",
+        ],
+        worker_id: None,
+    },
+    FormatDescriptor {
+        format: Format::TarLzip,
+        id: "tar-lzip",
+        label: "TAR.LZ",
+        container: "tar",
+        filters: &[
+            "lzip",
+        ],
+        read_methods: &[
+            "lzma",
+        ],
+        write_methods: &[],
+        read_encryption: &[],
+        write_encryption: &[],
+        read_volumes: &[],
+        write_volumes: &[],
+        creation_suffixes: &[],
+        rewrite: false,
+        check_kind: "supported_content",
+        extensions: &[
+            ".tar.lz",
+        ],
         worker_id: None,
     },
     FormatDescriptor {
@@ -171,6 +345,10 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         write_volumes: &[],
         creation_suffixes: &[],
         rewrite: false,
+        check_kind: "supported_content",
+        extensions: &[
+            ".rar",
+        ],
         worker_id: Some(4),
     },
     FormatDescriptor {
@@ -194,6 +372,10 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         write_volumes: &[],
         creation_suffixes: &[],
         rewrite: false,
+        check_kind: "supported_content",
+        extensions: &[
+            ".cab",
+        ],
         worker_id: Some(8),
     },
     FormatDescriptor {
@@ -214,6 +396,10 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         write_volumes: &[],
         creation_suffixes: &[],
         rewrite: false,
+        check_kind: "structure_and_readability",
+        extensions: &[
+            ".iso",
+        ],
         worker_id: Some(9),
     },
     FormatDescriptor {
@@ -235,6 +421,10 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         write_volumes: &[],
         creation_suffixes: &[],
         rewrite: false,
+        check_kind: "structure_and_readability",
+        extensions: &[
+            ".udf",
+        ],
         worker_id: Some(10),
     },
 ];
@@ -246,9 +436,15 @@ pub(super) fn descriptor(format: Format) -> &'static FormatDescriptor {
         Format::TarGzip => &DESCRIPTORS[2],
         Format::SevenZip => &DESCRIPTORS[3],
         Format::Gzip => &DESCRIPTORS[4],
-        Format::Rar => &DESCRIPTORS[5],
-        Format::Cab => &DESCRIPTORS[6],
-        Format::Iso => &DESCRIPTORS[7],
-        Format::Udf => &DESCRIPTORS[8],
+        Format::Bzip2 => &DESCRIPTORS[5],
+        Format::TarBzip2 => &DESCRIPTORS[6],
+        Format::Lzma => &DESCRIPTORS[7],
+        Format::TarLzma => &DESCRIPTORS[8],
+        Format::Lzip => &DESCRIPTORS[9],
+        Format::TarLzip => &DESCRIPTORS[10],
+        Format::Rar => &DESCRIPTORS[11],
+        Format::Cab => &DESCRIPTORS[12],
+        Format::Iso => &DESCRIPTORS[13],
+        Format::Udf => &DESCRIPTORS[14],
     }
 }

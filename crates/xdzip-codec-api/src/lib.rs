@@ -124,6 +124,18 @@ pub enum Format {
     TarGzip,
     /// One ordinary file compressed with RFC 1952 GZIP.
     Gzip,
+    /// One ordinary file, optionally concatenated, in BZip2 streams.
+    Bzip2,
+    /// TAR behind a BZip2 filter, read only.
+    TarBzip2,
+    /// One LZMA Alone stream, with structural validation but no checksum.
+    Lzma,
+    /// TAR behind LZMA Alone, read only.
+    TarLzma,
+    /// One ordinary file in Lzip v1 members.
+    Lzip,
+    /// TAR behind Lzip v1, read only.
+    TarLzip,
     /// Independent Rust 7z behind the isolated codec worker.
     SevenZip,
     /// Independent Rust RAR read-only backend in the isolated codec worker.
@@ -204,7 +216,15 @@ impl Entry {
                     matches!(self.method, 0 | 8)
                 }
             }
-            Format::Tar | Format::TarGzip | Format::Gzip => !self.warning && !self.link,
+            Format::Tar
+            | Format::TarGzip
+            | Format::Gzip
+            | Format::Bzip2
+            | Format::TarBzip2
+            | Format::Lzma
+            | Format::TarLzma
+            | Format::Lzip
+            | Format::TarLzip => !self.warning && !self.link,
             Format::SevenZip | Format::Rar | Format::Cab | Format::Iso | Format::Udf => {
                 !self.warning && !self.link && (!self.encrypted || self.password_supported)
             }

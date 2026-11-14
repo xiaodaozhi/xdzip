@@ -29,9 +29,9 @@ class RegistryTests(unittest.TestCase):
         formats = REGISTRY.validate(self.source)
         entries = [entry for item in formats for entry in item['extensions']]
         self.assertEqual({entry['suffix'] for entry in entries if entry['drop']},
-                         {'.zip', '.xpi', '.apk', '.ipa', '.cbz', '.tar', '.tar.gz', '.tgz', '.gz', '.7z', '.rar', '.cab', '.iso', '.udf'})
+                         {'.zip', '.xpi', '.apk', '.ipa', '.cbz', '.tar', '.tar.gz', '.tgz', '.gz', '.7z', '.rar', '.cab', '.iso', '.udf', '.bz2', '.bz', '.tar.bz2', '.tar.bz', '.tbz', '.tbz2', '.lzma', '.tar.lzma', '.tlz', '.lz', '.tar.lz'})
         self.assertEqual({entry['suffix'] for entry in entries if entry['shell']},
-                         {'.zip', '.xpi', '.apk', '.ipa', '.cbz', '.tar', '.tar.gz', '.tgz', '.gz', '.7z', '.rar', '.cab', '.iso', '.udf'})
+                         {'.zip', '.xpi', '.apk', '.ipa', '.cbz', '.tar', '.tar.gz', '.tgz', '.gz', '.7z', '.rar', '.cab', '.iso', '.udf', '.bz2', '.bz', '.tar.bz2', '.tar.bz', '.tbz', '.tbz2', '.lzma', '.tar.lzma', '.tlz', '.lz', '.tar.lz'})
         self.assertEqual({item['id']: item['worker_id'] for item in formats if item['worker_id']},
                          {'7z': 7, 'rar': 4, 'cab': 8, 'iso': 9, 'udf': 10})
         self.assertEqual({suffix for item in formats for suffix in item['creation_suffixes']},
@@ -79,6 +79,21 @@ class RegistryTests(unittest.TestCase):
 
     def test_rejects_unreadable_volumes(self):
         self.reject(lambda source: source['formats'][0].update(write_volumes=['unknown']))
+
+    def test_check_strength_distinguishes_formats_without_content_checksums(self):
+        by_id = {item['id']: item for item in self.source['formats']}
+        for identity in ['tar', 'lzma', 'tar-lzma', 'iso', 'udf']:
+            self.assertEqual(by_id[identity]['check_kind'], 'structure_and_readability')
+        for identity in ['gzip', 'bzip2', 'tar-bzip2', 'lzip', 'tar-lzip']:
+            self.assertEqual(by_id[identity]['check_kind'], 'supported_content')
+        self.reject(lambda source: source['formats'][0].update(check_kind='unknown'))
+
+    def test_shared_macos_artwork_is_inventoried_once(self):
+        output = REGISTRY.render(self.source)['scripts/archive_formats_generated.py']
+        self.assertIn("'archive'", output)
+        import ast
+        icons = ast.literal_eval(output.split('MACOS_ICONS = ', 1)[1].split('\n', 1)[0])
+        self.assertEqual(icons.count('archive'), 1)
 
     def test_rejects_undeclared_creation_suffix(self):
         self.reject(lambda source: source['formats'][0].update(creation_suffixes=['.exe']))

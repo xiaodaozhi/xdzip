@@ -1,5 +1,5 @@
 //! Built-in capability routing. The host retains all paths and source authority.
-use std::io::SeekFrom;
+use std::io::{Read, SeekFrom};
 use xdzip_codec_api::{
     Format, MetadataCodec, ReadSource, ScanError,
     encode::{CreationCodec, RewriteCodec},
@@ -7,7 +7,7 @@ use xdzip_codec_api::{
 };
 use xdzip_codec_native::NativeCodec;
 use xdzip_codec_stream::{
-    GzipCodec,
+    StreamCodec,
     controlled::{ControlledStream, Filter},
 };
 use xdzip_codec_tar::TarCodec;
@@ -16,13 +16,37 @@ pub(crate) trait Codec: MetadataCodec + PayloadCodec + CreationCodec + RewriteCo
 impl Codec for ZipCodec {}
 impl Codec for TarCodec {}
 impl Codec for NativeCodec {}
-impl Codec for GzipCodec {}
+impl Codec for StreamCodec {}
 pub(crate) fn codec(format: Format) -> &'static dyn Codec {
     match format {
         Format::Zip => &ZipCodec,
-        Format::Tar => &TarCodec { gzip: false },
-        Format::TarGzip => &TarCodec { gzip: true },
-        Format::Gzip => &GzipCodec,
+        Format::Tar => &TarCodec {
+            filter: Filter::Identity,
+        },
+        Format::TarGzip => &TarCodec {
+            filter: Filter::Gzip,
+        },
+        Format::Gzip => &StreamCodec {
+            format: Format::Gzip,
+        },
+        Format::Bzip2 => &StreamCodec {
+            format: Format::Bzip2,
+        },
+        Format::Lzma => &StreamCodec {
+            format: Format::Lzma,
+        },
+        Format::Lzip => &StreamCodec {
+            format: Format::Lzip,
+        },
+        Format::TarBzip2 => &TarCodec {
+            filter: Filter::Bzip2,
+        },
+        Format::TarLzma => &TarCodec {
+            filter: Filter::Lzma,
+        },
+        Format::TarLzip => &TarCodec {
+            filter: Filter::Lzip,
+        },
         Format::SevenZip => &NativeCodec {
             format: Format::SevenZip,
         },
@@ -40,6 +64,28 @@ pub(crate) fn codec(format: Format) -> &'static dyn Codec {
         },
     }
 }
+pub(crate) fn scan(
+    format: &mut Format,
+    source: &mut dyn ReadSource,
+    control: &xdzip_codec_api::Cancellation,
+    password: Option<&str>,
+) -> Result<Vec<xdzip_codec_api::Entry>, ScanError> {
+    if format.descriptor().container == "single-file" {
+        let stream = StreamCodec { format: *format };
+        let info = stream.inspect(source, control, limits(*format))?;
+        if info.all_zero && info.entry.size >= 1024 {
+            let tar = TarCodec {
+                filter: stream.filter()?,
+            };
+            *format = tar.format();
+            tar.scan(source, control, limits(*format))
+        } else {
+            Ok(vec![info.entry])
+        }
+    } else {
+        codec(*format).scan_with_password(source, control, limits(*format), password)
+    }
+}
 pub(crate) fn detect(
     source: &mut dyn ReadSource,
     control: &xdzip_codec_api::Cancellation,
@@ -51,26 +97,11 @@ pub(crate) fn detect(
         .map_err(|_| ScanError::Invalid)?;
     source.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
     Ok(if magic[..2] == [0x1f, 0x8b] {
-        use std::io::Read;
-        let mut stream = ControlledStream::probe(source, control, Filter::Gzip, 256 * 1024, 512)?;
-        let mut header = [0; 512];
-        let mut length = 0;
-        while length != header.len() {
-            let n = stream
-                .read(&mut header[length..])
-                .map_err(|_| stream.failure().unwrap_or(ScanError::Invalid))?;
-            if n == 0 {
-                break;
-            }
-            length += n;
-        }
-        drop(stream);
-        source.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
-        if xdzip_codec_tar::recognizes_header(&header[..length]) {
-            Format::TarGzip
-        } else {
-            Format::Gzip
-        }
+        compressed_format(source, control, Filter::Gzip, Format::Gzip)?
+    } else if magic[..3] == *b"BZh" {
+        compressed_format(source, control, Filter::Bzip2, Format::Bzip2)?
+    } else if magic[..4] == *b"LZIP" {
+        compressed_format(source, control, Filter::Lzip, Format::Lzip)?
     } else if matches!(&magic[..4], b"PK\x03\x04" | b"PK\x05\x06" | b"PK\x07\x08") {
         Format::Zip
     } else if magic[..6] == *b"7z\xbc\xaf\x27\x1c" {
@@ -85,6 +116,78 @@ pub(crate) fn detect(
     } else {
         detect_optical(source)?.unwrap_or(Format::Tar)
     })
+}
+
+fn compressed_format(
+    source: &mut dyn ReadSource,
+    control: &xdzip_codec_api::Cancellation,
+    filter: Filter,
+    ordinary: Format,
+) -> Result<Format, ScanError> {
+    let input_limit = if filter == Filter::Bzip2 {
+        2 * 1024 * 1024
+    } else {
+        256 * 1024
+    };
+    let mut stream = ControlledStream::probe(source, control, filter, input_limit, 512)?;
+    let mut header = [0; 512];
+    let mut length = 0;
+    while length != header.len() {
+        let n = stream
+            .read(&mut header[length..])
+            .map_err(|_| stream.failure().unwrap_or(ScanError::Invalid))?;
+        if n == 0 {
+            break;
+        }
+        length += n;
+    }
+    drop(stream);
+    source.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
+    Ok(if xdzip_codec_tar::recognizes_header(&header[..length]) {
+        TarCodec { filter }.format()
+    } else {
+        ordinary
+    })
+}
+/// Weak LZMA Alone detection follows failed TAR/ZIP-SFX discovery, never precedes them.
+pub(crate) fn detect_lzma(
+    source: &mut dyn ReadSource,
+    control: &xdzip_codec_api::Cancellation,
+) -> Result<Option<Format>, ScanError> {
+    control.check()?;
+    source.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
+    let mut header = [0; 13];
+    match source.read_exact(&mut header) {
+        Ok(()) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::UnexpectedEof => return Ok(None),
+        Err(_) => return Err(ScanError::Io),
+    }
+    let size = u64::from_le_bytes(header[5..].try_into().expect("fixed slice"));
+    if header[0] > 224 || (size != u64::MAX && size >= 256 * 1024 * 1024 * 1024) {
+        return Ok(None);
+    }
+    compressed_format(source, control, Filter::Lzma, Format::Lzma).map(Some)
+}
+pub(crate) fn recognized_tar(
+    source: &mut dyn ReadSource,
+    control: &xdzip_codec_api::Cancellation,
+) -> Result<bool, ScanError> {
+    control.check()?;
+    source.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
+    let mut header = [0; 512];
+    let mut length = 0;
+    while length != header.len() {
+        control.check()?;
+        let n = source
+            .read(&mut header[length..])
+            .map_err(|_| ScanError::Io)?;
+        if n == 0 {
+            break;
+        }
+        length += n;
+    }
+    source.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
+    Ok(xdzip_codec_tar::recognizes_header(&header[..length]))
 }
 
 /// Optical descriptors start at sector 16. Bound discovery independently from
@@ -200,7 +303,6 @@ mod tests {
     }
     #[test]
     fn optical_routing_uses_descriptors_and_keeps_damaged_udf_hybrids() {
-        use std::io::Read;
         let root =
             std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/cab-iso");
         for (name, format) in [

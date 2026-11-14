@@ -37,6 +37,7 @@ pub(crate) struct Input<R> {
     buffer: [u8; READ_QUANTUM],
     start: usize,
     end: usize,
+    prefetch: bool,
     pub(crate) consumed: u64,
     pub(crate) packed: u64,
 }
@@ -47,9 +48,22 @@ impl<R: Read> Input<R> {
             buffer: [0; READ_QUANTUM],
             start: 0,
             end: 0,
+            prefetch: true,
             consumed: 0,
             packed,
         }
+    }
+    pub(crate) fn unbuffered(source: R, packed: u64) -> Self {
+        Self {
+            prefetch: false,
+            ..Self::new(source, packed)
+        }
+    }
+    pub(crate) fn into_unbuffered(self) -> io::Result<R> {
+        if self.prefetch || self.start != self.end {
+            return Err(invalid());
+        }
+        Ok(self.source.into_inner())
     }
     pub(crate) fn byte(&mut self, boundary: u64) -> io::Result<u8> {
         if self.consumed >= boundary || boundary > self.packed {
@@ -57,7 +71,8 @@ impl<R: Read> Input<R> {
         }
         if self.start == self.end {
             loop {
-                match self.source.read(&mut self.buffer) {
+                let capacity = if self.prefetch { READ_QUANTUM } else { 1 };
+                match self.source.read(&mut self.buffer[..capacity]) {
                     Err(error) if retryable_io(&error) => continue,
                     Err(error) => return Err(preserve_io_error(error)),
                     Ok(0) => return Err(invalid()),

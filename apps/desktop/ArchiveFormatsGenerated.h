@@ -4,7 +4,7 @@
 #include <string_view>
 // clang-format off
 namespace xdzip_formats {
-inline constexpr std::array<std::string_view, 14> DropSuffixes = {{
+inline constexpr std::array<std::string_view, 25> DropSuffixes = {{
     ".zip",
     ".xpi",
     ".apk",
@@ -15,12 +15,23 @@ inline constexpr std::array<std::string_view, 14> DropSuffixes = {{
     ".tgz",
     ".7z",
     ".gz",
+    ".bz2",
+    ".bz",
+    ".tar.bz2",
+    ".tar.bz",
+    ".tbz",
+    ".tbz2",
+    ".lzma",
+    ".tar.lzma",
+    ".tlz",
+    ".lz",
+    ".tar.lz",
     ".rar",
     ".cab",
     ".iso",
     ".udf",
 }};
-inline constexpr std::array<std::string_view, 14> ShellSuffixes = {{
+inline constexpr std::array<std::string_view, 25> ShellSuffixes = {{
     ".zip",
     ".xpi",
     ".apk",
@@ -31,12 +42,23 @@ inline constexpr std::array<std::string_view, 14> ShellSuffixes = {{
     ".tgz",
     ".7z",
     ".gz",
+    ".bz2",
+    ".bz",
+    ".tar.bz2",
+    ".tar.bz",
+    ".tbz",
+    ".tbz2",
+    ".lzma",
+    ".tar.lzma",
+    ".tlz",
+    ".lz",
+    ".tar.lz",
     ".rar",
     ".cab",
     ".iso",
     ".udf",
 }};
-inline constexpr std::array<std::string_view, 17> ShellMimeTypes = {{
+inline constexpr std::array<std::string_view, 27> ShellMimeTypes = {{
     "application/zip",
     "application/x-xpinstall",
     "application/vnd.android.package-archive",
@@ -47,6 +69,16 @@ inline constexpr std::array<std::string_view, 17> ShellMimeTypes = {{
     "application/x-7z-compressed",
     "application/gzip",
     "application/x-gzip",
+    "application/x-bzip2",
+    "application/x-bzip",
+    "application/bzip2",
+    "application/x-bzip2-compressed-tar",
+    "application/x-bzip-compressed-tar",
+    "application/x-lzma",
+    "application/x-lzma-compressed-tar",
+    "application/lzip",
+    "application/x-lzip",
+    "application/x-lzip-compressed-tar",
     "application/vnd.rar",
     "application/x-rar",
     "application/x-rar-compressed",
@@ -54,6 +86,12 @@ inline constexpr std::array<std::string_view, 17> ShellMimeTypes = {{
     "application/x-cab",
     "application/x-iso9660-image",
     "application/x-udf",
+}};
+inline constexpr std::array<std::string_view, 4> UnknownPackedLabels = {{
+    "TAR.GZ",
+    "TAR.BZ2",
+    "TAR.LZMA",
+    "TAR.LZ",
 }};
 } // namespace xdzip_formats
 // clang-format on

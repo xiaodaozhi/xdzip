@@ -1,4 +1,4 @@
-use crate::{TarCodec, record};
+use crate::{Filter, TarCodec, record};
 use std::io::{Read, Write};
 use xdzip_codec_api::{
     Cancellation,
@@ -129,13 +129,19 @@ impl CreationCodec for TarCodec {
         cancel: &Cancellation,
         progress: &mut dyn FnMut(EncodeProgress<'_>),
     ) -> Result<(), EncodeError> {
-        if settings.password.is_some()
+        if !matches!(self.filter, Filter::Identity | Filter::Gzip)
+            || settings.password.is_some()
             || ![0, 1, 6, 9].contains(&settings.level)
-            || settings.method != if self.gzip { "deflate" } else { "store" }
+            || settings.method
+                != if self.filter == Filter::Gzip {
+                    "deflate"
+                } else {
+                    "store"
+                }
         {
             return Err(EncodeError::Unsupported);
         }
-        if self.gzip {
+        if self.filter == Filter::Gzip {
             let mut encoder =
                 GzipWriter::new(output, settings.level).map_err(|_| EncodeError::Invalid)?;
             write_tar(&mut encoder, input, cancel, progress)?;

@@ -49,11 +49,13 @@ python scripts/build-association-icons.py --check --check-runtime
 # Export local artifacts using existing Pillow, Playwright and Chromium.
 python scripts/build-association-icons.py --export build/file-association-icons
 python scripts/build-association-icons.py --check --export build/file-association-icons
+# After copying intended ICO/ICNS exports into the canonical asset folder:
+python scripts/build-design-assets.py --metadata-only --refresh-association-icons
 ```
 
 `XDZIP_CHROMIUM` can identify an existing Chromium/Edge path. SVG masters, small-size sources, specification and high-fidelity review page are versioned; asset sources are registered in the main [manifest.json](../../design/assets/manifest.json). The generation entry is [build-association-icons.py](../../scripts/build-association-icons.py), with composition definitions in [association_icon_assets.py](../../scripts/association_icon_assets.py).
 
-Exported artifacts contain generic and macOS PNGs from 16 through 1024 pixels per format, plus ICO and ICNS. The nine ICOs and nine ICNS files used by the product reside beside vector sources in `file-associations/`; ZIP containers retain their original pre-migration bytes and the others come from corresponding exports. Ordinary builds read these containers directly and do not require a browser. Temporary PNGs, complete exports, contact sheets and receipts stay in `build/` or `dist/`.
+Exported artifacts contain generic and macOS PNGs from 16 through 1024 pixels per format, plus ICO and ICNS. Product ICO and ICNS files, inventoried by the format registry, reside beside vector sources in `file-associations/`; ZIP containers retain their original pre-migration bytes and the others come from corresponding exports. Ordinary builds read these containers directly and do not require a browser. Temporary PNGs, complete exports, contact sheets and receipts stay in `build/` or `dist/`.
 
 ## Verification and acceptance
 

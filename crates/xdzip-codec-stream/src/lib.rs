@@ -1,5 +1,8 @@
 //! Single-file streams and controlled composition, without filesystem authority.
 pub mod controlled;
+mod framed;
+#[cfg(test)]
+mod framed_tests;
 #[cfg(test)]
 mod tests;
 use controlled::{ControlledStream, Filter};
@@ -16,8 +19,11 @@ use xdzip_codec_api::{
 use xdzip_compression::GzipWriter;
 use xdzip_domain::identity::EntryId;
 
-/// Single regular-file GZIP stream. Header filenames never grant output names.
-pub struct GzipCodec;
+/// One ordinary-file compression stream. Header filenames never grant output names.
+pub struct StreamCodec {
+    /// An admitted ordinary-file stream format, independent of its filename.
+    pub format: Format,
+}
 /// Fully validated observed stream metadata used for empty-TAR discrimination.
 pub struct StreamInfo {
     /// One virtual ordinary-file row.
@@ -26,13 +32,18 @@ pub struct StreamInfo {
     pub all_zero: bool,
 }
 const STREAM_LIMIT: u64 = 24 * 1024 * 1024 * 1024;
-fn candidate(source: &dyn ReadSource) -> String {
+fn candidate(source: &dyn ReadSource, format: Format) -> String {
     source
         .source_name_hint()
         .and_then(|name| {
-            let stem = name.get(..name.len().checked_sub(3)?)?;
-            (name.get(name.len() - 3..)?.eq_ignore_ascii_case(".gz")
-                && !stem.is_empty()
+            let suffix = format
+                .descriptor()
+                .extensions
+                .iter()
+                .filter(|suffix| name.to_ascii_lowercase().ends_with(**suffix))
+                .max_by_key(|suffix| suffix.len())?;
+            let stem = name.get(..name.len().checked_sub(suffix.len())?)?;
+            (!stem.is_empty()
                 && stem != "."
                 && stem != ".."
                 && !stem
@@ -42,7 +53,25 @@ fn candidate(source: &dyn ReadSource) -> String {
         })
         .unwrap_or_else(|| "content".into())
 }
-impl GzipCodec {
+impl StreamCodec {
+    /// Resolve the admitted single-file outer filter without granting paths.
+    pub fn filter(&self) -> Result<Filter, ScanError> {
+        match self.format {
+            Format::Gzip => Ok(Filter::Gzip),
+            Format::Bzip2 => Ok(Filter::Bzip2),
+            Format::Lzma => Ok(Filter::Lzma),
+            Format::Lzip => Ok(Filter::Lzip),
+            _ => Err(ScanError::Unsupported),
+        }
+    }
+    fn method(&self) -> u16 {
+        match self.format {
+            Format::Gzip => 8,
+            Format::Bzip2 => 12,
+            _ => 14,
+        }
+    }
+
     /// Drain the entire stream with independent input/output bounds before publication.
     pub fn inspect(
         &self,
@@ -53,7 +82,8 @@ impl GzipCodec {
         if limits.entries == 0 {
             return Err(ScanError::Limit);
         }
-        let name = candidate(source);
+        let filter = self.filter()?;
+        let name = candidate(source, self.format);
         let display_name = xdzip_codec_api::names::display(&name);
         if name.len() > limits.name_bytes
             || name.len() > limits.total_name_bytes
@@ -67,7 +97,7 @@ impl GzipCodec {
         let mut stream = ControlledStream::new(
             source,
             control,
-            Filter::Gzip,
+            filter,
             limits.read_bytes,
             limits.read_bytes,
         )?;
@@ -85,7 +115,7 @@ impl GzipCodec {
         Ok(StreamInfo {
             all_zero,
             entry: Entry {
-                format: Format::Gzip,
+                format: self.format,
                 id: EntryId::try_from(1).expect("nonzero"),
                 raw_name: name.into_bytes(),
                 display_name,
@@ -97,7 +127,7 @@ impl GzipCodec {
                 size: stream.position(),
                 size_known: true,
                 packed_size,
-                method: 8,
+                method: self.method(),
                 modified_dos: 0,
                 encrypted: false,
                 password_supported: false,
@@ -106,7 +136,7 @@ impl GzipCodec {
         })
     }
 }
-impl MetadataCodec for GzipCodec {
+impl MetadataCodec for StreamCodec {
     fn scan(
         &self,
         source: &mut dyn ReadSource,
@@ -130,7 +160,7 @@ struct Reader<'a> {
     entry: Entry,
     consumed: bool,
 }
-impl PayloadCodec for GzipCodec {
+impl PayloadCodec for StreamCodec {
     fn open_payload<'a>(
         &self,
         source: &'a mut dyn ReadSource,
@@ -140,14 +170,14 @@ impl PayloadCodec for GzipCodec {
         let [entry] = snapshot else {
             return Err(DecodeError::Integrity);
         };
-        if entry.format != Format::Gzip
+        if entry.format != self.format
             || entry.id.get() != 1
             || entry.directory
             || entry.link
             || entry.encrypted
             || entry.warning
             || !entry.size_known
-            || entry.method != 8
+            || entry.method != self.method()
         {
             return Err(DecodeError::Integrity);
         }
@@ -162,7 +192,7 @@ impl PayloadCodec for GzipCodec {
             stream: ControlledStream::new(
                 source,
                 control,
-                Filter::Gzip,
+                self.filter().map_err(decode_error)?,
                 STREAM_LIMIT,
                 entry.size.min(STREAM_LIMIT),
             )
@@ -201,7 +231,7 @@ impl PayloadReader for Reader<'_> {
         Ok(())
     }
 }
-impl CreationCodec for GzipCodec {
+impl CreationCodec for StreamCodec {
     fn encode(
         &self,
         input: &dyn EncodeInput,
@@ -210,7 +240,8 @@ impl CreationCodec for GzipCodec {
         cancel: &Cancellation,
         progress: &mut dyn FnMut(EncodeProgress<'_>),
     ) -> Result<(), EncodeError> {
-        if settings.method != "deflate"
+        if self.format != Format::Gzip
+            || settings.method != "deflate"
             || ![0, 1, 6, 9].contains(&settings.level)
             || settings.password.is_some()
             || settings.solid
@@ -259,7 +290,7 @@ impl CreationCodec for GzipCodec {
         Ok(())
     }
 }
-impl RewriteCodec for GzipCodec {
+impl RewriteCodec for StreamCodec {
     fn rewrite(
         &self,
         _: &mut dyn ReadSource,

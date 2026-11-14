@@ -1987,11 +1987,18 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             QStringList{QStringLiteral("7z"), QStringLiteral("RAR"), QStringLiteral("CAB"),
                         QStringLiteral("ISO"), QStringLiteral("UDF")}
                 .contains(m_format, Qt::CaseInsensitive);
+        const auto formatLabel = m_format.toStdString();
+        const bool unknownPacked =
+            std::find(xdzip_formats::UnknownPackedLabels.begin(),
+                      xdzip_formats::UnknownPackedLabels.end(),
+                      std::string_view(formatLabel)) != xdzip_formats::UnknownPackedLabels.end();
         for (const auto &row : event.rows) {
             const auto method = nativeFormat                        ? m_format
                                 : m_format == QStringLiteral("TAR") ? qtTrId("ui.695e3ecda20b")
                                 : row.method == 0                   ? QStringLiteral("Store")
                                 : row.method == 8                   ? QStringLiteral("Deflate")
+                                : row.method == 12                  ? QStringLiteral("BZip2")
+                                : row.method == 14                  ? QStringLiteral("LZMA")
                                                                     : QString::number(row.method);
             QStringList status;
             if (row.directory)
@@ -2025,9 +2032,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             m_result.rows.append(
                 {text(row.id),
                  {name, row.physical && row.size_known ? QString::number(row.size) : QString{},
-                  row.physical && m_format != QStringLiteral("TAR.GZ")
-                      ? QString::number(row.packed_size)
-                      : QString{},
+                  row.physical && !unknownPacked ? QString::number(row.packed_size) : QString{},
                   type, modified},
                  row.directory,
                  row.directory && !row.warning,

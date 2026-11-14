@@ -62,5 +62,6 @@ var creationFormats = [
         "volumes": []
     }
 ];
-var associationSuffixes = [".zip", ".xpi", ".apk", ".ipa", ".cbz", ".tar", ".tar.gz", ".tgz", ".7z", ".gz", ".rar", ".cab", ".iso", ".udf"];
-var formatLabels = ["ZIP", "TAR", "TAR.GZ", "7z", "GZIP", "RAR", "CAB", "ISO", "UDF"];
+var associationSuffixes = [".zip", ".xpi", ".apk", ".ipa", ".cbz", ".tar", ".tar.gz", ".tgz", ".7z", ".gz", ".bz2", ".bz", ".tar.bz2", ".tar.bz", ".tbz", ".tbz2", ".lzma", ".tar.lzma", ".tlz", ".lz", ".tar.lz", ".rar", ".cab", ".iso", ".udf"];
+var formatLabels = ["ZIP", "TAR", "TAR.GZ", "7z", "GZIP", "BZip2", "TAR.BZ2", "LZMA", "TAR.LZMA", "Lzip", "TAR.LZ", "RAR", "CAB", "ISO", "UDF"];
+var structureOnlyFormats = ["TAR", "LZMA", "TAR.LZMA", "ISO", "UDF"];

@@ -1,6 +1,6 @@
 # 内置格式能力登记
 
-内置格式以 [archive-formats.json](../../../specs/engineering/archive-formats.json) 为登记来源，记录稳定格式标识、标签、容器族、压缩外层、既有私有工作进程编号、支持的方法族、创建后缀及入口候选。方法族是对应格式契约的摘要，不承诺全部参数、历史变体或组合；实际条目、宿主策略和平台能力仍在任务开始前进一步收敛准入范围。
+内置格式以 [archive-formats.json](../../../specs/engineering/archive-formats.json) 为登记来源，记录稳定格式标识、标签、容器族、压缩外层、既有私有工作进程编号、支持的方法族、创建后缀、检查强度及入口候选。方法族是对应格式契约的摘要，不承诺全部参数、历史变体或组合；实际条目、宿主策略和平台能力仍在任务开始前进一步收敛准入范围。
 
 修改规格后运行 `python3 scripts/generate-format-registry.py`，生成 Rust 格式描述、C++ 拖放与 Shell 候选、JavaScript 界面选项以及 Python 安装图标映射。`--check` 只检查，缺失或过期输出明确失败。`python3 scripts/test-format-registry.py` 检查矛盾能力、重复标识和后缀、生成语言中的非法值及过期消费者；日常 CI 执行这两项检查。
 

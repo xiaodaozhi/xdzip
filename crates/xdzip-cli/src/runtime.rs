@@ -285,7 +285,7 @@ impl Runtime {
                 }
                 let mut response = Response::success(
                     command,
-                    json!({"format":snapshot.format, "output":snapshot.open_path, "check_kind":if matches!(snapshot.format, "TAR" | "ISO" | "UDF") { "structure_and_readability" } else { "supported_content" }}),
+                    json!({"format":snapshot.format, "output":snapshot.open_path, "check_kind":xdzip_codec_api::registry::formats().iter().find(|format| format.label == snapshot.format).map_or("supported_content", |format| format.check_kind)}),
                     if self.chinese {
                         format!(
                             "操作完成，已提交 {} 个文件，已跳过 {} 个文件。",

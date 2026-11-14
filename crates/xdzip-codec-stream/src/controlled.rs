@@ -1,15 +1,35 @@
 //! Shared cancellation and byte admission for sequential filters and containers.
+use crate::framed::{FramedReader, Kind, lzma_alone};
 use std::io::{self, Read, SeekFrom};
 use xdzip_codec_api::{Cancellation, ReadSource, ScanError};
 use xdzip_compression::GzipReader;
 
+const FILTER_MEMORY_LIMIT: u64 = 128 * 1024 * 1024;
+fn scan_error(error: &io::Error) -> ScanError {
+    error
+        .get_ref()
+        .and_then(|e| e.downcast_ref::<ScanError>())
+        .copied()
+        .unwrap_or(match error.kind() {
+            io::ErrorKind::OutOfMemory => ScanError::Limit,
+            io::ErrorKind::Unsupported => ScanError::Unsupported,
+            _ => ScanError::Invalid,
+        })
+}
+
 /// Outer filter selected by content-aware host routing.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Eq, PartialEq)]
 pub enum Filter {
     /// Uncompressed bytes.
     Identity,
     /// RFC 1952, including concatenated members.
     Gzip,
+    /// Concatenated BZh1..BZh9 members with block and combined CRC validation.
+    Bzip2,
+    /// One LZMA Alone stream, with a 13-byte header and exact stream ending.
+    Lzma,
+    /// Concatenated Lzip v1 members, including all trailer fields.
+    Lzip,
 }
 
 struct Input<'a> {
@@ -103,6 +123,21 @@ impl<'a> ControlledStream<'a> {
         let reader: Box<dyn Read + 'a> = match filter {
             Filter::Identity => Box::new(input),
             Filter::Gzip => Box::new(GzipReader::new(input)),
+            Filter::Bzip2 => Box::new(FramedReader::new(
+                input,
+                length,
+                Kind::Bzip2,
+                FILTER_MEMORY_LIMIT,
+            )),
+            Filter::Lzma => Box::new(
+                lzma_alone(input, length, FILTER_MEMORY_LIMIT).map_err(|e| scan_error(&e))?,
+            ),
+            Filter::Lzip => Box::new(FramedReader::new(
+                input,
+                length,
+                Kind::Lzip,
+                FILTER_MEMORY_LIMIT,
+            )),
         };
         Ok(Self {
             reader,
@@ -150,13 +185,7 @@ impl Read for ControlledStream<'_> {
             return Err(io::Error::other(error));
         }
         self.read_inner(bytes).inspect_err(|error| {
-            self.failure = Some(
-                error
-                    .get_ref()
-                    .and_then(|e| e.downcast_ref::<ScanError>())
-                    .copied()
-                    .unwrap_or(ScanError::Invalid),
-            );
+            self.failure = Some(scan_error(error));
         })
     }
 }

@@ -405,6 +405,7 @@ pub struct LzmaReader<R> {
     models: Models,
     range: Option<Range>,
     expected: Option<u64>,
+    member: bool,
     decoded: u64,
     pending: (usize, usize),
     ended: bool,
@@ -420,16 +421,42 @@ impl<R: Read> LzmaReader<R> {
         properties: &[u8],
         memory_limit: u64,
     ) -> io::Result<Self> {
+        Self::construct(source, packed, expected, properties, memory_limit, false)
+    }
+    /// Read an EOS-terminated member without consuming its following trailer.
+    /// No output size is assumed; the enclosing format must bound output and
+    /// verify its own checksums and sizes. Buffer the source for efficient I/O.
+    pub fn new_member(
+        source: R,
+        packed_limit: u64,
+        properties: &[u8],
+        memory_limit: u64,
+    ) -> io::Result<Self> {
+        Self::construct(source, packed_limit, None, properties, memory_limit, true)
+    }
+    fn construct(
+        source: R,
+        packed: u64,
+        expected: Option<u64>,
+        properties: &[u8],
+        memory_limit: u64,
+        member: bool,
+    ) -> io::Result<Self> {
         let (properties, dictionary) = raw_properties(properties)?;
         if memory_required(dictionary, properties.contexts()) > memory_limit {
             return Err(resource());
         }
         Ok(Self {
-            input: Input::new(source, packed),
+            input: if member {
+                Input::unbuffered(source, packed)
+            } else {
+                Input::new(source, packed)
+            },
             dictionary: Dictionary::new(dictionary)?,
             models: Models::new(properties)?,
             range: None,
             expected,
+            member,
             decoded: 0,
             pending: (0, 0),
             ended: false,
@@ -443,6 +470,14 @@ impl<R: Read> LzmaReader<R> {
     /// Bytes returned to the consumer, including a partially emitted match.
     pub fn decoded_bytes(&self) -> u64 {
         self.decoded
+    }
+    /// Recover the exact source after validated member EOF. The ordinary
+    /// full-span constructor and unfinished/failed states refuse recovery.
+    pub fn into_member_source(self) -> io::Result<R> {
+        if !self.member || !self.ended || self.failed {
+            return Err(invalid());
+        }
+        self.input.into_unbuffered()
     }
     fn initialize(&mut self) -> io::Result<()> {
         if self.range.is_none() {
@@ -517,7 +552,13 @@ impl<R: Read> LzmaReader<R> {
                         self.dictionary.get(distance)?
                     }
                     Token::End => {
-                        if self.expected.is_some() || !range.complete(&self.input) {
+                        if self.expected.is_some()
+                            || (if self.member {
+                                range.code != 0
+                            } else {
+                                !range.complete(&self.input)
+                            })
+                        {
                             return Err(invalid());
                         }
                         self.ended = true;

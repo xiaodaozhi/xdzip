@@ -130,6 +130,25 @@ def check(binary, worker, output, payload=None, install_fixture=False):
             invoke('list',alias)
             invoke('test',alias)
         record('gzip_single_file_levels_and_zip_aliases')
+        phrase = b'abracadabra abracadabra\n' * 6
+        for name, kind, output_name in [
+            ('phrase.bz2','supported_content','phrase'), ('phrase.lzma','structure_and_readability','phrase'),
+            ('phrase.lz','supported_content','phrase'), ('files.tbz2','supported_content','hello.txt'),
+            ('files.tar.lzma','structure_and_readability','hello.txt'), ('files.tlz','supported_content','hello.txt'),
+        ]:
+            archive = ROOT/'tests/fixtures/streams'/name
+            listed = invoke('list',archive)['data']['entries']
+            assert len(listed) == 1 and listed[0]['path'] == output_name
+            tested = invoke('test',archive)
+            assert tested['data']['check_kind'] == kind
+            target = work/('filtered-output-'+name)
+            invoke('extract',archive,'-C',target)
+            assert (target/output_name).read_bytes() == phrase
+        for suffix in ['bz2','lzma','lz']:
+            refused = work/('read-only.'+suffix)
+            assert invoke('create',refused,single,code=2)['error_code'] == 'unsupported_format'
+            assert not refused.exists()
+        record('bzip2_lzma_lzip_and_tar_filters_read_only')
         invoke('create',work/'literal.zip','--','--input.txt')
         assert invoke('list',work/'literal.zip')['data']['entries'][0]['path'] == '--input.txt'
         duplicate = ROOT/'tests/fixtures/zip/normal.zip'
