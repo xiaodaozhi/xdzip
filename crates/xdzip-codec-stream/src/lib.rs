@@ -9,6 +9,7 @@ pub mod lz4;
 mod tests;
 mod writer;
 pub mod xz;
+pub mod zstd;
 use controlled::{ControlledStream, Filter};
 use std::io::Read;
 pub use writer::FrameWriter;

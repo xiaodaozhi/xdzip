@@ -21,6 +21,7 @@ mod raw;
 mod stream_io;
 mod xxhash;
 mod xxhash64;
+pub mod zstd;
 pub use byte_filter::{ByteFilter, ByteFilterKind};
 pub use bzip2::{Bzip2Reader, bzip2_memory_required};
 pub use gzip::{GzipReader, GzipWriter};
