@@ -1769,6 +1769,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-asar"
+version = "0.2.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "xdzip-codec-api",
+ "xdzip-crypto",
+ "xdzip-domain",
+]
+
+[[package]]
 name = "xdzip-codec-bridge"
 version = "0.2.0"
 dependencies = [
