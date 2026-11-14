@@ -162,6 +162,10 @@ pub enum Format {
     TarCompress,
     /// Password-admitted AES Crypt v0-v3 single-file envelope, read only.
     AesCrypt,
+    /// One ordinary RFC 7932 Brotli stream, read only and without a checksum.
+    Brotli,
+    /// TAR behind an ordinary Brotli stream, read only.
+    TarBrotli,
     /// Independent Rust 7z behind the isolated codec worker.
     SevenZip,
     /// Independent Rust RAR read-only backend in the isolated codec worker.
@@ -270,6 +274,7 @@ impl Entry {
             | Format::Xxe
             | Format::Compress
             | Format::TarCompress => !self.warning && !self.link,
+            Format::Brotli | Format::TarBrotli => !self.warning && !self.link,
             Format::AesCrypt
             | Format::SevenZip
             | Format::Rar

@@ -58,6 +58,7 @@ impl StreamCodec {
             Format::Lz4 => Ok(Filter::Lz4),
             Format::Zstd => Ok(Filter::Zstd),
             Format::Compress => Ok(Filter::Compress),
+            Format::Brotli => Ok(Filter::Brotli),
             _ => Err(ScanError::Unsupported),
         }
     }
@@ -69,6 +70,7 @@ impl StreamCodec {
             Format::Lz4 => 256,
             Format::Zstd => 93,
             Format::Compress => 257,
+            Format::Brotli => 258,
             _ => 14,
         }
     }

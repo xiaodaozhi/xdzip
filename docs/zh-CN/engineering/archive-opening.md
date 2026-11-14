@@ -57,3 +57,5 @@ English: CAB uses header-specified names rather than concatenated numbered parts
 特殊字符、关闭页面后任务路由、临时目录安全和退出清理策略。
 
 English: 7z numbered parts form one authorized byte stream. RAR partN and legacy volume names preserve physical boundaries supplied through ReadSource::volume_lengths; the isolated Rust backend cannot select arbitrary host paths. Every part is version checked and protected from output overwrite. Encrypted directory opens publish no partial metadata and retain secrets only in their session and admitted tasks.
+
+只读 [Brotli/TAR.BR](brotli-streams.md) 在发布条目前完整验证无魔数候选，Brotli/LZMA 共用候选读取预算，保留强源签名及合法 TAR/ZIP 识别优先级，解码后损坏的 TAR 不能降级为普通流。

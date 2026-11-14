@@ -49,3 +49,5 @@ English: Archives with unknown uncompressed sizes remain browsable. Whole-archiv
 XZ 和 TAR.XZ 使用 `format_declared_checks`，须验证声明的 CRC32、CRC64、SHA-256 和结构字段；声明 None 的流没有内容校验和。界面须说明此区别，不承诺每份输入都有内容校验和。新增未加密 ZIP 方法 9、12、14、95 仍须满足精确解码尺寸及外层 ZIP CRC，LZMA 数据描述符配置须有 EOS。未知方法可展示，但不能计为内容验证成功。
 
 AES Crypt 使用 `format_declared_checks` 和保留的打开密码。元数据准入及实际任务解码都必须通过完整密文 HMAC。0–2 版不认证尾部长度模值，扩展字段也未认证。检查成功仅表示格式声明的检查通过，范围见 [AES Crypt 契约](aescrypt-envelopes.md)。
+
+Brotli 与 TAR.BR 使用 `structure_and_readability`，必须通过完整流结束、声明的元块大小和全部准入词典/历史变换，Brotli 本身不提供内容校验和。详见 [Brotli 契约](brotli-streams.md)。

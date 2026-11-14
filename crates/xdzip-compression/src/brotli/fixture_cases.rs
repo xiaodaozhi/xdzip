@@ -79,4 +79,10 @@ pub(super) const CASES: &[(&str, usize, u32)] = &[
     ("metadata.br", 144, 0x416a98de),
     ("empty-meta.br", 0, 0x00000000),
     ("raw.br", 1, 0x59bc5767),
+    ("files.tar.br", 10240, 0x8019a8cc),
+    ("bad-header.br", 10240, 0xae11f8a4),
+    ("empty.tar.br", 1024, 0xefb5af2e),
+    ("empty-tar.br", 1024, 0xefb5af2e),
+    ("zeros.br", 4096, 0xc71c0011),
+    ("raw-tar-marker.br", 512, 0x04b6bebf),
 ];

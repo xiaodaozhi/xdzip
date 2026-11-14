@@ -44,7 +44,7 @@
 - **内容预览**：在属性卡主动预览受限纯文本、常见栅格图片和静态 SVG，macOS 还支持 HEIC／HEIF。完整读取并完成格式提供的校验后显示，可取消；格式、大小和解码预算见[预览说明](docs/zh-CN/engineering/content-preview.md)。
 - **解压和打开**：选择目标位置与重名策略，查看进度并可请求取消。双击普通文件会先将副本解压到私有临时目录，再交给系统打开；修改副本不会写回压缩包，缓存会在七天后的后续打开操作中清理。
 - **创建和修改**：可创建 ZIP、TAR、TAR.GZ、GZIP、XZ、TAR.XZ、LZ4、TAR.LZ4、Zstandard、TAR.ZST 和 7z。支持对符合条件的普通单文件压缩包添加文件、替换文件和包内移动；也可从列表拖出文件，或拖入文件后确认添加。具体格式和限制见下表。
-- **检查**：可在后台测试整包，不写出文件。TAR、LZMA、TAR.LZMA、ISO 和 UDF 只检查结构与可读性，不提供逐文件内容校验保证。详见[完整性检查](docs/zh-CN/engineering/archive-checking.md)。
+- **检查**：可在后台测试整包，不写出文件。TAR、LZMA、TAR.LZMA、Z、TAR.Z、UU/UUE、XXE、Brotli、TAR.BR、ISO 和 UDF 只检查结构与可读性，不提供逐文件内容校验保证。详见[完整性检查](docs/zh-CN/engineering/archive-checking.md)。
 - **多个归档**：默认在新标签页打开，也可设置为新窗口。同一登录会话共用应用进程和托盘，关闭浏览页面后后台任务仍可从任务入口访问。
 - **文件管理器操作**：Windows 经典右键菜单、Ubuntu Files 子菜单及 macOS Finder Sync 动态子菜单可直接压缩或解压，macOS 保留 Finder 服务作为回退。操作使用独立窗口，默认不打开主窗口或目标目录；支持逐项 ZIP、智能解压目录与批次取消。入口、系统启用及安装范围见[文件管理器操作](docs/zh-CN/engineering/shell-actions.md)。
 
@@ -68,6 +68,7 @@
 | DEB | 普通 ar 成员、control/data TAR 视图，已准入 GZIP/XZ/Zstandard/BZip2/LZMA 配置 | 不支持 | 不支持 |
 | ASAR | 存储文件与目录、共享载荷区间及声明的文件/块 SHA-256 | 不支持 | 不支持 |
 | Z、TAR.Z（包括 `.taz`） | Unix compress LZW、9–16 位字典及已准入 CLEAR/对齐配置 | 不支持 | 不支持 |
+| Brotli、TAR.BR | 普通 RFC 7932 流，10–24 位窗口和全部静态词典变换 | 不支持 | 不支持 |
 | AES Crypt（`.aes`） | 0–3 版，打开密码、完整密文 HMAC 和逐版本长度规则 | 不支持 | 不支持 |
 | UU/UUE、XXE | 传统计数行与已准入 begin-base64 封装，包括多成员 | 不支持 | 不支持 |
 | RAR | 支持旧版、RAR5 和 RAR 7 格式扩展，包括密码、固实及分卷 | 不支持 | 不支持 |
@@ -87,6 +88,8 @@
 - 暂不支持稀疏 TAR 和第三方扩展。普通 GZIP 及 XPI/APK/IPA/CBZ 候选遵循[单文件流契约](docs/zh-CN/engineering/single-file-streams.md)。旧编码文件名会尝试识别，但短名称或混合编码无法保证唯一识别，详见[文件名编码](docs/zh-CN/engineering/filename-encoding.md)。
 
 - AES Crypt 在发布元数据前必须提供打开密码并验证完整密文认证码。0–2 版的尾部长度模值未认证，扩展字段不授予权限。详见 [AES Crypt 契约](docs/zh-CN/engineering/aescrypt-envelopes.md)。
+
+- Brotli 和 TAR.BR 只读，无魔数候选必须完整验证内容，没有校验和；共享词典与大窗口扩展不在准入 [Brotli 范围](docs/zh-CN/engineering/brotli-streams.md)内。
 
 ## 命令行
 

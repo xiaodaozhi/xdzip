@@ -380,6 +380,27 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
         invoke('list',ROOT/'tests/fixtures/compress/bad-header.Z',code=1)
         record('unix_compress_real_lzw_empty_streams_tar_and_readonly_boundary')
 
+        marker=bytearray(512);marker[254:259]=b'ustar'
+        for name,expected in [('q11-text.br',phrase),('files.tar.br',phrase),('metadata.br',phrase),('empty.br',b''),('raw.br',b'Z'),('raw-tar-marker.br',bytes(marker)),('zeros.br',bytes(4096)),('empty.tar.br',None)]:
+            compressed=ROOT/'tests/fixtures/brotli'/name
+            listed=invoke('list',compressed)['data'];tar=name.endswith('.tar.br')
+            assert listed['format']==('TAR.BR' if tar else 'Brotli')
+            assert invoke('test',compressed)['data']['check_kind']=='structure_and_readability'
+            if expected is None:
+                assert not listed['entries'];continue
+            row=listed['entries'][0];assert (row['packed_size'] is None)==tar
+            target=work/('brotli-'+name)
+            invoke('extract',compressed,'--entry-id',row['id'],'-C',target)
+            assert (target/row['path']).read_bytes()==expected
+            before=hashlib.sha256(compressed.read_bytes()).hexdigest();invoke('add',compressed,source,code=1)
+            assert hashlib.sha256(compressed.read_bytes()).hexdigest()==before
+        invoke('list',ROOT/'tests/fixtures/brotli/bad-header.br',code=1)
+        for suffix in ['br','tar.br']:
+            refused=work/('read-only.'+suffix)
+            assert invoke('create',refused,single,code=2)['error_code']=='unsupported_format'
+            assert not refused.exists()
+        record('brotli_strict_headerless_streams_tar_selection_and_readonly_boundary')
+
         for version in range(4):
             for profile in ['phrase','empty','tail17','unicode']:
                 encrypted=ROOT/'tests/fixtures/aescrypt'/f'v{version}-{profile}.aes'

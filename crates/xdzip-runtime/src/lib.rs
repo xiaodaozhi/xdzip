@@ -3,6 +3,8 @@
 mod aescrypt_tests;
 #[cfg(test)]
 mod asar_tests;
+#[cfg(test)]
+mod brotli_tests;
 pub mod catalog;
 pub mod checking;
 #[cfg(test)]
@@ -85,6 +87,18 @@ impl Archive {
         // Preserve validated self-extracting ZIP sources without using the suffix.
         // Budget/cancel/unsupported failures are authoritative and never retried.
         let scanned = if format == xdzip_codec_api::Format::Tar
+            && tar_identified
+            && matches!(&scanned, Err(ScanError::Invalid))
+        {
+            match formats::discover_brotli(&mut source, control) {
+                Ok(Some((candidate, rows))) => {
+                    format = candidate;
+                    Ok((rows, None))
+                }
+                Ok(None) | Err(ScanError::Invalid | ScanError::Unsupported) => scanned,
+                Err(error) => return Err(error),
+            }
+        } else if format == xdzip_codec_api::Format::Tar
             && !tar_identified
             && matches!(&scanned, Err(ScanError::Invalid))
         {
@@ -94,10 +108,9 @@ impl Archive {
                     Ok(rows)
                 }
                 Err(ScanError::Invalid) => {
-                    if let Some(candidate) = formats::detect_lzma(&mut source, control)? {
+                    if let Some((candidate, rows)) = formats::discover_weak(&mut source, control)? {
                         format = candidate;
-                        formats::scan(&mut format, &mut source, control, None)
-                            .map(|rows| (rows, None))
+                        Ok((rows, None))
                     } else {
                         scanned
                     }

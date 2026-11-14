@@ -31,6 +31,12 @@ pub(crate) fn codec(format: Format) -> &'static dyn Codec {
         Format::Deb => &DebCodec,
         Format::Asar => &AsarCodec,
         Format::AesCrypt => &AesCryptCodec,
+        Format::Brotli => &StreamCodec {
+            format: Format::Brotli,
+        },
+        Format::TarBrotli => &TarCodec {
+            filter: Filter::Brotli,
+        },
         Format::Compress => &StreamCodec {
             format: Format::Compress,
         },
@@ -148,7 +154,7 @@ pub(crate) fn detect(
             Err(error) => return Err(ScanError::from_source_error(&error)),
         }
     }
-    if length < magic.len() && (length < 2 || magic[..2] != [0x1f, 0x9d]) {
+    if length == 0 {
         return Err(ScanError::Invalid);
     }
     source.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
@@ -269,7 +275,9 @@ fn compressed_format(
     filter: Filter,
     ordinary: Format,
 ) -> Result<Format, ScanError> {
-    let input_limit = if matches!(filter, Filter::Lz4 | Filter::Zstd) {
+    let input_limit = if filter == Filter::Brotli {
+        24 * 1024 * 1024 * 1024
+    } else if matches!(filter, Filter::Lz4 | Filter::Zstd) {
         8 * 1024 * 1024
     } else if filter == Filter::Bzip2 {
         2 * 1024 * 1024
@@ -314,6 +322,131 @@ pub(crate) fn detect_lzma(
         return Ok(None);
     }
     compressed_format(source, control, Filter::Lzma, Format::Lzma).map(Some)
+}
+/// Headerless streams are candidates until complete metadata admission succeeds.
+/// Strong containers and ZIP/SFX discovery have already failed without identifying TAR.
+/// One ledger covers all weak probes and their repeated reads; terminal host failures
+/// and quotas are authoritative. Invalid/unsupported guesses publish no format or rows.
+pub(crate) fn discover_weak(
+    source: &mut dyn ReadSource,
+    control: &xdzip_codec_api::Cancellation,
+) -> Result<Option<(Format, Vec<xdzip_codec_api::Entry>)>, ScanError> {
+    let mut input = WeakInput {
+        source,
+        control,
+        remaining: 24 * 1024 * 1024 * 1024,
+    };
+    if let Some(found) = validate_brotli(&mut input, control)? {
+        return Ok(Some(found));
+    }
+    let Some(mut candidate) = detect_lzma(&mut input, control)? else {
+        return Ok(None);
+    };
+    let rows = scan(&mut candidate, &mut input, control, None)?;
+    Ok(Some((candidate, rows)))
+}
+/// Disambiguate an unvalidated raw TAR marker with a complete ordinary-stream candidate.
+/// A malformed TAR reached through decoded Brotli is never exposed as an ordinary file.
+pub(crate) fn discover_brotli(
+    source: &mut dyn ReadSource,
+    control: &xdzip_codec_api::Cancellation,
+) -> Result<Option<(Format, Vec<xdzip_codec_api::Entry>)>, ScanError> {
+    let mut input = WeakInput {
+        source,
+        control,
+        remaining: 24 * 1024 * 1024 * 1024,
+    };
+    validate_brotli(&mut input, control)
+}
+fn validate_brotli(
+    input: &mut dyn ReadSource,
+    control: &xdzip_codec_api::Cancellation,
+) -> Result<Option<(Format, Vec<xdzip_codec_api::Entry>)>, ScanError> {
+    match compressed_format(input, control, Filter::Brotli, Format::Brotli) {
+        Ok(mut candidate) => match scan(&mut candidate, input, control, None) {
+            Ok(rows) => return Ok(Some((candidate, rows))),
+            Err(ScanError::Invalid | ScanError::Unsupported) if candidate != Format::TarBrotli => {}
+            Err(error) => return Err(error),
+        },
+        Err(ScanError::Invalid | ScanError::Unsupported) => {}
+        Err(error) => return Err(error),
+    }
+    Ok(None)
+}
+struct WeakInput<'a> {
+    source: &'a mut dyn ReadSource,
+    control: &'a xdzip_codec_api::Cancellation,
+    remaining: u64,
+}
+impl Read for WeakInput<'_> {
+    fn read(&mut self, bytes: &mut [u8]) -> std::io::Result<usize> {
+        loop {
+            self.control.check().map_err(std::io::Error::other)?;
+            if bytes.is_empty() {
+                return Ok(0);
+            }
+            if self.remaining == 0 {
+                return Err(std::io::Error::other(ScanError::Limit));
+            }
+            let take = bytes
+                .len()
+                .min(self.remaining.min(usize::MAX as u64) as usize);
+            match self.source.read(&mut bytes[..take]) {
+                Err(error)
+                    if error.kind() == std::io::ErrorKind::Interrupted
+                        && error.get_ref().is_none() =>
+                {
+                    continue;
+                }
+                Err(error) => return Err(error),
+                Ok(n) if n <= take => {
+                    self.remaining -= n as u64;
+                    return Ok(n);
+                }
+                Ok(_) => return Err(std::io::Error::other(ScanError::Io)),
+            }
+        }
+    }
+}
+impl std::io::Seek for WeakInput<'_> {
+    fn seek(&mut self, at: SeekFrom) -> std::io::Result<u64> {
+        self.control.check().map_err(std::io::Error::other)?;
+        self.source.seek(at)
+    }
+}
+impl ReadSource for WeakInput<'_> {
+    fn source_name_hint(&self) -> Option<&str> {
+        self.source.source_name_hint()
+    }
+    fn volume_lengths(&self) -> Option<&[u64]> {
+        self.source.volume_lengths()
+    }
+    fn volume_names(&self) -> Option<&[Vec<u8>]> {
+        self.source.volume_names()
+    }
+    fn local_calendar(
+        &self,
+        t: xdzip_codec_api::time::Timestamp,
+    ) -> Result<Option<xdzip_codec_api::time::Calendar>, ScanError> {
+        self.source.local_calendar(t)
+    }
+    fn oem_to_ansi_wide(
+        &self,
+        input: &[u16],
+        output: &mut [u16],
+    ) -> Result<Option<usize>, ScanError> {
+        self.source.oem_to_ansi_wide(input, output)
+    }
+    fn wide_to_ansi(&self, input: &[u16], output: &mut [u8]) -> Result<Option<usize>, ScanError> {
+        self.source.wide_to_ansi(input, output)
+    }
+    fn wide_to_local_prefix(
+        &self,
+        input: &[u32],
+        output: &mut [u8],
+    ) -> Result<Option<usize>, ScanError> {
+        self.source.wide_to_local_prefix(input, output)
+    }
 }
 pub(crate) fn recognized_tar(
     source: &mut dyn ReadSource,
@@ -397,6 +530,90 @@ pub(crate) fn limits(format: Format) -> xdzip_codec_api::ScanLimits {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn weak_stream_discovery_retains_one_exact_input_ledger_and_never_retries_host_failures() {
+        use std::{cell::Cell, io::Cursor, rc::Rc};
+        struct Source {
+            data: Cursor<Vec<u8>>,
+            reads: Rc<Cell<usize>>,
+            error: Option<ScanError>,
+        }
+        impl Read for Source {
+            fn read(&mut self, bytes: &mut [u8]) -> std::io::Result<usize> {
+                self.reads.set(self.reads.get() + 1);
+                if let Some(e) = self.error {
+                    Err(std::io::Error::other(e))
+                } else {
+                    self.data.read(bytes)
+                }
+            }
+        }
+        impl std::io::Seek for Source {
+            fn seek(&mut self, at: SeekFrom) -> std::io::Result<u64> {
+                self.data.seek(at)
+            }
+        }
+        impl ReadSource for Source {
+            fn source_name_hint(&self) -> Option<&str> {
+                Some("owned.br")
+            }
+        }
+        let bytes = std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../../tests/fixtures/brotli/raw.br"),
+        )
+        .unwrap();
+        assert_eq!(bytes.len(), 5);
+        let cancel = Default::default();
+        for budget in [10, 9] {
+            let mut source = Source {
+                data: Cursor::new(bytes.clone()),
+                reads: Rc::default(),
+                error: None,
+            };
+            let mut input = WeakInput {
+                source: &mut source,
+                control: &cancel,
+                remaining: budget,
+            };
+            let result = validate_brotli(&mut input, &cancel);
+            if budget == 10 {
+                let (format, rows) = result.unwrap().unwrap();
+                assert_eq!(format, Format::Brotli);
+                assert_eq!(rows[0].name_bytes(), b"owned");
+            } else {
+                assert!(matches!(result, Err(ScanError::Limit)));
+            }
+            assert_eq!(input.remaining, 0);
+        }
+        for error in [
+            ScanError::Io,
+            ScanError::Limit,
+            ScanError::Cancelled,
+            ScanError::SourceChanged,
+        ] {
+            let calls = Rc::new(Cell::new(0));
+            let mut source = Source {
+                data: Cursor::new(bytes.clone()),
+                reads: Rc::clone(&calls),
+                error: Some(error),
+            };
+            assert!(matches!(discover_weak(&mut source,&cancel),Err(e) if e==error));
+            assert_eq!(calls.get(), 1);
+        }
+        let calls = Rc::new(Cell::new(0));
+        let mut source = Source {
+            data: Cursor::new(bytes),
+            reads: Rc::clone(&calls),
+            error: None,
+        };
+        cancel.cancel();
+        assert!(matches!(
+            discover_weak(&mut source, &cancel),
+            Err(ScanError::Cancelled)
+        ));
+        assert_eq!(calls.get(), 0);
+    }
     #[test]
     fn unnamed_zero_only_stream_retains_the_empty_tar_default() {
         use std::io::{Cursor, Write};

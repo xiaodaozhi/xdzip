@@ -31,6 +31,8 @@ def main():
     shutil.copyfile(ROOT / 'tests/fixtures/streams/phrase.zst', output / 'sample.zst')
     shutil.copyfile(ROOT / 'tests/fixtures/deb/control-gz-data-zst.deb', output / 'sample.deb')
     shutil.copyfile(ROOT / 'tests/fixtures/aescrypt/v3-phrase.aes', output / 'sample.aes')
+    shutil.copyfile(ROOT / 'tests/fixtures/brotli/q11-text.br', output / 'sample.br')
+    shutil.copyfile(ROOT / 'tests/fixtures/brotli/files.tar.br', output / 'sample.tar.br')
     shutil.copyfile(ROOT / 'tests/fixtures/asar/ordinary.asar', output / 'sample.asar')
     shutil.copyfile(ROOT / 'tests/fixtures/compress/phrase.Z', output / 'sample.z')
     for suffix in ['tar.z', 'taz']:

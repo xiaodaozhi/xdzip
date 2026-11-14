@@ -9642,10 +9642,10 @@ QtObject {
         QTRY_VERIFY(formats->width() > 0);
         QTRY_VERIFY(formats->width() <= 608);
         for (const auto &format :
-             {"ZIP",     "TAR",      "TAR.GZ",    "7z",     "GZIP", "BZip2",  "TAR.BZ2",
-              "LZMA",    "TAR.LZMA", "Lzip",      "TAR.LZ", "XZ",   "TAR.XZ", "LZ4",
-              "TAR.LZ4", "ZSTD",     "TAR.ZST",   "DEB",    "ASAR", "UU",     "XXE",
-              "Z",       "TAR.Z",    "AES Crypt", "RAR",    "CAB",  "ISO",    "UDF"}) {
+             {"ZIP",      "TAR",    "TAR.GZ", "7z",  "GZIP",   "BZip2", "TAR.BZ2", "LZMA",
+              "TAR.LZMA", "Lzip",   "TAR.LZ", "XZ",  "TAR.XZ", "LZ4",   "TAR.LZ4", "ZSTD",
+              "TAR.ZST",  "DEB",    "ASAR",   "UU",  "XXE",    "Z",     "TAR.Z",   "AES Crypt",
+              "Brotli",   "TAR.BR", "RAR",    "CAB", "ISO",    "UDF"}) {
             auto *badge =
                 findVisual(window->contentItem(), "welcomeFormat-" + QString::fromLatin1(format));
             QVERIFY(badge && badge->isVisible());
@@ -9671,12 +9671,13 @@ QtObject {
         task->setProperty("taskStatus", "running");
         task->setProperty("archiveName", "readonly-image.iso");
         for (const auto &format :
-             {QStringLiteral("TAR"), QStringLiteral("LZMA"), QStringLiteral("TAR.LZMA"),
-              QStringLiteral("ISO"), QStringLiteral("UDF"), QStringLiteral("XZ"),
-              QStringLiteral("TAR.XZ"), QStringLiteral("LZ4"), QStringLiteral("TAR.LZ4"),
-              QStringLiteral("ZSTD"), QStringLiteral("TAR.ZST"), QStringLiteral("DEB"),
-              QStringLiteral("ASAR"), QStringLiteral("UU"), QStringLiteral("XXE"),
-              QStringLiteral("Z"), QStringLiteral("TAR.Z"), QStringLiteral("AES Crypt")}) {
+             {QStringLiteral("TAR"),    QStringLiteral("LZMA"),    QStringLiteral("TAR.LZMA"),
+              QStringLiteral("ISO"),    QStringLiteral("UDF"),     QStringLiteral("XZ"),
+              QStringLiteral("TAR.XZ"), QStringLiteral("LZ4"),     QStringLiteral("TAR.LZ4"),
+              QStringLiteral("ZSTD"),   QStringLiteral("TAR.ZST"), QStringLiteral("DEB"),
+              QStringLiteral("ASAR"),   QStringLiteral("UU"),      QStringLiteral("XXE"),
+              QStringLiteral("Z"),      QStringLiteral("TAR.Z"),   QStringLiteral("AES Crypt"),
+              QStringLiteral("Brotli"), QStringLiteral("TAR.BR")}) {
             task->setProperty("resultTask", QVariantMap{{"kind", "check"}, {"format", format}});
             QVERIFY(QMetaObject::invokeMethod(task, "present"));
             QTRY_VERIFY(task->isVisible());
@@ -9710,16 +9711,26 @@ QtObject {
         QTest::addColumn<QString>("fixture");
         QTest::addColumn<QString>("format");
         QTest::addColumn<QString>("language");
-        const QList<QPair<QString, QString>> formats{
-            {"phrase.bz2", "BZip2"},        {"phrase.lzma", "LZMA"},
-            {"phrase.lz", "Lzip"},          {"files.tbz2", "TAR.BZ2"},
-            {"files.tar.lzma", "TAR.LZMA"}, {"files.tlz", "TAR.LZ"},
-            {"phrase-crc64.xz", "XZ"},      {"files.txz", "TAR.XZ"},
-            {"phrase.lz4", "LZ4"},          {"files.tar.lz4", "TAR.LZ4"},
-            {"phrase.zst", "ZSTD"},         {"files.tar.zst", "TAR.ZST"},
-            {"zipx-deflate64.zipx", "ZIP"}, {"zipx-bzip2.zipx", "ZIP"},
-            {"zipx-lzma.zipx", "ZIP"},      {"zipx-xz.zipx", "ZIP"},
-            {"../compress/phrase.Z", "Z"},  {"../compress/files.taz", "TAR.Z"}};
+        const QList<QPair<QString, QString>> formats{{"phrase.bz2", "BZip2"},
+                                                     {"phrase.lzma", "LZMA"},
+                                                     {"phrase.lz", "Lzip"},
+                                                     {"files.tbz2", "TAR.BZ2"},
+                                                     {"files.tar.lzma", "TAR.LZMA"},
+                                                     {"files.tlz", "TAR.LZ"},
+                                                     {"phrase-crc64.xz", "XZ"},
+                                                     {"files.txz", "TAR.XZ"},
+                                                     {"phrase.lz4", "LZ4"},
+                                                     {"files.tar.lz4", "TAR.LZ4"},
+                                                     {"phrase.zst", "ZSTD"},
+                                                     {"files.tar.zst", "TAR.ZST"},
+                                                     {"zipx-deflate64.zipx", "ZIP"},
+                                                     {"zipx-bzip2.zipx", "ZIP"},
+                                                     {"zipx-lzma.zipx", "ZIP"},
+                                                     {"zipx-xz.zipx", "ZIP"},
+                                                     {"../compress/phrase.Z", "Z"},
+                                                     {"../compress/files.taz", "TAR.Z"},
+                                                     {"../brotli/q11-text.br", "Brotli"},
+                                                     {"../brotli/files.tar.br", "TAR.BR"}};
         for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
             for (const auto &[fixture, format] : formats)
                 QTest::newRow(qPrintable(fixture + "-" + language))
@@ -9756,6 +9767,7 @@ QtObject {
         QCOMPARE(row->cells[2].isEmpty(), tar);
         const auto method =
             format == "Z" || format == "TAR.Z"                     ? QStringLiteral("LZW")
+            : format == "Brotli" || format == "TAR.BR"             ? QStringLiteral("Brotli")
             : format.contains("ZST")                               ? QStringLiteral("Zstandard")
             : format.contains("LZ4")                               ? QStringLiteral("LZ4")
             : fixture.contains("deflate64")                        ? QStringLiteral("Deflate64")

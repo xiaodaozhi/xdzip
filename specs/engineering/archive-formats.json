@@ -308,6 +308,28 @@
       ]
     },
     {
+      "id": "brotli", "rust_variant": "Brotli", "label": "Brotli", "container": "single-file", "filters": ["brotli"], "worker_id": null,
+      "check_kind": "structure_and_readability",
+      "creation_levels": [],
+      "read_methods": ["brotli"], "write_methods": [], "rewrite": false,
+      "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [], "shell_mime_types": ["application/x-brotli"],
+      "extensions": [
+        {"suffix": ".br", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": null}
+      ]
+    },
+    {
+      "id": "tar-brotli", "rust_variant": "TarBrotli", "label": "TAR.BR", "container": "tar", "filters": ["brotli"], "worker_id": null,
+      "check_kind": "structure_and_readability",
+      "creation_levels": [],
+      "read_methods": ["brotli"], "write_methods": [], "rewrite": false,
+      "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [], "shell_mime_types": [],
+      "extensions": [
+        {"suffix": ".tar.br", "drop": true, "shell": true, "windows_icon": null, "macos_icon": null}
+      ]
+    },
+    {
       "id": "aes-crypt", "rust_variant": "AesCrypt", "label": "AES Crypt", "container": "encrypted-single-file", "filters": [], "worker_id": null,
       "check_kind": "format_declared_checks",
       "creation_levels": [],

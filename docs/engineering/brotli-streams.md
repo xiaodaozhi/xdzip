@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/brotli-streams.md)
 
-`xdzip-compression::BrotliReader` independently decodes one ordinary RFC 7932 Brotli stream. It takes a caller-owned `Read` capability and an admitted packed span; it has no filename, filesystem, network, process or output-publication authority. Product entry points and TAR compositions are separately declared by the [format registry](format-registry.md); the primitive alone does not declare a browser, writer or association capability.
+`xdzip-compression::BrotliReader` independently decodes one ordinary RFC 7932 Brotli stream. It takes a caller-owned `Read` capability and an admitted packed span; it has no filename, filesystem, network, process or output-publication authority. The product registers read-only Brotli (`.br`) and TAR.BR (`.tar.br`) through the [format registry](format-registry.md). They support browsing, preview, checking and selected extraction, using the shared host source, task, quota, staging and publication rules. There is no writer, modification or volume capability.
 
 ## Wire profile
 
@@ -11,6 +11,14 @@ The reader accepts standard window declarations 10–24, compressed/uncompressed
 The source is [RFC 7932](https://www.rfc-editor.org/rfc/rfc7932.txt), SHA-256 `394abd1879e016f4eac89512c2acaf92f7b2d67feb8ab58b6b118c213be07146`. Verified [erratum 5948](https://www.rfc-editor.org/errata/eid5948) corrects an editorial typo in section 3.5. [RFC 9841](https://www.rfc-editor.org/rfc/rfc9841.html) adds shared dictionaries, large windows and a separate container; those extensions are outside this ordinary-stream profile. The reserved extended-window pattern reports unsupported. External dictionaries are never discovered or fetched.
 
 One exact stream must end with legal zero fill and consume its admitted byte span. Noncanonical length fields, reserved metadata bits, invalid/oversubscribed/incomplete trees, repeated symbols, map/type gaps, invalid distances/transforms and out-of-block output fail. The profile rejects concatenation, trailing bytes and truncated streams. Brotli has no content checksum, decoded-size declaration for the complete stream, encryption, member pathname or timestamp. Successful decoding establishes admitted structure, declared meta-block sizes and readability; a mutation that remains a valid stream cannot be detected as corruption.
+
+## Product discovery and presentation
+
+Brotli has no fixed magic. Strong source signatures, valid plain TAR metadata and ZIP/SFX discovery retain priority. In the remaining headerless path, a bounded Brotli prefix proposes an ordinary/TAR composition; complete metadata scanning must validate the entire stream before the format or any row is published. A failed ordinary guess may proceed to the existing LZMA Alone candidate. A TAR header recognized in decoded Brotli is authoritative: failed TAR parsing never becomes an ordinary-file or LZMA success. An unvalidated raw TAR marker in compressed bytes can be disambiguated only by complete valid Brotli admission; an invalid guess preserves the original TAR failure. Source, cancellation and resource errors are terminal.
+
+One 24 GiB actual-read ledger covers Brotli/LZMA candidate probes and repeated metadata reads, without refund between candidates. Other strong-format and text-envelope discovery retains its existing independent bounds. One-byte empty Brotli streams are admitted; empty physical files are invalid. Filename suffixes do not validate a candidate. After full validation, a same-filter `.br` or `.tar.br` hint resolves an otherwise ambiguous all-zero output of at least 1024 bytes; unrelated hints leave the empty-TAR default. Real TAR headers retain priority over an ordinary suffix.
+
+Ordinary Brotli presents one regular virtual file with a safe host-derived basename, known decoded size and the full physical packed size. TAR.BR keeps TAR physical entry identity and unknown child packed sizes. Both display the actual Brotli method and structural-check note, without implying a checksum. The generic archive artwork is reused; the existing `application/x-brotli` MIME declaration provides an ordinary shell candidate.
 
 ## Resource and control rules
 

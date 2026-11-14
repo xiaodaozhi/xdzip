@@ -4,6 +4,7 @@ import argparse
 import ast
 import hashlib
 import json
+import lzma
 from pathlib import Path
 import re
 import struct
@@ -281,6 +282,18 @@ def main():
             for byte in body:wire.put(byte,8)
         if not last:wire.put(1,1);wire.put(1,1)
         wire.align();cases.append((label+'.br',bytes(wire.data),body))
+    for name,payload in [
+        ('files.tar.br',lzma.decompress((ROOT/'tests/fixtures/streams/files.txz').read_bytes())),
+        ('bad-header.br',lzma.decompress((ROOT/'tests/fixtures/streams/bad-header.txz').read_bytes())),
+        ('empty.tar.br',bytes(1024)),('empty-tar.br',bytes(1024)),('zeros.br',bytes(4096)),
+    ]:
+        cases.append((name,brotli.compress(payload,quality=5,lgwin=16),payload))
+    payload=bytearray(512);payload[254:259]=b'ustar'
+    wire=Wire();wire.put(0,1);plain_header(wire,False,len(payload),True);wire.align()
+    for byte in payload:wire.put(byte,8)
+    wire.put(1,1);wire.put(1,1);wire.align()
+    assert wire.data[257:262]==b'ustar'
+    cases.append(('raw-tar-marker.br',bytes(wire.data),bytes(payload)))
     identities={};DEST.mkdir(parents=True,exist_ok=True)
     for name,data,payload in cases:
         if brotli.decompress(data)!=payload:raise ValueError('Independent reference mismatch: '+name)

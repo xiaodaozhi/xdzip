@@ -1998,10 +1998,13 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                 m_format == QStringLiteral("UU") || m_format == QStringLiteral("XXE");
             const bool unixCompress =
                 m_format == QStringLiteral("Z") || m_format == QStringLiteral("TAR.Z");
+            const bool brotli =
+                m_format == QStringLiteral("Brotli") || m_format == QStringLiteral("TAR.BR");
             const auto method = textEnvelope && row.method == 0     ? QStringLiteral("UU")
                                 : textEnvelope && row.method == 1   ? QStringLiteral("XXE")
                                 : textEnvelope && row.method == 2   ? QStringLiteral("Base64")
                                 : unixCompress && row.method == 257 ? QStringLiteral("LZW")
+                                : brotli && row.method == 258       ? QStringLiteral("Brotli")
                                 : zstd && row.method == 93          ? QStringLiteral("Zstandard")
                                 : lz4 && row.method == 256          ? QStringLiteral("LZ4")
                                 : nativeFormat                      ? m_format

@@ -44,7 +44,7 @@ Open an archive to browse its directories, search and sort entries, and select f
 - **Content preview:** Explicitly preview bounded plain text, common raster images, and static SVG in the properties card; macOS also supports HEIC/HEIF. Preview appears after the content is fully read and any checks provided by the format are complete, and it can be canceled. See [preview](docs/engineering/content-preview.md) for formats, sizes, and decoding budgets.
 - **Extract and open:** Choose a destination and name-conflict policy, view progress, and request cancellation. Double-clicking a regular file extracts a copy to a private temporary directory before opening it with the system. Changes to the copy are not written back to the archive; cached copies are cleaned up during a later open operation after seven days.
 - **Create and modify:** Create ZIP, TAR, TAR.GZ, GZIP, XZ, TAR.XZ, LZ4, TAR.LZ4, Zstandard, TAR.ZST and 7z archives. Add, replace, or move entries in eligible regular single-file archives. You can also drag files out of the list or drag files in and confirm adding them. See the table below for formats and limits.
-- **Check:** Test an entire archive in the background without writing files. For TAR, LZMA, TAR.LZMA, ISO, and UDF, only structure and readability are checked; per-file content verification is not guaranteed. See [archive integrity checks](docs/engineering/archive-checking.md).
+- **Check:** Test an entire archive in the background without writing files. For TAR, LZMA, TAR.LZMA, Z, TAR.Z, UU/UUE, XXE, Brotli, TAR.BR, ISO, and UDF, only structure and readability are checked; per-file content verification is not guaranteed. See [archive integrity checks](docs/engineering/archive-checking.md).
 - **Multiple archives:** Open archives in new tabs by default or configure them to open in new windows. A login session shares the application process and tray; background tasks remain accessible from the task entry point after browser pages close.
 - **File-manager actions:** Create or extract archives directly from the Windows classic context menu, Ubuntu Files submenu, or macOS Finder Sync dynamic submenu. Finder services remain available as a fallback on macOS. Actions use separate windows and do not open the main window or destination directory by default. Per-item ZIP creation, smart extraction directories, and batch cancellation are supported. See [file-manager actions](docs/engineering/shell-actions.md) for entry points, system enablement, and installation scope.
 
@@ -68,6 +68,7 @@ Open an archive to browse its directories, search and sort entries, and select f
 | DEB | Common ar members, control/data TAR views, admitted GZIP/XZ/Zstandard/BZip2/LZMA profiles | Not supported | Not supported |
 | ASAR | Stored files/directories, shared payload ranges and declared file/block SHA-256 | Not supported | Not supported |
 | Z, TAR.Z (including `.taz`) | Unix compress LZW, 9–16-bit dictionaries and admitted CLEAR/alignment profiles | Not supported | Not supported |
+| Brotli, TAR.BR | Ordinary RFC 7932 streams, 10–24-bit windows and all static dictionary transforms | Not supported | Not supported |
 | AES Crypt (`.aes`) | Versions 0–3, opening password, full ciphertext HMAC and version-specific length rules | Not supported | Not supported |
 | UU/UUE, XXE | Traditional counted lines and admitted begin-base64 envelopes, including multiple members | Not supported | Not supported |
 | RAR | Legacy, RAR5, and RAR 7 format extensions, including passwords, solid and split archives | Not supported | Not supported |
@@ -87,6 +88,8 @@ Open an archive to browse its directories, search and sort entries, and select f
 - Sparse TAR and third-party extensions are not currently supported. Ordinary GZIP and ZIP-derived XPI/APK/IPA/CBZ candidates follow the [single-file stream contract](docs/engineering/single-file-streams.md). Legacy filename encodings are detected where possible, but short names and mixed encodings cannot be identified uniquely in every case; see [filename encoding](docs/engineering/filename-encoding.md).
 
 - AES Crypt requires an opening password before metadata is published. All ciphertext MACs must pass; versions 0–2 leave the final length modulo unauthenticated, and extensions grant no authority. See the [AES Crypt contract](docs/engineering/aescrypt-envelopes.md).
+
+- Brotli and TAR.BR are read-only, require complete content validation during weak discovery and have no checksum. Shared dictionaries and large-window extensions are outside the admitted [Brotli profile](docs/engineering/brotli-streams.md).
 
 ## Command line
 

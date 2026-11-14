@@ -10,6 +10,8 @@ Cases cover qualities 0–11 in generic/text/font modes, window declarations 10�
 
 `dictionary-all.br` constructs all 121 transforms for the first and last dictionary words of every length 4–24, including zero-length transforms and non-ASCII byte fermentation, and validates the exact complete output independently. Twelve distance cases cover postfix values 0–3 and direct fields 0/1/15. Raw and metadata cases exercise byte alignment, ignored metadata and a final metadata-only block. Corrupt/truncated input and precise memory/input/output/work/cancellation boundaries are constructed in Rust tests. Unknown shared dictionaries, RFC 9841 large-window profiles and concatenation are separate from these ordinary RFC 7932 cases.
 
+Product handoff additionally covers owned TAR payloads, a damaged TAR header that must not become ordinary Brotli, empty-TAR/ordinary zero-only ambiguity, and a raw compressed stream whose bytes contain a TAR marker at physical offset 257 while its actual decoded payload has no TAR header.
+
 | Input | Packed bytes | Decoded bytes | SHA-256 |
 | --- | ---: | ---: | --- |
 | `q0-generic.br` | 88 | 144 | `fabb8647d089e8f25df61b802d3380a627d32b07734c1bf982a5b36184efdde4` |
@@ -90,3 +92,9 @@ Cases cover qualities 0–11 in generic/text/font modes, window declarations 10�
 | `metadata.br` | 171 | 144 | `3d7418829c583827870ba27b835bc454f2840766a55e2648a1a25768807ef2ea` |
 | `empty-meta.br` | 5 | 0 | `21e7203727291bedea9f05750e67fbc50bb4d38c30db65c6c1e905022577af74` |
 | `raw.br` | 5 | 1 | `71ecce5657d97080bddd4427c49111bd604f3bcd4a13dbe61de23bc325dbb3db` |
+| `files.tar.br` | 85 | 10240 | `b04d135345a6daf94928abf6d6af7d2a84da525235a04816b37476fdbafef870` |
+| `bad-header.br` | 88 | 10240 | `f0f5919194eea28c4abe49f15c3e5dd393dde4c64e805474863d3d8e0e3a4928` |
+| `empty.tar.br` | 10 | 1024 | `e01985b5b1b4cf8a077a82cf19c10365b692ea93e64718b7eb86d3abdc72049f` |
+| `empty-tar.br` | 10 | 1024 | `e01985b5b1b4cf8a077a82cf19c10365b692ea93e64718b7eb86d3abdc72049f` |
+| `zeros.br` | 12 | 4096 | `b6644147adc01dce08648c6b6207112c728a44fcdaf0d263f603c626fa6a2dd1` |
+| `raw-tar-marker.br` | 516 | 512 | `b6ba12bc7e844624b427494f505f388fd11f93820bba2bbd4c659a32ac9592e3` |
