@@ -266,6 +266,27 @@
       ]
     },
     {
+      "id": "uu", "rust_variant": "Uu", "label": "UU", "container": "text-envelope", "filters": [], "worker_id": null,
+      "check_kind": "structure_and_readability", "creation_levels": [],
+      "read_methods": ["uu", "xx", "base64"], "write_methods": [], "rewrite": false,
+      "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [], "shell_mime_types": ["text/x-uuencode"],
+      "extensions": [
+        {"suffix": ".uu", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"},
+        {"suffix": ".uue", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+      ]
+    },
+    {
+      "id": "xxe", "rust_variant": "Xxe", "label": "XXE", "container": "text-envelope", "filters": [], "worker_id": null,
+      "check_kind": "structure_and_readability", "creation_levels": [],
+      "read_methods": ["xx"], "write_methods": [], "rewrite": false,
+      "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [], "shell_mime_types": [],
+      "extensions": [
+        {"suffix": ".xxe", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+      ]
+    },
+    {
       "id": "asar", "rust_variant": "Asar", "label": "ASAR", "container": "asar", "filters": [], "worker_id": null,
       "check_kind": "format_declared_checks", "creation_levels": [],
       "read_methods": ["store", "sha256"], "write_methods": [], "rewrite": false,

@@ -22,6 +22,8 @@ mod source_cab;
 mod stream_tests;
 mod task_interaction;
 pub mod updating;
+#[cfg(test)]
+mod uu_tests;
 use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};

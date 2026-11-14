@@ -16,6 +16,8 @@ The domain layer, Qt bridge, and public codec trait retain their ownership. Back
 
 The read-only ASAR reader follows the [ASAR contract](asar-containers.md), with ordered bounded JSON/Pickle metadata, shared stored ranges and optional SHA-256 checks. General JSON and hash primitives do not grant external-file access or application execution.
 
+The read-only UU/UUE/XXE reader follows the [text envelope contract](text-envelopes.md). Its counted alphabets, Base64, member identity and terminal validation are independent Rust code; reference stream encoders stay outside the runtime dependency closure.
+
 ## Sources and independent implementation
 
 First define fields, state transitions, numeric ranges, error behavior, and test vectors from official technical documentation, then write code. Reference implementations supplement behavioral understanding only; no line-by-line language translation, renamed copying, transplanted structures, or copied comments. Record sections for specification identifiers/constants; prefer generating tables from explicit mathematical rules. Test-reference sources and licenses are managed separately from product dependencies.

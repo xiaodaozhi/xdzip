@@ -1865,6 +1865,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-uu"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-domain",
+]
+
+[[package]]
 name = "xdzip-codec-zip"
 version = "0.2.0"
 dependencies = [
@@ -2007,6 +2015,7 @@ dependencies = [
  "xdzip-codec-native",
  "xdzip-codec-stream",
  "xdzip-codec-tar",
+ "xdzip-codec-uu",
  "xdzip-codec-zip",
  "xdzip-domain",
  "xdzip-extract-plan",

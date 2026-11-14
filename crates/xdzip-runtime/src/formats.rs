@@ -13,6 +13,7 @@ use xdzip_codec_stream::{
     controlled::{ControlledStream, Filter},
 };
 use xdzip_codec_tar::TarCodec;
+use xdzip_codec_uu::UuCodec;
 use xdzip_codec_zip::ZipCodec;
 pub(crate) trait Codec: MetadataCodec + PayloadCodec + CreationCodec + RewriteCodec {}
 impl Codec for ZipCodec {}
@@ -21,11 +22,16 @@ impl Codec for NativeCodec {}
 impl Codec for StreamCodec {}
 impl Codec for DebCodec {}
 impl Codec for AsarCodec {}
+impl Codec for UuCodec {}
 pub(crate) fn codec(format: Format) -> &'static dyn Codec {
     match format {
         Format::Zip => &ZipCodec,
         Format::Deb => &DebCodec,
         Format::Asar => &AsarCodec,
+        Format::Uu => &UuCodec { format: Format::Uu },
+        Format::Xxe => &UuCodec {
+            format: Format::Xxe,
+        },
         Format::Tar => &TarCodec {
             filter: Filter::Identity,
         },
@@ -169,8 +175,12 @@ pub(crate) fn detect(
         Format::Deb
     } else if magic[..4] == *b"MSCF" {
         Format::Cab
+    } else if let Some(format) = detect_optical(source)? {
+        format
+    } else if !recognized_tar(source, control)? && xdzip_codec_uu::candidate(source, control)? {
+        UuCodec::detect(source, control)?
     } else {
-        detect_optical(source)?.unwrap_or(Format::Tar)
+        Format::Tar
     })
 }
 

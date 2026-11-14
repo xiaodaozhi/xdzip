@@ -152,6 +152,10 @@ pub enum Format {
     Deb,
     /// Electron ASAR tree with uncompressed stored ranges and optional SHA-256.
     Asar,
+    /// Traditional UU/UUE and begin-base64 envelopes, including mixed UU/XX members.
+    Uu,
+    /// XX-encoded text envelopes containing only the XX alphabet.
+    Xxe,
     /// Independent Rust 7z behind the isolated codec worker.
     SevenZip,
     /// Independent Rust RAR read-only backend in the isolated codec worker.
@@ -255,7 +259,9 @@ impl Entry {
             | Format::Zstd
             | Format::TarZstd
             | Format::Deb
-            | Format::Asar => !self.warning && !self.link,
+            | Format::Asar
+            | Format::Uu
+            | Format::Xxe => !self.warning && !self.link,
             Format::SevenZip | Format::Rar | Format::Cab | Format::Iso | Format::Udf => {
                 !self.warning && !self.link && (!self.encrypted || self.password_supported)
             }

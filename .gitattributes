@@ -12,6 +12,10 @@ scripts/qt-source-identity/*.base64 text eol=lf
 *.rar binary
 *.r[0-9][0-9] binary
 *.woff2 binary
+# Transport fixtures retain exact counted lines, zero spaces and CRLF bytes.
+tests/fixtures/uu/*.uu binary
+tests/fixtures/uu/*.uue binary
+tests/fixtures/uu/*.xxe binary
 # Keep the upstream license byte-for-byte, including its original whitespace.
 design/assets/fonts/OFL.txt -text -whitespace
 # Historical source fixtures are verified by SHA-256, including original LF bytes.

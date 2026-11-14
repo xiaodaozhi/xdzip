@@ -340,6 +340,27 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
             assert not target.exists() or (target.is_dir() and not list(target.iterdir()))
         record('asar_shared_ranges_declared_hashes_selection_and_readonly_boundary')
 
+        uu_payload=b'Owned UU/XXE payload.\n'*17+bytes(range(256))
+        for name in ['ordinary.uue','ordinary.xxe','spaces.uu','tails.uue','tails.xxe','empty.uue','empty.xxe','base64.uue']:
+            envelope=ROOT/'tests/fixtures/uu'/name
+            listed=invoke('list',envelope)['data']
+            assert listed['format']==('XXE' if name.endswith('xxe') else 'UU')
+            assert invoke('test',envelope)['data']['check_kind']=='structure_and_readability'
+            target=work/('uu-'+name)
+            invoke('extract',envelope,'-C',target)
+            expected=b'' if name.startswith('empty') else bytes(range(46)) if name.startswith('tails') else uu_payload
+            assert (target/('data.bin' if name=='base64.uue' else 'hello.bin')).read_bytes()==expected
+            before=hashlib.sha256(envelope.read_bytes()).hexdigest()
+            invoke('add',envelope,source,code=1)
+            assert hashlib.sha256(envelope.read_bytes()).hexdigest()==before
+        multi=ROOT/'tests/fixtures/uu/multi.uue'
+        entries=invoke('list',multi)['data']['entries']
+        assert len(entries)==3 and entries[0]['path']==entries[1]['path'] and entries[0]['id']!=entries[1]['id']
+        invoke('extract',multi,'--entry-id',entries[1]['id'],'-C',work/'uu-selected')
+        assert (work/'uu-selected/hello.bin').read_bytes()==bytes(range(46))
+        assert len(list((work/'uu-selected').iterdir()))==1
+        record('uu_xxe_base64_profiles_physical_selection_and_readonly_boundary')
+
 
 
         check_desktop_worker(binary,worker,work,env,source/'你好.txt')

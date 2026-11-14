@@ -9642,9 +9642,10 @@ QtObject {
         QTRY_VERIFY(formats->width() > 0);
         QTRY_VERIFY(formats->width() <= 608);
         for (const auto &format :
-             {"ZIP",      "TAR",  "TAR.GZ", "7z",  "GZIP",   "BZip2", "TAR.BZ2", "LZMA",
-              "TAR.LZMA", "Lzip", "TAR.LZ", "XZ",  "TAR.XZ", "LZ4",   "TAR.LZ4", "ZSTD",
-              "TAR.ZST",  "DEB",  "ASAR",   "RAR", "CAB",    "ISO",   "UDF"}) {
+             {"ZIP",     "TAR",      "TAR.GZ",  "7z",     "GZIP", "BZip2",  "TAR.BZ2",
+              "LZMA",    "TAR.LZMA", "Lzip",    "TAR.LZ", "XZ",   "TAR.XZ", "LZ4",
+              "TAR.LZ4", "ZSTD",     "TAR.ZST", "DEB",    "ASAR", "UU",     "XXE",
+              "RAR",     "CAB",      "ISO",     "UDF"}) {
             auto *badge =
                 findVisual(window->contentItem(), "welcomeFormat-" + QString::fromLatin1(format));
             QVERIFY(badge && badge->isVisible());
@@ -9674,7 +9675,7 @@ QtObject {
               QStringLiteral("ISO"), QStringLiteral("UDF"), QStringLiteral("XZ"),
               QStringLiteral("TAR.XZ"), QStringLiteral("LZ4"), QStringLiteral("TAR.LZ4"),
               QStringLiteral("ZSTD"), QStringLiteral("TAR.ZST"), QStringLiteral("DEB"),
-              QStringLiteral("ASAR")}) {
+              QStringLiteral("ASAR"), QStringLiteral("UU"), QStringLiteral("XXE")}) {
             task->setProperty("resultTask", QVariantMap{{"kind", "check"}, {"format", format}});
             QVERIFY(QMetaObject::invokeMethod(task, "present"));
             QTRY_VERIFY(task->isVisible());
@@ -9782,6 +9783,83 @@ QtObject {
         QFile actual(QDir(destination).filePath(leaf));
         QVERIFY(actual.open(QIODevice::ReadOnly));
         QCOMPARE(actual.readAll(), QByteArray("abracadabra abracadabra\n").repeated(6));
+    }
+    void textEnvelopesUseSharedBrowserAndTasks_data() {
+        QTest::addColumn<QString>("fixture");
+        QTest::addColumn<QString>("language");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (const auto &fixture : {"ordinary.uue", "ordinary.xxe", "base64.uue", "empty.uue",
+                                        "empty.xxe", "multi.uue"})
+                QTest::newRow(qPrintable(QString::fromLatin1(fixture) + "-" + language))
+                    << QString::fromLatin1(fixture) << language;
+    }
+    void textEnvelopesUseSharedBrowserAndTasks() {
+        QFETCH(QString, fixture);
+        QFETCH(QString, language);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir owned;
+        QVERIFY(owned.isValid());
+        const auto source = QDir(QStringLiteral(XDZIP_FIXTURES)).filePath("../uu/" + fixture);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        QVERIFY(controller->canOpenDroppedUrls({QUrl::fromLocalFile(source)}));
+        controller->openPath(source);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        const auto format = fixture.endsWith("xxe") ? QStringLiteral("XXE") : QStringLiteral("UU");
+        QCOMPARE(controller->formatLabel(), format);
+        QCOMPARE(controller->archiveTotal(), fixture == "multi.uue" ? 3 : 1);
+        QVERIFY(!controller->canUpdateArchive());
+        controller->startUpdate({source}, controller->sessionId(), controller->directoryId(), 0);
+        QCOMPARE(controller->addDropMessage(), qtTrId("edit.readOnlyFormat").arg(format));
+        QCOMPARE(controller->activeTaskCount(), 0);
+        QSignalSpy checked(controller, &BrowserController::archiveTestStarted);
+        controller->startArchiveTest();
+        QTRY_COMPARE(checked.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        const auto leaf =
+            fixture == "base64.uue" ? QStringLiteral("data.bin") : QStringLiteral("hello.bin");
+        controller->search(leaf);
+        QTRY_VERIFY(!controller->busy());
+        QTRY_COMPARE(controller->m_model.rowCount(), fixture == "multi.uue" ? 2 : 1);
+        const auto *row = controller->m_model.rowAt(fixture == "multi.uue" ? 1 : 0);
+        QVERIFY(row);
+        const auto method = fixture == "base64.uue" ? QStringLiteral("Base64")
+                            : fixture.endsWith("xxe") || fixture == "multi.uue"
+                                ? QStringLiteral("XXE")
+                                : QStringLiteral("UU");
+        QCOMPARE(row->method, method);
+        const auto entry = row->id;
+        const auto destination = owned.filePath("output");
+        QVERIFY(QDir().mkpath(destination));
+        controller->prepareExtraction(false, {entry});
+        QTRY_VERIFY(!controller->busy());
+        controller->checkTarget(destination);
+        QTRY_VERIFY(!controller->busy() && controller->targetMatches(destination));
+        QSignalSpy extracted(controller, &BrowserController::extractionStarted);
+        controller->startExtraction(destination, false, false, 0, false, false);
+        QTRY_COMPARE(extracted.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        QFile actual(QDir(destination).filePath(leaf));
+        QVERIFY(actual.open(QIODevice::ReadOnly));
+        QByteArray expected;
+        if (fixture == "multi.uue") {
+            for (int value = 0; value < 46; ++value)
+                expected.append(static_cast<char>(value));
+        } else if (!fixture.startsWith("empty")) {
+            expected = QByteArray("Owned UU/XXE payload.\n").repeated(17);
+            for (int value = 0; value < 256; ++value)
+                expected.append(static_cast<char>(value));
+        }
+        QCOMPARE(actual.readAll(), expected);
     }
     void asarArchivesUseSharedBrowserAndTasks_data() {
         QTest::addColumn<QString>("fixture");

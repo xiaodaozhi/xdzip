@@ -4,7 +4,7 @@
 #include <string_view>
 // clang-format off
 namespace xdzip_formats {
-inline constexpr std::array<std::string_view, 36> DropSuffixes = {{
+inline constexpr std::array<std::string_view, 39> DropSuffixes = {{
     ".zip",
     ".zipx",
     ".xpi",
@@ -35,6 +35,9 @@ inline constexpr std::array<std::string_view, 36> DropSuffixes = {{
     ".zst",
     ".tar.zst",
     ".tzst",
+    ".uu",
+    ".uue",
+    ".xxe",
     ".asar",
     ".deb",
     ".rar",
@@ -42,7 +45,7 @@ inline constexpr std::array<std::string_view, 36> DropSuffixes = {{
     ".iso",
     ".udf",
 }};
-inline constexpr std::array<std::string_view, 36> ShellSuffixes = {{
+inline constexpr std::array<std::string_view, 39> ShellSuffixes = {{
     ".zip",
     ".zipx",
     ".xpi",
@@ -73,6 +76,9 @@ inline constexpr std::array<std::string_view, 36> ShellSuffixes = {{
     ".zst",
     ".tar.zst",
     ".tzst",
+    ".uu",
+    ".uue",
+    ".xxe",
     ".asar",
     ".deb",
     ".rar",
@@ -80,7 +86,7 @@ inline constexpr std::array<std::string_view, 36> ShellSuffixes = {{
     ".iso",
     ".udf",
 }};
-inline constexpr std::array<std::string_view, 35> ShellMimeTypes = {{
+inline constexpr std::array<std::string_view, 36> ShellMimeTypes = {{
     "application/zip",
     "application/x-xpinstall",
     "application/vnd.android.package-archive",
@@ -107,6 +113,7 @@ inline constexpr std::array<std::string_view, 35> ShellMimeTypes = {{
     "application/x-lz4-compressed-tar",
     "application/zstd",
     "application/x-zstd-compressed-tar",
+    "text/x-uuencode",
     "application/x-asar",
     "application/vnd.debian.binary-package",
     "application/vnd.rar",
@@ -117,13 +124,15 @@ inline constexpr std::array<std::string_view, 35> ShellMimeTypes = {{
     "application/x-iso9660-image",
     "application/x-udf",
 }};
-inline constexpr std::array<std::string_view, 12> ReadOnlyLabels = {{
+inline constexpr std::array<std::string_view, 14> ReadOnlyLabels = {{
     "BZip2",
     "TAR.BZ2",
     "LZMA",
     "TAR.LZMA",
     "Lzip",
     "TAR.LZ",
+    "UU",
+    "XXE",
     "ASAR",
     "DEB",
     "RAR",
