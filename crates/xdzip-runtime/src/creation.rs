@@ -88,11 +88,8 @@ impl Options {
             && creation_format(&self.name)
                 .and_then(|format| format.descriptor().creation_method(self.method))
                 .is_some()
-            && ([1, 6, 9].contains(&self.level)
-                || (matches!(
-                    creation_format(&self.name),
-                    Some(Format::TarGzip | Format::Gzip)
-                ) && self.level == 0))
+            && creation_format(&self.name)
+                .is_some_and(|format| format.descriptor().creation_levels.contains(&self.level))
             && self.volume_bytes <= 24 * 1024 * 1024 * 1024
             && (self.volume_bytes == 0 || self.name.len() <= 250)
     }

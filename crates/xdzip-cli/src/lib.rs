@@ -196,11 +196,9 @@ fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -
                 .ok_or_else(|| Failure::usage("unsupported_format"))?;
             let seven = format == xdzip_codec_api::Format::SevenZip;
             let tar = format == xdzip_codec_api::Format::Tar;
-            let lzma2_only = format.descriptor().write_methods == ["lzma2"];
-            let gzip = matches!(
-                format,
-                xdzip_codec_api::Format::Gzip | xdzip_codec_api::Format::TarGzip
-            );
+            let declaration = format.descriptor();
+            let stored = declaration.creation_method(0).is_some();
+            let zero_level = declaration.creation_levels.contains(&0);
             if (matches.get_flag("solid") || matches.get_flag("encrypt-names")) && !seven {
                 return Err(Failure::usage("unsupported_options"));
             }
@@ -232,20 +230,22 @@ fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -
                 );
             }
             let level = matches.get_one::<String>("level").unwrap().as_str();
-            if lzma2_only && level == "store" {
+            if !stored && !zero_level && level == "store" {
                 return Err(Failure::usage("unsupported_options"));
             }
-            let method = if tar || level == "store" && !gzip {
+            let method = if tar || level == "store" && stored {
                 0
-            } else if seven || lzma2_only {
-                32
             } else {
-                8
+                declaration
+                    .write_methods
+                    .iter()
+                    .find_map(|name| declaration.creation_method_id(name).filter(|id| *id != 0))
+                    .ok_or_else(|| Failure::usage("unsupported_options"))?
             };
             let numeric_level = match level {
                 "fast" => 1,
                 "best" => 9,
-                "store" if gzip => 0,
+                "store" if zero_level => 0,
                 _ => 6,
             };
             let inputs = strings(matches, "inputs")

@@ -11,9 +11,9 @@ use xdzip_codec_stream::controlled::ControlledStream as Stream;
 pub use xdzip_codec_stream::controlled::Filter;
 use xdzip_domain::identity::EntryId;
 
-/// TAR container, optionally behind exactly one GZIP filter.
+/// TAR container, optionally behind one admitted sequential filter.
 pub struct TarCodec {
-    /// Outer filter; creation and rewrite accept only Identity and Gzip.
+    /// Outer filter; creation and rewrite remain independently admitted.
     pub filter: Filter,
 }
 const EXTENSION_LIMIT: u64 = 64 * 1024;
@@ -37,6 +37,7 @@ impl TarCodec {
             Filter::Lzma => Format::TarLzma,
             Filter::Lzip => Format::TarLzip,
             Filter::Xz => Format::TarXz,
+            Filter::Lz4 => Format::TarLz4,
         }
     }
 
@@ -320,6 +321,7 @@ fn scan(
                 Format::TarBzip2 => 12,
                 Format::TarLzma | Format::TarLzip => 14,
                 Format::TarXz => 95,
+                Format::TarLz4 => 256,
                 _ => 8,
             },
             modified_dos: modified,

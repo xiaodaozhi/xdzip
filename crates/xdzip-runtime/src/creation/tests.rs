@@ -48,6 +48,8 @@ fn single_file_creation_browsing_checking_and_extraction_preserve_bytes() {
         (true, Format::Gzip, "gz", 8),
         (false, Format::Xz, "xz", 32),
         (true, Format::Xz, "xz", 32),
+        (false, Format::Lz4, "lz4", 256),
+        (true, Format::Lz4, "lz4", 256),
     ] {
         let fixture = Fixture::new();
         let input = fixture.0.join(if empty {
@@ -66,6 +68,12 @@ fn single_file_creation_browsing_checking_and_extraction_preserve_bytes() {
         let file = std::fs::File::open(&created.target).unwrap();
         if format == Format::Gzip {
             flate2::read::MultiGzDecoder::new(file)
+                .read_to_end(&mut independent)
+                .unwrap();
+        } else if format == Format::Lz4 {
+            let packed = file.metadata().unwrap().len();
+            xdzip_codec_stream::lz4::Lz4Reader::new(file, packed, 128 << 20)
+                .unwrap()
                 .read_to_end(&mut independent)
                 .unwrap();
         } else {
@@ -1107,7 +1115,12 @@ fn directory_link_swap_after_scan_is_rejected() {
 
 #[test]
 fn tar_and_gzip_use_the_same_safe_creation_extraction_rename_and_cancel_barriers() {
-    for (extension, method, format) in [(".tar", 0, Format::Tar), (".tar.gz", 8, Format::TarGzip)] {
+    for (extension, method, format) in [
+        (".tar", 0, Format::Tar),
+        (".tar.gz", 8, Format::TarGzip),
+        (".tar.xz", 32, Format::TarXz),
+        (".tar.lz4", 256, Format::TarLz4),
+    ] {
         let f = Fixture::new();
         let mut job = f.job(method);
         job.options.name = format!("archive{extension}");

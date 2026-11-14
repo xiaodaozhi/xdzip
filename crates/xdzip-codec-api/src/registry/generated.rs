@@ -3,6 +3,15 @@ use super::FormatDescriptor;
 use crate::Format;
 
 #[rustfmt::skip]
+pub(super) static CREATION_METHODS: &[(&str, u16)] = &[
+    ("store", 0),
+    ("copy", 0),
+    ("deflate", 8),
+    ("lzma2", 32),
+    ("lz4", 256),
+];
+
+#[rustfmt::skip]
 pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
     FormatDescriptor {
         format: Format::Zip,
@@ -39,6 +48,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
             ".zip",
         ],
         rewrite: true,
+        creation_levels: &[1, 6, 9],
         check_kind: "supported_content",
         extensions: &[
             ".zip",
@@ -70,6 +80,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
             ".tar",
         ],
         rewrite: true,
+        creation_levels: &[1, 6, 9],
         check_kind: "structure_and_readability",
         extensions: &[
             ".tar",
@@ -99,6 +110,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
             ".tgz",
         ],
         rewrite: true,
+        creation_levels: &[0, 1, 6, 9],
         check_kind: "supported_content",
         extensions: &[
             ".tar.gz",
@@ -141,6 +153,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
             ".7z",
         ],
         rewrite: true,
+        creation_levels: &[1, 6, 9],
         check_kind: "supported_content",
         extensions: &[
             ".7z",
@@ -169,6 +182,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
             ".gz",
         ],
         rewrite: false,
+        creation_levels: &[0, 1, 6, 9],
         check_kind: "supported_content",
         extensions: &[
             ".gz",
@@ -193,6 +207,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         write_volumes: &[],
         creation_suffixes: &[],
         rewrite: false,
+        creation_levels: &[],
         check_kind: "supported_content",
         extensions: &[
             ".bz2",
@@ -218,6 +233,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         write_volumes: &[],
         creation_suffixes: &[],
         rewrite: false,
+        creation_levels: &[],
         check_kind: "supported_content",
         extensions: &[
             ".tar.bz2",
@@ -245,6 +261,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         write_volumes: &[],
         creation_suffixes: &[],
         rewrite: false,
+        creation_levels: &[],
         check_kind: "structure_and_readability",
         extensions: &[
             ".lzma",
@@ -269,6 +286,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         write_volumes: &[],
         creation_suffixes: &[],
         rewrite: false,
+        creation_levels: &[],
         check_kind: "structure_and_readability",
         extensions: &[
             ".tar.lzma",
@@ -294,6 +312,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         write_volumes: &[],
         creation_suffixes: &[],
         rewrite: false,
+        creation_levels: &[],
         check_kind: "supported_content",
         extensions: &[
             ".lz",
@@ -318,6 +337,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         write_volumes: &[],
         creation_suffixes: &[],
         rewrite: false,
+        creation_levels: &[],
         check_kind: "supported_content",
         extensions: &[
             ".tar.lz",
@@ -348,6 +368,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
             ".xz",
         ],
         rewrite: false,
+        creation_levels: &[1, 6, 9],
         check_kind: "format_declared_checks",
         extensions: &[
             ".xz",
@@ -379,10 +400,69 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
             ".txz",
         ],
         rewrite: false,
+        creation_levels: &[1, 6, 9],
         check_kind: "format_declared_checks",
         extensions: &[
             ".tar.xz",
             ".txz",
+        ],
+        worker_id: None,
+    },
+    FormatDescriptor {
+        format: Format::Lz4,
+        id: "lz4",
+        label: "LZ4",
+        container: "single-file",
+        filters: &[
+            "lz4",
+        ],
+        read_methods: &[
+            "lz4",
+        ],
+        write_methods: &[
+            "lz4",
+        ],
+        read_encryption: &[],
+        write_encryption: &[],
+        read_volumes: &[],
+        write_volumes: &[],
+        creation_suffixes: &[
+            ".lz4",
+        ],
+        rewrite: false,
+        creation_levels: &[1, 6, 9],
+        check_kind: "format_declared_checks",
+        extensions: &[
+            ".lz4",
+        ],
+        worker_id: None,
+    },
+    FormatDescriptor {
+        format: Format::TarLz4,
+        id: "tar-lz4",
+        label: "TAR.LZ4",
+        container: "tar",
+        filters: &[
+            "lz4",
+        ],
+        read_methods: &[
+            "lz4",
+        ],
+        write_methods: &[
+            "lz4",
+        ],
+        read_encryption: &[],
+        write_encryption: &[],
+        read_volumes: &[],
+        write_volumes: &[],
+        creation_suffixes: &[
+            ".tar.lz4",
+        ],
+        rewrite: false,
+        creation_levels: &[1, 6, 9],
+        check_kind: "format_declared_checks",
+        extensions: &[
+            ".tar.lz4",
         ],
         worker_id: None,
     },
@@ -412,6 +492,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         write_volumes: &[],
         creation_suffixes: &[],
         rewrite: false,
+        creation_levels: &[],
         check_kind: "supported_content",
         extensions: &[
             ".rar",
@@ -439,6 +520,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         write_volumes: &[],
         creation_suffixes: &[],
         rewrite: false,
+        creation_levels: &[],
         check_kind: "supported_content",
         extensions: &[
             ".cab",
@@ -463,6 +545,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         write_volumes: &[],
         creation_suffixes: &[],
         rewrite: false,
+        creation_levels: &[],
         check_kind: "structure_and_readability",
         extensions: &[
             ".iso",
@@ -488,6 +571,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         write_volumes: &[],
         creation_suffixes: &[],
         rewrite: false,
+        creation_levels: &[],
         check_kind: "structure_and_readability",
         extensions: &[
             ".udf",
@@ -511,9 +595,11 @@ pub(super) fn descriptor(format: Format) -> &'static FormatDescriptor {
         Format::TarLzip => &DESCRIPTORS[10],
         Format::Xz => &DESCRIPTORS[11],
         Format::TarXz => &DESCRIPTORS[12],
-        Format::Rar => &DESCRIPTORS[13],
-        Format::Cab => &DESCRIPTORS[14],
-        Format::Iso => &DESCRIPTORS[15],
-        Format::Udf => &DESCRIPTORS[16],
+        Format::Lz4 => &DESCRIPTORS[13],
+        Format::TarLz4 => &DESCRIPTORS[14],
+        Format::Rar => &DESCRIPTORS[15],
+        Format::Cab => &DESCRIPTORS[16],
+        Format::Iso => &DESCRIPTORS[17],
+        Format::Udf => &DESCRIPTORS[18],
     }
 }

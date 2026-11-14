@@ -1989,7 +1989,10 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                       xdzip_formats::UnknownPackedLabels.end(),
                       std::string_view(formatLabel)) != xdzip_formats::UnknownPackedLabels.end();
         for (const auto &row : event.rows) {
-            const auto method = nativeFormat                        ? m_format
+            const bool lz4 =
+                m_format == QStringLiteral("LZ4") || m_format == QStringLiteral("TAR.LZ4");
+            const auto method = lz4 && row.method == 256            ? QStringLiteral("LZ4")
+                                : nativeFormat                      ? m_format
                                 : m_format == QStringLiteral("TAR") ? qtTrId("ui.695e3ecda20b")
                                 : row.method == 0                   ? QStringLiteral("Store")
                                 : row.method == 8                   ? QStringLiteral("Deflate")

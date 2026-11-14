@@ -77,7 +77,7 @@ Header、Additional 与 payload 共用图执行器。元数据读取和输出分
 
 AES KDF 以实际累计轮数和 hash 输入字节准入，失败或重试不返还额度，不以输出配额换取无界哈希。任务局部最多缓存 16 个已派生密钥，以密码、迭代参数和盐匹配，IV 不属于派生身份；密码变化清除旧缓存，不在不同会话间复用。缓存命中不伪造额外 KDF 工作，固定缓存及密码副本按 16 KiB 计入预检，节点验证密钥与自身 KDF 参数匹配后才使用。密码、密钥、owned hash 状态及候选内容缓冲使用归零生命周期，不宣称能擦除 Qt 或系统的所有历史副本。
 
-LZMA1/2、BZip2、PPMd7 与共享 Deflate/Deflate64 位于 `xdzip-compression`，其生产依赖仍为空，不引入相应压缩算法库。Deflate64 只切换同一 Deflate 实现中的格式差异，ZIP、GZIP 和 MSZIP 保持普通模式。PPMd7 显式区分已知长度和 END profile，格式模型重启不能替代宿主内存准入。LZMA2 writer 支持有界搜索级别 1/6/9，在单 chunk 无收益时用格式允许的 raw 回退，不将只有 raw 分块的封装标记为已完成压缩器。共享 Reader 显式限制 packed 范围，只有已验证完整终态才返回成功 EOF，错误后不能继续。`Read` 的输出分片上限不代表单个 block 或模型操作具有相同 CPU 上界。
+LZ4/XXH32、LZMA1/2、BZip2、PPMd7 与共享 Deflate/Deflate64 位于 `xdzip-compression`，其生产依赖仍为空，不引入相应压缩算法库。Deflate64 只切换同一 Deflate 实现中的格式差异，ZIP、GZIP 和 MSZIP 保持普通模式。PPMd7 显式区分已知长度和 END profile，格式模型重启不能替代宿主内存准入。LZMA2 writer 支持有界搜索级别 1/6/9，在单 chunk 无收益时用格式允许的 raw 回退，不将只有 raw 分块的封装标记为已完成压缩器。共享 Reader 显式限制 packed 范围，只有已验证完整终态才返回成功 EOF，错误后不能继续。`Read` 的输出分片上限不代表单个 block 或模型操作具有相同 CPU 上界。
 
 AES 使用已准入的通用 AES、SHA-256、随机数及 zeroize 原语。独立实现格式属性、UTF-16LE 密码 KDF、CBC 组合及块裁剪，不引入 7z 格式库。CBC 本身没有认证能力，容器仍须完成实际提供的 CRC 及尺寸校验；不能把任意完整性失败冒充确定的错误密码。创建 profile、秘密清理和最终发布仍需宿主全链路验收。
 

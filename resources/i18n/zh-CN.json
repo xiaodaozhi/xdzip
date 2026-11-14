@@ -685,7 +685,7 @@
     "update.archive": "目标压缩包",
     "create.sevenZipVolumes": "输出 .7z.001 等分卷，现有分卷只能整组改名。",
     "create.singleFileStream": "%1 只压缩一个普通文件，不支持文件夹、分卷和密码。",
-    "create.lzma2Method": "使用 LZMA2 压缩，不支持分卷和密码。",
+    "create.compressionMethod": "使用 %1 压缩，不支持分卷和密码。",
     "integrity.declaredCheckNote": "验证各流声明的校验和，未声明内容校验和的流只检查结构和可读性。",
     "create.sevenZipMethod": "级别 0 不压缩，其余级别使用 LZMA2。",
     "create.sevenZipEncryption": "AES-256 加密文件内容，可同时加密文件名。",

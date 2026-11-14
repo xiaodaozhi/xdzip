@@ -137,6 +137,7 @@ fn filtered_payload_rechecks_changed_checksum_or_size_after_metadata() {
     for (name, format, at) in [
         ("phrase.bz2", Format::Bzip2, 10),
         ("known-size.lzma", Format::Lzma, 5),
+        ("phrase.lz4", Format::Lz4, 6),
         ("phrase.lz", Format::Lzip, sample("phrase.lz").len() - 20),
     ] {
         let codec = StreamCodec { format };
@@ -166,6 +167,7 @@ fn all_filtered_profiles_enforce_actual_output_limit_and_midstream_cancellation(
         ("phrase.lzma", Filter::Lzma),
         ("phrase.lz", Filter::Lzip),
         ("phrase-crc64.xz", Filter::Xz),
+        ("phrase.lz4", Filter::Lz4),
     ] {
         for (limit, good) in [(144, true), (143, false)] {
             let cancel = Cancellation::default();
@@ -187,5 +189,48 @@ fn all_filtered_profiles_enforce_actual_output_limit_and_midstream_cancellation(
         cancel.cancel();
         assert!(stream.read(&mut [0]).is_err());
         assert_eq!(stream.failure(), Some(ScanError::Cancelled));
+    }
+}
+
+#[test]
+fn lz4_preserves_terminal_host_errors_and_never_retries_failed_sources() {
+    use std::cell::Cell;
+    use std::io::{self, Read, Seek, SeekFrom};
+    struct Fault<'a> {
+        source: Cursor<Vec<u8>>,
+        calls: &'a Cell<usize>,
+        kind: io::ErrorKind,
+    }
+    impl Read for Fault<'_> {
+        fn read(&mut self, _: &mut [u8]) -> io::Result<usize> {
+            self.calls.set(self.calls.get() + 1);
+            Err(self.kind.into())
+        }
+    }
+    impl Seek for Fault<'_> {
+        fn seek(&mut self, at: SeekFrom) -> io::Result<u64> {
+            self.source.seek(at)
+        }
+    }
+    impl xdzip_codec_api::ReadSource for Fault<'_> {}
+    for kind in [
+        io::ErrorKind::Interrupted,
+        io::ErrorKind::Unsupported,
+        io::ErrorKind::OutOfMemory,
+        io::ErrorKind::Other,
+    ] {
+        let calls = Cell::new(0);
+        let mut source = Fault {
+            source: Cursor::new(sample("phrase.lz4")),
+            calls: &calls,
+            kind,
+        };
+        let cancel = Cancellation::default();
+        let mut stream =
+            ControlledStream::new(&mut source, &cancel, Filter::Lz4, 1 << 20, 1 << 20).unwrap();
+        assert!(stream.read(&mut [0]).is_err());
+        assert_eq!(stream.failure(), Some(ScanError::Io));
+        assert!(stream.read(&mut [0]).is_err());
+        assert_eq!(calls.get(), 1);
     }
 }

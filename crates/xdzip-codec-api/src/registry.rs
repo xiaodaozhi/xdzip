@@ -18,6 +18,8 @@ pub struct FormatDescriptor {
     pub read_methods: &'static [&'static str],
     /// Creation profiles requiring independent source and output admission.
     pub write_methods: &'static [&'static str],
+    /// Creation levels admitted by this format, independent of host presentation.
+    pub creation_levels: &'static [u8],
     /// Read encryption families, subject to their container contracts.
     pub read_encryption: &'static [&'static str],
     /// Creation encryption profiles.
@@ -41,14 +43,17 @@ pub struct FormatDescriptor {
 impl FormatDescriptor {
     /// Resolve existing host creation method IDs only within this format's profile.
     pub fn creation_method(&self, id: u16) -> Option<&'static str> {
-        let method = match id {
-            0 if self.write_methods.contains(&"copy") => "copy",
-            0 => "store",
-            8 => "deflate",
-            32 => "lzma2",
-            _ => return None,
-        };
-        self.write_methods.contains(&method).then_some(method)
+        self.write_methods
+            .iter()
+            .copied()
+            .find(|method| generated::CREATION_METHODS.contains(&(*method, id)))
+    }
+    /// Resolve a method name only when this format admits creation with it.
+    pub fn creation_method_id(&self, method: &str) -> Option<u16> {
+        self.write_methods.contains(&method).then_some(())?;
+        generated::CREATION_METHODS
+            .iter()
+            .find_map(|&(name, id)| (name == method).then_some(id))
     }
 }
 
@@ -96,6 +101,8 @@ mod tests {
             ("archive.XZ", Some(Format::Xz)),
             ("archive.TAR.XZ", Some(Format::TarXz)),
             ("archive.TXZ", Some(Format::TarXz)),
+            ("archive.LZ4", Some(Format::Lz4)),
+            ("archive.TAR.LZ4", Some(Format::TarLz4)),
             ("archive.rar", None),
             ("archive.cab", None),
             ("archive.iso", None),
@@ -130,6 +137,16 @@ mod tests {
             assert_eq!(format.descriptor().worker_id, worker);
         }
         assert_eq!(Format::TarGzip.descriptor().filters, ["gzip"]);
+        for format in [Format::Lz4, Format::TarLz4] {
+            let declaration = format.descriptor();
+            assert_eq!(declaration.creation_method(256), Some("lz4"));
+            assert_eq!(declaration.creation_method_id("lz4"), Some(256));
+            assert_eq!(declaration.creation_method(8), None);
+            assert_eq!(declaration.creation_levels, [1, 6, 9]);
+            assert!(!declaration.rewrite);
+            assert_eq!(declaration.worker_id, None);
+        }
+        assert_eq!(Format::Zip.descriptor().creation_method(256), None);
         for format in [Format::Xz, Format::TarXz] {
             assert_eq!(format.descriptor().creation_method(32), Some("lzma2"));
             assert_eq!(format.descriptor().creation_method(0), None);

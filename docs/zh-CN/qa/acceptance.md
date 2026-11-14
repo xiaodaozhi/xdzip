@@ -481,3 +481,5 @@ English: The standalone SDK trial requires independent wire/content interoperabi
 English: Expanded previews require actual format/first-frame/first-page decoding, alpha/orientation and phone-size samples, resource-free static SVG, macOS system HEIF and refusal elsewhere. Validate bounded worker replies, deadlines, cancellation, abnormal exit and real archive-to-QML delivery. Missing plugins must fail before heavy builds; deployed Windows/Linux workers must prove their own plugin closure. Reuse unaffected layout evidence while observing newly rendered images.
 
 `FORMAT-XZ-ZIPX`：XZ 验证声明的各类校验、规范尺寸、支持的过滤链、实际块与索引一致、流尾、填充、串联、取消、有界输入输出和内存、失败后不可继续。真实 LZMA2 写入器须在每个可选级别经独立读取验证，包括多块。XZ/TXZ 及支持的 ZIPX 方法须通过 runtime、CLI、Qt 的浏览、检查、提取、精确记录身份和输出保护检查。自动核对分方法拒绝、LZMA EOS 标志、只读修改边界、可选校验说明及双语多字号布局。
+
+`FORMAT-LZ4`：独立工具生成且内容已知的样本须覆盖标准帧独立块、关联块、重叠、声明的各类校验、可选尺寸、串联与 skippable 帧及大块。每个真实压缩级别、空输入和原始块回退须经独立解码。严格拒绝垃圾尾部、截断、保留位、坏偏移和尺寸，核对帧/块数量的精确上限与超限、内存和字节预算、取消、终止源错误及失败后不可继续。普通 LZ4 与 TAR.LZ4 须通过宿主和实际 CLI/Qt 浏览、检查、提取、创建，以及源变化拒绝和零发布失败回归。自动核对登记的方法与级别范围、旧式帧/字典/重写拒绝、关联入口、可选校验说明及双语多字号布局。

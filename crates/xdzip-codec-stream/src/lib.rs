@@ -11,7 +11,7 @@ mod writer;
 pub mod xz;
 use controlled::{ControlledStream, Filter};
 use std::io::Read;
-use writer::Writer;
+pub use writer::FrameWriter;
 use xdzip_codec_api::encode::{
     CreationCodec, EncodeEntry, EncodeError, EncodeInput, EncodeOutput, EncodeProgress,
     EncodeSettings, RewriteCodec, RewriteInput, RewriteOutput,
@@ -66,6 +66,7 @@ impl StreamCodec {
             Format::Lzma => Ok(Filter::Lzma),
             Format::Lzip => Ok(Filter::Lzip),
             Format::Xz => Ok(Filter::Xz),
+            Format::Lz4 => Ok(Filter::Lz4),
             _ => Err(ScanError::Unsupported),
         }
     }
@@ -74,6 +75,7 @@ impl StreamCodec {
             Format::Gzip => 8,
             Format::Bzip2 => 12,
             Format::Xz => 95,
+            Format::Lz4 => 256,
             _ => 14,
         }
     }
@@ -246,14 +248,17 @@ impl CreationCodec for StreamCodec {
         cancel: &Cancellation,
         progress: &mut dyn FnMut(EncodeProgress<'_>),
     ) -> Result<(), EncodeError> {
-        if !matches!(self.format, Format::Gzip | Format::Xz)
+        if !matches!(self.format, Format::Gzip | Format::Xz | Format::Lz4)
             || !self
                 .format
                 .descriptor()
                 .write_methods
                 .contains(&settings.method)
-            || (!matches!(settings.level, 1 | 6 | 9)
-                && !(self.format == Format::Gzip && settings.level == 0))
+            || !self
+                .format
+                .descriptor()
+                .creation_levels
+                .contains(&settings.level)
             || settings.password.is_some()
             || settings.solid
             || settings.encrypt_headers
@@ -273,8 +278,12 @@ impl CreationCodec for StreamCodec {
         };
         cancel.check().map_err(|_| EncodeError::Cancelled)?;
         let mut source = input.open(0)?;
-        let mut writer =
-            Writer::new(output, self.format, settings.level).map_err(|_| EncodeError::Output)?;
+        let mut writer = FrameWriter::new(
+            output,
+            self.filter().map_err(|_| EncodeError::Unsupported)?,
+            settings.level,
+        )
+        .map_err(|_| EncodeError::Output)?;
         let mut bytes = [0; 64 * 1024];
         let mut total = 0u64;
         loop {

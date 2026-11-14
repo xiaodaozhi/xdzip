@@ -10,6 +10,15 @@ var creationFormats = [
             "store",
             "deflate"
         ],
+        "methodIds": [
+            0,
+            8
+        ],
+        "levels": [
+            1,
+            6,
+            9
+        ],
         "encryption": [
             "winzip-aes256"
         ],
@@ -25,6 +34,14 @@ var creationFormats = [
         "methods": [
             "store"
         ],
+        "methodIds": [
+            0
+        ],
+        "levels": [
+            1,
+            6,
+            9
+        ],
         "encryption": [],
         "volumes": []
     },
@@ -35,6 +52,15 @@ var creationFormats = [
         "container": "tar",
         "methods": [
             "deflate"
+        ],
+        "methodIds": [
+            8
+        ],
+        "levels": [
+            0,
+            1,
+            6,
+            9
         ],
         "encryption": [],
         "volumes": []
@@ -47,6 +73,15 @@ var creationFormats = [
         "methods": [
             "copy",
             "lzma2"
+        ],
+        "methodIds": [
+            0,
+            32
+        ],
+        "levels": [
+            1,
+            6,
+            9
         ],
         "encryption": [
             "7z-aes256"
@@ -63,6 +98,15 @@ var creationFormats = [
         "methods": [
             "deflate"
         ],
+        "methodIds": [
+            8
+        ],
+        "levels": [
+            0,
+            1,
+            6,
+            9
+        ],
         "encryption": [],
         "volumes": []
     },
@@ -73,6 +117,14 @@ var creationFormats = [
         "container": "single-file",
         "methods": [
             "lzma2"
+        ],
+        "methodIds": [
+            32
+        ],
+        "levels": [
+            1,
+            6,
+            9
         ],
         "encryption": [],
         "volumes": []
@@ -85,11 +137,57 @@ var creationFormats = [
         "methods": [
             "lzma2"
         ],
+        "methodIds": [
+            32
+        ],
+        "levels": [
+            1,
+            6,
+            9
+        ],
+        "encryption": [],
+        "volumes": []
+    },
+    {
+        "id": "lz4",
+        "label": "LZ4",
+        "suffix": ".lz4",
+        "container": "single-file",
+        "methods": [
+            "lz4"
+        ],
+        "methodIds": [
+            256
+        ],
+        "levels": [
+            1,
+            6,
+            9
+        ],
+        "encryption": [],
+        "volumes": []
+    },
+    {
+        "id": "tar-lz4",
+        "label": "TAR.LZ4",
+        "suffix": ".tar.lz4",
+        "container": "tar",
+        "methods": [
+            "lz4"
+        ],
+        "methodIds": [
+            256
+        ],
+        "levels": [
+            1,
+            6,
+            9
+        ],
         "encryption": [],
         "volumes": []
     }
 ];
-var associationSuffixes = [".zip", ".zipx", ".xpi", ".apk", ".ipa", ".cbz", ".tar", ".tar.gz", ".tgz", ".7z", ".gz", ".bz2", ".bz", ".tar.bz2", ".tar.bz", ".tbz", ".tbz2", ".lzma", ".tar.lzma", ".tlz", ".lz", ".tar.lz", ".xz", ".tar.xz", ".txz", ".rar", ".cab", ".iso", ".udf"];
-var formatLabels = ["ZIP", "TAR", "TAR.GZ", "7z", "GZIP", "BZip2", "TAR.BZ2", "LZMA", "TAR.LZMA", "Lzip", "TAR.LZ", "XZ", "TAR.XZ", "RAR", "CAB", "ISO", "UDF"];
+var associationSuffixes = [".zip", ".zipx", ".xpi", ".apk", ".ipa", ".cbz", ".tar", ".tar.gz", ".tgz", ".7z", ".gz", ".bz2", ".bz", ".tar.bz2", ".tar.bz", ".tbz", ".tbz2", ".lzma", ".tar.lzma", ".tlz", ".lz", ".tar.lz", ".xz", ".tar.xz", ".txz", ".lz4", ".tar.lz4", ".rar", ".cab", ".iso", ".udf"];
+var formatLabels = ["ZIP", "TAR", "TAR.GZ", "7z", "GZIP", "BZip2", "TAR.BZ2", "LZMA", "TAR.LZMA", "Lzip", "TAR.LZ", "XZ", "TAR.XZ", "LZ4", "TAR.LZ4", "RAR", "CAB", "ISO", "UDF"];
 var structureOnlyFormats = ["TAR", "LZMA", "TAR.LZMA", "ISO", "UDF"];
-var declaredCheckFormats = ["XZ", "TAR.XZ"];
+var declaredCheckFormats = ["XZ", "TAR.XZ", "LZ4", "TAR.LZ4"];

@@ -31,6 +31,12 @@ pub(crate) fn codec(format: Format) -> &'static dyn Codec {
         },
         Format::Xz => &StreamCodec { format: Format::Xz },
         Format::TarXz => &TarCodec { filter: Filter::Xz },
+        Format::Lz4 => &StreamCodec {
+            format: Format::Lz4,
+        },
+        Format::TarLz4 => &TarCodec {
+            filter: Filter::Lz4,
+        },
         Format::Bzip2 => &StreamCodec {
             format: Format::Bzip2,
         },
@@ -102,6 +108,14 @@ pub(crate) fn detect(
         compressed_format(source, control, Filter::Gzip, Format::Gzip)?
     } else if magic[..6] == *b"\xfd7zXZ\0" {
         compressed_format(source, control, Filter::Xz, Format::Xz)?
+    } else if matches!(
+        u32::from_le_bytes(magic[..4].try_into().expect("fixed slice")),
+        0x184d2204 | 0x184c2102 | 0x184d2a50..=0x184d2a5f
+    ) {
+        match framed_magic(source, control)? {
+            0x184d2204 => compressed_format(source, control, Filter::Lz4, Format::Lz4)?,
+            _ => return Err(ScanError::Unsupported),
+        }
     } else if magic[..3] == *b"BZh" {
         compressed_format(source, control, Filter::Bzip2, Format::Bzip2)?
     } else if magic[..4] == *b"LZIP" {
@@ -122,13 +136,58 @@ pub(crate) fn detect(
     })
 }
 
+/// LZ4 and Zstandard share skippable magic. Locate a data-frame signature
+/// inside an independently bounded prefix without granting another source.
+fn framed_magic(
+    source: &mut dyn ReadSource,
+    control: &xdzip_codec_api::Cancellation,
+) -> Result<u32, ScanError> {
+    let length = source.seek(SeekFrom::End(0)).map_err(|_| ScanError::Io)?;
+    let mut position = 0u64;
+    for _ in 0..100_000 {
+        control.check()?;
+        if position.checked_add(8).is_none_or(|end| end > length) {
+            return Err(ScanError::Invalid);
+        }
+        if position > 8 * 1024 * 1024 - 8 {
+            return Err(ScanError::Limit);
+        }
+        source
+            .seek(SeekFrom::Start(position))
+            .map_err(|_| ScanError::Io)?;
+        let mut header = [0; 8];
+        source.read_exact(&mut header).map_err(|error| {
+            if error.kind() == std::io::ErrorKind::UnexpectedEof {
+                ScanError::Invalid
+            } else {
+                ScanError::Io
+            }
+        })?;
+        let magic = u32::from_le_bytes(header[..4].try_into().expect("fixed slice"));
+        if !(0x184d2a50..=0x184d2a5f).contains(&magic) {
+            source.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
+            return Ok(magic);
+        }
+        position = position
+            .checked_add(
+                8 + u64::from(u32::from_le_bytes(
+                    header[4..].try_into().expect("fixed slice"),
+                )),
+            )
+            .ok_or(ScanError::Invalid)?;
+    }
+    Err(ScanError::Limit)
+}
+
 fn compressed_format(
     source: &mut dyn ReadSource,
     control: &xdzip_codec_api::Cancellation,
     filter: Filter,
     ordinary: Format,
 ) -> Result<Format, ScanError> {
-    let input_limit = if filter == Filter::Bzip2 {
+    let input_limit = if filter == Filter::Lz4 {
+        8 * 1024 * 1024
+    } else if filter == Filter::Bzip2 {
         2 * 1024 * 1024
     } else {
         256 * 1024
@@ -254,6 +313,40 @@ pub(crate) fn limits(format: Format) -> xdzip_codec_api::ScanLimits {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn lz4_discovery_bounds_shared_skippable_prefix_and_refuses_legacy() {
+        use std::io::Cursor;
+        let frame = include_bytes!("../../../tests/fixtures/streams/phrase.lz4");
+        let cancel = Default::default();
+        assert_eq!(detect(&mut Cursor::new(frame), &cancel), Ok(Format::Lz4));
+        let mut skipped = 0x184d2a5fu32.to_le_bytes().to_vec();
+        skipped.extend(16u32.to_le_bytes());
+        skipped.extend([0; 16]);
+        skipped.extend(frame);
+        assert_eq!(detect(&mut Cursor::new(&skipped), &cancel), Ok(Format::Lz4));
+        for (bytes, error) in [
+            (
+                include_bytes!("../../../tests/fixtures/streams/legacy.lz4").as_slice(),
+                ScanError::Unsupported,
+            ),
+            (
+                include_bytes!("../../../tests/fixtures/streams/only-skip.lz4").as_slice(),
+                ScanError::Invalid,
+            ),
+            (&skipped[..12], ScanError::Invalid),
+        ] {
+            assert_eq!(detect(&mut Cursor::new(bytes), &cancel), Err(error));
+        }
+        // A valid physical skip range still cannot move discovery beyond its prefix budget.
+        let mut over = 0x184d2a50u32.to_le_bytes().to_vec();
+        over.extend((8u32 * 1024 * 1024).to_le_bytes());
+        over.resize(8 * 1024 * 1024 + 8, 0);
+        over.extend(frame);
+        assert_eq!(
+            detect(&mut Cursor::new(over), &cancel),
+            Err(ScanError::Limit)
+        );
+    }
     #[test]
     fn gzip_routing_preserves_tar_identity_and_rejects_damage() {
         use std::io::Write;

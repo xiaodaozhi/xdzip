@@ -136,6 +136,7 @@ def check(binary, worker, output, payload=None, install_fixture=False):
             ('phrase.bz2','supported_content','phrase'), ('phrase.lzma','structure_and_readability','phrase'),
             ('phrase.lz','supported_content','phrase'), ('files.tbz2','supported_content','hello.txt'),
             ('files.tar.lzma','structure_and_readability','hello.txt'), ('files.tlz','supported_content','hello.txt'),
+            ('phrase.lz4','format_declared_checks','phrase'), ('files.tar.lz4','format_declared_checks','hello.txt'),
             ('phrase-crc64.xz','format_declared_checks','phrase-crc64'), ('files.txz','format_declared_checks','hello.txt'),
             ('zipx-deflate64.zipx','supported_content','hello.txt'), ('zipx-bzip2.zipx','supported_content','hello.txt'),
             ('zipx-lzma.zipx','supported_content','hello.txt'), ('zipx-xz.zipx','supported_content','hello.txt'),
@@ -170,6 +171,28 @@ def check(binary, worker, output, payload=None, install_fixture=False):
             assert invoke('create',refused,single,'--level','store',code=2)['error_code']=='unsupported_options'
             assert not refused.exists()
         record('xz_txz_lzma2_levels_and_independent_readers')
+        for suffix in ['lz4','tar.lz4']:
+            for level in ['fast','normal','best']:
+                archive=work/('created-'+level+'.'+suffix)
+                invoke('create',archive,single if suffix=='lz4' else source,'--level',level)
+                invoke('test',archive)
+                reference=os.environ.get('XDZIP_LZ4_REFERENCE')
+                if reference:
+                    decoded=subprocess.run([reference,'-d','-c',str(archive)],capture_output=True,check=True).stdout
+                    if suffix=='lz4':
+                        assert decoded==single.read_bytes()
+                    else:
+                        import io
+                        with tarfile.open(fileobj=io.BytesIO(decoded),mode='r:') as independent:
+                            assert independent.extractfile(source.name+'/'+single.name).read()==single.read_bytes()
+                target=work/('created-output-'+suffix+'-'+level)
+                invoke('extract',archive,'-C',target)
+                assert (target/('created-'+level if suffix=='lz4' else source.name+'/'+single.name)).read_bytes()==single.read_bytes()
+            refused=work/('store-refused.'+suffix)
+            assert invoke('create',refused,single,'--level','store',code=2)['error_code']=='unsupported_options'
+            assert not refused.exists()
+        record('lz4_standard_frame_levels_and_tar_composition')
+
         invoke('create',work/'literal.zip','--','--input.txt')
         assert invoke('list',work/'literal.zip')['data']['entries'][0]['path'] == '--input.txt'
         duplicate = ROOT/'tests/fixtures/zip/normal.zip'

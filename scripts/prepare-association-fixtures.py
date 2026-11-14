@@ -24,6 +24,8 @@ def main():
         shutil.copyfile(args.zip, output / ('sample.' + suffix))
     shutil.copyfile(ROOT / 'tests/fixtures/streams/zipx-deflate64.zipx', output / 'sample.zipx')
     shutil.copyfile(ROOT / 'tests/fixtures/streams/phrase-crc64.xz', output / 'sample.xz')
+    shutil.copyfile(ROOT / 'tests/fixtures/streams/phrase.lz4', output / 'sample.lz4')
+    shutil.copyfile(ROOT / 'tests/fixtures/streams/files.tar.lz4', output / 'sample.tar.lz4')
     for suffix in ['tar.xz', 'txz']:
         shutil.copyfile(ROOT / 'tests/fixtures/streams/files.txz', output / ('sample.' + suffix))
     content = b'xdzip association fixture\n'
