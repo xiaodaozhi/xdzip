@@ -56,9 +56,25 @@ impl Archive {
     ) -> Result<Self, ScanError> {
         control.check()?;
         let mut source = source::Source::open(path, control)?;
-        let mut format = formats::detect(&mut source)?;
+        let mut format = formats::detect(&mut source, control)?;
         let scanned = if format == xdzip_codec_api::Format::Zip {
             Self::scan_zip(&mut source, control)
+        } else if format == xdzip_codec_api::Format::Gzip {
+            let info = xdzip_codec_stream::GzipCodec.inspect(
+                &mut source,
+                control,
+                formats::limits(format),
+            )?;
+            // Empty TAR consists of at least two zero blocks. Require the full
+            // decoded stream to be zero, rather than guessing from its prefix.
+            if info.all_zero && info.entry.size >= 1024 {
+                format = xdzip_codec_api::Format::TarGzip;
+                formats::codec(format)
+                    .scan(&mut source, control, formats::limits(format))
+                    .map(|rows| (rows, None))
+            } else {
+                Ok((vec![info.entry], None))
+            }
         } else {
             formats::codec(format)
                 .scan_with_password(
@@ -123,14 +139,7 @@ impl Archive {
                 rows.iter()
                     .any(|r| r.link || r.warning || (!r.directory && !r.payload_supported())),
             ) << 2);
-        let edit_restriction = edit_restriction
-            | (u8::from(matches!(
-                format,
-                xdzip_codec_api::Format::Rar
-                    | xdzip_codec_api::Format::Cab
-                    | xdzip_codec_api::Format::Iso
-                    | xdzip_codec_api::Format::Udf
-            )) << 2);
+        let edit_restriction = edit_restriction | (u8::from(!format.descriptor().rewrite) << 2);
         let edit_restriction = edit_restriction | (u8::from(disk.is_some()) << 2);
         let update_allowed = edit_restriction == 0;
         Ok(Self {

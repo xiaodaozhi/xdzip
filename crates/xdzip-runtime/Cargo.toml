@@ -10,6 +10,7 @@ xdzip-extract-plan = { path = "../xdzip-extract-plan" }
 xdzip-domain = { path = "../xdzip-domain" }
 xdzip-codec-api = { path = "../xdzip-codec-api" }
 xdzip-codec-tar = { path = "../xdzip-codec-tar" }
+xdzip-codec-stream = { path = "../xdzip-codec-stream" }
 xdzip-codec-zip = { path = "../xdzip-codec-zip" }
 xdzip-codec-native = { path = "../xdzip-codec-native" }
 xdzip-io = { path = "../xdzip-io" }

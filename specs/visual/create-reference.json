@@ -15,7 +15,8 @@
     "7z adds a fourth format segment, LZMA2, solid and header-encryption options using existing controls; ZIP and 7z enable password/volumes, TAR disables levels, TAR/TAR.GZ disable password/volumes",
     "The format group reserves four times the measured TAR.GZ label width plus its existing track insets; option labels wrap only when enlarged translated text would otherwise overflow a segment",
     "Selected-input count and empty-state layout are functional additions",
-    "Native OS titlebar is outside client bounds; body may scroll on short screens"
+    "Native OS titlebar is outside client bounds; body may scroll on short screens",
+    "2026-11-14: the format field uses the shared select control and generated stable capability IDs. ZIP, TAR, TAR.GZ, 7z and single-file GZIP share the existing field dimensions and accessibility scaling; the original bitmap and source coordinates are retained."
   ],
   "source_controls": {
     "add_file_button": [
@@ -92,7 +93,8 @@
     "Footer buttons use one role component across operation windows",
     "Information uses commas or line breaks; original bitmaps remain immutable",
     "2026-10-15 border correction: light neutral control border changes from #C9D1E0 to #DCE2EC. Original C01 pixels and hash remain unchanged; dark #485469 and semantic states are retained.",
-    "2026-10-15 outer-corner correction: uniform antialiased rounded fills extend behind square inner seams; Qt and HTML inset once by the one-logical-pixel track border."
+    "2026-10-15 outer-corner correction: uniform antialiased rounded fills extend behind square inner seams; Qt and HTML inset once by the one-logical-pixel track border.",
+    "2026-11-14 format expansion: replace the growing segmented format group with OperationSelect. Compare its field border, radius, font and chevron with the original algorithm select. Original image and historical segment measurements remain immutable."
   ],
   "border_review": {
     "source_straight_edges": {

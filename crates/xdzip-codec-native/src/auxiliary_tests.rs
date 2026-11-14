@@ -52,6 +52,7 @@ fn auxiliary_packets_are_rar_payload_only_bounded_and_do_not_fund_output() {
         Format::Zip,
         Format::Tar,
         Format::TarGzip,
+        Format::Gzip,
         Format::SevenZip,
         Format::Cab,
         Format::Iso,

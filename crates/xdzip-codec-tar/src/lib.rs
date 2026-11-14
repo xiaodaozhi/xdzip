@@ -2,12 +2,12 @@
 mod record;
 mod rewrite;
 mod writer;
-use std::io::{self, Read, SeekFrom};
+use std::io::Read;
 use xdzip_codec_api::payload::{DecodeError, DecodedSink, PayloadCodec, PayloadReader};
 use xdzip_codec_api::{
     Cancellation, Entry, Format, MetadataCodec, ReadSource, ScanError, ScanLimits,
 };
-use xdzip_compression::GzipReader;
+use xdzip_codec_stream::controlled::{ControlledStream as Stream, Filter};
 use xdzip_domain::identity::EntryId;
 
 /// TAR container, optionally behind exactly one GZIP filter.
@@ -18,67 +18,13 @@ pub struct TarCodec {
 const EXTENSION_LIMIT: u64 = 64 * 1024;
 const STREAM_LIMIT: u64 = 24 * 1024 * 1024 * 1024;
 
-struct Stream<'a> {
-    reader: Box<dyn Read + 'a>,
-    control: &'a Cancellation,
-    remaining: u64,
-    position: u64,
-    failure: Option<ScanError>,
-}
-struct SourceGuard<'a> {
-    source: &'a mut dyn ReadSource,
-    control: &'a Cancellation,
-    remaining: u64,
-}
-impl Read for SourceGuard<'_> {
-    fn read(&mut self, output: &mut [u8]) -> io::Result<usize> {
-        if output.is_empty() {
-            return Ok(0);
-        }
-        self.control.check().map_err(io::Error::other)?;
-        if self.remaining == 0 {
-            return Err(io::Error::other(ScanError::Limit));
-        }
-        let take = output
-            .len()
-            .min(self.remaining.min(usize::MAX as u64) as usize);
-        let n = self
-            .source
-            .read(&mut output[..take])
-            .map_err(|_| io::Error::other(ScanError::Io))?;
-        self.remaining -= n as u64;
-        Ok(n)
-    }
-}
-impl Read for Stream<'_> {
-    fn read(&mut self, bytes: &mut [u8]) -> io::Result<usize> {
-        if bytes.is_empty() {
-            return Ok(0);
-        }
-        let fault = self
-            .control
-            .check()
-            .err()
-            .or_else(|| (self.remaining == 0).then_some(ScanError::Limit));
-        if let Some(error) = fault {
-            self.failure = Some(error);
-            return Err(io::Error::other(error));
-        }
-        let length = bytes
-            .len()
-            .min(self.remaining.min(usize::MAX as u64) as usize);
-        let n = self.reader.read(&mut bytes[..length]).inspect_err(|e| {
-            self.failure = Some(
-                e.get_ref()
-                    .and_then(|e| e.downcast_ref::<ScanError>())
-                    .copied()
-                    .unwrap_or(ScanError::Invalid),
-            );
-        })?;
-        self.remaining -= n as u64;
-        self.position += n as u64;
-        Ok(n)
-    }
+/// Recognize a nonempty TAR header before selecting a compressed container.
+/// A damaged ustar header remains TAR so a later failure cannot downgrade it.
+pub fn recognizes_header(bytes: &[u8]) -> bool {
+    bytes.get(257..262) == Some(b"ustar")
+        || <&[u8; 512]>::try_from(bytes).is_ok_and(|block| {
+            block.iter().any(|b| *b != 0) && record::Record(block).validate().is_ok()
+        })
 }
 impl TarCodec {
     fn stream<'a>(
@@ -87,24 +33,17 @@ impl TarCodec {
         control: &'a Cancellation,
         limit: u64,
     ) -> Result<Stream<'a>, ScanError> {
-        source.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
-        let guarded = SourceGuard {
+        Stream::new(
             source,
             control,
-            remaining: limit,
-        };
-        let reader: Box<dyn Read + 'a> = if self.gzip {
-            Box::new(GzipReader::new(guarded))
-        } else {
-            Box::new(guarded)
-        };
-        Ok(Stream {
-            reader,
-            control,
-            remaining: limit,
-            position: 0,
-            failure: None,
-        })
+            if self.gzip {
+                Filter::Gzip
+            } else {
+                Filter::Identity
+            },
+            limit,
+            limit,
+        )
     }
     fn inspect(
         &self,
@@ -114,7 +53,7 @@ impl TarCodec {
     ) -> Result<(Vec<Entry>, Vec<u64>), ScanError> {
         let mut stream = self.stream(source, control, limits.read_bytes)?;
         let result = scan(&mut stream, self.gzip, limits);
-        stream.failure.map_or(result, Err)
+        stream.failure().map_or(result, Err)
     }
 }
 fn skip(stream: &mut Stream<'_>, mut count: u64) -> Result<(), ScanError> {
@@ -230,7 +169,7 @@ fn scan(
                         &mut rows,
                         &legacy,
                         false,
-                        stream.control,
+                        stream.control(),
                         limits,
                     )?;
                     return Ok((rows, offsets));
@@ -360,7 +299,7 @@ fn scan(
         let warning =
             next_special || !(matches!(kind, 0 | b'0') || directory) || (directory && size != 0);
         legacy.push(unlabelled);
-        offsets.push(stream.position);
+        offsets.push(stream.position());
         rows.push(Entry {
             id: EntryId::try_from(rows.len() as u64 + 1).map_err(|_| ScanError::Limit)?,
             raw_name: name,
@@ -453,10 +392,10 @@ impl PayloadReader for Reader<'_> {
             return Err(DecodeError::Unsupported);
         }
         let distance = self.offsets[at]
-            .checked_sub(self.stream.position)
+            .checked_sub(self.stream.position())
             .ok_or(DecodeError::Integrity)?;
         let result = skip(&mut self.stream, distance);
-        if let Some(e) = self.stream.failure {
+        if let Some(e) = self.stream.failure() {
             return Err(decode_error(e));
         }
         result.map_err(decode_error)?;
@@ -467,7 +406,7 @@ impl PayloadReader for Reader<'_> {
             let count = remaining.min(bytes.len() as u64) as usize;
             if self.stream.read_exact(&mut bytes[..count]).is_err() {
                 return Err(decode_error(
-                    self.stream.failure.unwrap_or(ScanError::Invalid),
+                    self.stream.failure().unwrap_or(ScanError::Invalid),
                 ));
             }
             sink.write_chunk(&bytes[..count])?;
@@ -480,7 +419,7 @@ impl PayloadReader for Reader<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::{Cursor, Write};
+    use std::io::{self, Cursor, SeekFrom, Write};
     use xdzip_codec_api::encode::{
         CreationCodec, EncodeEntry, EncodeError, EncodeInput, EncodeSettings,
     };
@@ -671,8 +610,12 @@ mod tests {
             }
         }
         impl std::io::Seek for Broken {
-            fn seek(&mut self, _: SeekFrom) -> io::Result<u64> {
-                Ok(0)
+            fn seek(&mut self, at: SeekFrom) -> io::Result<u64> {
+                Ok(if matches!(at, SeekFrom::End(0)) {
+                    1024
+                } else {
+                    0
+                })
             }
         }
         for gzip in [false, true] {

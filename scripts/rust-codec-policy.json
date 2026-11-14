@@ -9,6 +9,10 @@
       "forbidden_runtime_dependencies": ["tar", "filetime", "flate2", "miniz_oxide", "zlib-rs"]
     },
     {
+      "package": "xdzip-codec-stream",
+      "forbidden_runtime_dependencies": ["tar", "filetime", "flate2", "miniz_oxide", "zlib-rs"]
+    },
+    {
       "package": "xdzip-compression",
       "forbidden_runtime_dependencies": ["flate2", "miniz_oxide", "zlib-rs", "libz-sys", "bzip2", "bzip2-sys", "lzma-rs", "lzma-sys", "liblzma", "xz2", "ppmd-rust", "ppmd-sys"]
     },

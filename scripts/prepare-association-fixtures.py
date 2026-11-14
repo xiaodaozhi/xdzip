@@ -20,7 +20,10 @@ def main():
         parser.error('Use a new child directory under build/')
     output.mkdir(parents=True)
     shutil.copyfile(args.zip, output / 'sample.zip')
+    for suffix in ['xpi', 'apk', 'ipa', 'cbz']:
+        shutil.copyfile(args.zip, output / ('sample.' + suffix))
     content = b'xdzip association fixture\n'
+    (output / 'sample.gz').write_bytes(gzip.compress(content, mtime=0))
     for name, mode in [('sample.tar', 'w'), ('sample.tar.gz', 'w:gz')]:
         with tarfile.open(output / name, mode) as archive:
             item = tarfile.TarInfo('hello.txt')
@@ -39,7 +42,7 @@ def main():
         if not data or len(data) > 64 * 1024 * 1024:
             raise ValueError('Optical fixture exceeds its bounded output')
         (output / name).write_bytes(data)
-    print('Prepared ZIP, TAR, compressed TAR, 7z, RAR, CAB, ISO and UDF inputs')
+    print('Prepared ZIP and derived candidates, TAR, compressed TAR, GZIP, 7z, RAR, CAB, ISO and UDF inputs')
 
 
 if __name__ == '__main__':

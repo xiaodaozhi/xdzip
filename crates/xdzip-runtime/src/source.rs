@@ -395,6 +395,9 @@ impl Source {
     }
 }
 impl xdzip_codec_api::ReadSource for Source {
+    fn source_name_hint(&self) -> Option<&str> {
+        self.name.file_name()?.to_str()
+    }
     fn volume_lengths(&self) -> Option<&[u64]> {
         (self.split || self.cab_names.is_some()).then_some(self.lengths.as_slice())
     }

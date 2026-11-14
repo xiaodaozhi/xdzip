@@ -6,8 +6,14 @@
       "read_methods": ["store", "deflate"], "write_methods": ["store", "deflate"], "rewrite": true,
       "read_encryption": ["winzip-aes256"], "write_encryption": ["winzip-aes256"],
       "read_volumes": ["numbered", "pkzip"], "write_volumes": ["numbered"],
-      "creation_suffixes": [".zip"], "shell_mime_types": ["application/zip"],
-      "extensions": [{"suffix": ".zip", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": "zip"}]
+      "creation_suffixes": [".zip"], "shell_mime_types": ["application/zip", "application/x-xpinstall", "application/vnd.android.package-archive", "application/vnd.comicbook+zip", "application/x-cbz"],
+      "extensions": [
+        {"suffix": ".zip", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": "zip"},
+        {"suffix": ".xpi", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": null},
+        {"suffix": ".apk", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": null},
+        {"suffix": ".ipa", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": null},
+        {"suffix": ".cbz", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": null}
+      ]
     },
     {
       "id": "tar", "rust_variant": "Tar", "label": "TAR", "container": "tar", "filters": [], "worker_id": null,
@@ -21,11 +27,10 @@
       "read_methods": ["deflate"], "write_methods": ["deflate"], "rewrite": true,
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [".tar.gz", ".tgz"],
-      "shell_mime_types": ["application/gzip", "application/x-gzip", "application/x-compressed-tar"],
+      "shell_mime_types": ["application/x-compressed-tar"],
       "extensions": [
         {"suffix": ".tar.gz", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "tar-gz"},
-        {"suffix": ".tgz", "drop": true, "shell": true, "windows_icon": "tgz", "macos_icon": null},
-        {"suffix": ".gz", "drop": false, "shell": true, "windows_icon": "gz", "macos_icon": "gz"}
+        {"suffix": ".tgz", "drop": true, "shell": true, "windows_icon": "tgz", "macos_icon": null}
       ]
     },
     {
@@ -35,6 +40,13 @@
       "read_volumes": ["numbered"], "write_volumes": ["numbered"],
       "creation_suffixes": [".7z"], "shell_mime_types": ["application/x-7z-compressed"],
       "extensions": [{"suffix": ".7z", "drop": true, "shell": true, "windows_icon": "7z", "macos_icon": "7z"}]
+    },
+    {
+      "id": "gzip", "rust_variant": "Gzip", "label": "GZIP", "container": "single-file", "filters": ["gzip"], "worker_id": null,
+      "read_methods": ["deflate"], "write_methods": ["deflate"], "rewrite": false,
+      "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [".gz"], "shell_mime_types": ["application/gzip", "application/x-gzip"],
+      "extensions": [{"suffix": ".gz", "drop": true, "shell": true, "windows_icon": "gz", "macos_icon": "gz"}]
     },
     {
       "id": "rar", "rust_variant": "Rar", "label": "RAR", "container": "rar", "filters": [], "worker_id": 4,

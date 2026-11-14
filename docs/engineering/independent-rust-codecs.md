@@ -36,6 +36,8 @@ The independent record layer is `xdzip-codec-tar/src/record.rs`. Layout follows 
 
 ## Shared Deflate and GZIP specification
 
+Ordinary GZIP and controlled TAR filters share `xdzip-codec-stream`; its host naming, quotas, full-stream verification and creation restrictions follow the [single-file stream contract](single-file-streams.md).
+
 `xdzip-compression` has no third-party production dependencies. Formats follow [RFC 1951 §3](https://www.rfc-editor.org/rfc/rfc1951) and [RFC 1952 §2.3](https://www.rfc-editor.org/rfc/rfc1952), without copying appendix example code. Length, distance, and extra-bit counts are specification wire-format tables; the CRC lookup table is generated at compile time from the IEEE polynomial.
 
 The shared public interfaces are `DeflateReader`, `DeflateWriter`, `GzipReader`, `GzipWriter`, and incremental `Crc32`. ZIP and GZIP use the same Deflate codec. The raw-stream reader reads only admitted compressed ranges, distinguishes actual consumption from buffered read-ahead, and returns successful EOF only after BFINAL and when actual consumption exactly equals compressed size. Matching output size or CRC does not replace stream termination; a second stream or trailing garbage within the range is rejected.

@@ -3,6 +3,136 @@ use super::*;
 use std::sync::atomic::{AtomicU64, Ordering};
 use xdzip_codec_api::{MetadataCodec, ScanLimits, payload::PayloadCodec};
 static NEXT: AtomicU64 = AtomicU64::new(0);
+
+#[test]
+fn zip_aliases_use_content_validation_and_the_same_codec_limits() {
+    let fixture = Fixture::new();
+    let bytes = std::fs::read(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/zip/normal.zip"),
+    )
+    .unwrap();
+    for suffix in ["xpi", "apk", "ipa", "cbz"] {
+        let path = fixture.0.join(format!("sample.{suffix}"));
+        std::fs::write(&path, &bytes).unwrap();
+        let archive = crate::Archive::open(&path, &Cancellation::default()).unwrap();
+        assert_eq!(archive.format, Format::Zip);
+        assert!(!archive.rows.is_empty());
+        std::fs::write(&path, b"invalid ZIP alias").unwrap();
+        assert!(crate::Archive::open(&path, &Cancellation::default()).is_err());
+    }
+}
+
+#[test]
+fn gzip_empty_tar_precedence_requires_a_fully_zero_decoded_stream() {
+    use std::io::Write;
+    let fixture = Fixture::new();
+    for (bytes, format, count) in [
+        (vec![0; 1024], Format::TarGzip, 0),
+        ([vec![0; 1024], vec![1]].concat(), Format::Gzip, 1),
+    ] {
+        let path = fixture.0.join("sample.gz");
+        let mut encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
+        encoder.write_all(&bytes).unwrap();
+        std::fs::write(&path, encoder.finish().unwrap()).unwrap();
+        let archive = crate::Archive::open(&path, &Cancellation::default()).unwrap();
+        assert_eq!(archive.format, format);
+        assert_eq!(archive.rows.len(), count);
+    }
+}
+
+#[test]
+fn gzip_creation_browsing_checking_and_extraction_preserve_single_file_bytes() {
+    use std::io::Read;
+    for empty in [false, true] {
+        let fixture = Fixture::new();
+        let input = fixture.0.join(if empty {
+            "输入/empty.bin"
+        } else {
+            "输入/文件.txt"
+        });
+        let expected = std::fs::read(&input).unwrap();
+        let mut job = fixture.job(8);
+        job.options.inputs = vec![input.to_string_lossy().into_owned()];
+        job.options.name = "重新命名.bin.gz".into();
+        assert!(job.options.bounded());
+        let created = execute(job, &Control::default(), |_| {});
+        assert_eq!(created.status, Status::Succeeded, "{}", created.error);
+        let mut independent = Vec::new();
+        flate2::read::MultiGzDecoder::new(std::fs::File::open(&created.target).unwrap())
+            .read_to_end(&mut independent)
+            .unwrap();
+        assert_eq!(independent, expected);
+        let cancel = Cancellation::default();
+        let archive = crate::Archive::open(Path::new(&created.target), &cancel).unwrap();
+        assert_eq!(archive.format, Format::Gzip);
+        assert!(!archive.update_allowed);
+        assert_eq!(archive.rows.len(), 1);
+        assert_eq!(archive.rows[0].name_bytes(), "重新命名.bin".as_bytes());
+        assert_eq!(archive.rows[0].size, expected.len() as u64);
+        let mut checked = None;
+        crate::checking::run(
+            archive.check_job(&cancel).unwrap(),
+            2,
+            &Control::default(),
+            &mut |s| checked = Some(s),
+        );
+        let checked = checked.unwrap();
+        assert_eq!(checked.status, Status::Succeeded, "{}", checked.error);
+        assert_eq!(checked.verified_files, 1);
+        let target = fixture.0.join("extracted");
+        std::fs::create_dir(&target).unwrap();
+        let options = crate::extraction::Options {
+            target: target.to_string_lossy().into_owned(),
+            all: true,
+            selected: vec![],
+            directory: String::new(),
+            create_folder: false,
+            shell_layout: 0,
+            conflict: ConflictPolicy::Ask,
+            allow_high_ratio: false,
+        };
+        let mut extracted = None;
+        crate::extraction::run(
+            archive.extraction_job(options, &cancel).unwrap(),
+            3,
+            &Control::default(),
+            &mut |s| extracted = Some(s),
+        );
+        let extracted = extracted.unwrap();
+        assert_eq!(extracted.status, Status::Succeeded, "{}", extracted.error);
+        assert_eq!(
+            std::fs::read(target.join("重新命名.bin")).unwrap(),
+            expected
+        );
+    }
+}
+
+#[test]
+fn gzip_directory_or_multiple_inputs_do_not_publish_an_archive() {
+    for multiple in [false, true] {
+        let fixture = Fixture::new();
+        let mut job = fixture.job(8);
+        if multiple {
+            job.options.inputs = vec![
+                fixture
+                    .0
+                    .join("输入/文件.txt")
+                    .to_string_lossy()
+                    .into_owned(),
+                fixture
+                    .0
+                    .join("输入/empty.bin")
+                    .to_string_lossy()
+                    .into_owned(),
+            ];
+        }
+        job.options.name = "refused.gz".into();
+        let result = execute(job, &Control::default(), |_| {});
+        assert_eq!(result.status, Status::Failed);
+        assert_eq!(result.error, "unsupported_feature");
+        assert!(!fixture.0.join("output/refused.gz").exists());
+    }
+}
 struct Fixture(PathBuf);
 impl Fixture {
     fn new() -> Self {
@@ -303,6 +433,7 @@ fn explicitly_selected_output_reaches_rename_and_keeps_its_original_bytes_in_eac
         (".zip", 8, Format::Zip),
         (".tar", 0, Format::Tar),
         (".tar.gz", 8, Format::TarGzip),
+        (".tgz", 8, Format::TarGzip),
     ] {
         for policy in [ConflictPolicy::Ask, ConflictPolicy::Rename] {
             let f = Fixture::new();

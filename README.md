@@ -43,7 +43,7 @@ Open an archive to browse its directories, search and sort entries, and select f
 
 - **Content preview:** Explicitly preview bounded plain text, common raster images, and static SVG in the properties card; macOS also supports HEIC/HEIF. Preview appears after the content is fully read and any checks provided by the format are complete, and it can be canceled. See [preview](docs/engineering/content-preview.md) for formats, sizes, and decoding budgets.
 - **Extract and open:** Choose a destination and name-conflict policy, view progress, and request cancellation. Double-clicking a regular file extracts a copy to a private temporary directory before opening it with the system. Changes to the copy are not written back to the archive; cached copies are cleaned up during a later open operation after seven days.
-- **Create and modify:** Create ZIP, TAR, TAR.GZ, and 7z archives. Add, replace, or move entries in eligible regular single-file archives. You can also drag files out of the list or drag files in and confirm adding them. See the table below for formats and limits.
+- **Create and modify:** Create ZIP, TAR, TAR.GZ, GZIP, and 7z archives. Add, replace, or move entries in eligible regular single-file archives. You can also drag files out of the list or drag files in and confirm adding them. See the table below for formats and limits.
 - **Check:** Test an entire archive in the background without writing files. For TAR, ISO, and UDF, only structure and readability are checked; per-file content verification is not guaranteed. See [archive integrity checks](docs/engineering/archive-checking.md).
 - **Multiple archives:** Open archives in new tabs by default or configure them to open in new windows. A login session shares the application process and tray; background tasks remain accessible from the task entry point after browser pages close.
 - **File-manager actions:** Create or extract archives directly from the Windows classic context menu, Ubuntu Files submenu, or macOS Finder Sync dynamic submenu. Finder services remain available as a fallback on macOS. Actions use separate windows and do not open the main window or destination directory by default. Per-item ZIP creation, smart extraction directories, and batch cancellation are supported. See [file-manager actions](docs/engineering/shell-actions.md) for entry points, system enablement, and installation scope.
@@ -58,6 +58,7 @@ Open an archive to browse its directories, search and sort entries, and select f
 | --- | --- | --- | --- |
 | ZIP | Store, Deflate, AES-256, and split archives | Store, Deflate, AES-256, and numbered volumes | Eligible regular single-file archives |
 | TAR, TAR.GZ (including `.tgz`) | Regular files and directories | Supported; TAR only packs files | Eligible regular single-file archives |
+| GZIP (`.gz`) | One regular file, including concatenated members | One regular file, Deflate 0/1/6/9 | Not supported |
 | 7z | Passwords, encrypted filenames, solid archives, and numbered volumes | Encryption, solid archives, and numbered volumes | Eligible unencrypted, non-split archives |
 | RAR | Legacy, RAR5, and RAR 7 format extensions, including passwords, solid and split archives | Not supported | Not supported |
 | CAB | Store, MSZip, Quantum, LZX, and volumes in the same directory | Not supported | Not supported |
@@ -67,7 +68,7 @@ Open an archive to browse its directories, search and sort entries, and select f
 - Modifying 7z rebuilds the archive, with a 512 MiB working-set limit for retained and added content. New archives use streaming input and are not subject to this rebuild limit. Encrypted and split ZIP and 7z archives cannot be modified. See [archive modification](docs/engineering/archive-transfers.md).
 - RAR, CAB, ISO, and UDF are read-only. ISO/UDF images are read as files; they are not mounted or executed. See the [RAR contract](docs/engineering/rar-format-sources.md) and [format backend contract](docs/engineering/native-codecs.md) for format coverage and resource limits.
 - Large ZIP archives using the disk-backed index do not currently support whole-archive testing or modification. Selected regular files can still be extracted within task limits; see [large archive indexing](docs/engineering/large-index.md).
-- Standalone non-TAR GZIP, sparse TAR, and third-party extensions are not currently supported. Legacy filename encodings are detected where possible, but short names and mixed encodings cannot be identified uniquely in every case; see [filename encoding](docs/engineering/filename-encoding.md).
+- Sparse TAR and third-party extensions are not currently supported. Ordinary GZIP and ZIP-derived XPI/APK/IPA/CBZ candidates follow the [single-file stream contract](docs/engineering/single-file-streams.md). Legacy filename encodings are detected where possible, but short names and mixed encodings cannot be identified uniquely in every case; see [filename encoding](docs/engineering/filename-encoding.md).
 
 ## Command line
 

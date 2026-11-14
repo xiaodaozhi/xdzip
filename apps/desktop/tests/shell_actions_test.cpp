@@ -80,7 +80,9 @@ class ShellTest : public QObject {
         candidate("archive.ZIP", true, true);
         candidate("archive.TAR.GZ", true, true);
         candidate("archive.TGZ", true, true);
-        candidate("archive.gz", false, true);
+        candidate("archive.gz", true, true);
+        for (const auto &suffix : {"XPI", "APK", "IPA", "CBZ"})
+            candidate(QStringLiteral("archive.") + suffix, true, true);
         candidate("archive.7z.001", true, true);
         candidate("archive.zip.exe", false, false);
         candidate("archive.zip.txt", false, false);

@@ -29,12 +29,17 @@ namespace {
 const QHash<QString, QStringList> &extensions() {
     static const QHash<QString, QStringList> value{
         {".zip", {"application/zip"}},
+        {".xpi", {"application/x-xpinstall"}},
+        {".apk", {"application/vnd.android.package-archive"}},
+        {".ipa", {"application/zip"}},
+        {".cbz", {"application/vnd.comicbook+zip", "application/x-cbz"}},
         {".7z", {"application/x-7z-compressed"}},
-        {".rar", {"application/vnd.rar", "application/x-rar"}},
+        {".rar", {"application/vnd.rar", "application/x-rar", "application/x-rar-compressed"}},
         {".tar", {"application/x-tar"}},
         {".tar.gz", {"application/x-compressed-tar"}},
         {".tgz", {"application/x-compressed-tar"}},
-        {".cab", {"application/vnd.ms-cab-compressed"}},
+        {".gz", {"application/gzip", "application/x-gzip"}},
+        {".cab", {"application/vnd.ms-cab-compressed", "application/x-cab"}},
         {".iso", {"application/x-iso9660-image"}},
         {".udf", {"application/x-udf"}}};
     return value;

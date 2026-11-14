@@ -1,0 +1,25 @@
+# Single-file streams and ZIP-derived packages
+
+The [built-in registry](format-registry.md) declares ordinary GZIP separately from TAR.GZ. `xdzip-codec-stream` adapts the independent `xdzip-compression` implementation of [RFC 1952](https://www.rfc-editor.org/rfc/rfc1952) to metadata, payload and creation contracts. No reference compression library enters the production dependency closure.
+
+## Discovery and read boundaries
+
+GZIP recognition checks at most 512 decoded prefix bytes with at most 256 KiB of compressed reads. A valid legacy TAR header or an explicit `ustar` marker selects TAR.GZ; a damaged recognized TAR fails without falling back to an ordinary file. Otherwise the complete GZIP stream is scanned before publishing its single regular-file entry. A fully zero decoded stream of at least 1024 bytes has empty-TAR precedence. A zero prefix followed by nonzero ordinary data remains GZIP. This unavoidable content ambiguity is deterministic and independent of the filename.
+
+Scan admission limits both physical input length and actual decoded bytes to 24 GiB. `ControlledStream` checks cancellation before reads and retains the first typed error. At an exact decoded boundary, it may inspect one additional private decoded byte to distinguish EOF from overflow; that byte is never delivered. TAR uses the same controlled stream with either identity or GZIP filtering. Whole-stream EOF must validate every member's CRC32 and ISIZE, including empty members. Concatenated members form one logical file. Header flags, bounded optional fields, header checksum, truncation and trailing nonmember bytes retain the independent GZIP decoder's validation.
+
+The row size is the observed complete decoded byte count, not the 32-bit ISIZE field. The host may provide a basename through `ReadSource::source_name_hint`; the codec removes a terminal `.gz` ignoring ASCII case, rejects separators, control characters and special names, and otherwise uses `content`. Header FNAME is ignored. Display text is escaped separately. All output names still pass the host's portable-path and destination checks. The hint grants no filesystem authority. Payload decoding binds to the immutable row, packed length and observed size, validates EOF again before success, and cannot resume after a failed or completed decode. Existing task limits remain 8 GiB per file and 20 GiB per task.
+
+## Creation and publication
+
+Ordinary `.gz` creation accepts exactly one regular input file, using Deflate levels 0/1/6/9. Directories, multiple files, passwords, volumes, solid mode and header encryption are rejected. The encoder reads the frozen input through EOF, checks its exact size and cancellation, and completes the GZIP trailer in host-owned staging. The host verifies the staged stream, source version and output transaction before publication. GZIP does not preserve the input filename; the reopened virtual name derives from the archive basename. Its verification therefore compares regular-file identity and size rather than requiring the original input name. Ordinary GZIP has no archive modification capability. TAR.GZ creation and rewriting retain their separate container contract.
+
+Desktop creation choices, welcome labels and association candidates are generated from stable registry identifiers. The shared format selector derives its dimensions from existing control parameters. CLI creation uses the same suffix registry and prefers the longest matching suffix, preserving `.tar.gz` over `.gz`. Conflict renaming retains the actual registered suffix, including `.tgz`.
+
+## ZIP-derived candidates
+
+`.xpi`, `.apk`, `.ipa` and `.cbz` are entry-point candidates for the existing ZIP reader. Content validation, Store/Deflate, admitted WinZip AES-256 profiles, path handling and resource limits remain those of ZIP. A suffix alone never admits another method or encryption scheme. Package manifests, application installation and package signatures are not interpreted by these operations. These aliases do not add creation suffixes. Windows aliases reuse the ZIP icon; macOS declares their extensions and resolves the extension's assigned type without replacing every ZIP default. Linux uses the corresponding available MIME candidates, with IPA retaining the generic ZIP association.
+
+## Automated acceptance
+
+Use the stream crate's independent reference-reader/writer tests for member checksums, truncation, trailing bytes, input changes, cancellation, exact quotas and virtual names. Runtime tests cover classification, empty TAR precedence, single-file creation, checking, extraction and zero-publication rejection. The real CLI regression includes all four levels and ZIP aliases. Qt tests cover stable identifier selection, single-file admission, actual creation/reopening, native accessibility metadata, keyboard selection and bilingual layout at 100/125/150% text scales. Generated declarations, installer mappings and window/shared-control contracts have separate automated checks. Record actual execution results in the work issue; these checks do not establish unexecuted platform behavior or release permission.

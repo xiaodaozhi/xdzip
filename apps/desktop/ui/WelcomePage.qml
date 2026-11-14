@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "ArchiveFormats.js" as ArchiveFormats
 import QtQuick.Controls
 import QtQuick.Layouts
 
@@ -199,7 +200,7 @@ Rectangle {
                         color: Theme.textSecondary
                     }
                     Repeater {
-                        model: ["ZIP", "TAR", "TAR.GZ", "7z", "RAR", "CAB", "ISO", "UDF"]
+                        model: ArchiveFormats.formatLabels
                         Rectangle {
                             required property string modelData
                             objectName: "welcomeFormat-" + modelData

@@ -29,16 +29,35 @@ class RegistryTests(unittest.TestCase):
         formats = REGISTRY.validate(self.source)
         entries = [entry for item in formats for entry in item['extensions']]
         self.assertEqual({entry['suffix'] for entry in entries if entry['drop']},
-                         {'.zip', '.tar', '.tar.gz', '.tgz', '.7z', '.rar', '.cab', '.iso', '.udf'})
+                         {'.zip', '.xpi', '.apk', '.ipa', '.cbz', '.tar', '.tar.gz', '.tgz', '.gz', '.7z', '.rar', '.cab', '.iso', '.udf'})
         self.assertEqual({entry['suffix'] for entry in entries if entry['shell']},
-                         {'.zip', '.tar', '.tar.gz', '.tgz', '.gz', '.7z', '.rar', '.cab', '.iso', '.udf'})
+                         {'.zip', '.xpi', '.apk', '.ipa', '.cbz', '.tar', '.tar.gz', '.tgz', '.gz', '.7z', '.rar', '.cab', '.iso', '.udf'})
         self.assertEqual({item['id']: item['worker_id'] for item in formats if item['worker_id']},
                          {'7z': 7, 'rar': 4, 'cab': 8, 'iso': 9, 'udf': 10})
         self.assertEqual({suffix for item in formats for suffix in item['creation_suffixes']},
-                         {'.zip', '.tar', '.tar.gz', '.tgz', '.7z'})
+                         {'.zip', '.tar', '.tar.gz', '.tgz', '.gz', '.7z'})
 
     def test_duplicate_id(self):
         self.reject(lambda source: source['formats'][1].update(id='zip'))
+
+    def test_ui_choices_preserve_stable_ids_and_independent_gzip_capabilities(self):
+        output = REGISTRY.render(self.source)['apps/desktop/ui/ArchiveFormats.js']
+        choices = json.loads(output.split('var creationFormats = ', 1)[1].split(';\n', 1)[0])
+        by_id = {item['id']: item for item in choices}
+        self.assertEqual(set(by_id), {'zip', 'tar', 'tar-gzip', '7z', 'gzip'})
+        self.assertEqual(by_id['tar-gzip']['suffix'], '.tar.gz')
+        self.assertEqual(by_id['gzip']['suffix'], '.gz')
+        self.assertEqual(by_id['gzip']['methods'], ['deflate'])
+        self.assertEqual(by_id['gzip']['encryption'], [])
+        self.assertEqual(by_id['gzip']['volumes'], [])
+
+    def test_linux_mime_declarations_match_registered_candidates(self):
+        declared = next(line.removeprefix('MimeType=') for line in
+                        (ROOT / 'apps/desktop/packaging/linux/xdzip.desktop').read_text().splitlines()
+                        if line.startswith('MimeType=')).strip(';').split(';')
+        expected = [mime for item in self.source['formats'] for mime in item['shell_mime_types']]
+        self.assertEqual(set(declared), set(expected))
+        self.assertEqual(len(declared), len(set(declared)))
 
     def test_boolean_is_not_schema_version(self):
         self.reject(lambda source: source.update(schema_version=True))
@@ -93,6 +112,10 @@ class RegistryTests(unittest.TestCase):
                     target.write_text(content, encoding='utf-8', newline='\n')
                 with redirect_stdout(io.StringIO()):
                     REGISTRY.main()
+                modified = {name: (root / name).stat().st_mtime_ns for name in outputs}
+                with patch('sys.argv', ['generator']), redirect_stdout(io.StringIO()):
+                    REGISTRY.main()
+                self.assertEqual(modified, {name: (root / name).stat().st_mtime_ns for name in outputs})
                 name = 'apps/desktop/ArchiveFormatsGenerated.h'
                 (root / name).write_text(outputs[name] + '// stale\n', encoding='utf-8')
                 with self.assertRaisesRegex(SystemExit, name):

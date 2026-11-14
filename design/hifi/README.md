@@ -1,5 +1,7 @@
 # xdzip 高保真设计统一入口
 
+[C01 格式选择修订](sources/create-format-selector.html)将新增 GZIP 后的格式选择接入共享下拉框，保留原稿及历史量测，尺寸继续使用既有参数。
+
 [文件关联图标设计](sources/file-association-icons.html)提供 10 个格式与通用后备图标的浅深背景和实际尺寸审阅。母版、光学规则与后续系统映射见[图标规范](../../docs/visual/file-association-icons.md)。
 
 [完整图片画廊](index.html)，[原稿清单与 SHA-256](catalog.json)，[统一素材库](../assets/index.html)，[颜色尺寸规范](../../specs/visual/tokens.json)

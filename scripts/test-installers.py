@@ -405,7 +405,7 @@ class InstallerTests(unittest.TestCase):
                     self.assertEqual(result.returncode,0,result.stderr)
                     info=plistlib.loads(output.read_bytes())
                     documents=info['CFBundleDocumentTypes']
-                    self.assertEqual(len(documents),len(MACOS_ICONS))
+                    self.assertEqual(len(documents),len(MACOS_ICONS)+4)
                     expected={'public.zip-archive':'zip','public.tar-archive':'tar',
                         'org.gnu.gnu-zip-tar-archive':'tar-gz','org.gnu.gnu-zip-archive':'gz',
                         'org.7-zip.7-zip-archive':'7z','com.rarlab.rar-archive':'rar',
@@ -421,6 +421,9 @@ class InstallerTests(unittest.TestCase):
                             udf_documents+=1
                             self.assertNotIn('LSItemContentTypes',document)
                             self.assertEqual(document['CFBundleTypeExtensions'],['udf'])
+                        elif set(document['CFBundleTypeExtensions']) <= {'xpi','apk','ipa','cbz'}:
+                            self.assertNotIn('LSItemContentTypes',document)
+                            self.assertEqual(document['CFBundleTypeIconFile'],'xdzip-zip.icns')
                         else:
                             self.assertTrue(document['LSItemContentTypes'])
                         for uti in document.get('LSItemContentTypes',[]):

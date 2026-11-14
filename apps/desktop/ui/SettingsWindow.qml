@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Xdzip.Settings 1.0
+import "ArchiveFormats.js" as ArchiveFormats
 
 OperationWindow {
     id: root
@@ -446,7 +447,7 @@ OperationWindow {
             GridLayout {
                 Layout.fillWidth: true; columns: 2; columnSpacing: 12; rowSpacing: 8
                 Repeater {
-                    model: [".zip", ".tgz", ".7z", ".cab", ".rar", ".iso", ".tar", ".udf", ".tar.gz"]
+                    model: ArchiveFormats.associationSuffixes
                     delegate: SettingsToggle {
                         required property string modelData
                         objectName: "settingsAssociation-" + modelData

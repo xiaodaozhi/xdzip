@@ -4,36 +4,49 @@
 #include <string_view>
 // clang-format off
 namespace xdzip_formats {
-inline constexpr std::array<std::string_view, 9> DropSuffixes = {{
+inline constexpr std::array<std::string_view, 14> DropSuffixes = {{
     ".zip",
+    ".xpi",
+    ".apk",
+    ".ipa",
+    ".cbz",
     ".tar",
     ".tar.gz",
     ".tgz",
     ".7z",
-    ".rar",
-    ".cab",
-    ".iso",
-    ".udf",
-}};
-inline constexpr std::array<std::string_view, 10> ShellSuffixes = {{
-    ".zip",
-    ".tar",
-    ".tar.gz",
-    ".tgz",
     ".gz",
-    ".7z",
     ".rar",
     ".cab",
     ".iso",
     ".udf",
 }};
-inline constexpr std::array<std::string_view, 13> ShellMimeTypes = {{
+inline constexpr std::array<std::string_view, 14> ShellSuffixes = {{
+    ".zip",
+    ".xpi",
+    ".apk",
+    ".ipa",
+    ".cbz",
+    ".tar",
+    ".tar.gz",
+    ".tgz",
+    ".7z",
+    ".gz",
+    ".rar",
+    ".cab",
+    ".iso",
+    ".udf",
+}};
+inline constexpr std::array<std::string_view, 17> ShellMimeTypes = {{
     "application/zip",
+    "application/x-xpinstall",
+    "application/vnd.android.package-archive",
+    "application/vnd.comicbook+zip",
+    "application/x-cbz",
     "application/x-tar",
-    "application/gzip",
-    "application/x-gzip",
     "application/x-compressed-tar",
     "application/x-7z-compressed",
+    "application/gzip",
+    "application/x-gzip",
     "application/vnd.rar",
     "application/x-rar",
     "application/x-rar-compressed",

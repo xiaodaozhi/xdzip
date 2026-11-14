@@ -6,17 +6,23 @@ use xdzip_codec_api::{
     payload::PayloadCodec,
 };
 use xdzip_codec_native::NativeCodec;
+use xdzip_codec_stream::{
+    GzipCodec,
+    controlled::{ControlledStream, Filter},
+};
 use xdzip_codec_tar::TarCodec;
 use xdzip_codec_zip::ZipCodec;
 pub(crate) trait Codec: MetadataCodec + PayloadCodec + CreationCodec + RewriteCodec {}
 impl Codec for ZipCodec {}
 impl Codec for TarCodec {}
 impl Codec for NativeCodec {}
+impl Codec for GzipCodec {}
 pub(crate) fn codec(format: Format) -> &'static dyn Codec {
     match format {
         Format::Zip => &ZipCodec,
         Format::Tar => &TarCodec { gzip: false },
         Format::TarGzip => &TarCodec { gzip: true },
+        Format::Gzip => &GzipCodec,
         Format::SevenZip => &NativeCodec {
             format: Format::SevenZip,
         },
@@ -34,7 +40,10 @@ pub(crate) fn codec(format: Format) -> &'static dyn Codec {
         },
     }
 }
-pub(crate) fn detect(source: &mut dyn ReadSource) -> Result<Format, ScanError> {
+pub(crate) fn detect(
+    source: &mut dyn ReadSource,
+    control: &xdzip_codec_api::Cancellation,
+) -> Result<Format, ScanError> {
     source.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
     let mut magic = [0; 8];
     source
@@ -42,7 +51,26 @@ pub(crate) fn detect(source: &mut dyn ReadSource) -> Result<Format, ScanError> {
         .map_err(|_| ScanError::Invalid)?;
     source.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
     Ok(if magic[..2] == [0x1f, 0x8b] {
-        Format::TarGzip
+        use std::io::Read;
+        let mut stream = ControlledStream::probe(source, control, Filter::Gzip, 256 * 1024, 512)?;
+        let mut header = [0; 512];
+        let mut length = 0;
+        while length != header.len() {
+            let n = stream
+                .read(&mut header[length..])
+                .map_err(|_| stream.failure().unwrap_or(ScanError::Invalid))?;
+            if n == 0 {
+                break;
+            }
+            length += n;
+        }
+        drop(stream);
+        source.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
+        if xdzip_codec_tar::recognizes_header(&header[..length]) {
+            Format::TarGzip
+        } else {
+            Format::Gzip
+        }
     } else if matches!(&magic[..4], b"PK\x03\x04" | b"PK\x05\x06" | b"PK\x07\x08") {
         Format::Zip
     } else if magic[..6] == *b"7z\xbc\xaf\x27\x1c" {
@@ -120,6 +148,37 @@ pub(crate) fn limits(format: Format) -> xdzip_codec_api::ScanLimits {
 mod tests {
     use super::*;
     #[test]
+    fn gzip_routing_preserves_tar_identity_and_rejects_damage() {
+        use std::io::Write;
+        fn gzip(bytes: &[u8]) -> Vec<u8> {
+            let mut encoder =
+                flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
+            encoder.write_all(bytes).unwrap();
+            encoder.finish().unwrap()
+        }
+        let cancel = Default::default();
+        assert_eq!(
+            detect(&mut std::io::Cursor::new(gzip(b"ordinary file")), &cancel),
+            Ok(Format::Gzip)
+        );
+        let mut header = [0; 512];
+        header[257..263].copy_from_slice(b"ustar\0");
+        // Strong TAR identification stays authoritative even with a bad checksum.
+        let mut source = std::io::Cursor::new(gzip(&header));
+        assert_eq!(detect(&mut source, &cancel), Ok(Format::TarGzip));
+        assert_eq!(
+            codec(Format::TarGzip).scan(&mut source, &cancel, Default::default()),
+            Err(ScanError::Invalid)
+        );
+        let mut damaged = gzip(b"ordinary file");
+        let length = damaged.len();
+        damaged[length - 8] ^= 1;
+        assert_eq!(
+            detect(&mut std::io::Cursor::new(damaged), &cancel),
+            Err(ScanError::Invalid)
+        );
+    }
+    #[test]
     fn native_signatures_route_without_filename_hints() {
         for (bytes, expected) in [
             (b"7z\xbc\xaf\x27\x1c00".as_slice(), Format::SevenZip),
@@ -128,7 +187,10 @@ mod tests {
             (b"Rar!\x1a\x07\x01\x00".as_slice(), Format::Rar),
             (b"PK\x03\x040000".as_slice(), Format::Zip),
         ] {
-            assert_eq!(detect(&mut std::io::Cursor::new(bytes)).unwrap(), expected);
+            assert_eq!(
+                detect(&mut std::io::Cursor::new(bytes), &Default::default()).unwrap(),
+                expected
+            );
         }
         assert_eq!(creation_format("archive.7Z"), Some(Format::SevenZip));
         assert_eq!(creation_format("archive.rar"), None);
@@ -155,7 +217,7 @@ mod tests {
             .read_to_end(&mut bytes)
             .unwrap();
             assert_eq!(
-                detect(&mut std::io::Cursor::new(&bytes)),
+                detect(&mut std::io::Cursor::new(&bytes), &Default::default()),
                 Ok(format),
                 "{name}"
             );
@@ -168,7 +230,10 @@ mod tests {
                         sector[1..6].fill(0);
                     }
                 }
-                assert_eq!(detect(&mut std::io::Cursor::new(&bytes)), Ok(Format::Udf));
+                assert_eq!(
+                    detect(&mut std::io::Cursor::new(&bytes), &Default::default()),
+                    Ok(Format::Udf)
+                );
             }
         }
     }
@@ -201,7 +266,7 @@ mod tests {
             position: 0,
             read: 0,
         };
-        assert_eq!(detect(&mut source), Ok(Format::Tar));
+        assert_eq!(detect(&mut source, &Default::default()), Ok(Format::Tar));
         assert!(source.read < 512 * 1024);
         assert_eq!(source.position, 0);
     }

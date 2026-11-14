@@ -3,6 +3,7 @@
 from __future__ import annotations
 import argparse
 import hashlib
+import gzip
 import json
 import os
 from pathlib import Path
@@ -110,6 +111,25 @@ def check(binary, worker, output, payload=None, install_fixture=False):
                 with tarfile.open(archive) as reader:
                     assert reader.extractfile('输入 files/你好.txt').read() == (source/'你好.txt').read_bytes()
         record('zip_tar_targz_7z_roundtrip_add_and_independent_readers')
+        single = source/'你好.txt'
+        for level in ['store','fast','normal','best']:
+            archive = work/('single-'+level+'.gz')
+            invoke('create',archive,single,'--level',level)
+            assert gzip.decompress(archive.read_bytes()) == single.read_bytes()
+            listed = invoke('list',archive)['data']['entries']
+            assert len(listed) == 1 and listed[0]['path'] == 'single-'+level
+            invoke('test',archive)
+            target = work/('gzip-output-'+level)
+            invoke('extract',archive,'-C',target)
+            assert (target/('single-'+level)).read_bytes() == single.read_bytes()
+        invoke('create',work/'refused.gz',source,code=1)
+        assert not (work/'refused.gz').exists()
+        for suffix in ['xpi','apk','ipa','cbz']:
+            alias = work/('package.'+suffix)
+            shutil.copyfile(ROOT/'tests/fixtures/zip/normal.zip',alias)
+            invoke('list',alias)
+            invoke('test',alias)
+        record('gzip_single_file_levels_and_zip_aliases')
         invoke('create',work/'literal.zip','--','--input.txt')
         assert invoke('list',work/'literal.zip')['data']['entries'][0]['path'] == '--input.txt'
         duplicate = ROOT/'tests/fixtures/zip/normal.zip'
@@ -216,7 +236,6 @@ def check(binary, worker, output, payload=None, install_fixture=False):
         for suffix in ['rar','cab','iso','udf']:
             invoke('create',work/('unsupported.'+suffix),source,code=2)
         record('split_archive_and_unsafe_or_unsupported_inputs')
-        import gzip
         readonly = [('CAB',ROOT/'tests/fixtures/cab-iso/named.cab'),('RAR',ROOT/'tests/fixtures/native-archives/rar7-store-small.rar')]
         for kind,name in [('ISO','iso9660.iso.gz'),('UDF','udf.iso.gz')]:
             image = work/(kind.lower()+'.iso')

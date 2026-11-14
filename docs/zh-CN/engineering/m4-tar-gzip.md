@@ -4,7 +4,7 @@
 
 ## 范围与能力
 
-支持 TAR、TAR.GZ 浏览、创建和安全解压。TAR 为容器，GZIP 为一层压缩过滤器，按内容探测，不按后缀选择读取后端。ZIP 行为保持兼容。当前不启用独立 GZIP 单文件创建、嵌套自动展开、加密或分卷 TAR。
+支持 TAR、TAR.GZ 浏览、创建和安全解压。TAR 为容器，GZIP 为一层压缩过滤器，按内容探测，不按后缀选择读取后端。ZIP 行为保持兼容。当前不启用嵌套自动展开、加密或分卷 TAR。普通 GZIP 单文件模式遵守独立的[压缩流契约](single-file-streams.md)。
 
 TAR 头、数字、PAX、流式编码与重写由独立 Rust 记录层实现；GZIP 封装、CRC-32、Deflate 的 LZ77 与 Huffman 由共享 `xdzip-compression` 实现。`tar` 和 `flate2` 仅用于开发测试参照，不进入这两个 crate 的生产依赖闭包。规格、来源及限制见[自研格式契约](independent-rust-codecs.md)。
 
@@ -29,4 +29,4 @@ TAR.GZ 缺少逐项压缩大小，高压缩比准入使用所选声明总量与�
 桌面操作与辅助功能按[通用验证方法](../qa/README.md)选择受影响项复验，原生自动化与离屏检查不代替人工专项。具体执行结果和限制记录于对应 issue，既有桌面验收见 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)，不在本契约保留单轮权限或环境阻塞。`v0.1.0` 的历史发行许可复核见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)，未来候选须建立新的发行 issue。
 
 
-CLI 创建入口接受 .tgz 作为 .tar.gz 的同格式名称别名，复用相同 GZIP 编码、验证和提交，不引入独立 GZIP 文件模式。English: CLI creation accepts .tgz as an alias for .tar.gz using the same GZIP encoding, validation and commit; standalone non-TAR GZIP is not added.
+CLI 创建入口接受 .tgz 作为 .tar.gz 的同格式名称别名，复用相同 GZIP 编码、验证和提交，普通非 TAR 的 GZIP 由独立单文件格式适配器处理。

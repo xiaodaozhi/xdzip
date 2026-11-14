@@ -2,7 +2,9 @@
 
 ## Built-in format registry
 
-FORMAT-REGISTRY: Generate and check all Rust, C++ and installer consumers from the shared specification. Reject duplicate format/worker identities, ambiguous suffixes, invalid generated-language values and write profiles without corresponding read support. Exercise real creation routing, worker protocol IDs, drag-and-drop and Shell candidates, including mixed case, compound suffixes, numbered volumes, directories, unknown files and the deliberate `.gz` entry-point difference. A candidate is not successful content detection or extraction. Verification uses automated component and integration checks; record actual scope in the delivery issue.
+FORMAT-STREAM: Validate ordinary GZIP against independent readers and writers at all admitted levels, including empty/concatenated members, header checksums, CRC/ISIZE failures, truncation, trailing garbage, cancellation, exact input/output budgets and changed sources. Require observed sizes and safe host-derived virtual names. Cover TAR.GZ classification and empty-TAR precedence without corruption downgrade, single-file creation/check/extraction, directory/multiple-input refusal without publication, ZIP alias content validation, actual CLI/Qt creation and stable capability selection. Check generated associations, native accessibility and bilingual layouts at 100/125/150% text scales using automation. See the [stream contract](../engineering/single-file-streams.md).
+
+FORMAT-REGISTRY: Generate and check all Rust, C++ and installer consumers from the shared specification. Reject duplicate format/worker identities, ambiguous suffixes, invalid generated-language values and write profiles without corresponding read support. Exercise real creation routing, worker protocol IDs, drag-and-drop and Shell candidates, including mixed case, compound suffixes, numbered volumes, directories, unknown files and ordinary `.gz` candidates. A candidate is not successful content detection or extraction. Verification uses automated component and integration checks; record actual scope in the delivery issue.
 
 ## Windows MSIX, AC-04 / AC-07 / AC-12
 

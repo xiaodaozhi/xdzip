@@ -7734,45 +7734,24 @@ QtObject {
         QVERIFY(QTest::qWaitForWindowExposed(create));
         auto *formats = findVisual(create->contentItem(), "createFormat");
         QVERIFY(formats);
-        const QStringList extensions{".zip", ".tar", ".tar.gz", ".7z"};
-        for (const auto &action : actions) {
-            for (const int index : {1, 2, 3, 0, 0}) {
-                auto *item =
-                    findVisual(create->contentItem(), "createFormat-" + QString::number(index));
-                QVERIFY(item);
-                auto *accessible = QAccessible::queryAccessibleInterface(item);
-                QVERIFY(accessible && accessible->actionInterface());
-                accessible->actionInterface()->doAction(action);
-                QTRY_COMPARE(formats->property("currentIndex").toInt(), index);
-                QTRY_COMPARE(create->property("formatExtension").toString(), extensions[index]);
-                for (int choice = 0; choice < extensions.size(); ++choice)
-                    QTRY_COMPARE(
-                        findVisual(create->contentItem(), "createFormat-" + QString::number(choice))
-                            ->property("checked")
-                            .toBool(),
-                        choice == index);
-            }
+        const QStringList extensions{".zip", ".tar", ".tar.gz", ".7z", ".gz"};
+        auto *formatInterface = QAccessible::queryAccessibleInterface(formats);
+        QVERIFY(formatInterface);
+        QCOMPARE(formatInterface->role(), QAccessible::ComboBox);
+        QVERIFY(!formatInterface->text(QAccessible::Name).isEmpty());
+        QCOMPARE(formats->property("count").toInt(), extensions.size());
+        for (const int index : {1, 2, 3, 4, 0}) {
+            QVERIFY(QMetaObject::invokeMethod(formats, "activateOption", Q_ARG(QVariant, index)));
+            QTRY_COMPARE(formats->property("currentIndex").toInt(), index);
+            QTRY_COMPARE(create->property("formatExtension").toString(), extensions[index]);
         }
-        auto *selectedFormat = findVisual(create->contentItem(), "createFormat-0");
-        QVERIFY(selectedFormat);
-        QTest::mouseClick(
-            create, Qt::LeftButton, Qt::NoModifier,
-            selectedFormat
-                ->mapToScene(QPointF(selectedFormat->width() / 2, selectedFormat->height() / 2))
-                .toPoint());
+        formats->setEnabled(false);
+        QVERIFY(QMetaObject::invokeMethod(formats, "activateOption", Q_ARG(QVariant, 1)));
         QCOMPARE(formats->property("currentIndex").toInt(), 0);
-        QVERIFY(selectedFormat->property("checked").toBool());
-        formats->setProperty("options",
-                             QVariantList{QVariantMap{{"text", "ZIP"}},
-                                          QVariantMap{{"text", "TAR"}, {"enabled", false}},
-                                          QVariantMap{{"text", "TAR.GZ"}}});
-        QTRY_VERIFY(findVisual(create->contentItem(), "createFormat-1"));
-        auto *disabled = findVisual(create->contentItem(), "createFormat-1");
-        QVERIFY(!disabled->isEnabled());
-        for (const auto &action : actions) {
-            QAccessible::queryAccessibleInterface(disabled)->actionInterface()->doAction(action);
-            QCOMPARE(formats->property("currentIndex").toInt(), 0);
-        }
+        formats->setEnabled(true);
+        formats->forceActiveFocus(Qt::TabFocusReason);
+        QTest::keyClick(create, Qt::Key_Down);
+        QTRY_COMPARE(create->property("formatId").toString(), QStringLiteral("tar"));
         create->close();
     }
     void accessibleCheckboxActionsCommitIntent() {
@@ -9205,18 +9184,14 @@ QtObject {
         formats->setProperty("currentIndex", 3);
         QCOMPARE(create->width(), 491);
         QTRY_VERIFY(formats->width() > 0);
-        for (int index = 0; index < 4; ++index) {
-            auto *segment =
-                findVisual(create->contentItem(), "createFormat-" + QString::number(index));
-            QVERIFY(segment);
+        QCOMPARE(formats->property("count").toInt(), 5);
+        for (int index = 0; index < formats->property("count").toInt(); ++index) {
+            formats->setProperty("currentIndex", index);
             auto *label =
-                qobject_cast<QQuickItem *>(segment->property("contentItem").value<QObject *>());
+                qobject_cast<QQuickItem *>(formats->property("contentItem").value<QObject *>());
             QVERIFY(label);
             QTRY_VERIFY2(label->implicitWidth() <= label->width() + 1,
-                         qPrintable(QString("format %1 text %2 exceeds %3")
-                                        .arg(index)
-                                        .arg(label->implicitWidth())
-                                        .arg(label->width())));
+                         qPrintable(QString("format %1 text exceeds selector").arg(index)));
         }
         auto *cancel = findVisual(create->contentItem(), "createCancel");
         auto *start = findVisual(create->contentItem(), "startCreate");
@@ -9353,6 +9328,67 @@ QtObject {
         QVERIFY(controller->passwordPrompt().isEmpty());
         QTRY_VERIFY(!passwordWindow->isVisible());
     }
+    void gzipCreationUsesStableCapabilityAndSingleFileAdmission() {
+        QTemporaryDir input;
+        QTemporaryDir output;
+        QVERIFY(input.isValid() && output.isValid());
+        const auto source = input.filePath(QStringLiteral("original.txt"));
+        {
+            QFile file(source);
+            QVERIFY(file.open(QIODevice::WriteOnly));
+            QCOMPARE(file.write("gzip GUI payload"), 16);
+        }
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *create = window->findChild<QQuickWindow *>("createWindow");
+        QVERIFY(controller && create && QMetaObject::invokeMethod(create, "configure"));
+        QTRY_VERIFY(create->isVisible() && !controller->busy());
+        int gzipIndex = -1;
+        QVERIFY(QMetaObject::invokeMethod(create, "formatIndex", Q_RETURN_ARG(int, gzipIndex),
+                                          Q_ARG(QString, QStringLiteral("gzip"))));
+        QVERIFY(gzipIndex >= 0);
+        auto *format = findVisual(create->contentItem(), "createFormat");
+        auto *name = findVisual(create->contentItem(), "createName");
+        auto *target = findVisual(create->contentItem(), "createTarget");
+        auto *start = findVisual(create->contentItem(), "startCreate");
+        auto *level = findVisual(create->contentItem(), "createLevel");
+        QVERIFY(format && name && target && start && level);
+        format->setProperty("currentIndex", gzipIndex);
+        level->setProperty("currentIndex", 0);
+        QTRY_COMPARE(create->property("formatId").toString(), QStringLiteral("gzip"));
+        QVERIFY(QMetaObject::invokeMethod(create, "addInputPaths",
+                                          Q_ARG(QVariant, QVariant(QStringList{input.path()})),
+                                          Q_ARG(bool, true)));
+        QTRY_COMPARE(create->property("inputs").toList().size(), 1);
+        QVERIFY(!create->property("inputsValid").toBool());
+        QVERIFY(!start->isEnabled());
+        create->setProperty("inputs", QVariantList{});
+        QVERIFY(QMetaObject::invokeMethod(create, "addInputPaths",
+                                          Q_ARG(QVariant, QVariant(QStringList{source})),
+                                          Q_ARG(bool, false)));
+        QTRY_VERIFY(create->property("inputsValid").toBool());
+        name->setProperty("text", QStringLiteral("renamed.gz"));
+        target->setProperty("text", output.path());
+        QTRY_VERIFY(!controller->busy());
+        controller->checkCreationTarget(output.path());
+        QTRY_VERIFY(!controller->busy() && checkedTarget(controller, output.path(), true));
+        QTRY_VERIFY(start->isEnabled());
+        QSignalSpy started(controller, &BrowserController::creationStarted);
+        QTest::mouseClick(
+            create, Qt::LeftButton, Qt::NoModifier,
+            start->mapToScene(QPointF(start->width() / 2, start->height() / 2)).toPoint());
+        QTRY_COMPARE(started.count(), 1);
+        QTRY_COMPARE_WITH_TIMEOUT(controller->activeTaskCount(), 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QCOMPARE(controller->formatLabel(), QStringLiteral("GZIP"));
+        QCOMPARE(controller->archiveTotal(), 1);
+        QVERIFY(QFileInfo::exists(output.filePath(QStringLiteral("renamed.gz"))));
+    }
     void creationControlsMatchReviewedSource() {
         const bool accessibilityWasActive = QAccessible::isActive();
         QAccessible::setActive(true);
@@ -9423,11 +9459,9 @@ QtObject {
         usePassword->setProperty("checked", false);
         QTRY_COMPARE(password->property("text").toString(), QString{});
         QTRY_VERIFY(start->isEnabled());
-        auto *tar = findVisual(create->contentItem(), "createFormat-1");
-        auto *zip = findVisual(create->contentItem(), "createFormat-0");
-        QVERIFY(zip && tar && zip->isEnabled() && tar->isEnabled());
-        zip->forceActiveFocus(Qt::TabFocusReason);
-        QTest::keyClick(create, Qt::Key_Right);
+        QCOMPARE(group->property("count").toInt(), 5);
+        group->forceActiveFocus(Qt::TabFocusReason);
+        QTest::keyClick(create, Qt::Key_Down);
         QCOMPARE(group->property("currentIndex").toInt(), 1);
         QTRY_VERIFY(name->property("text").toString().endsWith(QStringLiteral(".tar")));
         QVERIFY(!method->isEnabled() && !volume->isEnabled() && !usePassword->isEnabled());
@@ -9560,7 +9594,8 @@ QtObject {
         QVERIFY(formats);
         QTRY_VERIFY(formats->width() > 0);
         QTRY_VERIFY(formats->width() <= 608);
-        for (const auto &format : {"ZIP", "TAR", "TAR.GZ", "7z", "RAR", "CAB", "ISO", "UDF"}) {
+        for (const auto &format :
+             {"ZIP", "TAR", "TAR.GZ", "7z", "GZIP", "RAR", "CAB", "ISO", "UDF"}) {
             auto *badge =
                 findVisual(window->contentItem(), "welcomeFormat-" + QString::fromLatin1(format));
             QVERIFY(badge && badge->isVisible());

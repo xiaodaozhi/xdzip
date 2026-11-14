@@ -34,6 +34,8 @@ RAR 官方技术说明不完整，解码算法缺口须记录并进行专项许�
 
 ## 共享 Deflate 与 GZIP 规格
 
+普通 GZIP 与 TAR 过滤器共用 `xdzip-codec-stream`，宿主命名、预算、完整流校验和创建限制见[单文件压缩流契约](single-file-streams.md)。
+
 `xdzip-compression` 无第三方生产依赖。格式定义依据 [RFC 1951 第 3 节](https://www.rfc-editor.org/rfc/rfc1951)及 [RFC 1952 第 2.3 节](https://www.rfc-editor.org/rfc/rfc1952)，不搬运附录示例代码。长度、距离和额外位数为规范中的线格式表，CRC 查表由 IEEE 多项式在编译期生成。
 
 共享公开接口为 `DeflateReader`、`DeflateWriter`、`GzipReader`、`GzipWriter` 与增量 `Crc32`。ZIP 与 GZIP 使用同一套 Deflate 编解码器。裸流 Reader 只读取已准入的压缩范围，区分实际消费与缓冲预读；只有 BFINAL 结束且实际消费恰等于压缩大小时返回成功 EOF。不能用输出大小或 CRC 相同代替压缩流终止，也不接受范围内的第二条流或尾随垃圾。

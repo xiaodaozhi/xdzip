@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import "ArchiveFormats.js" as ArchiveFormats
 
 OperationWindow {
     id: root
@@ -17,9 +18,21 @@ OperationWindow {
     requestedHeight: Math.min(Theme.operationCreateClientHeight, Screen.desktopAvailableHeight - 60)
     title: qsTrId("ui.fe189b616c1d")
     readonly property bool targetReady: Boolean(controller.creationTargetCheck.valid) && controller.creationTargetMatches(target.text)
-    readonly property bool sevenZip: formatGroup.currentIndex === 3
-    readonly property bool supportsPasswordAndVolumes: formatGroup.currentIndex === 0 || sevenZip
-    readonly property string formatExtension: [".zip", ".tar", ".tar.gz", ".7z"][formatGroup.currentIndex]
+    readonly property var formatChoices: ArchiveFormats.creationFormats
+    readonly property var selectedFormat: formatChoices[formatGroup.currentIndex] || formatChoices[0]
+    readonly property string formatId: selectedFormat.id
+    readonly property bool sevenZip: formatId === "7z"
+    readonly property bool supportsPasswordAndVolumes: selectedFormat.encryption.length > 0 && selectedFormat.volumes.length > 0
+    readonly property string formatExtension: selectedFormat.suffix
+    readonly property bool inputsValid: inputs.length > 0 && (formatId !== "gzip" || (inputs.length === 1 && !inputs[0].directory))
+    function formatIndex(id: string): int {
+        return formatChoices.findIndex(choice => choice.id === id);
+    }
+    function nameStem(name: string): string {
+        const lower = name.toLowerCase();
+        const choice = formatChoices.slice().sort((a, b) => b.suffix.length - a.suffix.length).find(item => lower.endsWith(item.suffix));
+        return choice ? name.slice(0, -choice.suffix.length) : name;
+    }
     readonly property bool validName: fileName.text.trim().toLowerCase().endsWith(formatExtension) && fileName.text.trim().length > formatExtension.length && !/[\\/:*?"<>|\x00-\x1f]/.test(fileName.text)
     readonly property real volumeBytes: {
         if (!supportsPasswordAndVolumes) return 0;
@@ -34,7 +47,7 @@ OperationWindow {
     }
     readonly property bool passwordValid: !supportsPasswordAndVolumes || !usePassword.checked || (passwordBytes(password.text) > 0 && passwordBytes(password.text) <= 128 && !/[\x00-\x1f\x7f-\x9f]/.test(password.text))
     readonly property bool optionsValid: volumeBytes >= 0 && passwordValid
-    readonly property real minimumFormatWidth: Math.ceil(formatTextMetrics.advanceWidth) * formatGroup.options.length + formatGroup.padding * 2
+    readonly property real minimumFormatWidth: Math.ceil(formatTextMetrics.advanceWidth) + formatGroup.leftPadding + formatGroup.rightPadding
     // The grid's own width changes while it rearranges its labels.
     readonly property real optionLabelMaximumWidth: Math.max(0, optionsForm.width - minimumFormatWidth - optionsGrid.columnSpacing)
     TextMetrics {
@@ -56,7 +69,7 @@ OperationWindow {
         controller.clearCreationError();
         controller.invalidateCreationTarget();
         inputs = [];
-        formatGroup.currentIndex = 0;
+        formatGroup.currentIndex = formatIndex("zip");
         fileName.text = qsTrId("ui.58ca935c9fbf");
         target.text = initialTarget;
         level.currentIndex = 2;
@@ -73,7 +86,7 @@ OperationWindow {
         configureTarget(targetPath);
         inputs = items;
         target.text = targetPath;
-        formatGroup.currentIndex = seven ? 3 : 0;
+        formatGroup.currentIndex = formatIndex(seven ? "7z" : "zip");
         fileName.text = name;
         controller.checkCreationTarget(targetPath);
     }
@@ -255,40 +268,27 @@ OperationWindow {
                                             font.pixelSize: Theme.operationCreateBodySize
                                             color: Theme.text
                                         }
-                                        OperationSegmentedGroup {
+                                        OperationSelect {
                                             id: formatGroup
                                             objectName: "createFormat"
                                             Layout.fillWidth: true
                                             Layout.minimumWidth: root.minimumFormatWidth
-                                            accessibleLabel: qsTrId("ui.5e30948d6a8b")
+                                            density: root.density
+                                            implicitHeight: Math.max(Theme.operationCreateFieldHeight, contentItem.implicitHeight + 8)
+                                            Accessible.name: qsTrId("ui.5e30948d6a8b")
+                                            textRole: "label"
+                                            model: root.formatChoices
                                             onCurrentIndexChanged: {
-                                                if (!fileName) return;
-                                                const stem = fileName.text.replace(/\.(tar\.gz|zip|tar|7z)$/i, "");
-                                                fileName.text = stem + [".zip", ".tar", ".tar.gz", ".7z"][currentIndex];
+                                                if (!fileName || currentIndex < 0 || currentIndex >= root.formatChoices.length) return;
+                                                const stem = root.nameStem(fileName.text);
+                                                fileName.text = stem + root.formatChoices[currentIndex].suffix;
                                                 volume.currentIndex = 0;
                                                 usePassword.checked = false;
                                                 solid.checked = false;
                                                 encryptHeader.checked = false;
                                                 password.text = "";
                                             }
-                                            options: [
-                                                {
-                                                    text: "ZIP",
-                                                    enabled: true
-                                                },
-                                                {
-                                                    text: "TAR",
-                                                    enabled: true
-                                                },
-                                                {
-                                                    text: "TAR.GZ",
-                                                    enabled: true
-                                                },
-                                                {
-                                                    text: "7z",
-                                                    enabled: true
-                                                }
-                                            ]
+
                                         }
                                         Text {
                                             Layout.maximumWidth: root.optionLabelMaximumWidth
@@ -299,7 +299,7 @@ OperationWindow {
                                         }
                                         OperationSelect {
                                             id: level
-                                            enabled: formatGroup.currentIndex !== 1
+                                            enabled: root.formatId !== "tar"
                                             objectName: "createLevel"
                                             Layout.fillWidth: true
                                             density: root.density
@@ -343,7 +343,7 @@ OperationWindow {
                                     }
                                     Text {
                                         Layout.fillWidth: true
-                                        text: formatGroup.currentIndex === 1 ? qsTrId("ui.a823dd053540") : formatGroup.currentIndex === 2 ? qsTrId("ui.8de83aec57d2") : volume.currentIndex === 13 && root.volumeBytes < 0 ? qsTrId("ui.58e4aeca8ddc") : volume.currentIndex > 0 ? (root.sevenZip ? qsTrId("create.sevenZipVolumes") : qsTrId("ui.17f715707e84")) : root.sevenZip ? qsTrId("create.sevenZipMethod") : qsTrId("ui.13e4af7e4901")
+                                        text: root.formatId === "tar" ? qsTrId("ui.a823dd053540") : root.formatId === "tar-gzip" ? qsTrId("ui.8de83aec57d2") : root.formatId === "gzip" ? qsTrId("create.gzipSingleFile") : volume.currentIndex === 13 && root.volumeBytes < 0 ? qsTrId("ui.58e4aeca8ddc") : volume.currentIndex > 0 ? (root.sevenZip ? qsTrId("create.sevenZipVolumes") : qsTrId("ui.17f715707e84")) : root.sevenZip ? qsTrId("create.sevenZipMethod") : qsTrId("ui.13e4af7e4901")
                                         font.pixelSize: Theme.operationCreateNoteSize
                                         color: Theme.textSecondary
                                     }
@@ -421,11 +421,11 @@ OperationWindow {
                 objectName: "startCreate"
                 text: qsTrId("ui.e185d04bcc5f")
                 primary: true
-                enabled: root.inputs.length > 0 && root.validName && root.targetReady && root.optionsValid && !root.controller.busy
+                enabled: root.inputsValid && root.validName && root.targetReady && root.optionsValid && !root.controller.busy
                 onClicked: {
-                    const method = formatGroup.currentIndex === 1 || (root.supportsPasswordAndVolumes && level.currentIndex === 0) ? 0 : root.sevenZip ? 32 : 8;
+                    const method = root.formatId === "tar" || (root.supportsPasswordAndVolumes && level.currentIndex === 0) ? 0 : root.sevenZip ? 32 : 8;
                     root.submitting();
-                    root.controller.startCreation(root.inputs.map(item => item.path), target.text, fileName.text.trim(), method, formatGroup.currentIndex === 2 && level.currentIndex === 0 ? 0 : [6, 1, 6, 9][level.currentIndex], false, root.volumeBytes, root.supportsPasswordAndVolumes && usePassword.checked ? password.text : "", root.sevenZip && solid.checked, root.sevenZip && usePassword.checked && encryptHeader.checked);
+                    root.controller.startCreation(root.inputs.map(item => item.path), target.text, fileName.text.trim(), method, (root.formatId === "tar-gzip" || root.formatId === "gzip") && level.currentIndex === 0 ? 0 : [6, 1, 6, 9][level.currentIndex], false, root.volumeBytes, root.supportsPasswordAndVolumes && usePassword.checked ? password.text : "", root.sevenZip && solid.checked, root.sevenZip && usePassword.checked && encryptHeader.checked);
                     password.text = "";
                 }
             }

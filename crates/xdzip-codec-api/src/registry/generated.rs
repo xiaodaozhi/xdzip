@@ -122,6 +122,30 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         worker_id: Some(7),
     },
     FormatDescriptor {
+        format: Format::Gzip,
+        id: "gzip",
+        label: "GZIP",
+        container: "single-file",
+        filters: &[
+            "gzip",
+        ],
+        read_methods: &[
+            "deflate",
+        ],
+        write_methods: &[
+            "deflate",
+        ],
+        read_encryption: &[],
+        write_encryption: &[],
+        read_volumes: &[],
+        write_volumes: &[],
+        creation_suffixes: &[
+            ".gz",
+        ],
+        rewrite: false,
+        worker_id: None,
+    },
+    FormatDescriptor {
         format: Format::Rar,
         id: "rar",
         label: "RAR",
@@ -221,9 +245,10 @@ pub(super) fn descriptor(format: Format) -> &'static FormatDescriptor {
         Format::Tar => &DESCRIPTORS[1],
         Format::TarGzip => &DESCRIPTORS[2],
         Format::SevenZip => &DESCRIPTORS[3],
-        Format::Rar => &DESCRIPTORS[4],
-        Format::Cab => &DESCRIPTORS[5],
-        Format::Iso => &DESCRIPTORS[6],
-        Format::Udf => &DESCRIPTORS[7],
+        Format::Gzip => &DESCRIPTORS[4],
+        Format::Rar => &DESCRIPTORS[5],
+        Format::Cab => &DESCRIPTORS[6],
+        Format::Iso => &DESCRIPTORS[7],
+        Format::Udf => &DESCRIPTORS[8],
     }
 }

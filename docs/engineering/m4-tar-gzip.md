@@ -4,7 +4,7 @@ This contract defines TAR/TAR.GZ browsing, creation, and safe extraction boundar
 
 ## Scope and capabilities
 
-TAR and TAR.GZ browsing, creation, and safe extraction are supported. TAR is a container and GZIP one compression filter; reading probes content instead of selecting a backend by extension. ZIP behavior remains compatible. Standalone single-file GZIP creation, automatic nested expansion, encryption, and split TAR are not enabled.
+TAR and TAR.GZ browsing, creation, and safe extraction are supported. TAR is a container and GZIP one compression filter; reading probes content instead of selecting a backend by extension. ZIP behavior remains compatible. Automatic nested expansion, encryption and split TAR are not enabled. Ordinary single-file GZIP uses the separate [stream contract](single-file-streams.md).
 
 TAR headers, numbers, PAX, streaming encoding, and rewriting use an independent Rust record layer. GZIP framing, CRC-32, and Deflate LZ77/Huffman use shared `xdzip-compression`. `tar` and `flate2` are development-test references only and do not enter production dependency closures of these crates. See the [in-house format contract](independent-rust-codecs.md) for specifications, sources, and limits.
 
@@ -28,4 +28,4 @@ Cover bidirectional interoperability with system tar/Python tarfile, long paths,
 
 Choose affected desktop and accessibility reverification under [general verification](../qa/README.md); native automation and offscreen checks do not replace manual checks. Actual results and limitations go in the relevant issue. Existing desktop acceptance is in [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5); one-off permission or environment blockers are not retained in this contract. Historical `v0.1.0` release license review is in [#4](https://github.com/xiaodaozhi/xdzip/issues/4) and [#53](https://github.com/xiaodaozhi/xdzip/issues/53); future candidates need new release issues.
 
-The CLI creation entry accepts .tgz as a same-format alias for .tar.gz, using the same GZIP encoding, verification, and commit. It does not add standalone non-TAR GZIP mode.
+The CLI creation entry accepts .tgz as a same-format alias for .tar.gz, using the same GZIP encoding, verification, and commit. Ordinary non-TAR GZIP uses the separate single-file codec.

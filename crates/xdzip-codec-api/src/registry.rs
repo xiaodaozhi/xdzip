@@ -42,13 +42,17 @@ pub fn formats() -> &'static [FormatDescriptor] {
 /// Resolve a creation suffix only; this is not archive detection or pathname validation.
 pub fn creation_format(name: &str) -> Option<Format> {
     let name = name.to_ascii_lowercase();
-    formats().iter().find_map(|descriptor| {
-        descriptor
-            .creation_suffixes
-            .iter()
-            .any(|suffix| name.ends_with(suffix))
-            .then_some(descriptor.format)
-    })
+    formats()
+        .iter()
+        .flat_map(|descriptor| {
+            descriptor
+                .creation_suffixes
+                .iter()
+                .map(move |suffix| (descriptor.format, *suffix))
+        })
+        .filter(|(_, suffix)| name.ends_with(suffix))
+        .max_by_key(|(_, suffix)| suffix.len())
+        .map(|(format, _)| format)
 }
 
 impl Format {
@@ -70,7 +74,7 @@ mod tests {
             ("archive.TAR.GZ", Some(Format::TarGzip)),
             ("archive.tgz", Some(Format::TarGzip)),
             ("archive.7Z", Some(Format::SevenZip)),
-            ("archive.gz", None),
+            ("archive.gz", Some(Format::Gzip)),
             ("archive.rar", None),
             ("archive.cab", None),
             ("archive.iso", None),
@@ -87,6 +91,7 @@ mod tests {
             (Format::Zip, None),
             (Format::Tar, None),
             (Format::TarGzip, None),
+            (Format::Gzip, None),
             (Format::SevenZip, Some(7)),
             (Format::Rar, Some(4)),
             (Format::Cab, Some(8)),

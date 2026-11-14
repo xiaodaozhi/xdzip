@@ -1820,12 +1820,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-stream"
+version = "0.2.0"
+dependencies = [
+ "flate2",
+ "xdzip-codec-api",
+ "xdzip-compression",
+ "xdzip-domain",
+]
+
+[[package]]
 name = "xdzip-codec-tar"
 version = "0.2.0"
 dependencies = [
  "flate2",
  "tar",
  "xdzip-codec-api",
+ "xdzip-codec-stream",
  "xdzip-compression",
  "xdzip-domain",
 ]
@@ -1968,6 +1979,7 @@ dependencies = [
  "winapi-util",
  "xdzip-codec-api",
  "xdzip-codec-native",
+ "xdzip-codec-stream",
  "xdzip-codec-tar",
  "xdzip-codec-zip",
  "xdzip-domain",

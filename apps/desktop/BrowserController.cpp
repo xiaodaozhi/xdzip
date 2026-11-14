@@ -1075,7 +1075,9 @@ void BrowserController::startCreation(const QStringList &inputs, const QString &
     const bool sevenZip = name.endsWith(QStringLiteral(".7z"), Qt::CaseInsensitive);
     if ((method != 0 && method != (sevenZip ? 32 : 8)) ||
         (level != 1 && level != 6 && level != 9 &&
-         !(name.endsWith(QStringLiteral(".tar.gz"), Qt::CaseInsensitive) && level == 0)) ||
+         !((name.endsWith(QStringLiteral(".gz"), Qt::CaseInsensitive) ||
+            name.endsWith(QStringLiteral(".tgz"), Qt::CaseInsensitive)) &&
+           level == 0)) ||
         !validText(target) || !validText(name) ||
         std::any_of(inputs.cbegin(), inputs.cend(),
                     [&](const QString &path) { return !validText(path); })) {

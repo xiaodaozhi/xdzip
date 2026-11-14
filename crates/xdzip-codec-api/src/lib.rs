@@ -12,6 +12,11 @@ use xdzip_domain::identity::EntryId;
 
 /// Seekable input supplied by the host; codecs do not open arbitrary paths.
 pub trait ReadSource: Read + Seek {
+    /// Optional host basename for a single-file stream's virtual row. This is
+    /// a naming hint only; it grants no path access or output authorization.
+    fn source_name_hint(&self) -> Option<&str> {
+        None
+    }
     /// Optional host OEM-to-ANSI round trip for a complete NUL-terminated
     /// UTF16 buffer. The returned count excludes NUL. Neither slice is retained.
     fn oem_to_ansi_wide(
@@ -117,6 +122,8 @@ pub enum Format {
     Tar,
     /// One GZIP filter around TAR.
     TarGzip,
+    /// One ordinary file compressed with RFC 1952 GZIP.
+    Gzip,
     /// Independent Rust 7z behind the isolated codec worker.
     SevenZip,
     /// Independent Rust RAR read-only backend in the isolated codec worker.
@@ -197,7 +204,7 @@ impl Entry {
                     matches!(self.method, 0 | 8)
                 }
             }
-            Format::Tar | Format::TarGzip => !self.warning && !self.link,
+            Format::Tar | Format::TarGzip | Format::Gzip => !self.warning && !self.link,
             Format::SevenZip | Format::Rar | Format::Cab | Format::Iso | Format::Udf => {
                 !self.warning && !self.link && (!self.encrypted || self.password_supported)
             }

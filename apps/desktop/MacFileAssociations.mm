@@ -7,6 +7,11 @@
 
 namespace {
 UTType *contentType(const QString &extension) {
+    if (extension == QStringLiteral(".xpi") || extension == QStringLiteral(".apk") ||
+        extension == QStringLiteral(".ipa") || extension == QStringLiteral(".cbz")) {
+        // Preserve the extension's package identity instead of changing every ZIP default.
+        return [UTType typeWithFilenameExtension:extension.mid(1).toNSString()];
+    }
     if (extension == QStringLiteral(".udf")) {
         // An older installed bundle can shadow our corrected UDF declaration.
         // Use the type macOS actually assigns to .udf files, even if dynamic.
@@ -24,6 +29,7 @@ UTType *contentType(const QString &extension) {
         {".zip", "public.zip-archive"}, {".7z", "org.7-zip.7-zip-archive"},
         {".rar", "com.rarlab.rar-archive"}, {".tar", "public.tar-archive"},
         {".tar.gz", "org.gnu.gnu-zip-tar-archive"}, {".tgz", "org.gnu.gnu-zip-tar-archive"},
+        {".gz", "org.gnu.gnu-zip-archive"},
         {".cab", "com.microsoft.cab-archive"}, {".iso", "public.iso-image"},
         {".udf", "org.xdzip.udf-image"}};
     const QString identifier = types.value(extension);

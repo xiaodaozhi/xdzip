@@ -8,4 +8,4 @@ Icon=xdzip
 Terminal=false
 Categories=Utility;Archiving;
 StartupWMClass=xdzip
-MimeType=application/zip;application/x-tar;application/x-compressed-tar;application/x-7z-compressed;application/vnd.rar;application/x-rar;application/vnd.ms-cab-compressed;application/x-iso9660-image;application/x-udf;
+MimeType=application/zip;application/x-xpinstall;application/vnd.android.package-archive;application/vnd.comicbook+zip;application/x-cbz;application/x-tar;application/x-compressed-tar;application/x-7z-compressed;application/gzip;application/x-gzip;application/vnd.rar;application/x-rar;application/x-rar-compressed;application/vnd.ms-cab-compressed;application/x-cab;application/x-iso9660-image;application/x-udf;

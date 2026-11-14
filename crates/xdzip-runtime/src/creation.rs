@@ -85,7 +85,10 @@ impl Options {
                 || (!self.solid && !self.encrypt_headers))
             && (!self.encrypt_headers || self.password.is_some())
             && (creation_format(&self.name) != Some(Format::Tar) || self.method == 0)
-            && (creation_format(&self.name) != Some(Format::TarGzip) || self.method == 8)
+            && (!matches!(
+                creation_format(&self.name),
+                Some(Format::TarGzip | Format::Gzip)
+            ) || self.method == 8)
             && PortablePath::parse(&self.name).is_some_and(|p| p.parts().len() == 1)
             && (if creation_format(&self.name) == Some(Format::SevenZip) {
                 [0, 32].contains(&self.method)
@@ -93,7 +96,10 @@ impl Options {
                 [0, 8].contains(&self.method)
             })
             && ([1, 6, 9].contains(&self.level)
-                || (creation_format(&self.name) == Some(Format::TarGzip) && self.level == 0))
+                || (matches!(
+                    creation_format(&self.name),
+                    Some(Format::TarGzip | Format::Gzip)
+                ) && self.level == 0))
             && self.volume_bytes <= 24 * 1024 * 1024 * 1024
             && (self.volume_bytes == 0 || self.name.len() <= 250)
     }
@@ -297,13 +303,14 @@ fn fresh_name(
     name: &str,
     cancel: &Cancellation,
 ) -> Result<PortablePath, &'static str> {
-    let extension = match creation_format(name).ok_or("unsafe_name")? {
-        Format::Zip => ".zip",
-        Format::Tar => ".tar",
-        Format::TarGzip => ".tar.gz",
-        Format::SevenZip => ".7z",
-        Format::Rar | Format::Cab | Format::Iso | Format::Udf => return Err("unsupported_feature"),
-    };
+    let format = creation_format(name).ok_or("unsafe_name")?;
+    let extension = format
+        .descriptor()
+        .creation_suffixes
+        .iter()
+        .filter(|suffix| name.to_ascii_lowercase().ends_with(**suffix))
+        .max_by_key(|suffix| suffix.len())
+        .ok_or("unsupported_feature")?;
     let stem = name
         .get(..name.len() - extension.len())
         .ok_or("unsafe_name")?;
@@ -512,7 +519,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                     } else {
                         input.name.clone()
                     };
-                    if row.raw_name != expected.as_bytes()
+                    if (format != Format::Gzip && row.raw_name != expected.as_bytes())
                         || row.directory != input.directory
                         || row.size != input.size
                     {

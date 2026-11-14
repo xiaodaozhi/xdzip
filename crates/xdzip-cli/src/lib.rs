@@ -192,12 +192,14 @@ fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -
                 .and_then(|s| s.to_str())
                 .ok_or("invalid_archive_name")?
                 .to_lowercase();
-            let seven = name_lower.ends_with(".7z");
-            let tar = name_lower.ends_with(".tar");
-            let gzip = name_lower.ends_with(".tar.gz") || name_lower.ends_with(".tgz");
-            if !seven && !tar && !gzip && !name_lower.ends_with(".zip") {
-                return Err(Failure::usage("unsupported_format"));
-            }
+            let format = xdzip_codec_api::registry::creation_format(&name_lower)
+                .ok_or_else(|| Failure::usage("unsupported_format"))?;
+            let seven = format == xdzip_codec_api::Format::SevenZip;
+            let tar = format == xdzip_codec_api::Format::Tar;
+            let gzip = matches!(
+                format,
+                xdzip_codec_api::Format::Gzip | xdzip_codec_api::Format::TarGzip
+            );
             if (matches.get_flag("solid") || matches.get_flag("encrypt-names")) && !seven {
                 return Err(Failure::usage("unsupported_options"));
             }
