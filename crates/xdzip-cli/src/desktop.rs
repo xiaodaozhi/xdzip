@@ -11,7 +11,7 @@ use std::{
 };
 
 fn executable() -> Result<PathBuf> {
-    if let Context::Desktop(gui) = installation::context()? {
+    if let Context::Desktop(gui, _) = installation::context()? {
         return Ok(gui);
     }
     // A separately installed CLI can use an explicitly registered desktop,

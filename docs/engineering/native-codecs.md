@@ -4,6 +4,8 @@
 
 CAB always uses the independent Rust route in the product, without test switches, official handlers, or failure fallback. See the [in-house contract](independent-rust-codecs.md#cab只读规格) for complete frames, shared algorithms, and resource boundaries, and [CAB sources](cab-format-sources.md) for provenance and reference-analysis roles.
 
+Hosts may register one validated absolute worker path before runtime startup. Repeating the same registration succeeds; conflicting or relative paths are rejected without changing the selected worker. Explicit developer worker overrides retain precedence, followed by the registered path; the executable sibling is used only when none is registered. Desktop CLI bundles use this registration to share their desktop worker. Standalone packages retain a local worker and never infer another desktop installation from nearby directories.
+
 ## Build and sources
 
 The unified preparation entry point runs `scripts/prepare-native-codecs.py`. The [product source manifest](../../scripts/native-codec-sources.json) is currently empty; preparation does not download or extract official format sources, and offline builds need no UnRAR or 7-Zip archives. General source tooling retains bounded extraction and digest verification for explicitly declared source materials; cached contents cannot automatically enter the product.

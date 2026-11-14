@@ -136,7 +136,7 @@ pub fn cache_root() -> Result<PathBuf> {
 pub enum Context {
     Portable,
     Managed(PathBuf),
-    Desktop(PathBuf),
+    Desktop(PathBuf, Option<PathBuf>),
 }
 pub fn context() -> Result<Context> {
     context_for(&std::env::current_exe()?)
@@ -182,7 +182,39 @@ pub fn context_for(exe: &Path) -> Result<Context> {
         if !fs::symlink_metadata(&gui)?.is_file() {
             return Err("invalid_installation".into());
         }
-        return Ok(Context::Desktop(gui));
+        let worker = match context.get("worker_relative") {
+            None => None,
+            Some(value) => {
+                let relative = value.as_str().ok_or("invalid_installation")?;
+                let allowed: &[&str] = if cfg!(windows) {
+                    &["../xdzip-native-codec.exe"]
+                } else if cfg!(target_os = "macos") {
+                    &["../../MacOS/xdzip-native-codec"]
+                } else {
+                    &["../xdzip-native-codec", "../bin/xdzip-native-codec"]
+                };
+                if !allowed.contains(&relative) {
+                    return Err("invalid_installation".into());
+                }
+                let path = bin.join(relative);
+                let metadata = fs::symlink_metadata(&path)
+                    .map_err(|_| Failure::new("invalid_installation"))?;
+                if !metadata.is_file() || metadata.is_symlink() {
+                    return Err("invalid_installation".into());
+                }
+                let worker = fs::canonicalize(path)?;
+                let root = fs::canonicalize(bin.join(if cfg!(target_os = "macos") {
+                    "../.."
+                } else {
+                    ".."
+                }))?;
+                if !worker.starts_with(root) {
+                    return Err("invalid_installation".into());
+                }
+                Some(worker)
+            }
+        };
+        return Ok(Context::Desktop(gui, worker));
     }
     // Managed payloads are root/versions/<fixed-leaf>/bin/xdzip.
     if let Some(version) = bin.parent()
@@ -279,13 +311,70 @@ mod context_tests {
         let fixture = Desktop::new();
         assert!(matches!(fixture.context().unwrap(), Context::Portable));
         fixture.write();
-        assert!(matches!(fixture.context().unwrap(), Context::Desktop(path)
-            if path == fs::canonicalize(&fixture.gui).unwrap()));
+        assert!(
+            matches!(fixture.context().unwrap(), Context::Desktop(path, None)
+            if path == fs::canonicalize(&fixture.gui).unwrap())
+        );
         for value in [
             json!({"schema_version": 2, "kind": "desktop", "desktop_relative": "../../MacOS/xdzip"}),
             json!({"schema_version": 1, "kind": "desktop", "desktop_relative": "../foreign"}),
         ] {
             fs::write(&fixture.marker, serde_json::to_vec(&value).unwrap()).unwrap();
+            assert_eq!(fixture.context().unwrap_err().code, "invalid_installation");
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn shared_worker_cannot_escape_through_a_parent_directory_link() {
+        let fixture = Desktop::new();
+        let outside = Desktop::new();
+        fixture.write();
+        let mut marker: Value = read_json(&fixture.marker).unwrap();
+        marker["worker_relative"] = json!("../bin/xdzip-native-codec");
+        fs::write(&fixture.marker, serde_json::to_vec(&marker).unwrap()).unwrap();
+        fs::write(outside.root.join("xdzip-native-codec"), b"foreign worker").unwrap();
+        std::os::unix::fs::symlink(&outside.root, fixture.root.join("bin")).unwrap();
+        assert_eq!(fixture.context().unwrap_err().code, "invalid_installation");
+    }
+
+    #[test]
+    fn desktop_worker_requires_an_explicit_fixed_existing_file() {
+        let fixture = Desktop::new();
+        fixture.write();
+        let relative = if cfg!(windows) {
+            "../xdzip-native-codec.exe"
+        } else if cfg!(target_os = "macos") {
+            "../../MacOS/xdzip-native-codec"
+        } else {
+            "../bin/xdzip-native-codec"
+        };
+        let mut marker: Value = read_json(&fixture.marker).unwrap();
+        marker["worker_relative"] = json!(relative);
+        fs::write(&fixture.marker, serde_json::to_vec(&marker).unwrap()).unwrap();
+        assert_eq!(fixture.context().unwrap_err().code, "invalid_installation");
+        let worker = fixture.bin.join(relative);
+        fs::create_dir_all(worker.parent().unwrap()).unwrap();
+        fs::write(&worker, b"owned codec worker").unwrap();
+        assert!(
+            matches!(fixture.context().unwrap(), Context::Desktop(_, Some(path))
+            if path == fs::canonicalize(&worker).unwrap())
+        );
+        for invalid in [
+            json!("../../foreign-worker"),
+            json!("xdzip-native-codec"),
+            json!(null),
+        ] {
+            marker["worker_relative"] = invalid;
+            fs::write(&fixture.marker, serde_json::to_vec(&marker).unwrap()).unwrap();
+            assert_eq!(fixture.context().unwrap_err().code, "invalid_installation");
+        }
+        #[cfg(unix)]
+        {
+            marker["worker_relative"] = json!(relative);
+            fs::write(&fixture.marker, serde_json::to_vec(&marker).unwrap()).unwrap();
+            fs::remove_file(&worker).unwrap();
+            std::os::unix::fs::symlink(&fixture.gui, &worker).unwrap();
             assert_eq!(fixture.context().unwrap_err().code, "invalid_installation");
         }
     }
@@ -632,7 +721,7 @@ pub fn setup(matches: &ArgMatches) -> Result<Response> {
     let mut record = json!({"schema_version":1,"product":"xdzip"});
     let launcher;
     match context {
-        Context::Desktop(gui) => {
+        Context::Desktop(gui, _) => {
             record["kind"] = json!("desktop");
             record["executable"] = json!(exe);
             launcher = exe.parent().unwrap().join(executable("xdzip-launcher"));
@@ -742,7 +831,7 @@ impl Usage {
         {
             use std::os::{fd::AsRawFd, unix::fs::OpenOptionsExt};
             let mut file = None;
-            if let Context::Desktop(_) = context()? {
+            if let Context::Desktop(..) = context()? {
                 #[cfg(target_os = "macos")]
                 let gate = || -> Result<()> {
                     let record = data_root()?.join("desktop-update-status.json");
@@ -783,7 +872,7 @@ impl Usage {
         {
             use windows_sys::Win32::{Foundation::*, System::Threading::*};
             let mut handle: HANDLE = std::ptr::null_mut();
-            if matches!(context()?, Context::Desktop(_)) {
+            if matches!(context()?, Context::Desktop(..)) {
                 #[allow(unsafe_code)]
                 // SAFETY: fixed terminated mutex names, no borrowed data survives calls.
                 unsafe {

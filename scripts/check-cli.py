@@ -16,7 +16,48 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def check(binary, worker, output, payload=None, install_fixture=False):
+def check_desktop_worker(binary, worker, work, environment, source):
+    """Exercise fixed deployment lookup without the ordinary worker overrides."""
+    root=work/'desktop-worker-layout';root.mkdir()
+    mac=platform_name()=='macos'
+    cli=root/('Owned.app/Contents/Helpers/cli' if mac else 'cli');cli.mkdir(parents=True)
+    gui=root/'Owned.app/Contents/MacOS/xdzip' if mac else root/binary.name
+    gui.parent.mkdir(parents=True,exist_ok=True);gui.write_bytes(b'owned desktop identity fixture')
+    executable=cli/binary.name;shutil.copy2(binary,executable)
+    shared=gui.with_name(worker.name) if mac or os.name=='nt' else root/'bin'/worker.name
+    shared.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(worker,shared)
+    marker=root/'Owned.app/Contents/Resources/xdzip-cli-context.json' if mac else cli/'xdzip-cli-context.json'
+    marker.parent.mkdir(parents=True,exist_ok=True)
+    record=dict(schema_version=1,kind='desktop',desktop_relative=(
+        '../../MacOS/xdzip' if mac else '../'+binary.name),worker_relative=(
+        '../../MacOS/'+worker.name if mac else '../'+worker.name if os.name=='nt' else '../bin/'+worker.name))
+    marker.write_text(json.dumps(record))
+    home=root/'home';home.mkdir(mode=0o700)
+    env=dict(environment,HOME=str(home),LOCALAPPDATA=str(home),XDG_DATA_HOME=str(home))
+    for key in ('XDZIP_NATIVE_CODEC','XDZIP_NATIVE_CODEC_WORKER'):env.pop(key,None)
+    def command(*args,code=0):
+        p=subprocess.run([str(executable),'--json',*map(str,args)],env=env,capture_output=True,timeout=30)
+        assert p.returncode==code,(p.returncode,p.stdout[:1500],p.stderr[:1500])
+        return json.loads(p.stdout)
+    archive=root/'shared.7z'
+    command('create',archive,source);command('test',archive)
+    command('extract',archive,'-C',root/'extracted')
+    assert (root/'extracted'/source.name).read_bytes()==source.read_bytes()
+    original=record['worker_relative'];record['worker_relative']='../../foreign-worker'
+    marker.write_text(json.dumps(record))
+    assert command('list',archive,code=3)['error_code']=='invalid_installation'
+    record['worker_relative']=original;marker.write_text(json.dumps(record))
+    held=shared.with_name('held-worker');shared.rename(held)
+    assert command('list',archive,code=3)['error_code']=='invalid_installation'
+    held.rename(shared)
+    marker.unlink()
+    command('create',root/'missing-local.7z',source,code=1)
+    assert not (root/'missing-local.7z').exists()
+    shutil.copy2(shared,cli/worker.name)
+    command('create',root/'standalone.7z',source);command('test',root/'standalone.7z')
+
+
+def check(binary, worker, output, payload=None, install_fixture=False, default_worker=False):
     binary, worker, output = binary.resolve(), worker.resolve(), output.resolve()
     if not output.is_relative_to(ROOT/'build') or output == ROOT/'build':
         raise ValueError('CLI evidence must be under build/')
@@ -31,8 +72,9 @@ def check(binary, worker, output, payload=None, install_fixture=False):
     for key in ['DISPLAY','WAYLAND_DISPLAY','QT_PLUGIN_PATH','QT_QPA_PLATFORM_PLUGIN_PATH',
                 'QML_IMPORT_PATH','QML2_IMPORT_PATH','LD_LIBRARY_PATH','DYLD_LIBRARY_PATH']:
         env.pop(key, None)
-    env['XDZIP_NATIVE_CODEC'] = str(worker)
-    env['XDZIP_NATIVE_CODEC_WORKER'] = str(worker)
+    for key in ('XDZIP_NATIVE_CODEC','XDZIP_NATIVE_CODEC_WORKER'):
+        if default_worker:env.pop(key,None)
+        else:env[key]=str(worker)
     results = []
 
     def command(*arguments, code=0, stdin=None, cwd=work):
@@ -110,6 +152,8 @@ def check(binary, worker, output, payload=None, install_fixture=False):
                 with tarfile.open(archive) as reader:
                     assert reader.extractfile('输入 files/你好.txt').read() == (source/'你好.txt').read_bytes()
         record('zip_tar_targz_7z_roundtrip_add_and_independent_readers')
+        check_desktop_worker(binary,worker,work,env,source/'你好.txt')
+        record('desktop_shared_and_standalone_default_worker_lookup')
         invoke('create',work/'literal.zip','--','--input.txt')
         assert invoke('list',work/'literal.zip')['data']['entries'][0]['path'] == '--input.txt'
         duplicate = ROOT/'tests/fixtures/zip/normal.zip'
@@ -315,9 +359,10 @@ def main():
     parser.add_argument('--worker',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--payload',type=Path)
+    parser.add_argument('--default-worker',action='store_true',help='Clear worker overrides and exercise the deployed lookup')
     parser.add_argument('--install-fixture',action='store_true',help='Test setup using owned copies of these native binaries, without creating a release archive')
     args = parser.parse_args()
-    check(args.binary,args.worker,args.output,args.payload,args.install_fixture)
+    check(args.binary,args.worker,args.output,args.payload,args.install_fixture,args.default_worker)
 
 
 if __name__ == '__main__':

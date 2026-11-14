@@ -87,12 +87,19 @@ def bundle(args):
             raise ValueError('Mac desktop CLI requires Contents/Helpers/cli')
         context = generated(output.parent.parent/'Resources')/'xdzip-cli-context.json'
     output.mkdir(parents=True, exist_ok=True)
+    worker_name = 'xdzip-native-codec'+('.exe' if platform.system()=='Windows' else '')
     for path in (directory/'bin').iterdir():
-        if path.is_file():
+        if path.is_file() and path.name!=worker_name:
             shutil.copy2(path, output/path.name)
+    duplicate=output/worker_name
+    if duplicate.is_symlink() or duplicate.is_dir():
+        raise ValueError('Unexpected desktop CLI worker path')
+    duplicate.unlink(missing_ok=True)
     relative = {'Darwin':'../../MacOS/xdzip', 'Windows':'../xdzip.exe', 'Linux':'../xdzip'}[platform.system()]
+    worker_relative='../../MacOS/'+worker_name if platform.system()=='Darwin' else '../'+worker_name
     context.parent.mkdir(parents=True, exist_ok=True)
-    context.write_text(json.dumps(dict(schema_version=1, kind='desktop', desktop_relative=relative))+'\n')
+    context.write_text(json.dumps(dict(schema_version=1, kind='desktop', desktop_relative=relative,
+                                      worker_relative=worker_relative))+'\n')
     if platform.system() == 'Darwin':
         (output/'xdzip-cli-context.json').unlink(missing_ok=True)
 

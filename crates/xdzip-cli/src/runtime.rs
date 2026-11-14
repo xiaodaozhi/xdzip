@@ -24,6 +24,12 @@ pub struct Runtime {
 }
 impl Runtime {
     pub fn new(interactive: bool, chinese: bool, secret_from_stdin: bool) -> Result<Self> {
+        if let crate::installation::Context::Desktop(_, Some(worker)) =
+            crate::installation::context()?
+        {
+            xdzip_codec_native::configure_worker(worker)
+                .map_err(|_| Failure::new("invalid_installation"))?;
+        }
         let (client, mut receiver) = service::start()?;
         let (tx, events) = mpsc::sync_channel(4);
         let join = thread::spawn(move || {
