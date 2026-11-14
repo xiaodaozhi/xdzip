@@ -251,6 +251,19 @@ fn identified_compressed_tar_damage_never_downgrades_to_an_ordinary_file() {
             "{name}"
         );
     }
+    for (name, suffix) in [
+        ("bad-header.txz", "xz"),
+        ("bad-header.tar.lz4", "lz4"),
+        ("bad-header.tar.zst", "zst"),
+    ] {
+        let scratch = Scratch::new();
+        let source = scratch.0.join(format!("ordinary.{suffix}"));
+        std::fs::copy(fixture(name), &source).unwrap();
+        assert!(matches!(
+            Archive::open(&source, &Default::default()),
+            Err(ScanError::Invalid)
+        ));
+    }
 }
 
 #[test]

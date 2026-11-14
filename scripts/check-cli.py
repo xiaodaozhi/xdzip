@@ -218,6 +218,25 @@ def check(binary, worker, output, payload=None, install_fixture=False):
             assert invoke('create',refused,zstd_single,'--level','store',code=2)['error_code']=='unsupported_options'
             assert not refused.exists()
         record('zstandard_real_multiblock_levels_and_tar_compositions')
+        zero=work/'zero-source.bin'
+        zero.write_bytes(bytes(4096))
+        for suffix in ['gz','xz','lz4','zst']:
+            archive=work/('zeros.'+suffix)
+            invoke('create',archive,zero)
+            listed=invoke('list',archive)['data']['entries']
+            assert len(listed)==1 and listed[0]['path']=='zeros' and listed[0]['size']==4096
+            invoke('test',archive)
+            target=work/('zeros-output-'+suffix)
+            invoke('extract',archive,'-C',target)
+            assert (target/'zeros').read_bytes()==bytes(4096)
+            empty=work/('empty.tar.'+suffix)
+            shutil.copyfile(archive,empty)
+            assert invoke('list',empty)['data']['entries']==[]
+        unknown=work/'empty.unknown'
+        shutil.copyfile(work/'zeros.gz',unknown)
+        assert invoke('list',unknown)['data']['entries']==[]
+        record('zero_filled_ordinary_streams_keep_named_files')
+
 
 
         invoke('create',work/'literal.zip','--','--input.txt')

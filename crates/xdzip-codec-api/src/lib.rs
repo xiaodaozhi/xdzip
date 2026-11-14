@@ -12,8 +12,8 @@ use xdzip_domain::identity::EntryId;
 
 /// Seekable input supplied by the host; codecs do not open arbitrary paths.
 pub trait ReadSource: Read + Seek {
-    /// Optional host basename for a single-file stream's virtual row. This is
-    /// a naming hint only; it grants no path access or output authorization.
+    /// Optional host basename for a stream's virtual row or a fully validated
+    /// zero-only TAR/ordinary-file ambiguity. Never path access or output authority.
     fn source_name_hint(&self) -> Option<&str> {
         None
     }

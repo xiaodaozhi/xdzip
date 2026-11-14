@@ -78,6 +78,30 @@ pub fn creation_format(name: &str) -> Option<Format> {
         .map(|(format, _)| format)
 }
 
+/// Resolve only a fully validated zero-only stream's ambiguous container view.
+/// The longest same-filter suffix cannot identify or validate compressed content.
+pub fn compressed_view_hint(name: &str, ordinary: Format) -> Option<Format> {
+    let name = name.to_ascii_lowercase();
+    let filters = ordinary.descriptor().filters;
+    if ordinary.descriptor().container != "single-file" || filters.is_empty() {
+        return None;
+    }
+    formats()
+        .iter()
+        .filter(|descriptor| {
+            descriptor.filters == filters && matches!(descriptor.container, "single-file" | "tar")
+        })
+        .flat_map(|descriptor| {
+            descriptor
+                .extensions
+                .iter()
+                .map(move |suffix| (descriptor.format, *suffix))
+        })
+        .filter(|(_, suffix)| name.ends_with(suffix))
+        .max_by_key(|(_, suffix)| suffix.len())
+        .map(|(format, _)| format)
+}
+
 impl Format {
     /// Retrieve this built-in's declaration; input features and host policy remain authoritative.
     pub fn descriptor(self) -> &'static FormatDescriptor {
@@ -88,6 +112,28 @@ impl Format {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn ambiguous_view_hints_use_only_the_longest_same_filter_suffix() {
+        for (name, ordinary, expected) in [
+            ("ordinary.GZ", Format::Gzip, Some(Format::Gzip)),
+            ("empty.TAR.GZ", Format::Gzip, Some(Format::TarGzip)),
+            ("empty.tgz", Format::Gzip, Some(Format::TarGzip)),
+            ("ordinary.xz", Format::Xz, Some(Format::Xz)),
+            ("empty.txz", Format::Xz, Some(Format::TarXz)),
+            ("ordinary.lz4", Format::Lz4, Some(Format::Lz4)),
+            ("empty.tar.lz4", Format::Lz4, Some(Format::TarLz4)),
+            ("ordinary.zst", Format::Zstd, Some(Format::Zstd)),
+            ("empty.tzst", Format::Zstd, Some(Format::TarZstd)),
+            ("empty.tbz2", Format::Bzip2, Some(Format::TarBzip2)),
+            ("ordinary.lzma", Format::Lzma, Some(Format::Lzma)),
+            ("ordinary.lz", Format::Lzip, Some(Format::Lzip)),
+            ("wrong.xz", Format::Zstd, None),
+            ("unknown.bin", Format::Gzip, None),
+            ("archive.zip", Format::Zip, None),
+        ] {
+            assert_eq!(compressed_view_hint(name, ordinary), expected, "{name}");
+        }
+    }
 
     #[test]
     fn creation_candidates_keep_existing_case_and_read_only_boundaries() {

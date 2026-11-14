@@ -9370,7 +9370,9 @@ QtObject {
         {
             QFile file(source);
             QVERIFY(file.open(QIODevice::WriteOnly));
-            QCOMPARE(file.write("gzip GUI payload"), 16);
+            const auto payload = formatId.startsWith("tar-") ? QByteArray("gzip GUI payload")
+                                                             : QByteArray(4096, '\0');
+            QCOMPARE(file.write(payload), payload.size());
         }
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));

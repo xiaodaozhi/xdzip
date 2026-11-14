@@ -87,7 +87,13 @@ pub(crate) fn scan(
     if format.descriptor().container == "single-file" {
         let stream = StreamCodec { format: *format };
         let info = stream.inspect(source, control, limits(*format))?;
-        if info.all_zero && info.entry.size >= 1024 {
+        let ambiguous = info.all_zero && info.entry.size >= 1024;
+        let ordinary_hint = ambiguous
+            && source
+                .source_name_hint()
+                .and_then(|name| xdzip_codec_api::registry::compressed_view_hint(name, *format))
+                == Some(*format);
+        if ambiguous && !ordinary_hint {
             let tar = TarCodec {
                 filter: stream.filter()?,
             };
@@ -320,6 +326,21 @@ pub(crate) fn limits(format: Format) -> xdzip_codec_api::ScanLimits {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn unnamed_zero_only_stream_retains_the_empty_tar_default() {
+        use std::io::{Cursor, Write};
+        let mut writer = flate2::write::GzEncoder::new(Vec::new(), Default::default());
+        writer.write_all(&[0; 1024]).unwrap();
+        let mut source = Cursor::new(writer.finish().unwrap());
+        let control = Default::default();
+        let mut format = detect(&mut source, &control).unwrap();
+        assert!(
+            scan(&mut format, &mut source, &control, None)
+                .unwrap()
+                .is_empty()
+        );
+        assert_eq!(format, Format::TarGzip);
+    }
     #[test]
     fn shared_skippable_prefix_routes_each_frame_family_without_cross_format_concatenation() {
         use std::io::Cursor;
