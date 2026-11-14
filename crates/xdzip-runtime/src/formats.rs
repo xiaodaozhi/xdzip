@@ -5,6 +5,7 @@ use xdzip_codec_api::{
     encode::{CreationCodec, RewriteCodec},
     payload::PayloadCodec,
 };
+use xdzip_codec_asar::AsarCodec;
 use xdzip_codec_deb::DebCodec;
 use xdzip_codec_native::NativeCodec;
 use xdzip_codec_stream::{
@@ -19,10 +20,12 @@ impl Codec for TarCodec {}
 impl Codec for NativeCodec {}
 impl Codec for StreamCodec {}
 impl Codec for DebCodec {}
+impl Codec for AsarCodec {}
 pub(crate) fn codec(format: Format) -> &'static dyn Codec {
     match format {
         Format::Zip => &ZipCodec,
         Format::Deb => &DebCodec,
+        Format::Asar => &AsarCodec,
         Format::Tar => &TarCodec {
             filter: Filter::Identity,
         },
@@ -145,6 +148,23 @@ pub(crate) fn detect(
         || magic == *b"Rar!\x1a\x07\x01\x00"
     {
         Format::Rar
+    } else if magic[..4] == [4, 0, 0, 0] {
+        let mut header = [0; 16];
+        source.read_exact(&mut header).map_err(|error| {
+            if error.kind() == std::io::ErrorKind::UnexpectedEof {
+                ScanError::Invalid
+            } else {
+                ScanError::from_source_error(&error)
+            }
+        })?;
+        source
+            .seek(SeekFrom::Start(0))
+            .map_err(|error| ScanError::from_source_error(&error))?;
+        if xdzip_codec_asar::index::recognizes_header(&header) {
+            Format::Asar
+        } else {
+            detect_optical(source)?.unwrap_or(Format::Tar)
+        }
     } else if magic == *b"!<arch>\n" || magic == *b"!<thin>\n" {
         Format::Deb
     } else if magic[..4] == *b"MSCF" {

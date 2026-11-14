@@ -5,6 +5,30 @@ use xdzip_domain::path::components;
 const HEADER_LIMIT: u64 = 8 * 1024 * 1024;
 const SOURCE_LIMIT: u64 = 24 * 1024 * 1024 * 1024;
 const SAFE_INTEGER: u64 = 9_007_199_254_740_991;
+fn header_words(bytes: &[u8]) -> Result<[u64; 4], ScanError> {
+    let bytes: &[u8; 16] = bytes.try_into().map_err(|_| ScanError::Invalid)?;
+    let words: [u64; 4] = std::array::from_fn(|at| {
+        u64::from(u32::from_le_bytes(
+            bytes[at * 4..at * 4 + 4].try_into().expect("fixed header"),
+        ))
+    });
+    if words[0] != 4 {
+        return Err(ScanError::Unsupported);
+    }
+    let [_, header, payload, json_size] = words;
+    if header < 8
+        || header != payload + 4
+        || header & 3 != 0
+        || payload != 4 + ((json_size + 3) & !3)
+    {
+        return Err(ScanError::Invalid);
+    }
+    Ok(words)
+}
+/// Recognize the coherent fixed Pickle envelope only; full schema and bounds remain mandatory.
+pub fn recognizes_header(bytes: &[u8]) -> bool {
+    header_words(bytes).is_ok()
+}
 /// Supported optional SHA-256 declaration, without application authentication.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Integrity {
@@ -366,22 +390,7 @@ pub fn inspect(
     let mut work = 0;
     let mut words = [0; 16];
     exact(source, cancel, &mut words, &mut work, limits.read_bytes)?;
-    let words: [u64; 4] = std::array::from_fn(|at| {
-        u64::from(u32::from_le_bytes(
-            words[at * 4..at * 4 + 4].try_into().expect("fixed header"),
-        ))
-    });
-    if words[0] != 4 {
-        return Err(ScanError::Unsupported);
-    }
-    let [_, header, payload, json_size] = words;
-    if header < 8
-        || header != payload + 4
-        || header & 3 != 0
-        || payload != 4 + ((json_size + 3) & !3)
-    {
-        return Err(ScanError::Invalid);
-    }
+    let [_, header, _, json_size] = header_words(&words)?;
     if json_size > HEADER_LIMIT || header > HEADER_LIMIT + 8 {
         return Err(ScanError::Limit);
     }

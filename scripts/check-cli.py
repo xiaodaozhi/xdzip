@@ -304,6 +304,41 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
         invoke('add',deb,source,code=1)
         assert hashlib.sha256(deb.read_bytes()).hexdigest()==before
         record('deb_raw_and_nested_views_physical_selection_and_readonly_boundary')
+        for asar_name in ['ordinary.asar','without-integrity.asar','shared.asar','executable.asar','empty.asar']:
+            asar=ROOT/'tests/fixtures/asar'/asar_name
+            listed=invoke('list',asar)['data']
+            assert listed['format']=='ASAR'
+            assert invoke('test',asar)['data']['check_kind']=='format_declared_checks'
+            if asar_name=='empty.asar':
+                assert listed['entries']==[]
+                continue
+            asar_target=work/('asar-'+asar_name)
+            invoke('extract',asar,'-C',asar_target)
+            if asar_name=='executable.asar':
+                assert (asar_target/'run.txt').read_bytes()==phrase
+            else:
+                assert (asar_target/'hello.txt').read_bytes()==phrase
+                assert (asar_target/'copy.txt').read_bytes()==phrase
+                assert (asar_target/'empty-dir').is_dir()
+            if asar_name in ['ordinary.asar','without-integrity.asar']:
+                assert (asar_target/'assets/资料.txt').read_bytes()=='owned UTF-8 ASAR content\n资料\n'.encode()
+                assert (asar_target/'empty.bin').read_bytes()==b''
+        asar=ROOT/'tests/fixtures/asar/shared.asar'
+        entries=invoke('list',asar)['data']['entries']
+        invoke('extract',asar,'--entry-id',entries[1]['id'],'-C',work/'asar-selected')
+        assert (work/'asar-selected/copy.txt').read_bytes()==phrase
+        assert not (work/'asar-selected/hello.txt').exists()
+        before=hashlib.sha256(asar.read_bytes()).hexdigest()
+        invoke('add',asar,source,code=1)
+        assert hashlib.sha256(asar.read_bytes()).hexdigest()==before
+        for name in ['external.asar','link.asar']:
+            refused=ROOT/'tests/fixtures/asar'/name
+            assert invoke('list',refused)['data']['entries'][0]['warning']
+            failed=invoke('extract',refused,'-C',work/('refused-'+name),code=1)
+            assert failed['summary'].get('committed_files',0)==0
+            target=work/('refused-'+name)
+            assert not target.exists() or (target.is_dir() and not list(target.iterdir()))
+        record('asar_shared_ranges_declared_hashes_selection_and_readonly_boundary')
 
 
 

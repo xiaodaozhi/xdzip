@@ -1,5 +1,6 @@
 // apps/desktop/BrowserTransfers.cpp
 
+#include "ArchiveFormatsGenerated.h"
 #include "BrowserController.h"
 #include "xdzip-qt-bridge/src/lib.rs.h"
 #include <QDir>
@@ -11,6 +12,7 @@
 #include <QQuickWindow>
 #include <QStandardPaths>
 #include <QUuid>
+#include <algorithm>
 
 QString BrowserController::addDropMessage() const {
     if (!m_updateAllowed)
@@ -20,9 +22,12 @@ QString BrowserController::addDropMessage() const {
                                 : editUnavailableMessage();
 }
 QString BrowserController::editUnavailableMessage() const {
-    if (QStringList{QStringLiteral("RAR"), QStringLiteral("CAB"), QStringLiteral("ISO"),
-                    QStringLiteral("UDF")}
-            .contains(m_format, Qt::CaseInsensitive))
+    if (std::any_of(xdzip_formats::ReadOnlyLabels.begin(), xdzip_formats::ReadOnlyLabels.end(),
+                    [&](std::string_view label) {
+                        return m_format.compare(
+                                   QString::fromLatin1(label.data(), qsizetype(label.size())),
+                                   Qt::CaseInsensitive) == 0;
+                    }))
         return qtTrId("edit.readOnlyFormat").arg(m_format);
     switch (m_editRestriction & 3) {
     case 1:

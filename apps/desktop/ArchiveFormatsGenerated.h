@@ -4,7 +4,7 @@
 #include <string_view>
 // clang-format off
 namespace xdzip_formats {
-inline constexpr std::array<std::string_view, 35> DropSuffixes = {{
+inline constexpr std::array<std::string_view, 36> DropSuffixes = {{
     ".zip",
     ".zipx",
     ".xpi",
@@ -35,13 +35,14 @@ inline constexpr std::array<std::string_view, 35> DropSuffixes = {{
     ".zst",
     ".tar.zst",
     ".tzst",
+    ".asar",
     ".deb",
     ".rar",
     ".cab",
     ".iso",
     ".udf",
 }};
-inline constexpr std::array<std::string_view, 35> ShellSuffixes = {{
+inline constexpr std::array<std::string_view, 36> ShellSuffixes = {{
     ".zip",
     ".zipx",
     ".xpi",
@@ -72,13 +73,14 @@ inline constexpr std::array<std::string_view, 35> ShellSuffixes = {{
     ".zst",
     ".tar.zst",
     ".tzst",
+    ".asar",
     ".deb",
     ".rar",
     ".cab",
     ".iso",
     ".udf",
 }};
-inline constexpr std::array<std::string_view, 34> ShellMimeTypes = {{
+inline constexpr std::array<std::string_view, 35> ShellMimeTypes = {{
     "application/zip",
     "application/x-xpinstall",
     "application/vnd.android.package-archive",
@@ -105,6 +107,7 @@ inline constexpr std::array<std::string_view, 34> ShellMimeTypes = {{
     "application/x-lz4-compressed-tar",
     "application/zstd",
     "application/x-zstd-compressed-tar",
+    "application/x-asar",
     "application/vnd.debian.binary-package",
     "application/vnd.rar",
     "application/x-rar",
@@ -113,6 +116,20 @@ inline constexpr std::array<std::string_view, 34> ShellMimeTypes = {{
     "application/x-cab",
     "application/x-iso9660-image",
     "application/x-udf",
+}};
+inline constexpr std::array<std::string_view, 12> ReadOnlyLabels = {{
+    "BZip2",
+    "TAR.BZ2",
+    "LZMA",
+    "TAR.LZMA",
+    "Lzip",
+    "TAR.LZ",
+    "ASAR",
+    "DEB",
+    "RAR",
+    "CAB",
+    "ISO",
+    "UDF",
 }};
 inline constexpr std::array<std::string_view, 7> UnknownPackedLabels = {{
     "TAR.GZ",

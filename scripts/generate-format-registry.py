@@ -144,7 +144,8 @@ def render(spec):
     for name, values in (
             ('DropSuffixes', [e['suffix'] for e in extensions if e['drop']]),
             ('ShellSuffixes', [e['suffix'] for e in extensions if e['shell']]),
-            ('ShellMimeTypes', [m for item in formats for m in item['shell_mime_types']])):
+            ('ShellMimeTypes', [m for item in formats for m in item['shell_mime_types']]),
+            ('ReadOnlyLabels', [item['label'] for item in formats if not item['write_methods']])):
         cpp.append(f'inline constexpr std::array<std::string_view, {len(values)}> {name} = {{{{')
         cpp.extend(f'    {json.dumps(value)},' for value in values)
         cpp.append('}};')

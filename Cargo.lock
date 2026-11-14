@@ -2002,6 +2002,7 @@ dependencies = [
  "unicode-normalization",
  "winapi-util",
  "xdzip-codec-api",
+ "xdzip-codec-asar",
  "xdzip-codec-deb",
  "xdzip-codec-native",
  "xdzip-codec-stream",

@@ -87,7 +87,7 @@ fn deb_all_profiles_browse_check_and_export_raw_control_and_data_views() {
                     .iter()
                     .filter(|r| !r.directory)
                     .map(|r| r.size)
-                    .sum()
+                    .sum::<u64>()
             );
             let mut result = None;
             extraction::run(

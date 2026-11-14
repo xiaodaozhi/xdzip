@@ -1,4 +1,6 @@
 //! First read-only session service. Called only on a bounded background worker.
+#[cfg(test)]
+mod asar_tests;
 pub mod catalog;
 pub mod checking;
 pub mod creation;

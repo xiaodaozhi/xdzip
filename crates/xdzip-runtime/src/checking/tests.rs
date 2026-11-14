@@ -103,7 +103,7 @@ fn whole_zip_checks_empty_duplicate_directory_descriptor_and_link_records_withou
                 .iter()
                 .filter(|r| !r.directory)
                 .map(|r| r.size)
-                .sum()
+                .sum::<u64>()
         );
         assert!(done.read_bytes > 0);
     }

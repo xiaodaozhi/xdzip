@@ -30,6 +30,7 @@ def main():
         shutil.copyfile(ROOT / 'tests/fixtures/streams/files.txz', output / ('sample.' + suffix))
     shutil.copyfile(ROOT / 'tests/fixtures/streams/phrase.zst', output / 'sample.zst')
     shutil.copyfile(ROOT / 'tests/fixtures/deb/control-gz-data-zst.deb', output / 'sample.deb')
+    shutil.copyfile(ROOT / 'tests/fixtures/asar/ordinary.asar', output / 'sample.asar')
     for suffix in ['tar.zst','tzst']:
         shutil.copyfile(ROOT / 'tests/fixtures/streams/files.tar.zst', output / ('sample.' + suffix))
     content = b'xdzip association fixture\n'

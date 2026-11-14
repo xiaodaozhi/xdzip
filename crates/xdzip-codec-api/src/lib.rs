@@ -150,6 +150,8 @@ pub enum Format {
     TarZstd,
     /// Debian common-ar envelope with raw members and nested control/data TAR views.
     Deb,
+    /// Electron ASAR tree with uncompressed stored ranges and optional SHA-256.
+    Asar,
     /// Independent Rust 7z behind the isolated codec worker.
     SevenZip,
     /// Independent Rust RAR read-only backend in the isolated codec worker.
@@ -252,7 +254,8 @@ impl Entry {
             | Format::TarLz4
             | Format::Zstd
             | Format::TarZstd
-            | Format::Deb => !self.warning && !self.link,
+            | Format::Deb
+            | Format::Asar => !self.warning && !self.link,
             Format::SevenZip | Format::Rar | Format::Cab | Format::Iso | Format::Udf => {
                 !self.warning && !self.link && (!self.encrypted || self.password_supported)
             }

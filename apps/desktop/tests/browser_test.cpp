@@ -9618,27 +9618,51 @@ QtObject {
         theme.setData(
             "import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\n"
             "QtObject { property real factor: 1; property bool dark: false; "
+            "readonly property bool actualDark: Ui.Theme.dark; "
+            "readonly property real actualScale: Ui.Theme.fontScale; "
             "onFactorChanged: Ui.Theme.fontScale=factor; onDarkChanged: Ui.Theme.dark=dark }",
             QUrl());
         QScopedPointer<QObject> appearance(theme.create());
         QVERIFY2(appearance, qPrintable(theme.errorString()));
+        appearance->setProperty("factor", factor == 1.0 ? 1.25 : 1.0);
         appearance->setProperty("factor", factor);
+        appearance->setProperty("dark", !dark);
         appearance->setProperty("dark", dark);
+        QTRY_COMPARE(appearance->property("actualDark").toBool(), dark);
+        QTRY_COMPARE(appearance->property("actualScale").toDouble(), factor);
         auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
         window->resize(832, 544);
         auto *formats = findVisual(window->contentItem(), "welcomeFormats");
         QVERIFY(formats);
+        auto *welcomeScroll = findVisual(window->contentItem(), "welcomeContent");
+        QVERIFY(welcomeScroll);
+        auto *viewport =
+            qobject_cast<QQuickItem *>(welcomeScroll->property("contentItem").value<QObject *>());
+        QVERIFY(viewport && viewport->property("contentY").isValid());
         QTRY_VERIFY(formats->width() > 0);
         QTRY_VERIFY(formats->width() <= 608);
         for (const auto &format :
              {"ZIP",      "TAR",  "TAR.GZ", "7z",  "GZIP",   "BZip2", "TAR.BZ2", "LZMA",
               "TAR.LZMA", "Lzip", "TAR.LZ", "XZ",  "TAR.XZ", "LZ4",   "TAR.LZ4", "ZSTD",
-              "TAR.ZST",  "DEB",  "RAR",    "CAB", "ISO",    "UDF"}) {
+              "TAR.ZST",  "DEB",  "ASAR",   "RAR", "CAB",    "ISO",   "UDF"}) {
             auto *badge =
                 findVisual(window->contentItem(), "welcomeFormat-" + QString::fromLatin1(format));
             QVERIFY(badge && badge->isVisible());
             QTRY_VERIFY(badge->mapToScene(QPointF()).x() >= 0);
             QTRY_VERIFY(badge->mapToScene(QPointF(badge->width(), 0)).x() <= window->width());
+            const auto top = badge->mapToItem(viewport, QPointF()).y();
+            const auto current = viewport->property("contentY").toDouble();
+            const auto maximum =
+                qMax(0.0, viewport->property("contentHeight").toDouble() - viewport->height());
+            if (top < 0)
+                viewport->setProperty("contentY", qBound(0.0, current + top, maximum));
+            else if (top + badge->height() > viewport->height())
+                viewport->setProperty(
+                    "contentY",
+                    qBound(0.0, current + top + badge->height() - viewport->height(), maximum));
+            QTRY_VERIFY(badge->mapToItem(viewport, QPointF()).y() >= -0.5);
+            QTRY_VERIFY(badge->mapToItem(viewport, QPointF(0, badge->height())).y() <=
+                        viewport->height() + 0.5);
         }
         auto *task = window->findChild<QQuickWindow *>("taskWindow");
         QVERIFY(task);
@@ -9649,7 +9673,8 @@ QtObject {
              {QStringLiteral("TAR"), QStringLiteral("LZMA"), QStringLiteral("TAR.LZMA"),
               QStringLiteral("ISO"), QStringLiteral("UDF"), QStringLiteral("XZ"),
               QStringLiteral("TAR.XZ"), QStringLiteral("LZ4"), QStringLiteral("TAR.LZ4"),
-              QStringLiteral("ZSTD"), QStringLiteral("TAR.ZST"), QStringLiteral("DEB")}) {
+              QStringLiteral("ZSTD"), QStringLiteral("TAR.ZST"), QStringLiteral("DEB"),
+              QStringLiteral("ASAR")}) {
             task->setProperty("resultTask", QVariantMap{{"kind", "check"}, {"format", format}});
             QVERIFY(QMetaObject::invokeMethod(task, "present"));
             QTRY_VERIFY(task->isVisible());
@@ -9658,7 +9683,7 @@ QtObject {
             QCOMPARE(footer->property("note").toString(),
                      format == "TAR" ? qtTrId("integrity.tarNote")
                      : format.contains("XZ") || format.contains("LZ4") || format.contains("ZST") ||
-                             format == "DEB"
+                             format == "DEB" || format == "ASAR"
                          ? qtTrId("integrity.declaredCheckNote")
                          : qtTrId("integrity.structuralNote").arg(format));
             auto *hint = qobject_cast<QQuickItem *>(footer->property("hint").value<QObject *>());
@@ -9742,6 +9767,76 @@ QtObject {
         QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
         QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
                  QStringLiteral("succeeded"));
+        const auto destination = owned.filePath("output");
+        QVERIFY(QDir().mkpath(destination));
+        controller->prepareExtraction(false, {entry});
+        QTRY_VERIFY(!controller->busy());
+        controller->checkTarget(destination);
+        QTRY_VERIFY(!controller->busy() && controller->targetMatches(destination));
+        QSignalSpy extracted(controller, &BrowserController::extractionStarted);
+        controller->startExtraction(destination, false, false, 0, false, false);
+        QTRY_COMPARE(extracted.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        QFile actual(QDir(destination).filePath(leaf));
+        QVERIFY(actual.open(QIODevice::ReadOnly));
+        QCOMPARE(actual.readAll(), QByteArray("abracadabra abracadabra\n").repeated(6));
+    }
+    void asarArchivesUseSharedBrowserAndTasks_data() {
+        QTest::addColumn<QString>("fixture");
+        QTest::addColumn<int>("count");
+        QTest::addColumn<QString>("language");
+        const QList<QPair<QString, int>> profiles{{"ordinary.asar", 6},
+                                                  {"without-integrity.asar", 6},
+                                                  {"shared.asar", 3},
+                                                  {"executable.asar", 1}};
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (const auto &[fixture, count] : profiles)
+                QTest::newRow(qPrintable(fixture + "-" + language)) << fixture << count << language;
+    }
+    void asarArchivesUseSharedBrowserAndTasks() {
+        QFETCH(QString, fixture);
+        QFETCH(int, count);
+        QFETCH(QString, language);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir owned;
+        QVERIFY(owned.isValid());
+        const auto source = QDir(QStringLiteral(XDZIP_FIXTURES)).filePath("../asar/" + fixture);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        QVERIFY(controller->canOpenDroppedUrls({QUrl::fromLocalFile(source)}));
+        controller->openPath(source);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        QCOMPARE(controller->formatLabel(), QStringLiteral("ASAR"));
+        QCOMPARE(controller->archiveTotal(), count);
+        QVERIFY(!controller->canUpdateArchive());
+        controller->startUpdate({source}, controller->sessionId(), controller->directoryId(), 0);
+        QCOMPARE(controller->addDropMessage(),
+                 qtTrId("edit.readOnlyFormat").arg(QStringLiteral("ASAR")));
+        QCOMPARE(controller->activeTaskCount(), 0);
+        QSignalSpy checked(controller, &BrowserController::archiveTestStarted);
+        controller->startArchiveTest();
+        QTRY_COMPARE(checked.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        const auto leaf =
+            fixture == "executable.asar" ? QStringLiteral("run.txt") : QStringLiteral("hello.txt");
+        controller->search(leaf);
+        QTRY_VERIFY(!controller->busy());
+        QTRY_COMPARE(controller->m_model.rowCount(), 1);
+        const auto *row = controller->m_model.rowAt(0);
+        QVERIFY(row);
+        QCOMPARE(row->cells[0], leaf);
+        QCOMPARE(row->method, QStringLiteral("Store"));
+        QVERIFY(!row->cells[2].isEmpty());
+        const auto entry = row->id;
         const auto destination = owned.filePath("output");
         QVERIFY(QDir().mkpath(destination));
         controller->prepareExtraction(false, {entry});

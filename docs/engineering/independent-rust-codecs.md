@@ -14,6 +14,8 @@ Replace a format only after all existing capabilities pass acceptance. An incomp
 
 The domain layer, Qt bridge, and public codec trait retain their ownership. Backends receive no destination paths and cannot publish files. Raw name bytes, physical EntryIds, duplicate entries, encoding resolution, source identity, volume authorization, path preflight, staging, verification, and commit remain governed by existing engineering contracts. Shared algorithms are implemented once; containers independently handle framing, block boundaries, dictionary resets, and verification semantics. Migration of native backends to Rust retains worker cancellation, termination, and resource governance.
 
+The read-only ASAR reader follows the [ASAR contract](asar-containers.md), with ordered bounded JSON/Pickle metadata, shared stored ranges and optional SHA-256 checks. General JSON and hash primitives do not grant external-file access or application execution.
+
 ## Sources and independent implementation
 
 First define fields, state transitions, numeric ranges, error behavior, and test vectors from official technical documentation, then write code. Reference implementations supplement behavioral understanding only; no line-by-line language translation, renamed copying, transplanted structures, or copied comments. Record sections for specification identifiers/constants; prefer generating tables from explicit mathematical rules. Test-reference sources and licenses are managed separately from product dependencies.
