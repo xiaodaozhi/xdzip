@@ -67,6 +67,7 @@
 | 7z | 支持密码、文件名加密、固实和编号分卷 | 支持加密、固实和编号分卷 | 符合条件的未加密、非分卷包 |
 | DEB | 普通 ar 成员、control/data TAR 视图，已准入 GZIP/XZ/Zstandard/BZip2/LZMA 配置 | 不支持 | 不支持 |
 | ASAR | 存储文件与目录、共享载荷区间及声明的文件/块 SHA-256 | 不支持 | 不支持 |
+| Z、TAR.Z（包括 `.taz`） | Unix compress LZW、9–16 位字典及已准入 CLEAR/对齐配置 | 不支持 | 不支持 |
 | UU/UUE、XXE | 传统计数行与已准入 begin-base64 封装，包括多成员 | 不支持 | 不支持 |
 | RAR | 支持旧版、RAR5 和 RAR 7 格式扩展，包括密码、固实及分卷 | 不支持 | 不支持 |
 | CAB | 支持 Store、MSZip、Quantum、LZX 和同目录分卷 | 不支持 | 不支持 |
@@ -78,6 +79,7 @@
 - 7z 修改通过重建完成，保留及新增文件内容的工作集上限为 512 MiB；新建使用流式输入，不受此重建限制。加密和分卷的 ZIP、7z 不支持修改。详见[归档修改](docs/zh-CN/engineering/archive-transfers.md)。
 - RAR、CAB、ISO 和 UDF 为只读格式。ISO／UDF 映像用于读取文件，不会被挂载或执行。格式覆盖和资源限制分别见 [RAR 契约](docs/zh-CN/engineering/rar-format-sources.md)和[格式后端契约](docs/zh-CN/engineering/native-codecs.md)。
 - DEB 提供 `members/`、`control/`、`data/` 导出视图，全部提取包含原始成员和展开内容，不安装软件包、不执行脚本。control 接受无压缩、GZIP、XZ、Zstandard，data 另接受 BZip2、LZMA。检查验证容器可读性和声明的校验，不代表软件包认证，详见 [DEB 契约](docs/zh-CN/engineering/deb-containers.md)。
+- Z 与 TAR.Z 只检查结构与可读性，没有校验和，不提供创建或损坏历史流修复，详见 [Unix compress 契约](docs/zh-CN/engineering/compress-streams.md)。
 - UU/UUE 与 XXE 只检查结构与可读性，不提供校验和。头部路径和权限不直接授予输出或执行能力；GNU 编码文件名和多段修复不属于已准入的[文本封装配置](docs/zh-CN/engineering/text-envelopes.md)。
 - 浏览或提取只读 ASAR 不启动其中的应用。外置 `unpacked` 数据和声明的链接可见但不支持提取，不授予相邻目录访问或可执行权限恢复能力。可选摘要检查损坏，无摘要条目只提供结构与可读性检查，详见 [ASAR 契约](docs/zh-CN/engineering/asar-containers.md)。
 - 进入磁盘索引的大型 ZIP 暂不支持整包测试或修改，所选普通文件仍可按任务上限解压；详见[大归档索引](docs/zh-CN/engineering/large-index.md)。

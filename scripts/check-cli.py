@@ -361,6 +361,25 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
         assert len(list((work/'uu-selected').iterdir()))==1
         record('uu_xxe_base64_profiles_physical_selection_and_readonly_boundary')
 
+        for name,expected in [('phrase.Z',phrase),('empty.Z',b''),('nonblock.Z',b'ABABABA'),('clear.Z',b'ABABCDCD'),('zeros.Z',bytes(4096)),('empty-tar.Z',bytes(1024)),('files.taz',phrase),('empty.taz',None)]:
+            compressed=ROOT/'tests/fixtures/compress'/name
+            listed=invoke('list',compressed)['data']
+            tar=name.endswith('taz')
+            assert listed['format']==('TAR.Z' if tar else 'Z')
+            assert invoke('test',compressed)['data']['check_kind']=='structure_and_readability'
+            if expected is None:
+                assert not listed['entries']
+                continue
+            assert len(listed['entries'])==1 and (listed['entries'][0]['packed_size'] is None)==tar
+            target=work/('compress-'+name)
+            invoke('extract',compressed,'-C',target)
+            assert (target/listed['entries'][0]['path']).read_bytes()==expected
+            before=hashlib.sha256(compressed.read_bytes()).hexdigest()
+            invoke('add',compressed,source,code=1)
+            assert hashlib.sha256(compressed.read_bytes()).hexdigest()==before
+        invoke('list',ROOT/'tests/fixtures/compress/bad-header.Z',code=1)
+        record('unix_compress_real_lzw_empty_streams_tar_and_readonly_boundary')
+
 
 
         check_desktop_worker(binary,worker,work,env,source/'你好.txt')

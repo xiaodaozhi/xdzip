@@ -40,6 +40,7 @@ impl TarCodec {
             Filter::Xz => Format::TarXz,
             Filter::Lz4 => Format::TarLz4,
             Filter::Zstd => Format::TarZstd,
+            Filter::Compress => Format::TarCompress,
         }
     }
 
@@ -409,6 +410,7 @@ fn scan(
                 Format::TarXz => 95,
                 Format::TarLz4 => 256,
                 Format::TarZstd => 93,
+                Format::TarCompress => 257,
                 _ => 8,
             },
             modified_dos: modified,

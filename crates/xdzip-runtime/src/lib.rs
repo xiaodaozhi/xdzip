@@ -3,6 +3,8 @@
 mod asar_tests;
 pub mod catalog;
 pub mod checking;
+#[cfg(test)]
+mod compress_tests;
 pub mod creation;
 #[cfg(test)]
 mod deb_tests;

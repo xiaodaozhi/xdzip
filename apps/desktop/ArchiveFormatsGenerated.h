@@ -4,7 +4,7 @@
 #include <string_view>
 // clang-format off
 namespace xdzip_formats {
-inline constexpr std::array<std::string_view, 39> DropSuffixes = {{
+inline constexpr std::array<std::string_view, 42> DropSuffixes = {{
     ".zip",
     ".zipx",
     ".xpi",
@@ -35,6 +35,9 @@ inline constexpr std::array<std::string_view, 39> DropSuffixes = {{
     ".zst",
     ".tar.zst",
     ".tzst",
+    ".z",
+    ".tar.z",
+    ".taz",
     ".uu",
     ".uue",
     ".xxe",
@@ -45,7 +48,7 @@ inline constexpr std::array<std::string_view, 39> DropSuffixes = {{
     ".iso",
     ".udf",
 }};
-inline constexpr std::array<std::string_view, 39> ShellSuffixes = {{
+inline constexpr std::array<std::string_view, 42> ShellSuffixes = {{
     ".zip",
     ".zipx",
     ".xpi",
@@ -76,6 +79,9 @@ inline constexpr std::array<std::string_view, 39> ShellSuffixes = {{
     ".zst",
     ".tar.zst",
     ".tzst",
+    ".z",
+    ".tar.z",
+    ".taz",
     ".uu",
     ".uue",
     ".xxe",
@@ -86,7 +92,7 @@ inline constexpr std::array<std::string_view, 39> ShellSuffixes = {{
     ".iso",
     ".udf",
 }};
-inline constexpr std::array<std::string_view, 36> ShellMimeTypes = {{
+inline constexpr std::array<std::string_view, 37> ShellMimeTypes = {{
     "application/zip",
     "application/x-xpinstall",
     "application/vnd.android.package-archive",
@@ -113,6 +119,7 @@ inline constexpr std::array<std::string_view, 36> ShellMimeTypes = {{
     "application/x-lz4-compressed-tar",
     "application/zstd",
     "application/x-zstd-compressed-tar",
+    "application/x-compress",
     "text/x-uuencode",
     "application/x-asar",
     "application/vnd.debian.binary-package",
@@ -124,13 +131,15 @@ inline constexpr std::array<std::string_view, 36> ShellMimeTypes = {{
     "application/x-iso9660-image",
     "application/x-udf",
 }};
-inline constexpr std::array<std::string_view, 14> ReadOnlyLabels = {{
+inline constexpr std::array<std::string_view, 16> ReadOnlyLabels = {{
     "BZip2",
     "TAR.BZ2",
     "LZMA",
     "TAR.LZMA",
     "Lzip",
     "TAR.LZ",
+    "Z",
+    "TAR.Z",
     "UU",
     "XXE",
     "ASAR",
@@ -140,7 +149,7 @@ inline constexpr std::array<std::string_view, 14> ReadOnlyLabels = {{
     "ISO",
     "UDF",
 }};
-inline constexpr std::array<std::string_view, 7> UnknownPackedLabels = {{
+inline constexpr std::array<std::string_view, 8> UnknownPackedLabels = {{
     "TAR.GZ",
     "TAR.BZ2",
     "TAR.LZMA",
@@ -148,6 +157,7 @@ inline constexpr std::array<std::string_view, 7> UnknownPackedLabels = {{
     "TAR.XZ",
     "TAR.LZ4",
     "TAR.ZST",
+    "TAR.Z",
 }};
 } // namespace xdzip_formats
 // clang-format on

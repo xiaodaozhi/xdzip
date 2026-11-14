@@ -6,7 +6,7 @@ use crate::zstd::ZstdReader;
 use std::io::{self, Read, SeekFrom};
 use std::{cell::Cell, rc::Rc};
 use xdzip_codec_api::{Cancellation, ReadSource, ScanError};
-use xdzip_compression::GzipReader;
+use xdzip_compression::{CompressReader, GzipReader};
 
 const FILTER_MEMORY_LIMIT: u64 = 128 * 1024 * 1024;
 fn scan_error(error: &io::Error) -> ScanError {
@@ -40,6 +40,8 @@ pub enum Filter {
     Lz4,
     /// Zstandard standard frames with bounded history, entropy and declared checks.
     Zstd,
+    /// Historical Unix compress with bounded LZW and no content checksum.
+    Compress,
 }
 
 struct Input<'a> {
@@ -184,6 +186,10 @@ impl<'a> ControlledStream<'a> {
         let reader: Box<dyn Read + 'a> = match filter {
             Filter::Identity => Box::new(input),
             Filter::Gzip => Box::new(GzipReader::new(input)),
+            Filter::Compress => Box::new(
+                CompressReader::new(input, length, FILTER_MEMORY_LIMIT, 96 * 1024 * 1024 * 1024)
+                    .map_err(|error| scan_error(&error))?,
+            ),
             Filter::Xz => Box::new(
                 XzReader::new(input, length, FILTER_MEMORY_LIMIT)
                     .map_err(|error| scan_error(&error))?,

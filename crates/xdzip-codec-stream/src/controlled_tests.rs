@@ -14,6 +14,31 @@ fn sample(name: &str) -> Vec<u8> {
     .unwrap()
 }
 #[test]
+fn compress_filter_exact_input_output_quotas_and_empty_eof_are_sticky() {
+    let root =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/compress");
+    let cancel = Cancellation::default();
+    for (name, decoded) in [("empty.Z", 0), ("phrase.Z", 144)] {
+        let data = std::fs::read(root.join(name)).unwrap();
+        let packed = data.len() as u64;
+        let mut source = Cursor::new(&data);
+        let mut stream =
+            ControlledStream::new(&mut source, &cancel, Filter::Compress, packed, decoded).unwrap();
+        let mut output = vec![];
+        stream.read_to_end(&mut output).unwrap();
+        assert_eq!(output.len() as u64, decoded);
+        if decoded != 0 {
+            drop(stream);
+            let mut stream =
+                ControlledStream::new(&mut source, &cancel, Filter::Compress, packed, decoded - 1)
+                    .unwrap();
+            assert!(stream.read_to_end(&mut vec![]).is_err());
+            assert_eq!(stream.failure(), Some(ScanError::Limit));
+            assert!(stream.read(&mut [0]).is_err());
+        }
+    }
+}
+#[test]
 fn owned_and_borrowed_admission_preserve_typed_seek_failures_and_exact_rewind() {
     struct Source {
         error: Option<ScanError>,

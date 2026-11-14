@@ -9645,7 +9645,7 @@ QtObject {
              {"ZIP",     "TAR",      "TAR.GZ",  "7z",     "GZIP", "BZip2",  "TAR.BZ2",
               "LZMA",    "TAR.LZMA", "Lzip",    "TAR.LZ", "XZ",   "TAR.XZ", "LZ4",
               "TAR.LZ4", "ZSTD",     "TAR.ZST", "DEB",    "ASAR", "UU",     "XXE",
-              "RAR",     "CAB",      "ISO",     "UDF"}) {
+              "Z",       "TAR.Z",    "RAR",     "CAB",    "ISO",  "UDF"}) {
             auto *badge =
                 findVisual(window->contentItem(), "welcomeFormat-" + QString::fromLatin1(format));
             QVERIFY(badge && badge->isVisible());
@@ -9675,7 +9675,8 @@ QtObject {
               QStringLiteral("ISO"), QStringLiteral("UDF"), QStringLiteral("XZ"),
               QStringLiteral("TAR.XZ"), QStringLiteral("LZ4"), QStringLiteral("TAR.LZ4"),
               QStringLiteral("ZSTD"), QStringLiteral("TAR.ZST"), QStringLiteral("DEB"),
-              QStringLiteral("ASAR"), QStringLiteral("UU"), QStringLiteral("XXE")}) {
+              QStringLiteral("ASAR"), QStringLiteral("UU"), QStringLiteral("XXE"),
+              QStringLiteral("Z"), QStringLiteral("TAR.Z")}) {
             task->setProperty("resultTask", QVariantMap{{"kind", "check"}, {"format", format}});
             QVERIFY(QMetaObject::invokeMethod(task, "present"));
             QTRY_VERIFY(task->isVisible());
@@ -9717,7 +9718,8 @@ QtObject {
             {"phrase.lz4", "LZ4"},          {"files.tar.lz4", "TAR.LZ4"},
             {"phrase.zst", "ZSTD"},         {"files.tar.zst", "TAR.ZST"},
             {"zipx-deflate64.zipx", "ZIP"}, {"zipx-bzip2.zipx", "ZIP"},
-            {"zipx-lzma.zipx", "ZIP"},      {"zipx-xz.zipx", "ZIP"}};
+            {"zipx-lzma.zipx", "ZIP"},      {"zipx-xz.zipx", "ZIP"},
+            {"../compress/phrase.Z", "Z"},  {"../compress/files.taz", "TAR.Z"}};
         for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
             for (const auto &[fixture, format] : formats)
                 QTest::newRow(qPrintable(fixture + "-" + language))
@@ -9748,12 +9750,13 @@ QtObject {
         const auto *row = controller->m_model.rowAt(0);
         QVERIFY(row);
         const bool tar = format.startsWith("TAR.");
-        const auto leaf =
-            tar || format == "ZIP" ? QStringLiteral("hello.txt") : fixture.section('.', 0, 0);
+        const auto leaf = tar || format == "ZIP" ? QStringLiteral("hello.txt")
+                                                 : QFileInfo(fixture).fileName().section('.', 0, 0);
         QCOMPARE(row->cells[0], leaf);
         QCOMPARE(row->cells[2].isEmpty(), tar);
         const auto method =
-            format.contains("ZST")                                 ? QStringLiteral("Zstandard")
+            format == "Z" || format == "TAR.Z"                     ? QStringLiteral("LZW")
+            : format.contains("ZST")                               ? QStringLiteral("Zstandard")
             : format.contains("LZ4")                               ? QStringLiteral("LZ4")
             : fixture.contains("deflate64")                        ? QStringLiteral("Deflate64")
             : format.contains("XZ") || fixture.contains("zipx-xz") ? QStringLiteral("XZ")

@@ -28,6 +28,12 @@ pub(crate) fn codec(format: Format) -> &'static dyn Codec {
         Format::Zip => &ZipCodec,
         Format::Deb => &DebCodec,
         Format::Asar => &AsarCodec,
+        Format::Compress => &StreamCodec {
+            format: Format::Compress,
+        },
+        Format::TarCompress => &TarCodec {
+            filter: Filter::Compress,
+        },
         Format::Uu => &UuCodec { format: Format::Uu },
         Format::Xxe => &UuCodec {
             format: Format::Xxe,
@@ -124,11 +130,28 @@ pub(crate) fn detect(
 ) -> Result<Format, ScanError> {
     source.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
     let mut magic = [0; 8];
-    source
-        .read_exact(&mut magic)
-        .map_err(|_| ScanError::Invalid)?;
+    let mut length = 0;
+    while length != magic.len() {
+        control.check()?;
+        match source.read(&mut magic[length..]) {
+            Ok(0) => break,
+            Ok(count) if count <= magic.len() - length => length += count,
+            Ok(_) => return Err(ScanError::Io),
+            Err(error)
+                if error.kind() == std::io::ErrorKind::Interrupted && error.get_ref().is_none() =>
+            {
+                continue;
+            }
+            Err(error) => return Err(ScanError::from_source_error(&error)),
+        }
+    }
+    if length < magic.len() && (length < 2 || magic[..2] != [0x1f, 0x9d]) {
+        return Err(ScanError::Invalid);
+    }
     source.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
-    Ok(if magic[..2] == [0x1f, 0x8b] {
+    Ok(if magic[..2] == [0x1f, 0x9d] {
+        compressed_format(source, control, Filter::Compress, Format::Compress)?
+    } else if magic[..2] == [0x1f, 0x8b] {
         compressed_format(source, control, Filter::Gzip, Format::Gzip)?
     } else if magic[..6] == *b"\xfd7zXZ\0" {
         compressed_format(source, control, Filter::Xz, Format::Xz)?

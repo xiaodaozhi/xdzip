@@ -4,6 +4,8 @@ The toolbar's “Test” action performs one real background check of an eligibl
 
 
 UU/UUE and XXE check every physical text-envelope member, including empty files and duplicate names, validating counted lines or admitted Base64 padding and exact terminal markers. They provide no checksum or authentication; valid alphabet substitutions may change bytes without a failure. Header paths and modes grant no output or execution authority. See the [text envelope contract](text-envelopes.md).
+
+Z and TAR.Z validate Unix compress LZW codes, dictionary bounds, CLEAR/width alignment and physical EOF, with complete TAR record/tail checks for TAR.Z. They have no content checksum, decoded-size field or authentication; successful structural checking cannot detect every content-preserving substitution or valid-code tail. They retain the same controlled-source and task limits; see the [compress contract](compress-streams.md).
 ## Formats and results
 
 Ordinary GZIP, BZip2, LZMA Alone and Lzip v1 decode to the same bounded discard sink, verifying exact stream termination and observed sizes. GZIP checks each member CRC/ISIZE, BZip2 checks block/combined CRC and Lzip verifies its CRC, data size and member size. LZMA Alone has no content checksum, so success establishes structure and readability. Filtered TAR compositions rescan the complete container, including compressed EOF, without a second payload pass. Checking strength comes from the [built-in registry](format-registry.md); limits and profiles follow the [stream contract](single-file-streams.md).

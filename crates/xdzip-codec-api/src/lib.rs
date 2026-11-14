@@ -156,6 +156,10 @@ pub enum Format {
     Uu,
     /// XX-encoded text envelopes containing only the XX alphabet.
     Xxe,
+    /// One ordinary file in the historical Unix compress LZW profile.
+    Compress,
+    /// TAR behind Unix compress, including TAZ naming.
+    TarCompress,
     /// Independent Rust 7z behind the isolated codec worker.
     SevenZip,
     /// Independent Rust RAR read-only backend in the isolated codec worker.
@@ -261,7 +265,9 @@ impl Entry {
             | Format::Deb
             | Format::Asar
             | Format::Uu
-            | Format::Xxe => !self.warning && !self.link,
+            | Format::Xxe
+            | Format::Compress
+            | Format::TarCompress => !self.warning && !self.link,
             Format::SevenZip | Format::Rar | Format::Cab | Format::Iso | Format::Udf => {
                 !self.warning && !self.link && (!self.encrypted || self.password_supported)
             }

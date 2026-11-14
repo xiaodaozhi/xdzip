@@ -4,6 +4,8 @@
 
 
 UU/UUE 和 XXE 检查文本封装中的每个物理成员，包括空文件与同名记录，验证计数行或已准入的 Base64 填充及精确结束标记。它们不提供校验和或认证，替换有效字母表字符可能改变内容而不报错。头部路径与权限不直接授予输出或执行能力，详见[文本封装契约](text-envelopes.md)。
+
+Z 与 TAR.Z 验证 Unix compress LZW 码、字典边界、CLEAR/码宽对齐及物理 EOF，TAR.Z 另验证完整 TAR 记录与末尾。格式没有内容校验和、解码大小字段或认证，结构检查成功不能发现所有保持结构的替换或有效码尾部。继续使用相同受控源和任务限额，详见 [compress 契约](compress-streams.md)。
 ## 格式与结果
 
 普通 GZIP、BZip2、LZMA Alone 和 Lzip v1 解码到同一有界丢弃接收器，验证精确终止和观察尺寸。GZIP 检查逐成员 CRC/ISIZE，BZip2 检查块与组合 CRC，Lzip 检查 CRC、数据尺寸和完整成员尺寸。LZMA Alone 无内容校验和，成功只表示结构与可读性成立。压缩 TAR 组合重新扫描完整容器及压缩 EOF，不再另解一次负载。检查强度由[内置能力表](format-registry.md)登记，边界及组合见[压缩流契约](single-file-streams.md)。

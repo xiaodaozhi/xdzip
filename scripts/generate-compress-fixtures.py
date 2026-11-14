@@ -111,6 +111,8 @@ def main():
     for name, payload in [('empty.Z', b''), ('phrase.Z', phrase), ('random.Z', pattern(90000)),
                           ('natural-clear.Z', phrase * 4000 + pattern(250000)),
                           ('zeros.Z', bytes(4096)), ('empty-tar.Z', bytes(1024)),
+                          ('empty.taz', bytes(1024)),
+                          ('bad-header.Z', lzma.decompress((ROOT / 'tests/fixtures/streams/bad-header.txz').read_bytes())),
                           ('files.taz', lzma.decompress((ROOT / 'tests/fixtures/streams/files.txz').read_bytes()))]:
         cases[name] = reference.compress(payload), payload
     cases['nonblock.Z'] = pack([65, 66, 256, 258], block=False), b'ABABABA'

@@ -18,6 +18,8 @@ The read-only ASAR reader follows the [ASAR contract](asar-containers.md), with 
 
 The read-only UU/UUE/XXE reader follows the [text envelope contract](text-envelopes.md). Its counted alphabets, Base64, member identity and terminal validation are independent Rust code; reference stream encoders stay outside the runtime dependency closure.
 
+Unix compress and TAR.Z reuse the independent bounded LZW primitive and controlled stream/TAR composition specified by the [compress contract](compress-streams.md). Codes, dictionary occupancy, group alignment, work and memory admission are implemented without a third-party compression runtime.
+
 ## Sources and independent implementation
 
 First define fields, state transitions, numeric ranges, error behavior, and test vectors from official technical documentation, then write code. Reference implementations supplement behavioral understanding only; no line-by-line language translation, renamed copying, transplanted structures, or copied comments. Record sections for specification identifiers/constants; prefer generating tables from explicit mathematical rules. Test-reference sources and licenses are managed separately from product dependencies.

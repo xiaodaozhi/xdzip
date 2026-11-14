@@ -266,6 +266,27 @@
       ]
     },
     {
+      "id": "compress", "rust_variant": "Compress", "label": "Z", "container": "single-file", "filters": ["compress"], "worker_id": null,
+      "check_kind": "structure_and_readability", "creation_levels": [],
+      "read_methods": ["lzw"], "write_methods": [], "rewrite": false,
+      "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [], "shell_mime_types": ["application/x-compress"],
+      "extensions": [
+        {"suffix": ".z", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+      ]
+    },
+    {
+      "id": "tar-compress", "rust_variant": "TarCompress", "label": "TAR.Z", "container": "tar", "filters": ["compress"], "worker_id": null,
+      "check_kind": "structure_and_readability", "creation_levels": [],
+      "read_methods": ["lzw"], "write_methods": [], "rewrite": false,
+      "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [], "shell_mime_types": [],
+      "extensions": [
+        {"suffix": ".tar.z", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "archive"},
+        {"suffix": ".taz", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": null}
+      ]
+    },
+    {
       "id": "uu", "rust_variant": "Uu", "label": "UU", "container": "text-envelope", "filters": [], "worker_id": null,
       "check_kind": "structure_and_readability", "creation_levels": [],
       "read_methods": ["uu", "xx", "base64"], "write_methods": [], "rewrite": false,
