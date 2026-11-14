@@ -1,8 +1,10 @@
 //! Single-file streams and controlled composition, without filesystem authority.
 pub mod controlled;
+mod frame_io;
 mod framed;
 #[cfg(test)]
 mod framed_tests;
+pub mod lz4;
 #[cfg(test)]
 mod tests;
 mod writer;

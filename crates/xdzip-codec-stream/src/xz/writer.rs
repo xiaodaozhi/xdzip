@@ -2,26 +2,10 @@
 use super::{
     Check, FIXED_MEMORY, MAGIC, MAX_RECORDS, crc32, index_bytes, invalid, limit, terminal,
 };
+use crate::frame_io::write_all as emit;
 use std::io::{self, Write};
 use xdzip_compression::{Lzma2Writer, lzma2_writer_memory_required};
 const BLOCK_SIZE: u64 = 16 * 1024 * 1024;
-fn emit(sink: &mut dyn Write, mut bytes: &[u8]) -> io::Result<()> {
-    while !bytes.is_empty() {
-        match sink.write(bytes) {
-            Err(error)
-                if error.kind() == io::ErrorKind::Interrupted && error.get_ref().is_none() =>
-            {
-                continue;
-            }
-            Err(error) => return Err(terminal(error)),
-            Ok(0) => return Err(io::ErrorKind::WriteZero.into()),
-            Ok(n) if n <= bytes.len() => bytes = &bytes[n..],
-            Ok(_) => return Err(invalid()),
-        }
-    }
-    Ok(())
-}
-
 /// Streaming XZ with CRC64 and real LZMA2 compression at levels 1, 6 or 9.
 /// Drop never finishes a frame; failed writes poison all further operations.
 pub struct XzWriter<W> {

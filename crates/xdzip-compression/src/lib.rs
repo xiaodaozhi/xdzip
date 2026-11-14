@@ -5,6 +5,8 @@ mod byte_filter;
 mod bzip2;
 mod deflate;
 mod gzip;
+mod lz4;
+mod lz4_encode;
 mod lzma;
 mod lzma2;
 mod lzma_encode;
@@ -17,9 +19,12 @@ mod ppmd7;
 mod quantum;
 mod raw;
 mod stream_io;
+mod xxhash;
 pub use byte_filter::{ByteFilter, ByteFilterKind};
 pub use bzip2::{Bzip2Reader, bzip2_memory_required};
 pub use gzip::{GzipReader, GzipWriter};
+pub use lz4::Lz4BlockReader;
+pub use lz4_encode::encode_lz4_block;
 pub use lzma::{LzmaReader, lzma_memory_required};
 pub use lzma_encode::{Lzma2Writer, lzma2_writer_memory_required};
 pub use lzma2::{Lzma2Reader, lzma2_memory_required};
@@ -29,6 +34,7 @@ pub use ppmd::{PpmdCapacity, PpmdModel, PpmdRange, PpmdWork, ppmd_memory_require
 pub use ppmd7::{Ppmd7Reader, ppmd7_memory_required};
 pub use quantum::QuantumDecoder;
 pub use raw::{DeflateReader, DeflateWriter};
+pub use xxhash::{Xxh32, xxhash32};
 
 /// Incremental IEEE CRC-32 used by ZIP and GZIP containers.
 #[derive(Clone, Copy, Debug)]

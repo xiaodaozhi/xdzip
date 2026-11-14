@@ -1,7 +1,8 @@
 //! XZ 1.2.1 framing over independent LZMA2 and size-preserving byte filters.
 //! Every index record is compared with observed block work before stream success.
 mod writer;
-use std::io::{self, BufRead, BufReader, Read, Take};
+use crate::frame_io::{FrameInput as Source, terminal};
+use std::io::{self, Read};
 pub use writer::XzWriter;
 use xdzip_compression::{ByteFilter, ByteFilterKind, Crc32, Lzma2Reader, crc32};
 use xdzip_crypto::SecretSha256;
@@ -19,13 +20,6 @@ fn unsupported() -> io::Error {
 }
 fn limit() -> io::Error {
     io::Error::new(io::ErrorKind::OutOfMemory, "resource_limit")
-}
-fn terminal(error: io::Error) -> io::Error {
-    if error.kind() == io::ErrorKind::Interrupted && error.get_ref().is_some() {
-        io::Error::other(error.into_inner().expect("payload checked"))
-    } else {
-        error
-    }
 }
 fn checked_crc(bytes: &[u8]) -> io::Result<()> {
     let at = bytes.len().checked_sub(4).ok_or_else(invalid)?;
@@ -140,27 +134,6 @@ impl Check {
         }
     }
 }
-struct Source<R> {
-    input: BufReader<Take<R>>,
-    position: u64,
-}
-impl<R: Read> Read for Source<R> {
-    fn read(&mut self, bytes: &mut [u8]) -> io::Result<usize> {
-        let n = self.input.read(bytes).map_err(terminal)?;
-        self.position = self.position.checked_add(n as u64).ok_or_else(invalid)?;
-        Ok(n)
-    }
-}
-impl<R: Read> Source<R> {
-    fn byte(&mut self) -> io::Result<u8> {
-        let mut byte = [0];
-        self.read_exact(&mut byte)?;
-        Ok(byte[0])
-    }
-    fn peek(&mut self) -> io::Result<Option<u8>> {
-        Ok(self.input.fill_buf()?.first().copied())
-    }
-}
 struct Stage {
     filter: ByteFilter,
     pending: Vec<u8>,
@@ -265,10 +238,7 @@ impl<R: Read> XzReader<R> {
             return Err(invalid());
         }
         Ok(Self {
-            source: Some(Source {
-                input: BufReader::new(source.take(packed_limit)),
-                position: 0,
-            }),
+            source: Some(Source::new(source, packed_limit)),
             block: None,
             records: Vec::new(),
             packed_limit,
