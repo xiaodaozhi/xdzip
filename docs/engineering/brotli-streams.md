@@ -1,0 +1,27 @@
+# Ordinary Brotli stream contract
+
+English | [简体中文](../zh-CN/engineering/brotli-streams.md)
+
+`xdzip-compression::BrotliReader` independently decodes one ordinary RFC 7932 Brotli stream. It takes a caller-owned `Read` capability and an admitted packed span; it has no filename, filesystem, network, process or output-publication authority. Product entry points and TAR compositions are separately declared by the [format registry](format-registry.md); the primitive alone does not declare a browser, writer or association capability.
+
+## Wire profile
+
+The reader accepts standard window declarations 10–24, compressed/uncompressed/metadata meta-blocks, simple and complex canonical prefix codes, chained code-length repeats, all three block-switch categories, all four literal contexts, RLE and inverse-MTF context maps, explicit/recent/direct/postfix distances and overlapping history copies. Dictionary copies apply the normative word lengths 4–24 and all 121 byte transforms, including transforms producing zero bytes. Recent distances persist across meta-blocks and are updated only for eligible history references. Raw bytes, dictionary bytes and history copies all update the literal context.
+
+The source is [RFC 7932](https://www.rfc-editor.org/rfc/rfc7932.txt), SHA-256 `394abd1879e016f4eac89512c2acaf92f7b2d67feb8ab58b6b118c213be07146`. Verified [erratum 5948](https://www.rfc-editor.org/errata/eid5948) corrects an editorial typo in section 3.5. [RFC 9841](https://www.rfc-editor.org/rfc/rfc9841.html) adds shared dictionaries, large windows and a separate container; those extensions are outside this ordinary-stream profile. The reserved extended-window pattern reports unsupported. External dictionaries are never discovered or fetched.
+
+One exact stream must end with legal zero fill and consume its admitted byte span. Noncanonical length fields, reserved metadata bits, invalid/oversubscribed/incomplete trees, repeated symbols, map/type gaps, invalid distances/transforms and out-of-block output fail. The profile rejects concatenation, trailing bytes and truncated streams. Brotli has no content checksum, decoded-size declaration for the complete stream, encryption, member pathname or timestamp. Successful decoding establishes admitted structure, declared meta-block sizes and readability; a mutation that remains a valid stream cannot be detected as corruption.
+
+## Resource and control rules
+
+Before allocating history, admit `(1 << window_bits) + 2 MiB`. The second term conservatively covers bounded prefix symbols, block/context vectors, input buffering and fixed state; every declared count is independently bounded. There are at most 256 block types or context trees per category. Literal maps have at most 16384 entries, distance maps 1024; prefix alphabets have at most 704 symbols. Static normative data does not grant external I/O.
+
+Packed input and cumulative output each have hard 24 GiB ceilings, and callers may tighten them. Actual bit parsing, prefix construction, symbol/repeat expansion, context MTF movement and output consume one cumulative work ledger capped at 96 GiB units; failure never refunds it. Meta-block output declarations are admitted before decoding and never enlarge a caller quota. Read calls return at most 8192 decoded bytes. `with_poll` invokes an authority-free cooperative callback at bounded work intervals, including header or zero-output work; this makes cancellation independent of whether more source bytes are needed. Callback, source and quota errors are terminal. Only bare interrupted reads are retried; typed interruptions preserve their error object without convenience-method retries.
+
+The caller must drain to EOF and retain output privately until success. A later error invalidates prior chunks; the primitive never publishes them. A failed reader cannot resume. Cooperative control cannot interrupt a blocked underlying OS read. Source freezing and final publication remain host responsibilities.
+
+## Normative data and validation
+
+The static dictionary and three context tables are extracted directly from the pinned RFC, with all normative lengths and CRCs checked. Word depths and transform identifiers are likewise validated. The [data provenance and license](../../third_party/brotli-rfc7932/README.md) cover these standard constants; no Brotli reference implementation is linked. Keep the IETF Revised BSD notice in source and distributed notices. Desktop and CLI notice entry points collect it separately from Cargo dependencies and reference runtimes.
+
+[Authored fixtures](../../tests/fixtures/brotli/README.md) are generated or independently constructed, then checked byte-for-byte by a fixed author decoder. They cover qualities, windows, context-dependent actual output, block switches, distance parameters, every normative transform and metadata/raw blocks. Exact quotas, truncation, fill, short input, typed errors, work polling and deterministic mutations complement interoperability cases. References stay under `build/toolchain/`, and evidence stays under `build/` or CI. `FORMAT-BROTLI` in [acceptance requirements](../qa/acceptance.md) governs product integration separately from primitive tests.

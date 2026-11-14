@@ -1,0 +1,7 @@
+# RFC 7932 normative Brotli data
+
+The 122784-byte static dictionary, three literal-context tables, word depths and 121 word transformations are normative data from RFC 7932 sections 7.1 and appendices A/B, copyright 2016 IETF Trust and the document authors. They are distributed under the [IETF Revised BSD license](LICENSE.txt). The Trust clarified the historical mistaken name Simplified BSD; its three-clause text applies. This directory contains no Brotli reference implementation or application.
+
+Original [RFC 7932 text](https://www.rfc-editor.org/rfc/rfc7932.txt) SHA-256: `394abd1879e016f4eac89512c2acaf92f7b2d67feb8ab58b6b118c213be07146`. Dictionary SHA-256: `20e42eb1b511c21806d4d227d07e5dd06877d8ce7b3a817f378f313653f35c70`, normative CRC-32: `5136cb04`. Regenerate with `scripts/generate-brotli-tables.py --rfc <downloaded-rfc7932.txt>`; `--check` verifies bytes without changes. Keep downloaded references under `build/toolchain/`. The generator extracts only specified wire data and validates every normative size/CRC and transform ID, without copying reference code. Generated Rust constants are in `crates/xdzip-compression/src/brotli/data.rs`.
+
+Preserve the copyright, conditions and disclaimer in source and binary distributions. The [original IETF Trust provisions](https://trustee.ietf.org/documents/trust-legal-provisions/tlp-5/) provide the license text. Data inclusion does not enable a product format by itself; accepted capabilities and reference test results belong in the format contract and issue #303.

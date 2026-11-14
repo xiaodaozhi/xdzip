@@ -36,6 +36,7 @@ function(xdzip_rust_library target package stem)
     file(GLOB_RECURSE rust_sources CONFIGURE_DEPENDS
         "${rust_workspace}/crates/*.rs" "${rust_workspace}/crates/*.h" "${rust_workspace}/crates/*.hpp" "${rust_workspace}/crates/Cargo.toml"
         "${rust_workspace}/crates/*/Cargo.toml")
+    list(APPEND rust_sources "${rust_workspace}/third_party/brotli-rfc7932/dictionary.bin")
     file(MAKE_DIRECTORY "${output}/cxxbridge")
     set(bridge_headers "${output}/cxxbridge/${package}/src/lib.rs.h" "${output}/cxxbridge/rust/cxx.h")
     if(package STREQUAL "xdzip-qt-bridge")

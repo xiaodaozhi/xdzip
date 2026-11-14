@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "kind": "normative-format-data",
+  "name": "Brotli RFC 7932 normative data",
+  "version": "RFC7932",
+  "license": "BSD-3-Clause",
+  "source_url": "https://www.rfc-editor.org/rfc/rfc7932.txt",
+  "source_sha256": "394abd1879e016f4eac89512c2acaf92f7b2d67feb8ab58b6b118c213be07146",
+  "dictionary_sha256": "20e42eb1b511c21806d4d227d07e5dd06877d8ce7b3a817f378f313653f35c70",
+  "tables_sha256": "a35b0f87a8129c402775b4c3809eb00ab79ee4231d3a6764a7044274abc61fbf",
+  "reference_implementation_in_product": false
+}

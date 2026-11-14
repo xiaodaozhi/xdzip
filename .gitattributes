@@ -44,3 +44,10 @@ third_party/cldr43-webapp-notices/*.txt -text -whitespace
 patches/qt/6.8.2-network/*.diff -text -whitespace
 tools/qt-network-security/linux-abi-retain.cpp text eol=lf
 tools/qt-network-security/retain-linux-abi.cmake text eol=lf
+
+# Normative RFC dictionary is byte-exact static data.
+third_party/brotli-rfc7932/dictionary.bin binary
+tests/fixtures/brotli/*.br binary
+crates/xdzip-compression/src/brotli/data.rs text eol=lf
+crates/xdzip-compression/src/brotli/fixture_cases.rs text eol=lf
+third_party/brotli-rfc7932/LICENSE.txt text eol=lf

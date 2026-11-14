@@ -139,6 +139,8 @@ def notices(output):
         shutil.copy2(ROOT/name, output/name)
     from rar_mapping_materials import collect
     collect(output)
+    from brotli_data_materials import collect as collect_brotli_data
+    collect_brotli_data(output)
     (output/'rust-dependencies.json').write_text(json.dumps(inventory, indent=2)+'\n')
 
 
