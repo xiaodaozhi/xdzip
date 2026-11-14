@@ -16,7 +16,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def check(binary, worker, output, payload=None, install_fixture=False):
+def check(binary, worker, output, payload=None, install_fixture=False, default_worker=False):
     binary, worker, output = binary.resolve(), worker.resolve(), output.resolve()
     if not output.is_relative_to(ROOT/'build') or output == ROOT/'build':
         raise ValueError('CLI evidence must be under build/')
@@ -31,8 +31,9 @@ def check(binary, worker, output, payload=None, install_fixture=False):
     for key in ['DISPLAY','WAYLAND_DISPLAY','QT_PLUGIN_PATH','QT_QPA_PLATFORM_PLUGIN_PATH',
                 'QML_IMPORT_PATH','QML2_IMPORT_PATH','LD_LIBRARY_PATH','DYLD_LIBRARY_PATH']:
         env.pop(key, None)
-    env['XDZIP_NATIVE_CODEC'] = str(worker)
-    env['XDZIP_NATIVE_CODEC_WORKER'] = str(worker)
+    for key in ('XDZIP_NATIVE_CODEC','XDZIP_NATIVE_CODEC_WORKER'):
+        if default_worker:env.pop(key,None)
+        else:env[key]=str(worker)
     results = []
 
     def command(*arguments, code=0, stdin=None, cwd=work):
@@ -315,9 +316,10 @@ def main():
     parser.add_argument('--worker',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--payload',type=Path)
+    parser.add_argument('--default-worker',action='store_true',help='Clear worker overrides and exercise the deployed lookup')
     parser.add_argument('--install-fixture',action='store_true',help='Test setup using owned copies of these native binaries, without creating a release archive')
     args = parser.parse_args()
-    check(args.binary,args.worker,args.output,args.payload,args.install_fixture)
+    check(args.binary,args.worker,args.output,args.payload,args.install_fixture,args.default_worker)
 
 
 if __name__ == '__main__':

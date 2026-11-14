@@ -8,12 +8,14 @@
 
 - `xdzip` 为启动入口，使用当前目录的库、插件和 QML，不继承开发 SDK 搜索路径。
 - `bin/xdzip` 为产品，旁边 `qt.conf` 将 Qt 路径改为相对布局。
-- `lib/` 为实际导入的 Qt／SDK 共享库，`qml/` 为扫描得到的 Qt QML 模块根目录，保留控件样式及实现子模块。
+- `lib/` 为实际导入的 Qt／SDK 共享库，`qml/` 保留 Basic 控件样式和必要实现子模块。在收集原生依赖前移除其他控件样式、NativeStyle、Effects、样式专用对话框变体、设计器文件和 QML 类型元数据，避免部署其独占依赖库。
 - `plugins/` 包含 xcb、离屏验证、图片、图标、平台输入、xcb 图形集成和必需的 `tls/libqopensslbackend.so`；缺少 OpenSSL 后端时部署失败。不把 EGLFS、帧缓冲或 Wayland 平台插件作为已验证交付。
 - `translations/` 保留 Qt 标准控件翻译，`share/notices/` 交付当前通知和源码依赖材料。
 - `share/deployment.json` 记录 QML、系统运行依赖、复制的 SDK 库和边界，README.md 提供使用方法。
 
 扫描器使用固定 Qt 版本的 [qmlimportscanner](https://doc.qt.io/qt-6.8/qtqml-tooling-qmlimportscanner.html)。Xdzip.Settings／Xdzip.Native 是产品内建注册模块，不复制开发静态库。缺少普通依赖、QML 路径逃逸 SDK、同名库冲突或未知外部库均失败。原生导入递归收集只复制 SDK 库，不捎带宿主 glibc 或图形驱动；系统依赖按实际 Debian 包归属列出。
+
+裁剪先验证完整复制树、必要 Basic 插件、保留组件的强依赖和已知样式布局。发现意外链接、未知样式或对话框变体，以及对被省略模块的强依赖时，在删除前拒绝。默认对话框、输入法、辅助功能、图片插件、TLS 和系统翻译沿用现有部署规则。`share/deployment.json` 记录移除的 QML 文件与字节数。私有 `cli/` 通过固定上下文路径共享 `bin/xdzip-native-codec`，独立 CLI 包继续自包含。
 
 HTTPS 另显式要求 Ubuntu 的 `libssl3t64` 与 `ca-certificates`，验证 `libssl.so.3`、`libcrypto.so.3` 的系统包归属及非空系统 CA 信任库。Qt OpenSSL 后端可能在运行时加载这些库，不能仅凭 ldd 推断依赖完整。部署清单保留已安装的二进制包版本、源包与源包版本；安装器声明两项依赖，实际文件 SBOM 将其记录为必需 OS 包，不把系统库打包进应用。
 

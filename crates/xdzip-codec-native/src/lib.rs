@@ -27,6 +27,20 @@ use zeroize::Zeroizing;
 /// Native worker budget, enforced as committed memory on Windows and address
 /// space on Unix. macOS excludes its pre-existing dyld virtual reservation.
 pub const NATIVE_MEMORY_LIMIT: u64 = 1024 * 1024 * 1024;
+/// Register the host-validated absolute worker path before starting its runtime.
+/// Explicit worker environment overrides keep their existing test/developer
+/// precedence. Re-registering the same path succeeds; a conflicting path is
+/// returned unchanged and the first registration remains in effect.
+pub fn configure_worker(path: std::path::PathBuf) -> Result<(), std::path::PathBuf> {
+    if !path.is_absolute() {
+        return Err(path);
+    }
+    match protocol::HOST_WORKER.set(path) {
+        Ok(()) => Ok(()),
+        Err(path) if protocol::HOST_WORKER.get() == Some(&path) => Ok(()),
+        Err(path) => Err(path),
+    }
+}
 /// Isolated stream adapter for independent Rust codecs.
 pub struct NativeCodec {
     /// Selects an exact engine; other formats fail closed.

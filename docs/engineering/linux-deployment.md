@@ -8,12 +8,14 @@ The current development deployment baseline is Ubuntu 24.04, x86_64, and X11. Th
 
 - `xdzip` is the launcher, using local libraries, plugins, and QML without inheriting development SDK search paths.
 - `bin/xdzip` is the product; adjacent `qt.conf` uses relative Qt paths.
-- `lib/` contains actually imported Qt/SDK shared libraries; `qml/` is the scanned Qt QML module root, retaining control styles and implementation submodules.
+- `lib/` contains actually imported Qt/SDK shared libraries; `qml/` retains the Basic Controls style and required implementation submodules. Other Controls styles, NativeStyle, Effects, style-specific dialog variants, designer files and QML type metadata are removed before collecting native dependencies, so their exclusive libraries are not deployed.
 - `plugins/` contains xcb, offscreen verification, image, icon, platform input, xcb graphics integration, and required `tls/libqopensslbackend.so`; deployment fails without the OpenSSL backend. EGLFS, framebuffer, and Wayland platform plugins are not described as verified delivery.
 - `translations/` retains Qt standard-control translations; `share/notices/` delivers current notices and source dependency materials.
 - `share/deployment.json` records QML, system runtime dependencies, copied SDK libraries, and boundaries; README.md provides usage.
 
 The scanner uses pinned-Qt [qmlimportscanner](https://doc.qt.io/qt-6.8/qtqml-tooling-qmlimportscanner.html). Xdzip.Settings/Xdzip.Native are built-in registered modules; development static libraries are not copied. Missing ordinary dependencies, QML paths escaping the SDK, same-name library conflicts, and unknown external libraries fail. Recursive native-import collection copies only SDK libraries, not host glibc or graphics drivers; system dependencies are listed by actual Debian package ownership.
+
+Pruning validates the copied QML tree, required Basic plugins, retained strong imports and known style layouts before deletion. Unexpected links, unknown styles or dialog selectors, and strong dependencies on omitted modules fail. Default dialogs, input methods, accessibility, image plugins, TLS and system translations retain their existing rules. `share/deployment.json` records removed QML files and byte counts. The private `cli/` shares `bin/xdzip-native-codec` through its fixed context path; standalone CLI packages remain self-contained.
 
 HTTPS additionally requires Ubuntu `libssl3t64` and `ca-certificates`. Verify system-package ownership of `libssl.so.3` and `libcrypto.so.3` and a nonempty system CA trust store. The Qt OpenSSL backend may load these libraries at runtime, so ldd alone cannot establish complete dependencies. The deployment manifest records installed binary package versions, source packages, and source-package versions. Installers declare both dependencies; the actual-file SBOM records them as required OS packages without bundling system libraries in the app.
 
