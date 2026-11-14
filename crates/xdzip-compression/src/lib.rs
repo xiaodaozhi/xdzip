@@ -3,6 +3,7 @@
 //! Constants below describe wire code ranges, not a reference implementation.
 mod byte_filter;
 mod bzip2;
+mod compress;
 mod deflate;
 mod gzip;
 mod lz4;
@@ -25,6 +26,7 @@ mod xxhash64;
 pub mod zstd;
 pub use byte_filter::{ByteFilter, ByteFilterKind};
 pub use bzip2::{Bzip2Reader, bzip2_memory_required};
+pub use compress::{CompressReader, compress_memory_required};
 pub use gzip::{GzipReader, GzipWriter};
 pub use lz4::Lz4BlockReader;
 pub use lz4_encode::encode_lz4_block;

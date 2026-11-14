@@ -221,10 +221,11 @@ pub(crate) fn inspect(
     let length = source
         .seek(SeekFrom::End(0))
         .map_err(|e| ScanError::from_source_error(&e))?;
-    if length > WORK_LIMIT {
+    let read_budget = limits.read_bytes.min(ScanLimits::default().read_bytes);
+    if length > read_budget {
         return Err(ScanError::Limit);
     }
-    let mut input = Input::new(source, cancel, 0, length, limits.read_bytes.min(WORK_LIMIT))?;
+    let mut input = Input::new(source, cancel, 0, length, read_budget)?;
     let mut records = Vec::new();
     let mut names = 0usize;
     loop {

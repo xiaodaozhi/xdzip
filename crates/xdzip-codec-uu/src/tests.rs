@@ -200,6 +200,29 @@ fn metadata_limits_are_exact_and_cover_transport_and_names() {
     assert!(!candidate(&mut Cursor::new(prefix), &cancel).unwrap());
 }
 #[test]
+fn larger_host_stream_budgets_cannot_relax_the_text_metadata_ceiling() {
+    struct Large;
+    impl Read for Large {
+        fn read(&mut self, _: &mut [u8]) -> std::io::Result<usize> {
+            panic!("oversized envelope must fail before reading")
+        }
+    }
+    impl Seek for Large {
+        fn seek(&mut self, _: SeekFrom) -> std::io::Result<u64> {
+            Ok(64 * 1024 * 1024 + 1)
+        }
+    }
+    impl ReadSource for Large {}
+    let limits = ScanLimits {
+        read_bytes: 24 * 1024 * 1024 * 1024,
+        ..ScanLimits::default()
+    };
+    assert_eq!(
+        crate::text::inspect(&mut Large, &Cancellation::default(), limits).err(),
+        Some(ScanError::Limit)
+    );
+}
+#[test]
 fn raw_unsafe_and_unicode_names_remain_host_validated_without_permissions() {
     let cancel = Cancellation::default();
     for name in [
