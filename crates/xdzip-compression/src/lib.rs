@@ -1,6 +1,7 @@
 //! Independently implemented compression primitives. No production dependencies.
 //! Wire definitions: RFC 1951 sections 3.1–3.2 and RFC 1952 section 2.3.
 //! Constants below describe wire code ranges, not a reference implementation.
+mod byte_filter;
 mod bzip2;
 mod deflate;
 mod gzip;
@@ -16,6 +17,7 @@ mod ppmd7;
 mod quantum;
 mod raw;
 mod stream_io;
+pub use byte_filter::{ByteFilter, ByteFilterKind};
 pub use bzip2::{Bzip2Reader, bzip2_memory_required};
 pub use gzip::{GzipReader, GzipWriter};
 pub use lzma::{LzmaReader, lzma_memory_required};

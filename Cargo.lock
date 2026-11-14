@@ -1826,6 +1826,7 @@ dependencies = [
  "flate2",
  "xdzip-codec-api",
  "xdzip-compression",
+ "xdzip-crypto",
  "xdzip-domain",
 ]
 

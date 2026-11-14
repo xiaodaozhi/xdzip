@@ -5,6 +5,7 @@ mod framed;
 mod framed_tests;
 #[cfg(test)]
 mod tests;
+pub mod xz;
 use controlled::{ControlledStream, Filter};
 use std::io::Read;
 use xdzip_codec_api::encode::{
