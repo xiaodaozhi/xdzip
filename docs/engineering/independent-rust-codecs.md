@@ -6,6 +6,8 @@ This contract defines per-capability replacement rules for third-party format ba
 
 ## Implementation boundaries
 
+Built-in declarations and product entry-point mappings use the [format registry](format-registry.md). Declarations are capability candidates, narrowed by actual container records, host policy and platform support; they do not replace container validation or grant file authority.
+
 Container parsing, encoding, decoding, and compression algorithms use independent Rust implementations. Admitted general cryptography, character encoding, system, and bridge foundation libraries are permitted. Third-party format libraries, algorithm libraries, and command-line tools may be independent test references, but do not become product runtime dependencies for a migrated format. Removing only direct dependencies does not prove replacement: inspect transitive ordinary/build dependency closures and delivered files.
 
 Replace a format only after all existing capabilities pass acceptance. An incomplete format retains its prior backend; there is no silent runtime-failure fallback. ZIP, TAR, TAR.GZ, and 7z retain existing read/write and modification limits. RAR, CAB, ISO, and UDF are read-only. A format name does not imply support for all historical and future extensions. RAR7 LZ requires a successful independent compressed-stream sample; Store success and rejecting an over-budget dictionary do not replace it.

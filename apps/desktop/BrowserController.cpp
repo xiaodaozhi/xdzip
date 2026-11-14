@@ -1,4 +1,5 @@
 #include "BrowserController.h"
+#include "ArchiveFormats.h"
 #include "ImagePreviewProtocol.h"
 #include "NativeDialogPolicy.h"
 #include "PreviewImages.h"
@@ -469,9 +470,7 @@ bool BrowserController::canOpenDroppedUrls(const QList<QUrl> &urls) const {
         static const QRegularExpression splitSuffix(
             QStringLiteral("(?:\\.(?:zip|7z)\\.[0-9]{3,4}|\\.z[0-9]{2,4}|\\.r[0-9]{2,4})$"));
         if (!file.isFile() ||
-            !(name.endsWith(".zip") || name.endsWith(".tar") || name.endsWith(".tar.gz") ||
-              name.endsWith(".tgz") || name.endsWith(".7z") || name.endsWith(".rar") ||
-              name.endsWith(".cab") || name.endsWith(".iso") || name.endsWith(".udf") ||
+            !(xdzip_formats::hasSuffix(name.toUtf8().toStdString(), xdzip_formats::DropSuffixes) ||
               splitSuffix.match(name).hasMatch()))
             return false;
     }

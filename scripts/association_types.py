@@ -1,11 +1,6 @@
 """Product association mapping. Format support is determined by the reader."""
 
-# Windows resolves the final extension, so .tar.gz uses the gz entry.
-WINDOWS_ICONS = {
-    'zip': 'zip', 'tar': 'tar', 'tgz': 'tgz', 'gz': 'gz',
-    '7z': '7z', 'rar': 'rar', 'cab': 'cab', 'iso': 'iso', 'udf': 'udf',
-}
-MACOS_ICONS = ('zip', 'tar', 'tar-gz', 'gz', '7z', 'rar', 'cab', 'iso', 'udf')
+from archive_formats_generated import MACOS_ICONS, WINDOWS_ICONS
 
 
 def windows_progid(extension: str) -> str:

@@ -65,6 +65,36 @@ class ShellTest : public QObject {
         qmlRegisterType<BrowserController>("Xdzip.Native", 1, 0, "BrowserController");
         qmlRegisterType<ShellBatchController>("Xdzip.Native", 1, 0, "ShellBatchController");
     }
+    void registeredCandidatesPreserveEntryPointBoundaries() {
+        QTemporaryDir source;
+        QVERIFY(source.isValid());
+        BrowserController controller;
+        const auto candidate = [&](const QString &name, bool drop, bool shell) {
+            const auto path = source.filePath(name);
+            write(path, "not an archive");
+            QCOMPARE(controller.canOpenDroppedUrls({QUrl::fromLocalFile(path)}), drop);
+            QCOMPARE(
+                xdzip_shell::archiveCandidate(xdzip_shell::fs::u8path(path.toUtf8().toStdString())),
+                shell);
+        };
+        candidate("archive.ZIP", true, true);
+        candidate("archive.TAR.GZ", true, true);
+        candidate("archive.TGZ", true, true);
+        candidate("archive.gz", false, true);
+        candidate("archive.7z.001", true, true);
+        candidate("archive.zip.exe", false, false);
+        candidate("archive.zip.txt", false, false);
+        candidate(QString::fromUtf8("中文.zip"), true, true);
+        const auto directory = source.filePath("directory.zip");
+        QVERIFY(QDir().mkdir(directory));
+        QVERIFY(!controller.canOpenDroppedUrls({QUrl::fromLocalFile(directory)}));
+        QVERIFY(!xdzip_shell::archiveCandidate(
+            xdzip_shell::fs::u8path(directory.toUtf8().toStdString())));
+        QVERIFY(xdzip_shell::archiveMime("application/x-gzip"));
+        QVERIFY(xdzip_shell::archiveMime("application/x-rar-compressed"));
+        QVERIFY(!xdzip_shell::archiveMime("application/octet-stream"));
+        QVERIFY(!xdzip_shell::archiveMime("application/zip; charset=utf-8"));
+    }
     void boundedRequestAndNativeHandoff() {
         QTemporaryDir source;
         const auto path = source.filePath(QString::fromUtf8("中文 & notes.txt"));

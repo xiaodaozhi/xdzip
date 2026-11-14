@@ -1,5 +1,9 @@
 # Acceptance execution plan
 
+## Built-in format registry
+
+FORMAT-REGISTRY: Generate and check all Rust, C++ and installer consumers from the shared specification. Reject duplicate format/worker identities, ambiguous suffixes, invalid generated-language values and write profiles without corresponding read support. Exercise real creation routing, worker protocol IDs, drag-and-drop and Shell candidates, including mixed case, compound suffixes, numbered volumes, directories, unknown files and the deliberate `.gz` entry-point difference. A candidate is not successful content detection or extraction. Verification uses automated component and integration checks; record actual scope in the delivery issue.
+
 ## Windows MSIX, AC-04 / AC-07 / AC-12
 
 | Case | Procedure and criteria |

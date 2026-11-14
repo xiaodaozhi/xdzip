@@ -43,6 +43,8 @@ jobs:
           python3 scripts/generate-ui-messages.py --check
           python3 scripts/generate-qml-theme.py --check
           python3 scripts/generate-control-tokens.py --check
+          python3 scripts/generate-format-registry.py --check
+          python3 scripts/test-format-registry.py
           python3 scripts/build-html-design.py --check
           python3 scripts/check-window-contracts.py --self-test
           python3 scripts/check-operation-components.py

@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "formats": [
+    {
+      "id": "zip", "rust_variant": "Zip", "label": "ZIP", "container": "zip", "filters": [], "worker_id": null,
+      "read_methods": ["store", "deflate"], "write_methods": ["store", "deflate"], "rewrite": true,
+      "read_encryption": ["winzip-aes256"], "write_encryption": ["winzip-aes256"],
+      "read_volumes": ["numbered", "pkzip"], "write_volumes": ["numbered"],
+      "creation_suffixes": [".zip"], "shell_mime_types": ["application/zip"],
+      "extensions": [{"suffix": ".zip", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": "zip"}]
+    },
+    {
+      "id": "tar", "rust_variant": "Tar", "label": "TAR", "container": "tar", "filters": [], "worker_id": null,
+      "read_methods": ["store"], "write_methods": ["store"], "rewrite": true,
+      "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [".tar"], "shell_mime_types": ["application/x-tar"],
+      "extensions": [{"suffix": ".tar", "drop": true, "shell": true, "windows_icon": "tar", "macos_icon": "tar"}]
+    },
+    {
+      "id": "tar-gzip", "rust_variant": "TarGzip", "label": "TAR.GZ", "container": "tar", "filters": ["gzip"], "worker_id": null,
+      "read_methods": ["deflate"], "write_methods": ["deflate"], "rewrite": true,
+      "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [".tar.gz", ".tgz"],
+      "shell_mime_types": ["application/gzip", "application/x-gzip", "application/x-compressed-tar"],
+      "extensions": [
+        {"suffix": ".tar.gz", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "tar-gz"},
+        {"suffix": ".tgz", "drop": true, "shell": true, "windows_icon": "tgz", "macos_icon": null},
+        {"suffix": ".gz", "drop": false, "shell": true, "windows_icon": "gz", "macos_icon": "gz"}
+      ]
+    },
+    {
+      "id": "7z", "rust_variant": "SevenZip", "label": "7z", "container": "7z", "filters": [], "worker_id": 7,
+      "read_methods": ["copy", "lzma", "lzma2", "bzip2", "ppmd7", "deflate", "deflate64"], "write_methods": ["copy", "lzma2"], "rewrite": true,
+      "read_encryption": ["7z-aes256"], "write_encryption": ["7z-aes256"],
+      "read_volumes": ["numbered"], "write_volumes": ["numbered"],
+      "creation_suffixes": [".7z"], "shell_mime_types": ["application/x-7z-compressed"],
+      "extensions": [{"suffix": ".7z", "drop": true, "shell": true, "windows_icon": "7z", "macos_icon": "7z"}]
+    },
+    {
+      "id": "rar", "rust_variant": "Rar", "label": "RAR", "container": "rar", "filters": [], "worker_id": 4,
+      "read_methods": ["store", "ancient", "legacy", "modern"], "write_methods": [], "rewrite": false,
+      "read_encryption": ["legacy", "rar3-aes128", "rar5-aes256"], "write_encryption": [],
+      "read_volumes": ["rar-legacy", "rar-part"], "write_volumes": [],
+      "creation_suffixes": [], "shell_mime_types": ["application/vnd.rar", "application/x-rar", "application/x-rar-compressed"],
+      "extensions": [{"suffix": ".rar", "drop": true, "shell": true, "windows_icon": "rar", "macos_icon": "rar"}]
+    },
+    {
+      "id": "cab", "rust_variant": "Cab", "label": "CAB", "container": "cab", "filters": [], "worker_id": 8,
+      "read_methods": ["store", "mszip", "lzx", "quantum"], "write_methods": [], "rewrite": false,
+      "read_encryption": [], "write_encryption": [], "read_volumes": ["cabinet-set"], "write_volumes": [],
+      "creation_suffixes": [], "shell_mime_types": ["application/vnd.ms-cab-compressed", "application/x-cab"],
+      "extensions": [{"suffix": ".cab", "drop": true, "shell": true, "windows_icon": "cab", "macos_icon": "cab"}]
+    },
+    {
+      "id": "iso", "rust_variant": "Iso", "label": "ISO", "container": "iso", "filters": [], "worker_id": 9,
+      "read_methods": ["iso9660", "joliet", "rock-ridge"], "write_methods": [], "rewrite": false,
+      "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [], "shell_mime_types": ["application/x-iso9660-image"],
+      "extensions": [{"suffix": ".iso", "drop": true, "shell": true, "windows_icon": "iso", "macos_icon": "iso"}]
+    },
+    {
+      "id": "udf", "rust_variant": "Udf", "label": "UDF", "container": "udf", "filters": [], "worker_id": 10,
+      "read_methods": ["physical", "sparable", "vat", "metadata"], "write_methods": [], "rewrite": false,
+      "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [], "shell_mime_types": ["application/x-udf"],
+      "extensions": [{"suffix": ".udf", "drop": true, "shell": true, "windows_icon": "udf", "macos_icon": "udf"}]
+    }
+  ]
+}

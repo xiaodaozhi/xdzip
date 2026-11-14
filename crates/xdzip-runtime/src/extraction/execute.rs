@@ -597,6 +597,24 @@ pub(super) fn inject_disk_full(bytes: Option<u64>) {
     TEST_WRITE_LIMIT.with(|limit| limit.set(bytes));
 }
 
+/// Complete, validated output paths include implicit directories. A sole root
+/// file is not a directory, and no prefix is stripped from archive contents.
+fn single_top_directory(job: &Job) -> bool {
+    let mut top: Option<&str> = None;
+    for item in &job.planned {
+        let parts = item.path.parts();
+        if parts.len() == 1 && !job.rows[item.index].directory {
+            return false;
+        }
+        match top {
+            None => top = Some(&parts[0]),
+            Some(value) if value != parts[0] => return false,
+            _ => {}
+        }
+    }
+    top.is_some()
+}
+
 #[cfg(test)]
 mod meter_tests {
     use super::*;
@@ -1071,22 +1089,4 @@ mod meter_tests {
             initial(&job, 1)
         }
     }
-}
-
-/// Complete, validated output paths include implicit directories. A sole root
-/// file is not a directory, and no prefix is stripped from archive contents.
-fn single_top_directory(job: &Job) -> bool {
-    let mut top: Option<&str> = None;
-    for item in &job.planned {
-        let parts = item.path.parts();
-        if parts.len() == 1 && !job.rows[item.index].directory {
-            return false;
-        }
-        match top {
-            None => top = Some(&parts[0]),
-            Some(value) if value != parts[0] => return false,
-            _ => {}
-        }
-    }
-    top.is_some()
 }

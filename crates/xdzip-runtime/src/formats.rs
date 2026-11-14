@@ -101,18 +101,7 @@ fn detect_optical(source: &mut dyn ReadSource) -> Result<Option<Format>, ScanErr
     })
 }
 pub(crate) fn creation_format(name: &str) -> Option<Format> {
-    let name = name.to_ascii_lowercase();
-    if name.ends_with(".tar.gz") || name.ends_with(".tgz") {
-        Some(Format::TarGzip)
-    } else if name.ends_with(".tar") {
-        Some(Format::Tar)
-    } else if name.ends_with(".zip") {
-        Some(Format::Zip)
-    } else if name.ends_with(".7z") {
-        Some(Format::SevenZip)
-    } else {
-        None
-    }
+    xdzip_codec_api::registry::creation_format(name)
 }
 
 /// Sequential containers meter decoded and encoded work, including skipped payloads.

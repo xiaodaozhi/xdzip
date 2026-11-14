@@ -559,15 +559,18 @@ fn shell_smart_layout_and_exclusive_wrappers_preserve_contents() {
     let output = Target::new();
     let mut smart = output.options();
     smart.shell_layout = 1;
-    let done = execute(&bundle, smart, &Control::default(), |_| {});
     #[cfg(unix)]
     {
+        let done = execute(&bundle, smart, &Control::default(), |_| {});
         assert_eq!(done.status, Status::Succeeded, "{}", done.error);
         assert_eq!(Path::new(&done.target), output.0);
         assert!(output.0.join("Demo.app/Contents/MacOS/demo").is_file());
     }
     #[cfg(windows)]
-    assert_eq!(done.error, "unsupported_link");
+    assert!(matches!(
+        bundle.extraction_job(smart, &Cancellation::default()),
+        Err("unsupported_link")
+    ));
 }
 
 #[test]

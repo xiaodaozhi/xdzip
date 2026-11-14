@@ -119,14 +119,11 @@ impl NativeCodec {
         limits: ScanLimits,
         volume_info: (Option<&[u64]>, Option<&[Vec<u8>]>),
     ) -> Result<Vec<u8>, Fault> {
-        let format = match self.format {
-            Format::SevenZip => 7,
-            Format::Rar => 4,
-            Format::Cab => 8,
-            Format::Iso => 9,
-            Format::Udf => 10,
-            _ => return Err(Fault::Unsupported),
-        };
+        let format = self
+            .format
+            .descriptor()
+            .worker_id
+            .ok_or(Fault::Unsupported)?;
         let has_password = password.is_some();
         let password = password.unwrap_or("");
         if password.len() > 4096 {

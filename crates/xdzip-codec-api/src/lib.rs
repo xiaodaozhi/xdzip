@@ -4,6 +4,7 @@ pub mod encode;
 mod host_services_tests;
 pub mod names;
 pub mod payload;
+pub mod registry;
 pub mod time;
 use std::io::{Read, Seek};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -130,16 +131,7 @@ pub enum Format {
 impl Format {
     /// Stable user-visible capability label.
     pub fn label(self) -> &'static str {
-        match self {
-            Self::Zip => "ZIP",
-            Self::Tar => "TAR",
-            Self::TarGzip => "TAR.GZ",
-            Self::SevenZip => "7z",
-            Self::Rar => "RAR",
-            Self::Cab => "CAB",
-            Self::Iso => "ISO",
-            Self::Udf => "UDF",
-        }
+        self.descriptor().label
     }
 }
 
