@@ -567,10 +567,13 @@ fn shell_smart_layout_and_exclusive_wrappers_preserve_contents() {
         assert!(output.0.join("Demo.app/Contents/MacOS/demo").is_file());
     }
     #[cfg(windows)]
-    assert!(matches!(
-        bundle.extraction_job(smart, &Cancellation::default()),
-        Err("unsupported_link")
-    ));
+    {
+        assert!(matches!(
+            bundle.extraction_job(smart, &Cancellation::default()),
+            Err("unsupported_link")
+        ));
+        assert_eq!(std::fs::read_dir(&output.0).unwrap().count(), 0);
+    }
 }
 
 #[test]

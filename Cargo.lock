@@ -1737,6 +1737,7 @@ dependencies = [
  "ureq",
  "windows-sys 0.61.2",
  "xdzip-codec-api",
+ "xdzip-codec-native",
  "xdzip-domain",
  "xdzip-io",
  "xdzip-runtime",

@@ -258,6 +258,13 @@ class EnvironmentTests(unittest.TestCase):
         self.missing.add("pkg-config")
         self.assertEqual(self.failed(self.check("prepare")), {"tool.pkg-config", "linux.graphics-devel"})
 
+    def test_linux_packaging_requires_strip(self):
+        self.system, self.machine = "linux", "x86_64"
+        self.qt_sdk()
+        self.missing.add("strip")
+        self.assertIn("tool.strip", self.failed(self.check("package")))
+        self.assertNotIn("tool.strip", self.failed(self.check("build")))
+
     def test_minimum_cmake_and_missing_compiler_fail_as_one_report(self):
         self.qt_sdk()
         self.overrides[("cmake", ("--version",))] = (0, "cmake version 3.23.5", "")

@@ -58,6 +58,8 @@ build/cli/bin/xdzip --help
 
 macOS 的内置 CLI 可执行文件位于 `Contents/Helpers/cli/`，普通上下文 JSON 位于 `Contents/Resources/xdzip-cli-context.json`，由应用资源签名封装。CLI 只在固定的 Contents／Helpers／cli 布局查找该资源，继续核对 schema、desktop kind 与固定 GUI 相对路径；缺少标记按便携身份处理，非法标记拒绝。重复构建清除 Helpers 下的旧生成标记，不能通过放宽签名验证解决布局错误。English: Bundled macOS CLI executables stay under Helpers/cli, while their context JSON is sealed as a Resources file. Lookup requires the fixed bundle layout and existing identity/target checks; missing context remains portable and invalid context fails. Rebuilding removes the obsolete generated marker from Helpers without relaxing signature checks.
 
+新的桌面包在上下文中增加 `worker_relative`，内置 CLI 与桌面共享一个格式工作进程。只接受固定平台相对路径：Windows 为桌面旁的工作进程，macOS 为 `Contents/MacOS/xdzip-native-codec`，Linux 为构建目录旁或部署目录 `bin/` 中的工作进程。目标缺失、为链接或路径不符时拒绝上下文，不搜索 PATH 或其他副本。旧上下文没有该字段时，以及独立或管理式 CLI 包，保留原有的同目录查找。显式开发环境覆盖仍优先。使用 `scripts/check-cli.py --default-worker` 验证部署后的实际查找，普通测试路径覆盖不能替代该检查。
+
 独立包展开后运行 bin/xdzip，Windows 加 .exe。运行 `bin/xdzip setup` 显式安装用户级稳定入口及版本化运行目录。Unix 默认入口为 ~/.local/bin，Windows 默认位于用户 LocalAppData 下的 xdzip/cli/bin；管理目录使用平台用户数据位置。--bin-dir 和 --install-dir 可显式指定位置。用户自行将目录加入 PATH，工具不修改 Shell 启动文件。已有入口或登记文件一律拒绝覆盖。
 
 管理式身份要求有效的 installation.json；目录恰好名为 versions 而没有登记文件时仍视为便携运行。English: Managed identity requires its installation marker; a directory named versions alone remains portable.

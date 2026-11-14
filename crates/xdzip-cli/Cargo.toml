@@ -18,6 +18,7 @@ path = "src/launcher.rs"
 [dependencies]
 xdzip-runtime = { path = "../xdzip-runtime" }
 xdzip-codec-api = { path = "../xdzip-codec-api" }
+xdzip-codec-native = { path = "../xdzip-codec-native" }
 xdzip-domain = { path = "../xdzip-domain" }
 xdzip-io = { path = "../xdzip-io" }
 xdzip-update = { path = "../xdzip-update" }

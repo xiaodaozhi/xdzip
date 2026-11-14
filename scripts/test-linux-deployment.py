@@ -8,7 +8,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
-from deploy_linux import qml_roots, relative_rpath, runtime_origin, tls_requirements, TLS_PLUGIN
+from deploy_linux import qml_roots, relative_rpath, runtime_origin, tls_requirements, TLS_PLUGIN, prune_qml, relocate_cli_context, strip_runtime
 from verify_linux_runtime import check_events, check_https, run_https_probe, main as verify_runtime_main
 from package_linux import archive_payload
 
@@ -36,6 +36,100 @@ def probe_output(record):
 
 
 class LinuxDeploymentTests(unittest.TestCase):
+    def test_stripping_records_bytes_and_hashes_without_changing_dynamic_linkage(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);binary=root/'owned';binary.write_bytes(b'owned unstripped binary')
+            dynamic=' 0x01 (NEEDED) Shared library: [libc.so.6]\n 0x1d (RUNPATH) Library runpath: [$ORIGIN/../lib]\n'
+            def command(*args):
+                if args==('strip','--version'):return 'owned strip version\n'
+                if args[:2]==('readelf','-d'):return dynamic
+                self.assertEqual(args,('strip','--strip-unneeded',str(binary)))
+                binary.write_bytes(b'owned stripped');return ''
+            with patch('deploy_linux.command',side_effect=command):report=strip_runtime(root,[binary])
+            self.assertEqual(report['files'][0]['before_bytes'],len(b'owned unstripped binary'))
+            self.assertEqual(report['files'][0]['after_bytes'],len(b'owned stripped'))
+            self.assertNotEqual(report['files'][0]['input_sha256'],report['files'][0]['artifact_sha256'])
+
+    def test_stripping_refuses_outside_files_before_running_tools_and_detects_changed_imports(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base=Path(temp);root=base/'runtime';root.mkdir();outside=base/'outside';outside.touch()
+            with patch('deploy_linux.command') as command:
+                with self.assertRaisesRegex(ValueError,'inside'):strip_runtime(root,[outside])
+                command.assert_not_called()
+            binary=root/'owned';binary.write_bytes(b'owned')
+            with patch('deploy_linux.command',side_effect=['strip version','(NEEDED) old','','(NEEDED) new']):
+                with self.assertRaisesRegex(ValueError,'linkage'):strip_runtime(root,[binary])
+
+    def test_desktop_cli_relocation_requires_its_exact_context_and_no_duplicate(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);context=root/'xdzip-cli-context.json'
+            original={'schema_version':1,'kind':'desktop','desktop_relative':'../xdzip',
+                      'worker_relative':'../xdzip-native-codec'}
+            for invalid in ({**original,'worker_relative':'../../foreign'},
+                            {**original,'kind':'standalone'}):
+                context.write_text(json.dumps(invalid))
+                with self.assertRaises(ValueError):relocate_cli_context(root)
+                self.assertEqual(json.loads(context.read_text()),invalid)
+            context.write_text(json.dumps(original))
+            worker=root/'xdzip-native-codec';worker.write_bytes(b'owned duplicate')
+            with self.assertRaises(ValueError):relocate_cli_context(root)
+            self.assertEqual(json.loads(context.read_text()),original)
+            worker.unlink();relocate_cli_context(root)
+            self.assertEqual(json.loads(context.read_text()),{**original,'worker_relative':'../bin/xdzip-native-codec'})
+
+    def basic_qml(self, root):
+        modules={'QtQuick.Controls':'qtquickcontrols2plugin',
+                 'QtQuick.Controls.impl':'qtquickcontrols2implplugin',
+                 'QtQuick.Controls.Basic':'qtquickcontrols2basicstyleplugin',
+                 'QtQuick.Controls.Basic.impl':'qtquickcontrols2basicstyleimplplugin',
+                 'QtQuick.Templates':'qtquicktemplates2plugin'}
+        for name,plugin in modules.items():
+            path=root/name.replace('.','/');path.mkdir(parents=True,exist_ok=True)
+            (path/'qmldir').write_text(f'module {name}\nplugin {plugin}\n')
+            (path/('lib'+plugin+'.so')).write_bytes(b'owned plugin')
+        (root/'QtQuick/Controls/qmldir').write_text(
+            'module QtQuick.Controls\nplugin qtquickcontrols2plugin\n'
+            'optional import QtQuick.Controls.Material auto\ndefault import QtQuick.Controls.Basic auto\n')
+        unused=root/'QtQuick/Controls/Material';unused.mkdir()
+        (unused/'Material.qml').write_text('import QtQuick.Controls.Material\n')
+        (root/'QtQuick/plugins.qmltypes').write_text('owned development metadata')
+        return unused
+
+    def test_basic_pruning_removes_optional_styles_and_metadata_but_keeps_runtime(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);unused=self.basic_qml(root)
+            default=root/'QtQuick/Dialogs/quickimpl/qml';default.mkdir(parents=True)
+            (default/'FileDialog.qml').write_text('import QtQuick.Controls.Basic\n')
+            variant=default/'+Material';variant.mkdir()
+            (variant/'FileDialog.qml').write_text('import QtQuick.Controls.Material\n')
+            designer=root/'QtQuick/Controls/designer';designer.mkdir()
+            (designer/'design.qml').write_text('import QtQuick.Controls.Material\n')
+            before={p.relative_to(root).as_posix():p.read_bytes() for p in root.rglob('*') if p.is_file()}
+            records=prune_qml(root)
+            self.assertFalse(unused.exists());self.assertFalse(variant.exists());self.assertFalse(designer.exists())
+            self.assertFalse((root/'QtQuick/plugins.qmltypes').exists())
+            removed={p['path'] for p in records}
+            after={p.relative_to(root).as_posix():p.read_bytes() for p in root.rglob('*') if p.is_file()}
+            self.assertEqual(after,{p:b for p,b in before.items() if p not in removed})
+            self.assertIn('QtQuick/Dialogs/quickimpl/qml/FileDialog.qml',after)
+            self.assertEqual(prune_qml(root),[])
+
+    def test_pruning_rejects_strong_imports_and_unknown_layouts_before_deleting(self):
+        cases={'component':'import QtQuick.Controls.Material\n',
+               'qmldir':'module Owned\nimport QtQuick.Controls.Material auto\n',
+               'unknown_style':None,'unknown_selector':None,'missing_plugin':None}
+        for name,content in cases.items():
+            with self.subTest(name=name),tempfile.TemporaryDirectory() as temp:
+                root=Path(temp);unused=self.basic_qml(root)
+                if name=='component':(root/'Retained.qml').write_text(content)
+                elif name=='qmldir':
+                    (root/'Owned').mkdir();(root/'Owned/qmldir').write_text(content)
+                elif name=='unknown_style':(root/'QtQuick/Controls/FutureStyle').mkdir()
+                elif name=='unknown_selector':(root/'QtQuick/Dialogs/quickimpl/qml/+Future').mkdir(parents=True)
+                else:(root/'QtQuick/Controls/Basic/libqtquickcontrols2basicstyleplugin.so').unlink()
+                with self.assertRaises(ValueError):prune_qml(root)
+                self.assertTrue(unused.is_dir())
+
     def test_runtime_refuses_to_move_directory_at_evidence_path(self):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp);output=root/'runtime.json';output.write_text('previous report')

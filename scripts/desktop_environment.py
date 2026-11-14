@@ -247,7 +247,7 @@ def check_environment(qt_prefix: Path | None = None, *, stage: str,
         tools = {
             "macos": ["hdiutil", "codesign", "lipo", "otool", "install_name_tool"],
             "windows": ["dumpbin", "pwsh"] + (["powershell.exe"] if stage == "package" else []),
-            "linux": ["ldd", "readelf"] + (["patchelf", "dpkg-query", "dpkg-deb"] if stage == "package" else ["docker"]),
+            "linux": ["ldd", "readelf"] + (["patchelf", "strip", "dpkg-query", "dpkg-deb"] if stage == "package" else ["docker"]),
         }[system]
         for name in tools:
             tool(name)

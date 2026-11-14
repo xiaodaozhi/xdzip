@@ -21,6 +21,66 @@ STATIC_MODULES={'Xdzip.Settings','Xdzip.Native'}
 OPTIONAL_NATIVE=('QtQuick.Controls.Windows','QtQuick.Controls.macOS','QtQuick.Controls.iOS','QtQuick.NativeStyle')
 TLS_PLUGIN='plugins/tls/libqopensslbackend.so'
 TLS_SYSTEM_PACKAGES=('libssl3t64','ca-certificates')
+UNUSED_STYLES=('Fusion','Imagine','Material','Universal','FluentWinUI3','Windows','macOS','iOS')
+
+
+def prune_qml(root):
+    """Trim only a freshly copied runtime, before collecting native imports."""
+    paths=list(root.rglob('*'))
+    if root.is_symlink() or any(p.is_symlink() or not within(p,root) for p in paths):
+        raise ValueError('QML deployment contains links or escaped paths')
+    controls=root/'QtQuick/Controls'
+    required={'QtQuick.Controls':'qtquickcontrols2plugin',
+              'QtQuick.Controls.impl':'qtquickcontrols2implplugin',
+              'QtQuick.Controls.Basic':'qtquickcontrols2basicstyleplugin',
+              'QtQuick.Controls.Basic.impl':'qtquickcontrols2basicstyleimplplugin',
+              'QtQuick.Templates':'qtquicktemplates2plugin'}
+    if not controls.is_dir():raise ValueError('Basic Controls deployment missing')
+    if any(p.is_dir() and p.name not in (*UNUSED_STYLES,'Basic','impl','designer') for p in controls.iterdir()):
+        raise ValueError('Unknown Controls style requires deployment policy review')
+    removals={controls/name for name in UNUSED_STYLES}
+    removals.update(root/name for name in ('QtQuick/NativeStyle','QtQuick/Effects'))
+    dialogs=root/'QtQuick/Dialogs/quickimpl/qml'
+    if dialogs.is_dir():
+        for path in dialogs.iterdir():
+            if path.name.startswith('+') and path.name!='+Basic':
+                if path.name not in ('+Fusion','+Imagine','+Material','+Universal'):
+                    raise ValueError('Unknown Dialogs style selector requires review')
+                removals.add(path)
+    removals.update(p for p in paths if (p.name=='designer' and p.is_dir()) or p.suffix=='.qmltypes')
+    def removed(path):return path in removals or any(parent in removals for parent in path.parents)
+    def omitted(name):
+        return name in ('QtQuick.NativeStyle','QtQuick.Effects') or any(
+            name==f'QtQuick.Controls.{style}' or name.startswith(f'QtQuick.Controls.{style}.') for style in UNUSED_STYLES)
+    found=set()
+    for path in paths:
+        if removed(path) or not path.is_file():continue
+        if path.name=='qmldir':
+            lines=[line.split('#',1)[0].split() for line in path.read_text(encoding='utf-8').splitlines()]
+            modules=[line[1] for line in lines if len(line)==2 and line[0]=='module']
+            if len(modules)!=1:raise ValueError('QML module declaration missing or ambiguous')
+            if omitted(modules[0]):raise ValueError('Unused QML module remains outside its known path')
+            plugin=required.get(modules[0])
+            if plugin:
+                declarations=[line[1:] if line and line[0]=='optional' else line for line in lines]
+                if ['plugin',plugin] not in declarations or not (path.parent/('lib'+plugin+'.so')).is_file():
+                    raise ValueError('Required Basic Controls plugin missing')
+                found.add(modules[0])
+            for line in lines:
+                if line and line[0]=='default':line=line[1:]
+                if len(line)>=2 and line[0] in ('import','depends') and omitted(line[1]):
+                    raise ValueError('Retained QML module requires an omitted module')
+        elif path.suffix=='.qml':
+            content=re.sub(r'/\*.*?\*/|//[^\n]*','',path.read_text(encoding='utf-8'),flags=re.S)
+            if any(omitted(name) for name in re.findall(r'^\s*import\s+([A-Za-z_][\w.]*)',content,re.M)):
+                raise ValueError('Retained QML component requires an omitted module')
+    if found!=set(required):raise ValueError('Required Basic Controls modules missing')
+    records=[{'path':p.relative_to(root).as_posix(),'bytes':p.stat().st_size}
+             for p in paths if p.is_file() and removed(p)]
+    for path in sorted(removals,key=lambda p:len(p.parts)):
+        if path.is_dir():shutil.rmtree(path)
+        elif path.is_file():path.unlink()
+    return records
 
 
 def command(*args,env=None):
@@ -97,7 +157,39 @@ def tls_requirements(sdk,system_root=Path('/')):
     return plugin,records
 
 
-def deploy(app,sdk,output,notices):
+def relocate_cli_context(cli):
+    """Relocate only the generated desktop CLI, never a standalone payload."""
+    context=cli/'xdzip-cli-context.json'
+    record=json.loads(context.read_text())
+    if record!={'schema_version':1,'kind':'desktop','desktop_relative':'../xdzip',
+                'worker_relative':'../xdzip-native-codec'}:
+        raise ValueError('Desktop CLI build context does not match the shared worker layout')
+    if (cli/'xdzip-native-codec').exists() or (cli/'xdzip-native-codec').is_symlink():
+        raise ValueError('Desktop CLI must share the deployed codec worker')
+    record['worker_relative']='../bin/xdzip-native-codec'
+    context.write_text(json.dumps(record)+'\n')
+
+
+def strip_runtime(root, files):
+    """Strip only copied ELF files, retaining dynamic imports and relative RPATHs."""
+    files=sorted(files)
+    if root.is_symlink() or any(p.is_symlink() or not p.is_file() or not within(p,root) for p in files):
+        raise ValueError('Symbol stripping requires files inside the generated runtime')
+    version=command('strip','--version').splitlines()[0]
+    def linkage(path):
+        return [line.strip() for line in command('readelf','-d',str(path)).splitlines()
+                if any(tag in line for tag in ('(NEEDED)','(RPATH)','(RUNPATH)'))]
+    records=[]
+    for path in files:
+        imports=linkage(path);before=digest(path);size=path.stat().st_size
+        command('strip','--strip-unneeded',str(path))
+        if linkage(path)!=imports:raise ValueError('Symbol stripping changed runtime linkage')
+        records.append({'path':path.relative_to(root).as_posix(),'input_sha256':before,
+                        'artifact_sha256':digest(path),'before_bytes':size,'after_bytes':path.stat().st_size})
+    return {'tool_version':version,'files':records}
+
+
+def deploy(app,sdk,output,notices,*,strip_symbols=True):
     if sys.platform!='linux' or platform.machine()!='x86_64':raise ValueError('Deployment requires native Linux x86_64')
     app,sdk,output=app.resolve(),sdk.resolve(),output.resolve()
     if not within(output,ROOT/'build') and not within(output,ROOT/'dist'):
@@ -128,6 +220,7 @@ def deploy(app,sdk,output,notices):
     if not (cli/'xdzip').is_file():
         raise ValueError('Desktop build lacks its independent CLI')
     shutil.copytree(cli, output/'cli')
+    relocate_cli_context(output/'cli')
     helper = app.with_name('xdzip-update-helper')
     if not helper.is_file() or helper.is_symlink() or not native(helper, 'linux'):
         raise ValueError('Expected standalone native update helper beside application')
@@ -148,6 +241,7 @@ def deploy(app,sdk,output,notices):
         for item in source.rglob('*'):
             if not within(item,sdk):raise ValueError('QML SDK symlink escapes its root')
         shutil.copytree(source,output/'qml'/name,ignore=shutil.ignore_patterns('*.a','*.debug','*.prl'))
+    removed_qml=prune_qml(output/'qml')
     # The initial tested desktop contract is X11. Do not ship untested EGLFS,
     # direct-framebuffer or Wayland platform plugins as if they were validated.
     for name in ['libqxcb.so','libqoffscreen.so']:
@@ -190,6 +284,7 @@ def deploy(app,sdk,output,notices):
         command('patchelf','--set-rpath',relative_rpath(binary,output),str(binary))
         if command('patchelf','--print-rpath',str(binary)).strip()!=relative_rpath(binary,output):
             raise ValueError('Relocatable RPATH verification failed')
+    stripped=strip_runtime(output,inspected) if strip_symbols else None
     (output/'bin/qt.conf').write_text('[Paths]\nPrefix=..\nLibraries=lib\nPlugins=plugins\nQmlImports=qml\nTranslations=translations\n')
     launcher=output/'xdzip'
     launcher.write_text('''#!/bin/sh
@@ -207,6 +302,8 @@ exec "$xdzip_dir/bin/xdzip" "$@"
     shutil.copy2(ROOT/'design/assets/brand/xdzip.png',output/'share/xdzip.png')
     shutil.copy2(ROOT/'apps/desktop/packaging/linux/README.md',output/'README.md')
     report={'schema_version':1,'baseline':'Ubuntu 24.04 x86_64, X11','qt':'6.8.2',
+            'quick_style':'Basic','removed_qml':removed_qml,
+            'symbol_stripping':stripped,
             'entry':'xdzip','executable':'bin/xdzip','qml_roots':roots,'optional_native_modules_omitted':omitted,
             'patched_elf_files':len(inspected),'copied_libraries':[x for x in copied if x['path'].startswith('lib/')],
             'system_packages':sorted(packages),'system_libraries':sorted(system_libraries),
@@ -219,7 +316,9 @@ exec "$xdzip_dir/bin/xdzip" "$@"
     for group in ['qml','plugins','translations']:
         for path in (output/group).rglob('*'):
             if path.is_file():origins[path.relative_to(output).as_posix()] = path.relative_to(output).as_posix()
-    report['application_transform'] = {'source_sha256':digest(app),'artifact_sha256':digest(output/'bin/xdzip'),'kind':'relative RPATH rewrite by patchelf','tool_version':command('patchelf','--version').strip()}
+    report['application_transform'] = {'source_sha256':digest(app),'artifact_sha256':digest(output/'bin/xdzip'),
+        'kind':'relative RPATH rewrite by patchelf'+('; strip --strip-unneeded' if strip_symbols else ''),
+        'tool_version':command('patchelf','--version').strip()}
     report['sdk_files'] = [{'path':path,'sdk_path':source,'sdk_sha256':digest(sdk/source),
                             'artifact_sha256':digest(output/path)} for path,source in sorted(origins.items())]
     (output/'share/deployment.json').write_text(json.dumps(report,indent=2)+'\n')
@@ -230,8 +329,9 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--app',type=Path,required=True);parser.add_argument('--qt-prefix',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True);parser.add_argument('--notices',type=Path,required=True)
+    parser.add_argument('--keep-symbols',action='store_true',help='Keep native symbol tables in a diagnostic deployment copy')
     args=parser.parse_args()
-    try:report=deploy(args.app,args.qt_prefix,args.output,args.notices)
+    try:report=deploy(args.app,args.qt_prefix,args.output,args.notices,strip_symbols=not args.keep_symbols)
     except (ValueError,OSError,subprocess.SubprocessError) as error:raise SystemExit(str(error))
     print(f'Linux runtime directory: {report["patched_elf_files"]} relocated ELF files, {len(report["system_packages"])} OS packages')
 
