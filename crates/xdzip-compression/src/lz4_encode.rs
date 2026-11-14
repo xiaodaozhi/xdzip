@@ -1,16 +1,11 @@
 //! Project-owned bounded greedy parser for standard LZ4 block sequences.
 use crate::{
     invalid,
-    stream_io::{filled, resource},
+    match_finder::{MatchFinder, search_depth},
+    stream_io::resource,
 };
 use std::io;
-const WINDOW: usize = 65536;
 const MAX_BLOCK: usize = 4 * 1024 * 1024;
-const ABSENT: u32 = u32::MAX;
-fn hash(bytes: &[u8]) -> usize {
-    let word = u32::from_le_bytes(bytes[..4].try_into().expect("four-byte match key"));
-    (word.wrapping_mul(0x9e37_79b1) >> 16) as usize
-}
 fn extension(output: &mut Vec<u8>, mut length: usize) {
     while length >= 255 {
         output.push(255);
@@ -36,68 +31,27 @@ fn sequence(output: &mut Vec<u8>, literals: &[u8], matched: Option<(usize, usize
 /// Levels 1/6/9 bound the candidate search to 1/16/64 positions. The caller may
 /// store the original block when this encoded representation does not reduce it.
 pub fn encode_lz4_block(input: &[u8], level: u8, memory_limit: u64) -> io::Result<Vec<u8>> {
-    let depth = match level {
-        1 => 1,
-        6 => 16,
-        9 => 64,
-        _ => return Err(invalid()),
-    };
+    let depth = search_depth(level)?;
     if input.len() > MAX_BLOCK {
         return Err(invalid());
     }
     let bound = input.len() + input.len() / 255 + 16;
-    if (WINDOW * 8 + bound + 16384) as u64 > memory_limit {
+    if (MatchFinder::MEMORY + bound + 16384) as u64 > memory_limit {
         return Err(resource());
     }
     let mut output = Vec::new();
     output.try_reserve_exact(bound).map_err(|_| resource())?;
-    let mut heads = filled(WINDOW, ABSENT)?;
-    let mut previous = filled(WINDOW, ABSENT)?;
+    let mut finder = MatchFinder::new(depth)?;
     let mut anchor = 0;
     let mut position = 0;
     while position + 12 <= input.len() {
-        let key = hash(&input[position..]);
-        let mut candidate = heads[key];
-        previous[position % WINDOW] = candidate;
-        heads[key] = position as u32;
-        let mut best = (0usize, 0usize);
-        for _ in 0..depth {
-            if candidate == ABSENT {
-                break;
-            }
-            let at = candidate as usize;
-            if at >= position || position - at > 65535 {
-                break;
-            }
-            if input[at..at + 4] == input[position..position + 4] {
-                let maximum = input.len() - 5 - position;
-                let mut length = 4;
-                while length < maximum && input[at + length] == input[position + length] {
-                    length += 1;
-                }
-                if length > best.1 {
-                    best = (position - at, length);
-                }
-                if length == maximum {
-                    break;
-                }
-            }
-            let next = previous[at % WINDOW];
-            if next >= candidate {
-                break;
-            }
-            candidate = next;
-        }
+        let best = finder.find(input, position, input.len() - 5)?;
         if best.1 < 4 {
             position += 1;
             continue;
         }
         sequence(&mut output, &input[anchor..position], Some(best));
-        for at in position + 1..position + best.1 {
-            let key = hash(&input[at..]);
-            previous[at % WINDOW] = heads[key];
-            heads[key] = at as u32;
-        }
+        finder.seed(input, position + 1, position + best.1)?;
         position += best.1;
         anchor = position;
     }

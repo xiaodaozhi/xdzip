@@ -1,5 +1,5 @@
 use super::*;
-use std::io::Cursor;
+use std::io::{Cursor, Write};
 const PHRASE: &[u8] = b"abracadabra abracadabra\n";
 fn fixture(name: &str) -> Vec<u8> {
     std::fs::read(
@@ -172,6 +172,77 @@ fn item_and_block_limits_admit_the_exact_boundary_and_refuse_one_more() {
             assert!(result.unwrap().is_empty());
         } else {
             assert_eq!(result.unwrap_err().kind(), io::ErrorKind::OutOfMemory);
+        }
+    }
+}
+
+#[test]
+fn writer_levels_emit_real_matches_raw_fallback_rle_and_explicit_completion() {
+    let mut state = 0x726f6f74u32;
+    let random: Vec<u8> = (0..65535)
+        .map(|_| {
+            state ^= state << 13;
+            state ^= state >> 17;
+            state ^= state << 5;
+            state as u8
+        })
+        .collect();
+    for level in [1, 6, 9] {
+        for (plain, kind) in [
+            (vec![], 0),
+            (random.clone(), 0),
+            (vec![0; 900000], 1),
+            (PHRASE.repeat(50000), 2),
+        ] {
+            let mut writer = ZstdWriter::new(Vec::new(), level, 8 << 20).unwrap();
+            for part in plain.chunks(73) {
+                writer.write_all(part).unwrap();
+            }
+            let bytes = writer.finish().unwrap();
+            assert_eq!((bytes[6] >> 1) & 3, kind);
+            if kind == 2 {
+                assert!(bytes.len() < plain.len() / 10);
+            }
+            assert_eq!(decode(&bytes, 65536).unwrap(), plain);
+        }
+    }
+}
+
+#[test]
+#[ignore = "requires explicit independent Python/Zstandard oracle and owned output directory"]
+fn independent_reader_decodes_each_writer_level_and_multiple_blocks() {
+    let python = std::env::var_os("XDZIP_ZSTD_REFERENCE_PYTHON").expect("reference Python");
+    let root =
+        std::path::PathBuf::from(std::env::var_os("XDZIP_ZSTD_EXPORT_DIR").expect("owned output"));
+    std::fs::create_dir_all(&root).unwrap();
+    let mut state = 0x726f6f74u32;
+    let random: Vec<u8> = (0..65535)
+        .map(|_| {
+            state ^= state << 13;
+            state ^= state >> 17;
+            state ^= state << 5;
+            state as u8
+        })
+        .collect();
+    for level in [1, 6, 9] {
+        for (index, plain) in [
+            vec![],
+            random.clone(),
+            vec![0; 900000],
+            PHRASE.repeat(50000),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            let mut writer = ZstdWriter::new(Vec::new(), level, 8 << 20).unwrap();
+            writer.write_all(&plain).unwrap();
+            let encoded = writer.finish().unwrap();
+            let source = root.join(format!("frame-{level}-{index}.zst"));
+            let expected = root.join(format!("frame-{level}-{index}.bin"));
+            std::fs::write(&source, encoded).unwrap();
+            std::fs::write(&expected, plain).unwrap();
+            let status = std::process::Command::new(&python).args(["-c","import compression.zstd as z,sys; assert z.zstd_version_info==(1,5,7); assert z.decompress(open(sys.argv[1],'rb').read())==open(sys.argv[2],'rb').read()"]).arg(source).arg(expected).status().unwrap();
+            assert!(status.success(), "level {level}, pattern {index}");
         }
     }
 }

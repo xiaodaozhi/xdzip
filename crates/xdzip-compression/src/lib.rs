@@ -13,6 +13,7 @@ mod lzma_encode;
 #[cfg(test)]
 mod lzma_tests;
 mod lzx;
+mod match_finder;
 mod mszip;
 mod ppmd;
 mod ppmd7;

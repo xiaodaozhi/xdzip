@@ -1,6 +1,8 @@
 //! Standard Zstandard frames, independently decoded with bounded host-owned input.
+mod writer;
 use crate::frame_io::FrameInput;
 use std::io::{self, Read};
+pub use writer::ZstdWriter;
 use xdzip_compression::{Xxh64, zstd::ZstdBlockDecoder};
 const MAGIC: u32 = 0xfd2fb528;
 const MAX_ITEMS: usize = 100_000;

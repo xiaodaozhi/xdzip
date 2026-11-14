@@ -29,6 +29,32 @@ pub enum FseSequenceKind {
     Offset,
 }
 impl FseTable {
+    pub(super) fn state_bits(&self) -> u8 {
+        self.log
+    }
+    pub(super) fn symbol_state(&self, symbol: u8) -> io::Result<usize> {
+        self.rows
+            .iter()
+            .position(|row| row.symbol == symbol)
+            .ok_or_else(invalid)
+    }
+    /// Invert the normative transition ranges; no second entropy-model implementation.
+    pub(super) fn encoding_transition(
+        &self,
+        symbol: u8,
+        next: usize,
+    ) -> io::Result<(usize, u32, u8)> {
+        self.row(next)?;
+        self.rows
+            .iter()
+            .enumerate()
+            .find_map(|(state, row)| {
+                let baseline = usize::from(row.baseline);
+                (row.symbol == symbol && next >= baseline && next - baseline < (1usize << row.bits))
+                    .then(|| (state, (next - baseline) as u32, row.bits))
+            })
+            .ok_or_else(invalid)
+    }
     /// Build one of RFC 8878's normative predefined sequence distributions.
     pub fn predefined(kind: FseSequenceKind) -> io::Result<Self> {
         match kind {
