@@ -1,4 +1,4 @@
-use crate::{Index, Reader, inspect, resolve_names};
+use crate::{Index, Reader, inspect, inspect_pma, resolve_names};
 use xdzip_codec_api::{
     Cancellation, Entry, Format, MetadataCodec, ReadSource, ScanError, ScanLimits,
     encode::{
@@ -10,52 +10,81 @@ use xdzip_codec_api::{
 use xdzip_domain::identity::EntryId;
 /// LHA/LZH decoding and LH5 creation. The host retains filesystem and publication authority.
 pub struct LhaCodec;
+/// PMA read-only profiles. Methods are scoped to PMA, independently of LHA IDs.
+pub struct PmaCodec;
 impl LhaCodec {
     /// Bounded family-marker proposal. The host must validate the complete container.
     pub fn candidate(
         source: &mut dyn ReadSource,
         cancel: &Cancellation,
     ) -> Result<bool, ScanError> {
-        use std::io::SeekFrom;
-        cancel.check()?;
-        if source
-            .seek(SeekFrom::Start(0))
-            .map_err(|e| ScanError::from_source_error(&e))?
-            != 0
-        {
-            return Err(ScanError::SourceChanged);
-        }
-        let result = (|| {
-            let mut bytes = [0; 8];
-            let mut size = 0;
-            while size < bytes.len() {
-                cancel.check()?;
-                match source.read(&mut bytes[size..]) {
-                    Err(e)
-                        if e.kind() == std::io::ErrorKind::Interrupted && e.get_ref().is_none() =>
-                    {
-                        continue;
-                    }
-                    Err(e) => return Err(ScanError::from_source_error(&e)),
-                    Ok(0) => break,
-                    Ok(n) if n <= bytes.len() - size => size += n,
-                    Ok(_) => return Err(ScanError::Io),
-                }
-            }
-            Ok((size == 1 && bytes[0] == 0)
-                || (size >= 7 && matches!(&bytes[2..5], b"-lh" | b"-lz") && bytes[6] == b'-'))
-        })();
-        if source
-            .seek(SeekFrom::Start(0))
-            .map_err(|e| ScanError::from_source_error(&e))?
-            != 0
-        {
-            return Err(ScanError::SourceChanged);
-        }
-        result
+        candidate(source, cancel, false)
     }
 }
-fn method(marker: &[u8; 5]) -> u16 {
+impl PmaCodec {
+    /// Propose PMA family headers or a CP/M empty container, then validate fully.
+    pub fn candidate(
+        source: &mut dyn ReadSource,
+        cancel: &Cancellation,
+    ) -> Result<bool, ScanError> {
+        candidate(source, cancel, true)
+    }
+}
+fn candidate(
+    source: &mut dyn ReadSource,
+    cancel: &Cancellation,
+    pma: bool,
+) -> Result<bool, ScanError> {
+    use std::io::SeekFrom;
+    cancel.check()?;
+    if source
+        .seek(SeekFrom::Start(0))
+        .map_err(|e| crate::header::source_error(&e))?
+        != 0
+    {
+        return Err(ScanError::SourceChanged);
+    }
+    let result = (|| {
+        let mut bytes = [0; 8];
+        let mut size = 0;
+        while size < bytes.len() {
+            cancel.check()?;
+            match source.read(&mut bytes[size..]) {
+                Err(e) if e.kind() == std::io::ErrorKind::Interrupted && e.get_ref().is_none() => {
+                    continue;
+                }
+                Err(e) => return Err(crate::header::source_error(&e)),
+                Ok(0) => break,
+                Ok(n) if n <= bytes.len() - size => size += n,
+                Ok(_) => return Err(ScanError::Io),
+            }
+        }
+        Ok(if pma {
+            (size > 1 && bytes[0] == 0 && bytes[1..size].iter().all(|b| *b == 0x1a))
+                || (size >= 7 && &bytes[2..5] == b"-pm" && bytes[6] == b'-')
+        } else {
+            (size == 1 && bytes[0] == 0)
+                || (size >= 7 && matches!(&bytes[2..5], b"-lh" | b"-lz") && bytes[6] == b'-')
+        })
+    })();
+    if source
+        .seek(SeekFrom::Start(0))
+        .map_err(|e| crate::header::source_error(&e))?
+        != 0
+    {
+        return Err(ScanError::SourceChanged);
+    }
+    result
+}
+fn method(format: Format, marker: &[u8; 5]) -> u16 {
+    if format == Format::Pma {
+        return match marker {
+            b"-pm0-" => 0,
+            b"-pm1-" => 1,
+            b"-pm2-" => 2,
+            _ => u16::MAX,
+        };
+    }
     match marker {
         b"-lh0-" | b"-lhd-" => 0,
         b"-lh1-" => 1,
@@ -72,6 +101,7 @@ fn method(marker: &[u8; 5]) -> u16 {
     }
 }
 fn project(
+    format: Format,
     index: &Index,
     cancel: &Cancellation,
     limits: ScanLimits,
@@ -84,7 +114,7 @@ fn project(
         .enumerate()
         .map(|(at, (record, name))| {
             cancel.check()?;
-            let method = method(&record.method);
+            let method = method(format, &record.method);
             let kind = record.unix_mode & 0xf000;
             let object = kind == 0
                 || (kind == 0x8000 && !record.directory)
@@ -92,9 +122,10 @@ fn project(
             let warning = name.warning
                 || !object
                 || method == u16::MAX
-                || (method == 2 && record.crc16.is_none());
+                || (format == Format::Lha && method == 2 && record.crc16.is_none())
+                || (format == Format::Pma && (record.level != 0 || method == 1));
             Ok(Entry {
-                format: Format::Lha,
+                format,
                 id: EntryId::try_from(at as u64 + 1).map_err(|_| ScanError::Limit)?,
                 raw_name: record.raw_name.clone(),
                 decoded_name: name.decoded,
@@ -122,7 +153,27 @@ impl MetadataCodec for LhaCodec {
         cancel: &Cancellation,
         limits: ScanLimits,
     ) -> Result<Vec<Entry>, ScanError> {
-        project(&inspect(source, cancel, limits)?, cancel, limits)
+        project(
+            Format::Lha,
+            &inspect(source, cancel, limits)?,
+            cancel,
+            limits,
+        )
+    }
+}
+impl MetadataCodec for PmaCodec {
+    fn scan(
+        &self,
+        source: &mut dyn ReadSource,
+        cancel: &Cancellation,
+        limits: ScanLimits,
+    ) -> Result<Vec<Entry>, ScanError> {
+        project(
+            Format::Pma,
+            &inspect_pma(source, cancel, limits)?,
+            cancel,
+            limits,
+        )
     }
 }
 struct Payload<'a> {
@@ -137,24 +188,46 @@ impl PayloadCodec for LhaCodec {
         snapshot: &[Entry],
         cancel: &'a Cancellation,
     ) -> Result<Box<dyn PayloadReader + 'a>, DecodeError> {
-        let reader = Reader::fresh(source, cancel)?;
-        let rows =
-            project(reader.index(), cancel, ScanLimits::default()).map_err(
-                |error| match error {
-                    ScanError::Cancelled => DecodeError::Cancelled,
-                    ScanError::Limit => DecodeError::Limit,
-                    _ => DecodeError::Integrity,
-                },
-            )?;
-        if rows != snapshot {
-            return Err(DecodeError::Integrity);
-        }
-        Ok(Box::new(Payload {
-            reader,
-            rows,
-            failure: None,
-        }))
+        open(Format::Lha, source, snapshot, cancel)
     }
+}
+impl PayloadCodec for PmaCodec {
+    fn open_payload<'a>(
+        &self,
+        source: &'a mut dyn ReadSource,
+        snapshot: &[Entry],
+        cancel: &'a Cancellation,
+    ) -> Result<Box<dyn PayloadReader + 'a>, DecodeError> {
+        open(Format::Pma, source, snapshot, cancel)
+    }
+}
+fn open<'a>(
+    format: Format,
+    source: &'a mut dyn ReadSource,
+    snapshot: &[Entry],
+    cancel: &'a Cancellation,
+) -> Result<Box<dyn PayloadReader + 'a>, DecodeError> {
+    let reader = if format == Format::Pma {
+        Reader::fresh_pma(source, cancel)?
+    } else {
+        Reader::fresh(source, cancel)?
+    };
+    let rows =
+        project(format, reader.index(), cancel, ScanLimits::default()).map_err(
+            |error| match error {
+                ScanError::Cancelled => DecodeError::Cancelled,
+                ScanError::Limit => DecodeError::Limit,
+                _ => DecodeError::Integrity,
+            },
+        )?;
+    if rows != snapshot {
+        return Err(DecodeError::Integrity);
+    }
+    Ok(Box::new(Payload {
+        reader,
+        rows,
+        failure: None,
+    }))
 }
 impl PayloadReader for Payload<'_> {
     fn decode(
@@ -195,6 +268,30 @@ impl CreationCodec for LhaCodec {
     }
 }
 impl RewriteCodec for LhaCodec {
+    fn rewrite(
+        &self,
+        _: &mut dyn ReadSource,
+        _: RewriteInput<'_>,
+        _: &mut dyn RewriteOutput,
+        _: &Cancellation,
+        _: &mut dyn FnMut(EncodeProgress<'_>),
+    ) -> Result<(), EncodeError> {
+        Err(EncodeError::Unsupported)
+    }
+}
+impl CreationCodec for PmaCodec {
+    fn encode(
+        &self,
+        _: &dyn EncodeInput,
+        _: &mut dyn EncodeOutput,
+        _: EncodeSettings<'_>,
+        _: &Cancellation,
+        _: &mut dyn FnMut(EncodeProgress<'_>),
+    ) -> Result<(), EncodeError> {
+        Err(EncodeError::Unsupported)
+    }
+}
+impl RewriteCodec for PmaCodec {
     fn rewrite(
         &self,
         _: &mut dyn ReadSource,

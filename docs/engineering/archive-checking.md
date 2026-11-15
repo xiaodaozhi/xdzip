@@ -45,3 +45,5 @@ AES Crypt uses `format_declared_checks` and the retained opening password. Full 
 Brotli and TAR.BR use `structure_and_readability`. Complete stream termination, declared meta-block sizes and all admitted dictionary/history transformations must pass, but Brotli provides no content checksum. See the [Brotli contract](brotli-streams.md).
 
 LHA/LZH uses `format_declared_checks`: actually decode every supported regular file, verify exact lengths and all present header/payload CRC-16 values. Ancient level-0 members may omit CRC and then provide only structure/size/readability checks. LH2 requires CRC-bound finite-variant admission. Unknown methods, suspicious names, links or special objects prevent whole-archive success. See the [LHA contract](lha-containers.md).
+
+PMA uses `format_declared_checks` and fully decodes admitted PM0/PM2 members with exact sizes and all present payload CRC-16 values. Members without CRC establish structure/size/readability only. PM1 and other unsupported entries prevent whole-archive success. CP/M fill is validated as physical container framing, outside packed member ranges. See the [PMA contract](pma-streams.md).

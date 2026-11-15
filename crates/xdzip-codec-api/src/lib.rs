@@ -154,6 +154,8 @@ pub enum Format {
     Asar,
     /// LHA/LZH sequential members, including admitted historical LArc methods.
     Lha,
+    /// PMarc members with admitted PM0/PM2 methods and bounded CP/M framing.
+    Pma,
     /// Traditional UU/UUE and begin-base64 envelopes, including mixed UU/XX members.
     Uu,
     /// XX-encoded text envelopes containing only the XX alphabet.
@@ -279,6 +281,9 @@ impl Entry {
             Format::Brotli | Format::TarBrotli => !self.warning && !self.link,
             Format::Lha => {
                 !self.warning && !self.link && !self.encrypted && matches!(self.method, 0..=10)
+            }
+            Format::Pma => {
+                !self.warning && !self.link && !self.encrypted && matches!(self.method, 0 | 2)
             }
             Format::AesCrypt
             | Format::SevenZip

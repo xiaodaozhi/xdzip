@@ -9669,7 +9669,7 @@ QtObject {
              {"ZIP",      "TAR",    "TAR.GZ", "7z",  "GZIP",   "BZip2", "TAR.BZ2", "LZMA",
               "TAR.LZMA", "Lzip",   "TAR.LZ", "XZ",  "TAR.XZ", "LZ4",   "TAR.LZ4", "ZSTD",
               "TAR.ZST",  "DEB",    "ASAR",   "UU",  "XXE",    "Z",     "TAR.Z",   "AES Crypt",
-              "Brotli",   "TAR.BR", "LZH",    "RAR", "CAB",    "ISO",   "UDF"}) {
+              "Brotli",   "TAR.BR", "LZH",    "PMA", "RAR",    "CAB",   "ISO",     "UDF"}) {
             auto *badge =
                 findVisual(window->contentItem(), "welcomeFormat-" + QString::fromLatin1(format));
             QVERIFY(badge && badge->isVisible());
@@ -9701,7 +9701,8 @@ QtObject {
               QStringLiteral("ZSTD"),   QStringLiteral("TAR.ZST"), QStringLiteral("DEB"),
               QStringLiteral("ASAR"),   QStringLiteral("UU"),      QStringLiteral("XXE"),
               QStringLiteral("Z"),      QStringLiteral("TAR.Z"),   QStringLiteral("AES Crypt"),
-              QStringLiteral("Brotli"), QStringLiteral("TAR.BR"),  QStringLiteral("LZH")}) {
+              QStringLiteral("Brotli"), QStringLiteral("TAR.BR"),  QStringLiteral("LZH"),
+              QStringLiteral("PMA")}) {
             task->setProperty("resultTask", QVariantMap{{"kind", "check"}, {"format", format}});
             QVERIFY(QMetaObject::invokeMethod(task, "present"));
             QTRY_VERIFY(task->isVisible());
@@ -9711,7 +9712,7 @@ QtObject {
                      format == "TAR" ? qtTrId("integrity.tarNote")
                      : format.contains("XZ") || format.contains("LZ4") || format.contains("ZST") ||
                              format == "DEB" || format == "ASAR" || format == "AES Crypt" ||
-                             format == "LZH"
+                             format == "LZH" || format == "PMA"
                          ? qtTrId("integrity.declaredCheckNote")
                          : qtTrId("integrity.structuralNote").arg(format));
             auto *hint = qobject_cast<QQuickItem *>(footer->property("hint").value<QObject *>());
@@ -9761,7 +9762,10 @@ QtObject {
                                                      {"../lha/lh2-h1.lzh", "LZH"},
                                                      {"../lha/lh3-h3.lzh", "LZH"},
                                                      {"../lha/lzs-h2.lzh", "LZH"},
-                                                     {"../lha/lz5-h2.lzh", "LZH"}};
+                                                     {"../lha/lz5-h2.lzh", "LZH"},
+                                                     {"../pma/pm0-allbytes.pma", "PMA"},
+                                                     {"../pma/pm2-boundary-1024.pma", "PMA"},
+                                                     {"../pma/pm2-deep28.pma", "PMA"}};
         for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
             for (const auto &[fixture, format] : formats)
                 QTest::newRow(qPrintable(fixture + "-" + language))
@@ -9792,14 +9796,17 @@ QtObject {
         const auto *row = controller->m_model.rowAt(0);
         QVERIFY(row);
         const bool tar = format.startsWith("TAR.");
-        const auto leaf = format == "LZH" ? QStringLiteral("hello.bin")
+        const auto leaf = format == "PMA"   ? QStringLiteral("HELLO.BIN")
+                          : format == "LZH" ? QStringLiteral("hello.bin")
                           : tar || format == "ZIP"
                               ? QStringLiteral("hello.txt")
                               : QFileInfo(fixture).fileName().section('.', 0, 0);
         QCOMPARE(row->cells[0], leaf);
         QCOMPARE(row->cells[2].isEmpty(), tar);
         const auto method =
-            format == "LZH"                      ? QFileInfo(fixture).fileName().left(3).toUpper()
+            format == "PMA"
+                ? (fixture.contains("pm0-") ? QStringLiteral("Store") : QStringLiteral("PM2"))
+            : format == "LZH"                    ? QFileInfo(fixture).fileName().left(3).toUpper()
             : format == "Z" || format == "TAR.Z" ? QStringLiteral("LZW")
             : format == "Brotli" || format == "TAR.BR"             ? QStringLiteral("Brotli")
             : format.contains("ZST")                               ? QStringLiteral("Zstandard")
@@ -9831,7 +9838,22 @@ QtObject {
                  QStringLiteral("succeeded"));
         QFile actual(QDir(destination).filePath(leaf));
         QVERIFY(actual.open(QIODevice::ReadOnly));
-        QCOMPARE(actual.readAll(), QByteArray("abracadabra abracadabra\n").repeated(6));
+        auto expected = QByteArray("abracadabra abracadabra\n").repeated(6);
+        if (format == "PMA") {
+            expected.clear();
+            if (fixture.contains("deep28")) {
+                for (int i = 0; i < 128; ++i)
+                    expected.append(char(39 - i % 8));
+            } else {
+                for (int i = 0; i < 256; ++i)
+                    expected.append(char(i));
+                if (fixture.contains("pm2-")) {
+                    expected.append(QByteArray("abracadabra abracadabra\n").repeated(128));
+                    expected.truncate(1024);
+                }
+            }
+        }
+        QCOMPARE(actual.readAll(), expected);
     }
     void textEnvelopesUseSharedBrowserAndTasks_data() {
         QTest::addColumn<QString>("fixture");

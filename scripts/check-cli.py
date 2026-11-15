@@ -338,6 +338,26 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
         invoke('add',archive,source,code=1)
         assert hashlib.sha256(archive.read_bytes()).hexdigest()==before
         record('lha_all_admitted_methods_header_levels_decoded_names_and_readonly_boundary')
+        for name,expected in [
+            ('pm0-allbytes.pma', bytes(range(256))),
+            ('pm2-boundary-1024.pma', (bytes(range(256)) + b'abracadabra abracadabra\n'*128)[:1024]),
+            ('pm2-deep28.pma', bytes(range(39,31,-1))*16),
+        ]:
+            archive=ROOT/'tests/fixtures/pma'/name
+            listed=invoke('list',archive)['data']
+            assert listed['format']=='PMA' and len(listed['entries'])==1
+            assert invoke('test',archive)['data']['check_kind']=='format_declared_checks'
+            entry=listed['entries'][0]
+            assert entry['path']=='HELLO.BIN' and entry['size']==len(expected)
+            target=work/('pma-'+name)
+            invoke('extract',archive,'--entry-id',entry['id'],'-C',target)
+            assert (target/'HELLO.BIN').read_bytes()==expected
+        empty=invoke('list',ROOT/'tests/fixtures/pma/empty.pma')['data']
+        assert empty['format']=='PMA' and empty['entries']==[]
+        before=hashlib.sha256(archive.read_bytes()).hexdigest()
+        invoke('add',archive,source,code=1)
+        assert hashlib.sha256(archive.read_bytes()).hexdigest()==before
+        record('pma_pm0_pm2_final_controls_deep_codes_empty_and_readonly_boundary')
         for asar_name in ['ordinary.asar','without-integrity.asar','shared.asar','executable.asar','empty.asar']:
             asar=ROOT/'tests/fixtures/asar'/asar_name
             listed=invoke('list',asar)['data']

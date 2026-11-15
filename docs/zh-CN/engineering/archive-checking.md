@@ -53,3 +53,5 @@ AES Crypt 使用 `format_declared_checks` 和保留的打开密码。元数据�
 Brotli 与 TAR.BR 使用 `structure_and_readability`，必须通过完整流结束、声明的元块大小和全部准入词典/历史变换，Brotli 本身不提供内容校验和。详见 [Brotli 契约](brotli-streams.md)。
 
 LHA/LZH 使用 `format_declared_checks`，实际解码全部受支持普通文件，验证准确长度和所有存在的头部、载荷 CRC-16。古老 0 级成员可缺少 CRC，此时仅检查结构、尺寸与可读性；LH2 必须按 CRC 约束执行有限变体准入。未知方法、异常名称、链接或特殊对象不能跳过后宣称整包成功，详见 [LHA 契约](lha-containers.md)。
+
+PMA 使用 `format_declared_checks`，完整解码准入的 PM0/PM2，核对准确尺寸及存在的载荷 CRC-16；缺少 CRC 的成员仅检查结构、尺寸和可读性。PM1 和其他不支持条目阻止整包成功。CP/M 填充作为物理容器结构验证，位于成员压缩区间之外，详见 [PMA 契约](pma-streams.md)。

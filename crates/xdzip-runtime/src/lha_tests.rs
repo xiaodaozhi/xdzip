@@ -218,6 +218,164 @@ fn stored(payload: &[u8]) -> Vec<u8> {
     result.push(0);
     result
 }
+fn pma_fixture(name: &str) -> PathBuf {
+    fixture(name)
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("pma")
+        .join(name)
+}
+#[test]
+fn pma_common_profiles_use_actual_readonly_check_and_private_extraction() {
+    let cancel = Cancellation::default();
+    for (name, expected) in [
+        ("pm0-allbytes.pma", (0..=255).collect::<Vec<u8>>()),
+        ("pm2-zeros.pma", vec![0; 65536]),
+        (
+            "pm2-deep28.pma",
+            (32..=39).rev().cycle().take(128).collect(),
+        ),
+        (
+            "pm2-boundary-1024.pma",
+            [
+                (0..=255).collect::<Vec<u8>>(),
+                b"abracadabra abracadabra\n".repeat(128),
+            ]
+            .concat()
+            .into_iter()
+            .cycle()
+            .take(1024)
+            .collect(),
+        ),
+    ] {
+        let scratch = Scratch::new();
+        let archive = Archive::open(&pma_fixture(name), &cancel).unwrap();
+        assert_eq!(archive.format, xdzip_codec_api::Format::Pma);
+        assert!(!archive.update_allowed);
+        assert_eq!(archive.rows[0].name_bytes(), b"HELLO.BIN");
+        let mut checked = None;
+        checking::run(
+            archive.check_job(&cancel).unwrap(),
+            7,
+            &Control::default(),
+            &mut |s| checked = Some(s),
+        );
+        let checked = checked.unwrap();
+        assert_eq!(
+            checked.status,
+            Status::Succeeded,
+            "{name}: {}",
+            checked.error
+        );
+        assert_eq!(checked.verified_bytes, expected.len() as u64);
+        let mut result = None;
+        extraction::run(
+            archive
+                .extraction_job(options(&scratch.0), &cancel)
+                .unwrap(),
+            8,
+            &Control::default(),
+            &mut |s| result = Some(s),
+        );
+        let result = result.unwrap();
+        assert_eq!(result.status, Status::Succeeded, "{name}: {}", result.error);
+        assert_eq!(
+            std::fs::read(scratch.0.join("HELLO.BIN")).unwrap(),
+            expected
+        );
+    }
+    let empty = Archive::open(&pma_fixture("empty.pma"), &cancel).unwrap();
+    assert_eq!(empty.format, xdzip_codec_api::Format::Pma);
+    assert!(empty.rows.is_empty());
+}
+#[test]
+fn pma_crc_failure_and_unsupported_pm1_leave_existing_output_and_no_staging_files() {
+    let cancel = Cancellation::default();
+    for pm1 in [false, true] {
+        let scratch = Scratch::new();
+        let mut bytes = std::fs::read(pma_fixture("pm0-allbytes.pma")).unwrap();
+        if pm1 {
+            bytes[5] = b'1';
+        } else {
+            bytes[33] ^= 1;
+        }
+        bytes[1] = bytes[2..33].iter().fold(0u8, |s, b| s.wrapping_add(*b));
+        let source = scratch.0.join("input.dat");
+        std::fs::write(&source, bytes).unwrap();
+        let archive = Archive::open(&source, &cancel).unwrap();
+        assert_eq!(archive.format, xdzip_codec_api::Format::Pma);
+        assert_eq!(archive.rows[0].payload_supported(), !pm1);
+        let target = scratch.0.join("output");
+        let options = options(&target);
+        std::fs::write(target.join("HELLO.BIN"), b"old-content").unwrap();
+        let job = archive.extraction_job(options, &cancel);
+        if pm1 {
+            assert!(matches!(job, Err("unsupported_entry")));
+        } else {
+            let mut result = None;
+            extraction::run(job.unwrap(), 9, &Control::default(), &mut |s| {
+                result = Some(s)
+            });
+            assert_eq!(result.unwrap().status, Status::Failed);
+        }
+        assert_eq!(
+            std::fs::read(target.join("HELLO.BIN")).unwrap(),
+            b"old-content"
+        );
+        assert_eq!(std::fs::read_dir(&target).unwrap().count(), 1);
+    }
+}
+fn pma_stored(payload: &[u8]) -> Vec<u8> {
+    let mut bytes = stored(payload);
+    bytes[2..7].copy_from_slice(b"-pm0-");
+    bytes[1] = bytes[2..33].iter().fold(0u8, |s, b| s.wrapping_add(*b));
+    bytes.resize(bytes.len().div_ceil(128) * 128, 0x1a);
+    bytes
+}
+#[test]
+fn pma_duplicates_source_marker_collisions_and_nested_zip_keep_the_physical_namespace() {
+    let scratch = Scratch::new();
+    let cancel = Cancellation::default();
+    let mut content = vec![b'A'; 300];
+    content[224..229].copy_from_slice(b"ustar");
+    let nested = std::fs::read(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/zip/normal.zip"),
+    )
+    .unwrap();
+    for (at, payload) in [content, nested].into_iter().enumerate() {
+        let mut bytes = pma_stored(&payload);
+        bytes.truncate(33 + payload.len());
+        bytes.extend_from_slice(&pma_stored(b"second-record")[..33 + 13]);
+        bytes.push(0);
+        bytes.resize(bytes.len().div_ceil(128) * 128, 0x1a);
+        let path = scratch.0.join(format!("collision-{at}.bin"));
+        std::fs::write(&path, &bytes).unwrap();
+        let archive = Archive::open(&path, &cancel).unwrap();
+        assert_eq!(archive.format, xdzip_codec_api::Format::Pma);
+        assert_eq!(archive.rows.len(), 2);
+        assert_eq!(archive.rows[0].name_bytes(), archive.rows[1].name_bytes());
+        assert_ne!(archive.rows[0].id, archive.rows[1].id);
+        let target = scratch.0.join(format!("output-{at}"));
+        let mut options = options(&target);
+        options.all = false;
+        options.selected = vec![archive.rows[1].id.get().to_string()];
+        let mut result = None;
+        extraction::run(
+            archive.extraction_job(options, &cancel).unwrap(),
+            10,
+            &Control::default(),
+            &mut |s| result = Some(s),
+        );
+        let result = result.unwrap();
+        assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+        assert_eq!(
+            std::fs::read(target.join("hello.bin")).unwrap(),
+            b"second-record"
+        );
+    }
+}
 #[test]
 fn source_marker_collisions_and_nested_zip_content_keep_the_validated_lha_namespace() {
     let scratch = Scratch::new();

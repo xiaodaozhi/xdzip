@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/pma-streams.md)
 
-PMarc uses LHA-like sequential headers with `-pm0-`, `-pm1-` and `-pm2-` methods. These identify different algorithms, not aliases for the similarly named LH methods. `Pm2Reader` currently provides bounded raw PM2 decoding independently of Qt. PM1, complete PMA container admission and product registration require their own implementation and acceptance; the format registry remains authoritative. A raw primitive does not establish product opening, checking or extraction support.
+PMarc uses LHA-like sequential headers with `-pm0-`, `-pm1-` and `-pm2-` methods. These identify different algorithms, not aliases for the similarly named LH methods. The read-only PMA profile admits level-0 PM0 and PM2 members for browsing, checking and selected extraction. PM1 remains visible with an unsupported-content warning. Creation, modification, encryption, volumes and repair are not admitted; the format registry remains authoritative.
 
 ## Sources and reference boundary
 
@@ -17,6 +17,10 @@ Original PMarc 2.00 runs inside hash-pinned, source-verified CP/M emulation, wit
 PMA headers and payload ranges require the same arithmetic, checksum, name, duplicate, frozen-source and special-object rules as [LHA](lha-containers.md). PM0 is Store with equal packed and original sizes. PM1 and PM2 must not route to LH decoders. Present payload CRC-16 values must pass after complete decoding; an opened or listed method does not establish content validity.
 
 An original CP/M archive ends with a zero byte and enough `0x1a` fill to reach the next 128-byte record boundary. The admitted padded form must be exactly aligned, with at most 127 fill bytes, all of that value. An exact zero terminator may also delimit an unpadded container. These are specific framing requirements, not permission to ignore arbitrary trailing bytes, synthesize a missing terminator or append decoded EOF bytes. Container padding never belongs to a member's packed span. Source freezing must include the entire physical file, including padding.
+
+An eight-byte proposal never publishes a format by itself. The complete metadata chain, exact zero terminator and optional physical padding must validate before the host publishes rows. All weak-family probes share one input ledger. A CP/M empty archive identifies PMA by its bounded fill; an indistinguishable one-byte zero terminator retains the earlier LZH choice. Strong containers retain priority over weak discovery, and raw TAR-marker collisions require complete container admission. Source I/O failures remain terminal, including a typed malformed-input value originating from the host.
+
+Physical row IDs, raw/decoded names, flags, sizes and methods are compared again before payload output. PMA method 2 routes directly to PM2, without LHA's LH2 variant trials. CRC failures, unsupported methods and source changes retain the host's private staging and old-file protection. `.pma` is a shell/drop candidate on applicable platforms. No dedicated MIME type is declared, so this does not add a Linux PMA default-association claim.
 
 ## PM2 wire model
 

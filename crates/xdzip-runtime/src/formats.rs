@@ -8,7 +8,7 @@ use xdzip_codec_api::{
 };
 use xdzip_codec_asar::AsarCodec;
 use xdzip_codec_deb::DebCodec;
-use xdzip_codec_lha::LhaCodec;
+use xdzip_codec_lha::{LhaCodec, PmaCodec};
 use xdzip_codec_native::NativeCodec;
 use xdzip_codec_stream::{
     StreamCodec,
@@ -25,6 +25,7 @@ impl Codec for StreamCodec {}
 impl Codec for DebCodec {}
 impl Codec for AsarCodec {}
 impl Codec for LhaCodec {}
+impl Codec for PmaCodec {}
 impl Codec for UuCodec {}
 impl Codec for AesCryptCodec {}
 pub(crate) fn codec(format: Format) -> &'static dyn Codec {
@@ -33,6 +34,7 @@ pub(crate) fn codec(format: Format) -> &'static dyn Codec {
         Format::Deb => &DebCodec,
         Format::Asar => &AsarCodec,
         Format::Lha => &LhaCodec,
+        Format::Pma => &PmaCodec,
         Format::AesCrypt => &AesCryptCodec,
         Format::Brotli => &StreamCodec {
             format: Format::Brotli,
@@ -371,14 +373,22 @@ fn validate_lha(
     source: &mut dyn ReadSource,
     control: &xdzip_codec_api::Cancellation,
 ) -> Result<Option<(Format, Vec<xdzip_codec_api::Entry>)>, ScanError> {
-    if !LhaCodec::candidate(source, control)? {
-        return Ok(None);
+    for format in [Format::Lha, Format::Pma] {
+        let candidate = if format == Format::Pma {
+            PmaCodec::candidate(source, control)?
+        } else {
+            LhaCodec::candidate(source, control)?
+        };
+        if !candidate {
+            continue;
+        }
+        match codec(format).scan(source, control, limits(format)) {
+            Ok(rows) => return Ok(Some((format, rows))),
+            Err(ScanError::Invalid) => {}
+            Err(error) => return Err(error),
+        }
     }
-    match LhaCodec.scan(source, control, limits(Format::Lha)) {
-        Ok(rows) => Ok(Some((Format::Lha, rows))),
-        Err(ScanError::Invalid) => Ok(None),
-        Err(error) => Err(error),
-    }
+    Ok(None)
 }
 fn validate_brotli(
     input: &mut dyn ReadSource,

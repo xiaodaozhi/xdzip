@@ -4,9 +4,9 @@ mod content;
 mod creation;
 mod header;
 mod names;
-pub use adapter::LhaCodec;
+pub use adapter::{LhaCodec, PmaCodec};
 pub use content::Reader;
-pub use header::{Index, Record, inspect};
+pub use header::{Index, Record, inspect, inspect_pma};
 #[cfg(test)]
 mod tests;
 

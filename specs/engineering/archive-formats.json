@@ -352,6 +352,16 @@
       ]
     },
     {
+      "id": "pma", "rust_variant": "Pma", "label": "PMA", "container": "lha", "filters": [], "worker_id": null,
+      "check_kind": "format_declared_checks", "creation_levels": [],
+      "read_methods": ["store", "pm2"], "write_methods": [], "rewrite": false,
+      "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [], "shell_mime_types": [],
+      "extensions": [
+        {"suffix": ".pma", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+      ]
+    },
+    {
       "id": "asar", "rust_variant": "Asar", "label": "ASAR", "container": "asar", "filters": [], "worker_id": null,
       "check_kind": "format_declared_checks", "creation_levels": [],
       "read_methods": ["store", "sha256"], "write_methods": [], "rewrite": false,

@@ -1,14 +1,19 @@
-use crate::{Index, Record, inspect};
+use crate::{Index, Record, inspect, inspect_pma};
 use std::io::{self, Read, SeekFrom, Take};
 use xdzip_codec_api::{
     Cancellation, ReadSource, ScanError, ScanLimits,
     payload::{DecodeError, DecodedSink},
 };
-use xdzip_compression::{Crc16, LarcMethod, LarcReader, Lh2Variant, LhDynamicReader, LzhReader};
+use xdzip_compression::{
+    Crc16, LarcMethod, LarcReader, Lh2Variant, LhDynamicReader, LzhReader, Pm2Reader,
+};
 use xdzip_crypto::SecretSha256;
 
 const INPUT_LIMIT: u64 = 24 * 1024 * 1024 * 1024;
 const WORK_LIMIT: u64 = 96 * 1024 * 1024 * 1024;
+#[cfg(test)]
+#[path = "pma_tests.rs"]
+mod pma_tests;
 struct HashingSink<'a> {
     sink: &'a mut dyn DecodedSink,
     work: &'a mut u64,
@@ -105,6 +110,11 @@ impl Read for Source<'_, '_> {
 }
 trait Algorithm: Read {
     fn work_left(&self) -> u64;
+}
+impl<R: Read, P: FnMut() -> io::Result<()>> Algorithm for Pm2Reader<R, P> {
+    fn work_left(&self) -> u64 {
+        self.work_remaining()
+    }
 }
 impl<R: Read, P: FnMut() -> io::Result<()>> Algorithm for LzhReader<R, P> {
     fn work_left(&self) -> u64 {
@@ -225,7 +235,37 @@ impl<'a> Reader<'a> {
         source: &'a mut dyn ReadSource,
         cancel: &'a Cancellation,
     ) -> Result<Self, DecodeError> {
-        let index = inspect(source, cancel, ScanLimits::default()).map_err(scan_error)?;
+        Self::fresh_profile(source, cancel, false)
+    }
+    pub(crate) fn fresh_pma(
+        source: &'a mut dyn ReadSource,
+        cancel: &'a Cancellation,
+    ) -> Result<Self, DecodeError> {
+        Self::fresh_profile(source, cancel, true)
+    }
+    /// Bind a PMA snapshot, including its physical CP/M record padding.
+    pub fn open_pma(
+        source: &'a mut dyn ReadSource,
+        snapshot: &Index,
+        cancel: &'a Cancellation,
+    ) -> Result<Self, DecodeError> {
+        let result = Self::fresh_profile(source, cancel, true)?;
+        if &result.index != snapshot {
+            return Err(DecodeError::Integrity);
+        }
+        Ok(result)
+    }
+    fn fresh_profile(
+        source: &'a mut dyn ReadSource,
+        cancel: &'a Cancellation,
+        cpm_padding: bool,
+    ) -> Result<Self, DecodeError> {
+        let index = if cpm_padding {
+            inspect_pma(source, cancel, ScanLimits::default())
+        } else {
+            inspect(source, cancel, ScanLimits::default())
+        }
+        .map_err(scan_error)?;
         let input = INPUT_LIMIT
             .checked_sub(index.input_used)
             .ok_or(DecodeError::Limit)?;
@@ -368,6 +408,17 @@ impl<'a> Reader<'a> {
                 .map_err(io::Error::other)
         };
         let mut reader: Box<dyn Algorithm + '_> = match &record.method {
+            b"-pm2-" => Box::new(
+                Pm2Reader::with_poll(
+                    source,
+                    record.packed_size,
+                    record.size,
+                    256 * 1024,
+                    self.work,
+                    poll,
+                )
+                .map_err(io_error)?,
+            ),
             b"-lh0-" | b"-lz4-" | b"-pm0-" => Box::new(Stored {
                 source,
                 work: self.work,

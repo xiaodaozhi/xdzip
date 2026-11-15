@@ -4,6 +4,13 @@ use xdzip_codec_api::{Cancellation, ReadSource, ScanError, ScanLimits, time};
 const MAX_HEADER: usize = 1024 * 1024;
 const MAX_EXTENSIONS: usize = 256;
 
+pub(crate) fn source_error(error: &std::io::Error) -> ScanError {
+    match ScanError::from_source_error(error) {
+        ScanError::Invalid => ScanError::Io,
+        error => error,
+    }
+}
+
 /// Validated physical member framing; content still requires full decoding and CRC.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Record {
@@ -63,7 +70,7 @@ impl Input<'_> {
         if self
             .source
             .seek(SeekFrom::Start(offset))
-            .map_err(|e| ScanError::from_source_error(&e))?
+            .map_err(|e| source_error(&e))?
             != offset
         {
             return Err(ScanError::SourceChanged);
@@ -81,9 +88,12 @@ impl Input<'_> {
                 Err(e) if e.kind() == std::io::ErrorKind::Interrupted && e.get_ref().is_none() => {
                     continue;
                 }
-                Err(e) => return Err(ScanError::from_source_error(&e)),
+                Err(e) => return Err(source_error(&e)),
                 Ok(n) => n,
             };
+            if n > end - at {
+                return Err(ScanError::Io);
+            }
             if n == 0 {
                 return Err(ScanError::SourceChanged);
             }
@@ -412,6 +422,22 @@ pub fn inspect(
     cancel: &Cancellation,
     limits: ScanLimits,
 ) -> Result<Index, ScanError> {
+    inspect_profile(source, cancel, limits, false)
+}
+/// Scan shared PMA headers with bounded CP/M fill after the zero terminator.
+pub fn inspect_pma(
+    source: &mut dyn ReadSource,
+    cancel: &Cancellation,
+    limits: ScanLimits,
+) -> Result<Index, ScanError> {
+    inspect_profile(source, cancel, limits, true)
+}
+fn inspect_profile(
+    source: &mut dyn ReadSource,
+    cancel: &Cancellation,
+    limits: ScanLimits,
+    cpm_padding: bool,
+) -> Result<Index, ScanError> {
     cancel.check()?;
     let limits = ScanLimits {
         entries: limits.entries.min(xdzip_codec_api::MAX_ENTRIES),
@@ -422,7 +448,7 @@ pub fn inspect(
     };
     let length = source
         .seek(SeekFrom::End(0))
-        .map_err(|e| ScanError::from_source_error(&e))?;
+        .map_err(|e| source_error(&e))?;
     if length == 0 {
         return Err(ScanError::Invalid);
     }
@@ -440,7 +466,17 @@ pub fn inspect(
         let first = input.read(offset, 1)?[0];
         if first == 0 {
             if offset + 1 != length {
-                return Err(ScanError::Invalid);
+                let count = length.checked_sub(offset + 1).ok_or(ScanError::Invalid)?;
+                if !cpm_padding || length % 128 != 0 || count > 127 {
+                    return Err(ScanError::Invalid);
+                }
+                if input
+                    .read(offset + 1, count as usize)?
+                    .iter()
+                    .any(|byte| *byte != 0x1a)
+                {
+                    return Err(ScanError::Invalid);
+                }
             }
             break;
         }

@@ -203,6 +203,11 @@ mod tests {
         assert!(!lha.rewrite && lha.write_encryption.is_empty() && lha.write_volumes.is_empty());
         assert_eq!(Format::Zip.descriptor().creation_method(259), None);
         assert_eq!(lha.creation_method(5), None);
+        let pma = Format::Pma.descriptor();
+        assert_eq!(pma.read_methods, ["store", "pm2"]);
+        assert!(pma.write_methods.is_empty() && pma.creation_suffixes.is_empty());
+        assert!(!pma.rewrite && pma.worker_id.is_none());
+        assert!(pma.read_encryption.is_empty() && pma.read_volumes.is_empty());
         for format in [Format::Zstd, Format::TarZstd] {
             let declaration = format.descriptor();
             assert_eq!(declaration.creation_method(93), Some("zstd"));
