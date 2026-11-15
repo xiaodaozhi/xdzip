@@ -5,6 +5,7 @@ fn independently_encoded_static_lha_methods_cover_all_header_levels_and_real_pay
     let mut cases = 0;
     for &(name, method, header, packed, decoded, crc) in fixture_cases::CASES {
         let method = match method {
+            "lh3" => 3,
             "lh4" => 4,
             "lh5" => 5,
             "lh6" => 6,
@@ -37,7 +38,7 @@ fn independently_encoded_static_lha_methods_cover_all_header_levels_and_real_pay
         assert_eq!(crate::crc16(&result), crc, "{name}");
         cases += 1;
     }
-    assert_eq!(cases, 33);
+    assert_eq!(cases, 42);
 }
 fn single_literal(commands: u16) -> Vec<u8> {
     let mut bits = vec![];
@@ -244,4 +245,111 @@ fn cancellation_during_long_copies_does_not_depend_on_input_reads() {
     );
     assert!(output.len() < 589824);
     assert!(reader.read(&mut [0]).is_err());
+}
+fn wire(fields: &[(u32, u8)]) -> Vec<u8> {
+    let mut result = vec![];
+    let mut byte = 0;
+    let mut count = 0;
+    for &(value, width) in fields {
+        for bit in (0..width).rev() {
+            byte = (byte << 1) | ((value >> bit) & 1) as u8;
+            count += 1;
+            if count == 8 {
+                result.push(byte);
+                byte = 0;
+                count = 0;
+            }
+        }
+    }
+    if count != 0 {
+        result.push(byte << (8 - count));
+    }
+    result
+}
+#[test]
+fn legacy_static_singletons_escape_limits_and_incomplete_trees_are_explicit() {
+    let single = |code: u32| {
+        wire(&[
+            (1, 16),
+            (1, 1),
+            (0, 4),
+            (1, 1),
+            (0, 4),
+            (1, 1),
+            (0, 4),
+            (code, 9),
+            (0, 1),
+        ])
+    };
+    let memory = lzh_memory_required(3).unwrap();
+    let bytes = single(65);
+    let mut reader = LzhReader::new(
+        Cursor::new(&bytes),
+        3,
+        bytes.len() as u64,
+        1,
+        memory,
+        1_000_000,
+    )
+    .unwrap();
+    let mut output = vec![];
+    reader.read_to_end(&mut output).unwrap();
+    assert_eq!(output, b"A");
+    let bytes = wire(&[
+        (1, 16),
+        (1, 1),
+        (0, 4),
+        (1, 1),
+        (0, 4),
+        (1, 1),
+        (0, 4),
+        (256, 9),
+        (1, 1),
+        (1, 4),
+        (1, 4),
+        (1, 4),
+        (0, 7),
+        (0, 6),
+    ]);
+    let mut reader = LzhReader::new(
+        Cursor::new(&bytes),
+        3,
+        bytes.len() as u64,
+        3,
+        memory,
+        1_000_000,
+    )
+    .unwrap();
+    let mut output = vec![];
+    reader.read_to_end(&mut output).unwrap();
+    assert_eq!(output, b"   ");
+    let mut escape = single(285); // Rebuild the bit fields so extra bits precede final fill.
+    escape.clear();
+    escape.extend(wire(&[
+        (1, 16),
+        (1, 1),
+        (0, 4),
+        (1, 1),
+        (0, 4),
+        (1, 1),
+        (0, 4),
+        (285, 9),
+        (0, 1),
+        (225, 8),
+    ]));
+    let mut empty = vec![(1, 16)];
+    empty.extend(std::iter::repeat_n((0, 1), 286));
+    for bytes in [single(286), escape, wire(&empty)] {
+        let mut reader = LzhReader::new(
+            Cursor::new(&bytes),
+            3,
+            bytes.len() as u64,
+            1,
+            memory,
+            1_000_000,
+        )
+        .unwrap();
+        assert!(reader.read_to_end(&mut vec![]).is_err());
+        assert!(reader.read(&mut [0]).is_err());
+    }
 }

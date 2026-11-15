@@ -34,6 +34,7 @@ pub(crate) const CASES: &[(&str, &str, usize, usize, usize, u16)] = &[
     ("lz5-h0.lzh", "lz5", 33, 30, 144, 0xdab9),
     ("lz5-h1.lzh", "lz5", 41, 30, 144, 0xdab9),
     ("lz5-h2.lzh", "lz5", 43, 30, 144, 0xdab9),
+    ("lh5-h2-padding.lzh", "lh5", 257, 27, 144, 0xdab9),
     ("lh1-empty.lzh", "lh1", 43, 0, 0, 0x0000),
     ("lh1-tail1.lzh", "lh1", 43, 2, 1, 0x30c0),
     ("lh1-spaces.lzh", "lh1", 43, 113, 4096, 0x86c7),
@@ -82,4 +83,5 @@ pub(crate) const CASES: &[(&str, &str, usize, usize, usize, u16)] = &[
     ("lh5-initial.lzh", "lh5", 33, 7, 3, 0xd219),
     ("lzs-initial.lzh", "lzs", 33, 2, 17, 0x317b),
     ("lz5-initial.lzh", "lz5", 33, 3, 18, 0xacad),
+    ("lh2-unix-spaces.lzh", "lh2", 43, 46, 4096, 0x86c7),
 ];

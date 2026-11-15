@@ -15,6 +15,7 @@ const MAX_BYTES: u64 = 24 * 1024 * 1024 * 1024;
 const MAX_WORK: u64 = 96 * 1024 * 1024 * 1024;
 fn parameters(method: u8) -> io::Result<(u8, usize, u8)> {
     match method {
+        3 => Ok((13, 128, 7)),
         4 => Ok((12, 14, 4)),
         5 => Ok((13, 14, 4)),
         6 => Ok((15, 16, 5)),
@@ -123,7 +124,32 @@ fn literal_tree<R: Read, P: FnMut() -> io::Result<()>>(
     }
     Canonical::from_lengths(&result, 16, false)
 }
-/// Exact-size LH4/LH5/LH6/LH7 stream. No container framing or CRC is interpreted here.
+fn legacy_tree<R: Read, P: FnMut() -> io::Result<()>>(
+    bits: &mut Input<R, P>,
+    positions: bool,
+) -> io::Result<Canonical> {
+    let alphabet = if positions { 128 } else { 286 };
+    bits.charge(alphabet as u64)?;
+    let mut lengths = filled(alphabet, 0u8)?;
+    for at in 0..alphabet {
+        lengths[at] = if positions {
+            bits.get(4)? as u8
+        } else if bits.get(1)? != 0 {
+            bits.get(4)? as u8 + 1
+        } else {
+            0
+        };
+        if at == 2 && lengths[..3] == [1, 1, 1] {
+            let code = bits.get(if positions { 7 } else { 9 })? as usize;
+            if code >= alphabet {
+                return Err(invalid());
+            }
+            return Ok(Canonical::single(code as u16));
+        }
+    }
+    Canonical::from_lengths(&lengths, 16, false)
+}
+/// Exact-size static LH3/LH4/LH5/LH6/LH7 stream, without container framing or CRC.
 /// Its declared span and decoded size must come from a validated caller-owned container.
 pub struct LzhReader<R, P = fn() -> io::Result<()>> {
     bits: Input<R, P>,
@@ -133,6 +159,7 @@ pub struct LzhReader<R, P = fn() -> io::Result<()>> {
     position_symbols: usize,
     position_bits: u8,
     commands: u16,
+    method: u8,
     literals: Canonical,
     positions: Canonical,
     copy: usize,
@@ -194,6 +221,7 @@ impl<R: Read, P: FnMut() -> io::Result<()>> LzhReader<R, P> {
             position_symbols,
             position_bits,
             commands: 0,
+            method,
             literals: Canonical::single(0),
             positions: Canonical::single(0),
             copy: 0,
@@ -208,17 +236,42 @@ impl<R: Read, P: FnMut() -> io::Result<()>> LzhReader<R, P> {
             if self.commands == 0 {
                 return Err(invalid());
             }
-            let lengths = short_tree(&mut self.bits, 19, 5, true)?;
-            self.literals = literal_tree(&mut self.bits, &lengths)?;
-            self.positions = short_tree(
-                &mut self.bits,
-                self.position_symbols,
-                self.position_bits,
-                false,
-            )?;
+            if self.method == 3 {
+                self.literals = legacy_tree(&mut self.bits, false)?;
+                self.positions = if self.bits.get(1)? != 0 {
+                    legacy_tree(&mut self.bits, true)?
+                } else {
+                    self.bits.charge(128)?;
+                    let lengths: Vec<u8> = (0..128)
+                        .map(|at| {
+                            2 + [1, 1, 3, 6, 13, 31, 78]
+                                .iter()
+                                .filter(|&&boundary| at >= boundary)
+                                .count() as u8
+                        })
+                        .collect();
+                    Canonical::from_lengths(&lengths, 16, false)?
+                };
+            } else {
+                let lengths = short_tree(&mut self.bits, 19, 5, true)?;
+                self.literals = literal_tree(&mut self.bits, &lengths)?;
+                self.positions = short_tree(
+                    &mut self.bits,
+                    self.position_symbols,
+                    self.position_bits,
+                    false,
+                )?;
+            }
         }
         self.commands -= 1;
-        symbol(&self.literals, &mut self.bits)
+        let mut code = symbol(&self.literals, &mut self.bits)?;
+        if self.method == 3 && code == 285 {
+            code += self.bits.get(8)? as u16;
+            if code > 509 {
+                return Err(invalid());
+            }
+        }
+        Ok(code)
     }
     fn decode(&mut self, output: &mut [u8]) -> io::Result<usize> {
         let maximum = output.len().min(8192);
@@ -247,7 +300,9 @@ impl<R: Read, P: FnMut() -> io::Result<()>> LzhReader<R, P> {
                         return Err(invalid());
                     }
                     let position = symbol(&self.positions, &mut self.bits)?;
-                    let offset = if position == 0 {
+                    let offset = if self.method == 3 {
+                        (usize::from(position) << 6) + self.bits.get(6)? as usize
+                    } else if position == 0 {
                         0
                     } else {
                         (1usize << (position - 1)) + self.bits.get((position - 1) as u8)? as usize

@@ -51,6 +51,10 @@
     {
       "package": "xdzip-crypto",
       "forbidden_runtime_dependencies": ["sevenz-rust", "sevenz-rust2", "sevenz-rust-sys", "libarchive", "libarchive3-sys", "bzip2", "bzip2-sys", "lzma-rs", "lzma-sys", "liblzma", "xz2", "ppmd-rust", "ppmd-sys", "rawzip", "zip", "tar", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
+    },
+    {
+      "package": "xdzip-codec-lha",
+      "forbidden_runtime_dependencies": ["lha", "lhasa", "delharc", "delharc-sys", "lzhuf", "lzss", "libarchive", "libarchive3-sys", "sevenz-rust", "sevenz-rust2", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
     }
   ]
 }

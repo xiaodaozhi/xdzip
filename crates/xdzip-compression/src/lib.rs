@@ -1,6 +1,7 @@
 //! Independently implemented compression primitives. No production dependencies.
 //! Wire definitions: RFC 1951 sections 3.1–3.2 and RFC 1952 section 2.3.
 //! Constants below describe wire code ranges, not a reference implementation.
+mod adaptive_huffman;
 mod bitstream;
 mod brotli;
 mod byte_filter;
@@ -11,6 +12,7 @@ mod deflate;
 mod entropy;
 mod gzip;
 mod larc;
+mod lh_dynamic;
 mod lz4;
 mod lz4_encode;
 mod lzh;
@@ -37,6 +39,7 @@ pub use compress::{CompressReader, compress_memory_required};
 pub use crc16::{Crc16, crc16};
 pub use gzip::{GzipReader, GzipWriter};
 pub use larc::{LarcMethod, LarcReader, larc_memory_required};
+pub use lh_dynamic::{Lh2Variant, LhDynamicReader, lh_dynamic_memory_required};
 pub use lz4::Lz4BlockReader;
 pub use lz4_encode::encode_lz4_block;
 pub use lzh::{LzhReader, lzh_memory_required};

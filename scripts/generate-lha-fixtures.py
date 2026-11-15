@@ -14,7 +14,7 @@ COMMIT='0a6348d96e9bbb1ac5ee8b3f6ff1c2c75b17d0d9'
 SOURCE_SHA='ef9feb1c59f55aff69b00c0d69dee5edaefb45e86950a99a6728beb35e70ff3a'
 JDK_SHA='98518ecf554465057ee5509462631deeee374bc368c12a411d225cd29381f84b'
 LHASA_SHA='5925e6a7b615d784e381e18240a1537d55a42cddad91d21e13c604a40974fe28'
-INPUT_SHA='8866cb95bfac04a90895c5e426dc8689bba7a5e508d8d294803a7f79849ee20b'
+INPUT_SHA='088618b6faa40018bef0dca2d71758c784fc7e6a335a6601d6ae45febb156f82'
 
 
 def run(command):
@@ -57,7 +57,13 @@ def setup(base):
     seven=base/'7zip-26.06-full/tools/7z.exe'
     pinned(seven,'dc0493429fe28136fcb177a0e77c9875cbb3b0bff5f2f8eeba4df302e98cef76')
     pinned(seven.with_name('7z.dll'),'500db9eb17f3c21b729ba41dd02ecfe1823da05028c7e4ba129084cc74cc364e')
-    return [jdk/'bin/java.exe','-Duser.timezone=UTC','-cp',classes,'Reference'],lhasa,seven
+    author=base/'lha-dynamic-original'
+    pinned(author/'dhuf.c','99a0d828039b85dc9061b797388be3d6408094224d35d7f482122d0305a7854b')
+    compiler=ROOT/'build/toolchain/strawberry-perl-5.42.3.1/c/bin/gcc.exe'
+    pinned(compiler,'34a92e71f6814bd936135d0bd82b80b63daaf445791bba4a6bba93075235e8a4')
+    for name in ['lha.h','probe.c']:shutil.copyfile(ROOT/'tests/fixtures/lha/author-reference'/name,author/name)
+    run([compiler,'-std=c99','-O2',author/'dhuf.c',author/'probe.c','-o',author/'probe.exe'])
+    return [jdk/'bin/java.exe','-Duser.timezone=UTC','-cp',classes,'Reference'],lhasa,seven,author/'probe.exe'
 
 
 def pattern(count):
@@ -104,10 +110,11 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--references',type=Path,default=ROOT/'build/toolchain/references')
     parser.add_argument('--check',action='store_true');args=parser.parse_args()
-    java,lhasa,seven=setup(args.references.resolve())
+    java,lhasa,seven,author=setup(args.references.resolve())
     methods=['lh0','lh1','lh2','lh3','lh4','lh5','lh6','lh7','lzs','lz4','lz5']
     phrase=b'abracadabra abracadabra\n'*6
     cases=[(f'{method}-h{level}.lzh',method,level,phrase) for method in methods for level in range(3)]
+    cases.append(('lh5-h2-padding.lzh','lh5',2,phrase))
     for method in methods:
         if method in ['lh0','lz4']:continue
         for label,payload in [('empty',b''),('tail1',b'A'),('spaces',bytes([32])*4096),('random',pattern(65000)),('long',phrase*4096)]:
@@ -120,27 +127,47 @@ def main():
         source=work/'owned.bin';archive=work/'owned.lzh';decoded=work/'decoded.bin'
         for name,method,level,payload in cases:
             source.write_bytes(payload)
-            fields=list(map(int,run([*java,'encode',method,str(level),source,archive]).decode('ascii').split()))
+            entry_name='x'*218+'.bin' if name=='lh5-h2-padding.lzh' else 'hello.bin'
+            command=[*java,'encode',method,str(level),source,archive]
+            if name=='lh5-h2-padding.lzh':command.append(entry_name)
+            fields=list(map(int,run(command).decode('ascii').split()))
             header,packed,size,crc=fields;data=archive.read_bytes()
             if size!=len(payload) or data[2:7]!=('-'+method+'-').encode() or len(data)!=header+packed+1:raise ValueError('Unexpected reference framing')
             run([*java,'decode',archive,decoded])
             if decoded.read_bytes()!=payload:raise ValueError('Independent Java output mismatch: '+name)
-            target=work/name;target.mkdir()
-            p=subprocess.run([str(lhasa),'xq',str(archive)],cwd=target,capture_output=True,timeout=15,creationflags=0x08000000)
-            lhasa_exact=p.returncode==0 and (target/'hello.bin').is_file() and (target/'hello.bin').read_bytes()==payload
+            if name=='lh5-h2-padding.lzh':
+                # Keep the reference's legacy full path below MAX_PATH without
+                # shortening or changing the member's actual 222-byte name.
+                with tempfile.TemporaryDirectory(prefix='l8-',dir=ROOT/'build') as short:
+                    target=Path(short).resolve()
+                    if not target.is_relative_to((ROOT/'build').resolve()):raise ValueError('Reference output escapes build/')
+                    p=subprocess.run([str(lhasa),'xq',str(archive)],cwd=target,capture_output=True,timeout=15,creationflags=0x08000000)
+                    lhasa_exact=p.returncode==0 and (target/entry_name).is_file() and (target/entry_name).read_bytes()==payload
+            else:
+                target=work/name;target.mkdir()
+                p=subprocess.run([str(lhasa),'xq',str(archive)],cwd=target,capture_output=True,timeout=15,creationflags=0x08000000)
+                lhasa_exact=p.returncode==0 and (target/entry_name).is_file() and (target/entry_name).read_bytes()==payload
             if method in ['lh2','lh3']:
                 if p.returncode!=1:raise ValueError('Changed expected Lhasa method limitation')
             elif not lhasa_exact:raise ValueError('Independent Lhasa output mismatch: '+name)
             p=subprocess.run([str(seven),'x','-so',str(archive)],capture_output=True,timeout=15,creationflags=0x08000000)
             seven_exact=p.returncode==0 and p.stdout==payload
-            if method in ['lh0','lh4','lh5','lh6','lh7','lz4']:
+            if name=='lh5-h2-padding.lzh':
+                if p.returncode!=2:raise ValueError('Changed expected 7-Zip level-2 padding limitation')
+            elif method in ['lh0','lh4','lh5','lh6','lh7','lz4']:
                 if not seven_exact:raise ValueError('Independent 7-Zip output mismatch: '+name)
             elif p.returncode!=2:raise ValueError('Changed expected 7-Zip method limitation')
             target=dest/name
             if args.check:
                 if target.read_bytes()!=data:raise ValueError('Stale owned input: '+name)
             else:target.write_bytes(data)
-            identities[name]=dict(method=method,level=level,header=header,packed=packed,decoded=size,crc16=crc,sha256=hashlib.sha256(data).hexdigest(),jlha_exact=True,lhasa_exact=lhasa_exact,sevenzip_exact=seven_exact)
+            author_exact=None
+            if method=='lh2':
+                raw=work/'owned.raw';raw.write_bytes(data[header:header+packed])
+                p=subprocess.run([str(author),str(raw),str(size)],capture_output=True,timeout=15,creationflags=0x08000000)
+                author_exact=p.returncode==0 and p.stdout==payload
+                if author_exact!=('spaces' not in name and 'long' not in name):raise ValueError('Changed original Unix/jLHA variant behavior')
+            identities[name]=dict(method=method,level=level,header=header,packed=packed,decoded=size,crc16=crc,sha256=hashlib.sha256(data).hexdigest(),jlha_exact=True,lhasa_exact=lhasa_exact,sevenzip_exact=seven_exact,unix_exact=author_exact)
         for name,method,raw,payload in initial_vectors():
             data,header=framed(method,raw,payload);archive.write_bytes(data)
             run([*java,'decode',archive,decoded]);java_exact=decoded.read_bytes()==payload
@@ -155,9 +182,21 @@ def main():
                 if target.read_bytes()!=data:raise ValueError('Stale owned initial history input: '+name)
             else:target.write_bytes(data)
             identities[name]=dict(method=method,level=0,header=header,packed=len(raw),decoded=len(payload),crc16=crc16(payload),sha256=hashlib.sha256(data).hexdigest(),jlha_exact=java_exact,lhasa_exact=True,sevenzip_exact=False)
+        name='lh2-unix-spaces.lzh';payload=b' '*4096
+        header,packed,size,crc=map(int,run([*java,'encode-unix-spaces',archive]).decode('ascii').split())
+        data=archive.read_bytes();raw=work/'owned-unix.raw';raw.write_bytes(data[header:header+packed])
+        if (header,packed,size,crc)!=(43,46,4096,34503) or len(data)!=header+packed+1:raise ValueError('Unexpected owned original Unix framing')
+        if run([author,raw,str(size)])!=payload:raise ValueError('Original author reference output mismatch')
+        p=subprocess.run(list(map(str,[*java,'decode',archive,decoded])),capture_output=True,timeout=15,creationflags=0x08000000)
+        if p.returncode==0 and decoded.read_bytes()==payload:raise ValueError('Changed expected Java variant distinction')
+        target=dest/name
+        if args.check:
+            if target.read_bytes()!=data:raise ValueError('Stale original Unix owned input')
+        else:target.write_bytes(data)
+        identities[name]=dict(method='lh2',level=2,header=header,packed=packed,decoded=size,crc16=crc,sha256=hashlib.sha256(data).hexdigest(),jlha_exact=False,lhasa_exact=False,sevenzip_exact=False,unix_exact=True)
     identity=hashlib.sha256()
     for name in sorted(identities):identity.update(name.encode('utf-8')+b'\0'+(dest/name).read_bytes())
-    if len(identities)!=81 or identity.hexdigest()!=INPUT_SHA:raise ValueError('Owned input set does not match documented identity')
+    if len(identities)!=83 or identity.hexdigest()!=INPUT_SHA:raise ValueError('Owned input set does not match documented identity')
     rust=['// Generated independent LHA fixture expectations, not decoder output.','#[rustfmt::skip]','pub(crate) const CASES: &[(&str, &str, usize, usize, usize, u16)] = &[']
     rust.extend(f'    ("{name}", "{v["method"]}", {v["header"]}, {v["packed"]}, {v["decoded"]}, 0x{v["crc16"]:04x}),' for name,v in identities.items());rust.append('];')
     target=ROOT/'crates/xdzip-compression/src/lzh/fixture_cases.rs';data=('\n'.join(rust)+'\n').encode()

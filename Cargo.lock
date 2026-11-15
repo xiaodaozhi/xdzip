@@ -1824,6 +1824,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-lha"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-compression",
+ "xdzip-crypto",
+]
+
+[[package]]
 name = "xdzip-codec-native"
 version = "0.2.0"
 dependencies = [
