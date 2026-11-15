@@ -34,13 +34,13 @@
 
 ## PEA
 
-- **公开规范**：PeaZip，《Pack, Encrypt, Authenticate》规范，覆盖 PEA 1.x、PEA 2.0 流、多流和分卷控制、对象控制、结束标记以及 PCOMP 压缩级别。规范见 [`pea_help.pdf`](https://peazip.github.io/pea_help.pdf)，摘要见 [pea-file-format.html](https://peazip.github.io/pea-file-format.html)。
-- **参考实现**：`peazip/PeaZip`，提交 `b7807e252c275f2f73e8316ab74981eea6ab42a8`，以及其中的 `pea` 引擎。实现使用 LGPLv3。项目 2006 年公告称格式规范属于公有领域，但这不改变实现和密码库的许可。
-- **许可和再分发**：LGPLv3 引擎及密码依赖需要单独的依赖和许可复核，当前不能默认复制或链接。规范公有领域的历史声明也需要保存来源记录后才能用于实现。
+- **公开规范**：PeaZip，《Pack, Encrypt, Authenticate》规范，覆盖 PEA 1.x、仍处于提案状态的 PEA 2.0 流、多流和分卷控制、对象控制、结束标记以及 PCOMPRESS 级别。规范见 [`pea_help.pdf`](https://peazip.github.io/pea_help.pdf)，摘要见 [pea-file-format.html](https://peazip.github.io/pea-file-format.html)。当前官方页面明确说明 PEA 和 PCOMPRESS 规范属于公有领域。
+- **参考实现**：`peazip/PeaZip` 11.4.0 源码发布包，以及其中的 `pea` 引擎。实现使用 LGPLv3，随附的 Wolfgang Ehrhardt 密码单元使用 zlib/libpng 许可。源码发布地址为 [peazip-11.4.0.src.zip](https://github.com/peazip/PeaZip/releases/download/11.4.0/peazip-11.4.0.src.zip)，在把它作为样本判定工具前仍需记录不可变提交和源码哈希。
+- **许可和再分发**：格式规范本身没有产品许可阻塞，但 LGPLv3 引擎和密码依赖不能默认复制或链接进当前产品。净室 Rust 实现应依据公有领域格式记录并独立选择算法，参考程序只用于测试，不能成为运行时依赖。
 - **完整样本**：完整语料库必须包含 PEA 1.x 和 2.0、多流、分卷边界、Store 和 PCOMP 级别、认证失败、加密头部、畸形结束标记和大尺寸声明。仓库尚未登记可再分发的自有语料库。
 - **净室可行性**：无加密、单流、Store 或 Deflate 读取器在技术上可行，但认证和加密必须作为独立安全工作。由于该格式有完整性设计，仅做结构解析不能宣称内容验证完成。
 - **能力边界**：未来应先只读，不开放密码、加密、多卷、创建或修改。每个流都要在发布前通过声明的摘要和终止认证。
-- **结论**：**等待许可来源和完整认证样本，当前阻塞**。PEA 是有文档的真实格式，但安全与依赖面过大，不能无条件进入 M10。
+- **结论**：**等待不可变参考版本和完整认证样本，当前阻塞**。公有领域规范已经清除格式文本许可门槛，但 PEA 仍需固定源码快照、独立完整样本和有界完整性模型后才能进入登记。
 
 ## BOND
 
