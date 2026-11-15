@@ -30,7 +30,7 @@
 | 源码与候选 | [对应源码](engineering/source-delivery.md)、[SDK 对应核验](engineering/qt-sdk-correspondence.md)、[自动证据汇总](engineering/wp12-automation.md)、[候选材料](engineering/release-candidate.md) |
 | 版本与发行 | [版本机制](engineering/versioning.md)、[主动更新](engineering/software-update.md)、[发布协议](engineering/release-protocol.md)、[应用会话](engineering/application-sessions.md)、[支持政策](engineering/support-policy.md)、[发行审查流程](qa/release-review.md)、[发布手册](engineering/release-runbook.md) |
 | 执行与风险 | [工作包路线](planning/backlog.md)、[风险控制](planning/risks.md)、[就绪评审方法](planning/readiness.md) |
-| 仓库管理 | [内容与历史管理](engineering/repository-hygiene.md)、[目录与依赖](engineering/repository-layout.md)、[贡献指南](../../CONTRIBUTING.md)、[变更日志](../../CHANGELOG.md) |
+| 仓库管理 | [内容与历史管理](engineering/repository-hygiene.md)、[格式扩展收尾](engineering/format-expansion-closeout.md)、[目录与依赖](engineering/repository-layout.md)、[贡献指南](../../CONTRIBUTING.md)、[变更日志](../../CHANGELOG.md) |
 | 开源协作 | [治理](../../GOVERNANCE.md)、[行为规范](../../CODE_OF_CONDUCT.md)、[安全政策](../../SECURITY.md) |
 
 ## 按任务阅读

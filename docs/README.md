@@ -30,7 +30,7 @@ These documents describe the current source tree's general design, implementatio
 | Source and candidates | [Corresponding source](engineering/source-delivery.md), [SDK correspondence](engineering/qt-sdk-correspondence.md), [automated evidence collection](engineering/wp12-automation.md), [candidate materials](engineering/release-candidate.md) |
 | Versions and releases | [Versioning](engineering/versioning.md), [updates](engineering/software-update.md), [release protocol](engineering/release-protocol.md), [application sessions](engineering/application-sessions.md), [support policy](engineering/support-policy.md), [release review](qa/release-review.md), [release runbook](engineering/release-runbook.md) |
 | Execution and risks | [Work package roadmap](planning/backlog.md), [risk controls](planning/risks.md), [readiness review method](planning/readiness.md) |
-| Repository management | [Content and history management](engineering/repository-hygiene.md), [layout and dependencies](engineering/repository-layout.md), [contributing guide](../CONTRIBUTING.md), [changelog](../CHANGELOG.md) |
+| Repository management | [Content and history management](engineering/repository-hygiene.md), [format expansion closeout](engineering/format-expansion-closeout.md), [layout and dependencies](engineering/repository-layout.md), [contributing guide](../CONTRIBUTING.md), [changelog](../CHANGELOG.md) |
 | Open-source collaboration | [Governance](../GOVERNANCE.md), [code of conduct](../CODE_OF_CONDUCT.md), [security policy](../SECURITY.md) |
 
 ## Reading by task
