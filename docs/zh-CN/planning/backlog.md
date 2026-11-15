@@ -20,6 +20,7 @@
 | WP-14 / M7 额外格式 | WP-12 | ZIP AES-256／分卷、7z、RAR、CAB、ISO／UDF 的当前实现按 [README](../../../README.zh-CN.md)、[格式契约](../engineering/native-codecs.md)及[自研边界](../engineering/independent-rust-codecs.md)逐项声明，不因工作包名称承诺完整格式特性；新增算法仍单独准入 |
 | WP-15 / M8 外部 SDK | WP-12 | [独立只读试验](../engineering/sdk-trial.md)：两个独立协议实现、越权测试、平台沙箱；未达标不启用，产品发现／安装与完整 SDK 后续单独交付；本试验由 [#265](https://github.com/xiaodaozhi/xdzip/issues/265)跟踪 |
 | WP-16 / M9 稳定发行 | WP-13～15 中实际纳入项 | 稳定能力完整验收、许可与支持政策，沿用未正式签名的开源发行方式 |
+| WP-17 / M10 Bandizip 格式扩展 | WP-14／WP-16 格式资料与 #290 | 维护已核对的 48 个 Bandizip 名称和 44 行双语门禁；只有自研 Rust 配置具备登记、runtime、CLI 和自动化证据后才准入。跟踪 PEA 与 CFB 只读切片，同时在来源、许可、语料库和有界失败门槛清除前，将 WIM、NSIS、DAA、ISZ、ZPAQ、ACE、BOND、J2J 保持在产品之外。本工作包不授予正式发行许可，进度和阻塞继续记录在 [#290](https://github.com/xiaodaozhi/xdzip/issues/290) 与 [#304](https://github.com/xiaodaozhi/xdzip/issues/304) |
 
 每个 issue 写需求 ID、依赖、产物、测试、范围外事项及证据链接。新问题建立或复用独立 issue；不要把后续缺陷累积成已完成工作包的待办。WP-16 不以编号强制纳入尚未准备好的格式，删减能力须更新版本声明。
 
