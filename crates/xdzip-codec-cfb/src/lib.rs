@@ -50,6 +50,7 @@ struct Parsed {
     records: Vec<Record>,
     mini_stream: Vec<u8>,
     sector_size: usize,
+    sector_base: usize,
 }
 
 #[derive(Clone)]
@@ -194,8 +195,13 @@ impl PayloadReader for Payload {
                         .ok_or(DecodeError::Integrity)?;
                     (offset, MINI_SECTOR_SIZE)
                 } else {
-                    let offset = sector_offset(sector, self.parsed.sector_size, self.bytes.len())
-                        .map_err(|_| DecodeError::Integrity)?;
+                    let offset = sector_offset(
+                        sector,
+                        self.parsed.sector_size,
+                        self.parsed.sector_base,
+                        self.bytes.len(),
+                    )
+                    .map_err(|_| DecodeError::Integrity)?;
                     (offset, self.parsed.sector_size)
                 };
                 let data = if locator.mini {
@@ -282,10 +288,11 @@ fn parse(bytes: &[u8], control: &Cancellation, limits: ScanLimits) -> Result<Par
         return Err(ScanError::Invalid);
     }
     let sector_size = 1usize << sector_shift;
-    if !(bytes.len() - 512).is_multiple_of(sector_size) {
+    let sector_base = if sector_size == 4096 { 4096 } else { 512 };
+    if bytes.len() < sector_base || !(bytes.len() - sector_base).is_multiple_of(sector_size) {
         return Err(ScanError::Invalid);
     }
-    let sector_count = (bytes.len() - 512) / sector_size;
+    let sector_count = (bytes.len() - sector_base) / sector_size;
     if sector_count == 0 || sector_count > usize::try_from(MAXREGSECT).unwrap_or(usize::MAX) {
         return Err(ScanError::Limit);
     }
@@ -322,7 +329,7 @@ fn parse(bytes: &[u8], control: &Cancellation, limits: ScanLimits) -> Result<Par
             return Err(ScanError::Invalid);
         }
         difat_seen.push(current);
-        let sector = read_sector(bytes, current, sector_size)?;
+        let sector = read_sector(bytes, current, sector_size, sector_base)?;
         let slots = sector_size / 4 - 1;
         for slot in 0..slots {
             let value = read_u32(sector, slot * 4)?;
@@ -351,7 +358,7 @@ fn parse(bytes: &[u8], control: &Cancellation, limits: ScanLimits) -> Result<Par
     )
     .map_err(|_| ScanError::Limit)?;
     for &sector in &fat_sectors {
-        let data = read_sector(bytes, sector, sector_size)?;
+        let data = read_sector(bytes, sector, sector_size, sector_base)?;
         for slot in 0..sector_size / 4 {
             fat.push(read_u32(data, slot * 4)?);
         }
@@ -360,7 +367,7 @@ fn parse(bytes: &[u8], control: &Cancellation, limits: ScanLimits) -> Result<Par
     if dir_chain.is_empty() || dir_chain.len() > limits.entries.saturating_mul(4).max(1024) {
         return Err(ScanError::Limit);
     }
-    let directory = chain_bytes(bytes, &dir_chain, sector_size)?;
+    let directory = chain_bytes(bytes, &dir_chain, sector_size, sector_base)?;
     if directory.len() % 128 != 0 {
         return Err(ScanError::Invalid);
     }
@@ -399,7 +406,7 @@ fn parse(bytes: &[u8], control: &Cancellation, limits: ScanLimits) -> Result<Par
         if chain.len() < num_mini_fat {
             return Err(ScanError::Invalid);
         }
-        let data = chain_bytes(bytes, &chain[..num_mini_fat], sector_size)?;
+        let data = chain_bytes(bytes, &chain[..num_mini_fat], sector_size, sector_base)?;
         let (chunks, remainder) = data.as_chunks::<4>();
         if !remainder.is_empty() {
             return Err(ScanError::Invalid);
@@ -421,7 +428,7 @@ fn parse(bytes: &[u8], control: &Cancellation, limits: ScanLimits) -> Result<Par
         if chain.len() < needed {
             return Err(ScanError::Invalid);
         }
-        let mut data = chain_bytes(bytes, &chain[..needed], sector_size)?;
+        let mut data = chain_bytes(bytes, &chain[..needed], sector_size, sector_base)?;
         data.truncate(usize::try_from(root.size).map_err(|_| ScanError::Limit)?);
         data
     };
@@ -444,6 +451,7 @@ fn parse(bytes: &[u8], control: &Cancellation, limits: ScanLimits) -> Result<Par
         &mut Vec::new(),
         control,
         limits,
+        sector_base,
     )?;
     if records.len() > limits.entries {
         return Err(ScanError::Limit);
@@ -469,6 +477,7 @@ fn parse(bytes: &[u8], control: &Cancellation, limits: ScanLimits) -> Result<Par
         records,
         mini_stream,
         sector_size,
+        sector_base,
     })
 }
 
@@ -487,6 +496,7 @@ fn walk_tree(
     stack: &mut Vec<u32>,
     control: &Cancellation,
     limits: ScanLimits,
+    sector_base: usize,
 ) -> Result<(), ScanError> {
     if node == NOSTREAM {
         return Ok(());
@@ -512,6 +522,7 @@ fn walk_tree(
         stack,
         control,
         limits,
+        sector_base,
     )?;
     control.check()?;
     let path_length = if parent.is_empty() {
@@ -560,6 +571,7 @@ fn walk_tree(
             mini_stream,
             bytes,
             sector_size,
+            sector_base,
         )?)
     } else {
         None
@@ -583,6 +595,7 @@ fn walk_tree(
             stack,
             control,
             limits,
+            sector_base,
         )?;
     } else if entry.child != NOSTREAM {
         return Err(ScanError::Invalid);
@@ -601,6 +614,7 @@ fn walk_tree(
         stack,
         control,
         limits,
+        sector_base,
     )?;
     stack.pop();
     Ok(())
@@ -613,6 +627,7 @@ fn locator(
     mini_stream: &[u8],
     bytes: &[u8],
     sector_size: usize,
+    sector_base: usize,
 ) -> Result<Locator, ScanError> {
     if entry.size == 0 {
         if entry.start_sector != ENDOFCHAIN {
@@ -647,7 +662,7 @@ fn locator(
         let chain = collect_chain(
             entry.start_sector,
             fat,
-            bytes.len().saturating_sub(512) / sector_size,
+            bytes.len().saturating_sub(sector_base) / sector_size,
         )?;
         if chain.len() < needed {
             return Err(ScanError::Invalid);
@@ -718,7 +733,12 @@ fn collect_chain(start: u32, table: &[u32], max: usize) -> Result<Vec<u32>, Scan
     Ok(chain)
 }
 
-fn chain_bytes(bytes: &[u8], chain: &[u32], sector_size: usize) -> Result<Vec<u8>, ScanError> {
+fn chain_bytes(
+    bytes: &[u8],
+    chain: &[u32],
+    sector_size: usize,
+    sector_base: usize,
+) -> Result<Vec<u8>, ScanError> {
     let length = chain
         .len()
         .checked_mul(sector_size)
@@ -728,7 +748,7 @@ fn chain_bytes(bytes: &[u8], chain: &[u32], sector_size: usize) -> Result<Vec<u8
         .try_reserve_exact(length)
         .map_err(|_| ScanError::Limit)?;
     for &sector in chain {
-        output.extend_from_slice(read_sector(bytes, sector, sector_size)?);
+        output.extend_from_slice(read_sector(bytes, sector, sector_size, sector_base)?);
     }
     Ok(output)
 }
@@ -739,8 +759,13 @@ fn sectors_for(size: u64, sector_size: usize) -> Result<usize, ScanError> {
         .map_err(|_| ScanError::Limit)
 }
 
-fn sector_offset(sector: u32, sector_size: usize, length: usize) -> Result<usize, ScanError> {
-    let offset = 512usize
+fn sector_offset(
+    sector: u32,
+    sector_size: usize,
+    sector_base: usize,
+    length: usize,
+) -> Result<usize, ScanError> {
+    let offset = sector_base
         .checked_add(
             usize::try_from(sector)
                 .map_err(|_| ScanError::Invalid)?
@@ -758,8 +783,13 @@ fn sector_offset(sector: u32, sector_size: usize, length: usize) -> Result<usize
     }
 }
 
-fn read_sector(bytes: &[u8], sector: u32, sector_size: usize) -> Result<&[u8], ScanError> {
-    let offset = sector_offset(sector, sector_size, bytes.len())?;
+fn read_sector(
+    bytes: &[u8],
+    sector: u32,
+    sector_size: usize,
+    sector_base: usize,
+) -> Result<&[u8], ScanError> {
+    let offset = sector_offset(sector, sector_size, sector_base, bytes.len())?;
     bytes
         .get(offset..offset + sector_size)
         .ok_or(ScanError::Invalid)
@@ -788,13 +818,21 @@ mod tests {
     use std::io::Cursor;
 
     fn fixture() -> Vec<u8> {
-        let sector_size = 512usize;
-        let mut bytes = vec![0u8; 512 + sector_size * 4];
+        fixture_with(3, 512)
+    }
+
+    fn fixture_with(major: u16, sector_size: usize) -> Vec<u8> {
+        let sector_base = if sector_size == 4096 { 4096 } else { 512 };
+        let mut bytes = vec![0u8; sector_base + sector_size * 4];
         bytes[..8].copy_from_slice(&SIGNATURE);
         bytes[24..26].copy_from_slice(&0x003e_u16.to_le_bytes());
-        bytes[26..28].copy_from_slice(&3u16.to_le_bytes());
+        bytes[26..28].copy_from_slice(&major.to_le_bytes());
         bytes[28..30].copy_from_slice(&0xfffe_u16.to_le_bytes());
-        bytes[30..32].copy_from_slice(&9u16.to_le_bytes());
+        bytes[30..32].copy_from_slice(
+            &u16::try_from(sector_size.trailing_zeros())
+                .unwrap()
+                .to_le_bytes(),
+        );
         bytes[32..34].copy_from_slice(&6u16.to_le_bytes());
         bytes[44..48].copy_from_slice(&1u32.to_le_bytes());
         bytes[48..52].copy_from_slice(&1u32.to_le_bytes());
@@ -807,12 +845,12 @@ mod tests {
         for slot in 1..109 {
             bytes[76 + slot * 4..80 + slot * 4].copy_from_slice(&FREESECT.to_le_bytes());
         }
-        let fat = 512;
+        let fat = sector_base;
         bytes[fat..fat + 4].copy_from_slice(&FATSECT.to_le_bytes());
         bytes[fat + 4..fat + 8].copy_from_slice(&ENDOFCHAIN.to_le_bytes());
         bytes[fat + 8..fat + 12].copy_from_slice(&ENDOFCHAIN.to_le_bytes());
         bytes[fat + 12..fat + 16].copy_from_slice(&ENDOFCHAIN.to_le_bytes());
-        let directory = 512 + sector_size;
+        let directory = sector_base + sector_size;
         let root = directory;
         write_name(&mut bytes[root..root + 128], "Root Entry", 5);
         bytes[root + 76..root + 80].copy_from_slice(&1u32.to_le_bytes());
@@ -825,9 +863,9 @@ mod tests {
         bytes[stream + 76..stream + 80].copy_from_slice(&NOSTREAM.to_le_bytes());
         bytes[stream + 116..stream + 120].copy_from_slice(&0u32.to_le_bytes());
         bytes[stream + 120..stream + 128].copy_from_slice(&5u64.to_le_bytes());
-        let payload = 512 + sector_size * 2;
+        let payload = sector_base + sector_size * 2;
         bytes[payload..payload + 5].copy_from_slice(b"world");
-        let mini_fat = 512 + sector_size * 3;
+        let mini_fat = sector_base + sector_size * 3;
         bytes[mini_fat..mini_fat + 4].copy_from_slice(&ENDOFCHAIN.to_le_bytes());
         bytes
     }
@@ -862,6 +900,23 @@ mod tests {
         assert_eq!(rows[0].display_name, "hello");
         assert_eq!(rows[0].format, Format::Compound);
         assert!(rows[0].payload_supported());
+        let mut source = Cursor::new(bytes);
+        let mut payload = CfbCodec.open_payload(&mut source, &rows, &cancel).unwrap();
+        let mut sink = Sink(Vec::new());
+        payload.decode(&rows[0], &mut sink, &cancel).unwrap();
+        assert_eq!(sink.0, b"world");
+    }
+
+    #[test]
+    fn parses_major4_4096_byte_sector_base() {
+        let bytes = fixture_with(4, 4096);
+        let cancel = Cancellation::default();
+        let mut source = Cursor::new(bytes.clone());
+        let rows = CfbCodec
+            .scan(&mut source, &cancel, ScanLimits::default())
+            .unwrap();
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].display_name, "hello");
         let mut source = Cursor::new(bytes);
         let mut payload = CfbCodec.open_payload(&mut source, &rows, &cancel).unwrap();
         let mut sink = Sink(Vec::new());
