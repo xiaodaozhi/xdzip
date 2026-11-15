@@ -13,6 +13,15 @@ pub(crate) mod tests;
 type Input<R, P> = Bits<R, P, true>;
 const MAX_BYTES: u64 = 24 * 1024 * 1024 * 1024;
 const MAX_WORK: u64 = 96 * 1024 * 1024 * 1024;
+const ARJ_DICT_BITS: u8 = 15;
+pub(crate) fn arj_memory_required() -> u64 {
+    (1u64 << ARJ_DICT_BITS) + 64 * 1024
+}
+#[derive(Clone, Copy, Eq, PartialEq)]
+enum Profile {
+    Lha(u8),
+    Arj,
+}
 fn parameters(method: u8) -> io::Result<(u8, usize, u8)> {
     match method {
         3 => Ok((13, 128, 7)),
@@ -159,7 +168,8 @@ pub struct LzhReader<R, P = fn() -> io::Result<()>> {
     position_symbols: usize,
     position_bits: u8,
     commands: u16,
-    method: u8,
+    profile: Profile,
+    produced: u64,
     literals: Canonical,
     positions: Canonical,
     copy: usize,
@@ -203,9 +213,48 @@ impl<R: Read, P: FnMut() -> io::Result<()>> LzhReader<R, P> {
         work_limit: u64,
         poll: P,
     ) -> io::Result<Self> {
-        let (width, position_symbols, position_bits) = parameters(method)?;
-        if packed > MAX_BYTES || decoded > MAX_BYTES || lzh_memory_required(method)? > memory_limit
-        {
+        Self::profile(
+            source,
+            packed,
+            decoded,
+            memory_limit,
+            work_limit,
+            poll,
+            Profile::Lha(method),
+        )
+    }
+    pub(crate) fn with_arj_poll(
+        source: R,
+        packed: u64,
+        decoded: u64,
+        memory_limit: u64,
+        work_limit: u64,
+        poll: P,
+    ) -> io::Result<Self> {
+        Self::profile(
+            source,
+            packed,
+            decoded,
+            memory_limit,
+            work_limit,
+            poll,
+            Profile::Arj,
+        )
+    }
+    fn profile(
+        source: R,
+        packed: u64,
+        decoded: u64,
+        memory_limit: u64,
+        work_limit: u64,
+        poll: P,
+        profile: Profile,
+    ) -> io::Result<Self> {
+        let (width, position_symbols, position_bits) = match profile {
+            Profile::Lha(method) => parameters(method)?,
+            Profile::Arj => (ARJ_DICT_BITS, 17, 5),
+        };
+        if packed > MAX_BYTES || decoded > MAX_BYTES || (1u64 << width) + 64 * 1024 > memory_limit {
             return Err(resource());
         }
         if decoded == 0 && packed != 0 {
@@ -221,7 +270,8 @@ impl<R: Read, P: FnMut() -> io::Result<()>> LzhReader<R, P> {
             position_symbols,
             position_bits,
             commands: 0,
-            method,
+            profile,
+            produced: 0,
             literals: Canonical::single(0),
             positions: Canonical::single(0),
             copy: 0,
@@ -236,7 +286,7 @@ impl<R: Read, P: FnMut() -> io::Result<()>> LzhReader<R, P> {
             if self.commands == 0 {
                 return Err(invalid());
             }
-            if self.method == 3 {
+            if self.profile == Profile::Lha(3) {
                 self.literals = legacy_tree(&mut self.bits, false)?;
                 self.positions = if self.bits.get(1)? != 0 {
                     legacy_tree(&mut self.bits, true)?
@@ -265,7 +315,7 @@ impl<R: Read, P: FnMut() -> io::Result<()>> LzhReader<R, P> {
         }
         self.commands -= 1;
         let mut code = symbol(&self.literals, &mut self.bits)?;
-        if self.method == 3 && code == 285 {
+        if self.profile == Profile::Lha(3) && code == 285 {
             code += self.bits.get(8)? as u16;
             if code > 509 {
                 return Err(invalid());
@@ -300,7 +350,7 @@ impl<R: Read, P: FnMut() -> io::Result<()>> LzhReader<R, P> {
                         return Err(invalid());
                     }
                     let position = symbol(&self.positions, &mut self.bits)?;
-                    let offset = if self.method == 3 {
+                    let offset = if self.profile == Profile::Lha(3) {
                         (usize::from(position) << 6) + self.bits.get(6)? as usize
                     } else if position == 0 {
                         0
@@ -311,6 +361,12 @@ impl<R: Read, P: FnMut() -> io::Result<()>> LzhReader<R, P> {
                     if self.distance > self.dictionary.len() {
                         return Err(invalid());
                     }
+                    if self.profile == Profile::Arj {
+                        self.bits.charge(1)?;
+                        if self.distance > 26624 || self.distance as u64 > self.produced {
+                            return Err(invalid());
+                        }
+                    }
                     self.copy = count;
                     continue;
                 }
@@ -319,6 +375,7 @@ impl<R: Read, P: FnMut() -> io::Result<()>> LzhReader<R, P> {
             self.dictionary[self.position] = byte;
             self.position = (self.position + 1) & (self.dictionary.len() - 1);
             self.remaining -= 1;
+            self.produced += 1;
             output[at] = byte;
             at += 1;
         }
