@@ -4,94 +4,30 @@ use std::io::{self, Read};
 /// Canonical MSB-first symbol codes within the LSB-first Brotli field stream.
 /// Count/offset storage avoids a 2^15 table per declared context.
 pub(super) struct Prefix {
-    counts: [u16; 16],
-    first: [u16; 16],
-    offset: [u16; 16],
-    symbols: Vec<u16>,
-    singleton: Option<u16>,
+    code: crate::entropy::Canonical,
 }
 impl Prefix {
     fn single(symbol: u16) -> Self {
         Self {
-            counts: [0; 16],
-            first: [0; 16],
-            offset: [0; 16],
-            symbols: vec![],
-            singleton: Some(symbol),
+            code: crate::entropy::Canonical::single(symbol),
         }
     }
     fn from_lengths(lengths: &[u8], allow_single: bool) -> io::Result<Self> {
-        if lengths.is_empty() || lengths.len() > 704 {
+        if lengths.len() > 704 {
             return Err(invalid());
-        }
-        let mut counts = [0u16; 16];
-        for &n in lengths {
-            if n > 15 {
-                return Err(invalid());
-            }
-            if n != 0 {
-                counts[n as usize] += 1;
-            }
-        }
-        let used: u16 = counts.iter().sum();
-        if used == 1 && allow_single {
-            return Ok(Self::single(
-                lengths.iter().position(|&n| n != 0).ok_or_else(invalid)? as u16,
-            ));
-        }
-        let mut left = 1i32;
-        let mut first = [0u16; 16];
-        let mut offset = [0u16; 16];
-        for n in 1..16 {
-            left = left * 2 - i32::from(counts[n]);
-            if left < 0 {
-                return Err(invalid());
-            }
-            first[n] = ((u32::from(first[n - 1]) + u32::from(counts[n - 1])) * 2)
-                .try_into()
-                .map_err(|_| invalid())?;
-            offset[n] = offset[n - 1] + counts[n - 1];
-        }
-        if left != 0 || used < 2 {
-            return Err(invalid());
-        }
-        let mut symbols = filled(usize::from(used), 0u16)?;
-        let mut next = offset;
-        for (symbol, &n) in lengths.iter().enumerate() {
-            if n != 0 {
-                let at = &mut next[n as usize];
-                symbols[usize::from(*at)] = symbol as u16;
-                *at += 1;
-            }
         }
         Ok(Self {
-            counts,
-            first,
-            offset,
-            symbols,
-            singleton: None,
+            code: crate::entropy::Canonical::from_lengths(lengths, 15, allow_single)?,
         })
     }
     pub fn symbol<R: Read, P: FnMut() -> io::Result<()>>(
         &self,
         bits: &mut Bits<R, P>,
     ) -> io::Result<u16> {
-        if let Some(value) = self.singleton {
+        if self.code.is_single() {
             bits.charge(1)?;
-            return Ok(value);
         }
-        let mut value = 0u16;
-        for n in 1..16 {
-            value = (value << 1) | bits.get(1)? as u16;
-            if value >= self.first[n] && value - self.first[n] < self.counts[n] {
-                return self
-                    .symbols
-                    .get(usize::from(self.offset[n] + value - self.first[n]))
-                    .copied()
-                    .ok_or_else(invalid);
-            }
-        }
-        Err(invalid())
+        self.code.symbol(|| Ok(bits.get(1)? as u8))
     }
     pub fn read<R: Read, P: FnMut() -> io::Result<()>>(
         bits: &mut Bits<R, P>,

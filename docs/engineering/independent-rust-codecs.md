@@ -22,6 +22,8 @@ Unix compress and TAR.Z reuse the independent bounded LZW primitive and controll
 
 ## Sources and independent implementation
 
+The shared LH4–LH7 and LArc LZS/LZ5 raw decoders follow the [LHA wire and algorithm contract](lha-containers.md). Container methods, CRCs and product admission are evaluated separately; a raw decoder does not grant a registered archive capability. The shared canonical prefix implementation retains each format's own maximum depth and singleton rules.
+
 First define fields, state transitions, numeric ranges, error behavior, and test vectors from official technical documentation, then write code. Reference implementations supplement behavioral understanding only; no line-by-line language translation, renamed copying, transplanted structures, or copied comments. Record sections for specification identifiers/constants; prefer generating tables from explicit mathematical rules. Test-reference sources and licenses are managed separately from product dependencies.
 
 Developers who have seen reference source do not claim strict clean-room development. For modules requiring source separation, an analyst supplies behavioral specifications without code expression to an implementer who has not seen the reference implementation. Licenses of reference source, documents, and test data do not disappear with a Rust rewrite. Historical deliveries and transition dependencies continue meeting their obligations.

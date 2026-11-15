@@ -3,7 +3,7 @@ use crate::{
     stream_io::{Input, resource},
 };
 use std::io::{self, Read};
-pub(super) struct Bits<R, P = fn() -> io::Result<()>> {
+pub(crate) struct Bits<R, P = fn() -> io::Result<()>, const MSB: bool = false> {
     pub input: Input<R>,
     value: u32,
     count: u8,
@@ -17,7 +17,7 @@ impl<R: Read> Bits<R> {
         Self::with_poll(source, packed, work, || Ok(()))
     }
 }
-impl<R: Read, P: FnMut() -> io::Result<()>> Bits<R, P> {
+impl<R: Read, P: FnMut() -> io::Result<()>, const MSB: bool> Bits<R, P, MSB> {
     pub fn with_poll(source: R, packed: u64, work: u64, poll: P) -> Self {
         Self {
             input: Input::new(source, packed),
@@ -44,13 +44,24 @@ impl<R: Read, P: FnMut() -> io::Result<()>> Bits<R, P> {
         }
         self.charge(u64::from(n).max(1))?;
         while self.count < n {
-            self.value |= u32::from(self.input.byte(self.input.packed)?) << self.count;
+            let byte = self.input.byte(self.input.packed)?;
+            self.value |= u32::from(if MSB { byte.reverse_bits() } else { byte }) << self.count;
             self.count += 8;
         }
         let value = self.value & ((1u32 << n) - 1);
         self.value >>= n;
         self.count -= n;
-        Ok(value)
+        Ok(if MSB && n != 0 {
+            value.reverse_bits() >> (32 - n)
+        } else {
+            value
+        })
+    }
+    pub fn finish_ignored_padding(&mut self) -> io::Result<()> {
+        if self.input.consumed != self.input.packed {
+            return Err(invalid());
+        }
+        Ok(())
     }
     pub fn align_zero(&mut self) -> io::Result<()> {
         if self.value != 0 {

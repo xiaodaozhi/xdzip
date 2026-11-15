@@ -51,3 +51,7 @@ tests/fixtures/brotli/*.br binary
 crates/xdzip-compression/src/brotli/data.rs text eol=lf
 crates/xdzip-compression/src/brotli/fixture_cases.rs text eol=lf
 third_party/brotli-rfc7932/LICENSE.txt text eol=lf
+
+# Owned LHA fixtures and independent expectation bytes are reproducible.
+tests/fixtures/lha/*.lzh binary
+crates/xdzip-compression/src/lzh/fixture_cases.rs text eol=lf

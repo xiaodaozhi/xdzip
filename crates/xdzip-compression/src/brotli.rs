@@ -1,5 +1,7 @@
 //! Independent RFC 7932 stream reader. Product capability admission is separate.
-mod bits;
+mod bits {
+    pub(super) use crate::bitstream::Bits;
+}
 mod data;
 mod dictionary;
 mod meta;

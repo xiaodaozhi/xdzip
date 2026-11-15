@@ -1,14 +1,19 @@
 //! Independently implemented compression primitives. No production dependencies.
 //! Wire definitions: RFC 1951 sections 3.1–3.2 and RFC 1952 section 2.3.
 //! Constants below describe wire code ranges, not a reference implementation.
+mod bitstream;
 mod brotli;
 mod byte_filter;
 mod bzip2;
 mod compress;
+mod crc16;
 mod deflate;
+mod entropy;
 mod gzip;
+mod larc;
 mod lz4;
 mod lz4_encode;
+mod lzh;
 mod lzma;
 mod lzma2;
 mod lzma_encode;
@@ -29,9 +34,12 @@ pub use brotli::{BrotliReader, brotli_memory_required};
 pub use byte_filter::{ByteFilter, ByteFilterKind};
 pub use bzip2::{Bzip2Reader, bzip2_memory_required};
 pub use compress::{CompressReader, compress_memory_required};
+pub use crc16::{Crc16, crc16};
 pub use gzip::{GzipReader, GzipWriter};
+pub use larc::{LarcMethod, LarcReader, larc_memory_required};
 pub use lz4::Lz4BlockReader;
 pub use lz4_encode::encode_lz4_block;
+pub use lzh::{LzhReader, lzh_memory_required};
 pub use lzma::{LzmaReader, lzma_memory_required};
 pub use lzma_encode::{Lzma2Writer, lzma2_writer_memory_required};
 pub use lzma2::{Lzma2Reader, lzma2_memory_required};
