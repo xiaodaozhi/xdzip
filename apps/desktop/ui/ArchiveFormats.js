@@ -504,4 +504,5 @@ var associationGroups = [
     }
 ];
 var structureOnlyFormats = ["TAR", "LZMA", "TAR.LZMA", "Z", "TAR.Z", "UU", "XXE", "Brotli", "TAR.BR", "PEA", "NSIS", "Compound", "ISO", "UDF"];
+var discImageFormats = ["ISO", "UDF"];
 var declaredCheckFormats = ["XZ", "TAR.XZ", "LZ4", "TAR.LZ4", "ZSTD", "TAR.ZST", "AES Crypt", "LZH", "PMA", "ASAR", "DEB"];

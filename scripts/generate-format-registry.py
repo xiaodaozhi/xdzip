@@ -203,6 +203,7 @@ def render(spec):
                   'var formatGroups = ' + json.dumps(format_groups, indent=4) + ';\n'
                   'var associationGroups = ' + json.dumps(association_groups, indent=4) + ';\n'
                   'var structureOnlyFormats = ' + json.dumps([item['label'] for item in formats if item['check_kind'] == 'structure_and_readability']) + ';\n'
+                  'var discImageFormats = ' + json.dumps([item['label'] for item in formats if item['container'] in {'iso', 'udf'}]) + ';\n'
                   'var declaredCheckFormats = ' + json.dumps([item['label'] for item in formats if item['check_kind'] == 'format_declared_checks']) + ';\n')
     return {
         'crates/xdzip-codec-api/src/registry/generated.rs': '\n'.join(rust),

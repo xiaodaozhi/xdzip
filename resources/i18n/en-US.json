@@ -649,6 +649,7 @@
     "integrity.readOnlyNote": "Reads and verifies without writing files. Does not establish trust in the source.",
     "integrity.structuralNote": "%1 has no content checksums. Checks structure, sizes and readability without writing files.",
     "integrity.tarNote": "TAR has no content checksums. Checks structure and readability without writing files.",
+    "integrity.discImageNote": "%1 disc images are checked for structure and readability; per-file content verification is not guaranteed.",
     "integrity.passwordTitle": "Archive check password",
     "integrity.passwordHeading": "Enter a password to check",
     "integrity.continue": "Continue check",

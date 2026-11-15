@@ -9725,6 +9725,7 @@ QtObject {
             QCOMPARE(footer->property("note").toString(),
                      format == "ARJ" || format == "ARC" || format == "BH" || format == "ALZ" || format == "EGG" ? qtTrId("integrity.readOnlyNote")
                      : format == "TAR"                  ? qtTrId("integrity.tarNote")
+                     : format == "ISO" || format == "UDF" ? qtTrId("integrity.discImageNote").arg(format)
                      : format.contains("XZ") || format.contains("LZ4") || format.contains("ZST") ||
                              format == "DEB" || format == "ASAR" || format == "AES Crypt" ||
                              format == "LZH" || format == "PMA"

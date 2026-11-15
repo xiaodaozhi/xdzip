@@ -649,6 +649,7 @@
     "integrity.readOnlyNote": "仅读取和校验，不写出文件，不证明来源可信。",
     "integrity.structuralNote": "%1 无文件内容校验和，检查结构、尺寸和可读性，不写入文件。",
     "integrity.tarNote": "TAR 无文件内容校验和，仅检查结构与可读性，不写出文件。",
+    "integrity.discImageNote": "%1 光盘映像只检查结构和可读性，不保证逐文件内容校验。",
     "integrity.passwordTitle": "检查密码",
     "integrity.passwordHeading": "输入密码以继续检查",
     "integrity.continue": "继续检查",
