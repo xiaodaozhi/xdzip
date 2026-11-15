@@ -458,3 +458,46 @@ fn bounded_mutations_cannot_panic_overproduce_or_resume_failed_readers() {
         }
     }
 }
+#[test]
+fn every_fast_unary_width_boundary_leaves_the_following_bits_untouched() {
+    for (start, last, cases) in [
+        (
+            0,
+            7,
+            vec![
+                (0, 1, 0, 0),
+                (2, 2, 1, 1),
+                (6, 3, 2, 3),
+                (14, 4, 3, 7),
+                (30, 5, 4, 15),
+                (62, 6, 5, 31),
+                (126, 7, 6, 63),
+                (127, 7, 7, 127),
+            ],
+        ),
+        (
+            9,
+            13,
+            vec![
+                (0, 1, 9, 0),
+                (2, 2, 10, 512),
+                (6, 3, 11, 1536),
+                (14, 4, 12, 3584),
+                (15, 4, 13, 7680),
+            ],
+        ),
+    ] {
+        for (prefix, prefix_width, extra, base) in cases {
+            for low in [0, (1u32 << extra) - 1] {
+                let bytes = fields(&[(prefix, prefix_width), (low, extra), (5, 3)]);
+                let mut reader =
+                    Fast::new(Cursor::new(&bytes), bytes.len() as u64, 0, MAX_WORK, || {
+                        Ok(())
+                    })
+                    .unwrap();
+                assert_eq!(reader.extended(start, last).unwrap(), (base + low) as usize);
+                assert_eq!(reader.bits.get(3).unwrap(), 5);
+            }
+        }
+    }
+}
