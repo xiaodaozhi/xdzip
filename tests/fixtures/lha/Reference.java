@@ -82,6 +82,22 @@ public final class Reference {
             Files.writeString(Path.of(args[3]), trace.append("\n]\n").toString());
             return;
         }
+        if (args.length == 3 && args[0].equals("decode-tree")) {
+            Properties properties = LhaProperty.getProperties(); properties.setProperty("lha.encoding", "UTF-8");
+            Path output = Path.of(args[2]); Files.createDirectory(output);
+            try (LhaInputStream input = new LhaInputStream(Files.newInputStream(Path.of(args[1])), properties)) {
+                LhaHeader header; int index = 0;
+                while ((header = input.getNextEntry()) != null) {
+                    if (index >= 20 || header.getOriginalSize() > 2 * 1024 * 1024) throw new IOException("Owned reference bound");
+                    byte[] bytes = input.readAllBytes();
+                    Files.write(output.resolve(index + ".bin"), bytes);
+                    String path = header.getPath().replace('\\', '/');
+                    System.out.println(index + "\t" + Base64.getEncoder().encodeToString(path.getBytes(java.nio.charset.StandardCharsets.UTF_8)) + "\t" + header.getCompressMethod() + "\t" + header.getOriginalSize() + "\t" + header.getCRC());
+                    index++;
+                }
+            }
+            return;
+        }
         if (args.length == 3 && args[0].equals("decode")) {
             try (LhaInputStream input = new LhaInputStream(Files.newInputStream(Path.of(args[1])))) {
                 LhaHeader header = input.getNextEntry();

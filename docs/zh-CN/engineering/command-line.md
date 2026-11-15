@@ -37,7 +37,7 @@ list 返回物理记录，重名不合并。extract 的成员参数是包内完�
 
 extract 默认输出到当前目录，`-C` 指定缺失目录时，从最近已存在的安全父目录逐级获得授权，不使用无条件递归建目录。目标、源身份、链接、Unicode／大小写碰撞、暂存、校验及提交继续遵守[安全解压](m3-extraction.md)和[文件名编码](filename-encoding.md)。默认询问重名；`--conflict ask|skip|rename|overwrite` 显式选择策略。`--allow-high-ratio` 只确认高压缩比，不取消硬资源限制。
 
-create 依据 .zip、.tar、.tar.gz、.tgz、.7z 扩展名选择现有后端，目标父目录须已存在。`--level store|fast|normal|best` 对应现有四档级别，默认为 normal；TAR 仅打包。`--encrypt` 仅用于 ZIP／7z，7z 另可使用 --encrypt-names、--solid；--volume-size 接受正整数字节及 KiB、MiB、GiB 后缀，分卷只用于 ZIP／7z。格式不适用的参数明确拒绝。
+create 按已登记的创建后缀选择后端，详见[格式支持](../../../README.zh-CN.md#格式支持)。LZH 接受 `.lzh`、`.lha`，`fast|normal|best` 对应实际 LH5 1/6/9 级，不接受 Store、密码、固实或分卷，现有 LZH 归档不能修改；TAR 仅打包。`--encrypt` 仅用于 ZIP／7z，7z 另可使用 --encrypt-names、--solid；--volume-size 接受正整数字节及 KiB、MiB、GiB 后缀，分卷只用于 ZIP／7z。格式不适用的参数明确拒绝。
 
 密码只通过终端隐藏输入或 `--password-stdin` 的一行 UTF-8 输入传递，移除行结束符但不裁剪密码本身。创建交互加密包时确认两次。拒绝明文密码参数，不读取密码环境变量，不写设置或日志。密码长度与归零规则沿用[密码契约](password-extraction.md)和[创建契约](m4-creation.md)。
 

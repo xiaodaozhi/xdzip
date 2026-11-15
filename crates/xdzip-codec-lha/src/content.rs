@@ -333,7 +333,14 @@ impl<'a> Reader<'a> {
             .and_then(|()| cancel.check())
             .map_err(scan_error)?;
         let record = self.index.records.get(at).ok_or(DecodeError::Integrity)?;
-        if record.directory || !matches!(record.unix_mode & 0xf000, 0 | 0x8000) {
+        if record.directory {
+            return if matches!(record.unix_mode & 0xf000, 0 | 0x4000) {
+                Ok(())
+            } else {
+                Err(DecodeError::Unsupported)
+            };
+        }
+        if !matches!(record.unix_mode & 0xf000, 0 | 0x8000) {
             return Err(DecodeError::Unsupported);
         }
         if record.packed_size > self.input || record.size > self.decoded {
@@ -814,10 +821,7 @@ mod tests {
         let index = scan(&bytes).unwrap();
         let mut source = Cursor::new(&bytes);
         let mut reader = Reader::open(&mut source, &index, &cancel).unwrap();
-        assert_eq!(
-            reader.decode(0, &mut sink, &cancel),
-            Err(DecodeError::Unsupported)
-        );
+        assert_eq!(reader.decode(0, &mut sink, &cancel), Ok(()));
         assert!(sink.bytes.is_empty());
     }
 }

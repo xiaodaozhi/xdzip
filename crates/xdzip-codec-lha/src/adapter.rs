@@ -8,7 +8,7 @@ use xdzip_codec_api::{
     payload::{DecodeError, DecodedSink, PayloadCodec, PayloadReader},
 };
 use xdzip_domain::identity::EntryId;
-/// Read-only LHA/LZH export. The host retains names, filesystem and publication authority.
+/// LHA/LZH decoding and LH5 creation. The host retains filesystem and publication authority.
 pub struct LhaCodec;
 impl LhaCodec {
     /// Bounded family-marker proposal. The host must validate the complete container.
@@ -185,13 +185,13 @@ impl PayloadReader for Payload<'_> {
 impl CreationCodec for LhaCodec {
     fn encode(
         &self,
-        _: &dyn EncodeInput,
-        _: &mut dyn EncodeOutput,
-        _: EncodeSettings<'_>,
-        _: &Cancellation,
-        _: &mut dyn FnMut(EncodeProgress<'_>),
+        input: &dyn EncodeInput,
+        output: &mut dyn EncodeOutput,
+        settings: EncodeSettings<'_>,
+        cancel: &Cancellation,
+        progress: &mut dyn FnMut(EncodeProgress<'_>),
     ) -> Result<(), EncodeError> {
-        Err(EncodeError::Unsupported)
+        crate::creation::encode(input, output, settings, cancel, progress)
     }
 }
 impl RewriteCodec for LhaCodec {

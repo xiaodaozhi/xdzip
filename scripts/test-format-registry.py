@@ -35,7 +35,7 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual({item['id']: item['worker_id'] for item in formats if item['worker_id']},
                          {'7z': 7, 'rar': 4, 'cab': 8, 'iso': 9, 'udf': 10})
         self.assertEqual({suffix for item in formats for suffix in item['creation_suffixes']},
-                         {'.zip', '.tar', '.tar.gz', '.tgz', '.gz', '.7z', '.xz', '.tar.xz', '.txz', '.lz4', '.tar.lz4', '.zst', '.tar.zst', '.tzst'})
+                         {'.zip', '.tar', '.tar.gz', '.tgz', '.gz', '.7z', '.xz', '.tar.xz', '.txz', '.lz4', '.tar.lz4', '.zst', '.tar.zst', '.tzst', '.lzh', '.lha'})
 
     def test_duplicate_id(self):
         self.reject(lambda source: source['formats'][1].update(id='zip'))
@@ -44,7 +44,13 @@ class RegistryTests(unittest.TestCase):
         output = REGISTRY.render(self.source)['apps/desktop/ui/ArchiveFormats.js']
         choices = json.loads(output.split('var creationFormats = ', 1)[1].split(';\n', 1)[0])
         by_id = {item['id']: item for item in choices}
-        self.assertEqual(set(by_id), {'zip', 'tar', 'tar-gzip', '7z', 'gzip', 'xz', 'tar-xz', 'lz4', 'tar-lz4', 'zstd', 'tar-zstd'})
+        self.assertEqual(set(by_id), {'zip', 'tar', 'tar-gzip', '7z', 'gzip', 'xz', 'tar-xz', 'lz4', 'tar-lz4', 'zstd', 'tar-zstd', 'lzh'})
+        self.assertEqual(by_id['lzh']['suffix'], '.lzh')
+        self.assertEqual(by_id['lzh']['methods'], ['lh5'])
+        self.assertEqual(by_id['lzh']['methodIds'], [259])
+        self.assertEqual(by_id['lzh']['levels'], [1, 6, 9])
+        self.assertEqual(by_id['lzh']['encryption'], [])
+        self.assertEqual(by_id['lzh']['volumes'], [])
         self.assertEqual(by_id['tar-gzip']['suffix'], '.tar.gz')
         self.assertEqual(by_id['gzip']['suffix'], '.gz')
         self.assertEqual(by_id['gzip']['methods'], ['deflate'])

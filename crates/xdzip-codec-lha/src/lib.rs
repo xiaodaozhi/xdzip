@@ -1,6 +1,7 @@
 //! Independent bounded LHA containers over host-owned input capabilities.
 mod adapter;
 mod content;
+mod creation;
 mod header;
 mod names;
 pub use adapter::LhaCodec;

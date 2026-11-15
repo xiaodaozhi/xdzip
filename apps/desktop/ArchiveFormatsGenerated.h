@@ -144,7 +144,7 @@ inline constexpr std::array<std::string_view, 40> ShellMimeTypes = {{
     "application/x-iso9660-image",
     "application/x-udf",
 }};
-inline constexpr std::array<std::string_view, 20> ReadOnlyLabels = {{
+inline constexpr std::array<std::string_view, 19> ReadOnlyLabels = {{
     "BZip2",
     "TAR.BZ2",
     "LZMA",
@@ -158,7 +158,6 @@ inline constexpr std::array<std::string_view, 20> ReadOnlyLabels = {{
     "Brotli",
     "TAR.BR",
     "AES Crypt",
-    "LZH",
     "ASAR",
     "DEB",
     "RAR",

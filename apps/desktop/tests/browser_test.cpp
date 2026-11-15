@@ -7734,13 +7734,14 @@ QtObject {
         QVERIFY(QTest::qWaitForWindowExposed(create));
         auto *formats = findVisual(create->contentItem(), "createFormat");
         QVERIFY(formats);
-        const QStringList extensions{".zip", ".tar", ".tar.gz", ".7z", ".gz"};
+        const QStringList extensions{".zip",    ".tar", ".tar.gz",  ".7z",  ".gz",      ".xz",
+                                     ".tar.xz", ".lz4", ".tar.lz4", ".zst", ".tar.zst", ".lzh"};
         auto *formatInterface = QAccessible::queryAccessibleInterface(formats);
         QVERIFY(formatInterface);
         QCOMPARE(formatInterface->role(), QAccessible::ComboBox);
         QVERIFY(!formatInterface->text(QAccessible::Name).isEmpty());
         QCOMPARE(formats->property("count").toInt(), extensions.size());
-        for (const int index : {1, 2, 3, 4, 0}) {
+        for (const int index : {1, 2, 3, 4, 11, 0}) {
             QVERIFY(QMetaObject::invokeMethod(formats, "activateOption", Q_ARG(QVariant, index)));
             QTRY_COMPARE(formats->property("currentIndex").toInt(), index);
             QTRY_COMPARE(create->property("formatExtension").toString(), extensions[index]);
@@ -9184,7 +9185,7 @@ QtObject {
         formats->setProperty("currentIndex", 3);
         QCOMPARE(create->width(), 491);
         QTRY_VERIFY(formats->width() > 0);
-        QCOMPARE(formats->property("count").toInt(), 11);
+        QCOMPARE(formats->property("count").toInt(), 12);
         for (int index = 0; index < formats->property("count").toInt(); ++index) {
             formats->setProperty("currentIndex", index);
             auto *label =
@@ -9193,6 +9194,25 @@ QtObject {
             QTRY_VERIFY2(label->implicitWidth() <= label->width() + 1,
                          qPrintable(QString("format %1 text exceeds selector").arg(index)));
         }
+        QCOMPARE(create->property("formatId").toString(), QStringLiteral("lzh"));
+        QCOMPARE(create->property("compressedMethod").toInt(), 259);
+        QVERIFY(create->property("compressedOnly").toBool());
+        QVERIFY(!create->property("supportsPasswordAndVolumes").toBool());
+        formats->setProperty("currentIndex", 0);
+        auto *popup = formats->property("popup").value<QObject *>();
+        QVERIFY(popup && QMetaObject::invokeMethod(popup, "open"));
+        QTRY_VERIFY(popup->property("visible").toBool());
+        auto *popupContent =
+            qobject_cast<QQuickItem *>(popup->property("contentItem").value<QObject *>());
+        QVERIFY(popupContent);
+        QTRY_VERIFY(popupContent->height() > 0);
+        QTRY_VERIFY(popupContent->mapToScene(QPointF(0, 0)).y() >= 0);
+        QTRY_VERIFY(popupContent->mapToScene(QPointF(0, popupContent->height())).y() <=
+                    create->height() + 1);
+        QTest::keyClick(create, Qt::Key_End);
+        QTest::keyClick(create, Qt::Key_Return);
+        QTRY_COMPARE(formats->property("currentIndex").toInt(), 11);
+        QTRY_VERIFY(!popup->property("visible").toBool());
         auto *cancel = findVisual(create->contentItem(), "createCancel");
         auto *start = findVisual(create->contentItem(), "startCreate");
         QVERIFY(cancel && start);
@@ -9202,8 +9222,8 @@ QtObject {
         const auto captures = qEnvironmentVariable("XDZIP_CREATE_CONTROLS_AUDIT");
         if (!captures.isEmpty()) {
             QVERIFY(QDir().mkpath(captures));
-            QVERIFY(visual_audit::save(create, captures,
-                                       QStringLiteral("create-7z-") + QTest::currentDataTag()));
+            QVERIFY(visual_audit::save(
+                create, captures, QStringLiteral("create-formats-") + QTest::currentDataTag()));
         }
     }
     void passwordFieldsExposeLabelsWithoutSecrets_data() {
@@ -9354,6 +9374,9 @@ QtObject {
             QTest::newRow(qPrintable("tar-zstd-" + language))
                 << QStringLiteral("tar-zstd") << QStringLiteral("tar.zst")
                 << QStringLiteral("TAR.ZST") << language;
+            QTest::newRow(qPrintable("lzh-" + language))
+                << QStringLiteral("lzh") << QStringLiteral("lzh") << QStringLiteral("LZH")
+                << language;
         }
     }
     void singleStreamCreationUsesStableCapability() {
@@ -9400,7 +9423,8 @@ QtObject {
                                           Q_ARG(QVariant, QVariant(QStringList{input.path()})),
                                           Q_ARG(bool, true)));
         QTRY_COMPARE(create->property("inputs").toList().size(), 1);
-        QCOMPARE(create->property("inputsValid").toBool(), formatId.startsWith("tar-"));
+        QCOMPARE(create->property("inputsValid").toBool(),
+                 formatId.startsWith("tar-") || formatId == "lzh");
         create->setProperty("inputs", QVariantList{});
         QVERIFY(QMetaObject::invokeMethod(create, "addInputPaths",
                                           Q_ARG(QVariant, QVariant(QStringList{source})),

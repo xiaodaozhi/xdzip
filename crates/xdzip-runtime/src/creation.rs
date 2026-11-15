@@ -504,8 +504,12 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                     } else {
                         input.name.clone()
                     };
-                    if (format.descriptor().container != "single-file"
-                        && row.raw_name != expected.as_bytes())
+                    let matches_name = if format == Format::Lha {
+                        !row.warning && row.name_bytes() == expected.as_bytes()
+                    } else {
+                        row.raw_name == expected.as_bytes()
+                    };
+                    if (format.descriptor().container != "single-file" && !matches_name)
                         || row.directory != input.directory
                         || row.size != input.size
                     {

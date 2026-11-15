@@ -1437,3 +1437,101 @@ fn native_creation_capabilities_are_format_specific() {
     options.encrypt_headers = false;
     assert!(options.bounded());
 }
+#[test]
+fn lzh_creation_levels_and_aliases_publish_only_after_full_name_and_content_verification() {
+    for suffix in ["lzh", "lha"] {
+        for level in [1, 6, 9] {
+            let f = Fixture::new();
+            let mut job = f.job(259);
+            job.options.name = format!("archive.{suffix}");
+            job.options.level = level;
+            assert!(job.options.bounded());
+            let result = execute(job, &Control::default(), |_| {});
+            assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+            assert_eq!(result.verified_files, 2);
+            assert_eq!(result.committed_files, 2);
+            let path = f.0.join(format!("output/archive.{suffix}"));
+            let cancel = Cancellation::default();
+            let archive = crate::Archive::open(&path, &cancel).unwrap();
+            assert_eq!(archive.format, Format::Lha);
+            assert!(!archive.update_allowed && archive.rows.iter().all(|r| !r.warning));
+            let contents = archive_contents(std::fs::read(&path).unwrap(), Format::Lha);
+            assert_eq!(
+                contents["输入/文件.txt"],
+                std::fs::read(f.0.join("输入/文件.txt")).unwrap()
+            );
+            assert_eq!(contents["输入/empty.bin"], b"");
+            let mut checked = None;
+            crate::checking::run(
+                archive.check_job(&cancel).unwrap(),
+                2,
+                &Control::default(),
+                &mut |s| checked = Some(s),
+            );
+            let checked = checked.unwrap();
+            assert_eq!(checked.status, Status::Succeeded, "{}", checked.error);
+            assert_eq!(checked.verified_files, 2);
+            let target = f.0.join("extracted");
+            std::fs::create_dir(&target).unwrap();
+            let options = crate::extraction::Options {
+                target: target.to_string_lossy().into_owned(),
+                all: true,
+                selected: vec![],
+                directory: String::new(),
+                create_folder: false,
+                shell_layout: 0,
+                conflict: ConflictPolicy::Ask,
+                allow_high_ratio: true,
+            };
+            let mut extracted = None;
+            crate::extraction::run(
+                archive.extraction_job(options, &cancel).unwrap(),
+                3,
+                &Control::default(),
+                &mut |s| extracted = Some(s),
+            );
+            let extracted = extracted.unwrap();
+            assert_eq!(extracted.status, Status::Succeeded, "{}", extracted.error);
+            assert_eq!(
+                std::fs::read(target.join("输入/文件.txt")).unwrap(),
+                contents["输入/文件.txt"]
+            );
+            assert!(target.join("输入/空目录").is_dir());
+        }
+    }
+}
+#[test]
+fn lzh_source_change_or_cancel_during_verification_preserves_old_destination_and_cleans_stage() {
+    for mutate in [false, true] {
+        let f = Fixture::new();
+        let path = f.0.join("output/archive.lzh");
+        std::fs::write(&path, b"owned old destination").unwrap();
+        let mut job = f.job(259);
+        job.options.name = "archive.lzh".into();
+        job.options.conflict = ConflictPolicy::Overwrite;
+        let control = Control::default();
+        let result = execute(job, &control, |s| {
+            if s.status == Status::Verifying {
+                if mutate {
+                    std::fs::write(f.0.join("输入/文件.txt"), b"source changed").unwrap();
+                } else {
+                    control.cancel();
+                }
+            }
+        });
+        assert_eq!(
+            result.status,
+            if mutate {
+                Status::Failed
+            } else {
+                Status::Cancelled
+            }
+        );
+        if mutate {
+            assert_eq!(result.error, "source_changed");
+        }
+        assert_eq!(result.committed_files, 0);
+        assert_eq!(std::fs::read(path).unwrap(), b"owned old destination");
+        assert_eq!(std::fs::read_dir(f.0.join("output")).unwrap().count(), 1);
+    }
+}

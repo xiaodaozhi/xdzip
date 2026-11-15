@@ -260,6 +260,24 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
             assert invoke('create',refused,zstd_single,'--level','store',code=2)['error_code']=='unsupported_options'
             assert not refused.exists()
         record('zstandard_real_multiblock_levels_and_tar_compositions')
+        for suffix in ['lzh','lha']:
+            for level in ['fast','normal','best']:
+                archive=work/f'created-{level}.{suffix}'
+                invoke('create',archive,source,'--level',level)
+                listed=invoke('list',archive)['data']
+                assert listed['format']=='LZH'
+                assert all(row['directory'] or row['method']==5 for row in listed['entries'])
+                assert invoke('test',archive)['data']['check_kind']=='format_declared_checks'
+                target=work/f'lzh-created-output-{level}-{suffix}'
+                invoke('extract',archive,'-C',target)
+                assert (target/source.name/'你好.txt').read_bytes()==(source/'你好.txt').read_bytes()
+                before=hashlib.sha256(archive.read_bytes()).hexdigest()
+                invoke('add',archive,single,code=1)
+                assert hashlib.sha256(archive.read_bytes()).hexdigest()==before
+            refused=work/f'lzh-store-refused.{suffix}'
+            assert invoke('create',refused,single,'--level','store',code=2)['error_code']=='unsupported_options'
+            assert not refused.exists()
+        record('lzh_real_lh5_levels_unicode_directories_full_check_and_atomic_creation')
         zero=work/'zero-source.bin'
         zero.write_bytes(bytes(4096))
         for suffix in ['gz','xz','lz4','zst']:

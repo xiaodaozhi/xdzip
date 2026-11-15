@@ -196,6 +196,13 @@ mod tests {
             assert_eq!(declaration.worker_id, None);
         }
         assert_eq!(Format::Zip.descriptor().creation_method(256), None);
+        let lha = Format::Lha.descriptor();
+        assert_eq!(lha.creation_method(259), Some("lh5"));
+        assert_eq!(lha.creation_method_id("lh5"), Some(259));
+        assert_eq!(lha.creation_levels, [1, 6, 9]);
+        assert!(!lha.rewrite && lha.write_encryption.is_empty() && lha.write_volumes.is_empty());
+        assert_eq!(Format::Zip.descriptor().creation_method(259), None);
+        assert_eq!(lha.creation_method(5), None);
         for format in [Format::Zstd, Format::TarZstd] {
             let declaration = format.descriptor();
             assert_eq!(declaration.creation_method(93), Some("zstd"));

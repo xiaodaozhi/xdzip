@@ -10,6 +10,7 @@ pub(super) static CREATION_METHODS: &[(&str, u16)] = &[
     ("lzma2", 32),
     ("lz4", 256),
     ("zstd", 93),
+    ("lh5", 259),
 ];
 
 #[rustfmt::skip]
@@ -723,14 +724,19 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
             "lzs",
             "lz5",
         ],
-        write_methods: &[],
+        write_methods: &[
+            "lh5",
+        ],
         read_encryption: &[],
         write_encryption: &[],
         read_volumes: &[],
         write_volumes: &[],
-        creation_suffixes: &[],
+        creation_suffixes: &[
+            ".lzh",
+            ".lha",
+        ],
         rewrite: false,
-        creation_levels: &[],
+        creation_levels: &[1, 6, 9],
         check_kind: "format_declared_checks",
         extensions: &[
             ".lha",

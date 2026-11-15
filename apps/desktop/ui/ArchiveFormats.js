@@ -223,6 +223,25 @@ var creationFormats = [
         ],
         "encryption": [],
         "volumes": []
+    },
+    {
+        "id": "lzh",
+        "label": "LZH",
+        "suffix": ".lzh",
+        "container": "lha",
+        "methods": [
+            "lh5"
+        ],
+        "methodIds": [
+            259
+        ],
+        "levels": [
+            1,
+            6,
+            9
+        ],
+        "encryption": [],
+        "volumes": []
     }
 ];
 var associationSuffixes = [".zip", ".zipx", ".xpi", ".apk", ".ipa", ".cbz", ".tar", ".tar.gz", ".tgz", ".7z", ".gz", ".bz2", ".bz", ".tar.bz2", ".tar.bz", ".tbz", ".tbz2", ".lzma", ".tar.lzma", ".tlz", ".lz", ".tar.lz", ".xz", ".tar.xz", ".txz", ".lz4", ".tar.lz4", ".zst", ".tar.zst", ".tzst", ".z", ".tar.z", ".taz", ".uu", ".uue", ".xxe", ".br", ".tar.br", ".aes", ".lha", ".lzh", ".asar", ".deb", ".rar", ".cab", ".iso", ".udf"];

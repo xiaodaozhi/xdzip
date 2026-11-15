@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "creation_methods": {"store": 0, "copy": 0, "deflate": 8, "lzma2": 32, "lz4": 256, "zstd": 93},
+  "creation_methods": {"store": 0, "copy": 0, "deflate": 8, "lzma2": 32, "lz4": 256, "zstd": 93, "lh5": 259},
   "formats": [
     {
       "id": "zip", "rust_variant": "Zip", "label": "ZIP", "container": "zip", "filters": [], "worker_id": null,
@@ -342,10 +342,10 @@
     },
     {
       "id": "lzh", "rust_variant": "Lha", "label": "LZH", "container": "lha", "filters": [], "worker_id": null,
-      "check_kind": "format_declared_checks", "creation_levels": [],
-      "read_methods": ["store", "lh1", "lh2", "lh3", "lh4", "lh5", "lh6", "lh7", "lzs", "lz5"], "write_methods": [], "rewrite": false,
+      "check_kind": "format_declared_checks", "creation_levels": [1, 6, 9],
+      "read_methods": ["store", "lh1", "lh2", "lh3", "lh4", "lh5", "lh6", "lh7", "lzs", "lz5"], "write_methods": ["lh5"], "rewrite": false,
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
-      "creation_suffixes": [], "shell_mime_types": ["application/x-lha", "application/x-lharc"],
+      "creation_suffixes": [".lzh", ".lha"], "shell_mime_types": ["application/x-lha", "application/x-lharc"],
       "extensions": [
         {"suffix": ".lha", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"},
         {"suffix": ".lzh", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
