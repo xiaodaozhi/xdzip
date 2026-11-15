@@ -6,6 +6,7 @@
 - 同一页面说明 Bandizip 可创建 `ZIP`、`7Z`、`ZIPX`、`EXE（SFX）`、`TAR`、`TGZ`、`LZH`、`ISO`、`GZ` 和 `XZ`，较长的清单主要是解压清单。
 - [Bandizip ALZ 和 EGG 帮助](https://www.bandisoft.com/bandizip/help/how-to-open-alz-and-egg-files/) 说明 ALZ 的 Deflate、混淆 Deflate、BZip2 与 ZipCrypto，以及 EGG 的 Deflate、BZip2、LZMA、AZO、AES/LEA 加密、固实和分卷。
 - [Bandizip ZPAQ 帮助](https://www.bandisoft.com/bandizip/help/zpaq/) 将 ZPAQ 描述为独立的固实、日志式格式，不能当作 ZIP 方法别名。
+- M10 候选门槛文档记录了 DAA、ISZ、ZPAQ、PEA、BOND 和 J2J 的公开资料、许可、样本和净室检查。BOND 与 J2J 尚未确认是当前官方 Bandizip 归档条目，只保留为历史线索。
 
 ## xdzip 当前结论
 
@@ -60,13 +61,15 @@
 
 因此不能仅因为扩展名加入通用 `BIN`、`IMG`、`NSIS` 或 `SFX(EXE)` 处理器。这些名称可能指向可执行文件、磁盘镜像或安装器，扩展名不足以建立归档能力。Compound(MSI) 已具备按内容验证的 CFB 读取器，但 `.msi` 后缀仍不授予执行权限。
 
+M10 还检查了 DAA、ISZ、ZPAQ、PEA、BOND 和 J2J。DAA、ISZ、ZPAQ 和 PEA 因规范、法律、参考版本或完整语料库门槛保持阻塞，详见 [M10 候选格式资料和许可门槛](m10-candidate-source-gates.md)。BOND 与 J2J 尚未确认归档身份，没有登记后缀、MIME 或内容探测器。
+
 ## 详细推进方案
 
 1. **清单与登记门槛。** 每个已准入配置在 `specs/engineering/archive-formats.json` 中保留一个机器可读条目，生成 Rust、C++、JavaScript 和关联入口消费者，然后运行两项格式登记检查。每个新格式同时增加格式契约和验收条目。
 2. **先定线格式契约。** 固定公开源码 revision 和 SHA-256，记录头部字段、名称编码、物理结束、方法、校验和、重复身份和资源限额。参考工具只有在产出完整自有样本时才作为证据，崩溃或单一 Store 样本只能记录为限制。
 3. **先做原始算法自动测试。** Qt 之外实现有界读取器，覆盖空和边界载荷、每个准入方法、准确输入/输出/工作/内存限额、取消、类型化 I/O、来源变化、截断、尾随字节、CRC 和失败终止。未知方法保留可见性，不获得载荷权限。
 4. **再做容器和产品准入。** 增加 codec crate、runtime 强/弱探测、CLI list/test/extract、桌面标签和关联 fixture。验证冻结元数据与物理重复选择，再执行必要的自动 Qt 和布局检查。本次研究与格式切片无需人工视觉验收。
-5. **候选优先级。** ALZ 的保守 Store/raw Deflate 切片、EGG 的无加密且非固实 Store/raw Deflate 切片，以及 CFB/Compound(MSI) 元数据切片已经准入。WIM 在选定公开且有界的解析器前保持候选。NSIS 仍是只读元数据候选，因为安装器 stub 和脚本边界需要独立解析器。ACE、DAA、ISZ、ZPAQ 和 PEA 在规范及许可门槛清除前保持阻塞。ZIPX 创建和 SFX 创建是独立写入器项目，不会因读取别名自动获得。
+5. **候选优先级。** ALZ 的保守 Store/raw Deflate 切片、EGG 的无加密且非固实 Store/raw Deflate 切片，以及 CFB/Compound(MSI) 元数据切片已经准入。WIM 在选定公开且有界的解析器前保持候选。NSIS 仍是只读元数据候选，因为安装器 stub 和脚本边界需要独立解析器。ACE、DAA、ISZ、ZPAQ 和 PEA 在规范及许可门槛清除前保持阻塞。BOND 与 J2J 尚未确认，不能根据扩展名列表加入探测器。ZIPX 创建和 SFX 创建是独立写入器项目，不会因读取别名自动获得。
 6. **发行边界。** 候选格式在 codec、runtime、CLI 和桌面证据完成前不进入公开能力表。未知方法和参考工具限制记录在 issue 中，不能静默回退到 Store 或其他容器。
 
 当前 BH 切片遵循这套方案：只读、无密码和分卷路径，使用独立有界的 Deflate 读取器，强制 CRC-32 和准确物理结束。Compound(MSI) 切片遵循同一边界：CFB FAT/DIFAT、目录树、mini-stream 和环检测独立于 Qt，只有在不可变元数据快照匹配后才复制原始流，绝不执行 MSI 安装行为。
