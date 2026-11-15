@@ -26,7 +26,7 @@
 | Compound(MSI) | 候选 | Structured Storage/CFB 和 MSI 流需要独立容器契约，不能按扩展名准入。 |
 | DAA(1.0) | 阻塞 | 专有磁盘/归档格式，当前依赖策略中没有维护的公开实现。 |
 | DEB | 已准入 | 普通 `ar` 封装、control/data 视图及已准入压缩成员。 |
-| EGG | 阻塞 | ALZip 专用 AES/LEA、AZO、固实和分卷能力需要独立算法与安全复核。 |
+| EGG | 已准入 | 只读无加密、非固实普通单卷 Store 和原始 Deflate，验证准确块尺寸与 CRC-32；AZO、BZip2、LZMA、加密、分卷和其他配置仍不在范围。 |
 | GZ | 已准入 | GZIP 成员，包括串联流和 TAR.GZ。 |
 | IMG | 候选 | 磁盘镜像扩展名含义不唯一，ISO/UDF 按内容准入不代表通用 IMG 支持。 |
 | ISO | 已准入 | ISO9660、Joliet 和 Rock Ridge 只读镜像。 |
@@ -66,7 +66,7 @@
 2. **先定线格式契约。** 固定公开源码 revision 和 SHA-256，记录头部字段、名称编码、物理结束、方法、校验和、重复身份和资源限额。参考工具只有在产出完整自有样本时才作为证据，崩溃或单一 Store 样本只能记录为限制。
 3. **先做原始算法自动测试。** Qt 之外实现有界读取器，覆盖空和边界载荷、每个准入方法、准确输入/输出/工作/内存限额、取消、类型化 I/O、来源变化、截断、尾随字节、CRC 和失败终止。未知方法保留可见性，不获得载荷权限。
 4. **再做容器和产品准入。** 增加 codec crate、runtime 强/弱探测、CLI list/test/extract、桌面标签和关联 fixture。验证冻结元数据与物理重复选择，再执行必要的自动 Qt 和布局检查。本次研究与格式切片无需人工视觉验收。
-5. **候选优先级。** ALZ 的保守 Store/raw Deflate 切片已经准入。只有在选定公开且有界的 WIM 解析器后才推进 WIM，其次是只读元数据路径的 Compound(MSI)/NSIS。EGG、ACE、DAA、ISZ、ZPAQ 和 PEA 在规范及许可门槛清除前保持阻塞。ZIPX 创建和 SFX 创建是独立写入器项目，不会因读取别名自动获得。
+5. **候选优先级。** ALZ 的保守 Store/raw Deflate 切片和 EGG 的无加密、非固实 Store/raw Deflate 切片已经准入。只有在选定公开且有界的 WIM 解析器后才推进 WIM，其次是只读元数据路径的 Compound(MSI)/NSIS。ACE、DAA、ISZ、ZPAQ 和 PEA 在规范及许可门槛清除前保持阻塞。ZIPX 创建和 SFX 创建是独立写入器项目，不会因读取别名自动获得。
 6. **发行边界。** 候选格式在 codec、runtime、CLI 和桌面证据完成前不进入公开能力表。未知方法和参考工具限制记录在 issue 中，不能静默回退到 Store 或其他容器。
 
 当前 BH 切片遵循这套方案：只读、无密码和分卷路径，使用独立有界的 Deflate 读取器，强制 CRC-32 和准确物理结束。

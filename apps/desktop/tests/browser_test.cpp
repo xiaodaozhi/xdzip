@@ -9670,7 +9670,7 @@ QtObject {
               "LZMA",    "TAR.LZMA", "Lzip",      "TAR.LZ", "XZ",     "TAR.XZ", "LZ4",
               "TAR.LZ4", "ZSTD",     "TAR.ZST",   "DEB",    "ASAR",   "UU",     "XXE",
               "Z",       "TAR.Z",    "AES Crypt", "Brotli", "TAR.BR", "LZH",    "PMA",
-              "ARJ",     "ARC",      "BH",        "ALZ",    "RAR",    "CAB",    "ISO",    "UDF"}) {
+              "ARJ",     "ARC",      "BH",        "ALZ",    "EGG",    "RAR",    "CAB",    "ISO",    "UDF"}) {
             auto *badge =
                 findVisual(window->contentItem(), "welcomeFormat-" + QString::fromLatin1(format));
             QVERIFY(badge && badge->isVisible());
@@ -9704,14 +9704,14 @@ QtObject {
               QStringLiteral("Z"),      QStringLiteral("TAR.Z"),   QStringLiteral("AES Crypt"),
               QStringLiteral("Brotli"), QStringLiteral("TAR.BR"),  QStringLiteral("LZH"),
               QStringLiteral("PMA"),    QStringLiteral("ARJ"),     QStringLiteral("ARC"),
-              QStringLiteral("BH"),     QStringLiteral("ALZ")}) {
+              QStringLiteral("BH"),     QStringLiteral("ALZ"),    QStringLiteral("EGG")}) {
             task->setProperty("resultTask", QVariantMap{{"kind", "check"}, {"format", format}});
             QVERIFY(QMetaObject::invokeMethod(task, "present"));
             QTRY_VERIFY(task->isVisible());
             auto *footer = findVisual(task->contentItem(), "taskFooter");
             QVERIFY(footer);
             QCOMPARE(footer->property("note").toString(),
-                     format == "ARJ" || format == "ARC" || format == "BH" || format == "ALZ" ? qtTrId("integrity.readOnlyNote")
+                     format == "ARJ" || format == "ARC" || format == "BH" || format == "ALZ" || format == "EGG" ? qtTrId("integrity.readOnlyNote")
                      : format == "TAR"                  ? qtTrId("integrity.tarNote")
                      : format.contains("XZ") || format.contains("LZ4") || format.contains("ZST") ||
                              format == "DEB" || format == "ASAR" || format == "AES Crypt" ||

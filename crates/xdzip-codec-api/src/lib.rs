@@ -164,6 +164,8 @@ pub enum Format {
     Bh,
     /// ALZ ordinary single-volume members with Store and raw Deflate methods.
     Alz,
+    /// EGG ordinary non-solid members with Store and raw Deflate methods.
+    Egg,
     /// Traditional UU/UUE and begin-base64 envelopes, including mixed UU/XX members.
     Uu,
     /// XX-encoded text envelopes containing only the XX alphabet.
@@ -302,6 +304,9 @@ impl Entry {
             Format::Bh => !self.warning && !self.link && !self.encrypted && self.method == 8,
             Format::Alz => {
                 !self.warning && !self.link && !self.encrypted && matches!(self.method, 0 | 2)
+            }
+            Format::Egg => {
+                !self.warning && !self.link && !self.encrypted && matches!(self.method, 0 | 1)
             }
             Format::AesCrypt
             | Format::SevenZip

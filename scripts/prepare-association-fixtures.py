@@ -71,6 +71,17 @@ def main():
     alz.extend(alz_packed)
     alz.extend(b'CLZ\x02' + b'\x00' * 16)
     (output / 'sample.alz').write_bytes(alz)
+    egg_payload = b'xdzip EGG association fixture\n'
+    egg_encoder = zlib.compressobj(level=6, wbits=-15)
+    egg_packed = egg_encoder.compress(egg_payload) + egg_encoder.flush()
+    end = b'\x22\x82\xe2\x08'
+    egg = bytearray(b'EGGA\x00\x01\x01\x00\x00\x00\x00\x00\x00\x00' + end)
+    name = b'hello.txt'
+    egg.extend(b'\xe3\x90\x85\x0a' + (0).to_bytes(4, 'little') + len(egg_payload).to_bytes(8, 'little'))
+    egg.extend(b'\xac\x91\x85\x0a\x00' + len(name).to_bytes(2, 'little') + name + end)
+    egg.extend(b'\x13\x0c\xb5\x02\x01\x00' + len(egg_payload).to_bytes(4, 'little') + len(egg_packed).to_bytes(4, 'little'))
+    egg.extend((zlib.crc32(egg_payload) & 0xffffffff).to_bytes(4, 'little') + end + egg_packed + end)
+    (output / 'sample.egg').write_bytes(egg)
     for suffix in ['lha','lzh']:
         shutil.copyfile(ROOT / 'tests/fixtures/lha/lh5-h2.lzh', output / ('sample.' + suffix))
     shutil.copyfile(ROOT / 'tests/fixtures/compress/phrase.Z', output / 'sample.z')

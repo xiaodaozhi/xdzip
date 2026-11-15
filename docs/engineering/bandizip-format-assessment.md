@@ -26,7 +26,7 @@ The table uses the following meanings. **Admitted** means the current registry, 
 | Compound(MSI) | Candidate | Structured Storage/CFB parsing and MSI streams need a separate container contract; extension-only admission is unsafe. |
 | DAA(1.0) | Blocked | Proprietary disk/archive format without a maintained public implementation in the product dependency policy. |
 | DEB | Admitted | Common `ar` envelope, control/data views and admitted compressed members. |
-| EGG | Blocked | ALZip-specific AES/LEA, AZO, solid and split features require a separate algorithm and security review. |
+| EGG | Admitted | Read-only non-encrypted, non-solid single-volume Store and raw Deflate with exact block sizes and CRC-32; AZO, BZip2, LZMA, encryption, split and other profiles remain outside the scope. |
 | GZ | Admitted | GZIP members, including concatenated streams and TAR.GZ. |
 | IMG | Candidate | Ambiguous disk-image suffix. ISO/UDF admission is content based and does not imply generic IMG support. |
 | ISO | Admitted | ISO9660, Joliet and Rock Ridge read-only images. |
@@ -66,7 +66,7 @@ The inventory therefore does not justify adding generic handlers for `BIN`, `IMG
 2. **Wire contract before code.** Pin public source revisions and SHA-256 values, document header fields, name encoding, physical termination, methods, checksums, duplicate identity and resource limits. A reference tool is evidence only when it produces complete owned samples; a crash or a single Store sample is recorded as a limitation.
 3. **Raw algorithm tests.** Implement the bounded reader independently of Qt. Cover empty and boundary payloads, every admitted method, exact input/output/work/memory budgets, cancellation, typed I/O, source mutation, truncation, trailing bytes, CRC and terminal poisoning. Unknown methods stay visible without payload authority.
 4. **Container and product admission.** Add the codec crate, runtime weak/strong discovery, CLI list/test/extract, desktop labels and association fixtures. Verify frozen metadata and physical duplicate selection, then run the relevant automatic Qt and layout checks. No manual visual acceptance is needed for this research/format slice.
-5. **Priority queue.** ALZ's conservative Store/raw-Deflate slice is admitted. The next feasible candidates are WIM only after a public bounded parser is selected, then Compound(MSI)/NSIS as metadata-only read paths. EGG, ACE, DAA, ISZ, ZPAQ and PEA remain blocked until specification and licensing gates are cleared. ZIPX creation and SFX creation are separate writer projects and do not follow from read alias support.
+5. **Priority queue.** ALZ's conservative Store/raw-Deflate slice and EGG's non-encrypted, non-solid Store/raw-Deflate slice are admitted. The next feasible candidates are WIM only after a public bounded parser is selected, then Compound(MSI)/NSIS as metadata-only read paths. ACE, DAA, ISZ, ZPAQ and PEA remain blocked until specification and licensing gates are cleared. ZIPX creation and SFX creation are separate writer projects and do not follow from read alias support.
 6. **Release boundary.** Keep all candidate formats out of the public capability table until the codec, runtime, CLI and desktop evidence is complete. Record unsupported methods and reference-tool limitations in the issue rather than silently falling back to Store or a different container.
 
 The current BH slice follows this plan. It is read only, has no password or volume path, and uses an independently bounded Deflate reader with mandatory CRC-32 and exact physical termination.

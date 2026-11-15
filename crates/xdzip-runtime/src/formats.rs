@@ -12,6 +12,7 @@ use xdzip_codec_arj::ArjCodec;
 use xdzip_codec_asar::AsarCodec;
 use xdzip_codec_bh::BhCodec;
 use xdzip_codec_deb::DebCodec;
+use xdzip_codec_egg::EggCodec;
 use xdzip_codec_lha::{LhaCodec, PmaCodec};
 use xdzip_codec_native::NativeCodec;
 use xdzip_codec_stream::{
@@ -34,6 +35,7 @@ impl Codec for ArjCodec {}
 impl Codec for ArcCodec {}
 impl Codec for BhCodec {}
 impl Codec for AlzCodec {}
+impl Codec for EggCodec {}
 impl Codec for UuCodec {}
 impl Codec for AesCryptCodec {}
 pub(crate) fn codec(format: Format) -> &'static dyn Codec {
@@ -47,6 +49,7 @@ pub(crate) fn codec(format: Format) -> &'static dyn Codec {
         Format::Arc => &ArcCodec,
         Format::Bh => &BhCodec,
         Format::Alz => &AlzCodec,
+        Format::Egg => &EggCodec,
         Format::AesCrypt => &AesCryptCodec,
         Format::Brotli => &StreamCodec {
             format: Format::Brotli,
@@ -244,6 +247,12 @@ pub(crate) fn detect(
         } else {
             return Err(ScanError::Invalid);
         }
+    } else if magic[..4] == [0x45, 0x47, 0x47, 0x41] {
+        if EggCodec::candidate(source, control)? {
+            Format::Egg
+        } else {
+            return Err(ScanError::Invalid);
+        }
     } else if let Some(format) = detect_optical(source)? {
         format
     } else if !recognized_tar(source, control)? && xdzip_codec_uu::candidate(source, control)? {
@@ -375,6 +384,9 @@ pub(crate) fn discover_weak(
     if let Some(found) = validate_alz(&mut input, control)? {
         return Ok(Some(found));
     }
+    if let Some(found) = validate_egg(&mut input, control)? {
+        return Ok(Some(found));
+    }
     if let Some(found) = validate_lha(&mut input, control)? {
         return Ok(Some(found));
     }
@@ -408,6 +420,9 @@ pub(crate) fn discover_ambiguous_tar(
         return Ok(Some(found));
     }
     if let Some(found) = validate_alz(&mut input, control)? {
+        return Ok(Some(found));
+    }
+    if let Some(found) = validate_egg(&mut input, control)? {
         return Ok(Some(found));
     }
     if let Some(found) = validate_lha(&mut input, control)? {
@@ -450,6 +465,19 @@ fn validate_alz(
     }
     match AlzCodec.scan(source, control, limits(Format::Alz)) {
         Ok(rows) => Ok(Some((Format::Alz, rows))),
+        Err(ScanError::Invalid) => Ok(None),
+        Err(error) => Err(error),
+    }
+}
+fn validate_egg(
+    source: &mut dyn ReadSource,
+    control: &xdzip_codec_api::Cancellation,
+) -> Result<Option<(Format, Vec<xdzip_codec_api::Entry>)>, ScanError> {
+    if !EggCodec::candidate(source, control)? {
+        return Ok(None);
+    }
+    match EggCodec.scan(source, control, limits(Format::Egg)) {
+        Ok(rows) => Ok(Some((Format::Egg, rows))),
         Err(ScanError::Invalid) => Ok(None),
         Err(error) => Err(error),
     }

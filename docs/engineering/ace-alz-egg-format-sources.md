@@ -27,7 +27,7 @@ ALZ is admitted in xdzip as a conservative read-only product slice: ordinary sin
 
 The UnEGG license says commercial use requires ESTsoft approval, redistribution is non-commercial, and the module cannot be used to develop an EGG compressor. It also states that ESTsoft retains all rights. The module is therefore test-only evidence and cannot be copied, linked, or treated as a product dependency.
 
-The line format is technically separable from the restricted module. A future product slice may independently implement non-encrypted, non-solid Store, raw Deflate, standard BZip2 and the documented LZMA framing after a license and patent review. AZO, AES/LEA, ZipCrypto, split and solid archives remain outside the current product boundary. No EGG suffix or decoder is registered until that gate is cleared.
+The line format is technically separable from the restricted module. xdzip now admits an independently implemented non-encrypted, non-solid single-volume Store/raw-Deflate slice, with exact block sizes and CRC-32 covered by codec, runtime, CLI and association tests. Standard BZip2 and the documented LZMA framing still require separate complete samples and review. AZO, AES/LEA, ZipCrypto, split and solid archives remain outside the current product boundary.
 
 ## Required implementation gates
 

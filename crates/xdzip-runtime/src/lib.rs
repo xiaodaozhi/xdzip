@@ -21,6 +21,8 @@ pub mod creation;
 #[cfg(test)]
 mod deb_tests;
 mod disk_index;
+#[cfg(test)]
+mod egg_tests;
 mod exporting;
 pub mod extraction;
 mod formats;

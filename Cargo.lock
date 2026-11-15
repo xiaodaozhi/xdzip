@@ -1864,6 +1864,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-egg"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-compression",
+ "xdzip-crypto",
+ "xdzip-domain",
+]
+
+[[package]]
 name = "xdzip-codec-lha"
 version = "0.2.0"
 dependencies = [
@@ -2079,6 +2089,7 @@ dependencies = [
  "xdzip-codec-asar",
  "xdzip-codec-bh",
  "xdzip-codec-deb",
+ "xdzip-codec-egg",
  "xdzip-codec-lha",
  "xdzip-codec-native",
  "xdzip-codec-stream",

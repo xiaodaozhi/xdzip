@@ -510,3 +510,5 @@ English: Expanded previews require actual format/first-frame/first-page decoding
 **FORMAT-BH：** 验证固定的 `BH 05 07` 头部字段、头部和名称长度、连续物理成员、方法 8 raw Deflate 的准确结束、解码长度、CRC-32 及重复物理身份。覆盖未知方法可见但无载荷权限、固定字段错误、截断和尾随载荷、来源变化、取消、累计输入／工作／输出限额、冻结元数据、错误后缀和按内容发现。官方 IZArc 崩溃只作为参考工具限制记录，不证明 Store、加密、分卷或创建能力。产品 runtime、CLI、候选入口和双语格式登记检查与原始 codec 测试分开。详见 [BH 契约](../engineering/bh-containers.md)。
 
 **FORMAT-ALZ：** 验证 ALZ 头部、本地／结束签名、可变宽度尺寸、DOS 属性、UTF-8/CP949 原始名称、Store 和原始 Deflate 的准确结束、解码尺寸、CRC-32 及重复物理身份。覆盖加密和数据描述符拒绝、不支持的改造 BZip2 与未知方法、尾部／注释范围、截断、尾随字节、来源变化、取消、累计输入／工作／输出限额和冻结元数据。产品 runtime、CLI、关联候选和双语登记检查与原始 codec 测试分开，分卷、ZipCrypto、改造 BZip2 和创建仍不在准入范围。详见 [ACE、ALZ 与 EGG 资料门槛](../engineering/ace-alz-egg-format-sources.md)。
+
+**FORMAT-EGG：** 验证 EGG 前缀、文件／子头／块／结束签名，UTF-8 文件名扩展字段，无加密、非固实普通单卷准入，Store 和原始 Deflate 块尺寸、准确块结束、CRC-32 及重复物理身份。覆盖加密、分卷、固实、AZO/BZip2/LZMA 和未知方法可见但无载荷权限，多块拒绝、块越界、截断、来源变化、取消、累计输入／工作／输出限额和冻结元数据。产品 runtime、CLI、关联候选和双语登记检查与原始 codec 测试分开，密码、加密、分卷、固实、AZO 和创建仍不在准入范围。详见 [ACE、ALZ 与 EGG 资料门槛](../engineering/ace-alz-egg-format-sources.md)。
