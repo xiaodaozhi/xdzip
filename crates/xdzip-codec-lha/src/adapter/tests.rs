@@ -42,12 +42,12 @@ fn pma_methods_are_scoped_and_frozen_without_lha_variant_trials() {
         ));
     }
     let mut bytes = pma_fixture("pm0-allbytes.pma");
-    bytes[5] = b'1';
+    bytes[5] = b'3';
     refresh(&mut bytes, 33);
     let rows = PmaCodec
         .scan(&mut Cursor::new(&bytes), &cancel, ScanLimits::default())
         .unwrap();
-    assert_eq!(rows[0].method, 1);
+    assert_eq!(rows[0].method, u16::MAX);
     assert!(rows[0].warning && !rows[0].payload_supported());
     let mut source = Cursor::new(&bytes);
     let mut reader = PmaCodec.open_payload(&mut source, &rows, &cancel).unwrap();

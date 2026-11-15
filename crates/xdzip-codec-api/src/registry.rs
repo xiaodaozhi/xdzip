@@ -204,7 +204,7 @@ mod tests {
         assert_eq!(Format::Zip.descriptor().creation_method(259), None);
         assert_eq!(lha.creation_method(5), None);
         let pma = Format::Pma.descriptor();
-        assert_eq!(pma.read_methods, ["store", "pm2"]);
+        assert_eq!(pma.read_methods, ["store", "pm1", "pm2"]);
         assert!(pma.write_methods.is_empty() && pma.creation_suffixes.is_empty());
         assert!(!pma.rewrite && pma.worker_id.is_none());
         assert!(pma.read_encryption.is_empty() && pma.read_volumes.is_empty());

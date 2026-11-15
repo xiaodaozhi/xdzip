@@ -123,7 +123,7 @@ fn project(
                 || !object
                 || method == u16::MAX
                 || (format == Format::Lha && method == 2 && record.crc16.is_none())
-                || (format == Format::Pma && (record.level != 0 || method == 1));
+                || (format == Format::Pma && record.level != 0);
             Ok(Entry {
                 format,
                 id: EntryId::try_from(at as u64 + 1).map_err(|_| ScanError::Limit)?,

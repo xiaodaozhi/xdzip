@@ -62,4 +62,4 @@ English: 7z numbered parts form one authorized byte stream. RAR partN and legacy
 
 [LHA/LZH](lha-containers.md) 候选须在发布前完整验证有界头部与名称，包括单零字节空归档。LHA、Brotli 和 LZMA 弱候选共享实际读取账本。有效强容器识别仍优先，完整 LHA 准入可消歧无效原始 TAR 标记；尚不准入密码、分卷和修复配置。
 
-[PMA](pma-streams.md) 共用弱探测账本，完整验证元数据、准确零终止和可选有界 CP/M 填充。0 级头部 PM0/PM2 内容受支持，PM1 可见但不支持。带填充的空 CP/M 容器识别为 PMA，无法区分的单个零终止仍沿用先前 LZH 选择。创建、密码、分卷、修改和修复配置未准入。
+[PMA](pma-streams.md) 共用弱探测账本，完整验证元数据、准确零终止和可选有界 CP/M 填充。0 级头部 PM0/PM1/PM2 内容受支持，未知方法可见但不支持。带填充的空 CP/M 容器识别为 PMA，无法区分的单个零终止仍沿用先前 LZH 选择。创建、密码、分卷、修改和修复配置未准入。

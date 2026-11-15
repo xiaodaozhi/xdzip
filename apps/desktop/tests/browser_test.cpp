@@ -9765,7 +9765,9 @@ QtObject {
                                                      {"../lha/lz5-h2.lzh", "LZH"},
                                                      {"../pma/pm0-allbytes.pma", "PMA"},
                                                      {"../pma/pm2-boundary-1024.pma", "PMA"},
-                                                     {"../pma/pm2-deep28.pma", "PMA"}};
+                                                     {"../pma/pm2-deep28.pma", "PMA"},
+                                                     {"../pma/pm1-selector-17.pma", "PMA"},
+                                                     {"../pma/pm1-long-overlap.pma", "PMA"}};
         for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
             for (const auto &[fixture, format] : formats)
                 QTest::newRow(qPrintable(fixture + "-" + language))
@@ -9804,10 +9806,11 @@ QtObject {
         QCOMPARE(row->cells[0], leaf);
         QCOMPARE(row->cells[2].isEmpty(), tar);
         const auto method =
-            format == "PMA"
-                ? (fixture.contains("pm0-") ? QStringLiteral("Store") : QStringLiteral("PM2"))
-            : format == "LZH"                    ? QFileInfo(fixture).fileName().left(3).toUpper()
-            : format == "Z" || format == "TAR.Z" ? QStringLiteral("LZW")
+            format == "PMA"   ? (fixture.contains("pm0-")   ? QStringLiteral("Store")
+                                 : fixture.contains("pm1-") ? QStringLiteral("PM1")
+                                                            : QStringLiteral("PM2"))
+            : format == "LZH" ? QFileInfo(fixture).fileName().left(3).toUpper()
+            : format == "Z" || format == "TAR.Z"                   ? QStringLiteral("LZW")
             : format == "Brotli" || format == "TAR.BR"             ? QStringLiteral("Brotli")
             : format.contains("ZST")                               ? QStringLiteral("Zstandard")
             : format.contains("LZ4")                               ? QStringLiteral("LZ4")
@@ -9841,7 +9844,15 @@ QtObject {
         auto expected = QByteArray("abracadabra abracadabra\n").repeated(6);
         if (format == "PMA") {
             expected.clear();
-            if (fixture.contains("deep28")) {
+            if (fixture.contains("pm1-long-overlap")) {
+                expected = QByteArray(24704, ' ');
+            } else if (fixture.contains("pm1-selector-17")) {
+                QFile known(QFileInfo(source).dir().filePath("pm1-known.bin"));
+                QVERIFY(known.open(QIODevice::ReadOnly));
+                QVERIFY(known.seek(17 * 256));
+                expected = known.read(256);
+                QCOMPARE(expected.size(), 256);
+            } else if (fixture.contains("deep28")) {
                 for (int i = 0; i < 128; ++i)
                     expected.append(char(39 - i % 8));
             } else {

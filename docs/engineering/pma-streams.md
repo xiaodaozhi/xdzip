@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/pma-streams.md)
 
-PMarc uses LHA-like sequential headers with `-pm0-`, `-pm1-` and `-pm2-` methods. These identify different algorithms, not aliases for the similarly named LH methods. The read-only PMA profile admits level-0 PM0 and PM2 members for browsing, checking and selected extraction. PM1 remains visible with an unsupported-content warning. Creation, modification, encryption, volumes and repair are not admitted; the format registry remains authoritative.
+PMarc uses LHA-like sequential headers with `-pm0-`, `-pm1-` and `-pm2-` methods. These identify different algorithms, not aliases for the similarly named LH methods. The read-only PMA profile admits level-0 PM0, PM1 and PM2 members for browsing, checking and selected extraction. Unknown methods remain visible with an unsupported-content warning. Creation, modification, encryption, volumes and repair are not admitted; the format registry remains authoritative.
 
 ## Sources and reference boundary
 
@@ -22,9 +22,11 @@ An eight-byte proposal never publishes a format by itself. The complete metadata
 
 Physical row IDs, raw/decoded names, flags, sizes and methods are compared again before payload output. PMA method 2 routes directly to PM2, without LHA's LH2 variant trials. CRC failures, unsupported methods and source changes retain the host's private staging and old-file protection. `.pma` is a shell/drop candidate on applicable platforms. No dedicated MIME type is declared, so this does not add a Linux PMA default-association claim.
 
-## PM1 raw profile
+A 31-byte level-0 base-header length and its checksum can coincide with GZIP's `1f 8b` or Unix Z's `1f 9d`. If the following bytes are a complete `-lh`, `-lz` or `-pm` family marker, detection retains full family admission instead of rejecting the coincidental two-byte stream proposal. The marker's `-` is neither admitted GZIP method 8 nor valid Unix Z flags. This is bounded header disambiguation, without retrying failed decoded payloads; valid stream formats and host errors retain their usual handling.
 
-`Pm1Reader` provides raw decoding independently of product admission. The current PMA adapter still marks PM1 unsupported. Its wire observations use Lhasa's [PM1 reference](https://github.com/fragglet/lhasa/blob/v0.6.0/lib/pm1_decoder.c), Git blob `bb2937e382c8c8a8f5783b94a96b9b59e2c4e74b`, under ISC. Rust represents fixed codewords directly and independently of the reference's packed relative-offset trees, and uses the shared bounded flat recency permutation. No strict clean-room claim or reference runtime dependency is made.
+## PM1 wire profile
+
+`Pm1Reader` is the shared raw primitive for the PMA adapter. PMA method 1 enters it directly after frozen metadata comparison, independently of LHA methods. Its wire observations use Lhasa's [PM1 reference](https://github.com/fragglet/lhasa/blob/v0.6.0/lib/pm1_decoder.c), Git blob `bb2937e382c8c8a8f5783b94a96b9b59e2c4e74b`, under ISC. Rust represents fixed codewords directly and independently of the reference's packed relative-offset trees, and uses the shared bounded flat recency permutation. No strict clean-room claim or reference runtime dependency is made.
 
 The five-bit selector chooses one of 32 fixed literal-category alphabets. Categories select ranks starting at 0/16/32/64/128/192 with 4/4/5/6/6/6 low bits. Selector 17 has repeated category-3/4 branches and omits categories 0/1/5; both repeated branches retain their observed meaning. Selector 31 has no category bits and admits only ranks 0–15. Every literal or copied byte updates recency. The independent generator uses expanded symbolic alphabets, not the product's codeword lookup.
 

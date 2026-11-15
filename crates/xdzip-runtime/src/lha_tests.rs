@@ -227,6 +227,52 @@ fn pma_fixture(name: &str) -> PathBuf {
         .join("pma")
         .join(name)
 }
+#[path = "../../xdzip-compression/src/pm1/fixture_cases.rs"]
+mod pm1_cases;
+#[test]
+fn every_pm1_reference_profile_uses_actual_runtime_check_and_selected_publication() {
+    let cancel = Cancellation::default();
+    let known = std::fs::read(pma_fixture("pm1-known.bin")).unwrap();
+    for &(name, packed, size, _, offset) in pm1_cases::CASES {
+        let scratch = Scratch::new();
+        let archive = Archive::open(&pma_fixture(name), &cancel).unwrap();
+        assert_eq!(archive.format, xdzip_codec_api::Format::Pma);
+        assert!(!archive.update_allowed);
+        assert_eq!(archive.rows[0].method, 1);
+        assert_eq!(archive.rows[0].packed_size, packed as u64);
+        let mut checked = None;
+        checking::run(
+            archive.check_job(&cancel).unwrap(),
+            11,
+            &Control::default(),
+            &mut |s| checked = Some(s),
+        );
+        let checked = checked.unwrap();
+        assert_eq!(
+            checked.status,
+            Status::Succeeded,
+            "{name}: {}",
+            checked.error
+        );
+        assert_eq!(checked.verified_bytes, size as u64);
+        let mut selected = options(&scratch.0);
+        selected.all = false;
+        selected.selected = vec![archive.rows[0].id.get().to_string()];
+        let mut result = None;
+        extraction::run(
+            archive.extraction_job(selected, &cancel).unwrap(),
+            12,
+            &Control::default(),
+            &mut |s| result = Some(s),
+        );
+        let result = result.unwrap();
+        assert_eq!(result.status, Status::Succeeded, "{name}: {}", result.error);
+        assert_eq!(
+            std::fs::read(scratch.0.join("HELLO.BIN")).unwrap(),
+            known[offset..offset + size]
+        );
+    }
+}
 #[test]
 fn pma_common_profiles_use_actual_readonly_check_and_private_extraction() {
     let cancel = Cancellation::default();
@@ -291,14 +337,13 @@ fn pma_common_profiles_use_actual_readonly_check_and_private_extraction() {
     assert!(empty.rows.is_empty());
 }
 #[test]
-fn pma_crc_failure_and_unsupported_pm1_leave_existing_output_and_no_staging_files() {
+fn pma_crc_invalid_pm1_and_unknown_methods_leave_existing_output_and_no_staging_files() {
     let cancel = Cancellation::default();
-    for pm1 in [false, true] {
+    for method in [0, 1, 3] {
         let scratch = Scratch::new();
         let mut bytes = std::fs::read(pma_fixture("pm0-allbytes.pma")).unwrap();
-        if pm1 {
-            bytes[5] = b'1';
-        } else {
+        bytes[5] = b'0' + method;
+        if method == 0 {
             bytes[33] ^= 1;
         }
         bytes[1] = bytes[2..33].iter().fold(0u8, |s, b| s.wrapping_add(*b));
@@ -306,12 +351,12 @@ fn pma_crc_failure_and_unsupported_pm1_leave_existing_output_and_no_staging_file
         std::fs::write(&source, bytes).unwrap();
         let archive = Archive::open(&source, &cancel).unwrap();
         assert_eq!(archive.format, xdzip_codec_api::Format::Pma);
-        assert_eq!(archive.rows[0].payload_supported(), !pm1);
+        assert_eq!(archive.rows[0].payload_supported(), method != 3);
         let target = scratch.0.join("output");
         let options = options(&target);
         std::fs::write(target.join("HELLO.BIN"), b"old-content").unwrap();
         let job = archive.extraction_job(options, &cancel);
-        if pm1 {
+        if method == 3 {
             assert!(matches!(job, Err("unsupported_entry")));
         } else {
             let mut result = None;
@@ -333,6 +378,59 @@ fn pma_stored(payload: &[u8]) -> Vec<u8> {
     bytes[1] = bytes[2..33].iter().fold(0u8, |s, b| s.wrapping_add(*b));
     bytes.resize(bytes.len().div_ceil(128) * 128, 0x1a);
     bytes
+}
+#[test]
+fn valid_lha_pma_header_checksums_cannot_masquerade_as_gzip_or_unix_compress() {
+    let scratch = Scratch::new();
+    let cancel = Cancellation::default();
+    for pma in [false, true] {
+        for signature in [0x8bu8, 0x9d] {
+            let payload = b"independent known collision content";
+            let mut bytes = if pma {
+                pma_stored(payload)
+            } else {
+                stored(payload)
+            };
+            let mut found = false;
+            for minute in 0..1440u32 {
+                let dos = (43 << 25)
+                    | (11 << 21)
+                    | (14 << 16)
+                    | ((minute / 60) << 11)
+                    | ((minute % 60) << 5);
+                bytes[15..19].copy_from_slice(&dos.to_le_bytes());
+                bytes[1] = bytes[2..33].iter().fold(0u8, |s, b| s.wrapping_add(*b));
+                if bytes[1] == signature {
+                    found = true;
+                    break;
+                }
+            }
+            assert!(found);
+            assert_eq!(bytes[..2], [0x1f, signature]);
+            let path = scratch.0.join(format!("collision-{pma}-{signature}.dat"));
+            std::fs::write(&path, &bytes).unwrap();
+            let archive = Archive::open(&path, &cancel).unwrap();
+            assert_eq!(
+                archive.format,
+                if pma {
+                    xdzip_codec_api::Format::Pma
+                } else {
+                    xdzip_codec_api::Format::Lha
+                }
+            );
+            let target = scratch.0.join(format!("output-{pma}-{signature}"));
+            let mut result = None;
+            extraction::run(
+                archive.extraction_job(options(&target), &cancel).unwrap(),
+                13,
+                &Control::default(),
+                &mut |s| result = Some(s),
+            );
+            let result = result.unwrap();
+            assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+            assert_eq!(std::fs::read(target.join("hello.bin")).unwrap(), payload);
+        }
+    }
 }
 #[test]
 fn pma_duplicates_source_marker_collisions_and_nested_zip_keep_the_physical_namespace() {

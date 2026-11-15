@@ -67,7 +67,7 @@ Open an archive to browse its directories, search and sort entries, and select f
 | 7z | Passwords, encrypted filenames, solid archives, and numbered volumes | Encryption, solid archives, and numbered volumes | Eligible unencrypted, non-split archives |
 | DEB | Common ar members, control/data TAR views, admitted GZIP/XZ/Zstandard/BZip2/LZMA profiles | Not supported | Not supported |
 | LHA/LZH | Headers 0–3, Store, LH1–LH7, LZS/LZ5 and declared CRCs | LH5 levels 1/6/9, level-2 headers, regular files/directories | Not supported |
-| [PMA](docs/engineering/pma-streams.md) | Level-0 PM0/PM2, exact CP/M framing and declared CRCs; PM1 content unsupported | Not supported | Not supported |
+| [PMA](docs/engineering/pma-streams.md) | Level-0 PM0/PM1/PM2, exact CP/M framing and declared CRCs | Not supported | Not supported |
 | ASAR | Stored files/directories, shared payload ranges and declared file/block SHA-256 | Not supported | Not supported |
 | Z, TAR.Z (including `.taz`) | Unix compress LZW, 9–16-bit dictionaries and admitted CLEAR/alignment profiles | Not supported | Not supported |
 | Brotli, TAR.BR | Ordinary RFC 7932 streams, 10–24-bit windows and all static dictionary transforms | Not supported | Not supported |

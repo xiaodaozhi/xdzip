@@ -154,7 +154,7 @@ pub enum Format {
     Asar,
     /// LHA/LZH sequential members, including admitted historical LArc methods.
     Lha,
-    /// PMarc members with admitted PM0/PM2 methods and bounded CP/M framing.
+    /// PMarc members with admitted PM0/PM1/PM2 methods and bounded CP/M framing.
     Pma,
     /// Traditional UU/UUE and begin-base64 envelopes, including mixed UU/XX members.
     Uu,
@@ -283,7 +283,7 @@ impl Entry {
                 !self.warning && !self.link && !self.encrypted && matches!(self.method, 0..=10)
             }
             Format::Pma => {
-                !self.warning && !self.link && !self.encrypted && matches!(self.method, 0 | 2)
+                !self.warning && !self.link && !self.encrypted && matches!(self.method, 0..=2)
             }
             Format::AesCrypt
             | Format::SevenZip

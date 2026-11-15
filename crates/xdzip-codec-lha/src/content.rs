@@ -5,7 +5,7 @@ use xdzip_codec_api::{
     payload::{DecodeError, DecodedSink},
 };
 use xdzip_compression::{
-    Crc16, LarcMethod, LarcReader, Lh2Variant, LhDynamicReader, LzhReader, Pm2Reader,
+    Crc16, LarcMethod, LarcReader, Lh2Variant, LhDynamicReader, LzhReader, Pm1Reader, Pm2Reader,
 };
 use xdzip_crypto::SecretSha256;
 
@@ -110,6 +110,11 @@ impl Read for Source<'_, '_> {
 }
 trait Algorithm: Read {
     fn work_left(&self) -> u64;
+}
+impl<R: Read, P: FnMut() -> io::Result<()>> Algorithm for Pm1Reader<R, P> {
+    fn work_left(&self) -> u64 {
+        self.work_remaining()
+    }
 }
 impl<R: Read, P: FnMut() -> io::Result<()>> Algorithm for Pm2Reader<R, P> {
     fn work_left(&self) -> u64 {
@@ -408,6 +413,17 @@ impl<'a> Reader<'a> {
                 .map_err(io::Error::other)
         };
         let mut reader: Box<dyn Algorithm + '_> = match &record.method {
+            b"-pm1-" => Box::new(
+                Pm1Reader::with_poll(
+                    source,
+                    record.packed_size,
+                    record.size,
+                    256 * 1024,
+                    self.work,
+                    poll,
+                )
+                .map_err(io_error)?,
+            ),
             b"-pm2-" => Box::new(
                 Pm2Reader::with_poll(
                     source,

@@ -2,6 +2,69 @@ use super::*;
 use std::io::{Cursor, Seek};
 #[path = "../../xdzip-compression/src/pm2/fixture_cases.rs"]
 mod fixture_cases;
+#[path = "../../xdzip-compression/src/pm1/fixture_cases.rs"]
+mod pm1_cases;
+#[test]
+fn every_pm1_reference_profile_uses_real_pma_adapter_metadata_crc_and_frozen_payload() {
+    use xdzip_codec_api::{MetadataCodec, payload::PayloadCodec};
+    let known = fixture("pm1-known.bin");
+    let cancel = Cancellation::default();
+    for &(name, packed, size, _, offset) in pm1_cases::CASES {
+        let bytes = fixture(name);
+        let rows = crate::PmaCodec
+            .scan(&mut Cursor::new(&bytes), &cancel, ScanLimits::default())
+            .unwrap();
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].method, 1);
+        assert_eq!(rows[0].packed_size, packed as u64);
+        assert!(rows[0].payload_supported());
+        let mut source = Cursor::new(&bytes);
+        let mut reader = crate::PmaCodec
+            .open_payload(&mut source, &rows, &cancel)
+            .unwrap();
+        let mut sink = Sink::default();
+        reader
+            .decode(&rows[0], &mut sink, &cancel)
+            .unwrap_or_else(|e| panic!("{name}: {e}"));
+        assert_eq!(sink.bytes, known[offset..offset + size], "{name}");
+    }
+}
+#[test]
+fn multiple_pm1_members_share_actual_input_work_and_decoded_ledgers_without_fresh_credit() {
+    let bytes = fixture("pm1-selector-00.pma");
+    let packed = u32::from_le_bytes(bytes[7..11].try_into().unwrap()) as usize;
+    let mut two = bytes[..33 + packed].repeat(2);
+    two.push(0);
+    two.resize(two.len().div_ceil(128) * 128, 0x1a);
+    let index = scan(&two).unwrap();
+    let cancel = Cancellation::default();
+    let mut source = Cursor::new(&two);
+    let mut reader = Reader::open_pma(&mut source, &index, &cancel).unwrap();
+    let initial = reader.work;
+    reader.decode(0, &mut Sink::default(), &cancel).unwrap();
+    let spent = initial - reader.work;
+    reader.decode(1, &mut Sink::default(), &cancel).unwrap();
+    assert_eq!(initial - reader.work, 2 * spent);
+    assert_eq!(reader.decoded, INPUT_LIMIT - 512);
+    for input_limit in [false, true] {
+        let mut source = Cursor::new(&two);
+        let mut reader = Reader::open_pma(&mut source, &index, &cancel).unwrap();
+        if input_limit {
+            reader.input = packed as u64;
+        } else {
+            reader.work = 2 * spent - 1;
+        }
+        reader.decode(0, &mut Sink::default(), &cancel).unwrap();
+        assert_eq!(
+            reader.decode(1, &mut Sink::default(), &cancel),
+            Err(DecodeError::Limit)
+        );
+        assert_eq!(
+            reader.decode(0, &mut Sink::default(), &cancel),
+            Err(DecodeError::Limit)
+        );
+    }
+}
 fn fixture(name: &str) -> Vec<u8> {
     std::fs::read(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))

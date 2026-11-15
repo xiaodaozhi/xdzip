@@ -752,6 +752,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         filters: &[],
         read_methods: &[
             "store",
+            "pm1",
             "pm2",
         ],
         write_methods: &[],

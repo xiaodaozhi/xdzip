@@ -358,6 +358,16 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
         invoke('add',archive,source,code=1)
         assert hashlib.sha256(archive.read_bytes()).hexdigest()==before
         record('pma_pm0_pm2_final_controls_deep_codes_empty_and_readonly_boundary')
+        known=(ROOT/'tests/fixtures/pma/pm1-known.bin').read_bytes()
+        for name,expected in [('pm1-selector-17.pma',known[17*256:18*256]),('pm1-long-overlap.pma',b' '*24704)]:
+            archive=ROOT/'tests/fixtures/pma'/name
+            listed=invoke('list',archive)['data']
+            assert listed['format']=='PMA' and len(listed['entries'])==1
+            assert invoke('test',archive)['data']['check_kind']=='format_declared_checks'
+            target=work/('pma-'+name)
+            invoke('extract',archive,'--entry-id',listed['entries'][0]['id'],'-C',target)
+            assert (target/'HELLO.BIN').read_bytes()==expected
+        record('pma_pm1_repeated_literal_branches_overlap_full_check_and_selected_extraction')
         for asar_name in ['ordinary.asar','without-integrity.asar','shared.asar','executable.asar','empty.asar']:
             asar=ROOT/'tests/fixtures/asar'/asar_name
             listed=invoke('list',asar)['data']

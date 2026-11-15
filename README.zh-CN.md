@@ -67,7 +67,7 @@
 | 7z | 支持密码、文件名加密、固实和编号分卷 | 支持加密、固实和编号分卷 | 符合条件的未加密、非分卷包 |
 | DEB | 普通 ar 成员、control/data TAR 视图，已准入 GZIP/XZ/Zstandard/BZip2/LZMA 配置 | 不支持 | 不支持 |
 | LHA/LZH | 0–3 级头部，Store、LH1–LH7、LZS/LZ5 及声明 CRC | LH5 1/6/9 级，2 级头部，普通文件与目录 | 不支持 |
-| [PMA](docs/zh-CN/engineering/pma-streams.md) | 0 级头部 PM0/PM2，准确 CP/M 结构与声明 CRC，PM1 内容暂不支持 | 不支持 | 不支持 |
+| [PMA](docs/zh-CN/engineering/pma-streams.md) | 0 级头部 PM0/PM1/PM2，准确 CP/M 结构与声明 CRC | 不支持 | 不支持 |
 | ASAR | 存储文件与目录、共享载荷区间及声明的文件/块 SHA-256 | 不支持 | 不支持 |
 | Z、TAR.Z（包括 `.taz`） | Unix compress LZW、9–16 位字典及已准入 CLEAR/对齐配置 | 不支持 | 不支持 |
 | Brotli、TAR.BR | 普通 RFC 7932 流，10–24 位窗口和全部静态词典变换 | 不支持 | 不支持 |
