@@ -21,6 +21,9 @@ pub struct Record {
     pub level: u8,
     /// Raw composed name; legacy encoding must precede separator interpretation.
     pub raw_name: Vec<u8>,
+    /// Length of the original dirname extension inside `raw_name`; its 0xff
+    /// component separators are decoded independently of the following filename.
+    pub dirname_bytes: usize,
     /// Optional declared content CRC-16; never a cryptographic authenticator.
     pub crc16: Option<u16>,
     /// Directory declaration, with no output creation authority.
@@ -352,14 +355,9 @@ fn member(
         modified_dos = dos(input.source, seconds)?;
     }
     let mut raw_name = Vec::new();
+    let dirname_bytes = extensions.dirname.as_ref().map_or(0, Vec::len);
     if let Some(dirname) = extensions.dirname {
-        for byte in dirname {
-            grow(
-                &mut raw_name,
-                &[if byte == 255 { b'\\' } else { byte }],
-                limits.name_bytes,
-            )?;
-        }
+        grow(&mut raw_name, &dirname, limits.name_bytes)?;
     }
     grow(
         &mut raw_name,
@@ -374,7 +372,10 @@ fn member(
         if packed_size != 0 || size != 0 || crc16.is_some_and(|c| c != 0) {
             return Err(ScanError::Invalid);
         }
-        if !raw_name.ends_with(b"\\") && !raw_name.ends_with(b"/") {
+        if !raw_name.ends_with(b"\\")
+            && !raw_name.ends_with(b"/")
+            && !(dirname_bytes != 0 && dirname_bytes == raw_name.len())
+        {
             grow(&mut raw_name, b"\\", limits.name_bytes)?;
         }
     }
@@ -398,6 +399,7 @@ fn member(
         size,
         level,
         raw_name,
+        dirname_bytes,
         crc16,
         directory,
         unix_mode,

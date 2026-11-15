@@ -39,3 +39,5 @@ Do not clean while a lock is held. Retain completed output for at least seven da
 Temporary-file cleanup is limited to the application-created private cache; it does not scan or delete user extraction directories. Acceptance covers automatic hiding on success, retaining windows on failure, cancellation, password retries, duplicate filenames, Unicode and special characters, task routing after page closure, temporary-directory safety, and exit cleanup policy.
 
 Read-only [Brotli/TAR.BR](brotli-streams.md) admission validates headerless candidates completely before publishing rows, shares the Brotli/LZMA candidate-read ledger, preserves strong source and valid TAR/ZIP discovery priority, and never downgrades damaged decoded TAR to an ordinary stream.
+
+Read-only [LHA/LZH](lha-containers.md) proposals require complete bounded header/name validation before publication, including a single-zero empty archive. Weak LHA, Brotli and LZMA proposals share one actual-read ledger. Strong valid container discovery retains priority; complete LHA admission can disambiguate an invalid raw TAR marker. No password, volume or repair profile is admitted.

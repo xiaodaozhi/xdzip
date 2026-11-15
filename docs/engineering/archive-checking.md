@@ -43,3 +43,5 @@ XZ and TAR.XZ use `format_declared_checks`: every declared CRC32/CRC64/SHA-256 a
 AES Crypt uses `format_declared_checks` and the retained opening password. Full ciphertext HMAC must pass before metadata admission and after actual task decoding. Versions 0–2 do not authenticate the trailing length modulo; extensions also remain unauthenticated. A successful check is limited to the declared format checks, as specified by the [AES Crypt contract](aescrypt-envelopes.md).
 
 Brotli and TAR.BR use `structure_and_readability`. Complete stream termination, declared meta-block sizes and all admitted dictionary/history transformations must pass, but Brotli provides no content checksum. See the [Brotli contract](brotli-streams.md).
+
+LHA/LZH uses `format_declared_checks`: actually decode every supported regular file, verify exact lengths and all present header/payload CRC-16 values. Ancient level-0 members may omit CRC and then provide only structure/size/readability checks. LH2 requires CRC-bound finite-variant admission. Unknown methods, suspicious names, links or special objects prevent whole-archive success. See the [LHA contract](lha-containers.md).

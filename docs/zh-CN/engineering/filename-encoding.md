@@ -29,7 +29,7 @@ English: CAB retains raw name bytes and its explicit UTF-8 flag, otherwise using
 
 ## 全链路与保存
 
-目录树、直属索引、递归搜索、目录选择扩展、预检、解压、临时打开、外部拖出及包内修改使用同一个有效名称。完成解码后仍执行 PortablePath、Unicode NFD/大小写别名、重名与输出授权检查。Shift-JIS 中作为多字节字符尾字节的 0x5C 不当作目录分隔符，除 CAB 的格式分隔符外，解码后真正的反斜杠仍拒绝。
+目录树、直属索引、递归搜索、目录选择扩展、预检、解压、临时打开、外部拖出及包内修改使用同一个有效名称。完成解码后仍执行 PortablePath、Unicode NFD/大小写别名、重名与输出授权检查。Shift-JIS 中作为多字节字符尾字节的 0x5C 不当作目录分隔符，除 CAB 和 LHA 的格式分隔符外，解码后真正的反斜杠仍拒绝。
 
 普通 ZIP、TAR、TAR.GZ 添加和移动在规划结束后将旧编码/Unicode 扩展/未标记 UTF-8 名称重新声明为 UTF-8，保留逻辑移动规划中的原位置与跳过含义。ZIP 保持压缩载荷，TAR 使用明确的 UTF-8 PAX path；写后重新扫描、逐项验证名称与内容，最后执行原有同卷替换。TAR 改写 BINARY PAX path 时移除该路径的 BINARY 声明；如果这会改变其他非 UTF-8 PAX 文本的解释，则明确失败并保留原包。加密和分卷的读取、解压沿用相同名称，添加/移动限制不变。
 
@@ -40,3 +40,5 @@ English: CAB retains raw name bytes and its explicit UTF-8 flag, otherwise using
 scripts/check-filename-encoding.py 通过实际服务探针解压 Python 生成的 ZIP/TAR/TAR.GZ，另以 Python 独立读取 Rust 改写的归档，检查 UTF-8 标志/PAX、名称和内容。测试数据只来自源码常量，不使用用户包。具体结果与剩余人工验收记录于 issue 和 build/CI 工件，不在本契约登记通过状态。
 
 English: Filename resolution is host-independent and frozen in the Rust snapshot, separate from original name bytes and escaped display text. ZIP honors the UTF-8 flag first, then a version-1 Unicode Path extra bound to the raw name by CRC32, then unmarked UTF-8 when the whole unlabelled group is valid, otherwise bounded archive-level legacy detection with a CP437 fallback for the western ZIP default. TAR/GNU and BINARY PAX names use detection; ordinary PAX paths retain their UTF-8 requirement. All navigation, selection, extraction, temporary opening, export and ordinary updates consume the same resolved name and repeat path, Unicode/case, conflict and publication checks. Updates emit resolved names as UTF-8 without changing payloads or bypassing the ordinary-archive restriction. Sampling and allocations are bounded and cancellation remains effective. Detection is heuristic, cannot uniquely recover every short or mixed-encoding name, and does not repair already-mojibaked Unicode. No manual selector is provided. Damaged declarations and unsafe/unresolved names remain inspectable but cannot authorize output. If unresolved names exist, directory expansion is refused because their membership is uncertain; explicitly selected resolved files remain extractable. Native desktop acceptance remains separate from automated worker and format checks.
+
+LHA 保留目录与文件名的原始字段边界和目录内原始 `0xff` 分隔符，共享有界检测分别采样各完整字段。逐分量严格解码后，才解释解码所得的反斜杠并组合 `/`，原始字节边界禁止跨字段借用多字节字符。目录展开与输出使用同一有效名称，详见 [LHA 契约](lha-containers.md)。

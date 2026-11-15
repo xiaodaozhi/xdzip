@@ -14,7 +14,7 @@ COMMIT='0a6348d96e9bbb1ac5ee8b3f6ff1c2c75b17d0d9'
 SOURCE_SHA='ef9feb1c59f55aff69b00c0d69dee5edaefb45e86950a99a6728beb35e70ff3a'
 JDK_SHA='98518ecf554465057ee5509462631deeee374bc368c12a411d225cd29381f84b'
 LHASA_SHA='5925e6a7b615d784e381e18240a1537d55a42cddad91d21e13c604a40974fe28'
-INPUT_SHA='7de84cef348be3901f82491316ac98d6653811aa8208f27f28c18ec4aa037f9d'
+INPUT_SHA='bcb64d4be9c7d2b7cbcc364b276a3512f50b2318696bf3f837fd5c185374170e'
 
 
 def run(command):
@@ -219,9 +219,32 @@ def main():
                 if target.read_bytes()!=data:raise ValueError('Stale owned position-rescaling input: '+name)
             else:target.write_bytes(data)
             identities[name]=dict(method='lh2',level=0,header=header,packed=len(body),decoded=len(payload),crc16=crc16(payload),sha256=hashlib.sha256(data).hexdigest(),jlha_exact=java_exact,lhasa_exact=False,sevenzip_exact=False,unix_exact=author_exact)
+        payload=phrase;source.write_bytes(payload)
+        for name,path,charset in [
+            ('named-utf8.lzh','nested\\资料\\说明.txt','UTF-8'),
+            ('named-shiftjis.lzh','nested\\ソフトウェアの設定\\ソフトウェアの設定ファイルと日本語.txt','Shift_JIS'),
+        ]:
+            header,packed,size,crc=map(int,run([*java,'encode','lh5','2',source,archive,path,charset]).decode('ascii').split());data=archive.read_bytes()
+            run([*java,'decode',archive,decoded])
+            if decoded.read_bytes()!=payload:raise ValueError('Named reference payload mismatch')
+            at=26;amount=int.from_bytes(data[24:26],'little');fields={}
+            while amount:
+                end=at+amount
+                if amount<3 or end>header or data[at]in fields:raise ValueError('Named reference extension mismatch')
+                fields[data[at]]=data[at+1:end-2];amount=int.from_bytes(data[end-2:end],'little');at=end
+            if at!=header or not fields[2].endswith(b'\xff'):raise ValueError('Named reference framing mismatch')
+            parts=[part.decode(charset)for part in fields[2][:-1].split(b'\xff')]+[fields[1].decode(charset)]
+            if '/'.join(parts)!=path.replace('\\','/'):raise ValueError('Independent Python field decoding mismatch')
+            p=subprocess.run([str(seven),'x','-so',str(archive)],capture_output=True,timeout=15,creationflags=0x08000000)
+            if p.returncode or p.stdout!=payload:raise ValueError('Independent named payload read mismatch')
+            target=dest/name
+            if args.check:
+                if target.read_bytes()!=data:raise ValueError('Stale owned named input')
+            else:target.write_bytes(data)
+            identities[name]=dict(method='lh5',level=2,header=header,packed=packed,decoded=size,crc16=crc,sha256=hashlib.sha256(data).hexdigest(),jlha_exact=True,lhasa_exact=None,sevenzip_exact=True,unicode_path='/'.join(parts),charset=charset)
     identity=hashlib.sha256()
     for name in sorted(identities):identity.update(name.encode('utf-8')+b'\0'+(dest/name).read_bytes())
-    if len(identities)!=96 or identity.hexdigest()!=INPUT_SHA:raise ValueError('Owned input set does not match documented identity')
+    if len(identities)!=98 or identity.hexdigest()!=INPUT_SHA:raise ValueError('Owned input set does not match documented identity')
     rust=['// Generated independent LHA fixture expectations, not decoder output.','#[rustfmt::skip]','pub(crate) const CASES: &[(&str, &str, usize, usize, usize, u16)] = &[']
     rust.extend(f'    ("{name}", "{v["method"]}", {v["header"]}, {v["packed"]}, {v["decoded"]}, 0x{v["crc16"]:04x}),' for name,v in identities.items());rust.append('];')
     target=ROOT/'crates/xdzip-compression/src/lzh/fixture_cases.rs';data=('\n'.join(rust)+'\n').encode()

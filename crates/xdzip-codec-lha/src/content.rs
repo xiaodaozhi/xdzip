@@ -215,10 +215,17 @@ impl<'a> Reader<'a> {
         snapshot: &Index,
         cancel: &'a Cancellation,
     ) -> Result<Self, DecodeError> {
-        let index = inspect(source, cancel, ScanLimits::default()).map_err(scan_error)?;
-        if &index != snapshot {
+        let result = Self::fresh(source, cancel)?;
+        if &result.index != snapshot {
             return Err(DecodeError::Integrity);
         }
+        Ok(result)
+    }
+    pub(crate) fn fresh(
+        source: &'a mut dyn ReadSource,
+        cancel: &'a Cancellation,
+    ) -> Result<Self, DecodeError> {
+        let index = inspect(source, cancel, ScanLimits::default()).map_err(scan_error)?;
         let input = INPUT_LIMIT
             .checked_sub(index.input_used)
             .ok_or(DecodeError::Limit)?;
@@ -539,7 +546,7 @@ mod tests {
             );
             supported += 1;
         }
-        assert_eq!(supported, 96);
+        assert_eq!(supported, 98);
     }
     #[test]
     fn changed_headers_crc_and_later_packed_damage_are_terminal_even_after_output() {

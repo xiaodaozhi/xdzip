@@ -10,6 +10,7 @@ publish.workspace = true
 xdzip-codec-api = { path = "../xdzip-codec-api" }
 xdzip-compression = { path = "../xdzip-compression" }
 xdzip-crypto = { path = "../xdzip-crypto" }
+xdzip-domain = { path = "../xdzip-domain" }
 
 [lints]
 workspace = true

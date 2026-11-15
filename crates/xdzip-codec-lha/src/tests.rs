@@ -65,6 +65,9 @@ fn independently_framed_members_preserve_header_sizes_skip_sizes_crc_and_physica
                 record.raw_name,
                 [vec![b'x'; 218], b".bin".to_vec()].concat()
             );
+        } else if name.starts_with("named-") {
+            assert!(record.dirname_bytes > 0);
+            assert_eq!(record.raw_name[record.dirname_bytes - 1], 255);
         } else {
             assert_eq!(record.raw_name, b"hello.bin");
         }
@@ -247,7 +250,8 @@ pub(crate) fn with_extension(kind: u8, data: &[u8]) -> Vec<u8> {
 fn extended_names_modes_duplicate_declarations_and_necessary_boundary_padding_remain_distinct() {
     let bytes = with_extension(2, b"folder\xff");
     let record = scan(&bytes).unwrap().records.remove(0);
-    assert_eq!(record.raw_name, b"folder\\hello.bin");
+    assert_eq!(record.raw_name, b"folder\xffhello.bin");
+    assert_eq!(record.dirname_bytes, 7);
     let bytes = with_extension(0x50, &0xa1ffu16.to_le_bytes());
     let record = scan(&bytes).unwrap().records.remove(0);
     assert_eq!(record.unix_mode, 0xa1ff);

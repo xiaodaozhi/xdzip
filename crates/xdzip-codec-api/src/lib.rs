@@ -152,6 +152,8 @@ pub enum Format {
     Deb,
     /// Electron ASAR tree with uncompressed stored ranges and optional SHA-256.
     Asar,
+    /// LHA/LZH sequential members, including admitted historical LArc methods.
+    Lha,
     /// Traditional UU/UUE and begin-base64 envelopes, including mixed UU/XX members.
     Uu,
     /// XX-encoded text envelopes containing only the XX alphabet.
@@ -275,6 +277,9 @@ impl Entry {
             | Format::Compress
             | Format::TarCompress => !self.warning && !self.link,
             Format::Brotli | Format::TarBrotli => !self.warning && !self.link,
+            Format::Lha => {
+                !self.warning && !self.link && !self.encrypted && matches!(self.method, 0..=10)
+            }
             Format::AesCrypt
             | Format::SevenZip
             | Format::Rar

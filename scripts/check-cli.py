@@ -304,6 +304,22 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
         invoke('add',deb,source,code=1)
         assert hashlib.sha256(deb.read_bytes()).hexdigest()==before
         record('deb_raw_and_nested_views_physical_selection_and_readonly_boundary')
+        for name in ['lh0-h0.lzh','lh1-h1.lzh','lh2-h2.lzh','lh3-h3.lzh',
+                     'lh4-h0.lzh','lh5-h2.lzh','lh6-h1.lzh','lh7-h3.lzh',
+                     'lzs-h2.lzh','lz4-h0.lzh','lz5-h2.lzh','named-utf8.lzh','named-shiftjis.lzh']:
+            archive=ROOT/'tests/fixtures/lha'/name
+            listed=invoke('list',archive)['data']
+            assert listed['format']=='LZH'
+            assert invoke('test',archive)['data']['check_kind']=='format_declared_checks'
+            entry=listed['entries'][0]
+            target=work/('lha-'+name)
+            invoke('extract',archive,'--entry-id',entry['id'],'-C',target)
+            assert (target/entry['path']).read_bytes()==phrase
+        archive=ROOT/'tests/fixtures/lha/lh5-h2.lzh'
+        before=hashlib.sha256(archive.read_bytes()).hexdigest()
+        invoke('add',archive,source,code=1)
+        assert hashlib.sha256(archive.read_bytes()).hexdigest()==before
+        record('lha_all_admitted_methods_header_levels_decoded_names_and_readonly_boundary')
         for asar_name in ['ordinary.asar','without-integrity.asar','shared.asar','executable.asar','empty.asar']:
             asar=ROOT/'tests/fixtures/asar'/asar_name
             listed=invoke('list',asar)['data']

@@ -59,3 +59,5 @@ English: CAB uses header-specified names rather than concatenated numbered parts
 English: 7z numbered parts form one authorized byte stream. RAR partN and legacy volume names preserve physical boundaries supplied through ReadSource::volume_lengths; the isolated Rust backend cannot select arbitrary host paths. Every part is version checked and protected from output overwrite. Encrypted directory opens publish no partial metadata and retain secrets only in their session and admitted tasks.
 
 只读 [Brotli/TAR.BR](brotli-streams.md) 在发布条目前完整验证无魔数候选，Brotli/LZMA 共用候选读取预算，保留强源签名及合法 TAR/ZIP 识别优先级，解码后损坏的 TAR 不能降级为普通流。
+
+只读 [LHA/LZH](lha-containers.md) 候选须在发布前完整验证有界头部与名称，包括单零字节空归档。LHA、Brotli 和 LZMA 弱候选共享实际读取账本。有效强容器识别仍优先，完整 LHA 准入可消歧无效原始 TAR 标记；尚不准入密码、分卷和修复配置。

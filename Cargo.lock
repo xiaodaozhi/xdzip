@@ -1830,6 +1830,7 @@ dependencies = [
  "xdzip-codec-api",
  "xdzip-compression",
  "xdzip-crypto",
+ "xdzip-domain",
 ]
 
 [[package]]
@@ -2034,11 +2035,13 @@ dependencies = [
  "xdzip-codec-api",
  "xdzip-codec-asar",
  "xdzip-codec-deb",
+ "xdzip-codec-lha",
  "xdzip-codec-native",
  "xdzip-codec-stream",
  "xdzip-codec-tar",
  "xdzip-codec-uu",
  "xdzip-codec-zip",
+ "xdzip-compression",
  "xdzip-domain",
  "xdzip-extract-plan",
  "xdzip-io",

@@ -17,6 +17,8 @@ mod exporting;
 pub mod extraction;
 mod formats;
 mod index;
+#[cfg(test)]
+mod lha_tests;
 pub mod listing;
 pub mod navigation;
 pub mod preview;
@@ -90,7 +92,7 @@ impl Archive {
             && tar_identified
             && matches!(&scanned, Err(ScanError::Invalid))
         {
-            match formats::discover_brotli(&mut source, control) {
+            match formats::discover_ambiguous_tar(&mut source, control) {
                 Ok(Some((candidate, rows))) => {
                     format = candidate;
                     Ok((rows, None))

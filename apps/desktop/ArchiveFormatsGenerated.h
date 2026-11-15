@@ -4,7 +4,7 @@
 #include <string_view>
 // clang-format off
 namespace xdzip_formats {
-inline constexpr std::array<std::string_view, 45> DropSuffixes = {{
+inline constexpr std::array<std::string_view, 47> DropSuffixes = {{
     ".zip",
     ".zipx",
     ".xpi",
@@ -44,6 +44,8 @@ inline constexpr std::array<std::string_view, 45> DropSuffixes = {{
     ".br",
     ".tar.br",
     ".aes",
+    ".lha",
+    ".lzh",
     ".asar",
     ".deb",
     ".rar",
@@ -51,7 +53,7 @@ inline constexpr std::array<std::string_view, 45> DropSuffixes = {{
     ".iso",
     ".udf",
 }};
-inline constexpr std::array<std::string_view, 45> ShellSuffixes = {{
+inline constexpr std::array<std::string_view, 47> ShellSuffixes = {{
     ".zip",
     ".zipx",
     ".xpi",
@@ -91,6 +93,8 @@ inline constexpr std::array<std::string_view, 45> ShellSuffixes = {{
     ".br",
     ".tar.br",
     ".aes",
+    ".lha",
+    ".lzh",
     ".asar",
     ".deb",
     ".rar",
@@ -98,7 +102,7 @@ inline constexpr std::array<std::string_view, 45> ShellSuffixes = {{
     ".iso",
     ".udf",
 }};
-inline constexpr std::array<std::string_view, 38> ShellMimeTypes = {{
+inline constexpr std::array<std::string_view, 40> ShellMimeTypes = {{
     "application/zip",
     "application/x-xpinstall",
     "application/vnd.android.package-archive",
@@ -128,6 +132,8 @@ inline constexpr std::array<std::string_view, 38> ShellMimeTypes = {{
     "application/x-compress",
     "text/x-uuencode",
     "application/x-brotli",
+    "application/x-lha",
+    "application/x-lharc",
     "application/x-asar",
     "application/vnd.debian.binary-package",
     "application/vnd.rar",
@@ -138,7 +144,7 @@ inline constexpr std::array<std::string_view, 38> ShellMimeTypes = {{
     "application/x-iso9660-image",
     "application/x-udf",
 }};
-inline constexpr std::array<std::string_view, 19> ReadOnlyLabels = {{
+inline constexpr std::array<std::string_view, 20> ReadOnlyLabels = {{
     "BZip2",
     "TAR.BZ2",
     "LZMA",
@@ -152,6 +158,7 @@ inline constexpr std::array<std::string_view, 19> ReadOnlyLabels = {{
     "Brotli",
     "TAR.BR",
     "AES Crypt",
+    "LZH",
     "ASAR",
     "DEB",
     "RAR",

@@ -115,7 +115,8 @@ fn display_control(c: char) -> bool {
     c.is_control()
         || matches!(c, '\u{061c}' | '\u{200e}' | '\u{200f}' | '\u{202a}'..='\u{202e}' | '\u{2066}'..='\u{2069}')
 }
-fn suspicious(text: &str, directory: bool) -> bool {
+/// Whether a decoded spelling needs review. False still grants no output authority.
+pub fn suspicious(text: &str, directory: bool) -> bool {
     text.is_empty()
         || text.starts_with('/')
         || text.contains(['\\', ':'])
@@ -200,21 +201,28 @@ impl Default for NameSample {
 impl NameSample {
     /// Observe complete unlabelled names in physical order, up to the shared 1 MiB limit.
     pub fn observe(&mut self, row: &Entry, allowed: bool) {
-        if self.full
-            || !allowed
-            || row.name_encoding == NameEncoding::Unresolved
-            || row.decoded_name.is_some()
-            || std::str::from_utf8(&row.raw_name).is_ok()
-        {
+        if !allowed || row.name_encoding == NameEncoding::Unresolved || row.decoded_name.is_some() {
             return;
         }
-        if self.bytes + row.raw_name.len() + 1 > 1024 * 1024 {
+        self.observe_bytes(&row.raw_name);
+    }
+    /// Observe one complete unlabelled field, keeping encoded component boundaries intact.
+    pub fn observe_bytes(&mut self, raw: &[u8]) {
+        if self.full || std::str::from_utf8(raw).is_ok() {
+            return;
+        }
+        let Some(total) = self
+            .bytes
+            .checked_add(raw.len())
+            .and_then(|n| n.checked_add(1))
+            .filter(|&n| n <= 1024 * 1024)
+        else {
             self.full = true;
             return;
-        }
-        self.detector.feed(&row.raw_name, false);
+        };
+        self.detector.feed(raw, false);
         self.detector.feed(b"\n", false);
-        self.bytes += row.raw_name.len() + 1;
+        self.bytes = total;
     }
     /// Freeze the same encoding decision for every record in a second streaming pass.
     pub fn finish(mut self, zip: bool) -> NameResolution {
@@ -233,6 +241,31 @@ pub struct NameResolution {
     zip: bool,
 }
 impl NameResolution {
+    /// Strictly resolve one complete unlabelled field without joining adjacent raw bytes.
+    /// The caller still admits per-name and retained text allocation budgets.
+    pub fn decode_unmarked(&self, raw: &[u8]) -> Option<(String, NameEncoding)> {
+        if raw.is_ascii() {
+            return std::str::from_utf8(raw)
+                .ok()
+                .map(|name| (name.to_owned(), NameEncoding::Utf8));
+        }
+        if !self.sampled
+            && let Ok(name) = std::str::from_utf8(raw)
+        {
+            return Some((name.to_owned(), NameEncoding::UnmarkedUtf8));
+        }
+        decode_legacy(raw, self.encoding)
+            .map(|name| (name, NameEncoding::Legacy(self.encoding)))
+            .or_else(|| {
+                std::str::from_utf8(raw)
+                    .ok()
+                    .map(|name| (name.to_owned(), NameEncoding::UnmarkedUtf8))
+            })
+            .or_else(|| {
+                let label = local_guess(raw, self.zip);
+                decode_legacy(raw, label).map(|name| (name, NameEncoding::Legacy(label)))
+            })
+    }
     /// Resolve one record and charge all retained display/decoded bytes to the caller's total.
     pub fn resolve(
         &self,
@@ -242,8 +275,6 @@ impl NameResolution {
         limits: ScanLimits,
         text_bytes: &mut usize,
     ) -> Result<(), ScanError> {
-        let encoding = self.encoding;
-        let zip = self.zip;
         let allowed = &allowed;
         if row.name_encoding != NameEncoding::Unresolved && row.decoded_name.is_none() {
             match std::str::from_utf8(&row.raw_name) {
@@ -255,18 +286,7 @@ impl NameResolution {
                 _ if *allowed => {
                     // A GBK component can itself be valid UTF-8. Apply the archive's
                     // legacy result consistently so explicit and implicit parents agree.
-                    let decoded = decode_legacy(&row.raw_name, encoding)
-                        .map(|name| (name, NameEncoding::Legacy(encoding)))
-                        .or_else(|| {
-                            std::str::from_utf8(&row.raw_name)
-                                .ok()
-                                .map(|name| (name.to_owned(), NameEncoding::UnmarkedUtf8))
-                        })
-                        .or_else(|| {
-                            let local = local_guess(&row.raw_name, zip);
-                            decode_legacy(&row.raw_name, local)
-                                .map(|name| (name, NameEncoding::Legacy(local)))
-                        });
+                    let decoded = self.decode_unmarked(&row.raw_name);
                     if let Some((name, encoding)) = decoded {
                         row.decoded_name = Some(name);
                         row.name_encoding = encoding;

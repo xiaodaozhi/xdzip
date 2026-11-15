@@ -92,7 +92,7 @@ public final class Reference {
             }
             return;
         }
-        if ((args.length != 5 && args.length != 6) || !args[0].equals("encode")) throw new IllegalArgumentException("Invalid owned harness command");
+        if ((args.length < 5 || args.length > 7) || !args[0].equals("encode")) throw new IllegalArgumentException("Invalid owned harness command");
         String method = "-" + args[1] + "-";
         int level = Integer.parseInt(args[2]);
         byte[] payload = Files.readAllBytes(Path.of(args[3]));
@@ -103,13 +103,15 @@ public final class Reference {
         }
         CRC16 crc = new CRC16();
         crc.update(payload);
-        LhaHeader header = new LhaHeader(args.length == 6 ? args[5] : "hello.bin", new Date(1700000000000L));
+        LhaHeader header = new LhaHeader(args.length >= 6 ? args[5] : "hello.bin", new Date(1700000000000L));
         header.setHeaderLevel(level);
         header.setCompressMethod(method);
         header.setOriginalSize(payload.length);
         header.setCompressedSize(packed.size());
         header.setCRC((int) crc.getValue());
-        byte[] encodedHeader = header.getBytes("UTF-8");
+        String charset = args.length == 7 ? args[6] : "UTF-8";
+        byte[] encodedHeader = header.getBytes(charset);
+        if (!new LhaHeader(encodedHeader, charset).getPath().equals(header.getPath())) throw new IOException("Independent header path mismatch");
         try (OutputStream output = Files.newOutputStream(Path.of(args[4]))) {
             output.write(encodedHeader);
             packed.writeTo(output);

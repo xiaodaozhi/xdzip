@@ -341,6 +341,17 @@
       ]
     },
     {
+      "id": "lzh", "rust_variant": "Lha", "label": "LZH", "container": "lha", "filters": [], "worker_id": null,
+      "check_kind": "format_declared_checks", "creation_levels": [],
+      "read_methods": ["store", "lh1", "lh2", "lh3", "lh4", "lh5", "lh6", "lh7", "lzs", "lz5"], "write_methods": [], "rewrite": false,
+      "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [], "shell_mime_types": ["application/x-lha", "application/x-lharc"],
+      "extensions": [
+        {"suffix": ".lha", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"},
+        {"suffix": ".lzh", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+      ]
+    },
+    {
       "id": "asar", "rust_variant": "Asar", "label": "ASAR", "container": "asar", "filters": [], "worker_id": null,
       "check_kind": "format_declared_checks", "creation_levels": [],
       "read_methods": ["store", "sha256"], "write_methods": [], "rewrite": false,

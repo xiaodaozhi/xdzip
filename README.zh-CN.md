@@ -66,6 +66,7 @@
 | Zstandard、TAR.ZST（含 `.tzst`） | 标准帧、已准入窗口、Huffman/FSE、重复偏移及声明的校验 | Zstandard 1/6/9 级，普通 Zstandard 仅一个普通文件 | 不支持 |
 | 7z | 支持密码、文件名加密、固实和编号分卷 | 支持加密、固实和编号分卷 | 符合条件的未加密、非分卷包 |
 | DEB | 普通 ar 成员、control/data TAR 视图，已准入 GZIP/XZ/Zstandard/BZip2/LZMA 配置 | 不支持 | 不支持 |
+| LHA/LZH | 0–3 级头部，Store、LH1–LH7、LZS/LZ5 及声明 CRC | 不支持 | 不支持 |
 | ASAR | 存储文件与目录、共享载荷区间及声明的文件/块 SHA-256 | 不支持 | 不支持 |
 | Z、TAR.Z（包括 `.taz`） | Unix compress LZW、9–16 位字典及已准入 CLEAR/对齐配置 | 不支持 | 不支持 |
 | Brotli、TAR.BR | 普通 RFC 7932 流，10–24 位窗口和全部静态词典变换 | 不支持 | 不支持 |
@@ -83,6 +84,8 @@
 - DEB 提供 `members/`、`control/`、`data/` 导出视图，全部提取包含原始成员和展开内容，不安装软件包、不执行脚本。control 接受无压缩、GZIP、XZ、Zstandard，data 另接受 BZip2、LZMA。检查验证容器可读性和声明的校验，不代表软件包认证，详见 [DEB 契约](docs/zh-CN/engineering/deb-containers.md)。
 - Z 与 TAR.Z 只检查结构与可读性，没有校验和，不提供创建或损坏历史流修复，详见 [Unix compress 契约](docs/zh-CN/engineering/compress-streams.md)。
 - UU/UUE 与 XXE 只检查结构与可读性，不提供校验和。头部路径和权限不直接授予输出或执行能力；GNU 编码文件名和多段修复不属于已准入的[文本封装配置](docs/zh-CN/engineering/text-envelopes.md)。
+- LHA/LZH 当前只读，先解码旧名称再解释分隔符，实际解码时验证存在的 CRC，无 CRC 的古老成员只提供结构与可读性检查。密码、分卷、修复配置和 PMA 方法尚未准入，详见 [LHA 契约](docs/zh-CN/engineering/lha-containers.md)。
+
 - 浏览或提取只读 ASAR 不启动其中的应用。外置 `unpacked` 数据和声明的链接可见但不支持提取，不授予相邻目录访问或可执行权限恢复能力。可选摘要检查损坏，无摘要条目只提供结构与可读性检查，详见 [ASAR 契约](docs/zh-CN/engineering/asar-containers.md)。
 - 进入磁盘索引的大型 ZIP 暂不支持整包测试或修改，所选普通文件仍可按任务上限解压；详见[大归档索引](docs/zh-CN/engineering/large-index.md)。
 - 暂不支持稀疏 TAR 和第三方扩展。普通 GZIP 及 XPI/APK/IPA/CBZ 候选遵循[单文件流契约](docs/zh-CN/engineering/single-file-streams.md)。旧编码文件名会尝试识别，但短名称或混合编码无法保证唯一识别，详见[文件名编码](docs/zh-CN/engineering/filename-encoding.md)。

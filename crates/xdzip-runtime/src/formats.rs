@@ -8,6 +8,7 @@ use xdzip_codec_api::{
 };
 use xdzip_codec_asar::AsarCodec;
 use xdzip_codec_deb::DebCodec;
+use xdzip_codec_lha::LhaCodec;
 use xdzip_codec_native::NativeCodec;
 use xdzip_codec_stream::{
     StreamCodec,
@@ -23,6 +24,7 @@ impl Codec for NativeCodec {}
 impl Codec for StreamCodec {}
 impl Codec for DebCodec {}
 impl Codec for AsarCodec {}
+impl Codec for LhaCodec {}
 impl Codec for UuCodec {}
 impl Codec for AesCryptCodec {}
 pub(crate) fn codec(format: Format) -> &'static dyn Codec {
@@ -30,6 +32,7 @@ pub(crate) fn codec(format: Format) -> &'static dyn Codec {
         Format::Zip => &ZipCodec,
         Format::Deb => &DebCodec,
         Format::Asar => &AsarCodec,
+        Format::Lha => &LhaCodec,
         Format::AesCrypt => &AesCryptCodec,
         Format::Brotli => &StreamCodec {
             format: Format::Brotli,
@@ -336,6 +339,9 @@ pub(crate) fn discover_weak(
         control,
         remaining: 24 * 1024 * 1024 * 1024,
     };
+    if let Some(found) = validate_lha(&mut input, control)? {
+        return Ok(Some(found));
+    }
     if let Some(found) = validate_brotli(&mut input, control)? {
         return Ok(Some(found));
     }
@@ -345,9 +351,9 @@ pub(crate) fn discover_weak(
     let rows = scan(&mut candidate, &mut input, control, None)?;
     Ok(Some((candidate, rows)))
 }
-/// Disambiguate an unvalidated raw TAR marker with a complete ordinary-stream candidate.
+/// Disambiguate an unvalidated raw TAR marker with complete LHA or Brotli admission.
 /// A malformed TAR reached through decoded Brotli is never exposed as an ordinary file.
-pub(crate) fn discover_brotli(
+pub(crate) fn discover_ambiguous_tar(
     source: &mut dyn ReadSource,
     control: &xdzip_codec_api::Cancellation,
 ) -> Result<Option<(Format, Vec<xdzip_codec_api::Entry>)>, ScanError> {
@@ -356,7 +362,23 @@ pub(crate) fn discover_brotli(
         control,
         remaining: 24 * 1024 * 1024 * 1024,
     };
+    if let Some(found) = validate_lha(&mut input, control)? {
+        return Ok(Some(found));
+    }
     validate_brotli(&mut input, control)
+}
+fn validate_lha(
+    source: &mut dyn ReadSource,
+    control: &xdzip_codec_api::Cancellation,
+) -> Result<Option<(Format, Vec<xdzip_codec_api::Entry>)>, ScanError> {
+    if !LhaCodec::candidate(source, control)? {
+        return Ok(None);
+    }
+    match LhaCodec.scan(source, control, limits(Format::Lha)) {
+        Ok(rows) => Ok(Some((Format::Lha, rows))),
+        Err(ScanError::Invalid) => Ok(None),
+        Err(error) => Err(error),
+    }
 }
 fn validate_brotli(
     input: &mut dyn ReadSource,

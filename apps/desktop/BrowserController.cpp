@@ -2000,7 +2000,15 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                 m_format == QStringLiteral("Z") || m_format == QStringLiteral("TAR.Z");
             const bool brotli =
                 m_format == QStringLiteral("Brotli") || m_format == QStringLiteral("TAR.BR");
-            const auto method = textEnvelope && row.method == 0     ? QStringLiteral("UU")
+            const bool lha = m_format == QStringLiteral("LZH");
+            const auto lhaMethod =
+                row.method >= 1 && row.method <= 7    ? QStringLiteral("LH%1").arg(row.method)
+                : row.method == 8                     ? QStringLiteral("LZS")
+                : row.method == 9                     ? QStringLiteral("LZ5")
+                : row.method == 0 || row.method == 10 ? QStringLiteral("Store")
+                                                      : QString::number(row.method);
+            const auto method = lha                                 ? lhaMethod
+                                : textEnvelope && row.method == 0   ? QStringLiteral("UU")
                                 : textEnvelope && row.method == 1   ? QStringLiteral("XXE")
                                 : textEnvelope && row.method == 2   ? QStringLiteral("Base64")
                                 : unixCompress && row.method == 257 ? QStringLiteral("LZW")
