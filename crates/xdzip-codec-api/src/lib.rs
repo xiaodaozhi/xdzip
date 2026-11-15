@@ -192,6 +192,8 @@ pub enum Format {
     Iso,
     /// UDF optical images, read only; preferred for hybrid images.
     Udf,
+    /// PEA 1.x single-volume, unencrypted PCOMPRESS0 archives, read only.
+    Pea,
 }
 impl Format {
     /// Stable user-visible capability label.
@@ -316,7 +318,8 @@ impl Entry {
             | Format::Cab
             | Format::Compound
             | Format::Iso
-            | Format::Udf => {
+            | Format::Udf
+            | Format::Pea => {
                 !self.warning && !self.link && (!self.encrypted || self.password_supported)
             }
         }

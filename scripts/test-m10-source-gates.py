@@ -10,6 +10,7 @@ CHINESE = ROOT / "docs/zh-CN/engineering/m10-candidate-source-gates.md"
 REGISTRY = ROOT / "specs/engineering/archive-formats.json"
 
 CANDIDATES = ("DAA 1.0", "ISZ", "ZPAQ", "PEA", "BOND", "J2J")
+BLOCKED_CANDIDATES = ("DAA 1.0", "ISZ", "ZPAQ", "BOND", "J2J")
 
 
 def section(document: str, heading: str) -> str:
@@ -48,17 +49,21 @@ class M10SourceGateTests(unittest.TestCase):
                               "**完整样本**", "**净室可行性**", "**能力边界**", "**结论**"):
                     self.assertIn(field, chinese)
 
-    def test_each_candidate_has_an_explicit_blocked_or_unconfirmed_conclusion(self):
-        for candidate in CANDIDATES:
+    def test_blocked_candidates_have_explicit_blocked_or_unconfirmed_conclusions(self):
+        for candidate in BLOCKED_CANDIDATES:
             with self.subTest(candidate=candidate):
                 english = section(self.english, candidate)
                 self.assertRegex(english, r"\*\*Conclusion:\*\* \*\*(?:Blocked|Blocked pending)")
                 chinese = section(self.chinese, candidate)
                 self.assertRegex(chinese, r"\*\*结论\*\*：\*\*(?:阻塞|等待)")
 
+    def test_pea_has_an_explicit_admitted_profile(self):
+        self.assertIn("**Conclusion:** **Admitted as a conservative read-only profile.", section(self.english, "PEA"))
+        self.assertIn("**结论**：**已准入保守只读配置", section(self.chinese, "PEA"))
+
     def test_blocked_candidates_are_absent_from_product_registry(self):
         serialized = json.dumps(self.registry, ensure_ascii=False).lower()
-        for candidate in ("daa", "isz", "zpaq", "pea", "bond", "j2j"):
+        for candidate in ("daa", "isz", "zpaq", "bond", "j2j"):
             with self.subTest(candidate=candidate):
                 self.assertNotIn(f'"id": "{candidate}"', serialized)
 

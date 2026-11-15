@@ -16,6 +16,7 @@ use xdzip_codec_deb::DebCodec;
 use xdzip_codec_egg::EggCodec;
 use xdzip_codec_lha::{LhaCodec, PmaCodec};
 use xdzip_codec_native::NativeCodec;
+use xdzip_codec_pea::PeaCodec;
 use xdzip_codec_stream::{
     StreamCodec,
     controlled::{ControlledStream, Filter},
@@ -38,6 +39,7 @@ impl Codec for BhCodec {}
 impl Codec for AlzCodec {}
 impl Codec for EggCodec {}
 impl Codec for CfbCodec {}
+impl Codec for PeaCodec {}
 impl Codec for UuCodec {}
 impl Codec for AesCryptCodec {}
 pub(crate) fn codec(format: Format) -> &'static dyn Codec {
@@ -53,6 +55,7 @@ pub(crate) fn codec(format: Format) -> &'static dyn Codec {
         Format::Alz => &AlzCodec,
         Format::Egg => &EggCodec,
         Format::Compound => &CfbCodec,
+        Format::Pea => &PeaCodec,
         Format::AesCrypt => &AesCryptCodec,
         Format::Brotli => &StreamCodec {
             format: Format::Brotli,
@@ -246,6 +249,12 @@ pub(crate) fn detect(
         Format::Cab
     } else if magic == [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1] {
         Format::Compound
+    } else if magic[0] == 0xea {
+        if PeaCodec::candidate(source, control)? {
+            Format::Pea
+        } else {
+            return Err(ScanError::Invalid);
+        }
     } else if magic[..4] == [0x41, 0x4c, 0x5a, 0x01] {
         if AlzCodec::candidate(source, control)? {
             Format::Alz
@@ -905,6 +914,28 @@ mod tests {
         for name in ["archive.cab", "archive.iso", "archive.udf"] {
             assert_eq!(creation_format(name), None);
         }
+    }
+    #[test]
+    fn pea_store_profile_routes_without_filename_hints() {
+        let payload = b"runtime pea";
+        let name = b"hello.txt";
+        let mut bytes = vec![0xea, 1, 6, 0, 0, 0, 0, 1, 0x21, 0];
+        bytes.extend_from_slice(b"\x00\x00POD\x00\x00\x00\x00\x00");
+        bytes.extend_from_slice(&(name.len() as u16).to_le_bytes());
+        bytes.extend_from_slice(name);
+        bytes.extend_from_slice(&0u32.to_le_bytes());
+        bytes.extend_from_slice(&0u32.to_le_bytes());
+        bytes.extend_from_slice(&(payload.len() as u64).to_le_bytes());
+        bytes.extend_from_slice(payload);
+        bytes.extend_from_slice(b"\x00\x00EOA\x00");
+        let cancel = Default::default();
+        let mut source = std::io::Cursor::new(bytes);
+        assert_eq!(detect(&mut source, &cancel), Ok(Format::Pea));
+        let rows = codec(Format::Pea)
+            .scan(&mut source, &cancel, Default::default())
+            .unwrap();
+        assert_eq!(rows[0].name_bytes(), name);
+        assert_eq!(rows[0].size, payload.len() as u64);
     }
     #[test]
     fn optical_routing_uses_descriptors_and_keeps_damaged_udf_hybrids() {

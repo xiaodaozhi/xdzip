@@ -29,9 +29,9 @@ class RegistryTests(unittest.TestCase):
         formats = REGISTRY.validate(self.source)
         entries = [entry for item in formats for entry in item['extensions']]
         self.assertEqual({entry['suffix'] for entry in entries if entry['drop']},
-                     {'.zip', '.zipx', '.xpi', '.apk', '.ipa', '.cbz', '.tar', '.tar.gz', '.tgz', '.gz', '.7z', '.rar', '.cab', '.msi', '.iso', '.udf', '.bz2', '.bz', '.tar.bz2', '.tar.bz', '.tbz', '.tbz2', '.lzma', '.tar.lzma', '.tlz', '.lz', '.tar.lz', '.xz', '.tar.xz', '.txz', '.lz4', '.tar.lz4', '.zst', '.tar.zst', '.tzst', '.deb', '.asar', '.uu', '.uue', '.xxe', '.z', '.tar.z', '.taz', '.aes', '.br', '.tar.br', '.lha', '.lzh', '.pma', '.arj', '.arc', '.bh', '.alz', '.egg'})
+                     {'.zip', '.zipx', '.xpi', '.apk', '.ipa', '.cbz', '.tar', '.tar.gz', '.tgz', '.gz', '.7z', '.rar', '.cab', '.msi', '.iso', '.udf', '.bz2', '.bz', '.tar.bz2', '.tar.bz', '.tbz', '.tbz2', '.lzma', '.tar.lzma', '.tlz', '.lz', '.tar.lz', '.xz', '.tar.xz', '.txz', '.lz4', '.tar.lz4', '.zst', '.tar.zst', '.tzst', '.deb', '.asar', '.uu', '.uue', '.xxe', '.z', '.tar.z', '.taz', '.aes', '.br', '.tar.br', '.lha', '.lzh', '.pma', '.arj', '.arc', '.bh', '.alz', '.egg', '.pea'})
         self.assertEqual({entry['suffix'] for entry in entries if entry['shell']},
-                         {'.zip', '.zipx', '.xpi', '.apk', '.ipa', '.cbz', '.tar', '.tar.gz', '.tgz', '.gz', '.7z', '.rar', '.cab', '.msi', '.iso', '.udf', '.bz2', '.bz', '.tar.bz2', '.tar.bz', '.tbz', '.tbz2', '.lzma', '.tar.lzma', '.tlz', '.lz', '.tar.lz', '.xz', '.tar.xz', '.txz', '.lz4', '.tar.lz4', '.zst', '.tar.zst', '.tzst', '.deb', '.asar', '.uu', '.uue', '.xxe', '.z', '.tar.z', '.taz', '.aes', '.br', '.tar.br', '.lha', '.lzh', '.pma', '.arj', '.arc', '.bh', '.alz', '.egg'})
+                         {'.zip', '.zipx', '.xpi', '.apk', '.ipa', '.cbz', '.tar', '.tar.gz', '.tgz', '.gz', '.7z', '.rar', '.cab', '.msi', '.iso', '.udf', '.bz2', '.bz', '.tar.bz2', '.tar.bz', '.tbz', '.tbz2', '.lzma', '.tar.lzma', '.tlz', '.lz', '.tar.lz', '.xz', '.tar.xz', '.txz', '.lz4', '.tar.lz4', '.zst', '.tar.zst', '.tzst', '.deb', '.asar', '.uu', '.uue', '.xxe', '.z', '.tar.z', '.taz', '.aes', '.br', '.tar.br', '.lha', '.lzh', '.pma', '.arj', '.arc', '.bh', '.alz', '.egg', '.pea'})
         self.assertEqual({item['id']: item['worker_id'] for item in formats if item['worker_id']},
                          {'7z': 7, 'rar': 4, 'cab': 8, 'iso': 9, 'udf': 10})
         self.assertEqual({suffix for item in formats for suffix in item['creation_suffixes']},
@@ -108,7 +108,7 @@ class RegistryTests(unittest.TestCase):
 
     def test_check_strength_distinguishes_formats_without_content_checksums(self):
         by_id = {item['id']: item for item in self.source['formats']}
-        for identity in ['tar', 'lzma', 'tar-lzma', 'iso', 'udf']:
+        for identity in ['tar', 'lzma', 'tar-lzma', 'iso', 'udf', 'pea']:
             self.assertEqual(by_id[identity]['check_kind'], 'structure_and_readability')
         for identity in ['gzip', 'bzip2', 'tar-bzip2', 'lzip', 'tar-lzip']:
             self.assertEqual(by_id[identity]['check_kind'], 'supported_content')

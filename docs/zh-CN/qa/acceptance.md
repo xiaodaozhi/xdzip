@@ -513,4 +513,6 @@ English: Expanded previews require actual format/first-frame/first-page decoding
 
 **FORMAT-EGG：** 验证 EGG 前缀、文件／子头／块／结束签名，UTF-8 文件名扩展字段，无加密、非固实普通单卷准入，Store 和原始 Deflate 块尺寸、准确块结束、CRC-32 及重复物理身份。覆盖加密、分卷、固实、AZO/BZip2/LZMA 和未知方法可见但无载荷权限，多块拒绝、块越界、截断、来源变化、取消、累计输入／工作／输出限额和冻结元数据。产品 runtime、CLI、关联候选和双语登记检查与原始 codec 测试分开，密码、加密、分卷、固实、AZO 和创建仍不在准入范围。详见 [ACE、ALZ 与 EGG 资料门槛](../engineering/ace-alz-egg-format-sources.md)。
 
+**FORMAT-PEA：** 验证 PEA 1.x 到 1.6 版头部、单一物理卷、`POD`/`EOA` 结构、UTF-8 对象名称、存储文件和目录对象、准确 qword 尺寸、重复物理身份、源快照和终止。拒绝 PEA 2.0 流、未知版本、卷／ECC 控制、密码、认证或对象／流／卷哈希控制、PCOMPRESS1–3、畸形名称、截断、尾随字节、来源变化、取消和累计输入／输出／名称限额。实际 runtime、CLI、关联候选和双语登记检查与原始 codec 分开，创建、修改、分卷及所有压缩或认证配置仍不在准入切片。详见 [M10 候选格式资料和许可门槛](../engineering/m10-candidate-source-gates.md)。
+
 **FORMAT-M10-SOURCE-GATES：** 在 DAA、ISZ、ZPAQ、PEA、BOND 或 J2J 进入格式登记前，必须记录权威规范、不可变参考版本或内容哈希、适用许可、完整可再分发夹具矩阵和有界净室能力契约。公开扩展名列表、GPL 参考可执行文件、只有头部的样本或只有 Store 的样本都不能授予探测或载荷权限。阻塞和未确认候选继续不进入 runtime、CLI、MIME 和关联消费者。详见 [M10 候选格式资料和许可门槛](../engineering/m10-candidate-source-gates.md)。

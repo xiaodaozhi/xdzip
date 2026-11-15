@@ -73,6 +73,7 @@ Open an archive to browse its directories, search and sort entries, and select f
 | [BH](docs/engineering/bh-containers.md) | `BH 05 07` ordinary members, method 8 raw Deflate, exact sizes and CRC-32 | Not supported | Not supported |
 | [ALZ](docs/engineering/ace-alz-egg-format-sources.md) | Ordinary single-volume members using Store or raw Deflate, exact sizes and CRC-32 | Not supported | Not supported |
 | [EGG](docs/engineering/ace-alz-egg-format-sources.md) | Non-encrypted, non-solid single-volume members using Store or raw Deflate, exact sizes and CRC-32 | Not supported | Not supported |
+| [PEA](docs/engineering/m10-candidate-source-gates.md) | PEA 1.x single-volume, UTF-8 names, unencrypted PCOMPRESS0 stored files/directories; no object, stream or volume checks | Not supported | Not supported |
 | ASAR | Stored files/directories, shared payload ranges and declared file/block SHA-256 | Not supported | Not supported |
 | Z, TAR.Z (including `.taz`) | Unix compress LZW, 9–16-bit dictionaries and admitted CLEAR/alignment profiles | Not supported | Not supported |
 | Brotli, TAR.BR | Ordinary RFC 7932 streams, 10–24-bit windows and all static dictionary transforms | Not supported | Not supported |

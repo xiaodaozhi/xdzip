@@ -1910,6 +1910,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-pea"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-domain",
+]
+
+[[package]]
 name = "xdzip-codec-rar"
 version = "0.2.0"
 dependencies = [
@@ -2101,6 +2109,7 @@ dependencies = [
  "xdzip-codec-egg",
  "xdzip-codec-lha",
  "xdzip-codec-native",
+ "xdzip-codec-pea",
  "xdzip-codec-stream",
  "xdzip-codec-tar",
  "xdzip-codec-uu",

@@ -73,6 +73,7 @@
 | [BH](docs/zh-CN/engineering/bh-containers.md) | `BH 05 07` 普通成员、方法 8 raw Deflate、准确长度与 CRC-32 | 不支持 | 不支持 |
 | [ALZ](docs/zh-CN/engineering/ace-alz-egg-format-sources.md) | 普通单卷成员，支持 Store 或原始 Deflate，准确尺寸与 CRC-32 | 不支持 | 不支持 |
 | [EGG](docs/zh-CN/engineering/ace-alz-egg-format-sources.md) | 无加密、非固实的普通单卷成员，支持 Store 或原始 Deflate，准确尺寸与 CRC-32 | 不支持 | 不支持 |
+| [PEA](docs/zh-CN/engineering/m10-candidate-source-gates.md) | PEA 1.x 单卷、UTF-8 名称、无加密 PCOMPRESS0 存储文件与目录，不含对象、流或卷校验 | 不支持 | 不支持 |
 | ASAR | 存储文件与目录、共享载荷区间及声明的文件/块 SHA-256 | 不支持 | 不支持 |
 | Z、TAR.Z（包括 `.taz`） | Unix compress LZW、9–16 位字典及已准入 CLEAR/对齐配置 | 不支持 | 不支持 |
 | Brotli、TAR.BR | 普通 RFC 7932 流，10–24 位窗口和全部静态词典变换 | 不支持 | 不支持 |

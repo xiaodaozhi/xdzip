@@ -35,12 +35,12 @@
 ## PEA
 
 - **公开规范**：PeaZip，《Pack, Encrypt, Authenticate》规范，覆盖 PEA 1.x、仍处于提案状态的 PEA 2.0 流、多流和分卷控制、对象控制、结束标记以及 PCOMPRESS 级别。规范见 [`pea_help.pdf`](https://peazip.github.io/pea_help.pdf)，摘要见 [pea-file-format.html](https://peazip.github.io/pea-file-format.html)。当前官方页面明确说明 PEA 和 PCOMPRESS 规范属于公有领域。
-- **参考实现**：`peazip/PeaZip` 11.4.0 源码发布包，以及其中的 `pea` 引擎。实现使用 LGPLv3，随附的 Wolfgang Ehrhardt 密码单元使用 zlib/libpng 许可。源码发布地址为 [peazip-11.4.0.src.zip](https://github.com/peazip/PeaZip/releases/download/11.4.0/peazip-11.4.0.src.zip)，在把它作为样本判定工具前仍需记录不可变提交和源码哈希。
+- **参考实现**：`peazip/PeaZip`，提交 `81b31f7e487b462980a52ac0f2e0b3cf700fe799`，包含 `peazip-sources/dev/pea_utils.pas` 和 `unit_pea.pas`。实现使用 LGPLv3，随附的 Wolfgang Ehrhardt 密码单元使用 zlib/libpng 许可。源码发布地址为 [peazip-11.4.0.src.zip](https://github.com/peazip/PeaZip/releases/download/11.4.0/peazip-11.4.0.src.zip)。固定源码只作参考分析材料。
 - **许可和再分发**：格式规范本身没有产品许可阻塞，但 LGPLv3 引擎和密码依赖不能默认复制或链接进当前产品。净室 Rust 实现应依据公有领域格式记录并独立选择算法，参考程序只用于测试，不能成为运行时依赖。
-- **完整样本**：完整语料库必须包含 PEA 1.x 和 2.0、多流、分卷边界、Store 和 PCOMP 级别、认证失败、加密头部、畸形结束标记和大尺寸声明。仓库尚未登记可再分发的自有语料库。
+- **完整样本**：已准入配置使用自有完整 Store 夹具，覆盖文件、目录、UTF-8 有效名称、空与非空数据、截断、尾随字节、来源变化和限额。更广的语料库仍需包含 PEA 1.x 和 2.0、多流、分卷边界、PCOMP 级别、认证失败、加密头部、畸形结束标记和大尺寸声明，这些配置仍在产品边界外。
 - **净室可行性**：无加密、单流、Store 或 Deflate 读取器在技术上可行，但认证和加密必须作为独立安全工作。由于该格式有完整性设计，仅做结构解析不能宣称内容验证完成。
 - **能力边界**：未来应先只读，不开放密码、加密、多卷、创建或修改。每个流都要在发布前通过声明的摘要和终止认证。
-- **结论**：**等待不可变参考版本和完整认证样本，当前阻塞**。公有领域规范已经清除格式文本许可门槛，但 PEA 仍需固定源码快照、独立完整样本和有界完整性模型后才能进入登记。
+- **结论**：**已准入保守只读配置**。xdzip 当前准入 PEA 1.x、单一物理卷、UTF-8 名称、PCOMPRESS0 存储文件与目录，不含对象、流或卷校验。密码、认证/加密流、校验算法、PCOMPRESS1–3、分卷、PEA 2.0、创建和修改仍不支持。LGPL 参考实现只作测试材料，不链接进产品。
 
 ## BOND
 

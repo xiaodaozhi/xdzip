@@ -82,6 +82,18 @@ def main():
     egg.extend(b'\x13\x0c\xb5\x02\x01\x00' + len(egg_payload).to_bytes(4, 'little') + len(egg_packed).to_bytes(4, 'little'))
     egg.extend((zlib.crc32(egg_payload) & 0xffffffff).to_bytes(4, 'little') + end + egg_packed + end)
     (output / 'sample.egg').write_bytes(egg)
+    pea_payload = b'xdzip PEA association fixture\n'
+    pea = bytearray(bytes([0xEA, 1, 6, 0, 0, 0, 0, 1, 0x21, 0]))
+    pea.extend(b'\x00\x00POD\x00\x00\x00\x00\x00')
+    name = b'hello.txt'
+    pea.extend(len(name).to_bytes(2, 'little'))
+    pea.extend(name)
+    pea.extend((0).to_bytes(4, 'little'))
+    pea.extend((0).to_bytes(4, 'little'))
+    pea.extend(len(pea_payload).to_bytes(8, 'little'))
+    pea.extend(pea_payload)
+    pea.extend(b'\x00\x00EOA\x00')
+    (output / 'sample.pea').write_bytes(pea)
     for suffix in ['lha','lzh']:
         shutil.copyfile(ROOT / 'tests/fixtures/lha/lh5-h2.lzh', output / ('sample.' + suffix))
     shutil.copyfile(ROOT / 'tests/fixtures/compress/phrase.Z', output / 'sample.z')

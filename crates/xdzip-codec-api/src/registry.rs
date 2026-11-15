@@ -244,6 +244,7 @@ mod tests {
             Format::Compound,
             Format::Iso,
             Format::Udf,
+            Format::Pea,
             Format::Bzip2,
             Format::TarBzip2,
             Format::Lzma,

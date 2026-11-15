@@ -4,7 +4,7 @@
 #include <string_view>
 // clang-format off
 namespace xdzip_formats {
-inline constexpr std::array<std::string_view, 54> DropSuffixes = {{
+inline constexpr std::array<std::string_view, 55> DropSuffixes = {{
     ".zip",
     ".zipx",
     ".xpi",
@@ -52,6 +52,7 @@ inline constexpr std::array<std::string_view, 54> DropSuffixes = {{
     ".bh",
     ".alz",
     ".egg",
+    ".pea",
     ".asar",
     ".deb",
     ".rar",
@@ -60,7 +61,7 @@ inline constexpr std::array<std::string_view, 54> DropSuffixes = {{
     ".iso",
     ".udf",
 }};
-inline constexpr std::array<std::string_view, 54> ShellSuffixes = {{
+inline constexpr std::array<std::string_view, 55> ShellSuffixes = {{
     ".zip",
     ".zipx",
     ".xpi",
@@ -108,6 +109,7 @@ inline constexpr std::array<std::string_view, 54> ShellSuffixes = {{
     ".bh",
     ".alz",
     ".egg",
+    ".pea",
     ".asar",
     ".deb",
     ".rar",
@@ -116,7 +118,7 @@ inline constexpr std::array<std::string_view, 54> ShellSuffixes = {{
     ".iso",
     ".udf",
 }};
-inline constexpr std::array<std::string_view, 43> ShellMimeTypes = {{
+inline constexpr std::array<std::string_view, 44> ShellMimeTypes = {{
     "application/zip",
     "application/x-xpinstall",
     "application/vnd.android.package-archive",
@@ -150,6 +152,7 @@ inline constexpr std::array<std::string_view, 43> ShellMimeTypes = {{
     "application/x-lharc",
     "application/x-arj",
     "application/x-arj-compressed",
+    "application/x-pea",
     "application/x-asar",
     "application/vnd.debian.binary-package",
     "application/vnd.rar",
@@ -161,7 +164,7 @@ inline constexpr std::array<std::string_view, 43> ShellMimeTypes = {{
     "application/x-iso9660-image",
     "application/x-udf",
 }};
-inline constexpr std::array<std::string_view, 26> ReadOnlyLabels = {{
+inline constexpr std::array<std::string_view, 27> ReadOnlyLabels = {{
     "BZip2",
     "TAR.BZ2",
     "LZMA",
@@ -181,6 +184,7 @@ inline constexpr std::array<std::string_view, 26> ReadOnlyLabels = {{
     "BH",
     "ALZ",
     "EGG",
+    "PEA",
     "ASAR",
     "DEB",
     "RAR",
