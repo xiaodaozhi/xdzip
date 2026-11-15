@@ -8,7 +8,7 @@ This record pins the public material used to evaluate the remaining M8 formats. 
 - Independent implementation: `droe/acefile`, commit `11ed076ae19e8228148731cfbc05f019a395b3b9`, BSD-2-Clause implementation license SHA-256 `AD376BD9695F0E355F5C523443ABF822BB896999A3252AAA614D313CC4F1F5B5`, implementation SHA-256 `BC701569AD8521964C62256472AB44976AC57FB46E52B147A21018BC96348F1F`.
 - The implementation states that it reads ACE 1.0 and 2.0, including LZ77, DELTA, EXE, PIC, SOUND, passwords and volumes. Its license covers the Python implementation only and expressly does not claim rights over ACE technology.
 
-The technical record is enough to define block headers, CRCs, stored members and the old LZ77 family. It is not a commercial clearance for the ACE technology, and the implementation's reference to WinAce and unace is not an independent interoperability corpus. The product gate therefore remains: obtain a legal decision on a clean-room decoder, pin a redistributable corpus, then admit a declared read-only subset. No ACE suffix or decoder is registered yet.
+The technical record is enough to define block headers, CRCs, stored members and the old LZ77 family. It is not a commercial clearance for the ACE technology, and the implementation's reference to WinAce and unace is not an independent interoperability corpus. The product decision is now permanent exclusion: xdzip will not implement or register ACE, and no ACE suffix, detector, MIME type or association may be added.
 
 ## ALZ
 

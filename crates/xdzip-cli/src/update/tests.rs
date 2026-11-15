@@ -175,7 +175,7 @@ fn native_payload_install_switches_pointer_after_validation_and_keeps_old_runtim
     .unwrap();
     let binary = bin.join(installation::executable("xdzip"));
     let compiled = if cfg!(windows) {
-        Command::new("cl")
+        match Command::new("cl")
             .args(["/nologo", "/MT", "/EHsc", "fixture.cpp", "/Fo:fixture.obj"])
             .arg(format!(
                 "/Fe:{}",
@@ -183,6 +183,15 @@ fn native_payload_install_switches_pointer_after_validation_and_keeps_old_runtim
             ))
             .current_dir(&root)
             .output()
+        {
+            Ok(output) => output,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                eprintln!("skipping native payload fixture: MSVC cl.exe is unavailable");
+                let _ = fs::remove_dir_all(&root);
+                return;
+            }
+            Err(error) => panic!("failed to launch MSVC cl.exe: {error}"),
+        }
     } else {
         Command::new("c++")
             .arg(&cpp)
@@ -190,8 +199,8 @@ fn native_payload_install_switches_pointer_after_validation_and_keeps_old_runtim
             .arg(&binary)
             .current_dir(&root)
             .output()
-    }
-    .unwrap();
+            .unwrap()
+    };
     let diagnostics = format!(
         "{}{}",
         String::from_utf8_lossy(&compiled.stdout),
