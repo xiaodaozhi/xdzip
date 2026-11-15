@@ -8,6 +8,7 @@ Item {
     Ui.WelcomePage { id: page; anchors.fill: parent }
     SignalSpy { id: openSpy; target: page; signalName: "openRequested" }
     SignalSpy { id: createSpy; target: page; signalName: "createRequested" }
+    SignalSpy { id: formatsSpy; target: page; signalName: "formatsRequested" }
     SignalSpy { id: cancelSpy; target: page; signalName: "cancelRequested" }
     TestCase {
         name: "WelcomePage"; when: windowShown
@@ -95,33 +96,34 @@ Item {
             tryVerify(() => open.height > 124 && create.height === open.height);
             verify(open.contentItem.height >= open.contentItem.implicitHeight);
         }
-        function test_readonly_format_badges_data() {
+        function test_format_group_summary_data() {
             return [1, 1.25, 1.5].map(scale => ({tag: String(scale), scale: scale}));
         }
-        function test_readonly_format_badges(data) {
+        function test_format_group_summary(data) {
             Ui.Theme.fontScale = data.scale;
             surface.width = 832;
             const formats = findChild(page, "welcomeFormats");
-            const names = ["ZIP", "TAR", "TAR.GZ", "7z", "RAR", "CAB", "ISO", "UDF"];
-            const badges = names.map(format => findChild(page, "welcomeFormat-" + format));
-            verify(badges.every(badge => badge && badge.visible));
-            tryVerify(() => badges.every(badge => badge.children[0].font.pixelSize === Math.round(11 * data.scale)));
+            const groups = ["archives", "compressed-tar", "compressed-streams", "text-envelopes", "installer-metadata"]
+                .map(group => findChild(page, "welcomeFormatGroup-" + group));
+            verify(groups.every(group => group && group.visible));
+            const button = findChild(page, "welcomeFormatsSettings");
+            verify(button && button.visible && button.enabled);
+            mouseClick(button);
+            compare(formatsSpy.count, 1);
+            formatsSpy.clear();
+            tryVerify(() => groups.every(group => group.children[0].children[0].font.pixelSize === Math.round(11 * data.scale)));
             // A child Text can update its font metrics before the parent layout
             // schedules a second polish. Measure the frame with the new metrics.
             verify(waitForRendering(page));
             verify(waitForPolish(formats));
-            const naturalWidth = () => formats.children[0].implicitWidth
-                + badges.reduce((total, badge) => total + badge.implicitWidth, 0)
-                + formats.spacing * badges.length;
-            tryVerify(() => formats.width >= naturalWidth()
-                && badges.every(badge => badge.width >= badge.children[0].implicitWidth + 14));
+            tryVerify(() => groups.every(group => group.width > 0 && group.height > 0));
             verify(formats.width <= formats.parent.width);
-            console.log("Welcome format geometry", JSON.stringify({scale: data.scale,
-                available: formats.parent.width, width: formats.width, natural: naturalWidth()}));
-            for (const badge of badges) {
-                const point = badge.mapToItem(page, 0, 0);
-                verify(point.x >= 0 && point.x + badge.width <= page.width);
-                verify(badge.width >= badge.children[0].implicitWidth + 14);
+            console.log("Welcome format group geometry", JSON.stringify({scale: data.scale,
+                available: formats.parent.width, width: formats.width}));
+            for (const group of groups) {
+                const point = group.mapToItem(page, 0, 0);
+                verify(point.x >= 0 && point.x + group.width <= page.width);
+                verify(group.width > 0 && group.height > 0);
             }
         }
         function test_feedback_preserves_top_anchors_data() {

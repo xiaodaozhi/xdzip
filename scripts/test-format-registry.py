@@ -57,6 +57,22 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(by_id['gzip']['encryption'], [])
         self.assertEqual(by_id['gzip']['volumes'], [])
 
+    def test_ui_format_groups_keep_summary_and_association_scopes_distinct(self):
+        formats = REGISTRY.validate(self.source)
+        groups = {group['id']: group for group in REGISTRY.ui_groups(formats)}
+        self.assertEqual(list(groups), [
+            'archives', 'compressed-tar', 'compressed-streams', 'text-envelopes', 'installer-metadata'])
+        self.assertEqual({group['id']: len(group['labels']) for group in groups.values()}, {
+            'archives': 18, 'compressed-tar': 9, 'compressed-streams': 10,
+            'text-envelopes': 2, 'installer-metadata': 1})
+        associations = {group['id']: group for group in REGISTRY.ui_groups(formats, shell_only=True)
+                        if group['suffixes']}
+        self.assertNotIn('installer-metadata', associations)
+        self.assertNotIn('.exe', {suffix for group in associations.values() for suffix in group['suffixes']})
+        self.assertEqual(sum(len(group['suffixes']) for group in associations.values()),
+                         len({extension['suffix'] for item in formats for extension in item['extensions']
+                              if extension['shell']}))
+
     def test_linux_mime_declarations_match_registered_candidates(self):
         declared = next(line.removeprefix('MimeType=') for line in
                         (ROOT / 'apps/desktop/packaging/linux/xdzip.desktop').read_text().splitlines()

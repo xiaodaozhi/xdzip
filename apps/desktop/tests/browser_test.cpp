@@ -7874,6 +7874,9 @@ QtObject {
         QVERIFY(QTest::qWaitForWindowExposed(settings));
         QQuickItem *zip = nullptr;
         QTRY_VERIFY((zip = findVisual(settings->contentItem(), "settingsAssociation-.zip")));
+        for (const auto &group : {"archives", "compressed-tar", "compressed-streams", "text-envelopes"})
+            QVERIFY(findVisual(settings->contentItem(),
+                               "settingsAssociationGroup-" + QString::fromLatin1(group)));
         QVERIFY(zip->isEnabled());
         const bool active = QAccessible::isActive();
         QAccessible::setActive(true);
@@ -9665,14 +9668,10 @@ QtObject {
         QVERIFY(viewport && viewport->property("contentY").isValid());
         QTRY_VERIFY(formats->width() > 0);
         QTRY_VERIFY(formats->width() <= 608);
-        for (const auto &format :
-             {"ZIP",     "TAR",      "TAR.GZ",    "7z",     "GZIP",   "BZip2",  "TAR.BZ2",
-              "LZMA",    "TAR.LZMA", "Lzip",      "TAR.LZ", "XZ",     "TAR.XZ", "LZ4",
-              "TAR.LZ4", "ZSTD",     "TAR.ZST",   "DEB",    "ASAR",   "UU",     "XXE",
-              "Z",       "TAR.Z",    "AES Crypt", "Brotli", "TAR.BR", "LZH",    "PMA",
-              "ARJ",     "ARC",      "BH",        "ALZ",    "EGG",    "RAR",    "CAB",    "ISO",    "UDF"}) {
+        for (const auto &group : {"archives", "compressed-tar", "compressed-streams", "text-envelopes",
+                                  "installer-metadata"}) {
             auto *badge =
-                findVisual(window->contentItem(), "welcomeFormat-" + QString::fromLatin1(format));
+                findVisual(window->contentItem(), "welcomeFormatGroup-" + QString::fromLatin1(group));
             QVERIFY(badge && badge->isVisible());
             QTRY_VERIFY(badge->mapToScene(QPointF()).x() >= 0);
             QTRY_VERIFY(badge->mapToScene(QPointF(badge->width(), 0)).x() <= window->width());
@@ -9689,6 +9688,19 @@ QtObject {
             QTRY_VERIFY(badge->mapToItem(viewport, QPointF()).y() >= -0.5);
             QTRY_VERIFY(badge->mapToItem(viewport, QPointF(0, badge->height())).y() <=
                         viewport->height() + 0.5);
+        }
+        const auto formatAudit = qEnvironmentVariable("XDZIP_FORMAT_GROUPS_AUDIT");
+        if (!formatAudit.isEmpty()) {
+            QVERIFY(QDir().mkpath(formatAudit));
+            QVERIFY(visual_audit::save(window, formatAudit, "welcome-format-groups"));
+            auto *settings = window->findChild<QQuickWindow *>("settingsWindow");
+            QVERIFY(settings);
+            QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
+            settings->setProperty("currentTab", 3);
+            QTRY_VERIFY(settings->isVisible());
+            QTRY_VERIFY(visibleImagesReady(settings->contentItem()));
+            QVERIFY(visual_audit::save(settings, formatAudit, "settings-association-groups"));
+            settings->close();
         }
         auto *task = window->findChild<QQuickWindow *>("taskWindow");
         QVERIFY(task);

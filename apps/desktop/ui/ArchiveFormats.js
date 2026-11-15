@@ -246,5 +246,262 @@ var creationFormats = [
 ];
 var associationSuffixes = [".zip", ".zipx", ".xpi", ".apk", ".ipa", ".cbz", ".tar", ".tar.gz", ".tgz", ".7z", ".gz", ".bz2", ".bz", ".tar.bz2", ".tar.bz", ".tbz", ".tbz2", ".lzma", ".tar.lzma", ".tlz", ".lz", ".tar.lz", ".xz", ".tar.xz", ".txz", ".lz4", ".tar.lz4", ".zst", ".tar.zst", ".tzst", ".z", ".tar.z", ".taz", ".uu", ".uue", ".xxe", ".br", ".tar.br", ".aes", ".lha", ".lzh", ".pma", ".arj", ".arc", ".bh", ".alz", ".egg", ".pea", ".asar", ".deb", ".rar", ".cab", ".msi", ".iso", ".udf"];
 var formatLabels = ["ZIP", "TAR", "TAR.GZ", "7z", "GZIP", "BZip2", "TAR.BZ2", "LZMA", "TAR.LZMA", "Lzip", "TAR.LZ", "XZ", "TAR.XZ", "LZ4", "TAR.LZ4", "ZSTD", "TAR.ZST", "Z", "TAR.Z", "UU", "XXE", "Brotli", "TAR.BR", "AES Crypt", "LZH", "PMA", "ARJ", "ARC", "BH", "ALZ", "EGG", "PEA", "NSIS", "ASAR", "DEB", "RAR", "CAB", "Compound", "ISO", "UDF"];
+var formatGroups = [
+    {
+        "id": "archives",
+        "labels": [
+            "ZIP",
+            "TAR",
+            "7z",
+            "LZH",
+            "PMA",
+            "ARJ",
+            "ARC",
+            "BH",
+            "ALZ",
+            "EGG",
+            "PEA",
+            "ASAR",
+            "DEB",
+            "RAR",
+            "CAB",
+            "Compound",
+            "ISO",
+            "UDF"
+        ],
+        "suffixes": [
+            ".zip",
+            ".zipx",
+            ".xpi",
+            ".apk",
+            ".ipa",
+            ".cbz",
+            ".tar",
+            ".7z",
+            ".lha",
+            ".lzh",
+            ".pma",
+            ".arj",
+            ".arc",
+            ".bh",
+            ".alz",
+            ".egg",
+            ".pea",
+            ".asar",
+            ".deb",
+            ".rar",
+            ".cab",
+            ".msi",
+            ".iso",
+            ".udf"
+        ]
+    },
+    {
+        "id": "compressed-tar",
+        "labels": [
+            "TAR.GZ",
+            "TAR.BZ2",
+            "TAR.LZMA",
+            "TAR.LZ",
+            "TAR.XZ",
+            "TAR.LZ4",
+            "TAR.ZST",
+            "TAR.Z",
+            "TAR.BR"
+        ],
+        "suffixes": [
+            ".tar.gz",
+            ".tgz",
+            ".tar.bz2",
+            ".tar.bz",
+            ".tbz",
+            ".tbz2",
+            ".tar.lzma",
+            ".tlz",
+            ".tar.lz",
+            ".tar.xz",
+            ".txz",
+            ".tar.lz4",
+            ".tar.zst",
+            ".tzst",
+            ".tar.z",
+            ".taz",
+            ".tar.br"
+        ]
+    },
+    {
+        "id": "compressed-streams",
+        "labels": [
+            "GZIP",
+            "BZip2",
+            "LZMA",
+            "Lzip",
+            "XZ",
+            "LZ4",
+            "ZSTD",
+            "Z",
+            "Brotli",
+            "AES Crypt"
+        ],
+        "suffixes": [
+            ".gz",
+            ".bz2",
+            ".bz",
+            ".lzma",
+            ".lz",
+            ".xz",
+            ".lz4",
+            ".zst",
+            ".z",
+            ".br",
+            ".aes"
+        ]
+    },
+    {
+        "id": "text-envelopes",
+        "labels": [
+            "UU",
+            "XXE"
+        ],
+        "suffixes": [
+            ".uu",
+            ".uue",
+            ".xxe"
+        ]
+    },
+    {
+        "id": "installer-metadata",
+        "labels": [
+            "NSIS"
+        ],
+        "suffixes": [
+            ".exe"
+        ]
+    }
+];
+var associationGroups = [
+    {
+        "id": "archives",
+        "labels": [
+            "ZIP",
+            "TAR",
+            "7z",
+            "LZH",
+            "PMA",
+            "ARJ",
+            "ARC",
+            "BH",
+            "ALZ",
+            "EGG",
+            "PEA",
+            "ASAR",
+            "DEB",
+            "RAR",
+            "CAB",
+            "Compound",
+            "ISO",
+            "UDF"
+        ],
+        "suffixes": [
+            ".zip",
+            ".zipx",
+            ".xpi",
+            ".apk",
+            ".ipa",
+            ".cbz",
+            ".tar",
+            ".7z",
+            ".lha",
+            ".lzh",
+            ".pma",
+            ".arj",
+            ".arc",
+            ".bh",
+            ".alz",
+            ".egg",
+            ".pea",
+            ".asar",
+            ".deb",
+            ".rar",
+            ".cab",
+            ".msi",
+            ".iso",
+            ".udf"
+        ]
+    },
+    {
+        "id": "compressed-tar",
+        "labels": [
+            "TAR.GZ",
+            "TAR.BZ2",
+            "TAR.LZMA",
+            "TAR.LZ",
+            "TAR.XZ",
+            "TAR.LZ4",
+            "TAR.ZST",
+            "TAR.Z",
+            "TAR.BR"
+        ],
+        "suffixes": [
+            ".tar.gz",
+            ".tgz",
+            ".tar.bz2",
+            ".tar.bz",
+            ".tbz",
+            ".tbz2",
+            ".tar.lzma",
+            ".tlz",
+            ".tar.lz",
+            ".tar.xz",
+            ".txz",
+            ".tar.lz4",
+            ".tar.zst",
+            ".tzst",
+            ".tar.z",
+            ".taz",
+            ".tar.br"
+        ]
+    },
+    {
+        "id": "compressed-streams",
+        "labels": [
+            "GZIP",
+            "BZip2",
+            "LZMA",
+            "Lzip",
+            "XZ",
+            "LZ4",
+            "ZSTD",
+            "Z",
+            "Brotli",
+            "AES Crypt"
+        ],
+        "suffixes": [
+            ".gz",
+            ".bz2",
+            ".bz",
+            ".lzma",
+            ".lz",
+            ".xz",
+            ".lz4",
+            ".zst",
+            ".z",
+            ".br",
+            ".aes"
+        ]
+    },
+    {
+        "id": "text-envelopes",
+        "labels": [
+            "UU",
+            "XXE"
+        ],
+        "suffixes": [
+            ".uu",
+            ".uue",
+            ".xxe"
+        ]
+    }
+];
 var structureOnlyFormats = ["TAR", "LZMA", "TAR.LZMA", "Z", "TAR.Z", "UU", "XXE", "Brotli", "TAR.BR", "PEA", "NSIS", "Compound", "ISO", "UDF"];
 var declaredCheckFormats = ["XZ", "TAR.XZ", "LZ4", "TAR.LZ4", "ZSTD", "TAR.ZST", "AES Crypt", "LZH", "PMA", "ASAR", "DEB"];
