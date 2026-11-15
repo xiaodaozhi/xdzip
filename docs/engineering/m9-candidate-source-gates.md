@@ -8,7 +8,7 @@ This document records the next Bandizip inventory candidates. References stay in
 - The repository offers GPLv3+ for the project and a conditional LGPL-2.1+ choice for the library portion. The LGPL choice is conditional on third-party dependencies such as `libntfs-3g` not forcing GPL terms.
 - WIM is an imaging container rather than an ordinary archive. A bounded reader must handle resource tables, metadata streams, chunked resources, Xpress/LZX/LZMS compression, integrity tables, hard-link metadata and image selection without mounting or restoring security authority.
 
-The reference implementation is useful for wire and corpus research but cannot be linked into xdzip under the current no-third-party-runtime policy. WIM is **blocked pending gates**: a clean-room Rust reader, independently generated complete fixtures and a resource model covering decompression amplification, integrity resources, hard links and image selection must exist before any registry or runtime entry.
+The reference implementation is useful for wire and corpus research but cannot be linked into xdzip under the current no-third-party-runtime policy. WIM is **excluded by product decision**: the project will not take on the imaging-specific reader, decompression-amplification model, integrity resources, hard-link semantics and complete corpus needed to support it. No registry, MIME, runtime or CLI entry is permitted unless this product decision is explicitly revisited.
 
 ## Compound File and MSI
 
@@ -24,7 +24,7 @@ A standalone CFB metadata reader is technically feasible and is now implemented 
 - NSIS files are executable installers with script and embedded payload semantics. A parser must stay below the execution boundary, bound header and payload spans, and keep compression methods separate from installer behavior.
 - The public source defines the fixed `firstheader` record: `flags`, `0xDEADBEEF`, `NullsoftInstallSystem` signature words, `length_of_header` and `length_of_all_following_data`. A static reader can locate and validate this record without opening the PE stub, but it still needs an independent model for compressed header blocks and complete owned installers.
 
-NSIS is **blocked pending a metadata-only parser and complete owned installers**. The product must never run the stub, script, custom page, plug-in or extracted payload as part of opening, checking or extracting an NSIS file. Other SFX formats remain aliases only when their inner archive passes content validation.
+NSIS is an **accepted implementation candidate for static metadata browsing**. The first slice may inspect and expose bounded `firstheader` metadata and validated compressed-header spans from complete owned installers, but it must never run the PE stub, script, custom page, plug-in or extracted payload. It must remain independent of Qt and installer execution APIs; other SFX formats remain aliases only when their inner archive passes content validation.
 
 ## Admission gates
 

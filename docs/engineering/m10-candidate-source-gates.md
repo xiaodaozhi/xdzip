@@ -20,7 +20,7 @@ This record closes the next Bandizip inventory candidates after M9. It separates
 - **Complete samples:** A valid Store, zlib and BZip2 block can be generated from public tools, but a complete redistributable matrix still needs single-volume and segmented images, zero blocks, all pointer lengths, exact tail blocks, password modes, table obfuscation, truncation, offset and source-mutation cases. No such owned corpus is currently recorded in the repository.
 - **Clean-room feasibility:** The unencrypted, single-volume, read-only subset is technically separable from ISO browsing. A first implementation could decode the four documented block kinds into one virtual `image.iso` output, with no mounting or boot execution. However, legal clearance, an immutable reference pin and a complete fixture set must precede coding.
 - **Capability boundary:** Until those gates pass, do not register `.isz`, do not infer support from `IsZ!`, and do not expose password, AES, segmentation, writing or direct optical browsing. If later admitted, the decoder must validate header/version, pointer and segment tables, XOR/deobfuscation rules, block/data bounds, logical-size arithmetic, complete block termination, cancellation and input/work/output limits.
-- **Conclusion:** **Blocked pending legal and corpus gates.** The wire format is sufficiently described for a future bounded reader, but current evidence does not authorize product implementation.
+- **Conclusion:** **Excluded by product decision.** xdzip will not pursue ISZ support or contact EZB for a product license in this work package. No `.isz` detector or registry entry may be added unless the decision is revisited.
 
 ## ZPAQ
 
@@ -30,7 +30,7 @@ This record closes the next Bandizip inventory candidates after M9. It separates
 - **Complete samples:** A useful corpus must cover level 1 and 2 blocks, arbitrary ZPAQL programs, journaling updates, deduplication, encrypted and multipart records, SHA-1 verification and malformed VM or block boundaries. The repository has no such owned corpus.
 - **Clean-room feasibility:** Possible in theory, but the implementation is a virtual machine and resource-accounting project rather than a small container parser. Safe limits must charge bytecode interpretation, model memory, decompressed output, history and deduplication state.
 - **Capability boundary:** A future first slice would be read-only, unencrypted, non-multipart and non-journaled, with a declared VM subset. No creation, update, password handling or unbounded solid extraction is implied.
-- **Conclusion:** **Blocked.** Public specification exists, but the GPL reference, missing complete corpus and high-risk decompression VM prevent admission in M10.
+- **Conclusion:** **Excluded by product decision.** xdzip will not implement the ZPAQL virtual machine or accept a ZPAQ profile that depends on it. No `.zpaq` detector or registry entry may be added unless the decision is revisited.
 
 ## PEA
 
@@ -50,7 +50,7 @@ This record closes the next Bandizip inventory candidates after M9. It separates
 - **Complete samples:** None from a trustworthy, versioned source. A filename extension alone is not an acceptable fixture identity.
 - **Clean-room feasibility:** Cannot be assessed without a signature and enough complete samples to distinguish an archive from Microsoft Bond data or another binary payload.
 - **Capability boundary:** No detection, suffix registration, browsing, extraction, checking, creation, password or volume support.
-- **Conclusion:** **Blocked and unconfirmed as a Bandizip archive format.** Reopen only after an authoritative Bandizip source or vendor disclosure supplies a format identity and complete corpus.
+- **Conclusion:** **Excluded by product decision and unconfirmed as a Bandizip archive format.** No `.bond` detector or registry entry will be added in this work package.
 
 ## J2J
 
@@ -60,7 +60,7 @@ This record closes the next Bandizip inventory candidates after M9. It separates
 - **Complete samples:** No trustworthy, redistributable sample matrix exists in the repository. A `.j2j` name cannot establish a container identity.
 - **Clean-room feasibility:** Not assessable until the signature, record model and compression/encryption behavior are documented and a complete corpus is available.
 - **Capability boundary:** No detection, suffix registration, browsing, extraction, checking, creation, password or volume support.
-- **Conclusion:** **Blocked and unconfirmed as a Bandizip archive format.** Treat old third-party lists as historical leads only.
+- **Conclusion:** **Excluded by product decision and unconfirmed as a Bandizip archive format.** No `.j2j` detector or registry entry will be added in this work package.
 
 ## M10 admission gates
 
@@ -72,4 +72,4 @@ This record closes the next Bandizip inventory candidates after M9. It separates
 6. Connect runtime, CLI, associations and user-facing documentation only after the codec, snapshot identity, exact payload behavior and failure taxonomy pass targeted automation.
 7. A blocked candidate remains visible in the assessment as blocked. It must not receive a suffix, MIME entry or product capability merely because Bandizip or a third-party list names it.
 
-The repository guard `python scripts/test-m10-source-gates.py` checks that all six bilingual sections retain the required evidence fields, each conclusion remains explicitly blocked or unconfirmed, and no blocked candidate has entered `specs/engineering/archive-formats.json`.
+The repository guard `python scripts/test-m10-source-gates.py` checks that all six bilingual sections retain the required evidence fields, each conclusion remains explicitly blocked, excluded or admitted, and no blocked or excluded candidate has entered `specs/engineering/archive-formats.json`.

@@ -10,7 +10,8 @@ CHINESE = ROOT / "docs/zh-CN/engineering/m10-candidate-source-gates.md"
 REGISTRY = ROOT / "specs/engineering/archive-formats.json"
 
 CANDIDATES = ("DAA 1.0", "ISZ", "ZPAQ", "PEA", "BOND", "J2J")
-BLOCKED_CANDIDATES = ("DAA 1.0", "ISZ", "ZPAQ", "BOND", "J2J")
+BLOCKED_CANDIDATES = ("DAA 1.0",)
+EXCLUDED_CANDIDATES = ("ISZ", "ZPAQ", "BOND", "J2J")
 
 
 def section(document: str, heading: str) -> str:
@@ -56,6 +57,14 @@ class M10SourceGateTests(unittest.TestCase):
                 self.assertRegex(english, r"\*\*Conclusion:\*\* \*\*(?:Blocked|Blocked pending)")
                 chinese = section(self.chinese, candidate)
                 self.assertRegex(chinese, r"\*\*结论\*\*：\*\*(?:阻塞|等待)")
+
+    def test_excluded_candidates_have_explicit_excluded_conclusions(self):
+        for candidate in EXCLUDED_CANDIDATES:
+            with self.subTest(candidate=candidate):
+                english = section(self.english, candidate)
+                self.assertRegex(english, r"\*\*Conclusion:\*\* \*\*Excluded")
+                chinese = section(self.chinese, candidate)
+                self.assertRegex(chinese, r"\*\*结论\*\*：\*\*按产品决定明确不支持")
 
     def test_pea_has_an_explicit_admitted_profile(self):
         self.assertIn("**Conclusion:** **Admitted as a conservative read-only profile.", section(self.english, "PEA"))

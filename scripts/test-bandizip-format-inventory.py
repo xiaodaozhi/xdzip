@@ -62,8 +62,9 @@ EXPECTED_ROWS = [
 EXPECTED_STATUS_COUNTS = {
     "Admitted": 29,
     "Alias/profile": 7,
-    "Blocked": 6,
-    "Candidate": 2,
+    "Blocked": 2,
+    "Candidate": 3,
+    "Excluded": 3,
 }
 
 EXPECTED_STATUSES = {
@@ -84,7 +85,7 @@ EXPECTED_STATUSES = {
     "GZ": "Admitted",
     "IMG": "Candidate",
     "ISO": "Admitted",
-    "ISZ": "Blocked",
+    "ISZ": "Excluded",
     "LHA / LZH": "Admitted",
     "LZ": "Admitted",
     "LZMA": "Admitted",
@@ -97,19 +98,19 @@ EXPECTED_STATUSES = {
     "TLZ": "Alias/profile",
     "TXZ": "Alias/profile",
     "UDF": "Admitted",
-    "WIM": "Blocked",
+    "WIM": "Excluded",
     "XPI": "Alias/profile",
     "XZ": "Admitted",
     "Z": "Admitted",
     "ZIP": "Admitted",
     "ZIPX": "Alias/profile",
-    "ZPAQ": "Blocked",
+    "ZPAQ": "Excluded",
     "PEA": "Admitted",
     "UU / UUE": "Admitted",
     "XXE": "Admitted",
     "ASAR": "Admitted",
     "ZSTD": "Admitted",
-    "NSIS": "Blocked",
+    "NSIS": "Candidate",
     "LZ4": "Admitted",
 }
 
