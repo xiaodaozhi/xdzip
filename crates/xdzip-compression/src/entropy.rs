@@ -1,19 +1,20 @@
 //! Canonical prefix assignment shared by independently framed compression methods.
 use crate::{invalid, stream_io::filled};
 use std::io;
-pub(crate) struct Canonical {
-    counts: [u16; 17],
-    first: [u32; 17],
-    offset: [u16; 17],
+pub(crate) type Canonical = Prefix<17>;
+pub(crate) struct Prefix<const N: usize> {
+    counts: [u16; N],
+    first: [u32; N],
+    offset: [u16; N],
     symbols: Vec<u16>,
     singleton: Option<u16>,
 }
-impl Canonical {
+impl<const N: usize> Prefix<N> {
     pub fn single(symbol: u16) -> Self {
         Self {
-            counts: [0; 17],
-            first: [0; 17],
-            offset: [0; 17],
+            counts: [0; N],
+            first: [0; N],
+            offset: [0; N],
             symbols: vec![],
             singleton: Some(symbol),
         }
@@ -22,10 +23,15 @@ impl Canonical {
         self.singleton.is_some()
     }
     pub fn from_lengths(lengths: &[u8], maximum: u8, allow_single: bool) -> io::Result<Self> {
-        if lengths.is_empty() || lengths.len() > 4096 || !(1..=16).contains(&maximum) {
+        if lengths.is_empty()
+            || lengths.len() > 4096
+            || !(2..=29).contains(&N)
+            || !(1..=28).contains(&maximum)
+            || usize::from(maximum) >= N
+        {
             return Err(invalid());
         }
-        let mut counts = [0u16; 17];
+        let mut counts = [0u16; N];
         for &n in lengths {
             if n > maximum {
                 return Err(invalid());
@@ -41,8 +47,8 @@ impl Canonical {
             ));
         }
         let mut left = 1i32;
-        let mut first = [0u32; 17];
-        let mut offset = [0u16; 17];
+        let mut first = [0u32; N];
+        let mut offset = [0u16; N];
         for n in 1..=usize::from(maximum) {
             left = left * 2 - i32::from(counts[n]);
             if left < 0 {
@@ -76,7 +82,7 @@ impl Canonical {
             return Ok(value);
         }
         let mut code = 0u32;
-        for n in 1..17 {
+        for n in 1..N {
             let next = bit()?;
             if next > 1 {
                 return Err(invalid());
@@ -123,5 +129,28 @@ mod tests {
         );
         let tree = Canonical::from_lengths(&[1, 1], 16, false).unwrap();
         assert!(tree.symbol(|| Ok(2)).is_err());
+    }
+    #[test]
+    fn larger_pmarc_alphabets_admit_full_depth_without_growing_existing_tables() {
+        let mut lengths: Vec<u8> = (1..=27).collect();
+        lengths.extend([28, 28]);
+        let tree = Prefix::<29>::from_lengths(&lengths, 28, false).unwrap();
+        let mut count = 0;
+        assert_eq!(
+            tree.symbol(|| {
+                count += 1;
+                Ok(1)
+            })
+            .unwrap(),
+            28
+        );
+        assert_eq!(count, 28);
+        assert!(Prefix::<29>::from_lengths(&lengths, 27, false).is_err());
+        assert!(Canonical::from_lengths(&lengths, 28, false).is_err());
+        assert!(Prefix::<30>::from_lengths(&[1, 1], 29, false).is_err());
+        assert!(Prefix::<0>::from_lengths(&[1, 1], 1, false).is_err());
+        lengths[28] = 27;
+        assert!(Prefix::<29>::from_lengths(&lengths, 28, false).is_err());
+        assert!(std::mem::size_of::<Canonical>() < std::mem::size_of::<Prefix<29>>());
     }
 }
