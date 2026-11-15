@@ -84,4 +84,6 @@ pub(crate) const CASES: &[(&str, &str, usize, usize, usize, u16)] = &[
     ("lzs-initial.lzh", "lzs", 33, 2, 17, 0x317b),
     ("lz5-initial.lzh", "lz5", 33, 3, 18, 0xacad),
     ("lh2-unix-spaces.lzh", "lh2", 43, 46, 4096, 0x86c7),
+    ("lh2-unix-short.lzh", "lh2", 33, 57861, 99064, 0xc075),
+    ("lh2-jlha-short.lzh", "lh2", 33, 57863, 99064, 0xc075),
 ];

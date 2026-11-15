@@ -14,7 +14,7 @@ COMMIT='0a6348d96e9bbb1ac5ee8b3f6ff1c2c75b17d0d9'
 SOURCE_SHA='ef9feb1c59f55aff69b00c0d69dee5edaefb45e86950a99a6728beb35e70ff3a'
 JDK_SHA='98518ecf554465057ee5509462631deeee374bc368c12a411d225cd29381f84b'
 LHASA_SHA='5925e6a7b615d784e381e18240a1537d55a42cddad91d21e13c604a40974fe28'
-INPUT_SHA='088618b6faa40018bef0dca2d71758c784fc7e6a335a6601d6ae45febb156f82'
+INPUT_SHA='460f30c7e6576dece850f2bc71afb929e9fb5d324223d27b6f2912bca152b096'
 
 
 def run(command):
@@ -62,7 +62,7 @@ def setup(base):
     compiler=ROOT/'build/toolchain/strawberry-perl-5.42.3.1/c/bin/gcc.exe'
     pinned(compiler,'34a92e71f6814bd936135d0bd82b80b63daaf445791bba4a6bba93075235e8a4')
     for name in ['lha.h','probe.c']:shutil.copyfile(ROOT/'tests/fixtures/lha/author-reference'/name,author/name)
-    run([compiler,'-std=c99','-O2',author/'dhuf.c',author/'probe.c','-o',author/'probe.exe'])
+    run([compiler,'-std=c99','-O2',author/'probe.c','-o',author/'probe.exe'])
     return [jdk/'bin/java.exe','-Duser.timezone=UTC','-cp',classes,'Reference'],lhasa,seven,author/'probe.exe'
 
 
@@ -104,6 +104,15 @@ def initial_vectors():
         ('lzs-initial.lzh','lzs',fields([(0,1),(0,11),(15,4)]),b' '*17),
         ('lz5-initial.lzh','lz5',bytes([0,0,15]),bytes(13)+bytes([1])*5),
     ]
+
+
+def short_payload():
+    result=bytearray(range(64));state=0x6d2b79f5
+    for _ in range(33000):
+        state^=(state<<13)&0xffffffff;state^=state>>17;state^=(state<<5)&0xffffffff
+        distance=state%min(len(result),8192)+1
+        for _ in range(3):result.append(result[-distance])
+    return bytes(result)
 
 
 def main():
@@ -194,9 +203,25 @@ def main():
             if target.read_bytes()!=data:raise ValueError('Stale original Unix owned input')
         else:target.write_bytes(data)
         identities[name]=dict(method='lh2',level=2,header=header,packed=packed,decoded=size,crc16=crc,sha256=hashlib.sha256(data).hexdigest(),jlha_exact=False,lhasa_exact=False,sevenzip_exact=False,unix_exact=True)
+        payload=short_payload()
+        for profile in ['unix','jlha']:
+            name='lh2-'+profile+'-short.lzh';raw=work/'owned-short.raw'
+            if profile=='unix':raw.write_bytes(run([author,'--encode-short','33000']))
+            else:run([*java,'encode-jlha-short',raw])
+            body=raw.read_bytes();data,header=framed('lh2',body,payload);archive.write_bytes(data)
+            p=subprocess.run([str(author),str(raw),str(len(payload))],capture_output=True,timeout=15,creationflags=0x08000000)
+            author_exact=p.returncode==0 and p.stdout==payload
+            p=subprocess.run(list(map(str,[*java,'decode',archive,decoded])),capture_output=True,timeout=15,creationflags=0x08000000)
+            java_exact=p.returncode==0 and decoded.read_bytes()==payload
+            if (author_exact,java_exact)!=((True,False)if profile=='unix'else(False,True)):raise ValueError('Changed LH2 position-rescaling variant behavior')
+            target=dest/name
+            if args.check:
+                if target.read_bytes()!=data:raise ValueError('Stale owned position-rescaling input: '+name)
+            else:target.write_bytes(data)
+            identities[name]=dict(method='lh2',level=0,header=header,packed=len(body),decoded=len(payload),crc16=crc16(payload),sha256=hashlib.sha256(data).hexdigest(),jlha_exact=java_exact,lhasa_exact=False,sevenzip_exact=False,unix_exact=author_exact)
     identity=hashlib.sha256()
     for name in sorted(identities):identity.update(name.encode('utf-8')+b'\0'+(dest/name).read_bytes())
-    if len(identities)!=83 or identity.hexdigest()!=INPUT_SHA:raise ValueError('Owned input set does not match documented identity')
+    if len(identities)!=85 or identity.hexdigest()!=INPUT_SHA:raise ValueError('Owned input set does not match documented identity')
     rust=['// Generated independent LHA fixture expectations, not decoder output.','#[rustfmt::skip]','pub(crate) const CASES: &[(&str, &str, usize, usize, usize, u16)] = &[']
     rust.extend(f'    ("{name}", "{v["method"]}", {v["header"]}, {v["packed"]}, {v["decoded"]}, 0x{v["crc16"]:04x}),' for name,v in identities.items());rust.append('];')
     target=ROOT/'crates/xdzip-compression/src/lzh/fixture_cases.rs';data=('\n'.join(rust)+'\n').encode()

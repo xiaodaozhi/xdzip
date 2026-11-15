@@ -194,6 +194,11 @@ impl Adaptive {
             self.nodes[right].parent = Some(id);
             parents.push_back(id);
         }
+        self.root = parents
+            .back()
+            .or_else(|| leaves.front())
+            .copied()
+            .ok_or_else(invalid)?;
         let mut leaves = leaf_order;
         parents.clear();
         parents.extend(self.alphabet..parent_end);

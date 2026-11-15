@@ -42,6 +42,19 @@ public final class Reference {
         return output.finish();
     }
     public static void main(String[] args) throws Exception {
+        if (args.length == 2 && args[0].equals("encode-jlha-short")) {
+            ByteArrayOutputStream packed = new ByteArrayOutputStream();
+            PostLh2Encoder encoder = new PostLh2Encoder(packed);
+            for (int i = 0; i < 64; i++) encoder.writeCode(i);
+            int state = 0x6d2b79f5, produced = 64;
+            for (int i = 0; i < 33000; i++) {
+                state ^= state << 13; state ^= state >>> 17; state ^= state << 5;
+                int offset = (int) (Integer.toUnsignedLong(state) % Math.min(produced, 8192));
+                encoder.writeCode(256); encoder.writeOffset(offset); produced += 3;
+            }
+            encoder.close(); Files.write(Path.of(args[1]), packed.toByteArray());
+            return;
+        }
         if (args.length == 2 && args[0].equals("encode-unix-spaces")) {
             byte[] payload = new byte[4096]; Arrays.fill(payload, (byte) 32); byte[] packed = unixSpaces();
             CRC16 crc = new CRC16(); crc.update(payload);

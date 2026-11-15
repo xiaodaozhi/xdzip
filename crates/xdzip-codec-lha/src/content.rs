@@ -465,6 +465,21 @@ mod tests {
         }
     }
     fn expected(name: &str) -> Vec<u8> {
+        if name.ends_with("-short.lzh") {
+            let mut result: Vec<u8> = (0..64).collect();
+            let mut state = 0x6d2b79f5u32;
+            for _ in 0..33000 {
+                state ^= state << 13;
+                state ^= state >> 17;
+                state ^= state << 5;
+                let distance = state as usize % result.len().min(8192) + 1;
+                for _ in 0..3 {
+                    let byte = result[result.len() - distance];
+                    result.push(byte);
+                }
+            }
+            return result;
+        }
         if name == "lh5-initial.lzh" {
             return b"   ".to_vec();
         }
@@ -524,7 +539,7 @@ mod tests {
             );
             supported += 1;
         }
-        assert_eq!(supported, 83);
+        assert_eq!(supported, 85);
     }
     #[test]
     fn changed_headers_crc_and_later_packed_damage_are_terminal_even_after_output() {

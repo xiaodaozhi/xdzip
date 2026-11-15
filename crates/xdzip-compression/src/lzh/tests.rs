@@ -141,7 +141,21 @@ fn work_poll_and_typed_input_failures_cannot_resume_or_retry() {
 }
 
 pub(crate) fn expected(name: &str) -> Vec<u8> {
-    if name == "lh5-initial.lzh" {
+    if name.ends_with("-short.lzh") {
+        let mut result: Vec<u8> = (0..64).collect();
+        let mut state = 0x6d2b79f5u32;
+        for _ in 0..33000 {
+            state ^= state << 13;
+            state ^= state >> 17;
+            state ^= state << 5;
+            let distance = state as usize % result.len().min(8192) + 1;
+            for _ in 0..3 {
+                let byte = result[result.len() - distance];
+                result.push(byte);
+            }
+        }
+        result
+    } else if name == "lh5-initial.lzh" {
         b"   ".to_vec()
     } else if name == "lzs-initial.lzh" {
         vec![b' '; 17]

@@ -404,7 +404,7 @@ mod tests {
     fn independently_encoded_dynamic_lha_covers_initial_tree_adaptation_rescaling_and_history() {
         let mut cases = 0;
         for &(name, method, header, packed, decoded, crc) in crate::lzh::fixture_cases::CASES {
-            if !matches!(method, "lh1" | "lh2") || name == "lh2-unix-spaces.lzh" {
+            if !matches!(method, "lh1" | "lh2") || name.contains("unix") {
                 continue;
             }
             let bytes = std::fs::read(
@@ -430,6 +430,23 @@ mod tests {
             assert_eq!(crate::crc16(&output), crc);
             cases += 1;
         }
-        assert_eq!(cases, 16);
+        assert_eq!(cases, 17);
+    }
+    #[test]
+    fn original_position_rescaling_and_character_rescaling_match_the_author_stream() {
+        let bytes = include_bytes!("../../../tests/fixtures/lha/lh2-unix-short.lzh");
+        let mut reader = LhDynamicReader::with_lh2_variant(
+            Cursor::new(&bytes[33..33 + 57861]),
+            Lh2Variant::LhaUnix,
+            57861,
+            99064,
+            lh_dynamic_memory_required(),
+            96 * 1024 * 1024 * 1024,
+            || Ok(()),
+        )
+        .unwrap();
+        let mut output = vec![];
+        reader.read_to_end(&mut output).unwrap();
+        assert_eq!(output, crate::lzh::tests::expected("lh2-unix-short.lzh"));
     }
 }
