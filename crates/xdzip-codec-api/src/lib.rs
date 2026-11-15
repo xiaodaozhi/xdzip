@@ -162,6 +162,8 @@ pub enum Format {
     Arc,
     /// Sequential BlakHole regular files with the independently confirmed raw Deflate profile.
     Bh,
+    /// ALZ ordinary single-volume members with Store and raw Deflate methods.
+    Alz,
     /// Traditional UU/UUE and begin-base64 envelopes, including mixed UU/XX members.
     Uu,
     /// XX-encoded text envelopes containing only the XX alphabet.
@@ -298,6 +300,9 @@ impl Entry {
                 !self.warning && !self.link && !self.encrypted && matches!(self.method, 1..=9)
             }
             Format::Bh => !self.warning && !self.link && !self.encrypted && self.method == 8,
+            Format::Alz => {
+                !self.warning && !self.link && !self.encrypted && matches!(self.method, 0 | 2)
+            }
             Format::AesCrypt
             | Format::SevenZip
             | Format::Rar

@@ -53,3 +53,5 @@ ARJ uses `supported_content`. Complete metadata admission validates main, file a
 ARC uses `supported_content`: complete physical admission, actual decoding through old/new Store or methods 3–9, exact decoded size and required CRC-16/IBM. No unknown method, suspicious name or unsupported profile can be skipped to claim whole-archive success. Header SHA binding is a snapshot check, not authentication. See the [ARC contract](arc-streams.md).
 
 BH uses `supported_content`: complete `BH 05 07` member framing, method-8 raw Deflate termination, exact decoded size and required CRC-32. Unknown methods, invalid constants, suspicious names and unsupported profiles remain visible but block whole-archive success. See the [BH contract](bh-containers.md).
+
+ALZ uses `supported_content`: complete single-volume framing, Store or raw Deflate payload termination, exact decoded size and required CRC-32. Encrypted, descriptor, modified-BZip2, split and unknown-method records remain visible but block whole-archive success. See the [ACE, ALZ and EGG source gates](ace-alz-egg-format-sources.md).

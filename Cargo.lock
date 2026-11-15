@@ -1772,6 +1772,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-alz"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-compression",
+ "xdzip-crypto",
+ "xdzip-domain",
+]
+
+[[package]]
 name = "xdzip-codec-api"
 version = "0.2.0"
 dependencies = [
@@ -2062,6 +2072,7 @@ dependencies = [
  "unicode-normalization",
  "winapi-util",
  "xdzip-codec-aescrypt",
+ "xdzip-codec-alz",
  "xdzip-codec-api",
  "xdzip-codec-arc",
  "xdzip-codec-arj",

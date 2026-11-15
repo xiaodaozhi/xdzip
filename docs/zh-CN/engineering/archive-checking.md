@@ -62,3 +62,5 @@ ARC 使用 `supported_content`，完整验证物理结构，通过旧/新 Store 
 
 
 BH 使用 `supported_content`，完整验证 `BH 05 07` 成员结构、方法 8 raw Deflate 结束、准确解码长度和必需 CRC-32。未知方法、固定字段错误、可疑名称和不支持配置仍保持可见，但会阻止整包检查成功，详见 [BH 契约](bh-containers.md)。
+
+ALZ 使用 `supported_content`，完整验证单卷结构、Store 或原始 Deflate 的载荷结束、准确解码长度和必需 CRC-32。加密、数据描述符、改造 BZip2、分卷和未知方法记录保持可见，但会阻止整包检查成功，详见 [ACE、ALZ 与 EGG 资料门槛](ace-alz-egg-format-sources.md)。

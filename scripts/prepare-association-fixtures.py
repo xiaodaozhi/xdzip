@@ -54,6 +54,23 @@ def main():
     bh.extend(name)
     bh.extend(compressed)
     (output / 'sample.bh').write_bytes(bh)
+    alz_payload = b'xdzip ALZ association fixture\n'
+    alz_compressed = zlib.compressobj(level=6, wbits=-15)
+    alz_packed = alz_compressed.compress(alz_payload) + alz_compressed.flush()
+    alz = bytearray(b'ALZ\x01\x01\x00\x01\x00')
+    name = b'hello.txt'
+    alz.extend(b'BLZ\x01')
+    alz.extend(len(name).to_bytes(2, 'little'))
+    alz.extend(b'\x20')
+    alz.extend((0x12345678).to_bytes(4, 'little'))
+    alz.extend(b'\x40\x00\x02\x00')
+    alz.extend((zlib.crc32(alz_payload) & 0xffffffff).to_bytes(4, 'little'))
+    alz.extend(len(alz_packed).to_bytes(4, 'little'))
+    alz.extend(len(alz_payload).to_bytes(4, 'little'))
+    alz.extend(name)
+    alz.extend(alz_packed)
+    alz.extend(b'CLZ\x02' + b'\x00' * 16)
+    (output / 'sample.alz').write_bytes(alz)
     for suffix in ['lha','lzh']:
         shutil.copyfile(ROOT / 'tests/fixtures/lha/lh5-h2.lzh', output / ('sample.' + suffix))
     shutil.copyfile(ROOT / 'tests/fixtures/compress/phrase.Z', output / 'sample.z')

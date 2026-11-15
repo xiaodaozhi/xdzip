@@ -71,6 +71,7 @@ Open an archive to browse its directories, search and sort entries, and select f
 | [ARJ](docs/engineering/arj-streams.md) | Store and methods 1–4, validated headers and full member CRC-32 | Not supported | Not supported |
 | [ARC](docs/engineering/arc-streams.md) | Old/new Store and methods 3–9, exact framing and full member CRC-16 | Not supported | Not supported |
 | [BH](docs/engineering/bh-containers.md) | `BH 05 07` ordinary members, method 8 raw Deflate, exact sizes and CRC-32 | Not supported | Not supported |
+| [ALZ](docs/engineering/ace-alz-egg-format-sources.md) | Ordinary single-volume members using Store or raw Deflate, exact sizes and CRC-32 | Not supported | Not supported |
 | ASAR | Stored files/directories, shared payload ranges and declared file/block SHA-256 | Not supported | Not supported |
 | Z, TAR.Z (including `.taz`) | Unix compress LZW, 9–16-bit dictionaries and admitted CLEAR/alignment profiles | Not supported | Not supported |
 | Brotli, TAR.BR | Ordinary RFC 7932 streams, 10–24-bit windows and all static dictionary transforms | Not supported | Not supported |

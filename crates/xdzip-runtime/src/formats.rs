@@ -1,6 +1,7 @@
 //! Built-in capability routing. The host retains all paths and source authority.
 use std::io::{Read, SeekFrom};
 use xdzip_codec_aescrypt::AesCryptCodec;
+use xdzip_codec_alz::AlzCodec;
 use xdzip_codec_api::{
     Format, MetadataCodec, ReadSource, ScanError,
     encode::{CreationCodec, RewriteCodec},
@@ -32,6 +33,7 @@ impl Codec for PmaCodec {}
 impl Codec for ArjCodec {}
 impl Codec for ArcCodec {}
 impl Codec for BhCodec {}
+impl Codec for AlzCodec {}
 impl Codec for UuCodec {}
 impl Codec for AesCryptCodec {}
 pub(crate) fn codec(format: Format) -> &'static dyn Codec {
@@ -44,6 +46,7 @@ pub(crate) fn codec(format: Format) -> &'static dyn Codec {
         Format::Arj => &ArjCodec,
         Format::Arc => &ArcCodec,
         Format::Bh => &BhCodec,
+        Format::Alz => &AlzCodec,
         Format::AesCrypt => &AesCryptCodec,
         Format::Brotli => &StreamCodec {
             format: Format::Brotli,
@@ -235,6 +238,12 @@ pub(crate) fn detect(
         Format::Deb
     } else if magic[..4] == *b"MSCF" {
         Format::Cab
+    } else if magic[..4] == [0x41, 0x4c, 0x5a, 0x01] {
+        if AlzCodec::candidate(source, control)? {
+            Format::Alz
+        } else {
+            return Err(ScanError::Invalid);
+        }
     } else if let Some(format) = detect_optical(source)? {
         format
     } else if !recognized_tar(source, control)? && xdzip_codec_uu::candidate(source, control)? {
@@ -363,6 +372,9 @@ pub(crate) fn discover_weak(
     if let Some(found) = validate_bh(&mut input, control)? {
         return Ok(Some(found));
     }
+    if let Some(found) = validate_alz(&mut input, control)? {
+        return Ok(Some(found));
+    }
     if let Some(found) = validate_lha(&mut input, control)? {
         return Ok(Some(found));
     }
@@ -395,6 +407,9 @@ pub(crate) fn discover_ambiguous_tar(
     if let Some(found) = validate_bh(&mut input, control)? {
         return Ok(Some(found));
     }
+    if let Some(found) = validate_alz(&mut input, control)? {
+        return Ok(Some(found));
+    }
     if let Some(found) = validate_lha(&mut input, control)? {
         return Ok(Some(found));
     }
@@ -422,6 +437,19 @@ fn validate_bh(
     }
     match BhCodec.scan(source, control, limits(Format::Bh)) {
         Ok(rows) => Ok(Some((Format::Bh, rows))),
+        Err(ScanError::Invalid) => Ok(None),
+        Err(error) => Err(error),
+    }
+}
+fn validate_alz(
+    source: &mut dyn ReadSource,
+    control: &xdzip_codec_api::Cancellation,
+) -> Result<Option<(Format, Vec<xdzip_codec_api::Entry>)>, ScanError> {
+    if !AlzCodec::candidate(source, control)? {
+        return Ok(None);
+    }
+    match AlzCodec.scan(source, control, limits(Format::Alz)) {
+        Ok(rows) => Ok(Some((Format::Alz, rows))),
         Err(ScanError::Invalid) => Ok(None),
         Err(error) => Err(error),
     }
