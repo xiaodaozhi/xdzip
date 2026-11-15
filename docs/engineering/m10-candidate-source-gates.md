@@ -71,3 +71,5 @@ This record closes the next Bandizip inventory candidates after M9. It separates
 5. Keep every decoder independent of Qt, mounting, boot, installer, script, registry and arbitrary process execution APIs.
 6. Connect runtime, CLI, associations and user-facing documentation only after the codec, snapshot identity, exact payload behavior and failure taxonomy pass targeted automation.
 7. A blocked candidate remains visible in the assessment as blocked. It must not receive a suffix, MIME entry or product capability merely because Bandizip or a third-party list names it.
+
+The repository guard `python scripts/test-m10-source-gates.py` checks that all six bilingual sections retain the required evidence fields, each conclusion remains explicitly blocked or unconfirmed, and no blocked candidate has entered `specs/engineering/archive-formats.json`.

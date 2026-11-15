@@ -71,3 +71,5 @@
 5. 所有解码器独立于 Qt、挂载、启动、安装器、脚本、注册表和任意进程执行 API。
 6. 只有 codec、快照身份、准确载荷行为和失败分类通过定向自动化后，才能接入 runtime、CLI、关联入口和用户文档。
 7. 阻塞候选继续在评估中标为阻塞。不能因为 Bandizip 或第三方列表出现名称，就获得后缀、MIME 或产品能力。
+
+仓库回归命令 `python scripts/test-m10-source-gates.py` 会检查六项双语记录是否保留必要证据字段，每项结论是否仍明确为阻塞或未确认，以及阻塞候选是否误加入 `specs/engineering/archive-formats.json`。
