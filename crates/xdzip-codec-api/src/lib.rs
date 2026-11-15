@@ -158,6 +158,8 @@ pub enum Format {
     Pma,
     /// ARJ physical members with admitted Store and methods 1 through 4.
     Arj,
+    /// Sequential ARC regular files with admitted methods 1 through 9.
+    Arc,
     /// Traditional UU/UUE and begin-base64 envelopes, including mixed UU/XX members.
     Uu,
     /// XX-encoded text envelopes containing only the XX alphabet.
@@ -289,6 +291,9 @@ impl Entry {
             }
             Format::Arj => {
                 !self.warning && !self.link && !self.encrypted && matches!(self.method, 0..=4)
+            }
+            Format::Arc => {
+                !self.warning && !self.link && !self.encrypted && matches!(self.method, 1..=9)
             }
             Format::AesCrypt
             | Format::SevenZip

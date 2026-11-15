@@ -1,8 +1,18 @@
-# ARC compressed stream profiles
+# ARC containers and compressed stream profiles
 
 English | [简体中文](../zh-CN/engineering/arc-streams.md)
 
-`ArcReader` implements bounded raw decoding for ARC methods 3–9. Methods 1 and 2 are container Store profiles. Raw decoding does not establish product opening, checking or extraction; the [format registry](../../specs/engineering/archive-formats.json) declares actual host capabilities. ARC creation is outside this read-only expansion.
+`ArcReader` implements bounded raw decoding for ARC methods 3–9. Methods 1 and 2 are container Store profiles. `xdzip-codec-arc` and `ArcCodec` connect complete framing and required CRC-16 to runtime, CLI and desktop browsing, checking and extraction. The [format registry](../../specs/engineering/archive-formats.json) declares this read-only scope; creation, modification, passwords and volumes are unavailable.
+
+## Container and host admission
+
+The admitted profile uses ordinary ARC 5.x framing; ARC 6.x additional metadata and Spark extensions are not claimed. Every member starts with `0x1a` and its original method byte. Method 1 uses 25 bytes; all other nonzero methods use the ordinary 29-byte header. The thirteen-byte filename field must contain a nonempty NUL-terminated name. All integers are little endian: packed length at 15, DOS date/time at 19/21, required CRC-16 at 23 and ordinary decoded length at 25. Old Store inherits packed length. Both Store methods require equal lengths. Packed spans must fit, the next marker is mandatory, and the exact two-byte `1a00` terminator must coincide with physical EOF. No resynchronization, prefix scanning, padding or neighboring files are admitted.
+
+The container preserves every physical duplicate and unknown method. Metadata reads have a 64 MiB hard ceiling, at most 100000 records, caller-bounded raw names and a 24 GiB physical input ceiling. SHA-256 binds every header byte and terminator, including ignored name padding, when reopening an exact `Index`. Header hashes do not authenticate payload. Each reader has cumulative 24 GiB actual-input and decoded-byte ledgers and 96 GiB work, reserves table-CRC byte work before decoding, and terminates on any failure without budget refund or partial-index publication.
+
+The host retains strong-container and ZIP/SFX precedence, and fully validates weak ARC proposals under its shared probe ledger. Names are decoded as complete fields before DOS backslash conversion, using the shared bounded archive encoding decision. Original bytes and method IDs remain available. Suspicious/unresolved names and unknown methods remain visible without payload authority. ARC has no admitted directory, link, mode-restoration or external object profile. Legacy XOR has no encryption flag; stream, size and CRC validation remain mandatory, without password guessing or fallback. No dedicated Linux MIME registration is claimed by this profile.
+
+Payload opening reprojects and compares frozen entries; selected IDs identify physical rows and must match exactly. Runtime preflight, frozen host source identity, private staging, cancellation, old-file protection and final publication remain authoritative. Whole-archive `supported_content` checking actually decodes every admitted regular member, validates exact size and CRC-16, and fails on unsupported rows. A supported physical selection can still be extracted beside an unsupported neighbor.
 
 ## Sources and references
 

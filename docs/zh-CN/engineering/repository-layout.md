@@ -11,7 +11,7 @@
 | crates/xdzip-compression | 无第三方生产依赖的共享 Deflate/Deflate64/GZIP、LZMA/LZMA2、BZip2、PPMd7、MSZIP、LZX、Quantum 算法与封装，不拥有路径或发布能力；独立实现规则见[契约](independent-rust-codecs.md) |
 | crates/xdzip-crypto | 格式无关、固定内存的可清除敏感状态 SHA/HMAC 与 BLAKE 哈希，复用已准入基础原语；不解释归档密码或决定发布 |
 | crates/xdzip-codec-zip、xdzip-codec-tar | ZIP、TAR/GZIP 格式实现；不获取任意输出路径 |
-| crates/xdzip-codec-lha、xdzip-codec-arj | 自研 [LHA](lha-containers.md)、[PMA](pma-streams.md) 和 [ARJ](arj-streams.md) 结构与成员配置，不拥有文件系统权限；产品入口以格式登记为准，crate 存在不等于已准入 |
+| crates/xdzip-codec-lha、xdzip-codec-arj、xdzip-codec-arc | 自研 [LHA](lha-containers.md)、[PMA](pma-streams.md)、[ARJ](arj-streams.md) 和 [ARC](arc-streams.md) 结构与成员配置，不拥有文件系统权限；产品入口以格式登记为准，crate 存在不等于已准入 |
 | crates/xdzip-codec-7z | 自研 7z 容器、方法图、过滤器、AES 组合、流式创建及有界重写，不拥有文件路径 |
 | crates/xdzip-codec-cab | 自研 CAB 只读容器，使用宿主授权卷和共享算法；保留原始名称、UTF-8 声明及普通重名记录，不自行发现卷或发布输出；见[自研契约](independent-rust-codecs.md#cab只读规格)与[来源](cab-format-sources.md) |
 | crates/xdzip-codec-optical | 自研 ISO9660/Joliet/Rock Ridge/UDF 只读解析与内容流，不拥有文件路径 |

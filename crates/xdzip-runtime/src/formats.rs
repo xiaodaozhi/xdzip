@@ -6,6 +6,7 @@ use xdzip_codec_api::{
     encode::{CreationCodec, RewriteCodec},
     payload::PayloadCodec,
 };
+use xdzip_codec_arc::ArcCodec;
 use xdzip_codec_arj::ArjCodec;
 use xdzip_codec_asar::AsarCodec;
 use xdzip_codec_deb::DebCodec;
@@ -28,6 +29,7 @@ impl Codec for AsarCodec {}
 impl Codec for LhaCodec {}
 impl Codec for PmaCodec {}
 impl Codec for ArjCodec {}
+impl Codec for ArcCodec {}
 impl Codec for UuCodec {}
 impl Codec for AesCryptCodec {}
 pub(crate) fn codec(format: Format) -> &'static dyn Codec {
@@ -38,6 +40,7 @@ pub(crate) fn codec(format: Format) -> &'static dyn Codec {
         Format::Lha => &LhaCodec,
         Format::Pma => &PmaCodec,
         Format::Arj => &ArjCodec,
+        Format::Arc => &ArcCodec,
         Format::AesCrypt => &AesCryptCodec,
         Format::Brotli => &StreamCodec {
             format: Format::Brotli,
@@ -351,6 +354,9 @@ pub(crate) fn discover_weak(
     if let Some(found) = validate_arj(&mut input, control)? {
         return Ok(Some(found));
     }
+    if let Some(found) = validate_arc(&mut input, control)? {
+        return Ok(Some(found));
+    }
     if let Some(found) = validate_lha(&mut input, control)? {
         return Ok(Some(found));
     }
@@ -377,10 +383,26 @@ pub(crate) fn discover_ambiguous_tar(
     if let Some(found) = validate_arj(&mut input, control)? {
         return Ok(Some(found));
     }
+    if let Some(found) = validate_arc(&mut input, control)? {
+        return Ok(Some(found));
+    }
     if let Some(found) = validate_lha(&mut input, control)? {
         return Ok(Some(found));
     }
     validate_brotli(&mut input, control)
+}
+fn validate_arc(
+    source: &mut dyn ReadSource,
+    control: &xdzip_codec_api::Cancellation,
+) -> Result<Option<(Format, Vec<xdzip_codec_api::Entry>)>, ScanError> {
+    if !ArcCodec::candidate(source, control)? {
+        return Ok(None);
+    }
+    match ArcCodec.scan(source, control, limits(Format::Arc)) {
+        Ok(rows) => Ok(Some((Format::Arc, rows))),
+        Err(ScanError::Invalid) => Ok(None),
+        Err(error) => Err(error),
+    }
 }
 fn validate_arj(
     source: &mut dyn ReadSource,

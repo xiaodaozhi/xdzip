@@ -372,6 +372,16 @@
       ]
     },
     {
+      "id": "arc", "rust_variant": "Arc", "label": "ARC", "container": "arc", "filters": [], "worker_id": null,
+      "check_kind": "supported_content", "creation_levels": [],
+      "read_methods": ["store1", "store2", "packed", "squeezed", "crunched5", "crunched6", "crunched7", "crunched8", "squashed"], "write_methods": [], "rewrite": false,
+      "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [], "shell_mime_types": [],
+      "extensions": [
+        {"suffix": ".arc", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+      ]
+    },
+    {
       "id": "asar", "rust_variant": "Asar", "label": "ASAR", "container": "asar", "filters": [], "worker_id": null,
       "check_kind": "format_declared_checks", "creation_levels": [],
       "read_methods": ["store", "sha256"], "write_methods": [], "rewrite": false,

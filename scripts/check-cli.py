@@ -382,6 +382,20 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
             invoke('add',archive,source,code=1)
             assert hashlib.sha256(archive.read_bytes()).hexdigest()==before
         record('arj_store_methods_one_to_four_full_crc_selected_extraction_and_readonly_boundary')
+        for method in range(1,10):
+            archive=ROOT/'tests/fixtures/arc'/f'm{method}-phrase.arc'
+            before=hashlib.sha256(archive.read_bytes()).hexdigest()
+            listed=invoke('list',archive)['data']
+            assert listed['format']=='ARC' and len(listed['entries'])==1
+            entry=listed['entries'][0]
+            assert entry['path']=='HELLO.BIN' and entry['size']==3072
+            assert invoke('test',archive)['data']['check_kind']=='supported_content'
+            target=work/f'arc-method-{method}'
+            invoke('extract',archive,'--entry-id',entry['id'],'-C',target)
+            assert (target/'HELLO.BIN').read_bytes()==b'abracadabra abracadabra\n'*128
+            invoke('add',archive,source,code=1)
+            assert hashlib.sha256(archive.read_bytes()).hexdigest()==before
+        record('arc_methods_one_to_nine_full_crc_selected_extraction_and_readonly_boundary')
         for asar_name in ['ordinary.asar','without-integrity.asar','shared.asar','executable.asar','empty.asar']:
             asar=ROOT/'tests/fixtures/asar'/asar_name
             listed=invoke('list',asar)['data']

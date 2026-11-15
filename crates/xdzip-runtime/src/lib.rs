@@ -2,6 +2,8 @@
 #[cfg(test)]
 mod aescrypt_tests;
 #[cfg(test)]
+mod arc_tests;
+#[cfg(test)]
 mod arj_tests;
 #[cfg(test)]
 mod asar_tests;

@@ -57,3 +57,5 @@ LHA/LZH 使用 `format_declared_checks`，实际解码全部受支持普通文�
 PMA 使用 `format_declared_checks`，完整解码准入的 PM0/PM1/PM2，核对准确尺寸及存在的载荷 CRC-16；缺少 CRC 的成员仅检查结构、尺寸和可读性。未知方法和其他不支持条目阻止整包成功。CP/M 填充作为物理容器结构验证，位于成员压缩区间之外，详见 [PMA 契约](pma-streams.md)。
 
 ARJ 使用 `supported_content`。完整元数据准入验证主头部、文件头部及扩展头部 CRC-32；检查通过 Store 或方法 1–4 完整解码所有准入普通成员，核对准确尺寸和必需载荷 CRC-32，旧文本保留 CRC 覆盖的原始字节，不转换换行。未知或不支持记录阻止整包成功，详见 [ARJ 契约](arj-streams.md)。
+
+ARC 使用 `supported_content`，完整验证物理结构，通过旧/新 Store 或方法 3–9 实际解码，核对准确尺寸及必需 CRC-16/IBM。不跳过未知方法、可疑名称或不支持配置后宣称整包成功。头部 SHA 绑定用于冻结快照，不提供认证，详见 [ARC 契约](arc-streams.md)。

@@ -213,6 +213,12 @@ mod tests {
         assert!(arj.write_methods.is_empty() && arj.creation_suffixes.is_empty());
         assert!(!arj.rewrite && arj.worker_id.is_none());
         assert!(arj.read_encryption.is_empty() && arj.read_volumes.is_empty());
+        let arc = Format::Arc.descriptor();
+        assert_eq!(arc.read_methods.len(), 9);
+        assert_eq!(arc.check_kind, "supported_content");
+        assert!(arc.write_methods.is_empty() && arc.creation_suffixes.is_empty());
+        assert!(!arc.rewrite && arc.worker_id.is_none());
+        assert!(arc.read_encryption.is_empty() && arc.read_volumes.is_empty());
         for format in [Format::Zstd, Format::TarZstd] {
             let declaration = format.descriptor();
             assert_eq!(declaration.creation_method(93), Some("zstd"));

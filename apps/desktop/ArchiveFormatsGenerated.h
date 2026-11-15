@@ -4,7 +4,7 @@
 #include <string_view>
 // clang-format off
 namespace xdzip_formats {
-inline constexpr std::array<std::string_view, 49> DropSuffixes = {{
+inline constexpr std::array<std::string_view, 50> DropSuffixes = {{
     ".zip",
     ".zipx",
     ".xpi",
@@ -48,6 +48,7 @@ inline constexpr std::array<std::string_view, 49> DropSuffixes = {{
     ".lzh",
     ".pma",
     ".arj",
+    ".arc",
     ".asar",
     ".deb",
     ".rar",
@@ -55,7 +56,7 @@ inline constexpr std::array<std::string_view, 49> DropSuffixes = {{
     ".iso",
     ".udf",
 }};
-inline constexpr std::array<std::string_view, 49> ShellSuffixes = {{
+inline constexpr std::array<std::string_view, 50> ShellSuffixes = {{
     ".zip",
     ".zipx",
     ".xpi",
@@ -99,6 +100,7 @@ inline constexpr std::array<std::string_view, 49> ShellSuffixes = {{
     ".lzh",
     ".pma",
     ".arj",
+    ".arc",
     ".asar",
     ".deb",
     ".rar",
@@ -150,7 +152,7 @@ inline constexpr std::array<std::string_view, 42> ShellMimeTypes = {{
     "application/x-iso9660-image",
     "application/x-udf",
 }};
-inline constexpr std::array<std::string_view, 21> ReadOnlyLabels = {{
+inline constexpr std::array<std::string_view, 22> ReadOnlyLabels = {{
     "BZip2",
     "TAR.BZ2",
     "LZMA",
@@ -166,6 +168,7 @@ inline constexpr std::array<std::string_view, 21> ReadOnlyLabels = {{
     "AES Crypt",
     "PMA",
     "ARJ",
+    "ARC",
     "ASAR",
     "DEB",
     "RAR",
