@@ -66,6 +66,53 @@ EXPECTED_STATUS_COUNTS = {
     "Candidate": 2,
 }
 
+EXPECTED_STATUSES = {
+    "7Z": "Admitted",
+    "ACE": "Blocked",
+    "AES": "Admitted",
+    "ALZ": "Admitted",
+    "ARJ": "Admitted",
+    "BH": "Admitted",
+    "BIN": "Candidate",
+    "BR": "Admitted",
+    "BZ / BZ2": "Admitted",
+    "CAB": "Admitted",
+    "Compound(MSI)": "Admitted",
+    "DAA(1.0)": "Blocked",
+    "DEB": "Admitted",
+    "EGG": "Admitted",
+    "GZ": "Admitted",
+    "IMG": "Candidate",
+    "ISO": "Admitted",
+    "ISZ": "Blocked",
+    "LHA / LZH": "Admitted",
+    "LZ": "Admitted",
+    "LZMA": "Admitted",
+    "PMA": "Admitted",
+    "RAR / RAR5": "Admitted",
+    "SFX(EXE)": "Alias/profile",
+    "TAR": "Admitted",
+    "TBZ / TBZ2": "Alias/profile",
+    "TGZ": "Alias/profile",
+    "TLZ": "Alias/profile",
+    "TXZ": "Alias/profile",
+    "UDF": "Admitted",
+    "WIM": "Blocked",
+    "XPI": "Alias/profile",
+    "XZ": "Admitted",
+    "Z": "Admitted",
+    "ZIP": "Admitted",
+    "ZIPX": "Alias/profile",
+    "ZPAQ": "Blocked",
+    "PEA": "Admitted",
+    "UU / UUE": "Admitted",
+    "XXE": "Admitted",
+    "ASAR": "Admitted",
+    "ZSTD": "Admitted",
+    "NSIS": "Blocked",
+    "LZ4": "Admitted",
+}
+
 
 def _table_rows(path: Path, header: str):
     text = path.read_text(encoding="utf-8")
@@ -93,6 +140,7 @@ class BandizipInventoryTests(unittest.TestCase):
     def test_english_inventory_is_complete_and_ordered(self):
         rows = _table_rows(ENGLISH, "| Bandizip name | xdzip status |")
         self.assertEqual([row[0] for row in rows], EXPECTED_ROWS)
+        self.assertEqual({row[0]: row[1] for row in rows}, EXPECTED_STATUSES)
         self.assertEqual(Counter(row[1] for row in rows), Counter(EXPECTED_STATUS_COUNTS))
         for name, status, reason in rows:
             self.assertTrue(status)
