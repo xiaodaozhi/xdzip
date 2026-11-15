@@ -160,6 +160,8 @@ pub enum Format {
     Arj,
     /// Sequential ARC regular files with admitted methods 1 through 9.
     Arc,
+    /// Sequential BlakHole regular files with the independently confirmed raw Deflate profile.
+    Bh,
     /// Traditional UU/UUE and begin-base64 envelopes, including mixed UU/XX members.
     Uu,
     /// XX-encoded text envelopes containing only the XX alphabet.
@@ -295,6 +297,7 @@ impl Entry {
             Format::Arc => {
                 !self.warning && !self.link && !self.encrypted && matches!(self.method, 1..=9)
             }
+            Format::Bh => !self.warning && !self.link && !self.encrypted && self.method == 8,
             Format::AesCrypt
             | Format::SevenZip
             | Format::Rar

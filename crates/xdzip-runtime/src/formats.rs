@@ -9,6 +9,7 @@ use xdzip_codec_api::{
 use xdzip_codec_arc::ArcCodec;
 use xdzip_codec_arj::ArjCodec;
 use xdzip_codec_asar::AsarCodec;
+use xdzip_codec_bh::BhCodec;
 use xdzip_codec_deb::DebCodec;
 use xdzip_codec_lha::{LhaCodec, PmaCodec};
 use xdzip_codec_native::NativeCodec;
@@ -30,6 +31,7 @@ impl Codec for LhaCodec {}
 impl Codec for PmaCodec {}
 impl Codec for ArjCodec {}
 impl Codec for ArcCodec {}
+impl Codec for BhCodec {}
 impl Codec for UuCodec {}
 impl Codec for AesCryptCodec {}
 pub(crate) fn codec(format: Format) -> &'static dyn Codec {
@@ -41,6 +43,7 @@ pub(crate) fn codec(format: Format) -> &'static dyn Codec {
         Format::Pma => &PmaCodec,
         Format::Arj => &ArjCodec,
         Format::Arc => &ArcCodec,
+        Format::Bh => &BhCodec,
         Format::AesCrypt => &AesCryptCodec,
         Format::Brotli => &StreamCodec {
             format: Format::Brotli,
@@ -357,6 +360,9 @@ pub(crate) fn discover_weak(
     if let Some(found) = validate_arc(&mut input, control)? {
         return Ok(Some(found));
     }
+    if let Some(found) = validate_bh(&mut input, control)? {
+        return Ok(Some(found));
+    }
     if let Some(found) = validate_lha(&mut input, control)? {
         return Ok(Some(found));
     }
@@ -386,6 +392,9 @@ pub(crate) fn discover_ambiguous_tar(
     if let Some(found) = validate_arc(&mut input, control)? {
         return Ok(Some(found));
     }
+    if let Some(found) = validate_bh(&mut input, control)? {
+        return Ok(Some(found));
+    }
     if let Some(found) = validate_lha(&mut input, control)? {
         return Ok(Some(found));
     }
@@ -400,6 +409,19 @@ fn validate_arc(
     }
     match ArcCodec.scan(source, control, limits(Format::Arc)) {
         Ok(rows) => Ok(Some((Format::Arc, rows))),
+        Err(ScanError::Invalid) => Ok(None),
+        Err(error) => Err(error),
+    }
+}
+fn validate_bh(
+    source: &mut dyn ReadSource,
+    control: &xdzip_codec_api::Cancellation,
+) -> Result<Option<(Format, Vec<xdzip_codec_api::Entry>)>, ScanError> {
+    if !BhCodec::candidate(source, control)? {
+        return Ok(None);
+    }
+    match BhCodec.scan(source, control, limits(Format::Bh)) {
+        Ok(rows) => Ok(Some((Format::Bh, rows))),
         Err(ScanError::Invalid) => Ok(None),
         Err(error) => Err(error),
     }

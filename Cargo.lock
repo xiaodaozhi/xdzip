@@ -1812,6 +1812,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-bh"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-compression",
+ "xdzip-crypto",
+ "xdzip-domain",
+]
+
+[[package]]
 name = "xdzip-codec-bridge"
 version = "0.2.0"
 dependencies = [
@@ -2056,6 +2066,7 @@ dependencies = [
  "xdzip-codec-arc",
  "xdzip-codec-arj",
  "xdzip-codec-asar",
+ "xdzip-codec-bh",
  "xdzip-codec-deb",
  "xdzip-codec-lha",
  "xdzip-codec-native",

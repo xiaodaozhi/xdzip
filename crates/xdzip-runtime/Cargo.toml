@@ -15,6 +15,7 @@ xdzip-codec-asar = { path = "../xdzip-codec-asar" }
 xdzip-codec-lha = { path = "../xdzip-codec-lha" }
 xdzip-codec-arj = { path = "../xdzip-codec-arj" }
 xdzip-codec-arc = { path = "../xdzip-codec-arc" }
+xdzip-codec-bh = { path = "../xdzip-codec-bh" }
 xdzip-codec-uu = { path = "../xdzip-codec-uu" }
 xdzip-codec-aescrypt = { path = "../xdzip-codec-aescrypt" }
 xdzip-codec-stream = { path = "../xdzip-codec-stream" }

@@ -8,6 +8,8 @@ mod arj_tests;
 #[cfg(test)]
 mod asar_tests;
 #[cfg(test)]
+mod bh_tests;
+#[cfg(test)]
 mod brotli_tests;
 pub mod catalog;
 pub mod checking;

@@ -51,3 +51,5 @@ PMA uses `format_declared_checks` and fully decodes admitted PM0/PM1/PM2 members
 ARJ uses `supported_content`. Complete metadata admission validates main, file and extended-header CRC-32; checking fully decodes every admitted regular member through Store or methods 1–4, verifies exact sizes and mandatory payload CRC-32, and preserves CRC-covered legacy text bytes without newline translation. Unknown or unsupported records prevent whole-archive success. See the [ARJ contract](arj-streams.md).
 
 ARC uses `supported_content`: complete physical admission, actual decoding through old/new Store or methods 3–9, exact decoded size and required CRC-16/IBM. No unknown method, suspicious name or unsupported profile can be skipped to claim whole-archive success. Header SHA binding is a snapshot check, not authentication. See the [ARC contract](arc-streams.md).
+
+BH uses `supported_content`: complete `BH 05 07` member framing, method-8 raw Deflate termination, exact decoded size and required CRC-32. Unknown methods, invalid constants, suspicious names and unsupported profiles remain visible but block whole-archive success. See the [BH contract](bh-containers.md).

@@ -6,6 +6,7 @@ import io
 from pathlib import Path
 import shutil
 import tarfile
+import zlib
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -37,6 +38,22 @@ def main():
     shutil.copyfile(ROOT / 'tests/fixtures/pma/pm2-boundary-1024.pma', output / 'sample.pma')
     shutil.copyfile(ROOT / 'tests/fixtures/arj/m1-phrase.arj', output / 'sample.arj')
     shutil.copyfile(ROOT / 'tests/fixtures/arc/m8-phrase.arc', output / 'sample.arc')
+    bh_payload = b'xdzip BH association fixture\n'
+    encoder = zlib.compressobj(level=6, wbits=-15)
+    compressed = encoder.compress(bh_payload) + encoder.flush()
+    bh = bytearray(b'BH\x05\x07')
+    name = b'hello.txt'
+    bh.extend((37 + len(name)).to_bytes(2, 'little'))
+    bh.extend(b'\x25\xd8\x0c\x00\x08')
+    bh.extend((0x12345678).to_bytes(4, 'little'))
+    bh.extend(len(compressed).to_bytes(4, 'little'))
+    bh.extend(len(bh_payload).to_bytes(4, 'little'))
+    bh.extend((zlib.crc32(bh_payload) & 0xffffffff).to_bytes(4, 'little'))
+    bh.extend(b'\x20' + b'\x00' * 5)
+    bh.extend(len(name).to_bytes(4, 'little'))
+    bh.extend(name)
+    bh.extend(compressed)
+    (output / 'sample.bh').write_bytes(bh)
     for suffix in ['lha','lzh']:
         shutil.copyfile(ROOT / 'tests/fixtures/lha/lh5-h2.lzh', output / ('sample.' + suffix))
     shutil.copyfile(ROOT / 'tests/fixtures/compress/phrase.Z', output / 'sample.z')
