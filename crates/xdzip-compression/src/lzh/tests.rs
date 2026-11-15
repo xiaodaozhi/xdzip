@@ -38,7 +38,7 @@ fn independently_encoded_static_lha_methods_cover_all_header_levels_and_real_pay
         assert_eq!(crate::crc16(&result), crc, "{name}");
         cases += 1;
     }
-    assert_eq!(cases, 42);
+    assert_eq!(cases, 47);
 }
 fn single_literal(commands: u16) -> Vec<u8> {
     let mut bits = vec![];

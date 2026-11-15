@@ -37,6 +37,11 @@ pub(crate) fn refresh(bytes: &mut [u8], header: usize) {
             let crc = xdzip_compression::crc16(&bytes[..header]);
             bytes[27..29].copy_from_slice(&crc.to_le_bytes());
         }
+        3 => {
+            bytes[33..35].fill(0);
+            let crc = xdzip_compression::crc16(&bytes[..header]);
+            bytes[33..35].copy_from_slice(&crc.to_le_bytes());
+        }
         _ => panic!(),
     }
 }
@@ -76,7 +81,7 @@ fn independently_framed_members_preserve_header_sizes_skip_sizes_crc_and_physica
 }
 #[test]
 fn checksums_truncated_chains_later_damage_and_extra_tails_do_not_publish_partial_index() {
-    for name in ["lh5-h0.lzh", "lh5-h1.lzh", "lh5-h2.lzh"] {
+    for name in ["lh5-h0.lzh", "lh5-h1.lzh", "lh5-h2.lzh", "lh5-h3.lzh"] {
         let bytes = fixture(name);
         for cut in 0..bytes.len() {
             assert!(scan(&bytes[..cut]).is_err(), "{name} truncated at {cut}");
@@ -274,4 +279,39 @@ fn extended_names_modes_duplicate_declarations_and_necessary_boundary_padding_re
     assert!(record.directory);
     assert_eq!(record.raw_name, b"hello.bin\\");
     assert_eq!((record.packed_size, record.size), (0, 0));
+}
+#[test]
+fn level3_header_and_extension_sizes_are_admitted_before_allocation_or_range_use() {
+    let bytes = fixture("lh5-h3.lzh");
+    let index = scan(&bytes).unwrap();
+    assert_eq!(index.input_used, 54);
+    assert_eq!(index.records[0].payload_offset, 53);
+    assert_eq!(index.records[0].level, 3);
+    for (size, error) in [
+        (31, ScanError::Invalid),
+        (1024 * 1024 + 1, ScanError::Limit),
+        (u32::MAX, ScanError::Limit),
+    ] {
+        let mut bad = bytes.clone();
+        bad[24..28].copy_from_slice(&size.to_le_bytes());
+        assert_eq!(scan(&bad), Err(error));
+    }
+    for size in [1, 4, u32::MAX] {
+        let mut bad = bytes.clone();
+        bad[28..32].copy_from_slice(&size.to_le_bytes());
+        refresh(&mut bad, 53);
+        assert_eq!(scan(&bad), Err(ScanError::Invalid));
+    }
+    let mut bad = bytes.clone();
+    bad[0] = 8;
+    refresh(&mut bad, 53);
+    assert_eq!(scan(&bad), Err(ScanError::Unsupported));
+    let mut bad = bytes.clone();
+    bad[33] ^= 1;
+    assert_eq!(scan(&bad), Err(ScanError::Invalid));
+    let mut bad = bytes;
+    bad.insert(53, 0);
+    bad[24..28].copy_from_slice(&54u32.to_le_bytes());
+    refresh(&mut bad, 54);
+    assert_eq!(scan(&bad), Err(ScanError::Invalid));
 }

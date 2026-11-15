@@ -34,7 +34,7 @@ fn independent_larc_payloads_retain_absolute_history_flags_and_long_wraps() {
         assert_eq!(result, expected, "{name}");
         cases += 1;
     }
-    assert_eq!(cases, 18);
+    assert_eq!(cases, 20);
 }
 
 #[test]

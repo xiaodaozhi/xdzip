@@ -150,9 +150,10 @@ impl Extensions {
         header: &[u8],
         start: usize,
         size: usize,
+        width: usize,
         name_limit: usize,
     ) -> Result<(), ScanError> {
-        if size < 3 {
+        if size < width + 1 {
             return Err(ScanError::Invalid);
         }
         let section = header.get(start..start + size).ok_or(ScanError::Invalid)?;
@@ -161,7 +162,7 @@ impl Extensions {
             return Err(ScanError::Invalid);
         }
         self.seen[usize::from(kind)] = true;
-        let data = &section[1..size - 2];
+        let data = &section[1..size - width];
         match kind {
             0x00 => {
                 if !(2..=3).contains(&data.len()) {
@@ -217,14 +218,31 @@ fn member(
     let base_size = match level {
         0 | 1 => usize::from(first) + 2,
         2 => usize::from(word(&header, 0)?),
+        3 => {
+            if word(&header, 0)? != 4 {
+                return Err(ScanError::Unsupported);
+            }
+            grow(&mut header, &input.read(offset + 21, 11)?, MAX_HEADER)?;
+            usize::try_from(dword(&header, 24)?).map_err(|_| ScanError::Limit)?
+        }
         _ => return Err(ScanError::Unsupported),
     };
-    if base_size < if level == 2 { 26 } else { 22 } {
+    if base_size
+        < match level {
+            2 => 26,
+            3 => 32,
+            _ => 22,
+        }
+    {
         return Err(ScanError::Invalid);
     }
+    if base_size > MAX_HEADER {
+        return Err(ScanError::Limit);
+    }
+    let already = header.len();
     grow(
         &mut header,
-        &input.read(offset + 21, base_size - 21)?,
+        &input.read(offset + already as u64, base_size - already)?,
         MAX_HEADER,
     )?;
     if level < 2 && header[2..].iter().fold(0u8, |sum, b| sum.wrapping_add(*b)) != header[1] {
@@ -237,7 +255,7 @@ fn member(
     }
     let mut packed_size = u64::from(dword(&header, 7)?);
     let size = u64::from(dword(&header, 11)?);
-    let mut modified_dos = if level == 2 {
+    let mut modified_dos = if level >= 2 {
         dos(input.source, dword(&header, 15)?)?
     } else {
         dword(&header, 15)?
@@ -272,11 +290,24 @@ fn member(
     };
     let mut extensions = Extensions::new();
     if level != 0 {
-        let mut next_at = if level == 1 { base_size - 2 } else { 24 };
-        let mut at = if level == 1 { base_size } else { 26 };
+        let width = if level == 3 { 4 } else { 2 };
+        let mut next_at = match level {
+            1 => base_size - 2,
+            2 => 24,
+            _ => 28,
+        };
+        let mut at = match level {
+            1 => base_size,
+            2 => 26,
+            _ => 32,
+        };
         let mut count = 0;
         loop {
-            let amount = usize::from(word(&header, next_at)?);
+            let amount = if width == 2 {
+                usize::from(word(&header, next_at)?)
+            } else {
+                usize::try_from(dword(&header, next_at)?).map_err(|_| ScanError::Limit)?
+            };
             if amount == 0 {
                 break;
             }
@@ -284,7 +315,7 @@ fn member(
             if count > MAX_EXTENSIONS {
                 return Err(ScanError::Limit);
             }
-            if amount < 3 {
+            if amount < width + 1 {
                 return Err(ScanError::Invalid);
             }
             if level == 1 {
@@ -298,8 +329,8 @@ fn member(
                     .ok_or(ScanError::Invalid)?;
             }
             let end = at.checked_add(amount).ok_or(ScanError::Invalid)?;
-            extensions.add(&header, at, amount, limits.name_bytes)?;
-            next_at = end - 2;
+            extensions.add(&header, at, amount, width, limits.name_bytes)?;
+            next_at = end - width;
             at = end;
         }
         let boundary_padding =
@@ -373,7 +404,7 @@ fn member(
         modified_dos,
     })
 }
-/// Scan the complete level-0/1/2 container, with no partial index on a later failure.
+/// Scan the complete level-0/1/2/3 container, with no partial index on a later failure.
 pub fn inspect(
     source: &mut dyn ReadSource,
     cancel: &Cancellation,

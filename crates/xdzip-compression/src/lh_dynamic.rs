@@ -430,7 +430,7 @@ mod tests {
             assert_eq!(crate::crc16(&output), crc);
             cases += 1;
         }
-        assert_eq!(cases, 17);
+        assert_eq!(cases, 19);
     }
     #[test]
     fn original_position_rescaling_and_character_rescaling_match_the_author_stream() {

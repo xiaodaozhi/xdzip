@@ -14,7 +14,7 @@ COMMIT='0a6348d96e9bbb1ac5ee8b3f6ff1c2c75b17d0d9'
 SOURCE_SHA='ef9feb1c59f55aff69b00c0d69dee5edaefb45e86950a99a6728beb35e70ff3a'
 JDK_SHA='98518ecf554465057ee5509462631deeee374bc368c12a411d225cd29381f84b'
 LHASA_SHA='5925e6a7b615d784e381e18240a1537d55a42cddad91d21e13c604a40974fe28'
-INPUT_SHA='460f30c7e6576dece850f2bc71afb929e9fb5d324223d27b6f2912bca152b096'
+INPUT_SHA='7de84cef348be3901f82491316ac98d6653811aa8208f27f28c18ec4aa037f9d'
 
 
 def run(command):
@@ -122,7 +122,7 @@ def main():
     java,lhasa,seven,author=setup(args.references.resolve())
     methods=['lh0','lh1','lh2','lh3','lh4','lh5','lh6','lh7','lzs','lz4','lz5']
     phrase=b'abracadabra abracadabra\n'*6
-    cases=[(f'{method}-h{level}.lzh',method,level,phrase) for method in methods for level in range(3)]
+    cases=[(f'{method}-h{level}.lzh',method,level,phrase) for method in methods for level in range(4)]
     cases.append(('lh5-h2-padding.lzh','lh5',2,phrase))
     for method in methods:
         if method in ['lh0','lz4']:continue
@@ -161,8 +161,8 @@ def main():
             elif not lhasa_exact:raise ValueError('Independent Lhasa output mismatch: '+name)
             p=subprocess.run([str(seven),'x','-so',str(archive)],capture_output=True,timeout=15,creationflags=0x08000000)
             seven_exact=p.returncode==0 and p.stdout==payload
-            if name=='lh5-h2-padding.lzh':
-                if p.returncode!=2:raise ValueError('Changed expected 7-Zip level-2 padding limitation')
+            if name=='lh5-h2-padding.lzh' or level==3:
+                if p.returncode!=2:raise ValueError('Changed expected 7-Zip header profile limitation')
             elif method in ['lh0','lh4','lh5','lh6','lh7','lz4']:
                 if not seven_exact:raise ValueError('Independent 7-Zip output mismatch: '+name)
             elif p.returncode!=2:raise ValueError('Changed expected 7-Zip method limitation')
@@ -221,7 +221,7 @@ def main():
             identities[name]=dict(method='lh2',level=0,header=header,packed=len(body),decoded=len(payload),crc16=crc16(payload),sha256=hashlib.sha256(data).hexdigest(),jlha_exact=java_exact,lhasa_exact=False,sevenzip_exact=False,unix_exact=author_exact)
     identity=hashlib.sha256()
     for name in sorted(identities):identity.update(name.encode('utf-8')+b'\0'+(dest/name).read_bytes())
-    if len(identities)!=85 or identity.hexdigest()!=INPUT_SHA:raise ValueError('Owned input set does not match documented identity')
+    if len(identities)!=96 or identity.hexdigest()!=INPUT_SHA:raise ValueError('Owned input set does not match documented identity')
     rust=['// Generated independent LHA fixture expectations, not decoder output.','#[rustfmt::skip]','pub(crate) const CASES: &[(&str, &str, usize, usize, usize, u16)] = &[']
     rust.extend(f'    ("{name}", "{v["method"]}", {v["header"]}, {v["packed"]}, {v["decoded"]}, 0x{v["crc16"]:04x}),' for name,v in identities.items());rust.append('];')
     target=ROOT/'crates/xdzip-compression/src/lzh/fixture_cases.rs';data=('\n'.join(rust)+'\n').encode()

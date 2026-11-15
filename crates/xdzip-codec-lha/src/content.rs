@@ -539,7 +539,7 @@ mod tests {
             );
             supported += 1;
         }
-        assert_eq!(supported, 85);
+        assert_eq!(supported, 96);
     }
     #[test]
     fn changed_headers_crc_and_later_packed_damage_are_terminal_even_after_output() {
