@@ -1854,6 +1854,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-cfb"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-domain",
+]
+
+[[package]]
 name = "xdzip-codec-deb"
 version = "0.2.0"
 dependencies = [
@@ -2088,6 +2096,7 @@ dependencies = [
  "xdzip-codec-arj",
  "xdzip-codec-asar",
  "xdzip-codec-bh",
+ "xdzip-codec-cfb",
  "xdzip-codec-deb",
  "xdzip-codec-egg",
  "xdzip-codec-lha",

@@ -14,6 +14,8 @@ mod bh_tests;
 #[cfg(test)]
 mod brotli_tests;
 pub mod catalog;
+#[cfg(test)]
+mod cfb_tests;
 pub mod checking;
 #[cfg(test)]
 mod compress_tests;

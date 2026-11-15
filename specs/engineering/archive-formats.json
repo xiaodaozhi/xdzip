@@ -454,6 +454,16 @@
       ]
     },
     {
+      "id": "compound", "rust_variant": "Compound", "label": "Compound", "container": "cfb", "filters": [], "worker_id": null,
+      "check_kind": "structure_and_readability", "creation_levels": [],
+      "read_methods": ["store"], "write_methods": [], "rewrite": false,
+      "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
+      "creation_suffixes": [], "shell_mime_types": ["application/x-ole-storage"],
+      "extensions": [
+        {"suffix": ".msi", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+      ]
+    },
+    {
       "id": "iso", "rust_variant": "Iso", "label": "ISO", "container": "iso", "filters": [], "worker_id": 9,
       "check_kind": "structure_and_readability",
       "creation_levels": [],

@@ -55,6 +55,7 @@ const QHash<QString, QStringList> &extensions() {
         {".tar.xz", {"application/x-xz-compressed-tar"}},
         {".txz", {"application/x-xz-compressed-tar"}},
         {".cab", {"application/vnd.ms-cab-compressed", "application/x-cab"}},
+        {".msi", {"application/x-ole-storage"}},
         {".iso", {"application/x-iso9660-image"}},
         {".udf", {"application/x-udf"}}};
     return value;

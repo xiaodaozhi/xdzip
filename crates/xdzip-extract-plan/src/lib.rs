@@ -311,6 +311,7 @@ mod tests {
             xdzip_codec_api::Format::SevenZip,
             xdzip_codec_api::Format::Rar,
             xdzip_codec_api::Format::Cab,
+            xdzip_codec_api::Format::Compound,
             xdzip_codec_api::Format::Iso,
             xdzip_codec_api::Format::Udf,
         ] {

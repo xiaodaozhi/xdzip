@@ -186,6 +186,8 @@ pub enum Format {
     Rar,
     /// Microsoft Cabinet, read only through the isolated format worker.
     Cab,
+    /// Microsoft Compound File containers, including MSI metadata streams, read only.
+    Compound,
     /// ISO9660, Joliet and Rock Ridge optical images, read only.
     Iso,
     /// UDF optical images, read only; preferred for hybrid images.
@@ -312,6 +314,7 @@ impl Entry {
             | Format::SevenZip
             | Format::Rar
             | Format::Cab
+            | Format::Compound
             | Format::Iso
             | Format::Udf => {
                 !self.warning && !self.link && (!self.encrypted || self.password_supported)

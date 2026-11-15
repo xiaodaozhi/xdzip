@@ -241,6 +241,7 @@ mod tests {
         for format in [
             Format::Rar,
             Format::Cab,
+            Format::Compound,
             Format::Iso,
             Format::Udf,
             Format::Bzip2,

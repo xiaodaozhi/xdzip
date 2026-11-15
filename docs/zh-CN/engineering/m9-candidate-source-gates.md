@@ -15,7 +15,7 @@
 - Microsoft [MS-CFB] 是主要公开规范：https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-cfb/53989ce4-7b05-4f8d-829b-d08d6148375b 。页面发布 PDF/DOCX 版本，并包含允许实现所述技术的知识产权说明，专利许可仍受适用 Microsoft 计划约束。
 - CFB 读取器需要在解释 MSI 之前完成扇区、FAT/DIFAT、目录红黑树、mini-stream 分配、流长度边界和环检测。
 
-独立 CFB 元数据读取器技术上可行，可用于 `.msi` 浏览。MSI 表、内嵌 CAB、自定义动作和变换需要单独契约。首个可准入范围是只读 CFB 结构和命名流元数据，不执行安装器、自定义动作，不解释安装包脚本，也不回写。`.msi` 后缀不能授予执行权限。
+独立 CFB 元数据读取器技术上可行，当前已实现为 `xdzip-codec-cfb` 只读切片。它会在发布存储和流记录前验证 CFB 头部、FAT/DIFAT 链、目录树、mini-stream 分配、流长度边界和环。只有不可变元数据快照匹配后才允许复制原始流。MSI 表、内嵌 CAB、自定义动作和变换仍不在契约中，不执行安装器、自定义动作，不解释安装包脚本，也不回写，`.msi` 后缀不能授予执行权限。codec 和 runtime 的夹具及运行证据均为自动化测试。
 
 ## NSIS 与其他 SFX
 

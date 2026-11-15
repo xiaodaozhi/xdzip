@@ -1013,6 +1013,29 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         worker_id: Some(8),
     },
     FormatDescriptor {
+        format: Format::Compound,
+        id: "compound",
+        label: "Compound",
+        container: "cfb",
+        filters: &[],
+        read_methods: &[
+            "store",
+        ],
+        write_methods: &[],
+        read_encryption: &[],
+        write_encryption: &[],
+        read_volumes: &[],
+        write_volumes: &[],
+        creation_suffixes: &[],
+        rewrite: false,
+        creation_levels: &[],
+        check_kind: "structure_and_readability",
+        extensions: &[
+            ".msi",
+        ],
+        worker_id: None,
+    },
+    FormatDescriptor {
         format: Format::Iso,
         id: "iso",
         label: "ISO",
@@ -1102,7 +1125,8 @@ pub(super) fn descriptor(format: Format) -> &'static FormatDescriptor {
         Format::Deb => &DESCRIPTORS[32],
         Format::Rar => &DESCRIPTORS[33],
         Format::Cab => &DESCRIPTORS[34],
-        Format::Iso => &DESCRIPTORS[35],
-        Format::Udf => &DESCRIPTORS[36],
+        Format::Compound => &DESCRIPTORS[35],
+        Format::Iso => &DESCRIPTORS[36],
+        Format::Udf => &DESCRIPTORS[37],
     }
 }

@@ -11,6 +11,7 @@ use xdzip_codec_arc::ArcCodec;
 use xdzip_codec_arj::ArjCodec;
 use xdzip_codec_asar::AsarCodec;
 use xdzip_codec_bh::BhCodec;
+use xdzip_codec_cfb::CfbCodec;
 use xdzip_codec_deb::DebCodec;
 use xdzip_codec_egg::EggCodec;
 use xdzip_codec_lha::{LhaCodec, PmaCodec};
@@ -36,6 +37,7 @@ impl Codec for ArcCodec {}
 impl Codec for BhCodec {}
 impl Codec for AlzCodec {}
 impl Codec for EggCodec {}
+impl Codec for CfbCodec {}
 impl Codec for UuCodec {}
 impl Codec for AesCryptCodec {}
 pub(crate) fn codec(format: Format) -> &'static dyn Codec {
@@ -50,6 +52,7 @@ pub(crate) fn codec(format: Format) -> &'static dyn Codec {
         Format::Bh => &BhCodec,
         Format::Alz => &AlzCodec,
         Format::Egg => &EggCodec,
+        Format::Compound => &CfbCodec,
         Format::AesCrypt => &AesCryptCodec,
         Format::Brotli => &StreamCodec {
             format: Format::Brotli,
@@ -241,6 +244,8 @@ pub(crate) fn detect(
         Format::Deb
     } else if magic[..4] == *b"MSCF" {
         Format::Cab
+    } else if magic == [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1] {
+        Format::Compound
     } else if magic[..4] == [0x41, 0x4c, 0x5a, 0x01] {
         if AlzCodec::candidate(source, control)? {
             Format::Alz

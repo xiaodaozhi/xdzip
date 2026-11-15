@@ -48,6 +48,7 @@
         <dict><key>CFBundleTypeName</key><string>7z archive</string><key>CFBundleTypeRole</key><string>Viewer</string><key>LSHandlerRank</key><string>${XDZIP_MACOS_HANDLER_RANK}</string><key>LSItemContentTypes</key><array><string>org.7-zip.7-zip-archive</string></array><key>CFBundleTypeExtensions</key><array><string>7z</string></array><key>CFBundleTypeIconFile</key><string>xdzip-7z.icns</string></dict>
         <dict><key>CFBundleTypeName</key><string>RAR archive</string><key>CFBundleTypeRole</key><string>Viewer</string><key>LSHandlerRank</key><string>${XDZIP_MACOS_HANDLER_RANK}</string><key>LSItemContentTypes</key><array><string>com.rarlab.rar-archive</string></array><key>CFBundleTypeExtensions</key><array><string>rar</string></array><key>CFBundleTypeIconFile</key><string>xdzip-rar.icns</string></dict>
         <dict><key>CFBundleTypeName</key><string>CAB archive</string><key>CFBundleTypeRole</key><string>Viewer</string><key>LSHandlerRank</key><string>${XDZIP_MACOS_HANDLER_RANK}</string><key>LSItemContentTypes</key><array><string>com.microsoft.cab</string><string>com.microsoft.cab-archive</string></array><key>CFBundleTypeExtensions</key><array><string>cab</string></array><key>CFBundleTypeIconFile</key><string>xdzip-cab.icns</string></dict>
+        <dict><key>CFBundleTypeName</key><string>Microsoft Installer package</string><key>CFBundleTypeRole</key><string>Viewer</string><key>LSHandlerRank</key><string>${XDZIP_MACOS_HANDLER_RANK}</string><key>LSItemContentTypes</key><array><string>org.xdzip.msi</string></array><key>CFBundleTypeExtensions</key><array><string>msi</string></array><key>CFBundleTypeIconFile</key><string>xdzip-archive.icns</string></dict>
         <dict><key>CFBundleTypeName</key><string>ISO image</string><key>CFBundleTypeRole</key><string>Viewer</string><key>LSHandlerRank</key><string>${XDZIP_MACOS_HANDLER_RANK}</string><key>LSItemContentTypes</key><array><string>public.iso-image</string></array><key>CFBundleTypeExtensions</key><array><string>iso</string></array><key>CFBundleTypeIconFile</key><string>xdzip-iso.icns</string></dict>
         <!-- The extension remains discoverable when an older installed app shadows the UDF UTI. -->
         <dict><key>CFBundleTypeName</key><string>UDF image</string><key>CFBundleTypeRole</key><string>Viewer</string><key>LSHandlerRank</key><string>${XDZIP_MACOS_HANDLER_RANK}</string><key>CFBundleTypeExtensions</key><array><string>udf</string></array><key>CFBundleTypeIconFile</key><string>xdzip-udf.icns</string></dict>
@@ -69,6 +70,15 @@
             <key>UTTypeTagSpecification</key><dict>
                 <key>public.filename-extension</key><array><string>cab</string></array>
                 <key>public.mime-type</key><string>application/vnd.ms-cab-compressed</string>
+            </dict>
+        </dict>
+        <dict>
+            <key>UTTypeIdentifier</key><string>org.xdzip.msi</string>
+            <key>UTTypeDescription</key><string>Microsoft Installer package</string>
+            <key>UTTypeConformsTo</key><array><string>public.data</string><string>public.archive</string></array>
+            <key>UTTypeTagSpecification</key><dict>
+                <key>public.filename-extension</key><array><string>msi</string></array>
+                <key>public.mime-type</key><string>application/x-ole-storage</string>
             </dict>
         </dict>
         <dict>

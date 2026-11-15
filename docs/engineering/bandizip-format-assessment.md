@@ -23,7 +23,7 @@ The table uses the following meanings. **Admitted** means the current registry, 
 | BR | Admitted | Bounded Brotli stream and TAR.BR profiles. |
 | BZ / BZ2 | Admitted | BZip2 single-file streams and the declared TAR.BZ2 aliases. |
 | CAB | Admitted | Independent Rust CAB backend with Store, MSZip, Quantum, LZX and authorized cabinet sets. |
-| Compound(MSI) | Candidate | Structured Storage/CFB parsing and MSI streams need a separate container contract; extension-only admission is unsafe. |
+| Compound(MSI) | Admitted | Read-only CFB structure, storage/stream names and bounded raw stream copying for validated `.msi` content. MSI tables, embedded CAB interpretation, transforms, custom actions and installation remain outside the capability. |
 | DAA(1.0) | Blocked | Proprietary disk/archive format without a maintained public implementation in the product dependency policy. |
 | DEB | Admitted | Common `ar` envelope, control/data views and admitted compressed members. |
 | EGG | Admitted | Read-only non-encrypted, non-solid single-volume Store and raw Deflate with exact block sizes and CRC-32; AZO, BZip2, LZMA, encryption, split and other profiles remain outside the scope. |
@@ -58,7 +58,7 @@ The table uses the following meanings. **Admitted** means the current registry, 
 | NSIS | Candidate | Installer container with executable/script semantics; browsing requires a dedicated parser and must never grant execution authority. |
 | LZ4 | Admitted | Standard LZ4 frames and TAR.LZ4. |
 
-The inventory therefore does not justify adding generic handlers for `BIN`, `IMG`, `NSIS`, `Compound(MSI)` or `SFX(EXE)`. These names can describe executable, disk or installer data, and a suffix alone cannot establish an archive capability.
+The inventory therefore does not justify adding generic handlers for `BIN`, `IMG`, `NSIS` or `SFX(EXE)`. These names can describe executable, disk or installer data, and a suffix alone cannot establish an archive capability. Compound(MSI) now has a content-validated CFB reader; the `.msi` suffix still grants no execution authority.
 
 ## Delivery plan
 
@@ -66,7 +66,7 @@ The inventory therefore does not justify adding generic handlers for `BIN`, `IMG
 2. **Wire contract before code.** Pin public source revisions and SHA-256 values, document header fields, name encoding, physical termination, methods, checksums, duplicate identity and resource limits. A reference tool is evidence only when it produces complete owned samples; a crash or a single Store sample is recorded as a limitation.
 3. **Raw algorithm tests.** Implement the bounded reader independently of Qt. Cover empty and boundary payloads, every admitted method, exact input/output/work/memory budgets, cancellation, typed I/O, source mutation, truncation, trailing bytes, CRC and terminal poisoning. Unknown methods stay visible without payload authority.
 4. **Container and product admission.** Add the codec crate, runtime weak/strong discovery, CLI list/test/extract, desktop labels and association fixtures. Verify frozen metadata and physical duplicate selection, then run the relevant automatic Qt and layout checks. No manual visual acceptance is needed for this research/format slice.
-5. **Priority queue.** ALZ's conservative Store/raw-Deflate slice and EGG's non-encrypted, non-solid Store/raw-Deflate slice are admitted. The next feasible candidates are WIM only after a public bounded parser is selected, then Compound(MSI)/NSIS as metadata-only read paths. ACE, DAA, ISZ, ZPAQ and PEA remain blocked until specification and licensing gates are cleared. ZIPX creation and SFX creation are separate writer projects and do not follow from read alias support.
+5. **Priority queue.** ALZ's conservative Store/raw-Deflate slice, EGG's non-encrypted, non-solid Store/raw-Deflate slice and the CFB/Compound(MSI) metadata slice are admitted. WIM remains a candidate until a public bounded parser is selected. NSIS remains a metadata-only candidate because its installer stub and script boundary need a separate parser. ACE, DAA, ISZ, ZPAQ and PEA remain blocked until specification and licensing gates are cleared. ZIPX creation and SFX creation are separate writer projects and do not follow from read alias support.
 6. **Release boundary.** Keep all candidate formats out of the public capability table until the codec, runtime, CLI and desktop evidence is complete. Record unsupported methods and reference-tool limitations in the issue rather than silently falling back to Store or a different container.
 
-The current BH slice follows this plan. It is read only, has no password or volume path, and uses an independently bounded Deflate reader with mandatory CRC-32 and exact physical termination.
+The current BH slice follows this plan. It is read only, has no password or volume path, and uses an independently bounded Deflate reader with mandatory CRC-32 and exact physical termination. The Compound(MSI) slice follows the same boundary: CFB FAT/DIFAT, directory-tree, mini-stream and cycle validation are independent of Qt, and raw streams are copied only after the immutable metadata snapshot matches. No MSI installer behavior is executed.
