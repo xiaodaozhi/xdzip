@@ -1,4 +1,4 @@
-# PMA framing and PM2 primitive
+# PMA containers and PMarc methods
 
 English | [简体中文](../zh-CN/engineering/pma-streams.md)
 
@@ -21,6 +21,16 @@ An original CP/M archive ends with a zero byte and enough `0x1a` fill to reach t
 An eight-byte proposal never publishes a format by itself. The complete metadata chain, exact zero terminator and optional physical padding must validate before the host publishes rows. All weak-family probes share one input ledger. A CP/M empty archive identifies PMA by its bounded fill; an indistinguishable one-byte zero terminator retains the earlier LZH choice. Strong containers retain priority over weak discovery, and raw TAR-marker collisions require complete container admission. Source I/O failures remain terminal, including a typed malformed-input value originating from the host.
 
 Physical row IDs, raw/decoded names, flags, sizes and methods are compared again before payload output. PMA method 2 routes directly to PM2, without LHA's LH2 variant trials. CRC failures, unsupported methods and source changes retain the host's private staging and old-file protection. `.pma` is a shell/drop candidate on applicable platforms. No dedicated MIME type is declared, so this does not add a Linux PMA default-association claim.
+
+## PM1 raw profile
+
+`Pm1Reader` provides raw decoding independently of product admission. The current PMA adapter still marks PM1 unsupported. Its wire observations use Lhasa's [PM1 reference](https://github.com/fragglet/lhasa/blob/v0.6.0/lib/pm1_decoder.c), Git blob `bb2937e382c8c8a8f5783b94a96b9b59e2c4e74b`, under ISC. Rust represents fixed codewords directly and independently of the reference's packed relative-offset trees, and uses the shared bounded flat recency permutation. No strict clean-room claim or reference runtime dependency is made.
+
+The five-bit selector chooses one of 32 fixed literal-category alphabets. Categories select ranks starting at 0/16/32/64/128/192 with 4/4/5/6/6/6 low bits. Selector 17 has repeated category-3/4 branches and omits categories 0/1/5; both repeated branches retain their observed meaning. Selector 31 has no category bits and admits only ranks 0–15. Every literal or copied byte updates recency. The independent generator uses expanded symbolic alphabets, not the product's codeword lookup.
+
+Commands are an explicit history copy or a literal block of 1–216 bytes. A shorter literal block implies a subsequent copy when more decoded output remains; a 216-byte block returns to explicit command selection. The declared final literal may end the member without reading a synthetic copy. Copy classes 0/1 encode length two; other classes encode lengths 3–244. Distance prefixes grow at 64/576/2624 decoded bytes. Classes 3/4/5 widen their low fields at 320; 832/1088/1600; and 2880/3136/3648/4672/6720 bytes, respectively. Distances are offsets plus one, must reference emitted content, and use a 16 KiB ring with overlap and wrap. PM2's initial spaces grant no PM1 history.
+
+Literal and copy lengths must fit the declared remaining output; complete extra packed bytes are rejected. Final subbyte fill is ignored, but missing bytes are never replaced with zeroes. Historical reference EOF repair is outside this profile. Memory admission is 16 KiB history plus 32 KiB for input/state/scratch, with the same 24 GiB packed/decoded and 96 GiB work hard ceilings and smaller caller budgets. Source reads, prefix comparisons, rank movements and source-independent copies retain cooperative cancellation and terminal typed errors.
 
 ## PM2 wire model
 

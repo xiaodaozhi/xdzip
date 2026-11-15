@@ -55,4 +55,5 @@ third_party/brotli-rfc7932/LICENSE.txt text eol=lf
 # Owned LHA fixtures and independent expectation bytes are reproducible.
 tests/fixtures/lha/*.lzh binary
 tests/fixtures/pma/*.pma binary
+tests/fixtures/pma/*.bin binary
 crates/xdzip-compression/src/lzh/fixture_cases.rs text eol=lf

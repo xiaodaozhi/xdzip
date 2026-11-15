@@ -2,7 +2,7 @@
 use crate::{
     bitstream::Bits,
     entropy::Prefix,
-    invalid,
+    invalid, pmarc,
     stream_io::{filled, preserve_io_error, resource},
 };
 use std::io::{self, Read};
@@ -55,20 +55,7 @@ impl<R: Read, P: FnMut() -> io::Result<()>> Pm2Reader<R, P> {
         let mut bits = Bits::with_poll(source, packed, work.min(MAX_WORK), poll);
         bits.charge((DICTIONARY + 256) as u64)?;
         let history = filled(DICTIONARY, b' ')?;
-        let mut recent = [0; 256];
-        let mut at = 0;
-        for range in [
-            0x20..=0x7f,
-            0x00..=0x1f,
-            0xa0..=0xdf,
-            0x80..=0x9f,
-            0xe0..=0xff,
-        ] {
-            for byte in range {
-                recent[at] = byte;
-                at += 1;
-            }
-        }
+        let recent = pmarc::initial_order();
         Ok(Self {
             bits,
             history,
@@ -229,23 +216,7 @@ impl<R: Read, P: FnMut() -> io::Result<()>> Pm2Reader<R, P> {
         Ok(None)
     }
     fn observe(&mut self, byte: u8) -> io::Result<()> {
-        let mut rank = 0;
-        while rank < self.recent.len() {
-            self.bits.charge(1)?;
-            if self.recent[rank] == byte {
-                break;
-            }
-            rank += 1;
-        }
-        if rank == self.recent.len() {
-            return Err(invalid());
-        }
-        for index in (1..=rank).rev() {
-            self.bits.charge(1)?;
-            self.recent[index] = self.recent[index - 1];
-        }
-        self.recent[0] = byte;
-        Ok(())
+        pmarc::observe(&mut self.recent, byte, |n| self.bits.charge(n))
     }
     fn read_inner(&mut self, output: &mut [u8]) -> io::Result<usize> {
         if self.finished {
