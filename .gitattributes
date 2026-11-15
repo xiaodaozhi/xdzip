@@ -61,3 +61,5 @@ crates/xdzip-compression/src/lzh/fixture_cases.rs text eol=lf
 crates/xdzip-compression/src/pm1/fixture_cases.rs text eol=lf
 crates/xdzip-compression/src/pm2/fixture_cases.rs text eol=lf
 crates/xdzip-compression/src/arj/fixture_cases.rs text eol=lf
+tests/fixtures/arc/*.arc binary
+crates/xdzip-compression/src/arc/fixture_cases.rs text eol=lf

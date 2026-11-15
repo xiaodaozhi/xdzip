@@ -2,6 +2,7 @@
 //! Wire definitions: RFC 1951 sections 3.1–3.2 and RFC 1952 section 2.3.
 //! Constants below describe wire code ranges, not a reference implementation.
 mod adaptive_huffman;
+mod arc;
 mod arj;
 mod bitstream;
 mod brotli;
@@ -37,6 +38,7 @@ mod stream_io;
 mod xxhash;
 mod xxhash64;
 pub mod zstd;
+pub use arc::{ArcReader, arc_memory_required};
 pub use arj::{ArjReader, arj_memory_required};
 pub use brotli::{BrotliReader, brotli_memory_required};
 pub use byte_filter::{ByteFilter, ByteFilterKind};

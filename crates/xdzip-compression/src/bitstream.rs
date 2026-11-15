@@ -63,6 +63,10 @@ impl<R: Read, P: FnMut() -> io::Result<()>, const MSB: bool> Bits<R, P, MSB> {
         }
         Ok(())
     }
+    /// Logical unread bits, including the current byte, without reading past the span.
+    pub fn available_bits(&self) -> u64 {
+        (self.input.packed - self.input.consumed) * 8 + u64::from(self.count)
+    }
     pub fn align_zero(&mut self) -> io::Result<()> {
         if self.value != 0 {
             return Err(invalid());
