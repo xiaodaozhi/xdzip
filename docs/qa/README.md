@@ -19,7 +19,7 @@ Before building, downloading artifacts or rerunning workflows, check the commit 
 
 | Acceptance type | Necessary checks and evidence boundaries |
 | --- | --- |
-| Documentation and static resources | Check affected links, JSON and generated outputs; documentation changes do not automatically require real-device product acceptance. |
+| Documentation and static resources | Check affected links, JSON and generated outputs; for the Bandizip assessment, run `python scripts/test-bandizip-format-inventory.py` to keep the checked 44-row bilingual inventory complete and ordered. Documentation changes do not automatically require real-device product acceptance. |
 | Product, domain and bridge | Build and verify affected paths and corresponding failure, cancellation and protection behavior under the [CI policy](../engineering/ci-policy.md). Automated tests establish only their actual coverage. |
 | UI and native desktop | Run applicable window, shared-control and bilingual multiple-font-size checks. Operate actual windows and observe relevant states when required by the user or applicable specifications. Functional tests cannot replace required visual checks; static screenshots cannot establish transient behavior not observed. Recording is not a default requirement and is used only when explicitly requested or other suitable evidence cannot verify the issue. |
 | System interactions, installation and updates | Check affected system operations, identities, failures and recovery against the actual changes and contracts. Record isolated fixtures, test keys and controlled services separately from production. |
