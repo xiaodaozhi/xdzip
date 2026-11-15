@@ -11,6 +11,7 @@ Current product modules are defined by root Cargo.toml and CMakeLists.txt. This 
 | crates/xdzip-compression | Shared Deflate/Deflate64/GZIP, LZMA/LZMA2, BZip2, PPMd7, MSZIP, LZX, and Quantum algorithms/wrapping without third-party production dependencies or path/publication authority; see the [contract](independent-rust-codecs.md) |
 | crates/xdzip-crypto | Format-independent fixed-memory SHA/HMAC and BLAKE hashes with zeroizable sensitive state, reusing admitted primitives; does not interpret archive passwords or decide publication |
 | crates/xdzip-codec-zip, xdzip-codec-tar | ZIP and TAR/GZIP implementations; no arbitrary output paths |
+| crates/xdzip-codec-lha, xdzip-codec-arj | Independent [LHA](lha-containers.md)/[PMA](pma-streams.md) and [ARJ](arj-streams.md) framing/member profiles, without filesystem authority; product entry follows the format registry rather than the existence of a crate |
 | crates/xdzip-codec-7z | In-house 7z container, method graphs, filters, AES composition, streaming creation, and bounded rewriting without file-path ownership |
 | crates/xdzip-codec-cab | In-house read-only CAB container using host-authorized volumes and shared algorithms; preserves raw names, UTF-8 declarations, and ordinary duplicate-name records without discovering volumes or publishing output. See the [contract](independent-rust-codecs.md#cab只读规格) and [sources](cab-format-sources.md) |
 | crates/xdzip-codec-optical | In-house read-only ISO9660/Joliet/Rock Ridge/UDF parsing and content streams without file-path ownership |

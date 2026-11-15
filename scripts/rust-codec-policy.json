@@ -55,6 +55,10 @@
     {
       "package": "xdzip-codec-lha",
       "forbidden_runtime_dependencies": ["lha", "lhasa", "delharc", "delharc-sys", "lzhuf", "lzss", "libarchive", "libarchive3-sys", "sevenz-rust", "sevenz-rust2", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
+    },
+    {
+      "package": "xdzip-codec-arj",
+      "forbidden_runtime_dependencies": ["arj", "arj-sys", "unarj", "lha", "lhasa", "delharc", "lzhuf", "libarchive", "libarchive3-sys", "sevenz-rust", "sevenz-rust2", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
     }
   ]
 }

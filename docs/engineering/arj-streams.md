@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/arj-streams.md)
 
-`ArjReader` provides bounded raw decoding of ARJ methods 1–4. Store belongs to the container, not this reader. Raw tests do not establish product opening, checking, extraction or creation; the [format registry](../../specs/engineering/archive-formats.json) remains authoritative. Container and host admission require their own complete evidence.
+`ArjReader` provides bounded raw decoding of ARJ methods 1–4. Store belongs to the container, not this reader. `xdzip-codec-arj` supplies complete physical framing and CRC-verified member delivery over a host-owned source. These layers do not establish product opening, checking, extraction or creation; the [format registry](../../specs/engineering/archive-formats.json) remains authoritative. Host admission requires its own complete evidence.
 
 ## Sources and reference boundary
 
@@ -25,6 +25,16 @@ The stream is MSB-first. A length field counts 0–7 leading one bits, with a ze
 Static profiles admit 32 KiB history plus 64 KiB for input/tables/scratch. Fast decoding admits 16 KiB history plus 32 KiB for input/state/scratch. Packed and decoded sizes each have a hard 24 GiB ceiling, work a hard 96 GiB ceiling; smaller caller budgets remain authoritative. Output reads are at most 8192 bytes. Prefix operations, history work and source-independent copies preserve cooperative polling. `work_remaining()` supports the container's cumulative actual-work ledger.
 
 Declared lengths cannot be exceeded. Logical packed bytes must end exactly; final subbyte fill is ignored, complete extra bytes or missing input fail, and no zero EOF bytes are fabricated. Only bare `Interrupted` retries. Typed errors retain their first payload and terminate; any source, malformed data, quota or cancellation error poisons the reader. Raw readers have no path, credential, execution, filesystem publication or CRC authority.
+
+## Bounded physical containers
+
+`inspect` validates an offset-zero archive, a main first-header width of 30/34, file widths 30/34/46, and complete base blocks of at most 2600 bytes. Names and comments terminate exactly, the filename-position field grants no truncation authority, and all base/extended CRC-32 values pass. Each record admits at most 256 extended blocks, with 16-bit lengths. Opaque file attributes are validated and included in metadata identity, without application or execution. The exact `60 ea 00 00` terminal must end the physical source; no SFX prefix, padding or recovery tail is inferred.
+
+Metadata reads are capped at 64 MiB, physical entries at 100000, raw names at 4096 bytes each and 16 MiB in aggregate, with smaller caller limits retained. No later failure publishes a partial index. SHA-256 covers the complete physical metadata and terminator, including ignored comments/modifiers/attributes; `Reader::open` rescans and compares this plus every record and physical length before output. Source errors remain terminal, rather than becoming malformed-data guesses. Unix-host timestamps use only the optional host calendar; missing projections become zero, while callback errors terminate.
+
+The member profile admits required versions through 11, hosts DOS/Unix/OS2/Win95/WinNT, unencrypted binary/legacy-text methods 0–4 and empty Store directories. Unsupported methods, future versions, special types, Unix special modes, encryption/continuation/chapter fields remain explicit and cannot decode. Main volume/protection/security/dual-name/encryption/chapter profiles and dual-name file layouts are not admitted. Access modes and attributes never authorize permissions or special-file creation. Legacy text is delivered as the bytes covered by the archive size and CRC, matching 7-Zip; native Win32 ARJ instead expands LF to CRLF for the text profile. No host-dependent newline translation is performed.
+
+One reader retains 24 GiB cumulative actual input, including the fresh metadata scan, 24 GiB decoded output and 96 GiB work. CRC bit-step work for the declared output is reserved before lending the remaining work to the stateful decoder. Successful members account exactly for that reserve plus actual construction/model/Store work; failure terminates without refund. Caller sink accounting includes construction, rather than starting after initialization. All reads remain bounded to 8192 bytes, snapshots and physical indices are checked, and any payload/CRC/sink/cancellation/quota failure poisons the instance.
 
 ## Required container and host admission
 

@@ -1781,6 +1781,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-arj"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-compression",
+ "xdzip-crypto",
+]
+
+[[package]]
 name = "xdzip-codec-asar"
 version = "0.2.0"
 dependencies = [

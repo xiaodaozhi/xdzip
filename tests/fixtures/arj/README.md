@@ -15,3 +15,18 @@ All inputs use HELLO.BIN and RESULT.ARJ. A fresh owned directory and cleared ARJ
 Actual methods are 17 Store, six method 1, six method 2, six method 3 and five method 4. Empty and some incompressible inputs fall back to Store; generated descriptors preserve requested and actual methods. Those fallbacks never count as compressed-method evidence. Native empty inputs create zero-length Store files.
 
 Run `python scripts/generate-arj-fixtures.py --check` with the fixed references installed in the paths used by the script. It rebuilds the inputs independently, compares every archive byte and generated Rust descriptor, and verifies the set identity. For all 40 archives sorted by UTF-8 filename, SHA-256 over each filename, zero byte and complete archive is `9797b39865134962b6caa1a4ae0c2a546e108410f7f589ec14e5f54aa85ef93d`. Generated reports, original tool outputs and diagnostics remain under build/review/format-expansion.
+
+## Authored metadata profiles
+
+Container tests derive bounded metadata profiles from the owned method-1 phrase or empty Store archive, update base-header CRCs and preserve packed content. Canonical complete-input SHA-256 values bind those test constructions to independently read inputs:
+
+| Profile | Input SHA-256 |
+| --- | --- |
+| Main first width 30, file width 30 | `27287d9d989f6e4b1b9b805febce261fa10186508d86263f6f5e3a5826111b38` |
+| Main first width 30, file width 34 | `c64f8b7c6690f8d2939412a7b8e381e4b3e04799629f34080b2f098526fbfc75` |
+| Main first width 30, file width 46 | `ea3d4cda03e51d37d91697e2d5bc69847316bb531946d1d01d326d220f41ecf0` |
+| CRC-valid opaque Z attribute block | `d3dbabebd5f271c14309e88bd2fefac74a280a811c8034b66a689254fcc4db66` |
+| Legacy text type 1 | `0637d05e6d92b7c0efdf5c954f3928c4977fd46cbbb7ff91064edf5566c34e63` |
+| Empty directory type 3 with DOS directory attribute | `883ad27bdbb60c959a15fa1b2f27b6f95b1b2f5c4e3f0d4a9ce0010494a41e8f` |
+
+These are authored metadata inputs, separately from original native encoder output. Both references reproduce the binary profiles and directory semantics. The text profile has 3072 bytes under its declared size and CRC, reproduced exactly by 7-Zip. Native Win32 ARJ converts the 128 LF bytes to CRLF and writes 3200 bytes; that representation difference is not counted as an exact byte match. The product profile keeps the archive's CRC-covered bytes. `known.rs` supplies shared test-only plaintext construction, independently of the ARJ decoder and without another expected-byte implementation in each crate.
