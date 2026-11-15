@@ -424,6 +424,39 @@ mod tests {
     }
 
     #[test]
+    fn enforces_magic_alignment_flags_and_physical_bounds() {
+        let mut alternate = fixture();
+        alternate[0x400 + 4..0x400 + 8].copy_from_slice(&FIRSTHEADER_MAGIC_ALT.to_le_bytes());
+        assert_eq!(
+            NsisCodec::candidate(&mut Cursor::new(alternate), &Cancellation::default()),
+            Ok(true)
+        );
+
+        let mut unaligned = fixture();
+        let record = unaligned[0x400..0x400 + FIRSTHEADER_SIZE].to_vec();
+        unaligned[0x400..0x400 + FIRSTHEADER_SIZE].fill(0);
+        unaligned[0x404..0x404 + FIRSTHEADER_SIZE].copy_from_slice(&record);
+        assert_eq!(
+            NsisCodec::candidate(&mut Cursor::new(unaligned), &Cancellation::default()),
+            Ok(false)
+        );
+
+        let mut flags = fixture();
+        flags[0x400..0x404].copy_from_slice(&0x10u32.to_le_bytes());
+        assert_eq!(
+            NsisCodec::candidate(&mut Cursor::new(flags), &Cancellation::default()),
+            Ok(false)
+        );
+
+        let mut truncated = fixture();
+        truncated.truncate(0x400 + 80);
+        assert_eq!(
+            NsisCodec::candidate(&mut Cursor::new(truncated), &Cancellation::default()),
+            Ok(false)
+        );
+    }
+
+    #[test]
     fn static_row_cannot_be_decoded() {
         let bytes = fixture();
         let mut source = Cursor::new(bytes);
