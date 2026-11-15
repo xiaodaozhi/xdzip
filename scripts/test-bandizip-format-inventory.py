@@ -2,6 +2,7 @@
 """Guard the checked Bandizip inventory and its bilingual assessment tables."""
 
 from collections import Counter
+import json
 from pathlib import Path
 import unittest
 
@@ -9,6 +10,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 ENGLISH = ROOT / "docs/engineering/bandizip-format-assessment.md"
 CHINESE = ROOT / "docs/zh-CN/engineering/bandizip-format-assessment.md"
+REGISTRY = ROOT / "specs/engineering/archive-formats.json"
 
 EXPECTED_ROWS = [
     "7Z",
@@ -103,6 +105,17 @@ class BandizipInventoryTests(unittest.TestCase):
         for name, status, reason in rows:
             self.assertTrue(status)
             self.assertTrue(reason, name)
+
+    def test_blocked_and_ambiguous_names_have_no_registry_entry(self):
+        registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
+        registered = {
+            extension["suffix"]
+            for item in registry["formats"]
+            for extension in item["extensions"]
+        }
+        for suffix in (".ace", ".daa", ".isz", ".wim", ".zpaq", ".nsis", ".bin", ".img", ".exe"):
+            self.assertNotIn(suffix, registered, suffix)
+        self.assertIn(".pea", registered)
 
 
 if __name__ == "__main__":
