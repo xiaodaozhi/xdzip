@@ -517,4 +517,6 @@ English: Expanded previews require actual format/first-frame/first-page decoding
 
 **FORMAT-PEA：** 验证 PEA 1.x 到 1.6 版头部、单一物理卷、`POD`/`EOA` 结构、UTF-8 对象名称、存储文件和目录对象、准确 qword 尺寸、重复物理身份、源快照和终止。拒绝 PEA 2.0 流、未知版本、卷／ECC 控制、密码、认证或对象／流／卷哈希控制、PCOMPRESS1–3、畸形名称、截断、尾随字节、来源变化、取消和累计输入／输出／名称限额。实际 runtime、CLI、关联候选和双语登记检查与原始 codec 分开，创建、修改、分卷及所有压缩或认证配置仍不在准入切片。详见 [M10 候选格式资料和许可门槛](../engineering/m10-candidate-source-gates.md)。
 
+**FORMAT-NSIS：** 验证 `MZ`/`PE\0\0` 外层、有界节表和 overlay 扫描、512 字节对齐的 `firstheader` 候选、两个准入魔数、`NullsoftInstallSystem` 签名字、flags、头部/后续长度限额及后续数据的物理可用长度、取消和来源限额。只发布 `NSIS/firstheader` 静态元数据行，拒绝畸形 PE 或签名、不可能的长度和固定记录截断。`.exe` 登记项不具有拖放或系统关联权限。打开和解码载荷必须返回 `unsupported_feature`，绝不执行或暴露 PE stub、脚本、插件、安装动作、压缩头部或提取载荷。runtime 识别、CLI 列举和双语登记检查与原始 codec 分开。详见 [M9 候选资料门槛](../engineering/m9-candidate-source-gates.md)。
+
 **FORMAT-M10-SOURCE-GATES：** 在 DAA、ISZ、ZPAQ、PEA、BOND 或 J2J 进入格式登记前，必须记录权威规范、不可变参考版本或内容哈希、适用许可、完整可再分发夹具矩阵和有界净室能力契约。公开扩展名列表、GPL 参考可执行文件、只有头部的样本或只有 Store 的样本都不能授予探测或载荷权限。阻塞和未确认候选继续不进入 runtime、CLI、MIME 和关联消费者。详见 [M10 候选格式资料和许可门槛](../engineering/m10-candidate-source-gates.md)。

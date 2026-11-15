@@ -33,6 +33,8 @@ mod index;
 mod lha_tests;
 pub mod listing;
 pub mod navigation;
+#[cfg(test)]
+mod nsis_tests;
 pub mod preview;
 pub mod query;
 pub mod service;

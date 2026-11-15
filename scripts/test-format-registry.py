@@ -65,6 +65,20 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(set(declared), set(expected))
         self.assertEqual(len(declared), len(set(declared)))
 
+    def test_nsis_entry_is_metadata_only_and_never_an_association(self):
+        nsis = next(item for item in self.source['formats'] if item['id'] == 'nsis')
+        self.assertEqual(nsis['read_methods'], ['firstheader'])
+        self.assertEqual(nsis['write_methods'], [])
+        self.assertFalse(nsis['rewrite'])
+        self.assertEqual(nsis['shell_mime_types'], [])
+        self.assertEqual(nsis['extensions'], [{
+            'suffix': '.exe',
+            'drop': False,
+            'shell': False,
+            'windows_icon': None,
+            'macos_icon': None,
+        }])
+
     def test_boolean_is_not_schema_version(self):
         self.reject(lambda source: source.update(schema_version=True))
 

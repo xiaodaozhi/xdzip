@@ -20,6 +20,7 @@ xdzip-codec-alz = { path = "../xdzip-codec-alz" }
 xdzip-codec-egg = { path = "../xdzip-codec-egg" }
 xdzip-codec-cfb = { path = "../xdzip-codec-cfb" }
 xdzip-codec-pea = { path = "../xdzip-codec-pea" }
+xdzip-codec-nsis = { path = "../xdzip-codec-nsis" }
 xdzip-codec-uu = { path = "../xdzip-codec-uu" }
 xdzip-codec-aescrypt = { path = "../xdzip-codec-aescrypt" }
 xdzip-codec-stream = { path = "../xdzip-codec-stream" }

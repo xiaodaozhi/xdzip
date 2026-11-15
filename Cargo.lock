@@ -1901,6 +1901,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-nsis"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-domain",
+]
+
+[[package]]
 name = "xdzip-codec-optical"
 version = "0.2.0"
 dependencies = [
@@ -2109,6 +2117,7 @@ dependencies = [
  "xdzip-codec-egg",
  "xdzip-codec-lha",
  "xdzip-codec-native",
+ "xdzip-codec-nsis",
  "xdzip-codec-pea",
  "xdzip-codec-stream",
  "xdzip-codec-tar",

@@ -16,6 +16,7 @@ use xdzip_codec_deb::DebCodec;
 use xdzip_codec_egg::EggCodec;
 use xdzip_codec_lha::{LhaCodec, PmaCodec};
 use xdzip_codec_native::NativeCodec;
+use xdzip_codec_nsis::NsisCodec;
 use xdzip_codec_pea::PeaCodec;
 use xdzip_codec_stream::{
     StreamCodec,
@@ -40,6 +41,7 @@ impl Codec for AlzCodec {}
 impl Codec for EggCodec {}
 impl Codec for CfbCodec {}
 impl Codec for PeaCodec {}
+impl Codec for NsisCodec {}
 impl Codec for UuCodec {}
 impl Codec for AesCryptCodec {}
 pub(crate) fn codec(format: Format) -> &'static dyn Codec {
@@ -56,6 +58,7 @@ pub(crate) fn codec(format: Format) -> &'static dyn Codec {
         Format::Egg => &EggCodec,
         Format::Compound => &CfbCodec,
         Format::Pea => &PeaCodec,
+        Format::Nsis => &NsisCodec,
         Format::AesCrypt => &AesCryptCodec,
         Format::Brotli => &StreamCodec {
             format: Format::Brotli,
@@ -249,6 +252,15 @@ pub(crate) fn detect(
         Format::Cab
     } else if magic == [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1] {
         Format::Compound
+    } else if magic[..2] == *b"MZ" {
+        if NsisCodec::candidate(source, control)? {
+            Format::Nsis
+        } else {
+            // Keep the existing SFX fallback: a non-NSIS PE may still carry
+            // a validated ZIP overlay, which Archive::open discovers after
+            // the ordinary TAR probe fails.
+            Format::Tar
+        }
     } else if magic[0] == 0xea {
         if PeaCodec::candidate(source, control)? {
             Format::Pea

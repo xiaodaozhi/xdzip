@@ -60,10 +60,10 @@ EXPECTED_ROWS = [
 ]
 
 EXPECTED_STATUS_COUNTS = {
-    "Admitted": 29,
+    "Admitted": 30,
     "Alias/profile": 7,
     "Blocked": 2,
-    "Candidate": 3,
+    "Candidate": 2,
     "Excluded": 3,
 }
 
@@ -110,7 +110,7 @@ EXPECTED_STATUSES = {
     "XXE": "Admitted",
     "ASAR": "Admitted",
     "ZSTD": "Admitted",
-    "NSIS": "Candidate",
+    "NSIS": "Admitted",
     "LZ4": "Admitted",
 }
 
@@ -162,8 +162,16 @@ class BandizipInventoryTests(unittest.TestCase):
             for item in registry["formats"]
             for extension in item["extensions"]
         }
-        for suffix in (".ace", ".daa", ".isz", ".wim", ".zpaq", ".nsis", ".bin", ".img", ".exe"):
+        for suffix in (".ace", ".daa", ".isz", ".wim", ".zpaq", ".nsis", ".bin", ".img"):
             self.assertNotIn(suffix, registered, suffix)
+        nsis = next(item for item in registry["formats"] if item["id"] == "nsis")
+        self.assertEqual(nsis["extensions"], [{
+            "suffix": ".exe",
+            "drop": False,
+            "shell": False,
+            "windows_icon": None,
+            "macos_icon": None,
+        }])
         self.assertIn(".pea", registered)
 
 

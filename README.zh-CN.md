@@ -74,6 +74,7 @@
 | [ALZ](docs/zh-CN/engineering/ace-alz-egg-format-sources.md) | 普通单卷成员，支持 Store 或原始 Deflate，准确尺寸与 CRC-32 | 不支持 | 不支持 |
 | [EGG](docs/zh-CN/engineering/ace-alz-egg-format-sources.md) | 无加密、非固实的普通单卷成员，支持 Store 或原始 Deflate，准确尺寸与 CRC-32 | 不支持 | 不支持 |
 | [PEA](docs/zh-CN/engineering/m10-candidate-source-gates.md) | PEA 1.x 单卷、UTF-8 名称、无加密 PCOMPRESS0 存储文件与目录，不含对象、流或卷校验 | 不支持 | 不支持 |
+| NSIS（`.exe`） | 仅提供经内容验证的 PE overlay 中的静态 `firstheader` 元数据 | 不支持 | 不支持 |
 | ASAR | 存储文件与目录、共享载荷区间及声明的文件/块 SHA-256 | 不支持 | 不支持 |
 | Z、TAR.Z（包括 `.taz`） | Unix compress LZW、9–16 位字典及已准入 CLEAR/对齐配置 | 不支持 | 不支持 |
 | Brotli、TAR.BR | 普通 RFC 7932 流，10–24 位窗口和全部静态词典变换 | 不支持 | 不支持 |
@@ -97,6 +98,7 @@
 - BH 仅准入已独立确认的 `BH 05 07` 方法 8 raw Deflate 配置，只读。未知方法、加密、目录、分卷、尾部和 SFX 前缀不在范围内；官方 IZArc 命令行参考在当前环境产出结果前崩溃。
 
 - 浏览或提取只读 ASAR 不启动其中的应用。外置 `unpacked` 数据和声明的链接可见但不支持提取，不授予相邻目录访问或可执行权限恢复能力。可选摘要检查损坏，无摘要条目只提供结构与可读性检查，详见 [ASAR 契约](docs/zh-CN/engineering/asar-containers.md)。
+- NSIS 只有在 PE overlay 中发现有界且有效的 `firstheader` 记录时才按内容识别。xdzip 只发布静态元数据行，绝不执行 PE stub、安装器脚本、插件或载荷，不解压安装器头部，也不提供载荷提取；`.exe` 登记项不参与拖放和系统关联，这不是通用可执行文件处理器。
 - 进入磁盘索引的大型 ZIP 暂不支持整包测试或修改，所选普通文件仍可按任务上限解压；详见[大归档索引](docs/zh-CN/engineering/large-index.md)。
 - 暂不支持稀疏 TAR 和第三方扩展。普通 GZIP 及 XPI/APK/IPA/CBZ 候选遵循[单文件流契约](docs/zh-CN/engineering/single-file-streams.md)。旧编码文件名会尝试识别，但短名称或混合编码无法保证唯一识别，详见[文件名编码](docs/zh-CN/engineering/filename-encoding.md)。
 

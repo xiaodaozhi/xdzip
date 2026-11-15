@@ -194,6 +194,8 @@ pub enum Format {
     Udf,
     /// PEA 1.x single-volume, unencrypted PCOMPRESS0 archives, read only.
     Pea,
+    /// NSIS executable installers, static firstheader metadata only.
+    Nsis,
 }
 impl Format {
     /// Stable user-visible capability label.
@@ -312,6 +314,7 @@ impl Entry {
             Format::Egg => {
                 !self.warning && !self.link && !self.encrypted && matches!(self.method, 0 | 1)
             }
+            Format::Nsis => false,
             Format::AesCrypt
             | Format::SevenZip
             | Format::Rar

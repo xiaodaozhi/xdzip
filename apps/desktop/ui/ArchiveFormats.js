@@ -245,6 +245,6 @@ var creationFormats = [
     }
 ];
 var associationSuffixes = [".zip", ".zipx", ".xpi", ".apk", ".ipa", ".cbz", ".tar", ".tar.gz", ".tgz", ".7z", ".gz", ".bz2", ".bz", ".tar.bz2", ".tar.bz", ".tbz", ".tbz2", ".lzma", ".tar.lzma", ".tlz", ".lz", ".tar.lz", ".xz", ".tar.xz", ".txz", ".lz4", ".tar.lz4", ".zst", ".tar.zst", ".tzst", ".z", ".tar.z", ".taz", ".uu", ".uue", ".xxe", ".br", ".tar.br", ".aes", ".lha", ".lzh", ".pma", ".arj", ".arc", ".bh", ".alz", ".egg", ".pea", ".asar", ".deb", ".rar", ".cab", ".msi", ".iso", ".udf"];
-var formatLabels = ["ZIP", "TAR", "TAR.GZ", "7z", "GZIP", "BZip2", "TAR.BZ2", "LZMA", "TAR.LZMA", "Lzip", "TAR.LZ", "XZ", "TAR.XZ", "LZ4", "TAR.LZ4", "ZSTD", "TAR.ZST", "Z", "TAR.Z", "UU", "XXE", "Brotli", "TAR.BR", "AES Crypt", "LZH", "PMA", "ARJ", "ARC", "BH", "ALZ", "EGG", "PEA", "ASAR", "DEB", "RAR", "CAB", "Compound", "ISO", "UDF"];
-var structureOnlyFormats = ["TAR", "LZMA", "TAR.LZMA", "Z", "TAR.Z", "UU", "XXE", "Brotli", "TAR.BR", "PEA", "Compound", "ISO", "UDF"];
+var formatLabels = ["ZIP", "TAR", "TAR.GZ", "7z", "GZIP", "BZip2", "TAR.BZ2", "LZMA", "TAR.LZMA", "Lzip", "TAR.LZ", "XZ", "TAR.XZ", "LZ4", "TAR.LZ4", "ZSTD", "TAR.ZST", "Z", "TAR.Z", "UU", "XXE", "Brotli", "TAR.BR", "AES Crypt", "LZH", "PMA", "ARJ", "ARC", "BH", "ALZ", "EGG", "PEA", "NSIS", "ASAR", "DEB", "RAR", "CAB", "Compound", "ISO", "UDF"];
+var structureOnlyFormats = ["TAR", "LZMA", "TAR.LZMA", "Z", "TAR.Z", "UU", "XXE", "Brotli", "TAR.BR", "PEA", "NSIS", "Compound", "ISO", "UDF"];
 var declaredCheckFormats = ["XZ", "TAR.XZ", "LZ4", "TAR.LZ4", "ZSTD", "TAR.ZST", "AES Crypt", "LZH", "PMA", "ASAR", "DEB"];
