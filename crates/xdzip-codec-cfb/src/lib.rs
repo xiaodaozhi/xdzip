@@ -870,6 +870,53 @@ mod tests {
         bytes
     }
 
+    fn regular_major4_fixture() -> Vec<u8> {
+        let sector_size = 4096usize;
+        let sector_base = 4096usize;
+        let mut bytes = vec![0u8; sector_base + sector_size * 5];
+        bytes[..8].copy_from_slice(&SIGNATURE);
+        bytes[24..26].copy_from_slice(&0x003e_u16.to_le_bytes());
+        bytes[26..28].copy_from_slice(&4u16.to_le_bytes());
+        bytes[28..30].copy_from_slice(&0xfffe_u16.to_le_bytes());
+        bytes[30..32].copy_from_slice(&12u16.to_le_bytes());
+        bytes[32..34].copy_from_slice(&6u16.to_le_bytes());
+        bytes[44..48].copy_from_slice(&1u32.to_le_bytes());
+        bytes[48..52].copy_from_slice(&1u32.to_le_bytes());
+        bytes[56..60].copy_from_slice(&(MINI_STREAM_CUTOFF as u32).to_le_bytes());
+        bytes[60..64].copy_from_slice(&ENDOFCHAIN.to_le_bytes());
+        bytes[64..68].copy_from_slice(&0u32.to_le_bytes());
+        bytes[68..72].copy_from_slice(&ENDOFCHAIN.to_le_bytes());
+        bytes[72..76].copy_from_slice(&0u32.to_le_bytes());
+        bytes[76..80].copy_from_slice(&0u32.to_le_bytes());
+        for slot in 1..109 {
+            bytes[76 + slot * 4..80 + slot * 4].copy_from_slice(&FREESECT.to_le_bytes());
+        }
+
+        let fat = sector_base;
+        bytes[fat..fat + 4].copy_from_slice(&FATSECT.to_le_bytes());
+        bytes[fat + 4..fat + 8].copy_from_slice(&ENDOFCHAIN.to_le_bytes());
+        bytes[fat + 8..fat + 12].copy_from_slice(&3u32.to_le_bytes());
+        bytes[fat + 12..fat + 16].copy_from_slice(&ENDOFCHAIN.to_le_bytes());
+
+        let directory = sector_base + sector_size;
+        let root = directory;
+        write_name(&mut bytes[root..root + 128], "Root Entry", 5);
+        bytes[root + 76..root + 80].copy_from_slice(&1u32.to_le_bytes());
+        bytes[root + 116..root + 120].copy_from_slice(&ENDOFCHAIN.to_le_bytes());
+        let stream = directory + 128;
+        write_name(&mut bytes[stream..stream + 128], "large", 2);
+        bytes[stream + 68..stream + 72].copy_from_slice(&NOSTREAM.to_le_bytes());
+        bytes[stream + 72..stream + 76].copy_from_slice(&NOSTREAM.to_le_bytes());
+        bytes[stream + 76..stream + 80].copy_from_slice(&NOSTREAM.to_le_bytes());
+        bytes[stream + 116..stream + 120].copy_from_slice(&2u32.to_le_bytes());
+        bytes[stream + 120..stream + 128].copy_from_slice(&4097u64.to_le_bytes());
+
+        let payload = sector_base + sector_size * 2;
+        bytes[payload..payload + sector_size].fill(b'a');
+        bytes[payload + sector_size] = b'b';
+        bytes
+    }
+
     fn write_name(slot: &mut [u8], name: &str, kind: u8) {
         let units: Vec<u16> = name.encode_utf16().collect();
         for (index, unit) in units.iter().enumerate() {
@@ -922,6 +969,26 @@ mod tests {
         let mut sink = Sink(Vec::new());
         payload.decode(&rows[0], &mut sink, &cancel).unwrap();
         assert_eq!(sink.0, b"world");
+    }
+
+    #[test]
+    fn decodes_major4_regular_stream_across_sectors() {
+        let bytes = regular_major4_fixture();
+        let cancel = Cancellation::default();
+        let mut source = Cursor::new(bytes.clone());
+        let rows = CfbCodec
+            .scan(&mut source, &cancel, ScanLimits::default())
+            .unwrap();
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].display_name, "large");
+        assert_eq!(rows[0].size, 4097);
+        let mut source = Cursor::new(bytes);
+        let mut payload = CfbCodec.open_payload(&mut source, &rows, &cancel).unwrap();
+        let mut sink = Sink(Vec::new());
+        payload.decode(&rows[0], &mut sink, &cancel).unwrap();
+        assert_eq!(sink.0.len(), 4097);
+        assert!(sink.0[..4096].iter().all(|&byte| byte == b'a'));
+        assert_eq!(sink.0[4096], b'b');
     }
 
     #[test]
