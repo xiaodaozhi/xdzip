@@ -28,7 +28,7 @@ def pinned(path,sha):
         raise ValueError('Reference identity mismatch: '+path.name)
 
 
-def setup(base):
+def setup(base, *, dynamic_reference=True):
     ref=base/'jlha-0.0.11';pinned(ref/('jlha-'+COMMIT+'.zip'),SOURCE_SHA)
     with zipfile.ZipFile(ref/('jlha-'+COMMIT+'.zip')) as z:
         for e in z.infolist():
@@ -57,6 +57,7 @@ def setup(base):
     seven=base/'7zip-26.06-full/tools/7z.exe'
     pinned(seven,'dc0493429fe28136fcb177a0e77c9875cbb3b0bff5f2f8eeba4df302e98cef76')
     pinned(seven.with_name('7z.dll'),'500db9eb17f3c21b729ba41dd02ecfe1823da05028c7e4ba129084cc74cc364e')
+    if not dynamic_reference:return [jdk/'bin/java.exe','-Duser.timezone=UTC','-cp',classes,'Reference'],lhasa,seven,None
     author=base/'lha-dynamic-original'
     pinned(author/'dhuf.c','99a0d828039b85dc9061b797388be3d6408094224d35d7f482122d0305a7854b')
     compiler=ROOT/'build/toolchain/strawberry-perl-5.42.3.1/c/bin/gcc.exe'

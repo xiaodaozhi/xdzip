@@ -35,6 +35,8 @@ These are reference capabilities, separate from Rust method admission or product
 
 ## Reproduction and integrity
 
+`python scripts/check-lzh-writer.py` separately exports 21 owned Rust LH5 writer cases under a fresh `build/` child and compares their complete known contents with pinned jLHA, Lhasa and 7-Zip. Every level 1/6/9 covers empty, one-byte, all-byte, 100000 spaces, 65000 deterministic random bytes, the long phrase and nine repeats of the exact 8192-byte random window. Test-only level-0 framing and CRC are independently checked in Python; 7-Zip additionally tests the whole archive. This does not add generated writer archives to Git or establish product creation support. The dynamic original-C reference is unnecessary for this check and is not compiled by it.
+
 Run `python scripts/generate-lha-fixtures.py --check` with the verified references under the documented `build/toolchain/references/` subdirectories. Without `--check`, it regenerates the owned archives and compile-time fixture expectations. Actual reference results and temporary extraction files go under `build/review/format-expansion/`; the source tree contains only durable owned inputs, the harness and expectations.
 
 For all 98 archive files sorted by UTF-8 filename, SHA-256 of the concatenation of each filename, one zero byte and its complete archive bytes is `bcb64d4be9c7d2b7cbcc364b276a3512f50b2318696bf3f837fd5c185374170e`. The generator's check mode compares every archive and the exact Rust fixture expectations. Rust primitive tests independently compare complete decoded bytes and declared CRCs; self-roundtrips are not the independent reference.
