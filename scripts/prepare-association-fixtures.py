@@ -35,6 +35,7 @@ def main():
     shutil.copyfile(ROOT / 'tests/fixtures/brotli/files.tar.br', output / 'sample.tar.br')
     shutil.copyfile(ROOT / 'tests/fixtures/asar/ordinary.asar', output / 'sample.asar')
     shutil.copyfile(ROOT / 'tests/fixtures/pma/pm2-boundary-1024.pma', output / 'sample.pma')
+    shutil.copyfile(ROOT / 'tests/fixtures/arj/m1-phrase.arj', output / 'sample.arj')
     for suffix in ['lha','lzh']:
         shutil.copyfile(ROOT / 'tests/fixtures/lha/lh5-h2.lzh', output / ('sample.' + suffix))
     shutil.copyfile(ROOT / 'tests/fixtures/compress/phrase.Z', output / 'sample.z')

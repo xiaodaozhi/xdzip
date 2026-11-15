@@ -9666,10 +9666,11 @@ QtObject {
         QTRY_VERIFY(formats->width() > 0);
         QTRY_VERIFY(formats->width() <= 608);
         for (const auto &format :
-             {"ZIP",      "TAR",    "TAR.GZ", "7z",  "GZIP",   "BZip2", "TAR.BZ2", "LZMA",
-              "TAR.LZMA", "Lzip",   "TAR.LZ", "XZ",  "TAR.XZ", "LZ4",   "TAR.LZ4", "ZSTD",
-              "TAR.ZST",  "DEB",    "ASAR",   "UU",  "XXE",    "Z",     "TAR.Z",   "AES Crypt",
-              "Brotli",   "TAR.BR", "LZH",    "PMA", "RAR",    "CAB",   "ISO",     "UDF"}) {
+             {"ZIP",     "TAR",      "TAR.GZ",    "7z",     "GZIP",   "BZip2",  "TAR.BZ2",
+              "LZMA",    "TAR.LZMA", "Lzip",      "TAR.LZ", "XZ",     "TAR.XZ", "LZ4",
+              "TAR.LZ4", "ZSTD",     "TAR.ZST",   "DEB",    "ASAR",   "UU",     "XXE",
+              "Z",       "TAR.Z",    "AES Crypt", "Brotli", "TAR.BR", "LZH",    "PMA",
+              "ARJ",     "RAR",      "CAB",       "ISO",    "UDF"}) {
             auto *badge =
                 findVisual(window->contentItem(), "welcomeFormat-" + QString::fromLatin1(format));
             QVERIFY(badge && badge->isVisible());
@@ -9702,14 +9703,15 @@ QtObject {
               QStringLiteral("ASAR"),   QStringLiteral("UU"),      QStringLiteral("XXE"),
               QStringLiteral("Z"),      QStringLiteral("TAR.Z"),   QStringLiteral("AES Crypt"),
               QStringLiteral("Brotli"), QStringLiteral("TAR.BR"),  QStringLiteral("LZH"),
-              QStringLiteral("PMA")}) {
+              QStringLiteral("PMA"),    QStringLiteral("ARJ")}) {
             task->setProperty("resultTask", QVariantMap{{"kind", "check"}, {"format", format}});
             QVERIFY(QMetaObject::invokeMethod(task, "present"));
             QTRY_VERIFY(task->isVisible());
             auto *footer = findVisual(task->contentItem(), "taskFooter");
             QVERIFY(footer);
             QCOMPARE(footer->property("note").toString(),
-                     format == "TAR" ? qtTrId("integrity.tarNote")
+                     format == "ARJ"   ? qtTrId("integrity.readOnlyNote")
+                     : format == "TAR" ? qtTrId("integrity.tarNote")
                      : format.contains("XZ") || format.contains("LZ4") || format.contains("ZST") ||
                              format == "DEB" || format == "ASAR" || format == "AES Crypt" ||
                              format == "LZH" || format == "PMA"
@@ -9767,11 +9769,55 @@ QtObject {
                                                      {"../pma/pm2-boundary-1024.pma", "PMA"},
                                                      {"../pma/pm2-deep28.pma", "PMA"},
                                                      {"../pma/pm1-selector-17.pma", "PMA"},
-                                                     {"../pma/pm1-long-overlap.pma", "PMA"}};
+                                                     {"../pma/pm1-long-overlap.pma", "PMA"},
+                                                     {"../arj/m1-phrase.arj", "ARJ"},
+                                                     {"../arj/m2-phrase.arj", "ARJ"},
+                                                     {"../arj/m3-phrase.arj", "ARJ"},
+                                                     {"../arj/m4-phrase.arj", "ARJ"}};
         for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
             for (const auto &[fixture, format] : formats)
                 QTest::newRow(qPrintable(fixture + "-" + language))
                     << fixture << format << language;
+    }
+    void arjUnknownMethodKeepsItsOwnNumericIdentity() {
+        QTemporaryDir owned;
+        QVERIFY(owned.isValid());
+        QFile original(QDir(QStringLiteral(XDZIP_FIXTURES)).filePath("../arj/m0-phrase.arj"));
+        QVERIFY(original.open(QIODevice::ReadOnly));
+        auto bytes = original.readAll();
+        QVERIFY(bytes.size() > 123);
+        bytes[65] = 8;
+        // Mutate only the method and its header CRC in this owned input.
+        const auto size = quint16(quint8(bytes[58])) | (quint16(quint8(bytes[59])) << 8);
+        quint32 crc = 0xffffffffu;
+        for (int i = 60; i < 60 + size; ++i) {
+            crc ^= quint8(bytes[i]);
+            for (int bit = 0; bit < 8; ++bit)
+                crc = (crc >> 1) ^ (0xedb88320u & (0u - (crc & 1u)));
+        }
+        crc = ~crc;
+        for (int i = 0; i < 4; ++i)
+            bytes[60 + size + i] = char(crc >> (8 * i));
+        const auto source = owned.filePath("unknown-method.arj");
+        QFile output(source);
+        QVERIFY(output.open(QIODevice::WriteOnly));
+        QCOMPARE(output.write(bytes), bytes.size());
+        output.close();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(source);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        QCOMPARE(controller->formatLabel(), QStringLiteral("ARJ"));
+        QCOMPARE(controller->m_model.rowCount(), 1);
+        const auto *row = controller->m_model.rowAt(0);
+        QVERIFY(row);
+        QCOMPARE(row->method, QStringLiteral("8"));
+        QVERIFY(!controller->canUpdateArchive());
     }
     void filteredStreamsUseSharedBrowserAndTasks() {
         QFETCH(QString, fixture);
@@ -9798,15 +9844,16 @@ QtObject {
         const auto *row = controller->m_model.rowAt(0);
         QVERIFY(row);
         const bool tar = format.startsWith("TAR.");
-        const auto leaf = format == "PMA"   ? QStringLiteral("HELLO.BIN")
-                          : format == "LZH" ? QStringLiteral("hello.bin")
+        const auto leaf = format == "PMA" || format == "ARJ" ? QStringLiteral("HELLO.BIN")
+                          : format == "LZH"                  ? QStringLiteral("hello.bin")
                           : tar || format == "ZIP"
                               ? QStringLiteral("hello.txt")
                               : QFileInfo(fixture).fileName().section('.', 0, 0);
         QCOMPARE(row->cells[0], leaf);
         QCOMPARE(row->cells[2].isEmpty(), tar);
         const auto method =
-            format == "PMA"   ? (fixture.contains("pm0-")   ? QStringLiteral("Store")
+            format == "ARJ"   ? QStringLiteral("ARJ%1").arg(QFileInfo(fixture).fileName().mid(1, 1))
+            : format == "PMA" ? (fixture.contains("pm0-")   ? QStringLiteral("Store")
                                  : fixture.contains("pm1-") ? QStringLiteral("PM1")
                                                             : QStringLiteral("PM2"))
             : format == "LZH" ? QFileInfo(fixture).fileName().left(3).toUpper()
@@ -9842,7 +9889,9 @@ QtObject {
         QFile actual(QDir(destination).filePath(leaf));
         QVERIFY(actual.open(QIODevice::ReadOnly));
         auto expected = QByteArray("abracadabra abracadabra\n").repeated(6);
-        if (format == "PMA") {
+        if (format == "ARJ") {
+            expected = QByteArray("abracadabra abracadabra\n").repeated(128);
+        } else if (format == "PMA") {
             expected.clear();
             if (fixture.contains("pm1-long-overlap")) {
                 expected = QByteArray(24704, ' ');

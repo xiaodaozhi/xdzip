@@ -156,6 +156,8 @@ pub enum Format {
     Lha,
     /// PMarc members with admitted PM0/PM1/PM2 methods and bounded CP/M framing.
     Pma,
+    /// ARJ physical members with admitted Store and methods 1 through 4.
+    Arj,
     /// Traditional UU/UUE and begin-base64 envelopes, including mixed UU/XX members.
     Uu,
     /// XX-encoded text envelopes containing only the XX alphabet.
@@ -284,6 +286,9 @@ impl Entry {
             }
             Format::Pma => {
                 !self.warning && !self.link && !self.encrypted && matches!(self.method, 0..=2)
+            }
+            Format::Arj => {
+                !self.warning && !self.link && !self.encrypted && matches!(self.method, 0..=4)
             }
             Format::AesCrypt
             | Format::SevenZip

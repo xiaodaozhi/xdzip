@@ -68,6 +68,7 @@
 | DEB | 普通 ar 成员、control/data TAR 视图，已准入 GZIP/XZ/Zstandard/BZip2/LZMA 配置 | 不支持 | 不支持 |
 | LHA/LZH | 0–3 级头部，Store、LH1–LH7、LZS/LZ5 及声明 CRC | LH5 1/6/9 级，2 级头部，普通文件与目录 | 不支持 |
 | [PMA](docs/zh-CN/engineering/pma-streams.md) | 0 级头部 PM0/PM1/PM2，准确 CP/M 结构与声明 CRC | 不支持 | 不支持 |
+| [ARJ](docs/zh-CN/engineering/arj-streams.md) | Store 和方法 1–4，完整头部校验及成员 CRC-32 | 不支持 | 不支持 |
 | ASAR | 存储文件与目录、共享载荷区间及声明的文件/块 SHA-256 | 不支持 | 不支持 |
 | Z、TAR.Z（包括 `.taz`） | Unix compress LZW、9–16 位字典及已准入 CLEAR/对齐配置 | 不支持 | 不支持 |
 | Brotli、TAR.BR | 普通 RFC 7932 流，10–24 位窗口和全部静态词典变换 | 不支持 | 不支持 |
@@ -86,6 +87,7 @@
 - Z 与 TAR.Z 只检查结构与可读性，没有校验和，不提供创建或损坏历史流修复，详见 [Unix compress 契约](docs/zh-CN/engineering/compress-streams.md)。
 - UU/UUE 与 XXE 只检查结构与可读性，不提供校验和。头部路径和权限不直接授予输出或执行能力；GNU 编码文件名和多段修复不属于已准入的[文本封装配置](docs/zh-CN/engineering/text-envelopes.md)。
 - LHA/LZH 创建采用 LH5、2 级头部和 UTF-8 名称，旧 Windows 工具可能按旧代码页显示这些名称；现有归档不能修改。读取时先解码旧名称再解释分隔符，实际解码时验证存在的 CRC，无 CRC 的古老成员只提供结构与可读性检查。密码、分卷和修复配置尚未准入，PMA 使用独立只读配置，详见 [LHA 契约](docs/zh-CN/engineering/lha-containers.md)。
+- ARJ 为只读格式，二进制及旧文本成员均交付归档中 CRC 覆盖的原始字节，不按平台转换换行。密码、分卷、恢复/安全配置、链接和特殊对象尚未准入。未知方法保持可见，并阻止整包检查成功。
 
 - 浏览或提取只读 ASAR 不启动其中的应用。外置 `unpacked` 数据和声明的链接可见但不支持提取，不授予相邻目录访问或可执行权限恢复能力。可选摘要检查损坏，无摘要条目只提供结构与可读性检查，详见 [ASAR 契约](docs/zh-CN/engineering/asar-containers.md)。
 - 进入磁盘索引的大型 ZIP 暂不支持整包测试或修改，所选普通文件仍可按任务上限解压；详见[大归档索引](docs/zh-CN/engineering/large-index.md)。

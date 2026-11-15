@@ -2007,7 +2007,11 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                 : row.method == 9                     ? QStringLiteral("LZ5")
                 : row.method == 0 || row.method == 10 ? QStringLiteral("Store")
                                                       : QString::number(row.method);
-            const auto method = m_format == QStringLiteral("PMA") && row.method == 0
+            const auto arjMethod = row.method == 0   ? QStringLiteral("Store")
+                                   : row.method <= 4 ? QStringLiteral("ARJ%1").arg(row.method)
+                                                     : QString::number(row.method);
+            const auto method = m_format == QStringLiteral("ARJ") ? arjMethod
+                                : m_format == QStringLiteral("PMA") && row.method == 0
                                     ? QStringLiteral("Store")
                                 : m_format == QStringLiteral("PMA") && row.method <= 2
                                     ? QStringLiteral("PM%1").arg(row.method)

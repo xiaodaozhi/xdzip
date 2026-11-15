@@ -1,13 +1,10 @@
 use super::*;
+use crate::{test_cases as cases, test_known as known};
 use std::{
     cell::Cell,
     io::{Cursor, Seek},
     rc::Rc,
 };
-#[path = "../../xdzip-compression/src/arj/fixture_cases.rs"]
-mod cases;
-#[path = "../../../tests/fixtures/arj/known.rs"]
-mod known;
 fn fixture(name: &str) -> Vec<u8> {
     std::fs::read(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))

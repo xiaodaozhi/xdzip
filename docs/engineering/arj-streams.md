@@ -2,7 +2,15 @@
 
 English | [简体中文](../zh-CN/engineering/arj-streams.md)
 
-`ArjReader` provides bounded raw decoding of ARJ methods 1–4. Store belongs to the container, not this reader. `xdzip-codec-arj` supplies complete physical framing and CRC-verified member delivery over a host-owned source. These layers do not establish product opening, checking, extraction or creation; the [format registry](../../specs/engineering/archive-formats.json) remains authoritative. Host admission requires its own complete evidence.
+`ArjReader` provides bounded raw decoding of ARJ methods 1–4. Store belongs to the container, not this reader. `xdzip-codec-arj` supplies complete physical framing and CRC-verified member delivery over a host-owned source. `ArjCodec` connects admitted profiles to runtime, CLI and desktop browsing, checking and extraction. The [format registry](../../specs/engineering/archive-formats.json) declares the read-only boundary; creation, rewriting, passwords and volumes are unavailable.
+
+## Host admission and names
+
+A twelve-byte main-header proposal never publishes a format or rows. The runtime first preserves validated strong containers and ZIP/SFX precedence, then fully scans proposed ARJ metadata under the shared weak-probe input ledger. A raw, unvalidated TAR marker is disambiguated through complete ARJ admission. Invalid guesses publish nothing; typed host failures, cancellation and quotas remain authoritative.
+
+The adapter preserves physical member ordinals, original method bytes and raw names. ANSI-flagged and OEM names have separate encoding cohorts sharing a 1 MiB complete-field sampling limit, without ambient locale selection. Decode a whole multibyte name before interpreting separators. Only DOS-like hosts without the portable-path flag convert backslashes to slashes. Portable or Unix literal backslashes remain suspicious. Explicit directories gain a terminal slash; suspicious and unresolved names, unknown methods and unsupported object profiles remain visible without payload authority. Decoded names are capped at 4096 bytes and retained display/decoded allocations at 16 MiB, or smaller caller limits. No attributes are restored.
+
+Payload opening reprojects and compares the complete frozen entry set before delivery. Each selected record must exactly match its physical row; unsupported selections and every decode failure poison the payload instance. Host identity checks, preflight, private staging, cancellation and final publication retain shared runtime semantics. `supported_content` checks fully decode all admitted regular members and verify exact sizes and required CRC-32. Unsupported rows prevent whole-archive success. Legacy text is delivered as CRC-covered archive bytes, without host newline conversion.
 
 ## Sources and reference boundary
 

@@ -1787,6 +1787,7 @@ dependencies = [
  "xdzip-codec-api",
  "xdzip-compression",
  "xdzip-crypto",
+ "xdzip-domain",
 ]
 
 [[package]]
@@ -2042,6 +2043,7 @@ dependencies = [
  "winapi-util",
  "xdzip-codec-aescrypt",
  "xdzip-codec-api",
+ "xdzip-codec-arj",
  "xdzip-codec-asar",
  "xdzip-codec-deb",
  "xdzip-codec-lha",

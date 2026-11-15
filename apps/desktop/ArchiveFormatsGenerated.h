@@ -4,7 +4,7 @@
 #include <string_view>
 // clang-format off
 namespace xdzip_formats {
-inline constexpr std::array<std::string_view, 48> DropSuffixes = {{
+inline constexpr std::array<std::string_view, 49> DropSuffixes = {{
     ".zip",
     ".zipx",
     ".xpi",
@@ -47,6 +47,7 @@ inline constexpr std::array<std::string_view, 48> DropSuffixes = {{
     ".lha",
     ".lzh",
     ".pma",
+    ".arj",
     ".asar",
     ".deb",
     ".rar",
@@ -54,7 +55,7 @@ inline constexpr std::array<std::string_view, 48> DropSuffixes = {{
     ".iso",
     ".udf",
 }};
-inline constexpr std::array<std::string_view, 48> ShellSuffixes = {{
+inline constexpr std::array<std::string_view, 49> ShellSuffixes = {{
     ".zip",
     ".zipx",
     ".xpi",
@@ -97,6 +98,7 @@ inline constexpr std::array<std::string_view, 48> ShellSuffixes = {{
     ".lha",
     ".lzh",
     ".pma",
+    ".arj",
     ".asar",
     ".deb",
     ".rar",
@@ -104,7 +106,7 @@ inline constexpr std::array<std::string_view, 48> ShellSuffixes = {{
     ".iso",
     ".udf",
 }};
-inline constexpr std::array<std::string_view, 40> ShellMimeTypes = {{
+inline constexpr std::array<std::string_view, 42> ShellMimeTypes = {{
     "application/zip",
     "application/x-xpinstall",
     "application/vnd.android.package-archive",
@@ -136,6 +138,8 @@ inline constexpr std::array<std::string_view, 40> ShellMimeTypes = {{
     "application/x-brotli",
     "application/x-lha",
     "application/x-lharc",
+    "application/x-arj",
+    "application/x-arj-compressed",
     "application/x-asar",
     "application/vnd.debian.binary-package",
     "application/vnd.rar",
@@ -146,7 +150,7 @@ inline constexpr std::array<std::string_view, 40> ShellMimeTypes = {{
     "application/x-iso9660-image",
     "application/x-udf",
 }};
-inline constexpr std::array<std::string_view, 20> ReadOnlyLabels = {{
+inline constexpr std::array<std::string_view, 21> ReadOnlyLabels = {{
     "BZip2",
     "TAR.BZ2",
     "LZMA",
@@ -161,6 +165,7 @@ inline constexpr std::array<std::string_view, 20> ReadOnlyLabels = {{
     "TAR.BR",
     "AES Crypt",
     "PMA",
+    "ARJ",
     "ASAR",
     "DEB",
     "RAR",

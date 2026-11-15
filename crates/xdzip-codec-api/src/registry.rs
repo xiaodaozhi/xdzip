@@ -208,6 +208,11 @@ mod tests {
         assert!(pma.write_methods.is_empty() && pma.creation_suffixes.is_empty());
         assert!(!pma.rewrite && pma.worker_id.is_none());
         assert!(pma.read_encryption.is_empty() && pma.read_volumes.is_empty());
+        let arj = Format::Arj.descriptor();
+        assert_eq!(arj.read_methods, ["store", "arj1", "arj2", "arj3", "arj4"]);
+        assert!(arj.write_methods.is_empty() && arj.creation_suffixes.is_empty());
+        assert!(!arj.rewrite && arj.worker_id.is_none());
+        assert!(arj.read_encryption.is_empty() && arj.read_volumes.is_empty());
         for format in [Format::Zstd, Format::TarZstd] {
             let declaration = format.descriptor();
             assert_eq!(declaration.creation_method(93), Some("zstd"));
