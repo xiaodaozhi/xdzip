@@ -27,7 +27,7 @@ The app's existing Apache-2.0 license and third-party notices are unchanged by t
 
 ## App screenshots and combined promotional artwork
 
-To prepare replacement images, use the [guided native PNG capture assistant](capture.md). One run captures all four views for either language, with F8 confirming each manually prepared scene.
+To prepare replacement images, use the [automatic native PNG capture script](capture.md). One run prepares and captures all four views for either language, without manually switching views or confirming individual captures.
 
 Each language has four actual app views using owned demonstration files. Their app build matches the candidate identified above. The **1027 × 624 PNGs** preserve the complete default-size window, including its title and status bars. Cursor cleanup uses captured regions from two images of the same static view; the importer checks the unchanged middle area and verifies the resulting UI pixels.
 
