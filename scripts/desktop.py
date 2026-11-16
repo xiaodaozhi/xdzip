@@ -323,7 +323,8 @@ class Workflow:
                     '--output', self.output/'image-preview.json', env=env)
         if not self.args.skip_rust:
             self.run(['cargo', 'test', '--workspace', '--locked'], env=env)
-            self.run(['cargo', 'test', '-p', 'xdzip-runtime', '--locked', 'native_backend_tests', '--', '--ignored'], env=env)
+            self.script('check-runtime-worker-tests.py', '--worker', env['XDZIP_NATIVE_CODEC'],
+                        '--output', self.output/'runtime-worker-tests', env=env)
         self.script('cli.py', 'test', '--build-dir', self.build/'cli', env=env)
         self.script('check-ui-i18n.py', env=env)
         self.script('check-window-contracts.py', '--self-test', env=env)
@@ -334,6 +335,7 @@ class Workflow:
         self.build_receipt()
         return {'source': receipt['source'], 'product_sha256': receipt['product_sha256'],
                 'rust_workspace': 'not-run' if self.args.skip_rust else 'passed',
+                'runtime_worker_inventory': 'not-run' if self.args.skip_rust else 'passed',
                 'rendering': 'offscreen/software, native desktop acceptance remains separate'}
 
     def package_preflight(self):
