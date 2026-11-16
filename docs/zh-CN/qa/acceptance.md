@@ -520,3 +520,7 @@ English: Expanded previews require actual format/first-frame/first-page decoding
 **FORMAT-NSIS：** 验证 `MZ`/`PE\0\0` 外层、有界节表和 overlay 扫描、512 字节对齐的 `firstheader` 候选、两个准入魔数、`NullsoftInstallSystem` 签名字、flags、头部/后续长度限额及后续数据的物理可用长度、取消和来源限额。只发布 `NSIS/firstheader` 静态元数据行，拒绝畸形 PE 或签名、不可能的长度和固定记录截断。`.exe` 登记项不具有拖放或系统关联权限。打开和解码载荷必须返回 `unsupported_feature`，绝不执行或暴露 PE stub、脚本、插件、安装动作、压缩头部或提取载荷。runtime 识别、CLI 列举和双语登记检查与原始 codec 分开。详见 [M9 候选资料门槛](../engineering/m9-candidate-source-gates.md)。
 
 **FORMAT-M10-SOURCE-GATES：** DAA、ISZ、ZPAQ、BOND、J2J 永久排除，必须保持未登记状态。已准入的 PEA 配置及另行授权的扩展必须记录权威规范、不可变参考版本或内容哈希、适用许可、完整可再分发夹具矩阵和有界净室能力契约。公开扩展名列表、GPL 参考可执行文件、只有头部的样本或只有 Store 的样本都不能授予探测或载荷权限。阻塞和未确认候选继续不进入 runtime、CLI、MIME 和关联消费者。详见 [M10 候选格式资料和许可门槛](../engineering/m10-candidate-source-gates.md)。
+
+**FORMAT-ISO-CREATE：** CLI 与桌面创建单卷 ISO9660 + Joliet 数据映像，覆盖精确名称、嵌套和空目录、空文件及跨扇区数据。独立读取两套命名空间并比较文件字节。不可表示名称、深度／尺寸限制和非法参数不得产生最终文件；覆盖源变更、取消、输出错误与同名保留。
+
+**FORMAT-SFX-CREATE：** CLI 与桌面创建自有 Windows x64 Store/Deflate `.sfx.exe`。生成的程序须在没有 Qt、xdzip 安装或格式工作进程的环境下独立运行。覆盖完整载荷检查、文件夹选择、跳过／改名／覆盖、取消清理、封装和载荷损坏及非法参数拒绝。绝不执行提取文件或提权。检查导入依赖与独立组件部署。原生自动化对话框和命令行证据分开登记，不代表发行签名许可。

@@ -392,6 +392,8 @@ QString BrowserController::explain(const QString &code) {
         {"output_io", qtTrId("ui.7735b66ae246")},
         {"disk_full", qtTrId("ui.8e2070ff3086")},
         {"unsafe_target", qtTrId("ui.123399c0fb8b")},
+        {"sfx_stub_missing", qtTrId("create.sfxUnavailable")},
+        {"sfx_stub_invalid", qtTrId("create.sfxUnavailable")},
         {"target_changed", qtTrId("ui.8c5b6e8cc7b3")},
         {"output_conflict", qtTrId("ui.370322f1d979")},
         {"unsupported_filesystem", qtTrId("ui.74b624993d20")},

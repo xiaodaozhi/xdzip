@@ -34,7 +34,7 @@ class DesktopBundleTests(unittest.TestCase):
         directory = self.root/'build'/system/'cli'
         (directory/'bin').mkdir(parents=True)
         suffix = '.exe' if system == 'Windows' else ''
-        for name in ('xdzip', 'xdzip-launcher', 'xdzip-native-codec'):
+        for name in ('xdzip', 'xdzip-launcher', 'xdzip-native-codec') + (('xdzip-sfx',) if system == 'Windows' else ()):
             (directory/'bin'/(name+suffix)).write_bytes(b'owned program')
         output = (self.root/'build'/system/'Owned.app/Contents/Helpers/cli'
                   if system == 'Darwin' else self.root/'build'/system/'desktop/cli')
@@ -62,6 +62,8 @@ class DesktopBundleTests(unittest.TestCase):
                 self.assertFalse((output/('xdzip-native-codec'+suffix)).exists())
                 source=self.root/'build'/system/'cli/bin'/('xdzip-native-codec'+suffix)
                 self.assertEqual(source.read_bytes(),b'owned program')
+                if system == 'Windows':
+                    self.assertEqual((output/'xdzip-sfx.exe').read_bytes(), b'owned program')
                 if system == 'Darwin':
                     self.assertFalse((output/marker.name).exists())
                     self.assertEqual(len(list(output.iterdir())), 2)

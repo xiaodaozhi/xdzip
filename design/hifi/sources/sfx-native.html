@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>独立 Windows 自解压交互依据</title>
+<style>body{margin:0;padding:24px;background:#eef2f7;color:#182337;font:14px system-ui}main{max-width:900px;margin:auto}p,li{line-height:1.8}section{background:white;border-radius:12px;padding:20px;margin:16px 0}h2{font-size:18px}a{color:#1850cf}</style>
+<main><h1>独立 Windows 自解压</h1><p>自解压文件不附带 Qt。以下流程仅使用 Windows 系统文件夹选择器和 TaskDialog，系统决定控件比例、字体、密度、DPI 和辅助功能；不将系统截图像素转换成 Qt 逻辑尺寸。桌面创建窗口沿用 <a href="create-format-selector.html">C01 格式选择</a>。</p>
+<section><h2>1. 选择目标文件夹</h2><p>系统文件夹选择器，允许键入已存在的目录。取消即退出，不写文件。完成选择后在可取消的进度窗口校验包体，只有校验通过才进入输出。</p></section>
+<section><h2>2. 确认同名处理</h2><p>主说明为“遇到同名文件时”，正文显示完整目标路径。按钮为跳过、自动改名、覆盖和取消，默认跳过。页脚说明仅解压，绝不运行解压出的文件。</p></section>
+<section><h2>3. 解压与取消</h2><p>主说明为“正在解压”，正文显示当前文件、已提交文件数和总文件数，系统进度条与取消按钮保持可用。取消发往共享 Rust 任务，等待暂存清理完成后关闭进度框。已提交文件保留。</p></section>
+<section><h2>4. 结果</h2><p>分别显示解压完成、已取消或未能完成，正文显示已保存和已跳过文件数。仅提供关闭，不打开目标目录，不运行任何载荷。英文环境使用对应英文资源。</p></section>
+</main>

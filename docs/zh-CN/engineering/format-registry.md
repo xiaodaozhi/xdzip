@@ -13,3 +13,5 @@
 拖放与 Shell 候选按需分别登记。普通 `.gz` 现提供两个入口及单文件创建，`.tar.gz` 和 `.tgz` 保留 TAR 容器语义。XPI/APK/IPA/CBZ 候选沿用 ZIP 校验和已准入组合，见[单文件压缩流](single-file-streams.md)。分卷命名和源授权继续遵守[归档打开契约](archive-opening.md)，登记表不重新解释编号文件。Windows 按最终扩展名映射图标，`.tar.gz` 使用 `gz` 关联。
 
 只登记已实现且具有对应自动化验收的能力。实现变化按需同步[自研格式契约](independent-rust-codecs.md)、[格式工作进程契约](native-codecs.md)、用户能力说明及[验收条目](../qa/acceptance.md)。计划、进度和执行结论保留在 issue，生成测试证据只放在 `build/` 或 CI 工件。
+
+`creation_wrappers` 声明仅限 Windows 的 ZIP SFX 封装及显式 `.sfx.exe` 后缀，复用 ZIP 方法编号，并关闭加密和分卷，不登记通用 EXE 处理。ISO9660 创建使用宿主方法编号 260 和固定级别 0。详见 [ISO 创建](iso-creation.md)与[自有 SFX 创建](sfx-creation.md)。

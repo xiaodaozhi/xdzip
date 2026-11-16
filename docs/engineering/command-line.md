@@ -13,6 +13,8 @@ xdzip list archive.zip --json
 xdzip extract archive.zip docs/ -C output
 xdzip extract archive.zip --entry-id 3 -C output
 xdzip create backup.7z docs/ --level normal
+xdzip create data.iso docs/
+xdzip create portable.sfx.exe docs/ --level normal
 xdzip create private.zip docs/ --encrypt --password-stdin
 xdzip add backup.zip notes.txt --into docs
 xdzip test backup.zip
@@ -89,3 +91,5 @@ Standalone updates stage in a user-owned private directory, safely extract throu
 Desktop check and download query only the main program's non-GUI installation-identity entry point; they do not create QApplication or consume installation receipts. Installation intent passes through the existing same-user single-instance channel, accepting only a bounded request directory and candidate version, not arbitrary commands, packages, or trust roots. Request/result files reuse Rust native directory authorization and safe commits. The desktop controller independently rechecks and matches the candidate, reusing About, installer, Sparkle, and the all-task join barrier. Desktop CLI tasks also hold installation-occupancy protection; installation cannot destroy them.
 
 A terminal receiving accepted reports only handed_off. Actual installation and recovery depend on desktop receipts and actual running identity; downloading or handing off does not mean installed. Non-interactive mode rejects desktop installation requiring GUI or system authorization. See the [update contract](software-update.md) for installation security and native acceptance boundaries. Automated, native, and manual acceptance remain distinct.
+
+The `.iso` profile creates uncompressed ISO9660 + Joliet data images; only an explicit Store level is admitted. The Windows x64 `.sfx.exe` profile wraps Store/Deflate ZIP and requires the bundled sibling `xdzip-sfx.exe`. It rejects encryption, solid mode and volumes. Neither profile permits modification of an existing image or executable. See [ISO creation](iso-creation.md) and [owned SFX creation](sfx-creation.md).

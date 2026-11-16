@@ -242,6 +242,47 @@ var creationFormats = [
         ],
         "encryption": [],
         "volumes": []
+    },
+    {
+        "id": "iso",
+        "label": "ISO",
+        "suffix": ".iso",
+        "container": "iso",
+        "methods": [
+            "iso9660"
+        ],
+        "methodIds": [
+            260
+        ],
+        "levels": [
+            0
+        ],
+        "encryption": [],
+        "volumes": []
+    },
+    {
+        "id": "zip-sfx",
+        "label": "ZIP SFX",
+        "suffix": ".sfx.exe",
+        "container": "zip",
+        "methods": [
+            "store",
+            "deflate"
+        ],
+        "methodIds": [
+            0,
+            8
+        ],
+        "levels": [
+            1,
+            6,
+            9
+        ],
+        "encryption": [],
+        "volumes": [],
+        "platforms": [
+            "windows"
+        ]
     }
 ];
 var associationSuffixes = [".zip", ".zipx", ".xpi", ".apk", ".ipa", ".cbz", ".tar", ".tar.gz", ".tgz", ".7z", ".gz", ".bz2", ".bz", ".tar.bz2", ".tar.bz", ".tbz", ".tbz2", ".lzma", ".tar.lzma", ".tlz", ".lz", ".tar.lz", ".xz", ".tar.xz", ".txz", ".lz4", ".tar.lz4", ".zst", ".tar.zst", ".tzst", ".z", ".tar.z", ".taz", ".uu", ".uue", ".xxe", ".br", ".tar.br", ".aes", ".lha", ".lzh", ".pma", ".arj", ".arc", ".bh", ".alz", ".egg", ".pea", ".asar", ".deb", ".rar", ".cab", ".msi", ".iso", ".udf"];
@@ -271,6 +312,7 @@ var formatGroups = [
         ],
         "suffixes": [
             ".zip",
+            ".sfx.exe",
             ".zipx",
             ".xpi",
             ".apk",

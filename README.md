@@ -82,13 +82,16 @@ Open an archive to browse its directories, search and sort entries, and select f
 | UU/UUE, XXE | Traditional counted lines and admitted begin-base64 envelopes, including multiple members | Not supported | Not supported |
 | RAR | Legacy, RAR5, and RAR 7 format extensions, including passwords, solid and split archives | Not supported | Not supported |
 | CAB | Store, MSZip, Quantum, LZX, and volumes in the same directory | Not supported | Not supported |
-| ISO, UDF | ISO9660, Joliet, Rock Ridge, and UDF | Not supported | Not supported |
+| ISO | ISO9660, Joliet and Rock Ridge | ISO9660 + Joliet data image | Not supported |
+| UDF | UDF | Not supported | Not supported |
+| ZIP SFX | Validated ZIP self-extracting archives | Windows x64, Store/Deflate, `.sfx.exe` | Not supported |
 
 - ZIP AES-256 encrypts content only; filenames remain visible. AES-128/192 and traditional ZipCrypto are not supported. Split archives can be read using `.zip.001`, PKZIP `.z01`, and related naming conventions; creation uses numbered volumes. See [password extraction](docs/engineering/password-extraction.md) and [opening split archives](docs/engineering/archive-opening.md).
 - BZip2, LZMA Alone, Lzip v1 and their TAR compositions are currently read-only. LZMA has no content checksum; testing establishes structure, sizes and readability. See the [stream contract](docs/engineering/single-file-streams.md) for suffixes, members, memory limits and admission.
 - XZ verifies each declared content check; streams declaring None provide structure/readability checks only. ZIPX reading supports the listed ZIP methods; PPMd, JPEG and WavPack variants remain unsupported. Additional ZIP methods are read-only and do not extend AES profiles or enable ZIPX creation.
 - Modifying 7z rebuilds the archive, with a 512 MiB working-set limit for retained and added content. New archives use streaming input and are not subject to this rebuild limit. Encrypted and split ZIP and 7z archives cannot be modified. See [archive modification](docs/engineering/archive-transfers.md).
-- RAR, CAB, ISO, and UDF are read-only. ISO/UDF images are read as files; they are not mounted or executed. See the [RAR contract](docs/engineering/rar-format-sources.md) and [format backend contract](docs/engineering/native-codecs.md) for format coverage and resource limits.
+- RAR, CAB and UDF are read-only. [ISO creation](docs/engineering/iso-creation.md) supports ordinary files and directories, single volume, files smaller than 4 GiB and Joliet names of at most 64 UCS-2 characters per component. No boot images, UDF or Rock Ridge writing or image updates are provided. Reading an image never mounts or executes it. See the [RAR contract](docs/engineering/rar-format-sources.md) and [format backend contract](docs/engineering/native-codecs.md).
+- [Owned SFX creation](docs/engineering/sfx-creation.md) produces a standalone Windows x64 ZIP extractor without Qt or installed xdzip. It selects a destination, handles conflicts and supports cancellation, and never runs extracted files. Passwords, volumes and automatic launch commands are unavailable. Generic `.exe` files remain outside file associations.
 - DEB exposes `members/`, `control/` and `data/` as export views. Extracting all includes raw members and expanded content; no installation or script execution occurs. Control accepts none/GZIP/XZ/Zstandard, data additionally BZip2/LZMA. Checks validate container readability and declared checks, without package authentication. See the [DEB contract](docs/engineering/deb-containers.md).
 - Z and TAR.Z checks cover structure and readability without checksums. No writer or damaged legacy-stream repair is provided; see the [Unix compress contract](docs/engineering/compress-streams.md).
 - UU/UUE and XXE validate structure and readability without checksums. Header paths and modes grant no output or execution authority; GNU encoded filenames and multipart repair are outside the admitted [text envelope profile](docs/engineering/text-envelopes.md).
@@ -124,7 +127,7 @@ On Windows, use `python` and add `.exe` to the executable name. Running on Linux
 
 ## Build from source
 
-The desktop interface uses Qt Quick/QML, connected to the Rust core through a thin C++ layer. Format, query, and task logic are independent of Qt. The 7z, RAR, CAB, ISO, and UDF implementations use isolated worker processes.
+The desktop interface uses Qt Quick/QML, connected to the Rust core through a thin C++ layer. Format, query, and task logic are independent of Qt. The 7z, RAR, CAB, ISO and UDF readers and the 7z writer use isolated worker processes; ISO creation runs in the Rust host. The standalone Windows SFX uses system dialogs without Qt.
 
 Project documentation is in `docs/`; visual parameters, terminology, and dependency lists used by generators and checks are in `specs/`; high-fidelity designs are in `design/hifi/`.
 

@@ -87,3 +87,7 @@ English: Target checks and input summaries are background preparation: they do n
 2026-10-16 完成行为修订：创建不自动调用系统文件管理器，创建窗口移除目录自动打开选项。旧 startCreation 的 openAfter 参数忽略；任务接受及终态两条路径均禁止创建任务自动打开系统目录。成功结果沿用应用内打开队列，加密与编号分卷使用现有读取能力。结果统计使用“已保存”标签。详见 [界面契约](../ux/welcome-opening.md)。
 
 来自[系统右键](shell-actions.md)的创建任务携带独立完成策略，成功结果不进入应用内自动打开队列。单项和多项创建均显示真实独立结果，只有用户主动点击结果中的目录操作才交给系统文件管理器。
+
+## ISO 与自有 SFX 配置
+
+[ISO9660/Joliet 创建](iso-creation.md)与 [Windows ZIP SFX 创建](sfx-creation.md)复用本契约的输入树、输出授权、取消、冲突和最终提交流程，并在提交前执行各自更严格的名称、尺寸、方法与平台限制。创建 SFX 时绝不运行该可执行文件。

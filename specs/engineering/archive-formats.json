@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
-  "creation_methods": {"store": 0, "copy": 0, "deflate": 8, "lzma2": 32, "lz4": 256, "zstd": 93, "lh5": 259},
+  "creation_wrappers": [{"id": "zip-sfx", "format": "zip", "label": "ZIP SFX", "suffix": ".sfx.exe", "platforms": ["windows"]}],
+  "creation_methods": {"store": 0, "copy": 0, "deflate": 8, "lzma2": 32, "lz4": 256, "zstd": 93, "lh5": 259, "iso9660": 260},
   "formats": [
     {
       "id": "zip", "rust_variant": "Zip", "label": "ZIP", "container": "zip", "filters": [], "worker_id": null,
@@ -8,9 +9,10 @@
       "creation_levels": [1, 6, 9],
       "read_methods": ["store", "deflate", "deflate64", "bzip2", "lzma", "xz"], "write_methods": ["store", "deflate"], "rewrite": true,
       "read_encryption": ["winzip-aes256"], "write_encryption": ["winzip-aes256"], "read_volumes": ["numbered", "pkzip"], "write_volumes": ["numbered"],
-      "creation_suffixes": [".zip"], "shell_mime_types": ["application/zip", "application/x-xpinstall", "application/vnd.android.package-archive", "application/vnd.comicbook+zip", "application/x-cbz"],
+      "creation_suffixes": [".zip", ".sfx.exe"], "shell_mime_types": ["application/zip", "application/x-xpinstall", "application/vnd.android.package-archive", "application/vnd.comicbook+zip", "application/x-cbz"],
       "extensions": [
         {"suffix": ".zip", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": "zip"},
+        {"suffix": ".sfx.exe", "drop": false, "shell": false, "windows_icon": null, "macos_icon": null},
         {"suffix": ".zipx", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": null},
         {"suffix": ".xpi", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": null},
         {"suffix": ".apk", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": null},
@@ -486,10 +488,10 @@
     {
       "id": "iso", "rust_variant": "Iso", "label": "ISO", "container": "iso", "filters": [], "worker_id": 9,
       "check_kind": "structure_and_readability",
-      "creation_levels": [],
-      "read_methods": ["iso9660", "joliet", "rock-ridge"], "write_methods": [], "rewrite": false,
+      "creation_levels": [0],
+      "read_methods": ["iso9660", "joliet", "rock-ridge"], "write_methods": ["iso9660"], "rewrite": false,
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
-      "creation_suffixes": [], "shell_mime_types": ["application/x-iso9660-image"],
+      "creation_suffixes": [".iso"], "shell_mime_types": ["application/x-iso9660-image"],
       "extensions": [
         {"suffix": ".iso", "drop": true, "shell": true, "windows_icon": "iso", "macos_icon": "iso"}
       ]

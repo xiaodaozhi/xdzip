@@ -26,9 +26,11 @@ xdzip-codec-aescrypt = { path = "../xdzip-codec-aescrypt" }
 xdzip-codec-stream = { path = "../xdzip-codec-stream" }
 xdzip-codec-zip = { path = "../xdzip-codec-zip" }
 xdzip-codec-native = { path = "../xdzip-codec-native" }
+xdzip-codec-optical = { path = "../xdzip-codec-optical" }
 xdzip-io = { path = "../xdzip-io" }
 unicode-normalization = "=0.1.25"
 zeroize = "=1.9.1"
+sha2 = "=0.10.9"
 [target.'cfg(windows)'.dependencies]
 winapi-util = { version = "=0.1.11", default-features = false }
 [target.'cfg(unix)'.dependencies]

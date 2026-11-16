@@ -6,6 +6,7 @@ use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 use std::time::{Instant, UNIX_EPOCH};
 use xdzip_codec_api::Format;
+use xdzip_codec_api::encode::CreationCodec;
 use xdzip_codec_api::{
     Cancellation,
     encode::{EncodeEntry, EncodeError, EncodeInput, EncodeOutput, EncodeSettings},
@@ -77,6 +78,11 @@ impl Options {
             && !self.target.contains('\0')
             && self.name.len() <= 255
             && creation_format(&self.name).is_some()
+            && (!xdzip_codec_api::registry::is_sfx_creation(&self.name)
+                || (self.password.is_none()
+                    && self.volume_bytes == 0
+                    && !self.solid
+                    && !self.encrypt_headers))
             && (matches!(
                 creation_format(&self.name),
                 Some(Format::Zip | Format::SevenZip)
@@ -259,6 +265,7 @@ struct VerifySink<'a> {
     bytes: u64,
     limit: u64,
     cancel: &'a Cancellation,
+    expected: Option<CheckedRead<'a>>,
 }
 impl DecodedSink for VerifySink<'_> {
     fn charge_skipped(&mut self, bytes: u64) -> Result<(), DecodeError> {
@@ -280,6 +287,15 @@ impl DecodedSink for VerifySink<'_> {
             .ok_or(DecodeError::Limit)?;
         if self.bytes > self.limit {
             return Err(DecodeError::Limit);
+        }
+        if let Some(expected) = &mut self.expected {
+            let mut original = vec![0; bytes.len()];
+            expected
+                .read_exact(&mut original)
+                .map_err(|_| DecodeError::SourceIo)?;
+            if original != bytes {
+                return Err(DecodeError::Integrity);
+            }
         }
         Ok(())
     }
@@ -380,7 +396,23 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         stats.status = Status::Running;
         emit(&mut stats, start, publish);
         let format = creation_format(&job.options.name).ok_or("unsupported_feature")?;
-        codec(format)
+        let sfx = xdzip_codec_api::registry::is_sfx_creation(&job.options.name);
+        let prefix = if sfx {
+            let stub = crate::sfx::load_stub(&control.cancel)?;
+            stage.write_all(&stub).map_err(|_| "output_io")?;
+            written.set(stub.len() as u64);
+            extent.set(stub.len() as u64);
+            stub.len() as u64
+        } else {
+            0
+        };
+        let optical = xdzip_codec_optical::OpticalCodec { format };
+        let encoder: &dyn CreationCodec = if format == Format::Iso {
+            &optical
+        } else {
+            codec(format)
+        };
+        encoder
             .encode(
                 &sources,
                 &mut Output {
@@ -422,6 +454,11 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                 EncodeError::Unsupported => "unsupported_feature",
                 EncodeError::Limit => "resource_limit",
             })?;
+        if sfx {
+            let size = crate::sfx::finish(&mut stage, prefix, &control.cancel)?;
+            written.set(size);
+            extent.set(size);
+        }
         stats.written_bytes = written.get();
         stats.decoded_bytes = stats.declared_bytes;
         tree.validate(&stopped).map_err(|e| e.code())?;
@@ -429,6 +466,9 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         emit(&mut stats, start, publish);
         let verify_work = Cell::new(0u64);
         let mut reader = stage.verification_reader().map_err(output_code)?;
+        if sfx {
+            crate::sfx::validate_reader(&mut reader, &control.cancel)?;
+        }
         if let Some(password) = &job.options.password
             && format == Format::Zip
         {
@@ -475,28 +515,31 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                     )
                     .map_err(|_| "integrity_error")?;
                 let mut native_expected: std::collections::BTreeMap<Vec<u8>, _> =
-                    if format == Format::SevenZip {
+                    if matches!(format, Format::SevenZip | Format::Iso) {
                         tree.entries()
                             .iter()
-                            .map(|input| {
+                            .enumerate()
+                            .map(|(index, input)| {
                                 let name = if input.directory {
                                     format!("{}/", input.name)
                                 } else {
                                     input.name.clone()
                                 };
-                                (name.into_bytes(), input)
+                                (name.into_bytes(), (index, input))
                             })
                             .collect()
                     } else {
                         Default::default()
                     };
-                for (row, ordered_input) in rows.iter().zip(tree.entries()) {
-                    let input = if format == Format::SevenZip {
+                for (ordered_index, (row, ordered_input)) in
+                    rows.iter().zip(tree.entries()).enumerate()
+                {
+                    let (input_index, input) = if matches!(format, Format::SevenZip | Format::Iso) {
                         native_expected
                             .remove(row.name_bytes())
                             .ok_or("integrity_error")?
                     } else {
-                        ordered_input
+                        (ordered_index, ordered_input)
                     };
                     control.cancel.check().map_err(|_| "cancelled")?;
                     let expected = if input.directory {
@@ -504,7 +547,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                     } else {
                         input.name.clone()
                     };
-                    let matches_name = if format == Format::Lha {
+                    let matches_name = if matches!(format, Format::Lha | Format::Iso) {
                         !row.warning && row.name_bytes() == expected.as_bytes()
                     } else {
                         row.raw_name == expected.as_bytes()
@@ -528,6 +571,14 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                                 bytes: 0,
                                 limit: input.size,
                                 cancel: &control.cancel,
+                                expected: if format == Format::Iso && !input.directory {
+                                    Some(CheckedRead {
+                                        reader: tree.open(input_index).map_err(|e| e.code())?,
+                                        error: &sources.error,
+                                    })
+                                } else {
+                                    None
+                                },
                             },
                             &control.cancel,
                             job.options.password.as_ref().map(Password::expose),
@@ -536,7 +587,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                             if stopped() {
                                 "cancelled"
                             } else {
-                                "integrity_error"
+                                sources.error.get().unwrap_or("integrity_error")
                             }
                         })?;
                     if !input.directory {

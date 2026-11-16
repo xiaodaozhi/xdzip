@@ -30,14 +30,14 @@ The table uses the following meanings. **Admitted** means the current registry, 
 | EGG | Admitted | Read-only non-encrypted, non-solid single-volume Store and raw Deflate with exact block sizes and CRC-32; AZO, BZip2, LZMA, encryption, split and other profiles remain outside the scope. |
 | GZ | Admitted | GZIP members, including concatenated streams and TAR.GZ. |
 | IMG | Candidate | Ambiguous disk-image suffix. ISO/UDF admission is content based and does not imply generic IMG support. |
-| ISO | Admitted | ISO9660, Joliet and Rock Ridge read-only images. |
+| ISO | Admitted | ISO9660/Joliet/Rock Ridge reading and ordinary ISO9660 + Joliet data-image creation. |
 | ISZ | Excluded | Product decision: abandon ISZ support; no detector, registry entry or key-handling work will be added. |
 | LHA / LZH | Admitted | LHA levels 0–3, Store, LH1–LH7, LZS/LZ5, plus LH5 creation. |
 | LZ | Admitted | Lzip v1 and TAR.LZ. |
 | LZMA | Admitted | LZMA Alone and TAR.LZMA. |
 | PMA | Admitted | PM0/PM1/PM2 read-only profiles with CP/M framing and CRC checks. |
 | RAR / RAR5 | Admitted | Independent Rust RAR backend, including legacy, RAR5, RAR7 extensions, passwords, solid and split profiles within the declared scope. |
-| SFX(EXE) | Alias/profile | ZIP SFX prefixes are validated by the ZIP reader. Generic executable extraction or execution is never granted. SFX creation remains outside the current writer set. |
+| SFX(EXE) | Alias/profile | ZIP SFX prefixes are validated by the ZIP reader. Generic executable extraction or execution is never granted. Owned Windows x64 Store/Deflate ZIP creation is available through the explicit `.sfx.exe` profile, without auto-run. |
 | TAR | Admitted | TAR and filtered TAR.GZ/TAR.BZ2/TAR.LZMA/TAR.LZ/TAR.XZ/TAR.Z/TAR.BR/TAR.LZ4/TAR.ZST profiles as listed by the registry. |
 | TBZ / TBZ2 | Alias/profile | BZip2-filtered TAR aliases. |
 | TGZ | Alias/profile | GZIP-filtered TAR alias. |
@@ -69,7 +69,7 @@ The M10 research gate also checked DAA, ISZ, ZPAQ, PEA, BOND and J2J. ACE is per
 2. **Wire contract before code.** Pin public source revisions and SHA-256 values, document header fields, name encoding, physical termination, methods, checksums, duplicate identity and resource limits. A reference tool is evidence only when it produces complete owned samples; a crash or a single Store sample is recorded as a limitation.
 3. **Raw algorithm tests.** Implement the bounded reader independently of Qt. Cover empty and boundary payloads, every admitted method, exact input/output/work/memory budgets, cancellation, typed I/O, source mutation, truncation, trailing bytes, CRC and terminal poisoning. Unknown methods stay visible without payload authority.
 4. **Container and product admission.** Add the codec crate, runtime weak/strong discovery, CLI list/test/extract, desktop labels and association fixtures. Verify frozen metadata and physical duplicate selection, then run the relevant automatic Qt and layout checks. No manual visual acceptance is needed for this research/format slice.
-5. **Priority queue.** ALZ's conservative Store/raw-Deflate slice, EGG's non-encrypted, non-solid Store/raw-Deflate slice, the CFB/Compound(MSI) metadata slice, PEA's conservative stored profile and NSIS static `firstheader` metadata slice are admitted. ACE, DAA, WIM, ISZ, ZPAQ, BOND and J2J are permanently excluded by product decision. ZIPX creation and SFX creation are separate writer projects and do not follow from read alias support.
+5. **Priority queue.** ALZ's conservative Store/raw-Deflate slice, EGG's non-encrypted, non-solid Store/raw-Deflate slice, the CFB/Compound(MSI) metadata slice, PEA's conservative stored profile and NSIS static `firstheader` metadata slice are admitted. ACE, DAA, WIM, ISZ, ZPAQ, BOND and J2J are permanently excluded by product decision. ZIPX creation remains excluded from the current writers. The [owned SFX writer](sfx-creation.md) is separately implemented and does not follow from read alias support.
 6. **Release boundary.** Keep all candidate formats out of the public capability table until the codec, runtime, CLI and desktop evidence is complete. Record unsupported methods and reference-tool limitations in the issue rather than silently falling back to Store or a different container.
 
 The current BH slice follows this plan. It is read only, has no password or volume path, and uses an independently bounded Deflate reader with mandatory CRC-32 and exact physical termination. The Compound(MSI) slice follows the same boundary: CFB FAT/DIFAT, directory-tree, mini-stream and cycle validation are independent of Qt, and raw streams are copied only after the immutable metadata snapshot matches. The NSIS slice stops at the fixed firstheader metadata record and returns unsupported for payload access. No MSI installer behavior or NSIS installer behavior is executed.

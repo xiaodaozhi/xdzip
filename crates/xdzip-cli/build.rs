@@ -13,6 +13,15 @@ fn git(root: &std::path::Path, args: &[&str]) -> Option<String> {
         .then(|| String::from_utf8_lossy(&output.stdout).trim().to_owned())
 }
 fn main() {
+    if env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows") {
+        println!("cargo:rustc-link-arg-bin=xdzip-sfx=/MANIFEST:EMBED");
+        println!(
+            "cargo:rustc-link-arg-bin=xdzip-sfx=/MANIFESTINPUT:{}",
+            PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap())
+                .join("sfx.manifest")
+                .display()
+        );
+    }
     let root = PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap()).join("../..");
     let value: serde_json::Value =
         serde_json::from_slice(&fs::read(root.join("VERSION.json")).unwrap()).unwrap();

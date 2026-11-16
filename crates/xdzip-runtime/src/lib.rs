@@ -38,6 +38,7 @@ mod nsis_tests;
 pub mod preview;
 pub mod query;
 pub mod service;
+pub mod sfx;
 mod source;
 mod source_cab;
 #[cfg(test)]
