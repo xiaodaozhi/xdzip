@@ -65,3 +65,5 @@ English: Foundation runs the original complete explicit `native_backend_tests` b
 互操作检查使用固定 26.05 官方参考工具，独立于产品工作进程。Windows 从同一官方发布下载并核对 7zr.exe 摘要，再从已核验的 7z2605-extra.7z 仅提取 x64/7za.exe，并复核该成员的独立 SHA-256。此流程不依赖系统 tar 的 LZMA 支持，不运行安装器，也不从 PATH 借用未固定工具。Linux 与 macOS 从已核验 tar.xz 仅读取指定 7zz 成员。下载、缓存和提取结果任一摘要不符均停止；这些参考文件只保留于 build/ 测试目录，不进入产品部署。
 
 开发包维持实验性。组件许可、对应源码和重链接要求按实际构建单独复核，本功能完成不自动批准正式发行。
+
+[runtime 工作进程验证入口](../qa/runtime-worker-tests.md)自动准备完整集成清单及固定输入，代替直接执行未准备前提的 `native_backend_tests --ignored` 批次。可选的完整库模式要求零 ignored 结果。

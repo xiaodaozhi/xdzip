@@ -524,3 +524,5 @@ English: Expanded previews require actual format/first-frame/first-page decoding
 **FORMAT-ISO-CREATE：** CLI 与桌面创建单卷 ISO9660 + Joliet 数据映像，覆盖精确名称、嵌套和空目录、空文件及跨扇区数据。独立读取两套命名空间并比较文件字节。不可表示名称、深度／尺寸限制和非法参数不得产生最终文件；覆盖源变更、取消、输出错误与同名保留。
 
 **FORMAT-SFX-CREATE：** CLI 与桌面创建自有 Windows x64 Store/Deflate `.sfx.exe`。生成的程序须在没有 Qt、xdzip 安装或格式工作进程的环境下独立运行。覆盖完整载荷检查、文件夹选择、跳过／改名／覆盖、取消清理、封装和载荷损坏及非法参数拒绝。绝不执行提取文件或提权。检查导入依赖与独立组件部署。原生自动化对话框和命令行证据分开登记，不代表发行签名许可。
+
+**NATIVE-RUNTIME-INVENTORY：** 通过共享[验证入口](runtime-worker-tests.md)运行已声明的完整 runtime 工作进程清单，要求编译后的精确测试选择、已核验的前提、真实工作进程身份、大流完整尺寸和零 ignored 结果。覆盖空选择伪成功、取消、源变更与清理，定向重试保留成功且无关的证据，普通 Cargo 的 ignored 不计为通过。
