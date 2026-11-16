@@ -18,6 +18,8 @@ if ($LASTEXITCODE -ne 0 -or $revision -ne $env:GITHUB_SHA -or (& git status --po
 }
 $output = Join-Path (Get-Location) 'build/windows-native-visual'
 New-Item -ItemType Directory -Path $output -ErrorAction Stop | Out-Null
+Invoke-Checked powershell.exe @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
+    'scripts/test-windows-capture.ps1', '-OutputDirectory', (Join-Path $output 'capture-tools-self-test'))
 $privateTemp = Join-Path $output 'private-temp'
 New-Item -ItemType Directory -Path $privateTemp -ErrorAction Stop | Out-Null
 # The safe-I/O tests require a non-inherited directory, including on hosted VMs.
