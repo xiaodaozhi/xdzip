@@ -14575,6 +14575,40 @@ QtObject {
         QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->total() > 0, 5000);
         QVERIFY(!state->isVisible());
     }
+    void allSortColumnsKeepDirectoriesFirst() {
+        BrowserController controller;
+        controller.openPath(QStringLiteral(XDZIP_FIXTURES "/type-order.zip"));
+        QTRY_VERIFY(controller.ready() && !controller.busy());
+        const auto verifyGroups = [&controller](int expectedDirectories) {
+            bool filesStarted = false;
+            int directories = 0;
+            for (int row = 0; row < controller.entries()->rowCount(); ++row) {
+                const auto value = controller.entries()->data(controller.entries()->index(row, 0),
+                                                              Qt::UserRole + 1);
+                QVERIFY(value.isValid());
+                const bool directory = value.toBool();
+                QVERIFY2(!directory || !filesStarted, "Directory appears after a file");
+                directories += directory;
+                filesStarted |= !directory;
+            }
+            QCOMPARE(directories, expectedDirectories);
+        };
+        for (const auto &text : {QString{}, QStringLiteral("item")}) {
+            controller.search(text);
+            QTRY_VERIFY(!controller.busy());
+            for (int column = 0; column < 5; ++column) {
+                for (int direction = 0; direction < 2; ++direction) {
+                    controller.sortByColumn(column);
+                    QTRY_VERIFY(!controller.busy());
+                    verifyGroups(text.isEmpty() ? 3 : 2);
+                }
+            }
+            controller.sortByColumn(-1);
+            QTRY_VERIFY(!controller.busy());
+            QCOMPARE(controller.sortOrder(), 0);
+            verifyGroups(text.isEmpty() ? 3 : 2);
+        }
+    }
     void typeHeaderSortGroupsDirectoriesBeforeExtensionlessFiles() {
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));

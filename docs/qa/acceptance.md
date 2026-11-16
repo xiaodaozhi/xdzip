@@ -2,6 +2,10 @@
 
 English | [简体中文](../zh-CN/qa/acceptance.md)
 
+## Directory-first sorting
+
+SORT-DIRECTORIES-FIRST: Every sort code (0–12), including archive order, keeps explicit and implicit directories before files in both directions. Cover ordinary browsing, recursive search, directory navigation, cross-page results, duplicate identities and unknown original sizes. Verify memory and actual external disk merge ordering agree; direction and unknown-size ordering apply inside each group. Exercise all five desktop columns and default archive order through the real controller.
+
 ## Built-in format registry
 
 FORMAT-STREAM-READ: BZip2/LZMA Alone/Lzip and their TAR compositions must prove known-content browsing, checking and extraction, including empty/multiple members and multiblock BZip2. Retain strict full-span 7z decoding while separately validating member-source recovery. Check memory admission, actual output limits, midstream cancellation, source changes with restored timestamps, and no damaged-file publication. Recognized damaged TAR cannot downgrade; weak LZMA discovery cannot displace valid TAR or ZIP SFX. Read-only profiles reject creation/rewrite without output. CLI and Qt must distinguish absent content checksums, unknown packed sizes and method names. Registry-driven candidates, reused icon receipts, wrapped welcome labels and bilingual multi-font layouts use automated checks.

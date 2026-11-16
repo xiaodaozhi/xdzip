@@ -38,7 +38,7 @@ Index fields are divided into common columns and details. The list page does not
 
 ## 4. Queries and pagination
 
-`QuerySpec` includes directory scope, plain-text search, sort field, direction, and hidden-item options. The first version has no regular expressions to avoid unexpected complexity. Search uses the display path by default; size/type filters are separate explicit fields. Matching uses a Unicode-normalized, case-folded copy without changing the original name. Local sorting uses a deterministic comparator with EntryId as the final tie-breaker.
+`QuerySpec` includes directory scope, plain-text search, sort field, direction, and hidden-item options. The first version has no regular expressions to avoid unexpected complexity. Search uses the display path by default; size/type filters are separate explicit fields. Matching uses a Unicode-normalized, case-folded copy without changing the original name. Every sort field and direction keeps directories before files. Local sorting uses a deterministic comparator with EntryId ascending as the final tie-breaker; unknown sizes follow known sizes within each group.
 
 Creating a query snapshot can take time and therefore returns asynchronously. In `PageRequest {query_id, generation, offset, limit}`, offset is 64-bit and limit is at most 256. A page contains QueryId, generation, snapshot revision, row data, and completeness. A single Qt model's row count is limited by `int`; use segmented views above that limit. Do not narrow values or overflow the total.
 

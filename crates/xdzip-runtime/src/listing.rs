@@ -1,5 +1,5 @@
 //! Current-directory listings keep virtual navigation separate from physical records.
-use crate::{Archive, entry_type_key, navigation::Directory};
+use crate::{Archive, entry_sort_group, entry_type_key, navigation::Directory};
 use xdzip_codec_api::{Cancellation, Entry, ScanError};
 use xdzip_domain::query::PageRequest;
 
@@ -23,6 +23,12 @@ impl ListingRow<'_> {
         match self {
             Self::Physical(entry) => (0, entry.id.get()),
             Self::Directory(node) => (1, node.id),
+        }
+    }
+    fn sort_group(&self, sort: u8) -> u8 {
+        match self {
+            Self::Physical(entry) => entry_sort_group(entry, sort),
+            Self::Directory(_) => 0,
         }
     }
     fn type_key(&self) -> (bool, String) {
@@ -97,23 +103,20 @@ impl Archive {
                 .map(|row| row.resolve(self))
                 .collect()
         };
-        if sort == 9 {
+        if sort == 0 {
+            rows.sort_unstable_by_key(|row| (row.sort_group(sort), row.stable_key()));
+        } else if sort == 9 {
             rows.sort_by_cached_key(|row| (row.type_key(), row.stable_key()));
         } else if sort == 10 {
             rows.sort_by_cached_key(|row| {
                 let (file, category) = row.type_key();
                 (file, std::cmp::Reverse(category), row.stable_key())
             });
-        } else if sort != 0 {
+        } else {
             rows.sort_unstable_by(|a, b| {
-                if matches!(sort, 3 | 4) {
-                    let known = |row: &ListingRow<'_>| match row {
-                        ListingRow::Physical(entry) => entry.size_known,
-                        ListingRow::Directory(_) => true,
-                    };
-                    if known(a) != known(b) {
-                        return known(b).cmp(&known(a));
-                    }
+                let group = a.sort_group(sort).cmp(&b.sort_group(sort));
+                if group != std::cmp::Ordering::Equal {
+                    return group;
                 }
                 let order = if sort <= 2 {
                     a.path().cmp(b.path())
@@ -140,6 +143,61 @@ impl Archive {
 mod tests {
     use super::*;
     use std::path::Path;
+
+    #[test]
+    fn all_orders_keep_directories_first_before_paging_and_in_search() {
+        let control = Cancellation::default();
+        let path =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/zip/type-order.zip");
+        let mut archive = Archive::open(&path, &control).unwrap();
+        for entry in std::sync::Arc::make_mut(&mut archive.rows) {
+            if entry.directory || entry.display_name == "item-README" {
+                entry.size_known = false;
+            }
+        }
+        for text in ["", "item"] {
+            for sort in 0..=12 {
+                let (total, rows) = archive
+                    .listing_sorted("", text, 0, 128, sort, &control)
+                    .unwrap();
+                let is_directory = |row: &ListingRow<'_>| match row {
+                    ListingRow::Physical(entry) => entry.directory,
+                    ListingRow::Directory(_) => true,
+                };
+                let directory_count = rows.iter().filter(|row| is_directory(row)).count();
+                assert_eq!(directory_count, if text.is_empty() { 3 } else { 2 });
+                assert!(
+                    rows[..directory_count].iter().all(is_directory),
+                    "{text}/{sort}"
+                );
+                assert!(rows[directory_count..].iter().all(|row| !is_directory(row)));
+                let mut paged = Vec::new();
+                for offset in (0..total).step_by(2) {
+                    let (_, page) = archive
+                        .listing_sorted("", text, offset as u64, 2, sort, &control)
+                        .unwrap();
+                    paged.extend(page.iter().map(|row| row.path().to_owned()));
+                }
+                assert_eq!(paged, rows.iter().map(ListingRow::path).collect::<Vec<_>>());
+                let (_, physical) = archive
+                    .browse_sorted("", text, 0, 128, sort, &control)
+                    .unwrap();
+                let directory_count = physical.iter().filter(|entry| entry.directory).count();
+                assert_eq!(directory_count, 2);
+                assert!(
+                    physical[..directory_count]
+                        .iter()
+                        .all(|entry| entry.directory),
+                    "physical/{text}/{sort}"
+                );
+                assert!(
+                    physical[directory_count..]
+                        .iter()
+                        .all(|entry| !entry.directory)
+                );
+            }
+        }
+    }
 
     #[test]
     fn type_sort_keeps_directories_first_in_both_directions_and_search() {
@@ -252,7 +310,7 @@ mod tests {
         assert_eq!(total, 4);
         assert_eq!(
             root.iter().map(ListingRow::path).collect::<Vec<_>>(),
-            ["root.txt", "explicit/", "root.txt", "app/"]
+            ["explicit/", "app/", "root.txt", "root.txt"]
         );
         let app = archive
             .directories
