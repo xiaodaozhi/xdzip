@@ -25,9 +25,24 @@ These materials target MSIX **1.0.27.0**, package identity `xiaodaozhi.xdzip`, f
 
 The app's existing Apache-2.0 license and third-party notices are unchanged by the blank supplemental-terms field. Pricing and legal acceptance are not determined by this material pack.
 
+## App screenshots and combined promotional artwork
+
+Each language has four actual app views using owned demonstration files. Their app build matches the candidate identified above. The plain screenshots are **1600 × 955 PNGs**, cropped at the bottom status area and converted from the capture tool's JPEG output. The import check verifies that decoded pixels inside the crop are preserved exactly.
+
+Use the plain screenshots for the desktop screenshot field. The combined versions place the same captures in the existing blue brand layout, with a separate headline and supporting copy. They are promotional materials; Microsoft's screenshot guidance advises against added marketing overlays. A 4K promotional export may enlarge the captured view and does not represent a native 4K capture.
+
+| Scene | Plain screenshot | 1920 × 1080 artwork | 3840 × 2160 artwork |
+| --- | --- | --- | --- |
+| Browse folders and select a file | [PNG](images/screenshots/01-browse.png) | [PNG](images/combined/01-browse-1920x1080.png) | [PNG](images/combined/01-browse-3840x2160.png) |
+| Opening and creation entry points | [PNG](images/screenshots/02-create.png) | [PNG](images/combined/02-create-1920x1080.png) | [PNG](images/combined/02-create-3840x2160.png) |
+| On-demand image preview | [PNG](images/screenshots/03-preview.png) | [PNG](images/combined/03-preview-1920x1080.png) | [PNG](images/combined/03-preview-3840x2160.png) |
+| Multiple tabs and grid browsing | [PNG](images/screenshots/04-workspace.png) | [PNG](images/combined/04-workspace-1920x1080.png) | [PNG](images/combined/04-workspace-3840x2160.png) |
+
+[listing.md](listing.md) provides captions for all four views. The starting page shows the creation entry point; it does not show a completed creation task. The screenshot set uses the light theme, while the listing's appearance options remain as described in the candidate's features.
+
 ## Feature illustrations
 
-The owner requested modern promotional images instead of new desktop captures. The following artwork is original vector illustration, with an explicit **Feature illustration** label. It does not reconstruct the app interface or represent a screenshot of a running application. Uploading a PNG with acceptable dimensions does not establish compliance with the Store's required screenshot field. Microsoft's screenshot guidance asks for app UI and advises against added marketing messages; choose the intended field accordingly.
+The original vector artwork remains available for promotion, with an explicit **Feature illustration** label. Use the app captures above for the screenshot field.
 
 | Artwork | 1920 × 1080 | 3840 × 2160 |
 | --- | --- | --- |
@@ -57,7 +72,9 @@ Xbox-only branded key art (584 × 800), titled hero art and featured promotional
 
 ## Editing and regeneration
 
-The [design gallery](../../../design/hifi/sources/windows-store-artwork.html) is the high-fidelity entry point. Editable vector composition lives in [build-windows-store-assets.cjs](../../../scripts/build-windows-store-assets.cjs); localized copy, palette and export canvas parameters live in [windows-store.json](../../../specs/marketing/windows-store.json). The [asset inventory](../../../specs/marketing/windows-store-assets.json) records source and PNG hashes. These fixed export canvases do not change Qt logical window dimensions or incorporate screen scaling into the product.
+The [design gallery](../../../design/hifi/sources/windows-store-artwork.html) is the high-fidelity entry point. Editable vector composition lives in [build-windows-store-assets.cjs](../../../scripts/build-windows-store-assets.cjs); localized copy, palette and export canvas parameters live in [windows-store.json](../../../specs/marketing/windows-store.json). The [asset inventory](../../../specs/marketing/windows-store-assets.json) records source and PNG hashes. The [capture inventory](../../../specs/marketing/windows-store-captures.json) records the candidate, source hashes, crop, captions and decoded pixel hashes. These fixed export canvases do not change Qt logical window dimensions or incorporate screen scaling into the product.
+
+To replace the screenshots, first review approved captures made with owned demonstration files in both languages. Name each source JPEG `<locale>-<scene>.jpg`, such as `en-US-01-browse.jpg`, matching the four scene IDs in the copy specification. Keep original captures under `build/` and run [import-windows-store-captures.cjs](../../../scripts/import-windows-store-captures.cjs) with that directory. It checks all eight inputs before writing the cropped PNG set. Review the new images before publishing them.
 
 With Node.js and `sharp` available:
 
@@ -67,8 +84,10 @@ node scripts/build-windows-store-assets.cjs --check
 python scripts/check-docs.py
 ```
 
+For an approved replacement set, run `node scripts/import-windows-store-captures.cjs build/approved-store-captures` before the commands above. Capture input dimensions must contain the crop specified in `screenshot_artwork.capture_crop`. Screenshot changes require regeneration of both promotional resolutions and both languages.
+
 The check validates field limits, language parity, PNG dimensions, opacity, byte limits, exact asset inventory and source/output hashes. It also detects stale generated listing text and ensures that the hero composition contains no text. Regenerate both languages together after changing the target candidate or copy.
 
 ## Official references
 
-The [Store listing field reference](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/add-and-edit-store-listing-info) defines descriptions, features and supplemental fields. The [MSIX image reference](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/screenshots-and-images) defines screenshot and artwork guidance. The current Partner Center form can expose more upload slots than the documentation; this pack uses four feature illustrations per language and does not infer additional device support from available fields.
+The [Store listing field reference](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/add-and-edit-store-listing-info) defines descriptions, features and supplemental fields. The [MSIX image reference](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/screenshots-and-images) defines screenshot and artwork guidance. The current Partner Center form can expose more upload slots than the documentation; this pack provides four app screenshots and four feature illustrations per language and does not infer additional device support from available fields.

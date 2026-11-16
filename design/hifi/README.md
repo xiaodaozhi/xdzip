@@ -1,6 +1,6 @@
 # xdzip 高保真设计统一入口
 
-[Microsoft Store 宣传素材](sources/windows-store-artwork.html)提供中英文功能插画、招贴画、方形品牌图和无文字横幅；文案、用途与导出尺寸见[商店材料](../../docs/zh-CN/market/windows/README.md)。
+[Microsoft Store 宣传素材](sources/windows-store-artwork.html)提供中英文应用截图及品牌融合图、功能插画、招贴画、方形品牌图和无文字横幅；文案、用途与导出尺寸见[商店材料](../../docs/zh-CN/market/windows/README.md)。
 
 [C01 格式选择修订](sources/create-format-selector.html)将新增 GZIP 后的格式选择接入共享下拉框，保留原稿及历史量测，尺寸继续使用既有参数。
 

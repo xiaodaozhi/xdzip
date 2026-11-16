@@ -140,3 +140,39 @@ Windows 11，x64 电脑。
 ```text
 功能示意图：管理多个压缩包，并选择浅色或深色外观。此图不是软件实机截图。
 ```
+
+## 应用截图与融合宣传图
+
+界面截图经过边缘裁剪和 PNG 转换，保留捕获的界面像素，建议用于商店截图栏。融合宣传图加入品牌版式，供宣传用途。
+
+### 01-browse
+
+[应用截图](images/screenshots/01-browse.png), [1920 × 1080](images/combined/01-browse-1920x1080.png), [3840 × 2160](images/combined/01-browse-3840x2160.png)
+
+```text
+浏览压缩包目录树，选择文件并查看属性。
+```
+
+### 02-create
+
+[应用截图](images/screenshots/02-create.png), [1920 × 1080](images/combined/02-create-1920x1080.png), [3840 × 2160](images/combined/02-create-3840x2160.png)
+
+```text
+通过起始页直接打开或创建压缩包。
+```
+
+### 03-preview
+
+[应用截图](images/screenshots/03-preview.png), [1920 × 1080](images/combined/03-preview-1920x1080.png), [3840 × 2160](images/combined/03-preview-3840x2160.png)
+
+```text
+在文件列表和属性旁，按需加载图像预览。
+```
+
+### 04-workspace
+
+[应用截图](images/screenshots/04-workspace.png), [1920 × 1080](images/combined/04-workspace-1920x1080.png), [3840 × 2160](images/combined/04-workspace-3840x2160.png)
+
+```text
+在标签页中同时打开两个压缩包，并以网格视图浏览选中的文件。
+```

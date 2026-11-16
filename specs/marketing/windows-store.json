@@ -4,6 +4,7 @@
     "package_version": "1.0.27.0",
     "revision": "90916a1992188e6e7e5c6b3d91695861ee1bd2d2",
     "package_sha256": "45f9a99f74431c4ab8dcb79d0e9628fa121f73b998dd8359dfd38fadc48aab46",
+    "runtime_exe_sha256": "f6e58a99a2f38b746a7175128fd8cf9d7d0a88871a314fbd2fac15021399c01e",
     "product_id": "9P2PFGG1GK7L",
     "package_name": "xiaodaozhi.xdzip",
     "device_family": "Windows.Desktop"
@@ -22,6 +23,7 @@
     "rationale": "Fixed export canvases for marketing artwork, independent of Qt logical window sizes and device scaling. No app UI is reconstructed."
   },
   "screenshot_artwork": {
+    "capture_crop": [0, 0, 1600, 955],
     "frame": [638, 186, 1206, 790],
     "headline_size": 68,
     "body_size": 26,
@@ -60,6 +62,12 @@
       "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.en.md",
       "illustration_label": "Feature illustration",
       "screenshot_artwork_label": "App screenshot with brand artwork",
+      "screenshot_captions": {
+        "01-browse": "Browse an archive's folder tree, select individual files and view their properties.",
+        "02-create": "Start page with direct access to opening and creating archives.",
+        "03-preview": "Request an image preview next to archive entries and file properties.",
+        "04-workspace": "Keep two archives open in tabs and browse selected files in grid view."
+      },
       "poster_headline": ["Pack. Unpack.", "Carry on."],
       "square_tagline": "Make archives a little simpler.",
       "promotions": [
@@ -96,6 +104,12 @@
       "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
       "illustration_label": "功能示意图",
       "screenshot_artwork_label": "应用截图与品牌插画",
+      "screenshot_captions": {
+        "01-browse": "浏览压缩包目录树，选择文件并查看属性。",
+        "02-create": "通过起始页直接打开或创建压缩包。",
+        "03-preview": "在文件列表和属性旁，按需加载图像预览。",
+        "04-workspace": "在标签页中同时打开两个压缩包，并以网格视图浏览选中的文件。"
+      },
       "poster_headline": ["打包与解压，", "都简单一点。"],
       "square_tagline": "打包与解压，都简单一点。",
       "promotions": [

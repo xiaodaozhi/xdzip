@@ -133,11 +133,13 @@ function validateCopy() {
   }
   if (jobs.filter(j=>j.role==='text-free-hero').some(j=>/<text\b/.test(j.source))) throw Error('Hero artwork must not contain text');
   if (captures) {
-    if (captures.baseline_revision !== spec.baseline.revision || captures.package_sha256 !== spec.baseline.package_sha256) throw Error('Screenshot candidate differs from listing baseline');
+    if (captures.baseline_revision !== spec.baseline.revision || captures.package_sha256 !== spec.baseline.package_sha256 || captures.runtime_exe_sha256 !== spec.baseline.runtime_exe_sha256) throw Error('Screenshot candidate differs from listing baseline');
     const expected = Object.entries(spec.locales).flatMap(([key,l]) => l.promotions.map(p => `${key}/${p.id}`)).sort();
     const actual = captures.images.map(c => `${c.locale}/${c.scene}`).sort();
     if (JSON.stringify(expected) !== JSON.stringify(actual)) throw Error('Screenshot language or scene inventory differs');
     if (captures.images.some(c => c.width < 1366 || c.height < 768)) throw Error('Store screenshots must be at least 1366 by 768');
+    if (captures.images.some(c => !c.caption || c.caption.length > 200 || c.caption !== spec.locales[c.locale].screenshot_captions[c.scene])) throw Error('Screenshot captions differ or exceed portal limits');
+    if (captures.images.some(c => JSON.stringify(c.crop) !== JSON.stringify(spec.screenshot_artwork.capture_crop))) throw Error('Screenshot crop differs from its source specification');
   }
 }
 function listingMarkdown(key,l) {
@@ -150,7 +152,7 @@ function listingMarkdown(key,l) {
   s+=`\n### ${h[17]}\n\n\`\`\`text\n${l.copyright}\n\`\`\`\n\n### ${h[18]}\n\n${h[19]}\n\n### ${h[20]}\n\n\`\`\`text\n${l.developer}\n\`\`\`\n\n## ${h[21]}\n\n| ${h[9]} | URL |\n| --- | --- |\n| ${h[22]} | ${spec.links.website} |\n| ${h[23]} | ${spec.links.support} |\n| ${h[24]} | ${l.privacy_url} |\n| ${h[25]} | ${spec.links.license} |\n\n## ${h[26]}\n\n${l.system_requirements.join('\n')}\n\n## ${h[27]}\n\n${h[28]}\n\n`;
   l.promotions.forEach(p=>s+=`### ${p.id}\n\n[1920 × 1080](images/promotional/${p.id}-1920x1080.png), [3840 × 2160](images/promotional/${p.id}-3840x2160.png)\n\n\`\`\`text\n${p.caption}\n\`\`\`\n\n`);
   if (captures) {
-    s += `## ${chinese?'应用截图与融合宣传图':'App screenshots and combined artwork'}\n\n${chinese?'纯截图保留真实应用界面，建议用于商店截图栏；融合宣传图另加品牌版式，供宣传用途。':'The unretouched images show the real app interface and are the recommended inputs for the Store screenshot field. Combined artwork adds a separate brand layout for promotional use.'}\n\n`;
+    s += `## ${chinese?'应用截图与融合宣传图':'App screenshots and combined artwork'}\n\n${chinese?'界面截图经过边缘裁剪和 PNG 转换，保留捕获的界面像素，建议用于商店截图栏。融合宣传图加入品牌版式，供宣传用途。':'The app captures use edge cropping and PNG conversion while preserving the captured UI pixels. Use them for the Store screenshot field. Combined artwork adds a brand layout for promotional use.'}\n\n`;
     for (const p of l.promotions) {
       const capture = captures.images.find(c => c.locale === key && c.scene === p.id);
       s += `### ${p.id}\n\n[${chinese?'应用截图':'App screenshot'}](images/screenshots/${p.id}.png), [1920 × 1080](images/combined/${p.id}-1920x1080.png), [3840 × 2160](images/combined/${p.id}-3840x2160.png)\n\n\`\`\`text\n${capture.caption}\n\`\`\`\n\n`;
@@ -169,6 +171,10 @@ async function main() {
     const bytes=fs.readFileSync(destination); const meta=await sharp(bytes).metadata();
     if (meta.format!=='png' || meta.width!==job.width || meta.height!==job.height || bytes.length>5000000) throw Error(`Invalid image ${job.file}`);
     if (!job.transparent && !(await sharp(bytes).stats()).isOpaque) throw Error(`Unexpected transparency ${job.file}`);
+    if (job.input) {
+      const capture = captures.images.find(c => c.file === job.file);
+      if (hash(await sharp(bytes).removeAlpha().raw().toBuffer()) !== capture.pixels_sha256) throw Error(`Changed UI pixels ${job.file}`);
+    }
     const entry={file:job.file,width:job.width,height:job.height,role:job.role,locale:job.locale,source_sha256,sha256:hash(bytes)};
     if (check) {
       const old=previous.assets.find(a=>a.file===job.file);
