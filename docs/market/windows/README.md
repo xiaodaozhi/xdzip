@@ -27,6 +27,8 @@ The app's existing Apache-2.0 license and third-party notices are unchanged by t
 
 ## App screenshots and combined promotional artwork
 
+To prepare replacement images, use the [guided native PNG capture assistant](capture.md). One run captures all four views for either language, with F8 confirming each manually prepared scene.
+
 Each language has four actual app views using owned demonstration files. Their app build matches the candidate identified above. The **1027 × 624 PNGs** preserve the complete default-size window, including its title and status bars. Cursor cleanup uses captured regions from two images of the same static view; the importer checks the unchanged middle area and verifies the resulting UI pixels.
 
 Use the **1366 × 768 Store screenshots** for the desktop screenshot field. They center the default window at 1:1 on a neutral background. Combined artwork places the same window in the existing blue brand layout, with a separate headline and supporting copy. The 1080p layout keeps the window at its captured size; the 4K export doubles the overall layout and does not represent a native 4K capture. Microsoft's screenshot guidance advises against marketing overlays in screenshot fields.
