@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/contracts.md)
 
-Authoritative interfaces are in design/03, 05, 06, and 08. This page defines freeze checks rather than duplicating signatures. The internal bridge, dual handles, and lifecycle are implemented; see the [runtime contract](m1-runtime.md) for boundaries. Query generations, source-version checks, and creation/extraction tasks have also been implemented; see the [browser contract](readonly-browser.md), [safe extraction](m3-extraction.md), and [creation contract](m4-creation.md). The third-party process protocol has an independent [read-only SDK trial](sdk-trial.md), but is not released as a stable SDK or integrated into the product. The table defines integration gates.
+Authoritative interfaces are in design/03, 05, 06, and 08. This page defines freeze checks rather than duplicating signatures. The internal bridge, dual handles, and lifecycle are implemented; see the [runtime contract](product-runtime.md) for boundaries. Query generations, source-version checks, and creation/extraction tasks have also been implemented; see the [browser contract](readonly-browser.md), [safe extraction](zip-safe-extraction.md), and [creation contract](zip-creation.md). The third-party process protocol has an independent [read-only SDK trial](sdk-trial.md), but is not released as a stable SDK or integrated into the product. The table defines integration gates.
 
 | Boundary | Confirm before work | Failure behavior to test |
 | --- | --- | --- |

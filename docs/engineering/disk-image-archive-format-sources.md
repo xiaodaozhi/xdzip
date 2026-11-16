@@ -1,6 +1,6 @@
 # Sources and licenses for disk images and other archive formats
 
-English | [简体中文](../zh-CN/engineering/m10-candidate-source-gates.md)
+English | [简体中文](../zh-CN/engineering/disk-image-archive-format-sources.md)
 
 This page describes public technical references, licensing restrictions, and support requirements for DAA, ISZ, ZPAQ, PEA, BOND, J2J, and related formats. A public format description does not grant permission to ship a decoder, and a reference implementation is not necessarily a redistributable product dependency. None of the references below is linked into xdzip. Before a format enters the product registry, its source revision, license text, complete fixtures, resource limits, and failure behavior must be established.
 

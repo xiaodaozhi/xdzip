@@ -1,6 +1,6 @@
 # ZIP 只读浏览契约
 
-[English](../../engineering/m2-readonly.md) | 简体中文
+[English](../../engineering/zip-readonly-browsing.md) | 简体中文
 
 本契约定义根目录直属项、搜索后代、稳定物理身份及目录优先类型排序；只读浏览不写出文件、不解码内容、不声称 CRC 完整性。实际验收和测量按 issue／Actions 登记。
 

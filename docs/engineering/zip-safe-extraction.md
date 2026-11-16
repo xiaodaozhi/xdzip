@@ -1,6 +1,6 @@
 # Safe ZIP extraction implementation
 
-English | [简体中文](../zh-CN/engineering/m3-extraction.md)
+English | [简体中文](../zh-CN/engineering/zip-safe-extraction.md)
 
 This contract defines host-safe output, actual extraction, conflicts, cancellation, and commit behavior. Actual execution results and current defects are recorded in relevant issues and Actions artifacts rather than accumulated here.
 

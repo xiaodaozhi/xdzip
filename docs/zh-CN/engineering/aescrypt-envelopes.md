@@ -26,4 +26,4 @@ KDF、每次读取和有界 CBC 批次都检查取消。密码派生哈希、中
 
 结构和密码学规则依据作者的 [AES Crypt 流规范](https://www.aescrypt.com/aes_stream_format.html)及[引擎流说明](https://github.com/terrapane/aescrypt_engine/blob/master/stream_format.md)。后端使用已准入的通用 AES 与 SHA-2 原语，不引入 AES Crypt 运行时或官方应用程序，不执行解密文件，也不绕过应用许可。共享秘密 SHA-512/HMAC 状态遵循 RFC 2104 与 [RFC 4231](https://www.rfc-editor.org/rfc/rfc4231)。
 
-[自有样本集](../../../tests/fixtures/aescrypt/README.md)包含独立编码的 0–3 版输入，并由独立 Python 密码学解码器交叉核对。固定公开测试密钥与 IV 只用于确定性样本。参考工具只留在 `build/toolchain/`，生成证据只留在 `build/` 或 CI。验收条目为[验收要求](../qa/acceptance.md)中的 `FORMAT-AESCRYPT`。另见[密码处理](password-extraction.md)、[归档检查](archive-checking.md)及[安全提取](m3-extraction.md)。
+[自有样本集](../../../tests/fixtures/aescrypt/README.md)包含独立编码的 0–3 版输入，并由独立 Python 密码学解码器交叉核对。固定公开测试密钥与 IV 只用于确定性样本。参考工具只留在 `build/toolchain/`，生成证据只留在 `build/` 或 CI。验收条目为[验收要求](../qa/acceptance.md)中的 `FORMAT-AESCRYPT`。另见[密码处理](password-extraction.md)、[归档检查](archive-checking.md)及[安全提取](zip-safe-extraction.md)。

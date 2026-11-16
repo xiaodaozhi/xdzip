@@ -1,8 +1,8 @@
 # TAR/GZIP implementation contract
 
-English | [简体中文](../zh-CN/engineering/m4-tar-gzip.md)
+English | [简体中文](../zh-CN/engineering/tar-gzip.md)
 
-This contract defines TAR/TAR.GZ browsing, creation, and safe extraction boundaries. Platform results and manual acceptance are recorded in issues/CI artifacts. It retains input authorization, staging, conflicts, cancellation, and whole-archive commit from [safe extraction](m3-extraction.md) and [ZIP creation](m4-creation.md).
+This contract defines TAR/TAR.GZ browsing, creation, and safe extraction boundaries. Platform results and manual acceptance are recorded in issues/CI artifacts. It retains input authorization, staging, conflicts, cancellation, and whole-archive commit from [safe extraction](zip-safe-extraction.md) and [ZIP creation](zip-creation.md).
 
 ## Scope and capabilities
 

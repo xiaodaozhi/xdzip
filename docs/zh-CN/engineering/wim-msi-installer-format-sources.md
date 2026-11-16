@@ -1,6 +1,6 @@
 # WIM、MSI 和安装程序格式的资料与许可
 
-[English](../../engineering/m9-candidate-source-gates.md) | 简体中文
+[English](../../engineering/wim-msi-installer-format-sources.md) | 简体中文
 
 本文介绍 WIM、MSI 和安装程序格式的技术资料、许可限制及支持这些格式所需的条件。参考资料保留在 `build/toolchain/references` 或链接到公开规范，不作为产品依赖。
 

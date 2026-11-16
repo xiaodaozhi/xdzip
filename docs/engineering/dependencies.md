@@ -97,7 +97,7 @@ GZIP uses an independent `xdzip-compression` implementation without third-party 
 
 tar test transitive dependencies include filetime 0.2.29 (MIT or Apache-2.0), reusing cfg-if and libc; filetime does not enter the codec's product closure. There are no new downloading build scripts, runtime network requests, or external-process format backends. Existing collect-notices.py collects licenses from the lockfile; a test package in the lockfile does not mean the product links it. System tar and Python tarfile are tests only and do not enter runtime dependencies.
 
-An OSV exact-version query on 2026-10-15 for tar 0.4.46, filetime 0.2.29, and flate2 1.1.10 returned no advisories. Original responses remain only under build/review/wp11. This is not a vulnerability-free guarantee. Bidirectional interoperability, bad inputs, quotas, cancellation, and three-platform verification must actually run; evidence is linked from the [WP-11 contract](m4-tar-gzip.md).
+An OSV exact-version query on 2026-10-15 for tar 0.4.46, filetime 0.2.29, and flate2 1.1.10 returned no advisories. Original responses remain only under build/review/wp11. This is not a vulnerability-free guarantee. Bidirectional interoperability, bad inputs, quotas, cancellation, and three-platform verification must actually run; evidence is linked from the [WP-11 contract](tar-gzip.md).
 
 ## Security-patched QtNetwork derivative
 

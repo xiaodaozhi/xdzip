@@ -1,6 +1,6 @@
 # WIM, MSI, and installer format sources and licenses
 
-English | [简体中文](../zh-CN/engineering/m9-candidate-source-gates.md)
+English | [简体中文](../zh-CN/engineering/wim-msi-installer-format-sources.md)
 
 This page describes technical references, licensing restrictions, and requirements for supporting WIM, MSI, and installer formats. References stay in `build/toolchain/references` or link to public specifications; none is a product dependency.
 

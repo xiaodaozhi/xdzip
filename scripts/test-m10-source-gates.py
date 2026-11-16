@@ -5,8 +5,8 @@ from pathlib import Path
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-ENGLISH = ROOT / "docs/engineering/m10-candidate-source-gates.md"
-CHINESE = ROOT / "docs/zh-CN/engineering/m10-candidate-source-gates.md"
+ENGLISH = ROOT / "docs/engineering/disk-image-archive-format-sources.md"
+CHINESE = ROOT / "docs/zh-CN/engineering/disk-image-archive-format-sources.md"
 REGISTRY = ROOT / "specs/engineering/archive-formats.json"
 
 CANDIDATES = ("DAA 1.0", "ISZ", "ZPAQ", "PEA", "BOND", "J2J")

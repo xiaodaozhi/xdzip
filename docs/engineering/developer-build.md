@@ -188,7 +188,7 @@ Historical full-product, real install upgrade/rollback, and association lifecycl
 
 Opening browses only; it does not automatically extract. Regular same-name files support Ask, Skip, Rename, and explicit Replace. Publish a whole file only after content verification and synchronization. Cancellation before commit or write failure preserves the old file; previously committed extracted entries remain. Closing a task window only hides details. Exit uses the active-task decision and asynchronous shutdown barrier.
 
-ZIP can restore relative symbolic links and executable bits under restricted POSIX conditions but not privilege bits, extended attributes, or original modification times. This does not establish app-bundle installation or signature verification. Source and destination must satisfy the [safe extraction contract](m3-extraction.md). Crash staging is only reported and retained for inspection; unknown content is not automatically recovered or deleted.
+ZIP can restore relative symbolic links and executable bits under restricted POSIX conditions but not privilege bits, extended attributes, or original modification times. This does not establish app-bundle installation or signature verification. Source and destination must satisfy the [safe extraction contract](zip-safe-extraction.md). Crash staging is only reported and retained for inspection; unknown content is not automatically recovered or deleted.
 
 <a id="windows-msix-实验构建"></a>
 
@@ -212,7 +212,7 @@ The MSIX manifest explicitly declares `en-US` and `zh-CN` to match built-in Engl
 
 Select affected checks under [general verification](../qa/README.md) and [on-demand desktop verification](../qa/private-test-manual.md); routine work does not require a manual acceptance form. Build and test receipts are `desktop-build.json` and `desktop-test.json` under build-dir. Prepare, package, and verify receipts are `<stage>.json` under output-dir and link underlying evidence. Automation receipts record actual stages and sources. Offscreen/software rendering, native Cocoa checks, and performed manual checks are recorded separately and do not substitute for one another. Existing acceptance remains in [#5](https://github.com/xiaodaozhi/xdzip/issues/5) and is not repeated merely because a candidate inventory is regenerated.
 
-Windows/Linux artifact delivery includes same-commit source and license notices; Actions retains artifacts for 14 days. After expiry, rebuild using identities and pinned inputs. deployment-audit.json and source/file-level CycloneDX inventories support provenance verification but may remain incomplete and cannot establish license approval. See [source delivery](source-delivery.md) and the [automated verification contract](wp12-automation.md) for source rebuilding and Qt replacement.
+Windows/Linux artifact delivery includes same-commit source and license notices; Actions retains artifacts for 14 days. After expiry, rebuild using identities and pinned inputs. deployment-audit.json and source/file-level CycloneDX inventories support provenance verification but may remain incomplete and cannot establish license approval. See [source delivery](source-delivery.md) and the [automated verification contract](candidate-verification.md) for source rebuilding and Qt replacement.
 
 Builds, screenshots, measurements, reports, and packages remain only as ignored local or CI artifacts. Do not describe generated pending forms, offscreen checks, or partial SBOMs as clean-environment and complete release-gate passes.
 

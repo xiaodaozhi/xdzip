@@ -123,7 +123,7 @@ T01～T18 的权威映射见 design/requirements-traceability.md。以下是可�
 | CREATE-OUT-03 | 父路径系统别名、大小写／Unicode 等价目录项，异目录同名文件、大小写敏感卷的独立文件，以及硬链接、链接、目录和特殊对象 | 不静默过滤普通输入；输入身份保护由最终守卫判断，链接／特殊对象与硬链接目标限制继续有效，私有工作目录及别名不得成为输入 |
 | CREATE-OUT-04 | 分卷输入包含已有 `.001`、`.1024`、基名 `.zip`、`.1025` 及其他 `.xdzip-*` 普通文件 | 仅排除身份匹配的私有暂存目录；所有旧卷及其他普通文件原字节保留于新卷组，整组改名或取消不覆盖旧卷 |
 
-规则与失败前提见[创建契约](../engineering/m4-creation.md)。只使用自行生成的临时输入，核对实际输出内容、取消后的旧字节和暂存清理；运行结果记录在对应 issue 与工件。
+规则与失败前提见[创建契约](../engineering/zip-creation.md)。只使用自行生成的临时输入，核对实际输出内容、取消后的旧字节和暂存清理；运行结果记录在对应 issue 与工件。
 
 ## 密码解压，AC-05 / AC-06 / AC-07 / AC-08 / AC-11
 
@@ -485,13 +485,13 @@ Windows 托盘图标的白色填充与深色描边须在深色、浅色及有色
 
 **FORMAT-EGG：** 验证 EGG 前缀、文件／子头／块／结束签名，UTF-8 文件名扩展字段，无加密、非固实普通单卷准入，Store 和原始 Deflate 块尺寸、准确块结束、CRC-32 及重复物理身份。覆盖加密、分卷、固实、AZO/BZip2/LZMA 和未知方法可见但无载荷权限，多块拒绝、块越界、截断、来源变化、取消、累计输入／工作／输出限额和冻结元数据。产品 runtime、CLI、关联候选和双语登记检查与原始 codec 测试分开，密码、加密、分卷、固实、AZO 和创建仍不在准入范围。详见 [ACE、ALZ 与 EGG 资料门槛](../engineering/ace-alz-egg-format-sources.md)。
 
-**FORMAT-CFB：** 验证 CFB 3.0 和 4.0 头部，包括 512 字节和 4096 字节扇区基址、FAT/DIFAT 分配、目录树顺序、mini-stream 与普通流跨度、物理重复身份、环、源快照和取消。使用真实 MSI 形态的 CFB 输入通过 runtime 和 CLI 列举，同时保持 MSI 表解释、内嵌 CAB 展开、变换、自定义动作、安装和回写在契约之外。特殊元数据流保持可见但没有载荷权限，绝不运行安装器或提取出的可执行文件。详见 [M9 候选资料门槛](../engineering/m9-candidate-source-gates.md)。
+**FORMAT-CFB：** 验证 CFB 3.0 和 4.0 头部，包括 512 字节和 4096 字节扇区基址、FAT/DIFAT 分配、目录树顺序、mini-stream 与普通流跨度、物理重复身份、环、源快照和取消。使用真实 MSI 形态的 CFB 输入通过 runtime 和 CLI 列举，同时保持 MSI 表解释、内嵌 CAB 展开、变换、自定义动作、安装和回写在契约之外。特殊元数据流保持可见但没有载荷权限，绝不运行安装器或提取出的可执行文件。详见 [M9 候选资料门槛](../engineering/wim-msi-installer-format-sources.md)。
 
-**FORMAT-PEA：** 验证 PEA 1.x 到 1.6 版头部、单一物理卷、`POD`/`EOA` 结构、UTF-8 对象名称、存储文件和目录对象、准确 qword 尺寸、重复物理身份、源快照和终止。拒绝 PEA 2.0 流、未知版本、卷／ECC 控制、密码、认证或对象／流／卷哈希控制、PCOMPRESS1–3、畸形名称、截断、尾随字节、来源变化、取消和累计输入／输出／名称限额。实际 runtime、CLI、关联候选和双语登记检查与原始 codec 分开，创建、修改、分卷及所有压缩或认证配置仍不在准入切片。详见 [M10 候选格式资料和许可门槛](../engineering/m10-candidate-source-gates.md)。
+**FORMAT-PEA：** 验证 PEA 1.x 到 1.6 版头部、单一物理卷、`POD`/`EOA` 结构、UTF-8 对象名称、存储文件和目录对象、准确 qword 尺寸、重复物理身份、源快照和终止。拒绝 PEA 2.0 流、未知版本、卷／ECC 控制、密码、认证或对象／流／卷哈希控制、PCOMPRESS1–3、畸形名称、截断、尾随字节、来源变化、取消和累计输入／输出／名称限额。实际 runtime、CLI、关联候选和双语登记检查与原始 codec 分开，创建、修改、分卷及所有压缩或认证配置仍不在准入切片。详见 [M10 候选格式资料和许可门槛](../engineering/disk-image-archive-format-sources.md)。
 
-**FORMAT-NSIS：** 验证 `MZ`/`PE\0\0` 外层、有界节表和 overlay 扫描、512 字节对齐的 `firstheader` 候选、两个准入魔数、`NullsoftInstallSystem` 签名字、flags、头部/后续长度限额及后续数据的物理可用长度、取消和来源限额。只发布 `NSIS/firstheader` 静态元数据行，拒绝畸形 PE 或签名、不可能的长度和固定记录截断。`.exe` 登记项不具有拖放或系统关联权限。打开和解码载荷必须返回 `unsupported_feature`，绝不执行或暴露 PE stub、脚本、插件、安装动作、压缩头部或提取载荷。runtime 识别、CLI 列举和双语登记检查与原始 codec 分开。详见 [M9 候选资料门槛](../engineering/m9-candidate-source-gates.md)。
+**FORMAT-NSIS：** 验证 `MZ`/`PE\0\0` 外层、有界节表和 overlay 扫描、512 字节对齐的 `firstheader` 候选、两个准入魔数、`NullsoftInstallSystem` 签名字、flags、头部/后续长度限额及后续数据的物理可用长度、取消和来源限额。只发布 `NSIS/firstheader` 静态元数据行，拒绝畸形 PE 或签名、不可能的长度和固定记录截断。`.exe` 登记项不具有拖放或系统关联权限。打开和解码载荷必须返回 `unsupported_feature`，绝不执行或暴露 PE stub、脚本、插件、安装动作、压缩头部或提取载荷。runtime 识别、CLI 列举和双语登记检查与原始 codec 分开。详见 [M9 候选资料门槛](../engineering/wim-msi-installer-format-sources.md)。
 
-**FORMAT-M10-SOURCE-GATES：** DAA、ISZ、ZPAQ、BOND、J2J 永久排除，必须保持未登记状态。已准入的 PEA 配置及另行授权的扩展必须记录权威规范、不可变参考版本或内容哈希、适用许可、完整可再分发夹具矩阵和有界净室能力契约。公开扩展名列表、GPL 参考可执行文件、只有头部的样本或只有 Store 的样本都不能授予探测或载荷权限。阻塞和未确认候选继续不进入 runtime、CLI、MIME 和关联消费者。详见 [M10 候选格式资料和许可门槛](../engineering/m10-candidate-source-gates.md)。
+**FORMAT-M10-SOURCE-GATES：** DAA、ISZ、ZPAQ、BOND、J2J 永久排除，必须保持未登记状态。已准入的 PEA 配置及另行授权的扩展必须记录权威规范、不可变参考版本或内容哈希、适用许可、完整可再分发夹具矩阵和有界净室能力契约。公开扩展名列表、GPL 参考可执行文件、只有头部的样本或只有 Store 的样本都不能授予探测或载荷权限。阻塞和未确认候选继续不进入 runtime、CLI、MIME 和关联消费者。详见 [M10 候选格式资料和许可门槛](../engineering/disk-image-archive-format-sources.md)。
 
 **FORMAT-ISO-CREATE：** CLI 与桌面创建单卷 ISO9660 + Joliet 数据映像，覆盖精确名称、嵌套和空目录、空文件及跨扇区数据。独立读取两套命名空间并比较文件字节。不可表示名称、深度／尺寸限制和非法参数不得产生最终文件；覆盖源变更、取消、输出错误与同名保留。
 

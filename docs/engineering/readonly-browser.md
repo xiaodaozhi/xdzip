@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/readonly-browser.md)
 
-This document defines browsing data, resource, and interaction boundaries, supplementing design/03, 05, and 06 without freezing a third-party protocol or complete format SDK. Specific ZIP metadata rules follow. TAR/TAR.GZ reuse browsing and query models; see the [TAR/GZIP contract](m4-tar-gzip.md) for format differences.
+This document defines browsing data, resource, and interaction boundaries, supplementing design/03, 05, and 06 without freezing a third-party protocol or complete format SDK. Specific ZIP metadata rules follow. TAR/TAR.GZ reuse browsing and query models; see the [TAR/GZIP contract](tar-gzip.md) for format differences.
 
 See [large archive indexing](large-index.md) for regular single-file ZIP/ZIP64 million-entry streaming indexes, disk-spill budgets, on-demand models, and task limits. The 100,000-entry in-memory snapshot budgets below remain the baseline for ordinary formats and early ZIP support and do not override newer streaming ZIP admission.
 
@@ -10,7 +10,7 @@ See [large archive indexing](large-index.md) for regular single-file ZIP/ZIP64 m
 
 xdzip-codec-api defines borrowed read-only input, cancellation, limits, entries, and errors. xdzip-codec-zip implements built-in ZIP metadata adaptation without path or write capabilities. xdzip-runtime opens and holds read-only files, publishing immutable snapshots after successful scans. xdzip-qt-bridge exposes worker-thread entry points through cxx; thin C++ controllers convert bounded pages into Qt models, and QML handles display and action intent.
 
-The product has migrated to the [command/event runtime](m1-runtime.md): the GUI submits short commands, a Rust worker holds the archive, and a separate Qt receiver delivers results through a bounded mailbox. QtConcurrent synchronous bridging was removed. Each browsing controller has at most one pending request. This is still not a complete multitask scheduler, dynamic plugin ABI, or third-party process protocol.
+The product has migrated to the [command/event runtime](product-runtime.md): the GUI submits short commands, a Rust worker holds the archive, and a separate Qt receiver delivers results through a bounded mailbox. QtConcurrent synchronous bridging was removed. Each browsing controller has at most one pending request. This is still not a complete multitask scheduler, dynamic plugin ABI, or third-party process protocol.
 
 ## Behavior and data
 
@@ -18,7 +18,7 @@ Opening ZIP displays direct root files and directories without automatic extract
 
 Recognize ZIP/ZIP64 and validate the ZIP64 locator, end record, and starting disk of the central directory. The [split-volume host](archive-opening.md) supplies unified logical input; the codec still rejects unconverted multidisk metadata. ZIP64 sizes and offsets remain 64-bit; do not allocate content buffers from declared sizes. Central-directory counts must match EOCD. Errors, cancellation, and overages publish no partial list. Resolve names under the [encoding contract](filename-encoding.md), prioritizing Unicode declarations then detecting undeclared legacy encodings; escape unresolved bytes. Escape control and bidirectional text controls. Absolute paths, parent paths, special files, and similar records are marked “Needs review.” Raw name bytes are always preserved; output uses only effective names independently path-validated and authorized.
 
-Sizes, compression methods, and encryption flags are archive-declared metadata. Content has not been read, CRC not verified, and local headers not checked. “Metadata” does not mean safe or complete. This contract describes read-only browsing; explicit extraction follows [M3](m3-extraction.md), creation and post-write verification follow [WP-10](m4-creation.md), and independent integrity tests use an explicit read-only background task under the [check contract](archive-checking.md). Opening an archive still writes no file content.
+Sizes, compression methods, and encryption flags are archive-declared metadata. Content has not been read, CRC not verified, and local headers not checked. “Metadata” does not mean safe or complete. This contract describes read-only browsing; explicit extraction follows [M3](zip-safe-extraction.md), creation and post-write verification follow [WP-10](zip-creation.md), and independent integrity tests use an explicit read-only background task under the [check contract](archive-checking.md). Opening an archive still writes no file content.
 
 ## Cross-platform filename encoding boundaries
 
@@ -55,7 +55,7 @@ Bridge source paths are currently limited to losslessly representable UTF-8. Fil
 
 ## Acceptance and follow-up
 
-Record actual tests and screenshots in issues/artifacts under [verification](../qa/README.md). Browsing includes real open, lists, internal batched queries, directory trees, current-query selection, and command/event lifecycle, with three-platform development builds. Verify 100,000-entry ZIP64 indexing and query generations under the [M2 contract](m2-readonly.md); writing is independently specified by [safe extraction](m3-extraction.md). Explicit preview follows separate content/decode quotas. Formal release still requires [release licensing review](../qa/release-review.md); this page does not record stage acceptance conclusions.
+Record actual tests and screenshots in issues/artifacts under [verification](../qa/README.md). Browsing includes real open, lists, internal batched queries, directory trees, current-query selection, and command/event lifecycle, with three-platform development builds. Verify 100,000-entry ZIP64 indexing and query generations under the [M2 contract](zip-readonly-browsing.md); writing is independently specified by [safe extraction](zip-safe-extraction.md). Explicit preview follows separate content/decode quotas. Formal release still requires [release licensing review](../qa/release-review.md); this page does not record stage acceptance conclusions.
 
 ## Browsing interaction increments
 
@@ -80,7 +80,7 @@ Selected entries can request [extraction metadata preflight](extraction-prefligh
 - Browse sort codes: 0 physical order (additional implicit directories follow index order), 1/2 name ascending/descending, 3/4 original size, 5/6 compressed size, 7/8 ZIP method number, 9/10 type, and 11/12 modification time; reject others. Switching columns, directories, or search returns to page one; clear current-query selection/details when a page is successfully replaced. A non-admitted action restores last displayed query parameters.
 - The tree supports expand/collapse, keyboard navigation, and Enter to enter directories; horizontal scrolling reaches deep levels. Base row height is 32, level indent 12.8, folder slot 16, icon/text gap 6.4; center text and icons vertically. Larger fonts may increase row height and column widths.
 
-Reverify directory navigation and sorting under [general methods](../qa/README.md). See the [M2 contract](m2-readonly.md) for full query identity, source checks, and 100,000-entry verification. UI selection covers the complete current query; internal batches and cache reclamation do not clear it. Freeze large-query range selections into stable identities before confirmation.
+Reverify directory navigation and sorting under [general methods](../qa/README.md). See the [M2 contract](zip-readonly-browsing.md) for full query identity, source checks, and 100,000-entry verification. UI selection covers the complete current query; internal batches and cache reclamation do not clear it. Freeze large-query range selections into stable identities before confirmation.
 
 ## Shared controls and context commands
 
@@ -88,7 +88,7 @@ Menus, buttons, and shortcuts reuse read-only controller actions. Right-clicking
 
 Lists and grids share one bounded model and selected IDs; grids do not get a second index. Directory guides, last-sibling markers, ancestor chains, and breadcrumbs derive from the published complete directory model without extra format queries. Archive summaries cache Open's physical total independent of current directory/search; the count to the right of breadcrumbs shows current list rows, including necessary navigation rows.
 
-Menus invalidate and close on reading, query, or session changes; check capabilities again before execution. Each BrowserController maintains one real archive session; the application hosts multiple archives in independent pages/windows. HTML design data remains separate sample data. Real extraction separately obtains explicit output intent and target authorization under M3. Creation uses the independent [input tree and saving flow](m4-creation.md); integrity checking uses a [read-only task](archive-checking.md); preflight analyzes metadata only. Shared controls receive no direct file-write authority.
+Menus invalidate and close on reading, query, or session changes; check capabilities again before execution. Each BrowserController maintains one real archive session; the application hosts multiple archives in independent pages/windows. HTML design data remains separate sample data. Real extraction separately obtains explicit output intent and target authorization under M3. Creation uses the independent [input tree and saving flow](zip-creation.md); integrity checking uses a [read-only task](archive-checking.md); preflight analyzes metadata only. Shared controls receive no direct file-write authority.
 
 ## M2 query and resource increments
 

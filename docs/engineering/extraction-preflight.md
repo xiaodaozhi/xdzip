@@ -17,7 +17,7 @@ Preflight runs through the command/event service, reusing bounded admission and 
 - Names must resolve to UTF-8, at most 4 KiB, 64 components, and 255 bytes per component; original names are not repaired or rewritten.
 - Reject absolute paths, empty components, `.`, `..`, backslashes, colons, control/bidirectional controls, Windows-invalid characters, and trailing spaces/dots in components.
 - Reject common Windows device names, including extension forms and superscript COM/LPT digits, conservatively applying a cross-platform portable-name subset.
-- Report existing metadata warnings, unsupported encryption, and non-Store/Deflate methods. Entries strictly identified as supported AES-256 separately warn that extraction needs a password; method 99 is not incorrectly reported as an unknown compression method. This filters declared capability only and does not decrypt, authenticate, or decode. See the [format contract](m4-tar-gzip.md) for TAR/TAR.GZ capability mapping.
+- Report existing metadata warnings, unsupported encryption, and non-Store/Deflate methods. Entries strictly identified as supported AES-256 separately warn that extraction needs a password; method 99 is not incorrectly reported as an unknown compression method. This filters declared capability only and does not decrypt, authenticate, or decode. See the [format contract](tar-gzip.md) for TAR/TAR.GZ capability mapping.
 - Check exact duplicate names, collisions from Unicode lowercase comparison, parent-directory aliases differing in case, and file/directory conflicts in both insertion orders. An implicit parent directory may be supplemented by an explicit directory of the same name; duplicate explicit directory records still conflict.
 - Declared per-file size above 8 GiB, total above 20 GiB, or integer overflow produce findings; declared compression ratio above 1000:1 prompts review. Declared directory sizes do not count toward output bytes.
 
@@ -37,7 +37,7 @@ Select entries and click “Extraction preflight.” Results use an independent 
 
 ## Boundary with actual extraction
 
-[Actual safe extraction](m3-extraction.md) independently implements output accounting, CRC/structural verification, destination authorization, platform path rechecks, conflicts, staging, and file commits. It is not limited to preflight's 128 selections and supports plans for 100,000 physical records and virtual-directory selections. A preflight report is not reused as write permission. Starting a task must reacquire destination authorization, revalidate sources, and check actual content under the [file security specification](../design/07-file-security.md). Native failure behavior and current known defects are tracked by the relevant contracts and issues.
+[Actual safe extraction](zip-safe-extraction.md) independently implements output accounting, CRC/structural verification, destination authorization, platform path rechecks, conflicts, staging, and file commits. It is not limited to preflight's 128 selections and supports plans for 100,000 physical records and virtual-directory selections. A preflight report is not reused as write permission. Starting a task must reacquire destination authorization, revalidate sources, and check actual content under the [file security specification](../design/07-file-security.md). Native failure behavior and current known defects are tracked by the relevant contracts and issues.
 
 ## Window and result presentation
 

@@ -1,6 +1,6 @@
 # 候选自动验证与证据汇总契约
 
-[English](../../engineering/wp12-automation.md) | 简体中文
+[English](../../engineering/candidate-verification.md) | 简体中文
 
 本文介绍候选版本的自动验证、Qt 源码构建与兼容替换检查。[门槛清单](../../../scripts/wp12-gates.json)区分自动验证和外部准入；脚本检查候选身份及证据完整性，自动项通过不代表正式发行获批。历史验证记录见 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)。
 

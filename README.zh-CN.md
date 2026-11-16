@@ -48,7 +48,7 @@
 - **多个归档**：默认在新标签页打开，也可设置为新窗口。同一登录会话共用应用进程和托盘，关闭浏览页面后后台任务仍可从任务入口访问。
 - **文件管理器操作**：Windows 经典右键菜单、Ubuntu Files 子菜单及 macOS Finder Sync 动态子菜单可直接压缩或解压，macOS 保留 Finder 服务作为回退。操作使用独立窗口，默认不打开主窗口或目标目录；支持逐项 ZIP、智能解压目录与批次取消。入口、系统启用及安装范围见[文件管理器操作](docs/zh-CN/engineering/shell-actions.md)。
 
-创建或添加时会排除 `.DS_Store` 文件及 `__MACOSX`、`_MACOSX` 目录。解压时执行路径检查、目标授权、重名处理和暂存，支持的格式还会校验内容；特殊对象和链接的处理因格式与平台而异，详见[安全解压契约](docs/zh-CN/engineering/m3-extraction.md)。
+创建或添加时会排除 `.DS_Store` 文件及 `__MACOSX`、`_MACOSX` 目录。解压时执行路径检查、目标授权、重名处理和暂存，支持的格式还会校验内容；特殊对象和链接的处理因格式与平台而异，详见[安全解压契约](docs/zh-CN/engineering/zip-safe-extraction.md)。
 
 ## 格式支持
 
@@ -73,7 +73,7 @@
 | [BH](docs/zh-CN/engineering/bh-containers.md) | `BH 05 07` 普通成员、方法 8 raw Deflate、准确长度与 CRC-32 | 不支持 | 不支持 |
 | [ALZ](docs/zh-CN/engineering/ace-alz-egg-format-sources.md) | 普通单卷成员，支持 Store 或原始 Deflate，准确尺寸与 CRC-32 | 不支持 | 不支持 |
 | [EGG](docs/zh-CN/engineering/ace-alz-egg-format-sources.md) | 无加密、非固实的普通单卷成员，支持 Store 或原始 Deflate，准确尺寸与 CRC-32 | 不支持 | 不支持 |
-| [PEA](docs/zh-CN/engineering/m10-candidate-source-gates.md) | PEA 1.x 单卷、UTF-8 名称、无加密 PCOMPRESS0 存储文件与目录，不含对象、流或卷校验 | 不支持 | 不支持 |
+| [PEA](docs/zh-CN/engineering/disk-image-archive-format-sources.md) | PEA 1.x 单卷、UTF-8 名称、无加密 PCOMPRESS0 存储文件与目录，不含对象、流或卷校验 | 不支持 | 不支持 |
 | NSIS（`.exe`） | 仅提供经内容验证的 PE overlay 中的静态 `firstheader` 元数据 | 不支持 | 不支持 |
 | ASAR | 存储文件与目录、共享载荷区间及声明的文件/块 SHA-256 | 不支持 | 不支持 |
 | Z、TAR.Z（包括 `.taz`） | Unix compress LZW、9–16 位字典及已准入 CLEAR/对齐配置 | 不支持 | 不支持 |

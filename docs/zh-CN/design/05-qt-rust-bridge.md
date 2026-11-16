@@ -10,7 +10,7 @@
 
 以下表格定义概念类型与语义，不是可直接编译的 `cxx::bridge` 声明。实施阶段根据 cxx 允许的共享类型拆分结构，生成代码纳入构建而非手工编辑。禁止为性能方便引入未定义生命周期的裸指针。
 
-当前已落地双句柄、取消／关闭控制通道、Qt mailbox、查询代际与来源版本，以及创建／解压 TaskId 和独立输出授权。应用支持独立归档会话，每个 BrowserController 使用自己的单会话 RuntimeConnection，普通请求仍在各连接内串行，重任务由应用统一串行准入，见[应用会话契约](../engineering/application-sessions.md)。第三方进程协议、CPU token 池和下表中的部分目标命令仍属后续设计。实际 API 与资源／失败边界见 [产品运行时](../engineering/m1-runtime.md)、[ZIP 查询](../engineering/m2-readonly.md)、[安全解压](../engineering/m3-extraction.md)及[创建契约](../engineering/m4-creation.md)，不能将设计表当作当前 cxx 声明。
+当前已落地双句柄、取消／关闭控制通道、Qt mailbox、查询代际与来源版本，以及创建／解压 TaskId 和独立输出授权。应用支持独立归档会话，每个 BrowserController 使用自己的单会话 RuntimeConnection，普通请求仍在各连接内串行，重任务由应用统一串行准入，见[应用会话契约](../engineering/application-sessions.md)。第三方进程协议、CPU token 池和下表中的部分目标命令仍属后续设计。实际 API 与资源／失败边界见 [产品运行时](../engineering/product-runtime.md)、[ZIP 查询](../engineering/zip-readonly-browsing.md)、[安全解压](../engineering/zip-safe-extraction.md)及[创建契约](../engineering/zip-creation.md)，不能将设计表当作当前 cxx 声明。
 
 ## 2. 客户端和事件接收
 
@@ -109,7 +109,7 @@ CMake 构建 Qt 应用，Cargo 构建 Rust 静态库和 cxx 生成产物。使�
 
 内部桥接增加 Create：输入路径数组、目标目录、ZIP 名称、Store／Deflate、1／6／9 级和重名策略。Qt 在 UTF-16→UTF-8 与整数窄化前拒绝非法值，Rust 再检查单路径 4 KiB、选择路径总量 4 MiB、条目数与便携文件名。CheckTarget 的 session=0 表示独立创建目标检查；非零会话仍绑定解压来源。
 
-创建与解压共用后台任务身份、取消、提示 ID、事件预算与异步退出。TaskSnapshot 增加 creating、total_known，扫描未知总量不能伪装为零字节任务；Verifying 阶段不把再次读取的校验量计入已处理输入。创建只保存完整归档一次，输入条目不能提前计为已保存。字段、错误及整体提交语义见 [WP-10 契约](../engineering/m4-creation.md)。
+创建与解压共用后台任务身份、取消、提示 ID、事件预算与异步退出。TaskSnapshot 增加 creating、total_known，扫描未知总量不能伪装为零字节任务；Verifying 阶段不把再次读取的校验量计入已处理输入。创建只保存完整归档一次，输入条目不能提前计为已保存。字段、错误及整体提交语义见 [WP-10 契约](../engineering/zip-creation.md)。
 
 创建选择摘要通过内部 InspectInputs 命令读取，返回按输入顺序的 Inputs，再返回唯一 Finished。一次最多 256 个绝对路径、每条最多 4 KiB，纳入已有请求与事件字节预算。后台使用 symlink_metadata，不递归目录、不跟随所选叶链接；普通文件报告大小，目录、错误与特殊对象不伪装为已知总量。Qt 仅展示当前路径集合对应的结果，快速变更合并为最新集合。目标检查与摘要请求在元数据通道空闲后执行，不创建重任务；开始创建仍重新授权、扫描并冻结输入树，不使用这些展示数据作为提交依据。
 

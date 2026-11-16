@@ -2,7 +2,7 @@
 
 [English](../../engineering/password-extraction.md) | 简体中文
 
-本契约补充[安全解压](m3-extraction.md)，定义密码、认证和任务交互。格式与文件安全逻辑仍独立于 Qt，密码窗口只提交用户意图。实际开发进度与平台验证见 [issue #11](https://github.com/xiaodaozhi/xdzip/issues/11)，本页不保存执行报告。
+本契约补充[安全解压](zip-safe-extraction.md)，定义密码、认证和任务交互。格式与文件安全逻辑仍独立于 Qt，密码窗口只提交用户意图。实际开发进度与平台验证见 [issue #11](https://github.com/xiaodaozhi/xdzip/issues/11)，本页不保存执行报告。
 
 ## 能力与格式边界
 

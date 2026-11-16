@@ -33,8 +33,8 @@
 
 这些文档适合需要了解格式能力、边界或实现依据的读者。具体支持范围仍以[格式支持表](../../README.zh-CN.md#格式支持)为准。
 
-- **读取、解压和创建**：[浏览与索引](engineering/readonly-browser.md)、[安全解压](engineering/m3-extraction.md)、[ZIP 创建](engineering/m4-creation.md)、[ISO 创建](engineering/iso-creation.md)、[Windows 自解压包](engineering/sfx-creation.md)。
-- **常见压缩流**：[TAR 与 GZIP](engineering/m4-tar-gzip.md)、[单文件压缩流](engineering/single-file-streams.md)、[LZ4](engineering/lz4-streams.md)、[Zstandard](engineering/zstandard-streams.md)、[Brotli](engineering/brotli-streams.md)、[Unix compress](engineering/compress-streams.md)。
+- **读取、解压和创建**：[浏览与索引](engineering/readonly-browser.md)、[安全解压](engineering/zip-safe-extraction.md)、[ZIP 创建](engineering/zip-creation.md)、[ISO 创建](engineering/iso-creation.md)、[Windows 自解压包](engineering/sfx-creation.md)。
+- **常见压缩流**：[TAR 与 GZIP](engineering/tar-gzip.md)、[单文件压缩流](engineering/single-file-streams.md)、[LZ4](engineering/lz4-streams.md)、[Zstandard](engineering/zstandard-streams.md)、[Brotli](engineering/brotli-streams.md)、[Unix compress](engineering/compress-streams.md)。
 - **归档和封装格式**：[7z 实现依据](engineering/sevenzip-format-sources.md)、[RAR 实现依据](engineering/rar-format-sources.md)、[CAB 实现依据](engineering/cab-format-sources.md)、[DEB](engineering/deb-containers.md)、[ASAR](engineering/asar-containers.md)、[AES Crypt](engineering/aescrypt-envelopes.md)、[UU 与 XXE](engineering/text-envelopes.md)。
 - **其他格式**：[LHA/LZH](engineering/lha-containers.md)、[PMA](engineering/pma-streams.md)、[ARJ](engineering/arj-streams.md)、[ARC](engineering/arc-streams.md)、[BH](engineering/bh-containers.md)、[ACE、ALZ 与 EGG](engineering/ace-alz-egg-format-sources.md)。
 - **设计与依赖**：[格式后端](engineering/native-codecs.md)、[自研格式与算法](engineering/independent-rust-codecs.md)、[格式扩展设计](design/06-codec-extension-sdk.md)、[依赖与许可](engineering/dependencies.md)。

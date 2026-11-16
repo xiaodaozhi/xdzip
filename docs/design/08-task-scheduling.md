@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/design/08-task-scheduling.md)
 
-This page describes both scheduling goals and implemented rules. The application maintains separate runtime connections for independent sessions. Each connection retains a single session and one heavy-task worker; creation and extraction are coordinated through serial application-level admission. Closing a page does not cancel background tasks. See the [application sessions contract](../engineering/application-sessions.md). A complete CPU token pool, two concurrent heavy tasks, external workers, and general pause are future designs; the target budgets below are not current settings. Actual task boundaries are defined by the [safe extraction](../engineering/m3-extraction.md), [creation](../engineering/m4-creation.md), and [password extraction](../engineering/password-extraction.md) contracts.
+This page describes both scheduling goals and implemented rules. The application maintains separate runtime connections for independent sessions. Each connection retains a single session and one heavy-task worker; creation and extraction are coordinated through serial application-level admission. Closing a page does not cancel background tasks. See the [application sessions contract](../engineering/application-sessions.md). A complete CPU token pool, two concurrent heavy tasks, external workers, and general pause are future designs; the target budgets below are not current settings. Actual task boundaries are defined by the [safe extraction](../engineering/zip-safe-extraction.md), [creation](../engineering/zip-creation.md), and [password extraction](../engineering/password-extraction.md) contracts.
 
 ## 1. State machine
 
@@ -96,7 +96,7 @@ Failure summaries retain paged results and bounded error samples. “Retry faile
 
 Closing a window differs from exiting the application. The current [tray](../ux/desktop-integration.md) is enabled by default; when available, closing the main window only hides it. Explicit exit and restart still enter active-task confirmation and asynchronous shutdown; without a tray, normal close is the fallback. While tasks run, the user may keep waiting or cancel tasks and exit. After choosing cancellation, stop new commands, wake pending prompts, and wait for workers and the receiver thread to finish.
 
-A five-second soft wait, general force-quit choice, and automatic recovery checks are target designs; the complete flow is not currently provided. Actual shutdown follows the asynchronous barrier in [runtime lifecycle](../engineering/m1-runtime.md). Crash staging is only reported and retained; unknown content is not automatically recovered or deleted. Shutdown control must not deadlock on a full queue or blocked GUI join.
+A five-second soft wait, general force-quit choice, and automatic recovery checks are target designs; the complete flow is not currently provided. Actual shutdown follows the asynchronous barrier in [runtime lifecycle](../engineering/product-runtime.md). Crash staging is only reported and retained; unknown content is not automatically recovered or deleted. Shutdown control must not deadlock on a full queue or blocked GUI join.
 
 ## 9. Concurrency verification
 
@@ -104,7 +104,7 @@ Model-check state transitions, cancel/commit races, independent task survival af
 
 ## WP-10 creation tasks
 
-Creation reuses one heavy-task thread and a bounded task mailbox; the GUI does not recursively scan inputs. After freezing the input tree, report known totals, encode sequentially into private staging, then re-decode and verify each entry before obtaining the whole-archive commit permit. Ordinary snapshots are coalesced to approximately 100 ms; conflicts and terminal states are retained. Cancellation and shutdown use existing control channels. Input file count and source bytes enter committed counts only after the archive is saved as a whole; written represents actual ZIP output bytes. See the [implementation contract](../engineering/m4-creation.md) for phases, budgets, and failure behavior.
+Creation reuses one heavy-task thread and a bounded task mailbox; the GUI does not recursively scan inputs. After freezing the input tree, report known totals, encode sequentially into private staging, then re-decode and verify each entry before obtaining the whole-archive commit permit. Ordinary snapshots are coalesced to approximately 100 ms; conflicts and terminal states are retained. Cancellation and shutdown use existing control channels. Input file count and source bytes enter committed counts only after the archive is saved as a whole; written represents actual ZIP output bytes. See the [implementation contract](../engineering/zip-creation.md) for phases, budgets, and failure behavior.
 
 ## WP-14 waiting for extraction passwords
 

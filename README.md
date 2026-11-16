@@ -48,7 +48,7 @@ Open an archive to browse its directories, search and sort entries, and select f
 - **Multiple archives:** Open archives in new tabs by default or configure them to open in new windows. A login session shares the application process and tray; background tasks remain accessible from the task entry point after browser pages close.
 - **File-manager actions:** Create or extract archives directly from the Windows classic context menu, Ubuntu Files submenu, or macOS Finder Sync dynamic submenu. Finder services remain available as a fallback on macOS. Actions use separate windows and do not open the main window or destination directory by default. Per-item ZIP creation, smart extraction directories, and batch cancellation are supported. See [file-manager actions](docs/engineering/shell-actions.md) for entry points, system enablement, and installation scope.
 
-`.DS_Store` files and `__MACOSX` and `_MACOSX` directories are excluded when creating archives or adding files. Extraction checks paths and destination authorization, handles name conflicts, and stages output; supported formats also verify content. Handling of special objects and links varies by format and platform. See the [safe extraction contract](docs/engineering/m3-extraction.md).
+`.DS_Store` files and `__MACOSX` and `_MACOSX` directories are excluded when creating archives or adding files. Extraction checks paths and destination authorization, handles name conflicts, and stages output; supported formats also verify content. Handling of special objects and links varies by format and platform. See the [safe extraction contract](docs/engineering/zip-safe-extraction.md).
 
 ## Format support
 
@@ -73,7 +73,7 @@ Open an archive to browse its directories, search and sort entries, and select f
 | [BH](docs/engineering/bh-containers.md) | `BH 05 07` ordinary members, method 8 raw Deflate, exact sizes and CRC-32 | Not supported | Not supported |
 | [ALZ](docs/engineering/ace-alz-egg-format-sources.md) | Ordinary single-volume members using Store or raw Deflate, exact sizes and CRC-32 | Not supported | Not supported |
 | [EGG](docs/engineering/ace-alz-egg-format-sources.md) | Non-encrypted, non-solid single-volume members using Store or raw Deflate, exact sizes and CRC-32 | Not supported | Not supported |
-| [PEA](docs/engineering/m10-candidate-source-gates.md) | PEA 1.x single-volume, UTF-8 names, unencrypted PCOMPRESS0 stored files/directories; no object, stream or volume checks | Not supported | Not supported |
+| [PEA](docs/engineering/disk-image-archive-format-sources.md) | PEA 1.x single-volume, UTF-8 names, unencrypted PCOMPRESS0 stored files/directories; no object, stream or volume checks | Not supported | Not supported |
 | NSIS (`.exe`) | Static `firstheader` metadata only; content-validated PE overlay | Not supported | Not supported |
 | ASAR | Stored files/directories, shared payload ranges and declared file/block SHA-256 | Not supported | Not supported |
 | Z, TAR.Z (including `.taz`) | Unix compress LZW, 9–16-bit dictionaries and admitted CLEAR/alignment profiles | Not supported | Not supported |
