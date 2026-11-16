@@ -17,6 +17,7 @@
 | 此版本的新增功能 | 首次提交留空，不粘贴内部测试记录 |
 | 产品功能 | 十项分别填写，每项不超过 200 个字符，页面自动添加项目符号 |
 | 短标题 | `xdzip` |
+| 排序标题 | 留空，无需另设字母排序名称 |
 | 语音标题 | 留空，本次为桌面应用，不使用 Xbox 语音标题 |
 | 简短描述 | 使用本地化文案，控制在建议的 270 个字符以内 |
 | 关键字 | 七项分别添加，每项不超过 40 个字符，空格分词总数不超过 21 |
@@ -31,18 +32,18 @@
 
 需要重新截图时，使用[原生 PNG 自动截图脚本](capture.md)。每种语言运行一次，即可自动准备并保存四个场景，无需手动切换界面或逐张确认。
 
-每种语言均提供四张真实应用界面，使用自有演示文件，程序构建对应上方标明的候选。**1027 × 624 PNG** 保留完整的默认窗口，包括标题栏和状态栏。光标清理使用同一静止界面的两次捕获，导入器核对中部界面不变，并验证导出像素均来自实际捕获。
+每种语言均提供四张真实应用界面，使用自有演示文件，程序构建对应上方标明的候选。无损原生 PNG 中，主窗口为 **1536 × 933**，创建窗口为 **737 × 1104**，保持默认逻辑窗口尺寸。原始 PNG 与已校验捕获逐字节一致。另存的透明抠图仅裁去周边两像素并处理圆角，不重绘文字，也不改变不透明界面像素。
 
-桌面截图栏建议使用 **1366 × 768 商店截图**，默认窗口按 1:1 居中放置，周围添加中性留白。融合版把同一窗口放入已有的蓝色品牌版式，配以标题和说明。1080p 版保持窗口的捕获尺寸，4K 版将整体版式放大两倍，不代表原生 4K 截图。微软截图指引建议截图栏不要叠加营销文案。
+桌面截图栏使用 **2560 × 1440 商店截图**，处理后的应用界面按 1:1 居中，周围添加中性留白，不叠加营销文字。融合宣传图将同一界面放入蓝色品牌版式，配以本地化文案、细边框和柔和阴影。1080p 版仅缩小一次以适配版面，4K 版保持界面原生 1:1，均不放大界面。左下角不显示平台标记。
 
 | 场景 | 默认窗口 | 商店截图 | 1920 × 1080 宣传图 | 3840 × 2160 宣传图 |
 | --- | --- | --- | --- | --- |
 | 浏览目录与选择文件 | [PNG](images/screenshots/01-browse.png) | [PNG](images/store-screenshots/01-browse.png) | [PNG](images/combined/01-browse-1920x1080.png) | [PNG](images/combined/01-browse-3840x2160.png) |
-| 打开与创建入口 | [PNG](images/screenshots/02-create.png) | [PNG](images/store-screenshots/02-create.png) | [PNG](images/combined/02-create-1920x1080.png) | [PNG](images/combined/02-create-3840x2160.png) |
+| 创建窗口与 ZIP 设置 | [PNG](images/screenshots/02-create.png) | [PNG](images/store-screenshots/02-create.png) | [PNG](images/combined/02-create-1920x1080.png) | [PNG](images/combined/02-create-3840x2160.png) |
 | 按需图像预览 | [PNG](images/screenshots/03-preview.png) | [PNG](images/store-screenshots/03-preview.png) | [PNG](images/combined/03-preview-1920x1080.png) | [PNG](images/combined/03-preview-3840x2160.png) |
 | 多标签与网格浏览 | [PNG](images/screenshots/04-workspace.png) | [PNG](images/store-screenshots/04-workspace.png) | [PNG](images/combined/04-workspace-1920x1080.png) | [PNG](images/combined/04-workspace-3840x2160.png) |
 
-[listing.md](listing.md) 提供四张界面的说明文字。起始页展示创建入口，不表示完成了一次创建任务。本套截图采用浅色主题，文案中的外观选项仍以候选功能为准。
+[listing.md](listing.md) 提供四张界面的说明文字。创建窗口展示三张演示图片和 ZIP 选项，没有启动压缩任务。本套截图采用浅色主题，文案中的外观选项仍以候选功能为准。
 
 ## 功能宣传图
 
@@ -76,21 +77,27 @@
 
 ## 编辑与重新生成
 
-[设计画廊](../../../../design/hifi/sources/windows-store-artwork.html)是高保真入口。可编辑的矢量构图位于 [build-windows-store-assets.cjs](../../../../scripts/build-windows-store-assets.cjs)，本地化文案、配色与输出画布参数位于 [windows-store.json](../../../../specs/marketing/windows-store.json)，[素材清单](../../../../specs/marketing/windows-store-assets.json)保存源图和 PNG 的摘要，[截图素材清单](../../../../specs/marketing/windows-store-captures.json)保存候选身份、两份来源摘要、完整窗口尺寸、光标清理范围、图片说明和解码像素摘要。固定输出画布只用于商店图片，不改变 Qt 窗口逻辑尺寸，也不把屏幕缩放写入产品。
+[设计画廊](../../../../design/hifi/sources/windows-store-artwork.html)是高保真入口。可编辑构图位于 [build-windows-store-assets.cjs](../../../../scripts/build-windows-store-assets.cjs)，本地化文案、配色与输出画布参数位于 [windows-store.json](../../../../specs/marketing/windows-store.json)，[素材清单](../../../../specs/marketing/windows-store-assets.json)保存全部 71 张 PNG 及源图、输出摘要，[截图素材清单](../../../../specs/marketing/windows-store-captures.json)保存候选身份、原生截图与捕获回执摘要、客户区裁切、尺寸、DPI、图片说明和抠图处理参数。固定输出画布只用于商店图片，不改变 Qt 窗口逻辑尺寸，也不把屏幕缩放写入产品。
 
-替换截图前，先审阅两种语言中使用自有演示文件捕获的画面。对每个静止界面，分别在指针位于状态栏附近、标题栏附近时捕获，前者按 `<locale>-<scene>.jpg` 命名，例如 `zh-CN-01-browse.jpg`，后者按 `<locale>-<scene>-bottom.jpg` 命名。导入器取第二张中的干净底部补齐，所有界面像素保留实际捕获内容。原始捕获放在 `build/`，将目录传给 [import-windows-store-captures.cjs](../../../../scripts/import-windows-store-captures.cjs)，导入器核对全部八对输入后写入 PNG。公开使用前仍需审阅完整图片。
+替换截图前，分别运行两种语言的原生截图流程，并按 100% 比例审阅 PNG。将两个完整捕获目录传给 [import-windows-store-captures.cjs](../../../../scripts/import-windows-store-captures.cjs)。导入器先核对全部八张 PNG 的候选身份、摘要及客户区与窗框像素的精确对应，再更新材料输入。JPEG、不完整或身份不符的回执会被拒绝。更新候选时，先明确修改营销规格中的基线。
 
 环境中具备 Node.js 和 `sharp` 后执行：
 
 ```sh
+node scripts/import-windows-store-captures.cjs build/captures-en-US build/captures-zh-CN
 node scripts/build-windows-store-assets.cjs
 node scripts/build-windows-store-assets.cjs --check
 python scripts/check-docs.py
+python scripts/package-windows-store-materials.py --output dist/windows-store-materials
 ```
 
-替换为已审阅的截图时，先执行 `node scripts/import-windows-store-captures.cjs build/approved-store-captures`，再执行上方命令。输入尺寸须与 `screenshot_artwork.default_capture_size` 一致，清理范围由 `cursor_cleanup_height` 指定。截图变更后，同时重新生成两种语言、商店留白版与两种宣传分辨率。
+导出路径必须尚不存在。打包脚本生成目录和 ZIP，按 `en-US`、`zh-CN` 分开，包含 62 张上传或宣传 PNG、可复制文案、截图说明 CSV、补充字段、审核备注和 SHA-256 清单。原始捕获与透明抠图留在仓库中，不放入上传包。材料包不含产品二进制或源码压缩包。
 
-检查覆盖字段长度、双语条目对应、PNG 尺寸、不透明度、文件大小、完整素材清单及源图和输出摘要，同时核对商店留白版按 1:1 保留全部窗口像素、文案是否过期、横幅是否含文字。修改目标候选或文案后，请同时重新生成两种语言。
+检查覆盖字段长度、双语条目对应、PNG 尺寸、透明度、文件大小、完整素材清单及源图和输出摘要，同时核对不透明界面像素、透明圆角的背景、商店版与 4K 版的原生 1:1 放置、文案时效和无文字横幅。修改目标候选或文案后，同时重新生成两种语言。
+
+## 审核字段
+
+[审核说明](reviewer-notes.md)提供双语 `runFullTrust` 用途说明与认证测试说明，可复制到相应栏目。本材料包不表示受限功能已经获批或已提交认证。定价、年龄分级和账户级问卷仍属于合作伙伴中心的其他提交栏目。
 
 ## 官方参考
 

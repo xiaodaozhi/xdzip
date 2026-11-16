@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const sharp = require('sharp');
+const imageTools = require('./windows-store-image-utils.cjs');
 const ROOT = path.resolve(__dirname, '..');
 const spec = JSON.parse(fs.readFileSync(path.join(ROOT, 'specs/marketing/windows-store.json'), 'utf8'));
 const brand = fs.readFileSync(path.join(ROOT, 'design/assets/brand/xdzip.svg'), 'utf8');
@@ -12,7 +13,7 @@ const check = process.argv.includes('--check');
 const indexFile = path.join(ROOT, 'specs/marketing/windows-store-assets.json');
 const captureFile = path.join(ROOT, 'specs/marketing/windows-store-captures.json');
 const captures = fs.existsSync(captureFile) ? JSON.parse(fs.readFileSync(captureFile, 'utf8')) : null;
-const previous = check ? JSON.parse(fs.readFileSync(indexFile, 'utf8')) : null;
+const previous = fs.existsSync(indexFile) ? JSON.parse(fs.readFileSync(indexFile, 'utf8')) : null;
 const jobs = [];
 const hash = data => crypto.createHash('sha256').update(data).digest('hex');
 const esc = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
@@ -44,24 +45,13 @@ function promo(locale, index, width, height) {
   const base = item.headline.length === 3 ? 655 : 578;
   item.body.forEach((line, n) => body += text(113, base + n * 49, line, v.body_size, v.muted));
   body += scene(index) + rect(1492, 70, 310, 50, 25, '#E6EDFD') + text(1647, 103, locale.illustration_label, 22, '#536C94', 500, 'middle');
-  body += text(113, 1009, 'Windows 11, x64', 22, '#64789A');
   return svg(width, height, body);
-}
-function screenshotPlacement(capture) {
-  const layout = spec.screenshot_artwork;
-  const [frameX, frameY, frameWidth, frameHeight] = layout.frame;
-  const scale = Math.min(layout.max_capture_scale, frameWidth / capture.width, frameHeight / capture.height);
-  const imageWidth = capture.width * scale;
-  const imageHeight = capture.height * scale;
-  return {scale, imageWidth, imageHeight,
-    imageX:Math.round(frameX + (frameWidth - imageWidth) / 2),
-    imageY:Math.round(frameY + (frameHeight - imageHeight) / 2)};
 }
 function screenshotPromo(locale, index, capture, width, height) {
   const item = locale.promotions[index];
   const layout = spec.screenshot_artwork;
-  const {imageWidth,imageHeight,imageX,imageY} = screenshotPlacement(capture);
-  const uri = 'data:image/png;base64,' + capture.bytes.toString('base64');
+  const box = imageTools.placement(spec,capture,width,height);
+  const ratio = width / 1920;
   let body = rect(0, 0, 1920, 1080, 0, v.background);
   body += '<ellipse cx="1440" cy="430" rx="820" ry="670" fill="url(#glow)"/>';
   body += '<path d="M-80 1050Q720 590 2030 1090M-80 1105Q720 645 2030 1145" fill="none" stroke="#D9E7FE" stroke-width="3"/>';
@@ -71,11 +61,13 @@ function screenshotPromo(locale, index, capture, width, height) {
   const base = item.headline.length === 3 ? 667 : 594;
   item.body.forEach((line, n) => body += text(78, base + n * 41, line, layout.body_size, v.muted));
   body += `<g transform="translate(82 792) rotate(-7)">${logo(0, 0, 120)}</g>`;
-  body += text(78, 1010, 'Windows 11, x64', 22, '#64789A');
   body += rect(1318, 75, 526, 50, 25, '#E6EDFD');
   body += text(1581, 108, locale.screenshot_artwork_label, 22, '#536C94', 500, 'middle');
-  body += rect(imageX - 10, imageY - 10, imageWidth + 20, imageHeight + 20, 16, '#FFFFFF', 'filter="url(#shadow)"');
-  body += `<image x="${imageX}" y="${imageY}" width="${imageWidth}" height="${imageHeight}" href="${uri}"/>`;
+  // Only the vector background is scaled. The UI is composited separately.
+  const border = layout.border_width;
+  body += `<defs><filter id="capture-shadow" x="-25%" y="-20%" width="150%" height="160%"><feDropShadow dx="0" dy="${layout.shadow_offset_y}" stdDeviation="${layout.shadow_blur}" flood-color="#173763" flood-opacity=".18"/></filter></defs>`;
+  body += rect(box.imageX/ratio-border/2,box.imageY/ratio-border/2,box.imageWidth/ratio+border,box.imageHeight/ratio+border,
+    capture.corner_radius*box.scale/ratio+border/2,'#FFFFFF',`stroke="${layout.border_color}" stroke-width="${border}" filter="url(#capture-shadow)"`);
   return svg(width, height, body);
 }
 function poster(locale, width, height) {
@@ -117,16 +109,23 @@ if (captures) {
     const index = locale.promotions.findIndex(p => p.id === capture.scene);
     if (index < 0) throw Error(`Unknown screenshot scene ${capture.scene}`);
     jobs.push({file:capture.file, width:capture.width, height:capture.height, role:'app-screenshot', locale:capture.locale, source:bytes, input:true});
+    const cutoutBytes = fs.readFileSync(path.join(ROOT,capture.cutout_file));
+    if (hash(cutoutBytes) !== capture.cutout_sha256) throw Error(`Changed screenshot cutout ${capture.cutout_file}`);
+    jobs.push({file:capture.cutout_file,width:capture.cutout_width,height:capture.cutout_height,role:'screenshot-cutout',locale:capture.locale,source:cutoutBytes,input:true,transparent:true});
     const base = capture.locale === 'en-US' ? en : zh;
     const [minimumWidth,minimumHeight] = spec.screenshot_artwork.store_canvas;
-    const canvas = {width:Math.max(minimumWidth,capture.width), height:Math.max(minimumHeight,capture.height), background:spec.screenshot_artwork.store_background};
-    const left = Math.floor((canvas.width - capture.width) / 2);
-    const top = Math.floor((canvas.height - capture.height) / 2);
+    const canvas = {width:minimumWidth,height:minimumHeight,background:spec.screenshot_artwork.store_background};
+    if (capture.cutout_width > canvas.width || capture.cutout_height > canvas.height) throw Error('Native screenshot exceeds Store canvas');
+    const left = Math.floor((canvas.width - capture.cutout_width) / 2);
+    const top = Math.floor((canvas.height - capture.cutout_height) / 2);
     jobs.push({file:`${base}/images/store-screenshots/${capture.scene}.png`, width:canvas.width, height:canvas.height,
-      role:'store-screenshot', locale:capture.locale, source:JSON.stringify({capture_sha256:capture.sha256,canvas,left,top}),
+      role:'store-screenshot', locale:capture.locale, source:JSON.stringify({capture_sha256:capture.cutout_sha256,canvas,left,top}),
       canvas, left, top, capture});
     for (const [width,height] of [[1920,1080],[3840,2160]]) {
-      jobs.push({file:`${base}/images/combined/${capture.scene}-${width}x${height}.png`, width, height, role:'screenshot-artwork', locale:capture.locale, capture, source:screenshotPromo(locale,index,{...capture,bytes},width,height)});
+      const background = screenshotPromo(locale,index,capture,width,height);
+      const box = imageTools.placement(spec,capture,width,height);
+      jobs.push({file:`${base}/images/combined/${capture.scene}-${width}x${height}.png`,width,height,role:'screenshot-artwork',locale:capture.locale,capture,
+        source:JSON.stringify({background,box,capture_sha256:capture.cutout_sha256}),background,box});
     }
   }
 }
@@ -135,23 +134,23 @@ function validateCopy() {
   const a=spec.locales['en-US'],b=spec.locales['zh-CN'];
   if(a.features.length!==b.features.length || a.promotions.length!==4 || JSON.stringify(a.promotions.map(p=>p.id))!==JSON.stringify(b.promotions.map(p=>p.id))) throw Error('Bilingual feature or artwork inventory differs');
   for (const [key, l] of Object.entries(spec.locales)) {
-    const limits = {product_name:50,short_title:50,voice_title:255,developer:255,short_description:270,description:10000,release_notes:1500,copyright:200,additional_license_terms:10000};
+    const limits = {product_name:50,short_title:50,sort_title:255,voice_title:255,developer:255,short_description:270,description:10000,release_notes:1500,copyright:200,additional_license_terms:10000};
     for (const [name,max] of Object.entries(limits)) if (l[name].length > max) throw Error(`${key} ${name} exceeds ${max}`);
     if (l.features.length > 20 || l.features.some(s=>s.length>200)) throw Error(`${key} features exceed portal limits`);
     if (l.keywords.length > 7 || l.keywords.some(s=>s.length>40) || l.keywords.join(' ').trim().split(/\s+/).length>21) throw Error(`${key} keywords exceed portal limits`);
     if (l.promotions.some(p=>p.caption.length>200)) throw Error(`${key} caption exceeds 200`);
     if (/https?:|<\/?\w/.test(l.description)) throw Error(`${key} description is not plain text`);
-    if (l.release_notes || l.additional_license_terms || l.voice_title) throw Error('First submission and desktop-only empty fields must stay intentional');
+    if (l.release_notes || l.additional_license_terms || l.voice_title || l.sort_title) throw Error('First submission and desktop-only empty fields must stay intentional');
   }
+  if (jobs.filter(j=>['feature-illustration','screenshot-artwork'].includes(j.role)).some(j=>String(j.source).includes('Windows 11, x64'))) throw Error('Promotional footer system label must stay removed');
   if (jobs.filter(j=>j.role==='text-free-hero').some(j=>/<text\b/.test(j.source))) throw Error('Hero artwork must not contain text');
   if (captures) {
     if (captures.baseline_revision !== spec.baseline.revision || captures.package_sha256 !== spec.baseline.package_sha256 || captures.runtime_exe_sha256 !== spec.baseline.runtime_exe_sha256) throw Error('Screenshot candidate differs from listing baseline');
     const expected = Object.entries(spec.locales).flatMap(([key,l]) => l.promotions.map(p => `${key}/${p.id}`)).sort();
     const actual = captures.images.map(c => `${c.locale}/${c.scene}`).sort();
     if (JSON.stringify(expected) !== JSON.stringify(actual)) throw Error('Screenshot language or scene inventory differs');
-    if (captures.window_mode !== 'default' || captures.images.some(c => JSON.stringify([c.width,c.height]) !== JSON.stringify(spec.screenshot_artwork.default_capture_size))) throw Error('Screenshots must preserve the specified default window size');
+    if (captures.schema_version !== 2 || captures.window_mode !== 'default') throw Error('Lossless native capture inventory required');
     if (captures.images.some(c => !c.caption || c.caption.length > 200 || c.caption !== spec.locales[c.locale].screenshot_captions[c.scene])) throw Error('Screenshot captions differ or exceed portal limits');
-    if (captures.images.some(c => JSON.stringify(c.cursor_cleanup_strip) !== JSON.stringify([0,c.height - spec.screenshot_artwork.cursor_cleanup_height,c.width,spec.screenshot_artwork.cursor_cleanup_height]))) throw Error('Screenshot cleanup region differs from its source specification');
   }
 }
 function listingMarkdown(key,l) {
@@ -160,11 +159,12 @@ function listingMarkdown(key,l) {
   let s=`# ${h[0]}\n\n${chinese?'[English](../../../market/windows/listing.md) | 简体中文':'English | [简体中文](../../zh-CN/market/windows/listing.md)'}\n\n## ${h[1]}\n\nMSIX ${spec.baseline.package_version}, x64, \`${spec.baseline.revision}\`.\n\n## ${h[2]}\n\n\`\`\`text\n${l.product_name}\n\`\`\`\n\n## ${h[3]}\n\n\`\`\`text\n${l.description}\n\`\`\`\n\n## ${h[4]}\n\n${h[5]}\n\n## ${h[6]}\n\n${h[7]}\n\n`;
   l.features.forEach((f,i)=>s+=`${i+1}. ${f}\n`);
   s+=`\n## ${h[8]}\n\n| ${h[9]} | ${h[10]} |\n| --- | --- |\n| ${h[11]} | ${l.short_title} |\n| ${h[12]} | ${h[29]} |\n\n### ${h[13]}\n\n\`\`\`text\n${l.short_description}\n\`\`\`\n\n## ${h[14]}\n\n### ${h[15]}\n\n${h[16]}\n\n`;
+  s = s.replace(`| ${h[12]} |`, `${chinese?'| 排序标题 | 留空，名称没有其他排序形式。 |':'| Sort title | Leave empty; no alternate sorting form is needed. |'}\n| ${h[12]} |`);
   l.keywords.forEach(k=>s+=`- ${k}\n`);
   s+=`\n### ${h[17]}\n\n\`\`\`text\n${l.copyright}\n\`\`\`\n\n### ${h[18]}\n\n${h[19]}\n\n### ${h[20]}\n\n\`\`\`text\n${l.developer}\n\`\`\`\n\n## ${h[21]}\n\n| ${h[9]} | URL |\n| --- | --- |\n| ${h[22]} | ${spec.links.website} |\n| ${h[23]} | ${spec.links.support} |\n| ${h[24]} | ${l.privacy_url} |\n| ${h[25]} | ${spec.links.license} |\n\n## ${h[26]}\n\n${l.system_requirements.join('\n')}\n\n## ${h[27]}\n\n${h[28]}\n\n`;
   l.promotions.forEach(p=>s+=`### ${p.id}\n\n[1920 × 1080](images/promotional/${p.id}-1920x1080.png), [3840 × 2160](images/promotional/${p.id}-3840x2160.png)\n\n\`\`\`text\n${p.caption}\n\`\`\`\n\n`);
   if (captures) {
-    s += `## ${chinese?'应用截图与融合宣传图':'App screenshots and combined artwork'}\n\n${chinese?'完整界面保持默认窗口大小。商店版按 1:1 放置窗口像素，仅添加中性留白，建议用于截图栏。融合宣传图加入品牌版式，供宣传用途。':'The complete app views retain the default window size. Store exports place window pixels at 1:1 with neutral padding; use them for screenshot fields. Combined artwork adds a brand layout for promotional use.'}\n\n`;
+    s += `## ${chinese?'应用截图与融合宣传图':'App screenshots and combined artwork'}\n\n${chinese?'原始 PNG 保持默认逻辑窗口尺寸。商店版以透明圆角处理后的界面按 1:1 放入 2560 × 1440 中性画布，用于截图栏。融合宣传图加入品牌文案、细边框和阴影，供宣传使用，界面不放大。':'Original PNGs retain the default logical window dimensions. Store exports place the rounded app cutout at 1:1 on a neutral 2560 × 1440 canvas for screenshot fields. Combined artwork adds brand copy, a thin border and shadow for promotion, without upscaling the UI.'}\n\n`;
     for (const p of l.promotions) {
       const capture = captures.images.find(c => c.locale === key && c.scene === p.id);
       s += `### ${p.id}\n\n[${chinese?'默认窗口':'Default window'}](images/screenshots/${p.id}.png), [${chinese?'商店截图':'Store screenshot'}](images/store-screenshots/${p.id}.png), [1920 × 1080](images/combined/${p.id}-1920x1080.png), [3840 × 2160](images/combined/${p.id}-3840x2160.png)\n\n\`\`\`text\n${capture.caption}\n\`\`\`\n\n`;
@@ -176,33 +176,43 @@ async function main() {
   validateCopy(); const entries=[];
   for (const job of jobs) {
     const destination=path.join(ROOT,job.file); const source_sha256=hash(job.source);
-    if (!check && !job.input) {
+    const old=previous?.assets.find(a=>a.file===job.file);
+    const unchanged = old && old.source_sha256 === source_sha256 && fs.existsSync(destination) && hash(fs.readFileSync(destination)) === old.sha256;
+    let background = null,layer = null;
+    if (job.canvas) {
+      background = await sharp({create:{...job.canvas,channels:3}}).png().toBuffer();
+      layer = fs.readFileSync(path.join(ROOT,job.capture.cutout_file));
+    } else if (job.background) {
+      background = await sharp(Buffer.from(job.background)).png().toBuffer();
+      layer = await imageTools.screenshotLayer(fs.readFileSync(path.join(ROOT,job.capture.cutout_file)),job.box);
+    }
+    if (!check && !job.input && !unchanged) {
       fs.mkdirSync(path.dirname(destination),{recursive:true});
-      if (job.canvas) {
-        await sharp({create:{...job.canvas,channels:3}}).composite([{input:path.join(ROOT,job.capture.file),left:job.left,top:job.top}]).png({compressionLevel:9}).toFile(destination);
-      } else await sharp(Buffer.from(job.source)).png({compressionLevel:9}).toFile(destination);
+      if (background) fs.writeFileSync(destination,await imageTools.composite(background,layer,job.canvas?job.left:job.box.imageX,job.canvas?job.top:job.box.imageY));
+      else await sharp(Buffer.from(job.source)).png({compressionLevel:9}).toFile(destination);
     }
     const bytes=fs.readFileSync(destination); const meta=await sharp(bytes).metadata();
     if (meta.format!=='png' || meta.width!==job.width || meta.height!==job.height || bytes.length>5000000) throw Error(`Invalid image ${job.file}`);
     if (!job.transparent && !(await sharp(bytes).stats()).isOpaque) throw Error(`Unexpected transparency ${job.file}`);
     if (job.input) {
-      const capture = captures.images.find(c => c.file === job.file);
-      if (hash(await sharp(bytes).removeAlpha().raw().toBuffer()) !== capture.pixels_sha256) throw Error(`Changed UI pixels ${job.file}`);
+      const capture = captures.images.find(c => c.file === job.file || c.cutout_file === job.file);
+      if (job.role === 'app-screenshot') {
+        if (hash(await sharp(bytes).removeAlpha().raw().toBuffer()) !== capture.pixels_sha256) throw Error(`Changed native UI pixels ${job.file}`);
+      } else {
+        const expected = await imageTools.makeCutout(fs.readFileSync(path.join(ROOT,capture.file)),capture.width,capture.height,capture.dpi,spec.screenshot_artwork.cleanup);
+        if (!expected.png.equals(bytes)) throw Error(`Changed native cutout pixels or alpha ${job.file}`);
+      }
     }
     if (job.canvas) {
       if (meta.width < 1366 || meta.height < 768) throw Error(`Store screenshot canvas is too small ${job.file}`);
-      const pixels = await sharp(bytes).extract({left:job.left,top:job.top,width:job.capture.width,height:job.capture.height}).removeAlpha().raw().toBuffer();
-      if (hash(pixels) !== job.capture.pixels_sha256) throw Error(`Store screenshot scaled or changed UI pixels ${job.file}`);
+      await imageTools.assertOverlay(bytes,layer,job.left,job.top,background);
     }
-    if (job.role === 'screenshot-artwork' && job.width === 1920) {
-      const placement = screenshotPlacement(job.capture);
-      if (placement.scale !== 1) throw Error(`1080p artwork must preserve default window size ${job.file}`);
-      const pixels = await sharp(bytes).extract({left:placement.imageX,top:placement.imageY,width:job.capture.width,height:job.capture.height}).removeAlpha().raw().toBuffer();
-      if (hash(pixels) !== job.capture.pixels_sha256) throw Error(`1080p artwork changed default window pixels ${job.file}`);
+    if (job.role === 'screenshot-artwork') {
+      if (job.box.scale > 1 || (job.width === 3840 && job.box.scale !== 1)) throw Error(`Native screenshot scale differs ${job.file}`);
+      await imageTools.assertOverlay(bytes,layer,job.box.imageX,job.box.imageY,background);
     }
     const entry={file:job.file,width:job.width,height:job.height,role:job.role,locale:job.locale,source_sha256,sha256:hash(bytes)};
     if (check) {
-      const old=previous.assets.find(a=>a.file===job.file);
       if (!old || JSON.stringify(old)!==JSON.stringify(entry)) throw Error(`Stale or changed asset ${job.file}`);
     }
     entries.push(entry);

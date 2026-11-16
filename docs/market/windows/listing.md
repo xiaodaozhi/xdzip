@@ -54,6 +54,7 @@ Enter each feature separately, without the list numbers.
 | Field | Value |
 | --- | --- |
 | Short title | xdzip |
+| Sort title | Leave empty; no alternate sorting form is needed. |
 | Voice title | Leave empty; this desktop app does not use an Xbox voice title. |
 
 ### Short description
@@ -143,7 +144,7 @@ Feature illustration: organize multiple archives and choose a light or dark appe
 
 ## App screenshots and combined artwork
 
-The complete app views retain the default window size. Store exports place window pixels at 1:1 with neutral padding; use them for screenshot fields. Combined artwork adds a brand layout for promotional use.
+Original PNGs retain the default logical window dimensions. Store exports place the rounded app cutout at 1:1 on a neutral 2560 × 1440 canvas for screenshot fields. Combined artwork adds brand copy, a thin border and shadow for promotion, without upscaling the UI.
 
 ### 01-browse
 
@@ -158,7 +159,7 @@ Browse an archive's folder tree, select individual files and view their properti
 [Default window](images/screenshots/02-create.png), [Store screenshot](images/store-screenshots/02-create.png), [1920 × 1080](images/combined/02-create-1920x1080.png), [3840 × 2160](images/combined/02-create-3840x2160.png)
 
 ```text
-Start page with direct access to opening and creating archives.
+Create an archive from selected files and choose ZIP compression settings.
 ```
 
 ### 03-preview

@@ -19,6 +19,7 @@ param(
     [ValidateSet('zh-CN', 'en-US')][string]$Language,
     [Parameter(ParameterSetName = 'Capture')][string]$Executable,
     [Parameter(ParameterSetName = 'Capture')][string]$DemoDirectory,
+    [Parameter(ParameterSetName = 'Capture')][string]$CreationDemoDirectory,
     [Parameter(ParameterSetName = 'Capture')][ValidatePattern('^[A-Fa-f0-9]{64}$')][string]$ExpectedSha256,
     [Parameter(ParameterSetName = 'Capture')][ValidatePattern('^[A-Fa-f0-9]{40}$')][string]$SourceRevision,
     [string]$OutputDirectory,
@@ -59,6 +60,10 @@ if (!$OutputDirectory) {
 }
 $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
 if (Test-Path -LiteralPath $OutputDirectory) { throw 'OutputDirectory already exists. Choose a new directory to preserve earlier captures.' }
+if ($CreationDemoDirectory) {
+    $CreationDemoDirectory = [IO.Path]::GetFullPath($CreationDemoDirectory)
+    if (Test-Path -LiteralPath $CreationDemoDirectory) { throw 'CreationDemoDirectory already exists. Choose a fresh demonstration directory.' }
+}
 Initialize-WindowsCapture
 if ($SelfTest) {
     $null = New-Item -ItemType Directory -Path $OutputDirectory
@@ -167,7 +172,7 @@ function New-CreateRequest {
     $directory = Join-Path ([IO.Path]::GetTempPath()) ('xdzip-shell-' + [guid]::NewGuid().ToString('N'))
     New-PrivateCaptureDirectory $directory
     $script:requestFile = Join-Path $directory 'request.json'
-    $creationDemo = Join-Path $OutputDirectory 'create-demo'
+    $creationDemo = if ($CreationDemoDirectory) { $CreationDemoDirectory } else { Join-Path $OutputDirectory 'create-demo' }
     New-PrivateCaptureDirectory $creationDemo
     foreach ($name in @('coastline.png', 'dusk.png', 'forest.png')) {
         [IO.File]::Copy((Join-Path $DemoDirectory $name), (Join-Path $creationDemo $name), $false)
@@ -245,6 +250,9 @@ try {
         $removeName = $catalog.messages.'ui.2ec7e443b1c7'.Replace('%1', $name)
         Wait-Control $creationWindow $removeName 'Button'
     }
+    $archiveName = if ($Language -eq 'zh-CN') { '图片合集.zip' } else { 'Photos.zip' }
+    [Xdzip.WindowsCapture.Driver]::SetValue($process.Id, $creationWindow, $catalog.messages.'ui.0d568cd7b07d', $archiveName)
+    [Xdzip.WindowsCapture.Driver]::Focus($process.Id, $creationWindow, 'ZIP', 'RadioButton')
     Wait-Control $creationWindow $creationTitle 'Button'
     Save-Scene '02-create' $creationWindow $creationTitle @{ inputs = @('coastline.png', 'dusk.png', 'forest.png'); submitted = $false }
     $null = Test-WindowsCaptureImages -Directory $OutputDirectory -Session $receipt
