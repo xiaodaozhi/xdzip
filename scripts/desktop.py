@@ -195,6 +195,9 @@ class Workflow:
         cache = self.build/'CMakeCache.txt'
         if not cache.is_file() or receipt.get('cmake_cache_sha256') != digest(cache):
             raise ValueError('CMake configuration changed; run build again')
+        font = self.build/'generated/fonts/manifest.json'
+        if not font.is_file() or receipt.get('font_manifest_sha256') != digest(font):
+            raise ValueError('UI font generation changed; run build again')
         return receipt
 
     def sdk_identity(self):
@@ -220,14 +223,13 @@ class Workflow:
                 raise ValueError('CMake cached a different Qt SDK; use a new --build-dir for this --qt-prefix')
 
     def prepare_tools_and_qt(self):
-        if self.args.install_qt or self.args.packaging:
-            if not self.tools_python.is_file():
-                if self.tools.exists() and any(self.tools.iterdir()):
-                    raise ValueError('Tools directory exists without a venv; choose a dedicated --tools-dir')
-                self.run([sys.executable, '-m', 'venv', self.tools])
-            self.python = str(self.tools_python)
-            packages = list(TOOL_PACKAGES) + ([AQT_PACKAGE] if self.args.install_qt else [])
-            self.run([self.python, '-m', 'pip', 'install', *packages])
+        if not self.tools_python.is_file():
+            if self.tools.exists() and any(self.tools.iterdir()):
+                raise ValueError('Tools directory exists without a venv; choose a dedicated --tools-dir')
+            self.run([sys.executable, '-m', 'venv', self.tools])
+        self.python = str(self.tools_python)
+        packages = list(TOOL_PACKAGES) + ([AQT_PACKAGE] if self.args.install_qt else [])
+        self.run([self.python, '-m', 'pip', 'install', *packages])
         if self.args.install_qt and not (self.qt/'bin'/('qmake.exe' if self.system == 'windows' else 'qmake')).is_file():
             qt_root = Path(self.args.qt_root).resolve() if self.args.qt_root else self.qt.parents[1]
             expected = qt_root/QT_VERSION/self.platform_spec[3]
@@ -259,6 +261,7 @@ class Workflow:
                       '--component', 'rustfmt', '--component', 'clippy'])
         self.doctor('prepare')
         self.prepare_tools_and_qt()
+        self.script('ui-fonts.py', 'prepare')
         self.script('prepare-qt-network.py', '--qt-prefix', self.qt)
         self.doctor('build')
         self.run(['cargo', 'fetch', '--locked'])
@@ -296,7 +299,7 @@ class Workflow:
         command = ['cmake', '-S', ROOT, '-B', self.build, '-G', 'Ninja',
                    '-DCMAKE_BUILD_TYPE='+self.args.configuration, '-DXDZIP_BUILD_DESKTOP_PREVIEW=ON',
                    '-DBUILD_TESTING=ON',
-                   '-DCMAKE_PREFIX_PATH='+str(self.qt)]
+                   '-DCMAKE_PREFIX_PATH='+str(self.qt), '-DPython3_EXECUTABLE='+self.python]
         if self.system == 'macos':
             command += ['-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
                         '-DXDZIP_MACOS_HANDLER_RANK='+self.args.macos_handler_rank]
@@ -312,6 +315,7 @@ class Workflow:
         return {'source': before, 'qt_sdk': self.sdk_identity(), 'configuration': self.args.configuration,
                 'product': label(self.app), 'product_sha256': digest(self.app),
                 'identity_text': identity, 'cmake_cache_sha256': digest(self.build/'CMakeCache.txt'),
+                'font_manifest_sha256': digest(self.build/'generated/fonts/manifest.json'),
                 'macos_handler_rank': self.args.macos_handler_rank if self.system == 'macos' else None}
 
     def test(self):
@@ -367,7 +371,8 @@ class Workflow:
 
     def notices(self):
         notices = self.output/'notices'
-        self.script('collect-notices.py', notices, '--qt-prefix', self.qt)
+        self.script('collect-notices.py', notices, '--qt-prefix', self.qt,
+                    '--font-dir', self.build/'generated/fonts')
         self.script('prepare-runtime-notices.py', '--qt-prefix', self.qt, '--output', notices/'Qt-runtime')
         if self.system == 'windows':
             from native_runtime_materials import installer_notices

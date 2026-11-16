@@ -25,7 +25,9 @@ def violations(root):
             failures.append(f'{name}: unresolved index entry')
             continue
         parts = PurePosixPath(name).parts
-        if any(p in {'build', 'target', 'dist', '.cache'} for p in parts[:-1]):
+        if name.startswith('design/assets/fonts/') and (PurePosixPath(name).suffix.lower() in {'.ttf', '.otf', '.woff', '.woff2', '.ttc'} or name.endswith('/manifest.json')):
+            failures.append(f'{name}: generated UI fonts and result manifests belong in build/')
+        elif any(p in {'build', 'target', 'dist', '.cache'} for p in parts[:-1]):
             failures.append(f'{name}: generated directories must not be tracked')
         elif name.startswith(GENERATED_PREFIXES) or name in RETIRED_REPORTS:
             failures.append(f'{name}: generated content or retired task report belongs in artifacts/issues')

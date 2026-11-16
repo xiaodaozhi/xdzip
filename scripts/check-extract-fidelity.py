@@ -2,7 +2,7 @@
 """Compare live extraction controls with the immutable hifi reference and entry points."""
 from functools import partial
 from hashlib import sha256
-from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPRequestHandler as SimpleHTTPRequestHandler
 from html_review_server import ReviewHTTPServer
 import json
 import os

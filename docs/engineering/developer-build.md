@@ -142,6 +142,12 @@ The real product uses the name `xdzip` on every platform. Default build entry po
 
 The `xdzip-ui-preview` component example is not for real-file acceptance. Adjust paths after changing build-dir. Actual build identity records version, channel, commit, and dirty state. See the [Qt development application](../../apps/desktop/README.md) for modules and low-level CMake debugging.
 
+## UI font generation
+
+`prepare` installs pinned FontTools/Brotli in the shared tools environment and caches the hash-verified upstream UI font. Each desktop build automatically collects current bilingual copy and fixed QML/C++ text and generates the shared subset under `<build-directory>/generated/fonts/`. Adding characters requires no font binary commit. Builds work offline after preparation; missing or corrupt source caches fail explicitly. Direct CMake builds must select that environment through `Python3_EXECUTABLE`.
+
+For HTML-only preview, offline export, manual source import and font checks, see the [shared font guide](../../design/assets/fonts/README.en.md). Packaging validates the font manifest from the matching product build without regenerating it. Fixed UI text and user-data system-font selection retain their existing roles.
+
 ## Packaging and verification
 
 `test` and `package` check build receipts, source fingerprints, configuration, SDK identity, and actual product files. Rebuild first after source or configuration changes. Commit deliverable source before packaging, then build and test from that clean commit. package must not bypass checks by ignoring dirty state, changing artifact identity, or reusing old reports. License materials, Rust metadata, and actual CLI version must match this source. Platform tools check use and overwrite restrictions for existing package directories. Prefer a new output-dir for rebuilt candidates to avoid old-file mixing.

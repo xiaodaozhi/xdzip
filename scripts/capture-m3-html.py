@@ -2,7 +2,7 @@
 """Capture the canonical HTML reviewer at logical 100%, without image resampling."""
 from functools import partial
 from hashlib import sha256
-from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPRequestHandler as SimpleHTTPRequestHandler
 from html_review_server import ReviewHTTPServer
 import json
 from pathlib import Path

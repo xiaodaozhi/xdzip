@@ -3,7 +3,7 @@
 """Export top-aligned W01 design states without replacing historical references."""
 import argparse
 from functools import partial
-from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPRequestHandler as SimpleHTTPRequestHandler
 from html_review_server import ReviewHTTPServer
 import json
 import os

@@ -2,7 +2,7 @@
 """Check the changed creation profiles in the HTML reference; no product I/O is performed."""
 import argparse
 from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from html_review_server import ReviewHTTPRequestHandler as SimpleHTTPRequestHandler, ReviewHTTPServer
 import json
 from pathlib import Path
 from threading import Thread
@@ -21,7 +21,7 @@ def main():
     class Handler(SimpleHTTPRequestHandler):
         def log_message(self, *_):
             pass
-    server = ThreadingHTTPServer(('127.0.0.1', 0), partial(Handler, directory=str(root)))
+    server = ReviewHTTPServer(('127.0.0.1', 0), partial(Handler, directory=str(root)))
     Thread(target=server.serve_forever, daemon=True).start()
     checks, errors = [], []
     try:

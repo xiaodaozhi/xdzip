@@ -24,13 +24,17 @@
         "cargo-archives",
         "cargo-git",
         "pip",
-        "qt-sources"
+        "qt-sources",
+        "font-sources"
       ],
       "inputs": [
         "scripts/desktop.py",
         "scripts/desktop_environment.py",
         "scripts/corresponding-sources.json",
-        "scripts/qt-license-sources.json"
+        "scripts/qt-license-sources.json",
+        "specs/dependencies/ui-font.json",
+        "design/assets/fonts/requirements.txt",
+        "scripts/ui_fonts.py"
       ]
     }
   }

@@ -28,7 +28,7 @@ def image_plugins(system):
     return [prefix + name + suffix for name in names]
 
 STAGES = {"prepare", "build", "test", "package", "verify"}
-PYTHON_PACKAGES = {"jsonschema": "4.23.0", "referencing": "0.36.2"}
+PYTHON_PACKAGES = {"jsonschema": "4.23.0", "referencing": "0.36.2", "fonttools": "4.61.1", "Brotli": "1.2.0"}
 RUST_HOSTS = {
     "macos": "aarch64-apple-darwin",
     "windows": "x86_64-pc-windows-msvc",
@@ -346,7 +346,7 @@ def _check_python_packages(python_executable, add, run) -> None:
     # not the import environment of a different orchestration Python.
     probe = """import importlib.metadata as m, json, sys
 versions = {"python": list(sys.version_info[:3])}
-for package in ("jsonschema", "referencing"):
+for package in ("jsonschema", "referencing", "fonttools", "Brotli"):
     try:
         versions[package] = m.version(package)
     except m.PackageNotFoundError:

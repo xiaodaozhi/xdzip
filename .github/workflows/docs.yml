@@ -30,7 +30,8 @@ jobs:
       - name: Install lightweight check tools
         run: |
           python3 -m venv build/ci-check-tools
-          build/ci-check-tools/bin/python -m pip install PyYAML==6.0.2 clang-format==18.1.8
+          build/ci-check-tools/bin/python -m pip install PyYAML==6.0.2 clang-format==18.1.8 -r design/assets/fonts/requirements.txt
+          python3 scripts/ui-fonts.py prepare
       - name: Check documentation and generated sources
         run: |
           python3 scripts/sync-version.py --check
@@ -46,7 +47,8 @@ jobs:
           python3 scripts/generate-format-registry.py --check
           python3 scripts/test-format-registry.py
           python3 scripts/test-runtime-worker-tests.py
-          python3 scripts/build-html-design.py --check
+          build/ci-check-tools/bin/python scripts/test-ui-fonts.py
+          build/ci-check-tools/bin/python scripts/build-html-design.py --check
           python3 scripts/check-window-contracts.py --self-test
           python3 scripts/check-operation-components.py
       - name: Check Rust and C++ formatting

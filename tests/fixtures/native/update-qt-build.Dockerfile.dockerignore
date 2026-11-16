@@ -6,3 +6,7 @@
 !patches/
 !patches/qt/
 !patches/qt/**
+!design/
+!design/assets/
+!design/assets/fonts/
+!design/assets/fonts/requirements.txt

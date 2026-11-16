@@ -75,7 +75,7 @@ M2 在 Windows 运行时直接使用精确版本 `winapi-util = 0.1.11` 的 `fil
 
 ## HTML 复核字体与工具
 
-采用官方 Noto Sans SC 2.004-H2 的离线可变子集，替代审阅设备的系统回退字体。固定 Google Fonts 提交、原始及衍生哈希、版权和 OFL-1.1 许可见 [材料清单](../../../design/assets/fonts/manifest.json)。HTML 仅加载约128KB WOFF2，含400–750字重；无外部服务、传递运行依赖或原生编译。保留系统字体方案会导致跨平台文字度量不同，因此审阅稿采用随包字体。覆盖已检查，未知生成原稿字体仍不能证明匹配。字体上游持续维护，固定版本需随维护情况复核。
+采用官方 Noto Sans SC 2.004-H2 的离线可变子集，替代审阅设备的系统回退字体。固定 Google Fonts 提交、原始哈希和生成配置、版权和 OFL-1.1 许可见 [材料清单](../../../specs/dependencies/ui-font.json)。构建时在构建目录生成含 400–750 字重的 WOFF2 及同源 TTF，源码仓库不保存生成字体二进制；无外部服务、传递运行依赖或原生编译。保留系统字体方案会导致跨平台文字度量不同，因此审阅稿采用随包字体。每次构建检查当前文字覆盖，未知生成原稿字体仍不能证明匹配。字体上游持续维护，固定版本需随维护情况复核。
 
 桌面资源静态检查使用 Pillow（HPND）、FontTools（MIT）、Brotli（MIT）和工作流检查所需 PyYAML（MIT），版本固定于[桌面资源工具要求](../../../scripts/desktop-asset-requirements.txt)，通过独立 venv 安装。Playwright（Apache-2.0）及 Chromium 只用于按需运行的本地 HTML 设计复核，其版本见[本地设计工具要求](../../../scripts/html-design-requirements.txt)；它们不进入默认 CI、应用或离线设计交付。上述工具均不进入产品运行代码。
 

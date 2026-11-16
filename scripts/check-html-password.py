@@ -3,7 +3,7 @@
 import argparse
 import hashlib
 from functools import partial
-from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPRequestHandler as SimpleHTTPRequestHandler
 from html_review_server import ReviewHTTPServer
 from itertools import product
 import json

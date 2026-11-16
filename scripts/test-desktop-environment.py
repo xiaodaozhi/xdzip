@@ -85,7 +85,7 @@ class EnvironmentTests(unittest.TestCase):
             result = "linux/x86_64"
         elif arguments[:1] == ("-c",):
             compile(arguments[1], "<packaging-python-probe>", "exec")
-            result = json.dumps({"python": [3, 12, 9], "jsonschema": "4.23.0", "referencing": "0.36.2"})
+            result = json.dumps({"python": [3, 12, 9], **environment.PYTHON_PACKAGES})
         # MSVC reports its version on stderr and returns 2 without an input file.
         return subprocess.CompletedProcess(command, 2 if name == "cl" else 0,
                                            "" if name == "cl" else result,

@@ -2,7 +2,7 @@
 """Capture reviewed creation/progress HTML at logical 100%; keep older evidence intact."""
 from functools import partial
 from hashlib import sha256
-from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPRequestHandler as SimpleHTTPRequestHandler
 from html_review_server import ReviewHTTPServer
 import json
 from pathlib import Path

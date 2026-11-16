@@ -48,10 +48,14 @@ class WorkflowTests(unittest.TestCase):
         workflow.app.parent.mkdir(parents=True, exist_ok=True)
         workflow.app.write_bytes(b'product')
         (workflow.build/'CMakeCache.txt').write_bytes(b'compiler + qt + settings')
+        font = workflow.build/'generated/fonts/manifest.json'
+        font.parent.mkdir(parents=True, exist_ok=True)
+        font.write_bytes(b'owned font generation identity')
         receipt = {'status': 'passed', 'source': self.source, 'platform': workflow.system,
                    'configuration': 'Release', 'qt_sdk': workflow.sdk_identity(),
                    'product_sha256': desktop.digest(workflow.app),
                    'cmake_cache_sha256': desktop.digest(workflow.build/'CMakeCache.txt'),
+                   'font_manifest_sha256': desktop.digest(font),
                    'macos_handler_rank': 'Alternate'}
         (workflow.build/'desktop-build.json').write_text(json.dumps(receipt))
         (workflow.build/'desktop-test.json').write_text(json.dumps({
@@ -143,6 +147,14 @@ class WorkflowTests(unittest.TestCase):
         with patch.object(workflow, 'source', return_value=self.source):
             (workflow.build/'CMakeCache.txt').write_bytes(b'new compiler')
             with self.assertRaisesRegex(ValueError, 'configuration changed'):
+                workflow.build_receipt()
+
+    def test_font_generation_change_invalidates_build_receipt(self):
+        workflow = self.workflow('linux')
+        self.receipt(workflow)
+        (workflow.build/'generated/fonts/manifest.json').write_bytes(b'changed font generation')
+        with patch.object(workflow, 'source', return_value=self.source):
+            with self.assertRaisesRegex(ValueError, 'UI font generation changed'):
                 workflow.build_receipt()
 
     def test_build_receipt_rejects_different_sdk_or_configuration(self):
