@@ -23,6 +23,7 @@
 ## 开发与贡献
 
 - [开发构建指南](engineering/developer-build.md)：准备环境，构建、运行和测试桌面应用及命令行工具。
+- [Windows 截图工具](engineering/windows-screenshots.md)：重新生成双语应用截图，在其他场景复用带窗口检查的原生 PNG 捕获。
 - [开发者准备指南](engineering/development.md)和[仓库结构](engineering/repository-layout.md)：了解开发流程、模块分工和验证入口。
 - [贡献指南](../../CONTRIBUTING.md)、[行为规范](../../CODE_OF_CONDUCT.md)和[安全政策](../../SECURITY.md)：提交修改、参与协作和报告安全问题。
 - [验证方法](qa/README.md)和 [CI 策略](engineering/ci-policy.md)：根据改动选择检查，并区分自动化与实际桌面验证。

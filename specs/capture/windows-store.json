@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "baseline": {
+    "revision": "90916a1992188e6e7e5c6b3d91695861ee1bd2d2",
+    "package_version": "1.0.27.0",
+    "runtime_exe_sha256": "f6e58a99a2f38b746a7175128fd8cf9d7d0a88871a314fbd2fac15021399c01e"
+  },
+  "scenes": ["01-browse", "03-preview", "04-workspace", "02-create"],
+  "languages": ["en-US", "zh-CN"],
+  "runtime_candidates": ["build/package/windows/xdzip.exe", "build/issue272-store-materials/runtime/xdzip.exe"],
+  "fixture_revision": 1,
+  "fixture_source": "scripts/windows-store-demo.psm1"
+}
