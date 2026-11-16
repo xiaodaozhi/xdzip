@@ -10,6 +10,8 @@ const brand = fs.readFileSync(path.join(ROOT, 'design/assets/brand/xdzip.svg'), 
 const brandUri = 'data:image/svg+xml;base64,' + Buffer.from(brand).toString('base64');
 const check = process.argv.includes('--check');
 const indexFile = path.join(ROOT, 'specs/marketing/windows-store-assets.json');
+const captureFile = path.join(ROOT, 'specs/marketing/windows-store-captures.json');
+const captures = fs.existsSync(captureFile) ? JSON.parse(fs.readFileSync(captureFile, 'utf8')) : null;
 const previous = check ? JSON.parse(fs.readFileSync(indexFile, 'utf8')) : null;
 const jobs = [];
 const hash = data => crypto.createHash('sha256').update(data).digest('hex');
@@ -45,6 +47,32 @@ function promo(locale, index, width, height) {
   body += text(113, 1009, 'Windows 11, x64', 22, '#64789A');
   return svg(width, height, body);
 }
+function screenshotPromo(locale, index, capture, width, height) {
+  const item = locale.promotions[index];
+  const layout = spec.screenshot_artwork;
+  const [frameX, frameY, frameWidth, frameHeight] = layout.frame;
+  const scale = Math.min(frameWidth / capture.width, frameHeight / capture.height);
+  const imageWidth = capture.width * scale;
+  const imageHeight = capture.height * scale;
+  const imageX = frameX + (frameWidth - imageWidth) / 2;
+  const imageY = frameY + (frameHeight - imageHeight) / 2;
+  const uri = 'data:image/png;base64,' + capture.bytes.toString('base64');
+  let body = rect(0, 0, 1920, 1080, 0, v.background);
+  body += '<ellipse cx="1440" cy="430" rx="820" ry="670" fill="url(#glow)"/>';
+  body += '<path d="M-80 1050Q720 590 2030 1090M-80 1105Q720 645 2030 1145" fill="none" stroke="#D9E7FE" stroke-width="3"/>';
+  body += logo(76, 66, 62) + text(154, 111, 'xdzip', 40, v.ink, 650);
+  body += text(78, 235, item.eyebrow, 22, v.blue, 600);
+  item.headline.forEach((line, n) => body += text(74, 345 + n * 86, line, layout.headline_size, v.ink, 650));
+  const base = item.headline.length === 3 ? 667 : 594;
+  item.body.forEach((line, n) => body += text(78, base + n * 41, line, layout.body_size, v.muted));
+  body += `<g transform="translate(82 792) rotate(-7)">${logo(0, 0, 120)}</g>`;
+  body += text(78, 1010, 'Windows 11, x64', 22, '#64789A');
+  body += rect(1318, 75, 526, 50, 25, '#E6EDFD');
+  body += text(1581, 108, locale.screenshot_artwork_label, 22, '#536C94', 500, 'middle');
+  body += rect(imageX - 10, imageY - 10, imageWidth + 20, imageHeight + 20, 16, '#FFFFFF', 'filter="url(#shadow)"');
+  body += `<image x="${imageX}" y="${imageY}" width="${imageWidth}" height="${imageHeight}" href="${uri}"/>`;
+  return svg(width, height, body);
+}
 function poster(locale, width, height) {
   let body = rect(0, 0, 720, 1080, 0, 'url(#ocean)') + '<circle cx="675" cy="125" r="350" fill="#66D7F2" opacity=".12"/><path d="M-60 850Q350 600 800 935M-60 918Q350 668 800 1003M-60 986Q350 736 800 1071" fill="none" stroke="#B1D9FF" stroke-opacity=".16" stroke-width="2"/>';
   body += text(64, 111, 'xdzip', 66, '#FFFFFF', 650);
@@ -76,6 +104,20 @@ for (const [key, locale] of Object.entries(spec.locales)) {
   for (const size of [1080,2160]) jobs.push({file:`${base}/images/branding/box-art-${size}.png`,width:size,height:size,role:'box-art',locale:key,source:square(locale,size,size)});
   for (let i=0;i<locale.promotions.length;i++) for (const [w,h] of [[1920,1080],[3840,2160]]) jobs.push({file:`${base}/images/promotional/${locale.promotions[i].id}-${w}x${h}.png`,width:w,height:h,role:'feature-illustration',locale:key,source:promo(locale,i,w,h)});
 }
+if (captures) {
+  for (const capture of captures.images) {
+    const bytes = fs.readFileSync(path.join(ROOT, capture.file));
+    if (hash(bytes) !== capture.sha256) throw Error(`Changed screenshot source ${capture.file}`);
+    const locale = spec.locales[capture.locale];
+    const index = locale.promotions.findIndex(p => p.id === capture.scene);
+    if (index < 0) throw Error(`Unknown screenshot scene ${capture.scene}`);
+    jobs.push({file:capture.file, width:capture.width, height:capture.height, role:'app-screenshot', locale:capture.locale, source:bytes, input:true});
+    const base = capture.locale === 'en-US' ? en : zh;
+    for (const [width,height] of [[1920,1080],[3840,2160]]) {
+      jobs.push({file:`${base}/images/combined/${capture.scene}-${width}x${height}.png`, width, height, role:'screenshot-artwork', locale:capture.locale, source:screenshotPromo(locale,index,{...capture,bytes},width,height)});
+    }
+  }
+}
 function validateCopy() {
   if (Object.keys(spec.locales).sort().join(',')!=='en-US,zh-CN') throw Error('Expected the two listing locales');
   const a=spec.locales['en-US'],b=spec.locales['zh-CN'];
@@ -90,6 +132,13 @@ function validateCopy() {
     if (l.release_notes || l.additional_license_terms || l.voice_title) throw Error('First submission and desktop-only empty fields must stay intentional');
   }
   if (jobs.filter(j=>j.role==='text-free-hero').some(j=>/<text\b/.test(j.source))) throw Error('Hero artwork must not contain text');
+  if (captures) {
+    if (captures.baseline_revision !== spec.baseline.revision || captures.package_sha256 !== spec.baseline.package_sha256) throw Error('Screenshot candidate differs from listing baseline');
+    const expected = Object.entries(spec.locales).flatMap(([key,l]) => l.promotions.map(p => `${key}/${p.id}`)).sort();
+    const actual = captures.images.map(c => `${c.locale}/${c.scene}`).sort();
+    if (JSON.stringify(expected) !== JSON.stringify(actual)) throw Error('Screenshot language or scene inventory differs');
+    if (captures.images.some(c => c.width < 1366 || c.height < 768)) throw Error('Store screenshots must be at least 1366 by 768');
+  }
 }
 function listingMarkdown(key,l) {
   const chinese=key==='zh-CN';
@@ -100,13 +149,20 @@ function listingMarkdown(key,l) {
   l.keywords.forEach(k=>s+=`- ${k}\n`);
   s+=`\n### ${h[17]}\n\n\`\`\`text\n${l.copyright}\n\`\`\`\n\n### ${h[18]}\n\n${h[19]}\n\n### ${h[20]}\n\n\`\`\`text\n${l.developer}\n\`\`\`\n\n## ${h[21]}\n\n| ${h[9]} | URL |\n| --- | --- |\n| ${h[22]} | ${spec.links.website} |\n| ${h[23]} | ${spec.links.support} |\n| ${h[24]} | ${l.privacy_url} |\n| ${h[25]} | ${spec.links.license} |\n\n## ${h[26]}\n\n${l.system_requirements.join('\n')}\n\n## ${h[27]}\n\n${h[28]}\n\n`;
   l.promotions.forEach(p=>s+=`### ${p.id}\n\n[1920 × 1080](images/promotional/${p.id}-1920x1080.png), [3840 × 2160](images/promotional/${p.id}-3840x2160.png)\n\n\`\`\`text\n${p.caption}\n\`\`\`\n\n`);
+  if (captures) {
+    s += `## ${chinese?'应用截图与融合宣传图':'App screenshots and combined artwork'}\n\n${chinese?'纯截图保留真实应用界面，建议用于商店截图栏；融合宣传图另加品牌版式，供宣传用途。':'The unretouched images show the real app interface and are the recommended inputs for the Store screenshot field. Combined artwork adds a separate brand layout for promotional use.'}\n\n`;
+    for (const p of l.promotions) {
+      const capture = captures.images.find(c => c.locale === key && c.scene === p.id);
+      s += `### ${p.id}\n\n[${chinese?'应用截图':'App screenshot'}](images/screenshots/${p.id}.png), [1920 × 1080](images/combined/${p.id}-1920x1080.png), [3840 × 2160](images/combined/${p.id}-3840x2160.png)\n\n\`\`\`text\n${capture.caption}\n\`\`\`\n\n`;
+    }
+  }
   return s.trimEnd()+'\n';
 }
 async function main() {
   validateCopy(); const entries=[];
   for (const job of jobs) {
     const destination=path.join(ROOT,job.file); const source_sha256=hash(job.source);
-    if (!check) {
+    if (!check && !job.input) {
       fs.mkdirSync(path.dirname(destination),{recursive:true});
       await sharp(Buffer.from(job.source)).png({compressionLevel:9}).toFile(destination);
     }

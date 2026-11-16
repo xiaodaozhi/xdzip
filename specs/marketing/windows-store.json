@@ -21,6 +21,12 @@
     "safe_bottom": 720,
     "rationale": "Fixed export canvases for marketing artwork, independent of Qt logical window sizes and device scaling. No app UI is reconstructed."
   },
+  "screenshot_artwork": {
+    "frame": [638, 186, 1206, 790],
+    "headline_size": 68,
+    "body_size": 26,
+    "rationale": "Keep the original brand palette and copy alongside an aspect-preserved app capture. Native UI pixels are never redrawn."
+  },
   "links": {
     "website": "https://github.com/xiaodaozhi/xdzip",
     "support": "https://github.com/xiaodaozhi/xdzip/issues",
@@ -53,6 +59,7 @@
       "system_requirements": ["Windows 11, x64 PC."],
       "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.en.md",
       "illustration_label": "Feature illustration",
+      "screenshot_artwork_label": "App screenshot with brand artwork",
       "poster_headline": ["Pack. Unpack.", "Carry on."],
       "square_tagline": "Make archives a little simpler.",
       "promotions": [
@@ -88,6 +95,7 @@
       "system_requirements": ["Windows 11，x64 电脑。"],
       "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
       "illustration_label": "功能示意图",
+      "screenshot_artwork_label": "应用截图与品牌插画",
       "poster_headline": ["打包与解压，", "都简单一点。"],
       "square_tagline": "打包与解压，都简单一点。",
       "promotions": [
