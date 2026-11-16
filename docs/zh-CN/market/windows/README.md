@@ -27,16 +27,16 @@
 
 ## 应用截图与融合宣传图
 
-每种语言均提供四张真实应用界面，使用自有演示文件，程序构建对应上方标明的候选。界面截图为 **1600 × 955 PNG**，裁去底部状态区域，并由捕获工具输出的 JPEG 转换为 PNG。导入检查确认裁剪区域内的解码像素完全保留。
+每种语言均提供四张真实应用界面，使用自有演示文件，程序构建对应上方标明的候选。**1027 × 624 PNG** 保留完整的默认窗口，包括标题栏和状态栏。光标清理使用同一静止界面的两次捕获，导入器核对中部界面不变，并验证导出像素均来自实际捕获。
 
-桌面截图栏建议使用界面截图。融合版把同一截图放入已有的蓝色品牌版式，配以标题和说明，供宣传用途；微软截图指引建议不要叠加营销文案。4K 宣传导出会按版式放大捕获画面，不代表原生 4K 截图。
+桌面截图栏建议使用 **1366 × 768 商店截图**，默认窗口按 1:1 居中放置，周围添加中性留白。融合版把同一窗口放入已有的蓝色品牌版式，配以标题和说明。1080p 版保持窗口的捕获尺寸，4K 版将整体版式放大两倍，不代表原生 4K 截图。微软截图指引建议截图栏不要叠加营销文案。
 
-| 场景 | 界面截图 | 1920 × 1080 宣传图 | 3840 × 2160 宣传图 |
-| --- | --- | --- | --- |
-| 浏览目录与选择文件 | [PNG](images/screenshots/01-browse.png) | [PNG](images/combined/01-browse-1920x1080.png) | [PNG](images/combined/01-browse-3840x2160.png) |
-| 打开与创建入口 | [PNG](images/screenshots/02-create.png) | [PNG](images/combined/02-create-1920x1080.png) | [PNG](images/combined/02-create-3840x2160.png) |
-| 按需图像预览 | [PNG](images/screenshots/03-preview.png) | [PNG](images/combined/03-preview-1920x1080.png) | [PNG](images/combined/03-preview-3840x2160.png) |
-| 多标签与网格浏览 | [PNG](images/screenshots/04-workspace.png) | [PNG](images/combined/04-workspace-1920x1080.png) | [PNG](images/combined/04-workspace-3840x2160.png) |
+| 场景 | 默认窗口 | 商店截图 | 1920 × 1080 宣传图 | 3840 × 2160 宣传图 |
+| --- | --- | --- | --- | --- |
+| 浏览目录与选择文件 | [PNG](images/screenshots/01-browse.png) | [PNG](images/store-screenshots/01-browse.png) | [PNG](images/combined/01-browse-1920x1080.png) | [PNG](images/combined/01-browse-3840x2160.png) |
+| 打开与创建入口 | [PNG](images/screenshots/02-create.png) | [PNG](images/store-screenshots/02-create.png) | [PNG](images/combined/02-create-1920x1080.png) | [PNG](images/combined/02-create-3840x2160.png) |
+| 按需图像预览 | [PNG](images/screenshots/03-preview.png) | [PNG](images/store-screenshots/03-preview.png) | [PNG](images/combined/03-preview-1920x1080.png) | [PNG](images/combined/03-preview-3840x2160.png) |
+| 多标签与网格浏览 | [PNG](images/screenshots/04-workspace.png) | [PNG](images/store-screenshots/04-workspace.png) | [PNG](images/combined/04-workspace-1920x1080.png) | [PNG](images/combined/04-workspace-3840x2160.png) |
 
 [listing.md](listing.md) 提供四张界面的说明文字。起始页展示创建入口，不表示完成了一次创建任务。本套截图采用浅色主题，文案中的外观选项仍以候选功能为准。
 
@@ -72,9 +72,9 @@
 
 ## 编辑与重新生成
 
-[设计画廊](../../../../design/hifi/sources/windows-store-artwork.html)是高保真入口。可编辑的矢量构图位于 [build-windows-store-assets.cjs](../../../../scripts/build-windows-store-assets.cjs)，本地化文案、配色与输出画布参数位于 [windows-store.json](../../../../specs/marketing/windows-store.json)，[素材清单](../../../../specs/marketing/windows-store-assets.json)保存源图和 PNG 的摘要，[截图素材清单](../../../../specs/marketing/windows-store-captures.json)保存候选身份、来源摘要、裁剪范围、图片说明和解码像素摘要。固定输出画布只用于商店图片，不改变 Qt 窗口逻辑尺寸，也不把屏幕缩放写入产品。
+[设计画廊](../../../../design/hifi/sources/windows-store-artwork.html)是高保真入口。可编辑的矢量构图位于 [build-windows-store-assets.cjs](../../../../scripts/build-windows-store-assets.cjs)，本地化文案、配色与输出画布参数位于 [windows-store.json](../../../../specs/marketing/windows-store.json)，[素材清单](../../../../specs/marketing/windows-store-assets.json)保存源图和 PNG 的摘要，[截图素材清单](../../../../specs/marketing/windows-store-captures.json)保存候选身份、两份来源摘要、完整窗口尺寸、光标清理范围、图片说明和解码像素摘要。固定输出画布只用于商店图片，不改变 Qt 窗口逻辑尺寸，也不把屏幕缩放写入产品。
 
-替换截图前，先审阅两种语言中使用自有演示文件捕获的画面。原始 JPEG 按 `<locale>-<scene>.jpg` 命名，例如 `zh-CN-01-browse.jpg`，场景标识与文案规范中的四项对应。原始捕获放在 `build/`，将目录传给 [import-windows-store-captures.cjs](../../../../scripts/import-windows-store-captures.cjs)，导入器核对全部八项输入后写入裁剪后的 PNG。公开使用前仍需审阅新图。
+替换截图前，先审阅两种语言中使用自有演示文件捕获的画面。对每个静止界面，分别在指针位于状态栏附近、标题栏附近时捕获，前者按 `<locale>-<scene>.jpg` 命名，例如 `zh-CN-01-browse.jpg`，后者按 `<locale>-<scene>-bottom.jpg` 命名。导入器取第二张中的干净底部补齐，所有界面像素保留实际捕获内容。原始捕获放在 `build/`，将目录传给 [import-windows-store-captures.cjs](../../../../scripts/import-windows-store-captures.cjs)，导入器核对全部八对输入后写入 PNG。公开使用前仍需审阅完整图片。
 
 环境中具备 Node.js 和 `sharp` 后执行：
 
@@ -84,9 +84,9 @@ node scripts/build-windows-store-assets.cjs --check
 python scripts/check-docs.py
 ```
 
-替换为已审阅的截图时，先执行 `node scripts/import-windows-store-captures.cjs build/approved-store-captures`，再执行上方命令。输入尺寸须覆盖 `screenshot_artwork.capture_crop` 中的裁剪范围。截图变更后，同时重新生成两种语言与两种宣传分辨率。
+替换为已审阅的截图时，先执行 `node scripts/import-windows-store-captures.cjs build/approved-store-captures`，再执行上方命令。输入尺寸须与 `screenshot_artwork.default_capture_size` 一致，清理范围由 `cursor_cleanup_height` 指定。截图变更后，同时重新生成两种语言、商店留白版与两种宣传分辨率。
 
-检查覆盖字段长度、双语条目对应、PNG 尺寸、不透明度、文件大小、完整素材清单及源图和输出摘要，同时检查文案是否过期、横幅是否含文字。修改目标候选或文案后，请同时重新生成两种语言。
+检查覆盖字段长度、双语条目对应、PNG 尺寸、不透明度、文件大小、完整素材清单及源图和输出摘要，同时核对商店留白版按 1:1 保留全部窗口像素、文案是否过期、横幅是否含文字。修改目标候选或文案后，请同时重新生成两种语言。
 
 ## 官方参考
 

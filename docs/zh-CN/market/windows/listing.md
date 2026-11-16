@@ -143,11 +143,11 @@ Windows 11，x64 电脑。
 
 ## 应用截图与融合宣传图
 
-界面截图经过边缘裁剪和 PNG 转换，保留捕获的界面像素，建议用于商店截图栏。融合宣传图加入品牌版式，供宣传用途。
+完整界面保持默认窗口大小。商店版按 1:1 放置窗口像素，仅添加中性留白，建议用于截图栏。融合宣传图加入品牌版式，供宣传用途。
 
 ### 01-browse
 
-[应用截图](images/screenshots/01-browse.png), [1920 × 1080](images/combined/01-browse-1920x1080.png), [3840 × 2160](images/combined/01-browse-3840x2160.png)
+[默认窗口](images/screenshots/01-browse.png), [商店截图](images/store-screenshots/01-browse.png), [1920 × 1080](images/combined/01-browse-1920x1080.png), [3840 × 2160](images/combined/01-browse-3840x2160.png)
 
 ```text
 浏览压缩包目录树，选择文件并查看属性。
@@ -155,7 +155,7 @@ Windows 11，x64 电脑。
 
 ### 02-create
 
-[应用截图](images/screenshots/02-create.png), [1920 × 1080](images/combined/02-create-1920x1080.png), [3840 × 2160](images/combined/02-create-3840x2160.png)
+[默认窗口](images/screenshots/02-create.png), [商店截图](images/store-screenshots/02-create.png), [1920 × 1080](images/combined/02-create-1920x1080.png), [3840 × 2160](images/combined/02-create-3840x2160.png)
 
 ```text
 通过起始页直接打开或创建压缩包。
@@ -163,7 +163,7 @@ Windows 11，x64 电脑。
 
 ### 03-preview
 
-[应用截图](images/screenshots/03-preview.png), [1920 × 1080](images/combined/03-preview-1920x1080.png), [3840 × 2160](images/combined/03-preview-3840x2160.png)
+[默认窗口](images/screenshots/03-preview.png), [商店截图](images/store-screenshots/03-preview.png), [1920 × 1080](images/combined/03-preview-1920x1080.png), [3840 × 2160](images/combined/03-preview-3840x2160.png)
 
 ```text
 在文件列表和属性旁，按需加载图像预览。
@@ -171,7 +171,7 @@ Windows 11，x64 电脑。
 
 ### 04-workspace
 
-[应用截图](images/screenshots/04-workspace.png), [1920 × 1080](images/combined/04-workspace-1920x1080.png), [3840 × 2160](images/combined/04-workspace-3840x2160.png)
+[默认窗口](images/screenshots/04-workspace.png), [商店截图](images/store-screenshots/04-workspace.png), [1920 × 1080](images/combined/04-workspace-1920x1080.png), [3840 × 2160](images/combined/04-workspace-3840x2160.png)
 
 ```text
 在标签页中同时打开两个压缩包，并以网格视图浏览选中的文件。

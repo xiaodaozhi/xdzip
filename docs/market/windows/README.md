@@ -27,16 +27,16 @@ The app's existing Apache-2.0 license and third-party notices are unchanged by t
 
 ## App screenshots and combined promotional artwork
 
-Each language has four actual app views using owned demonstration files. Their app build matches the candidate identified above. The plain screenshots are **1600 × 955 PNGs**, cropped at the bottom status area and converted from the capture tool's JPEG output. The import check verifies that decoded pixels inside the crop are preserved exactly.
+Each language has four actual app views using owned demonstration files. Their app build matches the candidate identified above. The **1027 × 624 PNGs** preserve the complete default-size window, including its title and status bars. Cursor cleanup uses captured regions from two images of the same static view; the importer checks the unchanged middle area and verifies the resulting UI pixels.
 
-Use the plain screenshots for the desktop screenshot field. The combined versions place the same captures in the existing blue brand layout, with a separate headline and supporting copy. They are promotional materials; Microsoft's screenshot guidance advises against added marketing overlays. A 4K promotional export may enlarge the captured view and does not represent a native 4K capture.
+Use the **1366 × 768 Store screenshots** for the desktop screenshot field. They center the default window at 1:1 on a neutral background. Combined artwork places the same window in the existing blue brand layout, with a separate headline and supporting copy. The 1080p layout keeps the window at its captured size; the 4K export doubles the overall layout and does not represent a native 4K capture. Microsoft's screenshot guidance advises against marketing overlays in screenshot fields.
 
-| Scene | Plain screenshot | 1920 × 1080 artwork | 3840 × 2160 artwork |
-| --- | --- | --- | --- |
-| Browse folders and select a file | [PNG](images/screenshots/01-browse.png) | [PNG](images/combined/01-browse-1920x1080.png) | [PNG](images/combined/01-browse-3840x2160.png) |
-| Opening and creation entry points | [PNG](images/screenshots/02-create.png) | [PNG](images/combined/02-create-1920x1080.png) | [PNG](images/combined/02-create-3840x2160.png) |
-| On-demand image preview | [PNG](images/screenshots/03-preview.png) | [PNG](images/combined/03-preview-1920x1080.png) | [PNG](images/combined/03-preview-3840x2160.png) |
-| Multiple tabs and grid browsing | [PNG](images/screenshots/04-workspace.png) | [PNG](images/combined/04-workspace-1920x1080.png) | [PNG](images/combined/04-workspace-3840x2160.png) |
+| Scene | Default window | Store screenshot | 1920 × 1080 artwork | 3840 × 2160 artwork |
+| --- | --- | --- | --- | --- |
+| Browse folders and select a file | [PNG](images/screenshots/01-browse.png) | [PNG](images/store-screenshots/01-browse.png) | [PNG](images/combined/01-browse-1920x1080.png) | [PNG](images/combined/01-browse-3840x2160.png) |
+| Opening and creation entry points | [PNG](images/screenshots/02-create.png) | [PNG](images/store-screenshots/02-create.png) | [PNG](images/combined/02-create-1920x1080.png) | [PNG](images/combined/02-create-3840x2160.png) |
+| On-demand image preview | [PNG](images/screenshots/03-preview.png) | [PNG](images/store-screenshots/03-preview.png) | [PNG](images/combined/03-preview-1920x1080.png) | [PNG](images/combined/03-preview-3840x2160.png) |
+| Multiple tabs and grid browsing | [PNG](images/screenshots/04-workspace.png) | [PNG](images/store-screenshots/04-workspace.png) | [PNG](images/combined/04-workspace-1920x1080.png) | [PNG](images/combined/04-workspace-3840x2160.png) |
 
 [listing.md](listing.md) provides captions for all four views. The starting page shows the creation entry point; it does not show a completed creation task. The screenshot set uses the light theme, while the listing's appearance options remain as described in the candidate's features.
 
@@ -72,9 +72,9 @@ Xbox-only branded key art (584 × 800), titled hero art and featured promotional
 
 ## Editing and regeneration
 
-The [design gallery](../../../design/hifi/sources/windows-store-artwork.html) is the high-fidelity entry point. Editable vector composition lives in [build-windows-store-assets.cjs](../../../scripts/build-windows-store-assets.cjs); localized copy, palette and export canvas parameters live in [windows-store.json](../../../specs/marketing/windows-store.json). The [asset inventory](../../../specs/marketing/windows-store-assets.json) records source and PNG hashes. The [capture inventory](../../../specs/marketing/windows-store-captures.json) records the candidate, source hashes, crop, captions and decoded pixel hashes. These fixed export canvases do not change Qt logical window dimensions or incorporate screen scaling into the product.
+The [design gallery](../../../design/hifi/sources/windows-store-artwork.html) is the high-fidelity entry point. Editable vector composition lives in [build-windows-store-assets.cjs](../../../scripts/build-windows-store-assets.cjs); localized copy, palette and export canvas parameters live in [windows-store.json](../../../specs/marketing/windows-store.json). The [asset inventory](../../../specs/marketing/windows-store-assets.json) records source and PNG hashes. The [capture inventory](../../../specs/marketing/windows-store-captures.json) records the candidate, both source hashes, full window size, cursor cleanup region, captions and decoded pixel hashes. These fixed export canvases do not change Qt logical window dimensions or incorporate screen scaling into the product.
 
-To replace the screenshots, first review approved captures made with owned demonstration files in both languages. Name each source JPEG `<locale>-<scene>.jpg`, such as `en-US-01-browse.jpg`, matching the four scene IDs in the copy specification. Keep original captures under `build/` and run [import-windows-store-captures.cjs](../../../scripts/import-windows-store-captures.cjs) with that directory. It checks all eight inputs before writing the cropped PNG set. Review the new images before publishing them.
+To replace the screenshots, review approved captures made with owned demonstration files in both languages. For each unchanged view, capture once with the pointer near the status bar and save it as `<locale>-<scene>.jpg`, such as `en-US-01-browse.jpg`. Capture the same view with the pointer near the title bar as `<locale>-<scene>-bottom.jpg`. The importer takes the clean bottom strip from the second image, preserving captured UI pixels throughout. Keep originals under `build/` and run [import-windows-store-captures.cjs](../../../scripts/import-windows-store-captures.cjs) with that directory. It checks all eight pairs before writing the PNG set. Review the complete images before publishing them.
 
 With Node.js and `sharp` available:
 
@@ -84,9 +84,9 @@ node scripts/build-windows-store-assets.cjs --check
 python scripts/check-docs.py
 ```
 
-For an approved replacement set, run `node scripts/import-windows-store-captures.cjs build/approved-store-captures` before the commands above. Capture input dimensions must contain the crop specified in `screenshot_artwork.capture_crop`. Screenshot changes require regeneration of both promotional resolutions and both languages.
+For an approved replacement set, run `node scripts/import-windows-store-captures.cjs build/approved-store-captures` before the commands above. Input dimensions must match `screenshot_artwork.default_capture_size`; cleanup uses `cursor_cleanup_height`. Screenshot changes require regeneration of both languages, Store exports and promotional resolutions.
 
-The check validates field limits, language parity, PNG dimensions, opacity, byte limits, exact asset inventory and source/output hashes. It also detects stale generated listing text and ensures that the hero composition contains no text. Regenerate both languages together after changing the target candidate or copy.
+The check validates field limits, language parity, PNG dimensions, opacity, byte limits, exact asset inventory and source/output hashes. It verifies that Store padding preserves every window pixel at 1:1, detects stale listing text and ensures that the hero composition contains no text. Regenerate both languages together after changing the target candidate or copy.
 
 ## Official references
 

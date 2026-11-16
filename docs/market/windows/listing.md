@@ -143,11 +143,11 @@ Feature illustration: organize multiple archives and choose a light or dark appe
 
 ## App screenshots and combined artwork
 
-The app captures use edge cropping and PNG conversion while preserving the captured UI pixels. Use them for the Store screenshot field. Combined artwork adds a brand layout for promotional use.
+The complete app views retain the default window size. Store exports place window pixels at 1:1 with neutral padding; use them for screenshot fields. Combined artwork adds a brand layout for promotional use.
 
 ### 01-browse
 
-[App screenshot](images/screenshots/01-browse.png), [1920 × 1080](images/combined/01-browse-1920x1080.png), [3840 × 2160](images/combined/01-browse-3840x2160.png)
+[Default window](images/screenshots/01-browse.png), [Store screenshot](images/store-screenshots/01-browse.png), [1920 × 1080](images/combined/01-browse-1920x1080.png), [3840 × 2160](images/combined/01-browse-3840x2160.png)
 
 ```text
 Browse an archive's folder tree, select individual files and view their properties.
@@ -155,7 +155,7 @@ Browse an archive's folder tree, select individual files and view their properti
 
 ### 02-create
 
-[App screenshot](images/screenshots/02-create.png), [1920 × 1080](images/combined/02-create-1920x1080.png), [3840 × 2160](images/combined/02-create-3840x2160.png)
+[Default window](images/screenshots/02-create.png), [Store screenshot](images/store-screenshots/02-create.png), [1920 × 1080](images/combined/02-create-1920x1080.png), [3840 × 2160](images/combined/02-create-3840x2160.png)
 
 ```text
 Start page with direct access to opening and creating archives.
@@ -163,7 +163,7 @@ Start page with direct access to opening and creating archives.
 
 ### 03-preview
 
-[App screenshot](images/screenshots/03-preview.png), [1920 × 1080](images/combined/03-preview-1920x1080.png), [3840 × 2160](images/combined/03-preview-3840x2160.png)
+[Default window](images/screenshots/03-preview.png), [Store screenshot](images/store-screenshots/03-preview.png), [1920 × 1080](images/combined/03-preview-1920x1080.png), [3840 × 2160](images/combined/03-preview-3840x2160.png)
 
 ```text
 Request an image preview next to archive entries and file properties.
@@ -171,7 +171,7 @@ Request an image preview next to archive entries and file properties.
 
 ### 04-workspace
 
-[App screenshot](images/screenshots/04-workspace.png), [1920 × 1080](images/combined/04-workspace-1920x1080.png), [3840 × 2160](images/combined/04-workspace-3840x2160.png)
+[Default window](images/screenshots/04-workspace.png), [Store screenshot](images/store-screenshots/04-workspace.png), [1920 × 1080](images/combined/04-workspace-1920x1080.png), [3840 × 2160](images/combined/04-workspace-3840x2160.png)
 
 ```text
 Keep two archives open in tabs and browse selected files in grid view.

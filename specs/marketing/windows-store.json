@@ -23,7 +23,11 @@
     "rationale": "Fixed export canvases for marketing artwork, independent of Qt logical window sizes and device scaling. No app UI is reconstructed."
   },
   "screenshot_artwork": {
-    "capture_crop": [0, 0, 1600, 955],
+    "default_capture_size": [1027, 624],
+    "cursor_cleanup_height": 128,
+    "store_canvas": [1366, 768],
+    "store_background": "#F3F5F9",
+    "max_capture_scale": 1,
     "frame": [638, 186, 1206, 790],
     "headline_size": 68,
     "body_size": 26,

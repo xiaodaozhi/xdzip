@@ -3,183 +3,200 @@
   "baseline_revision": "90916a1992188e6e7e5c6b3d91695861ee1bd2d2",
   "package_sha256": "45f9a99f74431c4ab8dcb79d0e9628fa121f73b998dd8359dfd38fadc48aab46",
   "runtime_exe_sha256": "f6e58a99a2f38b746a7175128fd8cf9d7d0a88871a314fbd2fac15021399c01e",
-  "processing": "Crop the bottom status area, then convert the captured JPEG to PNG without redrawing UI pixels.",
+  "window_mode": "default",
+  "processing": "Preserve the complete default-size window. Remove the capture cursor marker using the bottom strip from a second capture of the same static view. All UI pixels come from captured app images.",
   "images": [
     {
       "file": "docs/market/windows/images/screenshots/01-browse.png",
       "locale": "en-US",
       "scene": "01-browse",
-      "width": 1600,
-      "height": 955,
+      "width": 1027,
+      "height": 624,
       "caption": "Browse an archive's folder tree, select individual files and view their properties.",
-      "sha256": "67ae7da2331571847113f67cb036ade47bf79b7f2c70016d57cb1bb7802d06c1",
+      "sha256": "71f18423ab5cc1abe5c100649519927962c4f146690e4c11533bcff4aa9c5143",
       "source_file": "en-US-01-browse.jpg",
-      "source_sha256": "34168816bfd0cb75e13ea3157b66ac429b0e9a281fc32a448c13c0cab98d2f2a",
+      "source_sha256": "22bc3bc8722ad3a41749896ba01997d22607170bab80831a3a49de33842dbd28",
+      "bottom_source_file": "en-US-01-browse-bottom.jpg",
+      "bottom_source_sha256": "fc63653774f93dfa10c9eb4f00643860f6ccff3668a4e735641abba47909c848",
       "source_dimensions": [
-        1600,
-        1019
+        1027,
+        624
       ],
-      "crop": [
+      "cursor_cleanup_strip": [
         0,
-        0,
-        1600,
-        955
+        496,
+        1027,
+        128
       ],
-      "pixels_sha256": "737216c5102a5bf93e07b50e37c1d9989586491201565773a42c89f15909532f"
+      "pixels_sha256": "7438d18473527c5f4cb4aa148189dcc1bfffb4ff087ae47adc8f0ff63ecb1d23"
     },
     {
       "file": "docs/market/windows/images/screenshots/02-create.png",
       "locale": "en-US",
       "scene": "02-create",
-      "width": 1600,
-      "height": 955,
+      "width": 1027,
+      "height": 624,
       "caption": "Start page with direct access to opening and creating archives.",
-      "sha256": "854f97fa25e306a2b0101c4d4b54185b2bf8be50370c190d033f0c4e6d4cfbc1",
+      "sha256": "46a1106f439a800b3ef542410a45d9a42b4916ce8ccb34674f3989beba246de3",
       "source_file": "en-US-02-create.jpg",
-      "source_sha256": "41c182eb21be36c0bba8bc419a81a0bcffff912731b29e28894ffb3a6bc43d37",
+      "source_sha256": "81b5479c9f5dea0fa7123779a66124501fa71b95a492a650577391aa82b686d6",
+      "bottom_source_file": "en-US-02-create-bottom.jpg",
+      "bottom_source_sha256": "5f0896f4d77bb82249093e099e5f22009446cce8a1f527e96f071e291cd5f83f",
       "source_dimensions": [
-        1600,
-        1019
+        1027,
+        624
       ],
-      "crop": [
+      "cursor_cleanup_strip": [
         0,
-        0,
-        1600,
-        955
+        496,
+        1027,
+        128
       ],
-      "pixels_sha256": "96ad4b7f49a2bce7cb8c42f9f8b698a63ac336682e8037262bd8f6d6be7a71a2"
+      "pixels_sha256": "1546d3fecfeda666635534457271294419e3f54129dc57b0fe5276f330154e83"
     },
     {
       "file": "docs/market/windows/images/screenshots/03-preview.png",
       "locale": "en-US",
       "scene": "03-preview",
-      "width": 1600,
-      "height": 955,
+      "width": 1027,
+      "height": 624,
       "caption": "Request an image preview next to archive entries and file properties.",
-      "sha256": "6d402c84d47d5a5c906aa787ca08f8743982647e283c2be9182269f4c9fa0b7e",
+      "sha256": "5a2b3765e55cefb5d55d5d0834a5411cee623e6e09050b11a5fdf41bc7d787bf",
       "source_file": "en-US-03-preview.jpg",
-      "source_sha256": "74da1da59733aa4e0307da098de98ff92946fe484caed3a52fbb0b66242b6110",
+      "source_sha256": "b6fbc31afc8327204cea5112d9566f326026b3a7fa71bef671a49a6de89bb41f",
+      "bottom_source_file": "en-US-03-preview-bottom.jpg",
+      "bottom_source_sha256": "4d11dc86ac9ee390f04aad4bcaa60f6c61d864f5d1d607e3eb73295ca69a5c72",
       "source_dimensions": [
-        1600,
-        1019
+        1027,
+        624
       ],
-      "crop": [
+      "cursor_cleanup_strip": [
         0,
-        0,
-        1600,
-        955
+        496,
+        1027,
+        128
       ],
-      "pixels_sha256": "b43551de0b6902729e33ec20789f8f615ab95aa39ef6e4bfd5431df749a863c2"
+      "pixels_sha256": "d3fb64228f004b2db3d2ca2cb984f91917c4322004d91e18823eb607fe13ce2e"
     },
     {
       "file": "docs/market/windows/images/screenshots/04-workspace.png",
       "locale": "en-US",
       "scene": "04-workspace",
-      "width": 1600,
-      "height": 955,
+      "width": 1027,
+      "height": 624,
       "caption": "Keep two archives open in tabs and browse selected files in grid view.",
-      "sha256": "f71a66df3ec5f6f595765d287304a4c1f5968cfa726a7483bdaa17424a1493fa",
+      "sha256": "ea78c92b3daddccf94472eb4f7af65f270d1a8d4fc0219ea205870aea08c72ba",
       "source_file": "en-US-04-workspace.jpg",
-      "source_sha256": "d5419cbc91c1502715e0734ea0245ff92f39b653c8f7e7e73f9c64b5b718dc71",
+      "source_sha256": "109855c4fbfd5f81a97ce117ed8f64d8cb9d756f30d2239355e1bf738f7150a8",
+      "bottom_source_file": "en-US-04-workspace-bottom.jpg",
+      "bottom_source_sha256": "e08a8ccdbd97fbe7ede5d08fba04f56859573080800706a59eadf8bce3853862",
       "source_dimensions": [
-        1600,
-        1019
+        1027,
+        624
       ],
-      "crop": [
+      "cursor_cleanup_strip": [
         0,
-        0,
-        1600,
-        955
+        496,
+        1027,
+        128
       ],
-      "pixels_sha256": "225e630c9245b2c74f0efcc1ef90d90ddb36e9a254767fa5a478a9ccbd34eac0"
+      "pixels_sha256": "55fb9e638171bee7cda29a5929eddff53222088c3bfaa36792bf91a090df942e"
     },
     {
       "file": "docs/zh-CN/market/windows/images/screenshots/01-browse.png",
       "locale": "zh-CN",
       "scene": "01-browse",
-      "width": 1600,
-      "height": 955,
+      "width": 1027,
+      "height": 624,
       "caption": "浏览压缩包目录树，选择文件并查看属性。",
-      "sha256": "eb954d76efb1f4d7cf1f3572683eae49d76d578d2a90a6770362a334ffb472da",
+      "sha256": "79203ef535c2c1f927cd7c0bb4b32ed222b5140db13e806327cd7ef7f82cd56a",
       "source_file": "zh-CN-01-browse.jpg",
-      "source_sha256": "6c12ef9259355d9493c6e5f2ed3f12ef2a08b8b0c6c919babdf0ec46a01137f7",
+      "source_sha256": "1ff8842e7059fecee1671ff6fb8f2a97df46034ed83ea302d2ca663d9ce30d9f",
+      "bottom_source_file": "zh-CN-01-browse-bottom.jpg",
+      "bottom_source_sha256": "1ff8842e7059fecee1671ff6fb8f2a97df46034ed83ea302d2ca663d9ce30d9f",
       "source_dimensions": [
-        1600,
-        1019
+        1027,
+        624
       ],
-      "crop": [
+      "cursor_cleanup_strip": [
         0,
-        0,
-        1600,
-        955
+        496,
+        1027,
+        128
       ],
-      "pixels_sha256": "e8f598f1f111c9a5e18e77d6cebe008205b0e5db8ae9257795baf88ce05f5233"
+      "pixels_sha256": "4d74ba07149246dac0397843d8ca4495751502c1af4deb474c6ef12e9ef1079a"
     },
     {
       "file": "docs/zh-CN/market/windows/images/screenshots/02-create.png",
       "locale": "zh-CN",
       "scene": "02-create",
-      "width": 1600,
-      "height": 955,
+      "width": 1027,
+      "height": 624,
       "caption": "通过起始页直接打开或创建压缩包。",
-      "sha256": "399d2902902d099b0e2b900557a0567b90888220fc9827da9ff2599880a0d4c5",
+      "sha256": "fd068785703486cea64f33b06e338e23d7ef347273c948706b13f21b4d6ca4ad",
       "source_file": "zh-CN-02-create.jpg",
-      "source_sha256": "73c1bfc6a5de88662abddc474c201b9c775b7af3e0198579c70c386b9110f084",
+      "source_sha256": "ab8b9e78c4e0265621d72c684b238c621abd008884421a4636cf0adf4cbad5c4",
+      "bottom_source_file": "zh-CN-02-create-bottom.jpg",
+      "bottom_source_sha256": "95a46559ff0fbdf8051037064b04e83959116be0975029939c01dd6ce5d7b37b",
       "source_dimensions": [
-        1600,
-        1019
+        1027,
+        624
       ],
-      "crop": [
+      "cursor_cleanup_strip": [
         0,
-        0,
-        1600,
-        955
+        496,
+        1027,
+        128
       ],
-      "pixels_sha256": "1a2503502a5eb1706f8e3e6b2995e5171c19cb05a3714b4c39d56d605bd35f1b"
+      "pixels_sha256": "059d84d047664b309fbd2e335836530f9b56afafec2131ada53a3b71eacc20f3"
     },
     {
       "file": "docs/zh-CN/market/windows/images/screenshots/03-preview.png",
       "locale": "zh-CN",
       "scene": "03-preview",
-      "width": 1600,
-      "height": 955,
+      "width": 1027,
+      "height": 624,
       "caption": "在文件列表和属性旁，按需加载图像预览。",
-      "sha256": "1075e284884cae6edccf6e47ee588ad7dbb3daf421af3be74221a9a5cd66330f",
+      "sha256": "7d90e212a522d3dab1a18dbc4676db59913469a2bbc8f948a1a5d1cd0703b983",
       "source_file": "zh-CN-03-preview.jpg",
-      "source_sha256": "2cd81042a0d3f1cca60145831d7ef2075a0e7197a4719b1d7f6aa8acf8bf91cf",
+      "source_sha256": "dbb5c72757a03a4ebdc980e0fa29f6228e8b69f0baf4fb297bf3b652f3b2e04c",
+      "bottom_source_file": "zh-CN-03-preview-bottom.jpg",
+      "bottom_source_sha256": "0ff991c21ef6cdecf0712650d5ad73c48f0c1bc7434feea25d99bb84d6adc9a3",
       "source_dimensions": [
-        1600,
-        1019
+        1027,
+        624
       ],
-      "crop": [
+      "cursor_cleanup_strip": [
         0,
-        0,
-        1600,
-        955
+        496,
+        1027,
+        128
       ],
-      "pixels_sha256": "25eaf635ead50f5ad11be42825bfca2be2161bb4ec1a6606b720ce1005f58844"
+      "pixels_sha256": "9a9a1d63212f5b647fa68a35bc49c02639bd902be60a8b221932fcb711b0f6f4"
     },
     {
       "file": "docs/zh-CN/market/windows/images/screenshots/04-workspace.png",
       "locale": "zh-CN",
       "scene": "04-workspace",
-      "width": 1600,
-      "height": 955,
+      "width": 1027,
+      "height": 624,
       "caption": "在标签页中同时打开两个压缩包，并以网格视图浏览选中的文件。",
-      "sha256": "143930a936d728499dc75c22f5d1469d19b2226ddcb4be5ee7340884718dec6a",
+      "sha256": "78b92009bd6bbe2e6b109caf356052caba9d662d5c9ea2d57c43bec5bc0c4a99",
       "source_file": "zh-CN-04-workspace.jpg",
-      "source_sha256": "80efab82289843acc7c030d28a8d86bf045da6b9db7e6e57a82a8b65f9422a2a",
+      "source_sha256": "2a6c7dd9100b7334502e7275e643296e34f0ffa765840ac13e70679db5adf195",
+      "bottom_source_file": "zh-CN-04-workspace-bottom.jpg",
+      "bottom_source_sha256": "67ecf9301a88688bff4e32d59dd9677d69785a355d7a9faec678580b4948a0ca",
       "source_dimensions": [
-        1600,
-        1019
+        1027,
+        624
       ],
-      "crop": [
+      "cursor_cleanup_strip": [
         0,
-        0,
-        1600,
-        955
+        496,
+        1027,
+        128
       ],
-      "pixels_sha256": "2bace94508f1988043b3c1aca4661211d6cee8742c482e59a0171fdb9048b22d"
+      "pixels_sha256": "a044d3e459414112e5f19cbf66769d01930a2a1359c61bb709d25097de9d405d"
     }
   ]
 }
