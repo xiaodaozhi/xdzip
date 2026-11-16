@@ -9,8 +9,8 @@ This record closes the next Bandizip inventory candidates after M9. It separates
 - **License and redistribution:** The implementation is GPL-2.0-or-later. The implementation license does not grant rights to the proprietary DAA technology, and the project has no independent permission record for shipping a decoder in xdzip.
 - **Complete samples:** Public samples are commonly disk images or multipart archives whose provenance and version are not fixed. No redistributable corpus covering old headers, version 110, multipart ordering, zlib, LZMA, obfuscation, checksums and malformed chunks is currently admitted.
 - **Clean-room feasibility:** A bounded ISO reconstruction may be technically possible after a stable wire record and legal decision. Reverse engineering from a GPL decoder alone is insufficient evidence for a product implementation.
-- **Capability boundary:** A future slice could expose one verified image as a read-only virtual ISO, with exact chunk ranges, decompressed-size and output budgets. It must reject password, obfuscated or multipart variants until their own contracts and fixtures exist. No image mounting, booting, writing or execution would be allowed.
-- **Conclusion:** **Blocked.** Missing public 1.0 specification, missing fixed source revision and missing complete redistributable corpus prevent a defensible admission.
+- **Capability boundary:** Permanently unsupported by product decision. Do not add a DAA detector, codec, registry entry, MIME type, association, reader or writer. Historical research does not authorize future admission.
+- **Conclusion:** **Excluded by product decision, permanently.** xdzip will not pursue DAA support. The source, license and sample findings above remain historical research, not pending delivery gates.
 
 ## ISZ
 

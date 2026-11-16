@@ -62,9 +62,9 @@ EXPECTED_ROWS = [
 EXPECTED_STATUS_COUNTS = {
     "Admitted": 30,
     "Alias/profile": 7,
-    "Blocked": 1,
+    "Blocked": 0,
     "Candidate": 2,
-    "Excluded": 4,
+    "Excluded": 5,
 }
 
 EXPECTED_STATUSES = {
@@ -79,7 +79,7 @@ EXPECTED_STATUSES = {
     "BZ / BZ2": "Admitted",
     "CAB": "Admitted",
     "Compound(MSI)": "Admitted",
-    "DAA(1.0)": "Blocked",
+    "DAA(1.0)": "Excluded",
     "DEB": "Admitted",
     "EGG": "Admitted",
     "GZ": "Admitted",
