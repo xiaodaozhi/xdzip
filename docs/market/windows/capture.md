@@ -15,9 +15,9 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/capture-windows-
 
 For a double-click entry point, open [capture-windows-store-zh-CN.cmd](../../../scripts/capture-windows-store-zh-CN.cmd) or [capture-windows-store-en-US.cmd](../../../scripts/capture-windows-store-en-US.cmd). These launch the same script and exit automatically on success. A failed run keeps the console open to show its error.
 
-`-ExecutionPolicy Bypass` applies only to this invocation; it does not change the saved execution policy. The script uses the existing candidate at `build/issue272-store-materials/runtime/xdzip.exe` and the owned files in the adjacent `demo/` directory. When run from a Git worktree it can reuse those files from the main checkout. It checks the executable against the SHA-256 recorded in [windows-store.json](../../../specs/marketing/windows-store.json), rather than building or installing a different application.
+`-ExecutionPolicy Bypass` applies only to this invocation; it does not change the saved execution policy. The script looks for a complete runtime matching the SHA-256 in the [capture configuration](../../../specs/capture/windows-store.json), including the package output or an existing candidate directory. A worktree can reuse that runtime from the main checkout. It does not build or install the application. Owned demonstration images and archives are generated from [source](../../../scripts/windows-store-demo.psm1) inside each fresh output directory, without downloads.
 
-For other locations, pass `-Executable`, `-DemoDirectory` and optionally a new `-OutputDirectory`. The demonstration directory must contain `设计交付.zip` and `图片精选.zip` for Chinese, or `Design delivery.zip` and `Photo collection.zip` for English, plus `coastline.png`, `dusk.png` and `forest.png`. The assistant does not download demonstration content. An existing output directory is rejected to preserve earlier images.
+Pass `-Executable` for another location. To capture a newer build, also supply its intended `-ExpectedSha256`, and optionally its known `-SourceRevision`; see [updating and reusing the tools](../../engineering/windows-screenshots.md). Other builds are not labeled as the pinned Store candidate. `-DemoDirectory` explicitly reuses an owned demo set instead of generating one. It must contain `设计交付.zip` and `图片精选.zip` for Chinese, or `Design delivery.zip` and `Photo collection.zip` for English, plus `coastline.png`, `dusk.png` and `forest.png`. An existing `-OutputDirectory` is rejected to preserve earlier images.
 
 ## Scenes prepared automatically
 
@@ -36,14 +36,15 @@ Each scene must satisfy its state checks, then produce an unchanged frame across
 
 ## Output and image quality
 
-The default output is a new directory under `build/issue272-store-materials/native-captures/`. Each run produces:
+The default output is a new directory under `build/screenshots/windows-store/`. Each run produces:
 
 - Four `<language>-<scene>.png` files containing the exact client pixels. The main window's custom title area is part of this crop; a separate native title bar, resize borders and shadows are excluded.
 - Four `<language>-<scene>-window.png` reference files containing the visible native frame, including the creation window's native title bar. Outer rounded corners can contain desktop background; these references are not transparent cutouts.
-- `capture-session.json`, recording language, candidate hash, confirmed scene states, dimensions, DPI, client crop and PNG hashes. `complete` becomes true only after all four views are saved. Partial runs remain marked false and record the failure.
+- `capture-session.json`, recording language, executable and tool-source hashes, known source revision, confirmed scene states, dimensions, DPI, client crop and PNG hashes. `complete` becomes true only after all four views are saved and the PNG set passes verification. Partial runs remain marked false and record the failure.
+- `demo/`, containing the source-generated owned demonstration inputs, unless `-DemoDirectory` was supplied.
 - `create-demo/`, containing the three owned demonstration image copies. Failed runs may also retain `owned-ui.txt` or `creation-ui.txt` for diagnosis.
 
-The native helper copies screen pixels after DWM presentation, checks ownership, geometry and occlusion before and after readback, then encodes lossless PNG. The client image is cropped from the same frame without resizing. It does not pass through JPEG, redraw text, sharpen glyphs, add a decorative frame or draw a pointer. Physical image dimensions follow the real window DPI; they are not written back into Qt component sizes. See [windows-store-capture.cs](../../../scripts/windows-store-capture.cs).
+The native helper copies screen pixels after DWM presentation, checks ownership, geometry and occlusion before and after readback, then encodes lossless PNG. The client image is cropped from the same frame without resizing. It does not pass through JPEG, redraw text, sharpen glyphs, add a decorative frame or draw a pointer. Physical image dimensions follow the real window DPI; they are not written back into Qt component sizes. See [windows-capture.cs](../../../scripts/windows-capture.cs) and the [reusable module guide](../../engineering/windows-screenshots.md).
 
 Inspect the saved originals at 100% before using them. This method preserves the application's actual rendering; it cannot improve text already rendered poorly. The script does not upload images or replace the Store artwork automatically. When it exits or is canceled, it releases its cancellation hotkey, closes only the xdzip process it created, restores the pointer and removes any unconsumed private request. It does not start compression or extraction tasks.
 
@@ -52,6 +53,7 @@ Inspect the saved originals at 100% before using them. This method preserves the
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/capture-windows-store.ps1 -Language zh-CN -ValidateOnly
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/capture-windows-store.ps1 -SelfTest
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/check-windows-captures.ps1 -Directory build/screenshots/windows-store/my-capture
 ```
 
-`-ValidateOnly` checks the candidate, demonstration paths and output path without launching xdzip or writing files. `-SelfTest` checks exact PNG RGBA roundtripping, physical-size calculations and refusal to overwrite files, using a generated image under `build/`. Neither mode captures the desktop. They do not establish actual native screenshot quality or manual scene correctness.
+`-ValidateOnly` checks the expected executable, demo-generation plan or supplied demo paths, and output path without launching xdzip or writing files. `-SelfTest` checks exact PNG RGBA roundtripping, physical-size calculations, crop pixels, lossy-file rejection and refusal to overwrite files under `build/`. The separate validator checks an existing receipt and every client/window pair. These checks do not capture the desktop or establish manual scene correctness. The broader reusable regression entry is `scripts/test-windows-capture.ps1`.

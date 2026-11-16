@@ -1,4 +1,4 @@
-// Native, lossless capture for the automatic Store screenshot assistant.
+// Native, lossless capture and scoped UI Automation for Windows capture recipes.
 // HWNDs are borrowed and revalidated before/after readback. A failed guard never
 // persists screen pixels; all GDI objects and thread DPI changes have scoped owners.
 using System;
@@ -12,7 +12,7 @@ using System.Text;
 using System.Security.Cryptography;
 using System.Windows.Automation;
 
-namespace Xdzip.StoreCapture {
+namespace Xdzip.WindowsCapture {
     public sealed class Result {
         public long Window;
         public string Title;
@@ -57,21 +57,15 @@ namespace Xdzip.StoreCapture {
             else if (element.TryGetCurrentPattern(SelectionItemPattern.Pattern, out pattern)) ((SelectionItemPattern)pattern).Select();
             else throw new InvalidOperationException("Owned control has no invoke/selection action: " + name);
         }
-        public static void SelectFile(int process, long handle, string name) {
-            // A row click selects exactly one real model entry. Toggling a
-            // checkbox only adds/removes it from the existing selection.
-            var element = Find(process, handle, name, "Group");
-            if (element == null) throw new InvalidOperationException("Missing owned file row: " + name);
+        public static void ClickNamed(int process, long handle, string name, string role) {
+            var element = Find(process, handle, name, role);
+            if (element == null) throw new InvalidOperationException("Missing owned control: " + name);
             var bounds = element.Current.BoundingRectangle;
             Native.Click(process, handle, (int)(bounds.Left + bounds.Width / 2), (int)(bounds.Top + bounds.Height / 2));
         }
         public static bool Selected(int process, long handle, string name, string role) {
             var element = Find(process, handle, name, role);
             if (element == null) return false;
-            // Qt exposes the active capsule's object name even when its UIA
-            // SelectionItem provider omits IsSelected. The name changes with
-            // the real selected-tab model, rather than with the requested action.
-            if (role == "TabItem" && element.Current.AutomationId.EndsWith(".activeArchiveTab", StringComparison.Ordinal)) return true;
             object pattern;
             if (element.TryGetCurrentPattern(TogglePattern.Pattern, out pattern)) return ((TogglePattern)pattern).Current.ToggleState == ToggleState.On;
             if (element.TryGetCurrentPattern(SelectionItemPattern.Pattern, out pattern)) return ((SelectionItemPattern)pattern).Current.IsSelected;
@@ -186,28 +180,28 @@ namespace Xdzip.StoreCapture {
         private static void Guard(IntPtr window, int process, Rectangle frame, Rectangle client, int dpi) {
             if (!Owned(window, process) || GetForegroundWindow() != window || Hidden(window) ||
                 !IsWindowEnabled(window) || IsZoomed(window))
-                throw new InvalidOperationException("Activate the requested xdzip window at its default size");
+                throw new InvalidOperationException("The requested window is inactive, hidden, disabled or maximized");
             if (GetDpiForWindow(window) != dpi || Frame(window) != frame || Client(window) != client)
                 throw new InvalidOperationException("Window geometry changed during capture; session stopped");
             var monitor = new Monitor { Size = Marshal.SizeOf(typeof(Monitor)) };
             if (!GetMonitorInfoW(MonitorFromWindow(window, 2), ref monitor) || !monitor.Work.Box.Contains(frame))
                 throw new InvalidOperationException("The complete window must fit inside one monitor's work area");
             // Conservatively reject every intersecting visible window above ours,
-            // including other xdzip dialogs. No foreign pixels are saved.
+            // including dialogs in the same process. No foreign pixels are saved.
             for (var above = GetWindow(window, 3); above != IntPtr.Zero; above = GetWindow(above, 3)) {
                 if (Hidden(above)) continue;
                 Rect other;
                 if (DwmGetWindowAttribute(above, 9, out other, Marshal.SizeOf(typeof(Rect))) != 0 && !GetWindowRect(above, out other))
                     throw new InvalidOperationException("Cannot verify an overlapping window");
                 if (frame.IntersectsWith(other.Box))
-                    throw new InvalidOperationException("Another window covers xdzip; session stopped without saving pixels");
+                    throw new InvalidOperationException("Another window covers the target; no pixels saved");
             }
         }
         public static bool DefaultSize(int width, int height, int dpi, int logicalWidth, int logicalHeight) {
             return dpi >= 96 && Math.Abs(width - logicalWidth * dpi / 96.0) <= 2 &&
                 Math.Abs(height - logicalHeight * dpi / 96.0) <= 2;
         }
-        public static long FindMain(int process, int logicalWidth, int logicalHeight) {
+        public static long FindDefaultWindow(int process, int logicalWidth, int logicalHeight) {
             using (new DpiScope()) {
                 var matches = new List<long>();
                 EnumWindows((window, state) => {
@@ -357,21 +351,20 @@ namespace Xdzip.StoreCapture {
             using (var file = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None))
                 file.Write(bytes, 0, bytes.Length);
         }
-        public static Result Capture(int process, long main, string requiredTitle, int logicalWidth, int logicalHeight, string clientFile, string windowFile) {
+        public static Result Capture(int process, long expectedWindow, string requiredTitle, int logicalWidth, int logicalHeight, string clientFile, string windowFile) {
             using (new DpiScope()) {
                 var window = GetForegroundWindow();
-                if (!Owned(window, process)) throw new InvalidOperationException("The capture-owned xdzip window is no longer active");
+                if (!Owned(window, process)) throw new InvalidOperationException("The capture-owned window is no longer active");
                 var title = Title(window);
-                bool creation = !String.IsNullOrEmpty(requiredTitle);
-                if (!creation ? window.ToInt64() != main : window.ToInt64() == main || title != requiredTitle)
+                if (window.ToInt64() != expectedWindow || (!String.IsNullOrEmpty(requiredTitle) && title != requiredTitle))
                     throw new InvalidOperationException("This is not the window requested for the current scene");
                 var frame = Frame(window);
                 var client = Client(window);
                 int dpi = (int)GetDpiForWindow(window);
                 if (client.Width <= 0 || client.Height <= 0 || !frame.Contains(client))
                     throw new InvalidOperationException("Invalid capture bounds");
-                if (!creation && !DefaultSize(client.Width, client.Height, dpi, logicalWidth, logicalHeight))
-                    throw new InvalidOperationException("Main window was resized; restart the assistant to restore its default size");
+                if ((logicalWidth > 0 || logicalHeight > 0) && !DefaultSize(client.Width, client.Height, dpi, logicalWidth, logicalHeight))
+                    throw new InvalidOperationException("Window dimensions differ from the recipe's logical size");
                 using (var full = ReadFrame(window, process, frame, client, dpi)) {
                     using (var ui = full.Clone(new Rectangle(client.X - frame.X, client.Y - frame.Y, client.Width, client.Height), PixelFormat.Format24bppRgb)) {
                         // No resize, JPEG, sharpening, cursor drawing or synthetic frame.
@@ -387,6 +380,51 @@ namespace Xdzip.StoreCapture {
                     WindowWidth = frame.Width, WindowHeight = frame.Height,
                     ClientLeft = client.X - frame.X, ClientTop = client.Y - frame.Y,
                     ClientFile = Path.GetFileName(clientFile), WindowFile = Path.GetFileName(windowFile) };
+            }
+        }
+        public static int[] VerifyPair(string clientFile, string windowFile, int[] crop) {
+            using (var client = new Bitmap(clientFile))
+            using (var window = new Bitmap(windowFile)) {
+                if (client.RawFormat.Guid != ImageFormat.Png.Guid || window.RawFormat.Guid != ImageFormat.Png.Guid)
+                    throw new InvalidOperationException("Capture is not an original PNG");
+                if (crop == null || crop.Length != 4 || crop[0] < 0 || crop[1] < 0 ||
+                    crop[2] != client.Width || crop[3] != client.Height ||
+                    (long)crop[0] + crop[2] > window.Width || (long)crop[1] + crop[3] > window.Height)
+                    throw new InvalidOperationException("Invalid client crop");
+                for (int y = 0; y < client.Height; y++)
+                    for (int x = 0; x < client.Width; x++)
+                        if (client.GetPixel(x, y).ToArgb() != window.GetPixel(x + crop[0], y + crop[1]).ToArgb())
+                            throw new InvalidOperationException("Client PNG differs from native window pixels");
+                return new [] { client.Width, client.Height, window.Width, window.Height };
+            }
+        }
+        public static void PairSelfTest(string directory) {
+            var clientFile = Path.Combine(directory, "pair-client.png");
+            var windowFile = Path.Combine(directory, "pair-window.png");
+            var jpegFile = Path.Combine(directory, "pair-lossy.png");
+            var crop = new [] { 3, 4, 11, 9 };
+            using (var frame = new Bitmap(23, 19, PixelFormat.Format24bppRgb)) {
+                for (int y = 0; y < frame.Height; y++)
+                    for (int x = 0; x < frame.Width; x++) frame.SetPixel(x, y, Color.FromArgb(x * 11 % 256, y * 13 % 256, (x + y) * 17 % 256));
+                WriteNew(windowFile, Png(frame));
+                using (var client = frame.Clone(new Rectangle(3, 4, 11, 9), PixelFormat.Format24bppRgb)) {
+                    var original = Png(client);
+                    WriteNew(clientFile, original);
+                    VerifyPair(clientFile, windowFile, crop);
+                    client.SetPixel(0, 0, Color.Magenta);
+                    File.WriteAllBytes(clientFile, Png(client));
+                    bool rejected = false;
+                    try { VerifyPair(clientFile, windowFile, crop); } catch (InvalidOperationException) { rejected = true; }
+                    if (!rejected) throw new Exception("Changed capture pixels accepted");
+                    File.WriteAllBytes(clientFile, original);
+                    rejected = false;
+                    try { VerifyPair(clientFile, windowFile, new [] { -1, 4, 11, 9 }); } catch (InvalidOperationException) { rejected = true; }
+                    if (!rejected) throw new Exception("Invalid crop accepted");
+                    client.Save(jpegFile, ImageFormat.Jpeg);
+                    rejected = false;
+                    try { VerifyPair(jpegFile, windowFile, crop); } catch (InvalidOperationException) { rejected = true; }
+                    if (!rejected) throw new Exception("JPEG disguised as PNG accepted");
+                }
             }
         }
         public static void CodecSelfTest(string path) {

@@ -19,6 +19,8 @@ param(
     [ValidateSet('zh-CN', 'en-US')][string]$Language,
     [Parameter(ParameterSetName = 'Capture')][string]$Executable,
     [Parameter(ParameterSetName = 'Capture')][string]$DemoDirectory,
+    [Parameter(ParameterSetName = 'Capture')][ValidatePattern('^[A-Fa-f0-9]{64}$')][string]$ExpectedSha256,
+    [Parameter(ParameterSetName = 'Capture')][ValidatePattern('^[A-Fa-f0-9]{40}$')][string]$SourceRevision,
     [string]$OutputDirectory,
     [Parameter(ParameterSetName = 'Capture')][switch]$ValidateOnly,
     [Parameter(Mandatory = $true, ParameterSetName = 'SelfTest')][switch]$SelfTest
@@ -29,65 +31,70 @@ if ($env:OS -ne 'Windows_NT' -or $PSVersionTable.PSEdition -ne 'Desktop') {
     throw 'Run this assistant with Windows PowerShell 5.1: powershell.exe -NoProfile -File ...'
 }
 $repoRoot = Split-Path -Parent $PSScriptRoot
-function Get-CaptureSha256([string]$Path) {
-    # Use the framework directly so cmd.exe launchers do not depend on an
-    # inherited PSModulePath from another PowerShell installation.
-    $algorithm = [Security.Cryptography.SHA256]::Create()
-    $stream = [IO.File]::OpenRead($Path)
-    try { [BitConverter]::ToString($algorithm.ComputeHash($stream)).Replace('-', '').ToLowerInvariant() }
-    finally { $stream.Dispose(); $algorithm.Dispose() }
-}
-$materialRoot = Join-Path $repoRoot 'build/issue272-store-materials'
-# A worktree reuses the existing candidate, rather than copying its runtime.
-if ((!$Executable -or !$DemoDirectory) -and !(Test-Path -LiteralPath (Join-Path $materialRoot 'runtime/xdzip.exe'))) {
+Import-Module (Join-Path $PSScriptRoot 'windows-capture.psm1')
+Import-Module (Join-Path $PSScriptRoot 'windows-store-demo.psm1')
+$spec = Get-Content -LiteralPath (Join-Path $repoRoot 'specs/capture/windows-store.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+if (!$ExpectedSha256) { $ExpectedSha256 = $spec.baseline.runtime_exe_sha256 }
+if (!$Executable -and !$SelfTest) {
+    $roots = @($repoRoot)
     $common = (& git -C $repoRoot rev-parse --path-format=absolute --git-common-dir 2>$null)
     if ($LASTEXITCODE -eq 0 -and $common) {
-        $sharedMaterials = Join-Path (Split-Path -Parent $common) 'build/issue272-store-materials'
-        if (Test-Path -LiteralPath $sharedMaterials) { $materialRoot = $sharedMaterials }
+        $roots += Split-Path -Parent $common
     }
+    foreach ($workspace in @($roots | Select-Object -Unique)) {
+        foreach ($relative in $spec.runtime_candidates) {
+            $candidate = Join-Path $workspace $relative
+            if ((Test-Path -LiteralPath $candidate -PathType Leaf) -and (Get-WindowsCaptureHash $candidate) -eq $ExpectedSha256.ToLowerInvariant()) {
+                $Executable = $candidate
+                break
+            }
+        }
+        if ($Executable) { break }
+    }
+    if (!$Executable) { throw 'No runtime matches the expected SHA-256. Supply -Executable and, for another build, -ExpectedSha256.' }
 }
 if (!$OutputDirectory) {
     $label = if ($SelfTest) { 'self-test' } else { $Language }
-    $OutputDirectory = Join-Path $materialRoot ('native-captures/{0}-{1}-{2}' -f $label, (Get-Date -Format 'yyyyMMdd-HHmmss'), [guid]::NewGuid().ToString('N').Substring(0, 6))
+    $OutputDirectory = Join-Path $repoRoot ('build/screenshots/windows-store/{0}-{1}-{2}' -f $label, (Get-Date -Format 'yyyyMMdd-HHmmss'), [guid]::NewGuid().ToString('N').Substring(0, 6))
 }
 $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
 if (Test-Path -LiteralPath $OutputDirectory) { throw 'OutputDirectory already exists. Choose a new directory to preserve earlier captures.' }
-if (!('Xdzip.StoreCapture.Native' -as [type])) {
-    Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes, WindowsBase
-    Add-Type -Path (Join-Path $PSScriptRoot 'windows-store-capture.cs') -ReferencedAssemblies @(
-        'System.Drawing', [System.Windows.Automation.AutomationElement].Assembly.Location,
-        [System.Windows.Automation.ControlType].Assembly.Location, [System.Windows.Rect].Assembly.Location)
-}
+Initialize-WindowsCapture
 if ($SelfTest) {
     $null = New-Item -ItemType Directory -Path $OutputDirectory
-    [Xdzip.StoreCapture.Native]::CodecSelfTest((Join-Path $OutputDirectory 'rgba-roundtrip.png'))
+    [Xdzip.WindowsCapture.Native]::CodecSelfTest((Join-Path $OutputDirectory 'rgba-roundtrip.png'))
+    [Xdzip.WindowsCapture.Native]::PairSelfTest($OutputDirectory)
     Write-Host 'PASS: exact PNG RGBA roundtrip, native DPI size guard, exclusive output writes. No desktop capture or app launch.'
     return
 }
-if (!$Executable) { $Executable = Join-Path $materialRoot 'runtime/xdzip.exe' }
-if (!$DemoDirectory) { $DemoDirectory = Join-Path $materialRoot 'demo' }
 $Executable = (Resolve-Path -LiteralPath $Executable).ProviderPath
-$DemoDirectory = (Resolve-Path -LiteralPath $DemoDirectory).ProviderPath
-$spec = Get-Content -LiteralPath (Join-Path $repoRoot 'specs/marketing/windows-store.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+$generateDemo = !$DemoDirectory
+if ($generateDemo) { $DemoDirectory = Join-Path $OutputDirectory 'demo' }
+else { $DemoDirectory = (Resolve-Path -LiteralPath $DemoDirectory).ProviderPath }
 $layout = Get-Content -LiteralPath (Join-Path $repoRoot 'specs/visual/layout-scale.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 $catalog = Get-Content -LiteralPath (Join-Path $repoRoot "resources/i18n/$Language.json") -Raw -Encoding UTF8 | ConvertFrom-Json
-$exeHash = Get-CaptureSha256 $Executable
-if ($exeHash -ne $spec.baseline.runtime_exe_sha256) { throw 'Executable differs from the Store candidate recorded in windows-store.json.' }
+$exeHash = Get-WindowsCaptureHash $Executable
+if ($exeHash -ne $ExpectedSha256.ToLowerInvariant()) { throw 'Executable differs from the expected capture build SHA-256.' }
+$pinnedCandidate = $exeHash -eq $spec.baseline.runtime_exe_sha256
+if (!$SourceRevision -and $pinnedCandidate) { $SourceRevision = $spec.baseline.revision }
 $browseName = if ($Language -eq 'zh-CN') { '设计交付.zip' } else { 'Design delivery.zip' }
 $photoName = if ($Language -eq 'zh-CN') { '图片精选.zip' } else { 'Photo collection.zip' }
 $demoInputs = @($browseName, $photoName, 'coastline.png', 'dusk.png', 'forest.png')
-foreach ($name in $demoInputs) {
-    if (!(Test-Path -LiteralPath (Join-Path $DemoDirectory $name) -PathType Leaf)) { throw "Missing demonstration file: $name" }
+if (!$generateDemo) {
+    foreach ($name in $demoInputs) {
+        if (!(Test-Path -LiteralPath (Join-Path $DemoDirectory $name) -PathType Leaf)) { throw "Missing demonstration file: $name" }
+    }
 }
 $currentSession = (Get-Process -Id $PID).SessionId
 $existing = @(Get-Process -Name xdzip -ErrorAction SilentlyContinue | Where-Object { $_.SessionId -eq $currentSession })
 if ($existing.Count) { throw 'Close existing xdzip processes before starting, so single-instance forwarding cannot target your normal session.' }
 if ($ValidateOnly) {
-    Write-Host "PASS: $Language, candidate SHA-256, five demonstration files, fresh output path. No files written or app launched."
+    Write-Host "PASS: $Language, expected executable SHA-256 and fresh output path. Demo generation: $generateDemo. No files written or app launched."
     return
 }
 
 $null = New-Item -ItemType Directory -Path $OutputDirectory
+if ($generateDemo) { $null = New-WindowsStoreDemo -Directory $DemoDirectory -Language $Language }
 $settings = Join-Path $OutputDirectory 'settings.ini'
 $utf8 = New-Object Text.UTF8Encoding($false)
 [IO.File]::WriteAllText($settings, @"
@@ -108,93 +115,60 @@ recentEnabled=false
 "@, $utf8)
 
 $receipt = [ordered]@{
-    schema_version = 2; complete = $false; language = $Language
-    baseline_revision = $spec.baseline.revision; runtime_exe_sha256 = $exeHash
+    schema_version = 3; complete = $false; language = $Language
+    baseline_revision = $SourceRevision; runtime_exe_sha256 = $exeHash
+    pinned_store_candidate = $pinnedCandidate; expected_scenes = @($spec.scenes)
+    recipe_sha256 = Get-WindowsCaptureHash $PSCommandPath
+    capture_helper_sha256 = Get-WindowsCaptureHash (Join-Path $PSScriptRoot 'windows-capture.cs')
+    capture_module_sha256 = Get-WindowsCaptureHash (Join-Path $PSScriptRoot 'windows-capture.psm1')
+    capture_config_sha256 = Get-WindowsCaptureHash (Join-Path $repoRoot 'specs/capture/windows-store.json')
+    fixture_generator_sha256 = Get-WindowsCaptureHash (Join-Path $PSScriptRoot 'windows-store-demo.psm1')
+    demo_source = if ($generateDemo) { 'generated' } else { 'provided' }
+    demo_inputs = @($demoInputs | ForEach-Object { @{ file = $_; sha256 = Get-WindowsCaptureHash (Join-Path $DemoDirectory $_) } })
+    fixture_revision = $spec.fixture_revision
     method = 'Native screen pixels, DWM visible frame and exact client crop, lossless PNG, no resampling'
     scene_preparation = 'Automatic owned UI Automation and create shell request'; images = @()
 }
 function Save-Receipt {
     [IO.File]::WriteAllText((Join-Path $OutputDirectory 'capture-session.json'), ($receipt | ConvertTo-Json -Depth 8), $utf8)
 }
-function Assert-Running {
-    if ($process.HasExited) { throw 'The capture-owned xdzip process has exited.' }
-    if ([Xdzip.StoreCapture.Native]::PollKey() -eq 2) { throw 'Capture canceled with F10. Earlier PNGs are retained.' }
-}
 function Wait-State([string]$Label, [scriptblock]$Predicate) {
-    $watch = [Diagnostics.Stopwatch]::StartNew()
-    while ($watch.Elapsed.TotalSeconds -lt 20) {
-        Assert-Running
-        try { if (& $Predicate) { return } } catch [System.Windows.Automation.ElementNotAvailableException] {}
-        Start-Sleep -Milliseconds 100
-    }
-    throw "Timed out waiting for scene state: $Label"
+    Wait-WindowsCaptureState -Process $process -Label $Label -Predicate $Predicate
 }
 function Wait-Control([long]$Window, [string]$Name, [string]$Role) {
-    Wait-State "$Name ($Role)" { [Xdzip.StoreCapture.Driver]::Ready($process.Id, $Window, $Name, $Role) }
+    Wait-State "$Name ($Role)" { [Xdzip.WindowsCapture.Driver]::Ready($process.Id, $Window, $Name, $Role) }
 }
 function Invoke-Control([long]$Window, [string]$Name, [string]$Role) {
     Wait-Control $Window $Name $Role
-    [Xdzip.StoreCapture.Native]::Activate($process.Id, $Window)
-    [Xdzip.StoreCapture.Driver]::Invoke($process.Id, $Window, $Name, $Role)
+    [Xdzip.WindowsCapture.Native]::Activate($process.Id, $Window)
+    [Xdzip.WindowsCapture.Driver]::Invoke($process.Id, $Window, $Name, $Role)
 }
 function Select-Tab([string]$Name) {
     Invoke-Control $mainWindow $Name 'TabItem'
-    Wait-State "selected tab $Name" { [Xdzip.StoreCapture.Driver]::Selected($process.Id, $mainWindow, $Name, 'TabItem') }
+    # This Qt capsule ID follows the real selected-tab model; the pinned Qt
+    # provider does not reliably expose SelectionItem.IsSelected.
+    Wait-State "selected tab $Name" { [Xdzip.WindowsCapture.Driver]::ReadyObject($process.Id, $mainWindow, $Name, 'activeArchiveTab') }
 }
 function Select-File([string]$Name) {
     Wait-Control $mainWindow $Name 'CheckBox'
-    [Xdzip.StoreCapture.Driver]::SelectFile($process.Id, $mainWindow, $Name)
-    Wait-State "selected file $Name" { [Xdzip.StoreCapture.Driver]::Selected($process.Id, $mainWindow, $Name, 'CheckBox') }
+    [Xdzip.WindowsCapture.Driver]::ClickNamed($process.Id, $mainWindow, $Name, 'Group')
+    Wait-State "selected file $Name" { [Xdzip.WindowsCapture.Driver]::Selected($process.Id, $mainWindow, $Name, 'CheckBox') }
 }
 function Save-Scene([string]$Scene, [long]$Window, [string]$Title, [hashtable]$State) {
-    [Xdzip.StoreCapture.Native]::Activate($process.Id, $Window)
-    [Xdzip.StoreCapture.Native]::FitPosition($process.Id, $Window)
-    [Xdzip.StoreCapture.Native]::ParkPointer($process.Id, $Window)
-    $watch = [Diagnostics.Stopwatch]::StartNew()
-    $previous = ''; $unchanged = 0
-    while ($watch.Elapsed.TotalSeconds -lt 10) {
-        Assert-Running
-        $current = [Xdzip.StoreCapture.Native]::Fingerprint($process.Id, $Window)
-        if ($current -eq $previous) { $unchanged++ } else { $unchanged = 0 }
-        if ($unchanged -ge 3 -and $watch.Elapsed.TotalMilliseconds -ge 600) { break }
-        $previous = $current
-        Start-Sleep -Milliseconds 180
-    }
-    if ($unchanged -lt 3) { throw "The scene did not finish rendering: $Scene" }
-    $image = [Xdzip.StoreCapture.Native]::Capture($process.Id, $mainWindow, $Title,
-        $layout.main.logical_window[0], $layout.main.logical_window[1],
-        (Join-Path $OutputDirectory "$Language-$Scene.png"),
-        (Join-Path $OutputDirectory "$Language-$Scene-window.png"))
-    $receipt.images += [ordered]@{
-        scene = $Scene; file = $image.ClientFile; state = $State
-        sha256 = Get-CaptureSha256 (Join-Path $OutputDirectory $image.ClientFile)
-        width = $image.ClientWidth; height = $image.ClientHeight; dpi = $image.Dpi
-        window_file = $image.WindowFile
-        window_sha256 = Get-CaptureSha256 (Join-Path $OutputDirectory $image.WindowFile)
-        window_dimensions = @($image.WindowWidth, $image.WindowHeight)
-        client_crop = @($image.ClientLeft, $image.ClientTop, $image.ClientWidth, $image.ClientHeight)
-    }
+    $logical = if ($Window -eq $mainWindow) { [int[]]$layout.main.logical_window } else { @(0, 0) }
+    $image = Save-WindowsCapture -Process $process -Window $Window -OutputDirectory $OutputDirectory -Name "$Language-$Scene" -ExpectedTitle $Title -LogicalSize $logical
+    $image['scene'] = $Scene
+    $image['state'] = $State
+    $receipt.images += $image
     Save-Receipt
-    Write-Host "Saved $($image.ClientFile), $($image.ClientWidth) x $($image.ClientHeight)." -ForegroundColor Green
-}
-function New-PrivateDirectory([string]$Directory) {
-    if ([IO.Directory]::Exists($Directory)) { throw 'Private capture directory already exists.' }
-    $security = New-Object Security.AccessControl.DirectorySecurity
-    $security.SetAccessRuleProtection($true, $false)
-    $owner = [Security.Principal.WindowsIdentity]::GetCurrent().User
-    $security.SetOwner($owner)
-    foreach ($sid in @($owner, [Security.Principal.SecurityIdentifier]::new('S-1-5-18'))) {
-        $security.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($sid, 'FullControl', 'ContainerInherit, ObjectInherit', 'None', 'Allow'))
-    }
-    # Creation applies the protected owner/System ACL before writing paths.
-    $null = [IO.Directory]::CreateDirectory($Directory, $security)
+    Write-Host "Saved $($image.file), $($image.width) x $($image.height)." -ForegroundColor Green
 }
 function New-CreateRequest {
     $directory = Join-Path ([IO.Path]::GetTempPath()) ('xdzip-shell-' + [guid]::NewGuid().ToString('N'))
-    New-PrivateDirectory $directory
+    New-PrivateCaptureDirectory $directory
     $script:requestFile = Join-Path $directory 'request.json'
     $creationDemo = Join-Path $OutputDirectory 'create-demo'
-    New-PrivateDirectory $creationDemo
+    New-PrivateCaptureDirectory $creationDemo
     foreach ($name in @('coastline.png', 'dusk.png', 'forest.png')) {
         [IO.File]::Copy((Join-Path $DemoDirectory $name), (Join-Path $creationDemo $name), $false)
     }
@@ -211,7 +185,7 @@ $requestFile = $null
 $pointer = $null
 $keysRegistered = $false
 try {
-    [Xdzip.StoreCapture.Native]::RegisterKeys()
+    [Xdzip.WindowsCapture.Native]::RegisterKeys()
     $keysRegistered = $true
     $start = New-Object Diagnostics.ProcessStartInfo
     $start.FileName = $Executable
@@ -230,13 +204,13 @@ try {
     $timer = [Diagnostics.Stopwatch]::StartNew()
     while (!$mainWindow -and $timer.Elapsed.TotalSeconds -lt 25) {
         if ($process.HasExited) { throw 'Candidate exited before exposing its own window. Close existing xdzip instances and retry.' }
-        $mainWindow = [Xdzip.StoreCapture.Native]::FindMain($process.Id, $layout.main.logical_window[0], $layout.main.logical_window[1])
+        $mainWindow = [Xdzip.WindowsCapture.Native]::FindDefaultWindow($process.Id, $layout.main.logical_window[0], $layout.main.logical_window[1])
         Start-Sleep -Milliseconds 100
     }
     if (!$mainWindow) { throw 'Default-size candidate window not found. No screenshots captured.' }
-    $pointer = [Xdzip.StoreCapture.Native]::Pointer()
+    $pointer = [Xdzip.WindowsCapture.Native]::Pointer()
     Write-Host "Automatic capture: $Language. F10 cancels."
-    [Xdzip.StoreCapture.Native]::Activate($process.Id, $mainWindow)
+    [Xdzip.WindowsCapture.Native]::Activate($process.Id, $mainWindow)
     Select-Tab $browseName
     Invoke-Control $mainWindow $catalog.messages.'ui.d56220435194' 'Button'
     Select-File 'README.md'
@@ -247,12 +221,12 @@ try {
     Select-File 'coastline.png'
     Invoke-Control $mainWindow $catalog.messages.'preview.action' 'Button'
     Wait-Control $mainWindow $catalog.messages.'preview.again' 'Button'
-    Wait-State 'loaded image preview' { [Xdzip.StoreCapture.Driver]::ReadyObject($process.Id, $mainWindow, 'coastline.png', 'contentPreviewImage') }
+    Wait-State 'loaded image preview' { [Xdzip.WindowsCapture.Driver]::ReadyObject($process.Id, $mainWindow, 'coastline.png', 'contentPreviewImage') }
     Save-Scene '03-preview' $mainWindow '' @{ tab = $photoName; selected = 'coastline.png'; preview = 'image' }
 
     Invoke-Control $mainWindow $catalog.messages.'ui.a35441db5cd1' 'Button'
     $gridSelection = $catalog.messages.'ui.98fb7e184544'.Replace('%1', 'coastline.png')
-    Wait-State 'selected grid tile' { [Xdzip.StoreCapture.Driver]::Selected($process.Id, $mainWindow, $gridSelection, 'CheckBox') }
+    Wait-State 'selected grid tile' { [Xdzip.WindowsCapture.Driver]::Selected($process.Id, $mainWindow, $gridSelection, 'CheckBox') }
     Wait-Control $mainWindow $browseName 'TabItem'
     Wait-Control $mainWindow $photoName 'TabItem'
     Save-Scene '04-workspace' $mainWindow '' @{ tabs = @($browseName, $photoName); view = 'grid'; selected = 'coastline.png' }
@@ -265,32 +239,34 @@ try {
         if ($relay.ExitCode -ne 0) { throw 'Candidate rejected the creation request.' }
     } finally { $relay.Dispose() }
     $creationTitle = $catalog.messages.'ui.fe189b616c1d'
-    Wait-State 'creation window' { $script:creationWindow = [Xdzip.StoreCapture.Native]::TitledWindow($process.Id, $creationTitle); $script:creationWindow -ne 0 }
-    [Xdzip.StoreCapture.Native]::Activate($process.Id, $creationWindow)
+    Wait-State 'creation window' { $script:creationWindow = [Xdzip.WindowsCapture.Native]::TitledWindow($process.Id, $creationTitle); $script:creationWindow -ne 0 }
+    [Xdzip.WindowsCapture.Native]::Activate($process.Id, $creationWindow)
     foreach ($name in @('coastline.png', 'dusk.png', 'forest.png')) {
         $removeName = $catalog.messages.'ui.2ec7e443b1c7'.Replace('%1', $name)
         Wait-Control $creationWindow $removeName 'Button'
     }
     Wait-Control $creationWindow $creationTitle 'Button'
     Save-Scene '02-create' $creationWindow $creationTitle @{ inputs = @('coastline.png', 'dusk.png', 'forest.png'); submitted = $false }
+    $null = Test-WindowsCaptureImages -Directory $OutputDirectory -Session $receipt
     $receipt.complete = $true
     Save-Receipt
     Write-Host "`nComplete: four client PNGs, four native-window references and capture-session.json.`n$OutputDirectory" -ForegroundColor Green
 } catch {
+    $receipt['complete'] = $false
     $receipt['failure'] = $_.Exception.GetBaseException().Message
     if ($process -and !$process.HasExited -and $mainWindow) {
-        [IO.File]::WriteAllText((Join-Path $OutputDirectory 'owned-ui.txt'), [Xdzip.StoreCapture.Driver]::Snapshot($process.Id, $mainWindow), $utf8)
-        if ($creationWindow) { [IO.File]::WriteAllText((Join-Path $OutputDirectory 'creation-ui.txt'), [Xdzip.StoreCapture.Driver]::Snapshot($process.Id, $creationWindow), $utf8) }
+        [IO.File]::WriteAllText((Join-Path $OutputDirectory 'owned-ui.txt'), [Xdzip.WindowsCapture.Driver]::Snapshot($process.Id, $mainWindow), $utf8)
+        if ($creationWindow) { [IO.File]::WriteAllText((Join-Path $OutputDirectory 'creation-ui.txt'), [Xdzip.WindowsCapture.Driver]::Snapshot($process.Id, $creationWindow), $utf8) }
     }
     throw
 } finally {
-    if ($keysRegistered) { [Xdzip.StoreCapture.Native]::ReleaseKeys() }
+    if ($keysRegistered) { [Xdzip.WindowsCapture.Native]::ReleaseKeys() }
     try { Save-Receipt } finally {
         # Only the process created by this invocation may be closed. There are no
         # submitted archive operations in this workflow; never stop a process by name.
         if ($process -and !$process.HasExited) { $process.Kill(); $process.WaitForExit() }
         if ($process) { $process.Dispose() }
-        if ($pointer) { [Xdzip.StoreCapture.Native]::RestorePointer($pointer[0], $pointer[1]) }
+        if ($pointer) { [Xdzip.WindowsCapture.Native]::RestorePointer($pointer[0], $pointer[1]) }
         # The product normally consumes the request. On failure remove only our
         # exact private file and then its empty directory, never a recursive tree.
         if ($requestFile) {

@@ -27,6 +27,7 @@ The [format support table](../README.md#format-support) describes the formats, o
 - [Developer preparation](engineering/development.md) and [repository layout](engineering/repository-layout.md): understand the development workflow, modules, and verification entry points.
 - [Contributing guide](../CONTRIBUTING.md), [code of conduct](../CODE_OF_CONDUCT.md), and [security policy](../SECURITY.md): contribute changes, participate, and report security issues.
 - [Verification](qa/README.md) and [CI policy](engineering/ci-policy.md): select checks for a change and distinguish automated results from desktop verification.
+- [Windows screenshots](engineering/windows-screenshots.md): regenerate bilingual app views and reuse guarded native PNG capture in other workflows.
 - [System architecture](design/system-architecture.md), [domain and data](design/domain-data.md), and the [Qt/Rust bridge](design/qt-rust-bridge.md): understand the main modules and their boundaries.
 - [UI design standard](visual/design-standard.md), [design workflow](visual/design-workflow.md), and [interaction prototype](ux/prototype-spec.md): explore interface, component, and interaction guidelines.
 

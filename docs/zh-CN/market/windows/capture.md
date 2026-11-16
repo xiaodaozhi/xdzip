@@ -15,9 +15,9 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/capture-windows-
 
 也可以双击 [capture-windows-store-zh-CN.cmd](../../../../scripts/capture-windows-store-zh-CN.cmd) 或 [capture-windows-store-en-US.cmd](../../../../scripts/capture-windows-store-en-US.cmd)。它们启动同一个脚本，成功后自动退出，失败时保留控制台显示错误。
 
-`-ExecutionPolicy Bypass` 只对这次调用生效，不修改已保存的执行策略。脚本复用 `build/issue272-store-materials/runtime/xdzip.exe` 中的候选程序，以及相邻 `demo/` 目录中的自有演示文件。从 Git 工作树运行时，也可以复用主检出目录中的这些文件。脚本按 [windows-store.json](../../../../specs/marketing/windows-store.json) 中的 SHA-256 核对可执行文件，不重新构建或安装应用。
+`-ExecutionPolicy Bypass` 只对这次调用生效，不修改已保存的执行策略。脚本按[截图配置](../../../../specs/capture/windows-store.json)中的 SHA-256 查找匹配的完整运行目录，包括打包输出或已有候选目录；工作树也可以复用主检出目录的运行文件。脚本不构建或安装应用。每次运行都会从[源码](../../../../scripts/windows-store-demo.psm1)在新输出目录中生成自有演示图片和压缩包，不下载素材。
 
-如文件位于其他位置，可指定 `-Executable`、`-DemoDirectory`，并按需指定新的 `-OutputDirectory`。中文演示目录需要包含 `设计交付.zip`、`图片精选.zip`，英文需要 `Design delivery.zip`、`Photo collection.zip`，另需 `coastline.png`、`dusk.png`、`forest.png`。脚本不会下载演示内容。输出目录已经存在时会拒绝运行，防止覆盖此前图片。
+运行文件位于其他位置时可以指定 `-Executable`。为新构建截图时，还需传入预期的 `-ExpectedSha256`，并可提供已知的 `-SourceRevision`，见[工具更新与复用](../../engineering/windows-screenshots.md)。其他构建不会被标为固定商店候选。`-DemoDirectory` 表示明确复用自有演示文件，不重新生成；中文需要 `设计交付.zip`、`图片精选.zip`，英文需要 `Design delivery.zip`、`Photo collection.zip`，另需 `coastline.png`、`dusk.png`、`forest.png`。指定的 `-OutputDirectory` 已存在时会拒绝运行，防止覆盖此前图片。
 
 ## 自动准备的场景
 
@@ -36,14 +36,15 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/capture-windows-
 
 ## 输出与画质
 
-默认输出到 `build/issue272-store-materials/native-captures/` 下的新目录，每次运行生成：
+默认输出到 `build/screenshots/windows-store/` 下的新目录，每次运行生成：
 
 - 四张 `<语言>-<场景>.png`，保留客户区的原始像素。主窗口自绘标题区包含在其中，单独的原生标题栏、调整大小的边框和阴影不包含在其中。
 - 四张 `<语言>-<场景>-window.png` 参考图，保留可见原生窗框，包括创建窗口的原生标题栏。外侧圆角可能包含桌面背景，这些参考图不是透明抠图。
-- `capture-session.json`，记录语言、候选摘要、已核对的场景状态、尺寸、DPI、客户区裁切位置和 PNG 摘要。四个场景都保存后，`complete` 才会变为 true，未完成的运行保留 false 并记录失败原因。
+- `capture-session.json`，记录语言、可执行文件与工具源码摘要、已知源码提交、场景状态、尺寸、DPI、客户区裁切位置和 PNG 摘要。四个场景都保存并通过校验后，`complete` 才会变为 true，未完成的运行保留 false 并记录失败原因。
+- `demo/`，保存从源码生成的自有演示输入，指定 `-DemoDirectory` 时除外。
 - `create-demo/`，保存三张自有演示图片的副本。失败时还可能保留 `owned-ui.txt` 或 `creation-ui.txt`，供定位问题。
 
-原生辅助代码等待 DWM 呈现后复制屏幕像素，在读取前后检查窗口归属、几何和遮挡，再编码为无损 PNG。客户区图片从同一帧按边界裁切，不缩放，不经过 JPEG，不重绘文字，不锐化字体，不添加装饰边框，也不绘制鼠标。图片物理尺寸跟随窗口实际 DPI，不会反写到 Qt 组件尺寸。实现见 [windows-store-capture.cs](../../../../scripts/windows-store-capture.cs)。
+原生辅助代码等待 DWM 呈现后复制屏幕像素，在读取前后检查窗口归属、几何和遮挡，再编码为无损 PNG。客户区图片从同一帧按边界裁切，不缩放，不经过 JPEG，不重绘文字，不锐化字体，不添加装饰边框，也不绘制鼠标。图片物理尺寸跟随窗口实际 DPI，不会反写到 Qt 组件尺寸。实现见 [windows-capture.cs](../../../../scripts/windows-capture.cs)和[通用模块说明](../../engineering/windows-screenshots.md)。
 
 使用前请按 100% 比例查看原图。这种方法保留应用实际渲染结果，无法改善应用本身已经渲染不佳的文字。脚本不会上传图片，也不会自动替换已有商店宣传图。结束或取消时会释放取消快捷键，只关闭本次启动的 xdzip 进程，恢复鼠标原位，并移除尚未消费的私有请求。脚本不会开始压缩或解压任务。
 
@@ -52,6 +53,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/capture-windows-
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/capture-windows-store.ps1 -Language zh-CN -ValidateOnly
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/capture-windows-store.ps1 -SelfTest
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/check-windows-captures.ps1 -Directory build/screenshots/windows-store/my-capture
 ```
 
-`-ValidateOnly` 检查候选、演示文件路径和输出路径，不启动 xdzip，也不写入文件。`-SelfTest` 在 `build/` 中生成测试图片，检查 PNG 编码解码前后的 RGBA 像素完全一致、物理尺寸换算，以及拒绝覆盖文件。两种模式都不截取桌面，不能代替实际原生截图的画质检查或人工场景确认。
+`-ValidateOnly` 检查预期可执行文件、素材生成计划或指定的演示路径，以及输出路径，不启动 xdzip，也不写入文件。`-SelfTest` 在 `build/` 中检查 PNG 编码解码前后的 RGBA 像素、物理尺寸换算、裁切像素、有损文件拒绝和防覆盖行为。独立校验器检查已有回执及每组客户区、窗框图片。这些检查都不截取桌面，不能代替人工场景确认。更完整的通用回归入口为 `scripts/test-windows-capture.ps1`。

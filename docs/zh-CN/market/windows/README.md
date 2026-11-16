@@ -6,6 +6,8 @@
 
 本套材料对应 MSIX **1.0.27.0**，包标识为 `xiaodaozhi.xdzip`，来源提交为 `90916a1992188e6e7e5c6b3d91695861ee1bd2d2`，不宣传当前开发分支中后续增加的格式。[支持政策](../../engineering/support-policy.md)仍为 Windows 11 x64，清单中 Windows 10 的技术最低版本不代表扩大支持承诺。商店版本由 Microsoft Store 管理更新，本候选不注册现代 Explorer 右键菜单。
 
+需要更新应用截图时，使用[自动双语截图流程](capture.md)。它会自行生成演示文件，也能通过明确的可执行文件摘要为新构建截图。[通用捕获模块](../../engineering/windows-screenshots.md)还可用于其他 Windows 场景。
+
 ## 文本字段
 
 | 合作伙伴中心字段 | 材料或填写决定 |

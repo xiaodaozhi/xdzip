@@ -6,6 +6,8 @@ English | [简体中文](../../zh-CN/market/windows/README.md)
 
 These materials target MSIX **1.0.27.0**, package identity `xiaodaozhi.xdzip`, from source `90916a1992188e6e7e5c6b3d91695861ee1bd2d2`. They do not advertise the later format expansion in the current development tree. The [support policy](../../engineering/support-policy.md) remains Windows 11 x64; a manifest's technical Windows 10 minimum does not extend that commitment. Store updates are managed by Microsoft Store, and this candidate does not register a modern Explorer context menu.
 
+To capture updated app views, use the [automatic bilingual screenshot recipe](capture.md). It generates its own demo files and can target a newer build with an explicit executable hash. The [reusable capture module](../../engineering/windows-screenshots.md) also supports other Windows workflows.
+
 ## Text fields
 
 | Partner Center field | Material or decision |
