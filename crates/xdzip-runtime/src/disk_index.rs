@@ -120,6 +120,17 @@ impl DiskIndex {
         directories: &[Directory],
         control: &Cancellation,
     ) -> Result<DiskQuery, ScanError> {
+        self.query_with_sort_budget(prefix, text, sort, directories, control, SORT_BYTES)
+    }
+    fn query_with_sort_budget(
+        &self,
+        prefix: &[u8],
+        text: &str,
+        sort: u8,
+        directories: &[Directory],
+        control: &Cancellation,
+        sort_bytes: usize,
+    ) -> Result<DiskQuery, ScanError> {
         if text.len() > 1024 || sort > 12 {
             return Err(ScanError::Limit);
         }
@@ -150,7 +161,7 @@ impl DiskIndex {
                 let key = SortRow::physical(entry, sort);
                 key_bytes += key.text.len() + std::mem::size_of::<SortRow>();
                 batch.push(key);
-                if key_bytes >= SORT_BYTES {
+                if key_bytes >= sort_bytes {
                     flush_run(
                         &mut batch,
                         &mut runs,
@@ -282,13 +293,7 @@ impl SortRow {
                 11 | 12 => u64::from(e.modified_dos),
                 _ => 0,
             },
-            group: if matches!(sort, 3 | 4) {
-                u8::from(!e.size_known)
-            } else if matches!(sort, 9 | 10) {
-                u8::from(!e.directory)
-            } else {
-                0
-            },
+            group: crate::entry_sort_group(e, sort),
         }
     }
     fn compare(&self, other: &Self, sort: u8) -> Ordering {
@@ -514,6 +519,74 @@ mod tests {
         Archive,
         query::{QueryRequest, QueryRow},
     };
+    #[test]
+    fn external_runs_keep_directories_first_for_every_order() {
+        let control = Cancellation::default();
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../tests/fixtures/zip/type-order.zip");
+        let mut memory = Archive::open(&path, &control).unwrap();
+        for entry in std::sync::Arc::make_mut(&mut memory.rows) {
+            if entry.directory || entry.display_name == "item-README" {
+                entry.size_known = false;
+            }
+        }
+        // Cross the real 128-row transport boundary without a large archive.
+        let originals = memory.rows.as_ref().clone();
+        memory.rows = (0..28)
+            .flat_map(|_| originals.iter().cloned())
+            .enumerate()
+            .map(|(at, mut entry)| {
+                entry.id = (at as u64 + 1).try_into().unwrap();
+                entry
+            })
+            .collect::<Vec<_>>()
+            .into();
+        memory.directories = Some(crate::navigation::build(&memory.rows, &control).unwrap());
+        memory.index = crate::index::DirectoryIndex::build(
+            &memory.rows,
+            memory.directories.as_deref(),
+            &control,
+        )
+        .unwrap();
+        let mut builder = Builder::new().unwrap();
+        for entry in memory.rows.iter() {
+            builder.push(entry).unwrap();
+        }
+        let index = builder.finish().unwrap();
+        let directories = memory.directories.as_deref().unwrap();
+        for text in ["", "item"] {
+            for sort in 0..=12 {
+                // Small runs exercise the actual external merge, keeping the
+                // production 8 MiB budget unchanged.
+                let query = index
+                    .query_with_sort_budget(b"", text, sort, directories, &control, 1024)
+                    .unwrap();
+                assert!(query.total > 128);
+                let tokens = (0..query.total)
+                    .step_by(128)
+                    .flat_map(|offset| query.page(offset).unwrap())
+                    .collect::<Vec<_>>();
+                let mut files_started = false;
+                for token in &tokens {
+                    let directory =
+                        navigation_token(*token).is_some() || index.get(*token).unwrap().directory;
+                    assert!(!directory || !files_started, "{text}/{sort}");
+                    files_started |= !directory;
+                }
+                let expected = memory
+                    .listing_rows("", text, sort, &control)
+                    .unwrap()
+                    .iter()
+                    .map(|row| match row {
+                        crate::listing::ListingRow::Physical(entry) => entry.id.get(),
+                        crate::listing::ListingRow::Directory(node) => NAV | node.id,
+                    })
+                    .collect::<Vec<_>>();
+                assert_eq!(tokens, expected, "{text}/{sort}");
+            }
+        }
+    }
+
     #[test]
     fn disk_queries_match_memory_for_all_orders_and_scopes() {
         let control = Cancellation::default();

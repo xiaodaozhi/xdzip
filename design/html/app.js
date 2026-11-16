@@ -310,23 +310,23 @@ function visibleEntries() {
               archivePath(entry).toLowerCase().includes(state.query.toLowerCase())
             : entry.parent === state.path,
     );
-    if (state.sort)
-        list.sort((a, b) => {
-            const grouping = Number(Boolean(b.folder)) - Number(Boolean(a.folder));
-            if (grouping) return grouping;
-            const key = state.sortKey;
-            const compared =
-                key === "size" || key === "compressed"
-                    ? (a[key] || 0) - (b[key] || 0)
-                    : String(a[key] || "").localeCompare(
-                          String(b[key] || ""),
-                          "zh-CN",
-                          { numeric: true },
-                      );
-            return (
-                compared * state.sort || entries.indexOf(a) - entries.indexOf(b)
-            );
-        });
+    list.sort((a, b) => {
+        const grouping = Number(Boolean(b.folder)) - Number(Boolean(a.folder));
+        if (grouping) return grouping;
+        if (!state.sort) return entries.indexOf(a) - entries.indexOf(b);
+        const key = state.sortKey;
+        const compared =
+            key === "size" || key === "compressed"
+                ? (a[key] || 0) - (b[key] || 0)
+                : String(a[key] || "").localeCompare(
+                      String(b[key] || ""),
+                      "zh-CN",
+                      { numeric: true },
+                  );
+        return (
+            compared * state.sort || entries.indexOf(a) - entries.indexOf(b)
+        );
+    });
     return list;
 }
 

@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/zip-readonly-browsing.md)
 
-This contract defines direct root entries, descendant search, stable physical identity, and directory-first type sorting. Read-only browsing writes no files, decodes no content, and makes no CRC integrity claim. Actual acceptance and measurements are recorded in issues/Actions.
+This contract defines direct root entries, descendant search, stable physical identity, and directory-first ordering in every sort mode. Read-only browsing writes no files, decodes no content, and makes no CRC integrity claim. Actual acceptance and measurements are recorded in issues/Actions.
 
 See [large archive indexing](large-index.md) for the current regular ZIP large index and on-demand Qt model. This page retains the original 100,000-entry baseline and query-identity requirements; later scale expansion does not remove error, cancellation, or identity regressions.
 

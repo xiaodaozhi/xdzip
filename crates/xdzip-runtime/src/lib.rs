@@ -404,7 +404,8 @@ impl Archive {
     ) -> Result<(usize, Vec<&Entry>), ScanError> {
         self.browse_sorted(directory, text, offset, limit, 0, control)
     }
-    /// Sort the full matching snapshot before slicing a page. Codes: 0 physical,
+    /// Directories precede files; sort the full matching snapshot before slicing a page.
+    /// Codes: 0 physical order within each group,
     /// 1/2 name, 3/4 original size, 5/6 packed size, 7/8 method, 9/10 type, 11/12 local modification date; odd ascending.
     /// Names use Unicode scalar lexical order; ties retain ascending physical identity.
     pub fn browse_sorted(
@@ -426,39 +427,40 @@ impl Archive {
         }
         let mut rows = self.matching_physical(directory, text, control)?;
         let count = rows.len();
-        if sort != 0 {
-            // Sorting is bounded by the admitted 100,000 records. Check cancellation on
-            // both sides; changing comparator behavior during cancellation is invalid.
-            control.check()?;
-            if sort == 9 {
-                rows.sort_by_cached_key(|entry| (entry_type_key(entry), entry.id.get()));
-            } else if sort == 10 {
-                rows.sort_by_cached_key(|entry| {
-                    let (file, category) = entry_type_key(entry);
-                    (file, std::cmp::Reverse(category), entry.id.get())
-                });
-            } else {
-                rows.sort_unstable_by(|a, b| {
-                    if matches!(sort, 3 | 4) && a.size_known != b.size_known {
-                        return b.size_known.cmp(&a.size_known);
-                    }
-                    let order = match sort {
-                        1 | 2 => a.display_name.cmp(&b.display_name),
-                        3 | 4 => a.size.cmp(&b.size),
-                        5 | 6 => a.packed_size.cmp(&b.packed_size),
-                        7 | 8 => a.method.cmp(&b.method),
-                        _ => a.modified_dos.cmp(&b.modified_dos),
-                    };
-                    let order = if sort.is_multiple_of(2) {
-                        order.reverse()
-                    } else {
-                        order
-                    };
-                    order.then_with(|| a.id.get().cmp(&b.id.get()))
-                });
-            }
-            control.check()?;
+        // Sorting is bounded by the admitted 100,000 records. Check cancellation on
+        // both sides; changing comparator behavior during cancellation is invalid.
+        control.check()?;
+        if sort == 0 {
+            rows.sort_unstable_by_key(|entry| (entry_sort_group(entry, sort), entry.id.get()));
+        } else if sort == 9 {
+            rows.sort_by_cached_key(|entry| (entry_type_key(entry), entry.id.get()));
+        } else if sort == 10 {
+            rows.sort_by_cached_key(|entry| {
+                let (file, category) = entry_type_key(entry);
+                (file, std::cmp::Reverse(category), entry.id.get())
+            });
+        } else {
+            rows.sort_unstable_by(|a, b| {
+                let group = entry_sort_group(a, sort).cmp(&entry_sort_group(b, sort));
+                if group != std::cmp::Ordering::Equal {
+                    return group;
+                }
+                let order = match sort {
+                    1 | 2 => a.display_name.cmp(&b.display_name),
+                    3 | 4 => a.size.cmp(&b.size),
+                    5 | 6 => a.packed_size.cmp(&b.packed_size),
+                    7 | 8 => a.method.cmp(&b.method),
+                    _ => a.modified_dos.cmp(&b.modified_dos),
+                };
+                let order = if sort.is_multiple_of(2) {
+                    order.reverse()
+                } else {
+                    order
+                };
+                order.then_with(|| a.id.get().cmp(&b.id.get()))
+            });
         }
+        control.check()?;
         if offset > count as u64 {
             return Err(ScanError::Limit);
         }
@@ -548,6 +550,11 @@ impl Archive {
             .min(self.rows.len());
         Ok(&self.rows[start..end])
     }
+}
+
+// Direction applies only within groups. Unknown sizes remain last in their group.
+fn entry_sort_group(entry: &Entry, sort: u8) -> u8 {
+    2 * u8::from(!entry.directory) + u8::from(matches!(sort, 3 | 4) && !entry.size_known)
 }
 
 // Keep directory identity separate from the extension category and translated labels.
@@ -697,7 +704,10 @@ mod tests {
             archive
                 .browse_sorted("", "", 0, 128, 8, &control)
                 .unwrap()
-                .1[0]
+                .1
+                .into_iter()
+                .find(|entry| !entry.directory)
+                .unwrap()
                 .method,
             8
         );
