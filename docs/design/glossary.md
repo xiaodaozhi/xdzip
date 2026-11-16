@@ -77,4 +77,4 @@ Design baseline version, application version, Rust SDK SemVer, internal build-br
 
 ## 6. Reference authority
 
-Product scope is governed by [01](01-product-requirements.md), internal services by [05](05-qt-rust-bridge.md), third-party protocols by [06](06-codec-extension-sdk.md), file-output policy by [07](07-file-security.md), scheduling by [08](08-task-scheduling.md), and engineering budgets by [09](09-performance.md). This table centralizes defaults; update references and related acceptance when values change.
+Product scope is governed by [01](product-requirements.md), internal services by [05](qt-rust-bridge.md), third-party protocols by [06](codec-extension-sdk.md), file-output policy by [07](file-security.md), scheduling by [08](task-scheduling.md), and engineering budgets by [09](performance.md). This table centralizes defaults; update references and related acceptance when values change.

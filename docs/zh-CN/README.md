@@ -26,7 +26,7 @@
 - [开发者准备指南](engineering/development.md)和[仓库结构](engineering/repository-layout.md)：了解开发流程、模块分工和验证入口。
 - [贡献指南](../../CONTRIBUTING.md)、[行为规范](../../CODE_OF_CONDUCT.md)和[安全政策](../../SECURITY.md)：提交修改、参与协作和报告安全问题。
 - [验证方法](qa/README.md)和 [CI 策略](engineering/ci-policy.md)：根据改动选择检查，并区分自动化与实际桌面验证。
-- [系统架构](design/02-system-architecture.md)、[领域与数据](design/03-domain-data.md)和 [Qt 与 Rust 桥接](design/05-qt-rust-bridge.md)：了解主要模块及其边界。
+- [系统架构](design/system-architecture.md)、[领域与数据](design/domain-data.md)和 [Qt 与 Rust 桥接](design/qt-rust-bridge.md)：了解主要模块及其边界。
 - [界面设计规范](visual/design-standard.md)、[设计流程](visual/design-workflow.md)和[交互原型](ux/prototype-spec.md)：查看界面、组件和交互约定。
 
 ## 格式与实现细节
@@ -37,7 +37,7 @@
 - **常见压缩流**：[TAR 与 GZIP](engineering/tar-gzip.md)、[单文件压缩流](engineering/single-file-streams.md)、[LZ4](engineering/lz4-streams.md)、[Zstandard](engineering/zstandard-streams.md)、[Brotli](engineering/brotli-streams.md)、[Unix compress](engineering/compress-streams.md)。
 - **归档和封装格式**：[7z 实现依据](engineering/sevenzip-format-sources.md)、[RAR 实现依据](engineering/rar-format-sources.md)、[CAB 实现依据](engineering/cab-format-sources.md)、[DEB](engineering/deb-containers.md)、[ASAR](engineering/asar-containers.md)、[AES Crypt](engineering/aescrypt-envelopes.md)、[UU 与 XXE](engineering/text-envelopes.md)。
 - **其他格式**：[LHA/LZH](engineering/lha-containers.md)、[PMA](engineering/pma-streams.md)、[ARJ](engineering/arj-streams.md)、[ARC](engineering/arc-streams.md)、[BH](engineering/bh-containers.md)、[ACE、ALZ 与 EGG](engineering/ace-alz-egg-format-sources.md)。
-- **设计与依赖**：[格式后端](engineering/native-codecs.md)、[自研格式与算法](engineering/independent-rust-codecs.md)、[格式扩展设计](design/06-codec-extension-sdk.md)、[依赖与许可](engineering/dependencies.md)。
+- **设计与依赖**：[格式后端](engineering/native-codecs.md)、[自研格式与算法](engineering/independent-rust-codecs.md)、[格式扩展设计](design/codec-extension-sdk.md)、[依赖与许可](engineering/dependencies.md)。
 
 ## 发布与项目协作
 

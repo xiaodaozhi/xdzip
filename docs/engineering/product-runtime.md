@@ -6,7 +6,7 @@ This guide explains how the desktop application connects to the Rust runtime thr
 
 ## Implemented services
 
-`xdzip-runtime::service` is the product implementation; diagnostic probes remain separate. The GUI owns only `CommandClient`; a dedicated Qt receiver thread exclusively owns `EventReceiver`. Each handle is taken once. cxx supplies ABI glue for this bridge; platform file-access security boundaries are separately described in the [file security specification](../design/07-file-security.md). A single Rust worker owns source files and archive snapshots; Archive handles and synchronous scan entry points are no longer exposed to Qt.
+`xdzip-runtime::service` is the product implementation; diagnostic probes remain separate. The GUI owns only `CommandClient`; a dedicated Qt receiver thread exclusively owns `EventReceiver`. Each handle is taken once. cxx supplies ABI glue for this bridge; platform file-access security boundaries are separately described in the [file security specification](../design/file-security.md). A single Rust worker owns source files and archive snapshots; Archive handles and synchronous scan entry points are no longer exposed to Qt.
 
 Core commands include Open, Browse, Preflight, CloseSession, and Snapshot; all existing real browsing and preflight use them. Each accepted ordinary request gets a non-reused ID, returns at most one bounded data event, then exactly one Finished; errors return Finished directly. Pages carry session, request, and offset identity. Each RuntimeConnection has one session and serial GUI pending requests. Queries also include a full query ID, GUI generation, and snapshot revision; see the [ZIP browsing contract](zip-readonly-browsing.md). Cross-session requests return stale_session.
 

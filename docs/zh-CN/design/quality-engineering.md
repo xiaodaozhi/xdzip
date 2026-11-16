@@ -1,6 +1,6 @@
 # xdzip：10 编码规范、注释和质量工程
 
-[English](../../design/10-quality-engineering.md) | 简体中文
+[English](../../design/quality-engineering.md) | 简体中文
 
 ## 1. 总原则
 

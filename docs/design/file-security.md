@@ -1,6 +1,6 @@
 # xdzip: 07 File security, permissions, and output transactions
 
-English | [简体中文](../zh-CN/design/07-file-security.md)
+English | [简体中文](../zh-CN/design/file-security.md)
 
 ## 1. Threat model
 

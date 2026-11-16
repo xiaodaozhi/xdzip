@@ -1,6 +1,6 @@
 # xdzip: 12 Implementation roadmap and prototype migration
 
-English | [简体中文](../zh-CN/design/12-implementation-roadmap.md)
+English | [简体中文](../zh-CN/design/implementation-roadmap.md)
 
 ## 1. Current implementation and future design
 

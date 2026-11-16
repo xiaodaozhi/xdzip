@@ -37,7 +37,7 @@ Select entries and click “Extraction preflight.” Results use an independent 
 
 ## Boundary with actual extraction
 
-[Actual safe extraction](zip-safe-extraction.md) independently implements output accounting, CRC/structural verification, destination authorization, platform path rechecks, conflicts, staging, and file commits. It is not limited to preflight's 128 selections and supports plans for 100,000 physical records and virtual-directory selections. A preflight report is not reused as write permission. Starting a task must reacquire destination authorization, revalidate sources, and check actual content under the [file security specification](../design/07-file-security.md). Native failure behavior and current known defects are tracked by the relevant contracts and issues.
+[Actual safe extraction](zip-safe-extraction.md) independently implements output accounting, CRC/structural verification, destination authorization, platform path rechecks, conflicts, staging, and file commits. It is not limited to preflight's 128 selections and supports plans for 100,000 physical records and virtual-directory selections. A preflight report is not reused as write permission. Starting a task must reacquire destination authorization, revalidate sources, and check actual content under the [file security specification](../design/file-security.md). Native failure behavior and current known defects are tracked by the relevant contracts and issues.
 
 ## Window and result presentation
 

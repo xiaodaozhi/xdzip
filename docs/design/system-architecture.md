@@ -1,6 +1,6 @@
 # xdzip: 02 System architecture
 
-English | [简体中文](../zh-CN/design/02-system-architecture.md)
+English | [简体中文](../zh-CN/design/system-architecture.md)
 
 ## 1. Architecture goals
 

@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/development.md)
 
-First read the product README, AGENTS, software design 01/02/10, and the current work package. The root Cargo workspace already includes domain, formats, I/O, runtime, and bridge. CMake builds the real Qt application, component preview, and independent probes. See [directory responsibilities](repository-layout.md) for existing modules; the root README is the entry point for actual capabilities and limits.
+First read the product README, AGENTS, [product requirements](../design/product-requirements.md), [system architecture](../design/system-architecture.md), [quality engineering](../design/quality-engineering.md), and the current work package. The root Cargo workspace already includes domain, formats, I/O, runtime, and bridge. CMake builds the real Qt application, component preview, and independent probes. See [directory responsibilities](repository-layout.md) for existing modules; the root README is the entry point for actual capabilities and limits.
 
 ## Obtain and modify
 

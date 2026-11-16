@@ -1,6 +1,6 @@
 # xdzip：02 系统架构
 
-[English](../../design/02-system-architecture.md) | 简体中文
+[English](../../design/system-architecture.md) | 简体中文
 
 ## 1. 架构目标
 

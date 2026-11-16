@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/readonly-browser.md)
 
-This document defines browsing data, resource, and interaction boundaries, supplementing design/03, 05, and 06 without freezing a third-party protocol or complete format SDK. Specific ZIP metadata rules follow. TAR/TAR.GZ reuse browsing and query models; see the [TAR/GZIP contract](tar-gzip.md) for format differences.
+This document defines browsing data, resource, and interaction boundaries, supplementing [domain and data](../design/domain-data.md), the [Qt/Rust bridge](../design/qt-rust-bridge.md), and the [format extension design](../design/codec-extension-sdk.md) without freezing a third-party protocol or complete format SDK. Specific ZIP metadata rules follow. TAR/TAR.GZ reuse browsing and query models; see the [TAR/GZIP contract](tar-gzip.md) for format differences.
 
 See [large archive indexing](large-index.md) for regular single-file ZIP/ZIP64 million-entry streaming indexes, disk-spill budgets, on-demand models, and task limits. The 100,000-entry in-memory snapshot budgets below remain the baseline for ordinary formats and early ZIP support and do not override newer streaming ZIP admission.
 

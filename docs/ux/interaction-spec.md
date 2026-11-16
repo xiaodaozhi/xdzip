@@ -21,4 +21,4 @@ The main-window and extraction-confirmation visual baseline is supplemented by t
 
 The toolbar says “Extract all” without a selection and “Extract selected” with one; search results are not all contents. In the first release the right preview is reduced to a properties panel; limited image/text decoding arrives in M6. Allow growth and scrolling under larger fonts/DPI without clipping confirmation buttons.
 
-Error copy states what happened and what the user can do; error codes belong in details. Do not show ordinary users call stacks or IPC terminology. Present dangerous filenames as safe text and do not interpret plugin messages as HTML. Shortcuts, IME, focus and screen readers follow design/04.
+Error copy states what happened and what the user can do; error codes belong in details. Do not show ordinary users call stacks or IPC terminology. Present dangerous filenames as safe text and do not interpret plugin messages as HTML. Shortcuts, IME, focus and screen readers follow the [Qt Quick interface design](../design/qt-quick-ui.md).

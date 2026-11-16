@@ -1,6 +1,6 @@
 # xdzip：06 格式适配与扩展 SDK
 
-[English](../../design/06-codec-extension-sdk.md) | 简体中文
+[English](../../design/codec-extension-sdk.md) | 简体中文
 
 ## 1. 两类扩展
 

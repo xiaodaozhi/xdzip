@@ -1,6 +1,6 @@
 # xdzip：04 Qt Quick 界面设计
 
-[English](../../design/04-qt-quick-ui.md) | 简体中文
+[English](../../design/qt-quick-ui.md) | 简体中文
 
 项目于 2026-10-11 建立正式视觉基线，参见 [高保真设计交付](../visual/README.md)。图片表达目标视觉；尺寸与颜色以 tokens 和组件规范为实现依据。目前支持的预览类型与限制见[内容预览](../engineering/content-preview.md)。
 

@@ -1,10 +1,10 @@
 # xdzip：05 Qt/Rust 类型桥接与应用服务协议
 
-[English](../../design/05-qt-rust-bridge.md) | 简体中文
+[English](../../design/qt-rust-bridge.md) | 简体中文
 
 ## 1. 决策和版本
 
-正式产品使用 `cxx` 生成 Rust/C++ 构建期桥接。应用、Rust 静态库和生成头必须来自同一提交和工具链组合；不允许替换为任意版本动态库。此接口面向产品内部，不是第三方二进制 SDK，也不是 [06](06-codec-extension-sdk.md) 的进程协议。
+正式产品使用 `cxx` 生成 Rust/C++ 构建期桥接。应用、Rust 静态库和生成头必须来自同一提交和工具链组合；不允许替换为任意版本动态库。此接口面向产品内部，不是第三方二进制 SDK，也不是 [06](codec-extension-sdk.md) 的进程协议。
 
 原型 `lab_engine_new/lab_request/lab_string_free/lab_engine_free` 及 JSON 请求继续作为实验代码保存；产品不能逐步往实验接口塞入密码、输出路径和插件操作后声称它已冻结。
 

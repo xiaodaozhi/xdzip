@@ -26,8 +26,11 @@ from lxml import etree, html
 PROJECT = Path(__file__).resolve().parents[1]
 SOURCE = PROJECT / "docs" / "zh-CN" / "design"
 TEMPLATES = Path(__file__).resolve().parent / "design-html"
-ORDER = ["index"] + sorted(p.stem for p in SOURCE.glob("[0-9][0-9]-*.md")) + [
-    "architecture-decisions", "requirements-traceability", "glossary"
+ORDER = [
+    "index", "product-requirements", "system-architecture", "domain-data",
+    "qt-quick-ui", "qt-rust-bridge", "codec-extension-sdk", "file-security",
+    "task-scheduling", "performance", "quality-engineering", "build-release",
+    "implementation-roadmap", "architecture-decisions", "requirements-traceability", "glossary",
 ]
 STATE_NAMES = {
     "Queued": "排队", "Preparing": "准备", "Running": "执行",
@@ -134,7 +137,7 @@ def prepare_document(stem: str, output: Path) -> tuple[etree._Element, list[Path
         generated.append(path)
         figure = html.Element("figure")
         panel = html.Element("div", {"class": "diagram-panel"})
-        panel.append(html.Element("img", src="assets/" + path.name, alt="系统架构图" if stem.startswith("02") else "任务状态机图"))
+        panel.append(html.Element("img", src="assets/" + path.name, alt="系统架构图" if stem == "system-architecture" else "任务状态机图"))
         figure.append(panel)
         caption = html.Element("figcaption")
         caption.text = "离线矢量图；可横向滚动查看细节。 "
@@ -231,7 +234,7 @@ def shell(title: str, body: str, documents: dict[str, etree._Element], *, curren
     nav = []
     for number, (stem, article) in enumerate(documents.items()):
         label = article.find("h1").text_content().removeprefix("xdzip：")
-        badge = "00" if stem == "index" else (stem[:2] if stem[0].isdigit() else {"architecture-decisions": "ADR", "requirements-traceability": "REQ", "glossary": "REF"}[stem])
+        badge = {"architecture-decisions": "ADR", "requirements-traceability": "REQ", "glossary": "REF"}.get(stem, f"{number:02d}")
         label = re.sub(r"^\d{2} ", "", label)
         href = "#doc-" + stem if combined else stem + ".html"
         active = ' aria-current="page"' if stem == current and not combined else ""

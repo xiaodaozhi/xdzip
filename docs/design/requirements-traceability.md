@@ -2,27 +2,27 @@
 
 English | [简体中文](../zh-CN/design/requirements-traceability.md)
 
-The sole source of requirement IDs is [01](01-product-requirements.md). The table targets the final product; later requirements are not considered complete in the first version. Test IDs identify planned acceptance suites, not tests already present in the repository.
+The sole source of requirement IDs is [01](product-requirements.md). The table targets the final product; later requirements are not considered complete in the first version. Test IDs identify planned acceptance suites, not tests already present in the repository.
 
 ## 1. Traceability matrix
 
 | Requirement | Main design | Acceptance suite | Initial delivery/gate |
 |---|---|---|---|
-| P01 Browse without automatic extraction | [03](03-domain-data.md), [04](04-qt-quick-ui.md) | T01 Read-only open and no changes in temporary directory | M2, v0.1 |
-| P02 Browse/query/select | [03](03-domain-data.md), [04](04-qt-quick-ui.md), [09](09-performance.md) | T02 Identity, query snapshots, 100,000 entries, stale pages | M2, v0.1; one million in M6 |
-| P03 Selective extraction/conflicts | [03](03-domain-data.md), [07](07-file-security.md), [08](08-task-scheduling.md) | T03 Plan scope, duplicate records, overwrite/skip/rename, disk results | M3, v0.1 |
-| P04 Archive creation | [06](06-codec-extension-sdk.md), [07](07-file-security.md) | T04 Bidirectional ZIP/TAR/TAR.GZ interoperability and old-file protection | M4, v0.1 |
-| P05 Capability-driven | [05](05-qt-rust-bridge.md), [06](06-codec-extension-sdk.md) | T05 Actual features, forged operations, disabled reasons | M2–M4; other capabilities M7 |
-| P06 Bounded tasks/cancellation | [05](05-qt-rust-bridge.md), [08](08-task-scheduling.md) | T06 Full queues, resource leases, cancellation/commit/shutdown races | M1/M3, v0.1 |
-| P07 Security protections | [07](07-file-security.md), [06](06-codec-extension-sdk.md) | T07 Native link races, path escape, quotas, special entries | Blocking for all write stages |
-| P08 Modern accessible UI | [04](04-qt-quick-ui.md) | T08 Three-platform keyboard/mouse, IME, DPI, screen readers, and focus | M5 basics; full matrix v1.0 |
-| P09 Low resource use | [09](09-performance.md), [08](08-task-scheduling.md) | T09 Actual process tree, GPU, startup, throughput, complete size | M5 baseline, M9 budget exit |
-| P10 Decoupling/format extensions | [02](02-system-architecture.md), [06](06-codec-extension-sdk.md) | T10 Core without Qt, dependency direction, third-format example | M1/M4 source SDK; external M8 |
-| P11 Privacy/passwords | [04](04-qt-quick-ui.md), [07](07-file-security.md) | T11 No default networking, redaction, secret lifetimes | M5 privacy; secret capability M7 |
-| P12 Auditable releases | [10](10-quality-engineering.md), [11](11-build-release.md) | T12 Locked dependencies, SBOM, required ad-hoc integrity and lack-of-formal-signing disclosure, clean machine, license materials | M5 private-test package, M9 official release |
-| P13 Third-party extensions | [06](06-codec-extension-sdk.md), [11](11-build-release.md) | T13 Independent interoperability, permission changes, rejection of unauthorized actions/refusal to cancel | M8 trial; sandbox gate in M9 |
-| P14 Limited preview | [04](04-qt-quick-ui.md), [07](07-file-security.md) | T14 Oversized images/text, active content, temporary-file cleanup | M6, v0.2+ |
-| P15 Recoverable errors | [05](05-qt-rust-bridge.md), [07](07-file-security.md), [08](08-task-scheduling.md) | T15 Error categories, source changes, full disk, crash recovery | M3–M5, v0.1 |
+| P01 Browse without automatic extraction | [03](domain-data.md), [04](qt-quick-ui.md) | T01 Read-only open and no changes in temporary directory | M2, v0.1 |
+| P02 Browse/query/select | [03](domain-data.md), [04](qt-quick-ui.md), [09](performance.md) | T02 Identity, query snapshots, 100,000 entries, stale pages | M2, v0.1; one million in M6 |
+| P03 Selective extraction/conflicts | [03](domain-data.md), [07](file-security.md), [08](task-scheduling.md) | T03 Plan scope, duplicate records, overwrite/skip/rename, disk results | M3, v0.1 |
+| P04 Archive creation | [06](codec-extension-sdk.md), [07](file-security.md) | T04 Bidirectional ZIP/TAR/TAR.GZ interoperability and old-file protection | M4, v0.1 |
+| P05 Capability-driven | [05](qt-rust-bridge.md), [06](codec-extension-sdk.md) | T05 Actual features, forged operations, disabled reasons | M2–M4; other capabilities M7 |
+| P06 Bounded tasks/cancellation | [05](qt-rust-bridge.md), [08](task-scheduling.md) | T06 Full queues, resource leases, cancellation/commit/shutdown races | M1/M3, v0.1 |
+| P07 Security protections | [07](file-security.md), [06](codec-extension-sdk.md) | T07 Native link races, path escape, quotas, special entries | Blocking for all write stages |
+| P08 Modern accessible UI | [04](qt-quick-ui.md) | T08 Three-platform keyboard/mouse, IME, DPI, screen readers, and focus | M5 basics; full matrix v1.0 |
+| P09 Low resource use | [09](performance.md), [08](task-scheduling.md) | T09 Actual process tree, GPU, startup, throughput, complete size | M5 baseline, M9 budget exit |
+| P10 Decoupling/format extensions | [02](system-architecture.md), [06](codec-extension-sdk.md) | T10 Core without Qt, dependency direction, third-format example | M1/M4 source SDK; external M8 |
+| P11 Privacy/passwords | [04](qt-quick-ui.md), [07](file-security.md) | T11 No default networking, redaction, secret lifetimes | M5 privacy; secret capability M7 |
+| P12 Auditable releases | [10](quality-engineering.md), [11](build-release.md) | T12 Locked dependencies, SBOM, required ad-hoc integrity and lack-of-formal-signing disclosure, clean machine, license materials | M5 private-test package, M9 official release |
+| P13 Third-party extensions | [06](codec-extension-sdk.md), [11](build-release.md) | T13 Independent interoperability, permission changes, rejection of unauthorized actions/refusal to cancel | M8 trial; sandbox gate in M9 |
+| P14 Limited preview | [04](qt-quick-ui.md), [07](file-security.md) | T14 Oversized images/text, active content, temporary-file cleanup | M6, v0.2+ |
+| P15 Recoverable errors | [05](qt-rust-bridge.md), [07](file-security.md), [08](task-scheduling.md) | T15 Error categories, source changes, full disk, crash recovery | M3–M5, v0.1 |
 
 ## 2. Cross-cutting gates
 

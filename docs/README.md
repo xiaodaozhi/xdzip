@@ -26,7 +26,7 @@ The [format support table](../README.md#format-support) describes the formats, o
 - [Developer preparation](engineering/development.md) and [repository layout](engineering/repository-layout.md): understand the development workflow, modules, and verification entry points.
 - [Contributing guide](../CONTRIBUTING.md), [code of conduct](../CODE_OF_CONDUCT.md), and [security policy](../SECURITY.md): contribute changes, participate, and report security issues.
 - [Verification](qa/README.md) and [CI policy](engineering/ci-policy.md): select checks for a change and distinguish automated results from desktop verification.
-- [System architecture](design/02-system-architecture.md), [domain and data](design/03-domain-data.md), and the [Qt/Rust bridge](design/05-qt-rust-bridge.md): understand the main modules and their boundaries.
+- [System architecture](design/system-architecture.md), [domain and data](design/domain-data.md), and the [Qt/Rust bridge](design/qt-rust-bridge.md): understand the main modules and their boundaries.
 - [UI design standard](visual/design-standard.md), [design workflow](visual/design-workflow.md), and [interaction prototype](ux/prototype-spec.md): explore interface, component, and interaction guidelines.
 
 ## Formats and implementation
@@ -37,7 +37,7 @@ These documents explain format capabilities, limits, and implementation sources.
 - **Common compression streams:** [TAR and GZIP](engineering/tar-gzip.md), [single-file compression streams](engineering/single-file-streams.md), [LZ4](engineering/lz4-streams.md), [Zstandard](engineering/zstandard-streams.md), [Brotli](engineering/brotli-streams.md), [Unix compress](engineering/compress-streams.md).
 - **Archives and envelopes:** [7z implementation basis](engineering/sevenzip-format-sources.md), [RAR implementation basis](engineering/rar-format-sources.md), [CAB implementation basis](engineering/cab-format-sources.md), [DEB](engineering/deb-containers.md), [ASAR](engineering/asar-containers.md), [AES Crypt](engineering/aescrypt-envelopes.md), [UU and XXE](engineering/text-envelopes.md).
 - **Other formats:** [LHA/LZH](engineering/lha-containers.md), [PMA](engineering/pma-streams.md), [ARJ](engineering/arj-streams.md), [ARC](engineering/arc-streams.md), [BH](engineering/bh-containers.md), [ACE, ALZ, and EGG](engineering/ace-alz-egg-format-sources.md).
-- **Design and dependencies:** [Format backends](engineering/native-codecs.md), [in-house formats and algorithms](engineering/independent-rust-codecs.md), [format extension design](design/06-codec-extension-sdk.md), [dependencies and licenses](engineering/dependencies.md).
+- **Design and dependencies:** [Format backends](engineering/native-codecs.md), [in-house formats and algorithms](engineering/independent-rust-codecs.md), [format extension design](design/codec-extension-sdk.md), [dependencies and licenses](engineering/dependencies.md).
 
 ## Releases and collaboration
 

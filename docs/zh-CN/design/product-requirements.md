@@ -1,6 +1,6 @@
 # xdzip：01 产品与需求
 
-[English](../../design/01-product-requirements.md) | 简体中文
+[English](../../design/product-requirements.md) | 简体中文
 
 ## 1. 产品定位
 
@@ -68,7 +68,7 @@ xdzip 是面向 macOS、Windows、Linux 的桌面归档管理器。主要价值�
 
 - 路径安全和输出事务是所有阶段的退出条件，不能放到“以后加固”。
 - 在发行参考 Mac 上验证默认字体、IME、⌘A/⌘O、拖放、Retina 和真实 GPU；在 Windows/Linux 上分别验证平台快捷键与目录授权。
-- 工作负载区分打开、扫描、查询、解压、创建和预览；所有性能预算见 [09](09-performance.md)。
+- 工作负载区分打开、扫描、查询、解压、创建和预览；所有性能预算见 [09](performance.md)。
 - 没有真实格式测试或平台实测的功能，在发布说明中标记为未支持或实验性。
 
 ## 6. 非目标和产品默认值

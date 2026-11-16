@@ -1,10 +1,10 @@
 # xdzip: 05 Qt/Rust type bridge and application service protocol
 
-English | [简体中文](../zh-CN/design/05-qt-rust-bridge.md)
+English | [简体中文](../zh-CN/design/qt-rust-bridge.md)
 
 ## 1. Decision and versioning
 
-The production product uses `cxx` to generate the Rust/C++ build-time bridge. The application, Rust static library, and generated headers must come from the same commit and toolchain combination; arbitrary-version dynamic libraries must not be substituted. This is an internal product interface, not a third-party binary SDK or the process protocol in [06](06-codec-extension-sdk.md).
+The production product uses `cxx` to generate the Rust/C++ build-time bridge. The application, Rust static library, and generated headers must come from the same commit and toolchain combination; arbitrary-version dynamic libraries must not be substituted. This is an internal product interface, not a third-party binary SDK or the process protocol in [06](codec-extension-sdk.md).
 
 The prototype `lab_engine_new/lab_request/lab_string_free/lab_engine_free` and JSON requests remain experimental code. The product must not gradually add passwords, output paths, and plugin actions to the experimental interface and then claim it is frozen.
 

@@ -1,6 +1,6 @@
 # xdzip：07 文件安全、权限和输出事务
 
-[English](../../design/07-file-security.md) | 简体中文
+[English](../../design/file-security.md) | 简体中文
 
 ## 1. 威胁模型
 

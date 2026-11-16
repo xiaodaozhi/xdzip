@@ -1,6 +1,6 @@
 # xdzip: 04 Qt Quick interface design
 
-English | [简体中文](../zh-CN/design/04-qt-quick-ui.md)
+English | [简体中文](../zh-CN/design/qt-quick-ui.md)
 
 The project established its formal visual baseline on 2026-10-11; see the [high-fidelity design deliverables](../visual/README.md). Images express the visual target; tokens and component specifications govern implementation dimensions and colors. See [content preview](../engineering/content-preview.md) for supported preview types and limits.
 

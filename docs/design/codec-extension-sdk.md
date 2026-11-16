@@ -1,6 +1,6 @@
 # xdzip: 06 Format adapters and extension SDK
 
-English | [简体中文](../zh-CN/design/06-codec-extension-sdk.md)
+English | [简体中文](../zh-CN/design/codec-extension-sdk.md)
 
 ## 1. Two kinds of extension
 

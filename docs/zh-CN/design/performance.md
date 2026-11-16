@@ -1,6 +1,6 @@
 # xdzip：09 性能设计与基准
 
-[English](../../design/09-performance.md) | 简体中文
+[English](../../design/performance.md) | 简体中文
 
 ## 1. 指标边界
 

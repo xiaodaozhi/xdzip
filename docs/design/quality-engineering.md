@@ -1,6 +1,6 @@
 # xdzip: 10 Coding conventions, comments, and quality engineering
 
-English | [简体中文](../zh-CN/design/10-quality-engineering.md)
+English | [简体中文](../zh-CN/design/quality-engineering.md)
 
 ## 1. General principles
 

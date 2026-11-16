@@ -1,6 +1,6 @@
 # xdzip：11 构建、发布、许可证与更新
 
-[English](../../design/11-build-release.md) | 简体中文
+[English](../../design/build-release.md) | 简体中文
 
 ## 1. 支持矩阵
 

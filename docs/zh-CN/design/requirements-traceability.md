@@ -2,27 +2,27 @@
 
 [English](../../design/requirements-traceability.md) | 简体中文
 
-需求 ID 的唯一来源为 [01](01-product-requirements.md)。下表对应最终产品；后期需求不算首版已经完成。测试编号是计划中的验收套件，不是当前仓库已有测试。
+需求 ID 的唯一来源为 [01](product-requirements.md)。下表对应最终产品；后期需求不算首版已经完成。测试编号是计划中的验收套件，不是当前仓库已有测试。
 
 ## 1. 追踪矩阵
 
 | 需求 | 主要设计 | 验收套件 | 首次交付/门槛 |
 |---|---|---|---|
-| P01 浏览不自动解压 | [03](03-domain-data.md)、[04](04-qt-quick-ui.md) | T01 打开只读及临时目录无变化 | M2，v0.1 |
-| P02 浏览/查询/选择 | [03](03-domain-data.md)、[04](04-qt-quick-ui.md)、[09](09-performance.md) | T02 身份、查询快照、十万条、过期页面 | M2，v0.1；百万条 M6 |
-| P03 选择性解压/冲突 | [03](03-domain-data.md)、[07](07-file-security.md)、[08](08-task-scheduling.md) | T03 计划范围、重复记录、覆盖/跳过/改名、磁盘结果 | M3，v0.1 |
-| P04 创建归档 | [06](06-codec-extension-sdk.md)、[07](07-file-security.md) | T04 ZIP/TAR/TAR.GZ 双向互操作与旧文件保护 | M4，v0.1 |
-| P05 能力驱动 | [05](05-qt-rust-bridge.md)、[06](06-codec-extension-sdk.md) | T05 实际特性、伪造操作、禁用原因 | M2～M4；其他能力 M7 |
-| P06 有界任务/取消 | [05](05-qt-rust-bridge.md)、[08](08-task-scheduling.md) | T06 满队列、资源 lease、取消/提交/关闭竞争 | M1/M3，v0.1 |
-| P07 安全防护 | [07](07-file-security.md)、[06](06-codec-extension-sdk.md) | T07 原生链接竞态、路径逃逸、配额、特殊项 | 所有写入阶段阻断 |
-| P08 现代可访问 UI | [04](04-qt-quick-ui.md) | T08 三平台键鼠、IME、DPI、读屏和焦点 | M5 基础；v1.0 完整矩阵 |
-| P09 低资源 | [09](09-performance.md)、[08](08-task-scheduling.md) | T09 实际进程树、GPU、启动、吞吐、完整体积 | M5 建基线，M9 预算退出 |
-| P10 解耦/格式扩展 | [02](02-system-architecture.md)、[06](06-codec-extension-sdk.md) | T10 无 Qt 核心、依赖方向、第三格式样例 | M1/M4，源码 SDK；外部 M8 |
-| P11 隐私/密码 | [04](04-qt-quick-ui.md)、[07](07-file-security.md) | T11 无默认联网、脱敏、秘密生命周期 | M5 隐私；秘密能力 M7 |
-| P12 可审计发行 | [10](10-quality-engineering.md)、[11](11-build-release.md) | T12 锁定依赖、SBOM、必要 ad-hoc 完整性及未正式签名说明、干净机、许可材料 | M5 私测包，M9 正式发行 |
-| P13 第三方扩展 | [06](06-codec-extension-sdk.md)、[11](11-build-release.md) | T13 独立实现互通、权限变更、拒绝越权/拒绝取消 | M8 试验；M9 满足沙箱门槛 |
-| P14 受限预览 | [04](04-qt-quick-ui.md)、[07](07-file-security.md) | T14 超大图像/文本、活动内容、临时文件清理 | M6，v0.2+ |
-| P15 可恢复错误 | [05](05-qt-rust-bridge.md)、[07](07-file-security.md)、[08](08-task-scheduling.md) | T15 错误分类、源变化、磁盘满、崩溃恢复 | M3～M5，v0.1 |
+| P01 浏览不自动解压 | [03](domain-data.md)、[04](qt-quick-ui.md) | T01 打开只读及临时目录无变化 | M2，v0.1 |
+| P02 浏览/查询/选择 | [03](domain-data.md)、[04](qt-quick-ui.md)、[09](performance.md) | T02 身份、查询快照、十万条、过期页面 | M2，v0.1；百万条 M6 |
+| P03 选择性解压/冲突 | [03](domain-data.md)、[07](file-security.md)、[08](task-scheduling.md) | T03 计划范围、重复记录、覆盖/跳过/改名、磁盘结果 | M3，v0.1 |
+| P04 创建归档 | [06](codec-extension-sdk.md)、[07](file-security.md) | T04 ZIP/TAR/TAR.GZ 双向互操作与旧文件保护 | M4，v0.1 |
+| P05 能力驱动 | [05](qt-rust-bridge.md)、[06](codec-extension-sdk.md) | T05 实际特性、伪造操作、禁用原因 | M2～M4；其他能力 M7 |
+| P06 有界任务/取消 | [05](qt-rust-bridge.md)、[08](task-scheduling.md) | T06 满队列、资源 lease、取消/提交/关闭竞争 | M1/M3，v0.1 |
+| P07 安全防护 | [07](file-security.md)、[06](codec-extension-sdk.md) | T07 原生链接竞态、路径逃逸、配额、特殊项 | 所有写入阶段阻断 |
+| P08 现代可访问 UI | [04](qt-quick-ui.md) | T08 三平台键鼠、IME、DPI、读屏和焦点 | M5 基础；v1.0 完整矩阵 |
+| P09 低资源 | [09](performance.md)、[08](task-scheduling.md) | T09 实际进程树、GPU、启动、吞吐、完整体积 | M5 建基线，M9 预算退出 |
+| P10 解耦/格式扩展 | [02](system-architecture.md)、[06](codec-extension-sdk.md) | T10 无 Qt 核心、依赖方向、第三格式样例 | M1/M4，源码 SDK；外部 M8 |
+| P11 隐私/密码 | [04](qt-quick-ui.md)、[07](file-security.md) | T11 无默认联网、脱敏、秘密生命周期 | M5 隐私；秘密能力 M7 |
+| P12 可审计发行 | [10](quality-engineering.md)、[11](build-release.md) | T12 锁定依赖、SBOM、必要 ad-hoc 完整性及未正式签名说明、干净机、许可材料 | M5 私测包，M9 正式发行 |
+| P13 第三方扩展 | [06](codec-extension-sdk.md)、[11](build-release.md) | T13 独立实现互通、权限变更、拒绝越权/拒绝取消 | M8 试验；M9 满足沙箱门槛 |
+| P14 受限预览 | [04](qt-quick-ui.md)、[07](file-security.md) | T14 超大图像/文本、活动内容、临时文件清理 | M6，v0.2+ |
+| P15 可恢复错误 | [05](qt-rust-bridge.md)、[07](file-security.md)、[08](task-scheduling.md) | T15 错误分类、源变化、磁盘满、崩溃恢复 | M3～M5，v0.1 |
 
 ## 2. 横向门槛
 

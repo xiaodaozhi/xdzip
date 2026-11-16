@@ -2,7 +2,7 @@
 
 [English](../../engineering/readonly-browser.md) | 简体中文
 
-本文规定浏览阶段的数据、资源及交互边界，补充 design/03、05、06，不冻结第三方协议或完整格式 SDK。ZIP 的具体元数据规则如下；TAR/TAR.GZ 复用浏览与查询模型，格式差异见 [TAR/GZIP 契约](tar-gzip.md)。
+本文规定浏览阶段的数据、资源及交互边界，补充[领域与数据](../design/domain-data.md)、[Qt/Rust 桥接](../design/qt-rust-bridge.md)和[格式扩展设计](../design/codec-extension-sdk.md)，不冻结第三方协议或完整格式 SDK。ZIP 的具体元数据规则如下；TAR/TAR.GZ 复用浏览与查询模型，格式差异见 [TAR/GZIP 契约](tar-gzip.md)。
 
 普通单文件 ZIP/ZIP64 的百万条流式索引、转盘预算、按需模型和任务限制见[大归档索引](large-index.md)。下述十万条内存快照预算保留为普通格式及早期 ZIP 的基线，不能覆盖新的流式 ZIP 准入。
 

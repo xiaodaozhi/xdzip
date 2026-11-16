@@ -6,7 +6,7 @@
 
 ## 已落地的服务
 
-`xdzip-runtime::service` 是产品实现，诊断探针继续独立保留。GUI 只持有 `CommandClient`，专用 Qt 接收线程独占 `EventReceiver`；两个句柄各取一次，cxx 负责该桥接的 ABI 胶水，平台文件访问的安全边界另见[文件安全规范](../design/07-file-security.md)。源文件与归档快照由单个 Rust 工作线程拥有，不再向 Qt 暴露 Archive 句柄或同步扫描入口。
+`xdzip-runtime::service` 是产品实现，诊断探针继续独立保留。GUI 只持有 `CommandClient`，专用 Qt 接收线程独占 `EventReceiver`；两个句柄各取一次，cxx 负责该桥接的 ABI 胶水，平台文件访问的安全边界另见[文件安全规范](../design/file-security.md)。源文件与归档快照由单个 Rust 工作线程拥有，不再向 Qt 暴露 Archive 句柄或同步扫描入口。
 
 基础命令包括 Open、Browse、Preflight、CloseSession、Snapshot；现有真实浏览和预检全部接入。每个 accepted 普通请求分配不复用 ID，返回至多一个有界数据事件，再返回恰好一次 Finished；错误直接 Finished。页面携带会话、请求和偏移身份；每个 RuntimeConnection 单会话、串行 GUI pending 请求，查询还包含完整查询 ID、GUI 代际和快照修订，见 [ZIP 浏览契约](zip-readonly-browsing.md)。跨会话请求返回 stale_session。
 

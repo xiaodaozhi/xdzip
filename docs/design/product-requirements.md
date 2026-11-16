@@ -1,6 +1,6 @@
 # xdzip: 01 Product and requirements
 
-English | [简体中文](../zh-CN/design/01-product-requirements.md)
+English | [简体中文](../zh-CN/design/product-requirements.md)
 
 ## 1. Product positioning
 
@@ -68,7 +68,7 @@ The current implementation supports limited AES-256 ZIP and split-volume reading
 
 - Path security and output transactions are exit criteria for every stage; they cannot be deferred as “future hardening.”
 - On the release reference Mac, verify the default font, IME, ⌘A/⌘O, drag-and-drop, Retina, and a real GPU. On Windows and Linux, separately verify platform shortcuts and directory authorization.
-- Distinguish opening, scanning, querying, extraction, creation, and preview workloads; see [09](09-performance.md) for all performance budgets.
+- Distinguish opening, scanning, querying, extraction, creation, and preview workloads; see [09](performance.md) for all performance budgets.
 - Features without real-format tests or actual platform verification are marked unsupported or experimental in release notes.
 
 ## 6. Non-goals and product defaults

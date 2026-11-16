@@ -77,4 +77,4 @@
 
 ## 6. 引用权威
 
-产品范围以 [01](01-product-requirements.md) 为准；内部服务以 [05](05-qt-rust-bridge.md) 为准；第三方协议以 [06](06-codec-extension-sdk.md) 为准；文件输出政策以 [07](07-file-security.md) 为准；调度以 [08](08-task-scheduling.md) 为准；工程预算以 [09](09-performance.md) 为准。本表集中默认值，改值时修改引用和相关验收。
+产品范围以 [01](product-requirements.md) 为准；内部服务以 [05](qt-rust-bridge.md) 为准；第三方协议以 [06](codec-extension-sdk.md) 为准；文件输出政策以 [07](file-security.md) 为准；调度以 [08](task-scheduling.md) 为准；工程预算以 [09](performance.md) 为准。本表集中默认值，改值时修改引用和相关验收。

@@ -1,6 +1,6 @@
 # xdzip: 09 Performance design and benchmarks
 
-English | [简体中文](../zh-CN/design/09-performance.md)
+English | [简体中文](../zh-CN/design/performance.md)
 
 ## 1. Metric boundaries
 

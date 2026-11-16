@@ -1,6 +1,6 @@
 # xdzip：12 实施路线与现有原型迁移
 
-[English](../../design/12-implementation-roadmap.md) | 简体中文
+[English](../../design/implementation-roadmap.md) | 简体中文
 
 ## 1. 当前实现与后续设计
 

@@ -1,6 +1,6 @@
 # xdzip: 11 Build, release, licensing, and updates
 
-English | [简体中文](../zh-CN/design/11-build-release.md)
+English | [简体中文](../zh-CN/design/build-release.md)
 
 ## 1. Support matrix
 

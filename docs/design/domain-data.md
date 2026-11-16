@@ -1,6 +1,6 @@
 # xdzip: 03 Domain model and data design
 
-English | [简体中文](../zh-CN/design/03-domain-data.md)
+English | [简体中文](../zh-CN/design/domain-data.md)
 
 ## 1. Identity and versioning
 
@@ -64,7 +64,7 @@ Plan construction may defer storing large numbers of entries, but the input set 
 
 `TaskResult` contains the state, completed/skipped/failed counts, actual bytes, a committed-item list or paged result handle, cleanup status, integrity status, and a bounded sample of errors. Success means every required item completed and passed the declared checks. A policy that permits skipping yields success with skips shown in the summary. Any failure not permitted by user policy makes the task Failed, although the summary may still contain completed files.
 
-Transaction logs record only relative mappings needed for recovery, the random working directory, file identities, temporary-file states, and commit states. The log format is versioned, length-bounded, and treated as untrusted input. Restarting does not automatically resume writing or delete unfamiliar files; see [07](07-file-security.md) for recovery.
+Transaction logs record only relative mappings needed for recovery, the random working directory, file identities, temporary-file states, and commit states. The log format is versioned, length-bounded, and treated as untrusted input. Restarting does not automatically resume writing or delete unfamiliar files; see [07](file-security.md) for recovery.
 
 User settings, archive indexes, transaction logs, and extension manifests have different schemas; one SQLite database must not carry all their lifetimes. Passwords never enter them.
 
