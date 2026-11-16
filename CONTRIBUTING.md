@@ -14,7 +14,7 @@
 
 ## 编码和测试
 
-遵守 [编码与注释规范](docs/design/10-quality-engineering.md)。注释说明不变量、所有权、失败边界和复杂度；不按注释数量评分。性能优化附工作负载和前后测量，不能只说“更快”。
+遵守 [编码与注释规范](docs/design/quality-engineering.md)。注释说明不变量、所有权、失败边界和复杂度；不按注释数量评分。性能优化附工作负载和前后测量，不能只说“更快”。
 
 本地检查按变更范围选择，具体入口见[开发构建指南](docs/engineering/developer-build.md)与 [CI 策略](docs/engineering/ci-policy.md)。普通 CI 只运行轻量静态检查，完整三平台检查按需手动触发；失败或未运行的检查在 PR 中明确说明。
 

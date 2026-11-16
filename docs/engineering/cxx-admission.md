@@ -12,6 +12,6 @@ The source is crates.io, with [dtolnay/cxx](https://github.com/dtolnay/cxx) upst
 
 cxx-build generates sources and headers and invokes C++ compilation tools; cxx compiles the bundled bridge implementation, and link-cplusplus links the C++ standard library. Cargo verifies dependency acquisition against the lockfile. New build scripts or optional features require renewed review of network and execution behavior; historical checks are not a security conclusion for a new version.
 
-Retain std/alloc and other features actually needed by the product. Trimming requires reverifying UTF-8, error propagation, unique handles, backpressure, shutdown, and draining. The [runtime contract](m1-runtime.md) and [bridge design](../design/05-qt-rust-bridge.md) define actual interfaces. Release licensing review follows the [release review process](../qa/release-review.md).
+Retain std/alloc and other features actually needed by the product. Trimming requires reverifying UTF-8, error propagation, unique handles, backpressure, shutdown, and draining. The [runtime contract](product-runtime.md) and [bridge design](../design/qt-rust-bridge.md) define actual interfaces. Release licensing review follows the [release review process](../qa/release-review.md).
 
 Specific probes, CI runs, and acceptance conclusions are recorded in the [WP-01 issue](https://github.com/xiaodaozhi/xdzip/issues/1) and its Actions artifacts; execution reports do not accumulate here.

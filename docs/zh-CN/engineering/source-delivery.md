@@ -106,7 +106,7 @@ python3 scripts/convert-iso-codes-for-qt.py \
 
 另附固定的 ICU 73.2 完整许可、ICU4C 官方发布源码归档、包含可编辑数据的固定 ICU 源码树、CLDR 43.1 源码子集，以及生成工具使用的 ICU 73.1 源码树，服务于 Linux ICU，并纳入交付总清单。CLDR 子集排除五个 ISO 639-3 文件、`docs/ldml` 下的 UTS #35 标准正文及配套文件、两张文档截图，并替换 963 张网页工具图片；原归档摘要、逐文件排除和替换清单保留在交付记录中。[Unicode 发布的 43.1 版 UTS #35](https://www.unicode.org/reports/tr35/tr35-69/tr35.html)可单独查阅，其使用条件由权利人说明。是否存在可转授的额外授权仍待核实。收集器也拒绝引导源码归档中名称包含 `iso-639-3` 的文件，名称检查不能排除其他形式的数据。收集时校验归档摘要、版本、归档内许可及指定源文件，不解包第三方路径。[ICU 数据重建说明](icu-cldr-rebuild.md)记录工具构建、数据生成和修改范围；上游版本相符不证明供应商二进制由这些材料无补丁构建。当前 Windows 开发包不包含软件 OpenGL 库，不再为该库收集 Mesa／LLVM 材料；历史交付保留原有材料和义务，见[原生运行库来源与通知](native-runtime-materials.md)。
 
-应用动态链接 Qt，提供源码重建入口和兼容库替换说明。[macOS 部署核验](macos-deployment.md)覆盖隔离副本的修改库加载，不声称已从源码重建整套 Qt。实际 Qt 源码构建与产品加载另有独立流程，见[自动验证契约](wp12-automation.md)。SDK 字节级构建等价性、精确静态链接归属和许可分支仍属于[发行许可复核](https://github.com/xiaodaozhi/xdzip/issues/4)，不重新列为已完成 WP-12 的开发待办。
+应用动态链接 Qt，提供源码重建入口和兼容库替换说明。[macOS 部署核验](macos-deployment.md)覆盖隔离副本的修改库加载，不声称已从源码重建整套 Qt。实际 Qt 源码构建与产品加载另有独立流程，见[自动验证契约](candidate-verification.md)。SDK 字节级构建等价性、精确静态链接归属和许可分支仍属于[发行许可复核](https://github.com/xiaodaozhi/xdzip/issues/4)，不重新列为已完成 WP-12 的开发待办。
 
 verify-source-delivery.py 先重新核对交付文件哈希，将自有项目和 vendor 安全解到新的 build/ 目录，使用空 Cargo 缓存、CARGO_NET_OFFLINE=true 和现有固定 Qt SDK 构建真实应用，再执行启动／关闭冒烟。它验证项目与 Rust 交付输入可离线使用，不声称 Qt 已从模块源码重建，不声称字节级可重复构建。生成源码目录的 Git 身份为 unknown，由外部固定提交及交付清单绑定。
 
@@ -118,4 +118,4 @@ verify-source-delivery.py 先重新核对交付文件哈希，将自有项目和
 
 交付还保留固定的 Qt Declarative Git 提交对象输入，供离线核对发布提交与归档 `.tag` 树对象的关系；交付清单会哈希该输入。树对象对应不代表源码归档覆盖整个树，或 SDK 与该树构建等价。
 
-实际 Qt 源码构建和加载／兼容替换流程见[自动化收尾契约](wp12-automation.md)，不再把应用使用现有 SDK 的离线重建误称为 Qt 本身的源码重建。
+实际 Qt 源码构建和加载／兼容替换流程见[自动化收尾契约](candidate-verification.md)，不再把应用使用现有 SDK 的离线重建误称为 Qt 本身的源码重建。

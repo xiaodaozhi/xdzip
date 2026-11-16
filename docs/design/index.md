@@ -10,18 +10,18 @@ The project uses **Qt Quick** for its desktop interface. The established technic
 
 | Document | Questions it addresses |
 |---|---|
-| [01 Product and requirements](01-product-requirements.md) | What to build, priorities, user actions, and acceptance criteria |
-| [02 System architecture](02-system-architecture.md) | Dependency direction, processes, threads, services, and deployment boundaries |
-| [03 Domain and data](03-domain-data.md) | Archive sessions, entries, queries, selections, plans, and results |
-| [04 Qt Quick interface](04-qt-quick-ui.md) | Information architecture, visual system, virtual models, interaction, and accessibility |
-| [05 Qt/Rust bridge](05-qt-rust-bridge.md) | Types, lifetimes, requests and responses, events, and errors |
-| [06 Format and extension SDK](06-codec-extension-sdk.md) | Format capabilities, built-in adapters, process protocol, and compatibility |
-| [07 File security and transactions](07-file-security.md) | Path escape, links, overwrites, bombs, previews, and passwords |
-| [08 Tasks and concurrency](08-task-scheduling.md) | State machine, resource admission, cancellation, pausing, and failure recovery |
-| [09 Performance and measurement](09-performance.md) | Budgets, optimization paths, real workloads, and evidence |
-| [10 Coding and quality](10-quality-engineering.md) | Conventions, comments, tests, fuzzing, and contribution workflow |
-| [11 Build, release, and licensing](11-build-release.md) | Deployment on three platforms, signing, notarization, dependencies, and updates |
-| [12 Implementation and prototype migration](12-implementation-roadmap.md) | Repository evolution, implementation order, and stage exit criteria |
+| [01 Product and requirements](product-requirements.md) | What to build, priorities, user actions, and acceptance criteria |
+| [02 System architecture](system-architecture.md) | Dependency direction, processes, threads, services, and deployment boundaries |
+| [03 Domain and data](domain-data.md) | Archive sessions, entries, queries, selections, plans, and results |
+| [04 Qt Quick interface](qt-quick-ui.md) | Information architecture, visual system, virtual models, interaction, and accessibility |
+| [05 Qt/Rust bridge](qt-rust-bridge.md) | Types, lifetimes, requests and responses, events, and errors |
+| [06 Format and extension SDK](codec-extension-sdk.md) | Format capabilities, built-in adapters, process protocol, and compatibility |
+| [07 File security and transactions](file-security.md) | Path escape, links, overwrites, bombs, previews, and passwords |
+| [08 Tasks and concurrency](task-scheduling.md) | State machine, resource admission, cancellation, pausing, and failure recovery |
+| [09 Performance and measurement](performance.md) | Budgets, optimization paths, real workloads, and evidence |
+| [10 Coding and quality](quality-engineering.md) | Conventions, comments, tests, fuzzing, and contribution workflow |
+| [11 Build, release, and licensing](build-release.md) | Deployment on three platforms, signing, notarization, dependencies, and updates |
+| [12 Implementation and prototype migration](implementation-roadmap.md) | Repository evolution, implementation order, and stage exit criteria |
 | [Architecture decision records](architecture-decisions.md) | Reasons for choices, costs, and when to revisit them |
 | [Requirements traceability matrix](requirements-traceability.md) | How requirements map to design, tests, and versions |
 | [Terminology and protocol constants](glossary.md) | Consistent names, units, initial limits, and version interpretation |

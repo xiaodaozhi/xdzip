@@ -8,7 +8,7 @@
 - 同一页面说明 Bandizip 可创建 `ZIP`、`7Z`、`ZIPX`、`EXE（SFX）`、`TAR`、`TGZ`、`LZH`、`ISO`、`GZ` 和 `XZ`，较长的清单主要是解压清单。
 - [Bandizip ALZ 和 EGG 帮助](https://www.bandisoft.com/bandizip/help/how-to-open-alz-and-egg-files/) 说明 ALZ 的 Deflate、混淆 Deflate、BZip2 与 ZipCrypto，以及 EGG 的 Deflate、BZip2、LZMA、AZO、AES/LEA 加密、固实和分卷。
 - [Bandizip ZPAQ 帮助](https://www.bandisoft.com/bandizip/help/zpaq/) 将 ZPAQ 描述为独立的固实、日志式格式，不能当作 ZIP 方法别名。
-- [磁盘镜像及其他归档格式资料](m10-candidate-source-gates.md)记录了 DAA、ISZ、ZPAQ、PEA、BOND 和 J2J 的公开资料、许可、样本和净室检查。BOND 与 J2J 尚未确认是当前官方 Bandizip 归档条目，只保留为历史线索。
+- [磁盘镜像及其他归档格式资料](disk-image-archive-format-sources.md)记录了 DAA、ISZ、ZPAQ、PEA、BOND 和 J2J 的公开资料、许可、样本和净室检查。BOND 与 J2J 尚未确认是当前官方 Bandizip 归档条目，只保留为历史线索。
 
 ## xdzip 当前结论
 
@@ -63,7 +63,7 @@
 
 因此不能仅因为扩展名加入通用 `BIN`、`IMG` 或 `SFX(EXE)` 处理器。这些名称可能指向可执行文件、磁盘镜像或安装器，扩展名不足以建立归档能力。NSIS 仅增加按内容验证的静态元数据读取器，不授予执行或载荷权限，登记的 `.exe` 也不参与拖放和系统关联。Compound(MSI) 已具备按内容验证的 CFB 读取器，但 `.msi` 后缀仍不授予执行权限。
 
-M10 还检查了 DAA、ISZ、ZPAQ、PEA、BOND 和 J2J。ACE 已按产品决定永久放弃。ISZ 和 ZPAQ 按产品决定明确不支持，BOND 与 J2J 也因尚未确认 Bandizip 归档身份而明确不支持。DAA 按产品决定永久放弃，详见 [M10 候选格式资料和许可门槛](m10-candidate-source-gates.md)。PEA 仅按该文档中的保守只读配置准入。
+M10 还检查了 DAA、ISZ、ZPAQ、PEA、BOND 和 J2J。ACE 已按产品决定永久放弃。ISZ 和 ZPAQ 按产品决定明确不支持，BOND 与 J2J 也因尚未确认 Bandizip 归档身份而明确不支持。DAA 按产品决定永久放弃，详见 [M10 候选格式资料和许可门槛](disk-image-archive-format-sources.md)。PEA 仅按该文档中的保守只读配置准入。
 
 ## 详细推进方案
 

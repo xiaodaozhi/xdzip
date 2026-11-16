@@ -39,6 +39,6 @@ Rust 核心负责格式、查询、任务及输出安全，QML 只表达状态�
 
 界面复用共享窗口、按钮、菜单和选择控件。视觉参数由 `specs/visual` 生成，运行 `python3 scripts/generate-qml-theme.py --check` 检查同步；新窗口先登记窗口契约。产品设置支持主题、100/125/150% 字号及中文 (简体)／English (US)，保存与重启规则见[设置与国际化](../../docs/ux/settings-localization.md)。开发测试用 `XDZIP_SETTINGS_PATH` 隔离配置，`XDZIP_LANGUAGE` 指定进程语言；它们不是产品设置入口。
 
-格式与安全边界见[只读浏览](../../docs/engineering/readonly-browser.md)、[预检](../../docs/engineering/extraction-preflight.md)、[安全解压](../../docs/engineering/m3-extraction.md)、[ZIP 创建](../../docs/engineering/m4-creation.md)及[TAR/GZIP](../../docs/engineering/m4-tar-gzip.md)。内容预览、额外格式和第三方扩展不因设计稿存在便视为实现。
+格式与安全边界见[只读浏览](../../docs/engineering/readonly-browser.md)、[预检](../../docs/engineering/extraction-preflight.md)、[安全解压](../../docs/engineering/zip-safe-extraction.md)、[ZIP 创建](../../docs/engineering/zip-creation.md)及[TAR/GZIP](../../docs/engineering/tar-gzip.md)。内容预览、额外格式和第三方扩展不因设计稿存在便视为实现。
 
 平台开发包、安装器、系统关联及本地 DMG 按[构建说明](../../docs/engineering/developer-build.md)和[安装契约](../../docs/engineering/installers-associations.md)执行。macOS CI 不部署或上传应用，验证副本的 LaunchServices 注册按[Mac 维护方法](../../docs/engineering/macos-deployment.md)自动收尾。

@@ -31,7 +31,7 @@
 
 ## 3. 初始常量表
 
-下表记录设计初值与后续目标约束，不是当前产品配置或已测量的最优值。当前产品的十万条扫描上限、每连接单会话浏览和文件输出配额等以[只读索引](../engineering/m2-readonly.md)、[安全解压](../engineering/m3-extraction.md)及[创建契约](../engineering/m4-creation.md)为准；应用级多会话、32 个存活会话上限及重任务串行准入以[应用会话契约](../engineering/application-sessions.md)为准。用户界面只开放实际已实现的设置。可调用户限额必须经过核心验证，线协议硬上限在同一协议主版本中不能任意放宽。
+下表记录设计初值与后续目标约束，不是当前产品配置或已测量的最优值。当前产品的十万条扫描上限、每连接单会话浏览和文件输出配额等以[只读索引](../engineering/zip-readonly-browsing.md)、[安全解压](../engineering/zip-safe-extraction.md)及[创建契约](../engineering/zip-creation.md)为准；应用级多会话、32 个存活会话上限及重任务串行准入以[应用会话契约](../engineering/application-sessions.md)为准。用户界面只开放实际已实现的设置。可调用户限额必须经过核心验证，线协议硬上限在同一协议主版本中不能任意放宽。
 
 | 常量 | 初始值 | 类别/说明 |
 |---|---:|---|
@@ -77,4 +77,4 @@
 
 ## 6. 引用权威
 
-产品范围以 [01](01-product-requirements.md) 为准；内部服务以 [05](05-qt-rust-bridge.md) 为准；第三方协议以 [06](06-codec-extension-sdk.md) 为准；文件输出政策以 [07](07-file-security.md) 为准；调度以 [08](08-task-scheduling.md) 为准；工程预算以 [09](09-performance.md) 为准。本表集中默认值，改值时修改引用和相关验收。
+产品范围以 [01](product-requirements.md) 为准；内部服务以 [05](qt-rust-bridge.md) 为准；第三方协议以 [06](codec-extension-sdk.md) 为准；文件输出政策以 [07](file-security.md) 为准；调度以 [08](task-scheduling.md) 为准；工程预算以 [09](performance.md) 为准。本表集中默认值，改值时修改引用和相关验收。

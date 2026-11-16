@@ -97,7 +97,7 @@ GZIP 使用无第三方生产依赖的 `xdzip-compression` 独立实现，包括
 
 tar 的测试传递依赖含 filetime 0.2.29（MIT 或 Apache-2.0），复用既有 cfg-if、libc；filetime 不进入该 codec 的产品依赖闭包。没有新增下载构建脚本、运行网络请求或外部进程格式后端。许可证由既有 collect-notices.py 根据锁文件收集，锁文件存在测试包不表示产品链接这些包。系统 tar 与 Python tarfile 仅用于测试，不进入应用运行依赖。
 
-2026-10-15 对 tar 0.4.46、filetime 0.2.29、flate2 1.1.10 执行 OSV 精确版本查询，未返回公告；查询原文只保存在 build/review/wp11。此结果不等于无漏洞保证。双向互操作、坏输入、配额、取消和三平台验证必须实际运行，证据入口见 [WP-11 契约](m4-tar-gzip.md)。
+2026-10-15 对 tar 0.4.46、filetime 0.2.29、flate2 1.1.10 执行 OSV 精确版本查询，未返回公告；查询原文只保存在 build/review/wp11。此结果不等于无漏洞保证。双向互操作、坏输入、配额、取消和三平台验证必须实际运行，证据入口见 [WP-11 契约](tar-gzip.md)。
 
 ## QtNetwork 安全派生库
 

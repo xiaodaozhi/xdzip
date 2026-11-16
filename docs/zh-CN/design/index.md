@@ -10,18 +10,18 @@
 
 | 文档 | 解决的问题 |
 |---|---|
-| [01 产品与需求](01-product-requirements.md) | 做什么、先做什么、用户操作和验收标准 |
-| [02 系统架构](02-system-architecture.md) | 依赖方向、进程、线程、服务和部署边界 |
-| [03 领域与数据](03-domain-data.md) | 归档会话、条目、查询、选择、计划和结果 |
-| [04 Qt Quick 界面](04-qt-quick-ui.md) | 信息结构、视觉系统、虚拟模型、交互与无障碍 |
-| [05 Qt/Rust 桥接](05-qt-rust-bridge.md) | 类型、生命周期、请求响应、事件和错误 |
-| [06 格式与扩展 SDK](06-codec-extension-sdk.md) | 格式能力、内置适配器、进程协议与兼容性 |
-| [07 文件安全与事务](07-file-security.md) | 路径逃逸、链接、覆盖、炸弹、预览和密码 |
-| [08 任务与并发](08-task-scheduling.md) | 状态机、资源准入、取消、暂停和故障恢复 |
-| [09 性能与测量](09-performance.md) | 预算、优化路径、真实工作负载和证据 |
-| [10 编码与质量](10-quality-engineering.md) | 规范、注释、测试、模糊测试与贡献流程 |
-| [11 构建、发布与许可](11-build-release.md) | 三平台部署、签名、公证、依赖和更新 |
-| [12 实施与原型迁移](12-implementation-roadmap.md) | 仓库演进、实施顺序和阶段退出条件 |
+| [01 产品与需求](product-requirements.md) | 做什么、先做什么、用户操作和验收标准 |
+| [02 系统架构](system-architecture.md) | 依赖方向、进程、线程、服务和部署边界 |
+| [03 领域与数据](domain-data.md) | 归档会话、条目、查询、选择、计划和结果 |
+| [04 Qt Quick 界面](qt-quick-ui.md) | 信息结构、视觉系统、虚拟模型、交互与无障碍 |
+| [05 Qt/Rust 桥接](qt-rust-bridge.md) | 类型、生命周期、请求响应、事件和错误 |
+| [06 格式与扩展 SDK](codec-extension-sdk.md) | 格式能力、内置适配器、进程协议与兼容性 |
+| [07 文件安全与事务](file-security.md) | 路径逃逸、链接、覆盖、炸弹、预览和密码 |
+| [08 任务与并发](task-scheduling.md) | 状态机、资源准入、取消、暂停和故障恢复 |
+| [09 性能与测量](performance.md) | 预算、优化路径、真实工作负载和证据 |
+| [10 编码与质量](quality-engineering.md) | 规范、注释、测试、模糊测试与贡献流程 |
+| [11 构建、发布与许可](build-release.md) | 三平台部署、签名、公证、依赖和更新 |
+| [12 实施与原型迁移](implementation-roadmap.md) | 仓库演进、实施顺序和阶段退出条件 |
 | [架构决策记录](architecture-decisions.md) | 选型原因、代价及何时重新评估 |
 | [需求追踪矩阵](requirements-traceability.md) | 需求如何落到设计、测试和版本 |
 | [术语和协议常量](glossary.md) | 统一名称、单位、初始限额和版本解释 |

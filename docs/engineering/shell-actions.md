@@ -47,7 +47,7 @@ Extraction actions appear when every selected item is an archive candidate by su
 - Per-archive directory: always add an archive-named wrapper. Reserve it exclusively using the held destination capability; existing files, directories and links are never reused. Select a new numbered name such as `name (2)`, with up to ten thousand attempts.
 - Selected directory: select a common destination in the standalone extraction window. Per-archive directories are the default, with smart or direct merge alternatives.
 
-Directory derivation follows [safe extraction](m3-extraction.md) portable-name and `.app` suffix rules. Smart detection cannot authorize output; each task must revalidate destination, source, CRC/authentication, conflicts and publication permission. An individual archive failure follows the existing whole-archive stop policy; the batch coordinator then proceeds to the next archive.
+Directory derivation follows [safe extraction](zip-safe-extraction.md) portable-name and `.app` suffix rules. Smart detection cannot authorize output; each task must revalidate destination, source, CRC/authentication, conflicts and publication permission. An individual archive failure follows the existing whole-archive stop policy; the batch coordinator then proceeds to the next archive.
 
 ## Processes, requests and windows
 

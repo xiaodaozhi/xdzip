@@ -2,7 +2,7 @@
 
 [English](../../engineering/development.md) | 简体中文
 
-先读产品 README、AGENTS、软件设计 01/02/10 和当前工作包。根 Cargo workspace 已包含领域、格式、I/O、运行时和桥接，CMake 构建真实 Qt 应用、组件预览及独立探针。现有模块见[目录职责](repository-layout.md)，实际能力和限制以根 README 为入口。
+先读产品 README、AGENTS、[产品需求](../design/product-requirements.md)、[系统架构](../design/system-architecture.md)、[质量工程](../design/quality-engineering.md)和当前工作包。根 Cargo workspace 已包含领域、格式、I/O、运行时和桥接，CMake 构建真实 Qt 应用、组件预览及独立探针。现有模块见[目录职责](repository-layout.md)，实际能力和限制以根 README 为入口。
 
 ## 获取与修改
 

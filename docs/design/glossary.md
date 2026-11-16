@@ -31,7 +31,7 @@ CPU at 100% of one core means one logical core fully occupied; a process tree ma
 
 ## 3. Initial constants
 
-This table records initial design values and future target constraints, not current product settings or measured optima. The current product's 100,000-entry scan limit, single-session browsing per connection, and file-output quotas are governed by [read-only indexing](../engineering/m2-readonly.md), [safe extraction](../engineering/m3-extraction.md), and the [creation contract](../engineering/m4-creation.md). Application-level multiple sessions, the 32-live-session limit, and serial heavy-task admission follow the [application sessions contract](../engineering/application-sessions.md). The UI exposes only implemented settings. Adjustable user limits must pass core validation; wire-protocol hard limits cannot be arbitrarily relaxed within the same protocol major version.
+This table records initial design values and future target constraints, not current product settings or measured optima. The current product's 100,000-entry scan limit, single-session browsing per connection, and file-output quotas are governed by [read-only indexing](../engineering/zip-readonly-browsing.md), [safe extraction](../engineering/zip-safe-extraction.md), and the [creation contract](../engineering/zip-creation.md). Application-level multiple sessions, the 32-live-session limit, and serial heavy-task admission follow the [application sessions contract](../engineering/application-sessions.md). The UI exposes only implemented settings. Adjustable user limits must pass core validation; wire-protocol hard limits cannot be arbitrarily relaxed within the same protocol major version.
 
 | Constant | Initial value | Category/notes |
 |---|---:|---|
@@ -77,4 +77,4 @@ Design baseline version, application version, Rust SDK SemVer, internal build-br
 
 ## 6. Reference authority
 
-Product scope is governed by [01](01-product-requirements.md), internal services by [05](05-qt-rust-bridge.md), third-party protocols by [06](06-codec-extension-sdk.md), file-output policy by [07](07-file-security.md), scheduling by [08](08-task-scheduling.md), and engineering budgets by [09](09-performance.md). This table centralizes defaults; update references and related acceptance when values change.
+Product scope is governed by [01](product-requirements.md), internal services by [05](qt-rust-bridge.md), third-party protocols by [06](codec-extension-sdk.md), file-output policy by [07](file-security.md), scheduling by [08](task-scheduling.md), and engineering budgets by [09](performance.md). This table centralizes defaults; update references and related acceptance when values change.

@@ -60,8 +60,8 @@ runtime-attribution.json 包含文件、组件、关系、上游声明、版权�
 
 ## 尚未解决的发行门槛
 
-已增加[源码交付收集器](source-delivery.md)，保存实际项目源码、Rust vendor、四份运行时 Qt 模块归档及两份构建模块归档、重建及动态替换说明。它不能证明 SDK 与上游逐项构建等价。每次发行还须核对精确静态链接归属、操作系统／再分发运行库、所有内嵌资源逐项许可、开源许可分支选择及履约。[本地 Mac 部署核验](macos-deployment.md)中的元数据修改替换，与[实际源码 Qt 构建及加载／替换](wp12-automation.md#qt-源码与兼容替换)是不同流程，分别保留证据；均不能推断任意 SDK 的字节级构建等价。源清单与 SPDX 字段不能替代许可义务。`v0.1.0` 的历史候选来源与许可结论见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)，后续候选单独复核，付费签名身份不作为门槛；既有桌面验收在 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)保留。
+已增加[源码交付收集器](source-delivery.md)，保存实际项目源码、Rust vendor、四份运行时 Qt 模块归档及两份构建模块归档、重建及动态替换说明。它不能证明 SDK 与上游逐项构建等价。每次发行还须核对精确静态链接归属、操作系统／再分发运行库、所有内嵌资源逐项许可、开源许可分支选择及履约。[本地 Mac 部署核验](macos-deployment.md)中的元数据修改替换，与[实际源码 Qt 构建及加载／替换](candidate-verification.md#qt-源码与兼容替换)是不同流程，分别保留证据；均不能推断任意 SDK 的字节级构建等价。源清单与 SPDX 字段不能替代许可义务。`v0.1.0` 的历史候选来源与许可结论见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)，后续候选单独复核，付费签名身份不作为门槛；既有桌面验收在 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)保留。
 
 [Qt SDK 对应核验](qt-sdk-correspondence.md)进一步记录固定归档提交、SDK 源码声明逐文件哈希、安装配置与已知 AGL 消费端补丁。声明覆盖范围内匹配不等于完整 SDK 构建等价，原有发行阻断保持不变。
 
-自动化收尾补充实际链接器 map／静态库成员、运行时资源哈希、可信原生依赖版本信息及精确可逆的二进制差异分析，见[完整契约](wp12-automation.md)。只在重建出的字节哈希精确匹配上游声明时标记转换已解释，原始 SDK 差异不删除；未匹配的发布者历史不能凭猜测补写。
+自动化收尾补充实际链接器 map／静态库成员、运行时资源哈希、可信原生依赖版本信息及精确可逆的二进制差异分析，见[完整契约](candidate-verification.md)。只在重建出的字节哈希精确匹配上游声明时标记转换已解释，原始 SDK 差异不删除；未匹配的发布者历史不能凭猜测补写。
