@@ -4,8 +4,10 @@
 #endif
 #endif
 #include "WindowsFrame.h"
+#include "WindowsFramePolicy.h"
 #include <QCoreApplication>
 #include <QGuiApplication>
+#include <QOperatingSystemVersion>
 #include <QPlatformSurfaceEvent>
 #include <QScopedValueRollback>
 #include <QTimer>
@@ -23,14 +25,37 @@ constexpr DWORD cornerPreferenceAttribute = 33;
 constexpr DWORD visibleBorderAttribute = 37;
 constexpr DWORD darkModeAttribute = 20;
 constexpr int roundCorners = 2;
+bool useLegacyClientCaptionWorkaround() {
+    static const bool enabled = [] {
+        OSVERSIONINFOEXW info{};
+        info.dwOSVersionInfoSize = sizeof(info);
+        info.wProductType = VER_NT_WORKSTATION;
+        const auto conditions = VerSetConditionMask(0, VER_PRODUCT_TYPE, VER_EQUAL);
+        const bool workstation = VerifyVersionInfoW(&info, VER_PRODUCT_TYPE, conditions);
+        const auto version = QOperatingSystemVersion::current();
+        return useWindows10ClientCaptionWorkaround(workstation, version.majorVersion(),
+                                                    version.minorVersion(), version.microVersion());
+    }();
+    return enabled;
+}
 int resizeBorder(HWND hwnd, int metric) {
     const UINT dpi = GetDpiForWindow(hwnd);
     return GetSystemMetricsForDpi(metric, dpi) + GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi);
 }
+bool customCaptionWindow(HWND hwnd, const QWindow *window) {
+    const auto style = GetWindowLongPtrW(hwnd, GWL_STYLE);
+    if (!useLegacyClientCaptionWorkaround())
+        return (style & WS_CAPTION) == WS_CAPTION;
+    if (!window || window->windowState() == Qt::WindowFullScreen ||
+        window->visibility() == QWindow::FullScreen)
+        return false;
+    return (style & WS_CAPTION) == WS_CAPTION ||
+           (style & WS_THICKFRAME);
+}
 bool ordinaryCaptionWindow(HWND hwnd, const QWindow *window) {
     return window && window->windowState() == Qt::WindowNoState &&
            window->visibility() != QWindow::FullScreen && !IsZoomed(hwnd) && !IsIconic(hwnd) &&
-           (GetWindowLongPtrW(hwnd, GWL_STYLE) & WS_CAPTION) == WS_CAPTION;
+           customCaptionWindow(hwnd, window);
 }
 bool nativeOuterSize(HWND hwnd, UINT dpi, qint64 clientWidth, qint64 clientHeight, SIZE *size) {
     if (!dpi || clientWidth <= 0 || clientHeight <= 0 ||
@@ -232,6 +257,24 @@ void WindowsFrame::apply() {
     }
     // The owned HWND must be bound before synchronous NCCALCSIZE callbacks.
     m_id = id;
+    // Retain DWM and WS_THICKFRAME on Windows 10 while removing only the native
+    // caption, which can otherwise be painted over the custom client area.
+    if (useLegacyClientCaptionWorkaround() && m_window->windowState() != Qt::WindowFullScreen &&
+        m_window->visibility() != QWindow::FullScreen) {
+        SetLastError(0);
+        const auto style = GetWindowLongPtrW(hwnd, GWL_STYLE);
+        if (!style && GetLastError()) {
+            m_id = 0;
+            return;
+        }
+        if (style & WS_CAPTION) {
+            SetLastError(0);
+            if (!SetWindowLongPtrW(hwnd, GWL_STYLE, style & ~LONG_PTR(WS_CAPTION)) && GetLastError()) {
+                m_id = 0;
+                return;
+            }
+        }
+    }
     const auto policy = DWMNCRP_ENABLED;
     DwmSetWindowAttribute(hwnd, DWMWA_NCRENDERING_POLICY, &policy, sizeof(policy));
     const BOOL dark = m_dark;
@@ -259,6 +302,11 @@ bool WindowsFrame::eventFilter(QObject *watched, QEvent *event) {
 #endif
         }
     }
+#ifdef Q_OS_WIN
+    if (watched == m_window && event->type() == QEvent::WindowStateChange &&
+        useLegacyClientCaptionWorkaround())
+        QTimer::singleShot(0, this, [this] { apply(); });
+#endif
     return false;
 }
 bool WindowsFrame::nativeEventFilter(const QByteArray &type, void *message, qintptr *result) {
@@ -306,7 +354,7 @@ bool WindowsFrame::nativeEventFilter(const QByteArray &type, void *message, qint
         // size Windows hides the resize band outside the monitor work area.
         // Fullscreen has no caption. Keep DefWindowProc's zero-inset client
         // rectangle there, or Qt mistakes the restored window for normal mode.
-        if ((GetWindowLongPtrW(hwnd, GWL_STYLE) & WS_CAPTION) == WS_CAPTION)
+        if (customCaptionWindow(hwnd, m_window))
             client->top = outer.top + (IsZoomed(hwnd) ? resizeBorder(hwnd, SM_CYSIZEFRAME) : 1);
         *result = 0;
         return true;
@@ -332,6 +380,12 @@ bool WindowsFrame::nativeEventFilter(const QByteArray &type, void *message, qint
             return true;
         }
     }
+    if (msg->message == WM_STYLECHANGED && LONG_PTR(msg->wParam) == GWL_STYLE &&
+        useLegacyClientCaptionWorkaround() && m_window &&
+        m_window->windowState() != Qt::WindowFullScreen &&
+        m_window->visibility() != QWindow::FullScreen &&
+        (GetWindowLongPtrW(hwnd, GWL_STYLE) & WS_CAPTION))
+        QTimer::singleShot(0, this, [this] { apply(); });
     if (msg->message == WM_DWMCOMPOSITIONCHANGED || msg->message == WM_THEMECHANGED ||
         msg->message == WM_DPICHANGED)
         QTimer::singleShot(0, this, [this] { apply(); });
@@ -378,6 +432,7 @@ QVariantMap WindowsFrame::diagnostics() const {
         data.insert(QStringLiteral("resizeStyle"), (style & WS_THICKFRAME) != 0);
         data.insert(QStringLiteral("composition"), composition != FALSE);
         data.insert(QStringLiteral("nonClientRendering"), rendering != FALSE);
+        data.insert(QStringLiteral("expectedCaptionStyle"), !useLegacyClientCaptionWorkaround());
         data.insert(QStringLiteral("cornerPreferenceSupported"), SUCCEEDED(cornerStatus));
         data.insert(QStringLiteral("cornerPreference"), corners);
         data.insert(QStringLiteral("visibleBorderPixels"), border);

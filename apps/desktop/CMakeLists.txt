@@ -457,6 +457,8 @@ if(BUILD_TESTING)
 endif()
 
 if(BUILD_TESTING AND WIN32)
+    add_executable(xdzip-windows-frame-policy-test tests/windows_frame_policy_test.cpp)
+    add_test(NAME windows_frame_policy COMMAND xdzip-windows-frame-policy-test)
     add_executable(xdzip-windows-frame-test tests/windows_frame_test.cpp WindowsFrame.cpp WindowsFrame.h)
     target_link_libraries(xdzip-windows-frame-test PRIVATE Qt6::Core Qt6::Gui Qt6::Qml dwmapi)
     add_test(NAME native_windows_frame_calculation COMMAND xdzip-windows-frame-test)

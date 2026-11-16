@@ -12,11 +12,20 @@ int main(int argc, char **argv) {
     WindowsFrame frame;
     frame.setWindow(&window);
     window.create();
-    if (!frame.diagnostics().value(QStringLiteral("attached")).toBool()) {
+    const auto diagnostic = frame.diagnostics();
+    if (!diagnostic.value(QStringLiteral("attached")).toBool()) {
         std::fprintf(stderr, "Native frame was not attached\n");
         return 1;
     }
-    const int topInset = frame.diagnostics().value(QStringLiteral("topInsetPixels")).toInt();
+    if (!diagnostic.value(QStringLiteral("resizeStyle")).toBool() ||
+        diagnostic.value(QStringLiteral("captionStyle")).toBool() !=
+            diagnostic.value(QStringLiteral("expectedCaptionStyle")).toBool() ||
+        (diagnostic.value(QStringLiteral("composition")).toBool() &&
+         !diagnostic.value(QStringLiteral("nonClientRendering")).toBool())) {
+        std::fprintf(stderr, "Unexpected native caption, resize, or DWM rendering policy\n");
+        return 8;
+    }
+    const int topInset = diagnostic.value(QStringLiteral("topInsetPixels")).toInt();
     if (topInset != 1) {
         std::fprintf(stderr, "Unexpected native client top inset: %d\n", topInset);
         return 7;
@@ -67,16 +76,28 @@ int main(int argc, char **argv) {
         std::fprintf(stderr, "Invalid payload was handled\n");
         return 5;
     }
-    MSG hit{};
-    hit.hwnd = hwnd;
-    hit.message = WM_NCHITTEST;
-    hit.lParam = MAKELPARAM(outer.left, outer.top);
-    qintptr hitResult = 0;
-    if (!frame.nativeEventFilter(QByteArrayLiteral("windows_generic_MSG"), &hit, &hitResult) ||
-        hitResult != HTTOPLEFT) {
-        std::fprintf(stderr, "Top-left resize hit test failed\n");
-        return 6;
+    struct HitCase { int x; int y; int expected; };
+    const int midX = outer.left + (outer.right - outer.left) / 2;
+    const int midY = outer.top + (outer.bottom - outer.top) / 2;
+    const HitCase cases[] = {
+        {outer.left, outer.top, HTTOPLEFT}, {midX, outer.top, HTTOP},
+        {outer.right - 1, outer.top, HTTOPRIGHT}, {outer.left, midY, HTLEFT},
+        {outer.right - 1, midY, HTRIGHT}, {outer.left, outer.bottom - 1, HTBOTTOMLEFT},
+        {midX, outer.bottom - 1, HTBOTTOM}, {outer.right - 1, outer.bottom - 1, HTBOTTOMRIGHT},
+    };
+    for (const auto &sample : cases) {
+        MSG hit{};
+        hit.hwnd = hwnd;
+        hit.message = WM_NCHITTEST;
+        hit.lParam = MAKELPARAM(sample.x, sample.y);
+        qintptr hitResult = 0;
+        if (!frame.nativeEventFilter(QByteArrayLiteral("windows_generic_MSG"), &hit, &hitResult) ||
+            hitResult != sample.expected) {
+            std::fprintf(stderr, "Resize hit test failed: expected %d, got %lld\n",
+                         sample.expected, static_cast<long long>(hitResult));
+            return 6;
+        }
     }
-    std::puts("Both WM_NCCALCSIZE forms and resize hit test passed");
+    std::puts("Both WM_NCCALCSIZE forms, native policy, and resize hit tests passed");
     return 0;
 }

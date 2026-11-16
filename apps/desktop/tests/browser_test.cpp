@@ -7092,7 +7092,8 @@ QtObject {
             QVERIFY(QMetaObject::invokeMethod(frame, "diagnostics",
                                               Q_RETURN_ARG(QVariantMap, nativeFrame)));
             QVERIFY(nativeFrame.value("attached").toBool());
-            QVERIFY(nativeFrame.value("captionStyle").toBool());
+            QCOMPARE(nativeFrame.value("captionStyle").toBool(),
+                     nativeFrame.value("expectedCaptionStyle").toBool());
             QVERIFY(nativeFrame.value("resizeStyle").toBool());
             if (nativeFrame.value("composition").toBool())
                 QVERIFY(nativeFrame.value("nonClientRendering").toBool());
