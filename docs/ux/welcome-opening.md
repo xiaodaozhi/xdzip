@@ -1,23 +1,21 @@
-# 欢迎页读取遮罩与创建完成行为
+# Welcome-page loading overlay and creation completion
 
-2026-10-16 修订，参数源为 [welcome-reference.json](../../specs/visual/welcome-reference.json)，动态高保真入口为 [欢迎页读取状态](../../design/hifi/sources/welcome.html?opening=1)。沿用主窗口、菜单和欢迎页的逻辑单位，标题栏不变。
+Revised 2026-10-16. Parameters come from [welcome-reference.json](../../specs/visual/welcome-reference.json); the dynamic high-fidelity entry is [welcome loading state](../../design/hifi/sources/welcome.html?opening=1). It retains the main window, menu and welcome-page logical units and leaves the title bar unchanged.
 
-欢迎页打开真实压缩包时，在正文上方居中显示浮动卡片及半透明遮罩。卡片正常宽 360、内距 24、间距 12、圆角 8、标题 16，窄窗口按可用宽度约束；文件名中间省略，状态说明可换行，取消按钮始终可达。浅深色均复用共享主题，辅助字号沿用全局设置。
+When opening a real archive from the welcome page, a floating card and translucent overlay appear centered above the body. The normal card is 360 wide with 24 padding, 12 gap, radius 8 and title size 16; narrow windows constrain it to available width. The filename is middle-elided, status can wrap, and Cancel remains reachable. Light and dark themes reuse shared tokens; accessibility font sizes follow global settings.
 
-已打开压缩包的添加与包内移动复用 BrowserBusyOverlay 卡片及尺寸，背景完全透明，保留原文件页并阻止底层操作。标题、说明、进度辅助名称及取消按钮使用实际操作名称；操作身份持续到任务清理和目录刷新结束，不借用“打开”或“加载”。首次打开的读取遮罩仍遵循上面的半透明政策。
+Adding to an open archive and moving entries within it reuse the BrowserBusyOverlay card and dimensions, with a fully transparent background that keeps the existing file page visible while blocking underlying operations. Title, description, progress accessible name and Cancel use the actual operation name. Operation identity persists through task cleanup and directory refresh, rather than borrowing “open” or “load”. Initial opening retains the translucent reading overlay above.
 
-English: Archive additions and internal moves keep the existing file page visible beneath a transparent blocking overlay. The shared card names the actual operation through task cleanup and browser refresh. Initial archive opening keeps its existing dimmed reading view.
+The metadata-reading interface currently has no total bytes or percentage, so it displays an active progress bar and “Reading archive contents” without simulating percentages with a timer. Cancel calls the existing cancellation request, creates no extraction task and writes no file. The overlay disappears after cancellation is confirmed, failure or success; failures remain visible on the welcome page and success enters the file list. During reading, the body blocks repeated opening, creation and drops; the title bar retains its layout and host command rules.
 
-当前元数据读取接口没有总字节和百分比进度，显示持续活动的进度条与“正在读取压缩包目录”状态，不使用计时模拟百分比。取消调用既有请求取消，不创建解压任务，不写出文件。取消确认、失败或成功结束后自动移除遮罩；失败信息仍显示于欢迎页，成功进入文件列表。读取期间阻止正文重复打开、新建与拖入，标题栏保持既有布局与宿主命令规则。
+The HTML prototype shows this state with a cancellable example wait and does not read dropped file contents. Cancellation clears timer callbacks and must not later jump to the example. High-fidelity `opening=1` displays a fixed waiting state; original PNGs and hashes remain unchanged.
 
-HTML 设计原型用可取消的示例等待展示该状态，不读取拖入文件内容。取消后清除定时回调，不能稍后跳入示例；高保真 `opening=1` 固定展示等待状态，原始 PNG 和哈希保持不变。
+The creation window removes “Open destination folder when finished”. Automatic completion does not call Finder/Explorer; existing creation results still open automatically within the application, including supported encrypted and numbered split archives. Extraction's “Open destination folder when finished” and explicit user clicks to open a directory retain their own semantics. The legacy creation auto-open-directory argument is ignored for both already-committed and terminal-first paths.
 
-创建窗口移除“完成后打开目标文件夹”。自动完成路径不调用 Finder／Explorer，既有创建结果仍在本应用中自动打开；受支持的加密与编号分卷也可浏览。解压的“完成后打开目标文件夹”及用户主动点击打开目录的动作保持各自语义。旧创建调用中的目录自动打开参数忽略，以覆盖已提交和终态先到的两条路径。
+Creation result counts consistently display “已保存” in Chinese and “Saved” in English, retaining their existing numeric meaning. Placeholders for all shared operation inputs explicitly bind textSecondary, preventing dark password fields from inheriting a light platform default; disabled states retain shared-control policy.
 
-创建结果计数统一显示“已保存”，英文为 Saved，保留现有数值含义。所有共享操作输入框的 placeholder 显式绑定 textSecondary，避免深色密码框沿用平台浅色默认值；禁用状态仍遵循共享控件策略。
+Acceptance covers real cancellation, reading-failure recovery, unchanged title-bar geometry, light/dark themes and accessibility font sizes, and successful creation opening in-app without opening a system directory. Test screenshots and measurements go only to build/ or CI artifacts.
 
-验收覆盖真实取消、读取失败恢复、标题栏几何不变、浅深色与辅助字号、创建成功应用内打开且无系统目录打开。测试截图和量测只写入 build/ 或 CI 工件。
+External-file launch revision: for command-line, Windows Open With, Linux desktop entry or macOS file-open events, receive the known open intent and submit real reading before first showing the main window. The window does not wait for reading to finish; it immediately shows the existing cancellable progress card while hiding welcome branding, open/create cards and drop area. Success shows the file list; failure or cancellation restores the welcome page and actual feedback. An ordinary empty launch still shows the welcome page, and opening from the welcome page retains the original overlay. Title-bar, main-window and menu proportions remain unchanged, with no artificial delay threshold or fabricated progress.
 
-外部文件启动修订：通过命令行、Windows 打开方式、Linux 桌面入口或 macOS 文件打开事件进入时，在首次显示主窗口前接收已知打开意图并提交真实读取。窗口不等待读取完成，直接显示现有可取消进度卡片，隐藏欢迎页的品牌说明、打开／新建卡片与拖入区域；成功后显示文件列表，失败或取消后恢复欢迎页及真实反馈。正常空启动仍显示欢迎页，欢迎页内主动打开仍保留原遮罩效果。标题栏、主窗口与菜单的尺寸比例不变，不增加延时阈值或伪造进度。
-
-高保真外部启动入口为 [external=1](../../design/hifi/sources/welcome.html?external=1)，HTML 仅展示相同状态，不模拟系统文件关联。回归覆盖隐藏窗口预提交、首次呈现时欢迎内容不可见、失败恢复和各平台真实系统打开；关联探针记录实际 frameSwapped 次数及欢迎内容可见次数，不以单纯成功读取替代启动显示检查。
+The high-fidelity external-launch entry is [external=1](../../design/hifi/sources/welcome.html?external=1). HTML shows the same state without simulating system file association. Regressions cover submission before showing the window, invisible welcome content on first presentation, failure recovery and real system opening on each platform. Association probes record actual frameSwapped and visible-welcome-content counts; successful reading alone does not replace startup-display checks.

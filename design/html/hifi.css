@@ -705,6 +705,8 @@ dialog:is([data-kind="progress"], [data-kind="archive-test"]) .modal-content { p
 .path-card h2 { font-size:calc(24px * var(--operation-progress-density)); font-weight:600; margin:0 0 calc(14px * var(--operation-progress-density)); }
 .path-card>div { display:flex; gap:calc(18px * var(--operation-progress-density)); align-items:center; border:calc(1px * var(--operation-progress-density)) solid var(--border); background:var(--surface); border-radius:calc(9px * var(--operation-progress-density)); padding:calc(14px * var(--operation-progress-density)) calc(18px * var(--operation-progress-density)); font-size:calc(27px * var(--operation-progress-density)); min-height:calc(70px * var(--operation-progress-density)); }
 .path-card svg { width:calc(48px * var(--operation-progress-density)); height:calc(48px * var(--operation-progress-density)); }
+#progress-file-icon { flex:none; }
+#progress-file { flex:1; min-width:0; white-space:nowrap; overflow:hidden; }
 .progress-card { padding:calc(28px * var(--operation-progress-density)); }
 .progress-line { display:flex; align-items:center; gap:calc(26px * var(--operation-progress-density)); }
 .progress-line .progress-track { flex:1; height:calc(30px * var(--operation-progress-density)); border-radius:calc(20px * var(--operation-progress-density)); margin:0; }

@@ -12,6 +12,13 @@ scripts/qt-source-identity/*.base64 text eol=lf
 *.rar binary
 *.r[0-9][0-9] binary
 *.woff2 binary
+# Transport fixtures retain exact counted lines, zero spaces and CRLF bytes.
+tests/fixtures/uu/*.uu binary
+tests/fixtures/uu/*.uue binary
+tests/fixtures/uu/*.xxe binary
+tests/fixtures/compress/*.Z binary
+tests/fixtures/compress/*.taz binary
+tests/fixtures/aescrypt/*.aes binary
 # Keep the upstream license byte-for-byte, including its original whitespace.
 design/assets/fonts/OFL.txt -text -whitespace
 # Historical source fixtures are verified by SHA-256, including original LF bytes.
@@ -37,3 +44,22 @@ third_party/cldr43-webapp-notices/*.txt -text -whitespace
 patches/qt/6.8.2-network/*.diff -text -whitespace
 tools/qt-network-security/linux-abi-retain.cpp text eol=lf
 tools/qt-network-security/retain-linux-abi.cmake text eol=lf
+
+# Normative RFC dictionary is byte-exact static data.
+third_party/brotli-rfc7932/dictionary.bin binary
+tests/fixtures/brotli/*.br binary
+crates/xdzip-compression/src/brotli/data.rs text eol=lf
+crates/xdzip-compression/src/brotli/fixture_cases.rs text eol=lf
+third_party/brotli-rfc7932/LICENSE.txt text eol=lf
+
+# Owned LHA fixtures and independent expectation bytes are reproducible.
+tests/fixtures/lha/*.lzh binary
+tests/fixtures/pma/*.pma binary
+tests/fixtures/pma/*.bin binary
+tests/fixtures/arj/*.arj binary
+crates/xdzip-compression/src/lzh/fixture_cases.rs text eol=lf
+crates/xdzip-compression/src/pm1/fixture_cases.rs text eol=lf
+crates/xdzip-compression/src/pm2/fixture_cases.rs text eol=lf
+crates/xdzip-compression/src/arj/fixture_cases.rs text eol=lf
+tests/fixtures/arc/*.arc binary
+crates/xdzip-compression/src/arc/fixture_cases.rs text eol=lf

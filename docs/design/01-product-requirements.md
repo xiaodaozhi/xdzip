@@ -1,74 +1,74 @@
-# xdzip：01 产品与需求
+# xdzip: 01 Product and requirements
 
-## 1. 产品定位
+## 1. Product positioning
 
-xdzip 是面向 macOS、Windows、Linux 的桌面归档管理器。主要价值是像普通文件管理器一样查看压缩包，并可靠地完成选定内容解压和新建归档。用户不必先把整个归档展开到磁盘，也不必理解插件和编解码实现。
+xdzip is a desktop archive manager for macOS, Windows, and Linux. Its primary value is letting users inspect archives like ordinary file folders and reliably extract selected content or create archives. Users do not have to unpack the entire archive to disk first or understand plugins and codec implementations.
 
-优先体验为 macOS 桌面，包括中文输入法、⌘ 快捷键、Retina、系统文件选择和 Finder 打开方式；三个平台共享信息结构、任务行为和安全语义，遵循各平台键盘、窗口和文件系统习惯。
+The priority experience is the macOS desktop, including Chinese input methods, ⌘ shortcuts, Retina, system file selection, and opening through Finder. All three platforms share information architecture, task behavior, and security semantics while following their own keyboard, window, and filesystem conventions.
 
-## 2. 编号需求
+## 2. Numbered requirements
 
-| ID | 需求 | 验收方式 |
+| ID | Requirement | Acceptance method |
 |---|---|---|
-| P01 | 打开归档只读取和浏览，不自动解压 | 打开测试归档后，目标目录和临时预览目录没有新增文件 |
-| P02 | 目录导航、搜索、稳定排序、单选及范围多选 | 十万条真实元数据集可分页操作，切换排序后选择身份正确 |
-| P03 | 选择性解压、全部解压、冲突预检及结果摘要 | 覆盖、跳过、改名、失败和取消均可观察且与实际磁盘一致 |
-| P04 | 从文件和目录创建 ZIP、TAR、TAR.GZ | 系统工具或独立参考工具可读取内容，取消不损坏已有目标 |
-| P05 | 能力驱动地开放格式、加密、分卷等操作 | 不支持的操作不可提交，核心再次拒绝伪造请求 |
-| P06 | 有界后台任务，界面保持可用，可取消 | 大任务中可搜索其他会话；取消结果包含已提交项及未完成项 |
-| P07 | 路径、链接、特殊文件和归档炸弹防护 | 对抗性样本不能越出授权目标，不超过实际输出配额 |
-| P08 | 现代一致界面，可用键盘、IME 和辅助技术操作 | 三平台验收表；焦点、读屏、高对比、200% 缩放可用 |
-| P09 | 明确的低资源预算和可复现实测 | 发布基准包含运行时、进程树、字体、GPU 和工作负载 |
-| P10 | Rust 核心与界面隔离，格式可按规范扩展 | 无 Qt 的核心测试可运行；独立格式适配器接入无需改 QML |
-| P11 | 隐私和密码保护 | 默认无遥测；日志无密码及完整用户路径；退出清理可清理的秘密 |
-| P12 | 可审计、可复现、可合法分发的版本 | 依赖锁、SBOM、许可证清单、签名及安装卸载验证齐全 |
-| P13 | 自愿安装第三方格式扩展，明确权限和兼容性 | 默认不执行下载扩展；沙箱/协议/签名或授权检查未通过则拒绝 |
-| P14 | 有限、明确的预览和临时打开 | 仅用户触发；受大小、类型、输出配额和临时目录策略限制 |
-| P15 | 错误可定位、可恢复，避免假成功 | 错误码和摘要一致；断电、磁盘满、源变化均有独立测试 |
+| P01 | Opening an archive only reads and browses it; it does not extract automatically | Opening a test archive creates no files in the destination or temporary preview directory |
+| P02 | Directory navigation, search, stable sorting, single selection, and range-based multiple selection | A real metadata set of 100,000 entries can be paged through; selection identities remain correct after changing sort order |
+| P03 | Selective and full extraction, conflict preflight, and result summary | Overwrite, skip, rename, failure, and cancellation are observable and match the actual disk state |
+| P04 | Create ZIP, TAR, and TAR.GZ from files and directories | System tools or independent reference tools can read the content; cancellation does not damage an existing destination |
+| P05 | Expose formats, encryption, split volumes, and other actions according to capabilities | Unsupported actions cannot be submitted, and the core also rejects forged requests |
+| P06 | Bounded background tasks, a usable interface, and cancellation | Other sessions remain searchable during large tasks; cancellation results include committed and unfinished items |
+| P07 | Protection against path escapes, links, special files, and archive bombs | Adversarial samples cannot escape the authorized destination or exceed actual output quotas |
+| P08 | A modern, consistent interface operable by keyboard, IME, and assistive technologies | Three-platform acceptance checklist; focus, screen readers, high contrast, and 200% scaling are usable |
+| P09 | Explicit low-resource budgets and reproducible measurements | Release benchmarks include runtime, process tree, fonts, GPU, and workload |
+| P10 | Rust core isolated from the interface, with formats extensible according to the specification | Core tests run without Qt; independent format adapters can be integrated without changing QML |
+| P11 | Privacy and password protection | No telemetry by default; logs contain no passwords or full user paths; secrets that can be cleared are cleared on exit |
+| P12 | Auditable, reproducible, legally distributable releases | Dependency locks, SBOM, license inventory, signing, and install/uninstall verification are complete |
+| P13 | Voluntary installation of third-party format extensions with explicit permissions and compatibility | Downloaded extensions are not executed by default; reject them if sandbox, protocol, signature, or authorization checks fail |
+| P14 | Limited, explicit preview and temporary opening | Only user initiated; subject to size, type, output quota, and temporary-directory policy |
+| P15 | Diagnosable, recoverable errors without false success | Error codes and summaries agree; power loss, full disks, and changed sources have separate tests |
 
-## 3. 操作流程
+## 3. Workflows
 
-### 打开和浏览
+### Open and browse
 
-文件关联、拖入或“打开”均获得一个用户授权的源文件句柄。按文件魔数和格式探测确定后端，后缀仅提供提示。会话先显示归档标题和探测状态，再增量显示内容。ZIP 可读取目录；TAR 等流式格式显示“正在扫描”，扫描期间总条目数可未知。部分索引不能伪装成完整搜索结果。
+A file association, drag-and-drop, or “Open” obtains a user-authorized source file handle. Determine the backend from file magic and format probing; the extension is only a hint. A session first displays the archive title and probing status, then incrementally displays content. ZIP can read its directory; streaming formats such as TAR display “Scanning,” and the total entry count may be unknown during the scan. A partial index must not masquerade as complete search results.
 
-遇到密码先说明是读取目录还是读取内容需要密码。用户取消密码输入后，会话保留可用元数据或返回可操作错误，不静默尝试空密码或无限重试。文件缺失、格式不支持、损坏和权限拒绝使用不同提示。
+When a password is needed, explain whether it is required to read the directory or the content. If the user cancels password entry, retain usable session metadata or return an actionable error; do not silently try an empty password or retry indefinitely. Missing files, unsupported formats, corruption, and permission denial have distinct messages.
 
-### 解压
+### Extract
 
-工具栏提供“解压选中项”和“全部解压”。有选择时默认使用选中项；没有选择时默认所有条目，**不把当前搜索结果悄悄当成全部归档**。搜索页可通过单独菜单“解压搜索结果”生成明确快照，并在确认区显示数量及“当前结果”的范围。
+The toolbar offers “Extract selected” and “Extract all.” Default to the selection when one exists and to all entries otherwise; **do not silently treat the current search results as the entire archive**. A separate “Extract search results” menu action can create an explicit snapshot from the search page, with its count and “current results” scope shown in the confirmation area.
 
-用户选择目标目录，可选“创建同名子目录”。核心生成计划：去重递归目录选择、路径可映射性、能力检查、预计大小、已知冲突及风险。对尚未完成的索引，全部解压计划等待扫描完成；大型计划异步构建，有进度和取消。
+The user chooses a destination directory and may select “Create a subdirectory with the same name.” The core builds a plan covering deduplication of recursive directory selections, path mapping, capability checks, estimated size, known conflicts, and risks. A full-extraction plan waits for an unfinished index to finish scanning. Large plans are built asynchronously, with progress and cancellation.
 
-默认不覆盖现有文件，遇冲突进入等待决策。对话框提供跳过、改名、覆盖，以及“对本次任务后续同类冲突应用”。决定绑定任务及冲突 ID；任务在实际提交时重新检查磁盘。完成摘要显示成功、跳过、失败、取消前已完成项，并提供“在系统中显示目标目录”。
+Existing files are not overwritten by default. A conflict pauses for a decision. The dialog offers skip, rename, overwrite, and an option to apply the decision to subsequent similar conflicts in the same task. Decisions are bound to the task and conflict ID; the task checks the disk again when actually committing. The completion summary shows successes, skips, failures, and items completed before cancellation, and offers “Show destination in system.”
 
-### 创建归档
+### Create an archive
 
-添加文件/目录 → 选择格式与目标 → 按后端能力选择压缩级别 → 预检 → 后台写入同目录临时归档 → 校验/关闭 → 原子发布。默认 ZIP/Deflate，压缩级别显示“快速/均衡/更小”并展示对应后端参数，不能承诺各格式同等级同结果。目标在输入树内时排除目标和本次临时文件，拒绝会无限递归的输入。
+Add files/directories → choose format and destination → choose a compression level according to backend capabilities → preflight → write a temporary archive in the same directory in the background → verify/close → publish atomically. The default is ZIP/Deflate. Compression levels are labeled “Fast,” “Balanced,” and “Smaller,” with their corresponding backend parameters shown; the same level cannot promise identical results across formats. When the destination is inside an input tree, exclude both the destination and this operation's temporary file, and reject input that would recurse indefinitely.
 
-### 预览和临时打开
+### Preview and temporary opening
 
-当前源码提供用户主动触发的有限[文本／图像预览](../engineering/content-preview.md)，格式、输入、像素和实际解码工作受白名单与独立配额限制；外部打开先完整解码到受控临时目录，说明将调用系统应用。禁止自动执行归档内程序、脚本、宏或 HTML。可执行文件不会因“预览”自动启动。
+The current source provides user-initiated, limited [text/image preview](../engineering/content-preview.md), with formats, input, pixels, and actual decoding work restricted by allowlists and independent quotas. External opening first fully decodes content into a controlled temporary directory and explains that a system application will be invoked. Programs, scripts, macros, and HTML in an archive must not execute automatically. Executable files do not start automatically as a result of “preview.”
 
-## 4. 范围和版本
+## 4. Scope and versions
 
-下表保留最初的阶段划分，用于解释需求来源，不代表当前版本的功能清单或发行计划。当前支持情况以根目录 [README](../../README.md)和对应工程契约为准。
+The table preserves the original stage breakdown to explain the requirements' origins. It is not a list of current-version features or a release plan. For current support, see the root [README](../../README.md) and the relevant engineering contracts.
 
-| 阶段 | 交付 | 明确后续项 |
+| Stage | Deliverables | Explicit follow-up items |
 |---|---|---|
-| v0.1 私测 | Qt 产品骨架；ZIP Store/Deflate 浏览/创建/解压、AES-256 与编号分卷创建；TAR/TAR.GZ；路径安全；任务取消；基础键盘及中文体验 | 加密／分卷读取、7z、RAR、外部扩展、预览、归档内编辑 |
-| v0.2 公测 | 7z 能力验证；条件满足时 RAR 只读；文本/图像预览；外部扩展 SDK 试验；大索引优化 | 完整第三方生态、通用恢复和任意格式写入 |
-| v1.0 | 三平台已验证安装包；稳定核心行为；性能预算；符合条件的第三方扩展；许可证和安全流程 | 每种格式加密/分卷须单独列支持项，不因版本号自动包含 |
+| v0.1 private test | Qt product skeleton; ZIP Store/Deflate browsing, creation, and extraction, AES-256 and numbered-volume creation; TAR/TAR.GZ; path security; task cancellation; basic keyboard and Chinese-language experience | Encrypted/split archive reading, 7z, RAR, external extensions, preview, in-archive editing |
+| v0.2 public test | 7z capability verification; read-only RAR when conditions are met; text/image preview; external extension SDK trial; large-index optimization | Full third-party ecosystem, general recovery, writing arbitrary formats |
+| v1.0 | Verified installers on three platforms; stable core behavior; performance budgets; eligible third-party extensions; licensing and security processes | Encryption and split-volume support must be listed separately for each format; the version number does not imply coverage |
 
-当前实现支持受限的 AES-256 ZIP 和分卷读取，也支持 7z 的密码、固实和分卷，以及符合条件的普通归档重建修改；传统 ZIP 加密、加密或分卷包修改仍不支持。具体能力及拒绝条件见[归档打开](../engineering/archive-opening.md)、[归档修改](../engineering/archive-transfers.md)和[格式后端](../engineering/native-codecs.md)。第三方扩展与选择兼容后端仍属于设计，不应将其写成已实现。
+The current implementation supports limited AES-256 ZIP and split-volume reading, 7z passwords, solid archives, and split volumes, as well as rebuilding and modifying eligible regular archives. Traditional ZIP encryption and modification of encrypted or split archives remain unsupported. See [archive opening](../engineering/archive-opening.md), [archive modification](../engineering/archive-transfers.md), and [format backends](../engineering/native-codecs.md) for capabilities and rejection conditions. Third-party extensions and choosing compatible backends remain designs and must not be described as implemented.
 
-## 5. 质量验收
+## 5. Quality acceptance
 
-- 路径安全和输出事务是所有阶段的退出条件，不能放到“以后加固”。
-- 在发行参考 Mac 上验证默认字体、IME、⌘A/⌘O、拖放、Retina 和真实 GPU；在 Windows/Linux 上分别验证平台快捷键与目录授权。
-- 工作负载区分打开、扫描、查询、解压、创建和预览；所有性能预算见 [09](09-performance.md)。
-- 没有真实格式测试或平台实测的功能，在发布说明中标记为未支持或实验性。
+- Path security and output transactions are exit criteria for every stage; they cannot be deferred as “future hardening.”
+- On the release reference Mac, verify the default font, IME, ⌘A/⌘O, drag-and-drop, Retina, and a real GPU. On Windows and Linux, separately verify platform shortcuts and directory authorization.
+- Distinguish opening, scanning, querying, extraction, creation, and preview workloads; see [09](09-performance.md) for all performance budgets.
+- Features without real-format tests or actual platform verification are marked unsupported or experimental in release notes.
 
-## 6. 非目标和产品默认值
+## 6. Non-goals and product defaults
 
-不以首版承担云同步、网络盘协议客户端、病毒扫描服务、磁盘映像挂载或任意归档修复。不会后台扫描用户磁盘，不会自动上传错误内容。默认浅色/深色随系统，基础交互不用付费组件。扩展管理不会出现在每次打开归档的主流程中。
+The first version does not aim to provide cloud synchronization, a network-drive protocol client, a virus-scanning service, disk-image mounting, or arbitrary archive repair. It does not scan user disks in the background or automatically upload error contents. Light/dark appearance follows the system by default, and basic interaction does not use paid components. Extension management does not appear in the main workflow every time an archive is opened.

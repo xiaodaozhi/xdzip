@@ -1,47 +1,47 @@
-# W01 主窗口欢迎页，高保真候选
+# W01 main-window welcome page, high-fidelity candidate
 
-高保真设计已确认，现已接入[正式 HTML 审阅入口](../../design/html/index.html?view=welcome&zoom=1)。Qt 已接入真实打开与新建，桌面人工验收另行登记。设计入口见[欢迎页状态稿](../../design/hifi/sources/welcome.html)，参数见 [welcome-reference.json](../../specs/visual/welcome-reference.json)。颜色、主窗口密度沿用现有 tokens 和 layout-scale，不调整全局规范。四张 PNG 为代码绘制的设计原稿导出，不是产品运行截图。
+The high-fidelity design is confirmed and integrated into the [official HTML review entry](../../design/html/index.html?view=welcome&zoom=1). Qt implements real opening and creation; desktop manual acceptance is recorded separately. See the [welcome page state design](../../design/hifi/sources/welcome.html) and [welcome-reference.json](../../specs/visual/welcome-reference.json). Colors and main-window density retain existing tokens and layout-scale without changing global standards. Four PNGs are exports of code-drawn design originals, not product runtime screenshots.
 
-## 信息与布局
+## Information and layout
 
-起始页主标题为“打包与解压，都简单一点。”，英文为“Packing and unpacking, made simple.”。副文案继续说明先浏览、按需解压与打包分享。
+The start-page headline is “打包与解压，都简单一点。” in Chinese and “Packing and unpacking, made simple.” in English. Supporting copy describes browsing first, extracting as needed and packing to share.
 
-默认客户区 1024×622，最小 832×544；标题区 48，胶囊 32，底栏 32。内容组宽 608，仅水平居中，从可用正文顶部固定 28 逻辑像素开始，不垂直居中。标题 30，窄窗口 28，说明 13，操作标题 16，卡片说明 12。两张操作卡宽 296、高 124，间隔 16、内距 20、圆角 8。它们是欢迎页入口卡片，不替代操作窗口共享按钮。
+Default client area is 1024×622, minimum 832×544; title area 48, capsule 32 and bottom bar 32. The content group is 608 wide, centered horizontally only and starts a fixed 28 logical pixels below the available body top, not vertically centered. Headline size is 30, or 28 in a narrow window; description 13, action title 16 and card description 12. Two action cards are 296 wide by 124 high, with 16 gap, 20 padding and radius 8. These are welcome-page entry cards, not replacements for shared operation-window buttons.
 
-标题栏完整复用主窗口原有组件，保留品牌、起始标签、添加标签与外观设置；欢迎页不改变标题栏的布局、尺寸、字体或图标。正文不展示空文件树、空表头、搜索框或解压工具栏；打开压缩包后再进入浏览布局。主操作为“打开压缩包”，次操作为“创建压缩包”；下方单独显示拖入区和 ZIP、TAR、TAR.GZ。底栏“文件在本机处理”表达处理位置，不作安全保证。任务数字取真实历史数据，稿中 0 仅为首次进入的空历史状态。
+The title bar fully reuses the main window's existing components, retaining branding, start tab, add tab and appearance settings; the welcome page changes none of its layout, dimensions, fonts or icons. The body does not display an empty file tree, table header, search box or extraction toolbar; browsing layout appears after opening an archive. The primary action is “Open archive”, the secondary “Create archive”; a drop area and ZIP, TAR, TAR.GZ appear separately below. “Files are processed locally” in the bottom bar describes processing location, not a safety guarantee. The task count uses real history; zero in the design represents an empty first-use history.
 
-不放示例最近文件、样例容量或产品尚未具备的格式能力。标题区交通灯只表示 macOS 装饰位置，正式实现使用平台窗口能力；Windows、Linux 沿用平台装饰，不复制交通灯。
+Do not show example recent files, sample sizes or format capabilities the product lacks. Traffic lights in the title area indicate macOS decoration placement only; the implementation uses platform window facilities. Windows and Linux retain platform decorations without copying traffic lights.
 
-## 交互设计
+## Interaction design
 
-- 首次启动、最后一个压缩包标签关闭、打开失败后没有可浏览压缩包时可进入欢迎页；后台任务继续运行，不因欢迎页重置。
-- 打开入口调用系统文件选择器，取消停留欢迎页。打开成功后切换真实压缩包标签，失败显示可恢复错误，不能伪造成功列表。
-- 新建入口打开既有创建窗口，取消保留欢迎页。快捷键候选 macOS 为 ⌘O、⌘N，Windows/Linux 为 Ctrl+O、Ctrl+N；实施前核对应用快捷键绑定，本稿不表示已接入。
-- 拖入单个受支持压缩包时，虚线边框改为 2 像素主题强调色，填充 selection，文案“松开即可打开压缩包”。移出恢复默认。目录、多个文件或不支持格式不得显示可打开态，落下时给出明确反馈；不隐式创建压缩包。
-- 卡片完整区域可点击，标题栏之后的键盘顺序为打开、新建、任务。键盘焦点不增加外框，遵循全窗口统一失焦规则。Hover、pressed 使用共享 accentHover、accentPressed，不能只改变透明度。
-- 打开请求进行中时，打开卡片以忙碌标记和“正在打开…”替代标题，临时禁止重复打开和拖入；禁用使用 accentDisabled、accentDisabledText。新建窗口是否可并行沿用宿主规则，不借欢迎页改变任务语义。忙碌、禁用与错误为实施契约，四张静态原稿未展示这些状态。
-- 设置和任务弹出菜单沿用 240 宽、13 字号、32 最小行高，与正文 13 字号比例为 1；欢迎页不另造菜单样式。卡片 16 字号是入口标题，不能作为菜单密度比较基准。
+- The welcome page may appear at first launch, after closing the last archive tab, or after opening fails with no browsable archive. Background tasks continue and are not reset by the welcome page.
+- Open invokes the system file picker; cancellation stays on the welcome page. Success switches to the real archive tab; failure displays a recoverable error and must not fabricate a successful list.
+- Create opens the existing creation window; cancellation retains the welcome page. Candidate shortcuts are ⌘O/⌘N on macOS and Ctrl+O/Ctrl+N on Windows/Linux. Check actual application bindings before implementation; this design does not claim they are integrated.
+- When one supported archive is dragged in, the dashed border becomes a 2-pixel theme accent, fill becomes selection and copy says “Release to open archive”. Leaving restores the default. Directories, multiple files and unsupported formats must not appear openable; dropping them gives clear feedback and never implicitly creates an archive.
+- The entire card is clickable. Keyboard order after the title bar is open, create, tasks. Keyboard focus adds no outline and follows the window-wide focus-loss rule. Hover and pressed use shared accentHover and accentPressed, not opacity alone.
+- While opening, the open card replaces its title with a busy indicator and “Opening…” and temporarily prevents repeated opening and drops; disabled appearance uses accentDisabled and accentDisabledText. Whether the creation window can run concurrently follows host rules; the welcome page does not change task semantics. Busy, disabled and error are implementation contracts not depicted in the four static originals.
+- Settings and task popups retain width 240, font 13 and minimum row height 32, a 1:1 ratio with body font 13; the welcome page introduces no separate menu style. Card font 16 is an entry heading, not a menu-density comparison baseline.
 
-## 验证方法与边界
+## Verification and boundaries
 
-欢迎页需覆盖浅深色、最小窗口、拖入状态和菜单／标题栏比例，检查 DPR 1、1.25、2 及真实页面缩放。不要用缩小截图代替布局或将 CSS 缩放当成浏览器页面缩放。执行结果、图片和几何报告只进入本地／CI 工件，状态由对应 issue 记录。
+Cover light/dark themes, minimum window, drag states and menu/title-bar proportions, checking DPR 1, 1.25 and 2 and actual browser page zoom. Do not substitute a downscaled screenshot for layout or CSS scaling for browser page zoom. Results, images and geometry reports belong only in local/CI artifacts; status is recorded in the corresponding issue.
 
-HTML 交互检查使用 `scripts/check-html-welcome.py`，Qt 使用欢迎页及浏览器回归。HTML 拖入只选择示例，不读取用户文件；Qt 通过实际产品入口打开文件。完整深色欢迎页不代表所有页面都有完整深色原稿，自动检查不能替代原生拖放、读屏和输入法验证。
+HTML interaction checks use `scripts/check-html-welcome.py`; Qt uses welcome-page and browser regressions. HTML drag-in only selects examples and does not read user files; Qt opens files through the real product entry. A complete dark welcome page does not imply complete dark originals for every page, and automated checks do not replace native drag-and-drop, screen-reader or IME verification.
 
-## Qt 真实接入
+## Real Qt integration
 
-WelcomePage、WelcomeAction 仅表达布局和意图。启动及关闭压缩包后显示欢迎页，成功打开后进入对应归档会话浏览；空压缩包仍是有效浏览状态。首次读取期间禁用重复打开及新建，显示“正在打开…”与取消加载；失败保留欢迎页和真实错误消息，可重新选择文件。创建草稿关闭后不产生任务。后台任务列表不随欢迎页重置。
+WelcomePage and WelcomeAction express layout and intent only. The welcome page appears on startup and after closing an archive; successful opening enters the appropriate archive session. An empty archive remains a valid browsing state. Initial loading disables repeated opening and creation, displays “Opening…” and allows load cancellation. Failure retains the welcome page and actual error for reselection. Closing a creation draft creates no task. Background task lists are not reset by the welcome page.
 
-打开按钮和系统快捷键复用 chooseArchive，新建复用 CreateWindow。原生文件选择器保持系统窗口，取消不创建会话。Qt 按已保存的标签／窗口模式路由，空白起始页优先复用，重复归档激活既有会话。
+Open and system shortcuts reuse chooseArchive; creation reuses CreateWindow. The native file picker remains a system window and cancellation creates no session. Qt routes by the saved tab/window mode, preferentially reuses an empty start page and activates existing sessions for duplicate archives.
 
-拖入适配仅接受一个本地普通文件，文件名为 ZIP、TAR、TAR.GZ 或 TGZ。QFileInfo 只检查输入形态，不读取压缩包内容；openDroppedUrls 复用 openPath，格式、预算、错误和源变化仍由现有 Rust 核心检查。拖入扩展名不表示内容有效，目录、多个条目及网络 URL 明确拒绝，不隐式创建。
+Drop handling accepts only one local regular file whose name ends in ZIP, TAR, TAR.GZ or TGZ. QFileInfo checks input shape only and does not read archive content. openDroppedUrls reuses openPath; the existing Rust core still checks format, budgets, errors and source changes. A dropped extension does not prove valid contents. Directories, multiple entries and network URLs are explicitly rejected; no archive is implicitly created.
 
-尺寸取 welcome-reference.json，经 generate-qml-theme.py 进入 Theme；字号放大增长卡片与正文，正文可滚动，键盘聚焦入口时自动滚到可见范围。状态栏和标题区独立增长，不使用 Item.scale。Qt 使用共享 PNG 图标，主按钮为既有深色浅墨图形；不从原稿裁切运行素材。
+Dimensions come from welcome-reference.json into Theme through generate-qml-theme.py. Larger text grows cards and body; the body scrolls and automatically brings focused keyboard entries into view. Status and title areas grow independently without Item.scale. Qt uses shared PNG icons, with the existing dark/light-ink graphic for the primary action; runtime assets are not cut from originals.
 
-自动化入口为 tst_welcome.qml、browser_test.cpp 的 welcomeOpensRealArchivesAndReturns 与 scripts/check-qt-welcome.py。按需三平台 Qt 工作流在 DPR 1、1.25、2 检查真实打开、关闭、失败恢复及 36 项几何，菜单同时检查 240 宽、13 字号。原生拖放、文件选择器、读屏和输入法按需检查，离屏结果不冒充未执行的桌面操作。
+Automation entries are tst_welcome.qml, welcomeOpensRealArchivesAndReturns in browser_test.cpp and scripts/check-qt-welcome.py. On-demand three-platform Qt workflows check real opening, closing, recovery from failure and 36 geometry items at DPR 1, 1.25 and 2, while also checking menu width 240 and font 13. Native drop, file picker, screen reader and IME are checked as needed; offscreen results are not presented as unperformed desktop operations.
 
-标题栏修订：初版欢迎页中对标题栏的专属样式已撤销。Qt ArchiveTabs 恢复接入前的组件原样，HTML 复用主窗口原有源画布及相同比例；欢迎页只替换正文。旧 PNG 与哈希保持历史记录，新修订为 screens/welcome-titlebar-*.png，源为 design/hifi/sources/welcome.html。回归比较欢迎页与打开压缩包后的标题栏、标签及外观按钮几何，防止空态再次改变应用框架。
+Title-bar revision: welcome-specific title-bar styling from the initial version was removed. Qt ArchiveTabs was restored unchanged to its pre-integration component; HTML reuses the main window's existing source canvas and scale. The welcome page changes only the body. Old PNGs and hashes remain historical records; the revision is `screens/welcome-titlebar-*.png`, sourced from design/hifi/sources/welcome.html. Regression compares title bar, tabs and appearance-button geometry before and after opening an archive to prevent the empty state from changing the application frame again.
 
-读取状态：首次打开期间的取消入口移入正文浮动遮罩，进度未知时显示活动进度条，不模拟百分比；详见 [读取遮罩契约](welcome-opening.md)。原始欢迎页位图保留，动态稿提供 opening=1 状态。
+Loading state: the initial-open cancellation entry moved into a floating body overlay. Unknown progress uses an active progress bar without simulated percentages; see the [loading overlay contract](welcome-opening.md). Original welcome bitmaps are retained; the dynamic design provides `opening=1`.
 
-错误／警告反馈追加在格式提示下方，文字使用共享危险色并配 status-warning 图标。出现、换行、清除或更换错误消息均不改变标题与入口卡片的顶部坐标；长内容由正文滚动。关闭托盘驻留主窗口后再次显示只有一个起始页，后台任务不取消。当前可编辑源新增 error=1 状态，旧欢迎页 PNG 保留历史字节，不能用旧居中图覆盖顶部定位契约。
+Error/warning feedback appears below format hints using the shared danger color and status-warning icon. Showing, wrapping, clearing or replacing an error does not change the top coordinates of the headline and entry cards; long content scrolls in the body. Reopening the main window after closing it to the tray shows only one start page and does not cancel background tasks. The editable source adds an `error=1` state; old welcome PNGs retain historical bytes and must not replace the top-positioning contract with their former centered layout.

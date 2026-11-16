@@ -1,21 +1,52 @@
 //! First read-only session service. Called only on a bounded background worker.
+#[cfg(test)]
+mod aescrypt_tests;
+#[cfg(test)]
+mod alz_tests;
+#[cfg(test)]
+mod arc_tests;
+#[cfg(test)]
+mod arj_tests;
+#[cfg(test)]
+mod asar_tests;
+#[cfg(test)]
+mod bh_tests;
+#[cfg(test)]
+mod brotli_tests;
 pub mod catalog;
+#[cfg(test)]
+mod cfb_tests;
 pub mod checking;
+#[cfg(test)]
+mod compress_tests;
 pub mod creation;
+#[cfg(test)]
+mod deb_tests;
 mod disk_index;
+#[cfg(test)]
+mod egg_tests;
 mod exporting;
 pub mod extraction;
 mod formats;
 mod index;
+#[cfg(test)]
+mod lha_tests;
 pub mod listing;
 pub mod navigation;
+#[cfg(test)]
+mod nsis_tests;
 pub mod preview;
 pub mod query;
 pub mod service;
+pub mod sfx;
 mod source;
 mod source_cab;
+#[cfg(test)]
+mod stream_tests;
 mod task_interaction;
 pub mod updating;
+#[cfg(test)]
+mod uu_tests;
 use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -48,7 +79,7 @@ impl Archive {
     pub fn open(path: &Path, control: &Cancellation) -> Result<Self, ScanError> {
         Self::open_with_password(path, control, None)
     }
-    /// Open encrypted headers without exposing a partial metadata snapshot.
+    /// Admit password-dependent archives without exposing a partial metadata snapshot.
     pub fn open_with_password(
         path: &Path,
         control: &Cancellation,
@@ -56,28 +87,50 @@ impl Archive {
     ) -> Result<Self, ScanError> {
         control.check()?;
         let mut source = source::Source::open(path, control)?;
-        let mut format = formats::detect(&mut source)?;
+        let mut format = formats::detect(&mut source, control)?;
+        let tar_identified = format == xdzip_codec_api::Format::Tar
+            && formats::recognized_tar(&mut source, control)?;
         let scanned = if format == xdzip_codec_api::Format::Zip {
             Self::scan_zip(&mut source, control)
         } else {
-            formats::codec(format)
-                .scan_with_password(
-                    &mut source,
-                    control,
-                    formats::limits(format),
-                    password.as_ref().map(extraction::Password::expose),
-                )
-                .map(|rows| (rows, None))
+            formats::scan(
+                &mut format,
+                &mut source,
+                control,
+                password.as_ref().map(extraction::Password::expose),
+            )
+            .map(|rows| (rows, None))
         };
         // Preserve validated self-extracting ZIP sources without using the suffix.
         // Budget/cancel/unsupported failures are authoritative and never retried.
         let scanned = if format == xdzip_codec_api::Format::Tar
+            && tar_identified
+            && matches!(&scanned, Err(ScanError::Invalid))
+        {
+            match formats::discover_ambiguous_tar(&mut source, control) {
+                Ok(Some((candidate, rows))) => {
+                    format = candidate;
+                    Ok((rows, None))
+                }
+                Ok(None) | Err(ScanError::Invalid | ScanError::Unsupported) => scanned,
+                Err(error) => return Err(error),
+            }
+        } else if format == xdzip_codec_api::Format::Tar
+            && !tar_identified
             && matches!(&scanned, Err(ScanError::Invalid))
         {
             match Self::scan_zip(&mut source, control) {
                 Ok(rows) => {
                     format = xdzip_codec_api::Format::Zip;
                     Ok(rows)
+                }
+                Err(ScanError::Invalid) => {
+                    if let Some((candidate, rows)) = formats::discover_weak(&mut source, control)? {
+                        format = candidate;
+                        Ok((rows, None))
+                    } else {
+                        scanned
+                    }
                 }
                 Err(_) => scanned,
             }
@@ -123,15 +176,13 @@ impl Archive {
                 rows.iter()
                     .any(|r| r.link || r.warning || (!r.directory && !r.payload_supported())),
             ) << 2);
-        let edit_restriction = edit_restriction
-            | (u8::from(matches!(
-                format,
-                xdzip_codec_api::Format::Rar
-                    | xdzip_codec_api::Format::Cab
-                    | xdzip_codec_api::Format::Iso
-                    | xdzip_codec_api::Format::Udf
-            )) << 2);
+        let edit_restriction = edit_restriction | (u8::from(!format.descriptor().rewrite) << 2);
         let edit_restriction = edit_restriction | (u8::from(disk.is_some()) << 2);
+        let edit_restriction = edit_restriction
+            | (u8::from(
+                format == xdzip_codec_api::Format::Zip
+                    && rows.iter().any(|row| !matches!(row.method, 0 | 8)),
+            ) << 2);
         let update_allowed = edit_restriction == 0;
         Ok(Self {
             update_allowed,

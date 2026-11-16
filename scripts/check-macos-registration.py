@@ -3,6 +3,7 @@
 import argparse
 import json
 from pathlib import Path
+from archive_formats_generated import ASSOCIATION_FIXTURES, MACOS_ICONS
 import plistlib
 import subprocess
 import sys
@@ -67,14 +68,13 @@ def main():
     if info.get('CFBundleIdentifier') != BUNDLE_ID or len(ranks) != 1 or not ranks <= {'None', 'Alternate'}:
         parser.error('Expected an explicit None or Alternate archive handler rank')
     rank = next(iter(ranks))
-    expected_icons = {'zip','tar','tar-gz','gz','7z','rar','cab','iso','udf'}
+    expected_icons = set(MACOS_ICONS)
     declared = {item.get('CFBundleTypeIconFile') for item in types}
     if declared != {f'xdzip-{name}.icns' for name in expected_icons}:
         parser.error('Expected one document icon for each declared type')
     if any(not (app/'Contents/Resources'/name).is_file() for name in declared):
         parser.error('A declared document icon is missing from the application')
-    format_names = ['sample.zip','sample.tar','sample.tar.gz','sample.tgz',
-                    'sample.7z','sample.rar','sample.cab','sample.iso','sample.udf']
+    format_names = ASSOCIATION_FIXTURES
     formats = args.formats.resolve()
     if not formats.is_relative_to(ROOT/'build') or any(not (formats/name).is_file() for name in format_names):
         parser.error('Expected owned format fixtures under build/')

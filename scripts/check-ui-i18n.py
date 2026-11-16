@@ -36,13 +36,14 @@ def main():
     used = set()
     paths = list((ROOT/'apps/desktop/ui').glob('*.qml')) + [ROOT/'apps/desktop'/name for name in ['BrowserController.cpp','BrowserTransfers.cpp','UiPreferences.cpp','DesktopIntegration.cpp','ApplicationSessions.cpp','FileAssociations.cpp','MacFileAssociations.mm','browser_main.cpp','ShellBatchController.cpp','ShellIntegration.cpp']]
     paths += [ROOT/'apps/desktop/shell'/name for name in ['MacFinderSync.mm', 'MacFinderRelay.mm']]
+    paths.append(ROOT/'crates/xdzip-cli/src/sfx/windows.rs')
     for path in paths:
         text = path.read_text(encoding='utf-8')
         for line in text.splitlines():
             if line.lstrip().startswith('//'): continue
             if re.search(r'"(?:[^"\\]|\\.)*[\u3400-\u9fff](?:[^"\\]|\\.)*"', line):
                 errors.append(f'{path.name}: static CJK text remains in source')
-        for match in re.finditer(r'(?:\b(?:qsTrId|qtTrId|systemDialogText)\(\s*|\bxdzip_shell::text\([^,]+,\s*)"([^"]+)"', text):
+        for match in re.finditer(r'(?:\b(?:qsTrId|qtTrId|systemDialogText|sfx_text)\(\s*|\bxdzip_shell::text\([^,]+,\s*)"([^"]+)"', text):
             key = match.group(1)
             used.add(key)
             if key not in source: errors.append(f'{path.name}: missing {key}')

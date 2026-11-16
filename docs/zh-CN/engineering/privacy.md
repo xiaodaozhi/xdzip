@@ -1,0 +1,21 @@
+# 数据生命周期与诊断
+
+面向用户的隐私说明见[隐私政策](../../../PRIVACY.md)与 [English 版本](../../../PRIVACY.en.md)。本文保留工程实现契约，不将待实现的诊断设计视为已交付功能。
+
+默认无遥测、无后台更新安装、无归档内容上传。基础压缩解压离线可用。产品设置、用户内容和诊断证据分开存放。
+
+| 数据 | 生命周期 | 清理与限制 |
+| --- | --- | --- |
+| 设置与主题 | 跨启动，版本化 schema | 保存失败可恢复默认；损坏文件保留可诊断副本，不读取为代码 |
+| 最近文件 | 可关闭，仅本地 | 独立 recent.json 最多 20 条，64 KiB 读取上限，去重、仅用户可读写；关闭停止新增，清空仅删除记录，路径不进入诊断上传 |
+| 内存索引 | 会话有效期 | 关闭释放；默认不跨启动缓存 |
+| 暂存输出/事务日志 | 任务及恢复期间 | 仅清理自身所有权可证明的项，不删除已发布文件 |
+| 预览缓存 | 用户触发、受限 | 会话结束清理，失效不继续显示旧内容 |
+| 密码 | 短生命周期 | 不落盘、不日志；不承诺系统内部副本绝对擦除 |
+| 更新检查与下载 | 仅用户主动触发 | 固定 GitHub 公开接口和 CDN，不携带登录凭据、归档内容或路径；服务器可见 IP、连接信息及应用版本 |
+| 更新事务回执 | 本地，跨安装重启 | 设置旁独立 update-state.ini 保存事务和目标身份；私有缓存保留失败材料，仅读固定文件，不执行回执内容 |
+| 诊断 | 本地受限、用户显式导出 | 版本/匿名ID/错误码；默认不含内容和完整路径 |
+
+诊断记录需要容量上限与保留策略，在实现中集中配置。导出前显示将包含的字段；用户自行上传前可检查。崩溃恢复只处理受控元数据，不执行归档内容或恢复任意路径写入。
+
+更新网络、签名、安装交接与恢复边界见[主动更新契约](software-update.md)。English: User-initiated update checks contact fixed public GitHub endpoints/CDNs, exposing connection metadata and the application version but no credentials, archive data or paths. Local transaction receipts survive installation restarts in a separate settings-side file; failed update materials remain in the private cache and are never executed as instructions.

@@ -35,7 +35,7 @@ with sync_playwright() as p:
                     page.goto(base + f'design/html/index.html?view={view}&theme={theme}&zoom=1')
                     frame = page.frame_locator('#design-frame')
                     expect(frame.locator('#welcome')).to_be_visible()
-                    expect(frame.locator('.welcome-formats b')).to_have_text(['ZIP','TAR','TAR.GZ','7z','RAR','CAB','ISO','UDF'])
+                    expect(frame.locator('.welcome-formats b')).to_have_text(['ZIP','TAR','TAR.GZ','7z','GZIP','BZip2','TAR.BZ2','LZMA','TAR.LZMA','Lzip','TAR.LZ','XZ','TAR.XZ','RAR','CAB','ISO','UDF'])
                     frame.locator('body').evaluate('() => document.fonts.ready')
                     expect(frame.locator('.toolbar')).to_be_hidden()
                     expect(frame.locator('.workspace')).to_be_hidden()

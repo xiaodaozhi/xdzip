@@ -13,6 +13,45 @@ fn phrase() -> Vec<u8> {
     b"abracadabra abracadabra\n".repeat(6)
 }
 
+#[test]
+fn bzip2_unknown_size_member_preserves_tail_without_weakening_full_span() {
+    for (bytes, expected) in [(PHRASE, phrase()), (EMPTY, vec![])] {
+        let mut complete = bytes.to_vec();
+        complete.extend_from_slice(b"following trailer");
+        let length = complete.len() as u64;
+        let mut reader =
+            Bzip2Reader::new_member(std::io::Cursor::new(&complete), length, 8 << 20).unwrap();
+        let mut out = Vec::new();
+        reader.read_to_end(&mut out).unwrap();
+        assert_eq!(out, expected);
+        assert_eq!(reader.consumed_bytes(), bytes.len() as u64);
+        let mut source = reader.into_member_source().unwrap();
+        assert_eq!(source.position(), bytes.len() as u64);
+        let mut tail = Vec::new();
+        source.read_to_end(&mut tail).unwrap();
+        assert_eq!(tail, b"following trailer");
+        let mut strict =
+            Bzip2Reader::new(complete.as_slice(), length, expected.len() as u64, 8 << 20).unwrap();
+        assert!(strict.read_to_end(&mut Vec::new()).is_err());
+    }
+}
+
+#[test]
+fn bzip2_member_cannot_recover_source_before_eof_or_after_failure() {
+    let reader = Bzip2Reader::new_member(PHRASE, PHRASE.len() as u64, 8 << 20).unwrap();
+    assert!(reader.into_member_source().is_err());
+    let mut reader = Bzip2Reader::new_member(PHRASE, PHRASE.len() as u64, 8 << 20).unwrap();
+    assert!(reader.finish().is_err());
+    assert!(reader.read(&mut [0]).is_err());
+    assert!(reader.into_member_source().is_err());
+    let mut damaged = PHRASE.to_vec();
+    damaged[10] ^= 1;
+    let mut reader =
+        Bzip2Reader::new_member(damaged.as_slice(), damaged.len() as u64, 8 << 20).unwrap();
+    assert!(reader.read_to_end(&mut Vec::new()).is_err());
+    assert!(reader.into_member_source().is_err());
+}
+
 struct Single<'a>(&'a [u8]);
 impl Read for Single<'_> {
     fn read(&mut self, output: &mut [u8]) -> io::Result<usize> {

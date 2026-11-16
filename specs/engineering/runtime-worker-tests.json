@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "profiles": {
+    "worker": "24 real-worker checks with bounded/generated or pinned small archives.",
+    "large": "4 large streaming/creation/index checks, run serially."
+  },
+  "cases": [
+    {
+      "name": "cab_backend_tests::cab_service_open_check_validates_all_records_and_frame_tail_without_output",
+      "source": "crates/xdzip-runtime/src/cab_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "cab_backend_tests::cab_same_folder_selection_charges_history_and_whole_selected_frame_tail",
+      "source": "crates/xdzip-runtime/src/cab_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "cab_backend_tests::cab_one_frame_with_128_files_charges_work_once_in_check_and_extraction",
+      "source": "crates/xdzip-runtime/src/cab_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "cab_backend_tests::cab_frozen_and_running_source_changes_fail_without_publishing_staged_bytes",
+      "source": "crates/xdzip-runtime/src/cab_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "cab_backend_tests::cab_committing_source_change_keeps_old_destination_after_complete_decode",
+      "source": "crates/xdzip-runtime/src/cab_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "cab_backend_tests::cab_running_stage_cancellation_preserves_old_file_and_joins_cleanup",
+      "source": "crates/xdzip-runtime/src/cab_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "extraction::tests::million_record_product_index_and_selected_safe_output",
+      "source": "crates/xdzip-runtime/src/extraction/tests.rs",
+      "profile": "large",
+      "prerequisites": [
+        "million-index"
+      ],
+      "timeout_seconds": 600
+    },
+    {
+      "name": "native_backend_tests::seven_zip_create_open_check_extract_header_password_and_split",
+      "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "native_backend_tests::seven_zip_solid_add_replace_move_and_cancel_preserve_transactions",
+      "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "native_backend_tests::rar4_rar5_encrypted_headers_and_mixed_content_are_read_only",
+      "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "native_backend_tests::rar5_solid_volumes_open_from_every_part_and_check_without_output",
+      "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "native_backend_tests::rust_rar_auxiliary_initialization_does_not_trigger_ratio_or_public_byte_counters",
+      "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [
+        "rar-fixed"
+      ],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "native_backend_tests::rust_rar_large_ppm_check_keeps_decoded_work_separate_from_initialization",
+      "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [
+        "rar-fixed"
+      ],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "native_backend_tests::rust_rar_unknown_size_check_refuses_before_password_and_output",
+      "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [
+        "rar-fixed"
+      ],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "native_backend_tests::rust_rar26_large_check_keeps_u64_counters_without_staging_content",
+      "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
+      "profile": "large",
+      "prerequisites": [
+        "rar-fixed"
+      ],
+      "timeout_seconds": 600
+    },
+    {
+      "name": "native_backend_tests::seven_zip_streaming_creation_exceeds_former_output_cache",
+      "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
+      "profile": "large",
+      "prerequisites": [],
+      "timeout_seconds": 600
+    },
+    {
+      "name": "native_backend_tests::rar7_store_roundtrip_and_dictionary_admission_publish_no_failed_output",
+      "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "native_backend_tests::cabinet_store_mszip_lzx_quantum_tasks_and_trailing_signature_are_read_only",
+      "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "native_backend_tests::cabinet_checksum_failure_publishes_no_selected_output",
+      "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "native_backend_tests::cabinet_arbitrary_volume_names_open_from_every_part_and_detect_later_changes",
+      "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "native_backend_tests::cabinet_logical_previous_opens_each_volume_and_rejects_false_origins",
+      "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "native_backend_tests::optical_images_preserve_names_readable_content_and_reject_link_output_and_udf_fallback",
+      "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "native_backend_tests::iso_extent_above_four_gib_reads_host_sparse_source_without_large_allocations",
+      "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "optical_backend_tests::optical_service_checks_readability_without_output_or_payload_authenticity_claim",
+      "source": "crates/xdzip-runtime/src/optical_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "optical_backend_tests::optical_frozen_and_running_checks_reject_real_source_changes",
+      "source": "crates/xdzip-runtime/src/optical_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "optical_backend_tests::optical_running_stream_cancellation_preserves_old_file_and_removes_private_stage",
+      "source": "crates/xdzip-runtime/src/optical_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "optical_backend_tests::optical_source_change_at_publish_boundary_keeps_old_destination",
+      "source": "crates/xdzip-runtime/src/optical_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "rar7_genuine_tests::full_check_keeps_memory_and_u64_counters",
+      "source": "crates/xdzip-runtime/src/rar7_genuine_tests.rs",
+      "profile": "large",
+      "prerequisites": [
+        "rar7-genuine"
+      ],
+      "timeout_seconds": 600
+    }
+  ]
+}

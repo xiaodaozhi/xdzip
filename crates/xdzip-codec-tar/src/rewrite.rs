@@ -1,6 +1,6 @@
 // crates/xdzip-codec-tar/src/rewrite.rs
 
-use crate::{STREAM_LIMIT, TarCodec, record};
+use crate::{Filter, STREAM_LIMIT, TarCodec, record};
 #[cfg(test)]
 use flate2::read::MultiGzDecoder;
 #[cfg(test)]
@@ -253,10 +253,13 @@ impl RewriteCodec for TarCodec {
         cancel: &Cancellation,
         progress: &mut dyn FnMut(EncodeProgress<'_>),
     ) -> Result<(), EncodeError> {
+        if !matches!(self.filter, Filter::Identity | Filter::Gzip) {
+            return Err(EncodeError::Unsupported);
+        }
         let mut reader = self
             .stream(original, cancel, STREAM_LIMIT)
             .map_err(|_| EncodeError::Source)?;
-        if self.gzip {
+        if self.filter == Filter::Gzip {
             let mut encoder =
                 GzipWriter::new(output, input.settings.level).map_err(|_| EncodeError::Invalid)?;
             copy_records(&mut reader, &mut encoder, input.keep, input.renames, cancel).map_err(
@@ -375,26 +378,28 @@ mod tests {
                 original.clone()
             };
             let mut result = Cursor::new(Vec::new());
-            TarCodec { gzip }
-                .rewrite(
-                    &mut Cursor::new(bytes),
-                    RewriteInput {
-                        keep: &[true],
-                        renames: &[Some(new_name.clone())],
-                        additions: &Empty,
-                        settings: EncodeSettings {
-                            solid: false,
-                            encrypt_headers: false,
-                            method: "deflate",
-                            level: 6,
-                            password: None,
-                        },
+            TarCodec {
+                filter: if gzip { Filter::Gzip } else { Filter::Identity },
+            }
+            .rewrite(
+                &mut Cursor::new(bytes),
+                RewriteInput {
+                    keep: &[true],
+                    renames: &[Some(new_name.clone())],
+                    additions: &Empty,
+                    settings: EncodeSettings {
+                        solid: false,
+                        encrypt_headers: false,
+                        method: "deflate",
+                        level: 6,
+                        password: None,
                     },
-                    &mut result,
-                    &Cancellation::default(),
-                    &mut |_| {},
-                )
-                .unwrap();
+                },
+                &mut result,
+                &Cancellation::default(),
+                &mut |_| {},
+            )
+            .unwrap();
             let raw = if gzip {
                 let mut raw = Vec::new();
                 MultiGzDecoder::new(result.get_ref().as_slice())

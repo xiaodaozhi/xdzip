@@ -32,7 +32,8 @@ pub struct Lzma2Reader<R> {
     dictionary: Dictionary,
     models: Models,
     chunk: Chunk,
-    expected: u64,
+    expected: Option<u64>,
+    member: bool,
     decoded: u64,
     pending: (usize, usize),
     dictionary_ready: bool,
@@ -49,6 +50,34 @@ impl<R: Read> Lzma2Reader<R> {
         property: u8,
         memory_limit: u64,
     ) -> io::Result<Self> {
+        Self::initialize(
+            source,
+            packed,
+            Some(expected),
+            property,
+            memory_limit,
+            false,
+        )
+    }
+    /// Decode through one terminal marker without reading the following container.
+    /// `packed_limit` is a hard upper bound; optional output size is still exact.
+    pub fn new_member(
+        source: R,
+        packed_limit: u64,
+        expected: Option<u64>,
+        property: u8,
+        memory_limit: u64,
+    ) -> io::Result<Self> {
+        Self::initialize(source, packed_limit, expected, property, memory_limit, true)
+    }
+    fn initialize(
+        source: R,
+        packed: u64,
+        expected: Option<u64>,
+        property: u8,
+        memory_limit: u64,
+        member: bool,
+    ) -> io::Result<Self> {
         let size = dictionary_size(property)?;
         if lzma::memory_required(size, 16) > memory_limit {
             return Err(lzma::resource());
@@ -61,11 +90,16 @@ impl<R: Read> Lzma2Reader<R> {
             pb: 2,
         })?;
         Ok(Self {
-            input: Input::new(source, packed),
+            input: if member {
+                Input::unbuffered(source, packed)
+            } else {
+                Input::new(source, packed)
+            },
             dictionary: Dictionary::new(size)?,
             models,
             chunk: Chunk::Header,
             expected,
+            member,
             decoded: 0,
             pending: (0, 0),
             dictionary_ready: false,
@@ -82,10 +116,24 @@ impl<R: Read> Lzma2Reader<R> {
     pub fn decoded_bytes(&self) -> u64 {
         self.decoded
     }
+    /// Recover exact remaining input only after a member's validated termination.
+    pub fn into_member_source(self) -> io::Result<R> {
+        if !self.member || !self.ended || self.failed {
+            return Err(invalid());
+        }
+        self.input.into_unbuffered()
+    }
+    fn output_remaining(&self) -> u64 {
+        self.expected
+            .unwrap_or(u64::MAX)
+            .saturating_sub(self.decoded)
+    }
     fn header(&mut self) -> io::Result<()> {
         let control = self.input.byte(self.input.packed)?;
         if control == 0 {
-            if self.decoded != self.expected || self.input.consumed != self.input.packed {
+            if self.expected.is_some_and(|size| self.decoded != size)
+                || (!self.member && self.input.consumed != self.input.packed)
+            {
                 return Err(invalid());
             }
             self.ended = true;
@@ -100,7 +148,7 @@ impl<R: Read> Lzma2Reader<R> {
                 return Err(invalid());
             }
             let size = u64::from(self.input.word()?) + 1;
-            if size > self.expected - self.decoded {
+            if size > self.output_remaining() {
                 return Err(invalid());
             }
             self.chunk = Chunk::Raw(size);
@@ -111,7 +159,7 @@ impl<R: Read> Lzma2Reader<R> {
         }
         let unpacked = (u64::from(control & 31) << 16) + u64::from(self.input.word()?) + 1;
         let packed = u64::from(self.input.word()?) + 1;
-        if unpacked > self.expected - self.decoded {
+        if unpacked > self.output_remaining() {
             return Err(invalid());
         }
         if control >= 0xe0 {
@@ -176,7 +224,7 @@ impl<R: Read> Lzma2Reader<R> {
             return Ok(());
         }
         let result = (|| {
-            if self.decoded != self.expected {
+            if self.expected.is_some_and(|size| self.decoded != size) {
                 return Err(invalid());
             }
             if !matches!(self.chunk, Chunk::Header) {
@@ -264,5 +312,67 @@ impl<R: Read> Read for Lzma2Reader<R> {
             self.failed = true;
         }
         result
+    }
+}
+
+#[cfg(test)]
+mod member_tests {
+    use super::*;
+    use crate::Lzma2Writer;
+    use std::io::{Cursor, Write};
+
+    #[test]
+    fn members_recover_exact_tail_without_weakening_strict_sizes() {
+        let plain = b"LZMA2 member boundary\n".repeat(4000);
+        let mut writer = Lzma2Writer::new(Vec::new(), 1, 128 << 20).unwrap();
+        let property = writer.property();
+        writer.write_all(&plain).unwrap();
+        let encoded = writer.finish().unwrap();
+        let mut framed = encoded.clone();
+        framed.extend_from_slice(b"TRAILER");
+        for expected in [None, Some(plain.len() as u64)] {
+            let mut reader = Lzma2Reader::new_member(
+                Cursor::new(&framed),
+                framed.len() as u64,
+                expected,
+                property,
+                128 << 20,
+            )
+            .unwrap();
+            let mut output = Vec::new();
+            reader.read_to_end(&mut output).unwrap();
+            assert_eq!(output, plain);
+            assert_eq!(reader.consumed_bytes(), encoded.len() as u64);
+            let mut source = reader.into_member_source().unwrap();
+            let mut tail = Vec::new();
+            source.read_to_end(&mut tail).unwrap();
+            assert_eq!(tail, b"TRAILER");
+        }
+        for expected in [
+            0,
+            plain.len() as u64 - 1,
+            plain.len() as u64 + 1,
+            plain.len() as u64,
+        ] {
+            let mut reader = Lzma2Reader::new(
+                Cursor::new(&framed),
+                framed.len() as u64,
+                expected,
+                property,
+                128 << 20,
+            )
+            .unwrap();
+            assert!(reader.read_to_end(&mut Vec::new()).is_err());
+            assert!(reader.into_member_source().is_err());
+        }
+        let unfinished = Lzma2Reader::new_member(
+            Cursor::new(&framed),
+            framed.len() as u64,
+            None,
+            property,
+            128 << 20,
+        )
+        .unwrap();
+        assert!(unfinished.into_member_source().is_err());
     }
 }

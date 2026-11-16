@@ -1,58 +1,58 @@
-# xdzip：12 实施路线与现有原型迁移
+# xdzip: 12 Implementation roadmap and prototype migration
 
-## 1. 当前实现与后续设计
+## 1. Current implementation and future design
 
-当前产品已实现双句柄运行时、Qt 控制器、[百万条 ZIP 有界查询与分页](../engineering/large-index.md)、[受限预览](../engineering/content-preview.md)、多个读写格式、设置、系统集成和安装器。独立[外部 SDK 试验](../engineering/sdk-trial.md)不启用产品第三方扩展。公开版本与能力以根目录 [README](../../README.md)及对应契约为准；WP-12 开发与验收完成记录见 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)，`v0.1.0` 发行许可与收尾见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)。
+The current product implements a dual-handle runtime, Qt controllers, [bounded million-entry ZIP queries and pagination](../engineering/large-index.md), [limited preview](../engineering/content-preview.md), multiple read/write formats, settings, system integration, and installers. The independent [external SDK trial](../engineering/sdk-trial.md) does not enable third-party product extensions. Public versions and capabilities are governed by the root [README](../../README.md) and respective contracts. WP-12 development and acceptance completion are recorded in [#5](https://github.com/xiaodaozhi/xdzip/issues/5); `v0.1.0` release licensing and closeout are in [#4](https://github.com/xiaodaozhi/xdzip/issues/4) and [#53](https://github.com/xiaodaozhi/xdzip/issues/53).
 
-实际目录及依赖见[仓库结构](../engineering/repository-layout.md)。内存／磁盘索引和预览在 runtime 中，平台文件授权与提交在 io 中，试验插件宿主独立于产品；独立索引／平台 crate 与完整扩展生态仍为后续设计，不能从目标模块图推断它们已存在。
+See [repository layout](../engineering/repository-layout.md) for actual directories and dependencies. Memory/disk indexing and preview are in runtime; platform file authorization and commit are in io; the experimental plugin host is separate from the product. Independent index/platform crates and a complete extension ecosystem remain future design and cannot be inferred from the target module diagram.
 
-早期独立实验工作区使用固定十万条样例、JSON/C ABI 和模拟任务，只提供选型经验。实验源码与报告未迁入当前仓库，不把它们当作真实格式、文件授权或安全输出证据。下述迁移表用于解释设计取舍，不要求重新导入实验代码或建立空壳目录。
+An earlier independent experimental workspace used a fixed 100,000-entry sample, JSON/C ABI, and simulated tasks and provides only technology-selection experience. Experimental source and reports were not migrated into this repository; they are not evidence for real formats, file authorization, or safe output. The migration table below explains design tradeoffs and does not require reimporting experimental code or creating empty directories.
 
-## 2. 实施工作包
+## 2. Implementation work packages
 
-| 里程碑 | 工作包 | 退出条件 |
+| Milestone | Work package | Exit criteria |
 |---|---|---|
-| M0 基线冻结 | 工具链/平台、Qt许可模块、构建清单、领域 ID、需求测试清单 | 支持矩阵可解释，依赖版本及发行路径明确 |
-| M1 产品骨架 | cxx 双句柄、Qt 控制器、空闲事件、关闭、无 Qt 核心测试 | 三平台最小构建与关闭竞态通过；无 GUI 同步长调用 |
-| M2 只读 ZIP | 探测、真实目录索引、查询/选择、源版本、能力 | 10 万条真实元数据流畅；损坏/不支持特性可解释 |
-| M3 安全解压 | 平台授权、路径映射、暂存、CRC、冲突、配额、取消 | 原生链接竞态、磁盘满、cancel/commit、目标外无变化 |
-| M4 创建及 TAR | ZIP创建、TAR/TAR.GZ组合、输入树、安全提交、摘要 | 双向互操作；取消保留旧归档；流式进度真实 |
-| M5 v0.1 私测 | Mac IME/GPU/无障碍、三平台包和基础基准 | P01～P12/P15 对应首版项达标，范围明确，无真实扩展执行 |
-| M6 大索引/预览 | 磁盘索引、百万条、结果分页、受限预览 | 资源上限与清理可验证，无自动执行内容 |
-| M7 额外格式 | 7z、条件满足的 RAR只读、独立加密/分卷能力 | 每个组合独立互操作/取消/许可，不只打开一个样例 |
-| M8 SDK 试验 | CBOR协议、broker、样例扩展、权限与平台沙箱 | 两个独立实现互通；平台越权测试通过才启用第三方 |
-| M9 v1.0 | 安全回归、发行合规、性能参考机、支持政策 | 三平台包、必要 ad-hoc 完整性及全部已声明能力通过发布门槛，沿用未正式签名的个人开源发行政策 |
+| M0 Baseline freeze | Toolchain/platforms, Qt license modules, build manifest, domain IDs, requirements test checklist | Support matrix is explainable; dependency versions and release routes are explicit |
+| M1 Product skeleton | cxx dual handles, Qt controllers, idle events, shutdown, core tests without Qt | Minimal three-platform builds and shutdown-race checks pass; no synchronous long GUI calls |
+| M2 Read-only ZIP | Detection, real directory index, queries/selection, source versions, capabilities | 100,000 real metadata entries are responsive; corruption/unsupported features are explainable |
+| M3 Safe extraction | Platform authorization, path mapping, staging, CRC, conflicts, quotas, cancellation | Native link races, full disk, cancel/commit, no changes outside destination |
+| M4 Creation and TAR | ZIP creation, TAR/TAR.GZ composition, input tree, safe commit, summary | Bidirectional interoperability; cancellation preserves old archives; streaming progress is real |
+| M5 v0.1 private test | Mac IME/GPU/accessibility, three-platform packages and basic benchmarks | Applicable first-version P01–P12/P15 criteria met, scope explicit, no real extension execution |
+| M6 Large index/preview | Disk index, one million entries, paged results, bounded preview | Resource limits and cleanup verifiable; no automatic content execution |
+| M7 Additional formats | 7z, read-only RAR when conditions are met, separate encryption/split-volume capabilities | Independent interoperability/cancellation/licensing for each combination, not merely opening one sample |
+| M8 SDK trial | CBOR protocol, broker, example extensions, permissions and platform sandbox | Two independent implementations interoperate; enable third parties only after platform privilege-boundary tests pass |
+| M9 v1.0 | Security regression, release compliance, performance reference machine, support policy | Three-platform packages, required ad-hoc integrity, and all declared capabilities meet release gates; retain personal open-source policy without formal signing |
 
-M1→M2→M3 是关键路径；设计系统与测试样本可同时由不同贡献者开发，但任何 UI 接入以服务契约为准。没有沙箱实现经验时先交付内置扩展式产品，不阻塞可靠 ZIP MVP，也不提前放开第三方代码执行。
+M1→M2→M3 is the critical path. Different contributors may develop the design system and test samples concurrently, but UI integration follows service contracts. Without sandbox expertise, first deliver a product with built-in extensions; do not block a reliable ZIP MVP or prematurely enable third-party code execution.
 
-## 3. 原型资产处理
+## 3. Prototype asset handling
 
-| 现有资产 | 复用方式 | 必须替换/补充 |
+| Existing asset | Reuse | Must replace/supplement |
 |---|---|---|
-| Qt 虚拟分页模型 | 缓存思路、generation guard、键盘验证 | QuerySnapshot身份、增量扫描、完整模型信号与结果类型 |
-| Qt QML 主窗口 | 虚拟化与交互经验；正式视觉以已确认高保真稿为准 | tokens、可访问性、IME、能力、真实错误与任务摘要 |
-| lab-core 条目生成器 | 大数据 UI/性能测试 fixture | 不用作真实读取；领域类型独立建模 |
-| JSON/C ABI | 保留比较和回归实验 | 正式桥接迁到 cxx，实验 ABI 不成为外部 SDK |
-| 单模拟任务 | 自动化流程示例 | 多任务状态机、资源池、实际字节、提交许可和输出日志 |
-| Linux 测量脚本 | 环境记录和顺序轮换方法 | 原生 Mac/Windows、真实 GPU、完整打包和真实 I/O |
-| Slint/Tauri 原型 | 历史研究与 UI 独立性证据 | 不进入产品运行时/安装包依赖 |
+| Qt virtual pagination model | Cache approach, generation guard, keyboard verification | QuerySnapshot identity, incremental scanning, complete model signals and result types |
+| Qt QML main window | Virtualization and interaction experience; approved high-fidelity designs govern production visuals | Tokens, accessibility, IME, capabilities, real errors and task summaries |
+| lab-core entry generator | Large-data UI/performance test fixture | Not used as real reading; domain types modeled independently |
+| JSON/C ABI | Comparison and regression experiments | Production bridge moves to cxx; experimental ABI does not become an external SDK |
+| Single simulated task | Automation workflow example | Multi-task state machine, resource pool, actual bytes, commit permits, and output logs |
+| Linux measurement scripts | Environment recording and order rotation method | Native Mac/Windows, real GPUs, complete packaging, and real I/O |
+| Slint/Tauri prototypes | Historical research and UI-independence evidence | Excluded from product runtime/installer dependencies |
 
-研究实验方案时审查线程和所有权，不直接导入旧实验工作区代码；原型 Clippy 通过不证明产品路径安全。任务轮询被事件接收取代后，基准取消指标定义同步更新。
+Review threads and ownership when studying experiments; do not directly import old experimental workspace code. A prototype passing Clippy does not prove product path safety. When task polling is replaced by event reception, update benchmark cancellation metrics accordingly.
 
-## 4. 最小闭环与后续增量原则
+## 4. Minimum end-to-end slice and subsequent increments
 
-已完成的首个产品切片用于后续新增能力的拆分参考：打开一个普通 ZIP → 展示真实目录 → 选择一个小文件 → 到新建私有子目录安全解压 → 校验 → 结果摘要。包含 cxx、线程、授权、路径和取消，但暂不支持覆盖旧文件。
+The first completed product slice is a reference for splitting future capabilities: open a regular ZIP → display its real directory → select a small file → safely extract to a new private subdirectory → verify → show a result summary. It includes cxx, threads, authorization, paths, and cancellation, but did not yet support overwriting existing files.
 
-冲突覆盖、全部解压、新建压缩包和 TAR 已在后续工作包接入。新增格式仍应按最小只读与写入闭环分别推进。一次接入所有格式会把 codec、I/O 和界面问题混在一起，不利于确定安全边界。
+Conflict overwrite, full extraction, archive creation, and TAR were added in later work packages. New formats should still proceed as separate minimal read-only and write end-to-end slices. Adding all formats at once mixes codec, I/O, and UI problems and makes security boundaries harder to establish.
 
-## 5. 工作分工接口
+## 5. Work allocation interfaces
 
-UI 维护者交付 tokens、QObject 模型、焦点和平台交互；核心维护者交付领域、运行时、索引与任务；安全文件层维护者交付各平台授权/提交；格式维护者交付适配器和互操作；发布维护者交付包、必要完整性与未正式签名说明、SBOM 和基准。
+UI maintainers deliver tokens, QObject models, focus, and platform interaction. Core maintainers deliver domain, runtime, index, and tasks. Secure file-layer maintainers deliver platform authorization/commit. Format maintainers deliver adapters and interoperability. Release maintainers deliver packages, required integrity and disclosure of lack of formal signing, SBOM, and benchmarks.
 
-具体职责随工作包认领确定，以依赖、产物、验收和风险明确交接。尚缺专长的安全/许可证项保留为发行阻断，不假设人员必然到位。
+Specific responsibilities are assigned by work package, with explicit handoffs for dependencies, artifacts, acceptance, and risk. Security/licensing items lacking expertise remain release blockers; staffing is not assumed.
 
-## 6. 排期方法
+## 6. Scheduling method
 
-不在未验证 cxx/平台文件 API 前承诺精确完成日期。M1/M3 是最大技术不确定性，先用技术验证缩小工作量，再按一到两周可验收增量计划。每阶段展示真实操作和失败行为，不能只展示静态 UI。
+Do not promise exact completion dates before validating cxx/platform file APIs. M1/M3 are the largest technical uncertainties; use technical validation to reduce uncertainty first, then plan one- to two-week acceptable increments. Each stage demonstrates real operations and failure behavior, not just static UI.
 
-范围扩展只能通过明确需求和能力表进入；新格式若新增原生库、密码、分卷或特殊输出，需重新评估安全、调度和许可，而非仅改后缀列表。
+Scope expansion requires explicit requirements and capability tables. If a new format adds native libraries, passwords, split volumes, or special outputs, reevaluate security, scheduling, and licensing rather than only changing the extension list.

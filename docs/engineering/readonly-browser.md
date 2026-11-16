@@ -1,103 +1,99 @@
-# 只读浏览实现契约
+# Read-only browsing implementation contract
 
-本文规定浏览阶段的数据、资源及交互边界，补充 design/03、05、06，不冻结第三方协议或完整格式 SDK。ZIP 的具体元数据规则如下；TAR/TAR.GZ 复用浏览与查询模型，格式差异见 [TAR/GZIP 契约](m4-tar-gzip.md)。
+This document defines browsing data, resource, and interaction boundaries, supplementing design/03, 05, and 06 without freezing a third-party protocol or complete format SDK. Specific ZIP metadata rules follow. TAR/TAR.GZ reuse browsing and query models; see the [TAR/GZIP contract](m4-tar-gzip.md) for format differences.
 
-普通单文件 ZIP/ZIP64 的百万条流式索引、转盘预算、按需模型和任务限制见[大归档索引](large-index.md)。下述十万条内存快照预算保留为普通格式／旧 M2 基线，不能覆盖新的流式 ZIP 准入。
+See [large archive indexing](large-index.md) for regular single-file ZIP/ZIP64 million-entry streaming indexes, disk-spill budgets, on-demand models, and task limits. The 100,000-entry in-memory snapshot budgets below remain the ordinary-format/old M2 baseline and do not override newer streaming ZIP admission.
 
-## 数据与依赖方向
+## Data and dependency direction
 
-xdzip-codec-api 定义借用只读输入、取消信号、限额、条目和错误。xdzip-codec-zip 实现内置 ZIP 元数据适配，不获取路径或写入能力。xdzip-runtime 打开并持有只读文件，扫描成功后发布不可变快照。xdzip-qt-bridge 通过 cxx 暴露工作线程入口；薄 C++ 控制器将有界页面转换为 Qt 模型，QML 负责显示和操作意图。
+xdzip-codec-api defines borrowed read-only input, cancellation, limits, entries, and errors. xdzip-codec-zip implements built-in ZIP metadata adaptation without path or write capabilities. xdzip-runtime opens and holds read-only files, publishing immutable snapshots after successful scans. xdzip-qt-bridge exposes worker-thread entry points through cxx; thin C++ controllers convert bounded pages into Qt models, and QML handles display and action intent.
 
-已迁移到 [M1 正式命令/事件运行时](m1-runtime.md)：GUI 提交短命令，Rust 工作线程持有归档，独立 Qt 接收线程通过有界 mailbox 投递结果。QtConcurrent 同步桥接已移除。每个浏览控制器最多一个 pending 请求；这仍不是完整多任务调度器、动态插件 ABI 或第三方进程协议。
+The product has migrated to the [M1 production command/event runtime](m1-runtime.md): the GUI submits short commands, a Rust worker holds the archive, and a separate Qt receiver delivers results through a bounded mailbox. QtConcurrent synchronous bridging was removed. Each browsing controller has at most one pending request. This is still not a complete multitask scheduler, dynamic plugin ABI, or third-party process protocol.
 
-## 行为与数据
+## Behavior and data
 
-打开 ZIP 后显示根目录的直属文件与目录，不自动解压；搜索可覆盖后代物理记录。重复名称保留独立 EntryId；会话 ID 不复用，UI 以字符串传输 ID 和字节数，避免 JavaScript 数值精度损失。单次桥接批次 128 条，Rust 页面上限 256 条；产品传输另限单批名称 64 KiB；Qt 对最多 1024 行的查询收集后原子更新，更大的结果保留逻辑总行数并按需加载，最多缓存 1024 行，不显示分页控件，视图委托按可见区域复用。支持名称子串搜索、显式和隐式目录树，以及全查询结果排序；[内嵌内容预览](content-preview.md)由用户主动触发，普通文件双击通过[临时解压及系统关联](archive-opening.md)打开。
+Opening ZIP displays direct root files and directories without automatic extraction; search can cover descendant physical records. Duplicate names retain separate EntryIds. Session IDs are not reused; the UI transports IDs and byte counts as strings to avoid JavaScript precision loss. Bridge batches contain 128 entries, Rust pages at most 256, and product transfer additionally limits names to 64 KiB per batch. Qt collects and atomically updates queries of at most 1,024 rows; larger results retain total logical rows and load on demand with at most 1,024 cached rows. No pagination controls are shown, and view delegates are reused within the visible region. Name-substring search, explicit and implicit directory trees, and sorting of complete query results are supported. [Embedded content preview](content-preview.md) is user initiated; double-clicking regular files uses [temporary extraction and system associations](archive-opening.md).
 
-识别 ZIP／ZIP64，校验 ZIP64 locator、尾记录及中央目录起始磁盘。[分卷主机](archive-opening.md)统一逻辑输入，编解码器仍拒绝未经转换的多磁盘元数据。ZIP64 的大小与偏移保持 64 位，不根据声明大小分配内容缓冲。中央目录数量必须与 EOCD 一致，错误、取消或超限不发布半成品列表。名称按[编码契约](filename-encoding.md)统一解析，优先 Unicode 声明，再检测未声明的旧编码；未解析字节转义。控制字符和双向文本控制符转义；绝对路径、上级路径、特殊文件等标为“需检查”。原始名称字节始终保留，输出仅使用经过独立路径验证及授权的有效名称。
+Recognize ZIP/ZIP64 and validate the ZIP64 locator, end record, and starting disk of the central directory. The [split-volume host](archive-opening.md) supplies unified logical input; the codec still rejects unconverted multidisk metadata. ZIP64 sizes and offsets remain 64-bit; do not allocate content buffers from declared sizes. Central-directory counts must match EOCD. Errors, cancellation, and overages publish no partial list. Resolve names under the [encoding contract](filename-encoding.md), prioritizing Unicode declarations then detecting undeclared legacy encodings; escape unresolved bytes. Escape control and bidirectional text controls. Absolute paths, parent paths, special files, and similar records are marked “Needs review.” Raw name bytes are always preserved; output uses only effective names independently path-validated and authorized.
 
-大小、压缩方法、加密位均是归档声明的元数据。未读内容，未验 CRC，未校验本地头；“元数据”状态不表示安全或完整。本契约描述只读浏览，显式解压见 [M3](m3-extraction.md)，实际创建及写后校验见 [WP-10](m4-creation.md)；独立完整性测试通过显式只读后台任务执行，见[检查契约](archive-checking.md)。打开归档仍不写出文件内容。
+Sizes, compression methods, and encryption flags are archive-declared metadata. Content has not been read, CRC not verified, and local headers not checked. “Metadata” does not mean safe or complete. This contract describes read-only browsing; explicit extraction follows [M3](m3-extraction.md), creation and post-write verification follow [WP-10](m4-creation.md), and independent integrity tests use an explicit read-only background task under the [check contract](archive-checking.md). Opening an archive still writes no file content.
 
-## 跨平台文件名编码边界
+## Cross-platform filename encoding boundaries
 
-格式层保留原始名称字节和物理身份，优先 ZIP UTF-8 标志及经 CRC 校验的 Unicode Path，再对整组未声明名称进行 UTF-8 检查及有界归档级统计检测。GBK/GB18030、Big5、Shift-JIS 等旧名称可直接用于浏览、导航、解压、临时打开、拖出及普通包修改。所有路径消费者共享冻结的解码结果，重新执行路径、Unicode/大小写及重名检查。
+The format layer preserves raw name bytes and physical identity, prioritizing ZIP UTF-8 flags and CRC-verified Unicode Path, then group-wide UTF-8 checks and bounded archive-level statistical detection for undeclared names. Legacy GBK/GB18030, Big5, Shift-JIS, and similar names may be used directly for browsing, navigation, extraction, temporary opening, export, and ordinary modification. All path consumers share frozen decoding results and repeat path, Unicode/case, and name-conflict checks.
 
-检测不依赖系统代码页或界面语言，也不能保证任意短名称、多个未声明编码或已经保存成 Unicode 的乱码均可恢复。当前无手动编码选择器。声明损坏、严格解码失败或异常路径继续标记需检查并拒绝输出。完整优先级、TAR/PAX、预算、载荷绑定和保存规则见[文件名编码自适应契约](filename-encoding.md)。新建和新增名称保持 UTF-8，修改时对已解析的旧名称补充明确 UTF-8 声明。
+Detection does not depend on system code page or UI language and cannot guarantee recovery of arbitrary short names, multiple undeclared encodings, or mojibake already stored as Unicode. There is currently no manual encoding selector. Corrupt declarations, strict decoding failures, or abnormal paths remain marked for review and denied output. See the [adaptive filename encoding contract](filename-encoding.md) for priority, TAR/PAX, budgets, payload binding, and saving. New and added names remain UTF-8; modification adds explicit UTF-8 declarations for resolved legacy names.
 
-English: Reading resolves filename encodings in the Rust snapshot: explicit ZIP UTF-8 and CRC-verified Unicode Path take precedence, followed by group-wide unmarked UTF-8 validation or bounded archive-level legacy detection. The same resolved spelling is used for browsing, navigation, extraction, opening, export and ordinary updates, with all path and collision checks repeated. Detection is host-independent and heuristic; short, mixed or already-mojibaked names are not guaranteed. There is no manual selector. Damaged declarations and unsafe/unresolved names remain refused. See the filename encoding contract for TAR/PAX and resource limits.
+## Resources and lifecycle
 
-## 资源与生命周期
+The calibrated main window displays five columns: name, original size, compressed size, type, and modification date. Type is inferred only from displayed-name extension, with JPG grouped as JPEG. Modification dates come from valid DOS local date/time in the ZIP central directory without inferring time zone; invalid values display `—`. All five columns sort. Dates sort by complete DOS time while the table displays dates. Compression methods remain in details and the bridge retains method-sort codes. Encrypted/review-needed states remain in row hints, accessibility descriptions, and details; entries requiring attention have a marker beside the name that visual simplification must not hide.
 
-主窗口校准后显示名称、原始大小、压缩大小、类型、修改日期五列。类型仅由显示名称后缀推断，JPG 统一为 JPEG。修改日期来自 ZIP 中央目录的有效 DOS 本地日期／时间，不推断时区，无效值显示 `—`。五列均支持排序；日期按完整 DOS 时间排序，表格显示日期。压缩方法仍在详情中可用，桥接保留方法排序代码。加密／需检查状态保留于行提示、可访问描述和详情；需注意条目在名称旁显示标记，不能被视觉精简隐藏。
+Normal products use the application session manager for tab closure, retaining background tasks and results; pages without tasks are reclaimed after asynchronous connection closure. The plus button creates a blank tab or main window according to saved open mode. File opening consistently prefers welcome-page reuse and deduplication; see the [application sessions contract](application-sessions.md). Independent controllers and diagnostic tests retain the `CloseSession` command to clear archive state in one connection. The title-bar Select All checkbox is tri-state. Status-bar sizes summarize selected metadata in the current query only, not archive totals. Retain behavior and actual geometry evidence under [verification](../qa/README.md).
 
-正常产品由应用会话管理器处理标签关闭，保留后台任务和结果；无任务页面异步关闭连接后回收。加号按保存的打开模式创建空白标签页或主窗口，文件打开统一优先复用欢迎页并去重，详见[应用会话契约](application-sessions.md)。独立控制器和诊断测试仍保留 `CloseSession` 命令，用于清空单个连接中的归档状态。标题栏全选复选框为三态；状态栏大小只汇总当前查询已选元数据，不冒充归档总量。按[验证方法](../qa/README.md)保留行为及实际几何证据。
-
-| 项目 | 当前上限 |
+| Item | Current limit |
 | --- | --- |
-| 物理记录 | 100,000 |
-| 单个原始名称 | 4 KiB |
-| 累计原始名称 | 16 MiB |
-| 转义显示名 | 16 MiB |
-| 累计读取字节（含重复读取） | 64 MiB |
-| 扫描缓冲区 | 256 KiB |
-| 桥接传输批次 | 128 条 |
-| Qt 当前查询模型 | 逻辑行数受索引准入限制，最多驻留 1024 行，虚拟化委托 |
-| 独立目录索引 | 32,768 节点、64 层 |
-| 目录名称与完整前缀合计 | 4 MiB |
+| Physical records | 100,000 |
+| One raw name | 4 KiB |
+| Total raw names | 16 MiB |
+| Escaped display names | 16 MiB |
+| Total read bytes, including rereads | 64 MiB |
+| Scan buffer | 256 KiB |
+| Bridge transfer batch | 128 entries |
+| Qt current-query model | Logical rows subject to index admission; at most 1,024 resident rows, virtualized delegates |
+| Independent directory index | 32,768 nodes, 64 levels |
+| Total directory names and full prefixes | 4 MiB |
 
-显示转义和桥接复制另占空间；上述不是进程 RSS 或耗时保证。普通内存快照的元数据驻留 Rust 内存；直属索引保留行身份，查询结果缓存只存排序后的索引。十万条测量按[验证方法](../qa/README.md)绑定提交、平台与负载记录，不能单独证明百万条场景的结果。扫描前后检查长度和修改时间，只能尽力检测变动，不能替代原子快照。
+Display escaping and bridge copies consume additional space; these values are not process RSS or timing guarantees. Ordinary in-memory snapshot metadata resides in Rust memory. Direct-child indexes retain row identities; query result caches retain sorted indexes only. Bind 100,000-entry measurements to commit, platform, and workload under [verification](../qa/README.md); they do not establish million-entry outcomes alone. Length and modification-time checks before/after scans are best-effort change detection, not atomic snapshots.
 
-取消在读取和遍历边界检查，不能打断操作系统阻塞读取。关闭忙碌主窗口先请求停止，收到完成通知后关闭，不在 GUI 线程 join。控制器意外销毁也不使后台任务引用悬空。正常窗口关闭和应用 Quit 已统一经过 M1 shutdown 屏障；创建与解压共用该退出屏障；写失败和暂存清理按各写入契约处理。强制终止后只报告可疑暂存，不自动恢复、覆盖或删除未知内容，不承诺全目录事务或设备掉电安全。
+Check cancellation at read and traversal boundaries; OS-blocked reads cannot be interrupted. Closing a busy main window first requests stop and closes after completion notification, without GUI-thread joins. Unexpected controller destruction does not leave dangling background references. Normal window close and application Quit use the M1 shutdown barrier, shared by creation and extraction. Write failures and staging cleanup follow respective write contracts. After forced termination, report suspicious staging only; unknown content is not automatically recovered, overwritten, or deleted. Whole-directory transactions and device power-loss safety are not promised.
 
-源文件要求普通文件。首次打开、来源复核和任务来源副本统一使用 `xdzip_io::open_regular_readonly`，在打开所得的同一句柄上复核类型；Unix 以非阻塞方式打开后分类，避免路径被换成 FIFO 等特殊对象时等待其 I/O。普通文件和指向普通文件的源符号链接保持可用，来源版本仍绑定实际文件身份。首次无法打开或类型不符返回 `Io`，后续来源复核与副本打开失败返回 `SourceChanged`。这不是原子内容快照、沙箱或普通文件 I/O 的强制时间限制。
+Sources must be regular files. Initial open, source revalidation, and task-source copies all use `xdzip_io::open_regular_readonly`, checking type on the same opened handle. Unix opens nonblocking before classification to avoid waiting for I/O if a path is replaced with a FIFO or other special object. Regular files and source symlinks pointing to regular files remain usable; source versions bind actual file identity. Initial open/type failure returns `Io`; later source revalidation or copy-open failure returns `SourceChanged`. This is not an atomic content snapshot, sandbox, or enforced regular-file I/O time limit.
 
-桥接源路径暂限可无损表示的 UTF-8。文件选择器采用原生独立对话框，macOS 不绘制交通灯；实际系统焦点、模态归属与窗口装饰须在桌面验收。
+Bridge source paths are currently limited to losslessly representable UTF-8. File selection uses independent native dialogs; macOS traffic lights are not drawn by the application. Actual system focus, modal ownership, and window decoration require desktop acceptance.
 
-## 验收与后续
+## Acceptance and follow-up
 
-实际测试与截图按[验证方法](../qa/README.md)在 issue 和工件登记。浏览实现包含真实打开、列表、内部批次查询、目录树、当前查询选择与命令/事件生命周期，并提供三平台开发构建。十万条 ZIP64 索引与查询代际按 [M2 契约](m2-readonly.md)验证；写入行为由[安全解压契约](m3-extraction.md)独立规定。主动预览遵循独立的内容和解码配额，正式发行仍按[发行许可复核](../qa/release-review.md)处理；不由本文记录阶段验收结论。
+Record actual tests and screenshots in issues/artifacts under [verification](../qa/README.md). Browsing includes real open, lists, internal batched queries, directory trees, current-query selection, and command/event lifecycle, with three-platform development builds. Verify 100,000-entry ZIP64 indexing and query generations under the [M2 contract](m2-readonly.md); writing is independently specified by [safe extraction](m3-extraction.md). Explicit preview follows separate content/decode quotas. Formal release still requires [release licensing review](../qa/release-review.md); this page does not record stage acceptance conclusions.
 
-## 浏览交互增量
+## Browsing interaction increments
 
-- 归档中的安全显式目录可双击进入，或聚焦复选框按 Enter；“根目录”返回根范围。普通目录只显示直属文件与目录，不递归列出后代；搜索递归当前范围并显示完整归档路径。列表的普通名称只显示末级名称，不影响内部完整路径、复制与导航。危险名称不可成为导航节点，仍保留在归档快照中供搜索和元数据检查。
-- 名称搜索回车提交，Unicode 小写后作字面子串匹配，不支持正则或区域排序；搜索框最多 256 个 UTF-16 代码单元，Rust 入口最多 1,024 UTF-8 字节。搜索作用于当前目录范围；返回根目录保留搜索词，打开新会话清空搜索。
-- 普通内存查询过滤遍历已加载且最多 100,000 条的快照，再按指定顺序排序并返回至多 128 条；过滤每条记录、排序前后检查取消。目录参数传物理 EntryId 或 `d` 前缀的虚拟目录 ID，由 Rust 校验当前会话资格，不接受 GUI 拼接的文件路径。
-- 这是单工作线程、有界的版本化查询。页面携带完整 QueryKey，Qt 合并最新意图并取消旧工作；过期请求或不匹配的会话、查询、代际、修订和偏移均不能替换当前视图。偏移越界返回错误，空结果属于 Ready。目录跳转与搜索从第一页开始。
-- 已有快照时，目录、排序或搜索查询期间保持该快照的列表／网格或空状态，直到新结果提交；不因 busy 短暂切换整块遮罩。初次打开未就绪归档仍显示加载状态，控制器继续执行原有串行准入、取消和源变化检查。English: Queries retain the last committed rows or empty state until a new snapshot commits. Initial loading and controller admission, cancellation and source checks remain in force.
-- 单击行或复选框切换当前查询多选，以物理 ID 区分同名记录，隐式目录使用独立的 dN 行键。查询成功或新会话替换模型后清空选择及详情；内部传输批次不影响已合成列表，界面不分页。详情显示最近激活条目的元数据，和复选框集合分别表达焦点与选择。全选以当前完整列表最后一行作为详情焦点，与逐项选中到最后一行的行为一致；取消全部选择清空详情。没有选择时隐藏原始大小、压缩大小、修改日期、压缩方法与解压焦点条目的动作，不展示误导的空属性。
-- 列表大小以 B/KiB/MiB/GiB 显示，数值转换仅用于近似显示；模型和 Rust 保留原始整数。文件图标表示类型，详情卡片显示属性，并可按[预览契约](content-preview.md)主动请求受限内容预览。
-- 未知原始大小携带独立 `size_known=false`，列表中的原始大小显示 `—`，状态说明尺寸未知；已知空文件仍显示 0。选中汇总大小未知时，底栏只显示已选数量，不显示分隔符或占位符，控制器仍保留未知状态；汇总大小已知时继续显示大小。大小升降序均将未知项置于已知项之后，同组保持身份顺序。物理未知项可请求元数据预检以查看拒绝原因，含虚拟目录的选择仍不能预检。未知尺寸不会变成输出授权或解码预算。
+- Safe explicit archive directories can be entered by double-clicking or focusing the checkbox and pressing Enter; “Root directory” returns to root scope. Ordinary directories show direct files/directories only, not recursive descendants; search recursively covers current scope and shows full archive paths. Ordinary list names show only basenames without changing internal full paths, copying, or navigation. Dangerous names cannot be navigation nodes but remain in the archive snapshot for search and metadata inspection.
+- Enter submits name search, using literal substring matching after Unicode lowercase; no regex or locale sorting. Search input is at most 256 UTF-16 units; the Rust entry point at most 1,024 UTF-8 bytes. Search covers current-directory scope. Returning to root retains search terms; a new session clears them.
+- Ordinary memory queries filter the loaded snapshot of at most 100,000 entries, then sort as requested and return at most 128. Check cancellation per filtered record and before/after sorting. Directory parameters are physical EntryIds or `d`-prefixed virtual directory IDs validated by Rust for current-session eligibility, not GUI-concatenated file paths.
+- This is a single-worker, bounded, versioned query. Pages carry complete QueryKey. Qt coalesces latest intent and cancels old work. Stale requests or mismatched session/query/generation/revision/offset cannot replace the current view. Out-of-range offsets return errors; empty results are Ready. Directory jumps and searches start at the first page.
+- With an existing snapshot, retain its list/grid or empty state during directory, sort, or search queries until new results commit; busy does not briefly replace the whole area with an overlay. Initial opening of an unready archive still shows loading; controller serial admission, cancellation, and source-change checks remain.
+- Clicking a row or checkbox toggles current-query multiple selection, distinguishing duplicate names by physical ID. Implicit directories use separate dN row keys. Clear selection and details after a successful query or new session replaces the model; internal transfer batches do not affect the composed list, and the UI does not paginate. Details show metadata for the most recently activated entry; focus and the checkbox set separately represent focus and selection. Select All uses the current complete list's last row as details focus, matching selecting entries individually through the last row. Deselect All clears details. With no selection, hide original size, compressed size, modified date, compression method, and the action to extract the focused entry rather than showing misleading empty properties.
+- List sizes display B/KiB/MiB/GiB; conversion is approximate display only, while models and Rust retain original integers. File icons represent type, details cards show properties, and [preview](content-preview.md) can be explicitly requested under its bounded contract.
+- Unknown uncompressed sizes carry separate `size_known=false`, display `—` in the original-size column, and state that size is unknown. Known empty files still show 0. When selection total is unknown, the status bar shows only selection count, without separator or placeholder, while the controller retains unknown state; known totals still show size. Both sort directions place unknown sizes after known ones, maintaining identity order within groups. Physical unknown-size items may request metadata preflight to inspect the refusal reason; selections containing virtual directories still cannot. Unknown size grants no output authorization or decode budget.
 
-English: An unknown uncompressed size has an explicit flag, displays a dash in the file size column, and sorts after known sizes in both directions. When the selection total is unknown, the status bar shows only the selection count while the controller retains the unknown state; known totals remain visible, including zero. Physical unknown-size records may be inspected for the preflight refusal reason; virtual-directory selections retain their existing preflight restriction. Unknown sizes never grant output or decoding credit.
+Selected entries can request [extraction metadata preflight](extraction-preflight.md) in an independent native result window. It writes no files and does not change read-only phase boundaries.
 
-所选条目现可发起 [解压元数据预检](extraction-preflight.md)，使用独立原生结果窗口；该功能不写出文件，不改变只读阶段边界。
+## Complete directory index and sorting
 
-## 完整目录索引与排序
+- Rust builds explicit/implicit directories from the complete immutable snapshot; Qt does not infer trees from the current page. Each virtual node has a unique session-local `dN` ID, parent ID, display name, complete archive prefix, and descendant physical-record count. Direct directories lacking explicit records appear as navigation rows with physical id 0, bridge navigation_id, and physical=false; Qt uses dN display keys. They cannot be physical extraction selections and do not increase physical record counts. Explicit duplicate records are not deduplicated; navigation rows fill only directories without explicit records. Navigation rows can be selected, have paths copied, and be entered, but size/method/date show —. Preflight accepts actual physical records only and is disabled for selections containing navigation rows.
+- Publish parents before children in first-appearance archive order. Same-name physical entries remain independent. Node counts include all descendants below the prefix, including entries needing review, but exclude records exactly equal to the directory prefix. Counts do not change with name search.
+- Records with warnings, unresolved names, backslashes, empty components, `.`, or `..` do not generate nodes; they remain in physical snapshots and recursive search for inspection. Indexes provide navigation, not path safety or extraction authorization.
+- Discard the entire directory index on any directory-budget overage and clearly notify the UI. Continue root, search, and eligible explicit-directory browsing. Do not infer implicit directories without an index; root may be empty while search still covers the complete physical snapshot. Never show a truncated tree as complete. Directory space has its own name budget and does not change format-specific scan admission.
+- Click Name, Original Size, Compressed Size, Type, or Modified Date headers to toggle ascending/descending; Enter/Space activates them. The upper-right sort menu can restore archive physical order. Filter and sort the entire result before pagination so ordering is consistent across pages. Names use case-sensitive Unicode scalar lexicographic order, not natural or locale sorting. Numbers compare raw Rust integers. Equal values use row type (physical before navigation) and corresponding identity ascending; descending does not reverse same-name record order. Type sorting first groups by directory flag, putting explicit and implicit directories before files. Ascending/descending type changes file-category order only. File categories use normalized extensions, grouping JPG and JPEG, while extensionless files retain a separate file group. Localized display text is not directory identity.
+- Browse sort codes: 0 physical order (additional implicit directories follow index order), 1/2 name ascending/descending, 3/4 original size, 5/6 compressed size, 7/8 ZIP method number, 9/10 type, and 11/12 modification time; reject others. Switching columns, directories, or search returns to page one; clear current-query selection/details when a page is successfully replaced. A non-admitted action restores last displayed query parameters.
+- The tree supports expand/collapse, keyboard navigation, and Enter to enter directories; horizontal scrolling reaches deep levels. Base row height is 32, level indent 12.8, folder slot 16, icon/text gap 6.4; center text and icons vertically. Larger fonts may increase row height and column widths.
 
-- Rust 从完整不可变快照建立显式/隐式目录，Qt 不从当前页推断树。每个虚拟节点有当前会话内唯一的 `dN` ID、父节点 ID、显示名称、归档内完整前缀及后代物理记录数。没有显式记录的直属目录以导航行显示，物理 id 为 0，桥接额外携带 navigation_id、physical=false，Qt 使用 dN 展示键；它不能作为物理解压选择，也不会增加物理记录数。显式重复记录不去重；导航行只补没有显式记录的目录。导航行可选中、复制路径和进入目录，但大小、方法、日期显示 —；预检只允许实际物理记录，含导航行的选择集合禁用预检。
-- 目录先于子节点发布，按归档中首次出现的顺序排列。同名物理条目保持独立；节点计数包含该前缀下全部后代（包括待检查条目），不包含与目录前缀完全相同的记录。计数不随名称搜索改变。
-- 带警告、未解析名称、反斜杠、空组件、`.` 或 `..` 的记录不用于生成节点；它们仍留在物理快照和递归搜索中供检查。索引是导航能力，不是路径安全或解压授权。
-- 超出任何目录预算时丢弃整个目录索引，界面明确提示，继续提供根目录、搜索及符合条件的显式目录浏览；未获得索引的隐式目录不能推测生成，根目录可能为空，搜索仍覆盖完整物理快照。绝不展示看似完整的截断树。目录空间另受名称预算限制，不改变对应格式的独立扫描准入。
-- 点击“名称、原始大小、压缩大小、类型、修改日期”列头切换升/降序；Enter/Space 可激活。列表右上角排序菜单可恢复归档物理顺序。先过滤和排序整个结果，再分页，因此跨页顺序一致。名称使用 Unicode 标量字典序、区分大小写，不宣称自然排序或区域规则；数值按 Rust 原始整数比较。所有相等值以行类型（物理先于导航）及对应身份升序决定先后，不因降序翻转同名记录。类型排序先依据记录的 directory 标记分组，显式与隐式目录都先于文件；类型升序／降序只改变文件类别顺序。文件类别由规范化扩展名确定，JPG 与 JPEG 属同组，无后缀文件保留独立的文件组，不用本地化显示文案作为目录身份。
-- 浏览命令排序码：0 为物理顺序（补充的隐式目录随后按索引顺序），1/2 名称升/降序，3/4 原始大小，5/6 压缩大小，7/8 ZIP 方法编号，9/10 类型，11/12 修改时间；其余拒绝。切换列、目录或搜索回到第一页，成功替换页面时清空当前查询选择和详情。未获准入的操作恢复上一次已显示的查询参数。
-- 树支持展开/收起、键盘导航及 Enter 进入目录；深层级通过横向滚动访问。基础行高 32、层级缩进 12.8、文件夹槽 16、图文间距 6.4，文字和图标与行中心对齐。大字号可增长行高与列宽。
+Reverify directory navigation and sorting under [general methods](../qa/README.md). See the [M2 contract](m2-readonly.md) for full query identity, source checks, and 100,000-entry verification. UI selection covers the complete current query; internal batches and cache reclamation do not clear it. Freeze large-query range selections into stable identities before confirmation.
 
-目录导航与排序按[通用方法](../qa/README.md)复验。完整 M2 查询身份、来源版本检查与十万条验证见 [M2 契约](m2-readonly.md)；界面选择覆盖完整当前查询，内部批次和缓存回收不清空选择。大查询的区间选择在确认前冻结为稳定身份。
+## Shared controls and context commands
 
-## 共享控件与上下文命令
+Menus, buttons, and shortcuts reuse read-only controller actions. Right-clicking a selected entry retains current-query multiple selection; right-clicking an unselected entry first selects it alone. Shift ranges use stable entry IDs as anchors and clear when a query or sort successfully replaces results. Select All covers the complete current directory query, including navigation rows, subject to format/index admission. Preflight separately limits selections to 128 real physical records and disables sets containing navigation rows or exceeding the limit. Copy names/archive paths to the system clipboard; directory names omit trailing separators, while paths retain their original display form.
 
-菜单、按钮和快捷键复用只读控制器动作。右击已选条目保留当前查询多选，右击未选条目先单选；Shift 范围使用稳定条目 ID 作为锚点，查询或排序成功替换时清空。全选覆盖当前完整目录查询（含导航行），受其格式与索引准入上限约束；预检独立限制为至多 128 个真实物理记录，含导航行或超限的集合禁用预检。名称 / 归档内路径复制到系统剪贴板，目录名称去掉末尾分隔符，路径保留原始展示形式。
+Lists and grids share one bounded model and selected IDs; grids do not get a second index. Directory guides, last-sibling markers, ancestor chains, and breadcrumbs derive from the published complete directory model without extra format queries. Archive summaries cache Open's physical total independent of current directory/search; the count to the right of breadcrumbs shows current list rows, including necessary navigation rows.
 
-列表与网格共享同一个受限模型与选中 ID；不为网格创建第二份索引。目录指南、末尾兄弟标记、祖先链和面包屑由已发布的完整目录模型派生，不新增格式查询。归档摘要缓存 Open 的物理总数，不随当前目录或搜索变化；面包屑右侧计数显示当前列表行数（含必要导航行）。
+Menus invalidate and close on reading, query, or session changes; check capabilities again before execution. Each BrowserController maintains one real archive session; the application hosts multiple archives in independent pages/windows. HTML design data remains separate sample data. Real extraction separately obtains explicit output intent and target authorization under M3. Creation uses the independent [input tree and saving flow](m4-creation.md); integrity checking uses a [read-only task](archive-checking.md); preflight analyzes metadata only. Shared controls receive no direct file-write authority.
 
-菜单在读取、查询或会话变化时失效关闭，执行前再次判断能力。每个 BrowserController 维持一个真实归档会话，应用以多个独立页面或窗口承载多个归档；HTML 设计中的数据仍是独立示例。真实解压在 M3 中单独获得显式输出意图与目标授权；创建通过独立的[输入树和保存流程](m4-creation.md)执行；独立完整性检查通过[只读检查任务](archive-checking.md)执行，预检项只分析元数据。共享控件不直接获得文件写入能力。
+## M2 query and resource increments
 
-## M2 查询与资源增量
+A query generates one complete ordering, then slices transport batches from cached row indexes. Batches contain at most 128 rows and 64 KiB total names. The command queue remains 8 MiB; Rust data events and the Qt mailbox each have 32 MiB content backpressure to accommodate complete bounded images. When search or directory intent changes, retain only the latest pending intent; old responses do not enter new queries. Ordinary cancellation or overage retains the last successful list; source-version changes clear invalid data and require reopening.
 
-同一查询先生成一次完整排序，再从缓存的行索引切取传输批次。每批最多 128 行、名称合计 64 KiB，命令队列维持 8 MiB，Rust 数据事件与 Qt mailbox 各有 32 MiB 内容背压，以容纳完整有界图片。搜索或目录意图改变时，只保留最新待执行意图；旧响应不写入新查询。普通查询取消或超限保留最近成功列表；源版本变化清空失效数据并要求重新打开。
+Check source handles and current paths for length, modification time, and available creation time before/after scans and at query/preflight boundaries. Unix additionally checks device/inode; Windows uses pinned winapi-util's safe wrapper for volume/file index to detect path replacements preserving timestamps. These checks are not filesystem atomic snapshots. Selection summaries are cached by model selection revision and use Rust u128 for exact sums, avoiding repeated traversal and 64-bit overflow.
 
-扫描前后、查询与预检边界检查来源句柄及当前路径的长度、修改时间和可用创建时间；Unix 另检查设备／inode，Windows 通过已锁定 winapi-util 的安全封装检查卷号／文件索引，以检测保留时间戳的路径替换。检查不是文件系统原子快照。选择汇总按模型选择修订缓存，使用 Rust u128 精确求和，避免重复遍历及 64 位溢出。
+Qt settings adapters load UI language. Type, state, error, and user-visible dates use translation catalogs and locale. Bridge values for byte counts, entry identity, paths, raw times, and sort parameters do not change with language. Do not infer format capabilities, identities, or security decisions from translated text. Successful language changes update UI text immediately without changing running tasks; see [settings and localization](../ux/settings-localization.md).
 
-界面语言由 Qt 设置适配器加载。类型、状态、错误及用户可见日期使用语言目录和 locale 展示；字节数、条目身份、路径、原始时间和排序参数的桥接值不随语言改变。不能从翻译后的文案反推格式能力、身份或安全判断。语言变更成功后即时更新界面文字，不改变运行中任务，详见[设置与国际化](../ux/settings-localization.md)。
-
-成功打开归档时，桥接层仅发出 archiveOpened(path) 给本地界面设置适配器；最近路径独立保存，不参与领域查询、排序或任务授权。未成功打开的路径不写入最近记录。
+After successful archive opening, the bridge emits only archiveOpened(path) to the local UI settings adapter. Recent paths are stored separately and do not participate in domain queries, sorting, or task authorization. Unsuccessful paths are not written to recent items.

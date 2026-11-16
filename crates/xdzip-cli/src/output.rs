@@ -177,6 +177,10 @@ fn explanation(code: &str, chinese: bool) -> &'static str {
             "目标目录未通过安全授权，请检查所有权、权限和链接",
             "Destination authorization failed; check ownership, permissions and links",
         ),
+        "sfx_stub_missing" | "sfx_stub_invalid" => (
+            "自解压组件缺失或损坏，请重新安装完整程序",
+            "The self-extraction component is missing or damaged; reinstall the complete application",
+        ),
         "command_conflict" => (
             "命令入口已存在或已被修改，原文件保持不变",
             "The command registration exists or has changed; its files were preserved",

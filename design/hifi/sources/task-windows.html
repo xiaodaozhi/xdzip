@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>任务路径与结果摘要</title>
+<style>body{margin:24px;font:14px/1.6 system-ui;background:#e8ebf0;color:#141827}iframe{display:block;border:0;width:100%;height:1000px}a{margin-right:20px}</style>
+<h1>任务路径与结果摘要</h1>
+<nav><a href="?view=progress">进度与长路径</a><a href="?view=result">解压结果</a><a href="?view=progress&theme=dark">深色进度</a><a href="../../../docs/ux/task-windows.md">交互契约</a></nav>
+<p>复用现有进度与结果可编辑设计，逻辑宽度 491，高度按内容与字号适配。“当前文件”单行、中间省略，完整路径保留在辅助功能信息中。普通解压结果仅显示成功提交的文件数，文件明细仍可展开。此页用于设计审阅，不代表原生视觉验收；历史原图与量测保留。</p>
+<iframe title="任务窗口可编辑设计" src="../../html/canvas.html"></iframe>
+<script>
+const query=new URLSearchParams(location.search),frame=document.querySelector('iframe');
+frame.addEventListener('load',()=>{
+    const view=query.get('view')==='result'?'result':'progress';
+    frame.contentWindow.postMessage({type:'xdzip-review-configure',view,platform:'windows',theme:query.get('theme')==='dark'?'dark':'light'},'*');
+    if(view==='progress')requestAnimationFrame(()=>requestAnimationFrame(()=>frame.contentWindow.setProgressFile('C:/资料/旅行照片/多层目录/'.repeat(10)+'旅途瞬间-08.jpg')));
+});
+</script></html>

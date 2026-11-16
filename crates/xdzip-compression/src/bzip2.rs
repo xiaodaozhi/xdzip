@@ -236,7 +236,8 @@ pub struct Bzip2Reader<R> {
     permutation: Vec<u32>,
     selectors: Vec<u8>,
     block: Option<Block>,
-    expected: u64,
+    expected: Option<u64>,
+    member: bool,
     decoded: u64,
     combined: u32,
     ended: bool,
@@ -247,7 +248,27 @@ impl<R: Read> Bzip2Reader<R> {
     /// admit the actual level's full working memory before allocating it.
     /// Typed initialization I/O errors preserve their concrete error object.
     pub fn new(source: R, packed: u64, expected: u64, memory_limit: u64) -> io::Result<Self> {
-        let mut input = Input::new(source, packed);
+        Self::initialize(source, packed, Some(expected), memory_limit, false)
+    }
+    /// Decode one complete member with an unknown output size, without
+    /// consuming any following member/container byte. The caller should buffer
+    /// the source, bound total output and drain to validated EOF before reuse.
+    /// `packed_limit` bounds reads; it is not the member's declared length.
+    pub fn new_member(source: R, packed_limit: u64, memory_limit: u64) -> io::Result<Self> {
+        Self::initialize(source, packed_limit, None, memory_limit, true)
+    }
+    fn initialize(
+        source: R,
+        packed: u64,
+        expected: Option<u64>,
+        memory_limit: u64,
+        member: bool,
+    ) -> io::Result<Self> {
+        let mut input = if member {
+            Input::unbuffered(source, packed)
+        } else {
+            Input::new(source, packed)
+        };
         if input.byte(packed)? != b'B' || input.byte(packed)? != b'Z' || input.byte(packed)? != b'h'
         {
             return Err(invalid());
@@ -268,6 +289,7 @@ impl<R: Read> Bzip2Reader<R> {
             selectors: filled(SELECTORS, 0)?,
             block: None,
             expected,
+            member,
             decoded: 0,
             combined: 0,
             ended: false,
@@ -281,6 +303,14 @@ impl<R: Read> Bzip2Reader<R> {
     /// Uncompressed bytes decoded into caller buffers.
     pub fn decoded_bytes(&self) -> u64 {
         self.decoded
+    }
+    /// Recover the exact source after a member reader reached validated EOF.
+    /// Ordinary full-span readers, unfinished readers and failed readers refuse.
+    pub fn into_member_source(self) -> io::Result<R> {
+        if !self.member || !self.ended || self.failed {
+            return Err(invalid());
+        }
+        self.bits.input.into_unbuffered()
     }
     fn entropy(&mut self, alphabet: usize) -> io::Result<Entropy> {
         let tables = self.bits.take(3)? as usize;
@@ -340,15 +370,16 @@ impl<R: Read> Bzip2Reader<R> {
         let magic = self.bits.magic()?;
         if magic == END_MAGIC {
             if self.bits.take(32)? != self.combined
-                || self.decoded != self.expected
-                || !self.bits.end()
+                || self.expected.is_some_and(|size| self.decoded != size)
+                || (!self.member && !self.bits.end())
+                || (self.member && self.bits.pending != 0)
             {
                 return Err(invalid());
             }
             self.ended = true;
             return Ok(());
         }
-        if magic != BLOCK_MAGIC || self.decoded == self.expected {
+        if magic != BLOCK_MAGIC || self.expected == Some(self.decoded) {
             return Err(invalid());
         }
         let expected_crc = self.bits.take(32)?;
@@ -468,7 +499,7 @@ impl<R: Read> Bzip2Reader<R> {
         if self.ended {
             return Ok(());
         }
-        let result = if self.decoded != self.expected {
+        let result = if self.expected != Some(self.decoded) {
             Err(invalid())
         } else {
             self.next().and_then(|byte| {
@@ -488,7 +519,7 @@ impl<R: Read> Bzip2Reader<R> {
         let limit = output.len().min(READ_QUANTUM);
         let mut count = 0;
         while count < limit {
-            if self.decoded == self.expected {
+            if self.expected == Some(self.decoded) {
                 self.finish()?;
                 break;
             }

@@ -1,5 +1,11 @@
 //! Qt-independent command-line host for the shared archive task runtime.
 mod args;
+mod sfx;
+
+/// Enter the standalone owned SFX host, without invoking the normal CLI or updater.
+pub fn run_sfx() -> i32 {
+    sfx::run()
+}
 mod desktop;
 mod installation;
 mod output;
@@ -192,18 +198,25 @@ fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -
                 .and_then(|s| s.to_str())
                 .ok_or("invalid_archive_name")?
                 .to_lowercase();
-            let seven = name_lower.ends_with(".7z");
-            let tar = name_lower.ends_with(".tar");
-            let gzip = name_lower.ends_with(".tar.gz") || name_lower.ends_with(".tgz");
-            if !seven && !tar && !gzip && !name_lower.ends_with(".zip") {
-                return Err(Failure::usage("unsupported_format"));
+            let format = xdzip_codec_api::registry::creation_format(&name_lower)
+                .ok_or_else(|| Failure::usage("unsupported_format"))?;
+            let seven = format == xdzip_codec_api::Format::SevenZip;
+            if xdzip_codec_api::registry::is_sfx_creation(&name_lower)
+                && (matches.get_flag("encrypt")
+                    || matches.get_one::<String>("volume-size").is_some())
+            {
+                return Err(Failure::usage("unsupported_options"));
             }
+            let tar = format == xdzip_codec_api::Format::Tar;
+            let declaration = format.descriptor();
+            let stored = declaration.creation_method(0).is_some();
+            let zero_level = declaration.creation_levels.contains(&0);
             if (matches.get_flag("solid") || matches.get_flag("encrypt-names")) && !seven {
                 return Err(Failure::usage("unsupported_options"));
             }
-            if (tar || gzip)
-                && (matches.get_flag("encrypt")
-                    || matches.get_one::<String>("volume-size").is_some())
+            if (format.descriptor().write_encryption.is_empty() && matches.get_flag("encrypt"))
+                || (format.descriptor().write_volumes.is_empty()
+                    && matches.get_one::<String>("volume-size").is_some())
             {
                 return Err(Failure::usage("unsupported_options"));
             }
@@ -229,18 +242,32 @@ fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -
                 );
             }
             let level = matches.get_one::<String>("level").unwrap().as_str();
-            let method = if tar || level == "store" && !gzip {
+            if !stored && !zero_level && level == "store" {
+                return Err(Failure::usage("unsupported_options"));
+            }
+            let method = if tar || level == "store" && stored {
                 0
-            } else if seven {
-                32
             } else {
-                8
+                declaration
+                    .write_methods
+                    .iter()
+                    .find_map(|name| declaration.creation_method_id(name).filter(|id| *id != 0))
+                    .ok_or_else(|| Failure::usage("unsupported_options"))?
             };
-            let numeric_level = match level {
-                "fast" => 1,
-                "best" => 9,
-                "store" if gzip => 0,
-                _ => 6,
+            let numeric_level = if declaration.creation_levels == [0] {
+                if level != "store"
+                    && matches.value_source("level") == Some(clap::parser::ValueSource::CommandLine)
+                {
+                    return Err(Failure::usage("unsupported_options"));
+                }
+                0
+            } else {
+                match level {
+                    "fast" => 1,
+                    "best" => 9,
+                    "store" if zero_level => 0,
+                    _ => 6,
+                }
             };
             let inputs = strings(matches, "inputs")
                 .into_iter()

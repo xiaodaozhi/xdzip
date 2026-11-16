@@ -9,6 +9,7 @@ publish.workspace = true
 xdzip-codec-api = { path = "../xdzip-codec-api" }
 xdzip-domain = { path = "../xdzip-domain" }
 xdzip-compression = { path = "../xdzip-compression" }
+xdzip-codec-stream = { path = "../xdzip-codec-stream" }
 [dev-dependencies]
 flate2 = { version = "=1.1.10", default-features = false, features = ["rust_backend"] }
 # Independent reference writer/reader for compatibility tests only.

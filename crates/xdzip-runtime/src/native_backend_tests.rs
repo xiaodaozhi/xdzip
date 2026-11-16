@@ -742,7 +742,11 @@ fn cabinet_store_mszip_lzx_quantum_tasks_and_trailing_signature_are_read_only() 
             assert_eq!(known_contents(&signed), contents);
         }
     }
-    for name in ["new.cab", "new.iso", "new.udf"] {
+    assert_eq!(
+        crate::formats::creation_format("new.iso"),
+        Some(Format::Iso)
+    );
+    for name in ["new.cab", "new.udf"] {
         assert_eq!(crate::formats::creation_format(name), None);
     }
 }
@@ -1002,7 +1006,10 @@ fn optical_images_preserve_names_readable_content_and_reject_link_output_and_udf
             }
             std::fs::write(&path, bytes).unwrap();
             assert_eq!(
-                crate::formats::detect(&mut std::io::Cursor::new(std::fs::read(&path).unwrap())),
+                crate::formats::detect(
+                    &mut std::io::Cursor::new(std::fs::read(&path).unwrap()),
+                    &Default::default()
+                ),
                 Ok(Format::Udf)
             );
             assert!(Archive::open(&path, &Default::default()).is_err());

@@ -1,4 +1,4 @@
-use crate::{TarCodec, record};
+use crate::{Filter, TarCodec, record};
 use std::io::{Read, Write};
 use xdzip_codec_api::{
     Cancellation,
@@ -6,7 +6,7 @@ use xdzip_codec_api::{
         CreationCodec, EncodeError, EncodeInput, EncodeOutput, EncodeProgress, EncodeSettings,
     },
 };
-use xdzip_compression::GzipWriter;
+use xdzip_codec_stream::FrameWriter;
 
 fn write_record(
     output: &mut dyn Write,
@@ -129,15 +129,27 @@ impl CreationCodec for TarCodec {
         cancel: &Cancellation,
         progress: &mut dyn FnMut(EncodeProgress<'_>),
     ) -> Result<(), EncodeError> {
-        if settings.password.is_some()
-            || ![0, 1, 6, 9].contains(&settings.level)
-            || settings.method != if self.gzip { "deflate" } else { "store" }
+        let declaration = self.format().descriptor();
+        if !matches!(
+            self.filter,
+            Filter::Identity | Filter::Gzip | Filter::Xz | Filter::Lz4 | Filter::Zstd
+        ) || settings.password.is_some()
+            || settings.solid
+            || settings.encrypt_headers
+            || !declaration.creation_levels.contains(&settings.level)
+            || !declaration.write_methods.contains(&settings.method)
         {
             return Err(EncodeError::Unsupported);
         }
-        if self.gzip {
+        if self.filter != Filter::Identity {
             let mut encoder =
-                GzipWriter::new(output, settings.level).map_err(|_| EncodeError::Invalid)?;
+                FrameWriter::new(output, self.filter, settings.level).map_err(|error| {
+                    if error.kind() == std::io::ErrorKind::OutOfMemory {
+                        EncodeError::Limit
+                    } else {
+                        EncodeError::Output
+                    }
+                })?;
             write_tar(&mut encoder, input, cancel, progress)?;
             cancel.check().map_err(|_| EncodeError::Cancelled)?;
             encoder.finish().map_err(|_| EncodeError::Output)?;

@@ -7,6 +7,7 @@ Window {
     property bool allowMinimize: false
     property bool escapeClosesWindow: true
     property bool centerOnScreen: false
+    property int screenAvailableHeight: BuildInfo.availableScreenHeight(root)
     // Constraints depend on requested geometry, never the constrained height.
     property int requestedHeight: Math.min(720, Screen.desktopAvailableHeight - 80)
     transientParent: owner
@@ -32,6 +33,7 @@ Window {
     }
     Component.onCompleted: applyRequestedHeight()
     onRequestedHeightChanged: Qt.callLater(applyRequestedHeight)
+    onScreenChanged: screenAvailableHeight = BuildInfo.availableScreenHeight(root)
     // Cocoa can deliver an older resize after the content limits have changed.
     onHeightChanged: if (visible) {
         if (height !== requestedHeight) Qt.callLater(applyRequestedHeight);
@@ -41,6 +43,9 @@ Window {
     function present() {
         // Reopening preserves view state and uses the owner's current display.
         if (owner) screen = owner.screen;
+        // Select the display before constraining content to its actual work area.
+        if (centerOnScreen) BuildInfo.centerOnScreen(root, owner);
+        screenAvailableHeight = BuildInfo.availableScreenHeight(root);
         applyRequestedHeight();
         if (centerOnScreen) {
             BuildInfo.centerOnScreen(root, owner);

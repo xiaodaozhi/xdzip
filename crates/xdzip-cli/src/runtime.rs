@@ -24,6 +24,12 @@ pub struct Runtime {
 }
 impl Runtime {
     pub fn new(interactive: bool, chinese: bool, secret_from_stdin: bool) -> Result<Self> {
+        if let crate::installation::Context::Desktop(_, Some(worker)) =
+            crate::installation::context()?
+        {
+            xdzip_codec_native::configure_worker(worker)
+                .map_err(|_| Failure::new("invalid_installation"))?;
+        }
         let (client, mut receiver) = service::start()?;
         let (tx, events) = mpsc::sync_channel(4);
         let join = thread::spawn(move || {
@@ -285,7 +291,7 @@ impl Runtime {
                 }
                 let mut response = Response::success(
                     command,
-                    json!({"format":snapshot.format, "output":snapshot.open_path, "check_kind":if matches!(snapshot.format, "TAR" | "ISO" | "UDF") { "structure_and_readability" } else { "supported_content" }}),
+                    json!({"format":snapshot.format, "output":snapshot.open_path, "check_kind":xdzip_codec_api::registry::formats().iter().find(|format| format.label == snapshot.format).map_or("supported_content", |format| format.check_kind)}),
                     if self.chinese {
                         format!(
                             "操作完成，已提交 {} 个文件，已跳过 {} 个文件。",

@@ -127,4 +127,4 @@ def asset_entries() -> list[dict]:
         'source': f'file-associations/xdzip-{icon_id}-master.svg',
         'sha256': hashlib.sha256((ASSETS / f'xdzip-{icon_id}.{suffix}').read_bytes()).hexdigest(),
     } for suffix, ids in [('ico', WINDOWS_ICONS.values()), ('icns', MACOS_ICONS)]
-      for icon_id in ids]
+      for icon_id in dict.fromkeys(ids)]

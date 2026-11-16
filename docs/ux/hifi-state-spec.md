@@ -1,65 +1,65 @@
-# 高保真状态与实现契约
+# High-fidelity states and implementation contract
 
-对应 [操作状态原稿](../../design/hifi/README.md) 和 [统一素材库](../../design/assets/README.md)。状态编号延续原型映射，补充 C02、T02、R02、R03，不另造业务协议。需求 P03/P04/P05/P06/P07/P08/P11/P15；验收仍对照 AC-03/04/05/06/07/08/11/14。
+Corresponds to [operation state originals](../../design/hifi/README.md) and the [shared asset library](../../design/assets/README.md). State IDs continue prototype mappings, adding C02, T02, R02 and R03 without inventing a business protocol. Requirements P03/P04/P05/P06/P07/P08/P11/P15; acceptance still compares AC-03/04/05/06/07/08/11/14.
 
-## 画面与任务语义
+## Screens and task semantics
 
-| 状态 / 图板 | 进入条件 | 默认焦点与操作 | 关闭与恢复 |
+| State / artboard | Entry condition | Default focus and action | Close and recovery |
 | --- | --- | --- | --- |
-| C01 / 01 | 新建，尚无执行任务 | 首个输入按钮或文件名；创建前校验输入、名称、目标、能力 | 放弃本窗口草稿；不产生写入 |
-| E02 / 02 | 当前 TaskId/PromptId 需要重名决定 | 默认跳过；改名保留扩展名；覆盖须明确按下；“应用后续”默认不勾选 | 关闭请求取消任务，经过 T02，再进入结果；不默认覆盖或跳过 |
-| T01 / 03、08 | 已接受计划并收到运行事件 | 返回浏览与取消均为普通按钮；没有虚构的暂停能力 | 仅隐藏视图；任务入口可重开；后台完成不抢焦点 |
-| T01 / 完整性检查 | 与任务进度同一组件，只读压缩包对象与校验阶段 | 返回浏览、取消检查与真实任务结果；HTML 演示与 Qt 组件预览继续单独标记 | 关闭不取消任务，真实检查经工具栏接入后台队列 |
-| R01 / 04 | 本次任务有已发布项和未完成项 | 重试仅选未完成项，重新进入计划确认 | 关闭视图不删除已提交文件 |
-| S01 / 05 | 打开设置，选择六个标签之一 | 所有编辑可用键盘访问；修改成功后即时生效，地址须通过校验 | 关闭保留已生效的设置，失败保留原值 |
-| R02 / 06 上 | 收到唯一成功终态 | 解压可按显式选项打开目标文件夹；创建仅在应用内打开受支持结果，不自动打开系统目录；零失败计数用中性状态 | 关闭详情，不重复通知完成 |
-| T02 / 06 中 | 已接受取消，清理尚未完成 | 重复取消禁用；仍可返回浏览 | 可隐藏；不能提前显示“已取消” |
-| R03 / 06 下 | 收到取消终态 | 保留已发布项；若允许重试，重新规划未完成范围 | 关闭不回滚已发布项 |
-| C02 / 07 | 新建目标已有同名压缩包 | 默认返回修改；使用新名称回到 C01 并建议未占用名；替换非默认 | 返回 C01 保留输入、格式、路径草稿；不隐式开始覆盖 |
+| C01 / 01 | Creation, no running task | First input button or filename; validate inputs, name, destination and capability before creating | Discard this window's draft; no write |
+| E02 / 02 | Current TaskId/PromptId needs a name-conflict decision | Skip by default; rename retains extension; overwrite requires explicit activation; “apply to subsequent” unchecked | Close requests task cancellation, goes through T02, then result; never overwrite or skip by default |
+| T01 / 03, 08 | Plan accepted and running event received | Return to browsing and cancel are ordinary buttons; no fabricated pause | Hide view only; task entry can reopen; background completion does not steal focus |
+| T01 / integrity check | Same component as task progress, read-only archive and verification stages | Return to browsing, cancel check and real task result; HTML demo and Qt component preview remain separately marked | Closing does not cancel; real checks enter background queue via toolbar |
+| R01 / 04 | Task has published and unfinished items | Retry selects only unfinished items and returns to planning confirmation | Closing view does not delete committed files |
+| S01 / 05 | Open settings and select one of six tabs | All edits keyboard-accessible; changes take effect immediately after success and addresses must validate | Close retains applied settings; failure preserves previous values |
+| R02 / 06 top | Unique successful terminal received | Extraction can open target folder by explicit choice; creation opens only supported results in-app, never automatically opens a system folder. Zero failures use neutral state | Close details without repeated completion notification |
+| T02 / 06 middle | Cancellation accepted, cleanup incomplete | Repeated cancellation disabled; returning to browsing remains possible | Can hide; cannot show “Cancelled” prematurely |
+| R03 / 06 bottom | Cancellation terminal received | Retain published items; if retry is allowed, replan unfinished scope | Closing does not roll back published items |
+| C02 / 07 | Creation target already has an archive of the same name | Default returns to editing; use new name returns to C01 and suggests an unoccupied name; replace is not default | Return to C01 preserving inputs, format and path draft; do not implicitly overwrite |
 
-“使用新名称”只提出建议名，真正开始时仍验证目标是否已存在；不能把文件名检查当作最终写入授权。替换创建必须先完整生成并验证临时压缩包，发布前再检查目标条件。取消在线性化提交点之后到达时按核心结果显示已完成，不把成功改写为取消。
+“Use new name” proposes a name only; actual start still checks whether the destination exists. Filename checking is not final write authorization. Replacement creation must completely generate and verify a temporary archive before rechecking destination conditions for publication. Cancellation arriving after the linearized commit point displays completion according to the core result rather than rewriting success as cancellation.
 
-## 新建能力与字段错误
+## Creation capabilities and field errors
 
-- ZIP 的四档级别映射 Store／Deflate 1／6／9，默认 2-正常压缩。TAR／TAR.GZ 可创建，格式切换同步扩展名并清空密码与分卷；TAR 禁用级别，TAR.GZ 级别 0／1／2／3 映射 GZIP 0／1／6／9。修改格式同步扩展名，但不能静默覆盖既有目标。
-- 无输入、空名称、目标无效或无权限时，创建按钮禁用，原因显示在相邻字段。错误文本参与读屏，不只改变边框颜色。
-- 同一输入去重与目录展开由核心处理；UI 只展示选择摘要。创建页的图像图标是类型标志，不进行图片预览。
-- ZIP 密码和分卷按 WP-10 宿主契约实际创建；RAR、7z 创建仍禁用。
+- ZIP's four levels map to Store/Deflate 1/6/9, default 2 normal. TAR/TAR.GZ can be created; switching formats synchronizes extensions and clears password and volume splitting. TAR disables level; TAR.GZ levels 0/1/2/3 map to GZIP 0/1/6/9. Format changes synchronize extension but cannot silently overwrite targets.
+- Without input, with an empty name, invalid destination or missing permission, Create is disabled and the reason appears beside the field. Error text participates in screen reading rather than changing border color alone.
+- The core handles duplicate inputs and directory expansion; UI shows selection summaries only. Image icons in creation are type indicators, not image preview.
+- ZIP passwords and volumes are actually created under the WP-10 host contract; RAR and 7z creation remain disabled.
 
-## 任务数据与异常
+## Task data and exceptions
 
-样例 A 为 3 个文件：8.4 + 6.2 + 12.8 = 27.4 MB。成功 2 个时已保存 14.6 MB，剩余 PDF 为 12.8 MB；成功、跳过、未完成的计数不可混淆。样例 B 为整个压缩包：30 个文件、77.5 MB；46.5 MB 对应 60%，不是样例 A 的同一个时刻。
+Example A has three files: 8.4 + 6.2 + 12.8 = 27.4 MB. With two successful, 14.6 MB is saved and the remaining PDF is 12.8 MB; success, skipped and unfinished counts must not be confused. Example B is an entire archive with 30 files and 77.5 MB; 46.5 MB is 60%, not the same moment as example A.
 
-百分比来源于已知总字节与真实计量；未知总量显示不定进度、不编造剩余时间。阶段变化后重新估算速率；图中 6.2 MB/s、约 5 秒仅为稳定阶段示例。文件计数标明已完成还是正在处理，不以当前条目序号当成功数。
+Percentages derive from known total bytes and actual metering. Unknown totals use indeterminate progress without invented remaining time. Re-estimate speed after a phase change; the illustrated 6.2 MB/s and approximately 5 seconds are only an example of a stable phase. File counts specify completed versus being processed and do not use the current entry ordinal as success count.
 
-磁盘满：停止并保留已发布项，释放空间或修改目标后重新规划。源变化：重试入口改为重新打开压缩包，不能沿用旧索引。单纯取消：未完成用琥珀/中性色，不显示压缩包损坏。错误码位于详情，普通画面不出现调用栈或内部桥接术语。
+Disk full: stop and retain published items; replan after freeing space or changing destination. Source change: retry becomes reopening the archive; old indexes cannot be reused. Cancellation alone: unfinished uses amber/neutral, without reporting corruption. Error codes appear in details; ordinary screens do not show call stacks or internal bridge terms.
 
-## 设置即时生效契约
+## Immediately applied settings
 
-主题、字号、密度、语言、打开方式和隐私开关操作成功后立即持久化并生效；清空最近记录立即执行，不删除原文件。失败保留原设置并提示。关于与更新位于设置的关于页；文件关联由操作系统确认并反映真实结果，网络页保存经校验的代理与镜像地址。详细行为见[设置契约](settings-localization.md)。
+Theme, font size, density, language, opening mode and privacy switches persist and apply immediately after successful changes. Clearing recent history happens immediately without deleting original files. Failure retains old settings and shows a message. About and updates are on the settings About page; file associations require OS confirmation and reflect actual results. The network page saves validated proxy and mirror addresses. See the [settings contract](settings-localization.md).
 
-单文件 8 GiB、任务 20 GiB 为现有宿主的默认输出预算，当前设置窗口不提供额度编辑。未来若增加限额设置，须检查正整数与溢出、单文件不大于任务上限，并只应用于新计划；不得更改运行中任务的不可变授权或绕过空间检查。
+The existing host's default output budgets are 8 GiB per file and 20 GiB per task; the current settings window does not allow editing quotas. If limits are added later, validate positive integers and overflow, ensure the per-file limit is no greater than the task limit, and apply only to new plans. Do not change immutable authorization for active tasks or bypass space checks.
 
-## 窗口、布局与素材映射
+## Window, layout and asset mapping
 
-全部操作窗遵循 [平台窗口规范](platform-windows.md)。macOS 原生标题栏不采用切图交通灯；Windows/Linux 标题栏按钮位置、禁用、系统菜单和移动行为由平台层验证。平台对照图中的 Linux 右侧控件不是对所有桌面环境的硬编码承诺。
+All operation windows follow the [platform window specification](platform-windows.md). Native macOS title bars do not use sliced traffic lights. Windows/Linux title button position, disabled states, system menus and movement are verified by the platform layer. Linux right-side controls in platform comparison images are not a hardcoded promise for every desktop environment.
 
-当前尺寸以[布局规范](../../specs/visual/layout-scale.json)、[窗口登记](../../specs/visual/window-registry.json)及[设计规范](../visual/design-standard.md)为准，替代早期大尺寸建议。创建、解压、冲突、进度与结果统一宽 491；设置宽 612，属于已登记的用途差异。标题 20、正文 13，footer 按钮 13、说明 12。高度按各窗口内容和上限约束，正文可滚动；有 footer 的操作窗保持 footer 固定可达，设置不设 footer。设置提供 100%／125%／150% 字号，不以整体缩放或截图物理像素推导组件尺寸。
+Current dimensions follow [layout-scale.json](../../specs/visual/layout-scale.json), the [window registry](../../specs/visual/window-registry.json) and the [design standard](../visual/design-standard.md), replacing early oversized suggestions. Creation, extraction, conflict, progress and results share width 491; settings uses 612 as a registered purpose-specific difference. Title is 20, body 13, footer buttons 13 and supporting text 12. Height follows content and each window's cap; body scrolls. Operation windows with footers keep them fixed and reachable; settings has no footer. Settings offers 100%/125%/150% font sizes; do not derive component dimensions from global scaling or physical screenshot pixels.
 
-| 使用位置 | 新增素材 | 共享 / 动态部分 |
+| Use | Added assets | Shared / dynamic parts |
 | --- | --- | --- |
-| 新建标题、添加输入 | archive-add、image-file、remove | folder、file-pdf、new |
-| 冲突、部分失败 | document-warning、status-warning、info | file-pdf；比较卡与文本由 QML 绘制 |
-| 运行进度 | document-download、image-file、info | 进度条与数字动态绘制 |
-| 成功、跳过、取消、停止 | status-success、status-skipped、status-stopped、spinner、clock | spinner 旋转由 Qt 控件处理 |
-| 设置 | settings-tile、theme-system | 主题预览、开关、数字输入为组件；settings 用于小图标 |
+| Creation title, add inputs | archive-add, image-file, remove | folder, file-pdf, new |
+| Conflict, partial failure | document-warning, status-warning, info | file-pdf; comparison cards and text drawn by QML |
+| Running progress | document-download, image-file, info | Progress bars and numbers drawn dynamically |
+| Success, skip, cancel, stop | status-success, status-skipped, status-stopped, spinner, clock | Qt control rotates spinner |
+| Settings | settings-tile, theme-system | Theme previews, switches and numeric inputs are components; settings is a small icon |
 
-素材统一位于 `design/assets/`。`reference/` 保留原像素切片，用于外观对照；`svg/` 和 `png/` 为透明运行素材，不能混称原稿图层。全部 SVG 使用 24×24 画布，PNG 导出 24×24、48×48、72×72；各倍率保持相同逻辑显示尺寸。HTML 文件列表采用 48×48 源空间槽位，Qt 文件列表采用约 31.75×39.69 逻辑像素槽位。PDF、文本、代码与 Markdown 图标共用中心与 22 像素可见高度，保留不同的轮廓宽度；文件夹在相同画布内居中。深色 SVG 是素材适配，完整深色行为仍需 Qt 实机与对比度检查。
+Assets reside under `design/assets/`. `reference/` retains original-pixel slices for appearance comparisons; `svg/` and `png/` are transparent runtime assets and must not be called original layers. All SVGs use 24×24 canvases; PNGs export at 24×24, 48×48 and 72×72, retaining the same logical display size. HTML file lists use a 48×48 source-space slot; Qt uses approximately 31.75×39.69 logical pixels. PDF, text, code and Markdown icons share a center and 22-pixel visible height while retaining distinct outline widths; folders are centered in the same canvas. Dark SVGs are asset adaptations; full dark behavior still requires real Qt and contrast checks.
 
-## 目录树组件补充
+## Directory tree addition
 
-B01 浏览新增[目录树 B 规格](directory-tree.md)，配套三张正式图板与 26 张统一切片。节点箭头由子目录决定；展开、当前目录和键盘焦点独立。读取、空压缩包、根文件、导航超限、失败与隐藏当前路径分别规定，既有只读领域契约不变。HTML 与 Qt 已接入核心导航、连接线和隐藏当前分支标记；骨架与专用边界图标仍为设计资源，接入范围见目录树规格。
+B01 browsing adds the [directory tree B specification](directory-tree.md) with three formal artboards and 26 shared slices. Node arrows depend on subdirectories; expansion, current directory and keyboard focus are independent. Loading, empty archives, root files, navigation limits, failures and hidden current paths are specified separately; the existing read-only domain contract is unchanged. HTML and Qt integrate core navigation, connecting lines and hidden-current-branch indicators; skeletons and dedicated boundary icons remain design assets. See the directory tree specification for integration scope.
 
-## 变更与复验
+## Changes and revalidation
 
-主要状态已用于 HTML 和 Qt 实现。后续变更仍须核对原稿及修订参数、控制项功能映射、共享组件与窗口契约，并执行受影响平台验证；不能仅凭稿件或静态检查确认原生功能和可访问性。实际结论在对应 issue 登记，历史验收不因本页清单重置。
+Major states have been used in HTML and Qt. Subsequent changes still check original designs and revised parameters, control-to-function mapping, shared components and window contracts, and perform affected-platform verification. Designs or static checks alone cannot establish native functionality and accessibility. Record actual conclusions in the corresponding issue; historical acceptance is not reset by this list.

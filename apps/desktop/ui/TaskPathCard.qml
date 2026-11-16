@@ -5,6 +5,7 @@ Rectangle {
     id: root
     property real density: 1
     property bool valueUserData: true
+    property bool singleLine: false
     readonly property alias valueItem: valueLabel
     property real labelSize: Math.round(Theme.operationBodySize * density)
     property real valueSize: Math.round(Theme.operationPathFontSize * density)
@@ -56,9 +57,13 @@ Rectangle {
                 Text {
                     id: valueLabel
                     Layout.fillWidth: true
+                    Layout.minimumWidth: 0
                     text: root.value
                     textFormat: Text.PlainText
-                    wrapMode: Text.WrapAnywhere
+                    wrapMode: root.singleLine ? Text.NoWrap : Text.WrapAnywhere
+                    maximumLineCount: root.singleLine ? 1 : 2147483647
+                    elide: root.singleLine ? Text.ElideMiddle : Text.ElideNone
+                    Accessible.name: root.value
                     font.pixelSize: root.valueSize
                     font.family: root.valueUserData ? Theme.userDataFontFamily : Theme.uiFontFamily
                     color: Theme.text

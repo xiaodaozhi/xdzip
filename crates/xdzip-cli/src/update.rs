@@ -500,7 +500,7 @@ fn status(context: &Context) -> Result<Response> {
             }
             Ok(response)
         }
-        Context::Desktop(_) => desktop::status(),
+        Context::Desktop(..) => desktop::status(),
         Context::Portable => Err("manual_install".into()),
     }
 }
@@ -585,7 +585,7 @@ pub fn run(matches: &ArgMatches, interactive: bool, chinese: bool) -> Result<Res
     if !matches.get_flag("check") && !system_supported {
         return Err("unsupported_system".into());
     }
-    let desktop_install = matches!(context, Context::Desktop(_));
+    let desktop_install = matches!(context, Context::Desktop(..));
     let desktop_info = if desktop_install {
         Some(desktop::installation_info()?)
     } else {

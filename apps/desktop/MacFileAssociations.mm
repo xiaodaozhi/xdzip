@@ -24,10 +24,16 @@ UTType *contentType(const QString &extension) {
         {".zip", "public.zip-archive"}, {".7z", "org.7-zip.7-zip-archive"},
         {".rar", "com.rarlab.rar-archive"}, {".tar", "public.tar-archive"},
         {".tar.gz", "org.gnu.gnu-zip-tar-archive"}, {".tgz", "org.gnu.gnu-zip-tar-archive"},
+        {".gz", "org.gnu.gnu-zip-archive"},
         {".cab", "com.microsoft.cab-archive"}, {".iso", "public.iso-image"},
         {".udf", "org.xdzip.udf-image"}};
     const QString identifier = types.value(extension);
-    return identifier.isEmpty() ? nil : [UTType typeWithIdentifier:identifier.toNSString()];
+    if (identifier.isEmpty()) {
+        // Additional registered suffixes use the type assigned to their final
+        // extension. This grants no new package execution or decoding behavior.
+        return [UTType typeWithFilenameExtension:extension.mid(extension.lastIndexOf('.') + 1).toNSString()];
+    }
+    return [UTType typeWithIdentifier:identifier.toNSString()];
 }
 void finish(QPointer<FileAssociations> service, bool success) {
     if (service)

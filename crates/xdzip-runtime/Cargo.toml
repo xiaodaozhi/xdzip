@@ -10,16 +10,33 @@ xdzip-extract-plan = { path = "../xdzip-extract-plan" }
 xdzip-domain = { path = "../xdzip-domain" }
 xdzip-codec-api = { path = "../xdzip-codec-api" }
 xdzip-codec-tar = { path = "../xdzip-codec-tar" }
+xdzip-codec-deb = { path = "../xdzip-codec-deb" }
+xdzip-codec-asar = { path = "../xdzip-codec-asar" }
+xdzip-codec-lha = { path = "../xdzip-codec-lha" }
+xdzip-codec-arj = { path = "../xdzip-codec-arj" }
+xdzip-codec-arc = { path = "../xdzip-codec-arc" }
+xdzip-codec-bh = { path = "../xdzip-codec-bh" }
+xdzip-codec-alz = { path = "../xdzip-codec-alz" }
+xdzip-codec-egg = { path = "../xdzip-codec-egg" }
+xdzip-codec-cfb = { path = "../xdzip-codec-cfb" }
+xdzip-codec-pea = { path = "../xdzip-codec-pea" }
+xdzip-codec-nsis = { path = "../xdzip-codec-nsis" }
+xdzip-codec-uu = { path = "../xdzip-codec-uu" }
+xdzip-codec-aescrypt = { path = "../xdzip-codec-aescrypt" }
+xdzip-codec-stream = { path = "../xdzip-codec-stream" }
 xdzip-codec-zip = { path = "../xdzip-codec-zip" }
 xdzip-codec-native = { path = "../xdzip-codec-native" }
+xdzip-codec-optical = { path = "../xdzip-codec-optical" }
 xdzip-io = { path = "../xdzip-io" }
 unicode-normalization = "=0.1.25"
 zeroize = "=1.9.1"
+sha2 = "=0.10.9"
 [target.'cfg(windows)'.dependencies]
 winapi-util = { version = "=0.1.11", default-features = false }
 [target.'cfg(unix)'.dependencies]
 libc = "=0.2.190"
 [dev-dependencies]
+xdzip-compression = { path = "../xdzip-compression" }
 flate2 = { version = "=1.1.10", default-features = false, features = ["rust_backend"] }
 [lints]
 workspace = true

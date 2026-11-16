@@ -1,19 +1,19 @@
-# 风险与待决策登记
+# Risks and decisions
 
-本表定义需持续评估的风险和控制要求。具体状态、责任人、截止日期和关闭证据在对应 issue 登记，不在本页追加阶段报告。
+This register defines risks and controls that require ongoing assessment. Actual status, owners, deadlines and closure evidence belong in the corresponding issue; do not append stage reports here.
 
-| ID | 风险/决定 | 责任角色 | 关闭证据 / 截止门槛 |
+| ID | Risk / decision | Responsible role | Closure evidence / gate |
 | --- | --- | --- | --- |
-| D01（已关闭） | 原创内容采用 Apache-2.0 | 仓库所有者 | 2026-10-11 确立许可策略；根目录 LICENSE 与许可文档已同步 |
-| D02 | 工具链发行冻结与 OS 支持 | 核心/平台 | 按[工具链](../engineering/toolchain.md)、[支持政策](../engineering/support-policy.md)及[发行审查](../qa/release-review.md)核对来源、维护渠道和实际目标环境 |
-| D03 | ZIP/TAR 后端版本 | 格式维护者 | 互操作、取消、许可和坏输入；WP-05/11 |
-| D04（按用户决策收口） | 发行方式 | 所有者/发布 | 2026-10-19 确定 GitHub Releases 未正式签名发行，不要求付费账号、证书或公证；保留必要 ad-hoc 完整性和工件校验，实际上传仍须明确授权 |
-| D05 | 性能结果的适用范围 | 性能维护者 | 每次采样记录硬件／系统／后端／负载和预算；共享 runner 或某台开发机的观测不推广为所有设备保证 |
-| D06 | 漏洞与社区反馈渠道 | 所有者 | 按[安全政策](../../SECURITY.md)接收和处理实际反馈，敏感内容不进入公开 issue |
-| R01 | cxx 与 Qt 关闭竞态 | 核心/Qt | 关闭/队列满/销毁后事件测试；WP-03 |
-| R02 | 三平台路径/链接语义不一致 | 平台安全 | 原生竞态测试与输出外无变化；WP-07 |
-| R03 | Qt 完整体积超预算 | 发布/性能 | 含全部运行库测量；删除未用依赖，不冒进静态化 |
-| R04 | 插件沙箱尚不可行 | 扩展维护者 | 平台越权套件；未通过保持关闭 |
-| R05 | 设计稿被误读为首版全功能 | 产品/Qt | 首版详情替代预览、明确能力文案；WP-04/12 |
+| D01 (closed) | Apache-2.0 for original content | Repository owner | License policy established 2026-10-11; root LICENSE and licensing documentation synchronized |
+| D02 | Release toolchain freeze and OS support | Core/platform | Check provenance, maintenance channels and actual target environments against [toolchain](../engineering/toolchain.md), [support policy](../engineering/support-policy.md) and [release review](../qa/release-review.md) |
+| D03 | ZIP/TAR backend versions | Format maintainer | Interoperability, cancellation, licensing and malformed input; WP-05/11 |
+| D04 (closed by user decision) | Distribution | Owner/release | GitHub Releases without formal signing decided 2026-10-19; no paid account, certificate or notarization required. Retain necessary ad-hoc integrity signing and artifact verification; actual uploads still require explicit authorization |
+| D05 | Applicability of performance results | Performance maintainer | Record hardware, system, backend, workload and budget for each measurement; observations on a shared runner or a single development machine are not guarantees for all devices |
+| D06 | Vulnerability and community feedback channels | Owner | Receive and handle actual feedback under the [security policy](../../SECURITY.md); do not put sensitive content in public issues |
+| R01 | cxx and Qt shutdown races | Core/Qt | Close, full-queue and post-destruction event tests; WP-03 |
+| R02 | Inconsistent path/link semantics across three platforms | Platform security | Native race tests and no changes outside output; WP-07 |
+| R03 | Complete Qt size exceeds budget | Release/performance | Measure with all runtime libraries; remove unused dependencies rather than prematurely static-linking |
+| R04 | Plugin sandbox not yet viable | Extension maintainer | Platform authorization-boundary suite; remain disabled until passed |
+| R05 | Designs mistaken for full first-release functionality | Product/Qt | First release uses details instead of preview, with explicit capability wording; WP-04/12 |
 
-只允许基于证据关闭风险。无法完成安全/许可门槛时缩小能力范围；不因文档完整便标记“风险已解决”。
+Risks may be closed only on evidence. Reduce capability scope when security or licensing gates cannot be met; complete documentation alone does not mean a risk is resolved.

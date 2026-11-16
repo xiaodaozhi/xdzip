@@ -5,13 +5,15 @@ use std::io::Cursor;
 #[path = "../../../tests/support/legacy_names.rs"]
 mod fixture;
 fn scan(bytes: &[u8]) -> Vec<Entry> {
-    TarCodec { gzip: false }
-        .scan(
-            &mut Cursor::new(bytes),
-            &Cancellation::default(),
-            ScanLimits::default(),
-        )
-        .unwrap()
+    TarCodec {
+        filter: Filter::Identity,
+    }
+    .scan(
+        &mut Cursor::new(bytes),
+        &Cancellation::default(),
+        ScanLimits::default(),
+    )
+    .unwrap()
 }
 fn pax(key: &[u8], value: &[u8]) -> Vec<u8> {
     let mut length = key.len() + value.len() + 4;
@@ -111,26 +113,28 @@ fn rewritten_binary_pax_path_declares_utf8_and_preserves_payload() {
     }
     let original = extended(b"\xd6\xd0\xce\xc4.txt", true, true);
     let mut output = Cursor::new(Vec::new());
-    TarCodec { gzip: false }
-        .rewrite(
-            &mut Cursor::new(original),
-            RewriteInput {
-                keep: &[true],
-                renames: &[Some("中文.txt".into())],
-                additions: &Empty,
-                settings: EncodeSettings {
-                    solid: false,
-                    encrypt_headers: false,
-                    method: "store",
-                    level: 0,
-                    password: None,
-                },
+    TarCodec {
+        filter: Filter::Identity,
+    }
+    .rewrite(
+        &mut Cursor::new(original),
+        RewriteInput {
+            keep: &[true],
+            renames: &[Some("中文.txt".into())],
+            additions: &Empty,
+            settings: EncodeSettings {
+                solid: false,
+                encrypt_headers: false,
+                method: "store",
+                level: 0,
+                password: None,
             },
-            &mut output,
-            &Cancellation::default(),
-            &mut |_| {},
-        )
-        .unwrap();
+        },
+        &mut output,
+        &Cancellation::default(),
+        &mut |_| {},
+    )
+    .unwrap();
     let rows = scan(output.get_ref());
     assert_eq!(rows[0].raw_name, "中文.txt".as_bytes());
     assert_eq!(
@@ -147,9 +151,11 @@ fn rewritten_binary_pax_path_declares_utf8_and_preserves_payload() {
     }
     let cancel = Cancellation::default();
     let mut source = Cursor::new(output.get_ref());
-    let mut reader = TarCodec { gzip: false }
-        .open_payload(&mut source, &rows, &cancel)
-        .unwrap();
+    let mut reader = TarCodec {
+        filter: Filter::Identity,
+    }
+    .open_payload(&mut source, &rows, &cancel)
+    .unwrap();
     let mut sink = Sink(vec![]);
     reader.decode(&rows[0], &mut sink, &cancel).unwrap();
     assert_eq!(sink.0, fixture::CONTENT);
@@ -161,7 +167,10 @@ fn rewritten_binary_pax_path_declares_utf8_and_preserves_payload() {
     );
     let mut refused = Cursor::new(Vec::new());
     assert_eq!(
-        TarCodec { gzip: false }.rewrite(
+        TarCodec {
+            filter: Filter::Identity
+        }
+        .rewrite(
             &mut Cursor::new(original),
             RewriteInput {
                 keep: &[true],

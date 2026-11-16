@@ -1,0 +1,111 @@
+# 主窗口功能、组件与交互契约
+
+主窗口的控件同时交付外观和行为：普通、悬停、按下、键盘焦点、禁用、选中、忙碌与错误均有明确状态。HTML 使用示例压缩包验证交互；Qt 根据真实浏览、创建、解压、[完整性检查](../engineering/archive-checking.md)和[主动内容预览](../engineering/content-preview.md)的能力启用动作，HTML 示例不代表真实后台结果。
+
+文件名、目录名、归档名和路径优先使用启动时的系统默认字体，缺字由平台回退；固定界面文案继续使用内置子集。目录树与拖动预览按对应文字字体量测，详见[视觉规范](../visual/design-standard.md#界面字体与用户数据)。
+
+## 功能与组件清单
+
+| 区域 | 通用组件 / 组合组件 | 交互与能力 |
+| --- | --- | --- |
+| 系统标题栏 | 平台窗口装饰、窗口拖动区域 | macOS 原生红绿灯；Windows 主窗口保留原生边框、DWM 阴影与系统圆角，仅隐藏原生标题栏，在设置右侧提供最小化、最大化／还原、关闭；拖动与边缘缩放调用系统接口，双击标题空白处切换最大化；Linux 使用原生装饰，按钮区域不触发拖动 |
+| 压缩包标签 | ArchiveTabs、ArchiveTab、图标按钮 | 默认新标签页，也可选新窗口；非活动标签常规字重，自适应收窄后横向滚动，提供滚动与标签列表入口；支持窗口内拖动与 Ctrl+Shift+Page Up/Down 排序，关闭后保留后台任务 |
+| 工具栏 | CommandButton、IconButton、SplitButton | 打开、新建、测试、更多、解压主动作与范围菜单；鼠标 / 键盘使用同一命令入口 |
+| 搜索 | SearchField、清除动作、范围提示 | 输入法组合期间不提交；当前目录范围搜索，清空不改变目录；快捷键聚焦 |
+| 压缩包摘要 | ArchiveSummary、格式徽章、统计条 | 就绪、读取、空内容、读取失败分别显示，不用未知值冒充零 |
+| 目录导航 | DirectoryTree、DirectoryRow、Disclosure、连接线 | 多级展开、叶子空箭头槽、当前 / 焦点独立、可访问完整路径、祖先收起标记、目录右键动作 |
+| 文件区域标题 | PaneHeader、Breadcrumb、ViewToggle | 路径分级返回、列表 / 网格切换、排序菜单；共享行高和垂直中心 |
+| 列表与网格 | EntryView、SelectableEntry、复选框、SortHeader | 单选、多选、范围选择、全选、清除、反选、方向键；目录双击或 Enter 进入，普通文件双击或 Enter 临时解压并由系统关联打开，属性仍通过右键或详情入口查看 |
+| 文件右键 | ContextMenu、CommandMenuItem、Submenu | 打开只作用于右击项，与双击一致；保留已有多选；右击未选中项先单选该项；按当前选择启用解压、属性、复制名称 / 路径、目录导航 |
+| 空白右键 | ContextMenu、RadioMenuItem、CheckboxMenuItem | 当前列表选择、视图、排序、详情栏；不擅自取消已有选择 |
+| 表头右键 | 排序菜单 | 排序字段、方向、恢复压缩包顺序；全部查询结果先排序，不只排序当前可见条目 |
+| 属性 / 预览 | InspectorPanel、PropertyRow、详情动作 | 文件、多选、压缩包与未就绪；关闭 / 重开、单文件操作、预览图边缘与表头对齐 |
+| 状态与任务 | StatusBar、StatusAction、任务入口 | 选择统计、索引状态、后台任务；隐藏任务窗口不取消任务 |
+| 提示与操作窗 | Tooltip、Notice、Toast、平台独立窗口 | 提示完整名称 / 禁用理由；Esc、焦点返回、取消和关闭遵循各动作语义 |
+
+浏览列表和网格共用空状态。已提交的搜索没有结果时提示更换搜索词；未搜索且压缩包记录数为零时说明压缩包为空，否则只说明当前文件夹没有可显示内容，不推断被限制的目录索引是否完整。读取与错误显示真实状态，输入框中尚未提交的文字不改变当前结果的提示。未打开文件时的引导不枚举过时的格式列表。
+
+English: List and grid share their empty state. A committed search with no results suggests another search term. Without a search, an archive with no records is identified as empty; otherwise the message describes only the current folder's visible contents, including when the directory index is limited. Reading and errors keep their actual status, and unsubmitted search text does not change the displayed result's message.
+
+## 统一命令与菜单
+
+按钮、快捷键、右键与下拉调用同一个命令，动作执行前重新检查当前能力。菜单打开时固定对象和选择范围；压缩包切换、查询变化或对象消失时关闭，不能把旧条目的命令应用到新压缩包。
+
+菜单统一使用图标 / 勾选槽、名称、快捷键、子菜单箭头四列；分隔线按动作组划分。只包含当前上下文相关动作：目录提供进入与展开，文件提供详情，多选保留批量范围。尚不可执行的动作保留禁用状态，原因仅供辅助功能描述读取，不显示说明副行或 tooltip，不使用“点击后提示待开发”代替禁用。
+
+字号变化时，菜单名称的高度直接跟随当前字体度量，并与所在行保持垂直居中；首次呈现即满足半逻辑像素的中心误差限制，不依赖下一轮布局修正旧文字槽。
+
+普通菜单行、复选项、单选项、子菜单入口与分隔线是共享组件。排序和视图以单选项标明当前状态；详情面板以复选项表示开关。危险动作没有默认自动激活行为，右键和打开菜单均不执行动作。
+
+## 菜单输入与生命周期
+
+- 向下 / 向上在可用项间移动，Home / End 到首尾；Enter / Space 激活，右键盘箭头进入子菜单，左箭头返回父菜单。
+- Esc 逐级关闭，根菜单关闭后退出触发控件或原条目的焦点；Tab 关闭菜单并继续页面正常焦点顺序。支持按名称首字符定位，输入法组合不触发菜单类型搜索。
+- 鼠标悬停高亮但不执行；子菜单延迟展开，移动到子菜单时保持父项。鼠标与键盘操作可以互相接续，不残留多个高亮或多个根菜单。
+- 点击外部关闭，不抢走外部目标焦点。滚动主区域、窗口尺寸变化、进入操作窗或切换压缩包关闭菜单；菜单自身滚动不关闭。HTML 共享控件记录打开时各现有容器的实际滚动位置，打开前已完成、仅延迟送达的滚动事件不关闭菜单；打开后位置变化仍关闭。
+- 根据实际视口避让底边与右边，必要时向左或向上展开。定位使用宿主坐标，逻辑尺寸、原稿源像素、DPR 和审阅缩放分别处理。
+- 键盘通过 Shift+F10 / 菜单键打开当前条目菜单；长按触屏与鼠标右击使用相同上下文，不以单击方式破坏多选。
+
+## 控件状态与可访问性
+
+| 状态 | 表现 | 行为 |
+| --- | --- | --- |
+| 普通 | 保留已确认原稿的边框、圆角、图标和基线 | 不因状态变化改变控件尺寸 |
+| 悬停 | 淡色填充；主按钮使用加深主色 | 提示延迟出现，不遮挡目标；触屏不保留粘滞悬停 |
+| 按下 | 比悬停更明确的填充 | 不通过位移造成文字 / 图标跳动；取消按下不执行动作 |
+| 焦点 | 不额外绘制 outline、加粗边框或光晕 | 保留 Tab 顺序及键盘激活，外部点击、Escape、Enter 退出控件焦点 |
+| 禁用 | 文字与图形采用明确禁用色，保留轮廓 | 不响应点击或快捷键；可访问描述说明原因 |
+| 选中 | 背景或勾选标志明确当前状态 | `aria-selected` / `aria-checked` / Qt Accessible 同步 |
+| 忙碌 | 状态与禁用范围按任务确定 | 阻止重复提交；后台任务允许继续浏览 |
+| 错误 | 邻近文案说明问题与恢复动作 | 不用颜色作为唯一信息，不报告假成功 |
+
+共享图标来自 `design/assets`。文字、勾选、背景、连接线与菜单定位由控件实现，原像素切片用于对照。HTML 沿用主稿源坐标，新增控件参数先从逻辑像素换算；Qt 使用相同逻辑规范。
+
+## 验收
+
+文件区域右侧的计数和操作按钮组成固定宽度组。列表、网格、排序和可见的详情入口保持 28×28 逻辑像素，按钮间距为 6.4，窗口变宽只增加面包屑可用空间。工具栏更多菜单仅保留设置，原始顺序、解压元数据预检、全选和详情使用已有专用入口。
+
+起始页和压缩文件页使用同一底栏高度，正常高度下限为32逻辑像素，来自 layout-scale.json 的 statusbarHeight。辅助字号按任务按钮的真实高度与相同上下留白共同增高，切换页面不改变底栏高度。两页任务按钮使用同一 task-list 素材及 main.interaction.taskIconSize 定义的 16×16 逻辑像素图标槽，居中对齐，不随页面或辅助字号改变尺寸。
+
+压缩文件页底栏显示选中数量；有选择且总大小已知时，在数量后显示分隔符和大小。选中项包含虚拟目录或未知大小文件等导致总大小未知时，只显示数量，不显示多余的分隔符和 `—`。已知的零字节大小仍正常显示，欢迎页文案不变。
+
+English: The archive status bar shows the selection count and appends the size only when a nonempty selection has a known total. If a virtual directory or unknown-size file makes the total unknown, it shows the count alone without a separator or dash. A known zero size remains visible; the welcome message is unchanged.
+
+English: Welcome and archive pages share a 32-unit minimum status bar and the same content-based growth for larger text. Both task buttons use the same task-list asset in a centered 16×16 logical icon slot from main.interaction.taskIconSize, independent of page and text scale.
+
+文件列表选框右边缘到文件图标槽固定留 12 逻辑像素，图标、文件名和“名称”表头同步定位。辅助字号只改变真实文字度量，不扩大这段空白；选框仍与每行选择状态及表头全选状态共用原有选择模型。
+
+五列均可拖动右边界调整宽度，命中区为 8 逻辑像素，双击边界恢复该列默认宽度。名称列默认填满余量，其余列以原设计值为基准，两个大小列的默认宽度按实际标题和排序箭头度量适当增大，避免默认标题被截断；用户列宽在本次运行的标签页和窗口间共享，退出后恢复默认，宽度以逻辑尺寸保存于内存，不写设置或 DPR。名称列最小 160，其余列最小 64，辅助字号按同一比例增加，超出视口时横向滚动。表头和内容使用同一个宽度来源，拖动不触发排序；原始大小、压缩大小的升序和降序标记位于右对齐标题文字左侧，其余列的标记位于标题右侧，均与实际显示文字留 6 逻辑像素。活动排序列在相应一侧为箭头预留空间，手动缩窄时标题先省略，箭头不得覆盖文字或相邻列；数值列标题继续与内容右对齐。
+
+English: Sort indicators precede the right-aligned original and compressed size labels and follow the other labels, with a 6-unit gap. Their default columns grow to fit the measured labels and indicators; manually narrowed columns elide labels without overlapping adjacent columns.
+
+文件类别图标按 [扩展名提示表](../../../specs/visual/file-types.json)生成 Qt 和 HTML 选择器，覆盖办公文档、表格、演示、音频、视频、压缩包、安装包、字体与磁盘镜像。后缀不区分大小写，未知类别使用通用文档图标。这只说明外观，不表示文件内容可信或该归档格式已经获得浏览、创建或解压支持。
+
+实际鼠标与键盘驱动检查各入口、菜单避让、子菜单往返、选择保持、焦点恢复、禁用保护、标签隔离、视图切换与目录层级。浅深色、三种平台装饰、正常 / 大字号和缩放下截取真实控件画面；初始主窗口的标题栏、工具栏、文件列表与预览既有对齐不以菜单改造为由回退。
+
+按[通用验证方法](../qa/README.md)记录功能覆盖、实际截图和未接入能力，结论放对应 issue，执行证据放 build/ 或 CI 工件。静态图板、浏览器行为验证、Qt 运行验证分别说明，不能相互替代。
+
+Qt 菜单明确使用 `Popup.Item` 消费共享委托，保证 AppKit 不忽略自定义样式；操作窗口继续采用独立顶层窗口。`CommandTooltip` 使用同一提示参数与纯文本，避免把压缩包名称解释为富文本；菜单获得焦点时隐藏提示。共享 JSON 的八位颜色采用 CSS RGBA，QML 生成器转换为 QColor ARGB，颜色与透明度一起验证。
+
+目录树及主工具栏打开、新建、测试、更多、解压的悬停没有浮动 tooltip；菜单中的禁用操作也不显示可见 hint 或 tooltip，其他按钮按共享延时提供提示。根目录和普通子目录只列直属文件与文件夹，搜索递归当前范围；普通名称显示末级名称，搜索显示完整路径。列表悬停覆盖整行，网格有固定左右留白及悬停／选中复选框，菜单使用四周柔和阴影并与调用按钮留 4 逻辑像素。交互及缩放复验按[通用方法](../qa/README.md)保留独立证据。
+
+文件类型排序的升序与降序都保持目录在前，以数据中的目录标记分组；无后缀文件不能与文件夹共用分组键。相同类型保留稳定身份顺序，排序作用于完整查询后再拆分内部传输批次。HTML 中未设置 folder 的文件按 false 处理，不能将 undefined 转成 NaN 参与比较。
+
+
+## 选择、任务与提示
+
+全选保留当前列表末项的详情焦点，元数据与逐项选择一致；取消选择后隐藏四项属性及“解压此文件”。该按钮使用共享 hover／pressed／focus 状态。全选仍作用于完整当前查询，不改变目录和物理身份的契约。
+
+底栏“任务 N”显示保留历史数，活动数只用于提示和退出逻辑。每个任务菜单项左侧显示创建／解压与编号，右侧显示状态色标，点击或键盘激活重开同一任务。任务菜单与其他菜单共用密度、字号和滚动边界。未选中时解压范围菜单中所选及预检动作禁用，不增加提示副行。
+
+浮动提示统一在同一控件内指针连续静止 1200 ms 后显示；移动、离开、按下按钮或打开菜单时取消显示及旧计时，跨控件重新完整等待，不沿用上一提示的快速唤醒。提示优先在调用控件上方显示，顶部空间不足时改在下方，避免边界约束将提示压到控件上造成 hover 反复切换。Qt 共享 CommandTooltip 使用显式静止计时，HTML data-tooltip 同步；列表完整名称不使用浏览器原生 title 绕过该策略。系统原生菜单和托盘的提示时序由系统管理，不宣称可由 QML 参数控制。时间不随字号、DPR 或密度缩放，视觉几何保持不变。
+
+归档标签的完整文件名同样使用共享静止延时提示，按纯文本显示，标签排序拖动、按下、标签菜单或标签列表开启时隐藏。全局任务列表先关闭菜单再显示任务窗口，不切换归档标签，不重新打开已关闭的归档页面。
+
+English: Archive tabs show their complete display name through the shared stationary-hover tooltip, as plain text. Pressing, reordering or opening either tab menu dismisses it. Global task entries dismiss their menu and open only the task dialog, preserving selected and closed archive tabs.
+
+起始页采用顶部固定、水平居中的可滚动正文，错误和警告追加于格式提示下方，以红色文字和语义图标显示，不推动上方内容。关闭托盘驻留的主窗口清空该窗口标签，普通唤出仅显示起始页；最小化保留标签，后台任务仍从全局入口访问。
+
+文件列表正文的双向拖放、当前目录添加确认及三平台外部复制流程见[文件拖放与修改](../engineering/archive-transfers.md)。
+
+包内移动采用内部拖动，目标列表/网格文件夹和目录树使用既有选择底色，即时反馈复用提示几何，最多四行并约束于当前客户区。选中目录、自身后代、原位置、搜索及加密/分卷目标有明确拒绝说明，不新增确认窗口。重名使用文件冲突窗口，移动任务有独立名称。状态原稿见 [包内移动](../../../design/hifi/sources/archive-move.html)，事务与边界见[拖放契约](../engineering/archive-transfers.md)。

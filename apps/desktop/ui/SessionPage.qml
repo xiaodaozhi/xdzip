@@ -258,6 +258,9 @@ Item {
         case "settings":
             settingsWindow.configure();
             break;
+        case "settingsAssociations":
+            settingsWindow.configureTab(3);
+            break;
         case "about":
             settingsWindow.configureTab(5);
             break;
@@ -858,6 +861,7 @@ Item {
             message: root.closedPage || reader.browsingBusy ? "" : reader.message || AppSettings.error
             onOpenRequested: root.dispatchDesktopCommand("open")
             onCreateRequested: createWindow.configure()
+            onFormatsRequested: root.dispatchDesktopCommand("settingsAssociations")
             onCancelRequested: {
                 if (root.waitingArchiveUpdate && root.sessionManager)
                     root.sessionManager.cancelPendingOpen(root.sessionIdentity);

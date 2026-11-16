@@ -79,6 +79,10 @@ void BuildInfo::centerOnScreen(QWindow *window, QWindow *owner) const {
     const auto y = area.y() + qMax(0, (area.height() - frame.height()) / 2);
     window->setFramePosition(QPoint(x, y));
 }
+int BuildInfo::availableScreenHeight(QWindow *window) const {
+    auto *screen = window && window->screen() ? window->screen() : QGuiApplication::primaryScreen();
+    return screen ? screen->availableGeometry().height() : 0;
+}
 bool BuildInfo::printVersionIfRequested(int argc, char **argv) {
     if (argc != 2)
         return false;

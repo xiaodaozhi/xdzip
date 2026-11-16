@@ -1,24 +1,24 @@
-# 发行候选材料契约
+# Release candidate materials contract
 
-每个候选绑定干净源码提交、产品版本和实际包哈希。材料生成不自动创建 GitHub Release、标签或上传包，也不批准许可选择；具体状态记录在候选对应 issue。正式签名与公证不作为门槛。按 2026-11-05 所有者政策，发行附件不提供对应源码压缩包；本地源码收集和审阅工具继续保留。
+Each candidate binds a clean source commit, product version, and actual package hashes. Generating materials does not automatically create GitHub Releases or tags, upload packages, or approve license choices; actual status is recorded in the candidate issue. Formal signing and notarization are not gates. Under the owner's 2026-11-05 policy, release attachments do not provide corresponding-source archives; local source collection and review tools remain available.
 
-## 交付内容
+## Deliverables
 
-固定干净提交后生成 Windows x86_64 ZIP／安装器、macOS arm64 app ZIP／DMG、Ubuntu 24.04 x86_64 tar.gz／deb，并收集通知、实际文件 SBOM、构建和生命周期回执。对应源码包可在本地单独审阅，不作为候选 Release 或 Actions 工件提供。候选总清单记录相对文件路径、SHA-256、大小、平台、构建版本和源码提交；不将不同提交的包拼成一个候选。
+After pinning a clean commit, produce Windows x86_64 ZIP/installer, macOS arm64 app ZIP/DMG, and Ubuntu 24.04 x86_64 tar.gz/deb, collecting notices, actual-file SBOMs, build receipts, and lifecycle receipts. A corresponding-source package may be reviewed separately locally and is not supplied as a candidate Release or Actions artifact. The candidate manifest records relative file paths, SHA-256, sizes, platforms, build versions, and source commit; do not combine packages from different commits into one candidate.
 
-按需 Qt 工作流的 macOS 作业只保留日志与 JSON。经所有者明确授权，专用 Release 工作流可在 Apple Silicon runner 部署 Qt、执行必要的 ad-hoc 签名，并从同一应用导出 app ZIP 与 DMG，验证完整性和无 SDK 搜索路径下的重定位启动；本地开发 DMG 仍遵循已有授权。Windows/Linux 的开发包由实际成功的按需 Qt 运行获取，不把 QA-only 安装器当作产品。历史完整源码 Qt／性能记录只作为历史材料引用，不改写提交，也不要求人工验收重做。
+The on-demand Qt workflow's macOS job retains logs and JSON only. With explicit owner authorization, the dedicated Release workflow may deploy Qt on Apple Silicon runners, perform necessary ad-hoc signing, and export app ZIP and DMG from the same app, verifying integrity and relocated startup without SDK search paths. Local development DMGs retain existing authorization requirements. Windows/Linux development packages come from actual successful on-demand Qt runs; QA-only installers are not product packages. Historical complete source-Qt/performance records are cited as historical materials without rewriting commits or requiring manual acceptance to be redone.
 
-本地源码交付的离线重建与实际启动另行核验；这不等于完全可复现的上游 SDK 二进制或已批准许可。源码包撤下不消除组件许可及重链接义务；如实际条款要求的交付条件无法通过其他方式满足，不得发布受影响二进制。macOS DMG 部署后字节与 SDK 模式 CI 字节有差异，两套 SBOM 保留各自审计范围，不混作同一工件。
+Offline rebuild and actual startup from local source delivery are separately verified; this does not mean completely reproducible upstream SDK binaries or approved licensing. Removing a source package does not eliminate component license or relinking obligations. If actual license delivery conditions cannot be met otherwise, affected binaries must not be released. Deployed macOS DMG bytes differ from SDK-mode CI bytes; their SBOMs retain distinct audit scope and are not treated as one artifact.
 
-## 许可与来源核对
+<a id="许可与来源核对"></a>
 
-已有 runtime-attribution.json、qt-sdk-correspondence.json、qt-binary-differences.json、链接输入和内嵌资源记录。逐项审查输出到 build/，区分已精确解释的二进制转换、上游未声明构建来源、系统包装依赖、实际再分发库、主程序复合代码和待选许可分支。原始 gap 与 incomplete 保留，不把一个技术解释直接改为法律批准。
+## License and provenance checks
 
-二进制差异记录同时保留归属报告中的 `attribution_path` 和 `sdk_path`。同一 SDK 文件的多个发行路径可以分别出现，不能把这些记录数量直接当作不同 SDK 文件数量；上游摘要差异仍按各自实际证据判断。
+Existing inputs include runtime-attribution.json, qt-sdk-correspondence.json, qt-binary-differences.json, link inputs, and embedded-resource records. Review each into build/, distinguishing precisely explained binary transformations, upstream undeclared build origins, system wrapper dependencies, actually redistributed libraries, composite main-program code, and license branches to select. Retain original gaps and incomplete status; a technical explanation is not automatically legal approval.
 
-English: Each binary-difference record retains both the `attribution_path` from the attribution report and the `sdk_path`. Multiple distributed paths may refer to one SDK file, so record counts are not automatically counts of distinct SDK files. An upstream checksum difference still requires its own evidence.
+Binary-difference records retain both attribution-report `attribution_path` and `sdk_path`. Multiple distributed paths can refer to one SDK file, so record counts are not automatically distinct SDK-file counts. Upstream digest differences still require their own actual evidence.
 
-公开 alpha.8 macOS 材料中的 110 条差异对应 61 个 SDK 文件。[Qt 官方 PySide6 6.8.2 macOS wheel](https://download.qt.io/official_releases/QtForPython/pyside6-essentials/PySide6_Essentials-6.8.2-cp39-abi3-macosx_12_0_universal2.whl) 包含与 61 个原 SPDX SHA-1 分别匹配的文件；它的固定 SHA-256 为 `abe8446367413b7b56626352e05adc7b15a180956ac9d90e4ee6419c16eab23d`。可提供原公开 macOS materials、该 wheel 和对应 Qt SDK，运行以下命令复验 SDK 的完整字节关系：
+The 110 differences in published alpha.8 macOS materials correspond to 61 SDK files. The [official Qt PySide6 6.8.2 macOS wheel](https://download.qt.io/official_releases/QtForPython/pyside6-essentials/PySide6_Essentials-6.8.2-cp39-abi3-macosx_12_0_universal2.whl) contains files matching all 61 original SPDX SHA-1 values; its pinned SHA-256 is `abe8446367413b7b56626352e05adc7b15a180956ac9d90e4ee6419c16eab23d`. Provide the original public macOS materials, wheel, and corresponding Qt SDK to reverify complete SDK byte relationships:
 
 ```sh
 python3 scripts/verify-alpha8-macos-sdk-signatures.py \
@@ -28,26 +28,22 @@ python3 scripts/verify-alpha8-macos-sdk-signatures.py \
   --output build/alpha8-macos-signature-review.json
 ```
 
-工具核对固定材料和 wheel 摘要、原始差异记录及每个 SDK 文件摘要，将 SDK 现有签名字节与必要的签名命令、链接段大小和对齐变化用于内存重建，并要求 61 个输出与 SDK 逐字节一致。它不签名文件，不修改原包，也不验证 Qt 签名的信任策略、证明历史签名命令或批准许可。原发行 SBOM 和历史材料不改写；详细证据见 [#53](https://github.com/xiaodaozhi/xdzip/issues/53#issuecomment-6571328466)。
+The tool verifies pinned material and wheel digests, original difference records, and each SDK-file digest. It reconstructs SDK files in memory using existing SDK signature bytes and required signature-command, link-edit-size, and alignment changes, requiring all 61 outputs to match the SDK byte for byte. It does not sign files, alter original packages, verify Qt signature trust policy, prove historical signing commands, or approve licensing. Original release SBOMs and historical materials remain unchanged; see [#53](https://github.com/xiaodaozhi/xdzip/issues/53#issuecomment-6571328466).
 
-English: The 110 differences in the published alpha.8 macOS materials refer to 61 SDK files. The pinned Qt PySide6 6.8.2 macOS wheel above contains files matching all 61 original SPDX SHA-1 values. The command verifies the pinned inputs and reconstructs each SDK file in memory using the SDK's existing signature bytes plus the necessary signature-command, link-edit-size and alignment changes. All reconstructed bytes must match. The tool does not sign or alter files, verify Qt's signature trust, prove the historical signing command or approve licenses. Historical SBOM and release assets remain unchanged; see [#53](https://github.com/xiaodaozhi/xdzip/issues/53#issuecomment-6571328466).
+The review checklist checks actual availability and scope per platform: final file SBOM, deployed component attribution, and SDK references are three inputs. With only file hashes or SDK-mode attribution, record deployed component association as missing. An app after architecture trimming, relocation, and signing cannot directly reuse SDK file identity. Compare historical and current candidate observation counts only after scope, files, and components match; count changes alone are not resolutions.
 
-审查清单须逐平台核对报告的实际可用性与范围：最终文件 SBOM、部署后组件归属和 SDK 参考是三类输入。只有文件哈希或 SDK 模式归属时，将部署后的组件关联登记为缺失；裁剪架构、重定位、签名后的应用不能直接沿用 SDK 文件身份。历史候选与当前候选的观察数量只有在范围、文件与组件均匹配后才能比较，不能把数量变化当作已解决项。
+Dedicated macOS Release captures a Cocoa/Metal resource probe, SDK-source correspondence, and difference analysis while the final deployed app exists, with conventional source/file SBOM names. Link graphs and static libraries bind the compiled app; resources and audits bind the deployed app. `release-deployment-evidence.json` reuses the Mach-O comparator to check exact section bytes, addresses, flags, zero-fill sizes, UUID, and normalized import versions while retaining different whole-file hashes. Load-command layout, LINKEDIT, and signature metadata are outside this equivalence conclusion. Invalid bounds, mixed identities, or changed sections/UUID/imports fail immediately. One probe does not approve reference-machine performance, human visual acceptance, or licensing; original attribution gaps and incomplete status remain.
 
-专用 macOS Release 在最终部署应用仍存在时采集 Cocoa／Metal 资源探针、SDK 源码对应与差异分析，提供通用名称的来源／文件 SBOM。链接图和静态库绑定编译应用，资源与审计绑定部署应用；`release-deployment-evidence.json` 复用既有 Mach-O 比较器，核对节的精确字节、地址、标志及零填充大小，以及 UUID 与归一化导入版本，保留不同的整文件哈希。加载命令布局、LINKEDIT 与签名元数据不计入该等价结论，异常边界、混合身份或节／UUID／导入变化直接失败。单次探针不批准参考机性能或真人视觉，原始归属缺口与 incomplete 保持。
+Qt dynamic linking, notices, and locally retained source/replacement materials are review inputs and do not automatically remove other obligations; see [Qt's official obligations](https://www.qt.io/development/open-source-lgpl-obligations). Check Windows redistributables file by file against the [official Visual Studio 2022 redistribution list](https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution), retaining toolchain/DLL provenance. “From the Qt SDK” is not specific authorization. Record fonts under existing OFL materials, original project content under Apache-2.0, and generative icons under their provenance separately. Corresponding-source archives are not release attachments; if actual license conditions cannot be met another way, block distribution of affected binaries.
 
-English: Dedicated macOS Release packaging captures a Cocoa/Metal resource probe, SDK-source correspondence and difference analysis while the final deployment exists, with conventional source/file SBOM names. Link inputs bind the compiled image; resources and audit bind the deployed image. `release-deployment-evidence.json` reuses the established Mach-O comparator for exact section bytes, addresses, flags, zero-fill sizes, UUID and normalized imports while preserving distinct whole-file hashes. Load-command layout, LINKEDIT and signatures remain outside that equivalence claim. Invalid bounds, mixed identities or changed sections/UUID/imports fail. A single probe grants no reference-performance, manual-visual or license approval; original gaps and incomplete status remain.
+Remaining issues must identify component/file, platform, original declaration, technical findings, acceptable supplementary evidence, and responsible role. Do not generically require commercial Qt, developer accounts, or certificates. Keep unapproved license choices pending rather than accepting terms for the owner.
 
-Qt 动态链接、通知及本地保留的源码／替换材料是核对依据，不自动消除其他许可义务；参见 [Qt 官方义务说明](https://www.qt.io/development/open-source-lgpl-obligations)。Windows 再分发逐文件对照 [Visual Studio 2022 官方可分发清单](https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution)，并保留工具链及 DLL 来源，不能以“来自 Qt SDK”代替具体授权。字体按现有 OFL 材料，项目原创按 Apache-2.0，生成式图标按来源说明分别登记。对应源码压缩包不作为发行附件提供，若实际许可条件无法在其他方式下满足，须阻止相关二进制分发。
+## Policy and review materials
 
-剩余问题必须具体到组件／文件、平台、原始声明、技术核对结果、可接受的补证方式和责任角色，不笼统要求购买商业 Qt、开发者账号或证书。对未经批准的许可选择保留待确认，不代替所有者接受条款。
+- [System support and maintenance policy](support-policy.md): on 2026-10-19 the owner approved initial macOS 14+ arm64, maintained Windows 11 x86_64, and Ubuntu 24.04 X11 x86_64 scope and best-effort personal-project maintenance. That policy governs scope and actual verification boundaries; draft status in frozen materials remains historical.
 
-## 政策与审查材料
+## Material completion criteria
 
-- [系统支持与维护政策](support-policy.md)：2026-10-19 所有者批准 macOS 14+ arm64、受维护 Windows 11 x86_64、Ubuntu 24.04 X11 x86_64 的首批范围，以及个人项目尽力维护策略。范围与实际验证边界以该政策为准，冻结材料中的草案保留历史状态。
+Actual candidate packages and source identities on three platforms are verified, source and notices are complete, offline rebuilding succeeds, license issues are organized into actionable review items, and materials can be read independently. Continue tracking unresolved provenance and licensing under the [release review process](../qa/release-review.md); preparation does not replace approval.
 
-## 材料完成条件
-
-三平台实际候选包与来源身份核验成功，源码和通知齐全、离线重建成功，许可问题整理为可处理的审查项，材料可独立阅读。待确认的来源与许可问题继续按[发行审查流程](../qa/release-review.md)跟踪，不以材料准备代替批准。
-
-实际包、执行报告和校验和保存在本地或 CI 工件；正式交付材料随获批 Release 提供，不提交生成报告到源码仓库。
+Actual packages, execution reports, and checksums stay in local/CI artifacts. Official delivery materials accompany approved Releases; generated reports are not committed to the source repository.

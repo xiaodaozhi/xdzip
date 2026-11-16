@@ -1,31 +1,29 @@
-# 大归档索引与按需浏览
+# Large archive indexing and on-demand browsing
 
-普通单文件 ZIP/ZIP64 的源码能力上限为一百万条物理记录。其他格式和分卷路径保持各自现有的十万条准入；格式名称不表示所有组合都已扩大上限。目录、重复名称和待检查记录均计入物理数量，隐式导航目录只增加展示行。
+The source capability limit for regular single-file ZIP/ZIP64 is one million physical records. Other formats and split-volume paths retain their existing 100,000-entry admissions; a format name does not mean all combinations have expanded limits. Directories, duplicate names, and records needing review all count as physical entries; implicit navigation directories add display rows only.
 
-## 扫描与存储
+## Scanning and storage
 
-ZIP 逐条扫描复用普通 ZIP 解析器，先完成有界的整包旧编码名称采样，再以同一编码决定执行第二遍。两遍合计读取最多 512 MiB，中央目录最多 256 MiB，原始名称累计最多 128 MiB，解码和显示名称合计最多 128 MiB，每个原始或解码名称仍限 4 KiB。损坏尾部、取消或来源变化使整次结果失败，不发布局部索引。
+ZIP scans records individually using the ordinary ZIP parser, first completing bounded archive-wide legacy-encoding name sampling, then performing a second pass with the same encoding decision. Both passes together read at most 512 MiB; the central directory is at most 256 MiB; raw names total at most 128 MiB; decoded and display names together at most 128 MiB; each raw or decoded name remains limited to 4 KiB. A damaged tail, cancellation, or source change fails the whole result without publishing a partial index.
 
-热元数据到达 64 MiB 或超过十万条后，逐条迁入私有磁盘存储，释放已有名称和记录，不同时保留两份完整索引。物理位置表最多一百万个 u64 偏移。磁盘元数据最多 512 MiB，文件名称与内容均不进入诊断字符串。目录树仍受 32768 节点、64 层和 4 MiB 名称预算限制，超过时整棵树不发布，根目录和物理搜索仍可用。
+At 64 MiB hot metadata or over 100,000 entries, migrate records individually to private disk storage and release existing names and records without holding two complete indexes simultaneously. The physical-position table contains at most one million u64 offsets. Disk metadata is at most 512 MiB; filenames and contents do not enter diagnostic strings. The directory tree remains limited to 32,768 nodes, 64 levels, and a 4 MiB name budget. If exceeded, do not publish the tree; root browsing and physical search remain available.
 
-临时文件位于宿主临时目录下随机命名、仅当前用户可读写的 `xdzip-index-*` 目录，通过持有的目录和普通文件句柄操作。正常关闭、查询替换、失败和取消清理已知文件及核对身份后的空目录。崩溃遗留使用与目录随机身份一致的 16 字节标记及排他租约识别；后续创建时有界扫描，七天以上且未使用的已知文件才可清理。链接、身份失配或未知对象保留，不递归删除陌生内容，不恢复或跨启动复用索引。
+Temporary files reside in a randomly named `xdzip-index-*` directory beneath the host temporary directory, readable/writable only by the current user and operated through held directory and regular-file handles. Normal close, query replacement, failure, and cancellation clean known files and identity-verified empty directories. Crash leftovers are identified by a 16-byte marker matching the directory's random identity and an exclusive lease. Later creation performs bounded scans and cleans known unused files older than seven days only. Links, identity mismatches, and unknown objects are retained. Do not recursively delete unfamiliar content or restore/reuse indexes across launches.
 
-## 查询与选择
+## Queries and selection
 
-搜索与排序生成一个不可变的完整行序，按每段最多 8 MiB 的排序键写入私有归并段，最多 128 段，临时排序存储最多 512 MiB。终态查询只存行令牌，不保留整套名称副本。比较仍使用原始整数、现有名称／类型规则和稳定物理身份；未知大小排在已知项后，不因降序改变重复项身份顺序。取消检查覆盖扫描、排序段前后和归并，不在比较器内改变顺序关系。
+Search and sorting produce an immutable complete row order. Sort keys are written into private merge runs of at most 8 MiB each, at most 128 runs and 512 MiB temporary sort storage. Final queries store row tokens only, without another full name copy. Comparisons retain original integers, existing name/type rules, and stable physical identity. Unknown sizes sort after known values; descending order does not change identity order for duplicates. Cancellation is checked around scanning, sort runs, and merging, not by changing ordering relationships inside the comparator.
 
-桥接每批最多 128 行、64 KiB 名称。最多 1024 行的查询保留原有完整提交方式，更大的 Qt 模型保留全部逻辑行数，仅按可见位置加载，驻留缓存最多 1024 行。未载入行不能提交条目动作。每个延迟页绑定会话、查询、代际、修订及请求偏移，旧页不能进入新结果。
+The bridge transfers at most 128 rows and 64 KiB of names per batch. Queries of at most 1,024 rows retain the existing full-commit approach. Larger Qt models retain the full logical row count and load only visible positions, with at most 1,024 resident cached rows. Unloaded rows cannot submit entry actions. Every deferred page binds session, query, generation, revision, and request offset; stale pages cannot enter new results.
 
-跨页选择以当前不可变查询中的有界区间表达，最多 4096 段；全选覆盖整个当前查询。离开缓存不改变选择。解压确认前由 Rust 将区间冻结为物理／导航身份，查询变化后仍使用已冻结的身份。超过任务十万条上限的选择明确拒绝，不自动缩小范围。未驻留选择的总大小暂不显示；超出驻留内容的整批剪贴板复制给出资源限制，不隐式复制不完整清单。
+Cross-page selection uses bounded ranges in the current immutable query, at most 4,096 ranges. Select All covers the entire current query; leaving the cache does not change selection. Before extraction confirmation, Rust freezes ranges into physical/navigation identities, which remain in use even if the query changes. Selections exceeding the task's 100,000-entry limit are explicitly rejected rather than silently reduced. Total size for nonresident selections is not currently shown. Bulk clipboard copying beyond resident content returns a resource limit rather than silently copying an incomplete list.
 
-## 任务边界
+## Task boundaries
 
-磁盘索引中的普通文件选择可经完整源复核、安全计划、整条目校验和既有授权提交解压。单次冻结计划仍限十万条及 64 MiB 元数据，文件和实际解码字节沿用[解压契约](m3-extraction.md)。目录扩展不能跳过未解析名称；所选链接在此索引配置中拒绝。ZIP 读取器重新检查全部中央目录物理偏移，只保留所选负载定位，保留重叠、局部头、尺寸、CRC、认证及取消检查。
+Regular files selected from a disk index may be extracted after complete source revalidation, safe planning, whole-entry verification, and existing authorized commit. A frozen plan remains limited to 100,000 entries and 64 MiB metadata; file and actual decoded-byte limits follow the [extraction contract](m3-extraction.md). Directory expansion cannot skip unresolved names; selected links are rejected in this index configuration. The ZIP reader rechecks physical offsets for the entire central directory, retains only selected payload locations, and preserves overlap, local-header, size, CRC, authentication, and cancellation checks.
 
-进入磁盘索引的归档暂不支持整体修改或整包测试，不能把空的内存投影当成完整归档。创建、其他格式、分卷与归档重写的原有上限不变。预览另见[内容预览](content-preview.md)。CLI 的物理列举与选择复用同一索引，使用[显式分页参数](command-line.md#归档行为)取得大包的完整物理范围；不分页的响应保留十万条及 16MiB 序列化数据／文本预算，超限整体失败。
+Archives using the disk index do not currently support whole-archive modification or testing; an empty in-memory projection cannot be treated as a complete archive. Existing limits for creation, other formats, split volumes, and archive rewriting are unchanged. See [content preview](content-preview.md) separately. CLI physical listing and selection reuse the same index; [explicit pagination](command-line.md#归档行为) obtains the complete physical range of large archives. Unpaged responses retain 100,000-entry and 16 MiB serialized-data/text budgets and fail as a whole when exceeded.
 
-## 验证
+## Verification
 
-`scripts/probe-large-index.py` 在 `build/` 生成含中文、重复名和嵌套目录的真实 ZIP64，再调用实际 `xdzip-m2-probe`。探针读完所有查询批次，并单独记录扫描、排序、检索、磁盘字节与平台可用的内存指标。样本生成器不在内存构造百万条文件名数组。范围、失败、取消、清理、过期页和实际所选文件输出按[验收要求](../qa/acceptance.md)执行，结果保留在 issue／本地或 CI 工件。
-
-English: Ordinary single-file ZIP/ZIP64 supports up to one million physical records. Other profiles retain their existing limits. Two streaming passes preserve the archive-wide filename decision. Metadata spills privately at 64 MiB or beyond 100,000 records; bounded external sorting retains only row tokens. Qt preserves the logical count with at most 1,024 cached rows. Pages and range selections bind the full query identity; extraction freezes selectors before confirmation and retains the independent 100,000-record task bound. Disk-index profiles reject whole-archive editing/checking and selected links. Private leased scratch storage is reclaimed on teardown and by bounded, identity-checked seven-day cleanup. Measurements are evidence for their actual machine and workload, not universal performance guarantees.
+`scripts/probe-large-index.py` generates a real ZIP64 under `build/` with Chinese names, duplicates, and nested directories, then invokes the actual `xdzip-m2-probe`. The probe reads every query batch and separately records scanning, sorting, retrieval, disk bytes, and platform-available memory metrics. The sample generator does not construct an array of one million filenames in memory. Scope, failure, cancellation, cleanup, stale pages, and actual selected-file output follow [acceptance requirements](../qa/acceptance.md); results remain in issues/local or CI artifacts. Measurements are evidence for their actual machine and workload, not universal performance guarantees.

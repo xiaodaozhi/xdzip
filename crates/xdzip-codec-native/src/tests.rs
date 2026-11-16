@@ -246,6 +246,13 @@ fn check_precharged_worker_credit_requires_paid_cab_work_and_consumes_once(admit
         Format::Zip,
         Format::Tar,
         Format::TarGzip,
+        Format::Gzip,
+        Format::Bzip2,
+        Format::TarBzip2,
+        Format::Lzma,
+        Format::TarLzma,
+        Format::Lzip,
+        Format::TarLzip,
         Format::Iso,
         Format::Udf,
     ] {

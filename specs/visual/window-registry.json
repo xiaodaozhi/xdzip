@@ -5,7 +5,7 @@
     "OperationWindow": {
       "parent": "Window",
       "role": "base",
-      "height_constraint_policy": "动态客户区高度变化时先放宽必要的上下限，再设置目标高度，最后恢复固定上下限；尺寸使用原有逻辑单位",
+      "height_constraint_policy": "动态客户区高度变化时先放宽必要的上下限，再设置目标高度，最后恢复固定上下限；尺寸使用原有逻辑单位。展示前选定显示器并刷新 screenAvailableHeight，供设置窗口沿用既有高度政策限制到实际工作区。",
       "reason": "平台装饰与固定客户区约束",
       "owner_policy": "Owner is optional for shell operations. Shell windows center their native frame in the selected screen's available geometry; prompts belong to the visible operation window."
     },
@@ -41,8 +41,8 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationCreateWidth",
-      "design": "design/html/canvas.html?view=create",
-      "reason": "保持 C01 既有尺寸与控件身份，文件选择区与添加窗口共享。7z 在既有格式组中增加一项，按真实文字宽度保障四项可读，空间不足时左侧选项标签换行。固实和文件名加密使用共享复选控件，正文滚动和固定 footer 不变。系统选择入口直接检查预填目标，不先访问默认下载目录",
+      "design": "design/hifi/sources/create-format-selector.html",
+      "reason": "保持 C01 既有窗口尺寸，文件选择区与添加窗口共享。格式使用共享 OperationSelect，选项由统一能力表生成，以稳定标识决定后缀和选项能力，避免格式增多挤压标签。最小宽度按最长文字和共享控件内边距测量。单文件压缩流只接受一个普通文件，方法编号与可选级别读取统一登记，LZ4、Zstandard、XZ 及其 TAR 组合仅显示已实现的三个压缩级别。固实和文件名加密使用共享复选控件，正文滚动和固定 footer 不变。系统选择入口直接检查预填目标，不先访问默认下载目录。ISO/Joliet 创建沿用同一窗口和共享控件，压缩级别固定为不压缩，密码与分卷禁用，能力说明可换行",
       "header_design": "design/hifi/sources/operation-headers.html",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
       "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."
@@ -61,7 +61,9 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationProgressWidth",
-      "reason": "复用既有解压进度尺寸，承载真实只读完整性检查及其密码等待和结果。临时打开任务在系统接受打开后自动隐藏，失败保留并可重试打开文件，更新归档和外部拖放沿用同一任务尺寸与独立操作类型，不把准备完成宣称为系统复制完成，包内移动沿用归档更新的校验及结果布局，保留独立移动任务标识。TAR、ISO 和 UDF 的无文件内容校验和说明复用既有可换行 footer，不改变窗口尺寸",
+      "current_file_policy": "进行中的当前文件使用单行、中间省略，完整路径保留在文本数据与辅助功能名称中；相同状态和字号下路径长度不改变卡片或窗口高度。普通解压结果摘要仅显示 committedFiles 的数量，创建结果、批次汇总及展开明细保留原行为。",
+      "content_design": "design/hifi/sources/task-windows.html",
+      "reason": "复用既有解压进度尺寸，承载真实只读完整性检查及其密码等待和结果。临时打开任务在系统接受打开后自动隐藏，失败保留并可重试打开文件，更新归档和外部拖放沿用同一任务尺寸与独立操作类型，不把准备完成宣称为系统复制完成，包内移动沿用归档更新的校验及结果布局，保留独立移动任务标识。无文件内容校验和的格式由能力表登记，TAR、LZMA、TAR.LZMA、ISO 和 UDF 的说明，以及 XZ 与 TAR.XZ 按流声明校验的说明，复用既有可换行 footer，不改变窗口尺寸",
       "design": "design/html/canvas.html?view=progress",
       "header_design": "design/hifi/sources/operation-headers.html",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
@@ -101,8 +103,9 @@
     "SettingsWindow": {
       "parent": "OperationWindow",
       "role": "settings",
+        "placement_policy": "无 owner 的托盘设置和关于窗口按指针所在显示器的可用区域居中，原生窗口创建及高度确定后再次定位；高度按实际 QScreen 可用工作区限制，不取虚拟桌面合并高度，完整原生边框必须留在可用区域内。",
       "width": "Theme.settingsLogicalWidth",
-      "reason": "设置与关于共用 612 宽窗口，六个左侧标签，首项贴齐顶部及右分隔线；侧栏基准宽 144，大字号按最长单词增宽；正文独立滚动，无固定 footer，变更即时提交。",
+      "reason": "设置与关于共用 612 宽窗口，六个左侧标签，首项贴齐顶部及右分隔线；侧栏基准宽 144，大字号按最长单词增宽；正文独立滚动，无固定 footer，变更即时提交。文件关联候选由统一格式能力表生成，新增候选沿用既有行组件和滚动区域。",
       "design": "design/hifi/sources/settings.html",
       "packaged_design": "design/hifi/sources/settings.html?tab=about&channel=msix",
       "scrollbar_policy": "The content viewport uses the default Qt vertical scrollbar at the right edge, spanning the viewport; its thumb tracks and controls scrolling.",
@@ -156,6 +159,11 @@
     }
   },
   "native_dialogs": {
-    "reason": "打开文件、添加输入与目标选择器由系统负责样式，经 NativeDialogPolicy 关联调用窗口；不套用操作窗口尺寸"
+    "reason": "打开文件、添加输入与目标选择器由系统负责样式，经 NativeDialogPolicy 关联调用窗口；不套用操作窗口尺寸",
+    "sfx_host": {
+      "source": "crates/xdzip-cli/src/sfx/windows.rs",
+      "design": "design/hifi/sources/sfx-native.html",
+      "reason": "独立 Windows 自解压程序复用系统文件夹选择器与 TaskDialog，布局、字体、DPI 和辅助功能由系统负责，不加载 Qt。普通桌面仍沿用 Qt Quick。"
+    }
   }
 }

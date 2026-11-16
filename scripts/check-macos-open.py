@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+from archive_formats_generated import ASSOCIATION_FIXTURES
 import subprocess
 from macos_launch_services import transient_registrations
 from deployment_audit import within
@@ -25,8 +26,7 @@ def main():
     scratch.mkdir(parents=True)
     app, fixture = args.app.resolve(), args.fixture.resolve()
     formats = args.formats.resolve()
-    format_names = ['sample.zip','sample.tar','sample.tar.gz','sample.tgz',
-                    'sample.7z','sample.rar','sample.cab','sample.iso','sample.udf']
+    format_names = ASSOCIATION_FIXTURES
     if not within(formats, ROOT/'build') or any(not (formats/name).is_file() for name in format_names):
         parser.error('Expected owned archive fixtures under build/')
     env = dict(os.environ, QT_QPA_PLATFORM='cocoa', QSG_RHI_BACKEND='metal')

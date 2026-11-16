@@ -1,79 +1,79 @@
-# v0.1 交互原型与功能映射
+# v0.1 interaction prototype and feature mapping
 
-状态：可交互设计验证稿。源文件在 [design/html](../../design/html/README.md)，入口为 [index.html](../../design/html/index.html)。Figma 工作稿保留为历史探索；当前功能与状态细化在仓库内继续。
+Status: interactive design-validation draft. Sources are in [design/html](../../design/html/README.md), with [index.html](../../design/html/index.html) as the entry. The Figma draft remains historical exploration; current feature and state refinement continues in the repository.
 
-## 已覆盖流程
+## Covered flows
 
-| 状态 | 入口与退出 | 需求 / 验收 |
+| State | Entry and exit | Requirements / acceptance |
 | --- | --- | --- |
-| B01 浏览 | 打开示例压缩包；目录双击或 Enter 进入，面包屑返回 | P01/P02/P08，AC-01/02/08 |
-| B02 搜索与选择 | 复选、单选、⌘/Ctrl 多选、Shift 连选、全选；搜索覆盖当前目录及其后代，根范围为整个压缩包 | P02/P03，AC-02/03 |
-| E01 解压确认 | 主按钮或范围菜单；目标、同名目录、范围与重名策略可修改 | P03/P07，AC-03/07 |
-| E02 冲突 | 询问策略遇到重名时进入；跳过、自动改名、覆盖后继续 | P03/P07，AC-03/07 |
-| T01 任务 | 开始 → 准备 → 处理 → 校验 → 结果；可返回浏览或请求停止 | P06/P15，AC-06/14 |
-| R01 结果 | 成功、部分失败、取消、源变化；重试未完成项重新确认 | P03/P04/P15，AC-03/04/14 |
-| C01 创建 | 输入增删、格式/级别/分卷/密码、保存位置；已有目标先确认 | P04/P05，AC-04/05 |
-| S01 设置 | 主题、字号、密度、语言与最近记录；关闭返回浏览状态 | P08/P11，AC-08/11 |
-| X01 异常 | 空压缩包、无结果、加载、损坏、不支持、权限与任务失败 | P05/P07/P15，AC-05/07/14 |
+| B01 Browse | Open a sample archive; double-click or Enter a directory, return by breadcrumb | P01/P02/P08, AC-01/02/08 |
+| B02 Search and select | Checkbox, single, ⌘/Ctrl multi-select, Shift range and select all; search covers current directory and descendants, or the whole archive at root | P02/P03, AC-02/03 |
+| E01 Confirm extraction | Primary button or scope menu; destination, same-name directory, scope and conflict policy are editable | P03/P07, AC-03/07 |
+| E02 Conflict | Enter on a collision under ask policy; continue after skip, automatic rename or overwrite | P03/P07, AC-03/07 |
+| T01 Task | Start → prepare → process → verify → result; return to browsing or request stop | P06/P15, AC-06/14 |
+| R01 Result | Success, partial failure, cancellation, source change; retry unfinished items with reconfirmation | P03/P04/P15, AC-03/04/14 |
+| C01 Create | Add/remove inputs, format/level/volumes/password and save location; confirm existing targets first | P04/P05, AC-04/05 |
+| S01 Settings | Theme, font size, density, language and recent history; close returns to browsing | P08/P11, AC-08/11 |
+| X01 Exceptions | Empty archive, no results, loading, corruption, unsupported features, permissions and task failure | P05/P07/P15, AC-05/07/14 |
 
-原型顶栏“设计标注”提供上述编号及当前状态规则。权限/空间等结果由场景驱动；工程验收 P09/P10/P12 不以原型运行成功为通过。
+“Design annotations” in the prototype header provides these IDs and current state rules. Permission and space outcomes are scenario-driven; successful prototype execution does not pass engineering acceptance P09/P10/P12.
 
-## 交互决定
+## Interaction decisions
 
-### 选择与搜索
+### Selection and search
 
-- 每项选择对应稳定条目 ID，不依赖排序后的行号。切换查询/目录清空选择，避免隐藏选择误解。
-- 当前列表全选与整个压缩包解压是两个独立概念。文件夹勾选展开为去重后代文件。
-- 输入法组合期间不提交查询，compositionend 后更新。浏览器模拟事件检查不替代 macOS/Windows/Linux 原生 IME 验收。
-- 普通文件 Enter／双击临时解压并由系统关联打开，目录 Enter／双击进入；属性入口保留。HTML 仅演示进度和自动隐藏，不真正写文件或调用系统。Qt 的主动内容预览另见[预览契约](../engineering/content-preview.md)。
+- Each selection corresponds to a stable entry ID, not a sorted row number. Changing query/directory clears selection to avoid hidden-selection misunderstandings.
+- Select all in the current list and extracting the whole archive are separate concepts. Checking a folder expands to deduplicated descendant files.
+- Do not submit queries during IME composition; update after compositionend. Browser simulated-event checks do not replace native IME acceptance on macOS/Windows/Linux.
+- Enter/double-click on a regular file extracts a temporary copy and opens it with the system association; on a directory it enters the directory. The properties entry remains. HTML demonstrates progress and automatic hiding only; it does not write files or call the system. See the [preview contract](../engineering/content-preview.md) for Qt's explicit content preview.
 
-### 解压与冲突
+### Extraction and conflicts
 
-- 最终路径实时显示，同名目录只追加一次。空路径或演示不可写路径阻止启动，更改目标后重新预检。
-- 默认询问重名；可选择跳过、自动改名或覆盖。覆盖后果用邻近文案解释。
-- 冲突面板初始焦点是“跳过”，覆盖不是默认 Enter。应用到后续冲突的选项限定本次任务；演示数据仅产生一个冲突。
-- 改名同时体现在完成摘要和文件明细中。跳过不计为失败；示例已有文件不在完成写入计数内。
+- Display the final path live; append a same-name directory only once. Empty or demonstrably unwritable example paths block start; re-preflight after changing destination.
+- Ask about conflicts by default; skip, automatic rename and overwrite are available. Adjacent copy explains overwrite consequences.
+- Initial conflict-panel focus is Skip; overwrite is not the default Enter action. Applying to later conflicts is limited to this task; sample data creates one conflict only.
+- Renames appear in completion summaries and file details. Skips are not failures; sample pre-existing files are not counted as completed writes.
 
-### 任务与结果
+### Tasks and results
 
-- 返回浏览不取消任务；状态栏可以再次打开任务。
-- 请求取消 → 正在停止（重复取消禁用）→ 已取消摘要。解压保留已发布项；创建压缩包没有中间发布。
-- 磁盘满停止任务并保留成功项。重试只取失败/未完成范围，重新进入计划确认。
-- 源变化要求重新打开压缩包，不静默复用旧索引。
-- 创建任务以一个最终压缩包计数；取消时“已创建压缩包”为 0，明确旧压缩包不变。
+- Returning to browsing does not cancel the task; the status bar can reopen it.
+- Request cancel → stopping (repeat cancellation disabled) → cancelled summary. Extraction retains published items; archive creation has no intermediate publication.
+- Disk full stops the task and retains successes. Retry selects only failed/unfinished scope and returns to plan confirmation.
+- Source changes require reopening the archive rather than silently reusing the old index.
+- A creation task counts one final archive; cancellation shows zero created archives and clearly preserves the old archive.
 
-### 创建压缩包与能力
+### Archive creation and capabilities
 
-原型中的 ZIP 显示四档压缩级别，默认 2-正常压缩，不另设算法控件。TAR 仅打包，TAR.GZ 使用 GZIP 0／1／6／9，两者禁用并清空密码与分卷参数。格式变化更新扩展名。空输入/空名称/空保存位置禁用创建。原型的格式选项不等同于当前产品的完整能力：产品支持 ZIP 和 7z 的受限创建、密码与分卷，RAR 不支持创建；实际边界见[格式后端](../engineering/native-codecs.md)、[密码交互](password-extraction.md)和[分卷契约](../engineering/archive-opening.md)。
+The prototype shows four ZIP compression levels, default 2 normal, without a separate algorithm control. TAR only packs; TAR.GZ uses GZIP 0/1/6/9. Both disable and clear password and volume parameters. Format changes update extensions. Empty input/name/save location disables Create. Prototype format choices are not the product's complete current capabilities: the product supports limited ZIP and 7z creation, passwords and volumes; RAR creation is unsupported. See [format backends](../engineering/native-codecs.md), [password interaction](password-extraction.md) and the [volume contract](../engineering/archive-opening.md) for actual boundaries.
 
-### 视觉与适配
+### Visuals and adaptation
 
-沿用暖灰、钴蓝和石墨主题。标准行高 40、紧凑 32；深色文本强调色独立于按钮填色，以提高小字辨识度。桌面宽度不足时详情作为可关闭浮层。手机审阅布局收起侧栏和次要表格列，操作面板适配窄屏并可滚动。
+Retain warm-gray, cobalt-blue and graphite themes. Standard row height is 40 and compact 32. Dark-theme text accent is independent of button fill for small-text legibility. At narrow desktop widths, details become a closable overlay. Mobile review collapses the sidebar and secondary table columns; operation panels adapt to narrow screens and scroll.
 
-操作界面按[平台窗口规范](platform-windows.md)设计为独立窗口。HTML 使用 dialog 模拟：决策窗限制焦点，进度、结果与设置为非模态；关闭后尽力恢复焦点。关闭冲突窗会取消任务而非静默跳过；关闭进度窗仅隐藏详情。正式 Qt 使用独立顶层窗口。
+Operation interfaces are standalone windows under the [platform window specification](platform-windows.md). HTML simulates them with dialog: decision windows constrain focus; progress, results and settings are nonmodal; closing attempts to restore focus. Closing a conflict window cancels the task rather than silently skipping; closing progress hides details only. Qt uses actual standalone top-level windows.
 
-### 主题选择控件
+### Theme selection
 
-设置页以 `fieldset#setting-theme` 和“外观主题”图例组织三个原生单选输入：跟随系统、浅色、深色。每张主题卡片使用共用的 `theme-system`、`theme-light` 或 `theme-dark` 素材，文字标签和输入关联；点击卡片、键盘切换和焦点均由实际单选控件参与。选中状态采用共用单选标志，切换时同步卡片边框与预览外观，不用不可交互的整块截图代替控件。
+The settings page organizes three native radio inputs, system, light and dark, using `fieldset#setting-theme` and the “Appearance theme” legend. Each theme card uses the shared `theme-system`, `theme-light` or `theme-dark` asset and associates its text label and input. Actual radio controls participate in card clicks, keyboard switching and focus. Selection uses the shared radio mark and synchronizes card border and preview appearance, rather than substituting a noninteractive screenshot.
 
-此说明记录 HTML 设计验证行为。当前设置仍为内存状态；跟随系统只在选择时解析，运行中的系统主题变化、跨启动持久化以及 Qt 正式设置的即时持久化和失败处理仍分别验证。
+This describes HTML design-validation behavior. Current settings are in-memory; follow-system resolves only when selected. Runtime system-theme changes, cross-launch persistence, and immediate persistence and failure handling in production Qt settings require separate verification.
 
-## 验证与剩余边界
+## Verification and remaining boundaries
 
-浏览器验证脚本为 scripts/check-html-design.py，检查实际点击流程、统计、禁用条件、格式联动、异常恢复、手机溢出以及单文件离线运行。报告随导出的原型包提供；浏览器验证仅使用 Chromium。
+The browser verification script is scripts/check-html-design.py, checking real click flows, statistics, disabled conditions, format coupling, recovery, mobile overflow and offline single-file operation. Reports accompany the exported prototype package; browser checks use Chromium only.
 
-主窗口当前交付两个独立示例压缩包会话、列表 / 网格、字段排序、递归目录树、分级面包屑、右键 / 下拉 / 子菜单以及按钮状态，详见[组件与交互契约](main-window-components.md)及[验证方法](../qa/README.md)。`scripts/check-html-controls.py` 使用真实浏览器输入检查这些行为；[组件审阅页](../../design/html/components.html)使用与主界面相同的实现。
+The current main-window delivery includes two independent example archive sessions, list/grid, field sorting, recursive directory tree, hierarchical breadcrumbs, context/dropdown/submenus and button states. See the [component and interaction contract](main-window-components.md) and [verification method](../qa/README.md). `scripts/check-html-controls.py` checks these with real browser input; the [component review page](../../design/html/components.html) uses the same implementation as the main UI.
 
-HTML 仅验证示例状态，不证明真实任务调度、授权、路径竞态、CRC 或平台辅助功能。Qt 已接入真实创建／解压、拖放、系统选择器、持久设置及可选标签页或多窗口的独立归档会话。多格式、普通单文件 ZIP 百万条索引和受限预览的实际范围分别见[格式后端](../engineering/native-codecs.md)、[大索引](../engineering/large-index.md)和[内容预览](../engineering/content-preview.md)；验收在对应 issue 登记。HTML 设置只在页面内保存演示状态，不跨启动持久化，不作为原生系统主题跟随或辅助功能的通过依据。
+HTML verifies sample states only; it does not prove real task scheduling, authorization, path races, CRC or platform accessibility. Qt integrates real creation/extraction, drag-and-drop, system pickers, persisted settings and independent archive sessions in optional tabs or multiple windows. Actual scope of multiple formats, million-entry ordinary single-file ZIP indexing and limited preview is in [format backends](../engineering/native-codecs.md), [large indexing](../engineering/large-index.md) and [content preview](../engineering/content-preview.md), respectively; acceptance is recorded in corresponding issues. HTML settings retain demo state only within the page, not across launches, and do not establish native system-theme following or accessibility acceptance.
 
-这些限制不改变软件设计中的目标能力。原型中的“已完成”仅描述演示任务状态，不代表真实压缩解压功能已交付。
+These limits do not change target capabilities in software design. “Complete” in the prototype describes a demo task state only and does not establish delivery of real compression or extraction.
 
-## 当前目录查询与卡片修订
+## Current directory queries and card revisions
 
-根入口为“根目录”，只列直属文件和文件夹；搜索匹配当前范围的后代，并显示完整压缩包内路径。普通列表／网格只显示末级名称，复制与导航保留完整路径。面包屑右侧显示当前列表行数。目录树标题为“压缩包”，与面包屑垂直中心一致；树悬停不弹出浮动提示。
+The root entry is “Root” and lists direct files and folders only. Search matches descendants in the current scope and shows complete in-archive paths. Ordinary lists/grids show only the final name; copy and navigation preserve complete paths. The right side of the breadcrumb shows current list row count. The directory-tree title is “Archive”, vertically centered with the breadcrumb; tree hover shows no floating tooltip.
 
-列表悬停覆盖整行；网格有 16 逻辑像素左右内边距，左上 8 像素的复选框悬停可见、选中常驻。所有按钮调用菜单与按钮间隔 4，菜单使用柔和阴影。预览重新打开按钮固定为 28 方形。对应参数位于 layout-scale.json、directory-tree.json 和 controls.json，实际验证按[通用方法](../qa/README.md)登记。
+List hover covers the whole row. Grids have approximately 16 logical pixels of horizontal padding; an 8-pixel top-left checkbox appears on hover and stays visible when selected. Menus invoked by buttons are 4 units from the button and use a soft shadow. The reopen-preview button is fixed at 28 square. Parameters are in layout-scale.json, directory-tree.json and controls.json; actual verification follows the [general method](../qa/README.md).
 
-## 设置窗口
+## Settings window
 
-设置保留原稿的图标标题、主题预览卡片、密度、最近记录和隐私说明，增加文字大小与界面语言。主题和字号预览可取消；保存与恢复默认均使用草稿。HTML 只在当前页面内保存演示状态，语言选择展示 Qt 下次启动生效的配置，不将设计审阅页或示例压缩包内容作为产品翻译覆盖证据。Qt 使用完整中英文资源与跨进程持久化验证，详见[设置与语言](settings-localization.md)。
+Settings retains original icon headings, theme preview cards, density, recent history and privacy explanation, adding text size and UI language. Theme and font previews can be cancelled; Save and Restore Defaults use drafts. HTML retains demo state only within the current page. Language selection shows configuration taking effect at Qt's next startup; neither the design review page nor sample archive contents serve as evidence of product translation coverage. Qt uses complete Chinese/English resources and cross-process persistence verification; see [settings and localization](settings-localization.md).

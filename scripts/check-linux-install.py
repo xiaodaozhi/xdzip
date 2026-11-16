@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+from archive_formats_generated import ASSOCIATION_FIXTURES, SHELL_MIME_TYPES
 import signal
 import subprocess
 import time
@@ -29,11 +30,8 @@ def verify_default_associations(home, env, user, formats, revision):
     foreign_probe=home/'probe/default-foreign.json'
     if any(path.exists() for path in (foreign,foreign_launcher,marker,foreign_probe)):
         raise RuntimeError('Refusing to overwrite default-association test files')
-    mime_types=('application/zip','application/x-tar','application/x-compressed-tar',
-                'application/x-7z-compressed','application/vnd.rar','application/x-rar',
-                'application/vnd.ms-cab-compressed','application/x-iso9660-image','application/x-udf')
-    names=('sample.zip','sample.tar','sample.tar.gz','sample.tgz','sample.7z',
-           'sample.rar','sample.cab','sample.iso','sample.udf')
+    mime_types=SHELL_MIME_TYPES
+    names=ASSOCIATION_FIXTURES
     child_env=dict(env)
     child_env.pop('DBUS_SESSION_BUS_ADDRESS',None)
     child_env.pop('XDZIP_ASSOCIATION_PROBE',None)
@@ -114,9 +112,7 @@ def main():
         target=home/relative;target.mkdir(parents=True,exist_ok=True)
     for p in home.rglob('*'):os.chown(p,1000,1000)
     (home/'runtime').chmod(0o700)
-    mime_types=('application/zip','application/x-tar','application/x-compressed-tar',
-                'application/x-7z-compressed','application/vnd.rar','application/x-rar',
-                'application/vnd.ms-cab-compressed','application/x-iso9660-image','application/x-udf')
+    mime_types=SHELL_MIME_TYPES
     config=home/'.config/mimeapps.list';config.write_text('[Default Applications]\n'+''.join(t+'=other.desktop\n' for t in mime_types));os.chown(config,1000,1000)
     other=home/'.local/share/applications/other.desktop';other.write_text('[Desktop Entry]\nType=Application\nName=Other\nExec=/bin/true %f\nMimeType='+';'.join(mime_types)+';\n');os.chown(other,1000,1000)
     settings=home/'.config/settings.ini';settings.write_text('[General]\nschemaVersion=1\n[appearance]\ntheme=dark\n[privacy]\nrecentEnabled=false\n');os.chown(settings,1000,1000)
@@ -171,8 +167,7 @@ def main():
                 raise RuntimeError('Format default handler changed: '+mime)
             if 'xdzip.desktop' not in run(['gio','mime',mime],**user):
                 raise RuntimeError('Format MIME candidate not registered: '+mime)
-        for name in ('sample.zip','sample.tar','sample.tar.gz','sample.tgz',
-                     'sample.7z','sample.rar','sample.cab','sample.iso','sample.udf'):
+        for name in ASSOCIATION_FIXTURES:
             verify_open('format-'+name, Path('/formats')/name, expected_records=None)
         phases.append('all-format-candidates-and-defaults')
         current=json.loads((home/'probe/actual-product-upgrade.json').read_text())

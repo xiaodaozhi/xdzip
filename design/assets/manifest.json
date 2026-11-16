@@ -29878,7 +29878,7 @@
       "brand_source": "brand/mark.svg",
       "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
-      "sha256": "8e70ef77fad288bfedc036c72dc04cadcc92171e01cbce501810a7ab174114ba"
+      "sha256": "c50178f3c3a3faf7c5c4ba7724451593582410b1c14c5078f8cf49319ab3257b"
     },
     {
       "id": "file-association/gz/tiny",
@@ -29894,7 +29894,7 @@
       "brand_source": "brand/mark.svg",
       "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
-      "sha256": "9d97e248d6c6fe3cd127861d69250c262cf6f60674ed08918aabe442650c8131"
+      "sha256": "a34f28fe5714bd3a6f2704376602ecf938010aedc39b8c307eb3ff75f2d05b99"
     },
     {
       "id": "file-association/gz/small",
@@ -29910,7 +29910,7 @@
       "brand_source": "brand/mark.svg",
       "specification": "../../specs/visual/file-association-icons.json",
       "usage": "file-association-source",
-      "sha256": "8b43fc2596bbcb0149a92ac465ae12e491d50f49c1f3d782a4c1480fa3b787cd"
+      "sha256": "24e9e42d45d5cbd8f560b4b27293e70f78114ac85bb6af8ac3754a5214f57631"
     },
     {
       "id": "file-association/cab/master",
@@ -30062,7 +30062,22 @@
       "kind": "association-icon-source",
       "purpose": "file-association",
       "format_id": "archive",
-      "extensions": [],
+      "extensions": [
+        ".bz2",
+        ".bz",
+        ".tar.bz2",
+        ".tar.bz",
+        ".tbz",
+        ".tbz2",
+        ".lzma",
+        ".tar.lzma",
+        ".tlz",
+        ".lz",
+        ".tar.lz",
+        ".xz",
+        ".tar.xz",
+        ".txz"
+      ],
       "profile": "master",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
@@ -30076,7 +30091,22 @@
       "kind": "association-icon-source",
       "purpose": "file-association",
       "format_id": "archive",
-      "extensions": [],
+      "extensions": [
+        ".bz2",
+        ".bz",
+        ".tar.bz2",
+        ".tar.bz",
+        ".tbz",
+        ".tbz2",
+        ".lzma",
+        ".tar.lzma",
+        ".tlz",
+        ".lz",
+        ".tar.lz",
+        ".xz",
+        ".tar.xz",
+        ".txz"
+      ],
       "profile": "tiny",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
@@ -30090,7 +30120,22 @@
       "kind": "association-icon-source",
       "purpose": "file-association",
       "format_id": "archive",
-      "extensions": [],
+      "extensions": [
+        ".bz2",
+        ".bz",
+        ".tar.bz2",
+        ".tar.bz",
+        ".tbz",
+        ".tbz2",
+        ".lzma",
+        ".tar.lzma",
+        ".tlz",
+        ".lz",
+        ".tar.lz",
+        ".xz",
+        ".tar.xz",
+        ".txz"
+      ],
       "profile": "small",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
@@ -30136,7 +30181,7 @@
       "format_id": "gz",
       "format": "ico",
       "source": "file-associations/xdzip-gz-master.svg",
-      "sha256": "a8a866cf022d54f061f324cbfe8d55f1823b948fb657a47b8e7e0aa70d0de2fd"
+      "sha256": "b1955720112ff3386e0b3c921648ee462867f9f6397dfe0a33ebafdd4a0db4d7"
     },
     {
       "id": "file-association/7z/ico",
@@ -30226,7 +30271,7 @@
       "format_id": "gz",
       "format": "icns",
       "source": "file-associations/xdzip-gz-master.svg",
-      "sha256": "a9e44437d3037bafed9048fc976015a94b1ab02bd6420e3439bebf8c9233b4a9"
+      "sha256": "ced6ddf7285dc8f0ebe14191e727329bee3c6af12760f40a51aae35c617dc6fc"
     },
     {
       "id": "file-association/7z/icns",
@@ -30757,6 +30802,26 @@
       ],
       "usage": "runtime-and-design",
       "sha256": "c882569b9fa4641a3143aa2c9fe61e3ee0aae85ff73721ad7a2a18556cc45337"
+    },
+    {
+      "id": "file-association/archive/ico",
+      "file": "file-associations/xdzip-archive.ico",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "archive",
+      "format": "ico",
+      "source": "file-associations/xdzip-archive-master.svg",
+      "sha256": "9bca20b462c6986bb9685a7fbc1cb1430ecadcc85f6fb11ec0bf1506c50281fd"
+    },
+    {
+      "id": "file-association/archive/icns",
+      "file": "file-associations/xdzip-archive.icns",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "archive",
+      "format": "icns",
+      "source": "file-associations/xdzip-archive-master.svg",
+      "sha256": "5f7bba6a4a3a5b802844279381bd25be775c9846644d09a4d8e2fb1d66f8ac46"
     }
   ]
 }

@@ -1737,6 +1737,7 @@ dependencies = [
  "ureq",
  "windows-sys 0.61.2",
  "xdzip-codec-api",
+ "xdzip-codec-native",
  "xdzip-domain",
  "xdzip-io",
  "xdzip-runtime",
@@ -1759,11 +1760,74 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-aescrypt"
+version = "0.2.0"
+dependencies = [
+ "aes",
+ "constant_time_eq",
+ "xdzip-codec-api",
+ "xdzip-crypto",
+ "xdzip-domain",
+ "zeroize",
+]
+
+[[package]]
+name = "xdzip-codec-alz"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-compression",
+ "xdzip-crypto",
+ "xdzip-domain",
+]
+
+[[package]]
 name = "xdzip-codec-api"
 version = "0.2.0"
 dependencies = [
  "chardetng",
  "encoding_rs",
+ "xdzip-domain",
+]
+
+[[package]]
+name = "xdzip-codec-arc"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-compression",
+ "xdzip-crypto",
+ "xdzip-domain",
+]
+
+[[package]]
+name = "xdzip-codec-arj"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-compression",
+ "xdzip-crypto",
+ "xdzip-domain",
+]
+
+[[package]]
+name = "xdzip-codec-asar"
+version = "0.2.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "xdzip-codec-api",
+ "xdzip-crypto",
+ "xdzip-domain",
+]
+
+[[package]]
+name = "xdzip-codec-bh"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-compression",
+ "xdzip-crypto",
  "xdzip-domain",
 ]
 
@@ -1790,6 +1854,44 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-cfb"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-domain",
+]
+
+[[package]]
+name = "xdzip-codec-deb"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-codec-stream",
+ "xdzip-codec-tar",
+ "xdzip-domain",
+]
+
+[[package]]
+name = "xdzip-codec-egg"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-compression",
+ "xdzip-crypto",
+ "xdzip-domain",
+]
+
+[[package]]
+name = "xdzip-codec-lha"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-compression",
+ "xdzip-crypto",
+ "xdzip-domain",
+]
+
+[[package]]
 name = "xdzip-codec-native"
 version = "0.2.0"
 dependencies = [
@@ -1799,11 +1901,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-nsis"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-domain",
+]
+
+[[package]]
 name = "xdzip-codec-optical"
 version = "0.2.0"
 dependencies = [
  "xdzip-codec-api",
  "xdzip-compression",
+ "xdzip-domain",
+]
+
+[[package]]
+name = "xdzip-codec-pea"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
  "xdzip-domain",
 ]
 
@@ -1820,13 +1938,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-stream"
+version = "0.2.0"
+dependencies = [
+ "flate2",
+ "xdzip-codec-api",
+ "xdzip-compression",
+ "xdzip-crypto",
+ "xdzip-domain",
+]
+
+[[package]]
 name = "xdzip-codec-tar"
 version = "0.2.0"
 dependencies = [
  "flate2",
  "tar",
  "xdzip-codec-api",
+ "xdzip-codec-stream",
  "xdzip-compression",
+ "xdzip-domain",
+]
+
+[[package]]
+name = "xdzip-codec-uu"
+version = "0.2.0"
+dependencies = [
+ "xdzip-codec-api",
  "xdzip-domain",
 ]
 
@@ -1843,6 +1981,7 @@ dependencies = [
  "rawzip",
  "sha1",
  "xdzip-codec-api",
+ "xdzip-codec-stream",
  "xdzip-compression",
  "xdzip-domain",
  "zeroize",
@@ -1964,12 +2103,29 @@ version = "0.2.0"
 dependencies = [
  "flate2",
  "libc",
+ "sha2",
  "unicode-normalization",
  "winapi-util",
+ "xdzip-codec-aescrypt",
+ "xdzip-codec-alz",
  "xdzip-codec-api",
+ "xdzip-codec-arc",
+ "xdzip-codec-arj",
+ "xdzip-codec-asar",
+ "xdzip-codec-bh",
+ "xdzip-codec-cfb",
+ "xdzip-codec-deb",
+ "xdzip-codec-egg",
+ "xdzip-codec-lha",
  "xdzip-codec-native",
+ "xdzip-codec-nsis",
+ "xdzip-codec-optical",
+ "xdzip-codec-pea",
+ "xdzip-codec-stream",
  "xdzip-codec-tar",
+ "xdzip-codec-uu",
  "xdzip-codec-zip",
+ "xdzip-compression",
  "xdzip-domain",
  "xdzip-extract-plan",
  "xdzip-io",

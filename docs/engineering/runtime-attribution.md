@@ -1,47 +1,39 @@
-# 实际组件归属与许可材料
+# Actual component attribution and license materials
 
-本流程补充文件级 SBOM，将实际 Qt 库／插件与 SDK 的 SPDX 声明关联。产物是可复核证据，不是自动许可选择或合规批准。正式发行完整性继续为 incomplete。
+This flow supplements file-level SBOMs by associating actual Qt libraries/plugins with SDK SPDX declarations. Its output is reviewable evidence, not automatic license selection or compliance approval. Formal release completeness remains incomplete.
 
-## 输入与来源
+## Inputs and sources
 
-Qt 6.8 起提供构建对应的 [SPDX 清单](https://doc.qt.io/qt-6.8/licenses-used-in-qt.html)。工具只读取本次固定 Qt 6.8.2 SDK 的 sbom/ 中 qtbase、qtdeclarative、qtsvg 和 qttranslations 等运行时声明，排除 qttools 构建／测试工具。验证 SPDX 版本、模块名和 Qt 版本，保存原始文档 SHA-256、namespace 和稳定包引用。输出只保留必要字段，不复制包含开发机路径的上游构建注释。
+Qt 6.8 onward provides build-corresponding [SPDX inventories](https://doc.qt.io/qt-6.8/licenses-used-in-qt.html). Tools read only runtime declarations such as qtbase, qtdeclarative, qtsvg, and qttranslations from this pinned Qt 6.8.2 SDK's sbom/, excluding qttools build/test tools. Validate SPDX version, module name, and Qt version; retain original document SHA-256, namespace, and stable package references. Output keeps only necessary fields rather than copying upstream build comments containing developer-machine paths.
 
-`scripts/qt-license-sources.json` 固定官方 Qt 源码及 SPDX license-list-data 提交、许可文本 URL 和 SHA-256。下载内容放入 build/ 缓存；任何缓存或下载的哈希不符都会失败。不会跟随 SPDX 中任意地址下载材料。除 LICENSES/ 的标准文本，还包含 Qt GUI 平滑缩放算法与 SVG 的原始通知，以及系统依赖声明涉及的 LGPL-2.1 文本；上游 LicenseRef 原文和版权声明保留在声明 JSON 中。
+`scripts/qt-license-sources.json` pins official Qt source and SPDX license-list-data commits, license-text URLs, and SHA-256. Downloads are cached under build/; any cache/download hash mismatch fails. Arbitrary SPDX URLs are not followed for material downloads. In addition to standard LICENSES/ texts, include original notices for Qt GUI smooth-scaling algorithms and SVG, plus LGPL-2.1 texts referenced by system dependency declarations. Upstream LicenseRef texts and copyrights remain in declaration JSON.
 
-Qt 运行时通知另随包提供 Qt Network 使用的 Public Suffix List 固定可编辑源码、MPL-2.0 原文和获取说明；收集器核对上游 blob、SHA-256 及许可字节。源码交付还验证该输入能重现 Qt 归档中的两种生成数据，见[对应源码材料](source-delivery.md)。此项不代替其他 Qt 模块的对应源码及替换核验。
+Qt runtime notices also include pinned editable Public Suffix List source used by Qt Network, MPL-2.0 text, and retrieval instructions. The collector verifies upstream blob, SHA-256, and license bytes. Source delivery separately verifies that this input reproduces two generated data forms in the Qt archive; see [corresponding source materials](source-delivery.md). This does not replace source and replacement checks for other Qt modules.
 
-English: Runtime notices include the pinned editable Public Suffix List used by Qt Network, its MPL-2.0 text and source information. Collection verifies the upstream blob, SHA-256 and license bytes. The source delivery separately checks both generated forms against the Qt archive; other Qt source and replacement obligations remain separately reviewed.
+Qt Core Tika MIME notices retain relevant Apache Software Foundation and UK National Archives PRONOM attribution, Apache-2.0 and OGL-UK-3.0 license texts, and the complete pinned upstream NOTICE. The complete NOTICE also describes other upstream Tika components; it does not imply they ship with this product. See [corresponding source materials](source-delivery.md) for original MIME data and Qt conversion verification.
 
-Qt Core 的 Tika MIME 数据通知同时保留 Apache Software Foundation 与英国国家档案馆 PRONOM 的相关署名、Apache-2.0 和 OGL-UK-3.0 许可文本，以及固定版本完整上游 NOTICE。完整 NOTICE 同时描述 Tika 上游的其他组件，不能据此推断它们随本产品提供；原始 MIME 数据和 Qt 转换的核验见[对应源码材料](source-delivery.md)。
+## File and component association
 
-English: Qt Core Tika MIME notices include the relevant Apache Software Foundation and National Archives PRONOM attribution, Apache-2.0 and OGL-UK-3.0 license texts, and the complete pinned upstream NOTICE. The full NOTICE describes additional upstream Tika components and does not imply they ship with this product. Source input and conversion verification are described in [source delivery](source-delivery.md).
+1. Recalculate file hashes inside the verification root and reject files modified after deployment-audit.json.
+2. macOS SDK mode uses actual resolved Qt SDK relative paths and byte identity, without claiming standalone deployment.
+3. Linux deployment records original SDK path/SHA-256 and post-patchelf artifact path/SHA-256. Later checks verify records in both directions, rejecting stale or altered copy evidence.
+4. Windows prefers SDK file byte identity. Unique filename candidates with different bytes are marked only filename-only-unverified-rewrite and registered as gaps, not verified sources.
+5. Use SPDX CONTAINS to find file owners, then recursively resolve DEPENDS_ON, including cross-Qt-repository references and embedded third parties. Missing package references remain gaps. Do not incorrectly include all tools in runtime through a repository-wide CONTAINS.
+6. Non-native QML/translations without per-file declarations are associated only with the relevant source repository scope; their individual licenses are not inferred. SDK native libraries lacking SPDX file records, native files outside Qt scope, NOASSERTION licenses, and missing texts are separately recorded.
 
-## 文件与组件关联
+Actual SDK file bytes may differ from SHA-1 in upstream build SPDX, for example due to later installation processing or signing. Tools retain expected values, comparisons, and gaps without inferring causes. SDK byte association, deployment-rewrite records, and upstream original hashes are three distinct evidence types.
 
-1. 对核验根内文件重新计算哈希，拒绝在 deployment-audit.json 之后被修改的文件。
-2. macOS SDK 模式使用实际解析的 Qt SDK 相对路径和字节身份，不据此声称独立部署。
-3. Linux 部署阶段记录 SDK 原文件路径／SHA-256 与 patchelf 后工件路径／SHA-256。后续双向校验记录，拒绝过期或篡改的复制证据。
-4. Windows 优先按 SDK 文件字节身份关联。文件名唯一但字节不同的候选仅标记 filename-only-unverified-rewrite，并登记缺口，不能当作来源验证通过。
-5. 通过 SPDX 的 CONTAINS 找到文件所有者，再递归解析 DEPENDS_ON，包括跨 Qt 仓库引用和内嵌第三方。缺失包引用保留为缺口。不从仓库总包的 CONTAINS 将全部工具错误纳入运行时。
-6. 非原生 QML／翻译若没有逐文件声明，只关联到对应源码仓库范围，不推断该文件的许可证。没有 SPDX 文件记录的 SDK 原生库、Qt 范围外原生文件、NOASSERTION 许可及缺失文本均单独登记。
+Dedicated macOS packaging generates deployed associations while the final signed app exists, matching SDK inputs by exact resource bytes or arm64 sections, UUID, and import versions and adding the report to the actual-file SBOM. Comparison excludes signatures, load-command layout, and LINKEDIT. See [native runtime provenance and notices](native-runtime-materials.md) for scope and dedicated notices. Ordinary SDK mode does not thereby establish deployed conclusions.
 
-SDK 中实际文件可能与上游构建 SPDX 中的 SHA-1 不同，例如后续安装处理或签名；工具保留预期值、对比结果并登记差异，不自行推断原因。SDK 字节关联、部署重写记录和上游原始哈希是三种不同证据。
+For plugins moved from QML directories into `Contents/PlugIns/quick/`, deployment association may use audited in-package QML symlinks to locate a unique SDK input. Recheck actual links, audited targets, and file hashes both when generating and consuming records, then perform the same byte or Mach-O comparison. Missing provenance remains unverified; multiple different sources or changed links are rejected. Filename matches alone cannot strengthen attribution or remove upstream SDK hash differences and license-review gaps.
 
-专用 macOS 打包流程在最终签名应用仍存活时生成部署关联，按精确资源字节或 arm64 section、UUID、导入版本对应 SDK，并将该报告加入实际文件 SBOM。比较不覆盖签名、load-command 布局及 LINKEDIT，范围与原生运行库专属通知见[原生运行库来源与通知](native-runtime-materials.md)。普通 SDK 模式不据此获得部署结论。
+Rust retains the complete host build graph and generates runtime candidates by following ordinary dependencies from desktop `xdzip-qt-bridge`, format-worker `xdzip-codec-bridge`, and Windows/Linux actual `xdzip-update-helper`; macOS has no separate update-helper root. Build, development, and proc-macro tools and their dependencies are excluded. These are potential runtime inputs, not proof every package's machine code survived linking; linker trimming, native C/C++, and compiler runtimes need further review.
 
-对于从 QML 目录迁移至 `Contents/PlugIns/quick/` 的插件，部署关联允许使用已审计的包内 QML 符号链接定位唯一 SDK 输入。生成和消费记录时均重新核对真实链接、审计目标及文件摘要，再执行相同的字节或 Mach-O 比较；来源缺失保留未验证，多个不同来源或链接变更直接拒绝。不能仅凭同名文件提升归属证据，也不消除上游 SDK 摘要差异或许可审查缺口。
+Simple legacy Cargo license alternatives separated by slashes become SPDX `OR` in source CycloneDX, with upstream original preserved in `xdzip:cargo_license_raw`. Slash expressions with ambiguous precedence are rejected. Original build inventories/notices are not rewritten; standard `AND`, `OR`, and `WITH` remain unchanged. This is format normalization, not license-branch selection or release approval.
 
-Rust 继续保存完整宿主构建图，并从桌面入口 `xdzip-qt-bridge`、格式工作进程入口 `xdzip-codec-bridge`，以及 Windows／Linux 实际构建的 `xdzip-update-helper` 沿普通依赖边生成 runtime candidates；macOS 不加入独立更新助手根。构建、开发和 proc-macro 工具及其依赖不属于候选。这是潜在运行时输入，不能证明每个包的机器码最终保留；链接器裁剪、原生 C/C++ 与编译器运行库还需进一步核验。
+## Execution and delivery
 
-English: Rust runtime candidates follow normal dependencies from the desktop bridge and codec worker bridge, plus the update helper on Windows and Linux. macOS does not include the separate helper root. Build, development and procedural macro tools are excluded; candidates are not proof that machine code survived linking.
-
-Cargo 旧式斜杠分隔的简单许可备选项在源码 CycloneDX 的表达式中转换为 `OR`，并以 `xdzip:cargo_license_raw` 保留上游原文；包含斜杠但无法明确判断优先级的写法直接拒绝。原始构建清单和通知不改写，标准 `AND`、`OR` 和 `WITH` 表达式保持不变。这是格式规范化，不代表已选择许可分支或批准发行。
-
-English: Simple legacy Cargo license alternatives separated by slashes are written with SPDX `OR` in the source CycloneDX, while `xdzip:cargo_license_raw` retains the original. Ambiguous slash expressions are rejected; standard `AND`, `OR` and `WITH` expressions and the original inventory remain unchanged. This is format normalization, not a license selection or release approval.
-
-## 执行与交付
-
-QtNetwork 的已知安全派生库在文件记录中增加 `network_security_variant`，报告同时保留完整、重新核验过的构建回执。上游 SDK 摘要差异仍保留，发行复核使用固定源码、完整补丁、构建回执与部署转换证据解释该差异。发布暂存要求最终 Network 的归属与这些字节相连，文件名匹配不能通过。源码与工件 SBOM 分别标记派生身份；不会把全局 incomplete 改写成许可批准。English: The patched Network carries its own variant and verified receipt. Upstream checksum differences remain visible, and release staging requires a deployed-byte link rather than a filename match. The global incomplete status remains separate from concrete release review.
+The known patched QtNetwork derivative adds `network_security_variant` to file records; reports also retain complete, reverified build receipts. Upstream SDK digest differences remain visible; release review uses pinned source, full patches, build receipts, and deployment transformation evidence to explain them. Release staging requires the final Network attribution to link to those bytes; a filename match does not pass. Source and artifact SBOMs separately mark the derivative identity without converting global incomplete status into license approval.
 
 ```sh
 python3 scripts/prepare-runtime-notices.py --qt-prefix /path/to/Qt/6.8.2/gcc_64 \
@@ -54,16 +46,16 @@ python3 scripts/sbom.py --audit build/review/deployment-audit.json \
   --output build/review/artifact-files.cdx.json
 ```
 
-Linux 传入部署重写记录；其他平台省略 --deployment。报告写在核验根外，避免自身清单递归。按需 Qt 和 Release 工作流在部署／最终哈希之前准备许可材料，Windows 和 Linux 将 notices 放入实际运行目录，Linux tar.gz 同时交付这些材料。按需 Qt 的 macOS 作业只做 SDK 读取与日志／JSON 记录；经明确授权的专用 Release 工作流另行部署、ad-hoc 签名、打包并核对实际发布材料，按[发布协议](release-protocol.md)保留独立的部署范围与哈希，不以 SDK 记录替代最终应用包归属。
+Linux passes deployment-rewrite records; other platforms omit --deployment. Write reports outside the verification root to avoid self-inventory recursion. On-demand Qt and Release workflows prepare license materials before deployment/final hashing. Windows and Linux put notices in actual runtimes; Linux tar.gz also delivers them. On-demand Qt macOS reads the SDK and records logs/JSON only. An explicitly authorized dedicated Release workflow separately deploys, ad-hoc signs, packages, and checks actual release materials under the [release protocol](release-protocol.md), retaining separate deployed scope and hashes. SDK records do not replace final app-bundle attribution.
 
-runtime-attribution.json 包含文件、组件、关系、上游声明、版权、文本来源与缺口。artifact-files.cdx.json 增加相同组件与已知所有者关系，并绑定该报告和同一实际审计的哈希／构建身份。官方 CycloneDX schema 与引用检查继续执行，compositions 仍为 incomplete。
+runtime-attribution.json includes files, components, relationships, upstream declarations, copyrights, text sources, and gaps. artifact-files.cdx.json adds the same components and known owner relationships, binding the report and same actual audit hashes/build identity. Official CycloneDX schema and reference checks continue; compositions remain incomplete.
 
-默认检查允许明确登记的开发审查缺口，禁止把它们静默标记通过；身份、路径、字节、版本、复制记录或许可文本哈希错误直接失败。--require-complete 是发行阻断检查，当前会因未完成归属或发行材料而失败。测试覆盖文件被改写、过期复制记录、路径逃逸、版本错误、跨文档缺失、部分 SBOM 及 Rust 工具排除。
+Default checks allow explicitly recorded development-review gaps but never silently mark them passed. Identity, path, byte, version, copy-record, or license-text hash errors fail immediately. --require-complete is a release-blocking check and currently fails on unfinished attribution or release materials. Tests cover rewritten files, stale copy records, path escape, wrong versions, cross-document omissions, partial SBOMs, and Rust tool exclusion.
 
-## 尚未解决的发行门槛
+## Unresolved release gates
 
-已增加[源码交付收集器](source-delivery.md)，保存实际项目源码、Rust vendor、四份运行时 Qt 模块归档及两份构建模块归档、重建及动态替换说明。它不能证明 SDK 与上游逐项构建等价。每次发行还须核对精确静态链接归属、操作系统／再分发运行库、所有内嵌资源逐项许可、开源许可分支选择及履约。[本地 Mac 部署核验](macos-deployment.md)中的元数据修改替换，与[实际源码 Qt 构建及加载／替换](wp12-automation.md#qt-源码与兼容替换)是不同流程，分别保留证据；均不能推断任意 SDK 的字节级构建等价。源清单与 SPDX 字段不能替代许可义务。`v0.1.0` 的历史候选来源与许可结论见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)，后续候选单独复核，付费签名身份不作为门槛；既有桌面验收在 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)保留。
+A [source-delivery collector](source-delivery.md) retains actual project source, Rust vendor, four runtime Qt module archives, two build-module archives, and rebuilding/dynamic-replacement instructions. It does not prove per-item SDK/upstream build equivalence. Each release must still review exact static-link attribution, OS/redistributable runtimes, individual licenses for all embedded resources, open-source license-branch choices, and fulfillment. Metadata modification/replacement in [local Mac deployment verification](macos-deployment.md) and [actual source-Qt build/loading/replacement](wp12-automation.md#qt-源码与兼容替换) are distinct flows with separate evidence; neither establishes byte-level build equivalence for arbitrary SDKs. Source inventories and SPDX fields do not replace license obligations. Historical `v0.1.0` candidate provenance and licensing are in [#4](https://github.com/xiaodaozhi/xdzip/issues/4) and [#53](https://github.com/xiaodaozhi/xdzip/issues/53); later candidates need separate review, without paid signing identity as a gate. Existing desktop acceptance remains in [#5](https://github.com/xiaodaozhi/xdzip/issues/5).
 
-[Qt SDK 对应核验](qt-sdk-correspondence.md)进一步记录固定归档提交、SDK 源码声明逐文件哈希、安装配置与已知 AGL 消费端补丁。声明覆盖范围内匹配不等于完整 SDK 构建等价，原有发行阻断保持不变。
+[Qt SDK correspondence verification](qt-sdk-correspondence.md) further records pinned archive commits, per-file hashes in SDK source declarations, installed configuration, and known AGL consumer patch. Matches within declared scope do not establish complete SDK build equivalence; existing release blockers remain.
 
-自动化收尾补充实际链接器 map／静态库成员、运行时资源哈希、可信原生依赖版本信息及精确可逆的二进制差异分析，见[完整契约](wp12-automation.md)。只在重建出的字节哈希精确匹配上游声明时标记转换已解释，原始 SDK 差异不删除；未匹配的发布者历史不能凭猜测补写。
+Automated closeout adds actual linker maps/static-library members, runtime-resource hashes, trusted native dependency versions, and precisely reversible binary-difference analysis; see the [complete contract](wp12-automation.md). Mark a transformation explained only when reconstructed byte hashes exactly match upstream declarations. Do not delete original SDK differences or guess undocumented publisher history.

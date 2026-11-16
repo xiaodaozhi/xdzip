@@ -25,7 +25,7 @@ for scene in ['create-light','create-dark','create-remove-hover','create-field-f
     check(scene+'/DPR height', capture['imageHeight']/capture['dpr'], capture['height'],1)
     check(scene+'/actual summary',nodes['createInputSummary']['text'], '2 个文件，19.0 MB' if scene=='create-removed' else reference['summary_fixture']['display'])
     dark = scene=='create-dark'
-    for name in ['createName','createTarget','createVolume','createLevel']:
+    for name in ['createName','createTarget','createFormat','createVolume','createLevel']:
         field,bg = nodes[name],nodes[name+'Background']
         check(scene+'/'+name+'/height',field['height'],reference['field_height'],1.5)
         check(scene+'/'+name+'/radius',bg['radius'],contract['field_radius'],.01)
@@ -33,7 +33,7 @@ for scene in ['create-light','create-dark','create-remove-hover','create-field-f
         # Focus uses the same normal border, without an extra outline.
         if scene in ['create-light','create-dark']:
             check(scene+'/'+name+'/border',bg['border.color'].upper(),'#485469' if dark else contract['field_border'])
-        if name in ['createVolume','createLevel']:
+        if name in ['createFormat','createVolume','createLevel']:
             icon = nodes[name+'Indicator']
             check(scene+'/'+name+'/chevron right inset',field['x']+field['width']-icon['x']-icon['width'],contract['select_icon_right_inset'],.01)
             check(scene+'/'+name+'/chevron center',field['y']+field['height']/2,icon['y']+icon['height']/2,.01)
@@ -46,13 +46,6 @@ for scene in ['create-light','create-dark','create-remove-hover','create-field-f
             check(scene+'/'+name+'/fully visible',0<=button['y'] and button['y']+button['height']<=capture['height'],True)
         if scene in ['create-light','create-dark']:
             check(scene+'/'+name+'/border',bg['border.color'].upper(),'#485469' if dark else contract['neutral_button_border'])
-    group,track = nodes['createFormat'],nodes['createFormatTrack']
-    check(scene+'/segmented group height',group['height'],contract['format_group_height'],1)
-    check(scene+'/segmented track radius',track['radius'],contract['format_group_radius'],.01)
-    slots = [nodes['createFormat-'+str(i)] for i in range(4)]
-    check(scene+'/segmented widths',max(n['width'] for n in slots)-min(n['width'] for n in slots),0,1)
-    for a,b in zip(slots,slots[1:]):
-        check(scene+'/segment seam',a['x']+a['width'],b['x'],.01)
     for i in range(2 if scene=='create-removed' else 3):
         button,icon = nodes[f'createRemoveInput-{i}'],nodes[f'createRemoveInput-{i}Icon']
         check(scene+f'/remove{i}/hit width',button['width'],contract['remove_hit_size'],.01)

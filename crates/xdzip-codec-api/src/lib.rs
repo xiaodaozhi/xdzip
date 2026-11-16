@@ -4,6 +4,7 @@ pub mod encode;
 mod host_services_tests;
 pub mod names;
 pub mod payload;
+pub mod registry;
 pub mod time;
 use std::io::{Read, Seek};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -11,6 +12,11 @@ use xdzip_domain::identity::EntryId;
 
 /// Seekable input supplied by the host; codecs do not open arbitrary paths.
 pub trait ReadSource: Read + Seek {
+    /// Optional host basename for a stream's virtual row or a fully validated
+    /// zero-only TAR/ordinary-file ambiguity. Never path access or output authority.
+    fn source_name_hint(&self) -> Option<&str> {
+        None
+    }
     /// Optional host OEM-to-ANSI round trip for a complete NUL-terminated
     /// UTF16 buffer. The returned count excludes NUL. Neither slice is retained.
     fn oem_to_ansi_wide(
@@ -116,30 +122,85 @@ pub enum Format {
     Tar,
     /// One GZIP filter around TAR.
     TarGzip,
+    /// One ordinary file compressed with RFC 1952 GZIP.
+    Gzip,
+    /// One ordinary file, optionally concatenated, in BZip2 streams.
+    Bzip2,
+    /// TAR behind a BZip2 filter, read only.
+    TarBzip2,
+    /// One LZMA Alone stream, with structural validation but no checksum.
+    Lzma,
+    /// TAR behind LZMA Alone, read only.
+    TarLzma,
+    /// One ordinary file in Lzip v1 members.
+    Lzip,
+    /// TAR behind Lzip v1, read only.
+    TarLzip,
+    /// One XZ stream file, including concatenated streams.
+    Xz,
+    /// TAR over XZ, including TXZ naming.
+    TarXz,
+    /// One ordinary file in standard LZ4 frames.
+    Lz4,
+    /// TAR behind standard LZ4 frames.
+    TarLz4,
+    /// One ordinary file in standard Zstandard frames.
+    Zstd,
+    /// TAR behind standard Zstandard frames, including TZST naming.
+    TarZstd,
+    /// Debian common-ar envelope with raw members and nested control/data TAR views.
+    Deb,
+    /// Electron ASAR tree with uncompressed stored ranges and optional SHA-256.
+    Asar,
+    /// LHA/LZH sequential members, including admitted historical LArc methods.
+    Lha,
+    /// PMarc members with admitted PM0/PM1/PM2 methods and bounded CP/M framing.
+    Pma,
+    /// ARJ physical members with admitted Store and methods 1 through 4.
+    Arj,
+    /// Sequential ARC regular files with admitted methods 1 through 9.
+    Arc,
+    /// Sequential BlakHole regular files with the independently confirmed raw Deflate profile.
+    Bh,
+    /// ALZ ordinary single-volume members with Store and raw Deflate methods.
+    Alz,
+    /// EGG ordinary non-solid members with Store and raw Deflate methods.
+    Egg,
+    /// Traditional UU/UUE and begin-base64 envelopes, including mixed UU/XX members.
+    Uu,
+    /// XX-encoded text envelopes containing only the XX alphabet.
+    Xxe,
+    /// One ordinary file in the historical Unix compress LZW profile.
+    Compress,
+    /// TAR behind Unix compress, including TAZ naming.
+    TarCompress,
+    /// Password-admitted AES Crypt v0-v3 single-file envelope, read only.
+    AesCrypt,
+    /// One ordinary RFC 7932 Brotli stream, read only and without a checksum.
+    Brotli,
+    /// TAR behind an ordinary Brotli stream, read only.
+    TarBrotli,
     /// Independent Rust 7z behind the isolated codec worker.
     SevenZip,
     /// Independent Rust RAR read-only backend in the isolated codec worker.
     Rar,
     /// Microsoft Cabinet, read only through the isolated format worker.
     Cab,
-    /// ISO9660, Joliet and Rock Ridge optical images, read only.
+    /// Microsoft Compound File containers, including MSI metadata streams, read only.
+    Compound,
+    /// ISO9660/Joliet creation and ISO9660/Joliet/Rock Ridge reading.
     Iso,
     /// UDF optical images, read only; preferred for hybrid images.
     Udf,
+    /// PEA 1.x single-volume, unencrypted PCOMPRESS0 archives, read only.
+    Pea,
+    /// NSIS executable installers, static firstheader metadata only.
+    Nsis,
 }
 impl Format {
     /// Stable user-visible capability label.
     pub fn label(self) -> &'static str {
-        match self {
-            Self::Zip => "ZIP",
-            Self::Tar => "TAR",
-            Self::TarGzip => "TAR.GZ",
-            Self::SevenZip => "7z",
-            Self::Rar => "RAR",
-            Self::Cab => "CAB",
-            Self::Iso => "ISO",
-            Self::Udf => "UDF",
-        }
+        self.descriptor().label
     }
 }
 
@@ -186,6 +247,13 @@ pub struct Entry {
 }
 
 impl Entry {
+    /// Whether a record has its own declared packed span. Filtered TAR children
+    /// share a stream; DEB's raw ar members still have exact stored sizes.
+    pub fn packed_size_known(&self) -> bool {
+        let descriptor = self.format.descriptor();
+        !(descriptor.container == "tar" && !descriptor.filters.is_empty()
+            || self.format == Format::Deb && self.method != 0)
+    }
     /// Effective archive-relative name. Never use escaped display text as a path.
     pub fn name_bytes(&self) -> &[u8] {
         self.decoded_name
@@ -202,11 +270,59 @@ impl Entry {
                 if self.encrypted {
                     self.password_supported
                 } else {
-                    matches!(self.method, 0 | 8)
+                    matches!(self.method, 0 | 8 | 9 | 12 | 14 | 95)
                 }
             }
-            Format::Tar | Format::TarGzip => !self.warning && !self.link,
-            Format::SevenZip | Format::Rar | Format::Cab | Format::Iso | Format::Udf => {
+            Format::Tar
+            | Format::TarGzip
+            | Format::Gzip
+            | Format::Bzip2
+            | Format::TarBzip2
+            | Format::Lzma
+            | Format::TarLzma
+            | Format::Lzip
+            | Format::TarLzip
+            | Format::Xz
+            | Format::TarXz
+            | Format::Lz4
+            | Format::TarLz4
+            | Format::Zstd
+            | Format::TarZstd
+            | Format::Deb
+            | Format::Asar
+            | Format::Uu
+            | Format::Xxe
+            | Format::Compress
+            | Format::TarCompress => !self.warning && !self.link,
+            Format::Brotli | Format::TarBrotli => !self.warning && !self.link,
+            Format::Lha => {
+                !self.warning && !self.link && !self.encrypted && matches!(self.method, 0..=10)
+            }
+            Format::Pma => {
+                !self.warning && !self.link && !self.encrypted && matches!(self.method, 0..=2)
+            }
+            Format::Arj => {
+                !self.warning && !self.link && !self.encrypted && matches!(self.method, 0..=4)
+            }
+            Format::Arc => {
+                !self.warning && !self.link && !self.encrypted && matches!(self.method, 1..=9)
+            }
+            Format::Bh => !self.warning && !self.link && !self.encrypted && self.method == 8,
+            Format::Alz => {
+                !self.warning && !self.link && !self.encrypted && matches!(self.method, 0 | 2)
+            }
+            Format::Egg => {
+                !self.warning && !self.link && !self.encrypted && matches!(self.method, 0 | 1)
+            }
+            Format::Nsis => false,
+            Format::AesCrypt
+            | Format::SevenZip
+            | Format::Rar
+            | Format::Cab
+            | Format::Compound
+            | Format::Iso
+            | Format::Udf
+            | Format::Pea => {
                 !self.warning && !self.link && (!self.encrypted || self.password_supported)
             }
         }
@@ -234,7 +350,7 @@ pub enum ScanError {
     Cancelled,
     /// File size or modification time changed during the scan.
     SourceChanged,
-    /// Header encryption requires a secret before metadata can be published.
+    /// Admission requires a secret before metadata can be published.
     PasswordRequired,
     /// A header password verifier rejected the provided secret.
     WrongPassword,
@@ -260,6 +376,16 @@ impl std::fmt::Display for ScanError {
     }
 }
 impl std::error::Error for ScanError {}
+impl ScanError {
+    /// Preserve a host adapter's typed failure, without treating bare I/O kinds as codec errors.
+    pub fn from_source_error(error: &std::io::Error) -> Self {
+        error
+            .get_ref()
+            .and_then(|error| error.downcast_ref::<Self>())
+            .copied()
+            .unwrap_or(Self::Io)
+    }
+}
 
 /// Internal source extension point; future extraction will use a separate host-owned sink.
 pub trait MetadataCodec {
@@ -270,7 +396,7 @@ pub trait MetadataCodec {
         control: &Cancellation,
         limits: ScanLimits,
     ) -> Result<Vec<Entry>, ScanError>;
-    /// Scan encrypted headers with a borrowed, host-owned secret.
+    /// Scan password-dependent metadata with a borrowed, host-owned secret.
     fn scan_with_password(
         &self,
         source: &mut dyn ReadSource,

@@ -1,4 +1,5 @@
 #pragma once
+#include "../ArchiveFormats.h"
 #include "NativeMessages.h"
 #include "NativeRequest.h"
 #include <algorithm>
@@ -10,27 +11,18 @@ struct MenuEntry {
     std::string action, label;
 };
 inline bool archiveCandidate(const fs::path &path) {
-    static const std::regex suffix(
-        R"(\.(zip|7z|rar|tar|tgz|gz|cab|iso|udf|z[0-9]{2,}|[r-z][0-9]{2}|(zip|7z)\.[0-9]{3,})$)",
-        std::regex::icase);
+    static const std::regex splitSuffix(R"(\.(z[0-9]{2,}|[r-z][0-9]{2}|(zip|7z)\.[0-9]{3,})$)",
+                                        std::regex::icase);
     std::error_code error;
-    return !fs::is_directory(path, error) && std::regex_search(path.filename().u8string(), suffix);
+    const auto name = path.filename().u8string();
+    return !fs::is_directory(path, error) &&
+           (xdzip_formats::hasSuffix(name, xdzip_formats::ShellSuffixes) ||
+            std::regex_search(name, splitSuffix));
 }
 inline bool archiveMime(const std::string &mime) {
-    static const std::array<const char *, 13> types{"application/zip",
-                                                    "application/x-7z-compressed",
-                                                    "application/vnd.rar",
-                                                    "application/x-rar",
-                                                    "application/x-rar-compressed",
-                                                    "application/x-tar",
-                                                    "application/gzip",
-                                                    "application/x-gzip",
-                                                    "application/x-compressed-tar",
-                                                    "application/vnd.ms-cab-compressed",
-                                                    "application/x-cab",
-                                                    "application/x-iso9660-image",
-                                                    "application/x-udf"};
-    return std::any_of(types.begin(), types.end(), [&](const char *type) { return mime == type; });
+    const auto &types = xdzip_formats::ShellMimeTypes;
+    return std::any_of(types.begin(), types.end(),
+                       [&](std::string_view type) { return mime == type; });
 }
 inline std::vector<MenuEntry> menu(const std::vector<fs::path> &paths, bool english,
                                    bool archiveCandidates = false) {

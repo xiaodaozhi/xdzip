@@ -3,7 +3,230 @@ use super::*;
 use std::sync::atomic::{AtomicU64, Ordering};
 use xdzip_codec_api::{MetadataCodec, ScanLimits, payload::PayloadCodec};
 static NEXT: AtomicU64 = AtomicU64::new(0);
+
+#[test]
+fn zip_aliases_use_content_validation_and_the_same_codec_limits() {
+    let fixture = Fixture::new();
+    let bytes = std::fs::read(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/zip/normal.zip"),
+    )
+    .unwrap();
+    for suffix in ["xpi", "apk", "ipa", "cbz"] {
+        let path = fixture.0.join(format!("sample.{suffix}"));
+        std::fs::write(&path, &bytes).unwrap();
+        let archive = crate::Archive::open(&path, &Cancellation::default()).unwrap();
+        assert_eq!(archive.format, Format::Zip);
+        assert!(!archive.rows.is_empty());
+        std::fs::write(&path, b"invalid ZIP alias").unwrap();
+        assert!(crate::Archive::open(&path, &Cancellation::default()).is_err());
+    }
+}
+
+#[test]
+fn gzip_empty_tar_precedence_requires_a_fully_zero_decoded_stream() {
+    use std::io::Write;
+    let fixture = Fixture::new();
+    for (name, bytes, format, count) in [
+        ("sample.tar.gz", vec![0; 1024], Format::TarGzip, 0),
+        ("sample.tgz", vec![0; 1024], Format::TarGzip, 0),
+        ("sample.unknown", vec![0; 1024], Format::TarGzip, 0),
+        ("sample.gz", vec![0; 1024], Format::Gzip, 1),
+        (
+            "sample.tar.gz",
+            [vec![0; 1024], vec![1]].concat(),
+            Format::Gzip,
+            1,
+        ),
+    ] {
+        let path = fixture.0.join(name);
+        let mut encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
+        encoder.write_all(&bytes).unwrap();
+        std::fs::write(&path, encoder.finish().unwrap()).unwrap();
+        let archive = crate::Archive::open(&path, &Cancellation::default()).unwrap();
+        assert_eq!(archive.format, format);
+        assert_eq!(archive.rows.len(), count);
+    }
+}
+
+#[test]
+fn single_file_creation_browsing_checking_and_extraction_preserve_bytes() {
+    use std::io::Read;
+    for (format, suffix, method) in [
+        (Format::Gzip, "gz", 8),
+        (Format::Xz, "xz", 32),
+        (Format::Lz4, "lz4", 256),
+        (Format::Zstd, "zst", 93),
+    ] {
+        for mode in 0..=2 {
+            let empty = mode == 1;
+            let fixture = Fixture::new();
+            let input = fixture.0.join(if empty {
+                "输入/empty.bin"
+            } else {
+                "输入/文件.txt"
+            });
+            if mode == 2 {
+                std::fs::write(&input, vec![0; 4096]).unwrap();
+            }
+            let expected = std::fs::read(&input).unwrap();
+            let mut job = fixture.job(method);
+            job.options.inputs = vec![input.to_string_lossy().into_owned()];
+            job.options.name = format!("重新命名.bin.{suffix}");
+            assert!(job.options.bounded());
+            let created = execute(job, &Control::default(), |_| {});
+            assert_eq!(created.status, Status::Succeeded, "{}", created.error);
+            let mut independent = Vec::new();
+            let file = std::fs::File::open(&created.target).unwrap();
+            if format == Format::Gzip {
+                flate2::read::MultiGzDecoder::new(file)
+                    .read_to_end(&mut independent)
+                    .unwrap();
+            } else if format == Format::Zstd {
+                let packed = file.metadata().unwrap().len();
+                xdzip_codec_stream::zstd::ZstdReader::new(file, packed, 128 << 20)
+                    .unwrap()
+                    .read_to_end(&mut independent)
+                    .unwrap();
+            } else if format == Format::Lz4 {
+                let packed = file.metadata().unwrap().len();
+                xdzip_codec_stream::lz4::Lz4Reader::new(file, packed, 128 << 20)
+                    .unwrap()
+                    .read_to_end(&mut independent)
+                    .unwrap();
+            } else {
+                let packed = file.metadata().unwrap().len();
+                xdzip_codec_stream::xz::XzReader::new(file, packed, 128 << 20)
+                    .unwrap()
+                    .read_to_end(&mut independent)
+                    .unwrap();
+            }
+            assert_eq!(independent, expected);
+            let cancel = Cancellation::default();
+            let archive = crate::Archive::open(Path::new(&created.target), &cancel).unwrap();
+            assert_eq!(archive.format, format);
+            assert!(!archive.update_allowed);
+            assert_eq!(archive.rows.len(), 1);
+            assert_eq!(archive.rows[0].name_bytes(), "重新命名.bin".as_bytes());
+            assert_eq!(archive.rows[0].size, expected.len() as u64);
+            let mut checked = None;
+            crate::checking::run(
+                archive.check_job(&cancel).unwrap(),
+                2,
+                &Control::default(),
+                &mut |s| checked = Some(s),
+            );
+            let checked = checked.unwrap();
+            assert_eq!(checked.status, Status::Succeeded, "{}", checked.error);
+            assert_eq!(checked.verified_files, 1);
+            let target = fixture.0.join("extracted");
+            std::fs::create_dir(&target).unwrap();
+            let options = crate::extraction::Options {
+                target: target.to_string_lossy().into_owned(),
+                all: true,
+                selected: vec![],
+                directory: String::new(),
+                create_folder: false,
+                shell_layout: 0,
+                conflict: ConflictPolicy::Ask,
+                allow_high_ratio: false,
+            };
+            let mut extracted = None;
+            crate::extraction::run(
+                archive.extraction_job(options, &cancel).unwrap(),
+                3,
+                &Control::default(),
+                &mut |s| extracted = Some(s),
+            );
+            let extracted = extracted.unwrap();
+            assert_eq!(extracted.status, Status::Succeeded, "{}", extracted.error);
+            assert_eq!(
+                std::fs::read(target.join("重新命名.bin")).unwrap(),
+                expected
+            );
+        }
+    }
+}
+
+#[test]
+fn ordinary_stream_directories_or_multiple_inputs_never_publish_an_archive() {
+    for (suffix, method) in [("gz", 8), ("xz", 32), ("lz4", 256), ("zst", 93)] {
+        for multiple in [false, true] {
+            let fixture = Fixture::new();
+            let mut job = fixture.job(method);
+            if multiple {
+                job.options.inputs = vec![
+                    fixture
+                        .0
+                        .join("输入/文件.txt")
+                        .to_string_lossy()
+                        .into_owned(),
+                    fixture
+                        .0
+                        .join("输入/empty.bin")
+                        .to_string_lossy()
+                        .into_owned(),
+                ];
+            }
+            job.options.name = format!("refused.{suffix}");
+            let result = execute(job, &Control::default(), |_| {});
+            assert_eq!(result.status, Status::Failed);
+            assert_eq!(result.error, "unsupported_feature");
+            assert!(!fixture.0.join(format!("output/refused.{suffix}")).exists());
+        }
+    }
+}
+
 struct Fixture(PathBuf);
+#[test]
+fn iso_creation_verifies_joliet_names_and_source_bytes_before_publication() {
+    let f = Fixture::new();
+    let mut job = f.job(260);
+    job.options.name = "data.iso".into();
+    job.options.level = 0;
+    assert!(job.options.bounded());
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+    let contents = archive_contents(std::fs::read(&result.target).unwrap(), Format::Iso);
+    assert_eq!(
+        contents["输入/文件.txt"],
+        std::fs::read(f.0.join("输入/文件.txt")).unwrap()
+    );
+    let archive =
+        crate::Archive::open(Path::new(&result.target), &Cancellation::default()).unwrap();
+    assert!(
+        archive
+            .rows
+            .iter()
+            .any(|row| row.directory && row.name_bytes() == "输入/空目录/".as_bytes())
+    );
+    assert_eq!(std::fs::read_dir(f.0.join("output")).unwrap().count(), 1);
+}
+
+#[test]
+fn iso_creation_refuses_unsupported_names_and_cancel_without_partial_output() {
+    for cancel in [false, true] {
+        let f = Fixture::new();
+        std::fs::write(f.0.join("输入/emoji-😀.txt"), b"payload").unwrap();
+        let mut job = f.job(260);
+        job.options.name = "data.iso".into();
+        job.options.level = 0;
+        let control = Control::default();
+        if cancel {
+            control.cancel();
+        }
+        let result = execute(job, &control, |_| {});
+        assert_eq!(
+            result.status,
+            if cancel {
+                Status::Cancelled
+            } else {
+                Status::Failed
+            }
+        );
+        assert_eq!(result.committed_files, 0);
+        assert_eq!(std::fs::read_dir(f.0.join("output")).unwrap().count(), 0);
+    }
+}
 impl Fixture {
     fn new() -> Self {
         let root = std::env::temp_dir().join(format!(
@@ -111,6 +334,7 @@ fn store_and_deflate_write_real_archives_and_decode_every_record() {
                         bytes: 0,
                         limit: r.size,
                         cancel: &cancel,
+                        expected: None,
                     },
                     &cancel,
                 )
@@ -303,6 +527,7 @@ fn explicitly_selected_output_reaches_rename_and_keeps_its_original_bytes_in_eac
         (".zip", 8, Format::Zip),
         (".tar", 0, Format::Tar),
         (".tar.gz", 8, Format::TarGzip),
+        (".tgz", 8, Format::TarGzip),
     ] {
         for policy in [ConflictPolicy::Ask, ConflictPolicy::Rename] {
             let f = Fixture::new();
@@ -962,7 +1187,13 @@ fn directory_link_swap_after_scan_is_rejected() {
 
 #[test]
 fn tar_and_gzip_use_the_same_safe_creation_extraction_rename_and_cancel_barriers() {
-    for (extension, method, format) in [(".tar", 0, Format::Tar), (".tar.gz", 8, Format::TarGzip)] {
+    for (extension, method, format) in [
+        (".tar", 0, Format::Tar),
+        (".tar.gz", 8, Format::TarGzip),
+        (".tar.xz", 32, Format::TarXz),
+        (".tar.lz4", 256, Format::TarLz4),
+        (".tar.zst", 93, Format::TarZstd),
+    ] {
         let f = Fixture::new();
         let mut job = f.job(method);
         job.options.name = format!("archive{extension}");
@@ -1256,4 +1487,102 @@ fn native_creation_capabilities_are_format_specific() {
     options.solid = false;
     options.encrypt_headers = false;
     assert!(options.bounded());
+}
+#[test]
+fn lzh_creation_levels_and_aliases_publish_only_after_full_name_and_content_verification() {
+    for suffix in ["lzh", "lha"] {
+        for level in [1, 6, 9] {
+            let f = Fixture::new();
+            let mut job = f.job(259);
+            job.options.name = format!("archive.{suffix}");
+            job.options.level = level;
+            assert!(job.options.bounded());
+            let result = execute(job, &Control::default(), |_| {});
+            assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+            assert_eq!(result.verified_files, 2);
+            assert_eq!(result.committed_files, 2);
+            let path = f.0.join(format!("output/archive.{suffix}"));
+            let cancel = Cancellation::default();
+            let archive = crate::Archive::open(&path, &cancel).unwrap();
+            assert_eq!(archive.format, Format::Lha);
+            assert!(!archive.update_allowed && archive.rows.iter().all(|r| !r.warning));
+            let contents = archive_contents(std::fs::read(&path).unwrap(), Format::Lha);
+            assert_eq!(
+                contents["输入/文件.txt"],
+                std::fs::read(f.0.join("输入/文件.txt")).unwrap()
+            );
+            assert_eq!(contents["输入/empty.bin"], b"");
+            let mut checked = None;
+            crate::checking::run(
+                archive.check_job(&cancel).unwrap(),
+                2,
+                &Control::default(),
+                &mut |s| checked = Some(s),
+            );
+            let checked = checked.unwrap();
+            assert_eq!(checked.status, Status::Succeeded, "{}", checked.error);
+            assert_eq!(checked.verified_files, 2);
+            let target = f.0.join("extracted");
+            std::fs::create_dir(&target).unwrap();
+            let options = crate::extraction::Options {
+                target: target.to_string_lossy().into_owned(),
+                all: true,
+                selected: vec![],
+                directory: String::new(),
+                create_folder: false,
+                shell_layout: 0,
+                conflict: ConflictPolicy::Ask,
+                allow_high_ratio: true,
+            };
+            let mut extracted = None;
+            crate::extraction::run(
+                archive.extraction_job(options, &cancel).unwrap(),
+                3,
+                &Control::default(),
+                &mut |s| extracted = Some(s),
+            );
+            let extracted = extracted.unwrap();
+            assert_eq!(extracted.status, Status::Succeeded, "{}", extracted.error);
+            assert_eq!(
+                std::fs::read(target.join("输入/文件.txt")).unwrap(),
+                contents["输入/文件.txt"]
+            );
+            assert!(target.join("输入/空目录").is_dir());
+        }
+    }
+}
+#[test]
+fn lzh_source_change_or_cancel_during_verification_preserves_old_destination_and_cleans_stage() {
+    for mutate in [false, true] {
+        let f = Fixture::new();
+        let path = f.0.join("output/archive.lzh");
+        std::fs::write(&path, b"owned old destination").unwrap();
+        let mut job = f.job(259);
+        job.options.name = "archive.lzh".into();
+        job.options.conflict = ConflictPolicy::Overwrite;
+        let control = Control::default();
+        let result = execute(job, &control, |s| {
+            if s.status == Status::Verifying {
+                if mutate {
+                    std::fs::write(f.0.join("输入/文件.txt"), b"source changed").unwrap();
+                } else {
+                    control.cancel();
+                }
+            }
+        });
+        assert_eq!(
+            result.status,
+            if mutate {
+                Status::Failed
+            } else {
+                Status::Cancelled
+            }
+        );
+        if mutate {
+            assert_eq!(result.error, "source_changed");
+        }
+        assert_eq!(result.committed_files, 0);
+        assert_eq!(std::fs::read(path).unwrap(), b"owned old destination");
+        assert_eq!(std::fs::read_dir(f.0.join("output")).unwrap().count(), 1);
+    }
 }

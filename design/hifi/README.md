@@ -1,5 +1,9 @@
 # xdzip 高保真设计统一入口
 
+[Microsoft Store 宣传素材](sources/windows-store-artwork.html)提供中英文功能插画、招贴画、方形品牌图和无文字横幅；文案、用途与导出尺寸见[商店材料](../../docs/zh-CN/market/windows/README.md)。
+
+[C01 格式选择修订](sources/create-format-selector.html)将新增 GZIP 后的格式选择接入共享下拉框，保留原稿及历史量测，尺寸继续使用既有参数。
+
 [文件关联图标设计](sources/file-association-icons.html)提供 10 个格式与通用后备图标的浅深背景和实际尺寸审阅。母版、光学规则与后续系统映射见[图标规范](../../docs/visual/file-association-icons.md)。
 
 [完整图片画廊](index.html)，[原稿清单与 SHA-256](catalog.json)，[统一素材库](../assets/index.html)，[颜色尺寸规范](../../specs/visual/tokens.json)
@@ -27,6 +31,8 @@
 当前菜单状态可直接查看：[根目录](sources/main.html?menu=directory-root)、[无子目录的节点](sources/main.html?menu=directory-leaf&theme=dark)、[解压下拉](sources/main.html?menu=extract)、[文件右键](sources/main.html?menu=context)与[视图子菜单](sources/main.html?menu=submenu)。禁用项保留置灰与无障碍描述，不在菜单下方显示原因，也不显示浮动提示。入口复用共享 HTML 菜单，支持 `lang=en-US`、`theme=dark` 和 `textScale=1.25`／`1.5` 的设计配置；截图与量测只输出到 build，不作为原生 Qt 验收或既有 PNG 已更新的声明。
 
 ## 操作窗口与功能状态
+
+[任务路径与结果摘要修订](sources/task-windows.html)展示单行、中间省略的当前文件路径，以及仅含处理数量的普通解压结果摘要，文件明细仍可展开。
 
 | 原稿 | 状态 |
 | --- | --- |

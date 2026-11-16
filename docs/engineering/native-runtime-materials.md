@@ -1,33 +1,31 @@
-# 原生运行库来源与通知
+# Native runtime provenance and notices
 
-本契约覆盖实际包中的非 Qt 原生运行库，与[运行时归属](runtime-attribution.md)及[对应源码](source-delivery.md)共同使用。源版本、文件身份、许可条件和实际履约分别核对，不能将供应方文件哈希当作许可批准。`v0.1.0` 的历史候选结论和补证记录在 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 与 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)；未来候选使用新的发行 issue，证据只生成到 build/ 或 CI 工件。
+This contract covers non-Qt native runtimes in actual packages and is used with [runtime attribution](runtime-attribution.md) and [corresponding source](source-delivery.md). Source version, file identity, license conditions, and actual fulfillment are checked separately; supplier file hashes are not license approval. Historical candidate conclusions and supplementary evidence for `v0.1.0` are in [#4](https://github.com/xiaodaozhi/xdzip/issues/4) and [#53](https://github.com/xiaodaozhi/xdzip/issues/53). Future candidates use new release issues; evidence is generated only under build/ or CI artifacts.
 
-| 组件 | 原始依据与交付材料 | 核对边界 |
+| Component | Original basis and delivery materials | Review boundary |
 | --- | --- | --- |
-| Qt 6.8.2 | SDK SPDX、模块原始源码和补丁、Qt 通知、LGPLv3 及 GPLv3 原文、应用重建和兼容替换说明 | 运行时采用 LGPL 分支，工具许可与第三方许可分别保留；SDK 文件对应不等于完整上游构建等价 |
-| Rust 运行时代码 | Cargo.lock、实际链接输入、运行依赖候选、完整 vendor 和原始通知、Rust 标准库源码 | 保守交付构建图的通知，不把 build/dev/proc-macro 误报为已链接运行时代码 |
-| Noto Sans SC 衍生字体 | 字体 manifest、原始 OFL、改名后的字体和生成入口 | 字体不适用项目 Apache-2.0，保留修改及命名说明 |
-| ICU 73.2 | 实际库版本、完整 ICU 上游 LICENSE（含第三方通知）、来源记录 | 不以通用 MIT 文本替代 ICU 自带通知，不把系统包装器误当实际打包文件 |
-| Microsoft VC++ runtime | 固定官方 VC_redist 包及 DLL 哈希、原始许可、版本及分发清单 | 逐文件保持未修改；维护者的适用许可资格及分发条件须另行核对 |
-| Windows SDK 图形编译库 | 新包不包含；历史包保留原始 SDK 许可、逐 DLL 哈希和来源记录 | 历史分发条件独立复核，不因新包移除而改变 |
-| Inno Setup 6.7.3 安装引擎 | 固定编译器包及来源提交、Inno 原始许可、RemObjects Pascal Script 原始许可和双语 Installer-CREDITS.txt | 保留安装引擎既有版权界面；Pascal Script 另有在 About 或文档中显示名称及来源地址的要求，不能只交付 Inno 总许可 |
+| Qt 6.8.2 | SDK SPDX, original module sources and patches, Qt notices, LGPLv3 and GPLv3 texts, app rebuild and compatible replacement instructions | Runtime uses the LGPL branch; tool and third-party licenses remain separate. SDK file correspondence is not complete upstream build equivalence |
+| Rust runtime code | Cargo.lock, actual link inputs, runtime dependency candidates, complete vendor and original notices, Rust standard-library source | Conservatively deliver build-graph notices without misreporting build/dev/proc-macro tools as linked runtime code |
+| Noto Sans SC derived fonts | Font manifest, original OFL, renamed font, generation entry point | Project Apache-2.0 does not apply to fonts; retain modification and naming explanations |
+| ICU 73.2 | Actual library version, complete upstream ICU LICENSE including third-party notices, provenance records | Generic MIT text does not replace ICU's own notices; system wrappers are not mistaken for actual packaged files |
+| Microsoft VC++ runtime | Pinned official VC_redist package and DLL hashes, original license, version and distribution inventory | Files remain unmodified; maintainer eligibility and redistribution conditions require separate review |
+| Windows SDK graphics compiler libraries | Excluded from new packages; historical packages retain original SDK license, per-DLL hashes, and provenance | Historical distribution conditions remain separately reviewed and are unchanged by removal from new packages |
+| Inno Setup 6.7.3 installer engine | Pinned compiler package and source commit, original Inno and RemObjects Pascal Script licenses, bilingual Installer-CREDITS.txt | Retain existing installer-engine copyright UI. Pascal Script separately requires its name and source URL in About or documentation; the general Inno license alone is insufficient |
 
-Microsoft 的[运行库分发说明](https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files)与 [VS 2022 可分发清单](https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution)将分发权与适用软件许可关联。安装许可文本不是维护者已满足资格的证明。Qt 的[开源义务说明](https://www.qt.io/development/open-source-lgpl-obligations)要求保留用户取得对应源码、修改、重新链接和运行修改库的权利；不能以“动态链接”代替其他义务。
+Microsoft's [runtime redistribution guidance](https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files) and [VS 2022 redistributable list](https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution) tie redistribution rights to applicable software licenses. Installer license text does not prove the maintainer meets eligibility. Qt's [open-source obligations](https://www.qt.io/development/open-source-lgpl-obligations) require preserving users' rights to obtain corresponding source, modify, relink, and run modified libraries; “dynamic linking” does not replace other obligations.
 
-Windows 的 Community 免费路径、托管 Enterprise 的独立依据和再分发条件见 [Windows 许可说明](windows-licensing.md)。部署将 CRT／SDK 原始许可、来源记录及双语 Windows-runtime-NOTICE.txt 同时纳入运行目录和 materials，安装器编译前核对原始 CRT 协议哈希并展示许可页，不将微软 DLL 纳入 Apache-2.0 授权。
+See [Windows licensing](windows-licensing.md) for the free Community path, separate hosted Enterprise authority, and redistribution conditions. Deployment includes original CRT/SDK licenses, provenance, and bilingual Windows-runtime-NOTICE.txt in both runtime and materials. Before compiling, Setup checks the original CRT agreement hash and shows its license page. Microsoft DLLs are not relicensed under Apache-2.0.
 
-## 生成与验证
+## Generation and verification
 
-`scripts/native-runtime-sources.json` 固定 ICU 许可的版本、官方 URL 和 SHA-256。`collect-notices.py` 在 Linux 收集 ICU 完整许可，缓存和下载均重新核对哈希。当前 Windows 开发包不携带 `opengl32sw.dll`，不再为它收集 Mesa／LLVM 原始通知；如通知输出目录含旧的专用材料，收集过程拒绝复用，避免把旧材料误写入新候选。
+`scripts/native-runtime-sources.json` pins the ICU license version, official URL, and SHA-256. `collect-notices.py` collects the complete ICU license on Linux and rechecks hashes for both caches and downloads. Current Windows development packages omit `opengl32sw.dll` and no longer collect Mesa/LLVM notices for it. If the notice output directory contains old dedicated materials, collection refuses reuse rather than incorrectly adding them to a new candidate.
 
-`prepare-source-delivery.py` 附带 ICU 许可及固定来源清单。材料保持原始字节，交付总清单重新计算大小和哈希。历史包如包含 Mesa 软件渲染库，仍须保留对应历史源码、通知和适用义务，不能据新策略改写历史交付。
+`prepare-source-delivery.py` includes the ICU license and pinned source inventory. Materials retain original bytes; the delivery manifest recalculates sizes and hashes. Historical packages containing Mesa software-rendering libraries still require corresponding historical source, notices, and obligations; the new policy cannot rewrite historical delivery.
 
-平台 materials 附件必须包含归属报告 `license_materials_base` 引用的目录，逐个复核许可原文哈希后再打包；不能仅因运行目录中另有相同原文，就交付指向缺失相对目录的报告。
+Platform materials attachments must include directories referenced by attribution report `license_materials_base`. Recheck each original license-text hash before packaging. Another identical text elsewhere in the runtime directory does not justify a report pointing to a missing relative directory.
 
-Windows 部署禁用 windeployqt 对软件 OpenGL、D3D 编译器和 DXC 的环境搜索，不再从 Windows SDK 复制三个图形编译库；暂存中出现这些名称时拒绝部署。受控暂存中残留的根目录软件 OpenGL DLL 会被清除，其他同名残留会被拒绝。
+Windows deployment disables windeployqt environment searches for software OpenGL, D3D compilers, and DXC and no longer copies the three graphics compiler libraries from the Windows SDK. Reject staging containing these names. Remove a leftover root software OpenGL DLL in controlled staging and reject same-name leftovers elsewhere.
 
-macOS 打包在最终签名应用仍存在时输出 `deployment-audit.json`、`macos-deployment.json`、`runtime-attribution.json`，文件 SBOM 使用同一审计及归属报告。Qt 原生文件按 arm64 分片、全部 section 字节、UUID 和导入版本比较，允许部署需要的 Qt 路径重定位；签名、load-command 布局及 LINKEDIT 不属于该比较结论。非原生资源按精确字节关联。未关联文件和原始 SPDX 缺口继续保留，不能将这个过程宣称为完整二进制等价。
+macOS packaging emits `deployment-audit.json`, `macos-deployment.json`, and `runtime-attribution.json` while the final signed app still exists. The file SBOM uses the same audit and attribution report. Compare Qt native files by arm64 slices, all section bytes, UUID, and import versions, permitting Qt path relocation needed for deployment. Signatures, load-command layout, and LINKEDIT are outside that comparison's conclusion. Associate non-native resources by exact bytes. Unassociated files and original SPDX gaps remain; this process is not complete binary equivalence.
 
-公开包发现缺失通知后，补充材料不能改写为“原包已包含”。原版本资产及校验和保持不可变，修订后的包必须使用新版本并重新验证；补充材料及其绑定对象应明确登记。
-
-English: Native runtime provenance, license conditions and delivered obligations are separate checks. Current Windows developer packages omit the software OpenGL library and the three Windows SDK graphics compiler DLLs. Eligible Community use, GitHub-hosted Enterprise builds and downstream Microsoft terms follow the Windows licensing contract. CRT terms and a bilingual runtime notice are delivered in both the runtime and materials; Setup presents the original CRT agreement. Historical packages retain their own notices and obligations, including those applicable to SDK graphics DLLs and the Mesa/LLVM renderer where included. The full ICU license remains pinned for Linux. Final macOS attribution binds the signed deployed app to SDK inputs using arm64 sections, UUID and imports, while explicitly excluding signatures, load-command layout and LINKEDIT from equivalence claims. Origins and license eligibility require explicit review. Published assets are immutable; corrected packages require a new version.
+When missing notices are found after publication, supplementary materials cannot be described as already included in the original package. Original version assets and checksums remain immutable; corrected packages require a new version and reverification. Explicitly record supplementary materials and what they bind to.

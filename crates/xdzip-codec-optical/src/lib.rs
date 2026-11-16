@@ -1,7 +1,8 @@
-//! Independent read-only ISO9660/Joliet/Rock Ridge and UDF image adapters.
+//! Independent ISO9660/Joliet creation and ISO9660/Joliet/Rock Ridge/UDF readers.
 mod image;
 mod iso;
 mod udf;
+mod writer;
 
 use image::{Extent, ImageReader, Index};
 use xdzip_codec_api::Format;
@@ -16,7 +17,7 @@ const METADATA_LIMIT: u64 = 64 * 1024 * 1024;
 const INPUT_LIMIT: u64 = 20 * 1024 * 1024 * 1024;
 const FILE_LIMIT: u64 = 8 * 1024 * 1024 * 1024;
 
-/// A read-only optical namespace selected by the host's bounded content probe.
+/// An optical namespace selected by the host's bounded content probe; only ISO admits creation.
 pub struct OpticalCodec {
     /// ISO9660/Joliet/Rock Ridge or UDF, never inferred from the extension.
     pub format: Format,
@@ -178,13 +179,16 @@ impl PayloadReader for Payload<'_> {
 impl CreationCodec for OpticalCodec {
     fn encode(
         &self,
-        _input: &dyn EncodeInput,
-        _output: &mut dyn EncodeOutput,
-        _settings: EncodeSettings<'_>,
-        _cancel: &Cancellation,
-        _progress: &mut dyn FnMut(EncodeProgress<'_>),
+        input: &dyn EncodeInput,
+        output: &mut dyn EncodeOutput,
+        settings: EncodeSettings<'_>,
+        cancel: &Cancellation,
+        progress: &mut dyn FnMut(EncodeProgress<'_>),
     ) -> Result<(), EncodeError> {
-        Err(EncodeError::Unsupported)
+        if self.format != Format::Iso {
+            return Err(EncodeError::Unsupported);
+        }
+        writer::encode(input, output, settings, cancel, progress)
     }
 }
 impl RewriteCodec for OpticalCodec {

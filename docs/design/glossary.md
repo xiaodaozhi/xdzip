@@ -1,78 +1,78 @@
-# xdzip：术语、单位与初始常量
+# xdzip: Terminology, units, and initial constants
 
-## 1. 术语
+## 1. Terminology
 
-| 术语 | 定义 |
+| Term | Definition |
 |---|---|
-| 归档/Archive | 一个容器或受支持压缩流及其授权源 |
-| 编解码器/Codec | 识别、扫描、读取或创建格式的实现 |
-| 会话/Session | 打开源、后端、索引和浏览上下文；不是任务 |
-| 条目/Entry | 一个实际归档记录；目录可另有合成展示节点 |
-| 查询快照/QuerySnapshot | 固定源/索引版本及结果次序的视图 |
-| 代次/Generation | 前端请求替代关系，避免过期结果覆盖 |
-| 计划/OperationPlan | 已固定范围、目标、能力、参数和策略的操作描述 |
-| 任务/Task | 执行一个计划的生命周期和结果 |
-| 授权/Grant | 宿主持有的文件/目录访问权，不是路径字符串 |
-| Sink | 受计量、限额和事务控制的写接口 |
-| 工作进程/Worker | 独立进程；只有实施了权限限制才能称受沙箱约束 |
-| 提交/Commit | 将已校验暂存内容发布为最终文件的安全点 |
-| 必达事件 | 在运行时正常连接下不得合并丢弃的结果/状态/终态 |
-| 能力/Capabilities | 特定实现、格式特性、平台和政策的具体交集 |
-| 固实/Solid | 多文件共享压缩块，选择性读取可能需要解码前置内容 |
-| 首帧/First presented frame | 实际渲染呈现，不能以 ui_ready 日志冒充 |
+| Archive | A container or supported compressed stream and its authorized source |
+| Codec | An implementation that detects, scans, reads, or creates a format |
+| Session | Open source, backend, index, and browsing context; not a task |
+| Entry | An actual archive record; a directory may also have a synthetic display node |
+| QuerySnapshot | A view with fixed source/index version and result order |
+| Generation | Frontend request replacement relationship that prevents stale results from overwriting newer ones |
+| OperationPlan | An operation description with fixed scope, destination, capabilities, parameters, and policies |
+| Task | Lifecycle and result of executing a plan |
+| Grant | Host-held file/directory access authority, not a path string |
+| Sink | A write interface under metering, quota, and transaction control |
+| Worker | A separate process; sandbox-constrained only when permission restrictions are implemented |
+| Commit | Safe point publishing verified staged content as a final file |
+| Mandatory-delivery event | Result/state/terminal event that cannot be coalesced away while the runtime connection is healthy |
+| Capabilities | Specific intersection of implementation, format features, platform, and policy |
+| Solid | Multiple files share compressed blocks; selective reading may require decoding preceding content |
+| First presented frame | Actual rendered presentation; an ui_ready log cannot substitute for it |
 
-## 2. 单位和数值
+## 2. Units and values
 
-内存/文件量使用二进制 KiB/MiB/GiB，1MiB=1024² bytes；传输和计量保留整数 bytes。时间使用 ms 或 s，事件时间来自单调时钟，用户文件时间使用携带精度/来源的日历时间。吞吐统一 MiB/s 并说明压缩输入、解码或输出哪一种字节。
+Memory/file quantities use binary KiB/MiB/GiB, with 1 MiB = 1024² bytes. Transport and accounting retain integer bytes. Time uses ms or s; event timestamps come from a monotonic clock, while user file times use calendar time with precision/origin. Throughput consistently uses MiB/s and specifies whether bytes are compressed input, decoded data, or output.
 
-单核计 CPU 100% 表示占满一个逻辑核心，进程树可超过 100%。PSS/RSS/USS/physical footprint 不互相等同。下载压缩体积、安装体积、executable 大小分别记录。
+CPU at 100% of one core means one logical core fully occupied; a process tree may exceed 100%. PSS/RSS/USS/physical footprint are not equivalent. Compressed download size, installed size, and executable size are recorded separately.
 
-## 3. 初始常量表
+## 3. Initial constants
 
-下表记录设计初值与后续目标约束，不是当前产品配置或已测量的最优值。当前产品的十万条扫描上限、每连接单会话浏览和文件输出配额等以[只读索引](../engineering/m2-readonly.md)、[安全解压](../engineering/m3-extraction.md)及[创建契约](../engineering/m4-creation.md)为准；应用级多会话、32 个存活会话上限及重任务串行准入以[应用会话契约](../engineering/application-sessions.md)为准。用户界面只开放实际已实现的设置。可调用户限额必须经过核心验证，线协议硬上限在同一协议主版本中不能任意放宽。
+This table records initial design values and future target constraints, not current product settings or measured optima. The current product's 100,000-entry scan limit, single-session browsing per connection, and file-output quotas are governed by [read-only indexing](../engineering/m2-readonly.md), [safe extraction](../engineering/m3-extraction.md), and the [creation contract](../engineering/m4-creation.md). Application-level multiple sessions, the 32-live-session limit, and serial heavy-task admission follow the [application sessions contract](../engineering/application-sessions.md). The UI exposes only implemented settings. Adjustable user limits must pass core validation; wire-protocol hard limits cannot be arbitrarily relaxed within the same protocol major version.
 
-| 常量 | 初始值 | 类别/说明 |
+| Constant | Initial value | Category/notes |
 |---|---:|---|
-| 列表默认页/最大页 | 128 / 256 行 | 应用契约，页上限固定 |
-| Qt 页缓存 | 8 页，默认共 1024 行 | UI 策略，可按密度优化不突破内存预算 |
-| 搜索防抖 | 120ms | 只针对已提交输入，不触发 IME 中间态 |
-| 普通 outstanding 请求 | 128 | 取消/关闭另有准入 |
-| 必达事件队列 | 256 | 进度另用合并槽，终态不被进度覆盖 |
-| 排队任务/活跃重任务 | 32 / 2 | 资源不足或冲突时进一步降低 |
-| 默认 CPU token | `max(1,min(4,cores-1))` | 后端线程同池计数 |
-| Codec 总准入内存 | 512MiB | 不含 GUI/索引；进程内估算非 OS 硬隔离 |
-| 第三方进程默认内存 | 256MiB | 以平台硬限制实施；声明需更高时重新准入 |
-| 索引热数据预算/转盘准备阈值 | 128MiB / 64MiB 每会话 | v0.1未完成磁盘后端时明确拒绝超额，不 OOM |
-| 索引全局预算/打开会话上限 | 256MiB / 8 | 被任务引用的索引也计入预算 |
-| 未启动计划上限/计划结果热数据 | 8 / 64MiB 全局 | 大型数据后续转盘；首版超额返回资源错误 |
-| 任务历史摘要 | 最近 100 个 | 完整结果按显式关闭/期限清理，活动引用不清理 |
-| 实际单文件/任务输出限额 | 8GiB / 20GiB | 用户可明确提高，需新计划 |
-| 默认扫描条目上限 | 1,000,000 | 可提高，但同时受索引预算限制 |
-| 单元数据字段上限 | 64KiB | 原始名、注释等分别限额；平台输出路径通常更小 |
-| 格式流组合深度 | 4 | 不自动递归展开嵌套归档 |
-| 最大魔数探测读取 | 64KiB 每候选 | 候选数同时有界，不能任意完整扫描 |
-| 流缓冲/IPC 数据块 | 256KiB | 两者可独立优化，IPC 不超协议硬限 |
-| IPC 最大 CBOR 帧 | 1MiB | 先检查长度再分配 |
-| CBOR 嵌套深度 | 16 | 拒绝无界长和重复关键字段 |
-| IPC 未确认数据块 | 4 每方向 | 信用管理，控制消息不受数据额度挤压 |
-| EntryBatch 最大行数 | 128 | 同时满足 1MiB 帧限，不能按 128×64KiB盲发 |
-| 握手期限/取消合作期限 | 2s / 2s | 终止后仍需宿主收尾 |
-| 进度合并频率 | 10Hz | 状态/提示/终态即时，不等待周期 |
-| 应用退出软等待 | 5s | 超时给等待/强退选择，不假成功 |
-| 高压缩比风险提示 | >1000:1 | 提示，绝对字节/资源配额才是硬保护 |
-| 文本预览/图像内容/像素 | 1MiB / 20MiB / 40MP | 用户显式预览；分配像素前检查 |
-| 外部临时打开上限 | 100MiB | 不自动执行程序/脚本 |
+| Default/maximum list page | 128 / 256 rows | Application contract; fixed page maximum |
+| Qt page cache | 8 pages, 1,024 rows total by default | UI policy; density optimization must remain within memory budget |
+| Search debounce | 120 ms | Committed input only; does not trigger on intermediate IME composition |
+| Ordinary outstanding requests | 128 | Cancellation/shutdown have separate admission |
+| Mandatory-delivery event queue | 256 | Progress uses separate coalesced slots; terminal states are not overwritten by progress |
+| Queued/active heavy tasks | 32 / 2 | Reduce further for insufficient resources or conflicts |
+| Default CPU tokens | `max(1,min(4,cores-1))` | Backend threads count against the same pool |
+| Total codec admission memory | 512 MiB | Excludes GUI/index; in-process estimates are not OS hard isolation |
+| Default third-party process memory | 256 MiB | Enforced by platform hard limits; re-admit when higher needs are declared |
+| Hot index budget/disk-migration preparation threshold | 128 MiB / 64 MiB per session | In v0.1, explicitly reject overages when disk backend is unfinished; do not OOM |
+| Global index budget/open-session limit | 256 MiB / 8 | Indexes referenced by tasks also count |
+| Unstarted plan limit/plan-result hot data | 8 / 64 MiB globally | Large data moves to disk later; first version returns resource errors on overage |
+| Task history summaries | Latest 100 | Full results cleaned on explicit close/expiry; active references are retained |
+| Actual per-file/task output limits | 8 GiB / 20 GiB | User may explicitly raise them with a new plan |
+| Default scan-entry limit | 1,000,000 | Can be raised, subject also to index budgets |
+| Per-metadata-field limit | 64 KiB | Raw names, comments, etc. have separate limits; platform output paths are usually smaller |
+| Format stream composition depth | 4 | Nested archives are not automatically expanded recursively |
+| Maximum magic probe read | 64 KiB per candidate | Candidate count is also bounded; arbitrary full scans are forbidden |
+| Stream buffer/IPC data block | 256 KiB | May be optimized independently; IPC remains within protocol hard limits |
+| Maximum IPC CBOR frame | 1 MiB | Check length before allocation |
+| CBOR nesting depth | 16 | Reject unbounded lengths and duplicate key fields |
+| Unacknowledged IPC data blocks | 4 per direction | Credit management; data limits cannot crowd out control messages |
+| EntryBatch maximum rows | 128 | Must also fit the 1 MiB frame limit; do not blindly send 128×64 KiB |
+| Handshake deadline/cancellation cooperation deadline | 2 s / 2 s | Host cleanup remains necessary after termination |
+| Progress coalescing frequency | 10 Hz | States/prompts/terminal states are immediate, without waiting for the interval |
+| Application shutdown soft wait | 5 s | On timeout offer wait/force quit, not false success |
+| High compression ratio warning | >1000:1 | Warning only; absolute byte/resource quotas are hard protection |
+| Text preview/image content/pixels | 1 MiB / 20 MiB / 40 MP | Explicit user preview; check before pixel allocation |
+| External temporary-open limit | 100 MiB | No automatic execution of programs/scripts |
 
-已实现的[密码解压](../engineering/password-extraction.md)按每个物理条目最多十次密码验证值失败计数，认证或结构损坏直接停止；每次提示使用一次性 ID。上表中的 32 个授权源是设计初值，当前 ZIP、7z、RAR 和 CAB 分卷读取的具体限制见[分卷契约](../engineering/archive-opening.md)。等待用户不重置或扩大输出额度。
+Implemented [password extraction](../engineering/password-extraction.md) counts at most ten password-verification-value failures per physical entry. Authentication or structural corruption stops immediately; each prompt has a one-shot ID. The 32 authorized sources mentioned in the table are an initial design value. Current ZIP, 7z, RAR, and CAB split-volume reading limits are specified by the [split-volume contract](../engineering/archive-opening.md). Waiting for a user does not reset or expand output quotas.
 
-## 4. 状态标准名称
+## 4. Standard state names
 
-任务标准名称为 Queued、Preparing、Running、WaitingForUser、Committing、Cancelling、CleaningUp、Succeeded、Failed、Cancelled。代码枚举和事件 schema 从这些语义生成；UI 翻译不改协议值。归档索引状态为 Detecting、Scanning、Ready、Failed、Closed。
+Standard task names are Queued, Preparing, Running, WaitingForUser, Committing, Cancelling, CleaningUp, Succeeded, Failed, and Cancelled. Code enums and event schemas derive from these semantics; UI translation does not change protocol values. Archive index states are Detecting, Scanning, Ready, Failed, and Closed.
 
-## 5. 版本规则
+## 5. Versioning rules
 
-设计基线版本、应用版本、Rust SDK SemVer、内部构建桥接版本、外部线协议版本和持久化 schema 版本分别管理。不能拿产品 v0.2 自动推导插件协议 0.2。草案协议在冻结前明确标 experimental；更新草案也要更新样例和一致性测试。
+Design baseline version, application version, Rust SDK SemVer, internal build-bridge version, external wire-protocol version, and persistence schema version are managed separately. Product v0.2 does not automatically imply plugin protocol 0.2. Clearly mark draft protocols experimental before freezing; draft updates also update examples and conformance tests.
 
-## 6. 引用权威
+## 6. Reference authority
 
-产品范围以 [01](01-product-requirements.md) 为准；内部服务以 [05](05-qt-rust-bridge.md) 为准；第三方协议以 [06](06-codec-extension-sdk.md) 为准；文件输出政策以 [07](07-file-security.md) 为准；调度以 [08](08-task-scheduling.md) 为准；工程预算以 [09](09-performance.md) 为准。本表集中默认值，改值时修改引用和相关验收。
+Product scope is governed by [01](01-product-requirements.md), internal services by [05](05-qt-rust-bridge.md), third-party protocols by [06](06-codec-extension-sdk.md), file-output policy by [07](07-file-security.md), scheduling by [08](08-task-scheduling.md), and engineering budgets by [09](09-performance.md). This table centralizes defaults; update references and related acceptance when values change.

@@ -98,7 +98,7 @@ pub trait PayloadCodec {
         snapshot: &[Entry],
         control: &'a Cancellation,
     ) -> Result<Box<dyn PayloadReader + 'a>, DecodeError>;
-    /// Open a header-encrypted archive using the secret retained by its immutable session.
+    /// Open a secret-dependent archive using the opening credential retained by its immutable session.
     fn open_payload_with_password<'a>(
         &self,
         source: &'a mut dyn ReadSource,

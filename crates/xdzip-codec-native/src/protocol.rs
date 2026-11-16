@@ -58,6 +58,8 @@ impl Fault {
     }
 }
 
+pub(crate) static HOST_WORKER: std::sync::OnceLock<std::path::PathBuf> = std::sync::OnceLock::new();
+
 pub struct Worker {
     child: Child,
     input: ChildStdin,
@@ -70,6 +72,8 @@ impl Worker {
             .or_else(|| std::env::var_os("XDZIP_NATIVE_CODEC"))
         {
             std::path::PathBuf::from(path)
+        } else if let Some(path) = HOST_WORKER.get() {
+            path.clone()
         } else {
             let mut path = std::env::current_exe().map_err(|_| Fault::Io)?;
             path.set_file_name(if cfg!(windows) {

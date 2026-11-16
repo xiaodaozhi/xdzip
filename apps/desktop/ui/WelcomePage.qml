@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "ArchiveFormats.js" as ArchiveFormats
 import QtQuick.Controls
 import QtQuick.Layouts
 
@@ -18,6 +19,7 @@ Rectangle {
     property string dropMessage: ""
     signal openRequested
     signal createRequested
+    signal formatsRequested
     signal cancelRequested
     signal dragEntered(var urls)
     signal archiveDropped(var urls)
@@ -33,6 +35,16 @@ Rectangle {
     }
     function focusOpen() {
         openAction.forceActiveFocus(Qt.TabFocusReason);
+    }
+    function formatGroupLabel(groupId) {
+        switch (groupId) {
+        case "archives": return qsTrId("format.group.archives");
+        case "compressed-tar": return qsTrId("format.group.compressed-tar");
+        case "compressed-streams": return qsTrId("format.group.compressed-streams");
+        case "text-envelopes": return qsTrId("format.group.text-envelopes");
+        case "installer-metadata": return qsTrId("format.group.installer-metadata");
+        default: return groupId;
+        }
     }
     color: Theme.surface
     ScrollView {
@@ -188,32 +200,64 @@ Rectangle {
                         }
                     }
                 }
-                RowLayout {
+                ColumnLayout {
                     objectName: "welcomeFormats"
                     Layout.topMargin: root.width < 900 ? 18 : 22
-                    Layout.alignment: Qt.AlignHCenter
+                    Layout.fillWidth: true
                     spacing: 8
-                    Text {
-                        text: qsTrId("ui.68e2f0d4ff9a")
-                        font.pixelSize: 11 * Theme.fontScale
-                        color: Theme.textSecondary
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Text {
+                            text: qsTrId("ui.68e2f0d4ff9a")
+                            Layout.fillWidth: true
+                            font.pixelSize: 11 * Theme.fontScale
+                            color: Theme.textSecondary
+                        }
+                        OperationButton {
+                            id: formatsSettingsButton
+                            objectName: "welcomeFormatsSettings"
+                            text: qsTrId("welcome.formatsOpenSettings")
+                            labelSize: 11
+                            baseHeight: 28
+                            horizontalInset: 10
+                            verticalInset: 4
+                            cornerRadius: 6
+                            onClicked: root.formatsRequested()
+                            onActiveFocusChanged: if (activeFocus)
+                                root.revealAction(formatsSettingsButton)
+                        }
                     }
-                    Repeater {
-                        model: ["ZIP", "TAR", "TAR.GZ", "7z", "RAR", "CAB", "ISO", "UDF"]
-                        Rectangle {
-                            required property string modelData
-                            objectName: "welcomeFormat-" + modelData
-                            implicitWidth: formatLabel.implicitWidth + 14
-                            implicitHeight: formatLabel.implicitHeight + 6
-                            color: Theme.canvas
-                            border.color: Theme.border
-                            radius: 4
-                            Text {
-                                id: formatLabel
-                                anchors.centerIn: parent
-                                text: parent.modelData
-                                font.pixelSize: 11 * Theme.fontScale
-                                color: Theme.textSecondary
+                    Flow {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Repeater {
+                            model: ArchiveFormats.formatGroups
+                            Rectangle {
+                                required property var modelData
+                                objectName: "welcomeFormatGroup-" + modelData.id
+                                implicitWidth: groupLabel.implicitWidth + groupCount.implicitWidth + 28
+                                implicitHeight: Math.max(groupLabel.implicitHeight, groupCount.implicitHeight) + 12
+                                color: Theme.canvas
+                                border.color: Theme.border
+                                radius: 6
+                                Row {
+                                    anchors.centerIn: parent
+                                    spacing: 8
+                                    Text {
+                                        id: groupLabel
+                                        text: root.formatGroupLabel(modelData.id)
+                                        font.pixelSize: 11 * Theme.fontScale
+                                        color: Theme.textSecondary
+                                    }
+                                    Text {
+                                        id: groupCount
+                                        text: String(modelData.labels.length)
+                                        font.pixelSize: 11 * Theme.fontScale
+                                        font.bold: true
+                                        color: Theme.text
+                                    }
+                                }
                             }
                         }
                     }

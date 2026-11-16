@@ -1,32 +1,70 @@
 //! Independently implemented compression primitives. No production dependencies.
 //! Wire definitions: RFC 1951 sections 3.1–3.2 and RFC 1952 section 2.3.
 //! Constants below describe wire code ranges, not a reference implementation.
+mod adaptive_huffman;
+mod arc;
+mod arj;
+mod bitstream;
+mod brotli;
+mod byte_filter;
 mod bzip2;
+mod compress;
+mod crc16;
 mod deflate;
+mod entropy;
 mod gzip;
+mod larc;
+mod lh_dynamic;
+mod lz4;
+mod lz4_encode;
+mod lzh;
+mod lzh_encode;
 mod lzma;
 mod lzma2;
 mod lzma_encode;
 #[cfg(test)]
 mod lzma_tests;
 mod lzx;
+mod match_finder;
 mod mszip;
+mod pm1;
+mod pm2;
+mod pmarc;
 mod ppmd;
 mod ppmd7;
 mod quantum;
 mod raw;
 mod stream_io;
+mod xxhash;
+mod xxhash64;
+pub mod zstd;
+pub use arc::{ArcReader, arc_memory_required};
+pub use arj::{ArjReader, arj_memory_required};
+pub use brotli::{BrotliReader, brotli_memory_required};
+pub use byte_filter::{ByteFilter, ByteFilterKind};
 pub use bzip2::{Bzip2Reader, bzip2_memory_required};
+pub use compress::{CompressReader, compress_memory_required};
+pub use crc16::{Crc16, crc16};
 pub use gzip::{GzipReader, GzipWriter};
+pub use larc::{LarcMethod, LarcReader, larc_memory_required};
+pub use lh_dynamic::{Lh2Variant, LhDynamicReader, lh_dynamic_memory_required};
+pub use lz4::Lz4BlockReader;
+pub use lz4_encode::encode_lz4_block;
+pub use lzh::{LzhReader, lzh_memory_required};
+pub use lzh_encode::{LzhWriter, lzh_writer_memory_required};
 pub use lzma::{LzmaReader, lzma_memory_required};
 pub use lzma_encode::{Lzma2Writer, lzma2_writer_memory_required};
 pub use lzma2::{Lzma2Reader, lzma2_memory_required};
 pub use lzx::LzxDecoder;
 pub use mszip::MszipDecoder;
+pub use pm1::{Pm1Reader, pm1_memory_required};
+pub use pm2::{Pm2Reader, pm2_memory_required};
 pub use ppmd::{PpmdCapacity, PpmdModel, PpmdRange, PpmdWork, ppmd_memory_required};
 pub use ppmd7::{Ppmd7Reader, ppmd7_memory_required};
 pub use quantum::QuantumDecoder;
 pub use raw::{DeflateReader, DeflateWriter};
+pub use xxhash::{Xxh32, xxhash32};
+pub use xxhash64::{Xxh64, xxhash64};
 
 /// Incremental IEEE CRC-32 used by ZIP and GZIP containers.
 #[derive(Clone, Copy, Debug)]

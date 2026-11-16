@@ -1,120 +1,120 @@
-# 目录树 B：设计、素材与接入规格
+# Directory tree B: design, assets and integration
 
-状态：**核心目录交互已接入 HTML 示例和 Qt 只读浏览，边界状态资源仍待接入**。范围对应 B01 浏览、P01/P02/P08 和 WP-05/06，沿用[只读浏览契约](../engineering/readonly-browser.md)，普通目录浏览采用直属子项，搜索递归当前范围，输出授权保持只读。
+Status: **core directory interaction is integrated in HTML examples and Qt read-only browsing; boundary-state assets await integration**. Scope covers B01 browsing, P01/P02/P08 and WP-05/06, following the [read-only browsing contract](../engineering/readonly-browser.md). Normal directory browsing uses direct children, search recursively covers the current scope, and output authorization remains read-only.
 
-三张当前图板位于 [多级展开](../../design/hifi/screens/directory-tree-capsule.png)、[节点与交互状态](../../design/hifi/screens/directory-tree-states.png)、[空态与导航边界](../../design/hifi/screens/directory-tree-boundaries.png)。[统一画廊](../../design/hifi/index.html#components)展示整幅图板，[素材库](../../design/assets/index.html#directory-tree)提供逐项切图。多级展开图从[可编辑设计源](../../design/hifi/sources/main.html?tree=expanded)导出，标题栏同步当前胶囊标签；图板中的顶部和中央列表仅提供上下文，不重新定义标题栏、工具栏或文件表格。[历史多级展开原图](../../design/hifi/screens/directory-tree.png)保持原样，继续作为 26 张切片的来源及独立量测依据。
+The three current artboards are [multi-level expansion](../../design/hifi/screens/directory-tree-capsule.png), [node and interaction states](../../design/hifi/screens/directory-tree-states.png) and [empty and navigation boundaries](../../design/hifi/screens/directory-tree-boundaries.png). The [shared gallery](../../design/hifi/index.html#components) shows full artboards and the [asset library](../../design/assets/index.html#directory-tree) provides individual slices. Multi-level expansion is exported from the [editable source](../../design/hifi/sources/main.html?tree=expanded), with the title bar synchronized to current capsule tabs. Top and central lists in the board provide context only and do not redefine title bar, toolbar or file table. The [historical multi-level original](../../design/hifi/screens/directory-tree.png) remains unchanged as the source of 26 slices and an independent measurement reference.
 
-图板采用放大展示，每张卡片的局部比例不完全相同。图片中的文字、圆角和像素尺寸不能直接当作控件尺寸；[组件参数](../../specs/visual/directory-tree.json)明确记录落地的逻辑尺寸，资产清单单独记录原图裁剪的物理坐标。实现采用 1024 逻辑宽度及统一源画布变换，不能把这一组新组件再整体放大。
+Artboards are enlarged and individual card scales differ. Text, radii and pixel dimensions in images cannot directly define control sizes; [component parameters](../../specs/visual/directory-tree.json) explicitly record implemented logical dimensions and the asset manifest separately records physical crop coordinates. The implementation uses a 1024 logical-width and shared source-canvas transform; do not enlarge the entire new component set again.
 
-Qt 直接使用下表的逻辑值。现有 HTML 主稿采用 1548 源像素窗口映射到 1024 逻辑像素，转换遵循 [display-spec.js](../../design/html/display-spec.js)：`source CSS = logical / (1024/1548)`。因此 32 行高对应 48.375 源 CSS 像素，11.2 字号对应 16.93125，16 图标槽对应 24.1875，12.8 缩进对应 19.35。预览缩放在换算之后统一作用于整个窗口；DPR 只决定采样密度和线条对齐，不参与逻辑尺寸换算。
+Qt uses the logical values below directly. The existing HTML main design maps a 1548 source-pixel window to 1024 logical pixels according to [display-spec.js](../../design/html/display-spec.js): `source CSS = logical / (1024/1548)`. Thus row height 32 corresponds to 48.375 source CSS pixels, font 11.2 to 16.93125, icon slot 16 to 24.1875 and indentation 12.8 to 19.35. Preview scaling applies uniformly to the whole window after conversion. DPR determines sampling density and line alignment only and does not enter logical-size conversion.
 
-## 树结构与计数
+## Tree structure and counts
 
-完整索引同时提供显式和隐式目录。叶子仅表示**没有子目录**，不表示没有文件；冰川湖若含子目录，就有自己的展开箭头，与其父目录的箭头互不替代。
+The complete index provides explicit and implicit directories. A leaf means **no subdirectories**, not no files. If Glacier Lake contains a subdirectory it has its own expansion arrow, independent of its parent's arrow.
 
 ```text
-根目录                             ← 当前目录
-▼ 01 照片                       12
-  ▼ 冰川湖                       6
-    ▸ 湖岸步道                   3  ← 有更深目录，尚未展开
-      雪山远景                   3  ← 只有文件，保留空箭头槽
-  ▸ 山间日出                     4
-    其他照片                     2  ← 无子目录
-▸ 02 文档                        8
-  03 地图                        4  ← 无子目录
+Root                               ← current directory
+▼ 01 Photos                     12
+  ▼ Glacier Lake                 6
+    ▸ Lakeside Trail             3  ← deeper directory, not expanded
+      Snow Mountain View          3  ← files only, retains empty arrow slot
+  ▸ Mountain Sunrise             4
+    Other Photos                 2  ← no subdirectories
+▸ 02 Documents                   8
+  03 Maps                        4  ← no subdirectories
 ```
 
-压缩包示例包含照片 12、文档 8、地图 4 和根目录文件 6；根目录列表显示三个直属目录及六个直属文件，不展开后代。未展开分支的后代也完整列入参数文件，避免用假箭头装饰叶子节点。另一张图板中的显式空目录是独立状态样例，不追加到这个 30 条样例中。
+The example archive contains 12 photos, 8 documents, 4 maps and 6 root files; the root list shows three direct directories and six direct files without expanding descendants. Descendants of collapsed branches are also listed fully in the parameter file so leaves are not decorated with fake arrows. The explicit empty directory in another board is a separate state example, not added to this 30-entry example.
 
-目录数字表示该前缀下全部后代**物理压缩包记录数**，包含重复名称，不包含与该目录前缀完全相同的目录记录；它不是子目录数量，也不随名称搜索变化。树行不显示计数。压缩包摘要保留完整物理记录数，列表标题右侧只显示当前目录的行数；二者口径不同。普通文件列表显示末级名称，搜索结果显示完整压缩包内路径。
+Directory numbers represent all descendant **physical archive records** below the prefix, including duplicate names but excluding the directory record identical to the prefix. They are not counts of subdirectories and do not change with name search. Tree rows do not display counts. The archive summary retains the complete physical record count, while the right side of the list title shows current-directory row count; these use different definitions. Ordinary lists show the final name; search results show the full in-archive path.
 
-箭头只由已知子目录决定：有子目录且折叠时向右，展开时向下；只有文件或为空时不显示，但同层级的箭头槽、图标槽和文字起点保持相同。读取完整索引期间不猜测逐节点箭头、计数或结构，也不增加逐节点异步加载状态。
+Arrows depend only on known subdirectories: right when a parent is collapsed and down when expanded. Nodes containing only files or empty nodes have no arrow, but peers retain identical arrow slots, icon slots and text starts. During complete-index loading, do not guess per-node arrows, counts or structure or add per-node asynchronous loading states.
 
-## 布局、字体与动态几何
+## Layout, fonts and dynamic geometry
 
-| 项目 | 正常逻辑尺寸 / 行为 |
+| Item | Normal logical size / behavior |
 | --- | --- |
-| 侧栏默认宽度 | 193.16；主窗口结构边界取整为 193 |
-| 行高 | 最小 32；字体放大时按参数文件公式增高 |
-| 每层缩进 | 12.8；不随节点类型变化 |
-| 箭头命中区 / 图形槽 | 至少 19.2×19.2 / 14.4×14.4；叶子保留相同槽位 |
-| 文件夹图标槽 | 16×16；共享 24 单位 SVG 等比显示，替代当前树的 18 槽位 |
-| 图标到文字 / 行末留白 | 6.4 / 16；不显示计数 |
-| 正文 | 11.2；Qt 取 11，使用同源字体 |
-| 记录数 | 保留在数据与可访问语义中；行内不显示，不保留数字列 |
-| 当前目录 | 淡蓝背景、右侧 6.4 圆角、左侧直边与全高 2.4 宽标记 |
-| 键盘焦点 | 不增加描边或焦点竖线，不改变行占位；当前目录标记保留 |
-| 层级连接线 | 1 宽；颜色与背景保持克制的层级关系 |
-| 隐藏当前目录标记 | 19.2 单位透明槽中的 4.8 单位圆点，与名称共享行中心 |
+| Default sidebar width | 193.16; main-window structural boundary rounds to 193 |
+| Row height | Minimum 32; grows according to the parameter formula with larger fonts |
+| Per-level indentation | 12.8; independent of node type |
+| Arrow hit area / graphic slot | At least 19.2×19.2 / 14.4×14.4; leaves retain the same slot |
+| Folder icon slot | 16×16; shared 24-unit SVG scales proportionally, replacing the current tree's 18 slot |
+| Icon-to-text / end padding | 6.4 / 16; no visible count |
+| Body | 11.2; Qt rounds to 11, using the same-source font |
+| Record count | Retained in data and accessible semantics; not shown in rows and no count column reserved |
+| Current directory | Pale blue background, 6.4 right corners, straight left edge and full-height 2.4-wide indicator |
+| Keyboard focus | No extra outline or focus bar and no change in row occupancy; current-directory indicator remains |
+| Hierarchy lines | Width 1; restrained hierarchy against background |
+| Hidden current directory marker | 4.8-unit dot in a transparent 19.2-unit slot, sharing the name's row center |
 
-连接线根据可见祖先链与最后同级节点标志动态绘制。父层竖线经过已展开子树，直至最后兄弟节点中心；该层的最后连接以 L 形终止，不向下一组顶层目录延伸。每段竖线的中心 X 与父节点向下展开箭头的尖端 X 一致，包含辅助字号放大；内层线独立终止，不能把一张通用直线图片贯穿全部行。线段按目标 DPR 对齐；文字、箭头和文件夹共用行垂直中心。
+Connecting lines are drawn dynamically from the visible ancestor chain and last-sibling flags. Parent vertical lines cross expanded subtrees through the last sibling's center; the last connection terminates in an L and does not extend into the next top-level group. Each vertical line's center X aligns with its parent's downward arrow tip X, including larger accessibility fonts. Inner lines terminate independently; a generic line image cannot span all rows. Align segments to target DPR; text, arrows and folders share the row's vertical center.
 
-层级区可横向滚动；宽度只按当前展开可见节点的实际名称、缩进与 16 行末留白计算。名称完整显示，不用数字覆盖层。折叠后重新计算宽度，不让隐藏深层节点留下空白；左侧指示线固定在视口边。树行悬停不显示浮动 tooltip；完整路径通过可访问描述和详情提供。垂直滚动只发生在目录视口，滚动条不包住主窗口边框。
+The hierarchy region scrolls horizontally. Width uses only actual names, indentation and 16 end padding for currently expanded visible nodes. Names remain complete without number overlays. Recompute width after collapse so hidden deep nodes leave no blank space; the left indicator stays fixed to the viewport edge. Row hover shows no floating tooltip; full paths are available in accessible descriptions and details. Vertical scrolling occurs only within the directory viewport; scrollbars do not enclose the main-window border.
 
-所有目录使用同一个文件夹资源。分支圆点、实心信息 / 警告、分段转轮有浅深色 SVG 和 1×/2×/3× PNG；连接线、焦点框、背景、骨架、文字与提示属于动态组件。深色参数沿用全局主题并补充线条和标记颜色；**完整深色目录树原稿仍待补齐**，不能以深色图标导出代替完整图板。现有渲染与桌面验收结论另由对应 issue 和工件记录。
+All directories use the same folder asset. Branch dots, filled information/warning icons and segmented spinners have light/dark SVGs and 1×/2×/3× PNGs; lines, focus frames, backgrounds, skeletons, text and prompts are dynamic components. Dark parameters reuse global theme with additional line and marker colors; **the complete dark directory-tree original remains outstanding** and dark icon exports do not replace the full artboard. Existing rendering and desktop acceptance conclusions are recorded separately in corresponding issues and artifacts.
 
-HTML／Qt 交互一致性按[验证方法](../qa/README.md)记录。图板和切图保留原始设计历史；当前行内计数、焦点与边角以本文及逻辑规范为准。
+Record HTML/Qt interaction consistency under the [verification method](../qa/README.md). Artboards and slices retain original design history; current row counts, focus and corners follow this page and the logical specification.
 
-## 交互与独立状态
+## Interactions and independent states
 
-展开、当前目录、悬停和键盘焦点分别保存，可以同时发生。目录当前态与右侧文件复选框的选择状态也是两回事。
+Expansion, current directory, hover and keyboard focus are stored independently and can coexist. Current directory also differs from file checkbox selection on the right.
 
-根目录是始终展开的独立导航入口，不参与普通目录节点的展开／收起。右击、菜单键和 Shift+F10 打开根目录菜单时，“收起子目录”保持禁用，菜单不显示禁用原因副行或 tooltip。辅助功能描述使用“根目录始终展开”（English: “Root is always expanded”），不能因根入口没有普通树行而解释为没有子目录。普通父目录仍按真实子目录启用展开／收起，普通叶子的辅助功能描述保留“该节点没有子目录”。这些原因只供辅助功能读取，不渲染为可见 hint。打开菜单或点击禁用项不得改变目录、文件选择或树的展开状态。
+Root is a separately navigable entry that is always expanded and does not participate in ordinary node expansion/collapse. When right-click, Menu key or Shift+F10 opens its menu, “Collapse subdirectories” remains disabled without a visible explanation line or tooltip. The accessible description is “根目录始终展开” / “Root is always expanded”; lack of an ordinary tree row does not imply no subdirectories. Ordinary parent expansion/collapse depends on actual subdirectories; ordinary leaves retain the accessible description “This node has no subdirectories”. Reasons are accessible only, not visible hints. Opening the menu or clicking disabled items must not change directory, file selection or tree expansion.
 
-| 操作 | 结果 |
+| Action | Result |
 | --- | --- |
-| 点击箭头 | 仅展开 / 收起该节点，目录查询、文件选择和详情保持原状 |
-| 点击名称区或 Enter | 通过当前会话的目录 ID 进入目录；成功替换查询后按既有契约重置当前目录查询、文件选择和详情 |
-| 上 / 下 | 在可见目录行中移动焦点，不自动切换文件列表 |
-| 右 | 折叠父节点先展开；已展开则移到首个子目录；叶子保持原位 |
-| 左 | 展开父节点先收起；其余节点移到父目录；顶层保持原位 |
-| 收起当前目录的祖先 | 保持当前目录和文件列表；隐藏焦点回到最近可见祖先 |
-| 新压缩包会话 | 清除旧节点 ID、展开、焦点与分支圆点，不串用另一压缩包状态 |
+| Click arrow | Expand/collapse only that node; directory query, file selection and details remain unchanged |
+| Click name or Enter | Enter using the current session's directory ID; after successful query replacement reset current-directory query, file selection and details under the existing contract |
+| Up / down | Move focus among visible directory rows without automatically switching the file list |
+| Right | Expand a collapsed parent, then move to first child if already expanded; leaves stay put |
+| Left | Collapse an expanded parent, otherwise move to parent; top-level nodes stay put |
+| Collapse current directory's ancestor | Keep current directory and file list; hidden focus returns to nearest visible ancestor |
+| New archive session | Clear old node IDs, expansion, focus and branch dots; do not reuse another archive's state |
 
-例如当前路径为 `01 照片 / 冰川湖`，收起 `01 照片` 后，右侧仍显示冰川湖。照片行只显示行末的蓝点，不获得冰川湖的当前目录填充；根目录也不能变为当前态。蓝点落在**最近的可见折叠祖先**，一个隐藏当前目录只有一个分支标记；展开恢复后，冰川湖重新显示当前背景。
+For example, when the path is `01 Photos / Glacier Lake`, collapsing `01 Photos` keeps Glacier Lake displayed on the right. The Photos row shows only a blue end dot, without receiving Glacier Lake's current-directory fill; root cannot become current either. The blue dot is on the **nearest visible collapsed ancestor**; one hidden current directory has one branch marker. Expanding again restores Glacier Lake's current background.
 
-树本身为一个键盘导航入口，节点保留稳定 ID、名称、层级、展开状态、位置和记录数的可访问语义。叶子不声明可展开；装饰性文件夹、连接线和圆点不重复读出。隐藏当前路径通过可访问描述提供，不能只依赖蓝色。方向键和箭头点击均不得穿透到行激活。
+The tree itself is one keyboard navigation entry. Nodes retain accessible semantics for stable ID, name, level, expansion, position and record count. Leaves do not claim to be expandable; decorative folders, lines and dots are not announced redundantly. Hidden current paths have accessible descriptions and cannot rely on blue alone. Arrow keys and arrow clicks must not propagate into row activation.
 
-## 状态覆盖与恢复
+## State coverage and recovery
 
-| 状态 | 目录树 | 文件列表 / 恢复 |
+| State | Directory tree | File list / recovery |
 | --- | --- | --- |
-| 正在读取 | 读取提示，记录数未知；骨架为后续设计资源；导航禁用 | 遵循全局读取状态；完整索引发布后一次替换树 |
-| 空压缩包 | 根目录行不显示数字，“此压缩包没有内容” | 空列表；仍可打开另一个压缩包 |
-| 只有根文件 | 根目录行不显示数字，“没有子目录” | 正常显示六条文件，不能把整页改成空态 |
-| 目录索引超限 | 不发布半棵树；显示“目录超过显示限额” | 根目录、搜索及合格显式目录浏览继续按现有能力工作 |
-| 读取失败 | 灰化导航，明确错误 | 重新打开压缩包；不能把失败解释为 0 或空目录 |
-| 有子目录的节点 | 每一级都有独立箭头 | 展开并不等于进入该目录 |
-| 非空 / 空叶子 | 记录数保留在数据中；行内都不显示计数、都没有箭头 | 名称仍可激活，空目录可浏览 |
-| 长名称 / 深层级 | 全文名称、可访问路径、横向滚动与可见节点宽度 | 路径筛选保持一致 |
-| 字号 150%（200% 仅作历史压力场景） | 槽位和行高增长，线条重新取行中心 | 名称、箭头和焦点不裁切 |
-| 隐藏当前目录 | 最近可见祖先显示分支圆点 | 列表保持当前路径；重新展开恢复当前行 |
+| Reading | Loading message, unknown count; skeleton is a future design asset; navigation disabled | Follow global loading state; replace tree once after complete index publication |
+| Empty archive | Root row has no number; “This archive is empty” | Empty list; another archive can still be opened |
+| Root files only | Root row has no number; “No subdirectories” | Show six files normally; do not turn the whole page into an empty state |
+| Directory index limit exceeded | Do not publish half a tree; show “Directory exceeds display limit” | Root, search and eligible explicit directory browsing continue within current capabilities |
+| Read failure | Dim navigation and show explicit error | Reopen archive; do not interpret failure as zero or empty directory |
+| Node with subdirectories | Independent arrow at every level | Expansion is not entry into that directory |
+| Nonempty / empty leaf | Count retained in data; neither shows row count or arrow | Name remains activatable; empty directory can be browsed |
+| Long name / deep nesting | Full name, accessible path, horizontal scrolling and visible-node width | Path filtering remains consistent |
+| 150% font (200% is a historical stress case only) | Slots and rows grow; lines recenter on rows | Names, arrows and focus are not clipped |
+| Hidden current directory | Nearest visible ancestor shows branch dot | List retains current path; re-expanding restores current row |
 
-导航超限与全局读取失败是不同状态，原因、可用操作和计数来源不能共用一个“空目录”模板。现有 32,768 节点、64 层和 4 MiB 目录名称预算来自只读契约；设计不提升或绕过这些资源预算。
+Navigation limits and global read failure are different states; reasons, available actions and count sources cannot share an “empty directory” template. Existing budgets of 32,768 nodes, 64 levels and 4 MiB directory names come from the read-only contract; design does not raise or bypass them.
 
-## 素材交付与实际接入
+## Asset delivery and actual integration
 
-26 张原像素切片集中在 `design/assets/reference/tree-*.png`，每张均有源图、SHA-256、`x,y,width,height` 与用途。`component_reference_coverage` 逐项指向共享矢量或动态组件；不把整行静态图片称为可操作控件，也不对带背景切片执行去白或伪造透明层。
+The 26 original-pixel slices are under `design/assets/reference/tree-*.png`, each with source, SHA-256, `x,y,width,height` and purpose. `component_reference_coverage` individually points to shared vectors or dynamic components. Do not describe static whole-row images as interactive controls or remove white backgrounds from slices to fabricate transparency.
 
-| 部分 | 资源 / 绘制方式 | 当前接入情况 |
+| Part | Asset / drawing | Current integration |
 | --- | --- | --- |
-| 文件夹、左右 / 向下箭头 | `folder`、`chevron-right`、`chevron-down`，复用统一素材库 | 既有共享资源可用；B 共享图标与 B 尺寸已用于递归 HTML 行和 Qt 委托 |
-| 读取、信息、警告 | 新增 `tree-spinner`、`tree-info`、`tree-warning` | 八张浅深色 SVG 与 24 张透明 PNG 的一部分；保留图板实心与分段造型，未用既有轮廓图标代替 |
-| 隐藏当前分支 | 新增 `tree-active-branch` | 两主题六张透明 PNG 已交付；HTML 与 Qt 均消费该资源，标记最近的可见折叠祖先 |
-| 连接线、当前背景、焦点、骨架、提示 | 动态绘制，参数文件定义尺寸和主题 | 样式与逻辑已规定，未交付第二套位图控件 |
-| 正式图板 | `hifi/screens/directory-tree*.png` | 保留确认稿原始字节，用于设计核对 |
+| Folder, right/down arrows | `folder`, `chevron-right`, `chevron-down` from shared assets | Existing shared resources available; B icons and dimensions used by recursive HTML rows and Qt delegates |
+| Loading, information, warning | New `tree-spinner`, `tree-info`, `tree-warning` | Part of eight light/dark SVGs and 24 transparent PNGs; retain filled and segmented board forms rather than substituting existing outline icons |
+| Hidden current branch | New `tree-active-branch` | Six transparent PNGs for two themes delivered; HTML and Qt consume the asset to mark nearest visible collapsed ancestor |
+| Lines, current background, focus, skeleton, hints | Dynamically drawn using dimensions and themes in parameter file | Style and logic specified; no second set of bitmap controls delivered |
+| Formal artboards | `hifi/screens/directory-tree*.png` | Retain confirmed originals' bytes for design comparison |
 
-HTML 与 Qt 已接入连接线、分支圆点、16 文件夹槽和目录右键；HTML 示例采用完整递归层级，Qt 使用真实受限索引。收起当前祖先不提交查询。加载骨架、专用信息／错误图标仍为设计资源，深色完整图板仍待补齐；图标接入不证明逐平台读屏或 HiDPI 验收，既有人工专项结论以 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)为准。
+HTML and Qt integrate connecting lines, branch dots, 16-unit folder slots and directory context menus. HTML uses a complete recursive example hierarchy; Qt uses the real bounded index. Collapsing the current ancestor does not submit a query. Loading skeletons and dedicated info/error icons remain design assets; the complete dark artboard is outstanding. Icon integration does not prove platform-by-platform screen-reader or HiDPI acceptance; existing manual conclusions follow [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5).
 
-## 接入后的验收标准
+## Post-integration acceptance
 
-1. 在同一 1024 逻辑宽度、字体配置、DPR 和状态数据下截取实际目录区域，与已确认图板的对应区域及规格对照；记录两者缩放关系。视觉判断与结构断言分别保留。
-2. 同层箭头、图标、名称起点一致；行内没有数字列；图标、文字、圆点、箭头共用行中心。目标几何偏差不超过 1 个物理像素，字体差异注明平台和实际回退。
-3. 至少三层展开，含一个更深但折叠的分支和非空叶子；验收连接线在最后兄弟与展开子树中的连续 / 终止规则。
-4. 单独及组合检查当前、悬停、焦点；箭头点击不提交目录查询、不清除文件选择，Enter 激活遵循成功查询重置规则。
-5. 冰川湖为当前目录时收起照片：列表路径不变、根目录不选中、照片只显示分支圆点；展开后恢复当前行。焦点隐藏后始终可继续键盘导航。
-6. 从真实受限索引核对空压缩包、根文件、显式空目录、读取失败与目录超限；分别检查计数、禁用和恢复操作。
-7. 长名称、100%／125%／150% 字号及历史 200% 压力场景、最小窗口和索引最大允许深度下，名称完整可见、横向滚动只作用于层级区，完整路径可访问；树滚动不移动压缩包摘要和底部统计。
-8. 完成浅深色实际渲染、正常 / Retina / Windows 高 DPI、键盘与读屏验收。图片检查或素材生成通过不能代替这些运行验证。
+1. Capture the actual directory region at the same 1024 logical width, font configuration, DPR and state data, and compare with the corresponding confirmed artboard region and specification. Record scale relationship; retain visual judgment and structural assertions separately.
+2. Align arrow, icon and name starts at each level; no numeric row column. Icons, text, dots and arrows share row centers. Target geometry deviation is at most one physical pixel; record platform and actual fallback for font differences.
+3. Expand at least three levels, including a deeper collapsed branch and a nonempty leaf. Accept connection-line continuity/termination through last siblings and expanded subtrees.
+4. Check current, hover and focus separately and together. Arrow clicks do not submit directory queries or clear file selection; Enter activation follows the successful-query reset rule.
+5. With Glacier Lake current, collapse Photos: list path remains, root is not selected and Photos shows only a branch dot. Re-expand to restore current row. Keyboard navigation remains possible when focus is hidden.
+6. Check empty archives, root files, explicit empty directories, read failure and directory limit from a real bounded index; separately check counts, disabling and recovery actions.
+7. With long names, 100%/125%/150% fonts and the historical 200% stress case, minimum window and maximum permitted index depth, names remain fully visible, horizontal scroll affects only hierarchy and full paths are accessible. Tree scrolling does not move archive summary or bottom statistics.
+8. Complete actual light/dark rendering, normal/Retina/Windows high DPI, keyboard and screen-reader acceptance. Passing image checks or asset generation does not replace these runtime checks.
 
-按[验证方法](../qa/README.md)分别核对原稿、切片、资源及实际鼠标、键盘、菜单和树行为，未测的辅助功能与平台差异保持明确标记。
+Under the [verification method](../qa/README.md), separately check originals, slices, assets and actual mouse, keyboard, menu and tree behavior. Explicitly mark untested accessibility and platform differences.

@@ -3,10 +3,12 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Xdzip.Settings 1.0
+import "ArchiveFormats.js" as ArchiveFormats
 
 OperationWindow {
     id: root
     objectName: "settingsWindow"
+    centerOnScreen: !owner
     title: qsTrId("settings.title")
     property int currentTab: 0
     property string pendingProxyMode: "system"
@@ -61,6 +63,16 @@ OperationWindow {
         if (AppSettings.applyNetwork(mode, AppSettings.proxyAddress, AppSettings.mirrorAddress))
             pendingProxyMode = mode;
     }
+    function formatGroupLabel(groupId) {
+        switch (groupId) {
+        case "archives": return qsTrId("format.group.archives");
+        case "compressed-tar": return qsTrId("format.group.compressed-tar");
+        case "compressed-streams": return qsTrId("format.group.compressed-streams");
+        case "text-envelopes": return qsTrId("format.group.text-envelopes");
+        case "installer-metadata": return qsTrId("format.group.installer-metadata");
+        default: return groupId;
+        }
+    }
     function updateMessage() {
         switch (updateState) {
         case "checking": return qsTrId("update.checking");
@@ -106,7 +118,7 @@ OperationWindow {
     }
     onCurrentTabChanged: if (currentTab === 3 && associations) associations.refresh()
     width: Theme.settingsLogicalWidth
-    requestedHeight: Math.min(Theme.settingsClientHeight, Screen.desktopAvailableHeight - 80)
+    requestedHeight: Math.min(Theme.settingsClientHeight, root.screenAvailableHeight - 80)
 
     component SectionTitle: Text {
         Layout.fillWidth: true
@@ -442,21 +454,37 @@ OperationWindow {
             objectName: "settingsPage-associations"
             spacing: Theme.settingsPageSectionGap
             PageNote { text: qsTrId("settings.associationDescription") }
-            GridLayout {
-                Layout.fillWidth: true; columns: 2; columnSpacing: 12; rowSpacing: 8
-                Repeater {
-                    model: [".zip", ".tgz", ".7z", ".cab", ".rar", ".iso", ".tar", ".udf", ".tar.gz"]
-                    delegate: SettingsToggle {
-                        required property string modelData
-                        objectName: "settingsAssociation-" + modelData
+            Repeater {
+                model: ArchiveFormats.associationGroups
+                delegate: ColumnLayout {
+                    id: associationGroup
+                    required property var modelData
+                    required property int index
+                    objectName: "settingsAssociationGroup-" + modelData.id
+                    Layout.fillWidth: true
+                    spacing: 8
+                    PageSeparator { visible: associationGroup.index > 0 }
+                    SectionTitle { text: root.formatGroupLabel(associationGroup.modelData.id) }
+                    GridLayout {
                         Layout.fillWidth: true
-                        text: modelData
-                        enabled: root.associations && root.associations.available && root.associations.ready && !root.associations.busy
-                        value: {
-                            const revision = root.associations ? root.associations.revision : 0;
-                            return root.associations && revision >= 0 && root.associations.isDefault(modelData);
+                        columns: 2
+                        columnSpacing: 12
+                        rowSpacing: 8
+                        Repeater {
+                            model: associationGroup.modelData.suffixes
+                            delegate: SettingsToggle {
+                                required property string modelData
+                                objectName: "settingsAssociation-" + modelData
+                                Layout.fillWidth: true
+                                text: modelData
+                                enabled: root.associations && root.associations.available && root.associations.ready && !root.associations.busy
+                                value: {
+                                    const revision = root.associations ? root.associations.revision : 0;
+                                    return root.associations && revision >= 0 && root.associations.isDefault(modelData);
+                                }
+                                onSelectionRequested: value => root.associations.requestChange(modelData, value)
+                            }
                         }
-                        onSelectionRequested: value => root.associations.requestChange(modelData, value)
                     }
                 }
             }

@@ -12,6 +12,7 @@ from sbom import source_bom
 from runtime_rust import runtime_candidates
 from native_runtime_materials import prepare
 from rar_mapping_materials import collect as collect_rar_mapping_materials
+from brotli_data_materials import collect as collect_brotli_data_materials
 
 root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
@@ -26,6 +27,8 @@ notice_files = []
 notice_files.extend(out/item['file'] for item in native_materials['files'])
 rar_mapping_files, rar_mapping_record = collect_rar_mapping_materials(out)
 notice_files += rar_mapping_files
+brotli_data_files, brotli_data_record = collect_brotli_data_materials(out)
+notice_files += brotli_data_files
 native_dependencies = []
 if arguments.qt_prefix:
     from qt_network_materials import collect as collect_network
@@ -84,7 +87,8 @@ assets = []
 for relative, license_id in [('design/assets/fonts/xdzip-design-sans-sc.woff2','OFL-1.1'),
                              ('design/assets/fonts/xdzip-design-sans-sc.ttf','OFL-1.1'),
                              ('design/assets/brand/xdzip.svg','Apache-2.0'),
-                             ('design/assets/file-associations/xdzip-zip-master.svg','Apache-2.0')]:
+                             ('design/assets/file-associations/xdzip-zip-master.svg','Apache-2.0'),
+                             ('third_party/brotli-rfc7932/dictionary.bin','BSD-3-Clause')]:
     assets.append({'path':relative, 'license':license_id, 'sha256':hashlib.sha256((root/relative).read_bytes()).hexdigest()})
 revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
 source_inventory = {
@@ -100,6 +104,7 @@ source_inventory = {
     'qt_version': '6.8.2',
     'native_dependencies': native_dependencies,
     'limited_reference_materials': [rar_mapping_record],
+    'normative_format_data': [brotli_data_record],
     'font': json.loads((root / 'design/assets/fonts/manifest.json').read_text()),
     'notice_hashes': [{'file': p.relative_to(out).as_posix(), 'sha256': hashlib.sha256(p.read_bytes()).hexdigest()}
                       for p in sorted(notice_files)],

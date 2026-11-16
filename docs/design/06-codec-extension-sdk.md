@@ -1,53 +1,51 @@
-# xdzip：06 格式适配与扩展 SDK
+# xdzip: 06 Format adapters and extension SDK
 
-## 1. 两类扩展
+## 1. Two kinds of extension
 
-**内置源码级扩展**实现 Rust SDK，随产品构建，使用 Cargo feature 挑选后端。Rust 编译器 ABI 不稳定，不将它们做成任意版本可加载的 `.so/.dylib/.dll`。
+**Built-in source-level extensions** implement the Rust SDK, are built with the product, and select backends through Cargo features. The Rust compiler ABI is unstable; they are not made into `.so/.dylib/.dll` files loadable across arbitrary versions.
 
-**进程级扩展**通过版本化线协议由 `xdzip-plugin-host` 承接。目前有独立、显式启动的[只读 SDK 试验](../engineering/sdk-trial.md)，包含有界 framing、broker、Rust／独立 Python peer 与平台门禁；尚未接入产品格式发现、安装或发行。下文完整能力仍是后续目标，不因试验存在就自动开放。线协议与 Qt 的 cxx 接口无关，外部进程不能创建 Qt 对象或弹出自己的密码窗口。
+**Process-level extensions** use a versioned wire protocol handled by `xdzip-plugin-host`. An independent, explicitly started [read-only SDK trial](../engineering/sdk-trial.md) currently provides bounded framing, a broker, Rust/independent Python peers, and platform gates. It is not integrated into product format discovery, installation, or release. The full capabilities below remain future goals and are not automatically enabled by the trial. The wire protocol is independent of Qt's cxx interface; external processes cannot create Qt objects or display their own password windows.
 
-官方原生后端也可使用工作进程协议，以隔离内存错误；“官方”不免除输入检查。第三方发布在沙箱验证阶段前默认不可执行。
+Official native backends may also use the worker protocol to isolate memory errors; being “official” does not exempt them from input validation. Third-party releases are non-executable by default until sandbox verification.
 
-## 2. 格式能力
+## 2. Format capabilities
 
-| 能力组 | 字段/内容 |
+| Capability group | Fields/content |
 |---|---|
-| 识别 | 格式 ID、魔数探测、所需最大探测字节、容器/流层 |
-| 读取 | 元数据扫描、按项读取、仅顺序读取、CRC/摘要、目录加密 |
-| 写入 | 新建、允许算法、压缩级别范围、参数 schema、流式输出 |
-| 加密 | 具体算法、读/写、文件名加密；不能只写 `encryption=true` |
-| 分卷 | 读/写、卷命名和顺序、缺卷行为 |
-| 执行 | seek 需求、每会话并发、内部线程、内存估算、取消安全点 |
-| 特殊结构 | 固实块、链接、时间精度、编码、权限与额外属性 |
+| Detection | Format ID, magic probing, maximum probe bytes required, container/stream layer |
+| Read | Metadata scanning, per-entry reading, sequential-only reading, CRC/digest, directory encryption |
+| Write | Creation, allowed algorithms, compression-level range, parameter schema, streaming output |
+| Encryption | Specific algorithms, read/write, filename encryption; `encryption=true` alone is insufficient |
+| Split volumes | Read/write, volume naming and order, missing-volume behavior |
+| Execution | Seek requirements, per-session concurrency, internal threads, memory estimate, cancellation safe points |
+| Special structures | Solid blocks, links, time precision, encoding, permissions, and extra attributes |
 
-每次打开生成 `EffectiveCapabilities`，取后端声明、实际归档特性、宿主政策和平台能力的交集。QML 根据这个集合显示选项，核心启动时再次检查。
+Each open produces `EffectiveCapabilities`, the intersection of backend declarations, actual archive features, host policy, and platform capabilities. QML displays options from this set; the core checks again at start.
 
-探测只允许读取有限字节，不执行任意扫描。多个候选按确定性优先级和可信来源选择；低信任扩展不能用“探测置信度更高”抢占内置后端。允许用户选择已安装兼容后端属于后续扩展设计，当前产品不提供该入口。探测错误不能触发无限递归尝试。
+Probing may read only a bounded number of bytes; it does not perform arbitrary scans. Multiple candidates are selected by deterministic priority and trusted origin. A low-trust extension cannot displace a built-in backend by claiming higher probe confidence. User selection of an installed compatible backend is future extension design; the current product has no such entry point. Probe errors must not trigger infinite recursive attempts.
 
-## 3. 分层和首批格式
+## 3. Layers and initial formats
 
-TAR 是容器，GZIP 是压缩流；`tar.gz` 组合为有限层数的 Source → GzipDecoder → TarReader。ZIP/7z 由各自容器处理。层组合由已登记能力和魔数确定，最大 4 层，不根据文件名无限拆后缀。嵌套归档是用户打开一个条目的新会话，不是解压时自动递归展开。
+TAR is a container and GZIP a compressed stream. `tar.gz` combines a bounded number of layers: Source → GzipDecoder → TarReader. ZIP/7z use their respective containers. Layer composition follows registered capabilities and magic, with at most four layers; do not strip filename extensions indefinitely. A nested archive is a new session opened by the user from an entry, not automatically recursively expanded during extraction.
 
-| 格式 | 当前源码能力 | 后续 | 依赖选择门槛 |
+| Format | Current source capability | Future | Dependency selection gates |
 |---|---|---|---|
-| ZIP Store/Deflate | 浏览、读、创建，支持 AES-256 和受限分卷读取、编号分卷创建及普通包修改 | 其他加密和压缩方法 | 独立 Rust 容器与共享 Deflate，保留 ZIP64、重复名、CRC、取消及宿主提交契约 |
-| TAR | 浏览、读、创建 | 稀疏项等独立能力 | 独立 Rust 容器，不获得直接 unpack 或目标路径权限 |
-| GZIP/TAR.GZ | 读/写及组合 | 多 member 等逐项验证 | 独立 Rust GZIP framing 与共享 Deflate，组合复用 TAR |
-| BZIP2/XZ/Zstd 层 | 未支持 | v0.2 后逐层接入 | 限制窗口/字典、原生依赖、内存预估 |
-| 7z | 自研 Rust 后端的浏览、读、创建；密码、固实、编号分卷及受限重写分别受能力约束 | 按独立互操作矩阵扩展 | 共享算法及薄 CXX 边界，宿主控制来源、预算、输出与提交，见[隔离后端契约](../engineering/native-codecs.md) |
-| RAR | 自研 Rust 只读后端，旧格式、RAR5 和 RAR7 按实际验证矩阵声明 | 继续补齐兼容样本，不承诺创建或修改 | 容器、算法、密码与物理卷身份在 Rust，宿主控制资源和提交；参考来源及历史交付分别保留原许可 |
-| CAB | 自研 Rust 只读后端，Store、MSZip、Quantum、LZX 与分卷 | 不承诺创建、修改或修复 | 宿主验证同目录完整卷链，保留原始名字及声明，缺卷不发布部分索引 |
-| ISO/UDF | 自研 Rust 只读后端，在隔离工作进程内处理 ISO9660、Joliet、Rock Ridge 与 UDF | 不承诺挂载、写入或任意磁盘映像 | 混合镜像优先 UDF，识别后损坏不回退；测试检查结构与可读性，不声称逐文件内容校验和；扩展边界见[独立实现契约](../engineering/independent-rust-codecs.md#iso与udf只读规格) |
+| ZIP Store/Deflate | Browse, read, create; AES-256, limited split-volume reading, numbered-volume creation, and regular archive modification | Other encryption and compression methods | Independent Rust container and shared Deflate; retain ZIP64, duplicate names, CRC, cancellation, and host commit contracts |
+| TAR | Browse, read, create | Separate capabilities such as sparse entries | Independent Rust container without direct unpack or destination-path authority |
+| GZIP/TAR.GZ | Read/write and composition | Verify multi-member and other features individually | Independent Rust GZIP framing and shared Deflate; composition reuses TAR |
+| BZIP2/XZ/Zstd layers | Unsupported | Add layers individually after v0.2 | Limit windows/dictionaries, native dependencies, and memory estimates |
+| 7z | In-house Rust backend for browsing, reading, and creation; passwords, solid archives, numbered volumes, and limited rewriting each have capability constraints | Expand according to an independent interoperability matrix | Shared algorithms and thin CXX boundary; host controls sources, budgets, output, and commit. See [isolated backend contract](../engineering/native-codecs.md) |
+| RAR | In-house read-only Rust backend; legacy, RAR5, and RAR7 declared according to the verified matrix | Add compatibility samples; no creation or modification promise | Container, algorithms, passwords, and physical volume identities reside in Rust; host controls resources and commits; reference sources and historical deliverables retain their licenses |
+| CAB | In-house read-only Rust backend; Store, MSZip, Quantum, LZX, and volumes | No creation, modification, or repair promise | Host validates the complete same-directory volume chain, retains original names and declarations, and does not publish a partial index when volumes are missing |
+| ISO/UDF | In-house read-only Rust backend in isolated workers handles ISO9660, Joliet, Rock Ridge, and UDF | No promise to mount, write, or handle arbitrary disk images | Hybrid images prefer UDF; corruption after recognition does not trigger fallback. Testing checks structure and readability and does not claim per-file content checksums. See the [independent implementation contract](../engineering/independent-rust-codecs.md#iso与udf只读规格) for extension boundaries |
 
-7z、RAR、CAB 与光盘容器在共享薄 CXX 边界中执行独立 Rust，官方 7-Zip 与 UnRAR 源码均退出产品构建，没有运行失败回退，通用格式逻辑不复制到 C++/QML。ZIP/TAR/GZIP 使用进程内 Rust。CAB 分卷保留授权卷边界与名称，不按连续字节流拼接；RAR 同样保留物理片身份与完整授权卷组；7z 编号卷由宿主冻结成有界连续来源。所有格式复用宿主预算、安全暂存及最终提交。宿主仅提供可选 OS 日历、字符集原语，格式时间和密码字节决策仍在 Rust；未知尺寸独立表达并禁止输出。
+7z, RAR, CAB, and optical containers run independent Rust through a shared thin CXX boundary. Official 7-Zip and UnRAR sources are excluded from product builds, with no fallback on runtime failure. General format logic is not copied into C++/QML. ZIP/TAR/GZIP use in-process Rust. CAB volumes retain authorized volume boundaries and names rather than being concatenated as a continuous stream. RAR also retains physical part identities and the complete authorized volume set; 7z numbered volumes are frozen by the host into a bounded continuous source. All formats reuse host budgets, secure staging, and final commit. The host exposes only optional OS calendar and character-set primitives; format time and password-byte decisions remain in Rust. Unknown sizes are represented explicitly and cannot be output.
 
-English: 7z, RAR, CAB and optical containers use independent Rust through a shared thin CXX boundary. Official 7-Zip and UnRAR sources are excluded from production with no fallback. Host calendar and character-set services expose only OS primitives; Rust owns format decisions, volume/record identities and explicit unknown-size handling. All formats retain host-owned budgets, staging and publication.
+Existing capabilities in the table are governed by each format's implementation contract. Listing a new extension does not grant execution permission. Source, version, feature, build configuration, interoperability results, and license must pass the checklist before being locked into Cargo.lock/SBOM.
 
-表中既有能力以各格式实现契约为准，新增扩展不因列在表中就获得执行权限。源码、版本、feature、构建配置、互操作结果和许可证通过清单后才能锁入 Cargo.lock/SBOM。
+## 4. Rust SDK contract
 
-## 4. Rust SDK 契约
-
-概念接口：
+Conceptual interface:
 
 ```text
 CodecFactory.probe(ProbeSource, ProbeBudget) -> Detection
@@ -57,25 +55,25 @@ CodecSession.read_entry(EntryToken, OutputSink, OperationContext) -> ReadReport
 CodecFactory.create(InputCatalog, ArchiveSink, WriteOptions, OperationContext) -> WriteReport
 ```
 
-这是职责示意，不是已编译签名。实现阶段 trait 返回类型保留 `Result`，并显式标明 Send/并发要求。`OperationContext` 含取消、预算、进度和短期秘密访问，不能把全局应用服务/文件系统放进去。
+This illustrates responsibilities, not compiled signatures. Implemented trait return types retain `Result` and explicitly state Send/concurrency requirements. `OperationContext` contains cancellation, budgets, progress, and short-lived secret access; it must not expose global application services or the filesystem.
 
-ReadSource 只暴露读取、有限 seek 和已授权卷；OutputSink 只能写当前批准条目，不暴露目标路径。ArchiveSink 只能写新归档临时对象。适配器主动每个安全点检查取消；宿主计量实际字节并返回限额错误。适配器不能捕获错误后继续偷偷写。
+ReadSource exposes only reading, bounded seek, and authorized volumes. OutputSink writes only the currently approved entry and exposes no destination path. ArchiveSink writes only a new temporary archive object. Adapters check cancellation at each safe point; the host meters actual bytes and returns quota errors. Adapters cannot catch errors and secretly continue writing.
 
-普通解压 OutputSink 为顺序写；ArchiveSink 如需修订头部，可协商受限 seek/write，所有偏移及加法检查溢出，高水位文件长度和累计写入均受额度限制，不能以 seek 制造超额稀疏文件。无需 seek 的后端优先流式写。
+Ordinary extraction OutputSink uses sequential writes. If ArchiveSink needs to revise headers, bounded seek/write may be negotiated. All offsets and additions are checked for overflow; high-water file length and cumulative writes are quota-limited, and seeking must not create over-quota sparse files. Backends that do not need seek should prefer streaming writes.
 
-扫描向 MetadataSink 输出原始路径、record token、大小、类型和属性；Sink 有批次和字段限额。后端声明的大小不作为配额可信输入。结束时返回完整性和扫描计数，不能只返回一个 bool。
+Scanning sends raw paths, record tokens, sizes, types, and attributes to MetadataSink. The Sink imposes batch and field limits. Backend-declared sizes are not trusted as quota inputs. Completion returns integrity and scan counts, not just a bool.
 
-如格式需再次 seek，同一个授权源仍受 SourceRevision 检测；如 TAR/固实块只能顺序解码，计划按物理顺序处理已选项并跳过无关内容，同时计量解码工作，不能承诺 O(1) 任意条目读取。
+If a format needs another seek, the same authorized source remains subject to SourceRevision detection. If TAR/solid blocks can only decode sequentially, the plan processes selected items in physical order and skips unrelated content while metering decoding work; it cannot promise O(1) access to arbitrary entries.
 
-## 5. 插件包与 manifest
+## 5. Plugin packages and manifest
 
-当前源码编码切片已编译实现于 `xdzip-codec-api::encode`：`CreationCodec::encode` 接收 `EncodeInput`、`EncodeOutput`、`EncodeSettings`、取消令牌和处理字节回调。算法使用后端定义的 `store`／`deflate` 标识，ZIP 头的数值不成为通用格式接口。输入只提供不可变条目和按序号打开的读取流，输出只提供顺序 `Write`；没有目标路径、目录句柄或提交能力。ZIP 写入器与 Qt 无依赖关系。预算和写后逐项校验由 [WP-10 宿主契约](../engineering/m4-creation.md)约束，外部进程协议仍未启用。
+The current source encoding slice is compiled in `xdzip-codec-api::encode`. `CreationCodec::encode` receives `EncodeInput`, `EncodeOutput`, `EncodeSettings`, a cancellation token, and a processed-byte callback. Algorithms use backend-defined `store`/`deflate` identifiers; numeric ZIP header values do not become a general format interface. Input provides only immutable entries and read streams opened by ordinal; output provides only sequential `Write`. There are no destination paths, directory handles, or commit authority. The ZIP writer does not depend on Qt. Budgets and per-entry verification after writing follow the [WP-10 host contract](../engineering/m4-creation.md); the external process protocol remains disabled.
 
-独立包包含 manifest、目标平台 executable、许可证、校验和、可选签名及能力 schema。manifest 至少包含 `plugin_id`、版本、作者、支持平台/架构、协议主版本范围、格式能力、入口、资源请求和来源。
+An independent package contains a manifest, target-platform executable, licenses, checksums, optional signature, and capability schema. The manifest includes at least `plugin_id`, version, author, supported platforms/architectures, protocol major-version range, format capabilities, entry point, resource requests, and origin.
 
-入口是包内相对路径；禁止 `..`、绝对路径、链接逃逸及 shell 命令字符串。宿主使用绝对可验证可执行文件及参数数组启动，不使用 `sh -c`。清理环境变量，不传应用凭据、代理密码、用户 PATH 扩展等。
+The entry point is a package-relative path. Forbid `..`, absolute paths, link escapes, and shell command strings. The host launches an absolute, verifiable executable with an argument array, without `sh -c`. Sanitize environment variables; do not pass application credentials, proxy passwords, user PATH extensions, and similar data.
 
-manifest 草案示例（哈希/签名由包清单提供；仅演示字段，不是可安装扩展）：
+Example draft manifest (hash/signature are supplied by the package inventory; fields are illustrative, not an installable extension):
 
 ```json
 {
@@ -93,64 +91,64 @@ manifest 草案示例（哈希/签名由包清单提供；仅演示字段，不�
 }
 ```
 
-格式能力 schema 比此示例更完整，必须声明算法和读取模式；未知 permission 不自动授予。源码 SDK 和 manifest/协议的类型定义随 conformance 工具统一发布。
+The format capability schema is more complete than this example and must declare algorithms and reading modes. Unknown permissions are not automatically granted. Type definitions for the source SDK and manifest/protocol are released with the conformance tool.
 
-安装包作为不可信归档由同一安全提取服务解包到暂存目录，验证清单/签名/平台后原子发布。签名说明发布者身份，不能证明代码安全。用户第一次启用能看到来源、格式和权限；协议兼容和权限变更需要重新评估，不能静默继承旧授权。
+An installation package is an untrusted archive unpacked by the same secure extraction service into staging, then atomically published after manifest/signature/platform checks. A signature identifies the publisher; it does not prove code safety. On first enablement users can see origin, formats, and permissions. Protocol compatibility and permission changes require reevaluation rather than silently inheriting prior authorization.
 
-## 6. 线协议 v1 草案
+## 6. Draft wire protocol v1
 
-当前只读试验的精确数字 schema、已实现消息及更严格的单块信用见[试验契约](../engineering/sdk-trial.md#线协议与状态)。本节其余消息不自动属于已协商能力。English: The trial contract defines the implemented numeric schema and stricter single-block credit; the remaining draft capabilities are not advertised.
+The [trial contract](../engineering/sdk-trial.md#线协议与状态) defines the exact numeric schema, implemented messages, and stricter single-block credit for the current read-only trial. The remaining messages in this section do not automatically form negotiated capabilities.
 
-传输为私有继承 IPC 管道；不监听 TCP，不创建公开端口。双向帧是 `u32 little-endian 长度 + CBOR 对象`。在分配前检查长度；每帧最大 1MiB，数据消息中 bytes 最大 256KiB。CBOR 深度最大 16，不允许无界长度、重复关键字段或未知必需消息种类。
+Transport uses private inherited IPC pipes; it does not listen on TCP or create public ports. Bidirectional frames are `u32 little-endian length + CBOR object`. Check length before allocation; maximum frame size is 1 MiB and data-message bytes are at most 256 KiB. CBOR depth is at most 16; unbounded lengths, duplicate key fields, and unknown required message kinds are forbidden.
 
-包络为 `{kind, request_id, operation_id, sequence, payload}`。CBOR 使用固定字段键和类型；字段 schema 随协议包发布。首帧只允许 Hello，后端在 2 秒握手预算内声明版本，宿主选择共同主版本和协商能力。相同主版本新增可选字段允许忽略；未知枚举/必需字段不忽略；不兼容变化升级主版本。
+The envelope is `{kind, request_id, operation_id, sequence, payload}`. CBOR uses fixed field keys and types; field schemas ship with the protocol package. Only Hello is allowed as the first frame. The backend declares its version within a two-second handshake budget; the host selects a common major version and negotiated capabilities. Optional fields added within the same major version may be ignored; unknown enum values or required fields may not. Incompatible changes increment the major version.
 
-| 消息组 | 消息 | 契约 |
+| Message group | Messages | Contract |
 |---|---|---|
-| 握手 | Hello、Welcome、Reject | 版本、后端身份、资源限额、协商能力 |
-| 调用 | Probe、Open、Scan、ReadEntry、Create、Close | request/operation ID 唯一；先握手再调用 |
-| 受限 I/O | ReadAt/ReadNext、ReadData、BeginOutput、WriteData、FinishOutput | 句柄令牌、偏移、数量、信用额度；没有真实输出路径 |
-| 元数据 | EntryBatch、ScanFinished | 主机校验字段、记录令牌唯一及数量 |
-| 交互 | NeedSecret、NeedVolume、SupplySecret、SupplyVolume | UI 由宿主呈现；秘密仅限对应操作 |
-| 控制 | Cancel、CancelAck、Ping/Pong、Shutdown | 控制优先；收到 Ack 不等于任务已清理 |
-| 结果 | Progress、OperationFinished、Error | sequence 单调；一次终态，不信任声称的字节/CRC |
+| Handshake | Hello, Welcome, Reject | Version, backend identity, resource limits, negotiated capabilities |
+| Calls | Probe, Open, Scan, ReadEntry, Create, Close | Unique request/operation IDs; handshake precedes calls |
+| Constrained I/O | ReadAt/ReadNext, ReadData, BeginOutput, WriteData, FinishOutput | Handle tokens, offsets, counts, credits; no actual output paths |
+| Metadata | EntryBatch, ScanFinished | Host validates fields, unique record tokens, and counts |
+| Interaction | NeedSecret, NeedVolume, SupplySecret, SupplyVolume | Host presents UI; secrets are limited to the corresponding operation |
+| Control | Cancel, CancelAck, Ping/Pong, Shutdown | Control has priority; an Ack does not mean cleanup is complete |
+| Results | Progress, OperationFinished, Error | Monotonic sequence, one terminal state; claimed bytes/CRC are not trusted |
 
-每个数据方向默认最多 4 个 256KiB 未确认块，信用耗尽时停止发送；控制消息不被数据信用阻塞。宿主验证 operation、句柄、范围和当前状态。超额/乱序/重复终态/非法状态转移关闭工作进程并令任务失败。
+Each data direction defaults to at most four unacknowledged 256 KiB blocks; sending stops when credit is exhausted. Control messages are not blocked by data credit. The host validates operation, handle, range, and current state. Overages, out-of-order messages, duplicate terminal states, or illegal state transitions close the worker and fail the task.
 
-关键 payload 约束如下；整数使用无符号有界类型，字节字段使用 CBOR bytes，而非把原始路径强行转 UTF-8：
+Key payload constraints follow. Integers use bounded unsigned types and byte fields use CBOR bytes instead of forcing raw paths into UTF-8:
 
-| 消息 | 必需字段及约束 |
+| Message | Required fields and constraints |
 |---|---|
-| Open | source_token、options；token 绑定当前 operation 的授权源 |
-| EntryBatch | session_token、entries；记录含 entry_token/raw_path/type/optional sizes，单批最多 128 且帧不超 1MiB |
-| ReadEntry | session_token、entry_token、approved_sink_token；不在当前计划内的条目不能获得 Sink |
-| ReadAt | source_token、offset:u64、length:u32；length ≤256KiB，范围不越授权源，EOF可短读 |
-| WriteData | sink_token、block_sequence、bytes；只能按批准顺序/seek能力写，重复块拒绝 |
-| FinishOutput | sink_token、reported_size、checksum_info；宿主使用实测字节和自身计量决定是否提交 |
-| OperationFinished | outcome、counts、integrity_info；操作只允许一次终态，存在未完成 Sink 时不能声明成功 |
+| Open | source_token, options; token binds the authorized source for the current operation |
+| EntryBatch | session_token, entries; records include entry_token/raw_path/type/optional sizes, at most 128 per batch, with frames no larger than 1 MiB |
+| ReadEntry | session_token, entry_token, approved_sink_token; entries outside the current plan cannot obtain a Sink |
+| ReadAt | source_token, offset:u64, length:u32; length ≤256 KiB, range stays within authorized source, EOF may return a short read |
+| WriteData | sink_token, block_sequence, bytes; write only in approved order/seek capability; reject duplicate blocks |
+| FinishOutput | sink_token, reported_size, checksum_info; host decides whether to commit from measured bytes and its own accounting |
+| OperationFinished | outcome, counts, integrity_info; only one terminal state per operation, and success cannot be claimed with unfinished Sinks |
 
-令牌不可复用到另一会话、任务或工作进程；取消撤销后不能继续 BeginOutput。Create 的输入目录只包含用户已授权输入的相对归档名和读取令牌，不允许扩展按本机路径自行增添文件。
+Tokens cannot be reused across sessions, tasks, or workers; BeginOutput cannot continue after cancellation revokes them. The Create input catalog contains only relative archive names and read tokens for user-authorized inputs. Extensions cannot add files themselves using local paths.
 
-宿主需要独立 stdout/stdin IPC 和有界 stderr 诊断；插件日志不能混入协议通道。诊断默认不记录秘密及完整路径，并对总量限流。宿主不能假定未知插件会自觉遵守日志隐私，因此插件启用说明必须涵盖其对用户内容和密码的接触。
+The host needs separate stdout/stdin IPC and bounded stderr diagnostics; plugin logs must not mix with the protocol channel. Diagnostics omit secrets and full paths by default and have total-volume limits. The host cannot assume an unknown plugin will respect log privacy, so enablement information must disclose its access to user content and passwords.
 
-宿主重新计量实际写入并计算可验证的校验值，但如果预期 CRC/摘要及解析结果也完全来自不可信插件，这不能独立证明内容忠实于原归档。沙箱保障的是权限边界，内容正确性仍依赖后端信任和互操作；需要更强保证时使用独立受信解析/校验，不宣称恶意插件可以被通用 broker 自动验证正确。
+The host independently meters actual writes and computes verifiable checksums. However, if expected CRC/digests and parse results also come entirely from an untrusted plugin, this cannot independently prove that content is faithful to the original archive. The sandbox protects permission boundaries; content correctness still depends on backend trust and interoperability. When stronger assurance is needed, use independent trusted parsing/verification. Do not claim a general broker can automatically verify a malicious plugin's correctness.
 
-## 7. 文件权力与沙箱
+## 7. File authority and sandboxing
 
-所有源、卷和输出由 broker 以操作令牌提供。默认不给第三方原始源路径或广泛目录句柄；只授权受限读范围和某个当前输出 Sink。密码算法需要明文秘密时，插件不可避免会接触该秘密；不能宣称宿主能让恶意解密插件永远看不到密码。
+The broker provides all sources, volumes, and outputs using operation tokens. By default, third parties receive neither raw source paths nor broad directory handles; they are authorized only for bounded read ranges and a current output Sink. If a password algorithm needs a plaintext secret, the plugin inevitably accesses it. The host cannot claim a malicious decryption plugin will never see the password.
 
-Windows 评估受限令牌/AppContainer、Job 对象和句柄白名单；Linux 评估 namespaces、seccomp、Landlock/挂载限制、cgroups；macOS 评估可支持发行方式下的沙箱 helper、entitlements 和 broker。每个平台都需实证禁止任意写、联网、派生逃逸和访问未授权文件。具体 API 可用性不由本设计假定。
+On Windows, evaluate restricted tokens/AppContainer, Job objects, and handle allowlists. On Linux, evaluate namespaces, seccomp, Landlock/mount restrictions, and cgroups. On macOS, evaluate sandbox helpers, entitlements, and a broker compatible with supported distribution. Each platform requires evidence that arbitrary writes, networking, descendant escape, and unauthorized file access are blocked. This design does not assume availability of particular APIs.
 
-无法实现/验证沙箱的构建禁用第三方执行；官方受信工作进程可以按发行政策单独允许，但界面不能标为“沙箱安全”。沙箱不保护同一授权归档的机密免受用户主动选择的恶意格式扩展读取，因此来源、权限与信任仍是必要条件。
+Builds that cannot implement/verify sandboxing disable third-party execution. Official trusted workers may be allowed separately under release policy, but the UI must not label them “sandbox safe.” A sandbox does not protect the confidentiality of an authorized archive from a malicious format extension the user chooses; origin, permissions, and trust remain necessary.
 
-## 8. 生命周期与失败
+## 8. Lifecycle and failure
 
-每后端默认最多一个工作进程；每进程默认一个活动重任务。宿主监督内存、协议大小、响应和 CPU/无进展预算。无进展预算不能简单把“60 秒未完成”当崩溃；读取复杂块时结合心跳、字节/进度和用户取消判断。
+By default, each backend has at most one worker and each worker has one active heavy task. The host supervises memory, protocol size, responsiveness, and CPU/no-progress budgets. A no-progress budget must not simply treat “not finished in 60 seconds” as a crash. When reading complex blocks, consider heartbeat, bytes/progress, and user cancellation together.
 
-取消后给后端 2 秒合作期限；未退出可终止工作进程。终止只释放未提交输出，不撤回已提交条目。后端崩溃不自动无限重试，同一输入连续崩溃隔离后端并提示。更新等待所有关联任务结束，旧包保留至引用归零。
+After cancellation, give the backend two seconds to cooperate; terminate the worker if it does not exit. Termination releases only uncommitted output and does not revoke already committed entries. A backend crash does not trigger infinite automatic retries. Repeated crashes on the same input isolate the backend and notify the user. Updates wait for all related tasks to finish; the old package remains until its reference count reaches zero.
 
-## 9. 开源扩展开发流程
+## 9. Open-source extension development workflow
 
-开发者实现参考骨架 → 声明真实能力 → 运行 SDK conformance → 提交最小及对抗性样本 → 独立参考工具互操作 → 检查取消/配额/损坏 → 许可证/SBOM → 平台包验证。提供源码级 ZIP/TAR 样例和进程级只读示例，文档按接口定义生成。
+Implement the reference skeleton → declare actual capabilities → run SDK conformance → submit minimal and adversarial samples → test interoperability with independent reference tools → check cancellation/quotas/corruption → license/SBOM → platform package verification. Provide source-level ZIP/TAR samples and a process-level read-only example; generate documentation from interface definitions.
 
-Rust SDK 使用 SemVer，破坏 trait 变更升级 major；线协议另有 major/minor。协议冻结前须由两个独立实现完成互通，不能只测宿主与自己生成的同一份代码。支持窗口至少覆盖当前及上一受支持协议主版本，具体撤销周期在 v1.0 发布政策确定。
+The Rust SDK uses SemVer; breaking trait changes increment major. The wire protocol has separate major/minor versions. Before freezing the protocol, two independent implementations must interoperate; testing only the host against code generated from the same source is insufficient. The support window covers at least the current and previous supported protocol major versions; the v1.0 release policy determines the specific withdrawal period.

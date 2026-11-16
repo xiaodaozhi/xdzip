@@ -42,8 +42,10 @@ def inspect(sources, registry):
             if 'ScrollView {' not in text or 'OperationFooter {' not in text:
                 errors.append(f'{name}: operation needs a scrolling body and fixed shared footer')
         if policy['role'] == 'settings':
-            if not re.search(r'^    requestedHeight:\s*Math\.min\(', text, re.M) or 'Screen.desktopAvailableHeight' not in text:
+            if not re.search(r'^    requestedHeight:\s*Math\.min\(Theme\.settingsClientHeight, root\.screenAvailableHeight - 80\)\s*$', text, re.M):
                 errors.append(f'{name}: settings height must respect available screen geometry')
+            if not re.search(r'^    centerOnScreen:\s*!owner\s*$', text, re.M):
+                errors.append(f'{name}: ownerless tray settings must use native screen centering')
             if 'ScrollView {' not in text or 'OperationFooter {' in text:
                 errors.append(f'{name}: settings needs a scrolling body without a footer')
         if policy.get('design') and not (ROOT / policy['design'].split('?')[0]).is_file():
@@ -80,6 +82,9 @@ def inspect(sources, registry):
                      'Theme.confirmationContentInset', 'Theme.confirmationMaximumHeight', 'availableClientHeight', 'Qt.ApplicationModal']:
         if required not in shared:
             errors.append('Shared confirmation missing contract: ' + required)
+    operation = sources.get('OperationWindow', '')
+    if 'property int screenAvailableHeight: BuildInfo.availableScreenHeight(root)' not in operation or 'screenAvailableHeight = BuildInfo.availableScreenHeight(root)' not in operation:
+        errors.append('Shared operation window must read and refresh the actual screen work area')
     return errors
 
 
@@ -97,6 +102,12 @@ def self_test(sources, registry):
     mutations.append(('unregistered inline window', inline, registry))
     screen = dict(sources); screen['TaskWindow'] = screen['TaskWindow'].replace('Screen.desktopAvailableHeight', '720')
     mutations.append(('operation ignores screen height', screen, registry))
+    settings = dict(sources); settings['SettingsWindow'] = settings['SettingsWindow'].replace('root.screenAvailableHeight', 'Screen.desktopAvailableHeight')
+    mutations.append(('settings uses combined virtual desktop height', settings, registry))
+    tray = dict(sources); tray['SettingsWindow'] = tray['SettingsWindow'].replace('centerOnScreen: !owner', 'centerOnScreen: false')
+    mutations.append(('tray settings loses native centering', tray, registry))
+    available = dict(sources); available['OperationWindow'] = available['OperationWindow'].replace('BuildInfo.availableScreenHeight(root)', 'Screen.desktopAvailableHeight')
+    mutations.append(('shared window loses actual work area', available, registry))
     for label, changed, spec in mutations:
         if not inspect(changed, spec):
             raise SystemExit('Regression gate failed to reject: ' + label)

@@ -1,4 +1,5 @@
 #include "BrowserController.h"
+#include "ArchiveFormats.h"
 #include "ImagePreviewProtocol.h"
 #include "NativeDialogPolicy.h"
 #include "PreviewImages.h"
@@ -391,6 +392,8 @@ QString BrowserController::explain(const QString &code) {
         {"output_io", qtTrId("ui.7735b66ae246")},
         {"disk_full", qtTrId("ui.8e2070ff3086")},
         {"unsafe_target", qtTrId("ui.123399c0fb8b")},
+        {"sfx_stub_missing", qtTrId("create.sfxUnavailable")},
+        {"sfx_stub_invalid", qtTrId("create.sfxUnavailable")},
         {"target_changed", qtTrId("ui.8c5b6e8cc7b3")},
         {"output_conflict", qtTrId("ui.370322f1d979")},
         {"unsupported_filesystem", qtTrId("ui.74b624993d20")},
@@ -469,9 +472,7 @@ bool BrowserController::canOpenDroppedUrls(const QList<QUrl> &urls) const {
         static const QRegularExpression splitSuffix(
             QStringLiteral("(?:\\.(?:zip|7z)\\.[0-9]{3,4}|\\.z[0-9]{2,4}|\\.r[0-9]{2,4})$"));
         if (!file.isFile() ||
-            !(name.endsWith(".zip") || name.endsWith(".tar") || name.endsWith(".tar.gz") ||
-              name.endsWith(".tgz") || name.endsWith(".7z") || name.endsWith(".rar") ||
-              name.endsWith(".cab") || name.endsWith(".iso") || name.endsWith(".udf") ||
+            !(xdzip_formats::hasSuffix(name.toUtf8().toStdString(), xdzip_formats::DropSuffixes) ||
               splitSuffix.match(name).hasMatch()))
             return false;
     }
@@ -1073,20 +1074,18 @@ void BrowserController::startCreation(const QStringList &inputs, const QString &
     const auto validText = [](const QString &value) {
         return !value.contains(QChar::Null) && QString::fromUtf8(value.toUtf8()) == value;
     };
-    const bool sevenZip = name.endsWith(QStringLiteral(".7z"), Qt::CaseInsensitive);
-    if ((method != 0 && method != (sevenZip ? 32 : 8)) ||
-        (level != 1 && level != 6 && level != 9 &&
-         !(name.endsWith(QStringLiteral(".tar.gz"), Qt::CaseInsensitive) && level == 0)) ||
-        !validText(target) || !validText(name) ||
-        std::any_of(inputs.cbegin(), inputs.cend(),
-                    [&](const QString &path) { return !validText(path); })) {
+    // Only validate transport ranges here. The Rust registry and creation
+    // admission own format, method, level and option compatibility.
+    if (method < 0 || method > 65535 || level < 0 || level > 255 || !validText(target) ||
+        !validText(name) || std::any_of(inputs.cbegin(), inputs.cend(), [&](const QString &path) {
+            return !validText(path);
+        })) {
         m_creationError = explain("invalid_path");
         emit extractionChanged();
         return;
     }
     if (volumeBytes > 24ULL * 1024 * 1024 * 1024 || !validText(password) ||
-        password.toUtf8().size() > 128 || (!sevenZip && (solid || encryptHeaders)) ||
-        (encryptHeaders && password.isEmpty()) ||
+        password.toUtf8().size() > 128 ||
         std::any_of(password.cbegin(), password.cend(),
                     [](QChar c) { return c.category() == QChar::Other_Control; })) {
         m_creationError = explain("invalid_creation_options");
@@ -1986,11 +1985,59 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             QStringList{QStringLiteral("7z"), QStringLiteral("RAR"), QStringLiteral("CAB"),
                         QStringLiteral("ISO"), QStringLiteral("UDF")}
                 .contains(m_format, Qt::CaseInsensitive);
+        const auto formatLabel = m_format.toStdString();
+        const bool unknownPacked =
+            std::find(xdzip_formats::UnknownPackedLabels.begin(),
+                      xdzip_formats::UnknownPackedLabels.end(),
+                      std::string_view(formatLabel)) != xdzip_formats::UnknownPackedLabels.end();
         for (const auto &row : event.rows) {
-            const auto method = nativeFormat                        ? m_format
+            const bool lz4 =
+                m_format == QStringLiteral("LZ4") || m_format == QStringLiteral("TAR.LZ4");
+            const bool zstd = m_format == QStringLiteral("ZSTD") ||
+                              m_format == QStringLiteral("TAR.ZST") ||
+                              m_format == QStringLiteral("DEB");
+            const bool textEnvelope =
+                m_format == QStringLiteral("UU") || m_format == QStringLiteral("XXE");
+            const bool unixCompress =
+                m_format == QStringLiteral("Z") || m_format == QStringLiteral("TAR.Z");
+            const bool brotli =
+                m_format == QStringLiteral("Brotli") || m_format == QStringLiteral("TAR.BR");
+            const bool lha = m_format == QStringLiteral("LZH");
+            const auto lhaMethod =
+                row.method >= 1 && row.method <= 7    ? QStringLiteral("LH%1").arg(row.method)
+                : row.method == 8                     ? QStringLiteral("LZS")
+                : row.method == 9                     ? QStringLiteral("LZ5")
+                : row.method == 0 || row.method == 10 ? QStringLiteral("Store")
+                                                      : QString::number(row.method);
+            const auto arjMethod = row.method == 0   ? QStringLiteral("Store")
+                                   : row.method <= 4 ? QStringLiteral("ARJ%1").arg(row.method)
+                                                     : QString::number(row.method);
+            const auto arcMethod = row.method == 1 || row.method == 2 ? QStringLiteral("Store")
+                                   : row.method >= 3 && row.method <= 9
+                                       ? QStringLiteral("ARC%1").arg(row.method)
+                                       : QString::number(row.method);
+            const auto method = m_format == QStringLiteral("ARC")   ? arcMethod
+                                : m_format == QStringLiteral("ARJ") ? arjMethod
+                                : m_format == QStringLiteral("PMA") && row.method == 0
+                                    ? QStringLiteral("Store")
+                                : m_format == QStringLiteral("PMA") && row.method <= 2
+                                    ? QStringLiteral("PM%1").arg(row.method)
+                                : lha                               ? lhaMethod
+                                : textEnvelope && row.method == 0   ? QStringLiteral("UU")
+                                : textEnvelope && row.method == 1   ? QStringLiteral("XXE")
+                                : textEnvelope && row.method == 2   ? QStringLiteral("Base64")
+                                : unixCompress && row.method == 257 ? QStringLiteral("LZW")
+                                : brotli && row.method == 258       ? QStringLiteral("Brotli")
+                                : zstd && row.method == 93          ? QStringLiteral("Zstandard")
+                                : lz4 && row.method == 256          ? QStringLiteral("LZ4")
+                                : nativeFormat                      ? m_format
                                 : m_format == QStringLiteral("TAR") ? qtTrId("ui.695e3ecda20b")
                                 : row.method == 0                   ? QStringLiteral("Store")
                                 : row.method == 8                   ? QStringLiteral("Deflate")
+                                : row.method == 9                   ? QStringLiteral("Deflate64")
+                                : row.method == 12                  ? QStringLiteral("BZip2")
+                                : row.method == 14                  ? QStringLiteral("LZMA")
+                                : row.method == 95                  ? QStringLiteral("XZ")
                                                                     : QString::number(row.method);
             QStringList status;
             if (row.directory)
@@ -2024,7 +2071,8 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             m_result.rows.append(
                 {text(row.id),
                  {name, row.physical && row.size_known ? QString::number(row.size) : QString{},
-                  row.physical && m_format != QStringLiteral("TAR.GZ")
+                  row.physical && !unknownPacked &&
+                          !(m_format == QStringLiteral("DEB") && row.method != 0)
                       ? QString::number(row.packed_size)
                       : QString{},
                   type, modified},

@@ -2154,6 +2154,125 @@ QtObject {
             popup->close();
         }
     }
+    void taskPathAndResultSummary_data() {
+        operationHeadersUseSharedGeometry_data();
+    }
+    void taskPathAndResultSummary() {
+        QFETCH(QString, language);
+        QFETCH(double, factor);
+        QFETCH(bool, dark);
+        const auto restore = qScopeGuard([] { initializeUiText("zh-CN"); });
+        QVERIFY(initializeUiText(language));
+        QQmlApplicationEngine engine;
+        QQmlComponent component(&engine);
+        component.setData(
+            "import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\nUi.TaskWindow { "
+            "archiveName: 'sample.zip'; destination: 'output'; currentFile: 'short.txt'; "
+            "fraction: .5; totalKnown: true; stopping: false; property real factor: 1; "
+            "property bool dark: false; onFactorChanged: Ui.Theme.fontScale = factor; "
+            "onDarkChanged: Ui.Theme.dark = dark }",
+            QUrl());
+        std::unique_ptr<QObject> object(component.create());
+        QVERIFY2(object, qPrintable(component.errorString()));
+        auto *window = qobject_cast<QQuickWindow *>(object.get());
+        QVERIFY(window);
+        window->setProperty("factor", factor);
+        window->setProperty("dark", dark);
+        window->show();
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *card = findVisual(window->contentItem(), "currentFileCard");
+        QVERIFY(card);
+        auto *label = qobject_cast<QQuickItem *>(card->property("valueItem").value<QObject *>());
+        QVERIFY(label);
+        QTRY_VERIFY(card->height() > 0 && label->width() > 0);
+        QTRY_COMPARE(window->height(), window->property("requestedHeight").toInt());
+        const auto cardHeight = card->height();
+        const auto windowHeight = window->height();
+        const auto bodyHeight =
+            findVisual(window->contentItem(), "taskBodyContent")->implicitHeight();
+        const auto longPath = QStringLiteral("目录/日本語/").repeated(40) +
+                              QStringLiteral("<b>很长的文件名</b>").repeated(20) + ".txt";
+        for (const auto &path : {longPath, QStringLiteral("short.txt"), longPath}) {
+            window->setProperty("currentFile", path);
+            QTRY_COMPARE(label->property("truncated").toBool(), path == longPath);
+            QCOMPARE(label->property("lineCount").toInt(), 1);
+            QCOMPARE(label->property("text").toString(), path);
+            QCOMPARE(label->property("textFormat").toInt(), int(Qt::PlainText));
+            auto *accessible = QAccessible::queryAccessibleInterface(label);
+            QVERIFY(accessible);
+            QCOMPARE(accessible->text(QAccessible::Name), path);
+            QCOMPARE(card->height(), cardHeight);
+            QCOMPARE(findVisual(window->contentItem(), "taskBodyContent")->implicitHeight(),
+                     bodyHeight);
+            QCOMPARE(window->property("requestedHeight").toInt(), windowHeight);
+            QCOMPARE(window->height(), windowHeight);
+        }
+        const auto output = qEnvironmentVariable("XDZIP_TASK_PATH_AUDIT");
+        const auto scene = language + QString::number(factor) + QString::number(dark);
+        auto *viewport = findVisual(window->contentItem(), "taskScroll")
+                             ->property("contentItem")
+                             .value<QQuickItem *>();
+        QVERIFY(viewport);
+        viewport->setProperty(
+            "contentY",
+            std::max(0., viewport->property("contentHeight").toDouble() - viewport->height()));
+        if (!output.isEmpty()) {
+            QVERIFY(QDir().mkpath(output));
+            QVERIFY(visual_audit::save(window, output, "progress-" + scene));
+        }
+        window->setProperty("taskStatus", "succeeded");
+        auto *panel = findVisual(window->contentItem(), "taskResultPanel");
+        auto *caption = findVisual(panel, "resultSavedCaption");
+        QVERIFY(panel && caption);
+        const QVariantList details{
+            QVariantMap{{"name", "kept-file.txt"}, {"status", "completed"}, {"size", "1234"}}};
+        for (const int count : {0, 1, 2, 127}) {
+            window->setProperty("resultTask",
+                                QVariantMap{{"id", "summary"},
+                                            {"kind", "extract"},
+                                            {"status", count == 2 ? "failed" : "succeeded"},
+                                            {"committedFiles", QString::number(count)},
+                                            {"files", 130},
+                                            {"target", "output"},
+                                            {"committedBytes", "1234567"},
+                                            {"skippedFiles", 1},
+                                            {"details", count ? details : QVariantList{}},
+                                            {"omittedDetails", count > 1 ? count - 1 : 0}});
+            const auto expected =
+                language == "zh-CN"
+                    ? QStringLiteral("已处理 %1 个文件").arg(count)
+                    : QString("Processed %1 file%2").arg(count).arg(count == 1 ? "" : "s");
+            QCOMPARE(caption->property("text").toString(), expected);
+            QCOMPARE(caption->property("font").value<QFont>().family(),
+                     QGuiApplication::font().family());
+        }
+        auto *toggle = findVisual(panel, "resultDetailsToggle");
+        QVERIFY(toggle);
+        QCOMPARE(toggle->property("recordCount").toInt(), 1);
+        toggle->forceActiveFocus(Qt::TabFocusReason);
+        QTest::keyClick(window, Qt::Key_Space);
+        QTRY_VERIFY(panel->property("expanded").toBool());
+        QTRY_COMPARE(window->height(), window->property("requestedHeight").toInt());
+        auto *footer = findVisual(window->contentItem(), "taskFooter");
+        QVERIFY(footer);
+        QVERIFY(footer->mapToItem(window->contentItem(), QPointF(0, footer->height())).y() <=
+                window->height() + .1);
+        viewport->setProperty(
+            "contentY",
+            std::max(0., viewport->property("contentHeight").toDouble() - viewport->height()));
+        if (!output.isEmpty())
+            QVERIFY(visual_audit::save(window, output, "result-" + scene));
+        window->setProperty("resultTask", QVariantMap{{"creating", true},
+                                                      {"outputParts", 1},
+                                                      {"writtenBytes", "1234"},
+                                                      {"details", details}});
+        QVERIFY(caption->property("text").toString().contains("kept-file.txt"));
+        window->setProperty("resultTask", QVariantMap{{"kind", "extract"},
+                                                      {"batchResults", true},
+                                                      {"committedFiles", 1},
+                                                      {"details", details}});
+        QCOMPARE(caption->property("text").toString(), "kept-file.txt");
+    }
     void operationWindowHeightTransitionsKeepValidBounds() {
         QQmlApplicationEngine engine;
         QQmlComponent component(&engine);
@@ -7616,45 +7735,41 @@ QtObject {
         QVERIFY(QTest::qWaitForWindowExposed(create));
         auto *formats = findVisual(create->contentItem(), "createFormat");
         QVERIFY(formats);
-        const QStringList extensions{".zip", ".tar", ".tar.gz", ".7z"};
-        for (const auto &action : actions) {
-            for (const int index : {1, 2, 3, 0, 0}) {
-                auto *item =
-                    findVisual(create->contentItem(), "createFormat-" + QString::number(index));
-                QVERIFY(item);
-                auto *accessible = QAccessible::queryAccessibleInterface(item);
-                QVERIFY(accessible && accessible->actionInterface());
-                accessible->actionInterface()->doAction(action);
-                QTRY_COMPARE(formats->property("currentIndex").toInt(), index);
-                QTRY_COMPARE(create->property("formatExtension").toString(), extensions[index]);
-                for (int choice = 0; choice < extensions.size(); ++choice)
-                    QTRY_COMPARE(
-                        findVisual(create->contentItem(), "createFormat-" + QString::number(choice))
-                            ->property("checked")
-                            .toBool(),
-                        choice == index);
-            }
+        const QStringList extensions{".zip",
+                                     ".tar",
+                                     ".tar.gz",
+                                     ".7z",
+                                     ".gz",
+                                     ".xz",
+                                     ".tar.xz",
+                                     ".lz4",
+                                     ".tar.lz4",
+                                     ".zst",
+                                     ".tar.zst",
+                                     ".lzh",
+                                     ".iso"
+#ifdef Q_OS_WIN
+                                     ,
+                                     ".sfx.exe"
+#endif
+        };
+        auto *formatInterface = QAccessible::queryAccessibleInterface(formats);
+        QVERIFY(formatInterface);
+        QCOMPARE(formatInterface->role(), QAccessible::ComboBox);
+        QVERIFY(!formatInterface->text(QAccessible::Name).isEmpty());
+        QCOMPARE(formats->property("count").toInt(), extensions.size());
+        for (const int index : {1, 2, 3, 4, 11, 0}) {
+            QVERIFY(QMetaObject::invokeMethod(formats, "activateOption", Q_ARG(QVariant, index)));
+            QTRY_COMPARE(formats->property("currentIndex").toInt(), index);
+            QTRY_COMPARE(create->property("formatExtension").toString(), extensions[index]);
         }
-        auto *selectedFormat = findVisual(create->contentItem(), "createFormat-0");
-        QVERIFY(selectedFormat);
-        QTest::mouseClick(
-            create, Qt::LeftButton, Qt::NoModifier,
-            selectedFormat
-                ->mapToScene(QPointF(selectedFormat->width() / 2, selectedFormat->height() / 2))
-                .toPoint());
+        formats->setEnabled(false);
+        QVERIFY(QMetaObject::invokeMethod(formats, "activateOption", Q_ARG(QVariant, 1)));
         QCOMPARE(formats->property("currentIndex").toInt(), 0);
-        QVERIFY(selectedFormat->property("checked").toBool());
-        formats->setProperty("options",
-                             QVariantList{QVariantMap{{"text", "ZIP"}},
-                                          QVariantMap{{"text", "TAR"}, {"enabled", false}},
-                                          QVariantMap{{"text", "TAR.GZ"}}});
-        QTRY_VERIFY(findVisual(create->contentItem(), "createFormat-1"));
-        auto *disabled = findVisual(create->contentItem(), "createFormat-1");
-        QVERIFY(!disabled->isEnabled());
-        for (const auto &action : actions) {
-            QAccessible::queryAccessibleInterface(disabled)->actionInterface()->doAction(action);
-            QCOMPARE(formats->property("currentIndex").toInt(), 0);
-        }
+        formats->setEnabled(true);
+        formats->forceActiveFocus(Qt::TabFocusReason);
+        QTest::keyClick(create, Qt::Key_Down);
+        QTRY_COMPARE(create->property("formatId").toString(), QStringLiteral("tar"));
         create->close();
     }
     void accessibleCheckboxActionsCommitIntent() {
@@ -7776,6 +7891,10 @@ QtObject {
         QVERIFY(QTest::qWaitForWindowExposed(settings));
         QQuickItem *zip = nullptr;
         QTRY_VERIFY((zip = findVisual(settings->contentItem(), "settingsAssociation-.zip")));
+        for (const auto &group :
+             {"archives", "compressed-tar", "compressed-streams", "text-envelopes"})
+            QVERIFY(findVisual(settings->contentItem(),
+                               "settingsAssociationGroup-" + QString::fromLatin1(group)));
         QVERIFY(zip->isEnabled());
         const bool active = QAccessible::isActive();
         QAccessible::setActive(true);
@@ -9087,19 +9206,54 @@ QtObject {
         formats->setProperty("currentIndex", 3);
         QCOMPARE(create->width(), 491);
         QTRY_VERIFY(formats->width() > 0);
-        for (int index = 0; index < 4; ++index) {
-            auto *segment =
-                findVisual(create->contentItem(), "createFormat-" + QString::number(index));
-            QVERIFY(segment);
+#ifdef Q_OS_WIN
+        const int expectedFormatCount = 14;
+#else
+        const int expectedFormatCount = 13;
+#endif
+        QCOMPARE(formats->property("count").toInt(), expectedFormatCount);
+        for (int index = 0; index < formats->property("count").toInt(); ++index) {
+            formats->setProperty("currentIndex", index);
             auto *label =
-                qobject_cast<QQuickItem *>(segment->property("contentItem").value<QObject *>());
+                qobject_cast<QQuickItem *>(formats->property("contentItem").value<QObject *>());
             QVERIFY(label);
             QTRY_VERIFY2(label->implicitWidth() <= label->width() + 1,
-                         qPrintable(QString("format %1 text %2 exceeds %3")
-                                        .arg(index)
-                                        .arg(label->implicitWidth())
-                                        .arg(label->width())));
+                         qPrintable(QString("format %1 text exceeds selector").arg(index)));
+            const auto profile = create->property("formatId").toString();
+            if (profile == "iso" || profile == "zip-sfx") {
+                auto *note = findVisual(create->contentItem(), "createProfileNote");
+                QVERIFY(note);
+                QTRY_VERIFY(note->height() + 1 >= note->property("contentHeight").toReal());
+                QVERIFY(!create->property("supportsPasswordAndVolumes").toBool());
+                auto *level = findVisual(create->contentItem(), "createLevel");
+                QVERIFY(level);
+                if (profile == "iso") {
+                    QCOMPARE(level->property("count").toInt(), 1);
+                    QVERIFY(!level->isEnabled());
+                }
+            }
         }
+        formats->setProperty("currentIndex", 11);
+        QCOMPARE(create->property("formatId").toString(), QStringLiteral("lzh"));
+        QCOMPARE(create->property("compressedMethod").toInt(), 259);
+        QVERIFY(create->property("compressedOnly").toBool());
+        QVERIFY(!create->property("supportsPasswordAndVolumes").toBool());
+        formats->setProperty("currentIndex", 0);
+        auto *popup = formats->property("popup").value<QObject *>();
+        QVERIFY(popup && QMetaObject::invokeMethod(popup, "open"));
+        QTRY_VERIFY(popup->property("visible").toBool());
+        auto *popupContent =
+            qobject_cast<QQuickItem *>(popup->property("contentItem").value<QObject *>());
+        QVERIFY(popupContent);
+        QTRY_VERIFY(popupContent->height() > 0);
+        QTRY_VERIFY(popupContent->mapToScene(QPointF(0, 0)).y() >= 0);
+        QTRY_VERIFY(popupContent->mapToScene(QPointF(0, popupContent->height())).y() <=
+                    create->height() + 1);
+        QTest::keyClick(create, Qt::Key_End);
+        QTest::keyClick(create, Qt::Key_Return);
+        QTRY_COMPARE(formats->property("currentIndex").toInt(),
+                     formats->property("count").toInt() - 1);
+        QTRY_VERIFY(!popup->property("visible").toBool());
         auto *cancel = findVisual(create->contentItem(), "createCancel");
         auto *start = findVisual(create->contentItem(), "startCreate");
         QVERIFY(cancel && start);
@@ -9109,8 +9263,8 @@ QtObject {
         const auto captures = qEnvironmentVariable("XDZIP_CREATE_CONTROLS_AUDIT");
         if (!captures.isEmpty()) {
             QVERIFY(QDir().mkpath(captures));
-            QVERIFY(visual_audit::save(create, captures,
-                                       QStringLiteral("create-7z-") + QTest::currentDataTag()));
+            QVERIFY(visual_audit::save(
+                create, captures, QStringLiteral("create-formats-") + QTest::currentDataTag()));
         }
     }
     void passwordFieldsExposeLabelsWithoutSecrets_data() {
@@ -9235,6 +9389,119 @@ QtObject {
         QVERIFY(controller->passwordPrompt().isEmpty());
         QTRY_VERIFY(!passwordWindow->isVisible());
     }
+    void singleStreamCreationUsesStableCapability_data() {
+        QTest::addColumn<QString>("formatId");
+        QTest::addColumn<QString>("suffix");
+        QTest::addColumn<QString>("label");
+        QTest::addColumn<QString>("language");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")}) {
+            QTest::newRow(qPrintable("gzip-" + language))
+                << QStringLiteral("gzip") << QStringLiteral("gz") << QStringLiteral("GZIP")
+                << language;
+            QTest::newRow(qPrintable("xz-" + language))
+                << QStringLiteral("xz") << QStringLiteral("xz") << QStringLiteral("XZ") << language;
+            QTest::newRow(qPrintable("tar-xz-" + language))
+                << QStringLiteral("tar-xz") << QStringLiteral("tar.xz") << QStringLiteral("TAR.XZ")
+                << language;
+            QTest::newRow(qPrintable("lz4-" + language))
+                << QStringLiteral("lz4") << QStringLiteral("lz4") << QStringLiteral("LZ4")
+                << language;
+            QTest::newRow(qPrintable("tar-lz4-" + language))
+                << QStringLiteral("tar-lz4") << QStringLiteral("tar.lz4")
+                << QStringLiteral("TAR.LZ4") << language;
+            QTest::newRow(qPrintable("zstd-" + language))
+                << QStringLiteral("zstd") << QStringLiteral("zst") << QStringLiteral("ZSTD")
+                << language;
+            QTest::newRow(qPrintable("tar-zstd-" + language))
+                << QStringLiteral("tar-zstd") << QStringLiteral("tar.zst")
+                << QStringLiteral("TAR.ZST") << language;
+            QTest::newRow(qPrintable("lzh-" + language))
+                << QStringLiteral("lzh") << QStringLiteral("lzh") << QStringLiteral("LZH")
+                << language;
+            QTest::newRow(qPrintable("iso-" + language))
+                << QStringLiteral("iso") << QStringLiteral("iso") << QStringLiteral("ISO")
+                << language;
+#ifdef Q_OS_WIN
+            QTest::newRow(qPrintable("zip-sfx-" + language))
+                << QStringLiteral("zip-sfx") << QStringLiteral("sfx.exe") << QStringLiteral("ZIP")
+                << language;
+#endif
+        }
+    }
+    void singleStreamCreationUsesStableCapability() {
+        QFETCH(QString, formatId);
+        QFETCH(QString, suffix);
+        QFETCH(QString, label);
+        QFETCH(QString, language);
+        QVERIFY(initializeUiText(language));
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QTemporaryDir input;
+        QTemporaryDir output;
+        QVERIFY(input.isValid() && output.isValid());
+        const auto source = input.filePath(QStringLiteral("original.txt"));
+        {
+            QFile file(source);
+            QVERIFY(file.open(QIODevice::WriteOnly));
+            const auto payload = formatId.startsWith("tar-") ? QByteArray("gzip GUI payload")
+                                                             : QByteArray(4096, '\0');
+            QCOMPARE(file.write(payload), payload.size());
+        }
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *create = window->findChild<QQuickWindow *>("createWindow");
+        QVERIFY(controller && create && QMetaObject::invokeMethod(create, "configure"));
+        QTRY_VERIFY(create->isVisible() && !controller->busy());
+        int gzipIndex = -1;
+        QVERIFY(QMetaObject::invokeMethod(create, "formatIndex", Q_RETURN_ARG(int, gzipIndex),
+                                          Q_ARG(QString, formatId)));
+        QVERIFY(gzipIndex >= 0);
+        auto *format = findVisual(create->contentItem(), "createFormat");
+        auto *name = findVisual(create->contentItem(), "createName");
+        auto *target = findVisual(create->contentItem(), "createTarget");
+        auto *start = findVisual(create->contentItem(), "startCreate");
+        auto *level = findVisual(create->contentItem(), "createLevel");
+        QVERIFY(format && name && target && start && level);
+        format->setProperty("currentIndex", gzipIndex);
+        level->setProperty("currentIndex", formatId == "iso" || formatId == "gzip" ? 0 : 1);
+        QTRY_COMPARE(level->property("count").toInt(), formatId == "iso" ? 1
+                                                       : formatId == "gzip" || formatId == "zip-sfx"
+                                                           ? 4
+                                                           : 3);
+        QTRY_COMPARE(create->property("formatId").toString(), formatId);
+        QVERIFY(QMetaObject::invokeMethod(create, "addInputPaths",
+                                          Q_ARG(QVariant, QVariant(QStringList{input.path()})),
+                                          Q_ARG(bool, true)));
+        QTRY_COMPARE(create->property("inputs").toList().size(), 1);
+        QCOMPARE(create->property("inputsValid").toBool(),
+                 formatId.startsWith("tar-") || formatId == "lzh" || formatId == "iso" ||
+                     formatId == "zip-sfx");
+        create->setProperty("inputs", QVariantList{});
+        QVERIFY(QMetaObject::invokeMethod(create, "addInputPaths",
+                                          Q_ARG(QVariant, QVariant(QStringList{source})),
+                                          Q_ARG(bool, false)));
+        QTRY_VERIFY(create->property("inputsValid").toBool());
+        name->setProperty("text", (QStringLiteral("renamed.") + suffix));
+        target->setProperty("text", output.path());
+        QTRY_VERIFY(!controller->busy());
+        controller->checkCreationTarget(output.path());
+        QTRY_VERIFY(!controller->busy() && checkedTarget(controller, output.path(), true));
+        QTRY_VERIFY(start->isEnabled());
+        QSignalSpy started(controller, &BrowserController::creationStarted);
+        QTest::mouseClick(
+            create, Qt::LeftButton, Qt::NoModifier,
+            start->mapToScene(QPointF(start->width() / 2, start->height() / 2)).toPoint());
+        QTRY_COMPARE(started.count(), 1);
+        QTRY_COMPARE_WITH_TIMEOUT(controller->activeTaskCount(), 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QCOMPARE(controller->formatLabel(), label);
+        QCOMPARE(controller->archiveTotal(), 1);
+        QVERIFY(QFileInfo::exists(output.filePath((QStringLiteral("renamed.") + suffix))));
+    }
     void creationControlsMatchReviewedSource() {
         const bool accessibilityWasActive = QAccessible::isActive();
         QAccessible::setActive(true);
@@ -9305,11 +9572,9 @@ QtObject {
         usePassword->setProperty("checked", false);
         QTRY_COMPARE(password->property("text").toString(), QString{});
         QTRY_VERIFY(start->isEnabled());
-        auto *tar = findVisual(create->contentItem(), "createFormat-1");
-        auto *zip = findVisual(create->contentItem(), "createFormat-0");
-        QVERIFY(zip && tar && zip->isEnabled() && tar->isEnabled());
-        zip->forceActiveFocus(Qt::TabFocusReason);
-        QTest::keyClick(create, Qt::Key_Right);
+        QCOMPARE(group->property("count").toInt(), 11);
+        group->forceActiveFocus(Qt::TabFocusReason);
+        QTest::keyClick(create, Qt::Key_Down);
         QCOMPARE(group->property("currentIndex").toInt(), 1);
         QTRY_VERIFY(name->property("text").toString().endsWith(QStringLiteral(".tar")));
         QVERIFY(!method->isEnabled() && !volume->isEnabled() && !usePassword->isEnabled());
@@ -9430,24 +9695,62 @@ QtObject {
         theme.setData(
             "import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\n"
             "QtObject { property real factor: 1; property bool dark: false; "
+            "readonly property bool actualDark: Ui.Theme.dark; "
+            "readonly property real actualScale: Ui.Theme.fontScale; "
             "onFactorChanged: Ui.Theme.fontScale=factor; onDarkChanged: Ui.Theme.dark=dark }",
             QUrl());
         QScopedPointer<QObject> appearance(theme.create());
         QVERIFY2(appearance, qPrintable(theme.errorString()));
+        appearance->setProperty("factor", factor == 1.0 ? 1.25 : 1.0);
         appearance->setProperty("factor", factor);
+        appearance->setProperty("dark", !dark);
         appearance->setProperty("dark", dark);
+        QTRY_COMPARE(appearance->property("actualDark").toBool(), dark);
+        QTRY_COMPARE(appearance->property("actualScale").toDouble(), factor);
         auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
         window->resize(832, 544);
         auto *formats = findVisual(window->contentItem(), "welcomeFormats");
         QVERIFY(formats);
+        auto *welcomeScroll = findVisual(window->contentItem(), "welcomeContent");
+        QVERIFY(welcomeScroll);
+        auto *viewport =
+            qobject_cast<QQuickItem *>(welcomeScroll->property("contentItem").value<QObject *>());
+        QVERIFY(viewport && viewport->property("contentY").isValid());
         QTRY_VERIFY(formats->width() > 0);
         QTRY_VERIFY(formats->width() <= 608);
-        for (const auto &format : {"ZIP", "TAR", "TAR.GZ", "7z", "RAR", "CAB", "ISO", "UDF"}) {
-            auto *badge =
-                findVisual(window->contentItem(), "welcomeFormat-" + QString::fromLatin1(format));
+        for (const auto &group : {"archives", "compressed-tar", "compressed-streams",
+                                  "text-envelopes", "installer-metadata"}) {
+            auto *badge = findVisual(window->contentItem(),
+                                     "welcomeFormatGroup-" + QString::fromLatin1(group));
             QVERIFY(badge && badge->isVisible());
             QTRY_VERIFY(badge->mapToScene(QPointF()).x() >= 0);
             QTRY_VERIFY(badge->mapToScene(QPointF(badge->width(), 0)).x() <= window->width());
+            const auto top = badge->mapToItem(viewport, QPointF()).y();
+            const auto current = viewport->property("contentY").toDouble();
+            const auto maximum =
+                qMax(0.0, viewport->property("contentHeight").toDouble() - viewport->height());
+            if (top < 0)
+                viewport->setProperty("contentY", qBound(0.0, current + top, maximum));
+            else if (top + badge->height() > viewport->height())
+                viewport->setProperty(
+                    "contentY",
+                    qBound(0.0, current + top + badge->height() - viewport->height(), maximum));
+            QTRY_VERIFY(badge->mapToItem(viewport, QPointF()).y() >= -0.5);
+            QTRY_VERIFY(badge->mapToItem(viewport, QPointF(0, badge->height())).y() <=
+                        viewport->height() + 0.5);
+        }
+        const auto formatAudit = qEnvironmentVariable("XDZIP_FORMAT_GROUPS_AUDIT");
+        if (!formatAudit.isEmpty()) {
+            QVERIFY(QDir().mkpath(formatAudit));
+            QVERIFY(visual_audit::save(window, formatAudit, "welcome-format-groups"));
+            auto *settings = window->findChild<QQuickWindow *>("settingsWindow");
+            QVERIFY(settings);
+            QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
+            settings->setProperty("currentTab", 3);
+            QTRY_VERIFY(settings->isVisible());
+            QTRY_VERIFY(visibleImagesReady(settings->contentItem()));
+            QVERIFY(visual_audit::save(settings, formatAudit, "settings-association-groups"));
+            settings->close();
         }
         auto *task = window->findChild<QQuickWindow *>("taskWindow");
         QVERIFY(task);
@@ -9455,15 +9758,32 @@ QtObject {
         task->setProperty("taskStatus", "running");
         task->setProperty("archiveName", "readonly-image.iso");
         for (const auto &format :
-             {QStringLiteral("TAR"), QStringLiteral("ISO"), QStringLiteral("UDF")}) {
+             {QStringLiteral("TAR"),    QStringLiteral("LZMA"),    QStringLiteral("TAR.LZMA"),
+              QStringLiteral("ISO"),    QStringLiteral("UDF"),     QStringLiteral("XZ"),
+              QStringLiteral("TAR.XZ"), QStringLiteral("LZ4"),     QStringLiteral("TAR.LZ4"),
+              QStringLiteral("ZSTD"),   QStringLiteral("TAR.ZST"), QStringLiteral("DEB"),
+              QStringLiteral("ASAR"),   QStringLiteral("UU"),      QStringLiteral("XXE"),
+              QStringLiteral("Z"),      QStringLiteral("TAR.Z"),   QStringLiteral("AES Crypt"),
+              QStringLiteral("Brotli"), QStringLiteral("TAR.BR"),  QStringLiteral("LZH"),
+              QStringLiteral("PMA"),    QStringLiteral("ARJ"),     QStringLiteral("ARC"),
+              QStringLiteral("BH"),     QStringLiteral("ALZ"),     QStringLiteral("EGG")}) {
             task->setProperty("resultTask", QVariantMap{{"kind", "check"}, {"format", format}});
             QVERIFY(QMetaObject::invokeMethod(task, "present"));
             QTRY_VERIFY(task->isVisible());
             auto *footer = findVisual(task->contentItem(), "taskFooter");
             QVERIFY(footer);
             QCOMPARE(footer->property("note").toString(),
-                     format == "TAR" ? qtTrId("integrity.tarNote")
-                                     : qtTrId("integrity.discImageNote").arg(format));
+                     format == "ARJ" || format == "ARC" || format == "BH" || format == "ALZ" ||
+                             format == "EGG"
+                         ? qtTrId("integrity.readOnlyNote")
+                     : format == "TAR" ? qtTrId("integrity.tarNote")
+                     : format == "ISO" || format == "UDF"
+                         ? qtTrId("integrity.discImageNote").arg(format)
+                     : format.contains("XZ") || format.contains("LZ4") || format.contains("ZST") ||
+                             format == "DEB" || format == "ASAR" || format == "AES Crypt" ||
+                             format == "LZH" || format == "PMA"
+                         ? qtTrId("integrity.declaredCheckNote")
+                         : qtTrId("integrity.structuralNote").arg(format));
             auto *hint = qobject_cast<QQuickItem *>(footer->property("hint").value<QObject *>());
             auto *label =
                 hint ? qobject_cast<QQuickItem *>(hint->property("labelItem").value<QObject *>())
@@ -9480,6 +9800,531 @@ QtObject {
                 QVERIFY(QDir().mkpath(captures));
                 QVERIFY(visual_audit::save(task, captures, format + "-" + QTest::currentDataTag()));
             }
+        }
+    }
+    void filteredStreamsUseSharedBrowserAndTasks_data() {
+        QTest::addColumn<QString>("fixture");
+        QTest::addColumn<QString>("format");
+        QTest::addColumn<QString>("language");
+        const QList<QPair<QString, QString>> formats{{"phrase.bz2", "BZip2"},
+                                                     {"phrase.lzma", "LZMA"},
+                                                     {"phrase.lz", "Lzip"},
+                                                     {"files.tbz2", "TAR.BZ2"},
+                                                     {"files.tar.lzma", "TAR.LZMA"},
+                                                     {"files.tlz", "TAR.LZ"},
+                                                     {"phrase-crc64.xz", "XZ"},
+                                                     {"files.txz", "TAR.XZ"},
+                                                     {"phrase.lz4", "LZ4"},
+                                                     {"files.tar.lz4", "TAR.LZ4"},
+                                                     {"phrase.zst", "ZSTD"},
+                                                     {"files.tar.zst", "TAR.ZST"},
+                                                     {"zipx-deflate64.zipx", "ZIP"},
+                                                     {"zipx-bzip2.zipx", "ZIP"},
+                                                     {"zipx-lzma.zipx", "ZIP"},
+                                                     {"zipx-xz.zipx", "ZIP"},
+                                                     {"../compress/phrase.Z", "Z"},
+                                                     {"../compress/files.taz", "TAR.Z"},
+                                                     {"../brotli/q11-text.br", "Brotli"},
+                                                     {"../brotli/files.tar.br", "TAR.BR"},
+                                                     {"../lha/lh5-h2.lzh", "LZH"},
+                                                     {"../lha/lh1-h0.lzh", "LZH"},
+                                                     {"../lha/lh2-h1.lzh", "LZH"},
+                                                     {"../lha/lh3-h3.lzh", "LZH"},
+                                                     {"../lha/lzs-h2.lzh", "LZH"},
+                                                     {"../lha/lz5-h2.lzh", "LZH"},
+                                                     {"../pma/pm0-allbytes.pma", "PMA"},
+                                                     {"../pma/pm2-boundary-1024.pma", "PMA"},
+                                                     {"../pma/pm2-deep28.pma", "PMA"},
+                                                     {"../pma/pm1-selector-17.pma", "PMA"},
+                                                     {"../pma/pm1-long-overlap.pma", "PMA"},
+                                                     {"../arj/m1-phrase.arj", "ARJ"},
+                                                     {"../arj/m2-phrase.arj", "ARJ"},
+                                                     {"../arj/m3-phrase.arj", "ARJ"},
+                                                     {"../arj/m4-phrase.arj", "ARJ"},
+                                                     {"../arc/m1-phrase.arc", "ARC"},
+                                                     {"../arc/m2-phrase.arc", "ARC"},
+                                                     {"../arc/m3-phrase.arc", "ARC"},
+                                                     {"../arc/m4-phrase.arc", "ARC"},
+                                                     {"../arc/m5-phrase.arc", "ARC"},
+                                                     {"../arc/m6-phrase.arc", "ARC"},
+                                                     {"../arc/m7-phrase.arc", "ARC"},
+                                                     {"../arc/m8-phrase.arc", "ARC"},
+                                                     {"../arc/m9-phrase.arc", "ARC"}};
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (const auto &[fixture, format] : formats)
+                QTest::newRow(qPrintable(fixture + "-" + language))
+                    << fixture << format << language;
+    }
+    void arjUnknownMethodKeepsItsOwnNumericIdentity() {
+        QTemporaryDir owned;
+        QVERIFY(owned.isValid());
+        QFile original(QDir(QStringLiteral(XDZIP_FIXTURES)).filePath("../arj/m0-phrase.arj"));
+        QVERIFY(original.open(QIODevice::ReadOnly));
+        auto bytes = original.readAll();
+        QVERIFY(bytes.size() > 123);
+        bytes[65] = 8;
+        // Mutate only the method and its header CRC in this owned input.
+        const auto size = quint16(quint8(bytes[58])) | (quint16(quint8(bytes[59])) << 8);
+        quint32 crc = 0xffffffffu;
+        for (int i = 60; i < 60 + size; ++i) {
+            crc ^= quint8(bytes[i]);
+            for (int bit = 0; bit < 8; ++bit)
+                crc = (crc >> 1) ^ (0xedb88320u & (0u - (crc & 1u)));
+        }
+        crc = ~crc;
+        for (int i = 0; i < 4; ++i)
+            bytes[60 + size + i] = char(crc >> (8 * i));
+        const auto source = owned.filePath("unknown-method.arj");
+        QFile output(source);
+        QVERIFY(output.open(QIODevice::WriteOnly));
+        QCOMPARE(output.write(bytes), bytes.size());
+        output.close();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(source);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        QCOMPARE(controller->formatLabel(), QStringLiteral("ARJ"));
+        QCOMPARE(controller->m_model.rowCount(), 1);
+        const auto *row = controller->m_model.rowAt(0);
+        QVERIFY(row);
+        QCOMPARE(row->method, QStringLiteral("8"));
+        QVERIFY(!controller->canUpdateArchive());
+    }
+    void arcUnknownMethodKeepsItsOwnNumericIdentity() {
+        QTemporaryDir owned;
+        QVERIFY(owned.isValid());
+        QFile original(QDir(QStringLiteral(XDZIP_FIXTURES)).filePath("../arc/m2-phrase.arc"));
+        QVERIFY(original.open(QIODevice::ReadOnly));
+        auto bytes = original.readAll();
+        QVERIFY(bytes.size() > 29);
+        bytes[1] = 14;
+        const auto source = owned.filePath("unknown-method.arc");
+        QFile output(source);
+        QVERIFY(output.open(QIODevice::WriteOnly));
+        QCOMPARE(output.write(bytes), bytes.size());
+        output.close();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(source);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        QCOMPARE(controller->formatLabel(), QStringLiteral("ARC"));
+        QCOMPARE(controller->m_model.rowCount(), 1);
+        const auto *row = controller->m_model.rowAt(0);
+        QVERIFY(row);
+        QCOMPARE(row->method, QStringLiteral("14"));
+        QVERIFY(!controller->canUpdateArchive());
+    }
+    void filteredStreamsUseSharedBrowserAndTasks() {
+        QFETCH(QString, fixture);
+        QFETCH(QString, format);
+        QFETCH(QString, language);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir owned;
+        QVERIFY(owned.isValid());
+        const auto source = QDir(QStringLiteral(XDZIP_FIXTURES)).filePath("../streams/" + fixture);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        QVERIFY(controller->canOpenDroppedUrls({QUrl::fromLocalFile(source)}));
+        controller->openPath(source);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        QCOMPARE(controller->formatLabel(), format);
+        QCOMPARE(controller->archiveTotal(), 1);
+        QVERIFY(!controller->canUpdateArchive());
+        QCOMPARE(controller->m_model.rowCount(), 1);
+        const auto *row = controller->m_model.rowAt(0);
+        QVERIFY(row);
+        const bool tar = format.startsWith("TAR.");
+        const auto leaf =
+            format == "PMA" || format == "ARJ" || format == "ARC" ? QStringLiteral("HELLO.BIN")
+            : format == "LZH"                                     ? QStringLiteral("hello.bin")
+            : tar || format == "ZIP"                              ? QStringLiteral("hello.txt")
+                                     : QFileInfo(fixture).fileName().section('.', 0, 0);
+        QCOMPARE(row->cells[0], leaf);
+        QCOMPARE(row->cells[2].isEmpty(), tar);
+        const auto method =
+            format == "ARC"
+                ? (QFileInfo(fixture).fileName()[1] <= QChar('2')
+                       ? QStringLiteral("Store")
+                       : QStringLiteral("ARC%1").arg(QFileInfo(fixture).fileName().mid(1, 1)))
+            : format == "ARJ" ? QStringLiteral("ARJ%1").arg(QFileInfo(fixture).fileName().mid(1, 1))
+            : format == "PMA" ? (fixture.contains("pm0-")   ? QStringLiteral("Store")
+                                 : fixture.contains("pm1-") ? QStringLiteral("PM1")
+                                                            : QStringLiteral("PM2"))
+            : format == "LZH" ? QFileInfo(fixture).fileName().left(3).toUpper()
+            : format == "Z" || format == "TAR.Z"                   ? QStringLiteral("LZW")
+            : format == "Brotli" || format == "TAR.BR"             ? QStringLiteral("Brotli")
+            : format.contains("ZST")                               ? QStringLiteral("Zstandard")
+            : format.contains("LZ4")                               ? QStringLiteral("LZ4")
+            : fixture.contains("deflate64")                        ? QStringLiteral("Deflate64")
+            : format.contains("XZ") || fixture.contains("zipx-xz") ? QStringLiteral("XZ")
+            : format.contains("BZ") || format == "BZip2" || fixture.contains("zipx-bzip2")
+                ? QStringLiteral("BZip2")
+                : QStringLiteral("LZMA");
+        QCOMPARE(row->method, method);
+        const auto entry = row->id;
+        QSignalSpy checked(controller, &BrowserController::archiveTestStarted);
+        controller->startArchiveTest();
+        QTRY_COMPARE(checked.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        const auto destination = owned.filePath("output");
+        QVERIFY(QDir().mkpath(destination));
+        controller->prepareExtraction(false, {entry});
+        QTRY_VERIFY(!controller->busy());
+        controller->checkTarget(destination);
+        QTRY_VERIFY(!controller->busy() && controller->targetMatches(destination));
+        QSignalSpy extracted(controller, &BrowserController::extractionStarted);
+        controller->startExtraction(destination, false, false, 0, false, false);
+        QTRY_COMPARE(extracted.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        QFile actual(QDir(destination).filePath(leaf));
+        QVERIFY(actual.open(QIODevice::ReadOnly));
+        auto expected = QByteArray("abracadabra abracadabra\n").repeated(6);
+        if (format == "ARJ" || format == "ARC") {
+            expected = QByteArray("abracadabra abracadabra\n").repeated(128);
+        } else if (format == "PMA") {
+            expected.clear();
+            if (fixture.contains("pm1-long-overlap")) {
+                expected = QByteArray(24704, ' ');
+            } else if (fixture.contains("pm1-selector-17")) {
+                QFile known(QFileInfo(source).dir().filePath("pm1-known.bin"));
+                QVERIFY(known.open(QIODevice::ReadOnly));
+                QVERIFY(known.seek(17 * 256));
+                expected = known.read(256);
+                QCOMPARE(expected.size(), 256);
+            } else if (fixture.contains("deep28")) {
+                for (int i = 0; i < 128; ++i)
+                    expected.append(char(39 - i % 8));
+            } else {
+                for (int i = 0; i < 256; ++i)
+                    expected.append(char(i));
+                if (fixture.contains("pm2-")) {
+                    expected.append(QByteArray("abracadabra abracadabra\n").repeated(128));
+                    expected.truncate(1024);
+                }
+            }
+        }
+        QCOMPARE(actual.readAll(), expected);
+    }
+    void textEnvelopesUseSharedBrowserAndTasks_data() {
+        QTest::addColumn<QString>("fixture");
+        QTest::addColumn<QString>("language");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (const auto &fixture : {"ordinary.uue", "ordinary.xxe", "base64.uue", "empty.uue",
+                                        "empty.xxe", "multi.uue"})
+                QTest::newRow(qPrintable(QString::fromLatin1(fixture) + "-" + language))
+                    << QString::fromLatin1(fixture) << language;
+    }
+    void textEnvelopesUseSharedBrowserAndTasks() {
+        QFETCH(QString, fixture);
+        QFETCH(QString, language);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir owned;
+        QVERIFY(owned.isValid());
+        const auto source = QDir(QStringLiteral(XDZIP_FIXTURES)).filePath("../uu/" + fixture);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        QVERIFY(controller->canOpenDroppedUrls({QUrl::fromLocalFile(source)}));
+        controller->openPath(source);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        const auto format = fixture.endsWith("xxe") ? QStringLiteral("XXE") : QStringLiteral("UU");
+        QCOMPARE(controller->formatLabel(), format);
+        QCOMPARE(controller->archiveTotal(), fixture == "multi.uue" ? 3 : 1);
+        QVERIFY(!controller->canUpdateArchive());
+        controller->startUpdate({source}, controller->sessionId(), controller->directoryId(), 0);
+        QCOMPARE(controller->addDropMessage(), qtTrId("edit.readOnlyFormat").arg(format));
+        QCOMPARE(controller->activeTaskCount(), 0);
+        QSignalSpy checked(controller, &BrowserController::archiveTestStarted);
+        controller->startArchiveTest();
+        QTRY_COMPARE(checked.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        const auto leaf =
+            fixture == "base64.uue" ? QStringLiteral("data.bin") : QStringLiteral("hello.bin");
+        controller->search(leaf);
+        QTRY_VERIFY(!controller->busy());
+        QTRY_COMPARE(controller->m_model.rowCount(), fixture == "multi.uue" ? 2 : 1);
+        const auto *row = controller->m_model.rowAt(fixture == "multi.uue" ? 1 : 0);
+        QVERIFY(row);
+        const auto method = fixture == "base64.uue" ? QStringLiteral("Base64")
+                            : fixture.endsWith("xxe") || fixture == "multi.uue"
+                                ? QStringLiteral("XXE")
+                                : QStringLiteral("UU");
+        QCOMPARE(row->method, method);
+        const auto entry = row->id;
+        const auto destination = owned.filePath("output");
+        QVERIFY(QDir().mkpath(destination));
+        controller->prepareExtraction(false, {entry});
+        QTRY_VERIFY(!controller->busy());
+        controller->checkTarget(destination);
+        QTRY_VERIFY(!controller->busy() && controller->targetMatches(destination));
+        QSignalSpy extracted(controller, &BrowserController::extractionStarted);
+        controller->startExtraction(destination, false, false, 0, false, false);
+        QTRY_COMPARE(extracted.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        QFile actual(QDir(destination).filePath(leaf));
+        QVERIFY(actual.open(QIODevice::ReadOnly));
+        QByteArray expected;
+        if (fixture == "multi.uue") {
+            for (int value = 0; value < 46; ++value)
+                expected.append(static_cast<char>(value));
+        } else if (!fixture.startsWith("empty")) {
+            expected = QByteArray("Owned UU/XXE payload.\n").repeated(17);
+            for (int value = 0; value < 256; ++value)
+                expected.append(static_cast<char>(value));
+        }
+        QCOMPARE(actual.readAll(), expected);
+    }
+    void aesCryptUsesOpeningPasswordAndSharedTasks_data() {
+        QTest::addColumn<QString>("fixture");
+        QTest::addColumn<QString>("language");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (int version = 0; version < 4; ++version)
+                for (const auto &profile : {"phrase", "empty", "unicode"}) {
+                    const auto fixture = QStringLiteral("v%1-%2.aes").arg(version).arg(profile);
+                    QTest::newRow(qPrintable(fixture + "-" + language)) << fixture << language;
+                }
+    }
+    void aesCryptUsesOpeningPasswordAndSharedTasks() {
+        QFETCH(QString, fixture);
+        QFETCH(QString, language);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir output;
+        QVERIFY(output.isValid());
+        const auto source = QDir(QStringLiteral(XDZIP_FIXTURES)).filePath("../aescrypt/" + fixture);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        QVERIFY(controller->canOpenDroppedUrls({QUrl::fromLocalFile(source)}));
+        controller->openPath(source);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->passwordPrompt().isEmpty(), 10000);
+        QVERIFY(!controller->ready());
+        QCOMPARE(controller->entries()->rowCount(), 0);
+        const auto first = controller->passwordPrompt();
+        QCOMPARE(first.value("taskId").toString(), QStringLiteral("open"));
+        QVERIFY(controller->submitPassword("open", first.value("promptId").toString(),
+                                           "incorrect fixture"));
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->passwordPrompt().isEmpty(), 10000);
+        const auto retry = controller->passwordPrompt();
+        QVERIFY(retry.value("retry").toBool());
+        QVERIFY(retry.value("promptId") != first.value("promptId"));
+        QCOMPARE(controller->entries()->rowCount(), 0);
+        const auto secret = fixture.contains("unicode") ? QString::fromUtf8("owned-資料-🔑")
+                                                        : QStringLiteral("owned-aes-fixture");
+        QVERIFY(!controller->submitPassword("open", first.value("promptId").toString(), secret));
+        QVERIFY(controller->submitPassword("open", retry.value("promptId").toString(), secret));
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        QVERIFY(controller->passwordPrompt().isEmpty());
+        QCOMPARE(controller->formatLabel(), QStringLiteral("AES Crypt"));
+        QCOMPARE(controller->archiveTotal(), 1);
+        QVERIFY(!controller->canUpdateArchive());
+        controller->startUpdate({source}, controller->sessionId(), controller->directoryId(), 0);
+        QCOMPARE(controller->addDropMessage(), qtTrId("edit.readOnlyFormat").arg("AES Crypt"));
+        QSignalSpy checked(controller, &BrowserController::archiveTestStarted);
+        controller->startArchiveTest();
+        QTRY_COMPARE(checked.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        QVERIFY(controller->passwordPrompt().isEmpty());
+        const auto *row = controller->m_model.rowAt(0);
+        QVERIFY(row);
+        QCOMPARE(row->method, QStringLiteral("Store"));
+        const auto entry = row->id;
+        controller->prepareExtraction(false, {entry});
+        QTRY_VERIFY(!controller->busy());
+        controller->checkTarget(output.path());
+        QTRY_VERIFY(!controller->busy() && controller->targetMatches(output.path()));
+        QSignalSpy extracted(controller, &BrowserController::extractionStarted);
+        controller->startExtraction(output.path(), false, false, 0, false, false);
+        QTRY_COMPARE(extracted.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        QVERIFY(controller->passwordPrompt().isEmpty());
+        QFile actual(QDir(output.path()).filePath(QFileInfo(fixture).completeBaseName()));
+        QVERIFY(actual.open(QIODevice::ReadOnly));
+        QCOMPARE(actual.readAll(), fixture.contains("empty")
+                                       ? QByteArray()
+                                       : QByteArray("abracadabra abracadabra\n").repeated(6));
+    }
+    void asarArchivesUseSharedBrowserAndTasks_data() {
+        QTest::addColumn<QString>("fixture");
+        QTest::addColumn<int>("count");
+        QTest::addColumn<QString>("language");
+        const QList<QPair<QString, int>> profiles{{"ordinary.asar", 6},
+                                                  {"without-integrity.asar", 6},
+                                                  {"shared.asar", 3},
+                                                  {"executable.asar", 1}};
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (const auto &[fixture, count] : profiles)
+                QTest::newRow(qPrintable(fixture + "-" + language)) << fixture << count << language;
+    }
+    void asarArchivesUseSharedBrowserAndTasks() {
+        QFETCH(QString, fixture);
+        QFETCH(int, count);
+        QFETCH(QString, language);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir owned;
+        QVERIFY(owned.isValid());
+        const auto source = QDir(QStringLiteral(XDZIP_FIXTURES)).filePath("../asar/" + fixture);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        QVERIFY(controller->canOpenDroppedUrls({QUrl::fromLocalFile(source)}));
+        controller->openPath(source);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        QCOMPARE(controller->formatLabel(), QStringLiteral("ASAR"));
+        QCOMPARE(controller->archiveTotal(), count);
+        QVERIFY(!controller->canUpdateArchive());
+        controller->startUpdate({source}, controller->sessionId(), controller->directoryId(), 0);
+        QCOMPARE(controller->addDropMessage(),
+                 qtTrId("edit.readOnlyFormat").arg(QStringLiteral("ASAR")));
+        QCOMPARE(controller->activeTaskCount(), 0);
+        QSignalSpy checked(controller, &BrowserController::archiveTestStarted);
+        controller->startArchiveTest();
+        QTRY_COMPARE(checked.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        const auto leaf =
+            fixture == "executable.asar" ? QStringLiteral("run.txt") : QStringLiteral("hello.txt");
+        controller->search(leaf);
+        QTRY_VERIFY(!controller->busy());
+        QTRY_COMPARE(controller->m_model.rowCount(), 1);
+        const auto *row = controller->m_model.rowAt(0);
+        QVERIFY(row);
+        QCOMPARE(row->cells[0], leaf);
+        QCOMPARE(row->method, QStringLiteral("Store"));
+        QVERIFY(!row->cells[2].isEmpty());
+        const auto entry = row->id;
+        const auto destination = owned.filePath("output");
+        QVERIFY(QDir().mkpath(destination));
+        controller->prepareExtraction(false, {entry});
+        QTRY_VERIFY(!controller->busy());
+        controller->checkTarget(destination);
+        QTRY_VERIFY(!controller->busy() && controller->targetMatches(destination));
+        QSignalSpy extracted(controller, &BrowserController::extractionStarted);
+        controller->startExtraction(destination, false, false, 0, false, false);
+        QTRY_COMPARE(extracted.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        QFile actual(QDir(destination).filePath(leaf));
+        QVERIFY(actual.open(QIODevice::ReadOnly));
+        QCOMPARE(actual.readAll(), QByteArray("abracadabra abracadabra\n").repeated(6));
+    }
+    void debViewsUseSharedBrowserAndTasks_data() {
+        QTest::addColumn<QString>("fixture");
+        QTest::addColumn<QString>("method");
+        QTest::addColumn<QString>("language");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")}) {
+            QTest::newRow(qPrintable("zstd-" + language))
+                << QStringLiteral("control-gz-data-zst.deb") << QStringLiteral("Zstandard")
+                << language;
+            QTest::newRow(qPrintable("lzma-" + language))
+                << QStringLiteral("control-zst-data-lzma.deb") << QStringLiteral("LZMA")
+                << language;
+        }
+    }
+    void debViewsUseSharedBrowserAndTasks() {
+        QFETCH(QString, fixture);
+        QFETCH(QString, method);
+        QFETCH(QString, language);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir owned;
+        QVERIFY(owned.isValid());
+        const auto source = QDir(QStringLiteral(XDZIP_FIXTURES)).filePath("../deb/" + fixture);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        QVERIFY(controller->canOpenDroppedUrls({QUrl::fromLocalFile(source)}));
+        controller->openPath(source);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        QCOMPARE(controller->formatLabel(), QStringLiteral("DEB"));
+        QCOMPARE(controller->archiveTotal(), 9);
+        QVERIFY(!controller->canUpdateArchive());
+        QCOMPARE(controller->m_model.rowCount(), 3);
+        QStringList roots;
+        for (int at = 0; at < controller->m_model.rowCount(); ++at)
+            roots << controller->m_model.rowAt(at)->cells[0];
+        roots.sort();
+        QCOMPARE(roots, QStringList({"control", "data", "members"}));
+        QSignalSpy checked(controller, &BrowserController::archiveTestStarted);
+        controller->startArchiveTest();
+        QTRY_COMPARE(checked.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        for (const auto &needle : {QStringLiteral("hello.txt"), QStringLiteral("debian-binary")}) {
+            controller->search(needle);
+            QTRY_VERIFY(!controller->busy());
+            QTRY_COMPARE(controller->m_model.rowCount(), 1);
+            const auto *row = controller->m_model.rowAt(0);
+            QVERIFY(row);
+            const bool raw = needle == "debian-binary";
+            QCOMPARE(row->cells[0], raw ? QStringLiteral("members/debian-binary")
+                                        : QStringLiteral("data/usr/share/xdzip/hello.txt"));
+            QCOMPARE(row->method, raw ? QStringLiteral("Store") : method);
+            QCOMPARE(row->cells[2].isEmpty(), !raw);
+            const auto entry = row->id;
+            const auto destination = owned.filePath(needle);
+            QVERIFY(QDir().mkpath(destination));
+            controller->prepareExtraction(false, {entry});
+            QTRY_VERIFY(!controller->busy());
+            controller->checkTarget(destination);
+            QTRY_VERIFY(!controller->busy() && controller->targetMatches(destination));
+            QSignalSpy extracted(controller, &BrowserController::extractionStarted);
+            controller->startExtraction(destination, false, false, 0, false, false);
+            QTRY_COMPARE(extracted.count(), 1);
+            QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0,
+                                     10000);
+            QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                     QStringLiteral("succeeded"));
+            QFile actual(
+                QDir(destination)
+                    .filePath(raw ? "members/debian-binary" : "data/usr/share/xdzip/hello.txt"));
+            QVERIFY(actual.open(QIODevice::ReadOnly));
+            QCOMPARE(actual.readAll(), raw ? QByteArray("2.0\n")
+                                           : QByteArray("abracadabra abracadabra\n").repeated(6));
         }
     }
     void readonlyFormatsUseSharedBrowserAndTasks_data() {
@@ -13312,7 +14157,8 @@ QtObject {
                     controller->tasks().first().toMap().value("terminal").toBool());
         const auto taskData = controller->tasks().first().toMap();
         QCOMPARE(taskData.value("status").toString(), "failed");
-        QCOMPARE(taskData.value("committedFiles").toString(), "2");
+        QVERIFY2(taskData.value("committedFiles").toString() == "2",
+                 qPrintable(taskData.value("errorCode").toString()));
         QCOMPARE(taskData.value("errorCode").toString(), "integrity_error");
         QCOMPARE(taskData.value("details").toList().size(), 3);
         QVERIFY(QFileInfo::exists(target.filePath(QStringLiteral("冰川湖.jpg"))));
@@ -13321,6 +14167,8 @@ QtObject {
         auto *task = window->findChild<QQuickWindow *>("taskWindow");
         QVERIFY(task);
         QTRY_VERIFY(task->isVisible() && visibleImagesReady(task->contentItem()));
+        QCOMPARE(findVisual(task->contentItem(), "resultSavedCaption")->property("text").toString(),
+                 QStringLiteral("已处理 2 个文件"));
         const auto output = qEnvironmentVariable("XDZIP_RESULT_AUDIT");
         const auto capture = [&](const QString &name) {
             return output.isEmpty() ||
@@ -14839,6 +15687,8 @@ QtObject {
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
         QVERIFY(!engine.rootObjects().isEmpty());
         auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        // This fixture compares the light reference palette, independent of OS theme.
+        window->setProperty("darkMode", false);
         auto *controller = window->findChild<BrowserController *>();
         controller->openPath(QStringLiteral(XDZIP_FIXTURES "/visual-main.zip"));
         QTRY_VERIFY(controller->ready() && !controller->busy());

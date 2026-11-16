@@ -12,6 +12,9 @@
 #include <QStyleHints>
 #include <QTemporaryDir>
 #include <QtQml/qqml.h>
+#ifdef Q_OS_WIN
+#include <QThread>
+#endif
 
 namespace {
 bool validTheme(const QString &theme) {
@@ -21,12 +24,34 @@ bool validScale(double scale) {
     return scale == 1 || scale == 1.25 || scale == 1.5;
 }
 bool atomicWrite(const QString &path, const QByteArray &bytes) {
-    QSaveFile output(path);
-    output.setDirectWriteFallback(false);
-    if (!output.open(QIODevice::WriteOnly))
+#ifdef Q_OS_WIN
+    unsigned int attempt = 0;
+#endif
+    for (;;) {
+        if (QFileInfo(path).isSymLink())
+            return false;
+        QSaveFile output(path);
+        output.setDirectWriteFallback(false);
+        if (!output.open(QIODevice::WriteOnly))
+            return false;
+        output.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner);
+        if (output.write(bytes) != bytes.size())
+            return false;
+        if (output.commit())
+            return true;
+#ifdef Q_OS_WIN
+        // A reader that omits delete sharing can temporarily deny Windows rename.
+        // Qt exposes RenameError, not a stable native error code after cleanup.
+        // Failed commit consumes its temporary file; recreate it with the same
+        // bytes while the caller's lock remains held, never writing in place.
+        if (output.error() != QFileDevice::RenameError || attempt >= 4)
+            return false;
+        // Four backoffs total 75 ms; do not process events and re-enter save.
+        QThread::msleep(5UL << attempt++);
+#else
         return false;
-    output.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner);
-    return output.write(bytes) == bytes.size() && output.commit();
+#endif
+    }
 }
 } // namespace
 UiPreferences::UiPreferences(QObject *parent) : QObject(parent) {
@@ -123,6 +148,7 @@ bool UiPreferences::save(const QString &theme, double scale, const QString &lang
     if (!stage.isValid())
         return failed();
     const auto stagedPath = stage.filePath("settings.ini");
+    QSettings settings(stagedPath, QSettings::IniFormat);
     QByteArray previous;
     const bool existed = QFile::exists(path);
     if (existed) {
@@ -130,10 +156,26 @@ bool UiPreferences::save(const QString &theme, double scale, const QString &lang
         if (!input.open(QIODevice::ReadOnly) || input.size() > 1024 * 1024)
             return failed();
         previous = input.readAll();
-        if (input.error() != QFileDevice::NoError || !atomicWrite(stagedPath, previous))
+        if (input.error() != QFileDevice::NoError)
+            return failed();
+        // Parse an immutable snapshot and serialize into a different, new file.
+        // Updating a just-written staging file makes QSettings perform another
+        // atomic replacement, exposed to the same Windows reader contention.
+        const auto snapshotPath = stage.filePath("original.ini");
+        {
+            QFile snapshot(snapshotPath);
+            if (!snapshot.open(QIODevice::WriteOnly | QIODevice::NewOnly) ||
+                snapshot.write(previous) != previous.size() || !snapshot.flush())
+                return failed();
+        }
+        QSettings source(snapshotPath, QSettings::IniFormat);
+        if (source.value("schemaVersion", 1).toInt() != 1)
+            return failed();
+        for (const auto &key : source.allKeys())
+            settings.setValue(key, source.value(key));
+        if (source.status() != QSettings::NoError)
             return failed();
     }
-    QSettings settings(stagedPath, QSettings::IniFormat);
     if (settings.status() != QSettings::NoError || settings.value("schemaVersion", 1).toInt() != 1)
         return failed();
     settings.setValue("schemaVersion", 1);

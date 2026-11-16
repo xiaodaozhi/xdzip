@@ -1,57 +1,57 @@
-# HTML 视觉一致性复核
+# HTML visual fidelity review
 
-高保真图片是视觉依据，HTML 是可编辑实现。顶部与工具栏下方内容均从 [冻结的初版主窗口](../../design/hifi/screens/main-light.png) 独立量取尺寸，不从当前 CSS 反推“设计应当如此”。当前展示使用[胶囊标签浅色稿](../../design/hifi/screens/main-capsule-light.png)与[深色稿](../../design/hifi/screens/main-capsule-dark.png)，它们由[可编辑源](../../design/hifi/sources/main.html)导出，不替代独立量测。标题栏按 layout-scale.json 的显式修订验收；原稿存在柔化边缘和生成式字形，不能凭测试数量声明整页逐像素一致。
+High-fidelity images are the visual reference; HTML is the editable implementation. Dimensions above and below the toolbar are measured independently from the [frozen initial main window](../../design/hifi/screens/main-light.png), not inferred backward from current CSS. Current display uses the [light capsule-tab design](../../design/hifi/screens/main-capsule-light.png) and [dark design](../../design/hifi/screens/main-capsule-dark.png), exported from the [editable source](../../design/hifi/sources/main.html); they do not replace independent measurement. The title bar is accepted against the explicit revision in layout-scale.json. Original artwork has softened edges and generated glyphs; test counts cannot establish whole-page pixel-perfect identity.
 
-## 固定可重复条件
+## Fixed reproducible conditions
 
-- 源画布与 PNG 一致，为 1586×992；窗口 1548×940、原点 `(20,30)`。原稿锚点检查仍使用 1588×1000 浏览器视口、设备像素比1，顶部同坐标裁切 `(20,30)-(1568,167)`，内容区域裁切 `(20,167)-(1568,970)`，不拉伸原稿。
-- 原稿 SHA-256 固定在 [header-reference.json](../../design/html/header-reference.json) 和 [body-reference.json](../../design/html/body-reference.json)。原稿变化后必须重新测量，不能默默替换。
-- 字体为离线随包的 [Xdzip Design Sans SC](../../design/assets/fonts/README.md)，测量等待 `document.fonts.ready`。固定真实 400–750 字重，减少平台回退字体改变宽度的问题。
-- 参考字体的原始家族无法从生成图片证明。字形轮廓与系统抗锯齿仍可能不同；字形差异单独记录，不能伪称已经还原原始字体。
+- The source canvas matches the PNG at 1586×992; the window is 1548×940 at origin `(20,30)`. Original anchor checks still use a 1588×1000 browser viewport at device pixel ratio 1. Crop the top at `(20,30)-(1568,167)` and content at `(20,167)-(1568,970)` without stretching the original.
+- Original SHA-256 values are pinned in [header-reference.json](../../design/html/header-reference.json) and [body-reference.json](../../design/html/body-reference.json). Changes to originals require remeasurement, not silent replacement.
+- The bundled offline [Xdzip Design Sans SC](../../design/assets/fonts/README.md) font is measured after `document.fonts.ready`. Real 400–750 weights are fixed to reduce width changes from platform fallback fonts.
+- The original font family cannot be established from a generated image. Glyph outlines and system anti-aliasing may still differ; record glyph differences separately and do not claim to have restored the original font.
 
-## 展示尺寸与源像素
+## Display size and source pixels
 
-正常设计展示沿用 [1024 逻辑像素窗口宽度](README.md)，将源坐标整体等比映射为 `1024 / 1548`。主窗口正常展示为 1024 × 约621.81 CSS 像素；原稿也使用同一倍率。这个比例来自显式设计约定，不是根据 PNG 推断 Retina 或 DPI。
+Normal design display uses the [1024 logical-pixel window width](README.md), uniformly mapping source coordinates by `1024 / 1548`. The main window displays at 1024 × approximately 621.81 CSS pixels; the original uses the same scale. This ratio is an explicit design convention, not an inference about Retina or DPI from a PNG.
 
-`display-spec.js` 是所有图板尺寸和展示比例的唯一来源。桌面默认正常设计尺寸，手机默认适应屏幕；适应倍率上限为正常设计尺寸，避免宽屏自动放大。原稿像素模式则使用 `scale=1`，在 HTML 和图片两侧同时保留原始像素尺寸和滚动范围。设备像素比只影响栅格化密度，不改变 CSS 逻辑宽度。
+`display-spec.js` is the sole source of all artboard dimensions and display scales. Desktop defaults to normal design size and mobile defaults to fit; fit scale is capped at normal design size to prevent automatic enlargement on wide screens. Original-pixel mode uses `scale=1`, preserving original pixel dimensions and scrolling on both HTML and image sides. Device pixel ratio affects rasterization density only, not CSS logical width.
 
-原稿和 HTML 禁止分别适应容器。顶部、正文锚点仍在源像素坐标中测量，展示缩放不修改已经校准的间距或字号。尺寸一致性另外覆盖实际屏幕边界、原稿自然尺寸、手机滚动、独立预览及离线单文件，证据按[验证方法](../qa/README.md)保存。
+Do not fit the original and HTML to their containers independently. Header and body anchors remain measured in source-pixel coordinates; display scaling does not change calibrated spacing or font sizes. Size consistency separately covers actual screen bounds, original natural size, mobile scrolling, standalone previews and offline single-file outputs. Retain evidence under the [verification method](../qa/README.md).
 
-## 画布与内容的滚动职责
+## Canvas and content scrolling
 
-嵌入审阅工具的 HTML 是固定尺寸图板，根文档使用 `overflow:hidden`，避免经典滚动条挤占画布宽高并互相触发。审阅页面自然上下滚动；外层画布只在宽度不足时横向平移。页面的 `scrollbar-gutter:stable` 保持经典条预留宽度，避免临界高度反复改变适应倍率；独立预览使用 `auto`。文件列表、长属性及操作窗口保留内容容器的滚动，直接打开非嵌入的源画布也保留页面滚动。该调整不改变源画布、窗口或组件尺寸。
+HTML embedded in the review tool is a fixed-size artboard with `overflow:hidden` on the root document, preventing classic scrollbars from consuming canvas dimensions and triggering one another. The review page scrolls vertically; the outer canvas pans horizontally only when width is insufficient. `scrollbar-gutter:stable` reserves classic scrollbar width so a threshold height does not repeatedly change fit scale; standalone previews use `auto`. File lists, long properties and operation windows retain scrolling in content containers, and directly opened non-embedded source canvases retain page scrolling. This does not change source canvas, window or component dimensions.
 
-Playwright 默认携带 `--hide-scrollbars`，此前的截图与尺寸矩阵没有覆盖实际经典滚动条。尺寸与预览专项检查现已明确移除该参数：同时检查根滚动条占位、窗口四边可见、外层横向平移和长属性末尾按钮可达。画布少 1 px 的用例和移除嵌入规则的负向用例用于复现并捕获滚动条相互挤占。复现及修复截图按[验证方法](../qa/README.md)保留在执行工件；这不等于验证了所有浏览器和系统的滚动条外观。
+Playwright defaults to `--hide-scrollbars`, so earlier screenshot and size matrices did not cover actual classic scrollbars. Size and preview checks now explicitly remove that argument, checking root scrollbar reservation, visibility of all four window edges, outer horizontal panning and access to the final button in long properties. A canvas 1 px too small and a negative case removing embedding rules reproduce and catch competing scrollbar space. Keep reproduction and fix screenshots in execution artifacts under the [verification method](../qa/README.md); this does not establish scrollbar appearance on every browser or system.
 
-## 本次顶部修正
+## Header corrections
 
-| 部位 | 修正前 | 按原稿修正 |
+| Area | Before | Corrected against original |
 | --- | --- | --- |
-| 活动 Tab | 起点 x299、宽244 | x293、宽246 |
-| 非活动 Tab | x557、宽244 | x542、宽262 |
-| Tab 间距 | 14 px | 3 px；按柔化边缘允许约1 px不确定性 |
-| 加号与关闭按钮 | 分属两套垂直布局，中线差5 px | 使用同一标签行，按原稿的约1 px光学偏移定位 |
-| 关闭控件 | 一个按钮、一个裸 span | 同一图标／名称／关闭控件结构与明确槽位 |
-| 设置图标 | 可见图形小、偏左偏上 | 中心 `(1532,61)`；检查实际图形而非仅检查SVG容器 |
-| 活动 Tab 下边框 | 与标题栏横线叠加 | 与工具栏白面接通，左肩过渡独立定义 |
-| 搜索与解压 | 左右、垂直边界有偏移 | 分别对照 `(906,101,449,51)`、`(1368,101,183,51)` |
-| 工具栏左侧图标 | 通用按钮尺寸和间距决定布局 | 按原稿的图形锚点定位与检查 |
+| Active tab | Start x299, width 244 | x293, width 246 |
+| Inactive tab | x557, width 244 | x542, width 262 |
+| Tab gap | 14 px | 3 px; approximately 1 px uncertainty permitted for softened edges |
+| Plus and close buttons | Separate vertical layouts with centers 5 px apart | Same tab row, positioned with approximately 1 px optical offset from the original |
+| Close controls | One button and one bare span | Same icon/name/close-control structure and explicit slots |
+| Settings icon | Visible graphic small and shifted up-left | Center `(1532,61)`; inspect actual artwork, not only the SVG container |
+| Active tab lower border | Overlapped title-bar rule | Joins white toolbar surface, with left-shoulder transition defined independently |
+| Search and extract | Horizontal and vertical boundaries shifted | Compare to `(906,101,449,51)` and `(1368,101,183,51)` respectively |
+| Toolbar left icons | Layout determined by generic button sizes and gaps | Position and check against original graphic anchors |
 
-顶部组件的槽位和排版集中在 `hifi.css` 的标题栏、标签和工具栏段落，不依赖通用 `.icon-button` 的尺寸或继承行高。浅深主题共用几何；Windows/Linux 的标题装饰仍是浏览器演示，正式产品原生窗口单独验收。
+Header component slots and typography are centralized in the title-bar, tab and toolbar sections of `hifi.css`, without relying on generic `.icon-button` dimensions or inherited line height. Light and dark themes share geometry. Windows/Linux title decorations remain browser demonstrations; native product windows receive separate acceptance.
 
-## 工具栏下方内容区域
+## Content below the toolbar
 
-正文范围为归档卡片、目录树、路径栏、列表表头与行、选择状态、文件预览和底部状态栏。记录列边界、行高、内边距、图标中心及可见墨迹，按 [独立基准](../../design/html/body-reference.json) 检查。严格几何与隔离图标墨迹容差均为 2 px，文字轮廓只记录供人工复核。文件夹的光学大小是明确的设计修订：新轮廓在共享素材内等比放大约25.7%；五处旧原稿目录墨迹保留作对照，按独立记录的新设计边界检查，其他原稿锚点不变。
+The body covers archive card, directory tree, path bar, table headers and rows, selection, file preview and bottom status bar. Record column boundaries, row heights, padding, icon centers and visible ink and check against the [independent baseline](../../design/html/body-reference.json). Strict geometry and isolated icon-ink tolerances are 2 px; text outlines are recorded only for manual review. Folder optical size is an explicit design revision: the new outline is uniformly enlarged approximately 25.7% in shared assets. Five old folder ink examples remain as comparisons and are checked against independently recorded new design boundaries; other original anchors remain unchanged.
 
-正文复核使用同尺寸内容裁切，并为侧栏、列表、预览及状态栏保留区域对照。修复前后截图、提交和测量只记录在对应 issue／Actions 工件，不在规范中维护某次运行结果。手机按区域查看，不能改变桌面排版隐藏差异。
+Body review uses equal-size content crops and keeps regional comparisons for sidebar, list, preview and status bar. Before/after screenshots, commits and measurements belong only in the corresponding issue/Actions artifacts, not as a particular run's results in the specification. Mobile review is by region and must not change desktop layout to hide differences.
 
-原稿选中一项但全选框为空、标注节省26%但比例条填充约56%，属于静态状态矛盾。HTML 分别保留 `indeterminate` 半选与实际26%比例，作为明确记录的语义例外。正常预览的溢出和长内容滚动由预览专项检查负责；选择、导航、排序、搜索和示例操作由现有交互检查负责，不以几何检查替代功能验证。
+The original selects one item while leaving Select All empty and labels savings 26% while filling the bar approximately 56%; these are contradictory static states. HTML retains `indeterminate` partial selection and actual 26% fill respectively, as documented semantic exceptions. Preview-specific checks cover normal preview overflow and long-content scrolling; existing interaction checks cover selection, navigation, sorting, search and sample actions. Geometry checks do not replace functional verification.
 
-按[验证方法](../qa/README.md)分别保存正文复核、同尺寸区域对照和量测证据。原稿的未知字体、生成软边、光影和抗锯齿差异必须保留说明；本轮 HTML 证据不能用于宣称 Qt 产品已完成对应校准。
+Save body review, equal-size regional comparisons and measurement evidence separately under the [verification method](../qa/README.md). Preserve explanations of unknown original fonts, generated soft edges, lighting and anti-aliasing differences; this HTML evidence cannot establish corresponding calibration of the Qt product.
 
-## 检查与交付
+## Checks and delivery
 
-执行：
+Run:
 
 ```sh
 python scripts/build-html-design.py
@@ -65,10 +65,10 @@ python scripts/build-html-header-review.py
 python scripts/build-html-body-review.py
 ```
 
-顶部检查使用原稿独立锚点：DOM 边界／中心最大偏差不超过 1 px，隔离区域中的实际图标墨迹边界偏差不超过 2 px。下拉箭头白色墨迹边界容差 1 px；Tab 右肩按原稿的白面和弧线取样，单通道颜色容差10/255，以容纳原稿柔化。字形轮廓只记录实测值。叠加图和差异图包含抗锯齿、光影和字形差异，不能将总像素差转换成虚构的相似度。
+Header checks use independent original anchors: DOM bounds/center deviate by at most 1 px and actual icon-ink boundaries in isolated regions by at most 2 px. White dropdown-arrow ink has a 1 px tolerance; the tab right shoulder samples original white surface and curve with a single-channel tolerance of 10/255 for softening. Glyph outlines are measured and recorded only. Overlays and difference images include anti-aliasing, lighting and glyph differences; total pixel difference must not be converted into fabricated similarity.
 
-顶部离线文件是 `dist/xdzip-header-review.html`；正文离线文件是 `dist/xdzip-body-review.html`。两者均可切换原稿、修复前、修复后、透明叠加和像素差异；正文增加手机区域选择。界面单文件是 `dist/xdzip-hifi-design.html`。
+The offline header file is `dist/xdzip-header-review.html` and the body file is `dist/xdzip-body-review.html`. Both switch among original, before, after, transparent overlay and pixel differences; body review adds mobile region selection. The single-file UI is `dist/xdzip-hifi-design.html`.
 
-上述 HTML 检查与离线复核按需在本地运行，不属于桌面产品默认 CI。锚点失败时应检查差异；几何通过后仍要看叠加证据。HTML 主窗口检查不替代其他页面校准，也不替代 Qt 产品与原生桌面验收。
+Run these HTML checks and offline reviews locally as needed; they are not default desktop product CI. Investigate anchor failures and inspect overlay evidence even after geometry passes. Main-window HTML checks do not replace calibration of other pages or Qt product and native desktop acceptance.
 
-主窗口与菜单的正常密度按[界面规范](design-standard.md)执行。必须同时核验 Qt 菜单／列表字号比例；在本地复核 HTML 时按[验证方法](../qa/README.md)检查实际页面缩放，旧源图坐标一致不能替代这一项。
+Normal main-window and menu density follows the [UI standard](design-standard.md). Qt menu/list font-size ratios must be checked together. When reviewing HTML locally, check actual page zoom under the [verification method](../qa/README.md); matching old source-image coordinates does not replace this.

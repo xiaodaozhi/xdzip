@@ -34,12 +34,13 @@ class DesktopBundleTests(unittest.TestCase):
         directory = self.root/'build'/system/'cli'
         (directory/'bin').mkdir(parents=True)
         suffix = '.exe' if system == 'Windows' else ''
-        for name in ('xdzip', 'xdzip-launcher', 'xdzip-native-codec'):
+        for name in ('xdzip', 'xdzip-launcher', 'xdzip-native-codec') + (('xdzip-sfx',) if system == 'Windows' else ()):
             (directory/'bin'/(name+suffix)).write_bytes(b'owned program')
         output = (self.root/'build'/system/'Owned.app/Contents/Helpers/cli'
                   if system == 'Darwin' else self.root/'build'/system/'desktop/cli')
         output.mkdir(parents=True)
         (output/'xdzip-cli-context.json').write_bytes(b'obsolete generated marker')
+        (output/('xdzip-native-codec'+suffix)).write_bytes(b'obsolete duplicate worker')
         args = argparse.Namespace(build_dir=directory, output=output)
         with patch.object(cli.platform, 'system', return_value=system):
             cli.bundle(args)
@@ -54,10 +55,18 @@ class DesktopBundleTests(unittest.TestCase):
                 marker = (output.parent.parent/'Resources/xdzip-cli-context.json'
                           if system == 'Darwin' else output/'xdzip-cli-context.json')
                 self.assertEqual(json.loads(marker.read_bytes()), {
-                    'schema_version': 1, 'kind': 'desktop', 'desktop_relative': relative})
+                    'schema_version': 1, 'kind': 'desktop', 'desktop_relative': relative,
+                    'worker_relative': ('../../MacOS/xdzip-native-codec' if system=='Darwin' else
+                                        '../xdzip-native-codec'+('.exe' if system=='Windows' else ''))})
+                suffix='.exe' if system=='Windows' else ''
+                self.assertFalse((output/('xdzip-native-codec'+suffix)).exists())
+                source=self.root/'build'/system/'cli/bin'/('xdzip-native-codec'+suffix)
+                self.assertEqual(source.read_bytes(),b'owned program')
+                if system == 'Windows':
+                    self.assertEqual((output/'xdzip-sfx.exe').read_bytes(), b'owned program')
                 if system == 'Darwin':
                     self.assertFalse((output/marker.name).exists())
-                    self.assertEqual(len(list(output.iterdir())), 3)
+                    self.assertEqual(len(list(output.iterdir())), 2)
 
     def test_windows_package_preserves_bytes_with_pre_1980_runtime_timestamps(self):
         directory = self.root/'build/cli'

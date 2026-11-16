@@ -1,46 +1,46 @@
-# M1 产品运行时与 Qt 生命周期
+# M1 product runtime and Qt lifecycle
 
-M1 范围以 design/12 为准：产品骨架、双句柄、事件/背压、关闭、三平台最小构建。M2 十万条索引、M3 安全解压和 M5 私测发行门槛不随此阶段完成。
+M1 scope follows design/12: product skeleton, dual handles, events/backpressure, shutdown, and minimal three-platform builds. M2's 100,000-entry index, M3 safe extraction, and M5 private-release gates are not completed merely by this phase.
 
-## 已落地的服务
+## Implemented services
 
-`xdzip-runtime::service` 是产品实现，诊断探针继续独立保留。GUI 只持有 `CommandClient`，专用 Qt 接收线程独占 `EventReceiver`；两个句柄各取一次，cxx 负责该桥接的 ABI 胶水，平台文件访问的安全边界另见[文件安全规范](../design/07-file-security.md)。源文件与归档快照由单个 Rust 工作线程拥有，不再向 Qt 暴露 Archive 句柄或同步扫描入口。
+`xdzip-runtime::service` is the product implementation; diagnostic probes remain separate. The GUI owns only `CommandClient`; a dedicated Qt receiver thread exclusively owns `EventReceiver`. Each handle is taken once. cxx supplies ABI glue for this bridge; platform file-access security boundaries are separately described in the [file security specification](../design/07-file-security.md). A single Rust worker owns source files and archive snapshots; Archive handles and synchronous scan entry points are no longer exposed to Qt.
 
-M1 命令为 Open、Browse、Preflight、CloseSession、Snapshot；现有真实浏览和预检全部接入。每个 accepted 普通请求分配不复用 ID，返回至多一个有界数据事件，再返回恰好一次 Finished；错误直接 Finished。页面携带会话、请求和偏移身份；每个 RuntimeConnection 单会话、串行 GUI pending 请求，M2 已增补完整查询 ID、GUI 代际和快照修订，见 [M2 契约](m2-readonly.md)。跨会话请求返回 stale_session。
+M1 commands are Open, Browse, Preflight, CloseSession, and Snapshot; all existing real browsing and preflight use them. Each accepted ordinary request gets a non-reused ID, returns at most one bounded data event, then exactly one Finished; errors return Finished directly. Pages carry session, request, and offset identity. Each RuntimeConnection has one session and serial GUI pending requests. M2 added full query ID, GUI generation, and snapshot revision; see the [M2 contract](m2-readonly.md). Cross-session requests return stale_session.
 
-GUI 普通准入使用 try_lock，不等待队列空间，校验路径 4 KiB、搜索 1 KiB、选择 128 项、目录 ID 21 字节、排序码 0–12。拒绝不消耗 ID，Busy 可重试。取消有独立最多 128 项控制通道和自己的 Finished 确认；确认不保证目标尚未完成。关闭保留独立、幂等 RequestId，预留最后一个可用 ID，即使正常 ID 耗尽或队列满也可关闭。
+GUI ordinary admission uses try_lock without waiting for queue space, validating 4 KiB paths, 1 KiB search, 128 selected items, 21-byte directory IDs, and sort codes 0–12. Rejection consumes no ID; Busy may be retried. Cancellation has a separate control channel with at most 128 items and its own Finished acknowledgement; acknowledgement does not guarantee the target has not already finished. Shutdown retains an independent, idempotent RequestId and reserves the last available ID so it works even when ordinary IDs are exhausted or the queue is full.
 
-Qt 控制器仅保留一个待准入命令。短暂 Busy 在事件循环中以 1 ms 单次定时器重试，最多尝试 32 次，持续饱和才提示重试；这不是完成时限保证。取消、关闭或断连立即撤销未接收命令，空闲时没有重试定时器。非法参数与 ID 耗尽分别报告，不伪装成忙碌；断连后禁用打开操作。
+The Qt controller retains only one command awaiting admission. Transient Busy is retried in the event loop using a one-shot 1 ms timer for at most 32 attempts; only sustained saturation prompts retry. This is not a completion deadline. Cancellation, shutdown, or disconnection immediately withdraws unaccepted commands; there is no retry timer when idle. Invalid arguments and exhausted IDs are reported separately rather than disguised as busy. Open is disabled after disconnection.
 
-## 有界传输
+## Bounded transport
 
-- 普通 outstanding 最多 128，直到 receiver 取走 Finished 才释放名额。每项预留两个事件位置，终态不被数据挤掉。
-- Rust 数据事件累计内容预算 32 MiB，包含最多 16 MiB 图片和其容器，超过预算暂停发布；取消/关闭可唤醒等待并改发 cancelled 终态。单事件超限返回 resource_limit。
-- Rust 命令累计内容仍限 8 MiB，超限拒绝准入，不受图片事件预算扩大影响。
-- Qt mailbox 最多 256 个事件、32 MiB 内容字节，其中普通数据最多 128 个位置，其余为终态/控制保留；不会为每条 Rust 事件生成一个 Qt callback。
-- 一个通知链按每轮最多 32 个事件、约 4 ms 的时间预算 drain，未结束则投递下一轮；单事件处理不可抢占。队列空时不再调度，接收线程由条件变量阻塞。
-- Open 的 Page 额外携带完整有界目录索引（至多 32,768 节点、名称和前缀共 4 MiB），由 `replace_directories` 标识替换；空索引也明确替换。Browse 不重复发送索引，`navigation_limited` 明确索引降级。Rust 计入名称和前缀字节，Qt mailbox 还计入桥接生成的节点/父 ID 字符串；节点容器和深度另设上限。只有对应请求的成功 Finished 后才一起应用新页面与目录模型。
-- Page 的 `total` 是当前列表行数，`archive_total` 独立保留物理归档记录数。普通浏览只列当前目录的直属文件和目录，搜索递归返回物理匹配。缺少显式记录的目录使用 `navigation_id` 和 `physical=false`；Qt 行键为 `dN`，原始物理 ID 保持独立，虚拟节点不可提交 Preflight。完整路径保留在行元数据中，显示名称按普通浏览／搜索分别使用 basename／全路径。
-- 字符串预算不等于 RSS：容器、快照、转换中的单个事件另有空间，但条目和页大小始终有界。桥接批次最多 128 项；M1／M2 的 100,000 条扫描基线及普通单文件 ZIP 的后续扩展分别见[M2 契约](m2-readonly.md)和[大归档索引](large-index.md)。
+- At most 128 ordinary requests are outstanding, with capacity released only when the receiver takes Finished. Two event slots are reserved per request so data cannot crowd out terminal states.
+- Rust data events have a cumulative 32 MiB content budget, including images of at most 16 MiB and their containers. Publication pauses beyond budget; cancellation/shutdown wakes waiting and can instead emit a cancelled terminal state. An oversized single event returns resource_limit.
+- Rust commands retain an 8 MiB cumulative content limit; excess is rejected on admission and is unaffected by the larger image-event budget.
+- The Qt mailbox has at most 256 events and 32 MiB content bytes. At most 128 slots are ordinary data; the rest are reserved for terminal/control events. It does not create one Qt callback per Rust event.
+- One notification chain drains at most 32 events or approximately 4 ms per turn, posting another turn if unfinished; handling a single event is not preemptible. Empty queues stop scheduling, and the receiver blocks on a condition variable.
+- Open's Page additionally carries the complete bounded directory index (at most 32,768 nodes and 4 MiB total names/prefixes), marked for replacement by `replace_directories`; an empty index also explicitly replaces. Browse does not resend the index; `navigation_limited` explicitly indicates downgraded indexing. Rust accounts name/prefix bytes; the Qt mailbox also counts bridge-generated node/parent ID strings. Node containers and depth have separate limits. Apply the new page and directory model together only after the corresponding request's successful Finished.
+- Page `total` is current list rows; `archive_total` independently retains physical archive record count. Ordinary browsing lists direct files/directories in the current directory; search recursively returns physical matches. Directories without explicit records use `navigation_id` and `physical=false`; Qt row keys are `dN`, raw physical IDs remain separate, and virtual nodes cannot submit Preflight. Full paths remain in row metadata; display names use basename/full path for ordinary browsing/search respectively.
+- String budgets are not RSS: containers, snapshots, and one event in conversion require additional space, but entries and pages remain bounded. Bridge batches contain at most 128 items. See the [M2 contract](m2-readonly.md) for the M1/M2 100,000-entry scan baseline and [large archive indexing](large-index.md) for later ordinary single-file ZIP expansion.
 
-控制与普通事件交替取出，避免持续取消确认使普通终态饥饿。递增 sequence 在交付时分配；Qt 丢弃旧序号，控制确认和过期 request_id 不修改当前视图。
+Control and ordinary events are taken alternately so continuous cancellation acknowledgements cannot starve ordinary terminal states. Increasing sequence numbers are assigned at delivery. Qt drops old sequences; control acknowledgements and stale request_ids do not modify the current view.
 
-独立任务通道的 `Task`／`TaskUpdate` 包络保留创建任务的原始 request_id，关联记录与有界任务控制槽一起保留，交付任务终态时释放。它可早于接纳数据或晚于请求 Finished，不占用第二个普通数据名额，也不释放或重新完成普通请求；用途是将准备占位与真实 TaskId、源会话准确关联。该 ID 不是取消任务的请求 ID，任务控制仍使用 TaskId。
+`Task`/`TaskUpdate` envelopes on the independent task channel retain the original task-creation request_id. Correlation records remain with bounded task control slots and are released when the task terminal state is delivered. They may precede acceptance data or follow request Finished. They consume no second ordinary-data slot and do not release or complete the ordinary request again; they accurately bind preparation placeholders to actual TaskId and source session. This ID is not a cancellation request ID; task control still uses TaskId.
 
-## 关闭、销毁与故障
+## Shutdown, destruction, and failure
 
-原生窗口关闭和应用 Quit（含 macOS Cmd+Q）进入同一异步关闭路径。停止准入，取消已接收工作，继续 drain 终态，Rust 释放会话后标记工作结束；接收线程 join Rust 工作线程，再收到 ShutdownReady 和 EOF。Qt 接收线程结束且 mailbox 排空后，GUI 才允许退出。GUI 从不 join 等待事件/文件工作的线程。
+Native window close and application Quit, including macOS Cmd+Q, enter one asynchronous shutdown path. Stop admission, cancel accepted work, continue draining terminal states, and mark work finished after Rust releases sessions. The receiver thread joins the Rust worker, then receives ShutdownReady and EOF. Only after the Qt receiver ends and the mailbox drains may the GUI exit. The GUI never joins threads waiting on events or file work.
 
-取消/关闭控制使用只含有界状态操作的短临界区，不受数据队列容量约束。协作取消不能打断操作系统阻塞读，这不是硬实时退出保证。本节的只读请求不产生输出事务；创建与解压的提交、暂存清理和退出结果分别按[创建](m4-creation.md)与[安全解压](m3-extraction.md)契约处理。
+Cancellation/shutdown control uses short critical sections containing bounded state operations, independent of data-queue capacity. Cooperative cancellation cannot interrupt an OS-blocked read; this is not a hard real-time exit guarantee. Read-only requests here do not produce output transactions. Creation/extraction commits, staging cleanup, and exit results follow the [creation](m4-creation.md) and [safe extraction](m3-extraction.md) contracts separately.
 
-QObject 提前销毁时，关闭 mailbox、唤醒接收线程、停止服务；后台仅持有共享队列和 Rust 接收句柄，不捕获控制器指针。Qt 自动撤销针对已销毁对象的通知。事件消费回调若同步销毁连接也有 QPointer 生命周期防护。放弃接收时不在析构函数 join，工作协作结束；正常 ShutdownReady 才是已 join 的证明。
+If a QObject is destroyed early, close the mailbox, wake the receiver, and stop the service. Background work holds only shared queues and the Rust receiver handle, not controller pointers. Qt automatically cancels notifications for destroyed objects. QPointer also protects lifetime if an event-consumption callback synchronously destroys the connection. When abandoning reception, do not join in the destructor; work ends cooperatively. Normal ShutdownReady alone establishes that join completed.
 
-只读工作处理函数发生可展开 panic 时，边界捕获后废弃整个服务，发送 RuntimeFault，并将未完成请求终结为 runtime_unavailable，不继续使用该会话。此处只定义只读请求的故障行为，不承诺恢复半完成的创建或解压事务；写入任务的已提交项、结果不确定性与清理按对应契约处理。分配失败、进程 abort、poisoned 内部锁等不可恢复错误不承诺发送终态。Qt 对意外 EOF/连接失败统一结束 pending 状态，防止永久忙碌。
+If a read-only worker handler encounters an unwindable panic, the boundary catches it, discards the entire service, sends RuntimeFault, and ends incomplete requests as runtime_unavailable; the session is not reused. This defines read-only failure behavior only and does not promise recovery of half-completed creation/extraction transactions. Committed items, uncertain results, and cleanup for writes follow their contracts. Unrecoverable allocation failure, process abort, or poisoned internal locks do not guarantee terminal delivery. Qt uniformly ends pending states on unexpected EOF/connection failure to prevent permanent busy state.
 
-## 验证与构建
+## Verification and build
 
-验证方法见[通用入口](../qa/README.md)。Rust 核心测试不需要 Qt；Qt 窗口、模型、压力和关闭用例在三平台原生构建运行。macOS CI 验证 arm64 与 SDK 环境 Cocoa 启动，不部署或上传应用；本地可按明确需求生成开发 DMG。Windows/Linux 部署随包 Qt 并验证无 SDK 运行，范围见[构建指南](developer-build.md)。这些检查不等同正式发行获批。
+See [general verification](../qa/README.md). Rust core tests require no Qt; Qt window, model, stress, and shutdown cases are natively built and run on three platforms. macOS CI verifies arm64 and SDK-environment Cocoa startup without deploying or uploading apps; local development DMGs may be produced on explicit request. Windows/Linux deploy bundled Qt and verify SDK-free execution; see the [build guide](developer-build.md). These checks do not amount to formal release approval.
 
-M2 的初始查询分配不可变结果身份，后续批次必须匹配全部 QueryKey 字段与参数；Qt 取消旧请求并合并最新意图，序列与请求 ID 的既有检查仍保留。单批另外限制名称 64 KiB，不重复过滤／排序。M1 历史验收不据此重写为当时已经具备 M2。
+M2 initial queries allocate immutable result identity; later batches must match every QueryKey field and parameter. Qt cancels old requests and coalesces the latest intent while retaining sequence and request-ID checks. A batch also limits names to 64 KiB and does not refilter/resort. Historical M1 acceptance is not rewritten to claim M2 already existed then.
 
-应用层可创建多个独立连接，领域运行时仍以连接隔离会话；全局任务身份与串行重任务准入见[应用会话契约](application-sessions.md)。
+The application layer may create multiple independent connections while the domain runtime isolates sessions per connection. See the [application sessions contract](application-sessions.md) for global task identity and serial heavy-task admission.

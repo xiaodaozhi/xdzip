@@ -1,6 +1,6 @@
-# Qt SDK 与源码对应核验
+# Qt SDK and source correspondence verification
 
-WP-12 的源码材料以官方归档的实际字节为准，不以相同版本号推断 SDK 构建等价。`scripts/qt_sdk_correspondence.py` 将固定源码归档、SDK 自带的源码 SPDX、构建声明、已安装配置与已知消费端补丁关联，输出到 build/；不修改 SDK，不批准许可分支。
+WP-12 source materials use actual official archive bytes; matching version numbers do not establish SDK build equivalence. `scripts/qt_sdk_correspondence.py` associates pinned source archives, source SPDX supplied by the SDK, build declarations, installed configuration, and known consumer patches, writing output to build/. It does not modify the SDK or approve license branches.
 
 ```sh
 python3 scripts/qt_sdk_correspondence.py \
@@ -8,23 +8,23 @@ python3 scripts/qt_sdk_correspondence.py \
   --output build/review/qt-sdk-correspondence.json
 ```
 
-默认离线读取 build/source-cache，缺失则失败；显式 --fetch 才按 [固定清单](../../scripts/corresponding-sources.json)下载并校验官方归档。按需三平台 Qt 工作流安装固定 SDK 后运行 --fetch，将 JSON 与其他验证记录一起保留；Mac 仍只上传记录，不部署、签名或打包应用。源码交付收集器传入 --qt-prefix 时，将该记录与补丁、固定清单一起纳入交付哈希，见[源码交付](source-delivery.md)。
+By default, read build/source-cache offline and fail if missing. Only explicit --fetch downloads and verifies official archives from the [pinned manifest](../../scripts/corresponding-sources.json). On-demand three-platform Qt workflows run --fetch after installing the pinned SDK and retain JSON with other verification records. Mac still uploads records only, without deploying, signing, or packaging apps. When the source-delivery collector receives --qt-prefix, it includes this record, patches, and pinned manifest in delivery hashes; see [source delivery](source-delivery.md).
 
-## 核验层次
+## Verification layers
 
-1. 归档 SHA-256 必须匹配固定值，归档根目录、成员路径与 .tag 的固定标记必须匹配。标记的 Git 对象类型单独记录；若标记是树对象，先对固定的原始提交对象重算 Git 对象哈希并核对其 tree 字段。逐文件读取，不解包上游源码。
-2. 若 SDK 提供模块的 .source.spdx，逐文件比较其 SHA-1 与归档内容。记录相同数量、不同文件双方哈希、SDK 声明中缺失于归档的文件及归档未覆盖数量。SHA-1 只复核上游原声明，整个归档另以固定 SHA-256 绑定。没有声明、声明差异及未覆盖文件不被补写为验证通过。
-3. 保存 SDK 模块构建 SPDX 的哈希、编译器声明与 configure 参数，同时读取安装后的 modules/*.json、qconfig*.pri 和 QT_FEATURE 配置头，保存内容及哈希。输出将上游构建者的绝对目录替换为占位符，原始证据通过文件哈希绑定。配置不是完整 CMake cache、构建环境或工具链材料；SDK 默认架构字段不代表实际库的所有架构，不能据此把 universal 库误判为 x86_64。
-4. [AGL 补丁](../../scripts/qt-patches/macos-no-agl.patch)只修改 SDK 的 lib/cmake/Qt6/FindWrapOpenGL.cmake，用于本项目消费 Qt 时避免链接旧 AGL。工具从固定 QtBase 归档读取补丁原文，重放统一差异，验证补丁、原文、结果三个 SHA-256，再检查实际 SDK 文件。只接受原版或已知补丁版；Windows SDK 的 CRLF 仅转换行尾后比较，同时保留实际字节 SHA-256、LF SHA-256 与转换标记，其他未知修改直接失败。它不改变 Qt 运行库的机器码，不能当作 Qt 已重编译的证据。完整 SDK 修改历史仍待核验。
+1. Archive SHA-256 must match the pin; archive root, member paths, and fixed `.tag` marker must match. Record marker Git object type separately. For a tree marker, first recompute the fixed original commit-object hash and verify its tree field. Read files individually without extracting upstream source.
+2. If the SDK provides a module's .source.spdx, compare each declared SHA-1 against archive content. Record matching counts, both hashes for differences, SDK-declared files missing from the archive, and uncovered archive counts. SHA-1 checks upstream's original declaration only; the complete archive is separately bound by pinned SHA-256. Missing declarations, differences, and uncovered files are not filled in as passes.
+3. Retain SDK module-build SPDX hashes, compiler declarations, and configure arguments. Also read installed modules/*.json, qconfig*.pri, and QT_FEATURE configuration headers, retaining content and hashes. Replace upstream builder absolute directories in output with placeholders; file hashes bind original evidence. Configuration is not the complete CMake cache, build environment, or toolchain materials. SDK default architecture fields do not represent every architecture in actual libraries and cannot be used to misclassify universal libraries as x86_64.
+4. The [AGL patch](../../scripts/qt-patches/macos-no-agl.patch) changes only SDK lib/cmake/Qt6/FindWrapOpenGL.cmake to avoid old AGL linkage when this project consumes Qt. The tool reads original content from the pinned QtBase archive, replays the unified diff, verifies patch, original, and result SHA-256, then checks the actual SDK file. Accept only original or known patched versions. For Windows SDK CRLF, compare only after line-ending normalization while retaining actual-byte SHA-256, LF SHA-256, and a conversion marker. Other unknown changes fail. This does not change Qt runtime machine code or prove Qt was rebuilt. Complete SDK modification history still needs verification.
 
-源码对应记录使用 schema 2，分别保存固定的 archive_commit、归档实际 archive_marker、archive_marker_type 和 commit_tree_verified。Qt Declarative 6.8.2 的 `.tag` 是 Git 树 `0a8139c574fe150aba92d5f2484a8f3fdb774977`，发布标签对应提交为 `75534f3e7fff24ed7ccb364e2ed9950a73da879f`；仓库固定的 base64 原始提交对象可离线重算提交哈希并验证其 tree 字段。其他当前固定模块的标记为提交。树关系只说明这两个 Git 对象的关系，不证明归档包含完整树或 SDK 与该树构建等价。
+Source correspondence records use schema 2, separately retaining pinned archive_commit, actual archive_marker, archive_marker_type, and commit_tree_verified. Qt Declarative 6.8.2 `.tag` is Git tree `0a8139c574fe150aba92d5f2484a8f3fdb774977`; the release tag maps to commit `75534f3e7fff24ed7ccb364e2ed9950a73da879f`. A pinned base64 original commit object in the repository permits offline recomputation of the commit hash and validation of its tree field. Other currently pinned module markers are commits. The tree relationship establishes only the relationship between these two Git objects, not that the archive contains the entire tree or that the SDK is build-equivalent to it.
 
-qt-license-sources.json 的 source_commits 仅表示许可文本的固定取回提交，与上述归档标记和发布提交分别保存，不能冒充 SDK 编译提交。历史 schema 1 材料把 Qt Declarative 树标记写入 archive_commit，已公开资产保留原样；后续解释应以对象类型修正，许可证文本仍按原有 SHA-256 检查。
+source_commits in qt-license-sources.json identify pinned retrieval commits for license texts only and are stored separately from archive markers and release commits. They cannot be represented as SDK build commits. Historical schema 1 materials placed the Qt Declarative tree marker in archive_commit; published assets remain unchanged. Later explanations should correct object type while continuing to verify license texts using original SHA-256.
 
-## 结果解释与发行边界
+## Interpreting results and release boundaries
 
-QtNetwork 安全派生库另记录 `network_security`，其回执绑定补丁、构建器、原 QtCore 与实际 QtNetwork 摘要、功能及真实传输验证。工具读取回执时重新核对实际 SDK 字节。该项证明限定在修改库，不将上游 SPDX 改写为派生库证明，也不改变其他模块的未覆盖事实。输入与维护方法见[Qt 补丁说明](../../patches/qt/README.md)。English: `network_security` separately binds the patched Network build to current SDK binaries and executed checks; upstream SPDX and all other modules retain their original evidence boundaries.
+The QtNetwork security derivative separately records `network_security`, with receipts binding patches, builder, original QtCore and actual QtNetwork digests, features, and real transport verification. When reading receipts, the tool rechecks actual SDK bytes. This evidence applies only to the modified library; it does not rewrite upstream SPDX as proof of the derivative or change uncovered facts for other modules. See the [Qt patch notes](../../patches/qt/README.md) for inputs and maintenance.
 
-模块是否提供源码 SPDX、匹配／缺失／未覆盖数量、配置和补丁状态均以本次生成的 JSON 为准，不把某个 SDK 的观测推广到其他 SDK。没有逐文件声明时不能推断对应通过，必须保留具体缺口。
+Whether modules supply source SPDX, match/missing/uncovered counts, configuration, and patch states follow the JSON generated for the current run. Do not generalize one SDK's observations to another. Without per-file declarations, do not infer correspondence passed; retain specific gaps.
 
-报告状态固定为 evidence-collected-not-build-equivalence。[实际 Qt 源码构建和加载／替换](wp12-automation.md#qt-源码与兼容替换)已有独立流程，但不能由此推断原 SDK 的字节级重现。完整工具链与系统 SDK 材料、未覆盖／生成文件、运行库来源及许可履约尚未全部核清时，不宣称全部对应源码义务已履行，不宣称字节级可重复构建。既有[运行时归属](runtime-attribution.md)的 incomplete、许可选择及平台运行库复核继续保留。
+Report status is always evidence-collected-not-build-equivalence. [Actual Qt source build and loading/replacement](wp12-automation.md#qt-源码与兼容替换) has a separate flow, but it does not establish byte-for-byte reproduction of the original SDK. Until complete toolchain/system SDK materials, uncovered/generated files, runtime provenance, and license fulfillment are fully clarified, do not claim all corresponding-source obligations are met or byte-reproducible builds. Existing [runtime attribution](runtime-attribution.md) incomplete status, license choices, and platform runtime reviews remain.

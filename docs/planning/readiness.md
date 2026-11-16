@@ -1,19 +1,19 @@
-# 开发与发行就绪评审方法
+# Development and release readiness review
 
-本页定义可重复执行的评审要求。具体阶段的完成记录、人工结论和未完成事项放在 [Issues](https://github.com/xiaodaozhi/xdzip/issues)，路线见[工作清单](backlog.md)，不在本页追加日期报告。
+This page defines repeatable review requirements. Completion records, manual conclusions and outstanding work for specific stages belong in [Issues](https://github.com/xiaodaozhi/xdzip/issues); see the [work packages](backlog.md) for the roadmap. Do not append dated status reports here.
 
-## 开发基线
+## Development baseline
 
-- 技术路线、模块边界、接口和格式能力与[设计规范](../design/index.md)一致。
-- 工具链、依赖与来源按锁文件和[工具链策略](../engineering/toolchain.md)固定。
-- Rust、C++、Qt/QML 及 FFI 变更执行与范围匹配的 CI 和回归，记录实际限制。
-- 视觉变更先走[设计流程](../visual/design-workflow.md)，实际原生视觉验收与功能测试分开登记。
-- 源码、测试和设计输入可以从当前仓库恢复，生成证据只进入本地或 Actions 工件。
+- The technical approach, module boundaries, interfaces and format capabilities agree with the [design specifications](../design/index.md).
+- Toolchain, dependencies and provenance are pinned according to lockfiles and the [toolchain policy](../engineering/toolchain.md).
+- Rust, C++, Qt/QML and FFI changes receive CI and regression checks appropriate to their scope, with actual limitations recorded.
+- Visual changes follow the [design workflow](../visual/design-workflow.md) first; actual native visual acceptance is recorded separately from functional tests.
+- Source, tests and design inputs can be recovered from the current repository; generated evidence belongs only in local or Actions artifacts.
 
-## 工作包退出
+## Work-package exit
 
-每个工作包在 issue 明确依赖、产物、验收条件、范围外事项及实际证据。未完成的缺陷、资源限制和许可复核单独跟踪，不因一次 CI 通过自动关闭。所有者调整退出边界时记录其决定，不把边界调整写成未执行的审查通过。历史 WP-12 收口见 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)。
+Each work package defines dependencies, deliverables, acceptance criteria, exclusions and actual evidence in its issue. Track unfinished defects, resource limits and license reviews separately; do not automatically close them because CI passed once. Record owner decisions that adjust exit boundaries without describing unperformed reviews as passed. Historical WP-12 closure is in [#5](https://github.com/xiaodaozhi/xdzip/issues/5).
 
-## 公开发行
+## Public release
 
-公开发行按[发行许可复核](../qa/release-review.md)与[发布手册](../engineering/release-runbook.md)执行，核对真实包、源码、来源许可、通知、安装与回退及支持政策。开发完成或人工验收不代表发行获批；未验证项保留实际状态。正式签名和付费账号不作为本项目必做前提。
+Follow the [release permission review](../qa/release-review.md) and [release runbook](../engineering/release-runbook.md), checking actual packages, source, provenance and licenses, notices, installation and rollback, and support policy. Development completion or manual acceptance does not mean release approval; unverified items retain their actual status. Formal signing and paid accounts are not mandatory prerequisites for this project.

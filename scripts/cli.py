@@ -52,12 +52,12 @@ def build(args):
         command.append('--release')
     run(command, env=environment)
     if os.name == 'nt':
-        launcher = ['cargo','rustc','--locked','-p','xdzip-cli','--bin','xdzip-launcher']
-        if args.profile == 'release':
-            launcher.append('--release')
-        # The user PATH entry must start before the versioned app-local CRT is
-        # available. Only this Rust launcher links the compiler CRT statically.
-        run([*launcher,'--','-C','target-feature=+crt-static'],env=environment)
+        for name in ['xdzip-launcher', 'xdzip-sfx']:
+            launcher = ['cargo','rustc','--locked','-p','xdzip-cli','--bin',name]
+            if args.profile == 'release':
+                launcher.append('--release')
+            # Launcher and independently distributed SFX cannot require the app-local CRT.
+            run([*launcher,'--','-C','target-feature=+crt-static'],env=environment)
     worker = args.codec
     if worker is None:
         codec = directory/'codec'
@@ -70,7 +70,7 @@ def build(args):
         worker = codec/exe('xdzip-native-codec')
     output = directory/'bin'
     output.mkdir(parents=True, exist_ok=True)
-    for name in ['xdzip', 'xdzip-launcher']:
+    for name in ['xdzip', 'xdzip-launcher'] + (['xdzip-sfx'] if os.name == 'nt' else []):
         shutil.copy2(directory/'target'/args.profile/exe(name), output/exe(name))
     shutil.copy2(worker, output/exe('xdzip-native-codec'))
     identity = json.loads(run([output/exe('xdzip'), '--version-json'], capture=True, env=environment))
@@ -87,12 +87,19 @@ def bundle(args):
             raise ValueError('Mac desktop CLI requires Contents/Helpers/cli')
         context = generated(output.parent.parent/'Resources')/'xdzip-cli-context.json'
     output.mkdir(parents=True, exist_ok=True)
+    worker_name = 'xdzip-native-codec'+('.exe' if platform.system()=='Windows' else '')
     for path in (directory/'bin').iterdir():
-        if path.is_file():
+        if path.is_file() and path.name!=worker_name:
             shutil.copy2(path, output/path.name)
+    duplicate=output/worker_name
+    if duplicate.is_symlink() or duplicate.is_dir():
+        raise ValueError('Unexpected desktop CLI worker path')
+    duplicate.unlink(missing_ok=True)
     relative = {'Darwin':'../../MacOS/xdzip', 'Windows':'../xdzip.exe', 'Linux':'../xdzip'}[platform.system()]
+    worker_relative='../../MacOS/'+worker_name if platform.system()=='Darwin' else '../'+worker_name
     context.parent.mkdir(parents=True, exist_ok=True)
-    context.write_text(json.dumps(dict(schema_version=1, kind='desktop', desktop_relative=relative))+'\n')
+    context.write_text(json.dumps(dict(schema_version=1, kind='desktop', desktop_relative=relative,
+                                      worker_relative=worker_relative))+'\n')
     if platform.system() == 'Darwin':
         (output/'xdzip-cli-context.json').unlink(missing_ok=True)
 
@@ -132,6 +139,8 @@ def notices(output):
         shutil.copy2(ROOT/name, output/name)
     from rar_mapping_materials import collect
     collect(output)
+    from brotli_data_materials import collect as collect_brotli_data
+    collect_brotli_data(output)
     (output/'rust-dependencies.json').write_text(json.dumps(inventory, indent=2)+'\n')
 
 
@@ -170,7 +179,7 @@ def package(args):
         if path.is_symlink():
             raise ValueError('CLI payload cannot contain links')
         if path.is_file():
-            files.append(dict(path=path.relative_to(payload).as_posix(), sha256=digest(path), executable=path.name in [exe(n) for n in ['xdzip','xdzip-launcher','xdzip-native-codec']]))
+            files.append(dict(path=path.relative_to(payload).as_posix(), sha256=digest(path), executable=path.name in [exe(n) for n in ['xdzip','xdzip-launcher','xdzip-native-codec','xdzip-sfx']]))
     (payload/'cli-payload.json').write_text(json.dumps(dict(schema_version=1,product='xdzip',identity=identity,files=files), indent=2)+'\n')
     target = {'Darwin':'macos-arm64.tar.gz','Windows':'windows-x86_64.zip','Linux':'linux-x86_64.tar.gz'}[platform.system()]
     archive = output/f'xdzip-cli-{identity["version"]}-{target}'

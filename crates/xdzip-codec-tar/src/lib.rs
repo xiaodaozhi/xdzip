@@ -2,109 +2,56 @@
 mod record;
 mod rewrite;
 mod writer;
-use std::io::{self, Read, SeekFrom};
+use std::io::Read;
+use std::{cell::Cell, rc::Rc};
 use xdzip_codec_api::payload::{DecodeError, DecodedSink, PayloadCodec, PayloadReader};
 use xdzip_codec_api::{
     Cancellation, Entry, Format, MetadataCodec, ReadSource, ScanError, ScanLimits,
 };
-use xdzip_compression::GzipReader;
+use xdzip_codec_stream::controlled::ControlledStream as Stream;
+pub use xdzip_codec_stream::controlled::Filter;
 use xdzip_domain::identity::EntryId;
 
-/// TAR container, optionally behind exactly one GZIP filter.
+/// TAR container, optionally behind one admitted sequential filter.
 pub struct TarCodec {
-    /// Decode/encode GZIP before/after the TAR container.
-    pub gzip: bool,
+    /// Outer filter; creation and rewrite remain independently admitted.
+    pub filter: Filter,
 }
 const EXTENSION_LIMIT: u64 = 64 * 1024;
 const STREAM_LIMIT: u64 = 24 * 1024 * 1024 * 1024;
 
-struct Stream<'a> {
-    reader: Box<dyn Read + 'a>,
-    control: &'a Cancellation,
-    remaining: u64,
-    position: u64,
-    failure: Option<ScanError>,
-}
-struct SourceGuard<'a> {
-    source: &'a mut dyn ReadSource,
-    control: &'a Cancellation,
-    remaining: u64,
-}
-impl Read for SourceGuard<'_> {
-    fn read(&mut self, output: &mut [u8]) -> io::Result<usize> {
-        if output.is_empty() {
-            return Ok(0);
-        }
-        self.control.check().map_err(io::Error::other)?;
-        if self.remaining == 0 {
-            return Err(io::Error::other(ScanError::Limit));
-        }
-        let take = output
-            .len()
-            .min(self.remaining.min(usize::MAX as u64) as usize);
-        let n = self
-            .source
-            .read(&mut output[..take])
-            .map_err(|_| io::Error::other(ScanError::Io))?;
-        self.remaining -= n as u64;
-        Ok(n)
-    }
-}
-impl Read for Stream<'_> {
-    fn read(&mut self, bytes: &mut [u8]) -> io::Result<usize> {
-        if bytes.is_empty() {
-            return Ok(0);
-        }
-        let fault = self
-            .control
-            .check()
-            .err()
-            .or_else(|| (self.remaining == 0).then_some(ScanError::Limit));
-        if let Some(error) = fault {
-            self.failure = Some(error);
-            return Err(io::Error::other(error));
-        }
-        let length = bytes
-            .len()
-            .min(self.remaining.min(usize::MAX as u64) as usize);
-        let n = self.reader.read(&mut bytes[..length]).inspect_err(|e| {
-            self.failure = Some(
-                e.get_ref()
-                    .and_then(|e| e.downcast_ref::<ScanError>())
-                    .copied()
-                    .unwrap_or(ScanError::Invalid),
-            );
-        })?;
-        self.remaining -= n as u64;
-        self.position += n as u64;
-        Ok(n)
-    }
+/// Recognize a nonempty TAR header before selecting a compressed container.
+/// A damaged ustar header remains TAR so a later failure cannot downgrade it.
+pub fn recognizes_header(bytes: &[u8]) -> bool {
+    bytes.get(257..262) == Some(b"ustar")
+        || <&[u8; 512]>::try_from(bytes).is_ok_and(|block| {
+            block.iter().any(|b| *b != 0) && record::Record(block).validate().is_ok()
+        })
 }
 impl TarCodec {
+    /// Container capability for this specific filter.
+    pub const fn format(&self) -> Format {
+        match self.filter {
+            Filter::Identity => Format::Tar,
+            Filter::Gzip => Format::TarGzip,
+            Filter::Bzip2 => Format::TarBzip2,
+            Filter::Lzma => Format::TarLzma,
+            Filter::Lzip => Format::TarLzip,
+            Filter::Xz => Format::TarXz,
+            Filter::Lz4 => Format::TarLz4,
+            Filter::Zstd => Format::TarZstd,
+            Filter::Compress => Format::TarCompress,
+            Filter::Brotli => Format::TarBrotli,
+        }
+    }
+
     fn stream<'a>(
         &self,
         source: &'a mut dyn ReadSource,
         control: &'a Cancellation,
         limit: u64,
     ) -> Result<Stream<'a>, ScanError> {
-        source.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
-        let guarded = SourceGuard {
-            source,
-            control,
-            remaining: limit,
-        };
-        let reader: Box<dyn Read + 'a> = if self.gzip {
-            Box::new(GzipReader::new(guarded))
-        } else {
-            Box::new(guarded)
-        };
-        Ok(Stream {
-            reader,
-            control,
-            remaining: limit,
-            position: 0,
-            failure: None,
-        })
+        Stream::new(source, control, self.filter, limit, limit)
     }
     fn inspect(
         &self,
@@ -112,9 +59,93 @@ impl TarCodec {
         control: &Cancellation,
         limits: ScanLimits,
     ) -> Result<(Vec<Entry>, Vec<u64>), ScanError> {
+        self.inspect_metered(source, control, limits, None)
+    }
+    fn inspect_metered(
+        &self,
+        source: &mut dyn ReadSource,
+        control: &Cancellation,
+        limits: ScanLimits,
+        budget: Option<Rc<Cell<u64>>>,
+    ) -> Result<(Vec<Entry>, Vec<u64>), ScanError> {
         let mut stream = self.stream(source, control, limits.read_bytes)?;
-        let result = scan(&mut stream, self.gzip, limits);
-        stream.failure.map_or(result, Err)
+        if let Some(budget) = budget {
+            stream = stream.with_output_budget(budget);
+        }
+        let result = scan(&mut stream, self.format(), limits);
+        stream.failure().map_or(result, Err)
+    }
+    /// Scan nested TAR content against an additional aggregate decoded-work budget.
+    pub fn scan_with_budget(
+        &self,
+        source: &mut dyn ReadSource,
+        control: &Cancellation,
+        limits: ScanLimits,
+        budget: Rc<Cell<u64>>,
+    ) -> Result<Vec<Entry>, ScanError> {
+        self.inspect_metered(source, control, limits, Some(budget))
+            .map(|(rows, _)| rows)
+    }
+    fn verified_payload(
+        &self,
+        source: &mut dyn ReadSource,
+        snapshot: &[Entry],
+        control: &Cancellation,
+        budget: Option<Rc<Cell<u64>>>,
+    ) -> Result<(Vec<Entry>, Vec<u64>), DecodeError> {
+        let limits = ScanLimits {
+            read_bytes: STREAM_LIMIT,
+            ..ScanLimits::default()
+        };
+        let (rows, offsets) = self
+            .inspect_metered(source, control, limits, budget)
+            .map_err(decode_error)?;
+        if rows.as_slice() != snapshot {
+            return Err(DecodeError::Integrity);
+        }
+        Ok((rows, offsets))
+    }
+    /// Own a restricted inner source and share separate preparation/delivery quotas.
+    pub fn open_payload_owned<'a>(
+        &self,
+        source: Box<dyn ReadSource + 'a>,
+        snapshot: &[Entry],
+        control: &'a Cancellation,
+        preparation: Rc<Cell<u64>>,
+        delivery: Rc<Cell<u64>>,
+    ) -> Result<Box<dyn PayloadReader + 'a>, DecodeError> {
+        let (rows, reader) = self.index_payload_owned(source, control, preparation, delivery)?;
+        if rows.as_slice() != snapshot {
+            return Err(DecodeError::Integrity);
+        }
+        Ok(reader)
+    }
+    /// Scan and retain an owned nested reader; the parent validates its combined snapshot.
+    pub fn index_payload_owned<'a>(
+        &self,
+        mut source: Box<dyn ReadSource + 'a>,
+        control: &'a Cancellation,
+        preparation: Rc<Cell<u64>>,
+        delivery: Rc<Cell<u64>>,
+    ) -> Result<(Vec<Entry>, Box<dyn PayloadReader + 'a>), DecodeError> {
+        let limits = ScanLimits {
+            read_bytes: STREAM_LIMIT,
+            ..ScanLimits::default()
+        };
+        let (rows, offsets) = self
+            .inspect_metered(source.as_mut(), control, limits, Some(preparation))
+            .map_err(decode_error)?;
+        let stream = Stream::new_owned(source, control, self.filter, STREAM_LIMIT, STREAM_LIMIT)
+            .map_err(decode_error)?
+            .with_output_budget(delivery);
+        Ok((
+            rows.clone(),
+            Box::new(Reader {
+                stream,
+                rows,
+                offsets,
+            }),
+        ))
     }
 }
 fn skip(stream: &mut Stream<'_>, mut count: u64) -> Result<(), ScanError> {
@@ -190,7 +221,7 @@ fn validate_global_comments(mut data: &[u8]) -> Result<(), ScanError> {
 }
 fn scan(
     stream: &mut Stream<'_>,
-    gzip: bool,
+    format: Format,
     limits: ScanLimits,
 ) -> Result<(Vec<Entry>, Vec<u64>), ScanError> {
     let mut rows = Vec::new();
@@ -230,7 +261,7 @@ fn scan(
                         &mut rows,
                         &legacy,
                         false,
-                        stream.control,
+                        stream.control(),
                         limits,
                     )?;
                     return Ok((rows, offsets));
@@ -360,7 +391,7 @@ fn scan(
         let warning =
             next_special || !(matches!(kind, 0 | b'0') || directory) || (directory && size != 0);
         legacy.push(unlabelled);
-        offsets.push(stream.position);
+        offsets.push(stream.position());
         rows.push(Entry {
             id: EntryId::try_from(rows.len() as u64 + 1).map_err(|_| ScanError::Limit)?,
             raw_name: name,
@@ -372,13 +403,23 @@ fn scan(
             unix_mode: 0,
             size,
             size_known: true,
-            packed_size: if gzip { 0 } else { size },
-            method: if gzip { 8 } else { 0 },
+            packed_size: if format == Format::Tar { size } else { 0 },
+            method: match format {
+                Format::Tar => 0,
+                Format::TarBzip2 => 12,
+                Format::TarLzma | Format::TarLzip => 14,
+                Format::TarXz => 95,
+                Format::TarLz4 => 256,
+                Format::TarZstd => 93,
+                Format::TarCompress => 257,
+                Format::TarBrotli => 258,
+                _ => 8,
+            },
             modified_dos: modified,
             encrypted: false,
             password_supported: false,
             warning,
-            format: if gzip { Format::TarGzip } else { Format::Tar },
+            format,
         });
         skip(stream, padded(size)?)?;
         extensions = 0;
@@ -419,16 +460,7 @@ impl PayloadCodec for TarCodec {
         snapshot: &[Entry],
         control: &'a Cancellation,
     ) -> Result<Box<dyn PayloadReader + 'a>, DecodeError> {
-        let limits = ScanLimits {
-            read_bytes: STREAM_LIMIT,
-            ..ScanLimits::default()
-        };
-        let (rows, offsets) = self
-            .inspect(source, control, limits)
-            .map_err(decode_error)?;
-        if rows.len() != snapshot.len() || rows.iter().zip(snapshot).any(|(a, b)| a != b) {
-            return Err(DecodeError::Integrity);
-        }
+        let (rows, offsets) = self.verified_payload(source, snapshot, control, None)?;
         Ok(Box::new(Reader {
             stream: self
                 .stream(source, control, STREAM_LIMIT)
@@ -453,10 +485,10 @@ impl PayloadReader for Reader<'_> {
             return Err(DecodeError::Unsupported);
         }
         let distance = self.offsets[at]
-            .checked_sub(self.stream.position)
+            .checked_sub(self.stream.position())
             .ok_or(DecodeError::Integrity)?;
         let result = skip(&mut self.stream, distance);
-        if let Some(e) = self.stream.failure {
+        if let Some(e) = self.stream.failure() {
             return Err(decode_error(e));
         }
         result.map_err(decode_error)?;
@@ -467,7 +499,7 @@ impl PayloadReader for Reader<'_> {
             let count = remaining.min(bytes.len() as u64) as usize;
             if self.stream.read_exact(&mut bytes[..count]).is_err() {
                 return Err(decode_error(
-                    self.stream.failure.unwrap_or(ScanError::Invalid),
+                    self.stream.failure().unwrap_or(ScanError::Invalid),
                 ));
             }
             sink.write_chunk(&bytes[..count])?;
@@ -480,9 +512,10 @@ impl PayloadReader for Reader<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::{Cursor, Write};
+    use std::io::{self, Cursor, SeekFrom, Write};
     use xdzip_codec_api::encode::{
-        CreationCodec, EncodeEntry, EncodeError, EncodeInput, EncodeSettings,
+        CreationCodec, EncodeEntry, EncodeError, EncodeInput, EncodeSettings, RewriteCodec,
+        RewriteInput,
     };
     struct Inputs {
         entries: Vec<EncodeEntry>,
@@ -528,27 +561,141 @@ mod tests {
             data: vec![vec![], b"payload".to_vec(), vec![]],
         }
     }
+    #[test]
+    fn owned_nested_readers_share_preparation_and_delivery_budgets() {
+        let work = encoded(false).len() as u64;
+        for gzip in [false, true] {
+            let codec = TarCodec {
+                filter: if gzip { Filter::Gzip } else { Filter::Identity },
+            };
+            let bytes = encoded(gzip);
+            let control = Cancellation::default();
+            let mut source = Cursor::new(&bytes);
+            let (rows, offsets) = codec
+                .inspect(&mut source, &control, ScanLimits::default())
+                .unwrap();
+            let preparation = Rc::new(Cell::new(2 * work));
+            let first_work = offsets[1] + rows[1].size;
+            let delivery = Rc::new(Cell::new(2 * first_work - 1));
+            let mut first = codec
+                .open_payload_owned(
+                    Box::new(Cursor::new(bytes.clone())),
+                    &rows,
+                    &control,
+                    preparation.clone(),
+                    delivery.clone(),
+                )
+                .unwrap();
+            let mut second = codec
+                .open_payload_owned(
+                    Box::new(Cursor::new(bytes)),
+                    &rows,
+                    &control,
+                    preparation.clone(),
+                    delivery.clone(),
+                )
+                .unwrap();
+            assert_eq!(preparation.get(), 0);
+            let mut sink = Sink(vec![]);
+            first.decode(&rows[1], &mut sink, &control).unwrap();
+            assert_eq!(sink.0, b"payload");
+            assert_eq!(delivery.get(), first_work - 1);
+            assert_eq!(
+                second.decode(&rows[1], &mut Sink(vec![]), &control),
+                Err(DecodeError::Limit)
+            );
+            delivery.set(1 << 20);
+            assert!(
+                second
+                    .decode(&rows[1], &mut Sink(vec![]), &control)
+                    .is_err()
+            );
+        }
+    }
+    #[test]
+    fn nested_metadata_cannot_publish_rows_after_aggregate_work_is_exhausted() {
+        let bytes = encoded(false);
+        let budget = Rc::new(Cell::new(2 * bytes.len() as u64 - 1));
+        let control = Cancellation::default();
+        let codec = TarCodec {
+            filter: Filter::Identity,
+        };
+        let mut source = Cursor::new(bytes);
+        codec
+            .scan_with_budget(&mut source, &control, ScanLimits::default(), budget.clone())
+            .unwrap();
+        assert_eq!(
+            codec.scan_with_budget(&mut source, &control, ScanLimits::default(), budget),
+            Err(ScanError::Limit)
+        );
+    }
+    #[test]
+    fn read_only_tar_filters_reject_encoding_and_rewrite_before_touching_streams() {
+        for filter in [Filter::Bzip2, Filter::Lzma, Filter::Lzip] {
+            let settings = EncodeSettings {
+                method: "store",
+                level: 6,
+                solid: false,
+                encrypt_headers: false,
+                password: None,
+            };
+            let cancel = Cancellation::default();
+            let mut output = vec![];
+            let codec = TarCodec { filter };
+            assert_eq!(
+                codec.encode(&input(), &mut output, settings, &cancel, &mut |_| {}),
+                Err(EncodeError::Unsupported)
+            );
+            assert!(output.is_empty());
+            let additions = Inputs {
+                entries: vec![],
+                data: vec![],
+            };
+            let mut stage = Cursor::new(vec![]);
+            assert_eq!(
+                codec.rewrite(
+                    &mut Cursor::new(b"invalid source"),
+                    RewriteInput {
+                        keep: &[],
+                        renames: &[],
+                        additions: &additions,
+                        settings
+                    },
+                    &mut stage,
+                    &cancel,
+                    &mut |_| {}
+                ),
+                Err(EncodeError::Unsupported)
+            );
+            assert!(stage.get_ref().is_empty());
+        }
+    }
     fn encoded(gzip: bool) -> Vec<u8> {
         let mut bytes = Vec::new();
-        TarCodec { gzip }
-            .encode(
-                &input(),
-                &mut bytes,
-                EncodeSettings {
-                    solid: false,
-                    encrypt_headers: false,
-                    method: if gzip { "deflate" } else { "store" },
-                    level: 6,
-                    password: None,
-                },
-                &Cancellation::default(),
-                &mut |_| {},
-            )
-            .unwrap();
+        TarCodec {
+            filter: if gzip { Filter::Gzip } else { Filter::Identity },
+        }
+        .encode(
+            &input(),
+            &mut bytes,
+            EncodeSettings {
+                solid: false,
+                encrypt_headers: false,
+                method: if gzip { "deflate" } else { "store" },
+                level: 6,
+                password: None,
+            },
+            &Cancellation::default(),
+            &mut |_| {},
+        )
+        .unwrap();
         bytes
     }
     fn scan_bytes(bytes: Vec<u8>, gzip: bool) -> Result<Vec<Entry>, ScanError> {
-        TarCodec { gzip }.scan(
+        TarCodec {
+            filter: if gzip { Filter::Gzip } else { Filter::Identity },
+        }
+        .scan(
             &mut Cursor::new(bytes),
             &Cancellation::default(),
             ScanLimits::default(),
@@ -608,7 +755,9 @@ mod tests {
             } else {
                 plain.clone()
             };
-            let codec = TarCodec { gzip };
+            let codec = TarCodec {
+                filter: if gzip { Filter::Gzip } else { Filter::Identity },
+            };
             let cancel = Cancellation::default();
             let mut source = Cursor::new(bytes);
             let rows = codec
@@ -671,15 +820,21 @@ mod tests {
             }
         }
         impl std::io::Seek for Broken {
-            fn seek(&mut self, _: SeekFrom) -> io::Result<u64> {
-                Ok(0)
+            fn seek(&mut self, at: SeekFrom) -> io::Result<u64> {
+                Ok(if matches!(at, SeekFrom::End(0)) {
+                    1024
+                } else {
+                    0
+                })
             }
         }
         for gzip in [false, true] {
             assert_eq!(
-                TarCodec { gzip }
-                    .scan(&mut Broken, &Cancellation::default(), ScanLimits::default())
-                    .unwrap_err(),
+                TarCodec {
+                    filter: if gzip { Filter::Gzip } else { Filter::Identity }
+                }
+                .scan(&mut Broken, &Cancellation::default(), ScanLimits::default())
+                .unwrap_err(),
                 ScanError::Io
             );
         }
@@ -697,7 +852,9 @@ mod tests {
     fn unicode_long_names_empty_records_and_sequential_selected_payloads() {
         for gzip in [false, true] {
             let mut source = Cursor::new(encoded(gzip));
-            let codec = TarCodec { gzip };
+            let codec = TarCodec {
+                filter: if gzip { Filter::Gzip } else { Filter::Identity },
+            };
             let cancel = Cancellation::default();
             let rows = codec
                 .scan(&mut source, &cancel, ScanLimits::default())
@@ -741,9 +898,11 @@ mod tests {
         let cancel = Cancellation::default();
         cancel.cancel();
         assert_eq!(
-            TarCodec { gzip: false }
-                .scan(&mut Cursor::new(&bytes), &cancel, ScanLimits::default())
-                .unwrap_err(),
+            TarCodec {
+                filter: Filter::Identity
+            }
+            .scan(&mut Cursor::new(&bytes), &cancel, ScanLimits::default())
+            .unwrap_err(),
             ScanError::Cancelled
         );
         for limits in [
@@ -761,9 +920,11 @@ mod tests {
             },
         ] {
             assert_eq!(
-                TarCodec { gzip: false }
-                    .scan(&mut Cursor::new(&bytes), &Cancellation::default(), limits)
-                    .unwrap_err(),
+                TarCodec {
+                    filter: Filter::Identity
+                }
+                .scan(&mut Cursor::new(&bytes), &Cancellation::default(), limits)
+                .unwrap_err(),
                 ScanError::Limit
             );
         }
@@ -795,7 +956,9 @@ mod tests {
             bytes.resize(1536, 0);
             let mut source = Cursor::new(bytes);
             let cancel = Cancellation::default();
-            let codec = TarCodec { gzip: false };
+            let codec = TarCodec {
+                filter: Filter::Identity,
+            };
             let rows = codec
                 .scan(&mut source, &cancel, ScanLimits::default())
                 .unwrap();
@@ -849,16 +1012,18 @@ mod tests {
             .unwrap();
         let mut members = empty.repeat(1000);
         members.extend(encoded(true));
-        let error = TarCodec { gzip: true }
-            .scan(
-                &mut Cursor::new(members),
-                &Cancellation::default(),
-                ScanLimits {
-                    read_bytes: 1024,
-                    ..Default::default()
-                },
-            )
-            .unwrap_err();
+        let error = TarCodec {
+            filter: Filter::Gzip,
+        }
+        .scan(
+            &mut Cursor::new(members),
+            &Cancellation::default(),
+            ScanLimits {
+                read_bytes: 1024,
+                ..Default::default()
+            },
+        )
+        .unwrap_err();
         assert_eq!(error, ScanError::Limit);
         let mut header = tar::Header::new_gnu();
         header.set_path("extension").unwrap();
@@ -875,38 +1040,42 @@ mod tests {
         let mut inputs = input();
         inputs.entries[1].size += 1;
         assert!(
-            TarCodec { gzip: false }
-                .encode(
-                    &inputs,
-                    &mut Vec::new(),
-                    EncodeSettings {
-                        solid: false,
-                        encrypt_headers: false,
-                        method: "store",
-                        level: 6,
-                        password: None
-                    },
-                    &Cancellation::default(),
-                    &mut |_| {}
-                )
-                .is_err()
+            TarCodec {
+                filter: Filter::Identity
+            }
+            .encode(
+                &inputs,
+                &mut Vec::new(),
+                EncodeSettings {
+                    solid: false,
+                    encrypt_headers: false,
+                    method: "store",
+                    level: 6,
+                    password: None
+                },
+                &Cancellation::default(),
+                &mut |_| {}
+            )
+            .is_err()
         );
         assert!(
-            TarCodec { gzip: true }
-                .encode(
-                    &input(),
-                    &mut Vec::new(),
-                    EncodeSettings {
-                        solid: false,
-                        encrypt_headers: false,
-                        method: "deflate",
-                        level: 6,
-                        password: Some("secret")
-                    },
-                    &Cancellation::default(),
-                    &mut |_| {}
-                )
-                .is_err()
+            TarCodec {
+                filter: Filter::Gzip
+            }
+            .encode(
+                &input(),
+                &mut Vec::new(),
+                EncodeSettings {
+                    solid: false,
+                    encrypt_headers: false,
+                    method: "deflate",
+                    level: 6,
+                    password: Some("secret")
+                },
+                &Cancellation::default(),
+                &mut |_| {}
+            )
+            .is_err()
         );
     }
 }
