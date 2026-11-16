@@ -73,6 +73,7 @@ def collect(source, deployed, qt, output):
         run('measure-desktop.py', '--app', final, '--fixture', fixture, '--metrics', metrics,
             '--runs', '1', '--require-backend', 'metal', '--output', output/'desktop-performance.json', env=runtime)
         run('check-runtime-resources.py', '--probe', output/'desktop-performance.json',
+            '--font-dir', build/'generated/fonts',
             '--output', output/'runtime-resources.json')
         run('linkage-evidence.py', '--app', compiled, '--map', link_map, '--rust-library', libraries[0],
             '--output', output/'linkage-evidence.json')

@@ -2,7 +2,7 @@
 
 """Exercise browser-style tab overflow, sorting and loading cancellation in the design."""
 from functools import partial
-from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPRequestHandler as SimpleHTTPRequestHandler
 from html_review_server import ReviewHTTPServer
 import json
 import os

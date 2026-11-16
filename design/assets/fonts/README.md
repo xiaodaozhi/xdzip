@@ -1,46 +1,42 @@
 # HTML 与 Qt 共用界面字体
 
-`xdzip-design-sans-sc.woff2` 是官方 **Noto Sans SC** 的小型可变字体子集，家族名为 **Xdzip Design Sans SC**。它用于固定 HTML 设计稿的字形、字重和文字宽度，覆盖当前界面、示例数据、ASCII 及常用界面标点，支持 400–750 的真实可变字重。文件由 `build-subset.py` 生成，不能手工编辑。
+[English](README.en.md) | 简体中文
 
-Qt 产品使用由同一 WOFF2 无损导出的 TTF，约 300 KiB。`export-qt.py` 保持字形、可变字重和度量不变，`UiFont.h` 在应用与测试中把它设为固定界面文案的默认字体，同时保留安装前的系统默认字体家族供文件名、目录名和路径等用户数据优先使用。系统缺少字形时仍由 Qt 和平台回退，不宣称覆盖所有语言。HTML 示例继续使用共享子集。高保真原稿是生成图片，无法确认其中的原始字体；统一字体不能据此宣称字形与原稿完全相同，平台抗锯齿仍有差异。
+Xdzip Design Sans SC 是官方 Noto Sans SC 2.004-H2 的可变字体子集，用于固定界面文案和 HTML 设计稿，字重范围为 400–750。Qt 使用由同一 WOFF2 无损导出的 TTF，保留相同字形、字重和文字度量。文件名、目录名、路径等用户数据仍优先使用启动时保存的系统字体，并由 Qt 和平台补充缺失字形。
 
-## 文件
+## 自动生成
 
-| 文件 | 用途 |
-| --- | --- |
-| `fonts.css` | `@font-face` 声明；界面样式另行设置家族名 |
-| `xdzip-design-sans-sc.woff2` | 实际用于 HTML 的离线字体 |
-| `xdzip-design-sans-sc.ttf` | Qt 原生运行字体，与 WOFF2 同源，SHA-256 `c380074ea8d8e955962409b9b3a8df7b4429020fdcd1f7c3e3e88affc98e6952` |
-| `export-qt.py` | 导出 TTF；`--check` 检查是否与当前 WOFF2 完全对应 |
-| `OFL.txt` | 上游原文版权及 SIL Open Font License 1.1 |
-| `manifest.json` | 固定来源、原始及子集 SHA-256、覆盖字符、字重和工具版本 |
-| `build-subset.py` | 从固定的上游 TTF 生成子集，或检查当前界面字符覆盖 |
-| `requirements.txt` | 生成和检查工具的固定版本；不属于产品运行依赖 |
+仓库只保留[固定来源与生成配置](../../../specs/dependencies/ui-font.json)、CSS、生成工具依赖和 OFL 许可。完整上游字体缓存在 `build/toolchain/fonts/<SHA-256>/source.ttf`；TTF、WOFF2 和结果清单只生成到构建目录，不提交到 Git。
+
+`python scripts/desktop.py prepare` 准备共享 Python 工具环境、固定版本的 FontTools/Brotli 和经过 SHA-256 校验的上游字体。随后 `python scripts/desktop.py build` 使用该环境离线生成子集。直接使用 CMake 时，以 `Python3_EXECUTABLE` 指定同一工具环境；每次 `cmake --build` 都会检查当前文案，包括新增和删除的源文件。Qt 字体结果位于 `<构建目录>/generated/fonts/`，资源地址继续为 `:/xdzip/fonts/xdzip-design-sans-sc.ttf`。
+
+生成器收集 `resources/i18n/` 的各语言文案、界面 QML/C++ 固定文字、HTML/CSS/JavaScript 设计文字、ASCII 和配置中的保留字符。普通文案只修改原文，不维护另一份字符表。源字体、生成算法、配置、工具版本和排序去重后的字符集合共同确定生成身份；字符集合不变时复用结果，不改写字体或触发额外资源编译。
+
+字体缓存缺失时先执行准备；缓存哈希不符时移除损坏的 `source.ttf` 再准备。上游不支持所需字符时构建失败并列出码位，不静默回退。准备阶段允许下载，构建与打包阶段不下载字体；打包工具检查该次构建的字体结果清单，不重新裁剪。
+
+## HTML 预览和离线导出
+
+仅审阅 HTML 时也使用 `build/toolchain/desktop-tools` 共享工具环境。尚未创建该环境时先执行 `python3 -m venv build/toolchain/desktop-tools`，然后在仓库根目录执行：
+
+```sh
+build/toolchain/desktop-tools/bin/python -m pip install -r design/assets/fonts/requirements.txt
+python3 scripts/ui-fonts.py prepare
+build/toolchain/desktop-tools/bin/python scripts/preview-html-design.py
+```
+
+Windows 将工具环境的 `bin/python` 换成 `Scripts/python.exe`，将 `python3` 换成 `python`。预览命令输出本机地址，按 Ctrl+C 关闭。通过此入口打开源码 HTML，预览服务器将原字体 URL 映射到 `build/generated/fonts/`；直接双击源码 HTML 不再自动提供字体。
+
+生成独立离线页面：
+
+```sh
+build/toolchain/desktop-tools/bin/python scripts/build-html-design.py
+build/toolchain/desktop-tools/bin/python scripts/ui-fonts.py check
+```
+
+`dist/` 中的页面嵌入 WOFF2 和完整许可，可以离线打开。检查生成资源可使用 `build-html-design.py --check`。已有完整上游字体时，可用 `python scripts/ui-fonts.py prepare --source /path/to/NotoSansSC.ttf` 导入，仍须通过固定哈希检查；准备后可用 `prepare --offline` 检查源缓存。
 
 ## 来源与许可
 
-字体来源是 [Google Fonts `ofl/notosanssc`](https://github.com/google/fonts/tree/a85815a42757630ce188fdad368c2dfc444d4773/ofl/notosanssc)，固定提交 `a85815a42757630ce188fdad368c2dfc444d4773`。上游文件 `NotoSansSC[wght].ttf` 的 SHA-256 为 `a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da`，内部版本为 `2.004-H2`。Google Fonts 元数据记录的原始来源为 `notofonts/noto-cjk` 提交 `523d033d6cb47f4a80c58a35753646f5c3608a78`。
+固定来源为 [Google Fonts](https://github.com/google/fonts/tree/a85815a42757630ce188fdad368c2dfc444d4773/ofl/notosanssc) 提交 `a85815a42757630ce188fdad368c2dfc444d4773`，上游 `NotoSansSC[wght].ttf` 的 SHA-256 为 `a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da`。原始来源、版本和工具版本见固定配置，生成结果的哈希和实际字符清单见构建目录中的 `manifest.json`。
 
-版权为 Adobe 2014–2021；保留字体名是 `Source`。子集采用单独家族名，保留上游版权和 OFL 元数据。**此字体及其派生字体遵循 OFL-1.1，不能改为项目的 Apache-2.0 许可证。** 分发字体时携带完整 `OFL.txt` 和版权说明；离线 HTML 嵌入字体时也必须包含完整许可文本。
-
-## 生成与检查
-
-下载固定来源的原始字体到临时路径；17.8 MB 的上游 TTF 不放入仓库。示例下载地址：
-
-```text
-https://raw.githubusercontent.com/google/fonts/a85815a42757630ce188fdad368c2dfc444d4773/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf
-```
-
-安装工具后，在仓库根目录执行：
-
-```sh
-python -m pip install -r design/assets/fonts/requirements.txt
-python design/assets/fonts/build-subset.py /tmp/NotoSansSC.ttf
-python design/assets/fonts/build-subset.py --check
-python design/assets/fonts/export-qt.py
-python design/assets/fonts/export-qt.py --check
-```
-
-生成过程校验原始文件哈希，收集 `design/html/` 中 HTML、CSS、JavaScript 的文字（排除生成的图标登记文件 `assets.js`），保留常用标点、ASCII 和已发行子集中的四个历史字形，将可变字重范围限制为 400–750，然后通过 FontTools 与 Brotli 导出 WOFF2。检查过程验证字体、许可哈希、字重范围和当前界面的字形覆盖。增加界面文字时如检查发现缺字，应重新生成子集及单文件 HTML。
-
-CSS 从 HTML 引用时使用 `../assets/fonts/fonts.css`，实际文字家族设为 `"Xdzip Design Sans SC"`。截图和几何测量前等待 `document.fonts.ready`，避免读取回退字体的宽度。单文件构建需要将 `fonts.css` 中的字体 URL 替换为 WOFF2 data URL，并嵌入完整许可。
+版权为 Adobe 2014–2021，保留字体名为 `Source`，派生字体采用独立家族名。字体及其派生字体遵循 [OFL-1.1](OFL.txt)，不适用项目 Apache-2.0。离线 HTML 和产品许可材料保留完整版权及许可。字体统一不代表与历史图片的未知原始字体完全一致，平台抗锯齿和用户数据的实际字形仍有差异。

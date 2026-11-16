@@ -8,10 +8,11 @@ import mimetypes
 import re
 from pathlib import Path
 from brand_assets import master_svg
+from ui_fonts import DEFAULT_OUTPUT, generate
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'design/html'
-FONTS = ROOT / 'design/assets/fonts'
+FONTS = DEFAULT_OUTPUT
 FONT_STYLESHEET = '../assets/fonts/fonts.css'
 
 
@@ -37,6 +38,7 @@ def inline_html(name, styles, scripts):
 
 
 def main():
+    generate(FONTS)
     assets = {'icons': {'light': {}, 'dark': {}}, 'photos': {}}
     # The manifest is the production inventory; stray files never enter a bundle.
     asset_root = ROOT / 'design/assets'
@@ -63,11 +65,6 @@ def main():
     if args.check:
         if (SOURCE / 'assets.js').read_text() != generated:
             raise SystemExit('HTML shared assets are stale; run scripts/build-html-design.py')
-        font_manifest = json.loads((FONTS / 'manifest.json').read_text())
-        for entry in ['subset', 'license']:
-            item = font_manifest[entry]
-            if hashlib.sha256((FONTS / item['path']).read_bytes()).hexdigest() != item['sha256']:
-                raise SystemExit(f'HTML font {entry} does not match its manifest')
         print('HTML shared assets match reviewed SVGs and source photos')
         return
     (SOURCE / 'assets.js').write_text(generated)
@@ -88,7 +85,7 @@ def main():
     review = review.replace('src="canvas.html"', 'src="about:blank"')
     config = 'window.XDZIP_CANVAS=' + json.dumps(canvas, ensure_ascii=False) + ';window.XDZIP_REFERENCES=' + json.dumps(references) + ';'
     review = review.replace('<script defer src="display-spec.js"></script>', '')
-    license_notice = '<script type="text/plain" id="xdzip-font-license">' + (FONTS / 'OFL.txt').read_text() + '</script>'
+    license_notice = '<script type="text/plain" id="xdzip-font-license">' + (ROOT / 'design/assets/fonts/OFL.txt').read_text() + '</script>'
     review = review.replace('</body>', license_notice + script(config) + script((SOURCE / 'display-spec.js').read_text()) + script((SOURCE / 'review.js').read_text()) + '</body>')
     output = ROOT / 'dist/xdzip-hifi-design.html'
     output.parent.mkdir(exist_ok=True)

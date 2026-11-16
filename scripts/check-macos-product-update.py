@@ -140,6 +140,8 @@ def deploy(source, build, qt, sdk, destination, log):
 
 def prepare(output, qt, session, app_name, production_trust=False):
     source = private_source(output, production_trust)
+    if (source/'scripts/ui-fonts.py').is_file():
+        run([sys.executable, source/'scripts/ui-fonts.py', 'prepare'], output/'font-prepare.log')
     run(['cargo', 'fetch', '--locked', '--manifest-path', source/'Cargo.toml'], output/'cargo-fetch.log')
     sdk = output/'sdk'
     run([sys.executable, source/'scripts/prepare-sparkle.py', '--output', sdk], output/'sdk.log')
@@ -154,7 +156,8 @@ def prepare(output, qt, session, app_name, production_trust=False):
              '-m', 'Owned Mac product update '+label])
         commit = run(['git', '-C', source, 'rev-parse', 'HEAD']).decode().strip()
         run(['cmake', '-S', source, '-B', build, '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release',
-             '-DCMAKE_PREFIX_PATH='+str(qt), '-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
+             '-DCMAKE_PREFIX_PATH='+str(qt), '-DPython3_EXECUTABLE='+sys.executable,
+             '-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
              '-DXDZIP_BUILD_QT_PROBE=OFF', '-DBUILD_TESTING=OFF', '-DXDZIP_BUILD_DESKTOP_PREVIEW=ON',
              '-DXDZIP_MACOS_HANDLER_RANK=Alternate', '-DXDZIP_NATIVE_MAC_UPDATE_FIXTURE=ON',
              '-DXDZIP_NATIVE_MAC_UPDATE_FIXTURE_DIRECTORY='+str(session), '-DXDZIP_SPARKLE_SDK='+str(sdk)], output/(label+'-build.log'))

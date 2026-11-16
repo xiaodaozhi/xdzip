@@ -9,7 +9,7 @@ The source repository retains durable inputs needed to understand, build, and ma
 | Content | Location | Git rule |
 | --- | --- | --- |
 | Product source, test code, project-owned minimal regression fixtures | apps, crates, tools, tests, resources | Retain; fixtures need explicit purposes and redistribution basis |
-| Design sources, runtime assets, fonts, parameters, necessary provenance inventories | design, specs | Retain as maintainable inputs, not execution evidence |
+| Design sources, runtime assets, font source declarations, parameters, necessary provenance inventories | design, specs | Retain as maintainable inputs, not execution evidence; generated UI font subsets remain in build directories |
 | Design, architecture decisions, interface contracts, build methods, support policy, general test methods | docs | Retain and update current rules; do not accumulate daily or per-batch execution conclusions |
 | Task scope, progress, acceptance summaries, approvals, blockers, follow-up ownership | GitHub Issues, Milestones | Cite exact commits and Actions runs; separate completed work packages from new defects |
 | Screenshots, measurements, logs, stage reports, generated reading editions, builds, development packages | build, target, dist, Actions artifacts | Do not commit; follow evidence retention periods |

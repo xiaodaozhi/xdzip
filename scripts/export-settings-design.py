@@ -4,7 +4,7 @@
 import argparse
 from functools import partial
 import hashlib
-from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPRequestHandler as SimpleHTTPRequestHandler
 from html_review_server import ReviewHTTPServer
 import json
 import os

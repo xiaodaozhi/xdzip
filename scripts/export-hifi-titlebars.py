@@ -2,7 +2,7 @@
 """Export current editable design artboards, preserving frozen raster measurements."""
 import argparse
 from functools import partial
-from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPRequestHandler as SimpleHTTPRequestHandler
 from html_review_server import ReviewHTTPServer
 import hashlib
 import json

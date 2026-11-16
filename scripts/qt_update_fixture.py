@@ -210,6 +210,11 @@ def prepare(output, sdk, session, *, production_trust=False):
         # Warm the complete locked workspace while this build phase has network;
         # the later SDK-free runtime remains offline.
         checked([cargo,'fetch','--locked','--manifest-path',source/'Cargo.toml'])
+        if (source/'scripts/ui-fonts.py').is_file():
+            from ui_fonts import source_path
+            cached_font = source_path()
+            checked([sys.executable,source/'scripts/ui-fonts.py','prepare',
+                     *(['--source', cached_font] if cached_font.is_file() else [])])
         for number,build_number in ((1,200),(2,201)):
             version='0.2.0-alpha.'+str(number)
             dump(source/'VERSION.json',{'version':'0.2.0','channel':'alpha','build':build_number,'prerelease_number':number})
@@ -220,7 +225,8 @@ def prepare(output, sdk, session, *, production_trust=False):
             checked(['git','-C',source,'-c','commit.gpgsign=false','commit','--allow-empty','--quiet','-m','Owned native update fixture '+version])
             commit=subprocess.check_output(['git','-C',str(source),'rev-parse','HEAD'],text=True).strip()
             checked([cmake,'-S',source,'-B',build,'-G','Ninja','-DCMAKE_BUILD_TYPE=Release',
-                     '-DCMAKE_PREFIX_PATH='+str(sdk),'-DBUILD_TESTING=OFF','-DXDZIP_BUILD_QT_PROBE=OFF',
+                     '-DCMAKE_PREFIX_PATH='+str(sdk),'-DPython3_EXECUTABLE='+sys.executable,
+                     '-DBUILD_TESTING=OFF','-DXDZIP_BUILD_QT_PROBE=OFF',
                      '-DXDZIP_BUILD_DESKTOP_PREVIEW=ON',
                      '-DXDZIP_NATIVE_UPDATE_FIXTURE=ON','-DXDZIP_NATIVE_UPDATE_FIXTURE_DIRECTORY='+str(session).replace('\\','/')])
             checked([cmake,'--build',build,'--target','xdzip-browser','--parallel','2'])

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Exercise creation controls at real 100/125% browser zoom and DPR 1/1.25/2."""
 from functools import partial
-from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPRequestHandler as SimpleHTTPRequestHandler
 from html_review_server import ReviewHTTPServer
 import json
 import os

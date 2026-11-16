@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "upstream": {
+    "repository": "https://github.com/google/fonts",
+    "commit": "a85815a42757630ce188fdad368c2dfc444d4773",
+    "path": "ofl/notosanssc/NotoSansSC[wght].ttf",
+    "sha256": "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da",
+    "version": "Version 2.004-H2;hotconv 1.0.118;makeotfexe 2.5.65603",
+    "original_source_repository": "https://github.com/notofonts/noto-cjk",
+    "original_source_commit": "523d033d6cb47f4a80c58a35753646f5c3608a78",
+    "url": "https://raw.githubusercontent.com/google/fonts/a85815a42757630ce188fdad368c2dfc444d4773/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf"
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "path": "design/assets/fonts/OFL.txt",
+    "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9",
+    "copyright": "(c) 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'.",
+    "derivative_family": "Xdzip Design Sans SC"
+  },
+  "family": "Xdzip Design Sans SC",
+  "weight_axis": {
+    "min": 400,
+    "default": 400,
+    "max": 750
+  },
+  "tools": {
+    "fonttools": "4.61.1",
+    "Brotli": "1.2.0"
+  },
+  "extra_characters": " ·×–—‘’”…‰′″›←↑→↓−三循第遵",
+  "inputs": [
+    "design/html/**/*.html",
+    "design/html/**/*.css",
+    "design/html/**/*.js",
+    "apps/desktop/ui/**/*.qml",
+    "apps/desktop/**/*.cpp",
+    "apps/desktop/**/*.h",
+    "apps/desktop/**/*.mm",
+    "resources/i18n/*.json"
+  ],
+  "exclude_names": [
+    "assets.js"
+  ],
+  "exclude_prefixes": [
+    "apps/desktop/tests/"
+  ]
+}

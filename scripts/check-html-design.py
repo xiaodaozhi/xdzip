@@ -5,7 +5,7 @@ Requires Playwright and a Chromium executable. Screenshots and reports are writt
 under dist/html-design-review. This is not a product codec or platform safety test.
 """
 from functools import partial
-from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPRequestHandler as SimpleHTTPRequestHandler
 from html_review_server import ReviewHTTPServer
 from pathlib import Path
 from threading import Thread

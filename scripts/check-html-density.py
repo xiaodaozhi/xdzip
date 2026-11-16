@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Measure composed main-window/menu proportions under actual browser page zoom."""
 from functools import partial
-from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPRequestHandler as SimpleHTTPRequestHandler
 from html_review_server import ReviewHTTPServer
 import json
 import os

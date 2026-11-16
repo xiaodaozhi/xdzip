@@ -2,7 +2,7 @@
 """Verify logical display size and equal HTML/reference scaling independently."""
 from contextlib import contextmanager
 from functools import partial
-from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPRequestHandler as SimpleHTTPRequestHandler
 from html_review_server import ReviewHTTPServer
 from pathlib import Path
 from threading import Thread

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Exercise About within settings, including update state fixtures."""
 from functools import partial
-from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPRequestHandler as SimpleHTTPRequestHandler
 from html_review_server import ReviewHTTPServer
 from pathlib import Path
 from threading import Thread

@@ -13,13 +13,16 @@ from runtime_rust import runtime_candidates
 from native_runtime_materials import prepare
 from rar_mapping_materials import collect as collect_rar_mapping_materials
 from brotli_data_materials import collect as collect_brotli_data_materials
+from ui_fonts import load_manifest
 
 root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('output', type=Path)
 parser.add_argument('--sparkle-sdk', type=Path)
 parser.add_argument('--qt-prefix', type=Path)
+parser.add_argument('--font-dir', type=Path, default=root/'build/desktop/generated/fonts')
 arguments = parser.parse_args()
+font_manifest = load_manifest(arguments.font_dir)
 out = arguments.output
 out.mkdir(parents=True, exist_ok=True)
 native_materials = prepare(out, {'win32': 'windows', 'darwin': 'macos'}.get(sys.platform, 'linux'))
@@ -84,12 +87,13 @@ display_version = version.pop('display_version')
 references = {p['id']: 'cargo:'+p['name']+'@'+p['version']+':'+hashlib.sha256((p['source'] or 'workspace').encode()).hexdigest()[:12]
               for p in metadata['packages'] if p['id'] in resolved}
 assets = []
-for relative, license_id in [('design/assets/fonts/xdzip-design-sans-sc.woff2','OFL-1.1'),
-                             ('design/assets/fonts/xdzip-design-sans-sc.ttf','OFL-1.1'),
-                             ('design/assets/brand/xdzip.svg','Apache-2.0'),
+for relative, license_id in [('design/assets/brand/xdzip.svg','Apache-2.0'),
                              ('design/assets/file-associations/xdzip-zip-master.svg','Apache-2.0'),
                              ('third_party/brotli-rfc7932/dictionary.bin','BSD-3-Clause')]:
     assets.append({'path':relative, 'license':license_id, 'sha256':hashlib.sha256((root/relative).read_bytes()).hexdigest()})
+for kind in ('subset', 'native'):
+    item = font_manifest[kind]
+    assets.append({'path':'generated/fonts/'+item['path'], 'license':'OFL-1.1', 'sha256':item['sha256']})
 revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
 source_inventory = {
     'schema_version': 1, 'product': 'xdzip', 'version_source': version,
@@ -105,7 +109,7 @@ source_inventory = {
     'native_dependencies': native_dependencies,
     'limited_reference_materials': [rar_mapping_record],
     'normative_format_data': [brotli_data_record],
-    'font': json.loads((root / 'design/assets/fonts/manifest.json').read_text()),
+    'font': font_manifest,
     'notice_hashes': [{'file': p.relative_to(out).as_posix(), 'sha256': hashlib.sha256(p.read_bytes()).hexdigest()}
                       for p in sorted(notice_files)],
     'limits': ['Source-resolved host build inventory, including build tools, not an installed artifact SBOM.',

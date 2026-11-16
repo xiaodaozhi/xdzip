@@ -6,7 +6,7 @@
 
 English: The default selection is Auto-detect (`auto`). The preferred system UI language selects Simplified Chinese or English (US); unsupported or missing system languages fall back to English (US). The saved selection remains distinct from the resolved locale. Automatic mode resolves again at startup; manual selection and returning to automatic mode take effect immediately.
 
-新增文案同时填写两份目录，运行 `python3 scripts/check-ui-i18n.py`。HTML 设置设计所需目录由 `python3 scripts/generate-ui-messages.py` 生成，字体覆盖由 `design/assets/fonts/build-subset.py` 检查。工程文档、高保真审阅说明、测试断言、示例归档内的文件名、用户内容和 Rust 协议标识不属于产品翻译资源。
+新增文案同时填写两份目录，运行 `python3 scripts/check-ui-i18n.py`。HTML 设置设计所需目录由 `python3 scripts/generate-ui-messages.py` 生成；普通构建自动裁剪字体并检查当前文案覆盖，无需提交字体二进制，准备和预览方法见[共享字体指南](../../design/assets/fonts/README.md)。工程文档、高保真审阅说明、测试断言、示例归档内的文件名、用户内容和 Rust 协议标识不属于产品翻译资源。
 
 设置与保存边界见[设置和界面语言](../../docs/ux/settings-localization.md)。运行验证报告仅生成到 build/ 或 dist/。
 

@@ -47,7 +47,8 @@ def roots(root=ROOT, env=None):
     cargo = Path(env.get('CARGO_HOME') or Path.home() / '.cargo')
     return {'cargo-archives': cargo / 'registry/cache', 'cargo-git': cargo / 'git/db',
             'pip': root / 'build/ci-input-cache/pip',
-            'qt-sources': root / 'build/source-cache'}
+            'qt-sources': root / 'build/source-cache',
+            'font-sources': root / 'build/toolchain/fonts'}
 
 
 def is_link(path):

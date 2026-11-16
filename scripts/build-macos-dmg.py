@@ -154,7 +154,8 @@ def build(source, qt, output, release_distribution=False):
         notices = app/'Contents/Resources/notices'
         notices.mkdir(parents=True, exist_ok=True)
         checked([sys.executable, ROOT/'scripts/collect-notices.py', notices,
-                 '--sparkle-sdk', sparkle_sdk, '--qt-prefix', qt])
+                 '--sparkle-sdk', sparkle_sdk, '--qt-prefix', qt,
+                 '--font-dir', source.parents[2]/'generated/fonts'])
         for name in ['LICENSE', 'NOTICE']:
             if (ROOT/name).exists():
                 shutil.copy2(ROOT/name, notices/name)

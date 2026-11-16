@@ -47,7 +47,6 @@
     <file alias="assets/dark/radio-selected.png">../../design/assets/png/dark/radio-selected@3x.png</file>
     <file alias="assets/light/radio-unselected.png">../../design/assets/png/light/radio-unselected@3x.png</file>
     <file alias="assets/dark/radio-unselected.png">../../design/assets/png/dark/radio-unselected@3x.png</file>
-    <file alias="fonts/xdzip-design-sans-sc.ttf">../../design/assets/fonts/xdzip-design-sans-sc.ttf</file>
     <file alias="assets/light/file-document.png">../../design/assets/png/light/file-document@3x.png</file>
     <file alias="assets/light/file-document-large.png">../../design/assets/png/light/file-document@9x.png</file>
     <file alias="assets/light/file-spreadsheet.png">../../design/assets/png/light/file-spreadsheet@3x.png</file>

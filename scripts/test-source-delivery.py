@@ -1164,6 +1164,8 @@ class DeliveryTests(unittest.TestCase):
                     return ''
                 self.fail('Unexpected subprocess in owned notice fixture')
             with patch('native_runtime_materials.prepare', return_value={'files': []}), \
+                 patch('ui_fonts.load_manifest', return_value={'subset': {'path': 'owned.woff2', 'sha256': '1'*64}, 'native': {'path': 'owned.ttf', 'sha256': '2'*64}}), \
+                 patch('brotli_data_materials.collect', return_value=([], {})), \
                  patch('native_codec_materials.notices', return_value=([], [])), \
                  patch('runtime_rust.runtime_candidates', return_value={'root': 'owned', 'packages': []}), \
                  patch.object(subprocess, 'check_output', side_effect=checked), \

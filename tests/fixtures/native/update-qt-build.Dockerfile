@@ -15,5 +15,8 @@ RUN python3 -m venv /opt/aqt \
     && /opt/aqt/bin/pip install aqtinstall==3.3.0 \
     && /opt/aqt/bin/python -m aqt install-qt linux desktop 6.8.2 linux_gcc_64 --outputdir /opt/Qt
 COPY scripts ./scripts
+COPY design/assets/fonts/requirements.txt /opt/ui-font-requirements.txt
+RUN /opt/aqt/bin/python -m pip install -r /opt/ui-font-requirements.txt
+ENV PATH="/opt/aqt/bin:${PATH}"
 COPY patches/qt ./patches/qt
 RUN python3 scripts/prepare-qt-network.py --qt-prefix /opt/Qt/6.8.2/gcc_64

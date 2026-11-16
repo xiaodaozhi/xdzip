@@ -28,8 +28,25 @@ add_custom_target(xdzip-build-info
     BYPRODUCTS "${XDZIP_BUILD_INFO_DIR}/BuildVersion.h" VERBATIM)
 set_property(SOURCE BuildInfo.cpp APPEND PROPERTY OBJECT_DEPENDS
     "${XDZIP_BUILD_INFO_DIR}/BuildVersion.h")
-qt_add_resources(ui_resources ui.qrc)
+set(XDZIP_FONT_DIR "${PROJECT_BINARY_DIR}/generated/fonts")
+set(XDZIP_FONT_TTF "${XDZIP_FONT_DIR}/xdzip-design-sans-sc.ttf")
+# Rescan on every build so newly added/deleted text files are observed too.
+# The generator preserves unchanged output bytes and timestamps.
+add_custom_target(xdzip-ui-font
+    COMMAND Python3::Interpreter "${PROJECT_SOURCE_DIR}/scripts/ui-fonts.py" build --output-dir "${XDZIP_FONT_DIR}"
+    BYPRODUCTS "${XDZIP_FONT_TTF}" "${XDZIP_FONT_DIR}/xdzip-design-sans-sc.woff2" "${XDZIP_FONT_DIR}/manifest.json"
+    VERBATIM)
+set_source_files_properties("${XDZIP_FONT_TTF}" PROPERTIES GENERATED TRUE)
+# Preserve the existing ui resource initialization and aliases. Source asset
+# paths become absolute because this combined qrc lives in the build tree.
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/ui.qrc" XDZIP_UI_QRC)
+string(REGEX REPLACE "<file>([^<]+)</file>" "<file alias=\"\\1\">\\1</file>" XDZIP_UI_QRC "${XDZIP_UI_QRC}")
+string(REGEX REPLACE "(<file[^>]*>)([^<]+)" "\\1${CMAKE_CURRENT_SOURCE_DIR}/\\2" XDZIP_UI_QRC "${XDZIP_UI_QRC}")
+string(REPLACE "</RCC>" "  <qresource prefix=\"/xdzip\"><file alias=\"fonts/xdzip-design-sans-sc.ttf\">${XDZIP_FONT_TTF}</file></qresource>\n</RCC>" XDZIP_UI_QRC "${XDZIP_UI_QRC}")
+file(CONFIGURE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/ui.qrc" CONTENT "${XDZIP_UI_QRC}" @ONLY)
+qt_add_resources(ui_resources "${CMAKE_CURRENT_BINARY_DIR}/ui.qrc")
 add_library(xdzip-ui-resources STATIC ${ui_resources})
+add_dependencies(xdzip-ui-resources xdzip-ui-font)
 add_dependencies(xdzip-ui-resources xdzip-image-preview)
 add_dependencies(xdzip-ui-resources xdzip-build-info)
 target_include_directories(xdzip-ui-resources PUBLIC "${XDZIP_BUILD_INFO_DIR}")
