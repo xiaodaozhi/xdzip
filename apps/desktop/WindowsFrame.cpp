@@ -34,7 +34,7 @@ bool useLegacyClientCaptionWorkaround() {
         const bool workstation = VerifyVersionInfoW(&info, VER_PRODUCT_TYPE, conditions);
         const auto version = QOperatingSystemVersion::current();
         return useWindows10ClientCaptionWorkaround(workstation, version.majorVersion(),
-                                                    version.minorVersion(), version.microVersion());
+                                                   version.minorVersion(), version.microVersion());
     }();
     return enabled;
 }
@@ -49,8 +49,7 @@ bool customCaptionWindow(HWND hwnd, const QWindow *window) {
     if (!window || window->windowState() == Qt::WindowFullScreen ||
         window->visibility() == QWindow::FullScreen)
         return false;
-    return (style & WS_CAPTION) == WS_CAPTION ||
-           (style & WS_THICKFRAME);
+    return (style & WS_CAPTION) == WS_CAPTION || (style & WS_THICKFRAME);
 }
 bool ordinaryCaptionWindow(HWND hwnd, const QWindow *window) {
     return window && window->windowState() == Qt::WindowNoState &&
@@ -269,7 +268,8 @@ void WindowsFrame::apply() {
         }
         if (style & WS_CAPTION) {
             SetLastError(0);
-            if (!SetWindowLongPtrW(hwnd, GWL_STYLE, style & ~LONG_PTR(WS_CAPTION)) && GetLastError()) {
+            if (!SetWindowLongPtrW(hwnd, GWL_STYLE, style & ~LONG_PTR(WS_CAPTION)) &&
+                GetLastError()) {
                 m_id = 0;
                 return;
             }

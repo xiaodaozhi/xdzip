@@ -9,4 +9,6 @@ static_assert(!useWindows10ClientCaptionWorkaround(true, 6, 3, 9600));
 static_assert(!useWindows10ClientCaptionWorkaround(true, 10, 0, 0));
 static_assert(!useWindows10ClientCaptionWorkaround(true, 11, 0, 1));
 
-int main() { return 0; }
+int main() {
+    return 0;
+}

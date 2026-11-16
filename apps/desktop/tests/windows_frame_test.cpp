@@ -76,14 +76,22 @@ int main(int argc, char **argv) {
         std::fprintf(stderr, "Invalid payload was handled\n");
         return 5;
     }
-    struct HitCase { int x; int y; int expected; };
+    struct HitCase {
+        int x;
+        int y;
+        int expected;
+    };
     const int midX = outer.left + (outer.right - outer.left) / 2;
     const int midY = outer.top + (outer.bottom - outer.top) / 2;
     const HitCase cases[] = {
-        {outer.left, outer.top, HTTOPLEFT}, {midX, outer.top, HTTOP},
-        {outer.right - 1, outer.top, HTTOPRIGHT}, {outer.left, midY, HTLEFT},
-        {outer.right - 1, midY, HTRIGHT}, {outer.left, outer.bottom - 1, HTBOTTOMLEFT},
-        {midX, outer.bottom - 1, HTBOTTOM}, {outer.right - 1, outer.bottom - 1, HTBOTTOMRIGHT},
+        {outer.left, outer.top, HTTOPLEFT},
+        {midX, outer.top, HTTOP},
+        {outer.right - 1, outer.top, HTTOPRIGHT},
+        {outer.left, midY, HTLEFT},
+        {outer.right - 1, midY, HTRIGHT},
+        {outer.left, outer.bottom - 1, HTBOTTOMLEFT},
+        {midX, outer.bottom - 1, HTBOTTOM},
+        {outer.right - 1, outer.bottom - 1, HTBOTTOMRIGHT},
     };
     for (const auto &sample : cases) {
         MSG hit{};
@@ -93,8 +101,8 @@ int main(int argc, char **argv) {
         qintptr hitResult = 0;
         if (!frame.nativeEventFilter(QByteArrayLiteral("windows_generic_MSG"), &hit, &hitResult) ||
             hitResult != sample.expected) {
-            std::fprintf(stderr, "Resize hit test failed: expected %d, got %lld\n",
-                         sample.expected, static_cast<long long>(hitResult));
+            std::fprintf(stderr, "Resize hit test failed: expected %d, got %lld\n", sample.expected,
+                         static_cast<long long>(hitResult));
             return 6;
         }
     }
