@@ -40,6 +40,17 @@ namespace Xdzip.WindowsCapture {
             return match;
         }
         public static bool Ready(int process, long handle, string name, string role) { return Find(process, handle, name, role) != null; }
+        public static void SetValue(int process, long handle, string name, string value) {
+            var element = Find(process, handle, name, "Edit");
+            if (element == null) throw new InvalidOperationException("Missing owned editable field: " + name);
+            element.SetFocus();
+            ((ValuePattern)element.GetCurrentPattern(ValuePattern.Pattern)).SetValue(value);
+        }
+        public static void Focus(int process, long handle, string name, string role) {
+            var element = Find(process, handle, name, role);
+            if (element == null) throw new InvalidOperationException("Missing owned focus target: " + name);
+            element.SetFocus();
+        }
         public static bool ReadyObject(int process, long handle, string name, string objectName) {
             var elements = Root(process, handle).FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.NameProperty, name));
             int matches = 0;

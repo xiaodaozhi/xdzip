@@ -17,6 +17,7 @@ To capture updated app views, use the [automatic bilingual screenshot recipe](ca
 | What's new | Empty for the first submission, rather than pasting internal test notes |
 | Product features | Ten separate entries, each below 200 characters; the portal adds bullets |
 | Short title | `xdzip` |
+| Sort title | Empty; no alternate alphabetical title is needed |
 | Voice title | Empty, because this submission targets desktop rather than Xbox |
 | Short description | Localized copy below the recommended 270 characters |
 | Keywords | Seven entries, each below 40 characters, within 21 space-separated words |
@@ -27,9 +28,26 @@ To capture updated app views, use the [automatic bilingual screenshot recipe](ca
 
 The app's existing Apache-2.0 license and third-party notices are unchanged by the blank supplemental-terms field. Pricing and legal acceptance are not determined by this material pack.
 
+## App screenshots and combined promotional artwork
+
+To prepare replacement images, use the [automatic native PNG capture script](capture.md). One run prepares and captures all four views for either language, without manually switching views or confirming individual captures.
+
+Each language has four actual app views using owned demonstration files. Their app build matches the candidate identified above. The lossless native PNGs are **1536 × 933** for the main window and **737 × 1104** for the creation window. They retain the default logical window dimensions. The original PNGs remain byte-identical to the verified captures. Separate transparent cutouts trim two perimeter pixels and mask rounded corners, without redrawing text or changing opaque UI pixels.
+
+Use the **2560 × 1440 Store screenshots** for the desktop screenshot field. They center the cleaned app view at 1:1 on a neutral background, without marketing overlays. Combined promotional artwork places the same view in the blue brand layout with localized copy, a thin border and a soft shadow. At 1080p the UI is downsampled once to fit; at 4K it remains at native 1:1 size. Neither export upscales the UI. The lower-left platform label is omitted.
+
+| Scene | Default window | Store screenshot | 1920 × 1080 artwork | 3840 × 2160 artwork |
+| --- | --- | --- | --- | --- |
+| Browse folders and select a file | [PNG](images/screenshots/01-browse.png) | [PNG](images/store-screenshots/01-browse.png) | [PNG](images/combined/01-browse-1920x1080.png) | [PNG](images/combined/01-browse-3840x2160.png) |
+| Creation window and ZIP settings | [PNG](images/screenshots/02-create.png) | [PNG](images/store-screenshots/02-create.png) | [PNG](images/combined/02-create-1920x1080.png) | [PNG](images/combined/02-create-3840x2160.png) |
+| On-demand image preview | [PNG](images/screenshots/03-preview.png) | [PNG](images/store-screenshots/03-preview.png) | [PNG](images/combined/03-preview-1920x1080.png) | [PNG](images/combined/03-preview-3840x2160.png) |
+| Multiple tabs and grid browsing | [PNG](images/screenshots/04-workspace.png) | [PNG](images/store-screenshots/04-workspace.png) | [PNG](images/combined/04-workspace-1920x1080.png) | [PNG](images/combined/04-workspace-3840x2160.png) |
+
+[listing.md](listing.md) provides captions for all four views. The creation window contains three selected demo images and ZIP settings; no compression task was started. The screenshot set uses the light theme, while the listing's appearance options remain as described in the candidate's features.
+
 ## Feature illustrations
 
-The owner requested modern promotional images instead of new desktop captures. The following artwork is original vector illustration, with an explicit **Feature illustration** label. It does not reconstruct the app interface or represent a screenshot of a running application. Uploading a PNG with acceptable dimensions does not establish compliance with the Store's required screenshot field. Microsoft's screenshot guidance asks for app UI and advises against added marketing messages; choose the intended field accordingly.
+The original vector artwork remains available for promotion, with an explicit **Feature illustration** label. Use the app captures above for the screenshot field.
 
 | Artwork | 1920 × 1080 | 3840 × 2160 |
 | --- | --- | --- |
@@ -59,18 +77,28 @@ Xbox-only branded key art (584 × 800), titled hero art and featured promotional
 
 ## Editing and regeneration
 
-The [design gallery](../../../design/hifi/sources/windows-store-artwork.html) is the high-fidelity entry point. Editable vector composition lives in [build-windows-store-assets.cjs](../../../scripts/build-windows-store-assets.cjs); localized copy, palette and export canvas parameters live in [windows-store.json](../../../specs/marketing/windows-store.json). The [asset inventory](../../../specs/marketing/windows-store-assets.json) records source and PNG hashes. These fixed export canvases do not change Qt logical window dimensions or incorporate screen scaling into the product.
+The [design gallery](../../../design/hifi/sources/windows-store-artwork.html) is the high-fidelity entry point. Editable composition lives in [build-windows-store-assets.cjs](../../../scripts/build-windows-store-assets.cjs); localized copy, palette and export canvas parameters live in [windows-store.json](../../../specs/marketing/windows-store.json). The [asset inventory](../../../specs/marketing/windows-store-assets.json) records all 71 PNGs and source/output hashes. The [capture inventory](../../../specs/marketing/windows-store-captures.json) records the candidate, native capture/session hashes, client crops, dimensions, DPI, captions and cutout processing. These fixed export canvases do not change Qt logical window dimensions or incorporate screen scaling into the product.
+
+To replace the screenshots, run the native capture recipe for both languages and review the original PNGs at 100%. Pass the two complete session directories to [import-windows-store-captures.cjs](../../../scripts/import-windows-store-captures.cjs). It preflights all eight PNGs, their candidate identity, hashes and exact client/window pixel correspondence before updating the material inputs. JPEG inputs and incomplete or mismatched sessions are rejected. When updating the candidate, update the marketing baseline deliberately before importing.
 
 With Node.js and `sharp` available:
 
 ```sh
+node scripts/import-windows-store-captures.cjs build/captures-en-US build/captures-zh-CN
 node scripts/build-windows-store-assets.cjs
 node scripts/build-windows-store-assets.cjs --check
 python scripts/check-docs.py
+python scripts/package-windows-store-materials.py --output dist/windows-store-materials
 ```
 
-The check validates field limits, language parity, PNG dimensions, opacity, byte limits, exact asset inventory and source/output hashes. It also detects stale generated listing text and ensures that the hero composition contains no text. Regenerate both languages together after changing the target candidate or copy.
+Use a fresh export path. The packaging script produces a directory and ZIP with separate `en-US` and `zh-CN` folders, 62 upload/promotion PNGs, copy-ready text, caption CSV, supplemental fields, reviewer notes and SHA-256 manifests. Raw capture inputs and cutouts stay in the repository and are excluded from the upload bundle. It contains no product binaries or source archives.
+
+The check validates field limits, language parity, PNG dimensions, transparency, byte limits, exact inventory and source/output hashes. It checks opaque UI pixels against the original cutout, transparent corners against the background, native 1:1 Store/4K placement, stale listing text and the text-free hero composition. Regenerate both languages together after changing the target candidate or copy.
+
+## Reviewer fields
+
+[Reviewer notes](reviewer-notes.md) provide copy-ready `runFullTrust` justification and certification instructions in both languages. Use them in their corresponding submission fields. The material pack does not indicate approval of a restricted capability or submission for certification. Pricing, age ratings and account-level questionnaires remain separate Partner Center sections.
 
 ## Official references
 
-The [Store listing field reference](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/add-and-edit-store-listing-info) defines descriptions, features and supplemental fields. The [MSIX image reference](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/screenshots-and-images) defines screenshot and artwork guidance. The current Partner Center form can expose more upload slots than the documentation; this pack uses four feature illustrations per language and does not infer additional device support from available fields.
+The [Store listing field reference](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/add-and-edit-store-listing-info) defines descriptions, features and supplemental fields. The [MSIX image reference](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/screenshots-and-images) defines screenshot and artwork guidance. The current Partner Center form can expose more upload slots than the documentation; this pack provides four app screenshots and four feature illustrations per language and does not infer additional device support from available fields.

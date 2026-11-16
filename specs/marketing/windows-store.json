@@ -4,12 +4,16 @@
     "package_version": "1.0.27.0",
     "revision": "90916a1992188e6e7e5c6b3d91695861ee1bd2d2",
     "package_sha256": "45f9a99f74431c4ab8dcb79d0e9628fa121f73b998dd8359dfd38fadc48aab46",
+    "runtime_exe_sha256": "f6e58a99a2f38b746a7175128fd8cf9d7d0a88871a314fbd2fac15021399c01e",
     "product_id": "9P2PFGG1GK7L",
     "package_name": "xiaodaozhi.xdzip",
     "device_family": "Windows.Desktop"
   },
   "visual": {
-    "canvas": [1920, 1080],
+    "canvas": [
+      1920,
+      1080
+    ],
     "background": "#F3F7FF",
     "ink": "#101D38",
     "muted": "#4B6084",
@@ -20,6 +24,31 @@
     "body_size": 32,
     "safe_bottom": 720,
     "rationale": "Fixed export canvases for marketing artwork, independent of Qt logical window sizes and device scaling. No app UI is reconstructed."
+  },
+  "screenshot_artwork": {
+    "store_canvas": [
+      2560,
+      1440
+    ],
+    "store_background": "#F3F5F9",
+    "max_capture_scale": 1,
+    "frame": [
+      638,
+      186,
+      1206,
+      790
+    ],
+    "headline_size": 68,
+    "body_size": 26,
+    "rationale": "Use lossless native PNGs. Original inputs remain byte-identical; cutouts trim only exterior pixels and add corner alpha. Compose raster UI separately at integer positions, never upscale it. Store screenshots use a neutral canvas at 1:1.",
+    "cleanup": {
+      "edge_trim_pixels": 2,
+      "corner_radius_logical": 8
+    },
+    "border_width": 1,
+    "border_color": "#C8D4E6",
+    "shadow_offset_y": 14,
+    "shadow_blur": 16
   },
   "links": {
     "website": "https://github.com/xiaodaozhi/xdzip",
@@ -47,20 +76,90 @@
         "Keep multiple archives open in tabs or separate windows.",
         "Choose light or dark themes, adjust text size, and switch between English and Simplified Chinese."
       ],
-      "keywords": ["archive manager", "zip", "unzip", "7z", "rar", "file compression", "archive extraction"],
+      "keywords": [
+        "archive manager",
+        "zip",
+        "unzip",
+        "7z",
+        "rar",
+        "file compression",
+        "archive extraction"
+      ],
       "copyright": "Copyright © 2026 xiaodaozhi. Third-party components retain their respective copyrights and trademarks.",
       "additional_license_terms": "",
-      "system_requirements": ["Windows 11, x64 PC."],
+      "system_requirements": [
+        "Windows 11, x64 PC."
+      ],
       "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.en.md",
       "illustration_label": "Feature illustration",
-      "poster_headline": ["Pack. Unpack.", "Carry on."],
+      "screenshot_artwork_label": "App screenshot with brand artwork",
+      "screenshot_captions": {
+        "01-browse": "Browse an archive's folder tree, select individual files and view their properties.",
+        "02-create": "Create an archive from selected files and choose ZIP compression settings.",
+        "03-preview": "Request an image preview next to archive entries and file properties.",
+        "04-workspace": "Keep two archives open in tabs and browse selected files in grid view."
+      },
+      "poster_headline": [
+        "Pack. Unpack.",
+        "Carry on."
+      ],
       "square_tagline": "Make archives a little simpler.",
       "promotions": [
-        {"id": "01-browse", "eyebrow": "FIND YOUR FILES", "headline": ["Browse first.", "Extract what", "matters."], "body": ["Look inside an archive.", "Take only the files you need."], "caption": "Feature illustration: browse supported archives, find files and extract selected items. Not an application screenshot."},
-        {"id": "02-create", "eyebrow": "PACK YOUR WAY", "headline": ["A place for", "everything."], "body": ["Create ZIP, TAR, TAR.GZ or 7z.", "Add passwords where supported."], "caption": "Feature illustration: create ZIP, TAR, TAR.GZ and 7z archives, with password protection where supported. Not an application screenshot."},
-        {"id": "03-preview", "eyebrow": "LOOK CLOSER", "headline": ["A closer look.", "On demand."], "body": ["Preview supported text and images", "before you extract."], "caption": "Feature illustration: request previews of supported text, images and static SVG. Not an application screenshot."},
-        {"id": "04-workspace", "eyebrow": "KEEP YOUR FLOW", "headline": ["Keep it", "all together."], "body": ["Multiple archives. Light or dark.", "English and Simplified Chinese."], "caption": "Feature illustration: organize multiple archives and choose a light or dark appearance. Not an application screenshot."}
-      ]
+        {
+          "id": "01-browse",
+          "eyebrow": "FIND YOUR FILES",
+          "headline": [
+            "Browse first.",
+            "Extract what",
+            "matters."
+          ],
+          "body": [
+            "Look inside an archive.",
+            "Take only the files you need."
+          ],
+          "caption": "Feature illustration: browse supported archives, find files and extract selected items. Not an application screenshot."
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "PACK YOUR WAY",
+          "headline": [
+            "A place for",
+            "everything."
+          ],
+          "body": [
+            "Create ZIP, TAR, TAR.GZ or 7z.",
+            "Add passwords where supported."
+          ],
+          "caption": "Feature illustration: create ZIP, TAR, TAR.GZ and 7z archives, with password protection where supported. Not an application screenshot."
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "LOOK CLOSER",
+          "headline": [
+            "A closer look.",
+            "On demand."
+          ],
+          "body": [
+            "Preview supported text and images",
+            "before you extract."
+          ],
+          "caption": "Feature illustration: request previews of supported text, images and static SVG. Not an application screenshot."
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "KEEP YOUR FLOW",
+          "headline": [
+            "Keep it",
+            "all together."
+          ],
+          "body": [
+            "Multiple archives. Light or dark.",
+            "English and Simplified Chinese."
+          ],
+          "caption": "Feature illustration: organize multiple archives and choose a light or dark appearance. Not an application screenshot."
+        }
+      ],
+      "sort_title": ""
     },
     "zh-CN": {
       "product_name": "xdzip",
@@ -82,20 +181,89 @@
         "在多个标签页或独立窗口中管理压缩包。",
         "选择浅色或深色主题、调整字号，并在简体中文与英语之间切换。"
       ],
-      "keywords": ["压缩软件", "解压缩", "ZIP", "7z", "RAR", "文件压缩", "压缩包管理"],
+      "keywords": [
+        "压缩软件",
+        "解压缩",
+        "ZIP",
+        "7z",
+        "RAR",
+        "文件压缩",
+        "压缩包管理"
+      ],
       "copyright": "版权所有 © 2026 xiaodaozhi。第三方组件保留各自的版权和商标权。",
       "additional_license_terms": "",
-      "system_requirements": ["Windows 11，x64 电脑。"],
+      "system_requirements": [
+        "Windows 11，x64 电脑。"
+      ],
       "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
       "illustration_label": "功能示意图",
-      "poster_headline": ["打包与解压，", "都简单一点。"],
+      "screenshot_artwork_label": "应用截图与品牌插画",
+      "screenshot_captions": {
+        "01-browse": "浏览压缩包目录树，选择文件并查看属性。",
+        "02-create": "将选中的文件整理成压缩包，并设置 ZIP 压缩选项。",
+        "03-preview": "在文件列表和属性旁，按需加载图像预览。",
+        "04-workspace": "在标签页中同时打开两个压缩包，并以网格视图浏览选中的文件。"
+      },
+      "poster_headline": [
+        "打包与解压，",
+        "都简单一点。"
+      ],
       "square_tagline": "打包与解压，都简单一点。",
       "promotions": [
-        {"id": "01-browse", "eyebrow": "找到需要的文件", "headline": ["先浏览，", "再解压。"], "body": ["查看包内内容，", "只提取需要的文件。"], "caption": "功能示意图：浏览受支持的压缩包，查找并选择性解压文件。此图不是软件实机截图。"},
-        {"id": "02-create", "eyebrow": "按自己的方式打包", "headline": ["文件归整，", "分享从容。"], "body": ["创建 ZIP、TAR、TAR.GZ 或 7z，", "按格式选择密码保护。"], "caption": "功能示意图：创建 ZIP、TAR、TAR.GZ 和 7z 压缩包，按格式使用密码保护。此图不是软件实机截图。"},
-        {"id": "03-preview", "eyebrow": "内容预览，按需查看", "headline": ["先看内容，", "再做决定。"], "body": ["按需预览受支持的文本与图像，", "再决定提取哪些文件。"], "caption": "功能示意图：按需预览受支持的文本、图像和静态 SVG。此图不是软件实机截图。"},
-        {"id": "04-workspace", "eyebrow": "让工作保持条理", "headline": ["多个压缩包，", "从容切换。"], "body": ["多标签浏览，浅色或深色主题，", "支持简体中文与英语。"], "caption": "功能示意图：管理多个压缩包，并选择浅色或深色外观。此图不是软件实机截图。"}
-      ]
+        {
+          "id": "01-browse",
+          "eyebrow": "找到需要的文件",
+          "headline": [
+            "先浏览，",
+            "再解压。"
+          ],
+          "body": [
+            "查看包内内容，",
+            "只提取需要的文件。"
+          ],
+          "caption": "功能示意图：浏览受支持的压缩包，查找并选择性解压文件。此图不是软件实机截图。"
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "按自己的方式打包",
+          "headline": [
+            "文件归整，",
+            "分享从容。"
+          ],
+          "body": [
+            "创建 ZIP、TAR、TAR.GZ 或 7z，",
+            "按格式选择密码保护。"
+          ],
+          "caption": "功能示意图：创建 ZIP、TAR、TAR.GZ 和 7z 压缩包，按格式使用密码保护。此图不是软件实机截图。"
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "内容预览，按需查看",
+          "headline": [
+            "先看内容，",
+            "再做决定。"
+          ],
+          "body": [
+            "按需预览受支持的文本与图像，",
+            "再决定提取哪些文件。"
+          ],
+          "caption": "功能示意图：按需预览受支持的文本、图像和静态 SVG。此图不是软件实机截图。"
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "让工作保持条理",
+          "headline": [
+            "多个压缩包，",
+            "从容切换。"
+          ],
+          "body": [
+            "多标签浏览，浅色或深色主题，",
+            "支持简体中文与英语。"
+          ],
+          "caption": "功能示意图：管理多个压缩包，并选择浅色或深色外观。此图不是软件实机截图。"
+        }
+      ],
+      "sort_title": ""
     }
   }
 }

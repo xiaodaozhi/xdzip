@@ -19,6 +19,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/capture-windows-
 
 运行文件位于其他位置时可以指定 `-Executable`。为新构建截图时，还需传入预期的 `-ExpectedSha256`，并可提供已知的 `-SourceRevision`，见[工具更新与复用](../../engineering/windows-screenshots.md)。其他构建不会被标为固定商店候选。`-DemoDirectory` 表示明确复用自有演示文件，不重新生成；中文需要 `设计交付.zip`、`图片精选.zip`，英文需要 `Design delivery.zip`、`Photo collection.zip`，另需 `coastline.png`、`dusk.png`、`forest.png`。指定的 `-OutputDirectory` 已存在时会拒绝运行，防止覆盖此前图片。
 
+可用 `-CreationDemoDirectory build/Photos-zh` 指定尚不存在的短路径，让创建截图中的演示目录更简洁。脚本为新目录设置受保护的权限，复制三张演示图片，将压缩包命名为“图片合集.zip”（英文为 `Photos.zip`），并在截图前聚焦 ZIP 控件。不指定时使用输出目录内的 `create-demo/`。已有目录会被拒绝，不会覆盖。
+
 ## 自动准备的场景
 
 运行期间保持桌面可用。脚本只临时激活本次启动的 xdzip 窗口，把鼠标移到截图范围外，结束后恢复鼠标原位。窗口保持默认尺寸和当前系统缩放；如果超出显示器工作区，会仅移动窗口，不改变大小。如果默认尺寸无法放入工作区，脚本会报错停止。

@@ -19,6 +19,8 @@ For a double-click entry point, open [capture-windows-store-zh-CN.cmd](../../../
 
 Pass `-Executable` for another location. To capture a newer build, also supply its intended `-ExpectedSha256`, and optionally its known `-SourceRevision`; see [updating and reusing the tools](../../engineering/windows-screenshots.md). Other builds are not labeled as the pinned Store candidate. `-DemoDirectory` explicitly reuses an owned demo set instead of generating one. It must contain `设计交付.zip` and `图片精选.zip` for Chinese, or `Design delivery.zip` and `Photo collection.zip` for English, plus `coastline.png`, `dusk.png` and `forest.png`. An existing `-OutputDirectory` is rejected to preserve earlier images.
 
+Use `-CreationDemoDirectory build/Photos-en` (or another fresh directory) to give the creation screenshot a short demonstration path. The script creates it with a protected ACL, copies the three images, sets a localized archive name (`Photos.zip` or `图片合集.zip`) and focuses the ZIP control before capture. Without this option, it uses `create-demo/` inside the output directory. Existing directories are rejected, not overwritten.
+
 ## Scenes prepared automatically
 
 Leave the desktop available while the script runs. It temporarily activates only its own xdzip windows, moves the pointer outside the capture and restores the original pointer position afterward. It preserves default window dimensions and system scaling. A window extending past its monitor's work area is repositioned without resizing. If its default size cannot fit, the run stops with an error.

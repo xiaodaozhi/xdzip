@@ -54,6 +54,7 @@ xdzip 是一款开源 Windows 压缩包管理工具。先查看包内内容，�
 | 字段 | 填写内容 |
 | --- | --- |
 | 短标题 | xdzip |
+| 排序标题 | 留空，名称没有其他排序形式。 |
 | 语音标题 | 留空，桌面应用不使用 Xbox 语音标题。 |
 
 ### 简短描述
@@ -139,4 +140,40 @@ Windows 11，x64 电脑。
 
 ```text
 功能示意图：管理多个压缩包，并选择浅色或深色外观。此图不是软件实机截图。
+```
+
+## 应用截图与融合宣传图
+
+原始 PNG 保持默认逻辑窗口尺寸。商店版以透明圆角处理后的界面按 1:1 放入 2560 × 1440 中性画布，用于截图栏。融合宣传图加入品牌文案、细边框和阴影，供宣传使用，界面不放大。
+
+### 01-browse
+
+[默认窗口](images/screenshots/01-browse.png), [商店截图](images/store-screenshots/01-browse.png), [1920 × 1080](images/combined/01-browse-1920x1080.png), [3840 × 2160](images/combined/01-browse-3840x2160.png)
+
+```text
+浏览压缩包目录树，选择文件并查看属性。
+```
+
+### 02-create
+
+[默认窗口](images/screenshots/02-create.png), [商店截图](images/store-screenshots/02-create.png), [1920 × 1080](images/combined/02-create-1920x1080.png), [3840 × 2160](images/combined/02-create-3840x2160.png)
+
+```text
+将选中的文件整理成压缩包，并设置 ZIP 压缩选项。
+```
+
+### 03-preview
+
+[默认窗口](images/screenshots/03-preview.png), [商店截图](images/store-screenshots/03-preview.png), [1920 × 1080](images/combined/03-preview-1920x1080.png), [3840 × 2160](images/combined/03-preview-3840x2160.png)
+
+```text
+在文件列表和属性旁，按需加载图像预览。
+```
+
+### 04-workspace
+
+[默认窗口](images/screenshots/04-workspace.png), [商店截图](images/store-screenshots/04-workspace.png), [1920 × 1080](images/combined/04-workspace-1920x1080.png), [3840 × 2160](images/combined/04-workspace-3840x2160.png)
+
+```text
+在标签页中同时打开两个压缩包，并以网格视图浏览选中的文件。
 ```

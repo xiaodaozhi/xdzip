@@ -1,0 +1,56 @@
+const sharp = require('sharp');
+const crypto = require('node:crypto');
+const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
+
+async function makeCutout(bytes, width, height, dpi, processing) {
+  const trim = processing.edge_trim_pixels;
+  const crop = {left:trim,top:trim,width:width-trim*2,height:height-trim*2};
+  if (crop.width <= 0 || crop.height <= 0) throw Error('Invalid screenshot perimeter trim');
+  const radius = Math.max(0, Math.round(processing.corner_radius_logical * dpi / 96) - trim);
+  const raw = await sharp(bytes).extract(crop).ensureAlpha().raw().toBuffer();
+  const mask = Buffer.from(`<svg width="${crop.width}" height="${crop.height}"><rect width="100%" height="100%" rx="${radius}" fill="white"/></svg>`);
+  const alpha = await sharp(mask).ensureAlpha().raw().toBuffer();
+  for (let p=0; p<raw.length; p+=4) {
+    raw[p+3] = alpha[p+3];
+    if (!raw[p+3]) raw.fill(0,p,p+3);
+  }
+  const png = await sharp(raw,{raw:{width:crop.width,height:crop.height,channels:4}}).png({compressionLevel:9}).toBuffer();
+  if (!(await sharp(png).ensureAlpha().raw().toBuffer()).equals(raw)) throw Error('Cutout PNG changed RGBA pixels');
+  return {png,width:crop.width,height:crop.height,crop,radius,rgba_sha256:hash(raw)};
+}
+
+function placement(spec, capture, width, height) {
+  const ratio = width / spec.visual.canvas[0];
+  if (height !== spec.visual.canvas[1] * ratio) throw Error('Promotional canvas aspect differs');
+  const [x,y,w,h] = spec.screenshot_artwork.frame.map(n=>Math.round(n*ratio));
+  const scale = Math.min(1,w/capture.cutout_width,h/capture.cutout_height);
+  const imageWidth = Math.min(capture.cutout_width,Math.floor(capture.cutout_width*scale));
+  const imageHeight = Math.min(capture.cutout_height,Math.floor(capture.cutout_height*scale));
+  return {imageWidth,imageHeight,imageX:x+Math.floor((w-imageWidth)/2),imageY:y+Math.floor((h-imageHeight)/2),scale};
+}
+
+async function screenshotLayer(bytes, box) {
+  const meta = await sharp(bytes).metadata();
+  if (box.imageWidth > meta.width || box.imageHeight > meta.height) throw Error('Screenshot upscaling is forbidden');
+  if (box.imageWidth === meta.width && box.imageHeight === meta.height) return bytes;
+  return sharp(bytes).resize(box.imageWidth,box.imageHeight,{fit:'fill',kernel:'lanczos3'}).png().toBuffer();
+}
+
+async function composite(background, layer, left, top) {
+  return sharp(background).composite([{input:layer,left,top}]).png({compressionLevel:9}).toBuffer();
+}
+
+async function assertOverlay(output,layer,left,top,background) {
+  const meta = await sharp(layer).metadata();
+  const ui = await sharp(layer).ensureAlpha().raw().toBuffer();
+  const actual = await sharp(output).extract({left,top,width:meta.width,height:meta.height}).removeAlpha().raw().toBuffer();
+  const behind = await sharp(background).extract({left,top,width:meta.width,height:meta.height}).removeAlpha().raw().toBuffer();
+  for (let p=0,q=0; p<ui.length; p+=4,q+=3) {
+    for (let c=0;c<3;c++) {
+      if (ui[p+3]===255 && actual[q+c]!==ui[p+c]) throw Error('Compositor altered opaque UI pixels');
+      if (ui[p+3]===0 && actual[q+c]!==behind[q+c]) throw Error('Transparent corner contains border or background residue');
+    }
+  }
+}
+
+module.exports = {hash,makeCutout,placement,screenshotLayer,composite,assertOverlay};
