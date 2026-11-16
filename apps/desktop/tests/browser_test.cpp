@@ -7874,7 +7874,8 @@ QtObject {
         QVERIFY(QTest::qWaitForWindowExposed(settings));
         QQuickItem *zip = nullptr;
         QTRY_VERIFY((zip = findVisual(settings->contentItem(), "settingsAssociation-.zip")));
-        for (const auto &group : {"archives", "compressed-tar", "compressed-streams", "text-envelopes"})
+        for (const auto &group :
+             {"archives", "compressed-tar", "compressed-streams", "text-envelopes"})
             QVERIFY(findVisual(settings->contentItem(),
                                "settingsAssociationGroup-" + QString::fromLatin1(group)));
         QVERIFY(zip->isEnabled());
@@ -9668,10 +9669,10 @@ QtObject {
         QVERIFY(viewport && viewport->property("contentY").isValid());
         QTRY_VERIFY(formats->width() > 0);
         QTRY_VERIFY(formats->width() <= 608);
-        for (const auto &group : {"archives", "compressed-tar", "compressed-streams", "text-envelopes",
-                                  "installer-metadata"}) {
-            auto *badge =
-                findVisual(window->contentItem(), "welcomeFormatGroup-" + QString::fromLatin1(group));
+        for (const auto &group : {"archives", "compressed-tar", "compressed-streams",
+                                  "text-envelopes", "installer-metadata"}) {
+            auto *badge = findVisual(window->contentItem(),
+                                     "welcomeFormatGroup-" + QString::fromLatin1(group));
             QVERIFY(badge && badge->isVisible());
             QTRY_VERIFY(badge->mapToScene(QPointF()).x() >= 0);
             QTRY_VERIFY(badge->mapToScene(QPointF(badge->width(), 0)).x() <= window->width());
@@ -9716,16 +9717,19 @@ QtObject {
               QStringLiteral("Z"),      QStringLiteral("TAR.Z"),   QStringLiteral("AES Crypt"),
               QStringLiteral("Brotli"), QStringLiteral("TAR.BR"),  QStringLiteral("LZH"),
               QStringLiteral("PMA"),    QStringLiteral("ARJ"),     QStringLiteral("ARC"),
-              QStringLiteral("BH"),     QStringLiteral("ALZ"),    QStringLiteral("EGG")}) {
+              QStringLiteral("BH"),     QStringLiteral("ALZ"),     QStringLiteral("EGG")}) {
             task->setProperty("resultTask", QVariantMap{{"kind", "check"}, {"format", format}});
             QVERIFY(QMetaObject::invokeMethod(task, "present"));
             QTRY_VERIFY(task->isVisible());
             auto *footer = findVisual(task->contentItem(), "taskFooter");
             QVERIFY(footer);
             QCOMPARE(footer->property("note").toString(),
-                     format == "ARJ" || format == "ARC" || format == "BH" || format == "ALZ" || format == "EGG" ? qtTrId("integrity.readOnlyNote")
-                     : format == "TAR"                  ? qtTrId("integrity.tarNote")
-                     : format == "ISO" || format == "UDF" ? qtTrId("integrity.discImageNote").arg(format)
+                     format == "ARJ" || format == "ARC" || format == "BH" || format == "ALZ" ||
+                             format == "EGG"
+                         ? qtTrId("integrity.readOnlyNote")
+                     : format == "TAR" ? qtTrId("integrity.tarNote")
+                     : format == "ISO" || format == "UDF"
+                         ? qtTrId("integrity.discImageNote").arg(format)
                      : format.contains("XZ") || format.contains("LZ4") || format.contains("ZST") ||
                              format == "DEB" || format == "ASAR" || format == "AES Crypt" ||
                              format == "LZH" || format == "PMA"
