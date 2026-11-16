@@ -1,6 +1,8 @@
 # 实施路线与工作包
 
-本页维护工作包依赖和持久的交付边界，具体进度、验收记录与阻塞项由 [Issues](https://github.com/xiaodaozhi/xdzip/issues)管理，不在此追加批次报告。开发工作包与正式发行审查分开，状态以对应 issue 及实际证据为准。
+[English](../../planning/backlog.md) | 简体中文
+
+本文列出功能开发的依赖关系和验收条件。表中的 WP 表示工作包，M 表示开发里程碑；具体进度和阻塞项见 [Issues](https://github.com/xiaodaozhi/xdzip/issues)。开发完成与正式发行审查分别判断。
 
 | ID / 阶段 | 依赖 | 交付与可验收退出条件 |
 | --- | --- | --- |

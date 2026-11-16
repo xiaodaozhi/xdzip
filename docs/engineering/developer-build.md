@@ -1,5 +1,7 @@
 # Development builds and platform verification
 
+English | [简体中文](../zh-CN/engineering/developer-build.md)
+
 This is the unified entry point for preparing, building, testing, packaging, and verifying environments on three platforms. Shared orchestration is implemented by [scripts/desktop.py](../../scripts/desktop.py). Platform documents supplement deployment layouts, tool behavior, and system limits rather than maintaining separate routine commands.
 
 The standalone CLI uses `python3 scripts/cli.py build`, `test`, and `package` without Qt, X11, or a graphical session. Linux compilation also requires `libssl-dev pkg-config`; runtime uses system OpenSSL and certificates. Desktop builds automatically create a private CLI directory. See the [CLI contract](command-line.md) for commands, installation, and trusted-update boundaries.

@@ -1,6 +1,6 @@
 # Microsoft Store materials
 
-English (US) | [中文（中国）](../../zh-CN/market/windows/README.md)
+English | [简体中文](../../zh-CN/market/windows/README.md)
 
 [Copy-ready listing text](listing.md) contains the description, ten product features, supplemental fields, seven keywords, copyright, developer information, links and image captions. Use the English page for `en-US` and the [Chinese page](../../zh-CN/market/windows/listing.md) for `zh-CN`.
 

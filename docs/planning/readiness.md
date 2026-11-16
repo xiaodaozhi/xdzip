@@ -1,5 +1,7 @@
 # Development and release readiness review
 
+English | [简体中文](../zh-CN/planning/readiness.md)
+
 This page defines repeatable review requirements. Completion records, manual conclusions and outstanding work for specific stages belong in [Issues](https://github.com/xiaodaozhi/xdzip/issues); see the [work packages](backlog.md) for the roadmap. Do not append dated status reports here.
 
 ## Development baseline

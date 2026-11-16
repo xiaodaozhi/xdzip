@@ -1,5 +1,7 @@
 # Unix compress Z contract
 
+English | [简体中文](../zh-CN/engineering/compress-streams.md)
+
 This contract defines the byte profile for the independent Rust LZW reader and its single-file/TAR composition. The utility's history and 9–16-bit dictionary behavior follow [OpenBSD compress(1)](https://man.openbsd.org/compress.1) and [ncompress](https://vapier.github.io/ncompress/). POSIX specifies the utility rather than a complete byte layout. Historical eight-code alignment and 9-bit compatibility differences are documented in the [upstream discussion](https://github.com/vapier/ncompress/issues/5) and checked with independent known-content inputs. Source observations supplement the wire rules; the Rust implementation is not a translation of reference code.
 
 ## Wire and dictionary rules

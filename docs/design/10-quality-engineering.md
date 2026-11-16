@@ -1,5 +1,7 @@
 # xdzip: 10 Coding conventions, comments, and quality engineering
 
+English | [简体中文](../zh-CN/design/10-quality-engineering.md)
+
 ## 1. General principles
 
 Prioritize explicit data ownership, small meaningful interfaces, predictable resource use, and verifiable behavior. Readability does not mean abstracting all code into a framework; performance does not mean unsafe by default. Optimizations require measurements, and complex boundaries require tests and comments.

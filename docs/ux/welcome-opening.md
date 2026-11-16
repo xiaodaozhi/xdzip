@@ -1,5 +1,7 @@
 # Welcome-page loading overlay and creation completion
 
+English | [简体中文](../zh-CN/ux/welcome-opening.md)
+
 Revised 2026-10-16. Parameters come from [welcome-reference.json](../../specs/visual/welcome-reference.json); the dynamic high-fidelity entry is [welcome loading state](../../design/hifi/sources/welcome.html?opening=1). It retains the main window, menu and welcome-page logical units and leaves the title bar unchanged.
 
 When opening a real archive from the welcome page, a floating card and translucent overlay appear centered above the body. The normal card is 360 wide with 24 padding, 12 gap, radius 8 and title size 16; narrow windows constrain it to available width. The filename is middle-elided, status can wrap, and Cancel remains reachable. Light and dark themes reuse shared tokens; accessibility font sizes follow global settings.

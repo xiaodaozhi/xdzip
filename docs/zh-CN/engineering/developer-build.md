@@ -1,8 +1,10 @@
 # 开发构建与平台验证
 
+[English](../../engineering/developer-build.md) | 简体中文
+
 本文是三平台环境准备、构建、测试、打包和验证的统一入口。共用编排由 [scripts/desktop.py](../../../scripts/desktop.py) 实现；平台文档仅补充部署布局、工具行为和系统限制，不再另维护一套日常命令。
 
-独立命令行版使用 `python3 scripts/cli.py build`、`test` 和 `package`，无需 Qt、X11 或图形会话。Linux 编译另需 `libssl-dev pkg-config`，运行使用系统 OpenSSL 与证书。桌面构建自动生成私有 CLI 目录。命令、安装与受信更新见 [CLI 契约](command-line.md)。English: The standalone CLI build/test/package entry requires no Qt or display server; desktop builds also include the private CLI directory.
+独立命令行版使用 `python3 scripts/cli.py build`、`test` 和 `package`，无需 Qt、X11 或图形会话。Linux 编译另需 `libssl-dev pkg-config`，运行使用系统 OpenSSL 与证书。桌面构建自动生成私有 CLI 目录。命令、安装与受信更新见 [CLI 契约](command-line.md)。
 
 开发构建仍标记实验性，不能当作正式 Release 安装包。能力和限制见根目录 [README](../../../README.zh-CN.md)，支持范围见[支持政策](support-policy.md)。正式 `v0.1.0` 的历史发行审查见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)；未来版本须按具体候选重新建立发行审查记录。
 
@@ -14,7 +16,6 @@
 
 `prepare` 会在原 SDK 中构建并验证 QtNetwork 安全补丁，修复 CVE-2026-116337 与 CVE-2026-105946，其他运行模块不被重建库替换。另需 Perl、make（Windows 为 nmake）和 OpenSSL 命令行工具；Ubuntu 需 `zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libzstd-dev libkrb5-dev`。源码、生成声明及构建缓存统一在 `build/`，默认复用 `build/toolchain/qt-network-security/<平台>`。输入和实际库摘要不匹配时，产品构建与打包直接失败，重新运行 `prepare`；来源、ABI、TLS 功能及失败恢复见[补丁维护说明](../../../patches/qt/README.md)。
 
-English: Preparation builds and verifies the pinned QtNetwork security variant in the existing SDK, retaining the original QtCore and other modules. Perl, make/nmake and the OpenSSL command-line tool are required; Ubuntu additionally needs the development packages listed above. Hash-bound receipts prevent building or packaging with an unprepared or changed library. See the patch maintenance guide for source, ABI, TLS and rollback details.
 
 统一入口的本地依赖只使用 `build/toolchain/`，该目录及其内容被 Git 忽略，不提交到仓库：
 
@@ -126,7 +127,6 @@ subprocess.run([sys.executable, 'scripts/desktop.py', 'test', *sys.argv[2:]], en
 
 Windows 为 worker 路径加 `.exe`。使用自定义 SDK、build-dir 或 tools-dir 时，将同一组参数附在 worker 路径后，例如 `--qt-prefix /path/to/Qt/6.8.2/gcc_64`，并将 worker 路径调整到实际构建目录。`XDZIP_CAB_BACKEND=rust` 对应固定 Rust CAB 专项；`password` 是公共 fixture 既有的测试值，只交给测试子进程。该交接保留默认 workspace 测试和完整 ignored 批次，不下载输入或隐式构建 worker。
 
-English: Explicitly prepare the fixed public RAR test data, then pass sources.json.environment, the freshly built worker and the existing public test value to the test child. CAB/optical/basic RAR fixtures ship in the project source; 7z creates its own inputs. The seven public cache files are separate prerequisites. A verified cache supports --archives/--offline; initial fixed downloads are a separate explicit step. Test stages do not implicitly prepare or download these fixture inputs, and the complete ignored runtime selection is retained.
 
 test 仅对子进程启用 offscreen／software，不污染后续命令的桌面环境。日常修改按变更范围重新构建并验证；只验证 Rust 核心可执行相应 crate 的 `cargo test --locked`，不需要 Qt。`test --skip-rust` 执行 qmllint 与 Qt CTest，但跳过 Rust workspace 和完整原生后端测试，收据将 Rust 记为 `not-run`；需要 Rust 结论时另行执行并记录实际结果。
 
@@ -134,7 +134,6 @@ test 仅对子进程启用 offscreen／software，不污染后续命令的桌面
 
 测试中的配置路径使用 `tests/test_environment` 作用域保存和恢复，Windows 保持宽字符值，并在系统环境块中区分未设置和显式空值；Unix 保留原环境字节。MSVC CRT 的设置 API 会删除空值，原生环境块另行恢复，因此空值的存在性使用 helper 的 processValue 或 QProcessEnvironment 检查，不以 Qt 的 CRT 空值／null 区别作保证。该 helper 仅限串行测试主线程，在相关引擎／工作线程创建前设置，在销毁／join 后恢复，不用于产品代码或并发环境修改。ASCII、中文及 ANSI 不可表示字符须核对原路径实际文件、语言恢复子进程和失败时窗口／草稿保留。自动化结果仍与真人设置操作分开记录。
 
-English: Browser suite processes use unique short roots under project build/test-tmp. Unix checks the byte budget for the existing IPC name against sun_path capacity; an overlong checkout fails the fixture precondition rather than changing product IPC or using an external directory. Auxiliary children retain the parent's temp identity for IPC, with private preflight probes and teardown before parent cleanup. Different shards remain isolated. Restore variables and clean fixtures after test teardown, before Qt application destruction. Probes cover child writes, locking, staging, atomic commit and settings readback, and fixture failures remain nonzero failures. Scoped overrides preserve Unicode paths and absent versus empty values in the native environment; MSVC's CRT setter deletes empty entries, so use processValue or QProcessEnvironment for empty presence. Mutate overrides only on the serial fixture main thread, before related engines/workers and after teardown/join. Explicit settings restart children retain their shared profile. These checks do not replace native manual acceptance or change product configuration semantics.
 
 真实产品在所有平台统一使用 `xdzip` 名称。默认构建后的入口为：
 
@@ -208,11 +207,9 @@ python scripts/desktop.py verify --kind msix
 
 构建要求干净来源、匹配的构建与测试回执、已审计的完整运行目录和支持 MSIX 的 Windows SDK MakeAppx。脚本复核运行目录及其 MSIX 更新能力标记，在独立暂存生成清单和品牌图标，打包后逐文件核对内容并记录摘要；不会覆盖已有包或暂存。包清单声明九类既有扩展和 full-trust 桌面入口，不声明右键扩展。许可、真实安装、文件关联、卸载、商店签名和 Windows 10／11 实际验收须分别完成，不由打包成功推定。
 
-English: Experimental Windows x64 MSIX packaging reuses a clean, tested and audited runtime and requires the explicit package name, publisher and publisher display name to match Partner Center. It produces an unsigned package with per-file verification and does not sign, install or submit the app. The manifest targets Windows 10 22H2 as a technical minimum without expanding the support policy; Store certification, licensing and native installation acceptance remain separate.
 
 MSIX 清单显式声明 `en-US` 和 `zh-CN`，与应用内置的英文、简体中文目录对应，回执同时记录并校验语言列表。Qt 自有翻译资源不会由本项目的 MakeAppx 流程自动转换为包语言声明。Partner Center 的“软件包中支持的语言”以已上传包为准，修正源码后须重新构建并替换草稿中的包才会更新；“其他 Store 一览语言”可独立配置，不能代替包清单声明。参见 [Microsoft 清单语言说明](https://learn.microsoft.com/windows/apps/design/globalizing/manage-language-and-region)。
 
-English: The MSIX manifest explicitly declares en-US and zh-CN to match the built-in catalogs; its receipt records and verifies the language list. The custom MakeAppx pipeline does not infer these declarations from Qt translations. Partner Center reads the uploaded package, so rebuild and replace it after changing declarations. Additional Store listing languages are configured separately.
 
 ## 证据与复验
 
@@ -228,6 +225,5 @@ Windows/Linux 工件交付同提交源码和许可通知，Actions 保存 14 天
 
 `python3 scripts/prepare-sparkle.py --output build/toolchain/Sparkle/2.10.0-xdzip-proxy.2` 使用现有 Xcode Command Line Tools 或 Xcode 的原生 Clang，不需要另建 Qt SDK。原始 SDK 和源码归档缓存于 `build/source-cache/`，离线时可分别传入 `--archive` 和 `--source-archive`。构建不执行下载源码中的脚本，不修改系统代理，也不读取生产签名密钥。
 
-English: The macOS updater framework library is rebuilt natively from pinned Sparkle source and the bounded proxy patch. Helpers, resources and signing tools retain their pinned upstream SDK origin. Valid per-file receipts permit reuse; the unmodified SDK cannot satisfy the proxy API contract. Native Clang from Command Line Tools or Xcode is sufficient. This preparation does not collect project source-delivery archives or access production signing authority.
 
-`check-macos-proxy.py` 默认只运行自有回环下载器检查。`--system-conflicts` 仅供专项工作流中的一次性 hosted Apple Silicon runner 使用，受限助手暂存、恢复并核验系统代理和固定测试域名的 hosts 设置；禁止在本机添加该参数。English: Default transport probes use owned loopback services only. The system-conflict option is restricted to disposable hosted Apple Silicon runners with verified proxy and hosts restoration; do not enable it locally.
+`check-macos-proxy.py` 默认只运行自有回环下载器检查。`--system-conflicts` 仅供专项工作流中的一次性 hosted Apple Silicon runner 使用，受限助手暂存、恢复并核验系统代理和固定测试域名的 hosts 设置；禁止在本机添加该参数。

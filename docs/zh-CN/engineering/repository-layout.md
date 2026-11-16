@@ -1,5 +1,7 @@
 # 仓库目录与依赖
 
+[English](../../engineering/repository-layout.md) | 简体中文
+
 当前产品模块以根目录 Cargo.toml 和 CMakeLists.txt 为准。下表描述实际目录；架构设计中的未来拆分不代表已有独立 crate。
 
 | 目录 | 所有权与依赖规则 |
@@ -38,5 +40,3 @@ CAB 产品固定使用 Rust，官方 Cab 处理器和 CAB 专用 LZX/Quantum 不
 依赖设计见[系统架构](../design/02-system-architecture.md)。避免 domain 反向引用 runtime、codec 直接通知 QML，以及平台层决定 UI 文案。生成绑定、样本、报告和构建输出进入 build/、target/ 或 dist/，不提交到源码目录。历史兼容测试的持久输入另见[安装与关联](installers-associations.md#兼容基线的长期输入)。
 
 `tools/image-preview/` 是 QtGui／QtSvg 的私有静态图片工作进程，输入为已验证的有界内容，输出为有界 RGBA，不持有归档和输出路径。平台支持及失败行为见[预览契约](content-preview.md)。
-
-English: `tools/image-preview/` isolates approved image decoding behind bounded, verified bytes and RGBA replies; it never receives archive or destination paths.

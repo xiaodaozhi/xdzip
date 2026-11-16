@@ -1,5 +1,7 @@
 # xdzip：06 格式适配与扩展 SDK
 
+[English](../../design/06-codec-extension-sdk.md) | 简体中文
+
 ## 1. 两类扩展
 
 **内置源码级扩展**实现 Rust SDK，随产品构建，使用 Cargo feature 挑选后端。Rust 编译器 ABI 不稳定，不将它们做成任意版本可加载的 `.so/.dylib/.dll`。
@@ -41,7 +43,6 @@ TAR 是容器，GZIP 是压缩流；`tar.gz` 组合为有限层数的 Source →
 
 7z、RAR、CAB 与光盘容器在共享薄 CXX 边界中执行独立 Rust，官方 7-Zip 与 UnRAR 源码均退出产品构建，没有运行失败回退，通用格式逻辑不复制到 C++/QML。ZIP/TAR/GZIP 使用进程内 Rust。CAB 分卷保留授权卷边界与名称，不按连续字节流拼接；RAR 同样保留物理片身份与完整授权卷组；7z 编号卷由宿主冻结成有界连续来源。所有格式复用宿主预算、安全暂存及最终提交。宿主仅提供可选 OS 日历、字符集原语，格式时间和密码字节决策仍在 Rust；未知尺寸独立表达并禁止输出。
 
-English: 7z, RAR, CAB and optical containers use independent Rust through a shared thin CXX boundary. Official 7-Zip and UnRAR sources are excluded from production with no fallback. Host calendar and character-set services expose only OS primitives; Rust owns format decisions, volume/record identities and explicit unknown-size handling. All formats retain host-owned budgets, staging and publication.
 
 表中既有能力以各格式实现契约为准，新增扩展不因列在表中就获得执行权限。源码、版本、feature、构建配置、互操作结果和许可证通过清单后才能锁入 Cargo.lock/SBOM。
 
@@ -99,7 +100,7 @@ manifest 草案示例（哈希/签名由包清单提供；仅演示字段，不�
 
 ## 6. 线协议 v1 草案
 
-当前只读试验的精确数字 schema、已实现消息及更严格的单块信用见[试验契约](../engineering/sdk-trial.md#线协议与状态)。本节其余消息不自动属于已协商能力。English: The trial contract defines the implemented numeric schema and stricter single-block credit; the remaining draft capabilities are not advertised.
+当前只读试验的精确数字 schema、已实现消息及更严格的单块信用见[试验契约](../engineering/sdk-trial.md#线协议与状态)。本节其余消息不自动属于已协商能力。
 
 传输为私有继承 IPC 管道；不监听 TCP，不创建公开端口。双向帧是 `u32 little-endian 长度 + CBOR 对象`。在分配前检查长度；每帧最大 1MiB，数据消息中 bytes 最大 256KiB。CBOR 深度最大 16，不允许无界长度、重复关键字段或未知必需消息种类。
 

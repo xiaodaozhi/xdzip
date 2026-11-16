@@ -1,5 +1,7 @@
 # Dependency and format backend admission
 
+English | [简体中文](../zh-CN/engineering/dependencies.md)
+
 ## External SDK trial
 
 The independent trial host reuses pinned serde 1.0.229, serde_json 1.0.154, sha2 0.10.9, getrandom 0.4.2, libc 0.2.190, and tempfile 3.27.0 without adding third-party versions or format/CBOR libraries. The protocol crate uses only std; project-owned bounded CBOR interoperates with an independent Python stdlib peer according to RFC 8949. The host does not link Qt, enter the desktop or CLI runtime closure, or change official release materials.

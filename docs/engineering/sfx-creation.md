@@ -1,5 +1,7 @@
 # Owned Windows ZIP self-extracting archives
 
+English | [简体中文](../zh-CN/engineering/sfx-creation.md)
+
 The first SFX profile is Windows x64 only, with the explicit `.sfx.exe` creation suffix. It wraps an unencrypted, single-volume Store/Deflate ZIP in the project-built `xdzip-sfx.exe` stub. Creation never executes the stub. Generic `.exe` files remain outside creation, drag/drop and system association registration.
 
 The host loads the stub only from its application directory or the shared parent of its private `cli` directory. It opens a bounded ordinary file without following links and validates PE32+, x64, section spans and the owned version marker. The ZIP end-record comment contains a 64-byte versioned envelope with the stub length, ZIP length and SHA-256 of the preceding bytes. The running SFX validates this envelope before using the shared Rust ZIP and extraction contracts. This detects corruption and wrong envelopes; it does not establish publisher identity or authenticate arbitrary executable code.

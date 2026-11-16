@@ -1,5 +1,7 @@
 # 主动内容预览
 
+[English](../../engineering/content-preview.md) | 简体中文
+
 预览由用户在属性卡点击“预览内容”触发，选择条目或打开归档不会自动解码内容。主窗口和独立属性查看器使用同一组件，密码复用现有密码窗口；详情仍可独立显示元数据。
 
 ## 能力与预算
@@ -44,5 +46,3 @@ SVG 在三个桌面平台使用同一 Qt Svg 渲染路径。进入渲染器前�
 `desktop.py prepare --install-qt` 为新安装或既有 SDK 补齐固定 Qt 6.8.2 的 qtimageformats；doctor 在构建前检查 Svg 与必需插件。官方源码、摘要、通知和 SDK 对应关系纳入统一配置，Qt 自带 libwebp／libtiff 与独立新增格式库分别管理。`check-image-preview.py` 核对实际工作进程、插件和最小解码，在默认测试、Windows／Linux 部署验证及获授权的 Mac 打包中执行；Mac 显式补齐 offscreen 并在自检前清除 SDK 搜索覆盖，不能以开发 SDK 的插件目录代替实际运行包验证。
 
 回归使用自有图片覆盖各类型、动画首帧、TIFF 首页、透明度、12MP 照片、macOS HEIC 及其他平台拒绝、SVG 内部定义和外部资源拒绝、损坏输入、像素超限、异常帧、超时和取消。真实归档链路继续覆盖密码、完整性、来源身份及 UI 失效清理。布局沿用[视觉规范](../visual/design-standard.md#主动内容预览)，按[验证方法](../qa/README.md)复用未改变的布局证据，并观察新增图片的实际显示。
-
-English: Explicit previews support bounded UTF-8/BOM UTF-16 text and PNG/JPEG/JFIF, GIF/WebP first frames, BMP, ICO/CUR, ICNS, TGA, TIFF first pages and a static, resource-free SVG subset on all desktop platforms. HEIC/HEIF uses Apple's system decoder only on macOS. No AVIF, independent format libraries or document engines are added. Encoded images are capped at 16 MiB; source dimensions at 16384 each and 33554432 pixels. A private process returns at most a 512-square, 1 MiB RGBA8 thumbnail under a five-second wall deadline, native resource limits and cancellation checks. Two jobs and a 32 MiB pending-input budget bound concurrency. Native limits have the platform distinctions stated above; macOS additional virtual address space is not an RSS cap. Its system file-backed runtime resources have a 16 MiB per-file limit; Linux retains a zero file-size allowance. The application exports no archive-entry copy. SVG rejects external/embedded resources, active content, entities and excessive complexity. Style elements accept only text and validate the complete CSS after joining XML/CDATA chunks. Complete archive verification precedes content delivery. Passwords, session identities, cancellation and teardown retain their existing guarantees. Actual format and platform results belong in issues and generated evidence, not this contract.

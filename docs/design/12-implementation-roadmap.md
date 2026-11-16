@@ -1,5 +1,7 @@
 # xdzip: 12 Implementation roadmap and prototype migration
 
+English | [简体中文](../zh-CN/design/12-implementation-roadmap.md)
+
 ## 1. Current implementation and future design
 
 The current product implements a dual-handle runtime, Qt controllers, [bounded million-entry ZIP queries and pagination](../engineering/large-index.md), [limited preview](../engineering/content-preview.md), multiple read/write formats, settings, system integration, and installers. The independent [external SDK trial](../engineering/sdk-trial.md) does not enable third-party product extensions. Public versions and capabilities are governed by the root [README](../../README.md) and respective contracts. WP-12 development and acceptance completion are recorded in [#5](https://github.com/xiaodaozhi/xdzip/issues/5); `v0.1.0` release licensing and closeout are in [#4](https://github.com/xiaodaozhi/xdzip/issues/4) and [#53](https://github.com/xiaodaozhi/xdzip/issues/53).

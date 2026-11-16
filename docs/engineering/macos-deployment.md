@@ -1,5 +1,7 @@
 # Local macOS development DMG
 
+English | [简体中文](../zh-CN/engineering/macos-deployment.md)
+
 The dedicated Release workflow permits native deployment, necessary ad-hoc signing, app.zip and DMG packaging, and uploads. The on-demand Qt workflow's macOS job retains SDK verification. One deployed, signed, verified .app is used for both release packages; the unzipped ZIP also receives relocated startup verification. See the [release protocol](release-protocol.md).
 
 A local development DMG is an allowed development deliverable. The on-demand Qt workflow verifies native Apple Silicon build/startup without packaging, signing, or uploading a Mac app. Local scripts do not install the application, change default associations, upload files, or read release credentials.

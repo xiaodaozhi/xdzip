@@ -1,5 +1,7 @@
 # Password extraction interaction
 
+English | [简体中文](../zh-CN/ux/password-extraction.md)
+
 Supported ZIP, 7z and RAR tasks enter `waiting_password` upon an entry requiring a password. The runtime publishes a request with task ID and request ID; QML expresses input and cancellation intent only and does not decrypt, authenticate or publish files. Password requests and name conflicts are separate states; do not route password requests to the conflict window. Format, authentication, retry and output boundaries follow the [engineering contract](../engineering/password-extraction.md).
 
 7z or RAR filename encryption requests a password during opening, reusing PasswordWindow. It shows “Open password” and “Continue opening”, explaining that closing cancels only this opening and creates no extraction or checking task. Opening uses a separate `open` identity and increasing request IDs; an old request cannot submit a password to a new open. No partial file list appears before complete scanning. Neither opening nor content passwords are persisted.

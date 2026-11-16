@@ -1,5 +1,7 @@
 # License decision and third-party materials
 
+English | [简体中文](../zh-CN/engineering/licensing.md)
+
 Status: Adopted. On 2026-10-11 the project established **Apache-2.0** for original project code, documentation, and other original content except where otherwise declared. The MIT OR Apache-2.0 choice in earlier experimental documents does not apply to this repository.
 
 The root [LICENSE](../../LICENSE) contains the full standard Apache License 2.0 text, SPDX identifier `Apache-2.0`. Contribution guidance and release design were updated. License selection does not change repository visibility; a read-only check on 2026-10-19 confirmed the repository was public. Release admission still requires separate review of actual materials.

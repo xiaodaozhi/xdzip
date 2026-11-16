@@ -2,6 +2,8 @@
 
 # File-list opening, bidirectional drag-and-drop, and archive modification
 
+English | [简体中文](../zh-CN/engineering/archive-transfers.md)
+
 Context-menu “Open” acts on the right-clicked entry without changing multiple selection, reusing the double-click and Enter entry point. Directories are entered; regular files use the private cache, password, and associated-application rules for [temporary opening](archive-opening.md). Session or query changes close the menu; execution still verifies stable entry identity.
 
 ## External drag-out

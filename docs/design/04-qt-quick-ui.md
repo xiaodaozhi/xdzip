@@ -1,10 +1,12 @@
 # xdzip: 04 Qt Quick interface design
 
-The project established its formal visual baseline on 2026-10-11; see the [high-fidelity design deliverables](../visual/README.md). Images express the visual target; tokens and component specifications govern implementation dimensions and colors. Image preview remains scheduled for M6 under the established roadmap.
+English | [简体中文](../zh-CN/design/04-qt-quick-ui.md)
+
+The project established its formal visual baseline on 2026-10-11; see the [high-fidelity design deliverables](../visual/README.md). Images express the visual target; tokens and component specifications govern implementation dimensions and colors. See [content preview](../engineering/content-preview.md) for supported preview types and limits.
 
 ## 1. Information architecture
 
-The main window consists of a top command area, session tabs, a side directory tree, a central virtual file list, and a bottom task area. The first version permits multiple archive sessions; it can begin with a single tab and expose multiple tabs later without changing the model. The global task area is independent of tabs, so users can view tasks from other sessions.
+The main window consists of a top command area, session tabs, a side directory tree, a central virtual file list, and a bottom task area. Multiple archive sessions are supported, and users can switch between tabs. The global task area is independent of tabs, so users can view tasks from other sessions.
 
 | Page/component | Content | Primary actions |
 |---|---|---|

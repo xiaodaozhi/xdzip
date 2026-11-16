@@ -1,5 +1,7 @@
 # W01 main-window welcome page, high-fidelity candidate
 
+English | [简体中文](../zh-CN/ux/welcome.md)
+
 The high-fidelity design is confirmed and integrated into the [official HTML review entry](../../design/html/index.html?view=welcome&zoom=1). Qt implements real opening and creation; desktop manual acceptance is recorded separately. See the [welcome page state design](../../design/hifi/sources/welcome.html) and [welcome-reference.json](../../specs/visual/welcome-reference.json). Colors and main-window density retain existing tokens and layout-scale without changing global standards. Four PNGs are exports of code-drawn design originals, not product runtime screenshots.
 
 ## Information and layout

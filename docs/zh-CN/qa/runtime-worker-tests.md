@@ -1,5 +1,7 @@
 # 通过真实工作进程验证 runtime
 
+[English](../../qa/runtime-worker-tests.md) | 简体中文
+
 [runtime 集成测试清单](../../../specs/engineering/runtime-worker-tests.json) 声明全部依赖环境的 runtime 库测试及其前提。普通 `cargo test` 将它们保留为显式运行项，因为它们需要另行构建的隔离工作进程、固定外部数据或较多临时存储。ignore 标记不代表验证证据。
 
 复用项目已构建的 `xdzip-native-codec`。以下入口准备已授权的输入，只构建 runtime 测试二进制，并按清单串行执行，不构建 Qt，不调用作者工具，不安装产品，也不授予发行许可。

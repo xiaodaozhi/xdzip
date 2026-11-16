@@ -1,5 +1,7 @@
 # Risks and decisions
 
+English | [简体中文](../zh-CN/planning/risks.md)
+
 This register defines risks and controls that require ongoing assessment. Actual status, owners, deadlines and closure evidence belong in the corresponding issue; do not append stage reports here.
 
 | ID | Risk / decision | Responsible role | Closure evidence / gate |

@@ -1,5 +1,7 @@
 # xdzip：12 实施路线与现有原型迁移
 
+[English](../../design/12-implementation-roadmap.md) | 简体中文
+
 ## 1. 当前实现与后续设计
 
 当前产品已实现双句柄运行时、Qt 控制器、[百万条 ZIP 有界查询与分页](../engineering/large-index.md)、[受限预览](../engineering/content-preview.md)、多个读写格式、设置、系统集成和安装器。独立[外部 SDK 试验](../engineering/sdk-trial.md)不启用产品第三方扩展。公开版本与能力以根目录 [README](../../../README.zh-CN.md)及对应契约为准；WP-12 开发与验收完成记录见 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)，`v0.1.0` 发行许可与收尾见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)。

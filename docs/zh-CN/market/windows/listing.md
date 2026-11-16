@@ -1,6 +1,6 @@
 # 商店一览文案，中文（中国）
 
-[English](../../../market/windows/listing.md)
+[English](../../../market/windows/listing.md) | 简体中文
 
 ## 适用基线
 

@@ -1,5 +1,7 @@
 # xdzip: 09 Performance design and benchmarks
 
+English | [简体中文](../zh-CN/design/09-performance.md)
+
 ## 1. Metric boundaries
 
 Performance goals are user-perceived open/query latency, actual throughput, low idle overhead, bounded task peaks, and complete distribution size. Rust does not automatically guarantee these metrics, and one Linux cloud environment cannot establish performance on every Mac.

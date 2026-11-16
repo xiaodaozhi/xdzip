@@ -1,12 +1,14 @@
-# M1 product runtime and Qt lifecycle
+# Product runtime and Qt lifecycle
 
-M1 scope follows design/12: product skeleton, dual handles, events/backpressure, shutdown, and minimal three-platform builds. M2's 100,000-entry index, M3 safe extraction, and M5 private-release gates are not completed merely by this phase.
+English | [简体中文](../zh-CN/engineering/m1-runtime.md)
+
+This guide explains how the desktop application connects to the Rust runtime through commands and events, including queue backpressure, shutdown, and platform builds. See [read-only browsing](readonly-browser.md) and [safe extraction](m3-extraction.md) for their specific capabilities.
 
 ## Implemented services
 
 `xdzip-runtime::service` is the product implementation; diagnostic probes remain separate. The GUI owns only `CommandClient`; a dedicated Qt receiver thread exclusively owns `EventReceiver`. Each handle is taken once. cxx supplies ABI glue for this bridge; platform file-access security boundaries are separately described in the [file security specification](../design/07-file-security.md). A single Rust worker owns source files and archive snapshots; Archive handles and synchronous scan entry points are no longer exposed to Qt.
 
-M1 commands are Open, Browse, Preflight, CloseSession, and Snapshot; all existing real browsing and preflight use them. Each accepted ordinary request gets a non-reused ID, returns at most one bounded data event, then exactly one Finished; errors return Finished directly. Pages carry session, request, and offset identity. Each RuntimeConnection has one session and serial GUI pending requests. M2 added full query ID, GUI generation, and snapshot revision; see the [M2 contract](m2-readonly.md). Cross-session requests return stale_session.
+Core commands include Open, Browse, Preflight, CloseSession, and Snapshot; all existing real browsing and preflight use them. Each accepted ordinary request gets a non-reused ID, returns at most one bounded data event, then exactly one Finished; errors return Finished directly. Pages carry session, request, and offset identity. Each RuntimeConnection has one session and serial GUI pending requests. Queries also include a full query ID, GUI generation, and snapshot revision; see the [ZIP browsing contract](m2-readonly.md). Cross-session requests return stale_session.
 
 GUI ordinary admission uses try_lock without waiting for queue space, validating 4 KiB paths, 1 KiB search, 128 selected items, 21-byte directory IDs, and sort codes 0–12. Rejection consumes no ID; Busy may be retried. Cancellation has a separate control channel with at most 128 items and its own Finished acknowledgement; acknowledgement does not guarantee the target has not already finished. Shutdown retains an independent, idempotent RequestId and reserves the last available ID so it works even when ordinary IDs are exhausted or the queue is full.
 
@@ -21,7 +23,7 @@ The Qt controller retains only one command awaiting admission. Transient Busy is
 - One notification chain drains at most 32 events or approximately 4 ms per turn, posting another turn if unfinished; handling a single event is not preemptible. Empty queues stop scheduling, and the receiver blocks on a condition variable.
 - Open's Page additionally carries the complete bounded directory index (at most 32,768 nodes and 4 MiB total names/prefixes), marked for replacement by `replace_directories`; an empty index also explicitly replaces. Browse does not resend the index; `navigation_limited` explicitly indicates downgraded indexing. Rust accounts name/prefix bytes; the Qt mailbox also counts bridge-generated node/parent ID strings. Node containers and depth have separate limits. Apply the new page and directory model together only after the corresponding request's successful Finished.
 - Page `total` is current list rows; `archive_total` independently retains physical archive record count. Ordinary browsing lists direct files/directories in the current directory; search recursively returns physical matches. Directories without explicit records use `navigation_id` and `physical=false`; Qt row keys are `dN`, raw physical IDs remain separate, and virtual nodes cannot submit Preflight. Full paths remain in row metadata; display names use basename/full path for ordinary browsing/search respectively.
-- String budgets are not RSS: containers, snapshots, and one event in conversion require additional space, but entries and pages remain bounded. Bridge batches contain at most 128 items. See the [M2 contract](m2-readonly.md) for the M1/M2 100,000-entry scan baseline and [large archive indexing](large-index.md) for later ordinary single-file ZIP expansion.
+- String budgets are not RSS: containers, snapshots, and one event in conversion require additional space, but entries and pages remain bounded. Bridge batches contain at most 128 items. See the [ZIP browsing contract](m2-readonly.md) for the original 100,000-entry scan baseline and [large archive indexing](large-index.md) for later ordinary single-file ZIP expansion.
 
 Control and ordinary events are taken alternately so continuous cancellation acknowledgements cannot starve ordinary terminal states. Increasing sequence numbers are assigned at delivery. Qt drops old sequences; control acknowledgements and stale request_ids do not modify the current view.
 
@@ -41,6 +43,6 @@ If a read-only worker handler encounters an unwindable panic, the boundary catch
 
 See [general verification](../qa/README.md). Rust core tests require no Qt; Qt window, model, stress, and shutdown cases are natively built and run on three platforms. macOS CI verifies arm64 and SDK-environment Cocoa startup without deploying or uploading apps; local development DMGs may be produced on explicit request. Windows/Linux deploy bundled Qt and verify SDK-free execution; see the [build guide](developer-build.md). These checks do not amount to formal release approval.
 
-M2 initial queries allocate immutable result identity; later batches must match every QueryKey field and parameter. Qt cancels old requests and coalesces the latest intent while retaining sequence and request-ID checks. A batch also limits names to 64 KiB and does not refilter/resort. Historical M1 acceptance is not rewritten to claim M2 already existed then.
+Initial queries allocate immutable result identity; later batches must match every QueryKey field and parameter. Qt cancels old requests and coalesces the latest intent while retaining sequence and request-ID checks. A batch also limits names to 64 KiB and does not refilter/resort. Historical acceptance remains limited to the capabilities available at the time.
 
 The application layer may create multiple independent connections while the domain runtime isolates sessions per connection. See the [application sessions contract](application-sessions.md) for global task identity and serial heavy-task admission.

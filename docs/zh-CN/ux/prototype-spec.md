@@ -1,5 +1,7 @@
 # v0.1 交互原型与功能映射
 
+[English](../../ux/prototype-spec.md) | 简体中文
+
 状态：可交互设计验证稿。源文件在 [design/html](../../../design/html/README.md)，入口为 [index.html](../../../design/html/index.html)。Figma 工作稿保留为历史探索；当前功能与状态细化在仓库内继续。
 
 ## 已覆盖流程

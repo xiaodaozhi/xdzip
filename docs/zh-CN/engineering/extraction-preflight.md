@@ -1,5 +1,7 @@
 # 解压预检：元数据阶段
 
+[English](../../engineering/extraction-preflight.md) | 简体中文
+
 本模块提供元数据预检规则。没有授权目标、解码、写入、暂存或提交能力。
 
 ## 实现与边界
@@ -8,7 +10,7 @@
 
 选择上限 128 个物理 ID，必须非空并且全部属于当前快照。选择目录时按原始名称的斜杠边界展开所有后代，不受搜索、分页或当前目录范围影响；目录和子项同时选中只计一次。同名物理记录不按路径合并。统计中的目录只计显式记录，不合成目录对象。
 
-预检通过 M1 正式命令/事件服务执行，复用有界准入和独立取消通道。结果不替换浏览页或清空选择。改变选择、查询或会话时清空旧报告并关闭结果窗，避免把旧选择结果用于新操作。报告只对应扫描时元数据；本阶段不重新验证源文件内容或身份。
+预检通过命令与事件服务执行，复用有界准入和独立取消通道。结果不替换浏览页或清空选择。改变选择、查询或会话时清空旧报告并关闭结果窗，避免把旧选择结果用于新操作。报告只对应扫描时元数据；预检不重新验证源文件内容或身份。
 
 ## 已执行规则
 
@@ -28,8 +30,6 @@ Unicode 小写比较不是完整大小写折叠或 NFC/NFD 文件系统等价规
 空选择、外来 ID、索引限额或取消返回错误，不返回部分成功报告。总量溢出显示“无法计算”，不截断成零。基础问题只报告，不自动覆盖、改名、忽略或跳过。
 
 未知原始大小报告稳定原因 `unknown_size`，`declared_bytes=None` 表示总量不可知，和已知空文件的 `Some(0)` 分开。未知本身不产生伪造的超总量或未知压缩方法问题；实际整数溢出仍产生总量限额问题。输出任务另行拒绝未知尺寸记录，不进入解码、暂存或密码交互。
-
-English: Unknown uncompressed sizes produce `unknown_size` and an unknown declared total, distinct from a known empty file. Unknown values do not fabricate a size-overflow or compression-method finding. Actual arithmetic overflow remains a total-limit finding. Output tasks reject unknown-size records before decoding, staging or password interaction.
 
 ## 桌面入口
 

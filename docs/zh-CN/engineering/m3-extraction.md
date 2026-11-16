@@ -1,4 +1,6 @@
-# M3 安全 ZIP 解压实现
+# 安全 ZIP 解压实现
+
+[English](../../engineering/m3-extraction.md) | 简体中文
 
 本契约定义宿主安全输出、真实解压、冲突、取消与提交行为；具体执行结果和当前缺陷记录于对应 issue 及 Actions 工件，不在本页累积验收报告。
 
@@ -7,8 +9,6 @@
 所有输出先通过共享 portable 名称解析器，拒绝路径穿越、绝对路径、保留设备名、非法字符和歧义组件。任务准备阶段冻结选择：根目录全量解压包括全部物理记录；所选目录展开全部后代；所选文件去除当前目录前缀。浏览器根目录列表仍仅显示直属文件和文件夹。常见 Unicode NFD／小写等价名称按首个拼写映射，普通文件别名进入冲突流程；文件与目录冲突、父目录歧义在创建目标对象前拒绝。该比较不是所有文件系统名称规则的完整模拟，最终排他创建仍由原生文件系统裁决。
 
 默认的同名文件夹由宿主从归档名称派生，界面预览和实际输出使用同一名称。去除归档扩展名后若以 `.app` 结尾，还要去除此后缀，大小写不敏感，避免 macOS Finder 将普通外层文件夹误认成应用包；例如 `demo.app.zip` 解压到 `demo/`，其内部原有的 `demo.app` 名称和内容不变。去除后为空时使用 `archive`，派生目录仍经过 portable 名称检查和目标授权。该规则同样适用于已支持的复合扩展名及分卷归档，不改变未勾选同名文件夹时的输出路径。
-
-English: The default archive-named wrapper and its UI preview share one host-derived name. After removing the archive suffix, a case-insensitive `.app` suffix is also removed so Finder sees an ordinary directory; an empty result becomes `archive`. The app inside retains its original name and bytes. Normal path and target authorization checks still apply.
 
 用户选择的目标目录通过 `xdzip-io::Grant` 转为持有目录句柄的能力。子目录逐组件 no-follow 打开，保留并复核父链身份。POSIX 目标须属于当前有效用户且不能向组或其他用户开放写权限；Windows 检查重解析点、所有者和 DACL，修改权限只允许当前用户、SYSTEM、Administrators 和继承用途的 Creator Owner。其他 SID 可以具有 FILE_GENERIC_READ／FILE_GENERIC_EXECUTE 的只读、枚举及执行权限，GENERIC_READ／GENERIC_EXECUTE 使用相同的文件权限边界；写入、创建、追加、删除、删除子项、改所有者、改 ACL、GENERIC_WRITE／GENERIC_ALL 及未知位仍拒绝，有效与仅继承 ACE 同样检查。这样可接受个人目录已有的只读观察账户，而不会将外部可写目录判为安全。Windows 输出沿用目标的只读共享权限，不承诺对已有只读账户隐藏文件内容，也不修改用户目录 ACL。链接、特殊对象、外部所有者和外部可写目标继续拒绝。
 
@@ -41,8 +41,6 @@ Qt 桥接只传不含输出能力的目标／任务 DTO，ID 以不透明字符�
 打开解压确认窗口后的自动目标检查、编辑后的重检，以及创建窗口的目标检查和输入元数据预览也属于操作准备。它们保持已提交的浏览快照，不能触发 browsingBusy 或关闭 browserQueryAvailable，避免主列表遮罩、工具栏禁用色和菜单关闭造成闪烁。busy 仍覆盖完整请求周期，继续保护串行准入；目标检查中的反馈只在操作窗口显示。初次打开未就绪的归档仍显示加载状态；切换目录或查询时保留已提交的非空列表或空状态，直到新快照提交。失败导致源快照失效时仍清除失效数据。
 
 解压目标在打开窗口、选择目录及结束编辑时自动检查；创建与解压分别保存检查结果，并以窗口代次、请求、路径和解压会话关联。路径改变立即使旧结果失效，排队或检查期间不能提交；过期回执不能授权新路径或另一窗口。两窗使用相同状态图标和提示，解压保留原有路径布局、同名文件夹与暂存提示。该检查仅供操作准备，真实写入仍按源与目标能力重新验证。
-
-English: Extraction checks its target when the window opens, a folder is chosen or editing finishes. Creation and extraction retain separate results bound to their window generation, request, path and extraction session; an edited or pending target cannot be submitted and stale replies cannot authorize another path or dialog. Both windows share status icons and wording while extraction retains its destination layout and leftover warning. Actual writes still revalidate source and destination authority.
 
 ## ZIP 符号链接安全恢复
 

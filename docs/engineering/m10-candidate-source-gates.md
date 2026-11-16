@@ -1,6 +1,8 @@
-# M10 candidate source and license gates
+# Sources and licenses for disk images and other archive formats
 
-This record closes the next Bandizip inventory candidates after M9. It separates a public description of a wire format from permission to ship a decoder, and separates a reference implementation from a redistributable product dependency. None of the references below is linked into xdzip. A candidate cannot enter the format registry until its source revision, license text, complete fixtures, resource model and failure behavior are frozen.
+English | [简体中文](../zh-CN/engineering/m10-candidate-source-gates.md)
+
+This page describes public technical references, licensing restrictions, and support requirements for DAA, ISZ, ZPAQ, PEA, BOND, J2J, and related formats. A public format description does not grant permission to ship a decoder, and a reference implementation is not necessarily a redistributable product dependency. None of the references below is linked into xdzip. Before a format enters the product registry, its source revision, license text, complete fixtures, resource limits, and failure behavior must be established.
 
 ## DAA 1.0
 
@@ -62,7 +64,7 @@ This record closes the next Bandizip inventory candidates after M9. It separates
 - **Capability boundary:** No detection, suffix registration, browsing, extraction, checking, creation, password or volume support.
 - **Conclusion:** **Excluded by product decision and unconfirmed as a Bandizip archive format.** No `.j2j` detector or registry entry will be added in this work package.
 
-## M10 admission gates
+## Requirements for format support
 
 1. Record an authoritative specification or a legally reviewed clean-room protocol. A blog, extension database or decoder source alone is not enough.
 2. Pin every research source to an immutable commit or content hash and record the applicable license text.

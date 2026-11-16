@@ -1,5 +1,7 @@
 # 系统菜单与托盘
 
+[English](../../ux/desktop-integration.md) | 简体中文
+
 多会话、单实例、窗口状态及全局退出以[应用会话契约](../engineering/application-sessions.md)为准。关闭非最后主窗口保留任务，最后窗口遵循托盘设置；退出确认覆盖所有会话。
 
 系统、菜单和托盘的显式退出在本应用密码或冲突提示中仍能进入全局退出确认，返回保留原任务和提示。macOS 应用菜单中的退出项及 Command-Q 在这些任务提示下可用。文件选择器及其他模态控件先完成或取消，再处理退出；在阻挡期间触发的退出不得延迟到模态关闭后执行。System, menu and tray Quit can open the global confirmation over an owned task password or conflict prompt; Return preserves the task and prompt. On macOS, the application-menu Quit item and Command-Q remain available for these task prompts. File selectors and other modal controls must be completed or cancelled first; Quit triggered while blocked must not execute later after the modal closes.
@@ -12,15 +14,11 @@ macOS 菜单按 xdzip、文件、编辑、显示、操作、窗口、帮助排�
 
 语言设置保存成功后，原有菜单栏、应用菜单的关于／设置／退出、托盘菜单、任务子菜单和托盘提示立即切换语言；切换失败时保持原语言。菜单命令和快捷键的行为、任务身份及正在运行的任务均保持不变。macOS 服务、隐藏等系统自带项目与原生文件选择器继续遵循系统语言。
 
-English: Saving a language change immediately updates the existing menu bar, application-owned About, Settings and Quit entries, tray menu, task submenu and tray tooltip. A failed save retains the previous language; menu actions, shortcuts and task identities remain intact. System-owned macOS entries such as Services and Hide, and native file dialogs, continue to follow the system language.
-
 托盘默认启用，设置开关操作成功后立即生效。schema 1 增加 desktop/trayEnabled，旧配置默认 true，保留未知字段与原子保存策略。菜单提供显示主窗口、打开、新建、任务、设置、关于、退出；任务由真实控制器数据驱动，状态与任务详情一致。macOS 点击展开菜单；Windows/Linux 普通激活恢复窗口、右键展开菜单。任务完成不自动弹出通知或抢焦点。
 
 托盘可用时关闭最后主窗口会清除该窗口的浏览标签与操作窗草稿，再隐藏窗口；再次显示仅保留一个起始页。后台任务及其会话身份继续保留，从全局任务入口主动打开。最小化不清除标签。模态窗口或文件选择器存在时先激活阻塞窗口。明确退出、系统退出和重启绕过隐藏，继续现有任务确认与异步 join；取消退出恢复驻留策略。关闭托盘先恢复隐藏主窗口。无托盘时恢复正常关闭，运行中托盘消失且窗口隐藏时恢复主窗口。macOS Dock 保留，点击 Dock、文件关联重新打开均可恢复。测试探针以明确退出语义完成，不依赖驻留设置。
 
 托盘图标从现有品牌标志提取字形，macOS 为模板图标，Windows 与 Linux 使用白色填充、深色描边的双层字形兼容深浅及有色系统栏背景，并提供多尺寸位图。Windows 不依赖应用主题或注册表主题读数，系统主题信息缺失时也保留对比度。图标不做闪烁或持续动画。
-
-English: Tray glyphs derive from the existing brand mark. macOS uses a template icon; Windows and Linux use white ink with a dark outline and multiple raster sizes to remain legible on light, dark and colored panels. Windows does not depend on the application theme or registry theme readings, including when system theme information is unavailable. Icons do not blink or animate continuously.
 
 “显示”菜单在“文件预览与属性”之后保留不可折叠的分隔线，将 AppKit 自动追加的全屏命令独立分组，避免系统全屏图标使预览项额外预留图标列。预览项与列表、网格的文字起点对齐，勾选标记仍由系统绘制；不靠空格、固定宽度或自绘菜单补偿。HTML／高保真交互稿只表达应用命令，系统追加项由原生桌面验证。
 
@@ -30,13 +28,8 @@ English: Tray glyphs derive from the existing brand mark. macOS uses a template 
 
 Windows 托盘隐藏后保留原生窗口、状态、QML 对象、控制器与后台任务，在隐藏状态下暂时遮蔽窗口透明度，恢复后首个新帧完成提交才恢复原透明度。仅清理 hovered 属性不能防止 DWM 在新帧提交前短暂显示窗口的最后一帧。新一轮隐藏使旧帧回调失效；此策略只适用于托盘隐藏，不用于最小化或仍可见的窗口，不通过截图读回、固定延时或禁用系统动画实现。
 
-English: Hiding or minimizing an application-owned Qt Quick window ends pointer hover and its cached position before restoration. The first restored frame reconciles against the current system pointer position before scene synchronization. Late native enter events remain normalized until real mouse movement or a press supplies current coordinates. Controls, MouseAreas, HoverHandlers and tooltips resume from fresh pointer input instead of the old hover color or coordinates. Focus, control bindings and native file choosers retain their existing behavior.
-
 没有系统全局指针的后端以注入事件为准，不查询物理鼠标覆盖其状态。offscreen／minimal 的组件检查与原生桌面恢复检查分开，不能用离屏检查替代 DWM、Cocoa 或 X11 的实际窗口验收。
 
-Backends without a system-wide pointer treat injected events as authoritative instead of overriding them with physical cursor queries. Offscreen/minimal component checks remain separate from native DWM, Cocoa and X11 window acceptance.
-
-On Windows, tray hiding retains the native window, state, QML objects, controllers and background tasks. While hidden, its opacity is masked until the first newly submitted frame after restoration, preventing DWM from revealing the previous hover-colored image. Hiding again invalidates old callbacks. This does not affect minimization or visible windows, and uses no screenshot readback, fixed delay or animation override.
 
 自动化覆盖菜单结构和角色、状态同步、命令与编辑路由、配置兼容与取消、驻留及退出策略、无托盘回退、任务菜单、模态阻塞与重启。原生桌面另核验 macOS 顶部菜单、Dock 恢复，Windows 通知区与 Linux StatusNotifier/XEmbed，深浅外观、高 DPR、键盘与屏幕阅读。离屏验证不等于原生桌面验收；截图与报告仅输出 build/ 或 dist/。
 

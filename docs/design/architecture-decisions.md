@@ -1,5 +1,7 @@
 # xdzip: Architecture decision records
 
+English | [简体中文](../zh-CN/design/architecture-decisions.md)
+
 The initial records are dated 2026-10-11; later records state their own dates. Accepted means adopted by the design, not that implementation has been verified. When superseding a record, retain the original and append a new record.
 
 ## ADR-001: Qt Quick as the sole product interface

@@ -1,5 +1,7 @@
 # 内置格式能力登记
 
+[English](../../engineering/format-registry.md) | 简体中文
+
 内置格式以 [archive-formats.json](../../../specs/engineering/archive-formats.json) 为登记来源，记录稳定格式标识、标签、容器族、压缩外层、既有私有工作进程编号、支持的方法族、创建后缀、检查强度及入口候选。方法族是对应格式契约的摘要，不承诺全部参数、历史变体或组合；实际条目、宿主策略和平台能力仍在任务开始前进一步收敛准入范围。
 
 检查强度分为三类：`supported_content` 验证支持的内容，`structure_and_readability` 不承诺内容校验和，`format_declared_checks` 验证流声明的校验，但允许格式中无校验和的配置。生成的界面说明和 CLI 结果须保留此区别。创建方法编号只能解析到该格式已准入的写方法，登记读过滤器不能隐式启用写入。

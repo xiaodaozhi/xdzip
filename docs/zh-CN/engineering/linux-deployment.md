@@ -1,5 +1,7 @@
 # Linux 独立运行目录与验证
 
+[English](../../engineering/linux-deployment.md) | 简体中文
+
 当前开发部署基线为 Ubuntu 24.04、x86_64、X11。目标是脱离开发 Qt SDK 运行当前产品，不据此承诺其他发行版、旧 glibc、Wayland 或完整安装器支持。macOS CI 保持原生编译、测试与启动验证，本地开发 DMG 按[Mac 部署指南](macos-deployment.md)处理，不受本流程影响。
 
 ## 布局和生成

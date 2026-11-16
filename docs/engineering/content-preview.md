@@ -1,5 +1,7 @@
 # Explicit content preview
 
+English | [简体中文](../zh-CN/engineering/content-preview.md)
+
 Preview is initiated when the user clicks “Preview content” in the properties card. Selecting an entry or opening an archive does not automatically decode content. The main window and independent properties viewer use the same component; passwords reuse the existing password window. Metadata details remain independently available.
 
 ## Capabilities and budgets

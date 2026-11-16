@@ -1,5 +1,7 @@
 # 算法辅助工作计量
 
+[English](../../engineering/auxiliary-decoding-work.md) | 简体中文
+
 解压和检查分别累计文件解码字节、实际输出与算法辅助工作。PPM 模型初始化、容量重启、控制及参数解码等辅助工作不是文件内容，不能增加 `decoded_bytes`、`written_bytes`、文件进度或压缩膨胀比，也不能产生预计费交付额度。任务快照不新增面向用户的辅助计数字段。
 
 `DecodedSink::charge_auxiliary(bytes)` 只报告已经执行的辅助工作，默认实现不改变任何文件计数。算法先用自己的剩余预算准入未来工作，执行后再结算实际数量，包括失败和取消前已经完成的部分。未执行的预留不报告为实际工作，已执行工作不因错误、模型清除或密码重试退款。RAR 的私有总工作预算继续约束文件解码与辅助工作之和。
@@ -30,5 +32,3 @@ cmake --build build/auxiliary-protocol --config Release
 ```
 
 将 `XDZIP_NATIVE_CODEC_WORKER` 指向该夹具，并设置 `XDZIP_AUXILIARY_PROTOCOL_FIXTURE=1` 后，显式运行 `cargo test -p xdzip-codec-native auxiliary_protocol -- --ignored`。普通定向回归使用 `cargo test -p xdzip-codec-native -p xdzip-runtime auxiliary`，通用默认 sink 的兼容行为由 codec API 测试核验。生成证据只进入 build 或 CI，任务结果和剩余项由[迁移任务 #51](https://github.com/xiaodaozhi/xdzip/issues/51)登记。
-
-English: Auxiliary algorithm work is separate from decoded file bytes, writes, expansion ratios, progress and prepaid delivery credit. Algorithms privately admit future work and report only completed work through `DecodedSink::charge_auxiliary`, including work performed before failure. `AUX_WORK=24` carries one little-endian u64 count from 1 to 65,536 and requires an ACK after successful host accounting. Only RAR payload decoding may use it. Native payload instances and runtime tasks independently enforce cumulative 20 GiB auxiliary limits across entries, worker restarts and password attempts, without refunds or public UI counters. Synchronous CXX callbacks retain no Rust pointers and convert exceptions before crossing the boundary. Existing file WORK can fund a single prepaid delivery in an admitted format; auxiliary work never can. Small-file correctness, malformed/scope-forged packets, repeated limits, retries, cancellation and credit isolation require separate checks. The authored protocol stub proves transport behavior only; complete RAR worker, runtime, platform and desktop acceptance require their own evidence.

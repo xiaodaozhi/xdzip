@@ -1,5 +1,7 @@
 # 原生运行库来源与通知
 
+[English](../../engineering/native-runtime-materials.md) | 简体中文
+
 本契约覆盖实际包中的非 Qt 原生运行库，与[运行时归属](runtime-attribution.md)及[对应源码](source-delivery.md)共同使用。源版本、文件身份、许可条件和实际履约分别核对，不能将供应方文件哈希当作许可批准。`v0.1.0` 的历史候选结论和补证记录在 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 与 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)；未来候选使用新的发行 issue，证据只生成到 build/ 或 CI 工件。
 
 | 组件 | 原始依据与交付材料 | 核对边界 |
@@ -29,5 +31,3 @@ Windows 部署禁用 windeployqt 对软件 OpenGL、D3D 编译器和 DXC 的环�
 macOS 打包在最终签名应用仍存在时输出 `deployment-audit.json`、`macos-deployment.json`、`runtime-attribution.json`，文件 SBOM 使用同一审计及归属报告。Qt 原生文件按 arm64 分片、全部 section 字节、UUID 和导入版本比较，允许部署需要的 Qt 路径重定位；签名、load-command 布局及 LINKEDIT 不属于该比较结论。非原生资源按精确字节关联。未关联文件和原始 SPDX 缺口继续保留，不能将这个过程宣称为完整二进制等价。
 
 公开包发现缺失通知后，补充材料不能改写为“原包已包含”。原版本资产及校验和保持不可变，修订后的包必须使用新版本并重新验证；补充材料及其绑定对象应明确登记。
-
-English: Native runtime provenance, license conditions and delivered obligations are separate checks. Current Windows developer packages omit the software OpenGL library and the three Windows SDK graphics compiler DLLs. Eligible Community use, GitHub-hosted Enterprise builds and downstream Microsoft terms follow the Windows licensing contract. CRT terms and a bilingual runtime notice are delivered in both the runtime and materials; Setup presents the original CRT agreement. Historical packages retain their own notices and obligations, including those applicable to SDK graphics DLLs and the Mesa/LLVM renderer where included. The full ICU license remains pinned for Linux. Final macOS attribution binds the signed deployed app to SDK inputs using arm64 sections, UUID and imports, while explicitly excluding signatures, load-command layout and LINKEDIT from equivalence claims. Origins and license eligibility require explicit review. Published assets are immutable; corrected packages require a new version.

@@ -1,5 +1,7 @@
 # 发行候选材料契约
 
+[English](../../engineering/release-candidate.md) | 简体中文
+
 每个候选绑定干净源码提交、产品版本和实际包哈希。材料生成不自动创建 GitHub Release、标签或上传包，也不批准许可选择；具体状态记录在候选对应 issue。正式签名与公证不作为门槛。按 2026-11-05 所有者政策，发行附件不提供对应源码压缩包；本地源码收集和审阅工具继续保留。
 
 ## 交付内容
@@ -16,8 +18,6 @@
 
 二进制差异记录同时保留归属报告中的 `attribution_path` 和 `sdk_path`。同一 SDK 文件的多个发行路径可以分别出现，不能把这些记录数量直接当作不同 SDK 文件数量；上游摘要差异仍按各自实际证据判断。
 
-English: Each binary-difference record retains both the `attribution_path` from the attribution report and the `sdk_path`. Multiple distributed paths may refer to one SDK file, so record counts are not automatically counts of distinct SDK files. An upstream checksum difference still requires its own evidence.
-
 公开 alpha.8 macOS 材料中的 110 条差异对应 61 个 SDK 文件。[Qt 官方 PySide6 6.8.2 macOS wheel](https://download.qt.io/official_releases/QtForPython/pyside6-essentials/PySide6_Essentials-6.8.2-cp39-abi3-macosx_12_0_universal2.whl) 包含与 61 个原 SPDX SHA-1 分别匹配的文件；它的固定 SHA-256 为 `abe8446367413b7b56626352e05adc7b15a180956ac9d90e4ee6419c16eab23d`。可提供原公开 macOS materials、该 wheel 和对应 Qt SDK，运行以下命令复验 SDK 的完整字节关系：
 
 ```sh
@@ -30,13 +30,9 @@ python3 scripts/verify-alpha8-macos-sdk-signatures.py \
 
 工具核对固定材料和 wheel 摘要、原始差异记录及每个 SDK 文件摘要，将 SDK 现有签名字节与必要的签名命令、链接段大小和对齐变化用于内存重建，并要求 61 个输出与 SDK 逐字节一致。它不签名文件，不修改原包，也不验证 Qt 签名的信任策略、证明历史签名命令或批准许可。原发行 SBOM 和历史材料不改写；详细证据见 [#53](https://github.com/xiaodaozhi/xdzip/issues/53#issuecomment-6571328466)。
 
-English: The 110 differences in the published alpha.8 macOS materials refer to 61 SDK files. The pinned Qt PySide6 6.8.2 macOS wheel above contains files matching all 61 original SPDX SHA-1 values. The command verifies the pinned inputs and reconstructs each SDK file in memory using the SDK's existing signature bytes plus the necessary signature-command, link-edit-size and alignment changes. All reconstructed bytes must match. The tool does not sign or alter files, verify Qt's signature trust, prove the historical signing command or approve licenses. Historical SBOM and release assets remain unchanged; see [#53](https://github.com/xiaodaozhi/xdzip/issues/53#issuecomment-6571328466).
-
 审查清单须逐平台核对报告的实际可用性与范围：最终文件 SBOM、部署后组件归属和 SDK 参考是三类输入。只有文件哈希或 SDK 模式归属时，将部署后的组件关联登记为缺失；裁剪架构、重定位、签名后的应用不能直接沿用 SDK 文件身份。历史候选与当前候选的观察数量只有在范围、文件与组件均匹配后才能比较，不能把数量变化当作已解决项。
 
 专用 macOS Release 在最终部署应用仍存在时采集 Cocoa／Metal 资源探针、SDK 源码对应与差异分析，提供通用名称的来源／文件 SBOM。链接图和静态库绑定编译应用，资源与审计绑定部署应用；`release-deployment-evidence.json` 复用既有 Mach-O 比较器，核对节的精确字节、地址、标志及零填充大小，以及 UUID 与归一化导入版本，保留不同的整文件哈希。加载命令布局、LINKEDIT 与签名元数据不计入该等价结论，异常边界、混合身份或节／UUID／导入变化直接失败。单次探针不批准参考机性能或真人视觉，原始归属缺口与 incomplete 保持。
-
-English: Dedicated macOS Release packaging captures a Cocoa/Metal resource probe, SDK-source correspondence and difference analysis while the final deployment exists, with conventional source/file SBOM names. Link inputs bind the compiled image; resources and audit bind the deployed image. `release-deployment-evidence.json` reuses the established Mach-O comparator for exact section bytes, addresses, flags, zero-fill sizes, UUID and normalized imports while preserving distinct whole-file hashes. Load-command layout, LINKEDIT and signatures remain outside that equivalence claim. Invalid bounds, mixed identities or changed sections/UUID/imports fail. A single probe grants no reference-performance, manual-visual or license approval; original gaps and incomplete status remain.
 
 Qt 动态链接、通知及本地保留的源码／替换材料是核对依据，不自动消除其他许可义务；参见 [Qt 官方义务说明](https://www.qt.io/development/open-source-lgpl-obligations)。Windows 再分发逐文件对照 [Visual Studio 2022 官方可分发清单](https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution)，并保留工具链及 DLL 来源，不能以“来自 Qt SDK”代替具体授权。字体按现有 OFL 材料，项目原创按 Apache-2.0，生成式图标按来源说明分别登记。对应源码压缩包不作为发行附件提供，若实际许可条件无法在其他方式下满足，须阻止相关二进制分发。
 

@@ -1,6 +1,8 @@
-# M9 候选格式资料和许可门槛
+# WIM、MSI 和安装程序格式的资料与许可
 
-本记录固定 Bandizip 清单中下一阶段候选格式。资料只保留在 `build/toolchain/references`，或链接公开规范，不作为产品依赖。
+[English](../../engineering/m9-candidate-source-gates.md) | 简体中文
+
+本文介绍 WIM、MSI 和安装程序格式的技术资料、许可限制及支持这些格式所需的条件。参考资料保留在 `build/toolchain/references` 或链接到公开规范，不作为产品依赖。
 
 ## WIM
 

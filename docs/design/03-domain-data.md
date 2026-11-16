@@ -1,5 +1,7 @@
 # xdzip: 03 Domain model and data design
 
+English | [简体中文](../zh-CN/design/03-domain-data.md)
+
 ## 1. Identity and versioning
 
 | Type | Meaning | Rules |

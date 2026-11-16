@@ -1,5 +1,7 @@
 # Data lifecycle and diagnostics
 
+English | [简体中文](../zh-CN/engineering/privacy.md)
+
 For user-facing privacy information, see the [Privacy Policy](../../PRIVACY.en.md) and its [Chinese version](../../PRIVACY.md). This page retains engineering implementation contracts and does not treat planned diagnostic designs as delivered features.
 
 By default there is no telemetry, background update installation, or archive-content upload. Basic compression and extraction work offline. Product settings, user content, and diagnostic evidence are stored separately.

@@ -1,5 +1,7 @@
 # xdzip: 06 Format adapters and extension SDK
 
+English | [简体中文](../zh-CN/design/06-codec-extension-sdk.md)
+
 ## 1. Two kinds of extension
 
 **Built-in source-level extensions** implement the Rust SDK, are built with the product, and select backends through Cargo features. The Rust compiler ABI is unstable; they are not made into `.so/.dylib/.dll` files loadable across arbitrary versions.

@@ -1,5 +1,7 @@
 # xdzip: 08 Task states, resource admission, and concurrency
 
+English | [简体中文](../zh-CN/design/08-task-scheduling.md)
+
 This page describes both scheduling goals and implemented rules. The application maintains separate runtime connections for independent sessions. Each connection retains a single session and one heavy-task worker; creation and extraction are coordinated through serial application-level admission. Closing a page does not cancel background tasks. See the [application sessions contract](../engineering/application-sessions.md). A complete CPU token pool, two concurrent heavy tasks, external workers, and general pause are future designs; the target budgets below are not current settings. Actual task boundaries are defined by the [safe extraction](../engineering/m3-extraction.md), [creation](../engineering/m4-creation.md), and [password extraction](../engineering/password-extraction.md) contracts.
 
 ## 1. State machine

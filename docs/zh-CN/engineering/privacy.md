@@ -1,5 +1,7 @@
 # 数据生命周期与诊断
 
+[English](../../engineering/privacy.md) | 简体中文
+
 面向用户的隐私说明见[隐私政策](../../../PRIVACY.md)与 [English 版本](../../../PRIVACY.en.md)。本文保留工程实现契约，不将待实现的诊断设计视为已交付功能。
 
 默认无遥测、无后台更新安装、无归档内容上传。基础压缩解压离线可用。产品设置、用户内容和诊断证据分开存放。
@@ -18,4 +20,4 @@
 
 诊断记录需要容量上限与保留策略，在实现中集中配置。导出前显示将包含的字段；用户自行上传前可检查。崩溃恢复只处理受控元数据，不执行归档内容或恢复任意路径写入。
 
-更新网络、签名、安装交接与恢复边界见[主动更新契约](software-update.md)。English: User-initiated update checks contact fixed public GitHub endpoints/CDNs, exposing connection metadata and the application version but no credentials, archive data or paths. Local transaction receipts survive installation restarts in a separate settings-side file; failed update materials remain in the private cache and are never executed as instructions.
+更新网络、签名、安装交接与恢复边界见[主动更新契约](software-update.md)。

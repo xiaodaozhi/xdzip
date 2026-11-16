@@ -1,5 +1,7 @@
 # Actual component attribution and license materials
 
+English | [简体中文](../zh-CN/engineering/runtime-attribution.md)
+
 This flow supplements file-level SBOMs by associating actual Qt libraries/plugins with SDK SPDX declarations. Its output is reviewable evidence, not automatic license selection or compliance approval. Formal release completeness remains incomplete.
 
 ## Inputs and sources

@@ -1,5 +1,7 @@
 # Auxiliary algorithm work accounting
 
+English | [简体中文](../zh-CN/engineering/auxiliary-decoding-work.md)
+
 Extraction and checking separately accumulate file-decoded bytes, actual output, and auxiliary algorithm work. PPM model initialization, capacity restarts, and control/parameter decoding are not file content. They must not increase `decoded_bytes`, `written_bytes`, file progress, or compression expansion ratio, or produce prepaid delivery credit. Task snapshots do not add a user-facing auxiliary counter.
 
 `DecodedSink::charge_auxiliary(bytes)` reports only auxiliary work already performed; its default implementation changes no file counters. Algorithms first admit future work against their own remaining budgets, then account for actual work after execution, including work completed before failure or cancellation. Unperformed reservations are not reported as actual work. Completed work is not refunded on error, model reset, or password retry. RAR's private total-work budget continues to bound file decoding plus auxiliary work.

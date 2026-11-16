@@ -1,10 +1,12 @@
-# M2 complete read-only ZIP browsing contract
+# Read-only ZIP browsing contract
+
+English | [简体中文](../zh-CN/engineering/m2-readonly.md)
 
 This contract defines direct root entries, descendant search, stable physical identity, and directory-first type sorting. Read-only browsing writes no files, decodes no content, and makes no CRC integrity claim. Actual acceptance and measurements are recorded in issues/Actions.
 
-See [large archive indexing](large-index.md) for the current regular ZIP large index and on-demand Qt model. This page retains the M2 100,000-entry baseline and query-identity requirements; later scale expansion does not remove error, cancellation, or identity regressions.
+See [large archive indexing](large-index.md) for the current regular ZIP large index and on-demand Qt model. This page retains the original 100,000-entry baseline and query-identity requirements; later scale expansion does not remove error, cancellation, or identity regressions.
 
-## Phase boundaries
+## Browsing scope and limits
 
 - ZIP/ZIP64 metadata, at most 100,000 physical records. Split volumes are read after conversion by the [split-volume host](archive-opening.md); the codec still rejects raw multidisk metadata.
 - 4 KiB per name, 16 MiB total raw names, 16 MiB total decoded and escaped display names, 64 MiB total reads, and 256 KiB scan buffer. Declared 64-bit sizes remain exact integers.

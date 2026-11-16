@@ -1,5 +1,7 @@
 # ZIP metadata dependency admission
 
+English | [简体中文](../zh-CN/engineering/zip-metadata-admission.md)
+
 This page retains the historical 2026-10-11 admission for the first read-only directory scan; it does not approve extraction, creation or third-party plugin execution. Current ZIP metadata has migrated to the [independent Rust record layer](independent-rust-codecs.md), with rawzip used only as a development-test reference. The historical selection below is not a current production dependency.
 
 The choice was [rawzip 0.5.2](https://github.com/nickbabcock/rawzip), with exact version and checksum in the [pinned manifest](../../specs/engineering/zip-metadata-dependencies.json) and root Cargo.lock. Default features were disabled and std explicitly enabled; there were no runtime dependencies or build.rs. The full upstream MIT license is retained in [third_party/rawzip/LICENSE](../../third_party/rawzip/LICENSE) and accompanies releases using the dependency.

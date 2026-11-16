@@ -1,5 +1,7 @@
 # Application sessions and shutdown contract
 
+English | [简体中文](../zh-CN/engineering/application-sessions.md)
+
 The tab context menu offers “Close,” “Close Others,” and “Close Tabs to the Right.” Shift+F10 or the menu key acts on the focused tab. Right-click does not switch the current page. Commands freeze the tab's stable identity and operate only on the current visual order in its owning window; they must not affect other windows. Close the menu on reorder, window resize, target disappearance, or entry into a modal operation. Disable bulk actions without applicable targets. Submit a bulk close once. Preserve the current page if it remains open; otherwise switch to the anchor tab, avoiding repeated page flashes. Closing the last page restores the welcome page; tasks and results remain in the global task entry point.
 
 Within one user login session, ordinary installed and portable processes share a single instance, tray, and application menu. Windows packaged processes use a separate single-instance namespace and do not forward requests to an ordinary installation, preventing Store launches from reaching the ordinary version's update interface. When both processes coexist, each owns its tray. Existing installation/update gates conservatively constrain both; coexistence, settings, and associations require actual installation-environment verification. Version queries return before GUI creation. Smoke tests, desktop probes, and tests use isolated paths and do not connect to the real user instance.

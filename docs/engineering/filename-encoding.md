@@ -1,5 +1,7 @@
 # Adaptive filename encoding contract
 
+English | [简体中文](../zh-CN/engineering/filename-encoding.md)
+
 ## Resolution and identity
 
 Decoding occurs in the Qt-independent Rust format layer. It does not use host system code pages, UI language, source-system guesses, file contents, or network services. ZIP raw_name retains original name-field bytes. TAR retains the raw name selected from PAX/GNU with leading `./` removed under existing rules. Physical EntryId is independent of names. decoded_name stores UTF-8 spelling requiring transcoding or an additional encoding declaration; name_encoding retains resolution origin; name_bytes provides the frozen effective name. display_name is escaped display only and cannot be an output path.

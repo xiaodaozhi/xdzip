@@ -1,5 +1,7 @@
 # xdzip: Terminology, units, and initial constants
 
+English | [简体中文](../zh-CN/design/glossary.md)
+
 ## 1. Terminology
 
 | Term | Definition |

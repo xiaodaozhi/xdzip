@@ -1,5 +1,7 @@
 # 单文件压缩流与 ZIP 衍生包
 
+[English](../../engineering/single-file-streams.md) | 简体中文
+
 [内置能力表](format-registry.md)将普通 GZIP 与 TAR.GZ 分开登记。`xdzip-codec-stream` 将独立 `xdzip-compression` 中的 [RFC 1952](https://www.rfc-editor.org/rfc/rfc1952) 实现接入元数据、内容解码和创建契约，生产依赖闭包不引入参考压缩库。
 
 ## 探测与读取边界

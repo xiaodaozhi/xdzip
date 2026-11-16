@@ -1,5 +1,7 @@
 # Developer preparation guide
 
+English | [简体中文](../zh-CN/engineering/development.md)
+
 First read the product README, AGENTS, software design 01/02/10, and the current work package. The root Cargo workspace already includes domain, formats, I/O, runtime, and bridge. CMake builds the real Qt application, component preview, and independent probes. See [directory responsibilities](repository-layout.md) for existing modules; the root README is the entry point for actual capabilities and limits.
 
 ## Obtain and modify
@@ -7,6 +9,8 @@ First read the product README, AGENTS, software design 01/02/10, and the current
 Clone the repository with Git, inspect the working tree and remote main, and preserve existing changes. Before committing or pushing, complete local builds or verification appropriate to the change. Maintainers may create temporary branches for short development cycles, integrate into main after relevant checks pass, use PRs as needed, and clean merged branches and the cycle's `build/` temporary directories. External contributors submit PRs under the [contributing guide](../../CONTRIBUTING.md). Check for duplicates and create or reuse an issue for new work; do not add stage results to docs. Markdown is the specification source. Colors and dimensions are centralized in specs/visual/tokens.json. Update the corresponding design and acceptance IDs when adding/changing contracts. Use [repository cleanup rules](repository-hygiene.md#研发周期工件收尾) for build cleanup; do not recursively delete all of `build/`.
 
 ## Documentation builds
+
+Write every document in `docs/` for its readers: explain the features, limitations, and technical details that users, developers, or contributors need, rather than presenting internal handoffs, directory storage rules, or milestone status as reader guidance. Explain internal work-package and milestone labels on first use, or replace them with the actual feature when the label is unnecessary. Write Chinese explanatory prose in Chinese, except for code identifiers, commands, and original text that must be retained; do not append duplicate English summaries. Keep corresponding Chinese and English documents consistent and provide a language selector below each title: show the current language as plain text and link to the corresponding page in the other language. Maintain both versions and links when adding, moving, or deleting documents.
 
 Documentation tools require Python 3.10+, lxml, Pandoc, and Graphviz; system CJK fonts are recommended. Run `python3 scripts/build-design-html.py` to generate 16 detailed software design documents and a single-file edition under build/docs-html, using the Chinese source in `docs/zh-CN/design/`. The downloadable bundle is written under dist/. Read other engineering and collaboration documentation through docs/README.md. HTML is not the product UI technology choice.
 

@@ -1,5 +1,7 @@
 # User-initiated update contract
 
+English | [简体中文](../zh-CN/engineering/software-update.md)
+
 Under Windows MSIX package identity, About does not show in-app updates and the update controller refuses the existing GitHub update check. Microsoft Store manages Store updates; sideloaded packages do not receive an in-app automatic-update commitment. Identity-query errors are treated as packaged identity to prevent misuse of installer updates. Ordinary installations and other platforms remain unchanged.
 
 The standalone CLI and CLI within the desktop package update their own installations under the [command-line contract](command-line.md). Standalone CLI uses a separate signed manifest and managed version directory. Bundled CLI submits a candidate intent over same-user single-instance IPC, and the desktop controller independently verifies it. Accepted means handed_off only; actual success requires a receipt and running identity. Windows/Linux installation occupancy extends to CLI tasks; macOS protects CLI using a shared-use lock, commit gate and persistent state. Existing tasks are not implicitly cancelled. Headless CLI identity queries do not create QApplication or read and clear installation receipts.

@@ -1,5 +1,7 @@
 # 发行许可复核流程
 
+[English](../../qa/release-review.md) | 简体中文
+
 本页定义每个候选可复用的许可来源与再分发复核方法，不登记某一候选的进度或审批结果。`v0.1.0` 的历史复核与发行收尾分别记录于 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 和 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)，两项已关闭；未来候选须为具体版本建立新的发行 issue。工作包完成、自动检查成功和正式发行批准是不同结论。
 
 ## 候选与输入

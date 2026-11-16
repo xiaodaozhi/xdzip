@@ -1,5 +1,7 @@
 # xdzip：01 产品与需求
 
+[English](../../design/01-product-requirements.md) | 简体中文
+
 ## 1. 产品定位
 
 xdzip 是面向 macOS、Windows、Linux 的桌面归档管理器。主要价值是像普通文件管理器一样查看压缩包，并可靠地完成选定内容解压和新建归档。用户不必先把整个归档展开到磁盘，也不必理解插件和编解码实现。

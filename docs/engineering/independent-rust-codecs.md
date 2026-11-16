@@ -1,5 +1,7 @@
 # In-house Rust format and algorithm contract
 
+English | [简体中文](../zh-CN/engineering/independent-rust-codecs.md)
+
 This contract defines per-capability replacement rules for third-party format backends. Actual progress, test results, and incomplete items are tracked in [migration task #45](https://github.com/xiaodaozhi/xdzip/issues/45). Architecture decisions or the existence of code do not establish format acceptance.
 
 <a id="实现边界"></a>

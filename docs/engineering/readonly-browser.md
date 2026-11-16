@@ -1,14 +1,16 @@
 # Read-only browsing implementation contract
 
+English | [简体中文](../zh-CN/engineering/readonly-browser.md)
+
 This document defines browsing data, resource, and interaction boundaries, supplementing design/03, 05, and 06 without freezing a third-party protocol or complete format SDK. Specific ZIP metadata rules follow. TAR/TAR.GZ reuse browsing and query models; see the [TAR/GZIP contract](m4-tar-gzip.md) for format differences.
 
-See [large archive indexing](large-index.md) for regular single-file ZIP/ZIP64 million-entry streaming indexes, disk-spill budgets, on-demand models, and task limits. The 100,000-entry in-memory snapshot budgets below remain the ordinary-format/old M2 baseline and do not override newer streaming ZIP admission.
+See [large archive indexing](large-index.md) for regular single-file ZIP/ZIP64 million-entry streaming indexes, disk-spill budgets, on-demand models, and task limits. The 100,000-entry in-memory snapshot budgets below remain the baseline for ordinary formats and early ZIP support and do not override newer streaming ZIP admission.
 
 ## Data and dependency direction
 
 xdzip-codec-api defines borrowed read-only input, cancellation, limits, entries, and errors. xdzip-codec-zip implements built-in ZIP metadata adaptation without path or write capabilities. xdzip-runtime opens and holds read-only files, publishing immutable snapshots after successful scans. xdzip-qt-bridge exposes worker-thread entry points through cxx; thin C++ controllers convert bounded pages into Qt models, and QML handles display and action intent.
 
-The product has migrated to the [M1 production command/event runtime](m1-runtime.md): the GUI submits short commands, a Rust worker holds the archive, and a separate Qt receiver delivers results through a bounded mailbox. QtConcurrent synchronous bridging was removed. Each browsing controller has at most one pending request. This is still not a complete multitask scheduler, dynamic plugin ABI, or third-party process protocol.
+The product has migrated to the [command/event runtime](m1-runtime.md): the GUI submits short commands, a Rust worker holds the archive, and a separate Qt receiver delivers results through a bounded mailbox. QtConcurrent synchronous bridging was removed. Each browsing controller has at most one pending request. This is still not a complete multitask scheduler, dynamic plugin ABI, or third-party process protocol.
 
 ## Behavior and data
 

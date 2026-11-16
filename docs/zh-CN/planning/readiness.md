@@ -1,5 +1,7 @@
 # 开发与发行就绪评审方法
 
+[English](../../planning/readiness.md) | 简体中文
+
 本页定义可重复执行的评审要求。具体阶段的完成记录、人工结论和未完成事项放在 [Issues](https://github.com/xiaodaozhi/xdzip/issues)，路线见[工作清单](backlog.md)，不在本页追加日期报告。
 
 ## 开发基线

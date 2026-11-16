@@ -1,14 +1,14 @@
 # 依赖与格式后端准入
 
+[English](../../engineering/dependencies.md) | 简体中文
+
 ## 外部 SDK 试验
 
 独立试验宿主复用锁定的 serde 1.0.229、serde_json 1.0.154、sha2 0.10.9、getrandom 0.4.2、libc 0.2.190 与 tempfile 3.27.0，不新增第三方版本或格式／CBOR 库。协议 crate 仅使用 std，自有有界 CBOR 与独立 Python stdlib peer 依据 RFC 8949 互通。宿主不链接 Qt、不进入桌面和 CLI 运行闭包，也不改变正式发行材料。
 
 tempfile 从既有锁文件提升为试验的直接依赖，用于保留经校验的私有可执行副本，替代自行维护通用临时目录实现；安全输出仍复用 xdzip-io，不把 tempfile 当作提交授权。来源为 [Stebalien/tempfile](https://github.com/Stebalien/tempfile)，许可 MIT 或 Apache-2.0，默认特性与 fastrand、getrandom、once_cell、rustix／windows-sys 等实际目标闭包以 Cargo.lock／metadata 为准，沿用已有锁定版本，没有下载构建脚本或新增 C 库。已有基础库的用途、来源和许可继续适用；本轮不把历史公告查询当成新安全结论。测试与门禁见 [SDK 试验](sdk-trial.md)，Windows 未有 AppContainer 实现时固定拒绝。
 
-English: The standalone trial reuses existing locked serde/JSON, SHA-256, randomness, libc and tempfile versions; it adds no external codec/CBOR library or desktop/CLI runtime dependency. Std-only bounded CBOR interoperates with an independent Python implementation. tempfile owns the verified executable copy, never output authority; its MIT/Apache upstream and actual target feature closure remain part of dependency notices. No historical advisory query is claimed as current assurance. Unsupported sandbox platforms refuse execution.
-
-包成员访问复用已准入 cap-std／cap-fs-ext 4.0.3 的精确版本与既有特性，以持有的目录逐层 no-follow 打开，避免字符串检查后重新按环境路径打开的竞争。两者沿用既有安全 I/O 的来源、MIT 或 Apache-2.0 许可、传递版本与原生行为，不新增第三方版本。English: Package admission reuses the existing pinned capability-directory libraries for held, component-by-component no-follow access.
+包成员访问复用已准入 cap-std／cap-fs-ext 4.0.3 的精确版本与既有特性，以持有的目录逐层 no-follow 打开，避免字符串检查后重新按环境路径打开的竞争。两者沿用既有安全 I/O 的来源、MIT 或 Apache-2.0 许可、传递版本与原生行为，不新增第三方版本。
 
 ## CLI 前端与 HTTPS
 
@@ -19,8 +19,6 @@ ureq 与 ureq-proto 来源为 [algesten/ureq](https://github.com/algesten/ureq)�
 Native TLS 的 Linux 构建通过 pkg-config 查找系统 OpenSSL，不启用 vendored，不下载或编译一份私有 OpenSSL；Mac/Windows 使用系统 TLS。必要的 Cargo 构建脚本、原生链接、目标条件和已知公告按实际锁定版本检查，查询记录留在本地／CI，摘要登记 CLI issue，不将单次无匹配公告写成永久安全保证。CLI 自有终端、信号与 OS 查询 FFI 限定在平台适配模块，失败拒绝操作，密码容器沿用归零约束。
 
 包内通知分别从 CLI 与 worker 的普通依赖闭包收集，排除 build/dev/proc-macro 作为运行归属证据。桌面运行归属增加 CLI 根。Windows 公共启动器单独静态链接编译器 CRT，使入口在版本化 app-local DLL 尚未加载时可启动；实际载荷和 worker 继续携带固定 VC++ 运行库及原始许可，不携带 SDK 图形库。依赖来源、静态／动态机器码保留和许可义务仍以实际发行材料复核。
-
-English: CLI uses the existing pinned clap and ureq 3.5.1 with defaults disabled, Native TLS/system trust and SOCKS only. It adds no Qt, external curl, cookie or archive-codec dependency. Target-filtered TLS uses Schannel, Apple Security.framework or system OpenSSL 3 without vendored OpenSSL. Cargo.lock/metadata, bounded native FFI, exact-version advisory evidence and actual notices define admission; no advisory match is not a permanent safety guarantee. The Windows PATH launcher alone uses static CRT, while payload/worker app-local VC++ runtime and supplier terms remain bundled.
 
 首次添加任何依赖，记录用途、替代方案、版本、来源、许可证、传递依赖、特性、原生构建行为、已知漏洞和维护情况。仅有 crate 名称不算准入完成。当前不列虚构的已审计版本。
 
@@ -101,14 +99,11 @@ tar 的测试传递依赖含 filetime 0.2.29（MIT 或 Apache-2.0），复用既
 
 2026-10-15 对 tar 0.4.46、filetime 0.2.29、flate2 1.1.10 执行 OSV 精确版本查询，未返回公告；查询原文只保存在 build/review/wp11。此结果不等于无漏洞保证。双向互操作、坏输入、配额、取消和三平台验证必须实际运行，证据入口见 [WP-11 契约](m4-tar-gzip.md)。
 
-
 ## QtNetwork 安全派生库
 
 桌面 Qt 6.8.2 的 Network 动态库使用 `6.8.2-xdzip-network.1`，从固定 QtBase 归档应用五份原样官方补丁，修复 CVE-2026-116337 与 CVE-2026-105946。范围是 HTTP/CONNECT 状态行及头部接收限制和认证解析边界，不更换 QtCore、其他模块或 TLS 插件。保留原有功能开关、导出符号及对原 SDK QtCore 的导入兼容性。源码、顺序、摘要、许可、替换及真实输入验证见[维护说明](../../../patches/qt/README.md)。生产继续采用 LGPL-3.0 动态链接路径，上游 GPL-only 测试不发行；OpenSSL 3.5.9 仅生成编译声明，不构建或分发新密码库。实际包的来源、通知与重链接条件仍单独复核。
 
 Linux 另加入受摘要约束的原始 ABI 保留单元，显式实例化 SDK 已有的内建类型常量，保留原导出而不增加网络行为；源码和 Apache-2.0 通知随材料提供。五份官方补丁不改写，其他平台的产品库不注入该单元。
-
-English: QtNetwork alone uses the pinned `6.8.2-xdzip-network.1` source build with five unmodified official patches for CVE-2026-116337 and CVE-2026-105946. Linux also retains the SDK's builtin constexpr exports through a hash-pinned original instantiation unit, with source and Apache-2.0 notices; it adds no networking behavior and is not injected into other platforms' product libraries. Other SDK modules and TLS backends retain their provenance. Features, exports and imports against the installed QtCore are checked. Production retains LGPL dynamic linking; upstream GPL-only tests and build-time OpenSSL declaration generation do not add distributed executables or crypto libraries.
 
 ## macOS 更新提供者
 
@@ -152,8 +147,6 @@ Windows 构建引入 Inno Setup 6.7.3，仅用于编译自有运行目录的当�
 该固定模块自带 libwebp 1.5.0 和 libtiff 4.7.0，实际 SDK SPDX 标记其归属；COPYING／COPYRIGHT 原文通过固定提交和 SHA-256 收集，不把通用 NOASSERTION 标记等同于已确认许可缺陷。动态 Qt 模块沿用现有许可路线，第三方通知按具体交付组件保留。精确版本依赖查询、三平台解码／坏输入／部署结果留在 issue 和工件，不据一次未返回公告的查询宣称无漏洞。
 
 图片运行库经固定 helper 使用，原图、像素、工作进程、输入输出及失败限制见[预览契约](content-preview.md)。默认准备补齐已有工具链，构建前检查插件，部署验证实际 helper；不新增另一套 Qt SDK。
-
-English: The official pinned Qt 6.8.2 image-formats add-on supplies WebP, TIFF, TGA and ICNS; Apple's HEIF plugin uses system ImageIO. QtGui/QtSvg supply the other approved formats. No independent HEIF/AVIF backend is introduced. The add-on bundles libwebp 1.5.0 and libtiff 4.7.0; exact source pins, upstream file ownership and complete notices are retained. Actual native validation and dependency-query limitations remain evidence rather than blanket assurance.
 
 ## 文件管理器菜单适配
 

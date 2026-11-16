@@ -1,6 +1,8 @@
 # ACE, ALZ and EGG source and licensing gates
 
-This record pins the public material used to evaluate the remaining M8 formats. The files remain in `build/toolchain/references` and are not product dependencies.
+English | [简体中文](../zh-CN/engineering/ace-alz-egg-format-sources.md)
+
+This page describes xdzip support for ACE, ALZ, and EGG, along with the public technical references and licensing restrictions behind those decisions. Reference files remain in `build/toolchain/references` and are not product dependencies.
 
 ## ACE
 

@@ -1,5 +1,7 @@
 # xdzip: 02 System architecture
 
+English | [简体中文](../zh-CN/design/02-system-architecture.md)
+
 ## 1. Architecture goals
 
 Rust owns all archive semantics, tasks, format selection, and file security. QML owns views and lightweight interaction; C++ owns Qt objects, models, desktop system interfaces, and Rust type adaptation. Replacing the UI retains the core and format adapters; adding a format does not change the list view or task state machine.

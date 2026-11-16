@@ -1,5 +1,7 @@
 # RAR 独立实现依据与兼容边界
 
+[English](../../engineering/rar-format-sources.md) | 简体中文
+
 RAR 自研迁移保留旧版、RAR5、RAR7、密码、头部加密、固实与授权分卷的完整只读范围，不开发 RAR 编码器。能力替代及官方依赖退出仍由[迁移任务 #51](https://github.com/xiaodaozhi/xdzip/issues/51)验收；容器代码或 Store 读取存在不代表完整迁移。现有产品路由与来源见[隔离后端契约](native-codecs.md)。
 
 ## 来源和角色
@@ -8,13 +10,12 @@ RAR 自研迁移保留旧版、RAR5、RAR7、密码、头部加密、固实与�
 
 旧容器及官方技术说明未覆盖的接受行为，经独立分析者按固定 UnRAR 来源形成纯事实交接。固定参考的上游内部版本为 7.30 beta1，下载归档文件名为 `unrarsrc-7.3.1.tar.gz`，不据文件名另推上游发行版本。归档 SHA-256 为 `634900842a3737d9cc15bbcc71d4c74cc713437e0bca296a573424fe5f2660ab`，许可为 UnRAR，精确原始许可与来源说明见[有限映射材料](../../../third_party/rar-wire-mappings/README.md)。容器、现代 LZ/过滤器、固实与密码分别交接，不据某一稿存在宣称其他算法已经完成分析。
 
-English: The pinned reference identifies itself as UnRAR 7.30 beta1. Its download filename is unrarsrc-7.3.1.tar.gz; that filename does not establish a separate upstream release version. The exact original notice and pinned archive provenance are preserved separately for the finite mappings, without inferring legal clearance.
 
 容器初次实现时，实现者未阅读该参考核心，使用官方文档和不含参考代码表达的数学交接 `RAR-CONTAINER-2026-10-26-v1`。冻结容器事实稿 SHA-256 为 `116ed2926619ea3009f00a6b6991f5d939581bca30a2060df2c77c51724f9839`，Unicode 补充边界为 `b456b85b59e97c96c78c1936df6d46c893a9f9b26cc61511cfc411dec20a2750`，来源记录为 `b68b0def40ca7b7f3220fa6caf928f239113366bf9a1969372c52063ce240827`。后续旧服务兼容补充中，原容器作者在代码冻结后受限阅读对应头解析及字节读取范围，转为事实分析者并停止修改对应容器；未暴露的另一实现者依据数值事实独立完成最终服务准入。旧服务补充主文 SHA-256 为 `2554d6752cd5c8e0f59f97c5a90a9291ba2d8908960a65f50e1c5b54301bad08`，冻结清单为 `39cad28299020679ab1a8e98e723c3eb8310008861bcea9c6ba76aa80f8fc853`。生成的事实稿、来源范围与验证报告作为本地或 CI 工件保存，不复制参考代码、结构、注释或逐行语言转换。不宣称严格洁净室，也不将独立实现视为许可结论；参考工具及既有交付仍履行各自许可义务。
 
 现代 LZ 使用纯事实交接 `RAR5-RAR7-LZ-FACTS-2026-10-26-v1`，总清单 SHA-256 为 `b86978fb63c90c38b4dc0fa0831a27598fff12407f561d25fef8d923d83f8ea5`。其中 LZ core 为 `02e31d56e5a1538d5b0d72222908e2dcc626259e68ec00e6d32e11b5cb92df13`，接受边界补充为 `7fdef948fdd8ab82376ed1aa8f1a3bba6016569fb1c036f5e0ec53f8f37d0e49`，过滤器为 `09933ca42c68676a63092a3de9fecb38dda4086cac13a1b7a63f9bc0f818fb30`，RAR7 差异为 `43ada71358a7df4f2c6ed84f0e7661dfeb16169e7f6d1bee3cebe46f6243139c`。Store/窗口补充 `RAR-SOLID-STORE-WINDOW-2026-10-26-v1` 为 `37de8e2d60a96ba92c0e4b400c77556d15a0adc448bc94e4328144979d0713f4`。实现者没有读取对应参考核心，不开发 RAR 压缩编码器；固定声明式数学位向量是测试数据，不能冒充独立作者压缩样本。
 
-大逻辑字典的 Constant/Raw 存储由项目依据自身预算、顺序写入和固实不变量独立设计，实现者读取本项目设计及数值事实，没有阅读对应第三方解码器。真实 RAR7 测试数据的分析者只将固定归档身份、头部数值、已知全零配方和工具记录交给实现者；测试入口下载压缩数据及原始 notice，不下载上游实现或 README。测试数据来源及许可边界保留在脚本生成的材料记录中，不能据此推导法律结论。English: The large-window representation is an original project design based on its own memory and streaming invariants. Implementers receive numerical fixture facts rather than third-party decoder code; build-only test data and its notice retain separate provenance and license review.
+大逻辑字典的 Constant/Raw 存储由项目依据自身预算、顺序写入和固实不变量独立设计，实现者读取本项目设计及数值事实，没有阅读对应第三方解码器。真实 RAR7 测试数据的分析者只将固定归档身份、头部数值、已知全零配方和工具记录交给实现者；测试入口下载压缩数据及原始 notice，不下载上游实现或 README。测试数据来源及许可边界保留在脚本生成的材料记录中，不能据此推导法律结论。
 
 现代 crypto version 0 采用纯事实交接 `RAR5-CRYPTO-FREEZE-2026-10-26-v1`，密码/封装主文为 `029f03e1cf7dff2ae804fb99f7dbacb8ac0306498476119a4d851cbe9a52e9fb`，BLAKE2sp profile 为 `1574159e24c956a2287d605501dff63f1ee67d0028cfd9fe3dadcdbbeee8f795`，来源记录为 `e13a21f12cc3df777d8d1d2332e38d9e525aceed02ddb0ce93a54c4cf8a2577a`。共享 `xdzip-crypto` 提供原创 SHA256 状态封装、RFC2104 HMAC 与 BLAKE2s/sp 组合，AES 与 SHA2 压缩原语遵循通用依赖准入，不复写参考的轮函数或表。
 
@@ -60,7 +61,6 @@ RAR29 LZ 与六种标准过滤器分别依据纯事实主文 `e375c541e106d43a3e
 
 真实算法 1 的互操作检查仅在 build/CI 获取固定来源的压缩测试数据与 notice，检查原始头身份以及全部原文 SHA-256、CRC、尺寸、WORK、AUX 和保留容量；不保存大明文或第三方实现。数学页测试与独立健康压缩流分别记录，单个成功流不证明所有扩展距离或加密、固实、跨卷组合已验收。
 
-English: Modern effective algorithm 1 compressed files whose complete dictionary exceeds dense admission use exact 64 KiB Constant/owned-Raw pages, with at most a 1 TiB logical window. The true modulus, available-history checks, bytewise overlap and prefilter history remain unchanged. Directory, pools, retained capacities, temporary peaks, private state and a 16 MiB allocator allowance share a 512 MiB cap; the existing 288 MiB outer allowance, crypto state and 1 GiB worker limit remain separate. Every allocation and actual initialization is admitted and auxiliary work never funds file delivery. Output acceptance precedes the infallible history commit; errors poison the payload and completed work is not refunded. Only complete constant page rewrites fold; partial solid rewrites retain their tails, and retained free buffers remain charged. Raw working sets may still exceed the budget. Other algorithms, Store and services receive no large-dictionary exception. Build-only pinned data checks and mathematical page tests remain distinct from complete stream and platform acceptance.
 
 现代 x86 的独立已知原文可按[受控 PE 数据配方](../../../crates/xdzip-codec-rar/tests/fixtures/modern-x86-owned/README.md)验证。官方作者正常生成的流须实际选择 E8 或 E8/E9，并同时通过直接 LZ、Payload 和真实 worker 的完整内容核对；PE 名称、工具版本或描述符计数本身不足以证明成功。数据输入不执行，不在仓库保存 PE 或生成归档，其他固实、加密、跨卷组合仍分别验收。
 
@@ -73,7 +73,6 @@ English: Modern effective algorithm 1 compressed files whose complete dictionary
 - PPM 每次交付一个完成统计更新并归一化的模型字节，escape、过滤器参数和匹配参数均正常更新模型。RLE 或 LZ 复制产生的文件字节不再次喂回 PPM。文件终止、模式切换、输出尺寸、内容 CRC 和声明 packed 边界由外层核验；RAR 不接受逃逸出根作为 7z END，也不施加 7z 的末尾 code-zero 条件。失败模型保持 poison，只有外层明确恢复时才清除状态。
 - 实际解出 PPM EOF 后，外层排空受完整声明 packed 范围约束的剩余输入，继续检查输入配额、取消和分片校验。PPM 算术尾不套用现代 CBC 的 0..15 字节对齐限制；没有真实 EOF、尺寸或 CRC 不符时不能借尾部政策成功。PPM EOF 后下一个 solid 文件重新读取模式头和新 range，reset 位单独决定是否保留统计模型。固定参考对 escape 后控制 1 及 6..255 均输出一个字面 escape；若候选严格拒绝 6..255，应单独登记接受范围差异，不能冒称参考也拒绝。
 
-English: RAR29 and 7z share the project's original PPMd H statistics and deterministic nominal-capacity ledger through distinct range adapters. RAR retains four-byte carryless initialization and its own interval arithmetic, header/reset and termination rules. Nominal capacity remains separate from admitted Rust storage. Arena initialization and model restarts admit work first, record only completed bounded chunks and retain that cost after cancellation, later failures or explicit clearing. Initialization, control and parameter work does not fund delivery credit. Host allocation, quota, cancellation and I/O errors remain terminal instead of triggering a format restart. After a real PPM EOF, the wrapper drains only the admitted packed remainder with normal input, cancellation and fragment checks. A following solid file rereads its mode header and range; statistics follow the reset bit. Unknown escape controls 6..255 produce a literal escape in the reference, so any stricter rejection remains an explicit compatibility difference. The implementation uses code-free facts and original project code; component provenance does not imply a new license for RAR changes or completed format/platform acceptance.
 
 ## RAR29 LZ 与标准过滤器候选规格
 
@@ -84,7 +83,6 @@ English: RAR29 and 7z share the project's original PPMd H statistics and determi
 - 旧 E8 的 PC 使用完整 32 位文件位置，不按现代规则取 16 MiB 模。Itanium 按原始 bundle/template 和指令字段变换，RGB 与 Audio 各有独立预测状态。Audio 包含首个采样的适配及负系数到 -17 的边界，不能由现代 Delta 或 E8 数学向量代替。
 - 每个实际变换字节、PPM 参数与实际模型初始化均扣辅助工作预算。辅助工作通过独立 `charge_auxiliary` 通道、至多 64 KiB 的非零消息结算，不能增加 decoded_bytes、膨胀率分子或交付 credit，跳过固实前缀仍转发该通道。worker、Native 接收端与运行时分别执行[辅助工作契约](auxiliary-decoding-work.md)；将辅助量交给 WORK 的早期候选不满足该计量契约。处理循环分块检查取消，失败前已完成的辅助工作不退款。
 
-English: RAR29 owns its MSB differential tables, 60 distance symbols, solid state and LZ/PPM transitions. Only six recognized standard filter identities are admitted; no arbitrary archive VM executes. Prefilter bytes remain history, exact matching ranges may chain, and final transformed bytes feed content integrity. Bounded parameters, queued intervals, allocation and actual transformation work are checked separately. The worker, Native receiver and runtime independently enforce auxiliary accounting without increasing decoded byte counts or delivery credit; routing auxiliary work through WORK violates this contract.
 
 ## 古老容器与历史密码候选规格
 
@@ -97,7 +95,6 @@ English: RAR29 owns its MSB differential tables, 60 distance symbols, solid stat
 - macOS 的旧窄密码先取 127 Unicode scalar，再明确编码 UTF8，最后原始 byte127 截止，允许形成不完整尾序列。普通 Linux 使用当前线程 locale 的有状态转换，EILSEQ 重试后保留实际前缀；本项目独立 worker 未为此切换进程 locale。带 U+FFFE 的 Linux 恢复路径在 Rust 移除标记、恢复 U+E080..E0FF 原 byte，普通单元仍交给宿主转换，不能把该协议套到 Apple 或无标记字符串。RAR3 非 Windows 宽投影保留原始 scalar 前缀，再取单元低 16 位，低 16 位为零不被误作原始 NUL。中间宽、窄、单字符及密钥缓冲均归零，固定投影 scratch 单独预算 4 KiB。
 - 没有可信独立 verifier 时，头 Invalid 或内容 Integrity 返回 PasswordOrIntegrity，供宿主安全重试；SourceChanged/SourceIo、Limit、Cancelled、Output、Unsupported 不被包装成密码歧义。已验证的现代 check mismatch 仍是 WrongPassword，已验证密钥下的损坏仍是完整性错误。物理原头复验变化按来源错误处理，不据密文变化误报密码。
 
-English: Ancient headers keep their own method, flags, fixed window and 16-bit final content checksum. Only explicit continuations merge, and final integrity spans all fragments. Compressed UnpVer10 remains unsupported while Store10 retains old13 encryption. Legacy ciphers restart per logical file; RAR3 encrypted headers preserve original salt and ciphertext. Legacy input first keeps the historical 511 native-wide-unit callback limit, then applies NUL and crypt-prefix rules. Windows conditionally projects complete DOS passwords before wide and raw-byte truncation. Apple explicitly uses UTF8; Linux retains locale-prefix and marked-byte-recovery semantics through borrowed host services. Intermediate buffers are erased. Unverified integrity failures remain PasswordOrIntegrity, while source, quota, cancellation, output and capability errors retain their classes. These candidates do not establish complete historical compatibility.
 
 ## 历史辅助头与前缀候选规格
 
@@ -107,7 +104,6 @@ English: Ancient headers keep their own method, flags, fixed window and 16-bit f
 - 古老 SFX 在偏移 1 保留特殊接受路径；偏移至少 2 且实际扫描长度超过 31 字节时要求绝对 byte28..31 为 RSFX。完整授权搜索的古老标记最大起点为 4 MiB−19。候选有界补齐授权流的短读，不复制旧 native 单次 64 KiB 返回量造成的更窄搜索范围。前缀永不执行。
 - Windows 旧 Unicode 无修正高位 run 按已验证的 signed-char 到 16 位单元扩展，带修正的 run 仍按低 byte 数学处理，二者不能混用。非 Windows 对该高位无修正分支暂保留 Unsupported，等待本地 ABI 与宽转换实样；公共字符串仍须为有效标量且经过共享名称安全政策。
 
-English: Historical comments use separate parent and child header CRC ranges; ignored comment contents do not receive an integrity guarantee. Only AV, SIGN and the exact UO subtype bypass generic header CRC. The REV exception examines the current physical header tail, including ciphertext for encrypted headers, rather than archive EOF. Ancient SFX applies the absolute RSFX marker rule without executing prefixes. Windows high-bit uncorrected Unicode runs retain the measured signed-char extension; other platforms remain explicitly unverified.
 
 ## 13/15 族候选规格
 
@@ -116,7 +112,6 @@ English: Historical comments use separate parent and child header CRC ranges; ig
 - 每次实际输出前先检查声明剩余尺寸和有效历史距离，匹配不得越过文件末尾。达到真实 unpacked size 后完整消费宿主授权的剩余 packed 输入，继续计入输入配额和取消，不虚构本代不存在的现代末块标志。没有足够真实位时失败，不用零字节补齐。
 - 有界匹配和至多 8 KiB 输出批次先预留本地预算，已执行的字节在成功或失败路径结算，只有原始产生字节可建立一次性交付额度。错误后压缩实例 poison，只有明确 reset 才能使用新的独立状态；solid 起点缺前驱状态时不能推断恢复。
 
-English: UnpVer13 and15 retain their public identities while sharing the original adaptive decoder and fixed64KiB history. Non-solid initialization resets statistics and history; solid files preserve them while each file resets its bit cursor and flags/repeats/special state. Real unpacked size terminates output, and the admitted packed remainder is consumed with normal bounds and cancellation. Missing bits are never synthesized. Bounded actual output is accounted before delivery, and errors poison the state. The finite wire mappings retain their original source and license record without asserting copyright clearance.
 
 ## 现代密码与完整性候选规格
 
@@ -142,9 +137,7 @@ English: UnpVer13 and15 retain their public identities while sharing the origina
 
 另有原始官方作者生成的[自有 RAR20 七卷](../../../crates/xdzip-codec-rar/tests/fixtures/legacy20-split-owned/README.md)与[自有 RAR26 十七卷](../../../crates/xdzip-codec-rar/tests/fixtures/legacy26-split-owned/README.md)。逐卷摘要和真实 split/LARGE 字段独立固定；20 的普通回归逐字节比较 589,826 字节数学原文，26 的显式 release 回归复用单卷的有界 sink，对同一 2 GiB 加 1 字节原文再核完整 SHA、CRC 与一次交付额度。公开 packed_size 始终保留首片尺寸。测试不依赖作者程序、不生成大明文；这两个非固实、无加密正例不外推其他分卷组合，也不替代 Store 混排实样。
 
-English: The owned seven-volume version 20 fixture compares all 589,826 original mathematical bytes in ordinary tests. The owned seventeen-volume version 26 fixture reuses the single-volume bounded sink for a second explicit SHA, CRC and prepaid-credit check of the same complete 2 GiB + 1 byte original. Every physical volume identity and actual split/LARGE flag is pinned; public packed_size remains the first fragment's size. Component tests use no author executable and create no large plaintext. These unencrypted nonsolid positives establish neither other split profiles nor Store mixing.
 
-English: The independent RAR20/26 candidate shares bounded MSB input, a maximum 1 MiB history and actual-work delivery helpers. Tables commit atomically without byte alignment and preserve untouched prior lengths; chronological distances retain duplicates. Predictive Audio supports one to four interleaved channels and preserves state across table/mode changes. Known output size ends content; an observed tail-table marker must parse completely before success, and the remaining authorized packed range is drained without inventing EOF. Auxiliary initialization/control work funds no delivery credit. The original Junrar RAR2.06 encrypted sample and two RAR20 Boat archives provide independently known content, including observed two-channel Audio. Mathematical vectors are separate. Three additional project-owned mathematical inputs were archived by the pinned official RAR2.90 writer in ordinary, solid and forced-Audio solid profiles. Normal tests compare every byte of all nine members,591,561bytes, including fresh-reader prefix replay; all actual unpack versions are20. A separate genuine official2.90 version26/method1/LARGE archive expands to2GiB+1bytes. Its explicit release regression uses bounded chunks, incremental SHA, complete CRC and prepaid-credit checks without materializing plaintext; ordinary debug tests ignore this workload. All legacy tail-table transitions, other actual channel counts and other split, solid or encrypted combinations retain separate coverage requirements. Original source and content notices are preserved; no RAR encoder or strict-clean-room claim is made.
 
 ## 尚未闭合的兼容条件
 
@@ -157,5 +150,3 @@ English: The independent RAR20/26 candidate shares bounded MSB input, a maximum 
 旧服务的 LARGE/extended-time 可在完整头 CRC、必需 32/40 字节基础、名称、64 位 packed 范围与预算通过后有界跳过。原始尾部保留为不解释的数据，不猜测 salt/time 分区，不构造补零密码参数，不改变普通文件时间，不提供服务输出或服务内容认证。数学元数据正负对照与健康独立作者档分别记录，缺少健康大服务内容样本仍是证据边界。已知原文作者覆盖包含古老压缩分卷、RAR20 普通与 Audio 固实、RAR20 与 RAR26 压缩分卷，以及真实 UnpVer26 的 2 GiB + 1 字节单文件；这些有限正例不扩展为所有分卷、通道或尾表转换已经验收。非 Windows 的旧 Unicode 高位无修正 run、历史非 ASCII 密码密文、旧压缩和 Store 混排等兼容条件继续分别跟踪，不以数学容器、纯 OS 转换或声明版本变异冒充健康作者互操作。
 
 现代无 end 的档案目前 fail-closed，旧格式允许恰好记录边界 EOF。SFX 搜索限定为前 4 MiB，古老边界另按上述精确范围。重复安全 extra 的严格拒绝等坏输入策略不冒称官方格式禁止。跳过服务内容不提供其完整内容校验保证。来源身份检查仍是宿主尽力检测，不宣称元数据重扫形成输入内容的原子快照。
-
-English: The product uses independent Rust for RAR containers, Store, legacy 13/15 and 20/26, RAR29 LZ/PPM/standard filters and modern LZ/crypto, with no compiled or deployed UnRAR and no runtime fallback. It preserves physical identities, authorized volumes, raw names, unpack versions and first-fragment public packed sizes. Decoding separates prefilter history from final output and keeps compression state across Store records. Actual produced bytes fund delivery credit; auxiliary work has a separate bounded channel. Encrypted headers retain salt/IV/ciphertext; file ciphers cross authorized fragments and applicable hashes cover ciphertext before decryption. Bounded task-private KDF caches span scan and payload; platform password profiles and ambiguous password/integrity failures remain explicit. Unknown sizes retain an explicit flag through the worker, runtime and UI, sort after known sizes, and cannot be decoded or output. Local calendar projection is supplied by the host while Rust owns DOS packing. Historical combinations, independent real-filter coverage and platform compatibility require separate evidence; actual RAR7 algorithm 1 acceptance requires pinned provenance, complete original-content checks and separate worker/runtime evidence. An accidental third-party ARM search snippet was recorded after the corresponding implementation was complete and that implementation was frozen. A later scoped service-parser analysis followed the original container freeze, and an unexposed implementer made the subsequent container change from the numeric handoff. Opaque service skipping never authenticates service contents. These source boundaries are neither strict-clean-room nor legal clearance.

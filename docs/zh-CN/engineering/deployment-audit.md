@@ -1,5 +1,7 @@
 # 部署依赖核验与 SBOM
 
+[English](../../engineering/deployment-audit.md) | 简体中文
+
 部署核验默认生成开发审阅材料，完整性明确标记 `incomplete`，不自动提升为可发行结论；正式 Release 会为同一候选另外收集并随包提供经过发布流程核对的材料。格式使用 [CycloneDX 1.6 官方 schema](https://github.com/CycloneDX/specification/blob/55343ba19dee1785acf1ce9191540d5fd7b590db/schema/bom-1.6.schema.json)。schema 的上游提交与三个文件 SHA-256 固定在 [配置](../../../scripts/sbom-schemas.json)，验证时只下载并解析这些资源，缓存到 build/，不会从 SBOM 中的任意 URL 下载 schema。
 
 | 工件 | 数据来源与用途 | 不能证明的事项 |
@@ -23,8 +25,6 @@
 按需三平台 Qt 工作流保存根目录下的两个 cdx.json 和 deployment-audit.json，不自动生成待填写的人工表。macOS 只读取本地编译 .app 与 SDK，普通检查不运行 macdeployqt、签名、压缩或上传应用包。Linux 通过[独立运行目录](linux-deployment.md)提供 Qt／QML／插件，使用 deployed 核验及无 SDK 容器验证；下载 tar.gz 保留执行位。当前只声明 Ubuntu 24.04、x86_64、X11 基线，不称为通用 Linux 安装器。
 
 Windows 可对自有可信安装器的独立提取结果和同一候选的便携 ZIP 运行 `python scripts/check-windows-package-payload.py --installer-app <提取的应用目录> --portable <便携包.zip> --output build/review/payload-comparison.json`。检查逐文件哈希、安装清单和不应携带的 SDK 图形 DLL；输出路径须是新文件。此静态对照不执行安装器或更新，也不代替实际安装验证。
-
-English: For trusted Windows artifacts, `check-windows-package-payload.py` compares an independently extracted installer app directory with the same candidate's portable ZIP and installation manifest. It checks file hashes and excluded SDK graphics DLLs. The report must be a new file; this static comparison does not execute the installer or an update.
 
 本地 macOS 示例，先从一致源码重新构建，然后运行：
 

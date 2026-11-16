@@ -1,5 +1,7 @@
 # CAB 格式来源与实现依据
 
+[English](../../engineering/cab-format-sources.md) | 简体中文
+
 本文记录 CAB 容器、MSZIP、LZX 和 Quantum 的来源、适用范围及独立实现约束。产品能力、资源治理和逐格式替代规则分别由[隔离格式工作进程契约](native-codecs.md)、[自研 Rust 契约](independent-rust-codecs.md)及[分卷契约](archive-opening.md)定义。来源记录不代替互操作验收或发行许可复核。
 
 ## 微软技术文档
@@ -88,5 +90,3 @@ LZXFMT 的部分概览、表格和正文存在矛盾。MS-PATCH 可辅助辨认�
 - Quantum 没有独立结束 token，精确输出长度由容器提供，同一压缩字节串可能满足不同合法声明长度。到达期望输出后仍须消费至少两个零位，取使输入达到字节边界的最少位数，即 2 至 9 位，然后恰好耗尽压缩输入。追加零字节、非零终止位、截断及跨帧 match 均不能成功。新 folder 也不能回溯尚未生成的窗口内容。
 
 宿主继续负责冻结卷集合和源身份、名称解析、条目身份、路径预检、任务预算、取消、暂存及提交。格式层只读取宿主授权的流，不按 CAB 内部名字自行打开文件。原始名字与 UTF-8 声明分别保留，普通重名记录不合并，仅规范明确的 continued 文件合并。算法错误不得掩盖宿主的取消、配额或 I/O 错误。具体接口和资源上限以共享契约为准，不从参考缓冲区尺寸或 HRESULT 分类推导新的产品权限。
-
-English: CAB framing and checksums use the archived Microsoft MS-CAB document; MSZIP uses MS-MCI and RFC 1951. The 1997 Microsoft CAB SDK documents are third-party-hosted copies whose hashes are pinned, without an authenticated SDK-archive comparison. MS-PATCH describes LZX Delta and does not replace CAB LZX. Available Quantum materials do not fully specify the CAB bitstream, and Russotto's original text was not obtained. A designated analyst read the listed, hash-pinned 7-Zip 26.05 files and supplied code-free behavioral specifications to separate LZX and Quantum implementers who had not read those sources. The analyst also implemented the CAB container. This is not a strict clean-room or a legal-clearance claim. Original licenses, host authority, bounded decoding, exact termination and independent interoperability requirements remain applicable.

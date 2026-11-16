@@ -1,6 +1,8 @@
 # ZIP extraction and output dependency admission
 
-This page defines dependency boundaries shared by safe and password extraction. The M3 baseline admission's provenance, licenses and feature excerpts are in the [baseline pinned materials](../../specs/engineering/zip-extraction-dependencies.json). Current exact versions including AES and crates.io checksums are governed by root Cargo.lock; check the complete enabled graph with `cargo tree --locked -e features`. Do not treat the baseline excerpt as the complete current dependency inventory.
+English | [简体中文](../zh-CN/engineering/zip-extraction-admission.md)
+
+This page defines dependency boundaries shared by safe and password extraction. The original admission’s dependency provenance, licenses and feature excerpts are in the [baseline pinned materials](../../specs/engineering/zip-extraction-dependencies.json). Current exact versions including AES and crates.io checksums are governed by root Cargo.lock; check the complete enabled graph with `cargo tree --locked -e features`. Do not treat the baseline excerpt as the complete current dependency inventory.
 
 | Dependency | Purpose and decision |
 | --- | --- |

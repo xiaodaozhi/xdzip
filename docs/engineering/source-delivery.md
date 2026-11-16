@@ -1,5 +1,7 @@
 # Corresponding source and rebuild materials
 
+English | [简体中文](../zh-CN/engineering/source-delivery.md)
+
 **Release boundary, 2026-11-05:** By owner direction, this collector is for local review and rebuild verification only. Corresponding-source archives are no longer provided as GitHub Release or Actions artifacts. Historical public Release assets and still-downloadable release Actions artifacts containing these archives have been withdrawn, and future release workflows reject their generation or upload. This decision does not change component licenses or establish that corresponding-source, relinking or other obligations are satisfied. GitHub's automatically generated source snapshots for tags in the public repository are outside these Release attachments.
 
 Routine release and acceptance must not run this collector or generate corresponding-source archives locally. Run it only when the user explicitly requests source collection; the upload restriction still applies. License review must identify actual components and obligations rather than treating generic machine-generated review flags as established defects.

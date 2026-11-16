@@ -1,14 +1,16 @@
 # 只读浏览实现契约
 
+[English](../../engineering/readonly-browser.md) | 简体中文
+
 本文规定浏览阶段的数据、资源及交互边界，补充 design/03、05、06，不冻结第三方协议或完整格式 SDK。ZIP 的具体元数据规则如下；TAR/TAR.GZ 复用浏览与查询模型，格式差异见 [TAR/GZIP 契约](m4-tar-gzip.md)。
 
-普通单文件 ZIP/ZIP64 的百万条流式索引、转盘预算、按需模型和任务限制见[大归档索引](large-index.md)。下述十万条内存快照预算保留为普通格式／旧 M2 基线，不能覆盖新的流式 ZIP 准入。
+普通单文件 ZIP/ZIP64 的百万条流式索引、转盘预算、按需模型和任务限制见[大归档索引](large-index.md)。下述十万条内存快照预算保留为普通格式及早期 ZIP 的基线，不能覆盖新的流式 ZIP 准入。
 
 ## 数据与依赖方向
 
 xdzip-codec-api 定义借用只读输入、取消信号、限额、条目和错误。xdzip-codec-zip 实现内置 ZIP 元数据适配，不获取路径或写入能力。xdzip-runtime 打开并持有只读文件，扫描成功后发布不可变快照。xdzip-qt-bridge 通过 cxx 暴露工作线程入口；薄 C++ 控制器将有界页面转换为 Qt 模型，QML 负责显示和操作意图。
 
-已迁移到 [M1 正式命令/事件运行时](m1-runtime.md)：GUI 提交短命令，Rust 工作线程持有归档，独立 Qt 接收线程通过有界 mailbox 投递结果。QtConcurrent 同步桥接已移除。每个浏览控制器最多一个 pending 请求；这仍不是完整多任务调度器、动态插件 ABI 或第三方进程协议。
+已迁移到 [命令与事件运行时](m1-runtime.md)：GUI 提交短命令，Rust 工作线程持有归档，独立 Qt 接收线程通过有界 mailbox 投递结果。QtConcurrent 同步桥接已移除。每个浏览控制器最多一个 pending 请求；这仍不是完整多任务调度器、动态插件 ABI 或第三方进程协议。
 
 ## 行为与数据
 
@@ -24,7 +26,6 @@ xdzip-codec-api 定义借用只读输入、取消信号、限额、条目和错�
 
 检测不依赖系统代码页或界面语言，也不能保证任意短名称、多个未声明编码或已经保存成 Unicode 的乱码均可恢复。当前无手动编码选择器。声明损坏、严格解码失败或异常路径继续标记需检查并拒绝输出。完整优先级、TAR/PAX、预算、载荷绑定和保存规则见[文件名编码自适应契约](filename-encoding.md)。新建和新增名称保持 UTF-8，修改时对已解析的旧名称补充明确 UTF-8 声明。
 
-English: Reading resolves filename encodings in the Rust snapshot: explicit ZIP UTF-8 and CRC-verified Unicode Path take precedence, followed by group-wide unmarked UTF-8 validation or bounded archive-level legacy detection. The same resolved spelling is used for browsing, navigation, extraction, opening, export and ordinary updates, with all path and collision checks repeated. Detection is host-independent and heuristic; short, mixed or already-mojibaked names are not guaranteed. There is no manual selector. Damaged declarations and unsafe/unresolved names remain refused. See the filename encoding contract for TAR/PAX and resource limits.
 
 ## 资源与生命周期
 
@@ -63,12 +64,11 @@ English: Reading resolves filename encodings in the Rust snapshot: explicit ZIP 
 - 名称搜索回车提交，Unicode 小写后作字面子串匹配，不支持正则或区域排序；搜索框最多 256 个 UTF-16 代码单元，Rust 入口最多 1,024 UTF-8 字节。搜索作用于当前目录范围；返回根目录保留搜索词，打开新会话清空搜索。
 - 普通内存查询过滤遍历已加载且最多 100,000 条的快照，再按指定顺序排序并返回至多 128 条；过滤每条记录、排序前后检查取消。目录参数传物理 EntryId 或 `d` 前缀的虚拟目录 ID，由 Rust 校验当前会话资格，不接受 GUI 拼接的文件路径。
 - 这是单工作线程、有界的版本化查询。页面携带完整 QueryKey，Qt 合并最新意图并取消旧工作；过期请求或不匹配的会话、查询、代际、修订和偏移均不能替换当前视图。偏移越界返回错误，空结果属于 Ready。目录跳转与搜索从第一页开始。
-- 已有快照时，目录、排序或搜索查询期间保持该快照的列表／网格或空状态，直到新结果提交；不因 busy 短暂切换整块遮罩。初次打开未就绪归档仍显示加载状态，控制器继续执行原有串行准入、取消和源变化检查。English: Queries retain the last committed rows or empty state until a new snapshot commits. Initial loading and controller admission, cancellation and source checks remain in force.
+- 已有快照时，目录、排序或搜索查询期间保持该快照的列表／网格或空状态，直到新结果提交；不因 busy 短暂切换整块遮罩。初次打开未就绪归档仍显示加载状态，控制器继续执行原有串行准入、取消和源变化检查。
 - 单击行或复选框切换当前查询多选，以物理 ID 区分同名记录，隐式目录使用独立的 dN 行键。查询成功或新会话替换模型后清空选择及详情；内部传输批次不影响已合成列表，界面不分页。详情显示最近激活条目的元数据，和复选框集合分别表达焦点与选择。全选以当前完整列表最后一行作为详情焦点，与逐项选中到最后一行的行为一致；取消全部选择清空详情。没有选择时隐藏原始大小、压缩大小、修改日期、压缩方法与解压焦点条目的动作，不展示误导的空属性。
 - 列表大小以 B/KiB/MiB/GiB 显示，数值转换仅用于近似显示；模型和 Rust 保留原始整数。文件图标表示类型，详情卡片显示属性，并可按[预览契约](content-preview.md)主动请求受限内容预览。
 - 未知原始大小携带独立 `size_known=false`，列表中的原始大小显示 `—`，状态说明尺寸未知；已知空文件仍显示 0。选中汇总大小未知时，底栏只显示已选数量，不显示分隔符或占位符，控制器仍保留未知状态；汇总大小已知时继续显示大小。大小升降序均将未知项置于已知项之后，同组保持身份顺序。物理未知项可请求元数据预检以查看拒绝原因，含虚拟目录的选择仍不能预检。未知尺寸不会变成输出授权或解码预算。
 
-English: An unknown uncompressed size has an explicit flag, displays a dash in the file size column, and sorts after known sizes in both directions. When the selection total is unknown, the status bar shows only the selection count while the controller retains the unknown state; known totals remain visible, including zero. Physical unknown-size records may be inspected for the preflight refusal reason; virtual-directory selections retain their existing preflight restriction. Unknown sizes never grant output or decoding credit.
 
 所选条目现可发起 [解压元数据预检](extraction-preflight.md)，使用独立原生结果窗口；该功能不写出文件，不改变只读阶段边界。
 

@@ -1,5 +1,7 @@
 # xdzip: 11 Build, release, licensing, and updates
 
+English | [简体中文](../zh-CN/design/11-build-release.md)
+
 ## 1. Support matrix
 
 The application display name and executable basename are consistently `xdzip`; platform artifacts are `xdzip.app`, `xdzip.exe`, and `xdzip`, with `xdzip.desktop` as the Linux desktop entry. Production Rust modules use the `xdzip-` prefix. Releases use the project's existing bundle ID. A paid signing identity is not required for personal open-source GitHub distribution; see the [release runbook](../engineering/release-runbook.md). The project owner approved the initial support scope and maintenance approach on 2026-10-19. The authoritative description is the [support policy](../engineering/support-policy.md) and [ADR-011](architecture-decisions.md#adr-011首批支持范围与个人项目维护政策).

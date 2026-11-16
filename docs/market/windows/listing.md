@@ -1,6 +1,6 @@
 # Store listing copy, English (US)
 
-[简体中文](../../zh-CN/market/windows/listing.md)
+English | [简体中文](../../zh-CN/market/windows/listing.md)
 
 ## Baseline
 

@@ -1,56 +1,44 @@
-# Documentation index
+# xdzip documentation
 
 English | [简体中文](zh-CN/README.md)
 
-These documents describe the current source tree's general design, implementation contracts, and reusable methods. `docs/` contains only Markdown and necessary images. Machine-readable inputs for generators, product resources, and checks are organized under `specs/` by visual design, terminology, and engineering dependencies. See the root [README](../README.md) for installation and version distinctions, and the [releases](https://github.com/xiaodaozhi/xdzip/releases) for individual versions. Progress and acceptance conclusions are tracked in [issues](https://github.com/xiaodaozhi/xdzip/issues); evidence is kept in [Actions](https://github.com/xiaodaozhi/xdzip/actions) or local artifacts rather than accumulated in docs.
+Find guides for using xdzip, building the project, and understanding its archive formats. If you are new to xdzip, start with the [project README](../README.md) for its features, downloads, and supported systems.
 
-## Where to start
+## Use xdzip
 
-- **Install and use:** Read the [README](../README.md), [installation and file associations](engineering/installers-associations.md), and [support policy](engineering/support-policy.md). The [command-line tool](engineering/command-line.md) has a separate release package starting with `v0.2.0`; earlier release assets remain unchanged.
-- **Privacy and data handling:** See the user-facing [Privacy Policy](../PRIVACY.en.md) and its [Chinese version](../PRIVACY.md); engineering boundaries are in [data lifecycle and diagnostics](engineering/privacy.md).
-- **Build and contribute:** Prepare your environment with the [developer build guide](engineering/developer-build.md), find code using the [repository layout](engineering/repository-layout.md), and select checks from [verification](qa/README.md).
-- **Change product behavior:** Consult the browsing, task, format, and interaction contracts below, distinguishing current implementation from design and unverified behavior.
-- **Change the interface:** Read the [visual standard](visual/design-standard.md) and [design workflow](visual/design-workflow.md), then consult the high-fidelity sources and relevant interaction contracts.
-- **Prepare a release:** Read the [release protocol](engineering/release-protocol.md) and [release review process](qa/release-review.md). Evidence and decisions for each candidate belong in its issue.
-- **Prepare a Store listing:** Use the [Windows Store materials](market/windows/README.md) for bilingual copy, product artwork, icons and field mappings.
-
-## Topic index
-
-| Area | Entry points |
+| I want to... | Read |
 | --- | --- |
-| Command line | [Standalone CLI, scripting interface, installation and updates](engineering/command-line.md) |
-| Product and architecture | [Design overview](design/index.md), [architecture decisions](design/architecture-decisions.md), [requirements traceability](design/requirements-traceability.md) |
-| Interface standards | [Strict design standard](visual/design-standard.md), [design workflow](visual/design-workflow.md), [logical dimensions](../specs/visual/layout-scale.json), [visual parameters](../specs/visual/tokens.json) |
-| High-fidelity design and assets | [Design sources](../design/hifi/README.md), [interactive HTML design](../design/html/README.md), [asset catalog](../design/assets/index.html) |
-| Interaction contracts | [Main window](ux/main-window-components.md), [task windows](ux/task-windows.md), [password extraction](ux/password-extraction.md), [desktop integration](ux/desktop-integration.md), [file-manager actions](engineering/shell-actions.md), [settings and localization](ux/settings-localization.md), [Chinese terminology](ux/chinese-terminology.md) |
-| Browsing and tasks | [Runtime](engineering/m1-runtime.md), [read-only index](engineering/m2-readonly.md), [large archive index](engineering/large-index.md), [preview](engineering/content-preview.md), [browser contract](engineering/readonly-browser.md), [extraction preflight](engineering/extraction-preflight.md) |
-| Files and formats | [Filename encoding](engineering/filename-encoding.md), [split archives and temporary opening](engineering/archive-opening.md), [drag-and-drop and modification](engineering/archive-transfers.md), [integrity checks](engineering/archive-checking.md), [safe extraction](engineering/m3-extraction.md), [password extraction](engineering/password-extraction.md), [ZIP creation](engineering/m4-creation.md), [ISO creation](engineering/iso-creation.md), [owned SFX](engineering/sfx-creation.md), [TAR/GZIP](engineering/m4-tar-gzip.md), [Single-file streams and ZIP-derived candidates](engineering/single-file-streams.md), [LZ4 stream contract](engineering/lz4-streams.md), [Zstandard stream contract](engineering/zstandard-streams.md), [DEB containers](engineering/deb-containers.md), [ASAR containers](engineering/asar-containers.md), [UU/XXE text envelopes](engineering/text-envelopes.md), [Unix compress streams](engineering/compress-streams.md), [AES Crypt envelopes](engineering/aescrypt-envelopes.md), [Brotli stream primitive](engineering/brotli-streams.md), [LHA wire and algorithms](engineering/lha-containers.md), [PMA and PM2](engineering/pma-streams.md), [ARJ profiles](engineering/arj-streams.md), [ARC profiles](engineering/arc-streams.md), [BH containers](engineering/bh-containers.md), [Bandizip format assessment](engineering/bandizip-format-assessment.md), [ACE, ALZ and EGG source gates](engineering/ace-alz-egg-format-sources.md), [CAB sources and implementation basis](engineering/cab-format-sources.md), [M9 candidate source gates](engineering/m9-candidate-source-gates.md), [M10 candidate source gates](engineering/m10-candidate-source-gates.md) |
-| Toolchains and dependencies | [Toolchain policy](engineering/toolchain.md), [dependency admission](engineering/dependencies.md), [cxx bridge rationale](engineering/cxx-admission.md), [licenses](engineering/licensing.md), [Windows licenses](engineering/windows-licensing.md) |
-| Build and verification | [Unified build entry point](engineering/developer-build.md), [development guide](engineering/development.md), [Qt application modules](../apps/desktop/README.md), [CI policy](engineering/ci-policy.md), [verification](qa/README.md) |
-| Deployment and provenance | [Deployment audit](engineering/deployment-audit.md), [runtime attribution](engineering/runtime-attribution.md), [native library materials](engineering/native-runtime-materials.md), [Linux deployment](engineering/linux-deployment.md), [Mac DMG](engineering/macos-deployment.md), [installation and associations](engineering/installers-associations.md) |
-| Source and candidates | [Corresponding source](engineering/source-delivery.md), [SDK correspondence](engineering/qt-sdk-correspondence.md), [automated evidence collection](engineering/wp12-automation.md), [candidate materials](engineering/release-candidate.md) |
-| Versions and releases | [Versioning](engineering/versioning.md), [updates](engineering/software-update.md), [release protocol](engineering/release-protocol.md), [application sessions](engineering/application-sessions.md), [support policy](engineering/support-policy.md), [release review](qa/release-review.md), [release runbook](engineering/release-runbook.md) |
-| Execution and risks | [Work package roadmap](planning/backlog.md), [risk controls](planning/risks.md), [readiness review method](planning/readiness.md) |
-| Repository management | [Content and history management](engineering/repository-hygiene.md), [format expansion closeout](engineering/format-expansion-closeout.md), [layout and dependencies](engineering/repository-layout.md), [contributing guide](../CONTRIBUTING.md), [changelog](../CHANGELOG.md) |
-| Open-source collaboration | [Governance](../GOVERNANCE.md), [code of conduct](../CODE_OF_CONDUCT.md), [security policy](../SECURITY.md) |
+| Install xdzip or set file associations | [Installation and file associations](engineering/installers-associations.md), [supported systems](engineering/support-policy.md) |
+| Use the command line | [Command-line guide](engineering/command-line.md) |
+| Drag files or modify an archive | [File transfers and archive modification](engineering/archive-transfers.md) |
+| Understand passwords, split archives, and filename encoding | [Password extraction](engineering/password-extraction.md), [split archives and temporary opening](engineering/archive-opening.md), [filename encoding](engineering/filename-encoding.md) |
+| Check an archive or preview a file | [Integrity checks](engineering/archive-checking.md), [content preview](engineering/content-preview.md) |
+| Understand limits for large archives | [Large archive indexing](engineering/large-index.md) |
+| Compress or extract from a file manager | [File-manager actions](engineering/shell-actions.md) |
+| Learn how data is handled | [Privacy policy](../PRIVACY.en.md), [data lifecycle and diagnostics](engineering/privacy.md) |
+| Check for updates | [User-initiated updates](engineering/software-update.md), [releases](https://github.com/xiaodaozhi/xdzip/releases) |
 
-## Reading by task
+The [format support table](../README.md#format-support) describes the formats, operations, and limits in the current source tree. Consult the release notes for the capabilities of a specific package.
 
-- **Use and build:** Start with the root [README](../README.md) and [developer build guide](engineering/developer-build.md). Use the same entry point for preparation, building, testing, packaging, and verification. Platform deployment documents describe differences; the Qt application document explains modules and low-level debugging.
-- **Change the core:** Find the relevant code in the [repository layout](engineering/repository-layout.md), then read the appropriate browsing, preflight, creation, or extraction contracts. The large archive index and preview scopes are defined in their respective engineering contracts. The target protocol and host design for the external SDK are described in the format extension specification.
-- **Isolate format workers:** See the [format backend contract](engineering/native-codecs.md) for controlled streams, worker processes, and licensing boundaries for Rust 7z/RAR/CAB/ISO/UDF. The product does not compile official UnRAR/7-Zip sources; a format name does not imply that every feature has passed acceptance.
-- **External extensions:** The standalone [read-only SDK trial](engineering/sdk-trial.md) includes two independent protocol implementations, controlled I/O, and a sandbox gate. The desktop application and CLI do not automatically enable third-party packages.
-- **In-house Rust backends:** See the [in-house formats and algorithms contract](engineering/independent-rust-codecs.md) for sources, per-format replacement, and criteria for removing production dependencies.
-- **Host calendar and encoding:** See [host platform services](engineering/host-platform-services.md) for optional format-independent `ReadSource` services, OS callbacks, borrowing, and secret-buffer boundaries.
-- **7z backend:** See the [read/write specification](engineering/independent-rust-codecs.md#7z读写规格) for streaming method graphs, shared algorithms, creation, rewriting, and password wrapping, and the [7z implementation basis](engineering/sevenzip-format-sources.md) for sources and reference analysis. The product uses Rust; official 7-Zip sources are not compiled into or deployed with it.
-- **CAB backend:** See the [in-house specification](engineering/independent-rust-codecs.md#cab只读规格) for the read-only container, shared algorithms, and full-frame work accounting, and the [source record](engineering/cab-format-sources.md) for specification versions and reference-analysis boundaries. The product uses Rust; official CAB handlers and CAB-specific LZX/Quantum are not built into it, and there is no fallback on failure.
-- **Change the interface:** Read the visual standard and workflow first. High-fidelity sources are in `design/hifi`; behavior is described in the UX documents. Verify HTML examples and actual Qt capabilities separately.
-- **Prepare delivery:** Recheck against deployment and installation contracts and the release runbook, keeping development acceptance separate from release licensing review. Official releases do not generate or include a corresponding-source archive. Routine release acceptance does not run the source delivery collector; it is used for local review or rebuild verification only when the user explicitly requests source collection. Supported scope follows the [approved policy](engineering/support-policy.md), not CI runner names.
+## Develop and contribute
 
-Check for duplicates and track new defects and tasks in issues. Completed [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5) does not absorb new follow-up work. Historical release license reviews for `v0.1.0` are in [#4](https://github.com/xiaodaozhi/xdzip/issues/4) and [#53](https://github.com/xiaodaozhi/xdzip/issues/53); file-input and macOS ACL fix scope and validation are in [#6](https://github.com/xiaodaozhi/xdzip/issues/6). Consult those issues for actual status. Future candidates require new release issues; this document does not duplicate execution reports.
+- [Developer build guide](engineering/developer-build.md): prepare your environment, build, run, and test the desktop application and command-line tool.
+- [Developer preparation](engineering/development.md) and [repository layout](engineering/repository-layout.md): understand the development workflow, modules, and verification entry points.
+- [Contributing guide](../CONTRIBUTING.md), [code of conduct](../CODE_OF_CONDUCT.md), and [security policy](../SECURITY.md): contribute changes, participate, and report security issues.
+- [Verification](qa/README.md) and [CI policy](engineering/ci-policy.md): select checks for a change and distinguish automated results from desktop verification.
+- [System architecture](design/02-system-architecture.md), [domain and data](design/03-domain-data.md), and the [Qt/Rust bridge](design/05-qt-rust-bridge.md): understand the main modules and their boundaries.
+- [UI design standard](visual/design-standard.md), [design workflow](visual/design-workflow.md), and [interaction prototype](ux/prototype-spec.md): explore interface, component, and interaction guidelines.
 
-## Documentation authority
+## Formats and implementation
 
-Requirements are defined in design/01; domain and tasks in design/03 and 08; the bridge in design/05; format extensions in design/06; and visuals in the approved artwork and tokens. Engineering documents supplement implementation boundaries and do not define conflicting protocols. Candidate, unimplemented, and unverified content must remain clearly labeled; a document's existence does not make a feature implemented.
+These documents explain format capabilities, limits, and implementation sources. For current support, start with the [format support table](../README.md#format-support).
 
-The Chinese design Markdown under `docs/zh-CN/design/` is the source for the Chinese HTML reading edition. Run `python3 scripts/build-design-html.py` to generate multipage and single-file HTML under ignored `build/docs-html/`; generated output is not committed to Git.
+- **Reading, extraction, and creation:** [Browsing and indexing](engineering/readonly-browser.md), [safe extraction](engineering/m3-extraction.md), [ZIP creation](engineering/m4-creation.md), [ISO creation](engineering/iso-creation.md), [Windows self-extracting archives](engineering/sfx-creation.md).
+- **Common compression streams:** [TAR and GZIP](engineering/m4-tar-gzip.md), [single-file compression streams](engineering/single-file-streams.md), [LZ4](engineering/lz4-streams.md), [Zstandard](engineering/zstandard-streams.md), [Brotli](engineering/brotli-streams.md), [Unix compress](engineering/compress-streams.md).
+- **Archives and envelopes:** [7z implementation basis](engineering/sevenzip-format-sources.md), [RAR implementation basis](engineering/rar-format-sources.md), [CAB implementation basis](engineering/cab-format-sources.md), [DEB](engineering/deb-containers.md), [ASAR](engineering/asar-containers.md), [AES Crypt](engineering/aescrypt-envelopes.md), [UU and XXE](engineering/text-envelopes.md).
+- **Other formats:** [LHA/LZH](engineering/lha-containers.md), [PMA](engineering/pma-streams.md), [ARJ](engineering/arj-streams.md), [ARC](engineering/arc-streams.md), [BH](engineering/bh-containers.md), [ACE, ALZ, and EGG](engineering/ace-alz-egg-format-sources.md).
+- **Design and dependencies:** [Format backends](engineering/native-codecs.md), [in-house formats and algorithms](engineering/independent-rust-codecs.md), [format extension design](design/06-codec-extension-sdk.md), [dependencies and licenses](engineering/dependencies.md).
+
+## Releases and collaboration
+
+Maintainers can consult [versioning](engineering/versioning.md), the [release protocol](engineering/release-protocol.md), the [release runbook](engineering/release-runbook.md), and [release review](qa/release-review.md). Project plans, issues, and feedback are on [GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues); version changes are in the [changelog](../CHANGELOG.md).

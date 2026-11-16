@@ -1,5 +1,7 @@
 # Linux standalone runtime directory and verification
 
+English | [简体中文](../zh-CN/engineering/linux-deployment.md)
+
 The current development deployment baseline is Ubuntu 24.04, x86_64, and X11. The goal is running the current product without the development Qt SDK; this does not promise other distributions, older glibc, Wayland, or complete installer support. macOS CI retains native build, test, and startup verification. Local development DMGs follow the [Mac deployment guide](macos-deployment.md) and are unaffected by this flow.
 
 ## Layout and generation
