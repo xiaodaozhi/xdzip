@@ -4,7 +4,7 @@
 
 <h1 align="center">xdzip</h1>
 
-<p align="center"><strong>Make packing and unpacking a little simpler.</strong></p>
+<p align="center"><strong>Pack and unpack, a little simpler</strong></p>
 
 <p align="center">xdzip is an open-source, cross-platform archive manager. Its Rust format implementations work without external extraction programs. Browse and search archives, extract selected files, work with encrypted and split archives, and modify entries in eligible formats.<br>It supports ZIP, 7z, RAR, TAR, CAB, ISO/UDF and more on Windows, macOS, and Linux.</p>
 
