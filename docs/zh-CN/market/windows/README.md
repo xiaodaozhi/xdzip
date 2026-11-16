@@ -32,7 +32,7 @@
 
 需要重新截图时，使用[原生 PNG 自动截图脚本](capture.md)。每种语言运行一次，即可自动准备并保存四个场景，无需手动切换界面或逐张确认。
 
-每种语言均提供四张真实应用界面，使用自有演示文件，程序构建对应上方标明的候选。无损原生 PNG 中，主窗口为 **1536 × 933**，创建窗口为 **737 × 1104**，保持默认逻辑窗口尺寸。原始 PNG 与已校验捕获逐字节一致。另存的透明抠图仅裁去周边两像素并处理圆角，不重绘文字，也不改变不透明界面像素。
+每种语言均提供四张真实应用界面，使用自有演示文件，程序构建对应上方标明的候选，并保持默认逻辑窗口尺寸。发布用 PNG 中，主窗口为 **1536 × 932**，创建窗口为 **737 × 1103**：裁掉顶部一行边缘，在四角小区域内清理旧桌面底色后应用圆角透明度。其他像素不变，不重绘文字或缩放界面。[原始素材](../../../../design/assets/marketing/windows-store-native)保留与原生捕获逐字节一致的 PNG。根目录中英文 README 分别使用对应语言清理后的 `01-browse` 图片。
 
 桌面截图栏使用 **2560 × 1440 商店截图**，处理后的应用界面按 1:1 居中，周围添加中性留白，不叠加营销文字。融合宣传图将同一界面放入蓝色品牌版式，配以本地化文案、细边框和柔和阴影。1080p 版仅缩小一次以适配版面，4K 版保持界面原生 1:1，均不放大界面。左下角不显示平台标记。
 
@@ -77,7 +77,7 @@
 
 ## 编辑与重新生成
 
-[设计画廊](../../../../design/hifi/sources/windows-store-artwork.html)是高保真入口。可编辑构图位于 [build-windows-store-assets.cjs](../../../../scripts/build-windows-store-assets.cjs)，本地化文案、配色与输出画布参数位于 [windows-store.json](../../../../specs/marketing/windows-store.json)，[素材清单](../../../../specs/marketing/windows-store-assets.json)保存全部 71 张 PNG 及源图、输出摘要，[截图素材清单](../../../../specs/marketing/windows-store-captures.json)保存候选身份、原生截图与捕获回执摘要、客户区裁切、尺寸、DPI、图片说明和抠图处理参数。固定输出画布只用于商店图片，不改变 Qt 窗口逻辑尺寸，也不把屏幕缩放写入产品。
+[设计画廊](../../../../design/hifi/sources/windows-store-artwork.html)是高保真入口。可编辑构图位于 [build-windows-store-assets.cjs](../../../../scripts/build-windows-store-assets.cjs)，本地化文案、配色与输出画布参数位于 [windows-store.json](../../../../specs/marketing/windows-store.json)，[素材清单](../../../../specs/marketing/windows-store-assets.json)保存 PNG 及源图、输出摘要，包含原生输入和两张 README 图片；[截图素材清单](../../../../specs/marketing/windows-store-captures.json)保存候选身份、原生截图与捕获回执摘要、客户区裁切、尺寸、DPI、图片说明和圆角处理参数。固定输出画布只用于商店图片，不改变 Qt 窗口逻辑尺寸，也不把屏幕缩放写入产品。
 
 替换截图前，分别运行两种语言的原生截图流程，并按 100% 比例审阅 PNG。将两个完整捕获目录传给 [import-windows-store-captures.cjs](../../../../scripts/import-windows-store-captures.cjs)。导入器先核对全部八张 PNG 的候选身份、摘要及客户区与窗框像素的精确对应，再更新材料输入。JPEG、不完整或身份不符的回执会被拒绝。更新候选时，先明确修改营销规格中的基线。
 
@@ -87,6 +87,7 @@
 node scripts/import-windows-store-captures.cjs build/captures-en-US build/captures-zh-CN
 node scripts/build-windows-store-assets.cjs
 node scripts/build-windows-store-assets.cjs --check
+node scripts/test-windows-store-images.cjs
 python scripts/check-docs.py
 python scripts/package-windows-store-materials.py --output dist/windows-store-materials
 ```

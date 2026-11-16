@@ -3,13 +3,26 @@ const crypto = require('node:crypto');
 const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 
 async function makeCutout(bytes, width, height, dpi, processing) {
-  const trim = processing.edge_trim_pixels;
-  const crop = {left:trim,top:trim,width:width-trim*2,height:height-trim*2};
-  if (crop.width <= 0 || crop.height <= 0) throw Error('Invalid screenshot perimeter trim');
-  const radius = Math.max(0, Math.round(processing.corner_radius_logical * dpi / 96) - trim);
+  const trim = processing.top_trim_pixels;
+  const crop = {left:0,top:trim,width,height:height-trim};
+  if (!Number.isInteger(trim) || trim < 0 || crop.width <= 0 || crop.height <= 0) throw Error('Invalid screenshot perimeter trim');
+  const radius = Math.round(processing.corner_radius_logical * dpi / 96);
+  if (radius < 0 || radius * 2 > Math.min(crop.width,crop.height)) throw Error('Invalid screenshot corner radius');
   const raw = await sharp(bytes).extract(crop).ensureAlpha().raw().toBuffer();
   const mask = Buffer.from(`<svg width="${crop.width}" height="${crop.height}"><rect width="100%" height="100%" rx="${radius}" fill="white"/></svg>`);
   const alpha = await sharp(mask).ensureAlpha().raw().toBuffer();
+  // Native rounded edges are already blended with the desktop. Use the same
+  // row's interior background in the corner squares before applying new alpha,
+  // otherwise old desktop colors survive as a dark or colored fringe.
+  for (let y=0; y<crop.height; y++) {
+    if (y>=radius && y<crop.height-radius) continue;
+    for (let x=0; x<crop.width; x++) {
+      if (x>=radius && x<crop.width-radius) continue;
+      const from=(y*crop.width+(x<radius?radius:crop.width-radius-1))*4;
+      const to=(y*crop.width+x)*4;
+      raw.copy(raw,to,from,from+3);
+    }
+  }
   for (let p=0; p<raw.length; p+=4) {
     raw[p+3] = alpha[p+3];
     if (!raw[p+3]) raw.fill(0,p,p+3);
