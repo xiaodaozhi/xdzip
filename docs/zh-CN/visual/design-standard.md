@@ -215,11 +215,15 @@ Ubuntu X11 主窗口将窗口控制整合到同一标题区，普通状态使用
 
 English: The Ubuntu X11 main window integrates its caption controls, with a 10-unit normal-state corner radius, three 36-unit control slots, 28-unit circular backgrounds, a 6-unit right inset for the controls and a 6-unit resize edge. A transparent window and antialiased titlebar and status bar corners preserve edge alpha. Titlebar movement, double-click and eight-direction resize use the window system; maximized and fullscreen states have square corners. Operation windows keep system decorations. Window-manager shadows and behavior require separate native checks.
 
-标题空白区域拖动调用 startSystemMove，双击切换最大化／还原；Windows 保留 WS_CAPTION／WS_THICKFRAME，只将原生标题栏区域纳入客户区；四边与四角由原生命中测试处理，最大化使用系统工作区与原生缩放边距。DWM 提供系统边框、阴影及受支持 Windows 11 上的圆角，不用 QML 圆角矩形或阴影代替。窗口按钮沿用正常键盘焦点和可访问名称，关闭走既有任务决策与异步退出屏障。操作窗口继续保留系统装饰，macOS 的原生红绿灯不变。HTML Windows 原稿同步按钮槽位，装饰示意不在浏览器中执行系统窗口操作。
+标题空白区域拖动调用 startSystemMove，双击切换最大化／还原；Windows 保留 WS_THICKFRAME，Windows 11 保留 WS_CAPTION，Windows 10 客户端移除该标题栏样式；四边与四角由原生命中测试处理，最大化使用系统工作区与原生缩放边距。DWM 提供系统边框、阴影及受支持 Windows 11 上的圆角，不用 QML 圆角矩形或阴影代替。窗口按钮沿用正常键盘焦点和可访问名称，关闭走既有任务决策与异步退出屏障。操作窗口继续保留系统装饰，macOS 的原生红绿灯不变。HTML Windows 原稿同步按钮槽位，装饰示意不在浏览器中执行系统窗口操作。
+
+Windows 原生客户区计算同时处理系统提供的 RECT 和 NCCALCSIZE_PARAMS 两种消息载荷，沿用系统对侧边和底边的计算；无效载荷交还系统。两种消息均保留自定义标题区及最大化和全屏边界规则。
+
+Windows 10 客户端主窗口保留 DWM 非客户区绘制与原生缩放样式，移除系统标题栏样式以避免覆盖自定义标题区；Windows 11、服务器和未知版本沿用原有策略。版本判断失败时不切换策略。系统装饰以实际平台能力为准。
 
 Qt 自动化同时核对标题区、按钮几何、字号与菜单／列表比例，DPR 1／1.25／2 保持逻辑尺寸。原生 Windows 启动、最大化／还原与退出单独执行；离屏结果不等于 Windows 拖动贴靠、系统缩放、输入法或辅助功能的完整人工验收。
 
-Windows 原生边框保留系统 caption 与缩放行为，取消 FramelessWindowHint 和 QML 边缘缩放层。WindowsFrame 使用公开 Qt 接口和 Win32，不再同步 Qt 私有客户区边距。首次绑定普通窗口时保持请求的逻辑客户区，后续边框重应用不重复初始尺寸补偿；普通 PMv2、PassThrough 且无局部缩放覆盖时，跨屏按待处理客户区调整量和目标 DPI 边框协商外框尺寸，其他配置交回 Qt。原生最小／最大跟踪尺寸使用 HWND 当前 DPI 和相同边框度量，不能使用跨屏拖动期间尚未更新的 Qt 屏幕倍率；只接管跟踪尺寸，保留系统最大化位置与尺寸。存在全局缩放覆盖时，跟踪约束仍交回 Qt。DWM 扩展与还原顶部保留 1 个原生设备像素，原生缩放度量从窗口 DPI 对应的系统指标读取；这些是 Win32 边界参数，不写入 QML 逻辑尺寸。暗色外框随主题更新，DPI、系统主题与合成变化后重新应用。Qt 升级须重跑相关尺寸与窗口状态回归；物理双屏拖动和原生视觉按需检查，未执行时记录限制。圆角属性不受支持或合成不可用时沿用系统能力，不宣称跨版本具有同样装饰。
+Windows 原生边框保留系统缩放行为，按版本处理 caption 样式，取消 FramelessWindowHint 和 QML 边缘缩放层。WindowsFrame 使用公开 Qt 接口和 Win32，不再同步 Qt 私有客户区边距。首次绑定普通窗口时保持请求的逻辑客户区，后续边框重应用不重复初始尺寸补偿；普通 PMv2、PassThrough 且无局部缩放覆盖时，跨屏按待处理客户区调整量和目标 DPI 边框协商外框尺寸，其他配置交回 Qt。原生最小／最大跟踪尺寸使用 HWND 当前 DPI 和相同边框度量，不能使用跨屏拖动期间尚未更新的 Qt 屏幕倍率；只接管跟踪尺寸，保留系统最大化位置与尺寸。存在全局缩放覆盖时，跟踪约束仍交回 Qt。DWM 扩展与还原顶部保留 1 个原生设备像素，原生缩放度量从窗口 DPI 对应的系统指标读取；这些是 Win32 边界参数，不写入 QML 逻辑尺寸。暗色外框随主题更新，DPI、系统主题与合成变化后重新应用。Qt 升级须重跑相关尺寸与窗口状态回归；物理双屏拖动和原生视觉按需检查，未执行时记录限制。圆角属性不受支持或合成不可用时沿用系统能力，不宣称跨版本具有同样装饰。
 
 回归同时检查原生窗口样式、DWM 非客户区渲染、可查询的圆角偏好与可见边框、实际客户区尺寸，以及最大化／还原、最小化和关闭。contentItem 截图无法证明外部边框与阴影；桌面合成截图和状态记录分别保存到 build/，不以内部画布截图替代原生装饰验收。
 
