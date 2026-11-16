@@ -1,5 +1,7 @@
 # xdzip：术语、单位与初始常量
 
+[English](../../design/glossary.md) | 简体中文
+
 ## 1. 术语
 
 | 术语 | 定义 |

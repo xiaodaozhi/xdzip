@@ -1,5 +1,7 @@
 # 7z format sources and independent implementation
 
+English | [简体中文](../zh-CN/engineering/sevenzip-format-sources.md)
+
 This document records reusable sources and implementation boundaries. Migration acceptance and remaining capabilities are tracked in [issue #50](https://github.com/xiaodaozhi/xdzip/issues/50); fixed Rust routing and removal of the official product dependency do not automatically establish cross-platform, manual or release acceptance. General replacement rules are in the [independent implementation contract](independent-rust-codecs.md).
 
 ## Specifications and reference identity

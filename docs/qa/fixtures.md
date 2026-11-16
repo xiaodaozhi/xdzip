@@ -1,5 +1,7 @@
 # Test sample specification
 
+English | [简体中文](../zh-CN/qa/fixtures.md)
+
 Samples must be self-generated, explicitly authorized or drawn from a test set with clear licensing. Never commit users' real archives, passwords, personal paths or malware of unknown origin. Record source URL, license and redistribution basis for third-party samples.
 
 Each fixture records an ID, generation method/tool version, SHA-256, format characteristics, expected entries/bytes/errors and associated acceptance IDs. Prefer small generatable samples. For large workloads record deterministic seeds, counts, size distributions and generation commands rather than committing gigabyte files to Git.

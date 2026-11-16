@@ -1,5 +1,7 @@
 # xdzip：03 领域模型与数据设计
 
+[English](../../design/03-domain-data.md) | 简体中文
+
 ## 1. 身份和版本
 
 | 类型 | 含义 | 规则 |

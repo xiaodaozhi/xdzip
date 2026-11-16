@@ -1,10 +1,12 @@
 # W01 main-window welcome page, high-fidelity candidate
 
+English | [简体中文](../zh-CN/ux/welcome.md)
+
 The high-fidelity design is confirmed and integrated into the [official HTML review entry](../../design/html/index.html?view=welcome&zoom=1). Qt implements real opening and creation; desktop manual acceptance is recorded separately. See the [welcome page state design](../../design/hifi/sources/welcome.html) and [welcome-reference.json](../../specs/visual/welcome-reference.json). Colors and main-window density retain existing tokens and layout-scale without changing global standards. Four PNGs are exports of code-drawn design originals, not product runtime screenshots.
 
 ## Information and layout
 
-The start-page headline is “打包与解压，都简单一点。” in Chinese and “Packing and unpacking, made simple.” in English. Supporting copy describes browsing first, extracting as needed and packing to share.
+The start-page headline is “打包与解压，都简单一点。” in Chinese and “Pack and unpack, a little simpler” in English. Supporting copy describes browsing first, extracting as needed and packing to share.
 
 Default client area is 1024×622, minimum 832×544; title area 48, capsule 32 and bottom bar 32. The content group is 608 wide, centered horizontally only and starts a fixed 28 logical pixels below the available body top, not vertically centered. Headline size is 30, or 28 in a narrow window; description 13, action title 16 and card description 12. Two action cards are 296 wide by 124 high, with 16 gap, 20 padding and radius 8. These are welcome-page entry cards, not replacements for shared operation-window buttons.
 

@@ -1,5 +1,7 @@
 # Command-line runtime contract
 
+English | [简体中文](../zh-CN/engineering/command-line.md)
+
 The CLI is an independent Rust host that calls format and secure I/O services through the same `xdzip-runtime`; it does not depend on Qt, QML, or a display session. 7z, RAR, CAB, ISO, and UDF continue to use bundled isolated workers and do not search PATH for alternative extraction tools. Platform and architecture follow the [support policy](support-policy.md). The standalone Linux CLI does not require X11; running requires system OpenSSL 3 and certificates, while building additionally requires libssl-dev and pkg-config.
 
 Starting with `v0.2.0`, official releases provide standalone CLI packages on three platforms, and desktop packages include a private CLI. Earlier release assets do not change retroactively. See the [releases](https://github.com/xiaodaozhi/xdzip/releases) for downloads and the sections below and [release protocol](release-protocol.md) for source build, installation, and update boundaries. Implementation and acceptance progress are tracked in [#254](https://github.com/xiaodaozhi/xdzip/issues/254).

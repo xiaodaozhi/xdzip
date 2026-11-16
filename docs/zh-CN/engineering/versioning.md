@@ -1,5 +1,7 @@
 # 产品版本与构建身份
 
+[English](../../engineering/versioning.md) | 简体中文
+
 可选 `prerelease_number` 分离预发布序号与构建号。例如 alpha.1 对应 build 14，后续 alpha.2 仍继续递增 build。缺省保留历史 `渠道.build` 读取方式。发布清单和资产命名见[发布协议](release-protocol.md)。
 
 [VERSION.json](../../../VERSION.json) 是产品版本、渠道与构建号的唯一维护入口。当前值由构建系统读取，不在本文另行维护。版本变更见[变更日志](../../../CHANGELOG.md)，各批次交付与验证见[项目 issue](https://github.com/xiaodaozhi/xdzip/issues)；版本递增本身不代表发行获批。

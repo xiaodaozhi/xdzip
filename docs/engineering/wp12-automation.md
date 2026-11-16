@@ -1,6 +1,8 @@
 # Candidate automated verification and evidence aggregation contract
 
-Automated verification and external admission are registered separately in the [gate list](../../scripts/wp12-gates.json). Scripts check candidate binding and evidence completeness; completing automated items does not approve a formal release. Work-package progress and acceptance status belong in [Issues](https://github.com/xiaodaozhi/xdzip/issues); historical WP-12 completion is in [#5](https://github.com/xiaodaozhi/xdzip/issues/5).
+English | [简体中文](../zh-CN/engineering/wp12-automation.md)
+
+This guide covers automated candidate verification, Qt source builds and compatible replacement checks. The [gate list](../../scripts/wp12-gates.json) separates automated checks from external admission. Scripts verify candidate identity and evidence completeness; passing automated checks does not approve a formal release. Historical verification is recorded in [#5](https://github.com/xiaodaozhi/xdzip/issues/5).
 
 <a id="qt-源码与兼容替换"></a>
 

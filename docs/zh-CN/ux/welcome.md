@@ -1,10 +1,12 @@
 # W01 主窗口欢迎页，高保真候选
 
+[English](../../ux/welcome.md) | 简体中文
+
 高保真设计已确认，现已接入[正式 HTML 审阅入口](../../../design/html/index.html?view=welcome&zoom=1)。Qt 已接入真实打开与新建，桌面人工验收另行登记。设计入口见[欢迎页状态稿](../../../design/hifi/sources/welcome.html)，参数见 [welcome-reference.json](../../../specs/visual/welcome-reference.json)。颜色、主窗口密度沿用现有 tokens 和 layout-scale，不调整全局规范。四张 PNG 为代码绘制的设计原稿导出，不是产品运行截图。
 
 ## 信息与布局
 
-起始页主标题为“打包与解压，都简单一点。”，英文为“Packing and unpacking, made simple.”。副文案继续说明先浏览、按需解压与打包分享。
+起始页主标题为“打包与解压，都简单一点。”，英文为“Pack and unpack, a little simpler”。副文案继续说明先浏览、按需解压与打包分享。
 
 默认客户区 1024×622，最小 832×544；标题区 48，胶囊 32，底栏 32。内容组宽 608，仅水平居中，从可用正文顶部固定 28 逻辑像素开始，不垂直居中。标题 30，窄窗口 28，说明 13，操作标题 16，卡片说明 12。两张操作卡宽 296、高 124，间隔 16、内距 20、圆角 8。它们是欢迎页入口卡片，不替代操作窗口共享按钮。
 

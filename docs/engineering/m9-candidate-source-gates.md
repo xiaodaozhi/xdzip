@@ -1,6 +1,8 @@
-# M9 candidate source and license gates
+# WIM, MSI, and installer format sources and licenses
 
-This document records the next Bandizip inventory candidates. References stay in `build/toolchain/references` or are linked as public specifications; none is a product dependency.
+English | [简体中文](../zh-CN/engineering/m9-candidate-source-gates.md)
+
+This page describes technical references, licensing restrictions, and requirements for supporting WIM, MSI, and installer formats. References stay in `build/toolchain/references` or link to public specifications; none is a product dependency.
 
 ## WIM
 

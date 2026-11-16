@@ -1,5 +1,7 @@
 # Task windows and integrity checks
 
+English | [简体中文](../zh-CN/ux/task-windows.md)
+
 The application task entry aggregates all sessions and routes progress, passwords, conflicts and results using session UUID and backend task ID. Closing a page retains its controller; explicit exit waits for all asynchronous joins. See the [application session contract](../engineering/application-sessions.md).
 
 Task menu rows display operation icon, archive filename, sequence tag and status tag. Icons use shared assets for creation, extraction, checking, addition, movement and export without operation-type text prefixes. Both tags use the same component; sequence retains the backend number and cross-session internal identity is unchanged. Long filenames are elided while accessible names include operation, number, filename and state.

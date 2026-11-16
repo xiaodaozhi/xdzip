@@ -1,5 +1,7 @@
 # Repository layout and dependencies
 
+English | [简体中文](../zh-CN/engineering/repository-layout.md)
+
 Current product modules are defined by root Cargo.toml and CMakeLists.txt. This table describes actual directories; future splits in architecture designs do not imply existing independent crates.
 
 | Directory | Ownership and dependency rules |

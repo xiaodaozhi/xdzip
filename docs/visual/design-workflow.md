@@ -1,5 +1,7 @@
 # UI design and correction workflow
 
+English | [简体中文](../zh-CN/visual/design-workflow.md)
+
 Perform this workflow before creating UI, not as documentation after implementation. The specification entry is the [UI design standard](design-standard.md).
 
 1. **Define goals and environment.** List functionality, real data and missing capabilities. Specify platform and dimension ranges for logical windows, accessibility font sizes, menus and standalone windows. Record system scaling, review scale and DPR; also record browser page zoom when using an HTML prototype.

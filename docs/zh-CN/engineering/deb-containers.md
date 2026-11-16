@@ -1,5 +1,7 @@
 # DEB 容器契约
 
+[English](../../engineering/deb-containers.md) | 简体中文
+
 软件包外层遵循 Debian 的 [deb(5)](https://manpages.debian.org/unstable/dpkg-dev/deb.5.en.html)，通用 ar 字段遵循 [ar(5)](https://man.netbsd.org/ar.5)。仅准入普通 `!<arch>\n` 布局。每个 60 字节头包含有界 ASCII 名称、时间、所有者、模式、尺寸和必需尾标记。验证十进制字段、八进制模式、精确载荷跨度、奇数成员的换行填充及物理 EOF。thin、历史布局和长名称扩展不支持，也不授予外部文件访问权。
 
 `debian-binary` 必须在首位。接受主版本 2、有界十进制次版本及有界附加版本行，拒绝不兼容主版本。control 与 data 成员按此顺序出现，之间可保留以下划线开头的扩展，后续额外成员也予以保留。control 接受无压缩 TAR、GZIP、XZ、Zstandard，data 另接受 BZip2 和独立 LZMA。须由实际 TAR 与过滤器实现验证对应成员，不能只凭后缀；不支持的必需成员配置明确失败。不把 Deb822 字段、元数据中列出的摘要、签名或可安装性当作容器校验范围。

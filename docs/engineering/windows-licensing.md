@@ -1,5 +1,7 @@
 # Windows development tool and runtime licensing
 
+English | [简体中文](../zh-CN/engineering/windows-licensing.md)
+
 This page defines applicable Windows build and redistribution paths and is used alongside [native runtime materials](native-runtime-materials.md), the [developer build entry](developer-build.md) and the [installation contract](installers-associations.md). Specific environments, verification commits, material hashes and acceptance conclusions belong in issues and local/CI artifacts; this page does not retain a machine's license proof.
 
 ## Free Community path and local choice

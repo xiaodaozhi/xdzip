@@ -1,5 +1,7 @@
 # 压缩包密码与加密目录打开
 
+[English](../../engineering/password-extraction.md) | 简体中文
+
 本契约补充[安全解压](m3-extraction.md)，定义密码、认证和任务交互。格式与文件安全逻辑仍独立于 Qt，密码窗口只提交用户意图。实际开发进度与平台验证见 [issue #11](https://github.com/xiaodaozhi/xdzip/issues/11)，本页不保存执行报告。
 
 ## 能力与格式边界
@@ -46,18 +48,10 @@ ZIP 任务建立解码器时有 64 MiB 的实际元数据读取预算，随后�
 
 创建与解压密码框通过显式的界面文案属性提供辅助名称，不从输入内容派生名称。Qt 6.8.2 会在密码状态下隐藏附加名称，因此桌面程序为这两个字段安装专用辅助接口：仅覆盖名称，状态、文本／值和动作继续使用 Qt 实现，密码标记与遮蔽不变。该接口继承 Qt Quick 的私有类，构建及运行依赖与所用 Qt Quick 版本匹配；升级或替换该库时须重新构建并验证接口、密码保密和三平台兼容。自动接口检查与系统读屏人工验收分别记录。
 
-English: Creation and extraction password fields expose an explicit UI label independent of their input. Qt 6.8.2 suppresses the attached name while a field has password state, so the desktop app installs a narrowly scoped accessibility interface for these fields. It overrides only the name and retains Qt's state, text/value and action behavior. This interface subclasses a private Qt Quick class and requires a matching Qt Quick build; rebuild and recheck accessibility, secret masking and all three platforms when upgrading or replacing that library. Automated interface checks do not replace screen-reader acceptance.
-
 验收要求覆盖原始 AES 字段／CRC／描述符／ZIP64、同名物理记录、正确和错误密码、认证破坏、混合文件、不同密码、空密码／控制字符、重试资源累计、满队列、取消／退出唤醒、来源变化、旧目标保护、链接和执行权限，以及独立 7-Zip 双向字节核对。界面检查分别覆盖实际控制器闭环、可访问动作、双语多字号、浅深色、DPR 与原生窗口。自动化不等于系统读屏人工验收。
-
-English: Independent Rust 7z and RAR backends handle their respective password profiles inside the isolated worker. Encrypted directories require a bounded OpenWithPassword request before any metadata is published. The private session and its admitted tasks retain zeroizing secret containers; events, settings and logs never contain passwords. Existing task prompts and cancellation remain in use. Only 7z creation supports encrypted filenames, requiring a creation password. Encrypted 7z and all RAR archives reject edits.
 
 RAR 未取得可信密码验证值时，加密头或内容的解码完整性失败同样使用 `password_or_integrity`；已验证匹配的可信 verifier、明文头校验和非密码类失败仍保留各自分类。历史单条密码及平台字符投影规则见[RAR 实现依据](rar-format-sources.md)。未知尺寸在解码和密码交互之前拒绝，不为不可输出的条目额外索取秘密。
 
-English: The explicit `password_or_integrity` error represents an unverifiable 7z CBC or RAR password mismatch versus encrypted-data damage. It retries through the existing password prompt, using the current ten-failure task limit and retaining that category at exhaustion. It never replaces source, resource, cancellation, unsupported-feature or output errors, and outer plaintext-header corruption remains an archive error. A trusted matching RAR verifier preserves subsequent integrity failures as integrity errors. Authentication failures in formats with an independent authenticator retain their existing integrity behavior. Failed attempts use fresh private stages, retain cumulative work/input accounting and never publish failed plaintext. Unknown-size records are refused before decoding or password interaction.
-
 旧式 RAR 加密条目缺少可可靠区分错误密码与损坏内容的验证值，因此每个加密条目解码前分别请求密码，不能把前一条密码直接套用到可能使用不同秘密的下一条。RAR5 和受支持的其他格式继续任务内复用。旧 RAR 的 CRC 或头部损坏仍作为完整性失败，不冒充已确认的错误密码。
-
-English: Older RAR encrypted records request a password separately for each entry because their checks cannot reliably distinguish a wrong cached secret from corruption. RAR5 retains task-local reuse. Legacy CRC or header damage remains an integrity failure, never a claimed password-verifier mismatch.
 
 AES Crypt 0–3 版虽然不加密文件名，仍须打开密码，完整密文认证后才发布精确大小的元数据。检查、预览、导出通过现有秘密槽保留该会话密码，不另设逐条目提示。0 版验证歧义、1–3 版会话密钥验证，以及旧版未认证长度和扩展字段，遵循 [AES Crypt 契约](aescrypt-envelopes.md)。

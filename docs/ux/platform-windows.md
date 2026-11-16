@@ -1,5 +1,7 @@
 # Platform windows and title bars
 
+English | [简体中文](../zh-CN/ux/platform-windows.md)
+
 xdzip operation interfaces use standalone top-level windows, not sheets attached to the main window or overlay panels drawn inside it. A standalone window does not imply a separate process or a taskbar entry for every auxiliary window. Dropdown menus and tooltips remain lightweight Popups and are not operation windows.
 
 ## Window contract

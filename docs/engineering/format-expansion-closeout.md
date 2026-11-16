@@ -1,6 +1,8 @@
 # Format expansion closeout and handoff
 
-This checklist is the reusable closeout gate for a multi-format work package. It keeps implementation scope, environment prerequisites, verification evidence and delivery actions separate. A format name, a generated registry row or a successful self-read does not by itself establish support.
+English | [简体中文](../zh-CN/engineering/format-expansion-closeout.md)
+
+This guide explains how to assess and deliver new archive formats by checking implementation scope, environment requirements and verification evidence separately. A format name, a generated registry row or a successful self-read does not by itself establish support.
 
 ## 1. Freeze the scope ledger
 

@@ -8,12 +8,12 @@
 
 先关闭已有的 xdzip 进程，在仓库根目录使用 Windows PowerShell 5.1 运行对应命令：
 
-也可以双击 [capture-windows-store-zh-CN.cmd](../../../../scripts/capture-windows-store-zh-CN.cmd) 或 [capture-windows-store-en-US.cmd](../../../../scripts/capture-windows-store-en-US.cmd)。它们启动同一个辅助脚本，并保留控制台供查看结果。
-
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/capture-windows-store.ps1 -Language zh-CN
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/capture-windows-store.ps1 -Language en-US
 ```
+
+也可以双击 [capture-windows-store-zh-CN.cmd](../../../../scripts/capture-windows-store-zh-CN.cmd) 或 [capture-windows-store-en-US.cmd](../../../../scripts/capture-windows-store-en-US.cmd)。它们启动同一个辅助脚本，并保留控制台供查看结果。
 
 `-ExecutionPolicy Bypass` 只对这次调用生效，不修改已保存的执行策略。脚本复用 `build/issue272-store-materials/runtime/xdzip.exe` 中的候选程序，以及相邻 `demo/` 目录中的自有演示文件。从 Git 工作树运行时，也可以复用主检出目录中的这些文件。脚本按 [windows-store.json](../../../../specs/marketing/windows-store.json) 中的 SHA-256 核对可执行文件，不重新构建或安装应用。
 

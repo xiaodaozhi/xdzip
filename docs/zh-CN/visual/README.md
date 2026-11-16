@@ -1,5 +1,7 @@
 # xdzip 视觉规范
 
+[English](../../visual/README.md) | 简体中文
+
 规范入口：[界面设计规范](design-standard.md)、[强制设计流程](design-workflow.md)、[密度与单位契约](../../../specs/visual/layout-scale.json)。主窗口与菜单比例的复验按[通用方法](../qa/README.md)记录。
 
 当前原稿见 [design/hifi](../../../design/hifi/README.md)，可操作 HTML 交付见 [design/html](../../../design/html/README.md)。未采用的早期提案不作为当前基线；不要依赖已整理的 main 历史查找旧稿，当前原稿以此目录及清单为准。

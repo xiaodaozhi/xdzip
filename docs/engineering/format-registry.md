@@ -1,5 +1,7 @@
 # Built-in format declarations
 
+English | [简体中文](../zh-CN/engineering/format-registry.md)
+
 The built-in declaration source is [archive-formats.json](../../specs/engineering/archive-formats.json). It records stable format identifiers, labels, container families, outer compression, existing private worker identifiers, supported method families, creation suffixes, checking strength and entry-point candidates. Method families summarize the corresponding format contracts; they do not promise every parameter, historical variant or combination. Actual records, host policy and platform capabilities narrow the declaration before an operation starts.
 
 Checking strength has three values: `supported_content` validates supported content, `structure_and_readability` does not promise content checksums, and `format_declared_checks` validates checks declared by the stream while allowing checksum-free profiles. Generated interface notes and CLI results preserve this distinction. Creation method IDs resolve only through the format's admitted write-method list, so a registered read filter cannot silently enable a writer.

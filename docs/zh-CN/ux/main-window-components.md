@@ -1,5 +1,7 @@
 # 主窗口功能、组件与交互契约
 
+[English](../../ux/main-window-components.md) | 简体中文
+
 主窗口的控件同时交付外观和行为：普通、悬停、按下、键盘焦点、禁用、选中、忙碌与错误均有明确状态。HTML 使用示例压缩包验证交互；Qt 根据真实浏览、创建、解压、[完整性检查](../engineering/archive-checking.md)和[主动内容预览](../engineering/content-preview.md)的能力启用动作，HTML 示例不代表真实后台结果。
 
 文件名、目录名、归档名和路径优先使用启动时的系统默认字体，缺字由平台回退；固定界面文案继续使用内置子集。目录树与拖动预览按对应文字字体量测，详见[视觉规范](../visual/design-standard.md#界面字体与用户数据)。
@@ -24,8 +26,6 @@
 | 提示与操作窗 | Tooltip、Notice、Toast、平台独立窗口 | 提示完整名称 / 禁用理由；Esc、焦点返回、取消和关闭遵循各动作语义 |
 
 浏览列表和网格共用空状态。已提交的搜索没有结果时提示更换搜索词；未搜索且压缩包记录数为零时说明压缩包为空，否则只说明当前文件夹没有可显示内容，不推断被限制的目录索引是否完整。读取与错误显示真实状态，输入框中尚未提交的文字不改变当前结果的提示。未打开文件时的引导不枚举过时的格式列表。
-
-English: List and grid share their empty state. A committed search with no results suggests another search term. Without a search, an archive with no records is identified as empty; otherwise the message describes only the current folder's visible contents, including when the directory index is limited. Reading and errors keep their actual status, and unsubmitted search text does not change the displayed result's message.
 
 ## 统一命令与菜单
 
@@ -69,15 +69,10 @@ English: List and grid share their empty state. A committed search with no resul
 
 压缩文件页底栏显示选中数量；有选择且总大小已知时，在数量后显示分隔符和大小。选中项包含虚拟目录或未知大小文件等导致总大小未知时，只显示数量，不显示多余的分隔符和 `—`。已知的零字节大小仍正常显示，欢迎页文案不变。
 
-English: The archive status bar shows the selection count and appends the size only when a nonempty selection has a known total. If a virtual directory or unknown-size file makes the total unknown, it shows the count alone without a separator or dash. A known zero size remains visible; the welcome message is unchanged.
-
-English: Welcome and archive pages share a 32-unit minimum status bar and the same content-based growth for larger text. Both task buttons use the same task-list asset in a centered 16×16 logical icon slot from main.interaction.taskIconSize, independent of page and text scale.
 
 文件列表选框右边缘到文件图标槽固定留 12 逻辑像素，图标、文件名和“名称”表头同步定位。辅助字号只改变真实文字度量，不扩大这段空白；选框仍与每行选择状态及表头全选状态共用原有选择模型。
 
 五列均可拖动右边界调整宽度，命中区为 8 逻辑像素，双击边界恢复该列默认宽度。名称列默认填满余量，其余列以原设计值为基准，两个大小列的默认宽度按实际标题和排序箭头度量适当增大，避免默认标题被截断；用户列宽在本次运行的标签页和窗口间共享，退出后恢复默认，宽度以逻辑尺寸保存于内存，不写设置或 DPR。名称列最小 160，其余列最小 64，辅助字号按同一比例增加，超出视口时横向滚动。表头和内容使用同一个宽度来源，拖动不触发排序；原始大小、压缩大小的升序和降序标记位于右对齐标题文字左侧，其余列的标记位于标题右侧，均与实际显示文字留 6 逻辑像素。活动排序列在相应一侧为箭头预留空间，手动缩窄时标题先省略，箭头不得覆盖文字或相邻列；数值列标题继续与内容右对齐。
-
-English: Sort indicators precede the right-aligned original and compressed size labels and follow the other labels, with a 6-unit gap. Their default columns grow to fit the measured labels and indicators; manually narrowed columns elide labels without overlapping adjacent columns.
 
 文件类别图标按 [扩展名提示表](../../../specs/visual/file-types.json)生成 Qt 和 HTML 选择器，覆盖办公文档、表格、演示、音频、视频、压缩包、安装包、字体与磁盘镜像。后缀不区分大小写，未知类别使用通用文档图标。这只说明外观，不表示文件内容可信或该归档格式已经获得浏览、创建或解压支持。
 
@@ -91,7 +86,6 @@ Qt 菜单明确使用 `Popup.Item` 消费共享委托，保证 AppKit 不忽略�
 
 文件类型排序的升序与降序都保持目录在前，以数据中的目录标记分组；无后缀文件不能与文件夹共用分组键。相同类型保留稳定身份顺序，排序作用于完整查询后再拆分内部传输批次。HTML 中未设置 folder 的文件按 false 处理，不能将 undefined 转成 NaN 参与比较。
 
-
 ## 选择、任务与提示
 
 全选保留当前列表末项的详情焦点，元数据与逐项选择一致；取消选择后隐藏四项属性及“解压此文件”。该按钮使用共享 hover／pressed／focus 状态。全选仍作用于完整当前查询，不改变目录和物理身份的契约。
@@ -101,8 +95,6 @@ Qt 菜单明确使用 `Popup.Item` 消费共享委托，保证 AppKit 不忽略�
 浮动提示统一在同一控件内指针连续静止 1200 ms 后显示；移动、离开、按下按钮或打开菜单时取消显示及旧计时，跨控件重新完整等待，不沿用上一提示的快速唤醒。提示优先在调用控件上方显示，顶部空间不足时改在下方，避免边界约束将提示压到控件上造成 hover 反复切换。Qt 共享 CommandTooltip 使用显式静止计时，HTML data-tooltip 同步；列表完整名称不使用浏览器原生 title 绕过该策略。系统原生菜单和托盘的提示时序由系统管理，不宣称可由 QML 参数控制。时间不随字号、DPR 或密度缩放，视觉几何保持不变。
 
 归档标签的完整文件名同样使用共享静止延时提示，按纯文本显示，标签排序拖动、按下、标签菜单或标签列表开启时隐藏。全局任务列表先关闭菜单再显示任务窗口，不切换归档标签，不重新打开已关闭的归档页面。
-
-English: Archive tabs show their complete display name through the shared stationary-hover tooltip, as plain text. Pressing, reordering or opening either tab menu dismisses it. Global task entries dismiss their menu and open only the task dialog, preserving selected and closed archive tabs.
 
 起始页采用顶部固定、水平居中的可滚动正文，错误和警告追加于格式提示下方，以红色文字和语义图标显示，不推动上方内容。关闭托盘驻留的主窗口清空该窗口标签，普通唤出仅显示起始页；最小化保留标签，后台任务仍从全局入口访问。
 

@@ -1,6 +1,8 @@
 # Qt SDK 与源码对应核验
 
-WP-12 的源码材料以官方归档的实际字节为准，不以相同版本号推断 SDK 构建等价。`scripts/qt_sdk_correspondence.py` 将固定源码归档、SDK 自带的源码 SPDX、构建声明、已安装配置与已知消费端补丁关联，输出到 build/；不修改 SDK，不批准许可分支。
+[English](../../engineering/qt-sdk-correspondence.md) | 简体中文
+
+源码对应核验以官方归档的实际字节为准，不以相同版本号推断 SDK 构建等价。`scripts/qt_sdk_correspondence.py` 将固定源码归档、SDK 自带的源码 SPDX、构建声明、已安装配置与已知消费端补丁关联，输出到 build/；不修改 SDK，不批准许可分支。
 
 ```sh
 python3 scripts/qt_sdk_correspondence.py \
@@ -23,7 +25,7 @@ qt-license-sources.json 的 source_commits 仅表示许可文本的固定取回�
 
 ## 结果解释与发行边界
 
-QtNetwork 安全派生库另记录 `network_security`，其回执绑定补丁、构建器、原 QtCore 与实际 QtNetwork 摘要、功能及真实传输验证。工具读取回执时重新核对实际 SDK 字节。该项证明限定在修改库，不将上游 SPDX 改写为派生库证明，也不改变其他模块的未覆盖事实。输入与维护方法见[Qt 补丁说明](../../../patches/qt/README.md)。English: `network_security` separately binds the patched Network build to current SDK binaries and executed checks; upstream SPDX and all other modules retain their original evidence boundaries.
+QtNetwork 安全派生库另记录 `network_security`，其回执绑定补丁、构建器、原 QtCore 与实际 QtNetwork 摘要、功能及真实传输验证。工具读取回执时重新核对实际 SDK 字节。该项证明限定在修改库，不将上游 SPDX 改写为派生库证明，也不改变其他模块的未覆盖事实。输入与维护方法见[Qt 补丁说明](../../../patches/qt/README.md)。
 
 模块是否提供源码 SPDX、匹配／缺失／未覆盖数量、配置和补丁状态均以本次生成的 JSON 为准，不把某个 SDK 的观测推广到其他 SDK。没有逐文件声明时不能推断对应通过，必须保留具体缺口。
 

@@ -1,7 +1,8 @@
 # 压缩包完整性检查
 
-工具栏“测试”对符合条件的当前归档执行一次真实后台检查，覆盖全部物理记录，包含重复名称、目录和空文件，不受当前目录、搜索或选择影响。进入磁盘索引的归档暂不支持整包检查，见[大归档索引](large-index.md)。检查只持有冻结的输入来源与元数据，不取得目标目录授权、不创建暂存或输出文件，不使用解压路径映射和链接发布流程。
+[English](../../engineering/archive-checking.md) | 简体中文
 
+工具栏“测试”对符合条件的当前归档执行一次真实后台检查，覆盖全部物理记录，包含重复名称、目录和空文件，不受当前目录、搜索或选择影响。进入磁盘索引的归档暂不支持整包检查，见[大归档索引](large-index.md)。检查只持有冻结的输入来源与元数据，不取得目标目录授权、不创建暂存或输出文件，不使用解压路径映射和链接发布流程。
 
 UU/UUE 和 XXE 检查文本封装中的每个物理成员，包括空文件与同名记录，验证计数行或已准入的 Base64 填充及精确结束标记。它们不提供校验和或认证，替换有效字母表字符可能改变内容而不报错。头部路径与权限不直接授予输出或执行能力，详见[文本封装契约](text-envelopes.md)。
 
@@ -32,19 +33,11 @@ AES 密码复用[密码协议](password-extraction.md)：独立控制槽、一�
 
 ## 验证边界
 
-English: The independent Rust CAB container and shared algorithms run inside the isolated worker, checking the authorized volume chain, decoded sizes and checksums available in complete data frames. ISO/UDF checks descriptors, directories, extent bounds and actual readability of supported files. Disc images do not generally provide per-file content checksums, so a successful check cannot detect every content change. Unsupported special records fail the whole-archive check. Hybrid checks retain the selected UDF namespace instead of falling back to ISO after an error. The existing file, task, read and native-memory budgets remain in force.
-
 核心回归覆盖支持格式、空文件、目录、重复名称、ZIP 链接负载、密码重试／取消、损坏负载、来源变化、实际计数和无输出。桥接与 Qt 验证真实工具栏到后台任务和结果闭环，密码路由、历史任务、跨会话准入及退出独立检查。双语多字号、浅深色与原生桌面视觉验收分别登记在 issue，生成证据仅保存于 build/ 或 CI 工件。
-
-English: 7z and RAR use independent Rust engines and a bounded discard sink, including encrypted, empty and solid records. Work decoded only to reach a solid record does not inflate verified-file counts. Test checks every physical record of the current archive in a background read-only task, independently of the current view or selection. ZIP payloads are fully decoded into a bounded discard sink, including AES authentication and ZIP symlink payloads without creating links. TAR and TAR.GZ are scanned completely again, including TAR end blocks and the GZIP trailer. TAR has no content checksums. The task stops at the first error, preserves actual read and verified-file counts, writes no output, reuses password/cancellation controls, and retains the existing resource and best-effort source-identity boundaries. Passing a check does not establish source trust or malware safety.
 
 旧式 RAR 加密条目缺少可可靠区分错误密码与损坏内容的验证值，因此每个加密条目解码前分别请求密码，不能把前一条密码直接套用到可能使用不同秘密的下一条。RAR5 和受支持的其他格式继续任务内复用。未取得可信密码验证值的加密解码或加密头完整性失败报告 `password_or_integrity`，保留错误密码或内容损坏的歧义；明文头校验、来源变化、取消、限额及输出 I/O 不误归类为密码问题。
 
-English: Older RAR encrypted records request a password separately for each entry because their checks cannot reliably distinguish a wrong cached secret from corruption. RAR5 retains task-local reuse. Without a trusted password verifier, encrypted integrity failures report `password_or_integrity`. Plaintext header checks, source changes, cancellation, limits and output I/O preserve their own error classes.
-
 包含未知原始大小的归档仍可浏览；整包检查的总量标为未知，并在打开 payload 或请求密码前以 `unsupported_feature` 失败，已验证和解码产量保持实际值。未知大小不按空文件验证，也不将内部 sentinel 用作进度分母。
-
-English: Archives with unknown uncompressed sizes remain browsable. Whole-archive checks report an unknown total and fail with `unsupported_feature` before opening payloads or requesting passwords. Actual decoded and verified counters are retained; unknown values are never verified as empty files or used as progress totals.
 
 XZ 和 TAR.XZ 使用 `format_declared_checks`，须验证声明的 CRC32、CRC64、SHA-256 和结构字段；声明 None 的流没有内容校验和。界面须说明此区别，不承诺每份输入都有内容校验和。新增未加密 ZIP 方法 9、12、14、95 仍须满足精确解码尺寸及外层 ZIP CRC，LZMA 数据描述符配置须有 EOS。未知方法可展示，但不能计为内容验证成功。
 
@@ -59,7 +52,6 @@ PMA 使用 `format_declared_checks`，完整解码准入的 PM0/PM1/PM2，核对
 ARJ 使用 `supported_content`。完整元数据准入验证主头部、文件头部及扩展头部 CRC-32；检查通过 Store 或方法 1–4 完整解码所有准入普通成员，核对准确尺寸和必需载荷 CRC-32，旧文本保留 CRC 覆盖的原始字节，不转换换行。未知或不支持记录阻止整包成功，详见 [ARJ 契约](arj-streams.md)。
 
 ARC 使用 `supported_content`，完整验证物理结构，通过旧/新 Store 或方法 3–9 实际解码，核对准确尺寸及必需 CRC-16/IBM。不跳过未知方法、可疑名称或不支持配置后宣称整包成功。头部 SHA 绑定用于冻结快照，不提供认证，详见 [ARC 契约](arc-streams.md)。
-
 
 BH 使用 `supported_content`，完整验证 `BH 05 07` 成员结构、方法 8 raw Deflate 结束、准确解码长度和必需 CRC-32。未知方法、固定字段错误、可疑名称和不支持配置仍保持可见，但会阻止整包检查成功，详见 [BH 契约](bh-containers.md)。
 

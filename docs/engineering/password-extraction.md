@@ -1,5 +1,7 @@
 # Archive passwords and encrypted-directory opening
 
+English | [简体中文](../zh-CN/engineering/password-extraction.md)
+
 This contract supplements [safe extraction](m3-extraction.md), defining passwords, authentication, and task interaction. Format and file-security logic remain independent of Qt; the password window submits user intent only. See [issue #11](https://github.com/xiaodaozhi/xdzip/issues/11) for actual progress and platform verification. Execution reports do not belong here.
 
 ## Capability and format boundaries

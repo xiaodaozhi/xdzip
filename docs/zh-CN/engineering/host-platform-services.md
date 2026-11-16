@@ -1,5 +1,7 @@
 # 格式工作进程的宿主日历与编码服务
 
+[English](../../engineering/host-platform-services.md) | 简体中文
+
 格式字段、密码兼容规则和校验由 Rust 处理。操作系统的历史时区、OEM/ANSI 代码页和本地 C 编码属于宿主环境，通过 `ReadSource` 的可选服务提供，不能由格式层根据文件名、HostOS 或当前 UTC 偏移猜测。服务不依赖 Qt，不授予路径访问或文件发布权限。
 
 ## 日历投影
@@ -27,5 +29,3 @@ Windows 的 [CharToOemBuffW](https://learn.microsoft.com/en-us/windows/win32/api
 所有切片只在同步调用期间借用，C++ 不保存指针。Rust 调用方负责秘密输入与输出的归零生命周期；C++ 的有界临时宽、窄缓冲在所有返回路径擦除。此保证不扩展为操作系统内部或全部历史内存副本已擦除。原语不记录密码，不把它放进进程参数或环境变量。
 
 Reader 在服务前检查取消。服务结果不生成解压输出额度，不改变已读、已解压或已写字节。失败保留已有的来源、取消与限额类别，不能误作密码错误；既定的密码/完整性歧义仅由格式层依据实际 verifier 状态决定。
-
-English: Archive interpretation, truncation and integrity remain in Rust. Borrowed host services provide date-specific local calendars and bounded operating-system encoding maps without Qt, path access or publication authority. Bare sources use deterministic UTC calendars and expose no optional code-page service. Product callbacks validate dimensions, terminators and result fields; conversion failures have defined results. CharToOemBuffW consumes all512 input wide units, including NUL padding; its temporary destination has2048 bytes after checking a maximum four-byte code-page expansion. Byte511 termination follows the complete OS conversion. RAR retains raw timestamps and modular compatibility before DOS projection, while 7z preserves its UTC display policy. Secret slices are borrowed synchronously, never retained or logged, and bounded temporary buffers have erasure lifetimes. These services neither grant decoded-output credit nor replace cancellation, source checks or format-specific password classification.

@@ -1,5 +1,7 @@
 # Split-volume reading and temporary opening
 
+English | [简体中文](../zh-CN/engineering/archive-opening.md)
+
 ## Split ZIP
 
 The read layer supports numbered continuous byte streams such as `name.zip.001`, `.002`, and PKZIP volumes such as `name.z01`, `.z02`, and final `name.zip`. Any volume may be used as the open entry point. Volumes must be in the same directory with consecutive names, at most 1,024 volumes; missing volumes, links, and special files are rejected. Extensions are used only to discover adjacent volume sets. The actual container is probed from source bytes and fully scanned by its backend.

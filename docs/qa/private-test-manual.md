@@ -1,5 +1,7 @@
 # On-demand desktop verification
 
+English | [简体中文](../zh-CN/qa/private-test-manual.md)
+
 Choose desktop verification for the current change; there is no requirement to complete a fixed three-platform manual acceptance form for every commit, merge or candidate. Prefer relevant automated tests, then operate the actual application and inspect actual windows or screenshots in available environments. When a device, system or desktop permission is unavailable, record unperformed scope and why. Do not present offscreen, synthetic-input or virtual-screen results as human or physical-device passes.
 
 First determine necessary scenarios under [acceptance scope, evidence and closure](README.md#验收范围证据和收口). Actual window inspection, screenshots, event assertions and recordings have different evidence boundaries and cannot impersonate one another; recording is not a default desktop-acceptance step. Stop once required scenarios are sufficiently verified and limitations recorded; do not add fixed manual matrices due to historical comments or executor preference. Scenarios explicitly required by the user or applicable specification must still be performed and cannot be skipped merely to shorten the process.

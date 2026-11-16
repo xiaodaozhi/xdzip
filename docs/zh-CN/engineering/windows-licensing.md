@@ -1,5 +1,7 @@
 # Windows 开发工具与运行库许可
 
+[English](../../engineering/windows-licensing.md) | 简体中文
+
 本文定义 Windows 构建和再分发的适用路径，与[原生运行库材料](native-runtime-materials.md)、[开发构建入口](developer-build.md)和[安装契约](installers-associations.md)共同使用。具体环境、验证提交、材料哈希和验收结论登记在 issue 与本地／CI 工件，本文不保存某台机器的许可证明。
 
 ## 免费 Community 路径与本地选择
@@ -35,5 +37,3 @@ CI 记录实际 VS 产品、版本、编译器相对位置、工具版本及 SDK
 展示或附带 SDK 原文不自动证明外部分发者和最终用户已同意 SDK 要求的保护条款，也不能代替发行者的有效许可与责任判断。当前安装器的接受页仅针对 CRT；如后续继续分发 SDK 图形 DLL，安装器和便携包应分别核对适用条款及接受方式，并在对应发行记录保存实际证据，历史版本见 [#135](https://github.com/xiaodaozhi/xdzip/issues/135)。
 
 安装器编译前核对 CRT 协议的固定哈希和双语说明，materials 附带同一份原始 CRT 文本和来源记录。历史包中的 SDK 原始条款位于 `Windows-SDK-graphics/sdk_license.rtf`。许可补正不改写旧公开资产或历史构建身份；修订包沿用[不可变发布协议](release-protocol.md)另发版本。
-
-English: xdzip uses Apache-2.0 for its original work. Eligible maintainers may acquire and accept Visual Studio Community 2022 for their own development environment under its individual or OSI open-source provisions; Community's Distributable Code rights remain subject to its redistribution requirements. A large local IDE installation is not a prerequisite for hosted builds. GitHub-hosted Windows jobs actually use Enterprise 2022, covered by the runner-images maintainer's published confirmation of GitHub's agreement with Microsoft and the applicable REDIST terms, not by relabeling it as Community. That confirmation does not cover self-hosted machines or tools copied off a hosted image. The current 2022 release toolchain matches Qt's supported SDK configuration; retaining 2019 for local development is a separate choice requiring its own licensing and compatibility checks. Tool identity and license eligibility are separate checks. Unmodified, pinned Microsoft CRT redistributables retain their own terms, outside the project's Apache-2.0 license. The installer presents the original CRT agreement and the bilingual component notice; portable users and downstream distributors must also comply with the applicable supplier terms. New packages omit the three SDK graphics DLLs. Supplying the SDK text alone does not establish the required recipient agreement or the distributor's eligibility and obligations for historical packages. For any future SDK redistribution, review the installer and portable acceptance paths separately and retain evidence in the release record; see [#135](https://github.com/xiaodaozhi/xdzip/issues/135) for the historical release. Corrected public packages require a new version.

@@ -1,6 +1,8 @@
 # Verification and evidence management
 
-This directory contains reusable acceptance requirements, test methods, fixture rules, review processes and blank templates. It does not contain acceptance results for specific versions, stage reports, screenshots, measurement JSON, runtime logs or handoff progress.
+English | [简体中文](../zh-CN/qa/README.md)
+
+These guides help developers choose appropriate checks, prepare test samples, and understand what the results establish.
 
 - [Product acceptance requirements](acceptance.md)
 - [Samples and fixtures](fixtures.md)

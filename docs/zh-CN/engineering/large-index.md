@@ -1,5 +1,7 @@
 # 大归档索引与按需浏览
 
+[English](../../engineering/large-index.md) | 简体中文
+
 普通单文件 ZIP/ZIP64 的源码能力上限为一百万条物理记录。其他格式和分卷路径保持各自现有的十万条准入；格式名称不表示所有组合都已扩大上限。目录、重复名称和待检查记录均计入物理数量，隐式导航目录只增加展示行。
 
 ## 扫描与存储
@@ -27,5 +29,3 @@ ZIP 逐条扫描复用普通 ZIP 解析器，先完成有界的整包旧编码�
 ## 验证
 
 `scripts/probe-large-index.py` 在 `build/` 生成含中文、重复名和嵌套目录的真实 ZIP64，再调用实际 `xdzip-m2-probe`。探针读完所有查询批次，并单独记录扫描、排序、检索、磁盘字节与平台可用的内存指标。样本生成器不在内存构造百万条文件名数组。范围、失败、取消、清理、过期页和实际所选文件输出按[验收要求](../qa/acceptance.md)执行，结果保留在 issue／本地或 CI 工件。
-
-English: Ordinary single-file ZIP/ZIP64 supports up to one million physical records. Other profiles retain their existing limits. Two streaming passes preserve the archive-wide filename decision. Metadata spills privately at 64 MiB or beyond 100,000 records; bounded external sorting retains only row tokens. Qt preserves the logical count with at most 1,024 cached rows. Pages and range selections bind the full query identity; extraction freezes selectors before confirmation and retains the independent 100,000-record task bound. Disk-index profiles reject whole-archive editing/checking and selected links. Private leased scratch storage is reclaimed on teardown and by bounded, identity-checked seven-day cleanup. Measurements are evidence for their actual machine and workload, not universal performance guarantees.

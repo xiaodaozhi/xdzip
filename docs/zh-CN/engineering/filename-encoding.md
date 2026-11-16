@@ -1,5 +1,7 @@
 # 文件名编码自适应契约
 
+[English](../../engineering/filename-encoding.md) | 简体中文
+
 ## 解析与身份
 
 解码在不依赖 Qt 的 Rust 格式层完成，不使用宿主系统代码页、界面语言、来源系统猜测、文件内容或网络服务。ZIP 的 raw_name 保留名称字段原始字节；TAR 保留 PAX/GNU 选择并按既有规则去掉前置 ./ 的原始名称。物理 EntryId 与名称无关。decoded_name 保存需要转码或补充编码声明的 UTF-8 拼写，name_encoding 保留解析来源，name_bytes 提供冻结的有效名称；display_name 只用于转义展示，不能作为输出路径。
@@ -16,8 +18,6 @@ TAR 普通头、GNU 长名称及显式 hdrcharset=BINARY 的 PAX path 使用相�
 规则依据为 [ZIP APPNOTE 6.3.10](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT)、[POSIX pax](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/pax.html)及 [WHATWG 编码标准](https://encoding.spec.whatwg.org/)。Unicode Path 的本地头可缺省，但若提供有效值，必须与冻结的有效名称一致；载荷仍校验原始名称、本地/中央头、CRC、大小、密码认证和流结束。
 
 CAB 保留原始名称字节和 UTF-8 属性。显式 UTF-8 严格验证，其余名称复用整包有界检测，不使用系统代码页。CAB 的反斜杠是格式目录分隔符，但仅在完整解码后规范化为正斜杠，不能误拆 Shift-JIS 多字节尾字节 0x5C。原始字节不变，有效路径仍经过相同安全与碰撞检查。ISO 非 Joliet 名称保留原始字节并使用相同有界解析，避免 Rock Ridge 名称经过宿主 OEM 转码。Joliet/UDF 使用处理器提供的 Unicode 名称并严格验证，不将有损替换字符视为原始名称。
-
-English: CAB retains raw name bytes and its explicit UTF-8 flag, otherwise using bounded archive-level legacy detection. CAB separators are normalized only after decoding, preserving Shift-JIS trail bytes. Non-Joliet ISO names retain raw bytes, avoiding host OEM conversion of Rock Ridge names. Joliet/UDF Unicode names are strictly validated. Every effective path remains subject to the shared output-safety and collision checks.
 
 ## 检测边界与资源
 
@@ -38,7 +38,5 @@ English: CAB retains raw name bytes and its explicit UTF-8 flag, otherwise using
 使用自有原始字节夹具及 Python 标准库独立编码的归档，覆盖未标记 UTF-8、GBK、四字节 GB18030、Big5、含 0x5C 的 Shift-JIS、韩文、俄文、ZIP CP437 和 Unicode Path。验证完整名称、原字节、目录/搜索/选择、预检、实际输出字节、临时打开、导出、普通包添加/移动、AES 和分卷；同时检查声明损坏、扩展优先级、路径拒绝、Unicode/大小写碰撞、取消和预算。
 
 scripts/check-filename-encoding.py 通过实际服务探针解压 Python 生成的 ZIP/TAR/TAR.GZ，另以 Python 独立读取 Rust 改写的归档，检查 UTF-8 标志/PAX、名称和内容。测试数据只来自源码常量，不使用用户包。具体结果与剩余人工验收记录于 issue 和 build/CI 工件，不在本契约登记通过状态。
-
-English: Filename resolution is host-independent and frozen in the Rust snapshot, separate from original name bytes and escaped display text. ZIP honors the UTF-8 flag first, then a version-1 Unicode Path extra bound to the raw name by CRC32, then unmarked UTF-8 when the whole unlabelled group is valid, otherwise bounded archive-level legacy detection with a CP437 fallback for the western ZIP default. TAR/GNU and BINARY PAX names use detection; ordinary PAX paths retain their UTF-8 requirement. All navigation, selection, extraction, temporary opening, export and ordinary updates consume the same resolved name and repeat path, Unicode/case, conflict and publication checks. Updates emit resolved names as UTF-8 without changing payloads or bypassing the ordinary-archive restriction. Sampling and allocations are bounded and cancellation remains effective. Detection is heuristic, cannot uniquely recover every short or mixed-encoding name, and does not repair already-mojibaked Unicode. No manual selector is provided. Damaged declarations and unsafe/unresolved names remain inspectable but cannot authorize output. If unresolved names exist, directory expansion is refused because their membership is uncertain; explicitly selected resolved files remain extractable. Native desktop acceptance remains separate from automated worker and format checks.
 
 LHA 保留目录与文件名的原始字段边界和目录内原始 `0xff` 分隔符，共享有界检测分别采样各完整字段。逐分量严格解码后，才解释解码所得的反斜杠并组合 `/`，原始字节边界禁止跨字段借用多字节字符。目录展开与输出使用同一有效名称，详见 [LHA 契约](lha-containers.md)。

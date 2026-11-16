@@ -1,5 +1,7 @@
 # 验收执行计划
 
+[English](../../qa/acceptance.md) | 简体中文
+
 ## 内置格式登记
 
 FORMAT-STREAM-READ：BZip2、LZMA Alone、Lzip 及 TAR 组合须以已知内容验证浏览、检查、解压，包含空成员、多成员和多块 BZip2。保留 7z 的完整压缩范围校验，单独验证成员源交还。检查内存准入、实际输出预算、途中取消、恢复时间戳后的源变化以及损坏文件不发布。强识别的 TAR 损坏不降级，LZMA 弱识别不能抢占有效 TAR 或 ZIP 自解压包。只读组合拒绝创建及重写且不输出，CLI 与 Qt 明确无内容校验和、压缩尺寸未知及方法名称。通过自动化验证登记候选、复用图标回执、欢迎标签换行和双语多字号布局。
@@ -21,8 +23,6 @@ TASK-PATH-SUMMARY：中英文、浅深色与 100%／125%／150% 字号下，在�
 | MSIX-SHELL | 当前包未登记现代菜单。未来实现时分别核验 Store、Developer、Enterprise、None 和查询失败，侧载不启用；Windows 11 Explorer 真实显示及 Windows 10 行为单独记录 |
 | MSIX-LIFECYCLE | 在实际目标系统验证安装、打开归档、拖放、工作进程、关联、更新和卸载，核对默认选择与用户数据；许可、商店认证及人工验收各自记录 |
 
-English: MSIX acceptance separates audited packaging and channel behavior from real installation, Explorer, licensing and Store certification. The current experimental package registers no modern context menu.
-
 ## 文件管理器操作，AC-04 / AC-06 / AC-07 / AC-08 / AC-12
 
 | 用例 | 操作与判定 |
@@ -36,12 +36,8 @@ English: MSIX acceptance separates audited packaging and channel behavior from r
 | FINDER-SYNC | 在实际 macOS 中启用 ad-hoc appex，包含主目录之外的自有临时目录，普通单选、归档单选、多选及混合选择分别核对 3/7/8/4 项动态动作；真实点击经过 relay 完成压缩与解压，核对输出字节、独立窗口及不自动打开目录；tag-only 交接和过期选择、URL/JSON 边界、缺失或错误令牌的拒绝、UUID 保持及回退能力分别回归 |
 | FINDER-INSTALL | 关闭与重新启用、语言切换和重复保存后菜单状态正确，未变化的扩展不重复登记断开连接；只撤销自有精确路径，旧副本不禁用新配置；原生 Service 面板仍能单独操作；嵌套 ad-hoc 严格校验及 entitlement 与允许列表一致，付费账号、App Groups、公证和其他 macOS 版本不得由本机结果代填 |
 
-English: Finder Sync acceptance covers real dynamic 3/7/8/4-action menus, relay execution and output bytes, independent windows, tag-only/stale-selection handling, bounded requests, missing/incorrect token rejection and preserved identities. Exercise disable/re-enable, language and idempotent registration, rollback, owned removal and the Service fallback. Record actual macOS and signing scope separately from paid signing, notarization or other OS versions.
-
 
 实际执行记录在对应 issue 与本地或 CI 工件。原生自动化、人工桌面操作及缺少的平台环境分别记录，不互相代填。
-
-English: Shell-action acceptance covers windowless startup and IPC admission, creation and extraction outputs, smart and exclusive layouts, multipart deduplication, failure continuation, cancellation and joined shutdown, owned installation lifecycle and native visual/accessibility behavior. Record actual platform coverage and distinguish automation from manual desktop checks.
 
 ## macOS 候选来源证据
 
@@ -49,19 +45,13 @@ English: Shell-action acceptance covers windowless startup and IPC admission, cr
 | --- | --- |
 | QT-NETWORK-SECURITY | 固定源码、五份官方补丁和构建器身份，保留原 Network 功能与导出、对原 QtCore 的导入。实际加载候选库，超限状态行、未终止响应头、分片和 CONNECT 在夹具取消前拒绝，正常响应、合法长头、各行终止形式、受信测试 CA 与 CONNECT TLS 可用，不受信证书仍拒绝；执行上游认证坏输入与正常向量。失败恢复原 SDK；缺失、陈旧回执、替换库或 SDK 工具、来源补丁缺失及仅文件名归属均不得进入产品/发行。记录实际平台，macOS 14 无环境时继续未验证，不由其他系统代填 |
 
-English: QT-NETWORK-SECURITY binds source, patches, features and ABI to the actual library. Bounded HTTP/CONNECT/TLS and upstream authentication controls verify early rejection and legitimate behavior. Failed preparation restores the SDK, and changed/missing receipts, tools, patches or filename-only provenance prevent delivery. Platform coverage remains explicit; other macOS versions do not prove macOS 14 execution.
-
 | 场景 | 操作与判定 |
 | --- | --- |
 | RELEASE-MAC-EVIDENCE | 专用 Release 在部署应用仍存在时实际运行 Cocoa／Metal 资源探针，并核对审计、版本和源码提交；链接输入绑定对应编译应用，复用既有 Mach-O 比较器核对节字节、地址、标志、零填充大小、UUID及归一化导入版本。签名／加载命令布局和LINKEDIT保留独立范围。负向检查拒绝变化节／UUID／导入、截断／越界、错误架构及混合资源／链接／SDK 身份；检查 SDK 对应、差异分析、来源／文件 SBOM 和总回执确实进入同包材料。原始 gaps／incomplete、参考机预算和真人视觉分别保留，自动结果不代填人工通过 |
 
-English: RELEASE-MAC-EVIDENCE runs a real Cocoa/Metal resource probe against the deployed candidate, reuses exact section/address/flag, zero-fill, UUID and normalized import comparison to bind compiled link inputs, rejects changed or mixed/boundedness-invalid evidence, and checks the same-package SDK, difference and SBOM records. Signing/load-command layout and LINKEDIT, original gaps, reference budgets and human visual acceptance remain separate.
-
 | 场景 | 操作与判定 |
 | --- | --- |
 | RELEASE-VALIDATION-UNSIGNED | 本地候选汇总的 `--validation-only` 模式不接收更新签名密钥或 key ID；即使调用环境注入自有测试密钥，也不生成清单签名或 appcast，并拒绝残留签名附件及与强制签名冲突的参数。该模式不属于 Release 工作流，正式发行路径只使用单次手动运行并强制验证完整更新签名 |
-
-English: RELEASE-VALIDATION-UNSIGNED applies only to local `--validation-only` candidate assembly. It prevents that mode from receiving signing inputs or producing update signatures, including with injected fixture keys, and rejects stale signing attachments and contradictory flags. The Release workflow has no validation-only dispatch; production signing and upgrade acceptance remain separate.
 
 ## 标题区、任务历史与拖动提示
 
@@ -94,8 +84,8 @@ English: RELEASE-VALIDATION-UNSIGNED applies only to local `--validation-only` c
 - 检查核心夹具：稳定/alpha/beta/rc/dev、同版本和降级、build 不递增、分页乱序、缺包、错误平台/架构/最低系统、签名或候选身份不一致。无签名或未知信任根只提供手动入口。
 - 网络检查离线、TLS、超时、限流、受控重定向、截断、空间不足、取消、重复点击及 ETag；任何失败不显示已是最新或启动安装。部署后清除 SDK 搜索路径，验证真实 HTTPS。
 - 在隔离三平台用独立测试密钥从旧版升级到新版，核对任务/密码等待、退出取消、安装中再启动、授权取消、失败、恢复和单实例重启；设置和默认关联须保留。Windows 交互安装保留许可确认，Linux 未配置 dpkg 不报成功或回滚，Mac 必须 Apple Silicon 原生执行完整 Sparkle 归档验证、替换和重启。
-- 密码与更新等待并存时，通过真实主程序的系统 Quit 路由进入退出确认，点击返回后原任务与请求令牌不变，取消并退出后所有 Rust join 完成且没有安装交接。另核验文件选择器和不相关模态窗口仍阻挡退出，不能以直接调用会话接口代替桌面入口回归。While password and update waiting coexist, exercise the real main program's system Quit route and Return/Cancel buttons. Preserve the task/token on Return; require all joins and no install handoff on cancellation. File selectors and unrelated modals remain blocking; a direct session call does not cover the desktop route.
-- macOS 密码和冲突任务提示期间核对应用菜单的退出项及 Command-Q，通过退出确认返回后任务和提示身份不变；不相关模态窗口及文件选择器仍阻挡退出，期间触发的退出不能在模态关闭后延迟执行。On macOS, check the application-menu Quit item and Command-Q during password and conflict task prompts. Return preserves the task and prompt identity; unrelated modals and file selectors still block Quit, including after they close.
+- 密码与更新等待并存时，通过真实主程序的系统 Quit 路由进入退出确认，点击返回后原任务与请求令牌不变，取消并退出后所有 Rust join 完成且没有安装交接。另核验文件选择器和不相关模态窗口仍阻挡退出，不能以直接调用会话接口代替桌面入口回归。
+- macOS 密码和冲突任务提示期间核对应用菜单的退出项及 Command-Q，通过退出确认返回后任务和提示身份不变；不相关模态窗口及文件选择器仍阻挡退出，期间触发的退出不能在模态关闭后延迟执行。
 - 关于页覆盖全部状态，关闭重开保持任务，取消显式执行；检查中英文、浅深色、三档字号和窄屏滚动，复用操作控件。生产密钥和真实平台未验证项独立列出，普通 CI 不部署/签名/上传 Mac 应用包。
 - macOS 手动回退分别覆盖安装身份不合格、无 appcast、无效网络配置及无可交接会话，显示实际首先未满足的条件并保留发布页和下载位置；双语、浅深色及三档字号下说明完整可读。下载完成不得显示为安装完成。
 
@@ -165,8 +155,6 @@ T01～T18 的权威映射见 design/requirements-traceability.md。以下是可�
 
 记录六个数据行的自然 hook、Quit 实际处理前后、延迟回调后、当前模态、任务与提示 token、活动任务数及 join 结果。受控同步通知是顺序回归，不能证明历史 macOS 普通 posted Quit 的唯一先后关系。Qt 显示新窗口可能移除已排队的 Quit，不能把未送达事件改报为产品已处理或降低投递断言。窗口尺寸与双语多字号按窗口清单检查；原生视觉按需检查并记录实际结果。
 
-English: These are repeatable acceptance requirements, not execution results. Use real AES password waiting and the normal application Quit route. Cover a ready prompt, synchronous Quit while a naturally created prompt has not yet been presented, another active session and window, a genuinely posted Quit after presentation, and Wait → Quit → Return → Quit → Cancel. The quit decision must remain modal after queued callbacks; Return/Wait preserve the same token, and cancellation joins every runtime without update handoff. Preserve actual hook/delivery/modal/join records. A controlled notification order does not establish an earlier macOS event order. A dropped posted event is not a handled Quit. Native visuals and accessibility remain separate checks.
-
 ## 文件输入与 macOS ACL 回归，AC-07 / AC-14 / AC-15
 
 | 用例 | 输入与操作 | 通过标准 |
@@ -179,7 +167,6 @@ English: These are repeatable acceptance requirements, not execution results. Us
 | MAC-ACL-04 | 授权后给目标父链或已有输出增加危险 ACL，再继续暂存或提交 | 复核拒绝不再安全的对象；POSIX mode、所有权、单硬链接及 no-follow 限制保持有效 |
 
 ACL 夹具只修改测试自行创建的对象，不清除或更改真实用户目录权限。非阻塞分类打开只解决特殊对象打开边界，普通文件的缓慢 I/O、原子内容快照和同账户恶意并发不由这些用例证明。原生平台结果和剩余项记录于对应 issue 与本地／CI 工件，不能以跨平台编译、mock 或独立进程超时替代实际安全结果。
-
 
 ## 操作与选择回归清单
 
@@ -198,11 +185,11 @@ ACL 夹具只修改测试自行创建的对象，不清除或更改真实用户�
 | UI-REV-09 | 完成多个任务，从底栏菜单重开 | 历史数准确，活动计数仍为 0，状态标记在右，菜单正常密度且可键盘导航 |
 | UI-REV-10 | 清空选择，打开全部解压下拉 | 所选及预检禁用，不出现多余选择提示行 |
 | UI-REV-11 | HTML 100%／125%，Qt DPR 1／1.25／2，长路径及辅助字号 | 逻辑尺寸不随 DPR 改变，正文与菜单比例正确，footer 可达 |
-| UI-REV-12 | 目录树根入口、普通父目录与叶子目录，右键、Menu 键、Shift+F10，双语、主题与三档字号 | 根入口的“收起子目录”禁用，所有不可用菜单项均无可见 hint、原因副行或 tooltip；辅助功能仍能读取准确的根入口及叶子原因。父目录可展开和收起，禁用操作不改变选择或路径。主标签在菜单项局部坐标中的中心偏差不超过 0.5 逻辑像素，祖先平移不得改变测量结果；不能忽略局部链上的缩放、旋转或自定义变换。覆盖关闭时切换字号后重开及已打开时切换字号的首个观测渲染，核对当前文字高度和各条件槽位。Disabled menu actions show no hint, reason subline or tooltip; accessible descriptions retain accurate root and leaf reasons, while parent toggle and selection/navigation behavior remain intact. Measure label centering within 0.5 logical pixels in the command's local coordinates, independently of ancestor translation; reject unhandled scale, rotation or custom transforms. Check current text height and conditional slots at the first observed rendering after closed and open font changes. |
-| UI-REV-13 | HTML 共享菜单的延迟滚动事件 | 通过真实右键输入在菜单打开前改变非祖先容器位置，延迟送达但位置未再变化的真实滚动事件不关闭菜单；打开后再次改变位置仍关闭。原双语三档字号及三种输入的 18 组目录组合保持通过。A trusted scroll queued by the preceding real context-menu input preserves the menu when the non-ancestor position is unchanged since opening; a subsequent position change closes it. Retain all 18 directory input, language and text-scale combinations. |
-| UI-REV-14 | 中英文、浅深色和三档字号下启动并打开创建窗口 | 选项标签可换行，四个格式文字不截断，窗口与 footer 可达；初始化和展示均不产生 Qt Quick 布局递归重排警告。In both languages, themes and all three text scales, labels wrap, format captions fit and the footer remains reachable, without a recursive layout warning during creation or presentation. |
-| UI-REV-15 | 在主窗口搜索、普通和密码输入框及可编辑下拉框中用鼠标、键盘选择与替换文字，切换浅深色 | 选区文字与背景均可读，密码模式和原有编辑行为保持有效。Selection foreground and background remain readable in both themes; password mode and editing behavior remain intact. |
-| UI-REV-16 | 单个空闲起始页、加载或错误状态、单归档及多个标签，浅深色和三档字号 | 唯一普通起始页不显示关闭按钮且按钮不可聚焦；其他情况按原规则显示，鼠标、键盘和辅助功能仍可关闭。关闭按钮悬停及按下背景为圆形，主窗口和菜单比例不变。The sole ordinary idle welcome tab hides its close button and removes it from focus; loading, errors, archives and multiple tabs preserve existing behavior. Hover and pressed backgrounds are circular. |
+| UI-REV-12 | 目录树根入口、普通父目录与叶子目录，右键、Menu 键、Shift+F10，双语、主题与三档字号 | 根入口的“收起子目录”禁用，所有不可用菜单项均无可见 hint、原因副行或 tooltip；辅助功能仍能读取准确的根入口及叶子原因。父目录可展开和收起，禁用操作不改变选择或路径。主标签在菜单项局部坐标中的中心偏差不超过 0.5 逻辑像素，祖先平移不得改变测量结果；不能忽略局部链上的缩放、旋转或自定义变换。覆盖关闭时切换字号后重开及已打开时切换字号的首个观测渲染，核对当前文字高度和各条件槽位。 |
+| UI-REV-13 | HTML 共享菜单的延迟滚动事件 | 通过真实右键输入在菜单打开前改变非祖先容器位置，延迟送达但位置未再变化的真实滚动事件不关闭菜单；打开后再次改变位置仍关闭。原双语三档字号及三种输入的 18 组目录组合保持通过。 |
+| UI-REV-14 | 中英文、浅深色和三档字号下启动并打开创建窗口 | 选项标签可换行，四个格式文字不截断，窗口与 footer 可达；初始化和展示均不产生 Qt Quick 布局递归重排警告。 |
+| UI-REV-15 | 在主窗口搜索、普通和密码输入框及可编辑下拉框中用鼠标、键盘选择与替换文字，切换浅深色 | 选区文字与背景均可读，密码模式和原有编辑行为保持有效。 |
+| UI-REV-16 | 单个空闲起始页、加载或错误状态、单归档及多个标签，浅深色和三档字号 | 唯一普通起始页不显示关闭按钮且按钮不可聚焦；其他情况按原规则显示，鼠标、键盘和辅助功能仍可关闭。关闭按钮悬停及按下背景为圆形，主窗口和菜单比例不变。 |
 
 实现回归位于 tst_operationrevisions.qml、browser_test.cpp 和共享控件检查脚本；高保真与 HTML 修订入口见 design/hifi/operation-revisions.html。
 
@@ -232,7 +219,7 @@ ACL 夹具只修改测试自行创建的对象，不清除或更改真实用户�
 | W01-04 | 拖入多个、目录、网络 URL、不支持扩展名或损坏 ZIP | 输入形态拒绝或显示真实核心错误，无假成功 |
 | W01-05 | 浅深色，DPR 1 / 1.25 / 2，最小窗口，100%／125%／150% 字号 | 卡片与共享菜单比例正确，入口可键盘访问，正文可滚动 |
 | W01-06 | 运行任务后关闭归档，再从欢迎页任务菜单重开 | 历史数量与真实状态保留，欢迎页不取消后台任务 |
-| W01-09 | 打开失败或取消后重试，关闭含后台任务的窗口并再次打开同一归档 | 可重用空闲起始页；仅回收同窗内未使用的自动欢迎页，手动页面、其他窗口、对话框、密码提示和任务身份保留。Reuse an idle welcome page after failure or cancellation. Reopening a task-retained archive retires only an untouched automatic welcome in its window, preserving user pages, other windows, dialogs, prompts and task identity. |
+| W01-09 | 打开失败或取消后重试，关闭含后台任务的窗口并再次打开同一归档 | 可重用空闲起始页；仅回收同窗内未使用的自动欢迎页，手动页面、其他窗口、对话框、密码提示和任务身份保留。 |
 
 自动化记录只写入 build/review/welcome/ 或 CI 工件；原生拖放、系统文件选择器取消、读屏、输入法和平台窗口外观按变更需要选择桌面检查，未执行时记录限制，不以离屏截图标记通过。
 
@@ -259,7 +246,7 @@ W01-07，欢迎页与打开归档后的标题栏、标签及外观按钮的位�
 - 原生系统主题、键盘、读屏及真实桌面外观按需检查；自动化与设计稿不能冒充未执行的桌面检查。
 
 - 设置下拉框在 100%、125%、150% 下右对齐，宽度覆盖完整选项文字与勾选列，至少等于按钮宽，超长项受窗口与最大宽度约束。
-- 双语、浅深色和三档字号下，密度、文字大小、语言与打开方式四个下拉框等高，文字及指示器不裁切。All four settings selectors have equal height with unclipped text and indicators in both languages and themes at every supported text scale.
+- 双语、浅深色和三档字号下，密度、文字大小、语言与打开方式四个下拉框等高，文字及指示器不裁切。
 - footer 在 150% 及历史 200% 布局验证中按钮保持同一行，提示可独立换行；旧 200% 设置迁移为 150%。
 - macOS 本地化声明和实际构建包均检查，中文系统下原生选择器使用系统语言，应用语言切换不写入系统偏好。按需检查真实原生对话框外观并登记实际结果。
 
@@ -331,11 +318,7 @@ W01-07，欢迎页与打开归档后的标题栏、标签及外观按钮的位�
 
 设置定位回归将指针置于各可用显示器的右下角，使用无 owner 的真实设置窗口，分别打开及重新打开外观和关于页。中英文、浅深色及 100%／125%／150% 字号下，完整原生边框须在实际 QScreen::availableGeometry 内并居中；已有主窗口不得被恢复。原生几何结果与实际托盘菜单操作分别记录。
 
-English: With the pointer at each available display's bottom-right corner, open and reopen ownerless Settings and About in both languages, both themes and all three text scales. The complete native frame must fit and center within QScreen::availableGeometry, without restoring the main window. Record native geometry separately from actual tray-menu interaction.
-
 Windows 托盘图标的白色填充与深色描边须在深色、浅色及有色背景上均可辨认，覆盖现有全部位图尺寸；修改应用主题、刷新及关闭再启用托盘后保持相同对比度，不依赖注册表主题读取成功。自动像素对照须能拒绝深色背景上的旧纯黑图标，实际系统通知区观察单独记录。
-
-English: Verify the Windows tray glyph's white fill and dark outline on light, dark and colored backgrounds at every supplied raster size, across application theme changes, refreshes and tray disable/re-enable. Registry theme availability must not determine legibility. Pixel checks must reject the former black-only glyph on dark backgrounds; record actual notification-area observation separately.
 
 自定义单选控件须使用 QAccessibleActionInterface 实际执行 press 和 toggle，覆盖主题、创建格式、重复激活和禁用项；检查选择模型、真实主题、代理、格式扩展名及所有选中状态一致，设置变更成功后持久化。只测试鼠标点击或只检查 Accessible.checked 不算该项通过。
 
@@ -344,8 +327,6 @@ English: Verify the Windows tray glyph's white fill and dark outline on light, d
 按[桌面集成契约](../ux/desktop-integration.md)验证 macOS 顶部菜单角色与标准快捷键，文本焦点编辑与文件选择命令分离，最近记录隐私，托盘默认开关与即时生效，关闭后驻留及任务详情恢复，退出取消／等待／清理，文件关联与 Dock 恢复，无托盘及托盘消失回退。自动测试不代替真实系统栏、系统缩放、读屏与 Linux 桌面验证，结果只记录在 build/ 或 CI 工件。
 
 从各平台托盘打开设置或关于时，核对已有主窗口保持隐藏、保持最小化或不被创建；无任务退出时不显示主窗口，有任务时只显示必要的退出确认。Ubuntu X11 主窗口核对应用内标题栏、正常状态四角圆角及平滑边缘、窗口拖动和八方向缩放，以及最大化／还原后的边框和控件；原生视觉检查与自动布局测试分别记录。
-
-English: Tray Settings, About and Exit must not create or restore the main window; active tasks still require the shared quit decision. Check the Ubuntu X11 integrated titlebar, all four smooth normal-state corners, system move and eight resize directions, and maximize/restore. Record native visual checks separately from automated layout tests.
 
 ## 只读压缩包检查
 
@@ -377,8 +358,6 @@ English: Tray Settings, About and Exit must not create or restore the main windo
 - macOS 在无现成第三方类型声明的隔离环境核对 RAR、CAB、UDF 的文件类型解析与候选；CAB 同时覆盖系统及兼容类型，设置查询使用实际识别的受支持类型。已有默认应用在注册期间保持，原先无处理器的类型允许系统临时解析到新候选，所有测试类型注销后恢复原状态。
 - macOS 在保留旧版无效 UDF 类型声明时，核对真实 `.udf` 文件的打开方式、None／Alternate 候选边界及设置状态；另核对既有第三方默认处理器和用户关联偏好保持不变，注销后恢复原有解析。
 - 浏览器／离屏结果与 Windows Explorer、Finder 的原生显示和人工操作分别登记，不因关联命令或 CI 通过宣称视觉验收通过。
-
-English: Verify each Windows format handler, document icon, real archive dispatch and historical rollback while preserving protected choices and foreign candidates. Check one branded xdzip application candidate, its embedded launcher icon/identity, owned legacy recommendation cleanup and no automatic default takeover; separately inspect actual Settings and Explorer UI. Verify bundled macOS ICNS, Viewer ranks and native handler candidates; compressed TAR may share one UTI. On an isolated Mac, verify RAR, CAB and UDF type resolution and candidates, both supported CAB identifiers, preservation of existing defaults, and restoration after cleanup. With a legacy invalid UDF declaration present, check actual `.udf` files, None and Alternate candidates, and the Settings state; preserve any third-party default and user preferences. If no handler existed, the system may temporarily resolve the new candidate. Linux keeps system MIME icons. Native shell visuals and human acceptance remain separate from automated checks.
 
 ## 会话与预发布验收
 
@@ -429,7 +408,6 @@ English: Verify each Windows format handler, document icon, real archive dispatc
 | NATIVE-13 | 旧密码的 OS 字符投影、现代时间本地日历及辅助工作计量，经实际平台回调和真实 worker | Rust 保留格式决策与预算，薄 C++ 仅提供 OS 原语；秘密缓冲清除，类型化错误不丢失，辅助工作不计作解码产量；各平台实际证据独立登记 |
 | NATIVE-14 | 从跨至少三卷文件的各 CAB 卷打开，其中逻辑前卷指向文件起始卷；核对独立已知原文，另试缺卷、错误来源、截断及取消 | 正向卷序和所有文件片段完整核验，非紧邻前卷必须属于实际持续文件的起始卷；异常不发布部分索引或文件，既有紧邻前卷样例继续支持 |
 
-
 ## CLI，AC-04 / AC-05 / AC-06 / AC-07 / AC-11 / AC-12 / AC-14
 
 | 场景 | 操作与判定 |
@@ -440,8 +418,6 @@ English: Verify each Windows format handler, document icon, real archive dispatc
 | CLI-INSTALL | 自有临时位置安装、稳定启动器转发、已有入口拒绝、已改入口保护及登记移除；实际用户 PATH、系统安装授权和真人终端操作分别记录 |
 | CLI-UPDATE | 私有签名和原生可执行夹具验证清单分离、篡改、离线／限流／超时错误、摘要和长度、暂存、自检、原子指针、并发互斥及恢复；模拟传输不写成实际 HTTPS 验收 |
 | CLI-DESKTOP | 同用户有界 IPC 不变为文件打开，关闭时拒绝；原有桌面更新复验候选和全部任务屏障，CLI 占用不被安装破坏，交接不冒称已安装；无 GUI 身份查询不消费回执；Mac 普通上下文仅位于 Resources，重复构建无旧标记残留，实际原生签名及固定 GUI 上下文解析通过 |
-
-English: CLI acceptance covers real headless interfaces and archive bytes, cancellation/cleanup, owned installation and launch forwarding, private signed/native update transactions and failure recovery, plus bounded desktop IPC and task barriers. Mock transport is not real HTTPS evidence, handoff is not installation, and automated/native/manual outcomes remain distinct.
 
 
 ## 大索引与主动预览
@@ -457,8 +433,6 @@ English: CLI acceptance covers real headless interfaces and archive bytes, cance
 | PREVIEW-LIFETIME | 密码缺失、错误、正确及认证损坏，取消和关闭密码窗口、更换条目、隐藏页面和关闭会话清空内容；迟到结果不能恢复内容，事件及 Qt mailbox 实际计入内容字节 |
 | PREVIEW-VISUAL | 主窗口与独立属性查看器的中英文、浅深色、100%／125%／150% 字号，文本、图片、错误和取消动作可读可达；保留主窗口和菜单比例，实际原生观察与自动功能检查分开记录 |
 
-English: Large-index acceptance covers real million-record ZIP64 data, complete logical results with a 1,024-row Qt cache, full query identities, frozen cross-page selection, actual safe selected-file output and private leased cleanup. Explicit preview acceptance covers authenticated plain text, bounded raster formats, a static resource-free SVG subset (including joined XML/CDATA style text) and macOS-only HEIC/HEIF, resource failures, password/cancel/close/source-change lifecycles, real mailbox accounting and bilingual multi-size native visual checks. Logs and measurements remain artifacts rather than repository reports.
-
 ## 外部 SDK 只读试验
 
 按 [SDK 试验契约](../engineering/sdk-trial.md)执行 `scripts/sdk-trial.py test`，独立于产品第三方启用与发行。
@@ -471,8 +445,6 @@ English: Large-index acceptance covers real million-record ZIP64 data, complete 
 | SDK-PACKAGE | 未知权限、路径逃逸与摘要失配拒绝；实际执行副本被验证并私有保存，环境与继承句柄受限，不能绕过沙箱或改用 shell |
 | SDK-KERNEL | 对自有读／写文件、回环监听器和 self-exec 先作正向对照，再验证真实内核拒绝；绑定实际平台、策略与二进制身份，资源与响应监督有效，未实现平台执行失败且产品第三方保持禁用 |
 
-English: The standalone SDK trial requires independent wire/content interoperability, bounded adversarial decoding and I/O, source/target protection and cleanup across abnormal completion/cancellation, strict verified packages, and real kernel read/write/network/descendant denial with positive controls. Unimplemented platforms must refuse execution. Evidence never implies product plugin enablement or release approval.
-
 ### 图片预览扩展
 
 - 实际解码 PNG/JPEG/JFIF、GIF 首帧、BMP、ICO/CUR、WebP、TIFF 第一页、TGA、ICNS 和 SVG，核对输出像素与比例；macOS 使用系统能力验证 HEIC／HEIF，其他平台验证拒绝，AVIF 等未授权格式继续拒绝。
@@ -480,8 +452,6 @@ English: The standalone SDK trial requires independent wire/content interoperabi
 - SVG 覆盖普通图形、样式、内部 use／渐变、文本与 metadata，拒绝文件／网络／相对引用、CSS import／转义、嵌入图像、实体、脚本、事件、动画、外来元素及深度／元素超限。
 - 对实际私有进程验证硬时限、取消、异常退出、超长／尾随／尺寸不符响应。通过完整归档、Rust 准入、桥接、提供器到 QML 的新增格式回归，并继续核对密码与选择失效清理。
 - 默认工具链准备能为既有 SDK 补装 qtimageformats，doctor 提前发现缺失插件。构建后和 Windows／Linux 部署后运行实际 helper 的格式与最小解码检查；源码、通知、运行库归属及打包交接匹配新增 Qt 模块。布局未改时复用有效比例证据，实际新增图片仍须观察显示。
-
-English: Expanded previews require actual format/first-frame/first-page decoding, alpha/orientation and phone-size samples, resource-free static SVG, macOS system HEIF and refusal elsewhere. Validate bounded worker replies, deadlines, cancellation, abnormal exit and real archive-to-QML delivery. Missing plugins must fail before heavy builds; deployed Windows/Linux workers must prove their own plugin closure. Reuse unaffected layout evidence while observing newly rendered images.
 
 `FORMAT-XZ-ZIPX`：XZ 验证声明的各类校验、规范尺寸、支持的过滤链、实际块与索引一致、流尾、填充、串联、取消、有界输入输出和内存、失败后不可继续。真实 LZMA2 写入器须在每个可选级别经独立读取验证，包括多块。XZ/TXZ 及支持的 ZIPX 方法须通过 runtime、CLI、Qt 的浏览、检查、提取、精确记录身份和输出保护检查。自动核对分方法拒绝、LZMA EOS 标志、只读修改边界、可选校验说明及双语多字号布局。
 

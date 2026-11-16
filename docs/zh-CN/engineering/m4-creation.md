@@ -1,6 +1,8 @@
-# WP-10 创建 ZIP 实现契约
+# ZIP 创建实现契约
 
-本工作包实现从明确选择的文件与目录创建新 ZIP；默认 2-正常压缩，使用 Deflate 6；支持 Store 与 Deflate 1／6／9、WinZip AES-256 内容加密和编号分卷。TAR/GZIP 的扩展见 [WP-11](m4-tar-gzip.md)，AES-256 读取见[密码解压](password-extraction.md)；分卷读取见[分卷契约](archive-opening.md)，普通单文件归档的显式添加使用[文件拖放与修改契约](archive-transfers.md)，不复用新建归档的源保护例外。输入授权、暂存、校验、重名决策和最终保存由宿主负责，格式层只接收条目、可读输入与可写输出。
+[English](../../engineering/m4-creation.md) | 简体中文
+
+从明确选择的文件与目录创建新 ZIP；默认 2-正常压缩，使用 Deflate 6；支持 Store 与 Deflate 1／6／9、WinZip AES-256 内容加密和编号分卷。TAR/GZIP 的创建与解压见[格式说明](m4-tar-gzip.md)，AES-256 读取见[密码解压](password-extraction.md)；分卷读取见[分卷契约](archive-opening.md)，普通单文件归档的显式添加使用[文件拖放与修改契约](archive-transfers.md)，不复用新建归档的源保护例外。输入授权、暂存、校验、重名决策和最终保存由宿主负责，格式层只接收条目、可读输入与可写输出。
 
 ## 输入树与预算
 
@@ -21,8 +23,6 @@
 仅从本次归档输入中排除，不删除或修改主机原文件，也不清理原归档的既有记录。因过滤元数据才变空的目录及其空祖先不写入；真正的空目录和零字节普通文件继续保留。过滤后没有有效条目时，在编码与重名提示前以 `empty_input` 失败，现有结果窗口显示“排除 macOS 元数据后，没有可压缩的文件或文件夹。”，不发布新包、不修改已有归档。选择摘要仍是有界元数据预览，最终有效内容由后台任务扫描决定，不在 GUI 递归扫描。
 
 冻结与保存前复核使用同一过滤策略。元数据的内容及存在性变化不使有效输入失败，普通条目及被裁剪目录中的普通子项变化仍触发来源变化。扫描预算同时约束最终被裁剪的普通目录，不能借过滤绕过条目和名称预算。解压、临时打开、包内移动和 macOS 文件承诺发布不应用新增输入过滤；普通 `InputTree::scan` 保留所有内容。
-
-English: Creation and addition use the same Rust input policy on every host platform. Exact `.DS_Store` regular files and `__MACOSX`/`_MACOSX` directory subtrees are excluded at every depth, including selected roots. Matching is case-sensitive and does not cover `._*` or other hidden files. Host files and existing archive records are preserved. Directories made empty solely by filtering are pruned recursively; genuinely empty directories and zero-byte files remain valid. When no entries remain, `empty_input` fails before encoding or conflict handling, with a translated explanation and no archive publication or replacement. Source validation uses the same filtered membership while retaining ordinary source-change and scan-budget checks. Extraction and external publication keep all selected archive content.
 
 ## 格式接口与校验
 
@@ -49,8 +49,6 @@ macOS 创建输出复用 [M3 扩展 ACL 边界](m3-extraction.md#macos-扩展-ac
 选择普通文件后，在已有 Rust 元数据工作线程读取当前文件长度，GUI 不读取磁盘或递归目录。InspectInputs 最多 256 路径，返回顺序固定、大小以十进制字节字符串桥接；symlink_metadata 不跟随所选叶链接。摘要使用十进制 MB；零字节是已知大小，目录与失败为未知，不把未知写成零。超过 256 项保留未检查说明，实际创建仍采用原有创建预算。快速编辑合并最新路径集合，过期结果不覆盖新选择；目标检查优先，普通查询按已有取消机制执行。摘要不是预检授权，输入树在任务开始后重新建立。
 
 目标路径检查和输入摘要属于后台准备，不改变添加、移除输入控件的可用外观，也不向起始页发布检查提示。检查期间继续串行化实际请求；创建按钮仅在当前路径的创建检查通过后可用。解压检查使用独立状态，不能以相同路径的创建检查代替，详见[解压契约](m3-extraction.md)。
-
-English: Target checks and input summaries are background preparation: they do not disable the input actions or publish checking text to the welcome page. Requests remain serialized, and creation is enabled only for its own current validated target. Extraction keeps separate validation state and actual writes recheck authority.
 
 六类操作窗口共用 footer 按钮；字段、正文动作、圆形移除与分段组选项复用对应角色组件。外观与字号生成自 layout-scale.json，不由窗口覆盖。真实摘要、控件量测及截图按[验证方法](../qa/README.md)保存到 build/ 或 CI 工件。
 

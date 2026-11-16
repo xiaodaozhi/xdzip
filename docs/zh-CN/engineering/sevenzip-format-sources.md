@@ -1,5 +1,7 @@
 # 7z 格式来源与独立实现依据
 
+[English](../../engineering/sevenzip-format-sources.md) | 简体中文
+
 本文件记录可复用的来源和实现边界。迁移验收与剩余能力在[任务 #50](https://github.com/xiaodaozhi/xdzip/issues/50)维护，固定 Rust 路由及官方产品依赖退出不自动构成跨平台、人工或发行验收。通用替代规则见[自研契约](independent-rust-codecs.md)。
 
 ## 规范与参考身份
@@ -36,5 +38,3 @@ LZMA 位流另参考 Igor Pavlov 2015-06-14 的[官方规格包](https://www.7-z
 历史兼容宽容必须逐项确认。例如 BZip2 的 7z 节点可接受最终字节的非零未使用位，以及块末四个重复字节恰无额外计数字节，但仍需正确 CRC、声明大小及完整流结束。额外尾字节和拼接流不能据此放行。末字节位与额外字节不能混为一种填充。
 
 PPMd7 区分外层已知长度与未知长度的结束 profile。7z 已知长度节点在精确输出后核对 range 终态和 packed 范围，不额外消费 END 符号；未知长度的共享 reader 要求 END。格式规定的模型容量重启与宿主内存准入是两回事，内存不足不能触发伪造的格式重启。独立对照输入包含固定官方 C 编码器产生的容量重启流，生成器和原始参考源码仅作为本地测试工具，不进入生产依赖。
-
-English: The implementation uses the pinned official 7z grammar and LZMA specification, supplemented by code-free factual handoffs from a designated reference analyst. Independent Rust implementers do not read or translate the corresponding reference implementations. C files declaring public domain and LGPL C++ wrappers retain distinct provenance; no strict clean-room or legal-clearance claim is made. Generic cryptographic primitives remain admitted dependencies, while container and compression logic is original. Independent known-byte interoperability, exact termination, corruption, resource, host and platform checks remain separate migration gates.

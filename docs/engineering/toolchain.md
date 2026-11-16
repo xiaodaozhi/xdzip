@@ -1,5 +1,7 @@
 # Toolchain and platform freeze
 
+English | [简体中文](../zh-CN/engineering/toolchain.md)
+
 Development tool versions are pinned by rust-toolchain.toml, Cargo.lock, CMake and CI; support scope follows the [support policy](support-policy.md). This table defines verification for upgrades and releases. Specific observations remain in issues/Actions; a single machine's tool inventory is not a release dependency lock.
 
 | Item | Current direction | Evidence required for freeze |

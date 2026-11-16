@@ -1,5 +1,7 @@
 # 自研 Rust 格式与算法契约
 
+[English](../../engineering/independent-rust-codecs.md) | 简体中文
+
 本契约定义第三方格式后端的逐项替代规则。实际进度、测试结果与未完成项由[迁移任务 #45](https://github.com/xiaodaozhi/xdzip/issues/45)跟踪，不以架构决策或代码存在推定格式已完成验收。
 
 ## 实现边界
@@ -52,8 +54,6 @@ DEB 的只读普通 ar 外层通过拥有式受限子源复用同一套 TAR 与�
 
 `DeflateReader::with_dictionary` 接收至多 32 KiB、按时间排列的已准入历史，只初始化匹配窗口，不将历史作为新流输出。ZIP/GZIP 的普通构造仍从空窗口开始。CAB 的 `MszipDecoder` 依据 [MS-MCI](https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-mci/27f0a9bf-9567-4e40-ad66-6ae9ab9d2786)复用此接口，每个 CK 帧重置 Deflate 位流、保留逻辑 folder 的末 32 KiB；压缩帧最多 32,780 字节、输出最多 32,768 字节，要求精确尺寸与完整裸流 EOF。只有完整帧通过后更新历史，失败后不能继续使用该 folder，`finish` 后不能追加帧。共享算法不验证 CAB 物理片段校验及卷链，由独立容器负责；CAB 的产品切换与其他方法验收见 [#48](https://github.com/xiaodaozhi/xdzip/issues/48)。
 
-English: MSZIP reuses the independent raw Deflate decoder with an explicitly admitted history of at most 32 KiB. Each CK-prefixed frame resets the compressed stream while retaining folder history, verifies exact input termination and output size, and updates history only after success. Failed or finished folder states cannot accept more frames. CAB fragment checksums, volume authorization and the production migration gate remain separate.
-
 - 解码处理 Store、固定和动态 Huffman，跨块保留 32 KiB 环形历史，允许重叠匹配。拒绝保留块类型、LEN/NLEN 不匹配、过度订阅码表、不允许的不完整码表、缺失结束符、越界重复长度、保留符号和历史之前的距离。
 - 编码使用有界哈希链 LZ77、频率构造的规范 Huffman 码和码长游程编码。树深度超出 15 时使用固定树，不截断码长。级别 0 以至多 65,535 字节存储块输出，1/6/9 以至多 2 MiB 块和 4/32/128 个候选搜索上限编码；收益不足时拆为存储块，避免无压缩收益的数据膨胀。编码历史每块重建，压缩率及输出字节不承诺与参考库一致。
 - 解码中间状态为窗口及有界码表，编码中间状态随单块上限有界，不收集整个归档。宿主继续累计输入、解码工作及输出配额。编码块有界完成后返回控制权，不在共享算法中新增线程或文件权限。
@@ -95,8 +95,6 @@ AES 使用已准入的通用 AES、SHA-256、随机数及 zeroize 原语。独�
 
 重写只支持未加密、非分卷且所有记录为可安全保留的普通文件或目录，未知必要元数据、anti、链接和特殊对象明确拒绝。工作进程持有最多 512 MiB 的保留及新增内容，字典、模型、元数据和工作集合计在默认 1 GiB 内预检。保留记录的原始 attrs、ctime、atime、mtime 按已理解字段重建，物理顺序和同名记录身份不合并。重写以选中的 FilesInfo 实体为准，重新组织压缩图；无文件引用的 folder 和未引用属性 blob 不属于结构保真承诺。来源复验、整包验证及同卷原子发布仍属于宿主。
 
-English: 7z uses the independent Rust codec through the shared isolated worker, with no official fallback. Payload graphs stream through bounded dictionaries, models and node buffers, retaining solid state across ordered files. Independent substream CRCs can complete individual files; files without one require remaining folder termination and supplied CRC. Metadata, payload input, terminal work, intermediate work and actual AES KDF admission have explicit limits. Creation supports Copy and genuine LZMA2 levels 1/6/9, solid content, fresh-IV AES and encrypted headers. Rewrites rebuild selected ordinary records and understood original properties within a 512 MiB content working set and a 1 GiB aggregate worker budget; unreferenced encoded blobs are not preserved structurally. The host owns source identity, quotas, verification, staging and final publication. Generic cryptographic primitives do not implement the archive format, and shared compression has no third-party production dependencies. Cross-platform, native manual and release acceptance are recorded separately.
-
 ## CAB只读规格
 
 `xdzip-codec-cab` 是自研只读后端，范围为 Store、MSZIP、LZX、Quantum 和宿主已经授权的同目录卷链。产品固定使用 Rust，没有官方处理器或运行失败回退；官方 Cab 容器与其专用 LZX/Quantum 算法不进入编译清单。CMake 的内部 `XDZIP_CAB_BACKEND=rust` 仅记录固定构建身份，不是可选择的产品后端。开发、平台和桌面人工验收分别由[任务 #48](https://github.com/xiaodaozhi/xdzip/issues/48)及关联验收条目维护，不自动批准正式发行。
@@ -117,13 +115,9 @@ CAB 与 ISO/UDF 共享 `xdzip-codec-bridge`，在既有隔离工作进程中以�
 
 worker 协议以 `WORK`（17，小端 `u64` 字节数）请求宿主准入，以 `PRECHARGED_DATA`（23）传递已有额度的内容，每个输出块最多 64 KiB，并等待宿主 ACK。Native 接收端仅允许 CAB、7z、RAR 在同一个持续 worker 的已准入额度内使用非空预计费输出；其他格式或不足额度均拒绝，条目完成时仍核对精确声明尺寸。重启、结束或失败后不得沿用旧 worker 额度。运行时提取 sink 与检查 sink 再以任务私有额度独立核验，正常文件切换可保留尚未消费的额度，但额度消费一次后不能再次使用。预计费只免除已计工作重复增加，文件声明尺寸、单文件 8 GiB、累计实际输出 20 GiB、取消和写入失败检查仍生效。额度在交付前扣减，部分输出失败不会把它退回重用；宿主拒绝 `WORK` 不产生任何新额度。RAR 的辅助工作单独准入，不产生预计费输出额度，见[辅助工作契约](auxiliary-decoding-work.md)。
 
-English: The independent read-only CAB backend is the fixed product route for Store, MSZIP, LZX, Quantum and host-authorized volume chains. Official Cab and its CAB-only LZX/Quantum implementations are excluded from compilation, with no fallback. Physical identities, raw names and original UTF-8 declarations are preserved, complete frames are verified, and shared algorithms retain folder history across files and volumes. The shared readonly CXX bridge stays inside the existing isolated worker. A complete decoded frame funds bounded prepaid delivery; the container, Native receiver and runtime independently enforce their respective allowances. The Native receiver admits prepaid CAB, 7z and RAR output only within authorized credit; RAR auxiliary work never creates delivery credit. Repeated delivery beyond that frame's allowance is ordinarily metered. Worker changes cannot reuse old worker credit, and prepaid delivery retains file, cumulative output, cancellation and publication checks. Source limitations and the analyst/implementer separation are documented in the CAB source record; independent implementation is not legal clearance, and native manual acceptance and release authorization remain separate.
-
 ## RAR只读规格
 
 `xdzip-codec-rar` 的古老/旧/现代容器、物理片身份、授权卷、名称、Store、13/15 与 20/26 族、RAR29 LZ/PPM/标准过滤器、现代 LZ/过滤器及历史/现代密码契约见[RAR 实现依据](rar-format-sources.md)。产品固定使用该 Rust 路由，不编译或部署 UnRAR，没有失败回退。未知尺寸显式表示并禁止输出，现代时间通过格式无关宿主服务投影，辅助解码工作独立计费。各历史组合、真实过滤器与跨平台兼容证据仍按[完整迁移任务 #51](https://github.com/xiaodaozhi/xdzip/issues/51)分别验收，不能因单族成功缩减范围；RAR7 算法 1 的独立健康实样由 #43 跟踪。
-
-English: The product uses the independent Rust RAR backend for ancient/legacy/modern containers, Store, 13/15 and 20/26, RAR29 LZ/PPM/standard filters, modern LZ/filters and historical/modern crypto. UnRAR is neither compiled nor deployed and there is no runtime fallback. Unknown sizes are explicit and cannot be output; local time uses a format-independent host service and auxiliary decoding work has its own accounting. Historical combinations, real filters and platform compatibility retain their individual acceptance requirements in issue #51; an independent healthy RAR7 algorithm 1 sample remains tracked by issue #43.
 
 ## ISO与UDF只读规格
 
@@ -137,8 +131,6 @@ English: The product uses the independent Rust RAR backend for ancient/legacy/mo
 - 实际解码保留单文件 8 GiB、累计工作及输入各 20 GiB 限制，以有界缓冲读取和输出。`xdzip-codec-bridge` 在既有工作进程内通过同步借用的 CXX 回调传递授权流；异常与 unwind 不跨边界，进程终止使未完成输出失败。宿主保留内存治理、取消、强制终止、来源复验、私有暂存及最终提交。官方 7-Zip Iso/Udf 处理器从构建和注册表移除，不保留运行时回退。
 
 独立样本必须具有可核验的生成工具或来源及已知内容；自编码规范向量只验证实现的内部状态组合。metadata、VAT、sparable 等扩展的独立实样与三平台验收单独登记于[迁移任务 #47](https://github.com/xiaodaozhi/xdzip/issues/47)，不能由代码存在或物理分区样本通过推定其他映射已验收。测试工具、参考 worker 与产品 worker 分别记录身份，不把参考工具不支持的样本记为验证通过。
-
-English: ISO/UDF parsing is independently implemented in Rust from ECMA-119, SUSP/Rock Ridge, El Torito, ECMA-167 and OSTA UDF specifications. The existing isolated worker calls it through a thin CXX boundary; official Iso/Udf handlers are excluded, with no runtime fallback. Physical records and raw names are preserved, metadata is rechecked before bounded extent streaming, and the host retains source validation, cancellation, resource limits, staging and publication. Images are read-only and checks establish structure and readability, not universal per-file content authenticity. The standard non-allocatable-space system record on sparable partitions is structurally validated as metadata. Unknown mandatory features, transformed data, ordinary named streams and unknown system streams are rejected; links and special objects cannot be output. Independent fixture coverage for each partition map and platform is tracked separately in issue #47.
 
 ## 能力与验证基线
 

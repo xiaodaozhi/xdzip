@@ -1,5 +1,7 @@
 # xdzip：需求、设计与验收追踪
 
+[English](../../design/requirements-traceability.md) | 简体中文
+
 需求 ID 的唯一来源为 [01](01-product-requirements.md)。下表对应最终产品；后期需求不算首版已经完成。测试编号是计划中的验收套件，不是当前仓库已有测试。
 
 ## 1. 追踪矩阵

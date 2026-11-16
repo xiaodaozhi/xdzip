@@ -1,18 +1,19 @@
 # 安装器与文件关联
 
+[English](../../engineering/installers-associations.md) | 简体中文
+
 实验性 Windows MSIX 使用包清单声明同一组扩展作为打开方式候选，不覆盖用户默认选择。包身份下不读取普通安装版的关联注册来显示其管理状态；用户通过 Windows 系统设置管理默认应用。实际文件激活、图标、共存和卸载行为待目标系统验收，见[MSIX 构建](developer-build.md#windows-msix-实验构建)。
 
-English: Experimental MSIX declares file types in its manifest without taking defaults. Packaged processes do not treat another installation's association registration as their own; users manage defaults in Windows Settings. Native activation, icons, coexistence and uninstall remain to be verified.
 
 逐格式图标素材及平台映射见[文件关联图标规范](../visual/file-association-icons.md)。Linux 保留系统 MIME 图标，安装不改变默认选择或现有注册范围。
 
-自 `v0.2.0` 起的桌面包及当前源码构建将命令行程序放在独立的 `cli/` 目录，macOS 位于 `Contents/Helpers/cli/`，保留原 GUI 与文件关联入口。更早版本的附件不追溯加入该功能。Windows 安装器提供默认关闭的当前用户 PATH 选项，检测同名命令冲突；卸载只撤销本安装目录。Mac/Linux 显式运行私有 CLI 的 `setup`，独立 CLI 包也通过 `setup` 安装用户级版本目录和稳定启动入口，不改 Shell 配置。撤销用 `setup --remove`，保留版本目录供核查。详见 [CLI 安装契约](command-line.md#构建与命令安装)。English: Desktop releases from `v0.2.0` and current source builds contain a private CLI. Desktop and standalone CLI entry registration is explicit and user scoped; earlier releases do not gain these assets retroactively. Existing commands are preserved, and shell startup files are never edited.
+自 `v0.2.0` 起的桌面包及当前源码构建将命令行程序放在独立的 `cli/` 目录，macOS 位于 `Contents/Helpers/cli/`，保留原 GUI 与文件关联入口。更早版本的附件不追溯加入该功能。Windows 安装器提供默认关闭的当前用户 PATH 选项，检测同名命令冲突；卸载只撤销本安装目录。Mac/Linux 显式运行私有 CLI 的 `setup`，独立 CLI 包也通过 `setup` 安装用户级版本目录和稳定启动入口，不改 Shell 配置。撤销用 `setup --remove`，保留版本目录供核查。详见 [CLI 安装契约](command-line.md#构建与命令安装)。
 
 本页描述本地开发和按需验证产物：Windows x64 当前用户安装器、Ubuntu 24.04 amd64 X11 的 .deb，以及按明确需求制作的[本地 macOS 开发 DMG](macos-deployment.md)。这些本地产物仍是实验性开发交付，不能替代正式 Release。正式 `v0.1.0` 的平台包由专用 Release 工作流生成和验证，另遵循[发布协议](release-protocol.md)。个人开源发行不要求付费证书、Developer ID 或公证，macOS 保留必要 ad-hoc 完整性签名；普通 CI 不部署或上传 Mac 应用。支持范围见[支持政策](support-policy.md)。
 
-当前源码的 Windows 安装器发行方、Linux 包维护者及更新策略 vendor 均为 `xiaodaozhi`。这些元数据不代替发行者证书签名，已有发行包以其原始元数据为准。English: Current source builds use `xiaodaozhi` as the Windows installer publisher and Linux package maintainer and update-policy vendor. These fields do not replace publisher signing; existing releases retain their original metadata.
+当前源码的 Windows 安装器发行方、Linux 包维护者及更新策略 vendor 均为 `xiaodaozhi`。这些元数据不代替发行者证书签名，已有发行包以其原始元数据为准。
 
-macOS 手动更新时优先使用对应 Release 的 DMG；使用 app.zip 时，先解压并将 xdzip.app 移出下载目录，退出正在运行的旧版，再替换“应用程序”中的副本。下载不代表安装完成，未公证包可能触发系统安全提示。具体回退条件见[软件更新契约](software-update.md)。English: For a manual macOS update, prefer the matching release DMG. For app.zip, extract and move xdzip.app out of Downloads, quit the old copy, then replace the application in Applications. Download is not installation, and an unnotarized package may trigger a system warning.
+macOS 手动更新时优先使用对应 Release 的 DMG；使用 app.zip 时，先解压并将 xdzip.app 移出下载目录，退出正在运行的旧版，再替换“应用程序”中的副本。下载不代表安装完成，未公证包可能触发系统安全提示。具体回退条件见[软件更新契约](software-update.md)。
 
 系统右键菜单、独立操作宿主和自有注册生命周期见[文件管理器操作契约](shell-actions.md)。右键入口不打开浏览主窗口，完成后默认不打开目标文件夹。
 
@@ -32,7 +33,6 @@ Windows/Linux 的 `package --kind runtime|installer|all` 共用同一部署与�
 
 Windows 上 Qt Quick 默认使用 Direct3D 11。Qt 在部分硬件或驱动功能不足的情况下可回退到 Direct3D WARP；这与软件 OpenGL 是不同路径。新包不承诺通过 `QT_OPENGL=software` 或 OpenGL 后端提供 Mesa 软件回退。历史包及其许可材料保持原样。[Qt 图形后端说明](https://doc.qt.io/qt-6.8/windows-graphics.html)列出默认和显式软件设备行为。
 
-English: New Windows developer deployments omit `opengl32sw.dll` and the three Windows SDK graphics compiler DLLs. Qt Quick defaults to Direct3D 11 and may fall back to WARP in some cases; WARP is separate from software OpenGL. Explicit software OpenGL fallback is not provided by the new package. Historical package obligations remain unchanged.
 
 VC++ 采用应用目录内部署，使用 [固定来源与文件哈希](../../../scripts/windows-runtime.json) 的微软官方 x64 14.44.35211 运行库。[准备脚本](../../../scripts/prepare-windows-runtime.py) 用固定 WiX 工具解包，再校验每个 DLL 和许可正文，不执行 EXE 或 MSI 安装、不从 System32 复制文件。交付所需 MSVCP／VCRUNTIME DLL 与许可、来源记录，工具、CAB、MSI 和未执行的 vc_redist 安装程序不进入产品；Windows 10／11 自带 UCRT。应用目录内运行库须随产品更新维护，不能依赖系统集中运行库更新替换它们，参见 [Microsoft 部署方式](https://learn.microsoft.com/en-us/cpp/windows/choosing-a-deployment-method)。
 
@@ -52,17 +52,14 @@ build-windows-installer.py 只接受干净构建的 deployed 审计，重新核�
 
 九个逐格式 ProgID 的类型描述使用应用语言，例如中文 `ZIP 压缩包`、英文 `ZIP archive`，不再添加 xdzip 前缀。安装或升级时读取本机应用的已保存语言，无有效设置时使用应用默认的简体中文；安装向导语言不改变应用语言。正常安装版在启动以及应用语言成功更改时同步这些描述并通知 Windows Shell 刷新。同步前核对安装标识、当前程序位置、安装清单、关联启动器及全部九个既有打开命令；条件不符时不写入，也不创建缺失项。注册表写入失败可能只完成部分描述，下次正常启动会重试；便携、开发和指定临时设置／语言的测试进程不触碰这些描述。旧共享 ProgID 保持兼容，不具备逐格式名称。Explorer 缓存、系统类型识别及用户所选默认处理器可能影响实际显示，原生视觉效果需单独验收。
 
-English: The nine format-specific Windows ProgIDs use the application language, for example `ZIP archive` or `ZIP 压缩包`, without an xdzip prefix. Setup reads the saved application locale and defaults to Simplified Chinese when no supported setting exists. A normal installed application refreshes its owned descriptions at startup and after a successful language change, only after checking its installation identity, manifest, launcher and all nine existing commands. Failed writes may be partial and are retried at the next normal start. Portable, development and isolated-settings or language-override processes do not update them. The legacy shared ProgID remains for compatibility; Explorer may display cached or system/other-handler descriptions.
 
 一次性 Windows CI 安装检查使用真实产品验证中英文启动同步，并以便携版及临时设置进程验证不写入；同时核对九类图标、命令、其他应用候选和默认选择未变。此自动检查不模拟运行中切换语言，也不替代 Explorer 或系统设置的人工显示验收。
 
-English: Disposable Windows CI checks startup synchronization in both languages using the installed product and verifies that a portable copy and an isolated-settings process do not write descriptions. It checks that icons, commands, other candidates and defaults remain unchanged; it does not simulate an in-session language switch or replace manual Explorer and Settings acceptance.
 
 全部格式 ProgID 的带引号命令启动 `xdzip-association.exe -- "%1"`，其 Applications 注册承载完整 SupportedTypes，使系统“打开方式”只呈现一个 xdzip 应用入口。启动器嵌入同一品牌应用 ICO 和独立 OriginalFilename、产品版本资源；应用图标与逐格式文档图标分别核验，不能用文档 DefaultIcon 代替可执行文件的应用资源。该小型 GUI 启动器只接受单个文件参数，先在自己的线程初始化 COM 单线程单元，再通过 ShellExecuteEx 的明确 `xdzip.Archive` 类委托既有打开命令，不经过命令解释器；调用返回后释放 COM。旧版回退会更新共享入口，逐格式候选因此仍指向回退后的程序；COM 初始化失败、入口不存在、参数无效或系统拒绝调用时启动器返回非零，不尝试其他应用或修改默认值。该机制依赖回退安装保留当前安装目录内的启动器，安装／回退和累计卸载须实测。
 
 旧共享与九个独立 ProgID 均设置 REG_NONE 类型的 `AllowSilentDefaultTakeOver`。按 [Windows ProgID 约定](https://learn.microsoft.com/en-us/windows/win32/shell/fa-progids)，此标记要求系统在自动判定默认处理器时忽略该候选，用户仍可在“打开方式”中明确选择。Inno 的 `ValueType: none` 只创建键，因此安装器使用有界原生注册表调用写入准确类型；仅打开已创建的自有 ProgID，失败终止安装，句柄在失败路径释放。按需安装检查同时快照保护选择、核对原生候选数量及自动后备路由；真实设置页面和 Explorer 的显示按需检查，未执行时如实记录。
 
-English: All nine Windows formats expose one branded association launcher through format-specific ProgIDs, including `xdzip.Archive.ZIP`. The hidden shared ProgID and main executable command remain available for existing choices and historical rollback. Upgrade removes only owned legacy recommendations, preserving foreign candidates and protected choices. Embedded application icon/version resources are separate from document icons. REG_NONE `AllowSilentDefaultTakeOver` markers prevent automatic default selection while keeping explicit Open With selection available. Native enumeration and installer lifecycle checks do not replace actual Settings/Explorer acceptance.
 
 ZIP、TAR、TGZ、GZ、7Z、RAR、CAB、ISO 和 UDF 注册为候选；GZ 仅用于 TAR.GZ，普通独立 GZIP 仍不支持，关联不扩大格式能力。CAB、ISO 和 UDF 为只读，不注册通用 `.img`、`.001` 或 `.rNN` 扩展名，避免占用其他文件类型；分卷仍可通过应用文件选择器打开。默认应用由用户在系统设置选择，安装器不绕过确认。
 
@@ -86,7 +83,6 @@ CAB、ISO、UDF 加入同一只读 Viewer 声明；CAB 和 UDF 的导入类型�
 
 macOS 的 RAR、CAB 和 UDF 导入类型声明均须符合 `public.data`，使系统能将实际文件识别为相应类型。CAB 同时声明系统使用的 `com.microsoft.cab` 和兼容标识 `com.microsoft.cab-archive`；设置页在系统首选类型是这两者之一时查询并更改该实际类型，否则沿用兼容标识。UDF 的 Viewer 声明使用 `.udf` 扩展名而不指定 `LSItemContentTypes`，使旧安装的无效 UTI 声明仍被系统采用时，实际文件也能发现候选；此[扩展名声明键](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html)已被 Apple 标记为弃用，必须持续在受支持的 macOS 版本验证。设置页按系统实际识别的 `.udf` 类型查询和更改，类型不可用时回退至既有标识。已有默认选择不由安装或注册主动覆盖。此前没有处理器时，Launch Services 可能按[隐式规则](https://developer.apple.com/library/archive/documentation/Carbon/Conceptual/LaunchServicesConcepts/LSCGlossary/LSCGlossary.html)将新候选解析为当前处理器；撤销临时注册后应恢复原状，此解析不等于应用主动写入用户偏好。
 
-English: Windows registers per-extension icons and ProgIDs without changing defaults or UserChoice. The existing shared ProgID remains available; a small launcher delegates new format handlers to it so a legacy rollback uses the restored application. Existing user choices may retain the old ZIP icon until the user reselects xdzip. macOS uses per-type ICNS with the existing Viewer rank, sharing TAR.GZ for the compressed-TAR UTI. Its imported RAR, CAB and UDF types conform to `public.data`. CAB claims both the system and compatibility identifiers, and Settings uses the recognized preferred identifier when it is one of those two. The UDF Viewer uses the `.udf` extension without `LSItemContentTypes`, so files remain discoverable when an older installed bundle shadows the corrected UTI. Apple has deprecated this extension declaration key; verify it on supported macOS versions. Settings queries and changes the type actually recognized for `.udf`, falling back to the existing identifier if unavailable. When no handler existed, Launch Services may implicitly resolve a new candidate as the current handler; removing the temporary registration should restore the original state. This is distinct from the application writing a user preference. Linux keeps system MIME icons. GZ remains limited to TAR.GZ content.
 
 FileOpenRouter 在 QML 前接收 [QFileOpenEvent](https://doc.qt.io/qt-6.8/qfileopenevent.html)，只接受本地文件并复用应用的打开与激活路由。GUI 命令行 `--` 后作为文件路径，避免误解为诊断开关。待处理意图最多 128 个，不抢占活跃任务。同一登录会话的正常产品进程共用一个实例；多文件请求按顺序打开并激活最后一个，标签和窗口行为见[应用会话契约](application-sessions.md)。
 
@@ -104,7 +100,6 @@ Windows 原生 CI 安装 QA 变体 1、升级 2、回退 1，再安装真正交�
 
 Linux 发行验证还在容器的独立用户配置中切换 MIME 默认项，通过 `gio open` 分别打开九个格式样本；另用独立处理程序验证切换确实生效，结束时恢复原默认配置。此检查使用容器内的 GIO 和虚拟显示，不修改维护者的桌面配置，也不代替系统设置界面或其他桌面环境的验证。
 
-English: Linux release validation also changes MIME defaults in an isolated container profile and opens nine format samples with `gio open`. A separate handler checks that the selection takes effect, and the original defaults are restored. This does not exercise a physical desktop or the system settings UI.
 
 QA 变体共用本次核验二进制，只改变测试包版本／目录，验证安装机制，不作为发行工件，也不冒充真实不同产品版本的数据迁移。设置 schema 当前为 1，两平台安装元数据记录它，旧安装器拒绝覆盖声明更新 schema 的安装；未来迁移须同步契约。
 
@@ -118,7 +113,6 @@ Windows 忙时替换保护的无任务探针使用独立配置关闭托盘，使
 
 Windows 更新协议夹具与真实 Qt 更新夹具同样提供关联启动器和全部九份文档 ICO，不能通过缺少必需载荷的安装器检查。协议夹具的小型 C 主程序与关联命令只验证更新交接；嵌入应用资源、原生候选和真实窗口由完整 Qt 产品链分别检查，不混用结论。
 
-English: Windows protocol and real Qt update fixtures include the required association launcher and all nine document ICOs. The small protocol fixture verifies updater handoff; application resources, native candidates and real windows are checked separately with the complete Qt product.
 
 ## 兼容基线的长期输入
 
@@ -138,6 +132,5 @@ English: Windows protocol and real Qt update fixtures include the required assoc
 
 设置页按当前系统查询显示九类关联。macOS 使用 NSWorkspace 的内容类型接口，并在关闭时由用户选取替代应用；开发副本按 None 等级禁用关联操作。Windows 打开系统默认应用页面并在返回后重查，只读系统关联，不修改 UserChoice。Linux 用 xdg-mime 查询与修改用户 MIME 默认，安装包声明 xdg-utils 依赖；移除关联时由用户选择已安装的替代桌面项。复合扩展可能共享系统类型；取消、系统拒绝或查询失败不显示伪造的成功。真实系统 UI 和多桌面环境行为须单独验收。
 
-English: Settings query operating-system defaults for each supported type. macOS requests changes through NSWorkspace, Windows opens the system default-app page, and Linux uses the user MIME configuration. Disabling a macOS or Linux association selects an alternative application. Composite extensions may share a system type. Native acceptance remains separate from automated checks.
 
-自动识别语言模式在 Windows 安装器中按当前用户的系统界面语言解析：中文各区域使用中文描述，其余以英文兜底；显式中文或英文选择优先。安装器不将自动识别改写为固定语言，应用启动后按自身系统语言解析并同步自有描述。English: Windows Setup resolves automatic mode from the current user’s Windows UI language, uses Chinese descriptions for Chinese variants and English otherwise, and respects explicit selections without rewriting the saved mode. Application startup resolves its own system UI language and synchronizes verified owned descriptions.
+自动识别语言模式在 Windows 安装器中按当前用户的系统界面语言解析：中文各区域使用中文描述，其余以英文兜底；显式中文或英文选择优先。安装器不将自动识别改写为固定语言，应用启动后按自身系统语言解析并同步自有描述。

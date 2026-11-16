@@ -1,5 +1,7 @@
 # Product version and build identity
 
+English | [简体中文](../zh-CN/engineering/versioning.md)
+
 The optional `prerelease_number` separates prerelease sequence from build number. For example, alpha.1 can use build 14 while later alpha.2 continues incrementing build. When absent, the historical `channel.build` interpretation remains. Release manifests and asset names are specified in the [release protocol](release-protocol.md).
 
 [VERSION.json](../../VERSION.json) is the sole maintained source for product version, channel and build number. The build reads its current values; this document does not duplicate them. See the [changelog](../../CHANGELOG.md) for version changes and [project issues](https://github.com/xiaodaozhi/xdzip/issues) for deliveries and verification. Incrementing a version alone does not approve a release.

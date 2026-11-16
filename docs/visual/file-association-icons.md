@@ -1,5 +1,7 @@
 # File association icons
 
+English | [简体中文](../zh-CN/visual/file-association-icons.md)
+
 System file icons reuse xdzip's folded-corner document, continuous-curvature badge, four interwoven bands and open U-shaped mark. The design entry is the [high-fidelity review page](../../design/hifi/sources/file-association-icons.html), parameters come from [file-association-icons.json](../../specs/visual/file-association-icons.json), and document icon sources and product platform containers reside in [file-associations](../../design/assets/file-associations). Users still choose their default applications.
 
 ## Shape and identification

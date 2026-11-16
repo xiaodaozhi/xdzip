@@ -1,5 +1,7 @@
 # 分卷读取与临时打开
 
+[English](../../engineering/archive-opening.md) | 简体中文
+
 ## 分卷 ZIP
 
 读取层支持编号连续字节流 `name.zip.001`、`.002` 等，以及 PKZIP 的
@@ -35,8 +37,6 @@ CAB 的卷名来自包头，允许任意合法文件名，不能套用编号卷�
 
 工作进程的换卷回调只能选择该授权集合中的名称，每卷提供独立有界流。所有卷参与任务前和文件提交前来源复核及输出覆盖保护，原生处理器的警告或缺卷结果不能转为成功索引。CAB 单卷与分卷均只读。
 
-English: CAB uses header-specified names rather than concatenated numbered parts. The next reference advances one volume, while a logical previous reference may name an earlier cabinet containing the start of a continued file; adjacent previous references remain supported. Rust follows previous references back, then verifies the complete forward same-directory chain from any selected volume and freezes each part's identity and bounds. The decoder verifies all file fragments and requires a non-adjacent previous reference to identify an actual continued file's origin. Missing, inconsistent, cyclic or unsafe volume chains fail without a partial index. All parts participate in source revalidation and output-overwrite protection.
-
 ## 双击普通文件
 
 目录双击仍进入目录。普通文件双击提交仅包含该物理条目的后台解压任务，
@@ -55,8 +55,6 @@ English: CAB uses header-specified names rather than concatenated numbered parts
 临时文件的清理限定于应用创建的私有缓存，不扫描或删除用户解压目录。
 验收覆盖成功自动隐藏、失败保留、取消、密码重试、重复文件名、Unicode 和
 特殊字符、关闭页面后任务路由、临时目录安全和退出清理策略。
-
-English: 7z numbered parts form one authorized byte stream. RAR partN and legacy volume names preserve physical boundaries supplied through ReadSource::volume_lengths; the isolated Rust backend cannot select arbitrary host paths. Every part is version checked and protected from output overwrite. Encrypted directory opens publish no partial metadata and retain secrets only in their session and admitted tasks.
 
 只读 [Brotli/TAR.BR](brotli-streams.md) 在发布条目前完整验证无魔数候选，Brotli/LZMA 共用候选读取预算，保留强源签名及合法 TAR/ZIP 识别优先级，解码后损坏的 TAR 不能降级为普通流。
 

@@ -1,5 +1,7 @@
 # 本地 macOS 开发 DMG
 
+[English](../../engineering/macos-deployment.md) | 简体中文
+
 专用 Release 工作流允许原生部署、必要的 ad-hoc 签名、app.zip 与 DMG 打包及上传，按需 Qt 工作流的 macOS 作业保持 SDK 验证策略。同一份已部署、签名并验证的 .app 用于两个发布包，ZIP 解包后另作重定位启动核验，详见[发布协议](release-protocol.md)。
 
 本地开发 DMG 是允许的开发交付方式；按需 Qt 工作流验证 Apple Silicon 原生构建／启动，不打包、签名或上传 Mac 应用。本地脚本不安装应用、不改默认关联、不上传文件，不读取发行凭据。
@@ -22,8 +24,6 @@ python3 scripts/desktop.py verify --build-dir build/desktop-dmg --output-dir bui
 共用 package 在运行 macdeployqt 前检查原生 arm64、系统 SDK、部署工具、Rust PATH／锁定元数据、Python 校验依赖、Qt 许可与 schema 材料。build、test 允许未提交源码；package 要求干净提交且实际 CLI 身份一致，不能借已有编译缓存绕过。系统编译器、SDK、lipo、codesign 和 hdiutil 由系统工具链提供，不由准备阶段安装。
 
 图片工作进程同样由 macdeployqt 重定位。Qt 6.8 的默认平台插件选择只包含 Cocoa，打包脚本须在扫描应用库之前显式复制 offscreen 插件，使其 Qt framework 依赖一起处理；缺少插件或工作进程时拒绝打包。完整性签名与导入审计之后，清除 Qt／QML／DYLD 搜索覆盖，使用应用内真实图片工作进程核对格式集合及自有 PNG 解码，回执为 `image-preview-deployed.json`。脚本单元检查不等同于实际部署包验收。
-
-English: macdeployqt relocates the private image worker. Because Qt 6.8 selects only Cocoa by default, staging explicitly includes offscreen before the bundle library scan. Missing inputs refuse packaging. After integrity signing and import auditing, the actual bundled worker verifies its formats and an owned PNG without SDK search overrides. Script unit checks do not establish deployed-package acceptance.
 
 底层 [build-macos-dmg.py](../../../scripts/build-macos-dmg.py)和 [verify-macos-dmg.py](../../../scripts/verify-macos-dmg.py)继续负责镜像与原生验证细节；需要故障定位时使用各自 `--help`，不另外维护日常步骤。底层输出路径必须位于 build/ 且尚不存在。DMG 输入的文档类型必须全部声明 `Viewer/Alternate`，否则要求重新构建，不在原包上改写 plist 或签名。macdeployqt 扫描实际 QML，部署 Qt frameworks、插件和 QML；补充 Qt 系统控件翻译、项目通知、Rust 上游通知、字体许可、源码 SBOM 和固定 Qt 许可材料。保留 framework 内部符号链接，拒绝逃逸应用目录的链接；移除开发机绝对 RPATH，递归检查全部原生导入只解析到应用或系统。构建身份不能为 dirty 或 unknown，必须匹配当前干净提交以绑定实际通知。
 
@@ -71,8 +71,6 @@ build/desktop/apps/desktop/xdzip.app/Contents/MacOS/xdzip --register-shell-integ
 签名脚本仅接受仓库 `build/` 下自有应用及输出，不部署 Qt、不创建 DMG、不读取发行凭据。其回执只证明 ad-hoc 完整性与嵌套严格校验，不证明 Developer ID、公证、Gatekeeper 信任或发行许可。应用须保留原始位置，在系统设置的登录项与扩展中启用 xdzip 的 Finder 扩展。系统版本不同，设置路径和菜单排列可能不同；仅登记成功不等于菜单或操作验收通过。
 
 结束临时验证前，用同一应用的 `--remove-shell-integration` 撤销自有服务和扩展登记，核对初始状态后只清理本次创建的配置及临时 LaunchServices 登记。不要修改其他应用或默认文件关联。若应用已被 Finder 加载，更新后可在系统设置中关闭再开启自有扩展，不重启 Finder。交接和回退边界见[文件管理器操作](shell-actions.md)。
-
-English: Local Finder validation explicitly signs the built application with ad-hoc integrity signatures, preserving the appex's exact sandbox entitlements before sealing the outer bundle. It needs no paid account or App Groups and does not deploy, package or notarize the app. Explicit registration and user-controlled system enablement are separate from real menu/action verification. Remove only this validation's owned registrations and configuration when finished; preserve other apps and default handlers.
 
 ## 开发与核验副本的打开方式注册
 

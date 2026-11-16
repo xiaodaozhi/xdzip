@@ -1,6 +1,8 @@
-# WP-10 ZIP creation implementation contract
+# ZIP creation implementation contract
 
-This work package creates new ZIP archives from explicitly selected files and directories. The default is level 2, normal compression, using Deflate 6. It supports Store and Deflate 1/6/9, WinZip AES-256 content encryption, and numbered volumes. See [WP-11](m4-tar-gzip.md) for TAR/GZIP, [password extraction](password-extraction.md) for AES-256 reading, and the [split-volume contract](archive-opening.md) for split reading. Explicit addition to ordinary single-file archives uses the [drag-and-drop and modification contract](archive-transfers.md) and does not reuse the source-protection exception for new archives. The host owns input authorization, staging, verification, conflict decisions, and final saving; the format layer receives entries, readable input, and writable output only.
+English | [简体中文](../zh-CN/engineering/m4-creation.md)
+
+Create new ZIP archives from explicitly selected files and directories. The default is level 2, normal compression, using Deflate 6. It supports Store and Deflate 1/6/9, WinZip AES-256 content encryption, and numbered volumes. See [TAR/GZIP](m4-tar-gzip.md) for creation and extraction, [password extraction](password-extraction.md) for AES-256 reading, and the [split-volume contract](archive-opening.md) for split reading. Explicit addition to ordinary single-file archives uses the [drag-and-drop and modification contract](archive-transfers.md) and does not reuse the source-protection exception for new archives. The host owns input authorization, staging, verification, conflict decisions, and final saving; the format layer receives entries, readable input, and writable output only.
 
 ## Input tree and budgets
 

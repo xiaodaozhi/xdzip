@@ -1,5 +1,7 @@
 # Extraction preflight: metadata phase
 
+English | [简体中文](../zh-CN/engineering/extraction-preflight.md)
+
 This module provides metadata preflight rules. It has no destination authorization, decoding, writing, staging, or commit capability.
 
 ## Implementation and boundaries
@@ -8,7 +10,7 @@ This module provides metadata preflight rules. It has no destination authorizati
 
 Selection is limited to 128 physical IDs, must be nonempty, and all IDs must belong to the current snapshot. Selecting a directory expands all descendants using slash boundaries in original names, independent of search, pagination, or current directory scope. Selecting a directory and child counts the child once. Same-name physical records are not merged by path. Directory statistics count only explicit records and do not synthesize directory objects.
 
-Preflight runs through the M1 production command/event service, reusing bounded admission and independent cancellation. Results do not replace the browsing page or clear selection. Changing selection, query, or session clears the old report and closes the result window, preventing old-selection results from being used for new operations. Reports correspond only to metadata at scan time; this stage does not revalidate source content or identity.
+Preflight runs through the command/event service, reusing bounded admission and independent cancellation. Results do not replace the browsing page or clear selection. Changing selection, query, or session clears the old report and closes the result window, preventing old-selection results from being used for new operations. Reports correspond only to metadata at scan time; preflight does not revalidate source content or identity.
 
 ## Rules performed
 

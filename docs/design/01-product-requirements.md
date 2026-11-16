@@ -1,5 +1,7 @@
 # xdzip: 01 Product and requirements
 
+English | [简体中文](../zh-CN/design/01-product-requirements.md)
+
 ## 1. Product positioning
 
 xdzip is a desktop archive manager for macOS, Windows, and Linux. Its primary value is letting users inspect archives like ordinary file folders and reliably extract selected content or create archives. Users do not have to unpack the entire archive to disk first or understand plugins and codec implementations.

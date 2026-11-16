@@ -1,5 +1,7 @@
 # 实际组件归属与许可材料
 
+[English](../../engineering/runtime-attribution.md) | 简体中文
+
 本流程补充文件级 SBOM，将实际 Qt 库／插件与 SDK 的 SPDX 声明关联。产物是可复核证据，不是自动许可选择或合规批准。正式发行完整性继续为 incomplete。
 
 ## 输入与来源
@@ -10,11 +12,9 @@ Qt 6.8 起提供构建对应的 [SPDX 清单](https://doc.qt.io/qt-6.8/licenses-
 
 Qt 运行时通知另随包提供 Qt Network 使用的 Public Suffix List 固定可编辑源码、MPL-2.0 原文和获取说明；收集器核对上游 blob、SHA-256 及许可字节。源码交付还验证该输入能重现 Qt 归档中的两种生成数据，见[对应源码材料](source-delivery.md)。此项不代替其他 Qt 模块的对应源码及替换核验。
 
-English: Runtime notices include the pinned editable Public Suffix List used by Qt Network, its MPL-2.0 text and source information. Collection verifies the upstream blob, SHA-256 and license bytes. The source delivery separately checks both generated forms against the Qt archive; other Qt source and replacement obligations remain separately reviewed.
 
 Qt Core 的 Tika MIME 数据通知同时保留 Apache Software Foundation 与英国国家档案馆 PRONOM 的相关署名、Apache-2.0 和 OGL-UK-3.0 许可文本，以及固定版本完整上游 NOTICE。完整 NOTICE 同时描述 Tika 上游的其他组件，不能据此推断它们随本产品提供；原始 MIME 数据和 Qt 转换的核验见[对应源码材料](source-delivery.md)。
 
-English: Qt Core Tika MIME notices include the relevant Apache Software Foundation and National Archives PRONOM attribution, Apache-2.0 and OGL-UK-3.0 license texts, and the complete pinned upstream NOTICE. The full NOTICE describes additional upstream Tika components and does not imply they ship with this product. Source input and conversion verification are described in [source delivery](source-delivery.md).
 
 ## 文件与组件关联
 
@@ -33,15 +33,13 @@ SDK 中实际文件可能与上游构建 SPDX 中的 SHA-1 不同，例如后续
 
 Rust 继续保存完整宿主构建图，并从桌面入口 `xdzip-qt-bridge`、格式工作进程入口 `xdzip-codec-bridge`，以及 Windows／Linux 实际构建的 `xdzip-update-helper` 沿普通依赖边生成 runtime candidates；macOS 不加入独立更新助手根。构建、开发和 proc-macro 工具及其依赖不属于候选。这是潜在运行时输入，不能证明每个包的机器码最终保留；链接器裁剪、原生 C/C++ 与编译器运行库还需进一步核验。
 
-English: Rust runtime candidates follow normal dependencies from the desktop bridge and codec worker bridge, plus the update helper on Windows and Linux. macOS does not include the separate helper root. Build, development and procedural macro tools are excluded; candidates are not proof that machine code survived linking.
 
 Cargo 旧式斜杠分隔的简单许可备选项在源码 CycloneDX 的表达式中转换为 `OR`，并以 `xdzip:cargo_license_raw` 保留上游原文；包含斜杠但无法明确判断优先级的写法直接拒绝。原始构建清单和通知不改写，标准 `AND`、`OR` 和 `WITH` 表达式保持不变。这是格式规范化，不代表已选择许可分支或批准发行。
 
-English: Simple legacy Cargo license alternatives separated by slashes are written with SPDX `OR` in the source CycloneDX, while `xdzip:cargo_license_raw` retains the original. Ambiguous slash expressions are rejected; standard `AND`, `OR` and `WITH` expressions and the original inventory remain unchanged. This is format normalization, not a license selection or release approval.
 
 ## 执行与交付
 
-QtNetwork 的已知安全派生库在文件记录中增加 `network_security_variant`，报告同时保留完整、重新核验过的构建回执。上游 SDK 摘要差异仍保留，发行复核使用固定源码、完整补丁、构建回执与部署转换证据解释该差异。发布暂存要求最终 Network 的归属与这些字节相连，文件名匹配不能通过。源码与工件 SBOM 分别标记派生身份；不会把全局 incomplete 改写成许可批准。English: The patched Network carries its own variant and verified receipt. Upstream checksum differences remain visible, and release staging requires a deployed-byte link rather than a filename match. The global incomplete status remains separate from concrete release review.
+QtNetwork 的已知安全派生库在文件记录中增加 `network_security_variant`，报告同时保留完整、重新核验过的构建回执。上游 SDK 摘要差异仍保留，发行复核使用固定源码、完整补丁、构建回执与部署转换证据解释该差异。发布暂存要求最终 Network 的归属与这些字节相连，文件名匹配不能通过。源码与工件 SBOM 分别标记派生身份；不会把全局 incomplete 改写成许可批准。
 
 ```sh
 python3 scripts/prepare-runtime-notices.py --qt-prefix /path/to/Qt/6.8.2/gcc_64 \

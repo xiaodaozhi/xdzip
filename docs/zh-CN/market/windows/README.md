@@ -1,6 +1,6 @@
 # Microsoft Store 商店材料
 
-中文（中国） | [English (US)](../../../market/windows/README.md)
+[English](../../../market/windows/README.md) | 简体中文
 
 [可复制的商店文案](listing.md)包含说明、十项产品功能、补充字段、七个关键字、版权、开发者信息、链接和图片说明。`zh-CN` 使用本目录，`en-US` 使用[英文文案](../../../market/windows/listing.md)。
 

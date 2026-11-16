@@ -2,6 +2,8 @@
 
 # 文件列表打开、双向拖放与归档修改
 
+[English](../../engineering/archive-transfers.md) | 简体中文
+
 右键“打开”作用于右击条目，保留多选，复用双击和 Enter 的入口。目录进入，普通文件使用[临时打开](archive-opening.md)的私有缓存、密码和关联程序规则。会话、查询变化关闭菜单，执行时仍核对稳定条目身份。
 
 ## 外部拖出
@@ -9,8 +11,6 @@
 列表和网格达到系统拖动阈值后冻结选择与包内目录。拖动未选项先单选，拖动已选项保留选择。目录展开后代，父子重复选择去重，保留当前目录以下的相对层级及空目录，不删除归档内容。链接不经拖出入口发布。清单最多十万项，名称及结构预算为 4 MiB，仍受安全解压的字节、路径、密码及配额约束。
 
 生成拖出清单只准备传输元数据，不属于目录读取。准备及原生交接期间保留已提交的列表／网格、选择和目录，不显示主页面的“正在读取”遮罩；请求仍保持忙碌与取消语义。真正的打开、目录查询以及归档修改继续使用各自的等待反馈。
-
-English: Building the drag-out manifest prepares transfer metadata rather than browsing a directory. Preparation and native handoff preserve the committed list or grid, selection and directory without showing the browser's reading overlay. Request busy/cancellation semantics remain intact; real opening, browsing and archive edits retain their own waiting feedback.
 
 Windows 通过 OLE `IDataObject` 的 FILEDESCRIPTOR/FILECONTENTS 和异步能力提供内容。目标接受后启动后台准备，私有副本完整校验后才交给消费者读取；同步消费者不能使 GUI 等待任务，未支持的目标明确失败。Explorer 决定最终位置和重名。FILEDESCRIPTORW 的路径须短于 260 个 UTF-16 单元。内容流只读，取消后停止提供后续数据。异步消费者结束前，退出仍等待本机传输结束。
 
@@ -21,8 +21,6 @@ Linux 的已支持基线为 Ubuntu 24.04 x86_64、X11。先准备私有副本，
 导出缓存与临时打开缓存分别存放。使用随机目录、身份标记及活动锁，准备失败不发布 URL。保持七天保留与有界后续清理，不在拖动返回时删除消费者可能仍需读取的文件。页面关闭保留任务所属控制器，明确退出取消准备并等待 Rust 工作线程与原生消费者结束。
 
 拖出到系统目标位置后，导出和复制任务均不自动打开 Explorer、Finder 或目标目录。普通解压的“完成后打开目录”只属于该次明确的解压请求，不能被后续导出或临时打开继承。用户主动点击结果窗口的打开入口仍按原行为处理。
-
-English: Drag-out preparation and copy completion never open the destination in the system file manager. The optional folder-opening choice belongs only to its explicit extraction request; export and temporary-open requests cannot inherit it.
 
 ## 外部拖入和确认
 
@@ -36,11 +34,7 @@ UpdateWindow 按创建原稿呈现图标标题与添加文件、添加位置、�
 
 添加或包内移动被接纳后，主页面的取消入口按原会话的真实任务身份发送任务取消，包括重名提示已关闭、任务仍在等待决定的情况。不能只取消已经结束的任务登记请求。取消后继续等待任务终态、清理与原归档重开完成，再恢复目录查询与选择；不提前解除旧条目身份的冻结。
 
-English: Once an add or move task is accepted, page-level Cancel targets that task even if its conflict prompt was dismissed. Browsing resumes only after the task terminates, cleanup completes and the original archive reopens.
-
 修改期间保留已提交文件页用于显示，旧查询和选择身份仍不可操作。页面等待层按真实命令保留添加或移动名称，直到刷新结束。任务取消被运行时接纳后立即标记取消请求，重名和密码提示失去决策资格，进度窗口显示取消中并继续跟随真实终态。重名窗口绑定任务及提示令牌；用户关闭后的同一提示不因其他任务更新自动重开，可由任务入口明确重开。任务切换、提示令牌更换、终态和退出均关闭旧提示，按钮不得把旧决定提交到新任务。
-
-English: Accepted cancellation immediately withdraws conflict and password decisions while progress views follow cancellation and the actual terminal result. Conflict dialogs own a task and prompt token; dismissed prompts require explicit reopening, and stale decisions cannot target another task.
 
 ## 包内拖放移动
 
@@ -66,7 +60,7 @@ Update 支持普通单文件 ZIP、TAR、TAR.GZ 和 7z，不改写加密、分�
 
 提交前取消或失败保留原归档字节。提交许可获得后成功发布胜出，清理失败单独记录。成功或失败后重新打开同一源，清除失效的物理条目选择。任务使用独立 update、move、export 和 export-copy 类型，不把私有准备完成当作系统复制成功。
 
-7z 修改保持同一命名空间、冲突、来源复核及原子替换契约，固实内容需要解码重建。重建输入使用显式有界缓冲，总原内容及新增内容不超过原生适配器的 512 MiB 缓存上限，另受后端 1 GiB 进程内存预算约束，超限明确返回资源限制。该上限不扩大为磁盘缓存权限，原包仍不变。修改成功后的输出可能采用正常级别和非固实布局，不承诺保留原始压缩流、算法组合或固实分块。文件名加密、内容加密或任何分卷 7z 均拒绝修改，空的加密目录也不能绕过。
+7z 修改保持同一命名空间、冲突、来源复核及原子替换契约，固实内容需要解码重建。重建输入使用显式有界缓冲，总原内容及新增内容不超过原生适配器的 512 MiB 缓存上限，另受后端 1 GiB 进程内存预算约束，超限明确返回资源限制。该上限不扩大为磁盘缓存权限，原包仍不变。修改成功后的输出可能采用正常级别和非固实布局，不承诺保留原始压缩流、算法组合、固实分块或最终物理记录顺序。验证时逐项检查负载，并确保冻结的唯一名称集合恰好各出现一次。文件名加密、内容加密或任何分卷 7z 均拒绝修改，空的加密目录也不能绕过。
 
 RAR 使用独立 Rust 只读后端，不提供添加、替换或包内移动。整包 edit_restriction 的其他不支持位始终开启，不能通过当前页没有不支持条目绕过。7z／RAR 链接及特殊对象不写出，外部复制、临时打开仍经过既有预检和安全输出任务。
 
@@ -74,14 +68,6 @@ RAR 使用独立 Rust 只读后端，不提供添加、替换或包内移动。�
 
 列表与网格的完整名称提示在内部移动、原生复制准备和实际原生拖动期间统一抑制，取消旧静止计时。内外拖动交接不能短暂重新开启源提示；Windows以OLE返回、macOS以原生拖动结束回调、Qt准备后拖动以exec返回解除手势状态，异步复制可继续，不能把复制任务结束当作鼠标手势结束。结束后须先获得新的指针位置，再重新完整静止等待1200ms，避免缓存的源hover使提示复活。
 
-English: List and grid name tooltips are suppressed throughout internal dragging, native handoff and the native gesture, cancelling the old dwell timer. Windows OLE return, AppKit's drag-end callback and QDrag exec return end the gesture independently of asynchronous copying. Re-enabling a source tooltip requires a fresh pointer position and a new full stationary-hover delay, preventing cached source hover from reviving it.
-
 拖动预览只表达冻结的源名称、图标和选中数量，不读取或解压内容，不授予目标写入权限。内部预览从有效拖动令牌取值，跨出窗口后清除内部覆盖层并交给原生复制反馈。Windows IDataObject 为 Shell 图像保留有界、线程安全的私有 HGLOBAL 格式，并单独持有唯一 DragContext 流的 COM 引用而不读取或复制其内容，GetData 返回独立引用；禁止覆盖文件描述符、内容流和首选动作。失败不改变原有安全输出与取消语义。原生图像使用非预乘 BGRA 交给 Shell，位图所有权在初始化调用时移交，COM／GDI 准备失败沿用系统光标。具体样式见 [拖动规范](../../../specs/visual/drag-preview.json)。
 
-English: Drag previews describe only the frozen name, type and selection count. They neither extract content nor authorize writes. A valid internal token supplies the preview; native copy handoff clears the internal overlay. Windows stores bounded private Shell HGLOBAL feedback formats under a lock and retains one named DragContext COM stream without reading its contents, returning independent references. Descriptors, archive-content streams and the preferred action cannot be replaced. Straight-alpha image bytes and bitmap ownership pass to the Shell helper; image setup failure preserves existing safe transfer and cancellation semantics.
-
 核心覆盖三格式、当前目录、原内容和空目录、重名策略、来源变化、受保护输入及取消；Qt 覆盖真实右键打开与添加确认，中英文、浅深色、多字号和冻结会话。Windows 原生协议测试验证异步数据对象和实际内容流。移动回归覆盖列表/网格、目录树、拒绝目标、混选、目录合并、元数据保留及边界交接，三格式由独立 Python 读取器复核。真实 Explorer、Finder、Ubuntu Files 及桌面投放按需检查，执行时分别登记；离屏与协议接收器不冒充未执行的桌面操作。阶段证据记录于对应 issue 和本地/CI 工件。
-
-English: Context Open acts on the clicked item through the same stable-identity entry point as double-click and Enter. External copies use Windows asynchronous virtual files, macOS file promises backed by Rust publication tasks, and prepared file URLs on the supported Linux X11 baseline. Incoming local files require confirmation and target the frozen current archive directory. The addition dialog follows the C01 creation reference, with a shared file-selection panel, a read-only destination and the existing conflict policies. Users may append local files/folders or remove them; advisory metadata stays on the bounded worker and hidden drafts do not take over preview requests. Creation and addition exclude macOS metadata from new inputs at every depth; an empty filtered input fails without changing the archive or host files. Existing archive records are retained. Ordinary single-file ZIP, TAR, TAR.GZ and 7z edits use a frozen source, private same-volume rewrite, full content verification and version-bound atomic replacement. Resolved legacy names are re-emitted as explicit UTF-8 during ordinary updates, with namespace and Unicode/case checks repeated. Internal moves freeze source identities and accept sibling folders or the current session's directory tree. The same target rule applies to the list, grid and left directory tree: any selected folder, its descendants at any depth and the original location are refused with visible reasons. Mixed selections are rejected as a whole when the destination is forbidden. File conflicts reuse Ask/Skip/Rename/Replace; skipped inputs stay at their source. ZIP payloads and supported TAR metadata are retained through the same verified rewrite transaction. Encrypted and split edits are unavailable, with explicit hover feedback. Failed or cancelled pre-commit edits preserve the original archive. Native desktop acceptance is recorded separately from automated tests.
-
-English: Ordinary 7z edits rebuild admitted records using a bounded 512 MiB host buffer and the separate 1 GiB native-process limit. Exceeding either limit fails without modifying the original. Recompression may change methods, solid layout and physical record order; verification consumes the frozen unique-name set exactly once and checks each payload. Encrypted or split 7z archives and every RAR archive reject edits; native links and special records are not published.

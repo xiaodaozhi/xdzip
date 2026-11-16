@@ -1,5 +1,7 @@
 # 文件关联图标
 
+[English](../../visual/file-association-icons.md) | 简体中文
+
 系统文件图标沿用 xdzip 的折角文档、连续曲率徽章、四条交错带与开放 U 形标记。设计入口为[高保真审阅页](../../../design/hifi/sources/file-association-icons.html)，参数来源为 [file-association-icons.json](../../../specs/visual/file-association-icons.json)，文档图标源和产品所需平台容器统一位于 [file-associations](../../../design/assets/file-associations)。默认应用仍由用户选择。
 
 ## 形状与识别
@@ -62,5 +64,3 @@ python scripts/build-design-assets.py --metadata-only --refresh-association-icon
 生成检查验证 SVG 与规格一致、无字体／外部图像依赖。平台检查包括画布与 RGBA、透明角、可见主体高度和居中、矢量摘要以及每种 ICO／ICNS 表示解码后的像素一致性。主体边界按 alpha ≥ 128 测量，容差沿用品牌的 1.25 物理像素。
 
 视觉审阅同时覆盖浅色、深色与选中背景，16 至 256 像素，以及普通和高 DPR 的实际渲染。审阅页按 CSS 像素呈现，不将浏览器截图标记为 Explorer、Finder 或 Linux 原生验收。后续接入须检查真实文件名、复合后缀、图标缓存、默认选择前后和安装／卸载后的显示。阶段状态和实际执行范围在 GitHub issue 中记录，不在本规范累积测试报告。
-
-English: Windows uses per-extension ICOs and macOS uses per-type ICNS; Linux retains system MIME icons. Windows main and association executables embed the existing brand application ICO, with one visible xdzip application candidate; application identity and document icons require separate native checks. ZIP's original platform containers are preserved. Source vectors and required platform containers share one directory, and ordinary builds require no browser. The 16/24/32 px profiles omit lettering; GZ does not imply standalone GZIP support. Compound suffix recognition is platform dependent, and no generic volume or IMG association is introduced. Browser rendering and container validation do not replace native shell acceptance.

@@ -1,5 +1,7 @@
 # xdzip visual specifications
 
+English | [简体中文](../zh-CN/visual/README.md)
+
 Specification entries: [UI design standard](design-standard.md), [mandatory design workflow](design-workflow.md), and [density and unit contract](../../specs/visual/layout-scale.json). Reverification of main-window and menu proportions is recorded under the [general method](../qa/README.md).
 
 Current originals are in [design/hifi](../../design/hifi/README.md); the interactive HTML delivery is in [design/html](../../design/html/README.md). Unadopted early proposals are not the current baseline. Do not rely on reorganized main history to find old designs; the current originals and manifest govern.

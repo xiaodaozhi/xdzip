@@ -1,5 +1,7 @@
 # xdzip: Requirements, design, and acceptance traceability
 
+English | [简体中文](../zh-CN/design/requirements-traceability.md)
+
 The sole source of requirement IDs is [01](01-product-requirements.md). The table targets the final product; later requirements are not considered complete in the first version. Test IDs identify planned acceptance suites, not tests already present in the repository.
 
 ## 1. Traceability matrix

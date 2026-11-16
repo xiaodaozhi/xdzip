@@ -1,5 +1,7 @@
 # xdzip: Software design overview
 
+English | [简体中文](../zh-CN/design/index.md)
+
 Version: design baseline 0.1. These documents maintain the product design and architecture contracts; see issues for implementation and acceptance progress. The product name is **xdzip**, consistently spelled in lowercase.
 
 The project uses **Qt Quick** for its desktop interface. The established technical direction is **Qt Quick/QML + a thin C++ adapter layer + a Rust core**. These documents define product behavior, module boundaries, interface contracts, extensibility, security, performance, and delivery for open-source maintainers. This repository contains the actual product source, tests, and design inputs. Historical interface-selection experiments were not imported into this repository.

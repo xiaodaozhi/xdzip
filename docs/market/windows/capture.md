@@ -8,12 +8,12 @@ English | [简体中文](../../zh-CN/market/windows/capture.md)
 
 Close any existing xdzip processes first. From the repository root, run either command in Windows PowerShell 5.1:
 
-For a double-click entry point, open [capture-windows-store-zh-CN.cmd](../../../scripts/capture-windows-store-zh-CN.cmd) or [capture-windows-store-en-US.cmd](../../../scripts/capture-windows-store-en-US.cmd). These launch the same assistant and keep the console open to show the result.
-
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/capture-windows-store.ps1 -Language zh-CN
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/capture-windows-store.ps1 -Language en-US
 ```
+
+For a double-click entry point, open [capture-windows-store-zh-CN.cmd](../../../scripts/capture-windows-store-zh-CN.cmd) or [capture-windows-store-en-US.cmd](../../../scripts/capture-windows-store-en-US.cmd). These launch the same assistant and keep the console open to show the result.
 
 `-ExecutionPolicy Bypass` applies only to this invocation; it does not change the saved execution policy. The script uses the existing candidate at `build/issue272-store-materials/runtime/xdzip.exe` and the owned files in the adjacent `demo/` directory. When run from a Git worktree it can reuse those files from the main checkout. It checks the executable against the SHA-256 recorded in [windows-store.json](../../../specs/marketing/windows-store.json), rather than building or installing a different application.
 

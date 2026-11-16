@@ -1,6 +1,8 @@
 # High-fidelity states and implementation contract
 
-Corresponds to [operation state originals](../../design/hifi/README.md) and the [shared asset library](../../design/assets/README.md). State IDs continue prototype mappings, adding C02, T02, R02 and R03 without inventing a business protocol. Requirements P03/P04/P05/P06/P07/P08/P11/P15; acceptance still compares AC-03/04/05/06/07/08/11/14.
+English | [简体中文](../zh-CN/ux/hifi-state-spec.md)
+
+This guide describes behavior, focus and closing actions for creation, extraction and task windows, with links to the [operation state originals](../../design/hifi/README.md) and [shared asset library](../../design/assets/README.md). The identifiers in the table refer to design artboards and do not change the task protocol.
 
 ## Screens and task semantics
 

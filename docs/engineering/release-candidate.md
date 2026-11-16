@@ -1,5 +1,7 @@
 # Release candidate materials contract
 
+English | [简体中文](../zh-CN/engineering/release-candidate.md)
+
 Each candidate binds a clean source commit, product version, and actual package hashes. Generating materials does not automatically create GitHub Releases or tags, upload packages, or approve license choices; actual status is recorded in the candidate issue. Formal signing and notarization are not gates. Under the owner's 2026-11-05 policy, release attachments do not provide corresponding-source archives; local source collection and review tools remain available.
 
 ## Deliverables

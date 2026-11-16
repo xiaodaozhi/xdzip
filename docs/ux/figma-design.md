@@ -1,5 +1,7 @@
 # Figma functional design draft
 
+English | [简体中文](../zh-CN/ux/figma-design.md)
+
 Design file: [xdzip — v0.1 product design and interaction specification](https://www.figma.com/design/ib4gjPbNSFNpaOI1ld3zaF).
 
 Further functional detail continues in the [repository interaction prototype](prototype-spec.md); this file remains a record of design exploration.

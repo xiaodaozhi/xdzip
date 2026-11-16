@@ -1,6 +1,6 @@
 # Store listing copy, English (US)
 
-[简体中文](../../zh-CN/market/windows/listing.md)
+English | [简体中文](../../zh-CN/market/windows/listing.md)
 
 ## Baseline
 
@@ -15,7 +15,7 @@ xdzip
 ## Description
 
 ```text
-Make packing and unpacking a little simpler.
+Pack and unpack, a little simpler
 
 xdzip is an open-source archive manager for Windows. Look inside an archive, find the files you need, and extract selected items without unpacking everything. Basic compression, extraction and browsing work offline, with archive contents processed on your PC. No xdzip account is required.
 

@@ -1,5 +1,7 @@
 # xdzip：架构决策记录
 
+[English](../../design/architecture-decisions.md) | 简体中文
+
 初始记录日期为 2026-10-11，后续记录单独标明日期。Accepted 表示本设计采用，并非实现已验证。若替代某条记录，保留原文并追加新记录。
 
 ## ADR-001：Qt Quick 作为唯一产品界面

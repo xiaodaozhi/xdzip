@@ -1,6 +1,8 @@
 # 验证方法与证据管理
 
-本目录保存可重复使用的验收要求、测试方法、样本规则、审查流程和空白模板。它不保存具体版本的验收结果、阶段报告、截图、测量 JSON、运行日志或交接进度。
+[English](../../qa/README.md) | 简体中文
+
+这些指南帮助开发者根据改动选择验证方法、准备测试样本，并判断检查结果能够说明什么。
 
 - [产品验收要求](acceptance.md)
 - [样本与夹具规则](fixtures.md)
@@ -32,15 +34,12 @@
 
 HTML 正文对照保留冻结原稿及哈希。任务入口图标使用已批准的 16 逻辑像素修订，严格测量实际 SVG 的尺寸、垂直中心及在按钮和文字之间的位置；旧原稿墨迹保留为审阅记录，不改写目标。主窗口与菜单的比例由 Qt 逻辑尺寸和 DPR 矩阵检查；真实浏览器缩放可按需本地复核 HTML。
 
-English: First-frame menu checks locate sequence and status tags by object name and verify actual text metrics with the shared, font-scaled insets. Both languages and themes, 100/125/150% font scales, all eight tag/shortcut combinations and submenu arrows remain covered without geometry retries or wider tolerances. HTML body checks retain the frozen artwork and hash, recording its superseded task icon ink while strictly measuring the approved 16-unit SVG size, vertical center and placement. Qt main-window/menu proportions retain logical-size and DPR checks; browser zoom is optional for local HTML review.
 
 Windows 可在构建 Qt 浏览器测试后按需运行 `scripts/check-windows-update-uia.ps1`，传入 `-TestExecutable`、`-QtBin` 和尚不存在的 `-OutputDirectory`。脚本使用隔离测试进程与模拟更新状态，检查中英文更新文字是否可由 Windows UI Automation 读取；输出只放在 `build/`。它不连接真实更新服务，也不代替真实读屏或其他平台检查。
 
-English: On Windows, the optional `check-windows-update-uia.ps1` takes a built browser test executable, a Qt bin directory and a new output directory. It observes bilingual synthetic update states through Windows UI Automation in an isolated test process; it does not exercise a real update service or replace a screen-reader or other-platform check.
 
 Windows 设置侧栏的原生悬停回归先确认目标字号与侧栏几何已生效，并等待 Qt 完成待处理的布局整理，再检查目标位置是否由测试窗口接收；若被遮挡，只将测试自己的窗口临时置顶，不操作其他应用。检查仍核对系统指针位置、窗口命中、进入、切换和离开时的真实悬停状态；置顶是测试布置，不改变产品窗口策略。另用自有遮挡窗口验证该回退。失败时可设置 `XDZIP_SETTINGS_HOVER_FAILURE_AUDIT` 输出测试窗口自身的截图和诊断数据。
 
-English: The Windows settings-sidebar hover test checks that the requested font and sidebar geometry have taken effect and waits for pending Qt layout polish, then checks that its own window receives the target position. If obscured, it temporarily raises only the test window to topmost; it does not manipulate other applications or change product window policy. It still checks the system cursor, window hit, hover entry, switching and exit, and exercises the fallback with an owned obstruction. `XDZIP_SETTINGS_HOVER_FAILURE_AUDIT` optionally retains the test window's own failure screenshot and diagnostic data.
 
 ## 状态与证据放在哪里
 

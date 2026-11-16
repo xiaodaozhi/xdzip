@@ -1,8 +1,10 @@
 # File-manager actions and standalone task host
 
+English | [简体中文](../zh-CN/engineering/shell-actions.md)
+
 System entry points pass selections and actions to the desktop process in the same login session. Windows uses the classic `IContextMenu`, under “Show more options” on Windows 11. Ubuntu 24.04 Files uses a Nautilus 4.0 menu extension. macOS uses the Finder Sync “Open with xdzip” dynamic submenu, retaining “Services → Open with xdzip” and the standalone operation panel as fallbacks.
 
-Actual platform verification and remaining work for this package are tracked in [#270](https://github.com/xiaodaozhi/xdzip/issues/270). Source capabilities are not retroactively added to existing release assets.
+Actual platform verification and remaining work are tracked in [#270](https://github.com/xiaodaozhi/xdzip/issues/270). Source capabilities are not retroactively added to existing release assets.
 
 The no-paid-account Finder Sync implementation and local verification are tracked in [#273](https://github.com/xiaodaozhi/xdzip/issues/273). Apple positions Finder Sync for synchronization apps; this project accepts the applicability limitation for a general compression menu and does not claim App Store review acceptance. Local ad-hoc integrity signing requires no paid account, Developer ID, App Groups or notarization, and provides no Gatekeeper publisher trust. See [Apple's Finder Sync documentation](https://developer.apple.com/library/archive/documentation/General/Conceptual/ExtensibilityPG/Finder.html).
 

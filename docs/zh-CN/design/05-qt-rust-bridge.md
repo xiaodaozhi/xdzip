@@ -1,5 +1,7 @@
 # xdzip：05 Qt/Rust 类型桥接与应用服务协议
 
+[English](../../design/05-qt-rust-bridge.md) | 简体中文
+
 ## 1. 决策和版本
 
 正式产品使用 `cxx` 生成 Rust/C++ 构建期桥接。应用、Rust 静态库和生成头必须来自同一提交和工具链组合；不允许替换为任意版本动态库。此接口面向产品内部，不是第三方二进制 SDK，也不是 [06](06-codec-extension-sdk.md) 的进程协议。
@@ -8,7 +10,7 @@
 
 以下表格定义概念类型与语义，不是可直接编译的 `cxx::bridge` 声明。实施阶段根据 cxx 允许的共享类型拆分结构，生成代码纳入构建而非手工编辑。禁止为性能方便引入未定义生命周期的裸指针。
 
-当前已落地双句柄、取消／关闭控制通道、Qt mailbox、查询代际与来源版本，以及创建／解压 TaskId 和独立输出授权。应用支持独立归档会话，每个 BrowserController 使用自己的单会话 RuntimeConnection，普通请求仍在各连接内串行，重任务由应用统一串行准入，见[应用会话契约](../engineering/application-sessions.md)。第三方进程协议、CPU token 池和下表中的部分目标命令仍属后续设计。实际 API 与资源／失败边界见 [M1 运行时](../engineering/m1-runtime.md)、[M2 查询](../engineering/m2-readonly.md)、[安全解压](../engineering/m3-extraction.md)及[创建契约](../engineering/m4-creation.md)，不能将设计表当作当前 cxx 声明。
+当前已落地双句柄、取消／关闭控制通道、Qt mailbox、查询代际与来源版本，以及创建／解压 TaskId 和独立输出授权。应用支持独立归档会话，每个 BrowserController 使用自己的单会话 RuntimeConnection，普通请求仍在各连接内串行，重任务由应用统一串行准入，见[应用会话契约](../engineering/application-sessions.md)。第三方进程协议、CPU token 池和下表中的部分目标命令仍属后续设计。实际 API 与资源／失败边界见 [产品运行时](../engineering/m1-runtime.md)、[ZIP 查询](../engineering/m2-readonly.md)、[安全解压](../engineering/m3-extraction.md)及[创建契约](../engineering/m4-creation.md)，不能将设计表当作当前 cxx 声明。
 
 ## 2. 客户端和事件接收
 
@@ -125,8 +127,4 @@ CMake 构建 Qt 应用，Cargo 构建 Rust 静态库和 cxx 生成产物。使�
 
 `Preview` 接收会话、单物理条目和可选解码密码，沿用请求取消；有限 `Preview` 结果含内容类型、entry ID 和拥有的 bytes，计入 Rust 事件与 C++ mailbox 字节预算。只有完整成功终态、请求／会话／条目仍匹配时才展示。密码失败复用宿主密码窗口并限次重试，不在普通事件回传秘密。Qt 用 plain text 或每引擎受控异步 image provider 显示，token 不携带数据 URL 或路径；选择、查询、隐藏、关闭和取消撤销内容，见[预览契约](../engineering/content-preview.md)。
 
-English: Implemented pages are limited to 128 rows/64KiB names with a 1024-row Qt cache. Full session/query/generation/revision/offset identities reject stale pages. FreezeSelection validates bounded ranges and returns owned stable IDs before extraction confirmation. Preview returns only bounded verified bytes, accounted in both queues, and applies only to the still-current request/session/entry. Passwords remain host-controlled; plain text and opaque asynchronous image tokens are invalidated on lifecycle changes.
-
 图片预览 kind 使用固定 u8：1 纯文本、2 PNG、3 JPEG／JFIF、4 GIF、5 BMP、6 ICO／CUR、7 WebP、8 TIFF、9 TGA、10 ICNS、11 静态 SVG、12 macOS HEIC／HEIF。Rust 仅发布已完成归档读取与验证的内容；Qt 不扩展未知 kind，不按系统插件自动猜测其他格式。图片经私有受限进程转换为有界 RGBA，详情、选择和会话身份仍由现有控制器冻结与失效。完整预算见[预览契约](../engineering/content-preview.md)。
-
-English: Preview kinds 1..12 map to plain text, PNG, JPEG/JFIF, GIF, BMP, ICO/CUR, WebP, TIFF, TGA, ICNS, static SVG and macOS-only HEIC/HEIF. Only archive-verified bytes cross the bridge; unknown kinds are refused. A bounded private image process returns RGBA without receiving archive paths or secrets. Existing request/session identity and teardown rules remain authoritative.

@@ -1,5 +1,7 @@
 # DEB container contract
 
+English | [简体中文](../zh-CN/engineering/deb-containers.md)
+
 The package envelope follows Debian's [deb(5)](https://manpages.debian.org/unstable/dpkg-dev/deb.5.en.html); common ar fields follow [ar(5)](https://man.netbsd.org/ar.5). Only the ordinary `!<arch>\n` layout is admitted. Each 60-byte header has bounded ASCII name/time/owner/mode/size fields and its required trailer. Validate decimal fields, octal mode, exact payload spans, newline padding of odd-length members and physical EOF. Thin archives, historical formats and long-name extensions are unsupported and grant no external file access.
 
 `debian-binary` is first. Accept major version 2, bounded decimal minor versions and bounded additional version lines; refuse incompatible majors. Control and data members occur in that order. Underscore-prefixed extensions may intervene, and subsequent extra members are preserved. Control accepts TAR without compression, GZIP, XZ or Zstandard. Data additionally accepts BZip2 and LZMA Alone. The actual TAR/filter implementation, rather than a suffix alone, validates every selected member. Unsupported required member profiles fail explicitly. Deb822 fields, checksums listed inside metadata, signatures and installability are outside container validation.

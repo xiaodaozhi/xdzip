@@ -1,5 +1,7 @@
 # 许可证决策与第三方材料
 
+[English](../../engineering/licensing.md) | 简体中文
+
 状态：已采用。项目于 2026-10-11 确立 **Apache-2.0** 许可证，适用于项目原创代码、文档及其他原创内容，另有声明的材料除外。此前实验文档中的 MIT OR Apache-2.0 不适用于本仓库的许可选择。
 
 根目录 [LICENSE](../../../LICENSE) 提供完整 Apache License 2.0 标准正文，SPDX 标识为 `Apache-2.0`。贡献指南与发行设计已同步。许可证选择不改变仓库可见性；2026-10-19 只读查询确认仓库已公开，发行准入仍按实际材料单独核对。
@@ -13,8 +15,6 @@ RAR 的有限线格式映射及公开测试夹具保留各自的来源、原始�
 有限映射另保留[固定参考原文与来源说明](../../../third_party/rar-wire-mappings/README.md)，包括上游内部版本 UnRAR 7.30 beta1 的原始完整许可、下载归档 `unrarsrc-7.3.1.tar.gz` 及原文 SHA-256。通知收集器将这些有界材料纳入实际通知哈希，对应源码交付也保留独立副本；它们不是重新引入官方引擎或声明其为运行依赖，不自动裁定条款适用范围，也不批准本候选发行。
 
 固定原文与 SPDX 的 `UnRAR` 许可文本统一空白后逐词一致。为反映参考映射的保守处理，RAR crate 及其源码 SBOM 声明 `Apache-2.0 AND UnRAR`，并非可任选的双许可；该 crate 不发布到 crates.io。`UnRAR` 是 SPDX 3.28 及以后清单中的非 OSI 批准许可标识，较旧工具可能不识别；原许可和限制仍应随材料保留。该声明不裁定映射的版权性质，原版 alpha.8 清单也不会因此被改写。
-
-English: Current worker formats use independent Rust; official UnRAR and 7-Zip source code is absent from product builds and deployment. Historical deliveries, finite RAR wire mappings, public fixtures and separate reference tools retain their respective provenance and licensing obligations. The finite-mapping notice set retains the exact original license for upstream internal version UnRAR 7.30 beta1, from the pinned archive unrarsrc-7.3.1.tar.gz, in package notices and corresponding-source delivery. The notice matches the SPDX `UnRAR` text after whitespace normalization. As a conservative package-level statement, the RAR crate and source SBOM use `Apache-2.0 AND UnRAR`, requiring both rather than offering a choice; the crate is not published to crates.io. The non-OSI-approved `UnRAR` identifier appears in SPDX 3.28 and later, so older tools may not recognize it. This does not decide the mappings' copyright status or alter the alpha.8 inventory. These bounded materials neither reintroduce the official engine nor constitute clean-room certification, legal clearance or release approval.
 
 平台运行库专属通知、供应方输入和许可资格的核对遵循[原生运行库来源与通知](native-runtime-materials.md)，不以通用许可正文替代供应方版权声明。
 

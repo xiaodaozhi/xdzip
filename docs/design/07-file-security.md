@@ -1,5 +1,7 @@
 # xdzip: 07 File security, permissions, and output transactions
 
+English | [简体中文](../zh-CN/design/07-file-security.md)
+
 ## 1. Threat model
 
 Archives, filenames, sizes, CRCs, compressed data, extension metadata, recovery logs, and third-party extensions are untrusted. Major threats include path escape, overwriting important files, link attacks, archive bombs, parser memory errors, incorrect name mappings, partial writes masquerading as success, password leaks, and extension privilege abuse.

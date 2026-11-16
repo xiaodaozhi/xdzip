@@ -1,5 +1,7 @@
 # xdzip：11 构建、发布、许可证与更新
 
+[English](../../design/11-build-release.md) | 简体中文
+
 ## 1. 支持矩阵
 
 应用显示名和可执行文件基名统一为 `xdzip`；平台工件为 `xdzip.app`、`xdzip.exe` 和 `xdzip`，Linux 桌面入口为 `xdzip.desktop`。正式 Rust 模块使用 `xdzip-` 前缀。发布使用项目现有 bundle ID，个人 GitHub 开源发行不要求付费签名身份，见[发布手册](../engineering/release-runbook.md)。首批支持范围和维护方式已由项目所有者于 2026-10-19 批准，权威说明见[支持政策](../engineering/support-policy.md)及 [ADR-011](architecture-decisions.md#adr-011首批支持范围与个人项目维护政策)。

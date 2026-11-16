@@ -1,5 +1,7 @@
 # Runtime tests through the real worker
 
+English | [简体中文](../zh-CN/qa/runtime-worker-tests.md)
+
 The [runtime integration inventory](../../specs/engineering/runtime-worker-tests.json) declares every environment-dependent runtime library test and its prerequisites. Ordinary `cargo test` leaves these tests opt-in because they need a separately built isolated worker, fixed external data or substantial temporary storage. An ignore marker is not verification evidence.
 
 Use an existing project-built `xdzip-native-codec` worker. The following entry point prepares authorized inputs, builds only the runtime test binary and executes the inventory serially. It does not build Qt, invoke author tools, install the product or grant release permission.

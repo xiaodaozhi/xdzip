@@ -1,5 +1,7 @@
 # xdzip: 05 Qt/Rust type bridge and application service protocol
 
+English | [简体中文](../zh-CN/design/05-qt-rust-bridge.md)
+
 ## 1. Decision and versioning
 
 The production product uses `cxx` to generate the Rust/C++ build-time bridge. The application, Rust static library, and generated headers must come from the same commit and toolchain combination; arbitrary-version dynamic libraries must not be substituted. This is an internal product interface, not a third-party binary SDK or the process protocol in [06](06-codec-extension-sdk.md).
@@ -8,7 +10,7 @@ The prototype `lab_engine_new/lab_request/lab_string_free/lab_engine_free` and J
 
 The following tables define conceptual types and semantics, not directly compilable `cxx::bridge` declarations. Implementation splits structures according to cxx's supported shared types; generated code is built, not edited by hand. Raw pointers with undefined lifetimes must not be introduced for performance convenience.
 
-The product already implements dual handles, cancellation/shutdown control channels, a Qt mailbox, query generations and source versions, plus TaskId and separate output authorization for creation/extraction. The application supports independent archive sessions. Each BrowserController uses its own single-session RuntimeConnection; ordinary requests remain serial within each connection, while heavy tasks are admitted serially across the application. See the [application sessions contract](../engineering/application-sessions.md). The third-party process protocol, CPU token pool, and some target commands below remain future design. See [M1 runtime](../engineering/m1-runtime.md), [M2 queries](../engineering/m2-readonly.md), [safe extraction](../engineering/m3-extraction.md), and the [creation contract](../engineering/m4-creation.md) for actual APIs and resource/failure boundaries. Do not treat the design tables as current cxx declarations.
+The product already implements dual handles, cancellation/shutdown control channels, a Qt mailbox, query generations and source versions, plus TaskId and separate output authorization for creation/extraction. The application supports independent archive sessions. Each BrowserController uses its own single-session RuntimeConnection; ordinary requests remain serial within each connection, while heavy tasks are admitted serially across the application. See the [application sessions contract](../engineering/application-sessions.md). The third-party process protocol, CPU token pool, and some target commands below remain future design. See [product runtime](../engineering/m1-runtime.md), [ZIP queries](../engineering/m2-readonly.md), [safe extraction](../engineering/m3-extraction.md), and the [creation contract](../engineering/m4-creation.md) for actual APIs and resource/failure boundaries. Do not treat the design tables as current cxx declarations.
 
 ## 2. Client and event reception
 

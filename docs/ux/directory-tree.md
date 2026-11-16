@@ -1,6 +1,8 @@
 # Directory tree B: design, assets and integration
 
-Status: **core directory interaction is integrated in HTML examples and Qt read-only browsing; boundary-state assets await integration**. Scope covers B01 browsing, P01/P02/P08 and WP-05/06, following the [read-only browsing contract](../engineering/readonly-browser.md). Normal directory browsing uses direct children, search recursively covers the current scope, and output authorization remains read-only.
+English | [简体中文](../zh-CN/ux/directory-tree.md)
+
+Status: **core directory interaction is integrated in HTML examples and Qt read-only browsing; boundary-state assets await integration**. Interaction follows the [read-only browsing contract](../engineering/readonly-browser.md). Normal directory browsing uses direct children, search recursively covers the current scope, and output authorization remains read-only.
 
 The three current artboards are [multi-level expansion](../../design/hifi/screens/directory-tree-capsule.png), [node and interaction states](../../design/hifi/screens/directory-tree-states.png) and [empty and navigation boundaries](../../design/hifi/screens/directory-tree-boundaries.png). The [shared gallery](../../design/hifi/index.html#components) shows full artboards and the [asset library](../../design/assets/index.html#directory-tree) provides individual slices. Multi-level expansion is exported from the [editable source](../../design/hifi/sources/main.html?tree=expanded), with the title bar synchronized to current capsule tabs. Top and central lists in the board provide context only and do not redefine title bar, toolbar or file table. The [historical multi-level original](../../design/hifi/screens/directory-tree.png) remains unchanged as the source of 26 slices and an independent measurement reference.
 

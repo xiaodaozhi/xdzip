@@ -28,6 +28,14 @@ if ($env:OS -ne 'Windows_NT' -or $PSVersionTable.PSEdition -ne 'Desktop') {
     throw 'Run this assistant with Windows PowerShell 5.1: powershell.exe -NoProfile -File ...'
 }
 $repoRoot = Split-Path -Parent $PSScriptRoot
+function Get-CaptureSha256([string]$Path) {
+    # Use the framework directly so cmd.exe launchers do not depend on an
+    # inherited PSModulePath from another PowerShell installation.
+    $algorithm = [Security.Cryptography.SHA256]::Create()
+    $stream = [IO.File]::OpenRead($Path)
+    try { [BitConverter]::ToString($algorithm.ComputeHash($stream)).Replace('-', '').ToLowerInvariant() }
+    finally { $stream.Dispose(); $algorithm.Dispose() }
+}
 $materialRoot = Join-Path $repoRoot 'build/issue272-store-materials'
 # A worktree reuses the existing candidate, rather than copying its runtime.
 if ((!$Executable -or !$DemoDirectory) -and !(Test-Path -LiteralPath (Join-Path $materialRoot 'runtime/xdzip.exe'))) {
@@ -59,7 +67,7 @@ $DemoDirectory = (Resolve-Path -LiteralPath $DemoDirectory).ProviderPath
 $spec = Get-Content -LiteralPath (Join-Path $repoRoot 'specs/marketing/windows-store.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 $layout = Get-Content -LiteralPath (Join-Path $repoRoot 'specs/visual/layout-scale.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 $catalog = Get-Content -LiteralPath (Join-Path $repoRoot "resources/i18n/$Language.json") -Raw -Encoding UTF8 | ConvertFrom-Json
-$exeHash = (Get-FileHash -LiteralPath $Executable -Algorithm SHA256).Hash.ToLowerInvariant()
+$exeHash = Get-CaptureSha256 $Executable
 if ($exeHash -ne $spec.baseline.runtime_exe_sha256) { throw 'Executable differs from the Store candidate recorded in windows-store.json.' }
 $browseName = if ($Language -eq 'zh-CN') { '设计交付.zip' } else { 'Design delivery.zip' }
 $photoName = if ($Language -eq 'zh-CN') { '图片精选.zip' } else { 'Photo collection.zip' }
@@ -171,10 +179,10 @@ try {
                 }
                 $receipt.images += [ordered]@{
                     scene = $scene.id; file = $image.ClientFile
-                    sha256 = (Get-FileHash -LiteralPath (Join-Path $OutputDirectory $image.ClientFile) -Algorithm SHA256).Hash.ToLowerInvariant()
+                    sha256 = Get-CaptureSha256 (Join-Path $OutputDirectory $image.ClientFile)
                     width = $image.ClientWidth; height = $image.ClientHeight; dpi = $image.Dpi
                     window_file = $image.WindowFile
-                    window_sha256 = (Get-FileHash -LiteralPath (Join-Path $OutputDirectory $image.WindowFile) -Algorithm SHA256).Hash.ToLowerInvariant()
+                    window_sha256 = Get-CaptureSha256 (Join-Path $OutputDirectory $image.WindowFile)
                     window_dimensions = @($image.WindowWidth, $image.WindowHeight)
                     client_crop = @($image.ClientLeft, $image.ClientTop, $image.ClientWidth, $image.ClientHeight)
                 }

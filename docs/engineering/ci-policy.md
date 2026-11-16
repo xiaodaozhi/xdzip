@@ -1,5 +1,7 @@
 # CI and merge policy
 
+English | [简体中文](../zh-CN/engineering/ci-policy.md)
+
 ## Routine checks
 
 [CI](../../.github/workflows/docs.yml) runs one Linux job on pushes to main, pull requests, and manual dispatch. It checks documentation links and JSON, versions and UI text, generated-resource consistency, window/shared-control contracts, Rust and C/C++ formatting, workflow structure, and whitespace errors. It does not build the desktop product or run complete Rust, three-platform Qt, archive-format interoperability, packaging, or installation lifecycle checks. The target is usually under five minutes; queue and download times follow actual run records.

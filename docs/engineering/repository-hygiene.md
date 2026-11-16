@@ -1,5 +1,7 @@
 # Repository content and history management
 
+English | [简体中文](../zh-CN/engineering/repository-hygiene.md)
+
 The source repository retains durable inputs needed to understand, build, and maintain the product. Issues manage task progress and acceptance conclusions; local or CI artifacts manage execution output. “Generated” alone is not a reason to commit.
 
 ## Content ownership

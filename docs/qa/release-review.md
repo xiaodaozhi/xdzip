@@ -1,5 +1,7 @@
 # Release licensing review
 
+English | [简体中文](../zh-CN/qa/release-review.md)
+
 This page defines reusable provenance and redistribution review methods for each candidate; it does not record progress or approvals for a particular candidate. Historical `v0.1.0` review and release closeout are recorded in [#4](https://github.com/xiaodaozhi/xdzip/issues/4) and [#53](https://github.com/xiaodaozhi/xdzip/issues/53), both closed. Future candidates require a new release issue for the specific version. Completing work packages, passing automated checks and approving a formal release are separate conclusions.
 
 ## Candidate and inputs

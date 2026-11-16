@@ -1,6 +1,8 @@
 # Implementation roadmap and work packages
 
-This page maintains work-package dependencies and durable delivery boundaries. Specific progress, acceptance records and blockers are managed in [Issues](https://github.com/xiaodaozhi/xdzip/issues), not appended here as batch reports. Development work packages and formal release reviews are separate; status follows the relevant issue and actual evidence.
+English | [简体中文](../zh-CN/planning/backlog.md)
+
+This page describes dependencies and acceptance criteria for development. WP identifies a work package and M identifies a development milestone. See [Issues](https://github.com/xiaodaozhi/xdzip/issues) for progress and blockers. Development completion and formal release review are assessed separately.
 
 | ID / milestone | Dependencies | Deliverables and testable exit criteria |
 | --- | --- | --- |

@@ -1,5 +1,7 @@
 # 工具链与平台冻结表
 
+[English](../../engineering/toolchain.md) | 简体中文
+
 开发工具版本由 rust-toolchain.toml、Cargo.lock、CMake 和 CI 固定，支持范围遵循[支持政策](support-policy.md)。本表定义升级及发行前的核验要求，具体观测记录留在 issue／Actions，不把单机工具列表当作发行依赖锁。
 
 | 项目 | 当前方向 | 冻结所需证据 |
@@ -13,8 +15,6 @@
 | 系统 | macOS 14+ arm64、受维护 Windows 11 x64、Ubuntu 24.04 X11 x64 | 按已批准支持政策核对真实环境，不把 CI 宿主扩大为全部系统版本保证 |
 
 Windows 使用 MSVC 与 Ninja 时，桌面构建、Qt 源码构建和源码交付重建在构建期间临时使用 UTF-8 控制台代码页，并在结束后恢复原值；没有控制台时使用临时隐藏控制台，供本进程和子进程使用，外部进程不得主动附加。同一现有控制台中的受保护构建按附加进程列表互斥，独立控制台可以并行；各进程在保护期间必须保持附加，无法取得有效列表时停止，等待超过 30 秒则提示重试。无窗口句柄的旧版脚本与新版锁不兼容；该协调也不控制其他程序对控制台的修改。构建前后检查已编译对象的 Ninja 依赖记录，发现直接使用引号包含或同目录尖括号包含的源文件没有依赖记录时停止，保留原目录并要求使用新的构建目录，不自动删除或重用旧对象。Ninja 可能有意省略系统头文件，因此仅使用系统头的对象允许零依赖；检查不覆盖其他搜索路径的尖括号包含或所有编译器隐式输入，也不解析预处理条件，可能保守地拒绝未启用的包含项。直接运行 CMake／Ninja 不经过这些入口保护，应自行保证编译器输出与 Ninja 前缀一致，并在更换代码页或工具链后验证头文件改动确实触发重编译。
-
-English: On Windows, the desktop, Qt source and delivered-source build entry points temporarily use a UTF-8 console for MSVC/Ninja and restore its previous code pages afterwards; when no console is attached they create a temporary hidden one for the process and its children, and outside processes must not attach to it. Guarded builds sharing an existing console serialize using its attached-process list; independent consoles can build concurrently. Each process must remain attached while guarded. An invalid process list stops the build, and lock waits stop after 30 seconds. Older scripts without a console window use incompatible locks, and other programs can still change console settings. The checks inspect dependency records before and after building, stop if a compiled source with a direct quoted include or a same-directory angle include has no recorded dependencies, and ask for a new build directory without deleting the old one. Ninja can intentionally omit system headers, so zero dependencies are allowed for sources including only system headers. The check does not cover angle includes resolved through other search paths or every implicit compiler input; it does not evaluate preprocessor conditions and may conservatively reject inactive includes. Direct CMake/Ninja invocations bypass this protection: verify the compiler output prefix and a real header-triggered rebuild after changing code pages or toolchains.
 
 GitHub 托管的 Apple Silicon 作业使用 macOS 15 运行器，产品部署目标仍为 macOS 14.0。运行器升级不等于在 macOS 14 实机上完成验证；平台兼容与人工验收分别记录。
 
@@ -31,5 +31,3 @@ GitHub 托管的 Apple Silicon 作业使用 macOS 15 运行器，产品部署目
 Windows 主窗口的客户区扩展由 WindowsFrame 使用公开 Qt 窗口接口和 Win32 实现，不链接 GuiPrivate。首次绑定普通窗口时按当前 QWindow 客户区逻辑尺寸、DPR 和原生边框度量确定外框，后续主题或 DPI 重应用只刷新边框。在无局部缩放覆盖、Qt PassThrough 舍入的 PMv2 普通窗口中，WM_GETDPISCALEDSIZE 保留待处理 SIZE 的缩放前调整量，缩放客户区后加目标 DPI 的实际边框；无效度量、溢出及其他状态不写入 SIZE，交回 Qt。借用的原生消息及其可写结构仅在同步回调中使用。升级 Qt 或替换 SDK 时复验相关客户区、边框和窗口状态；物理双屏拖动与视觉按需检查，程序化结果不冒充未执行的物理验证。
 
 日常 CI 在 runner 临时目录中独立安装 `rust-toolchain.toml` 固定版本及 rustfmt、clippy，并检查实际编译器位于该目录后执行 Rust 格式检查，避免复用宿主不完整的 rustup 工具链。完整 Rust 与签名工具测试按变更在本地或相关按需工作流运行。
-
-English: Lightweight CI installs the pinned Rust toolchain and formatting components in an isolated runner-temporary directory, then runs the formatting check. Full Rust and signing-tool tests run locally or in the relevant on-demand workflow.

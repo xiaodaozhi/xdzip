@@ -1,5 +1,7 @@
 # GitHub Release 协议 v1
 
+[English](../../engineering/release-protocol.md) | 简体中文
+
 专用 [Release 工作流](../../../.github/workflows/release.yml)只由 `workflow_dispatch` 手动触发，并要求输入已有版本标签。创建或移动标签不会自动再触发一轮发行构建，因此同一提交的三平台 native 只在该手动运行中执行一次，汇总步骤复用同一运行的工件。按需 Qt 工作流的 macOS 作业只进行 SDK 验证；专用发布流程明确允许 Apple Silicon 原生 Qt 部署、必要的 ad-hoc 完整性签名、同一应用的 ZIP 和 DMG 打包与核验。未使用 Developer ID、Apple 公证或 Windows 发行者证书。
 
 完整标签等于 `v` 加 VERSION.json 派生的语义版本。`prerelease_number` 是可选正整数，缺省兼容历史构建号；alpha.1 与 build 14 是不同身份。Windows 数值资源和 macOS CFBundleVersion 仍使用单调递增构建号。公开同一版本的资产不可替换，修订必须使用新版本；草稿可重跑。
@@ -11,8 +13,6 @@
 发布器在改动草稿资产前回读 GitHub 标签、草稿状态和渠道标记。stable 渠道必须保持非预发布状态并成为 GitHub Latest；alpha、beta、rc 渠道必须保持预发布状态且不能取代 Latest。公开操作后及公开附件复核结束后再次核对相应状态，全部符合才报告成功。公开后的核对失败时，版本可能已经对外可见，脚本停止并要求所有者处理，不自动撤回、修改或替换已公开版本及资产。
 
 正式发布前在本地完成与提交匹配的构建、契约和版本说明预检。正式发布只使用版本标签执行一次手动工作流；该运行先创建草稿，再并行执行三平台 native 与契约检查，最后由汇总步骤复用已上传工件并使用受保护环境完成签名和公开。不要为同一提交先运行验证工作流再重跑正式发布，否则会重新构建 native。正式发布仍要求版本标签和生产更新签名，不能以提交 SHA 冒充标签。
-
-English: The Release workflow is a single manual dispatch for an existing version tag. It builds native packages once, uploads them as run artifacts, and reuses those artifacts in the final assembly and publication job. Local build, contract and notes checks happen before the tag is created; a separate validation run must not be followed by another release run for the same commit.
 
 发行契约作业先构建同提交的隔离格式工作进程，再通过 `XDZIP_NATIVE_CODEC` 与 `XDZIP_NATIVE_CODEC_WORKER` 运行 Rust workspace 测试。只运行 Cargo 测试不能证明需要真实工作进程的路径已执行；原生三平台作业继续分别验证实际应用、部署与安装生命周期。
 
@@ -60,21 +60,10 @@ macOS 在无秘密的工具链准备步骤中一次安装 `rust-toolchain.toml` 
 
 `prepare-release.py --require-update-signature` 在缺少任一密钥、签名或原生归档元数据时停止；`publish-release.py` 独立复验清单、同候选 feed 与归档后才上传。签名、appcast 和状态附件均进入完整 SHA256SUMS。已有公开版本不补传或替换这些新附件。
 
-English: Every immutable release includes schema-v1 release.json and SHA256SUMS. All six native package targets must be present and hash-verified before a draft becomes public. Metadata binds the complete semantic version, channel, monotonic build, tag and full commit to platform/architecture/package requirements and pinned URLs. Clients paginate Releases, compare semantic versions and builds, and never regress from beta/rc to an earlier channel. They must not use publication dates, filename guesses or /releases/latest for prereleases. Installation additionally requires an Ed25519 release.json.sig over exact JSON bytes and a locally embedded trusted public key. macOS uses a separate Sparkle key to sign both the final app.zip and the entire single-candidate appcast, with a short embedded version description and a pinned macos_appcast_url. Full release notes remain in the GitHub Release body; clients do not fetch external release notes. Owner-provided production public keys are versioned with the client and installation helper; test keys must never be embedded. Older clients without these keys first require a manual installation of a version containing them, because downloaded manifests cannot add trust roots. Existing public releases are never retroactively signed or replaced. Publication independently rejects missing or invalid signatures and never changes existing public assets. macOS application code signing remains ad-hoc; update signatures do not impersonate Developer ID or notarization. Incomplete licensing checks and unperformed manual acceptance remain explicit.
 
-As of 2026-11-05, the owner has directed that historical corresponding-source archives be withdrawn from GitHub Releases and Actions artifacts and that future release workflows stop creating or uploading them. `scripts/prepare-source-delivery.py` remains available for local review; release assembly and publication reject archives whose names contain `corresponding-source`. This policy does not change component licenses or establish that corresponding-source, relinking or other obligations are satisfied. Release review must continue to resolve those obligations for the actual distribution; if required conditions have no other feasible delivery path, distribution of the affected binaries must be blocked. GitHub's automatically generated source snapshots for tags in the public repository are outside these Release attachments.
 
-Routine releases must not run the source collector locally. Run it only when the user explicitly requests source collection, while respecting the upload restriction. Assess generic machine review flags against the actual components and specific obligations; the flags alone do not establish a new release defect.
 
-The Release workflow accepts an existing version tag through one manual dispatch. It builds, deploys, verifies and assembles the complete attachment set once, then publishes from the same run artifacts. Stable channel publication creates a non-prerelease Release and explicitly marks it Latest; alpha, beta and rc remain prereleases and are explicitly kept out of Latest.
 
-The separate production-update acceptance workflow is manually dispatched from main with read-only repository permissions and the protected release-signing environment. Secret-free builds precede strict derivation and comparison of existing production public keys. Native private build-200 to build-201 upgrades retain the committed production roots. Only fixed candidates bound to this run's source, product identity and hashes may be signed; installers and applications execute without secrets. Signed candidates, manifests, feeds and applications remain on the disposable runner. A bounded allowlist collector exports only diagnostic records and rejects signed payloads in result slots. Key matching, signature verification, actual native installation and manual acceptance remain separate outcomes. No tag, draft or release is created, and local tools never retrieve GitHub Secret values.
-
-Each Windows deployment verification uses a fresh test copy and preserves prior evidence. Repeated verification never reuses or deletes an existing harness, and test DLLs stay outside the product runtime.
-
-Release notes come from a reviewed, version-specific Markdown file with matching version/build metadata. Offline notes preflight runs before native builds. Draft creation, retries and publication use the same reviewed body; a changed draft stops publication before any asset mutation. Manual acceptance remains scoped to the recorded platform and commit, in both languages. Missing notes for a new version never inherit old acceptance. Only actually published versions are archived in the changelog.
-
-Before changing draft assets, the publisher reads back the GitHub tag, draft state and channel marker. It checks them again after publication and after public attachment verification, and reports success only for the expected channel state; stable releases must also be marked Latest. A failed public-state check may leave a release already visible; the script stops for owner review and never automatically withdraws, edits or replaces the public release or its assets.
 
 
 ## 独立 CLI 附件
@@ -84,5 +73,3 @@ Before changing draft assets, the publisher reads back the GitHub tag, draft sta
 CLI 使用 `cli-release.json` 与 `cli-release.json.sig`。清单 schema_version=1、product=xdzip、component=cli，version、channel、build、tag、commit、repository 与桌面清单完全一致。assets 只包含上述三个目标，字段与 desktop asset 相同；Mac 包型为 tar.gz，Linux 最低系统不含 display_server，其他系统、架构和大小／摘要要求不变。固定发布者仍为 xiaodaozhi/xdzip。
 
 桌面 release.json 继续恰好六类包，不加入 component 或 CLI 条目。旧客户端忽略新增独立附件。CLI 清单签名复用内置 Ed25519 信任根，签署和独立验证使用 sign-cli／verify-cli，覆盖精确原始字节。完整汇总和发布在签名、身份、三个 CLI 包及全部校验和齐备后才能公开。已公开旧版本不补传、改写或替换附件。
-
-English: Complete releases starting with v0.2.0 include three native CLI archives and separately signed cli-release.json metadata. Component cli shares the desktop version/channel/build/tag/full-commit/repository identity and the existing embedded Ed25519 trust roots. Its assets contain exactly Windows x86_64 zip, Apple Silicon macOS tar.gz and Ubuntu x86_64 tar.gz; Linux has no display requirement. The legacy desktop manifest remains exactly six targets, without a component field. CLI publication independently verifies original-byte signatures, all three packages and complete checksums. Existing public assets remain immutable; ordinary CI gains no permission to deploy/upload Mac applications.

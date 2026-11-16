@@ -1,12 +1,14 @@
 # UI design standard
 
+English | [简体中文](../zh-CN/visual/design-standard.md)
+
 This standard governs UI creation, HTML design delivery and Qt implementation. Dimension conversions follow [layout-scale.json](../../specs/visual/layout-scale.json); colors, shared controls and directory trees follow [tokens.json](../../specs/visual/tokens.json), [controls.json](../../specs/visual/controls.json) and [directory-tree.json](../../specs/visual/directory-tree.json), respectively. Original measurements are in [qt-main-reference.json](../../specs/visual/qt-main-reference.json); do not rewrite originals backward from implementation results.
 
 <a id="主动内容预览"></a>
 
 ## Explicit content preview
 
-The [content states](../../design/hifi/sources/content-preview.html) retain existing properties-card width, height, radius, main-window density and text roles. Insets, gaps, icons and loading-indicator parameters are generated from main.content_preview in layout-scale.json. Content is read only after the user clicks shared ArchiveAction. Loading, password waiting, plain text, images and errors share the card; cancellation remains reachable. Text is selectable plain text. Images preserve aspect ratio; raster and limited static SVG share an image slot without introducing browser, HTML or external-link execution. SVG is rasterized in a restricted worker and its source is not handed to QML. Main-window and standalone property viewers reuse InspectorPanel; closing preview or changing entries clears it immediately. The password window retains P02 and shared footer, changing copy only for the preview task. Main-window and menu proportions still require simultaneous revalidation.
+The [content states](../../design/hifi/sources/content-preview.html) retain existing properties-card width, height, radius, main-window density and text roles. Insets, gaps, icons and loading-indicator parameters are generated from main.content_preview in layout-scale.json. Content is read only after the user clicks shared ArchiveAction. Loading, password waiting, plain text, images and errors share the card; cancellation remains reachable. Text is selectable plain text. Images preserve aspect ratio; raster and limited static SVG share an image slot without introducing browser, HTML or external-link execution. SVG is rasterized in a restricted worker and its source is not handed to QML. Main-window and standalone property viewers reuse InspectorPanel; closing preview or changing entries clears it immediately. The password window retains its [password prompt](../ux/password-extraction.md) layout and shared footer, changing copy only for the preview task. Main-window and menu proportions still require simultaneous revalidation.
 
 <a id="界面字体与用户数据"></a>
 

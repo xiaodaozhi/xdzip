@@ -1,5 +1,7 @@
 # System menus and tray
 
+English | [简体中文](../zh-CN/ux/desktop-integration.md)
+
 Multi-session, single-instance, window state and global exit follow the [application session contract](../engineering/application-sessions.md). Closing a non-last main window retains tasks; the last window follows tray settings. Exit confirmation covers all sessions.
 
 Explicit system, menu and tray Quit can open global confirmation over an owned task password or conflict prompt; Return preserves the task and prompt. On macOS the application-menu Quit item and Command-Q remain available for these prompts. File selectors and other modal controls must first complete or be cancelled; Quit triggered while blocked must not execute later after the modal closes.

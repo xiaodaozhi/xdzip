@@ -1,5 +1,7 @@
 # BH containers and the admitted BlakHole profile
 
+English | [简体中文](../zh-CN/engineering/bh-containers.md)
+
 `xdzip-codec-bh` reads sequential BlakHole (`.bh`) members from the host-owned source. The product profile is intentionally narrow: it requires the `BH 05 07` prefix, the observed fixed header constants, ordinary-file metadata, exact packed and decoded sizes, and the IEEE CRC-32 declared by each member. Members are retained in physical order, so duplicate names remain distinct and the frozen row identity is independent of display-name decoding.
 
 The only payload method admitted by this implementation is method 8, raw RFC 1951 Deflate. The shared bounded Deflate reader requires a complete stream and exact compressed-span consumption; trailing bytes, truncated streams, decoded-size mismatches, and CRC mismatches fail the payload task. Unknown methods remain visible with a warning and cannot be extracted or counted as verified content.
