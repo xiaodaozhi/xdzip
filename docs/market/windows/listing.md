@@ -1,0 +1,142 @@
+# Store listing copy, English (US)
+
+[简体中文](../../zh-CN/market/windows/listing.md)
+
+## Baseline
+
+MSIX 1.0.27.0, x64, `90916a1992188e6e7e5c6b3d91695861ee1bd2d2`.
+
+## Product name
+
+```text
+xdzip
+```
+
+## Description
+
+```text
+Make packing and unpacking a little simpler.
+
+xdzip is an open-source archive manager for Windows. Look inside an archive, find the files you need, and extract selected items without unpacking everything. Basic compression, extraction and browsing work offline, with archive contents processed on your PC. No xdzip account is required.
+
+Browse ZIP, 7z, RAR, TAR, TAR.GZ, CAB, ISO and UDF files. Search and sort entries, navigate folders, and open several archives in tabs or separate windows. Request a preview of supported text, images or static SVG before extracting.
+
+Create ZIP, TAR, TAR.GZ and 7z archives. Use AES-256 ZIP encryption or supported 7z password protection, and work with supported split and solid archive profiles. Eligible regular single-file archives also support adding, replacing or moving entries.
+
+Choose a light or dark appearance, adjust text size, and use English (US) or Simplified Chinese. View task progress and request cancellation when needed.
+
+Features vary by format. RAR, CAB, ISO and UDF are read-only. Encrypted and split archive support depends on the format and profile; not every archive can be modified. Opening a file in another application creates a temporary local copy, and edits to that copy are not written back automatically.
+
+Designed for Windows 11 PCs with x64 processors. The Microsoft Store edition receives its updates through the Store. Windows 11 modern File Explorer context-menu integration is not included in this build.
+```
+
+## What's new in this version
+
+First submission: leave empty. Do not paste this instruction into the field.
+
+## Product features
+
+Enter each feature separately, without the list numbers.
+
+1. Browse ZIP, 7z, RAR, TAR, TAR.GZ, CAB, ISO and UDF archives.
+2. Find files with search, sorting and folder navigation.
+3. Extract selected files or folders without unpacking everything.
+4. Create ZIP, TAR, TAR.GZ and 7z archives.
+5. Use AES-256 ZIP encryption and supported 7z password protection.
+6. Work with supported split and solid archive profiles.
+7. Add, replace or move entries in eligible regular single-file archives.
+8. Preview supported text, images and static SVG on demand.
+9. Keep multiple archives open in tabs or separate windows.
+10. Choose light or dark themes, adjust text size, and switch between English and Simplified Chinese.
+
+## Supplemental fields
+
+| Field | Value |
+| --- | --- |
+| Short title | xdzip |
+| Voice title | Leave empty; this desktop app does not use an Xbox voice title. |
+
+### Short description
+
+```text
+Browse before you unpack. Extract selected files, create password-protected archives, and keep your files in order with xdzip.
+```
+
+## Other information
+
+### Keywords
+
+Add separately, seven items in total.
+
+- archive manager
+- zip
+- unzip
+- 7z
+- rar
+- file compression
+- archive extraction
+
+### Copyright and trademark information
+
+```text
+Copyright © 2026 xiaodaozhi. Third-party components retain their respective copyrights and trademarks.
+```
+
+### Additional license terms
+
+Leave empty. The project defines no additional Store-specific terms; the open-source licenses and third-party notices shipped with the app still apply.
+
+### Developer
+
+```text
+xiaodaozhi
+```
+
+## Website, support and privacy
+
+| Field | URL |
+| --- | --- |
+| Website | https://github.com/xiaodaozhi/xdzip |
+| Support | https://github.com/xiaodaozhi/xdzip/issues |
+| Privacy policy | https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.en.md |
+| Project license | https://github.com/xiaodaozhi/xdzip/blob/main/LICENSE |
+
+## System scope
+
+Windows 11, x64 PC.
+
+## Promotional image captions
+
+These images are feature illustrations, not app screenshots. Their files and captions do not establish that the required screenshot field is satisfied.
+
+### 01-browse
+
+[1920 × 1080](images/promotional/01-browse-1920x1080.png), [3840 × 2160](images/promotional/01-browse-3840x2160.png)
+
+```text
+Feature illustration: browse supported archives, find files and extract selected items. Not an application screenshot.
+```
+
+### 02-create
+
+[1920 × 1080](images/promotional/02-create-1920x1080.png), [3840 × 2160](images/promotional/02-create-3840x2160.png)
+
+```text
+Feature illustration: create ZIP, TAR, TAR.GZ and 7z archives, with password protection where supported. Not an application screenshot.
+```
+
+### 03-preview
+
+[1920 × 1080](images/promotional/03-preview-1920x1080.png), [3840 × 2160](images/promotional/03-preview-3840x2160.png)
+
+```text
+Feature illustration: request previews of supported text, images and static SVG. Not an application screenshot.
+```
+
+### 04-workspace
+
+[1920 × 1080](images/promotional/04-workspace-1920x1080.png), [3840 × 2160](images/promotional/04-workspace-3840x2160.png)
+
+```text
+Feature illustration: organize multiple archives and choose a light or dark appearance. Not an application screenshot.
+```

@@ -12,6 +12,7 @@ These documents describe the current source tree's general design, implementatio
 - **Change product behavior:** Consult the browsing, task, format, and interaction contracts below, distinguishing current implementation from design and unverified behavior.
 - **Change the interface:** Read the [visual standard](visual/design-standard.md) and [design workflow](visual/design-workflow.md), then consult the high-fidelity sources and relevant interaction contracts.
 - **Prepare a release:** Read the [release protocol](engineering/release-protocol.md) and [release review process](qa/release-review.md). Evidence and decisions for each candidate belong in its issue.
+- **Prepare a Store listing:** Use the [Windows Store materials](market/windows/README.md) for bilingual copy, product artwork, icons and field mappings.
 
 ## Topic index
 
