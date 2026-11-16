@@ -4,7 +4,7 @@
   "package_sha256": "45f9a99f74431c4ab8dcb79d0e9628fa121f73b998dd8359dfd38fadc48aab46",
   "runtime_exe_sha256": "f6e58a99a2f38b746a7175128fd8cf9d7d0a88871a314fbd2fac15021399c01e",
   "window_mode": "default",
-  "processing": "Native sources remain byte-identical in design/assets. Published screenshots remove one top row, clear old desktop colors only inside the corner squares, and apply corner alpha. All other cropped RGB pixels remain unchanged. No JPEG or screenshot upscaling.",
+  "processing": "Native sources remain byte-identical in design/assets. Published screenshots remove one top row, clear old desktop colors inside the corner squares, apply corner alpha and add a one-pixel inner border without changing dimensions or alpha. Other cropped RGB pixels remain unchanged. No JPEG or screenshot upscaling.",
   "images": [
     {
       "file": "docs/market/windows/images/screenshots/01-browse.png",
@@ -18,7 +18,7 @@
       "native_width": 1536,
       "native_height": 933,
       "caption": "Browse an archive's folder tree, select individual files and view their properties.",
-      "sha256": "4848bae8ad32d44b6657e302c30bf9f68f68b7958cc292db8d85227c9e5c93ce",
+      "sha256": "4688dc83b66b760c394f7692dfdc61ff630bf119def34902627e0297325c3d03",
       "pixels_sha256": "637f698a6192dde1e32d5638597641ea1d897667a75938ac0ac03af186bb2105",
       "source_file": "en-US-01-browse.png",
       "source_sha256": "b7c69d3c48ffd84a544683d4fb0ef50e4018efc5e5470d4e20ca277470207443",
@@ -30,17 +30,19 @@
         1536,
         933
       ],
-      "cutout_sha256": "4848bae8ad32d44b6657e302c30bf9f68f68b7958cc292db8d85227c9e5c93ce",
+      "cutout_sha256": "4688dc83b66b760c394f7692dfdc61ff630bf119def34902627e0297325c3d03",
       "cutout_width": 1536,
       "cutout_height": 932,
-      "cutout_rgba_sha256": "9e2610e660a4c592e0689c8270fb3213ae8d494db1eae44c3a1401fbd5adc8e3",
+      "cutout_rgba_sha256": "e4bd5552a343e1a7c540485c558b2484c0f1c55f23b08de1fad53cbaafc6c48f",
       "perimeter_crop": {
         "left": 0,
         "top": 1,
         "width": 1536,
         "height": 932
       },
-      "corner_radius": 12
+      "corner_radius": 12,
+      "border_pixels": 1,
+      "border_color": "#C8D4E6"
     },
     {
       "file": "docs/market/windows/images/screenshots/03-preview.png",
@@ -54,7 +56,7 @@
       "native_width": 1536,
       "native_height": 933,
       "caption": "Request an image preview next to archive entries and file properties.",
-      "sha256": "cb165e079d742c0aed843a6dbe7f614af79c4c8c43751f0ba51bffe25a3a1a32",
+      "sha256": "d348a2d547809ab5258975beaba621533a9dd88d363f95531ccf61b2b67372c0",
       "pixels_sha256": "b1b5b9ff072ac7c55e467c72ce6dbf62b8c36780c7905c74079405f4929f80fa",
       "source_file": "en-US-03-preview.png",
       "source_sha256": "580844b10d0159bce1d4560f66bd152268c195add3db555a918f531d23c4f796",
@@ -66,17 +68,19 @@
         1536,
         933
       ],
-      "cutout_sha256": "cb165e079d742c0aed843a6dbe7f614af79c4c8c43751f0ba51bffe25a3a1a32",
+      "cutout_sha256": "d348a2d547809ab5258975beaba621533a9dd88d363f95531ccf61b2b67372c0",
       "cutout_width": 1536,
       "cutout_height": 932,
-      "cutout_rgba_sha256": "d592a1a47b76910e27c95e940158fd98778191e45b2f601c87e2dc5794c7fd3d",
+      "cutout_rgba_sha256": "76667933cb72d586d35658bfb40f1da1b43c1ed89f269f4a652b2dd83c6b457d",
       "perimeter_crop": {
         "left": 0,
         "top": 1,
         "width": 1536,
         "height": 932
       },
-      "corner_radius": 12
+      "corner_radius": 12,
+      "border_pixels": 1,
+      "border_color": "#C8D4E6"
     },
     {
       "file": "docs/market/windows/images/screenshots/04-workspace.png",
@@ -90,7 +94,7 @@
       "native_width": 1536,
       "native_height": 933,
       "caption": "Keep two archives open in tabs and browse selected files in grid view.",
-      "sha256": "bbc43db26b58e6c6878e4a46c40fb57c9dec80aa67ec5621f86fabec25cfb563",
+      "sha256": "fa8114f74a053a2c50681c01ec9cec4b495bc9dbedfe5361f9e594562950492c",
       "pixels_sha256": "91224d47481a1680edf960c7fab70be3c43c7e4f41a19d9d7b56ce658d18fa97",
       "source_file": "en-US-04-workspace.png",
       "source_sha256": "5b1356cdc3c34829e9e33c7119ef5ed9650e3478af8e18c75e25c50146c552dd",
@@ -102,17 +106,19 @@
         1536,
         933
       ],
-      "cutout_sha256": "bbc43db26b58e6c6878e4a46c40fb57c9dec80aa67ec5621f86fabec25cfb563",
+      "cutout_sha256": "fa8114f74a053a2c50681c01ec9cec4b495bc9dbedfe5361f9e594562950492c",
       "cutout_width": 1536,
       "cutout_height": 932,
-      "cutout_rgba_sha256": "c53c208837cdbc298b208980ad2e19508b529dd74cded7831b32c2066388d593",
+      "cutout_rgba_sha256": "0dd5e201115d210ec1bdd88e370ccf5294eba9ec267cae24bfa6c1795cb5329d",
       "perimeter_crop": {
         "left": 0,
         "top": 1,
         "width": 1536,
         "height": 932
       },
-      "corner_radius": 12
+      "corner_radius": 12,
+      "border_pixels": 1,
+      "border_color": "#C8D4E6"
     },
     {
       "file": "docs/market/windows/images/screenshots/02-create.png",
@@ -126,7 +132,7 @@
       "native_width": 737,
       "native_height": 1104,
       "caption": "Create an archive from selected files and choose ZIP compression settings.",
-      "sha256": "b160c179be15e1fc9057cde51281b09d30a936850fa623204ee3c2b5ef12de74",
+      "sha256": "a477404c7de76582a8fdde22e91a0fbdbf475e429d62743d2454eda9a339843d",
       "pixels_sha256": "c68269aa4fdb847d7fe5175fb7a7689b413dd737eb4c6d62960f082f46aad45c",
       "source_file": "en-US-02-create.png",
       "source_sha256": "e862133d4a67ae441887f8df9038805c5cfd554641ceebdca2ce15d60767fc0b",
@@ -138,17 +144,19 @@
         737,
         1104
       ],
-      "cutout_sha256": "b160c179be15e1fc9057cde51281b09d30a936850fa623204ee3c2b5ef12de74",
+      "cutout_sha256": "a477404c7de76582a8fdde22e91a0fbdbf475e429d62743d2454eda9a339843d",
       "cutout_width": 737,
       "cutout_height": 1103,
-      "cutout_rgba_sha256": "49de865fdd8a7adf210ee36739a6210b3a21ab4015e1135ecd1952d42a12e1af",
+      "cutout_rgba_sha256": "0d65bf992def4f50390ec32f6e0bb86a1674ada0c593b9c9a2cb571cbf01ba9b",
       "perimeter_crop": {
         "left": 0,
         "top": 1,
         "width": 737,
         "height": 1103
       },
-      "corner_radius": 12
+      "corner_radius": 12,
+      "border_pixels": 1,
+      "border_color": "#C8D4E6"
     },
     {
       "file": "docs/zh-CN/market/windows/images/screenshots/01-browse.png",
@@ -162,7 +170,7 @@
       "native_width": 1536,
       "native_height": 933,
       "caption": "浏览压缩包目录树，选择文件并查看属性。",
-      "sha256": "a00417f6aa523917fb2b485d6ea28e3830d7c68d4111329391136f14cae64ae0",
+      "sha256": "dedb5e3ce17504cb0dcc7361b417ed9b487d0e41951885f10df351b08857cdaa",
       "pixels_sha256": "9a7520250966780537bbf8e77bc5568c1f3232c994ce11e74fc9d75afbf5531d",
       "source_file": "zh-CN-01-browse.png",
       "source_sha256": "cd1e0c440b6fb937eb8946f2bc4ad9f55329adea477c9fc00bb88263237dcbf6",
@@ -174,17 +182,19 @@
         1536,
         933
       ],
-      "cutout_sha256": "a00417f6aa523917fb2b485d6ea28e3830d7c68d4111329391136f14cae64ae0",
+      "cutout_sha256": "dedb5e3ce17504cb0dcc7361b417ed9b487d0e41951885f10df351b08857cdaa",
       "cutout_width": 1536,
       "cutout_height": 932,
-      "cutout_rgba_sha256": "211878109a17941b905c8d531efc05e73c210b1efa16554f660fc0f1dd41729b",
+      "cutout_rgba_sha256": "19f5db78b1e48da9304f7d99b24c15ce54e0f30d38ae429dda74e3e21252266f",
       "perimeter_crop": {
         "left": 0,
         "top": 1,
         "width": 1536,
         "height": 932
       },
-      "corner_radius": 12
+      "corner_radius": 12,
+      "border_pixels": 1,
+      "border_color": "#C8D4E6"
     },
     {
       "file": "docs/zh-CN/market/windows/images/screenshots/03-preview.png",
@@ -198,7 +208,7 @@
       "native_width": 1536,
       "native_height": 933,
       "caption": "在文件列表和属性旁，按需加载图像预览。",
-      "sha256": "8deca36583ed11f15f516200ec28b6f0f5663789bd976b4e36a5104ec017cf0d",
+      "sha256": "9937a0f190e6b588d8cafb35878337ebb5057fbc163d8b71c6093da7f6fa8814",
       "pixels_sha256": "489db47eb330552bed6a172be412062c233138576ac36674c12e495e2e9c45ac",
       "source_file": "zh-CN-03-preview.png",
       "source_sha256": "301a7c1d0d11815f72f45687b7285eeebeae711db70daf46bb472a44f5481380",
@@ -210,17 +220,19 @@
         1536,
         933
       ],
-      "cutout_sha256": "8deca36583ed11f15f516200ec28b6f0f5663789bd976b4e36a5104ec017cf0d",
+      "cutout_sha256": "9937a0f190e6b588d8cafb35878337ebb5057fbc163d8b71c6093da7f6fa8814",
       "cutout_width": 1536,
       "cutout_height": 932,
-      "cutout_rgba_sha256": "34bcf82e8be24a34cdc56d217f692e940fc7676c77437d73e387a213e0e52f9e",
+      "cutout_rgba_sha256": "94def19d297ebc1e0b7ba098d0ea2a304c3733feb91bedce0a1833d75e2c0ee6",
       "perimeter_crop": {
         "left": 0,
         "top": 1,
         "width": 1536,
         "height": 932
       },
-      "corner_radius": 12
+      "corner_radius": 12,
+      "border_pixels": 1,
+      "border_color": "#C8D4E6"
     },
     {
       "file": "docs/zh-CN/market/windows/images/screenshots/04-workspace.png",
@@ -234,7 +246,7 @@
       "native_width": 1536,
       "native_height": 933,
       "caption": "在标签页中同时打开两个压缩包，并以网格视图浏览选中的文件。",
-      "sha256": "86a5b2bdba6172d6805c7d9a2debe565417e79ebbe974d141751196f61e10bff",
+      "sha256": "09370447cbe4feb93534a70686f2297cc85f10d37f15c695f20f4e641cd9b16d",
       "pixels_sha256": "cc14cb17c50dd8f0cd782b236058ae00cc5aae79171a4d1d83d47c6d796ad596",
       "source_file": "zh-CN-04-workspace.png",
       "source_sha256": "52b335b3db8b643d0e63e58ce5b4c9240fc9c56f0fe3a8b86cbe7c8397ff3325",
@@ -246,17 +258,19 @@
         1536,
         933
       ],
-      "cutout_sha256": "86a5b2bdba6172d6805c7d9a2debe565417e79ebbe974d141751196f61e10bff",
+      "cutout_sha256": "09370447cbe4feb93534a70686f2297cc85f10d37f15c695f20f4e641cd9b16d",
       "cutout_width": 1536,
       "cutout_height": 932,
-      "cutout_rgba_sha256": "885b85716b2f8fb9c0a0f84d8953ab0a6c1f7fa7ab45d9e0fe1316fcb7ff69a7",
+      "cutout_rgba_sha256": "36ac521f9547e41fbbe14bdc6a80b68ff491d86277af97f545ea34c4f3d521ba",
       "perimeter_crop": {
         "left": 0,
         "top": 1,
         "width": 1536,
         "height": 932
       },
-      "corner_radius": 12
+      "corner_radius": 12,
+      "border_pixels": 1,
+      "border_color": "#C8D4E6"
     },
     {
       "file": "docs/zh-CN/market/windows/images/screenshots/02-create.png",
@@ -270,7 +284,7 @@
       "native_width": 737,
       "native_height": 1104,
       "caption": "将选中的文件整理成压缩包，并设置 ZIP 压缩选项。",
-      "sha256": "a0f8b0fc325fb43a3139ba36f22d7217c80246b98360f0a7998f26c7f63c15fc",
+      "sha256": "bb61804b503b58ee69770d933fd2824f2d1a31e86e09fec044ed0a098893ea2a",
       "pixels_sha256": "2ef73db51c4a08111bbc6829c83e00c447d6cf3d8180278e79a417aa8428dda0",
       "source_file": "zh-CN-02-create.png",
       "source_sha256": "912b033964a337941f749ecc2a9ba11af5020aa7f12d6f026ce2391413ebd5de",
@@ -282,17 +296,19 @@
         737,
         1104
       ],
-      "cutout_sha256": "a0f8b0fc325fb43a3139ba36f22d7217c80246b98360f0a7998f26c7f63c15fc",
+      "cutout_sha256": "bb61804b503b58ee69770d933fd2824f2d1a31e86e09fec044ed0a098893ea2a",
       "cutout_width": 737,
       "cutout_height": 1103,
-      "cutout_rgba_sha256": "72633158891cff49e9668c2ffdb722bc9f09067ec96c77da03d2d6df3ab70df0",
+      "cutout_rgba_sha256": "5ba11dc81a437bc368cd8135ae823838ee69a02826cc6cb2d6aab17e265f987b",
       "perimeter_crop": {
         "left": 0,
         "top": 1,
         "width": 737,
         "height": 1103
       },
-      "corner_radius": 12
+      "corner_radius": 12,
+      "border_pixels": 1,
+      "border_color": "#C8D4E6"
     }
   ]
 }

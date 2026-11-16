@@ -40,13 +40,13 @@
     ],
     "headline_size": 68,
     "body_size": 26,
-    "rationale": "Keep native sources unchanged. Published screenshots remove the top border row, clear desktop colors from the corner squares and apply rounded alpha. Preserve UI pixels elsewhere. Compose raster UI separately at integer positions, never upscale it. Store screenshots use a neutral canvas at 1:1.",
+    "rationale": "Keep native sources unchanged. Published screenshots remove the top border row, clear desktop colors from the corner squares, apply rounded alpha and add a one-pixel inner border. Preserve UI pixels elsewhere, image dimensions and outer alpha. Compose raster UI separately at integer positions, never upscale it. Store screenshots use a neutral canvas at 1:1.",
     "cleanup": {
       "top_trim_pixels": 1,
-      "corner_radius_logical": 8
+      "corner_radius_logical": 8,
+      "border_pixels": 1,
+      "border_color": "#C8D4E6"
     },
-    "border_width": 1,
-    "border_color": "#C8D4E6",
     "shadow_offset_y": 14,
     "shadow_blur": 16
   },

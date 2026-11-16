@@ -51,11 +51,12 @@ async function main() {
       caption,sha256:hash(cutout.png),pixels_sha256:hash(pixels),source_file:source.file,source_sha256:source.sha256,
       source_session_sha256:sessionHash,source_window_sha256:source.window_sha256,source_client_crop:source.client_crop,
       cutout_sha256:hash(cutout.png),cutout_width:cutout.width,cutout_height:cutout.height,
-      cutout_rgba_sha256:cutout.rgba_sha256,perimeter_crop:cutout.crop,corner_radius:cutout.radius});
+      cutout_rgba_sha256:cutout.rgba_sha256,perimeter_crop:cutout.crop,corner_radius:cutout.radius,
+      border_pixels:spec.screenshot_artwork.cleanup.border_pixels,border_color:spec.screenshot_artwork.cleanup.border_color});
   }
   const inventory = {schema_version:3,baseline_revision:spec.baseline.revision,package_sha256:spec.baseline.package_sha256,
     runtime_exe_sha256:spec.baseline.runtime_exe_sha256,window_mode:'default',
-    processing:'Native sources remain byte-identical in design/assets. Published screenshots remove one top row, clear old desktop colors only inside the corner squares, and apply corner alpha. All other cropped RGB pixels remain unchanged. No JPEG or screenshot upscaling.',images};
+    processing:'Native sources remain byte-identical in design/assets. Published screenshots remove one top row, clear old desktop colors inside the corner squares, apply corner alpha and add a one-pixel inner border without changing dimensions or alpha. Other cropped RGB pixels remain unchanged. No JPEG or screenshot upscaling.',images};
   fs.writeFileSync(path.join(root,'specs/marketing/windows-store-captures.json'),JSON.stringify(inventory,null,2)+'\n');
   console.log(`Imported ${images.length} lossless native PNGs and transparent cutouts; source hashes and window pixels verified.`);
 }

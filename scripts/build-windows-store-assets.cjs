@@ -63,11 +63,10 @@ function screenshotPromo(locale, index, capture, width, height) {
   body += `<g transform="translate(82 792) rotate(-7)">${logo(0, 0, 120)}</g>`;
   body += rect(1318, 75, 526, 50, 25, '#E6EDFD');
   body += text(1581, 108, locale.screenshot_artwork_label, 22, '#536C94', 500, 'middle');
-  // Only the vector background is scaled. The UI is composited separately.
-  const border = layout.border_width;
+  // The screenshot supplies its own border; this background adds only shadow.
   body += `<defs><filter id="capture-shadow" x="-25%" y="-20%" width="150%" height="160%"><feDropShadow dx="0" dy="${layout.shadow_offset_y}" stdDeviation="${layout.shadow_blur}" flood-color="#173763" flood-opacity=".18"/></filter></defs>`;
-  body += rect(box.imageX/ratio-border/2,box.imageY/ratio-border/2,box.imageWidth/ratio+border,box.imageHeight/ratio+border,
-    capture.corner_radius*box.scale/ratio+border/2,'#FFFFFF',`stroke="${layout.border_color}" stroke-width="${border}" filter="url(#capture-shadow)"`);
+  body += rect(box.imageX/ratio,box.imageY/ratio,box.imageWidth/ratio,box.imageHeight/ratio,
+    capture.corner_radius*box.scale/ratio,'#FFFFFF','filter="url(#capture-shadow)"');
   return svg(width, height, body);
 }
 function poster(locale, width, height) {
@@ -167,7 +166,7 @@ function listingMarkdown(key,l) {
   s+=`\n### ${h[17]}\n\n\`\`\`text\n${l.copyright}\n\`\`\`\n\n### ${h[18]}\n\n${h[19]}\n\n### ${h[20]}\n\n\`\`\`text\n${l.developer}\n\`\`\`\n\n## ${h[21]}\n\n| ${h[9]} | URL |\n| --- | --- |\n| ${h[22]} | ${spec.links.website} |\n| ${h[23]} | ${spec.links.support} |\n| ${h[24]} | ${l.privacy_url} |\n| ${h[25]} | ${spec.links.license} |\n\n## ${h[26]}\n\n${l.system_requirements.join('\n')}\n\n## ${h[27]}\n\n${h[28]}\n\n`;
   l.promotions.forEach(p=>s+=`### ${p.id}\n\n[1920 × 1080](images/promotional/${p.id}-1920x1080.png), [3840 × 2160](images/promotional/${p.id}-3840x2160.png)\n\n\`\`\`text\n${p.caption}\n\`\`\`\n\n`);
   if (captures) {
-    s += `## ${chinese?'应用截图与融合宣传图':'App screenshots and combined artwork'}\n\n${chinese?'截图保持默认逻辑窗口尺寸，仅裁掉顶部一像素并清理圆角旧底色。商店版将透明圆角界面按 1:1 放入 2560 × 1440 中性画布，用于截图栏。融合宣传图加入品牌文案、细边框和阴影，供宣传使用，界面不放大。':'Screenshots retain the default logical window dimensions, with one top row removed and old corner backgrounds cleared. Store exports place the transparent app view at 1:1 on a neutral 2560 × 1440 canvas for screenshot fields. Combined artwork adds brand copy, a thin border and shadow for promotion, without upscaling the UI.'}\n\n`;
+    s += `## ${chinese?'应用截图与融合宣传图':'App screenshots and combined artwork'}\n\n${chinese?'截图保持默认逻辑窗口尺寸，裁掉顶部一像素并清理圆角旧底色，添加一像素细边框。商店版将透明圆角界面按 1:1 放入 2560 × 1440 中性画布，用于截图栏。融合宣传图加入品牌文案、细边框和阴影，供宣传使用，界面不放大。':'Screenshots retain the default logical window dimensions, with one top row removed, old corner backgrounds cleared and a one-pixel border added. Store exports place the transparent app view at 1:1 on a neutral 2560 × 1440 canvas for screenshot fields. Combined artwork adds brand copy, a thin border and shadow for promotion, without upscaling the UI.'}\n\n`;
     for (const p of l.promotions) {
       const capture = captures.images.find(c => c.locale === key && c.scene === p.id);
       s += `### ${p.id}\n\n[${chinese?'默认窗口':'Default window'}](images/screenshots/${p.id}.png), [${chinese?'商店截图':'Store screenshot'}](images/store-screenshots/${p.id}.png), [1920 × 1080](images/combined/${p.id}-1920x1080.png), [3840 × 2160](images/combined/${p.id}-3840x2160.png)\n\n\`\`\`text\n${capture.caption}\n\`\`\`\n\n`;

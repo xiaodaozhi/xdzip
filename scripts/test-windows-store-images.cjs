@@ -35,6 +35,22 @@ async function main() {
     const expected=Buffer.from(background.slice(1),'hex');
     assert.deepEqual(composed.subarray(0,3),expected,'Old desktop color leaked into corner');
   }
-  console.log('PASS: top row removed, all four corners cleared on light/dark backgrounds, remaining UI RGB unchanged.');
+  const framed=await makeCutout(png,width,height,96,{top_trim_pixels:1,corner_radius_logical:radius,border_pixels:1,border_color:'#C8D4E6'});
+  assert.equal(framed.width,result.width);
+  assert.equal(framed.height,result.height);
+  const pixels=await sharp(framed.png).ensureAlpha().raw().toBuffer();
+  for(let y=0;y<result.height;y++) for(let x=0;x<width;x++) {
+    const p=(y*width+x)*4;
+    assert.equal(pixels[p+3],cleaned[p+3],'Border changed rounded transparency');
+    const corner=(y<radius || y>=result.height-radius) && (x<radius || x>=width-radius);
+    if(x>0 && x<width-1 && y>0 && y<result.height-1 && !corner) {
+      assert.deepEqual(pixels.subarray(p,p+4),cleaned.subarray(p,p+4),'Border changed UI away from perimeter');
+    }
+  }
+  for(const [x,y]of[[width/2,0],[0,Math.floor(result.height/2)],[width-1,Math.floor(result.height/2)],[width/2,result.height-1]]) {
+    const p=(y*width+x)*4;
+    assert.deepEqual([...pixels.subarray(p,p+4)],[200,212,230,255],'Border missing or color differs');
+  }
+  console.log('PASS: top crop, clean corners, visible one-pixel border, unchanged dimensions/alpha and interior UI pixels.');
 }
 main().catch(error=>{console.error(error);process.exitCode=1});
