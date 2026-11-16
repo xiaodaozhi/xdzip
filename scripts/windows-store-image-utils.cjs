@@ -27,6 +27,21 @@ async function makeCutout(bytes, width, height, dpi, processing) {
     raw[p+3] = alpha[p+3];
     if (!raw[p+3]) raw.fill(0,p,p+3);
   }
+  const border = processing.border_pixels ?? 0;
+  if (!Number.isInteger(border) || border < 0 || border*2 >= Math.min(crop.width,crop.height)) throw Error('Invalid screenshot border width');
+  if (border) {
+    if (!/^#[0-9a-f]{6}$/i.test(processing.border_color)) throw Error('Invalid screenshot border color');
+    const color = Buffer.from(processing.border_color.slice(1),'hex');
+    const inside = Buffer.from(`<svg width="${crop.width}" height="${crop.height}"><rect x="${border}" y="${border}" width="${crop.width-border*2}" height="${crop.height-border*2}" rx="${Math.max(0,radius-border)}" fill="white"/></svg>`);
+    const innerAlpha = await sharp(inside).ensureAlpha().raw().toBuffer();
+    // Color the inner perimeter while retaining the existing outer alpha.
+    // Compositing a second rounded stroke would make edge pixels more opaque.
+    for (let p=0; p<raw.length; p+=4) {
+      if (!raw[p+3]) continue;
+      const retained = Math.min(1,innerAlpha[p+3]/raw[p+3]);
+      for (let c=0;c<3;c++) raw[p+c] = Math.round(raw[p+c]*retained+color[c]*(1-retained));
+    }
+  }
   const png = await sharp(raw,{raw:{width:crop.width,height:crop.height,channels:4}}).png({compressionLevel:9}).toBuffer();
   if (!(await sharp(png).ensureAlpha().raw().toBuffer()).equals(raw)) throw Error('Cutout PNG changed RGBA pixels');
   return {png,width:crop.width,height:crop.height,crop,radius,rgba_sha256:hash(raw)};
