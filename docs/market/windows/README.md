@@ -32,7 +32,7 @@ The app's existing Apache-2.0 license and third-party notices are unchanged by t
 
 To prepare replacement images, use the [automatic native PNG capture script](capture.md). One run prepares and captures all four views for either language, without manually switching views or confirming individual captures.
 
-Each language has four actual app views using owned demonstration files. Their app build matches the candidate identified above. The lossless native PNGs are **1536 × 933** for the main window and **737 × 1104** for the creation window. They retain the default logical window dimensions. The original PNGs remain byte-identical to the verified captures. Separate transparent cutouts trim two perimeter pixels and mask rounded corners, without redrawing text or changing opaque UI pixels.
+Each language has four actual app views using owned demonstration files. Their app build matches the candidate identified above and uses the default logical window dimensions. Published PNGs are **1536 × 932** for the main window and **737 × 1103** for the creation window: one top border row is removed, and old desktop colors are cleared from the corner squares before rounded transparency is applied. Pixels elsewhere remain unchanged, with no text redrawing or resizing. The original native PNGs remain byte-identical in [the source assets](../../../design/assets/marketing/windows-store-native). The root READMEs use the cleaned `01-browse` image in their matching language.
 
 Use the **2560 × 1440 Store screenshots** for the desktop screenshot field. They center the cleaned app view at 1:1 on a neutral background, without marketing overlays. Combined promotional artwork places the same view in the blue brand layout with localized copy, a thin border and a soft shadow. At 1080p the UI is downsampled once to fit; at 4K it remains at native 1:1 size. Neither export upscales the UI. The lower-left platform label is omitted.
 
@@ -77,7 +77,7 @@ Xbox-only branded key art (584 × 800), titled hero art and featured promotional
 
 ## Editing and regeneration
 
-The [design gallery](../../../design/hifi/sources/windows-store-artwork.html) is the high-fidelity entry point. Editable composition lives in [build-windows-store-assets.cjs](../../../scripts/build-windows-store-assets.cjs); localized copy, palette and export canvas parameters live in [windows-store.json](../../../specs/marketing/windows-store.json). The [asset inventory](../../../specs/marketing/windows-store-assets.json) records all 71 PNGs and source/output hashes. The [capture inventory](../../../specs/marketing/windows-store-captures.json) records the candidate, native capture/session hashes, client crops, dimensions, DPI, captions and cutout processing. These fixed export canvases do not change Qt logical window dimensions or incorporate screen scaling into the product.
+The [design gallery](../../../design/hifi/sources/windows-store-artwork.html) is the high-fidelity entry point. Editable composition lives in [build-windows-store-assets.cjs](../../../scripts/build-windows-store-assets.cjs); localized copy, palette and export canvas parameters live in [windows-store.json](../../../specs/marketing/windows-store.json). The [asset inventory](../../../specs/marketing/windows-store-assets.json) records PNGs and source/output hashes, including native inputs and the two README images. The [capture inventory](../../../specs/marketing/windows-store-captures.json) records the candidate, native capture/session hashes, client crops, dimensions, DPI, captions and corner processing. These fixed export canvases do not change Qt logical window dimensions or incorporate screen scaling into the product.
 
 To replace the screenshots, run the native capture recipe for both languages and review the original PNGs at 100%. Pass the two complete session directories to [import-windows-store-captures.cjs](../../../scripts/import-windows-store-captures.cjs). It preflights all eight PNGs, their candidate identity, hashes and exact client/window pixel correspondence before updating the material inputs. JPEG inputs and incomplete or mismatched sessions are rejected. When updating the candidate, update the marketing baseline deliberately before importing.
 
@@ -87,6 +87,7 @@ With Node.js and `sharp` available:
 node scripts/import-windows-store-captures.cjs build/captures-en-US build/captures-zh-CN
 node scripts/build-windows-store-assets.cjs
 node scripts/build-windows-store-assets.cjs --check
+node scripts/test-windows-store-images.cjs
 python scripts/check-docs.py
 python scripts/package-windows-store-materials.py --output dist/windows-store-materials
 ```

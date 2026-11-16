@@ -40,9 +40,9 @@
     ],
     "headline_size": 68,
     "body_size": 26,
-    "rationale": "Use lossless native PNGs. Original inputs remain byte-identical; cutouts trim only exterior pixels and add corner alpha. Compose raster UI separately at integer positions, never upscale it. Store screenshots use a neutral canvas at 1:1.",
+    "rationale": "Keep native sources unchanged. Published screenshots remove the top border row, clear desktop colors from the corner squares and apply rounded alpha. Preserve UI pixels elsewhere. Compose raster UI separately at integer positions, never upscale it. Store screenshots use a neutral canvas at 1:1.",
     "cleanup": {
-      "edge_trim_pixels": 2,
+      "top_trim_pixels": 1,
       "corner_radius_logical": 8
     },
     "border_width": 1,

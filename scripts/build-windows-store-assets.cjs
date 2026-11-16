@@ -108,10 +108,13 @@ if (captures) {
     const locale = spec.locales[capture.locale];
     const index = locale.promotions.findIndex(p => p.id === capture.scene);
     if (index < 0) throw Error(`Unknown screenshot scene ${capture.scene}`);
-    jobs.push({file:capture.file, width:capture.width, height:capture.height, role:'app-screenshot', locale:capture.locale, source:bytes, input:true});
+    jobs.push({file:capture.file, width:capture.width, height:capture.height, role:'app-screenshot', locale:capture.locale, source:bytes, input:true,transparent:true,capture});
+    const nativeBytes = fs.readFileSync(path.join(ROOT,capture.native_file));
+    if (hash(nativeBytes) !== capture.source_sha256) throw Error(`Changed native source ${capture.native_file}`);
+    jobs.push({file:capture.native_file,width:capture.native_width,height:capture.native_height,role:'native-screenshot-source',locale:capture.locale,source:nativeBytes,input:true,capture});
     const cutoutBytes = fs.readFileSync(path.join(ROOT,capture.cutout_file));
     if (hash(cutoutBytes) !== capture.cutout_sha256) throw Error(`Changed screenshot cutout ${capture.cutout_file}`);
-    jobs.push({file:capture.cutout_file,width:capture.cutout_width,height:capture.cutout_height,role:'screenshot-cutout',locale:capture.locale,source:cutoutBytes,input:true,transparent:true});
+    if (capture.scene === '01-browse') jobs.push({file:capture.locale==='en-US'?'docs/images/main-window.png':'docs/zh-CN/images/main-window.png',width:capture.width,height:capture.height,role:'readme-screenshot',locale:capture.locale,source:bytes,copy:true,transparent:true});
     const base = capture.locale === 'en-US' ? en : zh;
     const [minimumWidth,minimumHeight] = spec.screenshot_artwork.store_canvas;
     const canvas = {width:minimumWidth,height:minimumHeight,background:spec.screenshot_artwork.store_background};
@@ -149,7 +152,7 @@ function validateCopy() {
     const expected = Object.entries(spec.locales).flatMap(([key,l]) => l.promotions.map(p => `${key}/${p.id}`)).sort();
     const actual = captures.images.map(c => `${c.locale}/${c.scene}`).sort();
     if (JSON.stringify(expected) !== JSON.stringify(actual)) throw Error('Screenshot language or scene inventory differs');
-    if (captures.schema_version !== 2 || captures.window_mode !== 'default') throw Error('Lossless native capture inventory required');
+    if (captures.schema_version !== 3 || captures.window_mode !== 'default') throw Error('Cleaned screenshots with native source inventory required');
     if (captures.images.some(c => !c.caption || c.caption.length > 200 || c.caption !== spec.locales[c.locale].screenshot_captions[c.scene])) throw Error('Screenshot captions differ or exceed portal limits');
   }
 }
@@ -164,7 +167,7 @@ function listingMarkdown(key,l) {
   s+=`\n### ${h[17]}\n\n\`\`\`text\n${l.copyright}\n\`\`\`\n\n### ${h[18]}\n\n${h[19]}\n\n### ${h[20]}\n\n\`\`\`text\n${l.developer}\n\`\`\`\n\n## ${h[21]}\n\n| ${h[9]} | URL |\n| --- | --- |\n| ${h[22]} | ${spec.links.website} |\n| ${h[23]} | ${spec.links.support} |\n| ${h[24]} | ${l.privacy_url} |\n| ${h[25]} | ${spec.links.license} |\n\n## ${h[26]}\n\n${l.system_requirements.join('\n')}\n\n## ${h[27]}\n\n${h[28]}\n\n`;
   l.promotions.forEach(p=>s+=`### ${p.id}\n\n[1920 × 1080](images/promotional/${p.id}-1920x1080.png), [3840 × 2160](images/promotional/${p.id}-3840x2160.png)\n\n\`\`\`text\n${p.caption}\n\`\`\`\n\n`);
   if (captures) {
-    s += `## ${chinese?'应用截图与融合宣传图':'App screenshots and combined artwork'}\n\n${chinese?'原始 PNG 保持默认逻辑窗口尺寸。商店版以透明圆角处理后的界面按 1:1 放入 2560 × 1440 中性画布，用于截图栏。融合宣传图加入品牌文案、细边框和阴影，供宣传使用，界面不放大。':'Original PNGs retain the default logical window dimensions. Store exports place the rounded app cutout at 1:1 on a neutral 2560 × 1440 canvas for screenshot fields. Combined artwork adds brand copy, a thin border and shadow for promotion, without upscaling the UI.'}\n\n`;
+    s += `## ${chinese?'应用截图与融合宣传图':'App screenshots and combined artwork'}\n\n${chinese?'截图保持默认逻辑窗口尺寸，仅裁掉顶部一像素并清理圆角旧底色。商店版将透明圆角界面按 1:1 放入 2560 × 1440 中性画布，用于截图栏。融合宣传图加入品牌文案、细边框和阴影，供宣传使用，界面不放大。':'Screenshots retain the default logical window dimensions, with one top row removed and old corner backgrounds cleared. Store exports place the transparent app view at 1:1 on a neutral 2560 × 1440 canvas for screenshot fields. Combined artwork adds brand copy, a thin border and shadow for promotion, without upscaling the UI.'}\n\n`;
     for (const p of l.promotions) {
       const capture = captures.images.find(c => c.locale === key && c.scene === p.id);
       s += `### ${p.id}\n\n[${chinese?'默认窗口':'Default window'}](images/screenshots/${p.id}.png), [${chinese?'商店截图':'Store screenshot'}](images/store-screenshots/${p.id}.png), [1920 × 1080](images/combined/${p.id}-1920x1080.png), [3840 × 2160](images/combined/${p.id}-3840x2160.png)\n\n\`\`\`text\n${capture.caption}\n\`\`\`\n\n`;
@@ -189,20 +192,22 @@ async function main() {
     if (!check && !job.input && !unchanged) {
       fs.mkdirSync(path.dirname(destination),{recursive:true});
       if (background) fs.writeFileSync(destination,await imageTools.composite(background,layer,job.canvas?job.left:job.box.imageX,job.canvas?job.top:job.box.imageY));
+      else if (job.copy) fs.writeFileSync(destination,job.source);
       else await sharp(Buffer.from(job.source)).png({compressionLevel:9}).toFile(destination);
     }
     const bytes=fs.readFileSync(destination); const meta=await sharp(bytes).metadata();
     if (meta.format!=='png' || meta.width!==job.width || meta.height!==job.height || bytes.length>5000000) throw Error(`Invalid image ${job.file}`);
     if (!job.transparent && !(await sharp(bytes).stats()).isOpaque) throw Error(`Unexpected transparency ${job.file}`);
     if (job.input) {
-      const capture = captures.images.find(c => c.file === job.file || c.cutout_file === job.file);
-      if (job.role === 'app-screenshot') {
+      const capture = job.capture;
+      if (job.role === 'native-screenshot-source') {
         if (hash(await sharp(bytes).removeAlpha().raw().toBuffer()) !== capture.pixels_sha256) throw Error(`Changed native UI pixels ${job.file}`);
       } else {
-        const expected = await imageTools.makeCutout(fs.readFileSync(path.join(ROOT,capture.file)),capture.width,capture.height,capture.dpi,spec.screenshot_artwork.cleanup);
+        const expected = await imageTools.makeCutout(fs.readFileSync(path.join(ROOT,capture.native_file)),capture.native_width,capture.native_height,capture.dpi,spec.screenshot_artwork.cleanup);
         if (!expected.png.equals(bytes)) throw Error(`Changed native cutout pixels or alpha ${job.file}`);
       }
     }
+    if (job.copy && !bytes.equals(job.source)) throw Error(`README screenshot differs from cleaned browse image ${job.file}`);
     if (job.canvas) {
       if (meta.width < 1366 || meta.height < 768) throw Error(`Store screenshot canvas is too small ${job.file}`);
       await imageTools.assertOverlay(bytes,layer,job.left,job.top,background);
