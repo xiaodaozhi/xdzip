@@ -1,0 +1,11 @@
+# Owned Windows ZIP self-extracting archives
+
+The first SFX profile is Windows x64 only, with the explicit `.sfx.exe` creation suffix. It wraps an unencrypted, single-volume Store/Deflate ZIP in the project-built `xdzip-sfx.exe` stub. Creation never executes the stub. Generic `.exe` files remain outside creation, drag/drop and system association registration.
+
+The host loads the stub only from its application directory or the shared parent of its private `cli` directory. It opens a bounded ordinary file without following links and validates PE32+, x64, section spans and the owned version marker. The ZIP end-record comment contains a 64-byte versioned envelope with the stub length, ZIP length and SHA-256 of the preceding bytes. The running SFX validates this envelope before using the shared Rust ZIP and extraction contracts. This detects corruption and wrong envelopes; it does not establish publisher identity or authenticate arbitrary executable code.
+
+The independently runnable stub has no Qt or installed-xdzip dependency. Windows system dialogs select an existing target directory and an explicit conflict policy, then display progress and cancellation. Archive operations remain in Rust, off the UI thread. The host uses the existing grants, frozen identities, resource budgets, per-file verification, staging, conflict handling and cleanup. Cancellation preserves files already committed and removes unfinished staging. Neither success nor failure opens or executes extracted files, invokes scripts, installs software, elevates privileges or changes associations.
+
+The stub also offers `--test` (validate without writing) and `--extract-to <existing-directory> --conflict skip|rename|overwrite` for automation. Invalid envelopes and unsupported/encrypted ZIP profiles fail before output. No payload password, split volume, custom launch command, silent installation or executable auto-run is supported. The generated file is unsigned; signing and publisher reputation are separate release concerns under the [PE/Authenticode rules](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format).
+
+The desktop remains Qt Quick. The standalone SFX uses native system dialogs under the narrow architectural exception recorded in [ADR-013](../design/architecture-decisions.md#adr-013-standalone-windows-sfx-host).

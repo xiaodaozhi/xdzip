@@ -64,6 +64,9 @@ pub fn formats() -> &'static [FormatDescriptor] {
 
 /// Resolve a creation suffix only; this is not archive detection or pathname validation.
 pub fn creation_format(name: &str) -> Option<Format> {
+    if is_sfx_creation(name) && !cfg!(all(windows, target_arch = "x86_64")) {
+        return None;
+    }
     let name = name.to_ascii_lowercase();
     formats()
         .iter()
@@ -76,6 +79,11 @@ pub fn creation_format(name: &str) -> Option<Format> {
         .filter(|(_, suffix)| name.ends_with(suffix))
         .max_by_key(|(_, suffix)| suffix.len())
         .map(|(format, _)| format)
+}
+
+/// Recognize only the explicit owned SFX creation suffix, not generic executables.
+pub fn is_sfx_creation(name: &str) -> bool {
+    name.to_ascii_lowercase().ends_with(generated::SFX_SUFFIX)
 }
 
 /// Resolve only a fully validated zero-only stream's ambiguous container view.
@@ -137,6 +145,10 @@ mod tests {
 
     #[test]
     fn creation_candidates_keep_existing_case_and_read_only_boundaries() {
+        assert_eq!(
+            creation_format("archive.SFX.EXE"),
+            cfg!(all(windows, target_arch = "x86_64")).then_some(Format::Zip)
+        );
         for (name, expected) in [
             ("ARCHIVE.ZIP", Some(Format::Zip)),
             ("archive.tar", Some(Format::Tar)),
@@ -154,7 +166,7 @@ mod tests {
             ("archive.TZST", Some(Format::TarZstd)),
             ("archive.rar", None),
             ("archive.cab", None),
-            ("archive.iso", None),
+            ("archive.iso", Some(Format::Iso)),
             ("archive.udf", None),
             ("archive.zip.exe", None),
         ] {
@@ -242,7 +254,6 @@ mod tests {
             Format::Rar,
             Format::Cab,
             Format::Compound,
-            Format::Iso,
             Format::Udf,
             Format::Pea,
             Format::Bzip2,
@@ -255,5 +266,9 @@ mod tests {
             assert!(format.descriptor().write_methods.is_empty());
             assert!(!format.descriptor().rewrite);
         }
+        let iso = Format::Iso.descriptor();
+        assert_eq!(iso.creation_method(260), Some("iso9660"));
+        assert_eq!(iso.creation_levels, [0]);
+        assert!(!iso.rewrite && iso.write_encryption.is_empty() && iso.write_volumes.is_empty());
     }
 }

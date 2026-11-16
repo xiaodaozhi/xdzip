@@ -82,13 +82,16 @@
 | UU/UUE、XXE | 传统计数行与已准入 begin-base64 封装，包括多成员 | 不支持 | 不支持 |
 | RAR | 支持旧版、RAR5 和 RAR 7 格式扩展，包括密码、固实及分卷 | 不支持 | 不支持 |
 | CAB | 支持 Store、MSZip、Quantum、LZX 和同目录分卷 | 不支持 | 不支持 |
-| ISO、UDF | 支持 ISO9660、Joliet、Rock Ridge 和 UDF | 不支持 | 不支持 |
+| ISO | 支持 ISO9660、Joliet 和 Rock Ridge | ISO9660 + Joliet 数据映像 | 不支持 |
+| UDF | 支持 UDF | 不支持 | 不支持 |
+| ZIP SFX | 经校验的 ZIP 自解压包 | Windows x64，Store/Deflate，`.sfx.exe` | 不支持 |
 
 - ZIP 的 AES-256 只加密内容，文件名仍可见；不支持 AES-128／192 或传统 ZipCrypto。分卷读取支持 `.zip.001` 及 PKZIP `.z01` 等命名，创建使用编号分卷。详见[密码解压](docs/zh-CN/engineering/password-extraction.md)和[分卷打开](docs/zh-CN/engineering/archive-opening.md)。
 - BZip2、独立 LZMA、Lzip v1 及其 TAR 组合目前只读。LZMA 没有内容校验和，测试检查结构、尺寸和可读性。后缀、成员、内存限制与识别边界见[单文件流契约](docs/zh-CN/engineering/single-file-streams.md)。
 - XZ 验证各流声明的内容校验，声明 None 的流只提供结构与可读性检查。ZIPX 读取限于表内 ZIP 方法，PPMd、JPEG 和 WavPack 变体尚不支持；新增 ZIP 压缩方法只读，不扩展 AES 组合，也不增加 ZIPX 创建。
 - 7z 修改通过重建完成，保留及新增文件内容的工作集上限为 512 MiB；新建使用流式输入，不受此重建限制。加密和分卷的 ZIP、7z 不支持修改。详见[归档修改](docs/zh-CN/engineering/archive-transfers.md)。
-- RAR、CAB、ISO 和 UDF 为只读格式。ISO／UDF 映像用于读取文件，不会被挂载或执行。格式覆盖和资源限制分别见 [RAR 契约](docs/zh-CN/engineering/rar-format-sources.md)和[格式后端契约](docs/zh-CN/engineering/native-codecs.md)。
+- RAR、CAB 和 UDF 为只读格式。[ISO 创建](docs/zh-CN/engineering/iso-creation.md)支持普通文件与目录、单卷、单文件小于 4 GiB，每个 Joliet 名称分量最多 64 个 UCS-2 字符。不提供启动镜像、UDF 或 Rock Ridge 写入及镜像更新。读取镜像不会挂载或执行内容。格式覆盖和资源限制见 [RAR 契约](docs/zh-CN/engineering/rar-format-sources.md)和[格式后端契约](docs/zh-CN/engineering/native-codecs.md)。
+- [自有 SFX 创建](docs/zh-CN/engineering/sfx-creation.md)生成可独立运行的 Windows x64 ZIP 自解压包，无需 Qt 或已安装的 xdzip。支持选择目标目录、冲突处理与取消，绝不执行解压出的文件。不提供密码、分卷和自动运行命令，普通 `.exe` 不参与文件关联。
 - DEB 提供 `members/`、`control/`、`data/` 导出视图，全部提取包含原始成员和展开内容，不安装软件包、不执行脚本。control 接受无压缩、GZIP、XZ、Zstandard，data 另接受 BZip2、LZMA。检查验证容器可读性和声明的校验，不代表软件包认证，详见 [DEB 契约](docs/zh-CN/engineering/deb-containers.md)。
 - Z 与 TAR.Z 只检查结构与可读性，没有校验和，不提供创建或损坏历史流修复，详见 [Unix compress 契约](docs/zh-CN/engineering/compress-streams.md)。
 - UU/UUE 与 XXE 只检查结构与可读性，不提供校验和。头部路径和权限不直接授予输出或执行能力；GNU 编码文件名和多段修复不属于已准入的[文本封装配置](docs/zh-CN/engineering/text-envelopes.md)。
@@ -124,7 +127,7 @@ Windows 使用 `python` 并为可执行文件加 `.exe`。Linux 运行需要系�
 
 ## 从源码构建
 
-桌面界面使用 Qt Quick/QML，通过薄 C++ 层连接 Rust 核心。格式、查询和任务逻辑独立于 Qt；7z、RAR、CAB、ISO 和 UDF 使用隔离工作进程。
+桌面界面使用 Qt Quick/QML，通过薄 C++ 层连接 Rust 核心。格式、查询和任务逻辑独立于 Qt；7z、RAR、CAB、ISO、UDF 读取与 7z 写入使用隔离工作进程，ISO 创建在 Rust 宿主中运行。独立 Windows 自解压程序使用系统对话框，不依赖 Qt。
 
 项目文档位于 `docs/`，供生成和检查使用的视觉参数、术语及依赖清单位于 `specs/`，高保真设计原稿位于 `design/hifi/`。
 

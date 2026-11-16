@@ -188,7 +188,7 @@ pub enum Format {
     Cab,
     /// Microsoft Compound File containers, including MSI metadata streams, read only.
     Compound,
-    /// ISO9660, Joliet and Rock Ridge optical images, read only.
+    /// ISO9660/Joliet creation and ISO9660/Joliet/Rock Ridge reading.
     Iso,
     /// UDF optical images, read only; preferred for hybrid images.
     Udf,

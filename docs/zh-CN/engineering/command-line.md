@@ -13,6 +13,8 @@ xdzip list archive.zip --json
 xdzip extract archive.zip docs/ -C output
 xdzip extract archive.zip --entry-id 3 -C output
 xdzip create backup.7z docs/ --level normal
+xdzip create data.iso docs/
+xdzip create portable.sfx.exe docs/ --level normal
 xdzip create private.zip docs/ --encrypt --password-stdin
 xdzip add backup.zip notes.txt --into docs
 xdzip test backup.zip
@@ -99,3 +101,5 @@ scripts/cli.py builds, tests and packages without Qt. Desktop builds include a p
 Updates target the current installation. Standalone CLI releases use a separate, exact-byte signed three-target manifest, without changing legacy desktop six-target metadata. System TLS trust, credential-free proxy/mirror options, bounded responses/redirects/downloads, channel progression, monotonic builds and hash verification apply. Managed clean Release installations validate and self-check a complete staged payload before pointer replacement. Other builds remain check/download-only. Network failures never become up-to-date results.
 
 Desktop metadata queries require no GUI and do not consume receipts. Installation uses bounded same-user IPC, independently revalidates the candidate and retains the existing task, installer and Sparkle barriers, including CLI occupancy. accepted means handed_off, not installed. Actual receipts and running identities determine success/recovery. --yes cannot supply system authority, and noninteractive desktop installation refuses required UI. Native, automated and manual acceptance remain distinct.
+
+`.iso` 创建无压缩 ISO9660 + Joliet 数据映像，显式指定级别时仅允许 Store。Windows x64 的 `.sfx.exe` 配置封装 Store/Deflate ZIP，要求随程序部署的 `xdzip-sfx.exe` 组件，拒绝加密、固实与分卷。两种配置均不允许修改现有映像或可执行文件。详见 [ISO 创建](iso-creation.md)与[自有 SFX 创建](sfx-creation.md)。

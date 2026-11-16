@@ -30,14 +30,14 @@
 | EGG | 已准入 | 只读无加密、非固实普通单卷 Store 和原始 Deflate，验证准确块尺寸与 CRC-32；AZO、BZip2、LZMA、加密、分卷和其他配置仍不在范围。 |
 | GZ | 已准入 | GZIP 成员，包括串联流和 TAR.GZ。 |
 | IMG | 候选 | 磁盘镜像扩展名含义不唯一，ISO/UDF 按内容准入不代表通用 IMG 支持。 |
-| ISO | 已准入 | ISO9660、Joliet 和 Rock Ridge 只读镜像。 |
+| ISO | 已准入 | 支持 ISO9660、Joliet、Rock Ridge 读取，以及普通 ISO9660 + Joliet 数据映像创建。 |
 | ISZ | 明确不支持 | 产品决定放弃 ISZ，不增加探测器、登记项或密钥处理。 |
 | LHA / LZH | 已准入 | LHA 0–3 级头部、Store、LH1–LH7、LZS/LZ5，并支持 LH5 创建。 |
 | LZ | 已准入 | Lzip v1 和 TAR.LZ。 |
 | LZMA | 已准入 | LZMA Alone 和 TAR.LZMA。 |
 | PMA | 已准入 | PM0/PM1/PM2 只读配置、CP/M 结构和 CRC 检查。 |
 | RAR / RAR5 | 已准入 | 自研 Rust RAR 后端，覆盖声明范围内的旧版、RAR5、RAR7 扩展、密码、固实和分卷。 |
-| SFX(EXE) | 别名/配置 | ZIP SFX 前缀由 ZIP 读取器验证，绝不授予执行权限；SFX 创建仍不在当前写入器集合。 |
+| SFX(EXE) | 别名/配置 | ZIP SFX 前缀由 ZIP 读取器验证，绝不授予执行权限；自有 Windows x64 Store/Deflate ZIP 创建通过显式 `.sfx.exe` 配置提供，不自动运行载荷。 |
 | TAR | 已准入 | TAR 及登记的 TAR.GZ、TAR.BZ2、TAR.LZMA、TAR.LZ、TAR.XZ、TAR.Z、TAR.BR、TAR.LZ4、TAR.ZST 配置。 |
 | TBZ / TBZ2 | 别名/配置 | BZip2 过滤的 TAR 别名。 |
 | TGZ | 别名/配置 | GZIP 过滤的 TAR 别名。 |
@@ -69,7 +69,7 @@ M10 还检查了 DAA、ISZ、ZPAQ、PEA、BOND 和 J2J。ACE 已按产品决定�
 2. **先定线格式契约。** 固定公开源码 revision 和 SHA-256，记录头部字段、名称编码、物理结束、方法、校验和、重复身份和资源限额。参考工具只有在产出完整自有样本时才作为证据，崩溃或单一 Store 样本只能记录为限制。
 3. **先做原始算法自动测试。** Qt 之外实现有界读取器，覆盖空和边界载荷、每个准入方法、准确输入/输出/工作/内存限额、取消、类型化 I/O、来源变化、截断、尾随字节、CRC 和失败终止。未知方法保留可见性，不获得载荷权限。
 4. **再做容器和产品准入。** 增加 codec crate、runtime 强/弱探测、CLI list/test/extract、桌面标签和关联 fixture。验证冻结元数据与物理重复选择，再执行必要的自动 Qt 和布局检查。本次研究与格式切片无需人工视觉验收。
-5. **候选优先级。** ALZ 的保守 Store/raw Deflate 切片、EGG 的无加密且非固实 Store/raw Deflate 切片、CFB/Compound(MSI) 元数据切片、PEA 保守存储配置和 NSIS 静态 `firstheader` 元数据切片已经准入。ACE、DAA、WIM、ISZ、ZPAQ、BOND 与 J2J 按产品决定永久不支持。ZIPX 创建和 SFX 创建是独立写入器项目，不会因读取别名自动获得。
+5. **候选优先级。** ALZ 的保守 Store/raw Deflate 切片、EGG 的无加密且非固实 Store/raw Deflate 切片、CFB/Compound(MSI) 元数据切片、PEA 保守存储配置和 NSIS 静态 `firstheader` 元数据切片已经准入。ACE、DAA、WIM、ISZ、ZPAQ、BOND 与 J2J 按产品决定永久不支持。ZIPX 创建仍不在当前写入器范围。[自有 SFX 写入器](sfx-creation.md)已单独实现，不会因读取别名自动获得。
 6. **发行边界。** 候选格式在 codec、runtime、CLI 和桌面证据完成前不进入公开能力表。未知方法和参考工具限制记录在 issue 中，不能静默回退到 Store 或其他容器。
 
 当前 BH 切片遵循这套方案：只读、无密码和分卷路径，使用独立有界的 Deflate 读取器，强制 CRC-32 和准确物理结束。Compound(MSI) 切片遵循同一边界：CFB FAT/DIFAT、目录树、mini-stream 和环检测独立于 Qt，只有在不可变元数据快照匹配后才复制原始流。NSIS 切片停在固定的 firstheader 元数据记录，并对载荷访问返回不支持，绝不执行 MSI 或 NSIS 安装行为。

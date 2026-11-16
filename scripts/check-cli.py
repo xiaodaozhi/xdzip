@@ -154,6 +154,16 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
                 with tarfile.open(archive) as reader:
                     assert reader.extractfile('输入 files/你好.txt').read() == (source/'你好.txt').read_bytes()
         record('zip_tar_targz_7z_roundtrip_add_and_independent_readers')
+        for suffix in ['iso'] + (['sfx.exe'] if os.name == 'nt' else []):
+            archive = work/('new-profile.'+suffix)
+            created = invoke('create', archive, source)
+            assert created['data']['format'] == ('ISO' if suffix == 'iso' else 'ZIP')
+            assert '输入 files/你好.txt' in [entry['path'] for entry in invoke('list', archive)['data']['entries']]
+            invoke('test', archive)
+            target = work/('new-profile-output-'+suffix)
+            invoke('extract', archive, '-C', target)
+            assert (target/'输入 files/你好.txt').read_bytes() == (source/'你好.txt').read_bytes()
+        record('iso_joliet_and_owned_windows_sfx_creation_roundtrip')
         single = source/'你好.txt'
         for level in ['store','fast','normal','best']:
             archive = work/('single-'+level+'.gz')
@@ -625,7 +635,7 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
         assert b'[warning]' in command('list',corrupt).stdout
         invoke('extract',corrupt,'-C',work/'unsafe-output',code=1)
         assert not (work/'escape').exists()
-        for suffix in ['rar','cab','iso','udf']:
+        for suffix in ['rar','cab','udf']:
             invoke('create',work/('unsupported.'+suffix),source,code=2)
         record('split_archive_and_unsafe_or_unsupported_inputs')
         readonly = [('CAB',ROOT/'tests/fixtures/cab-iso/named.cab'),('RAR',ROOT/'tests/fixtures/native-archives/rar7-store-small.rar')]

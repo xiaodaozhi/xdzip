@@ -2103,6 +2103,7 @@ version = "0.2.0"
 dependencies = [
  "flate2",
  "libc",
+ "sha2",
  "unicode-normalization",
  "winapi-util",
  "xdzip-codec-aescrypt",
@@ -2118,6 +2119,7 @@ dependencies = [
  "xdzip-codec-lha",
  "xdzip-codec-native",
  "xdzip-codec-nsis",
+ "xdzip-codec-optical",
  "xdzip-codec-pea",
  "xdzip-codec-stream",
  "xdzip-codec-tar",

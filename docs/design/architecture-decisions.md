@@ -123,3 +123,15 @@ Decision: Use independent Rust implementations for format parsing and compressio
 Accept and replace ZIP, TAR, TAR.GZ, 7z, RAR, CAB, ISO, and UDF individually according to existing capabilities. Retain the current implementation for formats that have not passed; do not silently fall back or expand read-only RAR/CAB/ISO/UDF scope. Reuse shared compression algorithms. Names, identities, authorized I/O, resources, cancellation, and commits remain under the Rust host; worker isolation does not disappear because the implementation changes to Rust.
 
 Costs: Independently maintaining compatibility, security, performance, fuzzing, and algorithms over the long term. Third-party references may be used in tests, but migrated formats must remove the corresponding engines from product dependencies and delivery files. See the [in-house backend contract](../engineering/independent-rust-codecs.md) for sources and interface rules; progress and actual acceptance are tracked in [#45](https://github.com/xiaodaozhi/xdzip/issues/45).
+
+## ADR-013: Standalone Windows SFX host
+
+**Status: Accepted for the owner-authorized first SFX profile, 2026-11-16.**
+
+Context: A generated Windows x64 self-extracting archive must work without installed xdzip or Qt. Shipping a second full Qt application in every archive would add an unrelated deployment runtime.
+
+Decision: Keep the desktop on Qt Quick and reuse its creation window. The standalone project-owned SFX executable uses Windows system folder and task dialogs only, with system-controlled fonts, DPI, sizing and accessibility. All ZIP, verification, output authorization, conflicts, progress, cancellation and cleanup use the existing Rust core. This is a narrow distribution-host exception to ADR-001, not an alternative desktop framework or new custom widget library.
+
+Costs: Maintain and automatically exercise one additional Windows executable, versioned envelope, static CRT linkage, no-Qt dependency audit and native dialog host. It never runs extracted content. Signing the generated executable is separate from signing a fixed stub.
+
+Reevaluation trigger: Any request for installers, payload auto-run, additional executable platforms or a custom SFX interface needs its own scope and architecture review.

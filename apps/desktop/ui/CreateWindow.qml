@@ -18,14 +18,14 @@ OperationWindow {
     requestedHeight: Math.min(Theme.operationCreateClientHeight, Screen.desktopAvailableHeight - 60)
     title: qsTrId("ui.fe189b616c1d")
     readonly property bool targetReady: Boolean(controller.creationTargetCheck.valid) && controller.creationTargetMatches(target.text)
-    readonly property var formatChoices: ArchiveFormats.creationFormats
+    readonly property var formatChoices: ArchiveFormats.creationFormats.filter(choice => !choice.platforms || choice.platforms.includes(Qt.platform.os))
     readonly property var selectedFormat: formatChoices[formatGroup.currentIndex] || formatChoices[0]
     readonly property string formatId: selectedFormat.id
     readonly property bool sevenZip: formatId === "7z"
     readonly property bool hasStoreMethod: selectedFormat.methodIds.indexOf(0) >= 0
     readonly property bool compressedOnly: !hasStoreMethod && selectedFormat.levels.indexOf(0) < 0
     readonly property var levelValues: hasStoreMethod ? [6, 1, 6, 9] : selectedFormat.levels
-    readonly property int defaultLevelIndex: levelValues.lastIndexOf(6)
+    readonly property int defaultLevelIndex: Math.max(0, levelValues.lastIndexOf(6))
     readonly property int compressedMethod: selectedFormat.methodIds.find(id => id !== 0) || 0
     readonly property bool supportsPasswordAndVolumes: selectedFormat.encryption.length > 0 && selectedFormat.volumes.length > 0
     readonly property string formatExtension: selectedFormat.suffix
@@ -305,13 +305,13 @@ OperationWindow {
                                         }
                                         OperationSelect {
                                             id: level
-                                            enabled: root.formatId !== "tar"
+                                            enabled: root.formatId !== "tar" && root.selectedFormat.levels.length > 1
                                             objectName: "createLevel"
                                             Layout.fillWidth: true
                                             density: root.density
                                             implicitHeight: Math.max(Theme.operationCreateFieldHeight, contentItem.implicitHeight + 8)
                                             currentIndex: 2
-                                            model: root.compressedOnly ? [qsTrId("ui.0ab258fe71f4"), qsTrId("ui.64209bb8c4df"), qsTrId("ui.bd60ad0e564e")] : [qsTrId("ui.114918a8e262"), qsTrId("ui.0ab258fe71f4"), qsTrId("ui.64209bb8c4df"), qsTrId("ui.bd60ad0e564e")]
+                                            model: root.formatId === "iso" ? [qsTrId("ui.114918a8e262")] : root.compressedOnly ? [qsTrId("ui.0ab258fe71f4"), qsTrId("ui.64209bb8c4df"), qsTrId("ui.bd60ad0e564e")] : [qsTrId("ui.114918a8e262"), qsTrId("ui.0ab258fe71f4"), qsTrId("ui.64209bb8c4df"), qsTrId("ui.bd60ad0e564e")]
                                         }
                                         Text {
                                             Layout.maximumWidth: root.optionLabelMaximumWidth
@@ -349,7 +349,9 @@ OperationWindow {
                                     }
                                     Text {
                                         Layout.fillWidth: true
-                                        text: root.formatId === "tar" ? qsTrId("ui.a823dd053540") : root.formatId === "tar-gzip" ? qsTrId("ui.8de83aec57d2") : root.selectedFormat.container === "single-file" ? qsTrId("create.singleFileStream").arg(root.selectedFormat.label) : root.compressedOnly ? qsTrId("create.compressionMethod").arg(root.selectedFormat.methods[0].toUpperCase()) : volume.currentIndex === 13 && root.volumeBytes < 0 ? qsTrId("ui.58e4aeca8ddc") : volume.currentIndex > 0 ? (root.sevenZip ? qsTrId("create.sevenZipVolumes") : qsTrId("ui.17f715707e84")) : root.sevenZip ? qsTrId("create.sevenZipMethod") : qsTrId("ui.13e4af7e4901")
+                                        objectName: "createProfileNote"
+                                        wrapMode: Text.Wrap
+                                        text: root.formatId === "zip-sfx" ? qsTrId("create.sfxProfile") : root.formatId === "iso" ? qsTrId("create.isoProfile") : root.formatId === "tar" ? qsTrId("ui.a823dd053540") : root.formatId === "tar-gzip" ? qsTrId("ui.8de83aec57d2") : root.selectedFormat.container === "single-file" ? qsTrId("create.singleFileStream").arg(root.selectedFormat.label) : root.compressedOnly ? qsTrId("create.compressionMethod").arg(root.selectedFormat.methods[0].toUpperCase()) : volume.currentIndex === 13 && root.volumeBytes < 0 ? qsTrId("ui.58e4aeca8ddc") : volume.currentIndex > 0 ? (root.sevenZip ? qsTrId("create.sevenZipVolumes") : qsTrId("ui.17f715707e84")) : root.sevenZip ? qsTrId("create.sevenZipMethod") : qsTrId("ui.13e4af7e4901")
                                         font.pixelSize: Theme.operationCreateNoteSize
                                         color: Theme.textSecondary
                                     }

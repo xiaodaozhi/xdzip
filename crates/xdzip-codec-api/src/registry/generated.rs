@@ -11,7 +11,10 @@ pub(super) static CREATION_METHODS: &[(&str, u16)] = &[
     ("lz4", 256),
     ("zstd", 93),
     ("lh5", 259),
+    ("iso9660", 260),
 ];
+
+pub(super) const SFX_SUFFIX: &str = ".sfx.exe";
 
 #[rustfmt::skip]
 pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
@@ -48,12 +51,14 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         ],
         creation_suffixes: &[
             ".zip",
+            ".sfx.exe",
         ],
         rewrite: true,
         creation_levels: &[1, 6, 9],
         check_kind: "supported_content",
         extensions: &[
             ".zip",
+            ".sfx.exe",
             ".zipx",
             ".xpi",
             ".apk",
@@ -1092,14 +1097,18 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
             "joliet",
             "rock-ridge",
         ],
-        write_methods: &[],
+        write_methods: &[
+            "iso9660",
+        ],
         read_encryption: &[],
         write_encryption: &[],
         read_volumes: &[],
         write_volumes: &[],
-        creation_suffixes: &[],
+        creation_suffixes: &[
+            ".iso",
+        ],
         rewrite: false,
-        creation_levels: &[],
+        creation_levels: &[0],
         check_kind: "structure_and_readability",
         extensions: &[
             ".iso",

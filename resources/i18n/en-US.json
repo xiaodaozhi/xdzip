@@ -640,6 +640,20 @@
     "tabs.reorderHint": "Drag to reorder, or press Control+Shift+Page Up/Down.",
     "desktop.testArchive": "Test archive",
     "desktop.checkTask": "Check",
+    "create.sfxProfile": "Windows x64 ZIP self-extractor, without installed xdzip. Extracts only; never auto-runs files. Passwords and volumes are unavailable.",
+    "create.isoProfile": "ISO9660 + Joliet data image, single volume, files below 4 GiB. Names: up to 64 UCS-2 characters; encoded paths: up to 240 bytes. No boot images.",
+    "sfx.target": "Choose the extraction destination",
+    "sfx.conflict": "How should existing files be handled?",
+    "sfx.skip": "Skip existing files",
+    "sfx.rename": "Keep both with a new name",
+    "sfx.overwrite": "Replace existing files",
+    "sfx.noRun": "Extracts files without opening files or running programs. Cancellation keeps completed files.",
+    "sfx.extracting": "Extracting files",
+    "sfx.completed": "Extraction completed",
+    "sfx.cancelled": "Extraction cancelled",
+    "sfx.failed": "Unable to complete extraction",
+    "sfx.invalid": "Check that the self-extracting archive is complete and the destination has sufficient permissions and space.",
+    "sfx.result": "Saved %1 files, skipped %2. Unfinished files are not retained as successful output.",
     "integrity.starting": "Preparing archive check…",
     "integrity.running": "Reading and verifying",
     "integrity.processed": "Read %1, verified %2",
@@ -754,6 +768,7 @@
     "shell.integrationFailed": "Could not update integration. Check the installation location and permissions.",
     "shell.requestRejected": "Could not accept the file manager action. Select up to 128 local files or folders and try again.",
     "shell.finderHandoffFailed": "The operation could not be handed off. Use Finder Services → Open with xdzip.",
-    "shell.finderRequestRejected": "The operation was rejected. Open xdzip to repair its Finder integration, or use Services."
+    "shell.finderRequestRejected": "The operation was rejected. Open xdzip to repair its Finder integration, or use Services.",
+    "create.sfxUnavailable": "The self-extraction component is missing or damaged. Reinstall the complete application."
   }
 }

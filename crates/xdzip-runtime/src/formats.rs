@@ -923,7 +923,8 @@ mod tests {
         }
         assert_eq!(creation_format("archive.7Z"), Some(Format::SevenZip));
         assert_eq!(creation_format("archive.rar"), None);
-        for name in ["archive.cab", "archive.iso", "archive.udf"] {
+        assert_eq!(creation_format("archive.iso"), Some(Format::Iso));
+        for name in ["archive.cab", "archive.udf"] {
             assert_eq!(creation_format(name), None);
         }
     }

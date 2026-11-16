@@ -35,7 +35,7 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual({item['id']: item['worker_id'] for item in formats if item['worker_id']},
                          {'7z': 7, 'rar': 4, 'cab': 8, 'iso': 9, 'udf': 10})
         self.assertEqual({suffix for item in formats for suffix in item['creation_suffixes']},
-                         {'.zip', '.tar', '.tar.gz', '.tgz', '.gz', '.7z', '.xz', '.tar.xz', '.txz', '.lz4', '.tar.lz4', '.zst', '.tar.zst', '.tzst', '.lzh', '.lha'})
+                         {'.zip', '.tar', '.tar.gz', '.tgz', '.gz', '.7z', '.xz', '.tar.xz', '.txz', '.lz4', '.tar.lz4', '.zst', '.tar.zst', '.tzst', '.lzh', '.lha', '.iso', '.sfx.exe'})
 
     def test_duplicate_id(self):
         self.reject(lambda source: source['formats'][1].update(id='zip'))
@@ -44,7 +44,7 @@ class RegistryTests(unittest.TestCase):
         output = REGISTRY.render(self.source)['apps/desktop/ui/ArchiveFormats.js']
         choices = json.loads(output.split('var creationFormats = ', 1)[1].split(';\n', 1)[0])
         by_id = {item['id']: item for item in choices}
-        self.assertEqual(set(by_id), {'zip', 'tar', 'tar-gzip', '7z', 'gzip', 'xz', 'tar-xz', 'lz4', 'tar-lz4', 'zstd', 'tar-zstd', 'lzh'})
+        self.assertEqual(set(by_id), {'zip', 'tar', 'tar-gzip', '7z', 'gzip', 'xz', 'tar-xz', 'lz4', 'tar-lz4', 'zstd', 'tar-zstd', 'lzh', 'iso', 'zip-sfx'})
         self.assertEqual(by_id['lzh']['suffix'], '.lzh')
         self.assertEqual(by_id['lzh']['methods'], ['lh5'])
         self.assertEqual(by_id['lzh']['methodIds'], [259])
@@ -56,6 +56,16 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(by_id['gzip']['methods'], ['deflate'])
         self.assertEqual(by_id['gzip']['encryption'], [])
         self.assertEqual(by_id['gzip']['volumes'], [])
+        self.assertEqual(by_id['iso']['methods'], ['iso9660'])
+        self.assertEqual(by_id['iso']['levels'], [0])
+        self.assertEqual(by_id['zip-sfx']['platforms'], ['windows'])
+        self.assertEqual(by_id['zip-sfx']['encryption'], [])
+        self.assertEqual(by_id['zip-sfx']['volumes'], [])
+
+    def test_sfx_wrapper_cannot_admit_generic_exe_or_another_platform(self):
+        self.reject(lambda source: source['creation_wrappers'][0].update(suffix='.exe'))
+        self.source = json.loads(REGISTRY.SOURCE.read_text(encoding='utf-8'))
+        self.reject(lambda source: source['creation_wrappers'][0].update(platforms=['linux']))
 
     def test_ui_format_groups_keep_summary_and_association_scopes_distinct(self):
         formats = REGISTRY.validate(self.source)

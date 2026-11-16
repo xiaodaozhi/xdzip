@@ -7734,8 +7734,24 @@ QtObject {
         QVERIFY(QTest::qWaitForWindowExposed(create));
         auto *formats = findVisual(create->contentItem(), "createFormat");
         QVERIFY(formats);
-        const QStringList extensions{".zip",    ".tar", ".tar.gz",  ".7z",  ".gz",      ".xz",
-                                     ".tar.xz", ".lz4", ".tar.lz4", ".zst", ".tar.zst", ".lzh"};
+        const QStringList extensions{".zip",
+                                     ".tar",
+                                     ".tar.gz",
+                                     ".7z",
+                                     ".gz",
+                                     ".xz",
+                                     ".tar.xz",
+                                     ".lz4",
+                                     ".tar.lz4",
+                                     ".zst",
+                                     ".tar.zst",
+                                     ".lzh",
+                                     ".iso"
+#ifdef Q_OS_WIN
+                                     ,
+                                     ".sfx.exe"
+#endif
+        };
         auto *formatInterface = QAccessible::queryAccessibleInterface(formats);
         QVERIFY(formatInterface);
         QCOMPARE(formatInterface->role(), QAccessible::ComboBox);
@@ -9189,7 +9205,12 @@ QtObject {
         formats->setProperty("currentIndex", 3);
         QCOMPARE(create->width(), 491);
         QTRY_VERIFY(formats->width() > 0);
-        QCOMPARE(formats->property("count").toInt(), 12);
+#ifdef Q_OS_WIN
+        const int expectedFormatCount = 14;
+#else
+        const int expectedFormatCount = 13;
+#endif
+        QCOMPARE(formats->property("count").toInt(), expectedFormatCount);
         for (int index = 0; index < formats->property("count").toInt(); ++index) {
             formats->setProperty("currentIndex", index);
             auto *label =
@@ -9197,7 +9218,21 @@ QtObject {
             QVERIFY(label);
             QTRY_VERIFY2(label->implicitWidth() <= label->width() + 1,
                          qPrintable(QString("format %1 text exceeds selector").arg(index)));
+            const auto profile = create->property("formatId").toString();
+            if (profile == "iso" || profile == "zip-sfx") {
+                auto *note = findVisual(create->contentItem(), "createProfileNote");
+                QVERIFY(note);
+                QTRY_VERIFY(note->height() + 1 >= note->property("contentHeight").toReal());
+                QVERIFY(!create->property("supportsPasswordAndVolumes").toBool());
+                auto *level = findVisual(create->contentItem(), "createLevel");
+                QVERIFY(level);
+                if (profile == "iso") {
+                    QCOMPARE(level->property("count").toInt(), 1);
+                    QVERIFY(!level->isEnabled());
+                }
+            }
         }
+        formats->setProperty("currentIndex", 11);
         QCOMPARE(create->property("formatId").toString(), QStringLiteral("lzh"));
         QCOMPARE(create->property("compressedMethod").toInt(), 259);
         QVERIFY(create->property("compressedOnly").toBool());
@@ -9215,7 +9250,8 @@ QtObject {
                     create->height() + 1);
         QTest::keyClick(create, Qt::Key_End);
         QTest::keyClick(create, Qt::Key_Return);
-        QTRY_COMPARE(formats->property("currentIndex").toInt(), 11);
+        QTRY_COMPARE(formats->property("currentIndex").toInt(),
+                     formats->property("count").toInt() - 1);
         QTRY_VERIFY(!popup->property("visible").toBool());
         auto *cancel = findVisual(create->contentItem(), "createCancel");
         auto *start = findVisual(create->contentItem(), "startCreate");
@@ -9381,6 +9417,14 @@ QtObject {
             QTest::newRow(qPrintable("lzh-" + language))
                 << QStringLiteral("lzh") << QStringLiteral("lzh") << QStringLiteral("LZH")
                 << language;
+            QTest::newRow(qPrintable("iso-" + language))
+                << QStringLiteral("iso") << QStringLiteral("iso") << QStringLiteral("ISO")
+                << language;
+#ifdef Q_OS_WIN
+            QTest::newRow(qPrintable("zip-sfx-" + language))
+                << QStringLiteral("zip-sfx") << QStringLiteral("sfx.exe") << QStringLiteral("ZIP")
+                << language;
+#endif
         }
     }
     void singleStreamCreationUsesStableCapability() {
@@ -9420,15 +9464,19 @@ QtObject {
         auto *level = findVisual(create->contentItem(), "createLevel");
         QVERIFY(format && name && target && start && level);
         format->setProperty("currentIndex", gzipIndex);
-        level->setProperty("currentIndex", formatId == "gzip" ? 0 : 1);
-        QTRY_COMPARE(level->property("count").toInt(), formatId == "gzip" ? 4 : 3);
+        level->setProperty("currentIndex", formatId == "iso" || formatId == "gzip" ? 0 : 1);
+        QTRY_COMPARE(level->property("count").toInt(), formatId == "iso" ? 1
+                                                       : formatId == "gzip" || formatId == "zip-sfx"
+                                                           ? 4
+                                                           : 3);
         QTRY_COMPARE(create->property("formatId").toString(), formatId);
         QVERIFY(QMetaObject::invokeMethod(create, "addInputPaths",
                                           Q_ARG(QVariant, QVariant(QStringList{input.path()})),
                                           Q_ARG(bool, true)));
         QTRY_COMPARE(create->property("inputs").toList().size(), 1);
         QCOMPARE(create->property("inputsValid").toBool(),
-                 formatId.startsWith("tar-") || formatId == "lzh");
+                 formatId.startsWith("tar-") || formatId == "lzh" || formatId == "iso" ||
+                     formatId == "zip-sfx");
         create->setProperty("inputs", QVariantList{});
         QVERIFY(QMetaObject::invokeMethod(create, "addInputPaths",
                                           Q_ARG(QVariant, QVariant(QStringList{source})),

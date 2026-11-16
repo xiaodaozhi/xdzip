@@ -85,3 +85,7 @@ On the first successful terminal state for a task ID after creating a supported 
 Completion behavior was revised on 2026-10-16: creation does not automatically invoke the system file manager, and the creation window removes its auto-open-directory option. The old startCreation openAfter parameter is ignored. Both task acceptance and terminal paths prohibit creation tasks from automatically opening system directories. Successful results continue through the in-application open queue using existing encrypted and numbered-volume reading. Result statistics use the “Saved” label. See the [UI contract](../ux/welcome-opening.md).
 
 Creation tasks from [system context menus](shell-actions.md) carry a separate completion policy: successful results do not enter the in-application auto-open queue. Single and multiple creations show real independent results; only an explicit user click on a result's directory action invokes the system file manager.
+
+## ISO and owned SFX profiles
+
+[ISO9660/Joliet creation](iso-creation.md) and [Windows ZIP SFX creation](sfx-creation.md) reuse this input tree, output authorization, cancellation, conflict and final-publication contract. Their narrower name, size, method and platform restrictions apply before publication. SFX wrapping never runs the executable during creation.

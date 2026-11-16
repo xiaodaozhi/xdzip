@@ -177,6 +177,56 @@ fn ordinary_stream_directories_or_multiple_inputs_never_publish_an_archive() {
 }
 
 struct Fixture(PathBuf);
+#[test]
+fn iso_creation_verifies_joliet_names_and_source_bytes_before_publication() {
+    let f = Fixture::new();
+    let mut job = f.job(260);
+    job.options.name = "data.iso".into();
+    job.options.level = 0;
+    assert!(job.options.bounded());
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+    let contents = archive_contents(std::fs::read(&result.target).unwrap(), Format::Iso);
+    assert_eq!(
+        contents["输入/文件.txt"],
+        std::fs::read(f.0.join("输入/文件.txt")).unwrap()
+    );
+    let archive =
+        crate::Archive::open(Path::new(&result.target), &Cancellation::default()).unwrap();
+    assert!(
+        archive
+            .rows
+            .iter()
+            .any(|row| row.directory && row.name_bytes() == "输入/空目录/".as_bytes())
+    );
+    assert_eq!(std::fs::read_dir(f.0.join("output")).unwrap().count(), 1);
+}
+
+#[test]
+fn iso_creation_refuses_unsupported_names_and_cancel_without_partial_output() {
+    for cancel in [false, true] {
+        let f = Fixture::new();
+        std::fs::write(f.0.join("输入/emoji-😀.txt"), b"payload").unwrap();
+        let mut job = f.job(260);
+        job.options.name = "data.iso".into();
+        job.options.level = 0;
+        let control = Control::default();
+        if cancel {
+            control.cancel();
+        }
+        let result = execute(job, &control, |_| {});
+        assert_eq!(
+            result.status,
+            if cancel {
+                Status::Cancelled
+            } else {
+                Status::Failed
+            }
+        );
+        assert_eq!(result.committed_files, 0);
+        assert_eq!(std::fs::read_dir(f.0.join("output")).unwrap().count(), 0);
+    }
+}
 impl Fixture {
     fn new() -> Self {
         let root = std::env::temp_dir().join(format!(
@@ -284,6 +334,7 @@ fn store_and_deflate_write_real_archives_and_decode_every_record() {
                         bytes: 0,
                         limit: r.size,
                         cancel: &cancel,
+                        expected: None,
                     },
                     &cancel,
                 )

@@ -42,7 +42,7 @@
       "role": "operation",
       "width": "Theme.operationCreateWidth",
       "design": "design/hifi/sources/create-format-selector.html",
-      "reason": "保持 C01 既有窗口尺寸，文件选择区与添加窗口共享。格式使用共享 OperationSelect，选项由统一能力表生成，以稳定标识决定后缀和选项能力，避免格式增多挤压标签。最小宽度按最长文字和共享控件内边距测量。单文件压缩流只接受一个普通文件，方法编号与可选级别读取统一登记，LZ4、Zstandard、XZ 及其 TAR 组合仅显示已实现的三个压缩级别。固实和文件名加密使用共享复选控件，正文滚动和固定 footer 不变。系统选择入口直接检查预填目标，不先访问默认下载目录",
+      "reason": "保持 C01 既有窗口尺寸，文件选择区与添加窗口共享。格式使用共享 OperationSelect，选项由统一能力表生成，以稳定标识决定后缀和选项能力，避免格式增多挤压标签。最小宽度按最长文字和共享控件内边距测量。单文件压缩流只接受一个普通文件，方法编号与可选级别读取统一登记，LZ4、Zstandard、XZ 及其 TAR 组合仅显示已实现的三个压缩级别。固实和文件名加密使用共享复选控件，正文滚动和固定 footer 不变。系统选择入口直接检查预填目标，不先访问默认下载目录。ISO/Joliet 创建沿用同一窗口和共享控件，压缩级别固定为不压缩，密码与分卷禁用，能力说明可换行",
       "header_design": "design/hifi/sources/operation-headers.html",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
       "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."
@@ -159,6 +159,11 @@
     }
   },
   "native_dialogs": {
-    "reason": "打开文件、添加输入与目标选择器由系统负责样式，经 NativeDialogPolicy 关联调用窗口；不套用操作窗口尺寸"
+    "reason": "打开文件、添加输入与目标选择器由系统负责样式，经 NativeDialogPolicy 关联调用窗口；不套用操作窗口尺寸",
+    "sfx_host": {
+      "source": "crates/xdzip-cli/src/sfx/windows.rs",
+      "design": "design/hifi/sources/sfx-native.html",
+      "reason": "独立 Windows 自解压程序复用系统文件夹选择器与 TaskDialog，布局、字体、DPI 和辅助功能由系统负责，不加载 Qt。普通桌面仍沿用 Qt Quick。"
+    }
   }
 }
