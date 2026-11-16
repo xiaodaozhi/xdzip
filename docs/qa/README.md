@@ -4,6 +4,7 @@ This directory contains reusable acceptance requirements, test methods, fixture 
 
 - [Product acceptance requirements](acceptance.md)
 - [Samples and fixtures](fixtures.md)
+- [Runtime tests through the real worker](runtime-worker-tests.md)
 - [On-demand desktop verification](private-test-manual.md)
 - [Release review process](release-review.md)
 - [CI policy](../engineering/ci-policy.md)

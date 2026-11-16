@@ -742,7 +742,11 @@ fn cabinet_store_mszip_lzx_quantum_tasks_and_trailing_signature_are_read_only() 
             assert_eq!(known_contents(&signed), contents);
         }
     }
-    for name in ["new.cab", "new.iso", "new.udf"] {
+    assert_eq!(
+        crate::formats::creation_format("new.iso"),
+        Some(Format::Iso)
+    );
+    for name in ["new.cab", "new.udf"] {
         assert_eq!(crate::formats::creation_format(name), None);
     }
 }

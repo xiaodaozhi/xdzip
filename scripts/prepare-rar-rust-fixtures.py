@@ -78,6 +78,8 @@ def decode_uu(data):
 def public_data(item, destination, archives=None, offline=False):
     cached = destination / item['file']
     candidates = [cached] + ([Path(archives) / item.get('cache_subdirectory', '') / item['file']] if archives else [])
+    if archives and item.get('cache_subdirectory'):
+        candidates.append(Path(archives) / item['file'])
     for path in candidates:
         if path.exists():
             if path.is_symlink() or not path.is_file() or path.stat().st_size != item['bytes']:

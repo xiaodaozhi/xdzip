@@ -4,6 +4,7 @@
 
 - [产品验收要求](acceptance.md)
 - [样本与夹具规则](fixtures.md)
+- [通过真实工作进程验证 runtime](runtime-worker-tests.md)
 - [按需桌面验证方法](private-test-manual.md)
 - [发行审查流程](release-review.md)
 - [CI 策略](../engineering/ci-policy.md)
