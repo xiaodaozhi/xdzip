@@ -12,6 +12,7 @@
 - **修改产品行为**：先查下方的浏览、任务、格式和交互契约，区分当前实现、设计和未验证内容。
 - **修改界面**：先读[视觉规范](visual/design-standard.md)和[设计流程](visual/design-workflow.md)，再查高保真原稿及相关交互契约。
 - **准备发行**：阅读[发布协议](engineering/release-protocol.md)与[发行审查流程](qa/release-review.md)，具体候选的证据和决定以 issue 为准。
+- **准备商店一览**：使用 [Windows 商店材料](market/windows/README.md)中的双语文案、宣传图、图标和字段对应表。
 
 ## 主题索引
 
