@@ -1,4 +1,5 @@
 #include "NativeRequest.h"
+#include "PackageMenu.h"
 #include <iostream>
 #include <set>
 #include <shlobj.h>
@@ -59,6 +60,15 @@ class MenuRegistryFixture {
 };
 
 int wmain(int argc, wchar_t **argv) {
+    for (int bits = 0; bits < 16; ++bits) {
+        const bool registered = (bits & 1) != 0, store = (bits & 2) != 0,
+                   signedStore = (bits & 4) != 0, win11 = (bits & 8) != 0;
+        if (xdzip_shell::packageMenuAllowed(registered, store, signedStore, true, win11) !=
+                (bits == 15) ||
+            xdzip_shell::packageMenuAllowed(registered, store, signedStore, false, win11) !=
+                registered)
+            return 1;
+    }
     if (argc == 3 && std::wstring(argv[1]) == L"--registered-target")
         return xdzip_shell::registeredTargetMatches(argv[2]) &&
                        xdzip_shell::supportsShellProtocol(argv[2])
@@ -80,6 +90,34 @@ int wmain(int argc, wchar_t **argv) {
     IClassFactory *factory = nullptr;
     if (!getClass || FAILED(getClass(id, IID_PPV_ARGS(&factory))))
         return 1;
+    for (const auto value : {xdzip_shell::PackageClassicStoreId,
+                             xdzip_shell::PackageClassicSideloadId, xdzip_shell::PackageModernId}) {
+        CLSID packagedId{};
+        if (FAILED(CLSIDFromString(value, &packagedId)))
+            return 1;
+        IClassFactory *packagedFactory = nullptr;
+        if (FAILED(getClass(packagedId, IID_PPV_ARGS(&packagedFactory))))
+            return 1;
+        const bool modern = std::wstring(value) == xdzip_shell::PackageModernId;
+        IUnknown *object = nullptr;
+        if (FAILED(packagedFactory->CreateInstance(nullptr, IID_PPV_ARGS(&object))))
+            return 1;
+        packagedFactory->Release();
+        IContextMenu *classic = nullptr;
+        IExplorerCommand *command = nullptr;
+        if (SUCCEEDED(object->QueryInterface(IID_PPV_ARGS(&classic))) == modern ||
+            SUCCEEDED(object->QueryInterface(IID_PPV_ARGS(&command))) != modern)
+            return 1;
+        if (classic)
+            classic->Release();
+        if (command) {
+            EXPCMDSTATE state = ECS_ENABLED;
+            if (FAILED(command->GetState(nullptr, FALSE, &state)) || state != ECS_HIDDEN)
+                return 1;
+            command->Release();
+        }
+        object->Release();
+    }
     const CLSID commandId{
         0x54b70170, 0x1072, 0x49b5, {0x9b, 0xd2, 0x6d, 0xfb, 0x5e, 0xcb, 0xf1, 0xb1}};
     IClassFactory *commandFactory = nullptr;
@@ -143,7 +181,7 @@ int wmain(int argc, wchar_t **argv) {
             if (withOpenWith)
                 ok = AppendMenuW(popup, MF_STRING, 99, L"Open wit&h") != FALSE;
             const auto result = menu->QueryContextMenu(popup, withOpenWith ? 1 : 0, 1000, 2000, 0);
-            ok = SUCCEEDED(result) && HRESULT_CODE(result) == expected &&
+            ok = SUCCEEDED(result) && UINT(HRESULT_CODE(result)) == expected &&
                  GetMenuItemCount(popup) == (withOpenWith ? 2 : 1);
             MENUITEMINFOW rootItem{};
             rootItem.cbSize = sizeof(rootItem);

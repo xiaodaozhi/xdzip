@@ -11,4 +11,13 @@ const updateStates={
  recovery:{state:'recovery_required',downloaded:true}
 };
 frame.addEventListener('load',()=>{frame.contentWindow.postMessage({type:'xdzip-review-configure',view:'settings',platform:q.get('channel')==='msix'?'windows':'macos',theme},'*');setTimeout(()=>{frame.contentWindow.document.getElementById('settings-tab-'+tab)?.click();const hover=q.get('hover');if(hover)frame.contentWindow.document.getElementById('settings-tab-'+hover)?.setAttribute('data-preview-hover','true');const update=updateStates[q.get('update')];if(tab==='about'&&update)frame.contentWindow.XdzipAboutUpdatePreview?.(update);if(tab==='about'&&q.get('channel')==='msix'){const section=frame.contentWindow.document.getElementById('about-update-section');const title=section?.previousElementSibling;const separator=title?.previousElementSibling;if(section&&title&&separator){section.style.display='none';title.style.display='none';separator.style.display='none';}}},100)});
+frame.addEventListener('load',()=>setTimeout(()=>{
+ if(tab!=='associations'||q.get('channel')!=='msix')return;
+ const doc=frame.contentWindow.document,pane=doc.querySelector('.settings-pane[data-tab="associations"]');
+ if(!pane)return;
+ const language=q.get('lang')==='en-US'?'en-US':'zh-CN',messages=frame.contentWindow.XDZIP_UI_MESSAGES[language].messages;
+ const note=doc.createElement('p');note.textContent=messages['settings.associationPackaged'];
+ const button=doc.createElement('button');button.className='button operation-body-button';button.textContent=messages['settings.openDefaultApps'];
+ pane.replaceChildren(note,button);
+},150));
 </script></html>

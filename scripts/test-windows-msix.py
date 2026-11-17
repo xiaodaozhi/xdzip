@@ -18,7 +18,7 @@ spec.loader.exec_module(msix)
 
 
 class MsixTests(unittest.TestCase):
-    def test_manifest_contains_associations_but_no_shell_menu(self):
+    def test_manifest_contains_associations_and_classic_only_for_sideload(self):
         data = msix.manifest('xdzip.Development', 'CN=xdzip development', 27, '测试 & Publisher')
         package = ET.fromstring(data)
         identity = package.find(msix.tag(msix.NS, 'Identity'))
@@ -35,8 +35,24 @@ class MsixTests(unittest.TestCase):
         extensions = {item.text for item in package.iter(msix.tag(msix.UAP, 'FileType'))}
         self.assertEqual(extensions, {'.' + ext for ext in msix.WINDOWS_ICONS})
         self.assertNotIn(b'fileExplorerContextMenus', data)
-        self.assertNotIn(b'comServer', data)
+        self.assertIn(b'comServer', data)
+        self.assertIn(b'windows.fileExplorerClassicContextMenuHandler', data)
+        self.assertNotIn(msix.MODERN.encode(), data)
         self.assertIn(b'runFullTrust', data)
+
+    def test_store_manifest_has_separate_modern_and_classic_classes(self):
+        data = msix.manifest('xdzip.Store', 'CN=test', 27, 'xdzip', 'store')
+        root = ET.fromstring(data)
+        classes = {element.get('Id') for element in root.iter(msix.tag(msix.COM, 'Class'))}
+        self.assertEqual(classes, {msix.CLASSIC_STORE, msix.MODERN})
+        self.assertEqual({element.get('Clsid') for element in root.iter(msix.tag(msix.D9, 'ExtensionHandler'))}, {msix.CLASSIC_STORE})
+        self.assertEqual({element.get('Clsid') for element in root.iter(msix.tag(msix.D5, 'Verb'))}, {msix.MODERN})
+        self.assertNotIn(msix.CLASSIC_SIDELOAD.encode(), data)
+        native = (ROOT / 'apps/desktop/shell/PackageMenu.h').read_text(encoding='utf-8')
+        for clsid in (msix.CLASSIC_STORE, msix.CLASSIC_SIDELOAD, msix.MODERN):
+            self.assertIn(clsid, native)
+        with self.assertRaisesRegex(ValueError, 'channel'):
+            msix.manifest('xdzip.Store', 'CN=test', 27, 'xdzip', 'unknown')
 
     def test_invalid_identity_and_version_are_rejected(self):
         for name, publisher, build in [('a', 'CN=test', 1), ('xdzip.test', 'invalid', 1),
@@ -84,15 +100,24 @@ class MsixTests(unittest.TestCase):
             runtime.mkdir()
             app = runtime / 'xdzip.exe'
             app.write_bytes(b'owned test fixture, not a runnable product')
+            (runtime / 'shell').mkdir()
+            library = runtime / 'shell/temporary.dll'
+            library.write_bytes(b'owned shell fixture, not a runnable DLL')
+            library = library.rename(library.with_name('xdzip-shell-' + digest(library)[:16] + '.dll'))
+            metadata = runtime / 'shell/integration.json'
+            metadata.write_text(json.dumps({'schema_version': 1, 'file': library.name, 'sha256': digest(library)}), encoding='utf-8')
             identity = {'version': '0.2.0', 'build': 27, 'revision': 'a' * 12, 'dirty': False}
             audit = {'status': 'passed', 'platform': 'windows', 'mode': 'deployed',
                      'identity': identity, 'files': [{'path': 'xdzip.exe', 'sha256': digest(app)}]}
             audit_path = folder / 'audit.json'
+            audit['files'].extend([{'path': str(library.relative_to(runtime)).replace('\\', '/'), 'sha256': digest(library)},
+                                   {'path': 'shell/integration.json', 'sha256': digest(metadata)}])
             audit_path.write_text(json.dumps(audit), encoding='utf-8')
             real_run = msix.subprocess.run
             def run(command, **kwargs):
                 if command[0] == str(app):
-                    return unittest.mock.Mock(stdout=json.dumps({**identity, 'packaged_update_policy': 1}))
+                    return unittest.mock.Mock(stdout=json.dumps({**identity, 'packaged_update_policy': 1,
+                        'packaged_shell_policy': 1, 'packaged_association_policy': 1}))
                 return real_run(command, **kwargs)
             with patch.object(msix.subprocess, 'run', side_effect=run):
                 msix.build(runtime, audit_path, folder / 'app.msix', 'xdzip.Test',
@@ -104,7 +129,11 @@ class MsixTests(unittest.TestCase):
             self.assertEqual(report['publisher'], 'CN=test')
             self.assertEqual(report['publisher_display_name'], 'Test Publisher')
             self.assertEqual(report['languages'], ['en-US', 'zh-CN'])
+            self.assertEqual(report['shell_library'], 'shell/' + library.name)
             self.assertEqual(report['version'], '1.0.27.0')
+            import zipfile
+            with zipfile.ZipFile(folder / 'app.msix') as package:
+                self.assertEqual(package.read('xdzip-msix-channel.txt'), b'xdzip-msix-v1\nsideload\n')
 
 
 if __name__ == '__main__':

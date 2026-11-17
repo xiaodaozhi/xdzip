@@ -1,6 +1,7 @@
 #include "FileAssociations.h"
 #include "BuildInfo.h"
 #include "UiText.h"
+#include "WindowsAssociationSettings.h"
 
 #include <QCoreApplication>
 #include <QDesktopServices>
@@ -16,6 +17,7 @@
 #ifdef Q_OS_WIN
 #include <windows.h>
 
+#include <appmodel.h>
 #include <shlwapi.h>
 #endif
 
@@ -26,6 +28,21 @@ void macAssociationChange(FileAssociations *service, const QString &extension, b
 #endif
 
 namespace {
+#ifdef Q_OS_WIN
+QString currentApplicationId() {
+    UINT32 length = 0;
+    if (GetCurrentApplicationUserModelId(&length, nullptr) != ERROR_INSUFFICIENT_BUFFER ||
+        length < 2 || length > 4096)
+        return {};
+    QString value(int(length), Qt::Uninitialized);
+    if (GetCurrentApplicationUserModelId(&length, reinterpret_cast<PWSTR>(value.data())) !=
+            ERROR_SUCCESS ||
+        length < 2 || length > UINT32(value.size()) || value[int(length) - 1] != QChar(0))
+        return {};
+    value.truncate(int(length) - 1);
+    return value.contains(QChar(0)) ? QString() : value;
+}
+#endif
 const QHash<QString, QStringList> &extensions() {
     static const QHash<QString, QStringList> value{
         {".zip", {"application/zip"}},
@@ -68,7 +85,8 @@ FileAssociations::FileAssociations(QObject *parent) : QObject(parent) {
 #elif defined(Q_OS_WIN)
     QSettings installed(QStringLiteral("HKEY_CURRENT_USER\\Software\\RegisteredApplications"),
                         QSettings::NativeFormat);
-    m_available = !BuildInfo::packaged() && installed.value(QStringLiteral("xdzip")).isValid();
+    m_systemManaged = BuildInfo::packaged();
+    m_available = m_systemManaged || installed.value(QStringLiteral("xdzip")).isValid();
 #elif defined(Q_OS_UNIX)
     m_available = !QStandardPaths::findExecutable(QStringLiteral("xdg-mime")).isEmpty() &&
                   !QStandardPaths::locate(QStandardPaths::ApplicationsLocation,
@@ -106,6 +124,12 @@ void FileAssociations::refresh() {
         return;
 #endif
     m_pendingDefaults.clear();
+    if (m_systemManaged) {
+        m_defaults.clear();
+        m_ready = true;
+        notify();
+        return;
+    }
 #ifdef Q_OS_MACOS
     for (auto it = extensions().cbegin(); it != extensions().cend(); ++it)
         m_pendingDefaults.insert(it.key(), macAssociationDefault(it.key()));
@@ -187,10 +211,7 @@ void FileAssociations::requestChange(const QString &extension, bool enable) {
     macAssociationChange(this, extension, enable);
 #elif defined(Q_OS_WIN)
     Q_UNUSED(enable);
-    if (!QDesktopServices::openUrl(
-            QUrl(QStringLiteral("ms-settings:defaultapps?registeredAppUser=xdzip"))))
-        m_error = QStringLiteral("settings.associationFailed");
-    notify();
+    openSystemSettings();
 #elif defined(Q_OS_UNIX)
     QString desktopId = QStringLiteral("xdzip.desktop");
     setBusy(true);
@@ -230,5 +251,17 @@ void FileAssociations::requestChange(const QString &extension, bool enable) {
         if (process->state() != QProcess::NotRunning)
             process->kill();
     });
+#endif
+}
+void FileAssociations::openSystemSettings() {
+#ifdef Q_OS_WIN
+    if (!m_available || m_busy)
+        return;
+    m_error.clear();
+    const auto url = file_associations::windowsSettingsUrl(
+        m_systemManaged, m_systemManaged ? currentApplicationId() : QString());
+    if (!QDesktopServices::openUrl(url))
+        m_error = QStringLiteral("settings.associationFailed");
+    notify();
 #endif
 }

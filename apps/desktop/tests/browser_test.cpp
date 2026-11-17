@@ -18,6 +18,7 @@
 #include "UiText.h"
 #include "WindowActivation.h"
 #include "WindowHoverPolicy.h"
+#include "WindowsAssociationSettings.h"
 #include "WindowsFrame.h"
 #include "native_monitor_audit.h"
 #include "test_environment.h"
@@ -30,6 +31,7 @@
 #include <QCryptographicHash>
 #include <QCursor>
 #include <QDebug>
+#include <QUrlQuery>
 #ifdef Q_OS_WIN
 #include <shlobj.h>
 #endif
@@ -7883,6 +7885,7 @@ QtObject {
         fixture.setData(R"(import QtQuick
             QtObject {
                 property bool available: true; property bool busy: false; property bool ready: true
+                property bool systemManaged: false
                 property int revision: 0; property string error: ""; property bool selected: false
                 property bool accept: false; property int requests: 0
                 function isDefault(extension) { return extension === ".zip" && selected }
@@ -7926,6 +7929,81 @@ QtObject {
         service->setProperty("ready", false);
         QTRY_VERIFY(!zip->isEnabled());
         settings->close();
+    }
+    void packagedAssociationSettings_data() {
+        settingsSelectorsHaveConsistentGeometry_data();
+    }
+    void packagedAssociationSettings() {
+        QFETCH(QString, language);
+        QFETCH(bool, dark);
+        QFETCH(double, scale);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QQmlApplicationEngine engine;
+        QQmlComponent fixture(&engine);
+        fixture.setData(R"(import QtQuick
+            QtObject {
+                property bool available: true; property bool systemManaged: true
+                property bool busy: false; property bool ready: true; property int revision: 0
+                property string error: ""; property int requests: 0
+                function refresh() { ++revision }
+                function openSystemSettings() { ++requests }
+            })",
+                        QUrl());
+        std::unique_ptr<QObject> service(fixture.create());
+        QVERIFY2(service, qPrintable(fixture.errorString()));
+        engine.rootContext()->setContextProperty(QStringLiteral("FileAssociationService"),
+                                                 service.get());
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
+        QVERIFY(settings && QMetaObject::invokeMethod(settings, "configure"));
+        auto *prefs = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(prefs);
+        prefs->preview(dark ? QStringLiteral("dark") : QStringLiteral("light"), scale);
+        const auto restorePreview = qScopeGuard([&] { prefs->cancelPreview(); });
+        settings->setProperty("currentTab", 3);
+        QVERIFY(QTest::qWaitForWindowExposed(settings));
+        QQuickItem *button = nullptr;
+        QTRY_VERIFY((button = findVisual(settings->contentItem(), "settingsOpenDefaultApps")));
+        QVERIFY(button->isVisible() && button->isEnabled());
+        QVERIFY(!findVisual(settings->contentItem(), "settingsAssociation-.zip"));
+        QVERIFY(button->width() > 0 && button->width() <= settings->width());
+        auto *label = button->property("contentItem").value<QQuickItem *>();
+        QVERIFY(label);
+        const QFontMetricsF labelMetrics(label->property("font").value<QFont>());
+        QVERIFY(labelMetrics.horizontalAdvance(button->property("text").toString()) <=
+                label->width() + 1);
+        QVERIFY(button->mapToScene(QPointF(button->width(), 0)).x() <= settings->width());
+        const bool active = QAccessible::isActive();
+        QAccessible::setActive(true);
+        const auto restoreAccessibility = qScopeGuard([&] { QAccessible::setActive(active); });
+        auto *accessible = QAccessible::queryAccessibleInterface(button);
+        QVERIFY(accessible && accessible->actionInterface());
+        accessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+        QTRY_COMPARE(service->property("requests").toInt(), 1);
+        const auto audit = qEnvironmentVariable("XDZIP_MSIX_SETTINGS_AUDIT");
+        if (!audit.isEmpty()) {
+            QVERIFY(QDir().mkpath(audit));
+            QVERIFY(visual_audit::save(settings, audit,
+                                       QStringLiteral("associations-%1-%2-%3")
+                                           .arg(language, dark ? "dark" : "light")
+                                           .arg(qRound(scale * 100))));
+        }
+        settings->close();
+    }
+    void windowsAssociationSettingsUrl() {
+        using file_associations::windowsSettingsUrl;
+        QCOMPARE(windowsSettingsUrl(false, QStringLiteral("package!App")).toString(),
+                 QStringLiteral("ms-settings:defaultapps?registeredAppUser=xdzip"));
+        QCOMPARE(windowsSettingsUrl(true, QString()).toString(),
+                 QStringLiteral("ms-settings:defaultapps"));
+        const auto url = windowsSettingsUrl(true, QStringLiteral("package_family!App&other=1"));
+        QVERIFY(!url.toString(QUrl::FullyEncoded).contains(QStringLiteral("&other=")));
+        QCOMPARE(
+            QUrlQuery(url).queryItemValue(QStringLiteral("registeredAUMID"), QUrl::FullyDecoded),
+            QStringLiteral("package_family!App&other=1"));
     }
     void settingsNetworkControlsCommitValidatedValues() {
         QTemporaryDir profile;

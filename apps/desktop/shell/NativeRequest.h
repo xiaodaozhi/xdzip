@@ -14,6 +14,7 @@
 
 #include <bcrypt.h>
 #include <sddl.h>
+#include <shobjidl.h>
 #include <winver.h>
 #else
 #include <cerrno>
@@ -235,19 +236,39 @@ inline fs::path requestFile(const std::string &action, const std::vector<fs::pat
 }
 inline bool launch(const fs::path &executable, const std::string &action,
                    const std::vector<fs::path> &paths, bool archiveCandidates = false,
-                   const std::string &requestIdentity = {}) {
+                   const std::string &requestIdentity = {},
+                   const std::wstring &applicationId = {}) {
     const auto file = requestFile(action, paths, archiveCandidates, requestIdentity);
     if (file.empty())
         return false;
+#ifndef _WIN32
+    (void)applicationId;
+#endif
 #ifdef _WIN32
     std::wstring command =
         L"\"" + executable.wstring() + L"\" --shell-request \"" + file.wstring() + L"\"";
     STARTUPINFOW startup{};
     startup.cb = sizeof(startup);
     PROCESS_INFORMATION process{};
-    const bool ok = CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, FALSE, 0,
-                                   nullptr, nullptr, &startup, &process) != 0;
-    if (ok) {
+    bool ok = false;
+    if (!applicationId.empty()) {
+        // Explorer/COM callers have initialized COM. Activation preserves the
+        // package identity; never fall back to launching an unrelated edition.
+        // Release the interface here; failure removes only our private request.
+        IApplicationActivationManager *manager = nullptr;
+        if (SUCCEEDED(CoCreateInstance(CLSID_ApplicationActivationManager, nullptr,
+                                       CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&manager)))) {
+            DWORD pid = 0;
+            const auto arguments = L"--shell-request \"" + file.wstring() + L"\"";
+            ok = SUCCEEDED(manager->ActivateApplication(applicationId.c_str(), arguments.c_str(),
+                                                        AO_NONE, &pid));
+            manager->Release();
+        }
+    } else {
+        ok = CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, FALSE, 0, nullptr,
+                            nullptr, &startup, &process) != 0;
+    }
+    if (ok && applicationId.empty()) {
         CloseHandle(process.hThread);
         CloseHandle(process.hProcess);
     }

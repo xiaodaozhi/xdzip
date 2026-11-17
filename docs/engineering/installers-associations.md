@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/installers-associations.md)
 
-Experimental Windows MSIX declares the same extensions as Open With candidates in its package manifest without taking the user's default choice. Packaged processes do not read ordinary installed-edition association registrations as their own management state; users manage defaults in Windows Settings. Actual file activation, icons, coexistence, and uninstall await target-system acceptance; see [MSIX builds](developer-build.md#windows-msix-实验构建).
+Windows MSIX declares the same extensions as Open With candidates in its package manifest without taking the user's default choice. Its association page explains Windows management and provides “Open default apps settings”, using the current package's `registeredAUMID`; if identity lookup fails, it opens the general defaults picker. It hides per-extension switches rather than reporting unqueried defaults as false, and never reads ordinary installed-edition registrations as package state. No UserChoice values are written. Actual file activation, icons, coexistence and uninstall require target-system acceptance; see [MSIX builds](developer-build.md#windows-msix-实验构建).
 
 See the [file-association icon specification](../visual/file-association-icons.md) for per-format artwork and platform mappings. Linux retains system MIME icons. Installation does not change defaults or existing registration scope.
 

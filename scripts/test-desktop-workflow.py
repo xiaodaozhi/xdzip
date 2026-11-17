@@ -392,6 +392,25 @@ class WorkflowTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'signature'):
             desktop.verify_msix_identity(package, report)
 
+    def test_store_and_sideload_shell_policy_is_verified_from_package(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('msix_builder', Path(__file__).with_name('build-windows-msix.py'))
+        builder = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(builder)
+        package = self.root/'channels.msix'
+        for channel in ('store', 'sideload'):
+            shell_library = 'shell/xdzip-shell-' + 'a'*16 + '.dll'
+            report = {'name': 'xdzip.Test', 'publisher': 'CN=test', 'version': '1.0.27.0',
+                      'publisher_display_name': 'xdzip', 'channel': channel, 'classic_context_menu': True,
+                      'modern_context_menu_declaration': channel == 'store', 'shell_library': shell_library}
+            with zipfile.ZipFile(package, 'w') as output:
+                output.writestr('AppxManifest.xml', builder.manifest('xdzip.Test', 'CN=test', 27, 'xdzip', channel, shell_library))
+                output.writestr(shell_library, b'owned fixture')
+                output.writestr('xdzip-msix-channel.txt', builder.marker(channel))
+            desktop.verify_msix_identity(package, report)
+            with self.assertRaises(ValueError):
+                desktop.verify_msix_identity(package, {**report, 'channel': 'sideload' if channel == 'store' else 'store'})
+
     def test_verify_does_not_require_current_checkout_to_match_package(self):
         workflow = self.workflow()
         workflow.output.mkdir(parents=True)

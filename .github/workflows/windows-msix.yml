@@ -1,13 +1,30 @@
 name: Windows MSIX lifecycle
 on:
   workflow_dispatch:
+    inputs:
+      shell_only:
+        description: Check native MSIX menus and package activation on disposable Windows 11 only
+        type: boolean
+        required: false
+        default: false
+      shell_runner:
+        description: Host for focused shell checks, Server is an x64 COM diagnostic only
+        type: choice
+        options: [windows-11-arm, windows-2025]
+        default: windows-11-arm
 permissions:
   contents: read
 concurrency:
   group: windows-msix-${{ github.run_id }}
   cancel-in-progress: false
 jobs:
+  shell:
+    if: inputs.shell_only
+    uses: ./.github/workflows/windows-msix-shell.yml
+    with:
+      runner: ${{ inputs.shell_runner || 'windows-11-arm' }}
   build:
+    if: ${{ !inputs.shell_only }}
     runs-on: windows-2022
     timeout-minutes: 90
     steps:

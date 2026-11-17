@@ -453,9 +453,16 @@ OperationWindow {
         ColumnLayout {
             objectName: "settingsPage-associations"
             spacing: Theme.settingsPageSectionGap
-            PageNote { text: qsTrId("settings.associationDescription") }
+            PageNote { text: root.associations && root.associations.systemManaged ? qsTrId("settings.associationPackaged") : qsTrId("settings.associationDescription") }
+            OperationButton {
+                objectName: "settingsOpenDefaultApps"
+                visible: root.associations && root.associations.systemManaged
+                enabled: root.associations && root.associations.available && !root.associations.busy
+                text: qsTrId("settings.openDefaultApps")
+                onClicked: root.associations.openSystemSettings()
+            }
             Repeater {
-                model: ArchiveFormats.associationGroups
+                model: root.associations && root.associations.systemManaged ? [] : ArchiveFormats.associationGroups
                 delegate: ColumnLayout {
                     id: associationGroup
                     required property var modelData
@@ -488,7 +495,7 @@ OperationWindow {
                     }
                 }
             }
-            PageNote { text: root.associations && root.associations.available ? qsTrId("settings.associationSystem") : qsTrId("settings.associationUnavailable") }
+            PageNote { visible: !root.associations || !root.associations.systemManaged; text: root.associations && root.associations.available ? qsTrId("settings.associationSystem") : qsTrId("settings.associationUnavailable") }
             PageNote { visible: root.associations && root.associations.error.length > 0; text: qsTrId("settings.associationFailed"); color: Theme.menuDanger }
         }
     }

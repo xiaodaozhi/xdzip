@@ -1,4 +1,5 @@
 #include "MenuModel.h"
+#include "PackageMenu.h"
 #include <array>
 #include <atomic>
 #include <cwctype>
@@ -15,6 +16,18 @@ const CLSID CommandClassId{
     0x54b70170, 0x1072, 0x49b5, {0x9b, 0xd2, 0x6d, 0xfb, 0x5e, 0xcb, 0xf1, 0xb1}};
 std::atomic<long> objects{0};
 HMODULE module = nullptr;
+enum class MenuKind { Installed, StoreClassic, SideloadClassic, StoreModern };
+const xdzip_shell::PackageMenuContext &packageContext() {
+    static const auto value = [] {
+        std::wstring path(32768, L'\0');
+        const auto size = GetModuleFileNameW(module, path.data(), DWORD(path.size()));
+        if (!size || size >= path.size())
+            return xdzip_shell::PackageMenuContext{};
+        path.resize(size);
+        return xdzip_shell::readPackageMenuContext(path);
+    }();
+    return value;
+}
 HBITMAP iconBitmap(HICON icon, int width, int height) {
     if (!icon || width <= 0 || height <= 0)
         return nullptr;
@@ -70,11 +83,11 @@ std::wstring wide(const std::string &text) {
                             result.data(), size);
     return result;
 }
-bool english() {
+bool menuEnglish(const std::wstring &key) {
     wchar_t language[16]{};
     DWORD bytes = sizeof(language);
-    return RegGetValueW(HKEY_CURRENT_USER, L"Software\\xdzip\\Shell", L"Language", RRF_RT_REG_SZ,
-                        nullptr, language, &bytes) == ERROR_SUCCESS &&
+    return RegGetValueW(HKEY_CURRENT_USER, key.c_str(), L"Language", RRF_RT_REG_SZ, nullptr,
+                        language, &bytes) == ERROR_SUCCESS &&
            std::wstring(language) == L"en-US";
 }
 class CommandEnumerator;
@@ -83,6 +96,34 @@ class Menu final : public IShellExtInit, public IContextMenu, public IExplorerCo
     std::vector<xdzip_shell::fs::path> paths;
     std::vector<xdzip_shell::MenuEntry> entries;
     bool archiveCandidates = false;
+    MenuKind kind = MenuKind::Installed;
+    bool packaged() const {
+        return kind != MenuKind::Installed;
+    }
+    bool allowedContext(const xdzip_shell::PackageMenuContext &context) const {
+        if ((kind == MenuKind::SideloadClassic) == context.storeDistribution)
+            return false;
+        return xdzip_shell::packageMenuAllowed(context.registered, context.storeDistribution,
+                                               context.storeSignature,
+                                               kind == MenuKind::StoreModern, context.windows11);
+    }
+    bool allowed() const {
+        return !packaged() || allowedContext(packageContext());
+    }
+    std::wstring settingsKey() const {
+        return packaged() ? packageContext().settingsKey : L"Software\\xdzip\\Shell";
+    }
+    bool english() const {
+        return menuEnglish(settingsKey());
+    }
+    bool enabled() const {
+        if (!allowed())
+            return false;
+        DWORD value = 1, size = sizeof(value);
+        RegGetValueW(HKEY_CURRENT_USER, settingsKey().c_str(), L"Enabled", RRF_RT_REG_DWORD,
+                     nullptr, &value, &size);
+        return value != 0;
+    }
     static constexpr size_t RootCommand = std::numeric_limits<size_t>::max();
     size_t commandIndex = RootCommand;
     HRESULT select(IShellItemArray *selection) {
@@ -138,12 +179,12 @@ class Menu final : public IShellExtInit, public IContextMenu, public IExplorerCo
     }
 
   public:
-    Menu() {
+    explicit Menu(MenuKind value = MenuKind::Installed) : kind(value) {
         ++objects;
     }
     Menu(const Menu &source, size_t index)
         : paths(source.paths), entries(source.entries), archiveCandidates(source.archiveCandidates),
-          commandIndex(index) {
+          kind(source.kind), commandIndex(index) {
         ++objects;
     }
     ~Menu() {
@@ -158,9 +199,10 @@ class Menu final : public IShellExtInit, public IContextMenu, public IExplorerCo
         *value = nullptr;
         if (id == IID_IUnknown || id == IID_IShellExtInit)
             *value = static_cast<IShellExtInit *>(this);
-        else if (id == IID_IContextMenu)
+        else if (id == IID_IContextMenu && kind != MenuKind::StoreModern)
             *value = static_cast<IContextMenu *>(this);
-        else if (id == IID_IExplorerCommand)
+        else if (id == IID_IExplorerCommand &&
+                 (kind == MenuKind::Installed || kind == MenuKind::StoreModern))
             *value = static_cast<IExplorerCommand *>(this);
         if (!*value)
             return E_NOINTERFACE;
@@ -218,13 +260,13 @@ class Menu final : public IShellExtInit, public IContextMenu, public IExplorerCo
     }
     HRESULT STDMETHODCALLTYPE QueryContextMenu(HMENU parent, UINT index, UINT first, UINT last,
                                                UINT flags) override {
-        if (flags & CMF_DEFAULTONLY)
+        if ((flags & CMF_DEFAULTONLY) || !enabled())
             return MAKE_HRESULT(SEVERITY_SUCCESS, 0, 0);
         try {
             DWORD enabled = 1, size = sizeof(enabled);
             RegGetValueW(HKEY_CURRENT_USER, L"Software\\xdzip\\Shell", L"Enabled", RRF_RT_REG_DWORD,
                          nullptr, &enabled, &size);
-            if (!enabled)
+            if (!packaged() && !enabled)
                 return MAKE_HRESULT(SEVERITY_SUCCESS, 0, 0);
             entries = xdzip_shell::menu(paths, english(), archiveCandidates);
             if (entries.empty() || last < first || last - first + 1 < entries.size())
@@ -270,6 +312,8 @@ class Menu final : public IShellExtInit, public IContextMenu, public IExplorerCo
     HRESULT STDMETHODCALLTYPE InvokeCommand(CMINVOKECOMMANDINFO *info) override {
         if (!info)
             return E_POINTER;
+        if (!enabled())
+            return E_ACCESSDENIED;
         try {
             size_t index = entries.size();
             if (!HIWORD(info->lpVerb))
@@ -285,14 +329,21 @@ class Menu final : public IShellExtInit, public IContextMenu, public IExplorerCo
             if (!size || size >= path.size())
                 return E_FAIL;
             path.resize(size);
+            // A loaded surrogate can outlive an upgrade or uninstall. Recheck
+            // the DLL's own registration before activating any package target.
+            const auto current = packaged() ? xdzip_shell::readPackageMenuContext(path)
+                                            : xdzip_shell::PackageMenuContext{};
+            if (packaged() && !allowedContext(current))
+                return HRESULT_FROM_WIN32(ERROR_REVISION_MISMATCH);
             auto root = xdzip_shell::fs::path(path).parent_path();
             if (root.filename() == L"shell")
                 root = root.parent_path();
             const auto executable = root / L"xdzip.exe";
-            if (!xdzip_shell::registeredTargetMatches(executable) ||
+            if ((!packaged() && !xdzip_shell::registeredTargetMatches(executable)) ||
                 !xdzip_shell::supportsShellProtocol(executable))
                 return HRESULT_FROM_WIN32(ERROR_REVISION_MISMATCH);
-            return xdzip_shell::launch(executable, entries[index].action, paths, archiveCandidates)
+            return xdzip_shell::launch(executable, entries[index].action, paths, archiveCandidates,
+                                       {}, packaged() ? current.applicationId : std::wstring())
                        ? S_OK
                        : E_FAIL;
         } catch (...) {
@@ -405,6 +456,8 @@ class Menu final : public IShellExtInit, public IContextMenu, public IExplorerCo
             return E_POINTER;
         *state = ECS_HIDDEN;
         try {
+            if (!enabled())
+                return S_OK;
             DWORD enabled = 1, size = sizeof(enabled);
             RegGetValueW(HKEY_CURRENT_USER, L"Software\\xdzip\\Shell", L"Enabled", RRF_RT_REG_DWORD,
                          nullptr, &enabled, &size);
@@ -418,9 +471,9 @@ class Menu final : public IShellExtInit, public IContextMenu, public IExplorerCo
                 _wcsicmp(legacy, L"{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}") == 0;
             // Old installers restore the legacy handler. Hide the retained
             // newer command so rollback presents only that compatible entry.
-            if (rolledBack)
+            if (!packaged() && rolledBack)
                 return S_OK;
-            if (enabled && SUCCEEDED(select(selection)) && !entries.empty() &&
+            if ((packaged() || enabled) && SUCCEEDED(select(selection)) && !entries.empty() &&
                 (commandIndex == RootCommand || commandIndex < entries.size()))
                 *state = ECS_ENABLED;
             return S_OK;
@@ -549,9 +602,10 @@ HRESULT Menu::EnumSubCommands(IEnumExplorerCommand **commands) {
 }
 class Factory final : public IClassFactory {
     std::atomic<ULONG> refs{1};
+    MenuKind kind;
 
   public:
-    Factory() {
+    explicit Factory(MenuKind value) : kind(value) {
         ++objects;
     }
     ~Factory() {
@@ -579,7 +633,7 @@ class Factory final : public IClassFactory {
     HRESULT STDMETHODCALLTYPE CreateInstance(IUnknown *outer, REFIID id, void **value) override {
         if (outer)
             return CLASS_E_NOAGGREGATION;
-        auto *object = new (std::nothrow) Menu;
+        auto *object = new (std::nothrow) Menu(kind);
         if (!object)
             return E_OUTOFMEMORY;
         const auto result = object->QueryInterface(id, value);
@@ -600,9 +654,18 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID) {
     return TRUE;
 }
 STDAPI DllGetClassObject(REFCLSID id, REFIID iid, void **value) {
-    if (id != ClassId && id != CommandClassId)
+    CLSID storeClassic{}, sideloadClassic{}, modern{};
+    CLSIDFromString(xdzip_shell::PackageClassicStoreId, &storeClassic);
+    CLSIDFromString(xdzip_shell::PackageClassicSideloadId, &sideloadClassic);
+    CLSIDFromString(xdzip_shell::PackageModernId, &modern);
+    if (id != ClassId && id != CommandClassId && id != storeClassic && id != sideloadClassic &&
+        id != modern)
         return CLASS_E_CLASSNOTAVAILABLE;
-    auto *factory = new (std::nothrow) Factory;
+    const auto kind = id == storeClassic      ? MenuKind::StoreClassic
+                      : id == sideloadClassic ? MenuKind::SideloadClassic
+                      : id == modern          ? MenuKind::StoreModern
+                                              : MenuKind::Installed;
+    auto *factory = new (std::nothrow) Factory(kind);
     if (!factory)
         return E_OUTOFMEMORY;
     const auto result = factory->QueryInterface(iid, value);

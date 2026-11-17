@@ -1,0 +1,40 @@
+name: Windows MSIX shell integration
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        type: choice
+        options: [windows-11-arm, windows-2025]
+        default: windows-11-arm
+  workflow_call:
+    inputs:
+      runner:
+        type: string
+        default: windows-11-arm
+permissions:
+  contents: read
+jobs:
+  shell:
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Build production menu and owned activation fixture
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          ./scripts/build-msix-shell-probe.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & build/msix-shell/menu-tests.exe build/msix-shell/xdzip-shell.dll
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Verify both package channels and activation
+        shell: pwsh
+        run: ./scripts/check-msix-shell-integration.ps1
+      - name: Preserve evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: msix-shell-${{ github.sha }}
+          path: build/msix-shell/results.json
+          if-no-files-found: warn
+          retention-days: 14
