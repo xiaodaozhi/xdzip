@@ -1095,6 +1095,9 @@ class BrowserTest : public QObject {
             row.name = rust::String(i == 3 ? "folder/" : "file" + std::to_string(i + 1));
             row.size = i == 2 ? 7 : 0;
             row.size_known = i == 1 || i == 2;
+            if (i == 1)
+                row.modified_dos = ((2026 - 1980) << 25) | (10 << 21) | (15 << 16) | (12 << 11) |
+                                   (34 << 5) | (56 / 2);
             row.physical = i != 3;
             row.directory = i == 3;
             page.rows.push_back(std::move(row));
@@ -1110,9 +1113,16 @@ class BrowserTest : public QObject {
         QCOMPARE(controller.m_model.rowAt(1)->cells[1], QStringLiteral("0"));
         controller.m_model.select(1);
         QCOMPARE(controller.selectedBytes(), QStringLiteral("0"));
+        controller.showRowDetail(1);
+        QCOMPARE(controller.detail().value("modified").toString(),
+                 QStringLiteral("2026/10/15 12:34:56"));
+        QCOMPARE(controller.m_model.rowAt(1)->cells[4], QStringLiteral("2026/10/15"));
         QVERIFY(controller.canPreflight());
         controller.m_model.select(0);
-        QCOMPARE(controller.selectedBytes(), QStringLiteral("—"));
+        QVERIFY(controller.selectedBytes().isEmpty());
+        controller.showRowDetail(0);
+        QVERIFY(controller.detail().value("modified").toString().isEmpty());
+        QVERIFY(controller.m_model.rowAt(0)->cells[4].isEmpty());
         QVERIFY(controller.canPreflight());
         // A later navigation row must still disable physical preflight after an unknown file.
         controller.m_model.select(3);
@@ -14732,7 +14742,7 @@ QtObject {
         controller->selectAll(true);
         QCOMPARE(controller->selectedCount(), 100000);
         QVERIFY(!controller->canPreflight());
-        QCOMPARE(controller->selectedBytes(), QString::fromUtf8("—"));
+        QVERIFY(controller->selectedBytes().isEmpty());
         elapsed.restart();
         controller->sortByColumn(0);
         QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 20000);
@@ -15873,7 +15883,8 @@ QtObject {
         QCOMPARE(controller->total(), 9);
         controller->selectOnlyRow(3);
         QCOMPARE(controller->detail().value("type").toString(), "PNG");
-        QCOMPARE(controller->detail().value("modified").toString(), QStringLiteral("2026/10/01"));
+        QCOMPARE(controller->detail().value("modified").toString(),
+                 QStringLiteral("2026/10/01 00:00:00"));
         QVERIFY(controller->selectedBytes().toULongLong() > 0);
         QVERIFY(QTest::qWaitForWindowExposed(window));
         const auto captures = qEnvironmentVariable("XDZIP_VISUAL_AUDIT");

@@ -31,6 +31,7 @@ struct BrowserRow {
     QString navigationId;
     bool physical = true;
     bool sizeKnown = true;
+    QString modifiedDateTime = {};
 };
 class ArchiveTableModel final : public QAbstractTableModel {
     Q_OBJECT

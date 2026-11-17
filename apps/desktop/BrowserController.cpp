@@ -593,11 +593,16 @@ void BrowserController::showRowDetail(int row) {
         m_detail.clear();
         return;
     }
-    m_detail = {{"name", item->cells[0]},       {"size", item->cells[1]},
-                {"packed", item->cells[2]},     {"type", item->cells[3]},
-                {"modified", item->cells[4]},   {"method", item->method},
-                {"status", item->status},       {"attention", item->attention},
-                {"directory", item->directory}, {"id", item->id}};
+    m_detail = {{"name", item->cells[0]},
+                {"size", item->cells[1]},
+                {"packed", item->cells[2]},
+                {"type", item->cells[3]},
+                {"modified", item->modifiedDateTime},
+                {"method", item->method},
+                {"status", item->status},
+                {"attention", item->attention},
+                {"directory", item->directory},
+                {"id", item->id}};
 }
 void BrowserController::updateSelectionSummary() const {
     if (m_summaryRevision == m_model.selectionRevision())
@@ -608,7 +613,7 @@ void BrowserController::updateSelectionSummary() const {
         !m_model.paged() || m_model.physicalSelectedIds().size() == m_model.selectedCount();
     if (!summaryKnown) {
         m_summaryPhysical = false;
-        m_summaryBytes = QStringLiteral("—");
+        m_summaryBytes.clear();
         return;
     }
     std::vector<std::uint64_t> sizes;
@@ -619,7 +624,7 @@ void BrowserController::updateSelectionSummary() const {
         const auto *item = m_model.rowAt(row);
         if (!item->physical) {
             m_summaryPhysical = false;
-            m_summaryBytes = QStringLiteral("—");
+            m_summaryBytes.clear();
             return;
         }
         if (!item->sizeKnown) {
@@ -629,7 +634,7 @@ void BrowserController::updateSelectionSummary() const {
         sizes.push_back(item->cells[1].toULongLong());
     }
     if (!summaryKnown) {
-        m_summaryBytes = QStringLiteral("—");
+        m_summaryBytes.clear();
         return;
     }
     const auto sum = xdzip::reader::sum_declared_sizes(
@@ -979,10 +984,9 @@ void BrowserController::presentExtractionIntent(bool all) {
             break;
         const auto *row = m_model.rowAt(i);
         if (all || m_extractionSelectors.contains(row->id))
-            samples.append(
-                QVariantMap{{"name", row->cells[0]},
-                            {"size", row->directory ? QStringLiteral("—") : row->cells[1]},
-                            {"directory", row->directory}});
+            samples.append(QVariantMap{{"name", row->cells[0]},
+                                       {"size", row->directory ? QString{} : row->cells[1]},
+                                       {"directory", row->directory}});
     }
     m_extractionIntent = {{"session", m_session},
                           {"archive", m_title},
@@ -1809,13 +1813,13 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                                              ? QLocale().toString(date, qtTrId("format.date")) +
                                                    " " +
                                                    QLocale().toString(time, qtTrId("format.time"))
-                                             : QStringLiteral("—"));
+                                             : QString{});
         bool validTime = false;
         const auto existingTime = text(t.existing_modified).toLongLong(&validTime);
         value.insert("existingModified",
                      validTime ? QLocale().toString(QDateTime::fromSecsSinceEpoch(existingTime),
                                                     qtTrId("format.dateTime"))
-                               : QStringLiteral("—"));
+                               : QString{});
         const bool firstSuccess =
             status == "succeeded" && !m_tasks.value(t.id).value("terminal").toBool();
         m_tasks.insert(t.id, value);
@@ -2067,7 +2071,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             const QTime time((packed >> 11) & 31, (packed >> 5) & 63, (packed & 31) * 2);
             const auto modified = date.isValid() && time.isValid()
                                       ? QLocale().toString(date, qtTrId("format.date"))
-                                      : QStringLiteral("—");
+                                      : QString{};
             m_result.rows.append(
                 {text(row.id),
                  {name, row.physical && row.size_known ? QString::number(row.size) : QString{},
@@ -2078,14 +2082,16 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                   type, modified},
                  row.directory,
                  row.directory && !row.warning,
-                 row.physical ? method : QStringLiteral("—"),
+                 row.physical ? method : QString{},
                  status.isEmpty() ? qtTrId("ui.aeae1c799c94")
                                   : status.join(qtTrId("common.separator")),
                  row.warning || row.encrypted,
                  path,
                  text(row.navigation_id),
                  row.physical,
-                 row.size_known});
+                 row.size_known,
+                 modified.isEmpty() ? QString{}
+                                    : modified + " " + time.toString(QStringLiteral("HH:mm:ss"))});
         }
         m_hasPayload = true;
     } else if (event.kind == EventKind::Snapshot &&

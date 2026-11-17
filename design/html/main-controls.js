@@ -1107,10 +1107,10 @@ window.XdzipMain = (() => {
                 progressName: "完整性检查进度", progress: job.progress,
                 processed: `已读取 ${bytes(Math.round(totalBytes * job.progress / 100))} / ${bytes(totalBytes)}`,
                 count: `${Math.floor(job.total * job.progress / 100)} / ${job.total} 个文件`,
-                speedLabel: "平均读取", speed: running ? "6.2 MB/s" : "—",
-                remaining: running ? "约 5 秒" : "—",
+                speedLabel: "平均读取", speed: running ? "6.2 MB/s" : "",
+                remaining: running ? "约 5 秒" : "",
                 phase: running ? "读取并校验" : job.status === "cancelled" ? "已停止" : "已结束",
-                currentFile: file?.name || "—", entry: file,
+                currentFile: file?.name || "", entry: file,
             }) + taskProgressFooter({
                 note: "界面预览，不执行实际校验。", backgroundId: "close-archive-test",
                 backgroundText: running ? "返回浏览" : "关闭", cancelId: "cancel-archive-test",

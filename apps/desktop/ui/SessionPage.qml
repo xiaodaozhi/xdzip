@@ -1750,7 +1750,7 @@ Item {
                                 anchors.fill: parent
                                 anchors.leftMargin: table.columnLeftInset(cell.column, false)
                                 anchors.rightMargin: cell.column === 0 && cell.attention ? Theme.mainUnits(24) : table.columnRightInset(cell.column)
-                                text: cell.column === 1 || cell.column === 2 ? (cell.isDirectory ? "—" : root.formatSize(cell.display)) : cell.display
+                                text: cell.column === 1 || cell.column === 2 ? (cell.isDirectory ? "" : root.formatSize(cell.display)) : cell.display
                                 font.family: cell.column === 0 ? Theme.userDataFontFamily : Theme.uiFontFamily
                                 horizontalAlignment: cell.column === 1 || cell.column === 2 ? Text.AlignRight : Text.AlignLeft
                                 textFormat: Text.PlainText

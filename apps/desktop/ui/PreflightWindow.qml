@@ -73,7 +73,7 @@ OperationWindow {
                                     }
                                     Text {
                                         Layout.fillWidth: true
-                                        text: [root.report.entries || "—", root.report.bytes === "unknown" ? qsTrId("ui.aa524057ccca") : root.report.bytes || "—", root.report.findingCount || "—"][statistic.index]
+                                        text: [root.report.entries ?? "", root.report.bytes === "unknown" ? qsTrId("ui.aa524057ccca") : root.report.bytes ?? "", root.report.findingCount ?? ""][statistic.index]
                                         textFormat: Text.PlainText
                                         elide: Text.ElideRight
                                         color: Theme.text
