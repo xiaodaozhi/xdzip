@@ -14,6 +14,8 @@
 
 ## 本地工具链目录
 
+通过 PowerShell 加载 Visual Studio 开发环境时，应保留 `USERPROFILE`、`LOCALAPPDATA` 和 `APPDATA` 的 Unicode 值；如果加载器改变了它们的编码，在继续执行前恢复原值。Qt 使用这些位置确定默认缓存和配置目录，因此即使编译器工作正常，目录变量损坏也可能导致文件操作失败。
+
 `prepare` 会在原 SDK 中构建并验证 QtNetwork 安全补丁，修复 CVE-2026-116337 与 CVE-2026-105946，其他运行模块不被重建库替换。另需 Perl、make（Windows 为 nmake）和 OpenSSL 命令行工具；Ubuntu 需 `zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libzstd-dev libkrb5-dev`。源码、生成声明及构建缓存统一在 `build/`，默认复用 `build/toolchain/qt-network-security/<平台>`。输入和实际库摘要不匹配时，产品构建与打包直接失败，重新运行 `prepare`；来源、ABI、TLS 功能及失败恢复见[补丁维护说明](../../../patches/qt/README.md)。
 
 
