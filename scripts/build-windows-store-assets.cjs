@@ -3,7 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const sharp = require('sharp');
+const sharp = require('./windows-store-sharp.cjs');
 const imageTools = require('./windows-store-image-utils.cjs');
 const ROOT = path.resolve(__dirname, '..');
 const spec = JSON.parse(fs.readFileSync(path.join(ROOT, 'specs/marketing/windows-store.json'), 'utf8'));

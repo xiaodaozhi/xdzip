@@ -2,7 +2,7 @@
 /* Import complete, lossless native captures, preserving original inputs. */
 const fs = require('node:fs');
 const path = require('node:path');
-const sharp = require('sharp');
+const sharp = require('./windows-store-sharp.cjs');
 const {hash,makeCutout} = require('./windows-store-image-utils.cjs');
 const root = path.resolve(__dirname,'..');
 const spec = JSON.parse(fs.readFileSync(path.join(root,'specs/marketing/windows-store.json'),'utf8'));
