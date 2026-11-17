@@ -4,7 +4,7 @@ English | [简体中文](../../zh-CN/market/windows/listing.md)
 
 ## Baseline
 
-MSIX 1.0.27.0, x64, `90916a1992188e6e7e5c6b3d91695861ee1bd2d2`.
+MSIX 1.0.28.0, x64, application 0.2.1, build 28. Screenshots retain the capture baseline documented in [the materials guide](README.md).
 
 ## Product name
 
@@ -27,12 +27,16 @@ Choose a light or dark appearance, adjust text size, and use English (US) or Sim
 
 Features vary by format. RAR, CAB, ISO and UDF are read-only. Encrypted and split archive support depends on the format and profile; not every archive can be modified. Opening a file in another application creates a temporary local copy, and edits to that copy are not written back automatically.
 
-Designed for Windows 11 PCs with x64 processors. The Microsoft Store edition receives its updates through the Store. Windows 11 modern File Explorer context-menu integration is not included in this build.
+Designed for Windows 11 PCs with x64 processors. The Microsoft Store edition receives its updates through the Store. Create or extract archives from File Explorer using either the Windows 11 modern context menu or the classic menu under Show more options.
 ```
 
 ## What's new in this version
 
-First submission: leave empty. Do not paste this instruction into the field.
+```text
+Fixed the file association settings page: open Windows default-app settings for xdzip directly.
+Added modern and classic File Explorer context menus for the Store edition, with language and enablement settings.
+Improved missing file-property display and included seconds in preview modification times.
+```
 
 ## Product features
 
