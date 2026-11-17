@@ -35,6 +35,37 @@ function Default-Snapshot {
     return ($snapshot | ConvertTo-Json -Compress)
 }
 $before = Default-Snapshot
+function Invoke-UserProbe($package, [string]$channel) {
+    # Hosted runners are elevated. Explorer uses the interactive user's normal
+    # token; elevated COM clients cannot validate per-user package activation.
+    $taskName = "xdzip-shell-ci-$env:GITHUB_RUN_ID-$channel"
+    if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) { throw 'Owned fixture task already exists' }
+    $log = Join-Path $buildPath "$channel-probe.log"
+    $arguments = '--verify "{0}" "{1}" {2} "{3}"' -f $package.InstallLocation, $package.PackageFamilyName, $channel, $log
+    $action = New-ScheduledTaskAction -Execute (Join-Path $buildPath 'xdzip.exe') -Argument $arguments -WorkingDirectory (Get-Location).Path
+    $principal = New-ScheduledTaskPrincipal -UserId ([Security.Principal.WindowsIdentity]::GetCurrent().Name) -LogonType Interactive -RunLevel Limited
+    $registered = $false
+    try {
+        $null = Register-ScheduledTask -TaskName $taskName -Action $action -Principal $principal
+        $registered = $true
+        $started = Get-Date
+        Start-ScheduledTask -TaskName $taskName
+        $finished = $false
+        do {
+            Start-Sleep -Milliseconds 250
+            $info = Get-ScheduledTaskInfo -TaskName $taskName
+            $state = (Get-ScheduledTask -TaskName $taskName).State
+            $finished = $info.LastRunTime -ge $started.AddSeconds(-2) -and $state -notin @('Running', 'Queued')
+        } while (!$finished -and (Get-Date) -lt $started.AddSeconds(60))
+        if (Test-Path -LiteralPath $log) { Get-Content -LiteralPath $log }
+        if (!$finished -or $info.LastTaskResult -ne 0) { throw "Packaged $channel user-token probe failed" }
+    } finally {
+        if ($registered) {
+            Stop-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+            Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
+        }
+    }
+}
 try {
     if ([int]$osInfo.CurrentBuildNumber -lt 22000) { throw 'Windows 11 is required' }
     $certificate = New-SelfSignedCertificate -Type CodeSigningCert -Subject $subject -CertStoreLocation 'Cert:\CurrentUser\My' -KeyExportPolicy NonExportable -NotAfter (Get-Date).AddDays(2)
@@ -55,8 +86,7 @@ try {
         $current = Get-AppxPackage -Name $name
         if (@($current).Count -ne 1 -or $current.SignatureKind.ToString() -eq 'Store') { throw 'Unexpected fixture identity or signature' }
         $installed += $current.PackageFullName
-        & (Join-Path $buildPath 'xdzip.exe') --verify $current.InstallLocation $current.PackageFamilyName $channel
-        if ($LASTEXITCODE -ne 0) { throw "Packaged $channel menu check failed" }
+        Invoke-UserProbe $current $channel
         $result.checks[$channel] = 'passed'
         Remove-AppxPackage -Package $current.PackageFullName
         if (Get-AppxPackage -Name $name) { throw 'Fixture uninstall failed' }

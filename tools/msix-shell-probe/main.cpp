@@ -65,6 +65,15 @@ void receive(const fs::path &request) {
     fs::remove(request.parent_path());
 }
 void verify(const fs::path &root, const std::wstring &family, bool store) {
+    HANDLE token = nullptr;
+    require(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token) != FALSE,
+            "Cannot inspect fixture token");
+    TOKEN_ELEVATION elevation{};
+    DWORD size = 0;
+    const bool tokenRead =
+        GetTokenInformation(token, TokenElevation, &elevation, sizeof(elevation), &size) != FALSE;
+    CloseHandle(token);
+    require(tokenRead && !elevation.TokenIsElevated, "COM fixture must run without elevation");
     const auto context = xdzip_shell::readPackageMenuContext(root / L"xdzip-shell.dll");
     require(context.registered && context.storeDistribution == store && context.windows11 &&
                 (!store || context.signatureKnown) && !context.storeSignature &&
@@ -166,10 +175,21 @@ int wmain(int argc, wchar_t **argv) {
     if (FAILED(initialized))
         return 1;
     int result = 0;
+    std::ofstream log;
+    std::streambuf *oldOutput = nullptr, *oldError = nullptr;
+    if (argc == 6 && std::wstring(argv[1]) == L"--verify") {
+        log.open(fs::path(argv[5]), std::ios::binary);
+        if (!log) {
+            RoUninitialize();
+            return 1;
+        }
+        oldOutput = std::cout.rdbuf(log.rdbuf());
+        oldError = std::cerr.rdbuf(log.rdbuf());
+    }
     try {
         if (argc == 3 && std::wstring(argv[1]) == L"--shell-request")
             receive(argv[2]);
-        else if (argc == 5 && std::wstring(argv[1]) == L"--verify")
+        else if ((argc == 5 || argc == 6) && std::wstring(argv[1]) == L"--verify")
             verify(argv[2], argv[3], std::wstring(argv[4]) == L"store");
         else
             result = 2;
@@ -182,5 +202,9 @@ int wmain(int argc, wchar_t **argv) {
         result = 1;
     }
     RoUninitialize();
+    if (oldOutput) {
+        std::cout.rdbuf(oldOutput);
+        std::cerr.rdbuf(oldError);
+    }
     return result;
 }
