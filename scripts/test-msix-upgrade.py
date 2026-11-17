@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """Check version-only MSIX upgrade fixtures without installing any package."""
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
 import tempfile
+import subprocess
+import sys
 import unittest
 from unittest.mock import Mock, patch
 import xml.etree.ElementTree as ET
@@ -27,6 +30,14 @@ builder = module('msix_upgrade_source', 'build-windows-msix.py')
 
 
 class UpgradeTests(unittest.TestCase):
+    def test_standalone_upgrade_keeps_ignorable_menu_namespaces(self):
+        content = builder.manifest('xdzip.MsixCI', 'CN=xdzip MSIX CI', 27, 'xdzip', 'store')
+        command = "import importlib.util,sys; s=importlib.util.spec_from_file_location('upgrade',sys.argv[1]); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); sys.stdout.buffer.write(m.advance_manifest(sys.stdin.buffer.read())[0])"
+        result = subprocess.run([sys.executable, '-c', command, str(ROOT/'scripts/prepare-msix-upgrade.py')], input=content, capture_output=True, check=True, cwd=ROOT/'scripts')
+        root = ET.fromstring(result.stdout)
+        namespaces = {name for _, (name, uri) in ET.iterparse(io.BytesIO(result.stdout), events=['start-ns'])}
+        self.assertTrue(set(root.get('IgnorableNamespaces').split()).issubset(namespaces))
+
     def test_only_manifest_version_changes(self):
         original = builder.manifest('xdzip.MsixCI', 'CN=xdzip MSIX CI', 27, 'xdzip')
         content, old, new = upgrade.advance_manifest(original)

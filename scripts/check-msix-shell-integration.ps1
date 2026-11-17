@@ -20,6 +20,9 @@ $audit = Join-Path $buildPath 'fixture-audit.json'
 $subject = 'CN=xdzip Shell CI'
 $certificate = $null
 $testUser = $null
+$developerKey = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock'
+$developerSnapshot = @{}
+$developerKeyCreated = !(Test-Path -LiteralPath $developerKey)
 $osInfo = Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
 $result = [ordered]@{status='failed'; revision=(& git rev-parse HEAD).Trim(); os_name=(Get-CimInstance Win32_OperatingSystem).Caption; os_build=$osInfo.CurrentBuildNumber; os_architecture=[Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString(); executable_architecture='x64'; fixture_only=$true; checks=[ordered]@{}; limitations=@('Self-signed independent fixture, not a Store-signed product.', 'Native menu API and package activation checks do not establish actual Explorer display or human visual acceptance.')}
 $choices = 'Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts'
@@ -53,6 +56,14 @@ function Invoke-UserProbe([string]$package, [string]$channel) {
 
 try {
     if ([int]$osInfo.CurrentBuildNumber -lt 22000) { throw 'Windows build 22000 or newer is required' }
+    $null = New-Item -Path $developerKey -Force
+    foreach ($name in @('AllowDevelopmentWithoutDevLicense', 'AllowAllTrustedApps')) {
+        $key = Get-Item -LiteralPath $developerKey
+        $exists = $key.GetValueNames() -contains $name
+        $developerSnapshot[$name] = @{ exists=$exists; value=if ($exists) { $key.GetValue($name) } else { $null } }
+        if ($exists -and $key.GetValueKind($name).ToString() -ne 'DWord') { throw 'Unexpected development-policy value type' }
+        $null = New-ItemProperty -LiteralPath $developerKey -Name $name -PropertyType DWord -Value 1 -Force
+    }
     $certificate = New-SelfSignedCertificate -Type CodeSigningCert -Subject $subject -CertStoreLocation 'Cert:\CurrentUser\My' -KeyExportPolicy NonExportable -NotAfter (Get-Date).AddDays(2)
     $trusted = [Security.Cryptography.X509Certificates.X509Store]::new('TrustedPeople', 'LocalMachine')
     $trusted.Open([Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
@@ -91,6 +102,17 @@ try {
             $path = Join-Path $store $certificate.Thumbprint
             if (Test-Path -LiteralPath $path) { Remove-Item -LiteralPath $path }
         }
+    }
+    foreach ($name in $developerSnapshot.Keys) {
+        if ($developerSnapshot[$name].exists) {
+            Set-ItemProperty -LiteralPath $developerKey -Name $name -Value $developerSnapshot[$name].value
+        } else {
+            Remove-ItemProperty -LiteralPath $developerKey -Name $name
+        }
+    }
+    if ($developerKeyCreated -and (Test-Path -LiteralPath $developerKey)) {
+        $key = Get-Item -LiteralPath $developerKey
+        if (!$key.ValueCount -and !$key.SubKeyCount) { Remove-Item -LiteralPath $developerKey }
     }
     $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $outputPath -Encoding utf8
 }

@@ -12,12 +12,15 @@ import zipfile
 
 from desktop import verify_msix_identity
 from deployment_audit import digest
+from msix_shell_policy import COM, D4, D5, D9
 
 ROOT = Path(__file__).resolve().parents[1]
 NS = 'http://schemas.microsoft.com/appx/manifest/foundation/windows10'
 ET.register_namespace('', NS)
 ET.register_namespace('uap', 'http://schemas.microsoft.com/appx/manifest/uap/windows10')
 ET.register_namespace('rescap', 'http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities')
+for prefix, uri in [('com', COM), ('desktop4', D4), ('desktop5', D5), ('desktop9', D9)]:
+    ET.register_namespace(prefix, uri)
 
 
 def advance_manifest(content):
