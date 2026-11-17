@@ -61,7 +61,9 @@ try {
     $userName = 'xdzipCI' + [guid]::NewGuid().ToString('N').Substring(0,8)
     $password = ConvertTo-SecureString ([guid]::NewGuid().ToString('N') + '!aA1') -AsPlainText -Force
     $testUser = New-LocalUser -Name $userName -Password $password -AccountNeverExpires -PasswordNeverExpires
-    Add-LocalGroupMember -SID 'S-1-5-32-545' -Member $testUser.SID
+    if (!(Get-LocalGroupMember -SID 'S-1-5-32-545' | Where-Object SID -eq $testUser.SID)) {
+        Add-LocalGroupMember -SID 'S-1-5-32-545' -Member $testUser.Name
+    }
     $credential = [pscredential]::new("$env:COMPUTERNAME\$userName", $password)
     $acl = Get-Acl -LiteralPath $buildPath
     $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($testUser.SID, 'Modify', 'ContainerInherit,ObjectInherit', 'None', 'Allow'))
