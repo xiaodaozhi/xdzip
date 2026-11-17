@@ -13,7 +13,7 @@ ColumnLayout {
     readonly property var failures: entries.filter(e => e.status === "unfinished")
     readonly property int remaining: Math.max(0, Number(task.files || 0) - Number(task.committedFiles || 0) - Number(task.skippedFiles || 0))
     readonly property bool extractionSummary: !task.creating && !task.batchResults && (!task.kind || task.kind === "extract")
-    readonly property bool creationSummary: task.creating && !task.batchResults
+    readonly property bool creationSummary: Boolean(task.creating)
     readonly property string savedCaption: {
         const total = Number(task.creating ? task.outputParts || 0 : task.committedFiles || 0);
         if (creationSummary) return qsTrId("ui.2e84a56c5f19", total);
@@ -41,9 +41,10 @@ ColumnLayout {
                     {label: qsTrId("shell.status.succeeded"), value: root.task.committedFiles || 0, icon: "status-partial-success"},
                     {label: qsTrId("ui.6707de42c29d"), value: root.task.failedCount || 0, icon: "status-warning"},
                     {label: qsTrId("shell.status.cancelled"), value: root.task.cancelledCount || 0, icon: "status-warning"},
-                    {label: qsTrId("shell.status.not-run"), value: root.task.notRunCount || 0, icon: "status-warning"},
+                    {label: qsTrId("shell.status.not-run"), value: root.task.notRunCount || 0, icon: "status-warning"}
+                ].concat(root.task.creating ? [] : [
                     {label: qsTrId("shell.status.duplicate"), value: root.task.skippedFiles || 0, icon: "status-skipped"}
-                ] : [
+                ]) : [
                     {label: root.task.creating ? qsTrId("ui.0e65135b7f52") : qsTrId("ui.053461ce86d2"), value: root.task.creating ? root.task.outputParts || 0 : root.task.committedFiles || 0, icon: "status-partial-success"},
                     {label: qsTrId("ui.fc50a99caae0"), value: root.task.skippedFiles || 0, icon: "status-skipped"},
                     {label: qsTrId("ui.6707de42c29d"), value: root.task.creating ? root.task.status === "succeeded" ? 0 : 1 : root.remaining, icon: "status-warning"}
