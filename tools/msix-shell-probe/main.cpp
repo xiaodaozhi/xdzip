@@ -1,12 +1,21 @@
 // Owned, non-product fixture for disposable Windows package tests. It never
 // extracts archives or changes defaults. Production menu code is built unchanged.
-#include "NativeRequest.h"
 #include "PackageMenu.h"
 #include <iostream>
 #include <shlobj.h>
-#include <winrt/Windows.Storage.h>
+#include <windows.storage.h>
 
 namespace fs = std::filesystem;
+using Microsoft::WRL::ComPtr;
+using Microsoft::WRL::Wrappers::HString;
+using Microsoft::WRL::Wrappers::HStringReference;
+struct ComFailure {
+    HRESULT value;
+};
+void check(HRESULT value) {
+    if (FAILED(value))
+        throw ComFailure{value};
+}
 void require(bool condition, const char *message) {
     if (!condition)
         throw std::runtime_error(message);
@@ -31,8 +40,18 @@ void receive(const fs::path &request) {
     const auto bytes = read(request);
     require(bytes.find("\"action\":\"zip\"") != std::string::npos,
             "Fixture activation received wrong action");
-    const fs::path folder(
-        winrt::Windows::Storage::ApplicationData::Current().LocalFolder().Path().c_str());
+    ComPtr<ABI::Windows::Storage::IApplicationDataStatics> factory;
+    check(RoGetActivationFactory(HStringReference(L"Windows.Storage.ApplicationData").Get(),
+                                 IID_PPV_ARGS(factory.GetAddressOf())));
+    ComPtr<ABI::Windows::Storage::IApplicationData> application;
+    check(factory->get_Current(&application));
+    ComPtr<ABI::Windows::Storage::IStorageFolder> local;
+    check(application->get_LocalFolder(&local));
+    ComPtr<ABI::Windows::Storage::IStorageItem> localItem;
+    check(local.As(&localItem));
+    HString location;
+    check(localItem->get_Path(location.GetAddressOf()));
+    const fs::path folder(location.GetRawBuffer(nullptr));
     std::ofstream receipt(folder / L"shell-receipt.txt", std::ios::binary);
     receipt << "activated-package-zip\n";
     receipt.close();
@@ -47,22 +66,23 @@ void receive(const fs::path &request) {
 void verify(const fs::path &root, const std::wstring &family, bool store) {
     const auto context = xdzip_shell::readPackageMenuContext(root / L"xdzip-shell.dll");
     require(context.registered && context.storeDistribution == store && context.windows11 &&
-                !context.storeSignature && context.applicationId == family + L"!App",
+                (!store || context.signatureKnown) && !context.storeSignature &&
+                context.applicationId == family + L"!App",
             "Own-package channel or self-signature policy failed");
     CLSID classic{}, modern{};
-    winrt::check_hresult(CLSIDFromString(store ? xdzip_shell::PackageClassicStoreId
-                                               : xdzip_shell::PackageClassicSideloadId,
-                                         &classic));
-    winrt::check_hresult(CLSIDFromString(xdzip_shell::PackageModernId, &modern));
+    check(CLSIDFromString(store ? xdzip_shell::PackageClassicStoreId
+                                : xdzip_shell::PackageClassicSideloadId,
+                          &classic));
+    check(CLSIDFromString(xdzip_shell::PackageModernId, &modern));
     // Real packaged COM activation runs the production DLL in the OS surrogate.
     // RAII releases every acquired interface. HRESULT failure rejects the check.
-    winrt::com_ptr<IUnknown> remote;
-    winrt::check_hresult(
-        CoCreateInstance(classic, nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(remote.put())));
+    ComPtr<IUnknown> remote;
+    check(CoCreateInstance(classic, nullptr, CLSCTX_LOCAL_SERVER,
+                           IID_PPV_ARGS(remote.GetAddressOf())));
     remote = nullptr;
-    winrt::com_ptr<IUnknown> modernRemote;
-    const auto modernResult =
-        CoCreateInstance(modern, nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(modernRemote.put()));
+    ComPtr<IUnknown> modernRemote;
+    const auto modernResult = CoCreateInstance(modern, nullptr, CLSCTX_LOCAL_SERVER,
+                                               IID_PPV_ARGS(modernRemote.GetAddressOf()));
     require(store ? SUCCEEDED(modernResult) : FAILED(modernResult),
             "Modern COM registration differs from channel");
     modernRemote = nullptr;
@@ -73,19 +93,19 @@ void verify(const fs::path &root, const std::wstring &family, bool store) {
     using GetClass = HRESULT(WINAPI *)(REFCLSID, REFIID, void **);
     const auto getClass = reinterpret_cast<GetClass>(GetProcAddress(library, "DllGetClassObject"));
     require(getClass != nullptr, "Installed class factory missing");
-    winrt::com_ptr<IClassFactory> factory;
-    winrt::check_hresult(getClass(classic, IID_PPV_ARGS(factory.put())));
-    winrt::com_ptr<IContextMenu> menu;
-    winrt::check_hresult(factory->CreateInstance(nullptr, IID_PPV_ARGS(menu.put())));
-    winrt::com_ptr<IExplorerCommand> command;
-    require(FAILED(menu->QueryInterface(IID_PPV_ARGS(command.put()))),
+    ComPtr<IClassFactory> factory;
+    check(getClass(classic, IID_PPV_ARGS(factory.GetAddressOf())));
+    ComPtr<IContextMenu> menu;
+    check(factory->CreateInstance(nullptr, IID_PPV_ARGS(menu.GetAddressOf())));
+    ComPtr<IExplorerCommand> command;
+    require(FAILED(menu->QueryInterface(IID_PPV_ARGS(command.GetAddressOf()))),
             "Classic class also exposes modern interface");
     if (store) {
-        winrt::com_ptr<IClassFactory> modernFactory;
-        winrt::check_hresult(getClass(modern, IID_PPV_ARGS(modernFactory.put())));
-        winrt::check_hresult(modernFactory->CreateInstance(nullptr, IID_PPV_ARGS(command.put())));
+        ComPtr<IClassFactory> modernFactory;
+        check(getClass(modern, IID_PPV_ARGS(modernFactory.GetAddressOf())));
+        check(modernFactory->CreateInstance(nullptr, IID_PPV_ARGS(command.GetAddressOf())));
         EXPCMDSTATE state = ECS_ENABLED;
-        winrt::check_hresult(command->GetState(nullptr, FALSE, &state));
+        check(command->GetState(nullptr, FALSE, &state));
         require(state == ECS_HIDDEN, "Self-signed Store flavor enables modern menu");
         command = nullptr;
     }
@@ -94,15 +114,16 @@ void verify(const fs::path &root, const std::wstring &family, bool store) {
     const auto pidl = ILCreateFromPathW(selected.c_str());
     require(pidl != nullptr, "Fixture selection failed");
     PCIDLIST_ABSOLUTE ids[] = {pidl};
-    winrt::com_ptr<IShellItemArray> selection;
-    const auto selectionResult = SHCreateShellItemArrayFromIDLists(1, ids, selection.put());
+    ComPtr<IShellItemArray> selection;
+    const auto selectionResult =
+        SHCreateShellItemArrayFromIDLists(1, ids, selection.GetAddressOf());
     CoTaskMemFree(pidl);
-    winrt::check_hresult(selectionResult);
-    winrt::com_ptr<IDataObject> data;
-    winrt::check_hresult(
-        selection->BindToHandler(nullptr, BHID_DataObject, IID_PPV_ARGS(data.put())));
-    auto init = menu.as<IShellExtInit>();
-    winrt::check_hresult(init->Initialize(nullptr, data.get(), nullptr));
+    check(selectionResult);
+    ComPtr<IDataObject> data;
+    check(selection->BindToHandler(nullptr, BHID_DataObject, IID_PPV_ARGS(data.GetAddressOf())));
+    ComPtr<IShellExtInit> init;
+    check(menu.As(&init));
+    check(init->Initialize(nullptr, data.Get(), nullptr));
     const auto popup = CreatePopupMenu();
     require(popup != nullptr, "Fixture popup creation failed");
     const auto query = menu->QueryContextMenu(popup, 0, 1000, 2000, 0);
@@ -113,7 +134,7 @@ void verify(const fs::path &root, const std::wstring &family, bool store) {
     CMINVOKECOMMANDINFO invoke{};
     invoke.cbSize = sizeof(invoke);
     invoke.nShow = SW_SHOWNORMAL;
-    winrt::check_hresult(menu->InvokeCommand(&invoke));
+    check(menu->InvokeCommand(&invoke));
     wchar_t localData[32768]{};
     const auto environmentSize =
         GetEnvironmentVariableW(L"LOCALAPPDATA", localData, DWORD(std::size(localData)));
@@ -138,7 +159,7 @@ int wmain(int argc, wchar_t **argv) {
                      "\"packaged_shell_policy\":1,\"packaged_association_policy\":1}\n";
         return 0;
     }
-    const auto initialized = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+    const auto initialized = RoInitialize(RO_INIT_SINGLETHREADED);
     if (FAILED(initialized))
         return 1;
     int result = 0;
@@ -149,13 +170,13 @@ int wmain(int argc, wchar_t **argv) {
             verify(argv[2], argv[3], std::wstring(argv[4]) == L"store");
         else
             result = 2;
-    } catch (const winrt::hresult_error &error) {
-        std::cerr << "Fixture COM error: " << std::hex << unsigned(error.code()) << '\n';
+    } catch (const ComFailure &error) {
+        std::cerr << "Fixture COM error: " << std::hex << unsigned(error.value) << '\n';
         result = 1;
     } catch (const std::exception &error) {
         std::cerr << error.what() << '\n';
         result = 1;
     }
-    CoUninitialize();
+    RoUninitialize();
     return result;
 }

@@ -6,8 +6,10 @@
 #include <fstream>
 #include <roapi.h>
 #include <vector>
-#include <winrt/Windows.ApplicationModel.h>
-#include <winrt/Windows.Management.Deployment.h>
+#include <windows.applicationmodel.h>
+#include <windows.management.deployment.h>
+#include <wrl/client.h>
+#include <wrl/wrappers/corewrappers.h>
 
 namespace xdzip_shell {
 inline constexpr wchar_t PackageClassicStoreId[] = L"{D1915E65-8E17-4B3C-BB61-4E34A1551A25}";
@@ -21,6 +23,7 @@ inline bool packageMenuAllowed(bool registered, bool storeDistribution, bool sto
 struct PackageMenuContext {
     bool registered = false;
     bool storeDistribution = false;
+    bool signatureKnown = false;
     bool storeSignature = false;
     bool windows11 = false;
     std::filesystem::path root;
@@ -94,17 +97,37 @@ inline PackageMenuContext readPackageMenuContext(const std::filesystem::path &bi
         if (result.storeDistribution) {
             // Bind signing evidence to this DLL's registered package, never to
             // Explorer's process. WinRT activation may fail in a host; fail closed.
-            const auto initialized = RoInitialize(RO_INIT_MULTITHREADED);
-            if (SUCCEEDED(initialized) || initialized == RPC_E_CHANGED_MODE) {
-                try {
-                    const auto package =
-                        winrt::Windows::Management::Deployment::PackageManager().FindPackageForUser(
-                            L"", fullName);
-                    result.storeSignature =
-                        package.SignatureKind() ==
-                        winrt::Windows::ApplicationModel::PackageSignatureKind::Store;
-                } catch (...) {
-                    result.storeSignature = false;
+            auto initialized = RoInitialize(RO_INIT_MULTITHREADED);
+            if (initialized == RPC_E_CHANGED_MODE)
+                initialized = RoInitialize(RO_INIT_SINGLETHREADED);
+            if (SUCCEEDED(initialized)) {
+                {
+                    // Use SDK ABI interfaces so the product's C++17 baseline
+                    // does not pull in C++/WinRT's obsolete coroutine headers.
+                    // Each successful COM/HSTRING acquisition is released before
+                    // RoUninitialize; any failed HRESULT keeps the menu hidden.
+                    using Microsoft::WRL::ComPtr;
+                    using Microsoft::WRL::Wrappers::HString;
+                    using Microsoft::WRL::Wrappers::HStringReference;
+                    ComPtr<IInspectable> instance;
+                    ComPtr<ABI::Windows::Management::Deployment::IPackageManager> manager;
+                    ComPtr<ABI::Windows::ApplicationModel::IPackage> package;
+                    ComPtr<ABI::Windows::ApplicationModel::IPackage4> signature;
+                    ABI::Windows::ApplicationModel::PackageSignatureKind kind{};
+                    HString packageName;
+                    if (SUCCEEDED(packageName.Set(fullName.c_str())) &&
+                        SUCCEEDED(RoActivateInstance(
+                            HStringReference(L"Windows.Management.Deployment.PackageManager").Get(),
+                            &instance)) &&
+                        instance && SUCCEEDED(instance.As(&manager)) && manager &&
+                        SUCCEEDED(manager->FindPackageByUserSecurityIdPackageFullName(
+                            HStringReference(L"").Get(), packageName.Get(), &package)) &&
+                        package && SUCCEEDED(package.As(&signature)) && signature &&
+                        SUCCEEDED(signature->get_SignatureKind(&kind))) {
+                        result.signatureKnown = true;
+                        result.storeSignature =
+                            kind == ABI::Windows::ApplicationModel::PackageSignatureKind_Store;
+                    }
                 }
                 if (SUCCEEDED(initialized))
                     RoUninitialize();
