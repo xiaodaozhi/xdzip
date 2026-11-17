@@ -41,6 +41,10 @@ function Invoke-UserProbe($package, [string]$channel) {
     $taskName = "xdzip-shell-ci-$env:GITHUB_RUN_ID-$channel"
     if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) { throw 'Owned fixture task already exists' }
     $log = Join-Path $buildPath "$channel-probe.log"
+    $null = New-Item -ItemType File -Path $log
+    $acl = Get-Acl -LiteralPath $log
+    $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new([Security.Principal.WindowsIdentity]::GetCurrent().User, 'Modify', 'Allow'))
+    Set-Acl -LiteralPath $log -AclObject $acl
     $arguments = '--verify "{0}" "{1}" {2} "{3}"' -f $package.InstallLocation, $package.PackageFamilyName, $channel, $log
     $action = New-ScheduledTaskAction -Execute (Join-Path $buildPath 'xdzip.exe') -Argument $arguments -WorkingDirectory (Get-Location).Path
     $principal = New-ScheduledTaskPrincipal -UserId ([Security.Principal.WindowsIdentity]::GetCurrent().Name) -LogonType Interactive -RunLevel Limited
@@ -58,7 +62,7 @@ function Invoke-UserProbe($package, [string]$channel) {
             $finished = $info.LastRunTime -ge $started.AddSeconds(-2) -and $state -notin @('Running', 'Queued')
         } while (!$finished -and (Get-Date) -lt $started.AddSeconds(60))
         if (Test-Path -LiteralPath $log) { Get-Content -LiteralPath $log }
-        if (!$finished -or $info.LastTaskResult -ne 0) { throw "Packaged $channel user-token probe failed" }
+        if (!$finished -or $info.LastTaskResult -ne 0) { throw "Packaged $channel user-token probe failed, task result $($info.LastTaskResult), state $state" }
     } finally {
         if ($registered) {
             Stop-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue

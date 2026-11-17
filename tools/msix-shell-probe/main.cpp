@@ -3,6 +3,7 @@
 #include "PackageMenu.h"
 #include <iostream>
 #include <shlobj.h>
+#include <string>
 #include <windows.storage.h>
 
 namespace fs = std::filesystem;
@@ -120,7 +121,9 @@ void verify(const fs::path &root, const std::wstring &family, bool store) {
         require(state == ECS_HIDDEN, "Self-signed Store flavor enables modern menu");
         command = nullptr;
     }
-    const auto selected = fs::current_path() / L"owned-selection.txt";
+    const auto selected =
+        fs::temp_directory_path() /
+        (L"xdzip-owned-selection-" + std::to_wstring(GetCurrentProcessId()) + L".txt");
     std::ofstream(selected) << "owned fixture\n";
     const auto pidl = ILCreateFromPathW(selected.c_str());
     require(pidl != nullptr, "Fixture selection failed");
