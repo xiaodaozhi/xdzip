@@ -357,7 +357,7 @@ function renderTree() {
     if (window.XdzipMain) return window.XdzipMain.renderTree();
     if (state.archiveState !== "ready") {
         $("#tree").innerHTML =
-            `<button class="tree-item active" disabled>${icon("layers")}<span>根目录</span><small>${state.archiveState === "empty" ? "0" : "—"}</small></button>`;
+            `<button class="tree-item active" disabled>${icon("layers")}<span>根目录</span><small>${state.archiveState === "empty" ? "0" : ""}</small></button>`;
         return;
     }
     const counts = (id) =>
@@ -398,7 +398,7 @@ function render() {
         $("#original-size").textContent =
             state.archiveState === "empty" ? "0 B" : "未知";
         $("#compressed-size").textContent = "未知";
-        $("#saving").textContent = "—";
+        $("#saving").textContent = "";
         $("#saving-bar").style.width = "0%";
     }
     const pathNodes = [];
@@ -440,7 +440,7 @@ function render() {
     $("#file-rows").innerHTML = list
         .map(
             (e) =>
-                `<tr tabindex="0" data-id="${e.id}" class="${e.folder ? "folder-row " : ""}${state.selected.has(e.id) ? "selected" : ""}" aria-selected="${state.selected.has(e.id)}"><td><input type="checkbox" tabindex="-1" aria-label="选择 ${esc(e.name)}" ${state.selected.has(e.id) ? "checked" : ""}></td><td><div class="entry-name"><span class="entry-icon">${["lake", "sunrise"].includes(e.id) ? photo(e.id, "entry-photo") : icon(fileIcon(e), fileIcon(e))}</span><span data-tooltip="${esc(e.name)}">${esc(displayEntryName(e))}</span></div></td><td>${e.folder ? "—" : bytes(e.size)}</td><td>${e.folder ? "—" : bytes(e.compressed)}</td><td class="type-col">${esc(displayType(e))}</td><td class="date-col">${esc(e.modified)}</td></tr>`,
+                `<tr tabindex="0" data-id="${e.id}" class="${e.folder ? "folder-row " : ""}${state.selected.has(e.id) ? "selected" : ""}" aria-selected="${state.selected.has(e.id)}"><td><input type="checkbox" tabindex="-1" aria-label="选择 ${esc(e.name)}" ${state.selected.has(e.id) ? "checked" : ""}></td><td><div class="entry-name"><span class="entry-icon">${["lake", "sunrise"].includes(e.id) ? photo(e.id, "entry-photo") : icon(fileIcon(e), fileIcon(e))}</span><span data-tooltip="${esc(e.name)}">${esc(displayEntryName(e))}</span></div></td><td>${e.folder ? "" : bytes(e.size)}</td><td>${e.folder ? "" : bytes(e.compressed)}</td><td class="type-col">${esc(displayType(e))}</td><td class="date-col">${esc(e.modified)}</td></tr>`,
         )
         .join("");
     $("#file-rows")
@@ -650,7 +650,7 @@ function renderInspector(chosen) {
                 single?.type.includes("JPEG") ? "尺寸" : "压缩方式",
                 single?.type.includes("JPEG") ? "6000 × 4000" : "Deflate",
             ],
-            ["修改日期", single?.modified || "2026/10/08"],
+            ["修改日期", single?.modified ? `${single.modified} 00:00:00` : ""],
             [
                 "位置",
                 single && single.parent

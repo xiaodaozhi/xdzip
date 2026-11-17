@@ -74,7 +74,7 @@ OperationWindow {
                                     Text { Layout.fillWidth: true; text: comparisonCard.modelData; font.pixelSize: Math.round(root.unit(Theme.operationBodySize)); font.bold: true; color: Theme.text; horizontalAlignment: Text.AlignHCenter }
                                     Text { Layout.fillWidth: true; text: root.sizeFormatter(comparisonCard.index === 0 ? root.task.existingBytes || "0" : root.task.incomingBytes || "0"); font.pixelSize: Math.round(root.unit(Theme.operationBodySize)); color: Theme.textSecondary; horizontalAlignment: Text.AlignHCenter }
                                     Text { Layout.fillWidth: true; text: qsTrId("ui.2cbced881b2d"); color: Theme.textSecondary; font.pixelSize: Theme.operationFooterNoteSize; horizontalAlignment: Text.AlignHCenter }
-                                    Text { Layout.fillWidth: true; text: comparisonCard.index === 0 ? root.task.existingModified || "—" : root.task.incomingModified || "—"; font.pixelSize: Theme.operationFooterNoteSize; color: Theme.text; horizontalAlignment: Text.AlignHCenter }
+                                    Text { Layout.fillWidth: true; text: comparisonCard.index === 0 ? root.task.existingModified || "" : root.task.incomingModified || ""; font.pixelSize: Theme.operationFooterNoteSize; color: Theme.text; horizontalAlignment: Text.AlignHCenter }
                                 }
                             }
                         }

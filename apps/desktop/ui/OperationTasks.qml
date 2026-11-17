@@ -134,7 +134,7 @@ Item {
     function averageSpeed(): string {
         const seconds = Number(taskSnapshot.elapsedMs || 0) / 1000;
         if (taskSnapshot.terminal && seconds < 2)
-            return "—";
+            return "";
         const processed = Number(taskSnapshot.kind === "check" ? taskSnapshot.readBytes || 0 : taskSnapshot.writtenBytes || 0);
         return seconds >= 2 && processed > 0 ? formatSize(String(Math.round(processed / seconds))) + "/s" : qsTrId("ui.f4199761edc9");
     }
@@ -142,19 +142,19 @@ Item {
         const t = taskSnapshot;
         const seconds = Number(t.elapsedMs || 0) / 1000;
         if (t.kind === "check" && !t.totalKnown)
-            return "—";
+            return "";
         if (t.kind === "check") {
             const verified = Number(t.verifiedBytes || 0);
-            return seconds >= 2 && verified > 0 && t.status === "running" ? qsTrId("ui.d6c40aaea130").arg(Math.ceil(Math.max(0, Number(t.declaredBytes || 0) - verified) / (verified / seconds))) : "—";
+            return seconds >= 2 && verified > 0 && t.status === "running" ? qsTrId("ui.d6c40aaea130").arg(Math.ceil(Math.max(0, Number(t.declaredBytes || 0) - verified) / (verified / seconds))) : "";
         }
         const written = Number(t.creating ? t.decodedBytes || 0 : t.writtenBytes || 0);
         if (seconds < 2 || !written || t.status !== "running")
-            return "—";
+            return "";
         return qsTrId("ui.d6c40aaea130").arg(Math.ceil(Math.max(0, Number(t.declaredBytes || 0) - Number(t.decodedBytes || 0)) / (written / seconds)));
     }
     function formatSize(value: string): string {
         if (!/^\d+$/.test(value))
-            return "—";
+            return "";
         const size = Number(value);
         if (size < 1024)
             return value + " B";

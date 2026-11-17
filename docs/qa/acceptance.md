@@ -175,7 +175,7 @@ This table specifies requirements; runtime results, screenshots and measurements
 | UI-REV-04 | Edit extraction destination; outside click or Escape/Return/Enter | Field loses focus without starting extraction; first Escape does not close window. |
 | UI-REV-05 | Display selected and all scopes | Title left, secondary-color count far right; whole row selectable. |
 | UI-REV-06 | Creation/extraction conflict at 100/125/150% and historical 200% stress | Conflict window width 491, title 20, body 13, footer 13, max 560, scrolling body and reachable actions. |
-| UI-REV-07 | Select all, clear and select individually through last item for same query | Select-all and individual last-item properties agree and action is available; four properties and action hidden without selection. |
+| UI-REV-07 | Select all, clear and select individually through last item for same query; inspect missing fields and known empty files | Select-all and individual last-item properties agree and action is available; four properties and action hidden without selection. Missing UI values remain blank, known zero sizes remain visible, and properties show modification time through seconds while the list retains date-only text. |
 | UI-REV-08 | Hover and press preview extraction action | Hover/pressed/focus visible; unauthorized state disabled. |
 | UI-REV-09 | Complete multiple tasks and reopen from bottom menu | Accurate history count, active count still 0, status badges right, normal menu density and keyboard navigation. |
 | UI-REV-10 | Clear selection and open Extract All dropdown | Selected and preflight disabled without extra selection hint line. |

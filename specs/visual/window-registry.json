@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "units": "Qt device-independent pixels and CSS pixels",
+  "empty_value_policy": "所有窗口的空值字段留白，不显示破折号占位；已有尺寸依据、密度和高保真入口保持不变。主窗口和独立属性窗口的修改日期显示到秒，列表仍只显示日期。",
   "windows": {
     "OperationWindow": {
       "parent": "Window",

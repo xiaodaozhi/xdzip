@@ -216,19 +216,19 @@ Rectangle {
                 model: [
                     {
                         label: qsTrId("ui.301a69c74dfc"),
-                        value: panel.detail.size ? panel.sizeFormatter(panel.detail.size) : "—"
+                        value: panel.detail.size ? panel.sizeFormatter(panel.detail.size) : ""
                     },
                     {
                         label: qsTrId("ui.2582e6a2c9e2"),
-                        value: panel.detail.packed ? panel.sizeFormatter(panel.detail.packed) : "—"
+                        value: panel.detail.packed ? panel.sizeFormatter(panel.detail.packed) : ""
                     },
                     {
                         label: qsTrId("ui.2cbced881b2d"),
-                        value: panel.detail.modified || "—"
+                        value: panel.detail.modified || ""
                     },
                     {
                         label: qsTrId("ui.9e9d1bfc0746"),
-                        value: panel.detail.method || "—"
+                        value: panel.detail.method || ""
                     }
                 ]
                 GridLayout {
