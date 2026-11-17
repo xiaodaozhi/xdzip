@@ -94,7 +94,7 @@ def render(payload,audit,output,chinese,qa=None,legacy=False):
             # Keep an uninstall-log ownership record across historical rollback,
             # whose old executable cannot remove the newer command registration.
             'Root: HKCU; Subkey: "Software\\Classes\\AllFilesystemObjects\\shell\\xdzip"; ValueType: none; Flags: uninsdeletekey; Check: OwnShellCommandKey',
-            'Root: HKCU; Subkey: "Software\\Classes\\CLSID\\{54B70170-1072-49B5-9BD2-6DFB5ECBF1B1}"; ValueType: none; Flags: uninsdeletekey; Check: OwnShellCommandClassKey',
+            'Root: HKCU; Subkey: "Software\\Classes\\CLSID\\{{54B70170-1072-49B5-9BD2-6DFB5ECBF1B1}"; ValueType: none; Flags: uninsdeletekey; Check: OwnShellCommandClassKey',
             'Root: HKCU; Subkey: "Software\\Classes\\xdzip.Archive"; ValueType: string; ValueName: "NoOpenWith"; AfterInstall: PreventSilentDefault(\'xdzip.Archive\')',
             'Root: HKCU; Subkey: "Software\\Classes\\Applications\\xdzip.exe"; ValueType: string; ValueName: "NoOpenWith"',
             'Root: HKCU; Subkey: "Software\\Classes\\Applications\\xdzip-association.exe"; ValueType: string; ValueName: "FriendlyAppName"; ValueData: "xdzip"; Flags: uninsdeletekey',
