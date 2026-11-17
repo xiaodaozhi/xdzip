@@ -97,7 +97,7 @@ xiaodaozhi
 
 | Field | URL |
 | --- | --- |
-| Website | https://github.com/xiaodaozhi/xdzip |
+| Website | https://xdzip.xiaodaozhi.com |
 | Support | https://github.com/xiaodaozhi/xdzip/issues |
 | Privacy policy | https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.en.md |
 | Project license | https://github.com/xiaodaozhi/xdzip/blob/main/LICENSE |

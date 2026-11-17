@@ -1607,7 +1607,7 @@ function showSettings(tab = "appearance") {
             });
         };
         window.XdzipAboutUpdatePreview();
-        $("#about-homepage").onclick=()=>window.open("https://github.com/xiaodaozhi/xdzip","_blank","noopener");
+        $("#about-homepage").onclick=()=>window.open("https://xdzip.xiaodaozhi.com","_blank","noopener");
         $("#about-copy").onclick=async()=>{try{await navigator.clipboard.writeText(JSON.stringify({product:"xdzip",version:window.XDZIP_VERSION.display_version,build:window.XDZIP_VERSION.build,preview:"HTML"},null,2));$("#about-copy").textContent=t("about.copied");}catch{}};
     }
 }
