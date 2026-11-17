@@ -476,6 +476,8 @@
     "settings.associationDescription": "Choose file types to open with xdzip.",
     "settings.associationSystem": "The system may ask you to confirm the default app.",
     "settings.associationUnavailable": "File associations cannot be changed in this installation.",
+    "settings.associationPackaged": "Windows manages file associations for this edition. Choose xdzip and the file types to associate in the system's Default apps settings.",
+    "settings.openDefaultApps": "Set default apps in Windows",
     "settings.proxy": "Proxy settings",
     "settings.proxyNone": "No proxy",
     "settings.proxySystem": "System proxy",

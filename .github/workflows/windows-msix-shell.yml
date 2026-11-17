@@ -1,0 +1,33 @@
+name: Windows MSIX shell integration
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  shell:
+    runs-on: windows-11-arm
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Build production menu and owned activation fixture
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          cmake -S tools/msix-shell-probe -B build/msix-shell -G 'Visual Studio 17 2022' -A x64
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build build/msix-shell --config Release --parallel 2
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Copy-Item build/msix-shell/Release/* -Destination build/msix-shell -Force
+          & build/msix-shell/menu-tests.exe build/msix-shell/xdzip-shell.dll
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Verify both package channels and activation
+        shell: pwsh
+        run: ./scripts/check-msix-shell-integration.ps1
+      - name: Preserve evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: msix-shell-${{ github.sha }}
+          path: build/msix-shell/results.json
+          if-no-files-found: warn
+          retention-days: 14

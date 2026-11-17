@@ -24,6 +24,8 @@
 
 ## 按需完整检查
 
+[MSIX 菜单集成检查](../../../.github/workflows/windows-msix-shell.yml)无需 Qt，编译生产菜单 DLL 和小型独立激活夹具；在一次性 Windows 11 ARM 上以 x64 仿真安装自签名的商店渠道与侧载渠道夹具，验证 COM 登记、传统菜单原生接口、包激活、现代菜单签名拒绝及默认选择保护，再移除包和临时证书。报告明确架构及夹具边界，不代表真实 Store 签名放行、Explorer 显示或 x64 原生产品验收。
+
 [Foundation probes](../../../.github/workflows/foundation.yml) 和 [Qt components](../../../.github/workflows/qt-components.yml) 仅通过 `workflow_dispatch` 手动运行，不随普通推送、PR 或标签自动触发。两者仍在 Windows、Linux 和 Apple Silicon macOS 运行完整矩阵。Foundation 包括 Rust workspace、Clippy、桥接探针、隔离工作进程和格式互操作；Qt 包括产品构建、组件及会话测试、原生平台检查、部署和适用的安装生命周期。Qt 按需运行保留首轮和十次完整浏览器套件；日常本地验证不重复这十轮。
 
 Qt 按需运行的 `test --skip-rust` 将 Rust workspace 标记为未执行。需要 Foundation 结论时应针对同一提交另行运行并核对，不把仅有的 Qt 结果当作 Foundation 已通过。运行中的失败、取消、缺少平台或原始日志仍使相应完整检查失败；仅使用本次实际执行的运行和工件。

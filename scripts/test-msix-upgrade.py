@@ -70,16 +70,20 @@ class UpgradeTests(unittest.TestCase):
             runtime.mkdir()
             app = runtime / 'xdzip.exe'
             app.write_bytes(b'owned non-executable fixture')
+            library = runtime / 'xdzip-shell.dll'
+            library.write_bytes(b'owned non-loadable menu fixture')
             identity = {'version': '0.2.0', 'build': 27, 'revision': 'a' * 12, 'dirty': False}
             audit = {'status': 'passed', 'platform': 'windows', 'mode': 'deployed',
-                     'identity': identity, 'files': [{'path': 'xdzip.exe', 'sha256': digest(app)}]}
+                     'identity': identity, 'files': [{'path': 'xdzip.exe', 'sha256': digest(app)},
+                                                    {'path': 'xdzip-shell.dll', 'sha256': digest(library)}]}
             audit_path = folder / 'audit.json'
             audit_path.write_text(json.dumps(audit), encoding='utf-8')
             real_run = builder.subprocess.run
 
             def run(command, **kwargs):
                 if command[0] == str(app):
-                    return Mock(stdout=json.dumps({**identity, 'packaged_update_policy': 1}))
+                    return Mock(stdout=json.dumps({**identity, 'packaged_update_policy': 1,
+                        'packaged_shell_policy': 1, 'packaged_association_policy': 1}))
                 return real_run(command, **kwargs)
 
             with patch.object(builder.subprocess, 'run', side_effect=run):

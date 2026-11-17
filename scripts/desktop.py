@@ -19,6 +19,7 @@ from desktop_environment import PYTHON_PACKAGES, QT_VERSION, check_environment, 
 from association_types import WINDOWS_ICONS
 from windows_ninja_safety import check_dependencies, utf8_console
 from qt_network_security import identity as qt_network_identity
+import msix_shell_policy
 
 ROOT = Path(__file__).resolve().parents[1]
 TOOL_PACKAGES = tuple(name+'=='+version for name, version in PYTHON_PACKAGES.items())
@@ -64,6 +65,12 @@ def verify_msix_identity(path, report):
             if len(names) != len(set(names)) or 'appxsignature.p7x' in names:
                 raise ValueError('MSIX contains duplicate entries or a signature')
             root = ET.fromstring(package.read('AppxManifest.xml'))
+            if 'channel' in report:
+                msix_shell_policy.verify_manifest(root, report['channel'], report.get('shell_library', 'xdzip-shell.dll'))
+                if (package.read('xdzip-msix-channel.txt') != msix_shell_policy.marker(report['channel']) or
+                        report.get('shell_library', 'xdzip-shell.dll').casefold() not in names or report.get('classic_context_menu') is not True or
+                        report.get('modern_context_menu_declaration') is not (report['channel'] == 'store')):
+                    raise ValueError('MSIX channel metadata differs from the receipt')
             if package.testzip() is not None:
                 raise ValueError('MSIX CRC verification failed')
     except (OSError, zipfile.BadZipFile, ET.ParseError, KeyError) as error:
@@ -80,7 +87,7 @@ def verify_msix_identity(path, report):
             identity.get('Version') != report.get('version') or
             identity.get('ProcessorArchitecture') != 'x64' or
             any(element.get('Category', '').casefold() == 'windows.fileexplorercontextmenus'
-                for element in root.iter())):
+                for element in root.iter()) != bool(report.get('modern_context_menu_declaration', False))):
         raise ValueError('MSIX identity or context menu differs from the receipt')
 
 
@@ -489,6 +496,7 @@ class Workflow:
                     '--audit', self.output/'deployment-audit.json', '--output', artifact,
                     '--name', self.args.msix_name, '--publisher', self.args.msix_publisher,
                     '--publisher-display-name', self.args.msix_publisher_display_name,
+                    '--channel', self.args.msix_channel,
                     '--report', self.output/'windows-msix.json')
         return {'source': self.source(), 'artifacts': self.hashes([artifact])}
 
@@ -640,6 +648,7 @@ def parser():
     value.add_argument('--msix-name', help='Explicit MSIX package identity name')
     value.add_argument('--msix-publisher', help='Explicit MSIX publisher distinguished name')
     value.add_argument('--msix-publisher-display-name', help='Explicit MSIX publisher display name')
+    value.add_argument('--msix-channel', choices=['store', 'sideload'], default='sideload')
     value.add_argument('--release-distribution', action='store_true', help='Dedicated release only: permit native Apple Silicon deployment, ad-hoc signing and both app ZIP/DMG')
     return value
 

@@ -12,6 +12,7 @@
 #include <QSettings>
 #include <QStandardPaths>
 #ifdef Q_OS_WIN
+#include "shell/PackageMenu.h"
 #include <shlobj.h>
 #endif
 #ifdef Q_OS_MACOS
@@ -32,6 +33,10 @@ bool installed() {
     return matches || macFinderIntegrationConfigured() || app == "/Applications/xdzip.app" ||
            app == QDir::homePath() + "/Applications/xdzip.app";
 #elif defined(Q_OS_WIN)
+    if (BuildInfo::packaged())
+        return xdzip_shell::readPackageMenuContext(
+                   QCoreApplication::applicationFilePath().toStdWString())
+            .registered;
     QSettings install("HKEY_CURRENT_USER\\Software\\xdzip\\Install", QSettings::NativeFormat);
     const auto directory = QFileInfo(QCoreApplication::applicationDirPath()).canonicalFilePath();
     const auto location = install.value("Location").toString();
@@ -85,6 +90,19 @@ bool ShellIntegration::apply(bool value) {
     if (m_applyOverride)
         return m_applyOverride(value);
 #ifdef Q_OS_WIN
+    if (BuildInfo::packaged()) {
+        const auto context = xdzip_shell::readPackageMenuContext(
+            QCoreApplication::applicationFilePath().toStdWString());
+        if (!context.registered)
+            return false;
+        QSettings options(QStringLiteral("HKEY_CURRENT_USER\\") +
+                              QString::fromStdWString(context.settingsKey),
+                          QSettings::NativeFormat);
+        options.setValue("Enabled", value ? 1 : 0);
+        options.setValue("Language", m_settings->activeLanguage());
+        options.sync();
+        return options.status() == QSettings::NoError;
+    }
     const auto root = QCoreApplication::applicationDirPath();
     QFile manifest(root + "/shell/integration.json");
     if (!manifest.open(QIODevice::ReadOnly) || manifest.size() > 4096)

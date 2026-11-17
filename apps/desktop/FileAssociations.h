@@ -7,6 +7,7 @@
 class FileAssociations final : public QObject {
     Q_OBJECT
     Q_PROPERTY(bool available READ available NOTIFY changed)
+    Q_PROPERTY(bool systemManaged READ systemManaged CONSTANT)
     Q_PROPERTY(bool busy READ busy NOTIFY changed)
     Q_PROPERTY(bool ready READ ready NOTIFY changed)
     Q_PROPERTY(int revision READ revision NOTIFY changed)
@@ -15,6 +16,9 @@ class FileAssociations final : public QObject {
     explicit FileAssociations(QObject *parent = nullptr);
     bool available() const {
         return m_available;
+    }
+    bool systemManaged() const {
+        return m_systemManaged;
     }
     bool busy() const {
         return m_busy;
@@ -31,6 +35,7 @@ class FileAssociations final : public QObject {
     Q_INVOKABLE bool isDefault(const QString &extension) const;
     Q_INVOKABLE void refresh();
     Q_INVOKABLE void requestChange(const QString &extension, bool enable);
+    Q_INVOKABLE void openSystemSettings();
     void nativeFinished(bool success);
   signals:
     void changed();
@@ -39,6 +44,7 @@ class FileAssociations final : public QObject {
     void setBusy(bool busy);
     void notify();
     bool m_available = false;
+    bool m_systemManaged = false;
     bool m_busy = false;
     bool m_ready = false;
     bool m_queryFailed = false;

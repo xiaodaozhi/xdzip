@@ -22,11 +22,17 @@ Finder 不保留菜单项的 `representedObject`，因此扩展通过单调递�
 
 更新可能受 Finder 持有旧扩展实例影响，必要时在系统设置中关闭再启用自有扩展，不强制结束 Finder。回退和卸载只操作自有登记及文件，不改变默认文件关联。Services 的可见位置由系统管理，可能提升到右键菜单顶层。
 
+<a id="windows-package-boundary"></a>
+
 ## Windows 应用包边界
 
-实验性 MSIX 构建不登记右键菜单，既不把经典扩展伪装成现代菜单，也不让侧载包启用现代菜单。Windows 11 现代菜单需要包身份、清单中的 COM 与文件管理器扩展，以及专用的现代菜单登记。仅有经典命令实现不会启用现代入口。未来若实现，除要求扩展所在包的系统签名类型为 Store，还须有可靠的安装来源判断以排除侧载；查询失败及 Developer、Enterprise、None 均不启用，并分别测试 Explorer 实际显示、设置开关和现有请求协议。Store 签名不单独证明安装途径，商店签名包也可能被复制侧载；无法可靠区分时不能启用现代菜单。Windows 10 没有 Windows 11 的现代菜单。具体实现与真实商店包验证不属于当前评估结论。
+MSIX 构建通过 `desktop9:Extension` 声明传统 `IContextMenu` 处理程序，用于 Windows 11 的“显示更多选项”。商店构建另行声明独立的 `IExplorerCommand` 类和 `windows.fileExplorerContextMenus`，用于现代菜单。两个类使用不同身份，分别只暴露各自菜单接口。侧载构建仅声明传统菜单类，普通安装版保留既有传统菜单。两种菜单复用文件操作及私有请求校验。
 
-候选来源接口为 [GetStagedPackageOrigin](https://learn.microsoft.com/en-us/windows/win32/api/appmodel/nf-appmodel-getstagedpackageorigin) 的 `PackageOrigin_Store`。它报告暂存包来源，而不是本文已验证的逐用户安装记录；同包多用户、Store 签名包复制侧载和升级等情形必须实测后才能决定是否足以满足侧载禁用要求。Explorer 内的扩展还须识别自己的包，不能把 Explorer 进程当作 xdzip 包查询。查询失败或结果不确定时隐藏入口。
+`--msix-channel store|sideload` 选择包内不可变渠道标记和对应清单，默认为 `sideload`。现代菜单要求运行于 Windows 11、商店构建已注册，且扩展自身包的系统签名类型为 `Store`；签名查询失败及 Developer、Enterprise、None 均隐藏现代入口。商店签名的商店构建即使被复制侧载，仍视为商店构建。这是构建渠道策略，不声称能识别相同签名字节的安装途径，参见[微软对该限制的说明](https://github.com/microsoft/WindowsAppSDK/issues/4993)。
+
+扩展根据自身 DLL 所在包目录及当前用户注册判断身份，不使用 Explorer 进程身份；每次执行前重新核对注册及可执行文件的菜单协议，再激活该包的 AUMID。注册已移除或被新版本替代时拒绝执行。包内菜单语言和开关使用按包族隔离的键，不借用普通安装版元数据；包身份下不写普通 COM 注册，清单登记及卸载由 Windows 管理。真实商店签名、Explorer 显示、升级与共存验收独立于自签名夹具检查。Windows 10 没有 Windows 11 现代菜单，且不在当前支持承诺内。
+
+[GetStagedPackageOrigin](https://learn.microsoft.com/en-us/windows/win32/api/appmodel/nf-appmodel-getstagedpackageorigin) 报告暂存包来源，不是已验证的逐用户安装途径；该接口保留用于诊断，不参与现代菜单放行。
 
 需要采集来源对照时，在当前用户已注册目标包的 Windows 环境运行以下只读诊断；包名称仅为示例，输出必须是 `build/` 下尚不存在的 JSON 文件。诊断同时记录系统签名类型、暂存来源和匿名化包完整名称摘要，拒绝没有唯一登记版本的结果。场景参数是执行者标签，不证明安装途径；系统查询失败、未知值或相同返回值均不能单独批准启用菜单。无需修改证书、安装或系统设置。
 

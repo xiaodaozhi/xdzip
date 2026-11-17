@@ -211,7 +211,9 @@ python scripts/desktop.py verify --kind msix
 
 身份示例仅供本地开发，正式商店身份的包名称、发布者和发布者显示名称必须与 Partner Center 提供的值一致。输出位于 `build/package/xdzip-windows-x64.msix`，仅是未签名实验包，不可直接视为可分发的侧载包或已通过商店认证。正常侧载需要与发布者匹配、设备信任的签名。Windows 11 的受限未签名开发测试模式另要求发布者包含指定 OID，含可执行文件时通常还需要管理员权限；上面的示例身份不满足该模式。脚本不创建证书、不签名、不安装、不提交商店。包的技术最低系统为 Windows 10 22H2 x64，不构成新增平台支持承诺。版本 `1.0.<产品 build>.0` 与显示版本分离，必须在 build 用尽前重新确定商店版本策略。
 
-构建要求干净来源、匹配的构建与测试回执、已审计的完整运行目录和支持 MSIX 的 Windows SDK MakeAppx。脚本复核运行目录及其 MSIX 更新能力标记，在独立暂存生成清单和品牌图标，打包后逐文件核对内容并记录摘要；不会覆盖已有包或暂存。包清单声明九类既有扩展和 full-trust 桌面入口，不声明右键扩展。许可、真实安装、文件关联、卸载、商店签名和 Windows 10／11 实际验收须分别完成，不由打包成功推定。
+构建要求干净来源、匹配的构建与测试回执、已审计的完整运行目录和支持 MSIX 的 Windows SDK MakeAppx。脚本复核运行目录及其更新、文件关联和菜单能力标记，在独立暂存生成清单和品牌图标，打包后逐文件核对内容并记录摘要；不会覆盖已有包或暂存。包清单声明九类既有扩展、full-trust 桌面入口及对应渠道的菜单类。
+
+示例使用默认的 `--msix-channel sideload`，仅登记 Windows 11 传统菜单。商店上传时使用 `package --kind msix --msix-channel store` 及 Partner Center 中的准确身份，同时声明现代、传统菜单；现代入口在包实际获得 Store 系统签名前保持隐藏。渠道标记在打包时加入，无须因此重编已审计运行目录；两种输出须使用不同目录，参见[菜单渠道策略](shell-actions.md#windows-package-boundary)。许可、真实安装、文件关联、卸载、商店签名及目标系统实际验收独立于打包成功。
 
 
 MSIX 清单显式声明 `en-US` 和 `zh-CN`，与应用内置的英文、简体中文目录对应，回执同时记录并校验语言列表。Qt 自有翻译资源不会由本项目的 MakeAppx 流程自动转换为包语言声明。Partner Center 的“软件包中支持的语言”以已上传包为准，修正源码后须重新构建并替换草稿中的包才会更新；“其他 Store 一览语言”可独立配置，不能代替包清单声明。参见 [Microsoft 清单语言说明](https://learn.microsoft.com/windows/apps/design/globalizing/manage-language-and-region)。

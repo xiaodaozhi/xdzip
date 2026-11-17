@@ -2,7 +2,7 @@
 
 [English](../../engineering/installers-associations.md) | 简体中文
 
-实验性 Windows MSIX 使用包清单声明同一组扩展作为打开方式候选，不覆盖用户默认选择。包身份下不读取普通安装版的关联注册来显示其管理状态；用户通过 Windows 系统设置管理默认应用。实际文件激活、图标、共存和卸载行为待目标系统验收，见[MSIX 构建](developer-build.md#windows-msix-实验构建)。
+Windows MSIX 使用包清单声明同一组扩展作为打开方式候选，不覆盖用户默认选择。文件关联页说明由 Windows 管理，并提供“打开默认应用设置”，使用当前包的 `registeredAUMID`；身份查询失败时打开通用默认应用选择页。不显示逐扩展开关，避免将未查询的默认状态显示为未关联，也不读取普通安装版注册作为包状态，不写 UserChoice。实际文件激活、图标、共存和卸载行为须在目标系统验收，见[MSIX 构建](developer-build.md#windows-msix-实验构建)。
 
 
 逐格式图标素材及平台映射见[文件关联图标规范](../visual/file-association-icons.md)。Linux 保留系统 MIME 图标，安装不改变默认选择或现有注册范围。
