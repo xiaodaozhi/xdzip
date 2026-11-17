@@ -11,10 +11,11 @@ using Microsoft::WRL::Wrappers::HString;
 using Microsoft::WRL::Wrappers::HStringReference;
 struct ComFailure {
     HRESULT value;
+    const char *operation;
 };
-void check(HRESULT value) {
+void check(HRESULT value, const char *operation = "COM call") {
     if (FAILED(value))
-        throw ComFailure{value};
+        throw ComFailure{value, operation};
 }
 void require(bool condition, const char *message) {
     if (!condition)
@@ -78,7 +79,8 @@ void verify(const fs::path &root, const std::wstring &family, bool store) {
     // RAII releases every acquired interface. HRESULT failure rejects the check.
     ComPtr<IUnknown> remote;
     check(CoCreateInstance(classic, nullptr, CLSCTX_LOCAL_SERVER,
-                           IID_PPV_ARGS(remote.GetAddressOf())));
+                           IID_PPV_ARGS(remote.GetAddressOf())),
+          "activate packaged classic COM");
     remote = nullptr;
     ComPtr<IUnknown> modernRemote;
     const auto modernResult = CoCreateInstance(modern, nullptr, CLSCTX_LOCAL_SERVER,
@@ -118,12 +120,13 @@ void verify(const fs::path &root, const std::wstring &family, bool store) {
     const auto selectionResult =
         SHCreateShellItemArrayFromIDLists(1, ids, selection.GetAddressOf());
     CoTaskMemFree(pidl);
-    check(selectionResult);
+    check(selectionResult, "create selected shell items");
     ComPtr<IDataObject> data;
-    check(selection->BindToHandler(nullptr, BHID_DataObject, IID_PPV_ARGS(data.GetAddressOf())));
+    check(selection->BindToHandler(nullptr, BHID_DataObject, IID_PPV_ARGS(data.GetAddressOf())),
+          "bind selected files");
     ComPtr<IShellExtInit> init;
     check(menu.As(&init));
-    check(init->Initialize(nullptr, data.Get(), nullptr));
+    check(init->Initialize(nullptr, data.Get(), nullptr), "initialize classic menu");
     const auto popup = CreatePopupMenu();
     require(popup != nullptr, "Fixture popup creation failed");
     const auto query = menu->QueryContextMenu(popup, 0, 1000, 2000, 0);
@@ -134,7 +137,7 @@ void verify(const fs::path &root, const std::wstring &family, bool store) {
     CMINVOKECOMMANDINFO invoke{};
     invoke.cbSize = sizeof(invoke);
     invoke.nShow = SW_SHOWNORMAL;
-    check(menu->InvokeCommand(&invoke));
+    check(menu->InvokeCommand(&invoke), "invoke classic menu");
     wchar_t localData[32768]{};
     const auto environmentSize =
         GetEnvironmentVariableW(L"LOCALAPPDATA", localData, DWORD(std::size(localData)));
@@ -171,7 +174,8 @@ int wmain(int argc, wchar_t **argv) {
         else
             result = 2;
     } catch (const ComFailure &error) {
-        std::cerr << "Fixture COM error: " << std::hex << unsigned(error.value) << '\n';
+        std::cerr << "Fixture COM error in " << error.operation << ": " << std::hex
+                  << unsigned(error.value) << '\n';
         result = 1;
     } catch (const std::exception &error) {
         std::cerr << error.what() << '\n';
