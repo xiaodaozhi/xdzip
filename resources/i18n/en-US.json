@@ -761,7 +761,7 @@
     "shell.status.failed": "Failed",
     "shell.status.cancelled": "Cancelled",
     "shell.status.not-run": "Not run",
-    "shell.status.duplicate": "Combined with the same volume group",
+    "shell.status.duplicate": "Skipped (same group)",
     "shell.integrationLabel": "File manager context menu",
     "shell.integrationDescription": "Provide standalone archive actions without opening the main window.",
     "shell.integrationUnavailable": "This copy has no registered integration. Portable copies require explicit integration setup.",

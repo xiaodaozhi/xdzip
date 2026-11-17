@@ -761,7 +761,7 @@
     "shell.status.failed": "失败",
     "shell.status.cancelled": "已取消",
     "shell.status.not-run": "未执行",
-    "shell.status.duplicate": "已合并到同一分卷组",
+    "shell.status.duplicate": "同组跳过",
     "shell.integrationLabel": "系统文件管理器右键菜单",
     "shell.integrationDescription": "提供压缩、解压的独立操作入口，不打开主窗口。",
     "shell.integrationUnavailable": "此副本未注册系统集成。便携版需显式安装集成。",
