@@ -1,6 +1,5 @@
 # Install only independent, owned fixtures on a disposable GitHub-hosted machine.
-param([string]$BuildDirectory = 'build/msix-shell', [string]$Output = 'build/msix-shell/results.json',
-      [ValidateSet('same-session','standard-user')][string]$Actor = 'same-session')
+param([string]$BuildDirectory = 'build/msix-shell', [string]$Output = 'build/msix-shell/results.json')
 $ErrorActionPreference = 'Stop'
 if ($env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows') {
     throw 'Package installation is restricted to a disposable GitHub-hosted Windows runner'
@@ -21,7 +20,6 @@ $audit = Join-Path $buildPath 'fixture-audit.json'
 $subject = 'CN=xdzip Shell CI'
 $certificate = $null
 $testUser = $null
-$installed = @()
 $developerKey = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock'
 $developerSnapshot = @{}
 $developerKeyCreated = !(Test-Path -LiteralPath $developerKey)
@@ -44,9 +42,9 @@ function Invoke-UserProbe([string]$package, [string]$channel) {
     $output = Join-Path $buildPath "$channel-user.json"
     $arguments = @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File',
         ((Join-Path (Get-Location) 'scripts/check-msix-shell-user.ps1')), '-Package', $package,
-        '-Probe', (Join-Path $buildPath 'xdzip.exe'), '-Channel', $channel, '-Output', $output)
+        '-Channel', $channel, '-Output', $output)
     $quoted = $arguments | ForEach-Object { '"' + $_ + '"' }
-    $process = Start-Process -FilePath (Get-Process -Id $PID).Path -ArgumentList $quoted -Credential $credential -LoadUserProfile -PassThru -RedirectStandardOutput (Join-Path $buildPath "$channel-user.log") -RedirectStandardError (Join-Path $buildPath "$channel-user-error.log")
+    $process = Start-Process -FilePath (Get-Process -Id $PID).Path -ArgumentList $quoted -Credential $credential -LoadUserProfile -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $buildPath "$channel-user.log") -RedirectStandardError (Join-Path $buildPath "$channel-user-error.log")
     try {
         $handle = $process.Handle
         if (!$process.WaitForExit(90000)) { $process.Kill(); $process.WaitForExit(); throw 'Ordinary-user probe timed out' }
@@ -54,17 +52,6 @@ function Invoke-UserProbe([string]$package, [string]$channel) {
         Get-Content -LiteralPath (Join-Path $buildPath "$channel-user-error.log")
         if ($process.ExitCode -ne 0 -or !(Test-Path -LiteralPath $output) -or (Get-Content -LiteralPath $output -Raw | ConvertFrom-Json).status -ne 'passed') { throw 'Ordinary-user package verification failed' }
     } finally { $process.Dispose() }
-}
-function Invoke-SessionProbe($package, [string]$channel) {
-    $log = Join-Path $buildPath "$channel-session.log"
-    $null = New-Item -ItemType File -Path $log
-    $acl = Get-Acl -LiteralPath $log
-    $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new([Security.Principal.WindowsIdentity]::GetCurrent().User, 'Modify', 'Allow'))
-    Set-Acl -LiteralPath $log -AclObject $acl
-    & (Join-Path $buildPath 'user-token.exe') (Join-Path $buildPath 'xdzip.exe') --verify $package.InstallLocation $package.PackageFamilyName $channel $log
-    $exitCode = $LASTEXITCODE
-    Get-Content -LiteralPath $log
-    if ($exitCode -ne 0) { throw "Same-session package probe failed: $exitCode" }
 }
 
 try {
@@ -82,7 +69,6 @@ try {
     $trusted.Open([Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
     $trusted.Add([Security.Cryptography.X509Certificates.X509Certificate2]::new($certificate.RawData))
     $trusted.Close()
-    if ($Actor -eq 'standard-user') {
     $userName = 'xdzipCI' + [guid]::NewGuid().ToString('N').Substring(0,8)
     $password = ConvertTo-SecureString ([guid]::NewGuid().ToString('N') + '!aA1') -AsPlainText -Force
     $testUser = New-LocalUser -Name $userName -Password $password -AccountNeverExpires -PasswordNeverExpires
@@ -93,7 +79,6 @@ try {
     $acl = Get-Acl -LiteralPath $buildPath
     $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($testUser.SID, 'Modify', 'ContainerInherit,ObjectInherit', 'None', 'Allow'))
     Set-Acl -LiteralPath $buildPath -AclObject $acl
-    }
     foreach ($channel in @('sideload','store')) {
         $name = "xdzip.ShellCI.$channel"
         if (Get-AppxPackage -Name $name) { throw 'Fixture already installed' }
@@ -103,16 +88,7 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'Fixture packaging failed' }
         & $tools[0].FullName sign /fd SHA256 /sha1 $certificate.Thumbprint $package
         if ($LASTEXITCODE -ne 0) { throw 'Fixture signing failed' }
-        if ($Actor -eq 'standard-user') {
-            Invoke-UserProbe $package $channel
-        } else {
-            Add-AppxPackage -Path $package
-            $current = Get-AppxPackage -Name $name
-            $installed += $current.PackageFullName
-            Invoke-SessionProbe $current $channel
-            Remove-AppxPackage -Package $current.PackageFullName
-            if (Get-AppxPackage -Name $name) { throw 'Fixture uninstall failed' }
-        }
+        Invoke-UserProbe $package $channel
         $result.checks[$channel] = 'passed'
         $result.checks["${channel}_uninstall"] = 'passed'
     }
@@ -120,7 +96,6 @@ try {
     $result.checks.defaults_unchanged = 'passed'
     $result.status = 'passed'
 } finally {
-    foreach ($fullName in $installed) { if (Get-AppxPackage | Where-Object PackageFullName -eq $fullName) { Remove-AppxPackage -Package $fullName } }
     if ($testUser) { Remove-LocalUser -SID $testUser.SID }
     if ($certificate) {
         foreach ($store in @('Cert:\LocalMachine\TrustedPeople', 'Cert:\CurrentUser\My')) {

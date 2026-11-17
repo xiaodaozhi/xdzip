@@ -101,7 +101,8 @@ void verify(const fs::path &root, const std::wstring &family, bool store) {
     // Inspect native HMENU and invoke without cross-process HMENU marshalling.
     // The trusted input is the exact DLL installed by the OS for this fixture.
     const auto library = LoadLibraryW((root / L"xdzip-shell.dll").c_str());
-    require(library != nullptr, "Installed menu load failed");
+    if (!library)
+        check(HRESULT_FROM_WIN32(GetLastError()), "load installed menu DLL");
     using GetClass = HRESULT(WINAPI *)(REFCLSID, REFIID, void **);
     const auto getClass = reinterpret_cast<GetClass>(GetProcAddress(library, "DllGetClassObject"));
     require(getClass != nullptr, "Installed class factory missing");

@@ -1,5 +1,5 @@
 # This script runs only as the disposable ordinary CI user.
-param([Parameter(Mandatory=$true)][string]$Package, [Parameter(Mandatory=$true)][string]$Probe,
+param([Parameter(Mandatory=$true)][string]$Package,
       [Parameter(Mandatory=$true)][string]$Channel, [Parameter(Mandatory=$true)][string]$Output)
 $ErrorActionPreference = 'Stop'
 if ($env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted') { throw 'Disposable hosted CI only' }
@@ -22,8 +22,16 @@ try {
     Add-AppxPackage -Path $Package
     $installed = Get-AppxPackage -Name $name
     if (@($installed).Count -ne 1 -or $installed.SignatureKind.ToString() -eq 'Store') { throw 'Wrong fixture identity or signature' }
-    & $Probe --verify $installed.InstallLocation $installed.PackageFamilyName $Channel
-    if ($LASTEXITCODE -ne 0) { throw 'Native package menu probe failed' }
+    # Loading a WindowsApps DLL requires this package's identity. Run its own
+    # installed executable; an unpackaged copy may activate COM but cannot load it.
+    $log = Join-Path ([IO.Path]::GetDirectoryName($Output)) "$Channel-native.log"
+    $process = Start-Process -FilePath (Join-Path $installed.InstallLocation 'xdzip.exe') -WindowStyle Hidden -PassThru -ArgumentList @('--verify', ('"'+$installed.InstallLocation+'"'), $installed.PackageFamilyName, $Channel, ('"'+$log+'"'))
+    try {
+        if (!$process.WaitForExit(45000)) { $process.Kill(); throw 'Native package menu probe timed out' }
+        $result.native_log = [string](Get-Content -LiteralPath $log -Raw)
+        Write-Output $result.native_log
+        if ($process.ExitCode -ne 0) { throw 'Native package menu probe failed' }
+    } finally { $process.Dispose() }
     Remove-AppxPackage -Package $installed.PackageFullName
     if (Get-AppxPackage -Name $name) { throw 'Fixture uninstall failed' }
     $result.status = 'passed'
