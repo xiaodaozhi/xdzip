@@ -6,11 +6,13 @@ import importlib.util
 import io
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
 from threading import Thread
 import unittest
+from unittest.mock import patch
 import urllib.request
 import xml.etree.ElementTree as ET
 
@@ -170,6 +172,42 @@ class FontTests(unittest.TestCase):
         files[-1]['sha256'] = '0' * 64
         with self.assertRaisesRegex(ValueError, 'bytes'):
             resources.check(report, fonts.DEFAULT_OUTPUT)
+
+    def test_html_check_and_offline_export_use_utf8_under_legacy_default_encoding(self):
+        fonts.generate()
+        spec = importlib.util.spec_from_file_location('html_font_export', ROOT / 'scripts/build-html-design.py')
+        exporter = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(exporter)
+        assets = self.root / 'design/assets'
+        manifest = json.loads((ROOT / 'design/assets/manifest.json').read_text(encoding='utf-8'))
+        for relative in ['manifest.json', 'brand/xdzip.svg',
+                         *[entry['file'] for entry in manifest['assets'] if entry['kind'] == 'vector-reconstruction'],
+                         'demo/photo-lake-thumbnail.png', 'demo/photo-lake-preview.png', 'demo/photo-sunrise-thumbnail.png',
+                         'tray/black-22.png']:
+            target = assets / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ROOT / 'design/assets' / relative, target)
+        catalog = self.root / 'design/hifi/catalog.json'
+        catalog.parent.mkdir(parents=True, exist_ok=True)
+        catalog.write_text(json.dumps({'screens': []}), encoding='utf-8')
+        original_read = Path.read_text
+        original_write = Path.write_text
+
+        def legacy_read(path, encoding=None, errors=None, **options):
+            return original_read(path, encoding=encoding or 'cp1252', errors=errors, **options)
+
+        def legacy_write(path, data, encoding=None, errors=None, **options):
+            return original_write(path, data, encoding=encoding or 'cp1252', errors=errors, **options)
+
+        with patch.object(Path, 'read_text', legacy_read), patch.object(Path, 'write_text', legacy_write):
+            with patch.object(sys, 'argv', ['build-html-design.py', '--check']):
+                exporter.main()
+            with patch.object(exporter, 'ROOT', self.root), patch.object(sys, 'argv', ['build-html-design.py']):
+                exporter.main()
+        output = (self.root / 'dist/xdzip-hifi-design.html').read_text(encoding='utf-8')
+        self.assertIn('data:font/woff2;base64,', output)
+        self.assertIn('Copyright', output)
+        self.assertIn('设置', output)
 
 
 if __name__ == '__main__':

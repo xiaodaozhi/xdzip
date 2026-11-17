@@ -35,6 +35,8 @@ build/toolchain/desktop-tools/bin/python scripts/ui-fonts.py check
 
 Pages in `dist/` embed WOFF2 and complete notices and can be opened offline. Use `build-html-design.py --check` to check generated resources. To import an existing complete upstream font, run `python scripts/ui-fonts.py prepare --source /path/to/NotoSansSC.ttf`; the fixed hash is still mandatory. After preparation, `prepare --offline` checks the cached source.
 
+HTML export reads source text and manifests and writes generated pages as UTF-8, independently of the system's default code page. The same rule applies to the resource check and embedded font notices.
+
 ## Source and license
 
 The source is [Google Fonts](https://github.com/google/fonts/tree/a85815a42757630ce188fdad368c2dfc444d4773/ofl/notosanssc) commit `a85815a42757630ce188fdad368c2dfc444d4773`. Upstream `NotoSansSC[wght].ttf` has SHA-256 `a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da`. The pinned configuration records original provenance, version and tools; each build's `manifest.json` records generated hashes and actual requested characters.
