@@ -11,6 +11,7 @@ ColumnLayout {
     onTaskIdChanged: expanded = false
     readonly property var entries: task.details || []
     readonly property var failures: entries.filter(e => e.status === "unfinished")
+    readonly property bool useDetailsForFailures: !task.openError && (task.creating || !task.kind || task.kind === "create" || task.kind === "extract")
     readonly property int remaining: Math.max(0, Number(task.files || 0) - Number(task.committedFiles || 0) - Number(task.skippedFiles || 0))
     readonly property bool extractionSummary: !task.creating && !task.batchResults && (!task.kind || task.kind === "extract")
     readonly property bool creationSummary: Boolean(task.creating)
@@ -71,14 +72,14 @@ ColumnLayout {
     }
     Rectangle {
         objectName: "resultFailures"
-        visible: root.failures.length > 0 || Boolean(root.task.error)
+        visible: (!root.useDetailsForFailures && root.failures.length > 0) || Boolean(root.task.error)
         Layout.fillWidth: true; implicitHeight: failed.implicitHeight + 24
         color: Theme.operationCard; border.color: Theme.operationCardBorder; radius: Theme.operationResultCardRadius
         ColumnLayout {
             id: failed
             anchors.fill: parent; anchors.margins: Theme.operationResultCardInset; spacing: 8
-            Text { text: root.task.openError ? qsTrId("result.fileOpenFailed") : qsTrId("ui.3ce2b5b2c6e8"); font.pixelSize: Math.round(Theme.operationResultSectionSize); font.bold: true; color: Theme.text }
-            Repeater { model: root.failures; delegate: ResultFileRow { required property var modelData; Layout.fillWidth: true; entry: modelData; showReason: true } }
+            Text { visible: !root.useDetailsForFailures; text: root.task.openError ? qsTrId("result.fileOpenFailed") : qsTrId("ui.3ce2b5b2c6e8"); font.pixelSize: Math.round(Theme.operationResultSectionSize); font.bold: true; color: Theme.text }
+            Repeater { model: root.useDetailsForFailures ? [] : root.failures; delegate: ResultFileRow { required property var modelData; Layout.fillWidth: true; entry: modelData; showReason: true } }
             Rectangle {
                 visible: Boolean(root.task.error); Layout.fillWidth: true
                 implicitHeight: message.implicitHeight + 16
@@ -145,7 +146,7 @@ ColumnLayout {
                 ColumnLayout {
                     id: rows
                     width: detailsScroll.availableWidth; spacing: 0
-                    Repeater { model: root.entries; delegate: ResultFileRow { required property var modelData; Layout.fillWidth: true; entry: modelData } }
+                    Repeater { model: root.entries; delegate: ResultFileRow { required property var modelData; Layout.fillWidth: true; entry: modelData; showDetailReason: root.useDetailsForFailures && modelData.status === "unfinished" } }
                 }
             }
             Text {
