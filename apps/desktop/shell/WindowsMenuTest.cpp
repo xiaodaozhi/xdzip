@@ -31,9 +31,26 @@ class MenuRegistryFixture {
         overridden = RegOverridePredefKey(HKEY_CURRENT_USER, key) == ERROR_SUCCESS;
         return overridden;
     }
+    bool legacyHandler(bool enabled) {
+        constexpr auto registryPath =
+            L"Software\\Classes\\AllFilesystemObjects\\shellex\\ContextMenuHandlers\\xdzip";
+        if (!enabled)
+            return RegDeleteKeyW(HKEY_CURRENT_USER, registryPath) == ERROR_SUCCESS;
+        HKEY handler = nullptr;
+        if (RegCreateKeyExW(HKEY_CURRENT_USER, registryPath, 0, nullptr, REG_OPTION_VOLATILE,
+                            KEY_SET_VALUE, nullptr, &handler, nullptr) != ERROR_SUCCESS)
+            return false;
+        constexpr wchar_t id[] = L"{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}";
+        const auto result = RegSetValueExW(handler, nullptr, 0, REG_SZ,
+                                           reinterpret_cast<const BYTE *>(id), sizeof(id));
+        RegCloseKey(handler);
+        return result == ERROR_SUCCESS;
+    }
     ~MenuRegistryFixture() {
         if (overridden)
             RegOverridePredefKey(HKEY_CURRENT_USER, nullptr);
+        if (key && created)
+            RegDeleteTreeW(key, nullptr);
         if (key)
             RegCloseKey(key);
         if (created)
@@ -62,6 +79,11 @@ int wmain(int argc, wchar_t **argv) {
     const CLSID id{0x731d9a38, 0x549e, 0x4cde, {0xb3, 0x5b, 0x6e, 0xb3, 0xa2, 0xc8, 0x8b, 0x71}};
     IClassFactory *factory = nullptr;
     if (!getClass || FAILED(getClass(id, IID_PPV_ARGS(&factory))))
+        return 1;
+    const CLSID commandId{
+        0x54b70170, 0x1072, 0x49b5, {0x9b, 0xd2, 0x6d, 0xfb, 0x5e, 0xcb, 0xf1, 0xb1}};
+    IClassFactory *commandFactory = nullptr;
+    if (FAILED(getClass(commandId, IID_PPV_ARGS(&commandFactory))))
         return 1;
     const auto marker =
         xdzip_shell::requestFile("choose", {xdzip_shell::fs::temp_directory_path()});
@@ -150,11 +172,16 @@ int wmain(int argc, wchar_t **argv) {
         EXPCMDFLAGS flags = ECF_DEFAULT;
         PWSTR title = nullptr;
         if (ok)
-            ok = SUCCEEDED(factory->CreateInstance(nullptr, IID_PPV_ARGS(&command))) &&
+            ok = SUCCEEDED(commandFactory->CreateInstance(nullptr, IID_PPV_ARGS(&command))) &&
                  SUCCEEDED(command->GetState(selection, FALSE, &state)) && state == ECS_ENABLED &&
                  SUCCEEDED(command->GetTitle(nullptr, &title)) && title && *title &&
                  SUCCEEDED(command->GetFlags(&flags)) && flags == ECF_HASSUBCOMMANDS &&
                  validIcon(command) && SUCCEEDED(command->EnumSubCommands(&commands));
+        if (ok)
+            ok = registry.legacyHandler(true) &&
+                 SUCCEEDED(command->GetState(selection, FALSE, &state)) && state == ECS_HIDDEN &&
+                 registry.legacyHandler(false) &&
+                 SUCCEEDED(command->GetState(selection, FALSE, &state)) && state == ECS_ENABLED;
         CoTaskMemFree(title);
         // Enumerated commands keep their selection alive after the root releases.
         if (command)
@@ -212,6 +239,7 @@ int wmain(int argc, wchar_t **argv) {
         xdzip_shell::fs::remove(path);
     xdzip_shell::fs::remove(root);
     factory->Release();
+    commandFactory->Release();
     FreeLibrary(library);
     CoUninitialize();
     if (passed)

@@ -9,6 +9,10 @@
 namespace {
 // Stable identity belongs only to xdzip; registration is per current user.
 const CLSID ClassId{0x731d9a38, 0x549e, 0x4cde, {0xb3, 0x5b, 0x6e, 0xb3, 0xa2, 0xc8, 0x8b, 0x71}};
+// A distinct identity prevents Explorer's cached legacy class factory from
+// answering the first IExplorerCommand activation after an in-place upgrade.
+const CLSID CommandClassId{
+    0x54b70170, 0x1072, 0x49b5, {0x9b, 0xd2, 0x6d, 0xfb, 0x5e, 0xcb, 0xf1, 0xb1}};
 std::atomic<long> objects{0};
 HMODULE module = nullptr;
 HBITMAP iconBitmap(HICON icon, int width, int height) {
@@ -375,7 +379,7 @@ class Menu final : public IShellExtInit, public IContextMenu, public IExplorerCo
     HRESULT STDMETHODCALLTYPE GetCanonicalName(GUID *name) override {
         if (!name)
             return E_POINTER;
-        *name = ClassId;
+        *name = CommandClassId;
         if (commandIndex != RootCommand) {
             if (commandIndex >= entries.size())
                 return E_INVALIDARG;
@@ -404,6 +408,18 @@ class Menu final : public IShellExtInit, public IContextMenu, public IExplorerCo
             DWORD enabled = 1, size = sizeof(enabled);
             RegGetValueW(HKEY_CURRENT_USER, L"Software\\xdzip\\Shell", L"Enabled", RRF_RT_REG_DWORD,
                          nullptr, &enabled, &size);
+            wchar_t legacy[64]{};
+            DWORD legacySize = sizeof(legacy);
+            const bool rolledBack =
+                RegGetValueW(
+                    HKEY_CURRENT_USER,
+                    L"Software\\Classes\\AllFilesystemObjects\\shellex\\ContextMenuHandlers\\xdzip",
+                    nullptr, RRF_RT_REG_SZ, nullptr, legacy, &legacySize) == ERROR_SUCCESS &&
+                _wcsicmp(legacy, L"{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}") == 0;
+            // Old installers restore the legacy handler. Hide the retained
+            // newer command so rollback presents only that compatible entry.
+            if (rolledBack)
+                return S_OK;
             if (enabled && SUCCEEDED(select(selection)) && !entries.empty() &&
                 (commandIndex == RootCommand || commandIndex < entries.size()))
                 *state = ECS_ENABLED;
@@ -584,7 +600,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID) {
     return TRUE;
 }
 STDAPI DllGetClassObject(REFCLSID id, REFIID iid, void **value) {
-    if (id != ClassId)
+    if (id != ClassId && id != CommandClassId)
         return CLASS_E_CLASSNOTAVAILABLE;
     auto *factory = new (std::nothrow) Factory;
     if (!factory)

@@ -201,7 +201,7 @@ function Test-FormatDispatch($Label, $Which, $Revision) {
     $phases.Add($Label+'-format-dispatch')
 }
 function Test-ShellIntegration {
-    $classKey = "$classes\CLSID\{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}\InprocServer32"
+    $classKey = "$classes\CLSID\{54B70170-1072-49B5-9BD2-6DFB5ECBF1B1}\InprocServer32"
     $menuKey = "$classes\AllFilesystemObjects\shell\xdzip"
     $legacyMenuKey = "$classes\AllFilesystemObjects\shellex\ContextMenuHandlers\xdzip"
     $manifest = Get-Content (Join-Path $testRoot 'shell/integration.json') -Raw | ConvertFrom-Json
@@ -210,10 +210,11 @@ function Test-ShellIntegration {
         class_exists = (Test-Path $classKey)
         menu_exists = (Test-Path $menuKey)
         class_matches = (Test-Path $classKey) -and (Get-Item $classKey).GetValue('') -eq $library
-        menu_matches = (Test-Path $menuKey) -and (Get-Item $menuKey).GetValue('ExplorerCommandHandler') -eq '{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}'
+        menu_matches = (Test-Path $menuKey) -and (Get-Item $menuKey).GetValue('ExplorerCommandHandler') -eq '{54B70170-1072-49B5-9BD2-6DFB5ECBF1B1}'
         menu_position = (Test-Path $menuKey) -and (Get-Item $menuKey).GetValue('Position') -eq 'Top'
         menu_multi_select = (Test-Path $menuKey) -and (Get-Item $menuKey).GetValue('MultiSelectModel') -eq 'Player'
         legacy_menu_removed = !(Test-Path $legacyMenuKey)
+        legacy_class_removed = !(Test-Path "$classes\CLSID\{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}")
         dll_hash_matches = (Get-FileHash $library -Algorithm SHA256).Hash.ToLowerInvariant() -eq $manifest.sha256
     }
     if ($facts.Values -contains $false) {
@@ -222,7 +223,7 @@ function Test-ShellIntegration {
     Test-ShellTarget 0
     $exe = Join-Path $testRoot 'xdzip.exe'
     # Simulate a retained registration for an older owned DLL after an upgrade.
-    $ownedClass = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Classes\CLSID\{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}\InprocServer32', $true)
+    $ownedClass = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Classes\CLSID\{54B70170-1072-49B5-9BD2-6DFB5ECBF1B1}\InprocServer32', $true)
     if (!$ownedClass) { throw 'Owned shell class cannot be opened for the upgrade fixture' }
     try {
         $ownedClass.SetValue('', (Join-Path (Split-Path $library) 'xdzip-shell-0000000000000000.dll'), [Microsoft.Win32.RegistryValueKind]::String)
@@ -502,6 +503,7 @@ try {
     Invoke-Installer (Join-Path $testRoot 'unins000.exe') 'uninstall'
     if (Test-Path "$classes\AllFilesystemObjects\shellex\ContextMenuHandlers\xdzip") { throw 'Owned shell menu remains after uninstall' }
     if (Test-Path "$classes\AllFilesystemObjects\shell\xdzip") { throw 'Owned shell command remains after uninstall or historical rollback' }
+    if (Test-Path "$classes\CLSID\{54B70170-1072-49B5-9BD2-6DFB5ECBF1B1}") { throw 'Owned shell command class remains after uninstall or historical rollback' }
     for ($i=0; $i -lt 200 -and (Test-Path "$classes\xdzip.Archive"); $i++) { Start-Sleep -Milliseconds 50 }
     if (Test-Path "$classes\xdzip.Archive") { throw 'Owned ProgID remains' }
     if (Test-Path "$classes\Applications\xdzip-association.exe") { throw 'Owned association launcher registration remains' }

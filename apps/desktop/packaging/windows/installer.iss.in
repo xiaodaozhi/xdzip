@@ -136,7 +136,18 @@ begin
   Result := not RegKeyExists(HKCU, 'Software\Classes\AllFilesystemObjects\shell\xdzip') or
     (RegQueryStringValue(HKCU, 'Software\Classes\AllFilesystemObjects\shell\xdzip',
       'ExplorerCommandHandler', Handler) and
-     (CompareText(Handler, '{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}') = 0));
+     ((CompareText(Handler, '{54B70170-1072-49B5-9BD2-6DFB5ECBF1B1}') = 0) or
+      (CompareText(Handler, '{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}') = 0)));
+end;
+
+function OwnShellCommandClassKey(): Boolean;
+var LibraryPath: String;
+begin
+  Result := not RegKeyExists(HKCU, 'Software\Classes\CLSID\{54B70170-1072-49B5-9BD2-6DFB5ECBF1B1}') or
+    (RegQueryStringValue(HKCU, 'Software\Classes\CLSID\{54B70170-1072-49B5-9BD2-6DFB5ECBF1B1}\InprocServer32', '', LibraryPath) and
+     (CompareText(ExtractFileDir(LibraryPath), ExpandConstant('{app}\shell')) = 0) and
+     (Pos('xdzip-shell-', Lowercase(ExtractFileName(LibraryPath))) = 1) and
+     (CompareText(ExtractFileExt(LibraryPath), '.dll') = 0));
 end;
 
 function CliUserPath(Param: String): String;

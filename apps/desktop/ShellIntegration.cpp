@@ -99,23 +99,26 @@ bool ShellIntegration::apply(bool value) {
         QCryptographicHash::hash(library.readAll(), QCryptographicHash::Sha256).toHex() !=
             info.value("sha256").toString().toLatin1())
         return false;
-    const auto clsid = QStringLiteral("{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}");
+    const auto clsid = QStringLiteral("{54B70170-1072-49B5-9BD2-6DFB5ECBF1B1}");
+    const auto legacyClsid = QStringLiteral("{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}");
     QSettings classes("HKEY_CURRENT_USER\\Software\\Classes", QSettings::NativeFormat);
     const auto classKey = "CLSID/" + clsid + "/InprocServer32";
     const auto menuKey = QStringLiteral("AllFilesystemObjects/shell/xdzip");
     const auto legacyMenuKey =
         QStringLiteral("AllFilesystemObjects/shellex/ContextMenuHandlers/xdzip");
     const auto dll = QDir::toNativeSeparators(library.fileName());
-    const auto previous = classes.value(classKey + "/Default").toString();
-    if (!previous.isEmpty() && QFileInfo(previous).absolutePath() != QFileInfo(dll).absolutePath())
+    const auto ownedClass = [&](const QString &id) {
+        const auto previous = classes.value("CLSID/" + id + "/InprocServer32/Default").toString();
+        if (previous.isEmpty())
+            return true;
+        const auto file = QFileInfo(previous);
+        return file.absolutePath() == QFileInfo(dll).absolutePath() &&
+               file.fileName().startsWith("xdzip-shell-") && file.fileName().endsWith(".dll");
+    };
+    if (!ownedClass(clsid) || !ownedClass(legacyClsid))
         return false;
-    if (!previous.isEmpty()) {
-        const auto oldName = QFileInfo(previous).fileName();
-        if (!oldName.startsWith("xdzip-shell-") || !oldName.endsWith(".dll"))
-            return false;
-    }
     const auto handler = classes.value(menuKey + "/ExplorerCommandHandler").toString();
-    if (!handler.isEmpty() && handler != clsid)
+    if (!handler.isEmpty() && handler != clsid && handler != legacyClsid)
         return false;
     if (value) {
         classes.setValue(classKey + "/Default", dll);
@@ -124,14 +127,14 @@ bool ShellIntegration::apply(bool value) {
         classes.setValue(menuKey + "/Position", "Top");
         classes.setValue(menuKey + "/MultiSelectModel", "Player");
     } else {
-        if (handler == clsid)
+        if (handler == clsid || handler == legacyClsid)
             classes.remove(menuKey);
-        if (!previous.isEmpty())
-            classes.remove("CLSID/" + clsid);
+        classes.remove("CLSID/" + clsid);
     }
     // Retire only our old dynamic entry when enabling or disabling integration.
-    if (classes.value(legacyMenuKey + "/Default") == clsid)
+    if (classes.value(legacyMenuKey + "/Default") == legacyClsid)
         classes.remove(legacyMenuKey);
+    classes.remove("CLSID/" + legacyClsid);
     classes.sync();
     QSettings options("HKEY_CURRENT_USER\\Software\\xdzip\\Shell", QSettings::NativeFormat);
     options.setValue("Enabled", value ? 1 : 0);
