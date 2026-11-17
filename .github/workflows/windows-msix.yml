@@ -7,6 +7,11 @@ on:
         type: boolean
         required: false
         default: false
+      shell_runner:
+        description: Host for focused shell checks, Server is an x64 COM diagnostic only
+        type: choice
+        options: [windows-11-arm, windows-2025]
+        default: windows-11-arm
 permissions:
   contents: read
 concurrency:
@@ -16,6 +21,8 @@ jobs:
   shell:
     if: inputs.shell_only
     uses: ./.github/workflows/windows-msix-shell.yml
+    with:
+      runner: ${{ inputs.shell_runner || 'windows-11-arm' }}
   build:
     if: ${{ !inputs.shell_only }}
     runs-on: windows-2022

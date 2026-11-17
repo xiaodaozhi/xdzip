@@ -1,12 +1,21 @@
 name: Windows MSIX shell integration
 on:
   workflow_dispatch:
+    inputs:
+      runner:
+        type: choice
+        options: [windows-11-arm, windows-2025]
+        default: windows-11-arm
   workflow_call:
+    inputs:
+      runner:
+        type: string
+        default: windows-11-arm
 permissions:
   contents: read
 jobs:
   shell:
-    runs-on: windows-11-arm
+    runs-on: ${{ inputs.runner }}
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

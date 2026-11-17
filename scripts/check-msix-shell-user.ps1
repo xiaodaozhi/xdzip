@@ -5,6 +5,12 @@ $ErrorActionPreference = 'Stop'
 if ($env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted') { throw 'Disposable hosted CI only' }
 $principal = [Security.Principal.WindowsPrincipal]::new([Security.Principal.WindowsIdentity]::GetCurrent())
 if ($principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { throw 'A real ordinary user is required' }
+$env:USERPROFILE = [Environment]::GetFolderPath('UserProfile')
+$env:LOCALAPPDATA = [Environment]::GetFolderPath('LocalApplicationData')
+$env:APPDATA = [Environment]::GetFolderPath('ApplicationData')
+$env:TEMP = Join-Path $env:LOCALAPPDATA 'Temp'
+$env:TMP = $env:TEMP
+$null = New-Item -ItemType Directory -Path $env:TEMP -Force
 if ($Channel -notin @('store','sideload')) { throw 'Invalid fixture channel' }
 $name = "xdzip.ShellCI.$Channel"
 $installed = $null
