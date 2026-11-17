@@ -19,7 +19,7 @@ $audit = Join-Path $buildPath 'fixture-audit.json'
 @{status='passed'; platform='windows'; mode='deployed'; identity=$identity; files=@($files)} | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $audit -Encoding utf8
 $subject = 'CN=xdzip Shell CI'
 $certificate = $null
-$installed = @()
+$testUser = $null
 $osInfo = Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
 $result = [ordered]@{status='failed'; revision=(& git rev-parse HEAD).Trim(); os_build=$osInfo.CurrentBuildNumber; os_architecture=[Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString(); executable_architecture='x64'; fixture_only=$true; checks=[ordered]@{}; limitations=@('Self-signed independent fixture, not a Store-signed product.', 'Native menu API and package activation checks do not establish actual Explorer display or human visual acceptance.')}
 $choices = 'Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts'
@@ -35,41 +35,22 @@ function Default-Snapshot {
     return ($snapshot | ConvertTo-Json -Compress)
 }
 $before = Default-Snapshot
-function Invoke-UserProbe($package, [string]$channel) {
-    # Hosted runners are elevated. Explorer uses the interactive user's normal
-    # token; elevated COM clients cannot validate per-user package activation.
-    $taskName = "xdzip-shell-ci-$env:GITHUB_RUN_ID-$channel"
-    if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) { throw 'Owned fixture task already exists' }
-    $log = Join-Path $buildPath "$channel-probe.log"
-    $null = New-Item -ItemType File -Path $log
-    $acl = Get-Acl -LiteralPath $log
-    $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new([Security.Principal.WindowsIdentity]::GetCurrent().User, 'Modify', 'Allow'))
-    Set-Acl -LiteralPath $log -AclObject $acl
-    $arguments = '--verify "{0}" "{1}" {2} "{3}"' -f $package.InstallLocation, $package.PackageFamilyName, $channel, $log
-    $action = New-ScheduledTaskAction -Execute (Join-Path $buildPath 'xdzip.exe') -Argument $arguments -WorkingDirectory (Get-Location).Path
-    $principal = New-ScheduledTaskPrincipal -UserId ([Security.Principal.WindowsIdentity]::GetCurrent().Name) -LogonType Interactive -RunLevel Limited
-    $registered = $false
+function Invoke-UserProbe([string]$package, [string]$channel) {
+    $output = Join-Path $buildPath "$channel-user.json"
+    $arguments = @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File',
+        ((Join-Path (Get-Location) 'scripts/check-msix-shell-user.ps1')), '-Package', $package,
+        '-Probe', (Join-Path $buildPath 'xdzip.exe'), '-Channel', $channel, '-Output', $output)
+    $quoted = $arguments | ForEach-Object { '"' + $_ + '"' }
+    $process = Start-Process -FilePath (Get-Process -Id $PID).Path -ArgumentList $quoted -Credential $credential -LoadUserProfile -PassThru -RedirectStandardOutput (Join-Path $buildPath "$channel-user.log") -RedirectStandardError (Join-Path $buildPath "$channel-user-error.log")
     try {
-        $null = Register-ScheduledTask -TaskName $taskName -Action $action -Principal $principal
-        $registered = $true
-        $started = Get-Date
-        Start-ScheduledTask -TaskName $taskName
-        $finished = $false
-        do {
-            Start-Sleep -Milliseconds 250
-            $info = Get-ScheduledTaskInfo -TaskName $taskName
-            $state = (Get-ScheduledTask -TaskName $taskName).State
-            $finished = $info.LastRunTime -ge $started.AddSeconds(-2) -and $state -notin @('Running', 'Queued')
-        } while (!$finished -and (Get-Date) -lt $started.AddSeconds(60))
-        if (Test-Path -LiteralPath $log) { Get-Content -LiteralPath $log }
-        if (!$finished -or $info.LastTaskResult -ne 0) { throw "Packaged $channel user-token probe failed, task result $($info.LastTaskResult), state $state" }
-    } finally {
-        if ($registered) {
-            Stop-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
-            Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
-        }
-    }
+        $handle = $process.Handle
+        if (!$process.WaitForExit(90000)) { $process.Kill(); $process.WaitForExit(); throw 'Ordinary-user probe timed out' }
+        Get-Content -LiteralPath (Join-Path $buildPath "$channel-user.log")
+        Get-Content -LiteralPath (Join-Path $buildPath "$channel-user-error.log")
+        if ($process.ExitCode -ne 0 -or !(Test-Path -LiteralPath $output) -or (Get-Content -LiteralPath $output -Raw | ConvertFrom-Json).status -ne 'passed') { throw 'Ordinary-user package verification failed' }
+    } finally { $process.Dispose() }
 }
+
 try {
     if ([int]$osInfo.CurrentBuildNumber -lt 22000) { throw 'Windows 11 is required' }
     $certificate = New-SelfSignedCertificate -Type CodeSigningCert -Subject $subject -CertStoreLocation 'Cert:\CurrentUser\My' -KeyExportPolicy NonExportable -NotAfter (Get-Date).AddDays(2)
@@ -77,6 +58,14 @@ try {
     $trusted.Open([Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
     $trusted.Add([Security.Cryptography.X509Certificates.X509Certificate2]::new($certificate.RawData))
     $trusted.Close()
+    $userName = 'xdzipCI' + [guid]::NewGuid().ToString('N').Substring(0,8)
+    $password = ConvertTo-SecureString ([guid]::NewGuid().ToString('N') + '!aA1') -AsPlainText -Force
+    $testUser = New-LocalUser -Name $userName -Password $password -AccountNeverExpires -PasswordNeverExpires
+    Add-LocalGroupMember -SID 'S-1-5-32-545' -Member $testUser.SID
+    $credential = [pscredential]::new("$env:COMPUTERNAME\$userName", $password)
+    $acl = Get-Acl -LiteralPath $buildPath
+    $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($testUser.SID, 'Modify', 'ContainerInherit,ObjectInherit', 'None', 'Allow'))
+    Set-Acl -LiteralPath $buildPath -AclObject $acl
     foreach ($channel in @('sideload','store')) {
         $name = "xdzip.ShellCI.$channel"
         if (Get-AppxPackage -Name $name) { throw 'Fixture already installed' }
@@ -86,21 +75,15 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'Fixture packaging failed' }
         & $tools[0].FullName sign /fd SHA256 /sha1 $certificate.Thumbprint $package
         if ($LASTEXITCODE -ne 0) { throw 'Fixture signing failed' }
-        Add-AppxPackage -Path $package
-        $current = Get-AppxPackage -Name $name
-        if (@($current).Count -ne 1 -or $current.SignatureKind.ToString() -eq 'Store') { throw 'Unexpected fixture identity or signature' }
-        $installed += $current.PackageFullName
-        Invoke-UserProbe $current $channel
+        Invoke-UserProbe $package $channel
         $result.checks[$channel] = 'passed'
-        Remove-AppxPackage -Package $current.PackageFullName
-        if (Get-AppxPackage -Name $name) { throw 'Fixture uninstall failed' }
         $result.checks["${channel}_uninstall"] = 'passed'
     }
     if ((Default-Snapshot) -ne $before) { throw 'Default application choices changed' }
     $result.checks.defaults_unchanged = 'passed'
     $result.status = 'passed'
 } finally {
-    foreach ($fullName in $installed) { if (Get-AppxPackage | Where-Object PackageFullName -eq $fullName) { Remove-AppxPackage -Package $fullName } }
+    if ($testUser) { Remove-LocalUser -SID $testUser.SID }
     if ($certificate) {
         foreach ($store in @('Cert:\LocalMachine\TrustedPeople', 'Cert:\CurrentUser\My')) {
             $path = Join-Path $store $certificate.Thumbprint
