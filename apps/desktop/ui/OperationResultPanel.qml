@@ -11,10 +11,13 @@ ColumnLayout {
     onTaskIdChanged: expanded = false
     readonly property var entries: task.details || []
     readonly property var failures: entries.filter(e => e.status === "unfinished")
+    readonly property bool useDetailsForFailures: !task.openError && (task.creating || !task.kind || task.kind === "create" || task.kind === "extract")
     readonly property int remaining: Math.max(0, Number(task.files || 0) - Number(task.committedFiles || 0) - Number(task.skippedFiles || 0))
     readonly property bool extractionSummary: !task.creating && !task.batchResults && (!task.kind || task.kind === "extract")
+    readonly property bool creationSummary: Boolean(task.creating)
     readonly property string savedCaption: {
         const total = Number(task.creating ? task.outputParts || 0 : task.committedFiles || 0);
+        if (creationSummary) return qsTrId("ui.2e84a56c5f19", total);
         if (extractionSummary) return qsTrId("result.processedFiles", total);
         const saved = entries.filter(e => e.status === "completed");
         if (!saved.length) return qsTrId("ui.c58cdccacf5f");
@@ -39,9 +42,10 @@ ColumnLayout {
                     {label: qsTrId("shell.status.succeeded"), value: root.task.committedFiles || 0, icon: "status-partial-success"},
                     {label: qsTrId("ui.6707de42c29d"), value: root.task.failedCount || 0, icon: "status-warning"},
                     {label: qsTrId("shell.status.cancelled"), value: root.task.cancelledCount || 0, icon: "status-warning"},
-                    {label: qsTrId("shell.status.not-run"), value: root.task.notRunCount || 0, icon: "status-warning"},
+                    {label: qsTrId("shell.status.not-run"), value: root.task.notRunCount || 0, icon: "status-warning"}
+                ].concat(root.task.creating ? [] : [
                     {label: qsTrId("shell.status.duplicate"), value: root.task.skippedFiles || 0, icon: "status-skipped"}
-                ] : [
+                ]) : [
                     {label: root.task.creating ? qsTrId("ui.0e65135b7f52") : qsTrId("ui.053461ce86d2"), value: root.task.creating ? root.task.outputParts || 0 : root.task.committedFiles || 0, icon: "status-partial-success"},
                     {label: qsTrId("ui.fc50a99caae0"), value: root.task.skippedFiles || 0, icon: "status-skipped"},
                     {label: qsTrId("ui.6707de42c29d"), value: root.task.creating ? root.task.status === "succeeded" ? 0 : 1 : root.remaining, icon: "status-warning"}
@@ -68,14 +72,14 @@ ColumnLayout {
     }
     Rectangle {
         objectName: "resultFailures"
-        visible: root.failures.length > 0 || Boolean(root.task.error)
+        visible: (!root.useDetailsForFailures && root.failures.length > 0) || Boolean(root.task.error)
         Layout.fillWidth: true; implicitHeight: failed.implicitHeight + 24
         color: Theme.operationCard; border.color: Theme.operationCardBorder; radius: Theme.operationResultCardRadius
         ColumnLayout {
             id: failed
             anchors.fill: parent; anchors.margins: Theme.operationResultCardInset; spacing: 8
-            Text { text: root.task.openError ? qsTrId("result.fileOpenFailed") : qsTrId("ui.3ce2b5b2c6e8"); font.pixelSize: Math.round(Theme.operationResultSectionSize); font.bold: true; color: Theme.text }
-            Repeater { model: root.failures; delegate: ResultFileRow { required property var modelData; Layout.fillWidth: true; entry: modelData; showReason: true } }
+            Text { visible: !root.useDetailsForFailures; text: root.task.openError ? qsTrId("result.fileOpenFailed") : qsTrId("ui.3ce2b5b2c6e8"); font.pixelSize: Math.round(Theme.operationResultSectionSize); font.bold: true; color: Theme.text }
+            Repeater { model: root.useDetailsForFailures ? [] : root.failures; delegate: ResultFileRow { required property var modelData; Layout.fillWidth: true; entry: modelData; showReason: true } }
             Rectangle {
                 visible: Boolean(root.task.error); Layout.fillWidth: true
                 implicitHeight: message.implicitHeight + 16
@@ -112,7 +116,7 @@ ColumnLayout {
                             objectName: "resultSavedCaption"
                             Layout.fillWidth: true; wrapMode: Text.Wrap
                             text: root.task.externalReader ? root.savedCaption + "\n" + qsTrId("ui.92ccb53e91dc") : root.savedCaption
-                            font.family: !root.extractionSummary && root.entries.some(e => e.status === "completed") ? Theme.userDataFontFamily : Theme.uiFontFamily
+                            font.family: !root.extractionSummary && !root.creationSummary && root.entries.some(e => e.status === "completed") ? Theme.userDataFontFamily : Theme.uiFontFamily
                             font.pixelSize: Math.round(Theme.operationResultNoteSize); color: Theme.textSecondary
                         }
                     }
@@ -142,7 +146,7 @@ ColumnLayout {
                 ColumnLayout {
                     id: rows
                     width: detailsScroll.availableWidth; spacing: 0
-                    Repeater { model: root.entries; delegate: ResultFileRow { required property var modelData; Layout.fillWidth: true; entry: modelData } }
+                    Repeater { model: root.entries; delegate: ResultFileRow { required property var modelData; required property int index; Layout.fillWidth: true; entry: modelData; showBottomBorder: index < root.entries.length - 1; showDetailReason: root.useDetailsForFailures && modelData.status === "unfinished" } }
                 }
             }
             Text {

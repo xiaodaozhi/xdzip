@@ -2,7 +2,7 @@
 
 [English](../../visual/design-standard.md) | 简体中文
 
-[任务路径与结果摘要修订](../../../design/hifi/sources/task-windows.html)将进行中的“当前文件”限制为单行、中间省略，保留完整纯文本辅助功能名称，路径长度不改变卡片或窗口高度。普通解压结果摘要仅含完整任务统计中的已提交文件数，不依赖保留的明细记录；创建结果、批次汇总及可展开明细保留现有行为。逻辑尺寸、密度与大字号适配继续沿用既有规范。
+[任务路径与结果摘要修订](../../../design/hifi/sources/task-windows.html)将进行中的“当前文件”限制为单行、中间省略，保留完整纯文本辅助功能名称，路径长度不改变卡片或窗口高度。普通解压结果摘要仅含完整任务统计中的已提交文件数，不依赖保留的明细记录；压缩结果摘要仅显示“N 个文件”，不显示名称或容量；普通压缩使用 outputParts，批量压缩使用成功任务数。批量压缩结果不显示卷组去重计数，批量解压结果仍显示该计数；可展开明细保留现有行为。逻辑尺寸、密度与大字号适配继续沿用既有规范。
 
 本规范约束界面创作、HTML 设计交付和 Qt 实现。尺寸换算以 [layout-scale.json](../../../specs/visual/layout-scale.json) 为准；颜色、共享控件和目录树分别以 [tokens.json](../../../specs/visual/tokens.json)、[controls.json](../../../specs/visual/controls.json)、[directory-tree.json](../../../specs/visual/directory-tree.json) 为准。原稿量测保存在 [qt-main-reference.json](../../../specs/visual/qt-main-reference.json)，不以实现结果反向改写原图。
 

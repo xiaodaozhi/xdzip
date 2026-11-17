@@ -2264,9 +2264,11 @@ QtObject {
             QVERIFY(visual_audit::save(window, output, "result-" + scene));
         window->setProperty("resultTask", QVariantMap{{"creating", true},
                                                       {"outputParts", 1},
+                                                      {"files", 5},
                                                       {"writtenBytes", "1234"},
                                                       {"details", details}});
-        QVERIFY(caption->property("text").toString().contains("kept-file.txt"));
+        QCOMPARE(caption->property("text").toString(),
+                 language == "zh-CN" ? QStringLiteral("1 个文件") : QStringLiteral("1 file"));
         window->setProperty("resultTask", QVariantMap{{"kind", "extract"},
                                                       {"batchResults", true},
                                                       {"committedFiles", 1},
