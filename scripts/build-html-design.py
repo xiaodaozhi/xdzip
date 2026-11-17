@@ -17,7 +17,8 @@ FONT_STYLESHEET = '../assets/fonts/fonts.css'
 
 
 def data_url(path):
-    return f'data:{mimetypes.guess_type(path.name)[0]};base64,' + base64.b64encode(path.read_bytes()).decode()
+    mime_type = 'font/woff2' if path.suffix.lower() == '.woff2' else mimetypes.guess_type(path.name)[0]
+    return f'data:{mime_type or "application/octet-stream"};base64,' + base64.b64encode(path.read_bytes()).decode()
 
 
 def script(code):

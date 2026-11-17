@@ -35,7 +35,7 @@ build/toolchain/desktop-tools/bin/python scripts/ui-fonts.py check
 
 Pages in `dist/` embed WOFF2 and complete notices and can be opened offline. Use `build-html-design.py --check` to check generated resources. To import an existing complete upstream font, run `python scripts/ui-fonts.py prepare --source /path/to/NotoSansSC.ttf`; the fixed hash is still mandatory. After preparation, `prepare --offline` checks the cached source.
 
-HTML export reads source text and manifests and writes generated pages as UTF-8, independently of the system's default code page. The same rule applies to the resource check and embedded font notices.
+HTML export reads source text and manifests and writes generated pages as UTF-8, independently of the system's default code page. The same rule applies to the resource check and embedded font notices. Embedded WOFF2 always uses `font/woff2`, without requiring a system MIME registration.
 
 ## Source and license
 

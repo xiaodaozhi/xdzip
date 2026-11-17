@@ -841,7 +841,7 @@ OperationWindow {
                     onClicked: { BuildInfo.copyVersionInfo(); root.copiedVersion = true; copyTimer.restart(); }
                 }
                 PageSeparator {}
-                OperationButton { objectName: "aboutHomepage"; text: qsTrId("about.homepage"); onClicked: Qt.openUrlExternally("https://github.com/xiaodaozhi/xdzip") }
+                OperationButton { objectName: "aboutHomepage"; text: qsTrId("about.homepage"); onClicked: Qt.openUrlExternally("https://xdzip.xiaodaozhi.com") }
                 PageNote { objectName: "aboutLicense"; text: qsTrId("about.license") }
             }
         }

@@ -35,7 +35,7 @@ build/toolchain/desktop-tools/bin/python scripts/ui-fonts.py check
 
 `dist/` 中的页面嵌入 WOFF2 和完整许可，可以离线打开。检查生成资源可使用 `build-html-design.py --check`。已有完整上游字体时，可用 `python scripts/ui-fonts.py prepare --source /path/to/NotoSansSC.ttf` 导入，仍须通过固定哈希检查；准备后可用 `prepare --offline` 检查源缓存。
 
-HTML 导出以 UTF-8 读取源文本和清单、写入生成页面，不依赖系统默认代码页；生成资源检查与嵌入的字体许可同样遵循此约定。
+HTML 导出以 UTF-8 读取源文本和清单、写入生成页面，不依赖系统默认代码页；生成资源检查与嵌入的字体许可同样遵循此约定。嵌入的 WOFF2 固定使用 `font/woff2`，不要求系统预先登记该 MIME 类型。
 
 ## 来源与许可
 

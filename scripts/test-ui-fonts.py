@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Exercise automatic glyph updates, offline integrity, concurrency and consumers."""
+import base64
 import copy
 from functools import partial
 import importlib.util
@@ -173,7 +174,7 @@ class FontTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'bytes'):
             resources.check(report, fonts.DEFAULT_OUTPUT)
 
-    def test_html_check_and_offline_export_use_utf8_under_legacy_default_encoding(self):
+    def test_html_export_is_independent_of_legacy_encoding_and_font_mime_registry(self):
         fonts.generate()
         spec = importlib.util.spec_from_file_location('html_font_export', ROOT / 'scripts/build-html-design.py')
         exporter = importlib.util.module_from_spec(spec)
@@ -192,6 +193,7 @@ class FontTests(unittest.TestCase):
         catalog.write_text(json.dumps({'screens': []}), encoding='utf-8')
         original_read = Path.read_text
         original_write = Path.write_text
+        original_guess = exporter.mimetypes.guess_type
 
         def legacy_read(path, encoding=None, errors=None, **options):
             return original_read(path, encoding=encoding or 'cp1252', errors=errors, **options)
@@ -199,15 +201,21 @@ class FontTests(unittest.TestCase):
         def legacy_write(path, data, encoding=None, errors=None, **options):
             return original_write(path, data, encoding=encoding or 'cp1252', errors=errors, **options)
 
-        with patch.object(Path, 'read_text', legacy_read), patch.object(Path, 'write_text', legacy_write):
+        def without_font_registration(name, *args, **options):
+            return (None, None) if str(name).endswith('.woff2') else original_guess(name, *args, **options)
+
+        with patch.object(Path, 'read_text', legacy_read), patch.object(Path, 'write_text', legacy_write), \
+                patch.object(exporter.mimetypes, 'guess_type', without_font_registration):
             with patch.object(sys, 'argv', ['build-html-design.py', '--check']):
                 exporter.main()
             with patch.object(exporter, 'ROOT', self.root), patch.object(sys, 'argv', ['build-html-design.py']):
                 exporter.main()
         output = (self.root / 'dist/xdzip-hifi-design.html').read_text(encoding='utf-8')
-        self.assertIn('data:font/woff2;base64,', output)
-        self.assertIn('Copyright', output)
-        self.assertIn('设置', output)
+        embedded_font = 'data:font/woff2;base64,' + base64.b64encode(
+            (fonts.DEFAULT_OUTPUT / (fonts.FONT_NAME + '.woff2')).read_bytes()).decode()
+        self.assertTrue(embedded_font in output, 'Offline HTML font MIME or embedded bytes differ')
+        self.assertTrue('Copyright' in output, 'Offline HTML lost its font license')
+        self.assertTrue('设置' in output, 'Offline HTML lost UTF-8 interface text')
 
 
 if __name__ == '__main__':
