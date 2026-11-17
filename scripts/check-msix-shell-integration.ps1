@@ -42,7 +42,7 @@ function Invoke-UserProbe([string]$package, [string]$channel) {
     $output = Join-Path $buildPath "$channel-user.json"
     $arguments = @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File',
         ((Join-Path (Get-Location) 'scripts/check-msix-shell-user.ps1')), '-Package', $package,
-        '-Channel', $channel, '-Output', $output)
+        '-Probe', (Join-Path $buildPath 'xdzip.exe'), '-Channel', $channel, '-Output', $output)
     $quoted = $arguments | ForEach-Object { '"' + $_ + '"' }
     $process = Start-Process -FilePath (Get-Process -Id $PID).Path -ArgumentList $quoted -Credential $credential -LoadUserProfile -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $buildPath "$channel-user.log") -RedirectStandardError (Join-Path $buildPath "$channel-user-error.log")
     try {

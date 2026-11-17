@@ -22,6 +22,42 @@ void require(bool condition, const char *message) {
     if (!condition)
         throw std::runtime_error(message);
 }
+class FixtureOptions {
+    HKEY key = nullptr;
+    std::wstring path;
+
+  public:
+    explicit FixtureOptions(const std::wstring &settings) : path(settings) {
+        DWORD disposition = 0;
+        const auto status =
+            RegCreateKeyExW(HKEY_CURRENT_USER, path.c_str(), 0, nullptr, REG_OPTION_VOLATILE,
+                            KEY_SET_VALUE, nullptr, &key, &disposition);
+        if (status != ERROR_SUCCESS || disposition != REG_CREATED_NEW_KEY) {
+            if (key)
+                RegCloseKey(key);
+            key = nullptr;
+            throw std::runtime_error("Fixture settings already exist or cannot be isolated");
+        }
+    }
+    ~FixtureOptions() {
+        if (key) {
+            RegCloseKey(key);
+            RegDeleteKeyW(HKEY_CURRENT_USER, path.c_str());
+        }
+    }
+    void enabled(DWORD value) {
+        check(HRESULT_FROM_WIN32(RegSetValueExW(key, L"Enabled", 0, REG_DWORD,
+                                                reinterpret_cast<const BYTE *>(&value),
+                                                sizeof(value))),
+              "set fixture enablement");
+    }
+    void language(const std::wstring &value) {
+        check(HRESULT_FROM_WIN32(RegSetValueExW(key, L"Language", 0, REG_SZ,
+                                                reinterpret_cast<const BYTE *>(value.c_str()),
+                                                DWORD((value.size() + 1) * sizeof(wchar_t)))),
+              "set fixture language");
+    }
+};
 fs::path executable() {
     std::wstring path(32768, L'\0');
     const auto size = GetModuleFileNameW(nullptr, path.data(), DWORD(path.size()));
@@ -80,6 +116,10 @@ void verify(const fs::path &root, const std::wstring &family, bool store) {
                 (!store || context.signatureKnown) && !context.storeSignature &&
                 context.applicationId == family + L"!App",
             "Own-package channel or self-signature policy failed");
+    require(family.rfind(L"xdzip.ShellCI.", 0) == 0 ||
+                family.rfind(L"xdzip.LocalComProbe.", 0) == 0,
+            "Only owned diagnostic identities may change fixture settings");
+    FixtureOptions options(context.settingsKey);
     CLSID classic{}, modern{};
     check(CLSIDFromString(store ? xdzip_shell::PackageClassicStoreId
                                 : xdzip_shell::PackageClassicSideloadId,
@@ -140,23 +180,46 @@ void verify(const fs::path &root, const std::wstring &family, bool store) {
     ComPtr<IShellExtInit> init;
     check(menu.As(&init));
     check(init->Initialize(nullptr, data.Get(), nullptr), "initialize classic menu");
-    const auto popup = CreatePopupMenu();
-    require(popup != nullptr, "Fixture popup creation failed");
-    const auto query = menu->QueryContextMenu(popup, 0, 1000, 2000, 0);
-    const auto count = GetMenuItemCount(popup);
-    DestroyMenu(popup);
-    require(SUCCEEDED(query) && HRESULT_CODE(query) > 0 && count == 1,
-            "Registered classic menu is empty");
+    const auto inspect = [&](bool enabled, const wchar_t *title) {
+        const auto popup = CreatePopupMenu();
+        require(popup != nullptr, "Fixture popup creation failed");
+        const auto query = menu->QueryContextMenu(popup, 0, 1000, 2000, 0);
+        const auto count = GetMenuItemCount(popup);
+        wchar_t text[256]{};
+        if (count > 0)
+            GetMenuStringW(popup, 0, text, int(std::size(text)), MF_BYPOSITION);
+        const auto child = GetSubMenu(popup, 0);
+        const auto children = child ? GetMenuItemCount(child) : 0;
+        DestroyMenu(popup);
+        require(SUCCEEDED(query) && count == (enabled ? 1 : 0) &&
+                    (enabled
+                         ? HRESULT_CODE(query) == 3 && children == 3 && text == std::wstring(title)
+                         : HRESULT_CODE(query) == 0),
+                "Classic enablement, language or command count differs");
+    };
+    options.enabled(0);
+    inspect(false, L"");
+    options.enabled(1);
+    options.language(L"en-US");
+    inspect(true, L"Open with xdzip");
+    options.language(L"zh-CN");
+    inspect(true, L"用 xdzip 打开");
     CMINVOKECOMMANDINFO invoke{};
     invoke.cbSize = sizeof(invoke);
     invoke.nShow = SW_SHOWNORMAL;
-    check(menu->InvokeCommand(&invoke), "invoke classic menu");
+    options.enabled(0);
+    require(menu->InvokeCommand(&invoke) == E_ACCESSDENIED,
+            "A retained menu still invokes after disabling");
+    options.enabled(1);
     wchar_t localData[32768]{};
     const auto environmentSize =
         GetEnvironmentVariableW(L"LOCALAPPDATA", localData, DWORD(std::size(localData)));
     require(environmentSize && environmentSize < std::size(localData), "Missing local app data");
     const auto receipt =
         fs::path(localData) / L"Packages" / family / L"LocalState" / L"shell-receipt.txt";
+    // Never let a receipt from an earlier invocation satisfy this check.
+    fs::remove(receipt);
+    check(menu->InvokeCommand(&invoke), "invoke classic menu");
     bool received = false;
     for (int attempt = 0; attempt < 100 && !received; ++attempt) {
         received = read(receipt) == "activated-package-zip\n";
@@ -166,7 +229,35 @@ void verify(const fs::path &root, const std::wstring &family, bool store) {
     require(received, "Package activation receipt missing");
     fs::remove(selected);
     // Keep the module loaded until all COM objects leave this scope.
-    std::cout << "Packaged COM registration, classic menu and package activation passed\n";
+    std::cout
+        << "Packaged COM, bilingual menu, enablement, disabled invocation and activation passed\n";
+}
+void activateVerification(const fs::path &root, const std::wstring &family,
+                          const std::wstring &channel, const fs::path &log) {
+    const auto context = xdzip_shell::readPackageMenuContext(root / L"xdzip-shell.dll");
+    require(context.registered && context.applicationId == family + L"!App" &&
+                (channel == L"store" || channel == L"sideload"),
+            "Verification activation requires its registered fixture");
+    ComPtr<IApplicationActivationManager> activation;
+    check(CoCreateInstance(CLSID_ApplicationActivationManager, nullptr, CLSCTX_INPROC_SERVER,
+                           IID_PPV_ARGS(activation.GetAddressOf())),
+          "create verification activation manager");
+    const auto arguments = L"--verify \"" + root.wstring() + L"\" " + family + L" " + channel +
+                           L" \"" + log.wstring() + L"\"";
+    DWORD processId = 0;
+    check(activation->ActivateApplication(context.applicationId.c_str(), arguments.c_str(), AO_NONE,
+                                          &processId),
+          "activate verification package");
+    // The activation manager supplies the PID. Own only this process handle;
+    // timeout or inaccessible exit status fails without killing other apps.
+    const auto process =
+        OpenProcess(SYNCHRONIZE | PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processId);
+    require(process != nullptr, "Cannot wait for activated verification");
+    const auto waited = WaitForSingleObject(process, 45000);
+    DWORD code = 1;
+    const bool exited = waited == WAIT_OBJECT_0 && GetExitCodeProcess(process, &code);
+    CloseHandle(process);
+    require(exited && code == 0, "Activated package verification failed or timed out");
 }
 int wmain(int argc, wchar_t **argv) {
     if (argc == 2 && std::wstring(argv[1]) == L"--version-json") {
@@ -195,6 +286,12 @@ int wmain(int argc, wchar_t **argv) {
             receive(argv[2]);
         else if ((argc == 5 || argc == 6) && std::wstring(argv[1]) == L"--verify")
             verify(argv[2], argv[3], std::wstring(argv[4]) == L"store");
+        else if (argc == 6 && std::wstring(argv[1]) == L"--activate-verify")
+            activateVerification(argv[2], argv[3], argv[4], argv[5]);
+        else if (argc == 3 && std::wstring(argv[1]) == L"--reject-unregistered")
+            require(!xdzip_shell::readPackageMenuContext(fs::path(argv[2]) / L"xdzip-shell.dll")
+                         .registered,
+                    "Removed or superseded package remains an accepted menu target");
         else
             result = 2;
     } catch (const ComFailure &error) {
