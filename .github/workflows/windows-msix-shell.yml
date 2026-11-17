@@ -14,11 +14,8 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          cmake -S tools/msix-shell-probe -B build/msix-shell -G 'Visual Studio 17 2022' -A x64
+          ./scripts/build-msix-shell-probe.ps1
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          cmake --build build/msix-shell --config Release --parallel 2
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          Copy-Item build/msix-shell/Release/* -Destination build/msix-shell -Force
           & build/msix-shell/menu-tests.exe build/msix-shell/xdzip-shell.dll
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Verify both package channels and activation
