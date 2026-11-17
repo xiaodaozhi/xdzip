@@ -81,7 +81,13 @@ The [design gallery](../../../design/hifi/sources/windows-store-artwork.html) is
 
 To replace the screenshots, run the native capture recipe for both languages and review the original PNGs at 100%. Pass the two complete session directories to [import-windows-store-captures.cjs](../../../scripts/import-windows-store-captures.cjs). It preflights all eight PNGs, their candidate identity, hashes and exact client/window pixel correspondence before updating the material inputs. JPEG inputs and incomplete or mismatched sessions are rejected. When updating the candidate, update the marketing baseline deliberately before importing.
 
-With Node.js and `sharp` available:
+Install Node.js and the pinned image dependency once. The scripts automatically find it in the local toolchain; no `NODE_PATH` setting is needed:
+
+```sh
+npm install --prefix build/toolchain/windows-store-tools --no-save --no-package-lock sharp@0.34.5
+```
+
+Then run:
 
 ```sh
 node scripts/import-windows-store-captures.cjs build/captures-en-US build/captures-zh-CN

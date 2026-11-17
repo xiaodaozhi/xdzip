@@ -97,7 +97,7 @@ xiaodaozhi
 
 | 字段 | URL |
 | --- | --- |
-| 网站 | https://github.com/xiaodaozhi/xdzip |
+| 网站 | https://xdzip.xiaodaozhi.com |
 | 支持 | https://github.com/xiaodaozhi/xdzip/issues |
 | 隐私政策 | https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md |
 | 项目许可 | https://github.com/xiaodaozhi/xdzip/blob/main/LICENSE |
