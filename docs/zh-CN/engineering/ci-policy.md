@@ -24,7 +24,9 @@
 
 ## 按需完整检查
 
-[MSIX 菜单集成检查](../../../.github/workflows/windows-msix-shell.yml)无需 Qt，编译生产菜单 DLL 和小型独立激活夹具；可直接运行，也可在 [MSIX 生命周期](../../../.github/workflows/windows-msix.yml)中选择 `shell_only`，在合并前检查交付分支。在一次性 Windows 11 ARM 上以 x64 仿真安装自签名的商店渠道与侧载渠道夹具，验证 COM 登记、传统菜单原生接口、包激活、现代菜单签名拒绝及默认选择保护，再移除包和临时证书。报告明确架构及夹具边界，不代表真实 Store 签名放行、Explorer 显示或 x64 原生产品验收。
+[MSIX 菜单集成检查](../../../.github/workflows/windows-msix-shell.yml)无需 Qt，编译生产菜单 DLL 和小型独立激活夹具；可直接运行，也可在 [MSIX 生命周期](../../../.github/workflows/windows-msix.yml)中选择 `shell_only`。默认使用 Windows 11 ARM 的 x64 仿真；`windows-2025` 提供原生 x64 COM 诊断，不代表 Windows 11 桌面验收。报告记录实际系统和架构。
+
+验证项包括包注册、传统菜单原生接口、包激活、现代菜单签名拒绝和默认选择。验证程序拒绝提升权限的进程；默认启动器请求当前登录会话的普通用户令牌，脚本可选的 `-Actor standard-user` 诊断使用一次性本地账户。托管令牌限制和使用其他账户凭据激活可能使检查无法完成；失败的探针不提供菜单激活通过结论，须保留未收口记录。测试证书、包注册、开发安装策略和临时账户会清理或恢复。自签名夹具不代表真实 Store 签名放行或 Explorer 显示验收。
 
 [Foundation probes](../../../.github/workflows/foundation.yml) 和 [Qt components](../../../.github/workflows/qt-components.yml) 仅通过 `workflow_dispatch` 手动运行，不随普通推送、PR 或标签自动触发。两者仍在 Windows、Linux 和 Apple Silicon macOS 运行完整矩阵。Foundation 包括 Rust workspace、Clippy、桥接探针、隔离工作进程和格式互操作；Qt 包括产品构建、组件及会话测试、原生平台检查、部署和适用的安装生命周期。Qt 按需运行保留首轮和十次完整浏览器套件；日常本地验证不重复这十轮。
 
