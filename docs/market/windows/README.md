@@ -4,7 +4,7 @@ English | [简体中文](../../zh-CN/market/windows/README.md)
 
 [Copy-ready listing text](listing.md) contains the description, ten product features, supplemental fields, seven keywords, copyright, developer information, links and image captions. Use the English page for `en-US` and the [Chinese page](../../zh-CN/market/windows/listing.md) for `zh-CN`.
 
-These materials target MSIX **1.0.27.0**, package identity `xiaodaozhi.xdzip`, from source `90916a1992188e6e7e5c6b3d91695861ee1bd2d2`. They do not advertise the later format expansion in the current development tree. The [support policy](../../engineering/support-policy.md) remains Windows 11 x64; a manifest's technical Windows 10 minimum does not extend that commitment. Store updates are managed by Microsoft Store, and this candidate does not register a modern Explorer context menu.
+The listing text targets MSIX **1.0.28.0**, application 0.2.1, build 28, with package identity `xiaodaozhi.xdzip`. The existing image assets retain their separately documented capture baseline. The [support policy](../../engineering/support-policy.md) remains Windows 11 x64; a manifest's technical Windows 10 minimum does not extend that commitment. Store updates are managed by Microsoft Store, and the Store build declares both modern and classic Explorer menus. Modern commands require the installed package to have a Microsoft Store signature.
 
 To capture updated app views, use the [automatic bilingual screenshot recipe](capture.md). It generates its own demo files and can target a newer build with an explicit executable hash. The [reusable capture module](../../engineering/windows-screenshots.md) also supports other Windows workflows.
 
@@ -14,7 +14,7 @@ To capture updated app views, use the [automatic bilingual screenshot recipe](ca
 | --- | --- |
 | Product name | `xdzip`, unchanged in both languages |
 | Description | Plain-text block in [listing.md](listing.md), below 10,000 characters |
-| What's new | Empty for the first submission, rather than pasting internal test notes |
+| What's new | Localized text in [listing.md](listing.md#whats-new-in-this-version) |
 | Product features | Ten separate entries, each below 200 characters; the portal adds bullets |
 | Short title | `xdzip` |
 | Sort title | Empty; no alternate alphabetical title is needed |
@@ -32,7 +32,7 @@ The app's existing Apache-2.0 license and third-party notices are unchanged by t
 
 To prepare replacement images, use the [automatic native PNG capture script](capture.md). One run prepares and captures all four views for either language, without manually switching views or confirming individual captures.
 
-Each language has four actual app views using owned demonstration files. Their app build matches the candidate identified above and uses the default logical window dimensions. Published PNGs are **1536 × 932** for the main window and **737 × 1103** for the creation window: one top border row is removed, old desktop colors are cleared from the corner squares, and a one-pixel gray-blue border is drawn inside the rounded edge. The border preserves image dimensions and outer transparency. Pixels outside the corner and border areas remain unchanged, with no text redrawing or resizing. The original native PNGs remain byte-identical in [the source assets](../../../design/assets/marketing/windows-store-native). The root READMEs use the bordered `01-browse` image in their matching language.
+Each language has four actual app views using owned demonstration files. They were captured from MSIX 1.0.27.0, source `90916a1992188e6e7e5c6b3d91695861ee1bd2d2`, using the default logical window dimensions. They do not show the new association page or Explorer menus. Published PNGs are **1536 × 932** for the main window and **737 × 1103** for the creation window: one top border row is removed, old desktop colors are cleared from the corner squares, and a one-pixel gray-blue border is drawn inside the rounded edge. The border preserves image dimensions and outer transparency. Pixels outside the corner and border areas remain unchanged, with no text redrawing or resizing. The original native PNGs remain byte-identical in [the source assets](../../../design/assets/marketing/windows-store-native). The root READMEs use the bordered `01-browse` image in their matching language.
 
 Use the **2560 × 1440 Store screenshots** for the desktop screenshot field. They center the cleaned app view at 1:1 on a neutral background, without marketing overlays. Combined promotional artwork places the same view in the blue brand layout with localized copy, a thin border and a soft shadow. At 1080p the UI is downsampled once to fit; at 4K it remains at native 1:1 size. Neither export upscales the UI. The lower-left platform label is omitted.
 

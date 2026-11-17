@@ -11,7 +11,7 @@ xdzip is a packaged x64 desktop archive manager using Qt Quick and Rust. Its app
 
 The application reads selected archives and writes files to a destination chosen by the user. It also starts bundled worker processes for supported archive formats and bounded content previews. Temporary files support staging, extraction and user-requested opening in the system's associated application.
 
-The application does not require an administrator account or request elevation for normal archive operations. It does not install a service or driver. This MSIX candidate does not register a Windows 11 modern File Explorer context-menu extension. Its separate in-app updater is disabled when running with MSIX package identity; Store-distributed updates are managed by Microsoft Store.
+The application does not require an administrator account or request elevation for normal archive operations. It does not install a service or driver. The Store build declares separate modern and classic File Explorer menu classes. Modern commands are enabled only when the registered package has a Microsoft Store signature; an unsigned or self-signed review copy keeps the modern entry hidden. Its separate in-app updater is disabled when running with MSIX package identity; Store-distributed updates are managed by Microsoft Store.
 
 Basic archive operations work locally and do not require an xdzip account. Archive contents, paths and passwords are not automatically uploaded to the developer. The public privacy policy is linked in the Store listing.
 ```
@@ -27,7 +27,9 @@ To review creation, choose New, add ordinary files and select ZIP. Choose a dest
 
 To review extraction, select files in an archive, choose Extract selected and select a writable destination. Progress and cancellation are available. Opening a file through the system creates a temporary local copy; changes to that copy are not automatically written back to the archive.
 
+To review system integration after Store delivery, open Settings, File associations and use the Windows default-app settings button. Right-click owned test files in File Explorer and check both the modern menu and Show more options. Menu enablement and language follow the app settings. The app does not change default applications automatically.
+
 The listing targets Windows 11 x64. Its English (US) and Simplified Chinese screenshots use owned demonstration content. The application receives Store-distributed updates through Microsoft Store.
 ```
 
-The capability is declared by [build-windows-msix.py](../../../scripts/build-windows-msix.py). These notes describe the candidate's existing desktop behavior, not a request for additional services, elevation or shell integration. Pricing, age ratings and other submission questionnaires must be completed in their own Partner Center sections.
+The capability is declared by [build-windows-msix.py](../../../scripts/build-windows-msix.py). These notes describe the candidate's existing desktop behavior, including manifest-based shell integration, without additional services or elevation. Pricing, age ratings and other submission questionnaires must be completed in their own Partner Center sections.
