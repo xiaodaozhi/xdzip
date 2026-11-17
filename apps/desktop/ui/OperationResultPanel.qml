@@ -13,8 +13,10 @@ ColumnLayout {
     readonly property var failures: entries.filter(e => e.status === "unfinished")
     readonly property int remaining: Math.max(0, Number(task.files || 0) - Number(task.committedFiles || 0) - Number(task.skippedFiles || 0))
     readonly property bool extractionSummary: !task.creating && !task.batchResults && (!task.kind || task.kind === "extract")
+    readonly property bool creationSummary: task.creating && !task.batchResults
     readonly property string savedCaption: {
         const total = Number(task.creating ? task.outputParts || 0 : task.committedFiles || 0);
+        if (creationSummary) return qsTrId("ui.2e84a56c5f19", total);
         if (extractionSummary) return qsTrId("result.processedFiles", total);
         const saved = entries.filter(e => e.status === "completed");
         if (!saved.length) return qsTrId("ui.c58cdccacf5f");
@@ -112,7 +114,7 @@ ColumnLayout {
                             objectName: "resultSavedCaption"
                             Layout.fillWidth: true; wrapMode: Text.Wrap
                             text: root.task.externalReader ? root.savedCaption + "\n" + qsTrId("ui.92ccb53e91dc") : root.savedCaption
-                            font.family: !root.extractionSummary && root.entries.some(e => e.status === "completed") ? Theme.userDataFontFamily : Theme.uiFontFamily
+                            font.family: !root.extractionSummary && !root.creationSummary && root.entries.some(e => e.status === "completed") ? Theme.userDataFontFamily : Theme.uiFontFamily
                             font.pixelSize: Math.round(Theme.operationResultNoteSize); color: Theme.textSecondary
                         }
                     }
