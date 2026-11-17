@@ -308,6 +308,8 @@ Verify `VERSION.json`, Cargo workspace, CLI, Windows version resources, macOS bu
 
 ## Native menus and tray
 
+For Windows classic commands, verify the `IExplorerCommand` root and every enumerated action with real selections, readable titles, loadable icon resources and distinct canonical identities. Enumeration retains its selection after the root releases; reset, skip and clone preserve independent positions. Retained `IContextMenu` clients keep valid root and child bitmaps. Check native Explorer placement before Open With separately from COM tests. In the same Explorer that holds the old DLL, upgrade must expose the new command through its distinct class; rollback must hide a retained newer command when the legacy handler returns. Settings disable and re-enable remove the matching legacy handler, and uninstall after historical rollback removes the owned command and class without changing default associations.
+
 For settings placement, place the pointer at the bottom-right of each available display and open/reopen real ownerless Settings and About. In both languages, light/dark themes and 100%/125%/150% fonts, the entire native frame must fit and be centered in the actual QScreen::availableGeometry without restoring an existing main window. Record native geometry separately from actual tray-menu interaction.
 
 Verify Windows tray white fill and dark outline on light, dark and colored backgrounds at every supplied bitmap size, across app theme changes, refresh and tray disable/re-enable. Legibility does not depend on registry theme reads. Pixel checks reject the former black-only icon on dark backgrounds; record actual notification-area observation separately.

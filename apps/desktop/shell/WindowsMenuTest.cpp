@@ -1,5 +1,6 @@
 #include "NativeRequest.h"
 #include <iostream>
+#include <set>
 #include <shlobj.h>
 
 // Redirect this process to an empty, volatile key so the fixture does not
@@ -30,9 +31,26 @@ class MenuRegistryFixture {
         overridden = RegOverridePredefKey(HKEY_CURRENT_USER, key) == ERROR_SUCCESS;
         return overridden;
     }
+    bool legacyHandler(bool enabled) {
+        constexpr auto registryPath =
+            L"Software\\Classes\\AllFilesystemObjects\\shellex\\ContextMenuHandlers\\xdzip";
+        if (!enabled)
+            return RegDeleteKeyW(HKEY_CURRENT_USER, registryPath) == ERROR_SUCCESS;
+        HKEY handler = nullptr;
+        if (RegCreateKeyExW(HKEY_CURRENT_USER, registryPath, 0, nullptr, REG_OPTION_VOLATILE,
+                            KEY_SET_VALUE, nullptr, &handler, nullptr) != ERROR_SUCCESS)
+            return false;
+        constexpr wchar_t id[] = L"{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}";
+        const auto result = RegSetValueExW(handler, nullptr, 0, REG_SZ,
+                                           reinterpret_cast<const BYTE *>(id), sizeof(id));
+        RegCloseKey(handler);
+        return result == ERROR_SUCCESS;
+    }
     ~MenuRegistryFixture() {
         if (overridden)
             RegOverridePredefKey(HKEY_CURRENT_USER, nullptr);
+        if (key && created)
+            RegDeleteTreeW(key, nullptr);
         if (key)
             RegCloseKey(key);
         if (created)
@@ -62,6 +80,11 @@ int wmain(int argc, wchar_t **argv) {
     IClassFactory *factory = nullptr;
     if (!getClass || FAILED(getClass(id, IID_PPV_ARGS(&factory))))
         return 1;
+    const CLSID commandId{
+        0x54b70170, 0x1072, 0x49b5, {0x9b, 0xd2, 0x6d, 0xfb, 0x5e, 0xcb, 0xf1, 0xb1}};
+    IClassFactory *commandFactory = nullptr;
+    if (FAILED(getClass(commandId, IID_PPV_ARGS(&commandFactory))))
+        return 1;
     const auto marker =
         xdzip_shell::requestFile("choose", {xdzip_shell::fs::temp_directory_path()});
     if (marker.empty())
@@ -78,6 +101,23 @@ int wmain(int argc, wchar_t **argv) {
         return 1;
     }
     int checks = 0;
+    const auto validIcon = [](IExplorerCommand *command) {
+        PWSTR location = nullptr;
+        if (FAILED(command->GetIcon(nullptr, &location)) || !location)
+            return false;
+        std::wstring value(location);
+        CoTaskMemFree(location);
+        const auto comma = value.rfind(L',');
+        if (comma == std::wstring::npos)
+            return false;
+        HICON icon = nullptr;
+        const auto count = ExtractIconExW(value.substr(0, comma).c_str(),
+                                          std::stoi(value.substr(comma + 1)), nullptr, &icon, 1);
+        const bool ok = count == 1 && icon;
+        if (icon)
+            DestroyIcon(icon);
+        return ok;
+    };
     const auto check = [&](const std::vector<xdzip_shell::fs::path> &paths, UINT expected,
                            bool withOpenWith = false) {
         std::vector<PIDLIST_ABSOLUTE> ids;
@@ -109,12 +149,14 @@ int wmain(int argc, wchar_t **argv) {
             rootItem.cbSize = sizeof(rootItem);
             rootItem.fMask = MIIM_SUBMENU | MIIM_BITMAP;
             ok = ok && GetMenuItemInfoW(popup, 0, TRUE, &rootItem) && rootItem.hSubMenu &&
-                 rootItem.hbmpItem && GetMenuItemCount(rootItem.hSubMenu) == int(expected);
+                 rootItem.hbmpItem && GetObjectType(rootItem.hbmpItem) == OBJ_BITMAP &&
+                 GetMenuItemCount(rootItem.hSubMenu) == int(expected);
             for (UINT i = 0; ok && i < expected; ++i) {
                 MENUITEMINFOW child{};
                 child.cbSize = sizeof(child);
                 child.fMask = MIIM_BITMAP;
-                ok = GetMenuItemInfoW(rootItem.hSubMenu, i, TRUE, &child) && child.hbmpItem;
+                ok = GetMenuItemInfoW(rootItem.hSubMenu, i, TRUE, &child) && child.hbmpItem &&
+                     GetObjectType(child.hbmpItem) == OBJ_BITMAP;
             }
             if (withOpenWith)
                 ok = ok && GetMenuItemID(popup, 1) == 99;
@@ -124,6 +166,59 @@ int wmain(int argc, wchar_t **argv) {
                                                   reinterpret_cast<LPSTR>(verb), 64)) &&
                  std::wstring(verb) == L"xdzip.zip";
         }
+        IExplorerCommand *command = nullptr;
+        IEnumExplorerCommand *commands = nullptr;
+        EXPCMDSTATE state = ECS_HIDDEN;
+        EXPCMDFLAGS flags = ECF_DEFAULT;
+        PWSTR title = nullptr;
+        if (ok)
+            ok = SUCCEEDED(commandFactory->CreateInstance(nullptr, IID_PPV_ARGS(&command))) &&
+                 SUCCEEDED(command->GetState(selection, FALSE, &state)) && state == ECS_ENABLED &&
+                 SUCCEEDED(command->GetTitle(nullptr, &title)) && title && *title &&
+                 SUCCEEDED(command->GetFlags(&flags)) && flags == ECF_HASSUBCOMMANDS &&
+                 validIcon(command) && SUCCEEDED(command->EnumSubCommands(&commands));
+        if (ok)
+            ok = registry.legacyHandler(true) &&
+                 SUCCEEDED(command->GetState(selection, FALSE, &state)) && state == ECS_HIDDEN &&
+                 registry.legacyHandler(false) &&
+                 SUCCEEDED(command->GetState(selection, FALSE, &state)) && state == ECS_ENABLED;
+        CoTaskMemFree(title);
+        // Enumerated commands keep their selection alive after the root releases.
+        if (command)
+            command->Release();
+        std::set<DWORD> names;
+        for (UINT i = 0; ok && i < expected; ++i) {
+            IExplorerCommand *child = nullptr;
+            ULONG fetched = 0;
+            title = nullptr;
+            GUID name{};
+            ok = commands->Next(1, &child, &fetched) == S_OK && fetched == 1;
+            if (ok)
+                ok = SUCCEEDED(child->GetTitle(nullptr, &title)) && title && *title &&
+                     SUCCEEDED(child->GetCanonicalName(&name)) && names.insert(name.Data1).second &&
+                     SUCCEEDED(child->GetFlags(&flags)) && flags == ECF_DEFAULT && validIcon(child);
+            CoTaskMemFree(title);
+            if (child)
+                child->Release();
+        }
+        if (ok) {
+            IExplorerCommand *child = nullptr;
+            ULONG fetched = 42;
+            IEnumExplorerCommand *copy = nullptr;
+            ok = commands->Next(1, &child, &fetched) == S_FALSE && fetched == 0 &&
+                 SUCCEEDED(commands->Reset()) && commands->Skip(1) == S_OK &&
+                 SUCCEEDED(commands->Clone(&copy)) && copy->Skip(expected - 1) == S_OK &&
+                 copy->Next(1, &child, &fetched) == S_FALSE && fetched == 0 &&
+                 commands->Next(1, &child, &fetched) == S_OK && fetched == 1;
+            if (child)
+                child->Release();
+            if (copy)
+                copy->Release();
+        }
+        if (commands)
+            commands->Release();
+        if (!ok)
+            std::cerr << "Windows COM menu case " << (checks + 1) << " failed\n";
         DestroyMenu(popup);
         if (init)
             init->Release();
@@ -144,6 +239,7 @@ int wmain(int argc, wchar_t **argv) {
         xdzip_shell::fs::remove(path);
     xdzip_shell::fs::remove(root);
     factory->Release();
+    commandFactory->Release();
     FreeLibrary(library);
     CoUninitialize();
     if (passed)

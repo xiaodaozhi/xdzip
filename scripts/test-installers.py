@@ -240,6 +240,11 @@ class InstallerTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             base=Path(temp);root,audit=self.payload(base,'windows')
             text,r=windows.render(root,audit,base/'setup.exe',base/'Chinese.isl')
+            self.assertIn('AllFilesystemObjects\\shell\\xdzip"; ValueType: none; Flags: uninsdeletekey; Check: OwnShellCommandKey',text)
+            self.assertIn('function OwnShellCommandKey(): Boolean;',text)
+            self.assertIn("'ExplorerCommandHandler', Handler)",text)
+            self.assertIn('Flags: uninsdeletekey; Check: OwnShellCommandClassKey',text)
+            self.assertIn("CompareText(ExtractFileDir(LibraryPath), ExpandConstant('{app}\\shell')) = 0",text)
             self.assertIn('PrivilegesRequired=lowest',text)
             self.assertIn('AppMutex=Local\\xdzip.desktop.running',text)
             self.assertIn('LicenseFile='+str(root.resolve())+'\\share\\notices\\Microsoft-VC-runtime\\license.rtf',text)
