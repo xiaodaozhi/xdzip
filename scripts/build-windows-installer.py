@@ -91,6 +91,9 @@ def render(payload,audit,output,chinese,qa=None,legacy=False):
         # The helper can be discovered by the Open With UI; keep its displayed
         # application identity and direct invocation consistent with xdzip.
         associations += [
+            # Keep an uninstall-log ownership record across historical rollback,
+            # whose old executable cannot remove the newer command registration.
+            'Root: HKCU; Subkey: "Software\\Classes\\AllFilesystemObjects\\shell\\xdzip"; ValueType: none; Flags: uninsdeletekey; Check: OwnShellCommandKey',
             'Root: HKCU; Subkey: "Software\\Classes\\xdzip.Archive"; ValueType: string; ValueName: "NoOpenWith"; AfterInstall: PreventSilentDefault(\'xdzip.Archive\')',
             'Root: HKCU; Subkey: "Software\\Classes\\Applications\\xdzip.exe"; ValueType: string; ValueName: "NoOpenWith"',
             'Root: HKCU; Subkey: "Software\\Classes\\Applications\\xdzip-association.exe"; ValueType: string; ValueName: "FriendlyAppName"; ValueData: "xdzip"; Flags: uninsdeletekey',

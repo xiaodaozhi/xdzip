@@ -129,6 +129,16 @@ begin
     Log('CLI PATH registration skipped because another xdzip command is already available.');
 end;
 
+function OwnShellCommandKey(): Boolean;
+var Handler: String;
+begin
+  { Never claim an existing command belonging to another handler. }
+  Result := not RegKeyExists(HKCU, 'Software\Classes\AllFilesystemObjects\shell\xdzip') or
+    (RegQueryStringValue(HKCU, 'Software\Classes\AllFilesystemObjects\shell\xdzip',
+      'ExplorerCommandHandler', Handler) and
+     (CompareText(Handler, '{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}') = 0));
+end;
+
 function CliUserPath(Param: String): String;
 var Existing, Entry: String;
 begin

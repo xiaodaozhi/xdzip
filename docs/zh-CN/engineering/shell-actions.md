@@ -2,7 +2,7 @@
 
 [English](../../engineering/shell-actions.md) | 简体中文
 
-系统入口将选择和动作交给同一登录会话的桌面进程。Windows 使用经典 `IContextMenu`，位于 Windows 11 的“显示更多选项”。Ubuntu 24.04 Files 使用 Nautilus 4.0 菜单扩展。macOS 使用 Finder Sync 的“用 xdzip 打开”动态子菜单，保留“服务 → 用 xdzip 打开”及独立操作面板作为回退。
+系统入口将选择和动作交给同一登录会话的桌面进程。Windows 使用 `IExplorerCommand` 提供经典菜单，位于 Windows 11 的“显示更多选项”；DLL 保留 `IContextMenu`，兼容已有调用方。Ubuntu 24.04 Files 使用 Nautilus 4.0 菜单扩展。macOS 使用 Finder Sync 的“用 xdzip 打开”动态子菜单，保留“服务 → 用 xdzip 打开”及独立操作面板作为回退。
 
 各平台实际验证情况与剩余项见 [#270](https://github.com/xiaodaozhi/xdzip/issues/270)。源码能力不追溯加入既有发布附件。
 
@@ -24,7 +24,7 @@ Finder 不保留菜单项的 `representedObject`，因此扩展通过单调递�
 
 ## Windows 应用包边界
 
-实验性 MSIX 构建不登记右键菜单，既不把经典 `IContextMenu` 伪装成现代菜单，也不让侧载包启用现代菜单。Windows 11 现代菜单需要包身份、清单中的 COM 与文件管理器扩展，以及新的 `IExplorerCommand` 实现；现有实现不能直接复用为现代入口。未来若实现，除要求扩展所在包的系统签名类型为 Store，还须有可靠的安装来源判断以排除侧载；查询失败及 Developer、Enterprise、None 均不启用，并分别测试 Explorer 实际显示、设置开关和现有请求协议。Store 签名不单独证明安装途径，商店签名包也可能被复制侧载；无法可靠区分时不能启用现代菜单。Windows 10 没有 Windows 11 的现代菜单。具体实现与真实商店包验证不属于当前评估结论。
+实验性 MSIX 构建不登记右键菜单，既不把经典扩展伪装成现代菜单，也不让侧载包启用现代菜单。Windows 11 现代菜单需要包身份、清单中的 COM 与文件管理器扩展，以及专用的现代菜单登记。仅有经典命令实现不会启用现代入口。未来若实现，除要求扩展所在包的系统签名类型为 Store，还须有可靠的安装来源判断以排除侧载；查询失败及 Developer、Enterprise、None 均不启用，并分别测试 Explorer 实际显示、设置开关和现有请求协议。Store 签名不单独证明安装途径，商店签名包也可能被复制侧载；无法可靠区分时不能启用现代菜单。Windows 10 没有 Windows 11 的现代菜单。具体实现与真实商店包验证不属于当前评估结论。
 
 候选来源接口为 [GetStagedPackageOrigin](https://learn.microsoft.com/en-us/windows/win32/api/appmodel/nf-appmodel-getstagedpackageorigin) 的 `PackageOrigin_Store`。它报告暂存包来源，而不是本文已验证的逐用户安装记录；同包多用户、Store 签名包复制侧载和升级等情形必须实测后才能决定是否足以满足侧载禁用要求。Explorer 内的扩展还须识别自己的包，不能把 Explorer 进程当作 xdzip 包查询。查询失败或结果不确定时隐藏入口。
 
@@ -61,7 +61,7 @@ python scripts/msix-origin-probe.py --name xdzip.Example --scenario store-instal
 
 macOS 单实例身份使用当前用户与 Security 框架的实际登录会话 ID，查询失败拒绝选举，不依赖 helper 可能缺失的环境变量。普通启动、Finder relay 和服务入口因此进入同一登录会话的实例，见 [SessionGetInfo](https://developer.apple.com/documentation/security/sessions)。
 
-右键创建与解压沿用 `TaskWindow` 的进度和结果，不切换独立的简化结果窗。批次使用同一结果布局呈现每项状态及实际错误，提交前失败没有任务回执时仅创建结果视图，不虚构任务。右键操作窗口按当前显示器可用区域居中，提示仍关联实际调用窗口。Windows 经典菜单优先放在可识别的“打开方式”之前，无法识别时保留系统指定位置；入口及操作使用应用、格式与系统文件夹图标。
+右键创建与解压沿用 `TaskWindow` 的进度和结果，不切换独立的简化结果窗。批次使用同一结果布局呈现每项状态及实际错误，提交前失败没有任务回执时仅创建结果视图，不虚构任务。右键操作窗口按当前显示器可用区域居中，提示仍关联实际调用窗口。Windows 经典入口使用系统支持的 `Position=Top` 置顶登记，确保在“打开方式”之前显示，不依赖 Explorer 添加“打开方式”与动态菜单查询的先后顺序。入口及枚举动作使用应用、格式与系统文件夹图标，原生尺寸由 Windows 控制。
 
 
 ## 批次、完成与退出
@@ -80,6 +80,6 @@ macOS 单实例身份使用当前用户与 Security 框架的实际登录会话 
 
 交接前核对桌面程序支持协议 1，防止回退后仍加载的扩展把请求文件交给旧程序。Windows 读取 GUI 可执行文件的版本资源 `XdzipShellProtocol`，并核对自有 `Applications/xdzip.exe` 登记命令指向同一个实际文件；关联启动器不声明协议能力。回退到旧的分版本布局后，即使新版根目录程序被保留，也不再作为右键目标，不读取或改变用户默认文件关联。macOS helper 每次重新读取目标 Info.plist 的产品身份、协议和单个可执行文件名，不使用 NSBundle 的缓存决定回退状态；Ubuntu 安装包拥有 `/usr/share/xdzip/shell-protocol`，回退到旧包及卸载均移除标记。缺失、未知、不兼容或已经不属于当前登记入口的目标拒绝启动。能力标记仅管理交接兼容性，不替代请求和 Rust 内容、目标验证。
 
-Windows 的自有 CLSID 与菜单处理器写入 HKCU。运行目录包含按内容摘要命名的扩展 DLL 与校验清单，避免升级覆盖 Explorer 已加载的同名 DLL。清理旧文件仍按安装器所有权与占用策略执行，不强制结束 Explorer。macOS 安装应用首次正常启动时将自有服务安装到用户 Library/Services，服务 helper 只收集选择并交接；关闭集成只移除核对过的自有文件，额外内容、链接或所有权不符时保留并报错。服务显示和启用状态仍由系统控制。
+Windows 的自有 CLSID 与经典命令写入 HKCU。启用或关闭集成时，仅移除匹配的旧菜单处理器。安装器为命令键保留卸载所有权记录，覆盖历史回退后的卸载。运行目录包含按内容摘要命名的扩展 DLL 与校验清单，避免升级覆盖 Explorer 已加载的同名 DLL。清理旧文件仍按安装器所有权与占用策略执行，不强制结束 Explorer。macOS 安装应用首次正常启动时将自有服务安装到用户 Library/Services，服务 helper 只收集选择并交接；关闭集成只移除核对过的自有文件，额外内容、链接或所有权不符时保留并报错。服务显示和启用状态仍由系统控制。
 
 Ubuntu 的原生扩展随安装包登记到 Nautilus 4.0 扩展目录，读取同一用户设置。运行中的 Files 可能继续持有旧模块，重开 Files 后更新，不自动结束文件管理器。独立运行目录不自动写入系统扩展目录，需显式安装对应集成组件。

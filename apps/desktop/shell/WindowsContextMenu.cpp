@@ -2,6 +2,7 @@
 #include <array>
 #include <atomic>
 #include <cwctype>
+#include <limits>
 #include <new>
 #include <shlobj.h>
 
@@ -72,11 +73,39 @@ bool english() {
                         nullptr, language, &bytes) == ERROR_SUCCESS &&
            std::wstring(language) == L"en-US";
 }
-class Menu final : public IShellExtInit, public IContextMenu {
+class CommandEnumerator;
+class Menu final : public IShellExtInit, public IContextMenu, public IExplorerCommand {
     std::atomic<ULONG> refs{1};
     std::vector<xdzip_shell::fs::path> paths;
     std::vector<xdzip_shell::MenuEntry> entries;
     bool archiveCandidates = false;
+    static constexpr size_t RootCommand = std::numeric_limits<size_t>::max();
+    size_t commandIndex = RootCommand;
+    HRESULT select(IShellItemArray *selection) {
+        if (!selection)
+            return paths.empty() ? E_INVALIDARG : S_OK;
+        IDataObject *data = nullptr;
+        auto result = selection->BindToHandler(nullptr, BHID_DataObject, IID_PPV_ARGS(&data));
+        if (FAILED(result))
+            return result;
+        result = Initialize(nullptr, data, nullptr);
+        data->Release();
+        if (SUCCEEDED(result))
+            entries = xdzip_shell::menu(paths, english(), archiveCandidates);
+        return result;
+    }
+    static HRESULT copyText(const std::wstring &text, PWSTR *value) {
+        if (!value)
+            return E_POINTER;
+        // Explorer frees successful string results with CoTaskMemFree. Failure
+        // leaves no borrowed storage crossing the COM boundary.
+        *value = static_cast<PWSTR>(CoTaskMemAlloc((text.size() + 1) * sizeof(wchar_t)));
+        if (!*value)
+            return E_OUTOFMEMORY;
+        std::copy(text.c_str(), text.c_str() + text.size() + 1, *value);
+        return S_OK;
+    }
+    friend class CommandEnumerator;
     // A menu instance owns its bitmaps until Explorer releases the COM object.
     std::array<HBITMAP, 4> icons{};
     void prepareIcons() {
@@ -108,6 +137,11 @@ class Menu final : public IShellExtInit, public IContextMenu {
     Menu() {
         ++objects;
     }
+    Menu(const Menu &source, size_t index)
+        : paths(source.paths), entries(source.entries), archiveCandidates(source.archiveCandidates),
+          commandIndex(index) {
+        ++objects;
+    }
     ~Menu() {
         for (const auto bitmap : icons)
             if (bitmap)
@@ -122,6 +156,8 @@ class Menu final : public IShellExtInit, public IContextMenu {
             *value = static_cast<IShellExtInit *>(this);
         else if (id == IID_IContextMenu)
             *value = static_cast<IContextMenu *>(this);
+        else if (id == IID_IExplorerCommand)
+            *value = static_cast<IExplorerCommand *>(this);
         if (!*value)
             return E_NOINTERFACE;
         AddRef();
@@ -212,7 +248,8 @@ class Menu final : public IShellExtInit, public IContextMenu {
             }
             MENUITEMINFOW item{};
             item.cbSize = sizeof(item);
-            item.fMask = MIIM_STRING | MIIM_SUBMENU | (icons[0] ? MIIM_BITMAP : 0);
+            item.fMask = MIIM_ID | MIIM_STRING | MIIM_SUBMENU | (icons[0] ? MIIM_BITMAP : 0);
+            item.wID = first;
             item.hbmpItem = icons[0];
             item.hSubMenu = submenu;
             auto title = wide(xdzip_shell::text(english(), "shell.title"));
@@ -280,7 +317,220 @@ class Menu final : public IShellExtInit, public IContextMenu {
             return E_NOTIMPL;
         return S_OK;
     }
+    HRESULT STDMETHODCALLTYPE GetTitle(IShellItemArray *selection, PWSTR *title) override {
+        if (!title)
+            return E_POINTER;
+        *title = nullptr;
+        try {
+            const auto result = select(selection);
+            if (FAILED(result))
+                return result;
+            if (commandIndex != RootCommand && commandIndex >= entries.size())
+                return E_INVALIDARG;
+            return copyText(wide(commandIndex == RootCommand
+                                     ? xdzip_shell::text(english(), "shell.title")
+                                     : entries[commandIndex].label),
+                            title);
+        } catch (...) {
+            return E_FAIL;
+        }
+    }
+    HRESULT STDMETHODCALLTYPE GetIcon(IShellItemArray *, PWSTR *icon) override {
+        if (!icon)
+            return E_POINTER;
+        *icon = nullptr;
+        try {
+            int resource = 101;
+            if (commandIndex != RootCommand) {
+                if (commandIndex >= entries.size())
+                    return E_INVALIDARG;
+                const auto &action = entries[commandIndex].action;
+                if (action.rfind("extract-", 0) == 0) {
+                    SHSTOCKICONINFO stock{};
+                    stock.cbSize = sizeof(stock);
+                    const auto result = SHGetStockIconInfo(SIID_FOLDER, SHGSI_ICONLOCATION, &stock);
+                    if (FAILED(result))
+                        return result;
+                    return copyText(
+                        std::wstring(stock.szPath) + L"," + std::to_wstring(stock.iIcon), icon);
+                }
+                resource = action == "7z" ? 103 : 102;
+            }
+            std::wstring path(32768, L'\0');
+            const auto size = GetModuleFileNameW(module, path.data(), DWORD(path.size()));
+            if (!size || size >= path.size())
+                return E_FAIL;
+            path.resize(size);
+            return copyText(path + L",-" + std::to_wstring(resource), icon);
+        } catch (...) {
+            return E_FAIL;
+        }
+    }
+    HRESULT STDMETHODCALLTYPE GetToolTip(IShellItemArray *, PWSTR *tip) override {
+        if (!tip)
+            return E_POINTER;
+        *tip = nullptr;
+        return E_NOTIMPL;
+    }
+    HRESULT STDMETHODCALLTYPE GetCanonicalName(GUID *name) override {
+        if (!name)
+            return E_POINTER;
+        *name = ClassId;
+        if (commandIndex != RootCommand) {
+            if (commandIndex >= entries.size())
+                return E_INVALIDARG;
+            static const std::array<const char *, 8> actions{"zip",
+                                                             "7z",
+                                                             "create",
+                                                             "separate-zip",
+                                                             "extract-here",
+                                                             "extract-smart",
+                                                             "extract-separate",
+                                                             "extract-to"};
+            const auto found =
+                std::find(actions.begin(), actions.end(), entries[commandIndex].action);
+            if (found == actions.end())
+                return E_INVALIDARG;
+            name->Data1 ^= DWORD(found - actions.begin() + 1);
+        }
+        return S_OK;
+    }
+    HRESULT STDMETHODCALLTYPE GetState(IShellItemArray *selection, BOOL,
+                                       EXPCMDSTATE *state) override {
+        if (!state)
+            return E_POINTER;
+        *state = ECS_HIDDEN;
+        try {
+            DWORD enabled = 1, size = sizeof(enabled);
+            RegGetValueW(HKEY_CURRENT_USER, L"Software\\xdzip\\Shell", L"Enabled", RRF_RT_REG_DWORD,
+                         nullptr, &enabled, &size);
+            if (enabled && SUCCEEDED(select(selection)) && !entries.empty() &&
+                (commandIndex == RootCommand || commandIndex < entries.size()))
+                *state = ECS_ENABLED;
+            return S_OK;
+        } catch (...) {
+            return E_FAIL;
+        }
+    }
+    HRESULT STDMETHODCALLTYPE Invoke(IShellItemArray *selection, IBindCtx *) override {
+        try {
+            if (commandIndex == RootCommand)
+                return E_NOTIMPL;
+            const auto result = select(selection);
+            if (FAILED(result) || commandIndex >= entries.size())
+                return E_INVALIDARG;
+            CMINVOKECOMMANDINFO info{};
+            info.cbSize = sizeof(info);
+            info.lpVerb = MAKEINTRESOURCEA(commandIndex);
+            return InvokeCommand(&info);
+        } catch (...) {
+            return E_FAIL;
+        }
+    }
+    HRESULT STDMETHODCALLTYPE GetFlags(EXPCMDFLAGS *flags) override {
+        if (!flags)
+            return E_POINTER;
+        *flags = commandIndex == RootCommand ? ECF_HASSUBCOMMANDS : ECF_DEFAULT;
+        return S_OK;
+    }
+    HRESULT STDMETHODCALLTYPE EnumSubCommands(IEnumExplorerCommand **commands) override;
 };
+class CommandEnumerator final : public IEnumExplorerCommand {
+    std::atomic<ULONG> refs{1};
+    std::vector<Menu *> commands;
+    size_t position = 0;
+
+  public:
+    explicit CommandEnumerator(const Menu &source) {
+        ++objects;
+        try {
+            commands.reserve(source.entries.size());
+            for (size_t i = 0; i < source.entries.size(); ++i)
+                commands.push_back(new Menu(source, i));
+        } catch (...) {
+            for (auto *command : commands)
+                command->Release();
+            --objects;
+            throw;
+        }
+    }
+    CommandEnumerator(const CommandEnumerator &source)
+        : commands(source.commands), position(source.position) {
+        ++objects;
+        for (auto *command : commands)
+            command->AddRef();
+    }
+    ~CommandEnumerator() {
+        for (auto *command : commands)
+            command->Release();
+        --objects;
+    }
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, void **value) override {
+        if (!value)
+            return E_POINTER;
+        *value = nullptr;
+        if (id != IID_IUnknown && id != IID_IEnumExplorerCommand)
+            return E_NOINTERFACE;
+        *value = static_cast<IEnumExplorerCommand *>(this);
+        AddRef();
+        return S_OK;
+    }
+    ULONG STDMETHODCALLTYPE AddRef() override {
+        return ++refs;
+    }
+    ULONG STDMETHODCALLTYPE Release() override {
+        const auto count = --refs;
+        if (!count)
+            delete this;
+        return count;
+    }
+    HRESULT STDMETHODCALLTYPE Next(ULONG count, IExplorerCommand **values,
+                                   ULONG *fetched) override {
+        if (!values || (count != 1 && !fetched))
+            return E_POINTER;
+        ULONG read = 0;
+        for (; read < count && position < commands.size(); ++read, ++position) {
+            values[read] = commands[position];
+            values[read]->AddRef();
+        }
+        if (fetched)
+            *fetched = read;
+        return read == count ? S_OK : S_FALSE;
+    }
+    HRESULT STDMETHODCALLTYPE Skip(ULONG count) override {
+        const auto remaining = commands.size() - position;
+        position += std::min(size_t(count), remaining);
+        return count <= remaining ? S_OK : S_FALSE;
+    }
+    HRESULT STDMETHODCALLTYPE Reset() override {
+        position = 0;
+        return S_OK;
+    }
+    HRESULT STDMETHODCALLTYPE Clone(IEnumExplorerCommand **copy) override {
+        if (!copy)
+            return E_POINTER;
+        *copy = nullptr;
+        try {
+            *copy = new CommandEnumerator(*this);
+            return S_OK;
+        } catch (...) {
+            return E_OUTOFMEMORY;
+        }
+    }
+};
+HRESULT Menu::EnumSubCommands(IEnumExplorerCommand **commands) {
+    if (!commands)
+        return E_POINTER;
+    *commands = nullptr;
+    if (commandIndex != RootCommand)
+        return E_NOTIMPL;
+    try {
+        *commands = new CommandEnumerator(*this);
+        return S_OK;
+    } catch (...) {
+        return E_OUTOFMEMORY;
+    }
+}
 class Factory final : public IClassFactory {
     std::atomic<ULONG> refs{1};
 

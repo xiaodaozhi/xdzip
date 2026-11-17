@@ -202,14 +202,18 @@ function Test-FormatDispatch($Label, $Which, $Revision) {
 }
 function Test-ShellIntegration {
     $classKey = "$classes\CLSID\{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}\InprocServer32"
-    $menuKey = "$classes\AllFilesystemObjects\shellex\ContextMenuHandlers\xdzip"
+    $menuKey = "$classes\AllFilesystemObjects\shell\xdzip"
+    $legacyMenuKey = "$classes\AllFilesystemObjects\shellex\ContextMenuHandlers\xdzip"
     $manifest = Get-Content (Join-Path $testRoot 'shell/integration.json') -Raw | ConvertFrom-Json
     $library = [IO.Path]::GetFullPath((Join-Path $testRoot ('shell/' + $manifest.file)))
     $facts = [ordered]@{
         class_exists = (Test-Path $classKey)
         menu_exists = (Test-Path $menuKey)
         class_matches = (Test-Path $classKey) -and (Get-Item $classKey).GetValue('') -eq $library
-        menu_matches = (Test-Path $menuKey) -and (Get-Item $menuKey).GetValue('') -eq '{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}'
+        menu_matches = (Test-Path $menuKey) -and (Get-Item $menuKey).GetValue('ExplorerCommandHandler') -eq '{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}'
+        menu_position = (Test-Path $menuKey) -and (Get-Item $menuKey).GetValue('Position') -eq 'Top'
+        menu_multi_select = (Test-Path $menuKey) -and (Get-Item $menuKey).GetValue('MultiSelectModel') -eq 'Player'
+        legacy_menu_removed = !(Test-Path $legacyMenuKey)
         dll_hash_matches = (Get-FileHash $library -Algorithm SHA256).Hash.ToLowerInvariant() -eq $manifest.sha256
     }
     if ($facts.Values -contains $false) {
@@ -223,8 +227,10 @@ function Test-ShellIntegration {
     try {
         $ownedClass.SetValue('', (Join-Path (Split-Path $library) 'xdzip-shell-0000000000000000.dll'), [Microsoft.Win32.RegistryValueKind]::String)
     } finally { $ownedClass.Close() }
+    New-Item -Path $legacyMenuKey -Force | Out-Null
+    Set-Item -Path $legacyMenuKey -Value '{731D9A38-549E-4CDE-B35B-6EB3A2C88B71}'
     $removed = Start-Process -FilePath $exe -ArgumentList '--uninstall-shell-integration' -Wait -PassThru
-    if ($removed.ExitCode -ne 0 -or (Test-Path $menuKey) -or (Test-Path $classKey)) { throw 'Owned shell removal failed' }
+    if ($removed.ExitCode -ne 0 -or (Test-Path $menuKey) -or (Test-Path $legacyMenuKey) -or (Test-Path $classKey)) { throw 'Owned shell removal failed' }
     $restored = Start-Process -FilePath $exe -ArgumentList '--sync-shell-integration' -Wait -PassThru
     if ($restored.ExitCode -ne 0 -or !(Test-Path $menuKey)) { throw 'Owned shell registration failed' }
     Assert-Default
@@ -495,6 +501,7 @@ try {
     Invoke-Installer (Join-Path $Packages 'product.exe') 'production-package'; Test-AssociatedOpen 'production-package'
     Invoke-Installer (Join-Path $testRoot 'unins000.exe') 'uninstall'
     if (Test-Path "$classes\AllFilesystemObjects\shellex\ContextMenuHandlers\xdzip") { throw 'Owned shell menu remains after uninstall' }
+    if (Test-Path "$classes\AllFilesystemObjects\shell\xdzip") { throw 'Owned shell command remains after uninstall or historical rollback' }
     for ($i=0; $i -lt 200 -and (Test-Path "$classes\xdzip.Archive"); $i++) { Start-Sleep -Milliseconds 50 }
     if (Test-Path "$classes\xdzip.Archive") { throw 'Owned ProgID remains' }
     if (Test-Path "$classes\Applications\xdzip-association.exe") { throw 'Owned association launcher registration remains' }
