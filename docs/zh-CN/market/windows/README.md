@@ -81,7 +81,13 @@
 
 替换截图前，分别运行两种语言的原生截图流程，并按 100% 比例审阅 PNG。将两个完整捕获目录传给 [import-windows-store-captures.cjs](../../../../scripts/import-windows-store-captures.cjs)。导入器先核对全部八张 PNG 的候选身份、摘要及客户区与窗框像素的精确对应，再更新材料输入。JPEG、不完整或身份不符的回执会被拒绝。更新候选时，先明确修改营销规格中的基线。
 
-环境中具备 Node.js 和 `sharp` 后执行：
+安装 Node.js 后，首次使用时安装固定版本的图片依赖。脚本会自动从本地工具链查找，无需设置 `NODE_PATH`：
+
+```sh
+npm install --prefix build/toolchain/windows-store-tools --no-save --no-package-lock sharp@0.34.5
+```
+
+然后执行：
 
 ```sh
 node scripts/import-windows-store-captures.cjs build/captures-en-US build/captures-zh-CN

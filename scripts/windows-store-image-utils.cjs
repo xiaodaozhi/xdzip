@@ -1,4 +1,4 @@
-const sharp = require('sharp');
+const sharp = require('./windows-store-sharp.cjs');
 const crypto = require('node:crypto');
 const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 

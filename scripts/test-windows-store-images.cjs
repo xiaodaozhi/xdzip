@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* Reproduce a captured top border and desktop colors behind rounded corners. */
 const assert = require('node:assert/strict');
-const sharp = require('sharp');
+const sharp = require('./windows-store-sharp.cjs');
 const {makeCutout} = require('./windows-store-image-utils.cjs');
 
 async function main() {
