@@ -23,7 +23,7 @@ No xdzip sign-in, subscription, test credentials or external archive program is 
 
 To review browsing and preview, open a ZIP containing ordinary text and PNG files. Select a file to view its properties and choose Preview content to request a preview. Open another archive to test tabbed browsing and switch between list and grid views.
 
-To review creation, choose New, add ordinary files and select ZIP. Choose a destination owned and writable by the test account, then create the archive. ZIP, TAR, TAR.GZ and 7z creation are available in this candidate. RAR, CAB, ISO and UDF are read-only. Encryption and split-archive support depend on the supported format and profile.
+To review creation, choose New, add ordinary files and select ZIP. Choose a destination owned and writable by the test account, then create the archive. ZIP, TAR, TAR.GZ and 7z creation are available in this candidate. RAR, CAB and UDF are read-only. ISO images can be created, but existing ISO images cannot be modified. Encryption and split-archive support depend on the supported format and profile.
 
 To review extraction, select files in an archive, choose Extract selected and select a writable destination. Progress and cancellation are available. Opening a file through the system creates a temporary local copy; changes to that copy are not automatically written back to the archive.
 

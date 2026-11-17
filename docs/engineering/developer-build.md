@@ -14,6 +14,8 @@ First install Python 3.10+, Git, CMake 3.24+, Ninja, rustup, and the platform co
 
 ## Local toolchain directories
 
+When loading Visual Studio's PowerShell environment, preserve the Unicode values of `USERPROFILE`, `LOCALAPPDATA` and `APPDATA` and restore them if the loader changes their encoding. Qt uses these locations for its default cache and configuration paths, so corrupted values can cause filesystem failures even when the compiler itself works.
+
 `prepare` builds and verifies a security-patched QtNetwork in the existing SDK for CVE-2026-116337 and CVE-2026-105946; other runtime modules are not replaced by the rebuilt library. Perl, make (nmake on Windows), and the OpenSSL command-line tool are also required. Ubuntu requires `zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libzstd-dev libkrb5-dev`. Source, generated declarations, and build caches stay under `build/`, defaulting to reuse of `build/toolchain/qt-network-security/<platform>`. Product build and packaging fail immediately if input and actual library digests do not match; rerun `prepare`. See [patch maintenance notes](../../patches/qt/README.md) for provenance, ABI, TLS functionality, and failure recovery.
 
 Local dependencies for the unified entry point use only `build/toolchain/`, which Git ignores and does not commit:

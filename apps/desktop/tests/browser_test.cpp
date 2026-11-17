@@ -9662,7 +9662,7 @@ QtObject {
         usePassword->setProperty("checked", false);
         QTRY_COMPARE(password->property("text").toString(), QString{});
         QTRY_VERIFY(start->isEnabled());
-        QCOMPARE(group->property("count").toInt(), 11);
+        QCOMPARE(group->property("count").toInt(), 14);
         group->forceActiveFocus(Qt::TabFocusReason);
         QTest::keyClick(create, Qt::Key_Down);
         QCOMPARE(group->property("currentIndex").toInt(), 1);
@@ -10461,7 +10461,10 @@ QtObject {
         QCOMPARE(controller->formatLabel(), format);
         QVERIFY(controller->archiveTotal() >= 3);
         QVERIFY(!controller->canUpdateArchive());
-        const auto reason = qtTrId("edit.readOnlyFormat").arg(format);
+        // ISO supports creation but not modification; its rejection must not
+        // claim that creating an image is unavailable.
+        const auto reason = format == "ISO" ? qtTrId("update.unavailable")
+                                            : qtTrId("edit.readOnlyFormat").arg(format);
         QCOMPARE(controller->addDropMessage(), reason);
         const auto findHello = [&] {
             for (int row = 0; row < controller->m_model.rowCount(); ++row)
@@ -12471,7 +12474,7 @@ QtObject {
         controller.beginExport(0, &owner);
         QTRY_VERIFY(!controller.busy());
         QVERIFY(controller.m_export);
-        QVERIFY(!controller.m_export->entries.isEmpty());
+        QVERIFY2(!controller.m_export->entries.isEmpty(), qPrintable(controller.m_export->error));
         const auto state = controller.m_export;
         controller.m_exportCache = fixture.filePath("export-cache");
         QVERIFY(QDir().mkpath(controller.m_exportCache));
@@ -12710,6 +12713,7 @@ QtObject {
         controller->m_exportCache = fixture.filePath("export-cache");
         QVERIFY(QDir().mkpath(controller->m_exportCache));
         const auto state = controller->m_export;
+        QVERIFY2(!state->entries.isEmpty(), qPrintable(state->error));
         QCOMPARE(state->entries.last().name, leaf);
         state->request();
         QTRY_VERIFY(state->done);

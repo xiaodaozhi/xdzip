@@ -25,7 +25,7 @@ Create ZIP, TAR, TAR.GZ and 7z archives. Use AES-256 ZIP encryption or supported
 
 Choose a light or dark appearance, adjust text size, and use English (US) or Simplified Chinese. View task progress and request cancellation when needed.
 
-Features vary by format. RAR, CAB, ISO and UDF are read-only. Encrypted and split archive support depends on the format and profile; not every archive can be modified. Opening a file in another application creates a temporary local copy, and edits to that copy are not written back automatically.
+Features vary by format. RAR, CAB and UDF are read-only. ISO images can be created, but existing ISO images cannot be modified. Encrypted and split archive support depends on the format and profile; not every archive can be modified. Opening a file in another application creates a temporary local copy, and edits to that copy are not written back automatically.
 
 Designed for Windows 11 PCs with x64 processors. The Microsoft Store edition receives its updates through the Store. Create or extract archives from File Explorer using either the Windows 11 modern context menu or the classic menu under Show more options.
 ```
