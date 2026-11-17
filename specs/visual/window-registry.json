@@ -63,7 +63,7 @@
       "width": "Theme.operationProgressWidth",
       "current_file_policy": "进行中的当前文件使用单行、中间省略，完整路径保留在文本数据与辅助功能名称中；相同状态和字号下路径长度不改变卡片或窗口高度。普通解压结果摘要仅显示 committedFiles 的数量；压缩结果摘要仅显示 N 个文件，普通压缩使用 outputParts，批量压缩使用成功任务数，不拼接名称或容量。",
       "content_design": "design/hifi/sources/task-windows.html",
-      "batch_result_policy": "批量压缩只显示完成、未完成、已取消和未执行计数，目标位置摘要按成功任务数显示 N 个文件；批量解压将同一分卷组重复选择而跳过的文件计为“同组跳过”；压缩和解压的未完成文件及原因显示在处理明细中，任务级错误仍单独提示。",
+      "batch_result_policy": "批量压缩只显示完成、未完成、已取消和未执行计数，目标位置摘要按成功任务数显示 N 个文件；批量解压将同一分卷组重复选择而跳过的文件计为“同组跳过”；压缩和解压的未完成文件及原因显示在处理明细中，任务级错误仍单独提示；处理明细列表只在相邻行之间显示分隔线，最后一项不显示底部边框。",
       "reason": "复用既有解压进度尺寸，承载真实只读完整性检查及其密码等待和结果。临时打开任务在系统接受打开后自动隐藏，失败保留并可重试打开文件，更新归档和外部拖放沿用同一任务尺寸与独立操作类型，不把准备完成宣称为系统复制完成，包内移动沿用归档更新的校验及结果布局，保留独立移动任务标识。无文件内容校验和的格式由能力表登记，TAR、LZMA、TAR.LZMA、ISO 和 UDF 的说明，以及 XZ 与 TAR.XZ 按流声明校验的说明，复用既有可换行 footer，不改变窗口尺寸",
       "design": "design/html/canvas.html?view=progress",
       "header_design": "design/hifi/sources/operation-headers.html",

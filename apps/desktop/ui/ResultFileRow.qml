@@ -7,6 +7,7 @@ Rectangle {
     id: root
     required property var entry
     property bool showReason: false
+    property bool showBottomBorder: true
     property bool showDetailReason: false
     readonly property bool incomplete: entry.status === "unfinished"
     readonly property string reason: entry.reason || ({disk_full: qsTrId("ui.1eeed25bf9dd"), source_changed: qsTrId("ui.89c590068e9d"), integrity_error: qsTrId("ui.a096c1176981"), cancelled: qsTrId("ui.a37778f17c5f"), output_io: qsTrId("ui.55039130fcb8")})[entry.errorCode] || entry.statusLabel || qsTrId("ui.6707de42c29d")
@@ -58,5 +59,5 @@ Rectangle {
             color: root.incomplete ? (Theme.resultWarningInk) : root.entry.status === "skipped" ? Theme.textSecondary : Theme.accentInk
         }
     }
-    Rectangle { anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; height: 1; color: Theme.operationCardBorder }
+    Rectangle { visible: root.showBottomBorder; anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; height: 1; color: Theme.operationCardBorder }
 }

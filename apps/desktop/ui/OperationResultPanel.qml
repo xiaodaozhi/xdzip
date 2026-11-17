@@ -146,7 +146,7 @@ ColumnLayout {
                 ColumnLayout {
                     id: rows
                     width: detailsScroll.availableWidth; spacing: 0
-                    Repeater { model: root.entries; delegate: ResultFileRow { required property var modelData; Layout.fillWidth: true; entry: modelData; showDetailReason: root.useDetailsForFailures && modelData.status === "unfinished" } }
+                    Repeater { model: root.entries; delegate: ResultFileRow { required property var modelData; required property int index; Layout.fillWidth: true; entry: modelData; showBottomBorder: index < root.entries.length - 1; showDetailReason: root.useDetailsForFailures && modelData.status === "unfinished" } }
                 }
             }
             Text {
