@@ -38,6 +38,8 @@ Encryption and volume splitting are archive states, not inferred from extension 
 
 Windows uses per-extension ProgIDs and ICOs while retaining the old shared entry; macOS maps document types to ICNS, with compressed TAR types sharing the TAR.GZ icon. Linux retains system MIME icons without overriding global file icons. Native display depends on default applications and icon caches; see the [installation and association contract](../engineering/installers-associations.md) for association and rollback.
 
+MSIX declares a separate `uap:Logo` for each format association. Its target-size PNGs reuse the canonical Windows ICO frames byte-for-byte, preserving small-size simplification, large-size format labels, visible bounds and centering. Application logos are separate resources with default and both unplated theme forms. [msix-icons.json](../../specs/visual/msix-icons.json) defines package sizes and variants; MakePRI indexes them before MakeAppx packaging. No system backplate or application-logo fallback is part of the intended document artwork.
+
 The Windows default-app and Open With application entry uses the [brand application ICO](../../design/assets/brand/xdzip.ico), embedded in both the main executable and association launcher. Per-format document icons do not replace application identity. The system should display one optional xdzip entry with the brand icon; the old shared command serves compatibility with existing choices. This reuses existing assets and does not change main-window, menu or QML logical geometry. Native application icons, document icons and candidate counts are accepted separately; an OS generic application box must not be classified as a format-document icon problem.
 
 ## Generation and delivery

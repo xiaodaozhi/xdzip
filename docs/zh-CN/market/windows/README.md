@@ -4,7 +4,7 @@
 
 [可复制的商店文案](listing.md)包含说明、十项产品功能、补充字段、七个关键字、版权、开发者信息、链接和图片说明。`zh-CN` 使用本目录，`en-US` 使用[英文文案](../../../market/windows/listing.md)。
 
-商店文案对应 MSIX **1.0.28.0**、应用版本 0.2.1、构建号 28，包标识为 `xiaodaozhi.xdzip`。现有图片素材保留单独标明的捕获基线。[支持政策](../../engineering/support-policy.md)仍为 Windows 11 x64，清单中 Windows 10 的技术最低版本不代表扩大支持承诺。商店版本由 Microsoft Store 管理更新，商店构建声明现代和传统 Explorer 菜单。现代菜单要求已安装包具有微软 Store 签名。
+商店文案对应 MSIX **1.0.29.0**、应用版本 0.2.1、构建号 29，包标识为 `xiaodaozhi.xdzip`。现有图片素材保留单独标明的捕获基线。[支持政策](../../engineering/support-policy.md)仍为 Windows 11 x64，清单中 Windows 10 的技术最低版本不代表扩大支持承诺。商店版本由 Microsoft Store 管理更新，商店构建声明现代和传统 Explorer 菜单。现代菜单要求已安装包具有微软 Store 签名。
 
 需要更新应用截图时，使用[自动双语截图流程](capture.md)。它会自行生成演示文件，也能通过明确的可执行文件摘要为新构建截图。[通用捕获模块](../../engineering/windows-screenshots.md)还可用于其他 Windows 场景。
 

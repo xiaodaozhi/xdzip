@@ -15,6 +15,8 @@ from association_types import WINDOWS_ICONS
 from deployment_audit import digest
 from installer_payload import verify_payload
 from msix_shell_policy import COM, D4, D5, D9, CLASSIC_STORE, CLASSIC_SIDELOAD, MODERN, marker, verify_manifest
+from msix_icon_assets import (POLICY, ROOT as ICON_ROOT, association_logo,
+                              prepare_associations, verify_manifest_icons, verify_package_icons)
 
 ROOT = Path(__file__).resolve().parents[1]
 LANGUAGES = ('en-US', 'zh-CN')
@@ -83,21 +85,44 @@ def manifest(name, publisher, build, publisher_display_name, channel='sideload',
     for ext in WINDOWS_ICONS:
         extension = ET.SubElement(extensions, tag(UAP, 'Extension'), Category='windows.fileTypeAssociation')
         association = ET.SubElement(extension, tag(UAP, 'FileTypeAssociation'), Name='xdzip-' + ext)
+        ET.SubElement(association, tag(UAP, 'Logo')).text = association_logo(WINDOWS_ICONS[ext]).replace('/', '\\')
         types = ET.SubElement(association, tag(UAP, 'SupportedFileTypes'))
         ET.SubElement(types, tag(UAP, 'FileType')).text = '.' + ext
     capabilities = ET.SubElement(package, tag(NS, 'Capabilities'))
     ET.SubElement(capabilities, tag(RESCAP, 'Capability'), Name='runFullTrust')
     verify_manifest(package, channel, shell_library)
+    verify_manifest_icons(package)
     return ET.tostring(package, encoding='utf-8', xml_declaration=True)
 
 
-def sdk_tool():
+def sdk_tool(name='makeappx.exe'):
     root = Path(os.environ.get('ProgramFiles(x86)', 'C:/Program Files (x86)')) / 'Windows Kits/10/bin'
-    candidates = sorted((p for p in root.glob('10.*/x64/makeappx.exe') if p.is_file()),
+    candidates = sorted((p for p in root.glob('10.*/x64/' + name) if p.is_file()),
                         key=lambda p: tuple(map(int, p.parent.parent.name.split('.'))), reverse=True)
     if not candidates:
-        raise ValueError('Windows SDK x64 MakeAppx.exe is required')
+        raise ValueError('Windows SDK x64 ' + name + ' is required')
     return candidates[0]
+
+
+def prepare_resource_index(stage):
+    tool = sdk_tool('makepri.exe')
+    config = stage.parent / (stage.name + '-priconfig.xml')
+    if config.exists():
+        raise ValueError('MSIX resource configuration already exists')
+    subprocess.run([str(tool), 'createconfig', '/cf', str(config), '/dq', 'en-US', '/o'],
+                   check=True, capture_output=True)
+    tree = ET.parse(config)
+    resources = tree.getroot()
+    packaging = resources.find('packaging')
+    if packaging is not None:
+        resources.remove(packaging)
+    # Keep package-relative Assets/ keys; indexing Assets as the seed strips
+    # that directory and prevents manifest paths from resolving their variants.
+    tree.write(config, encoding='utf-8', xml_declaration=True)
+    subprocess.run([str(tool), 'new', '/pr', str(stage), '/cf', str(config),
+                    '/of', str(stage / POLICY['resource_index']), '/o'], check=True, capture_output=True)
+    if not (stage / POLICY['resource_index']).is_file():
+        raise ValueError('MakePRI did not produce the icon resource index')
 
 
 def shell_library_path(root):
@@ -149,18 +174,21 @@ def build(root, audit_path, output, name, publisher, report, publisher_display_n
     stage = output.parent / (output.stem + '-stage')
     if stage.exists() or stage == root or stage.is_relative_to(root):
         raise ValueError('MSIX staging directory exists or overlaps the audited runtime')
-    if any((root / entry).exists() for entry in ('AppxManifest.xml', 'Assets', 'xdzip-msix-channel.txt')):
+    if any((root / entry).exists() for entry in ('AppxManifest.xml', 'Assets', 'xdzip-msix-channel.txt', POLICY['resource_index'])):
         raise ValueError('Runtime contains reserved MSIX paths')
     tool = sdk_tool()
+    sdk_tool('makepri.exe')
     shutil.copytree(root, stage)
     verify_payload(stage, audit)
     (stage / 'Assets').mkdir()
     subprocess.run(['pwsh', '-NoProfile', '-NonInteractive', '-File',
                     str(ROOT / 'scripts/prepare-msix-assets.ps1'), '-Source',
-                    str(ROOT / 'design/assets/brand/xdzip-256.png'), '-OutputDirectory',
+                    str(ICON_ROOT / POLICY['application']['source']), '-OutputDirectory',
                     str(stage / 'Assets')], check=True, capture_output=True)
+    prepare_associations(stage / 'Assets')
     (stage / 'AppxManifest.xml').write_bytes(content)
     (stage / 'xdzip-msix-channel.txt').write_bytes(marker(channel))
+    prepare_resource_index(stage)
     subprocess.run([str(tool), 'pack', '/d', str(stage), '/p', str(output), '/o'],
                    check=True, capture_output=True)
     if not output.is_file() or not output.stat().st_size:
@@ -168,6 +196,7 @@ def build(root, audit_path, output, name, publisher, report, publisher_display_n
     expected = {p.relative_to(stage).as_posix().casefold(): digest(p)
                 for p in stage.rglob('*') if p.is_file()}
     with zipfile.ZipFile(output) as archive:
+        icon_count = verify_package_icons(archive, ET.fromstring(content))
         files = [item for item in archive.infolist() if not item.is_dir()]
         actual = {item.filename.replace('\\', '/').casefold(): item for item in files}
         if len(actual) != len(files) or set(actual) != set(expected) | {'appxblockmap.xml', '[content_types].xml'}:
@@ -186,6 +215,8 @@ def build(root, audit_path, output, name, publisher, report, publisher_display_n
         'signed': False, 'store_submission': False, 'modern_context_menu': False,
         'channel': channel, 'classic_context_menu': True, 'modern_context_menu_declaration': channel == 'store',
         'shell_library': shell_library,
+        'icon_assets': {'schema_version': 1, 'resource_index': POLICY['resource_index'],
+                        'png_count': icon_count},
         'minimum_windows_build': 19045, 'languages': list(LANGUAGES)}, indent=2) + '\n', encoding='utf-8')
 
 
