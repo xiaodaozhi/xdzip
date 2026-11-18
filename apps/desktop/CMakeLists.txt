@@ -316,7 +316,12 @@ if(BUILD_TESTING)
     # QTRY assertions keep their own deadlines; a slow host must report the assertion.
     # All discovered functions run within this single ceiling. Offscreen workers
     # have isolated settings; native and explicitly shared settings run serially.
-    set_tests_properties(qt_zip_browser PROPERTIES TIMEOUT 240)
+    if(APPLE)
+        # Hosted Apple Silicon runs have completed within a few seconds of 240.
+        set_tests_properties(qt_zip_browser PROPERTIES TIMEOUT 300)
+    else()
+        set_tests_properties(qt_zip_browser PROPERTIES TIMEOUT 240)
+    endif()
     add_test(NAME qt_browser_load COMMAND xdzip-browser --smoke-test)
     add_executable(xdzip-update-tests tests/update_controller_test.cpp
         CliRequestBroker.cpp CliRequestBroker.h

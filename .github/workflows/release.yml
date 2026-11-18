@@ -82,6 +82,7 @@ jobs:
             build/review/windows-runtime-test-*/*.log
             build/review/windows-runtime-test-*/result.json
             build/desktop/apps/desktop/*tests.log
+            build/desktop/apps/desktop/browser-tests-shard-*.log
             build/desktop/Testing/Temporary/LastTest.log
             build/release-package/*.json
             build/release-package/*.log
