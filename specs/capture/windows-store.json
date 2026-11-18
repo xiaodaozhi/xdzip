@@ -1,13 +1,24 @@
 {
   "schema_version": 1,
   "baseline": {
-    "revision": "86356e35d18ab19e33a6e84e82b851f3fc8eafa7",
-    "package_version": "1.0.29.0",
-    "runtime_exe_sha256": "f69ac18968a73546460c0e6b05918377b022f5e042885168e283643487d5812f"
+    "revision": "06454d40cf419c50b3f3d0b2f7674941924b0da4",
+    "package_version": "1.0.30.0",
+    "runtime_exe_sha256": "fc723aabe72f2178840208fe908a36fa4c4eff9ca96a59dfc7432414fb9c8bfb"
   },
-  "scenes": ["01-browse", "03-preview", "04-workspace", "02-create"],
-  "languages": ["en-US", "zh-CN"],
-  "runtime_candidates": ["build/package/windows/xdzip.exe", "build/issue272-store-materials/runtime/xdzip.exe"],
+  "scenes": [
+    "01-browse",
+    "03-preview",
+    "04-workspace",
+    "02-create"
+  ],
+  "languages": [
+    "en-US",
+    "zh-CN"
+  ],
+  "runtime_candidates": [
+    "build/package/windows/xdzip.exe",
+    "build/issue272-store-materials/runtime/xdzip.exe"
+  ],
   "fixture_revision": 1,
   "fixture_source": "scripts/windows-store-demo.psm1"
 }

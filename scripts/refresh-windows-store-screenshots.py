@@ -67,14 +67,16 @@ def capture_pair(package, baseline, output, configuration):
         if digest(stream) != baseline['runtime_exe_sha256']:
             raise ValueError('Extracted xdzip executable differs from the verified package')
     directories = [output / language for language in LANGUAGES]
-    for language, directory in zip(LANGUAGES, directories):
-        subprocess.run([
-            'powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
-            str(ROOT / 'scripts/capture-windows-store.ps1'), '-Language', language,
-            '-Configuration', str(configuration), '-Executable', str(executable),
-            '-ExpectedSha256', baseline['runtime_exe_sha256'], '-SourceRevision', baseline['revision'],
-            '-OutputDirectory', str(directory),
-        ], cwd=ROOT, check=True)
+    # Keep the example destination short enough for the default creation window.
+    with tempfile.TemporaryDirectory(prefix='', dir=ROOT / 'build') as demo:
+        for language, directory, folder in zip(LANGUAGES, directories, ('Pics', '图片')):
+            subprocess.run([
+                'powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
+                str(ROOT / 'scripts/capture-windows-store.ps1'), '-Language', language,
+                '-Configuration', str(configuration), '-Executable', str(executable),
+                '-ExpectedSha256', baseline['runtime_exe_sha256'], '-SourceRevision', baseline['revision'],
+                '-OutputDirectory', str(directory), '-CreationDemoDirectory', str(Path(demo) / folder),
+            ], cwd=ROOT, check=True)
     return directories
 
 

@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "baseline": {
-    "package_version": "1.0.29.0",
-    "revision": "86356e35d18ab19e33a6e84e82b851f3fc8eafa7",
-    "package_sha256": "692b5c73b4368a120ce505198292cc2958b123801c6e698e880a08868da11881",
-    "runtime_exe_sha256": "f69ac18968a73546460c0e6b05918377b022f5e042885168e283643487d5812f",
+    "package_version": "1.0.30.0",
+    "revision": "06454d40cf419c50b3f3d0b2f7674941924b0da4",
+    "package_sha256": "423deec54c9aa87b872e6ab0cbfb78559da1fdd79e1d007b408049766e10495f",
+    "runtime_exe_sha256": "fc723aabe72f2178840208fe908a36fa4c4eff9ca96a59dfc7432414fb9c8bfb",
     "device_family": "Windows.Desktop"
   },
   "visual": {
@@ -25,8 +25,8 @@
   },
   "screenshot_artwork": {
     "store_canvas": [
-      1600,
-      900
+      2560,
+      1440
     ],
     "store_background": "#F3F5F9",
     "max_capture_scale": 1,

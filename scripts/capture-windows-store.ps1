@@ -93,7 +93,9 @@ if (!$generateDemo) {
     }
 }
 $currentSession = (Get-Process -Id $PID).SessionId
-$existing = @(Get-Process -Name xdzip -ErrorAction SilentlyContinue | Where-Object { $_.SessionId -eq $currentSession })
+$existing = @(Get-Process -Name xdzip -ErrorAction SilentlyContinue | Where-Object {
+    $_.SessionId -eq $currentSession -and [Xdzip.WindowsCapture.Native]::ProcessMayBeRunning($_.Id)
+})
 if ($existing.Count) { throw 'Close existing xdzip processes before starting, so single-instance forwarding cannot target your normal session.' }
 if ($ValidateOnly) {
     Write-Host "PASS: $Language, expected executable SHA-256 and fresh output path. Demo generation: $generateDemo. No files written or app launched."

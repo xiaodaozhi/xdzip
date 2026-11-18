@@ -1,6 +1,7 @@
 // Native, lossless capture and scoped UI Automation for Windows capture recipes.
 // HWNDs are borrowed and revalidated before/after readback. A failed guard never
 // persists screen pixels; all GDI objects and thread DPI changes have scoped owners.
+using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -120,6 +121,9 @@ namespace Xdzip.WindowsCapture {
         [DllImport("user32.dll")] private static extern bool SetWindowPos(IntPtr window, IntPtr after, int x, int y, int width, int height, uint flags);
         [DllImport("user32.dll")] private static extern bool AttachThreadInput(uint first, uint second, bool attach);
         [DllImport("kernel32.dll")] private static extern uint GetCurrentThreadId();
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern SafeWaitHandle OpenProcess(uint access, bool inherit, uint process);
+        [DllImport("kernel32.dll")] private static extern uint WaitForSingleObject(SafeWaitHandle handle, uint milliseconds);
         [DllImport("user32.dll")] private static extern bool SetCursorPos(int x, int y);
         [DllImport("user32.dll")] private static extern bool GetCursorPos(out Point point);
         [DllImport("user32.dll")] private static extern IntPtr WindowFromPoint(Point point);
@@ -149,6 +153,18 @@ namespace Xdzip.WindowsCapture {
         [DllImport("dwmapi.dll")] private static extern int DwmGetWindowAttribute(IntPtr window, uint attribute, out uint value, int size);
         [DllImport("dwmapi.dll")] private static extern int DwmFlush();
         private const int CancelKey = 0x5845;
+
+        public static bool ProcessMayBeRunning(int process) {
+            const uint synchronize = 0x00100000;
+            const int invalidParameter = 87;
+            const uint waitObject = 0;
+            using (var handle = OpenProcess(synchronize, false, checked((uint)process))) {
+                // A signaled handle confirms exit even when the process is still listed.
+                // Keep the guard in place when Windows denies access or the wait fails.
+                if (handle.IsInvalid) return Marshal.GetLastWin32Error() != invalidParameter;
+                return WaitForSingleObject(handle, 0) != waitObject;
+            }
+        }
 
         private sealed class DpiScope : IDisposable {
             private readonly IntPtr previous;
