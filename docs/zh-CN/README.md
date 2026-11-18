@@ -16,8 +16,7 @@
 | 了解大压缩包的限制 | [大归档索引](engineering/large-index.md) |
 | 从文件管理器直接压缩或解压 | [文件管理器操作](engineering/shell-actions.md) |
 | 了解数据处理和隐私 | [隐私政策](../../PRIVACY.md)、[数据生命周期与诊断](engineering/privacy.md) |
-| 检查更新 | [用户主动更新](engineering/software-update.md)、[发布页](https://github.com/xiaodaozhi/xdzip/releases) |
-| 打包和提交商店版 | [Windows Store MSIX 构建](engineering/developer-build.md#microsoft-store-msix)、[双语商店一览材料](market/windows/README.md) |
+| 检查更新 | [Microsoft Store 与 GitHub 版更新方式](engineering/software-update.md)、[GitHub 发布页](https://github.com/xiaodaozhi/xdzip/releases) |
 
 项目首页的[格式支持表](../../README.zh-CN.md#格式支持)列出当前源码支持的格式、操作及限制。发行包的实际能力以对应版本的发布说明为准。
 
@@ -37,10 +36,12 @@
 
 - **读取、解压和创建**：[浏览与索引](engineering/readonly-browser.md)、[安全解压](engineering/zip-safe-extraction.md)、[ZIP 创建](engineering/zip-creation.md)、[ISO 创建](engineering/iso-creation.md)、[Windows 自解压包](engineering/sfx-creation.md)。
 - **常见压缩流**：[TAR 与 GZIP](engineering/tar-gzip.md)、[单文件压缩流](engineering/single-file-streams.md)、[LZ4](engineering/lz4-streams.md)、[Zstandard](engineering/zstandard-streams.md)、[Brotli](engineering/brotli-streams.md)、[Unix compress](engineering/compress-streams.md)。
-- **归档和封装格式**：[7z 实现依据](engineering/sevenzip-format-sources.md)、[RAR 实现依据](engineering/rar-format-sources.md)、[CAB 实现依据](engineering/cab-format-sources.md)、[DEB](engineering/deb-containers.md)、[ASAR](engineering/asar-containers.md)、[AES Crypt](engineering/aescrypt-envelopes.md)、[UU 与 XXE](engineering/text-envelopes.md)。
+- **归档和封装格式**：[7z 实现依据](engineering/sevenzip-format-sources.md)、[RAR 实现依据](engineering/rar-format-sources.md)、[CAB 实现依据](engineering/cab-format-sources.md)、[DEB](engineering/deb-containers.md)、[MSI 与 NSIS](engineering/wim-msi-installer-format-sources.md)、[ASAR](engineering/asar-containers.md)、[AES Crypt](engineering/aescrypt-envelopes.md)、[UU 与 XXE](engineering/text-envelopes.md)。
 - **其他格式**：[LHA/LZH](engineering/lha-containers.md)、[PMA](engineering/pma-streams.md)、[ARJ](engineering/arj-streams.md)、[ARC](engineering/arc-streams.md)、[BH](engineering/bh-containers.md)、[ACE、ALZ 与 EGG](engineering/ace-alz-egg-format-sources.md)。
 - **设计与依赖**：[格式后端](engineering/native-codecs.md)、[自研格式与算法](engineering/independent-rust-codecs.md)、[格式扩展设计](design/codec-extension-sdk.md)、[依赖与许可](engineering/dependencies.md)。
 
 ## 发布与项目协作
 
-维护者可以查阅[版本机制](engineering/versioning.md)、[发布协议](engineering/release-protocol.md)、[发布手册](engineering/release-runbook.md)和[发行审查](qa/release-review.md)。项目计划、问题与反馈见 [GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues)，版本变化见[更新日志](../../CHANGELOG.md)。
+商店版打包与提交见 [MSIX 构建指南](engineering/developer-build.md#microsoft-store-msix)和[双语商店一览材料](market/windows/README.md)。
+
+GitHub 发行参见[版本机制](engineering/versioning.md)、[发布协议](engineering/release-protocol.md)、[发布手册](engineering/release-runbook.md)和[发行审查](qa/release-review.md)。项目计划、问题与反馈见 [GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues)，版本变化见[更新日志](../../CHANGELOG.md)。

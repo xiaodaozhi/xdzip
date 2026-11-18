@@ -56,7 +56,7 @@ Foundation 的 `image_only=true` 在原生 macOS 用系统 sips／ImageIO 转换
 
 Windows 视觉入口会先运行 `test-windows-capture.ps1`，检查[通用截图工具](windows-screenshots.md)的 PNG 像素保真、异常回执拒绝和演示输入可复现性。该自检不操作桌面，也不向日常 CI 增加 Windows 作业。
 
-[Windows MSIX 生命周期](../../../.github/workflows/windows-msix.yml)在一次性 GitHub 托管 Windows Server 中构建实验包，以临时自签名证书签署测试副本，检查侧载安装、默认关联、中英文关于页的更新入口、设置保留、便携版同时运行、文件激活、经典菜单注册拒绝和卸载，并清理证书。升级夹具只递增专用 CI 身份的 MSIX 清单版本，逐文件核对其余产品内容不变，验证升级后的设置、更新入口隔离和默认关联；它不代表新产品版本或商店更新验收。该工作流仅手动运行，不使用真实商店签名或修改开发者电脑；服务器侧载结果不代表 Windows 11 桌面、商店来源、普通安装版共存或人工视觉验收。
+[Windows MSIX 生命周期](../../../.github/workflows/windows-msix.yml)在一次性 GitHub 托管 Windows Server 中构建实验包，以临时自签名证书签署测试副本，检查侧载安装、默认关联、中英文关于页按渠道显示更新入口、设置保留、便携版同时运行、文件激活、拒绝在 MSIX 身份下运行普通安装版的右键注册命令，以及卸载，并清理证书。升级夹具只递增专用 CI 身份的 MSIX 清单版本，逐文件核对其余产品内容不变，验证升级后的设置、更新入口隔离和默认关联；它不代表新产品版本或商店更新验收。该工作流仅手动运行，不使用真实商店签名或修改开发者电脑；服务器侧载结果不代表 Windows 11 桌面、商店来源、普通安装版共存或人工视觉验收。
 
 [Windows Store MSIX](../../../.github/workflows/windows-store-msix.yml) 是正式商店身份的手动打包入口。它构建触发时 `main` 已包含的指定提交，执行桌面与命令行测试，校验已部署的运行目录与未签名 MSIX，并将包和回执保存为 Actions 工件。桌面测试阶段跳过 Rust 工作区测试和工作进程用例清单检查。商店提交、认证、签名和发布在合作伙伴中心进行。参见[商店打包步骤](developer-build.md#microsoft-store-msix)。
 

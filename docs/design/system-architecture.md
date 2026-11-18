@@ -79,7 +79,7 @@ Output transaction logs are stored in a random private working directory inside 
 
 ## 6. Replaceability and boundary checks
 
-Unit tests use memory sources, fault-injection file ports, fake backends, and event clients without Qt. UI integration tests use the same application service rather than reimplementing fake core business logic. A future CLI is another adapter that can reuse `xdzip-runtime` without calling through the GUI or cxx.
+Unit tests use memory sources, fault-injection file ports, fake backends, and event clients without Qt. UI integration tests use the same application service rather than reimplementing fake core business logic. The standalone [CLI](../engineering/command-line.md) calls `xdzip-runtime` directly as a separate Rust host.
 
 Architecture checks in CI prohibit core crates from depending on Qt or the bridge and format crates from depending on the desktop application; they also check that Cargo features do not pull in unused backends. Code review focuses on call direction and resource ownership. Directory separation alone is not evidence of decoupling.
 

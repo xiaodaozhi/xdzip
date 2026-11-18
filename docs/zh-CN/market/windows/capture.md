@@ -1,6 +1,6 @@
 # 自动截取四个商店场景
 
-简体中文 | [English](../../../market/windows/capture.md)
+[English](../../../market/windows/capture.md) | 简体中文
 
 [capture-windows-store.ps1](../../../../scripts/capture-windows-store.ps1) 可在一次运行中自动准备并截取一种语言所需的四张截图。脚本使用商店候选程序和隔离配置打开两个演示压缩包，自动切换标签、选择文件、请求预览、切换网格视图，并打开填好文件的创建窗口，无需逐张按键或手动准备界面。按 **F10** 可取消，已保存图片会保留。
 

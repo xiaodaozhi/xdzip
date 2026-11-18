@@ -1,6 +1,6 @@
 # 可复用的 Windows 截图工具
 
-简体中文 | [English](../../engineering/windows-screenshots.md)
+[English](../../engineering/windows-screenshots.md) | 简体中文
 
 仓库中的 Windows 截图工具用于保存应用实际呈现的无损 PNG，保留原生窗口尺寸，并检查每个场景是否就绪。[商店截图流程](../market/windows/capture.md)是完整示例：每种语言运行一次，自动准备并截取四个界面。其他 Windows 场景可以保留自己的界面编排，复用相同捕获模块。
 

@@ -26,7 +26,7 @@
 
 ## 3. Qt 模块和部署
 
-首批必要模块为 Core、Gui、Qml、Quick、QuickControls2 及 QML Layouts/相应 Templates、Models 等实际传递依赖。图标可需要 Svg；仅在选用时加入。避免 WebEngine、Multimedia、完整 Qt 开发工具和未使用 SQL driver。
+桌面程序使用 Qt Core、Gui、Qml、Quick、Quick Controls 和实际导入的 QML 模块。独立的图片预览进程链接 Qt SVG，用于受支持的静态 SVG 预览。避免 WebEngine、Multimedia、完整 Qt 开发工具和未使用 SQL driver。
 
 不能仅列直接链接库就删掉所有 transitive DLL/QML 插件。部署工具扫描 QML imports 和动态依赖，在干净机器上验证。QML 包资源和 platform/imageformat 插件用明确允许清单；不从用户当前目录加载未知 Qt 插件。
 
@@ -38,13 +38,13 @@ macOS 使用部署工具生成 app bundle，配置相对加载路径；Windows �
 
 ### macOS
 
-直接下载使用本地 `.dmg`，按个人开源发行政策只做必要的 ad-hoc 完整性签名，不要求 Developer ID、公证或付费账号。说明未正式签名的系统提示，不要求关闭系统安全保护。权限尽量小，禁止为插件便利开启宽泛禁用保护的 entitlements。
+GitHub 发布页提供用于安装的 `.dmg` 和 `.app.zip` 应用包。按个人开源发行政策只做必要的 ad-hoc 完整性签名，不要求 Developer ID、公证或付费账号。说明未正式签名的系统提示，不要求关闭系统安全保护。权限尽量小，禁止为插件便利开启宽泛禁用保护的 entitlements。
 
 Mac App Store 是独立发行路线，需重新评估 App Sandbox、书签授权、下载插件限制和许可；不能认为直接下载的第三方可执行扩展模式自动可用于商店版本。
 
 ### Windows
 
-未签名的当前用户安装程序按 GitHub Releases 渠道交付，明确是否需要管理员权限，默认用户安装可行。工作进程放固定应用/版本化扩展目录；DLL 加载路径不含不可信当前目录。安装/升级过程中不覆盖仍被任务使用的插件包。
+GitHub 发布页提供未签名的当前用户安装器和便携 ZIP。Microsoft Store 通过合作伙伴中心独立分发和更新 MSIX。EXE 安装器可在无管理员权限时为当前用户安装。商店版通过包身份提供文件关联和 Explorer 菜单。详见[安装指南](../engineering/installers-associations.md)和[商店构建指南](../engineering/developer-build.md#microsoft-store-msix)。
 
 ### Linux
 
@@ -52,13 +52,13 @@ Mac App Store 是独立发行路线，需重新评估 App Sandbox、书签授权
 
 ## 5. 许可证和供应链
 
-项目原创内容采用 Apache-2.0；冻结记录见 [许可证决策](../engineering/licensing.md)，完整授权条款以根目录 LICENSE 为准。Rust crate、Qt 模块、7z/RAR 原生库、图标和打包工具各自核查，不能用项目 LICENSE 覆盖依赖条款。Qt 动态部署本身不是全部合规证明。
+项目原创内容采用 Apache-2.0；冻结记录见 [许可证决策](../engineering/licensing.md)，完整授权条款以根目录 LICENSE 为准。Rust crate、Qt 模块、格式参考工具和材料、图标与打包工具各自核查，不能用项目 LICENSE 覆盖依赖条款。Qt 动态部署本身不是全部合规证明。
 
 依赖许可审查至少包含：分发许可、版权和声明、修改说明、源码提供义务、用户替换库和重新链接条件、安装信息及反调试/签名政策的相容性。LGPL/GPL/商业方案由实际模块和发行方式决定；不能把某一 Qt 模块结论推广到全部 Qt。
 
 7-Zip/UnRAR 或其他 RAR 实现涉及的具体条款单独评估，尤其创建 RAR 和逆向相关限制；不把它们简单标作“MIT 兼容”。不满足目标许可时不打包该能力，可作为用户自行安装的合规后端候选，仍需评估宿主分发关系。
 
-发布提供 SBOM（如 SPDX/CycloneDX）、NOTICE、依赖版本/哈希、源码与构建说明、所需许可证材料及文件清单。静态 Rust 第三方代码同样计入 SBOM。当前不使用正式签名密钥；若未来另选签名渠道，凭据不得进入仓库或普通 PR。
+GitHub 发行材料包括依赖版本与哈希、文件清单、SBOM 和所需的许可声明。源码和构建说明按[源码交付政策](../engineering/source-delivery.md)复核。更新清单使用独立于平台代码签名的密钥，签名和公开条件见[发布协议](../engineering/release-protocol.md)。
 
 ## 6. 可复现和离线构建
 
@@ -68,13 +68,13 @@ Mac App Store 是独立发行路线，需重新评估 App Sandbox、书签授权
 
 ## 7. 更新策略
 
-v0.1 手动下载更新，无后台自动安装。v1.0 可提供可关闭的版本检查，但联网需清楚设置和最小数据，不上传用户归档信息。更新清单签名验证不只依赖 TLS，包含版本、平台/架构、最低系统、哈希和来源；拒绝回滚攻击，必要的安全回滚经可信策略授权。
+GitHub 桌面版可在“关于 xdzip”中主动检查更新。符合条件的安装版会验证带签名的发布元数据后安装更新，macOS 另通过 Sparkle 验证更新源和应用归档的签名。便携版和开发构建使用手动安装。商店版 MSIX 由 Microsoft Store 更新。版本选择、隐私和安装条件见[软件更新](../engineering/software-update.md)。
 
-更新只在任务安全结束后应用，失败保留当前版本。扩展更新独立验证协议、来源和权限变更，正在使用的旧包延后回收。离线用户可以导入核对来源和校验和的完整包，缺失网络不是解压功能不可用的理由。
+安装会等待活动任务结束，失败时按平台提示处理。手动更新请从所用发行渠道获取完整安装包。基本归档操作支持离线使用。
 
 ## 8. 发布检查表
 
-- 同一提交生成源包、平台包、符号、SBOM、许可证与基准报告。
+- 从冻结的发行提交构建各平台安装包，核验所需清单、校验和、SBOM 与许可材料。附件清单见[发布协议](../engineering/release-protocol.md)。
 - 核验格式能力清单，未验证加密/分卷不能写进“全格式支持”。
 - 三平台干净机器安装、首次打开、系统关联、退出、升级/卸载通过。
 - 验证源变化、输出配额、取消、恢复、安全路径及沙箱；第三方未达门槛则默认禁用。

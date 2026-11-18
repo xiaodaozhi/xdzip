@@ -1,6 +1,6 @@
 # 商店审核说明
 
-简体中文 | [English](../../../market/windows/reviewer-notes.md)
+[English](../../../market/windows/reviewer-notes.md) | 简体中文
 
 以下文本用于[商店文案](listing.md)所标明 MSIX 候选的受限功能解释和认证备注，不代表该功能已经获批，也不表示已经提交认证。
 

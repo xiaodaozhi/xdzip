@@ -16,8 +16,7 @@ Find guides for using xdzip, building the project, and understanding its archive
 | Understand limits for large archives | [Large archive indexing](engineering/large-index.md) |
 | Compress or extract from a file manager | [File-manager actions](engineering/shell-actions.md) |
 | Learn how data is handled | [Privacy policy](../PRIVACY.en.md), [data lifecycle and diagnostics](engineering/privacy.md) |
-| Check for updates | [User-initiated updates](engineering/software-update.md), [releases](https://github.com/xiaodaozhi/xdzip/releases) |
-| Package and submit the Store edition | [Windows Store MSIX build](engineering/developer-build.md#microsoft-store-msix), [bilingual listing materials](market/windows/README.md) |
+| Check for updates | [Microsoft Store and GitHub update options](engineering/software-update.md), [GitHub releases](https://github.com/xiaodaozhi/xdzip/releases) |
 
 The [format support table](../README.md#format-support) describes the formats, operations, and limits in the current source tree. Consult the release notes for the capabilities of a specific package.
 
@@ -37,10 +36,12 @@ These documents explain format capabilities, limits, and implementation sources.
 
 - **Reading, extraction, and creation:** [Browsing and indexing](engineering/readonly-browser.md), [safe extraction](engineering/zip-safe-extraction.md), [ZIP creation](engineering/zip-creation.md), [ISO creation](engineering/iso-creation.md), [Windows self-extracting archives](engineering/sfx-creation.md).
 - **Common compression streams:** [TAR and GZIP](engineering/tar-gzip.md), [single-file compression streams](engineering/single-file-streams.md), [LZ4](engineering/lz4-streams.md), [Zstandard](engineering/zstandard-streams.md), [Brotli](engineering/brotli-streams.md), [Unix compress](engineering/compress-streams.md).
-- **Archives and envelopes:** [7z implementation basis](engineering/sevenzip-format-sources.md), [RAR implementation basis](engineering/rar-format-sources.md), [CAB implementation basis](engineering/cab-format-sources.md), [DEB](engineering/deb-containers.md), [ASAR](engineering/asar-containers.md), [AES Crypt](engineering/aescrypt-envelopes.md), [UU and XXE](engineering/text-envelopes.md).
+- **Archives and envelopes:** [7z implementation basis](engineering/sevenzip-format-sources.md), [RAR implementation basis](engineering/rar-format-sources.md), [CAB implementation basis](engineering/cab-format-sources.md), [DEB](engineering/deb-containers.md), [MSI and NSIS](engineering/wim-msi-installer-format-sources.md), [ASAR](engineering/asar-containers.md), [AES Crypt](engineering/aescrypt-envelopes.md), [UU and XXE](engineering/text-envelopes.md).
 - **Other formats:** [LHA/LZH](engineering/lha-containers.md), [PMA](engineering/pma-streams.md), [ARJ](engineering/arj-streams.md), [ARC](engineering/arc-streams.md), [BH](engineering/bh-containers.md), [ACE, ALZ, and EGG](engineering/ace-alz-egg-format-sources.md).
 - **Design and dependencies:** [Format backends](engineering/native-codecs.md), [in-house formats and algorithms](engineering/independent-rust-codecs.md), [format extension design](design/codec-extension-sdk.md), [dependencies and licenses](engineering/dependencies.md).
 
 ## Releases and collaboration
 
-Maintainers can consult [versioning](engineering/versioning.md), the [release protocol](engineering/release-protocol.md), the [release runbook](engineering/release-runbook.md), and [release review](qa/release-review.md). Project plans, issues, and feedback are on [GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues); version changes are in the [changelog](../CHANGELOG.md).
+For the Store edition, see the [MSIX build guide](engineering/developer-build.md#microsoft-store-msix) and [bilingual listing materials](market/windows/README.md).
+
+For GitHub releases, see [versioning](engineering/versioning.md), the [release protocol](engineering/release-protocol.md), the [release runbook](engineering/release-runbook.md), and [release review](qa/release-review.md). Project plans, issues, and feedback are on [GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues); version changes are in the [changelog](../CHANGELOG.md).

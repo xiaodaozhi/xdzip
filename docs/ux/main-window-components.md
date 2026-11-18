@@ -83,7 +83,7 @@ Qt menus explicitly use `Popup.Item` with shared delegates so AppKit does not ig
 
 Directory trees and the main toolbar's Open, New, Test, More and Extract hover states have no floating tooltips. Disabled menu actions likewise have no visible hint or tooltip; other buttons use shared delayed hints. Root and ordinary subdirectories list direct files and folders only, while search recursively covers current scope. Ordinary names show the final component; search shows full paths. List hover covers the whole row; grids retain fixed horizontal padding and hover/selected checkboxes. Menus use soft shadows on all sides and a 4-logical-pixel gap from invoking buttons. Retain separate interaction and scaling evidence under the [general method](../qa/README.md).
 
-File-type sorting keeps directories first for both ascending and descending order, grouping by the directory flag in data. Files without extensions cannot share a grouping key with folders. Equal types retain stable identity order. Sort the complete query before splitting internal transfer batches. HTML files without folder set are treated as false; do not convert undefined to NaN for comparison.
+All sort modes keep directories before files. Ascending and descending order apply within each group. File-type sorting groups extensionless files separately from directories and retains stable identity order for equal types. Sort the complete query before splitting internal transfer batches. HTML files without folder set are treated as false; do not convert undefined to NaN for comparison.
 
 ## Selection, tasks and hints
 

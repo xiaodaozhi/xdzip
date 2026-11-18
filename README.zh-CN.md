@@ -9,7 +9,7 @@
 <p align="center">xdzip 是一款开源跨平台压缩包管理工具。它使用 Rust 实现格式处理，无需依赖外部解压程序；支持浏览和搜索包内文件、选择性解压，以及加密、分卷和受支持格式的包内修改。<br>支持 ZIP、7z、RAR、TAR、CAB、ISO/UDF 等格式，适用于 Windows、macOS 和 Linux。</p>
 
 <p align="center">
-  <a href="https://github.com/xiaodaozhi/xdzip/actions/workflows/docs.yml"><img src="https://github.com/xiaodaozhi/xdzip/actions/workflows/docs.yml/badge.svg?branch=main" alt="日常检查"></a>
+  <a href="https://github.com/xiaodaozhi/xdzip/actions/workflows/docs.yml"><img src="https://github.com/xiaodaozhi/xdzip/actions/workflows/docs.yml/badge.svg?branch=main" alt="持续集成"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-blue.svg" alt="Apache License 2.0"></a>
 </p>
 
@@ -23,15 +23,15 @@
 
 ## 下载安装
 
-在[最新稳定版](https://github.com/xiaodaozhi/xdzip/releases/latest)发布页选择与你的系统对应的文件：
+Windows 11 x64 用户可以在 Microsoft Store 搜索 **XDZip**。如需直接下载安装包或独立命令行工具，请到 [GitHub 最新稳定版](https://github.com/xiaodaozhi/xdzip/releases/latest)选择对应系统的文件。
 
-| 系统 | 支持范围 | 下载选择 |
+| 系统 | 支持范围 | GitHub 下载包 |
 | --- | --- | --- |
-| Windows | 仍受维护的 Windows 11，x86_64 | 当前用户安装器 `setup.exe`、便携 `.zip` 或 Microsoft Store 中的 XDZip |
+| Windows | 仍受维护的 Windows 11，x86_64 | 当前用户安装器 `setup.exe` 或便携 `.zip` |
 | macOS | macOS 14 及以上，Apple Silicon | `.dmg`，或 `.app.zip` 应用包 |
 | Linux | Ubuntu 24.04 LTS，x86_64，X11，glibc 2.39 及以上 | `.deb` 安装包，或 `.tar.gz` 运行目录 |
 
-桌面下载包以 `xdzip-<版本>-` 开头，独立[命令行客户端](#命令行)的包以 `xdzip-cli-<版本>-` 开头。发布页还提供校验清单和第三方组件材料。Windows EXE 安装器未签名，Microsoft Store 负责该渠道 MSIX 的签名和更新。macOS 包采用 ad-hoc 完整性签名，系统可能显示安全提示。默认应用由 Windows 和用户管理。详见[安装指南](docs/zh-CN/engineering/installers-associations.md)。
+桌面下载包以 `xdzip-<版本>-` 开头，独立[命令行客户端](#命令行)的包以 `xdzip-cli-<版本>-` 开头。发布页还提供校验清单和第三方组件材料。Windows EXE 安装器未签名，Microsoft Store 负责该渠道 MSIX 的签名和更新，两条渠道独立发布，版本以各自的页面为准。macOS 包采用 ad-hoc 完整性签名，系统可能显示安全提示。默认应用由 Windows 和用户管理。详见[安装指南](docs/zh-CN/engineering/installers-associations.md)。
 
 GitHub 版可在“关于 xdzip”中主动检查更新。macOS 安装版的原生更新支持系统代理、自定义 HTTP CONNECT/SOCKS5 代理和直连设置。自动安装取决于有效的发布签名和安装身份。便携包及开发构建需要手动安装。详见[更新说明](docs/zh-CN/engineering/software-update.md)和[支持政策](docs/zh-CN/engineering/support-policy.md)。
 
@@ -39,12 +39,12 @@ GitHub 版可在“关于 xdzip”中主动检查更新。macOS 安装版的原�
 
 ## 使用 xdzip
 
-打开压缩包后可以先浏览目录、搜索和排序，再选择需要的文件解压。界面提供列表与网格视图、文件属性，以及中文 (简体) 和 English (US)、浅色和深色主题、字号与密度设置。默认自动识别系统界面语言，暂不支持的语言使用 English (US)，也可手动选择。普通单文件 ZIP/ZIP64 最多索引一百万条物理记录，其他格式和分卷路径保持十万条上限。大包的任务与修改边界见[大归档索引](docs/zh-CN/engineering/large-index.md)。
+打开压缩包后可以先浏览目录、搜索和排序，再选择需要的文件解压。升序和降序都将文件夹排在文件之前。界面提供列表与网格视图、文件属性，以及中文 (简体) 和 English (US)、浅色和深色主题、字号与密度设置。默认自动识别系统界面语言，暂不支持的语言使用 English (US)，也可手动选择。普通单文件 ZIP/ZIP64 最多索引一百万条物理记录，其他格式和分卷路径保持十万条上限。大包的任务与修改边界见[大归档索引](docs/zh-CN/engineering/large-index.md)。
 
 - **内容预览**：在属性卡主动预览受限纯文本、常见栅格图片和静态 SVG，macOS 还支持 HEIC／HEIF。完整读取并完成格式提供的校验后显示，可取消；格式、大小和解码预算见[预览说明](docs/zh-CN/engineering/content-preview.md)。
 - **解压和打开**：选择目标位置与重名策略，查看进度并可请求取消。双击普通文件会先将副本解压到私有临时目录，再交给系统打开；修改副本不会写回压缩包，缓存会在七天后的后续打开操作中清理。
-- **创建和修改**：可创建 ZIP、TAR、TAR.GZ、GZIP、XZ、TAR.XZ、LZ4、TAR.LZ4、Zstandard、TAR.ZST、LZH 和 7z。支持对符合条件的普通单文件压缩包添加文件、替换文件和包内移动；也可从列表拖出文件，或拖入文件后确认添加。具体格式和限制见下表。
-- **检查**：可在后台测试整包，不写出文件。TAR、LZMA、TAR.LZMA、Z、TAR.Z、UU/UUE、XXE、Brotli、TAR.BR、ISO 和 UDF 只检查结构与可读性，不提供逐文件内容校验保证。详见[完整性检查](docs/zh-CN/engineering/archive-checking.md)。
+- **创建和修改**：可创建 ZIP、TAR、TAR.GZ、GZIP、XZ、TAR.XZ、LZ4、TAR.LZ4、Zstandard、TAR.ZST、LZH 和 7z，也能创建 ISO9660/Joliet 数据镜像。Windows x64 还可以创建 ZIP 自解压包。支持对符合条件的普通单文件压缩包添加文件、替换文件和包内移动；也可从列表拖出文件，或拖入文件后确认添加。具体格式和限制见下表。
+- **检查**：可在后台测试整包，不写出文件。校验范围取决于格式。TAR、ISO、UDF 和复合文件（MSI）等格式检查结构与可读性，没有逐文件内容校验和。详见[完整性检查](docs/zh-CN/engineering/archive-checking.md)。
 - **多个归档**：默认在新标签页打开，也可设置为新窗口。同一登录会话共用应用进程和托盘，关闭浏览页面后后台任务仍可从任务入口访问。
 - **文件管理器操作**：可从 Windows 传统右键菜单、Ubuntu Files 子菜单及 macOS Finder Sync 子菜单直接压缩或解压。商店版也会出现在 Windows 11 现代右键菜单，macOS 保留 Finder 服务。操作使用独立窗口，支持逐项 ZIP、智能解压目录和批次取消。安装方式与设置见[文件管理器操作](docs/zh-CN/engineering/shell-actions.md)。
 
@@ -74,7 +74,8 @@ GitHub 版可在“关于 xdzip”中主动检查更新。macOS 安装版的原�
 | [ALZ](docs/zh-CN/engineering/ace-alz-egg-format-sources.md) | 普通单卷成员，支持 Store 或原始 Deflate，准确尺寸与 CRC-32 | 不支持 | 不支持 |
 | [EGG](docs/zh-CN/engineering/ace-alz-egg-format-sources.md) | 无加密、非固实的普通单卷成员，支持 Store 或原始 Deflate，准确尺寸与 CRC-32 | 不支持 | 不支持 |
 | [PEA](docs/zh-CN/engineering/disk-image-archive-format-sources.md) | PEA 1.x 单卷、UTF-8 名称、无加密 PCOMPRESS0 存储文件与目录，不含对象、流或卷校验 | 不支持 | 不支持 |
-| NSIS（`.exe`） | 仅提供经内容验证的 PE overlay 中的静态 `firstheader` 元数据 | 不支持 | 不支持 |
+| [复合文件（MSI）](docs/zh-CN/engineering/wim-msi-installer-format-sources.md#compound-file-与-msi) | 浏览存储目录、提取原始数据流，检查结构和可读性 | 不支持 | 不支持 |
+| [NSIS（`.exe`）](docs/zh-CN/engineering/wim-msi-installer-format-sources.md#nsis-与其他-sfx) | 仅提供静态 `firstheader` 元数据，无法提取安装器载荷 | 不支持 | 不支持 |
 | ASAR | 存储文件与目录、共享载荷区间及声明的文件/块 SHA-256 | 不支持 | 不支持 |
 | Z、TAR.Z（包括 `.taz`） | Unix compress LZW、9–16 位字典及已准入 CLEAR/对齐配置 | 不支持 | 不支持 |
 | Brotli、TAR.BR | 普通 RFC 7932 流，10–24 位窗口和全部静态词典变换 | 不支持 | 不支持 |

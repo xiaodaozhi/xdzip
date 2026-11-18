@@ -31,7 +31,7 @@
 
 ## 3. 初始常量表
 
-下表记录设计初值与后续目标约束，不是当前产品配置或已测量的最优值。当前产品的十万条扫描上限、每连接单会话浏览和文件输出配额等以[只读索引](../engineering/zip-readonly-browsing.md)、[安全解压](../engineering/zip-safe-extraction.md)及[创建契约](../engineering/zip-creation.md)为准；应用级多会话、32 个存活会话上限及重任务串行准入以[应用会话契约](../engineering/application-sessions.md)为准。用户界面只开放实际已实现的设置。可调用户限额必须经过核心验证，线协议硬上限在同一协议主版本中不能任意放宽。
+下表记录设计初值与后续目标约束，不是当前产品配置或已测量的最优值。普通单文件 ZIP/ZIP64 最多索引一百万条物理记录，其他格式和分卷归档仍以十万条为上限。浏览及任务限制见[大归档索引](../engineering/large-index.md)，输出配额详见[安全解压](../engineering/zip-safe-extraction.md)和[创建契约](../engineering/zip-creation.md)。应用级多会话、32 个存活会话上限及重任务串行准入以[应用会话契约](../engineering/application-sessions.md)为准。用户界面只开放实际已实现的设置。可调用户限额必须经过核心验证，线协议硬上限在同一协议主版本中不能任意放宽。
 
 | 常量 | 初始值 | 类别/说明 |
 |---|---:|---|

@@ -20,6 +20,8 @@ CAB uses an in-house Rust container and shared algorithms in an isolated worker,
 
 TAR and TAR.GZ rescan the complete stream sequentially inside the check task against frozen physical-record metadata, checking header checksums, lengths, two end blocks, and the tail. TAR.GZ continues to EOF and verifies GZIP CRC/ISIZE; it does not extract all content a second time after the complete scan. TAR has no file-content checksum and can establish only format structure and readability, not arbitrary structure-preserving content tampering. TAR links, special objects, and sparse files remain unsupported. This feature does not establish source trust or check for malware.
 
+Compound File (MSI) checks the container structure and readability of raw streams without content checksums. NSIS exposes static installer metadata only. See [MSI and NSIS format support](wim-msi-installer-format-sources.md) for the limits.
+
 The first structural, payload, source, resource, or unsupported-entry error ends the task. Results distinguish success, failure, and cancellation, show counts of verified and unchecked files, and retain the failed entry and stable error code. Every physical record is checked, but `files`/`verified_files` count only non-directory files, including empty files. Directories and directory-only archives must also complete structural validation before success. Reads completed during or before checking do not mean the whole archive passed.
 
 ## Scheduling, source, and resources

@@ -9,7 +9,7 @@
 <p align="center">xdzip is an open-source, cross-platform archive manager. Its Rust format implementations work without external extraction programs. Browse and search archives, extract selected files, work with encrypted and split archives, and modify entries in eligible formats.<br>It supports ZIP, 7z, RAR, TAR, CAB, ISO/UDF and more on Windows, macOS, and Linux.</p>
 
 <p align="center">
-  <a href="https://github.com/xiaodaozhi/xdzip/actions/workflows/docs.yml"><img src="https://github.com/xiaodaozhi/xdzip/actions/workflows/docs.yml/badge.svg?branch=main" alt="Daily checks"></a>
+  <a href="https://github.com/xiaodaozhi/xdzip/actions/workflows/docs.yml"><img src="https://github.com/xiaodaozhi/xdzip/actions/workflows/docs.yml/badge.svg?branch=main" alt="Continuous integration"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-blue.svg" alt="Apache License 2.0"></a>
 </p>
 
@@ -23,15 +23,15 @@
 
 ## Download and install
 
-Choose the file for your system from the [latest stable release](https://github.com/xiaodaozhi/xdzip/releases/latest):
+For Windows 11 x64, search for **XDZip** in Microsoft Store. For direct downloads and the standalone CLI, choose your system on the [latest stable GitHub release](https://github.com/xiaodaozhi/xdzip/releases/latest).
 
-| System | Supported scope | Download |
+| System | Supported scope | GitHub download |
 | --- | --- | --- |
-| Windows | Maintained versions of Windows 11, x86_64 | Per-user `setup.exe`, portable `.zip`, or XDZip from Microsoft Store |
+| Windows | Maintained versions of Windows 11, x86_64 | Per-user `setup.exe` or portable `.zip` |
 | macOS | macOS 14 and later, Apple Silicon | `.dmg` or `.app.zip` application bundle |
 | Linux | Ubuntu 24.04 LTS, x86_64, X11, glibc 2.39 or later | `.deb` package or `.tar.gz` runtime directory |
 
-Desktop downloads start with `xdzip-<version>-`, and standalone [command-line client](#command-line) packages start with `xdzip-cli-<version>-`. The release page also provides checksums and third-party component materials. The Windows EXE installer is unsigned. Microsoft Store signs and updates its MSIX edition. The macOS package uses an ad-hoc integrity signature, so the system may display security prompts. Windows and the user manage default applications. See the [installation guide](docs/engineering/installers-associations.md).
+Desktop downloads start with `xdzip-<version>-`, and standalone [command-line client](#command-line) packages start with `xdzip-cli-<version>-`. The release page also provides checksums and third-party component materials. The Windows EXE installer is unsigned. Microsoft Store signs and updates its MSIX edition. Each channel publishes independently, so check the version in the channel you use. The macOS package uses an ad-hoc integrity signature, so the system may display security prompts. Windows and the user manage default applications. See the [installation guide](docs/engineering/installers-associations.md).
 
 For GitHub builds, check for updates from “About xdzip.” Native updates for installed macOS builds support system proxies, custom HTTP CONNECT/SOCKS5 proxies, and direct connections. Automatic installation depends on a valid release signature and installation identity. Portable packages and development builds require manual installation. See [software updates](docs/engineering/software-update.md) and the [support policy](docs/engineering/support-policy.md).
 
@@ -39,12 +39,12 @@ For GitHub builds, check for updates from “About xdzip.” Native updates for 
 
 ## Using xdzip
 
-Open an archive to browse its directories, search and sort entries, and select files to extract. The interface offers list and grid views, file properties, Simplified Chinese and English (US), light and dark themes, and font size and density settings. By default, the application detects the system UI language and falls back to English (US) for unsupported languages; you can also choose a language manually. A regular single-file ZIP/ZIP64 archive can index up to one million physical records; other formats and split archive paths retain a limit of 100,000. See [large archive indexing](docs/engineering/large-index.md) for task and modification limits.
+Open an archive to browse its directories, search and sort entries, and select files to extract. Sorting keeps folders first in both directions. The interface offers list and grid views, file properties, Simplified Chinese and English (US), light and dark themes, and font size and density settings. By default, the application detects the system UI language and falls back to English (US) for unsupported languages; you can also choose a language manually. A regular single-file ZIP/ZIP64 archive can index up to one million physical records; other formats and split archive paths retain a limit of 100,000. See [large archive indexing](docs/engineering/large-index.md) for task and modification limits.
 
 - **Content preview:** Explicitly preview bounded plain text, common raster images, and static SVG in the properties card; macOS also supports HEIC/HEIF. Preview appears after the content is fully read and any checks provided by the format are complete, and it can be canceled. See [preview](docs/engineering/content-preview.md) for formats, sizes, and decoding budgets.
 - **Extract and open:** Choose a destination and name-conflict policy, view progress, and request cancellation. Double-clicking a regular file extracts a copy to a private temporary directory before opening it with the system. Changes to the copy are not written back to the archive; cached copies are cleaned up during a later open operation after seven days.
-- **Create and modify:** Create ZIP, TAR, TAR.GZ, GZIP, XZ, TAR.XZ, LZ4, TAR.LZ4, Zstandard, TAR.ZST, LZH and 7z archives. Add, replace, or move entries in eligible regular single-file archives. You can also drag files out of the list or drag files in and confirm adding them. See the table below for formats and limits.
-- **Check:** Test an entire archive in the background without writing files. For TAR, LZMA, TAR.LZMA, Z, TAR.Z, UU/UUE, XXE, Brotli, TAR.BR, ISO, and UDF, only structure and readability are checked; per-file content verification is not guaranteed. See [archive integrity checks](docs/engineering/archive-checking.md).
+- **Create and modify:** Create ZIP, TAR, TAR.GZ, GZIP, XZ, TAR.XZ, LZ4, TAR.LZ4, Zstandard, TAR.ZST, LZH and 7z archives, and ISO9660/Joliet data images. Windows x64 can also create ZIP self-extracting files. Add, replace, or move entries in eligible regular single-file archives. You can also drag files out of the list or drag files in and confirm adding them. See the table below for formats and limits.
+- **Check:** Test an entire archive in the background without writing files. The checks depend on the format. Formats such as TAR, ISO, UDF and Compound File (MSI) provide structure and readability checks without per-file content checksums. See [archive integrity checks](docs/engineering/archive-checking.md).
 - **Multiple archives:** Open archives in new tabs by default or configure them to open in new windows. A login session shares the application process and tray; background tasks remain accessible from the task entry point after browser pages close.
 - **File-manager actions:** Create or extract archives from the Windows classic context menu, Ubuntu Files submenu, or macOS Finder Sync submenu. The Store edition also appears in the Windows 11 modern context menu. Finder services remain available on macOS. Actions use separate windows and support per-item ZIP creation, smart extraction directories and batch cancellation. See [file-manager actions](docs/engineering/shell-actions.md) for installation and settings.
 
@@ -74,7 +74,8 @@ Open an archive to browse its directories, search and sort entries, and select f
 | [ALZ](docs/engineering/ace-alz-egg-format-sources.md) | Ordinary single-volume members using Store or raw Deflate, exact sizes and CRC-32 | Not supported | Not supported |
 | [EGG](docs/engineering/ace-alz-egg-format-sources.md) | Non-encrypted, non-solid single-volume members using Store or raw Deflate, exact sizes and CRC-32 | Not supported | Not supported |
 | [PEA](docs/engineering/disk-image-archive-format-sources.md) | PEA 1.x single-volume, UTF-8 names, unencrypted PCOMPRESS0 stored files/directories; no object, stream or volume checks | Not supported | Not supported |
-| NSIS (`.exe`) | Static `firstheader` metadata only; content-validated PE overlay | Not supported | Not supported |
+| [Compound File (MSI)](docs/engineering/wim-msi-installer-format-sources.md#compound-file-and-msi) | Browse storages and extract raw streams. Check structure and readability. | Not supported | Not supported |
+| [NSIS (`.exe`)](docs/engineering/wim-msi-installer-format-sources.md#nsis-and-other-sfx) | Static `firstheader` metadata only. Installer payload extraction is unavailable. | Not supported | Not supported |
 | ASAR | Stored files/directories, shared payload ranges and declared file/block SHA-256 | Not supported | Not supported |
 | Z, TAR.Z (including `.taz`) | Unix compress LZW, 9–16-bit dictionaries and admitted CLEAR/alignment profiles | Not supported | Not supported |
 | Brotli, TAR.BR | Ordinary RFC 7932 streams, 10–24-bit windows and all static dictionary transforms | Not supported | Not supported |
@@ -123,7 +124,7 @@ build/cli/bin/xdzip list archive.zip --json
 build/cli/bin/xdzip extract archive.zip -C output
 ```
 
-On Windows, use `python` and add `.exe` to the executable name. Running on Linux requires system OpenSSL 3 and certificates; building also requires `libssl-dev` and `pkg-config`. See the [CLI guide](docs/engineering/command-line.md) for passwords, non-interactive use, exit codes, command installation, and update limits.
+On Windows, use `python` and add `.exe` to the executable name. Running on Linux requires system OpenSSL 3 and certificates. Building also requires `libssl-dev` and `pkg-config`. See the [CLI guide](docs/engineering/command-line.md) for passwords, non-interactive use, exit codes, command installation, and update limits.
 
 ## Build from source
 

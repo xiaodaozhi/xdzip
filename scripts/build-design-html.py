@@ -266,7 +266,7 @@ def shell(title: str, body: str, documents: dict[str, etree._Element], *, curren
 <a class="brand" href="{'#doc-index' if combined else 'index.html'}">xd<span>zip</span></a><span class="top-label">软件设计，基线 0.1，16 篇</span>
 <div class="top-actions">{alternate}<button class="button" id="open-search" aria-haspopup="dialog">搜索<kbd>⌘ / Ctrl K</kbd></button><button class="button" id="theme-toggle">深色</button></div></header>
 <button class="mobile-shade" id="mobile-shade" aria-label="关闭目录"></button>
-<div class="layout"><nav class="sidebar" id="sidebar" aria-label="文档目录"><p class="nav-label">SOFTWARE DESIGN</p>{''.join(nav)}<p class="sidebar-note">Qt Quick / QML + C++ + Rust<br>离线可用，无外部资源<br>设计文档，产品尚待实现</p></nav>
+<div class="layout"><nav class="sidebar" id="sidebar" aria-label="文档目录"><p class="nav-label">SOFTWARE DESIGN</p>{''.join(nav)}<p class="sidebar-note">Qt Quick / QML + C++ + Rust<br>离线可用，无外部资源<br>产品设计与技术说明</p></nav>
 <main class="content" id="main" tabindex="-1">{body}{navigation}<footer class="footer">xdzip 软件设计，2026-10-11，基线 0.1</footer></main>
 <aside class="toc" aria-label="本页目录"><div class="toc-title">{'完整文档目录' if combined else '本页目录'}</div>{toc_html}</aside></div>
 <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title"><div class="search-header"><div class="search-title"><h2 id="search-title">搜索全部设计文档</h2><button class="button" id="close-search" aria-label="关闭搜索">关闭</button></div>

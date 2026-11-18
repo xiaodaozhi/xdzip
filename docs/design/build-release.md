@@ -26,7 +26,7 @@ Provide development Debug, diagnostic ReleaseWithSymbols, and release Release co
 
 ## 3. Qt modules and deployment
 
-Initially required modules are Core, Gui, Qml, Quick, QuickControls2, QML Layouts, and actual transitive dependencies such as corresponding Templates and Models. Icons may require Svg; add it only when selected. Avoid WebEngine, Multimedia, full Qt development tools, and unused SQL drivers.
+The desktop uses Qt Core, Gui, Qml, Quick and Quick Controls, along with the QML modules it imports. The private image preview worker links Qt SVG for supported static SVG previews. Avoid WebEngine, Multimedia, full Qt development tools, and unused SQL drivers.
 
 Do not delete every transitive DLL/QML plugin based only on directly linked libraries. Deployment tools scan QML imports and dynamic dependencies, followed by clean-machine verification. QML resources and platform/imageformat plugins use explicit allowlists; do not load unknown Qt plugins from the user's current directory.
 
@@ -38,13 +38,13 @@ Product installers contain only the Qt product core and selected backends, not S
 
 ### macOS
 
-Direct downloads use a local `.dmg`. Under the personal open-source distribution policy, use only necessary ad-hoc integrity signing; Developer ID, notarization, and paid accounts are not required. Explain system warnings for packages without formal signatures; do not require users to disable system security protections. Keep permissions minimal and do not enable broadly protection-disabling entitlements for plugin convenience.
+GitHub releases offer a `.dmg` for installation and an `.app.zip` application bundle. Under the personal open-source distribution policy, use only necessary ad-hoc integrity signing; Developer ID, notarization, and paid accounts are not required. Explain system warnings for packages without formal signatures; do not require users to disable system security protections. Keep permissions minimal and do not enable broadly protection-disabling entitlements for plugin convenience.
 
 The Mac App Store is a separate distribution route requiring reevaluation of App Sandbox, bookmark authorization, downloaded-plugin restrictions, and licensing. Do not assume that the directly downloaded third-party executable extension model automatically works in a store build.
 
 ### Windows
 
-Distribute the unsigned per-user installer through GitHub Releases, stating whether administrator rights are needed; default per-user installation must be viable. Workers reside in fixed application/versioned extension directories. DLL search paths exclude untrusted current directories. Installation/upgrades do not overwrite plugin packages still used by tasks.
+GitHub Releases provides the unsigned per-user installer and portable ZIP. Microsoft Store distributes and updates a separately built MSIX through Partner Center. The EXE installs for the current user without administrator rights. The Store edition uses its package identity for associations and Explorer menus. See the [installation guide](../engineering/installers-associations.md) and [Store build guide](../engineering/developer-build.md#microsoft-store-msix).
 
 ### Linux
 
@@ -52,13 +52,13 @@ Current delivery provides an Ubuntu 24.04 runtime directory and .deb, not AppIma
 
 ## 5. Licensing and supply chain
 
-Original project content uses Apache-2.0; see the [licensing decision](../engineering/licensing.md) for the frozen record and root LICENSE for full terms. Review Rust crates, Qt modules, 7z/RAR native libraries, icons, and packaging tools individually; the project LICENSE does not override dependency terms. Dynamic Qt deployment alone is not complete compliance proof.
+Original project content uses Apache-2.0; see the [licensing decision](../engineering/licensing.md) for the frozen record and root LICENSE for full terms. Review Rust crates, Qt modules, format reference tools and materials, icons, and packaging tools individually; the project LICENSE does not override dependency terms. Dynamic Qt deployment alone is not complete compliance proof.
 
 Dependency license review includes at least distribution permissions, copyrights/notices, modification notices, source-provision obligations, user library replacement and relinking conditions, installation information, and compatibility with anti-debugging/signing policies. LGPL/GPL/commercial choices depend on actual modules and distribution methods; one Qt module's conclusion cannot be generalized to all Qt.
 
 Assess the specific terms of 7-Zip/UnRAR or other RAR implementations separately, especially RAR creation and reverse-engineering restrictions; do not simply label them “MIT compatible.” If a capability does not satisfy target licensing, do not bundle it. A user-installed compliant backend may be considered, subject to review of the host distribution relationship.
 
-Releases provide an SBOM (such as SPDX/CycloneDX), NOTICE, dependency versions/hashes, source and build instructions, required license materials, and file inventory. Static Rust third-party code is also included in the SBOM. No formal signing key is currently used. If another signing channel is chosen later, credentials must not enter the repository or ordinary PRs.
+GitHub release materials record dependency versions and hashes, file inventories, SBOMs, and the required license notices. Review source and build instructions under the [source delivery policy](../engineering/source-delivery.md). Release update manifests use signing keys separate from platform code signing. See the [release protocol](../engineering/release-protocol.md) for the signature and publication requirements.
 
 ## 6. Reproducible and offline builds
 
@@ -68,13 +68,13 @@ Platform signing/notarization timestamps normally change final package bytes. Co
 
 ## 7. Update policy
 
-The v0.1 plan uses manually downloaded updates without background automatic installation. v1.0 may offer an optional version check, but networking requires clear settings and minimal data; user archive information is not uploaded. Update-manifest signature verification does not rely on TLS alone and covers version, platform/architecture, minimum OS, hashes, and origin. Reject rollback attacks; necessary security rollbacks require trusted policy authorization.
+GitHub desktop builds check for updates on request from About. Eligible installations can install an update after verifying the signed release metadata, with a separate Sparkle feed and archive signature on macOS. Portable and development builds use manual installation. Microsoft Store manages updates for its MSIX edition. See [software updates](../engineering/software-update.md) for the selection, privacy and installation rules.
 
-Updates apply only after tasks end safely; failure preserves the current version. Extension updates independently verify protocol, origin, and permission changes; old packages in use are reclaimed later. Offline users can import a complete package after checking origin and checksums; missing network access does not make extraction unavailable.
+Installation waits for active tasks to finish and follows the platform's recovery procedure if it fails. Manual updates use a complete package from the selected release channel. Core archive operations work offline.
 
 ## 8. Release checklist
 
-- Generate source package, platform packages, symbols, SBOM, license materials, and benchmark reports from the same commit.
+- Build platform packages from the frozen release commit and verify the required manifests, checksums, SBOMs and license materials. Follow the [release protocol](../engineering/release-protocol.md) for the attachment inventory.
 - Verify the format capability inventory; unverified encryption/split volumes cannot be advertised as “all formats supported.”
 - Pass clean-machine install, first open, system associations, exit, upgrade, and uninstall on three platforms.
 - Verify source changes, output quotas, cancellation, recovery, safe paths, and sandboxing; third parties remain disabled by default if they do not meet the gate.
