@@ -1376,11 +1376,15 @@ mod scratch_tests {
         ));
         std::fs::create_dir(&root).unwrap();
         let parent = Dir::open_ambient_dir(&root, cap_std::ambient_authority()).unwrap();
+        let minimum_age = std::time::Duration::from_secs(60);
+        let expired = std::fs::FileTimes::new().set_modified(std::time::UNIX_EPOCH);
         let mut space = ScratchSpace::new_in(parent.try_clone().unwrap()).unwrap();
         let name = space.name.clone();
         let mut file = space.file().unwrap();
         file.write_all(b"owned metadata").unwrap();
-        ScratchSpace::reap(&parent, std::time::Duration::ZERO).unwrap();
+        // Control expiry independently of filesystem and runner clock precision.
+        space.lease.as_ref().unwrap().set_times(expired).unwrap();
+        ScratchSpace::reap(&parent, minimum_age).unwrap();
         assert!(parent.open_dir_nofollow(&name).is_ok());
         // Emulate a process crash by closing all handles while retaining known files.
         file.published = true;
@@ -1388,7 +1392,7 @@ mod scratch_tests {
         space.lease.take();
         space.dir.take();
         drop(space);
-        ScratchSpace::reap(&parent, std::time::Duration::ZERO).unwrap();
+        ScratchSpace::reap(&parent, minimum_age).unwrap();
         assert!(parent.open_dir_nofollow(&name).is_err());
         let mut space = ScratchSpace::new_in(parent.try_clone().unwrap()).unwrap();
         let name = space.name.clone();
@@ -1398,8 +1402,9 @@ mod scratch_tests {
         let unknown = dir.open_with("keep-unknown", &options).unwrap().into_std();
         let identity = FileIdentity::read(&unknown).unwrap();
         drop(unknown);
+        space.lease.as_ref().unwrap().set_times(expired).unwrap();
         space.lease.take();
-        ScratchSpace::reap(&parent, std::time::Duration::ZERO).unwrap();
+        ScratchSpace::reap(&parent, minimum_age).unwrap();
         assert!(parent.open_dir_nofollow(&name).is_ok());
         remove_known(space.dir.as_ref().unwrap(), "keep-unknown", identity).unwrap();
         space.cleanup().unwrap();

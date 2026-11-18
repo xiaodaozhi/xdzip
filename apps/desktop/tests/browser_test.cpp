@@ -1535,14 +1535,12 @@ QtObject {
         QVERIFY(QTest::qWaitForWindowExposed(confirmation));
         QTRY_COMPARE(QGuiApplication::modalWindow(), confirmation);
         const auto platform = QGuiApplication::platformName();
-        if (platform == QStringLiteral("windows") || platform == QStringLiteral("xcb"))
+        const bool windows = platform == QStringLiteral("windows");
+        if (windows || platform == QStringLiteral("xcb"))
             QVERIFY(QTest::qWaitForWindowActive(confirmation));
-        if (platform == QStringLiteral("windows") && (quitTiming == 0 || quitTiming == 2)) {
-            // When a password window was already exposed, wait for the confirmation's frame.
-            QSignalSpy confirmationFrame(confirmation, &QQuickWindow::frameSwapped);
-            confirmation->requestUpdate();
-            QTRY_VERIFY(!confirmationFrame.isEmpty());
-        }
+        // Windows exposure can precede the deferred footer layout.
+        if (windows)
+            QVERIFY(QQuickTest::qWaitForPolish(confirmation, 5000));
         auto *returnButton =
             findVisual(confirmation->contentItem(), quitTiming == 5 ? "quitWait" : "quitReturn");
         QVERIFY(returnButton && returnButton->isVisible() && returnButton->isEnabled());
@@ -1553,7 +1551,14 @@ QtObject {
         QSignalSpy clicked(returnButton, SIGNAL(clicked()));
         QVERIFY(clicked.isValid());
         moveTestPointer(confirmation, returnPoint);
-        QTest::mouseClick(confirmation, Qt::LeftButton, Qt::NoModifier, returnPoint);
+        if (windows) {
+            QTest::mousePress(confirmation, Qt::LeftButton, Qt::NoModifier, returnPoint);
+            const bool pressed = returnButton->property("pressed").toBool();
+            QTest::mouseRelease(confirmation, Qt::LeftButton, Qt::NoModifier, returnPoint);
+            QVERIFY(pressed);
+        } else {
+            QTest::mouseClick(confirmation, Qt::LeftButton, Qt::NoModifier, returnPoint);
+        }
         QTRY_COMPARE(clicked.size(), 1);
         QTRY_VERIFY(!confirmation->isVisible());
         QVERIFY(!sessions.isClosing() && !sessions.updatePending());
