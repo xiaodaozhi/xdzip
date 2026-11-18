@@ -1535,13 +1535,14 @@ QtObject {
         QVERIFY(QTest::qWaitForWindowExposed(confirmation));
         QTRY_COMPARE(QGuiApplication::modalWindow(), confirmation);
 #ifdef Q_OS_WIN
-        if (QGuiApplication::platformName() == QStringLiteral("windows"))
+        if (QGuiApplication::platformName() == QStringLiteral("windows")) {
             QVERIFY(QTest::qWaitForWindowActive(confirmation));
+            // Exposure can precede the first frame containing the deferred footer layout.
+            QSignalSpy confirmationFrame(confirmation, &QQuickWindow::frameSwapped);
+            confirmation->requestUpdate();
+            QTRY_VERIFY(!confirmationFrame.isEmpty());
+        }
 #endif
-        // The native modal window can be exposed before the deferred footer layout is painted.
-        QSignalSpy confirmationFrame(confirmation, &QQuickWindow::frameSwapped);
-        confirmation->requestUpdate();
-        QTRY_VERIFY(!confirmationFrame.isEmpty());
         auto *returnButton =
             findVisual(confirmation->contentItem(), quitTiming == 5 ? "quitWait" : "quitReturn");
         QVERIFY(returnButton && returnButton->isVisible() && returnButton->isEnabled());
