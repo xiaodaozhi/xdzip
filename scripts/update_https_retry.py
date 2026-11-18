@@ -1,6 +1,9 @@
 """Bounded retry decisions for explicitly diagnosed anonymous GitHub limits."""
 import math
 
+HTTPS_ATTEMPTS = 3
+HTTPS_WAIT_LIMIT = 3700
+
 
 def https_retry_plan(record, attempt, now):
     """Only a newly diagnosed anonymous GitHub API limit may delay another probe."""

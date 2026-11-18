@@ -278,6 +278,10 @@ class LinuxDeploymentTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             output=Path(temp)/'runtime.json';clock=Clock()
             first=https_limited();second=https_success()
+            # Reproduce the release runner's 403 with an exhausted primary quota
+            # and no HTTP Date, where the reset fell outside the old 240-second cap.
+            first['http_responses'][0].update(status=403,server_date_epoch=None)
+            first['http_responses'][0]['rate_headers'].update(remaining='0',reset='1504')
             calls=[subprocess.CompletedProcess([],13,stdout=probe_output(first),stderr='limit\n'),
                    subprocess.CompletedProcess([],0,stdout=probe_output(second),stderr='')]
             with patch('verify_linux_runtime.subprocess.run',side_effect=calls) as run:
@@ -289,7 +293,8 @@ class LinuxDeploymentTests(unittest.TestCase):
             self.assertIn('limit',output.with_suffix('.https.attempt-1.log').read_text())
             self.assertEqual(json.loads(output.with_suffix('.https.json').read_text()),second)
             wait=json.loads(output.with_suffix('.https-waits.json').read_text())[0]
-            self.assertEqual((wait['delay_seconds'],wait['wait_status']),(60,'finished'))
+            self.assertEqual((wait['delay_seconds'],wait['wait_status']),(505,'finished'))
+            self.assertEqual(wait['actual_wait_seconds'],505)
 
     def test_sdk_free_https_requires_separate_runtime_capability_record(self):
         for record,status in [(https_success(),0),(https_limited(),13)]:
@@ -326,7 +331,7 @@ class LinuxDeploymentTests(unittest.TestCase):
     def test_sdk_free_https_respects_wait_budget_and_short_wait(self):
         with tempfile.TemporaryDirectory() as temp:
             output=Path(temp)/'runtime.json';record=https_limited()
-            record['http_responses'][0]['rate_headers'].update(remaining='0',reset='2000')
+            record['http_responses'][0]['rate_headers'].update(remaining='0',reset='5000')
             result=subprocess.CompletedProcess([],13,stdout=probe_output(record),stderr='')
             with patch('verify_linux_runtime.subprocess.run',return_value=result) as run:
                 with self.assertRaisesRegex(SystemExit,'wait_budget_exceeded'):

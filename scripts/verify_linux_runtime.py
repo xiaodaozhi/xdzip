@@ -8,11 +8,9 @@ import subprocess
 import time
 from uuid import uuid4
 from deployment_audit import digest
-from update_https_retry import https_retry_plan
+from update_https_retry import HTTPS_ATTEMPTS, HTTPS_WAIT_LIMIT, https_retry_plan
 
 ROOT=Path(__file__).resolve().parents[1]
-HTTPS_ATTEMPTS=3
-HTTPS_WAIT_LIMIT=240
 
 
 def archive_previous_evidence(output, *, https_only=False):
@@ -125,6 +123,8 @@ def run_https_probe(command, output, *, run=None, sleep=None, monotonic=None, wa
         output.with_suffix('.https-waits.json').write_text(json.dumps(waits,indent=2)+'\n',encoding='utf-8')
         if not plan['retry']:
             raise SystemExit(f'SDK-free HTTPS update request failed (exit {exit_code}; {plan["reason"]}); see HTTPS log')
+        print(f'GitHub API limited the SDK-free HTTPS probe. Waiting {plan["delay_seconds"]} seconds for attempt {attempt+1}.',
+              flush=True)
         started=monotonic();plan['wait_status']='waiting';finished=False
         output.with_suffix('.https-waits.json').write_text(json.dumps(waits,indent=2)+'\n',encoding='utf-8')
         try:

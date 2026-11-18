@@ -26,14 +26,12 @@ from desktop_environment import locked_rust_version
 from macos_bundle import optimize_bundle, validate_optimized_bundle
 from sparkle_bundle import configuration, embed, signing_metadata
 from update_fixture import ROOT, digest, dump
-from update_https_retry import https_retry_plan
+from update_https_retry import HTTPS_ATTEMPTS, HTTPS_WAIT_LIMIT, https_retry_plan
 
 VERSION, OLD_BUILD, NEW_BUILD = '99.0.0-alpha.1', 730, 731
 BUNDLE_ID = 'org.xdzip.update-regression'
 SPARKLE = 'http://www.andymatuschak.org/xml-namespaces/sparkle'
 ET.register_namespace('sparkle', SPARKLE)
-HTTPS_ATTEMPTS = 3
-HTTPS_WAIT_LIMIT = 3700
 
 
 def clean_environment():
