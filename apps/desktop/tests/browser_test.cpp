@@ -1534,15 +1534,15 @@ QtObject {
         QTRY_VERIFY(confirmation->isVisible());
         QVERIFY(QTest::qWaitForWindowExposed(confirmation));
         QTRY_COMPARE(QGuiApplication::modalWindow(), confirmation);
-#ifdef Q_OS_WIN
-        if (QGuiApplication::platformName() == QStringLiteral("windows")) {
+        const auto platform = QGuiApplication::platformName();
+        if (platform == QStringLiteral("windows") || platform == QStringLiteral("xcb"))
             QVERIFY(QTest::qWaitForWindowActive(confirmation));
-            // Exposure can precede the first frame containing the deferred footer layout.
+        if (platform == QStringLiteral("windows") && (quitTiming == 0 || quitTiming == 2)) {
+            // When a password window was already exposed, wait for the confirmation's frame.
             QSignalSpy confirmationFrame(confirmation, &QQuickWindow::frameSwapped);
             confirmation->requestUpdate();
             QTRY_VERIFY(!confirmationFrame.isEmpty());
         }
-#endif
         auto *returnButton =
             findVisual(confirmation->contentItem(), quitTiming == 5 ? "quitWait" : "quitReturn");
         QVERIFY(returnButton && returnButton->isVisible() && returnButton->isEnabled());
