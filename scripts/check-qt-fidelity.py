@@ -122,10 +122,12 @@ def audit(directory):
             record(f'row{row_index}.canonicalIcon', glyph['source'].startswith('qrc:/xdzip/assets/'), True)
             for column in [1, 2, 3, 4]:
                 cell = named(f'entry-{row_index}-{column}')
-                text = within(cell, lambda n: n['class'].startswith('QQuickText') and bool(n.get('text')))
+                text = within(cell, lambda n: n['class'].startswith('QQuickText') and 'text' in n)
                 header = named(f'sort-column-{column}')
                 align_right = column in [1, 2]
                 expected_align = 'AlignRight' if align_right else 'AlignLeft'
+                if row_index < 3 and align_right:
+                    record(f'row{row_index}.col{column}.folderSize', text['text'], '')
                 record(f'row{row_index}.col{column}.alignment', text['horizontalAlignment'], expected_align)
                 header_edge = header['x'] + header['width'] - header['rightPadding'] if align_right else header['x'] + header['leftPadding']
                 text_edge = text['x'] + text['width'] if align_right else text['x']
