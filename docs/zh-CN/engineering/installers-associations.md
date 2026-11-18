@@ -7,6 +7,8 @@ Windows MSIX 使用包清单声明同一组扩展作为打开方式候选，不�
 
 逐格式图标素材及平台映射见[文件关联图标规范](../visual/file-association-icons.md)。Linux 保留系统 MIME 图标，安装不改变默认选择或现有注册范围。
 
+MSIX 文件关联引用逐格式 PNG，直接提取自普通 Windows 安装版使用的同一套 ICO 帧。ZIP、7z、RAR 等已映射格式保留各自的文档图案、尺寸配置和透明边距；应用标志另有独立的无底板目标尺寸资源。两组资源均编入包内的 `resources.pri`，修改商店一览图片不会替换这些已安装图标。图标缓存和默认处理程序由 Windows 管理，安装不会自动更改默认选择。
+
 自 `v0.2.0` 起的桌面包及当前源码构建将命令行程序放在独立的 `cli/` 目录，macOS 位于 `Contents/Helpers/cli/`，保留原 GUI 与文件关联入口。更早版本的附件不追溯加入该功能。Windows 安装器提供默认关闭的当前用户 PATH 选项，检测同名命令冲突；卸载只撤销本安装目录。Mac/Linux 显式运行私有 CLI 的 `setup`，独立 CLI 包也通过 `setup` 安装用户级版本目录和稳定启动入口，不改 Shell 配置。撤销用 `setup --remove`，保留版本目录供核查。详见 [CLI 安装契约](command-line.md#构建与命令安装)。
 
 本页描述本地开发和按需验证产物：Windows x64 当前用户安装器、Ubuntu 24.04 amd64 X11 的 .deb，以及按明确需求制作的[本地 macOS 开发 DMG](macos-deployment.md)。这些本地产物仍是实验性开发交付，不能替代正式 Release。正式 `v0.1.0` 的平台包由专用 Release 工作流生成和验证，另遵循[发布协议](release-protocol.md)。个人开源发行不要求付费证书、Developer ID 或公证，macOS 保留必要 ad-hoc 完整性签名；普通 CI 不部署或上传 Mac 应用。支持范围见[支持政策](support-policy.md)。

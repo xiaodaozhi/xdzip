@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """MSIX identity, channel and payload regression checks."""
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -8,8 +9,10 @@ import tempfile
 import unittest
 from unittest.mock import patch
 import xml.etree.ElementTree as ET
+import zipfile
 
 from deployment_audit import digest
+import msix_icon_assets as icons
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('msix_builder', ROOT / 'scripts/build-windows-msix.py')
@@ -18,6 +21,40 @@ spec.loader.exec_module(msix)
 
 
 class MsixTests(unittest.TestCase):
+    def test_associations_declare_format_icons_in_both_channels(self):
+        for channel in ('store', 'sideload'):
+            root = ET.fromstring(msix.manifest('xdzip.Test', 'CN=test', 28, 'xdzip', channel))
+            icons.verify_manifest_icons(root)
+            for association in root.iter(icons.UAP + 'FileTypeAssociation'):
+                extension = association.get('Name').removeprefix('xdzip-')
+                self.assertEqual(association.find(icons.UAP + 'Logo').text,
+                                 icons.association_logo(msix.WINDOWS_ICONS[extension]).replace('/', '\\'))
+            association = next(root.iter(icons.UAP + 'FileTypeAssociation'))
+            association.remove(association.find(icons.UAP + 'Logo'))
+            with self.assertRaisesRegex(ValueError, 'canonical format icon'):
+                icons.verify_manifest_icons(root)
+
+    def test_canonical_file_images_keep_all_original_size_profiles(self):
+        assets = dict(icons.association_assets())
+        for icon in set(msix.WINDOWS_ICONS.values()):
+            frames = icons.ico_frames(ROOT / 'design/assets/file-associations' / f'xdzip-{icon}.ico')
+            self.assertEqual(set(frames), {16, 24, 32, 48, 64, 128, 256})
+            for size, frame in frames.items():
+                self.assertEqual(assets[f'file-{icon}.targetsize-{size}.png'], frame)
+            self.assertEqual(assets[f'file-{icon}.png'], frames[256])
+        self.assertNotEqual(assets['file-zip.png'], assets['file-7z.png'])
+        self.assertNotEqual(assets['file-zip.png'], (ROOT / 'design/assets/brand/xdzip-256.png').read_bytes())
+
+    def test_unplated_icons_cover_shell_sizes_and_both_themes(self):
+        assets = dict(icons.application_assets())
+        for size in (16, 20, 24, 30, 32, 36, 40, 48, 60, 64, 72, 80, 96, 256):
+            for suffix in ('', '_altform-unplated', '_altform-lightunplated'):
+                self.assertEqual(assets[f'logo44.targetsize-{size}{suffix}.png'], size)
+        for base, size in (('logo44', 44), ('logo150', 150)):
+            self.assertEqual(assets[base + '.png'], size)
+            self.assertEqual(assets[base + '.scale-200.png'], size * 2)
+            self.assertEqual(assets[base + '.scale-400.png'], size * 4)
+
     def test_manifest_contains_associations_and_classic_only_for_sideload(self):
         data = msix.manifest('xdzip.Development', 'CN=xdzip development', 27, '测试 & Publisher')
         package = ET.fromstring(data)
@@ -134,6 +171,73 @@ class MsixTests(unittest.TestCase):
             import zipfile
             with zipfile.ZipFile(folder / 'app.msix') as package:
                 self.assertEqual(package.read('xdzip-msix-channel.txt'), b'xdzip-msix-v1\nsideload\n')
+                self.assertGreater(package.getinfo('resources.pri').file_size, 1024)
+                root = ET.fromstring(package.read('AppxManifest.xml'))
+                count = icons.verify_package_icons(package, root)
+                self.assertEqual(report['icon_assets']['png_count'], count)
+                files = {name: package.read(name) for name in package.namelist()}
+            # Inspect the real SDK index, not just PNG filenames in the ZIP.
+            dump = folder / 'resources.xml'
+            msix.subprocess.run([str(msix.sdk_tool('makepri.exe')), 'dump', '/if',
+                            str(folder / 'app-stage/resources.pri'), '/of', str(dump), '/dt', 'detailed', '/o'],
+                           check=True, capture_output=True)
+            index = dump.read_text(encoding='utf-8-sig')
+            resources = {item.get('uri') for item in ET.fromstring(index).iter('NamedResource')}
+            self.assertIn('ms-resource://xdzip.Test/Files/Assets/logo44.png', resources)
+            for icon in set(msix.WINDOWS_ICONS.values()):
+                self.assertIn('ms-resource://xdzip.Test/Files/' + icons.association_logo(icon), resources)
+            qualifiers = {(item.get('name'), item.get('value')) for item in ET.fromstring(index).iter('Qualifier')}
+            self.assertIn(('AlternateForm', 'UNPLATED'), qualifiers)
+            self.assertIn(('AlternateForm', 'LIGHTUNPLATED'), qualifiers)
+            for name in dict(icons.application_assets()) | dict(icons.association_assets()):
+                self.assertIn(name, index)
+            pixels = folder / 'check-icon-pixels.ps1'
+            pixels.write_text(r'''
+param([string]$AssetsDirectory)
+$ErrorActionPreference = 'Stop'
+Add-Type -AssemblyName System.Drawing
+foreach ($stem in @('logo44', 'file-zip', 'file-7z', 'file-rar', 'file-iso')) {
+    foreach ($size in @(48, 128)) {
+        $bitmap = [System.Drawing.Bitmap]::new((Join-Path $AssetsDirectory "$stem.targetsize-$size.png"))
+        try {
+            if ($bitmap.GetPixel(0, 0).A -ne 0 -or $bitmap.GetPixel($size-1, $size-1).A -ne 0) {
+                throw 'Opaque icon background'
+            }
+            $left=$size; $top=$size; $right=-1; $bottom=-1
+            for ($y=0; $y -lt $size; $y++) { for ($x=0; $x -lt $size; $x++) {
+                if ($bitmap.GetPixel($x, $y).A -ge 128) {
+                    $left=[Math]::Min($left,$x); $top=[Math]::Min($top,$y)
+                    $right=[Math]::Max($right,$x); $bottom=[Math]::Max($bottom,$y)
+                }
+            }}
+            if ($bottom-$top+1 -lt $size*0.8 -or
+                [Math]::Abs(($left+$right+1)/2-$size/2) -gt 1.25 -or
+                [Math]::Abs(($top+$bottom+1)/2-$size/2) -gt 1.25) {
+                throw 'Undersized or misaligned icon artwork'
+            }
+        } finally { $bitmap.Dispose() }
+    }
+}
+''', encoding='utf-8')
+            msix.subprocess.run(['pwsh', '-NoProfile', '-NonInteractive', '-File', str(pixels),
+                                 '-AssetsDirectory', str(folder / 'app-stage/Assets')],
+                                check=True, capture_output=True)
+            for missing in ('resources.pri', 'Assets/logo44.targetsize-256_altform-unplated.png'):
+                with self.subTest(missing=missing):
+                    stream = io.BytesIO()
+                    with zipfile.ZipFile(stream, 'w') as changed:
+                        for name, data in files.items():
+                            if name != missing:
+                                changed.writestr(name, data)
+                    with zipfile.ZipFile(stream) as changed, self.assertRaises(ValueError):
+                        icons.verify_package_icons(changed, root)
+            stream = io.BytesIO()
+            with zipfile.ZipFile(stream, 'w') as changed:
+                for name, data in files.items():
+                    changed.writestr(name, files['Assets/logo44.targetsize-256.png']
+                                     if name == 'Assets/file-zip.png' else data)
+            with zipfile.ZipFile(stream) as changed, self.assertRaisesRegex(ValueError, 'pixels differ'):
+                icons.verify_package_icons(changed, root)
 
 
 if __name__ == '__main__':

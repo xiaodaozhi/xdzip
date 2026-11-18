@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "role": "windows-package-icon-resources",
+  "application": {
+    "source": "design/assets/brand/xdzip-1024.png",
+    "logos": {"logo44": 44, "logo50": 50, "logo150": 150},
+    "scales": [100, 125, 150, 200, 250, 300, 400],
+    "target_sizes": [16, 20, 24, 30, 32, 36, 40, 44, 48, 60, 64, 72, 80, 96, 128, 256],
+    "alternate_forms": ["", "unplated", "lightunplated"]
+  },
+  "associations": {
+    "source_directory": "design/assets/file-associations",
+    "target_sizes": [16, 24, 32, 48, 64, 128, 256],
+    "base_size": 256,
+    "geometry": "Reuse each canonical ICO PNG frame byte-for-byte, including its optical size profile, visible bounds and transparent margins."
+  },
+  "background": "transparent",
+  "resource_index": "resources.pri"
+}
