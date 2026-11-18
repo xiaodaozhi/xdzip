@@ -3,11 +3,14 @@
 import importlib.util
 import configparser
 import copy
+import contextlib
+import io
 import json
 import os
 from pathlib import Path
 import plistlib
 import re
+import runpy
 import shlex
 import shutil
 import subprocess
@@ -26,6 +29,21 @@ linux=module('build-linux-installer');windows=module('build-windows-installer');
 
 
 class InstallerTests(unittest.TestCase):
+    def test_linux_lifecycle_mounts_generated_format_registry(self):
+        script = ROOT/'scripts/verify-linux-installer.py'
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            args = [str(script), '--packages', str(base/'packages'), '--fixture', str(base/'fixture.zip'),
+                    '--formats', str(base/'formats'), '--output', str(base/'evidence.json')]
+            result = subprocess.CompletedProcess([], 0, 'XDZIP_INSTALL {"status":"passed"}\n', '')
+            with patch.object(sys, 'argv', args), patch('subprocess.run', return_value=result) as run:
+                with contextlib.redirect_stdout(io.StringIO()):
+                    runpy.run_path(str(script), run_name='__main__')
+            command = run.call_args.args[0]
+            mounts = [command[index + 1] for index, option in enumerate(command) if option == '--volume']
+            self.assertIn(str(ROOT/'scripts/archive_formats_generated.py')+':/archive_formats_generated.py:ro', mounts)
+            self.assertIn('--network=none', command)
+
     def test_windows_runtime_agreement_rejects_changed_supplier_text_and_notice(self):
         with tempfile.TemporaryDirectory() as temp:
             base=Path(temp); source=base/'apps/desktop/packaging/windows/Windows-runtime-NOTICE.txt'

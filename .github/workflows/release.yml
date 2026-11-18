@@ -76,6 +76,7 @@ jobs:
           name: release-evidence-${{ runner.os }}
           path: |
             build/review/*.json
+            build/review/linux-install-lifecycle.log
             build/review/native-sessions*.log
             build/review/x11-startup/*.json
             build/review/x11-startup/*.log
