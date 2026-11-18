@@ -30,9 +30,15 @@ for scene in ['result-partial', 'result-dark', 'result-details']:
     check(scene+'/maximum height', 0 < capture['height'] <= maximum_height, True)
     check(scene+'/DPR width',capture['imageWidth']/capture['dpr'],capture['width'])
     check(scene+'/single heading',len([n for n in visible if n.get('text')=='部分文件未完成']),1)
-    for text,key in [('部分文件未完成','title_size'),('未完成的文件','section_size'),('目标位置','section_size'),('查看处理明细','body_size')]:
-        node = next(n for n in visible if n.get('text')==text and n['class'].startswith('QQuickText'))
-        check(scene+'/'+text,node['fontPixelSize'],reference[key])
+    labels = {n.get('text'): n for n in visible if n['class'].startswith('QQuickText')}
+    for text, key in [('部分文件未完成', 'title_size'), ('目标位置', 'section_size'),
+                      ('查看处理明细', 'body_size')]:
+        check(scene+'/'+text, labels.get(text, {}).get('fontPixelSize'), reference[key])
+    check(scene+'/standalone unfinished heading', '未完成的文件' in labels, False)
+    check(scene+'/unfinished file in expanded details', '行程手册.pdf' in labels,
+          scene == 'result-details')
+    check(scene+'/unfinished reason in expanded details', '校验失败' in labels,
+          scene == 'result-details')
     card = named['resultCounts']
     check(scene+'/summary radius',card['radius'],reference['card_radius'],.01)
     check(scene+'/summary normal height',card['height'],80,1.5)
