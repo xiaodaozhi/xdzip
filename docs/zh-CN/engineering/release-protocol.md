@@ -2,6 +2,8 @@
 
 [English](../../engineering/release-protocol.md) | 简体中文
 
+本流程负责 GitHub 下载包。[Microsoft Store MSIX 工作流](developer-build.md#microsoft-store-msix)可基于同一版本源码生成商店包，商店认证和发布在微软合作伙伴中心完成。
+
 专用 [Release 工作流](../../../.github/workflows/release.yml)只由 `workflow_dispatch` 手动触发，并要求输入已有版本标签。创建或移动标签不会自动再触发一轮发行构建，因此同一提交的三平台 native 只在该手动运行中执行一次，汇总步骤复用同一运行的工件。按需 Qt 工作流的 macOS 作业只进行 SDK 验证；专用发布流程明确允许 Apple Silicon 原生 Qt 部署、必要的 ad-hoc 完整性签名、同一应用的 ZIP 和 DMG 打包与核验。未使用 Developer ID、Apple 公证或 Windows 发行者证书。
 
 完整标签等于 `v` 加 VERSION.json 派生的语义版本。`prerelease_number` 是可选正整数，缺省兼容历史构建号；alpha.1 与 build 14 是不同身份。Windows 数值资源和 macOS CFBundleVersion 仍使用单调递增构建号。公开同一版本的资产不可替换，修订必须使用新版本；草稿可重跑。

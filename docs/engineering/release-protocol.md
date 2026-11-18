@@ -2,6 +2,8 @@
 
 English | [简体中文](../zh-CN/engineering/release-protocol.md)
 
+This workflow serves GitHub downloads. The [Microsoft Store MSIX workflow](developer-build.md#microsoft-store-msix) packages the same versioned source for Microsoft Partner Center, which handles Store certification and publication.
+
 The dedicated [Release workflow](../../.github/workflows/release.yml) runs only by manual `workflow_dispatch` and requires an existing version tag. Creating or moving a tag does not trigger another release build, so three-platform native builds for one commit run once in that manual run and assembly reuses artifacts from the same run. The on-demand Qt workflow's macOS job performs SDK verification only. The dedicated release flow explicitly permits native Apple Silicon Qt deployment, necessary ad-hoc integrity signing, and ZIP/DMG packaging and verification from one app. Developer ID, Apple notarization, and Windows publisher certificates are not used.
 
 The complete tag is `v` plus the semantic version derived from VERSION.json. `prerelease_number` is an optional positive integer; its absence remains compatible with historical build numbers. alpha.1 and build 14 are distinct identities. Windows numeric resources and macOS CFBundleVersion still use monotonically increasing build numbers. Public assets for the same version cannot be replaced; revisions require a new version. Drafts may be rerun.

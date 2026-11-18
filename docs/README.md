@@ -17,7 +17,7 @@ Find guides for using xdzip, building the project, and understanding its archive
 | Compress or extract from a file manager | [File-manager actions](engineering/shell-actions.md) |
 | Learn how data is handled | [Privacy policy](../PRIVACY.en.md), [data lifecycle and diagnostics](engineering/privacy.md) |
 | Check for updates | [User-initiated updates](engineering/software-update.md), [releases](https://github.com/xiaodaozhi/xdzip/releases) |
-| Prepare a Store listing | [Windows Store copy, screenshots, promotional artwork and icons](market/windows/README.md) |
+| Package and submit the Store edition | [Windows Store MSIX build](engineering/developer-build.md#microsoft-store-msix), [bilingual listing materials](market/windows/README.md) |
 
 The [format support table](../README.md#format-support) describes the formats, operations, and limits in the current source tree. Consult the release notes for the capabilities of a specific package.
 

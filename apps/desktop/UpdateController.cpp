@@ -314,6 +314,8 @@ void UpdateController::fetch(const QUrl &url, qsizetype limit, FetchCallback cal
         return;
     }
     QNetworkRequest request(requestUrl);
+    // Keep the update transport off the affected Qt 6.8 HTTP/2 code path.
+    request.setAttribute(QNetworkRequest::Http2AllowedAttribute, false);
     request.setRawHeader("User-Agent", "xdzip/" + BuildInfo::version().toUtf8());
     request.setRawHeader("Accept", "application/vnd.github+json");
     request.setTransferTimeout(15000);
@@ -623,6 +625,7 @@ void UpdateController::beginDownload(bool install) {
         return;
     }
     QNetworkRequest request(downloadUrl);
+    request.setAttribute(QNetworkRequest::Http2AllowedAttribute, false);
     request.setRawHeader("User-Agent", "xdzip/" + BuildInfo::version().toUtf8());
     request.setTransferTimeout(30000);
     request.setMaximumRedirectsAllowed(5);

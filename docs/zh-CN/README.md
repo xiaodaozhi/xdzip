@@ -17,7 +17,7 @@
 | 从文件管理器直接压缩或解压 | [文件管理器操作](engineering/shell-actions.md) |
 | 了解数据处理和隐私 | [隐私政策](../../PRIVACY.md)、[数据生命周期与诊断](engineering/privacy.md) |
 | 检查更新 | [用户主动更新](engineering/software-update.md)、[发布页](https://github.com/xiaodaozhi/xdzip/releases) |
-| 准备商店一览 | [Windows 商店文案、截图、宣传图和图标](market/windows/README.md) |
+| 打包和提交商店版 | [Windows Store MSIX 构建](engineering/developer-build.md#microsoft-store-msix)、[双语商店一览材料](market/windows/README.md) |
 
 项目首页的[格式支持表](../../README.zh-CN.md#格式支持)列出当前源码支持的格式、操作及限制。发行包的实际能力以对应版本的发布说明为准。
 

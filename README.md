@@ -23,17 +23,17 @@
 
 ## Download and install
 
-The current stable release is [xdzip 0.2.0, build 27](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.2.0). Choose the file for your system on the release page:
+Choose the file for your system from the [latest stable release](https://github.com/xiaodaozhi/xdzip/releases/latest):
 
 | System | Supported scope | Download |
 | --- | --- | --- |
-| Windows | Maintained versions of Windows 11, x86_64 | `setup.exe` per-user installer or portable `.zip` |
+| Windows | Maintained versions of Windows 11, x86_64 | Per-user `setup.exe`, portable `.zip`, or XDZip from Microsoft Store |
 | macOS | macOS 14 and later, Apple Silicon | `.dmg` or `.app.zip` application bundle |
 | Linux | Ubuntu 24.04 LTS, x86_64, X11, glibc 2.39 or later | `.deb` package or `.tar.gz` runtime directory |
 
-Desktop packages start with `xdzip-0.2.0-`; packages for the standalone [command-line client](#command-line) start with `xdzip-cli-0.2.0-`. The release page also provides a checksum manifest and third-party component materials. The Windows installer is not signed with a publisher certificate. The macOS package uses an ad-hoc integrity signature and is neither Developer ID signed nor notarized, so the system may display security prompts. Installation does not change default applications. See the [installation guide](docs/engineering/installers-associations.md) for file associations and manual installation.
+Desktop downloads start with `xdzip-<version>-`, and standalone [command-line client](#command-line) packages start with `xdzip-cli-<version>-`. The release page also provides checksums and third-party component materials. The Windows EXE installer is unsigned. Microsoft Store signs and updates its MSIX edition. The macOS package uses an ad-hoc integrity signature, so the system may display security prompts. Windows and the user manage default applications. See the [installation guide](docs/engineering/installers-associations.md).
 
-You can check for updates from “About xdzip.” Native updates for installed macOS builds support system proxies, custom HTTP CONNECT/SOCKS5 proxies, and direct connections. Automatic installation depends on a valid release signature and installation identity; portable packages and development builds must be installed manually. See [software updates](docs/engineering/software-update.md). For the first upgrade from an older client, see the [release notes](release-notes/0.2.0.md). The [support policy](docs/engineering/support-policy.md) describes the scope for other systems, architectures, and desktop environments.
+For GitHub builds, check for updates from “About xdzip.” Native updates for installed macOS builds support system proxies, custom HTTP CONNECT/SOCKS5 proxies, and direct connections. Automatic installation depends on a valid release signature and installation identity. Portable packages and development builds require manual installation. See [software updates](docs/engineering/software-update.md) and the [support policy](docs/engineering/support-policy.md).
 
 **Version note:** Features on this page describe the current source tree. Consult the release notes for the corresponding release package. Builds from source are experimental development versions.
 
@@ -46,7 +46,7 @@ Open an archive to browse its directories, search and sort entries, and select f
 - **Create and modify:** Create ZIP, TAR, TAR.GZ, GZIP, XZ, TAR.XZ, LZ4, TAR.LZ4, Zstandard, TAR.ZST, LZH and 7z archives. Add, replace, or move entries in eligible regular single-file archives. You can also drag files out of the list or drag files in and confirm adding them. See the table below for formats and limits.
 - **Check:** Test an entire archive in the background without writing files. For TAR, LZMA, TAR.LZMA, Z, TAR.Z, UU/UUE, XXE, Brotli, TAR.BR, ISO, and UDF, only structure and readability are checked; per-file content verification is not guaranteed. See [archive integrity checks](docs/engineering/archive-checking.md).
 - **Multiple archives:** Open archives in new tabs by default or configure them to open in new windows. A login session shares the application process and tray; background tasks remain accessible from the task entry point after browser pages close.
-- **File-manager actions:** Create or extract archives directly from the Windows classic context menu, Ubuntu Files submenu, or macOS Finder Sync dynamic submenu. Finder services remain available as a fallback on macOS. Actions use separate windows and do not open the main window or destination directory by default. Per-item ZIP creation, smart extraction directories, and batch cancellation are supported. See [file-manager actions](docs/engineering/shell-actions.md) for entry points, system enablement, and installation scope.
+- **File-manager actions:** Create or extract archives from the Windows classic context menu, Ubuntu Files submenu, or macOS Finder Sync submenu. The Store edition also appears in the Windows 11 modern context menu. Finder services remain available on macOS. Actions use separate windows and support per-item ZIP creation, smart extraction directories and batch cancellation. See [file-manager actions](docs/engineering/shell-actions.md) for installation and settings.
 
 `.DS_Store` files and `__MACOSX` and `_MACOSX` directories are excluded when creating archives or adding files. Extraction checks paths and destination authorization, handles name conflicts, and stages output; supported formats also verify content. Handling of special objects and links varies by format and platform. See the [safe extraction contract](docs/engineering/zip-safe-extraction.md).
 
@@ -111,7 +111,7 @@ Open an archive to browse its directories, search and sort entries, and select f
 
 ## Command line
 
-The stable release includes a standalone Rust CLI that does not require Qt or a graphical session. It lists, extracts, creates, adds to, and tests archives, and supports JSON output. Download the `xdzip-cli-0.2.0-` package for your system and run `bin/xdzip --help` after extraction; on Windows use `bin/xdzip.exe`. You can also build it from source:
+The stable release includes a standalone Rust CLI that does not require Qt or a graphical session. It lists, extracts, creates, adds to, and tests archives, and supports JSON output. Download the `xdzip-cli-<version>-` package for your system and run `bin/xdzip --help` after extraction. On Windows use `bin/xdzip.exe`. You can also build it from source:
 
 ```sh
 git clone https://github.com/xiaodaozhi/xdzip.git

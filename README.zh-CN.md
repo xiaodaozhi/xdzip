@@ -23,17 +23,17 @@
 
 ## 下载安装
 
-当前稳定版是 [xdzip 0.2.0，build 27](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.2.0)。在发布页选择与你的系统对应的文件：
+在[最新稳定版](https://github.com/xiaodaozhi/xdzip/releases/latest)发布页选择与你的系统对应的文件：
 
 | 系统 | 支持范围 | 下载选择 |
 | --- | --- | --- |
-| Windows | 仍受维护的 Windows 11，x86_64 | `setup.exe` 当前用户安装器，或 `.zip` 便携包 |
+| Windows | 仍受维护的 Windows 11，x86_64 | 当前用户安装器 `setup.exe`、便携 `.zip` 或 Microsoft Store 中的 XDZip |
 | macOS | macOS 14 及以上，Apple Silicon | `.dmg`，或 `.app.zip` 应用包 |
 | Linux | Ubuntu 24.04 LTS，x86_64，X11，glibc 2.39 及以上 | `.deb` 安装包，或 `.tar.gz` 运行目录 |
 
-桌面包以 `xdzip-0.2.0-` 开头，独立[命令行客户端](#命令行)的包以 `xdzip-cli-0.2.0-` 开头。发布页还提供校验清单和第三方组件材料。Windows 安装器未签署发行者证书，macOS 包使用 ad-hoc 完整性签名，未使用 Developer ID 签名或公证，系统可能显示安全提示。安装不会更改默认应用；文件关联和手动安装步骤见[安装指南](docs/zh-CN/engineering/installers-associations.md)。
+桌面下载包以 `xdzip-<版本>-` 开头，独立[命令行客户端](#命令行)的包以 `xdzip-cli-<版本>-` 开头。发布页还提供校验清单和第三方组件材料。Windows EXE 安装器未签名，Microsoft Store 负责该渠道 MSIX 的签名和更新。macOS 包采用 ad-hoc 完整性签名，系统可能显示安全提示。默认应用由 Windows 和用户管理。详见[安装指南](docs/zh-CN/engineering/installers-associations.md)。
 
-应用的“关于 xdzip”可由用户主动检查更新。macOS 安装版的原生更新支持系统代理、自定义 HTTP CONNECT/SOCKS5 代理和直连设置。自动安装取决于有效的发布签名和安装身份，便携包及开发构建需要手动安装；详见[更新说明](docs/zh-CN/engineering/software-update.md)。旧版客户端首次升级的方式见[本版发布说明](release-notes/0.2.0.md)。其他系统、架构和桌面环境的范围见[支持政策](docs/zh-CN/engineering/support-policy.md)。
+GitHub 版可在“关于 xdzip”中主动检查更新。macOS 安装版的原生更新支持系统代理、自定义 HTTP CONNECT/SOCKS5 代理和直连设置。自动安装取决于有效的发布签名和安装身份。便携包及开发构建需要手动安装。详见[更新说明](docs/zh-CN/engineering/software-update.md)和[支持政策](docs/zh-CN/engineering/support-policy.md)。
 
 **版本说明**：本页的功能说明基于当前源码，发布包以对应版本的发布说明为准。源码构建属于实验性开发版本。
 
@@ -46,7 +46,7 @@
 - **创建和修改**：可创建 ZIP、TAR、TAR.GZ、GZIP、XZ、TAR.XZ、LZ4、TAR.LZ4、Zstandard、TAR.ZST、LZH 和 7z。支持对符合条件的普通单文件压缩包添加文件、替换文件和包内移动；也可从列表拖出文件，或拖入文件后确认添加。具体格式和限制见下表。
 - **检查**：可在后台测试整包，不写出文件。TAR、LZMA、TAR.LZMA、Z、TAR.Z、UU/UUE、XXE、Brotli、TAR.BR、ISO 和 UDF 只检查结构与可读性，不提供逐文件内容校验保证。详见[完整性检查](docs/zh-CN/engineering/archive-checking.md)。
 - **多个归档**：默认在新标签页打开，也可设置为新窗口。同一登录会话共用应用进程和托盘，关闭浏览页面后后台任务仍可从任务入口访问。
-- **文件管理器操作**：Windows 经典右键菜单、Ubuntu Files 子菜单及 macOS Finder Sync 动态子菜单可直接压缩或解压，macOS 保留 Finder 服务作为回退。操作使用独立窗口，默认不打开主窗口或目标目录；支持逐项 ZIP、智能解压目录与批次取消。入口、系统启用及安装范围见[文件管理器操作](docs/zh-CN/engineering/shell-actions.md)。
+- **文件管理器操作**：可从 Windows 传统右键菜单、Ubuntu Files 子菜单及 macOS Finder Sync 子菜单直接压缩或解压。商店版也会出现在 Windows 11 现代右键菜单，macOS 保留 Finder 服务。操作使用独立窗口，支持逐项 ZIP、智能解压目录和批次取消。安装方式与设置见[文件管理器操作](docs/zh-CN/engineering/shell-actions.md)。
 
 创建或添加时会排除 `.DS_Store` 文件及 `__MACOSX`、`_MACOSX` 目录。解压时执行路径检查、目标授权、重名处理和暂存，支持的格式还会校验内容；特殊对象和链接的处理因格式与平台而异，详见[安全解压契约](docs/zh-CN/engineering/zip-safe-extraction.md)。
 
@@ -111,7 +111,7 @@
 
 ## 命令行
 
-稳定版提供无需 Qt 或图形会话的独立 Rust CLI，可列举、解压、创建、添加和测试归档，也支持 JSON 输出。下载对应系统的 `xdzip-cli-0.2.0-` 包，解包后运行 `bin/xdzip --help`，Windows 使用 `bin/xdzip.exe`。也可按下面的源码步骤构建：
+稳定版提供无需 Qt 或图形会话的独立 Rust CLI，可列举、解压、创建、添加和测试归档，也支持 JSON 输出。下载对应系统的 `xdzip-cli-<版本>-` 包，解包后运行 `bin/xdzip --help`，Windows 使用 `bin/xdzip.exe`。也可按下面的源码步骤构建：
 
 ```sh
 git clone https://github.com/xiaodaozhi/xdzip.git

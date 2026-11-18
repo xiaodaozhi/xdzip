@@ -252,7 +252,12 @@ try {
     }
     $archiveName = if ($Language -eq 'zh-CN') { '图片合集.zip' } else { 'Photos.zip' }
     [Xdzip.WindowsCapture.Driver]::SetValue($process.Id, $creationWindow, $catalog.messages.'ui.0d568cd7b07d', $archiveName)
-    [Xdzip.WindowsCapture.Driver]::Focus($process.Id, $creationWindow, 'ZIP', 'RadioButton')
+    $formatName = $catalog.messages.'ui.5e30948d6a8b'
+    if ([Xdzip.WindowsCapture.Driver]::Ready($process.Id, $creationWindow, $formatName, 'ComboBox')) {
+        [Xdzip.WindowsCapture.Driver]::Focus($process.Id, $creationWindow, $formatName, 'ComboBox')
+    } else {
+        [Xdzip.WindowsCapture.Driver]::Focus($process.Id, $creationWindow, 'ZIP', 'RadioButton')
+    }
     Wait-Control $creationWindow $creationTitle 'Button'
     Save-Scene '02-create' $creationWindow $creationTitle @{ inputs = @('coastline.png', 'dusk.png', 'forest.png'); submitted = $false }
     $null = Test-WindowsCaptureImages -Directory $OutputDirectory -Session $receipt

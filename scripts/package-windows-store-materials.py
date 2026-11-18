@@ -26,6 +26,8 @@ def main():
     if output.exists() or archive.exists():
         raise ValueError('Choose a fresh output directory and ZIP name')
     spec = json.loads((ROOT / 'specs/marketing/windows-store.json').read_text(encoding='utf-8'))
+    version = json.loads((ROOT / 'VERSION.json').read_text(encoding='utf-8'))
+    msix_version = f"1.0.{version['build']}.0"
     inventory = json.loads((ROOT / 'specs/marketing/windows-store-assets.json').read_text(encoding='utf-8'))
     payload = {}
     image_count = 0
@@ -33,6 +35,7 @@ def main():
         base = ROOT / ('docs/market/windows' if locale == 'en-US' else 'docs/zh-CN/market/windows')
         field_files = {
             'description.txt': copy['description'],
+            'whats-new.txt': copy['release_notes'],
             'features.txt': '\n'.join(copy['features']),
             'short-description.txt': copy['short_description'],
             'keywords.txt': '\n'.join(copy['keywords']),
@@ -95,6 +98,7 @@ Use en-US for English (United States), zh-CN for Chinese (China).
 | Partner Center field / 页面字段 | File / 文件 |
 | --- | --- |
 | Description / 说明 | <language>/text/description.txt |
+| What's new / 此版本的新增功能 | <language>/text/whats-new.txt |
 | Product features / 产品功能 | <language>/text/features.txt, one entry per line / 每行单独填写 |
 | Short description / 简短描述 | <language>/text/short-description.txt |
 | Keywords / 关键字 | <language>/text/keywords.txt, one entry per line / 每行单独填写 |
@@ -119,11 +123,11 @@ screenshots/ 是 2560 x 1440 的纯应用界面。promotional/ 是带圆角细�
 1920 x 1080、3840 x 2160 宣传图。feature-illustrations/ 是标明用途的矢量功能示意图。
 桌面截图栏使用 screenshots/，其他两套图片供宣传使用。
 
-Keep What's new, sort title, voice title and additional license terms empty as specified
-in fields.json. fields.json and the caption CSV are copy references, not a Partner Center
+Use the values in fields.json for the optional fields.
+fields.json and the caption CSV are copy references, not a Partner Center
 CSV import template. Privacy URLs are provided in fields.json.
 
-首次提交的新增功能、排序标题、语音标题、额外许可条款按 fields.json 留空。
+可选字段按 fields.json 填写。
 fields.json 和截图说明 CSV 是填写参考，不是合作伙伴中心 CSV 导入模板。
 隐私政策链接见 fields.json。
 
@@ -133,10 +137,11 @@ Pricing, age ratings and other account-level submission sections are completed s
 
 本目录不包含程序包、二进制、项目源码、账户凭据或个人文件截图，也不表示已经提交认证。
 定价、年龄分级等提交栏目需在账户中另行完成。
-'''.format(version=spec['baseline']['package_version'])
+'''.format(version=msix_version)
     payload['UPLOAD.md'] = guide.encode('utf-8')
     files = [{'file': name, 'bytes': len(data), 'sha256': digest(data)} for name, data in sorted(payload.items())]
-    manifest = {'schema_version': 1, 'baseline': spec['baseline'], 'image_count': image_count,
+    manifest = {'schema_version': 1, 'baseline': spec['baseline'], 'msix_version': msix_version,
+                'image_count': image_count,
                 'asset_inventory_sha256': digest((ROOT / 'specs/marketing/windows-store-assets.json').read_bytes()), 'files': files}
     payload['manifest.json'] = (json.dumps(manifest, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
     payload['SHA256SUMS.txt'] = ''.join(f"{digest(data)}  {name}\n" for name, data in sorted(payload.items())).encode('utf-8')

@@ -11,6 +11,8 @@ Windows MSIX 包身份下关于页不显示应用内更新区域，更新控制�
 
 ## 选择、网络与隐私
 
+Qt 更新客户端通过 HTTP/1.1 获取元数据、校验信息和程序包，规避当前固定 Qt 版本受影响的 HTTP/2 路径。macOS 的 Sparkle 更新使用独立传输。参阅 [Qt 安全通告](https://www.qt.io/blog/security-advisory-cve-2026-96432)。
+
 客户端只读取固定仓库 `xiaodaozhi/xdzip` 的公开 [Releases API](https://docs.github.com/en/rest/releases/releases)，不使用凭据，不上传文件名、归档内容、密码、最近记录或设置。GitHub 与其下载 CDN 会收到网络连接信息及包含应用版本的 User-Agent。点击发布页或下载目录使用系统打开接口。
 
 每页最多 100 条，最多 10 页，每次响应最多 8 MiB，清单最多 256 KiB，签名最多 4 KiB。原始请求只允许 HTTPS 和明确登记的 GitHub/CDN 主机；用户配置镜像时传输地址允许该 HTTPS 镜像站点，重定向最多 5 次；元数据有 15 秒无数据超时和 30 秒总上限，下载有 30 秒无数据超时及一小时总上限。内存 ETag 缓存最多 24 项，304 只复用先前成功响应。离线、TLS、超时、限流、截断、缺包和清单错误均为失败，不等同于“已是最新”。重复点击不发起并行更新。

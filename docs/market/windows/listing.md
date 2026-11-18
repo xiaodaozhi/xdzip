@@ -4,7 +4,7 @@ English | [简体中文](../../zh-CN/market/windows/listing.md)
 
 ## Baseline
 
-MSIX 1.0.29.0, x64, application 0.2.1, build 29. Screenshots retain the capture baseline documented in [the materials guide](README.md).
+MSIX 1.0.30.0, x64, application 0.2.1, build 30. See the [materials guide](README.md) for screenshot provenance.
 
 ## Product name
 
@@ -19,38 +19,37 @@ Pack and unpack, a little simpler
 
 xdzip is an open-source archive manager for Windows. Look inside an archive, find the files you need, and extract selected items without unpacking everything. Basic compression, extraction and browsing work offline, with archive contents processed on your PC. No xdzip account is required.
 
-Browse ZIP, 7z, RAR, TAR, TAR.GZ, CAB, ISO and UDF files. Search and sort entries, navigate folders, and open several archives in tabs or separate windows. Request a preview of supported text, images or static SVG before extracting.
+Browse ZIP, 7z, RAR, TAR, CAB, ISO, UDF and more. Search and sort entries, keep folders first, and open several archives in tabs or separate windows. Preview supported text, images or static SVG before extracting.
 
-Create ZIP, TAR, TAR.GZ and 7z archives. Use AES-256 ZIP encryption or supported 7z password protection, and work with supported split and solid archive profiles. Eligible regular single-file archives also support adding, replacing or moving entries.
+Create ZIP, TAR, TAR.GZ, 7z and LZH archives, ISO9660/Joliet data images and Windows x64 ZIP self-extracting files. Use AES-256 ZIP encryption or supported 7z password protection. Compatible formats also support split or solid archives and changes to entries in eligible regular single-file archives.
 
 Choose a light or dark appearance, adjust text size, and use English (US) or Simplified Chinese. View task progress and request cancellation when needed.
 
-Features vary by format. RAR, CAB and UDF are read-only. ISO images can be created, but existing ISO images cannot be modified. Encrypted and split archive support depends on the format and profile; not every archive can be modified. Opening a file in another application creates a temporary local copy, and edits to that copy are not written back automatically.
+Features vary by format. RAR, CAB and UDF are read-only. Existing ISO images cannot be modified. Opening a file in another application creates a temporary local copy. Edits to that copy are not written back automatically.
 
-Designed for Windows 11 PCs with x64 processors. The Microsoft Store edition receives its updates through the Store. Create or extract archives from File Explorer using either the Windows 11 modern context menu or the classic menu under Show more options.
+Designed for Windows 11 PCs with x64 processors. Create or extract archives using either the modern File Explorer menu or the classic menu under Show more options. Choose default file types in Windows Settings. Microsoft Store manages updates for this edition.
 ```
 
 ## What's new in this version
 
 ```text
-Fixed the Store application's undersized icon and unwanted background plate.
-Restored per-format archive file icons, with the intended size, alignment and transparent margins.
+Restored the XDZip tray menu after the tray icon is turned back on.
 ```
 
 ## Product features
 
 Enter each feature separately, without the list numbers.
 
-1. Browse ZIP, 7z, RAR, TAR, TAR.GZ, CAB, ISO and UDF archives.
-2. Find files with search, sorting and folder navigation.
+1. Browse ZIP, 7z, RAR, TAR, CAB, ISO, UDF and other archive formats.
+2. Find files with search, folders-first sorting and folder navigation.
 3. Extract selected files or folders without unpacking everything.
-4. Create ZIP, TAR, TAR.GZ and 7z archives.
+4. Create archives, ISO data images and Windows x64 ZIP self-extracting files.
 5. Use AES-256 ZIP encryption and supported 7z password protection.
 6. Work with supported split and solid archive profiles.
 7. Add, replace or move entries in eligible regular single-file archives.
 8. Preview supported text, images and static SVG on demand.
 9. Keep multiple archives open in tabs or separate windows.
-10. Choose light or dark themes, adjust text size, and switch between English and Simplified Chinese.
+10. Create or extract archives from the modern or classic File Explorer menu.
 
 ## Supplemental fields
 

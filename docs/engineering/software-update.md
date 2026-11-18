@@ -10,6 +10,8 @@ The application-level `UpdateController` checks public releases from About. Clos
 
 ## Selection, network and privacy
 
+The Qt update client uses HTTP/1.1 for metadata, checksums and package downloads. This applies the published mitigation for the pinned Qt release. The macOS Sparkle update transport is separate. [Qt advisory](https://www.qt.io/blog/security-advisory-cve-2026-96432)
+
 The client reads only the public [Releases API](https://docs.github.com/en/rest/releases/releases) of the fixed `xiaodaozhi/xdzip` repository, uses no credentials and uploads no filenames, archive contents, passwords, recent records or settings. GitHub and its download CDN receive connection information and a User-Agent containing the application version. Release pages and download folders open through the system interface.
 
 Each page has at most 100 entries, at most 10 pages; each response is at most 8 MiB, manifests 256 KiB and signatures 4 KiB. Original requests allow only HTTPS and explicitly registered GitHub/CDN hosts. With a user-configured mirror, its HTTPS site is permitted as the transport address; at most five redirects are allowed. Metadata has a 15-second idle timeout and 30-second total limit; downloads have a 30-second idle timeout and one-hour total limit. The in-memory ETag cache holds at most 24 entries; 304 reuses only a prior successful response. Offline, TLS, timeout, rate limit, truncation, missing packages and manifest errors are failures, not “already up to date”. Repeated clicks do not start parallel updates.

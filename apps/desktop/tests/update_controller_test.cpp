@@ -409,8 +409,10 @@ class UpdateControllerTest final : public QObject {
         updates.download();
         QTRY_COMPARE(updates.state(), QStringLiteral("downloaded"));
         QVERIFY(updates.downloaded());
-        for (const auto &request : network.requests)
+        for (const auto &request : network.requests) {
             QVERIFY(UpdateNetwork::isMirrorUrl(request.url(), mirror));
+            QCOMPARE(request.attribute(QNetworkRequest::Http2AllowedAttribute), QVariant(false));
+        }
         updates.configureNetwork("none", "", "");
         QCOMPARE(network.proxyFactory()->queryProxy(QNetworkProxyQuery(QUrl(api))).first().type(),
                  QNetworkProxy::NoProxy);

@@ -60,19 +60,19 @@
       "voice_title": "",
       "developer": "xiaodaozhi",
       "short_description": "Browse before you unpack. Extract selected files, create password-protected archives, and keep your files in order with xdzip.",
-      "description": "Pack and unpack, a little simpler\n\nxdzip is an open-source archive manager for Windows. Look inside an archive, find the files you need, and extract selected items without unpacking everything. Basic compression, extraction and browsing work offline, with archive contents processed on your PC. No xdzip account is required.\n\nBrowse ZIP, 7z, RAR, TAR, TAR.GZ, CAB, ISO and UDF files. Search and sort entries, navigate folders, and open several archives in tabs or separate windows. Request a preview of supported text, images or static SVG before extracting.\n\nCreate ZIP, TAR, TAR.GZ and 7z archives. Use AES-256 ZIP encryption or supported 7z password protection, and work with supported split and solid archive profiles. Eligible regular single-file archives also support adding, replacing or moving entries.\n\nChoose a light or dark appearance, adjust text size, and use English (US) or Simplified Chinese. View task progress and request cancellation when needed.\n\nFeatures vary by format. RAR, CAB, ISO and UDF are read-only. Encrypted and split archive support depends on the format and profile; not every archive can be modified. Opening a file in another application creates a temporary local copy, and edits to that copy are not written back automatically.\n\nDesigned for Windows 11 PCs with x64 processors. The Microsoft Store edition receives its updates through the Store. Windows 11 modern File Explorer context-menu integration is not included in this build.",
-      "release_notes": "",
+      "description": "Pack and unpack, a little simpler\n\nxdzip is an open-source archive manager for Windows. Look inside an archive, find the files you need, and extract selected items without unpacking everything. Basic compression, extraction and browsing work offline, with archive contents processed on your PC. No xdzip account is required.\n\nBrowse ZIP, 7z, RAR, TAR, CAB, ISO, UDF and more. Search and sort entries, keep folders first, and open several archives in tabs or separate windows. Preview supported text, images or static SVG before extracting.\n\nCreate ZIP, TAR, TAR.GZ, 7z and LZH archives, ISO9660/Joliet data images and Windows x64 ZIP self-extracting files. Use AES-256 ZIP encryption or supported 7z password protection. Compatible formats also support split or solid archives and changes to entries in eligible regular single-file archives.\n\nChoose a light or dark appearance, adjust text size, and use English (US) or Simplified Chinese. View task progress and request cancellation when needed.\n\nFeatures vary by format. RAR, CAB and UDF are read-only. Existing ISO images cannot be modified. Opening a file in another application creates a temporary local copy. Edits to that copy are not written back automatically.\n\nDesigned for Windows 11 PCs with x64 processors. Create or extract archives using either the modern File Explorer menu or the classic menu under Show more options. Choose default file types in Windows Settings. Microsoft Store manages updates for this edition.",
+      "release_notes": "Restored the XDZip tray menu after the tray icon is turned back on.",
       "features": [
-        "Browse ZIP, 7z, RAR, TAR, TAR.GZ, CAB, ISO and UDF archives.",
-        "Find files with search, sorting and folder navigation.",
+        "Browse ZIP, 7z, RAR, TAR, CAB, ISO, UDF and other archive formats.",
+        "Find files with search, folders-first sorting and folder navigation.",
         "Extract selected files or folders without unpacking everything.",
-        "Create ZIP, TAR, TAR.GZ and 7z archives.",
+        "Create archives, ISO data images and Windows x64 ZIP self-extracting files.",
         "Use AES-256 ZIP encryption and supported 7z password protection.",
         "Work with supported split and solid archive profiles.",
         "Add, replace or move entries in eligible regular single-file archives.",
         "Preview supported text, images and static SVG on demand.",
         "Keep multiple archives open in tabs or separate windows.",
-        "Choose light or dark themes, adjust text size, and switch between English and Simplified Chinese."
+        "Create or extract archives from the modern or classic File Explorer menu."
       ],
       "keywords": [
         "archive manager",
@@ -165,19 +165,19 @@
       "voice_title": "",
       "developer": "xiaodaozhi",
       "short_description": "先浏览，再解压。查找并提取需要的文件，创建带密码的压缩包，用 xdzip 把文件整理得井井有条。",
-      "description": "打包与解压，都简单一点。\n\nxdzip 是一款开源 Windows 压缩包管理工具。先查看包内内容，找到需要的文件，再选择性解压，不必每次都解开整个压缩包。基础压缩、解压和浏览可离线使用，归档内容在你的电脑上处理，无需注册 xdzip 账户。\n\n浏览 ZIP、7z、RAR、TAR、TAR.GZ、CAB、ISO 和 UDF 文件。通过搜索、排序和目录导航查找内容，在多个标签页或独立窗口中管理压缩包。需要时，可以先预览受支持的文本、图像和静态 SVG，再决定提取哪些文件。\n\n创建 ZIP、TAR、TAR.GZ 和 7z 压缩包，按格式使用 ZIP AES-256 加密或 7z 密码保护，并处理受支持的分卷与固实归档。符合条件的普通单文件压缩包还支持添加、替换或移动包内条目。\n\n按喜好选择浅色或深色外观，调整字号，在简体中文与英语之间切换。任务进度清晰可见，需要时可以请求取消。\n\n不同格式的功能有所区别。RAR、CAB、ISO 和 UDF 为只读；加密和分卷支持取决于具体格式与配置，并非所有归档都支持修改。使用其他应用打开包内文件时会生成本地临时副本，对副本的修改不会自动写回压缩包。\n\n面向配备 x64 处理器的 Windows 11 电脑。Microsoft Store 版本由商店管理更新，本版本尚未提供 Windows 11 现代文件资源管理器右键菜单。",
-      "release_notes": "",
+      "description": "打包与解压，都简单一点。\n\nxdzip 是一款开源 Windows 压缩包管理工具。先查看包内内容，找到需要的文件，再选择性解压，不必每次都解开整个压缩包。基础压缩、解压和浏览可离线使用，归档内容在你的电脑上处理，无需注册 xdzip 账户。\n\n浏览 ZIP、7z、RAR、TAR、CAB、ISO、UDF 等格式。通过搜索、排序和目录导航查找文件，排序时文件夹优先。可在多个标签页或独立窗口中打开压缩包，并在解压前预览受支持的文本、图像或静态 SVG。\n\n创建 ZIP、TAR、TAR.GZ、7z 和 LZH 压缩包、ISO9660/Joliet 数据镜像及 Windows x64 ZIP 自解压文件。可使用 ZIP AES-256 加密或受支持的 7z 密码保护。分卷、固实归档和编辑单文件压缩包条目取决于具体格式及配置。\n\n按喜好选择浅色或深色外观，调整字号，在简体中文与英语之间切换。任务进度清晰可见，需要时可以请求取消。\n\n不同格式的功能有所区别。RAR、CAB 和 UDF 为只读，已有 ISO 镜像无法修改。使用其他应用打开包内文件时会生成本地临时副本，对副本的编辑不会自动写回压缩包。\n\n面向配备 x64 处理器的 Windows 11 电脑。可通过文件资源管理器的现代右键菜单或“显示更多选项”中的传统菜单创建、解压归档，也可以在 Windows 设置中选择默认打开的文件类型。此版本由 Microsoft Store 管理更新。",
+      "release_notes": "修复重新启用托盘图标后无法打开 xdzip 托盘菜单的问题。",
       "features": [
-        "浏览 ZIP、7z、RAR、TAR、TAR.GZ、CAB、ISO 和 UDF 压缩包。",
-        "通过搜索、排序和目录导航快速查找文件。",
+        "浏览 ZIP、7z、RAR、TAR、CAB、ISO、UDF 等归档格式。",
+        "通过搜索、文件夹优先排序和目录导航查找文件。",
         "按需解压选中的文件或文件夹，无需解开整个压缩包。",
-        "创建 ZIP、TAR、TAR.GZ 和 7z 压缩包。",
+        "创建压缩包、ISO 数据镜像及 Windows x64 ZIP 自解压文件。",
         "使用 ZIP AES-256 加密及受支持的 7z 密码保护。",
         "处理受支持的分卷和固实归档。",
         "向符合条件的普通单文件压缩包添加、替换或移动条目。",
         "按需预览受支持的文本、图像和静态 SVG。",
         "在多个标签页或独立窗口中管理压缩包。",
-        "选择浅色或深色主题、调整字号，并在简体中文与英语之间切换。"
+        "通过文件资源管理器的现代或传统右键菜单创建和解压归档。"
       ],
       "keywords": [
         "压缩软件",

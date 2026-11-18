@@ -7,6 +7,7 @@ const sharp = require('./windows-store-sharp.cjs');
 const imageTools = require('./windows-store-image-utils.cjs');
 const ROOT = path.resolve(__dirname, '..');
 const spec = JSON.parse(fs.readFileSync(path.join(ROOT, 'specs/marketing/windows-store.json'), 'utf8'));
+const version = JSON.parse(fs.readFileSync(path.join(ROOT, 'VERSION.json'), 'utf8'));
 const brand = fs.readFileSync(path.join(ROOT, 'design/assets/brand/xdzip.svg'), 'utf8');
 const brandUri = 'data:image/svg+xml;base64,' + Buffer.from(brand).toString('base64');
 const check = process.argv.includes('--check');
@@ -142,7 +143,7 @@ function validateCopy() {
     if (l.keywords.length > 7 || l.keywords.some(s=>s.length>40) || l.keywords.join(' ').trim().split(/\s+/).length>21) throw Error(`${key} keywords exceed portal limits`);
     if (l.promotions.some(p=>p.caption.length>200)) throw Error(`${key} caption exceeds 200`);
     if (/https?:|<\/?\w/.test(l.description)) throw Error(`${key} description is not plain text`);
-    if (l.release_notes || l.additional_license_terms || l.voice_title || l.sort_title) throw Error('First submission and desktop-only empty fields must stay intentional');
+    if (l.additional_license_terms || l.voice_title || l.sort_title) throw Error('Optional empty fields must stay intentional');
   }
   if (jobs.filter(j=>['feature-illustration','screenshot-artwork'].includes(j.role)).some(j=>String(j.source).includes('Windows 11, x64'))) throw Error('Promotional footer system label must stay removed');
   if (jobs.filter(j=>j.role==='text-free-hero').some(j=>/<text\b/.test(j.source))) throw Error('Hero artwork must not contain text');
@@ -158,7 +159,12 @@ function validateCopy() {
 function listingMarkdown(key,l) {
   const chinese=key==='zh-CN';
   const h=chinese?['商店一览文案，中文（中国）','适用基线','产品名称','说明','此版本的新增功能','首次提交，留空。不要把这句说明粘贴到字段中。','产品功能','逐项填写，每行是一个独立功能，不要复制列表编号。','补充字段','字段','填写内容','短标题','语音标题','简短描述','其他信息','关键字','逐项添加，共七项。','版权和商标信息','其他许可条款','留空。项目未定义额外的商店专用许可条款；应用中的开源许可和第三方通知仍然适用。','开发者','支持与隐私链接','网站','支持','隐私政策','项目许可','系统范围','宣传图说明文字','这些是功能示意图，不是实机截图。图片文件和字幕不可作为“已满足必需截图栏”的保证。','留空，桌面应用不使用 Xbox 语音标题。']:['Store listing copy, English (US)','Baseline','Product name','Description',"What's new in this version",'First submission: leave empty. Do not paste this instruction into the field.','Product features','Enter each feature separately, without the list numbers.','Supplemental fields','Field','Value','Short title','Voice title','Short description','Other information','Keywords','Add separately, seven items in total.','Copyright and trademark information','Additional license terms','Leave empty. The project defines no additional Store-specific terms; the open-source licenses and third-party notices shipped with the app still apply.','Developer','Website, support and privacy','Website','Support','Privacy policy','Project license','System scope','Promotional image captions','These images are feature illustrations, not app screenshots. Their files and captions do not establish that the required screenshot field is satisfied.','Leave empty; this desktop app does not use an Xbox voice title.'];
-  let s=`# ${h[0]}\n\n${chinese?'[English](../../../market/windows/listing.md) | 简体中文':'English | [简体中文](../../zh-CN/market/windows/listing.md)'}\n\n## ${h[1]}\n\nMSIX ${spec.baseline.package_version}, x64, \`${spec.baseline.revision}\`.\n\n## ${h[2]}\n\n\`\`\`text\n${l.product_name}\n\`\`\`\n\n## ${h[3]}\n\n\`\`\`text\n${l.description}\n\`\`\`\n\n## ${h[4]}\n\n${h[5]}\n\n## ${h[6]}\n\n${h[7]}\n\n`;
+  const msix = '1.0.' + version.build + '.0';
+  const target = chinese
+    ? `MSIX ${msix}，x64，应用版本 ${version.version}，构建号 ${version.build}。截图来源见[材料说明](README.md)。`
+    : `MSIX ${msix}, x64, application ${version.version}, build ${version.build}. See the [materials guide](README.md) for screenshot provenance.`;
+  const changes = l.release_notes ? ['```text', l.release_notes, '```'].join('\n') : h[5];
+  let s=`# ${h[0]}\n\n${chinese?'[English](../../../market/windows/listing.md) | 简体中文':'English | [简体中文](../../zh-CN/market/windows/listing.md)'}\n\n## ${h[1]}\n\n${target}\n\n## ${h[2]}\n\n\`\`\`text\n${l.product_name}\n\`\`\`\n\n## ${h[3]}\n\n\`\`\`text\n${l.description}\n\`\`\`\n\n## ${h[4]}\n\n${changes}\n\n## ${h[6]}\n\n${h[7]}\n\n`;
   l.features.forEach((f,i)=>s+=`${i+1}. ${f}\n`);
   s+=`\n## ${h[8]}\n\n| ${h[9]} | ${h[10]} |\n| --- | --- |\n| ${h[11]} | ${l.short_title} |\n| ${h[12]} | ${h[29]} |\n\n### ${h[13]}\n\n\`\`\`text\n${l.short_description}\n\`\`\`\n\n## ${h[14]}\n\n### ${h[15]}\n\n${h[16]}\n\n`;
   s = s.replace(`| ${h[12]} |`, `${chinese?'| 排序标题 | 留空，名称没有其他排序形式。 |':'| Sort title | Leave empty; no alternate sorting form is needed. |'}\n| ${h[12]} |`);
