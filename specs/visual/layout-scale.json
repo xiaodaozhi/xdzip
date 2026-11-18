@@ -188,7 +188,9 @@
       "createNoteSize": 12,
       "createInputRowHeight": 38,
       "createFieldHeight": 28,
-      "conflictClientHeight": 560
+      "conflictClientHeight": 560,
+      "resultBatchColumns": 3,
+      "resultCollapsedRows": 1
     },
     "source_to_logical_by_view": {
       "extract": [
