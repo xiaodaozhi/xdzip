@@ -146,11 +146,11 @@ Feature illustration: organize multiple archives and choose a light or dark appe
 
 ## App screenshots and combined artwork
 
-Screenshots retain the default logical window dimensions, with one top row removed, old corner backgrounds cleared and a one-pixel border added. Store exports place the transparent app view at 1:1 on a neutral 2560 × 1440 canvas for screenshot fields. Combined artwork adds brand copy, a thin border and shadow for promotion, without upscaling the UI.
+Screenshots retain the default logical window dimensions, with one top row removed, old corner backgrounds cleared and a one-pixel border added. Upload the 3840 × 2160 combined artwork to the desktop screenshot field. It shows the actual app view at 1:1 in a blue layout with brand copy, a thin border and a soft shadow. Plain app views use a neutral 2560 × 1440 canvas.
 
 ### 01-browse
 
-[Default window](images/screenshots/01-browse.png), [Store screenshot](images/store-screenshots/01-browse.png), [1920 × 1080](images/combined/01-browse-1920x1080.png), [3840 × 2160](images/combined/01-browse-3840x2160.png)
+[Default window](images/screenshots/01-browse.png), [Plain app view](images/store-screenshots/01-browse.png), [1920 × 1080](images/combined/01-browse-1920x1080.png), [3840 × 2160 Store upload](images/combined/01-browse-3840x2160.png)
 
 ```text
 Browse an archive's folder tree, select individual files and view their properties.
@@ -158,7 +158,7 @@ Browse an archive's folder tree, select individual files and view their properti
 
 ### 02-create
 
-[Default window](images/screenshots/02-create.png), [Store screenshot](images/store-screenshots/02-create.png), [1920 × 1080](images/combined/02-create-1920x1080.png), [3840 × 2160](images/combined/02-create-3840x2160.png)
+[Default window](images/screenshots/02-create.png), [Plain app view](images/store-screenshots/02-create.png), [1920 × 1080](images/combined/02-create-1920x1080.png), [3840 × 2160 Store upload](images/combined/02-create-3840x2160.png)
 
 ```text
 Create an archive from selected files and choose ZIP compression settings.
@@ -166,7 +166,7 @@ Create an archive from selected files and choose ZIP compression settings.
 
 ### 03-preview
 
-[Default window](images/screenshots/03-preview.png), [Store screenshot](images/store-screenshots/03-preview.png), [1920 × 1080](images/combined/03-preview-1920x1080.png), [3840 × 2160](images/combined/03-preview-3840x2160.png)
+[Default window](images/screenshots/03-preview.png), [Plain app view](images/store-screenshots/03-preview.png), [1920 × 1080](images/combined/03-preview-1920x1080.png), [3840 × 2160 Store upload](images/combined/03-preview-3840x2160.png)
 
 ```text
 Request an image preview next to archive entries and file properties.
@@ -174,7 +174,7 @@ Request an image preview next to archive entries and file properties.
 
 ### 04-workspace
 
-[Default window](images/screenshots/04-workspace.png), [Store screenshot](images/store-screenshots/04-workspace.png), [1920 × 1080](images/combined/04-workspace-1920x1080.png), [3840 × 2160](images/combined/04-workspace-3840x2160.png)
+[Default window](images/screenshots/04-workspace.png), [Plain app view](images/store-screenshots/04-workspace.png), [1920 × 1080](images/combined/04-workspace-1920x1080.png), [3840 × 2160 Store upload](images/combined/04-workspace-3840x2160.png)
 
 ```text
 Keep two archives open in tabs and browse selected files in grid view.

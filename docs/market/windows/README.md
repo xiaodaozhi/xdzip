@@ -34,9 +34,9 @@ The [local capture workflow](capture.md) prepares all four scenes in each langua
 
 Each language has four actual app views using owned demonstration files. Captures use the default window dimensions. The [capture inventory](../../../specs/marketing/windows-store-captures.json) records the package digest, native dimensions and exported sizes. Generation removes one top row, clears old desktop colors from the corner squares, and draws a one-pixel gray-blue inner border. The border preserves image dimensions and outer transparency. Pixels outside the corner and border areas remain unchanged, with no text redrawing or resizing. The original native PNGs remain byte-identical in [the source assets](../../../design/assets/marketing/windows-store-native). The root READMEs use the bordered `01-browse` image in their matching language.
 
-Use the **Store screenshots** for the desktop screenshot field. They center the cleaned app view at 1:1 on a neutral background, without marketing overlays. Combined promotional artwork places the same view in the blue brand layout with localized copy, a thin border and a soft shadow. Both exports preserve the native scale when the view fits. Larger views are downsampled once to fit the promotional layout. The lower-left platform label is omitted.
+Upload the **3840 × 2160 combined artwork** to the desktop screenshot field, in the order shown below. It embeds the actual app view at 1:1 in a blue layout with localized copy, a thin border and a soft shadow. The plain app views use a neutral background. The 1920 × 1080 artwork scales down larger views once to fit.
 
-| Scene | Default window | Store screenshot | 1920 × 1080 artwork | 3840 × 2160 artwork |
+| Scene | Default window | Plain app view | 1920 × 1080 artwork | 3840 × 2160 Store upload |
 | --- | --- | --- | --- | --- |
 | Browse folders and select a file | [PNG](images/screenshots/01-browse.png) | [PNG](images/store-screenshots/01-browse.png) | [PNG](images/combined/01-browse-1920x1080.png) | [PNG](images/combined/01-browse-3840x2160.png) |
 | Creation window and ZIP settings | [PNG](images/screenshots/02-create.png) | [PNG](images/store-screenshots/02-create.png) | [PNG](images/combined/02-create-1920x1080.png) | [PNG](images/combined/02-create-3840x2160.png) |
@@ -47,7 +47,7 @@ Use the **Store screenshots** for the desktop screenshot field. They center the 
 
 ## Feature illustrations
 
-The original vector artwork remains available for promotion, with an explicit **Feature illustration** label. Use the app captures above for the screenshot field.
+The original vector artwork remains available for other promotional uses, with an explicit **Feature illustration** label.
 
 | Artwork | 1920 × 1080 | 3840 × 2160 |
 | --- | --- | --- |
