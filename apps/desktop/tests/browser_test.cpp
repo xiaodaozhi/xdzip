@@ -2360,11 +2360,16 @@ QtObject {
                                                       {"details", details}});
         QCOMPARE(caption->property("text").toString(),
                  language == "zh-CN" ? QStringLiteral("1 个文件") : QStringLiteral("1 file"));
-        window->setProperty("resultTask", QVariantMap{{"kind", "extract"},
-                                                      {"batchResults", true},
-                                                      {"committedFiles", 1},
-                                                      {"details", details}});
-        QCOMPARE(caption->property("text").toString(), "kept-file.txt");
+        for (const int count : {0, 1, 127}) {
+            window->setProperty("resultTask", QVariantMap{{"kind", "extract"},
+                                                          {"batchResults", true},
+                                                          {"committedFiles", count},
+                                                          {"details", details}});
+            const auto expected = language == "zh-CN"
+                                      ? QStringLiteral("%1 个文件").arg(count)
+                                      : QString("%1 file%2").arg(count).arg(count == 1 ? "" : "s");
+            QCOMPARE(caption->property("text").toString(), expected);
+        }
     }
     void operationWindowHeightTransitionsKeepValidBounds() {
         QQmlApplicationEngine engine;
