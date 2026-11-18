@@ -1534,14 +1534,26 @@ QtObject {
         QTRY_VERIFY(confirmation->isVisible());
         QVERIFY(QTest::qWaitForWindowExposed(confirmation));
         QTRY_COMPARE(QGuiApplication::modalWindow(), confirmation);
+#ifdef Q_OS_WIN
+        if (QGuiApplication::platformName() == QStringLiteral("windows"))
+            QVERIFY(QTest::qWaitForWindowActive(confirmation));
+#endif
+        // The native modal window can be exposed before the deferred footer layout is painted.
+        QSignalSpy confirmationFrame(confirmation, &QQuickWindow::frameSwapped);
+        confirmation->requestUpdate();
+        QTRY_VERIFY(!confirmationFrame.isEmpty());
         auto *returnButton =
             findVisual(confirmation->contentItem(), quitTiming == 5 ? "quitWait" : "quitReturn");
         QVERIFY(returnButton && returnButton->isVisible() && returnButton->isEnabled());
         const auto returnPoint =
             returnButton->mapToScene(QPointF(returnButton->width() / 2, returnButton->height() / 2))
                 .toPoint();
+        QVERIFY(QRect(QPoint(), confirmation->size()).contains(returnPoint));
+        QSignalSpy clicked(returnButton, SIGNAL(clicked()));
+        QVERIFY(clicked.isValid());
         moveTestPointer(confirmation, returnPoint);
         QTest::mouseClick(confirmation, Qt::LeftButton, Qt::NoModifier, returnPoint);
+        QTRY_COMPARE(clicked.size(), 1);
         QTRY_VERIFY(!confirmation->isVisible());
         QVERIFY(!sessions.isClosing() && !sessions.updatePending());
         QCOMPARE(working->passwordPrompt(), prompt);
