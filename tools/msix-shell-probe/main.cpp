@@ -203,7 +203,7 @@ void verify(const fs::path &root, const std::wstring &family, bool store) {
     options.language(L"en-US");
     inspect(true, L"Open with xdzip");
     options.language(L"zh-CN");
-    inspect(true, L"用 xdzip 打开");
+    inspect(true, L"通过 xdzip 打开");
     CMINVOKECOMMANDINFO invoke{};
     invoke.cbSize = sizeof(invoke);
     invoke.nShow = SW_SHOWNORMAL;

@@ -475,7 +475,7 @@
     "settings.clearDescription": "不会删除原文件。",
     "settings.localTitle": "本地处理",
     "settings.localDescription": "压缩包内容不会上传。",
-    "settings.associationDescription": "选择要使用 xdzip 打开的文件类型。",
+    "settings.associationDescription": "选择要通过 xdzip 打开的文件类型。",
     "settings.associationSystem": "默认应用可能需要在系统中确认。",
     "settings.associationUnavailable": "当前运行方式无法修改文件关联。",
     "settings.associationPackaged": "此版本的文件关联由 Windows 管理。请在系统默认应用中选择 xdzip 及需要关联的文件类型。",
@@ -746,7 +746,7 @@
     "preview.passwordDescription": "此文件已加密，需要密码才能预览。",
     "preview.passwordPrivacy": "密码仅用于本次预览，不会保存。关闭此窗口将取消预览。",
     "preview.continue": "继续预览",
-    "shell.title": "用 xdzip 打开",
+    "shell.title": "通过 xdzip 打开",
     "shell.addNamed": "添加到“%1”",
     "shell.create": "添加到压缩文件...",
     "shell.separateZip": "添加到单独的“文件/文件夹名.zip”",
@@ -771,7 +771,7 @@
     "shell.integrationUnavailable": "此副本未注册系统集成。便携版需显式安装集成。",
     "shell.integrationFailed": "无法更新系统集成，请检查安装位置和权限。",
     "shell.requestRejected": "无法接纳文件管理器操作。请选择不超过 128 个本地文件或文件夹后重试。",
-    "shell.finderHandoffFailed": "无法交接操作，请使用 Finder 的“服务 → 用 xdzip 打开”。",
+    "shell.finderHandoffFailed": "无法交接操作，请使用 Finder 的“服务 → 通过 xdzip 打开”。",
     "shell.finderRequestRejected": "操作未被接纳，请打开 xdzip 修复 Finder 集成，或使用服务入口。",
     "create.sfxUnavailable": "自解压组件缺失或损坏，请重新安装完整程序。"
   }
