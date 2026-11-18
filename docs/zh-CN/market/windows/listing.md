@@ -146,11 +146,11 @@ Windows 11，x64 电脑。
 
 ## 应用截图与融合宣传图
 
-截图保持默认逻辑窗口尺寸，裁掉顶部一像素并清理圆角旧底色，添加一像素细边框。桌面截图栏上传 3840 × 2160 融合宣传图。该版本将实机界面按 1:1 嵌入蓝色版式，配以品牌文案、细边框和阴影。纯界面图使用 2560 × 1440 中性画布。
+截图保持默认逻辑窗口尺寸，裁掉顶部一像素并清理圆角旧底色，添加一像素细边框。桌面截图栏上传 1920 × 1080 融合宣传图。它将实机界面嵌入蓝色版式，配以品牌文案、细边框和阴影。纯界面图使用 2560 × 1440 中性画布。
 
 ### 01-browse
 
-[默认窗口](images/screenshots/01-browse.png), [纯界面图](images/store-screenshots/01-browse.png), [1920 × 1080](images/combined/01-browse-1920x1080.png), [3840 × 2160 商店上传图](images/combined/01-browse-3840x2160.png)
+[默认窗口](images/screenshots/01-browse.png), [纯界面图](images/store-screenshots/01-browse.png), [1920 × 1080 商店上传图](images/combined/01-browse-1920x1080.png), [3840 × 2160](images/combined/01-browse-3840x2160.png)
 
 ```text
 浏览压缩包目录树，选择文件并查看属性。
@@ -158,7 +158,7 @@ Windows 11，x64 电脑。
 
 ### 02-create
 
-[默认窗口](images/screenshots/02-create.png), [纯界面图](images/store-screenshots/02-create.png), [1920 × 1080](images/combined/02-create-1920x1080.png), [3840 × 2160 商店上传图](images/combined/02-create-3840x2160.png)
+[默认窗口](images/screenshots/02-create.png), [纯界面图](images/store-screenshots/02-create.png), [1920 × 1080 商店上传图](images/combined/02-create-1920x1080.png), [3840 × 2160](images/combined/02-create-3840x2160.png)
 
 ```text
 将选中的文件整理成压缩包，并设置 ZIP 压缩选项。
@@ -166,7 +166,7 @@ Windows 11，x64 电脑。
 
 ### 03-preview
 
-[默认窗口](images/screenshots/03-preview.png), [纯界面图](images/store-screenshots/03-preview.png), [1920 × 1080](images/combined/03-preview-1920x1080.png), [3840 × 2160 商店上传图](images/combined/03-preview-3840x2160.png)
+[默认窗口](images/screenshots/03-preview.png), [纯界面图](images/store-screenshots/03-preview.png), [1920 × 1080 商店上传图](images/combined/03-preview-1920x1080.png), [3840 × 2160](images/combined/03-preview-3840x2160.png)
 
 ```text
 在文件列表和属性旁，按需加载图像预览。
@@ -174,7 +174,7 @@ Windows 11，x64 电脑。
 
 ### 04-workspace
 
-[默认窗口](images/screenshots/04-workspace.png), [纯界面图](images/store-screenshots/04-workspace.png), [1920 × 1080](images/combined/04-workspace-1920x1080.png), [3840 × 2160 商店上传图](images/combined/04-workspace-3840x2160.png)
+[默认窗口](images/screenshots/04-workspace.png), [纯界面图](images/store-screenshots/04-workspace.png), [1920 × 1080 商店上传图](images/combined/04-workspace-1920x1080.png), [3840 × 2160](images/combined/04-workspace-3840x2160.png)
 
 ```text
 在标签页中同时打开两个压缩包，并以网格视图浏览选中的文件。

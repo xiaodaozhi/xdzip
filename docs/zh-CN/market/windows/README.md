@@ -34,9 +34,9 @@
 
 每种语言均提供四张真实应用界面，使用自有演示文件，截图采用默认窗口尺寸。[截图清单](../../../../specs/marketing/windows-store-captures.json)记录程序包摘要、原生尺寸和导出尺寸。生成过程裁掉顶部一行像素，清理四角旧桌面底色，并沿圆角内侧绘制一像素灰蓝色细边框。边框不改变图片尺寸或外侧透明度。圆角和边框区域以外的像素不变，不重绘文字或缩放界面。[原始素材](../../../../design/assets/marketing/windows-store-native)保留与原生捕获逐字节一致的 PNG。根目录中英文 README 分别使用对应语言带边框的 `01-browse` 图片。
 
-按下表顺序，将 **3840 × 2160 融合宣传图**上传到桌面截图栏。它将实机界面按 1:1 嵌入蓝色版式，配以本地化文案、细边框和柔和阴影。纯界面图使用中性留白。1920 × 1080 宣传图会将较大的界面缩小一次以适配版面。
+提交 Microsoft Store 更新时，按下表顺序将 **1920 × 1080 融合宣传图**上传到桌面截图栏。它将实机界面嵌入蓝色版式，配以本地化文案、细边框和柔和阴影。较大的界面只缩小一次以适配版面。3840 × 2160 版保留界面原生尺寸，供其他宣传场景使用。
 
-| 场景 | 默认窗口 | 纯界面图 | 1920 × 1080 宣传图 | 3840 × 2160 商店上传图 |
+| 场景 | 默认窗口 | 纯界面图 | 1920 × 1080 商店上传图 | 3840 × 2160 宣传图 |
 | --- | --- | --- | --- | --- |
 | 浏览目录与选择文件 | [PNG](images/screenshots/01-browse.png) | [PNG](images/store-screenshots/01-browse.png) | [PNG](images/combined/01-browse-1920x1080.png) | [PNG](images/combined/01-browse-3840x2160.png) |
 | 创建窗口与 ZIP 设置 | [PNG](images/screenshots/02-create.png) | [PNG](images/store-screenshots/02-create.png) | [PNG](images/combined/02-create-1920x1080.png) | [PNG](images/combined/02-create-3840x2160.png) |

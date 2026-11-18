@@ -105,7 +105,7 @@ Use en-US for English (United States), zh-CN for Chinese (China).
 | Keywords / 关键字 | <language>/text/keywords.txt, one entry per line / 每行单独填写 |
 | Copyright / 版权 | <language>/text/copyright.txt |
 | Other fields and links / 其他字段与链接 | <language>/text/fields.json |
-| Desktop screenshots / 桌面截图 | <language>/promotional/01-browse-3840x2160.png through 04-workspace-3840x2160.png |
+| Desktop screenshots / 桌面截图 | <language>/promotional/01-browse-1920x1080.png through 04-workspace-1920x1080.png |
 | Screenshot captions / 截图说明 | <language>/text/screenshot-captions.csv, reference only / 仅供对应填写 |
 | App icons / 应用图标 | <language>/branding/app-icon-300.png, app-icon-150.png, app-icon-71.png |
 | Avatars / 头像 | <language>/branding/avatar-512.png, avatar-1024.png, reusable brand exports / 补充品牌导出 |
@@ -118,11 +118,11 @@ Use en-US for English (United States), zh-CN for Chinese (China).
 The screenshots folder contains {store_dimensions} plain app views. Promotional images with
 rounded borders, shadows and localized copy are in promotional/ at 1920 x 1080 and
 3840 x 2160. feature-illustrations/ contains explicitly labeled vector illustrations.
-Upload the four 3840 x 2160 files in promotional/ to the desktop screenshot field.
+Upload the four 1920 x 1080 files in promotional/ to the desktop screenshot field.
 
 screenshots/ 是 {store_dimensions} 的纯应用界面。promotional/ 是带圆角细边框、阴影和双语文案的
 1920 x 1080、3840 x 2160 宣传图。feature-illustrations/ 是标明用途的矢量功能示意图。
-桌面截图栏上传 promotional/ 中的四张 3840 x 2160 融合宣传图。
+桌面截图栏上传 promotional/ 中的四张 1920 x 1080 融合宣传图。
 
 Use the values in fields.json for the optional fields.
 fields.json and the caption CSV are copy references, not a Partner Center
