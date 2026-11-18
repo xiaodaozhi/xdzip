@@ -15,6 +15,7 @@ class QMessageBox;
 class ApplicationSessions final : public QObject {
     Q_OBJECT
     Q_PROPERTY(bool shellTrayAvailable READ shellTrayAvailable NOTIFY sessionsChanged)
+    Q_PROPERTY(bool taskEntryAvailable READ taskEntryAvailable NOTIFY sessionsChanged)
     Q_PROPERTY(QVariantList tasks READ tasks NOTIFY tasksChanged)
     Q_PROPERTY(bool hasFinishedTasks READ hasFinishedTasks NOTIFY tasksChanged)
     Q_PROPERTY(QAbstractItemModel *taskModel READ taskModel CONSTANT)
@@ -29,6 +30,7 @@ class ApplicationSessions final : public QObject {
     void open(const QStringList &paths);
     bool shellAction(const QJsonObject &request);
     bool shellTrayAvailable() const;
+    bool taskEntryAvailable() const;
     bool ownsTaskPrompt(QQuickWindow *window) const;
     Q_INVOKABLE void showMainWindow();
     Q_SLOT void checkShellWindows();
