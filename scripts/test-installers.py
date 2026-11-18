@@ -391,6 +391,21 @@ class InstallerTests(unittest.TestCase):
         # Run the actual product's configuration before Qt discovery so this
         # metadata contract also runs on hosts without an installed Qt SDK.
         configure=(ROOT/'apps/desktop/CMakeLists.txt').read_text(encoding='utf-8').split('find_package(Qt6',1)[0]
+        expected_documents = {
+            'zip': ('zip', ['public.zip-archive']),
+            'tar': ('tar', ['public.tar-archive']),
+            'tgz': ('tar-gz', ['org.gnu.gnu-zip-tar-archive']),
+            'gz': ('gz', ['org.gnu.gnu-zip-archive']),
+            '7z': ('7z', ['org.7-zip.7-zip-archive']),
+            'rar': ('rar', ['com.rarlab.rar-archive']),
+            'cab': ('cab', ['com.microsoft.cab', 'com.microsoft.cab-archive']),
+            'msi': ('archive', ['org.xdzip.msi']),
+            'iso': ('iso', ['public.iso-image']),
+            'udf': ('udf', None),
+            **dict.fromkeys(('zipx', 'xpi', 'apk', 'ipa', 'cbz'), ('zip', None)),
+            **dict.fromkeys(('bz2', 'bz', 'tbz', 'tbz2', 'lzma', 'tlz', 'lz', 'xz', 'txz'),
+                            ('archive', None)),
+        }
         with tempfile.TemporaryDirectory() as directory:
             base=Path(directory);script=base/'render.cmake'
             template=(ROOT/'apps/desktop/packaging/macos/Info.plist.in').as_posix()
@@ -410,37 +425,17 @@ class InstallerTests(unittest.TestCase):
                     self.assertEqual(result.returncode,0,result.stderr)
                     info=plistlib.loads(output.read_bytes())
                     documents=info['CFBundleDocumentTypes']
-                    self.assertEqual(len(documents),len(WINDOWS_ICONS))
-                    expected={'public.zip-archive':'zip','public.tar-archive':'tar',
-                        'org.gnu.gnu-zip-tar-archive':'tar-gz','org.gnu.gnu-zip-archive':'gz',
-                        'org.7-zip.7-zip-archive':'7z','com.rarlab.rar-archive':'rar',
-                        'com.microsoft.cab':'cab','com.microsoft.cab-archive':'cab',
-                        'public.iso-image':'iso'}
-                    observed={}
-                    extensions=set()
-                    udf_documents=0
+                    observed = {}
                     for document in documents:
                         self.assertEqual(document['LSHandlerRank'],requested or 'None')
                         self.assertEqual(document['CFBundleTypeRole'],'Viewer')
-                        if document['CFBundleTypeIconFile']=='xdzip-udf.icns':
-                            udf_documents+=1
-                            self.assertNotIn('LSItemContentTypes',document)
-                            self.assertEqual(document['CFBundleTypeExtensions'],['udf'])
-                        elif set(document['CFBundleTypeExtensions']) <= {'bz2','bz','tbz','tbz2','lzma','tlz','lz','xz','txz'}:
-                            self.assertNotIn('LSItemContentTypes',document)
-                            self.assertEqual(document['CFBundleTypeIconFile'],'xdzip-archive.icns')
-                        elif set(document['CFBundleTypeExtensions']) <= {'zipx','xpi','apk','ipa','cbz'}:
-                            self.assertNotIn('LSItemContentTypes',document)
-                            self.assertEqual(document['CFBundleTypeIconFile'],'xdzip-zip.icns')
-                        else:
-                            self.assertTrue(document['LSItemContentTypes'])
-                        for uti in document.get('LSItemContentTypes',[]):
-                            self.assertNotIn(uti,observed)
-                            observed[uti]=document['CFBundleTypeIconFile']
-                        extensions.update(document['CFBundleTypeExtensions'])
-                    self.assertEqual(udf_documents,1)
-                    self.assertEqual(observed,{uti:'xdzip-'+icon+'.icns' for uti,icon in expected.items()})
-                    self.assertEqual(extensions,set(WINDOWS_ICONS))
+                        extension, = document['CFBundleTypeExtensions']
+                        self.assertNotIn(extension, observed)
+                        observed[extension] = (document['CFBundleTypeIconFile'], document.get('LSItemContentTypes'))
+                    self.assertEqual(observed, {
+                        extension: ('xdzip-' + icon + '.icns', types)
+                        for extension, (icon, types) in expected_documents.items()
+                    })
                     imported={item['UTTypeIdentifier']:item for item in info['UTImportedTypeDeclarations']}
                     for uti,extension in [('com.rarlab.rar-archive','rar'),
                                           ('com.microsoft.cab-archive','cab'),
