@@ -178,7 +178,7 @@ class WorkflowTests(unittest.TestCase):
         steps = job['steps']
         actions = {step['uses'].split('@')[0] for step in steps if 'uses' in step}
         self.assertEqual(actions, {'actions/checkout', 'actions/upload-artifact'})
-        archive = steps[-1]
+        archive, diagnostics = steps[-2:]
         self.assertTrue(archive['uses'].startswith('actions/upload-artifact@'))
         self.assertNotIn('if', archive)
         self.assertEqual(set(archive['with']['path'].splitlines()), {
@@ -190,6 +190,10 @@ class WorkflowTests(unittest.TestCase):
             'build/desktop/desktop-build.json',
             'build/desktop/desktop-test.json',
         })
+        self.assertEqual(diagnostics['if'], 'failure()')
+        self.assertTrue(diagnostics['uses'].startswith('actions/upload-artifact@'))
+        for path in diagnostics['with']['path'].splitlines():
+            self.assertIn(Path(path).suffix, {'.log', '.json'})
 
     def test_workflows_do_not_start_web_browser_tests(self):
         browser_drivers = re.compile(r'playwright|chromium|webdriver|selenium', re.I)

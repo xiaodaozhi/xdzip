@@ -114,3 +114,16 @@ jobs:
           if-no-files-found: error
           compression-level: 0
           retention-days: 30
+      - name: Preserve failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: windows-store-msix-diagnostics-${{ github.run_attempt }}
+          path: |
+            build/desktop/apps/desktop/qml-tests.log
+            build/desktop/Testing/Temporary/LastTest.log
+            build/desktop/desktop-build.json
+            build/desktop/desktop-test.json
+            build/store-msix-package/verify*.json
+          if-no-files-found: ignore
+          retention-days: 14
