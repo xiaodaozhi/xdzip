@@ -161,6 +161,12 @@ class RegistryTests(unittest.TestCase):
         icons = ast.literal_eval(output.split('MACOS_ICONS = ', 1)[1].split('\n', 1)[0])
         self.assertEqual(icons.count('archive'), 1)
 
+    def test_unattended_launch_excludes_only_password_opening_fixture(self):
+        namespace = {}
+        exec(REGISTRY.render(self.source)['scripts/archive_formats_generated.py'], namespace)
+        self.assertEqual(namespace['UNATTENDED_ASSOCIATION_FIXTURES'], tuple(
+            name for name in namespace['ASSOCIATION_FIXTURES'] if name != 'sample.aes'))
+
     def test_rejects_undeclared_creation_suffix(self):
         self.reject(lambda source: source['formats'][0].update(creation_suffixes=['.exe']))
 

@@ -77,6 +77,7 @@ jobs:
           path: |
             build/review/*.json
             build/review/linux-install-lifecycle.log
+            build/association-tests/macos-association/*.log
             build/review/native-sessions*.log
             build/review/x11-startup/*.json
             build/review/x11-startup/*.log

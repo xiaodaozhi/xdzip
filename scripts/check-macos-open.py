@@ -4,7 +4,7 @@ import argparse
 import json
 import os
 from pathlib import Path
-from archive_formats_generated import ASSOCIATION_FIXTURES
+from archive_formats_generated import UNATTENDED_ASSOCIATION_FIXTURES
 import subprocess
 from macos_launch_services import transient_registrations
 from deployment_audit import within
@@ -26,7 +26,7 @@ def main():
     scratch.mkdir(parents=True)
     app, fixture = args.app.resolve(), args.fixture.resolve()
     formats = args.formats.resolve()
-    format_names = ASSOCIATION_FIXTURES
+    format_names = UNATTENDED_ASSOCIATION_FIXTURES
     if not within(formats, ROOT/'build') or any(not (formats/name).is_file() for name in format_names):
         parser.error('Expected owned archive fixtures under build/')
     env = dict(os.environ, QT_QPA_PLATFORM='cocoa', QSG_RHI_BACKEND='metal')
@@ -47,19 +47,26 @@ def main():
                 for key in ['XDZIP_SETTINGS_PATH', 'XDZIP_ASSOCIATION_PROBE', 'QT_QPA_PLATFORM', 'QSG_RHI_BACKEND']:
                     command += ['--env', key+'='+environment[key]]
                 command += ['--env', 'QT_QUICK_BACKEND=', str(target)]
-            result = subprocess.run(command, env=environment, capture_output=True, text=True, timeout=35)
+            try:
+                result = subprocess.run(command, env=environment, capture_output=True, text=True, timeout=35)
+            except subprocess.TimeoutExpired:
+                raise SystemExit(f'macOS file-open launch timed out: {kind}') from None
+            if kind == 'argv':
+                (scratch/(kind+'.stdout.log')).write_text(result.stdout, encoding='utf-8')
+                (scratch/(kind+'.stderr.log')).write_text(result.stderr, encoding='utf-8')
             if result.returncode or not record.exists():
-                raise SystemExit('macOS file-open launch failed; see isolated association logs')
+                raise SystemExit(f'macOS file-open launch failed: {kind}, exit {result.returncode}, '
+                                 f'probe written: {record.exists()}')
             data = json.loads(record.read_text())
             records = data.get('records', 0)
             if ((expected_records is not None and records != expected_records) or records < 1
                     or data.get('presented_frames', 0) < 1 or data.get('welcome_frames') != 0):
-                raise SystemExit('macOS external launch exposed welcome content or did not open the fixture')
+                raise SystemExit(f'macOS external launch exposed welcome content or did not open the fixture: {kind}')
             cases[kind] = data
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps({'status': 'passed', 'platform': 'macos', 'cases': cases,
         'limits': 'Actual native launch and frame visibility, not Finder human interaction or a clean-machine installation.'}, indent=2)+'\n')
-    print('macOS argv and Launch Services: all format fixtures, presented frames, zero welcome frames')
+    print('macOS argv and Launch Services: unattended format fixtures, presented frames, zero welcome frames')
 
 
 if __name__ == '__main__':

@@ -5,7 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
-from archive_formats_generated import ASSOCIATION_FIXTURES, SHELL_MIME_TYPES
+from archive_formats_generated import SHELL_MIME_TYPES, UNATTENDED_ASSOCIATION_FIXTURES
 import signal
 import subprocess
 import time
@@ -31,21 +31,22 @@ def verify_default_associations(home, env, user, formats, revision):
     if any(path.exists() for path in (foreign,foreign_launcher,marker,foreign_probe)):
         raise RuntimeError('Refusing to overwrite default-association test files')
     mime_types=SHELL_MIME_TYPES
-    names=ASSOCIATION_FIXTURES
+    names=UNATTENDED_ASSOCIATION_FIXTURES
     child_env=dict(env)
     child_env.pop('DBUS_SESSION_BUS_ADDRESS',None)
     child_env.pop('XDZIP_ASSOCIATION_PROBE',None)
     bus_pid=None
     checks=[]
+    unmatched=[]
     def invoke(args, extra_env=None):
         options=dict(user)
         options['env']=dict(child_env,**(extra_env or {}))
         return run(args,**options)
-    def wait_file(path):
+    def wait_file(path, label):
         for _ in range(500):
             if path.is_file():return
             time.sleep(.05)
-        raise RuntimeError('Default association evidence did not arrive')
+        raise RuntimeError('Default association evidence did not arrive: '+label)
     def wait_application_exit():
         for _ in range(100):
             with open('/run/xdzip/usage.lock') as lock:
@@ -66,7 +67,7 @@ def verify_default_associations(home, env, user, formats, revision):
         if foreign.name not in invoke(['gio','mime','application/zip']).splitlines()[0]:
             raise RuntimeError('Foreign default was not selected')
         invoke(['gio','open',str(formats/'sample.zip')],{'XDZIP_ASSOCIATION_PROBE':str(foreign_probe)})
-        wait_file(marker)
+        wait_file(marker, 'foreign ZIP handler')
         if foreign_probe.exists():raise RuntimeError('Foreign default unexpectedly launched xdzip')
         for mime in mime_types:
             invoke(['gio','mime',mime,'xdzip.desktop'])
@@ -79,8 +80,16 @@ def verify_default_associations(home, env, user, formats, revision):
             info=invoke(['gio','info','-a','standard::content-type',str(target)])
             detected=next((line.strip().split(': ',1)[1] for line in info.splitlines()
                            if 'standard::content-type:' in line),None)
+            if not detected:
+                raise RuntimeError('GIO did not detect a content type: '+name)
+            default=invoke(['gio','mime',detected]).splitlines()
+            if not default or 'xdzip.desktop' not in default[0]:
+                if detected in mime_types:
+                    raise RuntimeError('Declared default did not resolve to xdzip: '+name)
+                unmatched.append({'format':name,'content_type':detected})
+                continue
             invoke(['gio','open',str(target)],{'XDZIP_ASSOCIATION_PROBE':str(probe)})
-            wait_file(probe)
+            wait_file(probe, name)
             record=json.loads(probe.read_text())
             if (record.get('event')!='association_open' or record.get('records',0)<1
                     or record.get('revision')!=revision or record.get('presented_frames',0)<1
@@ -88,6 +97,8 @@ def verify_default_associations(home, env, user, formats, revision):
                 raise RuntimeError('Incorrect default association result: '+name)
             wait_application_exit()
             checks.append({'format':name,'content_type':detected,'records':record['records']})
+        if not any(item['format']=='sample.zip' for item in checks):
+            raise RuntimeError('ZIP did not open via the selected xdzip default')
         invoke(['gio','mime','application/zip',foreign.name])
         if foreign.name not in invoke(['gio','mime','application/zip']).splitlines()[0]:
             raise RuntimeError('Changing the default back failed')
@@ -102,7 +113,8 @@ def verify_default_associations(home, env, user, formats, revision):
             if bus_pid:
                 try:os.kill(bus_pid,signal.SIGTERM)
                 except ProcessLookupError:pass
-    return {'mime_defaults':len(mime_types),'formats':checks,'foreign_default_control':'passed',
+    return {'mime_defaults':len(mime_types),'formats':checks,'unmatched_content_types':unmatched,
+            'foreign_default_control':'passed',
             'original_defaults_restored':True}
 
 
@@ -134,6 +146,7 @@ def main():
             for _ in range(300):
                 if probe.exists():break
                 time.sleep(.05)
+            if not probe.exists():raise RuntimeError('File-open probe did not complete: '+label)
             data=json.loads(probe.read_text())
             if (data['event']!='association_open' or data['records']<1
                     or (expected_records is not None and data['records']!=expected_records)):
@@ -167,9 +180,9 @@ def main():
                 raise RuntimeError('Format default handler changed: '+mime)
             if 'xdzip.desktop' not in run(['gio','mime',mime],**user):
                 raise RuntimeError('Format MIME candidate not registered: '+mime)
-        for name in ASSOCIATION_FIXTURES:
+        for name in UNATTENDED_ASSOCIATION_FIXTURES:
             verify_open('format-'+name, Path('/formats')/name, expected_records=None)
-        phases.append('all-format-candidates-and-defaults')
+        phases.append('unattended-format-opens-and-declared-defaults')
         current=json.loads((home/'probe/actual-product-upgrade.json').read_text())
         default_associations=verify_default_associations(home,env,user,Path('/formats'),current['revision'])
         phases.append('user-default-selection-and-format-dispatch')
