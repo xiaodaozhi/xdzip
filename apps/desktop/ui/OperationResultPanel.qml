@@ -94,36 +94,17 @@ ColumnLayout {
                 cornerRadius: height / 2
                 surfaceColor: Theme.surface
                 outlineColor: Theme.operationCardBorder
+                explanation: text
                 contentItem: Item {
-                    implicitWidth: statsContent.implicitWidth
-                    implicitHeight: statsContent.implicitHeight
-                    RowLayout {
-                        id: statsContent
-                        objectName: "resultStatsContent"
+                    implicitWidth: Theme.operationControlSelectIndicatorSize
+                    implicitHeight: Theme.operationControlSelectIndicatorSize
+                    Image {
+                        objectName: "resultStatsChevron"
                         anchors.centerIn: parent
-                        spacing: Theme.operationControlSelectIndicatorTextGap
-                        Item {
-                            Layout.alignment: Qt.AlignVCenter
-                            implicitWidth: statsLabelMetrics.tightBoundingRect.width
-                            implicitHeight: statsLabelMetrics.tightBoundingRect.height
-                            // Align visible glyphs with the chevron, independent of font line-box padding.
-                            TextMetrics { id: statsLabelMetrics; text: statsLabel.text; font: statsLabel.font }
-                            Text {
-                                id: statsLabel
-                                objectName: "resultStatsLabel"
-                                x: -statsLabelMetrics.tightBoundingRect.x
-                                y: -baselineOffset - statsLabelMetrics.tightBoundingRect.y
-                                text: statsToggle.text; font.pixelSize: statsToggle.labelPixelSize; color: Theme.textSecondary
-                            }
-                        }
-                        Image {
-                            objectName: "resultStatsChevron"
-                            Layout.alignment: Qt.AlignVCenter
-                            source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "chevron-down.png"
-                            rotation: statsToggle.checked ? 180 : 0
-                            Layout.preferredWidth: Theme.operationControlSelectIndicatorSize
-                            Layout.preferredHeight: Theme.operationControlSelectIndicatorSize
-                        }
+                        source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "chevron-down.png"
+                        rotation: statsToggle.checked ? 180 : 0
+                        width: Theme.operationControlSelectIndicatorSize
+                        height: Theme.operationControlSelectIndicatorSize
                     }
                 }
             }
