@@ -2,7 +2,7 @@
 
 [English](../../engineering/shell-actions.md) | 简体中文
 
-系统入口将选择和动作交给同一登录会话的桌面进程。Windows 使用 `IExplorerCommand` 提供经典菜单，位于 Windows 11 的“显示更多选项”；DLL 保留 `IContextMenu`，兼容已有调用方。Ubuntu 24.04 Files 使用 Nautilus 4.0 菜单扩展。macOS 使用 Finder Sync 的“用 xdzip 打开”动态子菜单，保留“服务 → 用 xdzip 打开”及独立操作面板作为回退。
+系统入口将选择和动作交给同一登录会话的桌面进程。Windows 使用 `IExplorerCommand` 提供经典菜单，位于 Windows 11 的“显示更多选项”；DLL 保留 `IContextMenu`，兼容已有调用方。Ubuntu 24.04 Files 使用 Nautilus 4.0 菜单扩展。macOS 使用 Finder Sync 的“通过 xdzip 打开”动态子菜单，保留“服务 → 通过 xdzip 打开”及独立操作面板作为回退。
 
 各平台实际验证情况与剩余项见 [#270](https://github.com/xiaodaozhi/xdzip/issues/270)。源码能力不追溯加入既有发布附件。
 
