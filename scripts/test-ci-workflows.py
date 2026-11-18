@@ -165,6 +165,32 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(set(native['strategy']['matrix']['os']), {'windows-2022', 'macos-15', 'ubuntu-24.04'})
         self.assertIn('scripts/ci-release.ps1', '\n'.join(step.get('run', '') for step in native['steps']))
 
+    def test_store_msix_is_manual_and_exports_verified_package_only(self):
+        workflow = self.workflows['windows-store-msix.yml']
+        self.assertEqual(set(workflow['on']), {'workflow_dispatch'})
+        inputs = workflow['on']['workflow_dispatch']['inputs']
+        self.assertEqual(inputs['source_revision']['required'], 'true')
+        self.assertEqual(workflow['permissions'], {'contents': 'read'})
+        self.assertEqual(set(workflow['jobs']), {'package'})
+        job = workflow['jobs']['package']
+        self.assertNotIn('permissions', job)
+        self.assertNotIn('environment', job)
+        steps = job['steps']
+        actions = {step['uses'].split('@')[0] for step in steps if 'uses' in step}
+        self.assertEqual(actions, {'actions/checkout', 'actions/upload-artifact'})
+        archive = steps[-1]
+        self.assertTrue(archive['uses'].startswith('actions/upload-artifact@'))
+        self.assertNotIn('if', archive)
+        self.assertEqual(set(archive['with']['path'].splitlines()), {
+            'build/store-msix-package/xdzip-windows-x64.msix',
+            'build/store-msix-package/windows-msix.json',
+            'build/store-msix-package/package-msix.json',
+            'build/store-msix-package/verify.json',
+            'build/store-msix-package/verify-runtime.json',
+            'build/desktop/desktop-build.json',
+            'build/desktop/desktop-test.json',
+        })
+
     def test_workflows_do_not_start_web_browser_tests(self):
         browser_drivers = re.compile(r'playwright|chromium|webdriver|selenium', re.I)
         web_scripts = re.compile(

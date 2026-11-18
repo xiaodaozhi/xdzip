@@ -1,0 +1,116 @@
+name: Windows Store MSIX
+run-name: Windows Store MSIX for ${{ inputs.source_revision }}
+on:
+  workflow_dispatch:
+    inputs:
+      source_revision:
+        description: Full 40-character commit SHA reachable from main
+        type: string
+        required: true
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: windows-2022
+    timeout-minutes: 90
+    steps:
+      - name: Check dispatch inputs
+        shell: pwsh
+        env:
+          SOURCE_REVISION: ${{ inputs.source_revision }}
+        run: |
+          if ($env:GITHUB_REF -cne 'refs/heads/main') { throw 'Dispatch this workflow on main' }
+          if ($env:SOURCE_REVISION -cnotmatch '\A[0-9a-f]{40}\z') { throw 'Enter a full lowercase commit SHA' }
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Select source from main
+        shell: pwsh
+        env:
+          SOURCE_REVISION: ${{ inputs.source_revision }}
+        run: |
+          $objectType = git cat-file -t $env:SOURCE_REVISION
+          if ($LASTEXITCODE -ne 0 -or $objectType -cne 'commit') { throw 'The requested SHA is not a commit' }
+          git merge-base --is-ancestor $env:SOURCE_REVISION $env:GITHUB_SHA
+          if ($LASTEXITCODE -ne 0) { throw 'The requested commit is not reachable from main at dispatch' }
+          git checkout --detach $env:SOURCE_REVISION
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot check out the requested commit' }
+      - name: Build and verify the Store package
+        id: msix
+        shell: pwsh
+        env:
+          SOURCE_REVISION: ${{ inputs.source_revision }}
+        run: |
+          $identity = Get-Content -LiteralPath 'specs/packaging/windows-store-identity.json' -Raw | ConvertFrom-Json
+          foreach ($field in @('name', 'publisher', 'publisher_display_name')) {
+            if ($identity.$field -isnot [string] -or [string]::IsNullOrWhiteSpace($identity.$field)) {
+              throw "Missing Store identity field: $field"
+            }
+          }
+          $version = Get-Content -LiteralPath 'VERSION.json' -Raw | ConvertFrom-Json
+          if (($version.build -isnot [int] -and $version.build -isnot [long]) -or
+              $version.build -lt 1 -or $version.build -gt 65535) {
+            throw 'VERSION.json build must be an integer between 1 and 65535 for MSIX'
+          }
+          $msixVersion = "1.0.$($version.build).0"
+
+          $vswhere = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
+          $installation = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if ($LASTEXITCODE -ne 0 -or !$installation) { throw 'MSVC installation not found' }
+          Import-Module "$installation/Common7/Tools/Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $installation -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+
+          $qtRoot = Join-Path $env:RUNNER_TEMP 'Qt'
+          $tools = Join-Path $env:RUNNER_TEMP 'desktop-tools'
+          $output = 'build/store-msix-package'
+          $shared = @('--qt-root', $qtRoot, '--qt-prefix', (Join-Path $qtRoot '6.8.2/msvc2022_64'),
+            '--tools-dir', $tools, '--output-dir', $output)
+          function Invoke-Desktop([string[]]$Arguments) {
+            & python scripts/desktop.py @Arguments @shared
+            if ($LASTEXITCODE -ne 0) { throw "Desktop stage failed: $($Arguments -join ' ')" }
+          }
+          Invoke-Desktop @('prepare', '--install-qt', '--install-rust', '--packaging')
+          Invoke-Desktop @('build')
+          Invoke-Desktop @('test', '--skip-rust')
+          Invoke-Desktop @('package', '--kind', 'runtime')
+          Invoke-Desktop @('verify', '--kind', 'runtime')
+          Move-Item -LiteralPath "$output/verify.json" -Destination "$output/verify-runtime.json"
+          Invoke-Desktop @('package', '--kind', 'msix', '--msix-channel', 'store',
+            '--msix-name', $identity.name, '--msix-publisher', $identity.publisher,
+            '--msix-publisher-display-name', $identity.publisher_display_name)
+          Invoke-Desktop @('verify', '--kind', 'msix')
+
+          $manifest = Get-Content -LiteralPath "$output/windows-msix.json" -Raw | ConvertFrom-Json
+          $receipt = Get-Content -LiteralPath "$output/package-msix.json" -Raw | ConvertFrom-Json
+          if ($receipt.source.revision -cne $env:SOURCE_REVISION -or $receipt.source.dirty -ne $false -or
+              $manifest.channel -cne 'store' -or $manifest.version -cne $msixVersion -or
+              $manifest.name -cne $identity.name -or $manifest.publisher -cne $identity.publisher -or
+              $manifest.publisher_display_name -cne $identity.publisher_display_name) {
+            throw 'Verified MSIX does not match the selected commit, Store identity or version'
+          }
+          "version=$msixVersion" >> $env:GITHUB_OUTPUT
+          @"
+          ### Windows Store MSIX $msixVersion
+
+          - Source commit: $($receipt.source.revision)
+          - Package: $($manifest.package)
+          - SHA-256: $($manifest.sha256)
+          - Status: verified unsigned upload candidate for Partner Center.
+          "@ >> $env:GITHUB_STEP_SUMMARY
+      - name: Preserve verified Store upload candidate
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: windows-store-msix-${{ steps.msix.outputs.version }}-${{ github.run_attempt }}
+          path: |
+            build/store-msix-package/xdzip-windows-x64.msix
+            build/store-msix-package/windows-msix.json
+            build/store-msix-package/package-msix.json
+            build/store-msix-package/verify.json
+            build/store-msix-package/verify-runtime.json
+            build/desktop/desktop-build.json
+            build/desktop/desktop-test.json
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30

@@ -201,6 +201,12 @@ python3 scripts/desktop.py verify --build-dir build/desktop-dmg --output-dir bui
 
 ZIP 在受限 POSIX 条件下可恢复相对符号链接和可执行位，不恢复特权位、扩展属性或原始修改时间，不代表应用包安装或签名验证。来源与目标必须满足[安全解压契约](zip-safe-extraction.md)。崩溃暂存只提示并保留供检查，不自动恢复或删除未知内容。
 
+## Microsoft Store MSIX
+
+准备商店更新时，先递增 `VERSION.json` 中的 `build`，同步版本文件并提交。在 GitHub 打开 [Windows Store MSIX](../../../.github/workflows/windows-store-msix.yml)，在 `main` 上选择 **Run workflow**，输入已合入 `main` 的完整提交 SHA。工作流使用该提交中的[商店身份配置](../../../specs/packaging/windows-store-identity.json)。下载 `windows-store-msix-<包版本>-<运行次数>` 工件，其中包含未签名的 `xdzip-windows-x64.msix`，以及构建、测试、运行时校验和程序包检查的回执。
+
+上传前，在 `package-msix.json` 和 `windows-msix.json` 中核对源提交、包版本和 SHA-256，并确认包版本高于商店已发布版本。将 MSIX 上传到合作伙伴中心，更新 Store 一览后提交认证。采用手动发布时，认证通过后选择 **立即发布**。微软签名并分发该包，随后可以在 Windows 上验证实际安装的商店版。
+
 ## Windows MSIX 实验构建
 
 MSIX 复用同一提交的 Windows Release 桌面构建、测试与已审计运行目录。先按本文完成 `prepare --packaging`、`build`、`test`，再使用相同参数执行：

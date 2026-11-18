@@ -198,6 +198,12 @@ Opening browses only; it does not automatically extract. Regular same-name files
 
 ZIP can restore relative symbolic links and executable bits under restricted POSIX conditions but not privilege bits, extended attributes, or original modification times. This does not establish app-bundle installation or signature verification. Source and destination must satisfy the [safe extraction contract](zip-safe-extraction.md). Crash staging is only reported and retained for inspection; unknown content is not automatically recovered or deleted.
 
+## Microsoft Store MSIX
+
+For a Store submission, first commit the increased `build` in `VERSION.json` and the synchronized version files. On GitHub, open [Windows Store MSIX](../../.github/workflows/windows-store-msix.yml), select **Run workflow** on `main`, and enter the full commit SHA from `main`. The workflow uses the [Store identity configuration](../../specs/packaging/windows-store-identity.json) at that commit. Download the `windows-store-msix-<package-version>-<attempt>` artifact. It contains the unsigned `xdzip-windows-x64.msix` and receipts for the build, tests, runtime verification and package inspection.
+
+Check the commit, package version and SHA-256 in `package-msix.json` and `windows-msix.json` before uploading the MSIX to Partner Center. Confirm that the package version is higher than the published Store version. Update the Store listings and submit for certification. In a manual publishing submission, select **Publish now** after certification. Microsoft signs and distributes the package, and the installed Store build can then be checked on Windows.
+
 <a id="windows-msix-实验构建"></a>
 
 ## Experimental Windows MSIX build
