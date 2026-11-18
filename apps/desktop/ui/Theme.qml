@@ -223,6 +223,8 @@ QtObject {
     readonly property real operationCreateInputRowHeight: 38
     readonly property real operationCreateFieldHeight: 28
     readonly property real operationConflictClientHeight: 560
+    readonly property real operationResultBatchColumns: 3
+    readonly property real operationResultCollapsedRows: 1
     readonly property real operationResultTitleSize: 20 * fontScale
     readonly property real operationResultSubtitleSize: 14 * fontScale
     readonly property real operationResultBodySize: 13 * fontScale
