@@ -737,18 +737,18 @@ void DesktopIntegration::updateIcon() {
 #ifdef Q_OS_MACOS
     const auto variant = QStringLiteral("black");
 #else
-    // The taskbar/panel background can differ from both app and system themes.
-    // White ink with a dark outline stays visible without a theme-read fallback.
-    const auto variant = QStringLiteral("contrast");
+    const auto variant = QStringLiteral("application");
 #endif
     if (m_iconVariant == variant)
         return;
     m_iconVariant = variant;
+#ifdef Q_OS_MACOS
     for (const auto size : {16, 20, 22, 24, 32, 44, 48, 64})
         icon.addFile(QStringLiteral(":/xdzip/assets/tray-%1-%2.png").arg(variant).arg(size),
                      QSize(size, size));
-#ifdef Q_OS_MACOS
     icon.setIsMask(true);
+#else
+    icon = QIcon(QStringLiteral(":/xdzip/assets/app-icon.png"));
 #endif
     m_tray.setIcon(icon);
 }

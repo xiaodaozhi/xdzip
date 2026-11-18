@@ -313,7 +313,7 @@ For Windows classic commands, verify the `IExplorerCommand` root and every enume
 
 For settings placement, place the pointer at the bottom-right of each available display and open/reopen real ownerless Settings and About. In both languages, light/dark themes and 100%/125%/150% fonts, the entire native frame must fit and be centered in the actual QScreen::availableGeometry without restoring an existing main window. Record native geometry separately from actual tray-menu interaction.
 
-Verify Windows tray white fill and dark outline on light, dark and colored backgrounds at every supplied bitmap size, across app theme changes, refresh and tray disable/re-enable. Legibility does not depend on registry theme reads. Pixel checks reject the former black-only icon on dark backgrounds; record actual notification-area observation separately.
+Verify that Windows, Linux and other non-macOS trays use the application icon at supported display sizes, across app theme changes, refresh and tray disable/re-enable. Compare the actual tray pixels with the application icon and check legibility on light, dark and colored backgrounds without registry theme reads. macOS retains its template icon. Record actual system notification-area observation separately from automated pixel checks.
 
 Custom radio controls must actually execute QAccessibleActionInterface press and toggle for theme, creation format, repeated activation and disabled items. Check selection model, actual theme, proxy, format extension and all checked states agree and successful settings persist. Mouse-only or Accessible.checked-only checks do not pass this case.
 

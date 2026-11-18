@@ -5697,6 +5697,8 @@ QtObject {
                 }
             return visible;
         };
+        const QIcon applicationIcon(QStringLiteral(":/xdzip/assets/app-icon.png"));
+        QVERIFY(!applicationIcon.isNull());
         const QColor dark("#202020");
         // This negative control reproduces the unreadable glyph without changing
         // the user's Windows personalization or relying on the host's theme.
@@ -5715,6 +5717,7 @@ QtObject {
                 for (const int size : {16, 20, 22, 24, 32, 44, 48, 64}) {
                     const auto image = icon.pixmap(QSize(size, size), 1).toImage();
                     QCOMPARE(image.size(), QSize(size, size));
+                    QCOMPARE(image, applicationIcon.pixmap(QSize(size, size), 1).toImage());
                     for (const auto &background : {QColor(Qt::white), dark, QColor("#18382d")})
                         QVERIFY2(visiblePixels(image, background) >= size * size / 50,
                                  qPrintable(QStringLiteral("%1px tray glyph on %2 (%3)")
