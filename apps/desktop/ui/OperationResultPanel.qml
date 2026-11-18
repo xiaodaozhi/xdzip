@@ -7,8 +7,9 @@ ColumnLayout {
     id: root
     required property var task
     property bool expanded: false
+    property bool statsExpanded: false
     readonly property string taskId: String(task.id || "")
-    onTaskIdChanged: expanded = false
+    onTaskIdChanged: { expanded = false; statsExpanded = false; }
     readonly property var entries: task.details || []
     readonly property var failures: entries.filter(e => e.status === "unfinished")
     readonly property bool useDetailsForFailures: !task.openError && (task.creating || !task.kind || task.kind === "create" || task.kind === "extract")
@@ -26,45 +27,82 @@ ColumnLayout {
         const amount = bytes >= 1000000 ? (bytes / 1000000).toFixed(1) + " MB" : bytes >= 1000 ? (bytes / 1000).toFixed(1) + " KB" : bytes + " B";
         return qsTrId("ui.f4d4c82e77ea").arg(names).arg(total > 3 ? qsTrId("ui.afa336b07774", Number(total)) : "").arg(amount);
     }
+    readonly property var metrics: root.task.batchResults ? [
+        {label: qsTrId("shell.status.succeeded"), value: root.task.committedFiles || 0, icon: "status-partial-success"},
+        {label: qsTrId("ui.6707de42c29d"), value: root.task.failedCount || 0, icon: "status-warning"},
+        {label: qsTrId("shell.status.cancelled"), value: root.task.cancelledCount || 0, icon: "status-warning"},
+        {label: qsTrId("shell.status.not-run"), value: root.task.notRunCount || 0, icon: "status-warning"}
+    ].concat(root.task.creating ? [] : [
+        {label: qsTrId("shell.status.duplicate"), value: root.task.skippedFiles || 0, icon: "status-skipped"}
+    ]) : [
+        {label: root.task.creating ? qsTrId("ui.0e65135b7f52") : qsTrId("ui.053461ce86d2"), value: root.task.creating ? root.task.outputParts || 0 : root.task.committedFiles || 0, icon: "status-partial-success"},
+        {label: qsTrId("ui.fc50a99caae0"), value: root.task.skippedFiles || 0, icon: "status-skipped"},
+        {label: qsTrId("ui.6707de42c29d"), value: root.task.creating ? root.task.status === "succeeded" ? 0 : 1 : root.remaining, icon: "status-warning"}
+    ]
     spacing: Theme.operationResultCardGap
     Rectangle {
         objectName: "resultCounts"
-        Layout.fillWidth: true; implicitHeight: Math.max(80, counts.implicitHeight + 24)
+        Layout.fillWidth: true; implicitHeight: Math.max(80, summary.implicitHeight + 24)
         color: Theme.operationCard; border.color: Theme.operationCardBorder; radius: Theme.operationResultCardRadius
-        GridLayout {
-            id: counts
-            columns: Theme.fontScale > 1.35 ? 1 : root.task.batchResults ? 2 : 3
-            columnSpacing: 0; rowSpacing: Theme.operationResultCardGap
+        ColumnLayout {
+            id: summary
             anchors.fill: parent; anchors.margins: Theme.operationResultCardInset
-            Repeater {
-                model: root.task.batchResults ? [
-                    {label: qsTrId("shell.status.succeeded"), value: root.task.committedFiles || 0, icon: "status-partial-success"},
-                    {label: qsTrId("ui.6707de42c29d"), value: root.task.failedCount || 0, icon: "status-warning"},
-                    {label: qsTrId("shell.status.cancelled"), value: root.task.cancelledCount || 0, icon: "status-warning"},
-                    {label: qsTrId("shell.status.not-run"), value: root.task.notRunCount || 0, icon: "status-warning"}
-                ].concat(root.task.creating ? [] : [
-                    {label: qsTrId("shell.status.duplicate"), value: root.task.skippedFiles || 0, icon: "status-skipped"}
-                ]) : [
-                    {label: root.task.creating ? qsTrId("ui.0e65135b7f52") : qsTrId("ui.053461ce86d2"), value: root.task.creating ? root.task.outputParts || 0 : root.task.committedFiles || 0, icon: "status-partial-success"},
-                    {label: qsTrId("ui.fc50a99caae0"), value: root.task.skippedFiles || 0, icon: "status-skipped"},
-                    {label: qsTrId("ui.6707de42c29d"), value: root.task.creating ? root.task.status === "succeeded" ? 0 : 1 : root.remaining, icon: "status-warning"}
-                ]
-                delegate: Item {
-                    id: metric
-                    required property var modelData
-                    required property int index
-                    Layout.fillWidth: true; implicitHeight: stat.implicitHeight
-                    ColumnLayout {
-                        id: stat
-                        anchors.horizontalCenter: parent.horizontalCenter; spacing: 5
-                        RowLayout {
-                            Layout.alignment: Qt.AlignHCenter; spacing: 8
-                            Image { source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + metric.modelData.icon + ".png"; Layout.preferredWidth: 24; Layout.preferredHeight: 24 }
-                            Text { text: metric.modelData.label; Layout.maximumWidth: Math.max(60, metric.width - 40); wrapMode: Text.Wrap; font.pixelSize: Math.round(Theme.operationResultBodySize); color: Theme.textSecondary }
+            spacing: Theme.operationResultCardGap
+            GridLayout {
+                id: counts
+                Layout.fillWidth: true
+                columns: root.task.batchResults ? Theme.operationResultBatchColumns : Theme.fontScale > 1.35 ? 1 : 3
+                columnSpacing: 0; rowSpacing: Theme.operationResultCardGap
+                Repeater {
+                    model: root.metrics
+                    delegate: Item {
+                        id: metric
+                        required property var modelData
+                        required property int index
+                        objectName: "resultMetric-" + index
+                        visible: !root.task.batchResults || root.statsExpanded || index < counts.columns * Theme.operationResultCollapsedRows
+                        Layout.fillWidth: true; Layout.preferredWidth: 1
+                        Layout.alignment: Qt.AlignTop
+                        implicitHeight: stat.implicitHeight
+                        ColumnLayout {
+                            id: stat
+                            width: parent.width; spacing: 5
+                            RowLayout {
+                                Layout.alignment: Qt.AlignHCenter; spacing: 8
+                                Image { source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + metric.modelData.icon + ".png"; Layout.preferredWidth: 24; Layout.preferredHeight: 24 }
+                                Text { text: metric.modelData.label; Layout.maximumWidth: Math.max(60, metric.width - 40); wrapMode: Text.Wrap; font.pixelSize: Math.round(Theme.operationResultBodySize); color: Theme.textSecondary }
+                            }
+                            Text { Layout.alignment: Qt.AlignHCenter; Layout.preferredHeight: Math.round(Theme.operationResultCountSize); text: metric.modelData.value; font.pixelSize: Math.round(Theme.operationResultCountSize); verticalAlignment: Text.AlignVCenter; lineHeight: Math.round(Theme.operationResultCountSize); lineHeightMode: Text.FixedHeight; font.bold: true; color: Theme.text }
                         }
-                        Text { Layout.alignment: Qt.AlignHCenter; Layout.preferredHeight: Math.round(Theme.operationResultCountSize); text: metric.modelData.value; font.pixelSize: Math.round(Theme.operationResultCountSize); verticalAlignment: Text.AlignVCenter; lineHeight: Math.round(Theme.operationResultCountSize); lineHeightMode: Text.FixedHeight; font.bold: true; color: Theme.text }
+                        Rectangle {
+                            visible: counts.columns > 1 && metric.index % counts.columns < counts.columns - 1 && metric.index < root.metrics.length - 1
+                            anchors.right: parent.right; height: parent.height; width: 1; color: Theme.operationCardBorder
+                        }
                     }
-                    Rectangle { visible: Theme.fontScale <= 1.35 && (root.task.batchResults ? metric.index % 2 === 0 && metric.index < 4 : metric.index < 2); anchors.right: parent.right; height: parent.height; width: 1; color: Theme.operationCardBorder }
+                }
+            }
+            OperationButton {
+                id: statsToggle
+                objectName: "resultStatsToggle"
+                visible: Boolean(root.task.batchResults) && root.metrics.length > counts.columns * Theme.operationResultCollapsedRows
+                Layout.alignment: Qt.AlignHCenter
+                checkable: true
+                checked: root.statsExpanded
+                onToggled: root.statsExpanded = checked
+                text: checked ? qsTrId("result.collapseStats") : qsTrId("result.expandStats")
+                labelSize: Theme.operationResultNoteSize
+                cornerRadius: height / 2
+                surfaceColor: Theme.surface
+                outlineColor: Theme.operationCardBorder
+                contentItem: RowLayout {
+                    spacing: Theme.operationControlSelectIndicatorTextGap
+                    Text { text: statsToggle.text; font.pixelSize: statsToggle.labelPixelSize; color: Theme.textSecondary }
+                    Image {
+                        source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "chevron-down.png"
+                        rotation: statsToggle.checked ? 180 : 0
+                        Layout.preferredWidth: Theme.operationControlSelectIndicatorSize
+                        Layout.preferredHeight: Theme.operationControlSelectIndicatorSize
+                    }
                 }
             }
         }
