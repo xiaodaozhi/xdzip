@@ -409,7 +409,8 @@ class InstallerTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             base=Path(directory);script=base/'render.cmake'
             template=(ROOT/'apps/desktop/packaging/macos/Info.plist.in').as_posix()
-            script.write_text(configure+'\nconfigure_file("'+template+'" "${OUTPUT}")\n')
+            script.write_text(configure+'\nconfigure_file("'+template+'" "${OUTPUT}")\n'
+                              'file(WRITE "${OUTPUT}.icons" "${XDZIP_MACOS_DOCUMENT_ICONS}")\n')
             for requested in [None,'None','Alternate','Owner','Default','none',' Alternate','Alternate;None','']:
                 with self.subTest(rank=requested):
                     output=base/'Info.plist'
@@ -436,6 +437,11 @@ class InstallerTests(unittest.TestCase):
                         extension: ('xdzip-' + icon + '.icns', types)
                         for extension, (icon, types) in expected_documents.items()
                     })
+                    icons = {f'xdzip-{icon}.icns' for icon in
+                             (base/'Info.plist.icons').read_text().split(';')}
+                    self.assertEqual(icons, {icon for icon, _ in observed.values()})
+                    for icon in icons:
+                        self.assertTrue((ROOT/'design/assets/file-associations'/icon).is_file(), icon)
                     imported={item['UTTypeIdentifier']:item for item in info['UTImportedTypeDeclarations']}
                     for uti,extension in [('com.rarlab.rar-archive','rar'),
                                           ('com.microsoft.cab-archive','cab'),

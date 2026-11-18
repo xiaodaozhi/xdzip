@@ -5,10 +5,42 @@ import gzip
 import io
 from pathlib import Path
 import shutil
+import struct
 import tarfile
 import zlib
 
+from archive_formats_generated import ASSOCIATION_FIXTURES
+
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def make_compound_file(payload):
+    # A version 3 Compound File with one text stream and no installer tables.
+    sector_size = 512
+    free_sector, end_of_chain, fat_sector = 0xffffffff, 0xfffffffe, 0xfffffffd
+    data = bytearray(5 * sector_size)
+    data[:8] = bytes.fromhex('d0cf11e0a1b11ae1')
+    struct.pack_into('<5H', data, 24, 0x003e, 3, 0xfffe, 9, 6)
+    struct.pack_into('<9I', data, 40, 0, 1, 1, 0, 4096, 3, 1, end_of_chain, 0)
+    struct.pack_into('<109I', data, 76, 0, *[free_sector] * 108)
+    struct.pack_into('<128I', data, sector_size,
+                     fat_sector, end_of_chain, end_of_chain, end_of_chain, *[free_sector] * 124)
+
+    directory = 2 * sector_size
+    for offset, name, kind, child, start, size in (
+        (directory, 'Root Entry', 5, 1, 2, 64),
+        (directory + 128, 'hello.txt', 2, free_sector, 0, len(payload)),
+    ):
+        encoded_name = (name + '\0').encode('utf-16le')
+        data[offset:offset + len(encoded_name)] = encoded_name
+        struct.pack_into('<HBB3I', data, offset + 64,
+                         len(encoded_name), kind, 1, free_sector, free_sector, child)
+        struct.pack_into('<IQ', data, offset + 116, start, size)
+
+    mini_stream = 3 * sector_size
+    data[mini_stream:mini_stream + len(payload)] = payload
+    struct.pack_into('<128I', data, 4 * sector_size, end_of_chain, *[free_sector] * 127)
+    return data
 
 
 def main():
@@ -104,6 +136,7 @@ def main():
     for suffix in ['tar.zst','tzst']:
         shutil.copyfile(ROOT / 'tests/fixtures/streams/files.tar.zst', output / ('sample.' + suffix))
     content = b'xdzip association fixture\n'
+    (output / 'sample.msi').write_bytes(make_compound_file(content))
     (output / 'sample.gz').write_bytes(gzip.compress(content, mtime=0))
     for name, mode in [('sample.tar', 'w'), ('sample.tar.gz', 'w:gz')]:
         with tarfile.open(output / name, mode) as archive:
@@ -130,7 +163,10 @@ def main():
         if not data or len(data) > 64 * 1024 * 1024:
             raise ValueError('Optical fixture exceeds its bounded output')
         (output / name).write_bytes(data)
-    print('Prepared ZIP and derived candidates, TAR, compressed TAR, GZIP, 7z, RAR, CAB, ISO and UDF inputs')
+    missing = [name for name in ASSOCIATION_FIXTURES if not (output / name).is_file()]
+    if missing:
+        raise ValueError('Missing association fixtures: ' + ', '.join(missing))
+    print(f'Prepared all {len(ASSOCIATION_FIXTURES)} association fixtures')
 
 
 if __name__ == '__main__':

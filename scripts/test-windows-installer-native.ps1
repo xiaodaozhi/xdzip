@@ -2,6 +2,13 @@
 $ErrorActionPreference = 'Stop'
 if ($env:CI -ne 'true' -or $env:RUNNER_OS -ne 'Windows') { throw 'Disposable Windows CI only' }
 . "$PSScriptRoot/windows-installer-paths.ps1"
+Add-Type -TypeDefinition @'
+using System.Runtime.InteropServices;
+public static class XdzipInstallerSmokeLanguage {
+    [DllImport("kernel32.dll")]
+    public static extern ushort GetUserDefaultUILanguage();
+}
+'@
 $root = Join-Path $env:RUNNER_TEMP 'xdzip 安装器 smoke, space'
 if (Test-Path 'HKCU:\Software\Classes\xdzip.Archive') { throw 'Refusing to overwrite an existing installation' }
 $profileDirectory = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'xdzip\xdzip'
@@ -26,7 +33,8 @@ function Assert-ApplicationIdentity($Language) {
         try {
             if (!$key -or $key.GetValueKind('AllowSilentDefaultTakeOver') -ne [Microsoft.Win32.RegistryValueKind]::None) { throw 'Silent-default marker was not written as REG_NONE' }
             $expected = $extension.ToUpperInvariant() + $(if ($Language -eq 'en-US') { ' archive' } else { ' 压缩包' })
-            if ($key.GetValue('') -ne $expected) { throw "Wrong association description for $extension" }
+            $actual = $key.GetValue('')
+            if ($actual -cne $expected) { throw "Wrong association description for ${extension}: expected '$expected', got '$actual'" }
         } finally { if ($key) { $key.Close() } }
         $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey("Software\Classes\.$extension\OpenWithProgids")
         try {
@@ -68,9 +76,10 @@ for ($i=0; $i -lt 100 -and (Test-Path (Join-Path $root 'xdzip.exe')); $i++) { St
 if ((Test-Path (Join-Path $root 'xdzip.exe')) -or (Test-Path $legacyExe) -or !(Test-Path $keep) -or !(Test-Path $legacyKeep)) { throw 'Uninstall failed to preserve user content' }
 $root = Join-Path $env:RUNNER_TEMP 'xdzip fresh installer smoke'
 Remove-Item -LiteralPath $profile
+$systemLanguage = if (([XdzipInstallerSmokeLanguage]::GetUserDefaultUILanguage() -band 0x3ff) -eq 0x04) { 'zh-CN' } else { 'en-US' }
 try {
     Install-Smoke 'build/installer-smoke/qa2.exe' 'english'
-    Assert-ApplicationIdentity 'zh-CN'
+    Assert-ApplicationIdentity $systemLanguage
     Assert-XdzipShortcut (Join-Path $root 'xdzip.exe')
     if (Test-Path (Join-Path $root 'versions')) { throw 'Fresh install created a versions directory' }
 } finally {

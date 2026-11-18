@@ -9834,7 +9834,11 @@ QtObject {
         usePassword->setProperty("checked", false);
         QTRY_COMPARE(password->property("text").toString(), QString{});
         QTRY_VERIFY(start->isEnabled());
+#ifdef Q_OS_WIN
         QCOMPARE(group->property("count").toInt(), 14);
+#else
+        QCOMPARE(group->property("count").toInt(), 13);
+#endif
         group->forceActiveFocus(Qt::TabFocusReason);
         QTest::keyClick(create, Qt::Key_Down);
         QCOMPARE(group->property("currentIndex").toInt(), 1);
