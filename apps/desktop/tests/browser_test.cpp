@@ -90,6 +90,85 @@
 #include <QtGui/qscreen_platform.h>
 #include <dwmapi.h>
 #include <qt_windows.h>
+
+struct NativeTrayMenuProbe {
+    HWND owner = nullptr;
+    HMENU menu = nullptr;
+    QString commandText;
+    bool shown = false;
+    bool submenusValid = true;
+    int itemCount = 0;
+    UINT command = 0;
+    inline static thread_local NativeTrayMenuProbe *current = nullptr;
+
+    static LRESULT CALLBACK observe(int code, WPARAM parameter, LPARAM message) {
+        if (code >= 0 && current) {
+            const auto *event = reinterpret_cast<const CWPSTRUCT *>(message);
+            if (event->hwnd == current->owner && event->message == WM_INITMENUPOPUP)
+                current->menu = reinterpret_cast<HMENU>(event->wParam);
+        }
+        return CallNextHookEx(nullptr, code, parameter, message);
+    }
+    static void CALLBACK finish(HWND, UINT, UINT_PTR timer, DWORD) {
+        KillTimer(nullptr, timer);
+        if (!current)
+            return;
+        GUITHREADINFO state{sizeof(GUITHREADINFO)};
+        current->shown = GetGUIThreadInfo(GetCurrentThreadId(), &state) &&
+                         (state.flags & GUI_INMENUMODE) && state.hwndMenuOwner == current->owner &&
+                         current->menu && IsMenu(current->menu);
+        if (current->shown) {
+            current->itemCount = GetMenuItemCount(current->menu);
+            for (int index = 0; index < current->itemCount; ++index) {
+                if (const auto submenu = GetSubMenu(current->menu, index))
+                    current->submenusValid &= IsMenu(submenu) != FALSE;
+                wchar_t text[512]{};
+                GetMenuStringW(current->menu, UINT(index), text, 512, MF_BYPOSITION);
+                const auto label = QString::fromWCharArray(text).section('\t', 0, 0).remove('&');
+                const auto id = GetMenuItemID(current->menu, index);
+                if (label == current->commandText && id != UINT(-1) &&
+                    !(GetMenuState(current->menu, UINT(index), MF_BYPOSITION) &
+                      (MF_DISABLED | MF_GRAYED)))
+                    current->command = id;
+            }
+        }
+        // End only this thread's menu, then deliver its actual native command ID.
+        EndMenu();
+        if (current->command)
+            PostMessage(current->owner, WM_COMMAND, MAKEWPARAM(current->command, 0), 0);
+    }
+    bool invoke(const QPoint &position) {
+        current = this;
+        const auto hook = SetWindowsHookExW(WH_CALLWNDPROC, observe, nullptr, GetCurrentThreadId());
+        const auto timer = SetTimer(nullptr, 0, 100, finish);
+        if (hook && timer) {
+            // Qt 6.8.2's Windows tray uses this callback and NOTIFYICON_VERSION_4 packing.
+            SendMessage(owner, WM_APP + 101, MAKELPARAM(position.x(), position.y()),
+                        MAKELPARAM(WM_CONTEXTMENU, 0));
+        }
+        if (timer)
+            KillTimer(nullptr, timer);
+        if (hook)
+            UnhookWindowsHookEx(hook);
+        current = nullptr;
+        return hook && timer;
+    }
+};
+
+static HWND currentThreadTrayWindow() {
+    QList<HWND> windows;
+    EnumThreadWindows(
+        GetCurrentThreadId(),
+        [](HWND window, LPARAM data) -> BOOL {
+            wchar_t title[256]{};
+            GetWindowTextW(window, title, 256);
+            if (QString::fromWCharArray(title) == QStringLiteral("QTrayIconMessageWindow"))
+                reinterpret_cast<QList<HWND> *>(data)->append(window);
+            return TRUE;
+        },
+        reinterpret_cast<LPARAM>(&windows));
+    return windows.size() == 1 ? windows.first() : nullptr;
+}
 #endif
 #ifdef Q_OS_MACOS
 void scheduleNativeFileDialogCancellation();
@@ -5747,6 +5826,91 @@ QtObject {
         QVERIFY(!again.saveDetails("light", 1, "zh-CN", "standard", true, false, true));
         QVERIFY(!again.trayEnabled());
         QCOMPARE(again.recentArchives().size(), 0);
+    }
+    void nativeTrayMenuSurvivesReenable_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<int>("mode");
+        for (const auto &language : {QString("zh-CN"), QString("en-US")})
+            for (int mode = 0; mode < 3; ++mode)
+                QTest::newRow(qPrintable(language + '-' + QString::number(mode)))
+                    << language << mode;
+    }
+    void nativeTrayMenuSurvivesReenable() {
+#ifdef Q_OS_WIN
+        if (QGuiApplication::platformName() != "windows")
+            QSKIP("Requires the Windows native tray/menu backend");
+        QFETCH(QString, language);
+        QFETCH(int, mode);
+        const bool previousQuit = QApplication::quitOnLastWindowClosed();
+        const auto restoreQuit =
+            qScopeGuard([&] { QApplication::setQuitOnLastWindowClosed(previousQuit); });
+        UiPreferences settings;
+        QVERIFY(settings.applyDetails("light", 1., language, "standard", false, true, "tabs"));
+        QQmlEngine engine;
+        QQmlComponent component(&engine, QUrl("qrc:/xdzip/ui/Browser.qml"));
+        std::unique_ptr<QObject> object(component.create());
+        auto *window = qobject_cast<QQuickWindow *>(object.get());
+        QVERIFY2(window && window->inherits("QQuickApplicationWindow"),
+                 qPrintable(component.errorString()));
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        bool available = true;
+        DesktopIntegration desktop(window, controller, &settings, true, [&] { return available; });
+        QVERIFY(desktop.trayMenu()->platformMenu());
+        auto *show = desktop.action("show");
+        QVERIFY(show && show->isEnabled());
+        QSignalSpy commands(show, &QAction::triggered);
+        QSignalSpy menus(desktop.trayMenu(), &QMenu::aboutToShow);
+        for (int cycle = 0; cycle < 4; ++cycle) {
+            const auto menusBefore = menus.count();
+            if (cycle) {
+                if (mode == 2) {
+                    available = false;
+                    desktop.refresh();
+                } else {
+                    QVERIFY(settings.applyDetails("light", 1., language, "standard", false, false,
+                                                  "tabs"));
+                }
+                QVERIFY(!desktop.trayAvailable());
+                QVERIFY(!currentThreadTrayWindow());
+                if (mode == 1)
+                    QCoreApplication::processEvents();
+                available = true;
+                QVERIFY(
+                    settings.applyDetails("light", 1., language, "standard", false, true, "tabs"));
+                desktop.refresh();
+            }
+            QVERIFY(desktop.trayAvailable());
+            const auto trayWindow = currentThreadTrayWindow();
+            QVERIFY(trayWindow);
+            NOTIFYICONIDENTIFIER icon{sizeof(NOTIFYICONIDENTIFIER)};
+            icon.hWnd = trayWindow;
+            RECT iconRectangle{};
+            QTRY_VERIFY(SUCCEEDED(Shell_NotifyIconGetRect(&icon, &iconRectangle)));
+            RECT bounds{};
+            QVERIFY(GetWindowRect(reinterpret_cast<HWND>(window->winId()), &bounds));
+            const QPoint position(bounds.left + 30, bounds.top + 30);
+            window->hide();
+            NativeTrayMenuProbe probe;
+            probe.owner = trayWindow;
+            probe.commandText = show->text().remove('&');
+            QVERIFY(probe.invoke(position));
+            QVERIFY2(probe.shown,
+                     qPrintable(QString("Native tray menu did not open in cycle %1").arg(cycle)));
+            QVERIFY(probe.command);
+            QCOMPARE(probe.itemCount, desktop.trayMenu()->actions().size());
+            QVERIFY(probe.submenusValid);
+            QVERIFY(menus.count() > menusBefore);
+            QTRY_COMPARE(commands.count(), cycle + 1);
+            QTRY_VERIFY(window->isVisible());
+            QVERIFY(QTest::qWaitForWindowExposed(window));
+        }
+        controller->requestClose();
+        QTRY_VERIFY(controller->shutdownComplete());
+#else
+        QSKIP("Windows native tray/menu regression");
+#endif
     }
     void desktopTrayLifecycleAndCommands() {
         const bool previousQuit = QApplication::quitOnLastWindowClosed();
