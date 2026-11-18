@@ -63,6 +63,8 @@ void ApplicationSessions::adopt(QQuickWindow *window) {
     m_windows.append(window);
     m_presentationReady |= window->isVisible();
     connect(window, &QWindow::visibleChanged, this, [this](bool visible) {
+        emit sessionsChanged();
+        QTimer::singleShot(0, this, &ApplicationSessions::checkShellWindows);
         if (!visible || m_presentationReady)
             return;
         m_presentationReady = true;
@@ -95,13 +97,13 @@ ApplicationSessions::Session *ApplicationSessions::add(QQuickWindow *window, QOb
         return nullptr;
     page->setProperty("sessionIdentity", session->id);
     session->controller->openIntent = [this](const QString &path) { openPath(path); };
-    for (const auto &name : {"settingsWindow"}) {
-        if (auto *popup = page->findChild<QQuickWindow *>(name))
-            connect(popup, &QWindow::visibleChanged, this, [this, session] {
-                if (session->closed)
-                    reap(session);
-            });
-    }
+    for (auto *popup : page->findChildren<QQuickWindow *>())
+        connect(popup, &QWindow::visibleChanged, this, [this, id = session->id] {
+            for (const auto &candidate : m_sessions)
+                if (candidate->id == id && candidate->closed)
+                    reap(candidate.get());
+            QTimer::singleShot(0, this, &ApplicationSessions::checkShellWindows);
+        });
     connect(session->controller, &BrowserController::changed, this, [this, session] {
         if (session->page && !session->controller->browsingBusy())
             session->page->setProperty("externalFileOpening", false);
@@ -630,6 +632,9 @@ void ApplicationSessions::command(const QString &command) {
                 }
                 settings->QObject::setParent(this);
                 m_traySettings = settings;
+                connect(settings, &QWindow::visibleChanged, this, [this] {
+                    QTimer::singleShot(0, this, &ApplicationSessions::checkShellWindows);
+                });
             }
             QMetaObject::invokeMethod(m_traySettings, "configureTab",
                                       Q_ARG(QVariant, command == "about" ? 5 : 0));
@@ -838,6 +843,12 @@ void ApplicationSessions::checkQuit() {
 bool ApplicationSessions::shellTrayAvailable() const {
     return m_desktop && m_desktop->trayAvailable();
 }
+bool ApplicationSessions::taskEntryAvailable() const {
+    return shellTrayAvailable() ||
+           std::any_of(m_windows.cbegin(), m_windows.cend(), [](const auto &window) {
+               return window && window->isVisible() && !window->property("retiredWindow").toBool();
+           });
+}
 void ApplicationSessions::showMainWindow() {
     if (m_quitting)
         return;
@@ -894,27 +905,35 @@ bool ApplicationSessions::shellAction(const QJsonObject &value) {
     return true;
 }
 void ApplicationSessions::shellAvailabilityChanged() {
-    if (!shellTrayAvailable() && !m_quitting) {
-        for (const auto &session : m_sessions) {
-            if (!session->operationOnly || !session->page || session->retiring)
-                continue;
-            auto *batch = session->page->findChild<ShellBatchController *>();
-            bool visible = false;
-            QMetaObject::invokeMethod(session->page, "visibleWindows", Q_RETURN_ARG(bool, visible));
-            if (!visible && batch && (batch->active() || !batch->results().isEmpty()))
-                QMetaObject::invokeMethod(session->page, "showCurrent");
-        }
-    }
     checkShellWindows();
 }
 void ApplicationSessions::checkShellWindows() {
     emit sessionsChanged();
-    if (m_quitting)
+    if (m_quitting || m_quitDecisionPending)
         return;
-    bool anyVisible = false;
+    const bool entryAvailable = taskEntryAvailable();
+    bool anyVisible = entryAvailable || (m_traySettings && m_traySettings->isVisible());
     for (const auto &session : m_sessions) {
-        if (!session->operationOnly || !session->page || session->retiring)
+        if (!session->page || session->retiring)
             continue;
+        const auto popups = session->page->findChildren<QQuickWindow *>();
+        const bool popupVisible = std::any_of(popups.cbegin(), popups.cend(),
+                                              [](auto *window) { return window->isVisible(); });
+        anyVisible |= popupVisible;
+        if (!session->operationOnly) {
+            if (!entryAvailable && !popupVisible && session->controller) {
+                for (const auto &value : session->controller->tasks()) {
+                    const auto task = value.toMap();
+                    if (!task.value("terminal").toBool()) {
+                        QMetaObject::invokeMethod(session->page, "showTask",
+                                                  Q_ARG(QString, task.value("id").toString()));
+                        anyVisible = true;
+                        break;
+                    }
+                }
+            }
+            continue;
+        }
         bool visible = false;
         QMetaObject::invokeMethod(session->page, "visibleWindows", Q_RETURN_ARG(bool, visible));
         anyVisible |= visible;
@@ -922,11 +941,11 @@ void ApplicationSessions::checkShellWindows() {
         if (!visible && batch && !batch->active()) {
             session->closed = true;
             reap(session.get());
-        } else if (!visible && batch && batch->active() && !shellTrayAvailable()) {
+        } else if (!visible && batch && batch->active() && !entryAvailable) {
             QMetaObject::invokeMethod(session->page, "showCurrent");
             anyVisible = true;
         }
     }
-    if (!m_active && !shellTrayAvailable() && !activeTaskCount() && !anyVisible)
+    if (!shellTrayAvailable() && !activeTaskCount() && !anyVisible)
         requestQuit();
 }

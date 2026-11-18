@@ -12,7 +12,7 @@ Item {
     readonly property var controller: batch.reader
     readonly property var batchController: batch
     readonly property bool active: batch.active
-    readonly property bool trayAvailable: sessionManager.shellTrayAvailable
+    readonly property bool taskEntryAvailable: sessionManager.taskEntryAvailable
     signal dismissed()
     Component.onCompleted: { Theme.dark = AppSettings.dark; Theme.fontScale = AppSettings.textScale; }
     function showTask(id: string) { root.userHidden = false; if (batch.finished) operations.showBatchResult(true); else operations.showTask(id); }
@@ -64,7 +64,7 @@ Item {
         batch: root.batchController
         onCancelRequested: batch.cancel()
         onDismissed: {
-            if (batch.active && !root.trayAvailable) { quitWindow.present(); panel.show(); }
+            if (batch.active && !root.taskEntryAvailable) { quitWindow.present(); panel.show(); }
             else { root.userHidden = true; Qt.callLater(() => root.dismissed()); }
         }
     }
@@ -94,7 +94,7 @@ Item {
         controller: batch.reader
         automaticPresentation: !root.userHidden
         presentationBlocked: root.sessionManager.quitDecisionPending
-        preventOrphanedClose: batch.active && !root.trayAvailable
+        preventOrphanedClose: batch.active && !root.taskEntryAvailable
         cancelHandler: () => batch.cancel()
         onOrphanedClose: { root.globalQuit = false; quitWindow.present(); }
         Connections {

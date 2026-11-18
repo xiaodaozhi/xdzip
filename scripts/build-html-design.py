@@ -103,6 +103,7 @@ def main():
     output.with_name('xdzip-components.html').write_text(components, encoding='utf-8')
     desktop = (SOURCE / 'desktop-integration.html').read_text(encoding='utf-8')
     desktop = desktop.replace('../assets/tray/black-22.png', data_url(ROOT / 'design/assets/tray/black-22.png'))
+    desktop = desktop.replace('../assets/brand/xdzip.png', data_url(ROOT / 'design/assets/brand/xdzip.png'))
     output.with_name('xdzip-desktop-integration.html').write_text(desktop, encoding='utf-8')
     print(f'{output}: {output.stat().st_size} bytes; no external runtime assets')
 

@@ -181,7 +181,7 @@ class FontTests(unittest.TestCase):
         spec.loader.exec_module(exporter)
         assets = self.root / 'design/assets'
         manifest = json.loads((ROOT / 'design/assets/manifest.json').read_text(encoding='utf-8'))
-        for relative in ['manifest.json', 'brand/xdzip.svg',
+        for relative in ['manifest.json', 'brand/xdzip.svg', 'brand/xdzip.png',
                          *[entry['file'] for entry in manifest['assets'] if entry['kind'] == 'vector-reconstruction'],
                          'demo/photo-lake-thumbnail.png', 'demo/photo-lake-preview.png', 'demo/photo-sunrise-thumbnail.png',
                          'tray/black-22.png']:
