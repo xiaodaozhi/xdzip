@@ -11,6 +11,7 @@ from native_window_manager import OpenboxSession
 
 ROOT = Path(__file__).resolve().parents[1]
 CASES = ['windowHoverEndsBeforeRestore', 'windowHoverSensorsEndBeforeRestore',
+          'nativeTrayMenuSurvivesReenable',
          'trayCaptionHoverEndsBeforeRestore',
          'desktopActivationPreservesWindowState', 'coldOpenSessionsWaitForNativeLaunch',
          'modalOpenDefersNewWindowUntilUnblocked',

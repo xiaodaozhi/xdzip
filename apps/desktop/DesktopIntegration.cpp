@@ -572,6 +572,15 @@ void DesktopIntegration::refresh() {
         if (!available && m_hidden && !m_sessions)
             restore();
         m_available = available;
+#ifdef Q_OS_WIN
+        if (available) {
+            // Qt 6.8 clears the native tray's menu on cleanup but retains QMenu's handle.
+            // Recreate that handle so the new tray instance receives the same actions.
+            m_tray.setContextMenu(nullptr);
+            m_trayMenu->setPlatformMenu(nullptr);
+            m_tray.setContextMenu(m_trayMenu.get());
+        }
+#endif
         m_tray.setVisible(available);
         QApplication::setQuitOnLastWindowClosed(!m_sessions && !available);
         emit availabilityChanged();
