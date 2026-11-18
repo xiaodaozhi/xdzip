@@ -125,7 +125,7 @@ Feature illustration: browse supported archives, find files and extract selected
 [1920 × 1080](images/promotional/02-create-1920x1080.png), [3840 × 2160](images/promotional/02-create-3840x2160.png)
 
 ```text
-Feature illustration: create ZIP, TAR, TAR.GZ and 7z archives, with password protection where supported. Not an application screenshot.
+Feature illustration showing archive and ISO image creation, with password protection for ZIP and 7z.
 ```
 
 ### 03-preview
@@ -146,7 +146,7 @@ Feature illustration: organize multiple archives and choose a light or dark appe
 
 ## App screenshots and combined artwork
 
-Screenshots retain the default logical window dimensions, with one top row removed, old corner backgrounds cleared and a one-pixel border added. Store exports place the transparent app view at 1:1 on a neutral 2560 × 1440 canvas for screenshot fields. Combined artwork adds brand copy, a thin border and shadow for promotion, without upscaling the UI.
+Screenshots retain the default logical window dimensions, with one top row removed, old corner backgrounds cleared and a one-pixel border added. Store exports place the transparent app view at 1:1 on a neutral 1600 × 900 canvas for screenshot fields. Combined artwork adds brand copy, a thin border and shadow for promotion, without upscaling the UI.
 
 ### 01-browse
 

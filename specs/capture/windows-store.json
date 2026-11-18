@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "baseline": {
-    "revision": "90916a1992188e6e7e5c6b3d91695861ee1bd2d2",
-    "package_version": "1.0.27.0",
-    "runtime_exe_sha256": "f6e58a99a2f38b746a7175128fd8cf9d7d0a88871a314fbd2fac15021399c01e"
+    "revision": "86356e35d18ab19e33a6e84e82b851f3fc8eafa7",
+    "package_version": "1.0.29.0",
+    "runtime_exe_sha256": "f69ac18968a73546460c0e6b05918377b022f5e042885168e283643487d5812f"
   },
   "scenes": ["01-browse", "03-preview", "04-workspace", "02-create"],
   "languages": ["en-US", "zh-CN"],

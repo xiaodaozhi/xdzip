@@ -28,6 +28,7 @@ def main():
     spec = json.loads((ROOT / 'specs/marketing/windows-store.json').read_text(encoding='utf-8'))
     version = json.loads((ROOT / 'VERSION.json').read_text(encoding='utf-8'))
     msix_version = f"1.0.{version['build']}.0"
+    store_dimensions = ' × '.join(map(str, spec['screenshot_artwork']['store_canvas']))
     inventory = json.loads((ROOT / 'specs/marketing/windows-store-assets.json').read_text(encoding='utf-8'))
     payload = {}
     image_count = 0
@@ -114,12 +115,12 @@ Use en-US for English (United States), zh-CN for Chinese (China).
 | Restricted capability / 受限功能 | <language>/review/runFullTrust.txt |
 | Certification notes / 认证备注 | <language>/review/certification-notes.txt |
 
-The screenshots folder contains 2560 x 1440 plain app views. Promotional images with
+The screenshots folder contains {store_dimensions} plain app views. Promotional images with
 rounded borders, shadows and localized copy are in promotional/ at 1920 x 1080 and
 3840 x 2160. feature-illustrations/ contains explicitly labeled vector illustrations.
 Use screenshots/ for the desktop screenshot field; the other two sets are promotional.
 
-screenshots/ 是 2560 x 1440 的纯应用界面。promotional/ 是带圆角细边框、阴影和双语文案的
+screenshots/ 是 {store_dimensions} 的纯应用界面。promotional/ 是带圆角细边框、阴影和双语文案的
 1920 x 1080、3840 x 2160 宣传图。feature-illustrations/ 是标明用途的矢量功能示意图。
 桌面截图栏使用 screenshots/，其他两套图片供宣传使用。
 
@@ -137,7 +138,7 @@ Pricing, age ratings and other account-level submission sections are completed s
 
 本目录不包含程序包、二进制、项目源码、账户凭据或个人文件截图，也不表示已经提交认证。
 定价、年龄分级等提交栏目需在账户中另行完成。
-'''.format(version=msix_version)
+'''.format(version=msix_version, store_dimensions=store_dimensions)
     payload['UPLOAD.md'] = guide.encode('utf-8')
     files = [{'file': name, 'bytes': len(data), 'sha256': digest(data)} for name, data in sorted(payload.items())]
     manifest = {'schema_version': 1, 'baseline': spec['baseline'], 'msix_version': msix_version,

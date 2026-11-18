@@ -125,8 +125,8 @@
       "height": 1080,
       "role": "feature-illustration",
       "locale": "en-US",
-      "source_sha256": "09072783d4e857421a06b777dab076dcf6b38157d25598c7a50168bda11496f2",
-      "sha256": "1ed54ac09908fd9172d717e22b1ff30eb169bdff9a6844b98d5702fc5a40e96d"
+      "source_sha256": "af3b26f3144e1d8f8e3a833865724ea9b557a2c276abbd57bf4f5ecd0f424541",
+      "sha256": "2783d3a1c795901459bbfc1a1177b95338b76fcaf6cc0b55f82ea09623038689"
     },
     {
       "file": "docs/market/windows/images/promotional/02-create-3840x2160.png",
@@ -134,8 +134,8 @@
       "height": 2160,
       "role": "feature-illustration",
       "locale": "en-US",
-      "source_sha256": "48db081889b3d0a64198250792fd7bf431d74750b5ed2c0aa131cba58acbdeaa",
-      "sha256": "f1d9f91d3e1965bbef4cc71034f6fa7c9c32883d1fde36eaba6abadbb82908d0"
+      "source_sha256": "605f183a948b7906d6881730a729a17c96450c258ebc65981e75edcf89bcfa02",
+      "sha256": "6da4f55f8ddf97dfc73d261055254d05694002a0b285734ebf99bc592d7a02a1"
     },
     {
       "file": "docs/market/windows/images/promotional/03-preview-1920x1080.png",
@@ -233,8 +233,8 @@
       "height": 1080,
       "role": "feature-illustration",
       "locale": "zh-CN",
-      "source_sha256": "4d4e5911f642a2a0680b2385e6d7785df5ec50455b6639b43fde6912a4ad8a2c",
-      "sha256": "f193347ff8d78663cfab404c8b170168e78ae16f14d5b68c6fa34ecbb0188e80"
+      "source_sha256": "a8ad1886f104425d07728ac288c9617856a2f9bb6f49d17f6af25ef3a8677483",
+      "sha256": "971174ed0c3833b44c8604811b4f8aea4cfdb6d3a9cfcb8170488409924b1c4a"
     },
     {
       "file": "docs/zh-CN/market/windows/images/promotional/02-create-3840x2160.png",
@@ -242,8 +242,8 @@
       "height": 2160,
       "role": "feature-illustration",
       "locale": "zh-CN",
-      "source_sha256": "2135d8368170d885774cf90d87a47e2d7d10ce1abe9858fa848f930b38c6728d",
-      "sha256": "296b62087e89ccc92f9eafba3e0742d57ae2de5504c150475b92797405f83ec1"
+      "source_sha256": "7888a8dd36f375ef9289cfaed84e740be0c5d6a8aa0a8672615a0d1799f6ad32",
+      "sha256": "cef4a256961984fb19fec82f01516b20ebeb0f8fbfa9cac1cf6951c7a77f91f3"
     },
     {
       "file": "docs/zh-CN/market/windows/images/promotional/03-preview-1920x1080.png",
@@ -283,39 +283,39 @@
     },
     {
       "file": "docs/market/windows/images/screenshots/01-browse.png",
-      "width": 1536,
-      "height": 932,
+      "width": 1024,
+      "height": 621,
       "role": "app-screenshot",
       "locale": "en-US",
-      "source_sha256": "4688dc83b66b760c394f7692dfdc61ff630bf119def34902627e0297325c3d03",
-      "sha256": "4688dc83b66b760c394f7692dfdc61ff630bf119def34902627e0297325c3d03"
+      "source_sha256": "ce143c828784234747148253ee0075c82c8e8215e3198a5ebdf2e1b6524dff2c",
+      "sha256": "ce143c828784234747148253ee0075c82c8e8215e3198a5ebdf2e1b6524dff2c"
     },
     {
       "file": "design/assets/marketing/windows-store-native/en-US/01-browse.png",
-      "width": 1536,
-      "height": 933,
+      "width": 1024,
+      "height": 622,
       "role": "native-screenshot-source",
       "locale": "en-US",
-      "source_sha256": "b7c69d3c48ffd84a544683d4fb0ef50e4018efc5e5470d4e20ca277470207443",
-      "sha256": "b7c69d3c48ffd84a544683d4fb0ef50e4018efc5e5470d4e20ca277470207443"
+      "source_sha256": "4bd4fa3772d89bd2d61d45cbdf493e86e0529eb8b3165dcaefee8875c34aca24",
+      "sha256": "4bd4fa3772d89bd2d61d45cbdf493e86e0529eb8b3165dcaefee8875c34aca24"
     },
     {
       "file": "docs/images/main-window.png",
-      "width": 1536,
-      "height": 932,
+      "width": 1024,
+      "height": 621,
       "role": "readme-screenshot",
       "locale": "en-US",
-      "source_sha256": "4688dc83b66b760c394f7692dfdc61ff630bf119def34902627e0297325c3d03",
-      "sha256": "4688dc83b66b760c394f7692dfdc61ff630bf119def34902627e0297325c3d03"
+      "source_sha256": "ce143c828784234747148253ee0075c82c8e8215e3198a5ebdf2e1b6524dff2c",
+      "sha256": "ce143c828784234747148253ee0075c82c8e8215e3198a5ebdf2e1b6524dff2c"
     },
     {
       "file": "docs/market/windows/images/store-screenshots/01-browse.png",
-      "width": 2560,
-      "height": 1440,
+      "width": 1600,
+      "height": 900,
       "role": "store-screenshot",
       "locale": "en-US",
-      "source_sha256": "a57e707dd234677ea6b96c76504064b7966cda9610dda78ca135db6c66c0fce6",
-      "sha256": "82276515ae376d1e48658b4642093404d3fb3030d6dfd828dc95fed95fa5351c"
+      "source_sha256": "c68f39a63d0368c26a3b0e5255017cc5a87738a818cc2c89590a80b8ec8a518c",
+      "sha256": "88a6d14a8ff967785a808cbd87db753aadfa8e8a012fd606066556d6c6fdc3ef"
     },
     {
       "file": "docs/market/windows/images/combined/01-browse-1920x1080.png",
@@ -323,8 +323,8 @@
       "height": 1080,
       "role": "screenshot-artwork",
       "locale": "en-US",
-      "source_sha256": "308df6b4a8b4851b743b80feabb6864f031581b2d56fe612faae13de80a5fd63",
-      "sha256": "3fc6cede672386491cc9b6ea56afb9533a61e15fe35d2a59d4a5f6b453831239"
+      "source_sha256": "b7dafa7c42179b5dd3652b2802d0cf82a2a8edb87a557a101dc31b81518c2504",
+      "sha256": "665c824d5d190f1e441b73c569e4b599feb0868a41dd0d473beffbcb6b646f59"
     },
     {
       "file": "docs/market/windows/images/combined/01-browse-3840x2160.png",
@@ -332,35 +332,35 @@
       "height": 2160,
       "role": "screenshot-artwork",
       "locale": "en-US",
-      "source_sha256": "9bceb79c0e7bb60e2c32a95835041d3d1d80b154b2f3568425cdca6ad08c2bdf",
-      "sha256": "10f8e43de495f78bcd1ce4de67004b5dbb6524be768c86f2f805e728d133b51b"
+      "source_sha256": "f91b6fb9f3fbfe9b9a6acfb4aea91611c2a2df89bbe3069264f7793f47756b8f",
+      "sha256": "5ee0d2dadb4a7f0c08cbb24ecffea3cad187aafa15ab5d0d7c3ebbcde2ab4cd6"
     },
     {
       "file": "docs/market/windows/images/screenshots/03-preview.png",
-      "width": 1536,
-      "height": 932,
+      "width": 1024,
+      "height": 621,
       "role": "app-screenshot",
       "locale": "en-US",
-      "source_sha256": "d348a2d547809ab5258975beaba621533a9dd88d363f95531ccf61b2b67372c0",
-      "sha256": "d348a2d547809ab5258975beaba621533a9dd88d363f95531ccf61b2b67372c0"
+      "source_sha256": "57c67f6948424369e2ffa64411b18308d2fd7a18d1baf1c82d4d7b68e2422da7",
+      "sha256": "57c67f6948424369e2ffa64411b18308d2fd7a18d1baf1c82d4d7b68e2422da7"
     },
     {
       "file": "design/assets/marketing/windows-store-native/en-US/03-preview.png",
-      "width": 1536,
-      "height": 933,
+      "width": 1024,
+      "height": 622,
       "role": "native-screenshot-source",
       "locale": "en-US",
-      "source_sha256": "580844b10d0159bce1d4560f66bd152268c195add3db555a918f531d23c4f796",
-      "sha256": "580844b10d0159bce1d4560f66bd152268c195add3db555a918f531d23c4f796"
+      "source_sha256": "482225c5c3b837f4a58ef7fadc4bc8f68a2f2a3632080b817447f7926cb0e455",
+      "sha256": "482225c5c3b837f4a58ef7fadc4bc8f68a2f2a3632080b817447f7926cb0e455"
     },
     {
       "file": "docs/market/windows/images/store-screenshots/03-preview.png",
-      "width": 2560,
-      "height": 1440,
+      "width": 1600,
+      "height": 900,
       "role": "store-screenshot",
       "locale": "en-US",
-      "source_sha256": "08f968416ef2ff6244c071e14e6095ca8421552df6d9100387148fe8fa858e70",
-      "sha256": "47f61b062d45be049e26d9db0e28feb04937af12c20ef9599b11393aa9ef79db"
+      "source_sha256": "354454a73dd094510d8e17db550e60d040afb2185ce3f5659f09bc9a7e8167b8",
+      "sha256": "ee4f4180f4688eca1cef7b4a4268b5b14b4138c974ef56df38c02d948086b7c7"
     },
     {
       "file": "docs/market/windows/images/combined/03-preview-1920x1080.png",
@@ -368,8 +368,8 @@
       "height": 1080,
       "role": "screenshot-artwork",
       "locale": "en-US",
-      "source_sha256": "8f4c2d1bb057b90e30cd634241e38b3eb38709c8fae2347b18167c301f931809",
-      "sha256": "f7788c46f570324792f618d42c299b7e088acd5b7b8f6ba5af2c98d21308c882"
+      "source_sha256": "41c2d7186969cef3f9a4421d0082327efe2b911d60d6c5e9ee510b2047985f45",
+      "sha256": "3154bfb242a4d44211a008b1143986485775d47a0578bba10e1b31e998b4235f"
     },
     {
       "file": "docs/market/windows/images/combined/03-preview-3840x2160.png",
@@ -377,35 +377,35 @@
       "height": 2160,
       "role": "screenshot-artwork",
       "locale": "en-US",
-      "source_sha256": "28476f80cc770a8a2be7b930e30ce2a0b1a28089fdc32a585139f1655590413b",
-      "sha256": "79111e48e3a89e1bd28e5b00ccf7ef8eb42e8e51d226f2c62b2073f6cf7a8fe4"
+      "source_sha256": "130327a3b7ce1bd603901809f114081d22176cdb0324d0d669e758628ad0bdd8",
+      "sha256": "cf437133d01c6c2b3fe0e3e926f5935243f697e24c89239c6e298a251856a422"
     },
     {
       "file": "docs/market/windows/images/screenshots/04-workspace.png",
-      "width": 1536,
-      "height": 932,
+      "width": 1024,
+      "height": 621,
       "role": "app-screenshot",
       "locale": "en-US",
-      "source_sha256": "fa8114f74a053a2c50681c01ec9cec4b495bc9dbedfe5361f9e594562950492c",
-      "sha256": "fa8114f74a053a2c50681c01ec9cec4b495bc9dbedfe5361f9e594562950492c"
+      "source_sha256": "f72811c9145945b8e30d308b72ca4c41aee87afa7e0f2dacf9be913a68d49912",
+      "sha256": "f72811c9145945b8e30d308b72ca4c41aee87afa7e0f2dacf9be913a68d49912"
     },
     {
       "file": "design/assets/marketing/windows-store-native/en-US/04-workspace.png",
-      "width": 1536,
-      "height": 933,
+      "width": 1024,
+      "height": 622,
       "role": "native-screenshot-source",
       "locale": "en-US",
-      "source_sha256": "5b1356cdc3c34829e9e33c7119ef5ed9650e3478af8e18c75e25c50146c552dd",
-      "sha256": "5b1356cdc3c34829e9e33c7119ef5ed9650e3478af8e18c75e25c50146c552dd"
+      "source_sha256": "d6db9f2d31fced52d578b82fad298b937ba8818f7a3748de82e3979b152e7d23",
+      "sha256": "d6db9f2d31fced52d578b82fad298b937ba8818f7a3748de82e3979b152e7d23"
     },
     {
       "file": "docs/market/windows/images/store-screenshots/04-workspace.png",
-      "width": 2560,
-      "height": 1440,
+      "width": 1600,
+      "height": 900,
       "role": "store-screenshot",
       "locale": "en-US",
-      "source_sha256": "535a6362dc46ba994e562cd86269a252b0c5379b415ab04ea6a302f5148b908c",
-      "sha256": "d8938c17d051f7a9197d43e50aa54d986c64f3e521d03dbf8466c09ef65561a0"
+      "source_sha256": "36c6e3d4c52631109bdaf7f61655359a0b5ebaede89ea8216fa288c62251cfc2",
+      "sha256": "646e04da7bf1c790969bd9432e5acb462753a3ea958fa54c34b0e3561292e39b"
     },
     {
       "file": "docs/market/windows/images/combined/04-workspace-1920x1080.png",
@@ -413,8 +413,8 @@
       "height": 1080,
       "role": "screenshot-artwork",
       "locale": "en-US",
-      "source_sha256": "3aeeb4769cf6be2be5cca366f763a4348ae2005e06658f159d39dbda497ddce5",
-      "sha256": "03bb46ac186bab11a5ae8de0f3879fc1e79c07f1397bc12ef92cc8eb92c10a72"
+      "source_sha256": "c77ba0855a4d03b8673b8fd4e3aa9568ba8241fe947115d804af1661c5d40a9d",
+      "sha256": "33e6e479c5f427e46ed271fea7881cb000b5f7e016f67be82c05cd4fbe9a67ba"
     },
     {
       "file": "docs/market/windows/images/combined/04-workspace-3840x2160.png",
@@ -422,35 +422,35 @@
       "height": 2160,
       "role": "screenshot-artwork",
       "locale": "en-US",
-      "source_sha256": "feab46d8be246bd5a2658c1856e9e8c16ff5d2e8c55320322454bd941ec71fdd",
-      "sha256": "e72ba7de1dda4e1bc0587cfd94ef631d455c39dcde92a3d85916020f3880729e"
+      "source_sha256": "cc4b0002dc5d80091c07f2fd351f31282b228ec52e919f0f1d96d1091ff0efae",
+      "sha256": "8467ccbd6ba83ee5851b6192dffa573ddd9a16d79efe918476de0e0a4376480e"
     },
     {
       "file": "docs/market/windows/images/screenshots/02-create.png",
-      "width": 737,
-      "height": 1103,
+      "width": 491,
+      "height": 735,
       "role": "app-screenshot",
       "locale": "en-US",
-      "source_sha256": "a477404c7de76582a8fdde22e91a0fbdbf475e429d62743d2454eda9a339843d",
-      "sha256": "a477404c7de76582a8fdde22e91a0fbdbf475e429d62743d2454eda9a339843d"
+      "source_sha256": "e5af81db4673dc689cec93518a834cc3881da63326f18ecb84676af8b1704431",
+      "sha256": "e5af81db4673dc689cec93518a834cc3881da63326f18ecb84676af8b1704431"
     },
     {
       "file": "design/assets/marketing/windows-store-native/en-US/02-create.png",
-      "width": 737,
-      "height": 1104,
+      "width": 491,
+      "height": 736,
       "role": "native-screenshot-source",
       "locale": "en-US",
-      "source_sha256": "e862133d4a67ae441887f8df9038805c5cfd554641ceebdca2ce15d60767fc0b",
-      "sha256": "e862133d4a67ae441887f8df9038805c5cfd554641ceebdca2ce15d60767fc0b"
+      "source_sha256": "df58cbc495a24e8e8a258cc8d362237979b6ec6d5ae5285eb29d4f3b8a55fa2c",
+      "sha256": "df58cbc495a24e8e8a258cc8d362237979b6ec6d5ae5285eb29d4f3b8a55fa2c"
     },
     {
       "file": "docs/market/windows/images/store-screenshots/02-create.png",
-      "width": 2560,
-      "height": 1440,
+      "width": 1600,
+      "height": 900,
       "role": "store-screenshot",
       "locale": "en-US",
-      "source_sha256": "5e1535795e71ce53de713df897488501e01ef503b54667b967dfbe4ce1051440",
-      "sha256": "1825ca33af800615db2bf9484da5953a1c20abadd23fadc363cbd0356a0b233a"
+      "source_sha256": "43dfd4c13c18892264f9f957c0f61c47de96a640cf81b962cc957d9cae799103",
+      "sha256": "430602c4725bcdc43761376b8f1ca84f4bf373ee1cd70e494e75f2a53bea6bac"
     },
     {
       "file": "docs/market/windows/images/combined/02-create-1920x1080.png",
@@ -458,8 +458,8 @@
       "height": 1080,
       "role": "screenshot-artwork",
       "locale": "en-US",
-      "source_sha256": "3c872e74b227e9ca97f0db6344d1c073b575b7cf3e806cead9a9b9aa9e7d3ee0",
-      "sha256": "4f26a586724644ab88aaa3b88d0334d039a0d491befed04ab00155da98659d1f"
+      "source_sha256": "778465143cf74def43860c169f086e58d31e52ee5d7f51602acc2e2a64c055a6",
+      "sha256": "76910ac5d3c7e23a25e3aefda95e64aeba47b51105a24951df8d1de94922da23"
     },
     {
       "file": "docs/market/windows/images/combined/02-create-3840x2160.png",
@@ -467,44 +467,44 @@
       "height": 2160,
       "role": "screenshot-artwork",
       "locale": "en-US",
-      "source_sha256": "e4367c2376f7ed4ee953a35530b4e936e1f78543294a838dfb65a4a011674b60",
-      "sha256": "fd5338cfa60a3aa6454f543687a01eb6a1c4d570e106c4d3117a4507a31fa152"
+      "source_sha256": "3559176dd9915fa6543470da356d729521503cce8a952443d8185a14c5938370",
+      "sha256": "7e0ea699cbd1d01c69d95d575f23c9da50245f4a9056bfd2af0bfc71b7d35bfb"
     },
     {
       "file": "docs/zh-CN/market/windows/images/screenshots/01-browse.png",
-      "width": 1536,
-      "height": 932,
+      "width": 1024,
+      "height": 621,
       "role": "app-screenshot",
       "locale": "zh-CN",
-      "source_sha256": "dedb5e3ce17504cb0dcc7361b417ed9b487d0e41951885f10df351b08857cdaa",
-      "sha256": "dedb5e3ce17504cb0dcc7361b417ed9b487d0e41951885f10df351b08857cdaa"
+      "source_sha256": "44fbb345bfa9961675b9d973a44376ad18e7946b193de58fbd05c60dd7735900",
+      "sha256": "44fbb345bfa9961675b9d973a44376ad18e7946b193de58fbd05c60dd7735900"
     },
     {
       "file": "design/assets/marketing/windows-store-native/zh-CN/01-browse.png",
-      "width": 1536,
-      "height": 933,
+      "width": 1024,
+      "height": 622,
       "role": "native-screenshot-source",
       "locale": "zh-CN",
-      "source_sha256": "cd1e0c440b6fb937eb8946f2bc4ad9f55329adea477c9fc00bb88263237dcbf6",
-      "sha256": "cd1e0c440b6fb937eb8946f2bc4ad9f55329adea477c9fc00bb88263237dcbf6"
+      "source_sha256": "3e6dea25ff6d3ff71d16c821434a35b0f9339fb48415dfbb61ea34798492dcb2",
+      "sha256": "3e6dea25ff6d3ff71d16c821434a35b0f9339fb48415dfbb61ea34798492dcb2"
     },
     {
       "file": "docs/zh-CN/images/main-window.png",
-      "width": 1536,
-      "height": 932,
+      "width": 1024,
+      "height": 621,
       "role": "readme-screenshot",
       "locale": "zh-CN",
-      "source_sha256": "dedb5e3ce17504cb0dcc7361b417ed9b487d0e41951885f10df351b08857cdaa",
-      "sha256": "dedb5e3ce17504cb0dcc7361b417ed9b487d0e41951885f10df351b08857cdaa"
+      "source_sha256": "44fbb345bfa9961675b9d973a44376ad18e7946b193de58fbd05c60dd7735900",
+      "sha256": "44fbb345bfa9961675b9d973a44376ad18e7946b193de58fbd05c60dd7735900"
     },
     {
       "file": "docs/zh-CN/market/windows/images/store-screenshots/01-browse.png",
-      "width": 2560,
-      "height": 1440,
+      "width": 1600,
+      "height": 900,
       "role": "store-screenshot",
       "locale": "zh-CN",
-      "source_sha256": "651e90a1e6ede79542bd25c3fb436a4a0e2695528854056729391b7dd0181259",
-      "sha256": "5485e9aba51320f2281d9c7725ba3dc0bd5314241fc79600ed9d8ef262e36271"
+      "source_sha256": "3ad4cae46962c7a8ad058e131d3a1f26488742346878c9aded850412d0e27a31",
+      "sha256": "713e910f150058c6234ca8a0309f1608c58980db5cbbab6eef62346956a98090"
     },
     {
       "file": "docs/zh-CN/market/windows/images/combined/01-browse-1920x1080.png",
@@ -512,8 +512,8 @@
       "height": 1080,
       "role": "screenshot-artwork",
       "locale": "zh-CN",
-      "source_sha256": "2211bad4aaf64e01c61780c9e53469df7b1b58e487fa1d0698619c17e904069c",
-      "sha256": "32d7f0f265da1c060b299959b2f0964b7d26c1aea0a0b496009088e2b764bd77"
+      "source_sha256": "5d66f2be85f48a78cb78353a43c2a961b29ce90da45df0f7c61fcdb542016be9",
+      "sha256": "a0e0c67f499fd7711073fa2a6033b97597cf45548be203fc84b5810270995aac"
     },
     {
       "file": "docs/zh-CN/market/windows/images/combined/01-browse-3840x2160.png",
@@ -521,35 +521,35 @@
       "height": 2160,
       "role": "screenshot-artwork",
       "locale": "zh-CN",
-      "source_sha256": "b9d4451b9fbebd3c0388c002f0bd2baea5363965fbce6c8690bdfb1f610463d3",
-      "sha256": "cec33a3ec8e349f0095a8519b6d1b83f7818fb2581b2882fd80431a0c9489c92"
+      "source_sha256": "d5343d91c88da5ac82717f9e50d2838d24a9bea5898d67b240e90200d22c40e9",
+      "sha256": "2e7eb8b83b89de3d091b5447febadbd0a5495535ef756141a0b19dea23db6af8"
     },
     {
       "file": "docs/zh-CN/market/windows/images/screenshots/03-preview.png",
-      "width": 1536,
-      "height": 932,
+      "width": 1024,
+      "height": 621,
       "role": "app-screenshot",
       "locale": "zh-CN",
-      "source_sha256": "9937a0f190e6b588d8cafb35878337ebb5057fbc163d8b71c6093da7f6fa8814",
-      "sha256": "9937a0f190e6b588d8cafb35878337ebb5057fbc163d8b71c6093da7f6fa8814"
+      "source_sha256": "7bad7fcd8c07f284b40890b2374dccc22dd80fb82a2e830ce55df605b39db537",
+      "sha256": "7bad7fcd8c07f284b40890b2374dccc22dd80fb82a2e830ce55df605b39db537"
     },
     {
       "file": "design/assets/marketing/windows-store-native/zh-CN/03-preview.png",
-      "width": 1536,
-      "height": 933,
+      "width": 1024,
+      "height": 622,
       "role": "native-screenshot-source",
       "locale": "zh-CN",
-      "source_sha256": "301a7c1d0d11815f72f45687b7285eeebeae711db70daf46bb472a44f5481380",
-      "sha256": "301a7c1d0d11815f72f45687b7285eeebeae711db70daf46bb472a44f5481380"
+      "source_sha256": "4b949df10be9636847c1f4c5ea281ce572798ddbaa56120a69b467bc5db0da8a",
+      "sha256": "4b949df10be9636847c1f4c5ea281ce572798ddbaa56120a69b467bc5db0da8a"
     },
     {
       "file": "docs/zh-CN/market/windows/images/store-screenshots/03-preview.png",
-      "width": 2560,
-      "height": 1440,
+      "width": 1600,
+      "height": 900,
       "role": "store-screenshot",
       "locale": "zh-CN",
-      "source_sha256": "8c5d792755a445141f5b3107ef3146ef7778e4c43bc598a521d53232101b3adf",
-      "sha256": "6bf49154fc5f219db2f26789e8ed3be2e92e31b30eff1d42c716c4cf75977806"
+      "source_sha256": "4b0942b5255ae16c26023d2666d08f994dc5b3bead56e280203a5f852715982f",
+      "sha256": "60b962032b047c245b35178d26c2afb6e99e63501ed5a320d8d99edd3bb226ba"
     },
     {
       "file": "docs/zh-CN/market/windows/images/combined/03-preview-1920x1080.png",
@@ -557,8 +557,8 @@
       "height": 1080,
       "role": "screenshot-artwork",
       "locale": "zh-CN",
-      "source_sha256": "4c843e3ea7f26e97e12c094ea6ca14fbd2f09bb86800828fb984fa865b969da2",
-      "sha256": "db5869e4f2ca710ca4213e25837d108c3d33f9c25ff4a8acce940e5950962833"
+      "source_sha256": "80a98fc94c0332ebdf0a3d80e2d5cae786965512fb557c66e9f971f379f657e9",
+      "sha256": "d47fa2cbb47320ef6f4fcd075c716371238a0734c57edbed324dbb4d81ffadf3"
     },
     {
       "file": "docs/zh-CN/market/windows/images/combined/03-preview-3840x2160.png",
@@ -566,35 +566,35 @@
       "height": 2160,
       "role": "screenshot-artwork",
       "locale": "zh-CN",
-      "source_sha256": "161f071bec3e875dbb8ad1dc7cef23e1aad190d33600cc9d00031f174d6e1597",
-      "sha256": "7316afede8de6664356659450f5e382a4b4a3a81395e5feb23a2b558ae83c989"
+      "source_sha256": "0ce5eeeb5496fe492c31d024b242181bd04ee5b1ea832a0ed3238c0791562bcd",
+      "sha256": "ef09532f7e7361ff0f868b02dd15d8dc8a823a8754ad8114604b4055fe6a99e8"
     },
     {
       "file": "docs/zh-CN/market/windows/images/screenshots/04-workspace.png",
-      "width": 1536,
-      "height": 932,
+      "width": 1024,
+      "height": 621,
       "role": "app-screenshot",
       "locale": "zh-CN",
-      "source_sha256": "09370447cbe4feb93534a70686f2297cc85f10d37f15c695f20f4e641cd9b16d",
-      "sha256": "09370447cbe4feb93534a70686f2297cc85f10d37f15c695f20f4e641cd9b16d"
+      "source_sha256": "c64e7316caae01729ed45c030a3a62391f54778fd97568e0fed80bd0e7a00da0",
+      "sha256": "c64e7316caae01729ed45c030a3a62391f54778fd97568e0fed80bd0e7a00da0"
     },
     {
       "file": "design/assets/marketing/windows-store-native/zh-CN/04-workspace.png",
-      "width": 1536,
-      "height": 933,
+      "width": 1024,
+      "height": 622,
       "role": "native-screenshot-source",
       "locale": "zh-CN",
-      "source_sha256": "52b335b3db8b643d0e63e58ce5b4c9240fc9c56f0fe3a8b86cbe7c8397ff3325",
-      "sha256": "52b335b3db8b643d0e63e58ce5b4c9240fc9c56f0fe3a8b86cbe7c8397ff3325"
+      "source_sha256": "2cf1bfcbaaa5bddc32bb5cc3b5a489310a8f531f2b6a38e115dcc112ee3ae8b3",
+      "sha256": "2cf1bfcbaaa5bddc32bb5cc3b5a489310a8f531f2b6a38e115dcc112ee3ae8b3"
     },
     {
       "file": "docs/zh-CN/market/windows/images/store-screenshots/04-workspace.png",
-      "width": 2560,
-      "height": 1440,
+      "width": 1600,
+      "height": 900,
       "role": "store-screenshot",
       "locale": "zh-CN",
-      "source_sha256": "d389cdaa84c2c1dce03aec4e3ba22f1355d03811242a589ac3c816c8c01a74f0",
-      "sha256": "bdb0afae56b2a39b8d6a6e71182570ca50d1d571598a5772c533a5082834711f"
+      "source_sha256": "5d2d034a863ecd3b8d01038769ef7536e930dd1c2ec6e91219c9d0b4fb5b4af5",
+      "sha256": "a0300c1316f684145027a160d23d503543a0e85fb795e6b2c56137fded8aea39"
     },
     {
       "file": "docs/zh-CN/market/windows/images/combined/04-workspace-1920x1080.png",
@@ -602,8 +602,8 @@
       "height": 1080,
       "role": "screenshot-artwork",
       "locale": "zh-CN",
-      "source_sha256": "f0cb1bc6774d133b8bd34ec444a2d2bfa8303d4feee7995a2b5e3052a13fbf38",
-      "sha256": "c9b09df0859d5a122beb0fcb1819965a5e6e2b054a4e46a0b660f724c94fece5"
+      "source_sha256": "437c953c9c3c1d2b82ecca47b83d85435ad73ac806df364acb9c09b4710c54ac",
+      "sha256": "a41f00bf64e47a08dd1a7872d6cbcfd7b01f43633356e9f19d483bcb2db80701"
     },
     {
       "file": "docs/zh-CN/market/windows/images/combined/04-workspace-3840x2160.png",
@@ -611,35 +611,35 @@
       "height": 2160,
       "role": "screenshot-artwork",
       "locale": "zh-CN",
-      "source_sha256": "d9519f26270052032a484d1fe15bca7541839e39bfea0ee4ac0dfda5d65673a8",
-      "sha256": "c6d1c0a7d3a7c96a2cb18073ee811ce24e8c7463869996552430e5a7b8ff854d"
+      "source_sha256": "6e782ac82055127baba865eec7f83a97cb311c086670fd690d4db2a01c2b4cac",
+      "sha256": "c00354f81089fd6fc7169c3bbd2717ff0955654f473d38a0bfef00141139ad56"
     },
     {
       "file": "docs/zh-CN/market/windows/images/screenshots/02-create.png",
-      "width": 737,
-      "height": 1103,
+      "width": 491,
+      "height": 735,
       "role": "app-screenshot",
       "locale": "zh-CN",
-      "source_sha256": "bb61804b503b58ee69770d933fd2824f2d1a31e86e09fec044ed0a098893ea2a",
-      "sha256": "bb61804b503b58ee69770d933fd2824f2d1a31e86e09fec044ed0a098893ea2a"
+      "source_sha256": "1ed31d4a2a277337a612edb9a3c06a9e2de143d5b6ca1dff1911a8f2e336b4c7",
+      "sha256": "1ed31d4a2a277337a612edb9a3c06a9e2de143d5b6ca1dff1911a8f2e336b4c7"
     },
     {
       "file": "design/assets/marketing/windows-store-native/zh-CN/02-create.png",
-      "width": 737,
-      "height": 1104,
+      "width": 491,
+      "height": 736,
       "role": "native-screenshot-source",
       "locale": "zh-CN",
-      "source_sha256": "912b033964a337941f749ecc2a9ba11af5020aa7f12d6f026ce2391413ebd5de",
-      "sha256": "912b033964a337941f749ecc2a9ba11af5020aa7f12d6f026ce2391413ebd5de"
+      "source_sha256": "64bd0caa48da6057687b5283ed224b3154caa3201650a6d4f175de7b4aca92c8",
+      "sha256": "64bd0caa48da6057687b5283ed224b3154caa3201650a6d4f175de7b4aca92c8"
     },
     {
       "file": "docs/zh-CN/market/windows/images/store-screenshots/02-create.png",
-      "width": 2560,
-      "height": 1440,
+      "width": 1600,
+      "height": 900,
       "role": "store-screenshot",
       "locale": "zh-CN",
-      "source_sha256": "ad09ebf78f296715adef3ff3b4e04a71ecd84a56f8e992df7bf11df2f305cf0c",
-      "sha256": "c15bab8208f469213fda52f22f6082c7376c274164a176ac6bb076b62fc7d0c6"
+      "source_sha256": "165670aa5517545346d5f9c8d8c85b83b9684fb63bbc04e8a469275866959ead",
+      "sha256": "c420c5205b299b285319c0d8d40140898cfd67ac13ca34af83d51d49b2dc4c82"
     },
     {
       "file": "docs/zh-CN/market/windows/images/combined/02-create-1920x1080.png",
@@ -647,8 +647,8 @@
       "height": 1080,
       "role": "screenshot-artwork",
       "locale": "zh-CN",
-      "source_sha256": "5749e42f6081a02c6981f8ef3b6fb522f17b560982467b6f930b3f0cdf6386aa",
-      "sha256": "ced4d621f0b5d792d9c2c1eccad005a50d811f25d966c4f411441110a9acc79d"
+      "source_sha256": "af7980b847b40d3be9fd342b8fdab6800c7f4b471199adc6d016948c2b0163ad",
+      "sha256": "df190ebbaedfb2a75b869d7622ded6626c78b0e6e6934d5164510be9e824d1f8"
     },
     {
       "file": "docs/zh-CN/market/windows/images/combined/02-create-3840x2160.png",
@@ -656,8 +656,8 @@
       "height": 2160,
       "role": "screenshot-artwork",
       "locale": "zh-CN",
-      "source_sha256": "64f4e69e69d17400e808a8a555c620f82b9d4759d5037e00658abaf046e3a4d3",
-      "sha256": "3c8e9f071ea4a983bfe4662b68d3da8d953ae539e190bb266721aca8aa14acc1"
+      "source_sha256": "687ec52b89da4fdde8232035441baca5319711f988667f509576092661d76e94",
+      "sha256": "fadd34d6e2ceebb674e47890161ba4a1d403ef0d1e3bc96ea0cb751890681eb1"
     }
   ]
 }

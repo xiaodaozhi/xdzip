@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "baseline": {
-    "package_version": "1.0.27.0",
-    "revision": "90916a1992188e6e7e5c6b3d91695861ee1bd2d2",
-    "package_sha256": "45f9a99f74431c4ab8dcb79d0e9628fa121f73b998dd8359dfd38fadc48aab46",
-    "runtime_exe_sha256": "f6e58a99a2f38b746a7175128fd8cf9d7d0a88871a314fbd2fac15021399c01e",
+    "package_version": "1.0.29.0",
+    "revision": "86356e35d18ab19e33a6e84e82b851f3fc8eafa7",
+    "package_sha256": "692b5c73b4368a120ce505198292cc2958b123801c6e698e880a08868da11881",
+    "runtime_exe_sha256": "f69ac18968a73546460c0e6b05918377b022f5e042885168e283643487d5812f",
     "device_family": "Windows.Desktop"
   },
   "visual": {
@@ -25,8 +25,8 @@
   },
   "screenshot_artwork": {
     "store_canvas": [
-      2560,
-      1440
+      1600,
+      900
     ],
     "store_background": "#F3F5F9",
     "max_capture_scale": 1,
@@ -125,10 +125,10 @@
             "everything."
           ],
           "body": [
-            "Create ZIP, TAR, TAR.GZ or 7z.",
-            "Add passwords where supported."
+            "Create archives or ISO disc images.",
+            "Protect ZIP and 7z with passwords."
           ],
-          "caption": "Feature illustration: create ZIP, TAR, TAR.GZ and 7z archives, with password protection where supported. Not an application screenshot."
+          "caption": "Feature illustration showing archive and ISO image creation, with password protection for ZIP and 7z."
         },
         {
           "id": "03-preview",
@@ -229,10 +229,10 @@
             "分享从容。"
           ],
           "body": [
-            "创建 ZIP、TAR、TAR.GZ 或 7z，",
-            "按格式选择密码保护。"
+            "创建压缩包或 ISO 光盘映像，",
+            "为 ZIP 和 7z 设置密码。"
           ],
-          "caption": "功能示意图：创建 ZIP、TAR、TAR.GZ 和 7z 压缩包，按格式使用密码保护。此图不是软件实机截图。"
+          "caption": "演示创建压缩包和 ISO 光盘映像，以及为 ZIP 和 7z 设置密码的功能示意图。"
         },
         {
           "id": "03-preview",
