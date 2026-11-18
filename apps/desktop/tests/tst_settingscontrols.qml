@@ -43,6 +43,7 @@ Item {
         function test_shared_checkboxes(data) {
             const settings = createTemporaryObject(settingsComponent, surface);
             verify(settings !== null);
+            compare(AppSettings.language, "zh-CN", "The component fixture selects its language explicitly");
             Ui.Theme.dark = data.dark;
             Ui.Theme.fontScale = data.scale;
             settings.show();

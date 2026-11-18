@@ -10,6 +10,7 @@
 #include <QQmlEngine>
 #include <QQuickStyle>
 #include <QResource>
+#include <QSettings>
 #include <QTemporaryDir>
 #include <QtQuickTest/quicktest.h>
 
@@ -64,7 +65,15 @@ class Setup : public QObject {
         installPasswordAccessibility();
         FocusDismissPolicy::install(QCoreApplication::instance());
         WindowHoverPolicy::install(QCoreApplication::instance());
-        if (!initializeUiText(QStringLiteral("zh-CN")))
+        // Settings tests persist their selections, so the fixture and the
+        // translator need the same language independently of the host locale.
+        const auto language = QStringLiteral("zh-CN");
+        QSettings settings(m_profile->filePath("settings.ini"), QSettings::IniFormat);
+        settings.setValue(QStringLiteral("locale/language"), language);
+        settings.sync();
+        if (settings.status() != QSettings::NoError)
+            qFatal("Unable to seed UI fixture language");
+        if (!initializeUiText(language))
             qFatal("Unable to load UI language");
         if (!installUiFont())
             qFatal("Unable to load UI font");
