@@ -20,6 +20,7 @@ param(
     [Parameter(ParameterSetName = 'Capture')][string]$Executable,
     [Parameter(ParameterSetName = 'Capture')][string]$DemoDirectory,
     [Parameter(ParameterSetName = 'Capture')][string]$CreationDemoDirectory,
+    [Parameter(ParameterSetName = 'Capture')][string]$Configuration,
     [Parameter(ParameterSetName = 'Capture')][ValidatePattern('^[A-Fa-f0-9]{64}$')][string]$ExpectedSha256,
     [Parameter(ParameterSetName = 'Capture')][ValidatePattern('^[A-Fa-f0-9]{40}$')][string]$SourceRevision,
     [string]$OutputDirectory,
@@ -34,7 +35,8 @@ if ($env:OS -ne 'Windows_NT' -or $PSVersionTable.PSEdition -ne 'Desktop') {
 $repoRoot = Split-Path -Parent $PSScriptRoot
 Import-Module (Join-Path $PSScriptRoot 'windows-capture.psm1')
 Import-Module (Join-Path $PSScriptRoot 'windows-store-demo.psm1')
-$spec = Get-Content -LiteralPath (Join-Path $repoRoot 'specs/capture/windows-store.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+if (!$Configuration) { $Configuration = Join-Path $repoRoot 'specs/capture/windows-store.json' }
+$spec = Get-Content -LiteralPath $Configuration -Raw -Encoding UTF8 | ConvertFrom-Json
 if (!$ExpectedSha256) { $ExpectedSha256 = $spec.baseline.runtime_exe_sha256 }
 if (!$Executable -and !$SelfTest) {
     $roots = @($repoRoot)
@@ -126,7 +128,7 @@ $receipt = [ordered]@{
     recipe_sha256 = Get-WindowsCaptureHash $PSCommandPath
     capture_helper_sha256 = Get-WindowsCaptureHash (Join-Path $PSScriptRoot 'windows-capture.cs')
     capture_module_sha256 = Get-WindowsCaptureHash (Join-Path $PSScriptRoot 'windows-capture.psm1')
-    capture_config_sha256 = Get-WindowsCaptureHash (Join-Path $repoRoot 'specs/capture/windows-store.json')
+    capture_config_sha256 = Get-WindowsCaptureHash $Configuration
     fixture_generator_sha256 = Get-WindowsCaptureHash (Join-Path $PSScriptRoot 'windows-store-demo.psm1')
     demo_source = if ($generateDemo) { 'generated' } else { 'provided' }
     demo_inputs = @($demoInputs | ForEach-Object { @{ file = $_; sha256 = Get-WindowsCaptureHash (Join-Path $DemoDirectory $_) } })

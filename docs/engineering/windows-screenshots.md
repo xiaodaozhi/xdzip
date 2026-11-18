@@ -11,6 +11,7 @@ Use the repository's Windows capture tools to save real application pixels as lo
 | [windows-capture.cs](../../scripts/windows-capture.cs) | Process/window ownership, scoped UI Automation, guarded input, activation, DPI-aware geometry, DWM presentation, native screen readback, PNG encoding and exact client/window pixel comparison. |
 | [windows-capture.psm1](../../scripts/windows-capture.psm1) | Module loading, SHA-256, bounded state waits, private fixture directories, stable-frame sampling, PNG pair export and receipt verification. It has no Store scene selectors. |
 | [capture-windows-store.ps1](../../scripts/capture-windows-store.ps1) | xdzip lifecycle, isolated settings, localized selectors, real file selection, preview, grid view and a populated creation window. |
+| [refresh-windows-store-screenshots.py](../../scripts/refresh-windows-store-screenshots.py) | Local bilingual capture from a verified MSIX, native-pixel cleanup, Store and README export, and optional material updates after preview. |
 | [windows-store-demo.psm1](../../scripts/windows-store-demo.psm1) | Owned illustration and archive generation, without downloads or existing local demo files. |
 | [Store capture configuration](../../specs/capture/windows-store.json) | Pinned candidate identity, scene set, languages and fixture revision. Product logical dimensions remain in [layout-scale.json](../../specs/visual/layout-scale.json). |
 | [check-windows-captures.ps1](../../scripts/check-windows-captures.ps1) | Verify a completed capture directory without running the application. |

@@ -6,7 +6,7 @@ English | [简体中文](../../zh-CN/market/windows/README.md)
 
 The listing text targets MSIX **1.0.30.0**, application 0.2.1, build 30. The [support policy](../../engineering/support-policy.md) remains Windows 11 x64; a manifest's technical Windows 10 minimum does not extend that commitment. Store updates are managed by Microsoft Store, and the Store build declares both modern and classic Explorer menus. Modern commands require the installed package to have a Microsoft Store signature.
 
-To capture updated app views, use the [automatic bilingual screenshot recipe](capture.md). It generates its own demo files and can target a newer build with an explicit executable hash. The [reusable capture module](../../engineering/windows-screenshots.md) also supports other Windows workflows.
+Use the [local bilingual screenshot workflow](capture.md) to capture updated app views and regenerate the Store, promotional and README images with owned demonstration files. The [reusable capture module](../../engineering/windows-screenshots.md) also supports other Windows workflows.
 
 ## Text fields
 
@@ -30,11 +30,11 @@ The app's existing Apache-2.0 license and third-party notices are unchanged by t
 
 ## App screenshots and combined promotional artwork
 
-To prepare replacement images, use the [automatic native PNG capture script](capture.md). One run prepares and captures all four views for either language, without manually switching views or confirming individual captures.
+The [local capture workflow](capture.md) prepares all four scenes in each language and generates a preview with the cleaned PNGs, ready for visual review.
 
-Each language has four actual app views using owned demonstration files. They were captured at the default window dimensions from the runtime extracted from MSIX 1.0.29.0, source `86356e35d18ab19e33a6e84e82b851f3fc8eafa7`. Build 30 retains the same four views. Published PNGs are **1024 × 622** for the main window and **491 × 736** for the creation window: one top border row is removed, old desktop colors are cleared from the corner squares, and a one-pixel gray-blue border is drawn inside the rounded edge. The border preserves image dimensions and outer transparency. Pixels outside the corner and border areas remain unchanged, with no text redrawing or resizing. The original native PNGs remain byte-identical in [the source assets](../../../design/assets/marketing/windows-store-native). The root READMEs use the bordered `01-browse` image in their matching language.
+Each language has four actual app views using owned demonstration files. Captures use the default window dimensions. The [capture inventory](../../../specs/marketing/windows-store-captures.json) records the package digest, native dimensions and exported sizes. Generation removes one top row, clears old desktop colors from the corner squares, and draws a one-pixel gray-blue inner border. The border preserves image dimensions and outer transparency. Pixels outside the corner and border areas remain unchanged, with no text redrawing or resizing. The original native PNGs remain byte-identical in [the source assets](../../../design/assets/marketing/windows-store-native). The root READMEs use the bordered `01-browse` image in their matching language.
 
-Use the **1600 × 900 Store screenshots** for the desktop screenshot field. They center the cleaned app view at 1:1 on a neutral background, without marketing overlays. Combined promotional artwork places the same view in the blue brand layout with localized copy, a thin border and a soft shadow. Both exports preserve the native scale when the view fits. Larger views are downsampled once to fit the promotional layout. The lower-left platform label is omitted.
+Use the **Store screenshots** for the desktop screenshot field. They center the cleaned app view at 1:1 on a neutral background, without marketing overlays. Combined promotional artwork places the same view in the blue brand layout with localized copy, a thin border and a soft shadow. Both exports preserve the native scale when the view fits. Larger views are downsampled once to fit the promotional layout. The lower-left platform label is omitted.
 
 | Scene | Default window | Store screenshot | 1920 × 1080 artwork | 3840 × 2160 artwork |
 | --- | --- | --- | --- | --- |
@@ -79,7 +79,7 @@ Xbox-only branded key art (584 × 800), titled hero art and featured promotional
 
 The [design gallery](../../../design/hifi/sources/windows-store-artwork.html) is the high-fidelity entry point. Editable composition lives in [build-windows-store-assets.cjs](../../../scripts/build-windows-store-assets.cjs); localized copy, palette and export canvas parameters live in [windows-store.json](../../../specs/marketing/windows-store.json). The [asset inventory](../../../specs/marketing/windows-store-assets.json) records PNGs and source/output hashes, including native inputs and the two README images. The [capture inventory](../../../specs/marketing/windows-store-captures.json) records the candidate, native capture/session hashes, client crops, dimensions, DPI, captions and corner processing. These fixed export canvases do not change Qt logical window dimensions or incorporate screen scaling into the product.
 
-To replace the screenshots, run the native capture recipe for both languages and review the original PNGs at 100%. Pass the two complete session directories to [import-windows-store-captures.cjs](../../../scripts/import-windows-store-captures.cjs). It preflights all eight PNGs, their candidate identity, hashes and exact client/window pixel correspondence before updating the material inputs. JPEG inputs and incomplete or mismatched sessions are rejected. When updating the candidate, update the marketing baseline deliberately before importing.
+Update the screenshots with the [local refresh command](capture.md). It checks the candidate, both complete sessions, the eight lossless PNGs and exact native crop pixels in an isolated preview before any repository files are replaced.
 
 Install Node.js and the pinned image dependency once. The scripts automatically find it in the local toolchain; no `NODE_PATH` setting is needed:
 

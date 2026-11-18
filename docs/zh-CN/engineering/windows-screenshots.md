@@ -11,6 +11,7 @@
 | [windows-capture.cs](../../../scripts/windows-capture.cs) | 进程与窗口归属、限定范围的可访问性操作、输入检查、激活、DPI 几何、DWM 呈现、原生屏幕读取、PNG 编码和客户区像素比对。 |
 | [windows-capture.psm1](../../../scripts/windows-capture.psm1) | 模块加载、SHA-256、有限时长的状态等待、私有演示目录、稳定画面采样、PNG 成对导出和回执校验，不包含商店场景选择器。 |
 | [capture-windows-store.ps1](../../../scripts/capture-windows-store.ps1) | xdzip 生命周期、隔离设置、本地化选择器、真实文件选择、预览、网格和已填入文件的创建窗口。 |
+| [refresh-windows-store-screenshots.py](../../../scripts/refresh-windows-store-screenshots.py) | 通过已校验的 MSIX 在本机拍摄双语截图，清理原生图像边缘，导出商店和 README 图片，支持预览后更新素材。 |
 | [windows-store-demo.psm1](../../../scripts/windows-store-demo.psm1) | 从源码生成自有插图与压缩包，不下载素材，也不依赖已有本地演示文件。 |
 | [商店截图配置](../../../specs/capture/windows-store.json) | 固定候选身份、场景集合、语言和演示素材修订号。产品逻辑尺寸仍来自 [layout-scale.json](../../../specs/visual/layout-scale.json)。 |
 | [check-windows-captures.ps1](../../../scripts/check-windows-captures.ps1) | 不运行应用，直接检查已有完整截图目录。 |

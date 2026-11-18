@@ -4,7 +4,25 @@ English | [简体中文](../../zh-CN/market/windows/capture.md)
 
 [capture-windows-store.ps1](../../../scripts/capture-windows-store.ps1) prepares and captures all four screenshots for one language in a single run. It opens two demonstration archives using the Store candidate and isolated settings, switches tabs, selects files, requests a preview, changes to grid view and opens a populated creation window. No per-image keys or manual scene preparation are required. **F10** cancels, retaining earlier images.
 
-## Run once for each language
+## Refresh both languages and generate the Store and README images
+
+Use a local Windows desktop at 150% display scaling. Exit XDZip, including its tray instance, and keep the desktop available during the capture. Run from the repository root with Python 3.11 or later, Node.js and the image tooling described in the [materials guide](README.md).
+
+```powershell
+python scripts/refresh-windows-store-screenshots.py --package-dir build/store-msix-package --output build/store-screenshot-review
+```
+
+Use the `store-msix-package` directory from the verified Store workflow artifact. The script checks the MSIX hash against the packaging and verification receipts, extracts the runtime without installing it, and runs each language once at the default logical window sizes. It checks that all eight screenshots came from 144 DPI windows. Use `--dpi` to specify a different intended Windows display scale.
+
+Review `materials/` in the printed output directory at 100%. Generation trims one top pixel, clears the old background from the four rounded corners, and applies a one-pixel inner border. The other client pixels are preserved. The Store canvases and README images use the cleaned screenshots at native scale. The preview also include the branded exports and retain their source hashes.
+
+After reviewing the result, reuse the two sessions to update the repository assets without retaking the screenshots. Use a new output directory for each run.
+
+```powershell
+python scripts/refresh-windows-store-screenshots.py --package-dir build/store-msix-package --from-captures build/store-screenshot-review/en-US build/store-screenshot-review/zh-CN --output build/store-screenshot-final --apply
+```
+
+## Capture just one language
 
 Close any existing xdzip processes first. From the repository root, run either command in Windows PowerShell 5.1:
 
