@@ -4,7 +4,7 @@ English | [简体中文](../../zh-CN/market/windows/listing.md)
 
 ## Baseline
 
-MSIX 1.0.28.0, x64, application 0.2.1, build 28. Screenshots retain the capture baseline documented in [the materials guide](README.md).
+MSIX 1.0.29.0, x64, application 0.2.1, build 29. Screenshots retain the capture baseline documented in [the materials guide](README.md).
 
 ## Product name
 
@@ -33,9 +33,8 @@ Designed for Windows 11 PCs with x64 processors. The Microsoft Store edition rec
 ## What's new in this version
 
 ```text
-Fixed the file association settings page: open Windows default-app settings for xdzip directly.
-Added modern and classic File Explorer context menus for the Store edition, with language and enablement settings.
-Improved missing file-property display and included seconds in preview modification times.
+Fixed the Store application's undersized icon and unwanted background plate.
+Restored per-format archive file icons, with the intended size, alignment and transparent margins.
 ```
 
 ## Product features

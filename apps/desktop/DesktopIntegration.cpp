@@ -568,8 +568,8 @@ void DesktopIntegration::refresh() {
     const bool available =
         m_interactive && m_settings && m_settings->trayEnabled() && m_availability();
     if (available != m_available) {
-        // Restore before removing the only visible entry point, including tray-host loss.
-        if (!available && m_hidden)
+        // Managed sessions recover only active tasks that have no other entry.
+        if (!available && m_hidden && !m_sessions)
             restore();
         m_available = available;
         m_tray.setVisible(available);

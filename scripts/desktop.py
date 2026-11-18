@@ -20,6 +20,7 @@ from association_types import WINDOWS_ICONS
 from windows_ninja_safety import check_dependencies, utf8_console
 from qt_network_security import identity as qt_network_identity
 import msix_shell_policy
+import msix_icon_assets
 
 ROOT = Path(__file__).resolve().parents[1]
 TOOL_PACKAGES = tuple(name+'=='+version for name, version in PYTHON_PACKAGES.items())
@@ -65,6 +66,10 @@ def verify_msix_identity(path, report):
             if len(names) != len(set(names)) or 'appxsignature.p7x' in names:
                 raise ValueError('MSIX contains duplicate entries or a signature')
             root = ET.fromstring(package.read('AppxManifest.xml'))
+            if 'icon_assets' in report:
+                count = msix_icon_assets.verify_package_icons(package, root)
+                if report['icon_assets'] != {'schema_version': 1, 'resource_index': 'resources.pri', 'png_count': count}:
+                    raise ValueError('MSIX icon resource receipt differs')
             if 'channel' in report:
                 msix_shell_policy.verify_manifest(root, report['channel'], report.get('shell_library', 'xdzip-shell.dll'))
                 if (package.read('xdzip-msix-channel.txt') != msix_shell_policy.marker(report['channel']) or
