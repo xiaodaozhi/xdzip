@@ -4,7 +4,7 @@ English | [简体中文](../../zh-CN/market/windows/README.md)
 
 [Copy-ready listing text](listing.md) contains the description, ten product features, supplemental fields, seven keywords, copyright, developer information, links and image captions. Use the English page for `en-US` and the [Chinese page](../../zh-CN/market/windows/listing.md) for `zh-CN`.
 
-The listing text targets MSIX **1.0.29.0**, application 0.2.1, build 29, with package identity `xiaodaozhi.xdzip`. The existing image assets retain their separately documented capture baseline. The [support policy](../../engineering/support-policy.md) remains Windows 11 x64; a manifest's technical Windows 10 minimum does not extend that commitment. Store updates are managed by Microsoft Store, and the Store build declares both modern and classic Explorer menus. Modern commands require the installed package to have a Microsoft Store signature.
+The listing text targets MSIX **1.0.29.0**, application 0.2.1, build 29. The existing image assets retain their separately documented capture baseline. The [support policy](../../engineering/support-policy.md) remains Windows 11 x64; a manifest's technical Windows 10 minimum does not extend that commitment. Store updates are managed by Microsoft Store, and the Store build declares both modern and classic Explorer menus. Modern commands require the installed package to have a Microsoft Store signature.
 
 To capture updated app views, use the [automatic bilingual screenshot recipe](capture.md). It generates its own demo files and can target a newer build with an explicit executable hash. The [reusable capture module](../../engineering/windows-screenshots.md) also supports other Windows workflows.
 

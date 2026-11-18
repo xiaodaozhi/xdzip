@@ -5,8 +5,6 @@
     "revision": "90916a1992188e6e7e5c6b3d91695861ee1bd2d2",
     "package_sha256": "45f9a99f74431c4ab8dcb79d0e9628fa121f73b998dd8359dfd38fadc48aab46",
     "runtime_exe_sha256": "f6e58a99a2f38b746a7175128fd8cf9d7d0a88871a314fbd2fac15021399c01e",
-    "product_id": "9P2PFGG1GK7L",
-    "package_name": "xiaodaozhi.xdzip",
     "device_family": "Windows.Desktop"
   },
   "visual": {

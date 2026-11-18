@@ -42,12 +42,21 @@ jobs:
         shell: pwsh
         env:
           SOURCE_REVISION: ${{ inputs.source_revision }}
+          XDZIP_STORE_MSIX_NAME: ${{ vars.XDZIP_STORE_MSIX_NAME }}
+          XDZIP_STORE_MSIX_PUBLISHER: ${{ vars.XDZIP_STORE_MSIX_PUBLISHER }}
+          XDZIP_STORE_MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.XDZIP_STORE_MSIX_PUBLISHER_DISPLAY_NAME }}
         run: |
-          $identity = Get-Content -LiteralPath 'specs/packaging/windows-store-identity.json' -Raw | ConvertFrom-Json
-          foreach ($field in @('name', 'publisher', 'publisher_display_name')) {
-            if ($identity.$field -isnot [string] -or [string]::IsNullOrWhiteSpace($identity.$field)) {
-              throw "Missing Store identity field: $field"
+          $storeVariables = @('XDZIP_STORE_MSIX_NAME', 'XDZIP_STORE_MSIX_PUBLISHER',
+            'XDZIP_STORE_MSIX_PUBLISHER_DISPLAY_NAME')
+          foreach ($variable in $storeVariables) {
+            if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($variable))) {
+              throw "Configure the repository's Actions variable $variable before packaging"
             }
+          }
+          $identity = @{
+            name = $env:XDZIP_STORE_MSIX_NAME
+            publisher = $env:XDZIP_STORE_MSIX_PUBLISHER
+            publisher_display_name = $env:XDZIP_STORE_MSIX_PUBLISHER_DISPLAY_NAME
           }
           $version = Get-Content -LiteralPath 'VERSION.json' -Raw | ConvertFrom-Json
           if (($version.build -isnot [int] -and $version.build -isnot [long]) -or

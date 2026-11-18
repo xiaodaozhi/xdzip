@@ -178,6 +178,11 @@ class WorkflowTests(unittest.TestCase):
         steps = job['steps']
         actions = {step['uses'].split('@')[0] for step in steps if 'uses' in step}
         self.assertEqual(actions, {'actions/checkout', 'actions/upload-artifact'})
+        build = next(step for step in steps if step.get('id') == 'msix')
+        self.assertEqual({key: value for key, value in build['env'].items() if key != 'SOURCE_REVISION'}, {
+            key: '${{ vars.' + key + ' }}' for key in (
+                'XDZIP_STORE_MSIX_NAME', 'XDZIP_STORE_MSIX_PUBLISHER', 'XDZIP_STORE_MSIX_PUBLISHER_DISPLAY_NAME')
+        })
         archive, diagnostics = steps[-2:]
         self.assertTrue(archive['uses'].startswith('actions/upload-artifact@'))
         self.assertNotIn('if', archive)
