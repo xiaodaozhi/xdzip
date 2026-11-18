@@ -799,7 +799,242 @@ class ShellTest : public QObject {
         sessions.confirmQuit(false);
         QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
     }
-    void trayLossRetainsHiddenBatchResultUntilClosed() {
+    void trayLossDoesNotReopenClosedResults_data() {
+        QTest::addColumn<int>("mainState");
+        QTest::addColumn<QString>("trigger");
+        QTest::addColumn<bool>("activeTask");
+        for (int state = 0; state < 4; ++state)
+            for (const auto &trigger :
+                 {QString("mouse"), QString("press"), QString("toggle"), QString("host")})
+                for (bool active : {false, true})
+                    QTest::newRow(qPrintable(
+                        QString("main-%1-%2-active-%3").arg(state).arg(trigger).arg(active)))
+                        << state << trigger << active;
+    }
+    void trayLossDoesNotReopenClosedResults() {
+        QFETCH(int, mainState);
+        QFETCH(QString, trigger);
+        QFETCH(bool, activeTask);
+        const bool wasAccessible = QAccessible::isActive();
+        QAccessible::setActive(true);
+        const auto restore = qScopeGuard([&] { QAccessible::setActive(wasAccessible); });
+        QQmlApplicationEngine engine;
+        auto *settings = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(settings &&
+                settings->applyDetails("light", 1., "zh-CN", "standard", false, true, "tabs"));
+        ApplicationSessions sessions(&engine, settings);
+        QQuickWindow *main = nullptr;
+        if (mainState) {
+            engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+            QVERIFY(!engine.rootObjects().isEmpty());
+            main = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+            QVERIFY(main);
+            sessions.adopt(main);
+        }
+        bool available = true;
+        DesktopIntegration desktop(main, main ? main->findChild<BrowserController *>() : nullptr,
+                                   settings, true, [&] { return available; });
+        sessions.setDesktop(&desktop);
+        if (mainState == 2)
+            main->showMinimized();
+        if (mainState == 3)
+            desktop.hideToTray();
+        const auto originalPage = main ? main->property("activePage") : QVariant{};
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        QTemporaryDir source;
+        QVERIFY(source.isValid());
+        QList<QQuickWindow *> history;
+        std::vector<std::unique_ptr<QSignalSpy>> historyVisibility;
+        for (int index = 0; index < 3; ++index) {
+            const auto input = source.filePath(QString("finished-%1.txt").arg(index));
+            write(input, "owned completed input");
+            const auto previous = sessions.findChildren<ShellBatchController *>();
+            QVERIFY(sessions.shellAction(request("zip", {input}).json()));
+            ShellBatchController *batch = nullptr;
+            for (auto *candidate : sessions.findChildren<ShellBatchController *>())
+                if (!previous.contains(candidate))
+                    batch = candidate;
+            QVERIFY(batch);
+            QTRY_VERIFY_WITH_TIMEOUT(batch->finished(), 10000);
+            auto *result = batch->parent()->findChild<QQuickWindow *>("taskWindow");
+            QVERIFY(result);
+            QTRY_VERIFY(result->isVisible());
+            result->close();
+            QTRY_VERIFY(!result->isVisible());
+            history.append(result);
+            historyVisibility.push_back(
+                std::make_unique<QSignalSpy>(result, &QWindow::visibleChanged));
+        }
+        ShellBatchController *batch = nullptr;
+        QQuickWindow *progress = nullptr;
+        QQuickWindow *conflict = nullptr;
+        QString taskIdentity, promptIdentity;
+        if (activeTask) {
+            const auto input = source.filePath("waiting.txt");
+            write(input, "owned waiting input");
+            write(input + ".zip", "keep original target");
+            const auto previous = sessions.findChildren<ShellBatchController *>();
+            QVERIFY(sessions.shellAction(request("zip", {input}).json()));
+            for (auto *candidate : sessions.findChildren<ShellBatchController *>())
+                if (!previous.contains(candidate))
+                    batch = candidate;
+            QVERIFY(batch);
+            progress = batch->parent()->findChild<QQuickWindow *>("taskWindow");
+            conflict = batch->parent()->findChild<QQuickWindow *>("conflictWindow");
+            QVERIFY(progress && conflict);
+            QTRY_VERIFY_WITH_TIMEOUT(conflict->isVisible(), 10000);
+            taskIdentity = sessions.tasks().last().toMap().value("id").toString();
+            promptIdentity = batch->reader()->tasks().last().toMap().value("promptId").toString();
+            conflict->close();
+            progress->close();
+            QTRY_VERIFY(!progress->isVisible());
+        }
+        desktop.execute("settings");
+        QQuickWindow *popup = nullptr;
+        for (auto *window : QGuiApplication::topLevelWindows())
+            if (window->objectName() == "settingsWindow" && window->isVisible())
+                popup = qobject_cast<QQuickWindow *>(window);
+        QVERIFY(popup);
+        popup->setProperty("currentTab", 1);
+        QQuickItem *control = nullptr;
+        QTRY_VERIFY(control = popup->findChild<QQuickItem *>("settingsTray"));
+        QTRY_VERIFY(control->width() > 0 && control->height() > 0);
+        QSignalSpy settingVisibility(popup, &QWindow::visibleChanged);
+        QSignalSpy clicks(control, SIGNAL(clicked()));
+        QSignalSpy toggles(control, SIGNAL(toggled()));
+        if (trigger == "host") {
+            available = false;
+            desktop.refresh();
+        } else if (trigger == "mouse") {
+            if (QGuiApplication::platformName() == "windows")
+                QVERIFY(QTest::qWaitForWindowExposed(popup));
+            control->forceActiveFocus(Qt::TabFocusReason);
+            auto *scroll = popup->findChild<QQuickItem *>("settingsScroll");
+            QVERIFY(scroll);
+            QTRY_VERIFY(scroll->mapRectToScene(scroll->boundingRect())
+                            .contains(control->mapToScene(
+                                QPointF(control->width() - 10, control->height() / 2))));
+            QTest::mouseClick(
+                popup, Qt::LeftButton, Qt::NoModifier,
+                control->mapToScene(QPointF(control->width() - 10, control->height() / 2))
+                    .toPoint());
+        } else {
+            auto *accessible = QAccessible::queryAccessibleInterface(control);
+            QVERIFY(accessible && accessible->actionInterface());
+            QVERIFY(!accessible->text(QAccessible::Name).isEmpty());
+            accessible->actionInterface()->doAction(
+                trigger == "press" ? QAccessibleActionInterface::pressAction()
+                                   : QAccessibleActionInterface::toggleAction());
+        }
+        QTRY_VERIFY(!desktop.trayAvailable());
+        if (trigger != "host") {
+            QVERIFY(!settings->trayEnabled());
+            QVERIFY(!control->property("checked").toBool());
+            QCOMPARE(clicks.count(), 1);
+            QCOMPARE(toggles.count(), 1);
+        }
+        QCoreApplication::processEvents();
+        for (int i = 0; i < history.size(); ++i) {
+            QVERIFY(!history[i]->isVisible());
+            QCOMPARE(historyVisibility[size_t(i)]->count(), 0);
+        }
+        QVERIFY(popup->isVisible());
+        QCOMPARE(settingVisibility.count(), 0);
+        QCOMPARE(joined.count(), 0);
+        QCOMPARE(sessions.windows().size(), main ? 1 : 0);
+        if (main) {
+            QCOMPARE(main->property("activePage"), originalPage);
+            QCOMPARE(main->isVisible(), mainState != 3);
+            if (mainState == 2)
+                QCOMPARE(main->visibility(), QWindow::Minimized);
+        }
+        if (activeTask) {
+            QCOMPARE(progress->isVisible(), mainState == 0 || mainState == 3);
+            QCOMPARE(batch->reader()->tasks().last().toMap().value("promptId").toString(),
+                     promptIdentity);
+            sessions.showTask(taskIdentity);
+            QTRY_VERIFY(progress->isVisible());
+            QTRY_VERIFY(conflict->isVisible());
+            conflict->close();
+        }
+        available = true;
+        QVERIFY(settings->applyDetails("light", 1., "zh-CN", "standard", false, true, "tabs"));
+        desktop.refresh();
+        QVERIFY(desktop.trayAvailable());
+        QVERIFY(settings->applyDetails("light", 1., "zh-CN", "standard", false, false, "tabs"));
+        QCoreApplication::processEvents();
+        for (const auto &spy : historyVisibility)
+            QCOMPARE(spy->count(), 0);
+        popup->close();
+        if (!activeTask && (mainState == 0 || mainState == 3))
+            QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
+        else {
+            QCOMPARE(joined.count(), 0);
+            sessions.confirmQuit(false);
+            QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
+        }
+        if (activeTask) {
+            QFile original(source.filePath("waiting.txt.zip"));
+            QVERIFY(original.open(QIODevice::ReadOnly));
+            QCOMPARE(original.readAll(), QByteArray("keep original target"));
+        }
+    }
+    void ordinaryTaskTrayLossKeepsPromptAndHiddenMain() {
+        QQmlApplicationEngine engine;
+        auto *settings = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(settings &&
+                settings->applyDetails("light", 1., "zh-CN", "standard", false, true, "tabs"));
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *main = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(main);
+        ApplicationSessions sessions(&engine, settings);
+        sessions.adopt(main);
+        auto *reader = main->findChild<BrowserController *>();
+        QVERIFY(reader);
+        DesktopIntegration desktop(main, reader, settings, true, [] { return true; });
+        sessions.setDesktop(&desktop);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        QTemporaryDir target;
+        QVERIFY(target.isValid());
+        const auto existing = target.filePath(QStringLiteral("说明.txt"));
+        write(existing, "keep original");
+        sessions.openPath(QStringLiteral(XDZIP_SHELL_FIXTURES "/stored.zip"));
+        QTRY_VERIFY(reader->ready() && !reader->busy());
+        reader->prepareExtraction(true);
+        QTRY_VERIFY(!reader->busy());
+        reader->checkTarget(target.path());
+        QTRY_VERIFY(!reader->busy() && reader->targetMatches(target.path()));
+        reader->startExtraction(target.path(), true, false, 0, false, false);
+        QTRY_VERIFY_WITH_TIMEOUT(!reader->tasks().isEmpty() &&
+                                     reader->tasks().first().toMap().value("status") == "waiting",
+                                 10000);
+        const auto task = reader->tasks().first().toMap();
+        auto *progress = main->findChild<QQuickWindow *>("taskWindow");
+        auto *conflict = main->findChild<QQuickWindow *>("conflictWindow");
+        QVERIFY(progress && conflict);
+        QTRY_VERIFY(conflict->isVisible());
+        conflict->close();
+        progress->close();
+        desktop.hideToTray();
+        QVERIFY(!main->isVisible());
+        QSignalSpy mainVisibility(main, &QWindow::visibleChanged);
+        QVERIFY(settings->applyDetails("light", 1., "zh-CN", "standard", false, false, "tabs"));
+        QTRY_VERIFY(progress->isVisible());
+        QTRY_VERIFY(conflict->isVisible());
+        QCOMPARE(reader->tasks().first().toMap().value("id"), task.value("id"));
+        QCOMPARE(reader->tasks().first().toMap().value("promptId"), task.value("promptId"));
+        QCOMPARE(mainVisibility.count(), 0);
+        conflict->close();
+        reader->cancelTask(task.value("id").toString());
+        QTRY_COMPARE_WITH_TIMEOUT(reader->activeTaskCount(), 0, 10000);
+        progress->close();
+        QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
+        QFile original(existing);
+        QVERIFY(original.open(QIODevice::ReadOnly));
+        QCOMPARE(original.readAll(), QByteArray("keep original"));
+    }
+    void trayLossRestoresOnlyActiveTaskWithoutOtherEntry() {
         QQmlApplicationEngine engine;
         UiPreferences settings;
         QVERIFY(settings.applyDetails("light", 1., "zh-CN", "standard", false, true, "tabs"));
@@ -822,8 +1057,6 @@ class ShellTest : public QObject {
         conflict->close();
         progress->close();
         QTRY_VERIFY(!progress->isVisible());
-        batch->cancel();
-        QTRY_VERIFY_WITH_TIMEOUT(batch->finished(), 10000);
         QVERIFY(!panel->isVisible());
         available = false;
         desktop.refresh();
@@ -831,6 +1064,8 @@ class ShellTest : public QObject {
         QVERIFY(!panel->isVisible());
         QCOMPARE(sessions.windows().size(), 0);
         QCOMPARE(joined.count(), 0);
+        batch->cancel();
+        QTRY_VERIFY_WITH_TIMEOUT(batch->finished(), 10000);
         progress->close();
         QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
     }
@@ -882,7 +1117,7 @@ class ShellTest : public QObject {
         QCOMPARE(conflict->transientParent(), progress);
         conflict->close();
         progress->close();
-        if (tray) {
+        if (tray || (main && main->isVisible())) {
             QTRY_VERIFY(!progress->isVisible());
             QVERIFY(!quit->isVisible());
             const auto identity = sessions.tasks().last().toMap().value("id").toString();
