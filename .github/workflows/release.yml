@@ -45,7 +45,8 @@ jobs:
       matrix:
         os: [windows-2022, macos-15, ubuntu-24.04]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 80
+    # macOS runs the native suite before a separate distribution build and DMG verification.
+    timeout-minutes: ${{ matrix.os == 'macos-15' && 120 || 80 }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
