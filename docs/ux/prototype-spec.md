@@ -27,7 +27,7 @@ Status: interactive design-validation draft. Sources are in [design/html](../../
 - Each selection corresponds to a stable entry ID, not a sorted row number. Changing query/directory clears selection to avoid hidden-selection misunderstandings.
 - Select all in the current list and extracting the whole archive are separate concepts. Checking a folder expands to deduplicated descendant files.
 - Do not submit queries during IME composition; update after compositionend. Browser simulated-event checks do not replace native IME acceptance on macOS/Windows/Linux.
-- Enter/double-click on a regular file extracts a temporary copy and opens it with the system association; on a directory it enters the directory. The properties entry remains. HTML demonstrates progress and automatic hiding only; it does not write files or call the system. See the [preview contract](../engineering/content-preview.md) for Qt's explicit content preview.
+- Enter/double-click on a regular file extracts a temporary copy and opens it with the system association; on a directory it enters the directory. The properties entry remains. HTML demonstrates progress and automatic hiding only; it does not write files or call the system. See the [preview contract](../engineering/content-preview.md) for Qt's automatic content preview.
 
 ### Extraction and conflicts
 

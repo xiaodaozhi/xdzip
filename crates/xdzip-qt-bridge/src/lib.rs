@@ -211,6 +211,7 @@ mod ffi {
         type CommandClient;
         type EventReceiver;
         fn metadata_limits() -> MetadataLimits;
+        fn supports_preview_name(name: &str) -> bool;
         fn sum_declared_sizes(values: &[u64]) -> String;
         fn new_runtime() -> Result<Box<Runtime>>;
         fn take_client(self: &mut Runtime) -> Result<Box<CommandClient>>;
@@ -226,6 +227,10 @@ mod ffi {
         fn shutdown(self: &CommandClient) -> u64;
         fn next_event(self: &mut EventReceiver) -> Event;
     }
+}
+/// Borrow the display name for a format allowlist check, with no I/O or retained data.
+pub fn supports_preview_name(name: &str) -> bool {
+    xdzip_runtime::preview::supports_name(name)
 }
 /// Read-only resource admission shared with the Qt receiver; no filesystem work.
 pub fn metadata_limits() -> ffi::MetadataLimits {

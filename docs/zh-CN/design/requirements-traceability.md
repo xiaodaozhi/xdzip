@@ -21,7 +21,7 @@
 | P11 保护密码及数据 | [文件授权](file-security.md)、[隐私](../engineering/privacy.md) | T11 有作用范围的密码、脱敏诊断及明确的网络访问。 |
 | P12 审计交付 | [质量](quality-engineering.md)、[发行](build-release.md) | T12 锁定输入和工件身份、组件清单、许可材料、包信任及适用安装检查。 |
 | P13 控制外部扩展准入 | [格式](codec-extension-sdk.md)、[SDK 试验](../engineering/sdk-trial.md) | T13 独立试验的互操作和原生权限结果。产品内安装扩展仍是设计选项。 |
-| P14 限制预览与打开 | [桌面](qt-quick-ui.md)、[文件授权](file-security.md) | T14 显式预览、受支持内容、工作进程限额和私有临时输出。 |
+| P14 限制预览与打开 | [桌面](qt-quick-ui.md)、[文件授权](file-security.md) | T14 自动预览、受支持内容、工作进程限额和私有临时输出。 |
 | P15 报告实际结果 | [桥接](qt-rust-bridge.md)、[文件授权](file-security.md)、[任务](task-scheduling.md) | T15 来源或目标变化、部分提交后的失败与取消、清理及不确定结果。 |
 
 ## 横向验证

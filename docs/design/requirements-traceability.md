@@ -21,7 +21,7 @@ English | [简体中文](../zh-CN/design/requirements-traceability.md)
 | P11 Protect secrets and data | [File authorization](file-security.md), [Privacy](../engineering/privacy.md) | T11 Scoped passwords, redacted diagnostics and intentional network access. |
 | P12 Audit delivery | [Quality](quality-engineering.md), [Releases](build-release.md) | T12 Locked inputs and artifact identity, inventory, license material, package trust and applicable install checks. |
 | P13 Gate external extensions | [Formats](codec-extension-sdk.md), [SDK trial](../engineering/sdk-trial.md) | T13 Trial-only interoperability and native permission results. Product extension installation remains a design option. |
-| P14 Bound preview and opening | [Desktop](qt-quick-ui.md), [File authorization](file-security.md) | T14 Explicit preview, supported content, worker limits and private temporary outputs. |
+| P14 Bound preview and opening | [Desktop](qt-quick-ui.md), [File authorization](file-security.md) | T14 Automatic preview, supported content, worker limits and private temporary outputs. |
 | P15 Report the actual outcome | [Bridge](qt-rust-bridge.md), [File authorization](file-security.md), [Tasks](task-scheduling.md) | T15 Source/target changes, failures and cancellation after earlier commits, cleanup and uncertainty. |
 
 ## Cross-cutting verification

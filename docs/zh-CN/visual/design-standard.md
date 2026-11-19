@@ -6,9 +6,11 @@
 
 本规范约束界面创作、HTML 设计交付和 Qt 实现。尺寸换算以 [layout-scale.json](../../../specs/visual/layout-scale.json) 为准；颜色、共享控件和目录树分别以 [tokens.json](../../../specs/visual/tokens.json)、[controls.json](../../../specs/visual/controls.json)、[directory-tree.json](../../../specs/visual/directory-tree.json) 为准。原稿量测保存在 [qt-main-reference.json](../../../specs/visual/qt-main-reference.json)，不以实现结果反向改写原图。
 
-## 主动内容预览
+<a id="主动内容预览"></a>
 
-[内容状态稿](../../../design/hifi/sources/content-preview.html)沿用现有属性卡的宽度、高度、圆角、主窗口密度与文字角色。内距、间距、图标和加载指示参数由 layout-scale.json 的 main.content_preview 生成。用户点击共享 ArchiveAction 后才读取内容；加载、密码等待、纯文本、图片和错误均在卡片内切换，取消动作固定可达。文本为纯文本且可选择，图片保持比例，栅格与受限静态 SVG 均通过同一图片槽显示，不增加浏览器、HTML 或外部链接执行入口；SVG 在受限工作进程内栅格化，不把原文交给 QML。主窗口与独立属性查看器复用同一 InspectorPanel，关闭预览或更换条目立即清空。密码窗口沿用[密码输入窗口](../ux/password-extraction.md)的布局和共享页脚，仅按预览任务切换文案。主窗口及菜单的既有比例仍须同时复验。
+## 内容预览
+
+[内容状态稿](../../../design/hifi/sources/content-preview.html)沿用现有属性卡的宽度、高度、圆角、主窗口密度与文字角色。内距、间距、图标和加载指示参数由 layout-scale.json 的 main.content_preview 生成。属性卡可见时，单选文件自动开始预览。读取、密码等待、纯文本、图片、错误和多选提示共用卡片，读取和等待密码时可取消。鼠标悬停预览区或键盘聚焦按钮时，右上角浮出共享 ArchiveAction。按钮为 28 逻辑像素见方，圆角 3、边距 6、刷新图标 16。文本为纯文本且可选择，图片保持比例，栅格与受限静态 SVG 均通过同一图片槽显示，不增加浏览器、HTML 或外部链接执行入口；SVG 在受限工作进程内栅格化，不把原文交给 QML。主窗口与独立属性查看器复用同一 InspectorPanel，关闭预览或更换条目立即清空。密码窗口沿用[密码输入窗口](../ux/password-extraction.md)的布局和共享页脚，仅按预览任务切换文案。主窗口及菜单的既有比例仍须同时复验。
 
 
 ## 界面字体与用户数据

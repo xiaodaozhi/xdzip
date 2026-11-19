@@ -248,6 +248,16 @@ QStringList ArchiveTableModel::selectedIds() const {
             QStringLiteral("q%1:%2:%3").arg(m_queryIdentity).arg(range.first).arg(range.second));
     return result;
 }
+int ArchiveTableModel::singleSelectedRow() const {
+    if (selectedCount() != 1)
+        return -1;
+    if (paged())
+        return m_ranges.first().first;
+    const auto &id = *m_selected.cbegin();
+    const auto item = std::find_if(m_rows.cbegin(), m_rows.cend(),
+                                   [&id](const BrowserRow &row) { return row.id == id; });
+    return item == m_rows.cend() ? -1 : static_cast<int>(item - m_rows.cbegin());
+}
 QStringList ArchiveTableModel::physicalSelectedIds() const {
     if (!paged())
         return selectedIds();
@@ -327,6 +337,9 @@ BrowserController::BrowserController(QObject *parent)
                                     {Qt::UserRole + 5, "nodeDepth"}});
     m_admissionRetry.setSingleShot(true);
     connect(&m_admissionRetry, &QTimer::timeout, this, &BrowserController::attemptSubmission);
+    m_previewAdmissionRetry.setSingleShot(true);
+    connect(&m_previewAdmissionRetry, &QTimer::timeout, this,
+            &BrowserController::submitContentPreview);
     m_connection->setConsumer([this](const xdzip::reader::Event &event) { receive(event); });
     connect(m_connection.get(), &RuntimeConnection::disconnected, this, [this](bool graceful) {
         m_busy = false;
@@ -573,7 +586,7 @@ void BrowserController::discardBrowsing() {
     emit changed();
 }
 void BrowserController::selectRow(int row) {
-    if ((m_busy && !m_result.pageFetch && !m_result.contentPreview) || !m_ready)
+    if ((m_busy && !m_result.pageFetch) || !m_ready)
         return;
     const auto *item = m_model.rowAt(row);
     if (!item)
@@ -587,12 +600,25 @@ void BrowserController::selectRow(int row) {
 }
 void BrowserController::showRowDetail(int row) {
     m_deferredDetailRow = -1;
-    clearContentPreview();
+    const int count = m_model.selectedCount();
+    if (count == 1 && !m_model.isSelected(row))
+        row = m_model.singleSelectedRow();
     const auto *item = m_model.rowAt(row);
-    if (!item || m_model.selectedCount() == 0) {
+    if (!item || count != 1 || item->id != m_detail.value("id").toString())
+        clearContentPreview();
+    if (!item || count == 0) {
         m_detail.clear();
+        if (count > 0 && row >= 0 && m_model.paged()) {
+            m_deferredDetailRow = row;
+            m_desiredPage = row;
+            QTimer::singleShot(0, this, &BrowserController::drainPage);
+        }
         return;
     }
+    const auto name = item->path.toUtf8();
+    const bool previewSupported = item->physical && !item->directory &&
+                                  xdzip::reader::supports_preview_name(rust::Str(
+                                      name.constData(), static_cast<size_t>(name.size())));
     m_detail = {{"name", item->cells[0]},
                 {"size", item->cells[1]},
                 {"packed", item->cells[2]},
@@ -602,6 +628,7 @@ void BrowserController::showRowDetail(int row) {
                 {"status", item->status},
                 {"attention", item->attention},
                 {"directory", item->directory},
+                {"previewSupported", previewSupported},
                 {"id", item->id}};
 }
 void BrowserController::updateSelectionSummary() const {
@@ -660,8 +687,7 @@ void BrowserController::closeArchive() {
     submit(std::move(command));
 }
 void BrowserController::selectOnlyRow(int row) {
-    if ((m_busy && !m_result.pageFetch && !m_result.contentPreview) || !m_ready ||
-        !m_model.rowAt(row))
+    if ((m_busy && !m_result.pageFetch) || !m_ready || !m_model.rowAt(row))
         return;
     m_selectionAnchor = m_model.rowAt(row)->id;
     m_selectionAnchorRow = row;
@@ -671,8 +697,7 @@ void BrowserController::selectOnlyRow(int row) {
     emit changed();
 }
 void BrowserController::selectRangeTo(int row) {
-    if ((m_busy && !m_result.pageFetch && !m_result.contentPreview) || !m_ready ||
-        !m_model.rowAt(row))
+    if ((m_busy && !m_result.pageFetch) || !m_ready || !m_model.rowAt(row))
         return;
     int anchor = m_model.paged() && m_selectionAnchorRow >= 0 ? m_selectionAnchorRow : row;
     bool foundAnchor = m_model.paged() && m_selectionAnchorRow >= 0;
@@ -690,8 +715,7 @@ void BrowserController::selectRangeTo(int row) {
     emit changed();
 }
 void BrowserController::selectForContext(int row) {
-    if ((m_busy && !m_result.pageFetch && !m_result.contentPreview) || !m_ready ||
-        !m_model.rowAt(row))
+    if ((m_busy && !m_result.pageFetch) || !m_ready || !m_model.rowAt(row))
         return;
     if (!m_model.isSelected(row)) {
         selectOnlyRow(row);
@@ -703,24 +727,13 @@ void BrowserController::selectForContext(int row) {
     emit changed();
 }
 void BrowserController::selectAll(bool selected) {
-    if ((m_busy && !m_result.pageFetch && !m_result.contentPreview) || !m_ready)
+    if ((m_busy && !m_result.pageFetch) || !m_ready)
         return;
     m_model.selectAll(selected);
     m_selectionAnchor.clear();
     m_selectionAnchorRow = -1;
     m_deferredDetailRow = -1;
-    if (selected && m_model.rowCount() > 0) {
-        const int last = m_model.rowCount() - 1;
-        showRowDetail(last);
-        if (m_model.paged() && !m_model.rowAt(last)) {
-            m_deferredDetailRow = last;
-            m_desiredPage = last;
-            QTimer::singleShot(0, this, &BrowserController::drainPage);
-        }
-    } else {
-        clearContentPreview();
-        m_detail.clear();
-    }
+    showRowDetail(selected ? m_model.rowCount() - 1 : -1);
     m_preflightReport.clear();
     emit changed();
 }
@@ -1226,8 +1239,7 @@ void BrowserController::startArchiveTest() {
 }
 void BrowserController::cancelTask(const QString &id) {
     if (id == QStringLiteral("preview")) {
-        clearContentPreview();
-        emit changed();
+        cancelContentPreview();
         return;
     }
     if (id == QStringLiteral("open")) {
@@ -1436,6 +1448,7 @@ bool BrowserController::requestClose() {
     if (m_closing)
         return false;
     m_closing = true;
+    clearContentPreview();
     if (m_export) {
         m_export->cancelled = true;
         m_export->changed.notify_all();
@@ -1458,15 +1471,31 @@ bool BrowserController::requestClose() {
 }
 void BrowserController::clearContentPreview() {
     PreviewImages::remove(m_contentPreview.value("image").toString());
-    if (m_busy && m_result.contentPreview && m_pending)
-        m_connection->cancel(m_pending);
+    m_previewAdmissionRetry.stop();
+    m_waitingPreview.reset();
+    if (const auto request = std::exchange(m_previewRequest, 0))
+        m_connection->cancel(request);
+    m_previewEntry = 0;
+    m_previewAttempts = 0;
+    m_previewKind = 0;
+    m_previewBytes.clear();
+    m_contentPreview.clear();
     if (m_openPasswordPrompt.value("taskId") == "preview") {
         m_openPasswordPrompt.clear();
         emit tasksChanged();
     }
-    m_previewEntry = 0;
-    m_previewAttempts = 0;
-    m_contentPreview.clear();
+}
+void BrowserController::hideContentPreview() {
+    if (m_contentPreview.isEmpty())
+        return;
+    clearContentPreview();
+    emit changed();
+}
+void BrowserController::cancelContentPreview() {
+    clearContentPreview();
+    if (m_model.selectedCount() == 1 && m_detail.value("previewSupported").toBool())
+        m_contentPreview = {{"state", "cancelled"}};
+    emit changed();
 }
 void BrowserController::requestPreview(const QString &id) {
     if (!canPreview() || id != m_detail.value("id").toString())
@@ -1489,7 +1518,78 @@ void BrowserController::startContentPreview(quint64 entry, const QString &passwo
     auto secret = password.toUtf8();
     command.password = rust::String(secret.constData(), static_cast<std::size_t>(secret.size()));
     secret.fill('\0');
-    submit(std::move(command));
+    m_waitingPreview.emplace(std::move(command));
+    m_previewAdmissionAttempts = 0;
+    submitContentPreview();
+}
+void BrowserController::submitContentPreview() {
+    if (!m_waitingPreview)
+        return;
+    const auto result = m_connection->submit(*m_waitingPreview);
+    if (result.status == xdzip::reader::Admission::Busy && ++m_previewAdmissionAttempts < 32) {
+        m_previewAdmissionRetry.start(1);
+    } else {
+        m_waitingPreview.reset();
+        m_previewRequest = result.request_id;
+        if (!m_previewRequest)
+            m_contentPreview = {{"state", "error"}, {"message", qtTrId("preview.failed")}};
+    }
+    emit changed();
+}
+void BrowserController::receiveContentPreview(const xdzip::reader::Event &event) {
+    using xdzip::reader::EventKind;
+    if (event.kind == EventKind::Preview) {
+        const bool isText = event.content_kind == 1;
+        const auto limit = isText ? qsizetype(256 * 1024) : ImagePreview::EncodedLimit;
+        if (event.session == m_session.toULongLong() && event.content_entry == m_previewEntry &&
+            event.content.size() <= size_t(limit) &&
+            (isText || !ImagePreview::format(event.content_kind).isEmpty())) {
+            m_previewKind = event.content_kind;
+            m_previewBytes = QByteArray(reinterpret_cast<const char *>(event.content.data()),
+                                        static_cast<qsizetype>(event.content.size()));
+        }
+        return;
+    }
+    if (event.kind != EventKind::Finished)
+        return;
+
+    m_previewRequest = 0;
+    auto code = QString::fromUtf8(event.error.data(), static_cast<qsizetype>(event.error.size()));
+    const auto kind = std::exchange(m_previewKind, 0);
+    auto bytes = std::exchange(m_previewBytes, {});
+    if (code == "password_required" || code == "wrong_password" ||
+        code == "password_or_integrity") {
+        if (m_openPasswordGeneration != std::numeric_limits<quint64>::max() &&
+            ++m_previewAttempts <= 10) {
+            m_openPasswordPrompt = {{"taskId", "preview"},
+                                    {"promptId", QString::number(++m_openPasswordGeneration)},
+                                    {"name", m_detail.value("name")},
+                                    {"kind", "preview"},
+                                    {"retry", code != "password_required"}};
+            m_contentPreview = {{"state", "password"}};
+            emit changed();
+            emit tasksChanged();
+            return;
+        }
+        code = "resource_limit";
+    }
+    if (code.isEmpty() && kind == 1) {
+        m_contentPreview = {{"state", "text"}, {"text", QString::fromUtf8(bytes)}};
+    } else if (code.isEmpty() && kind) {
+        const auto url = PreviewImages::store(std::move(bytes), kind);
+        m_contentPreview =
+            url.isEmpty() ? QVariantMap{{"state", "error"}, {"message", qtTrId("preview.limit")}}
+                          : QVariantMap{{"state", "image"}, {"image", url}};
+    } else {
+        const auto message = code == "preview_limit" || code == "resource_limit"
+                                 ? qtTrId("preview.limit")
+                             : code == "preview_encoding"    ? qtTrId("preview.encoding")
+                             : code == "preview_unsupported" ? qtTrId("preview.unsupported")
+                             : code.isEmpty()                ? qtTrId("preview.failed")
+                                                             : explain(code);
+        m_contentPreview = {{"state", "error"}, {"message", message}};
+    }
+    emit changed();
 }
 void BrowserController::drainPage() {
     if (m_desiredPage < 0 || m_busy || !m_ready || !runtimeAvailable() || !m_model.paged())
@@ -1587,7 +1687,6 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
                        command.kind == xdzip::reader::CommandKind::OpenWithPassword;
     m_result.preflight = preflight;
     m_result.freezeSelection = command.kind == xdzip::reader::CommandKind::FreezeSelection;
-    m_result.contentPreview = command.kind == xdzip::reader::CommandKind::Preview;
     m_result.pageFetch =
         command.kind == xdzip::reader::CommandKind::Browse && command.query != 0 && m_model.paged();
     m_result.extraction = command.kind == xdzip::reader::CommandKind::Extract ||
@@ -1610,6 +1709,10 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
     m_result.closeSession = command.kind == xdzip::reader::CommandKind::CloseSession;
     m_hasPayload = false;
     m_busy = true;
+    // Both lanes share the reader worker. Foreground commands supersede preview reads
+    // before they enter its queue, without discarding a preview already displayed.
+    if (m_waitingPreview || m_previewRequest || m_openPasswordPrompt.value("taskId") == "preview")
+        clearContentPreview();
     if (!m_result.targetCheck && !m_result.inputPreview)
         m_message = m_result.creating     ? qtTrId("ui.33495b6653c6")
                     : m_result.checking   ? qtTrId("integrity.starting")
@@ -1861,6 +1964,10 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         emit tasksChanged();
         return;
     }
+    if (m_previewRequest && event.request_id == m_previewRequest && !m_closing) {
+        receiveContentPreview(event);
+        return;
+    }
     // Cancel acknowledgements, stale events and shutdown control never mutate an active page.
     if (!m_pending || event.request_id != m_pending || m_closing)
         return;
@@ -1922,21 +2029,6 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         }
         for (const auto &id : event.selectors)
             m_result.frozenSelectors.append(text(id));
-        m_hasPayload = true;
-    } else if (event.kind == EventKind::Preview) {
-        const bool previewText = event.content_kind == 1;
-        const bool previewImage = !ImagePreview::format(event.content_kind).isEmpty();
-        const auto previewLimit = previewText ? qsizetype(256 * 1024) : ImagePreview::EncodedLimit;
-        if (!m_result.contentPreview || event.session != m_session.toULongLong() ||
-            event.content_entry != m_previewEntry || event.content.size() > size_t(previewLimit) ||
-            (!previewText && !previewImage)) {
-            m_result.error = "stale_query";
-            return;
-        }
-        m_result.previewEntry = event.content_entry;
-        m_result.previewKind = event.content_kind;
-        m_result.previewBytes = QByteArray(reinterpret_cast<const char *>(event.content.data()),
-                                           static_cast<qsizetype>(event.content.size()));
         m_hasPayload = true;
     } else if (event.kind == EventKind::Page) {
         if (m_deferredQuery)
@@ -2166,23 +2258,17 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_deferredQuery.reset();
         if (!event.error.empty())
             m_result.error = text(event.error);
-        if ((m_result.opening || m_result.contentPreview) &&
+        if (m_result.opening &&
             (m_result.error == "password_required" || m_result.error == "wrong_password" ||
              m_result.error == "password_or_integrity")) {
-            if (m_openPasswordGeneration == std::numeric_limits<quint64>::max() ||
-                (m_result.contentPreview && ++m_previewAttempts > 10)) {
+            if (m_openPasswordGeneration == std::numeric_limits<quint64>::max()) {
                 m_result.error = "resource_limit";
             } else {
-                m_openPasswordPrompt = {
-                    {"taskId",
-                     m_result.contentPreview ? QStringLiteral("preview") : QStringLiteral("open")},
-                    {"promptId", QString::number(++m_openPasswordGeneration)},
-                    {"name", m_result.contentPreview ? m_detail.value("name") : QVariant(m_title)},
-                    {"kind",
-                     m_result.contentPreview ? QStringLiteral("preview") : QStringLiteral("open")},
-                    {"retry", m_result.error != "password_required"}};
-                if (m_result.contentPreview)
-                    m_contentPreview = {{"state", "password"}};
+                m_openPasswordPrompt = {{"taskId", "open"},
+                                        {"promptId", QString::number(++m_openPasswordGeneration)},
+                                        {"name", m_title},
+                                        {"kind", "open"},
+                                        {"retry", m_result.error != "password_required"}};
                 m_result = {};
                 m_message.clear();
                 emit changed();
@@ -2204,34 +2290,6 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             }
             return;
         }
-        if (m_result.contentPreview) {
-            if (m_previewEntry && m_detail.value("id").toString().toULongLong() == m_previewEntry) {
-                if (!m_result.error.isEmpty()) {
-                    const auto code = m_result.error;
-                    const QString message =
-                        code == "preview_limit" || code == "resource_limit"
-                            ? qtTrId("preview.limit")
-                        : code == "preview_encoding"    ? qtTrId("preview.encoding")
-                        : code == "preview_unsupported" ? qtTrId("preview.unsupported")
-                                                        : explain(code);
-                    m_contentPreview = {{"state", "error"}, {"message", message}};
-                } else if (m_result.previewKind == 1)
-                    m_contentPreview = {{"state", "text"},
-                                        {"text", QString::fromUtf8(m_result.previewBytes)}};
-                else {
-                    const QString url = PreviewImages::store(std::move(m_result.previewBytes),
-                                                             m_result.previewKind);
-                    m_contentPreview =
-                        url.isEmpty()
-                            ? QVariantMap{{"state", "error"}, {"message", qtTrId("preview.limit")}}
-                            : QVariantMap{{"state", "image"}, {"image", url}};
-                }
-            }
-            m_result = {};
-            emit changed();
-            QTimer::singleShot(0, this, &BrowserController::drainPage);
-            return;
-        }
         if (m_result.inputPreview) {
             if (m_result.previewPaths == m_creationPreviewPaths && m_result.error.isEmpty()) {
                 m_creationInputs = m_result.inputInfo;
@@ -2246,14 +2304,12 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             if (m_result.error.isEmpty()) {
                 m_model.installPage(m_result.offset, std::move(m_result.rows));
                 m_summaryRevision = std::numeric_limits<quint64>::max();
-                if (m_deferredDetailRow >= 0 && m_model.rowAt(m_deferredDetailRow)) {
+                if (m_deferredDetailRow >= 0 && m_model.rowAt(m_deferredDetailRow))
                     showRowDetail(m_deferredDetailRow);
-                    m_deferredDetailRow = -1;
-                    emit changed();
-                }
             } else if (m_result.error == "source_changed" || m_result.error == "stale_session")
                 invalidateSnapshot();
             m_result = {};
+            emit changed();
             QTimer::singleShot(0, this, &BrowserController::drainPage);
             return;
         }
