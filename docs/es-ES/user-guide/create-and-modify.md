@@ -18,3 +18,14 @@
 Abre un archivo ZIP, 7z, TAR o TAR.GZ compatible y ve a la carpeta de destino dentro de él. Arrastra archivos o carpetas locales a la lista o cuadrícula, revisa la selección y confirma la adición. Entre las opciones para nombres en conflicto está sustituir los archivos normales que lo permitan. Para mover una entrada existente, arrástrala a otra carpeta del mismo archivo comprimido y confirma. Si la arrastras fuera de la ventana, exportas una copia. [Arrastrar y soltar según la plataforma](../engineering/archive-transfers.md)
 
 Al crear y añadir se omiten los archivos `.DS_Store` y los directorios `__MACOSX` y `_MACOSX`. Las posibilidades de modificación dependen del formato, contenido y origen. Los archivos comprimidos cifrados, divididos o con índice en disco no se pueden modificar por esta vía. Si no se puede editar, extrae el contenido en una carpeta nueva y crea otro archivo comprimido. [Reglas de modificación y arrastre](../engineering/archive-transfers.md)
+
+<a name="xdzip-rename-or-delete-entries"></a>
+
+## Cambiar el nombre de las entradas o eliminarlas
+
+En una carpeta normal de un archivo comprimido editable, haz clic con el botón derecho en un archivo o carpeta de la lista o cuadrícula. Si el elemento ya estaba seleccionado, se conserva la selección. Si no lo estaba, solo se selecciona ese elemento.
+
+- **Cambiar nombre** está disponible para un solo elemento. Escribe el nombre nuevo en la misma carpeta. Al cambiar el nombre de una carpeta, se actualizan todas las rutas de su contenido. Si ya existe el nombre de destino, elige otro.
+- **Eliminar** admite uno o más elementos seleccionados. Antes de confirmar, comprueba el nombre o el número de elementos. Al eliminar una carpeta, también se elimina todo su contenido. Si eliminas todos los elementos de la raíz, el archivo comprimido sigue disponible como archivo vacío.
+
+Para editar un resultado de la búsqueda, abre primero la carpeta que lo contiene. [Reglas de modificación de archivos comprimidos](../engineering/archive-transfers.md)

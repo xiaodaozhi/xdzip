@@ -47,7 +47,7 @@ Microsoft Store 負責該渠道的更新，與 GitHub 獨立釋出。GitHub 版�
 
 - **內容預覽**：選取單一檔案時，可見的屬性卡會自動預覽支援的純文字、點陣影像或靜態 SVG。macOS 還支援 HEIC／HEIF。完整讀取並完成格式提供的校驗後顯示，可取消；格式、大小和解碼預算見[預覽說明](docs/zh-TW/engineering/content-preview.md)。
 - **解壓和開啟**：選擇目標位置與重名策略，檢視進度並可請求取消。雙擊普通檔案會先將副本解壓到私有臨時目錄，再交給系統開啟；修改副本不會寫回壓縮檔，快取會在七天後的後續開啟操作中清理。
-- **建立和修改**：可建立 ZIP、TAR、TAR.GZ、GZIP、XZ、TAR.XZ、LZ4、TAR.LZ4、Zstandard、TAR.ZST、LZH 和 7z，也能建立 ISO9660/Joliet 資料映象。Windows x64 還可以建立 ZIP 自解壓包。支援對符合條件的普通單檔案壓縮檔新增檔案、替換檔案和包內移動；也可從列表拖出檔案，或拖入檔案後確認新增。具體格式和限制見下表。
+- **建立和修改**：可建立 ZIP、TAR、TAR.GZ、GZIP、XZ、TAR.XZ、LZ4、TAR.LZ4、Zstandard、TAR.ZST、LZH 和 7z，也能建立 ISO9660/Joliet 資料映象。Windows x64 還可以建立 ZIP 自解壓包。支援對符合條件的普通單檔案壓縮檔新增、取代、移動、重新命名或刪除項目；也可從列表拖出檔案，或拖入檔案後確認新增。具體格式和限制見下表。
 - **檢查**：可在背景測試整包，不寫出檔案。校驗範圍取決於格式。TAR、ISO、UDF 和複合檔案（MSI）等格式檢查結構與可讀性，沒有逐檔案內容校驗和。詳見[完整性檢查](docs/zh-TW/engineering/archive-checking.md)。
 - **多個歸檔**：預設在新標籤頁開啟，也可設定為新視窗。同一登入會話共用應用程序和托盤，關閉瀏覽頁面後背景任務仍可從任務入口訪問。
 - **檔案管理器操作。** Windows 11 安裝版可在“顯示更多選項”中使用經典選單，商店版還可以在現代選單中顯示。Ubuntu 透過已安裝的 Files（Nautilus）擴充套件提供操作。macOS 可在系統設定中啟用 Finder 擴充套件，或使用已登記的 Finder 服務。詳見[從檔案管理器解壓](docs/zh-TW/user-guide/extract.md#xdzip-%E4%BB%8E%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E5%99%A8%E8%A7%A3%E5%8E%8B)。
@@ -58,7 +58,7 @@ Microsoft Store 負責該渠道的更新，與 GitHub 獨立釋出。GitHub 版�
 
 ## 格式支援
 
-下表可用於確認 xdzip 能否開啟、建立或修改某類壓縮檔。“修改”指向已有壓縮檔新增、替換或移動條目。能否讀取或檢查取決於實際內容、壓縮方法和條目型別。字尾只提供探測入口。詳細限制見[內建格式登記](docs/zh-TW/engineering/format-registry.md)與[完整性檢查指南](docs/zh-TW/user-guide/checks-and-tasks.md)。
+下表可用於確認 xdzip 能否開啟、建立或修改某類壓縮檔。“修改”指向已有壓縮檔新增、取代、移動、重新命名或刪除項目。能否讀取或檢查取決於實際內容、壓縮方法和條目型別。字尾只提供探測入口。詳細限制見[內建格式登記](docs/zh-TW/engineering/format-registry.md)與[完整性檢查指南](docs/zh-TW/user-guide/checks-and-tasks.md)。
 
 | 格式 | 瀏覽、解壓和檢查 | 建立 | 修改 |
 | --- | --- | --- | --- |

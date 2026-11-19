@@ -18,3 +18,14 @@
 Öffnen Sie ein geeignetes ZIP-, 7z-, TAR- oder TAR.GZ-Archiv und wechseln Sie darin zum Zielordner. Ziehen Sie lokale Dateien oder Ordner auf die Liste oder das Raster und prüfen und bestätigen Sie das Hinzufügen. Zu den Konfliktoptionen gehört das Ersetzen geeigneter regulärer Dateien im Archiv. Ziehen Sie einen vorhandenen Eintrag zum Verschieben in einen anderen Ordner desselben Archivs und bestätigen Sie. Beim Ziehen aus dem Fenster wird eine Kopie exportiert. [Ziehen und Ablegen je nach Plattform](../engineering/archive-transfers.md)
 
 Beim Erstellen und Hinzufügen werden `.DS_Store`-Dateien und die Verzeichnisse `__MACOSX` und `_MACOSX` ausgelassen. Ob ein Archiv geändert werden kann, hängt von Format, Inhalt und Quelle ab. Verschlüsselte, mehrteilige und auf der Festplatte indizierte Archive lassen sich auf diesem Weg nicht bearbeiten. Ist die Bearbeitung nicht möglich, entpacken Sie in einen neuen Ordner und erstellen Sie ein neues Archiv. [Regeln für Änderungen und Ziehen und Ablegen](../engineering/archive-transfers.md)
+
+<a name="xdzip-rename-or-delete-entries"></a>
+
+## Einträge umbenennen oder löschen
+
+Klicken Sie in einem normalen Ordner eines bearbeitbaren Archivs mit der rechten Maustaste auf eine Datei oder einen Ordner in der Listen- oder Rasteransicht. Bei einem bereits ausgewählten Eintrag bleibt die Auswahl bestehen. Andernfalls wird nur der angeklickte Eintrag ausgewählt.
+
+- **Umbenennen** ist für einen einzelnen Eintrag verfügbar. Geben Sie den neuen Namen im selben Ordner ein. Beim Umbenennen eines Ordners ändern sich auch die Pfade aller enthaltenen Einträge. Wählen Sie einen anderen Namen, falls der gewünschte Name bereits existiert.
+- **Löschen** ist für einen oder mehrere ausgewählte Einträge verfügbar. Prüfen Sie vor der Bestätigung den Namen oder die Anzahl der Einträge. Beim Löschen eines Ordners wird auch sein gesamter Inhalt gelöscht. Wenn Sie alle Einträge im Stammverzeichnis löschen, bleibt ein leeres Archiv erhalten.
+
+Öffnen Sie bei einem Suchergebnis zuerst den Ordner, in dem sich der Eintrag befindet. [Regeln für Änderungen am Archiv](../engineering/archive-transfers.md)
