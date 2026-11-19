@@ -2,6 +2,7 @@
 
 English | [简体中文](../zh-CN/design/domain-data.md)
 
+This page describes a conceptual data model, including proposed plan, result and persistence types. For implemented request and task identities and their lifetimes, see the [Qt/Rust bridge](qt-rust-bridge.md) and [task scheduling](task-scheduling.md).
 ## 1. Identity and versioning
 
 | Type | Meaning | Rules |
@@ -64,7 +65,7 @@ Plan construction may defer storing large numbers of entries, but the input set 
 
 `TaskResult` contains the state, completed/skipped/failed counts, actual bytes, a committed-item list or paged result handle, cleanup status, integrity status, and a bounded sample of errors. Success means every required item completed and passed the declared checks. A policy that permits skipping yields success with skips shown in the summary. Any failure not permitted by user policy makes the task Failed, although the summary may still contain completed files.
 
-Transaction logs record only relative mappings needed for recovery, the random working directory, file identities, temporary-file states, and commit states. The log format is versioned, length-bounded, and treated as untrusted input. Restarting does not automatically resume writing or delete unfamiliar files; see [07](file-security.md) for recovery.
+The current private journal records the task and workspace context and relative names at preparation and commit. The host checks live file identities during publication and cleanup. Restarting does not replay the journal or delete unfamiliar files. See [file authorization and safe publication](file-security.md).
 
 User settings, archive indexes, transaction logs, and extension manifests have different schemas; one SQLite database must not carry all their lifetimes. Passwords never enter them.
 

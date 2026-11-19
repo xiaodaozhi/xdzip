@@ -1,102 +1,58 @@
-# xdzip: 07 File security, permissions, and output transactions
+# File authorization and safe publication
 
 English | [简体中文](../zh-CN/design/file-security.md)
 
-## 1. Threat model
+The host controls which files can be opened and where verified output can be published. A backend receives bounded readers and sinks, including when it runs in the isolated archive worker. Archive names, declared sizes, checksums and payloads are input data. The host's file checks apply independently of checks performed by the format. [System architecture](system-architecture.md), [Archive worker protocol](../engineering/native-codecs.md)
 
-Archives, filenames, sizes, CRCs, compressed data, extension metadata, recovery logs, and third-party extensions are untrusted. Major threats include path escape, overwriting important files, link attacks, archive bombs, parser memory errors, incorrect name mappings, partial writes masquerading as success, password leaks, and extension privilege abuse.
+## Authorizing the source and destination
 
-The trust boundary consists of the signed host, reviewed platform file layer, and user authorization. Third-party code is outside the trusted computing base. This design does not promise protection from an attacker who already controls the same user account or kernel; ordinary file permissions do not defend against an equally privileged process continuously moving directories or reading memory. For untrusted, multi-user-writable destinations, require a user-private subdirectory by default or reject safe-overwrite mode.
+- **Archive source.** `Source::open` opens the selected path through `xdzip-io::open_regular_readonly` and checks the opened file type. On Unix the classification open is nonblocking, so a FIFO cannot block it during open. A user-selected path may resolve through a link to an ordinary file. Split-volume discovery is bounded and format-specific. The host freezes the admitted neighboring parts and checks their file identities and versions. A codec can address only the supplied streams. [Source implementation](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/source.rs), [Volume handling](../engineering/archive-opening.md)
+- **Creation inputs.** `InputTree` walks the selected inputs with bounded metadata and file identities. Reads open members from that tree while checking their versions. The current private staging directory is excluded from its own input scan. A detected source change stops the job. File identity, size and time checks provide best-effort change detection rather than a complete content snapshot. [Input tree](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/input.rs), [Archive creation](../engineering/zip-creation.md)
+- **Destination.** `Grant` holds the selected directory object and its identity. Extraction also passes all source-volume identities as protected files. Creation and editing check the frozen input or original archive identities through their own task paths. Subfolders and staging are reached through the held directory, and parent identities are checked again before publication. `CheckTarget` and extraction preflight can produce useful findings before the task starts. Write authorization is checked again during the operation. [Destination grants](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/target.rs), [Extraction preflight](../engineering/extraction-preflight.md)
 
-## 2. Source and destination authorization
+## Name mapping, platform protection and links
 
-After the user selects a source/destination, the platform layer opens it and retains file identity and handles. Authorization binds to file/directory objects, not just display strings. SourceRef/TargetRef remain within the host; extensions receive operation tokens. Sources are read-only and do not automatically request full-disk access. Other volumes must be identified and authorized by the user before reading; do not locate files using absolute paths supplied by an archive.
+1. **Validate the archive-relative spelling.** The runtime resolves the frozen selection, strips the selected subtree prefix where applicable, and uses `PortablePath` to accept relative UTF-8 components. Absolute or drive paths, control characters, ambiguous separators, parent components, reserved device names and trailing spaces or dots are rejected. A validated spelling is only an input to the destination capability.
+2. **Plan collisions before creating output.** Extraction compares common case and Unicode aliases using lowercase NFD keys. Ambiguous directory spellings and file/directory collisions fail preparation. Ordinary file aliases map to a common spelling, so the runtime can apply the name-conflict policy. Native exclusive publication still decides whether the requested name is available on the actual filesystem. Display spelling and physical entry identity remain separate.
+3. **Traverse the authorized tree.** Output descends from a held directory capability, opening child directories without following links. It rechecks the granted root, parent identities and the leaf expected for overwrite. A replaced target or an unsafe link is refused. A final check before same-volume rename reduces races. Ordinary rename supplies no content compare-and-swap guarantee against a process with the same account's authority.
 
-Initial archive opening and subsequent source checks use the same regular-file opening boundary, checking object type on the handle actually opened rather than checking a path type before a potentially blocking open. Unix uses nonblocking classification opens and rejects FIFOs, devices, directories, and other special objects. A user-selected source path may follow a symbolic link to a regular file, but source identity and version must still be checked later. This check is not an atomic content snapshot and does not guarantee that regular-file I/O finishes within a fixed time.
+| Platform | Checks on output objects |
+| --- | --- |
+| Linux and macOS | Owner must be the current effective user. Group and other write permissions are refused, and an existing regular file must have one hard link. macOS also checks the native ACL, including inherited modification permissions. |
+| Windows | Check reparse points, owner, file ID, hard-link count for regular files and DACL on the held objects. Effective and inheritance-only access rules must keep modification within the trusted principals. Existing read-only sharing can remain. |
+| Private plaintext or scratch | Additional confidentiality checks exclude unrelated readers. On Windows an exclusively created private cache directory can receive a protected DACL. Ordinary user-selected extraction targets retain their own read-sharing policy. |
 
-The destination directory must exist and have sufficient permissions, or be created by the host within an authorized parent. Working directories use secure random names, exclusive creation, and minimum permissions; temporary names are not predictably derived from archive names. Output and log working directories are inside the authorized destination to allow same-volume commits; cross-volume output cannot be described as atomic rename.
+ZIP symbolic-link output is limited to an admitted Unix link graph. The runtime validates the selected graph and required absent leaves before publishing links, with regular targets committed first. The task never follows an archive-created link to write content. Other unsupported link or special-file profiles fail explicitly. POSIX ordinary file modes can restore safe read/execute bits on staging, alongside owner read/write. Privilege and external-write bits are excluded. The extraction path does not restore timestamps after commit.
 
-Private-output checks cover the destination root, parent chain, staging directory, and file to be replaced. POSIX mode bits do not replace platform ACL checks. On macOS, require ownership by the current effective user, no group or other-user mode write permissions, and exactly one hard link for regular files. Known deny rules and external read-only permissions are allowed. Modification permissions may be granted only to a principal explicitly matching the current effective user UID; group principals are not treated as the current user. Reject effective or inheritance-only external modification permissions, unknown permissions, and unverifiable ACLs. Create staging files exclusively in verified private directories, with inheritance constrained by directory ACL checks. Checks do not rewrite user ACLs; existing read-only sharing may be inherited by output, so confidentiality from shared accounts is not promised.
+[Portable path parser](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-domain/src/path.rs), [Extraction planning](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/plan.rs), [Private-object checks](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/private.rs), [Link and platform details](../engineering/zip-safe-extraction.md)
 
-## 3. Path processing pipeline
+## Staging, verification and commit
 
-1. Preserve raw paths and encoding origins; removing display ambiguity does not mean accepting an output path.
-2. Parse separators according to format rules and reject absolute paths, drive prefixes, UNC, device paths, NUL, and parent escapes.
-3. Form component lists and reject empty/invalid components and platform-reserved names. `.` may be normalized as specified, but `..` cannot be blindly removed and then declared safe.
-4. Form platform candidate output names and check component lengths, total paths, case, and Unicode filesystem equivalence.
-5. Check duplicate paths and file/directory conflicts within the plan and conflicts on disk.
-6. After user decisions, revalidate object identity and type at actual open/commit and perform handle-relative I/O.
+A destination grant creates an exclusive private workspace on the same volume. The host meters codec output into its staging file. Decode completion, expected size and the integrity or authentication checks provided by the format must succeed before publication. `Stage::finish` flushes and synchronizes the file and retains its checked version. The host checks the stage and destination again as part of commit. Data synchronization and atomic visibility of one file do not establish directory-metadata durability across power loss.
 
-Windows requires special handling of reserved names such as `CON/NUL/COM1`, trailing spaces/dots, colon ADS, `\\?\\`/device prefixes, and case collisions. A single generic string rule cannot assume that backslashes/colons allowed on POSIX are writable on Windows. Enable and test long paths explicitly according to platform capabilities.
+| Operation | Publication semantics |
+| --- | --- |
+| Extract or publish a file promise | Publish each eligible file after verification. Without overwrite, create a same-volume hard link exclusively and remove the private staging link afterward. With overwrite, extraction requires the expected safe regular file and replaces it by same-volume rename without truncating it first. File-promise publication always uses no-overwrite. A filesystem without the required primitive or a changed destination fails the affected write. There is no task-wide rollback of already published files or created directories. |
+| Create a single archive | Encode to staging, reopen and verify the expected entries and content for the creation profile, then publish the whole archive once. A name conflict can choose a new name or allow eligible replacement. A protected input cannot become an overwrite target. |
+| Create split volumes | Verify staged archive content, stage every part and publish the new flat set without overwriting existing volumes. The parts become visible individually. On partial failure, rollback attempts to remove only newly published objects whose identities still match. Failed rollback can leave an uncertain result. |
+| Modify an existing archive | `ArchiveUpdate` binds the authorized parent and expected original archive version. Reopen and verify the rewritten archive, then replace the original once through that authority. Ordinary extraction cannot use this special replacement route to overwrite its source. |
 
-Normalization is for collision analysis and display; do not arbitrarily change original names. `A.txt/a.txt`, NFC/NFD-equivalent names, and duplicate ZIP records form conflict groups. Default to waiting for a decision or skipping, not “the last one overwrites the previous one.” Rename policies retain traceable mappings; extensions cannot modify them.
+Cancellation before the publication gate prevents the current commit. Publication already in progress can settle and report its actual result. Previously committed extraction files remain visible. The terminal snapshot can report committed data alongside `cancelled`, `failed` or a cleanup warning. A successful whole-archive publication keeps its success even if cancellation arrives late. [Task cancellation](task-scheduling.md), [Archive modification](../engineering/archive-transfers.md), [Safe extraction](../engineering/zip-safe-extraction.md)
 
-## 4. Link and race protection
+## Output budgets and integrity scope
 
-On POSIX, traverse components using directory handles and `openat`-style calls, refusing to follow symbolic links. Linux may use `openat2` beneath/no-symlink constraints where available, but other platforms still need backends. Windows uses handle-relative/verifiable opens, reparse-point checks, and file IDs; `canonicalize + string starts_with` is not a security algorithm.
+The extraction path bounds declared and actual output separately, with 8 GiB per ordinary file and 20 GiB per task. A high-ratio check can refuse the request at admission in supported formats. For ZIP, a declared ratio above 1,000 to one on an entry over 1 MiB requires explicit allowance. The allowance leaves hard limits in force. Solid or streaming decoders can spend work on nonselected data. That work, repeated reads or attempts, and auxiliary decoder work are accounted separately from published bytes.
 
-POSIX ZIP symbolic links are validated as a closed graph within the selected scope under the [safe extraction contract](../engineering/zip-safe-extraction.md), then exclusively published after regular outputs finish; writes do not follow links. Other symbolic links, hard links, junctions, devices, FIFOs, sockets, and setuid/setgid are not restored. Reject ordinary overwrite when an existing destination is a link or special object. Create all staging files exclusively and retain handles until commit; destination changes between scan and commit return to conflict resolution.
+Metadata browsing, task admission, worker memory and preview have their own budgets. A large disk-backed ZIP index does not raise extraction or write limits. Integrity checks apply according to the format. For example, ISO/UDF structure and readability checks do not supply a missing per-file checksum. [Large archive indexes](../engineering/large-index.md), [Integrity checking](../engineering/archive-checking.md), [Auxiliary decoder accounting](../engineering/auxiliary-decoding-work.md)
 
-Directory handles alone cannot guarantee that an authorized party will never move their paths. The platform layer must define “under the authorized object” and detect destination/parent identity changes. Reject a normal multi-user-writable tree that cannot satisfy safe overwrite, or move to a new private subdirectory. Do not claim that `O_NOFOLLOW` alone eliminates all directory-movement races.
+## Preview, temporary opening and secrets
 
-Platform security implementations require native adversarial acceptance tests: swap links, directories, case aliases, and reparse points between check and open. In-memory mocks cannot replace all verification.
+- **Preview.** The user explicitly requests a supported entry. Rust reads and verifies the complete admitted entry within its budgets. Text is limited to 256 KiB. Encoded images are limited to 16 MiB, with separate original-dimension and pixel limits. The private image process receives bytes and returns a bounded thumbnail. It receives no archive name, password or destination handle. The current formats and restrictions are described in the [preview contract](../engineering/content-preview.md).
+- **Temporary opening.** A regular entry is extracted to the private cache under the task's normal verification rules. The desktop hands the verified file to the system association as a local URL. Acceptance of that handoff does not establish that the external program finished reading. Cleanup checks cache identity and locks on a later operation after the retention period. Edits to the copy are independent of the original archive. [Temporary opening](../engineering/archive-opening.md), [Archive transfers](../engineering/archive-transfers.md)
+- **Secrets.** Opening and extraction passwords stay in operation-specific, zeroizing containers for the session or task lifetime. They do not enter task snapshots or the staging journal. Private storage, retention and disclosure rules for user data are described in the [privacy engineering contract](../engineering/privacy.md) and the [password contract](../engineering/password-extraction.md).
 
-## 5. Per-file extraction transactions
+## Journals, leftovers and verification
 
-```text
-Plan and authorization checks
-  -> Controlled staging file
-  -> Decode and meter actual bytes
-  -> Verify content/authentication/expected structure
-  -> Check cancellation and destination conflicts
-  -> Update transaction log
-  -> Atomically publish one file
-  -> Record committed item
-  -> Clean staging
-```
+Staging journals record task context and relative output names at preparation and commit. Normal cleanup checks ownership and identities and removes only known staging objects. Private journals and remaining objects can provide evidence after abnormal termination. The runtime counts possible leftovers when it checks a destination. It does not use a discovered journal to replay writes or delete unknown content. Cache expiry for private temporary output has its own identity and lock checks.
 
-The backend writes to a constrained Sink; the host owns the staging handle. CRC/authentication failure, quota exhaustion, full disk, and cancellation never publish the current partial file. Files without format checks may complete according to backend capabilities, but the summary does not claim a nonexistent CRC was checked. Modes use ordinary safe read/write bits; timestamps are restored on a best-effort basis after commit, with failures reported as warnings.
-
-Do not overwrite by default: use a platform “publish only if destination absent” primitive, not exists followed by ordinary rename. When the user permits overwrite, recheck that the destination is the expected regular file and use a same-volume replacement primitive; do not delete the old file first. On Windows, another program or antivirus may hold the file; report failure and offer retry, without switching to non-atomic truncation. If the platform lacks the required primitive, return a capability/security error.
-
-Overwrite authorization applies to the mapped path. Atomic replacement makes new content appear as a whole but does not inherently provide compare-and-swap semantics that replace only if the destination inode/content is unchanged since the check. Ordinary platform primitives cannot exclude another program changing it after the check. To strictly avoid this kind of overwrite, use no-overwrite/rename/new-private-directory modes, or enable conditional replacement only where the platform actually provides a verifiable primitive. Path safety and protection against concurrent editing are separate guarantees.
-
-Directories and multiple files are not one whole transaction. Failure/cancellation retains committed items and reports them accurately; cleanup does not delete them. The first version does not offer imaginary one-click rollback. A future “publish a new directory as a whole” is a separate mode limited to an absent destination, same volume, and atomic directory rename support.
-
-## 6. Archive creation transactions
-
-The temporary archive is in the final destination directory. After writing the footer/directory, flushing, closing, and required verification, publish only if the destination is absent or perform a user-approved replacement. Failure/cancellation preserves the existing archive; unpublished temporary archives are deleted or recorded as recoverable leftovers. Finishing the last input file does not mean the archive is ready.
-
-Atomic publication visibility differs from power-loss durability. Durable mode synchronizes files and directories/transaction records according to platform capabilities. The default guarantees at least that incomplete output is not published; it does not claim all disks/network filesystems withstand power loss. Network drives and filesystems lacking required primitives explicitly downgrade or reject the relevant mode and are included in testing.
-
-## 7. Quotas and archive bombs
-
-The host meters actual writes and does not trust archive declarations. Initial limits are in [constants](glossary.md): 8 GiB per file, 20 GiB per task, one million scanned entries, 64 KiB per field, and four format layers. Stop before publishing the current file when a limit is exceeded. Raising a limit requires replanning and checking remaining space; one dialog cannot authorize unlimited automatic continuation.
-
-Compression ratios above 1000:1 produce a risk notice, but hard protection comes from absolute actual bytes, index count, decode memory, and work budgets. Zero compressed length, unknown sizes, and format deception cannot bypass metering. Legitimate high-ratio content may be processed after the user explicitly increases the relevant policy.
-
-Solid/streaming archives may decode much preceding content even when only one small item is selected; meter and display “decoded bytes” separately from “output bytes.” CPU/time limits are enforced through cancellation and worker supervision. Native blocking parsing that cannot cooperate with cancellation needs isolation; a stopped UI progress indicator does not prove work has stopped.
-
-## 8. Preview and external opening
-
-Preview is explicitly initiated only. Text is limited to 1 MiB; compressed image content is limited to 20 MiB and decoded pixels to 40 MP, checked after reading the header and before allocating pixels. Image decoders also process untrusted data and should be audited and considered for isolation. The default external temporary-open limit is 100 MiB; exceeding it requires an explicit action, and whole archives are not automatically unpacked.
-
-Private temporary directories are created exclusively. Files are not given executable bits, links are not followed, and dangerous xattr/ADS are not inherited. After user confirmation, invoke the system-associated application, not a shell. Do not render active HTML/SVG scripts/macros. macOS does not proactively strip existing quarantine; Windows does not proactively clear existing download marks. New mark propagation requires platform verification, and the same rule is not claimed for every format.
-
-External applications may hold temporary files. If deletion fails, record a deadline and clean up later. Clean only working directories created by this application whose identities are verified; do not recursively delete using a broad path wildcard.
-
-## 9. Passwords, content, and logs
-
-Secrets live only for the session/task phase, are not written to disk by default, use zeroizable buffers, minimize string copies, and do not pass through ordinary events/errors/traces. OS input methods, GUI internal caches, and backend copies may leave residue; promise only reasonable minimization and cleanup.
-
-Logs contain version, anonymous IDs, error codes, phases, counts, and durations by default. They contain no file contents, passwords, full paths, archive comments, or arbitrary plugin text. When a user exports detailed diagnostics, preview them and save locally; upload requires a separate explicit action. The product has no default telemetry.
-
-## 10. Abnormal termination and recovery
-
-When finding a working directory at startup, first verify ownership, random task ID, file identities, log version, and authorization availability. Treat logs as untrusted; paths must pass the same security checks. If state cannot be determined, show pending leftovers and do not automatically re-extract/overwrite.
-
-A `prepared` but unpublished file may be safely deleted. If publication occurred but the terminal log state was not written, inspect destination identity/checksum records and mark it “Possibly completed; please confirm”; do not simply delete the destination. Recovery after replacing an old file does not promise to restore old content. Insufficient cleanup permissions produce an actionable notice.
-
-## 11. Security test gates
-
-Path escape, link/reparse races, directory alias collisions, duplicate records, ZIP64, unknown sizes, CRC/authentication errors, full disk, insufficient space for logs, destination changes, process kill, corrupt recovery logs, oversized plugin frames, and refusal to cancel are release-blocking cases. Every security failure must verify that files outside the destination are unchanged and the current partial file was not published, rather than merely asserting an error code.
+For changes at this boundary, verify publication and cleanup as well as error codes. The [I/O tests](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/tests.rs), [extraction tests](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/tests.rs) and [safe extraction contract](../engineering/zip-safe-extraction.md) cover different layers. Native platform behavior requires platform-specific evidence when it is changed.

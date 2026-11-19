@@ -34,8 +34,9 @@ ORDER = [
 ]
 STATE_NAMES = {
     "Queued": "排队", "Preparing": "准备", "Running": "执行",
-    "WaitingForUser": "等待用户", "Committing": "提交",
-    "Cancelling": "正在取消", "CleaningUp": "收尾清理",
+    "Verifying": "验证", "Waiting": "等待重名答复",
+    "WaitingPassword": "等待密码", "Committing": "提交",
+    "Cancelling": "正在取消", "Cleaning": "清理",
     "Succeeded": "成功", "Failed": "失败", "Cancelled": "已取消",
 }
 
