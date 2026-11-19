@@ -17,6 +17,8 @@ Rectangle {
     property string openingName: ""
     property bool dropSupported: false
     property string dropMessage: ""
+    property string expandedFormatGroup: "archives"
+    readonly property int expandedFormatIndex: ArchiveFormats.formatGroups.findIndex(group => group.id === expandedFormatGroup)
     signal openRequested
     signal createRequested
     signal formatsRequested
@@ -35,6 +37,11 @@ Rectangle {
     }
     function focusOpen() {
         openAction.forceActiveFocus(Qt.TabFocusReason);
+    }
+    function toggleFormatGroup(groupId) {
+        expandedFormatGroup = expandedFormatGroup === groupId ? "" : groupId;
+        if (expandedFormatGroup)
+            Qt.callLater(() => { if (formatPreview.visible) root.revealAction(formatPreview); });
     }
     function formatGroupLabel(groupId) {
         switch (groupId) {
@@ -200,64 +207,168 @@ Rectangle {
                         }
                     }
                 }
-                ColumnLayout {
+                Rectangle {
                     objectName: "welcomeFormats"
                     Layout.topMargin: root.width < 900 ? 18 : 22
                     Layout.fillWidth: true
-                    spacing: 8
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 8
-                        Text {
-                            text: qsTrId("ui.68e2f0d4ff9a")
+                    implicitHeight: formatsContent.implicitHeight + 2 * Theme.welcomeFormatCardInset
+                    color: Theme.canvas
+                    border.color: Theme.border
+                    radius: Theme.welcomeFormatRadius
+                    ColumnLayout {
+                        id: formatsContent
+                        anchors.fill: parent
+                        anchors.margins: Theme.welcomeFormatCardInset
+                        spacing: Theme.welcomeFormatGap
+                        RowLayout {
                             Layout.fillWidth: true
-                            font.pixelSize: 11 * Theme.fontScale
-                            color: Theme.textSecondary
-                        }
-                        OperationButton {
-                            id: formatsSettingsButton
-                            objectName: "welcomeFormatsSettings"
-                            text: qsTrId("welcome.formatsOpenSettings")
-                            labelSize: 11
-                            baseHeight: 28
-                            horizontalInset: 10
-                            verticalInset: 4
-                            cornerRadius: 6
-                            onClicked: root.formatsRequested()
-                            onActiveFocusChanged: if (activeFocus)
-                                root.revealAction(formatsSettingsButton)
-                        }
-                    }
-                    Flow {
-                        Layout.fillWidth: true
-                        spacing: 8
-                        Repeater {
-                            model: ArchiveFormats.formatGroups
-                            Rectangle {
-                                required property var modelData
-                                objectName: "welcomeFormatGroup-" + modelData.id
-                                implicitWidth: groupLabel.implicitWidth + groupCount.implicitWidth + 28
-                                implicitHeight: Math.max(groupLabel.implicitHeight, groupCount.implicitHeight) + 12
-                                color: Theme.canvas
-                                border.color: Theme.border
-                                radius: 6
-                                Row {
-                                    anchors.centerIn: parent
-                                    spacing: 8
+                            spacing: Theme.welcomeFormatGap
+                            Text {
+                                text: qsTrId("ui.68e2f0d4ff9a")
+                                Layout.fillWidth: true
+                                font.pixelSize: Math.round(Theme.welcomeFormatTitleSize * Theme.fontScale)
+                                font.weight: Font.DemiBold
+                                color: Theme.text
+                            }
+                            OperationButton {
+                                id: formatsSettingsButton
+                                objectName: "welcomeFormatsSettings"
+                                text: qsTrId("welcome.formatsOpenSettings")
+                                labelSize: Theme.welcomeFormatFontSize * Theme.fontScale
+                                horizontalInset: Theme.welcomeFormatHorizontalInset
+                                leftPadding: horizontalInset
+                                rightPadding: horizontalInset
+                                cornerRadius: Theme.welcomeFormatRadius
+                                surfaceColor: "transparent"
+                                outlineColor: visualFocus ? Theme.accentInk : "transparent"
+                                onClicked: root.formatsRequested()
+                                onActiveFocusChanged: if (activeFocus)
+                                    root.revealAction(formatsSettingsButton)
+                                contentItem: RowLayout {
+                                    spacing: Theme.welcomeFormatChipGap
                                     Text {
-                                        id: groupLabel
-                                        text: root.formatGroupLabel(modelData.id)
-                                        font.pixelSize: 11 * Theme.fontScale
-                                        color: Theme.textSecondary
+                                        text: formatsSettingsButton.text
+                                        font.pixelSize: Math.round(formatsSettingsButton.labelPixelSize)
+                                        color: Theme.accentInk
+                                        Accessible.ignored: true
                                     }
-                                    Text {
-                                        id: groupCount
-                                        text: String(modelData.labels.length)
-                                        font.pixelSize: 11 * Theme.fontScale
-                                        font.bold: true
-                                        color: Theme.text
+                                    Image {
+                                        Layout.preferredWidth: Theme.welcomeFormatTitleSize
+                                        Layout.preferredHeight: Theme.welcomeFormatTitleSize
+                                        source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "chevron-right.png"
                                     }
                                 }
+                            }
+                        }
+                        Flow {
+                            Layout.fillWidth: true
+                            spacing: Theme.welcomeFormatChipGap
+                            Repeater {
+                                model: ArchiveFormats.formatGroups
+                                delegate: OperationButton {
+                                    id: badge
+                                    required property var modelData
+                                    objectName: "welcomeFormatGroup-" + modelData.id
+                                    readonly property bool expanded: root.expandedFormatGroup === modelData.id
+                                    text: root.formatGroupLabel(modelData.id)
+                                    Accessible.name: qsTrId("welcome.formatGroupCount", modelData.suffixes.length).arg(text)
+                                    Accessible.checkable: true
+                                    Accessible.checked: expanded
+                                    Accessible.onPressAction: if (enabled) click()
+                                    Accessible.onToggleAction: if (enabled) click()
+                                    onClicked: root.toggleFormatGroup(modelData.id)
+                                    onActiveFocusChanged: if (activeFocus) root.revealAction(badge)
+                                    labelSize: Theme.welcomeFormatFontSize * Theme.fontScale
+                                    horizontalInset: Theme.welcomeFormatHorizontalInset
+                                    leftPadding: horizontalInset
+                                    rightPadding: horizontalInset
+                                    cornerRadius: Theme.welcomeFormatRadius
+                                    surfaceColor: expanded ? Theme.selection : "transparent"
+                                    outlineColor: visualFocus ? Theme.accentInk : "transparent"
+                                    contentItem: RowLayout {
+                                        spacing: Theme.welcomeFormatChipGap
+                                        Text {
+                                            text: badge.text
+                                            font.pixelSize: Math.round(badge.labelPixelSize)
+                                            font.weight: badge.expanded ? Font.DemiBold : Font.Normal
+                                            color: badge.expanded ? Theme.accentInk : Theme.text
+                                            Accessible.ignored: true
+                                        }
+                                        Text {
+                                            text: String(badge.modelData.suffixes.length)
+                                            font.pixelSize: Math.round(badge.labelPixelSize)
+                                            color: badge.expanded ? Theme.accentInk : Theme.textSecondary
+                                            Accessible.ignored: true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        Rectangle {
+                            Layout.fillWidth: true
+                            implicitHeight: 1
+                            color: Theme.border
+                            visible: formatPreview.visible
+                        }
+                        Item {
+                            id: formatPreview
+                            objectName: "welcomeFormatPreview"
+                            readonly property var suffixes: root.expandedFormatIndex < 0 ? []
+                                : ArchiveFormats.formatGroups[root.expandedFormatIndex].suffixes
+                            readonly property bool truncated: extensionRow.implicitWidth > width
+                            Layout.fillWidth: true
+                            implicitHeight: extensionRow.implicitHeight
+                            visible: root.expandedFormatIndex >= 0
+                            Accessible.role: Accessible.StaticText
+                            Accessible.name: suffixes.join(", ")
+                            Item {
+                                id: extensionViewport
+                                anchors.left: parent.left
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: Math.max(0, parent.width - (formatPreview.truncated
+                                    ? overflowMark.implicitWidth + Theme.welcomeFormatChipGap : 0))
+                                height: extensionRow.implicitHeight
+                                clip: true
+                                Row {
+                                    id: extensionRow
+                                    spacing: Theme.welcomeFormatChipGap
+                                    Repeater {
+                                        model: formatPreview.suffixes
+                                        delegate: Rectangle {
+                                            id: chip
+                                            required property string modelData
+                                            // Keep the row's measured width even if a chip would be clipped.
+                                            opacity: x + width <= extensionViewport.width ? 1 : 0
+                                            implicitWidth: suffix.implicitWidth + 2 * Theme.welcomeFormatChipInset
+                                            implicitHeight: suffix.implicitHeight + 2 * Theme.welcomeFormatChipVerticalInset
+                                            color: Theme.surface
+                                            radius: Theme.operationControlRadius
+                                            Text {
+                                                id: suffix
+                                                anchors.centerIn: parent
+                                                text: chip.modelData.slice(1)
+                                                color: Theme.textSecondary
+                                                font.pixelSize: Math.round(Theme.welcomeFormatFontSize * Theme.fontScale)
+                                                Accessible.ignored: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            Text {
+                                id: overflowMark
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                visible: formatPreview.truncated
+                                text: "…"
+                                font.pixelSize: Math.round(Theme.welcomeFormatFontSize * Theme.fontScale)
+                                color: Theme.textSecondary
+                                Accessible.ignored: true
+                            }
+                            HoverHandler { id: formatHover }
+                            CommandTooltip {
+                                requested: formatHover.hovered && formatPreview.truncated
+                                text: formatPreview.suffixes.join(", ")
                             }
                         }
                     }
