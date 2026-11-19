@@ -174,6 +174,8 @@ Rectangle {
                                 selectByMouse: true
                                 wrapMode: TextEdit.Wrap
                                 color: Theme.text
+                                selectionColor: Theme.accent
+                                selectedTextColor: Theme.accentText
                                 font.family: Theme.userDataFontFamily
                                 font.pixelSize: Theme.mainPropertySize
                                 padding: 0
