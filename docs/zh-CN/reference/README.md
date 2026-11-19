@@ -2,23 +2,30 @@
 
 [English](../../reference/README.md) | 简体中文
 
-从[系统架构](../design/system-architecture.md)了解桌面与 CLI 的现行链路，再按主题查阅具体契约。功能操作见[用户手册](../user-guide/README.md)，环境准备和验证入口见[开发与贡献](../contributing/README.md)。
+从[系统架构](../design/system-architecture.md)了解桌面与 CLI 的实际执行链路，再按下方主题查找说明相应行为的契约。各格式能做什么可速查[格式支持表](../../../README.zh-CN.md#格式支持)。使用步骤和开发环境见[用户手册](../user-guide/README.md)、[CLI 示例](../integration/README.md)与[贡献指南](../contributing/README.md)。
 
 ## 架构与接口
 
-- [xdzip：软件设计总览](../design/index.md)
-- [xdzip：需求、设计与验收追踪](../design/requirements-traceability.md)
-- [xdzip：架构决策记录](../design/architecture-decisions.md)
+- [设计总览](../design/index.md)
+- [产品需求与操作边界](../design/product-requirements.md)
+- [领域模型、条目身份与来源版本](../design/domain-data.md)
+- [Qt/Rust 命令与事件桥接](../design/qt-rust-bridge.md)
+- [任务调度、进度、取消与退出](../design/task-scheduling.md)
+- [性能预算与验证](../design/performance.md)
+- [术语与实现限制](../design/glossary.md)
+- [需求与验证追踪](../design/requirements-traceability.md)
+- [架构决策](../design/architecture-decisions.md)
+- [从原型到桌面产品与 Rust 运行时的演进](../design/architecture-evolution.md)
 - [仓库目录与依赖](../engineering/repository-layout.md)
 - [接口契约与检查](../engineering/contracts.md)
 - [产品运行时与 Qt 生命周期](../engineering/product-runtime.md)
 - [应用会话与退出契约](../engineering/application-sessions.md)
 - [cxx 桥接依赖依据](../engineering/cxx-admission.md)
 - [格式工作进程的宿主日历与编码服务](../engineering/host-platform-services.md)
-- [外部只读 SDK 试验](../engineering/sdk-trial.md)
 
 ## 归档读写
 
+- [文件授权、暂存与提交](../design/file-security.md)
 - [只读浏览实现契约](../engineering/readonly-browser.md)
 - [ZIP 只读浏览契约](../engineering/zip-readonly-browsing.md)
 - [大归档索引与按需浏览](../engineering/large-index.md)
@@ -28,7 +35,7 @@
 - [解压预检：元数据阶段](../engineering/extraction-preflight.md)
 - [安全 ZIP 解压实现](../engineering/zip-safe-extraction.md)
 - [压缩包完整性检查](../engineering/archive-checking.md)
-- [-- docs/engineering/archive-transfers.md -->](../engineering/archive-transfers.md)
+- [打开条目、双向拖放与归档修改](../engineering/archive-transfers.md)
 - [压缩包密码与加密目录打开](../engineering/password-extraction.md)
 - [ZIP 创建实现契约](../engineering/zip-creation.md)
 - [ISO9660 与 Joliet 创建](../engineering/iso-creation.md)
@@ -36,7 +43,9 @@
 
 ## 格式能力与实现
 
-- [内置格式能力登记](../engineering/format-registry.md)
+- [内置格式能力、创建配置与检查强度](../engineering/format-registry.md)
+- [格式适配与外部 SDK 试验设计](../design/codec-extension-sdk.md)
+- [外部只读 SDK 试验与可执行范围](../engineering/sdk-trial.md)
 - [隔离格式工作进程契约](../engineering/native-codecs.md)
 - [自研 Rust 格式与算法契约](../engineering/independent-rust-codecs.md)
 - [算法辅助工作计量](../engineering/auxiliary-decoding-work.md)
@@ -67,15 +76,16 @@
 
 ## 桌面交互与视觉设计
 
-- [xdzip 视觉规范](../visual/README.md)
+- [Qt Quick 视图与控制器职责](../design/qt-quick-ui.md)
+- [桌面视觉规范](../visual/README.md)
 - [界面设计规范](../visual/design-standard.md)
 - [界面设计与修正流程](../visual/design-workflow.md)
 - [文件关联图标](../visual/file-association-icons.md)
 - [HTML 视觉一致性复核](../visual/html-fidelity.md)
 - [补充交互与文案规范](../ux/interaction-spec.md)
 - [主窗口功能、组件与交互契约](../ux/main-window-components.md)
-- [目录树 B：设计、素材与接入规格](../ux/directory-tree.md)
-- [W01 主窗口欢迎页，高保真候选](../ux/welcome.md)
+- [目录树设计与接入](../ux/directory-tree.md)
+- [主窗口欢迎页](../ux/welcome.md)
 - [欢迎页读取遮罩与创建完成行为](../ux/welcome-opening.md)
 - [密码解压交互](../ux/password-extraction.md)
 - [任务窗口与完整性检查](../ux/task-windows.md)
@@ -109,7 +119,9 @@
 
 ## 构建与命令行参考
 
+- [构建、部署与发行设计](../design/build-release.md)
+- [编码规范与验证层次](../design/quality-engineering.md)
 - [开发者准备指南](../engineering/development.md)
 - [开发构建与平台验证](../engineering/developer-build.md)
 - [工具链与平台冻结表](../engineering/toolchain.md)
-- [命令行运行契约](../engineering/command-line.md)
+- [CLI 命令、JSON、安装与更新回执](../engineering/command-line.md)
