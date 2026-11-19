@@ -148,6 +148,12 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
     },
     "linuxFrame": {
         "cornerRadius": 10,
+        "outlineWidth": 1,
+        "shadowInset": 28,
+        "shadowBlur": 8,
+        "shadowOffsetY": 4,
+        "shadowOpacityLight": 0.32,
+        "shadowOpacityDark": 0.54,
         "resizeEdge": 6,
         "captionWidth": 36,
         "captionSize": 28,

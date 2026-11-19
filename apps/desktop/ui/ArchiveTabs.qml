@@ -532,7 +532,7 @@ Rectangle {
                 x: listButton.width - width
                 y: listButton.height + Theme.mainPopupGap
                 width: Math.min(Theme.menuWidth, root.width - Theme.menuViewportInset * 2)
-                height: Math.min(contentItem.implicitHeight + padding * 2, root.Window.height - root.height - Theme.menuViewportInset * 2)
+                height: Math.min(contentItem.implicitHeight + padding * 2, root.Window.height - root.height - margins * 2)
                 Instantiator {
                     model: root.tabs
                     delegate: CommandMenuItem {

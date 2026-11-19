@@ -153,6 +153,7 @@ def check_application_icon(base, assets, path, entry, alias, prefix):
 
 def check_qt(base, assets, qrc):
     checked, applications, aliases = 0, 0, set()
+    shadow_kinds = {'menu': 'menu-shadow-rasterization', 'frame': 'window-shadow-rasterization'}
     resources = [(resource.attrib.get('prefix', ''), node)
                  for resource in ET.parse(qrc).iter('qresource') for node in resource.findall('file')]
     for prefix, node in resources:
@@ -165,12 +166,12 @@ def check_qt(base, assets, qrc):
         aliases.add(alias_path)
         entry = assets.get(path)
         require(entry is not None, f'Untracked runtime image: {node.text}')
-        if path.is_relative_to((base / 'menu').resolve()):
-            require(entry['kind'] == 'menu-shadow-rasterization', 'Invalid menu shadow raster')
-            require(png_dimensions(path) == entry['size'], 'Invalid menu shadow dimensions')
-            require(entry['border'] * 2 < entry['size'][0], 'Invalid menu shadow center')
-            require(hashlib.sha256(path.read_bytes()).hexdigest() == entry['sha256'], 'Stale menu shadow')
-            require(hashlib.sha256((base / entry['source']).read_bytes()).hexdigest() == entry['source_sha256'], 'Stale menu shadow specification')
+        if path.parent.parent == base and path.parent.name in shadow_kinds:
+            require(entry['kind'] == shadow_kinds[path.parent.name], 'Invalid shadow raster')
+            require(png_dimensions(path) == entry['size'], 'Invalid shadow dimensions')
+            require(entry['border'] * 2 < entry['size'][0], 'Invalid shadow center')
+            require(hashlib.sha256(path.read_bytes()).hexdigest() == entry['sha256'], 'Stale shadow')
+            require(hashlib.sha256((base / entry['source']).read_bytes()).hexdigest() == entry['source_sha256'], 'Stale shadow specification')
             checked += 1
             continue
         if path.is_relative_to((base / 'tray').resolve()):

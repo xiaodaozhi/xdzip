@@ -75,7 +75,7 @@ ToolTip {
     popupType: Popup.Item
     delay: 0
     timeout: Theme.tooltipDurationMs
-    margins: Theme.menuViewportInset
+    margins: Theme.menuViewportInset + (parent?.Window.window?.linuxFrameInset ?? 0)
     padding: Theme.tooltipPadding
     implicitWidth: Math.min(Theme.tooltipMaxWidth, contentItem.implicitWidth + padding * 2)
     implicitHeight: Math.min(Theme.treeTooltipMaxHeight * Theme.fontScale, contentItem.implicitHeight + padding * 2)

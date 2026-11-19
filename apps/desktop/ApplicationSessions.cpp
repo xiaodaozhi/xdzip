@@ -211,7 +211,7 @@ ApplicationSessions::Session *ApplicationSessions::create(bool newWindow, QQuick
     if (!page)
         return nullptr;
     page->setParent(owner);
-    page->setParentItem(owner->contentItem());
+    page->setParentItem(owner->property("sessionContent").value<QQuickItem *>());
     return add(owner, page);
 }
 void ApplicationSessions::ensureWelcome(QQuickWindow *window) {

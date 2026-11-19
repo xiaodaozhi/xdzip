@@ -24,8 +24,8 @@ Item {
     readonly property int visibility: windowHost.visibility
     readonly property bool windowsTitlebar: windowHost.windowsTitlebar
     readonly property bool integratedTitlebar: windowHost.integratedTitlebar
-    width: windowHost.contentItem.width
-    height: windowHost.contentItem.height
+    width: windowHost.sessionContent.width
+    height: windowHost.sessionContent.height
     HoverHandler { enabled: moveDrag.Drag.active; cursorShape: Qt.ForbiddenCursor }
     Shortcut { sequence: "Escape"; enabled: moveDrag.Drag.active; onActivated: root.cancelTransfer() }
     // Keep a gesture internal until it leaves this window. Crossing the window

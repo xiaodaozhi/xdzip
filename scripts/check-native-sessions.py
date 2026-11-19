@@ -54,7 +54,8 @@ def main():
     try:
         if sys.platform == 'linux':
             window_manager = OpenboxSession(env, output.parent).start()
-        command = [str(args.tests.resolve()), *CASES, '-o', str(log)+',txt']
+        cases = CASES + (['linuxMainFrameOutline'] if window_manager else [])
+        command = [str(args.tests.resolve()), *cases, '-o', str(log)+',txt']
         timed_out = False
         try:
             result = subprocess.run(command, env=env, timeout=150, check=False, capture_output=True, text=True)
@@ -67,7 +68,7 @@ def main():
         report = dict(status='passed' if result.returncode == 0 else 'failed', platform=sys.platform,
                       native_plugin=env['QT_QPA_PLATFORM'], window_manager='Openbox' if window_manager else 'system',
                       window_manager_ready_ms=window_manager.ready_ms if window_manager else None,
-                      cases=CASES, timed_out=timed_out,
+                      cases=cases, timed_out=timed_out,
                       limits='Native window/session automation. Not manual visual, GPU, IME or screen-reader acceptance.')
         if args.shell_tests and result.returncode == 0:
             shell_log = output.with_name('shell-native.log')

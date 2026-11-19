@@ -14,7 +14,20 @@ body { min-width:1586px; font-size:18px; background:var(--canvas); }
 .reviewbar,.review-footer { display:none; }
 .stage { width:1586px; max-width:none; margin:0; padding:30px 18px 22px 20px; }
 .window { width:1548px; height:940px; min-height:940px; border-radius:14px; box-shadow:0 8px 26px #1e2a4010; }
-body[data-platform="linux"] .window { border-radius:calc(var(--linux-cornerRadius) * var(--ui-source-factor) * 1px); overflow:hidden; }
+body[data-platform="linux"] .window {
+    --frame-outline:calc(var(--linux-outlineWidth) * var(--ui-source-factor) * 1px);
+    --frame-shadow-opacity:var(--linux-shadowOpacityLight);
+    border-radius:calc(var(--linux-cornerRadius) * var(--ui-source-factor) * 1px);
+    outline:var(--frame-outline) solid var(--ui-menu-border);
+    outline-offset:calc(-1 * var(--frame-outline));
+    box-shadow:0 calc(var(--linux-shadowOffsetY) * var(--ui-source-factor) * 1px)
+        calc(2 * var(--linux-shadowBlur) * var(--ui-source-factor) * 1px)
+        rgb(0 0 0 / var(--frame-shadow-opacity));
+    overflow:hidden;
+}
+:root[data-theme="dark"] body[data-platform="linux"] .window {
+    --frame-shadow-opacity:var(--linux-shadowOpacityDark);
+}
 /* Source-space anchors are recorded independently in header-reference.json. */
 .titlebar {
     --tab-capsule-height:max(var(--tab-height), calc((13px * 1.6 * var(--settings-text-scale,1) + 8px) * var(--ui-source-factor)));

@@ -28,7 +28,7 @@ Menu {
     implicitWidth: Math.max(Theme.menuMinWidth, Theme.menuWidth)
     padding: Theme.menuPadding
     bottomPadding: padding + footerHeight
-    margins: Theme.menuViewportInset
+    margins: Theme.menuViewportInset + (parent?.Window.window?.linuxFrameInset ?? 0)
     font.pixelSize: Theme.menuLabelSize
     delegate: CommandMenuItem {}
     function focusBoundary(last) {

@@ -55,7 +55,7 @@ qt_add_qml_module(xdzip-ui-resources
     URI Xdzip.Settings VERSION 1.0
     DEPENDENCIES QtQuick
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml/Xdzip/Settings"
-    SOURCES PreviewImages.h PreviewImages.cpp ImagePreviewProcess.h ImagePreviewProcess.cpp UiPreferences.h UiPreferences.cpp UiFonts.h WindowsFrame.h WindowsFrame.cpp BuildInfo.h BuildInfo.cpp)
+    SOURCES PreviewImages.h PreviewImages.cpp ImagePreviewProcess.h ImagePreviewProcess.cpp UiPreferences.h UiPreferences.cpp UiFonts.h WindowsFrame.h WindowsFrame.cpp LinuxFrame.h LinuxFrame.cpp BuildInfo.h BuildInfo.cpp)
 # Compile the QML declared in the resource manifest ahead of first launch.
 # Keep the original source resources available for Qt's cache fallback.
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/ui.qrc")
@@ -70,6 +70,9 @@ qt_target_qml_sources(xdzip-ui-resources NO_QMLDIR_TYPES PREFIX "/xdzip" QML_FIL
 target_link_libraries(xdzip-ui-resources PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick)
 if(WIN32)
     target_link_libraries(xdzip-ui-resources PRIVATE dwmapi user32)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    find_package(X11 REQUIRED COMPONENTS Xext)
+    target_link_libraries(xdzip-ui-resources PRIVATE X11::X11 X11::Xext)
 endif()
 add_executable(xdzip-ui-preview main.cpp)
 target_link_libraries(xdzip-ui-preview PRIVATE Qt6::Quick Qt6::QuickControls2)

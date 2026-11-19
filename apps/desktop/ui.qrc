@@ -13,6 +13,8 @@
     <file alias="assets/menu/dark-125.png">../../design/assets/menu/dark-125.png</file>
     <file alias="assets/menu/dark-150.png">../../design/assets/menu/dark-150.png</file>
     <file alias="assets/menu/dark-200.png">../../design/assets/menu/dark-200.png</file>
+    <file alias="assets/frame/linux-light.png">../../design/assets/frame/linux-light.png</file>
+    <file alias="assets/frame/linux-dark.png">../../design/assets/frame/linux-dark.png</file>
     <file alias="assets/tray-contrast-16.png">../../design/assets/tray/contrast-16.png</file>
     <file alias="assets/tray-contrast-20.png">../../design/assets/tray/contrast-20.png</file>
     <file alias="assets/tray-contrast-22.png">../../design/assets/tray/contrast-22.png</file>
