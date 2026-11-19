@@ -15,6 +15,7 @@
 @property(nonatomic, strong) NSMutableArray<NSURL *> *requests;
 @property(nonatomic, strong) NSError *nextError;
 @property(nonatomic) BOOL ignoreNextChange;
+@property(nonatomic) int nextPublicationDelayMs;
 @end
 
 @implementation AssociationWorkspace
@@ -31,10 +32,20 @@
                  completionHandler:(void (^)(NSError *))completion {
     [self.requests addObject:url];
     NSError *error = self.nextError;
-    if (!error && !self.ignoreNextChange)
-        self.defaults[type.identifier] = url;
+    if (!error && !self.ignoreNextChange) {
+        const int delay = self.nextPublicationDelayMs;
+        if (delay > 0) {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, delay * NSEC_PER_MSEC),
+                           dispatch_get_main_queue(), ^{
+                             self.defaults[type.identifier] = url;
+                           });
+        } else {
+            self.defaults[type.identifier] = url;
+        }
+    }
     self.nextError = nil;
     self.ignoreNextChange = NO;
+    self.nextPublicationDelayMs = 0;
     completion(error);
 }
 @end
@@ -118,6 +129,7 @@ class MacAssociationTest : public QObject {
         workspace.candidates = @[ testBundle.bundleURL, xdzipCopy, original, other, duplicate ];
         workspace.nextError = nil;
         workspace.ignoreNextChange = NO;
+        workspace.nextPublicationDelayMs = 0;
         chooserCount = 0;
         listedApps = @[];
         chooserResponse = NSAlertFirstButtonReturn;
@@ -136,7 +148,9 @@ class MacAssociationTest : public QObject {
 
         workspace.candidates = @[ testBundle.bundleURL, xdzipCopy ];
         QVERIFY(!service.isDefault(".lz4"));
+        workspace.nextPublicationDelayMs = 250;
         service.requestChange(".lz4", true);
+        QVERIFY(service.busy());
         QTRY_VERIFY(!service.busy());
         QCOMPARE(service.error(), QString());
         QCOMPARE(workspace.requests.count, 1u);

@@ -70,6 +70,22 @@ NSArray<NSURL *> *alternativeApplications(UTType *type) {
 
 enum class ChangeResult { Applied, Cancelled, Failed };
 
+void verifyDefault(UTType *type, NSString *target, void (^completion)(ChangeResult),
+                   int remainingRetries = 20) {
+    if ([defaultIdentifier(type) isEqualToString:target]) {
+        completion(ChangeResult::Applied);
+    } else if (remainingRetries == 0) {
+        completion(ChangeResult::Failed);
+    } else {
+        // Launch Services can report success before this process can read the
+        // new default. Retry the read, without issuing another change request.
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC),
+                       dispatch_get_main_queue(), ^{
+                         verifyDefault(type, target, completion, remainingRetries - 1);
+                       });
+    }
+}
+
 void requestDefault(NSURL *url, UTType *type, void (^completion)(ChangeResult)) {
     NSString *target = applicationIdentifier(url);
     if (!target.length) {
@@ -83,8 +99,8 @@ void requestDefault(NSURL *url, UTType *type, void (^completion)(ChangeResult)) 
                    // AppKit may complete off the GUI thread. Read Launch Services and
                    // touch the Qt service and its settings only on the main thread.
                    dispatch_async(dispatch_get_main_queue(), ^{
-                     if (!error && [defaultIdentifier(type) isEqualToString:target]) {
-                         completion(ChangeResult::Applied);
+                     if (!error) {
+                         verifyDefault(type, target, completion);
                      } else if (([error.domain isEqualToString:NSCocoaErrorDomain] &&
                                  error.code == NSUserCancelledError) ||
                                 ([error.domain isEqualToString:NSOSStatusErrorDomain] &&
