@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/integration/README.md)
 
-The standalone CLI runs without Qt or a desktop session. Download the CLI package for your platform and keep its bundled worker next to the executable. The examples use `xdzip` on PATH. You can also call `bin/xdzip` or `bin/xdzip.exe` from the unpacked package. [Download and setup](../engineering/command-line.md#build-and-command-installation)
+The standalone CLI runs without Qt or a desktop session. Unpack the `xdzip-cli-` asset for your platform from the [latest GitHub release](https://github.com/xiaodaozhi/xdzip/releases/latest) and keep the worker beside the executable. From the extracted folder use `./bin/xdzip --help` on macOS or Linux, or `.\bin\xdzip.exe --help` in PowerShell. The examples below use `xdzip` on PATH. To register the standalone CLI, run `setup` with the extracted CLI and add the resulting command directory to PATH. See [command installation](../engineering/command-line.md#build-and-command-installation) for the per-user locations and removal.
 
 ## List, select and extract
 
@@ -10,10 +10,10 @@ Practice with a small regular ZIP that you own, and use a fresh output directory
 
 ```sh
 xdzip list sample.zip --offset 0 --limit 128 --json
-xdzip extract sample.zip --entry-id 0 -C output --conflict skip --non-interactive --json
+xdzip extract sample.zip --entry-id 3 -C output --conflict skip --non-interactive --json
 ```
 
-Use the actual `id` of a regular entry returned by the first command in place of `0`. IDs distinguish physical entries even when names repeat. Re-list when the source changes. For a large listing, request the next page using `data.next_offset` until it is null. Exact member paths are case-sensitive and use forward slashes. The escaped `display_name` is meant for display.
+Replace example ID `3` with the `id` of a regular file returned by the first command. IDs start at 1 and distinguish physical entries even when names repeat. Re-list when the source changes. For a large listing, request the next page using `data.next_offset` until it is null. Exact member paths are case-sensitive and use forward slashes. The escaped `display_name` is for display.
 
 ## Create and check
 

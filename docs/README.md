@@ -2,15 +2,13 @@
 
 English | [简体中文](zh-CN/README.md)
 
-Choose the guide for what you want to do.
+New to XDZip? [Choose a download and install it](user-guide/install.md), then [open an archive and browse its contents](user-guide/browse.md). The [format support table](../README.md#format-support) shows which formats you can open, create or edit. For an installed release, check its [release notes](https://github.com/xiaodaozhi/xdzip/releases) for the features available in that version.
 
 | Read this | What it covers |
 | --- | --- |
-| [User manual](user-guide/README.md) | Install, browse, preview, extract, create, edit, check and update archives or the app. |
-| [Command-line integration](integration/README.md) | Automate archive operations with examples, JSON results and exit codes. |
-| [Build and contribute](contributing/README.md) | Set up the tools, find the relevant code and choose checks for a change. |
-| [Product design and technical reference](reference/README.md) | Understand the architecture, format capabilities, task behavior, platform integration and security. |
+| [User manual](user-guide/README.md) | Browse, preview, extract, create, edit and check archives. Work with passwords and split files, manage background tasks, and update XDZip. |
+| [Command-line integration](integration/README.md) | Run the standalone CLI and automate archive operations with JSON results and exit codes. |
+| [Product design and technical reference](reference/README.md) | Learn how XDZip detects formats, handles files, schedules tasks and integrates with each system. |
+| [Build and contribute](contributing/README.md) | Set up tools, build and run the code, and choose checks for a change. |
 
-See the [project README](../README.md) for downloads and the format support table. Refer to the release notes for the package you use.
-
-The [maintainer handbook](../developers/README.md) covers release, validation and repository operations. [GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues) tracks work and feedback.
+Need help with a specific problem? Start with [troubleshooting](user-guide/troubleshooting.md). For development and release operations, see the [maintainer handbook](../developers/README.md).

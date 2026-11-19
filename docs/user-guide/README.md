@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/user-guide/README.md)
 
-Use this manual to work with archives on Windows, macOS or Linux. Start with a copy of an archive you know, so you can practice without changing the original. For a downloaded release, use its release notes to confirm which features are available. [Download XDZip](../../README.md#download-and-install)
+Start with [installation](install.md) for the supported Windows, macOS and Ubuntu desktop configurations. Use the [format table](../../README.md#format-support) to check which operations are available for your archive. For a downloaded build, consult the notes for that [release](https://github.com/xiaodaozhi/xdzip/releases).
 
 | What you want to do | Chapter |
 | --- | --- |

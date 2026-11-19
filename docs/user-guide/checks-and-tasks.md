@@ -4,11 +4,11 @@ English | [简体中文](../zh-CN/user-guide/checks-and-tasks.md)
 
 ## Test an archive
 
-1. Open an archive and choose **Test archive** in the toolbar.
+1. Open the archive and choose **Test** in the toolbar.
 2. Follow any password prompt and wait for the result. The task checks eligible contents without writing extracted files.
 3. Review the failure reason and the affected entry, if shown. Some formats provide checksums or authentication, while others check structure and readability. A passed check only covers what the format verifies. [Integrity check behavior](../engineering/archive-checking.md)
 
-When Test is unavailable for a large disk-indexed ZIP, check the applicable limits and extract selected regular files if needed. [Large archive limits](../engineering/large-index.md)
+Some archives cannot be tested. For example, disk-indexed ZIP supports selected-file extraction within task limits, and NSIS exposes installer metadata only. See [large archive limits](../engineering/large-index.md) and [format support](../../README.md#format-support).
 
 ## Progress, cancellation and results
 

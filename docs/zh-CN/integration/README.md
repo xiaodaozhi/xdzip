@@ -2,7 +2,7 @@
 
 [English](../../integration/README.md) | 简体中文
 
-独立 CLI 无需 Qt 或桌面会话。下载对应系统的 CLI 包，并将随包提供的格式工作程序与主程序放在一起。下文以 PATH 中的 `xdzip` 为例，也可直接调用解压目录中的 `bin/xdzip` 或 `bin/xdzip.exe`。[下载与设置命令](../engineering/command-line.md#构建与命令安装)
+独立 CLI 无需 Qt 或桌面会话。从 [GitHub 最新发布页](https://github.com/xiaodaozhi/xdzip/releases/latest)下载适合平台的 `xdzip-cli-` 包并解压，保留可执行文件旁的工作进程。在解压目录中，macOS 或 Linux 执行 `./bin/xdzip --help`，Windows PowerShell 执行 `.\bin\xdzip.exe --help`。下文以 PATH 中的 `xdzip` 为例。需要登记独立 CLI 时，从解压目录运行 CLI 的 `setup` 命令，再将命令所在目录加入 PATH。当前用户的安装位置和移除方法见[命令安装](../engineering/command-line.md#构建与命令安装)。
 
 ## 列出、选择和解压
 
@@ -10,10 +10,10 @@
 
 ```sh
 xdzip list sample.zip --offset 0 --limit 128 --json
-xdzip extract sample.zip --entry-id 0 -C output --conflict skip --non-interactive --json
+xdzip extract sample.zip --entry-id 3 -C output --conflict skip --non-interactive --json
 ```
 
-把 `0` 换成第一条命令实际返回的普通条目 `id`。即使存在同名文件，ID 也能区分不同的物理条目。来源有变化时重新列出。大型列表通过 `data.next_offset` 请求下一页，直到其值为 null。按名称选择时使用精确路径，区分大小写并使用正斜杠。转义后的 `display_name` 用于展示。
+把示例中的 `3` 换成第一条命令返回的某个普通文件 `id`。ID 从 1 开始，可以区分同名的物理条目。来源变化后请重新列出。大归档可按 `data.next_offset` 请求下一页，直到值为 null。按名称选择时使用区分大小写的精确路径和正斜杠。转义后的 `display_name` 用于展示。
 
 ## 创建和检查
 
