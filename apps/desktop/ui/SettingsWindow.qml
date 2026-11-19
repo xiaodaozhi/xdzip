@@ -462,7 +462,7 @@ OperationWindow {
                 onClicked: root.associations.openSystemSettings()
             }
             Repeater {
-                model: root.associations && root.associations.systemManaged ? [] : ArchiveFormats.associationGroups
+                model: ArchiveFormats.associationGroups
                 delegate: ColumnLayout {
                     id: associationGroup
                     required property var modelData
@@ -484,10 +484,12 @@ OperationWindow {
                                 objectName: "settingsAssociation-" + modelData
                                 Layout.fillWidth: true
                                 text: modelData
-                                enabled: root.associations && root.associations.available && root.associations.ready && !root.associations.busy
+                                enabled: root.associations && !root.associations.systemManaged
+                                         && root.associations.available && root.associations.ready && !root.associations.busy
                                 value: {
                                     const revision = root.associations ? root.associations.revision : 0;
-                                    return root.associations && revision >= 0 && root.associations.isDefault(modelData);
+                                    return root.associations && !root.associations.systemManaged
+                                            && revision >= 0 && root.associations.isDefault(modelData);
                                 }
                                 onSelectionRequested: value => root.associations.requestChange(modelData, value)
                             }

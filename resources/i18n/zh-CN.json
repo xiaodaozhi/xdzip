@@ -482,7 +482,7 @@
     "settings.associationDescription": "选择要通过 xdzip 打开的文件类型。",
     "settings.associationSystem": "默认应用可能需要在系统中确认。",
     "settings.associationUnavailable": "当前运行方式无法修改文件关联。",
-    "settings.associationPackaged": "此版本的文件关联由 Windows 管理。请在系统默认应用中选择 xdzip 及需要关联的文件类型。",
+    "settings.associationPackaged": "下方开关用于展示可关联的文件类型。请在 Windows 默认应用设置中查看或更改关联。",
     "settings.openDefaultApps": "在 Windows 中设置默认应用",
     "settings.proxy": "代理设置",
     "settings.proxyNone": "不使用代理",

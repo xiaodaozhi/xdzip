@@ -76,7 +76,9 @@ def main():
         page.locator('#settings-tab-privacy').click()
         page.locator('#recent-enabled').uncheck()
         page.locator('#settings-tab-associations').click()
-        expect(page.locator('.settings-associations input')).to_have_count(9)
+        association_switches = page.evaluate(
+            'XDZIP_ASSOCIATION_GROUPS.flatMap(group => group.suffixes.map(suffix => "association-" + suffix))')
+        assert page.get_by_role('switch').evaluate_all('nodes => nodes.map(node => node.id)') == association_switches
         page.locator('[id="association-.zip"]').check()
         page.locator('#settings-tab-network').click()
         page.locator('input[name=setting-proxy][value=custom]').check()
@@ -159,11 +161,20 @@ def main():
         page.evaluate('window.XdzipDesign.open("about")')
         expect(modal).to_have_attribute('data-kind', 'settings')
         expect(page.locator('.settings-pane')).to_have_attribute('data-tab', 'about')
+        managed_url = 'https://settings.test/?view=settings&channel=msix&lang=en-US'
+        page.route(managed_url, lambda route: route.fulfill(body=canvas, content_type='text/html'))
+        page.goto(managed_url)
+        page.locator('#settings-tab-associations').click()
+        switches = page.get_by_role('switch')
+        assert switches.evaluate_all('nodes => nodes.map(node => node.id)') == association_switches
+        expect(page.locator('.settings-associations input:disabled')).to_have_count(len(association_switches))
+        expect(page.get_by_role('button', name='Set default apps in Windows')).to_be_enabled()
         assert not errors, errors
         browser.close()
     (OUTPUT / 'validation.json').write_text(json.dumps({
         'status': 'passed', 'checks': ['six tabs', 'no footer', 'immediate changes', 'reopen state',
-        'two languages and 150% text', 'proxy and mirror fields', 'association switches', 'about update states'],
+        'two languages and 150% text', 'proxy and mirror fields', 'editable and system-managed association switches',
+        'about update states'],
         'limits': ['HTML settings are an in-memory design simulation; system associations and persistence require Qt tests.']
     }, ensure_ascii=False, indent=2) + '\n')
     print('Settings design: six tabs and immediate interactions passed')

@@ -4,7 +4,7 @@
 
 Windows 11 x64 用户可以在 Microsoft Store 搜索 **XDZip**，安装或更新商店版。Windows EXE 安装器、便携 ZIP 及 macOS、Linux 安装包可从 [GitHub 最新发布页](https://github.com/xiaodaozhi/xdzip/releases/latest)下载。两条渠道独立发布，安装前可在所选渠道核对版本。
 
-Windows MSIX 使用包清单声明同一组扩展作为打开方式候选，不覆盖用户默认选择。文件关联页说明由 Windows 管理，并提供“打开默认应用设置”，使用当前包的 `registeredAUMID`；身份查询失败时打开通用默认应用选择页。不显示逐扩展开关，避免将未查询的默认状态显示为未关联，也不读取普通安装版注册作为包状态，不写 UserChoice。实际文件激活、图标、共存和卸载行为须在目标系统验收，见[MSIX 构建](developer-build.md#windows-msix-实验构建)。
+Windows MSIX 使用包清单声明同一组扩展作为打开方式候选，不覆盖用户默认选择。文件关联页完整显示可关联类型，开关为禁用状态。当前默认应用以 Windows 设置为准。“打开默认应用设置”使用当前包的 `registeredAUMID` 进入对应页面，身份查询失败时打开通用默认应用选择页。应用不读取普通安装版注册作为包状态，不写 UserChoice。实际文件激活、图标、共存和卸载行为须在目标系统验收，见[MSIX 构建](developer-build.md#windows-msix-实验构建)。
 
 
 逐格式图标素材及平台映射见[文件关联图标规范](../visual/file-association-icons.md)。Linux 保留系统 MIME 图标，安装不改变默认选择或现有注册范围。

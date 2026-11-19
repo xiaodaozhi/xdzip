@@ -1590,7 +1590,8 @@ function showSettings(tab = "appearance") {
     if (!keys.includes(tab)) tab = "appearance";
     const labels = ["Appearance", "General", "Privacy", "Associations", "Network", "About"];
     const icons = [icon("view-list"), icon("settings"), icon("shield"), icon("file-text"), icon("external-open"), icon("info")];
-    const queryLanguage = new URLSearchParams(location.search).get("lang");
+    const query = new URLSearchParams(location.search);
+    const queryLanguage = query.get("lang");
     if (!savedSettingsDemo) savedSettingsDemo = {
         theme:state.theme, textScale:1, language:"auto",
         density:"standard", recent:state.recent, tray:true, openMode:"tabs", proxyMode:"system",
@@ -1609,7 +1610,7 @@ function showSettings(tab = "appearance") {
     const t = id => window.XDZIP_UI_MESSAGES[resolvedLanguage].messages[id] || id;
     const label = (id) => esc(t(id));
     const row = (id, description, selectId, options, current) => `<div class="settings-detail-row"><div><strong>${label(id)}</strong><p>${label(description)}</p></div><select class="field-select" id="${selectId}" aria-label="${label(id)}">${options.map(([v,n])=>`<option value="${esc(v)}"${String(v)===String(current)?" selected":""}>${esc(n)}</option>`).join("")}</select></div>`;
-    const toggle = (id, title, description, checked) => `<label class="settings-toggle-row"><span><strong>${esc(title)}</strong>${description?`<small>${esc(description)}</small>`:""}</span><input type="checkbox" role="switch" id="${esc(id)}"${checked?" checked":""}><span class="settings-switch" aria-hidden="true"></span></label>`;
+    const toggle = (id, title, description, checked, disabled = false) => `<label class="settings-toggle-row"><span><strong>${esc(title)}</strong>${description?`<small>${esc(description)}</small>`:""}</span><input type="checkbox" role="switch" id="${esc(id)}"${checked?" checked":""}${disabled?" disabled":""}><span class="settings-switch" aria-hidden="true"></span></label>`;
     const separator = `<hr class="settings-separator">`;
     let body = "";
     if (tab === "appearance") {
@@ -1626,7 +1627,14 @@ function showSettings(tab = "appearance") {
         body = toggle("recent-enabled",t("settings.recent"),t("settings.recentDescription"),prefs.recent) + separator +
             `<div class="settings-detail-row"><div><strong>${label("settings.clearRecent")}</strong><p>${label("settings.clearDescription")}</p></div><button class="button operation-body-button" id="clear-recent">${label("settings.clearRecent")}</button></div><aside class="settings-note"><strong>${label("settings.localTitle")}</strong><p>${label("settings.localDescription")}</p></aside>`;
     } else if (tab === "associations") {
-        body = `<p>${label("settings.associationDescription")}</p><div class="settings-associations">${[".zip",".tgz",".7z",".cab",".rar",".iso",".tar",".udf",".tar.gz"].map(ext=>toggle("association-"+ext,ext,"",prefs.associations[ext])).join("")}</div><p>${label("settings.associationSystem")}</p>`;
+        const managed = query.get("channel") === "msix";
+        const groups = window.XDZIP_ASSOCIATION_GROUPS.map(({id, suffixes}) =>
+            `<strong>${label("format.group." + id)}</strong><div class="settings-associations">${suffixes.map(ext =>
+                toggle("association-" + ext, ext, "", !managed && prefs.associations[ext], managed)).join("")}</div>`);
+        body = `<p>${label(managed ? "settings.associationPackaged" : "settings.associationDescription")}</p>`;
+        if (managed) body += `<div><button type="button" class="button operation-body-button">${label("settings.openDefaultApps")}</button></div>`;
+        body += groups.join(separator);
+        if (!managed) body += `<p>${label("settings.associationSystem")}</p>`;
     } else if (tab === "network") {
         body = `<strong>${label("settings.proxy")}</strong><div class="settings-proxies">${[["none","settings.proxyNone"],["system","settings.proxySystem"],["custom","settings.proxyCustom"]].map(([value,id])=>`<label><input type="radio" name="setting-proxy" value="${value}"${prefs.proxyMode===value?" checked":""}>${label(id)}</label>`).join("")}</div>${prefs.proxyMode==="custom"?`<label class="settings-field">${label("settings.proxyAddress")}<input id="setting-proxy-address" type="text" value="${esc(prefs.proxyAddress)}" placeholder="http://127.0.0.1:7890"></label><p>${label("settings.proxyHint")}</p>`:""}${separator}<strong>${label("settings.mirror")}</strong><p>${label("settings.mirrorDescription")}</p><label class="settings-field">${label("settings.mirrorAddress")}<input id="setting-mirror-address" type="url" value="${esc(prefs.mirrorAddress)}" placeholder="https://mirror.example.com"></label><p>${label("settings.mirrorHint")}</p>`;
     } else {
@@ -1643,7 +1651,11 @@ function showSettings(tab = "appearance") {
     });
     [["tray-enabled","tray"],["recent-enabled","recent"]].forEach(([id,key])=>{const input=document.getElementById(id);if(input)input.onchange=()=>{prefs[key]=input.checked;if(key==="recent")state.recent=input.checked;};});
     $("#clear-recent")?.addEventListener("click",()=>{ state.recentItems=[]; });
-    $(".settings-associations")?.addEventListener("change",e=>{ if(e.target.id.startsWith("association-"))prefs.associations[e.target.id.slice(12)]=e.target.checked; });
+    if (tab === "associations") {
+        $(".settings-pane").addEventListener("change", e => {
+            if (e.target.id.startsWith("association-")) prefs.associations[e.target.id.slice(12)] = e.target.checked;
+        });
+    }
     $(".settings-proxies")?.addEventListener("change",e=>{prefs.proxyMode=e.target.value;showSettings(tab);});
     $("#setting-proxy-address")?.addEventListener("change",e=>{prefs.proxyAddress=e.target.value;});
     $("#setting-mirror-address")?.addEventListener("change",e=>{prefs.mirrorAddress=e.target.value;});
