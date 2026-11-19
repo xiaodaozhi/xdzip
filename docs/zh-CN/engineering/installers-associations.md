@@ -73,6 +73,8 @@ build-linux-installer.py 从同一核验目录生成 .deb，私有暂存目录�
 
 安装后的 [xdzip.desktop](../../../apps/desktop/packaging/linux/xdzip.desktop) 声明软件包的 MIME 候选，包括 ZIP 及部分别名、TAR 与压缩 TAR、独立压缩流、7z、RAR 和 CAB 等归档，以及 ISO／UDF 映像。`%f` 用于单文件启动，`--` 标记参数边界。软件包提供 `*.udf` 的 MIME 声明，不接管通用映像或二进制类型。安装和卸载刷新 MIME 及桌面数据库，不改写 `mimeapps.list`、用户默认选择或系统 MIME 图标。卸载清除自有启动项、图标及运行文件，保留用户设置。
 
+DEB 将 [AppStream 目录记录](../../../apps/desktop/packaging/linux/xdzip-local.yml) 安装至 Ubuntu 应用中心可读取的 `/var/lib/swcatalog/yaml/xdzip-local.yml`。记录将包名 `xdzip` 与 `xdzip.desktop` 关联，使已安装的软件包可出现在应用列表中。卸载 XDZip 时，dpkg 一并移除该目录文件。
+
 安装的产品持有 /run/xdzip/usage.lock 的共享 flock，维护脚本先取非阻塞独占锁，活动进程存在就失败。脚本在根用户独占的 /run/xdzip 下设置 installing 门，产品取得锁后再次检查，避免在 dpkg 钩子间启动。符号链接或错误所有者／权限被拒绝；关闭 QFile 释放锁。tmpfiles.d 在系统启动时准备运行锁。此约束不影响 SDK 开发应用。
 
 成功及 dpkg abort 路径清理门；中断／掉电可能留下未完成事务，应执行 sudo dpkg --configure -a 并修复实际错误，不能把无法启动当作安装成功。脚本不递归清理用户目录，产物只生成至 build/ 或 CI。

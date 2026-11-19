@@ -169,6 +169,9 @@ def main():
         run(['dpkg','-i','/packages/product.deb']);verify_open('actual-product-upgrade')
         extension=Path('/usr/lib/x86_64-linux-gnu/nautilus/extensions-4/libxdzip-nautilus.so')
         protocol=Path('/usr/share/xdzip/shell-protocol')
+        catalog = Path('/var/lib/swcatalog/yaml/xdzip-local.yml')
+        if not catalog.is_file() or run(['dpkg-query', '-S', str(catalog)]) != f'xdzip: {catalog}':
+            raise RuntimeError('Installed AppStream catalog is missing or not owned by xdzip')
         if protocol.read_text()!='1\n':raise RuntimeError('Installed shell protocol marker missing')
         launcher=Path('/usr/bin/xdzip').read_text()
         runtime=Path(launcher.split('exec "',1)[1].split('"',1)[0]).parent
@@ -192,6 +195,7 @@ def main():
         run(['dpkg','-i','/packages/previous.deb']);verify_open('actual-product-rollback')
         if extension.exists():raise RuntimeError('Historical rollback retained the newer Nautilus extension')
         if protocol.exists():raise RuntimeError('Historical rollback retained the newer shell protocol marker')
+        if catalog.exists():raise RuntimeError('Historical rollback retained the AppStream catalog')
         if settings.read_bytes()!=original_settings or sentinel.read_text()!='keep user data':
             raise RuntimeError('Actual product rollback lost settings or user data')
         run(['dpkg','-i','/packages/qa1.deb']);verify_open('install')
@@ -227,7 +231,9 @@ def main():
             active.terminate();active.wait(timeout=10)
         run(['dpkg','-i','/packages/qa1.deb']);verify_open('rollback')
         run(['dpkg','-i','/packages/product.deb']);verify_open('production-package')
-        run(['dpkg','--remove','xdzip']);run(['dpkg','--purge','xdzip'])
+        run(['dpkg','--remove','xdzip'])
+        if catalog.exists():raise RuntimeError('Owned AppStream catalog remains after removal')
+        run(['dpkg','--purge','xdzip'])
         if extension.exists():raise RuntimeError('Owned Nautilus extension remains after uninstall')
         if protocol.exists():raise RuntimeError('Owned shell protocol marker remains after uninstall')
         if Path('/usr/bin/xdzip').exists() or Path('/usr/share/applications/xdzip.desktop').exists():raise RuntimeError('Installed entry points remain')
