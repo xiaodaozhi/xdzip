@@ -18,8 +18,10 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+from xml.etree import ElementTree
 from deployment_audit import digest
 from installer_payload import HISTORICAL_PRODUCT_REVISION
+from packaging_languages import linux_resources, packaging_catalogs
 from association_types import WINDOWS_ICONS, MACOS_ICONS, windows_progid
 from archive_formats_generated import ASSOCIATION_FIXTURES
 
@@ -30,6 +32,30 @@ linux=module('build-linux-installer');windows=module('build-windows-installer');
 
 
 class InstallerTests(unittest.TestCase):
+    def test_linux_metadata_has_language_and_traditional_region_fallbacks(self):
+        catalogs = packaging_catalogs()
+        resources = linux_resources()
+        desktop = configparser.ConfigParser(interpolation=None)
+        desktop.optionxform = str
+        desktop.read_string(resources['xdzip.desktop'])
+        policy = ElementTree.fromstring(resources['org.xdzip.update.policy'])
+        mime = ElementTree.fromstring(resources['xdzip-mime.xml'])
+        language = '{http://www.w3.org/XML/1998/namespace}lang'
+        update_messages = {node.get(language): node.text for node in policy.iter('message')}
+        mime_comments = {node.get(language): node.text for node in mime.iter(
+            '{http://www.freedesktop.org/standards/shared-mime-info}comment')}
+        for alias, locale in [('de', 'de-DE'), ('fr', 'fr-FR'), ('zh', 'zh-CN'),
+                              ('zh_HK', 'zh-TW'), ('zh_MO', 'zh-TW')]:
+            with self.subTest(locale=alias):
+                catalog = catalogs[locale]
+                self.assertEqual(desktop['Desktop Entry'][f'Comment[{alias}]'],
+                                 catalog['DesktopComment'])
+                self.assertEqual(update_messages[alias], catalog['UpdateMessage'])
+                self.assertEqual(mime_comments[alias], catalog['Udf'])
+                self.assertIn(f'  {alias}: ' + json.dumps(catalog['AppStreamSummary'],
+                                                          ensure_ascii=False),
+                              resources['xdzip-local.yml'])
+
     def test_linux_lifecycle_mounts_generated_format_registry(self):
         script = ROOT/'scripts/verify-linux-installer.py'
         with tempfile.TemporaryDirectory() as directory:

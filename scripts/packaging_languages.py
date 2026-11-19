@@ -35,16 +35,22 @@ def packaging_catalogs():
 def linux_resources():
     sources = PACKAGING / 'linux'
     catalogs = packaging_catalogs()
+    localized = {locale.replace('-', '_'): catalog for locale, catalog in catalogs.items()
+                 if locale != 'en-US'}
+    # The system falls back from a regional POSIX locale to the bare language.
+    localized.update({locale.split('-')[0]: catalog for locale, catalog in catalogs.items()
+                      if locale not in ('en-US', 'zh-TW')})
+    localized.update({locale: catalogs['zh-TW'] for locale in ('zh_HK', 'zh_MO')})
     desktop = (sources / 'xdzip.desktop').read_text(encoding='utf-8')
     # Linux chooses these values using the desktop locale, not the Qt preference.
-    comments = '\n'.join(f"Comment[{locale.replace('-', '_')}]={catalog['DesktopComment']}"
-                         for locale, catalog in catalogs.items() if locale != 'en-US')
+    comments = '\n'.join(f"Comment[{locale}]={catalog['DesktopComment']}"
+                         for locale, catalog in localized.items())
     desktop = re.sub(r'^Comment\[zh_CN\]=[^\n]+$', lambda _: comments, desktop, flags=re.M)
 
     def xml_labels(source, element, key):
-        labels = '\n'.join(f'    <{element} xml:lang="{locale.replace("-", "_")}">'
+        labels = '\n'.join(f'    <{element} xml:lang="{locale}">'
                            f'{escape(catalog[key])}</{element}>'
-                           for locale, catalog in catalogs.items() if locale != 'en-US')
+                           for locale, catalog in localized.items())
         pattern = rf'^    <{element} xml:lang="zh_CN">.*</{element}>$'
         return re.sub(pattern, lambda _: labels, source, flags=re.M)
 
@@ -55,9 +61,8 @@ def linux_resources():
     appstream = (sources / 'xdzip-local.yml').read_text(encoding='utf-8')
     for header, key in [('Summary', 'AppStreamSummary'), ('Description', 'AppStreamDescription')]:
         entries = []
-        for locale in packaging_languages():
-            name = 'C' if locale == 'en-US' else locale.replace('-', '_')
-            text = catalogs[locale][key]
+        for name, catalog in {'C': catalogs['en-US'], **localized}.items():
+            text = catalog[key]
             if header == 'Description':
                 text = f'<p>{escape(text)}</p>'
             entries.append(f'  {name}: {json.dumps(text, ensure_ascii=False)}')

@@ -45,7 +45,7 @@ static void test_module_class_init(TestModuleClass *klass) {
     G_TYPE_MODULE_CLASS(klass)->unload = [](GTypeModule *) {};
 }
 int main(int argc, char **argv) {
-    if (argc != 2)
+    if (argc != 2 && argc != 3)
         return 2;
     auto *library = g_module_open(argv[1], G_MODULE_BIND_LOCAL);
     if (!library) {
@@ -80,10 +80,14 @@ int main(int argc, char **argv) {
         auto *items = nautilus_menu_provider_get_file_items(provider, files);
         int found = 0;
         if (items && !items->next) {
+            char *title = nullptr;
+            g_object_get(items->data, "label", &title, nullptr);
+            const bool expectedTitle = argc == 2 || g_strcmp0(title, argv[2]) == 0;
+            g_free(title);
             NautilusMenu *submenu = nullptr;
             g_object_get(items->data, "menu", &submenu, nullptr);
             auto *children = nautilus_menu_get_items(submenu);
-            found = g_list_length(children);
+            found = expectedTitle ? static_cast<int>(g_list_length(children)) : -1;
             for (auto *it = children; it; it = it->next) {
                 char *label = nullptr;
                 g_object_get(it->data, "label", &label, nullptr);
