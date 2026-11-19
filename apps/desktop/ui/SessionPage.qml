@@ -189,7 +189,6 @@ Item {
     readonly property var globalTaskModel: sessionManager ? (visible ? sessionManager.taskModel : null) : reader.taskModel
     readonly property int globalActiveTaskCount: sessionManager ? sessionManager.activeTaskCount : reader.activeTaskCount
     onVisibleChanged: if (!visible) {
-        reader.cancelContentPreview();
         if (taskMenu) taskMenu.close();
         if (moveDrag && moveDrag.Drag.active) root.cancelTransfer();
     }
@@ -215,6 +214,20 @@ Item {
     }
     property bool inspectorRequested: true
     readonly property bool inspectorVisible: inspectorRequested && width >= Theme.inspectorCollapseWidth
+    readonly property bool inlinePreviewVisible: visible && !sessionClosed && !welcomeVisible &&
+        inspectorVisible && visibility !== Window.Hidden && visibility !== Window.Minimized
+    readonly property bool separatePreviewVisible: visible && !sessionClosed && !welcomeVisible &&
+        inspectorWindow.visible && inspectorWindow.visibility !== Window.Minimized
+    readonly property bool contentPreviewVisible: inlinePreviewVisible || separatePreviewVisible
+    onContentPreviewVisibleChanged: if (!contentPreviewVisible) reader.hideContentPreview()
+    Timer {
+        // Let rapid selection changes and double-clicks settle before reading content.
+        readonly property string entry: String(reader.detail.id || "")
+        interval: 120
+        running: root.contentPreviewVisible && reader.canPreview && !reader.contentPreview.state
+        onEntryChanged: if (running) restart()
+        onTriggered: reader.requestPreview(entry)
+    }
     property string searchSession: ""
     property bool restartAfterClose: false
     property bool darkMode: AppSettings.dark
@@ -497,7 +510,6 @@ Item {
     Window {
         id: inspectorWindow
         objectName: "inspectorWindow"
-        onClosing: reader.cancelContentPreview()
         transientParent: root.windowHost
         title: qsTrId("ui.801948f7646f")
         width: 360
@@ -516,6 +528,7 @@ Item {
             anchors.fill: parent
             detail: reader.detail
             preview: reader.contentPreview
+            previewActive: root.separatePreviewVisible
             canPreview: reader.canPreview
             onPreviewRequested: id => reader.requestPreview(id)
             onPreviewCancelled: reader.cancelContentPreview()
@@ -524,7 +537,7 @@ Item {
             iconForFile: root.fileIcon
             canExtract: reader.ready && !reader.browsingBusy
             onExtractRequested: id => reader.prepareExtraction(false, [id])
-            onCloseRequested: { reader.cancelContentPreview(); inspectorWindow.close(); }
+            onCloseRequested: inspectorWindow.close()
         }
     }
     Connections {
@@ -1961,16 +1974,17 @@ Item {
                 Layout.maximumWidth: Math.round(Theme.inspectorWidth)
                 Layout.fillHeight: true
                 detail: reader.detail
-            preview: reader.contentPreview
-            canPreview: reader.canPreview
-            onPreviewRequested: id => reader.requestPreview(id)
-            onPreviewCancelled: reader.cancelContentPreview()
+                preview: reader.contentPreview
+                previewActive: root.inlinePreviewVisible
+                canPreview: reader.canPreview
+                onPreviewRequested: id => reader.requestPreview(id)
+                onPreviewCancelled: reader.cancelContentPreview()
                 selectionCount: reader.selectedCount
                 sizeFormatter: root.formatSize
                 iconForFile: root.fileIcon
                 canExtract: reader.ready && !reader.browsingBusy
                 onExtractRequested: id => reader.prepareExtraction(false, [id])
-                onCloseRequested: { reader.cancelContentPreview(); root.inspectorRequested = false; }
+                onCloseRequested: root.inspectorRequested = false
             }
         }
         Rectangle {

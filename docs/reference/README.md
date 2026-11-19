@@ -31,7 +31,7 @@ Start with the [system architecture](../design/system-architecture.md) for the d
 - [Large archive indexing and on-demand browsing](../engineering/large-index.md)
 - [Split-volume reading and temporary opening](../engineering/archive-opening.md)
 - [Adaptive filename encoding contract](../engineering/filename-encoding.md)
-- [Explicit content preview](../engineering/content-preview.md)
+- [Content preview](../engineering/content-preview.md)
 - [Extraction preflight: metadata phase](../engineering/extraction-preflight.md)
 - [Safe ZIP extraction implementation](../engineering/zip-safe-extraction.md)
 - [Archive integrity checking](../engineering/archive-checking.md)

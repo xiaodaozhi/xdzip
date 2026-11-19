@@ -41,7 +41,7 @@ Microsoft Store 负责该渠道的更新，与 GitHub 独立发布。GitHub 版�
 
 打开压缩包后可以浏览目录、搜索和排序，再选择需要解压的条目。升序和降序都将目录排在文件之前。界面提供列表和网格视图、文件属性、界面语言选择、浅色和深色主题，以及可调的字号和界面密度。自动语言在支持时跟随系统，否则使用美式英语。普通单文件 ZIP／ZIP64 最多可索引一百万条记录供浏览。多数其他格式的上限更低，解压、整包检查和修改也各有独立限制。详见[用户手册](docs/zh-CN/user-guide/README.md)与[大归档索引](docs/zh-CN/engineering/large-index.md)。
 
-- **内容预览**：在属性卡主动预览受限纯文本、常见栅格图片和静态 SVG，macOS 还支持 HEIC／HEIF。完整读取并完成格式提供的校验后显示，可取消；格式、大小和解码预算见[预览说明](docs/zh-CN/engineering/content-preview.md)。
+- **内容预览**：单选文件时，可见的属性卡自动预览受支持的纯文本、栅格图片或静态 SVG。macOS 还支持 HEIC／HEIF。完整读取并完成格式提供的校验后显示，可取消；格式、大小和解码预算见[预览说明](docs/zh-CN/engineering/content-preview.md)。
 - **解压和打开**：选择目标位置与重名策略，查看进度并可请求取消。双击普通文件会先将副本解压到私有临时目录，再交给系统打开；修改副本不会写回压缩包，缓存会在七天后的后续打开操作中清理。
 - **创建和修改**：可创建 ZIP、TAR、TAR.GZ、GZIP、XZ、TAR.XZ、LZ4、TAR.LZ4、Zstandard、TAR.ZST、LZH 和 7z，也能创建 ISO9660/Joliet 数据镜像。Windows x64 还可以创建 ZIP 自解压包。支持对符合条件的普通单文件压缩包添加文件、替换文件和包内移动；也可从列表拖出文件，或拖入文件后确认添加。具体格式和限制见下表。
 - **检查**：可在后台测试整包，不写出文件。校验范围取决于格式。TAR、ISO、UDF 和复合文件（MSI）等格式检查结构与可读性，没有逐文件内容校验和。详见[完整性检查](docs/zh-CN/engineering/archive-checking.md)。

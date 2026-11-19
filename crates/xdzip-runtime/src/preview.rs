@@ -1,4 +1,4 @@
-//! Explicit, authenticated, in-memory previews. No temporary file or external application.
+//! Authenticated in-memory previews. No temporary file or external application.
 use crate::{Archive, extraction::Password};
 use std::io::{self, Read, Seek, SeekFrom};
 use xdzip_codec_api::payload::{DecodeError, DecodedSink};
@@ -139,6 +139,10 @@ fn profile(name: &str) -> Option<(u8, usize)> {
         "heic" | "heif" if cfg!(target_os = "macos") => Some((12, IMAGE_BYTES)),
         _ => None,
     }
+}
+/// Check the preview format allowlist without accessing the archive or its payload.
+pub fn supports_name(name: &str) -> bool {
+    profile(name).is_some()
 }
 fn text(bytes: &[u8]) -> Result<Vec<u8>, &'static str> {
     let text = if bytes.starts_with(&[0xff, 0xfe]) || bytes.starts_with(&[0xfe, 0xff]) {

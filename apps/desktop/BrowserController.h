@@ -59,6 +59,7 @@ class ArchiveTableModel final : public QAbstractTableModel {
     void selectAll(bool selected);
     void selectRange(int first, int last);
     QStringList selectedIds() const;
+    int singleSelectedRow() const;
     quint64 selectionRevision() const {
         return m_selectionRevision;
     }
@@ -191,15 +192,14 @@ class BrowserController : public QObject {
         return m_contentPreview;
     }
     bool canPreview() const {
-        return m_ready && !m_busy && runtimeAvailable() && m_model.selectedCount() == 1 &&
-               !m_detail.value("directory").toBool() && !m_detail.value("id").toString().isEmpty();
+        return m_ready && !m_busy && !m_updateActive && !m_previewRequest && !m_waitingPreview &&
+               m_openPasswordPrompt.isEmpty() && runtimeAvailable() &&
+               m_model.selectedCount() == 1 && m_detail.value("previewSupported").toBool();
     }
     Q_INVOKABLE void requestPreview(const QString &id);
     void clearContentPreview();
-    Q_INVOKABLE void cancelContentPreview() {
-        clearContentPreview();
-        emit changed();
-    }
+    Q_INVOKABLE void hideContentPreview();
+    Q_INVOKABLE void cancelContentPreview();
     Q_INVOKABLE void navigateDirectory(const QString &id);
     Q_INVOKABLE QStringList directoryAncestors(const QString &id) const;
     // Columns 0..4 toggle ascending/descending; -1 restores archive order.
@@ -219,10 +219,9 @@ class BrowserController : public QObject {
     bool browsingBusy() const {
         // Operation preparation and drag manifests keep the committed browser snapshot.
         return m_updateActive || (m_busy && m_result.updating) ||
-               (m_busy &&
-                (m_closing || m_faulted ||
-                 (!taskStarting() && !m_result.targetCheck && !m_result.inputPreview &&
-                  !m_result.exportManifest && !m_result.pageFetch && !m_result.contentPreview)));
+               (m_busy && (m_closing || m_faulted ||
+                           (!taskStarting() && !m_result.targetCheck && !m_result.inputPreview &&
+                            !m_result.exportManifest && !m_result.pageFetch)));
     }
     QString archiveOperation() const {
         return runtimeAvailable() && browsingBusy() ? m_archiveOperation : QString{};
@@ -408,10 +407,6 @@ class BrowserController : public QObject {
         bool opening = false;
         bool freezeSelection = false;
         QStringList frozenSelectors;
-        bool contentPreview = false;
-        quint64 previewEntry = 0;
-        quint8 previewKind = 0;
-        QByteArray previewBytes;
         bool pageFetch = false;
         bool preflight = false;
         bool extraction = false;
@@ -458,9 +453,16 @@ class BrowserController : public QObject {
     void fetchPage(int offset);
     void presentExtractionIntent(bool all);
     void startContentPreview(quint64 entry, const QString &password = {}, bool supplied = false);
+    void submitContentPreview();
+    void receiveContentPreview(const xdzip::reader::Event &event);
     QVariantMap m_contentPreview;
-    quint64 m_previewEntry = 0;
+    quint64 m_previewEntry = 0, m_previewRequest = 0;
     int m_previewAttempts = 0;
+    quint8 m_previewKind = 0;
+    QByteArray m_previewBytes;
+    std::optional<xdzip::reader::Command> m_waitingPreview;
+    QTimer m_previewAdmissionRetry;
+    int m_previewAdmissionAttempts = 0;
     void drainPage();
     int m_desiredPage = -1;
     int m_selectionAnchorRow = -1;

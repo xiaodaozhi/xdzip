@@ -10,8 +10,11 @@ Rectangle {
     required property var sizeFormatter
     required property var iconForFile
     property var preview: ({})
+    property bool previewActive: false
     property bool canPreview: false
     readonly property bool imageProviderReady: PreviewImages.ready()
+    readonly property bool supportsPreview: selectionCount === 1 && Boolean(detail.previewSupported)
+    readonly property bool previewPending: preview.state === "loading" || preview.state === "password"
     signal previewRequested(string id)
     signal previewCancelled
     property int selectionCount: 0
@@ -83,11 +86,14 @@ Rectangle {
                 radius: Theme.mainPreviewRadius
                 color: Theme.canvas
                 border.color: Theme.border
+                HoverHandler { id: previewHover; acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad }
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: Theme.contentPreviewInset
                     spacing: Theme.contentPreviewGap
                     Item {
+                        id: previewBody
+                        readonly property bool decodingImage: panel.preview.state === "image" && contentImage.status === Image.Loading
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         clip: true
@@ -95,9 +101,9 @@ Rectangle {
                             anchors.centerIn: parent
                             width: parent.width
                             spacing: Theme.contentPreviewGap
-                            visible: !panel.preview.state || panel.preview.state === "loading" || panel.preview.state === "password" || panel.preview.state === "error"
+                            visible: panel.preview.state !== "text" && (panel.preview.state !== "image" || previewBody.decodingImage)
                             Image {
-                                visible: !panel.preview.state
+                                visible: !panel.preview.state && !panel.supportsPreview && panel.selectionCount <= 1
                                 Layout.alignment: Qt.AlignHCenter
                                 Layout.preferredWidth: Theme.contentPreviewIconSize
                                 Layout.preferredHeight: Theme.contentPreviewIconSize
@@ -106,15 +112,25 @@ Rectangle {
                             }
                             BusyIndicator {
                                 Layout.alignment: Qt.AlignHCenter
-                                visible: panel.preview.state === "loading"
+                                visible: panel.preview.state === "loading" || previewBody.decodingImage
                                 running: visible
                                 implicitWidth: Theme.contentPreviewSpinnerSize
                                 implicitHeight: implicitWidth
                                 Accessible.name: qsTrId("preview.loading")
                             }
                             Text {
+                                objectName: "contentPreviewStatus"
                                 Layout.fillWidth: true
-                                text: panel.preview.message || (panel.preview.state === "loading" ? qsTrId("preview.loading") : panel.preview.state === "password" ? qsTrId("preview.passwordDescription") : panel.detail.id ? qsTrId("preview.hint") : qsTrId("ui.3d997d4452fc"))
+                                text: {
+                                    if (panel.selectionCount > 1) return qsTrId("preview.multiple");
+                                    if (panel.preview.message) return panel.preview.message;
+                                    if (panel.preview.state === "password") return qsTrId("preview.passwordDescription");
+                                    if (panel.preview.state === "cancelled") return qsTrId("preview.cancelled");
+                                    if (panel.supportsPreview) return qsTrId("preview.loading");
+                                    if (panel.detail.directory) return qsTrId("preview.folder");
+                                    if (panel.detail.id) return qsTrId("preview.unsupported");
+                                    return qsTrId("ui.3d997d4452fc");
+                                }
                                 textFormat: Text.PlainText
                                 font.pixelSize: Theme.mainPropertySize
                                 color: panel.preview.state === "error" ? Theme.menuDanger : Theme.textSecondary
@@ -147,7 +163,7 @@ Rectangle {
                             objectName: "contentPreviewImage"
                             anchors.fill: parent
                             visible: panel.preview.state === "image"
-                            source: visible && panel.imageProviderReady ? panel.preview.image || "" : ""
+                            source: panel.previewActive && visible && panel.imageProviderReady ? panel.preview.image || "" : ""
                             sourceSize: Qt.size(Theme.contentPreviewImageSample, Theme.contentPreviewImageSample)
                             asynchronous: true
                             cache: false
@@ -155,8 +171,9 @@ Rectangle {
                             Accessible.name: panel.detail.name || qsTrId("preview.action")
                         }
                         Text {
+                            objectName: "contentPreviewImageError"
                             anchors.fill: parent
-                            visible: panel.preview.state === "image" && contentImage.status === Image.Error
+                            visible: panel.preview.state === "image" && (contentImage.status === Image.Error || !panel.imageProviderReady)
                             text: qsTrId("preview.imageFailed")
                             textFormat: Text.PlainText
                             wrapMode: Text.Wrap
@@ -167,12 +184,54 @@ Rectangle {
                         }
                     }
                     ArchiveAction {
-                        objectName: "contentPreviewAction"
+                        objectName: "contentPreviewCancel"
                         Layout.alignment: Qt.AlignHCenter
-                        visible: Boolean(panel.detail.id) && !Boolean(panel.detail.directory)
-                        text: panel.preview.state === "loading" || panel.preview.state === "password" ? qsTrId("common.cancel") : panel.preview.state ? qsTrId("preview.again") : qsTrId("preview.action")
-                        enabled: panel.canPreview || panel.preview.state === "loading" || panel.preview.state === "password"
-                        onClicked: panel.preview.state === "loading" || panel.preview.state === "password" ? panel.previewCancelled() : panel.previewRequested(String(panel.detail.id))
+                        visible: panel.previewPending
+                        text: qsTrId("common.cancel")
+                        onClicked: panel.previewCancelled()
+                    }
+                }
+                ArchiveAction {
+                    id: refresh
+                    objectName: "contentPreviewRefresh"
+                    anchors.top: parent.top
+                    anchors.right: parent.right
+                    anchors.margins: Theme.contentPreviewRefreshInset
+                    width: Theme.contentPreviewRefreshSize
+                    height: width
+                    visible: panel.supportsPreview && !panel.previewPending
+                    focusPolicy: Qt.TabFocus
+                    opacity: previewHover.hovered || visualFocus ? 1 : 0
+                    enabled: panel.canPreview
+                    Accessible.name: qsTrId("preview.refresh")
+                    explanation: Accessible.name
+                    onClicked: panel.previewRequested(String(panel.detail.id))
+                    background: Rectangle {
+                        color: refresh.down ? Theme.controlPressed : refresh.hovered ? Theme.controlHover : Theme.surface
+                        radius: Theme.contentPreviewRefreshRadius
+                        border.color: refresh.visualFocus ? Theme.accent : Theme.border
+                    }
+                    Canvas {
+                        anchors.centerIn: parent
+                        width: Theme.contentPreviewRefreshGlyphSize
+                        height: width
+                        readonly property color stroke: refresh.enabled ? Theme.text : Theme.textSecondary
+                        onStrokeChanged: requestPaint()
+                        onPaint: {
+                            const ctx = getContext("2d");
+                            ctx.reset();
+                            ctx.scale(width / 16, height / 16);
+                            ctx.strokeStyle = stroke;
+                            ctx.lineWidth = 1.5;
+                            ctx.lineCap = "round";
+                            ctx.lineJoin = "round";
+                            ctx.beginPath();
+                            ctx.arc(8, 8, 5, -0.62, -5.75, true);
+                            ctx.moveTo(12.4, 2.4);
+                            ctx.lineTo(12.4, 5.2);
+                            ctx.lineTo(9.6, 5.2);
+                            ctx.stroke();
+                        }
                     }
                 }
             }

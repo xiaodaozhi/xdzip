@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/ux/main-window-components.md) | [繁體中文（台灣）](../zh-TW/ux/main-window-components.md)
 
-Main-window controls deliver both appearance and behavior, with explicit normal, hover, pressed, keyboard focus, disabled, selected, busy and error states. HTML uses sample archives to verify interaction; Qt enables actions according to actual browsing, creation, extraction, [integrity checking](../engineering/archive-checking.md) and [explicit content preview](../engineering/content-preview.md) capabilities. HTML examples do not represent real background results.
+Main-window controls deliver both appearance and behavior, with explicit normal, hover, pressed, keyboard focus, disabled, selected, busy and error states. HTML uses sample archives to verify interaction; Qt enables actions according to actual browsing, creation, extraction, [integrity checking](../engineering/archive-checking.md) and [automatic content preview](../engineering/content-preview.md) capabilities. HTML examples do not represent real background results.
 
 Filenames, directory names, archive names and paths preferentially use the startup system default font, with platform fallback for missing glyphs. Fixed UI copy continues using the bundled subset. Directory tree and drag previews are measured with their respective text fonts; see the [visual standard](../visual/design-standard.md#界面字体与用户数据).
 

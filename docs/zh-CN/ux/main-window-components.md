@@ -2,7 +2,7 @@
 
 [English](../../ux/main-window-components.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/ux/main-window-components.md)
 
-主窗口的控件同时交付外观和行为：普通、悬停、按下、键盘焦点、禁用、选中、忙碌与错误均有明确状态。HTML 使用示例压缩包验证交互；Qt 根据真实浏览、创建、解压、[完整性检查](../engineering/archive-checking.md)和[主动内容预览](../engineering/content-preview.md)的能力启用动作，HTML 示例不代表真实后台结果。
+主窗口的控件同时交付外观和行为：普通、悬停、按下、键盘焦点、禁用、选中、忙碌与错误均有明确状态。HTML 使用示例压缩包验证交互；Qt 根据真实浏览、创建、解压、[完整性检查](../engineering/archive-checking.md)和[内容预览](../engineering/content-preview.md)的能力启用动作，HTML 示例不代表真实后台结果。
 
 文件名、目录名、归档名和路径优先使用启动时的系统默认字体，缺字由平台回退；固定界面文案继续使用内置子集。目录树与拖动预览按对应文字字体量测，详见[视觉规范](../visual/design-standard.md#界面字体与用户数据)。
 

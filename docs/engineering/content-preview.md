@@ -1,8 +1,8 @@
-# Explicit content preview
+# Content preview
 
 English | [简体中文](../zh-CN/engineering/content-preview.md) | [繁體中文（台灣）](../zh-TW/engineering/content-preview.md)
 
-Preview is initiated when the user clicks “Preview content” in the properties card. Selecting an entry or opening an archive does not automatically decode content. The main window and independent properties viewer use the same component; passwords reuse the existing password window. Metadata details remain independently available.
+When the properties card is visible, selecting one supported file starts a preview after the selection settles. The refresh icon appears at the upper right when the pointer is over the preview or the button receives keyboard focus. It reloads the selected file. The card reports read or decode failures and shows a selection message for multiple items. The main window and standalone properties viewer share these behaviors and the existing password window. File metadata remains available independently.
 
 ## Capabilities and budgets
 
@@ -39,7 +39,7 @@ Reject DTDs, entities, processing instructions, scripts, events, animation, fore
 
 Preview reuses frozen physical identity, source version, payload location, and existing decoders. Content must be completely decoded to EOF and complete the format's available integrity and authentication checks before text or encoded images reach preview. Formats such as TAR without per-file content checksums retain only their existing structure and readability guarantees. Disk-backed large indexes use bounded selected-payload reads without downloading all metadata to Qt.
 
-Passwords bind only to the current request and use the existing zeroizing container; errors, authentication ambiguity, and cancellation follow existing categories, with at most ten attempts. Closing the password window cancels only preview and retains the usable directory. Closing preview, changing entries, hiding an archive page, or closing a session clears content; invalidated requests and decode results cannot restore old content. Failure and cancellation discard unverified partial content, do not write an entry copy, and do not launch a system application. Double-click temporary opening follows its [separate flow](archive-opening.md).
+Passwords bind only to the current request and use the existing zeroizing container; errors, authentication ambiguity, and cancellation follow existing categories, with at most ten attempts. Closing the password window cancels only preview and retains the usable directory. Opening, navigating, and other foreground reader commands take priority over a pending preview read. Closing preview, changing entries, hiding an archive page, or closing a session clears content; invalidated requests and decode results cannot restore old content. Failure and cancellation discard unverified partial content, do not write an entry copy, and do not launch a system application. Double-click temporary opening follows its [separate flow](archive-opening.md).
 
 ## Toolchain and acceptance
 
