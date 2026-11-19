@@ -106,6 +106,10 @@
       "reference": "design/hifi/sources/content-preview.html",
       "iconSize": 48,
       "spinnerSize": 32,
+      "selectionStack": {
+        "offsetX": 16,
+        "offsetY": 8
+      },
       "refresh": {
         "size": 28,
         "radius": 3,

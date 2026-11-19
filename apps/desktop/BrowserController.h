@@ -112,6 +112,7 @@ class BrowserController : public QObject {
     Q_PROPERTY(QVariantMap contentPreview READ contentPreview NOTIFY changed)
     Q_PROPERTY(bool canPreview READ canPreview NOTIFY changed)
     Q_PROPERTY(int selectedCount READ selectedCount NOTIFY changed)
+    Q_PROPERTY(QVariantList previewSelectionEntries READ previewSelectionEntries NOTIFY changed)
     Q_PROPERTY(bool canUpdateArchive READ canUpdateArchive NOTIFY changed)
     Q_PROPERTY(QString addDropMessage READ addDropMessage NOTIFY changed)
     Q_PROPERTY(bool canPreflight READ canPreflight NOTIFY changed)
@@ -273,6 +274,7 @@ class BrowserController : public QObject {
     int selectedCount() const {
         return m_model.selectedCount();
     }
+    QVariantList previewSelectionEntries() const;
     QString selectedBytes() const;
     bool canPreflight() const;
     QString location() const {

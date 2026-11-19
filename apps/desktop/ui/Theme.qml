@@ -375,6 +375,8 @@ QtObject {
     readonly property real contentPreviewGap: mainUnits(8)
     readonly property real contentPreviewIconSize: mainUnits(48)
     readonly property real contentPreviewSpinnerSize: mainUnits(32)
+    readonly property real contentPreviewStackOffsetX: 16
+    readonly property real contentPreviewStackOffsetY: 8
     readonly property real contentPreviewRefreshSize: 28
     readonly property real contentPreviewRefreshRadius: 3
     readonly property real contentPreviewRefreshInset: 6

@@ -8,6 +8,12 @@ body{margin:24px}body.dark{background:#161d2b;--surface:#202a3a;--canvas:#182131
 nav{display:flex;gap:12px;align-items:center;margin-bottom:24px}label,button,select{font:inherit;font-size:13px}button,select{background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:5px;padding:5px 12px;cursor:pointer}button:hover{background:var(--hover)}
 main{display:flex;gap:24px;flex-wrap:wrap}.panel{box-sizing:border-box;width:258px;background:var(--surface);padding:13.23px 11.91px 16px 13.23px;border:1px solid var(--line)}h2{font-size:calc(13px*var(--scale));margin:0 0 16px;font-weight:600}.card{position:relative;box-sizing:border-box;height:183.235px;padding:9.6px;border:1px solid var(--line);border-radius:6px;background:var(--canvas);display:flex;flex-direction:column;gap:6.4px}.content{flex:1;min-height:0;overflow:auto;font-family:system-ui,sans-serif;font-size:calc(12px*var(--scale));white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5}.hint{display:grid;place-content:center;white-space:normal;text-align:center;color:var(--secondary)}.error{color:var(--danger)}.card button{align-self:center}.filename{font-size:calc(14px*var(--scale));overflow-wrap:anywhere;margin:11px 0 4px;font-weight:600}.content svg{width:100%;height:100%}
 .refresh{position:absolute;top:5px;right:5px;box-sizing:border-box;width:28px;height:28px;border-radius:3px;padding:0;display:grid;place-items:center;opacity:0}.refresh svg{width:16px;height:16px}.card:hover .refresh,.refresh:focus-visible{opacity:1}
+.selection-stack{position:relative;justify-self:center;width:54.4px;height:46.4px;margin-bottom:6.4px}
+.selection-stack span{position:absolute;width:38.4px;height:38.4px;background:center/contain no-repeat}
+.selection-stack .image-file{top:0;left:0;background-image:url('../../assets/svg/light/image-file.svg')}
+.selection-stack .text-file{top:8px;left:16px;background-image:url('../../assets/svg/light/file-text.svg')}
+body.dark .selection-stack .image-file{background-image:url('../../assets/svg/dark/image-file.svg')}
+body.dark .selection-stack .text-file{background-image:url('../../assets/svg/dark/file-text.svg')}
 .card [hidden]{display:none}
 </style>
 <nav>
@@ -35,7 +41,10 @@ Archive contents remain plain text.</div>
   </section>
   <section class="panel">
     <h2 data-zh="多选" data-en="Multiple selection">多选</h2>
-    <div class="card"><div class="content hint" data-zh="已选择多个项目" data-en="Multiple items selected">已选择多个项目</div></div>
+    <div class="card"><div class="content hint">
+      <span class="selection-stack" aria-hidden="true"><span class="image-file"></span><span class="text-file"></span></span>
+      <span data-zh="已选择多个项目" data-en="Multiple items selected">已选择多个项目</span>
+    </div></div>
   </section>
   <section class="panel">
     <h2 data-zh="预览失败" data-en="Preview failed">预览失败</h2>

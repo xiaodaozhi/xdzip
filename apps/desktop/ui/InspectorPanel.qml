@@ -18,6 +18,7 @@ Rectangle {
     signal previewRequested(string id)
     signal previewCancelled
     property int selectionCount: 0
+    required property var previewSelectionEntries
     property bool showCloseAction: true
     property bool canExtract: false
     signal extractRequested(string id)
@@ -109,6 +110,28 @@ Rectangle {
                                 Layout.preferredHeight: Theme.contentPreviewIconSize
                                 source: panel.iconForFile(panel.detail.name || "", panel.detail.directory || false)
                                 fillMode: Image.PreserveAspectFit
+                            }
+                            Item {
+                                objectName: "contentPreviewSelectionIcons"
+                                visible: panel.selectionCount > 1
+                                Layout.alignment: Qt.AlignHCenter
+                                implicitWidth: Theme.contentPreviewIconSize + Theme.contentPreviewStackOffsetX
+                                implicitHeight: Theme.contentPreviewIconSize + Theme.contentPreviewStackOffsetY
+                                Repeater {
+                                    model: panel.selectionCount > 1 ? 2 : 0
+                                    Image {
+                                        required property int index
+                                        readonly property var entry: panel.previewSelectionEntries[index] || ({})
+                                        objectName: index === 0 ? "contentPreviewBackIcon" : "contentPreviewFrontIcon"
+                                        x: index * Theme.contentPreviewStackOffsetX
+                                        y: index * Theme.contentPreviewStackOffsetY
+                                        width: Theme.contentPreviewIconSize
+                                        height: width
+                                        source: panel.iconForFile(entry.name || "", entry.directory || false)
+                                        fillMode: Image.PreserveAspectFit
+                                        Accessible.ignored: true
+                                    }
+                                }
                             }
                             BusyIndicator {
                                 Layout.alignment: Qt.AlignHCenter
