@@ -2,25 +2,31 @@
 
 [English](../../../market/windows/capture.md) | 简体中文
 
-[capture-windows-store.ps1](../../../../scripts/capture-windows-store.ps1) 可在一次运行中自动准备并截取一种语言所需的四张截图。脚本使用商店候选程序和隔离配置打开两个演示压缩包，自动切换标签、选择文件、请求预览、切换网格视图，并打开填好文件的创建窗口，无需逐张按键或手动准备界面。按 **F10** 可取消，已保存图片会保留。
+## 从审核过的截图集导出
 
-## 刷新中英文商店和 README 图片
-
-在本机 Windows 桌面将显示缩放设为 150%，退出 XDZip（包括托盘中的实例），并在截图时保持桌面可用。在仓库根目录运行以下命令，需要 Python 3.11 或更新版本、Node.js，以及[商店材料指南](README.md)所述的图像工具。
+首次使用时，在仓库根目录安装共享的图像工具。
 
 ```powershell
-python scripts/refresh-windows-store-screenshots.py --package-dir build/store-msix-package --output build/store-screenshot-review
+npm install --prefix build/toolchain/windows-store-tools --no-save --no-package-lock sharp@0.34.5
 ```
 
-使用 Store 工作流已验证工件中的 `store-msix-package` 目录。脚本按打包和验证记录核对 MSIX 摘要，提取运行文件，无需安装，再以默认逻辑窗口尺寸自动拍摄两种语言。八张图都应来自 144 DPI 的窗口。若使用其他 Windows 显示缩放，可用 `--dpi` 指定对应数值。
-
-在输出目录的 `materials/` 中以 100% 查看图片。生成过程裁去顶部一像素，清理四个圆角后的旧底色，并添加一像素内边框。其余客户区像素保持原样。商店画布和 README 图片都以原生比例使用处理后的界面。预览还包含融合宣传图和对应的来源摘要。
-
-确认画面后，复用已拍摄的两组记录更新仓库素材，无需再次截图。每次使用新的输出目录。
+使用已审核的导出目录或备份中的 `capture-source`。导出复用原始截图像素，与当前版本的宣传版式和一览文案合成。
 
 ```powershell
-python scripts/refresh-windows-store-screenshots.py --package-dir build/store-msix-package --from-captures build/store-screenshot-review/en-US build/store-screenshot-review/zh-CN --output build/store-screenshot-final --apply
+python scripts/package-windows-store-materials.py --from-archive "D:/Store-backup/approved/capture-source"
 ```
+
+命令会打印 `build/store-listing/` 下的新目录。用 `--output` 可指定目录，加 `--4k` 可另得 3840 × 2160 成品。打开 `preview.html` 审阅，商店桌面截图栏使用对应语言 `promotional/` 下的 1920 × 1080 文件。提交新图后，把整个目录作为独立文件归档。
+
+## 用已校验 MSIX 截取两种语言
+
+需要刷新截图时，在 Windows 桌面执行以下命令。它核验商店程序包和回执，采集两种语言的四个场景，并导出相同结构的目录。
+
+```powershell
+python scripts/refresh-windows-store-screenshots.py --package-dir build/store-msix-package
+```
+
+默认截图 DPI 为 144（150% 缩放）。如已有两套匹配的捕获会话，可传入 `--from-captures EN ZH`。原图和采集来源一并导出到 `capture-source/`，`manifest.json` 记录采集和导出的身份。
 
 ## 只截图一种语言
 

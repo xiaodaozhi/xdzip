@@ -3,20 +3,23 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const sharp = require('./windows-store-sharp.cjs');
-const imageTools = require('./windows-store-image-utils.cjs');
 const rootIndex = process.argv.indexOf('--root');
-const ROOT = rootIndex === -1 ? path.resolve(__dirname, '..') : path.resolve(process.argv[rootIndex + 1]);
+const repository = path.resolve(__dirname, '..');
+const listingsOnly = rootIndex === -1;
+const ROOT = listingsOnly ? repository : path.resolve(process.argv[rootIndex + 1]);
+if (!listingsOnly && ROOT === repository) throw Error('Render images in an export staging directory');
+const sharp = listingsOnly ? null : require('./windows-store-sharp.cjs');
+const imageTools = listingsOnly ? null : require('./windows-store-image-utils.cjs');
 const spec = JSON.parse(fs.readFileSync(path.join(ROOT, 'specs/marketing/windows-store.json'), 'utf8'));
-const version = JSON.parse(fs.readFileSync(path.join(ROOT, 'VERSION.json'), 'utf8'));
 const brand = fs.readFileSync(path.join(ROOT, 'design/assets/brand/xdzip.svg'), 'utf8');
 const brandUri = 'data:image/svg+xml;base64,' + Buffer.from(brand).toString('base64');
 const check = process.argv.includes('--check');
 const indexFile = path.join(ROOT, 'specs/marketing/windows-store-assets.json');
 const captureFile = path.join(ROOT, 'specs/marketing/windows-store-captures.json');
-const captures = fs.existsSync(captureFile) ? JSON.parse(fs.readFileSync(captureFile, 'utf8')) : null;
+const captures = listingsOnly ? null : JSON.parse(fs.readFileSync(captureFile, 'utf8'));
 const previous = fs.existsSync(indexFile) ? JSON.parse(fs.readFileSync(indexFile, 'utf8')) : null;
 const jobs = [];
+const largeSizes = process.argv.includes('--4k') ? [[1920,1080],[3840,2160]] : [[1920,1080]];
 const hash = data => crypto.createHash('sha256').update(data).digest('hex');
 const esc = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 const v = spec.visual;
@@ -93,12 +96,12 @@ function icon(size) {
 const en = 'developers/market/windows';
 const zh = 'developers/zh-CN/market/windows';
 for (const size of [71, 150, 300, 512, 1024]) jobs.push({file:`${en}/images/branding/${size <= 300 ? 'app-icon' : 'avatar'}-${size}.png`, width:size, height:size, role:size <= 300 ? 'app-tile-icon' : 'reusable-avatar', locale:'shared', source:icon(size), transparent:true});
-for (const [w,h] of [[1920,1080],[3840,2160]]) jobs.push({file:`${en}/images/branding/hero-${w}x${h}.png`, width:w,height:h,role:'text-free-hero',locale:'shared',source:hero(w,h)});
+for (const [w,h] of largeSizes) jobs.push({file:`${en}/images/branding/hero-${w}x${h}.png`, width:w,height:h,role:'text-free-hero',locale:'shared',source:hero(w,h)});
 for (const [key, locale] of Object.entries(spec.locales)) {
   const base = key === 'en-US' ? en : zh;
   for (const [w,h] of [[720,1080],[1440,2160]]) jobs.push({file:`${base}/images/branding/poster-${w}x${h}.png`,width:w,height:h,role:'poster',locale:key,source:poster(locale,w,h)});
   for (const size of [1080,2160]) jobs.push({file:`${base}/images/branding/box-art-${size}.png`,width:size,height:size,role:'box-art',locale:key,source:square(locale,size,size)});
-  for (let i=0;i<locale.promotions.length;i++) for (const [w,h] of [[1920,1080],[3840,2160]]) jobs.push({file:`${base}/images/promotional/${locale.promotions[i].id}-${w}x${h}.png`,width:w,height:h,role:'feature-illustration',locale:key,source:promo(locale,i,w,h)});
+  for (let i=0;i<locale.promotions.length;i++) for (const [w,h] of largeSizes) jobs.push({file:`${base}/images/promotional/${locale.promotions[i].id}-${w}x${h}.png`,width:w,height:h,role:'feature-illustration',locale:key,source:promo(locale,i,w,h)});
 }
 if (captures) {
   for (const capture of captures.images) {
@@ -113,7 +116,6 @@ if (captures) {
     jobs.push({file:capture.native_file,width:capture.native_width,height:capture.native_height,role:'native-screenshot-source',locale:capture.locale,source:nativeBytes,input:true,capture});
     const cutoutBytes = fs.readFileSync(path.join(ROOT,capture.cutout_file));
     if (hash(cutoutBytes) !== capture.cutout_sha256) throw Error(`Changed screenshot cutout ${capture.cutout_file}`);
-    if (capture.scene === '01-browse') jobs.push({file:capture.locale==='en-US'?'docs/images/main-window.png':'docs/zh-CN/images/main-window.png',width:capture.width,height:capture.height,role:'readme-screenshot',locale:capture.locale,source:bytes,copy:true,transparent:true});
     const base = capture.locale === 'en-US' ? en : zh;
     const [minimumWidth,minimumHeight] = spec.screenshot_artwork.store_canvas;
     const canvas = {width:minimumWidth,height:minimumHeight,background:spec.screenshot_artwork.store_background};
@@ -123,7 +125,7 @@ if (captures) {
     jobs.push({file:`${base}/images/store-screenshots/${capture.scene}.png`, width:canvas.width, height:canvas.height,
       role:'store-screenshot', locale:capture.locale, source:JSON.stringify({capture_sha256:capture.cutout_sha256,canvas,left,top}),
       canvas, left, top, capture});
-    for (const [width,height] of [[1920,1080],[3840,2160]]) {
+    for (const [width,height] of largeSizes) {
       const background = screenshotPromo(locale,index,capture,width,height);
       const box = imageTools.placement(spec,capture,width,height);
       jobs.push({file:`${base}/images/combined/${capture.scene}-${width}x${height}.png`,width,height,role:'screenshot-artwork',locale:capture.locale,capture,
@@ -141,6 +143,10 @@ function validateCopy() {
     if (l.features.length > 20 || l.features.some(s=>s.length>200)) throw Error(`${key} features exceed portal limits`);
     if (l.keywords.length > 7 || l.keywords.some(s=>s.length>40) || l.keywords.join(' ').trim().split(/\s+/).length>21) throw Error(`${key} keywords exceed portal limits`);
     if (l.promotions.some(p=>p.caption.length>200)) throw Error(`${key} caption exceeds 200`);
+    if (Object.keys(l.screenshot_captions).length !== l.promotions.length ||
+        l.promotions.some(({id})=>!l.screenshot_captions[id] || l.screenshot_captions[id].length>200)) {
+      throw Error(`${key} screenshot captions are incomplete or exceed 200 characters`);
+    }
     if (/https?:|<\/?\w/.test(l.description)) throw Error(`${key} description is not plain text`);
     if (l.additional_license_terms || l.voice_title || l.sort_title) throw Error('Optional empty fields must stay intentional');
   }
@@ -156,13 +162,11 @@ function validateCopy() {
   }
 }
 function listingMarkdown(key,l) {
-  const screenshotDimensions = spec.screenshot_artwork.store_canvas.join(' × ');
   const chinese=key==='zh-CN';
   const h=chinese?['商店一览文案，中文（中国）','适用基线','产品名称','说明','此版本的新增功能','首次提交，留空。不要把这句说明粘贴到字段中。','产品功能','逐项填写，每行是一个独立功能，不要复制列表编号。','补充字段','字段','填写内容','短标题','语音标题','简短描述','其他信息','关键字','逐项添加，共七项。','版权和商标信息','其他许可条款','留空。项目未定义额外的商店专用许可条款；应用中的开源许可和第三方通知仍然适用。','开发者','支持与隐私链接','网站','支持','隐私政策','项目许可','系统范围','宣传图说明文字','这些是功能示意图，不是实机截图。图片文件和字幕不可作为“已满足必需截图栏”的保证。','留空，桌面应用不使用 Xbox 语音标题。']:['Store listing copy, English (US)','Baseline','Product name','Description',"What's new in this version",'First submission: leave empty. Do not paste this instruction into the field.','Product features','Enter each feature separately, without the list numbers.','Supplemental fields','Field','Value','Short title','Voice title','Short description','Other information','Keywords','Add separately, seven items in total.','Copyright and trademark information','Additional license terms','Leave empty. The project defines no additional Store-specific terms; the open-source licenses and third-party notices shipped with the app still apply.','Developer','Website, support and privacy','Website','Support','Privacy policy','Project license','System scope','Promotional image captions','These images are feature illustrations, not app screenshots. Their files and captions do not establish that the required screenshot field is satisfied.','Leave empty; this desktop app does not use an Xbox voice title.'];
-  const msix = '1.0.' + version.build + '.0';
   const target = chinese
-    ? `MSIX ${msix}，x64，应用版本 ${version.version}，构建号 ${version.build}。截图来源见[材料说明](README.md)。`
-    : `MSIX ${msix}, x64, application ${version.version}, build ${version.build}. See the [materials guide](README.md) for screenshot provenance.`;
+    ? '用于 Windows 桌面商店一览。选择与本次提交相符的新增功能文案，截图来源见[材料说明](README.md)。'
+    : 'Use this copy for the Windows desktop listing. Choose release notes for the current submission and see the [materials guide](README.md) for screenshot provenance.';
   const changes = l.release_notes ? ['```text', l.release_notes, '```'].join('\n') : h[5];
   let s=`# ${h[0]}\n\n${chinese?'[English](../../../market/windows/listing.md) | 简体中文':'English | [简体中文](../../zh-CN/market/windows/listing.md)'}\n\n## ${h[1]}\n\n${target}\n\n## ${h[2]}\n\n\`\`\`text\n${l.product_name}\n\`\`\`\n\n## ${h[3]}\n\n\`\`\`text\n${l.description}\n\`\`\`\n\n## ${h[4]}\n\n${changes}\n\n## ${h[6]}\n\n${h[7]}\n\n`;
   l.features.forEach((f,i)=>s+=`${i+1}. ${f}\n`);
@@ -170,18 +174,26 @@ function listingMarkdown(key,l) {
   s = s.replace(`| ${h[12]} |`, `${chinese?'| 排序标题 | 留空，名称没有其他排序形式。 |':'| Sort title | Leave empty; no alternate sorting form is needed. |'}\n| ${h[12]} |`);
   l.keywords.forEach(k=>s+=`- ${k}\n`);
   s+=`\n### ${h[17]}\n\n\`\`\`text\n${l.copyright}\n\`\`\`\n\n### ${h[18]}\n\n${h[19]}\n\n### ${h[20]}\n\n\`\`\`text\n${l.developer}\n\`\`\`\n\n## ${h[21]}\n\n| ${h[9]} | URL |\n| --- | --- |\n| ${h[22]} | ${spec.links.website} |\n| ${h[23]} | ${spec.links.support} |\n| ${h[24]} | ${l.privacy_url} |\n| ${h[25]} | ${spec.links.license} |\n\n## ${h[26]}\n\n${l.system_requirements.join('\n')}\n\n## ${h[27]}\n\n${h[28]}\n\n`;
-  l.promotions.forEach(p=>s+=`### ${p.id}\n\n[1920 × 1080](images/promotional/${p.id}-1920x1080.png), [3840 × 2160](images/promotional/${p.id}-3840x2160.png)\n\n\`\`\`text\n${p.caption}\n\`\`\`\n\n`);
-  if (captures) {
-    s += `## ${chinese?'应用截图与融合宣传图':'App screenshots and combined artwork'}\n\n${chinese?'截图保持默认逻辑窗口尺寸，裁掉顶部一像素并清理圆角旧底色，添加一像素细边框。桌面截图栏上传 1920 × 1080 融合宣传图。它将实机界面嵌入蓝色版式，配以品牌文案、细边框和阴影。纯界面图使用 '+screenshotDimensions+' 中性画布。':'Screenshots retain the default logical window dimensions, with one top row removed, old corner backgrounds cleared and a one-pixel border added. Upload the 1920 × 1080 combined artwork to the desktop screenshot field. It shows the actual app view in a blue layout with brand copy, a thin border and a soft shadow. Plain app views use a neutral '+screenshotDimensions+' canvas.'}\n\n`;
-    for (const p of l.promotions) {
-      const capture = captures.images.find(c => c.locale === key && c.scene === p.id);
-      s += `### ${p.id}\n\n[${chinese?'默认窗口':'Default window'}](images/screenshots/${p.id}.png), [${chinese?'纯界面图':'Plain app view'}](images/store-screenshots/${p.id}.png), [${chinese?'1920 × 1080 商店上传图':'1920 × 1080 Store upload'}](images/combined/${p.id}-1920x1080.png), [3840 × 2160](images/combined/${p.id}-3840x2160.png)\n\n\`\`\`text\n${capture.caption}\n\`\`\`\n\n`;
-    }
+  l.promotions.forEach(p=>s+=`### ${p.id}\n\n\`\`\`text\n${p.caption}\n\`\`\`\n\n`);
+  s += `## ${chinese?'应用截图与融合宣传图':'App screenshots and combined artwork'}\n\n${chinese?'桌面截图栏上传本地导出目录中 promotional/ 内的 1920 × 1080 融合宣传图。':'Upload the 1920 × 1080 combined artwork in promotional/ from the local export to the desktop screenshot field.'}\n\n`;
+  for (const p of l.promotions) {
+    s += `### ${p.id}\n\n\`\`\`text\n${l.screenshot_captions[p.id]}\n\`\`\`\n\n`;
   }
   return s.trimEnd()+'\n';
 }
 async function main() {
   validateCopy(); const entries=[];
+  if (listingsOnly) {
+    for(const [key,l] of Object.entries(spec.locales)) {
+      const destination=path.join(ROOT,key==='en-US'?en:zh,'listing.md');
+      const content=listingMarkdown(key,l);
+      if(check) {
+        if(fs.readFileSync(destination,'utf8').replaceAll('\r\n','\n')!==content) throw Error(`Stale listing copy ${key}`);
+      } else fs.writeFileSync(destination,content);
+    }
+    console.log('Bilingual Store listing copy and field limits passed.');
+    return;
+  }
   for (const job of jobs) {
     const destination=path.join(ROOT,job.file); const source_sha256=hash(job.source);
     const old=previous?.assets.find(a=>a.file===job.file);
@@ -197,7 +209,6 @@ async function main() {
     if (!check && !job.input && !unchanged) {
       fs.mkdirSync(path.dirname(destination),{recursive:true});
       if (background) fs.writeFileSync(destination,await imageTools.composite(background,layer,job.canvas?job.left:job.box.imageX,job.canvas?job.top:job.box.imageY));
-      else if (job.copy) fs.writeFileSync(destination,job.source);
       else await sharp(Buffer.from(job.source)).png({compressionLevel:9}).toFile(destination);
     }
     const bytes=fs.readFileSync(destination); const meta=await sharp(bytes).metadata();
@@ -212,7 +223,6 @@ async function main() {
         if (!expected.png.equals(bytes)) throw Error(`Changed native cutout pixels or alpha ${job.file}`);
       }
     }
-    if (job.copy && !bytes.equals(job.source)) throw Error(`README screenshot differs from cleaned browse image ${job.file}`);
     if (job.canvas) {
       if (meta.width < 1366 || meta.height < 768) throw Error(`Store screenshot canvas is too small ${job.file}`);
       await imageTools.assertOverlay(bytes,layer,job.left,job.top,background);
@@ -229,12 +239,6 @@ async function main() {
   }
   if (check && previous.assets.length!==jobs.length) throw Error('Unexpected asset inventory entries');
   if (!check) fs.writeFileSync(indexFile,JSON.stringify({schema_version:1,brand_source:'design/assets/brand/xdzip.svg',assets:entries},null,2)+'\n');
-  for(const [key,l] of Object.entries(spec.locales)) {
-    const destination=path.join(ROOT,key==='en-US'?en:zh,'listing.md');
-    const content=listingMarkdown(key,l);
-    if(check) {if(fs.readFileSync(destination,'utf8')!==content) throw Error(`Stale listing copy ${key}`);}
-    else fs.writeFileSync(destination,content);
-  }
   console.log(`${check?'Validated':'Rendered'} ${jobs.length} PNG assets; bilingual field limits and source hashes passed.`);
 }
 main().catch(e=>{console.error(e.message);process.exitCode=1;});

@@ -4,14 +4,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 const sharp = require('./windows-store-sharp.cjs');
 const {hash,makeCutout} = require('./windows-store-image-utils.cjs');
-const rootIndex = process.argv.indexOf('--root');
-const root = rootIndex === -1 ? path.resolve(__dirname,'..') : path.resolve(process.argv[rootIndex + 1]);
-const spec = JSON.parse(fs.readFileSync(path.join(root,'specs/marketing/windows-store.json'),'utf8'));
-
 async function main() {
-  if (process.argv.length !== 4 && !(process.argv.length === 6 && rootIndex === 4)) {
-    throw Error('Usage: node scripts/import-windows-store-captures.cjs EN_CAPTURE_DIRECTORY ZH_CAPTURE_DIRECTORY [--root ROOT]');
+  if (process.argv.length !== 6 || process.argv[4] !== '--root') {
+    throw Error('Import captures with refresh-windows-store-screenshots.py or supply an explicit --root staging directory');
   }
+  const root = path.resolve(process.argv[5]);
+  if (root === path.resolve(__dirname,'..')) throw Error('Import screenshots into an export staging directory');
+  const spec = JSON.parse(fs.readFileSync(path.join(root,'specs/marketing/windows-store.json'),'utf8'));
   const inputs = [];
   for (const [index,locale] of ['en-US','zh-CN'].entries()) {
     const directory = path.resolve(process.argv[index+2]);

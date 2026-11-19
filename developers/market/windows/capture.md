@@ -2,25 +2,31 @@
 
 English | [简体中文](../../zh-CN/market/windows/capture.md)
 
-[capture-windows-store.ps1](../../../scripts/capture-windows-store.ps1) prepares and captures all four screenshots for one language in a single run. It opens two demonstration archives using the Store candidate and isolated settings, switches tabs, selects files, requests a preview, changes to grid view and opens a populated creation window. No per-image keys or manual scene preparation are required. **F10** cancels, retaining earlier images.
+## Export from an approved capture set
 
-## Refresh both languages and generate the Store and README images
-
-Use a local Windows desktop at 150% display scaling. Exit XDZip, including its tray instance, and keep the desktop available during the capture. Run from the repository root with Python 3.11 or later, Node.js and the image tooling described in the [materials guide](README.md).
+Install the shared image tooling once from the repository root.
 
 ```powershell
-python scripts/refresh-windows-store-screenshots.py --package-dir build/store-msix-package --output build/store-screenshot-review
+npm install --prefix build/toolchain/windows-store-tools --no-save --no-package-lock sharp@0.34.5
 ```
 
-Use the `store-msix-package` directory from the verified Store workflow artifact. The script checks the MSIX hash against the packaging and verification receipts, extracts the runtime without installing it, and runs each language once at the default logical window sizes. It checks that all eight screenshots came from 144 DPI windows. Use `--dpi` to specify a different intended Windows display scale.
-
-Review `materials/` in the printed output directory at 100%. Generation trims one top pixel, clears the old background from the four rounded corners, and applies a one-pixel inner border. The other client pixels are preserved. The Store canvases and README images use the cleaned screenshots at native scale. The preview also includes the branded exports and retain their source hashes.
-
-After reviewing the result, reuse the two sessions to update the repository assets without retaking the screenshots. Use a new output directory for each run.
+Use the `capture-source` folder from a reviewed export or backup. This reuses the actual screenshot pixels and uses the current artwork and listing copy.
 
 ```powershell
-python scripts/refresh-windows-store-screenshots.py --package-dir build/store-msix-package --from-captures build/store-screenshot-review/en-US build/store-screenshot-review/zh-CN --output build/store-screenshot-final --apply
+python scripts/package-windows-store-materials.py --from-archive "D:/Store-backup/approved/capture-source"
 ```
+
+The command prints the new output directory under `build/store-listing/`. Override it with `--output` or add `--4k` for 3840 × 2160 artwork. Inspect `preview.html` and use each language's 1920 × 1080 files in `promotional/` for the Store desktop screenshot field. Keep the directory as individual files after submitting new artwork.
+
+## Capture both languages from a verified MSIX
+
+When screenshots need refreshing, use this command on a Windows desktop. It validates the Store package and its receipts, captures all four scenes in both languages, and exports the same directory layout.
+
+```powershell
+python scripts/refresh-windows-store-screenshots.py --package-dir build/store-msix-package
+```
+
+The default capture DPI is 144 (150% scaling). A matching pair of existing capture sessions can be passed with `--from-captures EN ZH`. The raw screenshot provenance is copied to `capture-source/`. The source and output identities are recorded in `manifest.json`.
 
 ## Capture just one language
 

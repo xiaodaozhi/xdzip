@@ -39,6 +39,7 @@ jobs:
           python3 scripts/test-windows-msix.py
           python3 scripts/test-macos-finder.py
           python3 scripts/check-docs.py
+          node scripts/build-windows-store-assets.cjs --check
           python3 scripts/test-check-docs.py
           python3 scripts/check-ui-i18n.py
           node scripts/test-folder-sorting.cjs

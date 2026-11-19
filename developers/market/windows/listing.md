@@ -4,7 +4,7 @@ English | [简体中文](../../zh-CN/market/windows/listing.md)
 
 ## Baseline
 
-MSIX 1.0.30.0, x64, application 0.2.1, build 30. See the [materials guide](README.md) for screenshot provenance.
+Use this copy for the Windows desktop listing. Choose release notes for the current submission and see the [materials guide](README.md) for screenshot provenance.
 
 ## Product name
 
@@ -114,15 +114,11 @@ These images are feature illustrations, not app screenshots. Their files and cap
 
 ### 01-browse
 
-[1920 × 1080](images/promotional/01-browse-1920x1080.png), [3840 × 2160](images/promotional/01-browse-3840x2160.png)
-
 ```text
 Feature illustration: browse supported archives, find files and extract selected items. Not an application screenshot.
 ```
 
 ### 02-create
-
-[1920 × 1080](images/promotional/02-create-1920x1080.png), [3840 × 2160](images/promotional/02-create-3840x2160.png)
 
 ```text
 Feature illustration showing archive and ISO image creation, with password protection for ZIP and 7z.
@@ -130,15 +126,11 @@ Feature illustration showing archive and ISO image creation, with password prote
 
 ### 03-preview
 
-[1920 × 1080](images/promotional/03-preview-1920x1080.png), [3840 × 2160](images/promotional/03-preview-3840x2160.png)
-
 ```text
 Feature illustration: request previews of supported text, images and static SVG. Not an application screenshot.
 ```
 
 ### 04-workspace
-
-[1920 × 1080](images/promotional/04-workspace-1920x1080.png), [3840 × 2160](images/promotional/04-workspace-3840x2160.png)
 
 ```text
 Feature illustration: organize multiple archives and choose a light or dark appearance. Not an application screenshot.
@@ -146,11 +138,9 @@ Feature illustration: organize multiple archives and choose a light or dark appe
 
 ## App screenshots and combined artwork
 
-Screenshots retain the default logical window dimensions, with one top row removed, old corner backgrounds cleared and a one-pixel border added. Upload the 1920 × 1080 combined artwork to the desktop screenshot field. It shows the actual app view in a blue layout with brand copy, a thin border and a soft shadow. Plain app views use a neutral 2560 × 1440 canvas.
+Upload the 1920 × 1080 combined artwork in promotional/ from the local export to the desktop screenshot field.
 
 ### 01-browse
-
-[Default window](images/screenshots/01-browse.png), [Plain app view](images/store-screenshots/01-browse.png), [1920 × 1080 Store upload](images/combined/01-browse-1920x1080.png), [3840 × 2160](images/combined/01-browse-3840x2160.png)
 
 ```text
 Browse an archive's folder tree, select individual files and view their properties.
@@ -158,23 +148,17 @@ Browse an archive's folder tree, select individual files and view their properti
 
 ### 02-create
 
-[Default window](images/screenshots/02-create.png), [Plain app view](images/store-screenshots/02-create.png), [1920 × 1080 Store upload](images/combined/02-create-1920x1080.png), [3840 × 2160](images/combined/02-create-3840x2160.png)
-
 ```text
 Create an archive from selected files and choose ZIP compression settings.
 ```
 
 ### 03-preview
 
-[Default window](images/screenshots/03-preview.png), [Plain app view](images/store-screenshots/03-preview.png), [1920 × 1080 Store upload](images/combined/03-preview-1920x1080.png), [3840 × 2160](images/combined/03-preview-3840x2160.png)
-
 ```text
 Request an image preview next to archive entries and file properties.
 ```
 
 ### 04-workspace
-
-[Default window](images/screenshots/04-workspace.png), [Plain app view](images/store-screenshots/04-workspace.png), [1920 × 1080 Store upload](images/combined/04-workspace-1920x1080.png), [3840 × 2160](images/combined/04-workspace-3840x2160.png)
 
 ```text
 Keep two archives open in tabs and browse selected files in grid view.
