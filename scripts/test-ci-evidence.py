@@ -15,7 +15,7 @@ ci = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(ci)
 SOURCE = 'a' * 40
 QT_PHASES = ['prepare', 'source-contracts', 'sdk-correspondence', 'settings-compat', 'native-build',
-             'native-integration', 'component-tests', 'browser-repeat', 'resource-metrics', 'visual-default',
+             'native-integration', 'component-tests', 'resource-metrics', 'visual-default',
              'codec-interop', 'visual-density', 'runtime-package', 'deployed-runtime',
              'historical-fixture', 'installer-package', 'installer-lifecycle']
 
@@ -45,18 +45,20 @@ class EvidenceTests(unittest.TestCase):
                      'diagnostics/qml-requested-scale-1.25.log', 'diagnostics/qml-requested-scale-2.log']:
             self.write('build/review/' + name, log)
         self.write('build/review/native-sessions.log', log.replace('Owned::owned()', 'BrowserTest::ownedNative()'))
-        for _ in range(11):
-            suite = str(uuid.uuid4());stem = 'build/review/browser-timings/browser-suite-' + suite
-            shard = 'browser-suite-' + suite + '-shard-0'
-            timing = stem + '-shard-0/browser-123-owned.json'
-            self.write_json(timing, dict(status='passed', exit_code=0, revision=SOURCE[:12], dirty=False,
-                                        process_id=123, log='browser-123-owned.log'))
-            xml = '<TestCase name="BrowserTest">' + ''.join('<TestFunction name="' + n + '"><Incident type="pass"/></TestFunction>'
-                                                          for n in ['initTestCase', 'ownedAlpha', 'ownedBeta', 'cleanupTestCase']) + '</TestCase>'
-            self.write(stem + '-shard-0/browser-123-owned.log', xml)
-            self.write_json(stem + '.json', dict(schema_version=1, suite_id=suite, status='passed', functions=2,
-                            shards=[dict(index=0, functions=['ownedAlpha', 'ownedBeta'], timing_directory=shard,
-                                         process_id=123, status='passed', exit_code=0, missing_or_duplicate=[], extra=[])]))
+        self.browser_suite()
+
+    def browser_suite(self):
+        suite = str(uuid.uuid4());stem = 'build/review/browser-timings/browser-suite-' + suite
+        shard = 'browser-suite-' + suite + '-shard-0'
+        timing = stem + '-shard-0/browser-123-owned.json'
+        self.write_json(timing, dict(status='passed', exit_code=0, revision=SOURCE[:12], dirty=False,
+                                    process_id=123, log='browser-123-owned.log'))
+        xml = '<TestCase name="BrowserTest">' + ''.join('<TestFunction name="' + n + '"><Incident type="pass"/></TestFunction>'
+                                                      for n in ['initTestCase', 'ownedAlpha', 'ownedBeta', 'cleanupTestCase']) + '</TestCase>'
+        self.write(stem + '-shard-0/browser-123-owned.log', xml)
+        self.write_json(stem + '.json', dict(schema_version=1, suite_id=suite, status='passed', functions=2,
+                        shards=[dict(index=0, functions=['ownedAlpha', 'ownedBeta'], timing_directory=shard,
+                                     process_id=123, status='passed', exit_code=0, missing_or_duplicate=[], extra=[])]))
 
     def write(self, name, text):
         path = self.root / name;path.parent.mkdir(parents=True, exist_ok=True);path.write_text(text, encoding='utf-8')
@@ -77,9 +79,18 @@ class EvidenceTests(unittest.TestCase):
 
     def test_complete_native_evidence_and_all_platforms_pass(self):
         record = self.qt()
-        self.assertEqual(record['facts']['browser']['suites'], 11)
+        self.assertEqual(record['facts']['browser']['suites'], 1)
         self.assertEqual(record['facts']['browser']['functions_per_suite'], 2)
         self.assertEqual(self.gate()['heavy_validation'], 'executed')
+
+    def test_separate_stability_check_requires_ten_complete_suites(self):
+        reader = ci.Reader(self.root)
+        for _ in range(8):
+            self.browser_suite()
+        with self.assertRaisesRegex(ValueError, 'unexpected-browser-suite-count'):
+            ci.browser_evidence(reader, SOURCE, expected_suites=10)
+        self.browser_suite()
+        self.assertEqual(ci.browser_evidence(reader, SOURCE, expected_suites=10)['suites'], 10)
 
     def test_partial_rerun_preserves_successful_same_source_platforms_and_actual_attempts(self):
         records = self.records()
@@ -136,7 +147,7 @@ class EvidenceTests(unittest.TestCase):
         data['dirty'] = True;record.write_text(json.dumps(data), encoding='utf-8')
         with self.assertRaisesRegex(ValueError, 'stale-or-incomplete-browser-record'):self.qt()
         path.unlink()
-        with self.assertRaisesRegex(ValueError, 'missing-initial-or-repeated-suite'):self.qt()
+        with self.assertRaisesRegex(ValueError, 'unexpected-browser-suite-count'):self.qt()
 
     def test_helper_process_records_cannot_replace_missing_failed_or_ambiguous_worker(self):
         record = next((self.root / 'build/review/browser-timings').rglob('browser-123-owned.json'))
@@ -145,7 +156,7 @@ class EvidenceTests(unittest.TestCase):
         child = dict(data, process_id=124, log='browser-124-child.log')
         self.write_json((parent / 'browser-124-child.json').relative_to(self.root).as_posix(), child)
         self.write((parent / 'browser-124-child.log').relative_to(self.root).as_posix(), record.with_suffix('.log').read_text(encoding='utf-8'))
-        self.assertEqual(self.qt()['facts']['browser']['suites'], 11)
+        self.assertEqual(self.qt()['facts']['browser']['suites'], 1)
         data['status'] = 'failed';record.write_text(json.dumps(data), encoding='utf-8')
         with self.assertRaisesRegex(ValueError, 'stale-or-incomplete-browser-record'):self.qt()
         record.unlink()

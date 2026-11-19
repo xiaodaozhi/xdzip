@@ -18,6 +18,7 @@ import tarfile
 import tomllib
 import unittest
 from unittest.mock import patch
+import release_handoff as handoff
 from release_protocol import TARGETS, create, reject_corresponding_source_archives, select, validate
 from release_evidence import compare_macho_sections, macho_sections, verify_bindings
 
@@ -36,18 +37,52 @@ class SingleRunReleaseWorkflowTests(unittest.TestCase):
         self.assertNotIn('validate_only', workflow)
         self.assertEqual(workflow.count('      - name: Assemble complete immutable release\n'), 1)
         self.assertIn('environment: release-signing', workflow)
-        self.assertIn('python3 scripts/prepare-release.py --packages build/packages --output build/public-release --repository "$GITHUB_REPOSITORY" --require-update-signature', workflow)
-        self.assertIn('python3 scripts/publish-release.py --directory build/public-release --notes-file "$NOTES" --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"', workflow)
-        self.assertNotIn('release-validation', workflow)
+        self.assertIn('python3 scripts/prepare-release.py --packages build/packages --output build/assembled --repository "$GITHUB_REPOSITORY" --require-update-signature', workflow)
+        self.assertIn(' --defer-public-check', workflow)
+        self.assertIn(' --verify-public', workflow)
 
     def test_release_workflow_does_not_build_or_upload_corresponding_source_archives(self):
         workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/release.yml').read_text(encoding='utf-8')
         self.assertNotIn('prepare-source-delivery.py', workflow)
         self.assertNotIn('corresponding-source.tar.gz', workflow)
         self.assertNotIn('release-source', workflow)
-        self.assertIn('needs: [draft, native, contracts]', workflow)
-        self.assertGreaterEqual(workflow.count('--notes-file "$NOTES"'), 2)
+        self.assertIn('needs: [resolve, verify, contracts]', workflow)
+        self.assertGreaterEqual(workflow.count('--notes-file "release-policy/release-notes/'), 2)
         self.assertIn('path: release-policy', workflow)
+
+
+class NativeHandoffTests(unittest.TestCase):
+    def test_retry_can_restore_the_same_bytes_and_rejects_the_wrong_run_or_modified_archive(self):
+        identity = {'schema_version': 1, 'repository': 'owner/repo', 'run_id': '5',
+                    'revision': 'a' * 40, 'platform': 'linux'}
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            build = root/'build'
+            work = build/'release-handoff'
+            work.mkdir(parents=True)
+            archive = work/handoff.ARCHIVE
+            with tarfile.open(archive, 'w:gz') as writer:
+                member = tarfile.TarInfo('build/review/linux/bin/xdzip')
+                member.size = len(b'owned candidate')
+                member.mode = 0o755
+                writer.addfile(member, io.BytesIO(b'owned candidate'))
+            handoff.write_receipt(work, {**identity, 'archive_sha256': handoff.sha256(archive)})
+            with patch.dict(os.environ, RUNNER_ARCH='X64'), patch.multiple(
+                    handoff, ROOT=root, BUILD=build, HANDOFF=work), patch.object(
+                    handoff, 'identity', return_value={**identity, 'run_id': '6'}):
+                with self.assertRaisesRegex(ValueError, 'different run'):
+                    handoff.unpack('linux')
+            with patch.dict(os.environ, RUNNER_ARCH='X64'), patch.multiple(
+                    handoff, ROOT=root, BUILD=build, HANDOFF=work), patch.object(
+                    handoff, 'identity', return_value=identity):
+                handoff.unpack('linux')
+                self.assertEqual((build/'review/linux/bin/xdzip').read_bytes(), b'owned candidate')
+                with self.assertRaisesRegex(ValueError, 'occupied'):
+                    handoff.unpack('linux')
+                with archive.open('ab') as stream:
+                    stream.write(b'tampered')
+                with self.assertRaisesRegex(ValueError, 'checksum mismatch'):
+                    handoff.unpack('linux')
 
 
 class ProductionUpdateWorkflowTests(unittest.TestCase):
@@ -462,7 +497,27 @@ class NativeReleaseInputsTests(unittest.TestCase):
         directory = Path(temporary.name).resolve()
         (directory/'scripts').mkdir()
         shutil.copyfile(root/'scripts/ci-release.ps1', directory/'scripts/ci-release.ps1')
-        (directory/'scripts/ci-desktop.ps1').write_text('$global:LASTEXITCODE = 0\n', encoding='utf-8')
+        shutil.copyfile(root/'scripts/ci-desktop.ps1', directory/'scripts/ci-desktop-source.ps1')
+        (directory/'scripts/ci-desktop.ps1').write_text('''param([switch]$ReleaseBuild)
+if (!$ReleaseBuild) { throw 'Missing release build mode' }
+$tokens = $null; $errors = $null
+$tree = [System.Management.Automation.Language.Parser]::ParseFile(
+    (Join-Path $PSScriptRoot 'ci-desktop-source.ps1'), [ref]$tokens, [ref]$errors)
+$test = $tree.Find({ param($node)
+    $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+    $node.Name -eq 'Invoke-ReleaseComponentTests'
+}, $false)
+. ([ScriptBlock]::Create($test.Extent.Text))
+function Invoke-Checked {
+    param($Program, $Arguments)
+    & $Program @Arguments
+    if ($LASTEXITCODE) { throw 'Fixture command failed' }
+}
+Invoke-Checked python @('scripts/desktop.py', 'build')
+Invoke-ReleaseComponentTests -Arguments @('--release-distribution')
+Invoke-Checked python @('scripts/desktop.py', 'package')
+New-Item -ItemType Directory -Force 'build/review' | Out-Null
+''', encoding='utf-8')
         capture = directory/'capture.py'
         capture.write_text('''import json, os
 from pathlib import Path
@@ -508,7 +563,7 @@ $nativePython = '''+literal(sys.executable)+'''
 $capture = '''+literal(capture)+'''
 function python { & $nativePython $capture @args }
 $failed = $false
-try { & ./scripts/ci-release.ps1 } catch { $failed = $true; [Console]::Error.WriteLine($_.Exception.Message) }
+try { & ./scripts/ci-release.ps1 -Stage Build } catch { $failed = $true; [Console]::Error.WriteLine($_.Exception.Message) }
 & $nativePython $capture --after
 if ($failed) { exit 1 }
 ''', encoding='utf-8')
@@ -531,8 +586,8 @@ if ($failed) { exit 1 }
         result, calls, directory = self.run_release('success')
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual([call['stage'] for call in calls], [
-            'build', 'scripts/prepare-rar-rust-fixtures.py', 'test', 'package', 'verify',
-            'cli-test', 'cli-package', 'scripts/prepare-release.py'])
+            'build', 'scripts/prepare-rar-rust-fixtures.py', 'test', 'package',
+            'cli-package', 'scripts/release_handoff.py'])
         test = calls[2]
         sources = json.loads((directory/'build/release-rar-fixtures/sources.json').read_text())
         for name, value in sources['environment'].items():
@@ -541,8 +596,8 @@ if ($failed) { exit 1 }
         self.assertNotIn('--skip-rust', test['args'])
         self.assertIn('--release-distribution', test['args'])
         self.assertEqual(calls[3]['environment'], calls[-1]['environment'])
-        self.assertEqual(calls[5]['args'][1:4], ['test', '--build-dir', 'build/release-desktop/cli'])
-        self.assertEqual((directory/'build/release-package/owned-cli.tar.gz').read_bytes(), b'owned CLI fixture')
+        self.assertEqual(calls[4]['args'][1:4], ['package', '--build-dir', 'build/desktop/cli'])
+        self.assertEqual((directory/'build/review/owned-cli.tar.gz').read_bytes(), b'owned CLI fixture')
 
     def test_fixture_preparation_failure_prevents_tests_and_packages(self):
         result, calls, _ = self.run_release('prepare-failure')

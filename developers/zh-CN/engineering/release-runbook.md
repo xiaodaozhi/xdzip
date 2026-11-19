@@ -2,7 +2,7 @@
 
 [English](../../engineering/release-runbook.md) | 简体中文
 
-跨平台稳定发行与预发布使用[发布协议 v1](../../../docs/zh-CN/engineering/release-protocol.md)，按完整标签冻结源码，草稿汇集六类平台包、更新材料、通知、许可、SBOM 和部署／验证材料。发行不生成或附带对应源码压缩包；常规发行及验收不运行源码交付收集器，仅用户针对源码收集另行明确要求时可用于本地审查。正式发布使用 Release 工作流的单次手动运行：同一运行只构建一次三平台 native，汇总步骤直接复用这些工件并公开 Release。不要先运行一轮验证再推送标签触发第二轮构建；本地验证和发布前预检应在创建标签前完成。全部核验通过后，stable 作为普通 Release 公开并标记 Latest；alpha、beta、rc 作为 Pre-release 公开。公开后下载保留的附件复验哈希。未执行的人工验收按候选实际范围说明，不以自动化测试代替其结论。
+跨平台稳定发行与预发布使用[发布协议 v1](../../../docs/zh-CN/engineering/release-protocol.md)，按完整标签冻结源码，草稿汇集六类平台包、更新材料、通知、许可、SBOM 和部署／验证材料。发行不生成或附带对应源码压缩包；常规发行及验收不运行源码交付收集器，仅用户针对源码收集另行明确要求时可用于本地审查。正式发布在 Release 的单次手动运行中构建三平台工件，每个平台只构建一次。包验收、签名、公开和公开下载复核分别使用该运行的工件。创建标签前完成匹配的预检。全部核验通过后，stable 作为普通 Release 公开并标记 Latest；alpha、beta、rc 作为 Pre-release 公开。公开后下载保留的附件复验哈希。未执行的人工验收按候选实际范围说明，不以自动化测试代替其结论。
 
 开发验收、[发行许可复核](../qa/release-review.md)与发行执行分别登记在相应 issue，本手册不复制某次复核的开放／关闭状态。许可结论绑定实际候选，不自动批准后续版本；未勾选项不能解释为通过。公开稳定版前，实际候选的来源、通知、源码及替换材料须按发行审查流程核对；仍未完成的具体义务须作为阻断项解决，不能仅以披露替代。
 
@@ -22,3 +22,15 @@ v0.1 的更新由用户在关于页主动发起；满足安装身份、版本和
 需要桌面专项时按[桌面验证方法](../qa/private-test-manual.md)选择实际相关场景，无须为每个候选重填固定人工表。[部署依赖与 SBOM](../../../docs/zh-CN/engineering/deployment-audit.md)的源码图和实际文件清单必须与同一源码／可执行文件身份一致；当前完整性标记 incomplete，仍须完成实际部署组件归属与许可确认。既有干净机器人工核验保留于 WP-12 当前验收记录。已有 Windows 当前用户及 Ubuntu 24.04 实验安装器，见[安装与关联](../../../docs/zh-CN/engineering/installers-associations.md)。macOS 开发 .app 不代替独立安装包验证，交付 DMG 继续核验部署依赖与 ad-hoc 完整性。
 
 本地 Mac 可按用户明确要求制作[开发 DMG](../../../docs/zh-CN/engineering/macos-deployment.md)，源码与重建材料可用[交付收集器](../../../docs/zh-CN/engineering/source-delivery.md)在本地审查，不上传为 Release 或 Actions 下载工件。发行审查仍须判断实际组件义务是否能在此政策下满足；不能满足时阻止相关二进制分发。ad-hoc 签名不等于 Developer ID 或公证，但符合本项目当前签名政策；镜像核验不自动批准发行。
+
+## 候选演练与失败续跑
+
+在包含工作流变更的分支上运行专用 Release 工作流。
+
+```sh
+gh workflow run release.yml --ref BRANCH -f candidate=true
+```
+
+测试续跑时加入 `-f retry_probe=true`。它会在恢复候选工件后主动中断第一次 Windows 包验收。等本次运行结束，用 `gh run rerun RUN_ID --job JOB_ID` 指定失败的验收作业。重跑会读取现有构建工件并验哈希。签名、发布和公开下载复核也是独立作业。在原运行中重跑失败作业，GitHub 可以保留已经完成的作业和工件。
+
+组装结果可从 Actions 运行的 `release-candidate` 工件下载。`candidate-download` 作业重新下载并校验每个文件。候选包不含发行更新签名，演练不会创建草稿或公开 Release。正式发行在 `main` 上使用已授权标签，并使用当次运行中核验通过的工件。

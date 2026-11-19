@@ -1,6 +1,7 @@
 # CI extension: shared local stages plus historical, visual and installer gates.
-param([string]$QtRoot, [string]$ToolsDirectory, [switch]$BrowserStability)
+param([string]$QtRoot, [string]$ToolsDirectory, [switch]$BrowserStability, [switch]$ReleaseBuild)
 $ErrorActionPreference = 'Stop'
+if ($BrowserStability -and $ReleaseBuild) { throw 'Select one validation entry point' }
 . "$PSScriptRoot/ci-observability.ps1"
 Initialize-CiTiming -Scope qt -OutputPath 'build/review/ci-timings.json'
 function Invoke-Checked {
@@ -26,6 +27,32 @@ function Save-ComponentLogs {
     }
     if (Test-Path 'build/desktop/Testing/Temporary/LastTest.log') {
         Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' "build/review/diagnostics/ctest-$Label.log"
+    }
+}
+function Invoke-ReleaseComponentTests {
+    param([string[]]$Arguments)
+    # Preserve the native Rust coverage of the former second build.
+    Invoke-Checked python @('scripts/prepare-rar-rust-fixtures.py', '--output', 'build/release-rar-fixtures')
+    $fixtures = Get-Content -Raw -LiteralPath 'build/release-rar-fixtures/sources.json' | ConvertFrom-Json
+    $fixtureEnvironment = @{ XDZIP_RAR_FIXTURE_PASSWORD = 'password' }
+    foreach ($item in $fixtures.environment.PSObject.Properties) {
+        $fixtureEnvironment[$item.Name] = Join-Path (Get-Location) $item.Value
+    }
+    $previous = @{}
+    try {
+        foreach ($name in $fixtureEnvironment.Keys) {
+            $previous[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
+            [Environment]::SetEnvironmentVariable($name, $fixtureEnvironment[$name], 'Process')
+        }
+        Invoke-Checked python (@('scripts/desktop.py', 'test') + $Arguments)
+    } finally {
+        foreach ($name in $previous.Keys) {
+            if ($null -eq $previous[$name]) {
+                Remove-Item "Env:$name" -ErrorAction SilentlyContinue
+            } else {
+                [Environment]::SetEnvironmentVariable($name, $previous[$name], 'Process')
+            }
+        }
     }
 }
 # RUNNER_TEMP is an optional CI cache location. Local fallback uses the same
@@ -68,6 +95,9 @@ if ($IsWindows) {
 $qtPrefix = Join-Path $qtRoot "6.8.2/$qtFolder"
 $shared = @('--qt-prefix', $qtPrefix, '--qt-root', $qtRoot,
     '--build-dir', 'build/desktop', '--output-dir', 'build/review', '--tools-dir', $qtEnvironment)
+if ($ReleaseBuild -and $IsMacOS) {
+    $shared += @('--macos-handler-rank', 'Alternate', '--release-distribution')
+}
 # Fail on PATH/compiler/SDK issues before downloads, compilation or license collection.
 Set-CiPhase 'prepare'
 Invoke-Checked python (@('scripts/desktop.py', 'prepare', '--install-qt', '--install-rust', '--packaging') + $shared)
@@ -177,7 +207,11 @@ if ($IsMacOS) {
 $env:XDZIP_BROWSER_TIMING_DIR = Join-Path (Get-Location) 'build/review/browser-timings'
 Set-CiPhase 'component-tests'
 try {
-    Invoke-Checked python (@('scripts/desktop.py', 'test', '--skip-rust') + $shared)
+    if ($ReleaseBuild -and $IsMacOS) {
+        Invoke-ReleaseComponentTests -Arguments $shared
+    } else {
+        Invoke-Checked python (@('scripts/desktop.py', 'test', '--skip-rust') + $shared)
+    }
 } finally {
     Save-ComponentLogs 'initial'
     Remove-Item Env:XDZIP_BROWSER_TIMING_DIR
@@ -325,9 +359,13 @@ Copy-Item 'build/desktop/apps/desktop/*.png' 'build/review'
 Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'build/review'
 Set-CiPhase 'runtime-package'
 if ($IsMacOS) {
-    Invoke-Checked python @('scripts/collect-notices.py', 'build/review/notices', '--qt-prefix', $qtPrefix)
-    Invoke-Checked python @('scripts/prepare-runtime-notices.py', '--qt-prefix', $qtPrefix, '--output', 'build/review/notices/Qt-runtime')
-    Copy-Item 'build/review/notices/source-build.cdx.json' 'build/review/source-build.cdx.json'
+    if ($ReleaseBuild) {
+        Invoke-Checked python (@('scripts/desktop.py', 'package') + $shared)
+    } else {
+        Invoke-Checked python @('scripts/collect-notices.py', 'build/review/notices', '--qt-prefix', $qtPrefix)
+        Invoke-Checked python @('scripts/prepare-runtime-notices.py', '--qt-prefix', $qtPrefix, '--output', 'build/review/notices/Qt-runtime')
+        Copy-Item 'build/review/notices/source-build.cdx.json' 'build/review/source-build.cdx.json'
+    }
 } else {
     Invoke-Checked python (@('scripts/desktop.py', 'package', '--kind', 'runtime') + $shared)
     Copy-Item 'docs/engineering/developer-build.md' 'build/review/README.md'
@@ -337,8 +375,7 @@ if ($IsMacOS) {
 }
 Set-CiPhase 'deployed-runtime'
 if ($IsMacOS) {
-    # Validate the native executable using the installed SDK. Do not deploy Qt,
-    # sign, archive or upload an Apple Silicon developer application package.
+    # Exercise actual file-open activation with the same native build.
     $env:QT_PLUGIN_PATH = Join-Path $qtPrefix 'plugins'
     $env:QML_IMPORT_PATH = Join-Path $qtPrefix 'qml'
     $env:QT_QPA_PLATFORM = 'cocoa'
@@ -353,15 +390,17 @@ if ($IsMacOS) {
 } elseif ($IsWindows) {
     $env:QT_QPA_PLATFORM = 'windows'
     Invoke-Checked $browserTests @('windowsCaptionControlsAndWindowState')
-    Invoke-Checked python (@('scripts/desktop.py', 'verify', '--kind', 'runtime') + $shared)
-} else {
+    if (!$ReleaseBuild) {
+        Invoke-Checked python (@('scripts/desktop.py', 'verify', '--kind', 'runtime') + $shared)
+    }
+} elseif (!$ReleaseBuild) {
     Invoke-Checked python (@('scripts/desktop.py', 'verify', '--kind', 'runtime') + $shared)
 }
 $auditRoot = if ($IsMacOS) { 'build/desktop/apps/desktop/xdzip.app' } elseif ($IsWindows) { 'build/review/windows' } else { 'build/review/linux' }
 $auditExe = if ($IsMacOS) { $productExe } elseif ($IsWindows) { 'build/review/windows/xdzip.exe' } else { 'build/review/linux/bin/xdzip' }
 $auditMode = if ($IsMacOS) { 'sdk' } else { 'deployed' }
 Set-CiPhase 'attribution'
-if ($IsMacOS) {
+if ($IsMacOS -and !$ReleaseBuild) {
     Invoke-Checked python @('scripts/deployment_audit.py', '--root', $auditRoot, '--app', $auditExe, '--qt-prefix', $qtPrefix, '--mode', $auditMode, '--output', 'build/review/deployment-audit.json')
     Invoke-Checked python @('scripts/native-redistribution.py','--root',$auditRoot,'--audit','build/review/deployment-audit.json','--output','build/review/native-redistribution.json')
     $attributionArgs = @('scripts/runtime_attribution.py', '--audit', 'build/review/deployment-audit.json', '--root', $auditRoot, '--qt-prefix', $qtPrefix, '--output', 'build/review/runtime-attribution.json')
@@ -370,11 +409,11 @@ if ($IsMacOS) {
     Invoke-Checked python @('scripts/classify-qt-binary-differences.py','--attribution','build/review/runtime-attribution.json','--qt-prefix',$qtPrefix,'--output','build/review/qt-binary-differences.json')
     Invoke-Checked python @('scripts/sbom.py', '--audit', 'build/review/deployment-audit.json', '--source', 'build/review/source-build.cdx.json', '--output', 'build/review/artifact-files.cdx.json', '--attribution', 'build/review/runtime-attribution.json')
     Invoke-Checked $aqtPython @('scripts/validate-sbom.py', 'build/review/source-build.cdx.json', 'build/review/artifact-files.cdx.json')
-} else {
+} elseif (!$IsMacOS) {
     Set-CiPhase 'installer-package'
     Invoke-Checked python (@('scripts/desktop.py', 'package', '--kind', 'installer') + $shared)
 }
-Set-CiPhase 'installer-lifecycle'
+Set-CiPhase 'installer-fixtures'
 if ($IsLinux) {
     New-Item -ItemType Directory -Force 'build/installer-tests/linux-packages' | Out-Null
     Copy-Item 'build/review/xdzip-ubuntu24.04-amd64.deb' 'build/installer-tests/linux-packages/product.deb'
@@ -384,7 +423,6 @@ if ($IsLinux) {
     }
     Invoke-Checked python @('scripts/build-linux-installer.py', '--root', $auditRoot, '--audit', 'build/review/deployment-audit.json', '--output', 'build/installer-tests/linux-packages/qa-failure.deb', '--report', 'build/installer-tests/linux-packages/qa-failure.json', '--qa-variant', '2', '--qa-failure', 'postinst-once')
     Invoke-Checked python @('scripts/prepare-association-fixtures.py','--zip','tests/fixtures/zip/normal.zip','--output','build/installer-tests/association-fixtures')
-    Invoke-Checked python @('scripts/verify-linux-installer.py', '--packages', 'build/installer-tests/linux-packages', '--fixture', 'build/desktop/apps/desktop/m2-flat.zip', '--formats', 'build/installer-tests/association-fixtures', '--output', 'build/review/linux-install-lifecycle.json')
 }
 if ($IsWindows) {
     New-Item -ItemType Directory -Force 'build/installer-tests/windows-packages' | Out-Null
@@ -395,13 +433,18 @@ if ($IsWindows) {
         Invoke-Checked python ($installerBase + @('--output',"build/installer-tests/windows-packages/qa$variant.exe",'--report',"build/installer-tests/windows-packages/qa$variant.json",'--qa-variant',$variant))
     }
     Invoke-Checked python @('scripts/prepare-association-fixtures.py','--zip','build/desktop/apps/desktop/m2-flat.zip','--output','build/installer-tests/association-fixtures')
-    Invoke-Checked pwsh @('-File','scripts/check-windows-install.ps1','-Packages','build/installer-tests/windows-packages','-Fixture','build/desktop/apps/desktop/m2-flat.zip','-Formats','build/installer-tests/association-fixtures','-Output','build/review/windows-install-lifecycle.json')
+}
+if (!$IsMacOS -and !$ReleaseBuild) {
+    Set-CiPhase 'installer-lifecycle'
+    Invoke-Checked pwsh @('-NoProfile', '-File', 'scripts/ci-installer-lifecycle.ps1')
 }
 $commit = & git rev-parse HEAD
-$distribution = if ($IsMacOS) {
+$distribution = if ($ReleaseBuild) {
+    'Formal configuration candidate; package verification follows in a separate job'
+} elseif ($IsMacOS) {
     'Native macOS SDK validation only; no Apple Silicon developer package'
 } else {
     'Experimental developer build; native validation and package identity recorded for this commit'
 }
-@{ commit = $commit; platform = $qtHost; dependencyAuditMode = $auditMode; architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString(); qt = '6.8.2'; rust = '1.99.0'; packaged = !$IsMacOS; distribution = $distribution } |
+@{ commit = $commit; platform = $qtHost; dependencyAuditMode = $auditMode; architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString(); qt = '6.8.2'; rust = '1.99.0'; packaged = !$IsMacOS -or $ReleaseBuild; distribution = $distribution } |
     ConvertTo-Json | Set-Content 'build/review/build.json'

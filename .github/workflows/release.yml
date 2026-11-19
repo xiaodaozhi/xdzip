@@ -3,105 +3,185 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing version tag to build and publish
-        required: true
+        description: Existing version tag for a formal release
         type: string
+      candidate:
+        description: Build, verify, and download unsigned Actions artifacts only
+        type: boolean
+        default: false
+      retry_probe:
+        description: In candidate mode, interrupt the first Windows package verification to exercise resumption
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
-  group: release-${{ inputs.tag || github.ref_name }}
+  group: release-${{ inputs.candidate && github.run_id || inputs.tag }}
   cancel-in-progress: false
 jobs:
+  resolve:
+    runs-on: ubuntu-24.04
+    outputs:
+      revision: ${{ steps.source.outputs.revision }}
+    steps:
+      - name: Check release or candidate inputs
+        env:
+          CANDIDATE: ${{ inputs.candidate }}
+          RETRY_PROBE: ${{ inputs.retry_probe }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          if [[ "$CANDIDATE" == true ]]; then
+            [[ -z "$RELEASE_TAG" ]]
+          else
+            [[ "$RETRY_PROBE" == false && "$GITHUB_REF" == refs/heads/main ]]
+            [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9.-]+)?$ ]]
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.candidate && github.sha || format('refs/tags/{0}', inputs.tag) }}
+          persist-credentials: false
+      - name: Freeze source revision for every job
+        id: source
+        env:
+          CANDIDATE: ${{ inputs.candidate }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          python3 scripts/sync-version.py --check
+          revision=$(git rev-parse HEAD)
+          if [[ "$CANDIDATE" == false ]]; then
+            version=$(python3 -c 'import runpy; print(runpy.run_path("scripts/sync-version.py")["version_info"]()["display_version"])')
+            [[ "$RELEASE_TAG" == "v$version" ]]
+          fi
+          echo "revision=$revision" >> "$GITHUB_OUTPUT"
+
   draft:
+    if: ${{ !inputs.candidate }}
+    needs: resolve
     runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.tag || github.ref_name }}
+          ref: ${{ needs.resolve.outputs.revision }}
+          persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
           path: release-policy
-      - name: Validate version-specific reviewed notes
-        run: |
-          VERSION=$(python3 -c 'import runpy; print(runpy.run_path("scripts/sync-version.py")["version_info"]()["display_version"])')
-          NOTES="release-policy/release-notes/$VERSION.md"
-          python3 scripts/publish-release.py --check-notes --notes-file "$NOTES"
-      - name: Keep a draft until all native packages pass
+          persist-credentials: false
+      - name: Check reviewed notes and prepare the draft
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+          RELEASE_TAG: ${{ inputs.tag }}
         run: |
-          VERSION=$(python3 -c 'import runpy; print(runpy.run_path("scripts/sync-version.py")["version_info"]()["display_version"])')
-          NOTES="release-policy/release-notes/$VERSION.md"
-          python3 scripts/publish-release.py --draft-only --notes-file "$NOTES" --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
+          python3 scripts/publish-release.py --draft-only --notes-file "release-policy/release-notes/${RELEASE_TAG#v}.md" --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
+
   native:
-    needs: draft
-    environment: release-signing
+    needs: [resolve, draft]
+    if: always() && !cancelled() && needs.resolve.result == 'success' && (inputs.candidate || needs.draft.result == 'success')
     strategy:
       fail-fast: false
       matrix:
         os: [windows-2022, macos-15, ubuntu-24.04]
     runs-on: ${{ matrix.os }}
-    # Allow Linux to wait for a confirmed GitHub quota reset and macOS to verify a separate DMG build.
-    timeout-minutes: ${{ matrix.os == 'ubuntu-24.04' && 150 || matrix.os == 'macos-15' && 120 || 80 }}
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.tag || github.ref_name }}
-      - name: Install Linux build and X11 dependencies
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libnautilus-extension-dev libzstd-dev libkrb5-dev libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-0 libxcb1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render0 libxcb-render-util0 libxcb-shape0 libxcb-randr0 libxcb-xfixes0 libxcb-sync1 libxcb-shm0 libxcb-util1 libxcb-xinerama0 libxcb-xkb1 libx11-dev libx11-6 libx11-xcb1 libxrender1 libxext6 libxi6 libxfixes3 libxrandr2 libfontconfig1 libfreetype6 libice6 libsm6 fonts-noto-cjk 7zip patchelf xvfb xauth openbox x11-utils
-      - name: Native build, validation, deployment and package lifecycle
+          ref: ${{ needs.resolve.outputs.revision }}
+          persist-credentials: false
+      - if: runner.os == 'Linux'
+        uses: ./.github/actions/linux-release-dependencies
+      - name: Build and package the native desktop and CLI candidate once
         shell: pwsh
-        run: ./scripts/ci-release.ps1
-      - name: Sign the final immutable macOS update archive
-        if: runner.os == 'macOS'
-        env:
-          XDZIP_SPARKLE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_SPARKLE_SIGNING_KEY_HEX }}
-        run: python3 scripts/sign-macos-update.py --directory build/release-assets
+        run: ./scripts/ci-release.ps1 -Stage Build
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: release-${{ runner.os }}
-          path: build/release-assets/*
+          name: release-built-${{ runner.os }}
+          path: build/release-handoff/
           if-no-files-found: error
+          compression-level: 0
+          overwrite: true
           retention-days: 30
-      - name: Preserve validation evidence
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: release-evidence-${{ runner.os }}
+          name: release-build-evidence-${{ runner.os }}-${{ github.run_attempt }}
           path: |
             build/review/*.json
-            build/review/linux-runtime.*.log
-            build/review/linux-install-lifecycle.log
-            build/association-tests/macos-association/*.log
             build/review/native-sessions*.log
-            build/review/x11-startup/*.json
-            build/review/x11-startup/*.log
-            build/review/windows-runtime-test-*/*.log
-            build/review/windows-runtime-test-*/result.json
+            build/review/x11-startup/
             build/desktop/apps/desktop/*tests.log
             build/desktop/apps/desktop/browser-tests-shard-*.log
             build/desktop/Testing/Temporary/LastTest.log
-            build/release-package/*.json
-            build/release-package/*.log
             build/toolchain/qt-network-security/*/*.log
-            build/toolchain/qt-network-security/*/verification/*.log
-            build/toolchain/qt-network-security/*/verification/result.json
           retention-days: 30
+
+  verify:
+    needs: [resolve, native]
+    if: always() && !cancelled() && needs.resolve.result == 'success' && needs.native.result == 'success'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, macos-15, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    # Linux permits a real GitHub anonymous quota reset.
+    timeout-minutes: ${{ matrix.os == 'ubuntu-24.04' && 100 || 35 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve.outputs.revision }}
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-built-${{ runner.os }}
+          path: build/release-handoff
+      - name: Restore the hash-checked native handoff
+        run: python scripts/release_handoff.py unpack
+      - name: Interrupt only the first Windows candidate verification
+        if: inputs.candidate && inputs.retry_probe && runner.os == 'Windows' && github.run_attempt == 1
+        shell: pwsh
+        run: throw 'Candidate verification retry probe'
+      - name: Install pinned packaging verification dependencies
+        shell: pwsh
+        run: |
+          python -c "import sys, subprocess; sys.path.insert(0, 'scripts'); from desktop_environment import PYTHON_PACKAGES; subprocess.check_call([sys.executable, '-m', 'pip', 'install', *[f'{name}=={version}' for name, version in PYTHON_PACKAGES.items()]])"
+      - name: Verify the restored native package and installation lifecycle
+        shell: pwsh
+        run: ./scripts/ci-release.ps1 -Stage Verify
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-verified-${{ runner.os }}
+          path: build/release-assets/
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 30
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: release-verify-evidence-${{ runner.os }}-${{ github.run_attempt }}
+          path: |
+            build/release-handoff/receipt.json
+            build/review/*verify*.json
+            build/review/*verification/*.json
+            build/review/*install-lifecycle.*
+            build/review/linux-runtime.*
+            build/review/windows-runtime-test-*/*.log
+            build/review/windows-runtime-test-*/result.json
+          retention-days: 30
+
   contracts:
-    needs: draft
+    needs: resolve
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ needs.resolve.outputs.revision }}
+          persist-credentials: false
       - name: Check version and release contracts
         run: |
           python3 scripts/sync-version.py --check
@@ -118,8 +198,85 @@ jobs:
           python3 scripts/check-runtime-worker-tests.py --worker "$XDZIP_NATIVE_CODEC" --output build/release-runtime-tests
           cargo clippy --workspace --all-targets --locked -- -D warnings
           python3 scripts/test-release-updates.py
+
+
+  candidate-assembly:
+    if: always() && !cancelled() && inputs.candidate && needs.resolve.result == 'success' && needs.verify.result == 'success' && needs.contracts.result == 'success'
+    needs: [resolve, verify, contracts]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve.outputs.revision }}
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: release-verified-*
+          path: build/downloaded
+      - name: Assemble the unsigned candidate
+        run: |
+          python3 scripts/release_handoff.py collect
+          python3 scripts/prepare-release.py --packages build/packages --output build/assembled --repository "$GITHUB_REPOSITORY" --validation-only
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-candidate
+          path: build/assembled/
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 30
+
+  candidate-download:
+    if: always() && !cancelled() && inputs.candidate && needs.resolve.result == 'success' && needs.candidate-assembly.result == 'success'
+    needs: [resolve, candidate-assembly]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve.outputs.revision }}
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-candidate
+          path: build/assembled
+      - run: python3 scripts/publish-release.py --directory build/assembled --verify-candidate
+
+  sign:
+    if: ${{ !inputs.candidate }}
+    needs: [resolve, verify, contracts]
+    runs-on: ubuntu-24.04
+    environment: release-signing
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve.outputs.revision }}
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: release-verified-*
+          path: build/downloaded
+      - name: Collect verified bytes
+        run: |
+          python3 scripts/release_handoff.py collect
+          rustup toolchain install 1.99.0 --profile minimal
+      - name: Assemble complete immutable release
+        env:
+          XDZIP_UPDATE_KEY_ID: ${{ vars.XDZIP_UPDATE_KEY_ID }}
+          XDZIP_UPDATE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_UPDATE_SIGNING_KEY_HEX }}
+          XDZIP_SPARKLE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_SPARKLE_SIGNING_KEY_HEX }}
+        run: |
+          python3 scripts/sign-macos-update.py --directory build/packages
+          python3 scripts/prepare-release.py --packages build/packages --output build/assembled --repository "$GITHUB_REPOSITORY" --require-update-signature
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-signed
+          path: build/assembled/
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 30
+
   publish:
-    needs: [draft, native, contracts]
+    if: ${{ !inputs.candidate }}
+    needs: [resolve, sign]
     environment: release-signing
     runs-on: ubuntu-24.04
     permissions:
@@ -127,28 +284,51 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.tag || github.ref_name }}
+          ref: ${{ needs.resolve.outputs.revision }}
           persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
           path: release-policy
+          persist-credentials: false
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          pattern: release-*
-          path: build/downloaded
-      - name: Assemble complete immutable release
+          name: release-signed
+          path: build/assembled
+      - name: Check the tag and publish the verified draft
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
-          XDZIP_UPDATE_KEY_ID: ${{ vars.XDZIP_UPDATE_KEY_ID }}
-          XDZIP_UPDATE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_UPDATE_SIGNING_KEY_HEX }}
-          XDZIP_SPARKLE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_SPARKLE_SIGNING_KEY_HEX }}
+          RELEASE_TAG: ${{ inputs.tag }}
         run: |
-          mkdir -p build/packages
-          find build/downloaded/release-Windows build/downloaded/release-Linux build/downloaded/release-macOS -maxdepth 1 -type f -exec cp {} build/packages/ \;
-          VERSION=$(python3 -c 'import runpy; print(runpy.run_path("scripts/sync-version.py")["version_info"]()["display_version"])')
-          NOTES="release-policy/release-notes/$VERSION.md"
+          set -euo pipefail
+          name="refs/tags/$RELEASE_TAG"
+          revision=$(git ls-remote origin "$name^{}" | cut -f1)
+          if [[ -z "$revision" ]]; then revision=$(git ls-remote origin "$name" | cut -f1); fi
+          [[ "$revision" == "$(git rev-parse HEAD)" ]]
           rustup toolchain install 1.99.0 --profile minimal
-          python3 scripts/prepare-release.py --packages build/packages --output build/public-release --repository "$GITHUB_REPOSITORY" --require-update-signature
-          python3 scripts/publish-release.py --directory build/public-release --notes-file "$NOTES" --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
+          python3 scripts/publish-release.py --directory build/assembled --notes-file "release-policy/release-notes/${RELEASE_TAG#v}.md" --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY" --defer-public-check
+
+  verify-public:
+    if: ${{ !inputs.candidate }}
+    needs: [resolve, publish]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve.outputs.revision }}
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          path: release-policy
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-signed
+          path: build/assembled
+      - name: Download and verify the public release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          python3 scripts/publish-release.py --directory build/assembled --notes-file "release-policy/release-notes/${RELEASE_TAG#v}.md" --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY" --verify-public
