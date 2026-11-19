@@ -10419,7 +10419,7 @@ QtObject {
         const auto leaf =
             format == "PMA" || format == "ARJ" || format == "ARC" ? QStringLiteral("HELLO.BIN")
             : format == "LZH"                                     ? QStringLiteral("hello.bin")
-            : tar || format == "ZIP" ? QStringLiteral("hello.txt")
+            : tar || format == "ZIP"                              ? QStringLiteral("hello.txt")
                                      : QFileInfo(fixture).fileName().section('.', 0, 0);
         QCOMPARE(row->cells[0], leaf);
         QCOMPARE(row->cells[2].isEmpty(), tar);
