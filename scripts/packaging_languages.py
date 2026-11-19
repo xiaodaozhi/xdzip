@@ -52,7 +52,22 @@ def linux_resources():
     policy = xml_labels(policy, 'description', 'UpdateDescription')
     policy = xml_labels(policy, 'message', 'UpdateMessage')
     mime = xml_labels((sources / 'xdzip-mime.xml').read_text(encoding='utf-8'), 'comment', 'Udf')
-    return {'xdzip.desktop': desktop, 'org.xdzip.update.policy': policy, 'xdzip-mime.xml': mime}
+    appstream = (sources / 'xdzip-local.yml').read_text(encoding='utf-8')
+    for header, key in [('Summary', 'AppStreamSummary'), ('Description', 'AppStreamDescription')]:
+        entries = []
+        for locale in packaging_languages():
+            name = 'C' if locale == 'en-US' else locale.replace('-', '_')
+            text = catalogs[locale][key]
+            if header == 'Description':
+                text = f'<p>{escape(text)}</p>'
+            entries.append(f'  {name}: {json.dumps(text, ensure_ascii=False)}')
+        pattern = rf'^{header}:\n(?:  [^\n]+\n)+'
+        appstream, matches = re.subn(pattern, lambda _: header + ':\n' + '\n'.join(entries) + '\n',
+                                     appstream, flags=re.M)
+        if matches != 1:
+            raise ValueError(f'Missing or ambiguous AppStream section {header}')
+    return {'xdzip.desktop': desktop, 'org.xdzip.update.policy': policy, 'xdzip-mime.xml': mime,
+            'xdzip-local.yml': appstream}
 
 
 def write_resource(path, data):

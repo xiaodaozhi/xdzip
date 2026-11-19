@@ -92,7 +92,7 @@ def package_tree(payload,audit,stage,qa=None,failure=None,legacy=False,historica
         # the host had no /usr/share/swcatalog when snapd set up its mounts.
         catalog = stage/'var/lib/swcatalog/yaml/xdzip-local.yml'
         catalog.parent.mkdir(parents=True)
-        shutil.copyfile(ROOT/'apps/desktop/packaging/linux/xdzip-local.yml', catalog)
+        catalog.write_text(localized['xdzip-local.yml'], encoding='utf-8')
         catalog.chmod(0o644)
     mime=share/'mime/packages';mime.mkdir(parents=True)
     (mime/'xdzip-mime.xml').write_text(localized['xdzip-mime.xml'], encoding='utf-8')

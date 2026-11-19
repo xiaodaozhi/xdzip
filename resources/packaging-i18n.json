@@ -2,6 +2,8 @@
   "en-US": {
     "Description": "xdzip archive manager",
     "DesktopComment": "Browse and extract ZIP, TAR, TAR.GZ, 7z, RAR, CAB, ISO and UDF files",
+    "AppStreamSummary": "Browse, create and extract archives",
+    "AppStreamDescription": "Browse archives, extract selected files, and create or update archives in supported formats.",
     "UpdateDescription": "Install a verified xdzip update",
     "UpdateMessage": "Authentication is required to update xdzip",
     "Archive": "%1 archive",
@@ -23,6 +25,8 @@
   "zh-CN": {
     "Description": "xdzip 压缩包管理工具",
     "DesktopComment": "浏览和解压 ZIP、TAR、TAR.GZ、7z、RAR、CAB、ISO 和 UDF 文件",
+    "AppStreamSummary": "浏览、创建和解压压缩包",
+    "AppStreamDescription": "浏览压缩包、解压选中的文件，并创建或更新受支持格式的压缩包。",
     "UpdateDescription": "安装经过验证的 xdzip 更新",
     "UpdateMessage": "更新 xdzip 需要管理员授权",
     "Archive": "%1 压缩包",
@@ -44,6 +48,8 @@
   "zh-TW": {
     "Description": "xdzip 壓縮檔管理工具",
     "DesktopComment": "瀏覽及解壓縮 ZIP、TAR、TAR.GZ、7z、RAR、CAB、ISO 與 UDF 檔案",
+    "AppStreamSummary": "瀏覽、建立及解壓縮壓縮檔",
+    "AppStreamDescription": "瀏覽壓縮檔、解壓縮選取的檔案，並建立或更新支援格式的壓縮檔。",
     "UpdateDescription": "安裝已驗證的 xdzip 更新",
     "UpdateMessage": "更新 xdzip 需要管理員授權",
     "Archive": "%1 壓縮檔",
@@ -65,6 +71,8 @@
   "ja-JP": {
     "Description": "xdzip アーカイブ管理ツール",
     "DesktopComment": "ZIP、TAR、TAR.GZ、7z、RAR、CAB、ISO、UDF ファイルを閲覧して展開する",
+    "AppStreamSummary": "アーカイブを閲覧、作成、展開する",
+    "AppStreamDescription": "アーカイブを閲覧し、選択したファイルを展開できます。対応形式のアーカイブの作成や更新もできます。",
     "UpdateDescription": "検証済みの xdzip 更新プログラムをインストールする",
     "UpdateMessage": "xdzip の更新には管理者認証が必要です",
     "Archive": "%1 アーカイブ",
@@ -86,6 +94,8 @@
   "ko-KR": {
     "Description": "xdzip 압축 파일 관리자",
     "DesktopComment": "ZIP, TAR, TAR.GZ, 7z, RAR, CAB, ISO 및 UDF 파일 찾아보기 및 압축 풀기",
+    "AppStreamSummary": "압축 파일 찾아보기, 만들기 및 압축 풀기",
+    "AppStreamDescription": "압축 파일의 내용을 찾아보고 선택한 파일을 풉니다. 지원하는 형식으로 압축 파일을 만들거나 업데이트할 수도 있습니다.",
     "UpdateDescription": "검증된 xdzip 업데이트 설치",
     "UpdateMessage": "xdzip을 업데이트하려면 관리자 인증이 필요합니다",
     "Archive": "%1 압축 파일",
@@ -107,6 +117,8 @@
   "fr-FR": {
     "Description": "Gestionnaire d’archives xdzip",
     "DesktopComment": "Parcourir et extraire les fichiers ZIP, TAR, TAR.GZ, 7z, RAR, CAB, ISO et UDF",
+    "AppStreamSummary": "Parcourir, créer et extraire des archives",
+    "AppStreamDescription": "Parcourez les archives, extrayez les fichiers sélectionnés et créez ou mettez à jour des archives aux formats pris en charge.",
     "UpdateDescription": "Installer une mise à jour vérifiée de xdzip",
     "UpdateMessage": "La mise à jour de xdzip nécessite une authentification",
     "Archive": "Archive %1",
@@ -128,6 +140,8 @@
   "de-DE": {
     "Description": "xdzip-Archivverwaltung",
     "DesktopComment": "ZIP-, TAR-, TAR.GZ-, 7z-, RAR-, CAB-, ISO- und UDF-Dateien durchsuchen und entpacken",
+    "AppStreamSummary": "Archive durchsuchen, erstellen und entpacken",
+    "AppStreamDescription": "Durchsuchen Sie Archive, entpacken Sie ausgewählte Dateien und erstellen oder aktualisieren Sie Archive in unterstützten Formaten.",
     "UpdateDescription": "Geprüftes xdzip-Update installieren",
     "UpdateMessage": "Für das Update von xdzip ist eine Authentifizierung erforderlich",
     "Archive": "%1-Archiv",
@@ -149,6 +163,8 @@
   "es-ES": {
     "Description": "Gestor de archivos comprimidos xdzip",
     "DesktopComment": "Explorar y extraer archivos ZIP, TAR, TAR.GZ, 7z, RAR, CAB, ISO y UDF",
+    "AppStreamSummary": "Explorar, crear y extraer archivos comprimidos",
+    "AppStreamDescription": "Explora archivos comprimidos, extrae los archivos seleccionados y crea o actualiza archivos en formatos compatibles.",
     "UpdateDescription": "Instalar una actualización verificada de xdzip",
     "UpdateMessage": "Se requiere autenticación para actualizar xdzip",
     "Archive": "Archivo %1",
@@ -170,6 +186,8 @@
   "pt-BR": {
     "Description": "Gerenciador de arquivos compactados xdzip",
     "DesktopComment": "Explorar e extrair arquivos ZIP, TAR, TAR.GZ, 7z, RAR, CAB, ISO e UDF",
+    "AppStreamSummary": "Explorar, criar e extrair arquivos compactados",
+    "AppStreamDescription": "Explore arquivos compactados, extraia os arquivos selecionados e crie ou atualize arquivos em formatos compatíveis.",
     "UpdateDescription": "Instalar uma atualização verificada do xdzip",
     "UpdateMessage": "A atualização do xdzip requer autenticação",
     "Archive": "Arquivo %1",
@@ -191,6 +209,8 @@
   "ru-RU": {
     "Description": "Менеджер архивов xdzip",
     "DesktopComment": "Просмотр и распаковка файлов ZIP, TAR, TAR.GZ, 7z, RAR, CAB, ISO и UDF",
+    "AppStreamSummary": "Просмотр, создание и распаковка архивов",
+    "AppStreamDescription": "Просматривайте архивы, извлекайте выбранные файлы, создавайте и обновляйте архивы в поддерживаемых форматах.",
     "UpdateDescription": "Установить проверенное обновление xdzip",
     "UpdateMessage": "Для обновления xdzip требуется аутентификация",
     "Archive": "Архив %1",

@@ -43,9 +43,9 @@
 | Windows | MSVC 2022 x64 C++ 工具與 Windows SDK，x64 Developer PowerShell／命令列 | msvc2022_64 |
 | Ubuntu 24.04 | x86_64 C++ 編譯器，OpenGL、EGL、xkbcommon 開發包和 X11 執行庫 | gcc_64 |
 
-macOS 可用 `xcode-select --install` 準備命令列工具。Ubuntu 基礎開發包包含 `libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libnautilus-extension-dev pkg-config`；打包還需要 patchelf、binutils（readelf 和 strip）與 Debian 包工具，隔離執行驗證另需可連線的 Docker。Windows 僅安裝 Visual Studio 但未進入開發環境時，cl、link、rc 或 dumpbin 仍可能不可用，預檢會指出實際缺失項。共用入口不自動安裝系統編譯器、SDK 或需要管理員許可權的系統包。
+macOS 可用 `xcode-select --install` 準備命令列工具。Ubuntu 基礎開發包包含 `libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libx11-dev libxext-dev libnautilus-extension-dev pkg-config`；打包還需要 patchelf、binutils（readelf 和 strip）與 Debian 包工具，隔離執行驗證另需可連線的 Docker。Windows 僅安裝 Visual Studio 但未進入開發環境時，cl、link、rc 或 dumpbin 仍可能不可用，預檢會指出實際缺失項。共用入口不自動安裝系統編譯器、SDK 或需要管理員許可權的系統包。
 
-Windows 可按 [Community 免費許可路徑](windows-licensing.md)準備自有開發工具，閱讀並接受該版本條款；只裝 Build Tools 或 VC_redist 不單獨證明資格。GitHub 標準託管 runner 的 Enterprise 使用及相應再分發另有公開依據，不要求維護者為託管構建購買 Enterprise 或在本機安裝 Community IDE，也不將該依據用於自託管機器。現有 2019 工具無需為許可複核而解除安裝；本地替代配置與目前 2022 發行 SDK 的相容性須分別驗證。
+Windows 可按 [Community 免費許可路徑](windows-licensing.md)準備自有開發工具，閱讀並接受該版本條款；只裝 Build Tools 或 VC_redist 不單獨證明資格。GitHub 標準託管 runner 的 Enterprise 使用及相應再分發另有公開依據，不要求維護者為託管構建購買 Enterprise 或在本機安裝 Community IDE，也不將該依據用於自託管機器。現有 2019 工具無需為許可複核而解除安裝；本地替代配置與當前 2022 發行 SDK 的相容性須分別驗證。
 
 所有命令共用以下引數：
 
@@ -77,7 +77,7 @@ $LASTEXITCODE
 
 該包裝器為每次命令建立獨立的隱藏控制檯，並在超時或監督程序退出時結束其子程序；完成訊號缺失時按失敗處理。並行構建仍須分別使用不同的 `--build-dir`，包裝器不為構建目錄提供互斥。原有桌面構建和 `windows_ninja_safety.py` 的依賴檢查仍執行，直接包裝其他命令不會自動補上該檢查。此入口只適用於非互動命令，不支援將提示、密碼輸入或偽控制檯互動交給被包裝程序。
 
-`prepare` 核驗目前產品格式原始碼清單。ZIP、TAR/GZIP、7z、RAR、CAB 和光碟容器使用獨立 Rust，官方產品原始碼清單為空，不下載或編譯官方 UnRAR、7-Zip 引擎。獨立測試參照按各自固定來源準備，與產品執行依賴分開；RAR 有限對映的原始來源通知隨打包和對應原始碼交付保留，見[許可證契約](licensing.md)。`build` 只使用已準備輸入，不浮動下載。只測 Rust 時，需要先構建 `xdzip-native-codec`，將 `XDZIP_NATIVE_CODEC` 指向該工作程序，再執行 workspace 測試。原生後端任務閉環另執行 `cargo test -p xdzip-runtime --locked native_backend_tests -- --ignored`，統一 `test` 與 Foundation CI 均強制執行這部分，忽略狀態不能記作格式驗證透過。原始碼、流授權及許可邊界見[原生後端契約](native-codecs.md)。
+`prepare` 核驗當前產品格式原始碼清單。ZIP、TAR/GZIP、7z、RAR、CAB 和光碟容器使用獨立 Rust，官方產品原始碼清單為空，不下載或編譯官方 UnRAR、7-Zip 引擎。獨立測試參照按各自固定來源準備，與產品執行依賴分開；RAR 有限對映的原始來源通知隨打包和對應原始碼交付保留，見[許可證契約](licensing.md)。`build` 只使用已準備輸入，不浮動下載。只測 Rust 時，需要先構建 `xdzip-native-codec`，將 `XDZIP_NATIVE_CODEC` 指向該工作程序，再執行 workspace 測試。原生後端任務閉環另執行 `cargo test -p xdzip-runtime --locked native_backend_tests -- --ignored`，統一 `test` 與 Foundation CI 均強制執行這部分，忽略狀態不能記作格式驗證透過。原始碼、流授權及許可邊界見[原生後端契約](native-codecs.md)。
 
 | 命令 | 作用與前置條件 |
 | --- | --- |
@@ -88,7 +88,7 @@ $LASTEXITCODE
 | `package` | 部署執行時、收集許可與來源材料、執行部署審計並生成所選工件；要求乾淨原始碼、同提交構建與測試收據及打包工具 |
 | `verify` | 核驗已有執行時或包，不重新構建，不安裝產品、不改預設檔案關聯；依賴待核驗工件與平臺驗證環境 |
 
-預檢報告區分必需缺失、版本不符與目前階段不需要的工具，不用 Docker 或 Inno Setup 缺失阻止普通開發構建。打包預檢會實際檢查 Rust/Cargo 呼叫與鎖定依賴後設資料，避免到許可收集階段才發現 PATH 或依賴快取缺失。失敗的命令和驗證限制保留在本地／CI 輸出中，不把部分完成寫成透過。
+預檢報告區分必需缺失、版本不符與當前階段不需要的工具，不用 Docker 或 Inno Setup 缺失阻止普通開發構建。打包預檢會實際檢查 Rust/Cargo 呼叫與鎖定依賴後設資料，避免到許可收集階段才發現 PATH 或依賴快取缺失。失敗的命令和驗證限制保留在本地／CI 輸出中，不把部分完成寫成透過。
 
 首次準備固定 Qt 與 Rust 工具鏈：
 
@@ -119,7 +119,7 @@ python3 scripts/prepare-rar-rust-fixtures.py --output build/native-test-inputs
 python3 scripts/prepare-rar-rust-fixtures.py --output build/native-test-inputs --archives /path/to/fixed-rar-cache --offline
 ```
 
-準備器的固定來源和通知見 `scripts/rar-rust-fixtures.json` 與其公共相容清單，輸出 `sources.json.environment` 使用原始碼根目錄相對路徑。目前對應原始碼交付不包含這七個公共快取檔案；Cargo 的 `--offline` 不會補齊它們。準備器不會匯出 shell 環境，完整 `test` 前按下面的明確交接啟動子程序：
+準備器的固定來源和通知見 `scripts/rar-rust-fixtures.json` 與其公共相容清單，輸出 `sources.json.environment` 使用原始碼根目錄相對路徑。當前對應原始碼交付不包含這七個公共快取檔案；Cargo 的 `--offline` 不會補齊它們。準備器不會匯出 shell 環境，完整 `test` 前按下面的明確交接啟動子程序：
 
 ```sh
 python3 -c "
@@ -159,7 +159,7 @@ test 僅對子程序啟用 offscreen／software，不汙染後續命令的桌面
 
 ## 介面字型生成
 
-`prepare` 在共享工具環境安裝固定版本的 FontTools/Brotli，並快取經過雜湊驗證的上游字型。每次桌面構建自動收集目前雙語文案和 QML/C++ 固定文字，在 `<构建目录>/generated/fonts/` 生成共享子集。增加文字不需要提交字型二進位制。準備完成後可以離線構建，源快取缺失或損壞時明確失敗。直接使用 CMake 時，透過 `Python3_EXECUTABLE` 選擇同一工具環境。
+`prepare` 在共享工具環境安裝固定版本的 FontTools/Brotli，並快取經過雜湊驗證的上游字型。每次桌面構建自動收集當前雙語文案和 QML/C++ 固定文字，在 `<构建目录>/generated/fonts/` 生成共享子集。增加文字不需要提交字型二進位制。準備完成後可以離線構建，源快取缺失或損壞時明確失敗。直接使用 CMake 時，透過 `Python3_EXECUTABLE` 選擇同一工具環境。
 
 僅進行 HTML 預覽、離線匯出、匯入現有源字型和字型檢查時，參閱[共享字型指南](../../../design/assets/fonts/README.md)。打包檢查對應產品構建的字型清單，不重新生成字型。固定介面文案和使用者資料系統字型的既有分工保持不變。
 
@@ -180,7 +180,7 @@ python3 scripts/desktop.py package --kind all
 python3 scripts/desktop.py verify --kind all
 ```
 
-`prepare --packaging` 準備隔離 Python 校驗依賴、鎖定許可正文和 schema 快取，以及平臺打包材料；Windows 包括固定 CRT 和 Inno Setup。系統工具仍由開發者預先安裝。`package --kind runtime` 只准備部署執行目錄及其審計材料；隨後可用同一 output-dir 執行 `package --kind installer`，從已核驗執行目錄生成安裝器，Linux 同時生成保留執行許可權的 tar.gz。`--kind all` 為預設值，在一次命令內依次完成這兩部分。Windows 打包使用 Release 或 RelWithDebInfo，不部署 Debug Qt 庫；Windows 提供部署目錄和目前使用者安裝器，Linux 提供執行目錄、tar.gz 和 .deb。Windows 核驗需要同配置的瀏覽測試程式和 Qt Test／offscreen 測試輸入，Linux 核驗需要構建測試生成的 m2-flat.zip；測試檔案不會進入產品目錄。verify 的 `--kind runtime` 核驗執行時，預設 `--kind all` 核驗已選交付工件；普通核驗不執行安裝、升級／回退或使用者檔案關聯變更。
+`prepare --packaging` 準備隔離 Python 校驗依賴、鎖定許可正文和 schema 快取，以及平臺打包材料；Windows 包括固定 CRT 和 Inno Setup。系統工具仍由開發者預先安裝。`package --kind runtime` 只准備部署執行目錄及其審計材料；隨後可用同一 output-dir 執行 `package --kind installer`，從已核驗執行目錄生成安裝器，Linux 同時生成保留執行許可權的 tar.gz。`--kind all` 為預設值，在一次命令內依次完成這兩部分。Windows 打包使用 Release 或 RelWithDebInfo，不部署 Debug Qt 庫；Windows 提供部署目錄和當前使用者安裝器，Linux 提供執行目錄、tar.gz 和 .deb。Windows 核驗需要同配置的瀏覽測試程式和 Qt Test／offscreen 測試輸入，Linux 核驗需要構建測試生成的 m2-flat.zip；測試檔案不會進入產品目錄。verify 的 `--kind runtime` 核驗執行時，預設 `--kind all` 核驗已選交付工件；普通核驗不執行安裝、升級／回退或使用者檔案關聯變更。
 
 macOS DMG 須單獨選擇允許註冊文件候選的主構建，避免普通開發／測試副本進入“開啟方式”：
 

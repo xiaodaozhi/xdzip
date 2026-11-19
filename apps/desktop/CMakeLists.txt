@@ -281,6 +281,7 @@ if(UNIX AND NOT APPLE)
     set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/packaging/linux/xdzip.desktop"
         "${CMAKE_CURRENT_SOURCE_DIR}/packaging/linux/xdzip-mime.xml"
+        "${CMAKE_CURRENT_SOURCE_DIR}/packaging/linux/xdzip-local.yml"
         "${CMAKE_CURRENT_SOURCE_DIR}/packaging/linux/org.xdzip.update.policy")
     execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${XDZIP_PACKAGING_GENERATOR}"
         --platform linux --output "${XDZIP_PACKAGING_TRANSLATIONS}" COMMAND_ERROR_IS_FATAL ANY)

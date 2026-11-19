@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Compile actual previous/current preferences sources, then round-trip an owned profile."""
 import argparse
+import configparser
 import hashlib
 import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 from deployment_audit import digest, within
+from ui_languages import load_languages
 
 ROOT = Path(__file__).resolve().parents[1]
 BASELINE = '4cf0f8ca44bac3c0deaadbdaf5594504c5a6afa6'
@@ -33,11 +36,15 @@ def main():
             raise ValueError('Previous revision source checksum mismatch')
         (previous/name).write_bytes(data)
     build = output/'compiled'
+    generated = output/'generated'
     log = output/'compile.log'
     with log.open('w') as stream:
         for command in [
+            [sys.executable, str(ROOT/'scripts/ui_languages.py'), '--cpp',
+             str(generated/'UiLanguageData.h')],
             ['cmake', '-S', str(ROOT/'apps/desktop/tests/preferences-compat'), '-B', str(build), '-G', 'Ninja',
              '-DCMAKE_BUILD_TYPE=Release', '-DCMAKE_PREFIX_PATH='+str(args.qt_prefix.resolve()),
+             '-Dlanguage_INCLUDE_DIR='+generated.as_posix(),
              '-Dprevious_SOURCE='+previous.as_posix(), '-Dcurrent_SOURCE='+(ROOT/'apps/desktop').as_posix()],
             ['cmake', '--build', str(build), '--parallel', '3'],
         ]:
@@ -51,8 +58,8 @@ def main():
     profile = output/'settings.ini'
     environment = dict(os.environ, XDZIP_SETTINGS_PATH=str(profile), QT_QPA_PLATFORM='offscreen')
     suffix = '.exe' if os.name == 'nt' else ''
-    def invoke(revision, action=None):
-        command = [str(build/('preferences-'+revision+suffix))] + ([action] if action else [])
+    def invoke(revision, *arguments):
+        command = [str(build/('preferences-'+revision+suffix)), *arguments]
         return json.loads(subprocess.check_output(command, env=environment, text=True))
     dark = invoke('previous', '--write-dark')
     if not dark['saved'] or invoke('current') != dict(dark, saved=False):
@@ -60,6 +67,24 @@ def main():
     light = invoke('current', '--write-light')
     if not light['saved'] or invoke('previous') != dict(light, saved=False):
         raise ValueError('Same-schema profile cannot be read after rollback')
+    expanded = []
+    for language in load_languages()['languages']:
+        locale, legacy = language['id'], language['legacy']
+        if locale == legacy or not (ROOT/'resources/i18n'/f'{locale}.json').is_file():
+            continue
+        selected = invoke('current', '--write-language', locale)
+        original = profile.read_bytes()
+        ini = configparser.ConfigParser()
+        ini.read_string(original.decode('utf-8'), source='settings.ini')
+        if not selected['saved'] or dict(ini['locale']) != {'language': legacy, 'extendedlanguage': locale}:
+            raise ValueError(f'Language and legacy fallback were not saved together for {locale}')
+        if invoke('previous') != dict(light, language=legacy, saved=False):
+            raise ValueError(f'Rollback changed unrelated preferences or lost the fallback for {locale}')
+        if profile.read_bytes() != original or invoke('current') != dict(light, language=locale, saved=False):
+            raise ValueError(f'Language selection was not restored after reopening the current version for {locale}')
+        expanded.append(locale)
+    if not invoke('current', '--write-language', 'auto')['saved'] or b'extendedLanguage=' in profile.read_bytes():
+        raise ValueError('Returning to automatic language did not clear the dedicated key')
     if not invoke('previous', '--write-dark')['saved'] or invoke('current')['theme'] != 'dark':
         raise ValueError('Round-trip profile could not be saved after rollback')
     future = b'[General]\nschemaVersion=2\n[future]\nkeep=owned-canary\n'
@@ -69,7 +94,10 @@ def main():
     report = {'status': 'passed', 'previous_revision': BASELINE,
               'current_revision': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
               'executables': {r: digest(build/('preferences-'+r+suffix)) for r in ['previous', 'current']},
-              'cases': ['previous-save-current-read', 'current-save-previous-read', 'rollback-save-current-read', 'future-schema-write-refused'],
+              'extended_languages': expanded,
+              'cases': ['previous-save-current-read', 'current-save-previous-read',
+                        'extended-language-rollback-and-reopen', 'automatic-language-clears-override',
+                        'rollback-save-current-read', 'future-schema-write-refused'],
               'limits': 'Two real source revisions of the settings component, same Qt SDK and schema 1. Not two complete historical installers or a schema-2 migration.'}
     (output/'settings-compat.json').write_text(json.dumps(report, indent=2)+'\n')
     print('Previous/current settings binaries passed profile round-trip and future-schema refusal')
