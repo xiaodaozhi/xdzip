@@ -12,8 +12,8 @@ use random::RANDOM_PERIODS;
 
 const SELECTORS: usize = 18002;
 const FIXED_MEMORY: u64 = 65536;
-const BLOCK_MAGIC: u64 = 0x3141_5926_5359;
-const END_MAGIC: u64 = 0x1772_4538_5090;
+pub(crate) const BLOCK_MAGIC: u64 = 0x3141_5926_5359;
+pub(crate) const END_MAGIC: u64 = 0x1772_4538_5090;
 
 /// Conservative working-memory budget for BZh1..BZh9, covering the last column,
 /// stable permutation, selectors, entropy tables and bounded buffered input.
@@ -153,7 +153,7 @@ const fn crc_table() -> [u32; 256] {
     result
 }
 const CRC: [u32; 256] = crc_table();
-fn crc_byte(crc: u32, byte: u8) -> u32 {
+pub(crate) fn crc_byte(crc: u32, byte: u8) -> u32 {
     (crc << 8) ^ CRC[((crc >> 24) as u8 ^ byte) as usize]
 }
 

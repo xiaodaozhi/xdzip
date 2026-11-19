@@ -92,7 +92,7 @@ impl RewriteCodec for ZipCodec {
                 || record.method == 99
                 || filter_extra(&record.extra, &[0x9901])? != record.extra
                 || record.flags & !0x080e != 0
-                || !matches!(record.method, 0 | 8)
+                || !crate::rewritable_method(record.method)
                 || entry.warning
                 || entry.link
                 || (entry.directory && entry.size != 0)

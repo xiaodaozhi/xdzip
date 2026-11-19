@@ -88,16 +88,11 @@ fn extension(header: &mut Vec<u8>, kind: u8, data: &[u8], next: usize) {
     header.extend_from_slice(data);
     header.extend_from_slice(&(next as u16).to_le_bytes());
 }
-fn header(entry: &EncodeEntry) -> Result<Vec<u8>, EncodeError> {
-    let time = u32::try_from(entry.modified_unix).map_err(|_| EncodeError::Invalid)?;
-    let size = u32::try_from(entry.size).map_err(|_| EncodeError::Limit)?;
-    let (directory, filename) = if entry.directory {
-        (entry.name.as_str(), "")
+fn name_parts(name: &str, directory: bool) -> Result<(&[u8], Vec<u8>), EncodeError> {
+    let (directory, filename) = if directory {
+        (name, "")
     } else {
-        entry
-            .name
-            .rsplit_once('/')
-            .unwrap_or(("", entry.name.as_str()))
+        name.rsplit_once('/').unwrap_or(("", name))
     };
     let mut dir = Vec::new();
     dir.try_reserve_exact(directory.len() + usize::from(!directory.is_empty()))
@@ -109,6 +104,23 @@ fn header(entry: &EncodeEntry) -> Result<Vec<u8>, EncodeError> {
     if filename.len() + dir.len() > 4096 {
         return Err(EncodeError::Limit);
     }
+    Ok((filename.as_bytes(), dir))
+}
+
+fn seal_length(header: &mut Vec<u8>) -> Result<(), EncodeError> {
+    // A zero low size byte would be read as an archive terminator.
+    if header.len() % 256 == 0 {
+        header.push(0);
+    }
+    let length = u16::try_from(header.len()).map_err(|_| EncodeError::Limit)?;
+    header[..2].copy_from_slice(&length.to_le_bytes());
+    Ok(())
+}
+
+fn header(entry: &EncodeEntry) -> Result<Vec<u8>, EncodeError> {
+    let time = u32::try_from(entry.modified_unix).map_err(|_| EncodeError::Invalid)?;
+    let size = u32::try_from(entry.size).map_err(|_| EncodeError::Limit)?;
+    let (filename, dir) = name_parts(&entry.name, entry.directory)?;
     let length = 26 + 5 + filename.len() + 3 + if dir.is_empty() { 0 } else { dir.len() + 3 };
     let mut header = Vec::new();
     header
@@ -126,19 +138,86 @@ fn header(entry: &EncodeEntry) -> Result<Vec<u8>, EncodeError> {
     extension(
         &mut header,
         1,
-        filename.as_bytes(),
+        filename,
         if dir.is_empty() { 0 } else { dir.len() + 3 },
     );
     if !dir.is_empty() {
         extension(&mut header, 2, &dir, 0);
     }
-    if header.len() % 256 == 0 {
-        header.push(0);
-    }
-    let length = u16::try_from(header.len()).map_err(|_| EncodeError::Limit)?;
-    header[..2].copy_from_slice(&length.to_le_bytes());
+    seal_length(&mut header)?;
     Ok(header)
 }
+pub(crate) fn rename_header(
+    original: &[u8],
+    name: &str,
+    directory: bool,
+) -> Result<Vec<u8>, EncodeError> {
+    let name = if directory {
+        name.strip_suffix('/').ok_or(EncodeError::Invalid)?
+    } else {
+        name
+    };
+    PortablePath::parse(name).ok_or(EncodeError::Invalid)?;
+    let (filename, dirname) = name_parts(name, directory)?;
+    let mut header = Vec::new();
+    header
+        .try_reserve_exact(original.len() + filename.len() + dirname.len() + 16)
+        .map_err(|_| EncodeError::Limit)?;
+    header.extend_from_slice(original.get(..24).ok_or(EncodeError::Invalid)?);
+    header.extend_from_slice(&[0; 2]);
+    // Regenerate the filename and dirname, preserve independent metadata from
+    // the validated original, and recalculate the common header CRC.
+    let mut extra = Vec::new();
+    let mut common = [0; 3];
+    let mut common_size = 2;
+    let mut at = 24;
+    loop {
+        let word = original.get(at..at + 2).ok_or(EncodeError::Invalid)?;
+        let size = usize::from(u16::from_le_bytes([word[0], word[1]]));
+        if size == 0 {
+            break;
+        }
+        if size < 3 {
+            return Err(EncodeError::Invalid);
+        }
+        let bytes = original
+            .get(at + 2..at + size)
+            .ok_or(EncodeError::Invalid)?;
+        match bytes[0] {
+            0 => {
+                if !(3..=4).contains(&bytes.len()) {
+                    return Err(EncodeError::Invalid);
+                }
+                common_size = bytes.len() - 1;
+                if common_size == 3 {
+                    common[2] = bytes[3];
+                }
+            }
+            1 | 2 => {}
+            kind => extra.push((kind, &bytes[1..])),
+        }
+        at += size;
+    }
+    let mut parts = vec![(0, &common[..common_size]), (1, filename)];
+    if !dirname.is_empty() {
+        parts.push((2, dirname.as_slice()));
+    }
+    parts.extend(extra);
+    header[24..26].copy_from_slice(&((common_size + 3) as u16).to_le_bytes());
+    for (index, &(kind, data)) in parts.iter().enumerate() {
+        extension(
+            &mut header,
+            kind,
+            data,
+            parts.get(index + 1).map_or(0, |part| part.1.len() + 3),
+        );
+    }
+    seal_length(&mut header)?;
+    let checksum = crc16(&header);
+    header[27..29].copy_from_slice(&checksum.to_le_bytes());
+    Ok(header)
+}
+
 fn finalize(header: &mut [u8], packed: u64, crc: u16) -> Result<(), EncodeError> {
     header[7..11].copy_from_slice(
         &u32::try_from(packed)
@@ -154,6 +233,16 @@ fn finalize(header: &mut [u8], packed: u64, crc: u16) -> Result<(), EncodeError>
 pub(crate) fn encode(
     input: &dyn EncodeInput,
     output: &mut dyn EncodeOutput,
+    settings: EncodeSettings<'_>,
+    cancel: &Cancellation,
+    progress: &mut dyn FnMut(EncodeProgress<'_>),
+) -> Result<(), EncodeError> {
+    append(input, output, 0, settings, cancel, progress)
+}
+pub(crate) fn append(
+    input: &dyn EncodeInput,
+    output: &mut dyn EncodeOutput,
+    initial_position: u64,
     settings: EncodeSettings<'_>,
     cancel: &Cancellation,
     progress: &mut dyn FnMut(EncodeProgress<'_>),
@@ -195,7 +284,7 @@ pub(crate) fn encode(
     let mut output = Output {
         host: output,
         cancel,
-        position: 0,
+        position: initial_position,
         member_end: None,
     };
     let mut input_bytes = 0u64;

@@ -533,8 +533,7 @@ mod tests {
     use super::*;
     use std::io::{self, Cursor, SeekFrom, Write};
     use xdzip_codec_api::encode::{
-        CreationCodec, EncodeEntry, EncodeError, EncodeInput, EncodeSettings, RewriteCodec,
-        RewriteInput,
+        CreationCodec, EncodeEntry, EncodeError, EncodeInput, EncodeSettings,
     };
     struct Inputs {
         entries: Vec<EncodeEntry>,
@@ -649,8 +648,14 @@ mod tests {
         );
     }
     #[test]
-    fn read_only_tar_filters_reject_encoding_and_rewrite_before_touching_streams() {
-        for filter in [Filter::Bzip2, Filter::Lzma, Filter::Lzip] {
+    fn rewrite_only_tar_filters_reject_creation_before_touching_streams() {
+        for filter in [
+            Filter::Bzip2,
+            Filter::Lzma,
+            Filter::Lzip,
+            Filter::Compress,
+            Filter::Brotli,
+        ] {
             let settings = EncodeSettings {
                 method: "store",
                 level: 6,
@@ -666,27 +671,6 @@ mod tests {
                 Err(EncodeError::Unsupported)
             );
             assert!(output.is_empty());
-            let additions = Inputs {
-                entries: vec![],
-                data: vec![],
-            };
-            let mut stage = Cursor::new(vec![]);
-            assert_eq!(
-                codec.rewrite(
-                    &mut Cursor::new(b"invalid source"),
-                    RewriteInput {
-                        keep: &[],
-                        renames: &[],
-                        additions: &additions,
-                        settings
-                    },
-                    &mut stage,
-                    &cancel,
-                    &mut |_| {}
-                ),
-                Err(EncodeError::Unsupported)
-            );
-            assert!(stage.get_ref().is_empty());
         }
     }
     fn encoded(gzip: bool) -> Vec<u8> {

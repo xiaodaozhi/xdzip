@@ -204,7 +204,7 @@ mod tests {
             assert_eq!(declaration.creation_method_id("lz4"), Some(256));
             assert_eq!(declaration.creation_method(8), None);
             assert_eq!(declaration.creation_levels, [1, 6, 9]);
-            assert!(!declaration.rewrite);
+            assert_eq!(declaration.rewrite, format == Format::TarLz4);
             assert_eq!(declaration.worker_id, None);
         }
         assert_eq!(Format::Zip.descriptor().creation_method(256), None);
@@ -212,7 +212,7 @@ mod tests {
         assert_eq!(lha.creation_method(259), Some("lh5"));
         assert_eq!(lha.creation_method_id("lh5"), Some(259));
         assert_eq!(lha.creation_levels, [1, 6, 9]);
-        assert!(!lha.rewrite && lha.write_encryption.is_empty() && lha.write_volumes.is_empty());
+        assert!(lha.rewrite && lha.write_encryption.is_empty() && lha.write_volumes.is_empty());
         assert_eq!(Format::Zip.descriptor().creation_method(259), None);
         assert_eq!(lha.creation_method(5), None);
         let pma = Format::Pma.descriptor();
@@ -239,7 +239,7 @@ mod tests {
             assert_eq!(declaration.creation_method(8), None);
             assert_eq!(declaration.creation_levels, [1, 6, 9]);
             assert_eq!(declaration.check_kind, "format_declared_checks");
-            assert!(!declaration.rewrite);
+            assert_eq!(declaration.rewrite, format == Format::TarZstd);
             assert_eq!(declaration.worker_id, None);
         }
         assert_eq!(Format::Zip.descriptor().creation_method(93), None);
@@ -247,7 +247,7 @@ mod tests {
             assert_eq!(format.descriptor().creation_method(32), Some("lzma2"));
             assert_eq!(format.descriptor().creation_method(0), None);
             assert_eq!(format.descriptor().creation_method(8), None);
-            assert!(!format.descriptor().rewrite);
+            assert_eq!(format.descriptor().rewrite, format == Format::TarXz);
             assert_eq!(format.descriptor().check_kind, "format_declared_checks");
         }
         for format in [
@@ -257,14 +257,25 @@ mod tests {
             Format::Udf,
             Format::Pea,
             Format::Bzip2,
-            Format::TarBzip2,
             Format::Lzma,
-            Format::TarLzma,
             Format::Lzip,
-            Format::TarLzip,
+            Format::Compress,
+            Format::Brotli,
         ] {
             assert!(format.descriptor().write_methods.is_empty());
             assert!(!format.descriptor().rewrite);
+        }
+        for format in [
+            Format::TarBzip2,
+            Format::TarLzma,
+            Format::TarLzip,
+            Format::TarCompress,
+            Format::TarBrotli,
+        ] {
+            let declaration = format.descriptor();
+            assert!(declaration.rewrite);
+            assert!(declaration.write_methods.is_empty());
+            assert!(declaration.creation_suffixes.is_empty());
         }
         let iso = Format::Iso.descriptor();
         assert_eq!(iso.creation_method(260), Some("iso9660"));

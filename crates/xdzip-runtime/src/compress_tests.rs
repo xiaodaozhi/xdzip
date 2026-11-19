@@ -79,7 +79,10 @@ fn independent_compress_profiles_use_real_browse_check_and_extract() {
             },
             "{name}"
         );
-        assert!(!archive.update_allowed);
+        assert_eq!(
+            archive.update_allowed,
+            archive.format == xdzip_codec_api::Format::TarCompress
+        );
         assert_eq!(archive.rows.len(), 1);
         assert_eq!(archive.rows[0].method, 257);
         assert_eq!(archive.rows[0].packed_size_known(), !tar);

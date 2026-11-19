@@ -6,12 +6,12 @@
 
 检查强度描述成功完成[完整性检查](archive-checking.md)所提供的保证。`supported_content` 校验受支持的负载，`structure_and_readability` 检查结构和可读取性，`format_declared_checks` 校验流实际携带的校验字段，也允许无校验字段的配置。能否运行检查由独立的能力字段决定。例如 NSIS 只识别有界的安装器元数据，无法执行检查。创建方法编号只在对应格式获准的写入方法中解析。
 
-`creation_methods` 为方法名指定宿主传输编号，`creation_levels` 按格式限定级别，生成的界面选项与 Rust 描述同时携带这两项。CLI、GUI 和宿主解析同一份登记，不再假定压缩方法只能是 Deflate 或 LZMA2。Store、Copy 保留编号 0，Deflate 保留 8，LZMA2 保留 32；Zstandard 使用宿主编号 93，LZ4 使用 256，仅在其容器内解释，不代表 ZIP 方法。只读配置没有创建级别。生成器拒绝缺失或格式内歧义的方法编号及非法级别。
+`creation_methods` 为方法名指定宿主传输编号，`creation_levels` 按格式限定级别，生成的界面选项与 Rust 描述同时携带这两项。CLI、GUI 和宿主解析同一份登记，不再假定压缩方法只能是 Deflate 或 LZMA2。Store、Copy 保留编号 0，Deflate 保留 8，LZMA2 保留 32；Zstandard 使用宿主编号 93，LZ4 使用 256，仅在其容器内解释，不代表 ZIP 方法。未提供创建能力的格式没有创建级别。改写和创建是独立能力。生成器拒绝缺失或格式内歧义的方法编号及非法级别。
 
 | 操作 | 内置支持范围 |
 | --- | --- |
 | 创建新归档 | ZIP、7z、TAR、TAR.GZ（`.tar.gz`、`.tgz`）、独立 GZIP、XZ/TAR.XZ、LZ4/TAR.LZ4、Zstandard/TAR.ZST、LHA（`.lha`、`.lzh`）、ISO9660/Joliet，以及 Windows x64 的 ZIP 自解压封装。独立压缩流只接收一个普通文件。详见[归档创建](zip-creation.md)和[单文件压缩流](single-file-streams.md)。 |
-| 改写现有归档 | 符合条件的 ZIP、7z、TAR 和 TAR.GZ。加密、分卷，以及包含不支持的条目或存储形式的归档不在范围内，详见[归档修改契约](archive-transfers.md)。 |
+| 改写现有归档 | 符合条件的 ZIP/ZIPX、7z、2 级头部 LHA/LZH、TAR、TAR.GZ、TAR.XZ、TAR.ZST、TAR.LZ4、TAR.BZ2、TAR.LZMA、TAR.LZ、TAR.Z 和 TAR.BR。加密、分卷，以及包含不支持的条目或存储形式的归档不在范围内，详见[归档修改契约](archive-transfers.md)。 |
 | 浏览、解压、打开条目、导出或检查 | 每项操作分别核对格式与条目资格。例如，部分安装器只能查看元数据。详见[只读浏览](readonly-browser.md)和[完整性检查](archive-checking.md)。 |
 
 修改规格后运行 `python3 scripts/generate-format-registry.py`，生成 Rust 格式描述、C++ 拖放与 Shell 候选、JavaScript 界面选项以及 Python 安装图标映射。`--check` 只检查，缺失或过期输出明确失败。`python3 scripts/test-format-registry.py` 检查矛盾能力、重复标识和后缀、生成语言中的非法值及过期消费者；日常 CI 执行这两项检查。
