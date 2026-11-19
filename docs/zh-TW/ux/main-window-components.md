@@ -4,7 +4,7 @@
 
 [English](../../ux/main-window-components.md) | [简体中文](../../zh-CN/ux/main-window-components.md) | 繁體中文（台灣）
 
-主視窗的控制元件同時交付外觀和行為：普通、懸停、按下、鍵盤焦點、禁用、選中、忙碌與錯誤均有明確狀態。HTML 使用示例壓縮檔驗證互動；Qt 根據真實瀏覽、建立、解壓、[完整性檢查](../engineering/archive-checking.md)和[主動內容預覽](../engineering/content-preview.md)的能力啟用動作，HTML 示例不代表真實背景結果。
+主視窗的控制元件同時交付外觀和行為：普通、懸停、按下、鍵盤焦點、禁用、選中、忙碌與錯誤均有明確狀態。HTML 使用示例壓縮檔驗證互動；Qt 根據真實瀏覽、建立、解壓、[完整性檢查](../engineering/archive-checking.md)和[內容預覽](../engineering/content-preview.md)的能力啟用動作，HTML 示例不代表真實背景結果。
 
 檔名、目錄名、歸檔名和路徑優先使用啟動時的系統預設字型，缺字由平臺回退；固定介面文案繼續使用內建子集。目錄樹與拖動預覽按對應文字字型量測，詳見[視覺規範](../visual/design-standard.md#xdzip-%E7%95%8C%E9%9D%A2%E5%AD%97%E4%BD%93%E4%B8%8E%E7%94%A8%E6%88%B7%E6%95%B0%E6%8D%AE)。
 

@@ -25,7 +25,7 @@
 | P11 保護密碼及資料 | [檔案授權](file-security.md)、[隱私](../engineering/privacy.md) | T11 有作用範圍的密碼、脫敏診斷及明確的網路訪問。 |
 | P12 審計交付 | [質量](quality-engineering.md)、[發行](build-release.md) | T12 鎖定輸入和工件身份、元件清單、許可材料、包信任及適用安裝檢查。 |
 | P13 控制外部擴充套件准入 | [格式](codec-extension-sdk.md)、[SDK 試驗](../engineering/sdk-trial.md) | T13 獨立試驗的互操作和原生許可權結果。產品內安裝擴充套件仍是設計選項。 |
-| P14 限制預覽與開啟 | [桌面](qt-quick-ui.md)、[檔案授權](file-security.md) | T14 顯式預覽、受支援內容、工作程序限額和私有臨時輸出。 |
+| P14 限制預覽與開啟 | [桌面](qt-quick-ui.md)、[檔案授權](file-security.md) | T14 自動預覽、受支援內容、工作程序限額和私有臨時輸出。 |
 | P15 報告實際結果 | [橋接](qt-rust-bridge.md)、[檔案授權](file-security.md)、[任務](task-scheduling.md) | T15 來源或目標變化、部分提交後的失敗與取消、清理及不確定結果。 |
 
 <a name="xdzip-横向验证"></a>

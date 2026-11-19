@@ -37,7 +37,7 @@
 - [大歸檔索引與按需瀏覽](../engineering/large-index.md)
 - [分卷讀取與臨時開啟](../engineering/archive-opening.md)
 - [檔名編碼自適應契約](../engineering/filename-encoding.md)
-- [主動內容預覽](../engineering/content-preview.md)
+- [內容預覽](../engineering/content-preview.md)
 - [解壓預檢：後設資料階段](../engineering/extraction-preflight.md)
 - [安全 ZIP 解壓實現](../engineering/zip-safe-extraction.md)
 - [壓縮檔完整性檢查](../engineering/archive-checking.md)
