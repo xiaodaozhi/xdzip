@@ -1,5 +1,5 @@
 # CI extension: shared local stages plus historical, visual and installer gates.
-param([string]$QtRoot, [string]$ToolsDirectory)
+param([string]$QtRoot, [string]$ToolsDirectory, [switch]$BrowserStability)
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/ci-observability.ps1"
 Initialize-CiTiming -Scope qt -OutputPath 'build/review/ci-timings.json'
@@ -117,6 +117,17 @@ New-Item -ItemType Directory -Force 'build/review' | Out-Null
 Copy-Item 'build/settings-compat/settings-compat.json' 'build/review/settings-compat.json'
 Set-CiPhase 'native-build'
 Invoke-Checked python (@('scripts/desktop.py', 'build') + $shared)
+if ($BrowserStability) {
+    $env:XDZIP_BROWSER_TIMING_DIR = Join-Path (Get-Location) 'build/review/browser-timings'
+    Set-CiPhase 'browser-repeat'
+    try {
+        Invoke-Checked ctest @('--test-dir', 'build/desktop', '-R', '^qt_zip_browser$', '--no-tests=error', '--repeat', 'until-fail:10', '--output-on-failure')
+    } finally {
+        Remove-Item Env:XDZIP_BROWSER_TIMING_DIR
+        Save-ComponentLogs 'stability'
+    }
+    return
+}
 if ($IsWindows) {
     # Exercise the real desktop entry incrementally through the isolated console.
     $env:XDZIP_DETACHED_DESKTOP_ARGUMENTS = ConvertTo-Json -InputObject $shared -Compress
@@ -166,15 +177,9 @@ if ($IsMacOS) {
 $env:XDZIP_BROWSER_TIMING_DIR = Join-Path (Get-Location) 'build/review/browser-timings'
 Set-CiPhase 'component-tests'
 try {
-    try {
-        Invoke-Checked python (@('scripts/desktop.py', 'test', '--skip-rust') + $shared)
-    } finally {
-        Save-ComponentLogs 'initial'
-    }
-    # Repeat the complete browser suite without changing assertions or deadlines.
-    Set-CiPhase 'browser-repeat'
-    Invoke-Checked ctest @('--test-dir', 'build/desktop', '-R', 'qt_zip_browser', '--repeat', 'until-fail:10', '--output-on-failure')
+    Invoke-Checked python (@('scripts/desktop.py', 'test', '--skip-rust') + $shared)
 } finally {
+    Save-ComponentLogs 'initial'
     Remove-Item Env:XDZIP_BROWSER_TIMING_DIR
 }
 New-Item -ItemType Directory -Force 'build/review' | Out-Null
