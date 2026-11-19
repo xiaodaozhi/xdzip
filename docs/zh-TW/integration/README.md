@@ -2,7 +2,7 @@
 
 # 在指令碼中使用 XDZip
 
-[English](../../integration/README.md) | [简体中文](../../zh-CN/integration/README.md) | 繁體中文（台灣）
+[English](../../integration/README.md) | [简体中文](../../zh-CN/integration/README.md) | 繁體中文（台灣） | [日本語](../../ja-JP/integration/README.md) | [한국어](../../ko-KR/integration/README.md) | [Français](../../fr-FR/integration/README.md) | [Deutsch](../../de-DE/integration/README.md) | [Español](../../es-ES/integration/README.md) | [Português (Brasil)](../../pt-BR/integration/README.md) | [Русский](../../ru-RU/integration/README.md)
 
 獨立 CLI 無需 Qt 或桌面會話。從 [GitHub 釋出頁](https://github.com/xiaodaozhi/xdzip/releases)下載適合目前系統的 `xdzip-cli-` 包，完整解壓，保留可執行檔案旁的工作程序。從解壓目錄啟動時，macOS 或 Linux 執行 `./bin/xdzip --help`，Windows PowerShell 執行 `.\bin\xdzip.exe --help`。
 
