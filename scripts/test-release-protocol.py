@@ -7,6 +7,7 @@ import io
 import json
 import os
 from pathlib import Path
+import plistlib
 import re
 import shlex
 import shutil
@@ -52,6 +53,26 @@ class SingleRunReleaseWorkflowTests(unittest.TestCase):
 
 
 class NativeHandoffTests(unittest.TestCase):
+    def test_developer_rank_fixture_leaves_the_distribution_bundle_unchanged(self):
+        spec = importlib.util.spec_from_file_location('registration', Path(__file__).with_name('check-macos-registration.py'))
+        registration = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(registration)
+        with tempfile.TemporaryDirectory() as temporary:
+            build = Path(temporary)
+            app = build/'xdzip.app'
+            exe = app/'Contents/MacOS/xdzip'
+            exe.parent.mkdir(parents=True)
+            exe.write_bytes(b'owned executable')
+            plist = app/'Contents/Info.plist'
+            original = plistlib.dumps({'CFBundleDocumentTypes': [{'LSHandlerRank': 'Alternate'}]})
+            plist.write_bytes(original)
+            with registration.registration_target(app, True, build) as fixture:
+                ranks = plistlib.loads((fixture/'Contents/Info.plist').read_bytes())
+                self.assertEqual(ranks['CFBundleDocumentTypes'][0]['LSHandlerRank'], 'None')
+                self.assertEqual((fixture/'Contents/MacOS/xdzip').read_bytes(), exe.read_bytes())
+                self.assertEqual(plist.read_bytes(), original)
+            self.assertFalse(fixture.exists())
+
     def test_retry_can_restore_the_same_bytes_and_rejects_the_wrong_run_or_modified_archive(self):
         identity = {'schema_version': 1, 'repository': 'owner/repo', 'run_id': '5',
                     'revision': 'a' * 40, 'platform': 'linux'}
