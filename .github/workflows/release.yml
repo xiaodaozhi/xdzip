@@ -112,6 +112,8 @@ jobs:
           name: release-build-evidence-${{ runner.os }}-${{ github.run_attempt }}
           path: |
             build/review/*.json
+            build/release-package/*.json
+            build/release-package/*.log
             build/review/native-sessions*.log
             build/review/x11-startup/
             build/desktop/apps/desktop/*tests.log
@@ -167,6 +169,8 @@ jobs:
             build/release-handoff/receipt.json
             build/review/*verify*.json
             build/review/*verification/*.json
+            build/release-package/*verify*.json
+            build/release-package/*verification/*.json
             build/review/*install-lifecycle.*
             build/review/installer-diagnostics/
             build/review/linux-runtime.*

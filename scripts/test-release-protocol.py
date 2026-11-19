@@ -545,7 +545,7 @@ function Invoke-Checked {
 Invoke-Checked python @('scripts/desktop.py', 'build')
 Invoke-ReleaseComponentTests -Arguments @('--release-distribution')
 Invoke-Checked python @('scripts/desktop.py', 'package')
-New-Item -ItemType Directory -Force 'build/review' | Out-Null
+New-Item -ItemType Directory -Force 'build/release-package' | Out-Null
 ''', encoding='utf-8')
         capture = directory/'capture.py'
         capture.write_text('''import json, os
@@ -626,7 +626,7 @@ if ($failed) { exit 1 }
         self.assertIn('--release-distribution', test['args'])
         self.assertEqual(calls[3]['environment'], calls[-1]['environment'])
         self.assertEqual(calls[4]['args'][1:4], ['package', '--build-dir', 'build/desktop/cli'])
-        self.assertEqual((directory/'build/review/owned-cli.tar.gz').read_bytes(), b'owned CLI fixture')
+        self.assertEqual((directory/'build/release-package/owned-cli.tar.gz').read_bytes(), b'owned CLI fixture')
 
     def test_fixture_preparation_failure_prevents_tests_and_packages(self):
         result, calls, _ = self.run_release('prepare-failure')

@@ -24,6 +24,10 @@ ARCHITECTURES = {'windows': 'X64', 'linux': 'X64', 'macos': 'ARM64'}
 QT_FILES = ('bin/Qt6Test.dll', 'bin/Qt6QuickTest.dll', 'plugins/platforms/qoffscreen.dll')
 
 
+def package_directory(system):
+    return BUILD / 'release-package' if system == 'macos' else REVIEW
+
+
 def identity(system):
     revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     if (
@@ -50,10 +54,11 @@ def read_receipt(directory, system):
 
 
 def paths_for(system):
-    paths = [REVIEW / 'notices', REVIEW / 'sbom-schemas']
-    paths.extend(sorted(REVIEW.glob('*.json')))
+    packages = package_directory(system)
+    paths = [packages / 'notices', REVIEW / 'sbom-schemas']
+    paths.extend(sorted(packages.glob('*.json')))
     for pattern in ('*.deb', '*.dmg', '*.tar.gz', '*.exe', '*.zip'):
-        paths.extend(sorted(REVIEW.glob(pattern)))
+        paths.extend(sorted(packages.glob(pattern)))
     if system != 'macos':
         paths += [REVIEW / system, BUILD / 'desktop/apps/desktop/m2-flat.zip',
                   BUILD / f'installer-tests/{system}-packages', BUILD / 'installer-tests/association-fixtures']
@@ -75,7 +80,8 @@ def pack(system):
             output.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(qt / relative, output)
     paths = paths_for(system)
-    if not (REVIEW / 'package.json').is_file() or not (REVIEW / 'cli-package.json').is_file():
+    packages = package_directory(system)
+    if not (packages / 'package.json').is_file() or not (packages / 'cli-package.json').is_file():
         raise ValueError('Release build did not produce desktop and CLI package receipts')
     archive = HANDOFF / ARCHIVE
     with tarfile.open(archive, 'w:gz', compresslevel=3) as writer:
@@ -91,7 +97,7 @@ def unpack(system):
     archive = HANDOFF / ARCHIVE
     if sha256(archive) != receipt.get('archive_sha256'):
         raise ValueError('Native package handoff checksum mismatch')
-    allowed = ('build/review/', 'build/desktop/apps/desktop/', 'build/installer-tests/',
+    allowed = ('build/review/', 'build/release-package/', 'build/desktop/apps/desktop/', 'build/installer-tests/',
                'build/release-verify-qt/')
     names = set()
     with tarfile.open(archive, 'r:gz') as reader:
@@ -128,7 +134,7 @@ def stage(system):
     output = BUILD / 'release-assets'
     output.mkdir()
     subprocess.run([sys.executable, 'scripts/prepare-release.py',
-                    '--packages', str(REVIEW), '--output', str(output), '--platform', system],
+                    '--packages', str(package_directory(system)), '--output', str(output), '--platform', system],
                    cwd=ROOT, check=True)
     write_receipt(output, {**identity(system), 'archive_sha256': handoff['archive_sha256'],
                            'verified': inventory(output)})

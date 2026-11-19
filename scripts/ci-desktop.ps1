@@ -362,7 +362,7 @@ Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'build/review'
 Set-CiPhase 'runtime-package'
 if ($IsMacOS) {
     if ($ReleaseBuild) {
-        Invoke-Checked python (@('scripts/desktop.py', 'package') + $shared)
+        Invoke-Checked python (@('scripts/desktop.py', 'package') + $shared + @('--output-dir', 'build/release-package'))
     } else {
         Invoke-Checked python @('scripts/collect-notices.py', 'build/review/notices', '--qt-prefix', $qtPrefix)
         Invoke-Checked python @('scripts/prepare-runtime-notices.py', '--qt-prefix', $qtPrefix, '--output', 'build/review/notices/Qt-runtime')

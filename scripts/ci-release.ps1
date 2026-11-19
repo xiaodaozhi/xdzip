@@ -1,13 +1,14 @@
 param([Parameter(Mandatory)][ValidateSet('Build', 'Verify')][string]$Stage)
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $true
+$packages = if ($IsMacOS) { 'build/release-package' } else { 'build/review' }
 
 if ($Stage -eq 'Build') {
     $env:XDZIP_CLI_RELEASE_BUILD = '1'
     & ./scripts/ci-desktop.ps1 -ReleaseBuild
     python scripts/cli.py package --build-dir build/desktop/cli --output build/release-cli
     $cli = Get-Content -Raw -LiteralPath 'build/release-cli/cli-package.json' | ConvertFrom-Json
-    Copy-Item -LiteralPath "build/release-cli/$($cli.file)", 'build/release-cli/cli-package.json' -Destination build/review
+    Copy-Item -LiteralPath "build/release-cli/$($cli.file)", 'build/release-cli/cli-package.json' -Destination $packages
     python scripts/release_handoff.py pack
     return
 }
@@ -22,7 +23,7 @@ if ($IsWindows) {
     Enter-VsDevShell -VsInstallPath $installation -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
 }
 Set-CiPhase 'package-verification'
-$arguments = @('scripts/desktop.py', 'verify', '--build-dir', 'build/desktop', '--output-dir', 'build/review')
+$arguments = @('scripts/desktop.py', 'verify', '--build-dir', 'build/desktop', '--output-dir', $packages)
 if ($IsMacOS) {
     $arguments += '--release-distribution'
 } elseif ($IsWindows) {
