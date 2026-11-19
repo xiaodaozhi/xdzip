@@ -1,76 +1,76 @@
-# xdzip 隐私政策
+# xdzip Privacy Policy
 
-生效日期及最后更新日期：2026 年 11 月 13 日。
+English | [简体中文](PRIVACY.zh-CN.md)
 
-[English](PRIVACY.en.md)
+Effective date and last updated: November 13, 2026.
 
-## 适用范围与联系
+## Scope and contact
 
-本政策说明由 xiaodaozhi 维护的 xdzip 官方桌面应用和命令行工具如何处理信息，包括其 Windows MSIX 版本。不同版本和分发渠道提供的功能可能不同，以你使用的版本为准。
+This policy explains how the official xdzip desktop application and command-line tools maintained by xiaodaozhi process information, including their Windows MSIX editions. Features may differ between versions and distribution channels.
 
-隐私问题可通过[项目反馈页面](https://github.com/xiaodaozhi/xdzip/issues)联系维护者。该页面是公开的，请仅提供解决问题所需的信息，不要附上私人文件、密码或完整私人路径。涉及安全漏洞或敏感漏洞细节，请使用[私密安全报告](https://github.com/xiaodaozhi/xdzip/security/advisories/new)。
+For privacy questions, contact the maintainer through the [project issue tracker](https://github.com/xiaodaozhi/xdzip/issues). This is public: provide only what is needed to resolve the issue and do not include private files, passwords or full private paths. For security vulnerabilities or sensitive vulnerability details, use [private vulnerability reporting](https://github.com/xiaodaozhi/xdzip/security/advisories/new).
 
-## 本地文件与应用数据
+## Local files and application data
 
-xdzip 的基本压缩、解压和浏览功能可离线使用，不要求注册 xdzip 账户。应用会读取你选择的文件和目录，并按你的操作在设备上处理归档内容、文件名、路径、大小、时间和其他文件属性。这些内容可能包含个人信息。xdzip 不会将它们自动上传给开发者，也不提供面向开发者服务器的归档同步功能。
+Basic compression, extraction and browsing work offline and do not require an xdzip account. The application reads files and directories you select and processes archive contents, names, paths, sizes, timestamps and other file attributes on your device as needed for your actions. These may contain personal information. xdzip does not automatically upload them to the developer or provide archive synchronization to developer-operated servers.
 
-为保存偏好和支持操作，xdzip 会在本机处理以下数据：
+To remember preferences and support operations, xdzip processes the following locally:
 
-| 数据 | 用途与存放方式 |
+| Data | Purpose and storage |
 | --- | --- |
-| 设置 | 保存语言、主题、字号、布局和适用的更新网络设置等偏好。 |
-| 最近文件 | 在启用该功能时保存最近打开的归档路径，方便再次访问，最多保留 20 条。 |
-| 索引与预览 | 在当前会话中处理归档目录、搜索结果及你主动请求的内容预览。 |
-| 临时文件与任务状态 | 支持安全写出、临时打开、取消、清理及适用的任务恢复和更新交接。 |
-| 版本与错误信息 | 用于在界面、终端或本地诊断中说明版本、任务状态及失败原因，具体字段取决于所用功能。 |
+| Settings | Remember language, theme, text size, layout and applicable update network preferences. |
+| Recent files | When enabled, remember paths of recently opened archives for convenient access, up to 20 entries. |
+| Indexes and previews | Process archive listings, search results and previews you request in the current session. |
+| Temporary files and task state | Support safe output, temporary opening, cancellation, cleanup and applicable task recovery and update handoff. |
+| Version and error information | Explain versions, task status and failures in the interface, terminal or local diagnostics, with fields depending on the feature. |
 
-你选择复制文件信息或版本信息时，内容会写入系统剪贴板。你选择用系统关联应用打开归档条目时，xdzip 会先在本机生成临时副本，再将其交给该应用。该应用可访问交接的文件。网络共享、云同步目录、剪贴板同步、系统备份和其他应用的数据处理受相应系统或服务的设置与政策管理。
+When you copy file or version information, it is written to the system clipboard. When you open an archive entry with an associated application, xdzip creates a local temporary copy and passes it to that application, which can access the file. Network shares, cloud-synchronized folders, clipboard synchronization, system backups and other applications are governed by their respective settings and policies.
 
-## 密码与文件保护
+## Passwords and file protection
 
-密码用于你当前请求的加密或解密操作。xdzip 不提供保存归档密码的功能，不将密码写入应用设置或日志，也不将密码上传给开发者。命令行通过隐藏输入或标准输入接收密码，不接受明文密码参数或密码环境变量。
+Passwords are used for the encryption or decryption operation you request. xdzip does not offer saved archive passwords, write passwords to application settings or logs, or upload them to the developer. The command-line tools receive passwords through hidden input or standard input, not plaintext command-line arguments or password environment variables.
 
-输入密码后，应用会在操作所需的时间内处理它，并在不再需要时清理相关内存。操作系统的内存管理和崩溃转储不完全受应用控制，不能保证系统中所有副本立即消失。
+The application processes passwords for as long as the operation needs them and clears the associated memory when no longer needed. Operating-system memory management and crash dumps are not entirely under the application's control, so it cannot guarantee immediate removal of every system copy.
 
-归档加密不代表解压后的文件、临时打开副本或最近文件记录也经过加密。请根据文件敏感程度选择输出位置、设备访问权限和归档密码。
+Archive encryption does not mean that extracted files, temporary open copies or recent-file records are also encrypted. Choose output locations, device access permissions and archive passwords appropriate for the sensitivity of your files.
 
-## 联网与第三方服务
+## Network connections and third-party services
 
-xdzip 不向开发者自动发送遥测、使用统计或归档内容，不以广告投放为目的跟踪用户，也不出售或出租你的文件和本地记录。可能发生的联网包括：
+xdzip does not automatically send telemetry, usage statistics or archive contents to the developer, track users for advertising, or sell or rent your files and local records. Network activity may include:
 
-- 普通版本的用户主动更新：在你请求检查或下载更新时，适用版本会连接 GitHub 的公开发布接口和下载服务。服务提供方可见 IP 地址、连接和请求信息，以及请求中包含的应用版本。更新请求不携带你的归档内容、路径、密码、最近记录或 xdzip 设置。
-- 代理与镜像：如果你选择使用代理或更新镜像，请求会经过相应服务。镜像会收到用于下载的原始 GitHub 地址；相应服务能够看到的信息取决于其工作方式。
-- Microsoft Store 版本：具有 Windows MSIX 包身份时，应用内独立更新功能关闭。商店交付版本由 Microsoft Store 管理更新，Microsoft 可按其服务政策和你的系统设置处理安装、更新及诊断信息。侧载 MSIX 不因此获得应用内自动更新功能。
-- 帮助、反馈与网页：点击相关链接会由浏览器或系统打开 GitHub、Microsoft 或其他目标网站。这些网站可能处理账户、请求和浏览信息。
+- User-initiated updates in ordinary editions: when you request an update check or download, applicable versions connect to GitHub's public release and download services. Providers can see your IP address, connection and request information, and the application version included in requests. Update requests do not include archive contents, paths, passwords, recent-file records or xdzip settings.
+- Proxies and mirrors: if you choose a proxy or update mirror, requests pass through that service. A mirror receives the original GitHub download address. What the service can observe depends on how it operates.
+- Microsoft Store editions: the standalone in-app updater is disabled when the application has Windows MSIX package identity. Microsoft Store manages updates for Store-delivered editions and may process installation, update and diagnostic information under its policies and your system settings. Sideloaded MSIX packages do not thereby gain an in-app automatic updater.
+- Help, feedback and web links: following a link opens GitHub, Microsoft or another destination through your browser or operating system. Those sites may process account, request and browsing information.
 
-第三方服务有其独立的隐私政策，参见 [GitHub 隐私声明](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement)和 [Microsoft 隐私声明](https://privacy.microsoft.com/privacystatement)。第三方再分发者对其修改、附加服务和数据处理自行负责。
+Third-party services have their own privacy policies. See the [GitHub Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement) and the [Microsoft Privacy Statement](https://privacy.microsoft.com/privacystatement). Third-party distributors are responsible for their modifications, additional services and data practices.
 
-## 保留时间与删除
+## Retention and deletion
 
-设置与最近文件记录通常会跨启动保存在本机。你可以在设置中关闭最近文件功能或清空最近记录。关闭功能会停止新增记录，并不自动删除已经保存的记录；清空记录不会删除归档文件。
+Settings and recent-file records generally persist locally between launches. You can disable recent files or clear recent records in Settings. Disabling the feature stops new records; it does not automatically delete existing ones. Clearing records does not delete archive files.
 
-内存中的归档索引和预览内容会随相关会话关闭或内容失效而释放。普通解压和创建产生的文件保存在你选择的位置，不会因为关闭 xdzip 而自动删除。
+In-memory archive indexes and previews are released when the relevant session closes or the content becomes invalid. Extracted files and newly created archives remain at your chosen destination and are not automatically deleted when xdzip closes.
 
-通过系统应用临时打开的文件副本会保存在应用管理的本机缓存中。已完成且未锁定的副本至少保留七天，并在后续临时打开操作中清理过期项；退出应用不保证立即清除这些副本。失败或恢复所需的临时状态、更新下载及回执也可能在本机保留。
+Files temporarily opened in another application are kept in an application-managed local cache. Completed, unlocked copies are retained for at least seven days, and expired entries are cleaned during later temporary-open operations. Exiting the application does not guarantee immediate removal of these copies. Temporary recovery state, update downloads and receipts may also remain locally.
 
-你可以使用系统文件管理和应用数据管理功能清理不再需要的本地数据。卸载是否移除设置与缓存取决于安装方式和系统行为，系统备份、云同步副本及已导出的文件需要分别管理。
+You can use your operating system's file and application-data controls to remove local data you no longer need. Whether uninstallation removes settings and caches depends on the installation method and operating system. Manage system backups, cloud copies and exported files separately.
 
-## 反馈与诊断
+## Feedback and diagnostics
 
-xdzip 不会自动向维护者上传诊断记录。你主动提交反馈、版本信息、终端输出、截图或文件时，维护者才能看到你提供的内容，并用于沟通、排查和维护。错误输出或你选择提供的材料可能含有文件名、路径或个人信息，请在发送前检查和删去无关敏感内容。
+xdzip does not automatically upload diagnostics to the maintainer. If you submit feedback, version information, terminal output, screenshots or files, the maintainer can see what you provide and use it for communication, troubleshooting and maintenance. Error output and materials you choose to provide may include file names, paths or personal information. Review them and remove unrelated sensitive content before sending.
 
-GitHub Issues 中的反馈通常对公众可见，其保留、修改和删除还受 GitHub 的功能和政策约束。不要为取得普通支持而提供密码、身份凭证或私人归档；优先使用不含个人数据的复现样本。
+Feedback in GitHub Issues is generally public; retention, editing and deletion also depend on GitHub's features and policies. Do not provide passwords, identity credentials or private archives for ordinary support. Prefer reproduction samples without personal information.
 
-如果你自愿向维护者提供 Microsoft 账户邮箱以加入商店私有测试组，该邮箱用于配置和管理测试访问，并会提交给 Microsoft。你可以通过上述联系方式请求退出测试组；退出不会自动删除已经下载的应用或第三方平台保留的数据。
+If you voluntarily give the maintainer your Microsoft account email to join a private Store test group, it is used to configure and manage test access and is submitted to Microsoft. You can request removal from the group through the contact channels above. Leaving the group does not automatically delete an application you have already downloaded or data retained by third-party platforms.
 
-## 你的选择与安全
+## Your choices and security
 
-你可以选择是否使用最近文件、是否主动检查更新、是否配置代理或镜像、是否打开外部应用或网页，以及是否向维护者提供反馈。你也可以通过操作系统管理 xdzip 对文件和目录的访问权限。拒绝某项操作所需的文件访问可能导致该操作无法完成。
+You choose whether to use recent files, request update checks, configure a proxy or mirror, open external applications or websites, or provide feedback. You can also manage file and directory access through your operating system. Denying access required for an operation may prevent it from completing.
 
-应用使用操作系统权限和适用的临时目录保护措施限制本机数据访问，但设备管理者、恶意软件、其他获授权的应用以及系统或云服务仍可能接触相应数据。请妥善管理设备、输出文件和备份。
+The application uses operating-system permissions and applicable temporary-directory protections to limit local access. Device administrators, malware, other authorized applications and system or cloud services may still access relevant data. Protect your device, output files and backups accordingly.
 
-xdzip 不要求提供出生日期等年龄信息，也不为广告或画像收集儿童信息。未成年人使用时，请由监护人协助管理文件、密码及公开反馈。
+xdzip does not require a birth date or other age information and does not collect children's information for advertising or profiling. Minors should have a guardian help manage files, passwords and public feedback.
 
-## 政策更新
+## Policy updates
 
-本政策会随实际功能或数据处理方式的变化更新，并在本页标明更新日期。你可以通过本页和[项目发布说明](https://github.com/xiaodaozhi/xdzip/releases)查看相关说明。若对信息处理有疑问，请通过本政策开头列出的方式联系维护者。
+This policy will be updated when actual features or data practices change, with the date shown on this page. You can consult this page and the [project release notes](https://github.com/xiaodaozhi/xdzip/releases) for related information. Contact the maintainer through the channels at the start of this policy if you have questions.

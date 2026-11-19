@@ -153,7 +153,7 @@ Development packages are not official releases. Windows and Linux development ar
 | --- | --- |
 | Desktop use and scripting | [User manual](docs/user-guide/README.md), [command-line integration](docs/integration/README.md) |
 | Product design and implementation | [Technical reference](docs/reference/README.md) |
-| Privacy and data handling | [Privacy Policy](PRIVACY.en.md), [Chinese version](PRIVACY.md) |
+| Privacy and data handling | [Privacy Policy](PRIVACY.md), [Chinese version](PRIVACY.zh-CN.md) |
 | Build and contribute | [Contributor guide](docs/contributing/README.md) |
 | Changes and planned work | [Changelog](CHANGELOG.md), [GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues) |
 | Contributing | [Contributing guide](CONTRIBUTING.md), [code of conduct](CODE_OF_CONDUCT.md) |
