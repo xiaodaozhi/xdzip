@@ -631,6 +631,21 @@ void BrowserController::showRowDetail(int row) {
                 {"previewSupported", previewSupported},
                 {"id", item->id}};
 }
+QVariantList BrowserController::previewSelectionEntries() const {
+    auto rows = m_model.cachedRows();
+    if (m_model.paged())
+        std::sort(rows.begin(), rows.end());
+    QVariantList entries;
+    for (const int index : rows) {
+        if (!m_model.isSelected(index))
+            continue;
+        const auto *row = m_model.rowAt(index);
+        entries.append(QVariantMap{{"name", row->cells[0]}, {"directory", row->directory}});
+        if (entries.size() == 2)
+            break;
+    }
+    return entries;
+}
 void BrowserController::updateSelectionSummary() const {
     if (m_summaryRevision == m_model.selectionRevision())
         return;
