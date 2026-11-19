@@ -22,7 +22,7 @@
 #endif
 
 #ifdef Q_OS_MACOS
-bool macAssociationsAvailable();
+QStringList macAssociationExtensions();
 bool macAssociationDefault(const QString &extension);
 void macAssociationChange(FileAssociations *service, const QString &extension, bool enable);
 #endif
@@ -43,6 +43,7 @@ QString currentApplicationId() {
     return value.contains(QChar(0)) ? QString() : value;
 }
 #endif
+#ifndef Q_OS_MACOS
 const QHash<QString, QStringList> &extensions() {
     static const QHash<QString, QStringList> value{
         {".zip", {"application/zip"}},
@@ -77,11 +78,13 @@ const QHash<QString, QStringList> &extensions() {
         {".udf", {"application/x-udf"}}};
     return value;
 }
+#endif
 } // namespace
 
 FileAssociations::FileAssociations(QObject *parent) : QObject(parent) {
 #ifdef Q_OS_MACOS
-    m_available = macAssociationsAvailable();
+    m_supportedExtensions = macAssociationExtensions();
+    m_available = !m_supportedExtensions.isEmpty();
 #elif defined(Q_OS_WIN)
     QSettings installed(QStringLiteral("HKEY_CURRENT_USER\\Software\\RegisteredApplications"),
                         QSettings::NativeFormat);
@@ -103,6 +106,14 @@ FileAssociations::FileAssociations(QObject *parent) : QObject(parent) {
 bool FileAssociations::isDefault(const QString &extension) const {
     return m_defaults.value(extension, false);
 }
+bool FileAssociations::supportsExtension(const QString &extension) const {
+#ifdef Q_OS_MACOS
+    return m_supportedExtensions.contains(extension);
+#else
+    Q_UNUSED(extension);
+    return true;
+#endif
+}
 void FileAssociations::notify() {
     ++m_revision;
     emit changed();
@@ -111,8 +122,9 @@ void FileAssociations::setBusy(bool busy) {
     m_busy = busy;
     notify();
 }
-void FileAssociations::nativeFinished(bool success) {
-    m_error = success ? QString() : QStringLiteral("settings.associationFailed");
+void FileAssociations::nativeFinished(const QString &error, const QString &extension) {
+    m_error = error;
+    m_errorExtension = error.isEmpty() ? QString() : extension;
     m_busy = false;
     refresh();
 }
@@ -131,8 +143,8 @@ void FileAssociations::refresh() {
         return;
     }
 #ifdef Q_OS_MACOS
-    for (auto it = extensions().cbegin(); it != extensions().cend(); ++it)
-        m_pendingDefaults.insert(it.key(), macAssociationDefault(it.key()));
+    for (const auto &extension : m_supportedExtensions)
+        m_pendingDefaults.insert(extension, macAssociationDefault(extension));
     m_defaults = m_pendingDefaults;
     m_ready = true;
     notify();
@@ -203,9 +215,17 @@ void FileAssociations::refresh() {
 #endif
 }
 void FileAssociations::requestChange(const QString &extension, bool enable) {
-    if (!m_available || !m_ready || m_busy || !extensions().contains(extension))
+    if (!m_available || !m_ready || m_busy)
         return;
+#ifdef Q_OS_MACOS
+    if (!supportsExtension(extension))
+        return;
+#else
+    if (!extensions().contains(extension))
+        return;
+#endif
     m_error.clear();
+    m_errorExtension.clear();
 #ifdef Q_OS_MACOS
     setBusy(true);
     macAssociationChange(this, extension, enable);
@@ -238,7 +258,9 @@ void FileAssociations::requestChange(const QString &extension, bool enable) {
     connect(process, &QProcess::finished, this,
             [this, process](int code, QProcess::ExitStatus status) {
                 process->deleteLater();
-                nativeFinished(status == QProcess::NormalExit && code == 0);
+                nativeFinished(status == QProcess::NormalExit && code == 0
+                                   ? QString()
+                                   : QStringLiteral("settings.associationFailed"));
             });
     connect(process, &QProcess::errorOccurred, this, [process](QProcess::ProcessError error) {
         if (error == QProcess::FailedToStart)

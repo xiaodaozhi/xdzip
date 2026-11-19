@@ -326,6 +326,8 @@ Checkboxes must actually execute QAccessible press/toggle, checking real setting
 
 Under the [desktop integration contract](../../docs/ux/desktop-integration.md), verify macOS menu roles/standard shortcuts, separation of text editing and file selection commands, recent-history privacy, default tray and immediate toggles, close-to-tray and task-detail restoration, exit cancellation/wait/cleanup, file associations and Dock restoration, no-tray and disappeared-tray fallback. Automation does not replace real system panels, scaling, screen readers or Linux desktop verification. Results stay in build/ or CI artifacts.
 
+For [macOS default apps](../../docs/engineering/installers-associations.md), verify bundle declarations against all displayed suffixes and check shared underlying types. Exercise a first default, restoration across restarts, compatible alternatives when restoration fails, cancellation, and an inline message when no alternative exists. Check the current system default after each change. Automated service tests use isolated AppKit responses and local settings. Native registration checks use temporary bundles and confirm existing defaults are preserved.
+
 Opening Settings or About from platform trays must leave existing main windows hidden or minimized or avoid creating them. Exit without tasks does not show main; active tasks show only necessary confirmation. Check Ubuntu X11 integrated title bar, smooth normal-state corners on all four sides, system movement and eight resize directions, and borders/controls after maximize/restore. Record native visuals separately from automated layout tests.
 
 ## Read-only archive checking

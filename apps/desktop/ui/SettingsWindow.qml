@@ -63,6 +63,13 @@ OperationWindow {
         if (AppSettings.applyNetwork(mode, AppSettings.proxyAddress, AppSettings.mirrorAddress))
             pendingProxyMode = mode;
     }
+    function associationErrorText(error) {
+        switch (error) {
+        case "settings.associationNoAlternative": return qsTrId("settings.associationNoAlternative");
+        case "settings.associationHistoryFailed": return qsTrId("settings.associationHistoryFailed");
+        default: return qsTrId("settings.associationFailed");
+        }
+    }
     function formatGroupLabel(groupId) {
         switch (groupId) {
         case "archives": return qsTrId("format.group.archives");
@@ -475,6 +482,7 @@ OperationWindow {
                     GridLayout {
                         Layout.fillWidth: true
                         columns: 2
+                        uniformCellWidths: true
                         columnSpacing: 12
                         rowSpacing: 8
                         Repeater {
@@ -486,6 +494,9 @@ OperationWindow {
                                 text: modelData
                                 enabled: root.associations && !root.associations.systemManaged
                                          && root.associations.available && root.associations.ready && !root.associations.busy
+                                         && root.associations.supportsExtension(modelData)
+                                description: root.associations && root.associations.errorExtension === modelData
+                                             ? root.associationErrorText(root.associations.error) : ""
                                 value: {
                                     const revision = root.associations ? root.associations.revision : 0;
                                     return root.associations && !root.associations.systemManaged
@@ -498,7 +509,7 @@ OperationWindow {
                 }
             }
             PageNote { visible: !root.associations || !root.associations.systemManaged; text: root.associations && root.associations.available ? qsTrId("settings.associationSystem") : qsTrId("settings.associationUnavailable") }
-            PageNote { visible: root.associations && root.associations.error.length > 0; text: qsTrId("settings.associationFailed"); color: Theme.menuDanger }
+            PageNote { visible: root.associations && root.associations.error.length > 0 && !root.associations.errorExtension; text: qsTrId("settings.associationFailed"); color: Theme.menuDanger }
         }
     }
     Component {

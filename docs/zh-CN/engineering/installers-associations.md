@@ -83,7 +83,7 @@ build-linux-installer.py 从同一核验目录生成 .deb，私有暂存目录�
 
 CAB、ISO 和 UDF 使用同一个 Viewer 角色，ISO 使用 `public.iso-image`。应用不注册 `.img` 或通用 `public.disk-image`。Viewer 是 Launch Services 中的关联角色，实际可执行的操作由[格式后端](native-codecs.md)决定。[ISO 创建配置](iso-creation.md)可单独写入新映像。
 
-文档类型使用应用包内对应的 ICNS。压缩 TAR 类型可覆盖 `.tar.gz` 与 `.tgz`，独立 GZIP 也有文档类型。Finder 缓存、默认应用选择和系统类型识别影响实际显示。
+文档声明覆盖[格式注册表](format-registry.md)中所有系统关联候选的最终扩展名，并使用应用包内对应的 ICNS。复合后缀使用最后一段扩展名对应的系统类型。例如，`.tar.gz` 和 `.gz` 共用 GZIP 默认应用，`.tgz` 使用系统的压缩 TAR 类型。Finder 缓存、默认应用选择和系统类型识别影响实际显示。
 
 macOS 的 RAR、CAB 和 UDF 导入类型声明均须符合 `public.data`，使系统能将实际文件识别为相应类型。CAB 同时声明系统使用的 `com.microsoft.cab` 和兼容标识 `com.microsoft.cab-archive`；设置页在系统首选类型是这两者之一时查询并更改该实际类型，否则沿用兼容标识。UDF 的 Viewer 声明使用 `.udf` 扩展名而不指定 `LSItemContentTypes`，使旧安装的无效 UTI 声明仍被系统采用时，实际文件也能发现候选；此[扩展名声明键](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html)已被 Apple 标记为弃用，必须持续在受支持的 macOS 版本验证。设置页按系统实际识别的 `.udf` 类型查询和更改，类型不可用时回退至既有标识。已有默认选择不由安装或注册主动覆盖。此前没有处理器时，Launch Services 可能按[隐式规则](https://developer.apple.com/library/archive/documentation/Carbon/Conceptual/LaunchServicesConcepts/LSCGlossary/LSCGlossary.html)将新候选解析为当前处理器；撤销临时注册后应恢复原状，此解析不等于应用主动写入用户偏好。
 
@@ -134,7 +134,9 @@ Windows 更新协议夹具与真实 Qt 更新夹具同样提供关联启动器�
 
 ## 设置中的默认应用
 
-设置页按生成的格式数据对关联后缀分组，开关能否操作取决于平台服务和安装身份。Windows 交由系统“默认应用”处理，不写 UserChoice。MSIX 禁用开关，改用当前包的系统设置入口。macOS 通过 NSWorkspace 查询内容类型，可提示用户选择替代应用，Viewer／None 构建禁用关联变更。Linux 把支持的后缀映射到 MIME 类型，用 `xdg-mime` 管理用户默认设置，移除默认时可选择已安装的替代程序。多个后缀可能共用一个系统类型，设置页在操作后以系统结果为准。
+设置页按生成的格式数据对关联后缀分组，开关能否操作取决于平台服务和安装身份。Windows 交由系统“默认应用”处理，不写 UserChoice。MSIX 禁用开关，改用当前包的系统设置入口。Linux 把支持的后缀映射到 MIME 类型，用 `xdg-mime` 管理用户默认设置，移除默认时可选择已安装的替代程序。
+
+在 macOS 上，设置页启用已由安装包以 Viewer／Alternate 声明的类型开关。即使类型此前没有默认应用，也能请求设为 xdzip。macOS 可能要求确认。系统确认切换为 xdzip 后，应用按系统内容类型在本地记录原应用的包标识。关闭开关时，如果系统仍将原应用列为兼容候选，则优先请求恢复。没有兼容的历史应用或恢复失败时，可以选择其他兼容的已安装应用。没有替代应用时，说明直接显示在开关旁。取消后保留当前选择，界面以重新查询的系统状态为准。Viewer／None 构建禁用关联变更。
 
 
 自动识别语言模式在 Windows 安装器中按当前用户的系统界面语言解析：中文各区域使用中文描述，其余以英文兜底；显式中文或英文选择优先。安装器不将自动识别改写为固定语言，应用启动后按自身系统语言解析并同步自有描述。

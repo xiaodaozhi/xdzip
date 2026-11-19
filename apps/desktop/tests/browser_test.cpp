@@ -8077,15 +8077,25 @@ QtObject {
         accessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
         QCOMPARE(controller->selectedCount(), 0);
     }
+    void settingsAssociationFollowsSystemResult_data() {
+        settingsSelectorsHaveConsistentGeometry_data();
+    }
     void settingsAssociationFollowsSystemResult() {
+        QFETCH(QString, language);
+        QFETCH(bool, dark);
+        QFETCH(double, scale);
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
         QQmlApplicationEngine engine;
         QQmlComponent fixture(&engine);
         fixture.setData(R"(import QtQuick
             QtObject {
                 property bool available: true; property bool busy: false; property bool ready: true
                 property bool systemManaged: false
-                property int revision: 0; property string error: ""; property bool selected: false
+                property int revision: 0; property string error: ""; property string errorExtension: ""
+                property bool selected: false
                 property bool accept: false; property int requests: 0
+                function supportsExtension(extension) { return extension !== ".asar" }
                 function isDefault(extension) { return extension === ".zip" && selected }
                 function refresh() { ++revision }
                 function requestChange(extension, value) { ++requests; if (accept && extension === ".zip") { selected = value; ++revision } }
@@ -8100,6 +8110,10 @@ QtObject {
         auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
         auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
         QVERIFY(settings && QMetaObject::invokeMethod(settings, "configure"));
+        auto *prefs = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(prefs);
+        prefs->preview(dark ? QStringLiteral("dark") : QStringLiteral("light"), scale);
+        const auto restorePreview = qScopeGuard([&] { prefs->cancelPreview(); });
         settings->setProperty("currentTab", 3);
         QVERIFY(QTest::qWaitForWindowExposed(settings));
         QQuickItem *zip = nullptr;
@@ -8121,6 +8135,30 @@ QtObject {
         accessible->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
         QTRY_VERIFY(service->property("selected").toBool());
         QTRY_VERIFY(zip->property("checked").toBool());
+        service->setProperty("error", QStringLiteral("settings.associationNoAlternative"));
+        service->setProperty("errorExtension", QStringLiteral(".zip"));
+        const auto description = qtTrId("settings.associationNoAlternative");
+        QTRY_COMPARE(zip->property("description").toString(), description);
+        QVERIFY(accessible->text(QAccessible::Name).contains(description));
+        QVERIFY(zip->property("checked").toBool());
+        auto *zipx = findVisual(settings->contentItem(), "settingsAssociation-.zipx");
+        QVERIFY(zipx);
+        QTRY_VERIFY(qAbs(zip->width() - zipx->width()) <= 1.0);
+        auto *unsupported = findVisual(settings->contentItem(), "settingsAssociation-.asar");
+        QVERIFY(unsupported && !unsupported->isEnabled());
+        auto *unsupportedAccessible = QAccessible::queryAccessibleInterface(unsupported);
+        QVERIFY(unsupportedAccessible && unsupportedAccessible->actionInterface());
+        unsupportedAccessible->actionInterface()->doAction(
+            QAccessibleActionInterface::toggleAction());
+        QCOMPARE(service->property("requests").toInt(), 2);
+        const auto audit = qEnvironmentVariable("XDZIP_MACOS_ASSOCIATION_SETTINGS_AUDIT");
+        if (!audit.isEmpty()) {
+            QVERIFY(QDir().mkpath(audit));
+            QVERIFY(visual_audit::save(settings, audit,
+                                       QStringLiteral("associations-%1-%2-%3")
+                                           .arg(language, dark ? "dark" : "light")
+                                           .arg(scale)));
+        }
         accessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
         QTRY_VERIFY(!service->property("selected").toBool());
         QTRY_VERIFY(!zip->property("checked").toBool());
@@ -8143,7 +8181,7 @@ QtObject {
             QtObject {
                 property bool available: true; property bool systemManaged: true
                 property bool busy: false; property bool ready: true; property int revision: 0
-                property string error: ""; property int requests: 0
+                property string error: ""; property string errorExtension: ""; property int requests: 0
                 property int changes: 0
                 function refresh() { ++revision }
                 function openSystemSettings() { ++requests }
