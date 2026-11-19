@@ -2,7 +2,7 @@
 
 # 內建格式能力登記
 
-[English](../../engineering/format-registry.md) | [简体中文](../../zh-CN/engineering/format-registry.md) | 繁體中文（台灣）
+[English](../../engineering/format-registry.md) | [简体中文](../../zh-CN/engineering/format-registry.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/format-registry.md) | [한국어](../../ko-KR/engineering/format-registry.md) | [Français](../../fr-FR/engineering/format-registry.md) | [Deutsch](../../de-DE/engineering/format-registry.md) | [Español](../../es-ES/engineering/format-registry.md) | [Português (Brasil)](../../pt-BR/engineering/format-registry.md) | [Русский](../../ru-RU/engineering/format-registry.md)
 
 內建格式以 [archive-formats.json](../../../specs/engineering/archive-formats.json) 為登記來源，記錄穩定格式標識、標籤、容器族、壓縮外層、既有私有工作程序編號、支援的方法族、建立字尾、檢查強度及入口候選。方法族是對應格式契約的摘要，不承諾全部引數、歷史變體或組合；實際條目、宿主策略和平臺能力仍在任務開始前進一步收斂准入範圍。
 

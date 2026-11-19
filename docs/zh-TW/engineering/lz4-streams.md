@@ -2,7 +2,7 @@
 
 # LZ4 壓縮流契約
 
-[English](../../engineering/lz4-streams.md) | [简体中文](../../zh-CN/engineering/lz4-streams.md) | 繁體中文（台灣）
+[English](../../engineering/lz4-streams.md) | [简体中文](../../zh-CN/engineering/lz4-streams.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/lz4-streams.md) | [한국어](../../ko-KR/engineering/lz4-streams.md) | [Français](../../fr-FR/engineering/lz4-streams.md) | [Deutsch](../../de-DE/engineering/lz4-streams.md) | [Español](../../es-ES/engineering/lz4-streams.md) | [Português (Brasil)](../../pt-BR/engineering/lz4-streams.md) | [Русский](../../ru-RU/engineering/lz4-streams.md)
 
 標準幀配置依據作者的[幀格式 1.6.5](https://github.com/lz4/lz4/blob/v1.11.1/doc/lz4_Frame_format.md)、[塊格式，2026-10-26](https://github.com/lz4/lz4/blob/v1.11.1/doc/lz4_Block_format.md)及 [XXH32 演算法規格](https://github.com/Cyan4973/xxHash/blob/v0.8.3/doc/xxhash_spec.md)。產品演算法使用獨立 Rust 實現，參考工具和執行證據留在本地 `build/`，只對自有、可重現的輸入模式進行版本管理。宿主授權和提交邊界見[單檔案壓縮流](single-file-streams.md)。
 
