@@ -46,7 +46,7 @@ Status: interactive design-validation draft. Sources are in [design/html](../../
 
 ### Archive creation and capabilities
 
-The prototype shows four ZIP compression levels, default 2 normal, without a separate algorithm control. TAR only packs; TAR.GZ uses GZIP 0/1/6/9. Both disable and clear password and volume parameters. Format changes update extensions. Empty input/name/save location disables Create. Prototype format choices are not the product's complete current capabilities: the product supports limited ZIP and 7z creation, passwords and volumes; RAR creation is unsupported. See [format backends](../engineering/native-codecs.md), [password interaction](password-extraction.md) and the [volume contract](../engineering/archive-opening.md) for actual boundaries.
+The prototype illustrates ZIP levels, TAR packing and GZIP compression options. It checks basic input, filename and destination fields and changes the extension with the format. Current product choices use the [built-in format registry](../engineering/format-registry.md), including the [ISO](../engineering/iso-creation.md) and [Windows SFX](../engineering/sfx-creation.md) creation profiles. See [password interaction](password-extraction.md) and the [volume contract](../engineering/archive-opening.md) for the admitted options.
 
 ### Visuals and adaptation
 

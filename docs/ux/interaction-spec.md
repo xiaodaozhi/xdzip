@@ -12,13 +12,13 @@ The main-window and extraction-confirmation visual baseline is supplemented by t
 | No search results | Show search term and scope | Clear search; do not incorrectly report an empty archive |
 | Unsupported feature | Show specific format/algorithm/encryption reason | Retain readable metadata and stop unsafe partial output |
 | Create archive | Input list, format, destination, level and preflight | Errors near fields; do not overwrite existing files by default |
-| Name conflict | Information for both items, skip/rename/overwrite and current-task-only option | Overwrite is not the dangerous default Enter action |
-| Task complete | Successful/skipped/failed/committed counts | Extraction opens the destination only on explicit choice; creation opens supported single-volume results in-app. Retry requires replanning |
+| Name conflict | Both items, explicit Skip, Rename and Overwrite actions, and scope for subsequent decisions | Close the prompt to keep the task waiting. Reopen it or cancel from the task |
+| Task complete | Success, skip, failure and commit counts | Extraction opens the destination on explicit request. Creation can open a supported single archive or the first volume in-app. Retry requires replanning |
 | Partial failure | Retain committed files and explain failures | Do not delete user files to simulate whole-task rollback |
 | Application exit | Active task count, wait for completion or cancel and exit | Core confirms cleanup; do not block the GUI on an infinite join |
 | Settings | System/light/dark theme, density, font size, language, recent history and tray | Apply immediately after successful save; retain old values on failure. Quota editing is not a current setting |
-| Extension management | External execution disabled in first release | Later show provenance, permissions, version and reason for disabling |
+| Format extensions | The product uses built-in formats. An [external SDK trial](../engineering/sdk-trial.md) tests read-only execution separately | Use the [format registry](../engineering/format-registry.md) to find available operations |
 
-The toolbar says “Extract all” without a selection and “Extract selected” with one; search results are not all contents. In the first release the right preview is reduced to a properties panel; limited image/text decoding arrives in M6. Allow growth and scrolling under larger fonts/DPI without clipping confirmation buttons.
+The extraction button follows the selection. Its menu offers both scopes, subject to current eligibility. Search covers the current directory and its descendants. The properties panel supports user-requested [text and image preview](../engineering/content-preview.md). Below the inspector breakpoint it can open in a separate window. Larger fonts grow the layout and enable scrolling so confirmation controls stay reachable.
 
 Error copy states what happened and what the user can do; error codes belong in details. Do not show ordinary users call stacks or IPC terminology. Present dangerous filenames as safe text and do not interpret plugin messages as HTML. Shortcuts, IME, focus and screen readers follow the [Qt Quick interface design](../design/qt-quick-ui.md).

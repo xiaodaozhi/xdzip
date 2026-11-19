@@ -36,7 +36,7 @@
 
 加密与分卷是归档状态，不由扩展名图标猜测，不绘制锁或成功标记。已识别 ZIP、7z、RAR 分卷可在应用内复用对应家族，不注册通用 `.001`、`.rNN`、`.zNN` 或 `.img`。ISO／UDF 图标不表示挂载或执行能力。不能仅因后缀匹配就声明归档内容有效。
 
-Windows 使用逐扩展名 ProgID 和 ICO，保留旧共享入口；macOS 以文档类型映射 ICNS，压缩 TAR 类型共用 TAR.GZ 图标。Linux 保留系统 MIME 图标，不覆盖全局文件图标。原生显示受默认应用和图标缓存影响，关联与回退见[安装与关联契约](../engineering/installers-associations.md)。
+普通 Windows 安装版使用逐扩展名 ProgID 和 ICO。MSIX 为“打开方式”候选使用从对应 ICO 帧提取的 PNG。两者使用生成的关联映射，多个后缀可以共用图标。macOS 按文档类型使用 ICNS，包括压缩 TAR 和独立 GZIP。Linux 使用系统 MIME 图标。实际显示受默认应用和系统图标缓存影响，见[安装与关联](../engineering/installers-associations.md)。
 
 MSIX 为每个格式关联单独声明 `uap:Logo`，各目标尺寸 PNG 逐字节复用 Windows 标准 ICO 帧，保留小尺寸简化、大尺寸格式标签、可见边界及居中位置。应用标志使用独立资源，提供默认和两种主题的无底板变体。[msix-icons.json](../../../specs/visual/msix-icons.json) 定义包内尺寸与变体，由 MakePRI 建立索引后再交给 MakeAppx 打包。文档图标的预期设计不包含系统底板，也不以应用标志作为后备图案。
 

@@ -10,9 +10,9 @@ Filenames, directory names, archive names and paths preferentially use the start
 
 | Area | Shared / composed components | Interaction and capability |
 | --- | --- | --- |
-| System title bar | Platform decoration, draggable region | Native macOS traffic lights; Windows main window retains native frame, DWM shadow and system corners, hiding only the native title bar and placing minimize, maximize/restore and close to the right of settings. Drag and edge resize use system APIs; double-click blank title space toggles maximize. Linux uses native decoration; button areas do not initiate drag |
+| System title bar | `Browser`, `ArchiveTabs`, platform frame | macOS uses native traffic lights. Windows uses integrated buttons, native resizing and DWM decoration. On Ubuntu X11, integrated buttons and rounded normal-state corners follow the X11 design. See [platform windows](platform-windows.md) |
 | Archive tabs | ArchiveTabs, ArchiveTab, icon buttons | New tabs by default, optional new windows; inactive tabs normal weight, shrink then scroll horizontally with scroll and tab-list entries. In-window drag and Ctrl+Shift+Page Up/Down reorder; closing retains background tasks |
-| Toolbar | CommandButton, IconButton, SplitButton | Open, create, test, more, primary extraction and scope menu; mouse/keyboard share command entry |
+| Toolbar | `ArchiveToolbar`, `ArchiveAction`, `CommandMenu` | Open, New, Test, More and the split extraction button use the same command dispatch as menu and keyboard actions. Preflight is available in the extraction menu for eligible selections |
 | Search | SearchField, clear action, scope hint | Do not submit during IME composition; search current directory scope; clearing does not change directory; shortcut focuses |
 | Archive summary | ArchiveSummary, format badge, statistics bar | Distinguish ready, reading, empty and read failure; unknown values are not zero |
 | Directory navigation | DirectoryTree, DirectoryRow, Disclosure, connecting lines | Multi-level expansion, empty leaf arrow slots, independent current/focus, accessible full paths, collapsed-ancestor marker, directory context actions |
@@ -21,8 +21,8 @@ Filenames, directory names, archive names and paths preferentially use the start
 | File context menu | ContextMenu, CommandMenuItem, Submenu | Open applies only to the right-clicked item, as with double-click; retain existing multi-selection. Right-clicking an unselected item first selects it alone. Enable extraction, properties, copy name/path and directory navigation according to selection |
 | Blank-area context menu | ContextMenu, RadioMenuItem, CheckboxMenuItem | Current-list selection, view, sorting and details pane; do not arbitrarily clear selection |
 | Header context menu | Sort menu | Sort field, direction and restore archive order; sort all query results, not only visible entries |
-| Properties / preview | InspectorPanel, PropertyRow, detail actions | File, multi-selection, archive and not-ready states; close/reopen, single-file actions, preview image edge aligned with table header |
-| Status and tasks | StatusBar, StatusAction, task entry | Selection statistics, index status and background tasks; hiding a task window does not cancel it |
+| Properties / preview | `InspectorPanel` in the page or the standalone details window | Shows file, selection or archive state. Content is read on request. Below 928 logical pixels, the inline panel collapses and the details action opens a separate window |
+| Status and tasks | Status bar, task button and `CommandMenu` | Shows selection counts and known sizes. The task menu uses application-wide history. Active tasks have a separate count and survive dismissal of their progress window |
 | Hints and operation windows | Tooltip, Notice, Toast, standalone platform windows | Full names and disabled reasons; Escape, focus return, cancellation and close follow each action's semantics |
 
 List and grid share an empty state. A committed search with no results suggests another term. Without search, an archive with no records is identified as empty; otherwise the message describes only the current folder's visible contents and does not infer completeness of a limited directory index. Reading and errors retain actual states; unsubmitted search text does not change current result messages. Guidance before opening a file does not enumerate an outdated format list.

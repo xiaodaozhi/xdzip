@@ -4,7 +4,7 @@
 
 多会话、单实例、窗口状态及全局退出以[应用会话契约](../engineering/application-sessions.md)为准。关闭非最后主窗口保留任务，最后窗口遵循托盘设置；退出确认覆盖所有会话。
 
-系统、菜单和托盘的显式退出在本应用密码或冲突提示中仍能进入全局退出确认，返回保留原任务和提示。macOS 应用菜单中的退出项及 Command-Q 在这些任务提示下可用。文件选择器及其他模态控件先完成或取消，再处理退出；在阻挡期间触发的退出不得延迟到模态关闭后执行。System, menu and tray Quit can open the global confirmation over an owned task password or conflict prompt; Return preserves the task and prompt. On macOS, the application-menu Quit item and Command-Q remain available for these task prompts. File selectors and other modal controls must be completed or cancelled first; Quit triggered while blocked must not execute later after the modal closes.
+任务密码或重名提示存在时，仍可以从系统、菜单或托盘明确进入全局退出确认。macOS 应用菜单的退出项及 Command-Q 仍可使用。选择返回会保留任务和提示。原生文件选择器及其他阻塞模态窗口须先完成或关闭，应用会丢弃在这些窗口阻挡时发出的退出请求。
 
 macOS 顶部菜单和三平台托盘使用操作系统原生菜单，保留已有主窗口标题栏。参数见 [桌面集成参数](../../../specs/visual/desktop-integration.json)，[交互稿](../../../design/html/desktop-integration.html)，[高保真入口](../../../design/hifi/sources/desktop-integration.html)。原生字体、行高、菜单宽度与系统高亮不套用应用内 CommandMenu 的密度参数；HTML 为交互说明，不作为原生像素验收。
 
@@ -14,9 +14,9 @@ macOS 菜单按 xdzip、文件、编辑、显示、操作、窗口、帮助排�
 
 语言设置保存成功后，原有菜单栏、应用菜单的关于／设置／退出、托盘菜单、任务子菜单和托盘提示立即切换语言；切换失败时保持原语言。菜单命令和快捷键的行为、任务身份及正在运行的任务均保持不变。macOS 服务、隐藏等系统自带项目与原生文件选择器继续遵循系统语言。
 
-托盘默认启用，设置开关操作成功后立即生效。schema 1 增加 desktop/trayEnabled，旧配置默认 true，保留未知字段与原子保存策略。菜单提供显示主窗口、打开、新建、任务、设置、关于、退出；任务由真实控制器数据驱动，状态与任务详情一致。macOS 点击展开菜单；Windows/Linux 普通激活恢复窗口、右键展开菜单。任务完成不自动弹出通知或抢焦点。
+托盘驻留默认开启，设置成功保存后生效。菜单提供显示主窗口、打开、新建、任务、设置、关于和退出。macOS 点击托盘图标展开菜单。Windows 和 Linux 的托盘激活或双击恢复窗口，系统右键动作打开菜单。Windows 重新开启托盘时会重新绑定原生菜单。任务完成会更新任务入口，无需抢占焦点。
 
-托盘可用时关闭最后主窗口会清除该窗口的浏览标签与操作窗草稿，再隐藏窗口；再次显示仅保留一个起始页。后台任务及其会话身份继续保留，从全局任务入口主动打开。最小化不清除标签。模态窗口或文件选择器存在时先激活阻塞窗口。明确退出、系统退出和重启绕过隐藏，继续现有任务确认与异步 join；取消退出恢复驻留策略。关闭托盘先恢复隐藏主窗口。无托盘时恢复正常关闭，运行中托盘消失且窗口隐藏时恢复主窗口。macOS Dock 保留，点击 Dock、文件关联重新打开均可恢复。测试探针以明确退出语义完成，不依赖驻留设置。
+托盘可用时关闭最后一个主窗口，会清除该窗口的浏览标签和草稿，再隐藏窗口。恢复主窗口时回到欢迎页。最小化时保留标签。活动任务及其原有身份仍可从全局任务入口访问。桌面会话失去托盘且没有可见任务入口时，通过操作窗口让活动任务继续可达。没有托盘、可见窗口和活动任务时，应用退出。明确退出和重启仍走任务确认及异步关闭流程。macOS 也可通过 Dock 或系统文件打开恢复应用。
 
 macOS 托盘沿用从现有品牌标志提取字形的模板图标。Windows、Linux 及其他非 macOS 平台统一复用应用图标，由系统选择显示尺寸；应用图标不随应用或系统主题改变，也不依赖注册表主题读数。图标不做闪烁或持续动画。
 

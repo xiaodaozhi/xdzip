@@ -9,7 +9,7 @@ This guide describes behavior, focus and closing actions for creation, extractio
 | State / artboard | Entry condition | Default focus and action | Close and recovery |
 | --- | --- | --- | --- |
 | C01 / 01 | Creation, no running task | First input button or filename; validate inputs, name, destination and capability before creating | Discard this window's draft; no write |
-| E02 / 02 | Current TaskId/PromptId needs a name-conflict decision | Skip by default; rename retains extension; overwrite requires explicit activation; “apply to subsequent” unchecked | Close requests task cancellation, goes through T02, then result; never overwrite or skip by default |
+| E02 / 02 | A task snapshot carries a live conflict prompt | Skip, Rename and Overwrite are explicit decisions. Rename is the primary action. Apply to subsequent conflicts starts unchecked | Closing dismisses the prompt and leaves the task waiting. Reopen it from the task, or use the task's Cancel action to stop |
 | T01 / 03, 08 | Plan accepted and running event received | Return to browsing and cancel are ordinary buttons; no fabricated pause | Hide view only; task entry can reopen; background completion does not steal focus |
 | T01 / integrity check | Same component as task progress, read-only archive and verification stages | Return to browsing, cancel check and real task result; HTML demo and Qt component preview remain separately marked | Closing does not cancel; real checks enter background queue via toolbar |
 | R01 / 04 | Task has published and unfinished items | Retry selects only unfinished items and returns to planning confirmation | Closing view does not delete committed files |
@@ -17,7 +17,7 @@ This guide describes behavior, focus and closing actions for creation, extractio
 | R02 / 06 top | Unique successful terminal received | Extraction can open target folder by explicit choice; creation opens only supported results in-app, never automatically opens a system folder. Zero failures use neutral state | Close details without repeated completion notification |
 | T02 / 06 middle | Cancellation accepted, cleanup incomplete | Repeated cancellation disabled; returning to browsing remains possible | Can hide; cannot show “Cancelled” prematurely |
 | R03 / 06 bottom | Cancellation terminal received | Retain published items; if retry is allowed, replan unfinished scope | Closing does not roll back published items |
-| C02 / 07 | Creation target already has an archive of the same name | Default returns to editing; use new name returns to C01 and suggests an unoccupied name; replace is not default | Return to C01 preserving inputs, format and path draft; do not implicitly overwrite |
+| C02 / 07 | The artboard illustrates an existing output archive | A real creation conflict uses the live task's safe-name and publication rules | Dismiss the prompt to leave the task waiting. Explicit Rename, Replace or Cancel follows the task result |
 
 “Use new name” proposes a name only; actual start still checks whether the destination exists. Filename checking is not final write authorization. Replacement creation must completely generate and verify a temporary archive before rechecking destination conditions for publication. Cancellation arriving after the linearized commit point displays completion according to the core result rather than rewriting success as cancellation.
 
