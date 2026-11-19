@@ -2,7 +2,7 @@
 
 # 構建並參與貢獻
 
-[English](../../contributing/README.md) | [简体中文](../../zh-CN/contributing/README.md) | 繁體中文（台灣）
+[English](../../contributing/README.md) | [简体中文](../../zh-CN/contributing/README.md) | 繁體中文（台灣） | [日本語](../../ja-JP/contributing/README.md) | [한국어](../../ko-KR/contributing/README.md) | [Français](../../fr-FR/contributing/README.md) | [Deutsch](../../de-DE/contributing/README.md) | [Español](../../es-ES/contributing/README.md) | [Português (Brasil)](../../pt-BR/contributing/README.md) | [Русский](../../ru-RU/contributing/README.md)
 
 先閱讀[貢獻約定](../../../CONTRIBUTING.zh-CN.md)，查詢已有議題或為本次改動新建議題。寫明預期行為、適用平臺和可實際驗證的最小復現場景。使用專案自制或允許再分發的樣本。各模組的原始碼位置見[倉庫佈局](../engineering/repository-layout.md)。
 
@@ -44,7 +44,7 @@ git diff --check
 
 | 改動型別 | 原始碼與契約 | 執行或核對 |
 | --- | --- | --- |
-| 文件和示例 | 同步編輯英文與簡體中文頁面，並更新引用。對照實現契約，用小型自制樣本驗證改動後的命令。 | 執行上方的文件檢查，開啟改動後的章節連結，核對相關生成輸出。 |
+| 文件和範例 | 同步更新譯文、連結和章節錨點。根 README 和 `docs/` 有十種語言版本，`developers/` 下的指南使用美式英語和簡體中文。對照實作契約，用小型自製測試檔驗證變更後的指令。 | 執行上方的文件檢查，開啟改動後的章節連結，核對相關生成輸出。 |
 | CLI | 從 `crates/xdzip-cli` 追到共享 Rust 執行時。[命令列契約](../engineering/command-line.md) | 基於目前構建執行獨立 CLI 驗證。改動命令或輸出時，檢查 stdout、stderr、退出狀態和寫出的檔案，並覆蓋適用的失敗場景。 |
 | Rust 領域邏輯、格式或歸檔任務 | 從 `xdzip-domain`、對應編解碼模組、`xdzip-runtime` 或 `xdzip-io` 入手。查桌面命令時，先看 `BrowserController` 與 `RuntimeConnection`。[格式登記](../engineering/format-registry.md)、[執行時](../engineering/product-runtime.md)、[檔案安全](../design/file-security.md) | 執行 `cargo fmt --all -- --check` 和受影響的包測試。驗證實際執行時入口及相關的失敗、取消或提交行為。呼叫原生格式工作程序時使用[工作程序測試入口](../../../developers/qa/runtime-worker-tests.md)。登記表改動後執行 `python3 scripts/generate-format-registry.py` 重新生成，再加 `--check` 核對，並執行 `python3 scripts/test-format-registry.py`。 |
 | QML 視窗、控制元件或本地化 | 檢視 `apps/desktop/ui`、`resources/i18n` 和 `specs/visual`。改視窗前閱讀[視覺規範](../visual/design-standard.md)與[設計流程](../visual/design-workflow.md)，在[視窗登記表](../../../specs/visual/window-registry.json)登記契約。 | 視窗改動執行 `python3 scripts/check-window-contracts.py --self-test`、`python3 scripts/check-operation-components.py` 和受影響的雙語多字號佈局測試。本地化改動執行 `python3 scripts/check-ui-i18n.py`。按要求在相關平臺驗證原生互動或視覺表現。 |

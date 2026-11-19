@@ -1,0 +1,21 @@
+<a name="xdzip-data-lifecycle-and-diagnostics"></a>
+# Lebenszyklus von Daten und Diagnosen
+
+[English](../../engineering/privacy.md) | [简体中文](../../zh-CN/engineering/privacy.md) | [繁體中文（台灣）](../../zh-TW/engineering/privacy.md) | [日本語](../../ja-JP/engineering/privacy.md) | [한국어](../../ko-KR/engineering/privacy.md) | [Français](../../fr-FR/engineering/privacy.md) | Deutsch | [Español](../../es-ES/engineering/privacy.md) | [Português (Brasil)](../../pt-BR/engineering/privacy.md) | [Русский](../../ru-RU/engineering/privacy.md)
+
+Die [Datenschutzerklärung](../../../PRIVACY.md) beschreibt, welche Daten xdzip verarbeitet und welche Optionen Ihnen zur Verfügung stehen. Die Tabelle zeigt, wo Daten gespeichert werden und wann sie freigegeben werden. Durchsuchen, Komprimieren und Entpacken funktionieren offline. xdzip sendet keine Telemetrie oder Archivinhalte automatisch an die Projektbetreuer.
+
+| Daten | Lebensdauer | Speicherung und Bereinigung |
+| --- | --- | --- |
+| Einstellungen und Designs | Über Neustarts hinweg, mit versioniertem Schema | Änderungen verwenden atomaren Austausch. Schlägt das Speichern fehl, bleiben die bisherigen Einstellungen erhalten und die Oberfläche meldet den Fehler. |
+| Vorherige Standardanwendungen unter macOS | Lokal, über Neustarts hinweg | Wenn Sie xdzip als Standard festlegen, speichert eine separate Einstellungsdatei die Bundle-ID der vorherigen App für den Inhaltstyp. Beim Wiederherstellen oder Auswählen einer anderen App wird der Eintrag für diesen Typ entfernt. |
+| Zuletzt verwendete Dateien | Optional, nur lokal | Die private Datei `recent.json` speichert bis zu 20 verschiedene Einträge mit einer Lesegrenze von 64 KiB. Deaktivieren stoppt neue Einträge. Leeren löscht den Verlauf, ohne Originaldateien anzutasten. |
+| Archivindizes | Für die geöffnete Sitzung | Kleine Indizes liegen im Speicher. Große ZIP-Indizes verwenden private Dateien für Metadaten und Abfragereihenfolge. Reguläres Schließen, Ersetzen der Abfrage, Fehler und Abbruch bereinigen die bekannten Dateien. Ein späterer Erstellvorgang kann ungenutzte Absturzreste unter den Identitäts- und Lease-Regeln zurückgewinnen. Indizes werden nach Neustarts nicht wiederverwendet. Siehe [Indizes großer Archive](large-index.md). |
+| Temporäre Ausgaben und Wiederherstellungsstatus | Während Aufgaben und Wiederherstellung | Die Wiederherstellung verwendet kontrollierte Metadaten und bereinigt nur eindeutig zugeordnete Objekte. Sie führt keine Archivinhalte aus und wiederholt keine Schreibvorgänge an beliebigen Pfaden. |
+| Vorschau in der Anwendung | Vom Nutzer angefordert und begrenzt | Ein Wechsel des Vorschaukontexts oder das Ende der Sitzung löscht das aktuelle Ergebnis. Verspätete Ergebnisse stellen ungültige Inhalte nicht wieder her. |
+| Passwörter | Für den Vorgang, der sie benötigt | Die Anwendung speichert Passwörter weder in Einstellungen noch in Protokollen. Im Betriebssystem können zusätzliche Kopien im Arbeitsspeicher liegen, auf die die Anwendung keinen Einfluss hat. |
+| Eigenständige Updateprüfungen und Downloads | Vom Nutzer in geeigneten Ausgaben gestartet | Anfragen verwenden die öffentlichen GitHub-Dienste für Veröffentlichungen und Downloads. Ein konfigurierter Proxy kann Anfragen verarbeiten. Ein optionaler HTTPS-Spiegel erhält die ursprüngliche Download-URL. Anbieter können die Verbindungsdaten und die übermittelte Anwendungsversion sehen. Windows MSIX deaktiviert den eigenständigen Updater. |
+| Belege für Updatevorgänge | Lokal, auch nach Neustarts während der Installation | Die separate Datei `update-state.ini` neben den Einstellungen speichert die Identität des Vorgangs und des Ziels. Fehlgeschlagene Downloads können im privaten Updatecache bleiben. Der Updater liest nur festgelegte Belegdateien und führt ihren Inhalt nicht aus. |
+| Status und Diagnose | Je nach Funktion in Oberfläche, Terminal oder lokalen Aufzeichnungen | Die Anwendung lädt Diagnosen nicht automatisch hoch. Beim Kopieren von Versions- oder Dateiinformationen werden sie in die Systemzwischenablage geschrieben. Prüfen Sie Dateinamen, Pfade und andere private Angaben vor dem Teilen einer Fehlermeldung, eines Protokolls oder eines Screenshots. |
+
+Die [Spezifikation für Softwareupdates](software-update.md) beschreibt Netzwerkzugriffe, Signaturen, Installationsübergabe und Wiederherstellung.

@@ -2,7 +2,7 @@
 
 # ISO9660 與 Joliet 建立
 
-[English](../../engineering/iso-creation.md) | [简体中文](../../zh-CN/engineering/iso-creation.md) | 繁體中文（台灣）
+[English](../../engineering/iso-creation.md) | [简体中文](../../zh-CN/engineering/iso-creation.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/iso-creation.md) | [한국어](../../ko-KR/engineering/iso-creation.md) | [Français](../../fr-FR/engineering/iso-creation.md) | [Deutsch](../../de-DE/engineering/iso-creation.md) | [Español](../../es-ES/engineering/iso-creation.md) | [Português (Brasil)](../../pt-BR/engineering/iso-creation.md) | [Русский](../../ru-RU/engineering/iso-creation.md)
 
 首版寫入器建立單卷、不可啟動的資料映象，使用 2048 位元組扇區，同時寫入 ISO9660 主名稱空間和 Joliet 補充名稱空間。依據為 [ECMA-119 第五版](https://ecma-international.org/wp-content/uploads/ECMA-119_5th_edition_december_2024.pdf)，包括附錄 C 收錄的 Joliet 規範。不連結或啟動外部映象製作引擎。
 

@@ -1,6 +1,6 @@
 # Data lifecycle and diagnostics
 
-English | [简体中文](../zh-CN/engineering/privacy.md) | [繁體中文（台灣）](../zh-TW/engineering/privacy.md)
+English | [简体中文](../zh-CN/engineering/privacy.md) | [繁體中文（台灣）](../zh-TW/engineering/privacy.md) | [日本語](../ja-JP/engineering/privacy.md) | [한국어](../ko-KR/engineering/privacy.md) | [Français](../fr-FR/engineering/privacy.md) | [Deutsch](../de-DE/engineering/privacy.md) | [Español](../es-ES/engineering/privacy.md) | [Português (Brasil)](../pt-BR/engineering/privacy.md) | [Русский](../ru-RU/engineering/privacy.md)
 
 The [Privacy Policy](../../PRIVACY.md) explains what data xdzip handles and which choices are available to users. The table below describes where the implementation keeps that data and when it is released. Browsing, compression and extraction work offline. xdzip does not automatically send telemetry or archive contents to the maintainer.
 

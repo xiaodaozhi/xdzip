@@ -1,0 +1,21 @@
+<a name="xdzip-data-lifecycle-and-diagnostics"></a>
+# Ciclo de vida de los datos y diagnósticos
+
+[English](../../engineering/privacy.md) | [简体中文](../../zh-CN/engineering/privacy.md) | [繁體中文（台灣）](../../zh-TW/engineering/privacy.md) | [日本語](../../ja-JP/engineering/privacy.md) | [한국어](../../ko-KR/engineering/privacy.md) | [Français](../../fr-FR/engineering/privacy.md) | [Deutsch](../../de-DE/engineering/privacy.md) | Español | [Português (Brasil)](../../pt-BR/engineering/privacy.md) | [Русский](../../ru-RU/engineering/privacy.md)
+
+La [política de privacidad](../../../PRIVACY.md) explica qué datos maneja xdzip y qué opciones tienen los usuarios. La tabla indica dónde se guardan los datos y cuándo se liberan. La exploración, la compresión y la extracción funcionan sin conexión. xdzip no envía automáticamente telemetría ni contenido de archivos comprimidos al responsable del proyecto.
+
+| Datos | Duración | Almacenamiento y limpieza |
+| --- | --- | --- |
+| Ajustes y temas | Entre ejecuciones, con un esquema versionado | Los cambios usan reemplazo atómico. Si falla una actualización, conserva los ajustes anteriores y la interfaz informa del error. |
+| Aplicaciones predeterminadas anteriores en macOS | Localmente, entre ejecuciones | Al hacer que xdzip sea la aplicación predeterminada, un archivo de ajustes separado registra el identificador del paquete de la aplicación anterior para ese tipo de contenido. Al restaurarla o elegir otra se borra el registro de ese tipo. |
+| Archivos recientes | Opcional, solo local | El archivo privado `recent.json` guarda hasta 20 entradas distintas con un límite de lectura de 64 KiB. Desactivar esta opción deja de añadir entradas. Borrar el historial no toca los archivos originales. |
+| Índices de archivos comprimidos | Durante la sesión de apertura | Los índices pequeños viven en memoria. Los índices ZIP grandes usan archivos privados en disco para metadatos y orden de consulta. El cierre normal, la sustitución de consultas, el fallo y la cancelación limpian sus archivos conocidos. Una creación posterior puede recuperar restos sin uso de un fallo según las reglas de identidad y vigencia. Los índices no se reutilizan entre ejecuciones. Consulta los [índices de archivos grandes](large-index.md). |
+| Salidas temporales y estado de recuperación | Durante las tareas y la recuperación | La recuperación solo usa metadatos controlados y limpia elementos cuya propiedad está comprobada. No ejecuta contenidos de archivos comprimidos ni restaura escrituras en rutas arbitrarias. |
+| Vistas previas integradas | A petición del usuario y con límites | El cambio de contexto de vista previa o el fin de la sesión borra el resultado actual. Los resultados tardíos no restauran contenido invalidado. |
+| Contraseñas | Durante la operación que las necesita | La aplicación no guarda contraseñas en ajustes ni registros. El sistema operativo puede mantener copias adicionales en memoria fuera del control de la aplicación. |
+| Búsqueda y descarga de actualizaciones autónomas | A petición del usuario en las ediciones correspondientes | Las solicitudes usan los servicios públicos de versiones y descargas de GitHub. Un proxy configurado puede manejarlas. Un espejo HTTPS opcional recibe la URL de descarga original. Los proveedores pueden ver los datos de conexión y la versión incluida en las solicitudes. Windows MSIX desactiva el actualizador autónomo. |
+| Comprobantes de transacciones de actualización | Localmente, también tras reinicios de la instalación | El archivo separado `update-state.ini` junto a los ajustes conserva la identidad de la transacción y del destino. Las descargas fallidas pueden permanecer en la caché privada. El actualizador solo lee archivos de comprobante previstos y no ejecuta su contenido. |
+| Estado y diagnóstico | Interfaz, terminal o registros locales según la función | La aplicación no sube diagnósticos automáticamente. Copiar datos de versión o de archivo los coloca en el portapapeles del sistema. Revisa nombres, rutas y otros datos privados antes de compartir un error, un registro o una captura. |
+
+Consulta la [especificación de actualizaciones](software-update.md) para los accesos de red, las firmas, la entrega al instalador y la recuperación.
