@@ -14,7 +14,7 @@
       "parent": "OperationWindow",
       "role": "base",
       "width": "Theme.confirmationLogicalWidth",
-      "reason": "退出与重启共用确认布局"
+      "reason": "退出、重启与归档条目编辑共用确认布局"
     },
     "Browser": {
       "parent": "ApplicationWindow",
@@ -26,7 +26,7 @@
       "statusbar_policy": "Welcome and archive pages share a 32-unit minimum status bar, growing by the same task-control metrics for larger text. Both task buttons use the same 16-unit task-list icon from layout-scale.json main.interaction.taskIconSize.",
       "reopen_wait_policy": "A pending reopen during an archive modification reuses the welcome opening overlay and its existing dimensions; the message identifies the wait and cancellation affects only the new open request.",
       "owned_dialog_policy": "Closing the main window dismisses all its dialogs and releases their native surfaces; retained tasks reopen views only on explicit task activation.",
-      "operation_overlay_policy": "Archive edits retain the file page below a transparent blocking overlay using the existing welcome opening card metrics and operation-specific text.",
+      "operation_overlay_policy": "Archive edits retain the file page below a transparent blocking overlay using the existing welcome opening card metrics and operation-specific text. Rename and Delete share the list and grid context menu and preserve the existing menu density.",
       "operation_overlay_design": "design/hifi/sources/main.html?operation=add",
       "task_menu_policy": "Task rows show an operation-specific shared icon, archive filename, backend sequence tag, then status tag. Both tags reuse CommandMenuTag; operation names remain accessible without a visible text prefix.",
       "reason": "主窗口独立密度与最小尺寸，胶囊标签支持按稳定身份关闭、关闭其他和关闭右侧，文件操作按钮采用固定尺寸与间距，列宽在本次运行各窗口共享，大小列排序箭头位于右对齐标题左侧，其他列位于标题右侧，均保留 6 逻辑像素间距，选框到文件图标槽的留白为 12 逻辑像素，图标、文件名和名称表头同步左移，关闭窗口清除标签并保留后台任务入口，包内移动复用文件行和树行既有密度，拖入高亮及拒绝说明见 design/hifi/sources/archive-move.html。CAB、ISO、UDF 只读接入沿用格式徽标及欢迎页既有字号和间距，不增加创建选项或窗口",
@@ -134,6 +134,12 @@
       "parent": "OperationConfirmationWindow",
       "role": "confirmation",
       "design": "design/hifi/sources/confirmations.html"
+    },
+    "ArchiveEntryEditWindow": {
+      "parent": "OperationConfirmationWindow",
+      "role": "confirmation",
+      "reason": "包内重命名和删除复用 491 逻辑宽度、可滚动正文和固定共享 footer。重命名使用共享输入框，删除默认聚焦取消。",
+      "design": "design/hifi/sources/archive-entry-edit.html"
     },
     "UpdateWindow": {
       "parent": "OperationWindow",

@@ -37,12 +37,11 @@ impl MoveOptions {
     }
 }
 pub(super) struct Moves {
-    roots: BTreeMap<String, bool>,
-    source_prefix: String,
+    selection: Selection,
 }
 impl Moves {
     pub(super) fn bytes(&self) -> usize {
-        self.roots.keys().map(|s| s.capacity() + 64).sum::<usize>() + self.source_prefix.capacity()
+        self.selection.bytes()
     }
 }
 impl Archive {
@@ -72,48 +71,12 @@ impl Archive {
             return Err("move_same_directory");
         }
         let target_key = key(target.trim_end_matches('/'));
-        let mut roots = BTreeMap::new();
-        let mut bytes = 0usize;
-        for id in &options.selected {
-            cancel.check().map_err(|_| "cancelled")?;
-            let (name, directory) = if id.starts_with('d') {
-                (
-                    self.directory_prefix(id).map_err(|_| "invalid_selection")?,
-                    true,
-                )
-            } else {
-                let n = id.parse::<u64>().map_err(|_| "invalid_selection")?;
-                let row = n
-                    .checked_sub(1)
-                    .and_then(|n| usize::try_from(n).ok())
-                    .and_then(|n| self.rows.get(n))
-                    .filter(|r| r.id.get() == n)
-                    .ok_or("invalid_selection")?;
-                (row.name_bytes(), row.directory)
-            };
-            let name = std::str::from_utf8(name)
-                .map_err(|_| "unsafe_name")?
-                .trim_end_matches('/');
-            PortablePath::parse(name).ok_or("unsafe_name")?;
-            let relative = name
-                .strip_prefix(source)
-                .filter(|n| !n.is_empty() && !n.contains('/'))
-                .ok_or("invalid_selection")?;
-            if relative.is_empty() {
-                return Err("invalid_selection");
-            }
+        let roots = self.selection_roots(&options.selected, source, cancel)?;
+        if roots.iter().any(|(name, directory)| {
             let canonical = key(name);
-            if directory && (target_key == canonical || target_key.starts_with(&(canonical + "/")))
-            {
-                return Err("move_selected_directory");
-            }
-            if !roots.contains_key(name) {
-                bytes += name.len();
-                if bytes > 4 * 1024 * 1024 {
-                    return Err("resource_limit");
-                }
-                roots.insert(name.to_owned(), directory);
-            }
+            *directory && (target_key == canonical || target_key.starts_with(&(canonical + "/")))
+        }) {
+            return Err("move_selected_directory");
         }
         Ok(Job {
             source: self.source.fork().map_err(|_| "source_changed")?,
@@ -126,28 +89,30 @@ impl Archive {
             },
             prefix: target.to_owned(),
             session: self.key.session.get(),
-            moving: Some(Moves {
-                roots,
-                source_prefix: source.to_owned(),
+            operation: Operation::Move(Moves {
+                selection: Selection {
+                    roots: roots
+                        .into_iter()
+                        .map(|(name, dir)| (name.to_owned(), dir))
+                        .collect(),
+                    source_prefix: source.to_owned(),
+                },
             }),
         })
     }
 }
 pub(super) fn plan(
     job: &Job,
+    moves: &Moves,
     planner: &mut Planner<'_>,
     additions: &mut Additions<'_>,
 ) -> Result<(), &'static str> {
-    let moves = job.moving.as_ref().ok_or("invalid_options")?;
     // Removed source names must not consume the destination namespace budget.
     // Skipped source paths are disjoint from the destination and are rechecked
     // in the final output namespace before staging any rewritten bytes.
-    planner.names.retain(|_, (name, _, _)| {
-        !moves.roots.contains_key(name)
-            && !name
-                .match_indices('/')
-                .any(|(at, _)| moves.roots.get(&name[..at]) == Some(&true))
-    });
+    planner
+        .names
+        .retain(|_, (name, _, _)| moves.selection.root_for(name).is_none());
     planner.namespace_bytes = planner
         .names
         .iter()
@@ -159,14 +124,9 @@ pub(super) fn plan(
         let name = std::str::from_utf8(row.name_bytes())
             .map_err(|_| "unsafe_name")?
             .trim_end_matches('/');
-        let root = if moves.roots.contains_key(name) {
-            Some(name)
-        } else {
-            name.match_indices('/')
-                .map(|(at, _)| &name[..at])
-                .find(|p| moves.roots.get(*p) == Some(&true))
+        let Some(root) = moves.selection.root_for(name) else {
+            continue;
         };
-        let Some(root) = root else { continue };
         let leaf = root.rsplit('/').next().ok_or("unsafe_name")?;
         let requested = format!("{}{leaf}{}", job.prefix, &name[root.len()..]);
         let Some(resolved) = planner.resolve(requested, row.directory, row.size)? else {
@@ -211,21 +171,8 @@ pub(super) fn plan(
             planner.renames[index] = None;
         }
     }
-    if !moves.source_prefix.is_empty()
-        && !job.rows.iter().enumerate().any(|(index, row)| {
-            planner.keep[index]
-                && planner.renames[index]
-                    .as_ref()
-                    .map_or(row.name_bytes(), |name| name.as_bytes())
-                    .starts_with(moves.source_prefix.as_bytes())
-        })
-    {
-        additions.entries.push(EncodeEntry {
-            name: moves.source_prefix.trim_end_matches('/').to_owned(),
-            directory: true,
-            size: 0,
-            modified_unix: 0,
-        });
-    }
+    moves
+        .selection
+        .preserve_source_directory(planner, additions);
     Ok(())
 }

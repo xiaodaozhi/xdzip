@@ -71,6 +71,13 @@
       "timeout_seconds": 180
     },
     {
+      "name": "updating::tests::seven_zip_rename_and_delete_preserve_content_and_empty_archive",
+      "source": "crates/xdzip-runtime/src/updating/tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
+    {
       "name": "native_backend_tests::rar4_rar5_encrypted_headers_and_mixed_content_are_read_only",
       "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
       "profile": "worker",

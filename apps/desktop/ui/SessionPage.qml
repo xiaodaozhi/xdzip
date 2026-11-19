@@ -139,6 +139,7 @@ Item {
     function hideSessionWindows() {
         createWindow.close();
         updateWindow.close();
+        entryEditWindow.close();
         extractWindow.close();
         operationTasks.taskWindow.close();
         preflightWindow.close();
@@ -190,6 +191,7 @@ Item {
     readonly property int globalActiveTaskCount: sessionManager ? sessionManager.activeTaskCount : reader.activeTaskCount
     onVisibleChanged: if (!visible) {
         if (taskMenu) taskMenu.close();
+        if (entryEditWindow) entryEditWindow.close();
         if (moveDrag && moveDrag.Drag.active) root.cancelTransfer();
     }
     readonly property var controller: reader
@@ -201,7 +203,16 @@ Item {
         Theme.fontScale = AppSettings.textScale;
     }
     readonly property bool archiveOperationVisible: reader.archiveOperation.length > 0
-    readonly property string archiveOperationTitle: reader.archiveOperation === "move" ? qsTrId("archive.operation.moving") : qsTrId("archive.operation.adding")
+    readonly property var archiveOperationText: ({
+        add: {title: qsTrId("archive.operation.adding"), note: qsTrId("archive.operation.addNote"),
+              progress: qsTrId("archive.operation.addProgress"), cancel: qsTrId("archive.operation.cancelAdd")},
+        move: {title: qsTrId("archive.operation.moving"), note: qsTrId("archive.operation.moveNote"),
+               progress: qsTrId("archive.operation.moveProgress"), cancel: qsTrId("archive.operation.cancelMove")},
+        rename: {title: qsTrId("entry.edit.renaming"), note: qsTrId("entry.edit.refreshNote"),
+                 progress: qsTrId("entry.edit.renameProgress"), cancel: qsTrId("entry.edit.cancelRename")},
+        delete: {title: qsTrId("entry.edit.deleting"), note: qsTrId("entry.edit.refreshNote"),
+                 progress: qsTrId("entry.edit.deleteProgress"), cancel: qsTrId("entry.edit.cancelDelete")}
+    })[reader.archiveOperation] || ({title: "", note: "", progress: "", cancel: ""})
     readonly property bool welcomeVisible: closedPage || (!reader.ready && !archiveOperationVisible)
     property bool externalFileOpening: false
     property bool welcomeWasBusy: false
@@ -367,6 +378,16 @@ Item {
         else
             reader.selectOnlyRow(row);
     }
+    function showEntryEdit(rename: bool) {
+        const entry = root.contextEntry;
+        const intent = reader.prepareEntryEdit(entry.row, entry.session, entry.id, rename);
+        if (intent.token) Qt.callLater(() => {
+            if (root.visible && reader.entryEditCurrent(intent.token))
+                entryEditWindow.configure(intent);
+            else
+                reader.discardEntryEdit(intent.token);
+        });
+    }
     function entryMenuAt(item, row, entryId, directory, navigable, x, y) {
         if (!reader.ready || reader.browsingBusy)
             return;
@@ -437,6 +458,8 @@ Item {
             }
         }
         onChanged: {
+            if (entryEditWindow.visible && !reader.entryEditCurrent(entryEditWindow.token))
+                entryEditWindow.close();
             if (moveDrag.Drag.active && !reader.internalDragCurrent(moveDrag.token)) Qt.callLater(function () { if (moveDrag.Drag.active && !reader.internalDragCurrent(moveDrag.token)) root.cancelTransfer(); });
             if (root.welcomeVisible && !busy && root.welcomeWasBusy)
                 Qt.callLater(() => {
@@ -461,6 +484,7 @@ Item {
         }
     }
     UpdateWindow { id: updateWindow; owner: root.windowHost; controller: reader }
+    ArchiveEntryEditWindow { id: entryEditWindow; owner: root.windowHost; controller: reader }
     CreateWindow {
         id: createWindow
         owner: root.windowHost
@@ -771,6 +795,23 @@ Item {
             text: qsTrId("ui.a1fca7bde5d2")
             enabled: root.contextAvailable && reader.selectedCount > 0
             onTriggered: reader.prepareExtraction(false)
+        }
+        CommandMenuSeparator { commandVisible: reader.canUpdateArchive }
+        CommandMenuItem {
+            objectName: "contextRenameEntry"
+            text: qsTrId("entry.edit.rename")
+            commandVisible: reader.canUpdateArchive
+            enabled: root.contextAvailable && reader.selectedCount === 1
+            disabledReason: qsTrId("entry.edit.singleSelection")
+            onTriggered: root.showEntryEdit(true)
+        }
+        CommandMenuItem {
+            objectName: "contextDeleteEntries"
+            text: qsTrId("entry.edit.delete")
+            dangerous: true
+            commandVisible: reader.canUpdateArchive
+            enabled: root.contextAvailable && reader.selectedCount > 0
+            onTriggered: root.showEntryEdit(false)
         }
     }
     CommandMenu {
@@ -2029,6 +2070,7 @@ Item {
                     elide: Text.ElideRight
                 }
                 ArchiveAction {
+                    id: statusTaskButton
                     objectName: "browserTasks"
                     taskDisclosure: true
                     labelSize: root.welcomeVisible ? 12 * Theme.fontScale : Theme.mainHeaderSize
@@ -2126,7 +2168,7 @@ Item {
                                 text: taskData.archive || ""
                                 userData: true
                                 accessibleLabel: root.taskLabel(taskData) + qsTrId("common.separator") + text
-                                asset: taskData.kind === "check" ? "task-check" : taskData.kind === "update" ? "task-add" : taskData.kind === "move" ? "task-move" : ["export", "export-copy"].includes(taskData.kind) ? "task-export" : taskData.creating ? "task-create" : "task-extract"
+                                asset: taskData.kind === "check" ? "task-check" : taskData.kind === "update" ? "task-add" : ["move", "rename"].includes(taskData.kind) ? "task-move" : taskData.kind === "delete" ? "remove" : ["export", "export-copy"].includes(taskData.kind) ? "task-export" : taskData.creating ? "task-create" : "task-extract"
                                 sequenceLabel: taskData.backendId || taskData.id
                                 statusLabel: root.taskStateLabel(root.taskStatus(taskData))
                                 statusInk: taskData.status === "failed" ? Theme.menuDanger : ["waiting", "waiting_password"].includes(taskData.status) ? Theme.resultWarningInk : taskData.status === "cancelled" ? Theme.textSecondary : Theme.accentInk
@@ -2162,6 +2204,7 @@ Item {
             RowLayout {
                 visible: !root.welcomeVisible
                 x: parent.width / 2 - Theme.mainUnits(50)
+                width: Math.max(0, statusActions.x + statusTaskButton.x - x - Theme.mainUnits(8))
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: Theme.mainUnits(9)
                 Image {
@@ -2170,8 +2213,11 @@ Item {
                     source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + (reader.browsingBusy ? "activity.png" : "completed.png")
                 }
                 Text {
-                    text: root.archiveOperationVisible ? root.archiveOperationTitle : reader.browsingBusy ? qsTrId("ui.86b6d0d63062") : reader.ready ? qsTrId("ui.332e65565b33") : qsTrId("ui.654a6e182ac7")
-                    color: Theme.textSecondary
+                    Layout.fillWidth: true
+                    elide: Text.ElideRight
+                    text: root.archiveOperationVisible ? root.archiveOperationText.title : reader.browsingBusy ? qsTrId("ui.86b6d0d63062") : reader.entryEditError || (reader.ready ? qsTrId("ui.332e65565b33") : qsTrId("ui.654a6e182ac7"))
+                    Accessible.name: text
+                    color: reader.entryEditError ? Theme.menuDanger : Theme.textSecondary
                     font.pixelSize: Theme.mainStatusSize
                 }
             }
@@ -2188,10 +2234,10 @@ Item {
         cancellationPending: reader.archiveCancelling
         backdropColor: "transparent"
         archiveName: reader.title
-        titleLabel: root.archiveOperationTitle
-        noteLabel: reader.archiveOperation === "move" ? qsTrId("archive.operation.moveNote") : qsTrId("archive.operation.addNote")
-        progressLabel: reader.archiveOperation === "move" ? qsTrId("archive.operation.moveProgress") : qsTrId("archive.operation.addProgress")
-        cancelLabel: reader.archiveOperation === "move" ? qsTrId("archive.operation.cancelMove") : qsTrId("archive.operation.cancelAdd")
+        titleLabel: root.archiveOperationText.title
+        noteLabel: root.archiveOperationText.note
+        progressLabel: root.archiveOperationText.progress
+        cancelLabel: root.archiveOperationText.cancel
         onCancelRequested: reader.cancel()
         onDismissed: Qt.callLater(function () {
             if (!root.welcomeVisible && reader.ready && !reader.browsingBusy && root.visible)

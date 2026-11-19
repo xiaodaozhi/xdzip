@@ -60,6 +60,13 @@ pub enum Command {
         /// Archive-only identities, revalidated by the worker.
         options: crate::updating::MoveOptions,
     },
+    /// Rename or remove entries in one archive directory.
+    EditEntries {
+        /// Immutable source session.
+        session: u64,
+        /// Bounded archive-only intent, revalidated by the worker.
+        options: crate::updating::EntryEditOptions,
+    },
     /// Fulfil a native file promise from a verified private export copy.
     PublishExport {
         /// Absolute application-owned payload root item.
@@ -180,6 +187,7 @@ impl Command {
             Self::PublishExport { source, target } => source.capacity() + target.capacity(),
             Self::Update { options, .. } => options.bytes(),
             Self::Move { options, .. } => options.bytes(),
+            Self::EditEntries { options, .. } => options.bytes(),
             Self::Export { options, .. } | Self::ExportManifest { options, .. } => options.bytes(),
             Self::OpenEntry { cache, .. } => cache.capacity(),
             Self::Open(path) | Self::CheckTarget { path, .. } => path.len(),
@@ -223,6 +231,7 @@ impl Command {
                 .all(|p| !p.contains('\0') && p.len() <= 4096 && Path::new(p).is_absolute()),
             Self::Update { options, .. } => options.bounded(),
             Self::Move { options, .. } => options.bounded(),
+            Self::EditEntries { options, .. } => options.bounded(),
             Self::Export { options, .. } | Self::ExportManifest { options, .. } => {
                 options.bounded()
             }
@@ -929,6 +938,17 @@ fn execute(
                 let job = current.move_job(options, control)?;
                 let id = shared.enqueue_task(request, tasks::Job::Update(job))?;
                 // No new request may use old physical IDs once editing is admitted.
+                *archive = None;
+                return Ok(Payload::TaskAccepted(id));
+            }
+            Command::EditEntries { session, options } => {
+                let current = archive
+                    .as_ref()
+                    .filter(|a| a.key().session.get() == session)
+                    .ok_or("stale_session")?;
+                let job = current.edit_entries_job(options, control)?;
+                let id = shared.enqueue_task(request, tasks::Job::Update(job))?;
+                // IDs belong to the retired snapshot after successful admission.
                 *archive = None;
                 return Ok(Payload::TaskAccepted(id));
             }

@@ -30,7 +30,11 @@ impl Fixture {
             inputs: vec![self.0.join("inputs/资料").to_string_lossy().into()],
             target: self.0.to_string_lossy().into(),
             name,
-            method: if extension == "tar" { 0 } else { 8 },
+            method: match extension {
+                "tar" => 0,
+                "7z" => 32,
+                _ => 8,
+            },
             level: 6,
             conflict: ConflictPolicy::Ask,
             volume_bytes: 0,
@@ -858,4 +862,299 @@ fn metadata_only_addition_fails_without_rewriting_any_archive() {
             assert!(!result.cleanup_warning);
         }
     }
+}
+
+fn edit_options(
+    archive: &Archive,
+    directory: &str,
+    names: &[&str],
+    action: EntryEdit,
+) -> EntryEditOptions {
+    EntryEditOptions {
+        selected: names.iter().map(|name| row_id(archive, name)).collect(),
+        directory: if directory.is_empty() {
+            String::new()
+        } else {
+            row_id(archive, directory)
+        },
+        action,
+    }
+}
+
+fn apply_entry_edit(
+    path: &std::path::Path,
+    options: EntryEditOptions,
+    archive: Archive,
+) -> Archive {
+    let cancel = Cancellation::default();
+    let job = archive.edit_entries_job(options, &cancel).unwrap();
+    drop(archive);
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+    Archive::open(path, &cancel).unwrap()
+}
+
+fn exercise_entry_edits(extension: &str) {
+    let fixture = Fixture::new();
+    fs::create_dir_all(fixture.0.join("inputs/资料/rename me/child")).unwrap();
+    fs::write(
+        fixture.0.join("inputs/资料/rename me/child/data.bin"),
+        b"a nested record",
+    )
+    .unwrap();
+    let path = fixture.archive(extension);
+    let path = if extension == "tar.gz" {
+        let renamed = path.with_file_name("alias.gz");
+        fs::rename(path, &renamed).unwrap();
+        renamed
+    } else {
+        path
+    };
+    let archive = Archive::open(&path, &Cancellation::default()).unwrap();
+    let format = archive.format;
+    let options = edit_options(
+        &archive,
+        "资料/",
+        &["资料/原文件.txt"],
+        EntryEdit::Rename("new.txt".into()),
+    );
+    let archive = apply_entry_edit(&path, options, archive);
+    let options = edit_options(
+        &archive,
+        "资料/",
+        &["资料/rename me/"],
+        EntryEdit::Rename("Rename Me".into()),
+    );
+    let archive = apply_entry_edit(&path, options, archive);
+    assert_eq!(
+        crate::native_backend_tests::known_contents(&archive),
+        BTreeMap::from([
+            (
+                "资料/Rename Me/child/data.bin".to_owned(),
+                b"a nested record".to_vec()
+            ),
+            ("资料/new.txt".to_owned(), b"original bytes".to_vec()),
+        ])
+    );
+    let options = edit_options(
+        &archive,
+        "资料/",
+        &["资料/new.txt", "资料/Rename Me/"],
+        EntryEdit::Delete,
+    );
+    let archive = apply_entry_edit(&path, options, archive);
+    assert!(archive.rows.iter().all(|row| row.directory));
+    assert!(
+        archive
+            .rows
+            .iter()
+            .any(|row| row.name_bytes() == "资料/空目录/".as_bytes())
+    );
+    let options = edit_options(&archive, "", &["资料/"], EntryEdit::Delete);
+    let archive = apply_entry_edit(&path, options, archive);
+    assert_eq!(archive.format, format);
+    assert!(archive.rows.is_empty());
+}
+
+#[test]
+fn zip_and_tar_rename_and_delete_preserve_content_and_empty_archives() {
+    for format in ["zip", "tar", "tar.gz"] {
+        exercise_entry_edits(format);
+    }
+}
+
+#[test]
+#[ignore = "requires built isolated codec worker"]
+fn seven_zip_rename_and_delete_preserve_content_and_empty_archive() {
+    exercise_entry_edits("7z");
+}
+
+#[test]
+fn entry_edits_reject_wrong_selection_invalid_names_and_conflicts() {
+    let fixture = Fixture::new();
+    fs::write(fixture.0.join("inputs/资料/existing.txt"), b"sibling").unwrap();
+    let path = fixture.archive("zip");
+    let original = fs::read(&path).unwrap();
+    let cancel = Cancellation::default();
+    let archive = Archive::open(&path, &cancel).unwrap();
+    for (name, code) in [
+        ("..", "entry_name_invalid"),
+        ("blocked/here", "entry_name_invalid"),
+        ("CON.txt", "entry_name_invalid"),
+        ("原文件.txt", "entry_name_unchanged"),
+    ] {
+        let options = edit_options(
+            &archive,
+            "资料/",
+            &["资料/原文件.txt"],
+            EntryEdit::Rename(name.into()),
+        );
+        assert_eq!(archive.edit_entries_job(options, &cancel).err(), Some(code));
+    }
+    let options = edit_options(&archive, "", &["资料/原文件.txt"], EntryEdit::Delete);
+    assert_eq!(
+        archive.edit_entries_job(options, &cancel).err(),
+        Some("invalid_selection")
+    );
+    let mut options = edit_options(
+        &archive,
+        "资料/",
+        &["资料/原文件.txt", "资料/空目录/"],
+        EntryEdit::Delete,
+    );
+    options.selected.push("99999".into());
+    assert_eq!(
+        archive.edit_entries_job(options, &cancel).err(),
+        Some("invalid_selection")
+    );
+    for name in ["Existing.txt", "空目录"] {
+        let options = edit_options(
+            &archive,
+            "资料/",
+            &["资料/原文件.txt"],
+            EntryEdit::Rename(name.into()),
+        );
+        let result = execute(
+            archive.edit_entries_job(options, &cancel).unwrap(),
+            &Control::default(),
+            |_| {},
+        );
+        assert_eq!(
+            (result.kind, result.status, result.error.as_str()),
+            (TaskKind::Rename, Status::Failed, "entry_name_exists")
+        );
+    }
+    assert_eq!(fs::read(&path).unwrap(), original);
+}
+
+#[test]
+fn deleting_last_child_keeps_an_implicit_source_folder_and_rejects_cancelled_or_changed_sources() {
+    let fixture = Fixture::new();
+    let path = fixture.0.join("implicit.zip");
+    let entries = EmptyFiles(vec![
+        EncodeEntry {
+            name: "implicit/last.txt".into(),
+            directory: false,
+            size: 0,
+            modified_unix: 0,
+        },
+        EncodeEntry {
+            name: "existing/other.txt".into(),
+            directory: false,
+            size: 0,
+            modified_unix: 0,
+        },
+    ]);
+    let mut bytes = Vec::new();
+    let cancel = Cancellation::default();
+    codec(Format::Zip)
+        .encode(
+            &entries,
+            &mut bytes,
+            EncodeSettings {
+                solid: false,
+                encrypt_headers: false,
+                method: "store",
+                level: 6,
+                password: None,
+            },
+            &cancel,
+            &mut |_| {},
+        )
+        .unwrap();
+    fs::write(&path, &bytes).unwrap();
+    let archive = Archive::open(&path, &cancel).unwrap();
+    let id = |name| {
+        format!(
+            "d{}",
+            archive
+                .directories
+                .as_ref()
+                .unwrap()
+                .iter()
+                .find(|dir| dir.path == name)
+                .unwrap()
+                .id
+        )
+    };
+    let implicit = id("implicit/");
+    let options = EntryEditOptions {
+        selected: vec![implicit.clone()],
+        directory: String::new(),
+        action: EntryEdit::Rename("existing".into()),
+    };
+    assert_eq!(
+        execute(
+            archive.edit_entries_job(options, &cancel).unwrap(),
+            &Control::default(),
+            |_| {}
+        )
+        .error,
+        "entry_name_exists"
+    );
+    let options = EntryEditOptions {
+        selected: vec![implicit.clone()],
+        directory: String::new(),
+        action: EntryEdit::Rename("renamed".into()),
+    };
+    let archive = apply_entry_edit(&path, options, archive);
+    let prefix = format!(
+        "d{}",
+        archive
+            .directories
+            .as_ref()
+            .unwrap()
+            .iter()
+            .find(|dir| dir.path == "renamed/")
+            .unwrap()
+            .id
+    );
+    assert!(
+        archive
+            .rows
+            .iter()
+            .any(|row| row.name_bytes() == b"renamed/last.txt")
+    );
+    let options = EntryEditOptions {
+        selected: vec![row_id(&archive, "renamed/last.txt")],
+        directory: prefix,
+        action: EntryEdit::Delete,
+    };
+    let original = fs::read(&path).unwrap();
+    let control = Control::default();
+    let result = execute(
+        archive.edit_entries_job(options.clone(), &cancel).unwrap(),
+        &control,
+        |snapshot| {
+            if snapshot.status == Status::Verifying {
+                control.cancel();
+            }
+        },
+    );
+    assert_eq!(result.status, Status::Cancelled);
+    assert_eq!(fs::read(&path).unwrap(), original);
+    let archive = apply_entry_edit(&path, options, archive);
+    assert!(
+        archive
+            .rows
+            .iter()
+            .any(|row| row.name_bytes() == b"renamed/" && row.directory)
+    );
+    assert!(
+        !archive
+            .rows
+            .iter()
+            .any(|row| row.name_bytes() == b"renamed/last.txt")
+    );
+    let options = edit_options(&archive, "", &["renamed/"], EntryEdit::Delete);
+    let job = archive.edit_entries_job(options, &cancel).unwrap();
+    let mut changed = fs::read(&path).unwrap();
+    changed.push(0);
+    fs::write(&path, &changed).unwrap();
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(
+        (result.kind, result.status, result.error.as_str()),
+        (TaskKind::Delete, Status::Failed, "source_changed")
+    );
+    assert_eq!(fs::read(&path).unwrap(), changed);
 }

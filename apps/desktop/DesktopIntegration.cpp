@@ -114,6 +114,8 @@ QString text(const QString &command) {
         {QStringLiteral("task"), [] { return qtTrId("desktop.task"); }},
         {QStringLiteral("createTask"), [] { return qtTrId("desktop.createTask"); }},
         {QStringLiteral("moveTask"), [] { return qtTrId("desktop.moveTask"); }},
+        {QStringLiteral("renameTask"), [] { return qtTrId("entry.edit.rename"); }},
+        {QStringLiteral("deleteTask"), [] { return qtTrId("entry.edit.delete"); }},
         {QStringLiteral("extractTask"), [] { return qtTrId("desktop.extractTask"); }},
         {QStringLiteral("checkTask"), [] { return qtTrId("desktop.checkTask"); }},
         {QStringLiteral("trayEnabled"), [] { return qtTrId("desktop.trayEnabled"); }},
@@ -605,6 +607,14 @@ void DesktopIntegration::retranslateMenus() {
         for (auto *menu : m_taskMenus)
             rebuildTasks(menu);
 }
+static QString taskActionKey(const QVariantMap &task) {
+    const auto kind = task.value("kind").toString();
+    if (kind == "move" || kind == "rename" || kind == "delete" || kind == "check")
+        return kind + QStringLiteral("Task");
+    return task.value("creating").toBool() ? QStringLiteral("createTask")
+                                           : QStringLiteral("extractTask");
+}
+
 void DesktopIntegration::syncActions() {
     if (m_controller && m_window &&
         (m_session != m_controller->sessionId() || m_controller->browsingBusy())) {
@@ -638,10 +648,7 @@ void DesktopIntegration::syncActions() {
                         continue;
                     const auto state = taskStateText(task.value("status").toString());
                     item->setText(
-                        text("task").arg(text(task.value("kind") == "move"      ? "moveTask"
-                                              : task.value("kind") == "check"   ? "checkTask"
-                                              : task.value("creating").toBool() ? "createTask"
-                                                                                : "extractTask"),
+                        text("task").arg(text(taskActionKey(task)),
                                          task.value("backendId", task.value("id")).toString(),
                                          state) +
                         (m_sessions ? qtTrId("common.separator") + task.value("archive").toString()
@@ -673,10 +680,7 @@ void DesktopIntegration::rebuildTasks(QMenu *menu) {
         const auto task = value.toMap();
         const auto state = taskStateText(task.value("status").toString());
         auto *item = menu->addAction(
-            text("task").arg(text(task.value("kind") == "move"      ? "moveTask"
-                                  : task.value("kind") == "check"   ? "checkTask"
-                                  : task.value("creating").toBool() ? "createTask"
-                                                                    : "extractTask"),
+            text("task").arg(text(taskActionKey(task)),
                              task.value("backendId", task.value("id")).toString(), state) +
             (m_sessions ? qtTrId("common.separator") + task.value("archive").toString()
                         : QString{}));

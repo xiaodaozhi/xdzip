@@ -2,7 +2,7 @@
 mod record;
 mod rewrite;
 mod writer;
-use std::io::Read;
+use std::io::{Read, SeekFrom};
 use std::{cell::Cell, rc::Rc};
 use xdzip_codec_api::payload::{DecodeError, DecodedSink, PayloadCodec, PayloadReader};
 use xdzip_codec_api::{
@@ -28,6 +28,25 @@ pub fn recognizes_header(bytes: &[u8]) -> bool {
             block.iter().any(|b| *b != 0) && record::Record(block).validate().is_ok()
         })
 }
+/// Check the fixed GZIP comment emitted for an empty rewritten TAR.
+/// Call only after validating a stream containing exactly two zero TAR blocks.
+pub fn has_empty_gzip_marker(
+    source: &mut dyn ReadSource,
+    control: &Cancellation,
+) -> Result<bool, ScanError> {
+    use xdzip_compression::EMPTY_TAR_GZIP_HEADER;
+    control.check()?;
+    source
+        .seek(SeekFrom::Start(0))
+        .map_err(|error| ScanError::from_source_error(&error))?;
+    let mut prefix = [0; EMPTY_TAR_GZIP_HEADER.len()];
+    match source.read_exact(&mut prefix) {
+        Ok(()) => Ok(prefix == EMPTY_TAR_GZIP_HEADER),
+        Err(error) if error.kind() == std::io::ErrorKind::UnexpectedEof => Ok(false),
+        Err(error) => Err(ScanError::from_source_error(&error)),
+    }
+}
+
 impl TarCodec {
     /// Container capability for this specific filter.
     pub const fn format(&self) -> Format {

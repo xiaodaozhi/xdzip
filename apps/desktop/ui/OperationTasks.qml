@@ -74,6 +74,8 @@ Item {
     function taskLabel(task: var): string {
         const label = task.kind === "check" ? qsTrId("tasks.check")
             : task.kind === "move" ? qsTrId("move.task")
+            : task.kind === "rename" ? qsTrId("entry.edit.renameTask")
+            : task.kind === "delete" ? qsTrId("entry.edit.deleteTask")
             : task.kind === "update" ? qsTrId("tasks.add")
             : ["export", "export-copy"].includes(task.kind) ? qsTrId("tasks.export")
             : task.creating ? qsTrId("ui.9a63e2cb4339") : qsTrId("ui.fb4b66729449");
@@ -186,7 +188,9 @@ Item {
         cleanupWarning: root.presentationSnapshot.cleanupWarning || false
         outcomeUncertain: root.presentationSnapshot.outcomeUncertain || false
         processedSummary: taskWindow.checking ? qsTrId("integrity.processed").arg(root.formatSize(root.taskSnapshot.readBytes || "0")).arg(root.formatSize(root.taskSnapshot.verifiedBytes || "0")) : taskWindow.creating ? qsTrId("ui.a1c9c21cfbef").arg(root.formatSize(root.taskSnapshot.decodedBytes || "0")).arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")) : qsTrId("ui.8bce13df4816").arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")).arg(root.formatSize(root.taskSnapshot.committedBytes || "0"))
-        fileCountSummary: taskWindow.checking ? qsTrId("integrity.files").arg(root.taskSnapshot.verifiedFiles || "0").arg(root.taskSnapshot.files || "0") : taskWindow.creating ? qsTrId("ui.1f43814c240b").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.terminal ? qsTrId("ui.b61825c80ed6") : qsTrId("ui.483f8dd01321")) : qsTrId("ui.ed52971e9256").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.skippedFiles || "0")
+        fileCountSummary: taskWindow.entryEdit
+            ? qsTrId("entry.edit.filesVerified").arg(root.taskSnapshot.verifiedFiles || "0").arg(root.taskSnapshot.files || "0")
+            : taskWindow.checking ? qsTrId("integrity.files").arg(root.taskSnapshot.verifiedFiles || "0").arg(root.taskSnapshot.files || "0") : taskWindow.creating ? qsTrId("ui.1f43814c240b").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.terminal ? qsTrId("ui.b61825c80ed6") : qsTrId("ui.483f8dd01321")) : qsTrId("ui.ed52971e9256").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.skippedFiles || "0")
         resultSummary: taskWindow.checking ? qsTrId("integrity.result").arg(root.presentationSnapshot.verifiedFiles || "0").arg(Math.max(0, Number(root.presentationSnapshot.files || 0) - Number(root.presentationSnapshot.verifiedFiles || 0))) : qsTrId("ui.51fe7c80c764").arg(root.presentationSnapshot.committedFiles || "0").arg(root.presentationSnapshot.skippedFiles || "0").arg(root.presentationSnapshot.createdDirectories || "0")
         resultTask: root.presentationSnapshot
         speedSummary: root.averageSpeed()

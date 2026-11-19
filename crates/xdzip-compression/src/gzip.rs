@@ -130,6 +130,9 @@ impl<R: Read> Read for GzipReader<R> {
     }
 }
 
+/// A fixed RFC 1952 comment identifying an XDZip rewrite of an empty TAR.
+pub const EMPTY_TAR_GZIP_HEADER: &[u8] = b"\x1f\x8b\x08\x10\0\0\0\0\0\xffXDZip empty TAR\0";
+
 /// Bounded RFC 1952 writer using independent LZ77 and Huffman blocks.
 /// Level 0 stores bytes; levels 1/6/9 bound match search to 4/32/128 candidates.
 /// Drop never writes or finalizes; only a successful finish produces a trailer.
@@ -141,12 +144,15 @@ pub struct GzipWriter<W> {
 impl<W: Write> GzipWriter<W> {
     /// Create a writer with an explicit supported level. Invalid levels are rejected.
     pub fn new(sink: W, level: u8) -> io::Result<Self> {
+        Self::with_header(sink, level, &[0x1f, 0x8b, 8, 0, 0, 0, 0, 0, 0, 255])
+    }
+    /// Create a writer for the two zero end-of-archive blocks of an empty TAR.
+    pub fn for_empty_tar(sink: W, level: u8) -> io::Result<Self> {
+        Self::with_header(sink, level, EMPTY_TAR_GZIP_HEADER)
+    }
+    fn with_header(sink: W, level: u8, header: &'static [u8]) -> io::Result<Self> {
         Ok(Self {
-            inner: DeflateWriter::with_prefix(
-                sink,
-                level,
-                &[0x1f, 0x8b, 8, 0, 0, 0, 0, 0, 0, 255],
-            )?,
+            inner: DeflateWriter::with_prefix(sink, level, header)?,
             checksum: !0,
             size: 0,
         })

@@ -149,7 +149,11 @@ pub(crate) fn scan(
                 .source_name_hint()
                 .and_then(|name| xdzip_codec_api::registry::compressed_view_hint(name, *format))
                 == Some(*format);
-        if ambiguous && !ordinary_hint {
+        let marked_empty_tar = ordinary_hint
+            && *format == Format::Gzip
+            && info.entry.size == 1024
+            && xdzip_codec_tar::has_empty_gzip_marker(source, control)?;
+        if ambiguous && (!ordinary_hint || marked_empty_tar) {
             let tar = TarCodec {
                 filter: stream.filter()?,
             };
