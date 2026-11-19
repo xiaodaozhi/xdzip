@@ -85,6 +85,13 @@ def package_tree(payload,audit,stage,qa=None,failure=None,legacy=False,historica
         shutil.copy2(ROOT/'apps/desktop/packaging/linux/org.xdzip.update.policy',policy/'org.xdzip.update.policy')
     desktop=installed_desktop_entry((ROOT/'apps/desktop/packaging/linux/xdzip.desktop').read_text(encoding='utf-8'))
     (share/'applications/xdzip.desktop').write_text(desktop,encoding='utf-8')
+    if historical_record is None:
+        # Ubuntu App Center can see the existing APT catalog mount even when
+        # the host had no /usr/share/swcatalog when snapd set up its mounts.
+        catalog = stage/'var/lib/swcatalog/yaml/xdzip-local.yml'
+        catalog.parent.mkdir(parents=True)
+        shutil.copyfile(ROOT/'apps/desktop/packaging/linux/xdzip-local.yml', catalog)
+        catalog.chmod(0o644)
     mime=share/'mime/packages';mime.mkdir(parents=True)
     shutil.copy2(ROOT/'apps/desktop/packaging/linux/xdzip-mime.xml',mime/'xdzip-mime.xml')
     icons=share/'icons/hicolor/512x512/apps';icons.mkdir(parents=True)

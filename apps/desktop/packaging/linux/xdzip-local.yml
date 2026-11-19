@@ -1,0 +1,24 @@
+---
+File: DEP-11
+Version: '1.0'
+Origin: xdzip-local
+---
+Type: desktop-application
+ID: org.xdzip.XDZip
+Package: xdzip
+Name:
+  C: XDZip
+Summary:
+  C: Browse, create and extract archives
+  zh_CN: 浏览、创建和解压压缩包
+Description:
+  C: <p>Browse archives, extract selected files, and create or update archives in supported formats.</p>
+  zh_CN: <p>浏览压缩包、解压选中的文件，并创建或更新受支持格式的压缩包。</p>
+Categories:
+  - Utility
+  - Archiving
+Launchable:
+  desktop-id:
+    - xdzip.desktop
+Icon:
+  stock: xdzip

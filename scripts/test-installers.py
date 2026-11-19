@@ -178,6 +178,7 @@ class InstallerTests(unittest.TestCase):
                 self.assertIs(result['historical_product_qa']['update_helper_in_historical_source'],False)
                 self.assertFalse((stage/'usr/libexec/xdzip-update-helper').exists())
                 self.assertFalse((stage/'usr/share/polkit-1/actions/org.xdzip.update.policy').exists())
+                self.assertFalse((stage/'var/lib/swcatalog/yaml/xdzip-local.yml').exists())
                 self.assertFalse(any((stage/'opt/xdzip/versions').glob('*/bin/xdzip-update-helper')))
             with patch.dict(os.environ,{'CI':'false'}):
                 with self.assertRaisesRegex(ValueError,'disposable CI'):
@@ -215,6 +216,10 @@ class InstallerTests(unittest.TestCase):
             installed_entry=configparser.ConfigParser(interpolation=None)
             installed_entry.read(stage/'usr/share/applications/xdzip.desktop',encoding='utf-8')
             self.assertEqual(shlex.split(installed_entry['Desktop Entry']['Exec']),['/usr/bin/xdzip','--','%f'])
+            catalog=(stage/'var/lib/swcatalog/yaml/xdzip-local.yml').read_text(encoding='utf-8')
+            self.assertIn('Package: xdzip\n',catalog)
+            self.assertIn('  desktop-id:\n    - xdzip.desktop\n',catalog)
+            self.assertFalse((stage/'usr/share/swcatalog/yaml/xdzip-local.yml').exists())
             self.assertTrue((stage/'usr/bin/xdzip').read_text(encoding='utf-8').startswith('#!/bin/sh\nexec "/opt/xdzip/versions/'))
             self.assertIn('installing',(stage/'DEBIAN/preinst').read_text(encoding='utf-8'))
             self.assertNotIn('xdg-mime default',(stage/'DEBIAN/postinst').read_text(encoding='utf-8'))
