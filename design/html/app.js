@@ -872,14 +872,84 @@ function setWelcomeFeedback(message) {
     feedback.querySelector(".welcome-feedback-text").textContent = message;
     feedback.hidden = !message;
 }
+let welcomeFormatObserver;
+function bindWelcomeFormats() {
+    welcomeFormatObserver?.disconnect();
+    const groups = $(".welcome-format-groups");
+    const preview = $("#welcome-format-preview");
+    groups.innerHTML = window.XDZIP_FORMAT_GROUPS.map(group =>
+        `<button type="button" class="welcome-format-group" aria-controls="welcome-format-preview" aria-expanded="${group.id === "archives"}" data-group="${esc(group.id)}"><span></span><strong>${group.suffixes.length}</strong></button>`).join("");
+    const buttons = [...groups.querySelectorAll("button")];
+    const viewport = preview.querySelector(".welcome-format-viewport");
+    const chips = viewport.firstElementChild;
+    const ellipsis = preview.querySelector(".welcome-format-overflow");
+    const fontMeasure = document.createElement("canvas").getContext("2d");
+    const fitChips = () => {
+        const firstChip = chips.firstElementChild;
+        if (preview.hidden || !firstChip) return;
+        ellipsis.hidden = chips.offsetWidth <= preview.clientWidth;
+        const firstBounds = firstChip.getBoundingClientRect();
+        const baseline = firstChip.lastElementChild.getBoundingClientRect().top;
+        const {fontSize, fontFamily, fontWeight} = getComputedStyle(firstChip.firstElementChild);
+        fontMeasure.font = `${fontWeight} ${fontSize} ${fontFamily}`;
+        // Center the lowercase body using the shared baseline of the inline markers.
+        const lowercase = fontMeasure.measureText("x");
+        const targetBaseline = firstBounds.top + (firstBounds.height
+            + lowercase.actualBoundingBoxAscent - lowercase.actualBoundingBoxDescent) / 2;
+        chips.style.setProperty("--welcome-format-label-offset", `${targetBaseline - baseline}px`);
+        const availableWidth = viewport.clientWidth;
+        for (const chip of chips.children) {
+            chip.style.visibility = chip.offsetLeft + chip.offsetWidth <= availableWidth ? "" : "hidden";
+        }
+        preview.title = ellipsis.hidden ? "" : preview.getAttribute("aria-label");
+    };
+    const updatePreview = () => {
+        const selected = buttons.find(button => button.getAttribute("aria-expanded") === "true");
+        const group = window.XDZIP_FORMAT_GROUPS.find(group => group.id === selected?.dataset.group);
+        preview.hidden = !group;
+        preview.setAttribute("aria-label", group?.suffixes.join(", ") || "");
+        chips.innerHTML = group?.suffixes.map(suffix => `<span><b>${esc(suffix)}</b><i aria-hidden="true"></i></span>`).join("") || "";
+        fitChips();
+    };
+    for (const button of buttons) button.onclick = () => {
+        const expand = button.getAttribute("aria-expanded") !== "true";
+        for (const option of buttons) option.setAttribute("aria-expanded", String(option === button && expand));
+        updatePreview();
+    };
+    $("#welcome-formats-settings").onclick = () => showSettings("associations");
+    updateWelcomeFormatsLanguage();
+    updatePreview();
+    welcomeFormatObserver = new ResizeObserver(fitChips);
+    welcomeFormatObserver.observe(preview);
+    welcomeFormatObserver.observe(chips);
+    document.fonts.ready.then(fitChips);
+}
+function updateWelcomeFormatsLanguage() {
+    const header = $("#welcome-formats-heading");
+    if (!header) return;
+    const lang = savedSettingsDemo?.language === "auto" || !savedSettingsDemo?.language
+        ? new URLSearchParams(location.search).get("lang") || document.documentElement.lang
+        : savedSettingsDemo.language;
+    const messages = window.XDZIP_UI_MESSAGES[lang === "en-US" ? "en-US" : "zh-CN"].messages;
+    header.textContent = messages["ui.68e2f0d4ff9a"];
+    $("#welcome-formats-settings span").textContent = messages["welcome.formatsOpenSettings"];
+    for (const button of $(".welcome-format-groups").querySelectorAll("button")) {
+        const title = messages["format.group." + button.dataset.group];
+        const count = button.querySelector("strong").textContent;
+        button.querySelector("span").textContent = title;
+        const name = messages["welcome.formatGroupCount"][count === "1" ? "one" : "other"];
+        button.setAttribute("aria-label", name.replace("%1", title).replace("%n", count));
+    }
+}
 function showWelcome() {
     cancelWelcomeOpening(false);
     state.selected.clear();
     setWelcomeMode(true);
     const shortcut = document.body.dataset.platform === "macos" ? "⌘ " : "Ctrl+";
-    $("#welcome").innerHTML = `<div class="welcome-content"><div class="welcome-identity">${icon("app-mark")}<span>xdzip</span></div><h1>打包与解压，都简单一点。</h1><p class="welcome-subtitle">浏览压缩包，解压需要的文件。也能轻松打包，方便保存与分享。</p><div class="welcome-actions"><button class="welcome-action primary" id="welcome-open">${icon("folderOpen")}<span><strong>打开压缩包</strong><small>浏览内容，选择需要解压的文件</small><span class="welcome-shortcut">${shortcut}O</span></span></button><button class="welcome-action" id="welcome-create">${icon("new")}<span><strong>创建压缩包</strong><small>添加文件或文件夹，创建压缩包</small><span class="welcome-shortcut">${shortcut}N</span></span></button></div><div class="welcome-drop" id="welcome-drop">${icon("archive-grey")}<span>也可以将压缩包拖到这里</span></div><div class="welcome-formats"><span>支持打开</span><b>ZIP</b><b>TAR</b><b>TAR.GZ</b><b>7z</b><b>GZIP</b><b>BZip2</b><b>TAR.BZ2</b><b>LZMA</b><b>TAR.LZMA</b><b>Lzip</b><b>TAR.LZ</b><b>XZ</b><b>TAR.XZ</b><b>RAR</b><b>CAB</b><b>ISO</b><b>UDF</b></div><div class="welcome-feedback" role="alert" hidden><span class="welcome-feedback-icon" aria-hidden="true">${icon("status-warning")}</span><span class="welcome-feedback-text"></span></div></div>`;
+    $("#welcome").innerHTML = `<div class="welcome-content"><div class="welcome-identity">${icon("app-mark")}<span>xdzip</span></div><h1>打包与解压，都简单一点。</h1><p class="welcome-subtitle">浏览压缩包，解压需要的文件。也能轻松打包，方便保存与分享。</p><div class="welcome-actions"><button class="welcome-action primary" id="welcome-open">${icon("folderOpen")}<span><strong>打开压缩包</strong><small>浏览内容，选择需要解压的文件</small><span class="welcome-shortcut">${shortcut}O</span></span></button><button class="welcome-action" id="welcome-create">${icon("new")}<span><strong>创建压缩包</strong><small>添加文件或文件夹，创建压缩包</small><span class="welcome-shortcut">${shortcut}N</span></span></button></div><div class="welcome-drop" id="welcome-drop">${icon("archive-grey")}<span>也可以将压缩包拖到这里</span></div><section class="welcome-formats" aria-labelledby="welcome-formats-heading"><div class="welcome-formats-header"><span id="welcome-formats-heading"></span><button type="button" class="welcome-format-settings" id="welcome-formats-settings"><span></span><span class="welcome-format-chevron" aria-hidden="true"></span></button></div><div class="welcome-format-groups"></div><div class="welcome-format-preview" id="welcome-format-preview" role="group"><div class="welcome-format-viewport" aria-hidden="true"><div class="welcome-format-chips"></div></div><span class="welcome-format-overflow" aria-hidden="true" hidden>…</span></div></section><div class="welcome-feedback" role="alert" hidden><span class="welcome-feedback-icon" aria-hidden="true">${icon("status-warning")}</span><span class="welcome-feedback-text"></span></div></div>`;
     $("#welcome-open").onclick = openPicker;
     $("#welcome-create").onclick = showCreate;
+    bindWelcomeFormats();
     const resetDrop = () => {
         $("#welcome-drop").classList.remove("drag-over");
         $("#welcome-drop span").textContent = "也可以将压缩包拖到这里";
@@ -1532,6 +1602,7 @@ function showSettings(tab = "appearance") {
         : prefs.language;
     document.documentElement.lang = resolvedLanguage;
     activeSettingsLanguage = resolvedLanguage;
+    updateWelcomeFormatsLanguage();
     document.documentElement.style.setProperty("--settings-text-scale",prefs.textScale);
     document.documentElement.dataset.listDensity = prefs.density;
     document.documentElement.style.setProperty("--list-density-factor",prefs.density === "compact" ? .8 : 1);
@@ -2014,6 +2085,11 @@ window.addEventListener("message", (event) => {
     XdzipDesign.platform(config.platform);
     XdzipDesign.theme(config.theme);
     XdzipDesign.open(config.view);
+    if (config.welcomeFormatGroup && ["welcome", "welcome-narrow"].includes(config.view)) {
+        const selected = [...document.querySelectorAll(".welcome-format-group")]
+            .find(button => button.dataset.group === config.welcomeFormatGroup);
+        if (selected?.getAttribute("aria-expanded") === "false") selected.click();
+    }
     if (config.welcomeError) setWelcomeFeedback(config.welcomeError);
     if (config.welcomeOpening && ["welcome", "welcome-narrow"].includes(config.view))
         beginWelcomeOpening("北境旅行.zip", null, !!config.welcomeExternalOpening);

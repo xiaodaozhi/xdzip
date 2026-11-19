@@ -380,7 +380,11 @@
     "ui.b0d96542deee": "Add files or folders to create an archive",
     "ui.4a11171118b0": "Or drop an archive here",
     "ui.68e2f0d4ff9a": "Supported archives",
-    "welcome.formatsOpenSettings": "View all file types",
+    "welcome.formatsOpenSettings": "File associations",
+    "welcome.formatGroupCount": {
+      "one": "%1, %n extension",
+      "other": "%1, %n extensions"
+    },
     "format.group.archives": "Archives",
     "format.group.compressed-tar": "Compressed TAR",
     "format.group.compressed-streams": "Compressed streams",

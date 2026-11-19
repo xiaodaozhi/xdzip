@@ -1,6 +1,7 @@
 import QtQuick
 import QtTest
 import "../ui" as Ui
+import "../ui/ArchiveFormats.js" as Formats
 
 Item {
     id: surface
@@ -100,18 +101,18 @@ Item {
             return [1, 1.25, 1.5].map(scale => ({tag: String(scale), scale: scale}));
         }
         function test_format_group_summary(data) {
+            page.expandedFormatGroup = "archives";
             Ui.Theme.fontScale = data.scale;
             surface.width = 832;
             const formats = findChild(page, "welcomeFormats");
-            const groups = ["archives", "compressed-tar", "compressed-streams", "text-envelopes", "installer-metadata"]
-                .map(group => findChild(page, "welcomeFormatGroup-" + group));
+            const groups = Formats.formatGroups.map(group => findChild(page, "welcomeFormatGroup-" + group.id));
             verify(groups.every(group => group && group.visible));
             const button = findChild(page, "welcomeFormatsSettings");
             verify(button && button.visible && button.enabled);
             mouseClick(button);
             compare(formatsSpy.count, 1);
             formatsSpy.clear();
-            tryVerify(() => groups.every(group => group.children[0].children[0].font.pixelSize === Math.round(11 * data.scale)));
+            tryVerify(() => groups.every(group => group.contentItem.children[0].font.pixelSize === Math.round(13 * data.scale)));
             // A child Text can update its font metrics before the parent layout
             // schedules a second polish. Measure the frame with the new metrics.
             verify(waitForRendering(page));
@@ -125,6 +126,20 @@ Item {
                 verify(point.x >= 0 && point.x + group.width <= page.width);
                 verify(group.width > 0 && group.height > 0);
             }
+            const preview = findChild(page, "welcomeFormatPreview");
+            verify(preview.visible);
+            if (data.scale === 1.5) verify(preview.truncated);
+            compare(preview.suffixes, Formats.formatGroups[0].suffixes);
+            for (const [index, group] of groups.entries()) {
+                compare(group.contentItem.children[1].text, String(Formats.formatGroups[index].suffixes.length));
+            }
+            const textEnvelopes = findChild(page, "welcomeFormatGroup-text-envelopes");
+            textEnvelopes.forceActiveFocus(Qt.TabFocusReason);
+            keyClick(Qt.Key_Space);
+            tryCompare(page, "expandedFormatGroup", "text-envelopes");
+            compare(preview.suffixes, Formats.formatGroups.find(group => group.id === "text-envelopes").suffixes);
+            keyClick(Qt.Key_Space);
+            tryCompare(preview, "visible", false);
         }
         function test_feedback_preserves_top_anchors_data() {
             const cases=[];
