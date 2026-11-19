@@ -1,0 +1,33 @@
+name: Browser stability
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  repeat:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, macos-15, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - if: runner.os == 'Linux'
+        uses: ./.github/actions/linux-release-dependencies
+      - name: Build and run ten browser stability rounds
+        shell: pwsh
+        run: ./scripts/ci-desktop.ps1 -BrowserStability
+      - name: Verify all ten source-bound browser results
+        run: python scripts/ci-evidence.py browser-stability --scope qt
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: browser-stability-${{ runner.os }}-${{ github.run_attempt }}
+          path: |
+            build/desktop/desktop-build.json
+            build/review/ci-timings.json
+            build/review/browser-stability.json
+            build/review/browser-timings/
+            build/review/diagnostics/
+          retention-days: 30

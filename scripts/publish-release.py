@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 import runpy
 import subprocess
-from release_protocol import reject_corresponding_source_archives, sha256, validate
+from release_protocol import reject_corresponding_source_archives, sha256, validate, validate_cli
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -60,6 +60,41 @@ def require_latest_stable_release(tag, repository):
         raise ValueError(f'Stable release {tag} is not marked as the latest public release')
 
 
+def checksums(directory):
+    reject_corresponding_source_archives(directory.iterdir())
+    expected = {}
+    for line in (directory/'SHA256SUMS').read_text().splitlines():
+        digest, name = line.split('  ', 1)
+        path = directory/name
+        if (path.parent != directory or path.is_symlink() or not path.is_file()
+                or name in expected or sha256(path) != digest):
+            raise ValueError('Invalid complete release checksum set')
+        expected[name] = digest
+    if set(expected) != {path.name for path in directory.iterdir() if path.is_file() and path.name != 'SHA256SUMS'}:
+        raise ValueError('Checksums do not cover every attachment')
+    return expected
+
+
+def download_checked(tag, repository, destination, directory, expected):
+    destination.mkdir()
+    gh('release', 'download', tag, '--repo', repository, '--dir', destination)
+    if ((destination/'SHA256SUMS').read_bytes() != (directory/'SHA256SUMS').read_bytes()
+            or expected != checksums(destination)):
+        raise ValueError('Downloaded attachment hash mismatch')
+    validate(json.loads((destination/'release.json').read_text()), destination)
+
+
+def public_check(args, prerelease, work, directory, expected):
+    require_release_state(read_release_state(args.tag, args.repository), args.tag,
+                          draft=False, prerelease=prerelease)
+    download_checked(args.tag, args.repository, work/'public-download', directory, expected)
+    require_release_state(read_release_state(args.tag, args.repository), args.tag,
+                          draft=False, prerelease=prerelease)
+    if not prerelease:
+        require_latest_stable_release(args.tag, args.repository)
+    print('Published and downloaded all assets with matching hashes: '+args.tag)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--directory', type=Path)
@@ -67,8 +102,26 @@ def main():
     parser.add_argument('--repository')
     parser.add_argument('--notes-file', type=Path, help='Reviewed version-specific notes; defaults to release-notes/<version>.md')
     parser.add_argument('--check-notes', action='store_true', help='Validate notes without contacting GitHub')
-    parser.add_argument('--draft-only', action='store_true')
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument('--draft-only', action='store_true')
+    modes.add_argument('--defer-public-check', action='store_true')
+    modes.add_argument('--verify-public', action='store_true')
+    modes.add_argument('--verify-candidate', action='store_true')
     args = parser.parse_args()
+    if args.verify_candidate:
+        directory = args.directory.resolve()
+        checksums(directory)
+        desktop = validate(json.loads((directory/'release.json').read_bytes()), directory)
+        cli = validate_cli(json.loads((directory/'cli-release.json').read_bytes()), directory)
+        commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+        if (desktop['commit'] != commit or any(cli[key] != desktop[key]
+                for key in ('commit', 'version', 'build', 'channel', 'tag', 'repository'))):
+            raise ValueError('Candidate changed source or product identity')
+        if any((directory/name).exists() for name in ('release.json.sig', 'cli-release.json.sig',
+                                                       'appcast.xml', 'macos-update.json')):
+            raise ValueError('Candidate download must contain unsigned assets')
+        print('Downloaded unsigned candidate and verified all attachment hashes')
+        return
     version = runpy.run_path(str(ROOT/'scripts/sync-version.py'))['version_info']()
     if args.tag and args.tag != 'v'+version['display_version']:
         raise ValueError('This workflow only publishes the exact configured version tag')
@@ -87,6 +140,12 @@ def main():
     work.mkdir(parents=True, exist_ok=True)
     notes = work/'notes.md'
     notes.write_text(reviewed, encoding='utf-8')
+    if args.verify_public:
+        if not args.directory:
+            parser.error('--verify-public requires a signed asset directory')
+        directory = args.directory.resolve()
+        public_check(args, prerelease, work, directory, checksums(directory))
+        return
     query = subprocess.run(['gh', 'release', 'view', args.tag, '--repo', args.repository, '--json',
                             'tagName,isDraft,isPrerelease,assets,body'],
                            capture_output=True, text=True, encoding='utf-8')
@@ -99,9 +158,10 @@ def main():
         state = read_release_state(args.tag, args.repository)
     else:
         state = json.loads(query.stdout)
-    if isinstance(state, dict) and state.get('isDraft') is False:
+    already_public = isinstance(state, dict) and state.get('isDraft') is False
+    if already_public and not args.defer_public_check:
         raise ValueError('Public release is immutable; publish a new version for revisions')
-    require_release_state(state, args.tag, draft=True, prerelease=prerelease)
+    require_release_state(state, args.tag, draft=not already_public, prerelease=prerelease)
     if comparable_notes(state['body']) != comparable_notes(reviewed):
         raise ValueError('Draft notes differ from the reviewed file; reconcile them explicitly before publishing')
     if args.draft_only: return
@@ -113,41 +173,26 @@ def main():
     verify_cli_updates(directory, manifest)
     if manifest['tag'] != args.tag or manifest['repository'] != args.repository:
         raise ValueError('Release identity mismatch')
-    expected = {}
-    for line in (directory/'SHA256SUMS').read_text().splitlines():
-        digest, name = line.split('  ', 1)
-        path = directory/name
-        if path.parent != directory or not path.is_file() or sha256(path) != digest:
-            raise ValueError('Invalid complete release checksum set')
-        expected[name] = digest
-    if set(expected) != {path.name for path in directory.iterdir() if path.is_file() and path.name != 'SHA256SUMS'}:
-        raise ValueError('Checksums do not cover every attachment')
+    expected = checksums(directory)
+    if already_public:
+        # A retry after a successful edit may only continue with identical bytes.
+        public_check(args, prerelease, work, directory, expected)
+        return
     # Reruns may replace private draft assets. Public assets are never replaced.
     for asset in state['assets']:
         gh('release', 'delete-asset', args.tag, asset['name'], '--repo', args.repository, '--yes')
     files = sorted(path for path in directory.iterdir() if path.is_file())
     gh('release', 'upload', args.tag, *files, '--repo', args.repository)
-    for phase in ['draft-download', 'public-download']:
-        destination = work/phase
-        if destination.exists(): raise ValueError('Use a fresh publishing workspace for a retry')
-        destination.mkdir()
-        gh('release', 'download', args.tag, '--repo', args.repository, '--dir', destination)
-        for name, digest in expected.items():
-            if sha256(destination/name) != digest: raise ValueError('Downloaded attachment hash mismatch')
-        validate(json.loads((destination/'release.json').read_text()), destination)
-        if phase == 'draft-download':
-            publish_args = ['release', 'edit', args.tag, '--repo', args.repository, '--draft=false',
-                            '--notes-file', notes]
-            if prerelease:
-                publish_args.extend(['--prerelease', '--latest=false'])
-            else:
-                publish_args.append('--latest')
-            gh(*publish_args)
+    download_checked(args.tag, args.repository, work/'draft-download', directory, expected)
+    publish_args = ['release', 'edit', args.tag, '--repo', args.repository, '--draft=false',
+                    '--notes-file', notes]
+    publish_args.extend(['--prerelease', '--latest=false'] if prerelease else ['--latest'])
+    gh(*publish_args)
+    if args.defer_public_check:
         require_release_state(read_release_state(args.tag, args.repository), args.tag,
                               draft=False, prerelease=prerelease)
-    if not prerelease:
-        require_latest_stable_release(args.tag, args.repository)
-    print('Published and downloaded all assets with matching hashes: '+args.tag)
+    else:
+        public_check(args, prerelease, work, directory, expected)
 
 
 if __name__ == '__main__': main()

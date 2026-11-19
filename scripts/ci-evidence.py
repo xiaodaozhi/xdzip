@@ -67,7 +67,7 @@ def timings(reader, scope, context):
     phases = {row['phase'] for row in rows}
     expected = {'foundation': {'rust-contracts', 'native-worker', 'rust-tests', 'codec-interop', 'archive-transfers', 'native-bridge'},
                 'qt': {'prepare', 'source-contracts', 'sdk-correspondence', 'settings-compat', 'native-build',
-                       'native-integration', 'component-tests', 'browser-repeat', 'resource-metrics', 'visual-default',
+                       'native-integration', 'component-tests', 'resource-metrics', 'visual-default',
                        'codec-interop', 'visual-density', 'runtime-package', 'deployed-runtime'}}[scope]
     if scope == 'qt':
         expected |= {'attribution'} if context['platform'] == 'macOS' else {'historical-fixture', 'installer-package', 'installer-lifecycle'}
@@ -83,10 +83,10 @@ def text_totals(reader, name):
     return {'passed': int(totals[0][0]), 'skipped': int(totals[0][2])}
 
 
-def browser_evidence(reader, revision):
+def browser_evidence(reader, revision, *, expected_suites=1):
     directory = reader.root / 'build/review/browser-timings'
     manifests = sorted(directory.glob('browser-suite-*.json'))
-    require(len(manifests) == 11, 'missing-initial-or-repeated-suite')
+    require(len(manifests) == expected_suites, 'unexpected-browser-suite-count')
     all_functions, skips, workers = None, 0, 0
     for path in manifests:
         manifest = reader.json(path.relative_to(reader.root).as_posix())
@@ -213,8 +213,8 @@ def evidence_inventory(record):
     require(role in required and required[role] <= set(names), 'missing-platform-logs')
     if role == 'qt':
         browser = record['facts']['browser']
-        require(browser.get('suites') == 11 and browser.get('functions_per_suite', 0) > 0
-                and browser.get('workers', 0) >= 11
+        require(browser.get('suites') == 1 and browser.get('functions_per_suite', 0) > 0
+                and browser.get('workers', 0) >= 1
                 and sum(n.startswith('build/review/browser-timings/') and n.endswith('.log') for n in names) == browser['workers'],
                 'missing-browser-raw-logs')
 
@@ -281,13 +281,16 @@ def context():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('operation', choices=['collect', 'gate'])
+    parser.add_argument('operation', choices=['collect', 'gate', 'browser-stability'])
     parser.add_argument('--scope', choices=planner.SCOPES, required=True)
     parser.add_argument('--role')
     parser.add_argument('--input', type=Path, default=ROOT / 'build/ci-gate-input')
     args = parser.parse_args()
     current = context()
-    if args.operation == 'collect':
+    if args.operation == 'browser-stability':
+        record = {**current, **browser_evidence(Reader(ROOT), current['revision'], expected_suites=10)}
+        target = ROOT / 'build/review/browser-stability.json'
+    elif args.operation == 'collect':
         record = collect(args.scope, ROOT, current, args.role)
         name = '-'.join((args.scope, record['role'], current['platform'], current['architecture'])) + '.json'
         target = ROOT / 'build/ci-evidence' / name

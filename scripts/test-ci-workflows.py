@@ -163,7 +163,26 @@ class WorkflowTests(unittest.TestCase):
         self.assertNotIn('validate_only', workflow['on']['workflow_dispatch']['inputs'])
         native = workflow['jobs']['native']
         self.assertEqual(set(native['strategy']['matrix']['os']), {'windows-2022', 'macos-15', 'ubuntu-24.04'})
-        self.assertIn('scripts/ci-release.ps1', '\n'.join(step.get('run', '') for step in native['steps']))
+        self.assertIn('scripts/ci-release.ps1 -Stage Build', '\n'.join(step.get('run', '') for step in native['steps']))
+        jobs = workflow['jobs']
+        verify = jobs['verify']
+        self.assertEqual(verify['strategy']['matrix'], native['strategy']['matrix'])
+        self.assertEqual(verify['needs'], ['resolve', 'native'])
+        self.assertIn('scripts/ci-release.ps1 -Stage Verify', '\n'.join(step.get('run', '') for step in verify['steps']))
+        self.assertEqual(jobs['sign']['needs'], ['resolve', 'verify', 'contracts'])
+        self.assertEqual(jobs['publish']['needs'], ['resolve', 'sign'])
+        self.assertEqual(jobs['verify-public']['needs'], ['resolve', 'publish'])
+        for name in ['draft', 'sign', 'publish', 'verify-public']:
+            self.assertIn('!inputs.candidate', jobs[name]['if'])
+        for name in ['resolve', 'native', 'verify', 'contracts', 'candidate-assembly', 'candidate-download']:
+            self.assertNotIn('environment', jobs[name])
+            self.assertNotIn('permissions', jobs[name])
+            self.assertNotIn('secrets.', repr(jobs[name]))
+        self.assertEqual(jobs['sign']['environment'], 'release-signing')
+        self.assertEqual(jobs['publish']['environment'], 'release-signing')
+        stability = self.workflows['browser-stability.yml']
+        self.assertEqual(set(stability['on']), {'workflow_dispatch'})
+        self.assertIn('-BrowserStability', '\n'.join(step.get('run', '') for step in stability['jobs']['repeat']['steps']))
 
     def test_store_msix_is_manual_and_exports_verified_package_only(self):
         workflow = self.workflows['windows-store-msix.yml']

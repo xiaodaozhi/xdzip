@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Verify that actual macOS handler candidates respect the generated bundle rank."""
 import argparse
+from contextlib import contextmanager
 import json
 from pathlib import Path
 from archive_formats_generated import ASSOCIATION_FIXTURES, MACOS_ICONS
 import plistlib
+import shutil
 import subprocess
 import sys
+import tempfile
 from macos_launch_services import BUNDLE_ID, LSREGISTER, ROOT, build_copy, transient_registrations
 
 
@@ -47,12 +50,32 @@ def validate_preferences(before, during, cleaned):
         raise RuntimeError('User handler preferences changed during registration')
 
 
+@contextmanager
+def registration_target(app, developer_rank_fixture, build):
+    if not developer_rank_fixture:
+        yield app
+        return
+    info = plistlib.loads((app/'Contents/Info.plist').read_bytes())
+    if {item.get('LSHandlerRank') for item in info['CFBundleDocumentTypes']} != {'Alternate'}:
+        raise ValueError('Developer rank fixture requires a distribution bundle')
+    # Preserve the existing developer-rank scenario without rebuilding or
+    # changing the compiled application that will be deployed and shipped.
+    with tempfile.TemporaryDirectory(prefix='xdzip-registration-', dir=build) as temporary:
+        fixture = Path(temporary)/app.name
+        shutil.copytree(app, fixture, symlinks=True)
+        for item in info['CFBundleDocumentTypes']:
+            item['LSHandlerRank'] = 'None'
+        (fixture/'Contents/Info.plist').write_bytes(plistlib.dumps(info))
+        yield fixture
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--app', type=Path, required=True)
     parser.add_argument('--fixture', type=Path, required=True)
     parser.add_argument('--formats', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--developer-rank-fixture', action='store_true')
     args = parser.parse_args()
     if sys.platform != 'darwin':
         parser.error('This native check requires macOS')
@@ -60,6 +83,11 @@ def main():
     if (not build_copy(args.app) or not fixture.is_file() or not output.is_relative_to(ROOT/'build')
             or output.is_relative_to(app) or output.suffix != '.json' or output.exists()):
         parser.error('Use an owned build application, existing fixture and new build/ JSON outside the app')
+    with registration_target(app, args.developer_rank_fixture, ROOT/'build') as app:
+        check_registration(parser, app, fixture, args.formats, output, args.developer_rank_fixture)
+
+
+def check_registration(parser, app, fixture, formats, output, developer_rank_fixture):
     info = plistlib.loads((app/'Contents/Info.plist').read_bytes())
     types = info.get('CFBundleDocumentTypes', [])
     if not isinstance(types, list) or not types or any(not isinstance(item, dict) for item in types):
@@ -75,7 +103,7 @@ def main():
     if any(not (app/'Contents/Resources'/name).is_file() for name in declared):
         parser.error('A declared document icon is missing from the application')
     format_names = ASSOCIATION_FIXTURES
-    formats = args.formats.resolve()
+    formats = formats.resolve()
     if not formats.is_relative_to(ROOT/'build') or any(not (formats/name).is_file() for name in format_names):
         parser.error('Expected owned format fixtures under build/')
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -113,6 +141,7 @@ def main():
     for name in format_names:
         validate_transition(format_before[name], format_after[name], format_cleaned[name], rank, name)
     output.write_text(json.dumps({'status': 'passed', 'rank': rank, 'before': before,
+        'developer_rank_fixture': developer_rank_fixture,
         'after_forced_registration': after, 'after_cleanup': cleaned,
         'user_handler_preferences_unchanged': True,
         'format_candidates': {name:{'before':format_before[name], 'after':format_after[name],
@@ -126,6 +155,9 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
+    except RuntimeError as error:
+        # Registration errors in this check contain controlled labels only.
+        raise SystemExit('macOS registration check failed: '+str(error)) from None
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
         # Native exceptions can embed private paths. Reports contain no paths.
         raise SystemExit('macOS registration check failed: '+type(error).__name__) from None

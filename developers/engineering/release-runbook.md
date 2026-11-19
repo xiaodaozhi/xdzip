@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/release-runbook.md)
 
-Cross-platform stable releases and prereleases use [release protocol v1](../../docs/engineering/release-protocol.md), freezing source by complete tag and assembling six platform package types, update materials, notices, licenses, SBOMs, and deployment/verification materials in a draft. Releases do not generate or attach corresponding-source archives. Routine releases and acceptance do not run the source-delivery collector; it may be used for local review only when the user separately and explicitly requests source collection. Formal release uses one manual Release workflow run: three-platform native artifacts are built once and assembly directly reuses those artifacts for publication. Do not run a validation round and then push a tag for a second build. Complete local verification and release preflight before creating the tag. After all checks pass, stable is a normal Release marked Latest; alpha/beta/rc are Pre-releases. Redownload retained attachments and verify hashes after publication. Explain unperformed manual acceptance within the candidate's actual scope; automation does not replace its conclusions.
+Cross-platform stable releases and prereleases use [release protocol v1](../../docs/engineering/release-protocol.md), freezing source by complete tag and assembling six platform package types, update materials, notices, licenses, SBOMs, and deployment/verification materials in a draft. Releases do not generate or attach corresponding-source archives. Routine releases and acceptance do not run the source-delivery collector; it may be used for local review only when the user separately and explicitly requests source collection. Each platform builds once in a manual Release run. Package verification, signing, publication, and public download checks use artifacts from that run. Complete the matching preflight before creating the tag. After all checks pass, stable is a normal Release marked Latest; alpha/beta/rc are Pre-releases. Redownload retained attachments and verify hashes after publication. Explain unperformed manual acceptance within the candidate's actual scope; automation does not replace its conclusions.
 
 Development acceptance, [release license review](../qa/release-review.md) and release execution are recorded separately. License conclusions bind the actual candidate. Before publication, resolve concrete gaps in provenance, notices and applicable source and replacement obligations.
 
@@ -43,3 +43,15 @@ Desktop GitHub builds check for updates from About. Eligible installations downl
 Choose desktop checks for the actual candidate under [desktop verification](../qa/private-test-manual.md). Link prior evidence only when the identity and scope still apply. Review the [deployment SBOM and file inventory](../../docs/engineering/deployment-audit.md) against the final packages and investigate concrete component, notice and redistribution gaps. Check installed and portable behavior against the applicable platform requirements. On macOS, verify the delivered app and DMG deployment and ad-hoc integrity separately from SDK-mode validation.
 
 A local Mac can produce a [development DMG](../../docs/engineering/macos-deployment.md) at the user's explicit request. Run the [source-delivery collector](../../docs/engineering/source-delivery.md) only at the owner's separate explicit request for local review. Before publishing affected binaries, resolve the actual component obligations through the [release review](../qa/release-review.md). The project uses ad-hoc integrity signing on the Mac. Developer ID and notarization are outside the current GitHub distribution policy.
+
+## Rehearse and resume the release workflow
+
+Run the dedicated Release workflow from the branch containing the proposed workflow change.
+
+```sh
+gh workflow run release.yml --ref BRANCH -f candidate=true
+```
+
+For a resumption test, add `-f retry_probe=true`. If the first workflow attempt reaches Windows verification, it interrupts that job after restoring the candidate. Wait for the workflow to finish, then use `gh run rerun RUN_ID --job JOB_ID` with the failed verify job. A verify retry reads the existing build artifact and checks its digest. Signing, publication, and public download verification are also separate jobs. Rerun the failed job within the original run so GitHub can retain completed jobs and their artifacts.
+
+The assembled rehearsal is available as `release-candidate` in the Actions run. The `candidate-download` job checks every file after download. The candidate has no release update signatures, and this rehearsal does not create a draft or public release. A formal run takes the authorized tag on `main` and uses its own verified assets.

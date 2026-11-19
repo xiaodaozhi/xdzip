@@ -2,7 +2,7 @@
 
 [English](../../engineering/release-runbook.md) | 简体中文
 
-跨平台稳定发行与预发布使用[发布协议 v1](../../../docs/zh-CN/engineering/release-protocol.md)，按完整标签冻结源码，草稿汇集六类平台包、更新材料、通知、许可、SBOM 和部署／验证材料。发行不生成或附带对应源码压缩包；常规发行及验收不运行源码交付收集器，仅用户针对源码收集另行明确要求时可用于本地审查。正式发布使用 Release 工作流的单次手动运行：同一运行只构建一次三平台 native，汇总步骤直接复用这些工件并公开 Release。不要先运行一轮验证再推送标签触发第二轮构建；本地验证和发布前预检应在创建标签前完成。全部核验通过后，stable 作为普通 Release 公开并标记 Latest；alpha、beta、rc 作为 Pre-release 公开。公开后下载保留的附件复验哈希。未执行的人工验收按候选实际范围说明，不以自动化测试代替其结论。
+跨平台稳定发行与预发布使用[发布协议 v1](../../../docs/zh-CN/engineering/release-protocol.md)，按完整标签冻结源码，草稿汇集六类平台包、更新材料、通知、许可、SBOM 和部署／验证材料。发行不生成或附带对应源码压缩包；常规发行及验收不运行源码交付收集器，仅用户针对源码收集另行明确要求时可用于本地审查。正式发布在 Release 的单次手动运行中构建三平台工件，每个平台只构建一次。包验收、签名、公开和公开下载复核分别使用该运行的工件。创建标签前完成匹配的预检。全部核验通过后，stable 作为普通 Release 公开并标记 Latest；alpha、beta、rc 作为 Pre-release 公开。公开后下载保留的附件复验哈希。未执行的人工验收按候选实际范围说明，不以自动化测试代替其结论。
 
 开发验收、[发行许可复核](../qa/release-review.md)与发行执行分别记录。许可结论绑定实际候选。公开发布前须解决来源、通知及适用源码与替换义务的具体缺口。
 
@@ -43,3 +43,15 @@ GitHub 桌面版从“关于”主动检查更新。符合条件的安装版下�
 按[桌面验证方法](../qa/private-test-manual.md)为实际候选选择相关场景。只有身份和范围仍适用时才引用已有证据。用最终包核对[部署 SBOM 与文件清单](../../../docs/zh-CN/engineering/deployment-audit.md)，定位具体组件、通知和再分发缺口。按平台要求核对安装版及便携版行为。macOS 单独验证交付 app 和 DMG 的部署与 ad-hoc 完整性，SDK 模式验证另行记录。
 
 用户明确要求时，可在本地 Mac 生成[开发 DMG](../../../docs/zh-CN/engineering/macos-deployment.md)。只有所有者另行明确请求本地源码审查时才运行[交付收集器](../../../docs/zh-CN/engineering/source-delivery.md)。发布受影响的二进制前，按[发行许可复核](../qa/release-review.md)解决实际组件义务。项目在 Mac 上使用 ad-hoc 完整性签名，当前 GitHub 分发政策不包含 Developer ID 与公证。
+
+## 候选演练与失败续跑
+
+在包含工作流变更的分支上运行专用 Release 工作流。
+
+```sh
+gh workflow run release.yml --ref BRANCH -f candidate=true
+```
+
+测试续跑时加入 `-f retry_probe=true`。如果本次运行的首次尝试进入 Windows 包验收，作业会在恢复候选工件后主动中断。等本次运行结束，用 `gh run rerun RUN_ID --job JOB_ID` 指定失败的验收作业。重跑会读取现有构建工件并验哈希。签名、发布和公开下载复核也是独立作业。在原运行中重跑失败作业，GitHub 可以保留已经完成的作业和工件。
+
+组装结果可从 Actions 运行的 `release-candidate` 工件下载。`candidate-download` 作业重新下载并校验每个文件。候选包不含发行更新签名，演练不会创建草稿或公开 Release。正式发行在 `main` 上使用已授权标签，并使用当次运行中核验通过的工件。

@@ -34,7 +34,7 @@ Foundation 和 Qt 各保留一份 `build/ci-plans/*-plan.json` 工件。普通�
 
 验证项包括包注册、双语传统菜单、开关变化、禁用后拒绝执行、包激活、现代菜单签名拒绝、失效注册目标和默认选择。脚本使用一次性普通账户，通过 AUMID 激活已安装的夹具程序，并拒绝提升权限。加载 WindowsApps 中的 DLL 需要夹具自身的包身份，不能用未打包的副本代替。每次调用先移除旧回执，再检查本次包激活的新回执。托管会话限制和使用其他账户凭据激活可能使检查无法完成；失败的探针不提供菜单激活通过结论，须保留未收口记录。测试证书、包注册、开发安装策略和临时账户会清理或恢复。自签名夹具不代表真实 Store 签名放行或 Explorer 显示验收。
 
-[Foundation probes](../../../.github/workflows/foundation.yml) 和 [Qt components](../../../.github/workflows/qt-components.yml) 仅通过 `workflow_dispatch` 手动运行，不随普通推送、PR 或标签自动触发。两者仍在 Windows、Linux 和 Apple Silicon macOS 运行完整矩阵。Foundation 包括 Rust workspace、Clippy、桥接探针、隔离工作进程和格式互操作；Qt 包括产品构建、组件及会话测试、原生平台检查、部署和适用的安装生命周期。Qt 按需运行保留首轮和十次完整浏览器套件；日常本地验证不重复这十轮。
+[基础验证](../../../.github/workflows/foundation.yml)和 [Qt 组件验证](../../../.github/workflows/qt-components.yml)在 Windows、Linux 和 Apple Silicon macOS 上手动运行。基础验证覆盖 Rust 工作区、Clippy、桥接探针、隔离工作进程和格式互操作。Qt 组件验证覆盖产品构建、组件及会话测试、原生平台检查、部署和适用的安装生命周期。Qt 组件验证和正式发行各执行一轮完整浏览器测试。归档浏览、窗口会话时序或 Qt 变更需要重复验证时，在候选提交上运行[浏览器稳定性验证](../../../.github/workflows/browser-stability.yml)。该工作流核对同一提交的十轮完整结果并保留测试日志。
 
 Qt 按需运行的 `test --skip-rust` 将 Rust workspace 标记为未执行。需要 Foundation 结论时应针对同一提交另行运行并核对，不把仅有的 Qt 结果当作 Foundation 已通过。运行中的失败、取消、缺少平台或原始日志仍使相应完整检查失败；仅使用本次实际执行的运行和工件。
 
