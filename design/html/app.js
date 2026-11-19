@@ -885,25 +885,21 @@ function bindWelcomeFormats() {
     const ellipsis = preview.querySelector(".welcome-format-overflow");
     const fontMeasure = document.createElement("canvas").getContext("2d");
     const fitChips = () => {
-        if (preview.hidden) return;
-        ellipsis.hidden = chips.offsetWidth <= preview.clientWidth;
         const firstChip = chips.firstElementChild;
+        if (preview.hidden || !firstChip) return;
+        ellipsis.hidden = chips.offsetWidth <= preview.clientWidth;
         const firstBounds = firstChip.getBoundingClientRect();
         const baseline = firstChip.lastElementChild.getBoundingClientRect().top;
         const {fontSize, fontFamily, fontWeight} = getComputedStyle(firstChip.firstElementChild);
         fontMeasure.font = `${fontWeight} ${fontSize} ${fontFamily}`;
-        const chipCenter = firstBounds.top + firstBounds.height / 2 - baseline;
+        // Center the lowercase body using the shared baseline of the inline markers.
+        const lowercase = fontMeasure.measureText("x");
+        const targetBaseline = firstBounds.top + (firstBounds.height
+            + lowercase.actualBoundingBoxAscent - lowercase.actualBoundingBoxDescent) / 2;
+        chips.style.setProperty("--welcome-format-label-offset", `${targetBaseline - baseline}px`);
         const availableWidth = viewport.clientWidth;
-        const layout = [...chips.children].map(chip => {
-            const label = chip.firstElementChild;
-            const ink = fontMeasure.measureText(label.textContent);
-            // The zero-height inline marker locates the rendered text baseline.
-            return {chip, label, fits: chip.offsetLeft + chip.offsetWidth <= availableWidth,
-                offset: chipCenter + (ink.actualBoundingBoxAscent - ink.actualBoundingBoxDescent) / 2};
-        });
-        for (const {chip, label, fits, offset} of layout) {
-            chip.style.visibility = fits ? "" : "hidden";
-            label.style.top = `${offset}px`;
+        for (const chip of chips.children) {
+            chip.style.visibility = chip.offsetLeft + chip.offsetWidth <= availableWidth ? "" : "hidden";
         }
         preview.title = ellipsis.hidden ? "" : preview.getAttribute("aria-label");
     };

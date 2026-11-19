@@ -308,6 +308,13 @@ Rectangle {
                         visible: root.expandedFormatIndex >= 0
                         Accessible.role: Accessible.StaticText
                         Accessible.name: suffixes.join(", ")
+                        TextMetrics {
+                            id: lowercaseMetrics
+                            text: "x"
+                            font.family: Theme.uiFontFamily
+                            font.weight: Font.Normal
+                            font.pixelSize: Math.round(Theme.welcomeFormatFontSize * Theme.fontScale)
+                        }
                         Item {
                             id: extensionViewport
                             anchors.left: parent.left
@@ -328,27 +335,20 @@ Rectangle {
                                         opacity: x + width <= extensionViewport.width ? 1 : 0
                                         implicitWidth: suffix.implicitWidth + 2 * Theme.welcomeFormatChipInset
                                         implicitHeight: suffix.implicitHeight + 2 * Theme.welcomeFormatChipVerticalInset
-                                        color: "transparent"
+                                        color: Theme.operationButtonSurface
                                         border.color: Theme.operationFieldBorder
                                         border.width: 1
                                         radius: Theme.welcomeFormatChipRadius
                                         antialiasing: true
-                                        TextMetrics {
-                                            id: suffixMetrics
-                                            text: suffix.text
-                                            font: suffix.font
-                                        }
                                         Text {
                                             id: suffix
                                             anchors.horizontalCenter: parent.horizontalCenter
-                                            // Center the drawn glyphs, including ascenders and descenders.
-                                            y: (chip.height - suffixMetrics.tightBoundingRect.height) / 2
-                                                - baselineOffset - suffixMetrics.tightBoundingRect.y
+                                            // Center the lowercase body on a shared baseline.
+                                            y: (chip.height - lowercaseMetrics.tightBoundingRect.height) / 2
+                                                - baselineOffset - lowercaseMetrics.tightBoundingRect.y
                                             text: chip.modelData
                                             color: Theme.textSecondary
-                                            font.family: Theme.uiFontFamily
-                                            font.weight: Font.Normal
-                                            font.pixelSize: Math.round(Theme.welcomeFormatFontSize * Theme.fontScale)
+                                            font: lowercaseMetrics.font
                                             Accessible.ignored: true
                                         }
                                     }
