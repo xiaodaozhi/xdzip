@@ -2,11 +2,16 @@
 
 ## 未发布
 
-- 扩展常见栅格图片及受限静态 SVG 预览，macOS 增加系统 HEIC／HEIF，图片经有界私有进程生成缩略图；支持范围及格式子集见预览契约。
+- 提供独立只读 SDK 试验，包含有界 CBOR、受控 I/O、两个独立协议实现与失败关闭的沙箱门禁；产品继续禁用第三方扩展。
 
+## 0.2.1
+
+- 扩展 LHA/LZH、ARJ、ARC、DEB、ASAR、Zstandard 和 LZ4 等格式的浏览和解压支持，新增 LZH、ISO9660/Joliet 数据镜像和 Windows x64 ZIP 自解压文件的创建支持。
+- 扩展常见栅格图片及受限静态 SVG 预览，macOS 增加系统 HEIC／HEIF，图片经有界私有进程生成缩略图；支持范围及格式子集见预览契约。
 - 普通单文件 ZIP/ZIP64 支持百万条流式磁盘索引，大查询按需浏览并保持跨页选择。
 - 属性卡支持用户主动触发的有限纯文本和 PNG/JPEG 预览，复用密码、完整性及取消边界。
-- 提供独立只读 SDK 试验，包含有界 CBOR、受控 I/O、两个独立协议实现与失败关闭的沙箱门禁；产品继续禁用第三方扩展。
+
+平台支持和验收范围见[发布说明](release-notes/0.2.1.md)和 [GitHub Release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.2.1)。
 
 ## 0.2.0
 
