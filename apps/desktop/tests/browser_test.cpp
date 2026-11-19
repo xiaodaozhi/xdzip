@@ -5444,6 +5444,7 @@ QtObject {
         QVERIFY(!preferences.applyDetails("system", 1, "auto", "standard", true, true, "tabs"));
         QCOMPARE(preferences.activeLanguage(), originalLanguage);
         QCOMPARE(preferences.language(), QStringLiteral("auto"));
+        QCOMPARE(preferences.error(), qtTrId("ui.c43b29d7cbdf"));
         UiPreferences unchanged;
         QCOMPARE(unchanged.language(), QStringLiteral("auto"));
     }
@@ -8456,6 +8457,71 @@ QtObject {
         }
         settings->close();
     }
+    void localizedMainWindowAndMenuLayout_data() {
+        settingsSelectorsHaveConsistentGeometry_data();
+    }
+    void localizedMainWindowAndMenuLayout() {
+        QFETCH(QString, language);
+        QFETCH(bool, dark);
+        QFETCH(double, scale);
+        const auto restore = qScopeGuard([] { initializeUiText("zh-CN"); });
+        QVERIFY(initializeUiText(language));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(window && preferences);
+        preferences->preview(dark ? QStringLiteral("dark") : QStringLiteral("light"), scale);
+        const auto restorePreview = qScopeGuard([&] { preferences->cancelPreview(); });
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/visual-main.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+
+        qreal previousRight = 0;
+        for (const auto *name : {"archiveOpen", "archiveNew", "archiveTest", "archiveMore",
+                                 "archiveSearch", "archiveExtract"}) {
+            auto *button = findVisual(window->contentItem(), QString::fromLatin1(name));
+            QVERIFY(button && button->isVisible());
+            const auto left = button->mapToScene(QPointF()).x();
+            QVERIFY2(left + .5 >= previousRight && left + button->width() <= window->width() + .5,
+                     name);
+            previousRight = left + button->width();
+            auto *accessible = QAccessible::queryAccessibleInterface(button);
+            QVERIFY2(accessible && !accessible->text(QAccessible::Name).isEmpty(), name);
+        }
+
+        auto *menu = window->findChild<QObject *>("archiveExtractMenu");
+        QVERIFY(menu && QMetaObject::invokeMethod(menu, "open"));
+        QTRY_VERIFY(menu->property("visible").toBool());
+        QCOMPARE(menu->property("width").toDouble(), 240.0 * scale);
+        QCOMPARE(menu->property("font").value<QFont>().pixelSize(), qRound(13 * scale));
+        auto *content = menu->property("contentItem").value<QQuickItem *>();
+        QVERIFY(content);
+        const auto menuLeft = content->mapToScene(QPointF()).x();
+        QVERIFY(menuLeft >= 0 && menuLeft + content->width() <= window->width() + .5);
+        for (const int index : {0, 1, 3}) {
+            QQuickItem *row = nullptr;
+            QVERIFY(QMetaObject::invokeMethod(menu, "itemAt", Q_RETURN_ARG(QQuickItem *, row),
+                                              Q_ARG(int, index)));
+            QVERIFY(row);
+            auto *caption = findVisual(row, "Label");
+            QVERIFY2(caption && !caption->property("truncated").toBool(),
+                     qPrintable(row->property("text").toString()));
+            auto *accessible = QAccessible::queryAccessibleInterface(row);
+            QVERIFY(accessible);
+            QCOMPARE(accessible->text(QAccessible::Name), row->property("text").toString());
+        }
+        const auto captures = qEnvironmentVariable("XDZIP_VISUAL_AUDIT");
+        if (!captures.isEmpty())
+            QVERIFY(visual_audit::save(window, captures,
+                                       QStringLiteral("localized-main-%1-%2-%3")
+                                           .arg(language, dark ? "dark" : "light")
+                                           .arg(scale)));
+    }
     void settingsAllPagesLayout_data() {
         settingsSelectorsHaveConsistentGeometry_data();
     }
@@ -8486,7 +8552,7 @@ QtObject {
         int scrollablePages = 0;
         QCOMPARE(settings->width(), 612);
         QVERIFY(sidebar->width() >= 144.);
-        if (scale == 1.)
+        if (scale == 1. && (language == "zh-CN" || language == "en-US"))
             QCOMPARE(sidebar->width(), 144.);
         QTRY_VERIFY(qAbs(sidebar->mapToScene(QPointF(sidebar->width(), 0)).x() -
                          scroll->mapToScene(QPointF()).x()) < .5);
@@ -9369,24 +9435,34 @@ QtObject {
                  child.readAllStandardOutput().constData());
     }
     void qtRuntimeTranslations() {
-        QTranslator translator;
-        QVERIFY(loadQtSystemTranslation(translator, QLocale(QStringLiteral("zh_CN")),
-                                        QLibraryInfo::path(QLibraryInfo::TranslationsPath)));
-        QVERIFY(translator.translate("QFileDialog", "Open").contains(QStringLiteral("打开")));
+        const auto directory = QLibraryInfo::path(QLibraryInfo::TranslationsPath);
+        for (const auto &locale : supportedUiLanguages()) {
+            if (locale == "en-US")
+                continue;
+            QTranslator translator;
+            QVERIFY2(loadQtSystemTranslation(translator, QLocale(locale), directory),
+                     qPrintable(locale));
+        }
+        QTranslator simplified, traditional;
+        QVERIFY(loadQtSystemTranslation(simplified, QLocale("zh_CN"), directory));
+        QVERIFY(loadQtSystemTranslation(traditional, QLocale("zh_HK"), directory));
+        QVERIFY(simplified.translate("QFileDialog", "Open").contains(QStringLiteral("打开")));
+        QVERIFY(traditional.translate("QFileDialog", "Open").contains(QStringLiteral("開啟")));
     }
     void settingsEnglishStartup() {
         if (qEnvironmentVariable("XDZIP_SETTINGS_CHILD") != "1")
             QSKIP("Covered by the isolated settings restart child process");
         QCOMPARE(QCoreApplication::instance()->property("xdzipUiLanguage").toString(), "en-US");
         QCOMPARE(qtTrId("settings.title"), QStringLiteral("Settings"));
-        const auto systemLanguages = QLocale::system().uiLanguages();
-        const bool systemChinese =
-            !systemLanguages.isEmpty() && systemLanguages.first().startsWith("zh");
+        UiTranslator expectedProductText(nullptr);
+        QVERIFY(expectedProductText.read(resolveUiLanguage("auto")));
         QCOMPARE(systemDialogText("ui.1b59353f1874"),
-                 systemChinese ? QStringLiteral("打开压缩包") : QStringLiteral("Open archive"));
-        if (systemChinese)
-            QVERIFY(QCoreApplication::translate("QFileDialog", "Open")
-                        .contains(QStringLiteral("打开")));
+                 expectedProductText.translate(nullptr, "ui.1b59353f1874", nullptr, -1));
+        QTranslator expectedQtText;
+        if (loadQtSystemTranslation(expectedQtText, QLocale::system(),
+                                    QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
+            QCOMPARE(QCoreApplication::translate("QFileDialog", "Open"),
+                     expectedQtText.translate("QFileDialog", "Open"));
         QCOMPARE(qtTrId("ui.2e84a56c5f19", 1), QStringLiteral("1 file"));
         QCOMPARE(qtTrId("ui.2e84a56c5f19", 2), QStringLiteral("2 files"));
         QQmlApplicationEngine engine;

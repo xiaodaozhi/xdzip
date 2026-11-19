@@ -31,7 +31,8 @@ class FontTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
         spec = copy.deepcopy(fonts.configuration())
-        spec['inputs'] = ['resources/i18n/*.json', 'apps/desktop/ui/**/*.qml', 'apps/desktop/**/*.cpp']
+        spec['inputs'] = ['resources/i18n/*.json', 'apps/desktop/ui/**/*.qml',
+                          'apps/desktop/**/*.cpp', 'apps/desktop/**/*.h']
         for name, data in [(fonts.SPEC, json.dumps(spec).encode()),
                            (Path(spec['license']['path']), (ROOT / spec['license']['path']).read_bytes())]:
             target = self.root / name
@@ -77,6 +78,12 @@ class FontTests(unittest.TestCase):
         cpp.write_text('tr("麤"); QStringLiteral("靐");', encoding='utf-8')
         self.assertTrue(set(map(ord, '龘麤靐')) <= fonts.current_characters(self.root))
         self.assertEqual(fonts.decoded_characters(r'\ud840\udc00'), {0x20000})
+
+    def test_native_only_shell_catalog_does_not_supply_qt_glyphs(self):
+        header = self.root / 'apps/desktop/shell/NativeMessages.h'
+        header.parent.mkdir(parents=True)
+        header.write_text('const char *label = "압축 파일";', encoding='utf-8')
+        self.assertNotIn(ord('압'), fonts.current_characters(self.root))
 
     def test_fresh_generations_are_identical_and_ttf_is_same_source(self):
         self.prepare()

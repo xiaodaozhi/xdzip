@@ -74,8 +74,20 @@ class UiTranslator final : public QTranslator {
 inline bool loadQtSystemTranslation(QTranslator &translator, const QLocale &locale,
                                     const QString &directory) {
     // SDKs provide qtbase catalogs; windeployqt merges runtime catalogs as qt_*.qm.
-    return translator.load(locale, QStringLiteral("qtbase"), QStringLiteral("_"), directory) ||
-           translator.load(locale, QStringLiteral("qt"), QStringLiteral("_"), directory);
+    const auto load = [&](const QLocale &candidate) {
+        return translator.load(candidate, QStringLiteral("qtbase"), QStringLiteral("_"),
+                               directory) ||
+               translator.load(candidate, QStringLiteral("qt"), QStringLiteral("_"), directory);
+    };
+    if (load(locale))
+        return true;
+    const auto preferred = locale.uiLanguages().value(0);
+    const auto fallback = uiLanguageString(xdzip_i18n::systemLanguage(preferred.toStdString()));
+    if (fallback == uiLanguageString(xdzip_i18n::defaultLanguage))
+        return false;
+    // Qt ships a Taiwan catalog but no Hong Kong or Macao catalog.
+    const QLocale canonical(fallback);
+    return canonical != locale && load(canonical);
 }
 
 inline bool initializeUiText(const QString &forcedLanguage = {}) {

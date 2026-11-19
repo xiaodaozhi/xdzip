@@ -77,9 +77,26 @@ ToolTip {
     timeout: Theme.tooltipDurationMs
     margins: Theme.menuViewportInset + (parent?.Window.window?.linuxFrameInset ?? 0)
     padding: Theme.tooltipPadding
-    implicitWidth: Math.min(Theme.tooltipMaxWidth, contentItem.implicitWidth + padding * 2)
-    implicitHeight: Math.min(Theme.treeTooltipMaxHeight * Theme.fontScale, contentItem.implicitHeight + padding * 2)
+    // Measure wrapped text independently of the popup's own content geometry.
+    implicitWidth: Math.min(Theme.tooltipMaxWidth, naturalText.advanceWidth + padding * 2)
+    implicitHeight: Math.min(Theme.treeTooltipMaxHeight * Theme.fontScale, wrappedText.contentHeight + padding * 2)
+    TextMetrics {
+        id: naturalText
+        text: label.text
+        font: label.font
+    }
+    Text {
+        id: wrappedText
+        visible: false
+        width: Math.max(0, root.implicitWidth - root.padding * 2)
+        text: label.text
+        textFormat: Text.PlainText
+        font: label.font
+        wrapMode: Text.WrapAnywhere
+        Accessible.ignored: true
+    }
     contentItem: Text {
+        id: label
         text: root.text
         // Archive display names must remain text, including angle brackets.
         textFormat: Text.PlainText

@@ -349,9 +349,14 @@ bool UiPreferences::applyDetails(const QString &theme, double scale, const QStri
     if (!saveDetails(theme, scale, language, density, recentEnabled, false, trayEnabled,
                      openMode)) {
         if (changeLanguage) {
+            const bool backupFailed = m_error == qtTrId("ui.f9274c70af84");
             initializeUiText(previousLanguage);
             if (auto *engine = qmlEngine(this))
                 engine->retranslate();
+            if (!m_error.isEmpty()) {
+                m_error = backupFailed ? qtTrId("ui.f9274c70af84") : qtTrId("ui.c43b29d7cbdf");
+                emit errorChanged();
+            }
         }
         return false;
     }

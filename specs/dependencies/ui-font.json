@@ -69,6 +69,7 @@
     "assets.js"
   ],
   "exclude_prefixes": [
-    "apps/desktop/tests/"
+    "apps/desktop/tests/",
+    "apps/desktop/shell/NativeMessages.h"
   ]
 }
