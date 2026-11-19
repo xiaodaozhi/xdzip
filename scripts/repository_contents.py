@@ -7,6 +7,8 @@ RETIRED_REPORTS = {
     'docs/qa/private-test-readiness.md', 'docs/qa/wp12-closeout-actions.md',
     'docs/planning/preparation-record.md', 'docs/engineering/toolchain-candidates.json',
     'docs/engineering/support-policy-proposal.md',
+    'developers/qa/private-test-readiness.md', 'developers/qa/wp12-closeout-actions.md',
+    'developers/planning/preparation-record.md',
 }
 MAX_BLOB_BYTES = 5 * 1024 * 1024
 
@@ -31,11 +33,13 @@ def violations(root):
             failures.append(f'{name}: generated directories must not be tracked')
         elif name.startswith(GENERATED_PREFIXES) or name in RETIRED_REPORTS:
             failures.append(f'{name}: generated content or retired task report belongs in artifacts/issues')
-        elif name.startswith('docs/qa/') and not name.endswith('.md'):
+        elif '/'.join(parts[:2]) in {'docs/qa', 'developers/qa'} and not name.endswith('.md'):
             failures.append(f'{name}: QA execution output must not be tracked')
-        elif name.startswith('docs/') and PurePosixPath(name).suffix.lower() not in {
+        elif '/'.join(parts[:3]) in {'docs/zh-CN/qa', 'developers/zh-CN/qa'} and not name.endswith('.md'):
+            failures.append(f'{name}: QA execution output must not be tracked')
+        elif parts[0] in {'docs', 'developers'} and PurePosixPath(name).suffix.lower() not in {
                 '.md', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'}:
-            failures.append(f'{name}: docs/ only accepts Markdown and necessary image assets')
+            failures.append(f'{name}: documentation directories only accept Markdown and necessary image assets')
         files.append((name, oid))
     if files:
         sizes = subprocess.check_output(['git', 'cat-file', '--batch-check=%(objectsize)'],

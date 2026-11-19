@@ -17,7 +17,7 @@
 
 通用依赖核对 Cargo 配置、许可与公共 API；独立格式实现的来源规则见[自研契约](independent-rust-codecs.md)。cap 系列由 Bytecode Alliance 维护，getrandom 和 rustix 为系统接口项目，Unicode normalization 为通用 Unicode 库；升级仍须锁版本并重跑原生边界回归，不以维护主体代替回归测试与漏洞公告核对。新增包无运行时网络请求；含 build script 的包只探测编译器／目标配置或选择 Rust 系统调用后端，没有下载外部代码或编译 C 解码器。许可通知收集完整上游原文，实际许可表达式以锁定材料为准。
 
-OSV 精确版本查询须按[验证方法](../qa/README.md)保留实际响应；查询失败不能解释成未发现公告。该检查不是完整 cargo-audit。既有 cxx 公告与版本选择仍见 [M2 依赖记录](dependencies.md)。
+OSV 精确版本查询须按[验证方法](../../../developers/zh-CN/qa/README.md)保留实际响应；查询失败不能解释成未发现公告。该检查不是完整 cargo-audit。既有 cxx 公告与版本选择仍见 [M2 依赖记录](dependencies.md)。
 
 元数据准入不自动批准解码。独立适配器验证本地头、流结束、CRC 与 32／64-bit 数据描述符，按中央及本地 ZIP64 哨兵判定宽度；独立 Python force_zip64 夹具同时覆盖合法混合宽度和篡改大小。rawzip、zip、flate2 不进入 ZIP 及宿主的普通或构建依赖闭包，历史锁定摘录仅保留当时的来源记录。
 

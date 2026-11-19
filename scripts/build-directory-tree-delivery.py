@@ -88,7 +88,7 @@ def generate():
 <h2 id="behavior">行为与状态</h2><p>有无子目录决定箭头；运行树不显示计数；原稿中的数字保留其设计参考身份。只有文件或为空的叶子都没有箭头，同层级保留空槽。方向键焦点、展开、当前目录及文件复选框状态相互独立。</p>
 <div class="table-wrap"><table><thead><tr><th>操作</th><th>结果</th></tr></thead><tbody>''' + event_rows + '''</tbody></table></div><p>索引完整后发布目录树。空压缩包的文件列表为空；只有根文件时列表正常显示。导航索引超限仍可使用根目录和搜索；读取失败提供重新打开，不假装空目录。</p>
 <details><summary>16 种规定状态</summary><div class="table-wrap"><table><tbody>''' + state_rows + '''</tbody></table></div></details>
-<p>接入与验收细则见 <a href="../../docs/ux/directory-tree.md">目录树规格</a>；本次资产检查见 <a href="../../docs/qa/README.md">交付复核</a>。</p>
+<p>接入与验收细则见 <a href="../../docs/ux/directory-tree.md">目录树规格</a>；本次资产检查见 <a href="../../developers/qa/README.md">交付复核</a>。</p>
 <h2 id="cuts">26 张原像素切图</h2><p>裁剪没有缩放、去底色或补画；小图保持自然像素尺寸，宽图在手机上缩小以便浏览。背景、文字、连接线和状态由界面动态绘制，切片用于对照。</p><div class="cuts">''' + ''.join(cut_cards) + '''</div>
 <h2 id="icons">共享透明图标</h2><p>下列浅深色图标统一显示在 48×48 审阅画布，实际组件按统一规范显示。新增分支圆点、实心信息 / 警告和分段转轮尚无 Qt 引用，HTML 仅登记共享资源；文件夹与箭头复用当前素材库。</p><div class="icons">''' + ''.join(glyph_cards) + '''</div>
 <footer><p>完整素材台账见 <a href="../assets/manifest.json">manifest.json</a>；项目原创设计采用 <a href="../../LICENSE">Apache-2.0</a>。离线版内嵌所有展示图片，辅助文档链接需要仓库访问权限。</p></footer>

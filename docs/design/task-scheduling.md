@@ -102,11 +102,11 @@ A five-second soft wait, general force-quit choice, and automatic recovery check
 
 Model-check state transitions, cancel/commit races, independent task survival after tab closure, event reordering, full-queue shutdown, duplicate starts, resource reclamation, and overlapping destinations for two tasks. Tests use synchronization barriers and fault points rather than depending only on arbitrary sleeps. Where needed, use tools such as Loom for small shared-state regions; do not force the whole Qt application into concurrency model tests.
 
-## WP-10 creation tasks
+## Archive creation tasks
 
 Creation reuses one heavy-task thread and a bounded task mailbox; the GUI does not recursively scan inputs. After freezing the input tree, report known totals, encode sequentially into private staging, then re-decode and verify each entry before obtaining the whole-archive commit permit. Ordinary snapshots are coalesced to approximately 100 ms; conflicts and terminal states are retained. Cancellation and shutdown use existing control channels. Input file count and source bytes enter committed counts only after the archive is saved as a whole; written represents actual ZIP output bytes. See the [implementation contract](../engineering/zip-creation.md) for phases, budgets, and failure behavior.
 
-## WP-14 waiting for extraction passwords
+## Waiting for extraction passwords
 
 The current single heavy-task worker uses a separate `waiting_password` state and one-shot password response slot. It holds bounded source and task state without holding a filesystem mutex while waiting for input. Responses, cancellation, and exit can wake the task even when the ordinary queue is full. Cached passwords exist only within the current task; a correct response does not change frozen selection or output authorization. Actual bytes from failed attempts continue to count against budgets. Prompts, cleanup, cancellation, and terminal states bypass progress throttling.
 

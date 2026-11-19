@@ -30,7 +30,7 @@ ORDER = [
     "index", "product-requirements", "system-architecture", "domain-data",
     "qt-quick-ui", "qt-rust-bridge", "codec-extension-sdk", "file-security",
     "task-scheduling", "performance", "quality-engineering", "build-release",
-    "implementation-roadmap", "architecture-decisions", "requirements-traceability", "glossary",
+    "architecture-evolution", "architecture-decisions", "requirements-traceability", "glossary",
 ]
 STATE_NAMES = {
     "Queued": "排队", "Preparing": "准备", "Running": "执行",

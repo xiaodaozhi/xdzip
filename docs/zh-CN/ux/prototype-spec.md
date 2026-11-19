@@ -64,7 +64,7 @@
 
 浏览器验证脚本为 scripts/check-html-design.py，检查实际点击流程、统计、禁用条件、格式联动、异常恢复、手机溢出以及单文件离线运行。报告随导出的原型包提供；浏览器验证仅使用 Chromium。
 
-主窗口当前交付两个独立示例压缩包会话、列表 / 网格、字段排序、递归目录树、分级面包屑、右键 / 下拉 / 子菜单以及按钮状态，详见[组件与交互契约](main-window-components.md)及[验证方法](../qa/README.md)。`scripts/check-html-controls.py` 使用真实浏览器输入检查这些行为；[组件审阅页](../../../design/html/components.html)使用与主界面相同的实现。
+主窗口当前交付两个独立示例压缩包会话、列表 / 网格、字段排序、递归目录树、分级面包屑、右键 / 下拉 / 子菜单以及按钮状态，详见[组件与交互契约](main-window-components.md)及[验证方法](../../../developers/zh-CN/qa/README.md)。`scripts/check-html-controls.py` 使用真实浏览器输入检查这些行为；[组件审阅页](../../../design/html/components.html)使用与主界面相同的实现。
 
 HTML 仅验证示例状态，不证明真实任务调度、授权、路径竞态、CRC 或平台辅助功能。Qt 已接入真实创建／解压、拖放、系统选择器、持久设置及可选标签页或多窗口的独立归档会话。多格式、普通单文件 ZIP 百万条索引和受限预览的实际范围分别见[格式后端](../engineering/native-codecs.md)、[大索引](../engineering/large-index.md)和[内容预览](../engineering/content-preview.md)；验收在对应 issue 登记。HTML 设置只在页面内保存演示状态，不跨启动持久化，不作为原生系统主题跟随或辅助功能的通过依据。
 
@@ -74,7 +74,7 @@ HTML 仅验证示例状态，不证明真实任务调度、授权、路径竞态
 
 根入口为“根目录”，只列直属文件和文件夹；搜索匹配当前范围的后代，并显示完整压缩包内路径。普通列表／网格只显示末级名称，复制与导航保留完整路径。面包屑右侧显示当前列表行数。目录树标题为“压缩包”，与面包屑垂直中心一致；树悬停不弹出浮动提示。
 
-列表悬停覆盖整行；网格有 16 逻辑像素左右内边距，左上 8 像素的复选框悬停可见、选中常驻。所有按钮调用菜单与按钮间隔 4，菜单使用柔和阴影。预览重新打开按钮固定为 28 方形。对应参数位于 layout-scale.json、directory-tree.json 和 controls.json，实际验证按[通用方法](../qa/README.md)登记。
+列表悬停覆盖整行；网格有 16 逻辑像素左右内边距，左上 8 像素的复选框悬停可见、选中常驻。所有按钮调用菜单与按钮间隔 4，菜单使用柔和阴影。预览重新打开按钮固定为 28 方形。对应参数位于 layout-scale.json、directory-tree.json 和 controls.json，实际验证按[通用方法](../../../developers/zh-CN/qa/README.md)登记。
 
 ## 设置窗口
 

@@ -2,19 +2,19 @@
 
 [English](../../engineering/development.md) | 简体中文
 
-先读产品 README、AGENTS、[产品需求](../design/product-requirements.md)、[系统架构](../design/system-architecture.md)、[质量工程](../design/quality-engineering.md)和当前工作包。根 Cargo workspace 已包含领域、格式、I/O、运行时和桥接，CMake 构建真实 Qt 应用、组件预览及独立探针。现有模块见[目录职责](repository-layout.md)，实际能力和限制以根 README 为入口。
+从[开发与贡献](../contributing/README.md)选择适合这次改动的构建和验证入口。[系统架构](../design/system-architecture.md)与[仓库结构](repository-layout.md)说明 Qt、Rust 运行时和各格式模块的边界。
 
 ## 获取与修改
 
-使用 Git 克隆仓库，先检查工作区和远端 main，保留已有改动。提交、推送前在本地完成与变更匹配的构建或验证；维护者可按短周期开发需要创建临时分支，相关检查通过后集成到 main，按需使用 PR 并清理已合并分支和本研发周期的 `build/` 临时目录。外部贡献按[贡献指南](../../../CONTRIBUTING.md)提交 PR。新任务先查重并建立或复用 issue，阶段结果不另写入 docs。Markdown 是规范源文件；颜色和尺寸由 specs/visual/tokens.json 集中维护。新增/修改契约先更新相应设计与验收编号。构建目录清理使用[仓库收尾规则](repository-hygiene.md#研发周期工件收尾)，不要递归删除整个 `build/`。
+准备干净工作区，按[贡献约定](../../../CONTRIBUTING.md)提交 PR。修改契约时同步更新两种语言的规范及相关验证用例。颜色和尺寸以 specs/visual 中的参数为准。
 
 ## 文档构建
 
-`docs/` 下所有文档都应面向读者，围绕使用者、开发者和贡献者要了解或完成的事情说明功能、限制和必要的技术细节，不把内部工作交接、目录存储规则或阶段记录当作读者说明。工作包、阶段编号等内部术语首次出现时说明含义，不需要时改用具体功能名称。中文说明使用中文，代码标识、命令和必须保留的原文除外，不附重复的英文摘要。中英文对应文档内容应一致，并在标题下提供语言切换：当前语言显示为文字，另一语言链接到对应页面。新增、移动或删除文档时同步维护两种语言和链接。
+撰写两种语言的对应文档，标题下放置语言切换，当前语言显示为纯文字，另一语言链接到同一主题。新增或迁移文档时同步更新目录和已有链接。
 
 文档工具依赖 Python 3.10+、lxml、Pandoc 和 Graphviz，字体推荐系统 CJK。执行 `python3 scripts/build-design-html.py` 生成 build/docs-html 的 16 篇详细软件设计及单文件版，输出下载包在 dist/。其余工程和协作文档从 docs/README.md 阅读。HTML 不作为产品界面技术选择。
 
-执行 `python3 scripts/check-docs.py` 检查仓库 Markdown 文件目标、JSON 与设计资产；构建器另检查 HTML 内部链接和结构。Markdown 标题锚点和远端 URL 不在前者检查范围。文档检查通过不代表实际产品验收通过。
+执行 `python3 scripts/check-docs.py` 检查仓库 Markdown 文件目标、双语配对、JSON 与设计资产；构建器另检查 HTML 内部链接和结构。Markdown 标题锚点和远端 URL 不在前者检查范围。文档检查通过不代表实际产品验收通过。
 
 ## 产品工具链准备
 

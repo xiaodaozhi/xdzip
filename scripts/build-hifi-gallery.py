@@ -50,7 +50,7 @@ def main():
 <h2 id="current">当前视觉参考</h2>''' + ''.join(groups['current']) + '''
 <h2 id="components">目录树 B，已确认组件设计</h2><p>下列三张图板定义多级目录、节点状态与导航边界，补充主稿中的侧栏。多级目录图同步当前胶囊标题栏；HTML 与 Qt 已接入核心目录交互。图板比例不同，准确控件尺寸和行为见 <a href="../../docs/ux/directory-tree.md">目录树规格</a>，历史原像素切图见 <a href="../assets/index.html#directory-tree">统一素材库</a>。</p>''' + ''.join(groups['component']) + '''
 <details id="historical"><summary>历史原图，保留量测与切片来源</summary><p>以下图片已被对应修订替代，不定义当前标题栏或功能。旧主窗口和目录树原图的字节与哈希保持不变。</p>''' + ''.join(groups['historical']) + '''</details>
-<footer><p>图片 SHA-256 与迁移来源见 <a href="catalog.json">统一清单</a>。测试截图只生成到本地或 CI 工件，参见 <a href="../../docs/qa/README.md">验收入口</a>。</p></footer></body></html>
+<footer><p>图片 SHA-256 与迁移来源见 <a href="catalog.json">统一清单</a>。测试截图只生成到本地或 CI 工件，参见 <a href="../../developers/qa/README.md">验收入口</a>。</p></footer></body></html>
 '''
     target = ROOT / 'index.html'
     if args.check:

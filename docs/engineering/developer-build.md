@@ -28,7 +28,7 @@ Local dependencies for the unified entry point use only `build/toolchain/`, whic
 
 `scripts/desktop.py prepare --install-qt`, `doctor`, `build`, and `test` share these locations by default. Do not create separate `.cache/Qt`, `.cache/desktop-tools`, or similar copies for each development pipeline. Pass `--qt-prefix`, `--qt-root`, and `--tools-dir` explicitly only when isolating different Qt versions, platforms, or experimental builds. CI may explicitly point these to runner temporary directories, but CI fallback paths do not change local defaults. CMake, Ninja, rustup, Rust, and the platform C++ compiler belong to the host toolchain and are installed/invoked under environment preflight requirements, not copied by the Qt tool directory.
 
-After an R&D cycle and cleanup of branches and worktrees, remove temporary directories and files created under `build/` for that cycle. Retain reusable shared toolchains such as `build/toolchain/`; remove cycle-specific builds, diagnostics, and download staging. See [repository content and history management](repository-hygiene.md#研发周期工件收尾) for rules and manual fallback.
+After an R&D cycle and cleanup of branches and worktrees, remove temporary directories and files created under `build/` for that cycle. Retain reusable shared toolchains such as `build/toolchain/`; remove cycle-specific builds, diagnostics, and download staging. See [repository content and history management](../../developers/engineering/repository-hygiene.md#研发周期工件收尾) for rules and manual fallback.
 
 | Platform | System environment to prepare first | Qt SDK subdirectory |
 | --- | --- | --- |
@@ -190,7 +190,7 @@ When adding or changing a QML window, run `python3 scripts/check-window-contract
 
 [Routine CI](../../.github/workflows/docs.yml) runs lightweight static checks only and does not replace local product builds. [Foundation](../../.github/workflows/foundation.yml) and the [Qt workflow](../../.github/workflows/qt-components.yml) run manually on demand. Qt uses the same desktop.py for builds, Qt tests, and Windows/Linux packaging and runtime verification. [ci-desktop.ps1](../../scripts/ci-desktop.ps1) retains on-demand repetition, visual, interoperability, and installation-compatibility checks and is not mandatory for routine local verification.
 
-Historical full-product, real install upgrade/rollback, and association lifecycles run only on disposable Windows/Linux CI hosts or isolated containers; the unified entry point does not make them default ordinary local verify behavior. The macOS job in the on-demand Qt workflow uses SDK-mode deployment audit and Cocoa startup/file-open checks, retaining only logs and JSON. See [CI policy](ci-policy.md) for full checks and evidence boundaries.
+Historical full-product, real install upgrade/rollback, and association lifecycles run only on disposable Windows/Linux CI hosts or isolated containers; the unified entry point does not make them default ordinary local verify behavior. The macOS job in the on-demand Qt workflow uses SDK-mode deployment audit and Cocoa startup/file-open checks, retaining only logs and JSON. See [CI policy](../../developers/engineering/ci-policy.md) for full checks and evidence boundaries.
 
 ## File and task boundaries
 
@@ -200,11 +200,7 @@ ZIP can restore relative symbolic links and executable bits under restricted POS
 
 ## Microsoft Store MSIX
 
-Set `XDZIP_STORE_MSIX_NAME`, `XDZIP_STORE_MSIX_PUBLISHER` and `XDZIP_STORE_MSIX_PUBLISHER_DISPLAY_NAME` in the GitHub repository's **Settings → Secrets and variables → Actions → Variables**, using the values from **Product identity** in Partner Center. The workflow stops before building if any value is missing.
-
-For a Store submission, first commit the increased `build` in `VERSION.json` and the synchronized version files. On GitHub, open [Windows Store MSIX](../../.github/workflows/windows-store-msix.yml), select **Run workflow** on `main`, and enter the full commit SHA from `main`. Download the `windows-store-msix-<package-version>-<attempt>` artifact. It contains the unsigned `xdzip-windows-x64.msix` and receipts for the build, tests, runtime verification and package inspection.
-
-Check the commit, package version and SHA-256 in `package-msix.json` and `windows-msix.json` before uploading the MSIX to Partner Center. Confirm that the package version is higher than the published Store version. Update the Store listings and submit for certification. In a manual publishing submission, select **Publish now** after certification. Microsoft signs and distributes the package, and the installed Store build can then be checked on Windows.
+For a Store submission, follow the [maintainer procedure](../../developers/market/windows/build.md).
 
 <a id="windows-msix-实验构建"></a>
 
@@ -230,9 +226,9 @@ The MSIX manifest explicitly declares `en-US` and `zh-CN` to match built-in Engl
 
 ## Evidence and reverification
 
-Select affected checks under [general verification](../qa/README.md) and [on-demand desktop verification](../qa/private-test-manual.md); routine work does not require a manual acceptance form. Build and test receipts are `desktop-build.json` and `desktop-test.json` under build-dir. Prepare, package, and verify receipts are `<stage>.json` under output-dir and link underlying evidence. Automation receipts record actual stages and sources. Offscreen/software rendering, native Cocoa checks, and performed manual checks are recorded separately and do not substitute for one another. Existing acceptance remains in [#5](https://github.com/xiaodaozhi/xdzip/issues/5) and is not repeated merely because a candidate inventory is regenerated.
+Select affected checks under [general verification](../../developers/qa/README.md) and [on-demand desktop verification](../../developers/qa/private-test-manual.md); routine work does not require a manual acceptance form. Build and test receipts are `desktop-build.json` and `desktop-test.json` under build-dir. Prepare, package, and verify receipts are `<stage>.json` under output-dir and link underlying evidence. Automation receipts record actual stages and sources. Offscreen/software rendering, native Cocoa checks, and performed manual checks are recorded separately and do not substitute for one another. Existing acceptance remains in [#5](https://github.com/xiaodaozhi/xdzip/issues/5) and is not repeated merely because a candidate inventory is regenerated.
 
-Windows/Linux artifact delivery includes same-commit source and license notices; Actions retains artifacts for 14 days. After expiry, rebuild using identities and pinned inputs. deployment-audit.json and source/file-level CycloneDX inventories support provenance verification but may remain incomplete and cannot establish license approval. See [source delivery](source-delivery.md) and the [automated verification contract](candidate-verification.md) for source rebuilding and Qt replacement.
+Windows/Linux artifact delivery includes same-commit source and license notices; Actions retains artifacts for 14 days. After expiry, rebuild using identities and pinned inputs. deployment-audit.json and source/file-level CycloneDX inventories support provenance verification but may remain incomplete and cannot establish license approval. See [source delivery](source-delivery.md) and the [automated verification contract](../../developers/engineering/candidate-verification.md) for source rebuilding and Qt replacement.
 
 Builds, screenshots, measurements, reports, and packages remain only as ignored local or CI artifacts. Do not describe generated pending forms, offscreen checks, or partial SBOMs as clean-environment and complete release-gate passes.
 

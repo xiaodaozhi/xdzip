@@ -18,7 +18,7 @@ MARKETING = Path('specs/marketing/windows-store.json')
 CAPTURES = Path('specs/marketing/windows-store-captures.json')
 ASSETS = Path('specs/marketing/windows-store-assets.json')
 LANGUAGES = ('en-US', 'zh-CN')
-LISTINGS = (Path('docs/market/windows/listing.md'), Path('docs/zh-CN/market/windows/listing.md'))
+LISTINGS = (Path('developers/market/windows/listing.md'), Path('developers/zh-CN/market/windows/listing.md'))
 
 
 def read_json(path):

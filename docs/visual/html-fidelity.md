@@ -17,13 +17,13 @@ Normal design display uses the [1024 logical-pixel window width](README.md), uni
 
 `display-spec.js` is the sole source of all artboard dimensions and display scales. Desktop defaults to normal design size and mobile defaults to fit; fit scale is capped at normal design size to prevent automatic enlargement on wide screens. Original-pixel mode uses `scale=1`, preserving original pixel dimensions and scrolling on both HTML and image sides. Device pixel ratio affects rasterization density only, not CSS logical width.
 
-Do not fit the original and HTML to their containers independently. Header and body anchors remain measured in source-pixel coordinates; display scaling does not change calibrated spacing or font sizes. Size consistency separately covers actual screen bounds, original natural size, mobile scrolling, standalone previews and offline single-file outputs. Retain evidence under the [verification method](../qa/README.md).
+Do not fit the original and HTML to their containers independently. Header and body anchors remain measured in source-pixel coordinates; display scaling does not change calibrated spacing or font sizes. Size consistency separately covers actual screen bounds, original natural size, mobile scrolling, standalone previews and offline single-file outputs. Retain evidence under the [verification method](../../developers/qa/README.md).
 
 ## Canvas and content scrolling
 
 HTML embedded in the review tool is a fixed-size artboard with `overflow:hidden` on the root document, preventing classic scrollbars from consuming canvas dimensions and triggering one another. The review page scrolls vertically; the outer canvas pans horizontally only when width is insufficient. `scrollbar-gutter:stable` reserves classic scrollbar width so a threshold height does not repeatedly change fit scale; standalone previews use `auto`. File lists, long properties and operation windows retain scrolling in content containers, and directly opened non-embedded source canvases retain page scrolling. This does not change source canvas, window or component dimensions.
 
-Playwright defaults to `--hide-scrollbars`, so earlier screenshot and size matrices did not cover actual classic scrollbars. Size and preview checks now explicitly remove that argument, checking root scrollbar reservation, visibility of all four window edges, outer horizontal panning and access to the final button in long properties. A canvas 1 px too small and a negative case removing embedding rules reproduce and catch competing scrollbar space. Keep reproduction and fix screenshots in execution artifacts under the [verification method](../qa/README.md); this does not establish scrollbar appearance on every browser or system.
+Playwright defaults to `--hide-scrollbars`, so earlier screenshot and size matrices did not cover actual classic scrollbars. Size and preview checks now explicitly remove that argument, checking root scrollbar reservation, visibility of all four window edges, outer horizontal panning and access to the final button in long properties. A canvas 1 px too small and a negative case removing embedding rules reproduce and catch competing scrollbar space. Keep reproduction and fix screenshots in execution artifacts under the [verification method](../../developers/qa/README.md); this does not establish scrollbar appearance on every browser or system.
 
 ## Header corrections
 
@@ -49,7 +49,7 @@ Body review uses equal-size content crops and keeps regional comparisons for sid
 
 The original selects one item while leaving Select All empty and labels savings 26% while filling the bar approximately 56%; these are contradictory static states. HTML retains `indeterminate` partial selection and actual 26% fill respectively, as documented semantic exceptions. Preview-specific checks cover normal preview overflow and long-content scrolling; existing interaction checks cover selection, navigation, sorting, search and sample actions. Geometry checks do not replace functional verification.
 
-Save body review, equal-size regional comparisons and measurement evidence separately under the [verification method](../qa/README.md). Preserve explanations of unknown original fonts, generated soft edges, lighting and anti-aliasing differences; this HTML evidence cannot establish corresponding calibration of the Qt product.
+Save body review, equal-size regional comparisons and measurement evidence separately under the [verification method](../../developers/qa/README.md). Preserve explanations of unknown original fonts, generated soft edges, lighting and anti-aliasing differences; this HTML evidence cannot establish corresponding calibration of the Qt product.
 
 ## Checks and delivery
 
@@ -73,4 +73,4 @@ The offline header file is `dist/xdzip-header-review.html` and the body file is 
 
 Run these HTML checks and offline reviews locally as needed; they are not default desktop product CI. Investigate anchor failures and inspect overlay evidence even after geometry passes. Main-window HTML checks do not replace calibration of other pages or Qt product and native desktop acceptance.
 
-Normal main-window and menu density follows the [UI standard](design-standard.md). Qt menu/list font-size ratios must be checked together. When reviewing HTML locally, check actual page zoom under the [verification method](../qa/README.md); matching old source-image coordinates does not replace this.
+Normal main-window and menu density follows the [UI standard](design-standard.md). Qt menu/list font-size ratios must be checked together. When reviewing HTML locally, check actual page zoom under the [verification method](../../developers/qa/README.md); matching old source-image coordinates does not replace this.

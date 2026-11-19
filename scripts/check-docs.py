@@ -24,6 +24,36 @@ def markdown_documents(root):
     return sorted(root / name for name in set(names) if name and
                   not excluded.intersection(Path(name).parts) and (root / name).is_file())
 
+def bilingual_documents(root, documents):
+    """Check the matching page and first language selector in each document tree."""
+    paths = {path.relative_to(root) for path in documents}
+    failures = []
+    pairs = 0
+    for tree in ('docs', 'developers'):
+        english = {Path(*path.parts[1:]) for path in paths
+                   if path.parts[0] == tree and len(path.parts) > 1 and path.parts[1] != 'zh-CN'}
+        chinese = {Path(*path.parts[2:]) for path in paths
+                   if path.parts[:2] == (tree, 'zh-CN')}
+        pairs += len(english & chinese)
+        for name in sorted(english | chinese):
+            en, zh = Path(tree) / name, Path(tree) / 'zh-CN' / name
+            if name not in english or name not in chinese:
+                missing = en if name not in english else zh
+                failures.append(f'{missing.as_posix()}: missing language counterpart')
+                continue
+            for path, counterpart, pattern in (
+                (en, zh, r'English \| \[简体中文\]\(([^)]+)\)'),
+                (zh, en, r'\[English\]\(([^)]+)\) \| 简体中文'),
+            ):
+                lines = iter((root / path).read_text(encoding='utf-8').splitlines())
+                heading = next((line for line in lines if line.startswith('# ')), None)
+                selector = next((line for line in lines if line.strip()), '')
+                match = re.fullmatch(pattern, selector) if heading else None
+                if not match or ((root / path.parent / unquote(match.group(1))).resolve()
+                                 != (root / counterpart).resolve()):
+                    failures.append(f'{path.as_posix()}: expected a language selector linking to {counterpart.as_posix()}')
+    return pairs, failures
+
 def main():
     failures = violations(ROOT)
     links = 0
@@ -32,15 +62,15 @@ def main():
     for name in tracked.split('\0'):
         if name and 'dist' in Path(name).parts[:-1]:
             failures.append(f'{name}: generated dist/ files must not be tracked by Git')
-        if name.startswith('docs/qa/') and Path(name).suffix != '.md':
-            failures.append(f'{name}: QA captures/reports must not be tracked by Git')
         if name.startswith(('design/html/screenshots/', 'design/assets/preview/')) or name in {
                 'design/assets/validation.json', 'design/assets/fonts/validation.json',
                 'docs/html/VALIDATION.json', 'docs/html/BROWSER-VALIDATION.json'}:
             failures.append(f'{name}: generated review evidence must not be tracked by Git')
     documents = markdown_documents(ROOT)
+    pairs, language_failures = bilingual_documents(ROOT, documents)
+    failures.extend(language_failures)
     for path in documents:
-        source = re.sub(r'^```[^\n]*\n.*?^```\s*$', '', path.read_text(), flags=re.M | re.S)
+        source = re.sub(r'^```[^\n]*\n.*?^```\s*$', '', path.read_text(encoding='utf-8'), flags=re.M | re.S)
         for raw in re.findall(r'!?\[[^\]]*\]\(([^\n)]+)\)', source):
             target = raw.strip().split(' "', 1)[0].strip('<>')
             parsed = urlsplit(target)
@@ -53,7 +83,7 @@ def main():
     json_files = list((ROOT / 'specs').rglob('*.json'))
     for path in json_files:
         try:
-            json.loads(path.read_text())
+            json.loads(path.read_text(encoding='utf-8'))
         except (ValueError, UnicodeError) as error:
             failures.append(f'{path.relative_to(ROOT)}: {error}')
     result = subprocess.run([sys.executable, str(ROOT / 'scripts/build-hifi-gallery.py'), '--check'],
@@ -64,7 +94,7 @@ def main():
                             capture_output=True, text=True)
     if result.returncode:
         failures.append('Directory-tree design delivery: ' + (result.stderr or result.stdout).strip())
-    print(json.dumps({'markdown_documents': len(documents), 'local_file_links': links,
+    print(json.dumps({'markdown_documents': len(documents), 'bilingual_pairs': pairs, 'local_file_links': links,
                       'json_files': len(json_files), 'failures': failures}, ensure_ascii=False, indent=2))
     raise SystemExit(bool(failures))
 

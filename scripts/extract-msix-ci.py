@@ -15,7 +15,7 @@ RECHECK_FILES = frozenset({
     '.github/workflows/windows-msix-recheck.yml',
     '.github/workflows/windows-msix-coexistence.yml',
     '.github/workflows/windows-msix.yml',
-    'docs/engineering/ci-policy.md',
+    'developers/engineering/ci-policy.md',
     'docs/engineering/shell-actions.md',
     'scripts/check-windows-msix-install.ps1',
     'scripts/msix-origin-probe.py',

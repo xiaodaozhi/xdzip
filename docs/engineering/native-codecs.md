@@ -60,4 +60,4 @@ Interoperability uses pinned official 26.05 reference tools separate from the pr
 
 Development packages remain experimental. Component licenses, corresponding source, and relinking requirements are separately reviewed for actual builds; completing this feature does not automatically approve official release.
 
-The [runtime worker verification entry](../qa/runtime-worker-tests.md) prepares the complete declared integration inventory and fixed inputs automatically. Use it instead of invoking an unprepared `native_backend_tests --ignored` batch. Its optional full-library mode requires zero ignored outcomes.
+The [runtime worker verification entry](../../developers/qa/runtime-worker-tests.md) prepares the complete declared integration inventory and fixed inputs automatically. Use it instead of invoking an unprepared `native_backend_tests --ignored` batch. Its optional full-library mode requires zero ignored outcomes.

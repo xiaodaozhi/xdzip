@@ -1,11 +1,11 @@
 # 贡献指南
 
-当前先接受设计、用例和工程准备改进；产品实现以 [工作清单](docs/planning/backlog.md) 为入口。提交的原创贡献遵循本项目 [Apache-2.0 许可证](LICENSE)。提交前确认你拥有相应授权；第三方材料必须保留其原有许可与来源说明。
+欢迎提交产品、设计、测试和文档改进。构建、定位代码和选择验证方法见[开发与贡献](docs/zh-CN/contributing/README.md)与 [English guide](docs/contributing/README.md)。提交的原创贡献遵循本项目 [Apache-2.0 许可证](LICENSE)。提交前确认你拥有相应授权；第三方材料必须保留其原有许可与来源说明。
 
 ## 工作流程
 
 1. 明确问题、需求编号、范围和验收；较大跨模块改变先提交设计与 ADR。
-2. 从最新 main 建立 docs/、feat/、fix/ 或 chore/ 前缀的短期分支。
+2. 从最新 main 建立 coding/ 前缀的短期分支。
 3. 提交或推送前在本地构建或验证受影响部分；一次 PR 解决一个可审查问题，说明改变后的行为、验证结果和已知限制。
 4. 同步相关规范、能力表和用户文案。只提交来源明确、可再分发的样本。
 5. 维护者审查后合入；不以截图或 mock 替代真实功能验收。
@@ -16,7 +16,7 @@
 
 遵守 [编码与注释规范](docs/design/quality-engineering.md)。注释说明不变量、所有权、失败边界和复杂度；不按注释数量评分。性能优化附工作负载和前后测量，不能只说“更快”。
 
-本地检查按变更范围选择，具体入口见[开发构建指南](docs/engineering/developer-build.md)与 [CI 策略](docs/engineering/ci-policy.md)。普通 CI 只运行轻量静态检查，完整三平台检查按需手动触发；失败或未运行的检查在 PR 中明确说明。
+本地检查按变更范围选择，具体入口见[开发构建指南](docs/engineering/developer-build.md)与 [CI 策略](developers/engineering/ci-policy.md)。普通 CI 只运行轻量静态检查，完整三平台检查按需手动触发；失败或未运行的检查在 PR 中明确说明。
 
 ## 报告问题
 

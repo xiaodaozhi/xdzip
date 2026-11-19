@@ -92,8 +92,8 @@ function hero(width, height) {
 function icon(size) {
   return brand.replace(/width="1024" height="1024"/, `width="${size}" height="${size}"`);
 }
-const en = 'docs/market/windows';
-const zh = 'docs/zh-CN/market/windows';
+const en = 'developers/market/windows';
+const zh = 'developers/zh-CN/market/windows';
 for (const size of [71, 150, 300, 512, 1024]) jobs.push({file:`${en}/images/branding/${size <= 300 ? 'app-icon' : 'avatar'}-${size}.png`, width:size, height:size, role:size <= 300 ? 'app-tile-icon' : 'reusable-avatar', locale:'shared', source:icon(size), transparent:true});
 for (const [w,h] of [[1920,1080],[3840,2160]]) jobs.push({file:`${en}/images/branding/hero-${w}x${h}.png`, width:w,height:h,role:'text-free-hero',locale:'shared',source:hero(w,h)});
 for (const [key, locale] of Object.entries(spec.locales)) {

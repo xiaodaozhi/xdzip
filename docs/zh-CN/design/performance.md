@@ -10,7 +10,7 @@
 
 ## 2. 参考机和初始预算
 
-参考配置目标：Apple Silicon Mac、16GiB RAM、本地 SSD、60Hz 显示器、系统默认字体、真实 GPU、Release 构建及必要 ad-hoc 完整性。实际采样须绑定机器型号、系统、后端与提交；现有自动测量方法见[自动验证契约](../engineering/candidate-verification.md#性能与资源证据)。以下为工程预算，不因已有某次宿主观测而成为所有支持设备的性能保证。
+参考配置目标：Apple Silicon Mac、16GiB RAM、本地 SSD、60Hz 显示器、系统默认字体、真实 GPU、Release 构建及必要 ad-hoc 完整性。实际采样须绑定机器型号、系统、后端与提交；现有自动测量方法见[自动验证契约](../../../developers/zh-CN/engineering/candidate-verification.md#性能与资源证据)。以下为工程预算，不因已有某次宿主观测而成为所有支持设备的性能保证。
 
 | 场景 | 初始目标 | 测量条件 |
 |---|---|---|

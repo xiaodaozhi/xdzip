@@ -7,7 +7,7 @@
 | [owned-wide.heic](owned-wide.heic) | 670 | 320 × 180 | `6c7242586c96d5d718c18cd5d60842f10f933d140151954b91c5863d0a879258` | macOS 生成 512 × 288 缩略图，`.heic` 与 `.heif` 两种扩展均通过真实归档到属性查看器路径 |
 | [owned-phone.heic](owned-phone.heic) | 12895 | 4032 × 3024 | `beae822663ad32a177f77c8b1fc2a89eb441667e49eece3f5bafc663c7d95fe2` | macOS 生成 512 × 384 缩略图，覆盖常见手机照片尺寸 |
 
-关联验收为 [AC-13／CONTENT-PREVIEW](../../../docs/qa/acceptance.md)。解码回归使用固定输入，不要求 CI 有 HEVC 编码硬件；非 macOS 拒绝 HEIC／HEIF。输入仅用于预览路径与尺寸验证，不代表独立编解码互操作或照片色彩保真验收。
+关联验收为 [AC-13／CONTENT-PREVIEW](../../../developers/qa/acceptance.md)。解码回归使用固定输入，不要求 CI 有 HEVC 编码硬件；非 macOS 拒绝 HEIC／HEIF。输入仅用于预览路径与尺寸验证，不代表独立编解码互操作或照片色彩保真验收。
 
 如需重建，在仓库根目录执行，先生成到本地工件目录，再核对输出及摘要后有意更新固定输入：
 

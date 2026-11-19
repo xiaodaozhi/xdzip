@@ -16,7 +16,7 @@ Acceptance covers numbered volumes, PKZIP, ZIP64, headers and payloads spanning 
 
 ## 7z and RAR volumes
 
-Numbered 7z volumes use continuous byte streams such as name.7z.001 and .002. RAR uses name.partN.rar or legacy names such as name.rar and name.r00, preserving each physical RAR volume boundary rather than passing one concatenated RAR stream to UnRAR. Both locate a same-directory volume set from any existing part. Limits are 1,024 volumes and 100,000 directory-discovery entries. Missing volumes, conflicting name numbers, links, and reparse points are explicitly rejected.
+Numbered 7z volumes use continuous byte streams such as name.7z.001 and .002. RAR uses name.partN.rar or legacy names such as name.rar and name.r00, preserving each physical RAR volume boundary when passing the volumes to the isolated Rust RAR reader. Both locate a same-directory volume set from any existing part. Limits are 1,024 volumes and 100,000 directory-discovery entries. Missing volumes, conflicting name numbers, links, and reparse points are explicitly rejected.
 
 Rust retains each volume handle's identity, length, and timestamps and declares authorized boundaries to the native adapter through ReadSource::volume_lengths(). The native process can request that the host read only authorized ranges; changing volumes does not accept arbitrary host paths from the archive. All volumes participate in source revalidation and output-overwrite protection. A change to the first or any later volume stops the task.
 

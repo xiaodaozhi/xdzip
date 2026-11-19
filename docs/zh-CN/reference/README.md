@@ -1,0 +1,115 @@
+# 产品设计与技术参考
+
+[English](../../reference/README.md) | 简体中文
+
+从[系统架构](../design/system-architecture.md)了解桌面与 CLI 的现行链路，再按主题查阅具体契约。功能操作见[用户手册](../user-guide/README.md)，环境准备和验证入口见[开发与贡献](../contributing/README.md)。
+
+## 架构与接口
+
+- [xdzip：软件设计总览](../design/index.md)
+- [xdzip：需求、设计与验收追踪](../design/requirements-traceability.md)
+- [xdzip：架构决策记录](../design/architecture-decisions.md)
+- [仓库目录与依赖](../engineering/repository-layout.md)
+- [接口契约与检查](../engineering/contracts.md)
+- [产品运行时与 Qt 生命周期](../engineering/product-runtime.md)
+- [应用会话与退出契约](../engineering/application-sessions.md)
+- [cxx 桥接依赖依据](../engineering/cxx-admission.md)
+- [格式工作进程的宿主日历与编码服务](../engineering/host-platform-services.md)
+- [外部只读 SDK 试验](../engineering/sdk-trial.md)
+
+## 归档读写
+
+- [只读浏览实现契约](../engineering/readonly-browser.md)
+- [ZIP 只读浏览契约](../engineering/zip-readonly-browsing.md)
+- [大归档索引与按需浏览](../engineering/large-index.md)
+- [分卷读取与临时打开](../engineering/archive-opening.md)
+- [文件名编码自适应契约](../engineering/filename-encoding.md)
+- [主动内容预览](../engineering/content-preview.md)
+- [解压预检：元数据阶段](../engineering/extraction-preflight.md)
+- [安全 ZIP 解压实现](../engineering/zip-safe-extraction.md)
+- [压缩包完整性检查](../engineering/archive-checking.md)
+- [-- docs/engineering/archive-transfers.md -->](../engineering/archive-transfers.md)
+- [压缩包密码与加密目录打开](../engineering/password-extraction.md)
+- [ZIP 创建实现契约](../engineering/zip-creation.md)
+- [ISO9660 与 Joliet 创建](../engineering/iso-creation.md)
+- [自有 Windows ZIP 自解压包](../engineering/sfx-creation.md)
+
+## 格式能力与实现
+
+- [内置格式能力登记](../engineering/format-registry.md)
+- [隔离格式工作进程契约](../engineering/native-codecs.md)
+- [自研 Rust 格式与算法契约](../engineering/independent-rust-codecs.md)
+- [算法辅助工作计量](../engineering/auxiliary-decoding-work.md)
+- [ZIP 元数据依赖准入](../engineering/zip-metadata-admission.md)
+- [ZIP 解压与输出依赖准入](../engineering/zip-extraction-admission.md)
+- [7z 格式来源与独立实现依据](../engineering/sevenzip-format-sources.md)
+- [RAR 独立实现依据与兼容边界](../engineering/rar-format-sources.md)
+- [CAB 格式来源与实现依据](../engineering/cab-format-sources.md)
+- [TAR/GZIP 实现契约](../engineering/tar-gzip.md)
+- [单文件压缩流与 ZIP 衍生包](../engineering/single-file-streams.md)
+- [LZ4 压缩流契约](../engineering/lz4-streams.md)
+- [Zstandard 压缩流契约](../engineering/zstandard-streams.md)
+- [Unix compress Z 契约](../engineering/compress-streams.md)
+- [普通 Brotli 流契约](../engineering/brotli-streams.md)
+- [LHA 数据与算法契约](../engineering/lha-containers.md)
+- [PMA 容器与 PMarc 方法](../engineering/pma-streams.md)
+- [ARJ 压缩流与容器准入](../engineering/arj-streams.md)
+- [ARC 容器与压缩流配置](../engineering/arc-streams.md)
+- [BH 容器与准入的 BlakHole 配置](../engineering/bh-containers.md)
+- [ACE、ALZ 与 EGG 的资料和许可门槛](../engineering/ace-alz-egg-format-sources.md)
+- [AES Crypt 只读封装](../engineering/aescrypt-envelopes.md)
+- [DEB 容器契约](../engineering/deb-containers.md)
+- [ASAR 容器契约](../engineering/asar-containers.md)
+- [UU、UUE 与 XXE 文本封装](../engineering/text-envelopes.md)
+- [WIM、MSI 和安装程序格式的资料与许可](../engineering/wim-msi-installer-format-sources.md)
+- [磁盘镜像与其他归档格式的资料和许可](../engineering/disk-image-archive-format-sources.md)
+- [Bandizip 格式清单与 xdzip 可行性评估](../engineering/bandizip-format-assessment.md)
+
+## 桌面交互与视觉设计
+
+- [xdzip 视觉规范](../visual/README.md)
+- [界面设计规范](../visual/design-standard.md)
+- [界面设计与修正流程](../visual/design-workflow.md)
+- [文件关联图标](../visual/file-association-icons.md)
+- [HTML 视觉一致性复核](../visual/html-fidelity.md)
+- [补充交互与文案规范](../ux/interaction-spec.md)
+- [主窗口功能、组件与交互契约](../ux/main-window-components.md)
+- [目录树 B：设计、素材与接入规格](../ux/directory-tree.md)
+- [W01 主窗口欢迎页，高保真候选](../ux/welcome.md)
+- [欢迎页读取遮罩与创建完成行为](../ux/welcome-opening.md)
+- [密码解压交互](../ux/password-extraction.md)
+- [任务窗口与完整性检查](../ux/task-windows.md)
+- [设置窗口与界面语言](../ux/settings-localization.md)
+- [简体中文界面术语](../ux/chinese-terminology.md)
+- [系统菜单与托盘](../ux/desktop-integration.md)
+- [平台窗口与标题栏规范](../ux/platform-windows.md)
+- [高保真状态与实现契约](../ux/hifi-state-spec.md)
+- [v0.1 交互原型与功能映射](../ux/prototype-spec.md)
+
+## 平台集成、发布与信任
+
+- [安装器与文件关联](../engineering/installers-associations.md)
+- [系统支持与维护政策](../engineering/support-policy.md)
+- [文件管理器操作与独立任务宿主](../engineering/shell-actions.md)
+- [用户主动更新契约](../engineering/software-update.md)
+- [数据生命周期与诊断](../engineering/privacy.md)
+- [产品版本与构建身份](../engineering/versioning.md)
+- [GitHub Release 协议 v1](../engineering/release-protocol.md)
+- [本地 macOS 开发 DMG](../engineering/macos-deployment.md)
+- [Linux 独立运行目录与验证](../engineering/linux-deployment.md)
+- [部署依赖核验与 SBOM](../engineering/deployment-audit.md)
+- [实际组件归属与许可材料](../engineering/runtime-attribution.md)
+- [原生运行库来源与通知](../engineering/native-runtime-materials.md)
+- [Qt SDK 与源码对应核验](../engineering/qt-sdk-correspondence.md)
+- [Windows 开发工具与运行库许可](../engineering/windows-licensing.md)
+- [许可证决策与第三方材料](../engineering/licensing.md)
+- [依赖与格式后端准入](../engineering/dependencies.md)
+- [对应源码与重建材料](../engineering/source-delivery.md)
+- [从 CLDR 重建 ICU 73.2 数据](../engineering/icu-cldr-rebuild.md)
+
+## 构建与命令行参考
+
+- [开发者准备指南](../engineering/development.md)
+- [开发构建与平台验证](../engineering/developer-build.md)
+- [工具链与平台冻结表](../engineering/toolchain.md)
+- [命令行运行契约](../engineering/command-line.md)

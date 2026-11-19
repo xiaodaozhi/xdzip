@@ -1,0 +1,115 @@
+# Product design and technical reference
+
+English | [简体中文](../zh-CN/reference/README.md)
+
+Start with the [system architecture](../design/system-architecture.md) for current desktop and CLI behavior. Find the details in the contracts below. See the [user manual](../user-guide/README.md) for steps and [Build and contribute](../contributing/README.md) for setup and tests.
+
+## Architecture and interfaces
+
+- [xdzip: Software design overview](../design/index.md)
+- [xdzip: Requirements, design, and acceptance traceability](../design/requirements-traceability.md)
+- [xdzip: Architecture decision records](../design/architecture-decisions.md)
+- [Repository layout and dependencies](../engineering/repository-layout.md)
+- [Interface contracts and checks](../engineering/contracts.md)
+- [Product runtime and Qt lifecycle](../engineering/product-runtime.md)
+- [Application sessions and shutdown contract](../engineering/application-sessions.md)
+- [cxx bridge dependency rationale](../engineering/cxx-admission.md)
+- [Host calendar and encoding services for format workers](../engineering/host-platform-services.md)
+- [External read-only SDK trial](../engineering/sdk-trial.md)
+
+## Reading and writing archives
+
+- [Read-only browsing implementation contract](../engineering/readonly-browser.md)
+- [Read-only ZIP browsing contract](../engineering/zip-readonly-browsing.md)
+- [Large archive indexing and on-demand browsing](../engineering/large-index.md)
+- [Split-volume reading and temporary opening](../engineering/archive-opening.md)
+- [Adaptive filename encoding contract](../engineering/filename-encoding.md)
+- [Explicit content preview](../engineering/content-preview.md)
+- [Extraction preflight: metadata phase](../engineering/extraction-preflight.md)
+- [Safe ZIP extraction implementation](../engineering/zip-safe-extraction.md)
+- [Archive integrity checking](../engineering/archive-checking.md)
+- [-- docs/engineering/archive-transfers.md -->](../engineering/archive-transfers.md)
+- [Archive passwords and encrypted-directory opening](../engineering/password-extraction.md)
+- [ZIP creation implementation contract](../engineering/zip-creation.md)
+- [ISO9660 and Joliet creation](../engineering/iso-creation.md)
+- [Owned Windows ZIP self-extracting archives](../engineering/sfx-creation.md)
+
+## Format support and implementation
+
+- [Built-in format declarations](../engineering/format-registry.md)
+- [Isolated format worker contract](../engineering/native-codecs.md)
+- [In-house Rust format and algorithm contract](../engineering/independent-rust-codecs.md)
+- [Auxiliary algorithm work accounting](../engineering/auxiliary-decoding-work.md)
+- [ZIP metadata dependency admission](../engineering/zip-metadata-admission.md)
+- [ZIP extraction and output dependency admission](../engineering/zip-extraction-admission.md)
+- [7z format sources and independent implementation](../engineering/sevenzip-format-sources.md)
+- [RAR independent implementation basis and compatibility boundaries](../engineering/rar-format-sources.md)
+- [CAB format sources and implementation basis](../engineering/cab-format-sources.md)
+- [TAR/GZIP implementation contract](../engineering/tar-gzip.md)
+- [Single-file streams and ZIP-derived packages](../engineering/single-file-streams.md)
+- [LZ4 stream contract](../engineering/lz4-streams.md)
+- [Zstandard stream contract](../engineering/zstandard-streams.md)
+- [Unix compress Z contract](../engineering/compress-streams.md)
+- [Ordinary Brotli stream contract](../engineering/brotli-streams.md)
+- [LHA wire and algorithm contract](../engineering/lha-containers.md)
+- [PMA containers and PMarc methods](../engineering/pma-streams.md)
+- [ARJ compressed streams and container admission](../engineering/arj-streams.md)
+- [ARC containers and compressed stream profiles](../engineering/arc-streams.md)
+- [BH containers and the admitted BlakHole profile](../engineering/bh-containers.md)
+- [ACE, ALZ and EGG source and licensing gates](../engineering/ace-alz-egg-format-sources.md)
+- [AES Crypt read-only envelopes](../engineering/aescrypt-envelopes.md)
+- [DEB container contract](../engineering/deb-containers.md)
+- [ASAR container contract](../engineering/asar-containers.md)
+- [UU, UUE and XXE text envelopes](../engineering/text-envelopes.md)
+- [WIM, MSI, and installer format sources and licenses](../engineering/wim-msi-installer-format-sources.md)
+- [Sources and licenses for disk images and other archive formats](../engineering/disk-image-archive-format-sources.md)
+- [Bandizip format inventory and xdzip feasibility](../engineering/bandizip-format-assessment.md)
+
+## Desktop interaction and visual design
+
+- [xdzip visual specifications](../visual/README.md)
+- [UI design standard](../visual/design-standard.md)
+- [UI design and correction workflow](../visual/design-workflow.md)
+- [File association icons](../visual/file-association-icons.md)
+- [HTML visual fidelity review](../visual/html-fidelity.md)
+- [Additional interaction and copy specification](../ux/interaction-spec.md)
+- [Main-window functionality, components and interaction contract](../ux/main-window-components.md)
+- [Directory tree B: design, assets and integration](../ux/directory-tree.md)
+- [W01 main-window welcome page, high-fidelity candidate](../ux/welcome.md)
+- [Welcome-page loading overlay and creation completion](../ux/welcome-opening.md)
+- [Password extraction interaction](../ux/password-extraction.md)
+- [Task windows and integrity checks](../ux/task-windows.md)
+- [Settings window and UI language](../ux/settings-localization.md)
+- [Simplified Chinese UI terminology](../ux/chinese-terminology.md)
+- [System menus and tray](../ux/desktop-integration.md)
+- [Platform windows and title bars](../ux/platform-windows.md)
+- [High-fidelity states and implementation contract](../ux/hifi-state-spec.md)
+- [v0.1 interaction prototype and feature mapping](../ux/prototype-spec.md)
+
+## Platform integration, releases and trust
+
+- [Installers and file associations](../engineering/installers-associations.md)
+- [System support and maintenance policy](../engineering/support-policy.md)
+- [File-manager actions and standalone task host](../engineering/shell-actions.md)
+- [User-initiated update contract](../engineering/software-update.md)
+- [Data lifecycle and diagnostics](../engineering/privacy.md)
+- [Product version and build identity](../engineering/versioning.md)
+- [GitHub Release protocol v1](../engineering/release-protocol.md)
+- [Local macOS development DMG](../engineering/macos-deployment.md)
+- [Linux standalone runtime directory and verification](../engineering/linux-deployment.md)
+- [Deployment dependency verification and SBOM](../engineering/deployment-audit.md)
+- [Actual component attribution and license materials](../engineering/runtime-attribution.md)
+- [Native runtime provenance and notices](../engineering/native-runtime-materials.md)
+- [Qt SDK and source correspondence verification](../engineering/qt-sdk-correspondence.md)
+- [Windows development tool and runtime licensing](../engineering/windows-licensing.md)
+- [License decision and third-party materials](../engineering/licensing.md)
+- [Dependency and format backend admission](../engineering/dependencies.md)
+- [Corresponding source and rebuild materials](../engineering/source-delivery.md)
+- [Rebuild ICU 73.2 data from CLDR](../engineering/icu-cldr-rebuild.md)
+
+## Build and CLI reference
+
+- [Developer preparation guide](../engineering/development.md)
+- [Development builds and platform verification](../engineering/developer-build.md)
+- [Toolchain and platform freeze](../engineering/toolchain.md)
+- [Command-line runtime contract](../engineering/command-line.md)

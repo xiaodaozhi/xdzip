@@ -1,6 +1,6 @@
 # 安全解压输入
 
-本目录为仓库自行构造的可再分发回归输入，不包含用户压缩包。基础 ZIP、链接及权限输入由 [generate-extract-fixtures.py](../../../scripts/generate-extract-fixtures.py)生成，预期边界见[夹具规则](../../../docs/qa/fixtures.md)。
+本目录为仓库自行构造的可再分发回归输入，不包含用户压缩包。基础 ZIP、链接及权限输入由 [generate-extract-fixtures.py](../../../scripts/generate-extract-fixtures.py)生成，预期边界见[夹具规则](../../../developers/qa/fixtures.md)。
 
 `password-retry.zip` 是固定的 186 字节 WinZip AE-2 AES-256 Deflate 输入，唯一条目 `owned.txt` 为 18 字节，内容为 `owned AES payload` 加换行。SHA-256 为 `cdb1a34b259be86e1670c58d26fb328e3e2dfe6b71defaa6f333393bb4156d41`。
 

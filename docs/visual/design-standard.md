@@ -71,7 +71,7 @@ Follow the [UI design workflow](design-workflow.md). Do not mark full acceptance
 
 ## Main-window interaction revision
 
-Main toolbar icon/text gap is fixed at 6; standalone icons are centered in content boxes. List/grid/sort buttons are fixed 28×28 rounded squares with 6.4 header gap; breadcrumbs absorb remaining space. Breadcrumb buttons are normally 28 high with vertical padding. Menus sit 4 units from invoking buttons; bottom menus open upward. Tree rows show no file counts; selected left edges are straight with full-height indicator, and child nodes have no four-sided outlines. Tree width uses actual text metrics of expanded nodes. Record revised interactions and measurements under the [verification method](../qa/README.md).
+Main toolbar icon/text gap is fixed at 6; standalone icons are centered in content boxes. List/grid/sort buttons are fixed 28×28 rounded squares with 6.4 header gap; breadcrumbs absorb remaining space. Breadcrumb buttons are normally 28 high with vertical padding. Menus sit 4 units from invoking buttons; bottom menus open upward. Tree rows show no file counts; selected left edges are straight with full-height indicator, and child nodes have no four-sided outlines. Tree width uses actual text metrics of expanded nodes. Record revised interactions and measurements under the [verification method](../../developers/qa/README.md).
 
 ## Operation-window and task-state assets
 
@@ -97,11 +97,11 @@ Ordinary standalone windows retain 1280/1548 source-coordinate conversion and ap
 
 Extraction destination and conflict cards use uniform backgrounds; scope uses a pale header strip and white body. Light cards use #F4F6FA, borders #DFE5EF and path/dropdown borders #DCE2EC; dark equivalents are in tokens.json. Path icon, editable path and Change share one border. Checkboxes use shared selected graphics. All operation windows reuse xdzip's built-in dropdown with selection, disabled, keyboard navigation, Escape, focus return and edge flipping. Menus stay 4 logical pixels from callers.
 
-All footer buttons use text 13, supporting text 12 and icon slot 16 logical pixels generated from layout-scale.json. Body scrolls separately and footer stays reachable. Fonts, colors and 1-logical-pixel strokes do not change by embedded/standalone entry. Record actual comparisons under the [verification method](../qa/README.md).
+All footer buttons use text 13, supporting text 12 and icon slot 16 logical pixels generated from layout-scale.json. Body scrolls separately and footer stays reachable. Fonts, colors and 1-logical-pixel strokes do not change by embedded/standalone entry. Record actual comparisons under the [verification method](../../developers/qa/README.md).
 
 “Create folder with archive name” and destination-check feedback share 24-unit icon slots, 16-unit visible marks and 8-unit icon/text gaps. Optical centers align, text starts match, and each line centers text and marks vertically. Retain icon slots during checking/failure so text does not jump left. Right padding of Change equals its vertical padding, calculated as half the difference between path-field and actual button heights; retain this relationship for larger fonts.
 
-Task-result discs use solid fill and white semantic marks from [status-icons.json](../../specs/visual/status-icons.json), with 24-unit canvas and visible diameter 20, without gradient, highlight, thin border or shadow. Export light/dark SVG and 1×/2×/3× PNG together. Existing originals and slices retain historical pixels rather than being rewritten in the new style. Record actual verification under the [general method](../qa/README.md).
+Task-result discs use solid fill and white semantic marks from [status-icons.json](../../specs/visual/status-icons.json), with 24-unit canvas and visible diameter 20, without gradient, highlight, thin border or shadow. Export light/dark SVG and 1×/2×/3× PNG together. Existing originals and slices retain historical pixels rather than being rewritten in the new style. Record actual verification under the [general method](../../developers/qa/README.md).
 
 ## Root and file-item interaction
 
@@ -109,7 +109,7 @@ Task-result discs use solid fill and white semantic marks from [status-icons.jso
 
 List hover covers all columns across the row, with selection fill taking precedence. Grid horizontal padding is 16, card slot 144×124, slot gap 12 and icon slot 40. Checkboxes sit 8×8 from the card's upper left, appearing on hover and remaining visible when selected. Accessibility fonts grow slots according to real metrics. The reopen-preview button is also 28×28. Menu shadow radius is 12 with vertical offset 4; Qt uses a shared nine-slice PNG compatible with software/GPU rendering, HTML uses CSS blur from the same parameters. Verify body and shadow appear together on the first complete menu frame and check actual pixels in light/dark states. Dark split-button dividers use the dark border color.
 
-ZIP creation uses the C01 original's three-part structure and white inner panels: normal width 491, title 20, body 13, supporting text 12, fields/body buttons height 28, input rows 38, footer buttons height 32 and font 13. Client area maxes at 736; smaller desktops scroll only the body and keep footer reachable. Qt and HTML use the same logical parameters. TAR/TAR.GZ use existing format segments; TAR disables level, both disable password and volumes, and switching clears inapplicable options and synchronizes extensions. Directory totals await background scanning; sample values do not replace real preflight. Record actual function and comparison under the [verification method](../qa/README.md).
+ZIP creation uses the C01 original's three-part structure and white inner panels: normal width 491, title 20, body 13, supporting text 12, fields/body buttons height 28, input rows 38, footer buttons height 32 and font 13. Client area maxes at 736; smaller desktops scroll only the body and keep footer reachable. Qt and HTML use the same logical parameters. TAR/TAR.GZ use existing format segments; TAR disables level, both disable password and volumes, and switching clears inapplicable options and synchronizes extensions. Directory totals await background scanning; sample values do not replace real preflight. Record actual function and comparison under the [verification method](../../developers/qa/README.md).
 
 ## Shared operation controls and creation-window revision
 
@@ -121,7 +121,7 @@ Qt uses OperationButton, OperationFooterButton, OperationFrame, OperationSelect,
 
 The creation list uses a circular minus from shared assets with 28 hit area and 24 icon slot; file size aligns right. Compression format is one continuous segmented radio group, equal-width, zero gap and one outer border; disabled formats accept neither mouse nor keyboard selection. File summaries read regular-file metadata in the background; the three original same-named fixtures are actually 8.4, 6.2 and 12.8 MB and display “3 files, 27.4 MB”. Directory totals remain unknown and the input tree is frozen again when starting.
 
-Separate information with commas, periods, line breaks or explicit labels, not middle dots. This applies to current UI and maintenance documents, not existing high-fidelity bitmaps. Historical screenshots and captured JSON do not enter the current source tree. scripts/check-operation-components.py enforces shared controls; record actual measurements, interactions and limitations under the [verification method](../qa/README.md).
+Separate information with commas, periods, line breaks or explicit labels, not middle dots. This applies to current UI and maintenance documents, not existing high-fidelity bitmaps. Historical screenshots and captured JSON do not enter the current source tree. scripts/check-operation-components.py enforces shared controls; record actual measurements, interactions and limitations under the [verification method](../../developers/qa/README.md).
 
 ## Results and advanced creation options
 

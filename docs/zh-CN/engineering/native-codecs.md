@@ -64,4 +64,4 @@ Foundation 使用 `scripts/check-rar-rust-interop.py --worker <built-worker> --o
 
 开发包维持实验性。组件许可、对应源码和重链接要求按实际构建单独复核，本功能完成不自动批准正式发行。
 
-[runtime 工作进程验证入口](../qa/runtime-worker-tests.md)自动准备完整集成清单及固定输入，代替直接执行未准备前提的 `native_backend_tests --ignored` 批次。可选的完整库模式要求零 ignored 结果。
+[runtime 工作进程验证入口](../../../developers/zh-CN/qa/runtime-worker-tests.md)自动准备完整集成清单及固定输入，代替直接执行未准备前提的 `native_backend_tests --ignored` 批次。可选的完整库模式要求零 ignored 结果。

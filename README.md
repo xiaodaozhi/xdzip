@@ -151,10 +151,11 @@ Development packages are not official releases. Windows and Linux development ar
 
 | Topic | Start here |
 | --- | --- |
-| Project documentation, architecture, and format contracts | [Documentation index](docs/README.md) |
+| Desktop use and scripting | [User manual](docs/user-guide/README.md), [command-line integration](docs/integration/README.md) |
+| Product design and implementation | [Technical reference](docs/reference/README.md) |
 | Privacy and data handling | [Privacy Policy](PRIVACY.en.md), [Chinese version](PRIVACY.md) |
-| Build, repository layout, and testing | [Development guide](docs/engineering/development.md), [repository layout](docs/engineering/repository-layout.md), [verification](docs/qa/README.md) |
-| Changes and planned work | [Changelog](CHANGELOG.md), [work package roadmap](docs/planning/backlog.md), [issues](https://github.com/xiaodaozhi/xdzip/issues) |
+| Build and contribute | [Contributor guide](docs/contributing/README.md) |
+| Changes and planned work | [Changelog](CHANGELOG.md), [GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues) |
 | Contributing | [Contributing guide](CONTRIBUTING.md), [code of conduct](CODE_OF_CONDUCT.md) |
 
 Feedback and contributions are welcome. When reporting a bug, include the version or commit, system and architecture, reproduction steps, and actual results. Generate your own samples and avoid including sensitive information. Report security issues privately through [Report a vulnerability](https://github.com/xiaodaozhi/xdzip/security/advisories/new).

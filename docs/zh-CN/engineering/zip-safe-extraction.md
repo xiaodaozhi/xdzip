@@ -24,7 +24,7 @@
 
 取消通过原子提交许可线性化：开始提交前取消不写目标；提交已经开始时允许完成整文件原子发布，并在最终结果中计入已提交文件；最后任务完成后取消不能改变成功结果。关闭进度窗口只隐藏窗口，任务继续；退出程序须取消并等待工作线程与源句柄退出，不在 GUI 线程 join。
 
-Windows 与 macOS ACL 查询属于隔离的 unsafe 边界，每个调用解释句柄、指针、缓冲区和释放前提。验证结果须记录实际覆盖的平台和异常路径。依赖准入与公告查询见 [ZIP 解压依赖](zip-extraction-admission.md)，实际验收按[验证方法](../qa/README.md)在对应 issue 与工件登记。
+Windows 与 macOS ACL 查询属于隔离的 unsafe 边界，每个调用解释句柄、指针、缓冲区和释放前提。验证结果须记录实际覆盖的平台和异常路径。依赖准入与公告查询见 [ZIP 解压依赖](zip-extraction-admission.md)，实际验收按[验证方法](../../../developers/zh-CN/qa/README.md)在对应 issue 与工件登记。
 
 OWNER RIGHTS（S-1-3-4）表示对象所有者的动态权限，只在所有者已通过当前用户／SYSTEM／Administrators 检查后接受；不能使外部所有者或其他 SID 变为受信账户。原生回归同时验证继承到阶段文件与新建输出父目录，以及存在 OWNER RIGHTS 时接受 Everyone 的只读访问、仍拒绝其修改权限。
 

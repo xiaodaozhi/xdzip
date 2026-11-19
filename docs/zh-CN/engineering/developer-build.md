@@ -29,7 +29,7 @@
 
 `scripts/desktop.py prepare --install-qt`、`doctor`、`build` 和 `test` 默认共享这些目录。不要为每个开发管线另建 `.cache/Qt`、`.cache/desktop-tools` 或同类目录；只有需要隔离不同 Qt 版本、平台或实验构建时，才显式传入 `--qt-prefix`、`--qt-root` 和 `--tools-dir`。CI 可以把这些参数显式指向 runner 临时目录，但本地默认布局不随 CI 回退路径改变。CMake、Ninja、rustup、Rust 编译器和平台 C++ 编译器属于宿主工具链，按环境预检要求安装和调用，不由 Qt 工具目录复制。
 
-研发周期完成、分支和 worktree 清理后，必须清理该周期在 `build/` 下产生的临时目录和文件。保留 `build/toolchain/` 等仍需复用的共享工具链，删除周期专用构建、诊断和下载暂存；具体规则和手动兜底见[仓库内容与历史管理](repository-hygiene.md#研发周期工件收尾)。
+研发周期完成、分支和 worktree 清理后，必须清理该周期在 `build/` 下产生的临时目录和文件。保留 `build/toolchain/` 等仍需复用的共享工具链，删除周期专用构建、诊断和下载暂存；具体规则和手动兜底见[仓库内容与历史管理](../../../developers/zh-CN/engineering/repository-hygiene.md#研发周期工件收尾)。
 
 | 平台 | 先准备的系统环境 | Qt SDK 子目录 |
 | --- | --- | --- |
@@ -193,7 +193,7 @@ python3 scripts/desktop.py verify --build-dir build/desktop-dmg --output-dir bui
 
 [日常 CI](../../../.github/workflows/docs.yml)只运行轻量静态检查，不代替本地产品构建。[Foundation](../../../.github/workflows/foundation.yml) 和 [Qt 工作流](../../../.github/workflows/qt-components.yml)仅按需手动运行，Qt 工作流通过同一 desktop.py 执行构建、Qt 测试以及 Windows/Linux 打包和运行时核验。[ci-desktop.ps1](../../../scripts/ci-desktop.ps1)保留按需运行的重复、视觉、互操作和安装兼容检查，不作为日常本地验证的必选入口。
 
-历史完整产品、真实安装升级／回退及关联生命周期只在一次性 Windows/Linux CI 主机或隔离容器执行，不因统一入口就开放为普通本地 verify 的默认行为。按需 Qt 工作流的 macOS 作业使用 SDK 模式部署审计和 Cocoa 启动／文件打开检查，仅保存日志和 JSON。完整检查与证据边界见[CI 策略](ci-policy.md)。
+历史完整产品、真实安装升级／回退及关联生命周期只在一次性 Windows/Linux CI 主机或隔离容器执行，不因统一入口就开放为普通本地 verify 的默认行为。按需 Qt 工作流的 macOS 作业使用 SDK 模式部署审计和 Cocoa 启动／文件打开检查，仅保存日志和 JSON。完整检查与证据边界见[CI 策略](../../../developers/zh-CN/engineering/ci-policy.md)。
 
 ## 文件与任务边界
 
@@ -203,11 +203,7 @@ ZIP 在受限 POSIX 条件下可恢复相对符号链接和可执行位，不恢
 
 ## Microsoft Store MSIX
 
-在 GitHub 仓库的 **Settings → Secrets and variables → Actions → Variables** 设置 `XDZIP_STORE_MSIX_NAME`、`XDZIP_STORE_MSIX_PUBLISHER` 和 `XDZIP_STORE_MSIX_PUBLISHER_DISPLAY_NAME`，值取自合作伙伴中心的**产品标识**。任意值缺失时，工作流在构建前停止。
-
-准备商店更新时，先递增 `VERSION.json` 中的 `build`，同步版本文件并提交。在 GitHub 打开 [Windows Store MSIX](../../../.github/workflows/windows-store-msix.yml)，在 `main` 上选择 **Run workflow**，输入已合入 `main` 的完整提交 SHA。下载 `windows-store-msix-<包版本>-<运行次数>` 工件，其中包含未签名的 `xdzip-windows-x64.msix`，以及构建、测试、运行时校验和程序包检查的回执。
-
-上传前，在 `package-msix.json` 和 `windows-msix.json` 中核对源提交、包版本和 SHA-256，并确认包版本高于商店已发布版本。将 MSIX 上传到合作伙伴中心，更新 Store 一览后提交认证。采用手动发布时，认证通过后选择 **立即发布**。微软签名并分发该包，随后可以在 Windows 上验证实际安装的商店版。
+商店正式构建与提交流程见[维护者手册](../../../developers/zh-CN/market/windows/build.md)。
 
 ## Windows MSIX 实验构建
 
@@ -233,9 +229,9 @@ MSIX 清单显式声明 `en-US` 和 `zh-CN`，与应用内置的英文、简体�
 
 ## 证据与复验
 
-按[通用验证方法](../qa/README.md)和[按需桌面验证](../qa/private-test-manual.md)选择受影响项，不要求日常填写人工验收表。构建与测试收据分别保存在 build-dir 下的 `desktop-build.json`、`desktop-test.json`，prepare、package 和 verify 回执位于 output-dir 的 `<stage>.json`，并关联底层验证证据。自动化收据记录实际阶段与来源；离屏／软件渲染、原生 Cocoa 检查和已执行的人工专项分别登记，不相互替代。既有验收在 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)保留，不因重新生成候选清单而重做。
+按[通用验证方法](../../../developers/zh-CN/qa/README.md)和[按需桌面验证](../../../developers/zh-CN/qa/private-test-manual.md)选择受影响项，不要求日常填写人工验收表。构建与测试收据分别保存在 build-dir 下的 `desktop-build.json`、`desktop-test.json`，prepare、package 和 verify 回执位于 output-dir 的 `<stage>.json`，并关联底层验证证据。自动化收据记录实际阶段与来源；离屏／软件渲染、原生 Cocoa 检查和已执行的人工专项分别登记，不相互替代。既有验收在 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)保留，不因重新生成候选清单而重做。
 
-Windows/Linux 工件交付同提交源码和许可通知，Actions 保存 14 天；过期后按身份和锁定输入重建。deployment-audit.json、源码及文件级 CycloneDX 清单用于来源核验，覆盖仍可能为 incomplete，不能当作许可批准。源码重建与 Qt 替换方法见[源码交付](source-delivery.md)及[自动验证契约](candidate-verification.md)。
+Windows/Linux 工件交付同提交源码和许可通知，Actions 保存 14 天；过期后按身份和锁定输入重建。deployment-audit.json、源码及文件级 CycloneDX 清单用于来源核验，覆盖仍可能为 incomplete，不能当作许可批准。源码重建与 Qt 替换方法见[源码交付](source-delivery.md)及[自动验证契约](../../../developers/zh-CN/engineering/candidate-verification.md)。
 
 所有构建、截图、量测、报告与包只保留为忽略的本地或 CI 工件。不要把生成的 pending 表、离屏检查或部分 SBOM 写成干净环境与全部发行门槛通过。
 

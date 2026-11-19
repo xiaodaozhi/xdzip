@@ -41,7 +41,7 @@ If a read-only worker handler encounters an unwindable panic, the boundary catch
 
 ## Verification and build
 
-See [general verification](../qa/README.md). Rust core tests require no Qt; Qt window, model, stress, and shutdown cases are natively built and run on three platforms. macOS CI verifies arm64 and SDK-environment Cocoa startup without deploying or uploading apps; local development DMGs may be produced on explicit request. Windows/Linux deploy bundled Qt and verify SDK-free execution; see the [build guide](developer-build.md). These checks do not amount to formal release approval.
+See [general verification](../../developers/qa/README.md). Rust core tests require no Qt; Qt window, model, stress, and shutdown cases are natively built and run on three platforms. macOS CI verifies arm64 and SDK-environment Cocoa startup without deploying or uploading apps; local development DMGs may be produced on explicit request. Windows/Linux deploy bundled Qt and verify SDK-free execution; see the [build guide](developer-build.md). These checks do not amount to formal release approval.
 
 Initial queries allocate immutable result identity; later batches must match every QueryKey field and parameter. Qt cancels old requests and coalesces the latest intent while retaining sequence and request-ID checks. A batch also limits names to 64 KiB and does not refilter/resort. Historical acceptance remains limited to the capabilities available at the time.
 

@@ -33,7 +33,7 @@ def main():
     payload = {}
     image_count = 0
     for locale, copy in spec['locales'].items():
-        base = ROOT / ('docs/market/windows' if locale == 'en-US' else 'docs/zh-CN/market/windows')
+        base = ROOT / ('developers/market/windows' if locale == 'en-US' else 'developers/zh-CN/market/windows')
         field_files = {
             'description.txt': copy['description'],
             'whats-new.txt': copy['release_notes'],

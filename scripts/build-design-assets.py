@@ -320,7 +320,7 @@ def gallery(entries: list[dict]) -> str:
             '<title>xdzip — 统一素材库</title><style>' + styles + '</style><main><h1>xdzip — 统一素材库</h1>'
             f'<p>一套命名、一份清单、一组透明画布。{len(vectors)} 类共享图标提供浅色 / 深色 SVG 与 1× / 2× / 3× PNG；原稿参考和演示照片集中保存。</p>'
             '<p><a href="../hifi/index.html">完整高保真原稿</a>，<a href="../html/index.html">HTML 高保真界面</a>，'
-            '<a href="../../docs/qa/README.md">本地／CI 质量复核</a>，<a href="manifest.json">资产清单</a></p>'
+            '<a href="../../developers/qa/README.md">本地／CI 质量复核</a>，<a href="manifest.json">资产清单</a></p>'
             '<div class="banner"><p>每个运行图标均使用 24 × 24 逻辑画布；下列浅深色对照固定显示为 48 × 48。文档可见高度一致，目录保留自然横向比例。原稿栏包含背景，只用于核对造型；透明运行素材来自独立矢量重建。</p></div>'
             '<nav>' + ''.join(f'<a href="#{group}">{title}</a>' for group, title in GROUP_TITLES.items()) +
             '<a href="#platform-brand">平台品牌导出</a><a href="../hifi/sources/file-association-icons.html">文件关联图标</a><a href="#directory-tree">目录树 B 切图</a><a href="#references">原像素参考</a></nav>' + ''.join(sections) + platform_section + operation_section +

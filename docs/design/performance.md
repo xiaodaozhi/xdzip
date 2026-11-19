@@ -10,7 +10,7 @@ Existing evidence: a Qt 6.8.2 Linux software-rendered prototype recorded startup
 
 ## 2. Reference machine and initial budgets
 
-Target reference configuration: Apple Silicon Mac, 16 GiB RAM, local SSD, 60 Hz display, system default font, real GPU, Release build, and required ad-hoc integrity signing. Actual samples must identify machine model, system, backend, and commit; see the [automated verification contract](../engineering/candidate-verification.md#性能与资源证据) for existing measurement methods. These are engineering budgets, not performance guarantees for all supported devices based on a single host observation.
+Target reference configuration: Apple Silicon Mac, 16 GiB RAM, local SSD, 60 Hz display, system default font, real GPU, Release build, and required ad-hoc integrity signing. Actual samples must identify machine model, system, backend, and commit; see the [automated verification contract](../../developers/engineering/candidate-verification.md#性能与资源证据) for existing measurement methods. These are engineering budgets, not performance guarantees for all supported devices based on a single host observation.
 
 | Scenario | Initial target | Measurement conditions |
 |---|---|---|

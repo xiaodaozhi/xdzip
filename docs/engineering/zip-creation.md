@@ -52,7 +52,7 @@ After regular-file selection, the existing Rust metadata worker reads current fi
 
 Target checks and input summaries are background preparation. They do not change the enabled appearance of add/remove controls or publish checking hints to the welcome page. Actual requests remain serial; Create is enabled only after the current path's creation check succeeds. Extraction has independent check state; a creation check for the same path cannot substitute. See the [extraction contract](zip-safe-extraction.md).
 
-Six operation-window types share footer buttons; fields, body actions, circular remove, and segmented-group options reuse corresponding role components. Appearance and font sizes are generated from layout-scale.json, not overridden by windows. Save actual summary, control measurements, and screenshots under build/ or CI artifacts following [verification](../qa/README.md).
+Six operation-window types share footer buttons; fields, body actions, circular remove, and segmented-group options reuse corresponding role components. Appearance and font sizes are generated from layout-scale.json, not overridden by windows. Save actual summary, control measurements, and screenshots under build/ or CI artifacts following [verification](../../developers/qa/README.md).
 
 ## Acceptance
 

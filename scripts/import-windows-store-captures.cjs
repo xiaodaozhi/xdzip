@@ -43,7 +43,7 @@ async function main() {
   // All source sets have passed before any existing Store input is replaced.
   for (const input of inputs) {
     const {locale,source,bytes,pixels,cutout,caption,sessionHash} = input;
-    const base = locale === 'en-US' ? 'docs/market/windows' : 'docs/zh-CN/market/windows';
+    const base = locale === 'en-US' ? 'developers/market/windows' : 'developers/zh-CN/market/windows';
     const file = `${base}/images/screenshots/${source.scene}.png`;
     const nativeFile = `design/assets/marketing/windows-store-native/${locale}/${source.scene}.png`;
     for (const destination of [file,nativeFile]) fs.mkdirSync(path.dirname(path.join(root,destination)),{recursive:true});

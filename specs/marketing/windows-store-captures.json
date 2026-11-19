@@ -7,9 +7,9 @@
   "processing": "Native sources remain byte-identical in design/assets. Published screenshots remove one top row, clear old desktop colors inside the corner squares, apply corner alpha and add a one-pixel inner border without changing dimensions or alpha. Other cropped RGB pixels remain unchanged. No JPEG or screenshot upscaling.",
   "images": [
     {
-      "file": "docs/market/windows/images/screenshots/01-browse.png",
+      "file": "developers/market/windows/images/screenshots/01-browse.png",
       "native_file": "design/assets/marketing/windows-store-native/en-US/01-browse.png",
-      "cutout_file": "docs/market/windows/images/screenshots/01-browse.png",
+      "cutout_file": "developers/market/windows/images/screenshots/01-browse.png",
       "locale": "en-US",
       "scene": "01-browse",
       "width": 1536,
@@ -45,9 +45,9 @@
       "border_color": "#C8D4E6"
     },
     {
-      "file": "docs/market/windows/images/screenshots/03-preview.png",
+      "file": "developers/market/windows/images/screenshots/03-preview.png",
       "native_file": "design/assets/marketing/windows-store-native/en-US/03-preview.png",
-      "cutout_file": "docs/market/windows/images/screenshots/03-preview.png",
+      "cutout_file": "developers/market/windows/images/screenshots/03-preview.png",
       "locale": "en-US",
       "scene": "03-preview",
       "width": 1536,
@@ -83,9 +83,9 @@
       "border_color": "#C8D4E6"
     },
     {
-      "file": "docs/market/windows/images/screenshots/04-workspace.png",
+      "file": "developers/market/windows/images/screenshots/04-workspace.png",
       "native_file": "design/assets/marketing/windows-store-native/en-US/04-workspace.png",
-      "cutout_file": "docs/market/windows/images/screenshots/04-workspace.png",
+      "cutout_file": "developers/market/windows/images/screenshots/04-workspace.png",
       "locale": "en-US",
       "scene": "04-workspace",
       "width": 1536,
@@ -121,9 +121,9 @@
       "border_color": "#C8D4E6"
     },
     {
-      "file": "docs/market/windows/images/screenshots/02-create.png",
+      "file": "developers/market/windows/images/screenshots/02-create.png",
       "native_file": "design/assets/marketing/windows-store-native/en-US/02-create.png",
-      "cutout_file": "docs/market/windows/images/screenshots/02-create.png",
+      "cutout_file": "developers/market/windows/images/screenshots/02-create.png",
       "locale": "en-US",
       "scene": "02-create",
       "width": 737,
@@ -159,9 +159,9 @@
       "border_color": "#C8D4E6"
     },
     {
-      "file": "docs/zh-CN/market/windows/images/screenshots/01-browse.png",
+      "file": "developers/zh-CN/market/windows/images/screenshots/01-browse.png",
       "native_file": "design/assets/marketing/windows-store-native/zh-CN/01-browse.png",
-      "cutout_file": "docs/zh-CN/market/windows/images/screenshots/01-browse.png",
+      "cutout_file": "developers/zh-CN/market/windows/images/screenshots/01-browse.png",
       "locale": "zh-CN",
       "scene": "01-browse",
       "width": 1536,
@@ -197,9 +197,9 @@
       "border_color": "#C8D4E6"
     },
     {
-      "file": "docs/zh-CN/market/windows/images/screenshots/03-preview.png",
+      "file": "developers/zh-CN/market/windows/images/screenshots/03-preview.png",
       "native_file": "design/assets/marketing/windows-store-native/zh-CN/03-preview.png",
-      "cutout_file": "docs/zh-CN/market/windows/images/screenshots/03-preview.png",
+      "cutout_file": "developers/zh-CN/market/windows/images/screenshots/03-preview.png",
       "locale": "zh-CN",
       "scene": "03-preview",
       "width": 1536,
@@ -235,9 +235,9 @@
       "border_color": "#C8D4E6"
     },
     {
-      "file": "docs/zh-CN/market/windows/images/screenshots/04-workspace.png",
+      "file": "developers/zh-CN/market/windows/images/screenshots/04-workspace.png",
       "native_file": "design/assets/marketing/windows-store-native/zh-CN/04-workspace.png",
-      "cutout_file": "docs/zh-CN/market/windows/images/screenshots/04-workspace.png",
+      "cutout_file": "developers/zh-CN/market/windows/images/screenshots/04-workspace.png",
       "locale": "zh-CN",
       "scene": "04-workspace",
       "width": 1536,
@@ -273,9 +273,9 @@
       "border_color": "#C8D4E6"
     },
     {
-      "file": "docs/zh-CN/market/windows/images/screenshots/02-create.png",
+      "file": "developers/zh-CN/market/windows/images/screenshots/02-create.png",
       "native_file": "design/assets/marketing/windows-store-native/zh-CN/02-create.png",
-      "cutout_file": "docs/zh-CN/market/windows/images/screenshots/02-create.png",
+      "cutout_file": "developers/zh-CN/market/windows/images/screenshots/02-create.png",
       "locale": "zh-CN",
       "scene": "02-create",
       "width": 737,

@@ -21,7 +21,7 @@ The project uses **Qt Quick** for its desktop interface. The established technic
 | [09 Performance and measurement](performance.md) | Budgets, optimization paths, real workloads, and evidence |
 | [10 Coding and quality](quality-engineering.md) | Conventions, comments, tests, fuzzing, and contribution workflow |
 | [11 Build, release, and licensing](build-release.md) | Deployment on three platforms, signing, notarization, dependencies, and updates |
-| [12 Implementation and prototype migration](implementation-roadmap.md) | Repository evolution, implementation order, and stage exit criteria |
+| [12 Architecture evolution](architecture-evolution.md) | How the prototypes led to the current product and where the experimental SDK fits |
 | [Architecture decision records](architecture-decisions.md) | Reasons for choices, costs, and when to revisit them |
 | [Requirements traceability matrix](requirements-traceability.md) | How requirements map to design, tests, and versions |
 | [Terminology and protocol constants](glossary.md) | Consistent names, units, initial limits, and version interpretation |
@@ -43,7 +43,7 @@ Start with 01, 02, and the architecture decisions. Interface contributors should
 
 The design defines goals and boundaries; it is not a report of a particular run. For implemented product capabilities, the root README and engineering contracts are authoritative. Later capabilities and uncovered items are tracked in work package issues. Performance figures must come from measurements tied to an actual commit, platform, and workload. Historical prototype data cannot guarantee the current product's first-frame performance, installed size, or actual extraction performance.
 
-Third-party protocols, additional formats, sandboxing, content previews, and similar capabilities each require admission. Keep a capability explicitly disabled when its required verification has not passed; a designed interface alone does not establish implementation. Store execution evidence according to [verification](../qa/README.md); do not commit stage reports.
+Third-party protocols, additional formats, sandboxing, content previews, and similar capabilities each require admission. Keep a capability explicitly disabled when its required verification has not passed; a designed interface alone does not establish implementation. Store execution evidence according to [verification](../../developers/qa/README.md); do not commit stage reports.
 
 ## Change rules
 

@@ -1,90 +1,47 @@
-# xdzip: 02 System architecture
+# XDZip system architecture
 
 English | [简体中文](../zh-CN/design/system-architecture.md)
 
-## 1. Architecture goals
-
-Rust owns all archive semantics, tasks, format selection, and file security. QML owns views and lightweight interaction; C++ owns Qt objects, models, desktop system interfaces, and Rust type adaptation. Replacing the UI retains the core and format adapters; adding a format does not change the list view or task state machine.
-
-The MVP uses one application process, one Rust core runtime, and optional format worker processes. Built-in pure Rust backends may run in process; adapters using large native parsing libraries should preferably run in official worker processes. Third-party extensions always run through constrained worker processes. Process isolation does not replace sandboxing.
+The desktop and standalone CLI share the Rust archive runtime. Desktop clients express intent through Qt Quick. Rust selects formats, owns sources and indexes, and applies task and file policies. The CLI calls the runtime without Qt. [Repository and module map](../engineering/repository-layout.md)
 
 ```mermaid
 flowchart TB
-  QML[Qt Quick views and design system] --> QT[C++ controllers and virtual models]
-  QT --> BR[cxx build-time bridge]
-  BR --> APP[Rust application services and task scheduling]
-  APP --> DOM[Domain types and policies]
-  APP --> IDX[Index and queries]
-  APP --> SAFE[Authorized file access and output transactions]
-  APP --> REG[Format registry]
-  REG --> CODEC[Built-in format adapters]
-  REG --> PH[Process extension host]
-  PH --> WP[Constrained format worker process]
-  CODEC --> SDK[Format interface]
-  PH --> SDK
-  SAFE --> OS[Platform secure file API]
+  UI[Qt Quick views] --> CPP[C++ controllers and models]
+  CPP --> BR[cxx command and event bridge]
+  BR --> APP[Rust archive runtime]
+  CLI[Standalone Rust CLI] --> APP
+  APP --> INDEX[Session snapshots and queries]
+  APP --> IO[Authorized file I/O and output transactions]
+  APP --> REG[Built-in format registry]
+  REG --> CODEC[In-process Rust codecs]
+  REG --> WORKER[Private archive worker]
+  WORKER --> RUST[Isolated Rust format backends]
+  CPP --> PREVIEW[Private image preview worker]
 ```
 
-Arrows indicate call direction. Format adapters request I/O through the SDK's restricted read/output objects. Restricted ports omitted from the diagram do not grant arbitrary filesystem access.
+## Desktop requests and lifecycle
 
-## 2. Proposed modules
+`ApplicationSessions` owns browsing sessions and the shared task entry. A session's `BrowserController` submits commands through `RuntimeConnection`. The cxx bridge gives the application separate command and event handles. A receiver thread waits for runtime events and delivers bounded batches. The GUI applies a response only when its request, session and query identity still match. It can then discard a stale page after a search, sort or tab change. [Bridge and session contracts](qt-rust-bridge.md), [application sessions](../engineering/application-sessions.md)
 
-The table describes the target structure of the production repository. At the time of this design, the experimental repository had not yet created these crates.
+Closing a browsing tab releases its UI state. A running task can retain its session and source while the task entry remains available. Heavy tasks are admitted serially across the application. The runtime handles cancellation cooperatively and protects the actual terminal result when a commit has already completed. [Runtime](../engineering/product-runtime.md), [task lifecycle](task-scheduling.md)
 
-| Module | Responsibility | Disallowed dependencies/behavior |
-|---|---|---|
-| `xdzip-domain` | IDs, capabilities, states, errors, plans, policy values | Qt, filesystem, threads, concrete formats |
-| `xdzip-codec-api` | Constrained streams, probing, scanning, read/write interfaces, capabilities | QML, user settings, actual output paths |
-| `xdzip-index` | Metadata, pagination, sorting, filtering, index storage | UI objects, direct extraction |
-| `xdzip-io` | Authorized roots, secure traversal, quotas, staging, commit, cleanup | Format magic, UI dialogs |
-| `xdzip-runtime` | Session actors, plans, tasks, resource budgets, events | Qt, any QML state |
-| `xdzip-codec-zip` / `xdzip-codec-tar` | Format adaptation, CRC/structure checks, parameter mapping | Custom overwrite policy, arbitrary path writes |
-| `xdzip-plugin-host` | Worker processes, protocol, permissions, limits, health checks | Relaxing host path policy, directly loading Rust dylibs |
-| `xdzip-platform` | Secure file APIs, credentials, platform capabilities | QML, duplicated business policy |
-| `xdzip-qt-bridge` | cxx DTOs, command dispatch, event reception, exception boundary | QAbstractItemModel, format implementations |
-| `apps/desktop` | C++, QML, system dialogs, themes, accessibility | Core file writes and password logging |
-| `tools/codec-conformance` | Extension contract and interoperability tests | Released product runtime dependencies |
+## Archive operations from open to output
 
-`xdzip-runtime` composes the index, I/O, backends, and extension host. `xdzip-codec-api` depends on the domain; `xdzip-io` implements constrained stream ports; format implementations depend only on the domain and SDK. Platform and bridge services are injected through small interfaces. The core must not call back into Qt global objects. There is no `common` crate containing every utility function.
+1. **Open.** The runtime authorizes input, resolves any volume set and selects a backend by content. It records physical entry identities. Duplicate names keep separate identities.
+2. **Browse.** Memory or bounded disk indexes retain metadata and support stable searches, sorting and paging. Queries and selection are tied to the session and snapshot. Ordinary single-file ZIP/ZIP64 can use a larger streaming index, subject to separate task limits. [Index behavior](../engineering/large-index.md)
+3. **Read or write.** For extraction, the runtime freezes the requested entries and chooses a safe output plan rooted at the user's selected destination. Codecs read authorized ranges and deliver bytes to a bounded sink. The host handles target conflicts, verification, staging and commit. Creation and modification use their own archive-level publication rules. [File security](file-security.md), [archive modification](../engineering/archive-transfers.md)
+4. **Report.** The final result distinguishes what was verified, committed, skipped or left unfinished. Output committed before a failure or cancellation can remain. A metadata preflight or successful archive check has its own scope. [Preflight](../engineering/extraction-preflight.md), [integrity checking](../engineering/archive-checking.md)
 
-## 3. Processes and threads
+## Process and platform boundaries
 
-| Execution context | Work | Lifetime |
-|---|---|---|
-| Qt GUI thread | QML, controller properties, model updates, file dialogs | Application main thread; must not wait for scanning or extraction |
-| Qt event receiver thread | Wait for Rust events, convert them to batches of Qt value objects, emit queued signals | Created at startup; a separate control channel wakes it for shutdown |
-| Rust scheduler thread | Lightweight commands, session/task state, resource admission | Core runtime; does not perform long codec calls |
-| Rust bounded worker pool | Scanning, queries, extraction, compression, verification, file commits | Bounded queue; work items check cancellation |
-| Format worker process | A particular backend, official native library, or third-party extension | Reused by task/session, with concurrency and memory limits |
+| Component | Responsibility |
+| --- | --- |
+| `xdzip-domain` and `xdzip-codec-api` | Domain identities, capability declarations and bounded codec interfaces. |
+| `xdzip-runtime` and `xdzip-io` | Session, index, query and task policy, plus platform file authorization and output publication. |
+| `xdzip-codec-*` | Built-in format readers and writers with a registry of available operations. ZIP and TAR use in-process Rust. Supported 7z, RAR, CAB and optical reading routes use the bundled worker. |
+| Desktop image preview worker | Receives bounded encoded bytes only after the archive read. Produces a limited thumbnail for the corresponding request. |
+| Desktop adapters and updater | Handle Qt models, appearance and settings, tray, file associations, native menus and platform-specific update delivery. |
 
-A thread is not created for every file. Parallel threads created by a compression backend count against the task's CPU allowance; an outer four-thread task must not start four more unbounded thread pools. Task state changes are centralized in the scheduler; workers send only results and progress.
+The index lives in the runtime. Platform file operations live in the I/O crate and desktop adapters. The format worker and image preview worker have separate roles and resource limits. The experimental SDK host runs separately from the product. Third-party extensions are disabled in current product builds. [Archive worker contract](../engineering/native-codecs.md), [preview contract](../engineering/content-preview.md), [SDK trial](../engineering/sdk-trial.md)
 
-The UI submission interface only validates and enqueues without blocking. Results are pushed as events. When idle, the event receiver blocks instead of continuously polling status every 100 ms. Timing and metrics sampling are enabled only for diagnostics or running tasks.
-
-## 4. Services and ownership
-
-`ApplicationRuntime` owns session management, task scheduling, the capability registry, and event channels. Each `ArchiveSession` owns source file authorization, the format backend, index state, source version, and lifetime counts. A query produces an immutable `QuerySnapshot`; planning produces an immutable `OperationPlan`.
-
-A task does not depend on a particular tab remaining open. Closing a tab releases its browsing subscription; related tasks retain their source snapshots and file authorizations and continue or cancel according to the user's choice. Closing the whole application enters a unified shutdown: stop new commands, request cancellation, wait for safe commit points, finish worker processes, then reclaim models and the runtime.
-
-An archive session permits multiple read tasks, with actual concurrency limited by the backend's declaration. In-place source modification is forbidden; creating a new archive or “Save As” uses a new output transaction. Read tasks therefore do not compete with the product's own in-place writes.
-
-## 5. Configuration and persistence
-
-Small user settings use a Qt settings adapter: theme, window, last directory, and shortcut options. Rust receives only validated policy snapshots and does not read GUI settings directly. Settings have schema versions, migration, and backup. On a read error, restore defaults and show a one-time non-blocking notice.
-
-The archive index begins with a compact in-memory structure and migrates to a temporary disk index when its budget threshold is reached. A per-session SQLite candidate backend is only for the product's own metadata; it stores neither passwords nor file contents. Whether to use SQLite depends on measurements during the in-memory phase, but the `IndexStore` interface is provided from the first version. Archive indexes are not persisted across launches by default, avoiding source identity and privacy problems.
-
-Output transaction logs are stored in a random private working directory inside the authorized destination. Global application data stores only user settings, the extension manifest, and low-sensitivity diagnostics. Raw content must not be moved into a global cache merely because a user path cannot be opened.
-
-## 6. Replaceability and boundary checks
-
-Unit tests use memory sources, fault-injection file ports, fake backends, and event clients without Qt. UI integration tests use the same application service rather than reimplementing fake core business logic. The standalone [CLI](../engineering/command-line.md) calls `xdzip-runtime` directly as a separate Rust host.
-
-Architecture checks in CI prohibit core crates from depending on Qt or the bridge and format crates from depending on the desktop application; they also check that Cargo features do not pull in unused backends. Code review focuses on call direction and resource ownership. Directory separation alone is not evidence of decoupling.
-
-## 7. Failure boundaries
-
-A worker-process crash fails its associated tasks, and the host cleans up uncommitted files. Already committed files remain in the result summary. Format errors become domain errors. Rust internal invariant failures and unrecoverable memory errors are process-level failures; it is not valid to claim that every panic can be caught and execution continued. Bridge entry points must not allow panics across FFI. The release panic policy is decided during bridge verification and used with output recovery logs to handle abnormal termination.
-
-A Qt rendering failure must not trigger duplicate commits. After the GUI unsubscribes, the core still finishes according to the state machine. If shutdown exceeds the soft deadline, offer “Keep waiting” or “Force quit.” Forced exit does not promise zero leftovers; the next startup's recovery process handles them.
+The desktop keeps user preferences outside format code. Index and staging lifetimes are tied to their own sessions and tasks. Keep the dependency direction from UI through runtime toward domain, format and I/O interfaces. [Data boundaries](domain-data.md), [privacy](../engineering/privacy.md)

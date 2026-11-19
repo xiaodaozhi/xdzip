@@ -26,7 +26,7 @@ This guide describes behavior, focus and closing actions for creation, extractio
 - ZIP's four levels map to Store/Deflate 1/6/9, default 2 normal. TAR/TAR.GZ can be created; switching formats synchronizes extensions and clears password and volume splitting. TAR disables level; TAR.GZ levels 0/1/2/3 map to GZIP 0/1/6/9. Format changes synchronize extension but cannot silently overwrite targets.
 - Without input, with an empty name, invalid destination or missing permission, Create is disabled and the reason appears beside the field. Error text participates in screen reading rather than changing border color alone.
 - The core handles duplicate inputs and directory expansion; UI shows selection summaries only. Image icons in creation are type indicators, not image preview.
-- ZIP passwords and volumes are actually created under the WP-10 host contract; RAR and 7z creation remain disabled.
+- ZIP and 7z expose their supported password and volume settings. 7z can also encrypt filenames. The format registry lists the actual writing capabilities. [ZIP creation](../engineering/zip-creation.md), [format registry](../engineering/format-registry.md)
 
 ## Task data and exceptions
 

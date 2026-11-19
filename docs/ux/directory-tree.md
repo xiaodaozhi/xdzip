@@ -55,7 +55,7 @@ The hierarchy region scrolls horizontally. Width uses only actual names, indenta
 
 All directories use the same folder asset. Branch dots, filled information/warning icons and segmented spinners have light/dark SVGs and 1×/2×/3× PNGs; lines, focus frames, backgrounds, skeletons, text and prompts are dynamic components. Dark parameters reuse global theme with additional line and marker colors; **the complete dark directory-tree original remains outstanding** and dark icon exports do not replace the full artboard. Existing rendering and desktop acceptance conclusions are recorded separately in corresponding issues and artifacts.
 
-Record HTML/Qt interaction consistency under the [verification method](../qa/README.md). Artboards and slices retain original design history; current row counts, focus and corners follow this page and the logical specification.
+Record HTML/Qt interaction consistency under the [verification method](../../developers/qa/README.md). Artboards and slices retain original design history; current row counts, focus and corners follow this page and the logical specification.
 
 ## Interactions and independent states
 
@@ -119,4 +119,4 @@ HTML and Qt integrate connecting lines, branch dots, 16-unit folder slots and di
 7. With long names, 100%/125%/150% fonts and the historical 200% stress case, minimum window and maximum permitted index depth, names remain fully visible, horizontal scroll affects only hierarchy and full paths are accessible. Tree scrolling does not move archive summary or bottom statistics.
 8. Complete actual light/dark rendering, normal/Retina/Windows high DPI, keyboard and screen-reader acceptance. Passing image checks or asset generation does not replace these runtime checks.
 
-Under the [verification method](../qa/README.md), separately check originals, slices, assets and actual mouse, keyboard, menu and tree behavior. Explicitly mark untested accessibility and platform differences.
+Under the [verification method](../../developers/qa/README.md), separately check originals, slices, assets and actual mouse, keyboard, menu and tree behavior. Explicitly mark untested accessibility and platform differences.

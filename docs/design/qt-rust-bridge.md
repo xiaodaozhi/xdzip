@@ -105,15 +105,15 @@ CMake builds the Qt application; Cargo builds the Rust static library and cxx-ge
 
 The first stage verifies minimal round trips, Unicode, ownership, full queues, pending pages during shutdown, the cancellation priority channel, and RuntimeFault on macOS arm64, Windows MSVC, and Linux x86_64. Migrate the prototype pagination model only after those pass. The cxx dependency version is locked to the verified commit; the design does not invent a version number claimed to have passed testing.
 
-## WP-10 current creation slice
+## Archive creation commands and events
 
 The internal bridge adds Create: input path array, destination directory, ZIP name, Store/Deflate, levels 1/6/9, and name-conflict policy. Qt rejects invalid values before UTF-16→UTF-8 conversion and integer narrowing; Rust additionally checks 4 KiB per path, 4 MiB total selected paths, entry count, and portable filenames. CheckTarget with session=0 means a standalone creation destination check; a nonzero session remains bound to the extraction source.
 
-Creation and extraction share background task identity, cancellation, prompt IDs, event budgets, and asynchronous exit. TaskSnapshot adds creating and total_known; an unknown scan total must not appear as a zero-byte task. The Verifying phase does not count reread verification bytes as processed input. Creation saves the complete archive only once; input entries cannot be counted as saved early. See the [WP-10 contract](../engineering/zip-creation.md) for fields, errors, and whole-archive commit semantics.
+Creation and extraction share background task identity, cancellation, prompt IDs, event budgets, and asynchronous exit. TaskSnapshot adds creating and total_known; an unknown scan total must not appear as a zero-byte task. The Verifying phase does not count reread verification bytes as processed input. Creation saves the complete archive only once; input entries cannot be counted as saved early. See the [ZIP creation contract](../engineering/zip-creation.md) for fields, errors, and whole-archive commit semantics.
 
 The creation selection summary is read through the internal InspectInputs command, which returns Inputs in input order followed by one Finished. A request allows at most 256 absolute paths, each at most 4 KiB, within the existing request and event byte budgets. Background processing uses symlink_metadata, does not recurse into directories, and does not follow selected leaf links. Regular files report size; directories, errors, and special objects do not masquerade as known totals. Qt displays only results corresponding to the current path set and coalesces rapid changes to the latest set. Destination checks and summary requests run when the metadata channel is idle and do not create heavy tasks. Starting creation still reauthorizes, scans, and freezes the input tree; display data is not used as a commit basis.
 
-## WP-14 password extraction slice
+## Password prompts during extraction
 
 Password responses use a separate `respond_password(task, prompt, password)` control entry point, not the ordinary `Command`. At the cxx boundary, the incoming string is first moved into a zeroizing container dedicated to extraction, then the current task, prompt, cancellation, and capacity admission are checked. Rejection also consumes and clears the secret. Qt temporarily holds a bounded UTF-8 buffer only during the synchronous call and does not send queued signals containing passwords. Creation and extraction password rules are validated separately and must not be conflated because window controls are shared.
 

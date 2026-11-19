@@ -36,7 +36,7 @@ class ContentsTests(unittest.TestCase):
             (root/'.gitignore').write_text('build/\ndocs/html/\n')
             good = ['crates/core/src/lib.rs', 'tests/fixtures/owned.zip',
                     'design/hifi/screens/original.png', 'design/html/app.js',
-                    'docs/qa/acceptance.md', 'docs/design/architecture-decisions.md',
+                    'developers/qa/acceptance.md', 'docs/design/architecture-decisions.md',
                     'docs/images/main-window.png', 'specs/visual/tokens.json']
             bad = ['build/test/report.md', 'docs/html/index.html', 'docs/qa/results.json',
                    'docs/qa/private-test-readiness.md', 'design/assets/preview/contact.png',

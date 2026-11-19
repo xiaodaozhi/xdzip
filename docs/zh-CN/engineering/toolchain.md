@@ -26,7 +26,7 @@ GitHub 托管的 Apple Silicon 作业使用 macOS 15 运行器，产品部署目
 
 每条记录包含版本、下载来源、SHA256、许可证、目标、负责人、验证提交和日期。Rust/Qt 安全更新触发重新验证，不无限保留已失去维护的补丁。最低系统候选不等于正式支持承诺。
 
-系统维护状态、Qt 安全更新渠道及升级复验责任以[支持政策](support-policy.md)为准，来源与许可结论按[发行审查流程](../qa/release-review.md)登记。
+系统维护状态、Qt 安全更新渠道及升级复验责任以[支持政策](support-policy.md)为准，来源与许可结论按[发行审查流程](../../../developers/zh-CN/qa/release-review.md)登记。
 
 Windows 主窗口的客户区扩展由 WindowsFrame 使用公开 Qt 窗口接口和 Win32 实现，不链接 GuiPrivate。首次绑定普通窗口时按当前 QWindow 客户区逻辑尺寸、DPR 和原生边框度量确定外框，后续主题或 DPI 重应用只刷新边框。在无局部缩放覆盖、Qt PassThrough 舍入的 PMv2 普通窗口中，WM_GETDPISCALEDSIZE 保留待处理 SIZE 的缩放前调整量，缩放客户区后加目标 DPI 的实际边框；无效度量、溢出及其他状态不写入 SIZE，交回 Qt。借用的原生消息及其可写结构仅在同步回调中使用。升级 Qt 或替换 SDK 时复验相关客户区、边框和窗口状态；物理双屏拖动与视觉按需检查，程序化结果不冒充未执行的物理验证。
 
