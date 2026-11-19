@@ -21,6 +21,16 @@ if ($IsWindows) {
     if (!$installation) { throw 'MSVC verification tools not found' }
     Import-Module "$installation/Common7/Tools/Microsoft.VisualStudio.DevShell.dll"
     Enter-VsDevShell -VsInstallPath $installation -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+} elseif ($IsLinux) {
+    # The fresh runner executes one SDK-free image worker probe outside Docker.
+    Set-CiPhase 'verification-prerequisites'
+    $deployment = Get-Content -Raw -LiteralPath 'build/review/linux/share/deployment.json' | ConvertFrom-Json
+    $systemPackages = @($deployment.system_packages)
+    if (!$systemPackages.Count -or @($systemPackages | Where-Object { $_ -cnotmatch '\A[a-z0-9][a-z0-9+.-]*(?::amd64)?\z' }).Count) {
+        throw 'Invalid Linux runtime package list'
+    }
+    Invoke-CiCommand -Program sudo -Arguments @('apt-get', 'update')
+    Invoke-CiCommand -Program sudo -Arguments (@('apt-get', 'install', '-y', '--no-install-recommends', '--') + $systemPackages)
 }
 Set-CiPhase 'package-verification'
 $arguments = @('scripts/desktop.py', 'verify', '--build-dir', 'build/desktop', '--output-dir', $packages)

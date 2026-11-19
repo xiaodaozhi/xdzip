@@ -53,6 +53,28 @@ class SingleRunReleaseWorkflowTests(unittest.TestCase):
 
 
 class NativeHandoffTests(unittest.TestCase):
+    def test_handoff_carries_the_runtime_license_texts_separately_from_notices(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            build = root/'build'
+            review = build/'review'
+            packages = build/'release-package'
+            work = build/'release-handoff'
+            for directory in (packages/'notices', packages/'runtime-notices/license-texts',
+                              review/'sbom-schemas'):
+                directory.mkdir(parents=True)
+            (packages/'package.json').write_text('{}', encoding='utf-8')
+            (packages/'cli-package.json').write_text('{}', encoding='utf-8')
+            text = packages/'runtime-notices/license-texts/owned.txt'
+            text.write_bytes(b'owned runtime license')
+            with patch.dict(os.environ, RUNNER_ARCH='ARM64'), patch.multiple(
+                    handoff, ROOT=root, BUILD=build, REVIEW=review, HANDOFF=work), patch.object(
+                    handoff, 'identity', return_value={}):
+                handoff.pack('macos')
+            with tarfile.open(work/handoff.ARCHIVE, 'r:gz') as archive:
+                with archive.extractfile(text.relative_to(root).as_posix()) as saved:
+                    self.assertEqual(saved.read(), text.read_bytes())
+
     def test_developer_rank_fixture_leaves_the_distribution_bundle_unchanged(self):
         spec = importlib.util.spec_from_file_location('registration', Path(__file__).with_name('check-macos-registration.py'))
         registration = importlib.util.module_from_spec(spec)

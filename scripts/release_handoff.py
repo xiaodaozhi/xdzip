@@ -55,7 +55,7 @@ def read_receipt(directory, system):
 
 def paths_for(system):
     packages = package_directory(system)
-    paths = [packages / 'notices', REVIEW / 'sbom-schemas']
+    paths = [packages / 'notices', packages / 'runtime-notices', REVIEW / 'sbom-schemas']
     paths.extend(sorted(packages.glob('*.json')))
     for pattern in ('*.deb', '*.dmg', '*.tar.gz', '*.exe', '*.zip'):
         paths.extend(sorted(packages.glob(pattern)))
