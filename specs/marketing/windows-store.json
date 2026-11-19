@@ -90,7 +90,6 @@
       ],
       "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
       "illustration_label": "Feature illustration",
-      "screenshot_artwork_label": "App screenshot with brand artwork",
       "screenshot_captions": {
         "01-browse": "Browse an archive's folder tree, select individual files and view their properties.",
         "02-create": "Create an archive from selected files and choose ZIP compression settings.",
@@ -195,7 +194,6 @@
       ],
       "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.zh-CN.md",
       "illustration_label": "功能示意图",
-      "screenshot_artwork_label": "应用截图与品牌插画",
       "screenshot_captions": {
         "01-browse": "浏览压缩包目录树，选择文件并查看属性。",
         "02-create": "将选中的文件整理成压缩包，并设置 ZIP 压缩选项。",
