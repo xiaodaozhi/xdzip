@@ -1628,9 +1628,15 @@ function showSettings(tab = "appearance") {
             `<div class="settings-detail-row"><div><strong>${label("settings.clearRecent")}</strong><p>${label("settings.clearDescription")}</p></div><button class="button operation-body-button" id="clear-recent">${label("settings.clearRecent")}</button></div><aside class="settings-note"><strong>${label("settings.localTitle")}</strong><p>${label("settings.localDescription")}</p></aside>`;
     } else if (tab === "associations") {
         const managed = query.get("channel") === "msix";
+        const noAlternative = !managed && document.body.dataset.platform === "macos"
+            && query.get("association") === "no-alternative";
         const groups = window.XDZIP_ASSOCIATION_GROUPS.map(({id, suffixes}) =>
-            `<strong>${label("format.group." + id)}</strong><div class="settings-associations">${suffixes.map(ext =>
-                toggle("association-" + ext, ext, "", !managed && prefs.associations[ext], managed)).join("")}</div>`);
+            `<strong>${label("format.group." + id)}</strong><div class="settings-associations">${suffixes.map(ext => {
+                const unavailable = noAlternative && ext === ".zip";
+                return toggle("association-" + ext, ext,
+                    unavailable ? t("settings.associationNoAlternative") : "",
+                    !managed && (unavailable || prefs.associations[ext]), managed);
+            }).join("")}</div>`);
         body = `<p>${label(managed ? "settings.associationPackaged" : "settings.associationDescription")}</p>`;
         if (managed) body += `<div><button type="button" class="button operation-body-button">${label("settings.openDefaultApps")}</button></div>`;
         body += groups.join(separator);

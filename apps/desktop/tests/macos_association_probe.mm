@@ -6,7 +6,7 @@
 bool macAssociationDefault(const QString &extension);
 
 // The probe exercises only the read-only default query, not the change callback.
-void FileAssociations::nativeFinished(bool) {}
+void FileAssociations::nativeFinished(const QString &, const QString &) {}
 
 int main(int argc, char **argv) {
     @autoreleasepool {
