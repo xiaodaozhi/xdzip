@@ -274,8 +274,8 @@ fn row_id(archive: &Archive, name: &str) -> String {
     archive
         .rows
         .iter()
-        .find(|r| r.raw_name == name.as_bytes())
-        .unwrap()
+        .find(|r| r.name_bytes() == name.as_bytes())
+        .unwrap_or_else(|| panic!("missing entry {name}"))
         .id
         .get()
         .to_string()
@@ -1157,4 +1157,186 @@ fn deleting_last_child_keeps_an_implicit_source_folder_and_rejects_cancelled_or_
         (TaskKind::Delete, Status::Failed, "source_changed")
     );
     assert_eq!(fs::read(&path).unwrap(), changed);
+}
+
+fn extended_archive(
+    fixture: &Fixture,
+    suffix: &str,
+    filter: xdzip_codec_stream::controlled::Filter,
+) -> PathBuf {
+    use std::io::Write;
+    use xdzip_codec_stream::{FrameWriter, controlled::Filter};
+    let host = fixture.0.join("project");
+    fs::create_dir_all(host.join("target")).unwrap();
+    fs::create_dir_all(host.join("empty")).unwrap();
+    fs::write(host.join("source.bin"), extended_payload()).unwrap();
+    fs::write(fixture.0.join("add/extra.txt"), b"extra bytes").unwrap();
+    let name = if filter == Filter::Identity {
+        suffix
+    } else {
+        "unfiltered.tar"
+    };
+    let mut result = None;
+    creation::run(
+        creation::Job {
+            options: creation::Options {
+                inputs: vec![host.to_string_lossy().into_owned()],
+                target: fixture.0.to_string_lossy().into_owned(),
+                name: name.into(),
+                method: if filter == Filter::Identity { 259 } else { 0 },
+                level: 6,
+                conflict: ConflictPolicy::Ask,
+                volume_bytes: 0,
+                solid: false,
+                encrypt_headers: false,
+                password: None,
+            },
+        },
+        1,
+        &Control::default(),
+        &mut |snapshot| result = Some(snapshot),
+    );
+    let result = result.unwrap();
+    assert_eq!(result.status, Status::Succeeded, "{name}: {}", result.error);
+    if filter == Filter::Identity {
+        return fixture.0.join(name);
+    }
+    let path = fixture.0.join(suffix);
+    let mut writer = FrameWriter::new(fs::File::create(&path).unwrap(), filter, 6).unwrap();
+    writer
+        .write_all(&fs::read(fixture.0.join(name)).unwrap())
+        .unwrap();
+    writer.finish().unwrap();
+    path
+}
+
+fn extended_payload() -> Vec<u8> {
+    // Large enough to exercise multiple outer blocks, dictionary resets and
+    // range state across calls, with long runs and high-entropy sections.
+    let mut x = 1729u32;
+    (0..180_003)
+        .map(|i| {
+            x ^= x << 13;
+            x ^= x >> 17;
+            x ^= x << 5;
+            if i % 4096 < 800 { 0x61 } else { x as u8 }
+        })
+        .collect()
+}
+
+#[test]
+fn extended_formats_rename_move_add_replace_and_delete_transactionally() {
+    use xdzip_codec_stream::controlled::Filter;
+    let cancel = Cancellation::default();
+    for (name, format, filter) in [
+        ("edit.txz", Format::TarXz, Filter::Xz),
+        ("edit.tar.xz", Format::TarXz, Filter::Xz),
+        ("edit.tzst", Format::TarZstd, Filter::Zstd),
+        ("edit.tar.zst", Format::TarZstd, Filter::Zstd),
+        ("edit.tar.lz4", Format::TarLz4, Filter::Lz4),
+        ("edit.tar.bz2", Format::TarBzip2, Filter::Bzip2),
+        ("edit.tar.lzma", Format::TarLzma, Filter::Lzma),
+        ("edit.tar.lz", Format::TarLzip, Filter::Lzip),
+        ("edit.tar.Z", Format::TarCompress, Filter::Compress),
+        ("edit.tar.br", Format::TarBrotli, Filter::Brotli),
+        ("edit.lzh", Format::Lha, Filter::Identity),
+        ("edit.lha", Format::Lha, Filter::Identity),
+    ] {
+        let fixture = Fixture::new();
+        let path = extended_archive(&fixture, name, filter);
+        let archive = Archive::open(&path, &cancel).unwrap();
+        assert_eq!(archive.format, format, "{name}");
+        assert!(archive.can_update(), "{name}");
+        let options = edit_options(
+            &archive,
+            "project/",
+            &["project/source.bin"],
+            EntryEdit::Rename("renamed.bin".into()),
+        );
+        let archive = apply_entry_edit(&path, options, archive);
+
+        let options = MoveOptions {
+            selected: vec![row_id(&archive, "project/renamed.bin")],
+            directory: row_id(&archive, "project/"),
+            target: row_id(&archive, "project/target/"),
+            conflict: ConflictPolicy::Ask,
+        };
+        let job = archive.move_job(options, &cancel).unwrap();
+        drop(archive);
+        let result = execute(job, &Control::default(), |_| {});
+        assert_eq!(result.status, Status::Succeeded, "{name}: {}", result.error);
+
+        let extra = fixture.0.join("add/extra.txt");
+        for expected in [b"extra bytes".as_slice(), b"replacement bytes".as_slice()] {
+            fs::write(&extra, expected).unwrap();
+            let archive = Archive::open(&path, &cancel).unwrap();
+            let job = archive
+                .update_job(
+                    Options {
+                        inputs: vec![extra.to_string_lossy().into_owned()],
+                        directory: row_id(&archive, "project/target/"),
+                        conflict: ConflictPolicy::Overwrite,
+                    },
+                    &cancel,
+                )
+                .unwrap();
+            drop(archive);
+            let result = execute(job, &Control::default(), |_| {});
+            assert_eq!(result.status, Status::Succeeded, "{name}: {}", result.error);
+            let archive = Archive::open(&path, &cancel).unwrap();
+            let contents = crate::native_backend_tests::known_contents(&archive);
+            assert_eq!(contents["project/target/extra.txt"], expected);
+            assert_eq!(contents["project/target/renamed.bin"], extended_payload());
+            assert_eq!(contents.len(), 2);
+        }
+        if let Some(out) = std::env::var_os("XDZIP_EXTENDED_EDIT_OUTPUT") {
+            let out = PathBuf::from(out);
+            fs::create_dir_all(&out).unwrap();
+            fs::copy(&path, out.join(name)).unwrap();
+            fs::write(out.join("expected.bin"), extended_payload()).unwrap();
+        }
+
+        let archive = Archive::open(&path, &cancel).unwrap();
+        let options = edit_options(
+            &archive,
+            "project/",
+            &["project/target/", "project/empty/"],
+            EntryEdit::Delete,
+        );
+        let original = fs::read(&path).unwrap();
+        let stop = Control::default();
+        let job = archive.edit_entries_job(options.clone(), &cancel).unwrap();
+        let result = execute(job, &stop, |snapshot| {
+            if snapshot.status == Status::Verifying {
+                stop.cancel();
+            }
+        });
+        assert_eq!(result.status, Status::Cancelled, "{name}");
+        assert_eq!(fs::read(&path).unwrap(), original);
+        let archive = apply_entry_edit(&path, options, archive);
+        assert_eq!(archive.rows.len(), 1, "{name}");
+        let options = edit_options(&archive, "", &["project/"], EntryEdit::Delete);
+        let archive = apply_entry_edit(&path, options, archive);
+        assert_eq!(archive.format, format, "{name}");
+        assert!(archive.rows.is_empty(), "{name}");
+    }
+}
+
+#[test]
+fn bare_stream_suffix_rejects_empty_tar_before_commit() {
+    use xdzip_codec_stream::controlled::Filter;
+    let fixture = Fixture::new();
+    let path = extended_archive(&fixture, "bare.xz", Filter::Xz);
+    let cancel = Cancellation::default();
+    let original = fs::read(&path).unwrap();
+    let archive = Archive::open(&path, &cancel).unwrap();
+    assert_eq!(archive.format, Format::TarXz);
+    let options = edit_options(&archive, "", &["project/"], EntryEdit::Delete);
+    let result = execute(
+        archive.edit_entries_job(options, &cancel).unwrap(),
+        &Control::default(),
+        |_| {},
+    );
+    assert_eq!(result.error, "empty_tar_suffix");
+    assert_eq!(fs::read(&path).unwrap(), original);
 }

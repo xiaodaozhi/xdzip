@@ -62,7 +62,10 @@ fn independent_streams_are_admitted_by_content_before_any_format_or_rows_are_pub
             },
             "{name}"
         );
-        assert!(!archive.update_allowed);
+        assert_eq!(
+            archive.update_allowed,
+            archive.format == xdzip_codec_api::Format::TarBrotli
+        );
         assert!(
             archive
                 .rows

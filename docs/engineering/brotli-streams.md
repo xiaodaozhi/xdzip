@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/brotli-streams.md) | [繁體中文（台灣）](../zh-TW/engineering/brotli-streams.md)
 
-`xdzip-compression::BrotliReader` independently decodes one ordinary RFC 7932 Brotli stream. It takes a caller-owned `Read` capability and an admitted packed span; it has no filename, filesystem, network, process or output-publication authority. The product registers read-only Brotli (`.br`) and TAR.BR (`.tar.br`) through the [format registry](format-registry.md). They support browsing, preview, checking and selected extraction, using the shared host source, task, quota, staging and publication rules. There is no writer, modification or volume capability.
+`xdzip-compression::BrotliReader` independently decodes one ordinary RFC 7932 Brotli stream. It takes a caller-owned `Read` capability and an admitted packed span; it has no filename, filesystem, network, process or output-publication authority. The product registers Brotli (`.br`) and TAR.BR (`.tar.br`) through the [format registry](format-registry.md). They support browsing, preview, checking and selected extraction, using the shared host source, task, quota, staging and publication rules. There is no writer, modification or volume capability.
 
 ## Wire profile
 

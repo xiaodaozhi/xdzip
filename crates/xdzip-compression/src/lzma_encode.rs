@@ -5,7 +5,7 @@ use crate::{
     invalid,
     lzma::{self, Dictionary, Lengths, Models, Properties},
 };
-use std::io::{self, Write};
+use std::io::{self, BufWriter, Write};
 
 const DICTIONARY: usize = 8 * 1024 * 1024;
 const CHUNK: usize = 65536;
@@ -26,32 +26,42 @@ pub fn lzma2_writer_memory_required(level: u8) -> io::Result<u64> {
     Ok(lzma::memory_required(DICTIONARY, 8) + (DICTIONARY * 4 + HASHES * 8 + CHUNK * 2) as u64)
 }
 
-pub(crate) struct RangeOutput {
+pub(crate) struct RangeOutput<W = Vec<u8>> {
     low: u64,
     width: u32,
     pending: u8,
     postponed: usize,
-    bytes: Vec<u8>,
+    out: W,
+    written: u64,
+    limit: Option<u64>,
 }
-impl RangeOutput {
+impl RangeOutput<Vec<u8>> {
     pub(crate) fn new() -> io::Result<Self> {
         let mut bytes = Vec::new();
         bytes
             .try_reserve_exact(CHUNK)
             .map_err(|_| lzma::resource())?;
-        Ok(Self {
+        Ok(Self::with_sink(bytes, Some(CHUNK as u64)))
+    }
+}
+impl<W: Write> RangeOutput<W> {
+    fn with_sink(out: W, limit: Option<u64>) -> Self {
+        Self {
             low: 0,
             width: u32::MAX,
             pending: 0,
             postponed: 0,
-            bytes,
-        })
+            out,
+            written: 0,
+            limit,
+        }
     }
     fn emit(&mut self, byte: u8) -> io::Result<()> {
-        if self.bytes.len() == CHUNK {
+        if self.limit == Some(self.written) {
             return Err(io::Error::other("lzma_trial_full"));
         }
-        self.bytes.push(byte);
+        self.out.write_all(&[byte])?;
+        self.written += 1;
         Ok(())
     }
     fn advance(&mut self) -> io::Result<()> {
@@ -110,16 +120,19 @@ impl RangeOutput {
         }
         Ok(())
     }
-    pub(crate) fn finish(mut self) -> io::Result<Vec<u8>> {
+    pub(crate) fn finish(self) -> io::Result<W> {
+        self.finish_counted().map(|(output, _)| output)
+    }
+    fn finish_counted(mut self) -> io::Result<(W, u64)> {
         for _ in 0..5 {
             self.advance()?;
         }
-        Ok(self.bytes)
+        Ok((self.out, self.written))
     }
 }
 
 fn length(
-    range: &mut RangeOutput,
+    range: &mut RangeOutput<impl Write>,
     models: &mut Lengths,
     pos: usize,
     length: usize,
@@ -140,7 +153,7 @@ fn length(
 }
 
 fn literal(
-    range: &mut RangeOutput,
+    range: &mut RangeOutput<impl Write>,
     models: &mut Models,
     dictionary: &Dictionary,
     byte: u8,
@@ -174,7 +187,7 @@ fn literal(
 }
 
 fn repetition(
-    range: &mut RangeOutput,
+    range: &mut RangeOutput<impl Write>,
     models: &mut Models,
     position: u64,
     index: usize,
@@ -204,10 +217,24 @@ fn repetition(
 }
 
 fn distance_match(
-    range: &mut RangeOutput,
+    range: &mut RangeOutput<impl Write>,
     models: &mut Models,
     position: u64,
     distance: usize,
+    count: usize,
+) -> io::Result<()> {
+    match_bits(range, models, position, (distance - 1) as u32, count)?;
+    models.reps.rotate_right(1);
+    models.reps[0] = distance;
+    models.state = if models.state < 7 { 7 } else { 10 };
+    Ok(())
+}
+
+fn match_bits(
+    range: &mut RangeOutput<impl Write>,
+    models: &mut Models,
+    position: u64,
+    zero_based: u32,
     count: usize,
 ) -> io::Result<()> {
     let state = models.state;
@@ -215,7 +242,6 @@ fn distance_match(
     range.bit(&mut models.is_match[state][pos], 1)?;
     range.bit(&mut models.is_rep[state], 0)?;
     length(range, &mut models.lengths[0], pos, count)?;
-    let zero_based = (distance - 1) as u32;
     let slot = if zero_based < 4 {
         zero_based
     } else {
@@ -239,9 +265,6 @@ fn distance_match(
             range.tree(&mut models.alignment, 4, residual & 15, true)?;
         }
     }
-    models.reps.rotate_right(1);
-    models.reps[0] = distance;
-    models.state = if state < 7 { 7 } else { 10 };
     Ok(())
 }
 
@@ -327,6 +350,101 @@ fn match_length(dictionary: &Dictionary, input: &[u8], distance: usize) -> usize
 }
 
 /// Bounded streaming LZMA2 compressor, nominal 8 MiB dictionary, one thread.
+fn encode_symbol<W: Write>(
+    range: &mut RangeOutput<W>,
+    models: &mut Models,
+    dictionary: &Dictionary,
+    finder: &MatchFinder,
+    input: &[u8],
+    depth: usize,
+) -> (usize, io::Result<()>) {
+    let (distance, found) = finder.find(dictionary, input, depth);
+    let mut choice = (0, 0);
+    for (index, &rep) in models.reps.iter().enumerate() {
+        let length = match_length(dictionary, input, rep);
+        if length > choice.1 {
+            choice = (index, length);
+        }
+    }
+    let (index, repeated) = choice;
+    if repeated >= 2 && repeated.saturating_add(1) >= found {
+        (
+            repeated,
+            repetition(range, models, dictionary.position, index, repeated),
+        )
+    } else if found >= 3 {
+        (
+            found,
+            distance_match(range, models, dictionary.position, distance, found),
+        )
+    } else if index == 0 && repeated == 1 {
+        (1, repetition(range, models, dictionary.position, 0, 1))
+    } else {
+        (1, literal(range, models, dictionary, input[0]))
+    }
+}
+
+/// Streaming raw LZMA1 with its standard end marker and a bounded 8 MiB dictionary.
+pub struct Lzma1Writer<W: Write> {
+    range: RangeOutput<BufWriter<W>>,
+    dictionary: Dictionary,
+    models: Models,
+    finder: MatchFinder,
+}
+impl<W: Write> Lzma1Writer<W> {
+    /// Raw LZMA1 wire properties shared by LZMA Alone and Lzip.
+    pub const PROPERTIES: [u8; 5] = [0x5d, 0, 0, 0x80, 0];
+
+    /// Start a continuous range stream. Individual writes process at most 64 KiB.
+    pub fn new(out: W) -> io::Result<Self> {
+        Ok(Self {
+            range: RangeOutput::with_sink(BufWriter::new(out), None),
+            dictionary: Dictionary::new(DICTIONARY)?,
+            models: Models::new(PROPERTIES)?,
+            finder: MatchFinder::new()?,
+        })
+    }
+
+    /// Finish with a length-two LZMA end marker and return the packed byte count.
+    pub fn finish(mut self) -> io::Result<(W, u64)> {
+        let position = self.dictionary.position;
+        match_bits(&mut self.range, &mut self.models, position, u32::MAX, 2)?;
+        let (output, bytes) = self.range.finish_counted()?;
+        Ok((
+            output.into_inner().map_err(|error| error.into_error())?,
+            bytes,
+        ))
+    }
+}
+impl<W: Write> Write for Lzma1Writer<W> {
+    fn write(&mut self, input: &[u8]) -> io::Result<usize> {
+        let input = &input[..input.len().min(CHUNK)];
+        let mut at = 0;
+        while at < input.len() {
+            let (count, result) = encode_symbol(
+                &mut self.range,
+                &mut self.models,
+                &self.dictionary,
+                &self.finder,
+                &input[at..],
+                32,
+            );
+            result?;
+            for offset in at..at + count {
+                self.finder
+                    .insert(&input[offset..], self.dictionary.position);
+                self.dictionary.push(input[offset])?;
+            }
+            at += count;
+        }
+        Ok(input.len())
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        self.range.out.flush()
+    }
+}
+
 /// Levels 1, 6 and 9 perform actual LZ matching with different search depths.
 /// Incompressible chunks use the format's raw fallback. Drop never finishes.
 pub struct Lzma2Writer<W> {
@@ -413,38 +531,15 @@ impl<W: Write> Lzma2Writer<W> {
             let input = &self.buffer[position..];
             let mut count = 1;
             if active {
-                let (distance, found) = self.finder.find(&self.dictionary, input, depth);
-                let mut repetition_choice = (0, 0);
-                for (index, &rep) in self.models.reps.iter().enumerate() {
-                    let length = match_length(&self.dictionary, input, rep);
-                    if length > repetition_choice.1 {
-                        repetition_choice = (index, length);
-                    }
-                }
-                let (index, repeated) = repetition_choice;
-                let result = if repeated >= 2 && repeated.saturating_add(1) >= found {
-                    count = repeated;
-                    repetition(
-                        &mut range,
-                        &mut self.models,
-                        self.dictionary.position,
-                        index,
-                        count,
-                    )
-                } else if found >= 3 {
-                    count = found;
-                    distance_match(
-                        &mut range,
-                        &mut self.models,
-                        self.dictionary.position,
-                        distance,
-                        count,
-                    )
-                } else if index == 0 && repeated == 1 {
-                    repetition(&mut range, &mut self.models, self.dictionary.position, 0, 1)
-                } else {
-                    literal(&mut range, &mut self.models, &self.dictionary, input[0])
-                };
+                let (chosen, result) = encode_symbol(
+                    &mut range,
+                    &mut self.models,
+                    &self.dictionary,
+                    &self.finder,
+                    input,
+                    depth,
+                );
+                count = chosen;
                 if let Err(error) = result {
                     if error.to_string() != "lzma_trial_full" {
                         return Err(error);
@@ -1071,7 +1166,7 @@ mod tests {
         range.postponed = 2;
         range.low = 0x1_12ab_cdef;
         range.advance().unwrap();
-        assert_eq!(range.bytes, [0x7b, 0, 0]);
+        assert_eq!(range.out, [0x7b, 0, 0]);
         assert_eq!(range.pending, 0x12);
         assert_eq!(range.low, 0xabcd_ef00);
     }

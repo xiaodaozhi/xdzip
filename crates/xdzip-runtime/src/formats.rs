@@ -166,6 +166,24 @@ pub(crate) fn scan(
         codec(*format).scan_with_password(source, control, limits(*format), password)
     }
 }
+// Unlike marked GZIP, the other outer frames do not distinguish an empty
+// TAR from a standalone zero-filled file named with the bare stream suffix.
+pub(crate) fn ambiguous_empty_tar(format: Format, source: &dyn ReadSource) -> bool {
+    use xdzip_codec_api::registry::{compressed_view_hint, formats};
+    let descriptor = format.descriptor();
+    if descriptor.container != "tar" || descriptor.filters.is_empty() || format == Format::TarGzip {
+        return false;
+    }
+    let Some(name) = source.source_name_hint() else {
+        return false;
+    };
+    formats().iter().any(|ordinary| {
+        ordinary.container == "single-file"
+            && ordinary.filters == descriptor.filters
+            && compressed_view_hint(name, ordinary.format) == Some(ordinary.format)
+    })
+}
+
 pub(crate) fn detect(
     source: &mut dyn ReadSource,
     control: &xdzip_codec_api::Cancellation,

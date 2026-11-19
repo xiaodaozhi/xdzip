@@ -30,18 +30,24 @@ XZ 能力须遵循 [Tukaani 格式 1.2.1](https://tukaani.org/xz/xz-file-format-
 
 ZIPX 沿用 ZIP 记录语法与物理身份。按 [APPNOTE 6.3.10](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT) 分方法准入，包括 BZip2 12、LZMA 14、XZ 95。LZMA 属性头与独立 LZMA 不同，通用标志第 1 位控制 EOS 要求。已准入的数据描述符配置必须使用 EOS，本地记录已知尺寸时可省略。仍须验证精确负载范围、本地与中央记录一致性、描述符、解码尺寸和 ZIP CRC。没有已验证实现的方法保持逐记录不支持，后缀不能启用其他算法或加密配置。
 
-XZ（`.xz`）和 TAR.XZ（`.tar.xz`、`.txz`）按上述配置提供浏览、检查和提取。创建使用 CRC64、不超过 16 MiB 的独立块以及 LZMA2 1/6/9 级，拒绝级别 0、密码和分卷。普通 XZ 仅接受一个普通输入文件，虚拟输出名称来自宿主文件名；TAR.XZ 通过既有 TAR 写入器接受普通文件和目录，两者均不支持修改。ZIPX 将 `.zipx` 登记为 ZIP 候选，在既有 Store/Deflate 之外读取未加密方法 9、12、14、95。新增方法不能启用修改，也不扩展既有 AES-256 Store/Deflate 组合。PPMd I、JPEG 和 WavPack 仍明确不支持。
+XZ（`.xz`）和 TAR.XZ（`.tar.xz`、`.txz`）按上述配置提供浏览、检查和提取。创建使用 CRC64、不超过 16 MiB 的独立块以及 LZMA2 1/6/9 级，拒绝级别 0、密码和分卷。普通 XZ 仅接受一个普通输入文件，虚拟输出名称来自宿主文件名；TAR.XZ 通过既有 TAR 写入器接受普通文件和目录，TAR.XZ 支持归档修改。ZIPX 将 `.zipx` 登记为 ZIP 候选。ZIP 和 ZIPX 可读取并修改使用未加密 Store、Deflate 和方法 9、12、14、95 的合格压缩包，重写会保留现有条目的压缩数据，新加条目使用 Deflate。ZIP 的 AES-256 读取限于既有 Store/Deflate 配置。PPMd I、JPEG 和 WavPack 仍明确不支持。
 
-## 新增只读过滤器的准入契约
+## 压缩过滤器的准入契约
 
-BZip2（`.bz2`、`.bz`）、LZMA Alone（`.lzma`）和 Lzip v1（`.lz`）当前只读，TAR 组合接受 `.tar.bz2`、`.tar.bz`、`.tbz`、`.tbz2`、`.tar.lzma`、`.tlz` 和 `.tar.lz`。后缀只提供入口，歧义缩写由实际字节决定。适配复用独立算法，在分配前准入算法工作内存，限制为 128 MiB，沿用既有流字节预算，串联成员最多 100,000 个。BZip2 校验逐块和组合 CRC，允许串联完整流。LZMA Alone 遵守 [13 字节格式](https://github.com/tukaani-project/xz/blob/master/doc/lzma-file-format.txt)，前五字节为属性和字典，后八字节为小端原始尺寸。全一尺寸必须有 EOS，已知尺寸允许合法 range 终止或 EOS，拒绝尾随数据。此格式只提供结构和可读性校验，不提供内容校验和。Lzip v1 遵守[格式规范](https://datatracker.ietf.org/doc/draft-diaz-lzip/02/)，检查固定 LZMA 属性、编码字典边界、EOS 以及尾部 CRC32、解码尺寸和完整成员尺寸，其他版本明确拒绝。串联 Lzip 成员组成一个逻辑文件。
+BZip2（`.bz2`、`.bz`）、LZMA Alone（`.lzma`）和 Lzip v1（`.lz`）作为独立的单文件流只读，TAR 组合接受 `.tar.bz2`、`.tar.bz`、`.tbz`、`.tbz2`、`.tar.lzma`、`.tlz` 和 `.tar.lz`。后缀只提供入口，歧义缩写由实际字节决定。适配复用独立算法，在分配前准入算法工作内存，限制为 128 MiB，沿用既有流字节预算，串联成员最多 100,000 个。BZip2 校验逐块和组合 CRC，允许串联完整流。LZMA Alone 遵守 [13 字节格式](https://github.com/tukaani-project/xz/blob/master/doc/lzma-file-format.txt)，前五字节为属性和字典，后八字节为小端原始尺寸。全一尺寸必须有 EOS，已知尺寸允许合法 range 终止或 EOS，拒绝尾随数据。此格式只提供结构和可读性校验，不提供内容校验和。Lzip v1 遵守[格式规范](https://datatracker.ietf.org/doc/draft-diaz-lzip/02/)，检查固定 LZMA 属性、编码字典边界、EOS 以及尾部 CRC32、解码尺寸和完整成员尺寸，其他版本明确拒绝。串联 Lzip 成员组成一个逻辑文件。
 
-算法的成员读取器只有在 EOF 验证成功后，才可交还未消费输入，不得吞掉后续容器字节。独立构造入口必须保留既有 7z 读取器对完整压缩范围和已知尺寸的严格约束，并用前缀发现及畸形输入测试证明两种入口隔离。TAR 复用这些过滤器作为只读组合，压缩 TAR 解析失败不得降级为普通文件成功。LZMA Alone 没有强魔数，不得抢占有效 TAR 头、ZIP SFX 或其他强容器识别。能力表及产品入口声明须有对应实现与自动化验收，并登记检查强度与压缩尺寸未知状态，为 CLI 和界面生成一致信息。弱识别排除已知原始尺寸达到 256 GiB 的 LZMA，实际工作预算仍采用更小的既有边界。Windows 和 macOS 为新增只读候选复用既有无格式字样的通用归档图标。
+算法的成员读取器只有在 EOF 验证成功后，才可交还未消费输入，不得吞掉后续容器字节。独立构造入口必须保留既有 7z 读取器对完整压缩范围和已知尺寸的严格约束，并用前缀发现及畸形输入测试证明两种入口隔离。TAR 复用这些过滤器进行读取和修改，压缩 TAR 解析失败不得降级为普通文件成功。LZMA Alone 没有强魔数，不得抢占有效 TAR 头、ZIP SFX 或其他强容器识别。能力表及产品入口声明须有对应实现与自动化验收，并登记检查强度与压缩尺寸未知状态，为 CLI 和界面生成一致信息。弱识别排除已知原始尺寸达到 256 GiB 的 LZMA，实际工作预算仍采用更小的既有边界。Windows 和 macOS 为新增候选复用既有无格式字样的通用归档图标。
 
 ## 自动化验收
 
 流格式测试使用独立参考读写器验证成员校验、截断、尾随字节、输入变化、取消、精确预算和虚拟名称。运行时测试覆盖分类、空 TAR 优先级、单文件创建、检查、解压和拒绝时不发布。真实 CLI 回归覆盖四档级别和 ZIP 别名。Qt 测试覆盖稳定标识选择、单文件准入、实际创建与重新打开、原生辅助功能元数据、键盘选择及中英文 100/125/150% 字号布局。生成声明、安装映射、窗口和共享控件契约分别自动检查。实际执行结果写入工作 issue，不将这些检查扩大为未执行平台或发行许可的通过结论。
 
-LZ4 与 TAR.LZ4 遵循[标准帧契约](lz4-streams.md)，读取独立块、关联块、声明的校验、串联和 skippable 帧。创建使用真实 LZ4 压缩，输出 256 KiB 独立块、块与内容 XXH32，提供 1/6/9 级。普通 LZ4 只接受一个普通文件，TAR.LZ4 复用共享 TAR 写入器；均不支持修改、密码或分卷。检查仅验证流声明的校验和，旧式帧和外部字典尚不支持。
+LZ4 与 TAR.LZ4 遵循[标准帧契约](lz4-streams.md)，读取独立块、关联块、声明的校验、串联和 skippable 帧。创建使用真实 LZ4 压缩，输出 256 KiB 独立块、块与内容 XXH32，提供 1/6/9 级。普通 LZ4 只接受一个普通文件，TAR.LZ4 复用共享 TAR 写入器；TAR.LZ4 支持归档修改。密码与分卷不受支持。检查仅验证流声明的校验和，旧式帧和外部字典尚不支持。
 
-Zstandard（`.zst`）与 TAR.ZST（`.tar.zst`、`.tzst`）遵循 [Zstandard 压缩流契约](zstandard-streams.md)。读取准入有界标准帧原始/RLE/压缩块、Huffman/FSE、重复偏移、窗口历史、声明的校验、串联和 skippable 帧。创建使用真实 LZ/FSE，提供 1/6/9 级、128 KiB 窗口和必需 XXH64，普通 Zstandard 仅接受一个普通输入文件。两者均不支持修改、密码或分卷。非零字典编号、不可用外部历史和超预算窗口明确拒绝，检查仅验证声明的校验，不承诺格式中缺失的校验保证。
+Zstandard（`.zst`）与 TAR.ZST（`.tar.zst`、`.tzst`）遵循 [Zstandard 压缩流契约](zstandard-streams.md)。读取准入有界标准帧原始/RLE/压缩块、Huffman/FSE、重复偏移、窗口历史、声明的校验、串联和 skippable 帧。创建使用真实 LZ/FSE，提供 1/6/9 级、128 KiB 窗口和必需 XXH64，普通 Zstandard 仅接受一个普通输入文件。TAR.ZST 支持归档修改。密码与分卷不受支持。非零字典编号、不可用外部历史和超预算窗口明确拒绝，检查仅验证声明的校验，不承诺格式中缺失的校验保证。
+
+## 修改带压缩外层的 TAR
+
+归档编辑保留受支持的 TAR 记录，并按原格式重建外层流。TAR.XZ、TAR.LZ4 与 TAR.ZST 以正常压缩级别复用既有帧写入器。TAR.BZ2 写入 BZh1 流，每次处理 64 KiB 原始输入，记录块 CRC 和合并 CRC。TAR.LZMA 与 TAR.LZ 写入使用 8 MiB 字典和结束标记的 LZMA1，其中 Lzip v1 还写入 CRC 与尺寸尾部。TAR.Z 使用块模式 LZW，在 9 位码宽内提前 CLEAR。TAR.BR 使用 [RFC 7932](https://www.rfc-editor.org/rfc/rfc7932) 定义的未压缩元块，输出可能比原 Brotli 流大。
+
+宿主重新扫描并解码暂存结果，通过后才替换原归档。TAR 复合后缀可让空归档继续按 TAR 打开。删除最后一条记录时，可能误识别为空单文件流的后缀会在提交前导致失败。详见[归档修改契约](archive-transfers.md)。

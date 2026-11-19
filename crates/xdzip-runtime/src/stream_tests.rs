@@ -44,7 +44,7 @@ fn verify(name: &str, format: Format, output_name: &str, expected: &[u8]) {
     let cancel = Cancellation::default();
     let archive = Archive::open(&fixture(name), &cancel).unwrap();
     assert_eq!(archive.format, format);
-    assert!(!archive.update_allowed);
+    assert_eq!(archive.update_allowed, format.descriptor().rewrite);
     assert_eq!(archive.rows.len(), 1);
     assert_eq!(archive.rows[0].name_bytes(), output_name.as_bytes());
     assert_eq!(archive.rows[0].size, expected.len() as u64);
@@ -168,24 +168,119 @@ fn ordinary_streams_browse_check_and_extract_real_content() {
     }
 }
 #[test]
-fn zipx_methods_check_and_extract_without_granting_modification() {
+fn zipx_methods_are_editable_and_keep_original_payloads() {
     for method in ["deflate64", "bzip2", "lzma", "xz"] {
         for descriptor in [false, true] {
             let name = format!(
                 "zipx-{method}{}.zipx",
                 if descriptor { "-descriptor" } else { "" }
             );
-            verify(
-                &name,
-                Format::Zip,
-                "hello.txt",
-                &b"abracadabra abracadabra\n".repeat(6),
+            let expected = b"abracadabra abracadabra\n".repeat(6);
+            verify(&name, Format::Zip, "hello.txt", &expected);
+            let scratch = Scratch::new();
+            let path = scratch.0.join(&name);
+            std::fs::copy(fixture(&name), &path).unwrap();
+            let cancel = Cancellation::default();
+            let archive = Archive::open(&path, &cancel).unwrap();
+            let before = (archive.rows[0].method, archive.rows[0].packed_size);
+            let job = archive
+                .edit_entries_job(
+                    crate::updating::EntryEditOptions {
+                        selected: vec!["1".into()],
+                        directory: String::new(),
+                        action: crate::updating::EntryEdit::Rename("renamed.txt".into()),
+                    },
+                    &cancel,
+                )
+                .unwrap();
+            drop(archive);
+            let mut result = None;
+            crate::updating::run(job, 5, &Control::default(), &mut |s| result = Some(s));
+            let done = result.take().unwrap();
+            assert_eq!(done.status, Status::Succeeded, "{name}: {}", done.error);
+            let edited = Archive::open(&path, &cancel).unwrap();
+            assert_eq!((edited.rows[0].method, edited.rows[0].packed_size), before);
+            assert_eq!(
+                crate::native_backend_tests::known_contents(&edited)["renamed.txt"],
+                expected
             );
+            std::fs::create_dir(scratch.0.join("target")).unwrap();
+            std::fs::write(scratch.0.join("target/extra.txt"), b"new").unwrap();
+            let job = edited
+                .update_job(
+                    crate::updating::Options {
+                        inputs: vec![scratch.0.join("target").to_string_lossy().into_owned()],
+                        directory: String::new(),
+                        conflict: ConflictPolicy::Ask,
+                    },
+                    &cancel,
+                )
+                .unwrap();
+            drop(edited);
+            crate::updating::run(job, 6, &Control::default(), &mut |s| result = Some(s));
+            let done = result.take().unwrap();
+            assert_eq!(done.status, Status::Succeeded, "{name}: {}", done.error);
+            let edited = Archive::open(&path, &cancel).unwrap();
+            let target = edited
+                .rows
+                .iter()
+                .find(|row| row.name_bytes() == b"target/")
+                .unwrap()
+                .id
+                .get()
+                .to_string();
+            let job = edited
+                .move_job(
+                    crate::updating::MoveOptions {
+                        selected: vec!["1".into()],
+                        directory: String::new(),
+                        target,
+                        conflict: ConflictPolicy::Ask,
+                    },
+                    &cancel,
+                )
+                .unwrap();
+            drop(edited);
+            crate::updating::run(job, 7, &Control::default(), &mut |s| result = Some(s));
+            let done = result.take().unwrap();
+            assert_eq!(done.status, Status::Succeeded, "{name}: {}", done.error);
+            let edited = Archive::open(&path, &cancel).unwrap();
+            let contents = crate::native_backend_tests::known_contents(&edited);
+            assert_eq!(contents["target/renamed.txt"], expected);
+            assert_eq!(contents["target/extra.txt"], b"new");
+            if let Some(output) = std::env::var_os("XDZIP_EXTENDED_EDIT_OUTPUT") {
+                let destination = std::path::PathBuf::from(output);
+                std::fs::create_dir_all(&destination).unwrap();
+                std::fs::copy(&path, destination.join(&name)).unwrap();
+            }
+            let target = edited
+                .rows
+                .iter()
+                .find(|row| row.name_bytes() == b"target/")
+                .unwrap()
+                .id
+                .get()
+                .to_string();
+            let job = edited
+                .edit_entries_job(
+                    crate::updating::EntryEditOptions {
+                        selected: vec![target],
+                        directory: String::new(),
+                        action: crate::updating::EntryEdit::Delete,
+                    },
+                    &cancel,
+                )
+                .unwrap();
+            drop(edited);
+            crate::updating::run(job, 8, &Control::default(), &mut |s| result = Some(s));
+            let done = result.take().unwrap();
+            assert_eq!(done.status, Status::Succeeded, "{name}: {}", done.error);
+            assert!(Archive::open(&path, &cancel).unwrap().rows.is_empty());
         }
     }
 }
 #[test]
-fn tar_compositions_reuse_the_container_and_stay_read_only() {
+fn tar_compositions_reuse_the_container_and_are_editable() {
     for (name, format) in [
         ("files.tbz2", Format::TarBzip2),
         ("files.tar.lzma", Format::TarLzma),

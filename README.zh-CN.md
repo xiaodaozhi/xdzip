@@ -56,17 +56,17 @@ Microsoft Store 负责该渠道的更新，与 GitHub 独立发布。GitHub 版�
 
 | 格式 | 浏览、解压和检查 | 创建 | 修改 |
 | --- | --- | --- | --- |
-| ZIP 及 ZIPX、XPI、APK、IPA、CBZ 候选 | Store、Deflate、Deflate64、BZip2、LZMA、XZ，已准入 AES-256 和分卷配置 | 支持 ZIP，Store、Deflate、AES-256 和编号分卷 | 符合条件的 Store/Deflate ZIP 包 |
+| ZIP 及 ZIPX、XPI、APK、IPA、CBZ 候选 | Store、Deflate、Deflate64、BZip2、LZMA、XZ，已准入 AES-256 和分卷配置 | 支持 ZIP，Store、Deflate、AES-256 和编号分卷 | 使用表内方法的符合条件的 ZIP/ZIPX 包 |
 | TAR、TAR.GZ（含 `.tgz`） | 支持普通文件与目录 | 支持，TAR 仅打包 | 符合条件的普通单文件包 |
 | GZIP（`.gz`） | 一个逻辑文件，可由串联的 GZIP 成员组成。内部为 TAR 时按目录树浏览。 | 一个普通文件，Deflate 0/1/6/9 | 不支持 |
 | BZip2、独立 LZMA、Lzip v1 | 在流与内存限制内读取一个普通文件 | 不支持 | 不支持 |
-| TAR.BZ2、TAR.LZMA、TAR.LZ | 支持普通文件与目录 | 不支持 | 不支持 |
-| XZ、TAR.XZ（含 `.txz`） | 声明的校验、LZMA2、Delta/BCJ 和串联流 | LZMA2 1/6/9 级，XZ 仅一个普通文件 | 不支持 |
-| LZ4、TAR.LZ4 | 标准帧、独立块和关联块、串联及声明的校验 | LZ4 1/6/9 级，普通 LZ4 仅一个普通文件 | 不支持 |
-| Zstandard、TAR.ZST（含 `.tzst`） | 标准帧、已准入窗口、Huffman/FSE、重复偏移及声明的校验 | Zstandard 1/6/9 级，普通 Zstandard 仅一个普通文件 | 不支持 |
+| TAR.BZ2、TAR.LZMA、TAR.LZ | 支持普通文件与目录 | 不支持 | 符合条件的归档 |
+| XZ、TAR.XZ（含 `.txz`） | 声明的校验、LZMA2、Delta/BCJ 和串联流 | LZMA2 1/6/9 级，XZ 仅一个普通文件 | 仅 TAR.XZ |
+| LZ4、TAR.LZ4 | 标准帧、独立块和关联块、串联及声明的校验 | LZ4 1/6/9 级，普通 LZ4 仅一个普通文件 | 仅 TAR.LZ4 |
+| Zstandard、TAR.ZST（含 `.tzst`） | 标准帧、已准入窗口、Huffman/FSE、重复偏移及声明的校验 | Zstandard 1/6/9 级，普通 Zstandard 仅一个普通文件 | 仅 TAR.ZST |
 | 7z | 支持密码、文件名加密、固实和编号分卷 | 支持加密、固实和编号分卷 | 符合条件的未加密、非分卷包 |
 | DEB | 普通 ar 成员、control/data TAR 视图，已准入 GZIP/XZ/Zstandard/BZip2/LZMA 配置 | 不支持 | 不支持 |
-| LHA/LZH | 0–3 级头部，Store、LH1–LH7、LZS/LZ5 及声明 CRC | LH5 1/6/9 级，2 级头部，普通文件与目录 | 不支持 |
+| LHA/LZH | 0–3 级头部，Store、LH1–LH7、LZS/LZ5 及声明 CRC | LH5 1/6/9 级，2 级头部，普通文件与目录 | 符合条件的 2 级头部归档，含成员 CRC |
 | [PMA](docs/zh-CN/engineering/pma-streams.md) | 0 级头部 PM0/PM1/PM2，准确 CP/M 结构与声明 CRC | 不支持 | 不支持 |
 | [ARJ](docs/zh-CN/engineering/arj-streams.md) | Store 和方法 1–4，完整头部校验及成员 CRC-32 | 不支持 | 不支持 |
 | [ARC](docs/zh-CN/engineering/arc-streams.md) | 旧/新 Store 与方法 3–9，完整结构及成员 CRC-16 | 不支持 | 不支持 |
@@ -77,8 +77,8 @@ Microsoft Store 负责该渠道的更新，与 GitHub 独立发布。GitHub 版�
 | [复合文件（MSI）](docs/zh-CN/engineering/wim-msi-installer-format-sources.md#compound-file-与-msi) | 浏览存储目录、提取原始数据流，检查结构和可读性 | 不支持 | 不支持 |
 | [NSIS（`.exe`）](docs/zh-CN/engineering/wim-msi-installer-format-sources.md#nsis-与其他-sfx) | 仅查看静态 `firstheader` 元数据。不支持解压或整包测试。 | 不支持 | 不支持 |
 | ASAR | 存储文件与目录、共享载荷区间及声明的文件/块 SHA-256 | 不支持 | 不支持 |
-| Z、TAR.Z（包括 `.taz`） | Unix compress LZW、9–16 位字典及已准入 CLEAR/对齐配置 | 不支持 | 不支持 |
-| Brotli、TAR.BR | 普通 RFC 7932 流，10–24 位窗口和全部静态词典变换 | 不支持 | 不支持 |
+| Z、TAR.Z（包括 `.taz`） | Unix compress LZW、9–16 位字典及已准入 CLEAR/对齐配置 | 不支持 | 仅 TAR.Z |
+| Brotli、TAR.BR | 普通 RFC 7932 流，10–24 位窗口和全部静态词典变换 | 不支持 | 仅 TAR.BR |
 | AES Crypt（`.aes`） | 0–3 版，打开密码、完整密文 HMAC 和逐版本长度规则 | 不支持 | 不支持 |
 | UU/UUE、XXE | 传统计数行与已准入 begin-base64 封装，包括多成员 | 不支持 | 不支持 |
 | RAR | 支持旧版、RAR5 和 RAR 7 格式扩展，包括密码、固实及分卷 | 不支持 | 不支持 |
@@ -88,15 +88,15 @@ Microsoft Store 负责该渠道的更新，与 GitHub 独立发布。GitHub 版�
 | ZIP SFX | 经校验的 ZIP 自解压包 | Windows x64，Store/Deflate，`.sfx.exe` | 不支持 |
 
 - ZIP 的 AES-256 只加密内容，文件名仍可见；不支持 AES-128／192 或传统 ZipCrypto。分卷读取支持 `.zip.001` 及 PKZIP `.z01` 等命名，创建使用编号分卷。详见[密码解压](docs/zh-CN/engineering/password-extraction.md)和[分卷打开](docs/zh-CN/engineering/archive-opening.md)。
-- BZip2、独立 LZMA、Lzip v1 及其 TAR 组合目前只读。LZMA 没有内容校验和，测试检查结构、尺寸和可读性。后缀、成员、内存限制与识别边界见[单文件流契约](docs/zh-CN/engineering/single-file-streams.md)。
-- XZ 验证各流声明的内容校验，声明 None 的流只提供结构与可读性检查。ZIPX 读取限于表内 ZIP 方法，PPMd、JPEG 和 WavPack 变体尚不支持；新增 ZIP 压缩方法只读，不扩展 AES 组合，也不增加 ZIPX 创建。
+- 独立 BZip2、LZMA、Lzip v1 仍为只读格式。LZMA 没有内容校验和，测试检查结构、尺寸和可读性。后缀、成员、内存限制与识别边界见[单文件流契约](docs/zh-CN/engineering/single-file-streams.md)。
+- XZ 验证各流声明的内容校验，声明 None 的流只提供结构与可读性检查。ZIPX 读取限于表内 ZIP 方法，PPMd、JPEG 和 WavPack 变体尚不支持；编辑时原样保留所留 ZIP/ZIPX 条目的压缩数据和方法，新增条目使用 Deflate。
 - 7z 修改通过重建完成，保留及新增文件内容的工作集上限为 512 MiB；新建使用流式输入，不受此重建限制。加密和分卷的 ZIP、7z 不支持修改。详见[归档修改](docs/zh-CN/engineering/archive-transfers.md)。
 - RAR、CAB 和 UDF 为只读格式。[ISO 创建](docs/zh-CN/engineering/iso-creation.md)支持普通文件与目录、单卷、单文件小于 4 GiB，每个 Joliet 名称分量最多 64 个 UCS-2 字符。不提供启动镜像、UDF 或 Rock Ridge 写入及镜像更新。读取镜像不会挂载或执行内容。格式覆盖和资源限制见 [RAR 契约](docs/zh-CN/engineering/rar-format-sources.md)和[格式后端契约](docs/zh-CN/engineering/native-codecs.md)。
 - [自有 SFX 创建](docs/zh-CN/engineering/sfx-creation.md)生成可独立运行的 Windows x64 ZIP 自解压包，无需 Qt 或已安装的 xdzip。支持选择目标目录、冲突处理与取消，绝不执行解压出的文件。不提供密码、分卷和自动运行命令，普通 `.exe` 不参与文件关联。
 - DEB 提供 `members/`、`control/`、`data/` 导出视图，全部提取包含原始成员和展开内容，不安装软件包、不执行脚本。control 接受无压缩、GZIP、XZ、Zstandard，data 另接受 BZip2、LZMA。检查验证容器可读性和声明的校验，不代表软件包认证，详见 [DEB 契约](docs/zh-CN/engineering/deb-containers.md)。
 - Z 与 TAR.Z 只检查结构与可读性，没有校验和，不提供创建或损坏历史流修复，详见 [Unix compress 契约](docs/zh-CN/engineering/compress-streams.md)。
 - UU/UUE 与 XXE 只检查结构与可读性，不提供校验和。头部路径和权限不直接授予输出或执行能力；GNU 编码文件名和多段修复不属于已准入的[文本封装配置](docs/zh-CN/engineering/text-envelopes.md)。
-- LHA/LZH 创建采用 LH5、2 级头部和 UTF-8 名称，旧 Windows 工具可能按旧代码页显示这些名称；现有归档不能修改。读取时先解码旧名称再解释分隔符，实际解码时验证存在的 CRC，无 CRC 的古老成员只提供结构与可读性检查。密码、分卷和修复配置尚未准入，PMA 使用独立只读配置，详见 [LHA 契约](docs/zh-CN/engineering/lha-containers.md)。
+- LHA/LZH 创建采用 LH5、2 级头部和 UTF-8 名称，旧 Windows 工具可能按旧代码页显示这些名称；符合条件的 2 级头部归档可修改。读取时先解码旧名称再解释分隔符，实际解码时验证存在的 CRC，无 CRC 的古老成员只提供结构与可读性检查。密码、分卷和修复配置尚未准入，PMA 使用独立只读配置，详见 [LHA 契约](docs/zh-CN/engineering/lha-containers.md)。
 - ARJ 为只读格式，二进制及旧文本成员均交付归档中 CRC 覆盖的原始字节，不按平台转换换行。密码、分卷、恢复/安全配置、链接和特殊对象尚未准入。未知方法保持可见，并阻止整包检查成功。
 - ARC 采用只读顺序普通文件配置，验证精确结束。密码解码、分卷、SFX 和 Spark 扩展尚未准入。未知方法保留原始编号，不使用 ZIP 方法别名，并阻止整包检查成功。旧 XOR 加密没有头部标记，解码仍须通过码流、尺寸和 CRC 检查，不进行密码或修复回退。
 - BH 仅支持读取 `BH 05 07` 方法 8 的原始 Deflate 配置。未知方法、加密、目录、分卷、尾部和自解压前缀不在范围内。
@@ -108,7 +108,7 @@ Microsoft Store 负责该渠道的更新，与 GitHub 独立发布。GitHub 版�
 
 - AES Crypt 在发布元数据前必须提供打开密码并验证完整密文认证码。0–2 版的尾部长度模值未认证，扩展字段不授予权限。详见 [AES Crypt 契约](docs/zh-CN/engineering/aescrypt-envelopes.md)。
 
-- Brotli 和 TAR.BR 只读，无魔数候选必须完整验证内容，没有校验和；共享词典与大窗口扩展不在准入 [Brotli 范围](docs/zh-CN/engineering/brotli-streams.md)内。
+- Brotli 和 TAR.BR 的无魔数候选必须完整验证内容，流本身没有校验和。TAR.BR 修改使用标准未压缩元块，产物体积可能增大。共享词典与大窗口扩展不在准入 [Brotli 范围](docs/zh-CN/engineering/brotli-streams.md)内。
 
 ## 命令行
 

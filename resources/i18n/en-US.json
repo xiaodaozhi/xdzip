@@ -714,6 +714,7 @@
     "entry.edit.singleSelection": "Select one item to rename.",
     "entry.edit.invalidName": "Enter a valid file or folder name.",
     "entry.edit.unchangedName": "The new name is the same as the current name.",
+    "entry.edit.emptyTarSuffix": "Rename the archive with the corresponding TAR extension before deleting its last entry.",
     "entry.edit.nameExists": "A file or folder with that name already exists here.",
     "entry.edit.renaming": "Renaming…",
     "entry.edit.deleting": "Deleting…",

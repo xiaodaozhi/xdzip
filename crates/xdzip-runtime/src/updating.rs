@@ -510,6 +510,9 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                 e.size,
             )
         }));
+        if expected.is_empty() && crate::formats::ambiguous_empty_tar(job.format, &job.source) {
+            return Err("empty_tar_suffix");
+        }
         if expected.len() > 100_000
             || expected.iter().map(|e| e.0.len()).sum::<usize>() > 16 * 1024 * 1024
         {
@@ -565,10 +568,10 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                     settings: EncodeSettings {
                         solid: false,
                         encrypt_headers: false,
-                        method: if job.format == xdzip_codec_api::Format::SevenZip {
-                            "lzma2"
-                        } else {
-                            "deflate"
+                        method: match job.format {
+                            xdzip_codec_api::Format::SevenZip => "lzma2",
+                            xdzip_codec_api::Format::Lha => "lh5",
+                            _ => "deflate",
                         },
                         level: 6,
                         password: None,

@@ -2,7 +2,7 @@
 
 [English](../../engineering/brotli-streams.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/brotli-streams.md)
 
-`xdzip-compression::BrotliReader` 独立解码一个普通 RFC 7932 Brotli 流，只接收调用者持有的 `Read` 能力和已准入压缩跨度，没有文件名、文件系统、网络、进程或输出发布权限。产品通过[格式登记](format-registry.md)接入只读 Brotli（`.br`）与 TAR.BR（`.tar.br`），支持浏览、预览、检查和选中提取，复用主机源、任务、配额、暂存和提交规则，不提供创建、修改或分卷能力。
+`xdzip-compression::BrotliReader` 独立解码一个普通 RFC 7932 Brotli 流，只接收调用者持有的 `Read` 能力和已准入压缩跨度，没有文件名、文件系统、网络、进程或输出发布权限。产品通过[格式登记](format-registry.md)接入Brotli（`.br`）与 TAR.BR（`.tar.br`），支持浏览、预览、检查和选中提取，复用主机源、任务、配额、暂存和提交规则，不提供创建、修改或分卷能力。
 
 ## 数据范围
 

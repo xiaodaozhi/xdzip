@@ -81,7 +81,7 @@
       "id": "tar-bzip2", "rust_variant": "TarBzip2", "label": "TAR.BZ2", "container": "tar", "filters": ["bzip2"], "worker_id": null,
       "check_kind": "supported_content",
       "creation_levels": [],
-      "read_methods": ["bzip2"], "write_methods": [], "rewrite": false,
+      "read_methods": ["bzip2"], "write_methods": [], "rewrite": true,
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": ["application/x-bzip2-compressed-tar", "application/x-bzip-compressed-tar"],
       "extensions": [
@@ -106,7 +106,7 @@
       "id": "tar-lzma", "rust_variant": "TarLzma", "label": "TAR.LZMA", "container": "tar", "filters": ["lzma"], "worker_id": null,
       "check_kind": "structure_and_readability",
       "creation_levels": [],
-      "read_methods": ["lzma"], "write_methods": [], "rewrite": false,
+      "read_methods": ["lzma"], "write_methods": [], "rewrite": true,
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": ["application/x-lzma-compressed-tar"],
       "extensions": [
@@ -129,7 +129,7 @@
       "id": "tar-lzip", "rust_variant": "TarLzip", "label": "TAR.LZ", "container": "tar", "filters": ["lzip"], "worker_id": null,
       "check_kind": "supported_content",
       "creation_levels": [],
-      "read_methods": ["lzma"], "write_methods": [], "rewrite": false,
+      "read_methods": ["lzma"], "write_methods": [], "rewrite": true,
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": ["application/x-lzip-compressed-tar"],
       "extensions": [
@@ -195,7 +195,7 @@
       "write_methods": [
         "lzma2"
       ],
-      "rewrite": false,
+      "rewrite": true,
       "read_encryption": [],
       "write_encryption": [],
       "read_volumes": [],
@@ -239,7 +239,7 @@
       "id": "tar-lz4", "rust_variant": "TarLz4", "label": "TAR.LZ4", "container": "tar", "filters": ["lz4"], "worker_id": null,
       "check_kind": "format_declared_checks",
       "creation_levels": [1, 6, 9],
-      "read_methods": ["lz4"], "write_methods": ["lz4"], "rewrite": false,
+      "read_methods": ["lz4"], "write_methods": ["lz4"], "rewrite": true,
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [".tar.lz4"], "shell_mime_types": ["application/x-lz4-compressed-tar"],
       "extensions": [
@@ -259,7 +259,7 @@
     {
       "id": "tar-zstd", "rust_variant": "TarZstd", "label": "TAR.ZST", "container": "tar", "filters": ["zstd"], "worker_id": null,
       "check_kind": "format_declared_checks", "creation_levels": [1, 6, 9],
-      "read_methods": ["zstd"], "write_methods": ["zstd"], "rewrite": false,
+      "read_methods": ["zstd"], "write_methods": ["zstd"], "rewrite": true,
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [".tar.zst", ".tzst"], "shell_mime_types": ["application/x-zstd-compressed-tar"],
       "extensions": [
@@ -280,7 +280,7 @@
     {
       "id": "tar-compress", "rust_variant": "TarCompress", "label": "TAR.Z", "container": "tar", "filters": ["compress"], "worker_id": null,
       "check_kind": "structure_and_readability", "creation_levels": [],
-      "read_methods": ["lzw"], "write_methods": [], "rewrite": false,
+      "read_methods": ["lzw"], "write_methods": [], "rewrite": true,
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": [],
       "extensions": [
@@ -324,7 +324,7 @@
       "id": "tar-brotli", "rust_variant": "TarBrotli", "label": "TAR.BR", "container": "tar", "filters": ["brotli"], "worker_id": null,
       "check_kind": "structure_and_readability",
       "creation_levels": [],
-      "read_methods": ["brotli"], "write_methods": [], "rewrite": false,
+      "read_methods": ["brotli"], "write_methods": [], "rewrite": true,
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": [],
       "extensions": [
@@ -345,7 +345,7 @@
     {
       "id": "lzh", "rust_variant": "Lha", "label": "LZH", "container": "lha", "filters": [], "worker_id": null,
       "check_kind": "format_declared_checks", "creation_levels": [1, 6, 9],
-      "read_methods": ["store", "lh1", "lh2", "lh3", "lh4", "lh5", "lh6", "lh7", "lzs", "lz5"], "write_methods": ["lh5"], "rewrite": false,
+      "read_methods": ["store", "lh1", "lh2", "lh3", "lh4", "lh5", "lh6", "lh7", "lzs", "lz5"], "write_methods": ["lh5"], "rewrite": true,
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [".lzh", ".lha"], "shell_mime_types": ["application/x-lha", "application/x-lharc"],
       "extensions": [
