@@ -63,8 +63,6 @@ function screenshotPromo(locale, index, capture, width, height) {
   const base = item.headline.length === 3 ? 667 : 594;
   item.body.forEach((line, n) => body += text(78, base + n * 41, line, layout.body_size, v.muted));
   body += `<g transform="translate(82 792) rotate(-7)">${logo(0, 0, 120)}</g>`;
-  body += rect(1318, 75, 526, 50, 25, '#E6EDFD');
-  body += text(1581, 108, locale.screenshot_artwork_label, 22, '#536C94', 500, 'middle');
   // The screenshot supplies its own border; this background adds only shadow.
   body += `<defs><filter id="capture-shadow" x="-25%" y="-20%" width="150%" height="160%"><feDropShadow dx="0" dy="${layout.shadow_offset_y}" stdDeviation="${layout.shadow_blur}" flood-color="#173763" flood-opacity=".18"/></filter></defs>`;
   body += rect(box.imageX/ratio,box.imageY/ratio,box.imageWidth/ratio,box.imageHeight/ratio,
