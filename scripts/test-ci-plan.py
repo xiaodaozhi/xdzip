@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Exercise complete Git diffs, PR merge identity and conservative fallbacks."""
-import importlib.util
 import ast
+import importlib.util
+from itertools import product
 import json
 from pathlib import Path
 import subprocess
@@ -146,20 +147,25 @@ class PlanTests(unittest.TestCase):
             source = (ROOT / '.github/workflows' / (file + '.yml')).read_text(encoding='utf-8')
             block = re.search(r'^  ' + job + r':\n(.*?)(?=^  [a-z]|\Z)', source, re.M | re.S)[1]
             expression = re.search(r'^    if: (.+)$', block, re.M)[1]
-            for cancelled in (False, True):
-                for outcome in ('success', 'failure', 'cancelled', 'skipped'):
-                    for output in ('true', 'false', ''):
-                        actual = expression.replace('!cancelled()', repr(not cancelled)).replace('always()', 'True')
-                        actual = actual.replace('needs.' + scope + '-plan.result', repr(outcome))
-                        actual = actual.replace('needs.' + scope + '-plan.outputs.run_heavy', repr(output))
-                        actual = actual.replace('&&', ' and ').replace('||', ' or ')
-                        tree = ast.parse(actual, mode='eval')
-                        allowed = (ast.Expression, ast.BoolOp, ast.And, ast.Or, ast.Compare, ast.NotEq, ast.Eq, ast.Constant)
-                        self.assertTrue(all(isinstance(node, allowed) for node in ast.walk(tree)))
-                        value = eval(compile(tree, '<owned-workflow-condition>', 'eval'), {'__builtins__': {}}, {})
-                        expected = not cancelled and (outcome != 'success' or output != 'false')
-                        with self.subTest(job=job, cancelled=cancelled, outcome=outcome, output=output):
-                            self.assertEqual(value, expected)
+            preflights = product((False, True), repeat=2) if scope == 'foundation' else [(False, False)]
+            cases = product(preflights, (False, True), ('success', 'failure', 'cancelled', 'skipped'), ('true', 'false', ''))
+            for (sdk_only, image_only), cancelled, outcome, output in cases:
+                with self.subTest(job=job, sdk_only=sdk_only, image_only=image_only,
+                                  cancelled=cancelled, outcome=outcome, output=output):
+                    actual = expression.replace('cancelled()', repr(cancelled)).replace('always()', 'True')
+                    actual = actual.replace('inputs.sdk_only', repr(sdk_only)).replace('inputs.image_only', repr(image_only))
+                    actual = actual.replace('needs.' + scope + '-plan.result', repr(outcome))
+                    actual = actual.replace('needs.' + scope + '-plan.outputs.run_heavy', repr(output))
+                    operators = {'&&': ' and ', '||': ' or ', '!': 'not '}
+                    actual = re.sub(r"'(?:[^']|'')*'|&&|\|\||!(?!=)",
+                                    lambda token: operators.get(token[0], token[0]), actual)
+                    tree = ast.parse(actual.strip(), mode='eval')
+                    allowed = (ast.Expression, ast.BoolOp, ast.And, ast.Or, ast.UnaryOp, ast.Not,
+                               ast.Compare, ast.NotEq, ast.Eq, ast.Constant)
+                    self.assertTrue(all(isinstance(node, allowed) for node in ast.walk(tree)))
+                    value = eval(compile(tree, '<owned-workflow-condition>', 'eval'), {'__builtins__': {}}, {})
+                    expected = not (sdk_only or image_only or cancelled) and (outcome != 'success' or output != 'false')
+                    self.assertEqual(value, expected)
 
 
 if __name__ == '__main__':unittest.main()
