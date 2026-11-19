@@ -1,6 +1,6 @@
 # Task windows and integrity checks
 
-English | [简体中文](../zh-CN/ux/task-windows.md)
+English | [简体中文](../zh-CN/ux/task-windows.md) | [繁體中文（台灣）](../zh-TW/ux/task-windows.md)
 
 The application task entry aggregates all sessions and routes progress, passwords, conflicts and results using session UUID and backend task ID. Closing a page retains its controller; explicit exit waits for all asynchronous joins. See the [application session contract](../engineering/application-sessions.md).
 

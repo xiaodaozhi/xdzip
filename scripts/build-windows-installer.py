@@ -9,6 +9,8 @@ import re
 import subprocess
 from deployment_audit import digest, within
 from installer_payload import verify_payload
+from packaging_languages import packaging_catalogs, packaging_languages
+from ui_languages import load_languages
 
 ROOT=Path(__file__).resolve().parents[1]
 from association_types import WINDOWS_ICONS, windows_progid
@@ -54,17 +56,48 @@ def payload_manifest(audit):
     return text
 
 
-def association_code():
+def association_code(catalogs):
     code=(ROOT/'apps/desktop/packaging/windows/association-identity.iss').read_text(encoding='utf-8')
-    for locale, key in [('en-US','EN'),('zh-CN','ZH')]:
-        catalog=json.loads((ROOT/'resources/i18n'/f'{locale}.json').read_text(encoding='utf-8'))
-        pattern=catalog['messages']['association.typeDescription']
-        if not isinstance(pattern,str) or pattern.count('%1')!=1 or any(c in pattern for c in '\r\n'):
-            raise ValueError('Invalid association description translation')
-        before,after=pattern.split('%1')
-        quote=lambda value: "'"+value.replace("'","''")+"'"
-        code=code.replace('@ASSOCIATION_DESCRIPTION_'+key+'@',quote(before)+' + Param + '+quote(after))
-    return code
+    def quote(value):
+        return "'" + value.replace("'", "''") + "'"
+
+    def description(locale):
+        before, after = catalogs[locale]['Archive'].split('%1')
+        return quote(before) + ' + Param + ' + quote(after)
+
+    extended = '\n'.join(f"  if (Extended = '{language['id']}') and (Language = '{language['legacy']}') "
+                         'then Language := Extended;'
+                         for language in load_languages()['languages'] if language['legacy'] != language['id'])
+    switch = '\n'.join(f"  if Language = '{locale}' then begin Result := {description(locale)}; exit; end;"
+                       for locale in packaging_languages() if locale != 'en-US')
+    return (code.replace('@EXTENDED_LANGUAGE@', extended).replace('@ASSOCIATION_DESCRIPTIONS@', switch)
+            .replace('@ASSOCIATION_DESCRIPTION_EN@', description('en-US')))
+
+
+def installer_language_sections(chinese, catalogs):
+    files = {'en-US': 'compiler:Default.isl', 'zh-CN': str(chinese.resolve()),
+             'zh-TW': str(chinese.with_name('ChineseTraditional.isl').resolve()),
+             'ja-JP': 'compiler:Languages\\Japanese.isl',
+             'ko-KR': 'compiler:Languages\\Korean.isl',
+             'fr-FR': 'compiler:Languages\\French.isl',
+             'de-DE': 'compiler:Languages\\German.isl',
+             'es-ES': 'compiler:Languages\\Spanish.isl',
+             'pt-BR': 'compiler:Languages\\BrazilianPortuguese.isl',
+             'ru-RU': 'compiler:Languages\\Russian.isl'}
+    names = {'en-US': 'english', 'zh-CN': 'chinesesimplified', 'zh-TW': 'chinesetraditional',
+             'ja-JP': 'japanese', 'ko-KR': 'korean', 'fr-FR': 'french', 'de-DE': 'german',
+             'es-ES': 'spanish', 'pt-BR': 'brazilianportuguese', 'ru-RU': 'russian'}
+    languages, messages, custom = [], [], []
+    for locale in packaging_languages():
+        name, path, catalog = names[locale], files[locale], catalogs[locale]
+        if any(char in path for char in '"\r\n'):
+            raise ValueError('Installer language path contains an unsafe character')
+        languages.append(f'Name: "{name}"; MessagesFile: "{path}"')
+        messages.append(f'{name}.LicenseLabel3={catalog["LicenseLabel3"]}')
+        for key in ('IncompatibleSettings', 'UpdateAlreadyRunning', 'InvalidInstalledFiles',
+                    'ModifiedInstalledFiles', 'InstalledFilesCleanupFailed', 'AddCliPath'):
+            custom.append(f'{name}.{key}={catalog[key]}')
+    return dict(LANGUAGES='\n'.join(languages), MESSAGES='\n'.join(messages), CUSTOM_MESSAGES='\n'.join(custom))
 
 
 def render(payload,audit,output,chinese,qa=None,legacy=False):
@@ -122,11 +155,13 @@ def render(payload,audit,output,chinese,qa=None,legacy=False):
         associations += [f'Root: HKCU; Subkey: "Software\\Classes\\.{ext}\\OpenWithProgids"; ValueType: string; ValueName: "{progid}"; Flags: uninsdeletevalue',
             f'Root: HKCU; Subkey: "Software\\Classes\\Applications\\{application}\\SupportedTypes"; ValueType: string; ValueName: ".{ext}"',
             f'Root: HKCU; Subkey: "Software\\xdzip\\Capabilities\\FileAssociations"; ValueType: string; ValueName: ".{ext}"; ValueData: "{progid}"']
+    catalogs = packaging_catalogs()
+    language_sections = installer_language_sections(chinese, catalogs)
     values={'VERSION':identity['version'],'OUTPUT':str(output.parent.resolve()),'FILENAME':output.stem,
         'FILEVERSION':json.loads((ROOT/'VERSION.json').read_text(encoding='utf-8'))['version']+'.'+str(identity['build']),
         'APPICON':str((ROOT/'design/assets/brand/xdzip.ico').resolve()),'PAYLOAD':str(payload.resolve()),
-        'CHINESE':str(chinese.resolve()),'RUNTIME_DIR':runtime_dir,'ASSOCIATIONS':'\n'.join(associations),
-        'ASSOCIATION_CODE':'' if legacy else association_code(),
+        'RUNTIME_DIR':runtime_dir,'ASSOCIATIONS':'\n'.join(associations),
+        'ASSOCIATION_CODE':'' if legacy else association_code(catalogs),
         'MANIFEST_FILES':'' if legacy else (f'Source: "{manifest_path}"; DestName: "xdzip-package-files.txt"; Flags: dontcopy\n'
             f'Source: "{manifest_path}"; DestDir: "{{app}}"; DestName: "{MANIFEST_NAME}"; Flags: ignoreversion'),
         'CLEANUP_CODE':'' if legacy else (ROOT/'apps/desktop/packaging/windows/installed-files.iss').read_text(encoding='utf-8'),
@@ -138,6 +173,8 @@ def render(payload,audit,output,chinese,qa=None,legacy=False):
     for name,value in values.items():
         if name not in ('ASSOCIATIONS','ASSOCIATION_CODE','MANIFEST_FILES','CLEANUP_CODE','SHELL_HOOKS') and any(c in value for c in ['"','\r','\n']):raise ValueError('Unsafe installer substitution')
         text=text.replace('@'+name+'@',value)
+    for name, value in language_sections.items():
+        text = text.replace('@' + name + '@', value)
     return text,{'runtime_id':runtime,'identity':identity,'executable_sha256':digest(payload/'xdzip.exe'),'qa_fixture':qa is not None or legacy,'layout':'legacy-qa' if legacy else 'flat',
         'executable_relative_path':('versions/'+runtime+'/' if legacy else '')+'xdzip.exe',
         'payload_manifest_sha256':hashlib.sha256(manifest.encode('utf-8')).hexdigest()}
@@ -155,6 +192,10 @@ def main():
     if not within(args.output,ROOT/'build'):parser.error('Installer belongs under build/')
     audit=json.loads(args.audit.read_text(encoding='utf-8'))
     toolchain=json.loads((ROOT/'scripts/installer-toolchain.json').read_text())['inno_setup']
+    for item in toolchain['translations']:
+        path = args.chinese.with_name(item['file'])
+        if not path.is_file() or digest(path) != item['sha256']:
+            raise ValueError('Installer requires the pinned language resource ' + item['file'])
     notice_records=[]
     for item in toolchain['materials']:
         if item['file'] == 'ChineseSimplified.isl':continue

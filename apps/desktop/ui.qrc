@@ -92,8 +92,6 @@
     <file>ui/SettingsToggle.qml</file>
     <file>ui/SettingsSelectRow.qml</file>
     <file>ui/RestartWindow.qml</file>
-    <file alias="i18n/zh-CN.json">../../resources/i18n/zh-CN.json</file>
-    <file alias="i18n/en-US.json">../../resources/i18n/en-US.json</file>
     <file>ui/InfoRow.qml</file>
     <file>ui/AppButton.qml</file>
     <file>ui/OperationWindow.qml</file>

@@ -60,7 +60,7 @@ UiPreferences::UiPreferences(QObject *parent) : QObject(parent) {
     const auto theme = settings.value("appearance/theme", "system").toString();
     const auto storedScale = settings.value("appearance/textScale", 1).toDouble();
     const auto scale = storedScale == 2 ? 1.5 : storedScale;
-    const auto language = settings.value("locale/language", "auto").toString();
+    const auto language = readUiLanguageSelection(settings);
     if (settings.status() == QSettings::NoError && schema == 1 && validTheme(theme) &&
         validScale(scale) && validUiLanguageSelection(language)) {
         m_savedTheme = m_theme = theme;
@@ -107,6 +107,30 @@ bool UiPreferences::dark() const {
 }
 QString UiPreferences::activeLanguage() const {
     return QCoreApplication::instance()->property("xdzipUiLanguage").toString();
+}
+QStringList UiPreferences::languageIds() const {
+    return QStringList{QStringLiteral("auto")} + supportedUiLanguages();
+}
+QStringList UiPreferences::languageNames() const {
+    QStringList result;
+    const auto available = supportedUiLanguages();
+    for (const auto &entry : xdzip_i18n::languages) {
+        if (!available.contains(uiLanguageString(entry.id)))
+            continue;
+        if (entry.id == "zh-CN")
+            result.append(qtTrId("language.zhCN"));
+        else if (entry.id == "en-US")
+            result.append(qtTrId("language.enUS"));
+        else
+            result.append(uiLanguageString(entry.name));
+    }
+    return result;
+}
+QStringList UiPreferences::languageFonts() const {
+    QStringList result{uiFontFamilyForLanguage(activeLanguage())};
+    for (const auto &language : supportedUiLanguages())
+        result.append(uiFontFamilyForLanguage(language));
+    return result;
 }
 void UiPreferences::preview(const QString &theme, double scale) {
     if (!validTheme(theme) || !validScale(scale))
@@ -181,7 +205,7 @@ bool UiPreferences::save(const QString &theme, double scale, const QString &lang
     settings.setValue("schemaVersion", 1);
     settings.setValue("appearance/theme", theme);
     settings.setValue("appearance/textScale", scale);
-    settings.setValue("locale/language", language);
+    writeUiLanguageSelection(settings, language);
     settings.setValue("appearance/density", m_savedDensity);
     settings.setValue("privacy/recentEnabled", m_recentEnabled);
     settings.setValue("desktop/shellEnabled", m_shellEnabled);

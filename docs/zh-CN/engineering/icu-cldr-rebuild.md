@@ -1,6 +1,6 @@
 # 从 CLDR 重建 ICU 73.2 数据
 
-[English](../../engineering/icu-cldr-rebuild.md) | 简体中文
+[English](../../engineering/icu-cldr-rebuild.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/icu-cldr-rebuild.md)
 
 本流程用于编辑和重建 Linux ICU 73.2 的区域资源。源码交付包括固定的 ICU 73.2 源码树、CLDR 43.1 子集，以及构建 CLDR 工具所需的 ICU 73.1 源码树。CLDR 子集有意排除五个 ISO 639-3 文件、`docs/ldml` 标准文档目录和两张文档截图，并替换 963 张网页工具图片，不是完整上游树。标准文本可查看 [Unicode 发布的 43.1 版 UTS #35](https://www.unicode.org/reports/tr35/tr35-69/tr35.html)，其使用条件由权利人说明；其他工具用途或新增数据仍须单独检查来源和条款。
 

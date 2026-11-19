@@ -1,6 +1,6 @@
 # Local macOS development DMG
 
-English | [简体中文](../zh-CN/engineering/macos-deployment.md)
+English | [简体中文](../zh-CN/engineering/macos-deployment.md) | [繁體中文（台灣）](../zh-TW/engineering/macos-deployment.md)
 
 The dedicated Release workflow permits native deployment, necessary ad-hoc signing, app.zip and DMG packaging, and uploads. The on-demand Qt workflow's macOS job retains SDK verification. One deployed, signed, verified .app is used for both release packages; the unzipped ZIP also receives relocated startup verification. See the [release protocol](release-protocol.md).
 

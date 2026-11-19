@@ -74,7 +74,8 @@ int main(int argc, char **argv) {
                                                   attributes:nil
                                                        error:nil];
         const auto entries = [&](NSArray<NSURL *> *urls, bool english, NSInteger expected) {
-            auto *menu = xdzip_shell::finderMenu(urls, english, nil, @selector(description));
+            auto *menu = xdzip_shell::finderMenu(urls, english ? "en-US" : "zh-CN", nil,
+                                                 @selector(description));
             auto *submenu = menu.itemArray.firstObject.submenu;
             check(menu.numberOfItems == 1 && submenu.numberOfItems == expected,
                   "dynamic menu count");
@@ -168,7 +169,7 @@ int main(int argc, char **argv) {
         };
         check(write(true, "en-US"), "write preferences");
         auto prefs = xdzip_shell::finderPreferences(app, config);
-        check(prefs.enabled && prefs.english, "enabled language");
+        check(prefs.enabled && prefs.language == "en-US", "enabled language");
         check(xdzip_shell::validFinderToken(prefs.handoffToken), "private token generated");
         NSString *initialToken = prefs.handoffToken;
 

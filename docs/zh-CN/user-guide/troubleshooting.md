@@ -1,6 +1,6 @@
 # XDZip 常见问题与排错
 
-[English](../../user-guide/troubleshooting.md) | 简体中文
+[English](../../user-guide/troubleshooting.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/user-guide/troubleshooting.md)
 
 | 遇到的问题 | 可以怎么处理 |
 | --- | --- |

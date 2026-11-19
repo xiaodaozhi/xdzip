@@ -1,6 +1,6 @@
 # Rebuild ICU 73.2 data from CLDR
 
-English | [简体中文](../zh-CN/engineering/icu-cldr-rebuild.md)
+English | [简体中文](../zh-CN/engineering/icu-cldr-rebuild.md) | [繁體中文（台灣）](../zh-TW/engineering/icu-cldr-rebuild.md)
 
 This Linux workflow rebuilds ICU 73.2 locale resources using the delivered ICU source, a CLDR 43.1 subset and ICU 73.1 bootstrap source. The subset omits five ISO 639-3 files, the `docs/ldml` standards directory and two documentation screenshots, and replaces 963 web tool images. The [Unicode-published UTS #35 version 43.1](https://www.unicode.org/reports/tr35/tr35-69/tr35.html) is available separately under its owner's terms. Other uses or added data need separate provenance and terms review. Use Ubuntu 24.04 x86_64 with JDK 17, Ant, Maven, Python 3, a C/C++ toolchain, `make` and a UTF-8 locale. Maven initially needs its dependency repositories. Set `XDZIP_DELIVERY` to the trusted delivery and `JAVA_HOME` to JDK 17. Use a new working directory to avoid overwriting existing source or build results. The locally built bootstrap JARs are not claimed to be byte-identical to upstream published artifacts. Gzip bytes for the CLDR subset may vary across build environments, so verify it against that delivery's manifest; obtain the manifest through a trusted channel.
 

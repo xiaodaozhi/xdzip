@@ -78,6 +78,10 @@ shutil.copytree(root / 'third_party/qt', out / 'Qt-6.8.2', dirs_exist_ok=True)
 notice_files += [out/'Qt-6.8.2'/p.relative_to(root/'third_party/qt') for p in (root/'third_party/qt').rglob('*') if p.is_file()]
 shutil.copyfile(root / 'design/assets/fonts/OFL.txt', out / 'Xdzip-Design-Sans-SC-OFL.txt')
 notice_files.append(out / 'Xdzip-Design-Sans-SC-OFL.txt')
+for item in font_manifest.get('localized', {}).values():
+    notice = out / (Path(item['path']).stem + '-OFL.txt')
+    shutil.copyfile(root / item['license']['path'], notice)
+    notice_files.append(notice)
 (out / 'rust-dependencies.json').write_text(json.dumps(inventory, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 (out / 'target.json').write_text(json.dumps({'rust_host': host, 'scope': 'Host-resolved workspace dependencies, including build tools; Cargo.lock retains all targets'}, indent=2) + '\n', encoding='utf-8')
 
@@ -91,8 +95,7 @@ for relative, license_id in [('design/assets/brand/xdzip.svg','Apache-2.0'),
                              ('design/assets/file-associations/xdzip-zip-master.svg','Apache-2.0'),
                              ('third_party/brotli-rfc7932/dictionary.bin','BSD-3-Clause')]:
     assets.append({'path':relative, 'license':license_id, 'sha256':hashlib.sha256((root/relative).read_bytes()).hexdigest()})
-for kind in ('subset', 'native'):
-    item = font_manifest[kind]
+for item in [font_manifest['subset'], font_manifest['native'], *font_manifest.get('localized', {}).values()]:
     assets.append({'path':'generated/fonts/'+item['path'], 'license':'OFL-1.1', 'sha256':item['sha256']})
 revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
 source_inventory = {

@@ -1,6 +1,6 @@
 # ASAR container contract
 
-English | [简体中文](../zh-CN/engineering/asar-containers.md)
+English | [简体中文](../zh-CN/engineering/asar-containers.md) | [繁體中文（台灣）](../zh-TW/engineering/asar-containers.md)
 
 The format follows Electron's [ASAR description](https://github.com/electron/asar#format) and Chromium's [Pickle contract](https://chromium.googlesource.com/chromium/src/+/main/base/pickle.h). An eight-byte size Pickle precedes a Pickle string containing a JSON directory tree; stored file offsets are decimal strings relative to the payload area. Each tree entry retains its own identity even when files share the same stored bytes. Optional integrity declares SHA-256 for the complete file and each fixed-size block. These declarations are corruption checks, not package or application authentication.
 

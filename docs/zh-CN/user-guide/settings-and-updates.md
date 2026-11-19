@@ -1,6 +1,6 @@
 # 设置与更新
 
-[English](../../user-guide/settings-and-updates.md) | 简体中文
+[English](../../user-guide/settings-and-updates.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/user-guide/settings-and-updates.md)
 
 ## 调整工作区
 

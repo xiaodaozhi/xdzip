@@ -1,6 +1,6 @@
 # xdzip 视觉规范
 
-[English](../../visual/README.md) | 简体中文
+[English](../../visual/README.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/visual/README.md)
 
 规范入口：[界面设计规范](design-standard.md)、[强制设计流程](design-workflow.md)、[密度与单位契约](../../../specs/visual/layout-scale.json)。主窗口与菜单比例的复验按[通用方法](../../../developers/zh-CN/qa/README.md)记录。
 

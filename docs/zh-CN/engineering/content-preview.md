@@ -1,6 +1,6 @@
 # 主动内容预览
 
-[English](../../engineering/content-preview.md) | 简体中文
+[English](../../engineering/content-preview.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/content-preview.md)
 
 预览由用户在属性卡点击“预览内容”触发，选择条目或打开归档不会自动解码内容。主窗口和独立属性查看器使用同一组件，密码复用现有密码窗口；详情仍可独立显示元数据。
 

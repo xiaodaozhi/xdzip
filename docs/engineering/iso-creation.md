@@ -1,6 +1,6 @@
 # ISO9660 and Joliet creation
 
-English | [简体中文](../zh-CN/engineering/iso-creation.md)
+English | [简体中文](../zh-CN/engineering/iso-creation.md) | [繁體中文（台灣）](../zh-TW/engineering/iso-creation.md)
 
 The first writer creates a single non-bootable data image with 2048-byte sectors, an ISO9660 primary namespace and a Joliet supplementary namespace. It follows [ECMA-119, fifth edition](https://ecma-international.org/wp-content/uploads/ECMA-119_5th_edition_december_2024.pdf), including the Joliet specification reproduced in Annex C. No external image authoring engine is linked or launched.
 

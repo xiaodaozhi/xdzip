@@ -1,6 +1,6 @@
 # Requirements and verification traceability
 
-English | [简体中文](../zh-CN/design/requirements-traceability.md)
+English | [简体中文](../zh-CN/design/requirements-traceability.md) | [繁體中文（台灣）](../zh-TW/design/requirements-traceability.md)
 
 [Product requirements](product-requirements.md) defines the requirement IDs and their current scope. Each row below describes what to verify when that behavior changes. Execution results, platform scope and limitations belong to the corresponding change record. The [acceptance cases](../../developers/qa/acceptance.md) identify verification entry points.
 

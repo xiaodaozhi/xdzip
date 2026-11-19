@@ -1,6 +1,6 @@
 # Host calendar and encoding services for format workers
 
-English | [简体中文](../zh-CN/engineering/host-platform-services.md)
+English | [简体中文](../zh-CN/engineering/host-platform-services.md) | [繁體中文（台灣）](../zh-TW/engineering/host-platform-services.md)
 
 Rust handles format fields, password compatibility rules, and validation. OS historical time zones, OEM/ANSI code pages, and local C encodings belong to the host environment and are exposed through optional `ReadSource` services. The format layer must not guess them from filename, HostOS, or current UTC offset. Services do not depend on Qt or grant path access or file-publication authority.
 

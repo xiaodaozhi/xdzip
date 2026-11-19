@@ -1,5 +1,6 @@
 #pragma once
 #include <QObject>
+#include <QStringList>
 #include <QtQml/qqmlregistration.h>
 
 class UiPreferences : public QObject {
@@ -13,6 +14,9 @@ class UiPreferences : public QObject {
     Q_PROPERTY(double savedTextScale READ savedTextScale NOTIFY savedChanged)
     Q_PROPERTY(QString language READ language NOTIFY savedChanged)
     Q_PROPERTY(QString activeLanguage READ activeLanguage NOTIFY savedChanged)
+    Q_PROPERTY(QStringList languageIds READ languageIds CONSTANT)
+    Q_PROPERTY(QStringList languageNames READ languageNames NOTIFY savedChanged)
+    Q_PROPERTY(QStringList languageFonts READ languageFonts NOTIFY savedChanged)
     Q_PROPERTY(QString error READ error NOTIFY errorChanged)
     Q_PROPERTY(QString density READ density NOTIFY appearanceChanged)
     Q_PROPERTY(QString savedDensity READ savedDensity NOTIFY savedChanged)
@@ -103,6 +107,9 @@ class UiPreferences : public QObject {
         return m_language;
     }
     QString activeLanguage() const;
+    QStringList languageIds() const;
+    QStringList languageNames() const;
+    QStringList languageFonts() const;
     QString error() const {
         return m_error;
     }

@@ -1,6 +1,6 @@
 # 格式适配器与扩展试验
 
-[English](../../design/codec-extension-sdk.md) | 简体中文
+[English](../../design/codec-extension-sdk.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/codec-extension-sdk.md)
 
 ## 三条执行路径
 

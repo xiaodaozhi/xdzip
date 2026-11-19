@@ -63,9 +63,8 @@ class MsixTests(unittest.TestCase):
         self.assertEqual(identity.attrib['ProcessorArchitecture'], 'x64')
         languages = [item.get('Language') for item in package.findall(
             msix.tag(msix.NS, 'Resources') + '/' + msix.tag(msix.NS, 'Resource'))]
-        self.assertEqual(languages, ['en-US', 'zh-CN'])
-        catalogs = {json.loads(path.read_text(encoding='utf-8'))['locale']
-                    for path in (ROOT / 'resources/i18n').glob('*.json')}
+        self.assertEqual(languages, list(msix.packaging_languages()))
+        catalogs = set(msix.packaging_catalogs())
         self.assertEqual(set(languages), catalogs)
         self.assertEqual(package.find(msix.tag(msix.NS, 'Properties')).find(
             msix.tag(msix.NS, 'PublisherDisplayName')).text, '测试 & Publisher')
@@ -165,7 +164,7 @@ class MsixTests(unittest.TestCase):
             self.assertEqual(report['name'], 'xdzip.Test')
             self.assertEqual(report['publisher'], 'CN=test')
             self.assertEqual(report['publisher_display_name'], 'Test Publisher')
-            self.assertEqual(report['languages'], ['en-US', 'zh-CN'])
+            self.assertEqual(report['languages'], list(msix.packaging_languages()))
             self.assertEqual(report['shell_library'], 'shell/' + library.name)
             self.assertEqual(report['version'], '1.0.27.0')
             import zipfile
@@ -184,8 +183,11 @@ class MsixTests(unittest.TestCase):
             index = dump.read_text(encoding='utf-8-sig')
             resources = {item.get('uri') for item in ET.fromstring(index).iter('NamedResource')}
             self.assertIn('ms-resource://xdzip.Test/Files/Assets/logo44.png', resources)
+            self.assertIn('ms-resource://xdzip.Test/Resources/AppDescription', resources)
             for icon in set(msix.WINDOWS_ICONS.values()):
                 self.assertIn('ms-resource://xdzip.Test/Files/' + icons.association_logo(icon), resources)
+            for ext in msix.WINDOWS_ICONS:
+                self.assertIn('ms-resource://xdzip.Test/Resources/Association_' + ext, resources)
             qualifiers = {(item.get('name'), item.get('value')) for item in ET.fromstring(index).iter('Qualifier')}
             self.assertIn(('AlternateForm', 'UNPLATED'), qualifiers)
             self.assertIn(('AlternateForm', 'LIGHTUNPLATED'), qualifiers)

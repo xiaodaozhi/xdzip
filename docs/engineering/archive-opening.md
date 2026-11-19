@@ -1,6 +1,6 @@
 # Split-volume reading and temporary opening
 
-English | [简体中文](../zh-CN/engineering/archive-opening.md)
+English | [简体中文](../zh-CN/engineering/archive-opening.md) | [繁體中文（台灣）](../zh-TW/engineering/archive-opening.md)
 
 Desktop file selection, shell requests and the CLI feed the same Rust source-opening rules. The host resolves any allowed volume set, captures source identity and probes the authorized bytes. The selected backend then supplies [browse metadata](readonly-browser.md), sometimes through the [isolated format worker](native-codecs.md). Explicitly opening a member creates a verified temporary copy for the associated application. Use a separate [integrity check](archive-checking.md) to verify the archive as a whole.
 

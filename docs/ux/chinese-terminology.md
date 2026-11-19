@@ -1,6 +1,6 @@
 # Simplified Chinese UI terminology
 
-English | [简体中文](../zh-CN/ux/chinese-terminology.md)
+English | [简体中文](../zh-CN/ux/chinese-terminology.md) | [繁體中文（台灣）](../zh-TW/ux/chinese-terminology.md)
 
 User-facing Chinese copy follows the [terminology configuration](../../specs/ux/chinese-terminology.json). Qt static text retains stable IDs in resources/i18n/zh-CN.json. HTML, current high-fidelity designs and user documentation follow the table below; engineering and format documents may use technical terminology. This change does not alter component dimensions, main-window 0.8/menu 1 density, DPR or scaling parameters.
 

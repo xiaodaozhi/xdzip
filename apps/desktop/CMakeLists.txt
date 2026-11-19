@@ -20,6 +20,12 @@ qt_policy(SET QTP0004 NEW)
 add_library(xdzip-password-accessibility STATIC PasswordAccessibility.cpp PasswordAccessibility.h)
 target_link_libraries(xdzip-password-accessibility PRIVATE Qt6::QuickPrivate)
 set(XDZIP_BUILD_INFO_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
+set(XDZIP_LANGUAGE_REGISTRY "${PROJECT_SOURCE_DIR}/resources/ui-languages.json")
+set(XDZIP_LANGUAGE_GENERATOR "${PROJECT_SOURCE_DIR}/scripts/ui_languages.py")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${XDZIP_LANGUAGE_REGISTRY}" "${XDZIP_LANGUAGE_GENERATOR}")
+execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${XDZIP_LANGUAGE_GENERATOR}"
+    --cpp "${XDZIP_BUILD_INFO_DIR}/UiLanguageData.h" COMMAND_ERROR_IS_FATAL ANY)
 add_custom_target(xdzip-build-info
     COMMAND "${CMAKE_COMMAND}" "-DXDZIP_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
         "-DXDZIP_OUTPUT_DIR=${XDZIP_BUILD_INFO_DIR}" "-DXDZIP_DISPLAY_VERSION=${XDZIP_DISPLAY_VERSION}"
@@ -31,19 +37,41 @@ set_property(SOURCE BuildInfo.cpp APPEND PROPERTY OBJECT_DEPENDS
     "${XDZIP_BUILD_INFO_DIR}/BuildVersion.h")
 set(XDZIP_FONT_DIR "${PROJECT_BINARY_DIR}/generated/fonts")
 set(XDZIP_FONT_TTF "${XDZIP_FONT_DIR}/xdzip-design-sans-sc.ttf")
+file(GLOB XDZIP_LANGUAGE_CATALOGS CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/i18n/*.json")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${PROJECT_SOURCE_DIR}/scripts/ui_fonts.py" "${PROJECT_SOURCE_DIR}/specs/dependencies/ui-font.json")
+execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${PROJECT_SOURCE_DIR}/scripts/ui-fonts.py"
+    localized-files OUTPUT_VARIABLE XDZIP_LOCALIZED_FONT_NAMES OUTPUT_STRIP_TRAILING_WHITESPACE
+    COMMAND_ERROR_IS_FATAL ANY)
+set(XDZIP_LOCALIZED_FONT_FILES "")
+set(XDZIP_LOCALIZED_FONT_RESOURCES "")
+foreach(font IN LISTS XDZIP_LOCALIZED_FONT_NAMES)
+    list(APPEND XDZIP_LOCALIZED_FONT_FILES "${XDZIP_FONT_DIR}/${font}")
+    string(APPEND XDZIP_LOCALIZED_FONT_RESOURCES "<file alias=\"fonts/${font}\">${XDZIP_FONT_DIR}/${font}</file>\n")
+endforeach()
 # Rescan on every build so newly added/deleted text files are observed too.
 # The generator preserves unchanged output bytes and timestamps.
 add_custom_target(xdzip-ui-font
     COMMAND Python3::Interpreter "${PROJECT_SOURCE_DIR}/scripts/ui-fonts.py" build --output-dir "${XDZIP_FONT_DIR}"
-    BYPRODUCTS "${XDZIP_FONT_TTF}" "${XDZIP_FONT_DIR}/xdzip-design-sans-sc.woff2" "${XDZIP_FONT_DIR}/manifest.json"
+    BYPRODUCTS "${XDZIP_FONT_TTF}" ${XDZIP_LOCALIZED_FONT_FILES}
+        "${XDZIP_FONT_DIR}/xdzip-design-sans-sc.woff2" "${XDZIP_FONT_DIR}/manifest.json"
     VERBATIM)
-set_source_files_properties("${XDZIP_FONT_TTF}" PROPERTIES GENERATED TRUE)
+set_source_files_properties("${XDZIP_FONT_TTF}" ${XDZIP_LOCALIZED_FONT_FILES} PROPERTIES GENERATED TRUE)
 # Preserve the existing ui resource initialization and aliases. Source asset
 # paths become absolute because this combined qrc lives in the build tree.
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/ui.qrc" XDZIP_UI_QRC)
 string(REGEX REPLACE "<file>([^<]+)</file>" "<file alias=\"\\1\">\\1</file>" XDZIP_UI_QRC "${XDZIP_UI_QRC}")
 string(REGEX REPLACE "(<file[^>]*>)([^<]+)" "\\1${CMAKE_CURRENT_SOURCE_DIR}/\\2" XDZIP_UI_QRC "${XDZIP_UI_QRC}")
-string(REPLACE "</RCC>" "  <qresource prefix=\"/xdzip\"><file alias=\"fonts/xdzip-design-sans-sc.ttf\">${XDZIP_FONT_TTF}</file></qresource>\n</RCC>" XDZIP_UI_QRC "${XDZIP_UI_QRC}")
+set(XDZIP_I18N_RESOURCES "")
+foreach(catalog IN LISTS XDZIP_LANGUAGE_CATALOGS)
+    get_filename_component(catalog_name "${catalog}" NAME)
+    string(APPEND XDZIP_I18N_RESOURCES "<file alias=\"i18n/${catalog_name}\">${catalog}</file>\n")
+endforeach()
+set(XDZIP_PACKAGING_GENERATOR "${PROJECT_SOURCE_DIR}/scripts/packaging_languages.py")
+set(XDZIP_PACKAGING_TRANSLATIONS "${XDZIP_BUILD_INFO_DIR}/packaging-localizations")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${XDZIP_PACKAGING_GENERATOR}" "${PROJECT_SOURCE_DIR}/resources/packaging-i18n.json")
+string(REPLACE "</RCC>" "  <qresource prefix=\"/xdzip\">${XDZIP_I18N_RESOURCES}<file alias=\"fonts/xdzip-design-sans-sc.ttf\">${XDZIP_FONT_TTF}</file>${XDZIP_LOCALIZED_FONT_RESOURCES}</qresource>\n</RCC>" XDZIP_UI_QRC "${XDZIP_UI_QRC}")
 file(CONFIGURE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/ui.qrc" CONTENT "${XDZIP_UI_QRC}" @ONLY)
 qt_add_resources(ui_resources "${CMAKE_CURRENT_BINARY_DIR}/ui.qrc")
 add_library(xdzip-ui-resources STATIC ${ui_resources})
@@ -165,6 +193,21 @@ if(WIN32)
 endif()
 if(APPLE)
     enable_language(OBJCXX)
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${XDZIP_LANGUAGE_CATALOGS}
+        "${CMAKE_CURRENT_SOURCE_DIR}/packaging/macos/Info.plist.in")
+    execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${XDZIP_PACKAGING_GENERATOR}"
+        --platform macos --output "${XDZIP_PACKAGING_TRANSLATIONS}"
+        OUTPUT_VARIABLE XDZIP_MACOS_LANGUAGES OUTPUT_STRIP_TRAILING_WHITESPACE
+        COMMAND_ERROR_IS_FATAL ANY)
+    set(XDZIP_LOCALIZATION_XML "")
+    foreach(locale IN LISTS XDZIP_MACOS_LANGUAGES)
+        string(APPEND XDZIP_LOCALIZATION_XML "<string>${locale}</string>")
+    endforeach()
+    set(XDZIP_MACOS_BUNDLE_PLIST "${CMAKE_CURRENT_BINARY_DIR}/Localized-Info.plist.in")
+    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/packaging/macos/Info.plist.in" XDZIP_MACOS_PLIST)
+    string(REPLACE "<array><string>zh-Hans</string><string>en</string></array>"
+        "<array>${XDZIP_LOCALIZATION_XML}</array>" XDZIP_MACOS_PLIST "${XDZIP_MACOS_PLIST}")
+    file(WRITE "${XDZIP_MACOS_BUNDLE_PLIST}" "${XDZIP_MACOS_PLIST}")
     include(${PROJECT_SOURCE_DIR}/cmake/Sparkle.cmake)
     set_target_properties(xdzip-browser PROPERTIES OBJCXX_STANDARD 17
         OBJCXX_STANDARD_REQUIRED ON OBJCXX_EXTENSIONS OFF)
@@ -179,7 +222,7 @@ if(APPLE)
     target_link_libraries(xdzip-browser PRIVATE "-framework AppKit")
     set_target_properties(xdzip-browser PROPERTIES MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.xdzip.desktop"
-        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/packaging/macos/Info.plist.in"
+        MACOSX_BUNDLE_INFO_PLIST "${XDZIP_MACOS_BUNDLE_PLIST}"
         MACOSX_BUNDLE_BUNDLE_NAME "xdzip"
         MACOSX_BUNDLE_COPYRIGHT "Copyright (C) 2026 xiaodaozhi"
         MACOSX_BUNDLE_ICON_FILE "xdzip.icns"
@@ -235,8 +278,14 @@ endif()
 if(UNIX AND NOT APPLE)
     include(GNUInstallDirs)
     install(TARGETS xdzip-browser RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-    install(FILES packaging/linux/xdzip.desktop DESTINATION "${CMAKE_INSTALL_DATADIR}/applications")
-    install(FILES packaging/linux/xdzip-mime.xml DESTINATION "${CMAKE_INSTALL_DATADIR}/mime/packages")
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/packaging/linux/xdzip.desktop"
+        "${CMAKE_CURRENT_SOURCE_DIR}/packaging/linux/xdzip-mime.xml"
+        "${CMAKE_CURRENT_SOURCE_DIR}/packaging/linux/org.xdzip.update.policy")
+    execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${XDZIP_PACKAGING_GENERATOR}"
+        --platform linux --output "${XDZIP_PACKAGING_TRANSLATIONS}" COMMAND_ERROR_IS_FATAL ANY)
+    install(FILES "${XDZIP_PACKAGING_TRANSLATIONS}/xdzip.desktop" DESTINATION "${CMAKE_INSTALL_DATADIR}/applications")
+    install(FILES "${XDZIP_PACKAGING_TRANSLATIONS}/xdzip-mime.xml" DESTINATION "${CMAKE_INSTALL_DATADIR}/mime/packages")
     install(FILES "${XDZIP_BRAND_ASSETS}/xdzip.png"
         DESTINATION "${CMAKE_INSTALL_DATADIR}/icons/hicolor/512x512/apps")
 endif()
@@ -360,7 +409,7 @@ if(BUILD_TESTING)
             endif()
             get_target_property(probe_sources xdzip-update-tests SOURCES)
             list(FILTER probe_sources EXCLUDE REGEX "tests/update_controller_test\\.cpp$")
-            file(READ "${CMAKE_CURRENT_SOURCE_DIR}/packaging/macos/Info.plist.in" update_probe_info)
+            file(READ "${XDZIP_MACOS_BUNDLE_PLIST}" update_probe_info)
             string(REPLACE "<key>XdzipFinderSyncProtocol</key><integer>1</integer>" ""
                 update_probe_info "${update_probe_info}")
             file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/UpdateProbe-Info.plist.in" "${update_probe_info}")
@@ -469,12 +518,14 @@ elseif(APPLE)
     target_sources(xdzip-browser PRIVATE MacShellService.mm MacFinderIntegration.mm)
     add_dependencies(xdzip-browser xdzip-shell-service)
     set(service_bundle "$<TARGET_BUNDLE_DIR:xdzip-browser>/Contents/Helpers/xdzip.service/Contents")
+    file(GLOB_RECURSE XDZIP_MACOS_LOCALIZED_FILES "${XDZIP_PACKAGING_TRANSLATIONS}/*.strings")
+    set_property(TARGET xdzip-browser APPEND PROPERTY LINK_DEPENDS ${XDZIP_MACOS_LOCALIZED_FILES})
     add_custom_command(TARGET xdzip-browser POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E make_directory "${service_bundle}/MacOS" "${service_bundle}/Resources/en.lproj" "${service_bundle}/Resources/zh-Hans.lproj"
+        COMMAND "${CMAKE_COMMAND}" -E make_directory "${service_bundle}/MacOS" "${service_bundle}/Resources"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:xdzip-shell-service>" "${service_bundle}/MacOS/xdzip-shell-service"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/shell/Service-Info.plist" "${service_bundle}/Info.plist"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/shell/ServicesMenu-en.strings" "${service_bundle}/Resources/en.lproj/ServicesMenu.strings"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/shell/ServicesMenu-zh.strings" "${service_bundle}/Resources/zh-Hans.lproj/ServicesMenu.strings" VERBATIM)
+        COMMAND "${CMAKE_COMMAND}" -E copy_directory "${XDZIP_PACKAGING_TRANSLATIONS}/service" "${service_bundle}/Resources"
+        COMMAND "${CMAKE_COMMAND}" -E copy_directory "${XDZIP_PACKAGING_TRANSLATIONS}/bundle" "$<TARGET_BUNDLE_DIR:xdzip-browser>/Contents/Resources" VERBATIM)
 elseif(UNIX)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(NAUTILUS4 REQUIRED IMPORTED_TARGET libnautilus-extension-4)
@@ -539,6 +590,13 @@ elseif(BUILD_TESTING AND APPLE)
     add_dependencies(xdzip-mac-finder-test xdzip-browser)
     add_test(NAME native_mac_finder COMMAND xdzip-mac-finder-test "${PROJECT_SOURCE_DIR}/build/test-tmp" "$<TARGET_BUNDLE_DIR:xdzip-browser>")
 endif()
+
+foreach(language_target xdzip-browser-tests xdzip-shell-extension xdzip-finder-sync
+        xdzip-shell-relay xdzip-nautilus xdzip-mac-finder-test xdzip-macos-association-probe)
+    if(TARGET ${language_target})
+        target_include_directories(${language_target} PRIVATE "${XDZIP_BUILD_INFO_DIR}")
+    endif()
+endforeach()
 
 if(APPLE)
     foreach(session_target xdzip-browser xdzip-browser-tests xdzip-shell-tests xdzip-update-tests xdzip-mac-update-probe)

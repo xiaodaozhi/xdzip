@@ -7,6 +7,7 @@ RowLayout {
     property string label: ""
     property string description: ""
     property var options: []
+    property var optionFonts: []
     property int selectedIndex: 0
     property string controlName: ""
     signal selectionRequested(int index)
@@ -42,6 +43,7 @@ RowLayout {
         density: Theme.settingsBodySize * Theme.fontScale / Theme.operationBodySize
         implicitHeight: Math.max(Theme.operationControlBodyButtonHeight, contentItem.implicitHeight + 8)
         model: root.options
+        optionFonts: root.optionFonts
         currentIndex: root.selectedIndex
         onActivated: index => {
             root.selectionRequested(index);

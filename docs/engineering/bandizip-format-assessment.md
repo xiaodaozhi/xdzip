@@ -1,6 +1,6 @@
 # Bandizip format inventory and xdzip feasibility
 
-English | [简体中文](../zh-CN/engineering/bandizip-format-assessment.md)
+English | [简体中文](../zh-CN/engineering/bandizip-format-assessment.md) | [繁體中文（台灣）](../zh-TW/engineering/bandizip-format-assessment.md)
 
 This assessment compares the formats listed by Bandizip with xdzip’s implementation scope and identifies capabilities that require source, fixture and automated verification. The inventory is taken from the Bandizip product page and its format-help pages, checked on 2026-11-15:
 

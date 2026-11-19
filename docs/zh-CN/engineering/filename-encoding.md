@@ -1,6 +1,6 @@
 # 文件名编码自适应契约
 
-[English](../../engineering/filename-encoding.md) | 简体中文
+[English](../../engineering/filename-encoding.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/filename-encoding.md)
 
 ## 解析与身份
 

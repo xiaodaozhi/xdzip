@@ -1,6 +1,6 @@
 # Installers and file associations
 
-English | [简体中文](../zh-CN/engineering/installers-associations.md)
+English | [简体中文](../zh-CN/engineering/installers-associations.md) | [繁體中文（台灣）](../zh-TW/engineering/installers-associations.md)
 
 On Windows 11 x64, search for **XDZip** in Microsoft Store to install or update the Store edition. Download the Windows EXE or portable ZIP, the macOS packages and the Linux packages from the [latest GitHub release](https://github.com/xiaodaozhi/xdzip/releases/latest). The two channels publish independently. Check the listing or release notes for the version you are installing.
 

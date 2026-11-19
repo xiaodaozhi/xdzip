@@ -83,12 +83,31 @@ std::wstring wide(const std::string &text) {
                             result.data(), size);
     return result;
 }
-bool menuEnglish(const std::wstring &key) {
+std::string readMenuLocale(const std::wstring &key, const wchar_t *value) {
     wchar_t language[16]{};
     DWORD bytes = sizeof(language);
-    return RegGetValueW(HKEY_CURRENT_USER, key.c_str(), L"Language", RRF_RT_REG_SZ, nullptr,
-                        language, &bytes) == ERROR_SUCCESS &&
-           std::wstring(language) == L"en-US";
+    char utf8[64]{};
+    if (RegGetValueW(HKEY_CURRENT_USER, key.c_str(), value, RRF_RT_REG_SZ, nullptr, language,
+                     &bytes) != ERROR_SUCCESS ||
+        !WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, language, -1, utf8, int(sizeof(utf8)),
+                             nullptr, nullptr))
+        return {};
+    return utf8;
+}
+std::string_view menuLanguage(const std::wstring &key) {
+    const auto legacy = readMenuLocale(key, L"Language");
+    const auto extended = readMenuLocale(key, L"ExtendedLanguage");
+    if (const auto *language =
+            xdzip_i18n::findLanguage(xdzip_i18n::storedLanguage(legacy, extended)))
+        return language->id;
+    wchar_t locale[LOCALE_NAME_MAX_LENGTH]{};
+    char utf8[LOCALE_NAME_MAX_LENGTH]{};
+    if (LCIDToLocaleName(MAKELCID(GetUserDefaultUILanguage(), SORT_DEFAULT), locale,
+                         int(std::size(locale)), 0) &&
+        WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, locale, -1, utf8, int(sizeof(utf8)),
+                            nullptr, nullptr))
+        return xdzip_i18n::systemLanguage(utf8);
+    return xdzip_i18n::defaultLanguage;
 }
 class CommandEnumerator;
 class Menu final : public IShellExtInit, public IContextMenu, public IExplorerCommand {
@@ -113,8 +132,8 @@ class Menu final : public IShellExtInit, public IContextMenu, public IExplorerCo
     std::wstring settingsKey() const {
         return packaged() ? packageContext().settingsKey : L"Software\\xdzip\\Shell";
     }
-    bool english() const {
-        return menuEnglish(settingsKey());
+    std::string_view language() const {
+        return menuLanguage(settingsKey());
     }
     bool enabled() const {
         if (!allowed())
@@ -136,7 +155,7 @@ class Menu final : public IShellExtInit, public IContextMenu, public IExplorerCo
         result = Initialize(nullptr, data, nullptr);
         data->Release();
         if (SUCCEEDED(result))
-            entries = xdzip_shell::menu(paths, english(), archiveCandidates);
+            entries = xdzip_shell::menu(paths, language(), archiveCandidates);
         return result;
     }
     static HRESULT copyText(const std::wstring &text, PWSTR *value) {
@@ -268,7 +287,7 @@ class Menu final : public IShellExtInit, public IContextMenu, public IExplorerCo
                          nullptr, &enabled, &size);
             if (!packaged() && !enabled)
                 return MAKE_HRESULT(SEVERITY_SUCCESS, 0, 0);
-            entries = xdzip_shell::menu(paths, english(), archiveCandidates);
+            entries = xdzip_shell::menu(paths, language(), archiveCandidates);
             if (entries.empty() || last < first || last - first + 1 < entries.size())
                 return E_FAIL;
             const auto submenu = CreatePopupMenu();
@@ -298,7 +317,7 @@ class Menu final : public IShellExtInit, public IContextMenu, public IExplorerCo
             item.wID = first;
             item.hbmpItem = icons[0];
             item.hSubMenu = submenu;
-            auto title = wide(xdzip_shell::text(english(), "shell.title"));
+            auto title = wide(xdzip_shell::text(language(), "shell.title"));
             item.dwTypeData = title.data();
             if (!InsertMenuItemW(parent, insertionIndex(parent, index), TRUE, &item)) {
                 DestroyMenu(submenu);
@@ -383,7 +402,7 @@ class Menu final : public IShellExtInit, public IContextMenu, public IExplorerCo
             if (commandIndex != RootCommand && commandIndex >= entries.size())
                 return E_INVALIDARG;
             return copyText(wide(commandIndex == RootCommand
-                                     ? xdzip_shell::text(english(), "shell.title")
+                                     ? xdzip_shell::text(language(), "shell.title")
                                      : entries[commandIndex].label),
                             title);
         } catch (...) {

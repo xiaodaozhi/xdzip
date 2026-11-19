@@ -24,7 +24,7 @@ inline bool archiveMime(const std::string &mime) {
     return std::any_of(types.begin(), types.end(),
                        [&](std::string_view type) { return mime == type; });
 }
-inline std::vector<MenuEntry> menu(const std::vector<fs::path> &paths, bool english,
+inline std::vector<MenuEntry> menu(const std::vector<fs::path> &paths, std::string_view language,
                                    bool archiveCandidates = false) {
     if (paths.empty() || paths.size() > 128)
         return {};
@@ -33,19 +33,19 @@ inline std::vector<MenuEntry> menu(const std::vector<fs::path> &paths, bool engl
     if (base.empty())
         base = "archive";
     const auto add = [&](const char *extension) {
-        auto label = text(english, "shell.addNamed");
+        auto label = text(language, "shell.addNamed");
         label.replace(label.find("%1"), 2, base + extension);
         return label;
     };
     std::vector<MenuEntry> result{
-        {"zip", add(".zip")}, {"7z", add(".7z")}, {"create", text(english, "shell.create")}};
+        {"zip", add(".zip")}, {"7z", add(".7z")}, {"create", text(language, "shell.create")}};
     if (paths.size() > 1)
-        result.push_back({"separate-zip", text(english, "shell.separateZip")});
+        result.push_back({"separate-zip", text(language, "shell.separateZip")});
     if (archiveCandidates || std::all_of(paths.begin(), paths.end(), archiveCandidate)) {
-        result.push_back({"extract-here", text(english, "shell.extractHere")});
-        result.push_back({"extract-smart", text(english, "shell.extractSmart")});
-        result.push_back({"extract-separate", text(english, "shell.extractSeparate")});
-        result.push_back({"extract-to", text(english, "shell.extractTo")});
+        result.push_back({"extract-here", text(language, "shell.extractHere")});
+        result.push_back({"extract-smart", text(language, "shell.extractSmart")});
+        result.push_back({"extract-separate", text(language, "shell.extractSeparate")});
+        result.push_back({"extract-to", text(language, "shell.extractTo")});
     }
     return result;
 }

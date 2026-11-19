@@ -1,6 +1,6 @@
 # Adaptive filename encoding contract
 
-English | [简体中文](../zh-CN/engineering/filename-encoding.md)
+English | [简体中文](../zh-CN/engineering/filename-encoding.md) | [繁體中文（台灣）](../zh-TW/engineering/filename-encoding.md)
 
 ## Resolution and identity
 

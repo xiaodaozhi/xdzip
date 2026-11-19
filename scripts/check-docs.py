@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check bilingual navigation, local Markdown links, JSON and design assets.
+"""Check language navigation, local Markdown links, JSON and design assets.
 
 Use only the standard library. External URLs and generated HTML anchors are
 outside this check. The HTML builder validates its output separately.
@@ -14,10 +14,13 @@ import sys
 import unicodedata
 from urllib.parse import unquote, urlsplit
 from repository_contents import violations
+from ui_languages import document_languages
 
 ROOT = Path(__file__).resolve().parents[1]
 ROOT_LANGUAGES = ('README', 'CHANGELOG', 'CODE_OF_CONDUCT', 'CONTRIBUTING',
                   'GOVERNANCE', 'PRIVACY', 'SECURITY')
+DEFAULT_LOCALE = 'en-US'
+BILINGUAL = ('en-US', 'zh-CN')
 ZH_SUFFIX = '.zh-CN.md'
 ATX_HEADING = re.compile(r'^ {0,3}(#{1,6})(?:[ \t]+(.*)|$)')
 GITHUB_PATH = re.compile(r'/xiaodaozhi/xdzip/(?:blob|tree)/(?:HEAD|main|refs/heads/main)/(.+)')
@@ -67,15 +70,18 @@ def language_selector(source, root_readme):
         heading = re.search(r'<h1\b[^>]*>.*?</h1>', source, re.I | re.S)
         if heading:
             intro = re.split(r'^ {0,3}#{1,6}[ \t]', source[heading.end():], maxsplit=1, flags=re.M)[0]
-            for paragraph in re.findall(r'<p\b[^>]*>(.*?)</p>', intro, re.I | re.S):
+            for match in re.finditer(r'<p\b[^>]*>(.*?)</p>', intro, re.I | re.S):
+                paragraph = match[1]
                 if 'English' in paragraph and '简体中文' in paragraph and '|' in paragraph:
-                    return re.sub(r'''<a\s+href=(["'])([^"']+)\1>(English|简体中文)</a>''',
-                                  r'[\3](\2)', paragraph, flags=re.I).strip()
-            return ''
-    lines = iter(source.splitlines())
-    if any(line.startswith('# ') for line in lines):
-        return next((line.strip() for line in lines if line.strip()), '')
-    return ''
+                    selector = re.sub(r'''<a\s+href=(["'])([^"']+)\1>([^<]+)</a>''',
+                                      r'[\3](\2)', paragraph, flags=re.I).strip()
+                    line = source.count('\n', 0, heading.end() + match.start()) + 1
+                    return selector, line
+            return '', 0
+    lines = iter(enumerate(source.splitlines(), 1))
+    if any(line.startswith('# ') for _, line in lines):
+        return next(((line.strip(), number) for number, line in lines if line.strip()), ('', 0))
+    return '', 0
 
 
 def local_path(root, parent, url_path):
@@ -85,42 +91,72 @@ def local_path(root, parent, url_path):
     return (parent / name).resolve()
 
 
-def bilingual_documents(root, documents):
-    """Check mandatory root pairs and the reciprocal selectors in each language tree."""
+def document_topic(path, languages):
+    """Identify the language and the corresponding default-English path."""
+    if path == Path('README.md'):
+        return DEFAULT_LOCALE, path
+    if len(path.parts) == 1:
+        match = re.fullmatch(r'README\.([a-z]{2}-[A-Z]{2})\.md', path.name)
+        return (match[1], Path('README.md')) if match and match[1] in languages else None
+    if path.parts[0] in ('docs', 'developers'):
+        tree, *parts = path.parts
+        if parts[0] in languages:
+            return parts[0], Path(tree, *parts[1:])
+        return DEFAULT_LOCALE, path
+    return None
+
+
+def language_path(topic, locale):
+    if locale == DEFAULT_LOCALE:
+        return topic
+    if len(topic.parts) == 1:
+        return topic.with_name(f'{topic.stem}.{locale}.md')
+    return Path(topic.parts[0], locale, *topic.parts[1:])
+
+
+def localized_documents(root, documents, languages=None):
+    """Check complete language families and their reciprocal selectors."""
+    languages = document_languages() if languages is None else languages
     paths = {path.relative_to(root) for path in documents}
     root_topics = set(ROOT_LANGUAGES)
     root_topics.update(path.name[:-len(ZH_SUFFIX)] for path in paths
                        if len(path.parts) == 1 and path.name.endswith(ZH_SUFFIX))
-    counterparts = [(Path(f'{stem}.md'), Path(f'{stem}{ZH_SUFFIX}')) for stem in sorted(root_topics)]
-    for tree in ('docs', 'developers'):
-        tree_paths = set()
-        for path in paths:
-            if len(path.parts) > 1 and path.parts[0] == tree:
-                offset = 2 if path.parts[1] == 'zh-CN' else 1
-                tree_paths.add(Path(*path.parts[offset:]))
-        counterparts.extend((Path(tree) / name, Path(tree) / 'zh-CN' / name)
-                            for name in sorted(tree_paths))
-
+    topics = {Path(f'{stem}.md') for stem in root_topics}
     failures = []
-    pairs = 0
-    for en, zh in counterparts:
-        missing = [path.as_posix() for path in (en, zh) if path not in paths]
+    for path in paths:
+        identified = document_topic(path, languages)
+        if identified:
+            locale, topic = identified
+            if topic.parts[0] == 'developers' and locale not in BILINGUAL:
+                failures.append(f'{path.as_posix()}: developers supports only English and Simplified Chinese')
+            topics.add(topic)
+
+    complete = 0
+    for topic in sorted(topics):
+        locales = languages if topic == Path('README.md') or topic.parts[0] == 'docs' else BILINGUAL
+        counterparts = {locale: language_path(topic, locale) for locale in locales}
+        missing = [path.as_posix() for path in counterparts.values() if path not in paths]
         if missing:
             failures.append(f'{", ".join(missing)}: missing language counterpart')
             continue
-        pairs += 1
-        for path, counterpart, pattern in (
-            (en, zh, r'English \| \[简体中文\]\(([^)#?]+)\)'),
-            (zh, en, r'\[English\]\(([^)#?]+)\) \| 简体中文'),
-        ):
+        complete += 1
+        for locale, path in counterparts.items():
             source = markdown_content((root / path).read_text(encoding='utf-8'))
-            selector = language_selector(source, en == Path('README.md'))
-            match = re.fullmatch(pattern, selector)
-            if not match or (local_path(root, root / path.parent, match[1])
-                             != (root / counterpart).resolve()):
+            selector, _ = language_selector(source, topic == Path('README.md'))
+            expected = []
+            for language in counterparts:
+                if language == locale:
+                    expected.append(re.escape(languages[language]))
+                else:
+                    expected.append(r'\[' + re.escape(languages[language]) + r'\]\(([^)#?]+)\)')
+            match = re.fullmatch(r' \| '.join(expected), selector)
+            targets = [counterpart for language, counterpart in counterparts.items() if language != locale]
+            if not match or any(local_path(root, root / path.parent, link) != (root / target).resolve()
+                                for link, target in zip(match.groups(), targets)):
                 failures.append(f'{path.as_posix()}: expected a language selector linking to '
-                                f'{counterpart.as_posix()} with the current language in plain text')
-    return pairs, failures
+                                f'{", ".join(target.as_posix() for target in targets)} '
+                                'with the current language in plain text')
+    return complete, failures
 
 
 class MarkdownHtml(HTMLParser):
@@ -190,7 +226,36 @@ def markdown_anchors(source, html):
     return headings | html.anchors
 
 
-def markdown_links(root, documents):
+def check_document_link(root, source, target, selector_line, languages):
+    """Return the required target when a reader link uses the wrong language."""
+    if not source or selector_line:
+        return None
+    locale, topic = source
+    if topic != Path('README.md') and topic.parts[0] != 'docs':
+        return None
+    if target.parts[:1] == ('developers',):
+        developer_locale = 'zh-CN' if locale == 'zh-CN' else DEFAULT_LOCALE
+        parts = target.parts[1:]
+        if parts and parts[0] in languages:
+            parts = parts[1:]
+        expected = Path('developers', *parts)
+        if developer_locale != DEFAULT_LOCALE:
+            expected = Path('developers', developer_locale, *parts)
+        return expected if expected != target else None
+    if target.suffix.lower() != '.md':
+        return None
+    identified = document_topic(target, languages)
+    if identified:
+        destination_locale, destination = identified
+        if destination_locale != locale:
+            expected = language_path(destination, locale)
+            if (root / expected).is_file():
+                return expected
+    return None
+
+
+def markdown_links(root, documents, languages=None):
+    languages = document_languages() if languages is None else languages
     sources = {}
     for path in documents:
         source = markdown_content(path.read_text(encoding='utf-8'))
@@ -201,7 +266,9 @@ def markdown_links(root, documents):
     links = fragments = 0
     failures = []
     anchors_by_path = {}
-    for path, (_, prose, html) in sources.items():
+    for path, (source, prose, html) in sources.items():
+        topic = document_topic(path.relative_to(root), languages)
+        selector_line = language_selector(source, bool(topic and topic[1] == Path('README.md')))[1]
         targets = list(html.links)
         for pattern, group in ((INLINE_LINK, 2), (REFERENCE_LINK, 1)):
             targets.extend((prose.count('\n', 0, match.start()) + 1, match[group].strip('<>'))
@@ -227,6 +294,10 @@ def markdown_links(root, documents):
             if not resolved.is_relative_to(root) or not resolved.exists():
                 failures.append(f'{location}: missing or external local target {target}')
                 continue
+            expected = check_document_link(root, topic, resolved.relative_to(root),
+                                           line == selector_line, languages)
+            if expected:
+                failures.append(f'{location}: wrong document language for {target}; expected {expected.as_posix()}')
             if (not fragment or resolved.suffix.lower() != '.md' or not resolved.is_file()
                     or (github and re.fullmatch(r'L\d+(?:-L\d+)?', fragment))):
                 continue
@@ -255,7 +326,7 @@ def main():
                 'docs/html/VALIDATION.json', 'docs/html/BROWSER-VALIDATION.json'}:
             failures.append(f'{name}: generated review evidence must not be tracked by Git')
     documents = markdown_documents(ROOT)
-    pairs, language_failures = bilingual_documents(ROOT, documents)
+    topics, language_failures = localized_documents(ROOT, documents)
     failures.extend(language_failures)
     links, fragments, link_failures = markdown_links(ROOT, documents)
     failures.extend(link_failures)
@@ -273,7 +344,7 @@ def main():
                             capture_output=True, text=True)
     if result.returncode:
         failures.append('Directory-tree design delivery: ' + (result.stderr or result.stdout).strip())
-    print(json.dumps({'markdown_documents': len(documents), 'bilingual_pairs': pairs, 'local_file_links': links,
+    print(json.dumps({'markdown_documents': len(documents), 'localized_topics': topics, 'local_file_links': links,
                       'markdown_anchor_links': fragments,
                       'json_files': len(json_files), 'failures': failures}, ensure_ascii=False, indent=2))
     raise SystemExit(bool(failures))

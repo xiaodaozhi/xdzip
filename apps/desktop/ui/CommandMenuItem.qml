@@ -27,6 +27,7 @@ MenuItem {
     topPadding: 4
     bottomPadding: 4
     property real labelSize: Theme.menuLabelSize
+    property string labelFamily: ""
     font.pixelSize: labelSize
     Accessible.name: (accessibleLabel.length ? accessibleLabel : text + (sequenceLabel.length ? qsTrId("common.separator") + sequenceLabel : "")) + (statusLabel.length ? qsTrId("common.separator") + statusLabel : "")
     Accessible.description: enabled ? "" : disabledReason
@@ -85,7 +86,7 @@ MenuItem {
             textFormat: Text.PlainText
             color: !root.enabled ? Theme.menuDisabled : root.dangerous ? Theme.menuDanger : Theme.menuText
             font.pixelSize: root.labelSize
-            font.family: root.userData ? Theme.userDataFontFamily : Theme.uiFontFamily
+            font.family: root.labelFamily || (root.userData ? Theme.userDataFontFamily : Theme.uiFontFamily)
             elide: Text.ElideRight
         }
         CommandMenuTag {

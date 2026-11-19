@@ -1,6 +1,6 @@
 # 系统支持与维护政策
 
-[English](../../engineering/support-policy.md) | 简体中文
+[English](../../engineering/support-policy.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/support-policy.md)
 
 项目所有者于 2026-10-19 批准首批支持政策，`v0.1.0` 于 2026-11-06 公开。当前版本与下载见[发布页](https://github.com/xiaodaozhi/xdzip/releases)。本文确定支持范围，不修改应用最低版本检查，不将 CI 宿主或未附环境明细的用户验收扩大为全部系统版本保证。人工专项已按用户结论完成，无需重复。
 

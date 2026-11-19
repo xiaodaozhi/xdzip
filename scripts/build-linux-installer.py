@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+from packaging_languages import linux_resources
 import subprocess
 from deployment_audit import digest, within
 from installer_payload import historical_qa_identity, historical_qa_revision, verify_payload
@@ -78,12 +79,13 @@ def package_tree(payload,audit,stage,qa=None,failure=None,legacy=False,historica
         extensions=stage/'usr/lib/x86_64-linux-gnu/nautilus/extensions-4';extensions.mkdir(parents=True)
         shutil.copy2(shell,extensions/'libxdzip-nautilus.so')
     share=stage/'usr/share';(share/'applications').mkdir(parents=True)
+    localized = linux_resources()
     if historical_record is None:
         protocol=share/'xdzip/shell-protocol';protocol.parent.mkdir(parents=True)
         protocol.write_text('1\n')
         policy=share/'polkit-1/actions';policy.mkdir(parents=True)
-        shutil.copy2(ROOT/'apps/desktop/packaging/linux/org.xdzip.update.policy',policy/'org.xdzip.update.policy')
-    desktop=installed_desktop_entry((ROOT/'apps/desktop/packaging/linux/xdzip.desktop').read_text(encoding='utf-8'))
+        (policy/'org.xdzip.update.policy').write_text(localized['org.xdzip.update.policy'], encoding='utf-8')
+    desktop=installed_desktop_entry(localized['xdzip.desktop'])
     (share/'applications/xdzip.desktop').write_text(desktop,encoding='utf-8')
     if historical_record is None:
         # Ubuntu App Center can see the existing APT catalog mount even when
@@ -93,7 +95,7 @@ def package_tree(payload,audit,stage,qa=None,failure=None,legacy=False,historica
         shutil.copyfile(ROOT/'apps/desktop/packaging/linux/xdzip-local.yml', catalog)
         catalog.chmod(0o644)
     mime=share/'mime/packages';mime.mkdir(parents=True)
-    shutil.copy2(ROOT/'apps/desktop/packaging/linux/xdzip-mime.xml',mime/'xdzip-mime.xml')
+    (mime/'xdzip-mime.xml').write_text(localized['xdzip-mime.xml'], encoding='utf-8')
     icons=share/'icons/hicolor/512x512/apps';icons.mkdir(parents=True)
     shutil.copy2(ROOT/'design/assets/brand/xdzip.png',icons/'xdzip.png')
     tmpfiles=stage/'usr/lib/tmpfiles.d';tmpfiles.mkdir(parents=True)

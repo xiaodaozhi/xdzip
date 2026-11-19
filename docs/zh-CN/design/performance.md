@@ -1,6 +1,6 @@
 # 性能设计与测量
 
-[English](../../design/performance.md) | 简体中文
+[English](../../design/performance.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/performance.md)
 
 XDZip 分别约束索引、传输、任务执行和图片预览的内存与工作量。下面的代码限额属于实现规则。耗时、内存和吞吐数据取决于构建和工作负载，后文的参考指标是设计目标。
 

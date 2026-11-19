@@ -1,6 +1,6 @@
 # 接口契约与检查
 
-[English](../../engineering/contracts.md) | 简体中文
+[English](../../engineering/contracts.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/contracts.md)
 
 权威接口见[领域与数据](../design/domain-data.md)、[Qt/Rust 桥接](../design/qt-rust-bridge.md)、[格式扩展设计](../design/codec-extension-sdk.md)和[任务调度](../design/task-scheduling.md)；本页定义冻结检查，不复制另一套签名。内部桥接、双句柄和生命周期已实现，具体边界见[运行时契约](product-runtime.md)。查询代际、来源版本检查、创建与解压任务已分别落地，见[浏览契约](readonly-browser.md)、[安全解压](zip-safe-extraction.md)及[创建契约](zip-creation.md)。第三方进程协议已有独立[只读 SDK 试验](sdk-trial.md)，尚未作为稳定 SDK 发布或接入产品；下表规定的是接入门槛。
 

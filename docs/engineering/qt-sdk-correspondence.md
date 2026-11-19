@@ -1,6 +1,6 @@
 # Qt SDK and source correspondence verification
 
-English | [简体中文](../zh-CN/engineering/qt-sdk-correspondence.md)
+English | [简体中文](../zh-CN/engineering/qt-sdk-correspondence.md) | [繁體中文（台灣）](../zh-TW/engineering/qt-sdk-correspondence.md)
 
 Source correspondence verification uses the actual bytes of official archives; matching version numbers do not establish SDK build equivalence. `scripts/qt_sdk_correspondence.py` associates pinned source archives, source SPDX supplied by the SDK, build declarations, installed configuration, and known consumer patches, writing output to build/. It does not modify the SDK or approve license branches.
 

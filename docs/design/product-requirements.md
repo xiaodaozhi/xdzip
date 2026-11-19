@@ -1,6 +1,6 @@
 # XDZip product requirements
 
-English | [简体中文](../zh-CN/design/product-requirements.md)
+English | [简体中文](../zh-CN/design/product-requirements.md) | [繁體中文（台灣）](../zh-TW/design/product-requirements.md)
 
 XDZip lets people inspect archives like folders, work with selected content, and create or edit archives when the format supports it. The desktop and [standalone CLI](../engineering/command-line.md) share the archive runtime. The [project README](../../README.md) describes current capabilities and distribution. The requirements below describe the behavior to preserve and verify.
 

@@ -1,6 +1,6 @@
 # Zstandard stream contract
 
-English | [简体中文](../zh-CN/engineering/zstandard-streams.md)
+English | [简体中文](../zh-CN/engineering/zstandard-streams.md) | [繁體中文（台灣）](../zh-TW/engineering/zstandard-streams.md)
 
 The wire profile follows [RFC 8878](https://www.rfc-editor.org/rfc/rfc8878.html), the author's [format 0.4.3](https://github.com/facebook/zstd/blob/v1.5.7/doc/zstd_compression_format.md), and the [XXH64 specification](https://github.com/Cyan4973/xxHash/blob/v0.8.3/doc/xxhash_spec.md). Product algorithms are independent Rust implementations. Independent reference libraries/programs generate owned test content only; they never enter product dependencies. Host authority and publication follow [single-file streams](single-file-streams.md).
 

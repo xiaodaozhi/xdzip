@@ -1,6 +1,6 @@
 # 编码规范与质量工程
 
-[English](../../design/quality-engineering.md) | 简体中文
+[English](../../design/quality-engineering.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/quality-engineering.md)
 
 ## 代码与所有权
 

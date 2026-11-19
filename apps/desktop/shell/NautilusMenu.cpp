@@ -11,17 +11,22 @@ struct ExtensionClass {
     GObjectClass parent;
 };
 GType extensionType = 0;
-std::pair<bool, bool> preferences() {
+std::pair<bool, std::string> preferences() {
     auto *settings = g_key_file_new();
     const std::string file = std::string(g_get_user_config_dir()) + "/xdzip/settings.ini";
     g_key_file_load_from_file(settings, file.c_str(), G_KEY_FILE_NONE, nullptr);
     const bool enabled = !g_key_file_has_key(settings, "desktop", "shellEnabled", nullptr) ||
                          g_key_file_get_boolean(settings, "desktop", "shellEnabled", nullptr);
-    auto *language = g_key_file_get_string(settings, "locale", "language", nullptr);
-    const bool english = language && std::string(language) == "en-US";
-    g_free(language);
+    auto *legacy = g_key_file_get_string(settings, "locale", "language", nullptr);
+    auto *extended = g_key_file_get_string(settings, "locale", "extendedLanguage", nullptr);
+    auto selected = xdzip_i18n::storedLanguage(legacy ? legacy : "auto", extended ? extended : "");
+    const auto *system = g_get_language_names()[0];
+    auto language = std::string(
+        selected == "auto" ? xdzip_i18n::systemLanguage(system ? system : "") : selected);
+    g_free(legacy);
+    g_free(extended);
     g_key_file_unref(settings);
-    return {enabled, english};
+    return {enabled, std::move(language)};
 }
 struct Invocation {
     std::vector<xdzip_shell::fs::path> paths;
@@ -44,7 +49,7 @@ void activate(NautilusMenuItem *, gpointer data) {
 }
 GList *items(NautilusMenuProvider *, GList *files) {
     try {
-        const auto [enabled, english] = preferences();
+        const auto [enabled, language] = preferences();
         if (!enabled)
             return nullptr;
         std::vector<xdzip_shell::fs::path> paths;
@@ -64,11 +69,11 @@ GList *items(NautilusMenuProvider *, GList *files) {
                                  (mime && xdzip_shell::archiveMime(mime));
             g_free(mime);
         }
-        const auto commands = xdzip_shell::menu(paths, english, archiveCandidates);
+        const auto commands = xdzip_shell::menu(paths, language, archiveCandidates);
         if (commands.empty())
             return nullptr;
         auto *root = nautilus_menu_item_new(
-            "xdzip::actions", xdzip_shell::text(english, "shell.title").c_str(), nullptr, "xdzip");
+            "xdzip::actions", xdzip_shell::text(language, "shell.title").c_str(), nullptr, "xdzip");
         auto *submenu = nautilus_menu_new();
         for (const auto &command : commands) {
             auto *item = nautilus_menu_item_new(("xdzip::" + command.action).c_str(),

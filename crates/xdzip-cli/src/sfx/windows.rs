@@ -4,7 +4,7 @@ use super::{Control, extract};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Condvar, LazyLock, Mutex};
 use windows_sys::Win32::Foundation::{HWND, LPARAM, WPARAM};
-use windows_sys::Win32::Globalization::GetUserDefaultUILanguage;
+use windows_sys::Win32::Globalization::{GetUserDefaultUILanguage, LCIDToLocaleName};
 use windows_sys::Win32::System::Com::{
     COINIT_APARTMENTTHREADED, CoInitializeEx, CoTaskMemFree, CoUninitialize,
 };
@@ -13,18 +13,53 @@ use windows_sys::Win32::UI::Shell::*;
 use windows_sys::Win32::UI::WindowsAndMessaging::{IDCANCEL, SendMessageW};
 use xdzip_runtime::extraction::{ConflictPolicy, Snapshot, Status};
 
-fn sfx_text(key: &str) -> String {
-    static CATALOG: LazyLock<serde_json::Value> = LazyLock::new(|| {
-        // Locale is read once; no secret or user filename enters the catalog.
-        let chinese = unsafe { GetUserDefaultUILanguage() } & 0x3ff == 4;
-        serde_json::from_str(if chinese {
-            include_str!("../../../../resources/i18n/zh-CN.json")
-        } else {
-            include_str!("../../../../resources/i18n/en-US.json")
-        })
-        .unwrap()
+include!(concat!(env!("OUT_DIR"), "/sfx_messages.rs"));
+
+fn sfx_locale() -> &'static str {
+    static LOCALE: LazyLock<&str> = LazyLock::new(|| {
+        let mut tag = [0u16; 85]; // LOCALE_NAME_MAX_LENGTH, including the terminator.
+        // A LANGID with the default sort ID is a valid LCID input. The writable
+        // buffer is private to the call. A Windows conversion failure uses English.
+        let length = unsafe {
+            LCIDToLocaleName(
+                u32::from(GetUserDefaultUILanguage()),
+                tag.as_mut_ptr(),
+                tag.len() as i32,
+                0,
+            )
+        };
+        if length <= 1 {
+            return "en-US";
+        }
+        let tag = String::from_utf16_lossy(&tag[..length as usize - 1]).to_ascii_lowercase();
+        let mut subtags = tag.split('-');
+        let primary = subtags.next().unwrap_or("");
+        if primary == "zh" {
+            return match subtags.next() {
+                Some("hant" | "tw" | "hk" | "mo") => "zh-TW",
+                _ => "zh-CN",
+            };
+        }
+        SFX_MESSAGES
+            .iter()
+            .find(|(locale, _, _)| locale.split('-').next() == Some(primary))
+            .map_or("en-US", |(locale, _, _)| *locale)
     });
-    CATALOG["messages"][key].as_str().unwrap_or(key).to_string()
+    *LOCALE
+}
+
+fn sfx_text(key: &str) -> String {
+    let locale = sfx_locale();
+    SFX_MESSAGES
+        .iter()
+        .find(|(candidate, id, _)| *candidate == locale && *id == key)
+        .or_else(|| {
+            SFX_MESSAGES
+                .iter()
+                .find(|(candidate, id, _)| *candidate == "en-US" && *id == key)
+        })
+        .map_or(key, |(_, _, text)| *text)
+        .to_owned()
 }
 fn wide(text: &str) -> Vec<u16> {
     text.encode_utf16().chain(Some(0)).collect()

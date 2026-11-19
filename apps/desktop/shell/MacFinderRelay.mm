@@ -32,7 +32,7 @@
         auto *alert = [NSAlert new];
         alert.messageText = @"xdzip";
         alert.informativeText =
-            [NSString stringWithUTF8String:xdzip_shell::text(preferences.english,
+            [NSString stringWithUTF8String:xdzip_shell::text(preferences.language,
                                                              "shell.finderRequestRejected")
                                                .c_str()];
         [alert runModal];

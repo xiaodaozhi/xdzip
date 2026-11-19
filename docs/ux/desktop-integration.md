@@ -1,6 +1,6 @@
 # System menus and tray
 
-English | [简体中文](../zh-CN/ux/desktop-integration.md)
+English | [简体中文](../zh-CN/ux/desktop-integration.md) | [繁體中文（台灣）](../zh-TW/ux/desktop-integration.md)
 
 Multi-session, single-instance, window state and global exit follow the [application session contract](../engineering/application-sessions.md). Closing a non-last main window retains tasks; the last window follows tray settings. Exit confirmation covers all sessions.
 

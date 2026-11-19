@@ -1,6 +1,6 @@
 # High-fidelity states and implementation contract
 
-English | [简体中文](../zh-CN/ux/hifi-state-spec.md)
+English | [简体中文](../zh-CN/ux/hifi-state-spec.md) | [繁體中文（台灣）](../zh-TW/ux/hifi-state-spec.md)
 
 This guide describes behavior, focus and closing actions for creation, extraction and task windows, with links to the [operation state originals](../../design/hifi/README.md) and [shared asset library](../../design/assets/README.md). The identifiers in the table refer to design artboards and do not change the task protocol.
 

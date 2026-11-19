@@ -30,28 +30,16 @@ LicenseFile=@PAYLOAD@\share\notices\Microsoft-VC-runtime\license.rtf
 InfoBeforeFile=@PAYLOAD@\share\notices\Windows-runtime-NOTICE.txt
 
 [Languages]
-Name: "english"; MessagesFile: "compiler:Default.isl"
-Name: "chinesesimplified"; MessagesFile: "@CHINESE@"
+@LANGUAGES@
 
 [Messages]
-english.LicenseLabel3=This agreement covers the bundled Microsoft VC++ runtime. Accept it to install the runtime. Other components keep their own licenses.
-chinesesimplified.LicenseLabel3=以下协议仅适用于 Microsoft VC++ 运行库，安装前须接受。xdzip 及其他组件遵守各自许可证。
+@MESSAGES@
 
 [CustomMessages]
-english.IncompatibleSettings=This installation uses newer settings. Downgrade was refused to protect your data.
-chinesesimplified.IncompatibleSettings=现有安装使用了更新的设置格式。为保护数据，已拒绝回退。
-english.UpdateAlreadyRunning=Another xdzip update is in progress. Wait for it to finish and try again.
-chinesesimplified.UpdateAlreadyRunning=另一个 xdzip 更新正在进行，请等待完成后重试。
-
-english.InvalidInstalledFiles=The installed file manifest is invalid. Repair or uninstall the existing installation before trying again.
-chinesesimplified.InvalidInstalledFiles=现有安装文件清单无效。请修复或卸载现有安装后重试。
-english.ModifiedInstalledFiles=An obsolete installed file was modified or cannot be verified. Installation was stopped to preserve it.
-chinesesimplified.ModifiedInstalledFiles=旧版安装文件已被修改或无法核验。为保留该文件，已停止安装。
-english.InstalledFilesCleanupFailed=Installation completed, but some obsolete files could not be removed. Close programs using the installation directory and run Setup again.
-chinesesimplified.InstalledFilesCleanupFailed=安装已完成，但部分旧文件未能清理。请关闭占用安装目录的程序后重新运行安装程序。
+@CUSTOM_MESSAGES@
 
 [Tasks]
-Name: "clipath"; Description: "Add xdzip CLI to user PATH / 将命令加入用户 PATH"; Flags: unchecked
+Name: "clipath"; Description: "{cm:AddCliPath}"; Flags: unchecked
 
 [Files]
 @MANIFEST_FILES@

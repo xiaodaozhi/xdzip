@@ -1,6 +1,6 @@
 # Extraction preflight: metadata phase
 
-English | [简体中文](../zh-CN/engineering/extraction-preflight.md)
+English | [简体中文](../zh-CN/engineering/extraction-preflight.md) | [繁體中文（台灣）](../zh-TW/engineering/extraction-preflight.md)
 
 This module provides metadata preflight rules. It has no destination authorization, decoding, writing, staging, or commit capability.
 

@@ -1,6 +1,6 @@
 # Qt/Rust bridge and application service
 
-English | [简体中文](../zh-CN/design/qt-rust-bridge.md)
+English | [简体中文](../zh-CN/design/qt-rust-bridge.md) | [繁體中文（台灣）](../zh-TW/design/qt-rust-bridge.md)
 
 The Qt desktop calls the Rust runtime through the linked `cxx` bridge. Each `BrowserController` owns a `RuntimeConnection` with a separate service instance. The bridge transports typed commands and owned results within the desktop process. The CLI uses the same Rust service directly. [System architecture](system-architecture.md), [Desktop sessions](../engineering/application-sessions.md)
 

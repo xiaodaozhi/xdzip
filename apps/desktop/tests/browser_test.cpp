@@ -5344,12 +5344,16 @@ QtObject {
         QTest::newRow("simplified")
             << QString("auto") << QStringList{"zh-Hans-CN"} << QString("zh-CN");
         QTest::newRow("traditional")
-            << QString("auto") << QStringList{"zh-Hant-TW"} << QString("zh-CN");
+            << QString("auto") << QStringList{"zh-Hant-TW"} << QString("zh-TW");
+        QTest::newRow("hant-before-territory")
+            << QString("auto") << QStringList{"zh-Hant-CN"} << QString("zh-TW");
+        QTest::newRow("hans-before-territory")
+            << QString("auto") << QStringList{"zh-Hans-HK"} << QString("zh-CN");
         QTest::newRow("english-us")
             << QString("auto") << QStringList{"en-Latn-US"} << QString("en-US");
         QTest::newRow("english-gb") << QString("auto") << QStringList{"en-GB"} << QString("en-US");
         QTest::newRow("unsupported")
-            << QString("auto") << QStringList{"ja-JP", "zh-CN"} << QString("en-US");
+            << QString("auto") << QStringList{"it-IT", "zh-CN"} << QString("en-US");
         QTest::newRow("missing") << QString("auto") << QStringList{} << QString("en-US");
         QTest::newRow("invalid-system")
             << QString("auto") << QStringList{"invalid"} << QString("en-US");
@@ -5365,6 +5369,35 @@ QtObject {
         QFETCH(QStringList, systemLanguages);
         QFETCH(QString, expected);
         QCOMPARE(resolveUiLanguage(selection, systemLanguages), expected);
+    }
+    void extendedLanguageKeepsLegacySettingsReadable() {
+        QTemporaryDir profile;
+        QVERIFY(profile.isValid());
+        const auto path = profile.filePath("settings.ini");
+        test_environment::ScopedVariable pathOverride("XDZIP_SETTINGS_PATH", path);
+        test_environment::ScopedVariable languageOverride("XDZIP_LANGUAGE", QString());
+        QVERIFY(pathOverride.valid());
+        QVERIFY(languageOverride.valid());
+        const auto restore = qScopeGuard([] { initializeUiText("zh-CN"); });
+        UiPreferences preferences;
+        for (const auto &language : supportedUiLanguages()) {
+            if (legacyUiLanguage(language) == language)
+                continue;
+            QVERIFY(
+                preferences.applyDetails("dark", 1.25, language, "compact", true, true, "tabs"));
+            QSettings written(path, QSettings::IniFormat);
+            QCOMPARE(written.value("locale/language").toString(), legacyUiLanguage(language));
+            QCOMPARE(written.value("locale/extendedLanguage").toString(), language);
+            QCOMPARE(written.value("appearance/theme").toString(), QStringLiteral("dark"));
+            QVERIFY(initializeUiText());
+            UiPreferences restored;
+            QCOMPARE(restored.language(), language);
+            QCOMPARE(restored.activeLanguage(), language);
+        }
+        QVERIFY(preferences.applyDetails("dark", 1.25, "en-US", "compact", true, true, "tabs"));
+        QSettings written(path, QSettings::IniFormat);
+        QCOMPARE(written.value("locale/language").toString(), QStringLiteral("en-US"));
+        QVERIFY(!written.contains("locale/extendedLanguage"));
     }
     void automaticLanguageStartupAndPersistence() {
         QTemporaryDir profile;
@@ -8351,7 +8384,7 @@ QtObject {
         QTest::addColumn<QString>("language");
         QTest::addColumn<bool>("dark");
         QTest::addColumn<double>("scale");
-        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+        for (const auto &language : supportedUiLanguages())
             for (const bool dark : {false, true})
                 for (const double scale : {1., 1.25, 1.5})
                     QTest::newRow(qPrintable(language + (dark ? "-dark-" : "-light-") +
@@ -8400,7 +8433,12 @@ QtObject {
             if (name == QStringLiteral("settingsLanguage")) {
                 auto *popup = control->property("popup").value<QObject *>();
                 QVERIFY(popup && QMetaObject::invokeMethod(popup, "open"));
-                for (int index = 0; index < 3; ++index) {
+                auto *choices = popup->property("contentItem").value<QQuickItem *>();
+                QVERIFY(choices);
+                const auto count = control->property("count").toInt();
+                QCOMPARE(count, supportedUiLanguages().size() + 1);
+                for (int index = 0; index < count; ++index) {
+                    QVERIFY(choices->setProperty("currentIndex", index));
                     QQuickItem *label = nullptr;
                     QTRY_VERIFY((label = findVisual(
                                      settings->contentItem(),

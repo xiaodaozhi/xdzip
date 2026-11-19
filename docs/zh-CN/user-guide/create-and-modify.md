@@ -1,6 +1,6 @@
 # 创建与修改压缩包
 
-[English](../../user-guide/create-and-modify.md) | 简体中文
+[English](../../user-guide/create-and-modify.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/user-guide/create-and-modify.md)
 
 ## 创建压缩包
 

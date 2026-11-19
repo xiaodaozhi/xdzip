@@ -1,6 +1,6 @@
 # Password extraction interaction
 
-English | [简体中文](../zh-CN/ux/password-extraction.md)
+English | [简体中文](../zh-CN/ux/password-extraction.md) | [繁體中文（台灣）](../zh-TW/ux/password-extraction.md)
 
 Supported ZIP, 7z and RAR tasks enter `waiting_password` upon an entry requiring a password. The runtime publishes a request with task ID and request ID; QML expresses input and cancellation intent only and does not decrypt, authenticate or publish files. Password requests and name conflicts are separate states; do not route password requests to the conflict window. Format, authentication, retry and output boundaries follow the [engineering contract](../engineering/password-extraction.md).
 

@@ -1,6 +1,6 @@
 # 算法辅助工作计量
 
-[English](../../engineering/auxiliary-decoding-work.md) | 简体中文
+[English](../../engineering/auxiliary-decoding-work.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/auxiliary-decoding-work.md)
 
 解压和检查分别累计文件解码字节、实际输出与算法辅助工作。PPM 模型初始化、容量重启、控制及参数解码等辅助工作不是文件内容，不能增加 `decoded_bytes`、`written_bytes`、文件进度或压缩膨胀比，也不能产生预计费交付额度。任务快照不新增面向用户的辅助计数字段。
 

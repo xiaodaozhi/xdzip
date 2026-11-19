@@ -13,7 +13,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-blue.svg" alt="Apache License 2.0"></a>
 </p>
 
-<p align="center"><a href="README.md">English</a> | 简体中文</p>
+<p align="center"><a href="README.md">English</a> | 简体中文 | <a href="README.zh-TW.md">繁體中文（台灣）</a></p>
 
 <p align="center">
   <a href="#下载安装">下载安装</a> / <a href="#使用-xdzip">使用 xdzip</a> / <a href="#格式支持">格式支持</a> / <a href="#从源码构建">从源码构建</a> / <a href="docs/zh-CN/README.md">文档</a> / <a href="https://github.com/xiaodaozhi/xdzip/issues">反馈</a>
@@ -39,7 +39,7 @@ Microsoft Store 负责该渠道的更新，与 GitHub 独立发布。GitHub 版�
 
 ## 使用 xdzip
 
-打开压缩包后可以浏览目录、搜索和排序，再选择需要解压的条目。升序和降序都将目录排在文件之前。界面提供列表和网格视图、文件属性、简体中文和美式英语、浅色和深色主题，以及可调的字号和界面密度。自动语言在支持时跟随系统，否则使用美式英语。普通单文件 ZIP／ZIP64 最多可索引一百万条记录供浏览。多数其他格式的上限更低，解压、整包检查和修改也各有独立限制。详见[用户手册](docs/zh-CN/user-guide/README.md)与[大归档索引](docs/zh-CN/engineering/large-index.md)。
+打开压缩包后可以浏览目录、搜索和排序，再选择需要解压的条目。升序和降序都将目录排在文件之前。界面提供列表和网格视图、文件属性、界面语言选择、浅色和深色主题，以及可调的字号和界面密度。自动语言在支持时跟随系统，否则使用美式英语。普通单文件 ZIP／ZIP64 最多可索引一百万条记录供浏览。多数其他格式的上限更低，解压、整包检查和修改也各有独立限制。详见[用户手册](docs/zh-CN/user-guide/README.md)与[大归档索引](docs/zh-CN/engineering/large-index.md)。
 
 - **内容预览**：在属性卡主动预览受限纯文本、常见栅格图片和静态 SVG，macOS 还支持 HEIC／HEIF。完整读取并完成格式提供的校验后显示，可取消；格式、大小和解码预算见[预览说明](docs/zh-CN/engineering/content-preview.md)。
 - **解压和打开**：选择目标位置与重名策略，查看进度并可请求取消。双击普通文件会先将副本解压到私有临时目录，再交给系统打开；修改副本不会写回压缩包，缓存会在七天后的后续打开操作中清理。

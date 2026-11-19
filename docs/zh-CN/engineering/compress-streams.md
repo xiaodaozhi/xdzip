@@ -1,6 +1,6 @@
 # Unix compress Z 契约
 
-[English](../../engineering/compress-streams.md) | 简体中文
+[English](../../engineering/compress-streams.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/compress-streams.md)
 
 本契约规定独立 Rust LZW 读取器及其单文件/TAR 组合的字节配置。工具历史与 9–16 位字典行为依据 [OpenBSD compress(1)](https://man.openbsd.org/compress.1) 和 [ncompress](https://vapier.github.io/ncompress/)。POSIX 规定工具行为，没有完整规定字节布局；历史八码分组对齐及 9 位兼容差异参见[上游讨论](https://github.com/vapier/ncompress/issues/5)，并用独立已知内容输入核对。源码观察仅补充字节规则，Rust 实现不翻译参考代码。
 

@@ -25,11 +25,19 @@ def check(report, font_dir=ROOT/'build/desktop/generated/fonts'):
             files.append({'resource':resource,'source':path.relative_to(ROOT).as_posix(),'sha256':expected[resource],
                           'license_reference':'design/assets/fonts/OFL.txt' if '/fonts/' in path.as_posix() else 'LICENSE',
                           'scope':'Source/compiled-byte correspondence and existing project/font notice, not third-party or generative-rights approval'})
-    font=load_manifest(font_dir)['native'];resource=':/xdzip/fonts/'+font['path']
-    expected[resource]=font['sha256']
-    files.append({'resource':resource,'source':'generated/fonts/'+font['path'],'sha256':font['sha256'],
-                  'license_reference':'design/assets/fonts/OFL.txt',
-                  'scope':'Generated font bytes verified against the matching build manifest'})
+    for path in sorted((ROOT/'resources/i18n').glob('*.json')):
+        resource = ':/xdzip/i18n/' + path.name
+        expected[resource] = digest(path)
+        files.append({'resource':resource,'source':path.relative_to(ROOT).as_posix(),
+                      'sha256':expected[resource],'license_reference':'LICENSE',
+                      'scope':'Source/compiled-byte correspondence for the product language catalog'})
+    manifest = load_manifest(font_dir)
+    for font in [manifest['native'], *manifest.get('localized', {}).values()]:
+        resource = ':/xdzip/fonts/' + font['path']
+        expected[resource] = font['sha256']
+        files.append({'resource':resource,'source':'generated/fonts/'+font['path'],'sha256':font['sha256'],
+                      'license_reference':font.get('license', manifest['license'])['path'],
+                      'scope':'Generated font bytes verified against the matching build manifest'})
     if actual!=expected:raise ValueError('Runtime resource bytes or set differ from source and generated font')
     return files
 

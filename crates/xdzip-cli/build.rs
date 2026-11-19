@@ -12,7 +12,34 @@ fn git(root: &std::path::Path, args: &[&str]) -> Option<String> {
         .success()
         .then(|| String::from_utf8_lossy(&output.stdout).trim().to_owned())
 }
+
+fn write_sfx_messages(root: &std::path::Path) {
+    let resources = root.join("resources");
+    let registry: serde_json::Value =
+        serde_json::from_slice(&fs::read(resources.join("ui-languages.json")).unwrap()).unwrap();
+    let mut generated = String::from("const SFX_MESSAGES: &[(&str, &str, &str)] = &[\n");
+    for language in registry["languages"].as_array().unwrap() {
+        let locale = language["id"].as_str().unwrap();
+        let path = resources.join("i18n").join(format!("{locale}.json"));
+        println!("cargo:rerun-if-changed={}", path.display());
+        if !path.is_file() {
+            continue;
+        }
+        let catalog: serde_json::Value = serde_json::from_slice(&fs::read(path).unwrap()).unwrap();
+        for (id, value) in catalog["messages"].as_object().unwrap() {
+            if id.starts_with("sfx.") || id == "ui.3ca05aed62cc" {
+                let text = value.as_str().unwrap();
+                generated.push_str(&format!("    ({locale:?}, {id:?}, {text:?}),\n"));
+            }
+        }
+    }
+    generated.push_str("];\n");
+    let path = PathBuf::from(env::var_os("OUT_DIR").unwrap()).join("sfx_messages.rs");
+    fs::write(path, generated).unwrap();
+}
+
 fn main() {
+    let root = PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap()).join("../..");
     if env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows") {
         println!("cargo:rustc-link-arg-bin=xdzip-sfx=/MANIFEST:EMBED");
         println!(
@@ -21,8 +48,8 @@ fn main() {
                 .join("sfx.manifest")
                 .display()
         );
+        write_sfx_messages(&root);
     }
-    let root = PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap()).join("../..");
     let value: serde_json::Value =
         serde_json::from_slice(&fs::read(root.join("VERSION.json")).unwrap()).unwrap();
     let channel = value["channel"].as_str().unwrap();

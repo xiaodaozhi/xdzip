@@ -1,6 +1,6 @@
 # Architecture evolution and current boundaries
 
-English | [简体中文](../zh-CN/design/architecture-evolution.md)
+English | [简体中文](../zh-CN/design/architecture-evolution.md) | [繁體中文（台灣）](../zh-TW/design/architecture-evolution.md)
 
 ## From framework experiments to the product
 

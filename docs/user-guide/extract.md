@@ -1,6 +1,6 @@
 # Extract all or selected files
 
-English | [简体中文](../zh-CN/user-guide/extract.md)
+English | [简体中文](../zh-CN/user-guide/extract.md) | [繁體中文（台灣）](../zh-TW/user-guide/extract.md)
 
 ## From the archive window
 

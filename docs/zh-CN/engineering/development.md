@@ -1,6 +1,6 @@
 # 开发者准备指南
 
-[English](../../engineering/development.md) | 简体中文
+[English](../../engineering/development.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/development.md)
 
 从[开发与贡献](../contributing/README.md)选择适合这次改动的构建和验证入口。[系统架构](../design/system-architecture.md)与[仓库结构](repository-layout.md)说明 Qt、Rust 运行时和各格式模块的边界。
 
@@ -10,11 +10,11 @@
 
 ## 文档构建
 
-撰写两种语言的对应文档，标题下放置语言切换，当前语言显示为纯文字，另一语言链接到同一主题。新增或迁移文档时同步更新目录和已有链接。
+为每种受支持的界面语言维护对应的根 README 和产品文档。默认英文页面位于 `README.md` 和 `docs/`，译文使用 `README.<locale>.md` 和 `docs/<locale>/`。维护者手册使用美式英语和简体中文。标题下放置语言切换，当前语言显示为纯文字，其余语言链接到同一主题。简体中文读者页面链接到简体中文维护者页面，其他读者页面链接到默认英文维护者页面。新增或迁移文档时同步更新目录、已有链接及章节锚点。
 
 文档工具依赖 Python 3.10+、lxml、Pandoc 和 Graphviz，字体推荐系统 CJK。执行 `python3 scripts/build-design-html.py` 生成 build/docs-html 的 16 篇详细软件设计及单文件版，输出下载包在 dist/。其余工程和协作文档从 docs/README.md 阅读。HTML 不作为产品界面技术选择。
 
-执行 `python3 scripts/check-docs.py`，检查根目录、`docs/` 和 `developers/` 的双语配对与互相指向的语言切换，以及仓库内链接目标、Markdown 章节锚点、JSON 和设计资产。此检查在离线状态下运行。HTML 构建器验证生成页面的链接与结构。修改检查器时运行 `python3 scripts/test-check-docs.py`。
+执行 `python3 scripts/check-docs.py`，检查译文覆盖、语言切换互链、读者页面的链接语言、Markdown 章节锚点、JSON 和设计资产。此检查在离线状态下运行。HTML 构建器验证生成页面的链接与结构。修改检查器时运行 `python3 scripts/test-check-docs.py`。
 
 ## 产品工具链准备
 

@@ -1,6 +1,6 @@
 # 文件管理器操作与独立任务宿主
 
-[English](../../engineering/shell-actions.md) | 简体中文
+[English](../../engineering/shell-actions.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/shell-actions.md)
 
 系统入口将选择和动作交给同一登录会话中的桌面进程。Windows 11 的普通安装版扩展位于“显示更多选项”，其 COM 类同时提供 `IContextMenu` 和 `IExplorerCommand`。MSIX 单独声明经典处理程序，商店构建另外声明现代菜单处理程序，详见下文。Ubuntu 24.04 的 Files 使用 Nautilus 4.0 扩展。macOS 提供 Finder Sync 子菜单、“服务”命令及独立操作面板。
 

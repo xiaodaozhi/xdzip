@@ -1,6 +1,6 @@
 # File-manager actions and standalone task host
 
-English | [简体中文](../zh-CN/engineering/shell-actions.md)
+English | [简体中文](../zh-CN/engineering/shell-actions.md) | [繁體中文（台灣）](../zh-TW/engineering/shell-actions.md)
 
 System entry points pass selections and actions to the desktop process in the same login session. On Windows 11 the ordinary installed extension appears under “Show more options”. Its COM class exposes both `IContextMenu` and `IExplorerCommand`. MSIX declares a separate classic handler and adds the modern handler in the Store build, as described below. Ubuntu 24.04 Files uses a Nautilus 4.0 extension. macOS offers the Finder Sync submenu, the Services command and the standalone operation panel.
 

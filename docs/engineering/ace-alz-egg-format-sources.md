@@ -1,6 +1,6 @@
 # ACE, ALZ and EGG source and licensing gates
 
-English | [简体中文](../zh-CN/engineering/ace-alz-egg-format-sources.md)
+English | [简体中文](../zh-CN/engineering/ace-alz-egg-format-sources.md) | [繁體中文（台灣）](../zh-TW/engineering/ace-alz-egg-format-sources.md)
 
 This page describes xdzip support for ACE, ALZ, and EGG, along with the public technical references and licensing restrictions behind those decisions. Reference files remain in `build/toolchain/references` and are not product dependencies.
 

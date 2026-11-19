@@ -1,6 +1,6 @@
 # Product version and build identity
 
-English | [简体中文](../zh-CN/engineering/versioning.md)
+English | [简体中文](../zh-CN/engineering/versioning.md) | [繁體中文（台灣）](../zh-TW/engineering/versioning.md)
 
 The optional `prerelease_number` separates prerelease sequence from build number. For example, alpha.1 can use build 14 while later alpha.2 continues incrementing build. When absent, the historical `channel.build` interpretation remains. Release manifests and asset names are specified in the [release protocol](release-protocol.md).
 

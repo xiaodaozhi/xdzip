@@ -1,6 +1,6 @@
 # AES Crypt read-only envelopes
 
-English | [简体中文](../zh-CN/engineering/aescrypt-envelopes.md)
+English | [简体中文](../zh-CN/engineering/aescrypt-envelopes.md) | [繁體中文（台灣）](../zh-TW/engineering/aescrypt-envelopes.md)
 
 The independent Rust `xdzip-codec-aescrypt` backend reads AES Crypt stream versions 0, 1, 2 and 3. Application version numbers are separate. One regular virtual file is exposed; there is no creation, modification, volume or external-extension fetch capability. The format contains encrypted data without compression, so the row's method is Store and its encrypted flag is true. The packed size is the complete physical envelope. Content discovery, not `.aes`, selects the backend.
 

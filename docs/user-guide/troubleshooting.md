@@ -1,6 +1,6 @@
 # Troubleshooting XDZip
 
-English | [简体中文](../zh-CN/user-guide/troubleshooting.md)
+English | [简体中文](../zh-CN/user-guide/troubleshooting.md) | [繁體中文（台灣）](../zh-TW/user-guide/troubleshooting.md)
 
 | What happened | What to try |
 | --- | --- |

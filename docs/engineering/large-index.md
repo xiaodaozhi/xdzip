@@ -1,6 +1,6 @@
 # Large archive indexing and on-demand browsing
 
-English | [简体中文](../zh-CN/engineering/large-index.md)
+English | [简体中文](../zh-CN/engineering/large-index.md) | [繁體中文（台灣）](../zh-TW/engineering/large-index.md)
 
 The source capability limit for regular single-file ZIP/ZIP64 is one million physical records. Other formats and split-volume paths retain their existing 100,000-entry admissions; a format name does not mean all combinations have expanded limits. Directories, duplicate names, and records needing review all count as physical entries; implicit navigation directories add display rows only.
 

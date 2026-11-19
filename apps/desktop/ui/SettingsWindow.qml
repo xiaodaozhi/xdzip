@@ -397,9 +397,10 @@ OperationWindow {
             SettingsSelectRow {
                 Layout.fillWidth: true; controlName: "settingsLanguage"
                 label: qsTrId("settings.language"); description: qsTrId("settings.languageDescription")
-                options: [qsTrId("language.auto"), qsTrId("language.zhCN"), qsTrId("language.enUS")]
-                selectedIndex: ["auto", "zh-CN", "en-US"].indexOf(AppSettings.language)
-                onSelectionRequested: index => root.commit(AppSettings.savedTheme, AppSettings.savedTextScale, ["auto", "zh-CN", "en-US"][index], AppSettings.savedDensity, AppSettings.recentEnabled, AppSettings.trayEnabled, AppSettings.openMode)
+                options: [qsTrId("language.auto")].concat(Array.from(AppSettings.languageNames))
+                optionFonts: AppSettings.languageFonts
+                selectedIndex: AppSettings.languageIds.indexOf(AppSettings.language)
+                onSelectionRequested: index => root.commit(AppSettings.savedTheme, AppSettings.savedTextScale, AppSettings.languageIds[index], AppSettings.savedDensity, AppSettings.recentEnabled, AppSettings.trayEnabled, AppSettings.openMode)
             }
             PageSeparator {}
             SettingsToggle {

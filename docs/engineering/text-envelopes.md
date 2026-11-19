@@ -1,6 +1,6 @@
 # UU, UUE and XXE text envelopes
 
-English | [简体中文](../zh-CN/engineering/text-envelopes.md)
+English | [简体中文](../zh-CN/engineering/text-envelopes.md) | [繁體中文（台灣）](../zh-TW/engineering/text-envelopes.md)
 
 Traditional UU fields and bit order follow [NetBSD uuencode(5)](https://man.netbsd.org/uuencode.5). Base64 mode is described by [uuencode(1)](https://man.netbsd.org/uuencode.1) and [GNU Sharutils](https://www.gnu.org/software/sharutils/manual/sharutils.html). The XX alphabet is `+-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`, checked against the public encoder in [UUDeview](https://github.com/hannob/uudeview). The Rust reader is independently written from these field/bit rules. The reference C implementation is a test tool only, never a runtime dependency.
 

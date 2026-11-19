@@ -1,6 +1,6 @@
 # 任务调度、进度与取消
 
-[English](../../design/task-scheduling.md) | 简体中文
+[English](../../design/task-scheduling.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/task-scheduling.md)
 
 XDZip 的每个运行时连接各有一个 Rust 命令线程和一个任务线程。命令线程持有当前归档并准备任务输入。任务线程执行已接收的作业，命令线程仍能处理元数据请求。[系统架构](system-architecture.md)说明这些线程在哪里运行，[Qt/Rust 桥接](qt-rust-bridge.md)说明结果如何送到客户端。
 

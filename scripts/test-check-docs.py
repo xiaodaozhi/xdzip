@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('check_docs', ROOT / 'scripts/check-docs.py')
 check_docs = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(check_docs)
+BILINGUAL = {'en-US': 'English', 'zh-CN': '简体中文'}
 
 
 class DocumentDiscoveryTests(unittest.TestCase):
@@ -65,23 +66,23 @@ class DocumentTests(unittest.TestCase):
             files.append(self.write(f'{tree}/zh-CN/guide/README.md',
                                     '# 指南\n\n[English](../../guide/README.md) | 简体中文\n'))
 
-        self.assertEqual(check_docs.bilingual_documents(self.root, files), (9, []))
+        self.assertEqual(check_docs.localized_documents(self.root, files, BILINGUAL), (9, []))
         self.write('developers/zh-CN/guide/README.md',
                    '# 指南\n\n[English](../../guide/README.md) | [简体中文](README.md)\n')
-        pairs, failures = check_docs.bilingual_documents(self.root, files)
+        pairs, failures = check_docs.localized_documents(self.root, files, BILINGUAL)
         self.assertEqual(pairs, 9)
         self.assertEqual(len(failures), 1)
         self.assertIn('developers/zh-CN/guide/README.md', failures[0])
-        pairs, failures = check_docs.bilingual_documents(self.root, files[:-1])
+        pairs, failures = check_docs.localized_documents(self.root, files[:-1], BILINGUAL)
         self.assertEqual(pairs, 8)
         self.assertIn('missing language counterpart', failures[0])
 
     def test_root_requires_both_versions_and_recognizes_new_localized_pages(self):
         files = self.root_pairs()
-        self.assertEqual(check_docs.bilingual_documents(self.root, files), (7, []))
+        self.assertEqual(check_docs.localized_documents(self.root, files, BILINGUAL), (7, []))
         files = [path for path in files if not path.name.startswith('SECURITY.')]
         files.append(self.write('FAQ.zh-CN.md', '# 说明\n\n[English](FAQ.md) | 简体中文\n'))
-        pairs, failures = check_docs.bilingual_documents(self.root, files)
+        pairs, failures = check_docs.localized_documents(self.root, files, BILINGUAL)
         self.assertEqual(pairs, 6)
         self.assertEqual(failures, [
             'FAQ.md: missing language counterpart',
@@ -103,12 +104,54 @@ class DocumentTests(unittest.TestCase):
         for name, content, expected in invalid:
             with self.subTest(path=name):
                 self.write(name, content)
-                pairs, failures = check_docs.bilingual_documents(self.root, files)
+                pairs, failures = check_docs.localized_documents(self.root, files, BILINGUAL)
                 self.assertEqual(pairs, 7)
                 self.assertEqual(len(failures), 1)
                 self.assertTrue(failures[0].startswith(f'{name}:'))
                 self.assertIn(expected, failures[0])
                 self.root_pairs()
+
+    def test_reader_docs_require_all_languages_but_developers_only_two(self):
+        languages = {**BILINGUAL, 'fr-FR': 'Français'}
+        files = self.root_pairs()
+        files.extend([
+            self.write('README.md', '<h1>XDZip</h1>\n<p>English | <a href="README.zh-CN.md">简体中文</a>'
+                       ' | <a href="README.fr-FR.md">Français</a></p>\n'),
+            self.write('README.zh-CN.md', '<h1>XDZip</h1>\n<p><a href="README.md">English</a> | 简体中文'
+                       ' | <a href="README.fr-FR.md">Français</a></p>\n'),
+            self.write('README.fr-FR.md', '<h1>XDZip</h1>\n<p><a href="README.md">English</a> | '
+                       '<a href="README.zh-CN.md">简体中文</a> | Français</p>\n'),
+            self.write('docs/guide.md', '# Guide\n\nEnglish | [简体中文](zh-CN/guide.md) | '
+                       '[Français](fr-FR/guide.md)\n'),
+            self.write('docs/zh-CN/guide.md', '# 指南\n\n[English](../guide.md) | 简体中文 | '
+                       '[Français](../fr-FR/guide.md)\n'),
+            self.write('developers/guide.md', '# Guide\n\nEnglish | [简体中文](zh-CN/guide.md)\n'),
+            self.write('developers/zh-CN/guide.md', '# 指南\n\n[English](../guide.md) | 简体中文\n'),
+        ])
+        count, failures = check_docs.localized_documents(self.root, files, languages)
+        self.assertEqual(count, 8)
+        self.assertEqual(failures, ['docs/fr-FR/guide.md: missing language counterpart'])
+        files.append(self.write('docs/fr-FR/guide.md', '# Guide\n\n[English](../guide.md) | '
+                                '[简体中文](../zh-CN/guide.md) | Français\n'))
+        self.assertEqual(check_docs.localized_documents(self.root, files, languages), (9, []))
+
+    def test_reader_links_follow_their_language_and_use_english_developers_fallback(self):
+        self.write('docs/guide.md', '# Guide\n')
+        target = self.write('docs/fr-FR/guide.md', '# Guide\n\n## Démarrage\n')
+        self.write('developers/qa.md', '# Verification\n\n## Layout\n')
+        self.write('developers/zh-CN/qa.md', '# 验证\n\n## 布局\n')
+        index = self.write('docs/fr-FR/index.md', '# XDZip\n\n'
+                           '[Guide](guide.md#démarrage)\n'
+                           '[Check](../../developers/qa.md#layout)\n'
+                           '[Wrong language](../guide.md)\n'
+                           '[Wrong developers](https://github.com/xiaodaozhi/xdzip/blob/main/developers/zh-CN/qa.md#布局)\n'
+                           '[Wrong section](../../developers/qa.md#布局)\n')
+        links, fragments, failures = check_docs.markdown_links(self.root, [index, target])
+        self.assertEqual((links, fragments), (5, 4))
+        self.assertEqual(len(failures), 3)
+        self.assertIn('expected docs/fr-FR/guide.md', failures[0])
+        self.assertIn('expected developers/qa.md', failures[1])
+        self.assertIn('missing Markdown anchor', failures[2])
 
     def test_markdown_anchor_styles_and_local_targets(self):
         topic = self.write('docs/归档 名称 (FAQ).md', """# **格式** 与 _安全_：\x60file_name\x60 ###

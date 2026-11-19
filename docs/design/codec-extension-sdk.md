@@ -1,6 +1,6 @@
 # Format adapters and the extension trial
 
-English | [简体中文](../zh-CN/design/codec-extension-sdk.md)
+English | [简体中文](../zh-CN/design/codec-extension-sdk.md) | [繁體中文（台灣）](../zh-TW/design/codec-extension-sdk.md)
 
 ## Three execution paths
 

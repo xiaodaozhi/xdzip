@@ -1,6 +1,6 @@
 # XDZip 文档
 
-[English](../README.md) | 简体中文
+[English](../README.md) | 简体中文 | [繁體中文（台灣）](../zh-TW/README.md)
 
 第一次使用 XDZip，可以先[选择下载包并安装](user-guide/install.md)，再[打开压缩包浏览内容](user-guide/browse.md)。[格式支持表](../../README.zh-CN.md#格式支持)列出了可以打开、创建或修改的格式。已安装版本可查阅对应的[发布说明](https://github.com/xiaodaozhi/xdzip/releases)，了解该版本的具体功能。
 

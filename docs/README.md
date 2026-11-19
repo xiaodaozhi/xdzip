@@ -1,6 +1,6 @@
 # XDZip documentation
 
-English | [简体中文](zh-CN/README.md)
+English | [简体中文](zh-CN/README.md) | [繁體中文（台灣）](zh-TW/README.md)
 
 New to XDZip? [Choose a download and install it](user-guide/install.md), then [open an archive and browse its contents](user-guide/browse.md). The [format support table](../README.md#format-support) shows which formats you can open, create or edit. For an installed release, check its [release notes](https://github.com/xiaodaozhi/xdzip/releases) for the features available in that version.
 

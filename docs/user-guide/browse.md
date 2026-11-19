@@ -1,6 +1,6 @@
 # Browse, select and preview files
 
-English | [简体中文](../zh-CN/user-guide/browse.md)
+English | [简体中文](../zh-CN/user-guide/browse.md) | [繁體中文（台灣）](../zh-TW/user-guide/browse.md)
 
 1. Open an archive. Enter a folder from the directory tree or by double-clicking its row. Use the breadcrumb to go back to a parent folder.
 2. Type part of a filename and press Enter. Search covers the current folder and its descendants. Use list or grid view and choose a sort order. Folders stay ahead of files in both directions.

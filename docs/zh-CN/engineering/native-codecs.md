@@ -1,6 +1,6 @@
 # 隔离格式工作进程契约
 
-[English](../../engineering/native-codecs.md) | 简体中文
+[English](../../engineering/native-codecs.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/native-codecs.md)
 
 7z、RAR、CAB 和 ISO／UDF 的读取由隔离工作进程内的[内置 Rust 实现](independent-rust-codecs.md)通过共享 CXX 边界提供。7z 写入也经该工作进程执行，任务由宿主控制。ZIP、TAR、压缩流、DEB 和[新建 ISO9660/Joliet 映像](iso-creation.md)在 Rust 宿主进程内处理。格式按内置规则选择，所有路径均不会从 PATH 寻找命令行解码工具。
 

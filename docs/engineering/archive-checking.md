@@ -1,6 +1,6 @@
 # Archive integrity checking
 
-English | [简体中文](../zh-CN/engineering/archive-checking.md)
+English | [简体中文](../zh-CN/engineering/archive-checking.md) | [繁體中文（台灣）](../zh-TW/engineering/archive-checking.md)
 
 The toolbar's “Test” action performs one real background check of an eligible current archive, covering all physical records, including duplicate names, directories, and empty files, regardless of current directory, search, or selection. Whole-archive checking is not currently supported for archives using the disk index; see [large archive indexing](large-index.md). The check holds only frozen input sources and metadata. It obtains no destination authorization, creates no staging or output files, and does not use extraction path mapping or link publication.
 

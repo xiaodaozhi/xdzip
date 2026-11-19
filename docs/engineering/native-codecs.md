@@ -1,6 +1,6 @@
 # Isolated format worker contract
 
-English | [简体中文](../zh-CN/engineering/native-codecs.md)
+English | [简体中文](../zh-CN/engineering/native-codecs.md) | [繁體中文（台灣）](../zh-TW/engineering/native-codecs.md)
 
 7z, RAR, CAB and ISO/UDF reads use [built-in Rust codecs](independent-rust-codecs.md) behind one shared CXX boundary in the isolated worker. The same worker handles 7z writing within host-controlled tasks. The Rust host handles ZIP, TAR, compressed streams, DEB and [new ISO9660/Joliet images](iso-creation.md) in-process. Format selection uses built-in routes. No route searches PATH for a command-line decoder.
 

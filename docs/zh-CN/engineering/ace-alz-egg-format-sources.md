@@ -1,6 +1,6 @@
 # ACE、ALZ 与 EGG 的资料和许可门槛
 
-[English](../../engineering/ace-alz-egg-format-sources.md) | 简体中文
+[English](../../engineering/ace-alz-egg-format-sources.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/ace-alz-egg-format-sources.md)
 
 本文说明 xdzip 对 ACE、ALZ 和 EGG 格式的支持范围，以及实现所参考的公开技术资料与许可限制。参考资料保留在 `build/toolchain/references`，不作为产品依赖。
 

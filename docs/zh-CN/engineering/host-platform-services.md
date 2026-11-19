@@ -1,6 +1,6 @@
 # 格式工作进程的宿主日历与编码服务
 
-[English](../../engineering/host-platform-services.md) | 简体中文
+[English](../../engineering/host-platform-services.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/host-platform-services.md)
 
 格式字段、密码兼容规则和校验由 Rust 处理。操作系统的历史时区、OEM/ANSI 代码页和本地 C 编码属于宿主环境，通过 `ReadSource` 的可选服务提供，不能由格式层根据文件名、HostOS 或当前 UTC 偏移猜测。服务不依赖 Qt，不授予路径访问或文件发布权限。
 

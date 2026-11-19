@@ -4,6 +4,13 @@
     "url": "https://github.com/jrsoftware/issrc/releases/download/is-6_7_3/innosetup-6.7.3.exe",
     "sha256": "9c73c3bae7ed48d44112a0f48e66742c00090bdb5bef71d9d3c056c66e97b732",
     "source_commit": "4adf37ed7f3fd2bd11c6836ba056e3de170fbabf",
+    "translations": [
+      {
+        "file": "ChineseTraditional.isl",
+        "url": "https://raw.githubusercontent.com/jrsoftware/issrc/4adf37ed7f3fd2bd11c6836ba056e3de170fbabf/Files/Languages/Unofficial/ChineseTraditional.isl",
+        "sha256": "ab22b0ebf82969d1c9a7208e0e9f60e5119c0c95b9dacc00eb8e5582c7d3c604"
+      }
+    ],
     "materials": [
       {
         "file": "ChineseSimplified.isl",

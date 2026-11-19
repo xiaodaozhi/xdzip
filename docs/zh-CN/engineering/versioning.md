@@ -1,6 +1,6 @@
 # 产品版本与构建身份
 
-[English](../../engineering/versioning.md) | 简体中文
+[English](../../engineering/versioning.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/versioning.md)
 
 可选 `prerelease_number` 分离预发布序号与构建号。例如 alpha.1 对应 build 14，后续 alpha.2 仍继续递增 build。缺省保留历史 `渠道.build` 读取方式。发布清单和资产命名见[发布协议](release-protocol.md)。
 

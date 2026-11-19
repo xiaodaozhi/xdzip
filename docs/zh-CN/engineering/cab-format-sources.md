@@ -1,6 +1,6 @@
 # CAB 格式来源与实现依据
 
-[English](../../engineering/cab-format-sources.md) | 简体中文
+[English](../../engineering/cab-format-sources.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/cab-format-sources.md)
 
 本文记录 CAB 容器、MSZIP、LZX 和 Quantum 的来源、适用范围及独立实现约束。产品能力、资源治理和逐格式替代规则分别由[隔离格式工作进程契约](native-codecs.md)、[自研 Rust 契约](independent-rust-codecs.md)及[分卷契约](archive-opening.md)定义。来源记录不代替互操作验收或发行许可复核。
 

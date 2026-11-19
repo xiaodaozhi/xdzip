@@ -21,7 +21,7 @@
     if (kind != FIMenuKindContextualMenuForItems || !preferences.enabled)
         return nil;
     return menuSession_.prepare(FIFinderSyncController.defaultController.selectedItemURLs,
-                                preferences.english, self, @selector(runAction:));
+                                preferences.language, self, @selector(runAction:));
 }
 - (void)runAction:(NSMenuItem *)item {
     NSString *app = xdzip_shell::finderContainingApp(NSBundle.mainBundle.bundlePath);
@@ -33,9 +33,10 @@
       dispatch_async(dispatch_get_main_queue(), ^{
         auto *alert = [NSAlert new];
         alert.messageText = @"xdzip";
-        alert.informativeText = [NSString
-            stringWithUTF8String:xdzip_shell::text(preferences.english, "shell.finderHandoffFailed")
-                                     .c_str()];
+        alert.informativeText =
+            [NSString stringWithUTF8String:xdzip_shell::text(preferences.language,
+                                                             "shell.finderHandoffFailed")
+                                               .c_str()];
         [alert runModal];
       });
     };

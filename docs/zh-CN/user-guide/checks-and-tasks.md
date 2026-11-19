@@ -1,6 +1,6 @@
 # 检查压缩包与管理任务
 
-[English](../../user-guide/checks-and-tasks.md) | 简体中文
+[English](../../user-guide/checks-and-tasks.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/user-guide/checks-and-tasks.md)
 
 ## 测试压缩包
 

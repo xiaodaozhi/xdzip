@@ -1,6 +1,6 @@
 # ZIP 解压与输出依赖准入
 
-[English](../../engineering/zip-extraction-admission.md) | 简体中文
+[English](../../engineering/zip-extraction-admission.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/zip-extraction-admission.md)
 
 本页定义安全解压及密码解压复用的依赖边界。最初准入的依赖来源、许可与特性摘录见[基础锁定材料](../../../specs/engineering/zip-extraction-dependencies.json)；含 AES 的当前精确版本与 crates.io 校验和以根目录 Cargo.lock 为准，完整启用图通过 `cargo tree --locked -e features` 核对，不能把基础摘录当作当前完整依赖清单。
 

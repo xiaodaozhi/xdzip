@@ -1,5 +1,6 @@
 #include "ShellIntegration.h"
 #include "BuildInfo.h"
+#include "UiLanguage.h"
 #include "UiPreferences.h"
 #include <QCoreApplication>
 #include <QCryptographicHash>
@@ -20,6 +21,18 @@
 #include "MacShellService.h"
 #endif
 namespace {
+#ifdef Q_OS_WIN
+void writeWindowsMenuPreferences(QSettings &options, bool enabled, const QString &language) {
+    const auto legacy = legacyUiLanguage(language);
+    options.setValue("Enabled", enabled ? 1 : 0);
+    options.setValue("Language", legacy);
+    if (legacy != language)
+        options.setValue("ExtendedLanguage", language);
+    else
+        options.remove("ExtendedLanguage");
+}
+#endif
+
 bool installed() {
     if (!qEnvironmentVariableIsEmpty("XDZIP_SETTINGS_PATH") ||
         !qEnvironmentVariableIsEmpty("XDZIP_LANGUAGE"))
@@ -98,8 +111,7 @@ bool ShellIntegration::apply(bool value) {
         QSettings options(QStringLiteral("HKEY_CURRENT_USER\\") +
                               QString::fromStdWString(context.settingsKey),
                           QSettings::NativeFormat);
-        options.setValue("Enabled", value ? 1 : 0);
-        options.setValue("Language", m_settings->activeLanguage());
+        writeWindowsMenuPreferences(options, value, m_settings->activeLanguage());
         options.sync();
         return options.status() == QSettings::NoError;
     }
@@ -155,8 +167,7 @@ bool ShellIntegration::apply(bool value) {
     classes.remove("CLSID/" + legacyClsid);
     classes.sync();
     QSettings options("HKEY_CURRENT_USER\\Software\\xdzip\\Shell", QSettings::NativeFormat);
-    options.setValue("Enabled", value ? 1 : 0);
-    options.setValue("Language", m_settings->activeLanguage());
+    writeWindowsMenuPreferences(options, value, m_settings->activeLanguage());
     options.sync();
     const bool applied =
         classes.status() == QSettings::NoError && options.status() == QSettings::NoError;

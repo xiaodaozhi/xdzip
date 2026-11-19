@@ -1,6 +1,6 @@
 # 安装器与文件关联
 
-[English](../../engineering/installers-associations.md) | 简体中文
+[English](../../engineering/installers-associations.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/installers-associations.md)
 
 Windows 11 x64 用户可以在 Microsoft Store 搜索 **XDZip**，安装或更新商店版。Windows EXE 安装器、便携 ZIP 及 macOS、Linux 安装包可从 [GitHub 最新发布页](https://github.com/xiaodaozhi/xdzip/releases/latest)下载。两条渠道独立发布，安装前可在所选渠道核对版本。
 

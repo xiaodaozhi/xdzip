@@ -1,6 +1,6 @@
 # 构建、部署与发行架构
 
-[English](../../design/build-release.md) | 简体中文
+[English](../../design/build-release.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/build-release.md)
 
 ## 构建与打包输入
 

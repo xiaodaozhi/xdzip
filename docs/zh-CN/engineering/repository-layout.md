@@ -1,6 +1,6 @@
 # 仓库目录与依赖
 
-[English](../../engineering/repository-layout.md) | 简体中文
+[English](../../engineering/repository-layout.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/repository-layout.md)
 
 当前产品模块以根目录 Cargo.toml 和 CMakeLists.txt 为准。下表描述实际目录；架构设计中的未来拆分不代表已有独立 crate。
 

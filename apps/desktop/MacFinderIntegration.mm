@@ -1,4 +1,5 @@
 #include "MacFinderIntegration.h"
+#include "UiLanguage.h"
 #include "shell/MacFinderRequest.h"
 #include <QCoreApplication>
 #include <QCryptographicHash>
@@ -45,14 +46,17 @@ bool writeMacFinderConfiguration(const QString &application, const QString &path
         handoffToken = QString::fromStdString(xdzip_shell::randomHex() + xdzip_shell::randomHex());
     if (!xdzip_shell::validFinderToken(handoffToken.toNSString()))
         return false;
-    const auto bytes = QJsonDocument(QJsonObject{{"schema_version", 1},
-                                                 {"product", "org.xdzip.finder-sync"},
-                                                 {"application", application},
-                                                 {"enabled", enabled},
-                                                 {"extension_revision", revision},
-                                                 {"handoff_token", handoffToken},
-                                                 {"language", language}})
-                           .toJson(QJsonDocument::Compact);
+    const auto legacy = legacyUiLanguage(language);
+    const auto bytes =
+        QJsonDocument(QJsonObject{{"schema_version", 1},
+                                  {"product", "org.xdzip.finder-sync"},
+                                  {"application", application},
+                                  {"enabled", enabled},
+                                  {"extension_revision", revision},
+                                  {"handoff_token", handoffToken},
+                                  {"language", legacy},
+                                  {"extended_language", legacy != language ? language : QString()}})
+            .toJson(QJsonDocument::Compact);
     if (bytes.size() > 8192)
         return false;
     // Atomic replacement never falls back to writing through an existing leaf.

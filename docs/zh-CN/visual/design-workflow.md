@@ -1,6 +1,6 @@
 # 界面设计与修正流程
 
-[English](../../visual/design-workflow.md) | 简体中文
+[English](../../visual/design-workflow.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/visual/design-workflow.md)
 
 本流程在界面创作前执行，不等到实现完成后补写。规范入口为 [界面设计规范](design-standard.md)。
 

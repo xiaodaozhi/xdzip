@@ -1,6 +1,6 @@
 # ZIP 元数据依赖准入
 
-[English](../../engineering/zip-metadata-admission.md) | 简体中文
+[English](../../engineering/zip-metadata-admission.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/zip-metadata-admission.md)
 
 本页保留 2026-10-11 首个只读目录扫描的历史准入，不批准解压、创建或第三方插件执行。当前 ZIP 元数据已迁移至[独立 Rust 记录层](independent-rust-codecs.md)，rawzip 仅作为开发测试参照；以下历史选择不代表当前生产依赖。
 

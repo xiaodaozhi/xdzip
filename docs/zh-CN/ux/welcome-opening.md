@@ -1,6 +1,6 @@
 # 欢迎页读取遮罩与创建完成行为
 
-[English](../../ux/welcome-opening.md) | 简体中文
+[English](../../ux/welcome-opening.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/ux/welcome-opening.md)
 
 2026-10-16 修订，参数源为 [welcome-reference.json](../../../specs/visual/welcome-reference.json)，动态高保真入口为 [欢迎页读取状态](../../../design/hifi/sources/welcome.html?opening=1)。沿用主窗口、菜单和欢迎页的逻辑单位，标题栏不变。
 

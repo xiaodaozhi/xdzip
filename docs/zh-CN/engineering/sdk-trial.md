@@ -1,6 +1,6 @@
 # 外部只读 SDK 试验
 
-[English](../../engineering/sdk-trial.md) | 简体中文
+[English](../../engineering/sdk-trial.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/sdk-trial.md)
 
 `xdzip-plugin-protocol` 和 `xdzip-plugin-host` 实现[格式扩展设计](../design/codec-extension-sdk.md)的独立只读试验。它不进入桌面／CLI 的格式发现、安装、打包或自动启动路径。用户显式执行试验命令并选择包与来源；产品继续禁用第三方扩展。当前仅协商 `xdp1`，不提供创建、密码、分卷、链接、GUI 或任意宿主路径权限。这不是完整插件生态或正式 SDK 发布。
 

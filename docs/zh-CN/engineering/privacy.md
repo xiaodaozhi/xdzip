@@ -1,6 +1,6 @@
 # 数据生命周期与诊断
 
-[English](../../engineering/privacy.md) | 简体中文
+[English](../../engineering/privacy.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/privacy.md)
 
 [隐私政策](../../../PRIVACY.zh-CN.md)说明 xdzip 处理哪些数据，以及用户可以作出哪些选择。下表说明实现将数据存在哪里、何时释放。浏览、压缩与解压可离线使用。xdzip 不会自动向维护者发送遥测或归档内容。
 

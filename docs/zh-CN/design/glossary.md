@@ -1,6 +1,6 @@
 # XDZip 术语与实现限额
 
-[English](../../design/glossary.md) | 简体中文
+[English](../../design/glossary.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/glossary.md)
 
 ## 1. 术语
 

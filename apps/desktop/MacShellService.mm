@@ -1,4 +1,5 @@
 #include "MacShellService.h"
+#include "UiLanguage.h"
 #import <AppKit/AppKit.h>
 #include <QCoreApplication>
 #include <QCryptographicHash>
@@ -11,33 +12,51 @@
 #include <QSaveFile>
 #include <QUuid>
 #include <algorithm>
+#include <optional>
 #include <unistd.h>
 
 namespace {
 const QString ledgerName = "Contents/Resources/install.json";
-const QStringList ownedFiles{"Contents/Info.plist", "Contents/MacOS/xdzip-shell-service",
-                             "Contents/Resources/en.lproj/ServicesMenu.strings",
-                             "Contents/Resources/zh-Hans.lproj/ServicesMenu.strings",
-                             "Contents/Resources/application.txt"};
+const QStringList requiredFiles{"Contents/Info.plist", "Contents/MacOS/xdzip-shell-service",
+                                "Contents/Resources/en.lproj/ServicesMenu.strings",
+                                "Contents/Resources/zh-Hans.lproj/ServicesMenu.strings",
+                                "Contents/Resources/application.txt"};
+QStringList allowedFiles() {
+    QStringList files = requiredFiles;
+    for (const auto &language : xdzip_i18n::languages) {
+        const QString file = "Contents/Resources/" + uiLanguageString(language.macos) +
+                             ".lproj/ServicesMenu.strings";
+        if (!files.contains(file))
+            files.append(file);
+    }
+    return files;
+}
 QByteArray read(const QString &file) {
     QFile input(file);
     return input.open(QIODevice::ReadOnly) && input.size() <= 8 * 1024 * 1024 ? input.readAll()
                                                                               : QByteArray{};
 }
-bool owned(const QString &path) {
+std::optional<QStringList> ownedFiles(const QString &path) {
     if (QFileInfo(path).isSymLink())
-        return false;
+        return std::nullopt;
     const auto record = QJsonDocument::fromJson(read(path + '/' + ledgerName)).object();
     if (record.value("product") != "org.xdzip.shell-service" ||
         record.value("schema_version").toInt() != 1)
-        return false;
+        return std::nullopt;
     const auto hashes = record.value("files").toObject();
-    for (const auto &file : ownedFiles) {
+    const auto files = hashes.keys();
+    const auto allowed = allowedFiles();
+    for (const auto &required : requiredFiles)
+        if (!files.contains(required))
+            return std::nullopt;
+    for (const auto &file : files) {
+        if (!allowed.contains(file))
+            return std::nullopt;
         const auto info = QFileInfo(path + '/' + file);
         if (!info.isFile() || info.isSymLink() || info.ownerId() != getuid() ||
             QCryptographicHash::hash(read(info.filePath()), QCryptographicHash::Sha256).toHex() !=
                 hashes.value(file).toString().toLatin1())
-            return false;
+            return std::nullopt;
     }
     QDirIterator entries(path,
                          QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System,
@@ -47,26 +66,30 @@ bool owned(const QString &path) {
         const auto info = entries.fileInfo();
         const auto relative = QDir(path).relativeFilePath(entry);
         if (info.isSymLink() || info.ownerId() != getuid())
-            return false;
+            return std::nullopt;
         if (info.isDir()) {
-            if (std::none_of(ownedFiles.begin(), ownedFiles.end(),
+            if (std::none_of(files.begin(), files.end(),
                              [&](const QString &f) { return f.startsWith(relative + '/'); }))
-                return false;
-        } else if (relative != ledgerName && !ownedFiles.contains(relative))
-            return false;
+                return std::nullopt;
+        } else if (relative != ledgerName && !files.contains(relative))
+            return std::nullopt;
     }
-    return true;
+    return files;
 }
 bool removeOwned(const QString &path) {
-    if (!owned(path))
+    const auto files = ownedFiles(path);
+    if (!files)
         return false;
-    for (const auto &file : ownedFiles)
+    for (const auto &file : *files)
         if (!QFile::remove(path + '/' + file))
             return false;
     if (!QFile::remove(path + '/' + ledgerName))
         return false;
-    for (const auto &dir : {"Contents/Resources/en.lproj", "Contents/Resources/zh-Hans.lproj",
-                            "Contents/Resources", "Contents/MacOS", "Contents", ""})
+    for (const auto &file : *files)
+        if (file.endsWith("/ServicesMenu.strings") &&
+            !QDir().rmdir(path + '/' + QFileInfo(file).path()))
+            return false;
+    for (const auto &dir : {"Contents/Resources", "Contents/MacOS", "Contents", ""})
         if (!QDir().rmdir(path + '/' + dir))
             return false;
     return true;
@@ -77,7 +100,9 @@ bool updateMacShellService(bool enabled) {
     const auto source = app + "/Contents/Helpers/xdzip.service";
     const auto parent = QDir::homePath() + "/Library/Services";
     const auto target = parent + "/xdzip.service";
-    if (QFile::exists(target) && !owned(target))
+    const bool targetExists = QFile::exists(target);
+    const auto installedFiles = targetExists ? ownedFiles(target) : std::nullopt;
+    if (targetExists && !installedFiles)
         return false;
     if (!enabled) {
         const bool result = !QFile::exists(target) || removeOwned(target);
@@ -85,8 +110,14 @@ bool updateMacShellService(bool enabled) {
             NSUpdateDynamicServices();
         return result;
     }
-    bool identical = QFile::exists(target);
-    for (const auto &file : ownedFiles) {
+    QStringList sourceFiles;
+    for (const auto &file : allowedFiles())
+        if (requiredFiles.contains(file) || QFileInfo(source + '/' + file).isFile())
+            sourceFiles.append(file);
+    auto listing = sourceFiles;
+    listing.sort();
+    bool identical = installedFiles && *installedFiles == listing;
+    for (const auto &file : sourceFiles) {
         const auto expected =
             file.endsWith("application.txt") ? app.toUtf8() + '\n' : read(source + '/' + file);
         identical &= !expected.isEmpty() && expected == read(target + '/' + file);
@@ -98,7 +129,7 @@ bool updateMacShellService(bool enabled) {
     if (!QDir().mkpath(stage))
         return false;
     QJsonObject hashes;
-    for (const auto &file : ownedFiles) {
+    for (const auto &file : sourceFiles) {
         const auto bytes =
             file.endsWith("application.txt") ? app.toUtf8() + '\n' : read(source + '/' + file);
         if (bytes.isEmpty() || !QDir().mkpath(QFileInfo(stage + '/' + file).absolutePath()))
@@ -125,7 +156,7 @@ bool updateMacShellService(bool enabled) {
                                                  {"files", hashes}})
                            .toJson();
     if (!ledger.open(QIODevice::WriteOnly) || ledger.write(bytes) != bytes.size() ||
-        !ledger.commit() || !owned(stage))
+        !ledger.commit() || !ownedFiles(stage))
         return false;
     const auto previous =
         parent + "/.xdzip-service-old-" + QUuid::createUuid().toString(QUuid::WithoutBraces);

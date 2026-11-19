@@ -9,6 +9,8 @@ import re
 import sys
 import time
 import urllib.request
+from urllib.parse import quote
+from ui_languages import load_languages
 import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -109,6 +111,27 @@ def prepare(cache=DEFAULT_CACHE, *, source=None, offline=False, root=ROOT):
     return target
 
 
+def localized_sources(cache, spec, *, offline):
+    upstream = spec['upstream']
+    sources = {}
+    with locked(cache.parent / '.ui-font-prepare.lock'):
+        for group, data in spec.get('localized_fonts', {}).items():
+            target = cache / data['sha256'] / 'source.ttf'
+            if not target.is_file():
+                if offline:
+                    raise ValueError(f'Pinned UI font {group} is missing; run scripts/ui-fonts.py prepare')
+                url = 'https://raw.githubusercontent.com/google/fonts/' + upstream['commit'] + '/'
+                with urllib.request.urlopen(url + quote(data['path']), timeout=40) as response:
+                    contents = response.read(32 * 1024 * 1024 + 1)
+                if hashlib.sha256(contents).hexdigest() != data['sha256']:
+                    raise ValueError(f'Upstream UI font {group} differs from the pinned SHA-256')
+                atomic_write(target, contents)
+            if digest(target) != data['sha256']:
+                raise ValueError(f'Cached UI font {group} differs from the pinned SHA-256')
+            sources[group] = target
+    return sources
+
+
 def inputs(root=ROOT):
     spec = configuration(root)
     paths = set()
@@ -132,9 +155,12 @@ def decoded_characters(text):
 def current_characters(root=ROOT):
     spec = configuration(root)
     characters = set(range(0x20, 0x7F)) | set(map(ord, spec['extra_characters']))
+    localized = {locale for locs in localized_catalogs(root).values() for locale, _, _ in locs}
     for path in inputs(root):
         text = path.read_text(encoding='utf-8')
         if path.suffix == '.json':
+            if path.parent == root / 'resources/i18n' and path.stem in localized:
+                continue
             catalog = json.loads(text)
             values = catalog.get('messages', {}).values()
             for value in values:
@@ -148,6 +174,35 @@ def current_characters(root=ROOT):
         else:
             characters.update(decoded_characters(text))
     return characters
+
+
+def localized_catalogs(root):
+    registry = root / 'resources/ui-languages.json'
+    if not registry.is_file():
+        return {}
+    grouped = {}
+    for language in load_languages(registry)['languages']:
+        group, locale = language['font'], language['id']
+        path = root / 'resources/i18n' / f'{locale}.json'
+        if group != 'sc' and path.is_file():
+            grouped.setdefault(group, []).append((locale, language['name'], path))
+    return grouped
+
+
+def localized_characters(root):
+    groups = {}
+    for group, catalogs in localized_catalogs(root).items():
+        characters = set(range(0x20, 0x7F))
+        for _, name, path in catalogs:
+            characters.update(decoded_characters(name))
+            messages = json.loads(path.read_text(encoding='utf-8'))['messages']
+            for key, value in messages.items():
+                if key in ('language.zhCN', 'language.enUS'):
+                    continue  # These language choices use their own font family.
+                for text in value.values() if isinstance(value, dict) else (value,):
+                    characters.update(decoded_characters(text))
+        groups[group] = sorted(characters)
+    return groups
 
 
 def tools(root=ROOT):
@@ -166,7 +221,8 @@ def input_identity(root=ROOT):
     spec = configuration(root)
     codepoints = sorted(current_characters(root))
     identity = {'spec': spec, 'generator_sha256': digest(Path(__file__)),
-                'tools': tools(root), 'codepoints': codepoints}
+                'tools': tools(root), 'codepoints': codepoints,
+                'localized_codepoints': localized_characters(root)}
     return hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest(), codepoints
 
 
@@ -188,7 +244,51 @@ def load_manifest(directory, *, root=ROOT, expected_key=None):
         item = manifest[kind]
         if item['path'] != FONT_NAME + suffix or digest(directory / item['path']) != item['sha256']:
             raise ValueError('Generated UI font bytes differ from their manifest; rebuild first')
+    groups = localized_characters(root)
+    generated = manifest.get('localized', {})
+    if groups.keys() != generated.keys():
+        raise ValueError('Generated localized font set is stale; rebuild the matching product first')
+    for group, codepoints in groups.items():
+        item = generated[group]
+        recipe = spec['localized_fonts'][group]
+        license_info = recipe.get('license', spec['license'])
+        path = f'xdzip-design-sans-{group}.ttf'
+        if (item['path'] != path or item['source_sha256'] != recipe['sha256']
+                or item['license'] != license_info or digest(root / license_info['path']) != license_info['sha256']
+                or item['requested_codepoints'] != codepoints or digest(directory / path) != item['sha256']):
+            raise ValueError(f'Generated UI font {group} differs from its build manifest')
     return manifest
+
+
+def localized_font(source, codepoints, recipe, axis):
+    from fontTools import subset
+    from fontTools.ttLib import TTFont
+    from fontTools.varLib.instancer import instantiateVariableFont
+
+    font = TTFont(source, recalcTimestamp=False)
+    missing = sorted(set(codepoints) - set(font.getBestCmap()))
+    if missing:
+        raise ValueError(f"{recipe['family']} lacks required glyphs: " + ', '.join(f'U+{value:04X}' for value in missing))
+    options = subset.Options()
+    options.recommended_glyphs = True
+    options.name_IDs = [0, 1, 2, 3, 4, 5, 6, 13, 14, 16, 17, 25]
+    options.name_languages = [0x409]
+    subsetter = subset.Subsetter(options=options)
+    subsetter.populate(unicodes=codepoints)
+    subsetter.subset(font)
+    limits = {'wght': (axis['min'], axis['default'], axis['max'])}
+    if 'wdth' in {item.axisTag for item in font['fvar'].axes}:
+        limits['wdth'] = 100
+    font = instantiateVariableFont(font, limits, inplace=True)
+    family = recipe['family']
+    identifier = family.replace(' ', '')
+    names = {1: family, 2: 'Regular', 3: identifier + '-v1', 4: family,
+             6: identifier, 16: family, 17: 'Regular', 25: identifier}
+    for name, value in names.items():
+        font['name'].setName(value, name, 3, 1, 0x409)
+    output = io.BytesIO()
+    font.save(output)
+    return output.getvalue()
 
 
 def generate(output=DEFAULT_OUTPUT, *, cache=DEFAULT_CACHE, check=False, root=ROOT):
@@ -246,6 +346,22 @@ def generate(output=DEFAULT_OUTPUT, *, cache=DEFAULT_CACHE, check=False, root=RO
             filename = FONT_NAME + suffix
             manifest[kind] = {'path': filename, 'sha256': hashlib.sha256(data).hexdigest(), 'bytes': len(data)}
             atomic_write(output / filename, data)
+        groups = localized_characters(root)
+        if groups:
+            active = {group: spec['localized_fonts'][group] for group in groups}
+            sources = localized_sources(generated_directory(cache, root), {**spec, 'localized_fonts': active},
+                                        offline=True)
+            manifest['localized'] = {}
+            for group, points in groups.items():
+                recipe = active[group]
+                data = localized_font(sources[group], points, recipe, axis)
+                filename = f'xdzip-design-sans-{group}.ttf'
+                manifest['localized'][group] = {
+                    'path': filename, 'sha256': hashlib.sha256(data).hexdigest(), 'bytes': len(data),
+                    'source_sha256': recipe['sha256'], 'license': recipe.get('license', spec['license']),
+                    'requested_codepoints': points,
+                }
+                atomic_write(output / filename, data)
         atomic_write(output / 'manifest.json', (json.dumps(manifest, ensure_ascii=False, indent=2) + '\n').encode())
         return load_manifest(output, root=root, expected_key=key)
 
@@ -253,7 +369,7 @@ def generate(output=DEFAULT_OUTPUT, *, cache=DEFAULT_CACHE, check=False, root=RO
 def main():
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('operation', choices=['prepare', 'build', 'check'])
+    parser.add_argument('operation', choices=['prepare', 'build', 'check', 'localized-files'])
     parser.add_argument('--cache-dir', type=Path, default=DEFAULT_CACHE)
     parser.add_argument('--output-dir', type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument('--source', type=Path, help='Import a local upstream TTF after verifying the fixed SHA-256')
@@ -262,6 +378,9 @@ def main():
     try:
         if args.operation == 'prepare':
             prepare(args.cache_dir, source=args.source, offline=args.offline)
+            localized_sources(generated_directory(args.cache_dir), configuration(), offline=args.offline)
+        elif args.operation == 'localized-files':
+            print(';'.join(f'xdzip-design-sans-{group}.ttf' for group in localized_catalogs(ROOT)))
         else:
             result = generate(args.output_dir, cache=args.cache_dir, check=args.operation == 'check')
             print(f"UI font: {len(result['requested_codepoints'])} characters, TTF {result['native']['sha256']}")

@@ -1,6 +1,6 @@
 # 架构演进与当前边界
 
-[English](../../design/architecture-evolution.md) | 简体中文
+[English](../../design/architecture-evolution.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/architecture-evolution.md)
 
 ## 从框架试验到现行产品
 

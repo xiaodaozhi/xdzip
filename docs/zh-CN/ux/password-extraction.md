@@ -1,6 +1,6 @@
 # 密码解压交互
 
-[English](../../ux/password-extraction.md) | 简体中文
+[English](../../ux/password-extraction.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/ux/password-extraction.md)
 
 受支持的 ZIP、7z 和 RAR 任务在遇到需要密码的条目时进入 `waiting_password`。运行时发布带任务 ID 和请求 ID 的密码请求；QML 只表达输入与取消意图，不负责解密、认证或文件提交。密码请求与重名冲突是不同状态，不能把密码请求交给重名窗口。格式、认证、重试次数及输出边界以[工程契约](../engineering/password-extraction.md)为准。
 

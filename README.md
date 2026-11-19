@@ -13,7 +13,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-blue.svg" alt="Apache License 2.0"></a>
 </p>
 
-<p align="center">English | <a href="README.zh-CN.md">简体中文</a></p>
+<p align="center">English | <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文（台灣）</a></p>
 
 <p align="center">
   <a href="#download-and-install">Download</a> / <a href="#using-xdzip">Using xdzip</a> / <a href="#format-support">Format support</a> / <a href="#build-from-source">Build from source</a> / <a href="docs/README.md">Documentation</a> / <a href="https://github.com/xiaodaozhi/xdzip/issues">Feedback</a>
@@ -39,7 +39,7 @@ Microsoft Store handles updates for its edition and publishes independently of G
 
 ## Using xdzip
 
-Open an archive to browse its folders, search and sort entries, and select what to extract. Sorting keeps folders first in both directions. The interface offers list and grid views, file properties, Simplified Chinese and English (US), light and dark themes, and adjustable font size and density. The default language follows the system when supported and falls back to English (US). An ordinary single-file ZIP/ZIP64 can index up to one million records for browsing. Most other archive routes have lower limits. Extraction, whole-archive checks and modification have separate limits. See the [user manual](docs/user-guide/README.md) and [large archive indexing](docs/engineering/large-index.md).
+Open an archive to browse its folders, search and sort entries, and select what to extract. Sorting keeps folders first in both directions. The interface offers list and grid views, file properties, language selection in Settings, light and dark themes, and adjustable font size and density. The default language follows the system when supported and falls back to English (US). An ordinary single-file ZIP/ZIP64 can index up to one million records for browsing. Most other archive routes have lower limits. Extraction, whole-archive checks and modification have separate limits. See the [user manual](docs/user-guide/README.md) and [large archive indexing](docs/engineering/large-index.md).
 
 - **Content preview:** Explicitly preview bounded plain text, common raster images, and static SVG in the properties card; macOS also supports HEIC/HEIF. Preview appears after the content is fully read and any checks provided by the format are complete, and it can be canceled. See [preview](docs/engineering/content-preview.md) for formats, sizes, and decoding budgets.
 - **Extract and open:** Choose a destination and name-conflict policy, view progress, and request cancellation. Double-clicking a regular file extracts a copy to a private temporary directory before opening it with the system. Changes to the copy are not written back to the archive; cached copies are cleaned up during a later open operation after seven days.

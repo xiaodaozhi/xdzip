@@ -1,6 +1,6 @@
 # XDZip terminology and implementation limits
 
-English | [简体中文](../zh-CN/design/glossary.md)
+English | [简体中文](../zh-CN/design/glossary.md) | [繁體中文（台灣）](../zh-TW/design/glossary.md)
 
 ## 1. Terminology
 

@@ -67,7 +67,7 @@ inline bool finderTokensEqual(id left, id right) {
 }
 struct FinderPreferences {
     bool enabled = false;
-    bool english = false;
+    std::string_view language = xdzip_i18n::defaultLanguage;
     bool valid = false;
     NSString *handoffToken = nil;
 };
@@ -93,8 +93,17 @@ inline FinderPreferences finderPreferences(NSString *app,
         CFGetTypeID((__bridge CFTypeRef)value[@"enabled"]) != CFBooleanGetTypeID() ||
         !validFinderToken(value[@"handoff_token"]))
         return {};
+    const auto stringValue = [&](NSString *key) -> std::string_view {
+        id raw = value[key];
+        const char *text = [raw isKindOfClass:[NSString class]] ? [raw UTF8String] : nullptr;
+        return text ? text : "";
+    };
+    const auto selected =
+        xdzip_i18n::storedLanguage(stringValue(@"language"), stringValue(@"extended_language"));
+    const auto *language = xdzip_i18n::findLanguage(selected);
+    const char *system = [NSLocale preferredLanguages].firstObject.UTF8String;
     return {[value[@"enabled"] boolValue],
-            [value[@"language"] isEqual:@"en-US"],
+            language ? language->id : xdzip_i18n::systemLanguage(system ? system : ""),
             true,
             value[@"handoff_token"]};
 }
@@ -188,17 +197,18 @@ inline NSDictionary *finderRequestFromURL(NSURL *url, NSString *token) {
     [request removeObjectForKey:@"handoff_token"];
     return validFinderRequest(request) ? request : nil;
 }
-inline NSMenu *finderMenu(NSArray<NSURL *> *urls, bool english, id target, SEL action) {
+inline NSMenu *finderMenu(NSArray<NSURL *> *urls, std::string_view language, id target,
+                          SEL action) {
     auto *snapshot = finderRequest(@"zip", urls);
     if (!snapshot)
         return nil;
     std::vector<fs::path> paths;
     for (NSString *path in snapshot[@"paths"])
         paths.emplace_back(path.fileSystemRepresentation);
-    const auto entries = menu(paths, english, [snapshot[@"archive_candidates"] boolValue]);
+    const auto entries = menu(paths, language, [snapshot[@"archive_candidates"] boolValue]);
     auto *menu = [[NSMenu alloc] initWithTitle:@""];
     auto *root = [[NSMenuItem alloc]
-        initWithTitle:[NSString stringWithUTF8String:text(english, "shell.title").c_str()]
+        initWithTitle:[NSString stringWithUTF8String:text(language, "shell.title").c_str()]
                action:nullptr
         keyEquivalent:@""];
     auto *submenu = [[NSMenu alloc] initWithTitle:root.title];
@@ -222,12 +232,12 @@ class FinderMenuSession {
     NSInteger nextTag_ = 0;
 
   public:
-    NSMenu *prepare(NSArray<NSURL *> *urls, bool english, id target, SEL action) {
+    NSMenu *prepare(NSArray<NSURL *> *urls, std::string_view language, id target, SEL action) {
         if (nextTag_ > std::numeric_limits<int>::max() - 8) {
             requests_ = nil;
             return nil;
         }
-        auto *menu = finderMenu(urls, english, target, action);
+        auto *menu = finderMenu(urls, language, target, action);
         auto *requests = [NSMutableDictionary new];
         for (NSMenuItem *item in menu.itemArray.firstObject.submenu.itemArray) {
             item.tag = ++nextTag_;

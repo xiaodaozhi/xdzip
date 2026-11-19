@@ -1,6 +1,6 @@
 # Windows 开发工具与运行库许可
 
-[English](../../engineering/windows-licensing.md) | 简体中文
+[English](../../engineering/windows-licensing.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/windows-licensing.md)
 
 本文定义 Windows 构建和再分发的适用路径，与[原生运行库材料](native-runtime-materials.md)、[开发构建入口](developer-build.md)和[安装契约](installers-associations.md)共同使用。具体环境、验证提交、材料哈希和验收结论登记在 issue 与本地／CI 工件，本文不保存某台机器的许可证明。
 

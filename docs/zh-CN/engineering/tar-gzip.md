@@ -1,6 +1,6 @@
 # TAR/GZIP 实现契约
 
-[English](../../engineering/tar-gzip.md) | 简体中文
+[English](../../engineering/tar-gzip.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/tar-gzip.md)
 
 本契约定义 TAR／TAR.GZ 的浏览、创建和安全解压边界，平台执行结果与人工验收在 issue／CI 工件登记。沿用 [安全解压](zip-safe-extraction.md)与 [ZIP 创建](zip-creation.md)的输入授权、暂存、冲突、取消及整体提交。
 

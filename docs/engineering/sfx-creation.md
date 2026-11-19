@@ -1,6 +1,6 @@
 # Owned Windows ZIP self-extracting archives
 
-English | [简体中文](../zh-CN/engineering/sfx-creation.md)
+English | [简体中文](../zh-CN/engineering/sfx-creation.md) | [繁體中文（台灣）](../zh-TW/engineering/sfx-creation.md)
 
 The first SFX profile is Windows x64 only, with the explicit `.sfx.exe` creation suffix. It wraps an unencrypted, single-volume Store/Deflate ZIP in the project-built `xdzip-sfx.exe` stub. Creation never executes the stub. Generic `.exe` files remain outside creation, drag/drop and system association registration.
 

@@ -1,6 +1,6 @@
 # LZ4 压缩流契约
 
-[English](../../engineering/lz4-streams.md) | 简体中文
+[English](../../engineering/lz4-streams.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/lz4-streams.md)
 
 标准帧配置依据作者的[帧格式 1.6.5](https://github.com/lz4/lz4/blob/v1.11.1/doc/lz4_Frame_format.md)、[块格式，2026-10-26](https://github.com/lz4/lz4/blob/v1.11.1/doc/lz4_Block_format.md)及 [XXH32 算法规格](https://github.com/Cyan4973/xxHash/blob/v0.8.3/doc/xxhash_spec.md)。产品算法使用独立 Rust 实现，参考工具和运行证据留在本地 `build/`，只对自有、可重现的输入模式进行版本管理。宿主授权和提交边界见[单文件压缩流](single-file-streams.md)。
 

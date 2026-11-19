@@ -1,6 +1,6 @@
 # Create and modify archives
 
-English | [简体中文](../zh-CN/user-guide/create-and-modify.md)
+English | [简体中文](../zh-CN/user-guide/create-and-modify.md) | [繁體中文（台灣）](../zh-TW/user-guide/create-and-modify.md)
 
 ## Create an archive
 

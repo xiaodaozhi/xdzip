@@ -1,6 +1,6 @@
 # Passwords and split volumes
 
-English | [简体中文](../zh-CN/user-guide/passwords-and-volumes.md)
+English | [简体中文](../zh-CN/user-guide/passwords-and-volumes.md) | [繁體中文（台灣）](../zh-TW/user-guide/passwords-and-volumes.md)
 
 ## Passwords
 

@@ -1,12 +1,15 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
+import Xdzip.Settings 1.0
 
 ComboBox {
     id: root
     focusPolicy: Qt.StrongFocus
     property real density: 1
     property bool numericOnly: false
+    property var optionFonts: []
+    function optionFamily(index) { return root.optionFonts[index] || ""; }
     property string editPlaceholder: qsTrId("ui.2449d5ec999a")
     function activateOption(index) {
         if (!enabled || index < 0 || index >= count) return;
@@ -27,7 +30,7 @@ ComboBox {
         selectByMouse: root.editable
         validator: root.numericOnly ? digits : null
         maximumLength: root.numericOnly ? 20 : 32767
-        font: root.font
+        font: UiFonts.useFamily(root.font, root.editable ? "" : root.optionFamily(root.currentIndex))
         color: root.enabled ? Theme.text : Theme.textSecondary
         selectionColor: Theme.accent
         selectedTextColor: Theme.accentText
@@ -66,7 +69,9 @@ ComboBox {
         if (!source || currentFont.pixelSize <= 0) return 0;
         let width = 0;
         for (let index = 0; index < root.count; ++index)
-            width = Math.max(width, optionMetrics.advanceWidth(root.textAt(index)));
+            width = Math.max(width, root.optionFonts.length
+                    ? UiFonts.measure(root.textAt(index), currentFont, root.optionFamily(index))
+                    : optionMetrics.advanceWidth(root.textAt(index)));
         return width;
     }
     delegate: CommandMenuItem {
@@ -75,6 +80,7 @@ ComboBox {
         required property int index
         width: root.popup.availableWidth
         labelSize: Math.round(Theme.operationBodySize * root.density)
+        labelFamily: root.optionFamily(index)
         text: String(modelData)
         checkable: true
         checked: root.currentIndex === index

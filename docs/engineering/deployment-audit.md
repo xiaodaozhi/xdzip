@@ -1,6 +1,6 @@
 # Deployment dependency verification and SBOM
 
-English | [简体中文](../zh-CN/engineering/deployment-audit.md)
+English | [简体中文](../zh-CN/engineering/deployment-audit.md) | [繁體中文（台灣）](../zh-TW/engineering/deployment-audit.md)
 
 Deployment verification generates development-review materials by default, explicitly marked `incomplete`; it does not automatically establish release readiness. Official Release separately collects materials for the same candidate and supplies them with the package after release-process review. The format uses the [official CycloneDX 1.6 schema](https://github.com/CycloneDX/specification/blob/55343ba19dee1785acf1ce9191540d5fd7b590db/schema/bom-1.6.schema.json). The upstream commit and SHA-256 of three schema files are pinned in [configuration](../../scripts/sbom-schemas.json). Validation downloads and parses only these resources, caching them in build/; it does not download schemas from arbitrary URLs in an SBOM.
 

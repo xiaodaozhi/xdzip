@@ -1,6 +1,6 @@
 # Native runtime provenance and notices
 
-English | [简体中文](../zh-CN/engineering/native-runtime-materials.md)
+English | [简体中文](../zh-CN/engineering/native-runtime-materials.md) | [繁體中文（台灣）](../zh-TW/engineering/native-runtime-materials.md)
 
 This contract covers non-Qt native runtimes in actual packages and is used with [runtime attribution](runtime-attribution.md) and [corresponding source](source-delivery.md). Source version, file identity, license conditions, and actual fulfillment are checked separately; supplier file hashes are not license approval. Historical candidate conclusions and supplementary evidence for `v0.1.0` are in [#4](https://github.com/xiaodaozhi/xdzip/issues/4) and [#53](https://github.com/xiaodaozhi/xdzip/issues/53). Future candidates use new release issues; evidence is generated only under build/ or CI artifacts.
 

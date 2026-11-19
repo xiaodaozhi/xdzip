@@ -1,6 +1,6 @@
 # 解压全部或所选文件
 
-[English](../../user-guide/extract.md) | 简体中文
+[English](../../user-guide/extract.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/user-guide/extract.md)
 
 ## 从归档窗口解压
 

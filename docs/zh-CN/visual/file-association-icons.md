@@ -1,6 +1,6 @@
 # 文件关联图标
 
-[English](../../visual/file-association-icons.md) | 简体中文
+[English](../../visual/file-association-icons.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/visual/file-association-icons.md)
 
 系统文件图标沿用 xdzip 的折角文档、连续曲率徽章、四条交错带与开放 U 形标记。设计入口为[高保真审阅页](../../../design/hifi/sources/file-association-icons.html)，参数来源为 [file-association-icons.json](../../../specs/visual/file-association-icons.json)，文档图标源和产品所需平台容器统一位于 [file-associations](../../../design/assets/file-associations)。默认应用仍由用户选择。
 

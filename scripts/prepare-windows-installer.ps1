@@ -12,7 +12,7 @@ Get-PinnedFile $config.url $config.sha256 $setup
 $compiler = Join-Path $OutputDirectory 'compiler'
 $process = Start-Process $setup -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/CURRENTUSER',('/DIR="'+$compiler+'"')) -Wait -PassThru
 if ($process.ExitCode -ne 0) { throw 'Pinned installer compiler setup failed' }
-foreach ($material in $config.materials) {
+foreach ($material in ($config.materials + $config.translations)) {
     Get-PinnedFile $material.url $material.sha256 (Join-Path $OutputDirectory $material.file)
 }
 if (!(Test-Path (Join-Path $compiler 'ISCC.exe'))) { throw 'Installer compiler not found' }

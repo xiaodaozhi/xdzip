@@ -1,6 +1,6 @@
 # Coding conventions and quality engineering
 
-English | [简体中文](../zh-CN/design/quality-engineering.md)
+English | [简体中文](../zh-CN/design/quality-engineering.md) | [繁體中文（台灣）](../zh-TW/design/quality-engineering.md)
 
 ## Code and ownership
 

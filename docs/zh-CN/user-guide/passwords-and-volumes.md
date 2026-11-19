@@ -1,6 +1,6 @@
 # 密码与分卷
 
-[English](../../user-guide/passwords-and-volumes.md) | 简体中文
+[English](../../user-guide/passwords-and-volumes.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/user-guide/passwords-and-volumes.md)
 
 ## 密码
 

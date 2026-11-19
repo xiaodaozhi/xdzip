@@ -1,6 +1,6 @@
 # Check archives and manage tasks
 
-English | [简体中文](../zh-CN/user-guide/checks-and-tasks.md)
+English | [简体中文](../zh-CN/user-guide/checks-and-tasks.md) | [繁體中文（台灣）](../zh-TW/user-guide/checks-and-tasks.md)
 
 ## Test an archive
 

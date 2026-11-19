@@ -1,6 +1,6 @@
 # 磁盘镜像与其他归档格式的资料和许可
 
-[English](../../engineering/disk-image-archive-format-sources.md) | 简体中文
+[English](../../engineering/disk-image-archive-format-sources.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/disk-image-archive-format-sources.md)
 
 本文介绍 DAA、ISZ、ZPAQ、PEA、BOND 和 J2J 等格式的公开技术资料、许可限制与支持条件。公开描述数据格式不等于允许发布解码器，参考实现也不一定可以作为产品依赖再分发；下列参考实现均不链接进 xdzip。格式进入产品登记前，须确认源码版本、许可文本、完整样本、资源限制和失败行为。
 

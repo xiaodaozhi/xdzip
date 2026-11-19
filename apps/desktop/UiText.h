@@ -1,4 +1,5 @@
 #pragma once
+#include "UiFont.h"
 #include "UiLanguage.h"
 #include <QCoreApplication>
 #include <QFile>
@@ -21,17 +22,22 @@ inline QString uiSettingsPath() {
 
 class UiTranslator final : public QTranslator {
     QJsonObject messages;
+    xdzip_i18n::PluralRule pluralRule = xdzip_i18n::PluralRule::one;
 
   public:
     explicit UiTranslator(QObject *parent) : QTranslator(parent) {}
     bool read(const QString &language) {
-        QFile file(QStringLiteral(":/xdzip/i18n/") + language + QStringLiteral(".json"));
+        const auto *entry = xdzip_i18n::findLanguage(language.toStdString());
+        if (!entry)
+            return false;
+        QFile file(uiCatalogPath(language));
         if (!file.open(QIODevice::ReadOnly))
             return false;
         QJsonParseError error;
         const auto document = QJsonDocument::fromJson(file.readAll(), &error);
         if (error.error != QJsonParseError::NoError || !document.isObject())
             return false;
+        pluralRule = entry->plural;
         messages = document.object().value(QStringLiteral("messages")).toObject();
         return !messages.isEmpty();
     }
@@ -59,7 +65,7 @@ class UiTranslator final : public QTranslator {
             return value.toString();
         if (value.isObject())
             return value.toObject()
-                .value(n == 1 ? QStringLiteral("one") : QStringLiteral("other"))
+                .value(QString::fromLatin1(xdzip_i18n::pluralCategory(pluralRule, n)))
                 .toString();
         return {};
     }
@@ -79,8 +85,7 @@ inline bool initializeUiText(const QString &forcedLanguage = {}) {
         forcedLanguage.isEmpty() ? qEnvironmentVariable("XDZIP_LANGUAGE") : forcedLanguage;
     if (language.isEmpty() && settings.value(QStringLiteral("schemaVersion"), 1).toInt() == 1 &&
         settings.status() == QSettings::NoError)
-        language =
-            settings.value(QStringLiteral("locale/language"), QStringLiteral("auto")).toString();
+        language = readUiLanguageSelection(settings);
     language = resolveUiLanguage(language.isEmpty() ? QStringLiteral("auto") : language);
     // Qt-owned controls use the OS language, independently of the product locale.
     static QPointer<QTranslator> systemTranslator;
@@ -110,16 +115,13 @@ inline bool initializeUiText(const QString &forcedLanguage = {}) {
     activeTranslator = translator;
     QLocale::setDefault(QLocale(language));
     QCoreApplication::instance()->setProperty("xdzipUiLanguage", language);
+    activateUiFont(language);
     return true;
 }
 
 inline QString systemDialogText(const char *id) {
-    const auto preferred = QLocale::system().uiLanguages();
-    const auto first = preferred.isEmpty() ? QStringLiteral("en") : preferred.first();
     UiTranslator text(nullptr);
-    if (text.read(first.startsWith(QStringLiteral("zh"), Qt::CaseInsensitive)
-                      ? QStringLiteral("zh-CN")
-                      : QStringLiteral("en-US"))) {
+    if (text.read(resolveUiLanguage(QStringLiteral("auto")))) {
         const auto result = text.translate(nullptr, id, nullptr, -1);
         if (!result.isEmpty())
             return result;

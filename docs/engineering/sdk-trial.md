@@ -1,6 +1,6 @@
 # External read-only SDK trial
 
-English | [简体中文](../zh-CN/engineering/sdk-trial.md)
+English | [简体中文](../zh-CN/engineering/sdk-trial.md) | [繁體中文（台灣）](../zh-TW/engineering/sdk-trial.md)
 
 `xdzip-plugin-protocol` and `xdzip-plugin-host` implement the independent read-only trial described in the [format extension design](../design/codec-extension-sdk.md). It is excluded from desktop and CLI format discovery, installation, packaging and automatic startup. Users explicitly run the trial command and select the package and source; third-party extensions remain disabled in the product. Only `xdp1` is negotiated, with no creation, passwords, volumes, links, GUI or arbitrary host-path permissions. This is neither a complete plugin ecosystem nor an SDK release.
 

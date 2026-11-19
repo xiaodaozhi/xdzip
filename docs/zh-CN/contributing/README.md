@@ -1,6 +1,6 @@
 # 构建并参与贡献
 
-[English](../../contributing/README.md) | 简体中文
+[English](../../contributing/README.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/contributing/README.md)
 
 先阅读[贡献约定](../../../CONTRIBUTING.zh-CN.md)，查找已有议题或为本次改动新建议题。写明预期行为、适用平台和可实际验证的最小复现场景。使用项目自制或允许再分发的样本。各模块的源码位置见[仓库布局](../engineering/repository-layout.md)。
 

@@ -17,9 +17,10 @@ from installer_payload import verify_payload
 from msix_shell_policy import COM, D4, D5, D9, CLASSIC_STORE, CLASSIC_SIDELOAD, MODERN, marker, verify_manifest
 from msix_icon_assets import (POLICY, ROOT as ICON_ROOT, association_logo,
                               prepare_associations, verify_manifest_icons, verify_package_icons)
+from packaging_languages import packaging_catalogs, packaging_languages
 
 ROOT = Path(__file__).resolve().parents[1]
-LANGUAGES = ('en-US', 'zh-CN')
+LANGUAGES = packaging_languages()
 NS = 'http://schemas.microsoft.com/appx/manifest/foundation/windows10'
 UAP = 'http://schemas.microsoft.com/appx/manifest/uap/windows10'
 RESCAP = 'http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities'
@@ -64,7 +65,7 @@ def manifest(name, publisher, build, publisher_display_name, channel='sideload',
     app = ET.SubElement(apps, tag(NS, 'Application'), Id='App', Executable='xdzip.exe',
                         EntryPoint='Windows.FullTrustApplication')
     ET.SubElement(app, tag(UAP, 'VisualElements'), DisplayName='xdzip',
-                  Description='xdzip archive manager', BackgroundColor='transparent',
+                  Description='ms-resource:AppDescription', BackgroundColor='transparent',
                   Square150x150Logo='Assets\\logo150.png', Square44x44Logo='Assets\\logo44.png')
     extensions = ET.SubElement(app, tag(NS, 'Extensions'))
     server = ET.SubElement(extensions, tag(COM, 'Extension'), Category='windows.comServer')
@@ -85,6 +86,7 @@ def manifest(name, publisher, build, publisher_display_name, channel='sideload',
     for ext in WINDOWS_ICONS:
         extension = ET.SubElement(extensions, tag(UAP, 'Extension'), Category='windows.fileTypeAssociation')
         association = ET.SubElement(extension, tag(UAP, 'FileTypeAssociation'), Name='xdzip-' + ext)
+        ET.SubElement(association, tag(UAP, 'DisplayName')).text = 'ms-resource:Association_' + ext
         ET.SubElement(association, tag(UAP, 'Logo')).text = association_logo(WINDOWS_ICONS[ext]).replace('/', '\\')
         types = ET.SubElement(association, tag(UAP, 'SupportedFileTypes'))
         ET.SubElement(types, tag(UAP, 'FileType')).text = '.' + ext
@@ -122,7 +124,21 @@ def prepare_resource_index(stage):
     subprocess.run([str(tool), 'new', '/pr', str(stage), '/cf', str(config),
                     '/of', str(stage / POLICY['resource_index']), '/o'], check=True, capture_output=True)
     if not (stage / POLICY['resource_index']).is_file():
-        raise ValueError('MakePRI did not produce the icon resource index')
+        raise ValueError('MakePRI did not produce the package resource index')
+
+
+def write_localized_strings(stage):
+    for locale, catalog in packaging_catalogs().items():
+        directory = stage / 'Strings' / locale
+        directory.mkdir(parents=True)
+        document = ET.Element('root')
+        values = {'AppDescription': catalog['Description']}
+        values.update({'Association_' + ext: catalog['Archive'].replace('%1', ext.upper())
+                       for ext in WINDOWS_ICONS})
+        for key, text in values.items():
+            item = ET.SubElement(document, 'data', {'name': key, 'xml:space': 'preserve'})
+            ET.SubElement(item, 'value').text = text
+        ET.ElementTree(document).write(directory / 'Resources.resw', encoding='utf-8', xml_declaration=True)
 
 
 def shell_library_path(root):
@@ -174,7 +190,7 @@ def build(root, audit_path, output, name, publisher, report, publisher_display_n
     stage = output.parent / (output.stem + '-stage')
     if stage.exists() or stage == root or stage.is_relative_to(root):
         raise ValueError('MSIX staging directory exists or overlaps the audited runtime')
-    if any((root / entry).exists() for entry in ('AppxManifest.xml', 'Assets', 'xdzip-msix-channel.txt', POLICY['resource_index'])):
+    if any((root / entry).exists() for entry in ('AppxManifest.xml', 'Assets', 'Strings', 'xdzip-msix-channel.txt', POLICY['resource_index'])):
         raise ValueError('Runtime contains reserved MSIX paths')
     tool = sdk_tool()
     sdk_tool('makepri.exe')
@@ -188,7 +204,13 @@ def build(root, audit_path, output, name, publisher, report, publisher_display_n
     prepare_associations(stage / 'Assets')
     (stage / 'AppxManifest.xml').write_bytes(content)
     (stage / 'xdzip-msix-channel.txt').write_bytes(marker(channel))
+    write_localized_strings(stage)
     prepare_resource_index(stage)
+    for locale in LANGUAGES:
+        directory = stage / 'Strings' / locale
+        (directory / 'Resources.resw').unlink()
+        directory.rmdir()
+    (stage / 'Strings').rmdir()
     subprocess.run([str(tool), 'pack', '/d', str(stage), '/p', str(output), '/o'],
                    check=True, capture_output=True)
     if not output.is_file() or not output.stat().st_size:

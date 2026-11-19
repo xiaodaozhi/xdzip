@@ -1,6 +1,6 @@
 # v0.1 interaction prototype and feature mapping
 
-English | [简体中文](../zh-CN/ux/prototype-spec.md)
+English | [简体中文](../zh-CN/ux/prototype-spec.md) | [繁體中文（台灣）](../zh-TW/ux/prototype-spec.md)
 
 Status: interactive design-validation draft. Sources are in [design/html](../../design/html/README.md), with [index.html](../../design/html/index.html) as the entry. The Figma draft remains historical exploration; current feature and state refinement continues in the repository.
 

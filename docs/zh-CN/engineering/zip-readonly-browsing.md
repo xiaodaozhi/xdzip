@@ -1,6 +1,6 @@
 # ZIP 只读浏览契约
 
-[English](../../engineering/zip-readonly-browsing.md) | 简体中文
+[English](../../engineering/zip-readonly-browsing.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/zip-readonly-browsing.md)
 
 本文定义根目录直属项、后代搜索、稳定物理 ID 和目录优先排序。ZIP 浏览读取元数据，不解码条目负载或校验其 CRC，也不写出解压后的条目。大型普通 ZIP 可使用私有的[磁盘元数据索引](large-index.md)。
 

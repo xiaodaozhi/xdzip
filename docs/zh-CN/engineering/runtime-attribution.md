@@ -1,6 +1,6 @@
 # 实际组件归属与许可材料
 
-[English](../../engineering/runtime-attribution.md) | 简体中文
+[English](../../engineering/runtime-attribution.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/runtime-attribution.md)
 
 本流程补充文件级 SBOM，将实际 Qt 库／插件与 SDK 的 SPDX 声明关联。产物是可复核证据，不是自动许可选择或合规批准。正式发行完整性继续为 incomplete。
 

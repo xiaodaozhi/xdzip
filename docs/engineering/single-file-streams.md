@@ -1,6 +1,6 @@
 # Single-file streams and ZIP-derived packages
 
-English | [简体中文](../zh-CN/engineering/single-file-streams.md)
+English | [简体中文](../zh-CN/engineering/single-file-streams.md) | [繁體中文（台灣）](../zh-TW/engineering/single-file-streams.md)
 
 The [built-in registry](format-registry.md) declares ordinary GZIP separately from TAR.GZ. `xdzip-codec-stream` adapts the independent `xdzip-compression` implementation of [RFC 1952](https://www.rfc-editor.org/rfc/rfc1952) to metadata, payload and creation contracts. No reference compression library enters the production dependency closure.
 

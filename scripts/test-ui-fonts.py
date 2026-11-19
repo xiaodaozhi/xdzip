@@ -166,8 +166,11 @@ class FontTests(unittest.TestCase):
             for file in group.findall('file'):
                 files.append({'resource': ':' + group.get('prefix', '') + '/' + file.get('alias', file.text),
                               'sha256': fonts.digest(qrc.parent / file.text)})
+        for catalog in (ROOT / 'resources/i18n').glob('*.json'):
+            files.append({'resource': ':/xdzip/i18n/' + catalog.name, 'sha256': fonts.digest(catalog)})
         manifest = fonts.load_manifest(fonts.DEFAULT_OUTPUT)
-        files.append({'resource': ':/xdzip/fonts/' + manifest['native']['path'], 'sha256': manifest['native']['sha256']})
+        for font in [manifest['native'], *manifest.get('localized', {}).values()]:
+            files.append({'resource': ':/xdzip/fonts/' + font['path'], 'sha256': font['sha256']})
         report = {'runs': [{'events': [{'event': 'resource_manifest', 'files': files}]}]}
         self.assertEqual(len(resources.check(report, fonts.DEFAULT_OUTPUT)), len(files))
         files[-1]['sha256'] = '0' * 64

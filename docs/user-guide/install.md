@@ -1,6 +1,6 @@
 # Install XDZip and open an archive
 
-English | [简体中文](../zh-CN/user-guide/install.md)
+English | [简体中文](../zh-CN/user-guide/install.md) | [繁體中文（台灣）](../zh-TW/user-guide/install.md)
 
 Download the package for your system from the [latest stable GitHub release](https://github.com/xiaodaozhi/xdzip/releases/latest), or use Microsoft Store on Windows. The GitHub page lists the filename, version and `SHA256SUMS` for verifying direct downloads. See the [support policy](../engineering/support-policy.md) for the system requirements.
 

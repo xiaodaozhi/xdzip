@@ -1,6 +1,6 @@
 # CAB format sources and implementation basis
 
-English | [简体中文](../zh-CN/engineering/cab-format-sources.md)
+English | [简体中文](../zh-CN/engineering/cab-format-sources.md) | [繁體中文（台灣）](../zh-TW/engineering/cab-format-sources.md)
 
 This document records sources, scope, and independent-implementation constraints for the CAB container, MSZIP, LZX, and Quantum. Product capabilities, resource governance, and per-format replacement rules are defined by the [isolated format worker contract](native-codecs.md), [in-house Rust contract](independent-rust-codecs.md), and [split-volume contract](archive-opening.md), respectively. Source records do not replace interoperability acceptance or release license review.
 
