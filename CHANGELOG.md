@@ -1,153 +1,122 @@
-# 变更日志
+# Changelog
 
-## 未发布
+English | [简体中文](CHANGELOG.zh-CN.md)
 
-- 提供独立只读 SDK 试验，包含有界 CBOR、受控 I/O、两个独立协议实现与失败关闭的沙箱门禁；产品继续禁用第三方扩展。
+## Unreleased
+
+- Add a standalone read-only SDK trial with bounded CBOR, controlled I/O, two independent protocol implementations and a sandbox gate that refuses unsafe execution. Third-party extensions remain disabled in the product.
 
 ## 0.2.1
 
-- 扩展 LHA/LZH、ARJ、ARC、DEB、ASAR、Zstandard 和 LZ4 等格式的浏览和解压支持，新增 LZH、ISO9660/Joliet 数据镜像和 Windows x64 ZIP 自解压文件的创建支持。
-- 扩展常见栅格图片及受限静态 SVG 预览，macOS 增加系统 HEIC／HEIF，图片经有界私有进程生成缩略图；支持范围及格式子集见预览契约。
-- 普通单文件 ZIP/ZIP64 支持百万条流式磁盘索引，大查询按需浏览并保持跨页选择。
-- 属性卡支持用户主动触发的有限纯文本和 PNG/JPEG 预览，复用密码、完整性及取消边界。
+- Extend browsing and extraction for formats including LHA/LZH, ARJ, ARC, DEB, ASAR, Zstandard and LZ4. Add creation for LZH, ISO9660/Joliet data images and Windows x64 ZIP self-extracting files.
+- Extend preview to common raster images and a restricted static SVG profile. Add system HEIC/HEIF on macOS and generate thumbnails through a bounded private process. The preview contract describes format limits.
+- Index up to one million records in ordinary single-file ZIP/ZIP64 with a streaming disk index. Load large query results on demand and retain selection across pages.
+- Add user-requested, bounded plain-text and PNG/JPEG previews to the properties card, sharing password, integrity and cancellation handling.
 
-平台支持和验收范围见[发布说明](release-notes/0.2.1.md)和 [GitHub Release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.2.1)。
+See the [release notes](release-notes/0.2.1.md) and [GitHub release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.2.1) for platform support and verification scope.
 
 ## 0.2.0
 
-- macOS 安装版支持通过自定义 HTTP CONNECT/SOCKS5 代理和直连模式进行原生更新。
-- 提供 Windows、macOS 和 Linux 独立 CLI，支持归档操作、JSON 输出、显式命令注册及受签名清单保护的更新。
-- QtNetwork 应用官方补丁修复 CVE-2026-116337 和 CVE-2026-105946，保留完整补丁、来源与替换说明。
-- 修正 macOS 包内 CLI 元数据位置，使其作为普通资源纳入应用完整性签名。
+- Support native updates in installed macOS builds over custom HTTP CONNECT or SOCKS5 proxies and direct connections.
+- Provide standalone CLI packages for Windows, macOS and Linux, with archive commands, JSON results, explicit command registration and updates verified against signed manifests.
+- Apply the official QtNetwork patches for CVE-2026-116337 and CVE-2026-105946. Retain the complete patches, provenance and replacement instructions.
+- Move the bundled CLI metadata on macOS into ordinary app resources covered by bundle integrity signing.
 
-平台支持和验收范围见[发布说明](release-notes/0.2.0.md)和 [GitHub Release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.2.0)。
+See the [release notes](release-notes/0.2.0.md) and [GitHub release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.2.0) for platform support and verification scope.
 
 ## 0.1.3
 
-- 修复 `.app` 归档默认同名文件夹被 macOS Finder 误认为损坏应用的问题。
+- Prevent Finder from treating the default archive-named extraction folder for an archive ending in `.app` as a damaged application.
 
-平台支持和验收范围见[发布说明](release-notes/0.1.3.md)和 [GitHub Release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.1.3)。
+See the [release notes](release-notes/0.1.3.md) and [GitHub release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.1.3) for platform support and verification scope.
 
 ## 0.1.2
 
-- 保留目录切换、搜索和排序期间的列表状态，减少界面闪烁。
-- 改进 macOS 更新无法自动安装时的说明和手动安装指引。
-- 修复 macOS ZIP 中安全的父相对符号链接解压，并更正 Qt 运行时通知。
+- Preserve the file list during directory changes, searching and sorting to reduce flicker.
+- Improve the explanation and manual installation steps when automatic installation is unavailable on macOS.
+- Fix extraction of safe parent-relative symlinks from ZIP archives on macOS and correct Qt runtime notices.
 
-平台支持和验收范围见[发布说明](release-notes/0.1.2.md)和 [GitHub Release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.1.2)。
+See the [release notes](release-notes/0.1.2.md) and [GitHub release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.1.2) for platform support and verification scope.
 
 ## 0.1.0
 
-- 发布首个稳定版，提供 Windows、macOS 和 Linux 的原生安装包或便携包，并支持符合条件的安装版主动更新。
-- 改进设置窗口滚动布局、更新状态辅助功能和系统代理支持，修复原生悬停问题。
-- 修复第三方通知收集，规范源码 SBOM 的许可证表达式及 Rust 运行时候选依赖图。
+- Publish the first stable release with native installers or portable packages for Windows, macOS and Linux, and user-initiated updates for eligible installations.
+- Improve Settings scrolling, update-state accessibility and system proxy support. Fix native hover behavior.
+- Fix third-party notice collection and normalize license expressions in the source SBOM and the Rust runtime candidate dependency graph.
 
-平台支持、已知限制及发行材料见[发布说明](release-notes/0.1.0.md)和 [GitHub Release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.1.0)。
+See the [release notes](release-notes/0.1.0.md) and [GitHub release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.1.0) for platform support, known limits and release materials.
 
 ## 0.1.0-alpha.9
 
-- Windows 安装器和便携包不再携带三份 Windows SDK 图形编译 DLL，更新安装时清理旧版随包文件。
-- 改进设置窗口及更新入口，Windows 文件关联类型描述随应用语言显示。
-- 修复 macOS 全屏切换时的最小化处理及部分压缩包类型关联，改进应用启动和字体加载。
-- 修复归档浏览关闭后的状态清理、解压目标检查和任务提示。
-- 精简日常 CI，完整产品构建与发行检查按需运行；补充源码和第三方许可材料。
+- Remove three Windows SDK graphics compiler DLLs from the installer and portable package. Upgrades clean up old bundled copies.
+- Improve Settings and update entry points. Windows file-type descriptions follow the application language.
+- Fix minimization during macOS fullscreen transitions and several file associations. Improve startup and font loading.
+- Fix archive-close cleanup, extraction destination checks and task prompts.
+- Streamline routine CI and run full application builds and release verification on demand. Expand source and third-party licensing materials.
 
-本版本为实验性预发布，平台及许可限制见[发布说明](release-notes/0.1.0-alpha.9.md)。
+See the [release notes](release-notes/0.1.0-alpha.9.md) for platform and licensing limits of this experimental prerelease.
 
 ## 0.1.0-alpha.8
 
-- 关于页支持用户主动检查更新，安装版按已验证的签名、版本和平台条件提供升级；旧公开版本 alpha.6 需先手动安装新版。
-- 归档名称、文件名和路径使用系统字体及平台回退，固定界面文案保留产品字体；空目录、空归档和无结果搜索分别显示对应提示。
-
-- Windows 开发包不再随附软件 OpenGL 库，保留 Direct3D 11 默认渲染及可用的 WARP 软件设备。
-
-- 修复任务快照早于接纳回执时活动任务数重复计入准备占位的问题，保留真实接纳、取消及退出清理语义。
-
-- 自动解析常见旧编码文件名，统一浏览、导航、解压、临时打开、导出及普通包修改；优先 Unicode 声明，保留原始名称校验，改写后明确保存为 UTF-8，短名称或混合编码仍可能存在歧义。
-
-- 清理已取消的发行门槛与专用报告模板，同步贡献规则、就绪汇总和材料生成器，发行清单集中记录许可来源复核。
-- 发布流程改用可审阅的版本专属说明，校验版本和构建号；草稿说明发生分歧时停止，避免重跑或公开时覆盖人工验收边界。
-- 同步专用 macOS 发布流程、分卷读取和变更日志的现行文档。
+- Add user-initiated update checks to About. Eligible installations can upgrade after signature, version and platform checks. The previous public alpha.6 requires a manual upgrade.
+- Use system fonts and platform fallbacks for archive names, filenames and paths. Fixed UI copy keeps the product font. Show distinct messages for empty folders, empty archives and searches with no matches.
+- Remove the software OpenGL library from Windows development bundles. Keep Direct3D 11 as the default and WARP available for software rendering.
+- Fix double-counted active tasks when snapshots arrive before task acceptance. Preserve acceptance, cancellation and exit cleanup.
+- Detect common legacy filename encodings consistently across browsing, navigation, extraction, temporary opening, export and archive modification. Prefer Unicode declarations, retain raw-name validation and write rewritten names as UTF-8. Short names and mixed encodings can remain ambiguous.
+- Remove retired release gates and report templates. Align contribution rules, readiness aggregation and material generators, and track provenance and licensing in the release checklist.
+- Use reviewed version-specific notes with version and build checks. Stop when the draft notes differ from the reviewed file so retries cannot overwrite recorded acceptance limits.
+- Update documentation for dedicated macOS release, split-volume reading and the changelog.
 
 ## 0.1.0-alpha.6
 
-- 修复窗口隐藏或最小化后残留的悬停状态，托盘恢复主窗口时关闭按钮不再短暂显示旧的红色背景；主窗口、操作窗口及共享指针控件统一清理，保留正常悬停与激活行为。
-
-- 支持编号 ZIP 与 PKZIP 分卷浏览和解压，跨卷读取、ZIP64 偏移转换、密码和完整性校验沿用统一安全任务路径；所有源卷均受变化检测和覆盖保护。
-- 双击压缩包内普通文件，解压到私有临时目录并由系统关联打开；系统接受打开后自动隐藏对应进度窗口，失败保留并支持重试。临时副本按七天保留策略清理，不写回压缩包。
-- 修复“打开压缩包”设置保存，新增标签栏溢出滚动、标签列表和窗口内拖动排序，非活动标签采用常规字重。
-- 兼容 Git 源码 TAR 的 GNU 长文件名记录；起始页错误提示采用顶部固定布局，关闭窗口后清空其标签并保留后台任务，托盘任务计数文案同步。
+- Clear stale hover state after windows hide or minimize, including the red close-button flash when restoring from the Windows tray. Apply shared pointer cleanup to browsing and operation windows.
+- Browse and extract numbered ZIP and PKZIP volumes. Cross-volume reads, ZIP64 offsets, passwords and integrity checks use the shared extraction path, with source-change and overwrite protection for every volume.
+- Open regular archive entries through the system from a private temporary copy. Hide progress after the system accepts the request and retain failed results for retry. Copies follow a seven-day retention policy and edits to them stay outside the archive.
+- Fix persistence for the archive opening mode. Add tab overflow scrolling, a tab list and drag reordering. Use regular weight for inactive tabs.
+- Support GNU long filenames in Git source TAR archives. Anchor welcome-page error messages to its top layout. Closing a window clears its tabs and retains background tasks. Update tray task-count copy accordingly.
 
 ## 0.1.0-alpha.1
 
-- Linux 包建立 Debian epoch 1，修复旧 dev 开发包向 alpha 预发布包升级时的系统版本排序，历史夹具保留原版本身份。
+- Introduce Debian epoch 1 so alpha packages upgrade earlier dev packages in system version order. Keep historical fixture identities.
+- Preserve normal, maximized and fullscreen states through dialogs, tray restoration and external file opens.
+- Share one process and tray within a login session. Forward activation and batch open requests during startup, reject timeouts and recover from stale state after a crash.
+- Add optional tabs or separate windows with independent archive controllers and browsing state. Retain tasks and results after page close, route them by session and task identity, and serialize heavy admissions.
+- Separate prerelease number from build number. Prepare six cross-platform package types, immutable manifests and checksums, source and licensing materials, and publication procedures. At this stage, automatic updates were still pending, and release licensing was tracked separately.
+- Retain all explicitly selected regular creation inputs, including an existing target or older volume. Stage the output privately and apply conflicts at final publication. Preserve a target that is also an input and offer a new name or cancellation.
+- Update task menu entries in place by task ID to prevent flicker as progress changes. Preserve hover, highlighting and keyboard focus, and update only entries added to or removed from history.
+- Trim macOS development DMGs to arm64 Qt binaries, the Basic Qt Quick style and required shared dependencies. Record architecture, style and size and verify the final package. Keep the original app and SDK intact, using local ad-hoc integrity signing.
+- Retain only the pinned Qt Quick Basic style in Windows deployment, remove QML debug plugins and development type metadata, and keep native style and graphics fallbacks. Fix Qt system translation loading and bundle the same pinned VC++ runtime in the portable and per-user installer packages. Deployment audits reject borrowing host runtimes.
+- Standardize the main executable name as xdzip across Windows, macOS and Linux. Align launcher entries, resources, CI, rebuilds and documentation while retaining upgrade test compatibility with earlier builds.
+- Add single-volume AES-256 ZIP extraction for AE-1/AE-2 and Store/Deflate, with task password prompts, retry and cancellation. Publish files after authentication. Update designs, UI copy, protocol coverage and interoperability checks.
+- Add targeted Open With cleanup for macOS development copies. Remove new registrations after verification or failure and preserve the primary app, files and system defaults. Add boundary and failure-cleanup regressions.
+- Close the development and acceptance work package with owner approval, recording ten automated gates, eight manual checks and the support policy for the frozen candidate. Track provenance and licensing in the release checklist and issues. Formal release was still pending.
+- Add the macOS native menu bar and tray menus on all three platforms. Share commands, edit focus and task state. Default to tray residency when closing the last window. Settings can disable it, and quit and restart retain task confirmation and cleanup. Add bilingual copy, small template icons, designs and lifecycle tests.
+- Introduce unified versioning in VERSION.json, native metadata and About with bilingual copy and build-info copying. Continue full-process performance and licensing evidence while keeping desktop, clean-machine and licensing checks separate.
+- Align Qt main-window dimensions, panes, lists, text, icons, tabs and preview to frozen HTML and artwork measurements. Share font sources and add independent CI measurements and real ZIP screenshots. Support closing tabs and selecting all in the current page, with disabled states and unknown dates retained.
+- Complete shared main-window menus, hints, button states and breadcrumbs. HTML adds context, dropdown and submenus, sample tabs, grid, sort, selection, touch and demo check tasks. Qt adds real read-only selection, copy, view and directory menus. Verify 22 new interactions, 20 existing flows and five local Qt groups. Keep unavailable actions disabled and demos labeled.
+- Add directory-tree connector lines, fixed counts, collapsed-ancestor indicators and shared icon slots to HTML and Qt. Preserve the earlier main artwork. Track boundary hints, skeletons and manual accessibility separately.
+- Deliver three directory-tree artboards, 26 original-pixel slices, light and dark indicators, layout and interaction specifications, and single-file HTML and assets. HTML and Qt integration was pending at this point. Preserve original artwork and photos.
+- Move high-fidelity artwork to design/hifi with main and operation window overviews, historical proposals and hashes. Align asset sources and links. The matching dark main artwork was still pending.
+- Add a bounded directory tree with implicit folders, sorting over all matches and keyboard column headings. Page after sorting and preserve duplicate record IDs. Add node, depth and byte limits, fallback messaging, interaction tests and 54 visual checks.
+- Add the product runtime foundation with two cxx handles, bounded commands and events, independent cancel and shutdown control, Qt mailbox and shutdown barriers. Verify three-platform product CI, ten lifecycle repeats per platform and deployed native launch and exit on macOS and Windows, with an Apple Silicon development build and a one-time verification guide.
+- Retry brief admission-lock contention asynchronously within bounds. Disable disconnected commands, report invalid arguments and guard destruction during event handling.
+- Add bounded, metadata-only extraction preflight with directory expansion, path, conflict and size checks and a native result window. Output authority remains with extraction.
+- Refine the three-pane browser with light and dark themes, details, directory scope, search and multi-selection by physical ID. Add mouse and filtering tests.
+- Add real read-only ZIP browsing with independent Rust adaptation, bounded scanning, duplicate and Chinese names, 128-record pages and asynchronous cancellation and close. Record rawzip admission and Qt screenshots.
+- Add Qt task progress path cards, three-column metrics, progress gradient and shared footer from the artwork. Preserve large-text reflow and demo labels. Capture light, dark and 200% text states.
+- Establish domain identity and paging invariants, standalone Qt task-window previews, shared hints and generated theme parameters. Add layout, close and offscreen CI checks.
+- Add a standalone Rust/cxx bridge probe, unified CMake and Cargo builds, pinned dependencies and native CI. Verify Linux ownership, error, UTF-8 and shutdown behavior.
+- Add a standalone Qt Quick toolchain probe and Linux offscreen and path build evidence with Chinese characters and spaces. Three-platform and cxx checks were still pending at that point.
+- Add eight high-fidelity state artboards and assets for creation, conflicts, progress, results, Settings and platform comparisons, with save, cancel and recovery flows.
+- Deliver 24 original-pixel slices, 27 light and dark vector icon types and transparent PNGs at multiple densities, with source and precision notes.
+- Align file-type icons, list geometry and the type column. Define standalone windows, title bars and close behavior on all three platforms.
+- Add an offline HTML interaction prototype covering browsing, selection, extraction, creation, tasks and failure states, linked to requirements and verification.
+- Adopt Apache-2.0, add the full license and update contribution and release documents.
 
-- 修复弹窗、托盘与外部打开时主窗口状态被重置的问题，保留普通、最大化及全屏状态。
-- 每个用户登录会话共用一个产品进程和托盘，结构化转发激活与批量文件意图，支持启动期间转发、超时拒绝与崩溃残留恢复。
-- 新增可选标签页或多窗口模式，独立归档控制器与浏览状态，关闭页面后保留后台任务及结果，以会话和任务身份统一路由并串行准入重任务。
-- 分离预发布序号与构建号，准备六类跨平台预发布包、不可变 Release 清单、校验和、源码与许可材料及发布流程；自动更新器尚未实现，发行许可复核另行跟踪。
+### Pre-development baseline (2026-10-11)
 
-- 创建压缩包时完整保留用户选中的普通文件，包括已有目标压缩包和旧分卷，先写入私有暂存，最终保存时统一执行重名守卫；目标同时是输入时保留旧文件，允许新名称或取消，不再提前误报链接或特殊对象。
-
-- 修复解压、创建任务进行中，状态栏任务菜单在悬停时随进度更新反复闪烁的问题；按任务 ID 保留菜单条目，原位更新状态，保留悬停、高亮与键盘焦点，新增或淘汰历史仅变更对应条目。
-
-- 精简 macOS 开发 DMG：部署后将嵌套 Qt 原生文件统一裁剪为 arm64，仅保留产品使用的 Basic 控件样式及所需共享依赖；增加架构、样式、体积回执与最终包核验，不修改原应用或 Qt SDK，继续使用本地 ad-hoc 完整性签名。
-
-- Windows 部署仅保留已固定使用的 Qt Quick Basic 样式，移除 QML 调试插件和开发类型元数据，保留原生控件样式与图形回退库。修复部署目录的 Qt 系统翻译加载，便携包与当前用户安装包统一携带固定版本的 VC++ 运行库 DLL，依赖审计拒绝借用宿主机运行库。
-
-- 统一三平台主程序的对外文件名为 xdzip，修复 Windows、Linux 源码构建输出与产品名称不一致的问题；同步桌面启动项、原生资源、CI、源码重建及文档入口，保留历史构建的升级验证兼容。
-
-- 增加单卷 AES-256 ZIP 密码解压，支持 AE-1／AE-2、Store／Deflate、任务内密码提示、错误重试和取消；认证通过后才提交文件。同步高保真、HTML、Qt、双语文案及格式、控制协议和互操作回归。
-
-- 增加 macOS 开发副本的打开方式定向清理工具，验证结束或失败时撤销新增注册，保留主应用、应用文件及系统默认关联；新增边界和异常收尾回归。
-
-- 按所有者批准将 WP-12 标记为开发与验收完成，记录冻结候选 10 项自动门槛通过、八项人工验收和支持政策批准；许可来源复核移至发行清单及 issue，尚未批准正式发行。
-
-- 增加 macOS 原生顶部菜单和三平台托盘菜单，统一命令、编辑焦点与任务状态；托盘默认启用，关闭主窗口后继续运行，设置可关闭，无托盘时回退正常退出，明确退出与重启保留任务确认及清理。新增双语文案、小尺寸模板图标、高保真交互稿与生命周期回归。
-
-- 增加 VERSION.json 统一版本机制、原生版本元数据与关于窗口，支持双语和复制构建信息；推进 WP-12 完整进程性能观测与源码许可清单，保留桌面专项、干净机器及许可复核门槛。
-
-- 按冻结的 HTML / 原稿测量校准 Qt 主窗口尺寸、分栏、列表、字号、图标槽、标签和预览对齐；共用同源字体，增加独立于实现 tokens 的 CI 检查与真实 ZIP 截图。接入标签关闭与当前页全选，保留未实现能力禁用和未知日期显示。
-
-- 完成主窗口共享菜单、提示、按钮状态与面包屑；HTML 接入右键 / 下拉 / 子菜单、独立示例标签、网格、排序、选择、触屏长按与演示检查任务，Qt 接入真实只读选择、复制、视图和目录菜单。22 组新交互、20 条既有流程及本地五组 Qt 测试通过；保留业务能力禁用与明确演示标识。
-- 目录树 B 的连接线、固定数字、祖先收起圆点与统一图标槽接入 HTML / Qt；旧主稿原始字节保留。边界专用提示、骨架和完整人工辅助功能验收继续按工作包推进。
-
-- 交付目录树 B 的三张正式图板、26 张原像素切片、浅深色分支标记 / 状态图标和完整布局 / 状态 / 交互规格；提供单文件 HTML 与素材包。HTML / Qt 目录树改造待接入，既有原稿与照片保持原字节。
-
-- 统一高保真原稿至 design/hifi，新增主界面与操作窗口总览、历史提案归档和哈希清单；同步切图来源及文档链接，明确同版本深色主稿待补。
-
-- 增加受限完整目录树（包含隐式目录）、全结果排序和键盘列头操作；排序后再分页，重复记录保留身份。补齐节点/层级/字节限额与降级提示、真实交互回归和 54 项视觉量化检查。
-
-- 完成 M1 产品骨架：独立 cxx 双句柄、受限命令/事件、取消与关闭控制通道、Qt mailbox、工作故障与退出屏障；三平台产品 CI、各 10 次生命周期重复测试及 macOS/Windows 部署后原生启动关闭检查通过，提供 Apple Silicon 开发 app 和一次性验收说明。
-- 修复短暂准入锁竞争造成的偶发忙碌提示，改为有界异步重试；补齐断连禁用、明确参数错误和消费回调内销毁保护。
-
-- 新增独立解压元数据预检模块、选择目录展开、路径/重名/容量规则及原生结果窗口；只返回有界报告，不授权或执行目标写入。
-
-- 完善真实浏览三栏布局、浅深主题与条目详情，加入显式目录范围、名称搜索和按物理 ID 的本页多选，补充鼠标交互与过滤测试。
-
-- 接通真实 ZIP 只读浏览：独立 Rust 格式适配、受限后台扫描、重复条目与中文名称、128 条分页、异步取消/关闭；记录 rawzip 依赖准入及实际 Qt 截图。
-
-- 按任务进度高保真稿补齐 Qt 路径卡片、三列统计、渐变进度和同行底栏，保留大字号重排及示例标识；提交实际浅深色与 200% 字号截图。
-
-- 建立 xdzip-domain 身份与分页不变量，加入 Qt 独立任务窗口开发预览、共享提示行及主题 token 生成；补充布局/关闭行为测试与 Qt 离屏 CI。
-
-- 增加独立 Rust/cxx 诊断桥接、统一 CMake/Cargo 构建、锁定依赖清单和原生三平台 CI；Linux 本地所有权、错误、UTF-8 与关闭测试通过。
-
-- 启动 WP-01：增加独立 Qt Quick 工具链探针，记录 Linux 离屏窗口与中文/空格路径构建证据；三平台及 cxx 验证待完成。
-- 补充 8 张生成式高保真状态图板与对应素材，覆盖新建、冲突、进度、结果、设置和平台对照，并定义保存/取消与恢复路径。
-
-- 增加高保真稿素材交付：24 张原像素切片、27 类浅深色矢量图标、多倍率透明 PNG 与来源/精度说明。
-
-- 统一文件类型图标、列表对齐和类型列；增加三个平台的独立窗口设计、标题栏及关闭语义。
-
-- 增加离线 HTML 交互设计原型，覆盖浏览、选择、解压、新建、任务与主要异常状态，并关联需求/验收编号。
-
-- 采用 Apache-2.0，添加完整 LICENSE 并同步贡献与发行文档。
-
-### 开发前基线 — 2026-10-11
-
-- 纳入完整软件设计、需求追踪与架构决策。
-- 固定 Qt Quick + 薄 C++ + Rust 技术方向。
-- 建立浅色、深色和解压面板的高保真视觉基线及主题参数。
-- 补齐贡献、治理、安全、工程、验收、风险与实施工作包。
-- 尚未编写产品代码，未发布任何二进制版本。
+- Record the software design, requirements traceability and architecture decisions.
+- Choose Qt Quick with a thin C++ layer and Rust.
+- Set the visual baseline and theme parameters for light and dark views and extraction.
+- Add contribution, governance, security, engineering, acceptance, risk and work-package documentation.
+- Product code and binary releases were still pending.

@@ -11,4 +11,4 @@
 | 准备发行 | [发布手册](engineering/release-runbook.md)、[候选材料](engineering/release-candidate.md)、[候选验证](engineering/candidate-verification.md)、[许可复核](qa/release-review.md) |
 | 准备 Microsoft Store 材料 | [文案与图片](market/windows/README.md)、[本地截图流程](market/windows/capture.md)、[审核说明](market/windows/reviewer-notes.md)、[可复用截图工具](engineering/windows-screenshots.md) |
 
-用 [GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues) 跟踪进展和验收，已发行版本见[更新日志](../../CHANGELOG.md)。
+用 [GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues) 跟踪进展和验收，已发行版本见[更新日志](../../CHANGELOG.zh-CN.md)。

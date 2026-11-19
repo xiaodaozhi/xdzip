@@ -1,9 +1,11 @@
-# 项目治理
+# Project governance
 
-仓库所有者 xiaodaozhi 负责范围、发布身份、许可证和维护者授权。代码审查职责按核心、界面、平台、安全与发布划分；实际维护者名单尚未建立，不虚构人员或团队。
+English | [简体中文](GOVERNANCE.zh-CN.md)
 
-普通实现由相应维护者审查；改变已接受架构需附 ADR，记录背景、选项、决定、代价及替代关系。产品范围变化更新需求和路线。出现分歧时以可复现证据和安全不变量为依据，由所有者作最终范围决定。
+Repository owner xiaodaozhi is responsible for project scope, release identity, licensing decisions and maintainer authorization. Reviews follow the affected area, such as the core, UI, platforms, security or release. Maintainer authority comes from the owner's actual delegation.
 
-main 作为可审查基线；初始文档允许直接初始化，后续变更建议 PR。合并策略建议 squash，保留相关 issue/ADR 引用。分支保护和 CODEOWNERS 待真实维护者及 CI 检查名称就绪后配置，不使用不存在的账户占位。
+Changes to accepted architecture use an [architecture decision record](docs/design/architecture-decisions.md) with context, options, the decision, trade-offs and superseded decisions. Product scope changes update the relevant requirements. Resolve disagreements using reproducible evidence and documented safety constraints. The owner makes the final scope decision.
 
-安全关键功能不得由“无人反对”视为完成审查。发布负责人核验质量、供应链和平台证据；不满足门槛时延后功能而非扩大支持声明。
+`main` is the reviewable baseline. Use PRs where useful or required by branch protection. The [working agreement](AGENTS.md) and [repository delivery guide](developers/engineering/repository-hygiene.md) define how authorized changes reach `main` and how to verify the landed revision and clean up.
+
+Security-sensitive changes require evidence appropriate to their scope. Release decisions are specific to the candidate and use the [maintainer runbook](developers/engineering/release-runbook.md) to check verification, supply chain and platform evidence.

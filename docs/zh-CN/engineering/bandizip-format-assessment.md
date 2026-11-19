@@ -7,7 +7,7 @@
 - [Bandizip 产品页](https://www.bandisoft.com/bandizip/) 列出：`7Z`、`ACE`、`AES`、`ALZ`、`ARJ`、`BH`、`BIN`、`BR`、`BZ`、`BZ2`、`CAB`、`Compound(MSI)`、`DAA(1.0)`、`DEB`、`EGG`、`GZ`、`IMG`、`ISO`、`ISZ`、`LHA`、`LZ`、`LZH`、`LZMA`、`PMA`、`RAR`、`RAR5`、`SFX(EXE)`、`TAR`、`TBZ/TBZ2`、`TGZ`、`TLZ`、`TXZ`、`UDF`、`WIM`、`XPI`、`XZ`、`Z`、`ZIP`、`ZIPX`、`ZPAQ`、`PEA`、`UU`、`UUE`、`XXE`、`ASAR`、`ZSTD`、`NSIS` 和 `LZ4`。
 - 同一页面说明 Bandizip 可创建 `ZIP`、`7Z`、`ZIPX`、`EXE（SFX）`、`TAR`、`TGZ`、`LZH`、`ISO`、`GZ` 和 `XZ`，较长的清单主要是解压清单。
 - [Bandizip ALZ 和 EGG 帮助](https://www.bandisoft.com/bandizip/help/how-to-open-alz-and-egg-files/) 说明 ALZ 的 Deflate、混淆 Deflate、BZip2 与 ZipCrypto，以及 EGG 的 Deflate、BZip2、LZMA、AZO、AES/LEA 加密、固实和分卷。
-- [Bandizip ZPAQ 帮助](https://www.bandisoft.com/bandizip/help/zpaq/) 将 ZPAQ 描述为独立的固实、日志式格式，不能当作 ZIP 方法别名。
+- [Bandizip ZPAQ 帮助](https://cn.bandisoft.com/bandizip/help/what-is-a-zpaq/) 将 ZPAQ 说明为独立的日志式归档格式，并列出 Bandizip 可处理的压缩方法。
 - [磁盘镜像及其他归档格式资料](disk-image-archive-format-sources.md)记录了 DAA、ISZ、ZPAQ、PEA、BOND 和 J2J 的公开资料、许可、样本和净室检查。BOND 与 J2J 尚未确认是当前官方 Bandizip 归档条目，只保留为历史线索。
 
 ## xdzip 当前结论

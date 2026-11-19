@@ -16,7 +16,7 @@
 
 ## ISZ
 
-- **公开规范**：EZB Systems，《ISZ File Format Specification》1.00 版，修订日期为 2006 年 7 月 3 日，定义 `IsZ!` 签名、固定头部、可选分段定义表、块定义表和数据块。头部包含扇区尺寸、总扇区数、密码模式、分段尺寸、块数、块尺寸、指针长度、分段号、表偏移和数据偏移。块标志区分零块、存储块、zlib 块和 BZip2 块。可见 [ImgBurn 规范副本](https://forum.imgburn.com/topic/14260-isz-images-supporting/#comment-115553)，并由 [FileFormat.ArchiveTeam](http://fileformats.archiveteam.org/wiki/ISZ) 索引。
+- **公开规范**：EZB Systems，《ISZ File Format Specification》1.00 版，修订日期为 2006 年 7 月 3 日，定义 `IsZ!` 签名、固定头部、可选分段定义表、块定义表和数据块。头部包含扇区尺寸、总扇区数、密码模式、分段尺寸、块数、块尺寸、指针长度、分段号、表偏移和数据偏移。块标志区分零块、存储块、zlib 块和 BZip2 块。可见 [ImgBurn 规范副本](https://forum.imgburn.com/topic/14260-isz-images-supporting/#comment-115553)。
 - **参考实现**：CDEmu `libmirage` 的 ISZ 过滤器，提交 `39fcffe09739e1dc40bef4781646f9ffb8b7dc4e`，以及 Play- 的 `IszImageStream`，提交 `5bb010f27d8e2309f37b1f8eba0f74ecd546b29b`。二者只用于参考分析。`Helias/isz-tool` 是 Python 读取器，但本环境未能取得权威不可变提交和许可记录。
 - **许可和再分发**：EZB 规范第 8 节写明，把 ISZ 技术并入产品需要联系 EZB，取得带条件的免费许可。公开文本或宽松许可的独立读取器，都不能自动取消产品许可门槛。CDEmu 和 Play- 不作为 xdzip 依赖。
 - **完整样本**：可以用公开工具生成有效的 Store、zlib 和 BZip2 块，但完整可再分发矩阵还需要单卷和分段镜像、零块、不同指针长度、精确尾块、密码模式、表混淆、截断、偏移越界和来源变化样本。仓库尚未登记这样的自有语料库。

@@ -7,7 +7,7 @@ This assessment compares the formats listed by Bandizip with xdzip’s implement
 - [Bandizip product page](https://www.bandisoft.com/bandizip/) lists: `7Z`, `ACE`, `AES`, `ALZ`, `ARJ`, `BH`, `BIN`, `BR`, `BZ`, `BZ2`, `CAB`, `Compound(MSI)`, `DAA(1.0)`, `DEB`, `EGG`, `GZ`, `IMG`, `ISO`, `ISZ`, `LHA`, `LZ`, `LZH`, `LZMA`, `PMA`, `RAR`, `RAR5`, `SFX(EXE)`, `TAR`, `TBZ/TBZ2`, `TGZ`, `TLZ`, `TXZ`, `UDF`, `WIM`, `XPI`, `XZ`, `Z`, `ZIP`, `ZIPX`, `ZPAQ`, `PEA`, `UU`, `UUE`, `XXE`, `ASAR`, `ZSTD`, `NSIS`, and `LZ4`.
 - The same page states that Bandizip creates `ZIP`, `7Z`, `ZIPX`, `EXE (SFX)`, `TAR`, `TGZ`, `LZH`, `ISO`, `GZ`, and `XZ`; the longer list is primarily an extraction list.
 - [Bandizip ALZ and EGG help](https://www.bandisoft.com/bandizip/help/how-to-open-alz-and-egg-files/) describes ALZ Deflate/obfuscated Deflate/BZip2 and ZipCrypto, and EGG Deflate/BZip2/LZMA/AZO with AES/LEA encryption, solid blocks and split archives.
-- [Bandizip ZPAQ help](https://www.bandisoft.com/bandizip/help/zpaq/) describes ZPAQ as a separate, solid, journaled format. It is not a ZIP method alias.
+- [Bandizip ZPAQ help](https://www.bandisoft.com/bandizip/help/what-is-a-zpaq/) describes ZPAQ as its own journaling archive format, and lists the compression methods Bandizip can handle.
 - The [disk-image and other archive format source guide](disk-image-archive-format-sources.md) records the public-source, license, corpus and clean-room checks for DAA, ISZ, ZPAQ, PEA, BOND and J2J. BOND and J2J are not confirmed as current official Bandizip archive entries and remain historical leads only.
 
 ## Current xdzip disposition

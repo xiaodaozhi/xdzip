@@ -155,8 +155,9 @@ Windows 使用 MSVC x64 开发环境；macOS 使用 Apple Silicon 原生终端�
 | 产品设计与实现 | [技术参考](docs/zh-CN/reference/README.md) |
 | 隐私与数据处理 | [隐私政策](PRIVACY.zh-CN.md)、[Privacy Policy](PRIVACY.md) |
 | 开发与贡献 | [开发与贡献指南](docs/zh-CN/contributing/README.md) |
-| 版本变化和待办 | [变更日志](CHANGELOG.md)、[GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues) |
-| 贡献 | [贡献指南](CONTRIBUTING.md)、[行为规范](CODE_OF_CONDUCT.md) |
+| 版本变化和待办 | [变更日志](CHANGELOG.zh-CN.md)、[GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues) |
+| 贡献 | [贡献指南](CONTRIBUTING.zh-CN.md)、[行为规范](CODE_OF_CONDUCT.zh-CN.md) |
+| 项目政策 | [项目治理](GOVERNANCE.zh-CN.md)、[安全政策](SECURITY.zh-CN.md) |
 
 欢迎反馈问题或参与贡献。报告缺陷时请提供版本或提交、系统与架构、复现步骤和实际结果；样本请自行生成，避免包含敏感内容。安全问题请通过 [Report a vulnerability](https://github.com/xiaodaozhi/xdzip/security/advisories/new) 私下报告。
 

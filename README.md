@@ -157,6 +157,7 @@ Development packages are not official releases. Windows and Linux development ar
 | Build and contribute | [Contributor guide](docs/contributing/README.md) |
 | Changes and planned work | [Changelog](CHANGELOG.md), [GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues) |
 | Contributing | [Contributing guide](CONTRIBUTING.md), [code of conduct](CODE_OF_CONDUCT.md) |
+| Project policy | [Governance](GOVERNANCE.md), [security](SECURITY.md) |
 
 Feedback and contributions are welcome. When reporting a bug, include the version or commit, system and architecture, reproduction steps, and actual results. Generate your own samples and avoid including sensitive information. Report security issues privately through [Report a vulnerability](https://github.com/xiaodaozhi/xdzip/security/advisories/new).
 

@@ -2,22 +2,18 @@
 
 English | [简体中文](../zh-CN/engineering/privacy.md)
 
-For user-facing privacy information, see the [Privacy Policy](../../PRIVACY.md) and its [Chinese version](../../PRIVACY.zh-CN.md). This page retains engineering implementation contracts and does not treat planned diagnostic designs as delivered features.
+The [Privacy Policy](../../PRIVACY.md) explains what data xdzip handles and which choices are available to users. The table below describes where the implementation keeps that data and when it is released. Browsing, compression and extraction work offline. xdzip does not automatically send telemetry or archive contents to the maintainer.
 
-By default there is no telemetry, background update installation, or archive-content upload. Basic compression and extraction work offline. Product settings, user content, and diagnostic evidence are stored separately.
-
-| Data | Lifetime | Cleanup and limits |
+| Data | Lifetime | Storage and cleanup |
 | --- | --- | --- |
-| Settings and themes | Across launches, versioned schema | Save failures can restore defaults; retain a diagnosable copy of corrupt files without reading them as code |
-| Recent files | Optional, local only | Separate recent.json holds at most 20 entries with a 64 KiB read limit, deduplication, and user-only read/write. Disabling stops additions; clearing removes records only; paths do not enter diagnostic uploads |
-| Memory indexes | Session lifetime | Released on close; not cached across launches by default |
-| Staged output/transaction logs | During task and recovery | Clean only items whose ownership can be established; do not delete published files |
-| Preview cache | User initiated and bounded | Clear at session end; invalidation cannot keep displaying old content |
-| Passwords | Short-lived | No disk or logs; absolute erasure of OS-internal copies is not promised |
-| Update checks and downloads | User initiated only | Fixed public GitHub APIs and CDN, without login credentials, archive content, or paths. Servers can see IP, connection information, and application version |
-| Update transaction receipts | Local, across installation restarts | Separate update-state.ini beside settings stores transaction and target identity; private cache retains failed materials. Only fixed files are read and receipt content is not executed |
-| Diagnostics | Locally bounded, explicitly exported by user | Version/anonymous ID/error code; no content or full paths by default |
+| Settings and themes | Across launches, in a versioned schema | Changes use atomic replacement. If a settings update fails, it preserves the previous settings and the interface reports the failure. |
+| Recent files | Optional, local only | The private `recent.json` file stores up to 20 distinct entries with a 64 KiB read limit. Disabling the feature stops new entries. Clearing it deletes the history without touching the original files. |
+| Archive indexes | For the open session | Small indexes live in memory. Large ZIP indexes use private disk files for metadata and query order. Normal close, query replacement, failure and cancellation clean their known files. A later creation can reclaim unused crash leftovers under the identity and lease rules. Indexes are never reused across launches. See [large archive indexes](large-index.md). |
+| Staged output and recovery state | During tasks and recovery | Recovery acts only on controlled metadata and cleans only items whose ownership can be established. It does not execute archive contents or restore writes to arbitrary paths. |
+| In-app previews | User initiated and bounded | Changing the preview context or ending the session clears the current result. Late results cannot restore invalidated content. |
+| Passwords | For the operation that needs them | The app does not save passwords to settings or logs. The operating system may hold additional memory copies beyond the app's control. |
+| Standalone update checks and downloads | User initiated in applicable editions | Requests use public GitHub release and download services. A configured proxy can handle requests, and an optional HTTPS mirror receives the original download URL. Providers can see connection information and the application version included in requests. Windows MSIX disables the standalone updater. |
+| Update transaction receipts | Local, across installation restarts | A separate `update-state.ini` beside settings holds transaction and target identity. Failed downloads may remain in the private update cache. The updater reads only fixed receipt files and does not execute receipt contents. |
+| Status and diagnostics | Interface, terminal or local records, depending on the feature | The app does not automatically upload diagnostics. Copying version or file information writes to the system clipboard. Check filenames, paths and other private information before sharing an error, log or screenshot. |
 
-Diagnostic records require capacity limits and retention policies configured centrally in the implementation. Show fields to be included before export so users can inspect them before uploading. Crash recovery handles only controlled metadata and does not execute archive content or restore arbitrary-path writes.
-
-See the [software update contract](software-update.md) for networking, signatures, installation handoff, and recovery boundaries.
+See the [software update contract](software-update.md) for networking, signatures, installation handoff and recovery.

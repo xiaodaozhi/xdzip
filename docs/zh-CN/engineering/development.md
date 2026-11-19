@@ -6,7 +6,7 @@
 
 ## 获取与修改
 
-准备干净工作区，按[贡献约定](../../../CONTRIBUTING.md)提交 PR。修改契约时同步更新两种语言的规范及相关验证用例。颜色和尺寸以 specs/visual 中的参数为准。
+从当前 `main` 开始，保留工作区中的其他改动。按[贡献约定](../../../CONTRIBUTING.zh-CN.md)处理范围与审查，按[仓库交付指南](../../../developers/zh-CN/engineering/repository-hygiene.md)完成已授权的合入。改动契约时同步两种语言及受影响的验证用例。颜色和尺寸以 `specs/visual` 为准。
 
 ## 文档构建
 

@@ -32,7 +32,7 @@ Microsoft Open Specifications 文档带有自己的版权及知识产权条款�
 | [MSZIPFMT.DOC](https://am.net/lib/tools/Microsoft/cab-sdk/DOCS/MSZIPFMT.DOC) | Introduction、Implementation Details，特别是独立 Deflate 块与保留历史 | `046d283fa3b697e46c35b6a329bb90c86cbc9f4dedbed24c3ae43bd9b8ccf239` |
 | [LZXFMT.DOC](https://am.net/lib/tools/Microsoft/cab-sdk/DOCS/LZXFMT.DOC) | Concepts、LZX compressed data format、树编码、距离/长度及 E8 预处理各节 | `68ba4df86e08bece3259574133f1c61606d143d85f749b388f5f1e8ea46f8bef` |
 
-这些 `.DOC` 文件实际为 RTF。正文标题、版权和 CAB 定位支持其作为微软作者文档副本使用，但托管站不是 Microsoft，尚未与微软发布的 CAB SDK 归档逐字节比对。Microsoft 的[旧 SDK 下载地址](https://download.microsoft.com/download/platformsdk/cab/2.0/w98nt42kmexp/en-us/cabsdk.exe)未能提供可核验归档，不能据此声称已验证镜像真实性。阅读范围是格式文档，不含该 SDK 的 FCI/FDI 实现或示例代码。
+这些 `.DOC` 文件实际为 RTF。正文标题、版权和 CAB 定位支持其作为微软作者文档副本使用，但托管站不是 Microsoft，尚未与微软发布的 CAB SDK 归档逐字节比对。[Microsoft 知识库 310618 存档](https://mskb.pkisolutions.com/kb/310618)列出原 SDK 的内容，并记录旧下载已经下线。该存档无法验证镜像文件的真实性。阅读范围是格式文档，不含该 SDK 的 FCI/FDI 实现或示例代码。
 
 公开 TCOMP 参数另核对 Windows SDK 10.0.19041.0 的 `um/fdi_fci_types.h` 常量声明及 [TCOMPfromLZXWindow 文档](https://learn.microsoft.com/en-us/windows/win32/api/fdi_fci_types/nf-fdi_fci_types-tcompfromlzxwindow)。该头文件 SHA-256 为 `27a1f6f7728f5db64d11e434d101819d646ca49270930606bb76c7989ebe0254`。只使用公共参数范围与位定义，没有据此调用或分析 FCI/FDI 算法实现。
 

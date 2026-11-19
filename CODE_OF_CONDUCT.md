@@ -1,7 +1,9 @@
-# 社区行为规范
+# Code of conduct
 
-参与者应尊重不同经验和背景，讨论具体设计与证据，给予可执行的反馈。禁止骚扰、威胁、歧视、公开他人隐私、冒充身份和持续恶意干扰。
+English | [简体中文](CODE_OF_CONDUCT.zh-CN.md)
 
-维护者可要求修改内容、隐藏违规信息、限制参与或移除访问权限；按严重程度处理，并尽可能向当事人解释依据。利益冲突的维护者应回避处理自己的投诉。
+Respect participants with different experience and backgrounds. Discuss the proposal and the evidence, and give feedback the author can act on. Harassment, threats, discrimination, privacy violations, impersonation and sustained disruption are prohibited.
 
-当前仓库为私有筹备阶段，尚未建立独立举报邮箱。通过现有私密协作渠道联系仓库所有者；没有私密渠道时不要在公开 issue 粘贴隐私证据。公开招募社区前必须建立并公布可用的私密举报入口和复核方式。
+Maintainers may request changes, hide violating content, limit participation or remove access according to the severity of the incident. They should explain the basis to the people involved when possible. A maintainer with a conflict of interest should recuse themselves.
+
+If you have an established private channel with the repository owner, use it to report a conduct concern. Keep personal information and sensitive evidence out of public issues, pull requests and release comments. Use the [security policy](SECURITY.md) to report software vulnerabilities.
