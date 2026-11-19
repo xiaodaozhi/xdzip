@@ -58,11 +58,11 @@ After Qt implementation verify WCAG AA body contrast for theme colors. Focus app
 
 ## Qt Quick implementation constraints
 
-Establish unified Theme and dimension tokens; QML components must not scatter hardcoded theme colors. Suggested components include ArchiveTabs, ArchiveToolbar, ArchiveTree, ArchiveTable, InspectorPanel, ExtractDialog and TaskPanel. The file list uses a virtualizable model; preview, indexing and compression run in the background. QML presents state and user intent and does not decode formats.
+Qt uses shared `Theme` and generated dimensions. `ArchiveTabs`, `ArchiveToolbar` and the list, grid and directory sections in `SessionPage` share the main layout. `InspectorPanel`, `ExtractWindow`, `CreateWindow` and `TaskWindow` retain their own data and layout boundaries. QML presents state and user intent. The Rust runtime owns indexing, archive reads and writes, and format validation.
 
 macOS, Windows and Linux share content layout and interaction models; window controls, menus and shortcuts follow platform conventions. The macOS frame illustrated here does not require other platforms to copy traffic lights. Large real-time blur is not an implementation requirement; a static mask can reproduce background deemphasis in screenshots.
 
-Current complete originals cover light archive browsing, extraction confirmation, creation, conflicts, tasks, results and settings. Dark icons are adapted, but a complete dark main window, plugin management and some exceptional pages remain outstanding; not all product pages are finalized.
+Review the main window in [light](../../design/hifi/sources/main.html?theme=light) or [dark](../../design/hifi/sources/main.html?theme=dark), along with [task states](../../design/hifi/sources/task-windows.html), [settings](../../design/hifi/sources/settings.html) and [desktop integration](../../design/hifi/sources/desktop-integration.html). Use the [window registry](../../specs/visual/window-registry.json) to locate other states or size exceptions. A design page can show the contents of a native window or menu. Actual decoration, activation, scaling and menu behavior require the relevant platform.
 
 ## Platform window revision
 

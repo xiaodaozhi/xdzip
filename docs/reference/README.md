@@ -2,23 +2,30 @@
 
 English | [简体中文](../zh-CN/reference/README.md)
 
-Start with the [system architecture](../design/system-architecture.md) for current desktop and CLI behavior. Find the details in the contracts below. See the [user manual](../user-guide/README.md) for steps and [Build and contribute](../contributing/README.md) for setup and tests.
+Start with the [system architecture](../design/system-architecture.md) for the desktop and CLI execution paths. Use the sections below to locate the contract that owns a particular behavior. For supported operations at a glance, see the [format table](../../README.md#format-support). For operation steps or development setup, see the [user manual](../user-guide/README.md), [CLI examples](../integration/README.md) and [contribution guide](../contributing/README.md).
 
 ## Architecture and interfaces
 
-- [xdzip: Software design overview](../design/index.md)
-- [xdzip: Requirements, design, and acceptance traceability](../design/requirements-traceability.md)
-- [xdzip: Architecture decision records](../design/architecture-decisions.md)
+- [Design overview](../design/index.md)
+- [Product requirements and operation boundaries](../design/product-requirements.md)
+- [Domain model, entry identity and source versions](../design/domain-data.md)
+- [Qt/Rust command and event bridge](../design/qt-rust-bridge.md)
+- [Task scheduling, progress, cancellation and shutdown](../design/task-scheduling.md)
+- [Performance budgets and verification](../design/performance.md)
+- [Term definitions and implementation limits](../design/glossary.md)
+- [Requirements and verification traceability](../design/requirements-traceability.md)
+- [Architecture decisions](../design/architecture-decisions.md)
+- [Evolution from prototypes to the desktop and Rust runtime](../design/architecture-evolution.md)
 - [Repository layout and dependencies](../engineering/repository-layout.md)
 - [Interface contracts and checks](../engineering/contracts.md)
 - [Product runtime and Qt lifecycle](../engineering/product-runtime.md)
 - [Application sessions and shutdown contract](../engineering/application-sessions.md)
 - [cxx bridge dependency rationale](../engineering/cxx-admission.md)
 - [Host calendar and encoding services for format workers](../engineering/host-platform-services.md)
-- [External read-only SDK trial](../engineering/sdk-trial.md)
 
 ## Reading and writing archives
 
+- [File authorization, staging and safe commits](../design/file-security.md)
 - [Read-only browsing implementation contract](../engineering/readonly-browser.md)
 - [Read-only ZIP browsing contract](../engineering/zip-readonly-browsing.md)
 - [Large archive indexing and on-demand browsing](../engineering/large-index.md)
@@ -28,7 +35,7 @@ Start with the [system architecture](../design/system-architecture.md) for curre
 - [Extraction preflight: metadata phase](../engineering/extraction-preflight.md)
 - [Safe ZIP extraction implementation](../engineering/zip-safe-extraction.md)
 - [Archive integrity checking](../engineering/archive-checking.md)
-- [-- docs/engineering/archive-transfers.md -->](../engineering/archive-transfers.md)
+- [Opening members, drag-and-drop and archive modification](../engineering/archive-transfers.md)
 - [Archive passwords and encrypted-directory opening](../engineering/password-extraction.md)
 - [ZIP creation implementation contract](../engineering/zip-creation.md)
 - [ISO9660 and Joliet creation](../engineering/iso-creation.md)
@@ -36,7 +43,9 @@ Start with the [system architecture](../design/system-architecture.md) for curre
 
 ## Format support and implementation
 
-- [Built-in format declarations](../engineering/format-registry.md)
+- [Built-in capabilities, creation profiles and checking strength](../engineering/format-registry.md)
+- [Format adapters and the external SDK trial design](../design/codec-extension-sdk.md)
+- [External read-only SDK trial and supported execution scope](../engineering/sdk-trial.md)
 - [Isolated format worker contract](../engineering/native-codecs.md)
 - [In-house Rust format and algorithm contract](../engineering/independent-rust-codecs.md)
 - [Auxiliary algorithm work accounting](../engineering/auxiliary-decoding-work.md)
@@ -67,15 +76,16 @@ Start with the [system architecture](../design/system-architecture.md) for curre
 
 ## Desktop interaction and visual design
 
-- [xdzip visual specifications](../visual/README.md)
+- [Qt Quick views and controller responsibilities](../design/qt-quick-ui.md)
+- [Desktop visual specifications](../visual/README.md)
 - [UI design standard](../visual/design-standard.md)
 - [UI design and correction workflow](../visual/design-workflow.md)
 - [File association icons](../visual/file-association-icons.md)
 - [HTML visual fidelity review](../visual/html-fidelity.md)
 - [Additional interaction and copy specification](../ux/interaction-spec.md)
 - [Main-window functionality, components and interaction contract](../ux/main-window-components.md)
-- [Directory tree B: design, assets and integration](../ux/directory-tree.md)
-- [W01 main-window welcome page, high-fidelity candidate](../ux/welcome.md)
+- [Directory tree design and integration](../ux/directory-tree.md)
+- [Main-window welcome page](../ux/welcome.md)
 - [Welcome-page loading overlay and creation completion](../ux/welcome-opening.md)
 - [Password extraction interaction](../ux/password-extraction.md)
 - [Task windows and integrity checks](../ux/task-windows.md)
@@ -109,7 +119,9 @@ Start with the [system architecture](../design/system-architecture.md) for curre
 
 ## Build and CLI reference
 
+- [Build, deployment and release design](../design/build-release.md)
+- [Coding conventions and verification layers](../design/quality-engineering.md)
 - [Developer preparation guide](../engineering/development.md)
 - [Development builds and platform verification](../engineering/developer-build.md)
 - [Toolchain and platform freeze](../engineering/toolchain.md)
-- [Command-line runtime contract](../engineering/command-line.md)
+- [CLI commands, JSON, installation and update receipts](../engineering/command-line.md)

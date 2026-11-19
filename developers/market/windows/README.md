@@ -81,7 +81,7 @@ Xbox-only branded key art (584 × 800), titled hero art and featured promotional
 
 The [design gallery](../../../design/hifi/sources/windows-store-artwork.html) is the high-fidelity entry point. Editable composition lives in [build-windows-store-assets.cjs](../../../scripts/build-windows-store-assets.cjs); localized copy, palette and export canvas parameters live in [windows-store.json](../../../specs/marketing/windows-store.json). The [asset inventory](../../../specs/marketing/windows-store-assets.json) records PNGs and source/output hashes, including native inputs and the two README images. The [capture inventory](../../../specs/marketing/windows-store-captures.json) records the candidate, native capture/session hashes, client crops, dimensions, DPI, captions and corner processing. These fixed export canvases do not change Qt logical window dimensions or incorporate screen scaling into the product.
 
-Update the screenshots with the [local refresh command](capture.md). It checks the candidate, both complete sessions, the eight lossless PNGs and exact native crop pixels in an isolated preview before any repository files are replaced.
+Use the [local refresh command](capture.md) to capture both languages, verify an isolated preview and review the PNGs at 100% before applying changes. The refresh command uses [import-windows-store-captures.cjs](../../../scripts/import-windows-store-captures.cjs) to check both complete sessions, including the candidate identity, hashes and exact client-to-window crop pixels for all eight lossless PNGs. It rejects JPEGs and incomplete or mismatched captures. Update the baseline in the marketing specification when changing the candidate.
 
 Install Node.js and the pinned image dependency once. The scripts automatically find it in the local toolchain; no `NODE_PATH` setting is needed:
 
@@ -89,7 +89,7 @@ Install Node.js and the pinned image dependency once. The scripts automatically 
 npm install --prefix build/toolchain/windows-store-tools --no-save --no-package-lock sharp@0.34.5
 ```
 
-Then run:
+For manual import and generation from the two reviewed capture directories, run:
 
 ```sh
 node scripts/import-windows-store-captures.cjs build/captures-en-US build/captures-zh-CN

@@ -2,15 +2,14 @@
 
 [English](../../engineering/candidate-verification.md) | 简体中文
 
-本文介绍候选版本的自动验证、Qt 源码构建与兼容替换检查。[门槛清单](../../../scripts/wp12-gates.json)区分自动验证和外部准入；脚本检查候选身份及证据完整性，自动项通过不代表正式发行获批。历史验证记录见 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)。
+发行候选先按[发布手册](release-runbook.md)核对，将回执绑定到实际包的版本、提交与摘要。下文的 Qt 源码、兼容替换和性能检查供需要相应证据的改动使用。[历史门槛清单](../../../scripts/wp12-gates.json)用于复核 [#5](https://github.com/xiaodaozhi/xdzip/issues/5) 的原始证据范围。
 
 ## Qt 源码与兼容替换
 
 [固定来源清单](../../../scripts/corresponding-sources.json)包含 QtBase、QtDeclarative、QtSvg、QtTranslations，以及构建所需的 ShaderTools、QtTools，另包含固定 Rust 标准库源码组件。归档和源码补丁均有 SHA-256；源树恢复前重新核验普通文件，只接受原文或记录的补丁，不把未知修改带入下一次构建。
 
 ```sh
-python3 scripts/build-qt-source.py --output build/wp12 --resume \
-  --apple-sdk /Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk --parallel 6
+python3 scripts/build-qt-source.py --output build/wp12 --resume --parallel 6
 python3 scripts/verify-qt-source-product.py --qt-build build/wp12 \
   --output build/wp12/source-product
 ```

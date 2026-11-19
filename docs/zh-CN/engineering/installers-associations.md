@@ -52,9 +52,9 @@ build-windows-installer.py 只接受干净构建的 deployed 审计，重新核�
 
 产品整个生命周期持有 Local\xdzip.desktop.running 命名互斥量。[AppMutex](https://jrsoftware.org/ishelp/topic_setup_appmutex.htm)阻止安装／卸载，CloseApplications=no，不强制结束应用。FFI 句柄创建失败时启动失败，进程关闭时释放。任务退出仍沿用现有选择与 Rust join 屏障。
 
-关联只写 HKCU：自有 ProgID、两个自有 Applications 入口、Capabilities、RegisteredApplications 及 OpenWithProgids 中自有值。不写 HKLM、扩展默认值或受保护 UserChoice／UserChoiceLatest。卸载不删除其他应用候选。九类扩展统一使用 `xdzip.Archive.格式名`，ZIP 使用 `xdzip.Archive.ZIP`，文档图标继续按格式选择对应 ICO。旧共享 `xdzip.Archive` 保留直接打开命令，并与 `Applications/xdzip.exe` 一起设置 `NoOpenWith`；升级只删除各扩展 OpenWithProgids 中的旧共享推荐值及主程序的旧 SupportedTypes 值，不删除兼容命令。已有旧默认选择仍能打开，但可能继续显示 ZIP 文档图标，用户可在系统中重新选择对应格式的 xdzip 候选。Windows 只识别最终扩展名时 `.tar.gz` 使用 GZ 图标。
+普通 Windows 安装包在 HKCU 注册打开方式候选，写入自有 ProgID、两个自有 Applications 项、Capabilities、RegisteredApplications 和 OpenWithProgids 中的自有值。HKLM、扩展名默认值、受保护的 UserChoice／UserChoiceLatest 和其他应用的候选均保留。每个登记后缀有单独的 ProgID 和对应 ICO，例如 `xdzip.Archive.ZIP`。旧共享 `xdzip.Archive` 保留直接打开命令，与 `Applications/xdzip.exe` 一起从打开方式中隐藏。升级移除旧推荐项，保留已有默认选择的兼容性。Windows 为 `.tar.gz` 等复合后缀文件选择图标时使用最后一段扩展名。
 
-九个逐格式 ProgID 的类型描述使用应用语言，例如中文 `ZIP 压缩包`、英文 `ZIP archive`，不再添加 xdzip 前缀。安装或升级时遵循应用保存的语言选择。自动识别模式下，系统界面语言为中文时使用中文描述，其余使用英文描述。安装向导语言与应用语言分别设置。正常安装版在启动以及应用语言成功更改时同步这些描述并通知 Windows Shell 刷新。同步前核对安装标识、当前程序位置、安装清单、关联启动器及全部九个既有打开命令；条件不符时不写入，也不创建缺失项。注册表写入失败可能只完成部分描述，下次正常启动会重试；便携、开发和指定临时设置／语言的测试进程不触碰这些描述。旧共享 ProgID 保持兼容，不具备逐格式名称。Explorer 缓存、系统类型识别及用户所选默认处理器可能影响实际显示，原生视觉效果需单独验收。
+普通安装版在启动及应用语言切换成功后同步九个核心 ProgID 的类型描述，包括 ZIP、TAR、TGZ、GZ、7Z、RAR、CAB、ISO、UDF。安装包按应用保存的语言设置描述，自动模式下使用系统显示语言。向导语言独立设置。同步前核对安装标识、程序位置、安装清单、关联启动器及九个已有打开命令。登记缺失或不符时不写入。写入部分成功时，下次正常启动可重试。便携、开发和使用隔离设置的测试程序不会运行此同步。其他已登记后缀保留安装时写入的描述。Explorer 缓存和默认应用选择可能影响实际显示。
 
 
 一次性 Windows CI 安装检查使用真实产品验证中英文启动同步，并以便携版及临时设置进程验证不写入；同时核对九类图标、命令、其他应用候选和默认选择未变。此自动检查不模拟运行中切换语言，也不替代 Explorer 或系统设置的人工显示验收。
@@ -62,16 +62,16 @@ build-windows-installer.py 只接受干净构建的 deployed 审计，重新核�
 
 全部格式 ProgID 的带引号命令启动 `xdzip-association.exe -- "%1"`，其 Applications 注册承载完整 SupportedTypes，使系统“打开方式”只呈现一个 xdzip 应用入口。启动器嵌入同一品牌应用 ICO 和独立 OriginalFilename、产品版本资源；应用图标与逐格式文档图标分别核验，不能用文档 DefaultIcon 代替可执行文件的应用资源。该小型 GUI 启动器只接受单个文件参数，先在自己的线程初始化 COM 单线程单元，再通过 ShellExecuteEx 的明确 `xdzip.Archive` 类委托既有打开命令，不经过命令解释器；调用返回后释放 COM。旧版回退会更新共享入口，逐格式候选因此仍指向回退后的程序；COM 初始化失败、入口不存在、参数无效或系统拒绝调用时启动器返回非零，不尝试其他应用或修改默认值。该机制依赖回退安装保留当前安装目录内的启动器，安装／回退和累计卸载须实测。
 
-旧共享与九个独立 ProgID 均设置 REG_NONE 类型的 `AllowSilentDefaultTakeOver`。按 [Windows ProgID 约定](https://learn.microsoft.com/en-us/windows/win32/shell/fa-progids)，此标记要求系统在自动判定默认处理器时忽略该候选，用户仍可在“打开方式”中明确选择。Inno 的 `ValueType: none` 只创建键，因此安装器使用有界原生注册表调用写入准确类型；仅打开已创建的自有 ProgID，失败终止安装，句柄在失败路径释放。按需安装检查同时快照保护选择、核对原生候选数量及自动后备路由；真实设置页面和 Explorer 的显示按需检查，未执行时如实记录。
+安装器在共享 ProgID 和各个已登记的格式 ProgID 上设置 REG_NONE 类型的 `AllowSilentDefaultTakeOver`。Windows 仍可在“打开方式”中提供这些候选。安装器用有界原生注册表调用写入已经创建的自有键，失败时终止安装并释放句柄。详见 [Windows ProgID 约定](https://learn.microsoft.com/en-us/windows/win32/shell/fa-progids)。
 
 
-ZIP、TAR、TGZ、GZ、7Z、RAR、CAB、ISO 和 UDF 注册为候选；GZ 仅用于 TAR.GZ，普通独立 GZIP 仍不支持，关联不扩大格式能力。CAB、ISO 和 UDF 为只读，不注册通用 `.img`、`.001` 或 `.rNN` 扩展名，避免占用其他文件类型；分卷仍可通过应用文件选择器打开。默认应用由用户在系统设置选择，安装器不绕过确认。
+普通安装版和 MSIX 从[格式登记表](format-registry.md)生成 Windows“打开方式”候选，覆盖核心的 ZIP、TAR、TGZ、GZ、7z、RAR、CAB、ISO、UDF 以及其他已登记后缀。`.gz` 按内容区分独立 GZIP 与 TAR.GZ。通用 `.img`、`.001` 和 `.rNN` 不注册为候选，可通过显式打开或适用入口提交。关联提供系统启动 xdzip 的入口，读取器仍探测文件，并检查操作所需的格式与来源条件。
 
 ## Ubuntu 24.04
 
 build-linux-installer.py 从同一核验目录生成 .deb，私有暂存目录按输出路径区分，允许相同包名在不同候选目录重新打包，不覆盖既有暂存。包名 xdzip，版本绑定产品渠道和提交，架构 amd64。系统依赖来自实际部署清单，补充桌面数据库和锁工具，glibc 至少 2.39。Qt／QML／插件及通知位于 /opt/xdzip/versions/；/usr/bin/xdzip 是固定目标的引号化转发入口。dpkg 负责替换和清除旧包文件，回退需保留原 .deb。
 
-桌面文件按 [MimeType 与 Exec 规范](https://specifications.freedesktop.org/desktop-entry/latest-single/)注册 ZIP、TAR、压缩 TAR、7z、RAR、CAB、ISO 和 UDF，使用 %f 逐文件启动和 -- 参数边界。CAB 和 ISO 采用系统 MIME，UDF 随包提供仅匹配 `*.udf` 的 MIME 声明，不声明 `*.img` 或通用二进制处理器。安装和移除后刷新 MIME 及桌面数据库。不执行 xdg-mime default，不修改 mimeapps.list 或全局 MIME 图标。卸载删除自有启动项、图标、运行文件并刷新缓存，保留用户设置及额外文件。
+安装后的 [xdzip.desktop](../../../apps/desktop/packaging/linux/xdzip.desktop) 声明软件包的 MIME 候选，包括 ZIP 及部分别名、TAR 与压缩 TAR、独立压缩流、7z、RAR 和 CAB 等归档，以及 ISO／UDF 映像。`%f` 用于单文件启动，`--` 标记参数边界。软件包提供 `*.udf` 的 MIME 声明，不接管通用映像或二进制类型。安装和卸载刷新 MIME 及桌面数据库，不改写 `mimeapps.list`、用户默认选择或系统 MIME 图标。卸载清除自有启动项、图标及运行文件，保留用户设置。
 
 安装的产品持有 /run/xdzip/usage.lock 的共享 flock，维护脚本先取非阻塞独占锁，活动进程存在就失败。脚本在根用户独占的 /run/xdzip 下设置 installing 门，产品取得锁后再次检查，避免在 dpkg 钩子间启动。符号链接或错误所有者／权限被拒绝；关闭 QFile 释放锁。tmpfiles.d 在系统启动时准备运行锁。此约束不影响 SDK 开发应用。
 
@@ -81,9 +81,9 @@ build-linux-installer.py 从同一核验目录生成 .deb，私有暂存目录�
 
 主应用和交付包的 Info.plist 以 Viewer／Alternate 声明文档和 ICNS，[不声明默认所有权](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html)。开发和测试构建默认使用 Viewer／None，不进入系统打开方式候选；主开发包或交付构建须显式设置 `-DXDZIP_MACOS_HANDLER_RANK=Alternate`。默认应用由用户和 Launch Services 决定，不主动修改默认应用。开发验证副本的临时注册按[Mac 维护方法](macos-deployment.md)收尾，保留已有应用与用户默认选择。
 
-CAB、ISO、UDF 加入同一只读 Viewer 声明；CAB 和 UDF 的导入类型按各自扩展名与 MIME 声明，ISO 使用 `public.iso-image`。不增加 `.img` 或通用 `public.disk-image` 文档处理器；格式支持仍由实际内容识别及[格式后端契约](native-codecs.md)约束。
+CAB、ISO 和 UDF 使用同一个 Viewer 角色，ISO 使用 `public.iso-image`。应用不注册 `.img` 或通用 `public.disk-image`。Viewer 是 Launch Services 中的关联角色，实际可执行的操作由[格式后端](native-codecs.md)决定。[ISO 创建配置](iso-creation.md)可单独写入新映像。
 
-各类型声明使用对应的 bundle ICNS；系统将 `.tar.gz` 和 `.tgz` 识别为同一个压缩 TAR 类型时共享 TAR.GZ 图标。GZ 候选仍只支持 TAR.GZ 内容。Finder 缓存、选定默认应用和系统类型识别影响实际显示，原生显示与人工验收单独记录。
+文档类型使用应用包内对应的 ICNS。压缩 TAR 类型可覆盖 `.tar.gz` 与 `.tgz`，独立 GZIP 也有文档类型。Finder 缓存、默认应用选择和系统类型识别影响实际显示。
 
 macOS 的 RAR、CAB 和 UDF 导入类型声明均须符合 `public.data`，使系统能将实际文件识别为相应类型。CAB 同时声明系统使用的 `com.microsoft.cab` 和兼容标识 `com.microsoft.cab-archive`；设置页在系统首选类型是这两者之一时查询并更改该实际类型，否则沿用兼容标识。UDF 的 Viewer 声明使用 `.udf` 扩展名而不指定 `LSItemContentTypes`，使旧安装的无效 UTI 声明仍被系统采用时，实际文件也能发现候选；此[扩展名声明键](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html)已被 Apple 标记为弃用，必须持续在受支持的 macOS 版本验证。设置页按系统实际识别的 `.udf` 类型查询和更改，类型不可用时回退至既有标识。已有默认选择不由安装或注册主动覆盖。此前没有处理器时，Launch Services 可能按[隐式规则](https://developer.apple.com/library/archive/documentation/Carbon/Conceptual/LaunchServicesConcepts/LSCGlossary/LSCGlossary.html)将新候选解析为当前处理器；撤销临时注册后应恢复原状，此解析不等于应用主动写入用户偏好。
 
@@ -134,7 +134,7 @@ Windows 更新协议夹具与真实 Qt 更新夹具同样提供关联启动器�
 
 ## 设置中的默认应用
 
-设置页按当前系统查询显示九类关联。macOS 使用 NSWorkspace 的内容类型接口，并在关闭时由用户选取替代应用；开发副本按 None 等级禁用关联操作。Windows 打开系统默认应用页面并在返回后重查，只读系统关联，不修改 UserChoice。Linux 用 xdg-mime 查询与修改用户 MIME 默认，安装包声明 xdg-utils 依赖；移除关联时由用户选择已安装的替代桌面项。复合扩展可能共享系统类型；取消、系统拒绝或查询失败不显示伪造的成功。真实系统 UI 和多桌面环境行为须单独验收。
+设置页按生成的格式数据对关联后缀分组，开关能否操作取决于平台服务和安装身份。Windows 交由系统“默认应用”处理，不写 UserChoice。MSIX 禁用开关，改用当前包的系统设置入口。macOS 通过 NSWorkspace 查询内容类型，可提示用户选择替代应用，Viewer／None 构建禁用关联变更。Linux 把支持的后缀映射到 MIME 类型，用 `xdg-mime` 管理用户默认设置，移除默认时可选择已安装的替代程序。多个后缀可能共用一个系统类型，设置页在操作后以系统结果为准。
 
 
 自动识别语言模式在 Windows 安装器中按当前用户的系统界面语言解析：中文各区域使用中文描述，其余以英文兜底；显式中文或英文选择优先。安装器不将自动识别改写为固定语言，应用启动后按自身系统语言解析并同步自有描述。

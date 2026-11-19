@@ -24,7 +24,7 @@ Export and copy tasks do not automatically open Explorer, Finder, or the destina
 
 ## External drop and confirmation
 
-CAB, ISO, UDF, and RAR are read-only. External addition and internal moves are rejected both in the UI and at Rust execution entry points. Drag-out, temporary opening, and ordinary extraction reuse existing safe-read paths. A filename extension or disabled UI state does not replace core capability checks.
+Existing CAB, ISO, UDF and RAR archives do not support addition, replacement or internal moves. Both the interface and the Rust execution entry points enforce this restriction. Supported records can still be dragged out, temporarily opened or extracted through the same protected read paths. [Creating a new ISO image](iso-creation.md) is a separate operation.
 
 The file-list body of an open archive accepts real local files and directories, copy only. Dropped archive files are added as ordinary inputs; dropping on the welcome page still opens them. Reject remote URLs, virtual attachments, links, and special objects. Freeze session, current directory, and inputs on drop; search pages require entering a directory first.
 
@@ -48,7 +48,7 @@ MoveOptions carries only bounded source directory, target directory, and selecti
 
 When the pointer leaves the source window's client area or the source window becomes inactive, transfer the frozen selection to the existing platform external-copy flow and end internal dragging. Once promoted to system drag-out, do not treat exported data returned to the application as an internal move or new input. This prevents private staged content from being added again; platform drag-out rules remain unchanged.
 
-The bridge adds a Move command, reusing the bounded heavy-task queue, task exit barrier, and stable-session validation. Page `edit_restriction` bit 0 means encrypted, bit 1 split, and bit 2 other unsupported records. `update_allowed` holds only when all bits are zero. Reasons come from the entire read-only source snapshot, not the current page. Rejection messages describe capability and do not grant write authority.
+The `Move` and `Update` commands use the bounded task queue and validate the current session. On task admission, the command thread retires the archive snapshot. The controller can retain its last rendered page while waiting for the terminal state and reopening. Page `edit_restriction` bit 0 identifies encryption, bit 1 split volumes and bit 2 other restrictions, including formats without rewriting, disk-indexed ZIP, unsafe records or unsupported methods. `update_allowed` is true only if all bits are clear. The runtime uses the whole source snapshot to compute eligibility, and the task still validates its inputs before writing.
 
 ## Regular archive modification transaction
 

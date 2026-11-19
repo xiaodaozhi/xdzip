@@ -2,19 +2,19 @@
 
 English | [简体中文](../zh-CN/design/architecture-evolution.md)
 
-## From prototypes to the product
+## From framework experiments to the product
 
-Early experiments compared interface frameworks with a synthetic archive list and simulated tasks. Qt Quick was selected for the product. The production application uses a typed cxx bridge and real archive and file operations. The prototype's JSON/C ABI and fixtures explain the technology choice and have no supported integration contract. [Architecture decisions](architecture-decisions.md)
+Early framework experiments used a synthetic archive list and simulated tasks. The product adopted Qt Quick and a typed CXX bridge, then implemented real archive, task and file operations in Rust. Prototype JSON/C ABI and timing numbers belong to those experiments. The [architecture decision records](architecture-decisions.md) preserve the reasons for the choices and conditions for revisiting them.
 
-The product keeps the useful design principles of bounded model caches, request generation checks and accessible controls. The production implementation adds real entry identities, format capability checks, secure file authorization and verified output transactions. The [system architecture](system-architecture.md) follows the current code.
+The product uses bounded row models and checks query identity so old results cannot replace a new view. It adds physical entry identities, explicit format capabilities, file grants, staging and verified publication. The standalone CLI calls the same core without Qt. [System architecture](system-architecture.md), [Domain model](domain-data.md)
 
-## What is available and what is experimental
+## Current, experimental and proposed work
 
-| Area | Current boundary |
+| Area | Current state |
 | --- | --- |
-| Desktop and CLI | Qt Quick desktop plus a separate Rust CLI sharing runtime behavior. |
-| Large archives | Memory and disk indexes live in the runtime. The large ZIP index has separate limits for selected extraction and whole-archive actions. |
-| Formats | Built-in routes follow the [format registry](../engineering/format-registry.md). A reference decoder or format specification alone does not grant support. |
-| Extensions | The [read-only SDK trial](../engineering/sdk-trial.md) exercises a separate protocol and host. Current product builds disable third-party extensions. |
+| Runtime and indexing | Implemented in the host. Ordinary single-file ZIP/ZIP64 can migrate to a private disk index. Task limits and metadata limits remain separate. [Performance design](performance.md) |
+| Format isolation | Built-in format routing selects either in-process Rust or the bundled format worker. A supported operation is defined by its registry/profile and runtime admission. [Format adapters](codec-extension-sdk.md) |
+| External extensions | The independent read-only XDP1 trial has a bounded protocol and platform gates. It runs through a separate host. Product extension discovery, installation and activation remain proposed. [SDK trial](../engineering/sdk-trial.md) |
+| Long-lived state and concurrency | The current scheduler admits one heavy desktop operation at a time. Cross-launch persistent indexes and task recovery, and generalized shared scheduling, remain design options. [Task scheduling](task-scheduling.md), [File publication](file-security.md) |
 
-For current source capabilities, see the [format support table](../../README.md#format-support). For a released build, see the matching release notes.
+For current source capabilities, see the [format support table](../../README.md#format-support). For a released build, use its release notes and artifacts. Native implementation, experimental tools and measured results have their own scope.

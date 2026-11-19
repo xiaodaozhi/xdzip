@@ -31,34 +31,34 @@ Windows 11 x64 用户可以在 Microsoft Store 搜索 **XDZip**。如需直接�
 | macOS | macOS 14 及以上，Apple Silicon | `.dmg`，或 `.app.zip` 应用包 |
 | Linux | Ubuntu 24.04 LTS，x86_64，X11，glibc 2.39 及以上 | `.deb` 安装包，或 `.tar.gz` 运行目录 |
 
-桌面下载包以 `xdzip-<版本>-` 开头，独立[命令行客户端](#命令行)的包以 `xdzip-cli-<版本>-` 开头。发布页还提供校验清单和第三方组件材料。Windows EXE 安装器未签名，Microsoft Store 负责该渠道 MSIX 的签名和更新，两条渠道独立发布，版本以各自的页面为准。macOS 包采用 ad-hoc 完整性签名，系统可能显示安全提示。默认应用由 Windows 和用户管理。详见[安装指南](docs/zh-CN/engineering/installers-associations.md)。
+桌面包以 `xdzip-<版本>-` 开头，独立[命令行工具](#命令行)以 `xdzip-cli-<版本>-` 开头。直接下载后可用发布页的 `SHA256SUMS` 核对文件。GitHub 的 Windows 安装器未签名，macOS 包采用 ad-hoc 完整性签名，未经过 Apple 公证。各安装包的启动方法和文件关联设置见[安装指南](docs/zh-CN/user-guide/install.md)。
 
-GitHub 版可在“关于 xdzip”中主动检查更新。macOS 安装版的原生更新支持系统代理、自定义 HTTP CONNECT/SOCKS5 代理和直连设置。自动安装取决于有效的发布签名和安装身份。便携包及开发构建需要手动安装。详见[更新说明](docs/zh-CN/engineering/software-update.md)和[支持政策](docs/zh-CN/engineering/support-policy.md)。
+Microsoft Store 负责该渠道的更新，与 GitHub 独立发布。GitHub 版可在“关于 xdzip”中主动检查更新。符合条件的 Windows 当前用户安装版、macOS“应用程序”中的副本及 Ubuntu DEB 安装版可以在应用内安装更新。便携版请手动更新。详见[设置与更新](docs/zh-CN/user-guide/settings-and-updates.md)与[支持政策](docs/zh-CN/engineering/support-policy.md)。
 
 **版本说明**：本页的功能说明基于当前源码，发布包以对应版本的发布说明为准。源码构建属于实验性开发版本。
 
 ## 使用 xdzip
 
-打开压缩包后可以先浏览目录、搜索和排序，再选择需要的文件解压。升序和降序都将文件夹排在文件之前。界面提供列表与网格视图、文件属性，以及中文 (简体) 和 English (US)、浅色和深色主题、字号与密度设置。默认自动识别系统界面语言，暂不支持的语言使用 English (US)，也可手动选择。普通单文件 ZIP/ZIP64 最多索引一百万条物理记录，其他格式和分卷路径保持十万条上限。大包的任务与修改边界见[大归档索引](docs/zh-CN/engineering/large-index.md)。
+打开压缩包后可以浏览目录、搜索和排序，再选择需要解压的条目。升序和降序都将目录排在文件之前。界面提供列表和网格视图、文件属性、简体中文和美式英语、浅色和深色主题，以及可调的字号和界面密度。自动语言在支持时跟随系统，否则使用美式英语。普通单文件 ZIP／ZIP64 最多可索引一百万条记录供浏览。多数其他格式的上限更低，解压、整包检查和修改也各有独立限制。详见[用户手册](docs/zh-CN/user-guide/README.md)与[大归档索引](docs/zh-CN/engineering/large-index.md)。
 
 - **内容预览**：在属性卡主动预览受限纯文本、常见栅格图片和静态 SVG，macOS 还支持 HEIC／HEIF。完整读取并完成格式提供的校验后显示，可取消；格式、大小和解码预算见[预览说明](docs/zh-CN/engineering/content-preview.md)。
 - **解压和打开**：选择目标位置与重名策略，查看进度并可请求取消。双击普通文件会先将副本解压到私有临时目录，再交给系统打开；修改副本不会写回压缩包，缓存会在七天后的后续打开操作中清理。
 - **创建和修改**：可创建 ZIP、TAR、TAR.GZ、GZIP、XZ、TAR.XZ、LZ4、TAR.LZ4、Zstandard、TAR.ZST、LZH 和 7z，也能创建 ISO9660/Joliet 数据镜像。Windows x64 还可以创建 ZIP 自解压包。支持对符合条件的普通单文件压缩包添加文件、替换文件和包内移动；也可从列表拖出文件，或拖入文件后确认添加。具体格式和限制见下表。
 - **检查**：可在后台测试整包，不写出文件。校验范围取决于格式。TAR、ISO、UDF 和复合文件（MSI）等格式检查结构与可读性，没有逐文件内容校验和。详见[完整性检查](docs/zh-CN/engineering/archive-checking.md)。
 - **多个归档**：默认在新标签页打开，也可设置为新窗口。同一登录会话共用应用进程和托盘，关闭浏览页面后后台任务仍可从任务入口访问。
-- **文件管理器操作**：可从 Windows 传统右键菜单、Ubuntu Files 子菜单及 macOS Finder Sync 子菜单直接压缩或解压。商店版也会出现在 Windows 11 现代右键菜单，macOS 保留 Finder 服务。操作使用独立窗口，支持逐项 ZIP、智能解压目录和批次取消。安装方式与设置见[文件管理器操作](docs/zh-CN/engineering/shell-actions.md)。
+- **文件管理器操作。** Windows 11 安装版可在“显示更多选项”中使用经典菜单，商店版还可以在现代菜单中显示。Ubuntu 通过已安装的 Files（Nautilus）扩展提供操作。macOS 可在系统设置中启用 Finder 扩展，或使用已登记的 Finder 服务。详见[从文件管理器解压](docs/zh-CN/user-guide/extract.md#从文件管理器解压)。
 
 创建或添加时会排除 `.DS_Store` 文件及 `__MACOSX`、`_MACOSX` 目录。解压时执行路径检查、目标授权、重名处理和暂存，支持的格式还会校验内容；特殊对象和链接的处理因格式与平台而异，详见[安全解压契约](docs/zh-CN/engineering/zip-safe-extraction.md)。
 
 ## 格式支持
 
-下表中的“修改”指向已有压缩包添加、替换或移动条目。“支持”不意味着支持该格式的所有算法或扩展，具体限制见表后说明。
+下表可用于确认 xdzip 能否打开、创建或修改某类压缩包。“修改”指向已有压缩包添加、替换或移动条目。能否读取或检查取决于实际内容、压缩方法和条目类型。后缀只提供探测入口。详细限制见[内置格式登记](docs/zh-CN/engineering/format-registry.md)与[完整性检查指南](docs/zh-CN/user-guide/checks-and-tasks.md)。
 
 | 格式 | 浏览、解压和检查 | 创建 | 修改 |
 | --- | --- | --- | --- |
 | ZIP 及 ZIPX、XPI、APK、IPA、CBZ 候选 | Store、Deflate、Deflate64、BZip2、LZMA、XZ，已准入 AES-256 和分卷配置 | 支持 ZIP，Store、Deflate、AES-256 和编号分卷 | 符合条件的 Store/Deflate ZIP 包 |
 | TAR、TAR.GZ（含 `.tgz`） | 支持普通文件与目录 | 支持，TAR 仅打包 | 符合条件的普通单文件包 |
-| GZIP（`.gz`） | 一个普通文件，包括串联成员 | 一个普通文件，Deflate 0/1/6/9 | 不支持 |
+| GZIP（`.gz`） | 一个逻辑文件，可由串联的 GZIP 成员组成。内部为 TAR 时按目录树浏览。 | 一个普通文件，Deflate 0/1/6/9 | 不支持 |
 | BZip2、独立 LZMA、Lzip v1 | 在流与内存限制内读取一个普通文件 | 不支持 | 不支持 |
 | TAR.BZ2、TAR.LZMA、TAR.LZ | 支持普通文件与目录 | 不支持 | 不支持 |
 | XZ、TAR.XZ（含 `.txz`） | 声明的校验、LZMA2、Delta/BCJ 和串联流 | LZMA2 1/6/9 级，XZ 仅一个普通文件 | 不支持 |
@@ -75,7 +75,7 @@ GitHub 版可在“关于 xdzip”中主动检查更新。macOS 安装版的原�
 | [EGG](docs/zh-CN/engineering/ace-alz-egg-format-sources.md) | 无加密、非固实的普通单卷成员，支持 Store 或原始 Deflate，准确尺寸与 CRC-32 | 不支持 | 不支持 |
 | [PEA](docs/zh-CN/engineering/disk-image-archive-format-sources.md) | PEA 1.x 单卷、UTF-8 名称、无加密 PCOMPRESS0 存储文件与目录，不含对象、流或卷校验 | 不支持 | 不支持 |
 | [复合文件（MSI）](docs/zh-CN/engineering/wim-msi-installer-format-sources.md#compound-file-与-msi) | 浏览存储目录、提取原始数据流，检查结构和可读性 | 不支持 | 不支持 |
-| [NSIS（`.exe`）](docs/zh-CN/engineering/wim-msi-installer-format-sources.md#nsis-与其他-sfx) | 仅提供静态 `firstheader` 元数据，无法提取安装器载荷 | 不支持 | 不支持 |
+| [NSIS（`.exe`）](docs/zh-CN/engineering/wim-msi-installer-format-sources.md#nsis-与其他-sfx) | 仅查看静态 `firstheader` 元数据。不支持解压或整包测试。 | 不支持 | 不支持 |
 | ASAR | 存储文件与目录、共享载荷区间及声明的文件/块 SHA-256 | 不支持 | 不支持 |
 | Z、TAR.Z（包括 `.taz`） | Unix compress LZW、9–16 位字典及已准入 CLEAR/对齐配置 | 不支持 | 不支持 |
 | Brotli、TAR.BR | 普通 RFC 7932 流，10–24 位窗口和全部静态词典变换 | 不支持 | 不支持 |
@@ -99,7 +99,7 @@ GitHub 版可在“关于 xdzip”中主动检查更新。macOS 安装版的原�
 - LHA/LZH 创建采用 LH5、2 级头部和 UTF-8 名称，旧 Windows 工具可能按旧代码页显示这些名称；现有归档不能修改。读取时先解码旧名称再解释分隔符，实际解码时验证存在的 CRC，无 CRC 的古老成员只提供结构与可读性检查。密码、分卷和修复配置尚未准入，PMA 使用独立只读配置，详见 [LHA 契约](docs/zh-CN/engineering/lha-containers.md)。
 - ARJ 为只读格式，二进制及旧文本成员均交付归档中 CRC 覆盖的原始字节，不按平台转换换行。密码、分卷、恢复/安全配置、链接和特殊对象尚未准入。未知方法保持可见，并阻止整包检查成功。
 - ARC 采用只读顺序普通文件配置，验证精确结束。密码解码、分卷、SFX 和 Spark 扩展尚未准入。未知方法保留原始编号，不使用 ZIP 方法别名，并阻止整包检查成功。旧 XOR 加密没有头部标记，解码仍须通过码流、尺寸和 CRC 检查，不进行密码或修复回退。
-- BH 仅准入已独立确认的 `BH 05 07` 方法 8 raw Deflate 配置，只读。未知方法、加密、目录、分卷、尾部和 SFX 前缀不在范围内；官方 IZArc 命令行参考在当前环境产出结果前崩溃。
+- BH 仅支持读取 `BH 05 07` 方法 8 的原始 Deflate 配置。未知方法、加密、目录、分卷、尾部和自解压前缀不在范围内。
 
 - 浏览或提取只读 ASAR 不启动其中的应用。外置 `unpacked` 数据和声明的链接可见但不支持提取，不授予相邻目录访问或可执行权限恢复能力。可选摘要检查损坏，无摘要条目只提供结构与可读性检查，详见 [ASAR 契约](docs/zh-CN/engineering/asar-containers.md)。
 - NSIS 只有在 PE overlay 中发现有界且有效的 `firstheader` 记录时才按内容识别。xdzip 只发布静态元数据行，绝不执行 PE stub、安装器脚本、插件或载荷，不解压安装器头部，也不提供载荷提取；`.exe` 登记项不参与拖放和系统关联，这不是通用可执行文件处理器。
@@ -112,7 +112,7 @@ GitHub 版可在“关于 xdzip”中主动检查更新。macOS 安装版的原�
 
 ## 命令行
 
-稳定版提供无需 Qt 或图形会话的独立 Rust CLI，可列举、解压、创建、添加和测试归档，也支持 JSON 输出。下载对应系统的 `xdzip-cli-<版本>-` 包，解包后运行 `bin/xdzip --help`，Windows 使用 `bin/xdzip.exe`。也可按下面的源码步骤构建：
+独立 CLI 无需 Qt 或图形会话，支持列举、解压、创建、添加和测试压缩包，以及 JSON 输出。解开 `xdzip-cli-<版本>-` 下载包后，macOS 或 Linux 运行 `./bin/xdzip --help`，Windows PowerShell 运行 `.\bin\xdzip.exe --help`。保留可执行文件旁的配套工作进程文件。[命令行入门](docs/zh-CN/integration/README.md)提供使用示例及 PATH 设置方法。也可从源码构建：
 
 ```sh
 git clone https://github.com/xiaodaozhi/xdzip.git
@@ -155,8 +155,9 @@ Windows 使用 MSVC x64 开发环境；macOS 使用 Apple Silicon 原生终端�
 | 产品设计与实现 | [技术参考](docs/zh-CN/reference/README.md) |
 | 隐私与数据处理 | [隐私政策](PRIVACY.zh-CN.md)、[Privacy Policy](PRIVACY.md) |
 | 开发与贡献 | [开发与贡献指南](docs/zh-CN/contributing/README.md) |
-| 版本变化和待办 | [变更日志](CHANGELOG.md)、[GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues) |
-| 贡献 | [贡献指南](CONTRIBUTING.md)、[行为规范](CODE_OF_CONDUCT.md) |
+| 版本变化和待办 | [变更日志](CHANGELOG.zh-CN.md)、[GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues) |
+| 贡献 | [贡献指南](CONTRIBUTING.zh-CN.md)、[行为规范](CODE_OF_CONDUCT.zh-CN.md) |
+| 项目政策 | [项目治理](GOVERNANCE.zh-CN.md)、[安全政策](SECURITY.zh-CN.md) |
 
 欢迎反馈问题或参与贡献。报告缺陷时请提供版本或提交、系统与架构、复现步骤和实际结果；样本请自行生成，避免包含敏感内容。安全问题请通过 [Report a vulnerability](https://github.com/xiaodaozhi/xdzip/security/advisories/new) 私下报告。
 

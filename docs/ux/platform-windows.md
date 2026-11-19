@@ -8,25 +8,25 @@ xdzip operation interfaces use standalone top-level windows, not sheets attached
 
 | Window | Relationship to main window | Close / Escape | Minimize / maximize |
 | --- | --- | --- | --- |
-| Extract, create, open file | Has a transient owner; blocks its main window | Discard current form without starting writes | Disabled / disabled |
-| Name conflict | Blocks its main window; task waits for a decision | Cancel the current task, stop and clean up, then show result; never overwrite by default | Disabled / disabled |
-| Existing archive overwrite confirmation | Blocks its main window | Return to creation form; implementation preserves draft | Disabled / disabled |
-| Task progress | Nonmodal; browsing its archive may continue | Close details only; task continues and can be reopened from task entry | Minimize / disabled |
-| Task results, settings | Nonmodal | Close window and restore appropriate focus | Disabled / disabled |
+| Extract or create form | Nonmodal `OperationWindow` with a transient owner when opened from browsing | Dismiss the draft or confirmation without submitting a new task | Disabled / disabled |
+| Task conflict prompt | Nonmodal prompt owned by the operation window's host. The task waits for a decision | Dismiss the prompt. Reopen it from the task, or explicitly cancel the task there | Disabled / disabled |
+| Password, quit or restart prompt | Application-modal. The native file picker is also application-modal with a transient caller | Password, exit and restart each have explicit dismissal or confirmation actions | According to native dialog capabilities |
+| Task progress and result | Nonmodal `TaskWindow`. Browsing can continue when no other modal is active | Dismiss details and reopen them from the task entry. Standalone work retains a way to reach active tasks | Minimize / disabled |
+| Settings and About | Nonmodal. A tray entry may open it without a browsing owner | Close the view. Settings already saved remain active | Disabled / disabled |
 
 Cancelling a task is an explicit task command independent of closing its progress window. Background completion does not steal foreground focus; update open details or otherwise update the task entry. Application exit still follows task-exit policy; closing the main window cannot directly map to closing auxiliary windows.
 
 ## Platform appearance
 
 - macOS: use a system-decorated title bar with red, yellow and green controls at upper left; do not substitute custom-colored dots for native controls. Fixed-size operation windows retain red Close and disable unavailable minimize/zoom; progress windows can minimize. Actual button availability depends on AppKit/Qt window capabilities and is accepted on a real device. The main window retains normal resize, minimize and fullscreen capabilities.
-- Windows: custom title bars are allowed, with icon/title left and minimize/maximize/close right. Available buttons support system menu, keyboard access, high contrast and hit areas. The main window retains system resize, dragging and snapping; fixed-size operation windows cannot maximize.
-- Linux: custom title bars are allowed; the prototype shows buttons at right, while the product respects desktop environment conventions. Initial support is X11; future Wayland expansion needs separate verification. Unavailable features appear disabled. Environments where custom decoration cannot adapt reliably fall back to server-side decoration.
+- Windows uses a client-extended main title bar with QML caption buttons, a native resizable frame and DWM shadow. Dragging, edge resizing and system snapping use platform facilities. Standalone operation windows use native decorations. See the [Windows and Ubuntu main designs](../../design/hifi/sources/main.html?platform=windows).
+- Ubuntu X11 uses integrated right-side controls, rounded transparent corners in normal state and square corners when maximized or fullscreen. It delegates movement and resizing to the window system. Standalone operation windows keep system decorations. Other backends outside the custom X11 path use normal decorations. Wayland is outside the supported scope. See the [Ubuntu main design](../../design/hifi/sources/main.html?platform=linux).
 
 Each operation window has its own title, border, shadow and draggable title bar; the main window behind it is not dimmed or blurred like a webpage. Initial opening centers within the available area of the owner's display. Restored positions must be clamped to visible screens. Toolbars or content must not cover the title bar.
 
 ## Qt Quick implementation constraints
 
-Each operation window uses a standalone `Window` / `QQuickWindow` with `transientParent`. Blocking decisions use `Qt.WindowModal`; task details, results and settings use `Qt.NonModal`. Do not use QML `Popup` as a top-level operation window or make macOS frameless and draw traffic lights. File pickers open as standalone system windows, not sheets; if native integration cannot provide this mode, explicitly implement and accept platform adaptation.
+`OperationWindow` uses a standalone `Window` with an optional `transientParent` and defaults to `Qt.NonModal`. `PasswordWindow` and `OperationConfirmationWindow` explicitly use `Qt.ApplicationModal`. The native picker takes the actual calling window as its transient owner and restores activation only while that caller is visible. See the [window registry](../../specs/visual/window-registry.json) and [task windows](task-windows.md).
 
 Custom Windows/Linux title bars need actual platform window movement, resizing and system-menu support, not simulated system dragging by manually changing QML positions. `WindowController` handles window lifecycle, ownership, close requests and reopening task views. The core owns tasks; destroying a view cannot destroy an active task. Cross-thread window state updates use only defined bridge events.
 
@@ -41,6 +41,6 @@ Platform controls on the prototype main window are appearance illustrations. Ret
 1. Each operation window is a standalone platform window correctly associated with its main window, with no sheet or webpage-style overlay.
 2. Traffic lights/right-side button order, disabled state and close requests match platform and window capabilities; titles and system buttons do not overlap at different font sizes and scales.
 3. Window dragging, screen boundaries, multiple displays, 125%/150%/200% scaling and light/dark themes work correctly.
-4. Closing task details leaves the task running and the task entry can reopen it; closing a conflict window safely stops without overwriting files.
+4. Closing task details leaves the task running and the task entry can reopen it. Closing a conflict window leaves the task waiting until the user reopens the prompt or explicitly cancels the task.
 5. Owner modality, focus restoration, keyboard navigation, screen-reader titles and system shortcuts work; unrelated archive windows are not unnecessarily blocked.
 6. Verify Windows system menu/snapping and Linux X11 separately; Wayland is outside initial support. Existing Qt real-device conclusions are in [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5). This list is for rechecking affected items later and does not reset completed acceptance.

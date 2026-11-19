@@ -6,7 +6,7 @@ This guide explains how the desktop application connects to the Rust runtime thr
 
 ## Implemented services
 
-`xdzip-runtime::service` is the product implementation; diagnostic probes remain separate. The GUI owns only `CommandClient`; a dedicated Qt receiver thread exclusively owns `EventReceiver`. Each handle is taken once. cxx supplies ABI glue for this bridge; platform file-access security boundaries are separately described in the [file security specification](../design/file-security.md). A single Rust worker owns source files and archive snapshots; Archive handles and synchronous scan entry points are no longer exposed to Qt.
+`xdzip-runtime::service` implements the product service. The GUI takes `CommandClient` once and a dedicated Qt receiver thread takes `EventReceiver` once. The Rust command thread owns the connection's open archive and browse snapshot. The separate Rust task thread receives prepared work with the source/settings it needs and publishes task updates. Archive handles and synchronous scan entry points stay in Rust. See the [Qt/Rust bridge](../design/qt-rust-bridge.md) for the ABI and [task scheduling](../design/task-scheduling.md) for ownership and admission.
 
 Core commands include Open, Browse, Preflight, CloseSession, and Snapshot; all existing real browsing and preflight use them. Each accepted ordinary request gets a non-reused ID, returns at most one bounded data event, then exactly one Finished; errors return Finished directly. Pages carry session, request, and offset identity. Each RuntimeConnection has one session and serial GUI pending requests. Queries also include a full query ID, GUI generation, and snapshot revision; see the [ZIP browsing contract](zip-readonly-browsing.md). Cross-session requests return stale_session.
 
@@ -31,7 +31,7 @@ Control and ordinary events are taken alternately so continuous cancellation ack
 
 ## Shutdown, destruction, and failure
 
-Native window close and application Quit, including macOS Cmd+Q, enter one asynchronous shutdown path. Stop admission, cancel accepted work, continue draining terminal states, and mark work finished after Rust releases sessions. The receiver thread joins the Rust worker, then receives ShutdownReady and EOF. Only after the Qt receiver ends and the mailbox drains may the GUI exit. The GUI never joins threads waiting on events or file work.
+Closing an individual archive or dismissing a window can leave the application and its tasks running in the tray. When the application exits or restarts, the coordinator stops admission, requests cancellation, and drains events while Rust releases its sessions. The receiver joins both Rust threads before returning `ShutdownReady`. The desktop waits for the Qt receiver to finish and the mailbox to drain before exiting. The GUI thread never joins threads that are waiting on file work or event delivery.
 
 Cancellation/shutdown control uses short critical sections containing bounded state operations, independent of data-queue capacity. Cooperative cancellation cannot interrupt an OS-blocked read; this is not a hard real-time exit guarantee. Read-only requests here do not produce output transactions. Creation/extraction commits, staging cleanup, and exit results follow the [creation](zip-creation.md) and [safe extraction](zip-safe-extraction.md) contracts separately.
 

@@ -46,7 +46,7 @@
 
 ### 创建压缩包与能力
 
-原型中的 ZIP 显示四档压缩级别，默认 2-正常压缩，不另设算法控件。TAR 仅打包，TAR.GZ 使用 GZIP 0／1／6／9，两者禁用并清空密码与分卷参数。格式变化更新扩展名。空输入/空名称/空保存位置禁用创建。原型的格式选项不等同于当前产品的完整能力：产品支持 ZIP 和 7z 的受限创建、密码与分卷，RAR 不支持创建；实际边界见[格式后端](../engineering/native-codecs.md)、[密码交互](password-extraction.md)和[分卷契约](../engineering/archive-opening.md)。
+原型展示 ZIP 压缩级别、TAR 打包和 GZIP 压缩选项，检查输入、名称和目标字段，并随格式更新扩展名。当前产品的选项由[内置格式登记](../engineering/format-registry.md)提供，包括 [ISO](../engineering/iso-creation.md) 与 [Windows 自解压包](../engineering/sfx-creation.md)创建配置。可用的密码和分卷选项见[密码交互](password-extraction.md)与[分卷契约](../engineering/archive-opening.md)。
 
 ### 视觉与适配
 

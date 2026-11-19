@@ -6,7 +6,7 @@ This page defines reusable provenance and redistribution review methods for each
 
 ## Candidate and inputs
 
-Bind review to an explicit version, full commit SHA, source package, actual installers for each platform and SHA-256. Provide same-commit SBOM, provenance and notices, offline rebuild and applicable Qt source and replacement verification. Select performance and desktop checks according to actual changes, recording results and uncovered scope. Reassess affected items if source tree or packages change; do not mix binaries and historical reports from different commits. Machine report `automatic_complete` and `release_ready` values are not rewritten because an issue closes or documentation is reorganized.
+Bind review to the version, full source commit, delivered platforms and actual package SHA-256 values. Use same-candidate SBOMs, provenance, notices and applicable Qt source and replacement evidence. Review the real corresponding-source and relinking obligations without requiring a source archive as a release attachment. The separate collector runs only at the owner's explicit request. Choose performance and desktop checks according to the change. Reassess affected evidence after source or package changes. Machine report `automatic_complete` and `release_ready` retain their actual values.
 
 ## Review items
 

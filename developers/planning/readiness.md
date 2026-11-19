@@ -14,7 +14,7 @@ This page defines repeatable review requirements. Completion records, manual con
 
 ## Work-package exit
 
-Each work package defines dependencies, deliverables, acceptance criteria, exclusions and actual evidence in its issue. Track unfinished defects, resource limits and license reviews separately; do not automatically close them because CI passed once. Record owner decisions that adjust exit boundaries without describing unperformed reviews as passed. Historical WP-12 closure is in [#5](https://github.com/xiaodaozhi/xdzip/issues/5).
+Each work package defines dependencies, deliverables, acceptance criteria, exclusions and actual evidence in its issue. Once required checks pass, finish the authorized [main integration, remote verification and cleanup](../engineering/repository-hygiene.md). Track unresolved defects and licensing separately. If a required external decision or an explicit delivery boundary prevents completion, record the remaining steps and leave the corresponding work open.
 
 ## Public release
 

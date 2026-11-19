@@ -10,16 +10,16 @@ This module provides metadata preflight rules. It has no destination authorizati
 
 Selection is limited to 128 physical IDs, must be nonempty, and all IDs must belong to the current snapshot. Selecting a directory expands all descendants using slash boundaries in original names, independent of search, pagination, or current directory scope. Selecting a directory and child counts the child once. Same-name physical records are not merged by path. Directory statistics count only explicit records and do not synthesize directory objects.
 
-Preflight runs through the command/event service, reusing bounded admission and independent cancellation. Results do not replace the browsing page or clear selection. Changing selection, query, or session clears the old report and closes the result window, preventing old-selection results from being used for new operations. Reports correspond only to metadata at scan time; preflight does not revalidate source content or identity.
+Preflight runs through the command/event service with bounded admission and independent cancellation. The runtime checks the open source identity before and after inspection. For disk-indexed ZIP, it loads the selected physical records and needed descendants from the index. Changing the selection, query or session clears the report. Results are estimates from recorded metadata. Preflight never decodes member payloads, reserves destination paths or authorizes writes.
 
 ## Rules performed
 
 - Names must resolve to UTF-8, at most 4 KiB, 64 components, and 255 bytes per component; original names are not repaired or rewritten.
 - Reject absolute paths, empty components, `.`, `..`, backslashes, colons, control/bidirectional controls, Windows-invalid characters, and trailing spaces/dots in components.
 - Reject common Windows device names, including extension forms and superscript COM/LPT digits, conservatively applying a cross-platform portable-name subset.
-- Report existing metadata warnings, unsupported encryption, and non-Store/Deflate methods. Entries strictly identified as supported AES-256 separately warn that extraction needs a password; method 99 is not incorrectly reported as an unknown compression method. This filters declared capability only and does not decrypt, authenticate, or decode. See the [format contract](tar-gzip.md) for TAR/TAR.GZ capability mapping.
+- Report existing metadata warnings and use the record's payload and password capability flags. An encrypted record can report either a supported password requirement or unsupported encryption. A record with known size and an unsupported payload also reports a method finding. Preflight uses the metadata and capabilities projected by the reader. It does not decrypt, authenticate or decode the payload.
 - Check exact duplicate names, collisions from Unicode lowercase comparison, parent-directory aliases differing in case, and file/directory conflicts in both insertion orders. An implicit parent directory may be supplemented by an explicit directory of the same name; duplicate explicit directory records still conflict.
-- Declared per-file size above 8 GiB, total above 20 GiB, or integer overflow produce findings; declared compression ratio above 1000:1 prompts review. Declared directory sizes do not count toward output bytes.
+- Report declared per-file size above 8 GiB, totals above 20 GiB and integer overflow. For ZIP records, a declared compression ratio above 1000:1 prompts review. Directory sizes do not count toward output bytes.
 
 Unicode lowercase comparison is not full case folding or NFC/NFD filesystem equivalence. Any non-ASCII component marks the report “Requires destination filesystem review.” Even a report with no findings does not authorize output.
 

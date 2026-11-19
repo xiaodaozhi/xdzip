@@ -31,34 +31,34 @@ For Windows 11 x64, search for **XDZip** in Microsoft Store. For direct download
 | macOS | macOS 14 and later, Apple Silicon | `.dmg` or `.app.zip` application bundle |
 | Linux | Ubuntu 24.04 LTS, x86_64, X11, glibc 2.39 or later | `.deb` package or `.tar.gz` runtime directory |
 
-Desktop downloads start with `xdzip-<version>-`, and standalone [command-line client](#command-line) packages start with `xdzip-cli-<version>-`. The release page also provides checksums and third-party component materials. The Windows EXE installer is unsigned. Microsoft Store signs and updates its MSIX edition. Each channel publishes independently, so check the version in the channel you use. The macOS package uses an ad-hoc integrity signature, so the system may display security prompts. Windows and the user manage default applications. See the [installation guide](docs/engineering/installers-associations.md).
+Desktop assets start with `xdzip-<version>-`. Standalone [CLI](#command-line) assets start with `xdzip-cli-<version>-`. Use `SHA256SUMS` on the release page to verify a direct download. The Windows GitHub installer is unsigned. The macOS download uses ad-hoc integrity signing and is not notarized. See the [installation guide](docs/user-guide/install.md) for how to launch each package and set file associations.
 
-For GitHub builds, check for updates from “About xdzip.” Native updates for installed macOS builds support system proxies, custom HTTP CONNECT/SOCKS5 proxies, and direct connections. Automatic installation depends on a valid release signature and installation identity. Portable packages and development builds require manual installation. See [software updates](docs/engineering/software-update.md) and the [support policy](docs/engineering/support-policy.md).
+Microsoft Store handles updates for its edition and publishes independently of GitHub. For GitHub downloads, use **About xdzip** to check for updates. In-app installation is available to eligible Windows per-user installations, macOS apps installed in Applications, and Ubuntu DEB installations. Use a manual upgrade for portable copies. See [settings and updates](docs/user-guide/settings-and-updates.md) and the [support policy](docs/engineering/support-policy.md).
 
 **Version note:** Features on this page describe the current source tree. Consult the release notes for the corresponding release package. Builds from source are experimental development versions.
 
 ## Using xdzip
 
-Open an archive to browse its directories, search and sort entries, and select files to extract. Sorting keeps folders first in both directions. The interface offers list and grid views, file properties, Simplified Chinese and English (US), light and dark themes, and font size and density settings. By default, the application detects the system UI language and falls back to English (US) for unsupported languages; you can also choose a language manually. A regular single-file ZIP/ZIP64 archive can index up to one million physical records; other formats and split archive paths retain a limit of 100,000. See [large archive indexing](docs/engineering/large-index.md) for task and modification limits.
+Open an archive to browse its folders, search and sort entries, and select what to extract. Sorting keeps folders first in both directions. The interface offers list and grid views, file properties, Simplified Chinese and English (US), light and dark themes, and adjustable font size and density. The default language follows the system when supported and falls back to English (US). An ordinary single-file ZIP/ZIP64 can index up to one million records for browsing. Most other archive routes have lower limits. Extraction, whole-archive checks and modification have separate limits. See the [user manual](docs/user-guide/README.md) and [large archive indexing](docs/engineering/large-index.md).
 
 - **Content preview:** Explicitly preview bounded plain text, common raster images, and static SVG in the properties card; macOS also supports HEIC/HEIF. Preview appears after the content is fully read and any checks provided by the format are complete, and it can be canceled. See [preview](docs/engineering/content-preview.md) for formats, sizes, and decoding budgets.
 - **Extract and open:** Choose a destination and name-conflict policy, view progress, and request cancellation. Double-clicking a regular file extracts a copy to a private temporary directory before opening it with the system. Changes to the copy are not written back to the archive; cached copies are cleaned up during a later open operation after seven days.
 - **Create and modify:** Create ZIP, TAR, TAR.GZ, GZIP, XZ, TAR.XZ, LZ4, TAR.LZ4, Zstandard, TAR.ZST, LZH and 7z archives, and ISO9660/Joliet data images. Windows x64 can also create ZIP self-extracting files. Add, replace, or move entries in eligible regular single-file archives. You can also drag files out of the list or drag files in and confirm adding them. See the table below for formats and limits.
 - **Check:** Test an entire archive in the background without writing files. The checks depend on the format. Formats such as TAR, ISO, UDF and Compound File (MSI) provide structure and readability checks without per-file content checksums. See [archive integrity checks](docs/engineering/archive-checking.md).
 - **Multiple archives:** Open archives in new tabs by default or configure them to open in new windows. A login session shares the application process and tray; background tasks remain accessible from the task entry point after browser pages close.
-- **File-manager actions:** Create or extract archives from the Windows classic context menu, Ubuntu Files submenu, or macOS Finder Sync submenu. The Store edition also appears in the Windows 11 modern context menu. Finder services remain available on macOS. Actions use separate windows and support per-item ZIP creation, smart extraction directories and batch cancellation. See [file-manager actions](docs/engineering/shell-actions.md) for installation and settings.
+- **File-manager actions.** Use **Show more options** for the classic Windows 11 menu in installed editions. The Store edition can also appear in the modern menu. On Ubuntu use Files (Nautilus) with the installed extension. On macOS enable the Finder extension in system settings or use the registered Finder Service. See [file-manager extraction](docs/user-guide/extract.md#from-the-file-manager).
 
 `.DS_Store` files and `__MACOSX` and `_MACOSX` directories are excluded when creating archives or adding files. Extraction checks paths and destination authorization, handles name conflicts, and stages output; supported formats also verify content. Handling of special objects and links varies by format and platform. See the [safe extraction contract](docs/engineering/zip-safe-extraction.md).
 
 ## Format support
 
-“Modify” means adding, replacing, or moving entries in an existing archive. Support does not imply support for every algorithm or extension of a format; see the notes below.
+Use the table to check whether xdzip can open, create or edit an archive. “Modify” covers adding, replacing or moving entries in an existing archive. Read and check support depends on the actual contents, compression method and record type. Opening a file by suffix starts detection. For the detailed limits, see the [built-in format registry](docs/engineering/format-registry.md) and [integrity check guide](docs/user-guide/checks-and-tasks.md).
 
 | Format | Browse, extract, and check | Create | Modify |
 | --- | --- | --- | --- |
 | ZIP and ZIPX/XPI/APK/IPA/CBZ candidates | Store, Deflate, Deflate64, BZip2, LZMA, XZ; admitted AES-256 and split profiles | ZIP with Store, Deflate, AES-256 and numbered volumes | Eligible Store/Deflate ZIP archives |
 | TAR, TAR.GZ (including `.tgz`) | Regular files and directories | Supported; TAR only packs files | Eligible regular single-file archives |
-| GZIP (`.gz`) | One regular file, including concatenated members | One regular file, Deflate 0/1/6/9 | Not supported |
+| GZIP (`.gz`) | One logical file, including concatenated GZIP members. TAR inside GZIP exposes a TAR tree. | One regular file, Deflate 0/1/6/9 | Not supported |
 | BZip2, LZMA Alone, Lzip v1 | One regular file, within stream and memory limits | Not supported | Not supported |
 | TAR.BZ2, TAR.LZMA, TAR.LZ | Regular files and directories | Not supported | Not supported |
 | XZ, TAR.XZ (including `.txz`) | Declared checks, LZMA2, Delta/BCJ and concatenated streams | LZMA2 levels 1/6/9, XZ with one regular file | Not supported |
@@ -75,7 +75,7 @@ Open an archive to browse its directories, search and sort entries, and select f
 | [EGG](docs/engineering/ace-alz-egg-format-sources.md) | Non-encrypted, non-solid single-volume members using Store or raw Deflate, exact sizes and CRC-32 | Not supported | Not supported |
 | [PEA](docs/engineering/disk-image-archive-format-sources.md) | PEA 1.x single-volume, UTF-8 names, unencrypted PCOMPRESS0 stored files/directories; no object, stream or volume checks | Not supported | Not supported |
 | [Compound File (MSI)](docs/engineering/wim-msi-installer-format-sources.md#compound-file-and-msi) | Browse storages and extract raw streams. Check structure and readability. | Not supported | Not supported |
-| [NSIS (`.exe`)](docs/engineering/wim-msi-installer-format-sources.md#nsis-and-other-sfx) | Static `firstheader` metadata only. Installer payload extraction is unavailable. | Not supported | Not supported |
+| [NSIS (`.exe`)](docs/engineering/wim-msi-installer-format-sources.md#nsis-and-other-sfx) | Static `firstheader` metadata only. Extraction and whole-archive testing are unavailable. | Not supported | Not supported |
 | ASAR | Stored files/directories, shared payload ranges and declared file/block SHA-256 | Not supported | Not supported |
 | Z, TAR.Z (including `.taz`) | Unix compress LZW, 9–16-bit dictionaries and admitted CLEAR/alignment profiles | Not supported | Not supported |
 | Brotli, TAR.BR | Ordinary RFC 7932 streams, 10–24-bit windows and all static dictionary transforms | Not supported | Not supported |
@@ -101,7 +101,7 @@ Open an archive to browse its directories, search and sort entries, and select f
 - LHA/LZH creation uses LH5 and UTF-8 names with level-2 headers. Legacy Windows tools may display these names using their old code page. Existing archives cannot be modified. Legacy names are decoded before separators, and present CRCs are verified during actual decoding; ancient members without CRC provide structure/readability only. Passwords, volumes and repair profiles are not admitted. PMA has a separate read-only profile. See the [LHA contract](docs/engineering/lha-containers.md).
 - ARJ is read only. Binary and legacy text members deliver the archive's CRC-covered bytes without platform newline conversion. Passwords, volumes, recovery/security profiles, links and special objects are not admitted. Unknown methods remain visible and prevent whole-archive check success.
 - ARC is read only, with sequential regular files and exact termination. Password decoding, volumes, SFX and Spark extensions are not admitted. Unknown methods remain visible without ZIP method aliases and prevent whole-archive check success. Old XOR encryption has no header flag; decoding still requires a valid stream, exact size and CRC, without password or repair fallback.
-- BH is read only and limited to the independently confirmed `BH 05 07` method-8 raw-Deflate profile. Unknown methods, encryption, directories, volumes, trailers and SFX prefixes remain outside the admitted scope; the official IZArc command-line reference crashed before producing output in this environment.
+- BH reading supports the `BH 05 07` method-8 raw Deflate profile. It excludes unknown methods, encryption, directories, volumes, trailers and SFX prefixes.
 
 - Large ZIP archives using the disk-backed index do not currently support whole-archive testing or modification. Selected regular files can still be extracted within task limits; see [large archive indexing](docs/engineering/large-index.md).
 - Sparse TAR and third-party extensions are not currently supported. Ordinary GZIP and ZIP-derived XPI/APK/IPA/CBZ candidates follow the [single-file stream contract](docs/engineering/single-file-streams.md). Legacy filename encodings are detected where possible, but short names and mixed encodings cannot be identified uniquely in every case; see [filename encoding](docs/engineering/filename-encoding.md).
@@ -112,7 +112,7 @@ Open an archive to browse its directories, search and sort entries, and select f
 
 ## Command line
 
-The stable release includes a standalone Rust CLI that does not require Qt or a graphical session. It lists, extracts, creates, adds to, and tests archives, and supports JSON output. Download the `xdzip-cli-<version>-` package for your system and run `bin/xdzip --help` after extraction. On Windows use `bin/xdzip.exe`. You can also build it from source:
+The standalone CLI runs without Qt or a graphical session. It lists, extracts, creates, adds to and tests archives, and supports JSON output. Unpack the `xdzip-cli-<version>-` asset and run `./bin/xdzip --help` on macOS or Linux, or `.\bin\xdzip.exe --help` in Windows PowerShell. Keep the bundled worker alongside the executable. The [CLI quick start](docs/integration/README.md) covers first commands and installation on PATH. You can also build from source:
 
 ```sh
 git clone https://github.com/xiaodaozhi/xdzip.git
@@ -157,6 +157,7 @@ Development packages are not official releases. Windows and Linux development ar
 | Build and contribute | [Contributor guide](docs/contributing/README.md) |
 | Changes and planned work | [Changelog](CHANGELOG.md), [GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues) |
 | Contributing | [Contributing guide](CONTRIBUTING.md), [code of conduct](CODE_OF_CONDUCT.md) |
+| Project policy | [Governance](GOVERNANCE.md), [security](SECURITY.md) |
 
 Feedback and contributions are welcome. When reporting a bug, include the version or commit, system and architecture, reproduction steps, and actual results. Generate your own samples and avoid including sensitive information. Report security issues privately through [Report a vulnerability](https://github.com/xiaodaozhi/xdzip/security/advisories/new).
 

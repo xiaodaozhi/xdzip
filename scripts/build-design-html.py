@@ -264,11 +264,11 @@ def shell(title: str, body: str, documents: dict[str, etree._Element], *, curren
 <title>{escape(title)}，xdzip 软件设计</title>{styles}</head>
 <body><a class="skip-link" href="#main">跳至正文</a>
 <header class="topbar"><button class="button menu-button" id="menu-toggle" aria-label="展开文档目录" aria-expanded="false" aria-controls="sidebar">目录</button>
-<a class="brand" href="{'#doc-index' if combined else 'index.html'}">xd<span>zip</span></a><span class="top-label">软件设计，基线 0.1，16 篇</span>
+<a class="brand" href="{'#doc-index' if combined else 'index.html'}">xd<span>zip</span></a><span class="top-label">软件设计，{len(documents)} 篇</span>
 <div class="top-actions">{alternate}<button class="button" id="open-search" aria-haspopup="dialog">搜索<kbd>⌘ / Ctrl K</kbd></button><button class="button" id="theme-toggle">深色</button></div></header>
 <button class="mobile-shade" id="mobile-shade" aria-label="关闭目录"></button>
 <div class="layout"><nav class="sidebar" id="sidebar" aria-label="文档目录"><p class="nav-label">SOFTWARE DESIGN</p>{''.join(nav)}<p class="sidebar-note">Qt Quick / QML + C++ + Rust<br>离线可用，无外部资源<br>产品设计与技术说明</p></nav>
-<main class="content" id="main" tabindex="-1">{body}{navigation}<footer class="footer">xdzip 软件设计，2026-10-11，基线 0.1</footer></main>
+<main class="content" id="main" tabindex="-1">{body}{navigation}<footer class="footer">XDZip 软件设计</footer></main>
 <aside class="toc" aria-label="本页目录"><div class="toc-title">{'完整文档目录' if combined else '本页目录'}</div>{toc_html}</aside></div>
 <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title"><div class="search-header"><div class="search-title"><h2 id="search-title">搜索全部设计文档</h2><button class="button" id="close-search" aria-label="关闭搜索">关闭</button></div>
 <label class="nav-label" for="search-input">关键词</label><input class="search-input" id="search-input" type="search" autocomplete="off" placeholder="例如：路径安全、取消、格式扩展">
@@ -349,7 +349,7 @@ def main() -> None:
     instructions.write_text(
         "xdzip HTML 软件设计文档\n\n"
         "多页面阅读：解压整个目录后，用浏览器打开 index.html。请保留 assets 目录。\n"
-        "单文件阅读：all.html 包含全部 16 篇、样式、搜索数据和两张 SVG 图，可以单独复制分享。\n"
+        f"单文件阅读：all.html 包含全部 {len(documents)} 篇、样式、搜索数据和 {report['inline_diagrams']} 张 SVG 图，可以单独复制分享。\n"
         "搜索：点击顶部搜索按钮，或按 Cmd/Ctrl+K；可用空格组合关键词。\n"
         "显示：顶部按钮切换深浅色；窄屏点击目录按钮切换文档。\n"
         "打印：使用浏览器打印功能，可另存为 PDF；导航和搜索控件会自动隐藏。\n"

@@ -1,4 +1,4 @@
-# W01 main-window welcome page, high-fidelity candidate
+# Main-window welcome page
 
 English | [简体中文](../zh-CN/ux/welcome.md)
 
@@ -19,7 +19,7 @@ Do not show example recent files, sample sizes or format capabilities the produc
 - The welcome page may appear at first launch, after closing the last archive tab, or after opening fails with no browsable archive. Background tasks continue and are not reset by the welcome page.
 - Open invokes the system file picker; cancellation stays on the welcome page. Success switches to the real archive tab; failure displays a recoverable error and must not fabricate a successful list.
 - Create opens the existing creation window; cancellation retains the welcome page. Candidate shortcuts are ⌘O/⌘N on macOS and Ctrl+O/Ctrl+N on Windows/Linux. Check actual application bindings before implementation; this design does not claim they are integrated.
-- When one supported archive is dragged in, the dashed border becomes a 2-pixel theme accent, fill becomes selection and copy says “Release to open archive”. Leaving restores the default. Directories, multiple files and unsupported formats must not appear openable; dropping them gives clear feedback and never implicitly creates an archive.
+- Dragging an eligible selection highlights the drop area with a 2-logical-pixel accent border and selection fill. Leaving restores the normal state. The desktop and HTML review have separate admission rules. See [Real Qt integration](#real-qt-integration) for actual file opening.
 - The entire card is clickable. Keyboard order after the title bar is open, create, tasks. Keyboard focus adds no outline and follows the window-wide focus-loss rule. Hover and pressed use shared accentHover and accentPressed, not opacity alone.
 - While opening, the open card replaces its title with a busy indicator and “Opening…” and temporarily prevents repeated opening and drops; disabled appearance uses accentDisabled and accentDisabledText. Whether the creation window can run concurrently follows host rules; the welcome page does not change task semantics. Busy, disabled and error are implementation contracts not depicted in the four static originals.
 - Settings and task popups retain width 240, font 13 and minimum row height 32, a 1:1 ratio with body font 13; the welcome page introduces no separate menu style. Card font 16 is an entry heading, not a menu-density comparison baseline.
@@ -36,7 +36,7 @@ WelcomePage and WelcomeAction express layout and intent only. The welcome page a
 
 Open and system shortcuts reuse chooseArchive; creation reuses CreateWindow. The native file picker remains a system window and cancellation creates no session. Qt routes by the saved tab/window mode, preferentially reuses an empty start page and activates existing sessions for duplicate archives.
 
-Drop handling accepts only one local regular file whose name ends in ZIP, TAR, TAR.GZ or TGZ. QFileInfo checks input shape only and does not read archive content. openDroppedUrls reuses openPath; the existing Rust core still checks format, budgets, errors and source changes. A dropped extension does not prove valid contents. Directories, multiple entries and network URLs are explicitly rejected; no archive is implicitly created.
+The welcome page can open up to 128 local files from one drop when using the desktop session manager. Each item must match a generated drag-and-drop suffix or a supported split-volume naming pattern. The single-session development entry accepts one item. Directories and nonlocal URLs are rejected. These checks choose an opening route. The Rust runtime still identifies the actual format and validates the source. Use **Open archive** for formats with an explicit-open entry only. See the [format registry](../engineering/format-registry.md).
 
 Dimensions come from welcome-reference.json into Theme through generate-qml-theme.py. Larger text grows cards and body; the body scrolls and automatically brings focused keyboard entries into view. Status and title areas grow independently without Item.scale. Qt uses shared PNG icons, with the existing dark/light-ink graphic for the primary action; runtime assets are not cut from originals.
 

@@ -4,7 +4,7 @@ English | [简体中文](../zh-CN/user-guide/passwords-and-volumes.md)
 
 ## Passwords
 
-Some archives need a password before they can show filenames. Others prompt when you extract, check or preview an encrypted file. Enter the password when XDZip asks for it. Keep exact spaces and letter case. Cancel the prompt if you do not have the password. An error can indicate unsupported encryption or damaged content, so verify the method as well as the password. [Supported encryption](../engineering/password-extraction.md)
+AES Crypt and archives with encrypted filenames, such as 7z with name encryption, need a password before showing the file list. Others can prompt during extraction, testing or preview. Preserve spaces and letter case when entering the password. ZIP AES-256 is supported in admitted profiles. ZIP AES-128/192 and traditional ZipCrypto are unsupported. If the password is correct but the archive still fails, check encryption support and whether the file is damaged. [Supported encryption](../engineering/password-extraction.md)
 
 When creating a password-protected archive, choose a format that offers encryption. ZIP AES-256 protects file contents and leaves filenames visible. If the file list must also be protected, choose 7z and enable filename encryption. Store the password separately from the archive.
 

@@ -2,7 +2,7 @@
 
 English | [简体中文](zh-CN/README.md)
 
-Use this handbook for recurring team operations. Results for a particular run, candidate or work package belong in its issue with a commit and evidence link. This directory is part of the public repository. Keep private material in approved private channels. For product and contribution guides, see the [documentation home](../docs/README.md).
+Use this handbook with [AGENTS.md](../AGENTS.md), the repository working agreement. Put the outcome for a run, candidate or issue in its GitHub issue with the exact commit, actual verification and evidence links. Keep private material in approved private channels. For product and contribution guides, see the [documentation home](../docs/README.md).
 
 | Task | Procedures |
 | --- | --- |

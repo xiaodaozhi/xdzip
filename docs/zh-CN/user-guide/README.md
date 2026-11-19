@@ -2,7 +2,7 @@
 
 [English](../../user-guide/README.md) | 简体中文
 
-本手册说明如何在 Windows、macOS 和 Linux 上使用 XDZip。第一次练习时，可以先复制一份熟悉的压缩包。已安装版本的功能以对应发布说明为准。[下载 XDZip](../../../README.zh-CN.md#下载安装)
+首次使用可从[安装指南](install.md)开始，核对 Windows、macOS 和 Ubuntu 的适用配置。想确认某种压缩包可以执行哪些操作，可查[格式支持表](../../../README.zh-CN.md#格式支持)。已安装的版本请查阅对应[发布说明](https://github.com/xiaodaozhi/xdzip/releases)。
 
 | 想做什么 | 对应章节 |
 | --- | --- |

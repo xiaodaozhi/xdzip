@@ -81,7 +81,7 @@
 
 [设计画廊](../../../../design/hifi/sources/windows-store-artwork.html)是高保真入口。可编辑构图位于 [build-windows-store-assets.cjs](../../../../scripts/build-windows-store-assets.cjs)，本地化文案、配色与输出画布参数位于 [windows-store.json](../../../../specs/marketing/windows-store.json)，[素材清单](../../../../specs/marketing/windows-store-assets.json)保存 PNG 及源图、输出摘要，包含原生输入和两张 README 图片；[截图素材清单](../../../../specs/marketing/windows-store-captures.json)保存候选身份、原生截图与捕获回执摘要、客户区裁切、尺寸、DPI、图片说明和圆角处理参数。固定输出画布只用于商店图片，不改变 Qt 窗口逻辑尺寸，也不把屏幕缩放写入产品。
 
-替换截图前，分别运行两种语言的原生截图流程，并按 100% 比例审阅 PNG。将两个完整捕获目录传给 [import-windows-store-captures.cjs](../../../../scripts/import-windows-store-captures.cjs)。导入器先核对全部八张 PNG 的候选身份、摘要及客户区与窗框像素的精确对应，再更新材料输入。JPEG、不完整或身份不符的回执会被拒绝。更新候选时，先明确修改营销规格中的基线。
+通过[本地刷新命令](capture.md)捕获两种语言的原生截图，生成隔离预览并按 100% 比例审阅 PNG，确认后再应用变更。刷新命令使用 [import-windows-store-captures.cjs](../../../../scripts/import-windows-store-captures.cjs) 校验两个完整捕获目录，核对全部八张无损 PNG 的候选身份、摘要及客户区与窗框像素的精确对应。JPEG、不完整或身份不符的截图会被拒绝。更换候选时，先更新营销规格中的基线。
 
 安装 Node.js 后，首次使用时安装固定版本的图片依赖。脚本会自动从本地工具链查找，无需设置 `NODE_PATH`：
 
@@ -89,7 +89,7 @@
 npm install --prefix build/toolchain/windows-store-tools --no-save --no-package-lock sharp@0.34.5
 ```
 
-然后执行：
+如需从两个已审阅的截图目录手动导入并生成素材，执行：
 
 ```sh
 node scripts/import-windows-store-captures.cjs build/captures-en-US build/captures-zh-CN

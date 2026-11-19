@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/native-codecs.md)
 
-7z, RAR, CAB, and ISO/UDF use [independent Rust backends](independent-rust-codecs.md) through a shared thin CXX boundary in the same isolated worker. ZIP, TAR, compressed streams and DEB use in-process Rust backends. The product does not search user PATH for alternatives or invoke external command-line extractors.
+7z, RAR, CAB and ISO/UDF reads use [built-in Rust codecs](independent-rust-codecs.md) behind one shared CXX boundary in the isolated worker. The same worker handles 7z writing within host-controlled tasks. The Rust host handles ZIP, TAR, compressed streams, DEB and [new ISO9660/Joliet images](iso-creation.md) in-process. Format selection uses built-in routes. No route searches PATH for a command-line decoder.
 
 CAB always uses the independent Rust route in the product, without test switches, official handlers, or failure fallback. See the [in-house contract](independent-rust-codecs.md#cab只读规格) for complete frames, shared algorithms, and resource boundaries, and [CAB sources](cab-format-sources.md) for provenance and reference-analysis roles.
 

@@ -6,7 +6,7 @@ Use [Build and contribute](../contributing/README.md) to choose a build and veri
 
 ## Obtain and modify
 
-Start from a clean working tree and submit a PR under the [contribution policy](../../CONTRIBUTING.md). When a contract changes, update its two language versions and the affected verification cases. Use the values in specs/visual for colors and geometry.
+Start from current `main` and preserve other work in the checkout. Follow the [contribution policy](../../CONTRIBUTING.md) for scope and review and the [repository delivery guide](../../developers/engineering/repository-hygiene.md) for authorized integration. When a contract changes, update both language versions and the affected verification cases. Use `specs/visual` for colors and geometry.
 
 ## Documentation builds
 

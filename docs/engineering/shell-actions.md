@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/shell-actions.md)
 
-System entry points pass selections and actions to the desktop process in the same login session. Windows uses `IExplorerCommand` for its classic menu, under “Show more options” on Windows 11; the DLL retains `IContextMenu` compatibility for existing hosts. Ubuntu 24.04 Files uses a Nautilus 4.0 menu extension. macOS uses the Finder Sync “Open with xdzip” dynamic submenu, retaining “Services → Open with xdzip” and the standalone operation panel as fallbacks.
+System entry points pass selections and actions to the desktop process in the same login session. On Windows 11 the ordinary installed extension appears under “Show more options”. Its COM class exposes both `IContextMenu` and `IExplorerCommand`. MSIX declares a separate classic handler and adds the modern handler in the Store build, as described below. Ubuntu 24.04 Files uses a Nautilus 4.0 extension. macOS offers the Finder Sync submenu, the Services command and the standalone operation panel.
 
 Actual platform verification and remaining work are tracked in [#270](https://github.com/xiaodaozhi/xdzip/issues/270). Source capabilities are not retroactively added to existing release assets.
 

@@ -2,7 +2,7 @@
 
 [English](../../engineering/independent-rust-codecs.md) | 简体中文
 
-本契约定义第三方格式后端的逐项替代规则。实际进度、测试结果与未完成项由[迁移任务 #45](https://github.com/xiaodaozhi/xdzip/issues/45)跟踪，不以架构决策或代码存在推定格式已完成验收。
+本文说明内置 Rust 格式实现、支持范围及兼容性验证方法。可执行的操作由[格式登记表](format-registry.md)声明，进程分工见[格式工作进程契约](native-codecs.md)。
 
 ## 实现边界
 
@@ -10,7 +10,7 @@
 
 容器解析、编码、解码与压缩算法采用独立 Rust 实现，允许经准入的通用密码学、字符编码、系统及桥接基础库。第三方格式库、算法库和命令行工具可以作为独立测试参照，不成为迁移完成格式的产品运行依赖。仅删除直接依赖不足以证明替代完成，须检查普通依赖及构建依赖的传递闭包和交付文件。
 
-格式完成全部既有能力验收后才替换，未完成格式继续使用原后端，不在运行失败时静默回退。ZIP、TAR、TAR.GZ、7z 保留既有读写及修改限制，RAR、CAB、ISO、UDF 只读。格式名称不意味着支持该格式的所有历史和未来扩展。RAR7 LZ 必须通过独立压缩流成功样本，Store 成功及超预算字典拒绝不能替代。
+程序识别格式后选用对应的内置实现，解码失败不会切换后端。ZIP、TAR、TAR.GZ 和 7z 可创建归档，也可改写符合条件的现有归档。RAR、CAB 和 UDF 只提供读取操作。ISO 读取经工作进程执行，[ISO9660/Joliet 写入器](iso-creation.md)在 Rust 宿主中创建新的数据映像，现有 ISO 映像不支持改写。各格式均有明确的配置与资源边界，例如 RAR7 LZ 需要使用独立来源的压缩流样本验证互操作性。
 
 领域层、Qt 桥接和公共 codec trait 保持现有所有权。后端不获得目标路径或自行发布文件。名称原始字节、物理 EntryId、重复条目、编码解析、来源身份、卷授权、路径预检、暂存、校验与提交继续遵守现有工程契约。共享算法只实现一次，容器独立处理封装、块边界、字典重置及校验语义。原生后端迁移为 Rust 后仍保留工作进程的取消、终止和资源治理。
 
@@ -121,7 +121,7 @@ worker 协议以 `WORK`（17，小端 `u64` 字节数）请求宿主准入，以
 
 ## ISO与UDF只读规格
 
-`xdzip-codec-optical` 只接收借用的 `ReadSource`，不访问文件系统或挂载镜像。ISO 依据 [ECMA-119 第五版](https://ecma-international.org/wp-content/uploads/ECMA-119_5th_edition_december_2024.pdf)的卷描述符、目录、扩展属性和附录 C Joliet，以及 [Rock Ridge 1.12](https://bitsavers.org/projects/cdrom/Rock_Ridge_Interchange_Protocol.pdf)、SUSP 1.12 与 [El Torito 1.0](https://bitsavers.org/projects/cdrom/El_Torito_CD-ROM_Spec.pdf)编写。UDF 依据 [ECMA-167 第三版](https://ecma-international.org/publications-and-standards/standards/ecma-167/)第 1、3、4 部分及 [OSTA UDF 2.60](https://www.osta.org/specs/pdf/udf260.pdf)的结构限制、分区与字符集规定编写。实现不转换第三方解析器源码，规范原文和第三方测试工具不作为本项目原创材料再许可。
+`xdzip-codec-optical` 只接收借用的 `ReadSource`，不访问文件系统或挂载镜像。ISO 依据 [ECMA-119 第五版](https://ecma-international.org/wp-content/uploads/ECMA-119_5th_edition_december_2024.pdf)的卷描述符、目录、扩展属性和附录 C Joliet，以及 [Rock Ridge 1.12](https://bitsavers.org/projects/cdrom/Rock_Ridge_Interchange_Protocol.pdf)、SUSP 1.12 与 [El Torito 1.0](https://bitsavers.org/projects/cdrom/El_Torito_CD-ROM_Spec.pdf)编写。UDF 依据 [ECMA-167 第三版](https://ecma-international.org/publications-and-standards/standards/ecma-167/)第 1、3、4 部分及 [OSTA UDF 2.60（PDF 镜像）](https://www.13thmonkey.org/documentation/UDF/udf260.pdf)的结构限制、分区与字符集规定编写。实现不转换第三方解析器源码，规范原文和第三方测试工具不作为本项目原创材料再许可。
 
 - ISO 核对双端整数、卷范围、目录记录及文件区段，支持多区段普通文件、Joliet UCS-2、Rock Ridge 名称续接、SUSP CE、CL/PL/RE 目录重定位与链接/特殊类型识别。非 Joliet 原始名称交给共享有界编码解析，不调用系统 OEM 转码。启动目录及镜像仅表示为可读取记录。跨卷 ISO、交错文件、面向记录的扩展属性、Rock Ridge SF 稀疏及 ZF 压缩扩展明确拒绝；不能把未知必须特性当普通文件解码。
 - UDF 区分逻辑块号与物理偏移，验证 descriptor tag 的位置、校验和、CRC 和尺寸，处理主/备锚点、VDS 续链、FSD、FE/EFE、FID 与 ICB。物理、sparable、VAT 1.50/2.x、metadata/mirror 分区映射分别准入。Sparable 分区的标准 `*UDF Non-Allocatable Space` 系统记录按 OSTA 3.3.7.2 验证名称、类型、Metadata/System/Stream 标志、零信息长度和未记录尾分配，仅作系统元数据，不成为输出条目。短、长、扩展 AD 及续接按实际 recorded/information 长度解释，支持内联、未记录零区段和非连续内容，不将数据范围相加后假设连续。目录图、分配续链及映射循环均有界，CS0 严格转 Unicode。

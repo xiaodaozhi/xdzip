@@ -8,6 +8,12 @@
 
 每次 PR 更新可以取消同一 PR 的旧运行；main 和手动运行使用独立运行身份。失败或取消不能记为通过。工作流使用只读仓库权限和固定版本的依赖，不使用发布密钥。普通 CI 不启动 Playwright、Chromium 或其他网页浏览器；HTML 设计的静态生成检查仍会执行。
 
+### 变更分类与回退
+
+[ci-plan.py](../../../scripts/ci-plan.py) 按[仓库中的分类策略](../../../scripts/ci-plan-policy.json)，以已核验的基准提交为起点比较完整 Git 文件树。目前只允许把 `docs/README.md` 的原位 UTF-8 修改归入 `plain-docs`，且须满足差异与文件大小限额。其他路径、增删、重命名、模式变化、无法核验的历史及手动触发均得到 `classification=full`。当前 `shadow` 模式下，即使判定为 `plain-docs`，`run_heavy` 仍为 `true`。
+
+Foundation 和 Qt 各保留一份 `build/ci-plans/*-plan.json` 工件。普通运行没有取消时，分类缺失或失败会回退到完整检查。Foundation 的显式诊断参数选择自己的作业。日常 CI 独立运行轻量作业。修改分类或工作流时，在本地运行 `python3 scripts/test-ci-plan.py` 和 `python3 scripts/test-ci-workflows.py`。
+
 ## 提交前本地验证
 
 提交和推送前，在本地对拟提交的改动完成对应构建或验证，并记录实际执行结果。无需安装 Git 钩子；源码或配置发生影响结果的变化后重新验证，不把包含其他未提交改动的测试结果直接描述成干净提交的结果。
@@ -47,6 +53,10 @@ Windows 和 Linux 的 Qt 手动运行上传实验性开发包和验证工件，�
 [SDK trial](../../../.github/workflows/sdk-trial.yml)同样仅手动运行，先执行独立只读协议与原生内核门禁，不下载 Qt、不部署应用，仅上传日志和 JSON。Foundation 的 `sdk_only=true` 手动选项调用同一 SDK 工作流，并跳过完整 Foundation 作业与 gate，不能据此声称完整 Foundation 通过。SDK 平台失败优先用该入口收敛；Foundation 与 Qt 中仍适用的其他证据按验证方法复用。
 
 Foundation 的 `image_only=true` 在原生 macOS 用系统 sips／ImageIO 转换固定自有 HEIC，并通过同一共享工具链准备方法安装固定 Qt，单独编译真实图片工作进程及测试对照。对照不施加限制的 Qt 读取器，以及逐项省略一个限制的真实进程代码，区分系统／插件能力与资源预算；测试拦截器不进入产品构建。`--verify-worker` 另要求真实父进程和默认工作进程对两个输入的尺寸／像素正确，运行时文件额度以内可增长且超额返回 EFBIG，否则此检查失败。此入口不构建桌面应用、不部署或签名，只保存 JSON 和日志，不把观察成功或受影响组件回归等同于完整产品／Foundation 通过。两个 preflight 选项不能同时选择。
+
+### 更新专项验证
+
+[原生更新回归](../../../.github/workflows/update-regression.yml)使用隔离夹具，可选单个平台排障，或以 `platform=all` 跑完整矩阵。[生产更新验收](../../../.github/workflows/production-update-acceptance.yml)是独立的手动工作流，在 `main` 上通过受保护的 `release-signing` 环境核对生产信任根并验证签名夹具。发布决定仍依据专用 Release 工作流和实际候选包。议题应记录运行、平台及覆盖范围。长时原生作业默认至少间隔五分钟查询，按需读取相关日志片段。
 
 ## 视觉、桌面与发行
 

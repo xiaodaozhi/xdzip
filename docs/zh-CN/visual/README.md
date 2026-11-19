@@ -58,11 +58,11 @@ HTML 与 Qt 共用 [Xdzip Design Sans SC 字体](../../../design/assets/fonts/RE
 
 ## Qt Quick 实施约束
 
-建立统一 Theme 与尺寸 token，QML 组件不得散落硬编码主题色。建议组件包括 ArchiveTabs、ArchiveToolbar、ArchiveTree、ArchiveTable、InspectorPanel、ExtractDialog 和 TaskPanel。文件列表使用可虚拟化模型，预览、索引和压缩操作均由后台驱动；QML 负责呈现与用户意图，不承担格式解码。
+Qt 使用共享 `Theme` 与生成的尺寸参数。`ArchiveTabs`、`ArchiveToolbar` 和 `SessionPage` 中的列表、网格及目录区域共用主窗口布局。`InspectorPanel`、`ExtractWindow`、`CreateWindow` 和 `TaskWindow` 各有数据和布局边界。QML 呈现状态与用户意图，Rust 运行时负责索引、归档读写和格式校验。
 
 macOS、Windows、Linux 共用内容布局与交互模型；窗口按钮、菜单与快捷键遵循各平台习惯。这里绘制 macOS 窗口外框，不要求其他平台复制交通灯按钮。大面积实时模糊不作为实现要求；截图中的背景弱化可用静态遮罩实现。
 
-当前完整原稿覆盖浅色归档浏览、解压确认、新建、冲突、任务、结果与设置。深色图标已有适配，完整深色主窗口、插件管理及部分异常页面仍需补齐；完整产品页面尚未全部定稿。
+可审阅主窗口的[浅色](../../../design/hifi/sources/main.html?theme=light)或[深色](../../../design/hifi/sources/main.html?theme=dark)，以及[任务状态](../../../design/hifi/sources/task-windows.html)、[设置](../../../design/hifi/sources/settings.html)和[桌面集成](../../../design/hifi/sources/desktop-integration.html)。其他状态与尺寸例外见[窗口登记](../../../specs/visual/window-registry.json)。设计页可以展示原生窗口或菜单的内容。装饰、激活、缩放和系统菜单的实际表现须在对应平台核对。
 
 ## 平台窗口修订
 

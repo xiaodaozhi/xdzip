@@ -14,7 +14,7 @@ python scripts/refresh-windows-store-screenshots.py --package-dir build/store-ms
 
 Use the `store-msix-package` directory from the verified Store workflow artifact. The script checks the MSIX hash against the packaging and verification receipts, extracts the runtime without installing it, and runs each language once at the default logical window sizes. It checks that all eight screenshots came from 144 DPI windows. Use `--dpi` to specify a different intended Windows display scale.
 
-Review `materials/` in the printed output directory at 100%. Generation trims one top pixel, clears the old background from the four rounded corners, and applies a one-pixel inner border. The other client pixels are preserved. The Store canvases and README images use the cleaned screenshots at native scale. The preview also include the branded exports and retain their source hashes.
+Review `materials/` in the printed output directory at 100%. Generation trims one top pixel, clears the old background from the four rounded corners, and applies a one-pixel inner border. The other client pixels are preserved. The Store canvases and README images use the cleaned screenshots at native scale. The preview also includes the branded exports and retain their source hashes.
 
 After reviewing the result, reuse the two sessions to update the repository assets without retaking the screenshots. Use a new output directory for each run.
 
