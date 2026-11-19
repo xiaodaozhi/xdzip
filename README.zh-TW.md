@@ -4,6 +4,8 @@
 
 <h1 align="center">xdzip</h1>
 
+<p align="center"><a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | 繁體中文（台灣） | <a href="README.ja-JP.md">日本語</a> | <a href="README.ko-KR.md">한국어</a> | <a href="README.fr-FR.md">Français</a> | <a href="README.de-DE.md">Deutsch</a> | <a href="README.es-ES.md">Español</a> | <a href="README.pt-BR.md">Português (Brasil)</a> | <a href="README.ru-RU.md">Русский</a></p>
+
 <p align="center"><strong>打包與解壓，都簡單一點。</strong></p>
 
 <p align="center">xdzip 是一款開源跨平臺壓縮檔管理工具。它使用 Rust 實現格式處理，無需依賴外部解壓程式；支援瀏覽和搜尋包內檔案、選擇性解壓，以及加密、分卷和受支援格式的包內修改。<br>支援 ZIP、7z、RAR、TAR、CAB、ISO/UDF 等格式，適用於 Windows、macOS 和 Linux。</p>
@@ -12,8 +14,6 @@
   <a href="https://github.com/xiaodaozhi/xdzip/actions/workflows/docs.yml"><img src="https://github.com/xiaodaozhi/xdzip/actions/workflows/docs.yml/badge.svg?branch=main" alt="持续集成"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-blue.svg" alt="Apache License 2.0"></a>
 </p>
-
-<p align="center"><a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | 繁體中文（台灣）</p>
 
 <p align="center">
   <a href="#xdzip-%E4%B8%8B%E8%BD%BD%E5%AE%89%E8%A3%85">下載安裝</a> / <a href="#xdzip-%E4%BD%BF%E7%94%A8-xdzip">使用 xdzip</a> / <a href="#xdzip-%E6%A0%BC%E5%BC%8F%E6%94%AF%E6%8C%81">格式支援</a> / <a href="#xdzip-%E4%BB%8E%E6%BA%90%E7%A0%81%E6%9E%84%E5%BB%BA">從原始碼構建</a> / <a href="docs/zh-TW/README.md">文件</a> / <a href="https://github.com/xiaodaozhi/xdzip/issues">意見回饋</a>

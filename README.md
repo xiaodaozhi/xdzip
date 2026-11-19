@@ -4,6 +4,8 @@
 
 <h1 align="center">xdzip</h1>
 
+<p align="center">English | <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文（台灣）</a> | <a href="README.ja-JP.md">日本語</a> | <a href="README.ko-KR.md">한국어</a> | <a href="README.fr-FR.md">Français</a> | <a href="README.de-DE.md">Deutsch</a> | <a href="README.es-ES.md">Español</a> | <a href="README.pt-BR.md">Português (Brasil)</a> | <a href="README.ru-RU.md">Русский</a></p>
+
 <p align="center"><strong>Pack and unpack, a little simpler</strong></p>
 
 <p align="center">xdzip is an open-source, cross-platform archive manager. Its Rust format implementations work without external extraction programs. Browse and search archives, extract selected files, work with encrypted and split archives, and modify entries in eligible formats.<br>It supports ZIP, 7z, RAR, TAR, CAB, ISO/UDF and more on Windows, macOS, and Linux.</p>
@@ -12,8 +14,6 @@
   <a href="https://github.com/xiaodaozhi/xdzip/actions/workflows/docs.yml"><img src="https://github.com/xiaodaozhi/xdzip/actions/workflows/docs.yml/badge.svg?branch=main" alt="Continuous integration"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-blue.svg" alt="Apache License 2.0"></a>
 </p>
-
-<p align="center">English | <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文（台灣）</a></p>
 
 <p align="center">
   <a href="#download-and-install">Download</a> / <a href="#using-xdzip">Using xdzip</a> / <a href="#format-support">Format support</a> / <a href="#build-from-source">Build from source</a> / <a href="docs/README.md">Documentation</a> / <a href="https://github.com/xiaodaozhi/xdzip/issues">Feedback</a>
