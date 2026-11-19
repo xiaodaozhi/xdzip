@@ -21,7 +21,8 @@ from unittest.mock import patch
 from xml.etree import ElementTree
 from deployment_audit import digest
 from installer_payload import HISTORICAL_PRODUCT_REVISION
-from packaging_languages import linux_resources, packaging_catalogs
+from packaging_languages import linux_resources, macos_resources, packaging_catalogs
+from ui_languages import macos_language
 from association_types import WINDOWS_ICONS, MACOS_ICONS, windows_progid
 from archive_formats_generated import ASSOCIATION_FIXTURES
 
@@ -32,6 +33,18 @@ linux=module('build-linux-installer');windows=module('build-windows-installer');
 
 
 class InstallerTests(unittest.TestCase):
+    def test_macos_localizes_all_declared_document_types(self):
+        catalog = packaging_catalogs()
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            macos_resources(base)
+            for locale, messages in catalog.items():
+                path = base/'bundle'/f'{macos_language(locale)}.lproj'/'InfoPlist.strings'
+                names = plistlib.loads(path.read_bytes())
+                with self.subTest(locale=locale):
+                    self.assertEqual(names['AES Crypt file'], messages['File'].replace('%1', 'AES Crypt'))
+                    self.assertEqual(names['Brotli file'], messages['File'].replace('%1', 'Brotli'))
+
     def test_linux_metadata_has_language_and_traditional_region_fallbacks(self):
         catalogs = packaging_catalogs()
         resources = linux_resources()

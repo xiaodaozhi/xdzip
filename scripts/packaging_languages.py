@@ -92,6 +92,8 @@ def macos_resources(output):
             return messages['ZipDerived'].replace('%1', label.split()[0])
         if label.endswith(' compressed stream'):
             return messages['Stream'].replace('%1', label.split()[0])
+        if label.endswith(' file'):
+            return messages['File'].replace('%1', label[:-5])
         keys = {'Compressed TAR archive': 'CompressedTar', 'Microsoft Installer package': 'Msi',
                 'ISO image': 'Iso', 'UDF image': 'Udf', 'UDF disc image': 'Udf',
                 'Microsoft Cabinet archive': 'Cabinet'}
