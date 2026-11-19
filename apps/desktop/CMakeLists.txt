@@ -26,6 +26,7 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${XDZIP_LANGUAGE_REGISTRY}" "${XDZIP_LANGUAGE_GENERATOR}")
 execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${XDZIP_LANGUAGE_GENERATOR}"
     --cpp "${XDZIP_BUILD_INFO_DIR}/UiLanguageData.h" COMMAND_ERROR_IS_FATAL ANY)
+include_directories("${XDZIP_BUILD_INFO_DIR}")
 add_custom_target(xdzip-build-info
     COMMAND "${CMAKE_COMMAND}" "-DXDZIP_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
         "-DXDZIP_OUTPUT_DIR=${XDZIP_BUILD_INFO_DIR}" "-DXDZIP_DISPLAY_VERSION=${XDZIP_DISPLAY_VERSION}"
@@ -78,7 +79,6 @@ add_library(xdzip-ui-resources STATIC ${ui_resources})
 add_dependencies(xdzip-ui-resources xdzip-ui-font)
 add_dependencies(xdzip-ui-resources xdzip-image-preview)
 add_dependencies(xdzip-ui-resources xdzip-build-info)
-target_include_directories(xdzip-ui-resources PUBLIC "${XDZIP_BUILD_INFO_DIR}")
 qt_add_qml_module(xdzip-ui-resources
     URI Xdzip.Settings VERSION 1.0
     DEPENDENCIES QtQuick
@@ -591,13 +591,6 @@ elseif(BUILD_TESTING AND APPLE)
     add_dependencies(xdzip-mac-finder-test xdzip-browser)
     add_test(NAME native_mac_finder COMMAND xdzip-mac-finder-test "${PROJECT_SOURCE_DIR}/build/test-tmp" "$<TARGET_BUNDLE_DIR:xdzip-browser>")
 endif()
-
-foreach(language_target xdzip-browser-tests xdzip-shell-extension xdzip-finder-sync
-        xdzip-shell-relay xdzip-nautilus xdzip-mac-finder-test xdzip-macos-association-probe)
-    if(TARGET ${language_target})
-        target_include_directories(${language_target} PRIVATE "${XDZIP_BUILD_INFO_DIR}")
-    endif()
-endforeach()
 
 if(APPLE)
     foreach(session_target xdzip-browser xdzip-browser-tests xdzip-shell-tests xdzip-update-tests xdzip-mac-update-probe)
