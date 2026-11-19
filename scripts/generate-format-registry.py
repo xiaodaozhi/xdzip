@@ -100,7 +100,6 @@ def validate(spec):
         require(set(item['write_encryption']) <= set(item['read_encryption']), 'Unverifiable encryption')
         require(set(item['write_volumes']) <= set(item['read_volumes']), 'Unverifiable volumes')
         require(bool(item['creation_suffixes']) == bool(item['write_methods']), 'Inconsistent creation')
-        require(not item['rewrite'] or item['write_methods'], 'Rewrite needs write capability')
         require(item['write_methods'] or not (item['write_encryption'] or item['write_volumes']),
                 'Read-only format declares write options')
         require(len(item['filters']) <= 3, 'Too many compression layers')
@@ -182,7 +181,7 @@ def render(spec):
             ('DropSuffixes', [e['suffix'] for e in extensions if e['drop']]),
             ('ShellSuffixes', [e['suffix'] for e in extensions if e['shell']]),
             ('ShellMimeTypes', [m for item in formats for m in item['shell_mime_types']]),
-            ('ReadOnlyLabels', [item['label'] for item in formats if not item['write_methods']])):
+            ('ReadOnlyLabels', [item['label'] for item in formats if not item['write_methods'] and not item['rewrite']])):
         cpp.append(f'inline constexpr std::array<std::string_view, {len(values)}> {name} = {{{{')
         cpp.extend(f'    {json.dumps(value)},' for value in values)
         cpp.append('}};')

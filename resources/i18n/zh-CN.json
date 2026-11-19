@@ -714,6 +714,7 @@
     "entry.edit.singleSelection": "请选择单个条目进行重命名。",
     "entry.edit.invalidName": "请输入有效的文件或文件夹名称。",
     "entry.edit.unchangedName": "新名称与原名称相同。",
+    "entry.edit.emptyTarSuffix": "请先将压缩包文件改为对应的 TAR 复合后缀，再删除最后一个条目。",
     "entry.edit.nameExists": "当前文件夹已有同名文件或文件夹。",
     "entry.edit.renaming": "正在重命名…",
     "entry.edit.deleting": "正在删除…",

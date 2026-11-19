@@ -6,6 +6,7 @@ mod frame_io;
 mod framed;
 #[cfg(test)]
 mod framed_tests;
+mod legacy_writer;
 pub mod lz4;
 #[cfg(test)]
 mod tests;

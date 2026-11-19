@@ -426,6 +426,7 @@ QString BrowserController::explain(const QString &code) {
         {"entry_name_invalid", qtTrId("entry.edit.invalidName")},
         {"entry_name_unchanged", qtTrId("entry.edit.unchangedName")},
         {"entry_name_exists", qtTrId("entry.edit.nameExists")},
+        {"empty_tar_suffix", qtTrId("entry.edit.emptyTarSuffix")},
         {"move_selected_directory", qtTrId("move.selected")},
         {"task_abandoned", qtTrId("ui.cc72ffea1705")},
         {"integrity_error", qtTrId("ui.6adbf73c75b1")},

@@ -16239,6 +16239,76 @@ QtObject {
         QVERIFY(QMetaObject::invokeMethod(menu, "close"));
         QTRY_VERIFY(!menu->property("visible").toBool());
     }
+    void extendedArchiveFormatsExposeRealRenameMenu_data() {
+        QTest::addColumn<QString>("fixture");
+        QTest::addColumn<bool>("editable");
+        for (const auto *path :
+             {"streams/files.txz", "streams/files.tar.zst", "streams/files.tar.lz4",
+              "streams/files.tbz2", "streams/files.tar.lzma", "streams/files.tlz",
+              "compress/files.taz", "brotli/files.tar.br", "streams/zipx-lzma-descriptor.zipx",
+              "lha/lh5-h2.lzh"}) {
+            QTest::newRow(path) << QString::fromLatin1(path) << true;
+        }
+        QTest::newRow("level-1 LZH") << QStringLiteral("lha/lh5-h1.lzh") << false;
+    }
+    void extendedArchiveFormatsExposeRealRenameMenu() {
+        QFETCH(QString, fixture);
+        QFETCH(bool, editable);
+        QTemporaryDir local;
+        QVERIFY(local.isValid());
+        const auto original =
+            QDir(QStringLiteral(XDZIP_FIXTURES)).absoluteFilePath("../" + fixture);
+        const auto source = local.filePath(QFileInfo(original).fileName());
+        QVERIFY(QFile::copy(original, source));
+
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller && QTest::qWaitForWindowExposed(window));
+        controller->openPath(source);
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QCOMPARE(controller->canUpdateArchive(), editable);
+        auto *menu = window->findChild<QObject *>("browserEntryMenu");
+        auto *rename = window->findChild<QQuickItem *>("contextRenameEntry");
+        auto *remove = window->findChild<QQuickItem *>("contextDeleteEntries");
+        QVERIFY(menu && rename && remove);
+        QQuickItem *cell = nullptr;
+        QTRY_VERIFY((cell = findVisual(window->contentItem(), "entry-0-0")));
+        const auto click = [](QQuickItem *item, Qt::MouseButton button = Qt::LeftButton) {
+            QTest::mouseClick(
+                item->window(), button, Qt::NoModifier,
+                item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint());
+        };
+        click(cell, Qt::RightButton);
+        QTRY_VERIFY(menu->property("visible").toBool());
+        QCOMPARE(rename->isVisible(), editable);
+        QCOMPARE(remove->isVisible(), editable);
+        if (!editable)
+            return;
+
+        QTRY_VERIFY(rename->isEnabled());
+        auto *accessible = QAccessible::queryAccessibleInterface(rename);
+        QVERIFY(accessible && accessible->actionInterface());
+        accessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+        auto *dialog = window->findChild<QQuickWindow *>("archiveEntryEditWindow");
+        QVERIFY(dialog);
+        QTRY_VERIFY(dialog->isVisible());
+        auto *name = findVisual(dialog->contentItem(), "archiveEntryNameField");
+        auto *confirm = findVisual(dialog->contentItem(), "archiveEntryEditConfirm");
+        QVERIFY(name && confirm);
+        QVERIFY(name->setProperty("text", "renamed.bin"));
+        QTRY_VERIFY(confirm->isEnabled());
+        click(confirm);
+        const auto refreshed = [&] {
+            auto *model = controller->entries();
+            return controller->ready() && !controller->browsingBusy() &&
+                   model->data(model->index(0, 0), Qt::DisplayRole).toString() == "renamed.bin";
+        };
+        QTRY_VERIFY_WITH_TIMEOUT(refreshed(), 10000);
+        QCOMPARE(controller->tasks().last().toMap().value("status").toString(), "succeeded");
+    }
     void unicodeSourcePath() {
         QTemporaryDir directory;
         QVERIFY(directory.isValid());

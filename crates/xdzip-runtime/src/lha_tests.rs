@@ -58,7 +58,7 @@ fn lha_common_header_and_method_profiles_use_actual_browse_check_and_extract() {
         let archive =
             Archive::open(&fixture(name), &cancel).unwrap_or_else(|e| panic!("{name}: {e}"));
         assert_eq!(archive.format, xdzip_codec_api::Format::Lha);
-        assert!(!archive.update_allowed);
+        assert_eq!(archive.update_allowed, name.contains("-h2."));
         assert_eq!(archive.rows.len(), 1);
         assert_eq!(archive.rows[0].name_bytes(), b"hello.bin");
         assert!(archive.rows[0].payload_supported());

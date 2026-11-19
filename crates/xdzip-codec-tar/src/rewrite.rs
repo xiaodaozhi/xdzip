@@ -7,6 +7,7 @@ use flate2::read::MultiGzDecoder;
 use flate2::{Compression, write::GzEncoder};
 use std::io::{Read, Write};
 use xdzip_codec_api::{Cancellation, ReadSource, encode::*};
+use xdzip_codec_stream::FrameWriter;
 use xdzip_compression::GzipWriter;
 
 // Rewrite path and its charset declaration; preserve other admitted PAX record bytes.
@@ -253,43 +254,43 @@ impl RewriteCodec for TarCodec {
         cancel: &Cancellation,
         progress: &mut dyn FnMut(EncodeProgress<'_>),
     ) -> Result<(), EncodeError> {
-        if !matches!(self.filter, Filter::Identity | Filter::Gzip) {
-            return Err(EncodeError::Unsupported);
-        }
         let mut reader = self
             .stream(original, cancel, STREAM_LIMIT)
             .map_err(|_| EncodeError::Source)?;
-        if self.filter == Filter::Gzip {
-            let empty =
-                !input.keep.iter().any(|keep| *keep) && input.additions.entries().is_empty();
-            let mut encoder = if empty {
-                GzipWriter::for_empty_tar(output, input.settings.level)
-            } else {
-                GzipWriter::new(output, input.settings.level)
+        let write = |writer: &mut dyn Write, progress: &mut dyn FnMut(EncodeProgress<'_>)| {
+            copy_records(&mut reader, writer, input.keep, input.renames, cancel).map_err(
+                |error| {
+                    if cancel.check().is_err() {
+                        EncodeError::Cancelled
+                    } else {
+                        error
+                    }
+                },
+            )?;
+            crate::writer::write_tar(writer, input.additions, cancel, progress)
+        };
+        let mut write = write;
+        let empty = !input.keep.iter().any(|keep| *keep) && input.additions.entries().is_empty();
+        match self.filter {
+            Filter::Identity => write(output, progress)?,
+            Filter::Gzip if empty => {
+                let mut encoder = GzipWriter::for_empty_tar(output, input.settings.level)
+                    .map_err(|_| EncodeError::Invalid)?;
+                write(&mut encoder, progress)?;
+                cancel.check().map_err(|_| EncodeError::Cancelled)?;
+                encoder.finish().map_err(|_| EncodeError::Output)?;
             }
-            .map_err(|_| EncodeError::Invalid)?;
-            copy_records(&mut reader, &mut encoder, input.keep, input.renames, cancel).map_err(
-                |error| {
-                    if cancel.check().is_err() {
-                        EncodeError::Cancelled
-                    } else {
-                        error
-                    }
-                },
-            )?;
-            crate::writer::write_tar(&mut encoder, input.additions, cancel, progress)?;
-            encoder.finish().map_err(|_| EncodeError::Output)?;
-        } else {
-            copy_records(&mut reader, output, input.keep, input.renames, cancel).map_err(
-                |error| {
-                    if cancel.check().is_err() {
-                        EncodeError::Cancelled
-                    } else {
-                        error
-                    }
-                },
-            )?;
-            crate::writer::write_tar(output, input.additions, cancel, progress)?;
+            _ => {
+                let mut encoder = FrameWriter::new(output, self.filter, input.settings.level)
+                    .map_err(|error| match error.kind() {
+                        std::io::ErrorKind::OutOfMemory => EncodeError::Limit,
+                        std::io::ErrorKind::Unsupported => EncodeError::Unsupported,
+                        _ => EncodeError::Output,
+                    })?;
+                write(&mut encoder, progress)?;
+                cancel.check().map_err(|_| EncodeError::Cancelled)?;
+                encoder.finish().map_err(|_| EncodeError::Output)?;
+            }
         }
         Ok(())
     }

@@ -239,7 +239,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         read_volumes: &[],
         write_volumes: &[],
         creation_suffixes: &[],
-        rewrite: false,
+        rewrite: true,
         creation_levels: &[],
         check_kind: "supported_content",
         extensions: &[
@@ -292,7 +292,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         read_volumes: &[],
         write_volumes: &[],
         creation_suffixes: &[],
-        rewrite: false,
+        rewrite: true,
         creation_levels: &[],
         check_kind: "structure_and_readability",
         extensions: &[
@@ -343,7 +343,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         read_volumes: &[],
         write_volumes: &[],
         creation_suffixes: &[],
-        rewrite: false,
+        rewrite: true,
         creation_levels: &[],
         check_kind: "supported_content",
         extensions: &[
@@ -406,7 +406,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
             ".tar.xz",
             ".txz",
         ],
-        rewrite: false,
+        rewrite: true,
         creation_levels: &[1, 6, 9],
         check_kind: "format_declared_checks",
         extensions: &[
@@ -465,7 +465,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         creation_suffixes: &[
             ".tar.lz4",
         ],
-        rewrite: false,
+        rewrite: true,
         creation_levels: &[1, 6, 9],
         check_kind: "format_declared_checks",
         extensions: &[
@@ -524,7 +524,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
             ".tar.zst",
             ".tzst",
         ],
-        rewrite: false,
+        rewrite: true,
         creation_levels: &[1, 6, 9],
         check_kind: "format_declared_checks",
         extensions: &[
@@ -575,7 +575,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         read_volumes: &[],
         write_volumes: &[],
         creation_suffixes: &[],
-        rewrite: false,
+        rewrite: true,
         creation_levels: &[],
         check_kind: "structure_and_readability",
         extensions: &[
@@ -675,7 +675,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
         read_volumes: &[],
         write_volumes: &[],
         creation_suffixes: &[],
-        rewrite: false,
+        rewrite: true,
         creation_levels: &[],
         check_kind: "structure_and_readability",
         extensions: &[
@@ -740,7 +740,7 @@ pub(super) static DESCRIPTORS: &[FormatDescriptor] = &[
             ".lzh",
             ".lha",
         ],
-        rewrite: false,
+        rewrite: true,
         creation_levels: &[1, 6, 9],
         check_kind: "format_declared_checks",
         extensions: &[

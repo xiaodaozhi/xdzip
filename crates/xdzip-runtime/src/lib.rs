@@ -181,8 +181,17 @@ impl Archive {
         let edit_restriction = edit_restriction
             | (u8::from(
                 format == xdzip_codec_api::Format::Zip
-                    && rows.iter().any(|row| !matches!(row.method, 0 | 8)),
+                    && rows
+                        .iter()
+                        .any(|row| !xdzip_codec_zip::rewritable_method(row.method)),
             ) << 2);
+        let edit_restriction = if format == xdzip_codec_api::Format::Lha && edit_restriction == 0 {
+            let allowed = xdzip_codec_lha::LhaCodec::rewrite_allowed(&mut source, control)?;
+            source.validate()?;
+            u8::from(!allowed) << 2
+        } else {
+            edit_restriction
+        };
         let update_allowed = edit_restriction == 0;
         Ok(Self {
             update_allowed,

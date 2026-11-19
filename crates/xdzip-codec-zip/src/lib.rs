@@ -39,6 +39,11 @@ impl MetadataCodec for ZipCodec {
     }
 }
 
+/// Unencrypted methods with complete decoders and a lossless record-copy rewrite.
+pub fn rewritable_method(method: u16) -> bool {
+    matches!(method, 0 | 8 | 9 | 12 | 14 | 95)
+}
+
 pub(crate) fn metadata(
     record: record::Record,
     index: usize,

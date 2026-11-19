@@ -56,17 +56,17 @@ Use the table to check whether xdzip can open, create or edit an archive. “Mod
 
 | Format | Browse, extract, and check | Create | Modify |
 | --- | --- | --- | --- |
-| ZIP and ZIPX/XPI/APK/IPA/CBZ candidates | Store, Deflate, Deflate64, BZip2, LZMA, XZ; admitted AES-256 and split profiles | ZIP with Store, Deflate, AES-256 and numbered volumes | Eligible Store/Deflate ZIP archives |
+| ZIP and ZIPX/XPI/APK/IPA/CBZ candidates | Store, Deflate, Deflate64, BZip2, LZMA, XZ; admitted AES-256 and split profiles | ZIP with Store, Deflate, AES-256 and numbered volumes | Eligible ZIP/ZIPX archives using the listed methods |
 | TAR, TAR.GZ (including `.tgz`) | Regular files and directories | Supported; TAR only packs files | Eligible regular single-file archives |
 | GZIP (`.gz`) | One logical file, including concatenated GZIP members. TAR inside GZIP exposes a TAR tree. | One regular file, Deflate 0/1/6/9 | Not supported |
 | BZip2, LZMA Alone, Lzip v1 | One regular file, within stream and memory limits | Not supported | Not supported |
-| TAR.BZ2, TAR.LZMA, TAR.LZ | Regular files and directories | Not supported | Not supported |
-| XZ, TAR.XZ (including `.txz`) | Declared checks, LZMA2, Delta/BCJ and concatenated streams | LZMA2 levels 1/6/9, XZ with one regular file | Not supported |
-| LZ4, TAR.LZ4 | Standard frames, independent/linked blocks, concatenation and declared checks | LZ4 levels 1/6/9, ordinary LZ4 with one regular file | Not supported |
-| Zstandard, TAR.ZST (including `.tzst`) | Standard frames, admitted windows, Huffman/FSE, repeat offsets and declared checks | Zstandard levels 1/6/9, ordinary Zstandard with one regular file | Not supported |
+| TAR.BZ2, TAR.LZMA, TAR.LZ | Regular files and directories | Not supported | Eligible archives |
+| XZ, TAR.XZ (including `.txz`) | Declared checks, LZMA2, Delta/BCJ and concatenated streams | LZMA2 levels 1/6/9, XZ with one regular file | TAR.XZ |
+| LZ4, TAR.LZ4 | Standard frames, independent/linked blocks, concatenation and declared checks | LZ4 levels 1/6/9, ordinary LZ4 with one regular file | TAR.LZ4 |
+| Zstandard, TAR.ZST (including `.tzst`) | Standard frames, admitted windows, Huffman/FSE, repeat offsets and declared checks | Zstandard levels 1/6/9, ordinary Zstandard with one regular file | TAR.ZST |
 | 7z | Passwords, encrypted filenames, solid archives, and numbered volumes | Encryption, solid archives, and numbered volumes | Eligible unencrypted, non-split archives |
 | DEB | Common ar members, control/data TAR views, admitted GZIP/XZ/Zstandard/BZip2/LZMA profiles | Not supported | Not supported |
-| LHA/LZH | Headers 0–3, Store, LH1–LH7, LZS/LZ5 and declared CRCs | LH5 levels 1/6/9, level-2 headers, regular files/directories | Not supported |
+| LHA/LZH | Headers 0–3, Store, LH1–LH7, LZS/LZ5 and declared CRCs | LH5 levels 1/6/9, level-2 headers, regular files/directories | Eligible level-2 archives with member CRCs |
 | [PMA](docs/engineering/pma-streams.md) | Level-0 PM0/PM1/PM2, exact CP/M framing and declared CRCs | Not supported | Not supported |
 | [ARJ](docs/engineering/arj-streams.md) | Store and methods 1–4, validated headers and full member CRC-32 | Not supported | Not supported |
 | [ARC](docs/engineering/arc-streams.md) | Old/new Store and methods 3–9, exact framing and full member CRC-16 | Not supported | Not supported |
@@ -77,8 +77,8 @@ Use the table to check whether xdzip can open, create or edit an archive. “Mod
 | [Compound File (MSI)](docs/engineering/wim-msi-installer-format-sources.md#compound-file-and-msi) | Browse storages and extract raw streams. Check structure and readability. | Not supported | Not supported |
 | [NSIS (`.exe`)](docs/engineering/wim-msi-installer-format-sources.md#nsis-and-other-sfx) | Static `firstheader` metadata only. Extraction and whole-archive testing are unavailable. | Not supported | Not supported |
 | ASAR | Stored files/directories, shared payload ranges and declared file/block SHA-256 | Not supported | Not supported |
-| Z, TAR.Z (including `.taz`) | Unix compress LZW, 9–16-bit dictionaries and admitted CLEAR/alignment profiles | Not supported | Not supported |
-| Brotli, TAR.BR | Ordinary RFC 7932 streams, 10–24-bit windows and all static dictionary transforms | Not supported | Not supported |
+| Z, TAR.Z (including `.taz`) | Unix compress LZW, 9–16-bit dictionaries and admitted CLEAR/alignment profiles | Not supported | TAR.Z |
+| Brotli, TAR.BR | Ordinary RFC 7932 streams, 10–24-bit windows and all static dictionary transforms | Not supported | TAR.BR |
 | AES Crypt (`.aes`) | Versions 0–3, opening password, full ciphertext HMAC and version-specific length rules | Not supported | Not supported |
 | UU/UUE, XXE | Traditional counted lines and admitted begin-base64 envelopes, including multiple members | Not supported | Not supported |
 | RAR | Legacy, RAR5, and RAR 7 format extensions, including passwords, solid and split archives | Not supported | Not supported |
@@ -88,17 +88,17 @@ Use the table to check whether xdzip can open, create or edit an archive. “Mod
 | ZIP SFX | Validated ZIP self-extracting archives | Windows x64, Store/Deflate, `.sfx.exe` | Not supported |
 
 - ZIP AES-256 encrypts content only; filenames remain visible. AES-128/192 and traditional ZipCrypto are not supported. Split archives can be read using `.zip.001`, PKZIP `.z01`, and related naming conventions; creation uses numbered volumes. See [password extraction](docs/engineering/password-extraction.md) and [opening split archives](docs/engineering/archive-opening.md).
-- BZip2, LZMA Alone, Lzip v1 and their TAR compositions are currently read-only. LZMA has no content checksum; testing establishes structure, sizes and readability. See the [stream contract](docs/engineering/single-file-streams.md) for suffixes, members, memory limits and admission.
-- XZ verifies each declared content check; streams declaring None provide structure/readability checks only. ZIPX reading supports the listed ZIP methods; PPMd, JPEG and WavPack variants remain unsupported. Additional ZIP methods are read-only and do not extend AES profiles or enable ZIPX creation.
+- Standalone BZip2, LZMA Alone and Lzip v1 are read-only. LZMA has no content checksum; testing establishes structure, sizes and readability. See the [stream contract](docs/engineering/single-file-streams.md) for suffixes, members, memory limits and admission.
+- XZ verifies each declared content check; streams declaring None provide structure/readability checks only. ZIPX reading supports the listed ZIP methods; PPMd, JPEG and WavPack variants remain unsupported. Edits retain the compressed data and method of kept ZIP/ZIPX records. New entries use Deflate.
 - Modifying 7z rebuilds the archive, with a 512 MiB working-set limit for retained and added content. New archives use streaming input and are not subject to this rebuild limit. Encrypted and split ZIP and 7z archives cannot be modified. See [archive modification](docs/engineering/archive-transfers.md).
 - RAR, CAB and UDF are read-only. [ISO creation](docs/engineering/iso-creation.md) supports ordinary files and directories, single volume, files smaller than 4 GiB and Joliet names of at most 64 UCS-2 characters per component. No boot images, UDF or Rock Ridge writing or image updates are provided. Reading an image never mounts or executes it. See the [RAR contract](docs/engineering/rar-format-sources.md) and [format backend contract](docs/engineering/native-codecs.md).
 - [Owned SFX creation](docs/engineering/sfx-creation.md) produces a standalone Windows x64 ZIP extractor without Qt or installed xdzip. It selects a destination, handles conflicts and supports cancellation, and never runs extracted files. Passwords, volumes and automatic launch commands are unavailable. Generic `.exe` files remain outside file associations.
 - DEB exposes `members/`, `control/` and `data/` as export views. Extracting all includes raw members and expanded content; no installation or script execution occurs. Control accepts none/GZIP/XZ/Zstandard, data additionally BZip2/LZMA. Checks validate container readability and declared checks, without package authentication. See the [DEB contract](docs/engineering/deb-containers.md).
-- Z and TAR.Z checks cover structure and readability without checksums. No writer or damaged legacy-stream repair is provided; see the [Unix compress contract](docs/engineering/compress-streams.md).
+- Z and TAR.Z checks cover structure and readability without checksums. Standalone Z creation and damaged legacy-stream repair are unavailable; see the [Unix compress contract](docs/engineering/compress-streams.md).
 - UU/UUE and XXE validate structure and readability without checksums. Header paths and modes grant no output or execution authority; GNU encoded filenames and multipart repair are outside the admitted [text envelope profile](docs/engineering/text-envelopes.md).
 - Opening or extracting read-only ASAR does not launch its application. External `unpacked` data and declared links are visible but unsupported; no adjacent directory access or executable-mode restoration is granted. Optional hashes detect corruption, and hashless records provide structure/readability only. See the [ASAR contract](docs/engineering/asar-containers.md).
 - NSIS is recognized only when its PE overlay contains a bounded, valid `firstheader` record. xdzip publishes that static metadata row and never executes the PE stub, installer script, plug-in or payload, decompresses the installer header, or exposes payload extraction. The `.exe` entry is hidden from drag-and-drop and shell associations; this is not a general executable handler.
-- LHA/LZH creation uses LH5 and UTF-8 names with level-2 headers. Legacy Windows tools may display these names using their old code page. Existing archives cannot be modified. Legacy names are decoded before separators, and present CRCs are verified during actual decoding; ancient members without CRC provide structure/readability only. Passwords, volumes and repair profiles are not admitted. PMA has a separate read-only profile. See the [LHA contract](docs/engineering/lha-containers.md).
+- LHA/LZH creation uses LH5 and UTF-8 names with level-2 headers. Legacy Windows tools may display these names using their old code page. Eligible level-2 archives can be modified. Legacy names are decoded before separators, and present CRCs are verified during actual decoding; ancient members without CRC provide structure/readability only. Passwords, volumes and repair profiles are not admitted. PMA has a separate read-only profile. See the [LHA contract](docs/engineering/lha-containers.md).
 - ARJ is read only. Binary and legacy text members deliver the archive's CRC-covered bytes without platform newline conversion. Passwords, volumes, recovery/security profiles, links and special objects are not admitted. Unknown methods remain visible and prevent whole-archive check success.
 - ARC is read only, with sequential regular files and exact termination. Password decoding, volumes, SFX and Spark extensions are not admitted. Unknown methods remain visible without ZIP method aliases and prevent whole-archive check success. Old XOR encryption has no header flag; decoding still requires a valid stream, exact size and CRC, without password or repair fallback.
 - BH reading supports the `BH 05 07` method-8 raw Deflate profile. It excludes unknown methods, encryption, directories, volumes, trailers and SFX prefixes.
@@ -108,7 +108,7 @@ Use the table to check whether xdzip can open, create or edit an archive. “Mod
 
 - AES Crypt requires an opening password before metadata is published. All ciphertext MACs must pass; versions 0–2 leave the final length modulo unauthenticated, and extensions grant no authority. See the [AES Crypt contract](docs/engineering/aescrypt-envelopes.md).
 
-- Brotli and TAR.BR are read-only, require complete content validation during weak discovery and have no checksum. Shared dictionaries and large-window extensions are outside the admitted [Brotli profile](docs/engineering/brotli-streams.md).
+- Brotli and TAR.BR require complete content validation during weak discovery and have no checksum. TAR.BR edits write standard stored meta-blocks, so the resulting archive can be larger. Shared dictionaries and large-window extensions are outside the admitted [Brotli profile](docs/engineering/brotli-streams.md).
 
 ## Command line
 

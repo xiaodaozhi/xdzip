@@ -1505,7 +1505,7 @@ fn lzh_creation_levels_and_aliases_publish_only_after_full_name_and_content_veri
             let cancel = Cancellation::default();
             let archive = crate::Archive::open(&path, &cancel).unwrap();
             assert_eq!(archive.format, Format::Lha);
-            assert!(!archive.update_allowed && archive.rows.iter().all(|r| !r.warning));
+            assert!(archive.update_allowed && archive.rows.iter().all(|r| !r.warning));
             let contents = archive_contents(std::fs::read(&path).unwrap(), Format::Lha);
             assert_eq!(
                 contents["输入/文件.txt"],

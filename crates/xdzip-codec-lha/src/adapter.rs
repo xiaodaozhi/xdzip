@@ -1,4 +1,5 @@
 use crate::{Index, Reader, inspect, inspect_pma, resolve_names};
+use std::io::SeekFrom;
 use xdzip_codec_api::{
     Cancellation, Entry, Format, MetadataCodec, ReadSource, ScanError, ScanLimits,
     encode::{
@@ -13,6 +14,18 @@ pub struct LhaCodec;
 /// PMA read-only profiles. Methods are scoped to PMA, independently of LHA IDs.
 pub struct PmaCodec;
 impl LhaCodec {
+    /// Determine whether every existing header uses the admitted edit profile.
+    pub fn rewrite_allowed(
+        source: &mut dyn ReadSource,
+        cancel: &Cancellation,
+    ) -> Result<bool, ScanError> {
+        Ok(editable_headers(&inspect(
+            source,
+            cancel,
+            ScanLimits::default(),
+        )?))
+    }
+
     /// Bounded family-marker proposal. The host must validate the complete container.
     pub fn candidate(
         source: &mut dyn ReadSource,
@@ -267,16 +280,90 @@ impl CreationCodec for LhaCodec {
         crate::creation::encode(input, output, settings, cancel, progress)
     }
 }
+fn editable_headers(index: &Index) -> bool {
+    index
+        .records
+        .iter()
+        .all(|record| record.level == 2 && record.crc16.is_some())
+}
+fn edit_source(error: ScanError) -> EncodeError {
+    match error {
+        ScanError::Cancelled => EncodeError::Cancelled,
+        ScanError::Limit => EncodeError::Limit,
+        ScanError::Unsupported => EncodeError::Unsupported,
+        ScanError::Invalid => EncodeError::Invalid,
+        _ => EncodeError::Source,
+    }
+}
 impl RewriteCodec for LhaCodec {
     fn rewrite(
         &self,
-        _: &mut dyn ReadSource,
-        _: RewriteInput<'_>,
-        _: &mut dyn RewriteOutput,
-        _: &Cancellation,
-        _: &mut dyn FnMut(EncodeProgress<'_>),
+        source: &mut dyn ReadSource,
+        input: RewriteInput<'_>,
+        mut output: &mut dyn RewriteOutput,
+        cancel: &Cancellation,
+        progress: &mut dyn FnMut(EncodeProgress<'_>),
     ) -> Result<(), EncodeError> {
-        Err(EncodeError::Unsupported)
+        let limits = ScanLimits::default();
+        let index = inspect(source, cancel, limits).map_err(edit_source)?;
+        let rows = project(Format::Lha, &index, cancel, limits).map_err(edit_source)?;
+        if !editable_headers(&index)
+            || rows
+                .iter()
+                .any(|row| row.warning || row.link || !row.payload_supported() && !row.directory)
+            || rows.len() != input.keep.len()
+            || (!input.renames.is_empty() && input.renames.len() != rows.len())
+        {
+            return Err(EncodeError::Unsupported);
+        }
+        let mut buffer = [0; 64 * 1024];
+        let mut headers = 0usize;
+        let read_error = |error| edit_source(ScanError::from_source_error(&error));
+        for (at, record) in index.records.iter().enumerate() {
+            cancel.check().map_err(|_| EncodeError::Cancelled)?;
+            if !input.keep[at] {
+                continue;
+            }
+            source
+                .seek(SeekFrom::Start(record.header_offset))
+                .map_err(read_error)?;
+            let header_len = usize::try_from(record.payload_offset - record.header_offset)
+                .map_err(|_| EncodeError::Limit)?;
+            let mut header = vec![0; header_len];
+            source.read_exact(&mut header).map_err(read_error)?;
+            let rename = input.renames.get(at).and_then(Option::as_deref);
+            if let Some(name) = rename {
+                header = crate::creation::rename_header(&header, name, record.directory)?;
+            }
+            headers = headers
+                .checked_add(header.len())
+                .filter(|&n| n <= 64 * 1024 * 1024)
+                .ok_or(EncodeError::Limit)?;
+            output.write_all(&header).map_err(|_| EncodeError::Output)?;
+            let mut remaining = record.packed_size;
+            while remaining != 0 {
+                cancel.check().map_err(|_| EncodeError::Cancelled)?;
+                let size = remaining.min(buffer.len() as u64) as usize;
+                source.read_exact(&mut buffer[..size]).map_err(read_error)?;
+                output
+                    .write_all(&buffer[..size])
+                    .map_err(|_| EncodeError::Output)?;
+                remaining -= size as u64;
+            }
+            progress(EncodeProgress {
+                name: rename.unwrap_or(&rows[at].display_name),
+                input_bytes: 0,
+            });
+        }
+        let position = output.stream_position().map_err(|_| EncodeError::Output)?;
+        crate::creation::append(
+            input.additions,
+            &mut output,
+            position,
+            input.settings,
+            cancel,
+            progress,
+        )
     }
 }
 impl CreationCodec for PmaCodec {
