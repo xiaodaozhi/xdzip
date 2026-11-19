@@ -86,7 +86,7 @@ These are acceptance requirements. Record actual results and native-platform lim
 - Cover all About states, retaining work after close/reopen and explicit cancellation; check both languages/themes, three font sizes and narrow-screen scrolling with shared controls. List unverified production-key and real-platform items separately. Ordinary CI does not deploy/sign/upload Mac app packages.
 - Mac manual fallback separately covers ineligible installation identity, no appcast, invalid network configuration and no handoff session. Display the first actual unmet condition and retain release-page/download-location actions; guidance stays legible in both languages/themes and three font sizes. Download completion is not installation completion.
 
-The authoritative T01–T18 mapping is in design/requirements-traceability.md. These are reusable acceptance specifications, not claims that this run did or did not execute them all. Actual results belong in issues and artifacts; existing manual conclusions are in [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5). Reverify affected items for new candidates without creating fake pass reports.
+The T01–T18 mapping is in [requirements traceability](../../docs/design/requirements-traceability.md). These are reusable acceptance specifications, not claims that this run did or did not execute them all. Actual results belong in issues and artifacts; existing manual conclusions are in [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5). Reverify affected items for new candidates without creating fake pass reports.
 
 | Case | Preconditions and action | Pass criteria |
 | --- | --- | --- |
@@ -99,11 +99,11 @@ The authoritative T01–T18 mapping is in design/requirements-traceability.md. T
 | AC-07 / T07 | Inject ../, absolute paths, link replacement, ADS and more on native OS | No change outside authorized directory; existing targets not modified without authorization |
 | AC-08 / T08 | Chinese IME, keyboard, screen reader and 125/150/200% scaling on three platforms | Critical actions reachable, no clipped text/lost focus, states announced |
 | AC-09 / T09 | Cold/warm startup, idle, multitasking and real I/O on a fixed reference machine | Report entire process tree and complete package data, compare with budgets and explain error |
-| AC-10 / T10/T13 | Core tests without Qt; later interoperability of two independent external extensions | One-way dependencies and capability-driven behavior; unauthorized/malformed frames rejected while host continues |
+| AC-10 / T10/T13 | Core tests without Qt and the separate XDP1 SDK trial | One-way dependencies and explicit built-in capabilities. The trial verifies independent peer interoperability, permission checks and malformed-frame rejection. |
 | AC-11 / T11 | Default use, errors and diagnostic export | No default network transfer; no secrets or full paths |
 | AC-12 / T12/T18 | Clean-machine install, update, uninstall and Qt dependency verification | No implicit development-machine dependencies; delivery includes image worker and offscreen plugin, with real decoding after clearing SDK search overrides. Required ad-hoc integrity, unsigned-release explanation, provenance and license materials complete; active tasks preserved |
 | AC-12 / DEPLOY-TRIM | Basic-only Qt runtime and shared desktop CLI worker | Check required plugins and retained strong imports before pruning; reject unknown layouts and links. Verify relocated QML startup, default dialogs, images and TLS without SDK paths. Exercise private and standalone CLI worker lookup without overrides, including missing or invalid targets; compare actual payload bytes.  Verify that symbol stripping preserves dynamic imports and relative RPATHs, with bound input/output hashes. |
-| AC-13 / T14 | Preview oversized image/text, HTML/executable contents | Bounded resources, no automatic execution, cleanup on close; M6+ only |
+| AC-13 / T14 | Explicit preview of oversized image/text and unsupported content | Enforce preview and worker limits, reject unsupported content and clear preview state on close. Temporary-open cache cleanup follows its separate contract. |
 | AC-14 / T15 | Change source after indexing, disk full, terminate process before/after publication | No false success or deletion of committed/user-modified files; recovery explicit |
 | AC-15 / T17 | Fuzz metadata/names/frames/recovery logs and minimal regression samples | No out-of-bounds or uncontrolled resource growth; diagnosable failure and regression coverage |
 

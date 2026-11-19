@@ -10,14 +10,15 @@ English | [简体中文](../zh-CN/design/glossary.md)
 | Codec | An implementation that detects, scans, reads, or creates a format |
 | Session | Open source, backend, index, and browsing context; not a task |
 | Entry | An actual archive record; a directory may also have a synthetic display node |
-| QuerySnapshot | A view with fixed source/index version and result order |
+| SourceVersion | Best-effort fingerprint of one admitted source file or volume |
+| QuerySnapshot | The runtime's current immutable result order, keyed by session, query, generation and revision |
 | Generation | Frontend request replacement relationship that prevents stale results from overwriting newer ones |
 | Prepared job | The runtime's bounded execution input, with the source, selection and options relevant to the operation |
 | Task | The lifecycle and result of a job admitted to the task queue |
 | Grant | Host-held file/directory access authority, not a path string |
 | Sink | A write interface under metering, quota, and transaction control |
 | Worker | A command or task worker is a thread in the host. The archive and image workers are separate processes. |
-| Commit | Safe point publishing verified staged content as a final file |
+| Commit | Publish verified staged output through its authorized file or archive operation |
 | Task snapshot | The latest report of task status, progress, prompt or outcome. Intermediate snapshots may be coalesced. |
 | Capabilities | Specific intersection of implementation, format features, platform, and policy |
 | Solid | Multiple files share compressed blocks; selective reading may require decoding preceding content |

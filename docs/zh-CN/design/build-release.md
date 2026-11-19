@@ -1,84 +1,32 @@
-# xdzip：11 构建、发布、许可证与更新
+# 构建、部署与发行架构
 
 [English](../../design/build-release.md) | 简体中文
 
-## 1. 支持矩阵
+## 构建与打包输入
 
-应用显示名和可执行文件基名统一为 `xdzip`；平台工件为 `xdzip.app`、`xdzip.exe` 和 `xdzip`，Linux 桌面入口为 `xdzip.desktop`。正式 Rust 模块使用 `xdzip-` 前缀。发布使用项目现有 bundle ID，个人 GitHub 开源发行不要求付费签名身份，见[发布手册](../../../developers/zh-CN/engineering/release-runbook.md)。首批支持范围和维护方式已由项目所有者于 2026-10-19 批准，权威说明见[支持政策](../engineering/support-policy.md)及 [ADR-011](architecture-decisions.md#adr-011首批支持范围与个人项目维护政策)。
+CMake 构建 Qt 桌面、C++ 适配层及原生助手。Cargo 构建 Rust 运行时并生成要链接的 CXX 桥接。独立 CLI 使用自己的构建入口，无需 Qt。`scripts/desktop.py` 与 `scripts/cli.py` 组织构建和测试。当前源码锁定 Rust 1.99.0 和 Qt 6.8.2 SDK。比较结果时要同时核对构建身份、目标架构、锁文件和工具链来源。[工具链](../engineering/toolchain.md)、[开发构建指南](../engineering/developer-build.md)
 
-| 平台 | 首批目标 | 最低系统与范围 | 发布核验 |
-|---|---|---|---|
-| macOS | Apple Silicon arm64 | macOS 14 及以上，不承诺所有未来系统版本 | 原生 GPU/IME/VoiceOver、ad-hoc 完整性、无开发环境运行 |
-| Windows | x86_64 MSVC | 仍受维护的 Windows 11 | Unicode/DPI/长路径/NTFS、未签名包与干净环境 |
-| Linux | x86_64 | Ubuntu 24.04 LTS、X11、glibc 2.39 及以上 | X11 平台插件、隔离运行、目标发行版原生文件 API |
+桌面部署各平台包需要的 Qt 库、QML 模块、系统资源和随包助手。专用图片进程使用 Qt 进行图片解码及静态 SVG 渲染。CLI 包携带所需的归档工作进程。构建配置、打包清单和部署检查由脚本和平台契约维护。单个可执行文件的大小无法说明完整依赖或安装体积。[部署与依赖审计](../engineering/deployment-audit.md)、[CLI 分发](../engineering/command-line.md)
 
-首批不提供 Intel Mac、Universal、Windows ARM64 或 Linux ARM64 包，不承诺 Windows 10、其他 Linux 发行版或 Wayland。支持范围不等于已逐一覆盖所有系统版本；扩大范围须补充实际验证。个人项目优先维护最新公开版本、尽力处理反馈、不承诺固定响应时限，开发预览保持实验性。
+## 当前分发渠道
 
-## 2. 工具链和构建入口
+| 目标 | 安装包与信任边界 |
+| --- | --- |
+| macOS Apple Silicon | GitHub 提供 DMG 和应用包 ZIP。目标基线为 macOS 14，应用包使用 ad-hoc 完整性签名。安装和更新行为见平台说明。 |
+| Windows 11 x86_64 | GitHub 提供未签名的每用户安装程序及便携 ZIP。Microsoft Store 管理 MSIX 的包身份、签名和更新渠道。 |
+| Ubuntu 24.04 LTS x86_64 | GitHub 提供运行时目录压缩包和 DEB。支持基线包含 X11 及 glibc 2.39 或更高版本。 |
+| 独立 CLI | 单独分发，拥有自己的包与更新身份。桌面安装中附带的 CLI 遵循其所在安装的集成和交接规则。 |
 
-产品以 CMake 组织 Qt/C++/QML，Cargo 组织 Rust，顶层脚本/预设负责 target、依赖位置及顺序。Rust 静态核心链接进应用，Qt 默认动态部署，便于许可合规和替换。平台原生 codec/helper 作为明确可审计独立工件。
+[支持政策](../engineering/support-policy.md)界定系统及架构范围。[项目首页](../../../README.zh-CN.md)与对应发布说明列出实际附件，[安装程序指南](../engineering/installers-associations.md)说明文件关联与集成限制。
 
-当前 Rust 工具链由 rust-toolchain.toml 锁定为 1.99.0，Qt SDK 由构建配置锁定为 6.8.2；来源和哈希见[工具链策略](../engineering/toolchain.md)。升级通过对应审查与三平台复验，不把原型版本或宽泛的 ≥6.8 当作可直接替换的构建输入。Qt LTS 名称不代表所有开源分发渠道都提供相同的长期补丁。
+## 常规检查、原生构建与发行
 
-`cxx`、Cargo、CMake、编译器、Qt 包 SHA、features 和目标架构保存于版本化构建清单。构建生成文件放 build 目录；QML 编译缓存启用与否也写入基准元数据。缓存 key 含工具链/Qt/feature，避免错误复用不同架构产物。
+常规 [CI 工作流](https://github.com/xiaodaozhi/xdzip/blob/main/.github/workflows/docs.yml)执行轻量检查。原生 Foundation 和 Qt 检查由独立工作流手动运行。普通 Apple Silicon CI 执行编译、测试和启动验证，无需部署可供下载的应用包。专用发行工作流按授权执行部署、签名、打包和发布。[发行协议](../engineering/release-protocol.md)和 [CI 策略](../../../developers/zh-CN/engineering/ci-policy.md)定义门槛与证据。
 
-提供开发 Debug、诊断 ReleaseWithSymbols、发行 Release 三配置。调试符号单独存放，签名前归档；没有实际测量不启用高风险 aggressive LTO/自定义分配器。使用可解释、可回滚的 size 优化，确保 panic/崩溃可定位。
+发行清单、校验和、组件清单、SBOM 和许可材料描述实际交付的工件。发行工作流不生成或上传项目源码压缩包。GitHub 自带的标签快照通过独立机制提供。依赖义务依据实际随包组件与项目的[许可记录](../engineering/licensing.md)和[源码交付政策](../engineering/source-delivery.md)。
 
-## 3. Qt 模块和部署
+## 更新与后续分发
 
-桌面程序使用 Qt Core、Gui、Qml、Quick、Quick Controls 和实际导入的 QML 模块。独立的图片预览进程链接 Qt SVG，用于受支持的静态 SVG 预览。避免 WebEngine、Multimedia、完整 Qt 开发工具和未使用 SQL driver。
+更新选择和验证独立于归档任务。符合条件的安装版按更新契约核对可信元数据、已验证工件和安装身份，并按活动任务状态完成交接。Windows 和 Linux 使用对应的助手流程，macOS 使用 Sparkle，商店版由 Microsoft Store 提供更新。便携与开发配置各有限制。[软件更新](../engineering/software-update.md)
 
-不能仅列直接链接库就删掉所有 transitive DLL/QML 插件。部署工具扫描 QML imports 和动态依赖，在干净机器上验证。QML 包资源和 platform/imageformat 插件用明确允许清单；不从用户当前目录加载未知 Qt 插件。
-
-macOS 使用部署工具生成 app bundle，配置相对加载路径；Windows 部署 Qt DLL/QML 和必要 MSVC runtime；Linux 采用 Ubuntu 24.04 运行目录 tar.gz 和 .deb，按[部署契约](../engineering/linux-deployment.md)收集 Qt 与 OS 依赖。部署工具的输出需审查，不假设自动满足许可、安全或最小体积。
-
-产品安装包仅包含 Qt 产品核心和选择的后端，不包含 Slint/Tauri 原型、Python 基准环境、Cargo target、头文件或字体实验资源。源码包可保留选型实验，但必须与产品二进制包分开。
-
-## 4. 平台发布
-
-### macOS
-
-GitHub 发布页提供用于安装的 `.dmg` 和 `.app.zip` 应用包。按个人开源发行政策只做必要的 ad-hoc 完整性签名，不要求 Developer ID、公证或付费账号。说明未正式签名的系统提示，不要求关闭系统安全保护。权限尽量小，禁止为插件便利开启宽泛禁用保护的 entitlements。
-
-Mac App Store 是独立发行路线，需重新评估 App Sandbox、书签授权、下载插件限制和许可；不能认为直接下载的第三方可执行扩展模式自动可用于商店版本。
-
-### Windows
-
-GitHub 发布页提供未签名的当前用户安装器和便携 ZIP。Microsoft Store 通过合作伙伴中心独立分发和更新 MSIX。EXE 安装器可在无管理员权限时为当前用户安装。商店版通过包身份提供文件关联和 Explorer 菜单。详见[安装指南](../engineering/installers-associations.md)和[商店构建指南](../engineering/developer-build.md#microsoft-store-msix)。
-
-### Linux
-
-当前交付 Ubuntu 24.04 运行目录及 .deb，不提供 AppImage 或 Flatpak。扩大渠道前须补充安装、文件访问和来源验证。针对基线系统构建，不在新 glibc 上构建后宣称老系统可运行。Wayland/X11、portal、Qt 插件和沙箱权限分别测试。AppImage/Flatpak/原生包对文件与工作进程限制不同，按发行配置暴露实际能力。
-
-## 5. 许可证和供应链
-
-项目原创内容采用 Apache-2.0；冻结记录见 [许可证决策](../engineering/licensing.md)，完整授权条款以根目录 LICENSE 为准。Rust crate、Qt 模块、格式参考工具和材料、图标与打包工具各自核查，不能用项目 LICENSE 覆盖依赖条款。Qt 动态部署本身不是全部合规证明。
-
-依赖许可审查至少包含：分发许可、版权和声明、修改说明、源码提供义务、用户替换库和重新链接条件、安装信息及反调试/签名政策的相容性。LGPL/GPL/商业方案由实际模块和发行方式决定；不能把某一 Qt 模块结论推广到全部 Qt。
-
-7-Zip/UnRAR 或其他 RAR 实现涉及的具体条款单独评估，尤其创建 RAR 和逆向相关限制；不把它们简单标作“MIT 兼容”。不满足目标许可时不打包该能力，可作为用户自行安装的合规后端候选，仍需评估宿主分发关系。
-
-GitHub 发行材料包括依赖版本与哈希、文件清单、SBOM 和所需的许可声明。源码和构建说明按[源码交付政策](../engineering/source-delivery.md)复核。更新清单使用独立于平台代码签名的密钥，签名和公开条件见[发布协议](../engineering/release-protocol.md)。
-
-## 6. 可复现和离线构建
-
-依赖锁、来源哈希、可选 vendor 缓存和工具链清单支持离线构建。限制未经审查的 build script 下载；不能默认 cargo build 就应访问任意站点。
-
-平台签名/公证时间戳通常会改变最终包字节，分别比较未签名工件的可复现性和已签名产物的验证结果。不要宣称所有签名包 byte-for-byte 相同。
-
-## 7. 更新策略
-
-GitHub 桌面版可在“关于 xdzip”中主动检查更新。符合条件的安装版会验证带签名的发布元数据后安装更新，macOS 另通过 Sparkle 验证更新源和应用归档的签名。便携版和开发构建使用手动安装。商店版 MSIX 由 Microsoft Store 更新。版本选择、隐私和安装条件见[软件更新](../engineering/software-update.md)。
-
-安装会等待活动任务结束，失败时按平台提示处理。手动更新请从所用发行渠道获取完整安装包。基本归档操作支持离线使用。
-
-## 8. 发布检查表
-
-- 从冻结的发行提交构建各平台安装包，核验所需清单、校验和、SBOM 与许可材料。附件清单见[发布协议](../engineering/release-protocol.md)。
-- 核验格式能力清单，未验证加密/分卷不能写进“全格式支持”。
-- 三平台干净机器安装、首次打开、系统关联、退出、升级/卸载通过。
-- 验证源变化、输出配额、取消、恢复、安全路径及沙箱；第三方未达门槛则默认禁用。
-- 记录完整压缩下载/安装体积，而非只记录主 executable。
-- 验证必要 ad-hoc 完整性、未正式签名的安全提示、Qt 替换政策和所有声明；公布已知限制。
-
-发布负责人可以拒绝不满足安全/许可门槛的功能，不能为了一个版本日期隐式降低默认保护。
+扩大架构、系统基线、包格式或商店范围时，需要独立的构建和验收证据。历史发行决策与复核触发条件见[架构决策记录](architecture-decisions.md)。

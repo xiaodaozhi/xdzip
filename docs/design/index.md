@@ -1,50 +1,22 @@
-# xdzip: Software design overview
+# XDZip design guide
 
 English | [简体中文](../zh-CN/design/index.md)
 
-Version: design baseline 0.1. These documents maintain the product design and architecture contracts; see issues for implementation and acceptance progress. The product name is **xdzip**, consistently spelled in lowercase.
+Start with the [system architecture](system-architecture.md) to see how the Qt Quick desktop and the independent Rust CLI reach the archive runtime. The design pages explain the current contracts, decisions and the scope of proposed work. Installation and everyday operations are covered in the [user manual](../user-guide/README.md). To build or change the project, see [Build and contribute](../contributing/README.md).
 
-The project uses **Qt Quick** for its desktop interface. The established technical direction is **Qt Quick/QML + a thin C++ adapter layer + a Rust core**. These documents define product behavior, module boundaries, interface contracts, extensibility, security, performance, and delivery for open-source maintainers. This repository contains the actual product source, tests, and design inputs. Historical interface-selection experiments were not imported into this repository.
+## Find a design topic
 
-## Reading guide
+| Topic | What to read |
+| --- | --- |
+| Product behavior | [Product requirements](product-requirements.md) defines expected operations and their scope. [Requirements traceability](requirements-traceability.md) identifies corresponding verification. |
+| Archive data | [Domain model](domain-data.md) describes sessions, source versions, physical entries, queries and operation input. |
+| Desktop | [Qt Quick interface](qt-quick-ui.md) covers views, controller ownership and interaction. [Qt/Rust bridge](qt-rust-bridge.md) gives the actual commands, IDs, events and lifecycle. |
+| Formats and extension boundaries | [Format adapters and the extension trial](codec-extension-sdk.md) explains the built-in registry, bundled worker and standalone XDP1 trial. |
+| Output and background work | [File authorization and safe publication](file-security.md) covers staging, verification and commit. [Task scheduling](task-scheduling.md) explains admission, prompts, progress and cancellation. |
+| Performance and quality | [Performance design](performance.md) explains budgets, measurements and targets. [Quality engineering](quality-engineering.md) maps changes to verification. |
+| Delivery and decisions | [Build, deployment and release](build-release.md) covers platforms, packages and updates. [Architecture decisions](architecture-decisions.md) records the rationale, and [architecture evolution](architecture-evolution.md) explains how prototype choices led to the current product. |
+| Terminology | [Terminology and implementation limits](glossary.md) explains vocabulary and links to the current limits for each subsystem. |
 
-| Document | Questions it addresses |
-|---|---|
-| [01 Product and requirements](product-requirements.md) | What to build, priorities, user actions, and acceptance criteria |
-| [02 System architecture](system-architecture.md) | Dependency direction, processes, threads, services, and deployment boundaries |
-| [03 Domain and data](domain-data.md) | Archive sessions, entries, queries, selections, plans, and results |
-| [04 Qt Quick interface](qt-quick-ui.md) | Information architecture, visual system, virtual models, interaction, and accessibility |
-| [05 Qt/Rust bridge](qt-rust-bridge.md) | Types, lifetimes, requests and responses, events, and errors |
-| [06 Format and extension SDK](codec-extension-sdk.md) | Format capabilities, built-in adapters, process protocol, and compatibility |
-| [07 File security and transactions](file-security.md) | Path escape, links, overwrites, bombs, previews, and passwords |
-| [08 Tasks and concurrency](task-scheduling.md) | State machine, resource admission, cancellation, pausing, and failure recovery |
-| [09 Performance and measurement](performance.md) | Budgets, optimization paths, real workloads, and evidence |
-| [10 Coding and quality](quality-engineering.md) | Conventions, comments, tests, fuzzing, and contribution workflow |
-| [11 Build, release, and licensing](build-release.md) | Deployment on three platforms, signing, notarization, dependencies, and updates |
-| [12 Architecture evolution](architecture-evolution.md) | How the prototypes led to the current product and where the experimental SDK fits |
-| [Architecture decision records](architecture-decisions.md) | Reasons for choices, costs, and when to revisit them |
-| [Requirements traceability matrix](requirements-traceability.md) | How requirements map to design, tests, and versions |
-| [Terminology and protocol constants](glossary.md) | Consistent names, units, initial limits, and version interpretation |
+## Interpreting the references
 
-Start with 01, 02, and the architecture decisions. Interface contributors should then read 04 and 05; format contributors should read 03, 06, and 07; core maintainers should cover 08 through 11. Document 01 is authoritative for requirements, while 05 and 06 define their respective protocol boundaries. Other documents refer to these instead of inventing another interface.
-
-## Core decisions
-
-1. Double-clicking an archive first browses its contents. Extraction, compression, overwriting, and external program execution require explicit actions.
-2. The UI presents archive operations handled by the Qt-independent Rust core. The standalone [CLI](../engineering/command-line.md) and test drivers use the same core.
-3. The production Qt/Rust boundary uses build-time type bridging generated by `cxx`; it does not promise a binary ABI across versions. The prototype's JSON/C ABI is only for migration verification.
-4. Formats are driven by declared capabilities. Source-level Rust extensions and process-level third-party extensions have separate contracts; arbitrary Rust dynamic libraries are not loaded.
-5. File authorization, path validation, output transactions, and quotas are centralized in the host. Codecs cannot choose actual output paths themselves.
-6. Complete the real ZIP and TAR/GZIP workflows first, then expand format coverage. 7z, RAR, encryption, split archives, and third-party sandboxing each have independent verification gates.
-7. The UI, index, tasks, and plugins use bounded queues and caches; progress events must not drown out terminal task states.
-8. Express “small, fast, and low resource use” as budgets tied to machine configurations and workloads; do not treat prototype binary size as installed size.
-
-## Implementation and verification
-
-The design defines goals and boundaries; it is not a report of a particular run. For implemented product capabilities, the root README and engineering contracts are authoritative. Later capabilities and uncovered items are tracked in work package issues. Performance figures must come from measurements tied to an actual commit, platform, and workload. Historical prototype data cannot guarantee the current product's first-frame performance, installed size, or actual extraction performance.
-
-Third-party protocols, additional formats, sandboxing, content previews, and similar capabilities each require admission. Keep a capability explicitly disabled when its required verification has not passed; a designed interface alone does not establish implementation. Store execution evidence according to [verification](../../developers/qa/README.md); do not commit stage reports.
-
-## Change rules
-
-A PR that changes domain identity, capabilities, task states, file writes, or extension protocols also updates the corresponding design and traceability matrix. Append an ADR for decision changes and identify the record it supersedes. MVP simplifications must not implicitly weaken path or quota security requirements. Wording-only and visual adjustments do not require new architecture documents.
+Current behavior is described with implementation links. Design options and experimental tools have their own stated scope. The [engineering reference](../reference/README.md) leads to individual contracts. The [project README](../../README.md) and matching release notes describe supported distribution and delivered features. Timing, resource and native verification claims apply to the recorded build, platform and workload.

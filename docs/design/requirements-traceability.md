@@ -1,52 +1,43 @@
-# xdzip: Requirements, design, and acceptance traceability
+# Requirements and verification traceability
 
 English | [简体中文](../zh-CN/design/requirements-traceability.md)
 
-[Product requirements](product-requirements.md) defines the requirement IDs. The matrix links requirements to the design and behavior to verify. See [acceptance cases](../../developers/qa/acceptance.md) for the verification entry points.
+[Product requirements](product-requirements.md) defines the requirement IDs and their current scope. Each row below describes what to verify when that behavior changes. Execution results, platform scope and limitations belong to the corresponding change record. The [acceptance cases](../../developers/qa/acceptance.md) identify verification entry points.
 
-## 1. Traceability matrix
+## Requirement matrix
 
-| Requirement | Main design | Acceptance suite |
-|---|---|--- |
-| P01 Browse without automatic extraction | [Domain](domain-data.md), [UI](qt-quick-ui.md) | T01 Read-only open and no changes in temporary directory |
-| P02 Browse/query/select | [Domain](domain-data.md), [UI](qt-quick-ui.md), [Performance](performance.md) | T02 Identity, query snapshots, 100,000 entries, stale pages |
-| P03 Selective extraction/conflicts | [Domain](domain-data.md), [File security](file-security.md), [Tasks](task-scheduling.md) | T03 Plan scope, duplicate records, overwrite/skip/rename, disk results |
-| P04 Archive creation | [Formats](codec-extension-sdk.md), [File security](file-security.md) | T04 Bidirectional ZIP/TAR/TAR.GZ interoperability and old-file protection |
-| P05 Capability-driven | [Bridge](qt-rust-bridge.md), [Formats](codec-extension-sdk.md) | T05 Actual features, forged operations, disabled reasons |
-| P06 Bounded tasks/cancellation | [Bridge](qt-rust-bridge.md), [Tasks](task-scheduling.md) | T06 Full queues, resource leases, cancellation/commit/shutdown races |
-| P07 Security protections | [File security](file-security.md), [Formats](codec-extension-sdk.md) | T07 Native link races, path escape, quotas, special entries |
-| P08 Modern accessible UI | [UI](qt-quick-ui.md) | T08 Three-platform keyboard/mouse, IME, DPI, screen readers, and focus |
-| P09 Low resource use | [Performance](performance.md), [Tasks](task-scheduling.md) | T09 Actual process tree, GPU, startup, throughput, complete size |
-| P10 Decoupling/format extensions | [Architecture](system-architecture.md), [Formats](codec-extension-sdk.md) | T10 Core without Qt, dependency direction, third-format example |
-| P11 Privacy/passwords | [UI](qt-quick-ui.md), [File security](file-security.md) | T11 No default networking, redaction, secret lifetimes |
-| P12 Auditable releases | [Quality](quality-engineering.md), [Releases](build-release.md) | T12 Locked dependencies, SBOM, required ad-hoc integrity and lack-of-formal-signing disclosure, clean machine, license materials |
-| P13 Third-party extensions | [Formats](codec-extension-sdk.md), [Releases](build-release.md) | T13 Independent interoperability, permission changes, rejection of unauthorized actions/refusal to cancel |
-| P14 Limited preview | [UI](qt-quick-ui.md), [File security](file-security.md) | T14 Oversized images/text, active content, temporary-file cleanup |
-| P15 Recoverable errors | [Bridge](qt-rust-bridge.md), [File security](file-security.md), [Tasks](task-scheduling.md) | T15 Error categories, source changes, full disk, crash recovery |
+| Requirement | Design reference | Verification focus |
+| --- | --- | --- |
+| P01 Browse without extraction | [Domain](domain-data.md), [Desktop](qt-quick-ui.md) | T01 Open a real archive and confirm browsing produces no extracted payload. |
+| P02 Browse, query and select | [Domain](domain-data.md), [Performance](performance.md) | T02 Same-name identities, stable queries, stale pages, large-index storage and selection across pages. |
+| P03 Extract the intended scope | [File authorization](file-security.md), [Tasks](task-scheduling.md) | T03 Directory expansion, duplicates, rename, skip, overwrite and exact disk results. |
+| P04 Create an archive | [Formats](codec-extension-sdk.md), [File authorization](file-security.md) | T04 Independent round trips for the changed profile, stage verification and old-file protection. |
+| P05 Honor format capabilities | [Bridge](qt-rust-bridge.md), [Formats](codec-extension-sdk.md) | T05 Registry, session-specific actions and runtime rejection of unsupported profiles. |
+| P06 Bound jobs and allow cancellation | [Bridge](qt-rust-bridge.md), [Tasks](task-scheduling.md) | T06 Full queues, prompt routing, cancel/commit races and asynchronous shutdown. |
+| P07 Protect file and resource boundaries | [File authorization](file-security.md), [Formats](codec-extension-sdk.md) | T07 Applicable native link and identity checks, path validation, quotas and protected objects. |
+| P08 Provide an accessible desktop | [Desktop](qt-quick-ui.md) | T08 Model and control behavior, native keyboard/IME/accessibility, scaling and focus on affected platforms. |
+| P09 Bound and measure resources | [Performance](performance.md) | T09 Comparable build, process-tree metrics, startup, sorting, output throughput or package size as applicable. |
+| P10 Keep Qt out of format logic | [Architecture](system-architecture.md), [Formats](codec-extension-sdk.md) | T10 Core without Qt, explicit adapter routing and format-specific regressions. |
+| P11 Protect secrets and data | [File authorization](file-security.md), [Privacy](../engineering/privacy.md) | T11 Scoped passwords, redacted diagnostics and intentional network access. |
+| P12 Audit delivery | [Quality](quality-engineering.md), [Releases](build-release.md) | T12 Locked inputs and artifact identity, inventory, license material, package trust and applicable install checks. |
+| P13 Gate external extensions | [Formats](codec-extension-sdk.md), [SDK trial](../engineering/sdk-trial.md) | T13 Trial-only interoperability and native permission results. Product extension installation remains a design option. |
+| P14 Bound preview and opening | [Desktop](qt-quick-ui.md), [File authorization](file-security.md) | T14 Explicit preview, supported content, worker limits and private temporary outputs. |
+| P15 Report the actual outcome | [Bridge](qt-rust-bridge.md), [File authorization](file-security.md), [Tasks](task-scheduling.md) | T15 Source/target changes, failures and cancellation after earlier commits, cleanup and uncertainty. |
 
-## 2. Cross-cutting gates
+## Cross-cutting verification
 
-| Suite | Scope | Actual results to check |
-|---|---|---|
-| T16 Bridge ownership and lifecycle | Every bridge change | Repeated close, receiver wakeup, no callbacks after object destruction, no leaks/out-of-bounds |
-| T17 Format interoperability and fuzzing | Every new format/feature | Interoperate with independent references, do not publish corrupt content, bound excessive input |
-| T18 Installation, update, and rollback | Every distribution channel | Runs on a clean machine, complete dependencies, active tasks finish before update, documented rollback or recovery |
+| Suite | Applicable changes | Verification focus |
+| --- | --- | --- |
+| T16 Bridge ownership and lifecycle | Bridge, connection or controller lifetime | Current request identity, receiver wakeup, retained tasks and safe destruction. |
+| T17 Format interoperability and negative paths | Format or codec changes | Independent valid fixture where applicable, truncation or unsupported profiles, and bounded output. |
+| T18 Install, update and removal | Platform or distribution channel changes | The actual package, clean-environment runtime dependencies, installation identity, update handoff and supported removal or recovery. |
 
-A new format covers at least T05, T07, T10, and T17. A new output action covers at least T03/T04, T06, T07, and T15. A new release platform covers at least T08, T09, T12, T16, and T18.
+## Representative workflows
 
-## 3. Representative end-to-end scenarios
+1. Open a ZIP and search it, freeze selected results, then extract and compare output bytes. “Extract all” still means the entire archive.
+2. Extract same-name or colliding records under a defined conflict policy and confirm the resulting filenames and statuses.
+3. Cancel before and during publication, check that completed files remain reported, and confirm earlier verified archives are preserved if creation fails before commit.
+4. Change a source or destination during an owned test and verify the actual outcome. Following abnormal termination, inspect leftovers without assuming automatic replay.
+5. Fault a bundled format worker or the separate SDK trial according to its contract and verify that incomplete data is never published as a successful result.
 
-1. **Regular ZIP:** Drop → display directory → Chinese query → range-select multiple entries → choose a new directory → extract → content matches reference.
-2. **Search scope:** Filter with no selection → “Extract all” still means the entire archive; To extract only matches, select them in the result list and review the selection before confirming.
-3. **Duplicate/colliding names:** Two records map to the same name → host prompts → renamed/skipped results are traceable, with no silent last-item overwrite.
-4. **Cancel commit:** Cancellation before the commit barrier does not publish the current item; after the barrier it retains committed items. A terminal state appears once.
-5. **Malicious paths:** `../`, absolute names, ADS, links, and reparse substitutions → reject according to platform policy; no changes outside the authorized directory.
-6. **Source changes:** Modify the source after indexing → start/read detects invalidation → stop and explain reopening is needed; no “success” summary.
-7. **Create over an old archive:** Full disk/cancellation during writing → old archive checksum remains unchanged; temporary leftovers can be located and cleaned.
-8. **Runaway worker:** Out-of-order/oversized frames, refusal to cancel, or unauthorized reads/writes → terminate the extension; host continues other sessions.
-9. **Abnormal termination:** Inject kill before/after publication → next recovery does not automatically overwrite or delete user files; explicitly report uncertain state.
-
-
-## 4. Definition of done
-
-A requirement is complete only when its design is implemented, corresponding acceptance passes, capability documentation is updated, and it is usable in the actual release configuration. Mocks, static screenshots, parse success, or an interface name alone do not count. Design checks can verify document consistency but cannot replace T01–T18.
+Static writing, format and link checks validate the documentation. Fixture, offscreen, native automated and manual acceptance evidence retain their own scope. [Quality engineering](quality-engineering.md), [Verification guide](../../developers/qa/README.md)

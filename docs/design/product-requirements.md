@@ -1,76 +1,35 @@
-# xdzip: 01 Product and requirements
+# XDZip product requirements
 
 English | [简体中文](../zh-CN/design/product-requirements.md)
 
-## 1. Product positioning
+XDZip lets people inspect archives like folders, work with selected content, and create or edit archives when the format supports it. The desktop and [standalone CLI](../engineering/command-line.md) share the archive runtime. The [project README](../../README.md) describes current capabilities and distribution. The requirements below describe the behavior to preserve and verify.
 
-xdzip is a desktop archive manager for macOS, Windows, and Linux. Its primary value is letting users inspect archives like ordinary file folders and reliably extract selected content or create archives. Users do not have to unpack the entire archive to disk first or understand plugins and codec implementations.
+## Requirements and implementation
 
-The priority experience is the macOS desktop, including Chinese input methods, ⌘ shortcuts, Retina, system file selection, and opening through Finder. All three platforms share information architecture, task behavior, and security semantics while following their own keyboard, window, and filesystem conventions.
+| ID | Requirement | Current behavior or scope |
+| --- | --- | --- |
+| P01 | Browse without automatically extracting | Opening probes a source and finishes its bounded scan before publishing the first page. Decoding entry content requires a separate action. |
+| P02 | Navigate, search, sort and select | Stable physical IDs, separate navigation identities, paged queries and bounded selection are implemented. Ordinary single-file ZIP/ZIP64 has a larger metadata index with separate task limits. |
+| P03 | Extract a selection or the archive | The runtime freezes scope, validates names and authorizes a destination. It supports conflict decisions and reports actual publication, skips, errors and cancellation. |
+| P04 | Create archives from files and directories | Validate options against the creation registry, encode to staging and verify before publication. Supported formats and creation options follow the registry. |
+| P05 | Offer operations by capability | The UI combines the format descriptor and current session state. Runtime validation still applies to every request. Readability, preview, testing, creation, password and volume profiles have separate bounds. |
+| P06 | Run bounded tasks and allow cancellation | Metadata and heavy tasks have separate lanes. Desktop heavy operations are serialized, and an accepted task can continue after its tab closes. |
+| P07 | Keep writes within validated authority and limits | Host rules cover names, links, file identity, staging, actual output and commit. Format checks validate the applicable structure and integrity. |
+| P08 | Provide consistent, accessible desktop controls | QML and C++ provide shared controls, keyboard navigation, focus and accessibility behavior. Platform-native IME, screen readers and display behavior require their own verification. |
+| P09 | Keep resource use measurable and bounded | Code enforces independent budgets. Reference performance targets and measured results are tracked separately. |
+| P10 | Keep formats independent of Qt | Rust traits, explicit registry routing and dedicated worker interfaces support built-in implementations. Desktop and CLI use the same core. |
+| P11 | Protect passwords and user data | Archive operations work offline. Passwords are kept in scoped, zeroizing storage. Privacy, diagnostic output and explicit update access have their own contracts. |
+| P12 | Make release contents and provenance auditable | Use the defined packaging channels, locked inputs, manifests, checksums, license material and platform checks. Results apply to the build and distribution actually verified. |
+| P13 | Allow third-party extensions only with validated trust and permissions | The XDP1 read-only trial is implemented separately. Product-side installation and activation remain design work. |
+| P14 | Preview or temporarily open only on explicit action | Properties can request bounded text/image preview. Opening a regular entry uses a verified private copy and delegates to the system association. |
+| P15 | Report failures and uncertain results accurately | Stable errors and bounded results cover source change, disk failure, skipped entries and cleanup. Automatic restart recovery remains a design option. |
 
-## 2. Numbered requirements
+## Workflows and scope
 
-| ID | Requirement | Acceptance method |
-|---|---|---|
-| P01 | Opening an archive only reads and browses it; it does not extract automatically | Opening a test archive creates no files in the destination or temporary preview directory |
-| P02 | Directory navigation, search, stable sorting, single selection, and range-based multiple selection | A real metadata set of 100,000 entries can be paged through; selection identities remain correct after changing sort order |
-| P03 | Selective and full extraction, conflict preflight, and result summary | Overwrite, skip, rename, failure, and cancellation are observable and match the actual disk state |
-| P04 | Create ZIP, TAR, and TAR.GZ from files and directories | System tools or independent reference tools can read the content; cancellation does not damage an existing destination |
-| P05 | Expose formats, encryption, split volumes, and other actions according to capabilities | Unsupported actions cannot be submitted, and the core also rejects forged requests |
-| P06 | Bounded background tasks, a usable interface, and cancellation | Other sessions remain searchable during large tasks; cancellation results include committed and unfinished items |
-| P07 | Protection against path escapes, links, special files, and archive bombs | Adversarial samples cannot escape the authorized destination or exceed actual output quotas |
-| P08 | A modern, consistent interface operable by keyboard, IME, and assistive technologies | Three-platform acceptance checklist; focus, screen readers, high contrast, and 200% scaling are usable |
-| P09 | Explicit low-resource budgets and reproducible measurements | Release benchmarks include runtime, process tree, fonts, GPU, and workload |
-| P10 | Rust core isolated from the interface, with formats extensible according to the specification | Core tests run without Qt; independent format adapters can be integrated without changing QML |
-| P11 | Privacy and password protection | No telemetry by default; logs contain no passwords or full user paths; secrets that can be cleared are cleared on exit |
-| P12 | Auditable, reproducible, legally distributable releases | Dependency locks, SBOM, license inventory, signing, and install/uninstall verification are complete |
-| P13 | Voluntary installation of third-party format extensions with explicit permissions and compatibility | Downloaded extensions are not executed by default; reject them if sandbox, protocol, signature, or authorization checks fail |
-| P14 | Limited, explicit preview and temporary opening | Only user initiated; subject to size, type, output quota, and temporary-directory policy |
-| P15 | Diagnosable, recoverable errors without false success | Error codes and summaries agree; power loss, full disks, and changed sources have separate tests |
+- **Open and inspect.** A file-open intent enters the desktop session coordinator. A successful scan publishes a session; search and sorting make a new query. Double-click enters a directory or opens an eligible file through the temporary-copy workflow. Preview is initiated separately from the properties view. [Browsing and preview](../user-guide/browse.md), [Temporary opening](../engineering/archive-opening.md)
+- **Extract.** “Extract all” refers to the archive. To extract only matches, select within the query and review the resulting scope. A metadata preflight provides findings before write authorization. Per-file commits preserve already completed files on a later failure or cancellation. [Extraction](../engineering/zip-safe-extraction.md), [Task scheduling](task-scheduling.md)
+- **Create, modify or test.** Creation and eligible edits verify staged output before publication. The Test action checks an eligible archive according to its format and obtains no output authorization. Available operations depend on the format, entry and source profile. [Format registry](../engineering/format-registry.md), [Archive transfers](../engineering/archive-transfers.md), [Archive checking](../engineering/archive-checking.md)
 
-## 3. Workflows
+## Planned scope and verification
 
-### Open and browse
-
-A file association, drag-and-drop, or “Open” obtains a user-authorized source file handle. Determine the backend from file magic and format probing; the extension is only a hint. A session first displays the archive title and probing status, then incrementally displays content. ZIP can read its directory; streaming formats such as TAR display “Scanning,” and the total entry count may be unknown during the scan. A partial index must not masquerade as complete search results.
-
-When a password is needed, explain whether it is required to read the directory or the content. If the user cancels password entry, retain usable session metadata or return an actionable error; do not silently try an empty password or retry indefinitely. Missing files, unsupported formats, corruption, and permission denial have distinct messages.
-
-### Extract
-
-The toolbar offers “Extract selected” and “Extract all.” Default to the selection when one exists and to all entries otherwise; **do not silently treat the current search results as the entire archive**. A separate “Extract search results” menu action can create an explicit snapshot from the search page, with its count and “current results” scope shown in the confirmation area.
-
-The user chooses a destination directory and may select “Create a subdirectory with the same name.” The core builds a plan covering deduplication of recursive directory selections, path mapping, capability checks, estimated size, known conflicts, and risks. A full-extraction plan waits for an unfinished index to finish scanning. Large plans are built asynchronously, with progress and cancellation.
-
-Existing files are not overwritten by default. A conflict pauses for a decision. The dialog offers skip, rename, overwrite, and an option to apply the decision to subsequent similar conflicts in the same task. Decisions are bound to the task and conflict ID; the task checks the disk again when actually committing. The completion summary shows successes, skips, failures, and items completed before cancellation, and offers “Show destination in system.”
-
-### Create an archive
-
-Add files/directories → choose format and destination → choose a compression level according to backend capabilities → preflight → write a temporary archive in the same directory in the background → verify/close → publish atomically. The default is ZIP/Deflate. Compression levels are labeled “Fast,” “Balanced,” and “Smaller,” with their corresponding backend parameters shown; the same level cannot promise identical results across formats. When the destination is inside an input tree, exclude both the destination and this operation's temporary file, and reject input that would recurse indefinitely.
-
-### Preview and temporary opening
-
-The current source provides user-initiated, limited [text/image preview](../engineering/content-preview.md), with formats, input, pixels, and actual decoding work restricted by allowlists and independent quotas. External opening first fully decodes content into a controlled temporary directory and explains that a system application will be invoked. Programs, scripts, macros, and HTML in an archive must not execute automatically. Executable files do not start automatically as a result of “preview.”
-
-## 4. Scope and versions
-
-The table preserves the original stage breakdown to explain the requirements' origins. It is not a list of current-version features or a release plan. For current support, see the root [README](../../README.md) and the relevant engineering contracts.
-
-| Stage | Deliverables | Explicit follow-up items |
-|---|---|---|
-| v0.1 private test | Qt product skeleton; ZIP Store/Deflate browsing, creation, and extraction, AES-256 and numbered-volume creation; TAR/TAR.GZ; path security; task cancellation; basic keyboard and Chinese-language experience | Encrypted/split archive reading, 7z, RAR, external extensions, preview, in-archive editing |
-| v0.2 public test | 7z capability verification; read-only RAR when conditions are met; text/image preview; external extension SDK trial; large-index optimization | Full third-party ecosystem, general recovery, writing arbitrary formats |
-| v1.0 | Verified installers on three platforms; stable core behavior; performance budgets; eligible third-party extensions; licensing and security processes | Encryption and split-volume support must be listed separately for each format; the version number does not imply coverage |
-
-The current implementation supports limited AES-256 ZIP and split-volume reading, 7z passwords, solid archives, and split volumes, as well as rebuilding and modifying eligible regular archives. Traditional ZIP encryption and modification of encrypted or split archives remain unsupported. See [archive opening](../engineering/archive-opening.md), [archive modification](../engineering/archive-transfers.md), and [format backends](../engineering/native-codecs.md) for capabilities and rejection conditions. Third-party extensions and choosing compatible backends remain designs and must not be described as implemented.
-
-## 5. Quality acceptance
-
-- Path security and output transactions are exit criteria for every stage; they cannot be deferred as “future hardening.”
-- On the release reference Mac, verify the default font, IME, ⌘A/⌘O, drag-and-drop, Retina, and a real GPU. On Windows and Linux, separately verify platform shortcuts and directory authorization.
-- Distinguish opening, scanning, querying, extraction, creation, and preview workloads; see [09](performance.md) for all performance budgets.
-- Features without real-format tests or actual platform verification are marked unsupported or experimental in release notes.
-
-## 6. Non-goals and product defaults
-
-The first version does not aim to provide cloud synchronization, a network-drive protocol client, a virus-scanning service, disk-image mounting, or arbitrary archive repair. It does not scan user disks in the background or automatically upload error contents. Light/dark appearance follows the system by default, and basic interaction does not use paid components. Extension management does not appear in the main workflow every time an archive is opened.
+External extension management, persistent job recovery and additional format profiles require their own design, implementation and verification. Version numbers alone do not establish format or platform coverage. Cloud archive synchronization, disk-image mounting and a malware-scanning service are outside the product scope. The [traceability matrix](requirements-traceability.md) maps each requirement to the relevant verification. The [support policy](../engineering/support-policy.md) and release notes describe the distributed builds.
