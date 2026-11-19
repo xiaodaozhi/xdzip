@@ -62,7 +62,7 @@ Enter each feature separately, without the list numbers.
 ### Short description
 
 ```text
-Browse before you unpack. Extract selected files, create password-protected archives, and keep your files in order with xdzip.
+Pack and unpack, a little simpler. Open and switch between multiple archives in one window. Work with encrypted archives, split archives, and ISO disc images. Add, delete, or rename files directly inside ZIP archives.
 ```
 
 ## Other information
