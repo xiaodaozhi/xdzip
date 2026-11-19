@@ -405,6 +405,12 @@ QtObject {
     readonly property real mainCaptionIconSize: 18
     readonly property real mainCaptionRestoreOffset: 3
     readonly property real mainLinuxCornerRadius: 10
+    readonly property real mainLinuxOutlineWidth: 1
+    readonly property real mainLinuxShadowInset: 28
+    readonly property real mainLinuxShadowBlur: 8
+    readonly property real mainLinuxShadowOffsetY: 4
+    readonly property real mainLinuxShadowOpacityLight: 0.32
+    readonly property real mainLinuxShadowOpacityDark: 0.54
     readonly property real mainLinuxResizeEdge: 6
     readonly property real mainLinuxCaptionWidth: 36
     readonly property real mainLinuxCaptionSize: 28

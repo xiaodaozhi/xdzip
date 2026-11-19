@@ -30822,6 +30822,38 @@
       "format": "icns",
       "source": "file-associations/xdzip-archive-master.svg",
       "sha256": "5f7bba6a4a3a5b802844279381bd25be775c9846644d09a4d8e2fb1d66f8ac46"
+    },
+    {
+      "file": "frame/linux-light.png",
+      "kind": "window-shadow-rasterization",
+      "theme": "light",
+      "size": [
+        124,
+        124
+      ],
+      "border": 38,
+      "inset": 28,
+      "usage": "runtime-and-design",
+      "source": "../../specs/visual/layout-scale.json",
+      "source_sha256": "d420c0cc7eea60b9762c94a12187410890505273ec93e308c47ffa837bfe7c1b",
+      "sha256": "675ac4e86a8a8a2e3cbd66f61db589f7c4ef4eafb75bbeb46723386b85f831dc",
+      "id": "linux-window-shadow/light"
+    },
+    {
+      "file": "frame/linux-dark.png",
+      "kind": "window-shadow-rasterization",
+      "theme": "dark",
+      "size": [
+        124,
+        124
+      ],
+      "border": 38,
+      "inset": 28,
+      "usage": "runtime-and-design",
+      "source": "../../specs/visual/layout-scale.json",
+      "source_sha256": "d420c0cc7eea60b9762c94a12187410890505273ec93e308c47ffa837bfe7c1b",
+      "sha256": "9a49269db77e55b1b6c3d09437e7806b413d771921b4ed8e1a20a874b9f8fb20",
+      "id": "linux-window-shadow/dark"
     }
   ]
 }

@@ -7536,6 +7536,42 @@ QtObject {
         QSKIP("Windows custom caption regression");
 #endif
     }
+    void linuxMainFrameOutline() {
+        if (!BuildInfo::linuxX11())
+            QSKIP("Main window client frame requires X11");
+        QQuickWindow::setDefaultAlphaBuffer(true);
+        const auto resetAlpha = qScopeGuard([] { QQuickWindow::setDefaultAlphaBuffer(false); });
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window && QTest::qWaitForWindowExposed(window));
+        auto *frame = window->property("sessionContent").value<QQuickItem *>();
+        QVERIFY(frame);
+        QCOMPARE(frame->size(), QSizeF(1024, 622));
+
+        const auto pixel = [window, frame](int offset) {
+            const auto image = window->grabWindow();
+            const auto scale = image.devicePixelRatio();
+            const QPoint point(qRound(frame->x() * scale) + offset, image.height() / 2);
+            return image.valid(point) ? image.pixelColor(point) : QColor();
+        };
+        window->setProperty("darkMode", false);
+        QTRY_COMPARE(pixel(0), QColor("#DDE3EF"));
+        QVERIFY(pixel(3) != pixel(0));
+        window->setProperty("darkMode", true);
+        QTRY_COMPARE(pixel(0), QColor("#3B465B"));
+        QVERIFY(pixel(3) != pixel(0));
+
+        window->showMaximized();
+        QTRY_COMPARE(window->visibility(), QWindow::Maximized);
+        QTRY_COMPARE(frame->size(), QSizeF(window->size()));
+        QTRY_COMPARE(pixel(0), pixel(3));
+        window->showNormal();
+        QTRY_COMPARE(window->visibility(), QWindow::Windowed);
+        QTRY_COMPARE(frame->size(), QSizeF(1024, 622));
+        QTRY_COMPARE(pixel(0), QColor("#3B465B"));
+    }
     void initTestCase() {
         WindowActivation::install(QCoreApplication::instance());
         FocusDismissPolicy::install(QCoreApplication::instance());

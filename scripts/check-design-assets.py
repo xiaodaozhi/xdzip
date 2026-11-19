@@ -254,10 +254,13 @@ def main() -> None:
                 assert max(abs(value - 12) for value in center) <= .5 / scale + .05, (entry['file'], center)
                 optical_checks.append({'file': entry['file'], 'bounds': measured, 'expected': expected,
                                        'max_edge_error': max(errors), 'tolerance': tolerance, 'center': center})
-        elif kind == 'menu-shadow-rasterization':
+        elif kind in ('menu-shadow-rasterization', 'window-shadow-rasterization'):
             assert entry['theme'] in ('light', 'dark'), entry['file']
-            assert entry['font_scale'] in (1, 1.25, 1.5, 2), entry['file']
-            assert entry['source'] == '../../specs/visual/controls.json', entry['file']
+            if kind == 'menu-shadow-rasterization':
+                assert entry['font_scale'] in (1, 1.25, 1.5, 2), entry['file']
+                assert entry['source'] == '../../specs/visual/controls.json', entry['file']
+            else:
+                assert entry['source'] == '../../specs/visual/layout-scale.json', entry['file']
             assert entry['source_sha256'] == hashlib.sha256((ROOT / entry['source']).read_bytes()).hexdigest(), entry['file']
             with Image.open(ROOT / entry['file']) as image:
                 assert list(image.size) == entry['size'] and image.mode == 'RGBA', entry['file']
