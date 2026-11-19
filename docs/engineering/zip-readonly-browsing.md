@@ -1,6 +1,6 @@
 # Read-only ZIP browsing contract
 
-English | [简体中文](../zh-CN/engineering/zip-readonly-browsing.md) | [繁體中文（台灣）](../zh-TW/engineering/zip-readonly-browsing.md)
+English | [简体中文](../zh-CN/engineering/zip-readonly-browsing.md) | [繁體中文（台灣）](../zh-TW/engineering/zip-readonly-browsing.md) | [日本語](../ja-JP/engineering/zip-readonly-browsing.md) | [한국어](../ko-KR/engineering/zip-readonly-browsing.md) | [Français](../fr-FR/engineering/zip-readonly-browsing.md) | [Deutsch](../de-DE/engineering/zip-readonly-browsing.md) | [Español](../es-ES/engineering/zip-readonly-browsing.md) | [Português (Brasil)](../pt-BR/engineering/zip-readonly-browsing.md) | [Русский](../ru-RU/engineering/zip-readonly-browsing.md)
 
 This contract defines direct root entries, descendant search, stable physical identity and directory-first sorting. ZIP browsing reads metadata without decoding member payloads or checking their CRC. It produces no extracted member files. Large ordinary ZIP archives may use a private [on-disk metadata index](large-index.md).
 

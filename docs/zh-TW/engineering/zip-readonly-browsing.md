@@ -2,7 +2,7 @@
 
 # ZIP 只讀瀏覽契約
 
-[English](../../engineering/zip-readonly-browsing.md) | [简体中文](../../zh-CN/engineering/zip-readonly-browsing.md) | 繁體中文（台灣）
+[English](../../engineering/zip-readonly-browsing.md) | [简体中文](../../zh-CN/engineering/zip-readonly-browsing.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/zip-readonly-browsing.md) | [한국어](../../ko-KR/engineering/zip-readonly-browsing.md) | [Français](../../fr-FR/engineering/zip-readonly-browsing.md) | [Deutsch](../../de-DE/engineering/zip-readonly-browsing.md) | [Español](../../es-ES/engineering/zip-readonly-browsing.md) | [Português (Brasil)](../../pt-BR/engineering/zip-readonly-browsing.md) | [Русский](../../ru-RU/engineering/zip-readonly-browsing.md)
 
 本文定義根目錄直屬項、後代搜尋、穩定物理 ID 和目錄優先排序。ZIP 瀏覽讀取後設資料，不解碼條目負載或校驗其 CRC，也不寫出解壓後的條目。大型普通 ZIP 可使用私有的[磁碟後設資料索引](large-index.md)。
 
