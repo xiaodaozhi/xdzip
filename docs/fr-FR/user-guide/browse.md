@@ -1,0 +1,12 @@
+# Parcourir, sélectionner et prévisualiser des fichiers
+
+[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | [繁體中文（台灣）](../../zh-TW/user-guide/browse.md) | [日本語](../../ja-JP/user-guide/browse.md) | [한국어](../../ko-KR/user-guide/browse.md) | Français | [Deutsch](../../de-DE/user-guide/browse.md) | [Español](../../es-ES/user-guide/browse.md) | [Português (Brasil)](../../pt-BR/user-guide/browse.md) | [Русский](../../ru-RU/user-guide/browse.md)
+
+1. Ouvrez une archive. Pour entrer dans un dossier, utilisez l’arborescence ou double-cliquez sur sa ligne. Le fil d’Ariane permet de remonter dans un dossier parent.
+2. Saisissez une partie du nom de fichier et appuyez sur Entrée. La recherche couvre le dossier actuel et ses sous-dossiers. Choisissez le mode liste ou grille et un ordre de tri. Les dossiers restent avant les fichiers dans les deux sens de tri.
+3. Sélectionnez les entrées à l’aide des cases à cocher ou des touches de sélection de votre système. **Tout sélectionner** s’applique à la recherche en cours et inclut les lignes qui ne sont pas affichées. Vérifiez le nombre d’éléments sélectionnés avant d’extraire.
+4. Ouvrez les propriétés d’un fichier ordinaire et demandez son aperçu. Le texte doit être en UTF-8 ou UTF-16 avec BOM et ne peut pas dépasser 256 KiB. Les images ont leurs propres limites de taille. Seul un sous-ensemble des SVG statiques est pris en charge. HEIC/HEIF est disponible sous macOS. Si l’aperçu est indisponible, vous pouvez extraire le fichier si son entrée le permet. [Formats et limites de l’aperçu](../engineering/content-preview.md)
+
+Un double-clic sur un fichier ordinaire extrait une copie temporaire et demande au système de l’ouvrir. Les modifications de la copie ne mettent pas l’archive à jour. Pour conserver une copie, extrayez le fichier vers la destination de votre choix. [Ouverture temporaire](../engineering/archive-opening.md)
+
+Les archives s’ouvrent par défaut dans des onglets. Un réglage permet de les ouvrir dans des fenêtres distinctes. Un ZIP/ZIP64 ordinaire sous forme de fichier unique peut indexer jusqu’à un million d’enregistrements physiques. Les grands index chargent les lignes à la demande. Un ZIP indexé sur disque peut toujours permettre d’extraire des fichiers sélectionnés. La vérification de toute l’archive et les modifications sont désactivées. [Limites des grandes archives](../engineering/large-index.md)

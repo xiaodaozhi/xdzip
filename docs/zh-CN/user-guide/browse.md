@@ -1,6 +1,6 @@
 # 浏览、选择与预览文件
 
-[English](../../user-guide/browse.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/user-guide/browse.md)
+[English](../../user-guide/browse.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/user-guide/browse.md) | [日本語](../../ja-JP/user-guide/browse.md) | [한국어](../../ko-KR/user-guide/browse.md) | [Français](../../fr-FR/user-guide/browse.md) | [Deutsch](../../de-DE/user-guide/browse.md) | [Español](../../es-ES/user-guide/browse.md) | [Português (Brasil)](../../pt-BR/user-guide/browse.md) | [Русский](../../ru-RU/user-guide/browse.md)
 
 1. 打开压缩包。在目录树中选择文件夹，或双击列表中的文件夹进入。用面包屑路径返回上一级。
 2. 输入文件名的一部分并按回车。搜索范围是当前目录及其后代。可以切换列表或网格视图并选择排序方式，升序和降序都将目录排在文件之前。

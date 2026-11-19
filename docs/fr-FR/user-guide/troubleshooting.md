@@ -1,0 +1,16 @@
+# Dépannage de XDZip
+
+[English](../../user-guide/troubleshooting.md) | [简体中文](../../zh-CN/user-guide/troubleshooting.md) | [繁體中文（台灣）](../../zh-TW/user-guide/troubleshooting.md) | [日本語](../../ja-JP/user-guide/troubleshooting.md) | [한국어](../../ko-KR/user-guide/troubleshooting.md) | Français | [Deutsch](../../de-DE/user-guide/troubleshooting.md) | [Español](../../es-ES/user-guide/troubleshooting.md) | [Português (Brasil)](../../pt-BR/user-guide/troubleshooting.md) | [Русский](../../ru-RU/user-guide/troubleshooting.md)
+
+| Problème | Que faire |
+| --- | --- |
+| Une archive ne s’ouvre pas | Vérifiez les [formats pris en charge](../../../README.fr-FR.md#xdzip-format-support), la méthode de compression ou de chiffrement et la présence de tous les volumes. Si la source est inaccessible, copiez l’archive et ses volumes dans un dossier local accessible, en conservant leurs noms, puis rouvrez-la. |
+| Les noms de fichiers semblent incorrects ou ne peuvent pas être écrits | Vérifiez si l’archive peut être recréée avec des noms UTF-8. XDZip détecte certains anciens encodages, avec des limites pour les noms courts ou mixtes. Extrayez seulement les entrées que le plan peut écrire en toute sécurité. [Gestion des noms](../engineering/filename-encoding.md) |
+| Le fichier a des propriétés mais pas d’aperçu | Vérifiez le type, la taille, le système et l’encodage. L’aperçu a ses propres limites et se distingue de l’extraction. [Limites de l’aperçu](../engineering/content-preview.md) |
+| La destination est refusée ou le résultat est partiel | Choisissez un dossier privé accessible en écriture. Vérifiez les conflits de noms et les entrées incompatibles, puis consultez le résultat avant de réessayer. [Extraction](extract.md) |
+| Le fichier a été remplacé pendant le traitement | Rouvrez la nouvelle copie et faites une nouvelle sélection. XDZip vérifie de nouveau la source avant d’écrire. |
+| L’Explorateur, Finder ou Fichiers n’affiche pas l’action | Vérifiez la provenance de l’installation et l’activation de l’extension. Windows 11 propose le menu classique sous **Afficher plus d’options**. Sous macOS, activez l’extension dans les réglages système ou essayez le service Finder enregistré. Vous pouvez toujours ouvrir l’archive dans XDZip. [Extraction depuis le gestionnaire](extract.md#xdzip-from-the-file-manager) |
+| La vérification ou la modification d’un grand ZIP est indisponible | Si XDZip utilise un index sur disque, ne sélectionnez que les fichiers ordinaires nécessaires et extrayez-les dans les limites de la tâche. [Limites des grandes archives](../engineering/large-index.md) |
+| La mise à jour ou l’installation échoue | Vérifiez la version et le canal de distribution. Vérifiez les sommes de contrôle des téléchargements manuels et suivez les étapes d’installation correspondantes. [Récupération après mise à jour](settings-and-updates.md) |
+
+Pour un signalement, indiquez la version et le numéro de compilation depuis **À propos de xdzip**, le système et son architecture, le format, l’opération ainsi que les étapes et les résultats attendus et obtenus. Si possible, utilisez un petit fichier d’exemple à vous. Retirez les mots de passe et les chemins privés avant de les partager. [Signaler un problème](https://github.com/xiaodaozhi/xdzip/issues/new/choose)

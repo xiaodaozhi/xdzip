@@ -1,0 +1,12 @@
+# Navegar, selecionar e visualizar arquivos
+
+[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | [繁體中文（台灣）](../../zh-TW/user-guide/browse.md) | [日本語](../../ja-JP/user-guide/browse.md) | [한국어](../../ko-KR/user-guide/browse.md) | [Français](../../fr-FR/user-guide/browse.md) | [Deutsch](../../de-DE/user-guide/browse.md) | [Español](../../es-ES/user-guide/browse.md) | Português (Brasil) | [Русский](../../ru-RU/user-guide/browse.md)
+
+1. Abra um arquivo compactado. Para entrar em uma pasta, use a árvore de diretórios ou clique duas vezes na linha. Use a barra de caminho para voltar a uma pasta acima.
+2. Digite parte de um nome de arquivo e pressione Enter. A busca inclui a pasta atual e suas subpastas. Escolha a visualização em lista ou grade e a ordem de classificação. As pastas aparecem antes dos arquivos nos dois sentidos.
+3. Selecione entradas com as caixas de seleção ou com as teclas de seleção do sistema. **Selecionar tudo** abrange a busca atual, inclusive linhas fora da área visível. Confira quantos itens estão selecionados antes de extrair.
+4. Abra as propriedades e solicite a visualização de um arquivo comum. O texto deve estar em UTF-8 ou UTF-16 com BOM e ter até 256 KiB. Imagens têm limites de tamanho próprios. Apenas um subconjunto de SVG estático é aceito. HEIC/HEIF está disponível no macOS. Se a visualização não estiver disponível, você ainda pode extrair o arquivo se a entrada aceitar essa operação. [Formatos e limites da visualização](../engineering/content-preview.md)
+
+Com um clique duplo em um arquivo comum, o aplicativo extrai uma cópia temporária e pede ao sistema para abri-la. Editar essa cópia não atualiza o arquivo compactado. Extraia o arquivo para o local escolhido se precisar de uma cópia permanente. [Abertura temporária](../engineering/archive-opening.md)
+
+Por padrão, os arquivos compactados abrem em abas. Altere a configuração para abri-los em janelas separadas. Um ZIP/ZIP64 comum em arquivo único pode indexar até um milhão de registros físicos. Índices grandes carregam linhas sob demanda. Arquivos ZIP com índice em disco podem aceitar a extração de itens selecionados. A verificação do arquivo inteiro e as modificações ficam desativadas. [Limites de arquivos grandes](../engineering/large-index.md)

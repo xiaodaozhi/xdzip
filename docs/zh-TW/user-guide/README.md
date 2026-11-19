@@ -2,7 +2,7 @@
 
 # XDZip 使用者手冊
 
-[English](../../user-guide/README.md) | [简体中文](../../zh-CN/user-guide/README.md) | 繁體中文（台灣）
+[English](../../user-guide/README.md) | [简体中文](../../zh-CN/user-guide/README.md) | 繁體中文（台灣） | [日本語](../../ja-JP/user-guide/README.md) | [한국어](../../ko-KR/user-guide/README.md) | [Français](../../fr-FR/user-guide/README.md) | [Deutsch](../../de-DE/user-guide/README.md) | [Español](../../es-ES/user-guide/README.md) | [Português (Brasil)](../../pt-BR/user-guide/README.md) | [Русский](../../ru-RU/user-guide/README.md)
 
 首次使用可從[安裝指南](install.md)開始，核對 Windows、macOS 和 Ubuntu 的適用配置。想確認某種壓縮檔可以執行哪些操作，可查[格式支援表](../../../README.zh-TW.md#xdzip-%E6%A0%BC%E5%BC%8F%E6%94%AF%E6%8C%81)。已安裝的版本請查閱對應[發行說明](https://github.com/xiaodaozhi/xdzip/releases)。
 

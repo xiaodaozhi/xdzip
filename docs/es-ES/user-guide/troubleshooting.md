@@ -1,0 +1,16 @@
+# Solución de problemas de XDZip
+
+[English](../../user-guide/troubleshooting.md) | [简体中文](../../zh-CN/user-guide/troubleshooting.md) | [繁體中文（台灣）](../../zh-TW/user-guide/troubleshooting.md) | [日本語](../../ja-JP/user-guide/troubleshooting.md) | [한국어](../../ko-KR/user-guide/troubleshooting.md) | [Français](../../fr-FR/user-guide/troubleshooting.md) | [Deutsch](../../de-DE/user-guide/troubleshooting.md) | Español | [Português (Brasil)](../../pt-BR/user-guide/troubleshooting.md) | [Русский](../../ru-RU/user-guide/troubleshooting.md)
+
+| Qué ha pasado | Qué puedes probar |
+| --- | --- |
+| Un archivo comprimido no se abre | Comprueba los [formatos compatibles](../../../README.es-ES.md#xdzip-format-support), el método de compresión o cifrado y el conjunto de volúmenes. Si no se puede acceder al origen, copia el archivo y todas sus partes a una carpeta local accesible, conserva los nombres y vuelve a abrirlo. |
+| Los nombres de archivo se ven mal o no se pueden escribir | Comprueba si puedes recrear el archivo comprimido con nombres UTF-8. XDZip detecta algunas codificaciones antiguas, con límites para nombres cortos o mixtos. Extrae solo las entradas que el plan pueda asignar de forma segura. [Tratamiento de nombres](../engineering/filename-encoding.md) |
+| El archivo muestra propiedades pero no vista previa | Comprueba el tipo, el tamaño, la plataforma y la codificación. La vista previa tiene límites propios y es independiente de la extracción. [Límites de la vista previa](../engineering/content-preview.md) |
+| Se rechaza el destino o el resultado es incompleto | Elige una carpeta privada con permisos de escritura. Busca conflictos de nombres o entradas incompatibles y revisa el resultado antes de repetir. [Extraer archivos](extract.md) |
+| El archivo se sustituyó mientras XDZip trabajaba | Abre la nueva copia y vuelve a seleccionar las entradas. XDZip vuelve a comprobar el origen antes de escribir. |
+| El Explorador, Finder o Archivos no muestran la acción esperada | Comprueba el canal de instalación y si la extensión está activada. En Windows 11, abre el menú clásico con **Mostrar más opciones**. En macOS, activa la extensión de Finder en los ajustes o prueba el servicio registrado. Siempre puedes abrir antes el archivo con XDZip. [Extracción desde el gestor de archivos](extract.md#xdzip-from-the-file-manager) |
+| No se puede verificar o modificar un ZIP grande | Si XDZip usa un índice en disco, selecciona solo los archivos normales que necesitas y extráelos dentro de los límites de la tarea. [Límites de los archivos grandes](../engineering/large-index.md) |
+| Falla la actualización o la instalación | Comprueba la versión y el canal. Verifica las sumas de las descargas manuales y usa las instrucciones de instalación correspondientes. [Recuperación tras una actualización](settings-and-updates.md) |
+
+Al informar de un problema, incluye la versión y compilación que aparecen en **Acerca de xdzip**, el sistema operativo y la arquitectura, el formato y la operación, y los pasos con resultados previstos y reales. Usa una muestra pequeña propia si puedes. Elimina contraseñas y rutas privadas antes de compartirla. [Informar de un problema](https://github.com/xiaodaozhi/xdzip/issues/new/choose)

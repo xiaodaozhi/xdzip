@@ -1,0 +1,12 @@
+# Dateien durchsuchen, auswählen und in der Vorschau anzeigen
+
+[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | [繁體中文（台灣）](../../zh-TW/user-guide/browse.md) | [日本語](../../ja-JP/user-guide/browse.md) | [한국어](../../ko-KR/user-guide/browse.md) | [Français](../../fr-FR/user-guide/browse.md) | Deutsch | [Español](../../es-ES/user-guide/browse.md) | [Português (Brasil)](../../pt-BR/user-guide/browse.md) | [Русский](../../ru-RU/user-guide/browse.md)
+
+1. Öffnen Sie ein Archiv. Öffnen Sie einen Ordner über den Verzeichnisbaum oder per Doppelklick auf seine Zeile. Über die Pfadleiste gelangen Sie zurück zu einem übergeordneten Ordner.
+2. Geben Sie einen Teil des Dateinamens ein und drücken Sie die Eingabetaste. Die Suche umfasst den aktuellen Ordner und seine Unterordner. Wählen Sie Listen- oder Rasteransicht und eine Sortierung. Ordner stehen in beiden Sortierrichtungen vor Dateien.
+3. Wählen Sie Einträge über die Kontrollkästchen oder die Auswahltasten Ihres Systems. **Alles auswählen** gilt für die aktuelle Suche und schließt nicht sichtbare Zeilen ein. Prüfen Sie vor dem Entpacken die Anzahl der ausgewählten Einträge.
+4. Öffnen Sie die Dateieigenschaften und rufen Sie die Vorschau einer regulären Datei auf. Texte müssen in UTF-8 oder UTF-16 mit BOM vorliegen und dürfen höchstens 256 KiB groß sein. Für Bilder gelten eigene Größenlimits. Statische SVG-Dateien sind auf den unterstützten Funktionsumfang begrenzt. HEIC/HEIF ist unter macOS verfügbar. Ist keine Vorschau verfügbar, können Sie die Datei entpacken, sofern ihr Archiveintrag das zulässt. [Vorschauformate und Grenzen](../engineering/content-preview.md)
+
+Ein Doppelklick auf eine reguläre Datei entpackt eine temporäre Kopie und übergibt sie zum Öffnen an das Betriebssystem. Änderungen an dieser Kopie gelangen nicht zurück ins Archiv. Für eine dauerhafte Kopie entpacken Sie die Datei an einem selbst gewählten Ort. [Temporäres Öffnen](../engineering/archive-opening.md)
+
+Archive öffnen sich standardmäßig in Tabs. In den Einstellungen können Sie separate Fenster wählen. Ein gewöhnliches ZIP/ZIP64 in einer einzelnen Datei kann bis zu eine Million tatsächliche Einträge indizieren. Bei großen Indizes werden Zeilen nach Bedarf geladen. ZIP-Archive mit Index auf der Festplatte können das Entpacken ausgewählter Dateien unterstützen. Das Prüfen des gesamten Archivs und das Ändern bleiben deaktiviert. [Grenzen für große Archive](../engineering/large-index.md)

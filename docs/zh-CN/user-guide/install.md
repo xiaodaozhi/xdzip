@@ -1,6 +1,6 @@
 # 安装 XDZip 与打开压缩包
 
-[English](../../user-guide/install.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/user-guide/install.md)
+[English](../../user-guide/install.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/user-guide/install.md) | [日本語](../../ja-JP/user-guide/install.md) | [한국어](../../ko-KR/user-guide/install.md) | [Français](../../fr-FR/user-guide/install.md) | [Deutsch](../../de-DE/user-guide/install.md) | [Español](../../es-ES/user-guide/install.md) | [Português (Brasil)](../../pt-BR/user-guide/install.md) | [Русский](../../ru-RU/user-guide/install.md)
 
 从 [GitHub 最新稳定版](https://github.com/xiaodaozhi/xdzip/releases/latest)选择对应系统的下载包。Windows 用户也可通过 Microsoft Store 安装。GitHub 发布页列出文件名、版本和 `SHA256SUMS`，可用来核对直接下载的文件。具体要求见[支持政策](../engineering/support-policy.md)。
 

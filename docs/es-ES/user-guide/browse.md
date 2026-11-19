@@ -1,0 +1,12 @@
+# Explorar, seleccionar y previsualizar archivos
+
+[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | [繁體中文（台灣）](../../zh-TW/user-guide/browse.md) | [日本語](../../ja-JP/user-guide/browse.md) | [한국어](../../ko-KR/user-guide/browse.md) | [Français](../../fr-FR/user-guide/browse.md) | [Deutsch](../../de-DE/user-guide/browse.md) | Español | [Português (Brasil)](../../pt-BR/user-guide/browse.md) | [Русский](../../ru-RU/user-guide/browse.md)
+
+1. Abre un archivo comprimido. Para entrar en una carpeta, usa el árbol de directorios o haz doble clic en su fila. Usa la ruta de navegación para regresar a una carpeta superior.
+2. Escribe parte de un nombre y pulsa Intro. La búsqueda incluye la carpeta actual y sus subcarpetas. Elige vista de lista o de cuadrícula y un orden. Las carpetas se muestran antes que los archivos en ambos sentidos.
+3. Selecciona entradas mediante las casillas o las teclas de selección de tu sistema. **Seleccionar todo** se aplica a la consulta actual e incluye las filas fuera de la vista. Antes de extraer, comprueba cuántos elementos has seleccionado.
+4. Abre las propiedades y solicita una vista previa de un archivo normal. Los textos compatibles deben usar UTF-8 o UTF-16 con BOM y ocupar hasta 256 KiB. Las imágenes tienen otros límites de tamaño. Solo se admite un subconjunto de SVG estático. HEIC/HEIF está disponible en macOS. Si el archivo no se puede previsualizar, puedes extraerlo si su entrada lo permite. [Formatos y límites de la vista previa](../engineering/content-preview.md)
+
+Al hacer doble clic en un archivo normal, se extrae una copia temporal y se pide al sistema operativo que la abra. Los cambios en esa copia no actualizan el archivo comprimido. Para obtener una copia permanente, extráela al destino elegido. [Apertura temporal](../engineering/archive-opening.md)
+
+Los archivos comprimidos se abren en pestañas de forma predeterminada. Puedes cambiar el ajuste para abrirlos en ventanas separadas. Un ZIP/ZIP64 normal en un único archivo puede indexar hasta un millón de registros físicos. En los índices grandes, las filas se cargan cuando hacen falta. El índice en disco de un ZIP puede permitir la extracción de archivos seleccionados. La comprobación de todo el archivo comprimido y la modificación están desactivadas. [Límites de los archivos grandes](../engineering/large-index.md)

@@ -1,6 +1,6 @@
 # 检查压缩包与管理任务
 
-[English](../../user-guide/checks-and-tasks.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/user-guide/checks-and-tasks.md)
+[English](../../user-guide/checks-and-tasks.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/user-guide/checks-and-tasks.md) | [日本語](../../ja-JP/user-guide/checks-and-tasks.md) | [한국어](../../ko-KR/user-guide/checks-and-tasks.md) | [Français](../../fr-FR/user-guide/checks-and-tasks.md) | [Deutsch](../../de-DE/user-guide/checks-and-tasks.md) | [Español](../../es-ES/user-guide/checks-and-tasks.md) | [Português (Brasil)](../../pt-BR/user-guide/checks-and-tasks.md) | [Русский](../../ru-RU/user-guide/checks-and-tasks.md)
 
 ## 测试压缩包
 

@@ -1,6 +1,6 @@
 # XDZip user manual
 
-English | [简体中文](../zh-CN/user-guide/README.md) | [繁體中文（台灣）](../zh-TW/user-guide/README.md)
+English | [简体中文](../zh-CN/user-guide/README.md) | [繁體中文（台灣）](../zh-TW/user-guide/README.md) | [日本語](../ja-JP/user-guide/README.md) | [한국어](../ko-KR/user-guide/README.md) | [Français](../fr-FR/user-guide/README.md) | [Deutsch](../de-DE/user-guide/README.md) | [Español](../es-ES/user-guide/README.md) | [Português (Brasil)](../pt-BR/user-guide/README.md) | [Русский](../ru-RU/user-guide/README.md)
 
 Start with [installation](install.md) for the supported Windows, macOS and Ubuntu desktop configurations. Use the [format table](../../README.md#format-support) to check which operations are available for your archive. For a downloaded build, consult the notes for that [release](https://github.com/xiaodaozhi/xdzip/releases).
 

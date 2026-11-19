@@ -1,0 +1,16 @@
+# Fehlerbehebung für XDZip
+
+[English](../../user-guide/troubleshooting.md) | [简体中文](../../zh-CN/user-guide/troubleshooting.md) | [繁體中文（台灣）](../../zh-TW/user-guide/troubleshooting.md) | [日本語](../../ja-JP/user-guide/troubleshooting.md) | [한국어](../../ko-KR/user-guide/troubleshooting.md) | [Français](../../fr-FR/user-guide/troubleshooting.md) | Deutsch | [Español](../../es-ES/user-guide/troubleshooting.md) | [Português (Brasil)](../../pt-BR/user-guide/troubleshooting.md) | [Русский](../../ru-RU/user-guide/troubleshooting.md)
+
+| Problem | Abhilfe |
+| --- | --- |
+| Ein Archiv lässt sich nicht öffnen | Prüfen Sie die [Formatunterstützung](../../../README.de-DE.md#xdzip-format-support), die Kompressions- oder Verschlüsselungsmethode und alle Archivteile. Wenn die Quelle nicht zugänglich ist, kopieren Sie das Archiv und alle Teile mit ihren ursprünglichen Namen in einen zugänglichen lokalen Ordner und öffnen Sie es erneut. |
+| Dateinamen sehen falsch aus oder können nicht geschrieben werden | Prüfen Sie, ob sich das Archiv mit UTF-8-Namen neu erstellen lässt. XDZip erkennt manche alten Kodierungen. Bei kurzen oder gemischten Namen ist das begrenzt. Entpacken Sie nur Einträge, die sich sicher zuordnen lassen. [Verarbeitung von Dateinamen](../engineering/filename-encoding.md) |
+| Die Datei zeigt Eigenschaften, aber keine Vorschau | Prüfen Sie Typ, Größe, Plattform und Kodierung. Für die Vorschau gelten eigene Grenzen unabhängig vom Entpacken. [Vorschaugrenzen](../engineering/content-preview.md) |
+| Der Zielordner wird abgelehnt oder das Ergebnis ist unvollständig | Wählen Sie einen privaten Ordner mit Schreibzugriff. Prüfen Sie Namenskonflikte und nicht unterstützte Einträge sowie das Aufgabenergebnis vor einem erneuten Versuch. [Dateien entpacken](extract.md) |
+| Die Datei wurde während der Verarbeitung ersetzt | Öffnen Sie die neue Kopie und wählen Sie die Einträge erneut aus. XDZip prüft die Quelle vor dem Schreiben. |
+| Explorer, Finder oder Dateien zeigt die Aktion nicht | Prüfen Sie den Installationskanal und ob die Erweiterung aktiv ist. Unter Windows 11 steht das klassische Menü unter **Weitere Optionen anzeigen**. Aktivieren Sie unter macOS die Finder-Erweiterung in den Systemeinstellungen oder nutzen Sie den registrierten Dienst. Sie können das Archiv jederzeit zuerst in XDZip öffnen. [Entpacken aus dem Dateimanager](extract.md#xdzip-from-the-file-manager) |
+| Prüfen oder Ändern eines großen ZIP ist deaktiviert | Bei einem Index auf der Festplatte wählen Sie nur benötigte reguläre Dateien und entpacken sie innerhalb der Aufgabengrenzen. [Grenzen für große Archive](../engineering/large-index.md) |
+| Update oder Installation ist fehlgeschlagen | Prüfen Sie Version und Installationskanal. Prüfen Sie die Prüfsummen für manuelle Downloads und folgen Sie der passenden Anleitung. [Wiederherstellung bei Updateproblemen](settings-and-updates.md) |
+
+Nennen Sie in einem Fehlerbericht Version und Build aus **Über xdzip**, Betriebssystem und Architektur, Format und Aktion, Schritte sowie erwartetes und tatsächliches Ergebnis. Verwenden Sie nach Möglichkeit eine kleine eigene Beispieldatei. Entfernen Sie vor der Weitergabe Passwörter und private Pfade. [Problem melden](https://github.com/xiaodaozhi/xdzip/issues/new/choose)

@@ -1,0 +1,20 @@
+# アーカイブの作成と変更
+
+[English](../../user-guide/create-and-modify.md) | [简体中文](../../zh-CN/user-guide/create-and-modify.md) | [繁體中文（台灣）](../../zh-TW/user-guide/create-and-modify.md) | 日本語 | [한국어](../../ko-KR/user-guide/create-and-modify.md) | [Français](../../fr-FR/user-guide/create-and-modify.md) | [Deutsch](../../de-DE/user-guide/create-and-modify.md) | [Español](../../es-ES/user-guide/create-and-modify.md) | [Português (Brasil)](../../pt-BR/user-guide/create-and-modify.md) | [Русский](../../ru-RU/user-guide/create-and-modify.md)
+
+<a name="xdzip-create-an-archive"></a>
+
+## アーカイブを作成する
+
+1. 初期画面または **作成** から作成ウィンドウを開きます。ファイルやフォルダーを追加し、入力一覧を確認します。
+2. 出力名と保存先を指定します。形式と、利用可能な圧縮設定を選びます。共有には ZIP がよく使われます。作成できる形式は[対応形式表](../../../README.ja-JP.md#xdzip-format-support)を参照してください。GZIP のような単一ファイルのストリーム形式は通常ファイル 1 個を受け取ります。
+3. ZIP と 7z は、設定によって暗号化と分割ボリュームを利用できます。データディスクイメージには ISO、自己展開 ZIP には Windows x64 用の SFX プロファイルを選びます。処理を開始し、タスクの結果で実際に保存されたファイルを確認します。[パスワードと分割ボリューム](passwords-and-volumes.md)
+4. キャンセルや再試行が必要なら、先に結果を確認します。アーカイブは一時的な場所に書き込まれ、完了した結果が確定してから公開されます。
+
+<a name="xdzip-add-replace-or-move-files"></a>
+
+## ファイルを追加、置換、移動する
+
+対応する ZIP、7z、TAR、TAR.GZ アーカイブを開き、アーカイブ内の対象フォルダーに移動します。ローカルのファイルやフォルダーを一覧またはグリッドにドロップし、追加内容を確認して承認します。名前が重複した場合、置き換え可能な通常ファイルを上書きできます。既存の項目は同じアーカイブ内の別のフォルダーにドラッグし、確認して移動します。ウィンドウの外へのドラッグはコピーを出力します。[プラットフォーム別のドラッグ＆ドロップ](../engineering/archive-transfers.md)
+
+作成時と追加時は、`.DS_Store` ファイルと `__MACOSX` および `_MACOSX` ディレクトリを除外します。変更の可否は形式、内容、元のファイルによって異なります。暗号化済み、分割済み、またはインデックスをディスクに置くアーカイブは通常の手順では編集できません。編集できない場合は、新しいフォルダーに展開して新規アーカイブを作成します。[変更とドラッグ＆ドロップの規則](../engineering/archive-transfers.md)
