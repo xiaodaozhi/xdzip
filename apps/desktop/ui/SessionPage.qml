@@ -219,6 +219,7 @@ Item {
     readonly property bool separatePreviewVisible: visible && !sessionClosed && !welcomeVisible &&
         inspectorWindow.visible && inspectorWindow.visibility !== Window.Minimized
     readonly property bool contentPreviewVisible: inlinePreviewVisible || separatePreviewVisible
+    readonly property var previewSelectionEntries: contentPreviewVisible && reader.selectedCount > 1 ? reader.previewSelectionEntries : []
     onContentPreviewVisibleChanged: if (!contentPreviewVisible) reader.hideContentPreview()
     Timer {
         // Let rapid selection changes and double-clicks settle before reading content.
@@ -533,6 +534,7 @@ Item {
             onPreviewRequested: id => reader.requestPreview(id)
             onPreviewCancelled: reader.cancelContentPreview()
             selectionCount: reader.selectedCount
+            previewSelectionEntries: root.previewSelectionEntries
             sizeFormatter: root.formatSize
             iconForFile: root.fileIcon
             canExtract: reader.ready && !reader.browsingBusy
@@ -1980,6 +1982,7 @@ Item {
                 onPreviewRequested: id => reader.requestPreview(id)
                 onPreviewCancelled: reader.cancelContentPreview()
                 selectionCount: reader.selectedCount
+                previewSelectionEntries: root.previewSelectionEntries
                 sizeFormatter: root.formatSize
                 iconForFile: root.fileIcon
                 canExtract: reader.ready && !reader.browsingBusy

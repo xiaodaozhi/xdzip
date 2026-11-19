@@ -735,9 +735,16 @@ class BrowserTest : public QObject {
         auto *status = findVisual(card, "contentPreviewStatus");
         QVERIFY(status && status->isVisible());
         QCOMPARE(status->property("text").toString(), qtTrId("preview.multiple"));
+        auto *selectionIcons = findVisual(card, "contentPreviewSelectionIcons");
+        QVERIFY(selectionIcons && selectionIcons->isVisible());
         QVERIFY(!action->isVisible());
         controller->selectRow(otherRow);
         QCOMPARE(controller->detail().value("id").toString(), "3");
+        QVERIFY(!selectionIcons->isVisible());
+        controller->selectAll(true);
+        QVERIFY(controller->selectedCount() > 2);
+        QCOMPARE(controller->previewSelectionEntries().size(), 2);
+        controller->selectOnlyRow(row);
         QTRY_COMPARE(controller->contentPreview().value("state").toString(), "text");
         controller->requestPreview("3");
         controller->selectOnlyRow(otherRow);
@@ -1053,9 +1060,22 @@ class BrowserTest : public QObject {
                     const auto scene =
                         language + (dark ? "-dark-" : "-light-") + QString::number(scale);
                     controller->selectAll(true);
-                    auto *multi = findVisual(page, "contentPreviewStatus");
-                    QVERIFY(multi && multi->isVisible());
-                    QCOMPARE(multi->property("text").toString(), qtTrId("preview.multiple"));
+                    const auto verifySelectionIcons = [](QQuickItem *surface) {
+                        const auto *stack = findVisual(surface, "contentPreviewSelectionIcons");
+                        const auto *back = findVisual(surface, "contentPreviewBackIcon");
+                        const auto *front = findVisual(surface, "contentPreviewFrontIcon");
+                        const auto *label = findVisual(surface, "contentPreviewStatus");
+                        QVERIFY(stack && back && front && label);
+                        QVERIFY(stack->isVisible() && label->isVisible());
+                        QCOMPARE(label->property("text").toString(), qtTrId("preview.multiple"));
+                        QCOMPARE(back->property("source").toUrl().fileName(), "image-file.png");
+                        QCOMPARE(front->property("source").toUrl().fileName(), "file-text.png");
+                        QTRY_COMPARE(back->property("status").toInt(), 1);
+                        QTRY_COMPARE(front->property("status").toInt(), 1);
+                        QCOMPARE(front->position() - back->position(), QPointF(16, 8));
+                        QVERIFY(back->width() > 16 && back->height() > 8);
+                    };
+                    verifySelectionIcons(page);
                     QVERIFY(visual_audit::save(window, directory, scene + "-multiple"));
                     controller->selectOnlyRow(1);
                     // These are presentation fixtures. The separate real runtime
@@ -1106,6 +1126,10 @@ class BrowserTest : public QObject {
                     QVERIFY(visual_audit::save(inspector, directory,
                                                language + (dark ? "-dark-" : "-light-") +
                                                    QString::number(scale) + "-separate"));
+                    controller->selectAll(true);
+                    verifySelectionIcons(inspector->contentItem());
+                    QVERIFY(visual_audit::save(inspector, directory, scene + "-separate-multiple"));
+                    controller->selectOnlyRow(1);
                     inspector->close();
                     QVERIFY(controller->contentPreview().isEmpty());
                 }

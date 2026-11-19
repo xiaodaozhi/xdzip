@@ -145,6 +145,8 @@ lines.append(f'    readonly property real mainToolbarRadius: {tokens["radius"]["
 for key in ['inset', 'gap', 'iconSize', 'spinnerSize']:
     value = layout['main']['content_preview'][key]
     lines.append(f'    readonly property real contentPreview{key[0].upper() + key[1:]}: mainUnits({value})')
+for key, value in layout['main']['content_preview']['selectionStack'].items():
+    lines.append(f'    readonly property real contentPreviewStack{key[0].upper() + key[1:]}: {value}')
 for key, value in layout['main']['content_preview']['refresh'].items():
     lines.append(f'    readonly property real contentPreviewRefresh{key[0].upper() + key[1:]}: {value}')
 lines.append(f'    readonly property int contentPreviewImageSample: {layout["main"]["content_preview"]["image_display_sample"][0]}')
