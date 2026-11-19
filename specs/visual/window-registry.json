@@ -22,7 +22,7 @@
       "width": "Theme.mainWindowWidth",
       "linux_frame_policy": "Ubuntu X11 integrates window controls in the titlebar and draws antialiased transparent corners in normal state, with system move and resize; maximized and fullscreen states use square corners.",
       "linux_frame_design": "design/hifi/sources/main.html?platform=linux",
-      "welcome_format_policy": "欢迎页按内置扩展名分组并计数，默认展开压缩包，分类栏和单行扩展名标签放在同一张卡片，末尾仅展示完整标签，超出时显示省略号。卡片保留 608 逻辑像素内容宽度，依据 welcome-reference.json 排版。高保真入口为 design/hifi/sources/welcome.html。",
+      "welcome_format_policy": "欢迎页按内置扩展名分组并计数，默认展开压缩包，分类区沿用页面底色，选中分类用强调色与字重区分。扩展名使用常规界面字体和透明底细描边标签，单行仅显示完整标签，超出时显示省略号。区域保留 608 逻辑像素内容宽度，依据 welcome-reference.json 排版。高保真入口为 design/hifi/sources/welcome.html。",
       "statusbar_policy": "Welcome and archive pages share a 32-unit minimum status bar, growing by the same task-control metrics for larger text. Both task buttons use the same 16-unit task-list icon from layout-scale.json main.interaction.taskIconSize.",
       "reopen_wait_policy": "A pending reopen during an archive modification reuses the welcome opening overlay and its existing dimensions; the message identifies the wait and cancellation affects only the new open request.",
       "owned_dialog_policy": "Closing the main window dismisses all its dialogs and releases their native surfaces; retained tasks reopen views only on explicit task activation.",

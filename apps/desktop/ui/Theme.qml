@@ -18,15 +18,15 @@ QtObject {
     readonly property real welcomeTitlebarHeight: 48
     readonly property real welcomeStatusbarHeight: 32
     readonly property real welcomeContentWidth: 608
-    readonly property real welcomeFormatGap: 8
-    readonly property real welcomeFormatRadius: 8
-    readonly property real welcomeFormatFontSize: 11
-    readonly property real welcomeFormatHorizontalInset: 10
-    readonly property real welcomeFormatCardInset: 12
+    readonly property real welcomeFormatGap: 10
+    readonly property real welcomeFormatFontSize: 12
     readonly property real welcomeFormatTitleSize: 13
-    readonly property real welcomeFormatChipGap: 6
-    readonly property real welcomeFormatChipInset: 6
-    readonly property real welcomeFormatChipVerticalInset: 3
+    readonly property real welcomeFormatCountSize: 11
+    readonly property real welcomeFormatGroupGap: 20
+    readonly property real welcomeFormatGroupHeight: 32
+    readonly property real welcomeFormatChipGap: 8
+    readonly property real welcomeFormatChipInset: 7
+    readonly property real welcomeFormatChipVerticalInset: 2
     readonly property real welcomeContentTopInset: 28
     readonly property real welcomeFeedbackIconSize: 18
     readonly property real welcomeFeedbackGap: 8

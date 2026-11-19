@@ -896,7 +896,7 @@ function bindWelcomeFormats() {
         const group = window.XDZIP_FORMAT_GROUPS.find(group => group.id === selected?.dataset.group);
         preview.hidden = !group;
         preview.setAttribute("aria-label", group?.suffixes.join(", ") || "");
-        chips.innerHTML = group?.suffixes.map(suffix => `<span>${esc(suffix.slice(1))}</span>`).join("") || "";
+        chips.innerHTML = group?.suffixes.map(suffix => `<span>${esc(suffix)}</span>`).join("") || "";
         fitChips();
     };
     for (const button of buttons) button.onclick = () => {

@@ -112,7 +112,7 @@ Item {
             mouseClick(button);
             compare(formatsSpy.count, 1);
             formatsSpy.clear();
-            tryVerify(() => groups.every(group => group.contentItem.children[0].font.pixelSize === Math.round(11 * data.scale)));
+            tryVerify(() => groups.every(group => group.contentItem.children[0].font.pixelSize === Math.round(13 * data.scale)));
             // A child Text can update its font metrics before the parent layout
             // schedules a second polish. Measure the frame with the new metrics.
             verify(waitForRendering(page));

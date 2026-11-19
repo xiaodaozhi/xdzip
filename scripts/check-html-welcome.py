@@ -40,7 +40,7 @@ with sync_playwright() as p:
                     preview = frame.locator('#welcome-format-preview')
                     expect(badges.locator('strong')).to_have_text([str(len(group['suffixes'])) for group in registry])
                     expect(badges.first).to_have_attribute('aria-expanded', 'true')
-                    expect(preview.locator('.welcome-format-chips span')).to_have_text([ext[1:] for ext in registry[0]['suffixes']])
+                    expect(preview.locator('.welcome-format-chips span')).to_have_text(registry[0]['suffixes'])
                     expect(preview.locator('.welcome-format-overflow')).to_be_visible()
                     badge = frame.locator('.welcome-format-group[data-group="text-envelopes"]')
                     badge.press('Space')
