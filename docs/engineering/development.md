@@ -14,7 +14,7 @@ Maintain corresponding English and Chinese pages. Place a language selector belo
 
 Documentation tools require Python 3.10+, lxml, Pandoc, and Graphviz; system CJK fonts are recommended. Run `python3 scripts/build-design-html.py` to generate 16 detailed software design documents and a single-file edition under build/docs-html, using the Chinese source in `docs/zh-CN/design/`. The downloadable bundle is written under dist/. Read other engineering and collaboration documentation through docs/README.md. HTML is not the product UI technology choice.
 
-Run `python3 scripts/check-docs.py` to check repository Markdown targets, bilingual links, JSON, and design assets. The builder separately checks HTML internal links and structure. The former does not check Markdown heading anchors or remote URLs. Passing documentation checks does not establish actual product acceptance.
+Run `python3 scripts/check-docs.py` to check bilingual pairs and reciprocal language selectors in the root directory, `docs/` and `developers/`, along with repository link targets, Markdown heading anchors, JSON and design assets. This check runs offline. The HTML builder validates the links and structure of its generated pages. Run `python3 scripts/test-check-docs.py` when changing the checker.
 
 ## Product toolchain preparation
 

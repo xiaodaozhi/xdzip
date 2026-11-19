@@ -14,7 +14,7 @@
 
 文档工具依赖 Python 3.10+、lxml、Pandoc 和 Graphviz，字体推荐系统 CJK。执行 `python3 scripts/build-design-html.py` 生成 build/docs-html 的 16 篇详细软件设计及单文件版，输出下载包在 dist/。其余工程和协作文档从 docs/README.md 阅读。HTML 不作为产品界面技术选择。
 
-执行 `python3 scripts/check-docs.py` 检查仓库 Markdown 文件目标、双语配对、JSON 与设计资产；构建器另检查 HTML 内部链接和结构。Markdown 标题锚点和远端 URL 不在前者检查范围。文档检查通过不代表实际产品验收通过。
+执行 `python3 scripts/check-docs.py`，检查根目录、`docs/` 和 `developers/` 的双语配对与互相指向的语言切换，以及仓库内链接目标、Markdown 章节锚点、JSON 和设计资产。此检查在离线状态下运行。HTML 构建器验证生成页面的链接与结构。修改检查器时运行 `python3 scripts/test-check-docs.py`。
 
 ## 产品工具链准备
 
