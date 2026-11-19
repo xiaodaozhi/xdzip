@@ -4,7 +4,7 @@
 
 ## 适用基线
 
-MSIX 1.0.30.0，x64，应用版本 0.2.1，构建号 30。截图来源见[材料说明](README.md)。
+用于 Windows 桌面商店一览。选择与本次提交相符的新增功能文案，截图来源见[材料说明](README.md)。
 
 ## 产品名称
 
@@ -114,15 +114,11 @@ Windows 11，x64 电脑。
 
 ### 01-browse
 
-[1920 × 1080](images/promotional/01-browse-1920x1080.png), [3840 × 2160](images/promotional/01-browse-3840x2160.png)
-
 ```text
 功能示意图：浏览受支持的压缩包，查找并选择性解压文件。此图不是软件实机截图。
 ```
 
 ### 02-create
-
-[1920 × 1080](images/promotional/02-create-1920x1080.png), [3840 × 2160](images/promotional/02-create-3840x2160.png)
 
 ```text
 演示创建压缩包和 ISO 光盘映像，以及为 ZIP 和 7z 设置密码的功能示意图。
@@ -130,15 +126,11 @@ Windows 11，x64 电脑。
 
 ### 03-preview
 
-[1920 × 1080](images/promotional/03-preview-1920x1080.png), [3840 × 2160](images/promotional/03-preview-3840x2160.png)
-
 ```text
 功能示意图：按需预览受支持的文本、图像和静态 SVG。此图不是软件实机截图。
 ```
 
 ### 04-workspace
-
-[1920 × 1080](images/promotional/04-workspace-1920x1080.png), [3840 × 2160](images/promotional/04-workspace-3840x2160.png)
 
 ```text
 功能示意图：管理多个压缩包，并选择浅色或深色外观。此图不是软件实机截图。
@@ -146,11 +138,9 @@ Windows 11，x64 电脑。
 
 ## 应用截图与融合宣传图
 
-截图保持默认逻辑窗口尺寸，裁掉顶部一像素并清理圆角旧底色，添加一像素细边框。桌面截图栏上传 1920 × 1080 融合宣传图。它将实机界面嵌入蓝色版式，配以品牌文案、细边框和阴影。纯界面图使用 2560 × 1440 中性画布。
+桌面截图栏上传本地导出目录中 promotional/ 内的 1920 × 1080 融合宣传图。
 
 ### 01-browse
-
-[默认窗口](images/screenshots/01-browse.png), [纯界面图](images/store-screenshots/01-browse.png), [1920 × 1080 商店上传图](images/combined/01-browse-1920x1080.png), [3840 × 2160](images/combined/01-browse-3840x2160.png)
 
 ```text
 浏览压缩包目录树，选择文件并查看属性。
@@ -158,23 +148,17 @@ Windows 11，x64 电脑。
 
 ### 02-create
 
-[默认窗口](images/screenshots/02-create.png), [纯界面图](images/store-screenshots/02-create.png), [1920 × 1080 商店上传图](images/combined/02-create-1920x1080.png), [3840 × 2160](images/combined/02-create-3840x2160.png)
-
 ```text
 将选中的文件整理成压缩包，并设置 ZIP 压缩选项。
 ```
 
 ### 03-preview
 
-[默认窗口](images/screenshots/03-preview.png), [纯界面图](images/store-screenshots/03-preview.png), [1920 × 1080 商店上传图](images/combined/03-preview-1920x1080.png), [3840 × 2160](images/combined/03-preview-3840x2160.png)
-
 ```text
 在文件列表和属性旁，按需加载图像预览。
 ```
 
 ### 04-workspace
-
-[默认窗口](images/screenshots/04-workspace.png), [纯界面图](images/store-screenshots/04-workspace.png), [1920 × 1080 商店上传图](images/combined/04-workspace-1920x1080.png), [3840 × 2160](images/combined/04-workspace-3840x2160.png)
 
 ```text
 在标签页中同时打开两个压缩包，并以网格视图浏览选中的文件。
