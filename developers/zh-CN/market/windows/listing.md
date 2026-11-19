@@ -101,7 +101,7 @@ xiaodaozhi
 | --- | --- |
 | 网站 | https://xdzip.xiaodaozhi.com |
 | 支持 | https://github.com/xiaodaozhi/xdzip/issues |
-| 隐私政策 | https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md |
+| 隐私政策 | https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.zh-CN.md |
 | 项目许可 | https://github.com/xiaodaozhi/xdzip/blob/main/LICENSE |
 
 ## 系统范围

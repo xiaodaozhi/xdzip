@@ -153,7 +153,7 @@ Windows 使用 MSVC x64 开发环境；macOS 使用 Apple Silicon 原生终端�
 | --- | --- |
 | 桌面使用与脚本集成 | [用户手册](docs/zh-CN/user-guide/README.md)、[命令行与集成](docs/zh-CN/integration/README.md) |
 | 产品设计与实现 | [技术参考](docs/zh-CN/reference/README.md) |
-| 隐私与数据处理 | [隐私政策](PRIVACY.md)、[Privacy Policy](PRIVACY.en.md) |
+| 隐私与数据处理 | [隐私政策](PRIVACY.zh-CN.md)、[Privacy Policy](PRIVACY.md) |
 | 开发与贡献 | [开发与贡献指南](docs/zh-CN/contributing/README.md) |
 | 版本变化和待办 | [变更日志](CHANGELOG.md)、[GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues) |
 | 贡献 | [贡献指南](CONTRIBUTING.md)、[行为规范](CODE_OF_CONDUCT.md) |

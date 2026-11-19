@@ -101,7 +101,7 @@ xiaodaozhi
 | --- | --- |
 | Website | https://xdzip.xiaodaozhi.com |
 | Support | https://github.com/xiaodaozhi/xdzip/issues |
-| Privacy policy | https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.en.md |
+| Privacy policy | https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md |
 | Project license | https://github.com/xiaodaozhi/xdzip/blob/main/LICENSE |
 
 ## System scope
