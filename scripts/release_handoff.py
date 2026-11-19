@@ -57,7 +57,9 @@ def paths_for(system):
         paths += [REVIEW / system, BUILD / 'desktop/apps/desktop/m2-flat.zip',
                   BUILD / f'installer-tests/{system}-packages', BUILD / 'installer-tests/association-fixtures']
     if system == 'windows':
-        paths += [BUILD / 'desktop/apps/desktop/xdzip-browser-tests.exe', BUILD / 'release-verify-qt']
+        paths += [BUILD / 'desktop/apps/desktop/xdzip-browser-tests.exe',
+                  BUILD / 'desktop/apps/desktop/xdzip-windows-shell-test.exe',
+                  BUILD / 'release-verify-qt']
     return paths
 
 
