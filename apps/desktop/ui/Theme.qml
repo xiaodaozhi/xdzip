@@ -27,6 +27,7 @@ QtObject {
     readonly property real welcomeFormatChipGap: 8
     readonly property real welcomeFormatChipInset: 7
     readonly property real welcomeFormatChipVerticalInset: 2
+    readonly property real welcomeFormatChipRadius: 3
     readonly property real welcomeContentTopInset: 28
     readonly property real welcomeFeedbackIconSize: 18
     readonly property real welcomeFeedbackGap: 8

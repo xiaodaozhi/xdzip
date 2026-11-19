@@ -25,6 +25,7 @@
   --welcome-format-chip-gap: calc(8px * var(--ui-source-factor));
   --welcome-format-chip-inset: calc(7px * var(--ui-source-factor));
   --welcome-format-chip-vertical-inset: calc(2px * var(--ui-source-factor));
+  --welcome-format-chip-radius: calc(3px * var(--ui-source-factor));
   --welcome-content-top-inset: calc(28px * var(--ui-source-factor));
   --welcome-feedback-icon-size: calc(18px * var(--ui-source-factor));
   --welcome-feedback-gap: calc(8px * var(--ui-source-factor));

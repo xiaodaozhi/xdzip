@@ -44,7 +44,9 @@
 .welcome-format-preview[hidden],.welcome-format-overflow[hidden] { display:none; }
 .welcome-format-viewport { flex:1; min-width:0; overflow:hidden; }
 .welcome-format-chips { position:relative; display:flex; width:max-content; gap:var(--welcome-format-chip-gap); }
-.welcome-format-chips span { white-space:nowrap; border-radius:var(--operation-control-radius); border:calc(1px * var(--ui-source-factor)) solid var(--operation-field-border); padding:var(--welcome-format-chip-vertical-inset) var(--welcome-format-chip-inset); font-weight:400; }
+.welcome-format-chips span { white-space:nowrap; border-radius:var(--welcome-format-chip-radius); border:calc(1px * var(--ui-source-factor)) solid var(--operation-field-border); padding:var(--welcome-format-chip-vertical-inset) var(--welcome-format-chip-inset); }
+.welcome-format-chips b { position:relative; font-weight:400; }
+.welcome-format-chips i { display:inline-block; width:0; height:0; vertical-align:baseline; }
 .welcome-mode .welcome-feedback { display:flex; align-items:flex-start; gap:var(--welcome-feedback-gap); width:100%; font-size:calc(12px * var(--ui-source-factor) * var(--settings-text-scale,1)); margin:var(--welcome-feedback-top-gap) 0 0; color:var(--ui-menu-danger); text-align:left; }
 .welcome-feedback-icon { flex-shrink:0; width:var(--welcome-feedback-icon-size); height:var(--welcome-feedback-icon-size); }
 .welcome-feedback-icon svg { display:block; width:100%; height:100%; }

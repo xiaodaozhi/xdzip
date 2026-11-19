@@ -331,10 +331,19 @@ Rectangle {
                                         color: "transparent"
                                         border.color: Theme.operationFieldBorder
                                         border.width: 1
-                                        radius: Theme.operationControlRadius
+                                        radius: Theme.welcomeFormatChipRadius
+                                        antialiasing: true
+                                        TextMetrics {
+                                            id: suffixMetrics
+                                            text: suffix.text
+                                            font: suffix.font
+                                        }
                                         Text {
                                             id: suffix
-                                            anchors.centerIn: parent
+                                            anchors.horizontalCenter: parent.horizontalCenter
+                                            // Center the drawn glyphs, including ascenders and descenders.
+                                            y: (chip.height - suffixMetrics.tightBoundingRect.height) / 2
+                                                - baselineOffset - suffixMetrics.tightBoundingRect.y
                                             text: chip.modelData
                                             color: Theme.textSecondary
                                             font.family: Theme.uiFontFamily

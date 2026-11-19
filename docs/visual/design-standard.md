@@ -25,6 +25,8 @@ At Qt startup, capture the system default font family before installing the bund
 5. Browser review scale, browser page zoom, system scaling and DPR must not enter component size parameters. Qt does not use `Item.scale`, downsized screenshots or an extra 1.25 multiplier to implement density correction; specification parameters generate real layout and integer pixelSize.
 6. One-logical-pixel separators and focus strokes retain specified values; OS owns native window decoration. Keep fractional spatial dimensions; round structural boundaries and window sizes to nearest integer. Round Qt font sizes after density conversion and before accessibility scaling.
 
+New compact badges and tags use a corner radius of 3 logical pixels. Reserve larger radii for explicitly approved component shapes and keep compact tags from taking on a capsule shape. Use the shared geometry for standard buttons, fields and windows.
+
 ## Title-area revision
 
 Main title-bar height is 48 logical pixels. Tabs are floating capsules height 32 and radius 16, with 8 above and below. Active tabs have complete borders and do not join the toolbar. Tab close, plus and settings share the title-bar vertical center. Larger fonts first increase capsule height while retaining equal top/bottom padding. This replaces bottom-attached tabs in the archived original.
