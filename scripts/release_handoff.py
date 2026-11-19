@@ -7,6 +7,7 @@ import platform
 import re
 import shutil
 import subprocess
+import sys
 import tarfile
 
 from release_protocol import sha256
@@ -92,13 +93,19 @@ def unpack(system):
         raise ValueError('Native package handoff checksum mismatch')
     allowed = ('build/review/', 'build/desktop/apps/desktop/', 'build/installer-tests/',
                'build/release-verify-qt/')
+    names = set()
     with tarfile.open(archive, 'r:gz') as reader:
         for member in reader.getmembers():
             name = PurePosixPath(member.name)
-            if (not (str(name) + '/').startswith(allowed) or '..' in name.parts
+            target = ROOT / name
+            if (not (member.isfile() or member.isdir())
+                    or not (str(name) + '/').startswith(allowed) or '..' in name.parts
                     or '\\' in member.name or ':' in member.name
-                    or (ROOT / name).exists() or (ROOT / name).is_symlink()):
+                    or not target.resolve().is_relative_to(BUILD)
+                    or target.exists() or target.is_symlink()
+                    or name.as_posix().casefold() in names):
                 raise ValueError('Invalid or occupied native handoff path')
+            names.add(name.as_posix().casefold())
         reader.extractall(ROOT, filter='data')
     print('Verified native handoff SHA-256 ' + receipt['archive_sha256'])
 
@@ -120,7 +127,7 @@ def stage(system):
     handoff = read_receipt(HANDOFF, system)
     output = BUILD / 'release-assets'
     output.mkdir()
-    subprocess.run(['python' if os.name == 'nt' else 'python3', 'scripts/prepare-release.py',
+    subprocess.run([sys.executable, 'scripts/prepare-release.py',
                     '--packages', str(REVIEW), '--output', str(output), '--platform', system],
                    cwd=ROOT, check=True)
     write_receipt(output, {**identity(system), 'archive_sha256': handoff['archive_sha256'],

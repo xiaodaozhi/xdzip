@@ -83,6 +83,14 @@ class NativeHandoffTests(unittest.TestCase):
                     stream.write(b'tampered')
                 with self.assertRaisesRegex(ValueError, 'checksum mismatch'):
                     handoff.unpack('linux')
+                with tarfile.open(archive, 'w:gz') as writer:
+                    link = tarfile.TarInfo('build/review/owned-link')
+                    link.type = tarfile.SYMTYPE
+                    link.linkname = 'owned-target'
+                    writer.addfile(link)
+                handoff.write_receipt(work, {**identity, 'archive_sha256': handoff.sha256(archive)})
+                with self.assertRaisesRegex(ValueError, 'Invalid or occupied'):
+                    handoff.unpack('linux')
 
 
 class ProductionUpdateWorkflowTests(unittest.TestCase):
