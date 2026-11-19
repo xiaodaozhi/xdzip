@@ -38,11 +38,11 @@ Each work package has one primary executor and delivery branch. Reuse an existin
 
 When a new or split branch/PR is actually needed, explain why, organize it on existing work, and compare code, tests, documentation, and applicable evidence to confirm complete migration before closing superseded entry points. Different commit hashes alone do not imply different functionality. Synchronize and assess concurrent remote changes before proceeding so other devices' progress is not overwritten. Update related records on handoff, scope, or status changes only; logs and reports keep conclusions and necessary evidence links without repeatedly pasting full output.
 
-For source, test, or product-behavior fixes with explicit issue scope, work first on a temporary branch with the `coding/` prefix. Branch names contain the issue number or recognizable scope. Do not leave product fixes awaiting handoff only as uncommitted changes on shared `main`. A branch may cover related issues in one work package, but issues separately record their scopes, verification, and commit relationships.
+For bounded source, test, configuration or documentation work, use a short-lived `coding/` branch named for the issue or scope when isolation or handoff is useful. Preserve existing work in the primary checkout. Related issues can share one delivery entry and retain separate scope, verification and commit records.
 
-Before reporting a fix complete, perform local builds and verification appropriate to the change, commit and push source, tests, and necessary design inputs to the temporary branch, then append commit SHA, branch name, actual verification, and unfinished items to the issue, creating a reviewable, recoverable remote handoff. Pushing is not merging, release approval, or a platform manual-acceptance pass.
+Complete the relevant local checks, commit the changes and integrate them into `main` under the repository's protection rules. Push `main` and fetch or query the remote to verify it contains the final change. Record the actual merged commit, checks and evidence in the issue. A branch push or PR can provide a recoverable checkpoint during this process.
 
-After branch handoff, integrate the fix into `main` under project convention or merge through a Pull Request. Clean temporary branches and worktrees under the cycle cleanup rules below. Keep issues open when platform acceptance remains; a pushed branch does not replace acceptance conclusions.
+Continue through integration, remote verification and [artifact cleanup](#研发周期工件收尾) before closing the issue or reporting delivery complete. Pause at an explicit local, branch or PR-only boundary, or when required external acceptance is unavailable. Record the recoverable revision, completed steps, exact blocker and remaining work. Follow [AGENTS.md](../../AGENTS.md) for the delivery agreement.
 
 <a id="研发周期工件收尾"></a>
 
@@ -50,16 +50,16 @@ After branch handoff, integrate the fix into `main` under project convention or 
 
 `build/` holds only local/CI builds, tests, diagnostics, tool caches, and evidence; it is not source input. At each development-cycle start, record newly created `build/` paths in the issue or work record. On completion:
 
-1. Merge commits and confirm remote branch status.
+1. Confirm that remote `main` contains the final change. For a squash or rebase, use the landed revision when verifying the remote and recording the issue.
 2. Delete merged local and remote branches and remove unused Git worktrees; directories still referenced by `git worktree list` must not be cleaned.
 3. Remove this cycle's dedicated `build/` temporary directories and files, retaining receipts still needed for reverification, pinned local toolchains, and build directories explicitly reused next cycle.
 4. Run `git status --short` again to ensure temporary output, logs, and credentials were not left in the source directory.
 
-Preview first, then perform explicitly authorized deletion:
+Inspect `git worktree list` and keep any receipts still needed. Preview exact cycle-owned paths first, then apply the selected cleanup. The helper protects shared directories such as `build/toolchain/`, rejects active worktrees, and never removes the whole `build/` tree.
 
 ```sh
-python3 scripts/cleanup-build.py --path build/<cycle-directory>
-python3 scripts/cleanup-build.py --path build/<cycle-directory> --apply --yes
+python3 scripts/cleanup-build.py --path build/docs-review-scratch
+python3 scripts/cleanup-build.py --path build/docs-review-scratch --apply --yes
 ```
 
 For directories not cleaned at cycle end, manually scan by age as a fallback. Scans select only named temporary pipeline directories not used by active worktrees and not protected shared directories; default is preview:

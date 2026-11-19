@@ -8,6 +8,12 @@ English | [简体中文](../zh-CN/engineering/ci-policy.md)
 
 Each PR update can cancel older runs for the same PR; main and manual runs use independent run identities. Failures and cancellations do not count as passes. Workflows use read-only repository permissions and pinned dependencies, without release keys. Routine CI does not start Playwright, Chromium, or another web browser; static HTML design-generation checks still run.
 
+### Change classification and fallback
+
+[ci-plan.py](../../scripts/ci-plan.py) classifies the full Git tree difference against a verified base using [the committed policy](../../scripts/ci-plan-policy.json). The current allowlist admits only an in-place UTF-8 change to `docs/README.md`, subject to the file and diff budgets. Other paths, adds, deletes, renames, mode changes, unverifiable Git history, and manual dispatch produce `classification=full`. The current `shadow` mode keeps `run_heavy=true` even when it classifies a change as `plain-docs`.
+
+Foundation and Qt record separate `build/ci-plans/*-plan.json` artifacts. A missing or failed plan falls back to the full checks for a non-cancelled ordinary run. The explicit Foundation diagnostic inputs select their own jobs. Routine CI runs its lightweight job independently of the plan. For classifier or workflow changes, run `python3 scripts/test-ci-plan.py` and `python3 scripts/test-ci-workflows.py` locally.
+
 ## Local verification before commit
 
 Before committing and pushing, complete the build or verification appropriate to the proposed changes locally and record what actually ran. Git hooks are not required. Reverify after source or configuration changes that affect results; do not describe tests including other uncommitted changes as results for a clean commit.
@@ -47,6 +53,10 @@ Ordinary development and release acceptance do not automatically generate projec
 [SDK trial](../../.github/workflows/sdk-trial.yml) is also manual only. It first runs independent read-only protocol and native-kernel gates without downloading Qt or deploying the application and uploads only logs and JSON. Foundation's manual `sdk_only=true` option invokes the same SDK workflow and skips the full Foundation jobs and gate; it cannot establish a full Foundation pass. Use this entry point first to narrow SDK platform failures. Reuse other still-applicable Foundation and Qt evidence according to the verification method.
 
 Foundation `image_only=true` uses system sips/ImageIO on native macOS to convert a fixed project-owned HEIC, installs pinned Qt through the same shared toolchain preparation method, and separately builds the real image worker and test controls. It compares an unrestricted Qt reader and real worker code with one limit omitted at a time to distinguish system/plugin capabilities from resource budgets; test interceptors do not enter product builds. `--verify-worker` additionally requires correct dimensions/pixels for two inputs through the real parent and default worker, growth within the runtime file budget, and EFBIG beyond it; otherwise this check fails. This entry point does not build the desktop application, deploy, or sign, and saves only JSON and logs. Observed success or affected-component regression does not establish a full product/Foundation pass. The two preflight options are mutually exclusive.
+
+### Update-specific verification
+
+[Native update regression](../../.github/workflows/update-regression.yml) uses isolated fixtures and offers one platform for diagnosis or `platform=all` for its full matrix. [Production update acceptance](../../.github/workflows/production-update-acceptance.yml) is a separate manual workflow. It checks the production trust roots through the protected `release-signing` environment on `main` and exercises signed fixtures. Publish decisions still use the dedicated release workflow and the actual candidate. Identify the run, platform, and scope in the issue. For long native jobs, normally check at least five minutes apart and read relevant log excerpts only.
 
 ## Visual, desktop, and release
 

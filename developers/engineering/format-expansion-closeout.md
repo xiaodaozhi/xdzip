@@ -30,7 +30,7 @@ git diff --check
 
 For every path marked modified, inspect the actual diff. If the textual diff is empty, compare the working-tree object with `git hash-object` and the committed object with `git rev-parse HEAD:<path>`. Resolve line-ending or stat-only noise before reporting an uncommitted change. Preserve real unrelated edits, but list their exact paths and never describe a status-only artifact as pending implementation.
 
-Before committing, compare the staged path list with the scope ledger. After committing, inspect `git show --stat --summary HEAD` and verify the remote tip with `git ls-remote origin refs/heads/<branch>`.
+Before committing, compare the staged paths with the issue scope. Inspect the result with `git show --stat --summary HEAD`, then verify the landed revision on remote `main` after integration. If a remote handoff branch is part of the required delivery, check its remote revision as well.
 
 ## 3. Preflight the real environment
 
@@ -60,13 +60,9 @@ Separate product regressions from missing tools, missing fixtures, ACL failures 
 
 ## 5. Close the handoff in one order
 
-Complete the implementation and checks first. Then:
+Complete the implementation and required checks. Commit the scoped source, tests and durable documentation. Follow the [repository delivery agreement](repository-hygiene.md) to integrate and push `main`, verify the landed revision on the remote, and clean temporary branches, worktrees and cycle artifacts. Record the actual revision, final scope, evidence and exclusions before closing the issue.
 
-1. commit only the scoped source, tests and durable documentation;
-2. push the delivery branch and verify the remote commit;
-3. append the final scope, evidence, exclusions and remaining gates to the issue;
-4. report the result using five short sections: completed, excluded, blocked, automated evidence and next user decision;
-5. merge `main` only after the owner explicitly confirms the concrete pushed result.
+When the user specifies a local, branch or PR handoff, or a required external check blocks integration, record the recoverable commit and remaining work at that boundary. A pushed delivery branch remains a checkpoint.
 
 Issue comments and reports must not include credentials, complete local paths, lock-screen state or raw temporary-environment details. Formal release approval remains a separate decision.
 

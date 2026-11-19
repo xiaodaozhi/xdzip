@@ -6,7 +6,7 @@
 
 ## 交付内容
 
-固定干净提交后生成 Windows x86_64 ZIP／安装器、macOS arm64 app ZIP／DMG、Ubuntu 24.04 x86_64 tar.gz／deb，并收集通知、实际文件 SBOM、构建和生命周期回执。对应源码包可在本地单独审阅，不作为候选 Release 或 Actions 工件提供。候选总清单记录相对文件路径、SHA-256、大小、平台、构建版本和源码提交；不将不同提交的包拼成一个候选。
+固定干净的源码提交并收集六项桌面资产，包括 Windows x86_64 ZIP 和安装器、macOS arm64 app ZIP 和 DMG，以及 Ubuntu 24.04 x86_64 TAR.GZ 和 DEB。另收集三平台独立 CLI 包及回执。通知、实际文件 SBOM、构建和生命周期回执均须对应相同平台与候选包。完整清单绑定路径、SHA-256、大小、平台、版本、构建号和源码提交。桌面与 CLI 更新清单使用同一身份，分别列出各自的包。见[发布协议](../../../docs/zh-CN/engineering/release-protocol.md)。
 
 按需 Qt 工作流的 macOS 作业只保留日志与 JSON。经所有者明确授权，专用 Release 工作流可在 Apple Silicon runner 部署 Qt、执行必要的 ad-hoc 签名，并从同一应用导出 app ZIP 与 DMG，验证完整性和无 SDK 搜索路径下的重定位启动；本地开发 DMG 仍遵循已有授权。Windows/Linux 的开发包由实际成功的按需 Qt 运行获取，不把 QA-only 安装器当作产品。历史完整源码 Qt／性能记录只作为历史材料引用，不改写提交，也不要求人工验收重做。
 

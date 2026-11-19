@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/candidate-verification.md)
 
-This guide covers automated candidate verification, Qt source builds and compatible replacement checks. The [gate list](../../scripts/wp12-gates.json) separates automated checks from external admission. Scripts verify candidate identity and evidence completeness; passing automated checks does not approve a formal release. Historical verification is recorded in [#5](https://github.com/xiaodaozhi/xdzip/issues/5).
+For a release candidate, start with the [release runbook](release-runbook.md) and bind receipts to the actual package version, commit and digest. The Qt-source, replacement and performance checks below are independent evidence for changes that need them. The [historical gate list](../../scripts/wp12-gates.json) applies when reproducing the original evidence bundle in [#5](https://github.com/xiaodaozhi/xdzip/issues/5).
 
 <a id="qt-源码与兼容替换"></a>
 
@@ -11,8 +11,7 @@ This guide covers automated candidate verification, Qt source builds and compati
 The [pinned source manifest](../../scripts/corresponding-sources.json) contains QtBase, QtDeclarative, QtSvg, QtTranslations, build-required ShaderTools and QtTools, and pinned Rust standard-library source components. Archives and source patches have SHA-256 values. Reverify regular files before restoring source trees; accept only original texts or recorded patches and do not carry unknown modifications into the next build.
 
 ```sh
-python3 scripts/build-qt-source.py --output build/wp12 --resume \
-  --apple-sdk /Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk --parallel 6
+python3 scripts/build-qt-source.py --output build/wp12 --resume --parallel 6
 python3 scripts/verify-qt-source-product.py --qt-build build/wp12 \
   --output build/wp12/source-product
 ```
