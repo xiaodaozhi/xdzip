@@ -1,8 +1,10 @@
 #include "NativeRequest.h"
 #include "PackageMenu.h"
+#include <cwchar>
 #include <iostream>
 #include <set>
 #include <shlobj.h>
+#include <string_view>
 
 // Redirect this process to an empty, volatile key so the fixture does not
 // depend on or modify the user's Explorer menu preference.
@@ -47,6 +49,20 @@ class MenuRegistryFixture {
         RegCloseKey(handler);
         return result == ERROR_SUCCESS;
     }
+    bool language(const wchar_t *legacy, const wchar_t *extended) {
+        HKEY shell = nullptr;
+        if (RegCreateKeyExW(key, L"Software\\xdzip\\Shell", 0, nullptr, REG_OPTION_VOLATILE,
+                            KEY_SET_VALUE, nullptr, &shell, nullptr) != ERROR_SUCCESS)
+            return false;
+        const auto write = [&](const wchar_t *name, const wchar_t *value) {
+            const auto length = DWORD((std::wcslen(value) + 1) * sizeof(wchar_t));
+            return RegSetValueExW(shell, name, 0, REG_SZ, reinterpret_cast<const BYTE *>(value),
+                                  length) == ERROR_SUCCESS;
+        };
+        const bool saved = write(L"Language", legacy) && write(L"ExtendedLanguage", extended);
+        RegCloseKey(shell);
+        return saved;
+    }
     ~MenuRegistryFixture() {
         if (overridden)
             RegOverridePredefKey(HKEY_CURRENT_USER, nullptr);
@@ -74,8 +90,9 @@ int wmain(int argc, wchar_t **argv) {
                        xdzip_shell::supportsShellProtocol(argv[2])
                    ? 0
                    : 1;
-    if (argc != 2)
+    if (argc != 2 && argc != 5)
         return 2;
+    const auto *expectedTitle = argc == 5 ? argv[4] : nullptr;
     const auto initialized = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
     if (FAILED(initialized))
         return 1;
@@ -138,6 +155,8 @@ int wmain(int argc, wchar_t **argv) {
         std::cerr << "Could not isolate the menu test registry\n";
         return 1;
     }
+    if (expectedTitle && !registry.language(argv[2], argv[3]))
+        return 1;
     int checks = 0;
     const auto validIcon = [](IExplorerCommand *command) {
         PWSTR location = nullptr;
@@ -189,6 +208,11 @@ int wmain(int argc, wchar_t **argv) {
             ok = ok && GetMenuItemInfoW(popup, 0, TRUE, &rootItem) && rootItem.hSubMenu &&
                  rootItem.hbmpItem && GetObjectType(rootItem.hbmpItem) == OBJ_BITMAP &&
                  GetMenuItemCount(rootItem.hSubMenu) == int(expected);
+            if (ok && expectedTitle) {
+                wchar_t caption[128]{};
+                ok = GetMenuStringW(popup, 0, caption, int(std::size(caption)), MF_BYPOSITION) &&
+                     std::wstring_view(caption) == expectedTitle;
+            }
             for (UINT i = 0; ok && i < expected; ++i) {
                 MENUITEMINFOW child{};
                 child.cbSize = sizeof(child);
@@ -215,6 +239,8 @@ int wmain(int argc, wchar_t **argv) {
                  SUCCEEDED(command->GetTitle(nullptr, &title)) && title && *title &&
                  SUCCEEDED(command->GetFlags(&flags)) && flags == ECF_HASSUBCOMMANDS &&
                  validIcon(command) && SUCCEEDED(command->EnumSubCommands(&commands));
+        if (ok && expectedTitle)
+            ok = std::wstring_view(title) == expectedTitle;
         if (ok)
             ok = registry.legacyHandler(true) &&
                  SUCCEEDED(command->GetState(selection, FALSE, &state)) && state == ECS_HIDDEN &&
