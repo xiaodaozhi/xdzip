@@ -2,7 +2,7 @@
 
 # 系統支援與維護政策
 
-[English](../../engineering/support-policy.md) | [简体中文](../../zh-CN/engineering/support-policy.md) | 繁體中文（台灣）
+[English](../../engineering/support-policy.md) | [简体中文](../../zh-CN/engineering/support-policy.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/support-policy.md) | [한국어](../../ko-KR/engineering/support-policy.md) | [Français](../../fr-FR/engineering/support-policy.md) | [Deutsch](../../de-DE/engineering/support-policy.md) | [Español](../../es-ES/engineering/support-policy.md) | [Português (Brasil)](../../pt-BR/engineering/support-policy.md) | [Русский](../../ru-RU/engineering/support-policy.md)
 
 專案所有者於 2026-10-19 批准首批支援政策，`v0.1.0` 於 2026-11-06 公開。目前版本與下載見[釋出頁](https://github.com/xiaodaozhi/xdzip/releases)。本文確定支援範圍，不修改應用最低版本檢查，不將 CI 宿主或未附環境明細的使用者驗收擴大為全部系統版本保證。人工專項已按使用者結論完成，無需重複。
 

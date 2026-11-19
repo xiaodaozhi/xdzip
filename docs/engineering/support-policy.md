@@ -1,6 +1,6 @@
 # System support and maintenance policy
 
-English | [简体中文](../zh-CN/engineering/support-policy.md) | [繁體中文（台灣）](../zh-TW/engineering/support-policy.md)
+English | [简体中文](../zh-CN/engineering/support-policy.md) | [繁體中文（台灣）](../zh-TW/engineering/support-policy.md) | [日本語](../ja-JP/engineering/support-policy.md) | [한국어](../ko-KR/engineering/support-policy.md) | [Français](../fr-FR/engineering/support-policy.md) | [Deutsch](../de-DE/engineering/support-policy.md) | [Español](../es-ES/engineering/support-policy.md) | [Português (Brasil)](../pt-BR/engineering/support-policy.md) | [Русский](../ru-RU/engineering/support-policy.md)
 
 The project owner approved the initial support policy on 2026-10-19, and `v0.1.0` was released publicly on 2026-11-06. See the [releases page](https://github.com/xiaodaozhi/xdzip/releases) for current versions and downloads. This document defines support scope; it does not change minimum-version checks or extend CI host results or user acceptance without environment details into guarantees for all system versions. The manual review was completed according to the user's conclusion and need not be repeated.
 
