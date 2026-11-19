@@ -12,6 +12,7 @@ class FileAssociations final : public QObject {
     Q_PROPERTY(bool ready READ ready NOTIFY changed)
     Q_PROPERTY(int revision READ revision NOTIFY changed)
     Q_PROPERTY(QString error READ error NOTIFY changed)
+    Q_PROPERTY(QString errorExtension READ errorExtension NOTIFY changed)
   public:
     explicit FileAssociations(QObject *parent = nullptr);
     bool available() const {
@@ -32,11 +33,15 @@ class FileAssociations final : public QObject {
     QString error() const {
         return m_error;
     }
+    QString errorExtension() const {
+        return m_errorExtension;
+    }
+    Q_INVOKABLE bool supportsExtension(const QString &extension) const;
     Q_INVOKABLE bool isDefault(const QString &extension) const;
     Q_INVOKABLE void refresh();
     Q_INVOKABLE void requestChange(const QString &extension, bool enable);
     Q_INVOKABLE void openSystemSettings();
-    void nativeFinished(bool success);
+    void nativeFinished(const QString &error = {}, const QString &extension = {});
   signals:
     void changed();
 
@@ -51,6 +56,10 @@ class FileAssociations final : public QObject {
     int m_revision = 0;
     int m_pending = 0;
     QString m_error;
+    QString m_errorExtension;
+#ifdef Q_OS_MACOS
+    QStringList m_supportedExtensions;
+#endif
     QHash<QString, bool> m_defaults;
     QHash<QString, bool> m_pendingDefaults;
 };

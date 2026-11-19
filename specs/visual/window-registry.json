@@ -113,6 +113,8 @@
       "packaged_design": "design/hifi/sources/settings.html?tab=about&channel=msix",
       "packaged_association_policy": "MSIX 文件关联由 Windows 管理。文件关联页完整显示可关联类型，开关禁用，默认应用以 Windows 设置为准。共享按钮跳转当前包应用的默认应用页，身份查询失败时进入系统默认应用总页。",
       "packaged_association_design": "design/hifi/sources/settings.html?tab=associations&channel=msix",
+      "macos_association_policy": "文件关联沿用现有设置窗口尺寸与共享 SettingsToggle，两列等宽。应用内状态说明在对应开关下按现有字号换行。替代应用由 AppKit 原生选择面板呈现，使用系统布局；没有替代应用时仅显示行内说明。",
+      "macos_association_status_design": "design/hifi/sources/settings.html?tab=associations&association=no-alternative",
       "scrollbar_policy": "The content viewport uses the default Qt vertical scrollbar at the right edge, spanning the viewport; its thumb tracks and controls scrolling.",
       "version_labels_policy": "The About version-information grid sizes its label column to the label text; the value column receives remaining width and wraps as needed.",
       "header_design": "design/hifi/sources/operation-headers.html",
@@ -165,6 +167,10 @@
   },
   "native_dialogs": {
     "reason": "打开文件、添加输入与目标选择器由系统负责样式，经 NativeDialogPolicy 关联调用窗口；不套用操作窗口尺寸",
+    "macos_association_chooser": {
+      "source": "apps/desktop/MacFileAssociations.mm",
+      "reason": "AppKit 原生 NSAlert 在设置窗口上按系统样式显示兼容应用，使用系统按钮、字体和辅助功能。"
+    },
     "sfx_host": {
       "source": "crates/xdzip-cli/src/sfx/windows.rs",
       "design": "design/hifi/sources/sfx-native.html",

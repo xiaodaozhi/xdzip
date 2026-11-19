@@ -21,6 +21,7 @@ from unittest.mock import patch
 from deployment_audit import digest
 from installer_payload import HISTORICAL_PRODUCT_REVISION
 from association_types import WINDOWS_ICONS, MACOS_ICONS, windows_progid
+from archive_formats_generated import ASSOCIATION_FIXTURES
 
 ROOT=Path(__file__).resolve().parents[1]
 def module(name):
@@ -429,6 +430,8 @@ class InstallerTests(unittest.TestCase):
             **dict.fromkeys(('bz2', 'bz', 'tbz', 'tbz2', 'lzma', 'tlz', 'lz', 'xz', 'txz'),
                             ('archive', None)),
         }
+        for fixture in ASSOCIATION_FIXTURES:
+            expected_documents.setdefault(fixture.rsplit('.', 1)[1], ('archive', None))
         with tempfile.TemporaryDirectory() as directory:
             base=Path(directory);script=base/'render.cmake'
             template=(ROOT/'apps/desktop/packaging/macos/Info.plist.in').as_posix()
