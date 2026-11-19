@@ -223,13 +223,11 @@ try {
     Select-Tab $browseName
     Invoke-Control $mainWindow $catalog.messages.'ui.d56220435194' 'Button'
     Select-File 'README.md'
-    Wait-Control $mainWindow $catalog.messages.'preview.action' 'Button'
+    Wait-State 'loaded text preview' { [Xdzip.WindowsCapture.Driver]::ReadyObject($process.Id, $mainWindow, $catalog.messages.'preview.action', 'contentPreviewText') }
     Save-Scene '01-browse' $mainWindow '' @{ tab = $browseName; selected = 'README.md'; view = 'list' }
 
     Select-Tab $photoName
     Select-File 'coastline.png'
-    Invoke-Control $mainWindow $catalog.messages.'preview.action' 'Button'
-    Wait-Control $mainWindow $catalog.messages.'preview.again' 'Button'
     Wait-State 'loaded image preview' { [Xdzip.WindowsCapture.Driver]::ReadyObject($process.Id, $mainWindow, 'coastline.png', 'contentPreviewImage') }
     Save-Scene '03-preview' $mainWindow '' @{ tab = $photoName; selected = 'coastline.png'; preview = 'image' }
 

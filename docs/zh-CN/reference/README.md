@@ -31,7 +31,7 @@
 - [大归档索引与按需浏览](../engineering/large-index.md)
 - [分卷读取与临时打开](../engineering/archive-opening.md)
 - [文件名编码自适应契约](../engineering/filename-encoding.md)
-- [主动内容预览](../engineering/content-preview.md)
+- [内容预览](../engineering/content-preview.md)
 - [解压预检：元数据阶段](../engineering/extraction-preflight.md)
 - [安全 ZIP 解压实现](../engineering/zip-safe-extraction.md)
 - [压缩包完整性检查](../engineering/archive-checking.md)

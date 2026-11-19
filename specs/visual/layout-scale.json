@@ -105,7 +105,13 @@
       ],
       "reference": "design/hifi/sources/content-preview.html",
       "iconSize": 48,
-      "spinnerSize": 32
+      "spinnerSize": 32,
+      "refresh": {
+        "size": 28,
+        "radius": 3,
+        "inset": 6,
+        "glyphSize": 16
+      }
     }
   },
   "operation": {
