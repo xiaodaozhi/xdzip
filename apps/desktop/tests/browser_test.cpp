@@ -16003,6 +16003,218 @@ QtObject {
         }
         QTest::keyClick(window, Qt::Key_Escape);
     }
+    void archiveEntryEditMenus_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<double>("scale");
+        QTest::addColumn<bool>("dark");
+        for (const auto &language : {QString("zh-CN"), QString("en-US")}) {
+            for (double scale : {1., 1.25, 1.5}) {
+                for (bool dark : {false, true}) {
+                    const auto label =
+                        QString("%1-%2-%3").arg(language).arg(scale).arg(dark ? "dark" : "light");
+                    QTest::newRow(qPrintable(label)) << language << scale << dark;
+                }
+            }
+        }
+    }
+    void archiveEntryEditMenus() {
+        QFETCH(QString, language);
+        QFETCH(double, scale);
+        QFETCH(bool, dark);
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir fixture;
+        QVERIFY(fixture.isValid());
+        const auto source = fixture.filePath("edit.zip");
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/visual-main.zip"), source));
+        const auto readBytes = [&] {
+            QFile file(source);
+            return file.open(QIODevice::ReadOnly) ? file.readAll() : QByteArray{};
+        };
+        const auto original = readBytes();
+        QVERIFY(!original.isEmpty());
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(preferences->saveDetails(dark ? "dark" : "light", scale, language, "standard",
+                                         false, false, false, "tabs"));
+        QVERIFY(controller && QTest::qWaitForWindowExposed(window));
+        controller->openPath(source);
+        QTRY_VERIFY(controller->ready() && !controller->browsingBusy());
+        QVERIFY(controller->canUpdateArchive());
+
+        auto *menu = window->findChild<QObject *>("browserEntryMenu");
+        auto *rename = window->findChild<QQuickItem *>("contextRenameEntry");
+        auto *remove = window->findChild<QQuickItem *>("contextDeleteEntries");
+        auto *dialog = window->findChild<QQuickWindow *>("archiveEntryEditWindow");
+        auto *task = window->findChild<QQuickWindow *>("taskWindow");
+        QVERIFY(menu && rename && remove && dialog && task);
+        const auto click = [](QQuickItem *item, Qt::MouseButton button = Qt::LeftButton) {
+            QTest::mouseClick(
+                item->window(), button, Qt::NoModifier,
+                item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint());
+        };
+        const auto pressDialogKey = [&](Qt::Key key) {
+            // Some Cocoa test launches have no foreground window. Verify the focused
+            // Qt control's key path without requiring activation of another app.
+            if (QGuiApplication::focusWindow() == dialog) {
+                QTest::keyClick(dialog, key);
+            } else {
+                auto *focused = dialog->activeFocusItem();
+                QVERIFY(focused);
+                QKeyEvent press(QEvent::KeyPress, key, Qt::NoModifier);
+                QCoreApplication::sendEvent(focused, &press);
+            }
+        };
+        const auto rowFor = [&](const QString &name) {
+            auto *model = controller->entries();
+            for (int i = 0; i < model->rowCount(); ++i)
+                if (model->data(model->index(i, 0), Qt::DisplayRole).toString() == name)
+                    return i;
+            return -1;
+        };
+        const auto rowItem = [&](int row, bool grid = false) {
+            return findVisual(window->contentItem(), grid ? QString("grid-entry-%1").arg(row)
+                                                          : QString("entry-%1-0").arg(row));
+        };
+        const QString oldName = QStringLiteral("旅行清单.txt");
+        const QString folder = QStringLiteral("01 照片");
+        const int fileRow = rowFor(oldName), directoryRow = rowFor(folder);
+        QVERIFY(fileRow >= 0 && directoryRow >= 0);
+        controller->selectOnlyRow(directoryRow);
+        controller->selectRow(fileRow);
+        QQuickItem *cell = nullptr;
+        QTRY_VERIFY((cell = rowItem(fileRow)));
+        click(cell, Qt::RightButton);
+        QTRY_VERIFY(menu->property("visible").toBool());
+        QCOMPARE(controller->selectedCount(), 2);
+        QVERIFY(rename->isVisible() && !rename->isEnabled());
+        QVERIFY(remove->isVisible() && remove->isEnabled());
+        auto *label = findVisual(remove, "contextDeleteEntriesLabel");
+        auto *fileLabel = findVisual(cell, QString("entryName-%1").arg(fileRow));
+        QVERIFY(label && fileLabel);
+        const auto menuFont = label->property("font").value<QFont>().pixelSize();
+        const auto fileFont = fileLabel->property("font").value<QFont>().pixelSize();
+        QVERIFY(fileFont > 0 && qreal(menuFont) / fileFont >= .95 &&
+                qreal(menuFont) / fileFont <= 1.10);
+        QVERIFY(remove->height() >= 32);
+        QVERIFY(label->property("contentWidth").toReal() <= label->width() + 1);
+        const auto audit = qEnvironmentVariable("XDZIP_ENTRY_EDIT_AUDIT");
+        const auto tag = QString::fromLatin1(QTest::currentDataTag());
+        if (!audit.isEmpty()) {
+            QVERIFY(QDir().mkpath(audit));
+            QVERIFY(visual_audit::save(window, audit, "entry-menu-" + tag));
+        }
+        click(remove);
+        QTRY_VERIFY(dialog->isVisible());
+        auto *cancel = findVisual(dialog->contentItem(), "archiveEntryEditCancel");
+        QVERIFY(cancel);
+        QTRY_VERIFY(cancel->hasActiveFocus());
+        QCOMPARE(dialog->width(), 491);
+        QCOMPARE(dialog->property("intent").toMap().value("count").toInt(), 2);
+        QVERIFY(dialog->property("intent").toMap().value("includesDirectory").toBool());
+        if (!audit.isEmpty())
+            QVERIFY(visual_audit::save(dialog, audit, "entry-delete-" + tag));
+        QTRY_VERIFY(!menu->property("visible").toBool());
+        pressDialogKey(Qt::Key_Escape);
+        QTRY_VERIFY(!dialog->isVisible());
+        QCOMPARE(readBytes(), original);
+        QCOMPARE(controller->activeTaskCount(), 0);
+
+        // Opening a new context on an unselected row replaces the previous batch.
+        const auto otherName = QStringLiteral("行程手册.pdf");
+        const int other = rowFor(otherName);
+        QVERIFY(other >= 0);
+        QTRY_VERIFY((cell = rowItem(other)));
+        click(cell, Qt::RightButton);
+        QTRY_VERIFY(menu->property("visible").toBool());
+        QCOMPARE(controller->selectedCount(), 1);
+        QVERIFY(rename->isEnabled());
+        click(rename);
+        QTRY_VERIFY(dialog->isVisible());
+        const auto stale = dialog->property("token").toString();
+        controller->selectOnlyRow(fileRow);
+        QTRY_VERIFY(!dialog->isVisible());
+        QVERIFY(!controller->startEntryEdit(stale, "stale.pdf"));
+        QCOMPARE(readBytes(), original);
+
+        QTRY_VERIFY((cell = rowItem(fileRow)));
+        click(cell, Qt::RightButton);
+        QTRY_VERIFY(menu->property("visible").toBool());
+        click(rename);
+        QTRY_VERIFY(dialog->isVisible());
+        auto *field = findVisual(dialog->contentItem(), "archiveEntryNameField");
+        auto *confirm = findVisual(dialog->contentItem(), "archiveEntryEditConfirm");
+        QVERIFY(field && confirm);
+        QTRY_VERIFY(field->hasActiveFocus());
+        QCOMPARE(field->property("text").toString(), oldName);
+        QCOMPARE(field->property("selectedText").toString(), QStringLiteral("旅行清单"));
+        QVERIFY(!confirm->isEnabled());
+        QVERIFY(field->setProperty("text", "../escape.txt"));
+        QVERIFY(!confirm->isEnabled());
+        QVERIFY(findVisual(dialog->contentItem(), "archiveEntryNameError")->isVisible());
+        if (!audit.isEmpty())
+            QVERIFY(visual_audit::save(dialog, audit, "entry-rename-" + tag));
+        QVERIFY(field->setProperty("text", "new-name.txt"));
+        QTRY_VERIFY(confirm->isEnabled());
+        pressDialogKey(Qt::Key_Return);
+        QTRY_VERIFY(!dialog->isVisible());
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->browsingBusy() &&
+                                     rowFor("new-name.txt") >= 0,
+                                 10000);
+        QCOMPARE(rowFor(oldName), -1);
+        QCOMPARE(controller->selectedCount(), 0);
+        QVERIFY(controller->tasks().last().toMap().value("kind") == "rename");
+        QCOMPARE(controller->tasks().last().toMap().value("status").toString(), "succeeded");
+        task->close();
+
+        QVERIFY(window->setProperty("viewMode", "grid"));
+        const int renamed = rowFor("new-name.txt");
+        controller->selectOnlyRow(rowFor(folder));
+        controller->selectRow(renamed);
+        QTRY_VERIFY((cell = rowItem(renamed, true)));
+        click(cell, Qt::RightButton);
+        QTRY_VERIFY(menu->property("visible").toBool());
+        QVERIFY(remove->isEnabled() && !rename->isEnabled());
+        click(remove);
+        QTRY_VERIFY(dialog->isVisible());
+        confirm = findVisual(dialog->contentItem(), "archiveEntryEditConfirm");
+        QVERIFY(confirm && confirm->isEnabled());
+        click(confirm);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->browsingBusy() &&
+                                     rowFor("new-name.txt") < 0,
+                                 10000);
+        QCOMPARE(rowFor(folder), -1);
+        QVERIFY(rowFor(otherName) >= 0);
+        QCOMPARE(controller->selectedCount(), 0);
+        const auto tasks = controller->tasks();
+        QVERIFY(std::any_of(tasks.cbegin(), tasks.cend(), [](const QVariant &value) {
+            const auto snapshot = value.toMap();
+            return snapshot.value("kind") == "delete" && snapshot.value("status") == "succeeded";
+        }));
+        task->close();
+
+        controller->search(otherName);
+        QTRY_VERIFY(!controller->busy() && controller->total() == 1);
+        QTRY_VERIFY((cell = rowItem(0, true)));
+        click(cell, Qt::RightButton);
+        QTRY_VERIFY(menu->property("visible").toBool());
+        QVERIFY(!rename->isVisible() && !remove->isVisible());
+        QVERIFY(QMetaObject::invokeMethod(menu, "close"));
+        QTRY_VERIFY(!menu->property("visible").toBool());
+        controller->openPath(QStringLiteral(XDZIP_READONLY_FIXTURES "/named.cab"));
+        QTRY_VERIFY(controller->ready() && !controller->busy() && controller->total() > 0);
+        QTRY_VERIFY((cell = rowItem(0, true)));
+        click(cell, Qt::RightButton);
+        QTRY_VERIFY(menu->property("visible").toBool());
+        QVERIFY(!rename->isVisible() && !remove->isVisible());
+        QVERIFY(QMetaObject::invokeMethod(menu, "close"));
+        QTRY_VERIFY(!menu->property("visible").toBool());
+    }
     void unicodeSourcePath() {
         QTemporaryDir directory;
         QVERIFY(directory.isValid());

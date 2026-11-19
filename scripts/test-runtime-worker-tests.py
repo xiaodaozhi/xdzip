@@ -93,13 +93,13 @@ class RuntimeInventoryTests(unittest.TestCase):
         declared = CHECK.inventory()
         actual = set()
         for path in (ROOT/'crates/xdzip-runtime/src').rglob('*.rs'):
-            module = 'extraction::tests' if path.name == 'tests.rs' else path.stem
+            module = '::'.join(path.relative_to(ROOT/'crates/xdzip-runtime/src').with_suffix('').parts)
             for name in re.findall(r'#\[ignore[^\n]*\]\s*fn\s+(\w+)', path.read_text(encoding='utf-8')):
                 actual.add(module+'::'+name)
         self.assertEqual(actual, {case['name'] for case in declared})
-        self.assertEqual(len(CHECK.select(declared, 'worker', [])), 24)
+        self.assertEqual(len(CHECK.select(declared, 'worker', [])), 25)
         self.assertEqual(len(CHECK.select(declared, 'large', [])), 4)
-        self.assertEqual(len(CHECK.select(declared, None, [])), 28)
+        self.assertEqual(len(CHECK.select(declared, None, [])), 29)
 
     def test_explicit_retry_cannot_select_nothing_or_duplicate_a_case(self):
         cases = CHECK.inventory()

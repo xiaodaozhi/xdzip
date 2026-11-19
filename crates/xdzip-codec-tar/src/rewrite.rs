@@ -260,8 +260,14 @@ impl RewriteCodec for TarCodec {
             .stream(original, cancel, STREAM_LIMIT)
             .map_err(|_| EncodeError::Source)?;
         if self.filter == Filter::Gzip {
-            let mut encoder =
-                GzipWriter::new(output, input.settings.level).map_err(|_| EncodeError::Invalid)?;
+            let empty =
+                !input.keep.iter().any(|keep| *keep) && input.additions.entries().is_empty();
+            let mut encoder = if empty {
+                GzipWriter::for_empty_tar(output, input.settings.level)
+            } else {
+                GzipWriter::new(output, input.settings.level)
+            }
+            .map_err(|_| EncodeError::Invalid)?;
             copy_records(&mut reader, &mut encoder, input.keep, input.renames, cancel).map_err(
                 |error| {
                     if cancel.check().is_err() {

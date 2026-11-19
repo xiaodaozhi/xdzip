@@ -215,6 +215,10 @@ pub struct Outcome {
 pub enum TaskKind {
     /// Move archive entries through a verified whole-container rewrite.
     Move,
+    /// Rename one archive entry through a verified whole-container rewrite.
+    Rename,
+    /// Remove archive entries through a verified whole-container rewrite.
+    Delete,
     /// Publish a prepared private item to a native file-promise destination.
     ExportCopy,
     /// Verified private copies offered to an external copy operation.
@@ -238,6 +242,8 @@ impl TaskKind {
             Self::Create => "create",
             Self::Update => "update",
             Self::Move => "move",
+            Self::Rename => "rename",
+            Self::Delete => "delete",
             Self::Check => "check",
         }
     }

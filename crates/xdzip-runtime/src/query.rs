@@ -85,6 +85,22 @@ pub struct QueryRequest<'a> {
     pub generation: u64,
 }
 impl Archive {
+    pub(crate) fn validate_directory_selectors(
+        &self,
+        selected: &[String],
+        directory: &str,
+    ) -> Result<(), &'static str> {
+        if selected.iter().any(|id| id.starts_with('q'))
+            && !self
+                .cached_query
+                .as_ref()
+                .is_some_and(|query| query.directory == directory && query.text.is_empty())
+        {
+            return Err("stale_query");
+        }
+        Ok(())
+    }
+
     /// Freeze logical ranges against the complete immutable query identity.
     /// Returned selectors retain the independent 100,000-item task limit.
     pub(crate) fn resolve_query_selectors(

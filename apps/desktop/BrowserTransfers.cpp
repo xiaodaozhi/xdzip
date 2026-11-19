@@ -13,6 +13,7 @@
 #include <QStandardPaths>
 #include <QUuid>
 #include <algorithm>
+#include <utility>
 
 QString BrowserController::addDropMessage() const {
     if (!m_updateAllowed)
@@ -146,11 +147,8 @@ void BrowserController::moveInternalDrag(const QString &token, const QString &ta
     command.conflict = 0;
     for (const auto &id : m_moveSelectors)
         command.selectors.emplace_back(id.toStdString());
-    m_updateLocation = m_location;
-    m_updateSort = m_sort;
-    m_extractionIntent = {{"archive", m_title}, {"target", m_sourcePath}};
     cancelInternalDrag(token);
-    submit(std::move(command));
+    submitArchiveEdit(std::move(command));
 }
 void BrowserController::exportInternalDrag(const QString &token, QWindow *owner) {
     if (!internalDragCurrent(token))
@@ -203,16 +201,88 @@ void BrowserController::startUpdate(const QStringList &inputs, const QString &se
         return;
     xdzip::reader::Command command{};
     command.kind = xdzip::reader::CommandKind::Update;
-    m_updateLocation = m_location;
-    m_updateSort = m_sort;
     command.session = session.toULongLong();
     command.directory = directory.toStdString();
     command.conflict = static_cast<std::uint8_t>(conflict);
     for (const auto &path : inputs)
         command.inputs.emplace_back(path.toStdString());
+    submitArchiveEdit(std::move(command));
+}
+void BrowserController::submitArchiveEdit(xdzip::reader::Command command) {
+    m_updateLocation = m_location;
+    m_updateSort = m_sort;
     m_extractionIntent = {{"archive", m_title}, {"target", m_sourcePath}};
     submit(std::move(command));
 }
+QVariantMap BrowserController::prepareEntryEdit(int row, const QString &session,
+                                                const QString &entryId, bool rename) {
+    const auto *entry = m_model.rowAt(row);
+    const int count = m_model.selectedCount();
+    if (!canUpdateArchive() || m_busy || m_closing || session != m_session || !entry ||
+        entry->id != entryId || !m_model.isSelected(row) || count == 0 || (rename && count != 1))
+        return {};
+    const auto token = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    m_entryEdit = EntryEditIntent{token,
+                                  m_session,
+                                  m_directory,
+                                  entry->cells.value(0),
+                                  m_model.selectedIds(),
+                                  m_generation,
+                                  m_model.selectionRevision(),
+                                  rename};
+    bool includesDirectory = entry->directory;
+    if (!rename && count > 1) {
+        int known = 0;
+        for (int index : m_model.cachedRows()) {
+            if (m_model.isSelected(index)) {
+                ++known;
+                includesDirectory |= m_model.rowAt(index)->directory;
+            }
+        }
+        // Uncached rows can only matter if an editable paged source is available.
+        includesDirectory |= known < count;
+    }
+    return {{"token", token},
+            {"name", m_entryEdit->originalName},
+            {"count", count},
+            {"directory", entry->directory},
+            {"includesDirectory", includesDirectory},
+            {"rename", rename}};
+}
+bool BrowserController::entryEditCurrent(const QString &token) const {
+    return m_entryEdit && m_entryEdit->token == token && canUpdateArchive() && !m_busy &&
+           !m_closing && m_entryEdit->session == m_session &&
+           m_entryEdit->directory == m_directory && m_entryEdit->generation == m_generation &&
+           m_entryEdit->selectionRevision == m_model.selectionRevision();
+}
+void BrowserController::discardEntryEdit(const QString &token) {
+    if (m_entryEdit && m_entryEdit->token == token)
+        m_entryEdit.reset();
+}
+bool BrowserController::validEntryName(const QString &name) const {
+    if (name.size() > 255 || !name.isValidUtf16())
+        return false;
+    const auto utf8 = name.toUtf8();
+    return xdzip::reader::valid_entry_name(rust::Str(utf8.constData(), utf8.size()));
+}
+bool BrowserController::startEntryEdit(const QString &token, const QString &name) {
+    if (!entryEditCurrent(token) ||
+        (m_entryEdit->rename && (name == m_entryEdit->originalName || !validEntryName(name))))
+        return false;
+    auto intent = std::exchange(m_entryEdit, std::nullopt);
+    xdzip::reader::Command command{};
+    command.kind = intent->rename ? xdzip::reader::CommandKind::RenameEntry
+                                  : xdzip::reader::CommandKind::DeleteEntries;
+    command.session = intent->session.toULongLong();
+    command.directory = intent->directory.toStdString();
+    if (intent->rename)
+        command.text = name.toStdString();
+    for (const auto &id : intent->selectors)
+        command.selectors.emplace_back(id.toStdString());
+    submitArchiveEdit(std::move(command));
+    return true;
+}
+
 void BrowserController::beginExport(int row, QWindow *owner) {
     if (!m_ready || m_busy || m_closing || m_updateActive || !owner || !m_model.rowAt(row))
         return;

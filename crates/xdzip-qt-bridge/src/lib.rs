@@ -41,6 +41,8 @@ mod ffi {
         Export,
         ExportManifest,
         Move,
+        RenameEntry,
+        DeleteEntries,
     }
     struct MetadataLimits {
         entries: u64,
@@ -212,6 +214,7 @@ mod ffi {
         type EventReceiver;
         fn metadata_limits() -> MetadataLimits;
         fn supports_preview_name(name: &str) -> bool;
+        fn valid_entry_name(name: &str) -> bool;
         fn sum_declared_sizes(values: &[u64]) -> String;
         fn new_runtime() -> Result<Box<Runtime>>;
         fn take_client(self: &mut Runtime) -> Result<Box<CommandClient>>;
@@ -241,6 +244,11 @@ pub fn metadata_limits() -> ffi::MetadataLimits {
         rows_per_batch: 128,
     }
 }
+/// Syntax-only check for immediate feedback in the rename field.
+fn valid_entry_name(name: &str) -> bool {
+    xdzip_runtime::updating::valid_entry_name(name)
+}
+
 /// Exact bounded metadata aggregation, without I/O or retaining the borrowed slice.
 pub fn sum_declared_sizes(values: &[u64]) -> String {
     if values.len() > xdzip_codec_api::MAX_ENTRIES {
@@ -398,6 +406,22 @@ impl CommandClient {
                         target: command.path,
                         directory: command.directory,
                         conflict,
+                    },
+                }
+            }
+            ffi::CommandKind::RenameEntry | ffi::CommandKind::DeleteEntries => {
+                use xdzip_runtime::updating::{EntryEdit, EntryEditOptions};
+                let action = if command.kind == ffi::CommandKind::RenameEntry {
+                    EntryEdit::Rename(command.text)
+                } else {
+                    EntryEdit::Delete
+                };
+                Command::EditEntries {
+                    session: command.session,
+                    options: EntryEditOptions {
+                        selected: command.selectors,
+                        directory: command.directory,
+                        action,
                     },
                 }
             }

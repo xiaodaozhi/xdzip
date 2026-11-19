@@ -394,11 +394,38 @@ BrowserController::~BrowserController() {
         m_exportCopy->finish("runtime_closed");
 }
 
+static QString archiveEditOperation(xdzip::reader::CommandKind kind) {
+    using xdzip::reader::CommandKind;
+    switch (kind) {
+    case CommandKind::Update:
+        return QStringLiteral("add");
+    case CommandKind::Move:
+        return QStringLiteral("move");
+    case CommandKind::RenameEntry:
+        return QStringLiteral("rename");
+    case CommandKind::DeleteEntries:
+        return QStringLiteral("delete");
+    default:
+        return {};
+    }
+}
+
+static bool isEntryEdit(const QString &kind) {
+    return kind == "rename" || kind == "delete";
+}
+
+static bool isArchiveEditTask(const QString &kind) {
+    return kind == "update" || kind == "move" || isEntryEdit(kind);
+}
+
 QString BrowserController::explain(const QString &code) {
     if (code.isEmpty())
         return {};
     const QHash<QString, QString> taskErrors = {
         {"move_same_directory", qtTrId("move.same")},
+        {"entry_name_invalid", qtTrId("entry.edit.invalidName")},
+        {"entry_name_unchanged", qtTrId("entry.edit.unchangedName")},
+        {"entry_name_exists", qtTrId("entry.edit.nameExists")},
         {"move_selected_directory", qtTrId("move.selected")},
         {"task_abandoned", qtTrId("ui.cc72ffea1705")},
         {"integrity_error", qtTrId("ui.6adbf73c75b1")},
@@ -1271,7 +1298,7 @@ void BrowserController::cancelTask(const QString &id) {
         m_cancellingTasks.insert(task);
         const auto state = m_tasks.value(task);
         if ((state.value("session").toString() == m_session &&
-             (state.value("kind") == "update" || state.value("kind") == "move")) ||
+             isArchiveEditTask(state.value("kind").toString())) ||
             (m_result.updating && (m_result.taskId == id || m_result.observedTask == task)))
             m_archiveCancellationRequested = true;
         emit tasksChanged();
@@ -1410,7 +1437,7 @@ void BrowserController::cancel() {
         for (auto task = m_tasks.cbegin(); task != m_tasks.cend(); ++task)
             if (!task->value("terminal").toBool() &&
                 task->value("session").toString() == m_session &&
-                (task->value("kind") == "update" || task->value("kind") == "move")) {
+                isArchiveEditTask(task->value("kind").toString())) {
                 cancelTask(QString::number(task.key()));
                 return;
             }
@@ -1706,10 +1733,11 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
         command.kind == xdzip::reader::CommandKind::Browse && command.query != 0 && m_model.paged();
     m_result.extraction = command.kind == xdzip::reader::CommandKind::Extract ||
                           command.kind == xdzip::reader::CommandKind::OpenEntry;
-    m_result.updating = command.kind == xdzip::reader::CommandKind::Update ||
-                        command.kind == xdzip::reader::CommandKind::Move;
+    const auto edit = archiveEditOperation(command.kind);
+    m_entryEditError.clear();
+    m_result.updating = !edit.isEmpty();
     if (m_result.updating) {
-        m_archiveOperation = command.kind == xdzip::reader::CommandKind::Move ? "move" : "add";
+        m_archiveOperation = edit;
         m_archiveCancellationRequested = false;
     }
     m_result.exporting = command.kind == xdzip::reader::CommandKind::Export ||
@@ -1745,8 +1773,7 @@ void BrowserController::attemptSubmission() {
     // queued controller retains its bounded command and remains cancellable.
     static QPointer<BrowserController> heavyOwner;
     const bool heavy = m_waiting->kind == xdzip::reader::CommandKind::PublishExport ||
-                       m_waiting->kind == xdzip::reader::CommandKind::Update ||
-                       m_waiting->kind == xdzip::reader::CommandKind::Move ||
+                       !archiveEditOperation(m_waiting->kind).isEmpty() ||
                        m_waiting->kind == xdzip::reader::CommandKind::Export ||
                        m_waiting->kind == xdzip::reader::CommandKind::Create ||
                        m_waiting->kind == xdzip::reader::CommandKind::OpenEntry ||
@@ -1801,8 +1828,11 @@ void BrowserController::attemptSubmission() {
         m_message = explain(code);
         if (m_result.creating)
             m_creationError = m_message;
-        if (m_result.updating)
+        if (m_result.updating) {
+            if (isEntryEdit(m_archiveOperation))
+                m_entryEditError = m_message;
             m_archiveOperation.clear();
+        }
         if (m_result.exporting && m_export)
             m_export->finish({}, "runtime_unavailable");
         if (m_exportCopy) {
@@ -1943,7 +1973,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_tasks.insert(t.id, value);
         if (firstSuccess && !t.open_path.empty())
             openTemporaryOutput(t.id);
-        if ((text(t.kind) == "update" || text(t.kind) == "move") && terminal &&
+        if (isArchiveEditTask(text(t.kind)) && terminal &&
             !m_tasks.value(t.id).value("updateRefreshed").toBool()) {
             m_tasks[t.id].insert("updateRefreshed", true);
             const auto session = QString::number(t.session), source = text(t.source);
@@ -2375,8 +2405,11 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             if (creating)
                 m_creationError = m_result.error.isEmpty() ? QString{} : m_message;
             const QString taskId = m_result.taskId;
-            if (updating && taskId.isEmpty())
+            if (updating && taskId.isEmpty()) {
+                if (isEntryEdit(m_archiveOperation))
+                    m_entryEditError = m_message;
                 m_archiveOperation.clear();
+            }
             m_extractionIntent.insert("error", m_message);
             if (m_result.error == "source_changed" || m_result.error == "stale_session")
                 invalidateSnapshot();

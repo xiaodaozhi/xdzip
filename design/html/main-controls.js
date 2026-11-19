@@ -630,6 +630,21 @@ window.XdzipMain = (() => {
             { id: "view-menu", label: "视图", children: viewItems() },
             { id: "sort-menu", label: "排序方式", children: sortItems() },
         );
+        if (target && ready() && !state.query && !jobRunning()) {
+            const selected = [...state.selected].map(id => byId.get(id));
+            items.push(
+                separator(),
+                {
+                    id: "rename-entry", label: confirmationText("entry.edit.rename"),
+                    disabled: selected.length !== 1, reason: confirmationText("entry.edit.singleSelection"),
+                    run: () => showArchiveEntryEdit("rename", selected),
+                },
+                {
+                    id: "delete-entries", label: confirmationText("entry.edit.delete"), danger: true,
+                    run: () => showArchiveEntryEdit("delete", selected),
+                },
+            );
+        }
         const restored = entryId
             ? () => entryNode(entryId)
             : $(".table-scroll");

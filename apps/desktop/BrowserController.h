@@ -124,6 +124,7 @@ class BrowserController : public QObject {
     Q_PROPERTY(bool taskStarting READ taskStarting NOTIFY changed)
     Q_PROPERTY(bool browsingBusy READ browsingBusy NOTIFY changed)
     Q_PROPERTY(QString archiveOperation READ archiveOperation NOTIFY changed)
+    Q_PROPERTY(QString entryEditError READ entryEditError NOTIFY changed)
     Q_PROPERTY(bool archiveCancelling READ archiveCancelling NOTIFY changed)
     Q_PROPERTY(bool browserQueryAvailable READ browserQueryAvailable NOTIFY changed)
     Q_PROPERTY(bool queryAvailable READ queryAvailable NOTIFY changed)
@@ -227,6 +228,9 @@ class BrowserController : public QObject {
     QString archiveOperation() const {
         return runtimeAvailable() && browsingBusy() ? m_archiveOperation : QString{};
     }
+    QString entryEditError() const {
+        return m_entryEditError;
+    }
     bool archiveCancelling() const {
         return !archiveOperation().isEmpty() && m_archiveCancellationRequested;
     }
@@ -312,6 +316,12 @@ class BrowserController : public QObject {
     Q_INVOKABLE void addDroppedUrls(const QList<QUrl> &urls);
     Q_INVOKABLE void startUpdate(const QStringList &inputs, const QString &session,
                                  const QString &directory, int conflict);
+    Q_INVOKABLE QVariantMap prepareEntryEdit(int row, const QString &session,
+                                             const QString &entryId, bool rename);
+    Q_INVOKABLE bool entryEditCurrent(const QString &token) const;
+    Q_INVOKABLE void discardEntryEdit(const QString &token);
+    Q_INVOKABLE bool validEntryName(const QString &name) const;
+    Q_INVOKABLE bool startEntryEdit(const QString &token, const QString &name);
     Q_INVOKABLE QString directoryForRow(int row) const;
     Q_INVOKABLE QString beginInternalDrag(int row, QWindow *owner = nullptr);
     Q_INVOKABLE bool internalDragCurrent(const QString &token) const;
@@ -522,6 +532,14 @@ class BrowserController : public QObject {
     bool handleTransferEvent(const xdzip::reader::Event &event);
     void handleTransferTask(const xdzip::reader::TaskSnapshot &task);
     QString editUnavailableMessage() const;
+    void submitArchiveEdit(xdzip::reader::Command command);
+    struct EntryEditIntent {
+        QString token, session, directory, originalName;
+        QStringList selectors;
+        quint64 generation, selectionRevision;
+        bool rename;
+    };
+    std::optional<EntryEditIntent> m_entryEdit;
     int m_editRestriction = 4;
     QString m_moveToken, m_moveSession, m_moveDirectory, m_moveAnchor;
     QStringList m_moveSelectors;
@@ -531,6 +549,7 @@ class BrowserController : public QObject {
     bool m_updateAllowed = false;
     bool m_updateActive = false;
     QString m_archiveOperation;
+    QString m_entryEditError;
     bool m_archiveCancellationRequested = false;
     bool m_restoreAfterUpdate = false;
     QString m_updateLocation;

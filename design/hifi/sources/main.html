@@ -59,7 +59,12 @@ frame.addEventListener('load',async()=>{
     await Promise.all([...doc.images].map(image=>image.decode()));
     const menu=query.get('menu');
     if(menu==='extract')doc.querySelector('#extract-menu-button').click();
-    else if(['directory-root','directory-leaf','context','submenu'].includes(menu)){
+    else if(['directory-root','directory-leaf','context','submenu','archive-entry-edit'].includes(menu)){
+        const editing=query.get('edit');
+        if(editing==='multiple'){
+            doc.querySelector('#file-rows [data-id="lake"] input').click();
+            doc.querySelector('#file-rows [data-id="guide"] input').click();
+        }
         const selector=menu==='directory-root'?'.tree-root[data-directory=""]':
             menu==='directory-leaf'?'[data-directory="maps"]':'#file-rows [data-id="lake"]';
         const target=doc.querySelector(selector),rect=target.getBoundingClientRect();
@@ -72,8 +77,12 @@ frame.addEventListener('load',async()=>{
             item.dispatchEvent(new frame.contentWindow.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));
         }
     }
+    if (menu==='archive-entry-edit' && query.has('edit')){
+        const command=query.get('edit')==='rename'?'rename-entry':'delete-entries';
+        doc.querySelector(`[data-command="${command}"]`)?.click();
+    }
     document.documentElement.dataset.ready='true';
 });
-frame.src='../../html/canvas.html?view=main';
+frame.src='../../html/canvas.html?view=main&lang='+(query.get('lang')==='en-US'?'en-US':'zh-CN');
 </script>
 </body></html>

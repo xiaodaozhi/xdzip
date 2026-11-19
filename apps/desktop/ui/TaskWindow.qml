@@ -14,8 +14,12 @@ OperationWindow {
     property bool creating: false
     property string operationKind: creating ? "create" : "extract"
     readonly property bool checking: operationKind === "check"
+    readonly property bool entryEdit: operationKind === "rename" || operationKind === "delete"
+    readonly property string entryEditHeading: operationKind === "rename"
+        ? (terminal ? qsTrId("entry.edit.renameResult") : qsTrId("entry.edit.renaming"))
+        : (terminal ? qsTrId("entry.edit.deleteResult") : qsTrId("entry.edit.deleting"))
     property bool sampleData: false
-    title: operationKind === "move" ? (terminal ? qsTrId("move.result") : qsTrId("move.progress")) : operationKind === "update" ? (terminal ? qsTrId("update.result") : qsTrId("update.progress")) : operationKind === "export" || operationKind === "export-copy" ? (terminal ? qsTrId("export.result") : qsTrId("export.preparing")) : checking ? sampleData ? qsTrId("ui.09fb2202dff9") : qsTrId("ui.06840dd516fe") : sampleData ? qsTrId("ui.cbd8ddd9b2b3") : terminal ? creating ? qsTrId("ui.ecabd6e05c84") : qsTrId("ui.7525c4c57b28") : creating ? qsTrId("ui.7d33a8f142f9") : qsTrId("ui.60483c3431b0")
+    title: entryEdit ? entryEditHeading : operationKind === "move" ? (terminal ? qsTrId("move.result") : qsTrId("move.progress")) : operationKind === "update" ? (terminal ? qsTrId("update.result") : qsTrId("update.progress")) : operationKind === "export" || operationKind === "export-copy" ? (terminal ? qsTrId("export.result") : qsTrId("export.preparing")) : checking ? sampleData ? qsTrId("ui.09fb2202dff9") : qsTrId("ui.06840dd516fe") : sampleData ? qsTrId("ui.cbd8ddd9b2b3") : terminal ? creating ? qsTrId("ui.ecabd6e05c84") : qsTrId("ui.7525c4c57b28") : creating ? qsTrId("ui.7d33a8f142f9") : qsTrId("ui.60483c3431b0")
     allowMinimize: true
     required property string archiveName
     required property string destination
@@ -47,7 +51,7 @@ OperationWindow {
     }
     readonly property alias timingHint: timingHint
     readonly property alias closingHint: footer.hint
-    readonly property string heading: operationKind === "move" ? (terminal ? qsTrId("move.result") : qsTrId("move.progress")) : operationKind === "update" ? (terminal ? qsTrId("update.result") : qsTrId("update.progress")) : operationKind === "export" || operationKind === "export-copy" ? (terminal ? qsTrId("export.result") : qsTrId("export.preparing")) : checking ? taskStatus === "succeeded" ? qsTrId("ui.67ec0b18537f") : taskStatus === "failed" ? qsTrId("ui.b327e25dbc82") : taskStatus === "cancelled" ? qsTrId("ui.ce9bc029cc7e") : stopping ? qsTrId("ui.619dd70cb582") : taskStatus === "waiting_password" ? qsTrId("password.waiting") : taskStatus === "queued" ? qsTrId("ui.56bbef5868e7") : qsTrId("ui.2ef948f6a64e") : taskStatus === "succeeded" ? (creating ? qsTrId("ui.b58663721975") : qsTrId("ui.49e8128e1a96"))
+    readonly property string heading: entryEdit ? entryEditHeading : operationKind === "move" ? (terminal ? qsTrId("move.result") : qsTrId("move.progress")) : operationKind === "update" ? (terminal ? qsTrId("update.result") : qsTrId("update.progress")) : operationKind === "export" || operationKind === "export-copy" ? (terminal ? qsTrId("export.result") : qsTrId("export.preparing")) : checking ? taskStatus === "succeeded" ? qsTrId("ui.67ec0b18537f") : taskStatus === "failed" ? qsTrId("ui.b327e25dbc82") : taskStatus === "cancelled" ? qsTrId("ui.ce9bc029cc7e") : stopping ? qsTrId("ui.619dd70cb582") : taskStatus === "waiting_password" ? qsTrId("password.waiting") : taskStatus === "queued" ? qsTrId("ui.56bbef5868e7") : qsTrId("ui.2ef948f6a64e") : taskStatus === "succeeded" ? (creating ? qsTrId("ui.b58663721975") : qsTrId("ui.49e8128e1a96"))
         : taskStatus === "failed" ? (creating ? qsTrId("ui.b5926b78a037") : Number(resultTask.committedFiles || 0) > 0 ? qsTrId("ui.cf06124d3ffd") : qsTrId("ui.5bef0b169e84")) : taskStatus === "cancelled" ? qsTrId("ui.6f96c2add214")
         : taskStatus === "waiting" ? qsTrId("ui.00b405cb9dd9") : taskStatus === "waiting_password" ? qsTrId("password.waiting") : stopping ? qsTrId("ui.af48159f380f")
         : taskStatus === "queued" ? qsTrId("ui.402ce5b3351f") : taskStatus === "verifying" ? qsTrId("ui.ceecf5089636") : (creating ? qsTrId("ui.34ee864936c6") : qsTrId("ui.09eb6850c88c"))
@@ -66,7 +70,11 @@ OperationWindow {
                     Layout.fillWidth: true
                     source: "qrc:/xdzip/assets/" + (root.terminal ? root.taskStatus === "succeeded" ? "success-large" : root.taskStatus === "cancelled" ? "cancelled-large" : "document-warning" : root.checking ? (Theme.dark ? "dark/document-check" : "document-check") : root.creating ? (Theme.dark ? "dark/archive-add-large" : "archive-add-large") : "document-download") + ".png"
                     title: root.heading
-                    subtitle: root.checking ? root.archiveName : root.terminal ? root.creating ? root.taskStatus === "succeeded" ? qsTrId("ui.d7776832f17e") : root.outcomeUncertain ? qsTrId("ui.c96310851765") : qsTrId("ui.bd737a972601") : qsTrId("ui.d78e5fd4e099") : root.archiveName
+                    subtitle: root.checking ? root.archiveName : root.entryEdit && root.terminal
+                        ? (root.taskStatus === "succeeded" ? qsTrId("entry.edit.saved")
+                           : root.taskStatus === "cancelled" ? qsTrId("entry.edit.cancelled")
+                           : qsTrId("entry.edit.failed"))
+                        : root.terminal ? root.creating ? root.taskStatus === "succeeded" ? qsTrId("ui.d7776832f17e") : root.outcomeUncertain ? qsTrId("ui.c96310851765") : qsTrId("ui.bd737a972601") : qsTrId("ui.d78e5fd4e099") : root.archiveName
                     subtitleUserData: root.checking || !root.terminal
                 }
                 ColumnLayout {
@@ -89,7 +97,9 @@ OperationWindow {
                                     Layout.fillWidth: true
                                     value: Number.isFinite(root.fraction) ? Math.max(0, Math.min(1, root.fraction)) : 0
                                     indeterminate: !root.totalKnown
-                                    Accessible.name: root.checking ? qsTrId("ui.928c432129ac") : root.creating ? qsTrId("ui.317cb00c1275") : qsTrId("ui.fcef101b1132")
+                                    Accessible.name: root.entryEdit
+                                        ? (root.operationKind === "rename" ? qsTrId("entry.edit.renameProgress") : qsTrId("entry.edit.deleteProgress"))
+                                        : root.checking ? qsTrId("ui.928c432129ac") : root.creating ? qsTrId("ui.317cb00c1275") : qsTrId("ui.fcef101b1132")
                                     background: Rectangle { implicitHeight: root.unit(Theme.operationProgressTrackHeight); radius: height / 2; color: Theme.taskTrack }
                                     contentItem: Item {
                                         implicitHeight: root.unit(Theme.operationProgressTrackHeight)
@@ -157,8 +167,8 @@ OperationWindow {
             OperationFooterButton { text: root.terminal ? qsTrId("ui.3fd47edce45b") : qsTrId("ui.26867436321f"); onClicked: root.close() }
             OperationFooterButton { visible: root.taskStatus === "waiting"; text: qsTrId("ui.26bd480adc53"); primary: true; onClicked: root.conflictRequested() }
             OperationFooterButton { visible: root.taskStatus === "waiting_password"; text: qsTrId("password.open"); primary: true; onClicked: root.passwordRequested() }
-            OperationFooterButton { objectName: "openOutputButton"; visible: root.terminal && !root.checking; enabled: !root.resultTask.openPath || root.taskStatus === "succeeded"; text: root.resultTask.openPath ? qsTrId("action.openExtractedFile") : qsTrId("ui.aee023c587c7"); onClicked: root.openOutputRequested() }
-            OperationFooterButton { objectName: "cancelButton"; visible: !root.terminal; text: root.stopping ? qsTrId("ui.8a99be840844") : root.checking ? qsTrId("ui.4d761bdef85f") : qsTrId("ui.537d17f1c531"); enabled: !root.stopping; onClicked: root.cancelRequested() }
+            OperationFooterButton { objectName: "openOutputButton"; visible: root.terminal && !root.checking && !root.entryEdit; enabled: !root.resultTask.openPath || root.taskStatus === "succeeded"; text: root.resultTask.openPath ? qsTrId("action.openExtractedFile") : qsTrId("ui.aee023c587c7"); onClicked: root.openOutputRequested() }
+            OperationFooterButton { objectName: "cancelButton"; visible: !root.terminal; text: root.stopping ? qsTrId("ui.8a99be840844") : root.checking ? qsTrId("ui.4d761bdef85f") : root.entryEdit ? (root.operationKind === "rename" ? qsTrId("entry.edit.cancelRename") : qsTrId("entry.edit.cancelDelete")) : qsTrId("ui.537d17f1c531"); enabled: !root.stopping; onClicked: root.cancelRequested() }
         }
     }
 }

@@ -229,6 +229,7 @@ const specs = {
     A01: ["关于 xdzip", "版本与构建来源", "版本信息来自 VERSION.json，Qt 显示实际构建信息。", "复制不含个人文件或路径的信息，关闭后返回原窗口。", "HTML 预览不伪造原生 Qt 版本与 Git 提交。"],
     Q01: ["退出 xdzip", "仍有任务正在进行", "可以等待任务完成，或取消未完成的工作后退出。已提交的文件会保留。", "返回应用", "等待完成，取消并退出"],
     Q02: ["设置", "是否要重启应用使设置生效？", "稍后", "现在重启"],
+    Q03: ["归档条目编辑", "重命名或删除", "单选可重命名，删除支持单选和多选。", "确认前可退出。", "沿用共享确认布局。"],
     S01: [
         "设置",
         "P08 / P11，AC-08 / AC-11",
@@ -1707,6 +1708,42 @@ function confirmationText(id) {
 }
 function confirmationBody(heading, message = "") {
     return `<section class="confirmation-content"><h1>${esc(heading)}</h1>${message ? `<p>${esc(message)}</p>` : ""}</section>`;
+}
+function showArchiveEntryEdit(action, selected) {
+    const t = key => confirmationText("entry.edit." + key);
+    const renaming = action === "rename";
+    const entry = selected[0];
+    const name = displayEntryName(entry);
+    const count = selected.length;
+    const message = count === 1 ? t("deleteOne").replace("%1", () => name)
+        : t("deleteMany").other.replace("%n", count);
+    const field = `<input id="archive-entry-name" aria-label="${esc(t("newName"))}" class="text-input"
+        value="${esc(name)}"><p id="archive-entry-error" role="status" hidden>${esc(t("invalidName"))}</p>`;
+    const deletion = `<p>${esc(message)}</p>${selected.some(item => item.folder)
+        ? `<p>${esc(t("deleteDescendants"))}</p>` : ""}`;
+    dialog(`<section class="confirmation-content"><h1>${esc(t(renaming ? "renameHeading" : "deleteHeading"))}</h1>
+        ${renaming ? field : deletion}</section>` +
+        footer(`<button id="entry-edit-cancel" class="button" data-close>${esc(t("cancel"))}</button>
+        <button id="entry-edit-confirm" class="button primary"${renaming ? " disabled" : ""}>${esc(t(action))}</button>`, ""),
+        "archive-entry-edit", "Q03", renaming ? "#archive-entry-name" : "#entry-edit-cancel");
+    $("#modal .os-title").textContent = t(action);
+    bindClose();
+    const confirm = $("#entry-edit-confirm");
+    confirm.onclick = closeModal;
+    if (renaming) {
+        const input = $("#archive-entry-name");
+        const extension = entry.folder ? -1 : name.lastIndexOf(".");
+        input.setSelectionRange(0, extension > 0 ? extension : name.length);
+        input.oninput = () => {
+            const changed = input.value !== name;
+            const valid = input.value && !/[\/\\:<>|"*?]/.test(input.value) && !/[. ]$/.test(input.value);
+            confirm.disabled = !changed || !valid;
+            $("#archive-entry-error").hidden = !changed || Boolean(valid);
+        };
+        input.onkeydown = event => {
+            if (event.key === "Enter" && !event.isComposing && !confirm.disabled) closeModal();
+        };
+    }
 }
 function showPasswordPrompt(retry = false, pending = false) {
     const opening = new URLSearchParams(location.search).get("kind") === "open";
