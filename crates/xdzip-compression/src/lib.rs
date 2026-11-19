@@ -45,7 +45,7 @@ pub use byte_filter::{ByteFilter, ByteFilterKind};
 pub use bzip2::{Bzip2Reader, bzip2_memory_required};
 pub use compress::{CompressReader, compress_memory_required};
 pub use crc16::{Crc16, crc16};
-pub use gzip::{GzipReader, GzipWriter};
+pub use gzip::{EMPTY_TAR_GZIP_HEADER, GzipReader, GzipWriter};
 pub use larc::{LarcMethod, LarcReader, larc_memory_required};
 pub use lh_dynamic::{Lh2Variant, LhDynamicReader, lh_dynamic_memory_required};
 pub use lz4::Lz4BlockReader;

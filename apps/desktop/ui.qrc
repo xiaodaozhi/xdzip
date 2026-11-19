@@ -168,6 +168,7 @@
     <file alias="assets/folder.png">../../design/assets/png/light/folder@3x.png</file>
     <file alias="assets/image-file.png">../../design/assets/png/light/image-file@3x.png</file>
     <file>ui/ArchiveAction.qml</file>
+    <file>ui/ArchiveEntryEditWindow.qml</file>
     <file>ui/ArchiveTabs.qml</file>
     <file alias="assets/light/minimize.png">../../design/assets/png/light/minimize@3x.png</file>
     <file alias="assets/light/maximize.png">../../design/assets/png/light/maximize@3x.png</file>

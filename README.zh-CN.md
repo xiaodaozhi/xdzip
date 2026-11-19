@@ -43,7 +43,7 @@ Microsoft Store 负责该渠道的更新，与 GitHub 独立发布。GitHub 版�
 
 - **内容预览**：单选文件时，可见的属性卡自动预览受支持的纯文本、栅格图片或静态 SVG。macOS 还支持 HEIC／HEIF。完整读取并完成格式提供的校验后显示，可取消；格式、大小和解码预算见[预览说明](docs/zh-CN/engineering/content-preview.md)。
 - **解压和打开**：选择目标位置与重名策略，查看进度并可请求取消。双击普通文件会先将副本解压到私有临时目录，再交给系统打开；修改副本不会写回压缩包，缓存会在七天后的后续打开操作中清理。
-- **创建和修改**：可创建 ZIP、TAR、TAR.GZ、GZIP、XZ、TAR.XZ、LZ4、TAR.LZ4、Zstandard、TAR.ZST、LZH 和 7z，也能创建 ISO9660/Joliet 数据镜像。Windows x64 还可以创建 ZIP 自解压包。支持对符合条件的普通单文件压缩包添加文件、替换文件和包内移动；也可从列表拖出文件，或拖入文件后确认添加。具体格式和限制见下表。
+- **创建和修改**：可创建 ZIP、TAR、TAR.GZ、GZIP、XZ、TAR.XZ、LZ4、TAR.LZ4、Zstandard、TAR.ZST、LZH 和 7z，也能创建 ISO9660/Joliet 数据镜像。Windows x64 还可以创建 ZIP 自解压包。支持对符合条件的普通单文件压缩包添加、替换、移动、重命名和删除条目，也可从列表拖出文件，或拖入文件后确认添加。具体格式和限制见下表。
 - **检查**：可在后台测试整包，不写出文件。校验范围取决于格式。TAR、ISO、UDF 和复合文件（MSI）等格式检查结构与可读性，没有逐文件内容校验和。详见[完整性检查](docs/zh-CN/engineering/archive-checking.md)。
 - **多个归档**：默认在新标签页打开，也可设置为新窗口。同一登录会话共用应用进程和托盘，关闭浏览页面后后台任务仍可从任务入口访问。
 - **文件管理器操作。** Windows 11 安装版可在“显示更多选项”中使用经典菜单，商店版还可以在现代菜单中显示。Ubuntu 通过已安装的 Files（Nautilus）扩展提供操作。macOS 可在系统设置中启用 Finder 扩展，或使用已登记的 Finder 服务。详见[从文件管理器解压](docs/zh-CN/user-guide/extract.md#从文件管理器解压)。
@@ -52,7 +52,7 @@ Microsoft Store 负责该渠道的更新，与 GitHub 独立发布。GitHub 版�
 
 ## 格式支持
 
-下表可用于确认 xdzip 能否打开、创建或修改某类压缩包。“修改”指向已有压缩包添加、替换或移动条目。能否读取或检查取决于实际内容、压缩方法和条目类型。后缀只提供探测入口。详细限制见[内置格式登记](docs/zh-CN/engineering/format-registry.md)与[完整性检查指南](docs/zh-CN/user-guide/checks-and-tasks.md)。
+下表可用于确认 xdzip 能否打开、创建或修改某类压缩包。“修改”指向已有压缩包添加、替换、移动、重命名或删除条目。能否读取或检查取决于实际内容、压缩方法和条目类型。后缀只提供探测入口。详细限制见[内置格式登记](docs/zh-CN/engineering/format-registry.md)与[完整性检查指南](docs/zh-CN/user-guide/checks-and-tasks.md)。
 
 | 格式 | 浏览、解压和检查 | 创建 | 修改 |
 | --- | --- | --- | --- |

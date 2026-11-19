@@ -19,7 +19,10 @@ use xdzip_codec_api::{
 use xdzip_domain::path::PortablePath;
 use xdzip_io::{ArchiveUpdate, InputTree};
 
+mod entries;
 mod moving;
+use entries::Selection;
+pub use entries::{EntryEdit, EntryEditOptions, valid_entry_name};
 pub use moving::MoveOptions;
 
 /// Explicit host edit intent; the runtime resolves the opaque directory identity.
@@ -53,7 +56,12 @@ pub(crate) struct Job {
     options: Options,
     prefix: String,
     session: u64,
-    moving: Option<moving::Moves>,
+    operation: Operation,
+}
+enum Operation {
+    Add,
+    Move(moving::Moves),
+    Edit(entries::Edit),
 }
 impl Job {
     pub fn retained_bytes(&self) -> usize {
@@ -64,7 +72,11 @@ impl Job {
                 .iter()
                 .map(|row| std::mem::size_of::<Entry>() + row.name_capacity())
                 .sum::<usize>()
-            + self.moving.as_ref().map_or(0, moving::Moves::bytes)
+            + match &self.operation {
+                Operation::Add => 0,
+                Operation::Move(moves) => moves.bytes(),
+                Operation::Edit(edit) => edit.bytes(),
+            }
     }
 }
 fn key(name: &str) -> String {
@@ -99,7 +111,7 @@ impl Archive {
             options,
             prefix,
             session: self.key.session.get(),
-            moving: None,
+            operation: Operation::Add,
         })
     }
 }
@@ -126,10 +138,10 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
         },
         id,
     );
-    snapshot.kind = if job.moving.is_some() {
-        TaskKind::Move
-    } else {
-        TaskKind::Update
+    snapshot.kind = match &job.operation {
+        Operation::Add => TaskKind::Update,
+        Operation::Move(_) => TaskKind::Move,
+        Operation::Edit(edit) => edit.kind(),
     };
     snapshot.source = path.to_string_lossy().into();
     snapshot.session = job.session;
@@ -388,7 +400,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
         job.source.validate().map_err(|_| "source_changed")?;
         workspace = Some(authority.workspace(id).map_err(output)?);
         let w = workspace.as_mut().expect("created workspace");
-        let tree = if job.moving.is_none() {
+        let tree = if matches!(job.operation, Operation::Add) {
             let tree = InputTree::scan_for_archive(
                 &job.options
                     .inputs
@@ -437,8 +449,10 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
             entries: vec![],
             indices: vec![],
         };
-        if job.moving.is_some() {
-            moving::plan(&job, &mut planner, &mut additions)?;
+        if let Operation::Edit(edit) = &job.operation {
+            edit.plan(&mut planner, &mut additions)?;
+        } else if let Operation::Move(moves) = &job.operation {
+            moving::plan(&job, moves, &mut planner, &mut additions)?;
         } else if let Some(tree) = &tree {
             for (index, entry) in tree.entries().iter().enumerate() {
                 control.cancel.check().map_err(|_| "cancelled")?;

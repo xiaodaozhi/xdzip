@@ -1068,12 +1068,14 @@ dialog[data-kind] .text-input::placeholder { color:var(--secondary); opacity:1; 
 .about-content p:not(.about-description) { font-size:calc(var(--about-note-size,12) * 1px * var(--ui-source-factor) * var(--settings-text-scale,1)); }
 
 /* Confirmation geometry comes from the shared logical policy, like Qt. */
-dialog:is([data-kind="quit"],[data-kind="restart"]) { width:calc(var(--confirmation-logical-width) * 1px * var(--ui-source-factor)); max-height:min(calc(var(--confirmation-maximum-height) * 1px * var(--ui-source-factor)),calc(100dvh - 40px)); }
-dialog:is([data-kind="quit"],[data-kind="restart"])[open] { display:flex; flex-direction:column; overflow:hidden; }
-dialog:is([data-kind="quit"],[data-kind="restart"])>.os-titlebar,dialog:is([data-kind="quit"],[data-kind="restart"])>.modal-footer { flex-shrink:0; }
+dialog:is([data-kind="quit"],[data-kind="restart"],[data-kind="archive-entry-edit"]) { width:calc(var(--confirmation-logical-width) * 1px * var(--ui-source-factor)); max-height:min(calc(var(--confirmation-maximum-height) * 1px * var(--ui-source-factor)),calc(100dvh - 40px)); }
+dialog:is([data-kind="quit"],[data-kind="restart"],[data-kind="archive-entry-edit"])[open] { display:flex; flex-direction:column; overflow:hidden; }
+dialog:is([data-kind="quit"],[data-kind="restart"],[data-kind="archive-entry-edit"])>.os-titlebar,dialog:is([data-kind="quit"],[data-kind="restart"],[data-kind="archive-entry-edit"])>.modal-footer { flex-shrink:0; }
 .confirmation-content { padding:calc(var(--confirmation-content-inset) * 1px * var(--ui-source-factor)); display:flex; flex-direction:column; gap:calc(var(--confirmation-section-gap) * 1px * var(--ui-source-factor)); overflow:auto; min-height:0; }
 .confirmation-content h1 { margin:0; font-size:calc(var(--confirmation-title-size) * 1px * var(--ui-source-factor) * var(--settings-text-scale,1)); line-height:1.4; }
 .confirmation-content p { margin:0; font-size:calc(var(--confirmation-body-size) * 1px * var(--ui-source-factor) * var(--settings-text-scale,1)); color:var(--secondary); line-height:1.5; }
+#archive-entry-name { min-width:0; font-size:calc(var(--confirmation-body-size) * 1px * var(--ui-source-factor) * var(--settings-text-scale,1)); }
+#archive-entry-error { color:var(--ui-menu-danger); }
 /* Keep the action row together; large translated labels may wrap inside buttons. */
 .operation-footer-actions { min-width:0; flex-shrink:1; align-items:stretch; }
 dialog[data-kind] .modal-footer .button { flex-shrink:1; white-space:normal; height:auto; padding-top:var(--operation-control-vertical-inset); padding-bottom:var(--operation-control-vertical-inset); }

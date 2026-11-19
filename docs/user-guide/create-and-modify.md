@@ -14,3 +14,13 @@ English | [简体中文](../zh-CN/user-guide/create-and-modify.md) | [繁體中�
 Open an eligible ZIP, 7z, TAR or TAR.GZ archive and navigate to the destination folder inside it. Drop local files or folders onto the list or grid, then review and confirm the addition. The conflict options include replacing eligible regular files in the archive. To move an existing entry, drag it to another folder inside the same archive and confirm. Dragging outside exports a copy. [Drag-and-drop behavior by platform](../engineering/archive-transfers.md)
 
 Creation and addition omit `.DS_Store` files and `__MACOSX` and `_MACOSX` directories. Archive modification depends on the format, contents and source. Encrypted, split and disk-indexed archives cannot be edited through the normal modification flow. When editing is unavailable, extract to a new folder and create a new archive. [Modification and drag-and-drop rules](../engineering/archive-transfers.md)
+
+
+## Rename or delete entries
+
+In a regular folder of an editable archive, right-click a file or folder in the list or grid. Right-clicking a selected item keeps the selection. Right-clicking an unselected item selects it alone.
+
+- **Rename** is available for one item. Enter the new name in the same folder. Renaming a folder updates all the paths under it. Choose a different name if the destination name already exists.
+- **Delete** accepts one or more selected items. Review the name or selection count before confirming. Deleting a folder also deletes its contents. After deleting every item at the archive root, the archive remains available as an empty archive.
+
+To edit an item found through search, open its containing folder first. [Archive modification rules](../engineering/archive-transfers.md)

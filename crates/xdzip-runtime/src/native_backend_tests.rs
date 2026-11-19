@@ -133,7 +133,7 @@ pub(super) fn check(archive: &Archive, mixed: bool) -> Snapshot {
     );
     result
 }
-fn known_contents(archive: &Archive) -> BTreeMap<String, Vec<u8>> {
+pub(crate) fn known_contents(archive: &Archive) -> BTreeMap<String, Vec<u8>> {
     struct Sink(Vec<u8>);
     impl DecodedSink for Sink {
         fn write_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {

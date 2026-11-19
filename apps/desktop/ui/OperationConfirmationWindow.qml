@@ -8,6 +8,9 @@ OperationWindow {
     id: root
     property string heading: ""
     property string message: ""
+    property bool messageUserData: false
+    property Component extraContent
+    readonly property alias extraItem: extraLoader.item
     property real availableClientHeight: Screen.desktopAvailableHeight - Theme.confirmationScreenMargin
     default property alias actions: footer.actions
     readonly property alias headingItem: headingLabel
@@ -58,8 +61,16 @@ OperationWindow {
                         text: root.message
                         textFormat: Text.PlainText
                         font.pixelSize: Theme.confirmationBodySize
+                        font.family: root.messageUserData ? Theme.userDataFontFamily : Theme.uiFontFamily
                         color: Theme.textSecondary
                         wrapMode: Text.Wrap
+                    }
+                    Loader {
+                        id: extraLoader
+                        Layout.fillWidth: true
+                        visible: active
+                        active: root.extraContent !== null
+                        sourceComponent: root.extraContent
                     }
                 }
             }

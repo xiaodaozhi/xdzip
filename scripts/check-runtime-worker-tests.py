@@ -39,8 +39,8 @@ def inventory():
     spec = json.loads(SPEC.read_text(encoding='utf-8'))
     cases = spec['cases']
     names = [case['name'] for case in cases]
-    if spec['schema_version'] != 1 or len(names) != 28 or len(set(names)) != len(names):
-        raise ValueError('Runtime inventory must contain the 28 distinct tracked cases')
+    if spec['schema_version'] != 1 or len(names) != 29 or len(set(names)) != len(names):
+        raise ValueError('Runtime inventory must contain the 29 distinct tracked cases')
     for case in cases:
         if (case['profile'] not in spec['profiles'] or not 1 <= case['timeout_seconds'] <= 900
                 or not re.fullmatch(r'[a-z_][\w]*(?:::[a-z_][\w]*)+', case['name'])

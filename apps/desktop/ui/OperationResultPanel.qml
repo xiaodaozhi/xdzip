@@ -15,6 +15,7 @@ ColumnLayout {
     readonly property bool useDetailsForFailures: !task.openError && (task.creating || !task.kind || task.kind === "create" || task.kind === "extract")
     readonly property int remaining: Math.max(0, Number(task.files || 0) - Number(task.committedFiles || 0) - Number(task.skippedFiles || 0))
     readonly property bool extractionSummary: !task.creating && !task.batchResults && (!task.kind || task.kind === "extract")
+    readonly property bool entryEdit: task.kind === "rename" || task.kind === "delete"
     readonly property bool countSummary: Boolean(task.creating || task.batchResults)
     readonly property string savedCaption: {
         const total = Number(task.creating ? task.outputParts || 0 : task.committedFiles || 0);
@@ -42,6 +43,7 @@ ColumnLayout {
     spacing: Theme.operationResultCardGap
     Rectangle {
         objectName: "resultCounts"
+        visible: !root.entryEdit
         Layout.fillWidth: true; implicitHeight: Math.max(80, summary.implicitHeight + 24)
         color: Theme.operationCard; border.color: Theme.operationCardBorder; radius: Theme.operationResultCardRadius
         ColumnLayout {
@@ -155,6 +157,7 @@ ColumnLayout {
                         Text {
                             objectName: "resultSavedCaption"
                             Layout.fillWidth: true; wrapMode: Text.Wrap
+                            visible: !root.entryEdit
                             text: root.task.externalReader ? root.savedCaption + "\n" + qsTrId("ui.92ccb53e91dc") : root.savedCaption
                             font.family: !root.extractionSummary && !root.countSummary && root.entries.some(e => e.status === "completed") ? Theme.userDataFontFamily : Theme.uiFontFamily
                             font.pixelSize: Math.round(Theme.operationResultNoteSize); color: Theme.textSecondary
