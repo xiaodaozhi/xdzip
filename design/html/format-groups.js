@@ -133,3 +133,127 @@ window.XDZIP_FORMAT_GROUPS = [
         ]
     }
 ];
+window.XDZIP_ASSOCIATION_GROUPS = [
+    {
+        "id": "archives",
+        "labels": [
+            "ZIP",
+            "TAR",
+            "7z",
+            "LZH",
+            "PMA",
+            "ARJ",
+            "ARC",
+            "BH",
+            "ALZ",
+            "EGG",
+            "PEA",
+            "ASAR",
+            "DEB",
+            "RAR",
+            "CAB",
+            "Compound",
+            "ISO",
+            "UDF"
+        ],
+        "suffixes": [
+            ".zip",
+            ".zipx",
+            ".xpi",
+            ".apk",
+            ".ipa",
+            ".cbz",
+            ".tar",
+            ".7z",
+            ".lha",
+            ".lzh",
+            ".pma",
+            ".arj",
+            ".arc",
+            ".bh",
+            ".alz",
+            ".egg",
+            ".pea",
+            ".asar",
+            ".deb",
+            ".rar",
+            ".cab",
+            ".msi",
+            ".iso",
+            ".udf"
+        ]
+    },
+    {
+        "id": "compressed-tar",
+        "labels": [
+            "TAR.GZ",
+            "TAR.BZ2",
+            "TAR.LZMA",
+            "TAR.LZ",
+            "TAR.XZ",
+            "TAR.LZ4",
+            "TAR.ZST",
+            "TAR.Z",
+            "TAR.BR"
+        ],
+        "suffixes": [
+            ".tar.gz",
+            ".tgz",
+            ".tar.bz2",
+            ".tar.bz",
+            ".tbz",
+            ".tbz2",
+            ".tar.lzma",
+            ".tlz",
+            ".tar.lz",
+            ".tar.xz",
+            ".txz",
+            ".tar.lz4",
+            ".tar.zst",
+            ".tzst",
+            ".tar.z",
+            ".taz",
+            ".tar.br"
+        ]
+    },
+    {
+        "id": "compressed-streams",
+        "labels": [
+            "GZIP",
+            "BZip2",
+            "LZMA",
+            "Lzip",
+            "XZ",
+            "LZ4",
+            "ZSTD",
+            "Z",
+            "Brotli",
+            "AES Crypt"
+        ],
+        "suffixes": [
+            ".gz",
+            ".bz2",
+            ".bz",
+            ".lzma",
+            ".lz",
+            ".xz",
+            ".lz4",
+            ".zst",
+            ".z",
+            ".br",
+            ".aes"
+        ]
+    },
+    {
+        "id": "text-envelopes",
+        "labels": [
+            "UU",
+            "XXE"
+        ],
+        "suffixes": [
+            ".uu",
+            ".uue",
+            ".xxe"
+        ]
+    }
+];

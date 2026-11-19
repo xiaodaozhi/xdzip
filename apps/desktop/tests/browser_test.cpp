@@ -4,6 +4,7 @@
 #include "../BuildInfo.h"
 #include "AppQuitGuard.h"
 #include "ApplicationSessions.h"
+#include "ArchiveFormatsGenerated.h"
 #include "BrowserController.h"
 #include "DesktopIntegration.h"
 #include "DesktopProbe.h"
@@ -8143,8 +8144,10 @@ QtObject {
                 property bool available: true; property bool systemManaged: true
                 property bool busy: false; property bool ready: true; property int revision: 0
                 property string error: ""; property int requests: 0
+                property int changes: 0
                 function refresh() { ++revision }
                 function openSystemSettings() { ++requests }
+                function requestChange(extension, selected) { ++changes }
             })",
                         QUrl());
         std::unique_ptr<QObject> service(fixture.create());
@@ -8165,7 +8168,14 @@ QtObject {
         QQuickItem *button = nullptr;
         QTRY_VERIFY((button = findVisual(settings->contentItem(), "settingsOpenDefaultApps")));
         QVERIFY(button->isVisible() && button->isEnabled());
-        QVERIFY(!findVisual(settings->contentItem(), "settingsAssociation-.zip"));
+        for (const auto suffix : xdzip_formats::ShellSuffixes) {
+            const auto name = QStringLiteral("settingsAssociation-") +
+                              QString::fromLatin1(suffix.data(), suffix.size());
+            auto *toggle = findVisual(settings->contentItem(), name);
+            QVERIFY2(toggle && toggle->isVisible(), qPrintable(name));
+            QVERIFY2(!toggle->isEnabled(), qPrintable(name));
+            QVERIFY2(!toggle->property("checked").toBool(), qPrintable(name));
+        }
         QVERIFY(button->width() > 0 && button->width() <= settings->width());
         auto *label = button->property("contentItem").value<QQuickItem *>();
         QVERIFY(label);
@@ -8176,6 +8186,14 @@ QtObject {
         const bool active = QAccessible::isActive();
         QAccessible::setActive(true);
         const auto restoreAccessibility = qScopeGuard([&] { QAccessible::setActive(active); });
+        auto *zip = findVisual(settings->contentItem(), "settingsAssociation-.zip");
+        auto *zipAccessible = QAccessible::queryAccessibleInterface(zip);
+        QVERIFY(zipAccessible && zipAccessible->actionInterface());
+        QVERIFY(zipAccessible->state().disabled);
+        zipAccessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+        zipAccessible->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+        QVERIFY(!zip->property("checked").toBool());
+        QCOMPARE(service->property("changes").toInt(), 0);
         auto *accessible = QAccessible::queryAccessibleInterface(button);
         QVERIFY(accessible && accessible->actionInterface());
         accessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
