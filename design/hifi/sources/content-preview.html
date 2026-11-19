@@ -14,6 +14,9 @@ main{display:flex;gap:24px;flex-wrap:wrap}.panel{box-sizing:border-box;width:258
 .selection-stack .text-file{top:8px;left:16px;background-image:url('../../assets/svg/light/file-text.svg')}
 body.dark .selection-stack .image-file{background-image:url('../../assets/svg/dark/image-file.svg')}
 body.dark .selection-stack .text-file{background-image:url('../../assets/svg/dark/file-text.svg')}
+.preview-text{--selection-background:#1956ff}
+body.dark .preview-text{--selection-background:#3264e9}
+.preview-text::selection{background:var(--selection-background);color:#fff}
 .card [hidden]{display:none}
 </style>
 <nav>
@@ -25,7 +28,7 @@ body.dark .selection-stack .text-file{background-image:url('../../assets/svg/dar
   <section class="panel">
     <h2 data-zh="纯文本" data-en="Plain text">纯文本</h2>
     <div class="card" data-refresh>
-      <div class="content">先浏览，再解压。
+      <div class="content preview-text">先浏览，再解压。
 &lt;h1&gt;这段文本不会作为 HTML 执行&lt;/h1&gt;
 
 Archive contents remain plain text.</div>

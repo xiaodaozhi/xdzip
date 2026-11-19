@@ -730,6 +730,13 @@ class BrowserTest : public QObject {
         QVERIFY(text->property("readOnly").toBool());
         QCOMPARE(text->property("text").toString(),
                  controller->contentPreview().value("text").toString());
+        const auto *search = findVisual(window->contentItem(), "archiveSearch");
+        QVERIFY(search);
+        QCOMPARE(text->property("selectionColor"), search->property("selectionColor"));
+        QCOMPARE(text->property("selectedTextColor"), search->property("selectedTextColor"));
+        text->forceActiveFocus();
+        QVERIFY(QMetaObject::invokeMethod(text, "selectAll"));
+        QCOMPARE(text->property("selectedText"), text->property("text"));
         controller->selectRow(otherRow);
         QVERIFY(controller->contentPreview().isEmpty());
         auto *status = findVisual(card, "contentPreviewStatus");
@@ -1020,6 +1027,23 @@ class BrowserTest : public QObject {
             QVERIFY(page);
             auto *model = qobject_cast<ArchiveTableModel *>(controller->entries());
             QVERIFY(model);
+            const auto *search = findVisual(page, "archiveSearch");
+            QVERIFY(search);
+            const auto captureTextSelection = [&](QQuickWindow *view, const QString &scene) {
+                auto *text = findVisual(view->contentItem(), "contentPreviewText");
+                QVERIFY(text && text->isVisible());
+                text->forceActiveFocus();
+                const auto firstLine = text->property("text").toString().section('\n', 0, 0);
+                QVERIFY(!firstLine.isEmpty());
+                QVERIFY(QMetaObject::invokeMethod(text, "select", Q_ARG(int, 0),
+                                                  Q_ARG(int, int(firstLine.size()))));
+                QCOMPARE(text->property("selectedText").toString(), firstLine);
+                QCOMPARE(text->property("selectionColor"), search->property("selectionColor"));
+                QCOMPARE(text->property("selectedTextColor"),
+                         search->property("selectedTextColor"));
+                QVERIFY(visual_audit::save(view, directory, scene));
+                QVERIFY(QMetaObject::invokeMethod(text, "deselect"));
+            };
             for (bool dark : {false, true})
                 for (double scale : {1., 1.25, 1.5}) {
                     preferences->preview(dark ? "dark" : "light", scale);
@@ -1055,7 +1079,10 @@ class BrowserTest : public QObject {
                                  3.);
                         const auto scene = language + (dark ? "-dark-" : "-light-") +
                                            QString::number(scale) + "-" + state;
-                        QVERIFY(visual_audit::save(window, directory, scene));
+                        if (state == "text")
+                            captureTextSelection(window, scene + "-selected");
+                        else
+                            QVERIFY(visual_audit::save(window, directory, scene));
                     }
                     const auto scene =
                         language + (dark ? "-dark-" : "-light-") + QString::number(scale);
@@ -1121,11 +1148,8 @@ class BrowserTest : public QObject {
                     auto *inspector = window->findChild<QQuickWindow *>("inspectorWindow");
                     QVERIFY(inspector);
                     QTRY_VERIFY(inspector->isVisible());
-                    QTRY_VERIFY(controller->contentPreview().value("state").toString() == "text" ||
-                                controller->contentPreview().value("state").toString() == "image");
-                    QVERIFY(visual_audit::save(inspector, directory,
-                                               language + (dark ? "-dark-" : "-light-") +
-                                                   QString::number(scale) + "-separate"));
+                    QTRY_COMPARE(controller->contentPreview().value("state").toString(), "text");
+                    captureTextSelection(inspector, scene + "-separate-text-selected");
                     controller->selectAll(true);
                     verifySelectionIcons(inspector->contentItem());
                     QVERIFY(visual_audit::save(inspector, directory, scene + "-separate-multiple"));
