@@ -6,7 +6,7 @@
 
 ## 已落地的服务
 
-`xdzip-runtime::service` 是产品实现，诊断探针继续独立保留。GUI 只持有 `CommandClient`，专用 Qt 接收线程独占 `EventReceiver`；两个句柄各取一次，cxx 负责该桥接的 ABI 胶水，平台文件访问的安全边界另见[文件安全规范](../design/file-security.md)。源文件与归档快照由单个 Rust 工作线程拥有，不再向 Qt 暴露 Archive 句柄或同步扫描入口。
+`xdzip-runtime::service` 实现产品服务。GUI 取一次 `CommandClient`，专用 Qt 接收线程取一次 `EventReceiver`。Rust 命令线程持有连接中打开的归档和浏览快照。独立的 Rust 任务线程接收已准备的任务及其所需的来源和设置，并发布任务更新。归档句柄和同步扫描入口保留在 Rust 内部。ABI 见 [Qt/Rust 桥接](../design/qt-rust-bridge.md)，所有权和准入见[任务调度](../design/task-scheduling.md)。
 
 基础命令包括 Open、Browse、Preflight、CloseSession、Snapshot；现有真实浏览和预检全部接入。每个 accepted 普通请求分配不复用 ID，返回至多一个有界数据事件，再返回恰好一次 Finished；错误直接 Finished。页面携带会话、请求和偏移身份；每个 RuntimeConnection 单会话、串行 GUI pending 请求，查询还包含完整查询 ID、GUI 代际和快照修订，见 [ZIP 浏览契约](zip-readonly-browsing.md)。跨会话请求返回 stale_session。
 
@@ -31,7 +31,7 @@ Qt 控制器仅保留一个待准入命令。短暂 Busy 在事件循环中以 1
 
 ## 关闭、销毁与故障
 
-原生窗口关闭和应用 Quit（含 macOS Cmd+Q）进入同一异步关闭路径。停止准入，取消已接收工作，继续 drain 终态，Rust 释放会话后标记工作结束；接收线程 join Rust 工作线程，再收到 ShutdownReady 和 EOF。Qt 接收线程结束且 mailbox 排空后，GUI 才允许退出。GUI 从不 join 等待事件/文件工作的线程。
+关闭单个归档或窗口后，应用和任务仍可能在托盘中运行。应用退出或重启时，协调器停止接收新请求、请求取消，并在 Rust 释放会话期间继续接收剩余事件。接收端在两个 Rust 线程全部结束后才返回 `ShutdownReady`。桌面应用还要等 Qt 接收线程结束且信箱排空后才退出。GUI 线程不会等待仍在处理文件或投递事件的线程结束。
 
 取消/关闭控制使用只含有界状态操作的短临界区，不受数据队列容量约束。协作取消不能打断操作系统阻塞读，这不是硬实时退出保证。本节的只读请求不产生输出事务；创建与解压的提交、暂存清理和退出结果分别按[创建](zip-creation.md)与[安全解压](zip-safe-extraction.md)契约处理。
 

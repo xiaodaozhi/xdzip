@@ -2,6 +2,8 @@
 
 [English](../../engineering/archive-opening.md) | 简体中文
 
+桌面文件选择、系统菜单请求和 CLI 共用 Rust 的来源打开规则。宿主解析允许的分卷组，记录来源身份并探测已授权的字节。选定的格式实现提供[浏览元数据](readonly-browser.md)，部分格式经[隔离的格式工作进程](native-codecs.md)读取。主动打开条目时，应用会生成经过校验的临时副本，再交给系统关联程序。验证整包应单独执行[完整性检查](archive-checking.md)。
+
 ## 分卷 ZIP
 
 读取层支持编号连续字节流 `name.zip.001`、`.002` 等，以及 PKZIP 的

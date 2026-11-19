@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/independent-rust-codecs.md)
 
-This contract defines per-capability replacement rules for third-party format backends. Actual progress, test results, and incomplete items are tracked in [migration task #45](https://github.com/xiaodaozhi/xdzip/issues/45). Architecture decisions or the existence of code do not establish format acceptance.
+This contract describes the built-in Rust format implementations, their supported profiles and how to verify compatibility. The [format registry](format-registry.md) records admitted operations, and the [worker contract](native-codecs.md) covers process routing.
 
 <a id="实现边界"></a>
 
@@ -12,7 +12,7 @@ Built-in declarations and product entry-point mappings use the [format registry]
 
 Container parsing, encoding, decoding, and compression algorithms use independent Rust implementations. Admitted general cryptography, character encoding, system, and bridge foundation libraries are permitted. Third-party format libraries, algorithm libraries, and command-line tools may be independent test references, but do not become product runtime dependencies for a migrated format. Removing only direct dependencies does not prove replacement: inspect transitive ordinary/build dependency closures and delivered files.
 
-Replace a format only after all existing capabilities pass acceptance. An incomplete format retains its prior backend; there is no silent runtime-failure fallback. ZIP, TAR, TAR.GZ, and 7z retain existing read/write and modification limits. RAR, CAB, ISO, and UDF are read-only. A format name does not imply support for all historical and future extensions. RAR7 LZ requires a successful independent compressed-stream sample; Store success and rejecting an over-budget dictionary do not replace it.
+The application selects its built-in implementation once the format is identified. Decode failures do not switch to another backend. ZIP, TAR, TAR.GZ and 7z can create and can rewrite eligible existing archives. RAR, CAB and UDF have read operations only. ISO reading uses the worker, and the [ISO9660/Joliet writer](iso-creation.md) creates new data images in the Rust host. Existing ISO images cannot be rewritten. Each format has explicit profile and resource limits. For example, RAR7 LZ interoperability requires an independent compressed-stream sample.
 
 The domain layer, Qt bridge, and public codec trait retain their ownership. Backends receive no destination paths and cannot publish files. Raw name bytes, physical EntryIds, duplicate entries, encoding resolution, source identity, volume authorization, path preflight, staging, verification, and commit remain governed by existing engineering contracts. Shared algorithms are implemented once; containers independently handle framing, block boundaries, dictionary resets, and verification semantics. Migration of native backends to Rust retains worker cancellation, termination, and resource governance.
 

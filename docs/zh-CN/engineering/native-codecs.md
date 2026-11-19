@@ -2,7 +2,7 @@
 
 [English](../../engineering/native-codecs.md) | 简体中文
 
-7z、RAR、CAB 与 ISO/UDF 使用[独立 Rust 后端](independent-rust-codecs.md)，通过共享的薄 CXX 边界复用同一隔离工作进程。ZIP、TAR、压缩流及 DEB 使用进程内 Rust 后端。产品不从用户 PATH 查找替代工具，也不运行外部命令行解包。
+7z、RAR、CAB 和 ISO／UDF 的读取由隔离工作进程内的[内置 Rust 实现](independent-rust-codecs.md)通过共享 CXX 边界提供。7z 写入也经该工作进程执行，任务由宿主控制。ZIP、TAR、压缩流、DEB 和[新建 ISO9660/Joliet 映像](iso-creation.md)在 Rust 宿主进程内处理。格式按内置规则选择，所有路径均不会从 PATH 寻找命令行解码工具。
 
 CAB 产品固定执行独立 Rust 路由，没有测试开关、官方处理器或失败回退。完整帧、共享算法和资源边界见[自研契约](independent-rust-codecs.md#cab只读规格)，来源及参考分析角色见[CAB 格式来源](cab-format-sources.md)。
 

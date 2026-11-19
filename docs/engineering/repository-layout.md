@@ -16,8 +16,8 @@ Current product modules are defined by root Cargo.toml and CMakeLists.txt. This 
 | crates/xdzip-codec-lha, xdzip-codec-arj, xdzip-codec-arc, xdzip-codec-bh | Independent [LHA](lha-containers.md)/[PMA](pma-streams.md), [ARJ](arj-streams.md), [ARC](arc-streams.md) and [BH](bh-containers.md) framing/member profiles, without filesystem authority; product entry follows the format registry rather than the existence of a crate |
 | crates/xdzip-codec-7z | In-house 7z container, method graphs, filters, AES composition, streaming creation, and bounded rewriting without file-path ownership |
 | crates/xdzip-codec-cab | In-house read-only CAB container using host-authorized volumes and shared algorithms; preserves raw names, UTF-8 declarations, and ordinary duplicate-name records without discovering volumes or publishing output. See the [contract](independent-rust-codecs.md#cab只读规格) and [sources](cab-format-sources.md) |
-| crates/xdzip-codec-optical | In-house read-only ISO9660/Joliet/Rock Ridge/UDF parsing and content streams without file-path ownership |
-| crates/xdzip-codec-bridge | Shared thin CXX boundary from isolated worker to Rust 7z, CAB, and optical backends, reusing authorized streams, cancellation, bounded input, output, and staging protocol without file paths |
+| crates/xdzip-codec-optical | ISO9660/Joliet/Rock Ridge/UDF readers and an ISO9660/Joliet writer for new data images, using streams without path ownership |
+| crates/xdzip-codec-bridge | Thin CXX boundary from the isolated worker to Rust 7z, RAR, CAB and optical codecs, with authorized streams, resource bounds and cancellation |
 | crates/xdzip-codec-native, tools/native-codec | Isolated worker for Rust 7z/RAR/optical/CAB backends; thin C++ supplies protocol and system calendar/encoding services only. Native independently checks prepaid output and auxiliary work; see the [I/O contract](native-codecs.md) |
 | crates/xdzip-extract-plan | Metadata preflight and bounded reports without destination authorization or write capability |
 | crates/xdzip-io | Input trees, native authorization and identity, secure staging, and file commits |

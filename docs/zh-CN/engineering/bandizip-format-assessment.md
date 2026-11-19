@@ -63,7 +63,7 @@
 
 因此不能仅因为扩展名加入通用 `BIN`、`IMG` 或 `SFX(EXE)` 处理器。这些名称可能指向可执行文件、磁盘镜像或安装器，扩展名不足以建立归档能力。NSIS 仅增加按内容验证的静态元数据读取器，不授予执行或载荷权限，登记的 `.exe` 也不参与拖放和系统关联。Compound(MSI) 已具备按内容验证的 CFB 读取器，但 `.msi` 后缀仍不授予执行权限。
 
-M10 还检查了 DAA、ISZ、ZPAQ、PEA、BOND 和 J2J。ACE 已按产品决定永久放弃。ISZ 和 ZPAQ 按产品决定明确不支持，BOND 与 J2J 也因尚未确认 Bandizip 归档身份而明确不支持。DAA 按产品决定永久放弃，详见 [M10 候选格式资料和许可门槛](disk-image-archive-format-sources.md)。PEA 仅按该文档中的保守只读配置准入。
+DAA、ISZ、ZPAQ、PEA、BOND 和 J2J 的判断依据见[磁盘镜像及其他归档格式资料](disk-image-archive-format-sources.md)。PEA 仅支持文档所述的保守只读配置。ACE、DAA、ISZ 和 ZPAQ 按产品决定不予支持。BOND 和 J2J 尚未确认为 Bandizip 归档格式，暂不支持。
 
 ## 详细推进方案
 

@@ -93,7 +93,7 @@ ZIP 容器、流式创建、普通重写与 AES 封装采用[独立 Rust 实现]
 
 精确固定 [tar 0.4.46](https://docs.rs/tar/0.4.46/tar/)（crates.io、[上游源码](https://github.com/alexcrichton/tar-rs)，MIT 或 Apache-2.0），关闭默认 xattr 特性，仅用作开发测试的独立读写参照。产品 TAR 头、PAX、创建与重写使用[独立 Rust 记录层](independent-rust-codecs.md)，不调用第三方 TAR 解析或 Builder，不调用通用 unpack 或所有者／权限恢复。生产依赖闭包禁止 tar 和 filetime 回流，测试及历史交付的许可证仍保留。编码显式写 PAX UTF-8 path 及超范围数字，保证跨平台名称互操作。
 
-GZIP 使用无第三方生产依赖的 `xdzip-compression` 独立实现，包括 RFC 1951 Deflate、RFC 1952 封装和 CRC-32。压缩输入和解码输出均受宿主取消及字节预算约束，结束时验证所有 member 的 CRC／ISIZE。flate2 1.1.10 仅用于开发测试参照，ZIP 与 GZIP 使用相同的自研 Deflate 算法。独立非 TAR 的 GZIP 仍明确拒绝。
+GZIP 由无第三方生产依赖的 `xdzip-compression` 独立实现，包括 RFC 1951 Deflate、RFC 1952 封装和 CRC-32。压缩输入与解码输出都遵守宿主取消和字节预算，完整解码时验证每个成员的 CRC 与 ISIZE。`flate2` 1.1.10 仅供开发测试对照。ZIP 和 GZIP 复用同一套自研 Deflate 算法。运行时区分[独立 GZIP](single-file-streams.md)与 [TAR.GZ](tar-gzip.md)，前者提供一个逻辑文件，后者提供 TAR 目录树。
 
 tar 的测试传递依赖含 filetime 0.2.29（MIT 或 Apache-2.0），复用既有 cfg-if、libc；filetime 不进入该 codec 的产品依赖闭包。没有新增下载构建脚本、运行网络请求或外部进程格式后端。许可证由既有 collect-notices.py 根据锁文件收集，锁文件存在测试包不表示产品链接这些包。系统 tar 与 Python tarfile 仅用于测试，不进入应用运行依赖。
 

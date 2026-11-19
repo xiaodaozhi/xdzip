@@ -16,8 +16,8 @@
 | crates/xdzip-codec-lha、xdzip-codec-arj、xdzip-codec-arc、xdzip-codec-bh | 自研 [LHA](lha-containers.md)、[PMA](pma-streams.md)、[ARJ](arj-streams.md)、[ARC](arc-streams.md) 和 [BH](bh-containers.md) 结构与成员配置，不拥有文件系统权限；产品入口以格式登记为准，crate 存在不等于已准入 |
 | crates/xdzip-codec-7z | 自研 7z 容器、方法图、过滤器、AES 组合、流式创建及有界重写，不拥有文件路径 |
 | crates/xdzip-codec-cab | 自研 CAB 只读容器，使用宿主授权卷和共享算法；保留原始名称、UTF-8 声明及普通重名记录，不自行发现卷或发布输出；见[自研契约](independent-rust-codecs.md#cab只读规格)与[来源](cab-format-sources.md) |
-| crates/xdzip-codec-optical | 自研 ISO9660/Joliet/Rock Ridge/UDF 只读解析与内容流，不拥有文件路径 |
-| crates/xdzip-codec-bridge | 隔离工作进程到 Rust 7z、CAB 和光盘后端的共享薄 CXX 边界，复用授权流、取消、有界输入、输出与暂存协议，不提供文件路径 |
+| crates/xdzip-codec-optical | ISO9660/Joliet/Rock Ridge/UDF 读取器，以及用于创建新数据映像的 ISO9660/Joliet 写入器，通过流读写，不持有路径 |
+| crates/xdzip-codec-bridge | 隔离工作进程到 Rust 7z、RAR、CAB 和光盘格式实现的薄 CXX 边界，传递授权流、资源限额和取消状态 |
 | crates/xdzip-codec-native、tools/native-codec | Rust 7z／RAR／光盘／CAB 后端的隔离工作进程，薄 C++ 仅提供协议及系统日历、编码服务；Native 独立核验预计费输出与辅助工作；I/O 边界见[契约](native-codecs.md) |
 | crates/xdzip-extract-plan | 元数据预检与有界报告；不拥有目标授权或写入能力 |
 | crates/xdzip-io | 输入树、原生授权与身份、安全暂存和文件提交 |

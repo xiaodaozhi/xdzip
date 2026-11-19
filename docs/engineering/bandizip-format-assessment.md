@@ -63,7 +63,7 @@ The table uses the following meanings. **Admitted** means the current registry, 
 
 The inventory therefore does not justify adding generic handlers for `BIN`, `IMG` or `SFX(EXE)`. These names can describe executable, disk or installer data, and a suffix alone cannot establish an archive capability. NSIS has a narrower content-validated static metadata reader; it never grants execution or payload authority and its `.exe` entry is hidden from drag/drop and shell associations. Compound(MSI) now has a content-validated CFB reader; the `.msi` suffix still grants no execution authority.
 
-The M10 research gate also checked DAA, ISZ, ZPAQ, PEA, BOND and J2J. ACE is permanently excluded by product decision. ISZ and ZPAQ are explicitly excluded by product decision. BOND and J2J are also explicitly out of scope because their Bandizip archive identities are unconfirmed. DAA is permanently excluded by product decision, as recorded in [M10 candidate source gates](disk-image-archive-format-sources.md). PEA is admitted only in the conservative read-only profile documented there.
+See [disk image and archive format sources](disk-image-archive-format-sources.md) for DAA, ISZ, ZPAQ, PEA, BOND and J2J. PEA is available in the documented conservative read-only profile. ACE, DAA, ISZ and ZPAQ are excluded by product decision. BOND and J2J are excluded because their identities as Bandizip archive formats are unconfirmed.
 
 ## Delivery plan
 

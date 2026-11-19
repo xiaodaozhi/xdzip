@@ -27,7 +27,7 @@ xdzip update --status
 xdzip gui archive.zip
 ```
 
-不带参数显示帮助。`version`、`--version` 和 `--version-json` 使用 VERSION.json 与构建时 Git 身份；旧版版本字符串及 JSON 的 product、version、build、revision、dirty 字段保留，CLI 额外说明 component、channel、configuration、distribution、platform、architecture。`--language zh-CN|en-US` 选择帮助和结果语言，默认依据桌面语言环境变量；公共标识与错误码为英文。`l`、`x`、`c`、`a`、`t` 分别是 list、extract、create、add、test 的别名。`--` 之后作为字面文件参数。
+不带参数或使用 `--help` 时显示帮助。`version`、`--version` 和 `--version-json` 根据 `VERSION.json` 及构建时的 Git 状态报告版本身份。`--version-json` 返回独立对象，包含 product、version、build、revision、dirty、component、channel、configuration、distribution、platform 和 architecture。可用 `--language zh-CN|en-US` 选择帮助和消息的语言。默认按 `LC_ALL`、`LC_MESSAGES`、`LANG` 的顺序取值，所用值以 `zh` 开头时使用中文。公开标识和错误码使用英文。`l`、`x`、`c`、`a`、`t` 分别是 `list`、`extract`、`create`、`add`、`test` 的别名。用 `--` 传递字面文件参数。
 
 所有业务命令接受 `--json`。stdout 只输出一个 JSON 对象，字段固定为 schema_version（1）、command、status、error_code、data、summary、warnings。未知大小使用 null，包括共享压缩 TAR 流的子项；原始 DEB ar 成员保留精确压缩尺寸。列表 data 包含 format 和 entries；每条保留 id、path、display_name、size、packed_size、method、directory、link、payload_supported、encrypted、warning。path 是冻结的有效名称，异常或未解析名称为 null；display_name 只用于转义展示。任务 summary 包含实际读取、解码、校验、提交、跳过、目录与分卷计数，并保留清理警告及不确定结果。
 
@@ -35,17 +35,17 @@ xdzip gui archive.zip
 
 ## 归档行为
 
-list 返回物理记录，重名不合并。extract 的成员参数是包内完整、精确、区分大小写的有效路径，使用正斜杠，目录递归展开并保留根目录以下层级。精确重名返回 ambiguous_member，使用 --entry-id 选择物理记录。任何未匹配、外来 ID 或歧义先于目标目录创建失败。首版不解释通配符，不支持将归档从 stdin 读取或将解压内容发送到 stdout。
+`list` 返回物理记录并保留重名条目。`extract` 接受完整、精确、区分大小写的有效包内路径，使用正斜杠。目录递归展开，保留根目录下的层级。精确重名返回 `ambiguous_member`。可用 `--entry-id` 传入 `list` 返回的数字 ID（从 1 开始），选择多个 ID 时重复该参数。无法解析指定路径或 ID 时，会在创建目标目录前失败。当前不支持通配符、从 stdin 读取整个归档，或将解压内容写到 stdout。
 
-大包列举使用 `list archive.zip --offset 999872 --limit 128 --json`，offset 从 0 开始，limit 为 1～4096；只指定 offset 时默认 128。JSON data 同时返回 offset、total 和可为空的 next_offset，summary.entries 是本次返回数。普通单文件 ZIP/ZIP64 可索引一百万条；未指定分页时整体列举最多十万条，JSON 行与文本累计最多 16MiB，超限返回 resource_limit，不输出被误认为完整清单的前缀。分页不改变物理 ID，详见[大索引](large-index.md)。
+指定 `--limit` 或 `--offset` 均启用分页。偏移量从 0 开始，最大为 1,000,000。只指定 `--limit` 时从 0 开始，只指定 `--offset` 时每页最多返回 128 条。`--limit` 的取值为 1～4,096。JSON 的 `data` 包含 `offset`、`total` 和可为空的 `next_offset`，`summary.entries` 是实际返回的行数。普通单文件 ZIP／ZIP64 可索引一百万条，未分页的列举在总量超过十万条时失败。两种模式下，序列化后的 JSON 行与格式化文本合计均限 16 MiB。超限返回 `resource_limit`，不返回部分结果。分页不改变物理 ID，详见[大归档索引](large-index.md)。
 
 extract 默认输出到当前目录，`-C` 指定缺失目录时，从最近已存在的安全父目录逐级获得授权，不使用无条件递归建目录。目标、源身份、链接、Unicode／大小写碰撞、暂存、校验及提交继续遵守[安全解压](zip-safe-extraction.md)和[文件名编码](filename-encoding.md)。默认询问重名；`--conflict ask|skip|rename|overwrite` 显式选择策略。`--allow-high-ratio` 只确认高压缩比，不取消硬资源限制。
 
-create 按已登记的创建后缀选择后端，详见[格式支持](../../../README.zh-CN.md#格式支持)。LZH 接受 `.lzh`、`.lha`，`fast|normal|best` 对应实际 LH5 1/6/9 级，不接受 Store、密码、固实或分卷，现有 LZH 归档不能修改；TAR 仅打包。`--encrypt` 仅用于 ZIP／7z，7z 另可使用 --encrypt-names、--solid；--volume-size 接受正整数字节及 KiB、MiB、GiB 后缀，分卷只用于 ZIP／7z。格式不适用的参数明确拒绝。
+`create` 按输出[后缀](format-registry.md)选择创建配置，要求目标父目录已经存在。`--level store|fast|normal|best` 按所选配置校验。普通 TAR 和 ISO 可省略级别，或显式使用 `store`。LHA（`.lzh` 或 `.lha`）的 `fast`、`normal`、`best` 对应 LH5 的 1、6、9 级。ZIP 和 7z 支持 `--encrypt`、`--volume-size`。7z 还可按配置使用 `--encrypt-names`、`--solid`。分卷大小接受正整数字节数，或带 `KiB`、`MiB`、`GiB` 后缀的值。不适用于所选配置的参数会在写入前被拒绝。
 
 密码只通过终端隐藏输入或 `--password-stdin` 的一行 UTF-8 输入传递，移除行结束符但不裁剪密码本身。创建交互加密包时确认两次。拒绝明文密码参数，不读取密码环境变量，不写设置或日志。密码长度与归零规则沿用[密码契约](password-extraction.md)和[创建契约](zip-creation.md)。
 
-add 默认加入包内根目录，--into 只选择已有安全目录。加密、分卷、RAR、CAB、ISO、UDF 及其他不满足编辑条件的包继续拒绝。普通包重建和替换、7z 工作集限制、macOS 元数据过滤与输入保护复用[归档修改](archive-transfers.md)。test 检查整包而不输出文件，TAR、ISO、UDF 只保证结构与可读性，其他格式只保证其已有校验能力，不将未支持能力称为通过。
+`add` 提交宿主更新，默认写入包内根目录。`--into` 按包内相对名称选择已有的安全目录。符合条件的输入可添加或替换条目，包内移动是桌面操作。CLI 复用[归档修改](archive-transfers.md)的格式与记录限制，以及输入保护、临时重建和最终替换流程。`test` 检查整包，不写出归档条目。检查成功后，JSON 的 `data.check_kind` 报告实际检查强度，见[完整性检查](archive-checking.md)。
 
 每次 CLI 操作拥有独立运行时，不加入桌面浏览会话。Ctrl+C／终止信号请求协作取消，等待任务终态、清理和运行时 join；先前已提交的文件保留。共享服务的 submit_wait 仅串行获得短状态锁，不等待队列容量，不改变 GUI 的非阻塞准入。Catalog 每页最多 128 个物理条目，SelectMembers 的数量和名称预算沿用既有上限，所有请求绑定不可变会话身份。
 
@@ -90,4 +90,4 @@ CLI 使用固定公开 GitHub Releases、渠道与单调 build 规则。CLI 三�
 
 终端收到 accepted 仅报告 handed_off。实际安装与恢复由桌面回执和实际运行身份判断，不能把下载或交接记为 installed。无交互模式拒绝需要图形界面或系统授权的桌面安装。安装安全及原生验收边界见[更新契约](software-update.md)。
 
-`.iso` 创建无压缩 ISO9660 + Joliet 数据映像，显式指定级别时仅允许 Store。Windows x64 的 `.sfx.exe` 配置封装 Store/Deflate ZIP，要求随程序部署的 `xdzip-sfx.exe` 组件，拒绝加密、固实与分卷。两种配置均不允许修改现有映像或可执行文件。详见 [ISO 创建](iso-creation.md)与[自有 SFX 创建](sfx-creation.md)。
+`.iso` 配置以固定的 0 级创建无压缩 ISO9660/Joliet 数据映像，可省略 `--level` 或使用 `--level store`。Windows x64 的 `.sfx.exe` 配置使用随包部署的相邻 `xdzip-sfx.exe` 封装 Store 或 Deflate ZIP，拒绝加密、固实和分卷。两种配置均不支持修改现有归档。详见 [ISO 创建](iso-creation.md)与[自有 SFX 创建](sfx-creation.md)。
