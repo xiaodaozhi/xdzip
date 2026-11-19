@@ -1538,9 +1538,16 @@ QtObject {
         const bool windows = platform == QStringLiteral("windows");
         if (windows || platform == QStringLiteral("xcb"))
             QVERIFY(QTest::qWaitForWindowActive(confirmation));
-        // Windows exposure can precede the deferred footer layout.
-        if (windows)
+        if (windows) {
+            if (quitTiming == 0 || quitTiming == 2) {
+                // After an exposed password prompt, wait for the replacement
+                // confirmation's first rendered frame as well as layout polish.
+                QSignalSpy confirmationFrame(confirmation, &QQuickWindow::frameSwapped);
+                confirmation->requestUpdate();
+                QTRY_VERIFY(!confirmationFrame.isEmpty());
+            }
             QVERIFY(QQuickTest::qWaitForPolish(confirmation, 5000));
+        }
         auto *returnButton =
             findVisual(confirmation->contentItem(), quitTiming == 5 ? "quitWait" : "quitReturn");
         QVERIFY(returnButton && returnButton->isVisible() && returnButton->isEnabled());
