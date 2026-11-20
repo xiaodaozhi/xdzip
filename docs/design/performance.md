@@ -1,6 +1,6 @@
 # Performance design and measurement
 
-English | [简体中文](../zh-CN/design/performance.md) | [繁體中文（台灣）](../zh-TW/design/performance.md)
+English | [简体中文](../zh-CN/design/performance.md) | [繁體中文（台灣）](../zh-TW/design/performance.md) | [日本語](../ja-JP/design/performance.md) | [한국어](../ko-KR/design/performance.md) | [Français](../fr-FR/design/performance.md) | [Deutsch](../de-DE/design/performance.md) | [Español](../es-ES/design/performance.md) | [Português (Brasil)](../pt-BR/design/performance.md) | [Русский](../ru-RU/design/performance.md)
 
 XDZip bounds the memory and work of indexing, transport, task execution and image preview separately. The code limits below are implementation rules. Timings, memory measurements and throughput depend on the build and workload. The reference targets later on this page are engineering goals.
 
