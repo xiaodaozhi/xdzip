@@ -10,7 +10,7 @@
 
 7z 返回 `password_or_integrity` 時，同一密碼窗顯示“密碼不匹配或加密資料損壞，請重試。”，英文為“The password does not match or the encrypted data is damaged. Try again.”。它不能確認密碼一定錯誤，也不意味著重新輸入必能修復損壞；使用者仍可取消。任務重試沿用現有限額，達到上限仍保留這一不確定錯誤分類，不顯示成已證實的密碼驗證失敗。
 
-PasswordWindow 使用應用模態和現有系統標題欄，客戶區寬 491，最高 600，並受目前螢幕可用高度約束。標題 20、正文 13、說明 12，正文隨內容增長或獨立滾動，footer 固定可達。尺寸來自 [password-reference.json](../../../specs/visual/password-reference.json)，高保真依據為 [P02 獨立狀態稿](../../../design/hifi/sources/password-extraction.html)。中英文、淺深色、100%／125%／150% 字號使用同一幾何政策。
+PasswordWindow 使用應用程式強制回應視窗及現有系統標題列，內容區寬 491，最高 600，並受目前螢幕的可用高度限制。標題字級為 20、正文為 13、輔助說明為 12。正文會隨內容增長或獨立捲動，底部按鈕保持可操作。尺寸來自 [password-reference.json](../../../specs/visual/password-reference.json)，高擬真依據為 [P02 獨立狀態設計](../../../design/hifi/sources/password-extraction.html)。所有支援的介面語言、淺色和深色主題，以及 100%／125%／150% 字級都採用相同的尺寸規則。
 
 視窗顯示目前加密條目的名稱、密碼輸入框、顯示／隱藏密碼動作與目前任務範圍說明。顯示動作使用明確文字和可讀名稱，不增加包含密碼的提示。輸入預設為掩碼；提交後、取消、視窗關閉或請求 ID 改變時，清空輸入並恢復掩碼。密碼不寫入設定、剪貼簿、日誌、任務快照或報告。UI 的字串清理不宣稱可擦除 Qt 記憶體中的所有歷史副本，底層秘密容器的生命週期由執行時契約約束。
 
