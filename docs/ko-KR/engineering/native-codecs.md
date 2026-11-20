@@ -6,7 +6,7 @@
 
 7z, RAR, CAB, ISO/UDF 읽기는 격리된 워커의 공유 CXX 경계 뒤에서 [내장 Rust 코덱](../../engineering/independent-rust-codecs.md)을 사용합니다. 같은 워커가 호스트가 제어하는 작업에서 7z 쓰기도 처리합니다. Rust 호스트는 ZIP, TAR, 압축 스트림, DEB와 [새 ISO9660/Joliet 이미지](iso-creation.md)를 프로세스 내부에서 처리합니다. 형식 선택은 내장 경로를 사용하며 어떤 경로도 PATH에서 명령줄 디코더를 찾지 않습니다.
 
-CAB는 제품에서 항상 독립 Rust 경로를 사용하며 테스트 스위치, 공식 처리기, 실패 폴백이 없습니다. 전체 프레임, 공유 알고리즘과 리소스 범위는 [자체 계약](../../engineering/independent-rust-codecs.md#cab-read-only-specification), 출처와 참조 분석 역할은 [CAB 소스](../../engineering/cab-format-sources.md)를 참조하세요.
+CAB는 제품에서 항상 독립 Rust 경로를 사용하며 테스트 스위치, 공식 처리기, 실패 폴백이 없습니다. 전체 프레임, 공유 알고리즘과 리소스 범위는 [자체 계약](../../engineering/independent-rust-codecs.md#cab-read-only-specification), 출처와 참조 분석 역할은 [CAB 소스](cab-format-sources.md)를 참조하세요.
 
 호스트는 runtime 시작 전에 검증된 절대 워커 경로 하나를 등록할 수 있습니다. 같은 등록을 반복하면 성공하고 충돌하거나 상대적인 경로는 선택을 바꾸지 않고 거부합니다. 명시적인 개발자 워커 재정의가 우선이고 그다음 등록된 경로를 사용하며 아무것도 등록되지 않은 경우에만 실행 파일 옆 워커를 사용합니다. 데스크톱 CLI 번들은 이 등록으로 데스크톱 워커를 공유합니다. 독립 패키지는 로컬 워커를 유지하며 주변 디렉터리에서 다른 데스크톱 설치를 추론하지 않습니다.
 

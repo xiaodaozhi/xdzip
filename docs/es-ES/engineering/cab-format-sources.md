@@ -1,6 +1,6 @@
 # Fuentes del formato CAB y fundamento de la implementación
 
-[English](../../engineering/cab-format-sources.md) | [简体中文](../../zh-CN/engineering/cab-format-sources.md) | [繁體中文](../../zh-TW/engineering/cab-format-sources.md) | [日本語](../../ja-JP/engineering/cab-format-sources.md) | [Français](../../fr-FR/engineering/cab-format-sources.md) | [Deutsch](../../de-DE/engineering/cab-format-sources.md) | Español | [Português (Brasil)](../../pt-BR/engineering/cab-format-sources.md)
+[English](../../engineering/cab-format-sources.md) | [简体中文](../../zh-CN/engineering/cab-format-sources.md) | [繁體中文](../../zh-TW/engineering/cab-format-sources.md) | [日本語](../../ja-JP/engineering/cab-format-sources.md) | [한국어](../../ko-KR/engineering/cab-format-sources.md) | [Français](../../fr-FR/engineering/cab-format-sources.md) | [Deutsch](../../de-DE/engineering/cab-format-sources.md) | Español | [Português (Brasil)](../../pt-BR/engineering/cab-format-sources.md)
 
 Este documento registra las fuentes, el alcance y las restricciones de implementación independiente del contenedor CAB, MSZIP, LZX y Quantum. Las capacidades del producto, la gestión de recursos y las reglas de sustitución por formato se definen respectivamente en el [contrato del proceso aislado de formatos](native-codecs.md), el [contrato Rust propio](../../engineering/independent-rust-codecs.md) y el [contrato de volúmenes divididos](archive-opening.md). Las referencias no sustituyen la aceptación de interoperabilidad ni la revisión de licencias para la publicación.
 

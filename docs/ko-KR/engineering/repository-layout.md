@@ -17,7 +17,7 @@
 | crates/xdzip-codec-zip, xdzip-codec-tar | ZIP 및 TAR/GZIP 구현. 임의의 출력 경로를 다루지 않습니다. |
 | crates/xdzip-codec-lha, xdzip-codec-arj, xdzip-codec-arc, xdzip-codec-bh | [LHA](../../engineering/lha-containers.md)/[PMA](pma-streams.md), [ARJ](arj-streams.md), [ARC](arc-streams.md), [BH](bh-containers.md)의 독립 프레임 및 항목 프로필. 파일 시스템 권한이 없으며 제품 내 사용 가능 여부는 형식 레지스트리에서 결정합니다. |
 | crates/xdzip-codec-7z | 자체 7z 컨테이너, 방식 그래프, 필터, AES 결합, 스트리밍 생성과 한도가 있는 다시 쓰기. 파일 경로에 대한 권한은 없습니다. |
-| crates/xdzip-codec-cab | 호스트가 승인한 볼륨과 공통 알고리즘을 사용하는 자체 읽기 전용 CAB 컨테이너. 원본 이름, UTF-8 선언 및 일반적인 중복 이름 레코드를 보존합니다. 볼륨 검색과 출력 확정은 호스트의 책임입니다. [계약](../../engineering/independent-rust-codecs.md#cab只读规格) 및 [자료](../../engineering/cab-format-sources.md)를 참고하세요. |
+| crates/xdzip-codec-cab | 호스트가 승인한 볼륨과 공통 알고리즘을 사용하는 자체 읽기 전용 CAB 컨테이너. 원본 이름, UTF-8 선언 및 일반적인 중복 이름 레코드를 보존합니다. 볼륨 검색과 출력 확정은 호스트의 책임입니다. [계약](../../engineering/independent-rust-codecs.md#cab只读规格) 및 [자료](cab-format-sources.md)를 참고하세요. |
 | crates/xdzip-codec-optical | ISO9660/Joliet/Rock Ridge/UDF 읽기와 새 데이터 이미지를 위한 ISO9660/Joliet 쓰기. 경로 권한 없이 스트림을 사용합니다. |
 | crates/xdzip-codec-bridge | 격리 프로세스와 Rust 7z, RAR, CAB 및 광학 매체 코덱을 잇는 얇은 CXX 경계. 승인된 스트림, 리소스 제한 및 취소를 다룹니다. |
 | crates/xdzip-codec-native, tools/native-codec | Rust 7z/RAR/광학 매체/CAB 백엔드 격리 프로세스. 얇은 C++ 계층은 프로토콜과 시스템 달력 및 인코딩 서비스만 제공합니다. 네이티브 수신자는 미리 집계한 출력과 보조 작업량을 독립적으로 검사합니다. [I/O 계약](native-codecs.md)을 참고하세요. |
