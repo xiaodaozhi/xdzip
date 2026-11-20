@@ -281,9 +281,12 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
                 target=work/f'lzh-created-output-{level}-{suffix}'
                 invoke('extract',archive,'-C',target)
                 assert (target/source.name/'你好.txt').read_bytes()==(source/'你好.txt').read_bytes()
-                before=hashlib.sha256(archive.read_bytes()).hexdigest()
-                invoke('add',archive,single,code=1)
-                assert hashlib.sha256(archive.read_bytes()).hexdigest()==before
+                invoke('add',archive,single)
+                assert invoke('test',archive)['data']['check_kind']=='format_declared_checks'
+                edited=work/f'lzh-edited-output-{level}-{suffix}'
+                invoke('extract',archive,'-C',edited)
+                assert (edited/source.name/'你好.txt').read_bytes()==single.read_bytes()
+                assert (edited/single.name).read_bytes()==single.read_bytes()
             refused=work/f'lzh-store-refused.{suffix}'
             assert invoke('create',refused,single,'--level','store',code=2)['error_code']=='unsupported_options'
             assert not refused.exists()
@@ -343,11 +346,12 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
             target=work/('lha-'+name)
             invoke('extract',archive,'--entry-id',entry['id'],'-C',target)
             assert (target/entry['path']).read_bytes()==phrase
-        archive=ROOT/'tests/fixtures/lha/lh5-h2.lzh'
+        archive=work/'lha-level-zero-readonly.lzh'
+        shutil.copyfile(ROOT/'tests/fixtures/lha/lh0-h0.lzh',archive)
         before=hashlib.sha256(archive.read_bytes()).hexdigest()
         invoke('add',archive,source,code=1)
         assert hashlib.sha256(archive.read_bytes()).hexdigest()==before
-        record('lha_all_admitted_methods_header_levels_decoded_names_and_readonly_boundary')
+        record('lha_all_admitted_methods_header_levels_decoded_names_and_legacy_edit_rejection')
         for name,expected in [
             ('pm0-allbytes.pma', bytes(range(256))),
             ('pm2-boundary-1024.pma', (bytes(range(256)) + b'abracadabra abracadabra\n'*128)[:1024]),
@@ -464,7 +468,8 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
         record('uu_xxe_base64_profiles_physical_selection_and_readonly_boundary')
 
         for name,expected in [('phrase.Z',phrase),('empty.Z',b''),('nonblock.Z',b'ABABABA'),('clear.Z',b'ABABCDCD'),('zeros.Z',bytes(4096)),('empty-tar.Z',bytes(1024)),('files.taz',phrase),('empty.taz',None)]:
-            compressed=ROOT/'tests/fixtures/compress'/name
+            compressed=work/name
+            shutil.copyfile(ROOT/'tests/fixtures/compress'/name,compressed)
             listed=invoke('list',compressed)['data']
             tar=name.endswith('taz')
             assert listed['format']==('TAR.Z' if tar else 'Z')
@@ -476,15 +481,24 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
             target=work/('compress-'+name)
             invoke('extract',compressed,'-C',target)
             assert (target/listed['entries'][0]['path']).read_bytes()==expected
-            before=hashlib.sha256(compressed.read_bytes()).hexdigest()
-            invoke('add',compressed,source,code=1)
-            assert hashlib.sha256(compressed.read_bytes()).hexdigest()==before
+            if tar:
+                invoke('add',compressed,source)
+                assert invoke('test',compressed)['data']['check_kind']=='structure_and_readability'
+                edited=work/('compress-edited-'+name)
+                invoke('extract',compressed,'-C',edited)
+                assert (edited/listed['entries'][0]['path']).read_bytes()==expected
+                assert (edited/source.name/'你好.txt').read_bytes()==single.read_bytes()
+            else:
+                before=hashlib.sha256(compressed.read_bytes()).hexdigest()
+                invoke('add',compressed,source,code=1)
+                assert hashlib.sha256(compressed.read_bytes()).hexdigest()==before
         invoke('list',ROOT/'tests/fixtures/compress/bad-header.Z',code=1)
-        record('unix_compress_real_lzw_empty_streams_tar_and_readonly_boundary')
+        record('unix_compress_real_lzw_empty_streams_tar_edit_and_single_stream_readonly')
 
         marker=bytearray(512);marker[254:259]=b'ustar'
         for name,expected in [('q11-text.br',phrase),('files.tar.br',phrase),('metadata.br',phrase),('empty.br',b''),('raw.br',b'Z'),('raw-tar-marker.br',bytes(marker)),('zeros.br',bytes(4096)),('empty.tar.br',None)]:
-            compressed=ROOT/'tests/fixtures/brotli'/name
+            compressed=work/name
+            shutil.copyfile(ROOT/'tests/fixtures/brotli'/name,compressed)
             listed=invoke('list',compressed)['data'];tar=name.endswith('.tar.br')
             assert listed['format']==('TAR.BR' if tar else 'Brotli')
             assert invoke('test',compressed)['data']['check_kind']=='structure_and_readability'
@@ -494,14 +508,23 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
             target=work/('brotli-'+name)
             invoke('extract',compressed,'--entry-id',row['id'],'-C',target)
             assert (target/row['path']).read_bytes()==expected
-            before=hashlib.sha256(compressed.read_bytes()).hexdigest();invoke('add',compressed,source,code=1)
-            assert hashlib.sha256(compressed.read_bytes()).hexdigest()==before
+            if tar:
+                invoke('add',compressed,source)
+                assert invoke('test',compressed)['data']['check_kind']=='structure_and_readability'
+                edited=work/('brotli-edited-'+name)
+                invoke('extract',compressed,'-C',edited)
+                assert (edited/row['path']).read_bytes()==expected
+                assert (edited/source.name/'你好.txt').read_bytes()==single.read_bytes()
+            else:
+                before=hashlib.sha256(compressed.read_bytes()).hexdigest()
+                invoke('add',compressed,source,code=1)
+                assert hashlib.sha256(compressed.read_bytes()).hexdigest()==before
         invoke('list',ROOT/'tests/fixtures/brotli/bad-header.br',code=1)
         for suffix in ['br','tar.br']:
             refused=work/('read-only.'+suffix)
             assert invoke('create',refused,single,code=2)['error_code']=='unsupported_format'
             assert not refused.exists()
-        record('brotli_strict_headerless_streams_tar_selection_and_readonly_boundary')
+        record('brotli_headerless_streams_tar_edit_and_single_stream_readonly')
 
         for version in range(4):
             for profile in ['phrase','empty','tail17','unicode']:
