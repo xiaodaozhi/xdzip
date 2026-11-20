@@ -2,7 +2,7 @@
 
 # 任務排程、進度與取消
 
-[English](../../design/task-scheduling.md) | [简体中文](../../zh-CN/design/task-scheduling.md) | 繁體中文（台灣）
+[English](../../design/task-scheduling.md) | [简体中文](../../zh-CN/design/task-scheduling.md) | 繁體中文（台灣） | [日本語](../../ja-JP/design/task-scheduling.md) | [한국어](../../ko-KR/design/task-scheduling.md) | [Français](../../fr-FR/design/task-scheduling.md) | [Deutsch](../../de-DE/design/task-scheduling.md) | [Español](../../es-ES/design/task-scheduling.md) | [Português (Brasil)](../../pt-BR/design/task-scheduling.md) | [Русский](../../ru-RU/design/task-scheduling.md)
 
 XDZip 的每個執行時連線各有一個 Rust 命令執行緒和一個任務執行緒。命令執行緒持有目前歸檔並準備任務輸入。任務執行緒執行已接收的作業，命令執行緒仍能處理後設資料請求。[系統架構](system-architecture.md)說明這些執行緒在哪裡執行，[Qt/Rust 橋接](qt-rust-bridge.md)說明結果如何送到客戶端。
 
@@ -30,28 +30,28 @@ stateDiagram-v2
   [*] --> Queued
   Queued --> Preparing
   Preparing --> Running
-  Preparing --> Waiting: 规划冲突
-  Preparing --> WaitingPassword: 准备链接需要密码
-  Running --> Waiting: 目标重名
-  Running --> WaitingPassword: 条目需要密码
-  Waiting --> Running: 解决解压冲突
-  WaitingPassword --> Preparing: 继续准备链接
-  WaitingPassword --> Running: 恢复解码
+  Preparing --> Waiting: 規劃衝突
+  Preparing --> WaitingPassword: 準備連結需要密碼
+  Running --> Waiting: 目標重名
+  Running --> WaitingPassword: 條目需要密碼
+  Waiting --> Running: 解決解壓衝突
+  WaitingPassword --> Preparing: 繼續準備連結
+  WaitingPassword --> Running: 恢復解碼
   Running --> Verifying
-  Verifying --> Waiting: 归档名称重名
+  Verifying --> Waiting: 歸檔名稱重名
   Verifying --> Committing
-  Waiting --> Committing: 解决归档名称重名
+  Waiting --> Committing: 解決歸檔名稱重名
   Running --> Committing
-  Committing --> Running: 继续处理条目
+  Committing --> Running: 繼續處理條目
   Committing --> Cleaning
-  Running --> Cleaning: 写入失败或进入清理
-  Running --> Succeeded: 只读检查完成
-  Running --> Failed: 只读检查失败
-  Preparing --> Cleaning: 准备失败
+  Running --> Cleaning: 寫入失敗或進入清理
+  Running --> Succeeded: 唯讀檢查完成
+  Running --> Failed: 唯讀檢查失敗
+  Preparing --> Cleaning: 準備失敗
   Waiting --> Cancelling
   WaitingPassword --> Cancelling
   Running --> Cancelling
-  Cancelling --> Cleaning: 清理暂存
+  Cancelling --> Cleaning: 清理暫存
   Cancelling --> Cancelled: 清理完成
   Cleaning --> Succeeded
   Cleaning --> Failed
@@ -87,7 +87,7 @@ stateDiagram-v2
 | --- | --- |
 | `begin_commit()` 取得提交許可前 | 目前提交不會開始。任務丟棄或清理未釋出的暫存，並保留先前的提交記錄。 |
 | 解壓或檔案承諾中正在提交一個檔案 | 該提交呼叫可以完成。如果檔案已釋出，任務保留對應記錄。取消可以阻止後續工作，最終快照可以是 `cancelled` 且已提交數量大於零。 |
-| 正在進行歸檔的最終提交 | 完整驗證過的單檔案歸檔或整組新分卷一旦成功釋出，建立和修改會保留成功結果。分卷建立提交失敗時可能回滾已經發布的部分。回滾失敗可以標記 `outcome_uncertain`。 |
+| 正在進行歸檔的最終提交 | 完整驗證過的單檔案歸檔或整組新分卷一旦成功釋出，建立和修改會保留成功結果。分卷建立時，提交程序可能需要回滾自身已部分發布的分卷組。回滾失敗可以標記 `outcome_uncertain`。 |
 | 最終結果已確定後 | 遲到的取消不會把已成功提交的結果改為取消。 |
 
 提交許可決定取消還能否阻止釋出。輸出授權和暫存驗證仍然必需。已授權的寫入也可能失敗，並返回實際的檔案系統錯誤。[取消與提交許可](../../../crates/xdzip-runtime/src/extraction/control.rs)、[檔案提交](file-security.md)
@@ -96,6 +96,6 @@ stateDiagram-v2
 
 ## 失敗、關閉標籤頁與退出應用
 
-跳過適用於支援的重名決定。解碼、資源、來源或目標安全錯誤可能停止作業。已釋出的檔案保留在結果中，釋出成功仍可能伴有暫存清理警告。工作程序異常或任務中可展開的恐慌可能導致失敗或結果不確定。任務恐慌路徑會報告 `task_abandoned` 並使對應執行時進入故障狀態。程序退出後缺少最終響應，無法據此判斷哪些內容已經發布。
+跳過適用於支援的重名決定。解碼、資源、來源或目標安全錯誤可能停止作業。已釋出的檔案保留在結果中，釋出成功仍可能伴有暫存清理警告。工作程序異常或任務中可進行堆疊展開的 panic可能導致失敗或結果不確定。任務 panic 路徑會報告 `task_abandoned` 並使對應執行時進入故障狀態。程序退出後缺少最終響應，無法據此判斷哪些內容已經發布。
 
 關閉進度視窗或歸檔標籤頁是介面操作，已接收的作業和結果仍可透過應用任務入口訪問。關閉正在等待答覆的密碼視窗可以取消任務。顯式退出會處理活動任務，關閉流程開始時停止接收新命令，喚醒等待者並繼續取出事件。接收器在返回 `ShutdownReady` 前等待 Rust 工作執行緒退出。Qt 排空郵箱並等待接收執行緒結束，介面執行緒無需阻塞等待。原生外部傳輸也可能需要完成交接。[執行時生命週期](../engineering/product-runtime.md)、[歸檔傳輸](../engineering/archive-transfers.md)
