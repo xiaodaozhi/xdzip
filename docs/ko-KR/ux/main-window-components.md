@@ -1,6 +1,6 @@
 # 메인 창 기능, 구성 요소와 상호 작용 계약
 
-[English](../../ux/main-window-components.md) | [简体中文](../../zh-CN/ux/main-window-components.md) | [繁體中文](../../zh-TW/ux/main-window-components.md) | [日本語](../../ja-JP/ux/main-window-components.md) | 한국어 | [Français](../../fr-FR/ux/main-window-components.md)
+[English](../../ux/main-window-components.md) | [简体中文](../../zh-CN/ux/main-window-components.md) | [繁體中文](../../zh-TW/ux/main-window-components.md) | [日本語](../../ja-JP/ux/main-window-components.md) | 한국어 | [Français](../../fr-FR/ux/main-window-components.md) | [Español](../../es-ES/ux/main-window-components.md)
 
 메인 창 컨트롤은 모양과 동작을 함께 제공하며 기본, 호버, 눌림, 키보드 포커스, 비활성, 선택, 처리 중과 오류 상태를 명시합니다. HTML은 샘플 아카이브로 상호 작용을 검증하고 Qt는 실제 탐색, 만들기, 압축 풀기, [무결성 검사](../engineering/archive-checking.md)와 [자동 콘텐츠 미리 보기](../engineering/content-preview.md) 기능에 따라 동작을 활성화합니다. HTML 예제는 실제 백그라운드 결과가 아닙니다.
 
