@@ -32,7 +32,7 @@
 ## Чтение и запись архивов
 
 - [Файловые разрешения, подготовка и безопасная запись](../design/file-security.md)
-- [Контракт просмотра в режиме чтения](../../engineering/readonly-browser.md)
+- [Контракт просмотра в режиме чтения](../engineering/readonly-browser.md)
 - [Просмотр ZIP в режиме чтения](../engineering/zip-readonly-browsing.md)
 - [Индексы больших архивов и просмотр по запросу](../engineering/large-index.md)
 - [Чтение томов и временное открытие](../engineering/archive-opening.md)

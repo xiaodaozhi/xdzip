@@ -1,6 +1,6 @@
 # Contrat d’implémentation de la navigation en lecture seule
 
-[English](../../engineering/readonly-browser.md) | [简体中文](../../zh-CN/engineering/readonly-browser.md) | [繁體中文](../../zh-TW/engineering/readonly-browser.md) | [日本語](../../ja-JP/engineering/readonly-browser.md) | [한국어](../../ko-KR/engineering/readonly-browser.md) | Français | [Deutsch](../../de-DE/engineering/readonly-browser.md) | [Español](../../es-ES/engineering/readonly-browser.md) | [Português (Brasil)](../../pt-BR/engineering/readonly-browser.md)
+[English](../../engineering/readonly-browser.md) | [简体中文](../../zh-CN/engineering/readonly-browser.md) | [繁體中文](../../zh-TW/engineering/readonly-browser.md) | [日本語](../../ja-JP/engineering/readonly-browser.md) | [한국어](../../ko-KR/engineering/readonly-browser.md) | Français | [Deutsch](../../de-DE/engineering/readonly-browser.md) | [Español](../../es-ES/engineering/readonly-browser.md) | [Português (Brasil)](../../pt-BR/engineering/readonly-browser.md) | [Русский](../../ru-RU/engineering/readonly-browser.md)
 
 Ce document définit les limites des données, des ressources et des interactions de navigation. Il complète [domaine et données](../design/domain-data.md), le [pont Qt/Rust](../design/qt-rust-bridge.md) et la [conception de l’extension des formats](../design/codec-extension-sdk.md), sans figer de protocole tiers ni de SDK complet pour les formats. Les règles propres aux métadonnées ZIP suivent. TAR/TAR.GZ réutilisent les modèles de navigation et de requête ; leurs différences sont décrites dans le [contrat TAR/GZIP](tar-gzip.md).
 

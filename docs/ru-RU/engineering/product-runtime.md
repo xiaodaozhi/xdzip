@@ -4,7 +4,7 @@
 
 [English](../../engineering/product-runtime.md) | [简体中文](../../zh-CN/engineering/product-runtime.md) | [繁體中文](../../zh-TW/engineering/product-runtime.md) | [日本語](../../ja-JP/engineering/product-runtime.md) | [한국어](../../ko-KR/engineering/product-runtime.md) | [Français](../../fr-FR/engineering/product-runtime.md) | [Deutsch](../../de-DE/engineering/product-runtime.md) | [Español](../../es-ES/engineering/product-runtime.md) | [Português (Brasil)](../../pt-BR/engineering/product-runtime.md) | Русский
 
-Руководство описывает связь настольного приложения со средой Rust через команды и события, включая противодавление очередей, завершение работы и сборки для платформ. Возможности отдельных операций приведены в документах о [просмотре только для чтения](../../engineering/readonly-browser.md) и [безопасном извлечении](zip-safe-extraction.md).
+Руководство описывает связь настольного приложения со средой Rust через команды и события, включая противодавление очередей, завершение работы и сборки для платформ. Возможности отдельных операций приведены в документах о [просмотре только для чтения](readonly-browser.md) и [безопасном извлечении](zip-safe-extraction.md).
 
 <a name="xdzip-implemented-services"></a>
 
