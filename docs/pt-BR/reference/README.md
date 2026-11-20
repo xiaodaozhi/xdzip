@@ -39,7 +39,7 @@ Comece pela [arquitetura do sistema](../design/system-architecture.md) para conh
 - [Codificação adaptativa de nomes de arquivos](../engineering/filename-encoding.md)
 - [Prévia do conteúdo](../engineering/content-preview.md)
 - [Verificação prévia dos metadados para extração](../engineering/extraction-preflight.md)
-- [Extração segura de ZIP](../../engineering/zip-safe-extraction.md)
+- [Extração segura de ZIP](../engineering/zip-safe-extraction.md)
 - [Verificação de integridade](../engineering/archive-checking.md)
 - [Abertura de entradas, arrastar e soltar e alteração](../../engineering/archive-transfers.md)
 - [Senhas e abertura de diretórios criptografados](../engineering/password-extraction.md)

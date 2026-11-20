@@ -96,7 +96,7 @@ flowchart TB
 2. **Decodificar.** O backend lê a origem admitida, diretamente ou pelo worker de arquivo. Envia bytes a um receptor medido apoiado por preparação privada. Novas tentativas de senha, expansão e trabalho auxiliar continuam sujeitos aos limites da operação. Bytes enviados à preparação são provisórios até que decodificação, verificações de tamanho e validação disponível do formato tenham sucesso.
 3. **Confirmar e relatar.** Antes da publicação, o host verifica novamente a identidade da origem e do destino pertinente. Confirma cada arquivo elegível separadamente e registra arquivos e bytes efetivamente publicados. Falha ou cancelamento posterior pode deixar arquivos já confirmados. A preparação não publicada é limpa quando possível, e o resultado terminal relata falha, cancelamento, itens ignorados e avisos de limpeza.
 
-[Execução da extração](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/execute.rs), [verificação de arquivos](../engineering/archive-checking.md), [interações de senha](../engineering/password-extraction.md), [extração ZIP segura](../../engineering/zip-safe-extraction.md).
+[Execução da extração](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/execute.rs), [verificação de arquivos](../engineering/archive-checking.md), [interações de senha](../engineering/password-extraction.md), [extração ZIP segura](../engineering/zip-safe-extraction.md).
 
 ## Criar ou modificar um arquivo
 

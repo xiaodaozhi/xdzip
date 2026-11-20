@@ -4,7 +4,7 @@
 
 [English](../../engineering/password-extraction.md) | [简体中文](../../zh-CN/engineering/password-extraction.md) | [繁體中文](../../zh-TW/engineering/password-extraction.md) | [日本語](../../ja-JP/engineering/password-extraction.md) | [한국어](../../ko-KR/engineering/password-extraction.md) | [Français](../../fr-FR/engineering/password-extraction.md) | [Deutsch](../../de-DE/engineering/password-extraction.md) | [Español](../../es-ES/engineering/password-extraction.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/password-extraction.md)
 
-Este contrato complementa a [extração segura](../../engineering/zip-safe-extraction.md) e define senhas, autenticação e interação de tarefas. A lógica de formato e segurança de arquivos continua independente do Qt; a janela de senha envia apenas a intenção do usuário. Veja o [issue #11](https://github.com/xiaodaozhi/xdzip/issues/11) para o progresso real e a verificação das plataformas. Relatórios de execução não pertencem aqui.
+Este contrato complementa a [extração segura](zip-safe-extraction.md) e define senhas, autenticação e interação de tarefas. A lógica de formato e segurança de arquivos continua independente do Qt; a janela de senha envia apenas a intenção do usuário. Veja o [issue #11](https://github.com/xiaodaozhi/xdzip/issues/11) para o progresso real e a verificação das plataformas. Relatórios de execução não pertencem aqui.
 
 <a name="xdzip-capability-and-format-boundaries"></a>
 

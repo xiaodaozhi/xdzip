@@ -51,7 +51,7 @@ As ações de extração aparecem quando todos os itens selecionados são candid
 - Diretório por arquivo: sempre acrescenta uma pasta com o nome do arquivo compactado. Ela é reservada exclusivamente por meio da capacidade de destino mantida; arquivos, diretórios e links existentes nunca são reutilizados. Um novo nome numerado, como `name (2)`, é escolhido em até dez mil tentativas.
 - Diretório escolhido: seleciona um destino comum na janela independente de extração. Diretórios por arquivo são o padrão, com alternativas de mesclagem inteligente ou direta.
 
-A derivação dos diretórios segue as regras de nomes portáveis e do sufixo `.app` da [extração segura](../../engineering/zip-safe-extraction.md). A detecção inteligente não autoriza saída; cada tarefa deve revalidar destino, origem, CRC ou autenticação, conflitos e permissão de publicação. Uma falha individual segue a política existente de interromper aquele arquivo inteiro; depois o coordenador prossegue ao próximo.
+A derivação dos diretórios segue as regras de nomes portáveis e do sufixo `.app` da [extração segura](zip-safe-extraction.md). A detecção inteligente não autoriza saída; cada tarefa deve revalidar destino, origem, CRC ou autenticação, conflitos e permissão de publicação. Uma falha individual segue a política existente de interromper aquele arquivo inteiro; depois o coordenador prossegue ao próximo.
 
 ## Processos, solicitações e janelas
 

@@ -4,7 +4,7 @@
 
 [English](../../engineering/product-runtime.md) | [简体中文](../../zh-CN/engineering/product-runtime.md) | [繁體中文](../../zh-TW/engineering/product-runtime.md) | [日本語](../../ja-JP/engineering/product-runtime.md) | [한국어](../../ko-KR/engineering/product-runtime.md) | [Français](../../fr-FR/engineering/product-runtime.md) | [Deutsch](../../de-DE/engineering/product-runtime.md) | [Español](../../es-ES/engineering/product-runtime.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/product-runtime.md)
 
-Este guia explica como o aplicativo de desktop se conecta ao runtime Rust por comandos e eventos, incluindo contrapressão das filas, encerramento e builds por plataforma. Consulte [navegação somente para leitura](../../engineering/readonly-browser.md) e [extração segura](../../engineering/zip-safe-extraction.md) para os respectivos recursos.
+Este guia explica como o aplicativo de desktop se conecta ao runtime Rust por comandos e eventos, incluindo contrapressão das filas, encerramento e builds por plataforma. Consulte [navegação somente para leitura](../../engineering/readonly-browser.md) e [extração segura](zip-safe-extraction.md) para os respectivos recursos.
 
 <a name="xdzip-implemented-services"></a>
 
@@ -41,7 +41,7 @@ Envelopes `Task`/`TaskUpdate` no canal independente de tarefas mantêm o request
 
 Fechar um arquivo ou dispensar uma janela pode deixar o aplicativo e as tarefas ativos na bandeja. Ao sair ou reiniciar, o coordenador interrompe admissões, solicita cancelamento e esvazia eventos enquanto Rust libera sessões. O receptor aguarda as duas threads Rust antes de retornar `ShutdownReady`. O desktop espera o receptor Qt terminar e a caixa esvaziar antes de sair. A thread da interface nunca espera threads que estejam aguardando trabalho de arquivo ou entrega de eventos.
 
-O controle de cancelamento e encerramento usa seções críticas curtas com operações de estado limitadas, independentes da capacidade da fila de dados. Cancelamento cooperativo não interrompe uma leitura bloqueada pelo sistema operacional e não garante saída em tempo real rígido. As solicitações somente de leitura aqui não produzem transações de saída. Confirmações de criação/extração, limpeza temporária e resultados de saída seguem separadamente os contratos de [criação](../../engineering/zip-creation.md) e [extração segura](../../engineering/zip-safe-extraction.md).
+O controle de cancelamento e encerramento usa seções críticas curtas com operações de estado limitadas, independentes da capacidade da fila de dados. Cancelamento cooperativo não interrompe uma leitura bloqueada pelo sistema operacional e não garante saída em tempo real rígido. As solicitações somente de leitura aqui não produzem transações de saída. Confirmações de criação/extração, limpeza temporária e resultados de saída seguem separadamente os contratos de [criação](../../engineering/zip-creation.md) e [extração segura](zip-safe-extraction.md).
 
 Se um QObject for destruído antes da hora, feche a caixa, desperte o receptor e interrompa o serviço. O trabalho em segundo plano mantém apenas filas compartilhadas e o handle do receptor Rust, não ponteiros para o controlador. Qt cancela automaticamente notificações de objetos destruídos. QPointer também protege a vida útil se um callback de consumo destruir a conexão de forma síncrona. Ao abandonar a recepção, não aguarde threads no destrutor; o trabalho termina cooperativamente. Apenas um ShutdownReady normal comprova que a espera terminou.
 
