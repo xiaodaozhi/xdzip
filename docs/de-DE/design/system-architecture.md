@@ -21,7 +21,7 @@ flowchart TB
   CPP --> IMAGE[Private image preview process]
 ```
 
-Die beiden Laufzeitblöcke stellen getrennte Instanzen derselben Implementierung dar. Desktop und CLI besitzen jeweils ihren eigenen Archivzustand und ihre Aufgaben. Das lokale Desktop-IPC leitet Aktivierungs- und Integrationsanfragen an die primäre GUI-Instanz weiter. Archivbefehle laufen durch die Laufzeit im Prozess. [Anwendungssitzungen](../../engineering/application-sessions.md), [CLI-Vertrag](../engineering/command-line.md).
+Die beiden Laufzeitblöcke stellen getrennte Instanzen derselben Implementierung dar. Desktop und CLI besitzen jeweils ihren eigenen Archivzustand und ihre Aufgaben. Das lokale Desktop-IPC leitet Aktivierungs- und Integrationsanfragen an die primäre GUI-Instanz weiter. Archivbefehle laufen durch die Laufzeit im Prozess. [Anwendungssitzungen](../engineering/application-sessions.md), [CLI-Vertrag](../engineering/command-line.md).
 
 ## Modulzuständigkeiten und Aufrufrichtung
 

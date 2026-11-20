@@ -18,7 +18,7 @@ Die Desktopanwendung nutzt Qt Quick für Anzeige und Interaktion. C++-Controller
 | `TaskListModel` und Vorgangsfenster | Zeigen begrenzte Aufgabensnapshots, Fortschritt, Ergebnisse und die anstehende Entscheidung. Die zusammengesetzte Desktopidentität leitet Befehle an den zuständigen Controller. |
 | Einstellungen und Plattformadapter | Verwalten Erscheinungsbild, Sprache, Textgröße und Anwendungsverhalten. Native Adapter übernehmen je nach Betriebssystem Infobereich, Aktivierung, Dateidialoge, Zuordnungen und die Übergabe von Transfers. |
 
-[Desktop-Einstieg](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/browser_main.cpp), [Sitzungsseite](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/ui/SessionPage.qml), [Controller und Modelle](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.h), [Anwendungssitzungen](../../engineering/application-sessions.md), [Einstellungen und Lokalisierung](../ux/settings-localization.md)
+[Desktop-Einstieg](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/browser_main.cpp), [Sitzungsseite](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/ui/SessionPage.qml), [Controller und Modelle](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.h), [Anwendungssitzungen](../engineering/application-sessions.md), [Einstellungen und Lokalisierung](../ux/settings-localization.md)
 
 <a name="xdzip-browsing-and-operation-flow"></a>
 

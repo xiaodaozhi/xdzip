@@ -55,4 +55,4 @@ Siehe [allgemeine Prüfung](../../../developers/qa/README.md). Rust-Kerntests be
 
 Erste Abfragen vergeben eine unveränderliche Ergebnisidentität; spätere Batches müssen allen QueryKey-Feldern und Parametern entsprechen. Qt bricht alte Anfragen ab und bündelt die neueste Absicht, während Sequenz und Anfrage-ID weiter geprüft werden. Ein Batch begrenzt Namen zusätzlich auf 64 KiB und filtert oder sortiert nicht erneut. Historische Abnahme bleibt auf die damals verfügbaren Fähigkeiten begrenzt.
 
-Die Anwendungsschicht kann mehrere unabhängige Verbindungen erzeugen, während die Domänenlaufzeit Sitzungen pro Verbindung isoliert. Der [Vertrag zu Anwendungssitzungen](../../engineering/application-sessions.md) beschreibt globale Aufgabenidentität und serielle Zulassung schwerer Aufgaben.
+Die Anwendungsschicht kann mehrere unabhängige Verbindungen erzeugen, während die Domänenlaufzeit Sitzungen pro Verbindung isoliert. Der [Vertrag zu Anwendungssitzungen](application-sessions.md) beschreibt globale Aufgabenidentität und serielle Zulassung schwerer Aufgaben.

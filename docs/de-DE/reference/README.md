@@ -23,7 +23,7 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 - [Repository-Struktur und Abhängigkeiten](../engineering/repository-layout.md)
 - [Schnittstellenverträge und Prüfungen](../engineering/contracts.md)
 - [Produktlaufzeit und Qt-Lebenszyklus](../engineering/product-runtime.md)
-- [Anwendungssitzungen und Beenden](../../engineering/application-sessions.md)
+- [Anwendungssitzungen und Beenden](../engineering/application-sessions.md)
 - [Begründung für die cxx-Brücke](../engineering/cxx-admission.md)
 - [Kalender- und Kodierungsdienste des Hosts](../engineering/host-platform-services.md)
 

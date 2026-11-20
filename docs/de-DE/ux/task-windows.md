@@ -4,7 +4,7 @@
 
 [English](../../ux/task-windows.md) | [简体中文](../../zh-CN/ux/task-windows.md) | [繁體中文](../../zh-TW/ux/task-windows.md) | [日本語](../../ja-JP/ux/task-windows.md) | [한국어](../../ko-KR/ux/task-windows.md) | [Français](../../fr-FR/ux/task-windows.md) | Deutsch | [Español](../../es-ES/ux/task-windows.md) | [Português (Brasil)](../../pt-BR/ux/task-windows.md) | [Русский](../../ru-RU/ux/task-windows.md)
 
-Der Aufgabeneinstieg der Anwendung bündelt alle Sitzungen und leitet Fortschritt, Passwörter, Konflikte und Ergebnisse anhand von Sitzungs-UUID und Backend-Aufgaben-ID weiter. Das Schließen einer Seite erhält deren Controller; ein ausdrückliches Beenden wartet auf alle asynchronen Joins. Siehe den [Vertrag der Anwendungssitzungen](../../engineering/application-sessions.md).
+Der Aufgabeneinstieg der Anwendung bündelt alle Sitzungen und leitet Fortschritt, Passwörter, Konflikte und Ergebnisse anhand von Sitzungs-UUID und Backend-Aufgaben-ID weiter. Das Schließen einer Seite erhält deren Controller; ein ausdrückliches Beenden wartet auf alle asynchronen Joins. Siehe den [Vertrag der Anwendungssitzungen](../engineering/application-sessions.md).
 
 Zeilen des Aufgabenmenüs zeigen Operationssymbol, Archivdateinamen, Sequenz- und Statusmarke. Die Symbole verwenden gemeinsame Ressourcen für Erstellung, Extraktion, Prüfung, Hinzufügen, Verschieben und Export ohne Textpräfix für den Operationstyp. Beide Marken verwenden dieselbe Komponente; die Sequenz behält die Backend-Nummer und die interne sitzungsübergreifende Identität bleibt unverändert. Lange Dateinamen werden gekürzt, während barrierefreie Namen Operation, Nummer, Dateinamen und Zustand enthalten.
 

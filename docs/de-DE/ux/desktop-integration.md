@@ -4,7 +4,7 @@
 
 [English](../../ux/desktop-integration.md) | [简体中文](../../zh-CN/ux/desktop-integration.md) | [繁體中文](../../zh-TW/ux/desktop-integration.md) | [日本語](../../ja-JP/ux/desktop-integration.md) | [한국어](../../ko-KR/ux/desktop-integration.md) | [Français](../../fr-FR/ux/desktop-integration.md) | Deutsch | [Español](../../es-ES/ux/desktop-integration.md) | [Português (Brasil)](../../pt-BR/ux/desktop-integration.md) | [Русский](../../ru-RU/ux/desktop-integration.md)
 
-Mehrere Sitzungen, Einzelinstanz, Fensterzustand und globales Beenden folgen dem [Anwendungssitzungsvertrag](../../engineering/application-sessions.md). Das Schließen eines nicht letzten Hauptfensters erhält Aufgaben; das letzte Fenster folgt den Infobereichseinstellungen. Die Beendigungsbestätigung umfasst alle Sitzungen.
+Mehrere Sitzungen, Einzelinstanz, Fensterzustand und globales Beenden folgen dem [Anwendungssitzungsvertrag](../engineering/application-sessions.md). Das Schließen eines nicht letzten Hauptfensters erhält Aufgaben; das letzte Fenster folgt den Infobereichseinstellungen. Die Beendigungsbestätigung umfasst alle Sitzungen.
 
 Ausdrückliches Beenden über System, Menü oder Infobereich kann die globale Bestätigung auch bei einer Passwort- oder Konfliktabfrage öffnen. Unter macOS bleiben Beenden im Anwendungsmenü und Command-Q verfügbar. Zurück lässt Aufgabe und Abfrage bestehen. Eine native Dateiauswahl oder ein anderes blockierendes modales Fenster muss zuerst abgeschlossen oder geschlossen werden. Die Anwendung verwirft einen dadurch blockierten Beendigungsversuch.
 

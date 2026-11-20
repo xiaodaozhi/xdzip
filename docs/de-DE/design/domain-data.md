@@ -19,7 +19,7 @@ Die Laufzeit besitzt die Archivsitzung, den abgeschlossenen Index und die letzte
 | `QueryKey` | Kombiniert Sitzung, Abfrage-ID, Generation und Snapshot-Revision. Offset bezeichnet eine Position in diesem Ergebnis. |
 | Anfrage-, Aufgaben- und Abfrageaufforderungsidentität | Der Dienst vergibt Anfrage- und Aufgabennummern innerhalb einer Verbindung. Eine Aufforderung gehört zu einer bestimmten Aufgabe. Der gemeinsame Desktop-Aufgabeneintrag nutzt die Sitzungsidentität des Controllers und die Aufgabennummer. |
 
-Domänentypen erzwingen Archiv- und Abfrageidentitäten ungleich null. An der nativen Brücke werden typisierte Rust-Werte in generierten CXX-Daten dargestellt. QML erhält undurchsichtige Zeichenfolgen für IDs, die alle 64 Bits benötigen. Eine Zeilennummer ist nur eine Position in einer bestimmten Abfrage. [Domänenidentitäten](../../../crates/xdzip-domain/src/identity.rs), [Quellimplementierung](../../../crates/xdzip-runtime/src/source.rs), [Anwendungssitzungen](../../engineering/application-sessions.md)
+Domänentypen erzwingen Archiv- und Abfrageidentitäten ungleich null. An der nativen Brücke werden typisierte Rust-Werte in generierten CXX-Daten dargestellt. QML erhält undurchsichtige Zeichenfolgen für IDs, die alle 64 Bits benötigen. Eine Zeilennummer ist nur eine Position in einer bestimmten Abfrage. [Domänenidentitäten](../../../crates/xdzip-domain/src/identity.rs), [Quellimplementierung](../../../crates/xdzip-runtime/src/source.rs), [Anwendungssitzungen](../engineering/application-sessions.md)
 
 <a name="xdzip-physical-entries-and-output-names"></a>
 
