@@ -17,6 +17,10 @@
 
 扫描器使用固定 Qt 版本的 [qmlimportscanner](https://doc.qt.io/qt-6.8/qtqml-tooling-qmlimportscanner.html)。Xdzip.Settings／Xdzip.Native 是产品内建注册模块，不复制开发静态库。缺少普通依赖、QML 路径逃逸 SDK、同名库冲突或未知外部库均失败。原生导入递归收集只复制 SDK 库，不捎带宿主 glibc 或图形驱动；系统依赖按实际 Debian 包归属列出。
 
+## 实验性 strict Snap
+
+采用 strict confinement 的 `core24` Snap 是单独的实验性交付。受限应用不会从宿主机继承 `$SNAP/usr/share/X11/xkb` 下的 XKB 配置。启动入口将 `QT_XKB_CONFIG_ROOT` 设为该路径时，Snap 必须从固定版本的 Ubuntu 构建环境完整纳入 XKB 目录。缺少这组数据时，Qt Wayland 插件仍可能加载并连接合成器，却会在创建键盘上下文时因 `xkbcommon` 包含路径错误失败。载荷须保留 `xkb-data` 版权通知，并在候选回执中记录软件包版本、确定性目录哈希、文件数和通知哈希。打包后先从最终 Snap 解包核对，再分别执行离屏和 Wayland 冒烟测试。这些检查不能代替真实 strict Snap 桌面会话中的安装和交互检查。
+
 裁剪先验证完整复制树、必要 Basic 插件、保留组件的强依赖和已知样式布局。发现意外链接、未知样式或对话框变体，以及对被省略模块的强依赖时，在删除前拒绝。默认对话框、输入法、辅助功能、图片插件、TLS 和系统翻译沿用现有部署规则。`share/deployment.json` 记录移除的 QML 文件与字节数。私有 `cli/` 通过固定上下文路径共享 `bin/xdzip-native-codec`，独立 CLI 包继续自包含。
 
 HTTPS 另显式要求 Ubuntu 的 `libssl3t64` 与 `ca-certificates`，验证 `libssl.so.3`、`libcrypto.so.3` 的系统包归属及非空系统 CA 信任库。Qt OpenSSL 后端可能在运行时加载这些库，不能仅凭 ldd 推断依赖完整。部署清单保留已安装的二进制包版本、源包与源包版本；安装器声明两项依赖，实际文件 SBOM 将其记录为必需 OS 包，不把系统库打包进应用。
