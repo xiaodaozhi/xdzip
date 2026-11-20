@@ -1,6 +1,6 @@
 # Domain model and archive data
 
-English | [简体中文](../zh-CN/design/domain-data.md) | [繁體中文（台灣）](../zh-TW/design/domain-data.md)
+English | [简体中文](../zh-CN/design/domain-data.md) | [繁體中文（台灣）](../zh-TW/design/domain-data.md) | [日本語](../ja-JP/design/domain-data.md) | [한국어](../ko-KR/design/domain-data.md) | [Français](../fr-FR/design/domain-data.md) | [Deutsch](../de-DE/design/domain-data.md) | [Español](../es-ES/design/domain-data.md) | [Português (Brasil)](../pt-BR/design/domain-data.md) | [Русский](../ru-RU/design/domain-data.md)
 
 The runtime owns the archive session, the completed index and the latest query for that session. Qt keeps a view of the result, and the CLI can read physical records through its separate catalog command. Both submit operations to the same Rust service. [System architecture](system-architecture.md), [Qt/Rust bridge](qt-rust-bridge.md)
 
