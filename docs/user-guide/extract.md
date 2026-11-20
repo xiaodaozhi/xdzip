@@ -6,7 +6,7 @@ English | [简体中文](../zh-CN/user-guide/extract.md) | [繁體中文](../zh-
 
 1. Open the archive. The main toolbar button extracts the current selection when you have one, or the whole archive when nothing is selected. Use the arrow next to the button to explicitly choose **Extract all** or **Extract selected**.
 2. Confirm the scope and choose a writable destination. Select the option to create an archive-named folder if you want one and the option is available.
-3. Choose a conflict policy. **Ask** pauses for a decision, **Skip** keeps the existing file, **Rename** saves a separate file, and **Overwrite** replaces an eligible file after verification.
+3. Choose a conflict policy. **Ask what to do** pauses for a decision, **Skip existing files** keeps the existing file, **Rename and keep both versions** saves a separate file, and **Overwrite existing files** replaces an eligible file after verification.
 4. Start extraction and check the task result. A failure or cancellation can leave earlier files in place. Use the result details to identify what remains before retrying. [Checks, tasks and results](checks-and-tasks.md)
 
 The extraction menu also offers **Extraction metadata preflight** for selections of up to 128 actual archive records. It reports issues such as unsafe names, unsupported methods and declared limits. Select explicit entries for this report. An implicit folder shown only for navigation can still be used for extraction when supported. Preflight does not read the payload or authorize writing. [Preflight and extraction limits](../engineering/extraction-preflight.md)

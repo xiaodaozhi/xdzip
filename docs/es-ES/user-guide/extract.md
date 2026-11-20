@@ -6,12 +6,12 @@
 
 ## Desde la ventana del archivo comprimido
 
-1. Abre el archivo comprimido. El botón principal de la barra extrae los elementos seleccionados o el archivo completo si no hay selección. Pulsa la flecha que hay junto al botón para elegir **Extraer todo** o **Extraer selección**.
+1. Abre el archivo comprimido. El botón principal de la barra extrae los elementos seleccionados o el archivo completo si no hay selección. Pulsa la flecha que hay junto al botón para elegir **Extraer todo** o **Extraer la selección**.
 2. Confirma qué quieres extraer y elige un destino con permisos de escritura. Si la opción está disponible, puedes crear una carpeta con el nombre del archivo comprimido.
-3. Elige cómo resolver los conflictos. **Preguntar** pone la operación en pausa hasta que decidas. **Omitir** conserva el archivo existente. **Cambiar nombre** guarda el archivo nuevo por separado. **Sobrescribir** sustituye el archivo existente después de verificarlo, si la operación es compatible.
+3. Elige cómo resolver los conflictos. **Preguntar qué hacer** pone la operación en pausa hasta que decidas. **Omitir los archivos existentes** conserva el archivo existente. **Cambiar el nombre y conservar ambas versiones** guarda el archivo nuevo por separado. **Sobrescribir archivos existentes** sustituye el archivo existente después de verificarlo, si la operación es compatible.
 4. Inicia la extracción y comprueba el resultado. Si se produce un error o cancelas, los archivos ya extraídos pueden quedarse en el destino. Antes de repetir la operación, consulta el resultado para saber qué queda por extraer. [Verificaciones, tareas y resultados](checks-and-tasks.md)
 
-El menú de extracción también incluye **Comprobar los metadatos antes de extraer**. Selecciona explícitamente hasta 128 entradas reales del archivo comprimido. La comprobación informa, por ejemplo, de nombres inseguros, métodos incompatibles y límites declarados. Si el formato lo permite, puedes extraer una carpeta implícita aunque solo se muestre para navegar. La comprobación previa no lee los datos ni concede permiso de escritura. [Comprobación previa y límites de extracción](../engineering/extraction-preflight.md)
+El menú de extracción también incluye **Comprobar metadatos**. Selecciona explícitamente hasta 128 entradas reales del archivo comprimido. La comprobación informa, por ejemplo, de nombres inseguros, métodos incompatibles y límites declarados. Si el formato lo permite, puedes extraer una carpeta implícita aunque solo se muestre para navegar. La comprobación previa no lee los datos ni concede permiso de escritura. [Comprobación previa y límites de extracción](../engineering/extraction-preflight.md)
 
 En archivos ZIP grandes con índice en disco puedes extraer archivos normales seleccionados dentro de los límites de la tarea. Si el archivo comprimido completo supera el límite de extracción, selecciona un grupo más pequeño. Si cambia el archivo de origen o se sustituye, ábrelo de nuevo y vuelve a seleccionar los elementos. [Límites de los archivos grandes](../engineering/large-index.md)
 
