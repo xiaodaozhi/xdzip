@@ -94,7 +94,7 @@
 - [HTML のビジュアル再現性検証](../visual/html-fidelity.md)
 - [操作と文言の補足仕様](../ux/interaction-spec.md)
 - [メインウィンドウの機能、コンポーネント、操作](../../ux/main-window-components.md)
-- [ディレクトリーツリーの設計と統合](../../ux/directory-tree.md)
+- [ディレクトリーツリーの設計と統合](../ux/directory-tree.md)
 - [メインウィンドウのようこそ画面](../ux/welcome.md)
 - [ようこそ画面の読み込み表示と作成完了](../ux/welcome-opening.md)
 - [展開時のパスワード操作](../ux/password-extraction.md)
