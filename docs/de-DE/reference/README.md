@@ -94,7 +94,7 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 - [Prüfung der visuellen HTML-Übereinstimmung](../visual/html-fidelity.md)
 - [Ergänzende Interaktions- und Textspezifikation](../ux/interaction-spec.md)
 - [Funktionen, Komponenten und Interaktion des Hauptfensters](../../ux/main-window-components.md)
-- [Entwurf und Integration des Verzeichnisbaums](../../ux/directory-tree.md)
+- [Entwurf und Integration des Verzeichnisbaums](../ux/directory-tree.md)
 - [Startseite im Hauptfenster](../ux/welcome.md)
 - [Ladeanzeige der Startseite und Abschluss der Erstellung](../ux/welcome-opening.md)
 - [Passworteingabe beim Entpacken](../ux/password-extraction.md)

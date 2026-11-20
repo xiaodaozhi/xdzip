@@ -1,6 +1,6 @@
 # 目录树 B：设计、素材与接入规格
 
-[English](../../ux/directory-tree.md) | 简体中文 | [繁體中文](../../zh-TW/ux/directory-tree.md) | [日本語](../../ja-JP/ux/directory-tree.md) | [한국어](../../ko-KR/ux/directory-tree.md) | [Français](../../fr-FR/ux/directory-tree.md) | [Español](../../es-ES/ux/directory-tree.md) | [Português (Brasil)](../../pt-BR/ux/directory-tree.md)
+[English](../../ux/directory-tree.md) | 简体中文 | [繁體中文](../../zh-TW/ux/directory-tree.md) | [日本語](../../ja-JP/ux/directory-tree.md) | [한국어](../../ko-KR/ux/directory-tree.md) | [Français](../../fr-FR/ux/directory-tree.md) | [Deutsch](../../de-DE/ux/directory-tree.md) | [Español](../../es-ES/ux/directory-tree.md) | [Português (Brasil)](../../pt-BR/ux/directory-tree.md)
 
 状态：**核心目录交互已接入 HTML 示例和 Qt 只读浏览，边界状态资源仍待接入**。交互遵循[只读浏览契约](../engineering/readonly-browser.md)，普通目录浏览采用直属子项，搜索递归当前范围，输出授权保持只读。
 

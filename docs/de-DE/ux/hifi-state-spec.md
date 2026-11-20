@@ -74,7 +74,7 @@ Ressourcen liegen unter `design/assets/`. `reference/` enthält Ausschnitte in O
 
 ## Ergänzung des Verzeichnisbaums
 
-Die B01-Navigation ergänzt die [Verzeichnisbaum-Spezifikation B](../../ux/directory-tree.md) mit drei formalen Zeichenflächen und 26 gemeinsamen Ausschnitten. Knotenpfeile hängen von Unterverzeichnissen ab; Aufklappen, aktuelles Verzeichnis und Tastaturfokus sind unabhängig. Laden, leere Archive, Dateien im Wurzelverzeichnis, Navigationsgrenzen, Fehler und verborgene aktuelle Pfade sind getrennt spezifiziert; der bestehende schreibgeschützte Domänenvertrag bleibt unverändert. HTML und Qt integrieren Kernnavigation, Verbindungslinien und Anzeigen für verborgene aktuelle Zweige; Skelette und spezielle Grenzsymbole bleiben Designressourcen. Den Integrationsumfang beschreibt die Verzeichnisbaum-Spezifikation.
+Die B01-Navigation ergänzt die [Verzeichnisbaum-Spezifikation B](directory-tree.md) mit drei formalen Zeichenflächen und 26 gemeinsamen Ausschnitten. Knotenpfeile hängen von Unterverzeichnissen ab; Aufklappen, aktuelles Verzeichnis und Tastaturfokus sind unabhängig. Laden, leere Archive, Dateien im Wurzelverzeichnis, Navigationsgrenzen, Fehler und verborgene aktuelle Pfade sind getrennt spezifiziert; der bestehende schreibgeschützte Domänenvertrag bleibt unverändert. HTML und Qt integrieren Kernnavigation, Verbindungslinien und Anzeigen für verborgene aktuelle Zweige; Skelette und spezielle Grenzsymbole bleiben Designressourcen. Den Integrationsumfang beschreibt die Verzeichnisbaum-Spezifikation.
 
 <a name="xdzip-changes-and-revalidation"></a>
 

@@ -1,6 +1,6 @@
 # Arborescence B : conception, ressources et intégration
 
-[English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | [繁體中文](../../zh-TW/ux/directory-tree.md) | [日本語](../../ja-JP/ux/directory-tree.md) | [한국어](../../ko-KR/ux/directory-tree.md) | Français | [Español](../../es-ES/ux/directory-tree.md) | [Português (Brasil)](../../pt-BR/ux/directory-tree.md)
+[English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | [繁體中文](../../zh-TW/ux/directory-tree.md) | [日本語](../../ja-JP/ux/directory-tree.md) | [한국어](../../ko-KR/ux/directory-tree.md) | Français | [Deutsch](../../de-DE/ux/directory-tree.md) | [Español](../../es-ES/ux/directory-tree.md) | [Português (Brasil)](../../pt-BR/ux/directory-tree.md)
 
 État : **les interactions essentielles des répertoires sont intégrées aux exemples HTML et à la navigation Qt en lecture seule ; les ressources des états limites restent à intégrer**. Les interactions suivent le [contrat de navigation en lecture seule](../engineering/readonly-browser.md). La navigation ordinaire utilise les enfants directs, la recherche couvre récursivement la portée courante et l’autorisation de sortie reste distincte de la lecture seule.
 
