@@ -62,17 +62,17 @@ Microsoft Store 版は GitHub とは別に公開され、更新は Microsoft Sto
 
 | 形式 | 閲覧、展開、検証 | 作成 | 変更 |
 | --- | --- | --- | --- |
-| ZIP および ZIPX/XPI/APK/IPA/CBZ の候補 | Store、Deflate、Deflate64、BZip2、LZMA、XZ。対応する AES-256 と分割プロファイル | Store、Deflate、AES-256、連番ボリュームを使用した ZIP | 条件を満たす Store/Deflate ZIP |
+| ZIP および ZIPX/XPI/APK/IPA/CBZ の候補 | Store、Deflate、Deflate64、BZip2、LZMA、XZ。対応する AES-256 と分割プロファイル | Store、Deflate、AES-256、連番ボリュームを使用した ZIP | 表の方式を使う条件適合の ZIP/ZIPX |
 | TAR、TAR.GZ（`.tgz` を含む） | 通常ファイルとディレクトリ | 対応。TAR は圧縮せずに格納 | 条件を満たす通常の単一ファイルアーカイブ |
 | GZIP（`.gz`） | 連結された GZIP メンバーを含む 1 個の論理ファイル。GZIP 内の TAR は TAR ツリーとして表示 | 通常ファイル 1 個、Deflate 0/1/6/9 | 非対応 |
 | BZip2、LZMA Alone、Lzip v1 | ストリームとメモリの上限内で通常ファイル 1 個 | 非対応 | 非対応 |
-| TAR.BZ2、TAR.LZMA、TAR.LZ | 通常ファイルとディレクトリ | 非対応 | 非対応 |
-| XZ、TAR.XZ（`.txz` を含む） | 宣言された検証、LZMA2、Delta/BCJ、連結ストリーム | LZMA2 レベル 1/6/9、XZ は通常ファイル 1 個 | 非対応 |
-| LZ4、TAR.LZ4 | 標準フレーム、独立または連結ブロック、フレームの連結、宣言された検証 | LZ4 レベル 1/6/9、通常の LZ4 は通常ファイル 1 個 | 非対応 |
-| Zstandard、TAR.ZST（`.tzst` を含む） | 標準フレーム、対応するウィンドウ、Huffman/FSE、反復オフセット、宣言された検証 | Zstandard レベル 1/6/9、通常の Zstandard は通常ファイル 1 個 | 非対応 |
+| TAR.BZ2、TAR.LZMA、TAR.LZ | 通常ファイルとディレクトリ | 非対応 | 条件を満たすアーカイブ |
+| XZ、TAR.XZ（`.txz` を含む） | 宣言された検証、LZMA2、Delta/BCJ、連結ストリーム | LZMA2 レベル 1/6/9、XZ は通常ファイル 1 個 | TAR.XZ |
+| LZ4、TAR.LZ4 | 標準フレーム、独立または連結ブロック、フレームの連結、宣言された検証 | LZ4 レベル 1/6/9、通常の LZ4 は通常ファイル 1 個 | TAR.LZ4 |
+| Zstandard、TAR.ZST（`.tzst` を含む） | 標準フレーム、対応するウィンドウ、Huffman/FSE、反復オフセット、宣言された検証 | Zstandard レベル 1/6/9、通常の Zstandard は通常ファイル 1 個 | TAR.ZST |
 | 7z | パスワード、暗号化されたファイル名、ソリッドアーカイブ、連番ボリューム | 暗号化、ソリッドアーカイブ、連番ボリューム | 条件を満たす非暗号化、非分割アーカイブ |
 | DEB | 一般的な ar メンバー、制御データとデータの TAR ビュー、対応する GZIP/XZ/Zstandard/BZip2/LZMA プロファイル | 非対応 | 非対応 |
-| LHA/LZH | ヘッダーレベル 0–3、Store、LH1–LH7、LZS/LZ5、宣言された CRC | LH5 レベル 1/6/9、レベル 2 ヘッダー、通常ファイルとディレクトリ | 非対応 |
+| LHA/LZH | ヘッダーレベル 0–3、Store、LH1–LH7、LZS/LZ5、宣言された CRC | LH5 レベル 1/6/9、レベル 2 ヘッダー、通常ファイルとディレクトリ | 項目の CRC を備えた条件適合のレベル 2 アーカイブ |
 | [PMA](docs/ja-JP/engineering/pma-streams.md) | レベル 0 の PM0/PM1/PM2、厳密な CP/M フレーミング、宣言された CRC | 非対応 | 非対応 |
 | [ARJ](docs/ja-JP/engineering/arj-streams.md) | Store と方式 1–4、ヘッダーの検証、メンバー全体の CRC-32 | 非対応 | 非対応 |
 | [ARC](docs/ja-JP/engineering/arc-streams.md) | 旧式と新式の Store、方式 3–9、厳密なフレーミング、メンバー全体の CRC-16 | 非対応 | 非対応 |
@@ -83,8 +83,8 @@ Microsoft Store 版は GitHub とは別に公開され、更新は Microsoft Sto
 | [Compound File (MSI)](docs/ja-JP/engineering/wim-msi-installer-format-sources.md#xdzip-compound-file-and-msi) | ストレージの閲覧、raw ストリームの展開。構造と読み取り可能性の検証 | 非対応 | 非対応 |
 | [NSIS（`.exe`）](docs/ja-JP/engineering/wim-msi-installer-format-sources.md#xdzip-nsis-and-other-sfx) | 静的な `firstheader` メタデータのみ。展開とアーカイブ全体の検証は利用不可 | 非対応 | 非対応 |
 | ASAR | 格納されたファイルとディレクトリ、共有ペイロード範囲、宣言されたファイルとブロックの SHA-256 | 非対応 | 非対応 |
-| Z、TAR.Z（`.taz` を含む） | Unix compress の LZW、9–16 ビット辞書、対応する CLEAR とアラインメントのプロファイル | 非対応 | 非対応 |
-| Brotli、TAR.BR | 通常の RFC 7932 ストリーム、10–24 ビットのウィンドウ、すべての静的辞書変換 | 非対応 | 非対応 |
+| Z、TAR.Z（`.taz` を含む） | Unix compress の LZW、9–16 ビット辞書、対応する CLEAR とアラインメントのプロファイル | 非対応 | TAR.Z |
+| Brotli、TAR.BR | 通常の RFC 7932 ストリーム、10–24 ビットのウィンドウ、すべての静的辞書変換 | 非対応 | TAR.BR |
 | AES Crypt（`.aes`） | バージョン 0–3、開くときのパスワード、暗号文全体の HMAC、バージョン固有の長さの規則 | 非対応 | 非対応 |
 | UU/UUE、XXE | 従来の文字数付き行と対応する begin-base64 エンベロープ。複数メンバーも扱う | 非対応 | 非対応 |
 | RAR | 従来の形式、RAR5、RAR 7 の形式拡張。パスワード、ソリッド、分割アーカイブも扱う | 非対応 | 非対応 |
@@ -94,17 +94,17 @@ Microsoft Store 版は GitHub とは別に公開され、更新は Microsoft Sto
 | ZIP SFX | 検証済みの ZIP 自己展開アーカイブ | Windows x64、Store/Deflate、`.sfx.exe` | 非対応 |
 
 - ZIP の AES-256 は内容だけを暗号化します。ファイル名は表示されます。AES-128/192 と従来の ZipCrypto には対応していません。`.zip.001`、PKZIP の `.z01` など関連する命名規則の分割アーカイブを読み取れます。作成時は連番ボリュームを使用します。[パスワード付きアーカイブの展開](docs/ja-JP/engineering/password-extraction.md)と[分割アーカイブを開く](docs/ja-JP/engineering/archive-opening.md)を参照してください。
-- BZip2、LZMA Alone、Lzip v1 と、それらを使う TAR の組み合わせは読み取り専用です。LZMA Alone には内容チェックサムがありません。検証の対象は構造、サイズ、読み取り可能性です。拡張子、メンバー、メモリ上限、受け入れ条件は[単一ファイルストリームの仕様](docs/ja-JP/engineering/single-file-streams.md)を参照してください。
-- XZ は宣言された内容検証をそれぞれ実行します。None を宣言するストリームは構造と読み取り可能性だけを検証します。ZIPX の読み取りは表にある ZIP 方式に対応します。PPMd、JPEG、WavPack のバリエーションには対応していません。追加の ZIP 方式は読み取り専用で、AES の対応範囲や ZIPX の作成機能は増えません。
+- 単独の BZip2、LZMA Alone、Lzip v1 は読み取り専用です。LZMA には内容のチェックサムがないため、構造、サイズ、読み取り可否を検証します。拡張子、項目、メモリー上限、受け入れ条件については[単一ファイルストリームの仕様](docs/ja-JP/engineering/single-file-streams.md)を参照してください。
+- XZ は各ストリームが宣言する内容の検証を行います。None を宣言したストリームの検証は構造と読み取り可否が対象です。ZIPX は表に記載した ZIP 方式に対応し、PPMd、JPEG、WavPack の派生形式には対応しません。ZIP/ZIPX の編集では保持する項目の圧縮データと方式を引き継ぎ、新しい項目は Deflate を使います。
 - 7z の変更ではアーカイブを再構築します。保持する内容と追加する内容には 512 MiB の作業メモリ上限があります。新規作成では入力をストリームで読み取るため、この再構築上限は適用されません。暗号化された ZIP や 7z、および分割された ZIP や 7z は変更できません。[アーカイブの変更](docs/ja-JP/engineering/archive-transfers.md)を参照してください。
 - RAR、CAB、UDF は読み取り専用です。[ISO の作成](docs/ja-JP/engineering/iso-creation.md)は、通常ファイルとディレクトリ、単一ボリューム、4 GiB 未満のファイルに対応し、Joliet 名は各構成要素が UCS-2 で最大 64 文字です。起動可能イメージ、UDF や Rock Ridge の書き込み、イメージの更新には対応していません。イメージを読み取るときにマウントや実行はしません。[RAR の仕様](docs/ja-JP/engineering/rar-format-sources.md)と[形式バックエンドの仕様](docs/ja-JP/engineering/native-codecs.md)を参照してください。
 - [ZIP 自己展開ファイル（SFX）の作成](docs/ja-JP/engineering/sfx-creation.md)では、Qt や xdzip のインストールを必要としない Windows x64 向けの展開プログラムを生成します。展開先の選択、競合の処理、キャンセルが可能です。展開されたファイルを実行しません。パスワード、分割ボリューム、自動起動コマンドには対応していません。一般の `.exe` はファイルの関連付けの対象外です。
 - DEB は `members/`、`control/`、`data/` をエクスポート用のビューとして表示します。すべて展開すると raw メンバーと展開した内容の双方が対象になります。インストールやスクリプト実行は行いません。制御データは無圧縮、GZIP、XZ、Zstandard に対応し、データはさらに BZip2 と LZMA に対応します。検証ではコンテナの読み取りと宣言された項目を確認します。パッケージの署名確認は行いません。[DEB の仕様](docs/ja-JP/engineering/deb-containers.md)を参照してください。
-- Z と TAR.Z は構造と読み取り可能性を検証します。チェックサムはありません。作成および壊れた旧形式ストリームの修復には対応していません。[Unix compress の仕様](docs/ja-JP/engineering/compress-streams.md)を参照してください。
+- Z と TAR.Z は構造と読み取り可否を検証します。チェックサムはありません。単独の Z の作成と、壊れた旧形式ストリームの修復には対応しません。[Unix compress の仕様](docs/ja-JP/engineering/compress-streams.md)を参照してください。
 - UU/UUE と XXE はチェックサム無しで構造と読み取り可能性を検証します。ヘッダー内のパスやモードは、出力や実行の権限を与えません。GNU のエンコード済みファイル名と複数部分の修復は、対応する[テキストエンベロープのプロファイル](docs/ja-JP/engineering/text-envelopes.md)の範囲外です。
 - 読み取り専用の ASAR を開いたり展開したりしても、アプリは起動しません。外部の `unpacked` データと宣言されたリンクは表示されますが、処理の対象外です。隣接ディレクトリへのアクセスや実行属性の復元は行いません。任意のハッシュがある場合は破損を検出し、ハッシュがないレコードは構造と読み取り可能性だけを検証します。[ASAR の仕様](docs/ja-JP/engineering/asar-containers.md)を参照してください。
 - NSIS は、PE オーバーレイに上限内の有効な `firstheader` レコードがある場合のみ検出します。xdzip はその静的メタデータ行を表示します。PE スタブ、インストーラースクリプト、プラグイン、ペイロードを実行しません。インストーラーヘッダーの解凍やペイロードの展開も行いません。`.exe` はドラッグ＆ドロップとシェルの関連付けには表示されません。一般の実行ファイルを扱う機能ではありません。
-- LHA/LZH の作成は LH5 と UTF-8 のファイル名をレベル 2 ヘッダーで使用します。旧来の Windows ツールでは古いコードページで名前を表示することがあります。既存アーカイブは変更できません。旧来の名前は区切り文字の解釈前にデコードし、CRC がある場合は実際にデコードするときに検証します。CRC のない古いメンバーは構造と読み取り可能性だけを確認します。パスワード、分割ボリューム、修復プロファイルは対象外です。PMA には別の読み取り専用プロファイルがあります。[LHA の仕様](docs/ja-JP/engineering/lha-containers.md)を参照してください。
+- LHA/LZH の作成には LH5、レベル 2 のヘッダー、UTF-8 の名前を使います。古い Windows ツールでは旧コードページで名前が表示される場合があります。条件を満たすレベル 2 のアーカイブは編集できます。旧形式の名前は区切り文字を解釈する前にデコードし、内容のデコード時に存在する CRC を検証します。CRC のない古い項目では構造と読み取り可否を検証します。パスワード、分割ボリューム、修復には対応していません。PMA は別の読み取り専用プロファイルです。[LHA の仕様](docs/ja-JP/engineering/lha-containers.md)を参照してください。
 - ARJ は読み取り専用です。バイナリと従来のテキストのメンバーは、OS による改行変換を行わず、CRC の対象になっているアーカイブのバイト列をそのまま返します。パスワード、分割ボリューム、復旧またはセキュリティに関するプロファイル、リンク、特殊オブジェクトは対象外です。不明な方式は表示され、アーカイブ全体の検証は失敗します。
 - ARC は読み取り専用です。通常ファイルは順に処理し、終端を厳密に検証します。パスワードによるデコード、分割ボリューム、SFX、Spark 拡張は対象外です。不明な方式は ZIP 方式に読み替えずに表示し、アーカイブ全体の検証は失敗します。旧式の XOR 暗号にはヘッダーフラグがありません。デコードには有効なストリーム、厳密なサイズ、CRC が必要です。パスワードや修復で代用することはありません。
 - BH は `BH 05 07` の方式 8 の raw Deflate プロファイルを読み取れます。不明な方式、暗号化、ディレクトリ、ボリューム、末尾データ、SFX 接頭部は対象外です。
@@ -113,7 +113,7 @@ Microsoft Store 版は GitHub とは別に公開され、更新は Microsoft Sto
 - スパースファイルを含む TAR と第三者製の拡張機能には現在対応していません。通常の GZIP と ZIP 由来の XPI/APK/IPA/CBZ の候補は[単一ファイルストリームの仕様](docs/ja-JP/engineering/single-file-streams.md)に従います。旧来のファイル名のエンコーディングは可能な範囲で検出します。短い名前や異なるエンコーディングが混在する場合は特定できないことがあります。[ファイル名のエンコーディング](docs/ja-JP/engineering/filename-encoding.md)を参照してください。
 
 - AES Crypt ではメタデータの表示前に、開くためのパスワードが必要です。すべての暗号文の MAC を検証します。バージョン 0–2 では末尾の長さの剰余を認証しません。拡張情報によって権限が付与されることはありません。[AES Crypt の仕様](docs/ja-JP/engineering/aescrypt-envelopes.md)を参照してください。
-- Brotli と TAR.BR は読み取り専用です。検出の手掛かりが弱い場合は内容全体を検証します。チェックサムはありません。共有辞書と大きなウィンドウの拡張は、対応する [Brotli プロファイル](docs/ja-JP/engineering/brotli-streams.md)の範囲外です。
+- Brotli と TAR.BR は形式を候補として仮検出した場合に内容の完全な検証が必要で、チェックサムはありません。TAR.BR の編集では標準の非圧縮メタブロックで書き込むため、アーカイブが大きくなることがあります。共有辞書と大きなウィンドウの拡張は、対応する[Brotli プロファイル](docs/ja-JP/engineering/brotli-streams.md)の対象外です。
 
 <a name="xdzip-command-line"></a>
 

@@ -8,12 +8,12 @@
 
 検証範囲は[整合性検証](archive-checking.md)に成功したときに何を確認できたかを示します。`supported_content` は対応する項目の内容を検証します。`structure_and_readability` は構造と読み取り可否を確認しますが、内容のチェックサムは保証しません。`format_declared_checks` はストリーム内で宣言された検証を実行します。検証値を持たないプロファイルもこの分類に含まれます。検証操作の可否は検証範囲とは別です。たとえば NSIS プロファイルは、上限内でインストーラーのメタデータを認識できますが、検証操作には対応していません。作成方式 ID は、形式ごとに許可された書き込み方式の範囲で解決します。
 
-`creation_methods` はホスト内の転送用 ID と方式名を対応付け、`creation_levels` は形式ごとに使用できるレベルを定めます。生成される GUI の選択肢と Rust の記述子は両方を保持します。CLI、GUI、ホストはいずれも同じ宣言を使い、Deflate と LZMA2 以外の方式にも対応します。Store と Copy は ID 0、Deflate は 8、LZMA2 は 32 を引き続き使います。Zstandard のホスト ID は 93 です。LZ4 の ID 256 は対象コンテナー内に限られ、ZIP 方式とは見なしません。読み取り専用プロファイルには作成レベルがありません。ジェネレーターは形式内の ID の欠落や重複、無効なレベルを拒否します。
+`creation_methods` はホスト内の転送用 ID と方式名を対応付け、`creation_levels` は形式ごとに使用できるレベルを定めます。生成される GUI の選択肢と Rust の記述子は両方を保持します。CLI、GUI、ホストはいずれも同じ宣言を使い、Deflate と LZMA2 以外の方式にも対応します。Store と Copy は ID 0、Deflate は 8、LZMA2 は 32 を引き続き使います。Zstandard のホスト ID は 93 です。LZ4 の ID 256 は対象コンテナー内に限られ、ZIP 方式とは見なしません。作成に対応しない形式には作成レベルがありません。書き換えへの対応は作成とは別に決まります。ジェネレーターは形式内の ID の欠落や重複、無効なレベルを拒否します。
 
 | 操作 | 組み込みの対応範囲 |
 | --- | --- |
 | 新しいアーカイブを作成 | ZIP、7z、TAR、TAR.GZ（`.tar.gz`、`.tgz`）、単独の GZIP、XZ/TAR.XZ、LZ4/TAR.LZ4、Zstandard/TAR.ZST、LHA（`.lha`、`.lzh`）、ISO9660/Joliet、Windows x64 用 ZIP SFX ラッパー。単独ストリームは通常ファイルを一つ受け取ります。[作成仕様](zip-creation.md)と[単一ファイルストリーム](single-file-streams.md)を参照してください。 |
-| 既存のアーカイブを書き換え | 条件を満たす ZIP、7z、TAR、TAR.GZ が対象です。暗号化、分割ボリューム、非対応のレコードや保存方式のアーカイブは[変更仕様](archive-transfers.md)に従って対象外です。 |
+| 既存のアーカイブを書き換え | 条件を満たす ZIP/ZIPX、7z、レベル 2 の LHA/LZH、TAR、TAR.GZ、TAR.XZ、TAR.ZST、TAR.LZ4、TAR.BZ2、TAR.LZMA、TAR.LZ、TAR.Z、TAR.BR が対象です。暗号化、分割ボリューム、非対応のレコードや保存方式は対象外です。[変更仕様](archive-transfers.md)を参照してください。 |
 | 閲覧、展開、項目を開く、書き出し、検証 | 操作ごとに機能とレコードの条件を確認します。たとえば、一部のインストーラーで確認できるのはメタデータだけです。[読み取り専用の閲覧](readonly-browser.md)と[検証](archive-checking.md)を参照してください。 |
 
 仕様を変更したら `python3 scripts/generate-format-registry.py` を実行します。Rust のコーデック記述子、ドラッグ＆ドロップ用とシェル用の C++ 形式候補、JavaScript UI の選択肢、インストーラー用の Python アイコン対応表が生成されます。`--check` はファイルを変更せず、生成物の欠落や古い内容を検出します。`python3 scripts/test-format-registry.py` は、矛盾する機能、ID や拡張子の重複、出力言語で無効な値、更新されていない参照先を検査します。通常の CI で両方の検査を実行します。

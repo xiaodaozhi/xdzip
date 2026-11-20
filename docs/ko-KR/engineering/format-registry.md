@@ -8,12 +8,12 @@
 
 검사 범위는 성공한 [무결성 검사](archive-checking.md)가 확인한 범위를 나타냅니다. `supported_content`는 지원하는 항목의 내용을 검사합니다. `structure_and_readability`는 구조와 읽기 가능 여부를 검사하며 내용 체크섬을 보장하지 않습니다. `format_declared_checks`는 스트림에 선언된 검사값을 확인합니다. 검사값이 없는 프로필도 이 범주에 포함됩니다. 검사를 실행할 수 있는지 여부와 검사 범위는 별개입니다. 예를 들어 NSIS 프로필은 제한 범위의 설치 프로그램 메타데이터를 인식하며 검사 작업은 지원하지 않습니다. 생성 방식 식별자는 각 형식이 허용하는 쓰기 방식 범위 안에서 해석합니다.
 
-`creation_methods`는 호스트 전송 식별자를 방식 이름에 연결하고, `creation_levels`는 형식별 허용 수준을 정합니다. 생성된 GUI 선택 항목과 Rust 설명자에 두 정보가 모두 포함됩니다. CLI, GUI, 호스트는 동일한 선언으로 Deflate와 LZMA2 외의 방식도 확인합니다. Store와 Copy는 식별자 0, Deflate는 8, LZMA2는 32를 그대로 사용합니다. Zstandard의 호스트 식별자는 93입니다. LZ4의 256은 해당 컨테이너로 한정되며 ZIP 방식으로 해석하지 않습니다. 읽기 전용 프로필에는 생성 수준이 없습니다. 생성기는 형식별 식별자가 없거나 모호할 때, 또는 수준이 유효하지 않을 때 거부합니다.
+`creation_methods`는 호스트 전송 식별자를 방식 이름에 연결하고, `creation_levels`는 형식별 허용 수준을 정합니다. 생성된 GUI 선택 항목과 Rust 설명자에 두 정보가 모두 포함됩니다. CLI, GUI, 호스트는 동일한 선언으로 Deflate와 LZMA2 외의 방식도 확인합니다. Store와 Copy는 식별자 0, Deflate는 8, LZMA2는 32를 그대로 사용합니다. Zstandard의 호스트 식별자는 93입니다. LZ4의 256은 해당 컨테이너로 한정되며 ZIP 방식으로 해석하지 않습니다. 생성을 지원하지 않는 형식에는 생성 수준이 없습니다. 다시 쓰기 지원은 생성과 별개입니다. 생성기는 형식별 식별자가 없거나 모호할 때, 또는 수준이 유효하지 않을 때 거부합니다.
 
 | 작업 | 내장 지원 범위 |
 | --- | --- |
 | 새 압축 파일 만들기 | ZIP, 7z, TAR, TAR.GZ (`.tar.gz`, `.tgz`), 독립 GZIP, XZ/TAR.XZ, LZ4/TAR.LZ4, Zstandard/TAR.ZST, LHA (`.lha`, `.lzh`), ISO9660/Joliet 및 Windows x64용 ZIP SFX 래퍼입니다. 독립 스트림은 일반 파일 하나를 받습니다. [생성](zip-creation.md)과 [단일 파일 스트림](single-file-streams.md)을 참조하세요. |
-| 기존 압축 파일 다시 쓰기 | 조건을 충족하는 ZIP, 7z, TAR, TAR.GZ를 지원합니다. 암호화되거나 분할된 압축 파일, 지원하지 않는 레코드나 저장 방식이 적용된 압축 파일은 [수정 계약](archive-transfers.md)에 따라 제외됩니다. |
+| 기존 압축 파일 다시 쓰기 | 조건을 충족하는 ZIP/ZIPX, 7z, 레벨 2 LHA/LZH, TAR, TAR.GZ, TAR.XZ, TAR.ZST, TAR.LZ4, TAR.BZ2, TAR.LZMA, TAR.LZ, TAR.Z, TAR.BR를 지원합니다. 암호화되거나 분할된 압축 파일, 지원하지 않는 레코드나 저장 방식을 쓰는 압축 파일은 제외합니다. 자세한 내용은 [수정 계약](archive-transfers.md)을 참조하세요. |
 | 탐색, 압축 풀기, 항목 열기, 내보내기 또는 검사 | 작업마다 기능과 레코드를 별도로 검사합니다. 예를 들어 일부 설치 프로그램은 메타데이터만 확인할 수 있습니다. [읽기 전용 탐색](readonly-browser.md)과 [검사](archive-checking.md)를 참조하세요. |
 
 사양을 변경한 후 `python3 scripts/generate-format-registry.py`를 실행하세요. 이 명령은 Rust 코덱 설명자, 끌어서 놓기 및 셸에 사용할 C++ 후보, JavaScript UI 선택 항목, 설치 프로그램 아이콘의 Python 매핑을 생성합니다. `--check`는 파일을 변경하지 않고 누락되었거나 오래된 출력을 검사합니다. `python3 scripts/test-format-registry.py`는 모순된 기능, 중복 식별자와 확장자, 생성 대상 언어에서 유효하지 않은 값, 오래된 사용 코드를 확인합니다. 일반 CI에서 두 검사 모두 실행합니다.

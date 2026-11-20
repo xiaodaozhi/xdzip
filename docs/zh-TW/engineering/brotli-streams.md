@@ -4,7 +4,7 @@
 
 [English](../../engineering/brotli-streams.md) | [简体中文](../../zh-CN/engineering/brotli-streams.md) | 繁體中文（台灣）
 
-`xdzip-compression::BrotliReader` 獨立解碼一個普通 RFC 7932 Brotli 流，只接收呼叫者持有的 `Read` 能力和已准入壓縮跨度，沒有檔名、檔案系統、網路、程序或輸出釋出許可權。產品透過[格式登記](format-registry.md)接入只讀 Brotli（`.br`）與 TAR.BR（`.tar.br`），支援瀏覽、預覽、檢查和選中提取，複用主機源、任務、配額、暫存和提交規則，不提供建立、修改或分卷能力。
+`xdzip-compression::BrotliReader` 獨立解碼單一普通的 RFC 7932 Brotli 串流。它只接收呼叫端持有的 `Read` 能力及允許的壓縮範圍，未持有檔名、檔案系統、網路、程序或發佈輸出的權限。產品透過[格式登記](format-registry.md)接入 Brotli（`.br`）及 TAR.BR（`.tar.br`），可瀏覽、預覽、檢查及解壓選取項目，並沿用共用的來源、任務、配額、暫存和提交規則。符合條件的現有 TAR.BR 可透過寫入標準未壓縮中繼區塊來修改。這兩種格式均不支援新建或分卷。詳見[改寫帶外層壓縮的 TAR](single-file-streams.md#xdzip-rewriting-compressed-tar-archives)。
 
 <a name="xdzip-数据范围"></a>
 

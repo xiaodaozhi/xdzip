@@ -62,17 +62,17 @@ Microsoft Store 負責該渠道的更新，與 GitHub 獨立釋出。GitHub 版�
 
 | 格式 | 瀏覽、解壓和檢查 | 建立 | 修改 |
 | --- | --- | --- | --- |
-| ZIP 及 ZIPX、XPI、APK、IPA、CBZ 候選 | Store、Deflate、Deflate64、BZip2、LZMA、XZ，已准入 AES-256 和分卷配置 | 支援 ZIP，Store、Deflate、AES-256 和編號分卷 | 符合條件的 Store/Deflate ZIP 包 |
+| ZIP 及 ZIPX、XPI、APK、IPA、CBZ 候選 | Store、Deflate、Deflate64、BZip2、LZMA、XZ，已准入 AES-256 和分卷配置 | 支援 ZIP，Store、Deflate、AES-256 和編號分卷 | 使用表列方法且符合條件的 ZIP/ZIPX 壓縮檔 |
 | TAR、TAR.GZ（含 `.tgz`） | 支援普通檔案與目錄 | 支援，TAR 僅打包 | 符合條件的普通單檔案包 |
 | GZIP（`.gz`） | 一個邏輯檔案，可由串聯的 GZIP 成員組成。內部為 TAR 時按目錄樹瀏覽。 | 一個普通檔案，Deflate 0/1/6/9 | 不支援 |
 | BZip2、獨立 LZMA、Lzip v1 | 在流與記憶體限制內讀取一個普通檔案 | 不支援 | 不支援 |
-| TAR.BZ2、TAR.LZMA、TAR.LZ | 支援普通檔案與目錄 | 不支援 | 不支援 |
-| XZ、TAR.XZ（含 `.txz`） | 宣告的校驗、LZMA2、Delta/BCJ 和串聯流 | LZMA2 1/6/9 級，XZ 僅一個普通檔案 | 不支援 |
-| LZ4、TAR.LZ4 | 標準幀、獨立塊和關聯塊、串聯及宣告的校驗 | LZ4 1/6/9 級，普通 LZ4 僅一個普通檔案 | 不支援 |
-| Zstandard、TAR.ZST（含 `.tzst`） | 標準幀、已准入視窗、Huffman/FSE、重複偏移及宣告的校驗 | Zstandard 1/6/9 級，普通 Zstandard 僅一個普通檔案 | 不支援 |
+| TAR.BZ2、TAR.LZMA、TAR.LZ | 支援普通檔案與目錄 | 不支援 | 符合條件的壓縮檔 |
+| XZ、TAR.XZ（含 `.txz`） | 宣告的校驗、LZMA2、Delta/BCJ 和串聯流 | LZMA2 1/6/9 級，XZ 僅一個普通檔案 | TAR.XZ |
+| LZ4、TAR.LZ4 | 標準幀、獨立塊和關聯塊、串聯及宣告的校驗 | LZ4 1/6/9 級，普通 LZ4 僅一個普通檔案 | TAR.LZ4 |
+| Zstandard、TAR.ZST（含 `.tzst`） | 標準幀、已准入視窗、Huffman/FSE、重複偏移及宣告的校驗 | Zstandard 1/6/9 級，普通 Zstandard 僅一個普通檔案 | TAR.ZST |
 | 7z | 支援密碼、檔名加密、固實和編號分卷 | 支援加密、固實和編號分卷 | 符合條件的未加密、非分捲包 |
 | DEB | 普通 ar 成員、control/data TAR 檢視，已准入 GZIP/XZ/Zstandard/BZip2/LZMA 配置 | 不支援 | 不支援 |
-| LHA/LZH | 0–3 級頭部，Store、LH1–LH7、LZS/LZ5 及宣告 CRC | LH5 1/6/9 級，2 級頭部，普通檔案與目錄 | 不支援 |
+| LHA/LZH | 0–3 級頭部，Store、LH1–LH7、LZS/LZ5 及宣告 CRC | LH5 1/6/9 級，2 級頭部，普通檔案與目錄 | 具有第 2 級標頭及項目 CRC 且符合條件的壓縮檔 |
 | [PMA](docs/zh-TW/engineering/pma-streams.md) | 0 級頭部 PM0/PM1/PM2，準確 CP/M 結構與宣告 CRC | 不支援 | 不支援 |
 | [ARJ](docs/zh-TW/engineering/arj-streams.md) | Store 和方法 1–4，完整頭部校驗及成員 CRC-32 | 不支援 | 不支援 |
 | [ARC](docs/zh-TW/engineering/arc-streams.md) | 舊/新 Store 與方法 3–9，完整結構及成員 CRC-16 | 不支援 | 不支援 |
@@ -83,8 +83,8 @@ Microsoft Store 負責該渠道的更新，與 GitHub 獨立釋出。GitHub 版�
 | [複合檔案（MSI）](docs/zh-TW/engineering/wim-msi-installer-format-sources.md#xdzip-compound-file-%E4%B8%8E-msi) | 瀏覽儲存目錄、提取原始資料流，檢查結構和可讀性 | 不支援 | 不支援 |
 | [NSIS（`.exe`）](docs/zh-TW/engineering/wim-msi-installer-format-sources.md#xdzip-nsis-%E4%B8%8E%E5%85%B6%E4%BB%96-sfx) | 僅檢視靜態 `firstheader` 後設資料。不支援解壓或整包測試。 | 不支援 | 不支援 |
 | ASAR | 儲存檔案與目錄、共享載荷區間及宣告的檔案/塊 SHA-256 | 不支援 | 不支援 |
-| Z、TAR.Z（包括 `.taz`） | Unix compress LZW、9–16 位字典及已准入 CLEAR/對齊配置 | 不支援 | 不支援 |
-| Brotli、TAR.BR | 普通 RFC 7932 流，10–24 位視窗和全部靜態詞典變換 | 不支援 | 不支援 |
+| Z、TAR.Z（包括 `.taz`） | Unix compress LZW、9–16 位字典及已准入 CLEAR/對齊配置 | 不支援 | TAR.Z |
+| Brotli、TAR.BR | 普通 RFC 7932 流，10–24 位視窗和全部靜態詞典變換 | 不支援 | TAR.BR |
 | AES Crypt（`.aes`） | 0–3 版，開啟密碼、完整密文 HMAC 和逐版本長度規則 | 不支援 | 不支援 |
 | UU/UUE、XXE | 傳統計數行與已准入 begin-base64 封裝，包括多成員 | 不支援 | 不支援 |
 | RAR | 支援舊版、RAR5 和 RAR 7 格式擴充套件，包括密碼、固實及分卷 | 不支援 | 不支援 |
@@ -94,15 +94,15 @@ Microsoft Store 負責該渠道的更新，與 GitHub 獨立釋出。GitHub 版�
 | ZIP SFX | 經校驗的 ZIP 自解壓包 | Windows x64，Store/Deflate，`.sfx.exe` | 不支援 |
 
 - ZIP 的 AES-256 只加密內容，檔名仍可見；不支援 AES-128／192 或傳統 ZipCrypto。分卷讀取支援 `.zip.001` 及 PKZIP `.z01` 等命名，建立使用編號分卷。詳見[密碼解壓](docs/zh-TW/engineering/password-extraction.md)和[分卷開啟](docs/zh-TW/engineering/archive-opening.md)。
-- BZip2、獨立 LZMA、Lzip v1 及其 TAR 組合目前只讀。LZMA 沒有內容校驗和，測試檢查結構、尺寸和可讀性。字尾、成員、記憶體限制與識別邊界見[單檔案流契約](docs/zh-TW/engineering/single-file-streams.md)。
-- XZ 驗證各流宣告的內容校驗，宣告 None 的流只提供結構與可讀性檢查。ZIPX 讀取限於表內 ZIP 方法，PPMd、JPEG 和 WavPack 變體尚不支援；新增 ZIP 壓縮方法只讀，不擴充套件 AES 組合，也不增加 ZIPX 建立。
+- 獨立的 BZip2、LZMA Alone 和 Lzip v1 為唯讀。LZMA 沒有內容總和檢查碼，檢查會驗證結構、大小與可讀性。副檔名、項目、記憶體上限和支援範圍見[單檔案流契約](docs/zh-TW/engineering/single-file-streams.md)。
+- XZ 會執行各串流宣告的內容檢查。宣告 None 的串流只檢查結構與可讀性。ZIPX 可讀取表列 ZIP 方法，PPMd、JPEG 和 WavPack 變體仍不支援。修改 ZIP/ZIPX 時會保留未移除項目的原始壓縮資料及方法，新項目使用 Deflate。
 - 7z 修改透過重建完成，保留及新增檔案內容的工作集上限為 512 MiB；新建使用流式輸入，不受此重建限制。加密和分卷的 ZIP、7z 不支援修改。詳見[歸檔修改](docs/zh-TW/engineering/archive-transfers.md)。
 - RAR、CAB 和 UDF 為只讀格式。[ISO 建立](docs/zh-TW/engineering/iso-creation.md)支援普通檔案與目錄、單卷、單檔案小於 4 GiB，每個 Joliet 名稱分量最多 64 個 UCS-2 字元。不提供啟動映象、UDF 或 Rock Ridge 寫入及映象更新。讀取映象不會掛載或執行內容。格式覆蓋和資源限制見 [RAR 契約](docs/zh-TW/engineering/rar-format-sources.md)和[格式後端契約](docs/zh-TW/engineering/native-codecs.md)。
 - [自有 SFX 建立](docs/zh-TW/engineering/sfx-creation.md)生成可獨立執行的 Windows x64 ZIP 自解壓包，無需 Qt 或已安裝的 xdzip。支援選擇目標目錄、衝突處理與取消，絕不執行解壓出的檔案。不提供密碼、分卷和自動執行命令，普通 `.exe` 不參與檔案關聯。
 - DEB 提供 `members/`、`control/`、`data/` 匯出檢視，全部提取包含原始成員和展開內容，不安裝軟體包、不執行指令碼。control 接受無壓縮、GZIP、XZ、Zstandard，data 另接受 BZip2、LZMA。檢查驗證容器可讀性和宣告的校驗，不代表軟體包認證，詳見 [DEB 契約](docs/zh-TW/engineering/deb-containers.md)。
-- Z 與 TAR.Z 只檢查結構與可讀性，沒有校驗和，不提供建立或損壞歷史流修復，詳見 [Unix compress 契約](docs/zh-TW/engineering/compress-streams.md)。
+- Z 和 TAR.Z 檢查結構與可讀性，格式沒有總和檢查碼。無法建立獨立的 Z 檔案或修復損壞的舊式串流。詳見[Unix compress 契約](docs/zh-TW/engineering/compress-streams.md)。
 - UU/UUE 與 XXE 只檢查結構與可讀性，不提供校驗和。頭部路徑和許可權不直接授予輸出或執行能力；GNU 編碼檔名和多段修復不屬於已准入的[文字封裝配置](docs/zh-TW/engineering/text-envelopes.md)。
-- LHA/LZH 建立採用 LH5、2 級頭部和 UTF-8 名稱，舊 Windows 工具可能按舊內碼表顯示這些名稱；現有歸檔不能修改。讀取時先解碼舊名稱再解釋分隔符，實際解碼時驗證存在的 CRC，無 CRC 的古老成員只提供結構與可讀性檢查。密碼、分卷和修復配置尚未准入，PMA 使用獨立只讀配置，詳見 [LHA 契約](docs/zh-TW/engineering/lha-containers.md)。
+- 建立 LHA/LZH 時使用 LH5、第 2 級標頭及 UTF-8 名稱。舊版 Windows 工具仍可能依舊字碼頁顯示名稱。符合條件的第 2 級壓縮檔可以修改。讀取時先解碼舊名稱，再解讀分隔符號。解碼內容時會驗證已有的 CRC。沒有 CRC 的早期項目只檢查結構與可讀性。密碼、分卷和修復不在支援範圍內。PMA 採獨立的唯讀設定檔。詳見[LHA 契約](docs/zh-TW/engineering/lha-containers.md)。
 - ARJ 為只讀格式，二進位制及舊文字成員均交付歸檔中 CRC 覆蓋的原始位元組，不按平臺轉換換行。密碼、分卷、恢復/安全配置、連結和特殊物件尚未准入。未知方法保持可見，並阻止整包檢查成功。
 - ARC 採用只讀順序普通檔案配置，驗證精確結束。密碼解碼、分卷、SFX 和 Spark 擴充套件尚未准入。未知方法保留原始編號，不使用 ZIP 方法別名，並阻止整包檢查成功。舊 XOR 加密沒有頭部標記，解碼仍須透過碼流、尺寸和 CRC 檢查，不進行密碼或修復回退。
 - BH 僅支援讀取 `BH 05 07` 方法 8 的原始 Deflate 配置。未知方法、加密、目錄、分卷、尾部和自解壓字首不在範圍內。
@@ -114,7 +114,7 @@ Microsoft Store 負責該渠道的更新，與 GitHub 獨立釋出。GitHub 版�
 
 - AES Crypt 在釋出後設資料前必須提供開啟密碼並驗證完整密文認證碼。0–2 版的尾部長度模值未認證，擴充套件欄位不授予許可權。詳見 [AES Crypt 契約](docs/zh-TW/engineering/aescrypt-envelopes.md)。
 
-- Brotli 和 TAR.BR 只讀，無魔數候選必須完整驗證內容，沒有校驗和；共享詞典與大視窗擴充套件不在准入 [Brotli 範圍](docs/zh-TW/engineering/brotli-streams.md)內。
+- Brotli 和 TAR.BR 的弱辨識候選必須通過完整內容驗證，格式不提供總和檢查碼。修改 TAR.BR 時使用標準未壓縮中繼區塊，結果可能比原檔更大。共享字典和大視窗擴充不在支援的[Brotli 範圍](docs/zh-TW/engineering/brotli-streams.md)內。
 
 <a name="xdzip-命令行"></a>
 

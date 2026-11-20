@@ -15,7 +15,7 @@
 
 ## Adicionar, substituir ou mover arquivos
 
-Abra um ZIP, 7z, TAR ou TAR.GZ compatível e acesse a pasta de destino dentro dele. Arraste arquivos ou pastas locais para a lista ou a grade, depois confira e confirme a inclusão. Entre as opções de conflito está substituir arquivos comuns compatíveis dentro do arquivo compactado. Para mover uma entrada, arraste-a para outra pasta do mesmo arquivo compactado e confirme. Arrastar para fora da janela exporta uma cópia. [Como arrastar e soltar em cada plataforma](../engineering/archive-transfers.md)
+Abra um ZIP/ZIPX, 7z, LHA/LZH, TAR ou TAR compactado compatível e acesse a pasta de destino dentro dele. Arraste arquivos ou pastas locais para a lista ou a grade, depois confira e confirme a inclusão. Entre as opções de conflito está substituir arquivos comuns compatíveis dentro do arquivo compactado. Para mover uma entrada, arraste-a para outra pasta do mesmo arquivo compactado e confirme. Arrastar para fora da janela exporta uma cópia. [Como arrastar e soltar em cada plataforma](../engineering/archive-transfers.md)
 
 A criação e a inclusão ignoram arquivos `.DS_Store` e pastas `__MACOSX` e `_MACOSX`. As opções de modificação dependem do formato, do conteúdo e da origem. O fluxo normal de modificação não aceita arquivos criptografados, divididos ou indexados em disco. Quando não for possível editar, extraia o conteúdo em uma nova pasta e crie outro arquivo compactado. [Regras de modificação e arraste](../engineering/archive-transfers.md)
 
@@ -26,6 +26,6 @@ A criação e a inclusão ignoram arquivos `.DS_Store` e pastas `__MACOSX` e `_M
 Em uma pasta comum de um arquivo compactado editável, clique com o botão direito em um arquivo ou pasta na lista ou grade. Se o item já estiver selecionado, a seleção atual será mantida. Caso contrário, apenas o item clicado será selecionado.
 
 - **Renomear** está disponível para um único item. Digite o novo nome na mesma pasta. Ao renomear uma pasta, todos os caminhos abaixo dela são atualizados. Se o nome já estiver em uso, escolha outro.
-- **Excluir** aceita um ou mais itens selecionados. Confira o nome ou a quantidade antes de confirmar. Ao excluir uma pasta, todo o conteúdo dela também é excluído. Se você excluir todos os itens da raiz, o arquivo compactado continuará disponível, vazio.
+- **Excluir** aceita um ou mais itens selecionados. Confira o nome ou a quantidade antes de confirmar. Ao excluir uma pasta, todo o conteúdo dela também é excluído. Se você excluir todos os itens da raiz, o arquivo compactado continuará disponível, vazio. Use uma extensão TAR composta, como `.tar.xz`, se o arquivo vazio for interpretado como fluxo compactado independente.
 
 Para editar um item encontrado na busca, abra primeiro a pasta que o contém. [Regras de alteração de arquivos compactados](../engineering/archive-transfers.md)

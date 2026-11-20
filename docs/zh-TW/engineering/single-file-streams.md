@@ -40,15 +40,17 @@ XZ 能力須遵循 [Tukaani 格式 1.2.1](https://tukaani.org/xz/xz-file-format-
 
 ZIPX 沿用 ZIP 記錄語法與物理身份。按 [APPNOTE 6.3.10](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT) 分方法准入，包括 BZip2 12、LZMA 14、XZ 95。LZMA 屬性頭與獨立 LZMA 不同，通用標誌第 1 位控制 EOS 要求。已准入的資料描述符配置必須使用 EOS，本地記錄已知尺寸時可省略。仍須驗證精確負載範圍、本地與中央記錄一致性、描述符、解碼尺寸和 ZIP CRC。沒有已驗證實現的方法保持逐記錄不支援，字尾不能啟用其他演算法或加密配置。
 
-XZ（`.xz`）和 TAR.XZ（`.tar.xz`、`.txz`）按上述配置提供瀏覽、檢查和提取。建立使用 CRC64、不超過 16 MiB 的獨立塊以及 LZMA2 1/6/9 級，拒絕級別 0、密碼和分卷。普通 XZ 僅接受一個普通輸入檔案，虛擬輸出名稱來自宿主檔名；TAR.XZ 透過既有 TAR 寫入器接受普通檔案和目錄，兩者均不支援修改。ZIPX 將 `.zipx` 登記為 ZIP 候選，在既有 Store/Deflate 之外讀取未加密方法 9、12、14、95。新增方法不能啟用修改，也不擴充套件既有 AES-256 Store/Deflate 組合。PPMd I、JPEG 和 WavPack 仍明確不支援。
+XZ（`.xz`）與 TAR.XZ（`.tar.xz`、`.txz`）依上述設定檔提供瀏覽、檢查和解壓。建立時使用 CRC64、不超過 16 MiB 的獨立區塊，以及 LZMA2 第 1/6/9 級。第 0 級、密碼和分卷不受支援。獨立 XZ 只接收一個普通輸入檔，虛擬輸出名稱取自來源檔名。TAR.XZ 透過既有 TAR 寫入器接收普通檔案和資料夾，並支援修改。`.zipx` 是 ZIP 偵測入口。使用未加密 Store、Deflate 或方法 9、12、14、95 的合格 ZIP 和 ZIPX 可讀取並修改。改寫時保留現有項目的壓縮資料，新項目使用 Deflate。ZIP 的 AES-256 讀取限於既有的 Store/Deflate 設定檔。PPMd I、JPEG 和 WavPack 仍不支援。
 
 <a name="xdzip-新增只读过滤器的准入契约"></a>
 
-## 新增只讀過濾器的准入契約
+<a id="新增只讀過濾器的准入契約"></a>
 
-BZip2（`.bz2`、`.bz`）、LZMA Alone（`.lzma`）和 Lzip v1（`.lz`）目前只讀，TAR 組合接受 `.tar.bz2`、`.tar.bz`、`.tbz`、`.tbz2`、`.tar.lzma`、`.tlz` 和 `.tar.lz`。字尾只提供入口，歧義縮寫由實際位元組決定。適配複用獨立演算法，在分配前准入演算法工作記憶體，限制為 128 MiB，沿用既有流位元組預算，串聯成員最多 100,000 個。BZip2 校驗逐塊和組合 CRC，允許串聯完整流。LZMA Alone 遵守 [13 位元組格式](https://github.com/tukaani-project/xz/blob/master/doc/lzma-file-format.txt)，前五位元組為屬性和字典，後八位元組為小端原始尺寸。全一尺寸必須有 EOS，已知尺寸允許合法 range 終止或 EOS，拒絕尾隨資料。此格式只提供結構和可讀性校驗，不提供內容校驗和。Lzip v1 遵守[格式規範](https://datatracker.ietf.org/doc/draft-diaz-lzip/02/)，檢查固定 LZMA 屬性、編碼字典邊界、EOS 以及尾部 CRC32、解碼尺寸和完整成員尺寸，其他版本明確拒絕。串聯 Lzip 成員組成一個邏輯檔案。
+## 壓縮篩選器的支援範圍
 
-演算法的成員讀取器只有在 EOF 驗證成功後，才可交還未消費輸入，不得吞掉後續容器位元組。獨立構造入口必須保留既有 7z 讀取器對完整壓縮範圍和已知尺寸的嚴格約束，並用字首發現及畸形輸入測試證明兩種入口隔離。TAR 複用這些過濾器作為只讀組合，壓縮 TAR 解析失敗不得降級為普通檔案成功。LZMA Alone 沒有強魔數，不得搶佔有效 TAR 頭、ZIP SFX 或其他強容器識別。能力表及產品入口宣告須有對應實現與自動化驗收，並登記檢查強度與壓縮尺寸未知狀態，為 CLI 和介面生成一致資訊。弱識別排除已知原始尺寸達到 256 GiB 的 LZMA，實際工作預算仍採用更小的既有邊界。Windows 和 macOS 為新增只讀候選複用既有無格式字樣的通用歸檔圖示。
+BZip2（`.bz2`、`.bz`）、LZMA Alone（`.lzma`）和 Lzip v1（`.lz`）作為獨立單檔串流時為唯讀，TAR 組合接受 `.tar.bz2`、`.tar.bz`、`.tbz`、`.tbz2`、`.tar.lzma`、`.tlz` 和 `.tar.lz`。字尾只提供入口，歧義縮寫由實際位元組決定。適配複用獨立演算法，在分配前准入演算法工作記憶體，限制為 128 MiB，沿用既有流位元組預算，串聯成員最多 100,000 個。BZip2 校驗逐塊和組合 CRC，允許串聯完整流。LZMA Alone 遵守 [13 位元組格式](https://github.com/tukaani-project/xz/blob/master/doc/lzma-file-format.txt)，前五位元組為屬性和字典，後八位元組為小端原始尺寸。全一尺寸必須有 EOS，已知尺寸允許合法 range 終止或 EOS，拒絕尾隨資料。此格式只提供結構和可讀性校驗，不提供內容校驗和。Lzip v1 遵守[格式規範](https://datatracker.ietf.org/doc/draft-diaz-lzip/02/)，檢查固定 LZMA 屬性、編碼字典邊界、EOS 以及尾部 CRC32、解碼尺寸和完整成員尺寸，其他版本明確拒絕。串聯 Lzip 成員組成一個邏輯檔案。
+
+演算法的成員讀取器只有在 EOF 驗證成功後，才可交還未消費輸入，不得吞掉後續容器位元組。獨立構造入口必須保留既有 7z 讀取器對完整壓縮範圍和已知尺寸的嚴格約束，並用字首發現及畸形輸入測試證明兩種入口隔離。TAR 使用這些篩選器支援讀取和修改，壓縮 TAR 解析失敗不得降級為普通檔案成功。LZMA Alone 沒有強魔數，不得搶佔有效 TAR 頭、ZIP SFX 或其他強容器識別。能力表及產品入口宣告須有對應實現與自動化驗收，並登記檢查強度與壓縮尺寸未知狀態，為 CLI 和介面生成一致資訊。弱識別排除已知原始尺寸達到 256 GiB 的 LZMA，實際工作預算仍採用更小的既有邊界。Windows 和 macOS 為新增候選複用既有無格式字樣的通用歸檔圖示。
 
 <a name="xdzip-自动化验收"></a>
 
@@ -56,6 +58,14 @@ BZip2（`.bz2`、`.bz`）、LZMA Alone（`.lzma`）和 Lzip v1（`.lz`）目前�
 
 流格式測試使用獨立參考讀寫器驗證成員校驗、截斷、尾隨位元組、輸入變化、取消、精確預算和虛擬名稱。執行時測試覆蓋分類、空 TAR 優先順序、單檔案建立、檢查、解壓和拒絕時不釋出。真實 CLI 迴歸覆蓋四檔級別和 ZIP 別名。Qt 測試覆蓋穩定標識選擇、單檔案准入、實際建立與重新開啟、原生輔助功能後設資料、鍵盤選擇及中英文 100/125/150% 字號佈局。生成宣告、安裝對映、視窗和共享控制元件契約分別自動檢查。實際執行結果寫入工作 issue，不將這些檢查擴大為未執行平臺或發行許可的透過結論。
 
-LZ4 與 TAR.LZ4 遵循[標準幀契約](lz4-streams.md)，讀取獨立塊、關聯塊、宣告的校驗、串聯和 skippable 幀。建立使用真實 LZ4 壓縮，輸出 256 KiB 獨立塊、塊與內容 XXH32，提供 1/6/9 級。普通 LZ4 只接受一個普通檔案，TAR.LZ4 複用共享 TAR 寫入器；均不支援修改、密碼或分卷。檢查僅驗證流宣告的校驗和，舊式幀和外部字典尚不支援。
+LZ4 與 TAR.LZ4 遵循[標準幀契約](lz4-streams.md)，讀取獨立塊、關聯塊、宣告的校驗、串聯和 skippable 幀。建立使用真實 LZ4 壓縮，輸出 256 KiB 獨立塊、塊與內容 XXH32，提供 1/6/9 級。普通 LZ4 只接受一個普通檔案，TAR.LZ4 複用共享 TAR 寫入器，且支援修改。兩種格式均不支援密碼或分卷。檢查僅驗證流宣告的校驗和，舊式幀和外部字典尚不支援。
 
-Zstandard（`.zst`）與 TAR.ZST（`.tar.zst`、`.tzst`）遵循 [Zstandard 壓縮流契約](zstandard-streams.md)。讀取准入有界標準幀原始/RLE/壓縮塊、Huffman/FSE、重複偏移、視窗歷史、宣告的校驗、串聯和 skippable 幀。建立使用真實 LZ/FSE，提供 1/6/9 級、128 KiB 視窗和必需 XXH64，普通 Zstandard 僅接受一個普通輸入檔案。兩者均不支援修改、密碼或分卷。非零字典編號、不可用外部歷史和超預算視窗明確拒絕，檢查僅驗證宣告的校驗，不承諾格式中缺失的校驗保證。
+Zstandard（`.zst`）與 TAR.ZST（`.tar.zst`、`.tzst`）遵循 [Zstandard 壓縮流契約](zstandard-streams.md)。讀取准入有界標準幀原始/RLE/壓縮塊、Huffman/FSE、重複偏移、視窗歷史、宣告的校驗、串聯和 skippable 幀。建立使用真實 LZ/FSE，提供 1/6/9 級、128 KiB 視窗和必需 XXH64，普通 Zstandard 僅接受一個普通輸入檔案。TAR.ZST 支援修改。兩種格式均不支援密碼或分卷。非零字典編號、不可用外部歷史和超預算視窗明確拒絕，檢查僅驗證宣告的校驗，不承諾格式中缺失的校驗保證。
+
+<a name="xdzip-rewriting-compressed-tar-archives"></a>
+
+## 改寫帶外層壓縮的 TAR
+
+修改時保留支援的 TAR 記錄，並依原格式重建外層串流。TAR.XZ、TAR.LZ4 和 TAR.ZST 以一般壓縮等級使用既有的資料框寫入器。TAR.BZ2 寫入 BZh1 串流，每次處理 64 KiB 原始輸入，並記錄區塊 CRC 與合併 CRC。TAR.LZMA 和 TAR.LZ 使用帶有 8 MiB 字典及結束標記的 LZMA1，Lzip v1 另外附上 CRC 和大小欄位。TAR.Z 使用區塊模式 LZW，及早執行 CLEAR，將碼寬維持在 9 位元。TAR.BR 使用 [RFC 7932](https://www.rfc-editor.org/rfc/rfc7932) 定義的未壓縮中繼區塊，輸出可能比原本的 Brotli 串流更大。
+
+主機重新掃描並解碼暫存結果，驗證成功後才會取代原壓縮檔。複合 TAR 副檔名可讓空壓縮檔繼續以 TAR 開啟。如果使用的副檔名會讓空壓縮檔被誤認成單檔串流，刪除最後一筆記錄的操作會在提交前失敗。詳見[壓縮檔修改規則](archive-transfers.md)。

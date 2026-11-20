@@ -704,6 +704,7 @@
     "entry.edit.invalidName": "請輸入有效的檔案或資料夾名稱。",
     "entry.edit.unchangedName": "新名稱與目前的名稱相同。",
     "entry.edit.nameExists": "這裡已有同名的檔案或資料夾。",
+    "entry.edit.emptyTarSuffix": "刪除最後一個項目前，請先將壓縮檔的副檔名改為對應的 TAR 副檔名。",
     "entry.edit.renaming": "正在重新命名…",
     "entry.edit.deleting": "正在刪除…",
     "entry.edit.refreshNote": "操作完成後會重新整理檔案清單。",

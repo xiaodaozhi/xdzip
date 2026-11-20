@@ -62,17 +62,17 @@ Microsoft Store는 GitHub와 독립적으로 해당 버전을 게시하고 업�
 
 | 형식 | 탐색, 압축 풀기 및 검사 | 만들기 | 수정 |
 | --- | --- | --- | --- |
-| ZIP 및 ZIPX/XPI/APK/IPA/CBZ 후보 | Store, Deflate, Deflate64, BZip2, LZMA, XZ 및 지원되는 AES-256과 분할 프로필 | Store, Deflate, AES-256, 번호를 붙인 볼륨을 사용하는 ZIP | 조건에 맞는 Store/Deflate ZIP |
+| ZIP 및 ZIPX/XPI/APK/IPA/CBZ 후보 | Store, Deflate, Deflate64, BZip2, LZMA, XZ 및 지원되는 AES-256과 분할 프로필 | Store, Deflate, AES-256, 번호를 붙인 볼륨을 사용하는 ZIP | 표의 방식을 사용하는 적격 ZIP/ZIPX 압축 파일 |
 | TAR, TAR.GZ (`.tgz` 포함) | 일반 파일과 폴더 | 지원. TAR는 압축 없이 파일을 묶음 | 조건에 맞는 일반 단일 파일 압축 파일 |
 | GZIP (`.gz`) | 연결된 GZIP 멤버를 포함하는 논리 파일 하나. GZIP에 들어 있는 TAR는 TAR 트리로 표시 | 일반 파일 하나, Deflate 0/1/6/9 | 지원하지 않음 |
 | BZip2, LZMA Alone, Lzip v1 | 스트림과 메모리 한도 내 일반 파일 하나 | 지원하지 않음 | 지원하지 않음 |
-| TAR.BZ2, TAR.LZMA, TAR.LZ | 일반 파일과 폴더 | 지원하지 않음 | 지원하지 않음 |
-| XZ, TAR.XZ (`.txz` 포함) | 선언된 검사, LZMA2, Delta/BCJ 및 연결된 스트림 | LZMA2 레벨 1/6/9, XZ는 일반 파일 하나 | 지원하지 않음 |
-| LZ4, TAR.LZ4 | 표준 프레임, 독립 또는 연결 블록, 프레임 연결과 선언된 검사 | LZ4 레벨 1/6/9, 일반 LZ4는 일반 파일 하나 | 지원하지 않음 |
-| Zstandard, TAR.ZST (`.tzst` 포함) | 표준 프레임, 허용된 윈도, Huffman/FSE, 반복 오프셋과 선언된 검사 | Zstandard 레벨 1/6/9, 일반 Zstandard는 일반 파일 하나 | 지원하지 않음 |
+| TAR.BZ2, TAR.LZMA, TAR.LZ | 일반 파일과 폴더 | 지원하지 않음 | 조건을 충족하는 압축 파일 |
+| XZ, TAR.XZ (`.txz` 포함) | 선언된 검사, LZMA2, Delta/BCJ 및 연결된 스트림 | LZMA2 레벨 1/6/9, XZ는 일반 파일 하나 | TAR.XZ |
+| LZ4, TAR.LZ4 | 표준 프레임, 독립 또는 연결 블록, 프레임 연결과 선언된 검사 | LZ4 레벨 1/6/9, 일반 LZ4는 일반 파일 하나 | TAR.LZ4 |
+| Zstandard, TAR.ZST (`.tzst` 포함) | 표준 프레임, 허용된 윈도, Huffman/FSE, 반복 오프셋과 선언된 검사 | Zstandard 레벨 1/6/9, 일반 Zstandard는 일반 파일 하나 | TAR.ZST |
 | 7z | 암호, 암호화된 파일 이름, 솔리드 압축 파일과 번호가 붙은 볼륨 | 암호화, 솔리드 압축 파일과 번호가 붙은 볼륨 | 조건에 맞는 암호화되지 않은 비분할 압축 파일 |
 | DEB | 일반 ar 멤버, 제어와 데이터 TAR 보기, 허용된 GZIP/XZ/Zstandard/BZip2/LZMA 프로필 | 지원하지 않음 | 지원하지 않음 |
-| LHA/LZH | 레벨 0–3 헤더, Store, LH1–LH7, LZS/LZ5와 선언된 CRC | LH5 레벨 1/6/9, 레벨 2 헤더, 일반 파일과 폴더 | 지원하지 않음 |
+| LHA/LZH | 레벨 0–3 헤더, Store, LH1–LH7, LZS/LZ5와 선언된 CRC | LH5 레벨 1/6/9, 레벨 2 헤더, 일반 파일과 폴더 | 항목 CRC가 있는 적격 레벨 2 압축 파일 |
 | [PMA](docs/ko-KR/engineering/pma-streams.md) | 레벨 0 PM0/PM1/PM2, 정확한 CP/M 구조와 선언된 CRC | 지원하지 않음 | 지원하지 않음 |
 | [ARJ](docs/ko-KR/engineering/arj-streams.md) | Store 및 방식 1–4, 검증된 헤더와 멤버 전체의 CRC-32 | 지원하지 않음 | 지원하지 않음 |
 | [ARC](docs/ko-KR/engineering/arc-streams.md) | 구형 및 신형 Store와 방식 3–9, 정확한 프레이밍과 멤버 전체의 CRC-16 | 지원하지 않음 | 지원하지 않음 |
@@ -83,8 +83,8 @@ Microsoft Store는 GitHub와 독립적으로 해당 버전을 게시하고 업�
 | [Compound File (MSI)](docs/ko-KR/engineering/wim-msi-installer-format-sources.md#xdzip-compound-file-and-msi) | 스토리지 탐색과 원시 스트림 추출. 구조와 읽기 가능 여부 확인 | 지원하지 않음 | 지원하지 않음 |
 | [NSIS (`.exe`)](docs/ko-KR/engineering/wim-msi-installer-format-sources.md#xdzip-nsis-and-other-sfx) | 정적 `firstheader` 메타데이터만 제공. 추출과 전체 검사 불가 | 지원하지 않음 | 지원하지 않음 |
 | ASAR | 저장된 파일과 폴더, 공유 페이로드 범위, 파일 및 블록에 선언된 SHA-256 | 지원하지 않음 | 지원하지 않음 |
-| Z, TAR.Z (`.taz` 포함) | Unix compress LZW, 9–16비트 사전 및 허용된 CLEAR와 정렬 프로필 | 지원하지 않음 | 지원하지 않음 |
-| Brotli, TAR.BR | 일반 RFC 7932 스트림, 10–24비트 윈도, 모든 정적 사전 변환 | 지원하지 않음 | 지원하지 않음 |
+| Z, TAR.Z (`.taz` 포함) | Unix compress LZW, 9–16비트 사전 및 허용된 CLEAR와 정렬 프로필 | 지원하지 않음 | TAR.Z |
+| Brotli, TAR.BR | 일반 RFC 7932 스트림, 10–24비트 윈도, 모든 정적 사전 변환 | 지원하지 않음 | TAR.BR |
 | AES Crypt (`.aes`) | 버전 0–3, 열기 암호, 암호문 전체의 HMAC 및 버전별 길이 규칙 | 지원하지 않음 | 지원하지 않음 |
 | UU/UUE, XXE | 기존 길이 표기 줄과 허용된 begin-base64 봉투, 여러 멤버 포함 | 지원하지 않음 | 지원하지 않음 |
 | RAR | 이전 형식, RAR5 및 RAR 7 형식 확장. 암호와 솔리드 및 분할 압축 파일 포함 | 지원하지 않음 | 지원하지 않음 |
@@ -94,17 +94,17 @@ Microsoft Store는 GitHub와 독립적으로 해당 버전을 게시하고 업�
 | ZIP SFX | 검증 가능한 ZIP 자동 압축 풀기 파일 | Windows x64, Store/Deflate, `.sfx.exe` | 지원하지 않음 |
 
 - ZIP AES-256은 내용만 암호화합니다. 파일 이름은 그대로 보입니다. AES-128/192와 기존 ZipCrypto는 지원하지 않습니다. `.zip.001`, PKZIP의 `.z01` 및 관련 이름 규칙으로 된 분할 압축 파일을 읽을 수 있습니다. 만들 때는 번호를 붙인 볼륨을 사용합니다. [암호가 있는 파일 풀기](docs/ko-KR/engineering/password-extraction.md) 및 [분할 압축 파일 열기](docs/ko-KR/engineering/archive-opening.md)를 참조하세요.
-- BZip2, LZMA Alone, Lzip v1과 이들을 사용하는 TAR는 현재 읽기 전용입니다. LZMA Alone에는 내용 체크섬이 없습니다. 검사는 구조, 크기, 읽기 가능 여부를 확인합니다. 확장자, 멤버, 메모리 한도 및 허용 조건은 [단일 파일 스트림 규칙](docs/ko-KR/engineering/single-file-streams.md)을 참조하세요.
-- XZ는 선언된 내용 검사를 모두 수행합니다. None을 선언한 스트림은 구조와 읽기 가능 여부만 확인합니다. ZIPX는 표에 나온 ZIP 방식을 읽을 수 있습니다. PPMd, JPEG 및 WavPack 변형은 지원하지 않습니다. 추가 ZIP 방식은 읽기 전용이며 AES 프로필을 확장하거나 ZIPX 만들기를 지원하지 않습니다.
+- 독립 BZip2, LZMA Alone 및 Lzip v1은 읽기 전용입니다. LZMA에는 콘텐츠 체크섬이 없으므로 구조, 크기 및 읽기 가능 여부를 검사합니다. 확장자, 항목, 메모리 제한 및 허용 범위는 [단일 파일 스트림 규칙](docs/ko-KR/engineering/single-file-streams.md)을 참조하세요.
+- XZ는 스트림에 선언된 콘텐츠 검사를 수행합니다. None을 선언한 스트림에서는 구조와 읽기 가능 여부를 확인합니다. ZIPX는 표에 나온 ZIP 방식을 읽으며 PPMd, JPEG 및 WavPack 변형은 지원하지 않습니다. ZIP/ZIPX 수정 시 유지하는 항목의 압축 데이터와 방식을 보존하고 새 항목에는 Deflate를 사용합니다.
 - 7z를 수정할 때는 압축 파일을 다시 만듭니다. 유지되거나 추가되는 내용의 작업 메모리 한도는 512 MiB입니다. 새로 만들 때는 입력을 스트림으로 읽으므로 이 재구성 한도가 적용되지 않습니다. 암호화되었거나 분할된 ZIP 및 7z는 수정할 수 없습니다. [압축 파일 수정](docs/ko-KR/engineering/archive-transfers.md)을 참조하세요.
 - RAR, CAB, UDF는 읽기 전용입니다. [ISO 만들기](docs/ko-KR/engineering/iso-creation.md)는 일반 파일 및 폴더, 단일 볼륨, 4 GiB 미만의 파일, 구성 요소마다 최대 64 UCS-2 문자인 Joliet 이름을 지원합니다. 부팅 이미지, UDF 또는 Rock Ridge 쓰기 및 이미지 업데이트는 지원하지 않습니다. 이미지를 읽을 때 마운트하거나 실행하지 않습니다. [RAR 규칙](docs/ko-KR/engineering/rar-format-sources.md)과 [형식 백엔드 규칙](docs/ko-KR/engineering/native-codecs.md)을 참조하세요.
 - [자체 SFX 만들기](docs/ko-KR/engineering/sfx-creation.md)는 Qt나 설치된 xdzip이 없어도 동작하는 Windows x64용 ZIP 압축 해제 프로그램을 만듭니다. 대상 선택, 충돌 처리 및 취소를 지원하며, 푼 파일을 실행하지 않습니다. 암호, 분할 볼륨, 자동 시작 명령은 지원하지 않습니다. 일반 `.exe`는 파일 연결 대상에서 제외됩니다.
 - DEB는 `members/`, `control/`, `data/`를 내보내기 보기로 제공하며, 모두 풀면 원시 멤버와 풀린 내용이 함께 나옵니다. 패키지를 설치하거나 스크립트를 실행하지 않습니다. 제어 데이터는 무압축, GZIP, XZ, Zstandard를 지원하고 데이터는 BZip2와 LZMA도 지원합니다. 검사는 컨테이너의 읽기 가능 여부와 선언된 검사 항목을 확인하며 패키지를 인증하지 않습니다. [DEB 규칙](docs/ko-KR/engineering/deb-containers.md)을 참조하세요.
-- Z와 TAR.Z는 체크섬 없이 구조와 읽기 가능 여부를 검사합니다. 작성 및 손상된 기존 스트림 복구는 제공하지 않습니다. [Unix compress 규칙](docs/ko-KR/engineering/compress-streams.md)을 참조하세요.
+- Z와 TAR.Z는 체크섬 없이 구조 및 읽기 가능 여부를 검사합니다. 독립 Z 생성 및 손상된 이전 스트림 복구는 지원하지 않습니다. [Unix compress 규칙](docs/ko-KR/engineering/compress-streams.md)을 참조하세요.
 - UU/UUE 및 XXE는 체크섬 없이 구조와 읽기 가능 여부를 검증합니다. 헤더의 경로와 모드는 파일 출력이나 실행 권한을 주지 않습니다. GNU 방식으로 인코딩한 파일 이름과 여러 부분으로 나뉜 파일의 복구는 [텍스트 봉투 프로필](docs/ko-KR/engineering/text-envelopes.md)의 지원 범위 밖입니다.
 - 읽기 전용 ASAR를 열거나 풀어도 해당 앱을 실행하지 않습니다. 외부 `unpacked` 데이터와 선언된 링크는 보이지만 처리하지 않습니다. 인접 폴더에 접근하거나 실행 권한을 복원하지 않습니다. 선택적 해시는 손상을 검출합니다. 해시가 없는 레코드는 구조와 읽기 가능 여부만 확인합니다. [ASAR 규칙](docs/ko-KR/engineering/asar-containers.md)을 참조하세요.
 - NSIS는 PE 오버레이에 크기가 제한된 유효한 `firstheader` 레코드가 있을 때만 인식합니다. xdzip은 해당 정적 메타데이터 행을 표시합니다. PE 스텁, 설치 스크립트, 플러그인 또는 페이로드는 실행하지 않습니다. 설치 프로그램 헤더의 압축 해제나 페이로드 추출은 지원하지 않습니다. `.exe` 항목은 끌어다 놓기와 셸 파일 연결에 표시하지 않습니다. 일반 실행 파일은 처리하지 않습니다.
-- LHA/LZH를 만들 때 LH5와 UTF-8 이름을 레벨 2 헤더에 사용합니다. 오래된 Windows 도구는 이전 코드 페이지로 이름을 표시할 수 있습니다. 기존 압축 파일을 수정할 수 없습니다. 이전 이름은 구분자를 해석하기 전에 디코딩하며, CRC가 있으면 실제 디코딩 중 검증합니다. CRC가 없는 오래된 멤버는 구조와 읽기 가능 여부만 확인합니다. 암호, 분할 볼륨, 복구 프로필은 허용되지 않습니다. PMA에는 별도의 읽기 전용 프로필이 있습니다. [LHA 규칙](docs/ko-KR/engineering/lha-containers.md)을 참조하세요.
+- LHA/LZH를 만들 때 LH5, 레벨 2 헤더, UTF-8 이름을 사용합니다. 이전 Windows 도구는 오래된 코드 페이지로 이름을 표시할 수 있습니다. 조건을 충족하는 레벨 2 압축 파일은 수정할 수 있습니다. 이전 이름은 구분 기호를 해석하기 전에 디코딩하고, 내용 디코딩 시 존재하는 CRC를 검증합니다. CRC가 없는 오래된 항목은 구조와 읽기 가능 여부만 검사합니다. 암호, 분할 볼륨 및 복구는 지원하지 않습니다. PMA는 별도의 읽기 전용 프로필입니다. [LHA 규칙](docs/ko-KR/engineering/lha-containers.md)을 참조하세요.
 - ARJ는 읽기 전용입니다. 바이너리와 기존 텍스트 멤버에서는 플랫폼에 따른 줄바꿈 변환 없이 CRC가 적용된 바이트를 그대로 제공합니다. 암호, 분할 볼륨, 복구 및 보안 프로필, 링크와 특수 개체는 허용되지 않습니다. 알 수 없는 방식도 표시되지만 전체 압축 파일 검사는 성공할 수 없습니다.
 - ARC는 읽기 전용입니다. 일반 파일을 순차 처리하고 정확한 종료를 확인합니다. 암호 디코딩, 분할 볼륨, SFX 및 Spark 확장은 허용되지 않습니다. 알 수 없는 방식은 ZIP 별칭 없이 표시되며 전체 검사가 성공할 수 없습니다. 이전 XOR 암호화에는 헤더 플래그가 없습니다. 암호나 복구로 대체하지 않고 유효한 스트림, 정확한 크기, CRC를 요구합니다.
 - BH는 읽기에서 `BH 05 07` 방식 8 raw Deflate 프로필을 지원합니다. 알 수 없는 방식, 암호화, 폴더, 분할 볼륨, 후행 데이터와 SFX 접두부는 제외합니다.
@@ -114,7 +114,7 @@ Microsoft Store는 GitHub와 독립적으로 해당 버전을 게시하고 업�
 
 - AES Crypt는 메타데이터를 표시하기 전에 열기 암호가 필요합니다. 모든 암호문 MAC을 검증해야 합니다. 버전 0–2는 끝에 있는 길이의 나머지를 인증하지 않으며, 확장은 별도 권한을 주지 않습니다. [AES Crypt 규칙](docs/ko-KR/engineering/aescrypt-envelopes.md)을 참조하세요.
 
-- Brotli와 TAR.BR는 읽기 전용이며 약한 단서로 인식할 때는 전체 내용 검증이 필요합니다. 체크섬은 없습니다. 공유 사전과 대형 윈도 확장은 허용된 [Brotli 프로필](docs/ko-KR/engineering/brotli-streams.md)의 범위 밖입니다.
+- Brotli와 TAR.BR 후보를 약한 식별 방식으로 발견하면 전체 내용을 검증해야 하며, 형식에는 체크섬이 없습니다. TAR.BR을 수정하면 표준 비압축 메타 블록을 사용하여 결과가 더 커질 수 있습니다. 공유 사전과 큰 윈도 확장은 허용된 [Brotli 프로필](docs/ko-KR/engineering/brotli-streams.md)에 포함되지 않습니다.
 
 <a name="xdzip-command-line"></a>
 
