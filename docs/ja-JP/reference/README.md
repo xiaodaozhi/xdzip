@@ -61,7 +61,7 @@
 - [ZIP 展開と出力の依存採用](../engineering/zip-extraction-admission.md)
 - [7z の形式資料と独立実装](../engineering/sevenzip-format-sources.md)
 - [RAR の独立実装の根拠と互換性の範囲](../../engineering/rar-format-sources.md)
-- [CAB の形式資料と実装の根拠](../../engineering/cab-format-sources.md)
+- [CAB の形式資料と実装の根拠](../engineering/cab-format-sources.md)
 - [TAR/GZIP の実装仕様](../engineering/tar-gzip.md)
 - [単一ファイルストリームと ZIP 派生パッケージ](../engineering/single-file-streams.md)
 - [LZ4 ストリーム仕様](../engineering/lz4-streams.md)

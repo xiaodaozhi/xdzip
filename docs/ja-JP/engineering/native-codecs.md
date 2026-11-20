@@ -6,7 +6,7 @@
 
 7z、RAR、CAB、ISO/UDF の読み取りは、分離ワーカー内の共有 CXX 境界を介した[組み込み Rust codec](../../engineering/independent-rust-codecs.md)を使用します。同じワーカーはホストが制御するタスク内で 7z の書き込みも扱います。Rust ホストは ZIP、TAR、圧縮ストリーム、DEB、[新しい ISO9660/Joliet イメージ](iso-creation.md)をプロセス内で処理します。形式の選択には組み込み経路を使用し、どの経路も PATH からコマンドラインデコーダーを探しません。
 
-製品の CAB は常に独立した Rust 経路を使用し、テストスイッチ、公式ハンドラー、失敗時フォールバックはありません。完全なフレーム、共有アルゴリズム、リソース範囲は[自前の契約](../../engineering/independent-rust-codecs.md#cab-read-only-specification)、出所と参照分析の役割は[CAB ソース](../../engineering/cab-format-sources.md)を参照してください。
+製品の CAB は常に独立した Rust 経路を使用し、テストスイッチ、公式ハンドラー、失敗時フォールバックはありません。完全なフレーム、共有アルゴリズム、リソース範囲は[自前の契約](../../engineering/independent-rust-codecs.md#cab-read-only-specification)、出所と参照分析の役割は[CAB ソース](cab-format-sources.md)を参照してください。
 
 ホストは runtime 起動前に検証済みの絶対ワーカーパスを一つ登録できます。同じ登録の繰り返しは成功し、競合するパスや相対パスは選択を変更せず拒否します。明示的な開発者オーバーライドが優先され、次に登録済みパスを使用し、登録がない場合のみ実行ファイルに隣接するワーカーを使います。デスクトップ CLI バンドルはこの登録でデスクトップワーカーを共有します。独立パッケージはローカルワーカーを持ち、近くのディレクトリから他のデスクトップインストールを推測しません。
 

@@ -17,7 +17,7 @@
 | crates/xdzip-codec-zip, xdzip-codec-tar | ZIP と TAR/GZIP の実装。任意の出力パスを扱いません。 |
 | crates/xdzip-codec-lha, xdzip-codec-arj, xdzip-codec-arc, xdzip-codec-bh | [LHA](../../engineering/lha-containers.md)/[PMA](pma-streams.md)、[ARJ](arj-streams.md)、[ARC](arc-streams.md)、[BH](bh-containers.md) のフレームとメンバーの独立プロファイル。ファイルシステムの権限は持ちません。製品での利用可否は形式レジストリで決まります。 |
 | crates/xdzip-codec-7z | 自前の 7z コンテナー、方式グラフ、フィルター、AES の組み合わせ、ストリーミング作成、上限付きの書き換え。ファイルパスは管理しません。 |
-| crates/xdzip-codec-cab | 読み取り専用の自前 CAB コンテナー。ホストが許可したボリュームと共通アルゴリズムを使います。元の名前、UTF-8 の宣言、通常の同名レコードを保持します。ボリュームの検出と出力の確定はホストの担当です。[契約](../../engineering/independent-rust-codecs.md#cab只读规格)と[資料](../../engineering/cab-format-sources.md)を参照してください。 |
+| crates/xdzip-codec-cab | 読み取り専用の自前 CAB コンテナー。ホストが許可したボリュームと共通アルゴリズムを使います。元の名前、UTF-8 の宣言、通常の同名レコードを保持します。ボリュームの検出と出力の確定はホストの担当です。[契約](../../engineering/independent-rust-codecs.md#cab只读规格)と[資料](cab-format-sources.md)を参照してください。 |
 | crates/xdzip-codec-optical | ISO9660/Joliet/Rock Ridge/UDF リーダーと、新しいデータイメージ用の ISO9660/Joliet ライター。パスを管理せず、ストリームを使用します。 |
 | crates/xdzip-codec-bridge | 隔離プロセスと Rust の 7z、RAR、CAB、光学メディアのコーデックをつなぐ薄い CXX 境界。許可済みのストリーム、リソース制限、キャンセルを扱います。 |
 | crates/xdzip-codec-native, tools/native-codec | Rust の 7z/RAR/光学メディア/CAB バックエンドの隔離プロセス。薄い C++ 層はプロトコル、システムの暦とエンコーディングの機能だけを提供します。ネイティブ受信側は事前計上済みの出力と補助処理を独立に検査します。[I/O 契約](native-codecs.md)を参照してください。 |
