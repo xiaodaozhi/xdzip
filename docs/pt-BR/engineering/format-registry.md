@@ -12,7 +12,7 @@ O alcance indica o que uma [verificação de integridade](archive-checking.md) b
 
 | Operação | Cobertura integrada |
 | --- | --- |
-| Criar um arquivo compactado | ZIP, 7z, TAR, TAR.GZ (`.tar.gz`, `.tgz`), GZIP independente, XZ/TAR.XZ, LZ4/TAR.LZ4, Zstandard/TAR.ZST, LHA (`.lha`, `.lzh`), ISO9660/Joliet e o invólucro ZIP SFX para Windows x64. Um fluxo independente aceita um arquivo comum. Veja [criação](../../engineering/zip-creation.md) e [fluxos de um único arquivo](single-file-streams.md). |
+| Criar um arquivo compactado | ZIP, 7z, TAR, TAR.GZ (`.tar.gz`, `.tgz`), GZIP independente, XZ/TAR.XZ, LZ4/TAR.LZ4, Zstandard/TAR.ZST, LHA (`.lha`, `.lzh`), ISO9660/Joliet e o invólucro ZIP SFX para Windows x64. Um fluxo independente aceita um arquivo comum. Veja [criação](zip-creation.md) e [fluxos de um único arquivo](single-file-streams.md). |
 | Regravar um arquivo compactado existente | ZIP/ZIPX, 7z, LHA/LZH de nível 2, TAR, TAR.GZ, TAR.XZ, TAR.ZST, TAR.LZ4, TAR.BZ2, TAR.LZMA, TAR.LZ, TAR.Z e TAR.BR que atendam aos requisitos. São excluídos arquivos criptografados, divididos ou com registros ou armazenamento incompatíveis. Veja o [contrato de alteração](../../engineering/archive-transfers.md). |
 | Navegar, extrair, abrir uma entrada, exportar ou verificar | Cada operação verifica separadamente as capacidades e os registros. Em alguns instaladores, por exemplo, apenas os metadados podem ser inspecionados. Veja [navegação somente para leitura](../../engineering/readonly-browser.md) e [verificação](archive-checking.md). |
 

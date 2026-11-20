@@ -32,7 +32,7 @@ Este guia descreve comportamento, foco e ações de fechamento das janelas de cr
 - Os quatro níveis ZIP correspondem a Store/Deflate 1/6/9, com 2 normal como padrão. TAR e TAR.GZ podem ser criados; mudar o formato sincroniza extensões e limpa a senha e a divisão em volumes. TAR desativa o nível; os níveis TAR.GZ 0/1/2/3 correspondem a GZIP 0/1/6/9. A mudança sincroniza a extensão sem sobrescrever destinos silenciosamente.
 - Sem entrada, com nome vazio, destino inválido ou permissão ausente, Criar fica desativado e o motivo aparece ao lado do campo. O texto do erro participa da leitura de tela, em vez de mudar apenas a cor da borda.
 - O núcleo trata entradas duplicadas e expansão de diretórios; a interface mostra apenas resumos da seleção. Ícones de imagem na criação indicam o tipo, não são prévias de imagem.
-- ZIP e 7z expõem suas configurações compatíveis de senha e volumes. 7z também pode criptografar nomes de arquivos. O registro de formatos lista os recursos reais de gravação. [Criação ZIP](../../engineering/zip-creation.md), [registro de formatos](../engineering/format-registry.md)
+- ZIP e 7z expõem suas configurações compatíveis de senha e volumes. 7z também pode criptografar nomes de arquivos. O registro de formatos lista os recursos reais de gravação. [Criação ZIP](../engineering/zip-creation.md), [registro de formatos](../engineering/format-registry.md)
 
 <a name="xdzip-task-data-and-exceptions"></a>
 

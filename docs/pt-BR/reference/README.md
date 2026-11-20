@@ -43,7 +43,7 @@ Comece pela [arquitetura do sistema](../design/system-architecture.md) para conh
 - [Verificação de integridade](../engineering/archive-checking.md)
 - [Abertura de entradas, arrastar e soltar e alteração](../../engineering/archive-transfers.md)
 - [Senhas e abertura de diretórios criptografados](../engineering/password-extraction.md)
-- [Contrato de criação ZIP](../../engineering/zip-creation.md)
+- [Contrato de criação ZIP](../engineering/zip-creation.md)
 - [Criação ISO9660 e Joliet](../engineering/iso-creation.md)
 - [Arquivos ZIP autoextraíveis integrados para Windows](../engineering/sfx-creation.md)
 
