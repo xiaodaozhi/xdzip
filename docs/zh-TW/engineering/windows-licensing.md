@@ -42,6 +42,6 @@ CI 記錄實際 VS 產品、版本、編譯器相對位置、工具版本及 SDK
 
 包內 `share/notices/Windows-runtime-NOTICE.txt` 雙語說明各元件許可邊界。Microsoft CRT 原始條款位於 `Microsoft-VC-runtime/license.rtf`。安裝器展示原始 CRT 協議並要求接受，隨後展示元件說明；便攜包使用者同樣需要閱讀並遵守隨包 Microsoft 條款。兩種包都保留原始許可及來源，下游再分發者應自行滿足適用資格和分發條件，不能僅憑專案 Apache-2.0 許可轉發 Microsoft 元件。
 
-展示或附帶 SDK 原文不自動證明外部分發者和終端使用者已同意 SDK 要求的保護條款，也不能代替發行者的有效許可與責任判斷。目前安裝器的接受頁僅針對 CRT；如後續繼續分發 SDK 圖形 DLL，安裝器和便攜包應分別核對適用條款及接受方式，並在對應發行記錄儲存實際證據，歷史版本見 [#135](https://github.com/xiaodaozhi/xdzip/issues/135)。
+展示或附帶 SDK 原文不自動證明外部分發者和終端使用者已同意 SDK 要求的保護條款，也不能代替發行者的有效許可與責任判斷。目前安裝器的接受頁僅針對 CRT；如未來再次分發 SDK 圖形 DLL，安裝器和便攜包應分別核對適用條款及接受方式，並在對應發行記錄儲存實際證據，歷史版本見 [#135](https://github.com/xiaodaozhi/xdzip/issues/135)。
 
 安裝器編譯前核對 CRT 協議的固定雜湊和雙語說明，materials 附帶同一份原始 CRT 文字和來源記錄。歷史包中的 SDK 原始條款位於 `Windows-SDK-graphics/sdk_license.rtf`。許可補正不改寫舊公開資產或歷史構建身份；修訂包沿用[不可變釋出協議](release-protocol.md)另發版本。
