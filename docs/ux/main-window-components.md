@@ -1,6 +1,6 @@
 # Main-window functionality, components and interaction contract
 
-English | [简体中文](../zh-CN/ux/main-window-components.md) | [繁體中文](../zh-TW/ux/main-window-components.md) | [日本語](../ja-JP/ux/main-window-components.md) | [한국어](../ko-KR/ux/main-window-components.md)
+English | [简体中文](../zh-CN/ux/main-window-components.md) | [繁體中文](../zh-TW/ux/main-window-components.md) | [日本語](../ja-JP/ux/main-window-components.md) | [한국어](../ko-KR/ux/main-window-components.md) | [Français](../fr-FR/ux/main-window-components.md)
 
 Main-window controls deliver both appearance and behavior, with explicit normal, hover, pressed, keyboard focus, disabled, selected, busy and error states. HTML uses sample archives to verify interaction; Qt enables actions according to actual browsing, creation, extraction, [integrity checking](../engineering/archive-checking.md) and [automatic content preview](../engineering/content-preview.md) capabilities. HTML examples do not represent real background results.
 

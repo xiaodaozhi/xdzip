@@ -93,7 +93,7 @@ Consultez d’abord l’[architecture du système](../design/system-architecture
 - [Icônes d’association de fichiers](../visual/file-association-icons.md)
 - [Vérification de la fidélité visuelle HTML](../visual/html-fidelity.md)
 - [Interaction et libellés complémentaires](../ux/interaction-spec.md)
-- [Fonctionnement, composants et interactions de la fenêtre principale](../../ux/main-window-components.md)
+- [Fonctionnement, composants et interactions de la fenêtre principale](../ux/main-window-components.md)
 - [Conception et intégration de l’arborescence](../ux/directory-tree.md)
 - [Page d’accueil de la fenêtre principale](../ux/welcome.md)
 - [Chargement sur la page d’accueil et fin de création](../ux/welcome-opening.md)
