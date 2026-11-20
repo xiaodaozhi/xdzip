@@ -12,7 +12,7 @@
 
 | Операция | Встроенная поддержка |
 | --- | --- |
-| Создать новый архив | ZIP, 7z, TAR, TAR.GZ (`.tar.gz`, `.tgz`), отдельный GZIP, XZ/TAR.XZ, LZ4/TAR.LZ4, Zstandard/TAR.ZST, LHA (`.lha`, `.lzh`), ISO9660/Joliet и оболочка ZIP SFX для Windows x64. Отдельный поток принимает один обычный файл. См. [создание](../../engineering/zip-creation.md) и [потоки одного файла](single-file-streams.md). |
+| Создать новый архив | ZIP, 7z, TAR, TAR.GZ (`.tar.gz`, `.tgz`), отдельный GZIP, XZ/TAR.XZ, LZ4/TAR.LZ4, Zstandard/TAR.ZST, LHA (`.lha`, `.lzh`), ISO9660/Joliet и оболочка ZIP SFX для Windows x64. Отдельный поток принимает один обычный файл. См. [создание](zip-creation.md) и [потоки одного файла](single-file-streams.md). |
 | Перезаписать существующий архив | Подходящие архивы ZIP/ZIPX, 7z, LHA/LZH уровня 2, TAR, TAR.GZ, TAR.XZ, TAR.ZST, TAR.LZ4, TAR.BZ2, TAR.LZMA, TAR.LZ, TAR.Z и TAR.BR. Зашифрованные, многотомные архивы и файлы с неподдерживаемыми записями или способом хранения исключены. См. [контракт изменения архивов](../../engineering/archive-transfers.md). |
 | Просмотреть, распаковать, открыть запись, экспортировать или проверить | Для каждой операции отдельно проверяются возможности и записи. Например, у некоторых установщиков доступны только метаданные. См. [просмотр в режиме чтения](../../engineering/readonly-browser.md) и [проверка](archive-checking.md). |
 

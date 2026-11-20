@@ -4,7 +4,7 @@
 
 [English](../../engineering/tar-gzip.md) | [简体中文](../../zh-CN/engineering/tar-gzip.md) | [繁體中文](../../zh-TW/engineering/tar-gzip.md) | [日本語](../../ja-JP/engineering/tar-gzip.md) | [한국어](../../ko-KR/engineering/tar-gzip.md) | [Français](../../fr-FR/engineering/tar-gzip.md) | [Deutsch](../../de-DE/engineering/tar-gzip.md) | [Español](../../es-ES/engineering/tar-gzip.md) | [Português (Brasil)](../../pt-BR/engineering/tar-gzip.md) | Русский
 
-Этот контракт определяет границы просмотра, создания и безопасной распаковки TAR/TAR.GZ. Результаты платформ и ручная приёмка записываются в задачах или артефактах CI. Сохраняются авторизация входа, временная подготовка, конфликты, отмена и фиксация архива целиком из [безопасной распаковки](zip-safe-extraction.md) и [создания ZIP](../../engineering/zip-creation.md).
+Этот контракт определяет границы просмотра, создания и безопасной распаковки TAR/TAR.GZ. Результаты платформ и ручная приёмка записываются в задачах или артефактах CI. Сохраняются авторизация входа, временная подготовка, конфликты, отмена и фиксация архива целиком из [безопасной распаковки](zip-safe-extraction.md) и [создания ZIP](zip-creation.md).
 
 <a name="xdzip-scope-and-capabilities"></a>
 

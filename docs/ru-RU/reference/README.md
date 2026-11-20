@@ -43,7 +43,7 @@
 - [Проверка целостности архивов](../engineering/archive-checking.md)
 - [Открытие записей, перетаскивание и изменение архивов](../../engineering/archive-transfers.md)
 - [Пароли архивов и открытие зашифрованных каталогов](../engineering/password-extraction.md)
-- [Контракт создания ZIP](../../engineering/zip-creation.md)
+- [Контракт создания ZIP](../engineering/zip-creation.md)
 - [Создание ISO9660 и Joliet](../engineering/iso-creation.md)
 - [Встроенные самораспаковывающиеся ZIP для Windows](../engineering/sfx-creation.md)
 
