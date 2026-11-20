@@ -156,6 +156,19 @@ class BrowserSuiteTest(unittest.TestCase):
         self.assertEqual(len(manifest['shards']), 4)
         self.assertEqual(self.output.read_text().count('() entering'), 6)
 
+    def test_three_core_macos_actions_runner_uses_three_workers(self):
+        with mock.patch.object(runner.os, 'cpu_count', return_value=3), \
+             mock.patch.object(runner.os, 'sched_getaffinity', return_value={0, 1, 2}, create=True), \
+             mock.patch.object(runner.sys, 'platform', 'darwin'), \
+             mock.patch.dict(runner.os.environ, {'GITHUB_ACTIONS': 'true'}):
+            self.assertEqual(runner.worker_count(), 3)
+            with mock.patch.dict(runner.os.environ, {'GITHUB_ACTIONS': 'false'}):
+                self.assertEqual(runner.worker_count(), 2)
+            with mock.patch.object(runner.sys, 'platform', 'linux'):
+                self.assertEqual(runner.worker_count(), 2)
+            with mock.patch.object(runner.os, 'sched_getaffinity', return_value={0, 1}):
+                self.assertEqual(runner.worker_count(), 2)
+
     def test_expensive_localization_and_format_tests_are_spread_across_workers(self):
         slow = [
             'settingsChromeAndScrollbar', 'settingsChromeAndScrollbarExtended',

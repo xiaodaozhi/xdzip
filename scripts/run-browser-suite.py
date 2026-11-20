@@ -20,41 +20,49 @@ import uuid
 
 # Relative scheduling hints only. Unknown/new functions are always included.
 WEIGHTS = {
-    # The ten-language layout matrices and expanded format fixtures are much
-    # slower than an average function on hosted offscreen runners. Keep their
-    # relative weights comparable to the older timing hints below.
-    'settingsChromeAndScrollbar': 185,
-    'settingsChromeAndScrollbarExtended': 185,
-    'filteredStreamsUseSharedBrowserAndTasks': 180,
-    'settingsAllPagesLayout': 86,
-    'localizedMainWindowAndMenuLayout': 84,
-    'settingsAssociationFollowsSystemResult': 81,
-    'packagedAssociationSettings': 79,
-    'settingsSelectorsHaveConsistentGeometry': 74,
-    'aesCryptUsesOpeningPasswordAndSharedTasks': 38,
-    'tabCloseTracksWelcomeAndSessionState': 36,
-    'singleStreamCreationUsesStableCapability': 27,
-    'treeMoveRejectsEverySelectedFolderAndDescendant': 59,
-    'closingWindowClearsTabsBeforeTrayRestore': 68,
-    'readonlyFormatsUseSharedBrowserAndTasks': 61,
-    'sessionTabReorderingPreservesControllers': 42,
-    'sessionLimitKeepsBackgroundTaskEntryReachable': 21,
-    'taskMenuScrollsAboveItsFixedClearButton': 22,
-    'internalMoveDrag': 30,
-    'sevenZipCreationLayout': 11,
-    'rightClickOpenAndDropAddition': 23,
-    'creationPreservesSelectedDestination': 14,
-    'nativeDragSuppressesSourceNameTooltips': 11,
-    'aboutUpdateStateLayoutAndReadOnlyActions': 15,
-    'readonlyFormatLabelsAndIntegrityNoteLayout': 11,
-    'settingsOpenModeSelectionPersists': 8,
-    'operationHeadersUseSharedGeometry': 11,
-    'taskMenuLabelsMatchOpenedTaskKinds': 16,
-    'directoryContextExpansionReasons': 17,
-    'taskMenuProgressPreservesHoverAndFocus': 7,
+    # Approximate relative costs from completed Windows and Ubuntu CI cases.
+    # These are hints only; unlisted and newly discovered tests still run.
+    'settingsChromeAndScrollbar': 128,
+    'settingsChromeAndScrollbarExtended': 128,
+    'filteredStreamsUseSharedBrowserAndTasks': 76,
+    'settingsAllPagesLayout': 69,
+    'treeMoveRejectsEverySelectedFolderAndDescendant': 66,
+    'closingWindowClearsTabsBeforeTrayRestore': 65,
+    'settingsAssociationFollowsSystemResult': 60,
+    'settingsSelectorsHaveConsistentGeometry': 54,
+    'localizedMainWindowAndMenuLayout': 52,
+    'packagedAssociationSettings': 50,
+    'readonlyFormatsUseSharedBrowserAndTasks': 28,
+    'taskMenuScrollsAboveItsFixedClearButton': 28,
+    'sessionLimitKeepsBackgroundTaskEntryReachable': 27,
+    'sessionTabReorderingPreservesControllers': 25,
+    'aesCryptUsesOpeningPasswordAndSharedTasks': 23,
+    'nativeDragSuppressesSourceNameTooltips': 22,
+    'archiveEntryEditMenus': 20,
+    'singleStreamCreationUsesStableCapability': 20,
+    'internalMoveDrag': 16,
     'm2LargeArchiveLatestQueryAndSourceChange': 16,
+    'aboutUpdateStateLayoutAndReadOnlyActions': 15,
+    'destinationStatusMatchesCreation': 15,
+    'rightClickOpenAndDropAddition': 13,
+    'taskMenuLabelsMatchOpenedTaskKinds': 13,
+    'verifiedRasterPreviewLoadsAsynchronouslyFromAnOpaqueToken': 12,
+    'directoryContextExpansionReasons': 11,
+    'taskMenuProgressPreservesHoverAndFocus': 11,
+    'textEnvelopesUseSharedBrowserAndTasks': 11,
+    'creationPreservesSelectedDestination': 10,
+    'operationHeadersUseSharedGeometry': 10,
+    'readonlyFormatLabelsAndIntegrityNoteLayout': 10,
+    'retainedArchiveDoesNotLeaveAutomaticWelcome': 9,
+    'extendedArchiveFormatsExposeRealRenameMenu': 8,
+    'globalQuitReturnsToPasswordTaskThenCancelsAndJoinsEverySession': 8,
+    'settingsOpenModeSelectionPersists': 8,
+    'sevenZipCreationLayout': 8,
+    'tabCloseTracksWelcomeAndSessionState': 8,
+    'asarArchivesUseSharedBrowserAndTasks': 7,
+    'closedBrowsingStateIsDiscarded': 7,
+    'backgroundTasksKeepSessionIdentityAndSerialAdmission': 6,
     'settingsWindowPersistsAndRollsBack': 5,
-    'globalQuitReturnsToPasswordTaskThenCancelsAndJoinsEverySession': 5,
 }
 FUNCTION = re.compile(r'^[A-Za-z_]\w*\(\)$')
 ENTERED = re.compile(r'^INFO\s+: BrowserTest::(\w+)\(\) entering\s*$', re.MULTILINE)
@@ -180,7 +188,12 @@ def worker_count():
             available = len(os.sched_getaffinity(0))
         except OSError:
             pass
-    # Leave a core for Qt and codec helper processes on small CI runners.
+    # The three-core macOS Actions runner has little deadline margin with two
+    # Qt workers. Offscreen cases spend time waiting on their own event loops;
+    # use all three there, while leaving the normal local policy unchanged.
+    if sys.platform == 'darwin' and os.environ.get('GITHUB_ACTIONS') == 'true' and available == 3:
+        return 3
+    # Leave a core for Qt and codec helper processes on other small runners.
     return min(4, max(2, available - 1))
 
 
