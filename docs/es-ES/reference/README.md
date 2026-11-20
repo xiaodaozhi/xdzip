@@ -32,7 +32,7 @@ Empieza por la [arquitectura del sistema](../design/system-architecture.md) para
 ## Lectura y escritura de archivos comprimidos
 
 - [Autorización, preparación y publicación segura](../design/file-security.md)
-- [Navegación de solo lectura](../../engineering/readonly-browser.md)
+- [Navegación de solo lectura](../engineering/readonly-browser.md)
 - [Navegación ZIP de solo lectura](../engineering/zip-readonly-browsing.md)
 - [Índices grandes y navegación bajo demanda](../engineering/large-index.md)
 - [Lectura de volúmenes y apertura temporal](../engineering/archive-opening.md)

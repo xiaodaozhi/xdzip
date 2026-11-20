@@ -1,6 +1,6 @@
 # 읽기 전용 탐색 구현 계약
 
-[English](../../engineering/readonly-browser.md) | [简体中文](../../zh-CN/engineering/readonly-browser.md) | [繁體中文](../../zh-TW/engineering/readonly-browser.md) | [日本語](../../ja-JP/engineering/readonly-browser.md) | 한국어 | [Français](../../fr-FR/engineering/readonly-browser.md)
+[English](../../engineering/readonly-browser.md) | [简体中文](../../zh-CN/engineering/readonly-browser.md) | [繁體中文](../../zh-TW/engineering/readonly-browser.md) | [日本語](../../ja-JP/engineering/readonly-browser.md) | 한국어 | [Français](../../fr-FR/engineering/readonly-browser.md) | [Español](../../es-ES/engineering/readonly-browser.md)
 
 이 문서는 탐색 데이터, 리소스와 상호 작용 경계를 정의하고 [도메인과 데이터](../design/domain-data.md), [Qt/Rust 브리지](../design/qt-rust-bridge.md), [형식 확장 설계](../design/codec-extension-sdk.md)를 보완합니다. 제삼자 프로토콜이나 완전한 형식 SDK를 확정하지 않습니다. 아래에 ZIP 메타데이터 고유 규칙을 설명합니다. TAR/TAR.GZ는 탐색 및 조회 모델을 재사용하며 형식 차이는 [TAR/GZIP 계약](tar-gzip.md)을 참조하세요.
 
