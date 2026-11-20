@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | Qt 6.8.2 | SDK SPDX、模块原始源码和补丁、Qt 通知、LGPLv3 及 GPLv3 原文、应用重建和兼容替换说明 | 运行时采用 LGPL 分支，工具许可与第三方许可分别保留；SDK 文件对应不等于完整上游构建等价 |
 | Rust 运行时代码 | Cargo.lock、实际链接输入、运行依赖候选、完整 vendor 和原始通知、Rust 标准库源码 | 保守交付构建图的通知，不把 build/dev/proc-macro 误报为已链接运行时代码 |
-| Noto Sans SC 衍生字体 | 字体 manifest、原始 OFL、改名后的字体和生成入口 | 字体不适用项目 Apache-2.0，保留修改及命名说明 |
+| Noto Sans SC、TC、JP、KR 和 Noto Sans 衍生字体 | 字体 manifest、原始 OFL 文本、改名后的字体和生成入口 | 字体不适用项目 Apache-2.0，保留修改及命名说明 |
 | ICU 73.2 | 实际库版本、完整 ICU 上游 LICENSE（含第三方通知）、来源记录 | 不以通用 MIT 文本替代 ICU 自带通知，不把系统包装器误当实际打包文件 |
 | Microsoft VC++ runtime | 固定官方 VC_redist 包及 DLL 哈希、原始许可、版本及分发清单 | 逐文件保持未修改；维护者的适用许可资格及分发条件须另行核对 |
 | Windows SDK 图形编译库 | 新包不包含；历史包保留原始 SDK 许可、逐 DLL 哈希和来源记录 | 历史分发条件独立复核，不因新包移除而改变 |
