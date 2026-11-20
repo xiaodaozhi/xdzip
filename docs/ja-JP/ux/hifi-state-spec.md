@@ -2,7 +2,7 @@
 
 # 高忠実度状態と実装契約
 
-[English](../../ux/hifi-state-spec.md) | [简体中文](../../zh-CN/ux/hifi-state-spec.md) | [繁體中文（台灣）](../../zh-TW/ux/hifi-state-spec.md) | 日本語 | [한국어](../../ko-KR/ux/hifi-state-spec.md) | [Français](../../fr-FR/ux/hifi-state-spec.md) | [Deutsch](../../de-DE/ux/hifi-state-spec.md) | [Español](../../es-ES/ux/hifi-state-spec.md) | [Português (Brasil)](../../pt-BR/ux/hifi-state-spec.md) | [Русский](../../ru-RU/ux/hifi-state-spec.md)
+[English](../../ux/hifi-state-spec.md) | [简体中文](../../zh-CN/ux/hifi-state-spec.md) | [繁體中文](../../zh-TW/ux/hifi-state-spec.md) | 日本語 | [한국어](../../ko-KR/ux/hifi-state-spec.md) | [Français](../../fr-FR/ux/hifi-state-spec.md) | [Deutsch](../../de-DE/ux/hifi-state-spec.md) | [Español](../../es-ES/ux/hifi-state-spec.md) | [Português (Brasil)](../../pt-BR/ux/hifi-state-spec.md) | [Русский](../../ru-RU/ux/hifi-state-spec.md)
 
 このガイドは作成、展開、タスクの各ウィンドウの動作、フォーカス、閉じる操作を説明し、[操作状態の原稿](../../../design/hifi/README.md)と[共有アセットライブラリー](../../../design/assets/README.md)にリンクします。表の識別子はデザインのアートボードを指し、タスクプロトコルを変更しません。
 

@@ -2,7 +2,7 @@
 
 # 7z 형식 출처와 독립 구현
 
-[English](../../engineering/sevenzip-format-sources.md) | [简体中文](../../zh-CN/engineering/sevenzip-format-sources.md) | [繁體中文（台灣）](../../zh-TW/engineering/sevenzip-format-sources.md) | [日本語](../../ja-JP/engineering/sevenzip-format-sources.md) | 한국어 | [Français](../../fr-FR/engineering/sevenzip-format-sources.md) | [Deutsch](../../de-DE/engineering/sevenzip-format-sources.md) | [Español](../../es-ES/engineering/sevenzip-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/sevenzip-format-sources.md) | [Русский](../../ru-RU/engineering/sevenzip-format-sources.md)
+[English](../../engineering/sevenzip-format-sources.md) | [简体中文](../../zh-CN/engineering/sevenzip-format-sources.md) | [繁體中文](../../zh-TW/engineering/sevenzip-format-sources.md) | [日本語](../../ja-JP/engineering/sevenzip-format-sources.md) | 한국어 | [Français](../../fr-FR/engineering/sevenzip-format-sources.md) | [Deutsch](../../de-DE/engineering/sevenzip-format-sources.md) | [Español](../../es-ES/engineering/sevenzip-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/sevenzip-format-sources.md) | [Русский](../../ru-RU/engineering/sevenzip-format-sources.md)
 
 이 문서는 재사용 가능한 출처와 구현 경계를 기록합니다. 마이그레이션 승인과 남은 기능은 [issue #50](https://github.com/xiaodaozhi/xdzip/issues/50)에서 추적합니다. Rust 경로 고정과 제품의 공식 의존성 제거가 플랫폼 간, 수동 또는 릴리스 승인을 자동으로 입증하지는 않습니다. 일반적인 대체 규칙은 [독립 구현 계약](independent-rust-codecs.md)에 있습니다.
 

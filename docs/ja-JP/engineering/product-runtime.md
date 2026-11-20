@@ -2,7 +2,7 @@
 
 # 製品ランタイムと Qt のライフサイクル
 
-[English](../../engineering/product-runtime.md) | [简体中文](../../zh-CN/engineering/product-runtime.md) | [繁體中文（台灣）](../../zh-TW/engineering/product-runtime.md) | 日本語 | [한국어](../../ko-KR/engineering/product-runtime.md) | [Français](../../fr-FR/engineering/product-runtime.md) | [Deutsch](../../de-DE/engineering/product-runtime.md) | [Español](../../es-ES/engineering/product-runtime.md) | [Português (Brasil)](../../pt-BR/engineering/product-runtime.md) | [Русский](../../ru-RU/engineering/product-runtime.md)
+[English](../../engineering/product-runtime.md) | [简体中文](../../zh-CN/engineering/product-runtime.md) | [繁體中文](../../zh-TW/engineering/product-runtime.md) | 日本語 | [한국어](../../ko-KR/engineering/product-runtime.md) | [Français](../../fr-FR/engineering/product-runtime.md) | [Deutsch](../../de-DE/engineering/product-runtime.md) | [Español](../../es-ES/engineering/product-runtime.md) | [Português (Brasil)](../../pt-BR/engineering/product-runtime.md) | [Русский](../../ru-RU/engineering/product-runtime.md)
 
 このガイドは、デスクトップアプリがコマンドとイベントで Rust ランタイムに接続する仕組みを、キューのバックプレッシャー、シャットダウン、プラットフォーム別ビルドを含めて説明します。各機能の範囲は[読み取り専用の閲覧](readonly-browser.md)と[安全な展開](zip-safe-extraction.md)を参照してください。
 

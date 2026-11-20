@@ -2,7 +2,7 @@
 
 # v0.1 상호작용 프로토타입과 기능 매핑
 
-[English](../../ux/prototype-spec.md) | [简体中文](../../zh-CN/ux/prototype-spec.md) | [繁體中文（台灣）](../../zh-TW/ux/prototype-spec.md) | [日本語](../../ja-JP/ux/prototype-spec.md) | 한국어 | [Français](../../fr-FR/ux/prototype-spec.md) | [Deutsch](../../de-DE/ux/prototype-spec.md) | [Español](../../es-ES/ux/prototype-spec.md) | [Português (Brasil)](../../pt-BR/ux/prototype-spec.md) | [Русский](../../ru-RU/ux/prototype-spec.md)
+[English](../../ux/prototype-spec.md) | [简体中文](../../zh-CN/ux/prototype-spec.md) | [繁體中文](../../zh-TW/ux/prototype-spec.md) | [日本語](../../ja-JP/ux/prototype-spec.md) | 한국어 | [Français](../../fr-FR/ux/prototype-spec.md) | [Deutsch](../../de-DE/ux/prototype-spec.md) | [Español](../../es-ES/ux/prototype-spec.md) | [Português (Brasil)](../../pt-BR/ux/prototype-spec.md) | [Русский](../../ru-RU/ux/prototype-spec.md)
 
 상태: 상호작용 디자인 검증 초안입니다. 원본은 [design/html](../../../design/html/README.md)에 있고 [index.html](../../../design/html/index.html)이 진입점입니다. Figma 초안은 과거 탐색으로 남으며 현재 기능과 상태의 세부화는 저장소에서 계속됩니다.
 

@@ -2,7 +2,7 @@
 
 # Versión del producto e identidad de la compilación
 
-[English](../../engineering/versioning.md) | [简体中文](../../zh-CN/engineering/versioning.md) | [繁體中文（台灣）](../../zh-TW/engineering/versioning.md) | [日本語](../../ja-JP/engineering/versioning.md) | [한국어](../../ko-KR/engineering/versioning.md) | [Français](../../fr-FR/engineering/versioning.md) | [Deutsch](../../de-DE/engineering/versioning.md) | Español | [Português (Brasil)](../../pt-BR/engineering/versioning.md) | [Русский](../../ru-RU/engineering/versioning.md)
+[English](../../engineering/versioning.md) | [简体中文](../../zh-CN/engineering/versioning.md) | [繁體中文](../../zh-TW/engineering/versioning.md) | [日本語](../../ja-JP/engineering/versioning.md) | [한국어](../../ko-KR/engineering/versioning.md) | [Français](../../fr-FR/engineering/versioning.md) | [Deutsch](../../de-DE/engineering/versioning.md) | Español | [Português (Brasil)](../../pt-BR/engineering/versioning.md) | [Русский](../../ru-RU/engineering/versioning.md)
 
 El campo opcional `prerelease_number` separa la secuencia de preversiones del número de compilación. Por ejemplo, alpha.1 puede usar la compilación 14 y el número de compilación seguir aumentando en alpha.2. Si el campo falta, se conserva la interpretación `channel.build`. El [protocolo de publicación](release-protocol.md) especifica manifiestos y nombres de archivos.
 

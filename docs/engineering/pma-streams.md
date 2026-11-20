@@ -1,6 +1,6 @@
 # PMA containers and PMarc methods
 
-English | [简体中文](../zh-CN/engineering/pma-streams.md) | [繁體中文（台灣）](../zh-TW/engineering/pma-streams.md) | [日本語](../ja-JP/engineering/pma-streams.md) | [한국어](../ko-KR/engineering/pma-streams.md) | [Français](../fr-FR/engineering/pma-streams.md) | [Deutsch](../de-DE/engineering/pma-streams.md) | [Español](../es-ES/engineering/pma-streams.md) | [Português (Brasil)](../pt-BR/engineering/pma-streams.md) | [Русский](../ru-RU/engineering/pma-streams.md)
+English | [简体中文](../zh-CN/engineering/pma-streams.md) | [繁體中文](../zh-TW/engineering/pma-streams.md) | [日本語](../ja-JP/engineering/pma-streams.md) | [한국어](../ko-KR/engineering/pma-streams.md) | [Français](../fr-FR/engineering/pma-streams.md) | [Deutsch](../de-DE/engineering/pma-streams.md) | [Español](../es-ES/engineering/pma-streams.md) | [Português (Brasil)](../pt-BR/engineering/pma-streams.md) | [Русский](../ru-RU/engineering/pma-streams.md)
 
 PMarc uses LHA-like sequential headers with `-pm0-`, `-pm1-` and `-pm2-` methods. These identify different algorithms, not aliases for the similarly named LH methods. The read-only PMA profile admits level-0 PM0, PM1 and PM2 members for browsing, checking and selected extraction. Unknown methods remain visible with an unsupported-content warning. Creation, modification, encryption, volumes and repair are not admitted; the format registry remains authoritative.
 

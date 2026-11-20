@@ -2,7 +2,7 @@
 
 # Indizierung großer Archive und bedarfsgesteuertes Durchsuchen
 
-[English](../../engineering/large-index.md) | [简体中文](../../zh-CN/engineering/large-index.md) | [繁體中文（台灣）](../../zh-TW/engineering/large-index.md) | [日本語](../../ja-JP/engineering/large-index.md) | [한국어](../../ko-KR/engineering/large-index.md) | [Français](../../fr-FR/engineering/large-index.md) | Deutsch | [Español](../../es-ES/engineering/large-index.md) | [Português (Brasil)](../../pt-BR/engineering/large-index.md) | [Русский](../../ru-RU/engineering/large-index.md)
+[English](../../engineering/large-index.md) | [简体中文](../../zh-CN/engineering/large-index.md) | [繁體中文](../../zh-TW/engineering/large-index.md) | [日本語](../../ja-JP/engineering/large-index.md) | [한국어](../../ko-KR/engineering/large-index.md) | [Français](../../fr-FR/engineering/large-index.md) | Deutsch | [Español](../../es-ES/engineering/large-index.md) | [Português (Brasil)](../../pt-BR/engineering/large-index.md) | [Русский](../../ru-RU/engineering/large-index.md)
 
 Die Grenze der Quellcodefähigkeit für gewöhnliche einteilige ZIP/ZIP64-Archive beträgt eine Million physische Einträge. Andere Formate und Mehrteilarchive behalten ihre bestehenden Zulassungsgrenzen von 100.000 Einträgen; der Formatname bedeutet nicht, dass alle Kombinationen erweiterte Grenzen haben. Verzeichnisse, doppelte Namen und prüfbedürftige Datensätze zählen als physische Einträge; implizite Navigationsverzeichnisse ergänzen nur Anzeigezeilen.
 

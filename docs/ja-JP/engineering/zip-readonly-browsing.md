@@ -2,7 +2,7 @@
 
 # 読み取り専用 ZIP 閲覧の仕様
 
-[English](../../engineering/zip-readonly-browsing.md) | [简体中文](../../zh-CN/engineering/zip-readonly-browsing.md) | [繁體中文（台灣）](../../zh-TW/engineering/zip-readonly-browsing.md) | 日本語 | [한국어](../../ko-KR/engineering/zip-readonly-browsing.md) | [Français](../../fr-FR/engineering/zip-readonly-browsing.md) | [Deutsch](../../de-DE/engineering/zip-readonly-browsing.md) | [Español](../../es-ES/engineering/zip-readonly-browsing.md) | [Português (Brasil)](../../pt-BR/engineering/zip-readonly-browsing.md) | [Русский](../../ru-RU/engineering/zip-readonly-browsing.md)
+[English](../../engineering/zip-readonly-browsing.md) | [简体中文](../../zh-CN/engineering/zip-readonly-browsing.md) | [繁體中文](../../zh-TW/engineering/zip-readonly-browsing.md) | 日本語 | [한국어](../../ko-KR/engineering/zip-readonly-browsing.md) | [Français](../../fr-FR/engineering/zip-readonly-browsing.md) | [Deutsch](../../de-DE/engineering/zip-readonly-browsing.md) | [Español](../../es-ES/engineering/zip-readonly-browsing.md) | [Português (Brasil)](../../pt-BR/engineering/zip-readonly-browsing.md) | [Русский](../../ru-RU/engineering/zip-readonly-browsing.md)
 
 ルート直下の項目、配下の検索、安定した物理識別子、フォルダー優先の並べ替えを定めます。ZIP の閲覧ではメタデータだけを読み取り、項目の内容のデコードや CRC の検証、ファイルの展開は行いません。大きな通常の ZIP では、非公開の[ディスク上のメタデータ索引](large-index.md)を使用できます。
 

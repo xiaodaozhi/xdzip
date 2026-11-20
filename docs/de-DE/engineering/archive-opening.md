@@ -2,7 +2,7 @@
 
 # Lesen von Archivteilen und temporäres Öffnen
 
-[English](../../engineering/archive-opening.md) | [简体中文](../../zh-CN/engineering/archive-opening.md) | [繁體中文（台灣）](../../zh-TW/engineering/archive-opening.md) | [日本語](../../ja-JP/engineering/archive-opening.md) | [한국어](../../ko-KR/engineering/archive-opening.md) | [Français](../../fr-FR/engineering/archive-opening.md) | Deutsch | [Español](../../es-ES/engineering/archive-opening.md) | [Português (Brasil)](../../pt-BR/engineering/archive-opening.md) | [Русский](../../ru-RU/engineering/archive-opening.md)
+[English](../../engineering/archive-opening.md) | [简体中文](../../zh-CN/engineering/archive-opening.md) | [繁體中文](../../zh-TW/engineering/archive-opening.md) | [日本語](../../ja-JP/engineering/archive-opening.md) | [한국어](../../ko-KR/engineering/archive-opening.md) | [Français](../../fr-FR/engineering/archive-opening.md) | Deutsch | [Español](../../es-ES/engineering/archive-opening.md) | [Português (Brasil)](../../pt-BR/engineering/archive-opening.md) | [Русский](../../ru-RU/engineering/archive-opening.md)
 
 Dateiauswahl auf dem Desktop, Anfragen der Dateiverwaltung und die CLI verwenden dieselben Rust-Regeln zum Öffnen von Quellen. Der Host löst zulässige Teilmengen auf, erfasst die Identität der Quelle und prüft die zugelassenen Bytes. Das gewählte Backend liefert [Metadaten zum Durchsuchen](readonly-browser.md), gegebenenfalls über den [isolierten Formatprozess](native-codecs.md). Beim ausdrücklichen Öffnen eines Eintrags entsteht eine geprüfte temporäre Kopie für die zugeordnete Anwendung. Zur Prüfung des gesamten Archivs dient eine gesonderte [Integritätsprüfung](archive-checking.md).
 

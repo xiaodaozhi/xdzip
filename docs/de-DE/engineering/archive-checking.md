@@ -2,7 +2,7 @@
 
 # Integritätsprüfung von Archiven
 
-[English](../../engineering/archive-checking.md) | [简体中文](../../zh-CN/engineering/archive-checking.md) | [繁體中文（台灣）](../../zh-TW/engineering/archive-checking.md) | [日本語](../../ja-JP/engineering/archive-checking.md) | [한국어](../../ko-KR/engineering/archive-checking.md) | [Français](../../fr-FR/engineering/archive-checking.md) | Deutsch | [Español](../../es-ES/engineering/archive-checking.md) | [Português (Brasil)](../../pt-BR/engineering/archive-checking.md) | [Русский](../../ru-RU/engineering/archive-checking.md)
+[English](../../engineering/archive-checking.md) | [简体中文](../../zh-CN/engineering/archive-checking.md) | [繁體中文](../../zh-TW/engineering/archive-checking.md) | [日本語](../../ja-JP/engineering/archive-checking.md) | [한국어](../../ko-KR/engineering/archive-checking.md) | [Français](../../fr-FR/engineering/archive-checking.md) | Deutsch | [Español](../../es-ES/engineering/archive-checking.md) | [Português (Brasil)](../../pt-BR/engineering/archive-checking.md) | [Русский](../../ru-RU/engineering/archive-checking.md)
 
 Die Aktion „Test“ der Werkzeugleiste führt eine echte Hintergrundprüfung des geeigneten aktuellen Archivs aus. Sie umfasst alle physischen Datensätze einschließlich doppelter Namen, Verzeichnissen und leerer Dateien, unabhängig von aktuellem Verzeichnis, Suche oder Auswahl. Für Archive mit Festplattenindex wird eine Gesamtprüfung derzeit nicht unterstützt; siehe [Indizierung großer Archive](large-index.md). Die Prüfung hält nur eingefrorene Eingabequellen und Metadaten. Sie erhält keine Zielautorisierung, erstellt keine Vorbereitungs- oder Ausgabedateien und verwendet weder Entpackpfadzuordnung noch Linkveröffentlichung.
 

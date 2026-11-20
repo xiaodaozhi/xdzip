@@ -2,7 +2,7 @@
 
 # Begründung für die cxx-Brücke
 
-[English](../../engineering/cxx-admission.md) | [简体中文](../../zh-CN/engineering/cxx-admission.md) | [繁體中文（台灣）](../../zh-TW/engineering/cxx-admission.md) | [日本語](../../ja-JP/engineering/cxx-admission.md) | [한국어](../../ko-KR/engineering/cxx-admission.md) | [Français](../../fr-FR/engineering/cxx-admission.md) | Deutsch | [Español](../../es-ES/engineering/cxx-admission.md) | [Português (Brasil)](../../pt-BR/engineering/cxx-admission.md) | [Русский](../../ru-RU/engineering/cxx-admission.md)
+[English](../../engineering/cxx-admission.md) | [简体中文](../../zh-CN/engineering/cxx-admission.md) | [繁體中文](../../zh-TW/engineering/cxx-admission.md) | [日本語](../../ja-JP/engineering/cxx-admission.md) | [한국어](../../ko-KR/engineering/cxx-admission.md) | [Français](../../fr-FR/engineering/cxx-admission.md) | Deutsch | [Español](../../es-ES/engineering/cxx-admission.md) | [Português (Brasil)](../../pt-BR/engineering/cxx-admission.md) | [Русский](../../ru-RU/engineering/cxx-admission.md)
 
 Qt und Rust verwenden eine von `cxx` erzeugte typisierte Brücke mit festgelegten Besitzregeln. C++ verwaltet Qt-Objekte, Rust die Domänen- und Laufzeitlogik. `cxx` und `cxx-build` müssen gemäß [Cargo.lock](../../../Cargo.lock) und der [Toolchain-Richtlinie](toolchain.md) exakt dieselbe Version haben. cxx ist keine stabile ABI für externe Formaterweiterungen. Eine handgeschriebene C-ABI hätte weniger Abhängigkeiten, aber mehr Pflegeaufwand bei Zeichenfolgen, freien Funktionen und Besitzregeln.
 

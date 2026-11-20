@@ -2,7 +2,7 @@
 
 # 簡體中文介面術語
 
-[English](../../ux/chinese-terminology.md) | [简体中文](../../zh-CN/ux/chinese-terminology.md) | 繁體中文（台灣） | [日本語](../../ja-JP/ux/chinese-terminology.md) | [한국어](../../ko-KR/ux/chinese-terminology.md) | [Français](../../fr-FR/ux/chinese-terminology.md) | [Deutsch](../../de-DE/ux/chinese-terminology.md) | [Español](../../es-ES/ux/chinese-terminology.md) | [Português (Brasil)](../../pt-BR/ux/chinese-terminology.md) | [Русский](../../ru-RU/ux/chinese-terminology.md)
+[English](../../ux/chinese-terminology.md) | [简体中文](../../zh-CN/ux/chinese-terminology.md) | 繁體中文 | [日本語](../../ja-JP/ux/chinese-terminology.md) | [한국어](../../ko-KR/ux/chinese-terminology.md) | [Français](../../fr-FR/ux/chinese-terminology.md) | [Deutsch](../../de-DE/ux/chinese-terminology.md) | [Español](../../es-ES/ux/chinese-terminology.md) | [Português (Brasil)](../../pt-BR/ux/chinese-terminology.md) | [Русский](../../ru-RU/ux/chinese-terminology.md)
 
 面向使用者的簡體中文文案遵循[術語設定](../../../specs/ux/chinese-terminology.json)。Qt 靜態文案保留 resources/i18n/zh-CN.json 中的穩定 ID。HTML、目前的高擬真設計和使用說明採用下表的簡體中文原文。工程和格式文件可使用技術術語。元件尺寸、主視窗 0.8／選單 1 的密度、DPR 和縮放參數沿用既有設定。
 

@@ -1,6 +1,6 @@
 # Product runtime and Qt lifecycle
 
-English | [简体中文](../zh-CN/engineering/product-runtime.md) | [繁體中文（台灣）](../zh-TW/engineering/product-runtime.md) | [日本語](../ja-JP/engineering/product-runtime.md) | [한국어](../ko-KR/engineering/product-runtime.md) | [Français](../fr-FR/engineering/product-runtime.md) | [Deutsch](../de-DE/engineering/product-runtime.md) | [Español](../es-ES/engineering/product-runtime.md) | [Português (Brasil)](../pt-BR/engineering/product-runtime.md) | [Русский](../ru-RU/engineering/product-runtime.md)
+English | [简体中文](../zh-CN/engineering/product-runtime.md) | [繁體中文](../zh-TW/engineering/product-runtime.md) | [日本語](../ja-JP/engineering/product-runtime.md) | [한국어](../ko-KR/engineering/product-runtime.md) | [Français](../fr-FR/engineering/product-runtime.md) | [Deutsch](../de-DE/engineering/product-runtime.md) | [Español](../es-ES/engineering/product-runtime.md) | [Português (Brasil)](../pt-BR/engineering/product-runtime.md) | [Русский](../ru-RU/engineering/product-runtime.md)
 
 This guide explains how the desktop application connects to the Rust runtime through commands and events, including queue backpressure, shutdown, and platform builds. See [read-only browsing](readonly-browser.md) and [safe extraction](zip-safe-extraction.md) for their specific capabilities.
 

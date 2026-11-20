@@ -2,7 +2,7 @@
 
 # 대형 압축 파일 인덱싱과 필요할 때 탐색
 
-[English](../../engineering/large-index.md) | [简体中文](../../zh-CN/engineering/large-index.md) | [繁體中文（台灣）](../../zh-TW/engineering/large-index.md) | [日本語](../../ja-JP/engineering/large-index.md) | 한국어 | [Français](../../fr-FR/engineering/large-index.md) | [Deutsch](../../de-DE/engineering/large-index.md) | [Español](../../es-ES/engineering/large-index.md) | [Português (Brasil)](../../pt-BR/engineering/large-index.md) | [Русский](../../ru-RU/engineering/large-index.md)
+[English](../../engineering/large-index.md) | [简体中文](../../zh-CN/engineering/large-index.md) | [繁體中文](../../zh-TW/engineering/large-index.md) | [日本語](../../ja-JP/engineering/large-index.md) | 한국어 | [Français](../../fr-FR/engineering/large-index.md) | [Deutsch](../../de-DE/engineering/large-index.md) | [Español](../../es-ES/engineering/large-index.md) | [Português (Brasil)](../../pt-BR/engineering/large-index.md) | [Русский](../../ru-RU/engineering/large-index.md)
 
 일반 단일 파일 ZIP/ZIP64의 소스 기능 한도는 물리 레코드 100만 개입니다. 다른 형식과 분할 볼륨 경로는 기존 100,000개 항목 허용 한도를 유지합니다. 형식 이름만으로 모든 조합의 한도가 확대되었다고 볼 수 없습니다. 디렉터리, 중복 이름, 검토가 필요한 레코드는 물리 항목에 포함되며 암시적 탐색 디렉터리는 표시 행만 추가합니다.
 

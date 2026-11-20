@@ -2,7 +2,7 @@
 
 # Страница приветствия главного окна
 
-[English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | [繁體中文（台灣）](../../zh-TW/ux/welcome.md) | [日本語](../../ja-JP/ux/welcome.md) | [한국어](../../ko-KR/ux/welcome.md) | [Français](../../fr-FR/ux/welcome.md) | [Deutsch](../../de-DE/ux/welcome.md) | [Español](../../es-ES/ux/welcome.md) | [Português (Brasil)](../../pt-BR/ux/welcome.md) | Русский
+[English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | [繁體中文](../../zh-TW/ux/welcome.md) | [日本語](../../ja-JP/ux/welcome.md) | [한국어](../../ko-KR/ux/welcome.md) | [Français](../../fr-FR/ux/welcome.md) | [Deutsch](../../de-DE/ux/welcome.md) | [Español](../../es-ES/ux/welcome.md) | [Português (Brasil)](../../pt-BR/ux/welcome.md) | Русский
 
 Дизайн высокой детализации подтверждён и включён в [официальную точку проверки HTML](../../../design/html/index.html?view=welcome&zoom=1). Qt реализует настоящее открытие и создание; ручная приёмка рабочего стола записывается отдельно. См. [дизайн состояний приветствия](../../../design/hifi/sources/welcome.html) и [welcome-reference.json](../../../specs/visual/welcome-reference.json). Цвета и плотность главного окна сохраняют существующие токены и layout-scale без изменения общих стандартов. Четыре PNG экспортированы из оригиналов дизайна, нарисованных кодом, и не являются снимками работающего продукта.
 

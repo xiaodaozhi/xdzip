@@ -1,6 +1,6 @@
 # 性能设计与测量
 
-[English](../../design/performance.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/performance.md) | [日本語](../../ja-JP/design/performance.md) | [한국어](../../ko-KR/design/performance.md) | [Français](../../fr-FR/design/performance.md) | [Deutsch](../../de-DE/design/performance.md) | [Español](../../es-ES/design/performance.md) | [Português (Brasil)](../../pt-BR/design/performance.md) | [Русский](../../ru-RU/design/performance.md)
+[English](../../design/performance.md) | 简体中文 | [繁體中文](../../zh-TW/design/performance.md) | [日本語](../../ja-JP/design/performance.md) | [한국어](../../ko-KR/design/performance.md) | [Français](../../fr-FR/design/performance.md) | [Deutsch](../../de-DE/design/performance.md) | [Español](../../es-ES/design/performance.md) | [Português (Brasil)](../../pt-BR/design/performance.md) | [Русский](../../ru-RU/design/performance.md)
 
 XDZip 分别约束索引、传输、任务执行和图片预览的内存与工作量。下面的代码限额属于实现规则。耗时、内存和吞吐数据取决于构建和工作负载，后文的参考指标是设计目标。
 

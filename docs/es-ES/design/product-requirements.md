@@ -2,7 +2,7 @@
 
 # Requisitos del producto XDZip
 
-[English](../../design/product-requirements.md) | [简体中文](../../zh-CN/design/product-requirements.md) | [繁體中文（台灣）](../../zh-TW/design/product-requirements.md) | [日本語](../../ja-JP/design/product-requirements.md) | [한국어](../../ko-KR/design/product-requirements.md) | [Français](../../fr-FR/design/product-requirements.md) | [Deutsch](../../de-DE/design/product-requirements.md) | Español | [Português (Brasil)](../../pt-BR/design/product-requirements.md) | [Русский](../../ru-RU/design/product-requirements.md)
+[English](../../design/product-requirements.md) | [简体中文](../../zh-CN/design/product-requirements.md) | [繁體中文](../../zh-TW/design/product-requirements.md) | [日本語](../../ja-JP/design/product-requirements.md) | [한국어](../../ko-KR/design/product-requirements.md) | [Français](../../fr-FR/design/product-requirements.md) | [Deutsch](../../de-DE/design/product-requirements.md) | Español | [Português (Brasil)](../../pt-BR/design/product-requirements.md) | [Русский](../../ru-RU/design/product-requirements.md)
 
 XDZip permite explorar archivos comprimidos como carpetas, trabajar con el contenido seleccionado y crear o editar archivos cuando el formato lo permite. El escritorio y la [CLI independiente](../engineering/command-line.md) comparten el entorno de ejecución. El [README del proyecto](../../../README.es-ES.md) describe las capacidades y distribuciones actuales. Los siguientes requisitos definen el comportamiento que hay que conservar y verificar.
 

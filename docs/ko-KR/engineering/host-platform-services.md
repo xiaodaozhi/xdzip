@@ -1,7 +1,7 @@
 <a name="xdzip-host-calendar-and-encoding-services-for-format-workers"></a>
 # 형식 워커를 위한 호스트 달력 및 인코딩 서비스
 
-[English](../../engineering/host-platform-services.md) | [简体中文](../../zh-CN/engineering/host-platform-services.md) | [繁體中文（台灣）](../../zh-TW/engineering/host-platform-services.md) | [日本語](../../ja-JP/engineering/host-platform-services.md) | 한국어 | [Français](../../fr-FR/engineering/host-platform-services.md) | [Deutsch](../../de-DE/engineering/host-platform-services.md) | [Español](../../es-ES/engineering/host-platform-services.md) | [Português (Brasil)](../../pt-BR/engineering/host-platform-services.md) | [Русский](../../ru-RU/engineering/host-platform-services.md)
+[English](../../engineering/host-platform-services.md) | [简体中文](../../zh-CN/engineering/host-platform-services.md) | [繁體中文](../../zh-TW/engineering/host-platform-services.md) | [日本語](../../ja-JP/engineering/host-platform-services.md) | 한국어 | [Français](../../fr-FR/engineering/host-platform-services.md) | [Deutsch](../../de-DE/engineering/host-platform-services.md) | [Español](../../es-ES/engineering/host-platform-services.md) | [Português (Brasil)](../../pt-BR/engineering/host-platform-services.md) | [Русский](../../ru-RU/engineering/host-platform-services.md)
 
 Rust는 형식 필드와 암호 호환성 규칙을 처리하고 데이터를 검증합니다. 운영체제의 과거 시간대 규칙, OEM 및 ANSI 코드 페이지, 로컬 C 인코딩은 호스트 환경에 속하며 선택적 `ReadSource` 서비스로 제공됩니다. 형식 계층은 파일 이름, HostOS 또는 현재 UTC 오프셋으로 이를 추측해서는 안 됩니다. 이 서비스는 Qt에 의존하지 않으며 경로 접근이나 파일 확정 권한을 주지 않습니다.
 

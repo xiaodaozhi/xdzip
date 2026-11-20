@@ -2,7 +2,7 @@
 
 # XDZip 文件
 
-[English](../README.md) | [简体中文](../zh-CN/README.md) | 繁體中文（台灣） | [日本語](../ja-JP/README.md) | [한국어](../ko-KR/README.md) | [Français](../fr-FR/README.md) | [Deutsch](../de-DE/README.md) | [Español](../es-ES/README.md) | [Português (Brasil)](../pt-BR/README.md) | [Русский](../ru-RU/README.md)
+[English](../README.md) | [简体中文](../zh-CN/README.md) | 繁體中文 | [日本語](../ja-JP/README.md) | [한국어](../ko-KR/README.md) | [Français](../fr-FR/README.md) | [Deutsch](../de-DE/README.md) | [Español](../es-ES/README.md) | [Português (Brasil)](../pt-BR/README.md) | [Русский](../ru-RU/README.md)
 
 第一次使用 XDZip，可以先[選擇下載包並安裝](user-guide/install.md)，再[開啟壓縮檔瀏覽內容](user-guide/browse.md)。[格式支援表](../../README.zh-TW.md#xdzip-%E6%A0%BC%E5%BC%8F%E6%94%AF%E6%8C%81)列出了可以開啟、建立或修改的格式。已安裝版本可查閱對應的[發行說明](https://github.com/xiaodaozhi/xdzip/releases)，瞭解該版本的具體功能。
 

@@ -1,6 +1,6 @@
 # Built-in format declarations
 
-English | [简体中文](../zh-CN/engineering/format-registry.md) | [繁體中文（台灣）](../zh-TW/engineering/format-registry.md) | [日本語](../ja-JP/engineering/format-registry.md) | [한국어](../ko-KR/engineering/format-registry.md) | [Français](../fr-FR/engineering/format-registry.md) | [Deutsch](../de-DE/engineering/format-registry.md) | [Español](../es-ES/engineering/format-registry.md) | [Português (Brasil)](../pt-BR/engineering/format-registry.md) | [Русский](../ru-RU/engineering/format-registry.md)
+English | [简体中文](../zh-CN/engineering/format-registry.md) | [繁體中文](../zh-TW/engineering/format-registry.md) | [日本語](../ja-JP/engineering/format-registry.md) | [한국어](../ko-KR/engineering/format-registry.md) | [Français](../fr-FR/engineering/format-registry.md) | [Deutsch](../de-DE/engineering/format-registry.md) | [Español](../es-ES/engineering/format-registry.md) | [Português (Brasil)](../pt-BR/engineering/format-registry.md) | [Русский](../ru-RU/engineering/format-registry.md)
 
 The built-in declaration source is [archive-formats.json](../../specs/engineering/archive-formats.json). It records stable format identifiers, labels, container families, outer compression, existing private worker identifiers, supported method families, creation suffixes, checking strength and entry-point candidates. Method families summarize the corresponding format contracts; they do not promise every parameter, historical variant or combination. Actual records, host policy and platform capabilities narrow the declaration before an operation starts.
 

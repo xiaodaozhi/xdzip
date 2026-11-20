@@ -2,7 +2,7 @@
 
 # 系統選單與托盤
 
-[English](../../ux/desktop-integration.md) | [简体中文](../../zh-CN/ux/desktop-integration.md) | 繁體中文（台灣） | [日本語](../../ja-JP/ux/desktop-integration.md) | [한국어](../../ko-KR/ux/desktop-integration.md) | [Français](../../fr-FR/ux/desktop-integration.md) | [Deutsch](../../de-DE/ux/desktop-integration.md) | [Español](../../es-ES/ux/desktop-integration.md) | [Português (Brasil)](../../pt-BR/ux/desktop-integration.md) | [Русский](../../ru-RU/ux/desktop-integration.md)
+[English](../../ux/desktop-integration.md) | [简体中文](../../zh-CN/ux/desktop-integration.md) | 繁體中文 | [日本語](../../ja-JP/ux/desktop-integration.md) | [한국어](../../ko-KR/ux/desktop-integration.md) | [Français](../../fr-FR/ux/desktop-integration.md) | [Deutsch](../../de-DE/ux/desktop-integration.md) | [Español](../../es-ES/ux/desktop-integration.md) | [Português (Brasil)](../../pt-BR/ux/desktop-integration.md) | [Русский](../../ru-RU/ux/desktop-integration.md)
 
 多工作階段、單一執行個體、視窗狀態及全域退出以[應用會話契約](../engineering/application-sessions.md)為準。關閉非最後主視窗保留任務，最後視窗遵循托盤設定；退出確認覆蓋所有會話。
 

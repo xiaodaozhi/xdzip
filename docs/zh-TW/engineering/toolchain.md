@@ -2,7 +2,7 @@
 
 # 工具鏈與平臺凍結表
 
-[English](../../engineering/toolchain.md) | [简体中文](../../zh-CN/engineering/toolchain.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/toolchain.md) | [한국어](../../ko-KR/engineering/toolchain.md) | [Français](../../fr-FR/engineering/toolchain.md) | [Deutsch](../../de-DE/engineering/toolchain.md) | [Español](../../es-ES/engineering/toolchain.md) | [Português (Brasil)](../../pt-BR/engineering/toolchain.md) | [Русский](../../ru-RU/engineering/toolchain.md)
+[English](../../engineering/toolchain.md) | [简体中文](../../zh-CN/engineering/toolchain.md) | 繁體中文 | [日本語](../../ja-JP/engineering/toolchain.md) | [한국어](../../ko-KR/engineering/toolchain.md) | [Français](../../fr-FR/engineering/toolchain.md) | [Deutsch](../../de-DE/engineering/toolchain.md) | [Español](../../es-ES/engineering/toolchain.md) | [Português (Brasil)](../../pt-BR/engineering/toolchain.md) | [Русский](../../ru-RU/engineering/toolchain.md)
 
 開發工具版本由 rust-toolchain.toml、Cargo.lock、CMake 和 CI 固定，支援範圍遵循[支援政策](support-policy.md)。本表定義升級及發行前的核驗要求，具體觀測記錄留在 issue／Actions，不把單機工具列表當作發行依賴鎖。
 

@@ -2,7 +2,7 @@
 
 # Decisión de licencia y materiales de terceros
 
-[English](../../engineering/licensing.md) | [简体中文](../../zh-CN/engineering/licensing.md) | [繁體中文（台灣）](../../zh-TW/engineering/licensing.md) | [日本語](../../ja-JP/engineering/licensing.md) | [한국어](../../ko-KR/engineering/licensing.md) | [Français](../../fr-FR/engineering/licensing.md) | [Deutsch](../../de-DE/engineering/licensing.md) | Español | [Português (Brasil)](../../pt-BR/engineering/licensing.md) | [Русский](../../ru-RU/engineering/licensing.md)
+[English](../../engineering/licensing.md) | [简体中文](../../zh-CN/engineering/licensing.md) | [繁體中文](../../zh-TW/engineering/licensing.md) | [日本語](../../ja-JP/engineering/licensing.md) | [한국어](../../ko-KR/engineering/licensing.md) | [Français](../../fr-FR/engineering/licensing.md) | [Deutsch](../../de-DE/engineering/licensing.md) | Español | [Português (Brasil)](../../pt-BR/engineering/licensing.md) | [Русский](../../ru-RU/engineering/licensing.md)
 
 Estado: adoptado. El 2026-10-11 el proyecto estableció **Apache-2.0** para el código, documentación y demás contenido original del proyecto, salvo declaración distinta. La opción MIT OR Apache-2.0 de documentos experimentales anteriores no se aplica a este repositorio.
 

@@ -1,6 +1,6 @@
 # ARJ compressed streams and container admission
 
-English | [简体中文](../zh-CN/engineering/arj-streams.md) | [繁體中文（台灣）](../zh-TW/engineering/arj-streams.md) | [日本語](../ja-JP/engineering/arj-streams.md) | [한국어](../ko-KR/engineering/arj-streams.md) | [Français](../fr-FR/engineering/arj-streams.md) | [Deutsch](../de-DE/engineering/arj-streams.md) | [Español](../es-ES/engineering/arj-streams.md) | [Português (Brasil)](../pt-BR/engineering/arj-streams.md) | [Русский](../ru-RU/engineering/arj-streams.md)
+English | [简体中文](../zh-CN/engineering/arj-streams.md) | [繁體中文](../zh-TW/engineering/arj-streams.md) | [日本語](../ja-JP/engineering/arj-streams.md) | [한국어](../ko-KR/engineering/arj-streams.md) | [Français](../fr-FR/engineering/arj-streams.md) | [Deutsch](../de-DE/engineering/arj-streams.md) | [Español](../es-ES/engineering/arj-streams.md) | [Português (Brasil)](../pt-BR/engineering/arj-streams.md) | [Русский](../ru-RU/engineering/arj-streams.md)
 
 `ArjReader` provides bounded raw decoding of ARJ methods 1–4. Store belongs to the container, not this reader. `xdzip-codec-arj` supplies complete physical framing and CRC-verified member delivery over a host-owned source. `ArjCodec` connects admitted profiles to runtime, CLI and desktop browsing, checking and extraction. The [format registry](../../specs/engineering/archive-formats.json) declares the read-only boundary; creation, rewriting, passwords and volumes are unavailable.
 

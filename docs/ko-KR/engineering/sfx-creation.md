@@ -1,6 +1,6 @@
 # xdzip에서 만드는 Windows용 ZIP 자동 압축 풀기 파일
 
-[English](../../engineering/sfx-creation.md) | [简体中文](../../zh-CN/engineering/sfx-creation.md) | [繁體中文（台灣）](../../zh-TW/engineering/sfx-creation.md) | [日本語](../../ja-JP/engineering/sfx-creation.md) | 한국어 | [Français](../../fr-FR/engineering/sfx-creation.md) | [Deutsch](../../de-DE/engineering/sfx-creation.md) | [Español](../../es-ES/engineering/sfx-creation.md) | [Português (Brasil)](../../pt-BR/engineering/sfx-creation.md) | [Русский](../../ru-RU/engineering/sfx-creation.md)
+[English](../../engineering/sfx-creation.md) | [简体中文](../../zh-CN/engineering/sfx-creation.md) | [繁體中文](../../zh-TW/engineering/sfx-creation.md) | [日本語](../../ja-JP/engineering/sfx-creation.md) | 한국어 | [Français](../../fr-FR/engineering/sfx-creation.md) | [Deutsch](../../de-DE/engineering/sfx-creation.md) | [Español](../../es-ES/engineering/sfx-creation.md) | [Português (Brasil)](../../pt-BR/engineering/sfx-creation.md) | [Русский](../../ru-RU/engineering/sfx-creation.md)
 
 첫 번째 SFX 프로필은 Windows x64 전용이며, 만들 때 `.sfx.exe` 확장자를 지정합니다. 프로젝트에서 빌드한 스텁 `xdzip-sfx.exe`에 암호화되지 않은 단일 볼륨 Store 또는 Deflate ZIP을 넣습니다. 만드는 동안 스텁을 실행하지 않습니다. 일반 `.exe`는 만들기, 끌어다 놓기, 시스템 파일 연결 등록 범위에 포함되지 않습니다.
 

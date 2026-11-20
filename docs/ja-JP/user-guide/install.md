@@ -1,6 +1,6 @@
 # XDZip をインストールしてアーカイブを開く
 
-[English](../../user-guide/install.md) | [简体中文](../../zh-CN/user-guide/install.md) | [繁體中文（台灣）](../../zh-TW/user-guide/install.md) | 日本語 | [한국어](../../ko-KR/user-guide/install.md) | [Français](../../fr-FR/user-guide/install.md) | [Deutsch](../../de-DE/user-guide/install.md) | [Español](../../es-ES/user-guide/install.md) | [Português (Brasil)](../../pt-BR/user-guide/install.md) | [Русский](../../ru-RU/user-guide/install.md)
+[English](../../user-guide/install.md) | [简体中文](../../zh-CN/user-guide/install.md) | [繁體中文](../../zh-TW/user-guide/install.md) | 日本語 | [한국어](../../ko-KR/user-guide/install.md) | [Français](../../fr-FR/user-guide/install.md) | [Deutsch](../../de-DE/user-guide/install.md) | [Español](../../es-ES/user-guide/install.md) | [Português (Brasil)](../../pt-BR/user-guide/install.md) | [Русский](../../ru-RU/user-guide/install.md)
 
 [GitHub の最新安定版](https://github.com/xiaodaozhi/xdzip/releases/latest)からシステムに合ったパッケージを入手してください。Windows では Microsoft Store も利用できます。GitHub のページにはファイル名、バージョン、直接ダウンロードしたファイルを検証するための `SHA256SUMS` があります。動作要件は[サポートポリシー](../engineering/support-policy.md)を参照してください。
 

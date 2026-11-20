@@ -2,7 +2,7 @@
 
 # 파일 권한과 안전한 게시
 
-[English](../../design/file-security.md) | [简体中文](../../zh-CN/design/file-security.md) | [繁體中文（台灣）](../../zh-TW/design/file-security.md) | [日本語](../../ja-JP/design/file-security.md) | 한국어 | [Français](../../fr-FR/design/file-security.md) | [Deutsch](../../de-DE/design/file-security.md) | [Español](../../es-ES/design/file-security.md) | [Português (Brasil)](../../pt-BR/design/file-security.md) | [Русский](../../ru-RU/design/file-security.md)
+[English](../../design/file-security.md) | [简体中文](../../zh-CN/design/file-security.md) | [繁體中文](../../zh-TW/design/file-security.md) | [日本語](../../ja-JP/design/file-security.md) | 한국어 | [Français](../../fr-FR/design/file-security.md) | [Deutsch](../../de-DE/design/file-security.md) | [Español](../../es-ES/design/file-security.md) | [Português (Brasil)](../../pt-BR/design/file-security.md) | [Русский](../../ru-RU/design/file-security.md)
 
 호스트는 열 수 있는 파일과 검증된 출력을 게시할 위치를 제어합니다. 백엔드는 격리된 압축 파일 작업 프로세스에서 실행될 때도 제한된 리더와 싱크를 받습니다. 압축 파일 이름, 선언 크기, 체크섬과 페이로드는 입력 데이터입니다. 호스트의 파일 검사는 형식이 수행하는 검사와 독립적으로 적용됩니다. [시스템 아키텍처](system-architecture.md), [압축 파일 작업 프로토콜](../engineering/native-codecs.md)
 

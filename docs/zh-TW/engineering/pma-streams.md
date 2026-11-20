@@ -2,7 +2,7 @@
 
 # PMA 容器與 PMarc 方法
 
-[English](../../engineering/pma-streams.md) | [简体中文](../../zh-CN/engineering/pma-streams.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/pma-streams.md) | [한국어](../../ko-KR/engineering/pma-streams.md) | [Français](../../fr-FR/engineering/pma-streams.md) | [Deutsch](../../de-DE/engineering/pma-streams.md) | [Español](../../es-ES/engineering/pma-streams.md) | [Português (Brasil)](../../pt-BR/engineering/pma-streams.md) | [Русский](../../ru-RU/engineering/pma-streams.md)
+[English](../../engineering/pma-streams.md) | [简体中文](../../zh-CN/engineering/pma-streams.md) | 繁體中文 | [日本語](../../ja-JP/engineering/pma-streams.md) | [한국어](../../ko-KR/engineering/pma-streams.md) | [Français](../../fr-FR/engineering/pma-streams.md) | [Deutsch](../../de-DE/engineering/pma-streams.md) | [Español](../../es-ES/engineering/pma-streams.md) | [Português (Brasil)](../../pt-BR/engineering/pma-streams.md) | [Русский](../../ru-RU/engineering/pma-streams.md)
 
 PMarc 使用類似 LHA 的順序頭部，方法為 `-pm0-`、`-pm1-`、`-pm2-`。它們是不同演算法，不能當成名稱相近的 LH 方法。只讀 PMA 配置准入 0 級頭部的 PM0、PM1、PM2，支援瀏覽、檢查和選中提取。未知方法仍可見，但帶有內容不支援警告。建立、修改、加密、分卷和修復未准入，格式登記保持權威。
 

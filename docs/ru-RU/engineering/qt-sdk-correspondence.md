@@ -2,7 +2,7 @@
 
 # Проверка соответствия Qt SDK исходному коду
 
-[English](../../engineering/qt-sdk-correspondence.md) | [简体中文](../../zh-CN/engineering/qt-sdk-correspondence.md) | [繁體中文（台灣）](../../zh-TW/engineering/qt-sdk-correspondence.md) | [日本語](../../ja-JP/engineering/qt-sdk-correspondence.md) | [한국어](../../ko-KR/engineering/qt-sdk-correspondence.md) | [Français](../../fr-FR/engineering/qt-sdk-correspondence.md) | [Deutsch](../../de-DE/engineering/qt-sdk-correspondence.md) | [Español](../../es-ES/engineering/qt-sdk-correspondence.md) | [Português (Brasil)](../../pt-BR/engineering/qt-sdk-correspondence.md) | Русский
+[English](../../engineering/qt-sdk-correspondence.md) | [简体中文](../../zh-CN/engineering/qt-sdk-correspondence.md) | [繁體中文](../../zh-TW/engineering/qt-sdk-correspondence.md) | [日本語](../../ja-JP/engineering/qt-sdk-correspondence.md) | [한국어](../../ko-KR/engineering/qt-sdk-correspondence.md) | [Français](../../fr-FR/engineering/qt-sdk-correspondence.md) | [Deutsch](../../de-DE/engineering/qt-sdk-correspondence.md) | [Español](../../es-ES/engineering/qt-sdk-correspondence.md) | [Português (Brasil)](../../pt-BR/engineering/qt-sdk-correspondence.md) | Русский
 
 Проверка соответствия использует фактические байты официальных архивов; совпадение номеров версий не доказывает эквивалентность сборки SDK. `scripts/qt_sdk_correspondence.py` связывает зафиксированные архивы исходного кода, предоставленные SDK SPDX исходников, декларации сборки, установленную конфигурацию и известные исправления потребителей SDK, записывая результат в build/. Инструмент не изменяет SDK и не утверждает варианты лицензии.
 

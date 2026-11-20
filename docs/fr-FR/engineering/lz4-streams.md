@@ -2,7 +2,7 @@
 
 # Contrat des flux LZ4
 
-[English](../../engineering/lz4-streams.md) | [简体中文](../../zh-CN/engineering/lz4-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/lz4-streams.md) | [日本語](../../ja-JP/engineering/lz4-streams.md) | [한국어](../../ko-KR/engineering/lz4-streams.md) | Français | [Deutsch](../../de-DE/engineering/lz4-streams.md) | [Español](../../es-ES/engineering/lz4-streams.md) | [Português (Brasil)](../../pt-BR/engineering/lz4-streams.md) | [Русский](../../ru-RU/engineering/lz4-streams.md)
+[English](../../engineering/lz4-streams.md) | [简体中文](../../zh-CN/engineering/lz4-streams.md) | [繁體中文](../../zh-TW/engineering/lz4-streams.md) | [日本語](../../ja-JP/engineering/lz4-streams.md) | [한국어](../../ko-KR/engineering/lz4-streams.md) | Français | [Deutsch](../../de-DE/engineering/lz4-streams.md) | [Español](../../es-ES/engineering/lz4-streams.md) | [Português (Brasil)](../../pt-BR/engineering/lz4-streams.md) | [Русский](../../ru-RU/engineering/lz4-streams.md)
 
 Le profil des trames standard suit les spécifications de l’auteur pour le [format de trame 1.6.5](https://github.com/lz4/lz4/blob/v1.11.1/doc/lz4_Frame_format.md), le [format de bloc du 2026-10-26](https://github.com/lz4/lz4/blob/v1.11.1/doc/lz4_Block_format.md) et [XXH32](https://github.com/Cyan4973/xxHash/blob/v0.8.3/doc/xxhash_spec.md). Les algorithmes sont implémentés indépendamment en Rust. Les outils de référence et les résultats d’exécution générés restent dans `build/` en local. Seuls les motifs d’entrée reproductibles du projet sont versionnés. Les [flux à fichier unique](single-file-streams.md) décrivent les autorisations de l’hôte et la publication.
 

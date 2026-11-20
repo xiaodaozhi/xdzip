@@ -2,7 +2,7 @@
 
 # Flujos comprimidos ARJ y admisión del contenedor
 
-[English](../../engineering/arj-streams.md) | [简体中文](../../zh-CN/engineering/arj-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/arj-streams.md) | [日本語](../../ja-JP/engineering/arj-streams.md) | [한국어](../../ko-KR/engineering/arj-streams.md) | [Français](../../fr-FR/engineering/arj-streams.md) | [Deutsch](../../de-DE/engineering/arj-streams.md) | Español | [Português (Brasil)](../../pt-BR/engineering/arj-streams.md) | [Русский](../../ru-RU/engineering/arj-streams.md)
+[English](../../engineering/arj-streams.md) | [简体中文](../../zh-CN/engineering/arj-streams.md) | [繁體中文](../../zh-TW/engineering/arj-streams.md) | [日本語](../../ja-JP/engineering/arj-streams.md) | [한국어](../../ko-KR/engineering/arj-streams.md) | [Français](../../fr-FR/engineering/arj-streams.md) | [Deutsch](../../de-DE/engineering/arj-streams.md) | Español | [Português (Brasil)](../../pt-BR/engineering/arj-streams.md) | [Русский](../../ru-RU/engineering/arj-streams.md)
 
 `ArjReader` ofrece decodificación bruta acotada de métodos ARJ 1–4. Store pertenece al contenedor, no a este lector. `xdzip-codec-arj` proporciona estructura física completa y entrega de miembros verificada por CRC sobre una fuente propiedad del host. `ArjCodec` conecta perfiles admitidos al entorno, CLI y navegación, comprobación y extracción de escritorio. El [registro de formatos](../../../specs/engineering/archive-formats.json) declara el límite de solo lectura; creación, reescritura, contraseñas y volúmenes no están disponibles.
 

@@ -1,6 +1,6 @@
 # Explorar, seleccionar y previsualizar archivos
 
-[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | [繁體中文（台灣）](../../zh-TW/user-guide/browse.md) | [日本語](../../ja-JP/user-guide/browse.md) | [한국어](../../ko-KR/user-guide/browse.md) | [Français](../../fr-FR/user-guide/browse.md) | [Deutsch](../../de-DE/user-guide/browse.md) | Español | [Português (Brasil)](../../pt-BR/user-guide/browse.md) | [Русский](../../ru-RU/user-guide/browse.md)
+[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | [繁體中文](../../zh-TW/user-guide/browse.md) | [日本語](../../ja-JP/user-guide/browse.md) | [한국어](../../ko-KR/user-guide/browse.md) | [Français](../../fr-FR/user-guide/browse.md) | [Deutsch](../../de-DE/user-guide/browse.md) | Español | [Português (Brasil)](../../pt-BR/user-guide/browse.md) | [Русский](../../ru-RU/user-guide/browse.md)
 
 1. Abre un archivo comprimido. Para entrar en una carpeta, usa el árbol de directorios o haz doble clic en su fila. Usa la ruta de navegación para regresar a una carpeta superior.
 2. Escribe parte de un nombre y pulsa Intro. La búsqueda incluye la carpeta actual y sus subcarpetas. Elige vista de lista o de cuadrícula y un orden. Las carpetas se muestran antes que los archivos en ambos sentidos.

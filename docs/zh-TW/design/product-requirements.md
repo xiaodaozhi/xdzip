@@ -2,7 +2,7 @@
 
 # XDZip 產品要求
 
-[English](../../design/product-requirements.md) | [简体中文](../../zh-CN/design/product-requirements.md) | 繁體中文（台灣） | [日本語](../../ja-JP/design/product-requirements.md) | [한국어](../../ko-KR/design/product-requirements.md) | [Français](../../fr-FR/design/product-requirements.md) | [Deutsch](../../de-DE/design/product-requirements.md) | [Español](../../es-ES/design/product-requirements.md) | [Português (Brasil)](../../pt-BR/design/product-requirements.md) | [Русский](../../ru-RU/design/product-requirements.md)
+[English](../../design/product-requirements.md) | [简体中文](../../zh-CN/design/product-requirements.md) | 繁體中文 | [日本語](../../ja-JP/design/product-requirements.md) | [한국어](../../ko-KR/design/product-requirements.md) | [Français](../../fr-FR/design/product-requirements.md) | [Deutsch](../../de-DE/design/product-requirements.md) | [Español](../../es-ES/design/product-requirements.md) | [Português (Brasil)](../../pt-BR/design/product-requirements.md) | [Русский](../../ru-RU/design/product-requirements.md)
 
 XDZip 支援像瀏覽資料夾一樣檢視壓縮檔、處理選取的內容，並在格式允許時建立或修改壓縮檔。桌面應用程式與[獨立 CLI](../engineering/command-line.md)共用壓縮檔執行環境。[專案首頁](../../../README.zh-TW.md)說明目前的功能與散布方式。下列需求說明需要保留和驗證的行為。
 

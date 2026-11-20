@@ -2,7 +2,7 @@
 
 # PMA コンテナーと PMarc メソッド
 
-[English](../../engineering/pma-streams.md) | [简体中文](../../zh-CN/engineering/pma-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/pma-streams.md) | 日本語 | [한국어](../../ko-KR/engineering/pma-streams.md) | [Français](../../fr-FR/engineering/pma-streams.md) | [Deutsch](../../de-DE/engineering/pma-streams.md) | [Español](../../es-ES/engineering/pma-streams.md) | [Português (Brasil)](../../pt-BR/engineering/pma-streams.md) | [Русский](../../ru-RU/engineering/pma-streams.md)
+[English](../../engineering/pma-streams.md) | [简体中文](../../zh-CN/engineering/pma-streams.md) | [繁體中文](../../zh-TW/engineering/pma-streams.md) | 日本語 | [한국어](../../ko-KR/engineering/pma-streams.md) | [Français](../../fr-FR/engineering/pma-streams.md) | [Deutsch](../../de-DE/engineering/pma-streams.md) | [Español](../../es-ES/engineering/pma-streams.md) | [Português (Brasil)](../../pt-BR/engineering/pma-streams.md) | [Русский](../../ru-RU/engineering/pma-streams.md)
 
 PMarc は `-pm0-`、`-pm1-`、`-pm2-` メソッドを持つ LHA に似た逐次ヘッダーを使用します。これらは異なるアルゴリズムを識別し、名前が似た LH メソッドの別名ではありません。読み取り専用の PMA プロファイルは、レベル 0 ヘッダーの PM0、PM1、PM2 メンバーについて閲覧、検査、選択抽出を認めます。不明なメソッドは内容が未対応である警告とともに表示されます。作成、変更、暗号化、分割、修復は認められず、形式レジストリが正式な基準です。
 

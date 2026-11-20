@@ -1,6 +1,6 @@
 # XDZip 用户手册
 
-[English](../../user-guide/README.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/user-guide/README.md) | [日本語](../../ja-JP/user-guide/README.md) | [한국어](../../ko-KR/user-guide/README.md) | [Français](../../fr-FR/user-guide/README.md) | [Deutsch](../../de-DE/user-guide/README.md) | [Español](../../es-ES/user-guide/README.md) | [Português (Brasil)](../../pt-BR/user-guide/README.md) | [Русский](../../ru-RU/user-guide/README.md)
+[English](../../user-guide/README.md) | 简体中文 | [繁體中文](../../zh-TW/user-guide/README.md) | [日本語](../../ja-JP/user-guide/README.md) | [한국어](../../ko-KR/user-guide/README.md) | [Français](../../fr-FR/user-guide/README.md) | [Deutsch](../../de-DE/user-guide/README.md) | [Español](../../es-ES/user-guide/README.md) | [Português (Brasil)](../../pt-BR/user-guide/README.md) | [Русский](../../ru-RU/user-guide/README.md)
 
 首次使用可从[安装指南](install.md)开始，核对 Windows、macOS 和 Ubuntu 的适用配置。想确认某种压缩包可以执行哪些操作，可查[格式支持表](../../../README.zh-CN.md#格式支持)。已安装的版本请查阅对应[发布说明](https://github.com/xiaodaozhi/xdzip/releases)。
 

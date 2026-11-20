@@ -2,7 +2,7 @@
 
 # cxx 橋接依賴依據
 
-[English](../../engineering/cxx-admission.md) | [简体中文](../../zh-CN/engineering/cxx-admission.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/cxx-admission.md) | [한국어](../../ko-KR/engineering/cxx-admission.md) | [Français](../../fr-FR/engineering/cxx-admission.md) | [Deutsch](../../de-DE/engineering/cxx-admission.md) | [Español](../../es-ES/engineering/cxx-admission.md) | [Português (Brasil)](../../pt-BR/engineering/cxx-admission.md) | [Русский](../../ru-RU/engineering/cxx-admission.md)
+[English](../../engineering/cxx-admission.md) | [简体中文](../../zh-CN/engineering/cxx-admission.md) | 繁體中文 | [日本語](../../ja-JP/engineering/cxx-admission.md) | [한국어](../../ko-KR/engineering/cxx-admission.md) | [Français](../../fr-FR/engineering/cxx-admission.md) | [Deutsch](../../de-DE/engineering/cxx-admission.md) | [Español](../../es-ES/engineering/cxx-admission.md) | [Português (Brasil)](../../pt-BR/engineering/cxx-admission.md) | [Русский](../../ru-RU/engineering/cxx-admission.md)
 
 Qt/Rust 採用 `cxx` 生成的型別化所有權橋接；C++ 保留 Qt 物件，Rust 保留領域和執行時。`cxx` 與 `cxx-build` 必須精確同版，以 [Cargo.lock](../../../Cargo.lock) 及[工具鏈策略](toolchain.md)為準。cxx 不作為第三方格式擴充套件的穩定 ABI。手寫 C ABI 雖減少依賴，卻增加字串、釋放函式與所有權不變數維護成本。
 

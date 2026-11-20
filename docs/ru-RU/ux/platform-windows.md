@@ -2,7 +2,7 @@
 
 # Окна платформ и строки заголовка
 
-[English](../../ux/platform-windows.md) | [简体中文](../../zh-CN/ux/platform-windows.md) | [繁體中文（台灣）](../../zh-TW/ux/platform-windows.md) | [日本語](../../ja-JP/ux/platform-windows.md) | [한국어](../../ko-KR/ux/platform-windows.md) | [Français](../../fr-FR/ux/platform-windows.md) | [Deutsch](../../de-DE/ux/platform-windows.md) | [Español](../../es-ES/ux/platform-windows.md) | [Português (Brasil)](../../pt-BR/ux/platform-windows.md) | Русский
+[English](../../ux/platform-windows.md) | [简体中文](../../zh-CN/ux/platform-windows.md) | [繁體中文](../../zh-TW/ux/platform-windows.md) | [日本語](../../ja-JP/ux/platform-windows.md) | [한국어](../../ko-KR/ux/platform-windows.md) | [Français](../../fr-FR/ux/platform-windows.md) | [Deutsch](../../de-DE/ux/platform-windows.md) | [Español](../../es-ES/ux/platform-windows.md) | [Português (Brasil)](../../pt-BR/ux/platform-windows.md) | Русский
 
 Операции xdzip используют самостоятельные окна верхнего уровня, а не листы, прикрепленные к главному окну, или нарисованные внутри него панели. Самостоятельное окно не означает отдельный процесс или запись на панели задач для каждого вспомогательного окна. Выпадающие меню и подсказки остаются легковесными Popup и не являются окнами операций.
 

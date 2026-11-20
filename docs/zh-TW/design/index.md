@@ -2,7 +2,7 @@
 
 # XDZip 設計指南
 
-[English](../../design/index.md) | [简体中文](../../zh-CN/design/index.md) | 繁體中文（台灣） | [日本語](../../ja-JP/design/index.md) | [한국어](../../ko-KR/design/index.md) | [Français](../../fr-FR/design/index.md) | [Deutsch](../../de-DE/design/index.md) | [Español](../../es-ES/design/index.md) | [Português (Brasil)](../../pt-BR/design/index.md) | [Русский](../../ru-RU/design/index.md)
+[English](../../design/index.md) | [简体中文](../../zh-CN/design/index.md) | 繁體中文 | [日本語](../../ja-JP/design/index.md) | [한국어](../../ko-KR/design/index.md) | [Français](../../fr-FR/design/index.md) | [Deutsch](../../de-DE/design/index.md) | [Español](../../es-ES/design/index.md) | [Português (Brasil)](../../pt-BR/design/index.md) | [Русский](../../ru-RU/design/index.md)
 
 從[系統架構](system-architecture.md)瞭解 Qt Quick 桌面與獨立 Rust CLI 如何呼叫歸檔執行時。這套文件說明目前實現契約、架構決策和擬議工作的範圍。安裝與日常操作見[使用者手冊](../user-guide/README.md)。需要構建或修改專案時，見[開發與貢獻](../contributing/README.md)。
 

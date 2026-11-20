@@ -1,6 +1,6 @@
 # 解压全部或所选文件
 
-[English](../../user-guide/extract.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/user-guide/extract.md) | [日本語](../../ja-JP/user-guide/extract.md) | [한국어](../../ko-KR/user-guide/extract.md) | [Français](../../fr-FR/user-guide/extract.md) | [Deutsch](../../de-DE/user-guide/extract.md) | [Español](../../es-ES/user-guide/extract.md) | [Português (Brasil)](../../pt-BR/user-guide/extract.md) | [Русский](../../ru-RU/user-guide/extract.md)
+[English](../../user-guide/extract.md) | 简体中文 | [繁體中文](../../zh-TW/user-guide/extract.md) | [日本語](../../ja-JP/user-guide/extract.md) | [한국어](../../ko-KR/user-guide/extract.md) | [Français](../../fr-FR/user-guide/extract.md) | [Deutsch](../../de-DE/user-guide/extract.md) | [Español](../../es-ES/user-guide/extract.md) | [Português (Brasil)](../../pt-BR/user-guide/extract.md) | [Русский](../../ru-RU/user-guide/extract.md)
 
 ## 从归档窗口解压
 

@@ -1,6 +1,6 @@
 # XDZip ユーザーガイド
 
-[English](../../user-guide/README.md) | [简体中文](../../zh-CN/user-guide/README.md) | [繁體中文（台灣）](../../zh-TW/user-guide/README.md) | 日本語 | [한국어](../../ko-KR/user-guide/README.md) | [Français](../../fr-FR/user-guide/README.md) | [Deutsch](../../de-DE/user-guide/README.md) | [Español](../../es-ES/user-guide/README.md) | [Português (Brasil)](../../pt-BR/user-guide/README.md) | [Русский](../../ru-RU/user-guide/README.md)
+[English](../../user-guide/README.md) | [简体中文](../../zh-CN/user-guide/README.md) | [繁體中文](../../zh-TW/user-guide/README.md) | 日本語 | [한국어](../../ko-KR/user-guide/README.md) | [Français](../../fr-FR/user-guide/README.md) | [Deutsch](../../de-DE/user-guide/README.md) | [Español](../../es-ES/user-guide/README.md) | [Português (Brasil)](../../pt-BR/user-guide/README.md) | [Русский](../../ru-RU/user-guide/README.md)
 
 対応する Windows、macOS、Ubuntu の構成は[インストール手順](install.md)をご覧ください。アーカイブで利用できる操作は[対応形式表](../../../README.ja-JP.md#xdzip-format-support)で確認できます。ダウンロードしたビルドについては、対応する[リリース](https://github.com/xiaodaozhi/xdzip/releases)のノートを参照してください。
 

@@ -1,6 +1,6 @@
 # 파일 탐색, 선택 및 미리 보기
 
-[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | [繁體中文（台灣）](../../zh-TW/user-guide/browse.md) | [日本語](../../ja-JP/user-guide/browse.md) | 한국어 | [Français](../../fr-FR/user-guide/browse.md) | [Deutsch](../../de-DE/user-guide/browse.md) | [Español](../../es-ES/user-guide/browse.md) | [Português (Brasil)](../../pt-BR/user-guide/browse.md) | [Русский](../../ru-RU/user-guide/browse.md)
+[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | [繁體中文](../../zh-TW/user-guide/browse.md) | [日本語](../../ja-JP/user-guide/browse.md) | 한국어 | [Français](../../fr-FR/user-guide/browse.md) | [Deutsch](../../de-DE/user-guide/browse.md) | [Español](../../es-ES/user-guide/browse.md) | [Português (Brasil)](../../pt-BR/user-guide/browse.md) | [Русский](../../ru-RU/user-guide/browse.md)
 
 1. 압축 파일을 열고 디렉터리 트리에서 폴더를 선택하거나 해당 행을 두 번 클릭합니다. 경로 표시줄에서 상위 폴더로 돌아갈 수 있습니다.
 2. 파일 이름의 일부를 입력하고 Enter 키를 누릅니다. 현재 폴더와 하위 폴더를 검색합니다. 목록 보기 또는 격자 보기를 선택하고 정렬 순서를 정하세요. 어느 방향으로 정렬해도 폴더가 파일보다 먼저 표시됩니다.

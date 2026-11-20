@@ -2,7 +2,7 @@
 
 # Produktversion und Build-Identität
 
-[English](../../engineering/versioning.md) | [简体中文](../../zh-CN/engineering/versioning.md) | [繁體中文（台灣）](../../zh-TW/engineering/versioning.md) | [日本語](../../ja-JP/engineering/versioning.md) | [한국어](../../ko-KR/engineering/versioning.md) | [Français](../../fr-FR/engineering/versioning.md) | Deutsch | [Español](../../es-ES/engineering/versioning.md) | [Português (Brasil)](../../pt-BR/engineering/versioning.md) | [Русский](../../ru-RU/engineering/versioning.md)
+[English](../../engineering/versioning.md) | [简体中文](../../zh-CN/engineering/versioning.md) | [繁體中文](../../zh-TW/engineering/versioning.md) | [日本語](../../ja-JP/engineering/versioning.md) | [한국어](../../ko-KR/engineering/versioning.md) | [Français](../../fr-FR/engineering/versioning.md) | Deutsch | [Español](../../es-ES/engineering/versioning.md) | [Português (Brasil)](../../pt-BR/engineering/versioning.md) | [Русский](../../ru-RU/engineering/versioning.md)
 
 Das optionale Feld `prerelease_number` trennt die Vorabversionsnummer von der Buildnummer. So kann alpha.1 Build 14 verwenden, während die Buildnummer bei alpha.2 weiter erhöht wird. Ohne Feld gilt die bisherige Auslegung `channel.build`. Das [Veröffentlichungsprotokoll](release-protocol.md) legt Manifeste und Dateinamen fest.
 

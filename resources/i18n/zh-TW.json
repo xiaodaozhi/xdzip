@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "locale": "zh-TW",
-  "name": "繁體中文（台灣）",
+  "name": "繁體中文",
   "messages": {
     "tasks.clearFinished": "清除已結束任務",
     "tasks.check": "檢查任務 %1",

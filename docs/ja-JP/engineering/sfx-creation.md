@@ -1,6 +1,6 @@
 # xdzip で作成する Windows 用 ZIP 自己展開アーカイブ
 
-[English](../../engineering/sfx-creation.md) | [简体中文](../../zh-CN/engineering/sfx-creation.md) | [繁體中文（台灣）](../../zh-TW/engineering/sfx-creation.md) | 日本語 | [한국어](../../ko-KR/engineering/sfx-creation.md) | [Français](../../fr-FR/engineering/sfx-creation.md) | [Deutsch](../../de-DE/engineering/sfx-creation.md) | [Español](../../es-ES/engineering/sfx-creation.md) | [Português (Brasil)](../../pt-BR/engineering/sfx-creation.md) | [Русский](../../ru-RU/engineering/sfx-creation.md)
+[English](../../engineering/sfx-creation.md) | [简体中文](../../zh-CN/engineering/sfx-creation.md) | [繁體中文](../../zh-TW/engineering/sfx-creation.md) | 日本語 | [한국어](../../ko-KR/engineering/sfx-creation.md) | [Français](../../fr-FR/engineering/sfx-creation.md) | [Deutsch](../../de-DE/engineering/sfx-creation.md) | [Español](../../es-ES/engineering/sfx-creation.md) | [Português (Brasil)](../../pt-BR/engineering/sfx-creation.md) | [Русский](../../ru-RU/engineering/sfx-creation.md)
 
 最初の SFX プロファイルは Windows x64 専用で、作成時に `.sfx.exe` を指定します。プロジェクトがビルドしたスタブ `xdzip-sfx.exe` に、暗号化されていない単一ボリュームの Store または Deflate ZIP を格納します。作成時にスタブを実行することはありません。一般の `.exe` ファイルは作成、ドラッグ＆ドロップおよびシステムの関連付けの対象外です。
 

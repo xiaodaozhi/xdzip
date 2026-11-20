@@ -2,7 +2,7 @@
 
 # Vertrag für Unix compress Z
 
-[English](../../engineering/compress-streams.md) | [简体中文](../../zh-CN/engineering/compress-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/compress-streams.md) | [日本語](../../ja-JP/engineering/compress-streams.md) | [한국어](../../ko-KR/engineering/compress-streams.md) | [Français](../../fr-FR/engineering/compress-streams.md) | Deutsch | [Español](../../es-ES/engineering/compress-streams.md) | [Português (Brasil)](../../pt-BR/engineering/compress-streams.md) | [Русский](../../ru-RU/engineering/compress-streams.md)
+[English](../../engineering/compress-streams.md) | [简体中文](../../zh-CN/engineering/compress-streams.md) | [繁體中文](../../zh-TW/engineering/compress-streams.md) | [日本語](../../ja-JP/engineering/compress-streams.md) | [한국어](../../ko-KR/engineering/compress-streams.md) | [Français](../../fr-FR/engineering/compress-streams.md) | Deutsch | [Español](../../es-ES/engineering/compress-streams.md) | [Português (Brasil)](../../pt-BR/engineering/compress-streams.md) | [Русский](../../ru-RU/engineering/compress-streams.md)
 
 Dieser Vertrag definiert das Byteprofil des unabhängigen Rust-LZW-Lesers und seiner Einzeldatei-/TAR-Kombination. Geschichte des Werkzeugs und 9–16-Bit-Wörterbuchverhalten folgen [OpenBSD compress(1)](https://man.openbsd.org/compress.1) und [ncompress](https://vapier.github.io/ncompress/). POSIX spezifiziert das Werkzeug statt eines vollständigen Byteformats. Historische Acht-Code-Ausrichtung und 9-Bit-Kompatibilitätsunterschiede sind in der [upstream-Diskussion](https://github.com/vapier/ncompress/issues/5) dokumentiert und mit unabhängigen Eingaben bekannten Inhalts geprüft. Quellbeobachtungen ergänzen die Formatregeln; die Rust-Implementierung ist keine Übersetzung des Referenzcodes.
 

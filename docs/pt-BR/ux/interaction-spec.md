@@ -2,7 +2,7 @@
 
 # Especificação complementar de interação e textos
 
-[English](../../ux/interaction-spec.md) | [简体中文](../../zh-CN/ux/interaction-spec.md) | [繁體中文（台灣）](../../zh-TW/ux/interaction-spec.md) | [日本語](../../ja-JP/ux/interaction-spec.md) | [한국어](../../ko-KR/ux/interaction-spec.md) | [Français](../../fr-FR/ux/interaction-spec.md) | [Deutsch](../../de-DE/ux/interaction-spec.md) | [Español](../../es-ES/ux/interaction-spec.md) | Português (Brasil) | [Русский](../../ru-RU/ux/interaction-spec.md)
+[English](../../ux/interaction-spec.md) | [简体中文](../../zh-CN/ux/interaction-spec.md) | [繁體中文](../../zh-TW/ux/interaction-spec.md) | [日本語](../../ja-JP/ux/interaction-spec.md) | [한국어](../../ko-KR/ux/interaction-spec.md) | [Français](../../fr-FR/ux/interaction-spec.md) | [Deutsch](../../de-DE/ux/interaction-spec.md) | [Español](../../es-ES/ux/interaction-spec.md) | Português (Brasil) | [Русский](../../ru-RU/ux/interaction-spec.md)
 
 A [especificação de estados](hifi-state-spec.md) completa o projeto da janela principal e da confirmação de extração com criação, conflitos, tarefas, resultados, configurações e comparações de plataformas. O [contrato da tela inicial](welcome-opening.md) descreve a abertura e o progresso. Os desenhos e parâmetros atuais seguem o [registro de janelas](../../../specs/visual/window-registry.json). Os contratos técnicos e de interação indicam os limites da implementação e da verificação visual nativa.
 

@@ -2,7 +2,7 @@
 
 # Abrechnung zusätzlicher Algorithmusarbeit
 
-[English](../../engineering/auxiliary-decoding-work.md) | [简体中文](../../zh-CN/engineering/auxiliary-decoding-work.md) | [繁體中文（台灣）](../../zh-TW/engineering/auxiliary-decoding-work.md) | [日本語](../../ja-JP/engineering/auxiliary-decoding-work.md) | [한국어](../../ko-KR/engineering/auxiliary-decoding-work.md) | [Français](../../fr-FR/engineering/auxiliary-decoding-work.md) | Deutsch | [Español](../../es-ES/engineering/auxiliary-decoding-work.md) | [Português (Brasil)](../../pt-BR/engineering/auxiliary-decoding-work.md) | [Русский](../../ru-RU/engineering/auxiliary-decoding-work.md)
+[English](../../engineering/auxiliary-decoding-work.md) | [简体中文](../../zh-CN/engineering/auxiliary-decoding-work.md) | [繁體中文](../../zh-TW/engineering/auxiliary-decoding-work.md) | [日本語](../../ja-JP/engineering/auxiliary-decoding-work.md) | [한국어](../../ko-KR/engineering/auxiliary-decoding-work.md) | [Français](../../fr-FR/engineering/auxiliary-decoding-work.md) | Deutsch | [Español](../../es-ES/engineering/auxiliary-decoding-work.md) | [Português (Brasil)](../../pt-BR/engineering/auxiliary-decoding-work.md) | [Русский](../../ru-RU/engineering/auxiliary-decoding-work.md)
 
 Entpacken und Prüfen zählen dekodierte Dateibytes, tatsächliche Ausgabe und zusätzliche Algorithmusarbeit getrennt. PPM-Modellinitialisierung, Neustarts wegen Kapazitätsgrenzen und Dekodierung von Steuerdaten oder Parametern sind kein Dateiinhalt. Sie dürfen `decoded_bytes`, `written_bytes`, Dateifortschritt und Expansionsverhältnis nicht erhöhen und kein Guthaben für vorab angerechnete Ausgabe erzeugen. Aufgabensnapshots haben keinen sichtbaren Zusatzarbeitszähler.
 

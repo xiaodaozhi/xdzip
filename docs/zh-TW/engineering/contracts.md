@@ -2,7 +2,7 @@
 
 # 介面契約與檢查
 
-[English](../../engineering/contracts.md) | [简体中文](../../zh-CN/engineering/contracts.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/contracts.md) | [한국어](../../ko-KR/engineering/contracts.md) | [Français](../../fr-FR/engineering/contracts.md) | [Deutsch](../../de-DE/engineering/contracts.md) | [Español](../../es-ES/engineering/contracts.md) | [Português (Brasil)](../../pt-BR/engineering/contracts.md) | [Русский](../../ru-RU/engineering/contracts.md)
+[English](../../engineering/contracts.md) | [简体中文](../../zh-CN/engineering/contracts.md) | 繁體中文 | [日本語](../../ja-JP/engineering/contracts.md) | [한국어](../../ko-KR/engineering/contracts.md) | [Français](../../fr-FR/engineering/contracts.md) | [Deutsch](../../de-DE/engineering/contracts.md) | [Español](../../es-ES/engineering/contracts.md) | [Português (Brasil)](../../pt-BR/engineering/contracts.md) | [Русский](../../ru-RU/engineering/contracts.md)
 
 權威介面見[領域與資料](../design/domain-data.md)、[Qt/Rust 橋接](../design/qt-rust-bridge.md)、[格式擴充套件設計](../design/codec-extension-sdk.md)和[任務排程](../design/task-scheduling.md)；本頁定義凍結檢查，不復制另一套簽名。內部橋接、雙控制代碼和生命週期已實現，具體邊界見[執行時契約](product-runtime.md)。查詢代際、來源版本檢查、建立與解壓任務已分別落地，見[瀏覽契約](readonly-browser.md)、[安全解壓](zip-safe-extraction.md)及[建立契約](zip-creation.md)。第三方程序協議已有獨立[只讀 SDK 試驗](sdk-trial.md)，尚未作為穩定 SDK 釋出或接入產品；下表規定的是接入門檻。
 

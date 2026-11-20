@@ -2,7 +2,7 @@
 
 # Leistungsentwurf und Messung
 
-[English](../../design/performance.md) | [简体中文](../../zh-CN/design/performance.md) | [繁體中文（台灣）](../../zh-TW/design/performance.md) | [日本語](../../ja-JP/design/performance.md) | [한국어](../../ko-KR/design/performance.md) | [Français](../../fr-FR/design/performance.md) | Deutsch | [Español](../../es-ES/design/performance.md) | [Português (Brasil)](../../pt-BR/design/performance.md) | [Русский](../../ru-RU/design/performance.md)
+[English](../../design/performance.md) | [简体中文](../../zh-CN/design/performance.md) | [繁體中文](../../zh-TW/design/performance.md) | [日本語](../../ja-JP/design/performance.md) | [한국어](../../ko-KR/design/performance.md) | [Français](../../fr-FR/design/performance.md) | Deutsch | [Español](../../es-ES/design/performance.md) | [Português (Brasil)](../../pt-BR/design/performance.md) | [Русский](../../ru-RU/design/performance.md)
 
 XDZip begrenzt Speicher und Arbeit für Indizierung, Transport, Aufgabenausführung und Bildvorschau getrennt. Die folgenden Codegrenzen sind Implementierungsregeln. Zeiten, Speichermessungen und Durchsatz hängen von Build und Arbeitslast ab. Die später genannten Referenzziele sind technische Ziele.
 

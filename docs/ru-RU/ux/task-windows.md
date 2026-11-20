@@ -2,7 +2,7 @@
 
 # Окна задач и проверка целостности
 
-[English](../../ux/task-windows.md) | [简体中文](../../zh-CN/ux/task-windows.md) | [繁體中文（台灣）](../../zh-TW/ux/task-windows.md) | [日本語](../../ja-JP/ux/task-windows.md) | [한국어](../../ko-KR/ux/task-windows.md) | [Français](../../fr-FR/ux/task-windows.md) | [Deutsch](../../de-DE/ux/task-windows.md) | [Español](../../es-ES/ux/task-windows.md) | [Português (Brasil)](../../pt-BR/ux/task-windows.md) | Русский
+[English](../../ux/task-windows.md) | [简体中文](../../zh-CN/ux/task-windows.md) | [繁體中文](../../zh-TW/ux/task-windows.md) | [日本語](../../ja-JP/ux/task-windows.md) | [한국어](../../ko-KR/ux/task-windows.md) | [Français](../../fr-FR/ux/task-windows.md) | [Deutsch](../../de-DE/ux/task-windows.md) | [Español](../../es-ES/ux/task-windows.md) | [Português (Brasil)](../../pt-BR/ux/task-windows.md) | Русский
 
 Раздел задач приложения объединяет все сеансы и направляет прогресс, пароли, конфликты и результаты по UUID сеанса и ID задачи в серверной части. Закрытие страницы сохраняет ее контроллер; явный выход ожидает завершения всех асинхронных соединений. См. [контракт сеансов приложения](../engineering/application-sessions.md).
 

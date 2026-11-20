@@ -2,7 +2,7 @@
 
 # Diseño y medición de rendimiento
 
-[English](../../design/performance.md) | [简体中文](../../zh-CN/design/performance.md) | [繁體中文（台灣）](../../zh-TW/design/performance.md) | [日本語](../../ja-JP/design/performance.md) | [한국어](../../ko-KR/design/performance.md) | [Français](../../fr-FR/design/performance.md) | [Deutsch](../../de-DE/design/performance.md) | Español | [Português (Brasil)](../../pt-BR/design/performance.md) | [Русский](../../ru-RU/design/performance.md)
+[English](../../design/performance.md) | [简体中文](../../zh-CN/design/performance.md) | [繁體中文](../../zh-TW/design/performance.md) | [日本語](../../ja-JP/design/performance.md) | [한국어](../../ko-KR/design/performance.md) | [Français](../../fr-FR/design/performance.md) | [Deutsch](../../de-DE/design/performance.md) | Español | [Português (Brasil)](../../pt-BR/design/performance.md) | [Русский](../../ru-RU/design/performance.md)
 
 XDZip limita por separado memoria y trabajo de indexación, transporte, ejecución de tareas y vista previa de imágenes. Los límites de código siguientes son reglas de implementación. Tiempos, memoria y rendimiento dependen de la compilación y la carga. Los objetivos de referencia posteriores son metas de ingeniería.
 

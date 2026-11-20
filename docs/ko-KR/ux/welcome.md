@@ -2,7 +2,7 @@
 
 # 기본 창 환영 페이지
 
-[English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | [繁體中文（台灣）](../../zh-TW/ux/welcome.md) | [日本語](../../ja-JP/ux/welcome.md) | 한국어 | [Français](../../fr-FR/ux/welcome.md) | [Deutsch](../../de-DE/ux/welcome.md) | [Español](../../es-ES/ux/welcome.md) | [Português (Brasil)](../../pt-BR/ux/welcome.md) | [Русский](../../ru-RU/ux/welcome.md)
+[English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | [繁體中文](../../zh-TW/ux/welcome.md) | [日本語](../../ja-JP/ux/welcome.md) | 한국어 | [Français](../../fr-FR/ux/welcome.md) | [Deutsch](../../de-DE/ux/welcome.md) | [Español](../../es-ES/ux/welcome.md) | [Português (Brasil)](../../pt-BR/ux/welcome.md) | [Русский](../../ru-RU/ux/welcome.md)
 
 고충실도 디자인은 확인되어 [공식 HTML 검토 진입점](../../../design/html/index.html?view=welcome&zoom=1)에 통합되었습니다. Qt는 실제 열기와 생성을 구현하며 데스크톱 수동 검수는 별도 기록합니다. [환영 페이지 상태 디자인](../../../design/hifi/sources/welcome.html)과 [welcome-reference.json](../../../specs/visual/welcome-reference.json)을 참고하세요. 색상과 기본 창 밀도는 기존 토큰과 layout-scale을 유지하며 전역 표준을 바꾸지 않습니다. PNG 네 개는 코드로 그린 디자인 원본의 내보내기이며 실행 중인 제품 스크린샷이 아닙니다.
 

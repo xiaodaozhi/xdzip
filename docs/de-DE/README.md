@@ -1,6 +1,6 @@
 # XDZip-Dokumentation
 
-[English](../README.md) | [简体中文](../zh-CN/README.md) | [繁體中文（台灣）](../zh-TW/README.md) | [日本語](../ja-JP/README.md) | [한국어](../ko-KR/README.md) | [Français](../fr-FR/README.md) | Deutsch | [Español](../es-ES/README.md) | [Português (Brasil)](../pt-BR/README.md) | [Русский](../ru-RU/README.md)
+[English](../README.md) | [简体中文](../zh-CN/README.md) | [繁體中文](../zh-TW/README.md) | [日本語](../ja-JP/README.md) | [한국어](../ko-KR/README.md) | [Français](../fr-FR/README.md) | Deutsch | [Español](../es-ES/README.md) | [Português (Brasil)](../pt-BR/README.md) | [Русский](../ru-RU/README.md)
 
 Beginnen Sie mit [XDZip herunterladen und installieren](user-guide/install.md). Anschließend können Sie [ein Archiv öffnen und seinen Inhalt durchsuchen](user-guide/browse.md). Die [Übersicht der unterstützten Formate](../../README.de-DE.md#xdzip-format-support) zeigt, welche Formate Sie öffnen, erstellen oder bearbeiten können. Welche Funktionen Ihre installierte Version bietet, erfahren Sie in den zugehörigen [Versionshinweise](https://github.com/xiaodaozhi/xdzip/releases).
 

@@ -1,6 +1,6 @@
 # ファイルを閲覧、選択、プレビューする
 
-[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | [繁體中文（台灣）](../../zh-TW/user-guide/browse.md) | 日本語 | [한국어](../../ko-KR/user-guide/browse.md) | [Français](../../fr-FR/user-guide/browse.md) | [Deutsch](../../de-DE/user-guide/browse.md) | [Español](../../es-ES/user-guide/browse.md) | [Português (Brasil)](../../pt-BR/user-guide/browse.md) | [Русский](../../ru-RU/user-guide/browse.md)
+[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | [繁體中文](../../zh-TW/user-guide/browse.md) | 日本語 | [한국어](../../ko-KR/user-guide/browse.md) | [Français](../../fr-FR/user-guide/browse.md) | [Deutsch](../../de-DE/user-guide/browse.md) | [Español](../../es-ES/user-guide/browse.md) | [Português (Brasil)](../../pt-BR/user-guide/browse.md) | [Русский](../../ru-RU/user-guide/browse.md)
 
 1. アーカイブを開きます。ディレクトリツリーでフォルダーを選ぶか、該当する行をダブルクリックします。パスバーから親フォルダーに戻れます。
 2. ファイル名の一部を入力して Enter キーを押します。現在のフォルダーとその下のフォルダーを検索します。リスト表示またはグリッド表示と、並べ替え順を選べます。昇順と降順のどちらでも、フォルダーはファイルより先に表示されます。

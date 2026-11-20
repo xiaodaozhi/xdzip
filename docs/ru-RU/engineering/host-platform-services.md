@@ -1,7 +1,7 @@
 <a name="xdzip-host-calendar-and-encoding-services-for-format-workers"></a>
 # Службы календаря и кодировок хоста для процессов обработки форматов
 
-[English](../../engineering/host-platform-services.md) | [简体中文](../../zh-CN/engineering/host-platform-services.md) | [繁體中文（台灣）](../../zh-TW/engineering/host-platform-services.md) | [日本語](../../ja-JP/engineering/host-platform-services.md) | [한국어](../../ko-KR/engineering/host-platform-services.md) | [Français](../../fr-FR/engineering/host-platform-services.md) | [Deutsch](../../de-DE/engineering/host-platform-services.md) | [Español](../../es-ES/engineering/host-platform-services.md) | [Português (Brasil)](../../pt-BR/engineering/host-platform-services.md) | Русский
+[English](../../engineering/host-platform-services.md) | [简体中文](../../zh-CN/engineering/host-platform-services.md) | [繁體中文](../../zh-TW/engineering/host-platform-services.md) | [日本語](../../ja-JP/engineering/host-platform-services.md) | [한국어](../../ko-KR/engineering/host-platform-services.md) | [Français](../../fr-FR/engineering/host-platform-services.md) | [Deutsch](../../de-DE/engineering/host-platform-services.md) | [Español](../../es-ES/engineering/host-platform-services.md) | [Português (Brasil)](../../pt-BR/engineering/host-platform-services.md) | Русский
 
 Rust обрабатывает поля форматов, правила совместимости паролей и проверку данных. Исторические правила часовых поясов ОС, кодовые страницы OEM и ANSI и локальные кодировки C относятся к среде хоста и доступны через необязательные службы `ReadSource`. Слой формата не должен угадывать их по имени файла, HostOS или текущему смещению UTC. Службы не зависят от Qt и не дают доступа к путям или права сохранять итоговые файлы.
 

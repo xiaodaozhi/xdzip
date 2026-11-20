@@ -1,6 +1,6 @@
 # 补充交互与文案规范
 
-[English](../../ux/interaction-spec.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/ux/interaction-spec.md) | [日本語](../../ja-JP/ux/interaction-spec.md) | [한국어](../../ko-KR/ux/interaction-spec.md) | [Français](../../fr-FR/ux/interaction-spec.md) | [Deutsch](../../de-DE/ux/interaction-spec.md) | [Español](../../es-ES/ux/interaction-spec.md) | [Português (Brasil)](../../pt-BR/ux/interaction-spec.md) | [Русский](../../ru-RU/ux/interaction-spec.md)
+[English](../../ux/interaction-spec.md) | 简体中文 | [繁體中文](../../zh-TW/ux/interaction-spec.md) | [日本語](../../ja-JP/ux/interaction-spec.md) | [한국어](../../ko-KR/ux/interaction-spec.md) | [Français](../../fr-FR/ux/interaction-spec.md) | [Deutsch](../../de-DE/ux/interaction-spec.md) | [Español](../../es-ES/ux/interaction-spec.md) | [Português (Brasil)](../../pt-BR/ux/interaction-spec.md) | [Русский](../../ru-RU/ux/interaction-spec.md)
 
 主窗口与解压确认的视觉基线由[操作状态规范](hifi-state-spec.md)补充新建、冲突、任务、结果、设置及平台对照。欢迎页和打开进度见[欢迎页契约](welcome-opening.md)，当前原稿与布局依据以[窗口登记](../../../specs/visual/window-registry.json)为准。不因状态规范存在便将全部设计视为已实现或已通过原生视觉验收，具体实现边界见相应工程和交互契约。
 

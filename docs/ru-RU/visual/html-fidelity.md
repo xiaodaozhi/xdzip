@@ -2,7 +2,7 @@
 
 # Проверка визуального соответствия HTML
 
-[English](../../visual/html-fidelity.md) | [简体中文](../../zh-CN/visual/html-fidelity.md) | [繁體中文（台灣）](../../zh-TW/visual/html-fidelity.md) | [日本語](../../ja-JP/visual/html-fidelity.md) | [한국어](../../ko-KR/visual/html-fidelity.md) | [Français](../../fr-FR/visual/html-fidelity.md) | [Deutsch](../../de-DE/visual/html-fidelity.md) | [Español](../../es-ES/visual/html-fidelity.md) | [Português (Brasil)](../../pt-BR/visual/html-fidelity.md) | Русский
+[English](../../visual/html-fidelity.md) | [简体中文](../../zh-CN/visual/html-fidelity.md) | [繁體中文](../../zh-TW/visual/html-fidelity.md) | [日本語](../../ja-JP/visual/html-fidelity.md) | [한국어](../../ko-KR/visual/html-fidelity.md) | [Français](../../fr-FR/visual/html-fidelity.md) | [Deutsch](../../de-DE/visual/html-fidelity.md) | [Español](../../es-ES/visual/html-fidelity.md) | [Português (Brasil)](../../pt-BR/visual/html-fidelity.md) | Русский
 
 Эталоном служат изображения высокой детализации, а HTML является редактируемой реализацией. Размеры над панелью инструментов и под ней измеряются независимо по [зафиксированному первоначальному главному окну](../../../design/hifi/screens/main-light.png), а не выводятся обратно из текущего CSS. В текущем отображении используются [светлый вариант с капсульными вкладками](../../../design/hifi/screens/main-capsule-light.png) и [тёмный вариант](../../../design/hifi/screens/main-capsule-dark.png), экспортированные из [редактируемого источника](../../../design/hifi/sources/main.html); они не заменяют независимое измерение. Заголовок принимается по явной редакции в layout-scale.json. У исходных изображений сглаженные края и сгенерированные глифы; число тестов не доказывает попиксельную идентичность всей страницы.
 

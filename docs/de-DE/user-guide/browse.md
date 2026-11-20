@@ -1,6 +1,6 @@
 # Dateien durchsuchen, auswählen und in der Vorschau anzeigen
 
-[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | [繁體中文（台灣）](../../zh-TW/user-guide/browse.md) | [日本語](../../ja-JP/user-guide/browse.md) | [한국어](../../ko-KR/user-guide/browse.md) | [Français](../../fr-FR/user-guide/browse.md) | Deutsch | [Español](../../es-ES/user-guide/browse.md) | [Português (Brasil)](../../pt-BR/user-guide/browse.md) | [Русский](../../ru-RU/user-guide/browse.md)
+[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | [繁體中文](../../zh-TW/user-guide/browse.md) | [日本語](../../ja-JP/user-guide/browse.md) | [한국어](../../ko-KR/user-guide/browse.md) | [Français](../../fr-FR/user-guide/browse.md) | Deutsch | [Español](../../es-ES/user-guide/browse.md) | [Português (Brasil)](../../pt-BR/user-guide/browse.md) | [Русский](../../ru-RU/user-guide/browse.md)
 
 1. Öffnen Sie ein Archiv. Öffnen Sie einen Ordner über den Verzeichnisbaum oder per Doppelklick auf seine Zeile. Über die Pfadleiste gelangen Sie zurück zu einem übergeordneten Ordner.
 2. Geben Sie einen Teil des Dateinamens ein und drücken Sie die Eingabetaste. Die Suche umfasst den aktuellen Ordner und seine Unterordner. Wählen Sie Listen- oder Rasteransicht und eine Sortierung. Ordner stehen in beiden Sortierrichtungen vor Dateien.

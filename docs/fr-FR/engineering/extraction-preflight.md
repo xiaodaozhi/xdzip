@@ -2,7 +2,7 @@
 
 # Précontrôle d’extraction : phase de métadonnées
 
-[English](../../engineering/extraction-preflight.md) | [简体中文](../../zh-CN/engineering/extraction-preflight.md) | [繁體中文（台灣）](../../zh-TW/engineering/extraction-preflight.md) | [日本語](../../ja-JP/engineering/extraction-preflight.md) | [한국어](../../ko-KR/engineering/extraction-preflight.md) | Français | [Deutsch](../../de-DE/engineering/extraction-preflight.md) | [Español](../../es-ES/engineering/extraction-preflight.md) | [Português (Brasil)](../../pt-BR/engineering/extraction-preflight.md) | [Русский](../../ru-RU/engineering/extraction-preflight.md)
+[English](../../engineering/extraction-preflight.md) | [简体中文](../../zh-CN/engineering/extraction-preflight.md) | [繁體中文](../../zh-TW/engineering/extraction-preflight.md) | [日本語](../../ja-JP/engineering/extraction-preflight.md) | [한국어](../../ko-KR/engineering/extraction-preflight.md) | Français | [Deutsch](../../de-DE/engineering/extraction-preflight.md) | [Español](../../es-ES/engineering/extraction-preflight.md) | [Português (Brasil)](../../pt-BR/engineering/extraction-preflight.md) | [Русский](../../ru-RU/engineering/extraction-preflight.md)
 
 Ce module fournit des règles de précontrôle des métadonnées. Il ne peut pas autoriser une destination, décoder, écrire, préparer temporairement ou valider une sortie.
 

@@ -2,7 +2,7 @@
 
 # Einzeldateiströme und ZIP-abgeleitete Pakete
 
-[English](../../engineering/single-file-streams.md) | [简体中文](../../zh-CN/engineering/single-file-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/single-file-streams.md) | [日本語](../../ja-JP/engineering/single-file-streams.md) | [한국어](../../ko-KR/engineering/single-file-streams.md) | [Français](../../fr-FR/engineering/single-file-streams.md) | Deutsch | [Español](../../es-ES/engineering/single-file-streams.md) | [Português (Brasil)](../../pt-BR/engineering/single-file-streams.md) | [Русский](../../ru-RU/engineering/single-file-streams.md)
+[English](../../engineering/single-file-streams.md) | [简体中文](../../zh-CN/engineering/single-file-streams.md) | [繁體中文](../../zh-TW/engineering/single-file-streams.md) | [日本語](../../ja-JP/engineering/single-file-streams.md) | [한국어](../../ko-KR/engineering/single-file-streams.md) | [Français](../../fr-FR/engineering/single-file-streams.md) | Deutsch | [Español](../../es-ES/engineering/single-file-streams.md) | [Português (Brasil)](../../pt-BR/engineering/single-file-streams.md) | [Русский](../../ru-RU/engineering/single-file-streams.md)
 
 Das [eingebaute Register](format-registry.md) deklariert gewöhnliches GZIP getrennt von TAR.GZ. `xdzip-codec-stream` passt die unabhängige `xdzip-compression`-Implementierung von [RFC 1952](https://www.rfc-editor.org/rfc/rfc1952) an Metadaten-, Nutzdaten- und Erstellungsverträge an. Keine Referenz-Kompressionsbibliothek gelangt in die Produktionsabhängigkeiten.
 

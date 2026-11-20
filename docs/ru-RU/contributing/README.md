@@ -1,6 +1,6 @@
 # Сборка XDZip и участие в проекте
 
-[English](../../contributing/README.md) | [简体中文](../../zh-CN/contributing/README.md) | [繁體中文（台灣）](../../zh-TW/contributing/README.md) | [日本語](../../ja-JP/contributing/README.md) | [한국어](../../ko-KR/contributing/README.md) | [Français](../../fr-FR/contributing/README.md) | [Deutsch](../../de-DE/contributing/README.md) | [Español](../../es-ES/contributing/README.md) | [Português (Brasil)](../../pt-BR/contributing/README.md) | Русский
+[English](../../contributing/README.md) | [简体中文](../../zh-CN/contributing/README.md) | [繁體中文](../../zh-TW/contributing/README.md) | [日本語](../../ja-JP/contributing/README.md) | [한국어](../../ko-KR/contributing/README.md) | [Français](../../fr-FR/contributing/README.md) | [Deutsch](../../de-DE/contributing/README.md) | [Español](../../es-ES/contributing/README.md) | [Português (Brasil)](../../pt-BR/contributing/README.md) | Русский
 
 Прочитайте [правила участия](../../../CONTRIBUTING.md) и найдите или заведите задачу для изменения. Опишите ожидаемое поведение, затронутые платформы и небольшой проверяемый пример. Используйте тестовые файлы проекта или материалы, разрешённые к распространению. [Структура репозитория](../engineering/repository-layout.md) показывает, где находится каждая часть реализации.
 

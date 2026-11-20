@@ -2,7 +2,7 @@
 
 # Contêineres PMA e métodos PMarc
 
-[English](../../engineering/pma-streams.md) | [简体中文](../../zh-CN/engineering/pma-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/pma-streams.md) | [日本語](../../ja-JP/engineering/pma-streams.md) | [한국어](../../ko-KR/engineering/pma-streams.md) | [Français](../../fr-FR/engineering/pma-streams.md) | [Deutsch](../../de-DE/engineering/pma-streams.md) | [Español](../../es-ES/engineering/pma-streams.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/pma-streams.md)
+[English](../../engineering/pma-streams.md) | [简体中文](../../zh-CN/engineering/pma-streams.md) | [繁體中文](../../zh-TW/engineering/pma-streams.md) | [日本語](../../ja-JP/engineering/pma-streams.md) | [한국어](../../ko-KR/engineering/pma-streams.md) | [Français](../../fr-FR/engineering/pma-streams.md) | [Deutsch](../../de-DE/engineering/pma-streams.md) | [Español](../../es-ES/engineering/pma-streams.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/pma-streams.md)
 
 O PMarc usa cabeçalhos sequenciais semelhantes aos de LHA com os métodos `-pm0-`, `-pm1-` e `-pm2-`. Eles identificam algoritmos diferentes, não são aliases dos métodos LH de nomes parecidos. O perfil PMA somente leitura admite membros PM0, PM1 e PM2 com cabeçalho de nível 0 para navegação, verificação e extração selecionada. Métodos desconhecidos continuam visíveis com aviso de conteúdo sem suporte. Criação, alteração, criptografia, volumes e reparo não são admitidos; o registro de formatos é a referência definitiva.
 

@@ -1,6 +1,6 @@
 # Archive passwords and encrypted-directory opening
 
-English | [简体中文](../zh-CN/engineering/password-extraction.md) | [繁體中文（台灣）](../zh-TW/engineering/password-extraction.md) | [日本語](../ja-JP/engineering/password-extraction.md) | [한국어](../ko-KR/engineering/password-extraction.md) | [Français](../fr-FR/engineering/password-extraction.md) | [Deutsch](../de-DE/engineering/password-extraction.md) | [Español](../es-ES/engineering/password-extraction.md) | [Português (Brasil)](../pt-BR/engineering/password-extraction.md) | [Русский](../ru-RU/engineering/password-extraction.md)
+English | [简体中文](../zh-CN/engineering/password-extraction.md) | [繁體中文](../zh-TW/engineering/password-extraction.md) | [日本語](../ja-JP/engineering/password-extraction.md) | [한국어](../ko-KR/engineering/password-extraction.md) | [Français](../fr-FR/engineering/password-extraction.md) | [Deutsch](../de-DE/engineering/password-extraction.md) | [Español](../es-ES/engineering/password-extraction.md) | [Português (Brasil)](../pt-BR/engineering/password-extraction.md) | [Русский](../ru-RU/engineering/password-extraction.md)
 
 This contract supplements [safe extraction](zip-safe-extraction.md), defining passwords, authentication, and task interaction. Format and file-security logic remain independent of Qt; the password window submits user intent only. See [issue #11](https://github.com/xiaodaozhi/xdzip/issues/11) for actual progress and platform verification. Execution reports do not belong here.
 

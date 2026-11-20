@@ -2,7 +2,7 @@
 
 # 内容のプレビュー
 
-[English](../../engineering/content-preview.md) | [简体中文](../../zh-CN/engineering/content-preview.md) | [繁體中文（台灣）](../../zh-TW/engineering/content-preview.md) | 日本語 | [한국어](../../ko-KR/engineering/content-preview.md) | [Français](../../fr-FR/engineering/content-preview.md) | [Deutsch](../../de-DE/engineering/content-preview.md) | [Español](../../es-ES/engineering/content-preview.md) | [Português (Brasil)](../../pt-BR/engineering/content-preview.md) | [Русский](../../ru-RU/engineering/content-preview.md)
+[English](../../engineering/content-preview.md) | [简体中文](../../zh-CN/engineering/content-preview.md) | [繁體中文](../../zh-TW/engineering/content-preview.md) | 日本語 | [한국어](../../ko-KR/engineering/content-preview.md) | [Français](../../fr-FR/engineering/content-preview.md) | [Deutsch](../../de-DE/engineering/content-preview.md) | [Español](../../es-ES/engineering/content-preview.md) | [Português (Brasil)](../../pt-BR/engineering/content-preview.md) | [Русский](../../ru-RU/engineering/content-preview.md)
 
 プロパティカードが表示されているとき、対応するファイルを一つ選択すると、選択が安定した後にプレビューが始まります。ポインターがプレビュー上にあるかボタンがキーボードフォーカスを受けると、右上に更新アイコンが表示され、選択ファイルを再読み込みできます。カードは読み取りやデコードの失敗を報告し、複数選択時は選択を促すメッセージを表示します。メインウィンドウと独立したプロパティビューアーはこれらの動作と既存のパスワードウィンドウを共有します。ファイルのメタデータは別途利用できます。
 

@@ -1,6 +1,6 @@
 # ZIP 只读浏览契约
 
-[English](../../engineering/zip-readonly-browsing.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/zip-readonly-browsing.md) | [日本語](../../ja-JP/engineering/zip-readonly-browsing.md) | [한국어](../../ko-KR/engineering/zip-readonly-browsing.md) | [Français](../../fr-FR/engineering/zip-readonly-browsing.md) | [Deutsch](../../de-DE/engineering/zip-readonly-browsing.md) | [Español](../../es-ES/engineering/zip-readonly-browsing.md) | [Português (Brasil)](../../pt-BR/engineering/zip-readonly-browsing.md) | [Русский](../../ru-RU/engineering/zip-readonly-browsing.md)
+[English](../../engineering/zip-readonly-browsing.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/zip-readonly-browsing.md) | [日本語](../../ja-JP/engineering/zip-readonly-browsing.md) | [한국어](../../ko-KR/engineering/zip-readonly-browsing.md) | [Français](../../fr-FR/engineering/zip-readonly-browsing.md) | [Deutsch](../../de-DE/engineering/zip-readonly-browsing.md) | [Español](../../es-ES/engineering/zip-readonly-browsing.md) | [Português (Brasil)](../../pt-BR/engineering/zip-readonly-browsing.md) | [Русский](../../ru-RU/engineering/zip-readonly-browsing.md)
 
 本文定义根目录直属项、后代搜索、稳定物理 ID 和目录优先排序。ZIP 浏览读取元数据，不解码条目负载或校验其 CRC，也不写出解压后的条目。大型普通 ZIP 可使用私有的[磁盘元数据索引](large-index.md)。
 

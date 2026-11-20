@@ -2,7 +2,7 @@
 
 # Проверка целостности архивов
 
-[English](../../engineering/archive-checking.md) | [简体中文](../../zh-CN/engineering/archive-checking.md) | [繁體中文（台灣）](../../zh-TW/engineering/archive-checking.md) | [日本語](../../ja-JP/engineering/archive-checking.md) | [한국어](../../ko-KR/engineering/archive-checking.md) | [Français](../../fr-FR/engineering/archive-checking.md) | [Deutsch](../../de-DE/engineering/archive-checking.md) | [Español](../../es-ES/engineering/archive-checking.md) | [Português (Brasil)](../../pt-BR/engineering/archive-checking.md) | Русский
+[English](../../engineering/archive-checking.md) | [简体中文](../../zh-CN/engineering/archive-checking.md) | [繁體中文](../../zh-TW/engineering/archive-checking.md) | [日本語](../../ja-JP/engineering/archive-checking.md) | [한국어](../../ko-KR/engineering/archive-checking.md) | [Français](../../fr-FR/engineering/archive-checking.md) | [Deutsch](../../de-DE/engineering/archive-checking.md) | [Español](../../es-ES/engineering/archive-checking.md) | [Português (Brasil)](../../pt-BR/engineering/archive-checking.md) | Русский
 
 Действие «Test» на панели инструментов запускает одну реальную фоновую проверку подходящего текущего архива. Она охватывает все физические записи, включая повторные имена, каталоги и пустые файлы, независимо от текущего каталога, поиска или выбора. Полная проверка архивов с дисковым индексом сейчас не поддерживается; см. [индексирование больших архивов](large-index.md). Проверка удерживает только зафиксированные источники и метаданные. Она не получает разрешения на место назначения, не создаёт подготовительных или выходных файлов и не использует сопоставление путей извлечения или публикацию ссылок.
 

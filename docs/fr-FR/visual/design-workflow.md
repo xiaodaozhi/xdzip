@@ -2,7 +2,7 @@
 
 # Processus de conception et de correction de l’interface
 
-[English](../../visual/design-workflow.md) | [简体中文](../../zh-CN/visual/design-workflow.md) | [繁體中文（台灣）](../../zh-TW/visual/design-workflow.md) | [日本語](../../ja-JP/visual/design-workflow.md) | [한국어](../../ko-KR/visual/design-workflow.md) | Français | [Deutsch](../../de-DE/visual/design-workflow.md) | [Español](../../es-ES/visual/design-workflow.md) | [Português (Brasil)](../../pt-BR/visual/design-workflow.md) | [Русский](../../ru-RU/visual/design-workflow.md)
+[English](../../visual/design-workflow.md) | [简体中文](../../zh-CN/visual/design-workflow.md) | [繁體中文](../../zh-TW/visual/design-workflow.md) | [日本語](../../ja-JP/visual/design-workflow.md) | [한국어](../../ko-KR/visual/design-workflow.md) | Français | [Deutsch](../../de-DE/visual/design-workflow.md) | [Español](../../es-ES/visual/design-workflow.md) | [Português (Brasil)](../../pt-BR/visual/design-workflow.md) | [Русский](../../ru-RU/visual/design-workflow.md)
 
 Appliquez ce processus avant de créer l’interface, et non comme une documentation rédigée après l’implémentation. La référence est la [norme de conception d’interface](design-standard.md).
 

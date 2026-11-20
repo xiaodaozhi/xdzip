@@ -2,7 +2,7 @@
 
 # Ordonnancement, progression et annulation des tâches
 
-[English](../../design/task-scheduling.md) | [简体中文](../../zh-CN/design/task-scheduling.md) | [繁體中文（台灣）](../../zh-TW/design/task-scheduling.md) | [日本語](../../ja-JP/design/task-scheduling.md) | [한국어](../../ko-KR/design/task-scheduling.md) | Français | [Deutsch](../../de-DE/design/task-scheduling.md) | [Español](../../es-ES/design/task-scheduling.md) | [Português (Brasil)](../../pt-BR/design/task-scheduling.md) | [Русский](../../ru-RU/design/task-scheduling.md)
+[English](../../design/task-scheduling.md) | [简体中文](../../zh-CN/design/task-scheduling.md) | [繁體中文](../../zh-TW/design/task-scheduling.md) | [日本語](../../ja-JP/design/task-scheduling.md) | [한국어](../../ko-KR/design/task-scheduling.md) | Français | [Deutsch](../../de-DE/design/task-scheduling.md) | [Español](../../es-ES/design/task-scheduling.md) | [Português (Brasil)](../../pt-BR/design/task-scheduling.md) | [Русский](../../ru-RU/design/task-scheduling.md)
 
 XDZip utilise un thread de commandes Rust et un thread de tâches par connexion runtime. Le thread de commandes possède l’archive courante et prépare les entrées des tâches. Le thread de tâches exécute les travaux acceptés tandis que le premier peut encore servir les requêtes de métadonnées. L’[architecture du système](system-architecture.md) situe ces threads et le [pont Qt/Rust](qt-rust-bridge.md) décrit la livraison des résultats au client.
 

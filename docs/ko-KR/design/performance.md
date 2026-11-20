@@ -2,7 +2,7 @@
 
 # 성능 설계와 측정
 
-[English](../../design/performance.md) | [简体中文](../../zh-CN/design/performance.md) | [繁體中文（台灣）](../../zh-TW/design/performance.md) | [日本語](../../ja-JP/design/performance.md) | 한국어 | [Français](../../fr-FR/design/performance.md) | [Deutsch](../../de-DE/design/performance.md) | [Español](../../es-ES/design/performance.md) | [Português (Brasil)](../../pt-BR/design/performance.md) | [Русский](../../ru-RU/design/performance.md)
+[English](../../design/performance.md) | [简体中文](../../zh-CN/design/performance.md) | [繁體中文](../../zh-TW/design/performance.md) | [日本語](../../ja-JP/design/performance.md) | 한국어 | [Français](../../fr-FR/design/performance.md) | [Deutsch](../../de-DE/design/performance.md) | [Español](../../es-ES/design/performance.md) | [Português (Brasil)](../../pt-BR/design/performance.md) | [Русский](../../ru-RU/design/performance.md)
 
 XDZip은 인덱싱, 전송, 작업 실행과 이미지 미리 보기의 메모리 및 작업량을 각각 제한합니다. 아래 코드 한도는 구현 규칙입니다. 시간, 메모리 측정값과 처리량은 빌드와 작업 부하에 따라 달라집니다. 아래 참조 목표는 엔지니어링 목표입니다.
 

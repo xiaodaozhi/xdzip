@@ -2,7 +2,7 @@
 
 # Justificativa para a ponte cxx
 
-[English](../../engineering/cxx-admission.md) | [简体中文](../../zh-CN/engineering/cxx-admission.md) | [繁體中文（台灣）](../../zh-TW/engineering/cxx-admission.md) | [日本語](../../ja-JP/engineering/cxx-admission.md) | [한국어](../../ko-KR/engineering/cxx-admission.md) | [Français](../../fr-FR/engineering/cxx-admission.md) | [Deutsch](../../de-DE/engineering/cxx-admission.md) | [Español](../../es-ES/engineering/cxx-admission.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/cxx-admission.md)
+[English](../../engineering/cxx-admission.md) | [简体中文](../../zh-CN/engineering/cxx-admission.md) | [繁體中文](../../zh-TW/engineering/cxx-admission.md) | [日本語](../../ja-JP/engineering/cxx-admission.md) | [한국어](../../ko-KR/engineering/cxx-admission.md) | [Français](../../fr-FR/engineering/cxx-admission.md) | [Deutsch](../../de-DE/engineering/cxx-admission.md) | [Español](../../es-ES/engineering/cxx-admission.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/cxx-admission.md)
 
 Qt e Rust usam uma ponte de propriedade tipada gerada por `cxx`. C++ mantém os objetos Qt, e Rust mantém a lógica de domínio e execução. `cxx` e `cxx-build` precisam ter exatamente a mesma versão, conforme o [Cargo.lock](../../../Cargo.lock) e a [política de ferramentas](toolchain.md). cxx não fornece ABI estável para extensões de formato de terceiros. Uma ABI C manual reduziria dependências e aumentaria a manutenção de strings, funções livres e regras de propriedade.
 

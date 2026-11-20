@@ -2,7 +2,7 @@
 
 # Aperçu du contenu
 
-[English](../../engineering/content-preview.md) | [简体中文](../../zh-CN/engineering/content-preview.md) | [繁體中文（台灣）](../../zh-TW/engineering/content-preview.md) | [日本語](../../ja-JP/engineering/content-preview.md) | [한국어](../../ko-KR/engineering/content-preview.md) | Français | [Deutsch](../../de-DE/engineering/content-preview.md) | [Español](../../es-ES/engineering/content-preview.md) | [Português (Brasil)](../../pt-BR/engineering/content-preview.md) | [Русский](../../ru-RU/engineering/content-preview.md)
+[English](../../engineering/content-preview.md) | [简体中文](../../zh-CN/engineering/content-preview.md) | [繁體中文](../../zh-TW/engineering/content-preview.md) | [日本語](../../ja-JP/engineering/content-preview.md) | [한국어](../../ko-KR/engineering/content-preview.md) | Français | [Deutsch](../../de-DE/engineering/content-preview.md) | [Español](../../es-ES/engineering/content-preview.md) | [Português (Brasil)](../../pt-BR/engineering/content-preview.md) | [Русский](../../ru-RU/engineering/content-preview.md)
 
 Lorsque la carte de propriétés est visible, sélectionner un fichier pris en charge démarre un aperçu une fois la sélection stabilisée. L’icône d’actualisation apparaît en haut à droite lorsque le pointeur survole l’aperçu ou que le bouton reçoit le focus clavier ; elle recharge le fichier choisi. La carte signale les erreurs de lecture ou de décodage et affiche un message en cas de sélection multiple. La fenêtre principale et la visionneuse autonome de propriétés partagent ces comportements et la fenêtre de mot de passe existante. Les métadonnées restent disponibles séparément.
 

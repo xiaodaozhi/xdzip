@@ -2,7 +2,7 @@
 
 # Aufgabenfenster und Integritätsprüfungen
 
-[English](../../ux/task-windows.md) | [简体中文](../../zh-CN/ux/task-windows.md) | [繁體中文（台灣）](../../zh-TW/ux/task-windows.md) | [日本語](../../ja-JP/ux/task-windows.md) | [한국어](../../ko-KR/ux/task-windows.md) | [Français](../../fr-FR/ux/task-windows.md) | Deutsch | [Español](../../es-ES/ux/task-windows.md) | [Português (Brasil)](../../pt-BR/ux/task-windows.md) | [Русский](../../ru-RU/ux/task-windows.md)
+[English](../../ux/task-windows.md) | [简体中文](../../zh-CN/ux/task-windows.md) | [繁體中文](../../zh-TW/ux/task-windows.md) | [日本語](../../ja-JP/ux/task-windows.md) | [한국어](../../ko-KR/ux/task-windows.md) | [Français](../../fr-FR/ux/task-windows.md) | Deutsch | [Español](../../es-ES/ux/task-windows.md) | [Português (Brasil)](../../pt-BR/ux/task-windows.md) | [Русский](../../ru-RU/ux/task-windows.md)
 
 Der Aufgabeneinstieg der Anwendung bündelt alle Sitzungen und leitet Fortschritt, Passwörter, Konflikte und Ergebnisse anhand von Sitzungs-UUID und Backend-Aufgaben-ID weiter. Das Schließen einer Seite erhält deren Controller; ein ausdrückliches Beenden wartet auf alle asynchronen Joins. Siehe den [Vertrag der Anwendungssitzungen](../engineering/application-sessions.md).
 

@@ -2,7 +2,7 @@
 
 # Мост Qt/Rust и служба приложения
 
-[English](../../design/qt-rust-bridge.md) | [简体中文](../../zh-CN/design/qt-rust-bridge.md) | [繁體中文（台灣）](../../zh-TW/design/qt-rust-bridge.md) | [日本語](../../ja-JP/design/qt-rust-bridge.md) | [한국어](../../ko-KR/design/qt-rust-bridge.md) | [Français](../../fr-FR/design/qt-rust-bridge.md) | [Deutsch](../../de-DE/design/qt-rust-bridge.md) | [Español](../../es-ES/design/qt-rust-bridge.md) | [Português (Brasil)](../../pt-BR/design/qt-rust-bridge.md) | Русский
+[English](../../design/qt-rust-bridge.md) | [简体中文](../../zh-CN/design/qt-rust-bridge.md) | [繁體中文](../../zh-TW/design/qt-rust-bridge.md) | [日本語](../../ja-JP/design/qt-rust-bridge.md) | [한국어](../../ko-KR/design/qt-rust-bridge.md) | [Français](../../fr-FR/design/qt-rust-bridge.md) | [Deutsch](../../de-DE/design/qt-rust-bridge.md) | [Español](../../es-ES/design/qt-rust-bridge.md) | [Português (Brasil)](../../pt-BR/design/qt-rust-bridge.md) | Русский
 
 Настольное приложение Qt вызывает среду Rust через скомпонованный мост `cxx`. Каждый `BrowserController` владеет `RuntimeConnection` с отдельным экземпляром службы. Мост передаёт типизированные команды и результаты с передачей владения внутри процесса приложения. CLI напрямую использует ту же службу Rust. [Архитектура системы](system-architecture.md), [Сеансы приложения](../engineering/application-sessions.md)
 

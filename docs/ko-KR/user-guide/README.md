@@ -1,6 +1,6 @@
 # XDZip 사용자 가이드
 
-[English](../../user-guide/README.md) | [简体中文](../../zh-CN/user-guide/README.md) | [繁體中文（台灣）](../../zh-TW/user-guide/README.md) | [日本語](../../ja-JP/user-guide/README.md) | 한국어 | [Français](../../fr-FR/user-guide/README.md) | [Deutsch](../../de-DE/user-guide/README.md) | [Español](../../es-ES/user-guide/README.md) | [Português (Brasil)](../../pt-BR/user-guide/README.md) | [Русский](../../ru-RU/user-guide/README.md)
+[English](../../user-guide/README.md) | [简体中文](../../zh-CN/user-guide/README.md) | [繁體中文](../../zh-TW/user-guide/README.md) | [日本語](../../ja-JP/user-guide/README.md) | 한국어 | [Français](../../fr-FR/user-guide/README.md) | [Deutsch](../../de-DE/user-guide/README.md) | [Español](../../es-ES/user-guide/README.md) | [Português (Brasil)](../../pt-BR/user-guide/README.md) | [Русский](../../ru-RU/user-guide/README.md)
 
 지원하는 Windows, macOS, Ubuntu 구성은 [설치 절차](install.md)를 참조하세요. 압축 파일에서 가능한 작업은 [형식 표](../../../README.ko-KR.md#xdzip-format-support)에서 확인할 수 있습니다. 내려받은 빌드는 해당 [릴리스](https://github.com/xiaodaozhi/xdzip/releases)의 변경 사항을 참고하세요.
 

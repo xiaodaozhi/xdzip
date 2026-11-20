@@ -2,7 +2,7 @@
 
 # Janelas de plataforma e barras de título
 
-[English](../../ux/platform-windows.md) | [简体中文](../../zh-CN/ux/platform-windows.md) | [繁體中文（台灣）](../../zh-TW/ux/platform-windows.md) | [日本語](../../ja-JP/ux/platform-windows.md) | [한국어](../../ko-KR/ux/platform-windows.md) | [Français](../../fr-FR/ux/platform-windows.md) | [Deutsch](../../de-DE/ux/platform-windows.md) | [Español](../../es-ES/ux/platform-windows.md) | Português (Brasil) | [Русский](../../ru-RU/ux/platform-windows.md)
+[English](../../ux/platform-windows.md) | [简体中文](../../zh-CN/ux/platform-windows.md) | [繁體中文](../../zh-TW/ux/platform-windows.md) | [日本語](../../ja-JP/ux/platform-windows.md) | [한국어](../../ko-KR/ux/platform-windows.md) | [Français](../../fr-FR/ux/platform-windows.md) | [Deutsch](../../de-DE/ux/platform-windows.md) | [Español](../../es-ES/ux/platform-windows.md) | Português (Brasil) | [Русский](../../ru-RU/ux/platform-windows.md)
 
 As interfaces de operação do xdzip usam janelas independentes de nível superior, não folhas anexadas à janela principal ou painéis sobrepostos desenhados dentro dela. Uma janela independente não implica processo separado nem entrada na barra de tarefas para cada janela auxiliar. Menus suspensos e dicas continuam como Popups leves e não são janelas de operação.
 

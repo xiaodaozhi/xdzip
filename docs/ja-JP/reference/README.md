@@ -2,7 +2,7 @@
 
 # 製品の設計と技術リファレンス
 
-[English](../../reference/README.md) | [简体中文](../../zh-CN/reference/README.md) | [繁體中文（台灣）](../../zh-TW/reference/README.md) | 日本語 | [한국어](../../ko-KR/reference/README.md) | [Français](../../fr-FR/reference/README.md) | [Deutsch](../../de-DE/reference/README.md) | [Español](../../es-ES/reference/README.md) | [Português (Brasil)](../../pt-BR/reference/README.md) | [Русский](../../ru-RU/reference/README.md)
+[English](../../reference/README.md) | [简体中文](../../zh-CN/reference/README.md) | [繁體中文](../../zh-TW/reference/README.md) | 日本語 | [한국어](../../ko-KR/reference/README.md) | [Français](../../fr-FR/reference/README.md) | [Deutsch](../../de-DE/reference/README.md) | [Español](../../es-ES/reference/README.md) | [Português (Brasil)](../../pt-BR/reference/README.md) | [Русский](../../ru-RU/reference/README.md)
 
 デスクトップと CLI の実行経路は[システム構成](../design/system-architecture.md)を参照してください。各動作を定める仕様は下の章から探せます。対応操作の一覧は[対応形式の表](../../../README.ja-JP.md#xdzip-format-support)にあります。使い方や開発準備は[ユーザーマニュアル](../user-guide/README.md)、[CLI の使用例](../integration/README.md)、[コントリビュートガイド](../contributing/README.md)を参照してください。
 

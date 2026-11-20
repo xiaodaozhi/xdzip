@@ -2,7 +2,7 @@
 
 # 製品バージョンとビルドの識別
 
-[English](../../engineering/versioning.md) | [简体中文](../../zh-CN/engineering/versioning.md) | [繁體中文（台灣）](../../zh-TW/engineering/versioning.md) | 日本語 | [한국어](../../ko-KR/engineering/versioning.md) | [Français](../../fr-FR/engineering/versioning.md) | [Deutsch](../../de-DE/engineering/versioning.md) | [Español](../../es-ES/engineering/versioning.md) | [Português (Brasil)](../../pt-BR/engineering/versioning.md) | [Русский](../../ru-RU/engineering/versioning.md)
+[English](../../engineering/versioning.md) | [简体中文](../../zh-CN/engineering/versioning.md) | [繁體中文](../../zh-TW/engineering/versioning.md) | 日本語 | [한국어](../../ko-KR/engineering/versioning.md) | [Français](../../fr-FR/engineering/versioning.md) | [Deutsch](../../de-DE/engineering/versioning.md) | [Español](../../es-ES/engineering/versioning.md) | [Português (Brasil)](../../pt-BR/engineering/versioning.md) | [Русский](../../ru-RU/engineering/versioning.md)
 
 任意の `prerelease_number` はプレリリースの連番をビルド番号から分離します。たとえば alpha.1 でビルド 14 を使い、次の alpha.2 でもビルド番号を増やせます。この項目がなければ、従来の `channel.build` の解釈を使います。マニフェストと成果物の名前は[リリースプロトコル](release-protocol.md)で定めます。
 

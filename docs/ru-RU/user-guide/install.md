@@ -1,6 +1,6 @@
 # Установка XDZip и открытие архива
 
-[English](../../user-guide/install.md) | [简体中文](../../zh-CN/user-guide/install.md) | [繁體中文（台灣）](../../zh-TW/user-guide/install.md) | [日本語](../../ja-JP/user-guide/install.md) | [한국어](../../ko-KR/user-guide/install.md) | [Français](../../fr-FR/user-guide/install.md) | [Deutsch](../../de-DE/user-guide/install.md) | [Español](../../es-ES/user-guide/install.md) | [Português (Brasil)](../../pt-BR/user-guide/install.md) | Русский
+[English](../../user-guide/install.md) | [简体中文](../../zh-CN/user-guide/install.md) | [繁體中文](../../zh-TW/user-guide/install.md) | [日本語](../../ja-JP/user-guide/install.md) | [한국어](../../ko-KR/user-guide/install.md) | [Français](../../fr-FR/user-guide/install.md) | [Deutsch](../../de-DE/user-guide/install.md) | [Español](../../es-ES/user-guide/install.md) | [Português (Brasil)](../../pt-BR/user-guide/install.md) | Русский
 
 Скачайте пакет для своей системы со страницы [последнего стабильного выпуска на GitHub](https://github.com/xiaodaozhi/xdzip/releases/latest) или воспользуйтесь Microsoft Store в Windows. На странице GitHub указаны название и версия файла, а также опубликован файл `SHA256SUMS` для проверки прямых загрузок. Требования к системе приведены в [правилах поддержки](../engineering/support-policy.md).
 

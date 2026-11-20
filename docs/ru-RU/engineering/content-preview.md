@@ -2,7 +2,7 @@
 
 # Предпросмотр содержимого
 
-[English](../../engineering/content-preview.md) | [简体中文](../../zh-CN/engineering/content-preview.md) | [繁體中文（台灣）](../../zh-TW/engineering/content-preview.md) | [日本語](../../ja-JP/engineering/content-preview.md) | [한국어](../../ko-KR/engineering/content-preview.md) | [Français](../../fr-FR/engineering/content-preview.md) | [Deutsch](../../de-DE/engineering/content-preview.md) | [Español](../../es-ES/engineering/content-preview.md) | [Português (Brasil)](../../pt-BR/engineering/content-preview.md) | Русский
+[English](../../engineering/content-preview.md) | [简体中文](../../zh-CN/engineering/content-preview.md) | [繁體中文](../../zh-TW/engineering/content-preview.md) | [日本語](../../ja-JP/engineering/content-preview.md) | [한국어](../../ko-KR/engineering/content-preview.md) | [Français](../../fr-FR/engineering/content-preview.md) | [Deutsch](../../de-DE/engineering/content-preview.md) | [Español](../../es-ES/engineering/content-preview.md) | [Português (Brasil)](../../pt-BR/engineering/content-preview.md) | Русский
 
 Когда карточка свойств видна, выбор одного поддерживаемого файла запускает предпросмотр после стабилизации выбора. Значок обновления появляется справа вверху при наведении на предпросмотр или получении кнопкой клавиатурного фокуса; он повторно загружает выбранный файл. Карточка сообщает об ошибках чтения или декодирования и показывает сообщение при выборе нескольких элементов. Главное окно и отдельное окно свойств используют одинаковое поведение и существующее окно пароля. Метаданные файла остаются доступны отдельно.
 

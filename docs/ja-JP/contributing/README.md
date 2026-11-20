@@ -1,6 +1,6 @@
 # XDZip のビルドと貢献
 
-[English](../../contributing/README.md) | [简体中文](../../zh-CN/contributing/README.md) | [繁體中文（台灣）](../../zh-TW/contributing/README.md) | 日本語 | [한국어](../../ko-KR/contributing/README.md) | [Français](../../fr-FR/contributing/README.md) | [Deutsch](../../de-DE/contributing/README.md) | [Español](../../es-ES/contributing/README.md) | [Português (Brasil)](../../pt-BR/contributing/README.md) | [Русский](../../ru-RU/contributing/README.md)
+[English](../../contributing/README.md) | [简体中文](../../zh-CN/contributing/README.md) | [繁體中文](../../zh-TW/contributing/README.md) | 日本語 | [한국어](../../ko-KR/contributing/README.md) | [Français](../../fr-FR/contributing/README.md) | [Deutsch](../../de-DE/contributing/README.md) | [Español](../../es-ES/contributing/README.md) | [Português (Brasil)](../../pt-BR/contributing/README.md) | [Русский](../../ru-RU/contributing/README.md)
 
 [貢献の方針](../../../CONTRIBUTING.md)を読み、変更に対応する issue を探すか新しく作成してください。期待する動作、影響するプラットフォーム、検証できる小さな再現例を記載します。プロジェクトが所有するか、再配布可能なテスト用ファイルを使ってください。実装の各部分の場所は[リポジトリの構成](../engineering/repository-layout.md)で確認できます。
 

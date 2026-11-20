@@ -2,7 +2,7 @@
 
 # Inhaltsvorschau
 
-[English](../../engineering/content-preview.md) | [简体中文](../../zh-CN/engineering/content-preview.md) | [繁體中文（台灣）](../../zh-TW/engineering/content-preview.md) | [日本語](../../ja-JP/engineering/content-preview.md) | [한국어](../../ko-KR/engineering/content-preview.md) | [Français](../../fr-FR/engineering/content-preview.md) | Deutsch | [Español](../../es-ES/engineering/content-preview.md) | [Português (Brasil)](../../pt-BR/engineering/content-preview.md) | [Русский](../../ru-RU/engineering/content-preview.md)
+[English](../../engineering/content-preview.md) | [简体中文](../../zh-CN/engineering/content-preview.md) | [繁體中文](../../zh-TW/engineering/content-preview.md) | [日本語](../../ja-JP/engineering/content-preview.md) | [한국어](../../ko-KR/engineering/content-preview.md) | [Français](../../fr-FR/engineering/content-preview.md) | Deutsch | [Español](../../es-ES/engineering/content-preview.md) | [Português (Brasil)](../../pt-BR/engineering/content-preview.md) | [Русский](../../ru-RU/engineering/content-preview.md)
 
 Ist die Eigenschaftenkarte sichtbar, beginnt nach Stabilisierung der Auswahl die Vorschau einer einzelnen unterstützten Datei. Das Aktualisierungssymbol erscheint oben rechts, wenn der Zeiger über der Vorschau liegt oder die Schaltfläche Tastaturfokus erhält; es lädt die ausgewählte Datei neu. Die Karte meldet Lese- oder Dekodierfehler und zeigt bei Mehrfachauswahl einen Auswahlhinweis. Hauptfenster und eigenständige Eigenschaftenansicht teilen dieses Verhalten und das vorhandene Passwortfenster. Dateimetadaten bleiben unabhängig verfügbar.
 

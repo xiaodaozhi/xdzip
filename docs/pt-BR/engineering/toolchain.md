@@ -2,7 +2,7 @@
 
 # Fixação da cadeia de ferramentas e das plataformas
 
-[English](../../engineering/toolchain.md) | [简体中文](../../zh-CN/engineering/toolchain.md) | [繁體中文（台灣）](../../zh-TW/engineering/toolchain.md) | [日本語](../../ja-JP/engineering/toolchain.md) | [한국어](../../ko-KR/engineering/toolchain.md) | [Français](../../fr-FR/engineering/toolchain.md) | [Deutsch](../../de-DE/engineering/toolchain.md) | [Español](../../es-ES/engineering/toolchain.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/toolchain.md)
+[English](../../engineering/toolchain.md) | [简体中文](../../zh-CN/engineering/toolchain.md) | [繁體中文](../../zh-TW/engineering/toolchain.md) | [日本語](../../ja-JP/engineering/toolchain.md) | [한국어](../../ko-KR/engineering/toolchain.md) | [Français](../../fr-FR/engineering/toolchain.md) | [Deutsch](../../de-DE/engineering/toolchain.md) | [Español](../../es-ES/engineering/toolchain.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/toolchain.md)
 
 As versões das ferramentas de desenvolvimento são fixadas por rust-toolchain.toml, Cargo.lock, CMake e CI; o escopo segue a [política de suporte](support-policy.md). A tabela define verificações para atualizações e entregas. Observações específicas permanecem em issues ou Actions; o inventário de uma única máquina não fixa as dependências de uma entrega.
 

@@ -1,6 +1,6 @@
 # XDZip 빌드와 기여
 
-[English](../../contributing/README.md) | [简体中文](../../zh-CN/contributing/README.md) | [繁體中文（台灣）](../../zh-TW/contributing/README.md) | [日本語](../../ja-JP/contributing/README.md) | 한국어 | [Français](../../fr-FR/contributing/README.md) | [Deutsch](../../de-DE/contributing/README.md) | [Español](../../es-ES/contributing/README.md) | [Português (Brasil)](../../pt-BR/contributing/README.md) | [Русский](../../ru-RU/contributing/README.md)
+[English](../../contributing/README.md) | [简体中文](../../zh-CN/contributing/README.md) | [繁體中文](../../zh-TW/contributing/README.md) | [日本語](../../ja-JP/contributing/README.md) | 한국어 | [Français](../../fr-FR/contributing/README.md) | [Deutsch](../../de-DE/contributing/README.md) | [Español](../../es-ES/contributing/README.md) | [Português (Brasil)](../../pt-BR/contributing/README.md) | [Русский](../../ru-RU/contributing/README.md)
 
 [기여 정책](../../../CONTRIBUTING.md)을 읽고 변경 사항에 맞는 이슈를 찾거나 새로 만드세요. 예상 동작, 영향받는 플랫폼, 검증할 수 있는 작은 재현 예제를 적어 주세요. 프로젝트가 소유하거나 재배포할 수 있는 테스트 파일을 사용하세요. [저장소 구조](../engineering/repository-layout.md)에 구현의 각 부분이 어디에 있는지 나와 있습니다.
 

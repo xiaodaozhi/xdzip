@@ -1,6 +1,6 @@
 # File authorization and safe publication
 
-English | [简体中文](../zh-CN/design/file-security.md) | [繁體中文（台灣）](../zh-TW/design/file-security.md) | [日本語](../ja-JP/design/file-security.md) | [한국어](../ko-KR/design/file-security.md) | [Français](../fr-FR/design/file-security.md) | [Deutsch](../de-DE/design/file-security.md) | [Español](../es-ES/design/file-security.md) | [Português (Brasil)](../pt-BR/design/file-security.md) | [Русский](../ru-RU/design/file-security.md)
+English | [简体中文](../zh-CN/design/file-security.md) | [繁體中文](../zh-TW/design/file-security.md) | [日本語](../ja-JP/design/file-security.md) | [한국어](../ko-KR/design/file-security.md) | [Français](../fr-FR/design/file-security.md) | [Deutsch](../de-DE/design/file-security.md) | [Español](../es-ES/design/file-security.md) | [Português (Brasil)](../pt-BR/design/file-security.md) | [Русский](../ru-RU/design/file-security.md)
 
 The host controls which files can be opened and where verified output can be published. A backend receives bounded readers and sinks, including when it runs in the isolated archive worker. Archive names, declared sizes, checksums and payloads are input data. The host's file checks apply independently of checks performed by the format. [System architecture](system-architecture.md), [Archive worker protocol](../engineering/native-codecs.md)
 

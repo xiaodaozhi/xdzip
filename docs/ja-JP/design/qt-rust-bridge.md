@@ -2,7 +2,7 @@
 
 # Qt/Rust ブリッジとアプリケーションサービス
 
-[English](../../design/qt-rust-bridge.md) | [简体中文](../../zh-CN/design/qt-rust-bridge.md) | [繁體中文（台灣）](../../zh-TW/design/qt-rust-bridge.md) | 日本語 | [한국어](../../ko-KR/design/qt-rust-bridge.md) | [Français](../../fr-FR/design/qt-rust-bridge.md) | [Deutsch](../../de-DE/design/qt-rust-bridge.md) | [Español](../../es-ES/design/qt-rust-bridge.md) | [Português (Brasil)](../../pt-BR/design/qt-rust-bridge.md) | [Русский](../../ru-RU/design/qt-rust-bridge.md)
+[English](../../design/qt-rust-bridge.md) | [简体中文](../../zh-CN/design/qt-rust-bridge.md) | [繁體中文](../../zh-TW/design/qt-rust-bridge.md) | 日本語 | [한국어](../../ko-KR/design/qt-rust-bridge.md) | [Français](../../fr-FR/design/qt-rust-bridge.md) | [Deutsch](../../de-DE/design/qt-rust-bridge.md) | [Español](../../es-ES/design/qt-rust-bridge.md) | [Português (Brasil)](../../pt-BR/design/qt-rust-bridge.md) | [Русский](../../ru-RU/design/qt-rust-bridge.md)
 
 Qt デスクトップはリンクされた `cxx` ブリッジを通じて Rust ランタイムを呼び出します。各 `BrowserController` は別のサービスインスタンスを持つ `RuntimeConnection` を所有します。ブリッジは型付きコマンドと所有権のある結果をデスクトッププロセス内で転送します。CLI は同じ Rust サービスを直接使います。[システムアーキテクチャー](system-architecture.md)、[デスクトップセッション](../engineering/application-sessions.md)
 

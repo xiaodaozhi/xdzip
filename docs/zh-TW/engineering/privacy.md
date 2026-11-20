@@ -2,7 +2,7 @@
 
 # 資料生命週期與診斷
 
-[English](../../engineering/privacy.md) | [简体中文](../../zh-CN/engineering/privacy.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/privacy.md) | [한국어](../../ko-KR/engineering/privacy.md) | [Français](../../fr-FR/engineering/privacy.md) | [Deutsch](../../de-DE/engineering/privacy.md) | [Español](../../es-ES/engineering/privacy.md) | [Português (Brasil)](../../pt-BR/engineering/privacy.md) | [Русский](../../ru-RU/engineering/privacy.md)
+[English](../../engineering/privacy.md) | [简体中文](../../zh-CN/engineering/privacy.md) | 繁體中文 | [日本語](../../ja-JP/engineering/privacy.md) | [한국어](../../ko-KR/engineering/privacy.md) | [Français](../../fr-FR/engineering/privacy.md) | [Deutsch](../../de-DE/engineering/privacy.md) | [Español](../../es-ES/engineering/privacy.md) | [Português (Brasil)](../../pt-BR/engineering/privacy.md) | [Русский](../../ru-RU/engineering/privacy.md)
 
 [隱私政策](../../../PRIVACY.zh-CN.md)說明 xdzip 處理哪些資料，以及使用者可以作出哪些選擇。下表說明實現將資料存在哪裡、何時釋放。瀏覽、壓縮與解壓可離線使用。xdzip 不會自動向維護者傳送遙測或歸檔內容。
 

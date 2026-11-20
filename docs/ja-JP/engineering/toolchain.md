@@ -2,7 +2,7 @@
 
 # ツールチェーンとプラットフォームの固定
 
-[English](../../engineering/toolchain.md) | [简体中文](../../zh-CN/engineering/toolchain.md) | [繁體中文（台灣）](../../zh-TW/engineering/toolchain.md) | 日本語 | [한국어](../../ko-KR/engineering/toolchain.md) | [Français](../../fr-FR/engineering/toolchain.md) | [Deutsch](../../de-DE/engineering/toolchain.md) | [Español](../../es-ES/engineering/toolchain.md) | [Português (Brasil)](../../pt-BR/engineering/toolchain.md) | [Русский](../../ru-RU/engineering/toolchain.md)
+[English](../../engineering/toolchain.md) | [简体中文](../../zh-CN/engineering/toolchain.md) | [繁體中文](../../zh-TW/engineering/toolchain.md) | 日本語 | [한국어](../../ko-KR/engineering/toolchain.md) | [Français](../../fr-FR/engineering/toolchain.md) | [Deutsch](../../de-DE/engineering/toolchain.md) | [Español](../../es-ES/engineering/toolchain.md) | [Português (Brasil)](../../pt-BR/engineering/toolchain.md) | [Русский](../../ru-RU/engineering/toolchain.md)
 
 開発ツールのバージョンは rust-toolchain.toml、Cargo.lock、CMake、CI で固定し、サポート範囲は[サポート方針](support-policy.md)に従います。この表は更新とリリース時の検証を定めます。具体的な観察結果は issue や Actions に記録し、一台のツール一覧をリリースの依存関係ロックとはしません。
 

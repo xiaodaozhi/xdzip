@@ -2,7 +2,7 @@
 
 # GitHub Release 協議 v1
 
-[English](../../engineering/release-protocol.md) | [简体中文](../../zh-CN/engineering/release-protocol.md) | 繁體中文（台灣）
+[English](../../engineering/release-protocol.md) | [简体中文](../../zh-CN/engineering/release-protocol.md) | 繁體中文
 
 本流程負責 GitHub 下載包。[Microsoft Store MSIX 工作流](developer-build.md#xdzip-microsoft-store-msix)可基於同一版本原始碼生成商店包，商店認證和釋出在微軟合作夥伴中心完成。
 

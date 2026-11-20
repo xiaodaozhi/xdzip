@@ -2,7 +2,7 @@
 
 # アーカイブの整合性検査
 
-[English](../../engineering/archive-checking.md) | [简体中文](../../zh-CN/engineering/archive-checking.md) | [繁體中文（台灣）](../../zh-TW/engineering/archive-checking.md) | 日本語 | [한국어](../../ko-KR/engineering/archive-checking.md) | [Français](../../fr-FR/engineering/archive-checking.md) | [Deutsch](../../de-DE/engineering/archive-checking.md) | [Español](../../es-ES/engineering/archive-checking.md) | [Português (Brasil)](../../pt-BR/engineering/archive-checking.md) | [Русский](../../ru-RU/engineering/archive-checking.md)
+[English](../../engineering/archive-checking.md) | [简体中文](../../zh-CN/engineering/archive-checking.md) | [繁體中文](../../zh-TW/engineering/archive-checking.md) | 日本語 | [한국어](../../ko-KR/engineering/archive-checking.md) | [Français](../../fr-FR/engineering/archive-checking.md) | [Deutsch](../../de-DE/engineering/archive-checking.md) | [Español](../../es-ES/engineering/archive-checking.md) | [Português (Brasil)](../../pt-BR/engineering/archive-checking.md) | [Русский](../../ru-RU/engineering/archive-checking.md)
 
 ツールバーの「テスト」は、対象となる現在のアーカイブに対して実際のバックグラウンド検査を一回実行します。現在のディレクトリ、検索、選択に関係なく、重複名、ディレクトリ、空ファイルを含むすべての物理レコードが対象です。ディスクインデックスを使うアーカイブ全体の検査は現在未対応です。[大規模アーカイブのインデックス](large-index.md)を参照してください。検査が保持するのは固定された入力ソースとメタデータのみで、出力先の認可を取得せず、ステージングや出力ファイルを作らず、展開パスの対応付けやリンクの公開を使いません。
 

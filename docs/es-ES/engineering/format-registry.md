@@ -2,7 +2,7 @@
 
 # Declaraciones de formatos integrados
 
-[English](../../engineering/format-registry.md) | [简体中文](../../zh-CN/engineering/format-registry.md) | [繁體中文（台灣）](../../zh-TW/engineering/format-registry.md) | [日本語](../../ja-JP/engineering/format-registry.md) | [한국어](../../ko-KR/engineering/format-registry.md) | [Français](../../fr-FR/engineering/format-registry.md) | [Deutsch](../../de-DE/engineering/format-registry.md) | Español | [Português (Brasil)](../../pt-BR/engineering/format-registry.md) | [Русский](../../ru-RU/engineering/format-registry.md)
+[English](../../engineering/format-registry.md) | [简体中文](../../zh-CN/engineering/format-registry.md) | [繁體中文](../../zh-TW/engineering/format-registry.md) | [日本語](../../ja-JP/engineering/format-registry.md) | [한국어](../../ko-KR/engineering/format-registry.md) | [Français](../../fr-FR/engineering/format-registry.md) | [Deutsch](../../de-DE/engineering/format-registry.md) | Español | [Português (Brasil)](../../pt-BR/engineering/format-registry.md) | [Русский](../../ru-RU/engineering/format-registry.md)
 
 Las declaraciones integradas provienen de [archive-formats.json](../../../specs/engineering/archive-formats.json). El archivo registra identificadores estables, nombres, familias de contenedores, compresión exterior, identificadores de procesos privados existentes, familias de métodos compatibles, extensiones de creación, alcance de verificación y puntos de entrada posibles. Las familias de métodos resumen el contrato de cada formato. Los registros concretos, las reglas del host y las capacidades de la plataforma acotan los parámetros, variantes históricas y combinaciones antes de cada operación.
 

@@ -2,7 +2,7 @@
 
 # Visualização de conteúdo
 
-[English](../../engineering/content-preview.md) | [简体中文](../../zh-CN/engineering/content-preview.md) | [繁體中文（台灣）](../../zh-TW/engineering/content-preview.md) | [日本語](../../ja-JP/engineering/content-preview.md) | [한국어](../../ko-KR/engineering/content-preview.md) | [Français](../../fr-FR/engineering/content-preview.md) | [Deutsch](../../de-DE/engineering/content-preview.md) | [Español](../../es-ES/engineering/content-preview.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/content-preview.md)
+[English](../../engineering/content-preview.md) | [简体中文](../../zh-CN/engineering/content-preview.md) | [繁體中文](../../zh-TW/engineering/content-preview.md) | [日本語](../../ja-JP/engineering/content-preview.md) | [한국어](../../ko-KR/engineering/content-preview.md) | [Français](../../fr-FR/engineering/content-preview.md) | [Deutsch](../../de-DE/engineering/content-preview.md) | [Español](../../es-ES/engineering/content-preview.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/content-preview.md)
 
 Quando o cartão de propriedades está visível, selecionar um arquivo suportado inicia a visualização após a seleção se estabilizar. O ícone de atualização aparece no canto superior direito quando o ponteiro está sobre a visualização ou o botão recebe foco do teclado; ele recarrega o arquivo selecionado. O cartão informa falhas de leitura ou decodificação e mostra uma mensagem para seleção múltipla. A janela principal e o visualizador independente de propriedades compartilham esses comportamentos e a janela de senha existente. Os metadados permanecem disponíveis separadamente.
 

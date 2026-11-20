@@ -2,7 +2,7 @@
 
 # Fenêtre des paramètres et langue d’interface
 
-[English](../../ux/settings-localization.md) | [简体中文](../../zh-CN/ux/settings-localization.md) | [繁體中文（台灣）](../../zh-TW/ux/settings-localization.md) | [日本語](../../ja-JP/ux/settings-localization.md) | [한국어](../../ko-KR/ux/settings-localization.md) | Français | [Deutsch](../../de-DE/ux/settings-localization.md) | [Español](../../es-ES/ux/settings-localization.md) | [Português (Brasil)](../../pt-BR/ux/settings-localization.md) | [Русский](../../ru-RU/ux/settings-localization.md)
+[English](../../ux/settings-localization.md) | [简体中文](../../zh-CN/ux/settings-localization.md) | [繁體中文](../../zh-TW/ux/settings-localization.md) | [日本語](../../ja-JP/ux/settings-localization.md) | [한국어](../../ko-KR/ux/settings-localization.md) | Français | [Deutsch](../../de-DE/ux/settings-localization.md) | [Español](../../es-ES/ux/settings-localization.md) | [Português (Brasil)](../../pt-BR/ux/settings-localization.md) | [Русский](../../ru-RU/ux/settings-localization.md)
 
 Lorsqu’aucune fenêtre principale n’est visible, les fenêtres Paramètres et À propos ouvertes depuis la zone de notification sans fenêtre parente centrent leur cadre natif complet dans la zone de travail de l’écran où se trouve le pointeur. Elles réutilisent le placement d’OperationWindow et se recentrent après la création native et le calcul de la hauteur. La hauteur est plafonnée selon la hauteur disponible du QScreen choisi et la marge existante, sans utiliser la taille du bureau virtuel ni restaurer les fenêtres principales masquées ou réduites. Un point d’entrée avec fenêtre parente conserve le placement, les dimensions et la densité de son appelant.
 

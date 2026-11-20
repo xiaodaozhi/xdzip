@@ -2,7 +2,7 @@
 
 # Контракт изолированного обработчика форматов
 
-[English](../../engineering/native-codecs.md) | [简体中文](../../zh-CN/engineering/native-codecs.md) | [繁體中文（台灣）](../../zh-TW/engineering/native-codecs.md) | [日本語](../../ja-JP/engineering/native-codecs.md) | [한국어](../../ko-KR/engineering/native-codecs.md) | [Français](../../fr-FR/engineering/native-codecs.md) | [Deutsch](../../de-DE/engineering/native-codecs.md) | [Español](../../es-ES/engineering/native-codecs.md) | [Português (Brasil)](../../pt-BR/engineering/native-codecs.md) | Русский
+[English](../../engineering/native-codecs.md) | [简体中文](../../zh-CN/engineering/native-codecs.md) | [繁體中文](../../zh-TW/engineering/native-codecs.md) | [日本語](../../ja-JP/engineering/native-codecs.md) | [한국어](../../ko-KR/engineering/native-codecs.md) | [Français](../../fr-FR/engineering/native-codecs.md) | [Deutsch](../../de-DE/engineering/native-codecs.md) | [Español](../../es-ES/engineering/native-codecs.md) | [Português (Brasil)](../../pt-BR/engineering/native-codecs.md) | Русский
 
 Чтение 7z, RAR, CAB и ISO/UDF использует [встроенные кодеки Rust](independent-rust-codecs.md) за общей границей CXX в изолированном обработчике. Тот же обработчик выполняет запись 7z в задачах под управлением хоста. Хост Rust обрабатывает ZIP, TAR, сжатые потоки, DEB и [новые образы ISO9660/Joliet](iso-creation.md) внутри процесса. Выбор формата использует встроенные маршруты. Ни один маршрут не ищет декодер командной строки в PATH.
 

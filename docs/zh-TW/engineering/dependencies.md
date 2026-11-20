@@ -2,7 +2,7 @@
 
 # 依賴與格式後端准入
 
-[English](../../engineering/dependencies.md) | [简体中文](../../zh-CN/engineering/dependencies.md) | 繁體中文（台灣）
+[English](../../engineering/dependencies.md) | [简体中文](../../zh-CN/engineering/dependencies.md) | 繁體中文
 
 <a name="xdzip-外部-sdk-试验"></a>
 

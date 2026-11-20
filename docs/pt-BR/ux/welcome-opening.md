@@ -2,7 +2,7 @@
 
 # Carregamento da tela inicial e conclusão da criação
 
-[English](../../ux/welcome-opening.md) | [简体中文](../../zh-CN/ux/welcome-opening.md) | [繁體中文（台灣）](../../zh-TW/ux/welcome-opening.md) | [日本語](../../ja-JP/ux/welcome-opening.md) | [한국어](../../ko-KR/ux/welcome-opening.md) | [Français](../../fr-FR/ux/welcome-opening.md) | [Deutsch](../../de-DE/ux/welcome-opening.md) | [Español](../../es-ES/ux/welcome-opening.md) | Português (Brasil) | [Русский](../../ru-RU/ux/welcome-opening.md)
+[English](../../ux/welcome-opening.md) | [简体中文](../../zh-CN/ux/welcome-opening.md) | [繁體中文](../../zh-TW/ux/welcome-opening.md) | [日本語](../../ja-JP/ux/welcome-opening.md) | [한국어](../../ko-KR/ux/welcome-opening.md) | [Français](../../fr-FR/ux/welcome-opening.md) | [Deutsch](../../de-DE/ux/welcome-opening.md) | [Español](../../es-ES/ux/welcome-opening.md) | Português (Brasil) | [Русский](../../ru-RU/ux/welcome-opening.md)
 
 Revisado em 2026-10-16. Os parâmetros vêm de [welcome-reference.json](../../../specs/visual/welcome-reference.json). O projeto interativo de alta fidelidade é o [estado de carregamento da tela inicial](../../../design/hifi/sources/welcome.html?opening=1). As unidades lógicas da janela principal, menu e tela inicial e a barra de título são preservadas.
 

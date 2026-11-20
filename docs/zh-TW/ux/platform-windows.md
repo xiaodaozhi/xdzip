@@ -2,7 +2,7 @@
 
 # 平臺視窗與標題欄規範
 
-[English](../../ux/platform-windows.md) | [简体中文](../../zh-CN/ux/platform-windows.md) | 繁體中文（台灣） | [日本語](../../ja-JP/ux/platform-windows.md) | [한국어](../../ko-KR/ux/platform-windows.md) | [Français](../../fr-FR/ux/platform-windows.md) | [Deutsch](../../de-DE/ux/platform-windows.md) | [Español](../../es-ES/ux/platform-windows.md) | [Português (Brasil)](../../pt-BR/ux/platform-windows.md) | [Русский](../../ru-RU/ux/platform-windows.md)
+[English](../../ux/platform-windows.md) | [简体中文](../../zh-CN/ux/platform-windows.md) | 繁體中文 | [日本語](../../ja-JP/ux/platform-windows.md) | [한국어](../../ko-KR/ux/platform-windows.md) | [Français](../../fr-FR/ux/platform-windows.md) | [Deutsch](../../de-DE/ux/platform-windows.md) | [Español](../../es-ES/ux/platform-windows.md) | [Português (Brasil)](../../pt-BR/ux/platform-windows.md) | [Русский](../../ru-RU/ux/platform-windows.md)
 
 xdzip 的操作介面使用獨立頂層視窗，不使用附著主視窗的 sheet 或在主視窗內部繪製的遮罩面板。獨立視窗不等於獨立程序，也不要求每個輔助視窗占一個工作列入口。下拉選單、工具提示保持輕量 Popup，不屬於操作視窗。
 

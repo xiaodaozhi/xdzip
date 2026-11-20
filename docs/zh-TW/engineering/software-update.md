@@ -2,7 +2,7 @@
 
 # 使用者主動更新契約
 
-[English](../../engineering/software-update.md) | [简体中文](../../zh-CN/engineering/software-update.md) | 繁體中文（台灣）
+[English](../../engineering/software-update.md) | [简体中文](../../zh-CN/engineering/software-update.md) | 繁體中文
 
 Windows MSIX 包身份下關於頁不顯示應用內更新區域，更新控制器也拒絕發起現有 GitHub 更新檢查。商店交付時由 Microsoft Store 管理更新；側載包不獲得本應用的自動更新承諾。身份查詢異常按包身份處理，避免誤用安裝器更新。現有普通安裝與其他平臺行為不變。
 

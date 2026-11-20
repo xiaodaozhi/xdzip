@@ -2,7 +2,7 @@
 
 # HTML 視覺一致性複核
 
-[English](../../visual/html-fidelity.md) | [简体中文](../../zh-CN/visual/html-fidelity.md) | 繁體中文（台灣） | [日本語](../../ja-JP/visual/html-fidelity.md) | [한국어](../../ko-KR/visual/html-fidelity.md) | [Français](../../fr-FR/visual/html-fidelity.md) | [Deutsch](../../de-DE/visual/html-fidelity.md) | [Español](../../es-ES/visual/html-fidelity.md) | [Português (Brasil)](../../pt-BR/visual/html-fidelity.md) | [Русский](../../ru-RU/visual/html-fidelity.md)
+[English](../../visual/html-fidelity.md) | [简体中文](../../zh-CN/visual/html-fidelity.md) | 繁體中文 | [日本語](../../ja-JP/visual/html-fidelity.md) | [한국어](../../ko-KR/visual/html-fidelity.md) | [Français](../../fr-FR/visual/html-fidelity.md) | [Deutsch](../../de-DE/visual/html-fidelity.md) | [Español](../../es-ES/visual/html-fidelity.md) | [Português (Brasil)](../../pt-BR/visual/html-fidelity.md) | [Русский](../../ru-RU/visual/html-fidelity.md)
 
 高保真圖片是視覺依據，HTML 是可編輯實現。頂部與工具欄下方內容均從 [凍結的初版主視窗](../../../design/hifi/screens/main-light.png) 獨立量取尺寸，不從目前 CSS 反推“設計應當如此”。目前展示使用[膠囊標籤淺色稿](../../../design/hifi/screens/main-capsule-light.png)與[深色稿](../../../design/hifi/screens/main-capsule-dark.png)，它們由[可編輯源](../../../design/hifi/sources/main.html)匯出，不替代獨立量測。標題欄按 layout-scale.json 的顯式修訂驗收；原稿存在柔化邊緣和生成式字形，不能憑測試數量宣告整頁逐畫素一致。
 

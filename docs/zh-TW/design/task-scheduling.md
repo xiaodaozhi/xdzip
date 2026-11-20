@@ -2,7 +2,7 @@
 
 # 任務排程、進度與取消
 
-[English](../../design/task-scheduling.md) | [简体中文](../../zh-CN/design/task-scheduling.md) | 繁體中文（台灣） | [日本語](../../ja-JP/design/task-scheduling.md) | [한국어](../../ko-KR/design/task-scheduling.md) | [Français](../../fr-FR/design/task-scheduling.md) | [Deutsch](../../de-DE/design/task-scheduling.md) | [Español](../../es-ES/design/task-scheduling.md) | [Português (Brasil)](../../pt-BR/design/task-scheduling.md) | [Русский](../../ru-RU/design/task-scheduling.md)
+[English](../../design/task-scheduling.md) | [简体中文](../../zh-CN/design/task-scheduling.md) | 繁體中文 | [日本語](../../ja-JP/design/task-scheduling.md) | [한국어](../../ko-KR/design/task-scheduling.md) | [Français](../../fr-FR/design/task-scheduling.md) | [Deutsch](../../de-DE/design/task-scheduling.md) | [Español](../../es-ES/design/task-scheduling.md) | [Português (Brasil)](../../pt-BR/design/task-scheduling.md) | [Русский](../../ru-RU/design/task-scheduling.md)
 
 XDZip 的每個執行時連線各有一個 Rust 命令執行緒和一個任務執行緒。命令執行緒持有目前歸檔並準備任務輸入。任務執行緒執行已接收的作業，命令執行緒仍能處理後設資料請求。[系統架構](system-architecture.md)說明這些執行緒在哪裡執行，[Qt/Rust 橋接](qt-rust-bridge.md)說明結果如何送到客戶端。
 

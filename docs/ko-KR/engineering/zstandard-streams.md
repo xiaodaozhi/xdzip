@@ -2,7 +2,7 @@
 
 # Zstandard 스트림 계약
 
-[English](../../engineering/zstandard-streams.md) | [简体中文](../../zh-CN/engineering/zstandard-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/zstandard-streams.md) | [日本語](../../ja-JP/engineering/zstandard-streams.md) | 한국어 | [Français](../../fr-FR/engineering/zstandard-streams.md) | [Deutsch](../../de-DE/engineering/zstandard-streams.md) | [Español](../../es-ES/engineering/zstandard-streams.md) | [Português (Brasil)](../../pt-BR/engineering/zstandard-streams.md) | [Русский](../../ru-RU/engineering/zstandard-streams.md)
+[English](../../engineering/zstandard-streams.md) | [简体中文](../../zh-CN/engineering/zstandard-streams.md) | [繁體中文](../../zh-TW/engineering/zstandard-streams.md) | [日本語](../../ja-JP/engineering/zstandard-streams.md) | 한국어 | [Français](../../fr-FR/engineering/zstandard-streams.md) | [Deutsch](../../de-DE/engineering/zstandard-streams.md) | [Español](../../es-ES/engineering/zstandard-streams.md) | [Português (Brasil)](../../pt-BR/engineering/zstandard-streams.md) | [Русский](../../ru-RU/engineering/zstandard-streams.md)
 
 바이너리 프로필은 [RFC 8878](https://www.rfc-editor.org/rfc/rfc8878.html), 작성자의 [형식 0.4.3](https://github.com/facebook/zstd/blob/v1.5.7/doc/zstd_compression_format.md)과 [XXH64 사양](https://github.com/Cyan4973/xxHash/blob/v0.8.3/doc/xxhash_spec.md)을 따릅니다. 제품 알고리즘은 Rust로 독립 구현합니다. 독립 참조 라이브러리와 프로그램은 관리 대상 테스트 콘텐츠를 생성하는 데만 쓰며 제품 종속성에 포함하지 않습니다. 호스트 권한과 파일 확정은 [단일 파일 스트림](single-file-streams.md) 계약을 따릅니다.
 

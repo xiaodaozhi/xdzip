@@ -2,7 +2,7 @@
 
 # ARJ 압축 스트림과 컨테이너 승인
 
-[English](../../engineering/arj-streams.md) | [简体中文](../../zh-CN/engineering/arj-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/arj-streams.md) | [日本語](../../ja-JP/engineering/arj-streams.md) | 한국어 | [Français](../../fr-FR/engineering/arj-streams.md) | [Deutsch](../../de-DE/engineering/arj-streams.md) | [Español](../../es-ES/engineering/arj-streams.md) | [Português (Brasil)](../../pt-BR/engineering/arj-streams.md) | [Русский](../../ru-RU/engineering/arj-streams.md)
+[English](../../engineering/arj-streams.md) | [简体中文](../../zh-CN/engineering/arj-streams.md) | [繁體中文](../../zh-TW/engineering/arj-streams.md) | [日本語](../../ja-JP/engineering/arj-streams.md) | 한국어 | [Français](../../fr-FR/engineering/arj-streams.md) | [Deutsch](../../de-DE/engineering/arj-streams.md) | [Español](../../es-ES/engineering/arj-streams.md) | [Português (Brasil)](../../pt-BR/engineering/arj-streams.md) | [Русский](../../ru-RU/engineering/arj-streams.md)
 
 `ArjReader`는 ARJ 방식 1–4의 제한된 원시 디코딩을 제공합니다. Store는 이 리더가 아니라 컨테이너에 속합니다. `xdzip-codec-arj`는 호스트 소유 원본에서 완전한 물리 구조와 CRC 검증된 멤버 전달을 제공합니다. `ArjCodec`은 승인된 프로필을 런타임, CLI와 데스크톱 탐색, 검사 및 추출에 연결합니다. [형식 레지스트리](../../../specs/engineering/archive-formats.json)는 읽기 전용 경계를 선언하며 생성, 재작성, 암호와 볼륨은 사용할 수 없습니다.
 

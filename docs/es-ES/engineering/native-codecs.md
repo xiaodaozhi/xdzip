@@ -2,7 +2,7 @@
 
 # Contrato del proceso aislado de formatos
 
-[English](../../engineering/native-codecs.md) | [简体中文](../../zh-CN/engineering/native-codecs.md) | [繁體中文（台灣）](../../zh-TW/engineering/native-codecs.md) | [日本語](../../ja-JP/engineering/native-codecs.md) | [한국어](../../ko-KR/engineering/native-codecs.md) | [Français](../../fr-FR/engineering/native-codecs.md) | [Deutsch](../../de-DE/engineering/native-codecs.md) | Español | [Português (Brasil)](../../pt-BR/engineering/native-codecs.md) | [Русский](../../ru-RU/engineering/native-codecs.md)
+[English](../../engineering/native-codecs.md) | [简体中文](../../zh-CN/engineering/native-codecs.md) | [繁體中文](../../zh-TW/engineering/native-codecs.md) | [日本語](../../ja-JP/engineering/native-codecs.md) | [한국어](../../ko-KR/engineering/native-codecs.md) | [Français](../../fr-FR/engineering/native-codecs.md) | [Deutsch](../../de-DE/engineering/native-codecs.md) | Español | [Português (Brasil)](../../pt-BR/engineering/native-codecs.md) | [Русский](../../ru-RU/engineering/native-codecs.md)
 
 La lectura de 7z, RAR, CAB e ISO/UDF utiliza [códecs Rust integrados](independent-rust-codecs.md) tras una frontera CXX compartida en el proceso aislado. El mismo proceso gestiona la escritura 7z dentro de tareas controladas por el anfitrión. El anfitrión Rust procesa ZIP, TAR, flujos comprimidos, DEB y [nuevas imágenes ISO9660/Joliet](iso-creation.md) en el proceso. La selección de formato usa rutas integradas. Ninguna ruta busca un descodificador de línea de comandos en PATH.
 

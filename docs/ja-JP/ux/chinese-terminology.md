@@ -2,7 +2,7 @@
 
 # 簡体字中国語の UI 用語
 
-[English](../../ux/chinese-terminology.md) | [简体中文](../../zh-CN/ux/chinese-terminology.md) | [繁體中文（台灣）](../../zh-TW/ux/chinese-terminology.md) | 日本語 | [한국어](../../ko-KR/ux/chinese-terminology.md) | [Français](../../fr-FR/ux/chinese-terminology.md) | [Deutsch](../../de-DE/ux/chinese-terminology.md) | [Español](../../es-ES/ux/chinese-terminology.md) | [Português (Brasil)](../../pt-BR/ux/chinese-terminology.md) | [Русский](../../ru-RU/ux/chinese-terminology.md)
+[English](../../ux/chinese-terminology.md) | [简体中文](../../zh-CN/ux/chinese-terminology.md) | [繁體中文](../../zh-TW/ux/chinese-terminology.md) | 日本語 | [한국어](../../ko-KR/ux/chinese-terminology.md) | [Français](../../fr-FR/ux/chinese-terminology.md) | [Deutsch](../../de-DE/ux/chinese-terminology.md) | [Español](../../es-ES/ux/chinese-terminology.md) | [Português (Brasil)](../../pt-BR/ux/chinese-terminology.md) | [Русский](../../ru-RU/ux/chinese-terminology.md)
 
 ユーザー向けの簡体字中国語は[用語設定](../../../specs/ux/chinese-terminology.json)に従います。Qt の静的文言は resources/i18n/zh-CN.json にある安定 ID を維持します。HTML、現在の高忠実度デザイン、ユーザー向け文書は表の用語を使います。技術文書と形式の仕様では専門用語も使用できます。コンポーネント寸法、メインウィンドウ 0.8／メニュー 1 の密度、DPR、拡大縮小の設定は従来どおりです。
 

@@ -2,7 +2,7 @@
 
 # Guía de diseño de XDZip
 
-[English](../../design/index.md) | [简体中文](../../zh-CN/design/index.md) | [繁體中文（台灣）](../../zh-TW/design/index.md) | [日本語](../../ja-JP/design/index.md) | [한국어](../../ko-KR/design/index.md) | [Français](../../fr-FR/design/index.md) | [Deutsch](../../de-DE/design/index.md) | Español | [Português (Brasil)](../../pt-BR/design/index.md) | [Русский](../../ru-RU/design/index.md)
+[English](../../design/index.md) | [简体中文](../../zh-CN/design/index.md) | [繁體中文](../../zh-TW/design/index.md) | [日本語](../../ja-JP/design/index.md) | [한국어](../../ko-KR/design/index.md) | [Français](../../fr-FR/design/index.md) | [Deutsch](../../de-DE/design/index.md) | Español | [Português (Brasil)](../../pt-BR/design/index.md) | [Русский](../../ru-RU/design/index.md)
 
 Empieza por la [arquitectura del sistema](system-architecture.md) para ver cómo el escritorio Qt Quick y la CLI independiente en Rust acceden al motor de archivos comprimidos. Las páginas de diseño explican los contratos actuales, las decisiones y el alcance de las propuestas. El [manual de usuario](../user-guide/README.md) cubre la instalación y las operaciones habituales. Para compilar o modificar el proyecto, consulta [Compilar y contribuir](../contributing/README.md).
 

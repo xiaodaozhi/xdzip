@@ -2,7 +2,7 @@
 
 # ARC コンテナーと圧縮ストリームのプロファイル
 
-[English](../../engineering/arc-streams.md) | [简体中文](../../zh-CN/engineering/arc-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/arc-streams.md) | 日本語 | [한국어](../../ko-KR/engineering/arc-streams.md) | [Français](../../fr-FR/engineering/arc-streams.md) | [Deutsch](../../de-DE/engineering/arc-streams.md) | [Español](../../es-ES/engineering/arc-streams.md) | [Português (Brasil)](../../pt-BR/engineering/arc-streams.md) | [Русский](../../ru-RU/engineering/arc-streams.md)
+[English](../../engineering/arc-streams.md) | [简体中文](../../zh-CN/engineering/arc-streams.md) | [繁體中文](../../zh-TW/engineering/arc-streams.md) | 日本語 | [한국어](../../ko-KR/engineering/arc-streams.md) | [Français](../../fr-FR/engineering/arc-streams.md) | [Deutsch](../../de-DE/engineering/arc-streams.md) | [Español](../../es-ES/engineering/arc-streams.md) | [Português (Brasil)](../../pt-BR/engineering/arc-streams.md) | [Русский](../../ru-RU/engineering/arc-streams.md)
 
 `ArcReader` は ARC 方式 3–9 の上限付き生デコードを実装します。方式 1 と 2 はコンテナーの Store プロファイルです。`xdzip-codec-arc` と `ArcCodec` は完全な構造と必須 CRC-16 をランタイム、CLI、デスクトップの閲覧、検査、展開に接続します。[形式レジストリ](../../../specs/engineering/archive-formats.json)は読み取り専用の範囲を宣言し、作成、変更、パスワード、分割は利用できません。
 

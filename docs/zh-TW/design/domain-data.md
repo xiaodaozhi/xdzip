@@ -2,7 +2,7 @@
 
 # 領域模型與歸檔資料
 
-[English](../../design/domain-data.md) | [简体中文](../../zh-CN/design/domain-data.md) | 繁體中文（台灣） | [日本語](../../ja-JP/design/domain-data.md) | [한국어](../../ko-KR/design/domain-data.md) | [Français](../../fr-FR/design/domain-data.md) | [Deutsch](../../de-DE/design/domain-data.md) | [Español](../../es-ES/design/domain-data.md) | [Português (Brasil)](../../pt-BR/design/domain-data.md) | [Русский](../../ru-RU/design/domain-data.md)
+[English](../../design/domain-data.md) | [简体中文](../../zh-CN/design/domain-data.md) | 繁體中文 | [日本語](../../ja-JP/design/domain-data.md) | [한국어](../../ko-KR/design/domain-data.md) | [Français](../../fr-FR/design/domain-data.md) | [Deutsch](../../de-DE/design/domain-data.md) | [Español](../../es-ES/design/domain-data.md) | [Português (Brasil)](../../pt-BR/design/domain-data.md) | [Русский](../../ru-RU/design/domain-data.md)
 
 歸檔會話、已完成的索引和會話內最新查詢由執行時持有。Qt 儲存結果的檢視，CLI 透過獨立的清單命令讀取物理記錄。兩者都把操作交給同一個 Rust 服務實現。[系統架構](system-architecture.md)、[Qt/Rust 橋接](qt-rust-bridge.md)
 

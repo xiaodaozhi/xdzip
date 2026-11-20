@@ -2,7 +2,7 @@
 
 # Überprüfung der Übereinstimmung von Qt SDK und Quellcode
 
-[English](../../engineering/qt-sdk-correspondence.md) | [简体中文](../../zh-CN/engineering/qt-sdk-correspondence.md) | [繁體中文（台灣）](../../zh-TW/engineering/qt-sdk-correspondence.md) | [日本語](../../ja-JP/engineering/qt-sdk-correspondence.md) | [한국어](../../ko-KR/engineering/qt-sdk-correspondence.md) | [Français](../../fr-FR/engineering/qt-sdk-correspondence.md) | Deutsch | [Español](../../es-ES/engineering/qt-sdk-correspondence.md) | [Português (Brasil)](../../pt-BR/engineering/qt-sdk-correspondence.md) | [Русский](../../ru-RU/engineering/qt-sdk-correspondence.md)
+[English](../../engineering/qt-sdk-correspondence.md) | [简体中文](../../zh-CN/engineering/qt-sdk-correspondence.md) | [繁體中文](../../zh-TW/engineering/qt-sdk-correspondence.md) | [日本語](../../ja-JP/engineering/qt-sdk-correspondence.md) | [한국어](../../ko-KR/engineering/qt-sdk-correspondence.md) | [Français](../../fr-FR/engineering/qt-sdk-correspondence.md) | Deutsch | [Español](../../es-ES/engineering/qt-sdk-correspondence.md) | [Português (Brasil)](../../pt-BR/engineering/qt-sdk-correspondence.md) | [Русский](../../ru-RU/engineering/qt-sdk-correspondence.md)
 
 Die Prüfung der Quellübereinstimmung verwendet die tatsächlichen Bytes offizieller Archive; gleiche Versionsnummern belegen keine Gleichwertigkeit des SDK-Builds. `scripts/qt_sdk_correspondence.py` verbindet festgelegte Quellarchive, vom SDK gelieferte Quell-SPDX, Build-Deklarationen, installierte Konfiguration und bekannte Patches der SDK-Nutzer und schreibt die Ausgabe nach build/. Das Werkzeug verändert das SDK nicht und genehmigt keine Lizenzzweige.
 

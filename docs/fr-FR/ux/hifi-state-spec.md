@@ -2,7 +2,7 @@
 
 # États haute fidélité et contrat d’implémentation
 
-[English](../../ux/hifi-state-spec.md) | [简体中文](../../zh-CN/ux/hifi-state-spec.md) | [繁體中文（台灣）](../../zh-TW/ux/hifi-state-spec.md) | [日本語](../../ja-JP/ux/hifi-state-spec.md) | [한국어](../../ko-KR/ux/hifi-state-spec.md) | Français | [Deutsch](../../de-DE/ux/hifi-state-spec.md) | [Español](../../es-ES/ux/hifi-state-spec.md) | [Português (Brasil)](../../pt-BR/ux/hifi-state-spec.md) | [Русский](../../ru-RU/ux/hifi-state-spec.md)
+[English](../../ux/hifi-state-spec.md) | [简体中文](../../zh-CN/ux/hifi-state-spec.md) | [繁體中文](../../zh-TW/ux/hifi-state-spec.md) | [日本語](../../ja-JP/ux/hifi-state-spec.md) | [한국어](../../ko-KR/ux/hifi-state-spec.md) | Français | [Deutsch](../../de-DE/ux/hifi-state-spec.md) | [Español](../../es-ES/ux/hifi-state-spec.md) | [Português (Brasil)](../../pt-BR/ux/hifi-state-spec.md) | [Русский](../../ru-RU/ux/hifi-state-spec.md)
 
 Ce guide décrit le comportement, le focus et les actions de fermeture des fenêtres de création, d’extraction et de tâche, avec des liens vers les [maquettes des états d’opération](../../../design/hifi/README.md) et la [bibliothèque de ressources partagées](../../../design/assets/README.md). Les identifiants du tableau désignent des plans de travail de conception et ne modifient pas le protocole des tâches.
 

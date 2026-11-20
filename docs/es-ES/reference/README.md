@@ -2,7 +2,7 @@
 
 # Diseño del producto y referencia técnica
 
-[English](../../reference/README.md) | [简体中文](../../zh-CN/reference/README.md) | [繁體中文（台灣）](../../zh-TW/reference/README.md) | [日本語](../../ja-JP/reference/README.md) | [한국어](../../ko-KR/reference/README.md) | [Français](../../fr-FR/reference/README.md) | [Deutsch](../../de-DE/reference/README.md) | Español | [Português (Brasil)](../../pt-BR/reference/README.md) | [Русский](../../ru-RU/reference/README.md)
+[English](../../reference/README.md) | [简体中文](../../zh-CN/reference/README.md) | [繁體中文](../../zh-TW/reference/README.md) | [日本語](../../ja-JP/reference/README.md) | [한국어](../../ko-KR/reference/README.md) | [Français](../../fr-FR/reference/README.md) | [Deutsch](../../de-DE/reference/README.md) | Español | [Português (Brasil)](../../pt-BR/reference/README.md) | [Русский](../../ru-RU/reference/README.md)
 
 Empieza por la [arquitectura del sistema](../design/system-architecture.md) para conocer las rutas de ejecución del escritorio y la CLI. Las secciones siguientes enlazan el contrato que define cada comportamiento. La [tabla de formatos](../../../README.es-ES.md#xdzip-format-support) resume las operaciones compatibles. Para pasos de uso o preparación del entorno, consulta el [manual de usuario](../user-guide/README.md), los [ejemplos de CLI](../integration/README.md) y la [guía de contribución](../contributing/README.md).
 

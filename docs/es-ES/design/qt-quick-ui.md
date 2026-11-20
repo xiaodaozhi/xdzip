@@ -2,7 +2,7 @@
 
 # Interfaz de escritorio de Qt Quick
 
-[English](../../design/qt-quick-ui.md) | [简体中文](../../zh-CN/design/qt-quick-ui.md) | [繁體中文（台灣）](../../zh-TW/design/qt-quick-ui.md) | [日本語](../../ja-JP/design/qt-quick-ui.md) | [한국어](../../ko-KR/design/qt-quick-ui.md) | [Français](../../fr-FR/design/qt-quick-ui.md) | [Deutsch](../../de-DE/design/qt-quick-ui.md) | Español | [Português (Brasil)](../../pt-BR/design/qt-quick-ui.md) | [Русский](../../ru-RU/design/qt-quick-ui.md)
+[English](../../design/qt-quick-ui.md) | [简体中文](../../zh-CN/design/qt-quick-ui.md) | [繁體中文](../../zh-TW/design/qt-quick-ui.md) | [日本語](../../ja-JP/design/qt-quick-ui.md) | [한국어](../../ko-KR/design/qt-quick-ui.md) | [Français](../../fr-FR/design/qt-quick-ui.md) | [Deutsch](../../de-DE/design/qt-quick-ui.md) | Español | [Português (Brasil)](../../pt-BR/design/qt-quick-ui.md) | [Русский](../../ru-RU/design/qt-quick-ui.md)
 
 El escritorio usa Qt Quick para la presentación y la interacción. Los controladores C++ traducen las acciones del usuario y mantienen el estado de la vista. El entorno de ejecución Rust interpreta los archivos comprimidos y controla las reglas de las tareas y los permisos sobre archivos. La [arquitectura del sistema](system-architecture.md) y el [contrato del puente](qt-rust-bridge.md) explican estas llamadas.
 

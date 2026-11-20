@@ -2,7 +2,7 @@
 
 # 主視窗歡迎頁
 
-[English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | 繁體中文（台灣） | [日本語](../../ja-JP/ux/welcome.md) | [한국어](../../ko-KR/ux/welcome.md) | [Français](../../fr-FR/ux/welcome.md) | [Deutsch](../../de-DE/ux/welcome.md) | [Español](../../es-ES/ux/welcome.md) | [Português (Brasil)](../../pt-BR/ux/welcome.md) | [Русский](../../ru-RU/ux/welcome.md)
+[English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | 繁體中文 | [日本語](../../ja-JP/ux/welcome.md) | [한국어](../../ko-KR/ux/welcome.md) | [Français](../../fr-FR/ux/welcome.md) | [Deutsch](../../de-DE/ux/welcome.md) | [Español](../../es-ES/ux/welcome.md) | [Português (Brasil)](../../pt-BR/ux/welcome.md) | [Русский](../../ru-RU/ux/welcome.md)
 
 高保真設計已確認，現已接入[正式 HTML 審閱入口](../../../design/html/index.html?view=welcome&zoom=1)。Qt 已接入真實開啟與新建，桌面人工驗收另行登記。設計入口見[歡迎頁狀態稿](../../../design/hifi/sources/welcome.html)，引數見 [welcome-reference.json](../../../specs/visual/welcome-reference.json)。顏色、主視窗密度沿用現有 tokens 和 layout-scale，不調整全域性規範。四張 PNG 為程式碼繪製的設計原稿匯出，不是產品執行截圖。
 

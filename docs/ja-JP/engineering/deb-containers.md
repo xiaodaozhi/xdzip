@@ -2,7 +2,7 @@
 
 # DEB コンテナー契約
 
-[English](../../engineering/deb-containers.md) | [简体中文](../../zh-CN/engineering/deb-containers.md) | [繁體中文（台灣）](../../zh-TW/engineering/deb-containers.md) | 日本語 | [한국어](../../ko-KR/engineering/deb-containers.md) | [Français](../../fr-FR/engineering/deb-containers.md) | [Deutsch](../../de-DE/engineering/deb-containers.md) | [Español](../../es-ES/engineering/deb-containers.md) | [Português (Brasil)](../../pt-BR/engineering/deb-containers.md) | [Русский](../../ru-RU/engineering/deb-containers.md)
+[English](../../engineering/deb-containers.md) | [简体中文](../../zh-CN/engineering/deb-containers.md) | [繁體中文](../../zh-TW/engineering/deb-containers.md) | 日本語 | [한국어](../../ko-KR/engineering/deb-containers.md) | [Français](../../fr-FR/engineering/deb-containers.md) | [Deutsch](../../de-DE/engineering/deb-containers.md) | [Español](../../es-ES/engineering/deb-containers.md) | [Português (Brasil)](../../pt-BR/engineering/deb-containers.md) | [Русский](../../ru-RU/engineering/deb-containers.md)
 
 パッケージの外側は Debian の [deb(5)](https://manpages.debian.org/unstable/dpkg-dev/deb.5.en.html)、共通の ar フィールドは [ar(5)](https://man.netbsd.org/ar.5) に従います。通常の `!<arch>\n` レイアウトのみを受け入れます。各 60 バイトのヘッダーには、長さが制限された ASCII の名前、時刻、所有者、モード、サイズの各フィールドと必須の終端マーカーがあります。10 進フィールド、8 進モード、正確なデータ範囲、奇数長メンバーの改行パディング、物理 EOF を検証します。thin アーカイブ、過去の形式、長い名前の拡張はサポートせず、外部ファイルへのアクセス権限も与えません。
 

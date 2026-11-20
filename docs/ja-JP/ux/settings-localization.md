@@ -2,7 +2,7 @@
 
 # 設定ウィンドウと表示言語
 
-[English](../../ux/settings-localization.md) | [简体中文](../../zh-CN/ux/settings-localization.md) | [繁體中文（台灣）](../../zh-TW/ux/settings-localization.md) | 日本語 | [한국어](../../ko-KR/ux/settings-localization.md) | [Français](../../fr-FR/ux/settings-localization.md) | [Deutsch](../../de-DE/ux/settings-localization.md) | [Español](../../es-ES/ux/settings-localization.md) | [Português (Brasil)](../../pt-BR/ux/settings-localization.md) | [Русский](../../ru-RU/ux/settings-localization.md)
+[English](../../ux/settings-localization.md) | [简体中文](../../zh-CN/ux/settings-localization.md) | [繁體中文](../../zh-TW/ux/settings-localization.md) | 日本語 | [한국어](../../ko-KR/ux/settings-localization.md) | [Français](../../fr-FR/ux/settings-localization.md) | [Deutsch](../../de-DE/ux/settings-localization.md) | [Español](../../es-ES/ux/settings-localization.md) | [Português (Brasil)](../../pt-BR/ux/settings-localization.md) | [Русский](../../ru-RU/ux/settings-localization.md)
 
 メインウィンドウが表示されていないとき、通知領域から親なしで開いた設定および「xdzip について」は、ポインターがある画面の作業領域にネイティブ枠全体を中央配置します。OperationWindow の画面配置を再利用し、ネイティブウィンドウを作成して高さが決まった後に再配置します。高さの上限は選択した QScreen の利用可能な高さと既存の余白に基づきます。仮想デスクトップ全体の高さは使わず、非表示または最小化されたメインウィンドウは復元しません。親のある入口では、呼び出し元の配置、寸法、密度を維持します。
 
@@ -30,7 +30,7 @@ macOS の手動更新案内は、満たされていない最初のインスト�
 
 本文の縦スクロールバーは表示領域の右端全体に沿います。つまみはスクロールに追従し、ドラッグで移動できます。バージョン情報のラベル列は実際の文言と文字サイズに合わせます。値には残りの幅を使い、折り返しも可能です。新しい項目も同じ配置を使います。
 
-製品の文言には `resources/i18n/` の安定 ID を使います。QML は `qsTrId`、C++ は `qtTrId` を使います。プロトコルコード、ファイル名、パス、ユーザーの内容はそのまま扱います。言語メニューには最初に自動検出、続いて同梱する言語をそれぞれの言語名で表示します。自動検出は起動のたびに、数値形式とは独立してシステムの最優先の表示言語を読み取ります。中国語では明示的な字体指定が地域指定より優先されます。繁体字と台湾、香港、マカオは台湾繁体字を選びます。ほかの言語は同じ言語の同梱版があれば使用します。設定が空か非対応なら英語（米国）を使います。
+製品の文言には `resources/i18n/` の安定 ID を使います。QML は `qsTrId`、C++ は `qtTrId` を使います。プロトコルコード、ファイル名、パス、ユーザーの内容はそのまま扱います。言語メニューには最初に自動検出、続いて同梱する言語をそれぞれの言語名で表示します。自動検出は起動のたびに、数値形式とは独立してシステムの最優先の表示言語を読み取ります。中国語では明示的な字体指定が地域指定より優先されます。繁体字と zh-TW、zh-HK、zh-MO 地域は繁体字中国語を選びます。ほかの言語は同じ言語の同梱版があれば使用します。設定が空か非対応なら英語（米国）を使います。
 
 言語の変更は即時に反映します。保存に失敗した場合は直前の選択と言語を復元します。英語と簡体字中国語の後に追加した言語を手動で選ぶと、`locale/extendedLanguage` に選んだ言語、`locale/language` に旧版で読める値を保存します。旧版では繁体字中国語は簡体字、それ以外の追加言語は英語で表示し、ほかの設定を引き続き読み取ります。現行版は互換値が一致する場合に拡張値を使います。自動検出、簡体字中国語、英語を選ぶと拡張値を消去します。
 

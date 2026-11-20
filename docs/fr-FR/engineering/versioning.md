@@ -2,7 +2,7 @@
 
 # Version du produit et identité du build
 
-[English](../../engineering/versioning.md) | [简体中文](../../zh-CN/engineering/versioning.md) | [繁體中文（台灣）](../../zh-TW/engineering/versioning.md) | [日本語](../../ja-JP/engineering/versioning.md) | [한국어](../../ko-KR/engineering/versioning.md) | Français | [Deutsch](../../de-DE/engineering/versioning.md) | [Español](../../es-ES/engineering/versioning.md) | [Português (Brasil)](../../pt-BR/engineering/versioning.md) | [Русский](../../ru-RU/engineering/versioning.md)
+[English](../../engineering/versioning.md) | [简体中文](../../zh-CN/engineering/versioning.md) | [繁體中文](../../zh-TW/engineering/versioning.md) | [日本語](../../ja-JP/engineering/versioning.md) | [한국어](../../ko-KR/engineering/versioning.md) | Français | [Deutsch](../../de-DE/engineering/versioning.md) | [Español](../../es-ES/engineering/versioning.md) | [Português (Brasil)](../../pt-BR/engineering/versioning.md) | [Русский](../../ru-RU/engineering/versioning.md)
 
 La clé facultative `prerelease_number` sépare le numéro de préversion du numéro de build. Par exemple, alpha.1 peut correspondre au build 14, et le numéro de build continue d’augmenter pour alpha.2. Sans cette clé, l’interprétation historique `channel.build` s’applique. Le [protocole de publication](release-protocol.md) définit les manifestes et les noms d’artefacts.
 

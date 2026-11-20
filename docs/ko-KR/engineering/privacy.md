@@ -1,7 +1,7 @@
 <a name="xdzip-data-lifecycle-and-diagnostics"></a>
 # 데이터 보관 및 진단
 
-[English](../../engineering/privacy.md) | [简体中文](../../zh-CN/engineering/privacy.md) | [繁體中文（台灣）](../../zh-TW/engineering/privacy.md) | [日本語](../../ja-JP/engineering/privacy.md) | 한국어 | [Français](../../fr-FR/engineering/privacy.md) | [Deutsch](../../de-DE/engineering/privacy.md) | [Español](../../es-ES/engineering/privacy.md) | [Português (Brasil)](../../pt-BR/engineering/privacy.md) | [Русский](../../ru-RU/engineering/privacy.md)
+[English](../../engineering/privacy.md) | [简体中文](../../zh-CN/engineering/privacy.md) | [繁體中文](../../zh-TW/engineering/privacy.md) | [日本語](../../ja-JP/engineering/privacy.md) | 한국어 | [Français](../../fr-FR/engineering/privacy.md) | [Deutsch](../../de-DE/engineering/privacy.md) | [Español](../../es-ES/engineering/privacy.md) | [Português (Brasil)](../../pt-BR/engineering/privacy.md) | [Русский](../../ru-RU/engineering/privacy.md)
 
 [개인정보 처리방침](../../../PRIVACY.md)은 xdzip이 처리하는 데이터와 사용자가 이용할 수 있는 선택 사항을 설명합니다. 아래 표에서 데이터를 저장하는 위치와 정리 시기를 확인할 수 있습니다. 탐색, 압축, 압축 풀기는 오프라인에서 동작합니다. xdzip은 원격 측정 데이터나 압축 파일 내용을 유지보수 담당자에게 자동으로 보내지 않습니다.
 

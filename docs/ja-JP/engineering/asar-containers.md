@@ -2,7 +2,7 @@
 
 # ASAR コンテナーの契約
 
-[English](../../engineering/asar-containers.md) | [简体中文](../../zh-CN/engineering/asar-containers.md) | [繁體中文（台灣）](../../zh-TW/engineering/asar-containers.md) | 日本語 | [한국어](../../ko-KR/engineering/asar-containers.md) | [Français](../../fr-FR/engineering/asar-containers.md) | [Deutsch](../../de-DE/engineering/asar-containers.md) | [Español](../../es-ES/engineering/asar-containers.md) | [Português (Brasil)](../../pt-BR/engineering/asar-containers.md) | [Русский](../../ru-RU/engineering/asar-containers.md)
+[English](../../engineering/asar-containers.md) | [简体中文](../../zh-CN/engineering/asar-containers.md) | [繁體中文](../../zh-TW/engineering/asar-containers.md) | 日本語 | [한국어](../../ko-KR/engineering/asar-containers.md) | [Français](../../fr-FR/engineering/asar-containers.md) | [Deutsch](../../de-DE/engineering/asar-containers.md) | [Español](../../es-ES/engineering/asar-containers.md) | [Português (Brasil)](../../pt-BR/engineering/asar-containers.md) | [Русский](../../ru-RU/engineering/asar-containers.md)
 
 形式は Electron の [ASAR の説明](https://github.com/electron/asar#format)と Chromium の [Pickle の契約](https://chromium.googlesource.com/chromium/src/+/main/base/pickle.h)に従います。サイズを格納する八バイトの Pickle の後に、JSON ディレクトリーツリーを格納する Pickle 文字列が続きます。ファイルのオフセットはデータ領域からの相対位置を表す十進文字列です。同じ記録バイトを複数のファイルで共有する場合も、各エントリーは固有の識別子を保持します。任意の整合性情報はファイル全体と各固定長ブロックの SHA-256 を宣言します。この情報はデータ破損の検出に使い、パッケージやアプリの認証には使用できません。
 

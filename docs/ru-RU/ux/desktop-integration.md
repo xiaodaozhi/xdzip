@@ -2,7 +2,7 @@
 
 # Системные меню и область уведомлений
 
-[English](../../ux/desktop-integration.md) | [简体中文](../../zh-CN/ux/desktop-integration.md) | [繁體中文（台灣）](../../zh-TW/ux/desktop-integration.md) | [日本語](../../ja-JP/ux/desktop-integration.md) | [한국어](../../ko-KR/ux/desktop-integration.md) | [Français](../../fr-FR/ux/desktop-integration.md) | [Deutsch](../../de-DE/ux/desktop-integration.md) | [Español](../../es-ES/ux/desktop-integration.md) | [Português (Brasil)](../../pt-BR/ux/desktop-integration.md) | Русский
+[English](../../ux/desktop-integration.md) | [简体中文](../../zh-CN/ux/desktop-integration.md) | [繁體中文](../../zh-TW/ux/desktop-integration.md) | [日本語](../../ja-JP/ux/desktop-integration.md) | [한국어](../../ko-KR/ux/desktop-integration.md) | [Français](../../fr-FR/ux/desktop-integration.md) | [Deutsch](../../de-DE/ux/desktop-integration.md) | [Español](../../es-ES/ux/desktop-integration.md) | [Português (Brasil)](../../pt-BR/ux/desktop-integration.md) | Русский
 
 Несколько сеансов, единственный экземпляр, состояние окон и общий выход следуют [контракту сеансов приложения](../engineering/application-sessions.md). Закрытие не последнего главного окна сохраняет задачи; последнее окно следует настройкам области уведомлений. Подтверждение выхода охватывает все сеансы.
 

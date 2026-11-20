@@ -1,6 +1,6 @@
 # BH 容器与准入的 BlakHole 配置
 
-[English](../../engineering/bh-containers.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/bh-containers.md) | [日本語](../../ja-JP/engineering/bh-containers.md) | [한국어](../../ko-KR/engineering/bh-containers.md) | [Français](../../fr-FR/engineering/bh-containers.md) | [Deutsch](../../de-DE/engineering/bh-containers.md) | [Español](../../es-ES/engineering/bh-containers.md) | [Português (Brasil)](../../pt-BR/engineering/bh-containers.md) | [Русский](../../ru-RU/engineering/bh-containers.md)
+[English](../../engineering/bh-containers.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/bh-containers.md) | [日本語](../../ja-JP/engineering/bh-containers.md) | [한국어](../../ko-KR/engineering/bh-containers.md) | [Français](../../fr-FR/engineering/bh-containers.md) | [Deutsch](../../de-DE/engineering/bh-containers.md) | [Español](../../es-ES/engineering/bh-containers.md) | [Português (Brasil)](../../pt-BR/engineering/bh-containers.md) | [Русский](../../ru-RU/engineering/bh-containers.md)
 
 `xdzip-codec-bh` 从主机提供的源读取顺序 BlakHole（`.bh`）成员。产品只准入保守配置：要求 `BH 05 07` 前缀、实测固定字段、普通文件元数据、准确的压缩和解码长度，以及成员声明的 IEEE CRC-32。成员按物理顺序保留，重复名称仍是不同记录，冻结行身份独立于显示名称解码。
 

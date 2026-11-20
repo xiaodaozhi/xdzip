@@ -2,7 +2,7 @@
 
 # Дополнительные требования к взаимодействию и текстам
 
-[English](../../ux/interaction-spec.md) | [简体中文](../../zh-CN/ux/interaction-spec.md) | [繁體中文（台灣）](../../zh-TW/ux/interaction-spec.md) | [日本語](../../ja-JP/ux/interaction-spec.md) | [한국어](../../ko-KR/ux/interaction-spec.md) | [Français](../../fr-FR/ux/interaction-spec.md) | [Deutsch](../../de-DE/ux/interaction-spec.md) | [Español](../../es-ES/ux/interaction-spec.md) | [Português (Brasil)](../../pt-BR/ux/interaction-spec.md) | Русский
+[English](../../ux/interaction-spec.md) | [简体中文](../../zh-CN/ux/interaction-spec.md) | [繁體中文](../../zh-TW/ux/interaction-spec.md) | [日本語](../../ja-JP/ux/interaction-spec.md) | [한국어](../../ko-KR/ux/interaction-spec.md) | [Français](../../fr-FR/ux/interaction-spec.md) | [Deutsch](../../de-DE/ux/interaction-spec.md) | [Español](../../es-ES/ux/interaction-spec.md) | [Português (Brasil)](../../pt-BR/ux/interaction-spec.md) | Русский
 
 Макеты главного окна и подтверждения распаковки дополняет [спецификация состояний](hifi-state-spec.md) для создания, конфликтов, задач, результатов, настроек и сравнения платформ. Приветствие и прогресс открытия описаны в [контракте начальной страницы](welcome-opening.md). Действующие макеты и параметры размещения соответствуют [реестру окон](../../../specs/visual/window-registry.json). Технические контракты и правила взаимодействия фиксируют границы реализации и нативной визуальной проверки.
 

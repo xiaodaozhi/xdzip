@@ -2,7 +2,7 @@
 
 # Página de boas-vindas da janela principal
 
-[English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | [繁體中文（台灣）](../../zh-TW/ux/welcome.md) | [日本語](../../ja-JP/ux/welcome.md) | [한국어](../../ko-KR/ux/welcome.md) | [Français](../../fr-FR/ux/welcome.md) | [Deutsch](../../de-DE/ux/welcome.md) | [Español](../../es-ES/ux/welcome.md) | Português (Brasil) | [Русский](../../ru-RU/ux/welcome.md)
+[English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | [繁體中文](../../zh-TW/ux/welcome.md) | [日本語](../../ja-JP/ux/welcome.md) | [한국어](../../ko-KR/ux/welcome.md) | [Français](../../fr-FR/ux/welcome.md) | [Deutsch](../../de-DE/ux/welcome.md) | [Español](../../es-ES/ux/welcome.md) | Português (Brasil) | [Русский](../../ru-RU/ux/welcome.md)
 
 O design de alta fidelidade está confirmado e integrado à [entrada oficial de revisão HTML](../../../design/html/index.html?view=welcome&zoom=1). Qt implementa abertura e criação reais; a aceitação manual de desktop é registrada separadamente. Veja o [design dos estados de boas-vindas](../../../design/hifi/sources/welcome.html) e [welcome-reference.json](../../../specs/visual/welcome-reference.json). Cores e densidade da janela principal mantêm tokens e layout-scale existentes sem alterar padrões globais. Quatro PNGs são exportações de originais desenhados por código, não capturas do produto em execução.
 

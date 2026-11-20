@@ -1,6 +1,6 @@
 # XDZip 문서
 
-[English](../README.md) | [简体中文](../zh-CN/README.md) | [繁體中文（台灣）](../zh-TW/README.md) | [日本語](../ja-JP/README.md) | 한국어 | [Français](../fr-FR/README.md) | [Deutsch](../de-DE/README.md) | [Español](../es-ES/README.md) | [Português (Brasil)](../pt-BR/README.md) | [Русский](../ru-RU/README.md)
+[English](../README.md) | [简体中文](../zh-CN/README.md) | [繁體中文](../zh-TW/README.md) | [日本語](../ja-JP/README.md) | 한국어 | [Français](../fr-FR/README.md) | [Deutsch](../de-DE/README.md) | [Español](../es-ES/README.md) | [Português (Brasil)](../pt-BR/README.md) | [Русский](../ru-RU/README.md)
 
 처음 사용한다면 [XDZip 다운로드 및 설치](user-guide/install.md)부터 시작하세요. 다음으로 [압축 파일 열기와 내용 탐색](user-guide/browse.md) 문서를 읽어 보세요. [지원 형식 표](../../README.ko-KR.md#xdzip-format-support)에서 열기, 만들기, 편집에 사용할 수 있는 형식을 확인할 수 있습니다. 설치한 버전에 포함된 기능은 해당 [릴리스 노트](https://github.com/xiaodaozhi/xdzip/releases)를 참고하세요.
 

@@ -1,7 +1,7 @@
 <a name="xdzip-system-support-and-maintenance-policy"></a>
 # Politique de support et de maintenance du système
 
-[English](../../engineering/support-policy.md) | [简体中文](../../zh-CN/engineering/support-policy.md) | [繁體中文（台灣）](../../zh-TW/engineering/support-policy.md) | [日本語](../../ja-JP/engineering/support-policy.md) | [한국어](../../ko-KR/engineering/support-policy.md) | Français | [Deutsch](../../de-DE/engineering/support-policy.md) | [Español](../../es-ES/engineering/support-policy.md) | [Português (Brasil)](../../pt-BR/engineering/support-policy.md) | [Русский](../../ru-RU/engineering/support-policy.md)
+[English](../../engineering/support-policy.md) | [简体中文](../../zh-CN/engineering/support-policy.md) | [繁體中文](../../zh-TW/engineering/support-policy.md) | [日本語](../../ja-JP/engineering/support-policy.md) | [한국어](../../ko-KR/engineering/support-policy.md) | Français | [Deutsch](../../de-DE/engineering/support-policy.md) | [Español](../../es-ES/engineering/support-policy.md) | [Português (Brasil)](../../pt-BR/engineering/support-policy.md) | [Русский](../../ru-RU/engineering/support-policy.md)
 
 Le responsable du projet a approuvé le périmètre initial le 2026-10-19. La version `v0.1.0` est sortie publiquement le 2026-11-06. Consultez la [page des versions](https://github.com/xiaodaozhi/xdzip/releases) pour trouver les versions actuelles et leurs fichiers. Cette politique définit le périmètre du support. Les contrôles de version minimale restent en vigueur. Les résultats de CI et les validations utilisateur doivent être lus dans le contexte de l’environnement testé. La vérification manuelle a été validée par l’utilisateur.
 

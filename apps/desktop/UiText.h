@@ -85,7 +85,7 @@ inline bool loadQtSystemTranslation(QTranslator &translator, const QLocale &loca
     const auto fallback = uiLanguageString(xdzip_i18n::systemLanguage(preferred.toStdString()));
     if (fallback == uiLanguageString(xdzip_i18n::defaultLanguage))
         return false;
-    // Qt ships a Taiwan catalog but no Hong Kong or Macao catalog.
+    // Qt ships a zh-TW catalog but no zh-HK or zh-MO catalog.
     const QLocale canonical(fallback);
     return canonical != locale && load(canonical);
 }

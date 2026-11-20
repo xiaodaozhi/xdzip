@@ -2,7 +2,7 @@
 
 # 操作と文言の補足仕様
 
-[English](../../ux/interaction-spec.md) | [简体中文](../../zh-CN/ux/interaction-spec.md) | [繁體中文（台灣）](../../zh-TW/ux/interaction-spec.md) | 日本語 | [한국어](../../ko-KR/ux/interaction-spec.md) | [Français](../../fr-FR/ux/interaction-spec.md) | [Deutsch](../../de-DE/ux/interaction-spec.md) | [Español](../../es-ES/ux/interaction-spec.md) | [Português (Brasil)](../../pt-BR/ux/interaction-spec.md) | [Русский](../../ru-RU/ux/interaction-spec.md)
+[English](../../ux/interaction-spec.md) | [简体中文](../../zh-CN/ux/interaction-spec.md) | [繁體中文](../../zh-TW/ux/interaction-spec.md) | 日本語 | [한국어](../../ko-KR/ux/interaction-spec.md) | [Français](../../fr-FR/ux/interaction-spec.md) | [Deutsch](../../de-DE/ux/interaction-spec.md) | [Español](../../es-ES/ux/interaction-spec.md) | [Português (Brasil)](../../pt-BR/ux/interaction-spec.md) | [Русский](../../ru-RU/ux/interaction-spec.md)
 
 メインウィンドウと展開確認のビジュアル基準に加え、作成、名前の競合、タスク、結果、設定、プラットフォーム別の比較は[操作状態の仕様](hifi-state-spec.md)にあります。ようこそ画面と読み込み時の進行状況は[ようこそ画面の仕様](welcome-opening.md)を参照してください。現行の原稿とレイアウトは[ウィンドウ登録表](../../../specs/visual/window-registry.json)に従います。実装済みの範囲とネイティブ表示の検証結果は、対応する技術・操作仕様に記載します。
 

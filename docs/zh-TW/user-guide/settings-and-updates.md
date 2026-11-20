@@ -2,7 +2,7 @@
 
 # 設定與更新
 
-[English](../../user-guide/settings-and-updates.md) | [简体中文](../../zh-CN/user-guide/settings-and-updates.md) | 繁體中文（台灣） | [日本語](../../ja-JP/user-guide/settings-and-updates.md) | [한국어](../../ko-KR/user-guide/settings-and-updates.md) | [Français](../../fr-FR/user-guide/settings-and-updates.md) | [Deutsch](../../de-DE/user-guide/settings-and-updates.md) | [Español](../../es-ES/user-guide/settings-and-updates.md) | [Português (Brasil)](../../pt-BR/user-guide/settings-and-updates.md) | [Русский](../../ru-RU/user-guide/settings-and-updates.md)
+[English](../../user-guide/settings-and-updates.md) | [简体中文](../../zh-CN/user-guide/settings-and-updates.md) | 繁體中文 | [日本語](../../ja-JP/user-guide/settings-and-updates.md) | [한국어](../../ko-KR/user-guide/settings-and-updates.md) | [Français](../../fr-FR/user-guide/settings-and-updates.md) | [Deutsch](../../de-DE/user-guide/settings-and-updates.md) | [Español](../../es-ES/user-guide/settings-and-updates.md) | [Português (Brasil)](../../pt-BR/user-guide/settings-and-updates.md) | [Русский](../../ru-RU/user-guide/settings-and-updates.md)
 
 <a name="xdzip-调整工作区"></a>
 

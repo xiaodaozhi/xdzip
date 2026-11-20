@@ -3,7 +3,7 @@
 
 # 格式配接器與擴充功能試驗
 
-[English](../../design/codec-extension-sdk.md) | [简体中文](../../zh-CN/design/codec-extension-sdk.md) | 繁體中文（台灣） | [日本語](../../ja-JP/design/codec-extension-sdk.md) | [한국어](../../ko-KR/design/codec-extension-sdk.md) | [Français](../../fr-FR/design/codec-extension-sdk.md) | [Deutsch](../../de-DE/design/codec-extension-sdk.md) | [Español](../../es-ES/design/codec-extension-sdk.md) | [Português (Brasil)](../../pt-BR/design/codec-extension-sdk.md) | [Русский](../../ru-RU/design/codec-extension-sdk.md)
+[English](../../design/codec-extension-sdk.md) | [简体中文](../../zh-CN/design/codec-extension-sdk.md) | 繁體中文 | [日本語](../../ja-JP/design/codec-extension-sdk.md) | [한국어](../../ko-KR/design/codec-extension-sdk.md) | [Français](../../fr-FR/design/codec-extension-sdk.md) | [Deutsch](../../de-DE/design/codec-extension-sdk.md) | [Español](../../es-ES/design/codec-extension-sdk.md) | [Português (Brasil)](../../pt-BR/design/codec-extension-sdk.md) | [Русский](../../ru-RU/design/codec-extension-sdk.md)
 
 <a name="xdzip-三条执行路径"></a>
 

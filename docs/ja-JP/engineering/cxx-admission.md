@@ -2,7 +2,7 @@
 
 # cxx ブリッジを採用した理由
 
-[English](../../engineering/cxx-admission.md) | [简体中文](../../zh-CN/engineering/cxx-admission.md) | [繁體中文（台灣）](../../zh-TW/engineering/cxx-admission.md) | 日本語 | [한국어](../../ko-KR/engineering/cxx-admission.md) | [Français](../../fr-FR/engineering/cxx-admission.md) | [Deutsch](../../de-DE/engineering/cxx-admission.md) | [Español](../../es-ES/engineering/cxx-admission.md) | [Português (Brasil)](../../pt-BR/engineering/cxx-admission.md) | [Русский](../../ru-RU/engineering/cxx-admission.md)
+[English](../../engineering/cxx-admission.md) | [简体中文](../../zh-CN/engineering/cxx-admission.md) | [繁體中文](../../zh-TW/engineering/cxx-admission.md) | 日本語 | [한국어](../../ko-KR/engineering/cxx-admission.md) | [Français](../../fr-FR/engineering/cxx-admission.md) | [Deutsch](../../de-DE/engineering/cxx-admission.md) | [Español](../../es-ES/engineering/cxx-admission.md) | [Português (Brasil)](../../pt-BR/engineering/cxx-admission.md) | [Русский](../../ru-RU/engineering/cxx-admission.md)
 
 Qt と Rust は `cxx` が生成する型付きブリッジで所有権を扱います。Qt オブジェクトは C++ が、ドメインとランタイムのロジックは Rust が保持します。[Cargo.lock](../../../Cargo.lock) と[ツールチェーン方針](toolchain.md)に従い、`cxx` と `cxx-build` のバージョンは完全に一致させます。cxx はサードパーティーの形式拡張向けの安定 ABI ではありません。手書きの C ABI で依存は減らせますが、文字列、自由関数、所有権の不変条件の保守が増えます。
 

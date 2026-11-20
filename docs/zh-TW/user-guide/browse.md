@@ -2,7 +2,7 @@
 
 # 瀏覽、選擇與預覽檔案
 
-[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | 繁體中文（台灣） | [日本語](../../ja-JP/user-guide/browse.md) | [한국어](../../ko-KR/user-guide/browse.md) | [Français](../../fr-FR/user-guide/browse.md) | [Deutsch](../../de-DE/user-guide/browse.md) | [Español](../../es-ES/user-guide/browse.md) | [Português (Brasil)](../../pt-BR/user-guide/browse.md) | [Русский](../../ru-RU/user-guide/browse.md)
+[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | 繁體中文 | [日本語](../../ja-JP/user-guide/browse.md) | [한국어](../../ko-KR/user-guide/browse.md) | [Français](../../fr-FR/user-guide/browse.md) | [Deutsch](../../de-DE/user-guide/browse.md) | [Español](../../es-ES/user-guide/browse.md) | [Português (Brasil)](../../pt-BR/user-guide/browse.md) | [Русский](../../ru-RU/user-guide/browse.md)
 
 1. 開啟壓縮檔。在目錄樹中選擇資料夾，或雙擊列表中的資料夾進入。用麵包屑路徑返回上一級。
 2. 輸入檔名的一部分並按回車。搜尋範圍是目前目錄及其後代。可以切換列表或網格檢視並選擇排序方式，升序和降序都將目錄排在檔案之前。

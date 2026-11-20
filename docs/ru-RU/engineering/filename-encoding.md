@@ -2,7 +2,7 @@
 
 # Контракт адаптивной кодировки имен файлов
 
-[English](../../engineering/filename-encoding.md) | [简体中文](../../zh-CN/engineering/filename-encoding.md) | [繁體中文（台灣）](../../zh-TW/engineering/filename-encoding.md) | [日本語](../../ja-JP/engineering/filename-encoding.md) | [한국어](../../ko-KR/engineering/filename-encoding.md) | [Français](../../fr-FR/engineering/filename-encoding.md) | [Deutsch](../../de-DE/engineering/filename-encoding.md) | [Español](../../es-ES/engineering/filename-encoding.md) | [Português (Brasil)](../../pt-BR/engineering/filename-encoding.md) | Русский
+[English](../../engineering/filename-encoding.md) | [简体中文](../../zh-CN/engineering/filename-encoding.md) | [繁體中文](../../zh-TW/engineering/filename-encoding.md) | [日本語](../../ja-JP/engineering/filename-encoding.md) | [한국어](../../ko-KR/engineering/filename-encoding.md) | [Français](../../fr-FR/engineering/filename-encoding.md) | [Deutsch](../../de-DE/engineering/filename-encoding.md) | [Español](../../es-ES/engineering/filename-encoding.md) | [Português (Brasil)](../../pt-BR/engineering/filename-encoding.md) | Русский
 
 <a name="xdzip-resolution-and-identity"></a>
 

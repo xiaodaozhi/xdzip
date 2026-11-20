@@ -2,7 +2,7 @@
 
 # 開発環境の準備
 
-[English](../../engineering/development.md) | [简体中文](../../zh-CN/engineering/development.md) | [繁體中文（台灣）](../../zh-TW/engineering/development.md) | 日本語 | [한국어](../../ko-KR/engineering/development.md) | [Français](../../fr-FR/engineering/development.md) | [Deutsch](../../de-DE/engineering/development.md) | [Español](../../es-ES/engineering/development.md) | [Português (Brasil)](../../pt-BR/engineering/development.md) | [Русский](../../ru-RU/engineering/development.md)
+[English](../../engineering/development.md) | [简体中文](../../zh-CN/engineering/development.md) | [繁體中文](../../zh-TW/engineering/development.md) | 日本語 | [한국어](../../ko-KR/engineering/development.md) | [Français](../../fr-FR/engineering/development.md) | [Deutsch](../../de-DE/engineering/development.md) | [Español](../../es-ES/engineering/development.md) | [Português (Brasil)](../../pt-BR/engineering/development.md) | [Русский](../../ru-RU/engineering/development.md)
 
 変更に合うビルドと検証方法は[ビルドとコントリビュート](../contributing/README.md)を参照してください。[システム構成](../design/system-architecture.md)と[リポジトリー構成](repository-layout.md)は、Qt、Rust ランタイム、コーデックの境界を説明します。
 

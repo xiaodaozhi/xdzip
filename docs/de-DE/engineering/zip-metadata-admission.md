@@ -2,7 +2,7 @@
 
 # Zulassung der Abhängigkeit für ZIP-Metadaten
 
-[English](../../engineering/zip-metadata-admission.md) | [简体中文](../../zh-CN/engineering/zip-metadata-admission.md) | [繁體中文（台灣）](../../zh-TW/engineering/zip-metadata-admission.md) | [日本語](../../ja-JP/engineering/zip-metadata-admission.md) | [한국어](../../ko-KR/engineering/zip-metadata-admission.md) | [Français](../../fr-FR/engineering/zip-metadata-admission.md) | Deutsch | [Español](../../es-ES/engineering/zip-metadata-admission.md) | [Português (Brasil)](../../pt-BR/engineering/zip-metadata-admission.md) | [Русский](../../ru-RU/engineering/zip-metadata-admission.md)
+[English](../../engineering/zip-metadata-admission.md) | [简体中文](../../zh-CN/engineering/zip-metadata-admission.md) | [繁體中文](../../zh-TW/engineering/zip-metadata-admission.md) | [日本語](../../ja-JP/engineering/zip-metadata-admission.md) | [한국어](../../ko-KR/engineering/zip-metadata-admission.md) | [Français](../../fr-FR/engineering/zip-metadata-admission.md) | Deutsch | [Español](../../es-ES/engineering/zip-metadata-admission.md) | [Português (Brasil)](../../pt-BR/engineering/zip-metadata-admission.md) | [Русский](../../ru-RU/engineering/zip-metadata-admission.md)
 
 Diese Seite dokumentiert die Entscheidung vom 2026-10-11 für den ersten schreibgeschützten Verzeichnisscan. Sie genehmigt weder Entpacken noch Erstellung oder Ausführung fremder Erweiterungen. ZIP-Metadaten laufen inzwischen über die [eigenständige Rust-Datensatzschicht](independent-rust-codecs.md). rawzip dient nur als Referenz für Entwicklungstests.
 

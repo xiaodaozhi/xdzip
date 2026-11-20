@@ -2,7 +2,7 @@
 
 # Проектирование продукта и технический справочник
 
-[English](../../reference/README.md) | [简体中文](../../zh-CN/reference/README.md) | [繁體中文（台灣）](../../zh-TW/reference/README.md) | [日本語](../../ja-JP/reference/README.md) | [한국어](../../ko-KR/reference/README.md) | [Français](../../fr-FR/reference/README.md) | [Deutsch](../../de-DE/reference/README.md) | [Español](../../es-ES/reference/README.md) | [Português (Brasil)](../../pt-BR/reference/README.md) | Русский
+[English](../../reference/README.md) | [简体中文](../../zh-CN/reference/README.md) | [繁體中文](../../zh-TW/reference/README.md) | [日本語](../../ja-JP/reference/README.md) | [한국어](../../ko-KR/reference/README.md) | [Français](../../fr-FR/reference/README.md) | [Deutsch](../../de-DE/reference/README.md) | [Español](../../es-ES/reference/README.md) | [Português (Brasil)](../../pt-BR/reference/README.md) | Русский
 
 Пути выполнения настольного приложения и CLI описаны в [архитектуре системы](../design/system-architecture.md). В разделах ниже указаны контракты для отдельных функций. Поддерживаемые операции собраны в [таблице форматов](../../../README.ru-RU.md#xdzip-format-support). Порядок работы и подготовки среды см. в [руководстве пользователя](../user-guide/README.md), [примерах CLI](../integration/README.md) и [руководстве участника](../contributing/README.md).
 

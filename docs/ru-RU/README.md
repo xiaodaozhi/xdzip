@@ -1,6 +1,6 @@
 # Документация XDZip
 
-[English](../README.md) | [简体中文](../zh-CN/README.md) | [繁體中文（台灣）](../zh-TW/README.md) | [日本語](../ja-JP/README.md) | [한국어](../ko-KR/README.md) | [Français](../fr-FR/README.md) | [Deutsch](../de-DE/README.md) | [Español](../es-ES/README.md) | [Português (Brasil)](../pt-BR/README.md) | Русский
+[English](../README.md) | [简体中文](../zh-CN/README.md) | [繁體中文](../zh-TW/README.md) | [日本語](../ja-JP/README.md) | [한국어](../ko-KR/README.md) | [Français](../fr-FR/README.md) | [Deutsch](../de-DE/README.md) | [Español](../es-ES/README.md) | [Português (Brasil)](../pt-BR/README.md) | Русский
 
 Если вы пользуетесь XDZip впервые, начните с того, как [скачать и установить XDZip](user-guide/install.md), а затем [открыть архив и просмотреть его содержимое](user-guide/browse.md). В [таблице поддерживаемых форматов](../../README.ru-RU.md#xdzip-format-support) указано, какие форматы можно открывать, создавать и редактировать. Возможности установленной версии описаны в её [примечания к выпуску](https://github.com/xiaodaozhi/xdzip/releases).
 

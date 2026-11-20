@@ -2,7 +2,7 @@
 
 # Preparación del entorno de desarrollo
 
-[English](../../engineering/development.md) | [简体中文](../../zh-CN/engineering/development.md) | [繁體中文（台灣）](../../zh-TW/engineering/development.md) | [日本語](../../ja-JP/engineering/development.md) | [한국어](../../ko-KR/engineering/development.md) | [Français](../../fr-FR/engineering/development.md) | [Deutsch](../../de-DE/engineering/development.md) | Español | [Português (Brasil)](../../pt-BR/engineering/development.md) | [Русский](../../ru-RU/engineering/development.md)
+[English](../../engineering/development.md) | [简体中文](../../zh-CN/engineering/development.md) | [繁體中文](../../zh-TW/engineering/development.md) | [日本語](../../ja-JP/engineering/development.md) | [한국어](../../ko-KR/engineering/development.md) | [Français](../../fr-FR/engineering/development.md) | [Deutsch](../../de-DE/engineering/development.md) | Español | [Português (Brasil)](../../pt-BR/engineering/development.md) | [Русский](../../ru-RU/engineering/development.md)
 
 Usa [Compilar y contribuir](../contributing/README.md) para elegir la compilación y las comprobaciones adecuadas. La [arquitectura](../design/system-architecture.md) y la [estructura del repositorio](repository-layout.md) explican los límites de Qt, el entorno de ejecución en Rust y los códecs.
 

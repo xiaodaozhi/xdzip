@@ -2,7 +2,7 @@
 
 # Licencias de herramientas de desarrollo y entornos de ejecución de Windows
 
-[English](../../engineering/windows-licensing.md) | [简体中文](../../zh-CN/engineering/windows-licensing.md) | [繁體中文（台灣）](../../zh-TW/engineering/windows-licensing.md) | [日本語](../../ja-JP/engineering/windows-licensing.md) | [한국어](../../ko-KR/engineering/windows-licensing.md) | [Français](../../fr-FR/engineering/windows-licensing.md) | [Deutsch](../../de-DE/engineering/windows-licensing.md) | Español | [Português (Brasil)](../../pt-BR/engineering/windows-licensing.md) | [Русский](../../ru-RU/engineering/windows-licensing.md)
+[English](../../engineering/windows-licensing.md) | [简体中文](../../zh-CN/engineering/windows-licensing.md) | [繁體中文](../../zh-TW/engineering/windows-licensing.md) | [日本語](../../ja-JP/engineering/windows-licensing.md) | [한국어](../../ko-KR/engineering/windows-licensing.md) | [Français](../../fr-FR/engineering/windows-licensing.md) | [Deutsch](../../de-DE/engineering/windows-licensing.md) | Español | [Português (Brasil)](../../pt-BR/engineering/windows-licensing.md) | [Русский](../../ru-RU/engineering/windows-licensing.md)
 
 Esta página define las vías aplicables de compilación y redistribución en Windows y se utiliza junto con los [materiales nativos](native-runtime-materials.md), la [entrada de compilación para desarrolladores](developer-build.md) y el [contrato de instalación](installers-associations.md). Los entornos concretos, commits de verificación, hashes de materiales y conclusiones de aceptación se registran en incidencias y artefactos locales o CI; esta página no conserva prueba de licencia de una máquina.
 

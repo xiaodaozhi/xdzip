@@ -2,7 +2,7 @@
 
 # Planificación, progreso y cancelación de tareas
 
-[English](../../design/task-scheduling.md) | [简体中文](../../zh-CN/design/task-scheduling.md) | [繁體中文（台灣）](../../zh-TW/design/task-scheduling.md) | [日本語](../../ja-JP/design/task-scheduling.md) | [한국어](../../ko-KR/design/task-scheduling.md) | [Français](../../fr-FR/design/task-scheduling.md) | [Deutsch](../../de-DE/design/task-scheduling.md) | Español | [Português (Brasil)](../../pt-BR/design/task-scheduling.md) | [Русский](../../ru-RU/design/task-scheduling.md)
+[English](../../design/task-scheduling.md) | [简体中文](../../zh-CN/design/task-scheduling.md) | [繁體中文](../../zh-TW/design/task-scheduling.md) | [日本語](../../ja-JP/design/task-scheduling.md) | [한국어](../../ko-KR/design/task-scheduling.md) | [Français](../../fr-FR/design/task-scheduling.md) | [Deutsch](../../de-DE/design/task-scheduling.md) | Español | [Português (Brasil)](../../pt-BR/design/task-scheduling.md) | [Русский](../../ru-RU/design/task-scheduling.md)
 
 XDZip usa un hilo Rust de comandos y otro de tareas por conexión del entorno de ejecución. El hilo de comandos posee el archivo actual y prepara las entradas. El hilo de tareas ejecuta trabajos aceptados mientras el primero sigue atendiendo solicitudes de metadatos. La [arquitectura del sistema](system-architecture.md) explica dónde se ejecutan y el [puente Qt/Rust](qt-rust-bridge.md) cómo llegan los resultados al cliente.
 

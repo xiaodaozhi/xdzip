@@ -1,7 +1,7 @@
 <a name="xdzip-data-lifecycle-and-diagnostics"></a>
 # Ciclo de vida dos dados e diagnósticos
 
-[English](../../engineering/privacy.md) | [简体中文](../../zh-CN/engineering/privacy.md) | [繁體中文（台灣）](../../zh-TW/engineering/privacy.md) | [日本語](../../ja-JP/engineering/privacy.md) | [한국어](../../ko-KR/engineering/privacy.md) | [Français](../../fr-FR/engineering/privacy.md) | [Deutsch](../../de-DE/engineering/privacy.md) | [Español](../../es-ES/engineering/privacy.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/privacy.md)
+[English](../../engineering/privacy.md) | [简体中文](../../zh-CN/engineering/privacy.md) | [繁體中文](../../zh-TW/engineering/privacy.md) | [日本語](../../ja-JP/engineering/privacy.md) | [한국어](../../ko-KR/engineering/privacy.md) | [Français](../../fr-FR/engineering/privacy.md) | [Deutsch](../../de-DE/engineering/privacy.md) | [Español](../../es-ES/engineering/privacy.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/privacy.md)
 
 A [política de privacidade](../../../PRIVACY.md) explica os dados tratados pelo xdzip e as opções disponíveis. A tabela mostra onde os dados ficam e quando são liberados. Navegação, compactação e extração funcionam sem conexão. O xdzip não envia automaticamente telemetria nem conteúdo de arquivos compactados aos responsáveis pela manutenção.
 

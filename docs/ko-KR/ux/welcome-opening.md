@@ -2,7 +2,7 @@
 
 # 홈 화면 불러오기 표시와 압축 파일 만들기 완료
 
-[English](../../ux/welcome-opening.md) | [简体中文](../../zh-CN/ux/welcome-opening.md) | [繁體中文（台灣）](../../zh-TW/ux/welcome-opening.md) | [日本語](../../ja-JP/ux/welcome-opening.md) | 한국어 | [Français](../../fr-FR/ux/welcome-opening.md) | [Deutsch](../../de-DE/ux/welcome-opening.md) | [Español](../../es-ES/ux/welcome-opening.md) | [Português (Brasil)](../../pt-BR/ux/welcome-opening.md) | [Русский](../../ru-RU/ux/welcome-opening.md)
+[English](../../ux/welcome-opening.md) | [简体中文](../../zh-CN/ux/welcome-opening.md) | [繁體中文](../../zh-TW/ux/welcome-opening.md) | [日本語](../../ja-JP/ux/welcome-opening.md) | 한국어 | [Français](../../fr-FR/ux/welcome-opening.md) | [Deutsch](../../de-DE/ux/welcome-opening.md) | [Español](../../es-ES/ux/welcome-opening.md) | [Português (Brasil)](../../pt-BR/ux/welcome-opening.md) | [Русский](../../ru-RU/ux/welcome-opening.md)
 
 2026-10-16 개정. 매개변수는 [welcome-reference.json](../../../specs/visual/welcome-reference.json)을 따릅니다. 동적 상세 설계 진입점은 [홈 화면의 불러오기 상태](../../../design/hifi/sources/welcome.html?opening=1)입니다. 기본 창, 메뉴 및 홈 화면의 논리 단위와 제목 표시줄을 유지합니다.
 

@@ -2,7 +2,7 @@
 
 # ZIP 展開と出力に関する依存関係の採用
 
-[English](../../engineering/zip-extraction-admission.md) | [简体中文](../../zh-CN/engineering/zip-extraction-admission.md) | [繁體中文（台灣）](../../zh-TW/engineering/zip-extraction-admission.md) | 日本語 | [한국어](../../ko-KR/engineering/zip-extraction-admission.md) | [Français](../../fr-FR/engineering/zip-extraction-admission.md) | [Deutsch](../../de-DE/engineering/zip-extraction-admission.md) | [Español](../../es-ES/engineering/zip-extraction-admission.md) | [Português (Brasil)](../../pt-BR/engineering/zip-extraction-admission.md) | [Русский](../../ru-RU/engineering/zip-extraction-admission.md)
+[English](../../engineering/zip-extraction-admission.md) | [简体中文](../../zh-CN/engineering/zip-extraction-admission.md) | [繁體中文](../../zh-TW/engineering/zip-extraction-admission.md) | 日本語 | [한국어](../../ko-KR/engineering/zip-extraction-admission.md) | [Français](../../fr-FR/engineering/zip-extraction-admission.md) | [Deutsch](../../de-DE/engineering/zip-extraction-admission.md) | [Español](../../es-ES/engineering/zip-extraction-admission.md) | [Português (Brasil)](../../pt-BR/engineering/zip-extraction-admission.md) | [Русский](../../ru-RU/engineering/zip-extraction-admission.md)
 
 このページは、安全な展開とパスワード付き展開で共通する依存関係の境界を定めます。初回採用時の依存関係の出所、ライセンス、機能の抜粋は[固定された基礎資料](../../../specs/engineering/zip-extraction-dependencies.json)にあります。AES を含む現在の正確なバージョンと crates.io のチェックサムはルートの Cargo.lock に従います。有効な依存関係全体は `cargo tree --locked -e features` で確認してください。基礎資料の抜粋を現在の完全な依存関係一覧として扱わないでください。
 

@@ -1,6 +1,6 @@
 # 许可证决策与第三方材料
 
-[English](../../engineering/licensing.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/licensing.md) | [日本語](../../ja-JP/engineering/licensing.md) | [한국어](../../ko-KR/engineering/licensing.md) | [Français](../../fr-FR/engineering/licensing.md) | [Deutsch](../../de-DE/engineering/licensing.md) | [Español](../../es-ES/engineering/licensing.md) | [Português (Brasil)](../../pt-BR/engineering/licensing.md) | [Русский](../../ru-RU/engineering/licensing.md)
+[English](../../engineering/licensing.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/licensing.md) | [日本語](../../ja-JP/engineering/licensing.md) | [한국어](../../ko-KR/engineering/licensing.md) | [Français](../../fr-FR/engineering/licensing.md) | [Deutsch](../../de-DE/engineering/licensing.md) | [Español](../../es-ES/engineering/licensing.md) | [Português (Brasil)](../../pt-BR/engineering/licensing.md) | [Русский](../../ru-RU/engineering/licensing.md)
 
 状态：已采用。项目于 2026-10-11 确立 **Apache-2.0** 许可证，适用于项目原创代码、文档及其他原创内容，另有声明的材料除外。此前实验文档中的 MIT OR Apache-2.0 不适用于本仓库的许可选择。
 

@@ -2,7 +2,7 @@
 
 # Контракт контейнера DEB
 
-[English](../../engineering/deb-containers.md) | [简体中文](../../zh-CN/engineering/deb-containers.md) | [繁體中文（台灣）](../../zh-TW/engineering/deb-containers.md) | [日本語](../../ja-JP/engineering/deb-containers.md) | [한국어](../../ko-KR/engineering/deb-containers.md) | [Français](../../fr-FR/engineering/deb-containers.md) | [Deutsch](../../de-DE/engineering/deb-containers.md) | [Español](../../es-ES/engineering/deb-containers.md) | [Português (Brasil)](../../pt-BR/engineering/deb-containers.md) | Русский
+[English](../../engineering/deb-containers.md) | [简体中文](../../zh-CN/engineering/deb-containers.md) | [繁體中文](../../zh-TW/engineering/deb-containers.md) | [日本語](../../ja-JP/engineering/deb-containers.md) | [한국어](../../ko-KR/engineering/deb-containers.md) | [Français](../../fr-FR/engineering/deb-containers.md) | [Deutsch](../../de-DE/engineering/deb-containers.md) | [Español](../../es-ES/engineering/deb-containers.md) | [Português (Brasil)](../../pt-BR/engineering/deb-containers.md) | Русский
 
 Оболочка пакета соответствует Debian [deb(5)](https://manpages.debian.org/unstable/dpkg-dev/deb.5.en.html), общие поля ar соответствуют [ar(5)](https://man.netbsd.org/ar.5). Допускается только обычная структура `!<arch>\n`. Каждый заголовок длиной 60 байт содержит ограниченные поля ASCII для имени, времени, владельца, режима и размера, а также обязательный завершающий маркер. Проверяются десятичные поля, восьмеричный режим, точные диапазоны данных, заполнение переводом строки для членов нечётной длины и физический конец файла. Тонкие архивы, исторические форматы и расширения длинных имён не поддерживаются и не дают доступа к внешним файлам.
 

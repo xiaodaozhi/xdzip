@@ -1,7 +1,7 @@
 <a name="xdzip-data-lifecycle-and-diagnostics"></a>
 # Lebenszyklus von Daten und Diagnosen
 
-[English](../../engineering/privacy.md) | [简体中文](../../zh-CN/engineering/privacy.md) | [繁體中文（台灣）](../../zh-TW/engineering/privacy.md) | [日本語](../../ja-JP/engineering/privacy.md) | [한국어](../../ko-KR/engineering/privacy.md) | [Français](../../fr-FR/engineering/privacy.md) | Deutsch | [Español](../../es-ES/engineering/privacy.md) | [Português (Brasil)](../../pt-BR/engineering/privacy.md) | [Русский](../../ru-RU/engineering/privacy.md)
+[English](../../engineering/privacy.md) | [简体中文](../../zh-CN/engineering/privacy.md) | [繁體中文](../../zh-TW/engineering/privacy.md) | [日本語](../../ja-JP/engineering/privacy.md) | [한국어](../../ko-KR/engineering/privacy.md) | [Français](../../fr-FR/engineering/privacy.md) | Deutsch | [Español](../../es-ES/engineering/privacy.md) | [Português (Brasil)](../../pt-BR/engineering/privacy.md) | [Русский](../../ru-RU/engineering/privacy.md)
 
 Die [Datenschutzerklärung](../../../PRIVACY.md) beschreibt, welche Daten xdzip verarbeitet und welche Optionen Ihnen zur Verfügung stehen. Die Tabelle zeigt, wo Daten gespeichert werden und wann sie freigegeben werden. Durchsuchen, Komprimieren und Entpacken funktionieren offline. xdzip sendet keine Telemetrie oder Archivinhalte automatisch an die Projektbetreuer.
 

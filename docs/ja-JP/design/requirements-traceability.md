@@ -2,7 +2,7 @@
 
 # 要件と検証のトレーサビリティ
 
-[English](../../design/requirements-traceability.md) | [简体中文](../../zh-CN/design/requirements-traceability.md) | [繁體中文（台灣）](../../zh-TW/design/requirements-traceability.md) | 日本語 | [한국어](../../ko-KR/design/requirements-traceability.md) | [Français](../../fr-FR/design/requirements-traceability.md) | [Deutsch](../../de-DE/design/requirements-traceability.md) | [Español](../../es-ES/design/requirements-traceability.md) | [Português (Brasil)](../../pt-BR/design/requirements-traceability.md) | [Русский](../../ru-RU/design/requirements-traceability.md)
+[English](../../design/requirements-traceability.md) | [简体中文](../../zh-CN/design/requirements-traceability.md) | [繁體中文](../../zh-TW/design/requirements-traceability.md) | 日本語 | [한국어](../../ko-KR/design/requirements-traceability.md) | [Français](../../fr-FR/design/requirements-traceability.md) | [Deutsch](../../de-DE/design/requirements-traceability.md) | [Español](../../es-ES/design/requirements-traceability.md) | [Português (Brasil)](../../pt-BR/design/requirements-traceability.md) | [Русский](../../ru-RU/design/requirements-traceability.md)
 
 [製品要件](product-requirements.md)は要件 ID と現在の範囲を定義します。各行は動作を変更した際の検証内容を示します。実行結果、対象プラットフォーム、制限は該当する変更記録に残します。[受け入れケース](../../../developers/qa/acceptance.md)は検証の入口を示します。
 

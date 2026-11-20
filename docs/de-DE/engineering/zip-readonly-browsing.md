@@ -2,7 +2,7 @@
 
 # Vertrag für die schreibgeschützte ZIP-Ansicht
 
-[English](../../engineering/zip-readonly-browsing.md) | [简体中文](../../zh-CN/engineering/zip-readonly-browsing.md) | [繁體中文（台灣）](../../zh-TW/engineering/zip-readonly-browsing.md) | [日本語](../../ja-JP/engineering/zip-readonly-browsing.md) | [한국어](../../ko-KR/engineering/zip-readonly-browsing.md) | [Français](../../fr-FR/engineering/zip-readonly-browsing.md) | Deutsch | [Español](../../es-ES/engineering/zip-readonly-browsing.md) | [Português (Brasil)](../../pt-BR/engineering/zip-readonly-browsing.md) | [Русский](../../ru-RU/engineering/zip-readonly-browsing.md)
+[English](../../engineering/zip-readonly-browsing.md) | [简体中文](../../zh-CN/engineering/zip-readonly-browsing.md) | [繁體中文](../../zh-TW/engineering/zip-readonly-browsing.md) | [日本語](../../ja-JP/engineering/zip-readonly-browsing.md) | [한국어](../../ko-KR/engineering/zip-readonly-browsing.md) | [Français](../../fr-FR/engineering/zip-readonly-browsing.md) | Deutsch | [Español](../../es-ES/engineering/zip-readonly-browsing.md) | [Português (Brasil)](../../pt-BR/engineering/zip-readonly-browsing.md) | [Русский](../../ru-RU/engineering/zip-readonly-browsing.md)
 
 Der Vertrag definiert direkte Einträge im Stammverzeichnis, die Suche in Unterordnern, eine stabile physische Identität und die Sortierung mit Ordnern zuerst. Die ZIP-Ansicht liest nur Metadaten. Sie dekodiert keine Eintragsinhalte, prüft deren CRC nicht und entpackt keine Dateien. Große gewöhnliche ZIP-Archive können einen privaten [Metadatenindex auf dem Datenträger](large-index.md) verwenden.
 

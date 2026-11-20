@@ -1,6 +1,6 @@
 # Usar XDZip en scripts
 
-[English](../../integration/README.md) | [简体中文](../../zh-CN/integration/README.md) | [繁體中文（台灣）](../../zh-TW/integration/README.md) | [日本語](../../ja-JP/integration/README.md) | [한국어](../../ko-KR/integration/README.md) | [Français](../../fr-FR/integration/README.md) | [Deutsch](../../de-DE/integration/README.md) | Español | [Português (Brasil)](../../pt-BR/integration/README.md) | [Русский](../../ru-RU/integration/README.md)
+[English](../../integration/README.md) | [简体中文](../../zh-CN/integration/README.md) | [繁體中文](../../zh-TW/integration/README.md) | [日本語](../../ja-JP/integration/README.md) | [한국어](../../ko-KR/integration/README.md) | [Français](../../fr-FR/integration/README.md) | [Deutsch](../../de-DE/integration/README.md) | Español | [Português (Brasil)](../../pt-BR/integration/README.md) | [Русский](../../ru-RU/integration/README.md)
 
 La CLI autónoma funciona sin Qt ni sesión de escritorio. Elige un paquete `xdzip-cli-` para tu sistema entre las [versiones de GitHub](https://github.com/xiaodaozhi/xdzip/releases). Descomprime todo el paquete y deja el proceso auxiliar al lado del ejecutable. Desde el directorio extraído, ejecuta `./bin/xdzip --help` en macOS o Linux, o `.\bin\xdzip.exe --help` en PowerShell.
 

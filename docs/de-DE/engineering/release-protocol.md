@@ -2,7 +2,7 @@
 
 # GitHub-Release-Protokoll v1
 
-[English](../../engineering/release-protocol.md) | [简体中文](../../zh-CN/engineering/release-protocol.md) | [繁體中文（台灣）](../../zh-TW/engineering/release-protocol.md) | [日本語](../../ja-JP/engineering/release-protocol.md) | [한국어](../../ko-KR/engineering/release-protocol.md) | [Français](../../fr-FR/engineering/release-protocol.md) | Deutsch | [Español](../../es-ES/engineering/release-protocol.md) | [Português (Brasil)](../../pt-BR/engineering/release-protocol.md) | [Русский](../../ru-RU/engineering/release-protocol.md)
+[English](../../engineering/release-protocol.md) | [简体中文](../../zh-CN/engineering/release-protocol.md) | [繁體中文](../../zh-TW/engineering/release-protocol.md) | [日本語](../../ja-JP/engineering/release-protocol.md) | [한국어](../../ko-KR/engineering/release-protocol.md) | [Français](../../fr-FR/engineering/release-protocol.md) | Deutsch | [Español](../../es-ES/engineering/release-protocol.md) | [Português (Brasil)](../../pt-BR/engineering/release-protocol.md) | [Русский](../../ru-RU/engineering/release-protocol.md)
 
 Dieser Ablauf stellt GitHub-Downloads bereit. Der [Microsoft-Store-MSIX-Ablauf](developer-build.md#microsoft-store-msix) paketiert denselben versionierten Quellstand für Microsoft Partner Center, das die Store-Zertifizierung und Veröffentlichung übernimmt.
 

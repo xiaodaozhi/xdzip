@@ -1,6 +1,6 @@
 # XDZip 产品要求
 
-[English](../../design/product-requirements.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/product-requirements.md) | [日本語](../../ja-JP/design/product-requirements.md) | [한국어](../../ko-KR/design/product-requirements.md) | [Français](../../fr-FR/design/product-requirements.md) | [Deutsch](../../de-DE/design/product-requirements.md) | [Español](../../es-ES/design/product-requirements.md) | [Português (Brasil)](../../pt-BR/design/product-requirements.md) | [Русский](../../ru-RU/design/product-requirements.md)
+[English](../../design/product-requirements.md) | 简体中文 | [繁體中文](../../zh-TW/design/product-requirements.md) | [日本語](../../ja-JP/design/product-requirements.md) | [한국어](../../ko-KR/design/product-requirements.md) | [Français](../../fr-FR/design/product-requirements.md) | [Deutsch](../../de-DE/design/product-requirements.md) | [Español](../../es-ES/design/product-requirements.md) | [Português (Brasil)](../../pt-BR/design/product-requirements.md) | [Русский](../../ru-RU/design/product-requirements.md)
 
 XDZip 支持像浏览文件夹一样查看归档、处理选定的内容，并在格式允许时创建或修改归档。桌面与[独立 CLI](../engineering/command-line.md)共用归档运行时。[项目首页](../../../README.zh-CN.md)说明当前能力与分发方式。下列要求说明需要保留和验证的行为。
 

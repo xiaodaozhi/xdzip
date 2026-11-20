@@ -1,7 +1,7 @@
 <a name="xdzip-iso9660-and-joliet-creation"></a>
 # Crear imágenes ISO9660 y Joliet
 
-[English](../../engineering/iso-creation.md) | [简体中文](../../zh-CN/engineering/iso-creation.md) | [繁體中文（台灣）](../../zh-TW/engineering/iso-creation.md) | [日本語](../../ja-JP/engineering/iso-creation.md) | [한국어](../../ko-KR/engineering/iso-creation.md) | [Français](../../fr-FR/engineering/iso-creation.md) | [Deutsch](../../de-DE/engineering/iso-creation.md) | Español | [Português (Brasil)](../../pt-BR/engineering/iso-creation.md) | [Русский](../../ru-RU/engineering/iso-creation.md)
+[English](../../engineering/iso-creation.md) | [简体中文](../../zh-CN/engineering/iso-creation.md) | [繁體中文](../../zh-TW/engineering/iso-creation.md) | [日本語](../../ja-JP/engineering/iso-creation.md) | [한국어](../../ko-KR/engineering/iso-creation.md) | [Français](../../fr-FR/engineering/iso-creation.md) | [Deutsch](../../de-DE/engineering/iso-creation.md) | Español | [Português (Brasil)](../../pt-BR/engineering/iso-creation.md) | [Русский](../../ru-RU/engineering/iso-creation.md)
 
 El primer módulo de escritura crea una única imagen de datos no arrancable con sectores de 2048 bytes, un espacio de nombres principal ISO9660 y otro complementario Joliet. Sigue la [quinta edición de ECMA-119](https://ecma-international.org/wp-content/uploads/ECMA-119_5th_edition_december_2024.pdf), incluida la especificación Joliet reproducida en el anexo C. No enlaza ni ejecuta motores externos de creación de imágenes.
 

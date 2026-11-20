@@ -1,6 +1,6 @@
 # Build and contribute to XDZip
 
-English | [简体中文](../zh-CN/contributing/README.md) | [繁體中文（台灣）](../zh-TW/contributing/README.md) | [日本語](../ja-JP/contributing/README.md) | [한국어](../ko-KR/contributing/README.md) | [Français](../fr-FR/contributing/README.md) | [Deutsch](../de-DE/contributing/README.md) | [Español](../es-ES/contributing/README.md) | [Português (Brasil)](../pt-BR/contributing/README.md) | [Русский](../ru-RU/contributing/README.md)
+English | [简体中文](../zh-CN/contributing/README.md) | [繁體中文](../zh-TW/contributing/README.md) | [日本語](../ja-JP/contributing/README.md) | [한국어](../ko-KR/contributing/README.md) | [Français](../fr-FR/contributing/README.md) | [Deutsch](../de-DE/contributing/README.md) | [Español](../es-ES/contributing/README.md) | [Português (Brasil)](../pt-BR/contributing/README.md) | [Русский](../ru-RU/contributing/README.md)
 
 Read the [contribution policy](../../CONTRIBUTING.md) and find or open an issue for the change. Describe the expected behavior, affected platforms and a small reproduction you can verify. Use project-owned or redistributable fixtures. The [repository layout](../engineering/repository-layout.md) shows where each part of the implementation lives.
 

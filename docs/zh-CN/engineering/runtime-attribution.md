@@ -1,6 +1,6 @@
 # 实际组件归属与许可材料
 
-[English](../../engineering/runtime-attribution.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/runtime-attribution.md) | [日本語](../../ja-JP/engineering/runtime-attribution.md) | [한국어](../../ko-KR/engineering/runtime-attribution.md) | [Français](../../fr-FR/engineering/runtime-attribution.md) | [Deutsch](../../de-DE/engineering/runtime-attribution.md) | [Español](../../es-ES/engineering/runtime-attribution.md) | [Português (Brasil)](../../pt-BR/engineering/runtime-attribution.md) | [Русский](../../ru-RU/engineering/runtime-attribution.md)
+[English](../../engineering/runtime-attribution.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/runtime-attribution.md) | [日本語](../../ja-JP/engineering/runtime-attribution.md) | [한국어](../../ko-KR/engineering/runtime-attribution.md) | [Français](../../fr-FR/engineering/runtime-attribution.md) | [Deutsch](../../de-DE/engineering/runtime-attribution.md) | [Español](../../es-ES/engineering/runtime-attribution.md) | [Português (Brasil)](../../pt-BR/engineering/runtime-attribution.md) | [Русский](../../ru-RU/engineering/runtime-attribution.md)
 
 本流程补充文件级 SBOM，将实际 Qt 库／插件与 SDK 的 SPDX 声明关联。产物是可复核证据，不是自动许可选择或合规批准。正式发行完整性继续为 incomplete。
 

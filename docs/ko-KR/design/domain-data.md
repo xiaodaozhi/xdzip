@@ -2,7 +2,7 @@
 
 # 도메인 모델과 압축 파일 데이터
 
-[English](../../design/domain-data.md) | [简体中文](../../zh-CN/design/domain-data.md) | [繁體中文（台灣）](../../zh-TW/design/domain-data.md) | [日本語](../../ja-JP/design/domain-data.md) | 한국어 | [Français](../../fr-FR/design/domain-data.md) | [Deutsch](../../de-DE/design/domain-data.md) | [Español](../../es-ES/design/domain-data.md) | [Português (Brasil)](../../pt-BR/design/domain-data.md) | [Русский](../../ru-RU/design/domain-data.md)
+[English](../../design/domain-data.md) | [简体中文](../../zh-CN/design/domain-data.md) | [繁體中文](../../zh-TW/design/domain-data.md) | [日本語](../../ja-JP/design/domain-data.md) | 한국어 | [Français](../../fr-FR/design/domain-data.md) | [Deutsch](../../de-DE/design/domain-data.md) | [Español](../../es-ES/design/domain-data.md) | [Português (Brasil)](../../pt-BR/design/domain-data.md) | [Русский](../../ru-RU/design/domain-data.md)
 
 런타임은 압축 파일 세션, 완료된 인덱스와 해당 세션의 최신 쿼리를 소유합니다. Qt는 결과의 뷰를 유지하고 CLI는 별도의 카탈로그 명령으로 물리 레코드를 읽을 수 있습니다. 둘 다 같은 Rust 서비스에 작업을 제출합니다. [시스템 아키텍처](system-architecture.md), [Qt/Rust 브리지](qt-rust-bridge.md)
 

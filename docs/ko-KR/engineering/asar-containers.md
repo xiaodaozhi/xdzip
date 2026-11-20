@@ -2,7 +2,7 @@
 
 # ASAR 컨테이너 계약
 
-[English](../../engineering/asar-containers.md) | [简体中文](../../zh-CN/engineering/asar-containers.md) | [繁體中文（台灣）](../../zh-TW/engineering/asar-containers.md) | [日本語](../../ja-JP/engineering/asar-containers.md) | 한국어 | [Français](../../fr-FR/engineering/asar-containers.md) | [Deutsch](../../de-DE/engineering/asar-containers.md) | [Español](../../es-ES/engineering/asar-containers.md) | [Português (Brasil)](../../pt-BR/engineering/asar-containers.md) | [Русский](../../ru-RU/engineering/asar-containers.md)
+[English](../../engineering/asar-containers.md) | [简体中文](../../zh-CN/engineering/asar-containers.md) | [繁體中文](../../zh-TW/engineering/asar-containers.md) | [日本語](../../ja-JP/engineering/asar-containers.md) | 한국어 | [Français](../../fr-FR/engineering/asar-containers.md) | [Deutsch](../../de-DE/engineering/asar-containers.md) | [Español](../../es-ES/engineering/asar-containers.md) | [Português (Brasil)](../../pt-BR/engineering/asar-containers.md) | [Русский](../../ru-RU/engineering/asar-containers.md)
 
 이 형식은 Electron의 [ASAR 설명](https://github.com/electron/asar#format)과 Chromium의 [Pickle 계약](https://chromium.googlesource.com/chromium/src/+/main/base/pickle.h)을 따릅니다. 크기를 담은 여덟 바이트 Pickle 뒤에 JSON 디렉터리 트리를 담은 Pickle 문자열이 옵니다. 파일 오프셋은 데이터 영역 기준의 십진 문자열입니다. 여러 파일이 같은 저장 바이트를 공유하더라도 각 트리 항목은 자체 식별 정보를 유지합니다. 선택적 무결성 선언에는 전체 파일 및 각 고정 크기 블록의 SHA-256이 들어갑니다. 이 선언은 손상을 검사하며 패키지나 앱을 인증하지 않습니다.
 

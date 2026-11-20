@@ -2,7 +2,7 @@
 
 # v0.1 互動原型與功能對映
 
-[English](../../ux/prototype-spec.md) | [简体中文](../../zh-CN/ux/prototype-spec.md) | 繁體中文（台灣） | [日本語](../../ja-JP/ux/prototype-spec.md) | [한국어](../../ko-KR/ux/prototype-spec.md) | [Français](../../fr-FR/ux/prototype-spec.md) | [Deutsch](../../de-DE/ux/prototype-spec.md) | [Español](../../es-ES/ux/prototype-spec.md) | [Português (Brasil)](../../pt-BR/ux/prototype-spec.md) | [Русский](../../ru-RU/ux/prototype-spec.md)
+[English](../../ux/prototype-spec.md) | [简体中文](../../zh-CN/ux/prototype-spec.md) | 繁體中文 | [日本語](../../ja-JP/ux/prototype-spec.md) | [한국어](../../ko-KR/ux/prototype-spec.md) | [Français](../../fr-FR/ux/prototype-spec.md) | [Deutsch](../../de-DE/ux/prototype-spec.md) | [Español](../../es-ES/ux/prototype-spec.md) | [Português (Brasil)](../../pt-BR/ux/prototype-spec.md) | [Русский](../../ru-RU/ux/prototype-spec.md)
 
 狀態：可互動設計驗證稿。原始檔在 [design/html](../../../design/html/README.md)，入口為 [index.html](../../../design/html/index.html)。Figma 工作稿保留為歷史探索；目前功能與狀態細化在倉庫內繼續。
 

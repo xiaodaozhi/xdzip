@@ -2,7 +2,7 @@
 
 # Terminologia da interface em chinês simplificado
 
-[English](../../ux/chinese-terminology.md) | [简体中文](../../zh-CN/ux/chinese-terminology.md) | [繁體中文（台灣）](../../zh-TW/ux/chinese-terminology.md) | [日本語](../../ja-JP/ux/chinese-terminology.md) | [한국어](../../ko-KR/ux/chinese-terminology.md) | [Français](../../fr-FR/ux/chinese-terminology.md) | [Deutsch](../../de-DE/ux/chinese-terminology.md) | [Español](../../es-ES/ux/chinese-terminology.md) | Português (Brasil) | [Русский](../../ru-RU/ux/chinese-terminology.md)
+[English](../../ux/chinese-terminology.md) | [简体中文](../../zh-CN/ux/chinese-terminology.md) | [繁體中文](../../zh-TW/ux/chinese-terminology.md) | [日本語](../../ja-JP/ux/chinese-terminology.md) | [한국어](../../ko-KR/ux/chinese-terminology.md) | [Français](../../fr-FR/ux/chinese-terminology.md) | [Deutsch](../../de-DE/ux/chinese-terminology.md) | [Español](../../es-ES/ux/chinese-terminology.md) | Português (Brasil) | [Русский](../../ru-RU/ux/chinese-terminology.md)
 
 O texto apresentado em chinês simplificado segue a [configuração de terminologia](../../../specs/ux/chinese-terminology.json). Os textos estáticos do Qt preservam seus IDs estáveis em resources/i18n/zh-CN.json. O HTML, os projetos atuais de alta fidelidade e a documentação de usuário usam a tabela abaixo. Documentos de engenharia e de formatos podem usar termos técnicos. Preservam-se as dimensões dos componentes, a densidade de 0.8 na janela principal e 1 no menu, o DPR e os parâmetros de escala.
 

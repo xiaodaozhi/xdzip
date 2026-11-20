@@ -1,6 +1,6 @@
 # UU、UUE 与 XXE 文本封装
 
-[English](../../engineering/text-envelopes.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/text-envelopes.md) | [日本語](../../ja-JP/engineering/text-envelopes.md) | [한국어](../../ko-KR/engineering/text-envelopes.md) | [Français](../../fr-FR/engineering/text-envelopes.md) | [Deutsch](../../de-DE/engineering/text-envelopes.md) | [Español](../../es-ES/engineering/text-envelopes.md) | [Português (Brasil)](../../pt-BR/engineering/text-envelopes.md) | [Русский](../../ru-RU/engineering/text-envelopes.md)
+[English](../../engineering/text-envelopes.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/text-envelopes.md) | [日本語](../../ja-JP/engineering/text-envelopes.md) | [한국어](../../ko-KR/engineering/text-envelopes.md) | [Français](../../fr-FR/engineering/text-envelopes.md) | [Deutsch](../../de-DE/engineering/text-envelopes.md) | [Español](../../es-ES/engineering/text-envelopes.md) | [Português (Brasil)](../../pt-BR/engineering/text-envelopes.md) | [Русский](../../ru-RU/engineering/text-envelopes.md)
 
 传统 UU 字段与位序依据 [NetBSD uuencode(5)](https://man.netbsd.org/uuencode.5)。Base64 模式参见 [uuencode(1)](https://man.netbsd.org/uuencode.1) 与 [GNU Sharutils](https://www.gnu.org/software/sharutils/manual/sharutils.html)。XX 字母表为 `+-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`，已与 [UUDeview](https://github.com/hannob/uudeview) 的公共编码器核对。Rust 读取器依据这些字段与位规则独立编写，参考 C 实现仅为测试工具，不成为运行时依赖。
 

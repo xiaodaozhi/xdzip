@@ -1,6 +1,6 @@
 # Navegar, selecionar e visualizar arquivos
 
-[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | [繁體中文（台灣）](../../zh-TW/user-guide/browse.md) | [日本語](../../ja-JP/user-guide/browse.md) | [한국어](../../ko-KR/user-guide/browse.md) | [Français](../../fr-FR/user-guide/browse.md) | [Deutsch](../../de-DE/user-guide/browse.md) | [Español](../../es-ES/user-guide/browse.md) | Português (Brasil) | [Русский](../../ru-RU/user-guide/browse.md)
+[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | [繁體中文](../../zh-TW/user-guide/browse.md) | [日本語](../../ja-JP/user-guide/browse.md) | [한국어](../../ko-KR/user-guide/browse.md) | [Français](../../fr-FR/user-guide/browse.md) | [Deutsch](../../de-DE/user-guide/browse.md) | [Español](../../es-ES/user-guide/browse.md) | Português (Brasil) | [Русский](../../ru-RU/user-guide/browse.md)
 
 1. Abra um arquivo compactado. Para entrar em uma pasta, use a árvore de diretórios ou clique duas vezes na linha. Use a barra de caminho para voltar a uma pasta acima.
 2. Digite parte de um nome de arquivo e pressione Enter. A busca inclui a pasta atual e suas subpastas. Escolha a visualização em lista ou grade e a ordem de classificação. As pastas aparecem antes dos arquivos nos dois sentidos.

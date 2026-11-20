@@ -2,7 +2,7 @@
 
 # ARC 容器與壓縮流配置
 
-[English](../../engineering/arc-streams.md) | [简体中文](../../zh-CN/engineering/arc-streams.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/arc-streams.md) | [한국어](../../ko-KR/engineering/arc-streams.md) | [Français](../../fr-FR/engineering/arc-streams.md) | [Deutsch](../../de-DE/engineering/arc-streams.md) | [Español](../../es-ES/engineering/arc-streams.md) | [Português (Brasil)](../../pt-BR/engineering/arc-streams.md) | [Русский](../../ru-RU/engineering/arc-streams.md)
+[English](../../engineering/arc-streams.md) | [简体中文](../../zh-CN/engineering/arc-streams.md) | 繁體中文 | [日本語](../../ja-JP/engineering/arc-streams.md) | [한국어](../../ko-KR/engineering/arc-streams.md) | [Français](../../fr-FR/engineering/arc-streams.md) | [Deutsch](../../de-DE/engineering/arc-streams.md) | [Español](../../es-ES/engineering/arc-streams.md) | [Português (Brasil)](../../pt-BR/engineering/arc-streams.md) | [Русский](../../ru-RU/engineering/arc-streams.md)
 
 `ArcReader` 提供 ARC 方法 3–9 的有界原始解碼，方法 1、2 由容器按 Store 處理。`xdzip-codec-arc` 和 `ArcCodec` 將完整結構及必需 CRC-16 接入 runtime、CLI 和桌面的瀏覽、檢查與提取。[格式登記](../../../specs/engineering/archive-formats.json)宣告該只讀範圍，不支援建立、修改、密碼或分卷。
 

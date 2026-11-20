@@ -2,7 +2,7 @@
 
 # Учёт вспомогательной работы алгоритмов
 
-[English](../../engineering/auxiliary-decoding-work.md) | [简体中文](../../zh-CN/engineering/auxiliary-decoding-work.md) | [繁體中文（台灣）](../../zh-TW/engineering/auxiliary-decoding-work.md) | [日本語](../../ja-JP/engineering/auxiliary-decoding-work.md) | [한국어](../../ko-KR/engineering/auxiliary-decoding-work.md) | [Français](../../fr-FR/engineering/auxiliary-decoding-work.md) | [Deutsch](../../de-DE/engineering/auxiliary-decoding-work.md) | [Español](../../es-ES/engineering/auxiliary-decoding-work.md) | [Português (Brasil)](../../pt-BR/engineering/auxiliary-decoding-work.md) | Русский
+[English](../../engineering/auxiliary-decoding-work.md) | [简体中文](../../zh-CN/engineering/auxiliary-decoding-work.md) | [繁體中文](../../zh-TW/engineering/auxiliary-decoding-work.md) | [日本語](../../ja-JP/engineering/auxiliary-decoding-work.md) | [한국어](../../ko-KR/engineering/auxiliary-decoding-work.md) | [Français](../../fr-FR/engineering/auxiliary-decoding-work.md) | [Deutsch](../../de-DE/engineering/auxiliary-decoding-work.md) | [Español](../../es-ES/engineering/auxiliary-decoding-work.md) | [Português (Brasil)](../../pt-BR/engineering/auxiliary-decoding-work.md) | Русский
 
 Распаковка и проверка отдельно учитывают декодированные байты файлов, фактический вывод и вспомогательную работу алгоритмов. Инициализация модели PPM, сбросы при нехватке ёмкости и декодирование управляющих данных или параметров не входят в содержимое файлов. Они не должны увеличивать `decoded_bytes`, `written_bytes`, прогресс по файлам или коэффициент распаковки и давать допуск на предварительно учтённый вывод. В снимках задач не добавляется видимый пользователю вспомогательный счётчик.
 

@@ -1,6 +1,6 @@
 # Windows development tool and runtime licensing
 
-English | [简体中文](../zh-CN/engineering/windows-licensing.md) | [繁體中文（台灣）](../zh-TW/engineering/windows-licensing.md) | [日本語](../ja-JP/engineering/windows-licensing.md) | [한국어](../ko-KR/engineering/windows-licensing.md) | [Français](../fr-FR/engineering/windows-licensing.md) | [Deutsch](../de-DE/engineering/windows-licensing.md) | [Español](../es-ES/engineering/windows-licensing.md) | [Português (Brasil)](../pt-BR/engineering/windows-licensing.md) | [Русский](../ru-RU/engineering/windows-licensing.md)
+English | [简体中文](../zh-CN/engineering/windows-licensing.md) | [繁體中文](../zh-TW/engineering/windows-licensing.md) | [日本語](../ja-JP/engineering/windows-licensing.md) | [한국어](../ko-KR/engineering/windows-licensing.md) | [Français](../fr-FR/engineering/windows-licensing.md) | [Deutsch](../de-DE/engineering/windows-licensing.md) | [Español](../es-ES/engineering/windows-licensing.md) | [Português (Brasil)](../pt-BR/engineering/windows-licensing.md) | [Русский](../ru-RU/engineering/windows-licensing.md)
 
 This page defines applicable Windows build and redistribution paths and is used alongside [native runtime materials](native-runtime-materials.md), the [developer build entry](developer-build.md) and the [installation contract](installers-associations.md). Specific environments, verification commits, material hashes and acceptance conclusions belong in issues and local/CI artifacts; this page does not retain a machine's license proof.
 

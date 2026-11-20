@@ -2,7 +2,7 @@
 
 # 알고리즘 보조 작업량 집계
 
-[English](../../engineering/auxiliary-decoding-work.md) | [简体中文](../../zh-CN/engineering/auxiliary-decoding-work.md) | [繁體中文（台灣）](../../zh-TW/engineering/auxiliary-decoding-work.md) | [日本語](../../ja-JP/engineering/auxiliary-decoding-work.md) | 한국어 | [Français](../../fr-FR/engineering/auxiliary-decoding-work.md) | [Deutsch](../../de-DE/engineering/auxiliary-decoding-work.md) | [Español](../../es-ES/engineering/auxiliary-decoding-work.md) | [Português (Brasil)](../../pt-BR/engineering/auxiliary-decoding-work.md) | [Русский](../../ru-RU/engineering/auxiliary-decoding-work.md)
+[English](../../engineering/auxiliary-decoding-work.md) | [简体中文](../../zh-CN/engineering/auxiliary-decoding-work.md) | [繁體中文](../../zh-TW/engineering/auxiliary-decoding-work.md) | [日本語](../../ja-JP/engineering/auxiliary-decoding-work.md) | 한국어 | [Français](../../fr-FR/engineering/auxiliary-decoding-work.md) | [Deutsch](../../de-DE/engineering/auxiliary-decoding-work.md) | [Español](../../es-ES/engineering/auxiliary-decoding-work.md) | [Português (Brasil)](../../pt-BR/engineering/auxiliary-decoding-work.md) | [Русский](../../ru-RU/engineering/auxiliary-decoding-work.md)
 
 압축 풀기와 검사에서는 디코딩한 파일 바이트, 실제 출력 및 알고리즘 보조 작업량을 따로 누적합니다. PPM 모델 초기화, 용량 한도 때문에 다시 시작하는 작업, 제어 정보나 매개변수 디코딩은 파일 내용에 포함되지 않습니다. 이 작업이 `decoded_bytes`, `written_bytes`, 파일 진행 상태나 압축 해제 비율을 늘리거나 미리 집계한 출력의 허용량을 만들면 안 됩니다. 작업 스냅샷에는 사용자에게 표시하는 보조 카운터를 추가하지 않습니다.
 

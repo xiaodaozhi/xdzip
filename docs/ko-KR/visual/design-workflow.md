@@ -2,7 +2,7 @@
 
 # UI 디자인과 수정 절차
 
-[English](../../visual/design-workflow.md) | [简体中文](../../zh-CN/visual/design-workflow.md) | [繁體中文（台灣）](../../zh-TW/visual/design-workflow.md) | [日本語](../../ja-JP/visual/design-workflow.md) | 한국어 | [Français](../../fr-FR/visual/design-workflow.md) | [Deutsch](../../de-DE/visual/design-workflow.md) | [Español](../../es-ES/visual/design-workflow.md) | [Português (Brasil)](../../pt-BR/visual/design-workflow.md) | [Русский](../../ru-RU/visual/design-workflow.md)
+[English](../../visual/design-workflow.md) | [简体中文](../../zh-CN/visual/design-workflow.md) | [繁體中文](../../zh-TW/visual/design-workflow.md) | [日本語](../../ja-JP/visual/design-workflow.md) | 한국어 | [Français](../../fr-FR/visual/design-workflow.md) | [Deutsch](../../de-DE/visual/design-workflow.md) | [Español](../../es-ES/visual/design-workflow.md) | [Português (Brasil)](../../pt-BR/visual/design-workflow.md) | [Русский](../../ru-RU/visual/design-workflow.md)
 
 이 절차는 UI를 만들기 전에 수행하며 구현 후에 문서를 보충하는 절차가 아닙니다. 사양의 출발점은 [UI 디자인 표준](design-standard.md)입니다.
 

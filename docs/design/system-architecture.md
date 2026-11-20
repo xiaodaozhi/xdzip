@@ -1,6 +1,6 @@
 # XDZip system architecture
 
-English | [简体中文](../zh-CN/design/system-architecture.md) | [繁體中文（台灣）](../zh-TW/design/system-architecture.md)
+English | [简体中文](../zh-CN/design/system-architecture.md) | [繁體中文](../zh-TW/design/system-architecture.md)
 
 The desktop and command-line clients share the Rust archive runtime. The runtime turns a selected source into an indexed session and turns an operation into a bounded task. Format backends interpret archive data. The host authorizes files, controls output placement and publishes verified results.
 

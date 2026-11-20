@@ -2,7 +2,7 @@
 
 # Qt Quick デスクトップインターフェース
 
-[English](../../design/qt-quick-ui.md) | [简体中文](../../zh-CN/design/qt-quick-ui.md) | [繁體中文（台灣）](../../zh-TW/design/qt-quick-ui.md) | 日本語 | [한국어](../../ko-KR/design/qt-quick-ui.md) | [Français](../../fr-FR/design/qt-quick-ui.md) | [Deutsch](../../de-DE/design/qt-quick-ui.md) | [Español](../../es-ES/design/qt-quick-ui.md) | [Português (Brasil)](../../pt-BR/design/qt-quick-ui.md) | [Русский](../../ru-RU/design/qt-quick-ui.md)
+[English](../../design/qt-quick-ui.md) | [简体中文](../../zh-CN/design/qt-quick-ui.md) | [繁體中文](../../zh-TW/design/qt-quick-ui.md) | 日本語 | [한국어](../../ko-KR/design/qt-quick-ui.md) | [Français](../../fr-FR/design/qt-quick-ui.md) | [Deutsch](../../de-DE/design/qt-quick-ui.md) | [Español](../../es-ES/design/qt-quick-ui.md) | [Português (Brasil)](../../pt-BR/design/qt-quick-ui.md) | [Русский](../../ru-RU/design/qt-quick-ui.md)
 
 デスクトップは表示と操作に Qt Quick を使用します。C++ コントローラーはユーザーの操作を要求に変換し、ビューの状態を維持します。Rust ランタイムはアーカイブの解釈、タスクの方針、ファイルの操作権限を担当します。以下の呼び出しは[システムアーキテクチャ](system-architecture.md)と[ブリッジの契約](qt-rust-bridge.md)に記載しています。
 

@@ -2,7 +2,7 @@
 
 # Menus système et zone de notification
 
-[English](../../ux/desktop-integration.md) | [简体中文](../../zh-CN/ux/desktop-integration.md) | [繁體中文（台灣）](../../zh-TW/ux/desktop-integration.md) | [日本語](../../ja-JP/ux/desktop-integration.md) | [한국어](../../ko-KR/ux/desktop-integration.md) | Français | [Deutsch](../../de-DE/ux/desktop-integration.md) | [Español](../../es-ES/ux/desktop-integration.md) | [Português (Brasil)](../../pt-BR/ux/desktop-integration.md) | [Русский](../../ru-RU/ux/desktop-integration.md)
+[English](../../ux/desktop-integration.md) | [简体中文](../../zh-CN/ux/desktop-integration.md) | [繁體中文](../../zh-TW/ux/desktop-integration.md) | [日本語](../../ja-JP/ux/desktop-integration.md) | [한국어](../../ko-KR/ux/desktop-integration.md) | Français | [Deutsch](../../de-DE/ux/desktop-integration.md) | [Español](../../es-ES/ux/desktop-integration.md) | [Português (Brasil)](../../pt-BR/ux/desktop-integration.md) | [Русский](../../ru-RU/ux/desktop-integration.md)
 
 Les sessions multiples, l’instance unique, l’état des fenêtres et la sortie globale suivent le [contrat des sessions](../engineering/application-sessions.md). Fermer une fenêtre principale qui n’est pas la dernière conserve les tâches ; la dernière suit les réglages de la zone de notification. La confirmation de sortie couvre toutes les sessions.
 

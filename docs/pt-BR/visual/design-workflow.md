@@ -2,7 +2,7 @@
 
 # Fluxo de design e correção da interface
 
-[English](../../visual/design-workflow.md) | [简体中文](../../zh-CN/visual/design-workflow.md) | [繁體中文（台灣）](../../zh-TW/visual/design-workflow.md) | [日本語](../../ja-JP/visual/design-workflow.md) | [한국어](../../ko-KR/visual/design-workflow.md) | [Français](../../fr-FR/visual/design-workflow.md) | [Deutsch](../../de-DE/visual/design-workflow.md) | [Español](../../es-ES/visual/design-workflow.md) | Português (Brasil) | [Русский](../../ru-RU/visual/design-workflow.md)
+[English](../../visual/design-workflow.md) | [简体中文](../../zh-CN/visual/design-workflow.md) | [繁體中文](../../zh-TW/visual/design-workflow.md) | [日本語](../../ja-JP/visual/design-workflow.md) | [한국어](../../ko-KR/visual/design-workflow.md) | [Français](../../fr-FR/visual/design-workflow.md) | [Deutsch](../../de-DE/visual/design-workflow.md) | [Español](../../es-ES/visual/design-workflow.md) | Português (Brasil) | [Русский](../../ru-RU/visual/design-workflow.md)
 
 Execute este fluxo antes de criar a interface, não como documentação posterior à implementação. A referência é o [padrão de design de interface](design-standard.md).
 

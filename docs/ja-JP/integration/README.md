@@ -1,6 +1,6 @@
 # スクリプトで XDZip を使う
 
-[English](../../integration/README.md) | [简体中文](../../zh-CN/integration/README.md) | [繁體中文（台灣）](../../zh-TW/integration/README.md) | 日本語 | [한국어](../../ko-KR/integration/README.md) | [Français](../../fr-FR/integration/README.md) | [Deutsch](../../de-DE/integration/README.md) | [Español](../../es-ES/integration/README.md) | [Português (Brasil)](../../pt-BR/integration/README.md) | [Русский](../../ru-RU/integration/README.md)
+[English](../../integration/README.md) | [简体中文](../../zh-CN/integration/README.md) | [繁體中文](../../zh-TW/integration/README.md) | 日本語 | [한국어](../../ko-KR/integration/README.md) | [Français](../../fr-FR/integration/README.md) | [Deutsch](../../de-DE/integration/README.md) | [Español](../../es-ES/integration/README.md) | [Português (Brasil)](../../pt-BR/integration/README.md) | [Русский](../../ru-RU/integration/README.md)
 
 スタンドアロン CLI は Qt やデスクトップセッションなしで動作します。[GitHub のリリース](https://github.com/xiaodaozhi/xdzip/releases)から、お使いのシステム向けの `xdzip-cli-` パッケージを選択してください。パッケージ全体を展開し、同梱のワーカーを実行ファイルの隣に置きます。展開したディレクトリから、macOS または Linux では `./bin/xdzip --help`、PowerShell では `.\bin\xdzip.exe --help` を実行します。
 

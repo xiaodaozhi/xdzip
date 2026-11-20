@@ -2,7 +2,7 @@
 
 # 介面設計與修正流程
 
-[English](../../visual/design-workflow.md) | [简体中文](../../zh-CN/visual/design-workflow.md) | 繁體中文（台灣） | [日本語](../../ja-JP/visual/design-workflow.md) | [한국어](../../ko-KR/visual/design-workflow.md) | [Français](../../fr-FR/visual/design-workflow.md) | [Deutsch](../../de-DE/visual/design-workflow.md) | [Español](../../es-ES/visual/design-workflow.md) | [Português (Brasil)](../../pt-BR/visual/design-workflow.md) | [Русский](../../ru-RU/visual/design-workflow.md)
+[English](../../visual/design-workflow.md) | [简体中文](../../zh-CN/visual/design-workflow.md) | 繁體中文 | [日本語](../../ja-JP/visual/design-workflow.md) | [한국어](../../ko-KR/visual/design-workflow.md) | [Français](../../fr-FR/visual/design-workflow.md) | [Deutsch](../../de-DE/visual/design-workflow.md) | [Español](../../es-ES/visual/design-workflow.md) | [Português (Brasil)](../../pt-BR/visual/design-workflow.md) | [Русский](../../ru-RU/visual/design-workflow.md)
 
 本流程應在建立介面前執行，而不是等實作完成後才補寫文件。規範入口為[介面設計規範](design-standard.md)。
 

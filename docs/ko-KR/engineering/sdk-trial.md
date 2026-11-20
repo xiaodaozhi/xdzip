@@ -2,7 +2,7 @@
 
 # 외부 읽기 전용 SDK 시험
 
-[English](../../engineering/sdk-trial.md) | [简体中文](../../zh-CN/engineering/sdk-trial.md) | [繁體中文（台灣）](../../zh-TW/engineering/sdk-trial.md) | [日本語](../../ja-JP/engineering/sdk-trial.md) | 한국어 | [Français](../../fr-FR/engineering/sdk-trial.md) | [Deutsch](../../de-DE/engineering/sdk-trial.md) | [Español](../../es-ES/engineering/sdk-trial.md) | [Português (Brasil)](../../pt-BR/engineering/sdk-trial.md) | [Русский](../../ru-RU/engineering/sdk-trial.md)
+[English](../../engineering/sdk-trial.md) | [简体中文](../../zh-CN/engineering/sdk-trial.md) | [繁體中文](../../zh-TW/engineering/sdk-trial.md) | [日本語](../../ja-JP/engineering/sdk-trial.md) | 한국어 | [Français](../../fr-FR/engineering/sdk-trial.md) | [Deutsch](../../de-DE/engineering/sdk-trial.md) | [Español](../../es-ES/engineering/sdk-trial.md) | [Português (Brasil)](../../pt-BR/engineering/sdk-trial.md) | [Русский](../../ru-RU/engineering/sdk-trial.md)
 
 `xdzip-plugin-protocol`과 `xdzip-plugin-host`는 [형식 확장 설계](../design/codec-extension-sdk.md)에 설명된 독립 읽기 전용 시험을 구현합니다. 데스크톱과 CLI의 형식 탐지, 설치, 패키징, 자동 시작에서는 제외됩니다. 사용자가 시험 명령을 명시적으로 실행하고 패키지와 원본을 선택하며 제품의 타사 확장은 계속 비활성화됩니다. `xdp1`만 협상하며 생성, 암호, 분할 볼륨, 링크, GUI 또는 임의의 호스트 경로 권한은 없습니다. 완전한 플러그인 생태계나 SDK 릴리스가 아닙니다.
 

@@ -2,7 +2,7 @@
 
 # Autorización de archivos y publicación segura
 
-[English](../../design/file-security.md) | [简体中文](../../zh-CN/design/file-security.md) | [繁體中文（台灣）](../../zh-TW/design/file-security.md) | [日本語](../../ja-JP/design/file-security.md) | [한국어](../../ko-KR/design/file-security.md) | [Français](../../fr-FR/design/file-security.md) | [Deutsch](../../de-DE/design/file-security.md) | Español | [Português (Brasil)](../../pt-BR/design/file-security.md) | [Русский](../../ru-RU/design/file-security.md)
+[English](../../design/file-security.md) | [简体中文](../../zh-CN/design/file-security.md) | [繁體中文](../../zh-TW/design/file-security.md) | [日本語](../../ja-JP/design/file-security.md) | [한국어](../../ko-KR/design/file-security.md) | [Français](../../fr-FR/design/file-security.md) | [Deutsch](../../de-DE/design/file-security.md) | Español | [Português (Brasil)](../../pt-BR/design/file-security.md) | [Русский](../../ru-RU/design/file-security.md)
 
 El host controla qué archivos pueden abrirse y dónde puede publicarse la salida verificada. Un motor recibe lectores y sumideros acotados, también cuando se ejecuta en el proceso de archivos aislado. Los nombres, tamaños declarados, sumas y contenidos del archivo comprimido son datos de entrada. Las comprobaciones de archivos del host se aplican independientemente de las del formato. [Arquitectura del sistema](system-architecture.md), [Protocolo del proceso de archivos](../engineering/native-codecs.md)
 

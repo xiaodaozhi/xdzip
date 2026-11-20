@@ -2,7 +2,7 @@
 
 # 플랫폼 창과 제목 표시줄
 
-[English](../../ux/platform-windows.md) | [简体中文](../../zh-CN/ux/platform-windows.md) | [繁體中文（台灣）](../../zh-TW/ux/platform-windows.md) | [日本語](../../ja-JP/ux/platform-windows.md) | 한국어 | [Français](../../fr-FR/ux/platform-windows.md) | [Deutsch](../../de-DE/ux/platform-windows.md) | [Español](../../es-ES/ux/platform-windows.md) | [Português (Brasil)](../../pt-BR/ux/platform-windows.md) | [Русский](../../ru-RU/ux/platform-windows.md)
+[English](../../ux/platform-windows.md) | [简体中文](../../zh-CN/ux/platform-windows.md) | [繁體中文](../../zh-TW/ux/platform-windows.md) | [日本語](../../ja-JP/ux/platform-windows.md) | 한국어 | [Français](../../fr-FR/ux/platform-windows.md) | [Deutsch](../../de-DE/ux/platform-windows.md) | [Español](../../es-ES/ux/platform-windows.md) | [Português (Brasil)](../../pt-BR/ux/platform-windows.md) | [Русский](../../ru-RU/ux/platform-windows.md)
 
 xdzip 작업 인터페이스는 독립적인 최상위 창을 사용하며 기본 창에 붙은 시트나 그 안에 그리는 오버레이 패널을 사용하지 않습니다. 독립 창이라고 해서 별도 프로세스나 모든 보조 창의 작업 표시줄 항목이 필요한 것은 아닙니다. 드롭다운 메뉴와 도구 설명은 가벼운 Popup으로 유지되며 작업 창이 아닙니다.
 

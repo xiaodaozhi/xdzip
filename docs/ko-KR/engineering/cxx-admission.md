@@ -2,7 +2,7 @@
 
 # cxx 브리지 의존성을 선택한 이유
 
-[English](../../engineering/cxx-admission.md) | [简体中文](../../zh-CN/engineering/cxx-admission.md) | [繁體中文（台灣）](../../zh-TW/engineering/cxx-admission.md) | [日本語](../../ja-JP/engineering/cxx-admission.md) | 한국어 | [Français](../../fr-FR/engineering/cxx-admission.md) | [Deutsch](../../de-DE/engineering/cxx-admission.md) | [Español](../../es-ES/engineering/cxx-admission.md) | [Português (Brasil)](../../pt-BR/engineering/cxx-admission.md) | [Русский](../../ru-RU/engineering/cxx-admission.md)
+[English](../../engineering/cxx-admission.md) | [简体中文](../../zh-CN/engineering/cxx-admission.md) | [繁體中文](../../zh-TW/engineering/cxx-admission.md) | [日本語](../../ja-JP/engineering/cxx-admission.md) | 한국어 | [Français](../../fr-FR/engineering/cxx-admission.md) | [Deutsch](../../de-DE/engineering/cxx-admission.md) | [Español](../../es-ES/engineering/cxx-admission.md) | [Português (Brasil)](../../pt-BR/engineering/cxx-admission.md) | [Русский](../../ru-RU/engineering/cxx-admission.md)
 
 Qt와 Rust는 `cxx`가 생성한 타입과 소유권이 명시된 브리지로 연결됩니다. C++는 Qt 객체를 보유하고 Rust는 도메인 및 실행 환경 로직을 보유합니다. [Cargo.lock](../../../Cargo.lock)과 [도구 정책](toolchain.md)에 따라 `cxx`와 `cxx-build`의 버전은 정확히 일치해야 합니다. cxx는 타사 형식 확장을 위한 안정적인 ABI가 아닙니다. 직접 작성한 C ABI는 의존성을 줄이는 대신 문자열, 자유 함수 및 소유권 불변식의 유지보수를 늘립니다.
 

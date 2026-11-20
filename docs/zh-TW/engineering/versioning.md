@@ -2,7 +2,7 @@
 
 # 產品版本與構建身份
 
-[English](../../engineering/versioning.md) | [简体中文](../../zh-CN/engineering/versioning.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/versioning.md) | [한국어](../../ko-KR/engineering/versioning.md) | [Français](../../fr-FR/engineering/versioning.md) | [Deutsch](../../de-DE/engineering/versioning.md) | [Español](../../es-ES/engineering/versioning.md) | [Português (Brasil)](../../pt-BR/engineering/versioning.md) | [Русский](../../ru-RU/engineering/versioning.md)
+[English](../../engineering/versioning.md) | [简体中文](../../zh-CN/engineering/versioning.md) | 繁體中文 | [日本語](../../ja-JP/engineering/versioning.md) | [한국어](../../ko-KR/engineering/versioning.md) | [Français](../../fr-FR/engineering/versioning.md) | [Deutsch](../../de-DE/engineering/versioning.md) | [Español](../../es-ES/engineering/versioning.md) | [Português (Brasil)](../../pt-BR/engineering/versioning.md) | [Русский](../../ru-RU/engineering/versioning.md)
 
 可選 `prerelease_number` 分離預釋出序號與構建號。例如 alpha.1 對應 build 14，後續 alpha.2 仍繼續遞增 build。預設保留歷史 `渠道.build` 讀取方式。釋出清單和資產命名見[釋出協議](release-protocol.md)。
 

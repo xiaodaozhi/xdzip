@@ -2,7 +2,7 @@
 
 # TAR/GZIP 実装契約
 
-[English](../../engineering/tar-gzip.md) | [简体中文](../../zh-CN/engineering/tar-gzip.md) | [繁體中文（台灣）](../../zh-TW/engineering/tar-gzip.md) | 日本語 | [한국어](../../ko-KR/engineering/tar-gzip.md) | [Français](../../fr-FR/engineering/tar-gzip.md) | [Deutsch](../../de-DE/engineering/tar-gzip.md) | [Español](../../es-ES/engineering/tar-gzip.md) | [Português (Brasil)](../../pt-BR/engineering/tar-gzip.md) | [Русский](../../ru-RU/engineering/tar-gzip.md)
+[English](../../engineering/tar-gzip.md) | [简体中文](../../zh-CN/engineering/tar-gzip.md) | [繁體中文](../../zh-TW/engineering/tar-gzip.md) | 日本語 | [한국어](../../ko-KR/engineering/tar-gzip.md) | [Français](../../fr-FR/engineering/tar-gzip.md) | [Deutsch](../../de-DE/engineering/tar-gzip.md) | [Español](../../es-ES/engineering/tar-gzip.md) | [Português (Brasil)](../../pt-BR/engineering/tar-gzip.md) | [Русский](../../ru-RU/engineering/tar-gzip.md)
 
 この契約は TAR/TAR.GZ の閲覧、作成、安全な展開の境界を定義します。プラットフォームの結果と手動受け入れは issue または CI 成果物に記録します。[安全な展開](zip-safe-extraction.md)と [ZIP 作成](zip-creation.md)の入力承認、一時準備、競合、キャンセル、アーカイブ全体のコミットを維持します。
 

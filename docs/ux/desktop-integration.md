@@ -1,6 +1,6 @@
 # System menus and tray
 
-English | [简体中文](../zh-CN/ux/desktop-integration.md) | [繁體中文（台灣）](../zh-TW/ux/desktop-integration.md) | [日本語](../ja-JP/ux/desktop-integration.md) | [한국어](../ko-KR/ux/desktop-integration.md) | [Français](../fr-FR/ux/desktop-integration.md) | [Deutsch](../de-DE/ux/desktop-integration.md) | [Español](../es-ES/ux/desktop-integration.md) | [Português (Brasil)](../pt-BR/ux/desktop-integration.md) | [Русский](../ru-RU/ux/desktop-integration.md)
+English | [简体中文](../zh-CN/ux/desktop-integration.md) | [繁體中文](../zh-TW/ux/desktop-integration.md) | [日本語](../ja-JP/ux/desktop-integration.md) | [한국어](../ko-KR/ux/desktop-integration.md) | [Français](../fr-FR/ux/desktop-integration.md) | [Deutsch](../de-DE/ux/desktop-integration.md) | [Español](../es-ES/ux/desktop-integration.md) | [Português (Brasil)](../pt-BR/ux/desktop-integration.md) | [Русский](../ru-RU/ux/desktop-integration.md)
 
 Multi-session, single-instance, window state and global exit follow the [application session contract](../engineering/application-sessions.md). Closing a non-last main window retains tasks; the last window follows tray settings. Exit confirmation covers all sessions.
 

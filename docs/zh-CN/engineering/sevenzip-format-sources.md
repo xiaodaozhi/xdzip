@@ -1,6 +1,6 @@
 # 7z 格式来源与独立实现依据
 
-[English](../../engineering/sevenzip-format-sources.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/sevenzip-format-sources.md) | [日本語](../../ja-JP/engineering/sevenzip-format-sources.md) | [한국어](../../ko-KR/engineering/sevenzip-format-sources.md) | [Français](../../fr-FR/engineering/sevenzip-format-sources.md) | [Deutsch](../../de-DE/engineering/sevenzip-format-sources.md) | [Español](../../es-ES/engineering/sevenzip-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/sevenzip-format-sources.md) | [Русский](../../ru-RU/engineering/sevenzip-format-sources.md)
+[English](../../engineering/sevenzip-format-sources.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/sevenzip-format-sources.md) | [日本語](../../ja-JP/engineering/sevenzip-format-sources.md) | [한국어](../../ko-KR/engineering/sevenzip-format-sources.md) | [Français](../../fr-FR/engineering/sevenzip-format-sources.md) | [Deutsch](../../de-DE/engineering/sevenzip-format-sources.md) | [Español](../../es-ES/engineering/sevenzip-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/sevenzip-format-sources.md) | [Русский](../../ru-RU/engineering/sevenzip-format-sources.md)
 
 本文件记录可复用的来源和实现边界。迁移验收与剩余能力在[任务 #50](https://github.com/xiaodaozhi/xdzip/issues/50)维护，固定 Rust 路由及官方产品依赖退出不自动构成跨平台、人工或发行验收。通用替代规则见[自研契约](independent-rust-codecs.md)。
 

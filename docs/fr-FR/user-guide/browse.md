@@ -1,6 +1,6 @@
 # Parcourir, sélectionner et prévisualiser des fichiers
 
-[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | [繁體中文（台灣）](../../zh-TW/user-guide/browse.md) | [日本語](../../ja-JP/user-guide/browse.md) | [한국어](../../ko-KR/user-guide/browse.md) | Français | [Deutsch](../../de-DE/user-guide/browse.md) | [Español](../../es-ES/user-guide/browse.md) | [Português (Brasil)](../../pt-BR/user-guide/browse.md) | [Русский](../../ru-RU/user-guide/browse.md)
+[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | [繁體中文](../../zh-TW/user-guide/browse.md) | [日本語](../../ja-JP/user-guide/browse.md) | [한국어](../../ko-KR/user-guide/browse.md) | Français | [Deutsch](../../de-DE/user-guide/browse.md) | [Español](../../es-ES/user-guide/browse.md) | [Português (Brasil)](../../pt-BR/user-guide/browse.md) | [Русский](../../ru-RU/user-guide/browse.md)
 
 1. Ouvrez une archive. Pour entrer dans un dossier, utilisez l’arborescence ou double-cliquez sur sa ligne. Le fil d’Ariane permet de remonter dans un dossier parent.
 2. Saisissez une partie du nom de fichier et appuyez sur Entrée. La recherche couvre le dossier actuel et ses sous-dossiers. Choisissez le mode liste ou grille et un ordre de tri. Les dossiers restent avant les fichiers dans les deux sens de tri.

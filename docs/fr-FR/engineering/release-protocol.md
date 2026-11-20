@@ -2,7 +2,7 @@
 
 # Protocole GitHub Release v1
 
-[English](../../engineering/release-protocol.md) | [简体中文](../../zh-CN/engineering/release-protocol.md) | [繁體中文（台灣）](../../zh-TW/engineering/release-protocol.md) | [日本語](../../ja-JP/engineering/release-protocol.md) | [한국어](../../ko-KR/engineering/release-protocol.md) | Français | [Deutsch](../../de-DE/engineering/release-protocol.md) | [Español](../../es-ES/engineering/release-protocol.md) | [Português (Brasil)](../../pt-BR/engineering/release-protocol.md) | [Русский](../../ru-RU/engineering/release-protocol.md)
+[English](../../engineering/release-protocol.md) | [简体中文](../../zh-CN/engineering/release-protocol.md) | [繁體中文](../../zh-TW/engineering/release-protocol.md) | [日本語](../../ja-JP/engineering/release-protocol.md) | [한국어](../../ko-KR/engineering/release-protocol.md) | Français | [Deutsch](../../de-DE/engineering/release-protocol.md) | [Español](../../es-ES/engineering/release-protocol.md) | [Português (Brasil)](../../pt-BR/engineering/release-protocol.md) | [Русский](../../ru-RU/engineering/release-protocol.md)
 
 Ce flux produit les téléchargements GitHub. Le [flux Microsoft Store MSIX](developer-build.md#microsoft-store-msix) empaquette le même code source versionné pour Microsoft Partner Center, qui assure la certification et la publication dans le Store.
 

@@ -2,7 +2,7 @@
 
 # 補充互動與文案規範
 
-[English](../../ux/interaction-spec.md) | [简体中文](../../zh-CN/ux/interaction-spec.md) | 繁體中文（台灣） | [日本語](../../ja-JP/ux/interaction-spec.md) | [한국어](../../ko-KR/ux/interaction-spec.md) | [Français](../../fr-FR/ux/interaction-spec.md) | [Deutsch](../../de-DE/ux/interaction-spec.md) | [Español](../../es-ES/ux/interaction-spec.md) | [Português (Brasil)](../../pt-BR/ux/interaction-spec.md) | [Русский](../../ru-RU/ux/interaction-spec.md)
+[English](../../ux/interaction-spec.md) | [简体中文](../../zh-CN/ux/interaction-spec.md) | 繁體中文 | [日本語](../../ja-JP/ux/interaction-spec.md) | [한국어](../../ko-KR/ux/interaction-spec.md) | [Français](../../fr-FR/ux/interaction-spec.md) | [Deutsch](../../de-DE/ux/interaction-spec.md) | [Español](../../es-ES/ux/interaction-spec.md) | [Português (Brasil)](../../pt-BR/ux/interaction-spec.md) | [Русский](../../ru-RU/ux/interaction-spec.md)
 
 主視窗與解壓確認的視覺基線由[操作狀態規範](hifi-state-spec.md)補充新建、衝突、任務、結果、設定及平臺對照。歡迎頁和開啟進度見[歡迎頁契約](welcome-opening.md)，目前原稿與佈局依據以[視窗登記](../../../specs/visual/window-registry.json)為準。不因狀態規範存在便將全部設計視為已實現或已透過原生視覺驗收，具體實現邊界見相應工程和互動契約。
 

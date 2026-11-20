@@ -2,7 +2,7 @@
 
 # 分離された形式ワーカーの契約
 
-[English](../../engineering/native-codecs.md) | [简体中文](../../zh-CN/engineering/native-codecs.md) | [繁體中文（台灣）](../../zh-TW/engineering/native-codecs.md) | 日本語 | [한국어](../../ko-KR/engineering/native-codecs.md) | [Français](../../fr-FR/engineering/native-codecs.md) | [Deutsch](../../de-DE/engineering/native-codecs.md) | [Español](../../es-ES/engineering/native-codecs.md) | [Português (Brasil)](../../pt-BR/engineering/native-codecs.md) | [Русский](../../ru-RU/engineering/native-codecs.md)
+[English](../../engineering/native-codecs.md) | [简体中文](../../zh-CN/engineering/native-codecs.md) | [繁體中文](../../zh-TW/engineering/native-codecs.md) | 日本語 | [한국어](../../ko-KR/engineering/native-codecs.md) | [Français](../../fr-FR/engineering/native-codecs.md) | [Deutsch](../../de-DE/engineering/native-codecs.md) | [Español](../../es-ES/engineering/native-codecs.md) | [Português (Brasil)](../../pt-BR/engineering/native-codecs.md) | [Русский](../../ru-RU/engineering/native-codecs.md)
 
 7z、RAR、CAB、ISO/UDF の読み取りは、分離ワーカー内の共有 CXX 境界を介した[組み込み Rust codec](independent-rust-codecs.md)を使用します。同じワーカーはホストが制御するタスク内で 7z の書き込みも扱います。Rust ホストは ZIP、TAR、圧縮ストリーム、DEB、[新しい ISO9660/Joliet イメージ](iso-creation.md)をプロセス内で処理します。形式の選択には組み込み経路を使用し、どの経路も PATH からコマンドラインデコーダーを探しません。
 

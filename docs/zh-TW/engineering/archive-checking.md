@@ -2,7 +2,7 @@
 
 # 壓縮檔完整性檢查
 
-[English](../../engineering/archive-checking.md) | [简体中文](../../zh-CN/engineering/archive-checking.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/archive-checking.md) | [한국어](../../ko-KR/engineering/archive-checking.md) | [Français](../../fr-FR/engineering/archive-checking.md) | [Deutsch](../../de-DE/engineering/archive-checking.md) | [Español](../../es-ES/engineering/archive-checking.md) | [Português (Brasil)](../../pt-BR/engineering/archive-checking.md) | [Русский](../../ru-RU/engineering/archive-checking.md)
+[English](../../engineering/archive-checking.md) | [简体中文](../../zh-CN/engineering/archive-checking.md) | 繁體中文 | [日本語](../../ja-JP/engineering/archive-checking.md) | [한국어](../../ko-KR/engineering/archive-checking.md) | [Français](../../fr-FR/engineering/archive-checking.md) | [Deutsch](../../de-DE/engineering/archive-checking.md) | [Español](../../es-ES/engineering/archive-checking.md) | [Português (Brasil)](../../pt-BR/engineering/archive-checking.md) | [Русский](../../ru-RU/engineering/archive-checking.md)
 
 工具欄“測試”對符合條件的目前歸檔執行一次真實背景檢查，覆蓋全部物理記錄，包含重複名稱、目錄和空檔案，不受目前目錄、搜尋或選擇影響。進入磁碟索引的歸檔暫不支援整包檢查，見[大歸檔索引](large-index.md)。檢查只持有凍結的輸入來源與後設資料，不取得目標目錄授權、不建立暫存或輸出檔案，不使用解壓路徑對映和連結釋出流程。
 

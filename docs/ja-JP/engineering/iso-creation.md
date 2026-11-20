@@ -1,7 +1,7 @@
 <a name="xdzip-iso9660-and-joliet-creation"></a>
 # ISO9660 と Joliet の作成
 
-[English](../../engineering/iso-creation.md) | [简体中文](../../zh-CN/engineering/iso-creation.md) | [繁體中文（台灣）](../../zh-TW/engineering/iso-creation.md) | 日本語 | [한국어](../../ko-KR/engineering/iso-creation.md) | [Français](../../fr-FR/engineering/iso-creation.md) | [Deutsch](../../de-DE/engineering/iso-creation.md) | [Español](../../es-ES/engineering/iso-creation.md) | [Português (Brasil)](../../pt-BR/engineering/iso-creation.md) | [Русский](../../ru-RU/engineering/iso-creation.md)
+[English](../../engineering/iso-creation.md) | [简体中文](../../zh-CN/engineering/iso-creation.md) | [繁體中文](../../zh-TW/engineering/iso-creation.md) | 日本語 | [한국어](../../ko-KR/engineering/iso-creation.md) | [Français](../../fr-FR/engineering/iso-creation.md) | [Deutsch](../../de-DE/engineering/iso-creation.md) | [Español](../../es-ES/engineering/iso-creation.md) | [Português (Brasil)](../../pt-BR/engineering/iso-creation.md) | [Русский](../../ru-RU/engineering/iso-creation.md)
 
 最初の書き込みモジュールは、2048 バイトのセクター、ISO9660 の主名前空間、Joliet の補助名前空間を持つ、起動用ではない単一のデータイメージを作成します。[ECMA-119 第 5 版](https://ecma-international.org/wp-content/uploads/ECMA-119_5th_edition_december_2024.pdf)と、付属書 C に掲載されている Joliet の仕様に従います。外部のイメージ作成エンジンをリンクしたり起動したりしません。
 

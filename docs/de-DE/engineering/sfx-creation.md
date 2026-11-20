@@ -1,6 +1,6 @@
 # Mit xdzip erstellte selbstentpackende ZIP-Archive für Windows
 
-[English](../../engineering/sfx-creation.md) | [简体中文](../../zh-CN/engineering/sfx-creation.md) | [繁體中文（台灣）](../../zh-TW/engineering/sfx-creation.md) | [日本語](../../ja-JP/engineering/sfx-creation.md) | [한국어](../../ko-KR/engineering/sfx-creation.md) | [Français](../../fr-FR/engineering/sfx-creation.md) | Deutsch | [Español](../../es-ES/engineering/sfx-creation.md) | [Português (Brasil)](../../pt-BR/engineering/sfx-creation.md) | [Русский](../../ru-RU/engineering/sfx-creation.md)
+[English](../../engineering/sfx-creation.md) | [简体中文](../../zh-CN/engineering/sfx-creation.md) | [繁體中文](../../zh-TW/engineering/sfx-creation.md) | [日本語](../../ja-JP/engineering/sfx-creation.md) | [한국어](../../ko-KR/engineering/sfx-creation.md) | [Français](../../fr-FR/engineering/sfx-creation.md) | Deutsch | [Español](../../es-ES/engineering/sfx-creation.md) | [Português (Brasil)](../../pt-BR/engineering/sfx-creation.md) | [Русский](../../ru-RU/engineering/sfx-creation.md)
 
 Das erste SFX-Profil ist nur für Windows x64 verfügbar. Verwenden Sie bei der Erstellung ausdrücklich die Endung `.sfx.exe`. Das Profil bettet ein unverschlüsseltes, einteiliges Store- oder Deflate-ZIP in das vom Projekt gebaute Startprogramm `xdzip-sfx.exe` ein. Bei der Erstellung wird das Startprogramm nie ausgeführt. Allgemeine `.exe`-Dateien bleiben von Erstellung, Ziehen und Ablegen sowie Systemzuordnungen ausgeschlossen.
 

@@ -2,7 +2,7 @@
 
 # Termos e limites de implementação do XDZip
 
-[English](../../design/glossary.md) | [简体中文](../../zh-CN/design/glossary.md) | [繁體中文（台灣）](../../zh-TW/design/glossary.md) | [日本語](../../ja-JP/design/glossary.md) | [한국어](../../ko-KR/design/glossary.md) | [Français](../../fr-FR/design/glossary.md) | [Deutsch](../../de-DE/design/glossary.md) | [Español](../../es-ES/design/glossary.md) | Português (Brasil) | [Русский](../../ru-RU/design/glossary.md)
+[English](../../design/glossary.md) | [简体中文](../../zh-CN/design/glossary.md) | [繁體中文](../../zh-TW/design/glossary.md) | [日本語](../../ja-JP/design/glossary.md) | [한국어](../../ko-KR/design/glossary.md) | [Français](../../fr-FR/design/glossary.md) | [Deutsch](../../de-DE/design/glossary.md) | [Español](../../es-ES/design/glossary.md) | Português (Brasil) | [Русский](../../ru-RU/design/glossary.md)
 
 <a name="xdzip-1-terminology"></a>
 

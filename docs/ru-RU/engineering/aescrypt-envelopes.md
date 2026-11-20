@@ -2,7 +2,7 @@
 
 # Оболочки AES Crypt только для чтения
 
-[English](../../engineering/aescrypt-envelopes.md) | [简体中文](../../zh-CN/engineering/aescrypt-envelopes.md) | [繁體中文（台灣）](../../zh-TW/engineering/aescrypt-envelopes.md) | [日本語](../../ja-JP/engineering/aescrypt-envelopes.md) | [한국어](../../ko-KR/engineering/aescrypt-envelopes.md) | [Français](../../fr-FR/engineering/aescrypt-envelopes.md) | [Deutsch](../../de-DE/engineering/aescrypt-envelopes.md) | [Español](../../es-ES/engineering/aescrypt-envelopes.md) | [Português (Brasil)](../../pt-BR/engineering/aescrypt-envelopes.md) | Русский
+[English](../../engineering/aescrypt-envelopes.md) | [简体中文](../../zh-CN/engineering/aescrypt-envelopes.md) | [繁體中文](../../zh-TW/engineering/aescrypt-envelopes.md) | [日本語](../../ja-JP/engineering/aescrypt-envelopes.md) | [한국어](../../ko-KR/engineering/aescrypt-envelopes.md) | [Français](../../fr-FR/engineering/aescrypt-envelopes.md) | [Deutsch](../../de-DE/engineering/aescrypt-envelopes.md) | [Español](../../es-ES/engineering/aescrypt-envelopes.md) | [Português (Brasil)](../../pt-BR/engineering/aescrypt-envelopes.md) | Русский
 
 Независимый бэкенд Rust `xdzip-codec-aescrypt` читает версии потока AES Crypt 0, 1, 2 и 3. Номера версий приложения отдельны. Показывается один обычный виртуальный файл; создание, изменение, тома и получение внешних расширений не поддерживаются. Формат содержит зашифрованные данные без сжатия, поэтому метод строки — Store, а признак шифрования установлен. Упакованный размер равен всей физической оболочке. Бэкенд выбирается по содержимому, а не по `.aes`.
 

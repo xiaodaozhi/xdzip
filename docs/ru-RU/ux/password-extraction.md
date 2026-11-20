@@ -2,7 +2,7 @@
 
 # Взаимодействие при распаковке с паролем
 
-[English](../../ux/password-extraction.md) | [简体中文](../../zh-CN/ux/password-extraction.md) | [繁體中文（台灣）](../../zh-TW/ux/password-extraction.md) | [日本語](../../ja-JP/ux/password-extraction.md) | [한국어](../../ko-KR/ux/password-extraction.md) | [Français](../../fr-FR/ux/password-extraction.md) | [Deutsch](../../de-DE/ux/password-extraction.md) | [Español](../../es-ES/ux/password-extraction.md) | [Português (Brasil)](../../pt-BR/ux/password-extraction.md) | Русский
+[English](../../ux/password-extraction.md) | [简体中文](../../zh-CN/ux/password-extraction.md) | [繁體中文](../../zh-TW/ux/password-extraction.md) | [日本語](../../ja-JP/ux/password-extraction.md) | [한국어](../../ko-KR/ux/password-extraction.md) | [Français](../../fr-FR/ux/password-extraction.md) | [Deutsch](../../de-DE/ux/password-extraction.md) | [Español](../../es-ES/ux/password-extraction.md) | [Português (Brasil)](../../pt-BR/ux/password-extraction.md) | Русский
 
 Поддерживаемые задачи ZIP, 7z и RAR переходят в `waiting_password`, когда запись требует пароль. Среда выполнения публикует запрос с идентификаторами задачи и запроса. QML передаёт только ввод и намерение отменить действие. Расшифрование, проверку подлинности и публикацию файлов выполняет ядро. Запрос пароля и конфликт имён являются разными состояниями. Нельзя направлять запрос пароля в окно конфликта. Границы форматов, проверки, повторов и вывода определены в [техническом контракте](../engineering/password-extraction.md).
 

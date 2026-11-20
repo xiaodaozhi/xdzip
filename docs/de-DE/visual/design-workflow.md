@@ -2,7 +2,7 @@
 
 # Ablauf für UI-Entwurf und Korrekturen
 
-[English](../../visual/design-workflow.md) | [简体中文](../../zh-CN/visual/design-workflow.md) | [繁體中文（台灣）](../../zh-TW/visual/design-workflow.md) | [日本語](../../ja-JP/visual/design-workflow.md) | [한국어](../../ko-KR/visual/design-workflow.md) | [Français](../../fr-FR/visual/design-workflow.md) | Deutsch | [Español](../../es-ES/visual/design-workflow.md) | [Português (Brasil)](../../pt-BR/visual/design-workflow.md) | [Русский](../../ru-RU/visual/design-workflow.md)
+[English](../../visual/design-workflow.md) | [简体中文](../../zh-CN/visual/design-workflow.md) | [繁體中文](../../zh-TW/visual/design-workflow.md) | [日本語](../../ja-JP/visual/design-workflow.md) | [한국어](../../ko-KR/visual/design-workflow.md) | [Français](../../fr-FR/visual/design-workflow.md) | Deutsch | [Español](../../es-ES/visual/design-workflow.md) | [Português (Brasil)](../../pt-BR/visual/design-workflow.md) | [Русский](../../ru-RU/visual/design-workflow.md)
 
 Führen Sie diesen Ablauf vor der Erstellung der Oberfläche durch, nicht als nachträgliche Dokumentation. Einstieg in die Vorgaben ist der [UI-Designstandard](design-standard.md).
 

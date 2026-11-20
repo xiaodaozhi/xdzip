@@ -2,7 +2,7 @@
 
 # 상호 작용과 문구의 추가 사양
 
-[English](../../ux/interaction-spec.md) | [简体中文](../../zh-CN/ux/interaction-spec.md) | [繁體中文（台灣）](../../zh-TW/ux/interaction-spec.md) | [日本語](../../ja-JP/ux/interaction-spec.md) | 한국어 | [Français](../../fr-FR/ux/interaction-spec.md) | [Deutsch](../../de-DE/ux/interaction-spec.md) | [Español](../../es-ES/ux/interaction-spec.md) | [Português (Brasil)](../../pt-BR/ux/interaction-spec.md) | [Русский](../../ru-RU/ux/interaction-spec.md)
+[English](../../ux/interaction-spec.md) | [简体中文](../../zh-CN/ux/interaction-spec.md) | [繁體中文](../../zh-TW/ux/interaction-spec.md) | [日本語](../../ja-JP/ux/interaction-spec.md) | 한국어 | [Français](../../fr-FR/ux/interaction-spec.md) | [Deutsch](../../de-DE/ux/interaction-spec.md) | [Español](../../es-ES/ux/interaction-spec.md) | [Português (Brasil)](../../pt-BR/ux/interaction-spec.md) | [Русский](../../ru-RU/ux/interaction-spec.md)
 
 기본 창과 압축 풀기 확인의 시각 기준을 [작업 상태 사양](hifi-state-spec.md)이 보완합니다. 생성, 충돌, 작업, 결과, 설정과 플랫폼 비교를 다룹니다. 시작 페이지와 열기 진행은 [시작 페이지 계약](welcome-opening.md)을 참조하세요. 현재 시안과 레이아웃 참조는 [창 레지스트리](../../../specs/visual/window-registry.json)를 따릅니다. 실제 구현과 네이티브 표시의 검사 범위는 해당 기술 및 상호 작용 계약에서 설명합니다.
 

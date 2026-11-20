@@ -2,7 +2,7 @@
 
 # 콘텐츠 미리 보기
 
-[English](../../engineering/content-preview.md) | [简体中文](../../zh-CN/engineering/content-preview.md) | [繁體中文（台灣）](../../zh-TW/engineering/content-preview.md) | [日本語](../../ja-JP/engineering/content-preview.md) | 한국어 | [Français](../../fr-FR/engineering/content-preview.md) | [Deutsch](../../de-DE/engineering/content-preview.md) | [Español](../../es-ES/engineering/content-preview.md) | [Português (Brasil)](../../pt-BR/engineering/content-preview.md) | [Русский](../../ru-RU/engineering/content-preview.md)
+[English](../../engineering/content-preview.md) | [简体中文](../../zh-CN/engineering/content-preview.md) | [繁體中文](../../zh-TW/engineering/content-preview.md) | [日本語](../../ja-JP/engineering/content-preview.md) | 한국어 | [Français](../../fr-FR/engineering/content-preview.md) | [Deutsch](../../de-DE/engineering/content-preview.md) | [Español](../../es-ES/engineering/content-preview.md) | [Português (Brasil)](../../pt-BR/engineering/content-preview.md) | [Русский](../../ru-RU/engineering/content-preview.md)
 
 속성 카드가 보일 때 지원되는 파일 하나를 선택하면 선택이 안정된 후 미리 보기가 시작됩니다. 포인터가 미리 보기 위에 있거나 버튼이 키보드 포커스를 받으면 오른쪽 위에 새로 고침 아이콘이 나타나며 선택한 파일을 다시 불러옵니다. 카드는 읽기나 디코딩 실패를 알리고 여러 항목 선택 시 선택 메시지를 표시합니다. 기본 창과 독립 속성 뷰어는 이 동작과 기존 암호 창을 공유합니다. 파일 메타데이터는 별도로 계속 사용할 수 있습니다.
 

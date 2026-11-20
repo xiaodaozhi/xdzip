@@ -2,7 +2,7 @@
 
 # Produktlaufzeit und Qt-Lebenszyklus
 
-[English](../../engineering/product-runtime.md) | [简体中文](../../zh-CN/engineering/product-runtime.md) | [繁體中文（台灣）](../../zh-TW/engineering/product-runtime.md) | [日本語](../../ja-JP/engineering/product-runtime.md) | [한국어](../../ko-KR/engineering/product-runtime.md) | [Français](../../fr-FR/engineering/product-runtime.md) | Deutsch | [Español](../../es-ES/engineering/product-runtime.md) | [Português (Brasil)](../../pt-BR/engineering/product-runtime.md) | [Русский](../../ru-RU/engineering/product-runtime.md)
+[English](../../engineering/product-runtime.md) | [简体中文](../../zh-CN/engineering/product-runtime.md) | [繁體中文](../../zh-TW/engineering/product-runtime.md) | [日本語](../../ja-JP/engineering/product-runtime.md) | [한국어](../../ko-KR/engineering/product-runtime.md) | [Français](../../fr-FR/engineering/product-runtime.md) | Deutsch | [Español](../../es-ES/engineering/product-runtime.md) | [Português (Brasil)](../../pt-BR/engineering/product-runtime.md) | [Русский](../../ru-RU/engineering/product-runtime.md)
 
 Diese Anleitung beschreibt die Verbindung der Desktopanwendung zur Rust-Laufzeit über Befehle und Ereignisse einschließlich Warteschlangenbegrenzung, Herunterfahren und plattformspezifischer Builds. Die jeweiligen Fähigkeiten stehen in den Verträgen zum [schreibgeschützten Durchsuchen](readonly-browser.md) und [sicheren Entpacken](zip-safe-extraction.md).
 

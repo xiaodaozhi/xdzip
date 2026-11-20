@@ -1,7 +1,7 @@
 <a name="xdzip-host-calendar-and-encoding-services-for-format-workers"></a>
 # フォーマットワーカーが使用するホストの暦と文字エンコーディング
 
-[English](../../engineering/host-platform-services.md) | [简体中文](../../zh-CN/engineering/host-platform-services.md) | [繁體中文（台灣）](../../zh-TW/engineering/host-platform-services.md) | 日本語 | [한국어](../../ko-KR/engineering/host-platform-services.md) | [Français](../../fr-FR/engineering/host-platform-services.md) | [Deutsch](../../de-DE/engineering/host-platform-services.md) | [Español](../../es-ES/engineering/host-platform-services.md) | [Português (Brasil)](../../pt-BR/engineering/host-platform-services.md) | [Русский](../../ru-RU/engineering/host-platform-services.md)
+[English](../../engineering/host-platform-services.md) | [简体中文](../../zh-CN/engineering/host-platform-services.md) | [繁體中文](../../zh-TW/engineering/host-platform-services.md) | 日本語 | [한국어](../../ko-KR/engineering/host-platform-services.md) | [Français](../../fr-FR/engineering/host-platform-services.md) | [Deutsch](../../de-DE/engineering/host-platform-services.md) | [Español](../../es-ES/engineering/host-platform-services.md) | [Português (Brasil)](../../pt-BR/engineering/host-platform-services.md) | [Русский](../../ru-RU/engineering/host-platform-services.md)
 
 Rust はフォーマットのフィールド、パスワードの互換性規則、検証を扱います。OS の過去のタイムゾーン規則、OEM と ANSI のコードページ、ローカルの C エンコーディングはホスト環境に属し、`ReadSource` のオプションサービスを通じて参照できます。フォーマット層はファイル名、HostOS、現在の UTC オフセットからこれらを推測してはいけません。サービスは Qt に依存せず、パスへのアクセス権やファイルの確定権限を与えません。
 

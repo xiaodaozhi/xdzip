@@ -2,7 +2,7 @@
 
 # Windows 開發工具與執行庫許可
 
-[English](../../engineering/windows-licensing.md) | [简体中文](../../zh-CN/engineering/windows-licensing.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/windows-licensing.md) | [한국어](../../ko-KR/engineering/windows-licensing.md) | [Français](../../fr-FR/engineering/windows-licensing.md) | [Deutsch](../../de-DE/engineering/windows-licensing.md) | [Español](../../es-ES/engineering/windows-licensing.md) | [Português (Brasil)](../../pt-BR/engineering/windows-licensing.md) | [Русский](../../ru-RU/engineering/windows-licensing.md)
+[English](../../engineering/windows-licensing.md) | [简体中文](../../zh-CN/engineering/windows-licensing.md) | 繁體中文 | [日本語](../../ja-JP/engineering/windows-licensing.md) | [한국어](../../ko-KR/engineering/windows-licensing.md) | [Français](../../fr-FR/engineering/windows-licensing.md) | [Deutsch](../../de-DE/engineering/windows-licensing.md) | [Español](../../es-ES/engineering/windows-licensing.md) | [Português (Brasil)](../../pt-BR/engineering/windows-licensing.md) | [Русский](../../ru-RU/engineering/windows-licensing.md)
 
 本文定義 Windows 構建和再分發的適用路徑，與[原生執行庫材料](native-runtime-materials.md)、[開發構建入口](developer-build.md)和[安裝契約](installers-associations.md)共同使用。具體環境、驗證提交、材料雜湊和驗收結論登記在 issue 與本地／CI 工件，本文不儲存某臺機器的許可證明。
 

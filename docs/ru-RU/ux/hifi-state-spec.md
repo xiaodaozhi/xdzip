@@ -2,7 +2,7 @@
 
 # Высокодетализированные состояния и контракт реализации
 
-[English](../../ux/hifi-state-spec.md) | [简体中文](../../zh-CN/ux/hifi-state-spec.md) | [繁體中文（台灣）](../../zh-TW/ux/hifi-state-spec.md) | [日本語](../../ja-JP/ux/hifi-state-spec.md) | [한국어](../../ko-KR/ux/hifi-state-spec.md) | [Français](../../fr-FR/ux/hifi-state-spec.md) | [Deutsch](../../de-DE/ux/hifi-state-spec.md) | [Español](../../es-ES/ux/hifi-state-spec.md) | [Português (Brasil)](../../pt-BR/ux/hifi-state-spec.md) | Русский
+[English](../../ux/hifi-state-spec.md) | [简体中文](../../zh-CN/ux/hifi-state-spec.md) | [繁體中文](../../zh-TW/ux/hifi-state-spec.md) | [日本語](../../ja-JP/ux/hifi-state-spec.md) | [한국어](../../ko-KR/ux/hifi-state-spec.md) | [Français](../../fr-FR/ux/hifi-state-spec.md) | [Deutsch](../../de-DE/ux/hifi-state-spec.md) | [Español](../../es-ES/ux/hifi-state-spec.md) | [Português (Brasil)](../../pt-BR/ux/hifi-state-spec.md) | Русский
 
 Руководство описывает поведение, фокус и действия закрытия окон создания, извлечения и задач и ссылается на [исходные макеты состояний операций](../../../design/hifi/README.md) и [общую библиотеку ресурсов](../../../design/assets/README.md). Идентификаторы в таблице относятся к монтажным областям дизайна и не меняют протокол задач.
 

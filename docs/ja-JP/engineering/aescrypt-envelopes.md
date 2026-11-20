@@ -2,7 +2,7 @@
 
 # AES Crypt の読み取り専用封装
 
-[English](../../engineering/aescrypt-envelopes.md) | [简体中文](../../zh-CN/engineering/aescrypt-envelopes.md) | [繁體中文（台灣）](../../zh-TW/engineering/aescrypt-envelopes.md) | 日本語 | [한국어](../../ko-KR/engineering/aescrypt-envelopes.md) | [Français](../../fr-FR/engineering/aescrypt-envelopes.md) | [Deutsch](../../de-DE/engineering/aescrypt-envelopes.md) | [Español](../../es-ES/engineering/aescrypt-envelopes.md) | [Português (Brasil)](../../pt-BR/engineering/aescrypt-envelopes.md) | [Русский](../../ru-RU/engineering/aescrypt-envelopes.md)
+[English](../../engineering/aescrypt-envelopes.md) | [简体中文](../../zh-CN/engineering/aescrypt-envelopes.md) | [繁體中文](../../zh-TW/engineering/aescrypt-envelopes.md) | 日本語 | [한국어](../../ko-KR/engineering/aescrypt-envelopes.md) | [Français](../../fr-FR/engineering/aescrypt-envelopes.md) | [Deutsch](../../de-DE/engineering/aescrypt-envelopes.md) | [Español](../../es-ES/engineering/aescrypt-envelopes.md) | [Português (Brasil)](../../pt-BR/engineering/aescrypt-envelopes.md) | [Русский](../../ru-RU/engineering/aescrypt-envelopes.md)
 
 独立した Rust バックエンド `xdzip-codec-aescrypt` は AES Crypt ストリームバージョン 0、1、2、3 を読み取ります。アプリケーションのバージョン番号は別です。通常の仮想ファイルを 1 つ公開し、作成、変更、ボリューム、外部拡張の取得は提供しません。この形式は圧縮せずにデータを暗号化するため、行の方式は Store、暗号化フラグは true です。圧縮サイズは物理封装全体です。バックエンドは `.aes` ではなく内容検出によって選択されます。
 

@@ -2,7 +2,7 @@
 
 # Chargement sur la page d’accueil et fin de la création
 
-[English](../../ux/welcome-opening.md) | [简体中文](../../zh-CN/ux/welcome-opening.md) | [繁體中文（台灣）](../../zh-TW/ux/welcome-opening.md) | [日本語](../../ja-JP/ux/welcome-opening.md) | [한국어](../../ko-KR/ux/welcome-opening.md) | Français | [Deutsch](../../de-DE/ux/welcome-opening.md) | [Español](../../es-ES/ux/welcome-opening.md) | [Português (Brasil)](../../pt-BR/ux/welcome-opening.md) | [Русский](../../ru-RU/ux/welcome-opening.md)
+[English](../../ux/welcome-opening.md) | [简体中文](../../zh-CN/ux/welcome-opening.md) | [繁體中文](../../zh-TW/ux/welcome-opening.md) | [日本語](../../ja-JP/ux/welcome-opening.md) | [한국어](../../ko-KR/ux/welcome-opening.md) | Français | [Deutsch](../../de-DE/ux/welcome-opening.md) | [Español](../../es-ES/ux/welcome-opening.md) | [Português (Brasil)](../../pt-BR/ux/welcome-opening.md) | [Русский](../../ru-RU/ux/welcome-opening.md)
 
 Révision du 2026-10-16. Les paramètres viennent de [welcome-reference.json](../../../specs/visual/welcome-reference.json). La maquette dynamique est l’[état de chargement de l’accueil](../../../design/hifi/sources/welcome.html?opening=1). Les unités logiques de la fenêtre principale, des menus et de l’accueil, ainsi que la barre de titre, sont conservées.
 

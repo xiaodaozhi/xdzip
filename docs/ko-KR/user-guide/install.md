@@ -1,6 +1,6 @@
 # XDZip 설치 및 압축 파일 열기
 
-[English](../../user-guide/install.md) | [简体中文](../../zh-CN/user-guide/install.md) | [繁體中文（台灣）](../../zh-TW/user-guide/install.md) | [日本語](../../ja-JP/user-guide/install.md) | 한국어 | [Français](../../fr-FR/user-guide/install.md) | [Deutsch](../../de-DE/user-guide/install.md) | [Español](../../es-ES/user-guide/install.md) | [Português (Brasil)](../../pt-BR/user-guide/install.md) | [Русский](../../ru-RU/user-guide/install.md)
+[English](../../user-guide/install.md) | [简体中文](../../zh-CN/user-guide/install.md) | [繁體中文](../../zh-TW/user-guide/install.md) | [日本語](../../ja-JP/user-guide/install.md) | 한국어 | [Français](../../fr-FR/user-guide/install.md) | [Deutsch](../../de-DE/user-guide/install.md) | [Español](../../es-ES/user-guide/install.md) | [Português (Brasil)](../../pt-BR/user-guide/install.md) | [Русский](../../ru-RU/user-guide/install.md)
 
 [GitHub의 최신 안정 버전](https://github.com/xiaodaozhi/xdzip/releases/latest)에서 운영체제에 맞는 패키지를 내려받으세요. Windows에서는 Microsoft Store를 이용할 수도 있습니다. GitHub 페이지에는 파일 이름과 버전이 표시되며 직접 다운로드한 파일을 검증할 수 있는 `SHA256SUMS`도 제공됩니다. 시스템 요구 사항은 [지원 정책](../engineering/support-policy.md)을 참조하세요.
 

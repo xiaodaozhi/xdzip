@@ -2,7 +2,7 @@
 
 # Contrato do contêiner ASAR
 
-[English](../../engineering/asar-containers.md) | [简体中文](../../zh-CN/engineering/asar-containers.md) | [繁體中文（台灣）](../../zh-TW/engineering/asar-containers.md) | [日本語](../../ja-JP/engineering/asar-containers.md) | [한국어](../../ko-KR/engineering/asar-containers.md) | [Français](../../fr-FR/engineering/asar-containers.md) | [Deutsch](../../de-DE/engineering/asar-containers.md) | [Español](../../es-ES/engineering/asar-containers.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/asar-containers.md)
+[English](../../engineering/asar-containers.md) | [简体中文](../../zh-CN/engineering/asar-containers.md) | [繁體中文](../../zh-TW/engineering/asar-containers.md) | [日本語](../../ja-JP/engineering/asar-containers.md) | [한국어](../../ko-KR/engineering/asar-containers.md) | [Français](../../fr-FR/engineering/asar-containers.md) | [Deutsch](../../de-DE/engineering/asar-containers.md) | [Español](../../es-ES/engineering/asar-containers.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/asar-containers.md)
 
 O formato segue a [descrição do ASAR](https://github.com/electron/asar#format) do Electron e o [contrato do Pickle](https://chromium.googlesource.com/chromium/src/+/main/base/pickle.h) do Chromium. Um Pickle de oito bytes com o tamanho antecede uma cadeia Pickle com uma árvore de diretórios em JSON. Os deslocamentos dos arquivos são cadeias decimais relativas à área de dados. Cada entrada mantém sua identidade mesmo quando os arquivos compartilham os mesmos bytes. A integridade opcional declara SHA-256 para o arquivo completo e cada bloco de tamanho fixo. As declarações detectam corrupção e não autenticam o pacote ou o aplicativo.
 

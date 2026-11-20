@@ -2,7 +2,7 @@
 
 # 일반 Brotli 스트림 계약
 
-[English](../../engineering/brotli-streams.md) | [简体中文](../../zh-CN/engineering/brotli-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/brotli-streams.md) | [日本語](../../ja-JP/engineering/brotli-streams.md) | 한국어 | [Français](../../fr-FR/engineering/brotli-streams.md) | [Deutsch](../../de-DE/engineering/brotli-streams.md) | [Español](../../es-ES/engineering/brotli-streams.md) | [Português (Brasil)](../../pt-BR/engineering/brotli-streams.md) | [Русский](../../ru-RU/engineering/brotli-streams.md)
+[English](../../engineering/brotli-streams.md) | [简体中文](../../zh-CN/engineering/brotli-streams.md) | [繁體中文](../../zh-TW/engineering/brotli-streams.md) | [日本語](../../ja-JP/engineering/brotli-streams.md) | 한국어 | [Français](../../fr-FR/engineering/brotli-streams.md) | [Deutsch](../../de-DE/engineering/brotli-streams.md) | [Español](../../es-ES/engineering/brotli-streams.md) | [Português (Brasil)](../../pt-BR/engineering/brotli-streams.md) | [Русский](../../ru-RU/engineering/brotli-streams.md)
 
 `xdzip-compression::BrotliReader`는 일반 RFC 7932 Brotli 스트림 하나를 독립적으로 디코딩합니다. 호출자가 소유한 `Read` 권한과 허용된 압축 범위를 받으며 파일 이름, 파일 시스템, 네트워크, 프로세스 또는 출력 게시 권한은 없습니다. 제품은 [형식 레지스트리](format-registry.md)에 Brotli(`.br`)와 TAR.BR(`.tar.br`)을 등록합니다. 둘 다 공통 호스트의 소스, 작업, 할당량, 임시 준비와 게시 규칙을 사용하여 탐색, 미리 보기, 검사와 선택 항목 추출을 지원합니다. 조건에 맞는 기존 TAR.BR은 표준 비압축 메타블록으로 다시 써서 편집할 수 있습니다. 두 프로파일 모두 새 압축 파일 생성이나 분할 볼륨을 지원하지 않습니다. [압축 TAR 다시 쓰기](single-file-streams.md#xdzip-rewriting-compressed-tar-archives)를 참조하세요.
 

@@ -2,7 +2,7 @@
 
 # Ponte Qt/Rust e serviço da aplicação
 
-[English](../../design/qt-rust-bridge.md) | [简体中文](../../zh-CN/design/qt-rust-bridge.md) | [繁體中文（台灣）](../../zh-TW/design/qt-rust-bridge.md) | [日本語](../../ja-JP/design/qt-rust-bridge.md) | [한국어](../../ko-KR/design/qt-rust-bridge.md) | [Français](../../fr-FR/design/qt-rust-bridge.md) | [Deutsch](../../de-DE/design/qt-rust-bridge.md) | [Español](../../es-ES/design/qt-rust-bridge.md) | Português (Brasil) | [Русский](../../ru-RU/design/qt-rust-bridge.md)
+[English](../../design/qt-rust-bridge.md) | [简体中文](../../zh-CN/design/qt-rust-bridge.md) | [繁體中文](../../zh-TW/design/qt-rust-bridge.md) | [日本語](../../ja-JP/design/qt-rust-bridge.md) | [한국어](../../ko-KR/design/qt-rust-bridge.md) | [Français](../../fr-FR/design/qt-rust-bridge.md) | [Deutsch](../../de-DE/design/qt-rust-bridge.md) | [Español](../../es-ES/design/qt-rust-bridge.md) | Português (Brasil) | [Русский](../../ru-RU/design/qt-rust-bridge.md)
 
 O desktop Qt chama o runtime Rust pela ponte `cxx` vinculada. Cada `BrowserController` possui uma `RuntimeConnection` com uma instância de serviço separada. A ponte transporta comandos tipados e resultados com propriedade transferida dentro do processo de desktop. A CLI usa diretamente o mesmo serviço Rust. [Arquitetura do sistema](system-architecture.md), [Sessões de desktop](../engineering/application-sessions.md)
 

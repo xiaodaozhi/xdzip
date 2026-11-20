@@ -2,7 +2,7 @@
 
 # Ventanas de tareas y comprobaciones de integridad
 
-[English](../../ux/task-windows.md) | [简体中文](../../zh-CN/ux/task-windows.md) | [繁體中文（台灣）](../../zh-TW/ux/task-windows.md) | [日本語](../../ja-JP/ux/task-windows.md) | [한국어](../../ko-KR/ux/task-windows.md) | [Français](../../fr-FR/ux/task-windows.md) | [Deutsch](../../de-DE/ux/task-windows.md) | Español | [Português (Brasil)](../../pt-BR/ux/task-windows.md) | [Русский](../../ru-RU/ux/task-windows.md)
+[English](../../ux/task-windows.md) | [简体中文](../../zh-CN/ux/task-windows.md) | [繁體中文](../../zh-TW/ux/task-windows.md) | [日本語](../../ja-JP/ux/task-windows.md) | [한국어](../../ko-KR/ux/task-windows.md) | [Français](../../fr-FR/ux/task-windows.md) | [Deutsch](../../de-DE/ux/task-windows.md) | Español | [Português (Brasil)](../../pt-BR/ux/task-windows.md) | [Русский](../../ru-RU/ux/task-windows.md)
 
 La entrada de tareas de la aplicación agrupa todas las sesiones y dirige progreso, contraseñas, conflictos y resultados mediante el UUID de sesión y el ID de tarea del backend. Cerrar una página conserva su controlador; la salida explícita espera todas las uniones asíncronas. Véase el [contrato de sesiones de la aplicación](../engineering/application-sessions.md).
 

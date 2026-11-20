@@ -2,7 +2,7 @@
 
 # 普通 Brotli 流契約
 
-[English](../../engineering/brotli-streams.md) | [简体中文](../../zh-CN/engineering/brotli-streams.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/brotli-streams.md) | [한국어](../../ko-KR/engineering/brotli-streams.md) | [Français](../../fr-FR/engineering/brotli-streams.md) | [Deutsch](../../de-DE/engineering/brotli-streams.md) | [Español](../../es-ES/engineering/brotli-streams.md) | [Português (Brasil)](../../pt-BR/engineering/brotli-streams.md) | [Русский](../../ru-RU/engineering/brotli-streams.md)
+[English](../../engineering/brotli-streams.md) | [简体中文](../../zh-CN/engineering/brotli-streams.md) | 繁體中文 | [日本語](../../ja-JP/engineering/brotli-streams.md) | [한국어](../../ko-KR/engineering/brotli-streams.md) | [Français](../../fr-FR/engineering/brotli-streams.md) | [Deutsch](../../de-DE/engineering/brotli-streams.md) | [Español](../../es-ES/engineering/brotli-streams.md) | [Português (Brasil)](../../pt-BR/engineering/brotli-streams.md) | [Русский](../../ru-RU/engineering/brotli-streams.md)
 
 `xdzip-compression::BrotliReader` 獨立解碼單一普通的 RFC 7932 Brotli 串流。它只接收呼叫端持有的 `Read` 能力及允許的壓縮範圍，未持有檔名、檔案系統、網路、程序或發佈輸出的權限。產品透過[格式登記](format-registry.md)接入 Brotli（`.br`）及 TAR.BR（`.tar.br`），可瀏覽、預覽、檢查及解壓選取項目，並沿用共用的來源、任務、配額、暫存和提交規則。符合條件的現有 TAR.BR 可透過寫入標準未壓縮中繼區塊來修改。這兩種格式均不支援新建或分卷。詳見[改寫帶外層壓縮的 TAR](single-file-streams.md#xdzip-rewriting-compressed-tar-archives)。
 

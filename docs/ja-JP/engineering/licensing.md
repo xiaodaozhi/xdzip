@@ -2,7 +2,7 @@
 
 # ライセンスの決定と第三者資料
 
-[English](../../engineering/licensing.md) | [简体中文](../../zh-CN/engineering/licensing.md) | [繁體中文（台灣）](../../zh-TW/engineering/licensing.md) | 日本語 | [한국어](../../ko-KR/engineering/licensing.md) | [Français](../../fr-FR/engineering/licensing.md) | [Deutsch](../../de-DE/engineering/licensing.md) | [Español](../../es-ES/engineering/licensing.md) | [Português (Brasil)](../../pt-BR/engineering/licensing.md) | [Русский](../../ru-RU/engineering/licensing.md)
+[English](../../engineering/licensing.md) | [简体中文](../../zh-CN/engineering/licensing.md) | [繁體中文](../../zh-TW/engineering/licensing.md) | 日本語 | [한국어](../../ko-KR/engineering/licensing.md) | [Français](../../fr-FR/engineering/licensing.md) | [Deutsch](../../de-DE/engineering/licensing.md) | [Español](../../es-ES/engineering/licensing.md) | [Português (Brasil)](../../pt-BR/engineering/licensing.md) | [Русский](../../ru-RU/engineering/licensing.md)
 
 状態：採用済み。プロジェクトは 2026-10-11 に、別途明示されたものを除くプロジェクト独自のコード、文書、その他の独自コンテンツに **Apache-2.0** を採用しました。以前の実験文書にあった MIT OR Apache-2.0 の選択肢は、このリポジトリーには適用されません。
 

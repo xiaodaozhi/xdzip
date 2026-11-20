@@ -1,6 +1,6 @@
 # v0.1 交互原型与功能映射
 
-[English](../../ux/prototype-spec.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/ux/prototype-spec.md) | [日本語](../../ja-JP/ux/prototype-spec.md) | [한국어](../../ko-KR/ux/prototype-spec.md) | [Français](../../fr-FR/ux/prototype-spec.md) | [Deutsch](../../de-DE/ux/prototype-spec.md) | [Español](../../es-ES/ux/prototype-spec.md) | [Português (Brasil)](../../pt-BR/ux/prototype-spec.md) | [Русский](../../ru-RU/ux/prototype-spec.md)
+[English](../../ux/prototype-spec.md) | 简体中文 | [繁體中文](../../zh-TW/ux/prototype-spec.md) | [日本語](../../ja-JP/ux/prototype-spec.md) | [한국어](../../ko-KR/ux/prototype-spec.md) | [Français](../../fr-FR/ux/prototype-spec.md) | [Deutsch](../../de-DE/ux/prototype-spec.md) | [Español](../../es-ES/ux/prototype-spec.md) | [Português (Brasil)](../../pt-BR/ux/prototype-spec.md) | [Русский](../../ru-RU/ux/prototype-spec.md)
 
 状态：可交互设计验证稿。源文件在 [design/html](../../../design/html/README.md)，入口为 [index.html](../../../design/html/index.html)。Figma 工作稿保留为历史探索；当前功能与状态细化在仓库内继续。
 

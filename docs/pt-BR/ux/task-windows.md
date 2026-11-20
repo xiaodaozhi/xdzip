@@ -2,7 +2,7 @@
 
 # Janelas de tarefas e verificações de integridade
 
-[English](../../ux/task-windows.md) | [简体中文](../../zh-CN/ux/task-windows.md) | [繁體中文（台灣）](../../zh-TW/ux/task-windows.md) | [日本語](../../ja-JP/ux/task-windows.md) | [한국어](../../ko-KR/ux/task-windows.md) | [Français](../../fr-FR/ux/task-windows.md) | [Deutsch](../../de-DE/ux/task-windows.md) | [Español](../../es-ES/ux/task-windows.md) | Português (Brasil) | [Русский](../../ru-RU/ux/task-windows.md)
+[English](../../ux/task-windows.md) | [简体中文](../../zh-CN/ux/task-windows.md) | [繁體中文](../../zh-TW/ux/task-windows.md) | [日本語](../../ja-JP/ux/task-windows.md) | [한국어](../../ko-KR/ux/task-windows.md) | [Français](../../fr-FR/ux/task-windows.md) | [Deutsch](../../de-DE/ux/task-windows.md) | [Español](../../es-ES/ux/task-windows.md) | Português (Brasil) | [Русский](../../ru-RU/ux/task-windows.md)
 
 A entrada de tarefas do aplicativo reúne todas as sessões e encaminha progresso, senhas, conflitos e resultados usando UUID da sessão e ID da tarefa no backend. Fechar uma página mantém seu controlador; a saída explícita aguarda todas as junções assíncronas. Consulte o [contrato de sessões do aplicativo](../engineering/application-sessions.md).
 

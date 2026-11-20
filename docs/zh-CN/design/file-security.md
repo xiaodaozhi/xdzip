@@ -1,6 +1,6 @@
 # 文件授权与安全写出
 
-[English](../../design/file-security.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/file-security.md) | [日本語](../../ja-JP/design/file-security.md) | [한국어](../../ko-KR/design/file-security.md) | [Français](../../fr-FR/design/file-security.md) | [Deutsch](../../de-DE/design/file-security.md) | [Español](../../es-ES/design/file-security.md) | [Português (Brasil)](../../pt-BR/design/file-security.md) | [Русский](../../ru-RU/design/file-security.md)
+[English](../../design/file-security.md) | 简体中文 | [繁體中文](../../zh-TW/design/file-security.md) | [日本語](../../ja-JP/design/file-security.md) | [한국어](../../ko-KR/design/file-security.md) | [Français](../../fr-FR/design/file-security.md) | [Deutsch](../../de-DE/design/file-security.md) | [Español](../../es-ES/design/file-security.md) | [Português (Brasil)](../../pt-BR/design/file-security.md) | [Русский](../../ru-RU/design/file-security.md)
 
 由宿主决定可打开哪些文件，以及验证后的内容可写到哪里。格式后端只能使用有界的读取器和输出接收器，独立归档工作进程也遵循这一边界。归档名称、声明大小、校验和及内容都属于输入数据。宿主文件检查与格式校验分别生效。[系统架构](system-architecture.md)、[归档工作进程协议](../engineering/native-codecs.md)
 

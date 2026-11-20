@@ -2,7 +2,7 @@
 
 # Menús del sistema y bandeja
 
-[English](../../ux/desktop-integration.md) | [简体中文](../../zh-CN/ux/desktop-integration.md) | [繁體中文（台灣）](../../zh-TW/ux/desktop-integration.md) | [日本語](../../ja-JP/ux/desktop-integration.md) | [한국어](../../ko-KR/ux/desktop-integration.md) | [Français](../../fr-FR/ux/desktop-integration.md) | [Deutsch](../../de-DE/ux/desktop-integration.md) | Español | [Português (Brasil)](../../pt-BR/ux/desktop-integration.md) | [Русский](../../ru-RU/ux/desktop-integration.md)
+[English](../../ux/desktop-integration.md) | [简体中文](../../zh-CN/ux/desktop-integration.md) | [繁體中文](../../zh-TW/ux/desktop-integration.md) | [日本語](../../ja-JP/ux/desktop-integration.md) | [한국어](../../ko-KR/ux/desktop-integration.md) | [Français](../../fr-FR/ux/desktop-integration.md) | [Deutsch](../../de-DE/ux/desktop-integration.md) | Español | [Português (Brasil)](../../pt-BR/ux/desktop-integration.md) | [Русский](../../ru-RU/ux/desktop-integration.md)
 
 Las sesiones múltiples, instancia única, estado de ventanas y salida global siguen el [contrato de sesiones](../engineering/application-sessions.md). Cerrar una ventana principal que no sea la última conserva las tareas; la última sigue la configuración de bandeja. La confirmación de salida cubre todas las sesiones.
 

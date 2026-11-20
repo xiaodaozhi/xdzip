@@ -2,7 +2,7 @@
 
 # Фиксация инструментов и платформ
 
-[English](../../engineering/toolchain.md) | [简体中文](../../zh-CN/engineering/toolchain.md) | [繁體中文（台灣）](../../zh-TW/engineering/toolchain.md) | [日本語](../../ja-JP/engineering/toolchain.md) | [한국어](../../ko-KR/engineering/toolchain.md) | [Français](../../fr-FR/engineering/toolchain.md) | [Deutsch](../../de-DE/engineering/toolchain.md) | [Español](../../es-ES/engineering/toolchain.md) | [Português (Brasil)](../../pt-BR/engineering/toolchain.md) | Русский
+[English](../../engineering/toolchain.md) | [简体中文](../../zh-CN/engineering/toolchain.md) | [繁體中文](../../zh-TW/engineering/toolchain.md) | [日本語](../../ja-JP/engineering/toolchain.md) | [한국어](../../ko-KR/engineering/toolchain.md) | [Français](../../fr-FR/engineering/toolchain.md) | [Deutsch](../../de-DE/engineering/toolchain.md) | [Español](../../es-ES/engineering/toolchain.md) | [Português (Brasil)](../../pt-BR/engineering/toolchain.md) | Русский
 
 Версии инструментов разработки зафиксированы в rust-toolchain.toml, Cargo.lock, CMake и CI; область поддержки определяется [политикой поддержки](support-policy.md). Таблица задает проверки для обновлений и выпусков. Конкретные наблюдения остаются в issue или Actions; перечень инструментов одной машины не фиксирует зависимости выпуска.
 

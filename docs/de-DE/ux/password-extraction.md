@@ -2,7 +2,7 @@
 
 # Passwortabfrage beim Entpacken
 
-[English](../../ux/password-extraction.md) | [简体中文](../../zh-CN/ux/password-extraction.md) | [繁體中文（台灣）](../../zh-TW/ux/password-extraction.md) | [日本語](../../ja-JP/ux/password-extraction.md) | [한국어](../../ko-KR/ux/password-extraction.md) | [Français](../../fr-FR/ux/password-extraction.md) | Deutsch | [Español](../../es-ES/ux/password-extraction.md) | [Português (Brasil)](../../pt-BR/ux/password-extraction.md) | [Русский](../../ru-RU/ux/password-extraction.md)
+[English](../../ux/password-extraction.md) | [简体中文](../../zh-CN/ux/password-extraction.md) | [繁體中文](../../zh-TW/ux/password-extraction.md) | [日本語](../../ja-JP/ux/password-extraction.md) | [한국어](../../ko-KR/ux/password-extraction.md) | [Français](../../fr-FR/ux/password-extraction.md) | Deutsch | [Español](../../es-ES/ux/password-extraction.md) | [Português (Brasil)](../../pt-BR/ux/password-extraction.md) | [Русский](../../ru-RU/ux/password-extraction.md)
 
 Unterstützte ZIP-, 7z- und RAR-Aufgaben wechseln bei einem passwortgeschützten Eintrag in `waiting_password`. Die Laufzeit veröffentlicht eine Anforderung mit Aufgaben- und Anforderungs-ID. QML übermittelt nur Eingabe und Abbruch. Entschlüsselung, Authentifizierung und Dateiveröffentlichung liegen beim Kern. Passwortanfragen und Namenskonflikte sind getrennte Zustände. Passwortanfragen dürfen nicht im Konfliktfenster erscheinen. Format, Authentifizierung, Wiederholungen und Ausgabegrenzen folgen dem [technischen Vertrag](../engineering/password-extraction.md).
 

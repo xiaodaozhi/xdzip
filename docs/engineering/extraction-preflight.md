@@ -1,6 +1,6 @@
 # Extraction preflight: metadata phase
 
-English | [简体中文](../zh-CN/engineering/extraction-preflight.md) | [繁體中文（台灣）](../zh-TW/engineering/extraction-preflight.md) | [日本語](../ja-JP/engineering/extraction-preflight.md) | [한국어](../ko-KR/engineering/extraction-preflight.md) | [Français](../fr-FR/engineering/extraction-preflight.md) | [Deutsch](../de-DE/engineering/extraction-preflight.md) | [Español](../es-ES/engineering/extraction-preflight.md) | [Português (Brasil)](../pt-BR/engineering/extraction-preflight.md) | [Русский](../ru-RU/engineering/extraction-preflight.md)
+English | [简体中文](../zh-CN/engineering/extraction-preflight.md) | [繁體中文](../zh-TW/engineering/extraction-preflight.md) | [日本語](../ja-JP/engineering/extraction-preflight.md) | [한국어](../ko-KR/engineering/extraction-preflight.md) | [Français](../fr-FR/engineering/extraction-preflight.md) | [Deutsch](../de-DE/engineering/extraction-preflight.md) | [Español](../es-ES/engineering/extraction-preflight.md) | [Português (Brasil)](../pt-BR/engineering/extraction-preflight.md) | [Русский](../ru-RU/engineering/extraction-preflight.md)
 
 This module provides metadata preflight rules. It has no destination authorization, decoding, writing, staging, or commit capability.
 

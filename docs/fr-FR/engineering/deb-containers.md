@@ -2,7 +2,7 @@
 
 # Contrat du conteneur DEB
 
-[English](../../engineering/deb-containers.md) | [简体中文](../../zh-CN/engineering/deb-containers.md) | [繁體中文（台灣）](../../zh-TW/engineering/deb-containers.md) | [日本語](../../ja-JP/engineering/deb-containers.md) | [한국어](../../ko-KR/engineering/deb-containers.md) | Français | [Deutsch](../../de-DE/engineering/deb-containers.md) | [Español](../../es-ES/engineering/deb-containers.md) | [Português (Brasil)](../../pt-BR/engineering/deb-containers.md) | [Русский](../../ru-RU/engineering/deb-containers.md)
+[English](../../engineering/deb-containers.md) | [简体中文](../../zh-CN/engineering/deb-containers.md) | [繁體中文](../../zh-TW/engineering/deb-containers.md) | [日本語](../../ja-JP/engineering/deb-containers.md) | [한국어](../../ko-KR/engineering/deb-containers.md) | Français | [Deutsch](../../de-DE/engineering/deb-containers.md) | [Español](../../es-ES/engineering/deb-containers.md) | [Português (Brasil)](../../pt-BR/engineering/deb-containers.md) | [Русский](../../ru-RU/engineering/deb-containers.md)
 
 L’enveloppe du paquet suit [deb(5)](https://manpages.debian.org/unstable/dpkg-dev/deb.5.en.html) de Debian ; les champs ar communs suivent [ar(5)](https://man.netbsd.org/ar.5). Seule la disposition ordinaire `!<arch>\n` est admise. Chaque en-tête de 60 octets contient des champs ASCII bornés pour le nom, l’heure, le propriétaire, le mode et la taille, ainsi que le marqueur final requis. Vérifiez les champs décimaux, le mode octal, les plages exactes des données, le remplissage par saut de ligne des membres de longueur impaire et la fin physique du fichier. Les archives thin, les formats historiques et les extensions de noms longs ne sont pas pris en charge et ne confèrent aucun accès à des fichiers externes.
 

@@ -1,7 +1,7 @@
 <a name="xdzip-system-support-and-maintenance-policy"></a>
 # Política de compatibilidad y mantenimiento
 
-[English](../../engineering/support-policy.md) | [简体中文](../../zh-CN/engineering/support-policy.md) | [繁體中文（台灣）](../../zh-TW/engineering/support-policy.md) | [日本語](../../ja-JP/engineering/support-policy.md) | [한국어](../../ko-KR/engineering/support-policy.md) | [Français](../../fr-FR/engineering/support-policy.md) | [Deutsch](../../de-DE/engineering/support-policy.md) | Español | [Português (Brasil)](../../pt-BR/engineering/support-policy.md) | [Русский](../../ru-RU/engineering/support-policy.md)
+[English](../../engineering/support-policy.md) | [简体中文](../../zh-CN/engineering/support-policy.md) | [繁體中文](../../zh-TW/engineering/support-policy.md) | [日本語](../../ja-JP/engineering/support-policy.md) | [한국어](../../ko-KR/engineering/support-policy.md) | [Français](../../fr-FR/engineering/support-policy.md) | [Deutsch](../../de-DE/engineering/support-policy.md) | Español | [Português (Brasil)](../../pt-BR/engineering/support-policy.md) | [Русский](../../ru-RU/engineering/support-policy.md)
 
 El propietario del proyecto aprobó la política inicial el 2026-10-19. La versión `v0.1.0` se publicó el 2026-11-06. Consulta la [página de versiones](https://github.com/xiaodaozhi/xdzip/releases) para encontrar las versiones y descargas actuales. Esta política define el alcance de la compatibilidad. Se mantienen las comprobaciones de versión mínima. Los resultados de CI y las pruebas de aceptación del usuario se refieren a los entornos probados. El usuario dio por concluida la revisión manual.
 

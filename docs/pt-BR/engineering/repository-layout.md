@@ -2,7 +2,7 @@
 
 # Organização do repositório e dependências
 
-[English](../../engineering/repository-layout.md) | [简体中文](../../zh-CN/engineering/repository-layout.md) | [繁體中文（台灣）](../../zh-TW/engineering/repository-layout.md) | [日本語](../../ja-JP/engineering/repository-layout.md) | [한국어](../../ko-KR/engineering/repository-layout.md) | [Français](../../fr-FR/engineering/repository-layout.md) | [Deutsch](../../de-DE/engineering/repository-layout.md) | [Español](../../es-ES/engineering/repository-layout.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/repository-layout.md)
+[English](../../engineering/repository-layout.md) | [简体中文](../../zh-CN/engineering/repository-layout.md) | [繁體中文](../../zh-TW/engineering/repository-layout.md) | [日本語](../../ja-JP/engineering/repository-layout.md) | [한국어](../../ko-KR/engineering/repository-layout.md) | [Français](../../fr-FR/engineering/repository-layout.md) | [Deutsch](../../de-DE/engineering/repository-layout.md) | [Español](../../es-ES/engineering/repository-layout.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/repository-layout.md)
 
 Os arquivos Cargo.toml e CMakeLists.txt da raiz definem os módulos atuais do produto. A tabela descreve os diretórios existentes. As divisões previstas na arquitetura ainda são propostas.
 

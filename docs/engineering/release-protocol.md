@@ -1,6 +1,6 @@
 # GitHub Release protocol v1
 
-English | [简体中文](../zh-CN/engineering/release-protocol.md) | [繁體中文（台灣）](../zh-TW/engineering/release-protocol.md)
+English | [简体中文](../zh-CN/engineering/release-protocol.md) | [繁體中文](../zh-TW/engineering/release-protocol.md)
 
 This workflow serves GitHub downloads. The [Microsoft Store MSIX workflow](developer-build.md#microsoft-store-msix) packages the same versioned source for Microsoft Partner Center, which handles Store certification and publication.
 

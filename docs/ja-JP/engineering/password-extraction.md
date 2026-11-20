@@ -2,7 +2,7 @@
 
 # アーカイブのパスワードと暗号化ディレクトリのオープン
 
-[English](../../engineering/password-extraction.md) | [简体中文](../../zh-CN/engineering/password-extraction.md) | [繁體中文（台灣）](../../zh-TW/engineering/password-extraction.md) | 日本語 | [한국어](../../ko-KR/engineering/password-extraction.md) | [Français](../../fr-FR/engineering/password-extraction.md) | [Deutsch](../../de-DE/engineering/password-extraction.md) | [Español](../../es-ES/engineering/password-extraction.md) | [Português (Brasil)](../../pt-BR/engineering/password-extraction.md) | [Русский](../../ru-RU/engineering/password-extraction.md)
+[English](../../engineering/password-extraction.md) | [简体中文](../../zh-CN/engineering/password-extraction.md) | [繁體中文](../../zh-TW/engineering/password-extraction.md) | 日本語 | [한국어](../../ko-KR/engineering/password-extraction.md) | [Français](../../fr-FR/engineering/password-extraction.md) | [Deutsch](../../de-DE/engineering/password-extraction.md) | [Español](../../es-ES/engineering/password-extraction.md) | [Português (Brasil)](../../pt-BR/engineering/password-extraction.md) | [Русский](../../ru-RU/engineering/password-extraction.md)
 
 この契約は[安全な展開](zip-safe-extraction.md)を補足し、パスワード、認証、タスク操作を定義します。形式とファイル安全性のロジックは Qt から独立し、パスワードウィンドウはユーザーの意図だけを送ります。実際の進捗とプラットフォーム検証は [issue #11](https://github.com/xiaodaozhi/xdzip/issues/11)を参照してください。実行レポートはここに置きません。
 

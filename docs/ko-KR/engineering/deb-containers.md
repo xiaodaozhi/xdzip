@@ -2,7 +2,7 @@
 
 # DEB 컨테이너 계약
 
-[English](../../engineering/deb-containers.md) | [简体中文](../../zh-CN/engineering/deb-containers.md) | [繁體中文（台灣）](../../zh-TW/engineering/deb-containers.md) | [日本語](../../ja-JP/engineering/deb-containers.md) | 한국어 | [Français](../../fr-FR/engineering/deb-containers.md) | [Deutsch](../../de-DE/engineering/deb-containers.md) | [Español](../../es-ES/engineering/deb-containers.md) | [Português (Brasil)](../../pt-BR/engineering/deb-containers.md) | [Русский](../../ru-RU/engineering/deb-containers.md)
+[English](../../engineering/deb-containers.md) | [简体中文](../../zh-CN/engineering/deb-containers.md) | [繁體中文](../../zh-TW/engineering/deb-containers.md) | [日本語](../../ja-JP/engineering/deb-containers.md) | 한국어 | [Français](../../fr-FR/engineering/deb-containers.md) | [Deutsch](../../de-DE/engineering/deb-containers.md) | [Español](../../es-ES/engineering/deb-containers.md) | [Português (Brasil)](../../pt-BR/engineering/deb-containers.md) | [Русский](../../ru-RU/engineering/deb-containers.md)
 
 패키지 외부 구조는 Debian의 [deb(5)](https://manpages.debian.org/unstable/dpkg-dev/deb.5.en.html)를 따르고 공통 ar 필드는 [ar(5)](https://man.netbsd.org/ar.5)를 따릅니다. 일반 `!<arch>\n` 레이아웃만 허용합니다. 각 60바이트 헤더에는 크기가 제한된 ASCII 이름, 시간, 소유자, 모드, 크기 필드와 필수 끝 표시가 있습니다. 10진 필드, 8진 모드, 정확한 데이터 구간, 홀수 길이 멤버의 줄 바꿈 패딩과 실제 파일 끝을 검증합니다. thin 아카이브, 과거 형식과 긴 이름 확장은 지원하지 않으며 외부 파일 접근 권한도 부여하지 않습니다.
 

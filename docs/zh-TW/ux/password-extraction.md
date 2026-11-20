@@ -2,7 +2,7 @@
 
 # 密碼解壓互動
 
-[English](../../ux/password-extraction.md) | [简体中文](../../zh-CN/ux/password-extraction.md) | 繁體中文（台灣） | [日本語](../../ja-JP/ux/password-extraction.md) | [한국어](../../ko-KR/ux/password-extraction.md) | [Français](../../fr-FR/ux/password-extraction.md) | [Deutsch](../../de-DE/ux/password-extraction.md) | [Español](../../es-ES/ux/password-extraction.md) | [Português (Brasil)](../../pt-BR/ux/password-extraction.md) | [Русский](../../ru-RU/ux/password-extraction.md)
+[English](../../ux/password-extraction.md) | [简体中文](../../zh-CN/ux/password-extraction.md) | 繁體中文 | [日本語](../../ja-JP/ux/password-extraction.md) | [한국어](../../ko-KR/ux/password-extraction.md) | [Français](../../fr-FR/ux/password-extraction.md) | [Deutsch](../../de-DE/ux/password-extraction.md) | [Español](../../es-ES/ux/password-extraction.md) | [Português (Brasil)](../../pt-BR/ux/password-extraction.md) | [Русский](../../ru-RU/ux/password-extraction.md)
 
 受支援的 ZIP、7z 和 RAR 任務在遇到需要密碼的條目時進入 `waiting_password`。執行時釋出帶任務 ID 和請求 ID 的密碼請求；QML 只表達輸入與取消意圖，不負責解密、認證或檔案提交。密碼請求與重名衝突是不同狀態，不能把密碼請求交給重名視窗。格式、認證、重試次數及輸出邊界以[工程契約](../engineering/password-extraction.md)為準。
 

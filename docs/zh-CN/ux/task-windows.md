@@ -1,6 +1,6 @@
 # 任务窗口与完整性检查
 
-[English](../../ux/task-windows.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/ux/task-windows.md) | [日本語](../../ja-JP/ux/task-windows.md) | [한국어](../../ko-KR/ux/task-windows.md) | [Français](../../fr-FR/ux/task-windows.md) | [Deutsch](../../de-DE/ux/task-windows.md) | [Español](../../es-ES/ux/task-windows.md) | [Português (Brasil)](../../pt-BR/ux/task-windows.md) | [Русский](../../ru-RU/ux/task-windows.md)
+[English](../../ux/task-windows.md) | 简体中文 | [繁體中文](../../zh-TW/ux/task-windows.md) | [日本語](../../ja-JP/ux/task-windows.md) | [한국어](../../ko-KR/ux/task-windows.md) | [Français](../../fr-FR/ux/task-windows.md) | [Deutsch](../../de-DE/ux/task-windows.md) | [Español](../../es-ES/ux/task-windows.md) | [Português (Brasil)](../../pt-BR/ux/task-windows.md) | [Русский](../../ru-RU/ux/task-windows.md)
 
 任务进行中的“当前文件”固定为单行，中间省略，保留路径开头和文件名末尾。完整纯文本路径仍保留在数据与辅助功能名称中；相同状态和字号下，路径长度不能改变卡片或窗口高度。其他路径卡片及终态说明仍可换行。普通解压结果摘要仅显示“已处理 N 个文件”，数量取自 committedFiles，不依赖有界明细列表；零文件明确显示为零，不计入跳过或未完成项。压缩结果摘要仅显示“N 个文件”，不显示名称或容量。普通压缩按 outputParts 统计实际输出文件，包括分卷；批量压缩按成功完成的压缩任务数统计；批量解压也仅显示“N 个文件”，按成功完成的解压任务数统计，不拼接归档名称或容量。批量统计每行三列，默认显示已完成、未完成和已取消；点击居中的向下箭头展开其余计数，再次点击向上箭头收起；按钮保留悬停说明和可读的辅助功能名称。切换任务时恢复折叠，同一任务更新保留展开状态。批量压缩结果不显示卷组去重计数，批量解压结果将同一分卷组中重复选择而跳过的文件计为“同组跳过”。压缩和解压结果的未完成文件及其原因统一在可展开的处理明细中显示，任务级错误仍单独提示。
 

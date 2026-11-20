@@ -1,6 +1,6 @@
 # Просмотр, выбор и предпросмотр файлов
 
-[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | [繁體中文（台灣）](../../zh-TW/user-guide/browse.md) | [日本語](../../ja-JP/user-guide/browse.md) | [한국어](../../ko-KR/user-guide/browse.md) | [Français](../../fr-FR/user-guide/browse.md) | [Deutsch](../../de-DE/user-guide/browse.md) | [Español](../../es-ES/user-guide/browse.md) | [Português (Brasil)](../../pt-BR/user-guide/browse.md) | Русский
+[English](../../user-guide/browse.md) | [简体中文](../../zh-CN/user-guide/browse.md) | [繁體中文](../../zh-TW/user-guide/browse.md) | [日本語](../../ja-JP/user-guide/browse.md) | [한국어](../../ko-KR/user-guide/browse.md) | [Français](../../fr-FR/user-guide/browse.md) | [Deutsch](../../de-DE/user-guide/browse.md) | [Español](../../es-ES/user-guide/browse.md) | [Português (Brasil)](../../pt-BR/user-guide/browse.md) | Русский
 
 1. Откройте архив. Чтобы перейти в папку, выберите её в дереве или дважды нажмите на её строку. Строка пути позволяет вернуться в родительскую папку.
 2. Введите часть имени файла и нажмите Enter. Поиск выполняется в текущей папке и во вложенных папках. Выберите список или сетку и порядок сортировки. При любом порядке папки отображаются перед файлами.

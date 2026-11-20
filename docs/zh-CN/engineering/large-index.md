@@ -1,6 +1,6 @@
 # 大归档索引与按需浏览
 
-[English](../../engineering/large-index.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/large-index.md) | [日本語](../../ja-JP/engineering/large-index.md) | [한국어](../../ko-KR/engineering/large-index.md) | [Français](../../fr-FR/engineering/large-index.md) | [Deutsch](../../de-DE/engineering/large-index.md) | [Español](../../es-ES/engineering/large-index.md) | [Português (Brasil)](../../pt-BR/engineering/large-index.md) | [Русский](../../ru-RU/engineering/large-index.md)
+[English](../../engineering/large-index.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/large-index.md) | [日本語](../../ja-JP/engineering/large-index.md) | [한국어](../../ko-KR/engineering/large-index.md) | [Français](../../fr-FR/engineering/large-index.md) | [Deutsch](../../de-DE/engineering/large-index.md) | [Español](../../es-ES/engineering/large-index.md) | [Português (Brasil)](../../pt-BR/engineering/large-index.md) | [Русский](../../ru-RU/engineering/large-index.md)
 
 普通单文件 ZIP/ZIP64 的源码能力上限为一百万条物理记录。其他格式和分卷路径保持各自现有的十万条准入；格式名称不表示所有组合都已扩大上限。目录、重复名称和待检查记录均计入物理数量，隐式导航目录只增加展示行。
 

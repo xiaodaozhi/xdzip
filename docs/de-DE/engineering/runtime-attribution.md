@@ -2,7 +2,7 @@
 
 # Zuordnung tatsächlicher Komponenten und Lizenzunterlagen
 
-[English](../../engineering/runtime-attribution.md) | [简体中文](../../zh-CN/engineering/runtime-attribution.md) | [繁體中文（台灣）](../../zh-TW/engineering/runtime-attribution.md) | [日本語](../../ja-JP/engineering/runtime-attribution.md) | [한국어](../../ko-KR/engineering/runtime-attribution.md) | [Français](../../fr-FR/engineering/runtime-attribution.md) | Deutsch | [Español](../../es-ES/engineering/runtime-attribution.md) | [Português (Brasil)](../../pt-BR/engineering/runtime-attribution.md) | [Русский](../../ru-RU/engineering/runtime-attribution.md)
+[English](../../engineering/runtime-attribution.md) | [简体中文](../../zh-CN/engineering/runtime-attribution.md) | [繁體中文](../../zh-TW/engineering/runtime-attribution.md) | [日本語](../../ja-JP/engineering/runtime-attribution.md) | [한국어](../../ko-KR/engineering/runtime-attribution.md) | [Français](../../fr-FR/engineering/runtime-attribution.md) | Deutsch | [Español](../../es-ES/engineering/runtime-attribution.md) | [Português (Brasil)](../../pt-BR/engineering/runtime-attribution.md) | [Русский](../../ru-RU/engineering/runtime-attribution.md)
 
 Dieser Ablauf ergänzt dateibezogene SBOMs, indem er tatsächliche Qt-Bibliotheken und Plugins den SPDX-Erklärungen des SDK zuordnet. Seine Ausgabe sind überprüfbare Nachweise, keine automatische Lizenzwahl oder Konformitätsfreigabe. Die Vollständigkeit für eine offizielle Veröffentlichung ist weiterhin nicht erreicht.
 

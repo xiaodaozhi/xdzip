@@ -2,7 +2,7 @@
 
 # Icônes d’association de fichiers
 
-[English](../../visual/file-association-icons.md) | [简体中文](../../zh-CN/visual/file-association-icons.md) | [繁體中文（台灣）](../../zh-TW/visual/file-association-icons.md) | [日本語](../../ja-JP/visual/file-association-icons.md) | [한국어](../../ko-KR/visual/file-association-icons.md) | Français | [Deutsch](../../de-DE/visual/file-association-icons.md) | [Español](../../es-ES/visual/file-association-icons.md) | [Português (Brasil)](../../pt-BR/visual/file-association-icons.md) | [Русский](../../ru-RU/visual/file-association-icons.md)
+[English](../../visual/file-association-icons.md) | [简体中文](../../zh-CN/visual/file-association-icons.md) | [繁體中文](../../zh-TW/visual/file-association-icons.md) | [日本語](../../ja-JP/visual/file-association-icons.md) | [한국어](../../ko-KR/visual/file-association-icons.md) | Français | [Deutsch](../../de-DE/visual/file-association-icons.md) | [Español](../../es-ES/visual/file-association-icons.md) | [Português (Brasil)](../../pt-BR/visual/file-association-icons.md) | [Русский](../../ru-RU/visual/file-association-icons.md)
 
 Les icônes système réutilisent le document à coin replié de xdzip, le badge à courbure continue, les quatre bandes entrelacées et la marque ouverte en U. L’entrée de conception est la [page de revue haute fidélité](../../../design/hifi/sources/file-association-icons.html), les paramètres proviennent de [file-association-icons.json](../../../specs/visual/file-association-icons.json), et les sources et conteneurs de plateforme se trouvent dans [file-associations](../../../design/assets/file-associations). Les utilisateurs choisissent toujours leurs applications par défaut.
 

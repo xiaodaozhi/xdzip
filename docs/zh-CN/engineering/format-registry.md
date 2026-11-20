@@ -1,6 +1,6 @@
 # 内置格式能力登记
 
-[English](../../engineering/format-registry.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/format-registry.md) | [日本語](../../ja-JP/engineering/format-registry.md) | [한국어](../../ko-KR/engineering/format-registry.md) | [Français](../../fr-FR/engineering/format-registry.md) | [Deutsch](../../de-DE/engineering/format-registry.md) | [Español](../../es-ES/engineering/format-registry.md) | [Português (Brasil)](../../pt-BR/engineering/format-registry.md) | [Русский](../../ru-RU/engineering/format-registry.md)
+[English](../../engineering/format-registry.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/format-registry.md) | [日本語](../../ja-JP/engineering/format-registry.md) | [한국어](../../ko-KR/engineering/format-registry.md) | [Français](../../fr-FR/engineering/format-registry.md) | [Deutsch](../../de-DE/engineering/format-registry.md) | [Español](../../es-ES/engineering/format-registry.md) | [Português (Brasil)](../../pt-BR/engineering/format-registry.md) | [Русский](../../ru-RU/engineering/format-registry.md)
 
 内置格式以 [archive-formats.json](../../../specs/engineering/archive-formats.json) 为登记来源，记录稳定格式标识、标签、容器族、压缩外层、既有私有工作进程编号、支持的方法族、创建后缀、检查强度及入口候选。方法族是对应格式契约的摘要，不承诺全部参数、历史变体或组合；实际条目、宿主策略和平台能力仍在任务开始前进一步收敛准入范围。
 

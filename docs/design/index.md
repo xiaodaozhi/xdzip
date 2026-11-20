@@ -1,6 +1,6 @@
 # XDZip design guide
 
-English | [简体中文](../zh-CN/design/index.md) | [繁體中文（台灣）](../zh-TW/design/index.md) | [日本語](../ja-JP/design/index.md) | [한국어](../ko-KR/design/index.md) | [Français](../fr-FR/design/index.md) | [Deutsch](../de-DE/design/index.md) | [Español](../es-ES/design/index.md) | [Português (Brasil)](../pt-BR/design/index.md) | [Русский](../ru-RU/design/index.md)
+English | [简体中文](../zh-CN/design/index.md) | [繁體中文](../zh-TW/design/index.md) | [日本語](../ja-JP/design/index.md) | [한국어](../ko-KR/design/index.md) | [Français](../fr-FR/design/index.md) | [Deutsch](../de-DE/design/index.md) | [Español](../es-ES/design/index.md) | [Português (Brasil)](../pt-BR/design/index.md) | [Русский](../ru-RU/design/index.md)
 
 Start with the [system architecture](system-architecture.md) to see how the Qt Quick desktop and the independent Rust CLI reach the archive runtime. The design pages explain the current contracts, decisions and the scope of proposed work. Installation and everyday operations are covered in the [user manual](../user-guide/README.md). To build or change the project, see [Build and contribute](../contributing/README.md).
 

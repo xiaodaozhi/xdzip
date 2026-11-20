@@ -2,7 +2,7 @@
 
 # Produktdesign und technische Referenz
 
-[English](../../reference/README.md) | [简体中文](../../zh-CN/reference/README.md) | [繁體中文（台灣）](../../zh-TW/reference/README.md) | [日本語](../../ja-JP/reference/README.md) | [한국어](../../ko-KR/reference/README.md) | [Français](../../fr-FR/reference/README.md) | Deutsch | [Español](../../es-ES/reference/README.md) | [Português (Brasil)](../../pt-BR/reference/README.md) | [Русский](../../ru-RU/reference/README.md)
+[English](../../reference/README.md) | [简体中文](../../zh-CN/reference/README.md) | [繁體中文](../../zh-TW/reference/README.md) | [日本語](../../ja-JP/reference/README.md) | [한국어](../../ko-KR/reference/README.md) | [Français](../../fr-FR/reference/README.md) | Deutsch | [Español](../../es-ES/reference/README.md) | [Português (Brasil)](../../pt-BR/reference/README.md) | [Русский](../../ru-RU/reference/README.md)
 
 Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungspfade von Desktop und CLI. Die folgenden Abschnitte führen zum Vertrag für das jeweilige Verhalten. Die [Formattabelle](../../../README.de-DE.md#xdzip-format-support) zeigt die unterstützten Vorgänge. Bedienung und Einrichtung erläutern das [Benutzerhandbuch](../user-guide/README.md), die [CLI-Beispiele](../integration/README.md) und der [Leitfaden zum Mitwirken](../contributing/README.md).
 

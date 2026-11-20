@@ -2,7 +2,7 @@
 
 # Contrato de los flujos Zstandard
 
-[English](../../engineering/zstandard-streams.md) | [简体中文](../../zh-CN/engineering/zstandard-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/zstandard-streams.md) | [日本語](../../ja-JP/engineering/zstandard-streams.md) | [한국어](../../ko-KR/engineering/zstandard-streams.md) | [Français](../../fr-FR/engineering/zstandard-streams.md) | [Deutsch](../../de-DE/engineering/zstandard-streams.md) | Español | [Português (Brasil)](../../pt-BR/engineering/zstandard-streams.md) | [Русский](../../ru-RU/engineering/zstandard-streams.md)
+[English](../../engineering/zstandard-streams.md) | [简体中文](../../zh-CN/engineering/zstandard-streams.md) | [繁體中文](../../zh-TW/engineering/zstandard-streams.md) | [日本語](../../ja-JP/engineering/zstandard-streams.md) | [한국어](../../ko-KR/engineering/zstandard-streams.md) | [Français](../../fr-FR/engineering/zstandard-streams.md) | [Deutsch](../../de-DE/engineering/zstandard-streams.md) | Español | [Português (Brasil)](../../pt-BR/engineering/zstandard-streams.md) | [Русский](../../ru-RU/engineering/zstandard-streams.md)
 
 El perfil binario sigue la [RFC 8878](https://www.rfc-editor.org/rfc/rfc8878.html), el [formato 0.4.3](https://github.com/facebook/zstd/blob/v1.5.7/doc/zstd_compression_format.md) del autor y la [especificación XXH64](https://github.com/Cyan4973/xxHash/blob/v0.8.3/doc/xxhash_spec.md). Los algoritmos del producto son implementaciones independientes en Rust. Las bibliotecas y programas de referencia independientes solo generan datos de prueba controlados y quedan fuera de las dependencias del producto. Los permisos del host y la escritura definitiva siguen el [contrato de flujos de un solo archivo](single-file-streams.md).
 

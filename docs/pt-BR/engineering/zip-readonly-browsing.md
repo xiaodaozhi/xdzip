@@ -2,7 +2,7 @@
 
 # Contrato de navegação ZIP somente para leitura
 
-[English](../../engineering/zip-readonly-browsing.md) | [简体中文](../../zh-CN/engineering/zip-readonly-browsing.md) | [繁體中文（台灣）](../../zh-TW/engineering/zip-readonly-browsing.md) | [日本語](../../ja-JP/engineering/zip-readonly-browsing.md) | [한국어](../../ko-KR/engineering/zip-readonly-browsing.md) | [Français](../../fr-FR/engineering/zip-readonly-browsing.md) | [Deutsch](../../de-DE/engineering/zip-readonly-browsing.md) | [Español](../../es-ES/engineering/zip-readonly-browsing.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/zip-readonly-browsing.md)
+[English](../../engineering/zip-readonly-browsing.md) | [简体中文](../../zh-CN/engineering/zip-readonly-browsing.md) | [繁體中文](../../zh-TW/engineering/zip-readonly-browsing.md) | [日本語](../../ja-JP/engineering/zip-readonly-browsing.md) | [한국어](../../ko-KR/engineering/zip-readonly-browsing.md) | [Français](../../fr-FR/engineering/zip-readonly-browsing.md) | [Deutsch](../../de-DE/engineering/zip-readonly-browsing.md) | [Español](../../es-ES/engineering/zip-readonly-browsing.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/zip-readonly-browsing.md)
 
 O contrato define as entradas diretamente na raiz, a busca em subpastas, a identidade física estável e a ordenação que exibe pastas primeiro. A navegação ZIP lê metadados sem decodificar o conteúdo das entradas nem verificar o CRC. Nenhum arquivo é extraído. ZIPs comuns de grande porte podem usar um [índice privado de metadados em disco](large-index.md).
 

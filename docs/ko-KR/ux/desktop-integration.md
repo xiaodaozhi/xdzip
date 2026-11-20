@@ -2,7 +2,7 @@
 
 # 시스템 메뉴와 트레이
 
-[English](../../ux/desktop-integration.md) | [简体中文](../../zh-CN/ux/desktop-integration.md) | [繁體中文（台灣）](../../zh-TW/ux/desktop-integration.md) | [日本語](../../ja-JP/ux/desktop-integration.md) | 한국어 | [Français](../../fr-FR/ux/desktop-integration.md) | [Deutsch](../../de-DE/ux/desktop-integration.md) | [Español](../../es-ES/ux/desktop-integration.md) | [Português (Brasil)](../../pt-BR/ux/desktop-integration.md) | [Русский](../../ru-RU/ux/desktop-integration.md)
+[English](../../ux/desktop-integration.md) | [简体中文](../../zh-CN/ux/desktop-integration.md) | [繁體中文](../../zh-TW/ux/desktop-integration.md) | [日本語](../../ja-JP/ux/desktop-integration.md) | 한국어 | [Français](../../fr-FR/ux/desktop-integration.md) | [Deutsch](../../de-DE/ux/desktop-integration.md) | [Español](../../es-ES/ux/desktop-integration.md) | [Português (Brasil)](../../pt-BR/ux/desktop-integration.md) | [Русский](../../ru-RU/ux/desktop-integration.md)
 
 다중 세션, 단일 인스턴스, 창 상태와 전체 종료는 [애플리케이션 세션 계약](../engineering/application-sessions.md)을 따릅니다. 마지막이 아닌 기본 창을 닫아도 작업은 유지되며 마지막 창은 트레이 설정을 따릅니다. 종료 확인은 모든 세션을 포함합니다.
 

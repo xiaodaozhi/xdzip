@@ -2,7 +2,7 @@
 
 # Conception et mesure des performances
 
-[English](../../design/performance.md) | [简体中文](../../zh-CN/design/performance.md) | [繁體中文（台灣）](../../zh-TW/design/performance.md) | [日本語](../../ja-JP/design/performance.md) | [한국어](../../ko-KR/design/performance.md) | Français | [Deutsch](../../de-DE/design/performance.md) | [Español](../../es-ES/design/performance.md) | [Português (Brasil)](../../pt-BR/design/performance.md) | [Русский](../../ru-RU/design/performance.md)
+[English](../../design/performance.md) | [简体中文](../../zh-CN/design/performance.md) | [繁體中文](../../zh-TW/design/performance.md) | [日本語](../../ja-JP/design/performance.md) | [한국어](../../ko-KR/design/performance.md) | Français | [Deutsch](../../de-DE/design/performance.md) | [Español](../../es-ES/design/performance.md) | [Português (Brasil)](../../pt-BR/design/performance.md) | [Русский](../../ru-RU/design/performance.md)
 
 XDZip limite séparément mémoire et travail pour l’indexation, le transport, les tâches et l’aperçu d’images. Les limites de code ci-dessous sont des règles d’implémentation. Durées, mémoire et débit dépendent de la compilation et de la charge. Les objectifs de référence plus bas sont des objectifs d’ingénierie.
 

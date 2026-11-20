@@ -1,6 +1,6 @@
 # XDZip documentation
 
-English | [简体中文](zh-CN/README.md) | [繁體中文（台灣）](zh-TW/README.md) | [日本語](ja-JP/README.md) | [한국어](ko-KR/README.md) | [Français](fr-FR/README.md) | [Deutsch](de-DE/README.md) | [Español](es-ES/README.md) | [Português (Brasil)](pt-BR/README.md) | [Русский](ru-RU/README.md)
+English | [简体中文](zh-CN/README.md) | [繁體中文](zh-TW/README.md) | [日本語](ja-JP/README.md) | [한국어](ko-KR/README.md) | [Français](fr-FR/README.md) | [Deutsch](de-DE/README.md) | [Español](es-ES/README.md) | [Português (Brasil)](pt-BR/README.md) | [Русский](ru-RU/README.md)
 
 New to XDZip? [Choose a download and install it](user-guide/install.md), then [open an archive and browse its contents](user-guide/browse.md). The [format support table](../README.md#format-support) shows which formats you can open, create or edit. For an installed release, check its [release notes](https://github.com/xiaodaozhi/xdzip/releases) for the features available in that version.
 

@@ -2,7 +2,7 @@
 
 # Contabilização do trabalho auxiliar de algoritmos
 
-[English](../../engineering/auxiliary-decoding-work.md) | [简体中文](../../zh-CN/engineering/auxiliary-decoding-work.md) | [繁體中文（台灣）](../../zh-TW/engineering/auxiliary-decoding-work.md) | [日本語](../../ja-JP/engineering/auxiliary-decoding-work.md) | [한국어](../../ko-KR/engineering/auxiliary-decoding-work.md) | [Français](../../fr-FR/engineering/auxiliary-decoding-work.md) | [Deutsch](../../de-DE/engineering/auxiliary-decoding-work.md) | [Español](../../es-ES/engineering/auxiliary-decoding-work.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/auxiliary-decoding-work.md)
+[English](../../engineering/auxiliary-decoding-work.md) | [简体中文](../../zh-CN/engineering/auxiliary-decoding-work.md) | [繁體中文](../../zh-TW/engineering/auxiliary-decoding-work.md) | [日本語](../../ja-JP/engineering/auxiliary-decoding-work.md) | [한국어](../../ko-KR/engineering/auxiliary-decoding-work.md) | [Français](../../fr-FR/engineering/auxiliary-decoding-work.md) | [Deutsch](../../de-DE/engineering/auxiliary-decoding-work.md) | [Español](../../es-ES/engineering/auxiliary-decoding-work.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/auxiliary-decoding-work.md)
 
 A extração e a verificação acumulam separadamente os bytes de arquivos decodificados, a saída real e o trabalho auxiliar de algoritmos. A inicialização do modelo PPM, as reinicializações por capacidade e a decodificação de controles e parâmetros ficam fora do conteúdo dos arquivos. Elas não podem aumentar `decoded_bytes`, `written_bytes`, o progresso de arquivos ou a taxa de expansão, nem gerar crédito de entrega pré-contabilizada. Os instantâneos das tarefas não incluem um contador auxiliar visível ao usuário.
 

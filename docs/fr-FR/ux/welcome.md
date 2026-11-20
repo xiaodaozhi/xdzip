@@ -2,7 +2,7 @@
 
 # Page d’accueil de la fenêtre principale
 
-[English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | [繁體中文（台灣）](../../zh-TW/ux/welcome.md) | [日本語](../../ja-JP/ux/welcome.md) | [한국어](../../ko-KR/ux/welcome.md) | Français | [Deutsch](../../de-DE/ux/welcome.md) | [Español](../../es-ES/ux/welcome.md) | [Português (Brasil)](../../pt-BR/ux/welcome.md) | [Русский](../../ru-RU/ux/welcome.md)
+[English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | [繁體中文](../../zh-TW/ux/welcome.md) | [日本語](../../ja-JP/ux/welcome.md) | [한국어](../../ko-KR/ux/welcome.md) | Français | [Deutsch](../../de-DE/ux/welcome.md) | [Español](../../es-ES/ux/welcome.md) | [Português (Brasil)](../../pt-BR/ux/welcome.md) | [Русский](../../ru-RU/ux/welcome.md)
 
 Le design haute fidélité est confirmé et intégré à l’[entrée officielle de revue HTML](../../../design/html/index.html?view=welcome&zoom=1). Qt implémente l’ouverture et la création réelles ; l’acceptation manuelle du bureau est enregistrée séparément. Voir le [design des états de la page d’accueil](../../../design/hifi/sources/welcome.html) et [welcome-reference.json](../../../specs/visual/welcome-reference.json). Les couleurs et la densité de fenêtre conservent les jetons et layout-scale existants sans modifier les normes globales. Quatre PNG sont des exports des originaux dessinés par code, pas des captures du produit en exécution.
 

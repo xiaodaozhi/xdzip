@@ -2,7 +2,7 @@
 
 # Interação de extração com senha
 
-[English](../../ux/password-extraction.md) | [简体中文](../../zh-CN/ux/password-extraction.md) | [繁體中文（台灣）](../../zh-TW/ux/password-extraction.md) | [日本語](../../ja-JP/ux/password-extraction.md) | [한국어](../../ko-KR/ux/password-extraction.md) | [Français](../../fr-FR/ux/password-extraction.md) | [Deutsch](../../de-DE/ux/password-extraction.md) | [Español](../../es-ES/ux/password-extraction.md) | Português (Brasil) | [Русский](../../ru-RU/ux/password-extraction.md)
+[English](../../ux/password-extraction.md) | [简体中文](../../zh-CN/ux/password-extraction.md) | [繁體中文](../../zh-TW/ux/password-extraction.md) | [日本語](../../ja-JP/ux/password-extraction.md) | [한국어](../../ko-KR/ux/password-extraction.md) | [Français](../../fr-FR/ux/password-extraction.md) | [Deutsch](../../de-DE/ux/password-extraction.md) | [Español](../../es-ES/ux/password-extraction.md) | Português (Brasil) | [Русский](../../ru-RU/ux/password-extraction.md)
 
 As tarefas compatíveis de ZIP, 7z e RAR passam para `waiting_password` quando uma entrada exige senha. O ambiente de execução publica uma solicitação com o ID da tarefa e o ID da solicitação. O QML só transmite a entrada e a intenção de cancelar. O núcleo cuida da descriptografia, autenticação e publicação dos arquivos. Pedidos de senha e conflitos de nomes são estados separados. Um pedido de senha não deve abrir a janela de conflito. Os limites de formato, autenticação, tentativas e saída seguem o [contrato técnico](../engineering/password-extraction.md).
 

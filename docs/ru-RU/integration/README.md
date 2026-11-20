@@ -1,6 +1,6 @@
 # Использование XDZip в сценариях
 
-[English](../../integration/README.md) | [简体中文](../../zh-CN/integration/README.md) | [繁體中文（台灣）](../../zh-TW/integration/README.md) | [日本語](../../ja-JP/integration/README.md) | [한국어](../../ko-KR/integration/README.md) | [Français](../../fr-FR/integration/README.md) | [Deutsch](../../de-DE/integration/README.md) | [Español](../../es-ES/integration/README.md) | [Português (Brasil)](../../pt-BR/integration/README.md) | Русский
+[English](../../integration/README.md) | [简体中文](../../zh-CN/integration/README.md) | [繁體中文](../../zh-TW/integration/README.md) | [日本語](../../ja-JP/integration/README.md) | [한국어](../../ko-KR/integration/README.md) | [Français](../../fr-FR/integration/README.md) | [Deutsch](../../de-DE/integration/README.md) | [Español](../../es-ES/integration/README.md) | [Português (Brasil)](../../pt-BR/integration/README.md) | Русский
 
 Автономная CLI работает без Qt и сеанса рабочего стола. Выберите пакет `xdzip-cli-` для своей системы в разделе [выпусков GitHub](https://github.com/xiaodaozhi/xdzip/releases). Распакуйте пакет целиком и оставьте вспомогательную программу рядом с исполняемым файлом. Из распакованного каталога выполните `./bin/xdzip --help` в macOS или Linux либо `.\bin\xdzip.exe --help` в PowerShell.
 

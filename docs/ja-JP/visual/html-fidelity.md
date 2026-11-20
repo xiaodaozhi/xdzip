@@ -2,7 +2,7 @@
 
 # HTML の視覚的忠実度レビュー
 
-[English](../../visual/html-fidelity.md) | [简体中文](../../zh-CN/visual/html-fidelity.md) | [繁體中文（台灣）](../../zh-TW/visual/html-fidelity.md) | 日本語 | [한국어](../../ko-KR/visual/html-fidelity.md) | [Français](../../fr-FR/visual/html-fidelity.md) | [Deutsch](../../de-DE/visual/html-fidelity.md) | [Español](../../es-ES/visual/html-fidelity.md) | [Português (Brasil)](../../pt-BR/visual/html-fidelity.md) | [Русский](../../ru-RU/visual/html-fidelity.md)
+[English](../../visual/html-fidelity.md) | [简体中文](../../zh-CN/visual/html-fidelity.md) | [繁體中文](../../zh-TW/visual/html-fidelity.md) | 日本語 | [한국어](../../ko-KR/visual/html-fidelity.md) | [Français](../../fr-FR/visual/html-fidelity.md) | [Deutsch](../../de-DE/visual/html-fidelity.md) | [Español](../../es-ES/visual/html-fidelity.md) | [Português (Brasil)](../../pt-BR/visual/html-fidelity.md) | [Русский](../../ru-RU/visual/html-fidelity.md)
 
 高忠実度画像を視覚的な基準とし、HTML を編集可能な実装とします。ツールバーの上下の寸法は、現在の CSS から逆算せず、[固定された初期メインウィンドウ](../../../design/hifi/screens/main-light.png)から別々に測定します。現在の表示には[ライトのカプセルタブデザイン](../../../design/hifi/screens/main-capsule-light.png)と[ダークデザイン](../../../design/hifi/screens/main-capsule-dark.png)を使い、[編集可能なソース](../../../design/hifi/sources/main.html)から書き出します。これらは独立した測定に代わりません。タイトルバーは layout-scale.json の明示された改訂に照らして受け入れます。元画像には柔らかい輪郭と生成されたグリフがあり、テスト件数だけではページ全体のピクセル単位の完全一致を証明できません。
 

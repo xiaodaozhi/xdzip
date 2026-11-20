@@ -1,6 +1,6 @@
 # Installer XDZip et ouvrir une archive
 
-[English](../../user-guide/install.md) | [简体中文](../../zh-CN/user-guide/install.md) | [繁體中文（台灣）](../../zh-TW/user-guide/install.md) | [日本語](../../ja-JP/user-guide/install.md) | [한국어](../../ko-KR/user-guide/install.md) | Français | [Deutsch](../../de-DE/user-guide/install.md) | [Español](../../es-ES/user-guide/install.md) | [Português (Brasil)](../../pt-BR/user-guide/install.md) | [Русский](../../ru-RU/user-guide/install.md)
+[English](../../user-guide/install.md) | [简体中文](../../zh-CN/user-guide/install.md) | [繁體中文](../../zh-TW/user-guide/install.md) | [日本語](../../ja-JP/user-guide/install.md) | [한국어](../../ko-KR/user-guide/install.md) | Français | [Deutsch](../../de-DE/user-guide/install.md) | [Español](../../es-ES/user-guide/install.md) | [Português (Brasil)](../../pt-BR/user-guide/install.md) | [Русский](../../ru-RU/user-guide/install.md)
 
 Téléchargez le paquet de votre système depuis la [dernière version stable sur GitHub](https://github.com/xiaodaozhi/xdzip/releases/latest) ou utilisez le Microsoft Store sous Windows. La page GitHub indique le nom et la version du fichier et fournit `SHA256SUMS` pour vérifier les téléchargements directs. Consultez la [politique de prise en charge](../engineering/support-policy.md) pour connaître la configuration requise.
 

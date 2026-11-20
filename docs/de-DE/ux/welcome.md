@@ -2,7 +2,7 @@
 
 # Willkommensseite des Hauptfensters
 
-[English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | [繁體中文（台灣）](../../zh-TW/ux/welcome.md) | [日本語](../../ja-JP/ux/welcome.md) | [한국어](../../ko-KR/ux/welcome.md) | [Français](../../fr-FR/ux/welcome.md) | Deutsch | [Español](../../es-ES/ux/welcome.md) | [Português (Brasil)](../../pt-BR/ux/welcome.md) | [Русский](../../ru-RU/ux/welcome.md)
+[English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | [繁體中文](../../zh-TW/ux/welcome.md) | [日本語](../../ja-JP/ux/welcome.md) | [한국어](../../ko-KR/ux/welcome.md) | [Français](../../fr-FR/ux/welcome.md) | Deutsch | [Español](../../es-ES/ux/welcome.md) | [Português (Brasil)](../../pt-BR/ux/welcome.md) | [Русский](../../ru-RU/ux/welcome.md)
 
 Der hochauflösende Entwurf ist bestätigt und in den [offiziellen HTML-Prüfeinstieg](../../../design/html/index.html?view=welcome&zoom=1) integriert. Qt implementiert tatsächliches Öffnen und Erstellen; die manuelle Desktopabnahme wird getrennt erfasst. Siehe [Zustandsentwurf der Willkommensseite](../../../design/hifi/sources/welcome.html) und [welcome-reference.json](../../../specs/visual/welcome-reference.json). Farben und Hauptfensterdichte behalten bestehende Tokens und layout-scale bei, ohne globale Standards zu ändern. Vier PNGs sind Exporte codegezeichneter Entwurfsoriginale, keine Screenshots des laufenden Produkts.
 

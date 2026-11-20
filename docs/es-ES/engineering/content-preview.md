@@ -2,7 +2,7 @@
 
 # Vista previa del contenido
 
-[English](../../engineering/content-preview.md) | [简体中文](../../zh-CN/engineering/content-preview.md) | [繁體中文（台灣）](../../zh-TW/engineering/content-preview.md) | [日本語](../../ja-JP/engineering/content-preview.md) | [한국어](../../ko-KR/engineering/content-preview.md) | [Français](../../fr-FR/engineering/content-preview.md) | [Deutsch](../../de-DE/engineering/content-preview.md) | Español | [Português (Brasil)](../../pt-BR/engineering/content-preview.md) | [Русский](../../ru-RU/engineering/content-preview.md)
+[English](../../engineering/content-preview.md) | [简体中文](../../zh-CN/engineering/content-preview.md) | [繁體中文](../../zh-TW/engineering/content-preview.md) | [日本語](../../ja-JP/engineering/content-preview.md) | [한국어](../../ko-KR/engineering/content-preview.md) | [Français](../../fr-FR/engineering/content-preview.md) | [Deutsch](../../de-DE/engineering/content-preview.md) | Español | [Português (Brasil)](../../pt-BR/engineering/content-preview.md) | [Русский](../../ru-RU/engineering/content-preview.md)
 
 Cuando la tarjeta de propiedades está visible, seleccionar un archivo compatible inicia una vista previa una vez estabilizada la selección. El icono de actualización aparece arriba a la derecha cuando el puntero está sobre la vista previa o el botón recibe foco de teclado; vuelve a cargar el archivo seleccionado. La tarjeta informa de errores de lectura o decodificación y muestra un mensaje para selecciones múltiples. La ventana principal y el visor independiente de propiedades comparten estos comportamientos y la ventana de contraseña existente. Los metadatos siguen disponibles por separado.
 

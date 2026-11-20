@@ -2,7 +2,7 @@
 
 # 단일 파일 스트림과 ZIP 파생 패키지
 
-[English](../../engineering/single-file-streams.md) | [简体中文](../../zh-CN/engineering/single-file-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/single-file-streams.md) | [日本語](../../ja-JP/engineering/single-file-streams.md) | 한국어 | [Français](../../fr-FR/engineering/single-file-streams.md) | [Deutsch](../../de-DE/engineering/single-file-streams.md) | [Español](../../es-ES/engineering/single-file-streams.md) | [Português (Brasil)](../../pt-BR/engineering/single-file-streams.md) | [Русский](../../ru-RU/engineering/single-file-streams.md)
+[English](../../engineering/single-file-streams.md) | [简体中文](../../zh-CN/engineering/single-file-streams.md) | [繁體中文](../../zh-TW/engineering/single-file-streams.md) | [日本語](../../ja-JP/engineering/single-file-streams.md) | 한국어 | [Français](../../fr-FR/engineering/single-file-streams.md) | [Deutsch](../../de-DE/engineering/single-file-streams.md) | [Español](../../es-ES/engineering/single-file-streams.md) | [Português (Brasil)](../../pt-BR/engineering/single-file-streams.md) | [Русский](../../ru-RU/engineering/single-file-streams.md)
 
 [내장 레지스트리](format-registry.md)는 일반 GZIP을 TAR.GZ와 별도로 선언합니다. `xdzip-codec-stream`은 독립적인 `xdzip-compression`의 [RFC 1952](https://www.rfc-editor.org/rfc/rfc1952) 구현을 메타데이터, 페이로드, 생성 계약에 맞춥니다. 참조 압축 라이브러리는 제품 의존성에 포함되지 않습니다.
 

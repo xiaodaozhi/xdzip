@@ -1,6 +1,6 @@
 # Qt Quick desktop interface
 
-English | [简体中文](../zh-CN/design/qt-quick-ui.md) | [繁體中文（台灣）](../zh-TW/design/qt-quick-ui.md) | [日本語](../ja-JP/design/qt-quick-ui.md) | [한국어](../ko-KR/design/qt-quick-ui.md) | [Français](../fr-FR/design/qt-quick-ui.md) | [Deutsch](../de-DE/design/qt-quick-ui.md) | [Español](../es-ES/design/qt-quick-ui.md) | [Português (Brasil)](../pt-BR/design/qt-quick-ui.md) | [Русский](../ru-RU/design/qt-quick-ui.md)
+English | [简体中文](../zh-CN/design/qt-quick-ui.md) | [繁體中文](../zh-TW/design/qt-quick-ui.md) | [日本語](../ja-JP/design/qt-quick-ui.md) | [한국어](../ko-KR/design/qt-quick-ui.md) | [Français](../fr-FR/design/qt-quick-ui.md) | [Deutsch](../de-DE/design/qt-quick-ui.md) | [Español](../es-ES/design/qt-quick-ui.md) | [Português (Brasil)](../pt-BR/design/qt-quick-ui.md) | [Русский](../ru-RU/design/qt-quick-ui.md)
 
 The desktop uses Qt Quick for presentation and interaction. C++ controllers translate intent and maintain view state. The Rust runtime owns archive interpretation, task policy and file authority. The [system architecture](system-architecture.md) and [bridge contract](qt-rust-bridge.md) describe the calls below.
 

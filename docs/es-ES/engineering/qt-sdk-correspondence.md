@@ -2,7 +2,7 @@
 
 # Verificación de correspondencia entre el SDK de Qt y el código fuente
 
-[English](../../engineering/qt-sdk-correspondence.md) | [简体中文](../../zh-CN/engineering/qt-sdk-correspondence.md) | [繁體中文（台灣）](../../zh-TW/engineering/qt-sdk-correspondence.md) | [日本語](../../ja-JP/engineering/qt-sdk-correspondence.md) | [한국어](../../ko-KR/engineering/qt-sdk-correspondence.md) | [Français](../../fr-FR/engineering/qt-sdk-correspondence.md) | [Deutsch](../../de-DE/engineering/qt-sdk-correspondence.md) | Español | [Português (Brasil)](../../pt-BR/engineering/qt-sdk-correspondence.md) | [Русский](../../ru-RU/engineering/qt-sdk-correspondence.md)
+[English](../../engineering/qt-sdk-correspondence.md) | [简体中文](../../zh-CN/engineering/qt-sdk-correspondence.md) | [繁體中文](../../zh-TW/engineering/qt-sdk-correspondence.md) | [日本語](../../ja-JP/engineering/qt-sdk-correspondence.md) | [한국어](../../ko-KR/engineering/qt-sdk-correspondence.md) | [Français](../../fr-FR/engineering/qt-sdk-correspondence.md) | [Deutsch](../../de-DE/engineering/qt-sdk-correspondence.md) | Español | [Português (Brasil)](../../pt-BR/engineering/qt-sdk-correspondence.md) | [Русский](../../ru-RU/engineering/qt-sdk-correspondence.md)
 
 La verificación de correspondencia utiliza los bytes reales de los archivos oficiales; coincidir en el número de versión no demuestra equivalencia de compilación del SDK. `scripts/qt_sdk_correspondence.py` relaciona los archivos fuente fijados, los SPDX de fuentes proporcionados por el SDK, las declaraciones de compilación, la configuración instalada y los parches conocidos aplicados por quienes utilizan el SDK, y escribe el resultado en build/. No modifica el SDK ni aprueba opciones de licencia.
 

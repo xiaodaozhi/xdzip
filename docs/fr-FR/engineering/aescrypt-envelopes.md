@@ -2,7 +2,7 @@
 
 # Enveloppes AES Crypt en lecture seule
 
-[English](../../engineering/aescrypt-envelopes.md) | [简体中文](../../zh-CN/engineering/aescrypt-envelopes.md) | [繁體中文（台灣）](../../zh-TW/engineering/aescrypt-envelopes.md) | [日本語](../../ja-JP/engineering/aescrypt-envelopes.md) | [한국어](../../ko-KR/engineering/aescrypt-envelopes.md) | Français | [Deutsch](../../de-DE/engineering/aescrypt-envelopes.md) | [Español](../../es-ES/engineering/aescrypt-envelopes.md) | [Português (Brasil)](../../pt-BR/engineering/aescrypt-envelopes.md) | [Русский](../../ru-RU/engineering/aescrypt-envelopes.md)
+[English](../../engineering/aescrypt-envelopes.md) | [简体中文](../../zh-CN/engineering/aescrypt-envelopes.md) | [繁體中文](../../zh-TW/engineering/aescrypt-envelopes.md) | [日本語](../../ja-JP/engineering/aescrypt-envelopes.md) | [한국어](../../ko-KR/engineering/aescrypt-envelopes.md) | Français | [Deutsch](../../de-DE/engineering/aescrypt-envelopes.md) | [Español](../../es-ES/engineering/aescrypt-envelopes.md) | [Português (Brasil)](../../pt-BR/engineering/aescrypt-envelopes.md) | [Русский](../../ru-RU/engineering/aescrypt-envelopes.md)
 
 Le backend Rust indépendant `xdzip-codec-aescrypt` lit les versions de flux AES Crypt 0, 1, 2 et 3. Les numéros de version de l’application sont distincts. Un fichier virtuel ordinaire est exposé ; aucune création, modification, gestion de volumes ni récupération d’extensions externes n’est fournie. Le format contient des données chiffrées sans compression : la méthode de la ligne est Store et son indicateur chiffré est vrai. La taille compressée correspond à l’enveloppe physique entière. La détection par contenu, et non `.aes`, choisit le backend.
 

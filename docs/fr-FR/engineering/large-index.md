@@ -2,7 +2,7 @@
 
 # Indexation des grandes archives et navigation à la demande
 
-[English](../../engineering/large-index.md) | [简体中文](../../zh-CN/engineering/large-index.md) | [繁體中文（台灣）](../../zh-TW/engineering/large-index.md) | [日本語](../../ja-JP/engineering/large-index.md) | [한국어](../../ko-KR/engineering/large-index.md) | Français | [Deutsch](../../de-DE/engineering/large-index.md) | [Español](../../es-ES/engineering/large-index.md) | [Português (Brasil)](../../pt-BR/engineering/large-index.md) | [Русский](../../ru-RU/engineering/large-index.md)
+[English](../../engineering/large-index.md) | [简体中文](../../zh-CN/engineering/large-index.md) | [繁體中文](../../zh-TW/engineering/large-index.md) | [日本語](../../ja-JP/engineering/large-index.md) | [한국어](../../ko-KR/engineering/large-index.md) | Français | [Deutsch](../../de-DE/engineering/large-index.md) | [Español](../../es-ES/engineering/large-index.md) | [Português (Brasil)](../../pt-BR/engineering/large-index.md) | [Русский](../../ru-RU/engineering/large-index.md)
 
 La limite de capacité du code pour ZIP/ZIP64 ordinaire en un seul fichier est d’un million d’enregistrements physiques. Les autres formats et les archives fractionnées conservent leurs admissions existantes de 100 000 entrées ; un nom de format ne signifie pas que toutes ses combinaisons bénéficient de limites accrues. Répertoires, doublons et enregistrements à examiner comptent comme entrées physiques ; les répertoires implicites de navigation ajoutent seulement des lignes d’affichage.
 

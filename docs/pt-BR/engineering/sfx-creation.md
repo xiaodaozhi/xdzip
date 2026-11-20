@@ -1,6 +1,6 @@
 # Arquivos ZIP autoextraíveis criados pelo xdzip para Windows
 
-[English](../../engineering/sfx-creation.md) | [简体中文](../../zh-CN/engineering/sfx-creation.md) | [繁體中文（台灣）](../../zh-TW/engineering/sfx-creation.md) | [日本語](../../ja-JP/engineering/sfx-creation.md) | [한국어](../../ko-KR/engineering/sfx-creation.md) | [Français](../../fr-FR/engineering/sfx-creation.md) | [Deutsch](../../de-DE/engineering/sfx-creation.md) | [Español](../../es-ES/engineering/sfx-creation.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/sfx-creation.md)
+[English](../../engineering/sfx-creation.md) | [简体中文](../../zh-CN/engineering/sfx-creation.md) | [繁體中文](../../zh-TW/engineering/sfx-creation.md) | [日本語](../../ja-JP/engineering/sfx-creation.md) | [한국어](../../ko-KR/engineering/sfx-creation.md) | [Français](../../fr-FR/engineering/sfx-creation.md) | [Deutsch](../../de-DE/engineering/sfx-creation.md) | [Español](../../es-ES/engineering/sfx-creation.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/sfx-creation.md)
 
 O primeiro perfil SFX funciona apenas no Windows x64 e é criado com a extensão explícita `.sfx.exe`. Ele incorpora um ZIP Store ou Deflate de volume único, sem criptografia, ao inicializador `xdzip-sfx.exe` compilado pelo projeto. A criação nunca executa o inicializador. Arquivos `.exe` genéricos continuam fora da criação, do recurso de arrastar e soltar e do registro de associações do sistema.
 

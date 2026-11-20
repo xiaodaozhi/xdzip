@@ -2,7 +2,7 @@
 
 # 디스크 이미지와 기타 압축 형식의 소스 및 라이선스
 
-[English](../../engineering/disk-image-archive-format-sources.md) | [简体中文](../../zh-CN/engineering/disk-image-archive-format-sources.md) | [繁體中文（台灣）](../../zh-TW/engineering/disk-image-archive-format-sources.md) | [日本語](../../ja-JP/engineering/disk-image-archive-format-sources.md) | 한국어 | [Français](../../fr-FR/engineering/disk-image-archive-format-sources.md) | [Deutsch](../../de-DE/engineering/disk-image-archive-format-sources.md) | [Español](../../es-ES/engineering/disk-image-archive-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/disk-image-archive-format-sources.md) | [Русский](../../ru-RU/engineering/disk-image-archive-format-sources.md)
+[English](../../engineering/disk-image-archive-format-sources.md) | [简体中文](../../zh-CN/engineering/disk-image-archive-format-sources.md) | [繁體中文](../../zh-TW/engineering/disk-image-archive-format-sources.md) | [日本語](../../ja-JP/engineering/disk-image-archive-format-sources.md) | 한국어 | [Français](../../fr-FR/engineering/disk-image-archive-format-sources.md) | [Deutsch](../../de-DE/engineering/disk-image-archive-format-sources.md) | [Español](../../es-ES/engineering/disk-image-archive-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/disk-image-archive-format-sources.md) | [Русский](../../ru-RU/engineering/disk-image-archive-format-sources.md)
 
 이 페이지는 DAA, ISZ, ZPAQ, PEA, BOND, J2J와 관련 형식의 공개 기술 자료, 라이선스 제한과 지원 요건을 설명합니다. 공개 형식 설명이 디코더 배포 권한을 부여하지 않으며 참조 구현도 반드시 재배포 가능한 제품 의존성은 아닙니다. 아래 참조는 어느 것도 xdzip에 링크되지 않습니다. 형식이 제품 레지스트리에 들어가기 전에 소스 리비전, 라이선스 텍스트, 완전한 테스트 자료, 리소스 제한, 실패 동작을 확정해야 합니다.
 

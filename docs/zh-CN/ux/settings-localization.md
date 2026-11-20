@@ -1,6 +1,6 @@
 # 设置窗口与界面语言
 
-[English](../../ux/settings-localization.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/ux/settings-localization.md) | [日本語](../../ja-JP/ux/settings-localization.md) | [한국어](../../ko-KR/ux/settings-localization.md) | [Français](../../fr-FR/ux/settings-localization.md) | [Deutsch](../../de-DE/ux/settings-localization.md) | [Español](../../es-ES/ux/settings-localization.md) | [Português (Brasil)](../../pt-BR/ux/settings-localization.md) | [Русский](../../ru-RU/ux/settings-localization.md)
+[English](../../ux/settings-localization.md) | 简体中文 | [繁體中文](../../zh-TW/ux/settings-localization.md) | [日本語](../../ja-JP/ux/settings-localization.md) | [한국어](../../ko-KR/ux/settings-localization.md) | [Français](../../fr-FR/ux/settings-localization.md) | [Deutsch](../../de-DE/ux/settings-localization.md) | [Español](../../es-ES/ux/settings-localization.md) | [Português (Brasil)](../../pt-BR/ux/settings-localization.md) | [Русский](../../ru-RU/ux/settings-localization.md)
 
 没有可见主窗口时，从托盘打开的设置和关于窗口没有 owner，按指针所在显示器的可用区域居中。复用 OperationWindow 的屏幕居中路径，在原生窗口创建及高度确定后再次定位，完整原生边框保持在工作区内；高度上限取选定 QScreen 的实际可用高度，保留既有屏幕留白，不使用虚拟桌面合并范围推导位置或高度，不恢复隐藏或最小化的主窗口。已有 owner 的入口继续跟随调用窗口，窗口尺寸和密度不变。
 
@@ -35,7 +35,7 @@ macOS 手动更新说明显示当前首先未满足的安装条件，并保留�
 
 
 
-产品文案通过 `resources/i18n/` 中的稳定 ID 引用，QML 使用 `qsTrId`，C++ 使用 `qtTrId`。协议码、文件名、路径和用户内容保留原值。语言菜单首先显示“自动识别”，其余选项显示随包语言的自称。每次启动时，自动模式独立于应用数字区域设置读取系统首选界面语言。中文显式简繁标记优先于地区。繁体中文及台湾、香港、澳门地区使用台湾繁体译文。其他语言在有对应译文时使用该语言的受支持版本。首选系统语言不受支持或为空时使用美式英语。
+产品文案通过 `resources/i18n/` 中的稳定 ID 引用，QML 使用 `qsTrId`，C++ 使用 `qtTrId`。协议码、文件名、路径和用户内容保留原值。语言菜单首先显示“自动识别”，其余选项显示随包语言的自称。每次启动时，自动模式独立于应用数字区域设置读取系统首选界面语言。中文显式简繁标记优先于地区。繁体中文显式标记以及 zh-TW、zh-HK、zh-MO 地区使用繁体中文译文。其他语言在有对应译文时使用该语言的受支持版本。首选系统语言不受支持或为空时使用美式英语。
 
 切换语言立即生效，保存失败时恢复原选择和显示语言。手动选择中英文之外的新增语言时，设置文件在 `locale/extendedLanguage` 记录所选语言，并在 `locale/language` 保存旧版可读取的回退值。旧版将繁体中文显示为简体中文，其余新增语言显示为英语，并继续读取其他设置。新版在扩展值与已保存的回退值匹配时使用扩展值。选择自动识别、简体中文或美式英语时清除扩展值。
 

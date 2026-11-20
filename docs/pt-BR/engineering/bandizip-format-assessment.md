@@ -2,7 +2,7 @@
 
 # Inventário de formatos do Bandizip e viabilidade no xdzip
 
-[English](../../engineering/bandizip-format-assessment.md) | [简体中文](../../zh-CN/engineering/bandizip-format-assessment.md) | [繁體中文（台灣）](../../zh-TW/engineering/bandizip-format-assessment.md) | [日本語](../../ja-JP/engineering/bandizip-format-assessment.md) | [한국어](../../ko-KR/engineering/bandizip-format-assessment.md) | [Français](../../fr-FR/engineering/bandizip-format-assessment.md) | [Deutsch](../../de-DE/engineering/bandizip-format-assessment.md) | [Español](../../es-ES/engineering/bandizip-format-assessment.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/bandizip-format-assessment.md)
+[English](../../engineering/bandizip-format-assessment.md) | [简体中文](../../zh-CN/engineering/bandizip-format-assessment.md) | [繁體中文](../../zh-TW/engineering/bandizip-format-assessment.md) | [日本語](../../ja-JP/engineering/bandizip-format-assessment.md) | [한국어](../../ko-KR/engineering/bandizip-format-assessment.md) | [Français](../../fr-FR/engineering/bandizip-format-assessment.md) | [Deutsch](../../de-DE/engineering/bandizip-format-assessment.md) | [Español](../../es-ES/engineering/bandizip-format-assessment.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/bandizip-format-assessment.md)
 
 Esta avaliação compara os formatos listados pelo Bandizip ao escopo de implementação do xdzip e identifica recursos que exigem verificação de fontes, amostras e testes automatizados. O inventário vem da página do produto Bandizip e das páginas de ajuda de formatos, consultadas em 2026-11-15:
 

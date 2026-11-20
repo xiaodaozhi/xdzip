@@ -2,7 +2,7 @@
 
 # ARJ 圧縮ストリームとコンテナーの受け入れ
 
-[English](../../engineering/arj-streams.md) | [简体中文](../../zh-CN/engineering/arj-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/arj-streams.md) | 日本語 | [한국어](../../ko-KR/engineering/arj-streams.md) | [Français](../../fr-FR/engineering/arj-streams.md) | [Deutsch](../../de-DE/engineering/arj-streams.md) | [Español](../../es-ES/engineering/arj-streams.md) | [Português (Brasil)](../../pt-BR/engineering/arj-streams.md) | [Русский](../../ru-RU/engineering/arj-streams.md)
+[English](../../engineering/arj-streams.md) | [简体中文](../../zh-CN/engineering/arj-streams.md) | [繁體中文](../../zh-TW/engineering/arj-streams.md) | 日本語 | [한국어](../../ko-KR/engineering/arj-streams.md) | [Français](../../fr-FR/engineering/arj-streams.md) | [Deutsch](../../de-DE/engineering/arj-streams.md) | [Español](../../es-ES/engineering/arj-streams.md) | [Português (Brasil)](../../pt-BR/engineering/arj-streams.md) | [Русский](../../ru-RU/engineering/arj-streams.md)
 
 `ArjReader` は ARJ 方式 1–4 の上限付き生デコードを提供します。Store はこのリーダーではなくコンテナーに属します。`xdzip-codec-arj` はホストが所有するソース上で完全な物理構造と CRC 検証済みメンバーの配信を提供します。`ArjCodec` は受理されたプロファイルをランタイム、CLI、デスクトップの閲覧、検査、展開に接続します。[形式レジストリ](../../../specs/engineering/archive-formats.json)は読み取り専用の境界を宣言し、作成、書き換え、パスワード、分割は利用できません。
 

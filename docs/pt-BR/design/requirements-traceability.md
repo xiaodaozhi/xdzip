@@ -2,7 +2,7 @@
 
 # Rastreabilidade de requisitos e verificações
 
-[English](../../design/requirements-traceability.md) | [简体中文](../../zh-CN/design/requirements-traceability.md) | [繁體中文（台灣）](../../zh-TW/design/requirements-traceability.md) | [日本語](../../ja-JP/design/requirements-traceability.md) | [한국어](../../ko-KR/design/requirements-traceability.md) | [Français](../../fr-FR/design/requirements-traceability.md) | [Deutsch](../../de-DE/design/requirements-traceability.md) | [Español](../../es-ES/design/requirements-traceability.md) | Português (Brasil) | [Русский](../../ru-RU/design/requirements-traceability.md)
+[English](../../design/requirements-traceability.md) | [简体中文](../../zh-CN/design/requirements-traceability.md) | [繁體中文](../../zh-TW/design/requirements-traceability.md) | [日本語](../../ja-JP/design/requirements-traceability.md) | [한국어](../../ko-KR/design/requirements-traceability.md) | [Français](../../fr-FR/design/requirements-traceability.md) | [Deutsch](../../de-DE/design/requirements-traceability.md) | [Español](../../es-ES/design/requirements-traceability.md) | Português (Brasil) | [Русский](../../ru-RU/design/requirements-traceability.md)
 
 Os [requisitos do produto](product-requirements.md) definem os identificadores e seu escopo atual. Cada linha indica o que verificar quando o comportamento muda. Resultados, plataformas e limites são registrados com a alteração correspondente. Os [casos de aceitação](../../../developers/qa/acceptance.md) indicam os pontos de entrada das verificações.
 

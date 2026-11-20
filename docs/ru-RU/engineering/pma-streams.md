@@ -2,7 +2,7 @@
 
 # Контейнеры PMA и методы PMarc
 
-[English](../../engineering/pma-streams.md) | [简体中文](../../zh-CN/engineering/pma-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/pma-streams.md) | [日本語](../../ja-JP/engineering/pma-streams.md) | [한국어](../../ko-KR/engineering/pma-streams.md) | [Français](../../fr-FR/engineering/pma-streams.md) | [Deutsch](../../de-DE/engineering/pma-streams.md) | [Español](../../es-ES/engineering/pma-streams.md) | [Português (Brasil)](../../pt-BR/engineering/pma-streams.md) | Русский
+[English](../../engineering/pma-streams.md) | [简体中文](../../zh-CN/engineering/pma-streams.md) | [繁體中文](../../zh-TW/engineering/pma-streams.md) | [日本語](../../ja-JP/engineering/pma-streams.md) | [한국어](../../ko-KR/engineering/pma-streams.md) | [Français](../../fr-FR/engineering/pma-streams.md) | [Deutsch](../../de-DE/engineering/pma-streams.md) | [Español](../../es-ES/engineering/pma-streams.md) | [Português (Brasil)](../../pt-BR/engineering/pma-streams.md) | Русский
 
 PMarc использует последовательные заголовки, похожие на LHA, с методами `-pm0-`, `-pm1-` и `-pm2-`. Они обозначают разные алгоритмы и не являются синонимами похожих по названию методов LH. Профиль PMA только для чтения допускает просмотр, проверку и выборочное извлечение элементов PM0, PM1 и PM2 с заголовком уровня 0. Неизвестные методы остаются видимыми с предупреждением о неподдерживаемом содержимом. Создание, изменение, шифрование, тома и восстановление не допускаются; окончательным источником сведений служит реестр форматов.
 

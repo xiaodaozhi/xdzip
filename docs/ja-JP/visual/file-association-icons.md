@@ -2,7 +2,7 @@
 
 # ファイル関連付けアイコン
 
-[English](../../visual/file-association-icons.md) | [简体中文](../../zh-CN/visual/file-association-icons.md) | [繁體中文（台灣）](../../zh-TW/visual/file-association-icons.md) | 日本語 | [한국어](../../ko-KR/visual/file-association-icons.md) | [Français](../../fr-FR/visual/file-association-icons.md) | [Deutsch](../../de-DE/visual/file-association-icons.md) | [Español](../../es-ES/visual/file-association-icons.md) | [Português (Brasil)](../../pt-BR/visual/file-association-icons.md) | [Русский](../../ru-RU/visual/file-association-icons.md)
+[English](../../visual/file-association-icons.md) | [简体中文](../../zh-CN/visual/file-association-icons.md) | [繁體中文](../../zh-TW/visual/file-association-icons.md) | 日本語 | [한국어](../../ko-KR/visual/file-association-icons.md) | [Français](../../fr-FR/visual/file-association-icons.md) | [Deutsch](../../de-DE/visual/file-association-icons.md) | [Español](../../es-ES/visual/file-association-icons.md) | [Português (Brasil)](../../pt-BR/visual/file-association-icons.md) | [Русский](../../ru-RU/visual/file-association-icons.md)
 
 システムのファイルアイコンは xdzip の折り返した角の文書、連続曲率のバッジ、交差する四本の帯、開いた U 字のマークを再利用します。設計入口は[高忠実度レビュー画面](../../../design/hifi/sources/file-association-icons.html)、パラメーターは [file-association-icons.json](../../../specs/visual/file-association-icons.json)、文書アイコンのソースと製品のプラットフォーム用コンテナーは [file-associations](../../../design/assets/file-associations) にあります。既定のアプリは引き続きユーザーが選択します。
 

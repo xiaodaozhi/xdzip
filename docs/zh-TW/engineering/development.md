@@ -2,7 +2,7 @@
 
 # 開發者準備指南
 
-[English](../../engineering/development.md) | [简体中文](../../zh-CN/engineering/development.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/development.md) | [한국어](../../ko-KR/engineering/development.md) | [Français](../../fr-FR/engineering/development.md) | [Deutsch](../../de-DE/engineering/development.md) | [Español](../../es-ES/engineering/development.md) | [Português (Brasil)](../../pt-BR/engineering/development.md) | [Русский](../../ru-RU/engineering/development.md)
+[English](../../engineering/development.md) | [简体中文](../../zh-CN/engineering/development.md) | 繁體中文 | [日本語](../../ja-JP/engineering/development.md) | [한국어](../../ko-KR/engineering/development.md) | [Français](../../fr-FR/engineering/development.md) | [Deutsch](../../de-DE/engineering/development.md) | [Español](../../es-ES/engineering/development.md) | [Português (Brasil)](../../pt-BR/engineering/development.md) | [Русский](../../ru-RU/engineering/development.md)
 
 從[開發與貢獻](../contributing/README.md)選擇適合這次改動的構建和驗證入口。[系統架構](../design/system-architecture.md)與[倉庫結構](repository-layout.md)說明 Qt、Rust 執行時和各格式模組的邊界。
 

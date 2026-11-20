@@ -2,7 +2,7 @@
 
 # 도구 체인과 플랫폼 고정
 
-[English](../../engineering/toolchain.md) | [简体中文](../../zh-CN/engineering/toolchain.md) | [繁體中文（台灣）](../../zh-TW/engineering/toolchain.md) | [日本語](../../ja-JP/engineering/toolchain.md) | 한국어 | [Français](../../fr-FR/engineering/toolchain.md) | [Deutsch](../../de-DE/engineering/toolchain.md) | [Español](../../es-ES/engineering/toolchain.md) | [Português (Brasil)](../../pt-BR/engineering/toolchain.md) | [Русский](../../ru-RU/engineering/toolchain.md)
+[English](../../engineering/toolchain.md) | [简体中文](../../zh-CN/engineering/toolchain.md) | [繁體中文](../../zh-TW/engineering/toolchain.md) | [日本語](../../ja-JP/engineering/toolchain.md) | 한국어 | [Français](../../fr-FR/engineering/toolchain.md) | [Deutsch](../../de-DE/engineering/toolchain.md) | [Español](../../es-ES/engineering/toolchain.md) | [Português (Brasil)](../../pt-BR/engineering/toolchain.md) | [Русский](../../ru-RU/engineering/toolchain.md)
 
 개발 도구 버전은 rust-toolchain.toml, Cargo.lock, CMake와 CI에서 고정하며 지원 범위는 [지원 정책](support-policy.md)을 따릅니다. 이 표는 업그레이드와 릴리스의 검증을 정의합니다. 구체적인 관찰은 issue나 Actions에 남기며 한 기기의 도구 목록을 릴리스 의존성 잠금으로 삼지 않습니다.
 

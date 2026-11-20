@@ -2,7 +2,7 @@
 
 # システムメニューとトレイ
 
-[English](../../ux/desktop-integration.md) | [简体中文](../../zh-CN/ux/desktop-integration.md) | [繁體中文（台灣）](../../zh-TW/ux/desktop-integration.md) | 日本語 | [한국어](../../ko-KR/ux/desktop-integration.md) | [Français](../../fr-FR/ux/desktop-integration.md) | [Deutsch](../../de-DE/ux/desktop-integration.md) | [Español](../../es-ES/ux/desktop-integration.md) | [Português (Brasil)](../../pt-BR/ux/desktop-integration.md) | [Русский](../../ru-RU/ux/desktop-integration.md)
+[English](../../ux/desktop-integration.md) | [简体中文](../../zh-CN/ux/desktop-integration.md) | [繁體中文](../../zh-TW/ux/desktop-integration.md) | 日本語 | [한국어](../../ko-KR/ux/desktop-integration.md) | [Français](../../fr-FR/ux/desktop-integration.md) | [Deutsch](../../de-DE/ux/desktop-integration.md) | [Español](../../es-ES/ux/desktop-integration.md) | [Português (Brasil)](../../pt-BR/ux/desktop-integration.md) | [Русский](../../ru-RU/ux/desktop-integration.md)
 
 複数セッション、単一インスタンス、ウィンドウ状態、全体終了は[アプリケーションセッション契約](../engineering/application-sessions.md)に従います。最後以外のメインウィンドウを閉じてもタスクは保持され、最後のウィンドウはトレイ設定に従います。終了確認はすべてのセッションを対象とします。
 

@@ -1,6 +1,6 @@
 # Zstandard 压缩流契约
 
-[English](../../engineering/zstandard-streams.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/zstandard-streams.md) | [日本語](../../ja-JP/engineering/zstandard-streams.md) | [한국어](../../ko-KR/engineering/zstandard-streams.md) | [Français](../../fr-FR/engineering/zstandard-streams.md) | [Deutsch](../../de-DE/engineering/zstandard-streams.md) | [Español](../../es-ES/engineering/zstandard-streams.md) | [Português (Brasil)](../../pt-BR/engineering/zstandard-streams.md) | [Русский](../../ru-RU/engineering/zstandard-streams.md)
+[English](../../engineering/zstandard-streams.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/zstandard-streams.md) | [日本語](../../ja-JP/engineering/zstandard-streams.md) | [한국어](../../ko-KR/engineering/zstandard-streams.md) | [Français](../../fr-FR/engineering/zstandard-streams.md) | [Deutsch](../../de-DE/engineering/zstandard-streams.md) | [Español](../../es-ES/engineering/zstandard-streams.md) | [Português (Brasil)](../../pt-BR/engineering/zstandard-streams.md) | [Русский](../../ru-RU/engineering/zstandard-streams.md)
 
 格式遵循 [RFC 8878](https://www.rfc-editor.org/rfc/rfc8878.html)、作者的[格式 0.4.3](https://github.com/facebook/zstd/blob/v1.5.7/doc/zstd_compression_format.md)及 [XXH64 规格](https://github.com/Cyan4973/xxHash/blob/v0.8.3/doc/xxhash_spec.md)。产品算法由 Rust 独立实现。独立参考库和程序仅处理项目自有测试内容，不进入产品依赖。宿主权限与发布遵循[单文件压缩流](single-file-streams.md)。
 

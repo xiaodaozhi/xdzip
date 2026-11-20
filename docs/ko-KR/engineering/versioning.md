@@ -2,7 +2,7 @@
 
 # 제품 버전 및 빌드 식별자
 
-[English](../../engineering/versioning.md) | [简体中文](../../zh-CN/engineering/versioning.md) | [繁體中文（台灣）](../../zh-TW/engineering/versioning.md) | [日本語](../../ja-JP/engineering/versioning.md) | 한국어 | [Français](../../fr-FR/engineering/versioning.md) | [Deutsch](../../de-DE/engineering/versioning.md) | [Español](../../es-ES/engineering/versioning.md) | [Português (Brasil)](../../pt-BR/engineering/versioning.md) | [Русский](../../ru-RU/engineering/versioning.md)
+[English](../../engineering/versioning.md) | [简体中文](../../zh-CN/engineering/versioning.md) | [繁體中文](../../zh-TW/engineering/versioning.md) | [日本語](../../ja-JP/engineering/versioning.md) | 한국어 | [Français](../../fr-FR/engineering/versioning.md) | [Deutsch](../../de-DE/engineering/versioning.md) | [Español](../../es-ES/engineering/versioning.md) | [Português (Brasil)](../../pt-BR/engineering/versioning.md) | [Русский](../../ru-RU/engineering/versioning.md)
 
 선택 항목인 `prerelease_number`는 사전 릴리스 순번과 빌드 번호를 구분합니다. 예를 들어 alpha.1은 빌드 14를 쓰고 이후 alpha.2에서도 빌드 번호를 계속 올릴 수 있습니다. 값이 없으면 기존의 `channel.build` 해석을 유지합니다. 릴리스 매니페스트와 배포 파일 이름은 [릴리스 프로토콜](release-protocol.md)에서 정의합니다.
 

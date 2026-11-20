@@ -2,7 +2,7 @@
 
 # 중국어 간체 UI 용어
 
-[English](../../ux/chinese-terminology.md) | [简体中文](../../zh-CN/ux/chinese-terminology.md) | [繁體中文（台灣）](../../zh-TW/ux/chinese-terminology.md) | [日本語](../../ja-JP/ux/chinese-terminology.md) | 한국어 | [Français](../../fr-FR/ux/chinese-terminology.md) | [Deutsch](../../de-DE/ux/chinese-terminology.md) | [Español](../../es-ES/ux/chinese-terminology.md) | [Português (Brasil)](../../pt-BR/ux/chinese-terminology.md) | [Русский](../../ru-RU/ux/chinese-terminology.md)
+[English](../../ux/chinese-terminology.md) | [简体中文](../../zh-CN/ux/chinese-terminology.md) | [繁體中文](../../zh-TW/ux/chinese-terminology.md) | [日本語](../../ja-JP/ux/chinese-terminology.md) | 한국어 | [Français](../../fr-FR/ux/chinese-terminology.md) | [Deutsch](../../de-DE/ux/chinese-terminology.md) | [Español](../../es-ES/ux/chinese-terminology.md) | [Português (Brasil)](../../pt-BR/ux/chinese-terminology.md) | [Русский](../../ru-RU/ux/chinese-terminology.md)
 
 사용자에게 표시되는 중국어 간체 문구는 [용어 설정](../../../specs/ux/chinese-terminology.json)을 따릅니다. Qt 정적 문구는 resources/i18n/zh-CN.json의 안정적인 ID를 유지합니다. HTML, 현재의 상세 설계 시안 및 사용자 안내서는 아래 표의 용어를 사용합니다. 기술 사양과 형식 문서에서는 전문 용어를 사용할 수 있습니다. 구성 요소 크기, 기본 창 0.8 및 메뉴 1의 밀도, DPR과 배율 설정은 기존 값을 따릅니다.
 

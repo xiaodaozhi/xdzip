@@ -1,7 +1,7 @@
 <a name="xdzip-iso9660-and-joliet-creation"></a>
 # ISO9660- und Joliet-Abbilder erstellen
 
-[English](../../engineering/iso-creation.md) | [简体中文](../../zh-CN/engineering/iso-creation.md) | [繁體中文（台灣）](../../zh-TW/engineering/iso-creation.md) | [日本語](../../ja-JP/engineering/iso-creation.md) | [한국어](../../ko-KR/engineering/iso-creation.md) | [Français](../../fr-FR/engineering/iso-creation.md) | Deutsch | [Español](../../es-ES/engineering/iso-creation.md) | [Português (Brasil)](../../pt-BR/engineering/iso-creation.md) | [Русский](../../ru-RU/engineering/iso-creation.md)
+[English](../../engineering/iso-creation.md) | [简体中文](../../zh-CN/engineering/iso-creation.md) | [繁體中文](../../zh-TW/engineering/iso-creation.md) | [日本語](../../ja-JP/engineering/iso-creation.md) | [한국어](../../ko-KR/engineering/iso-creation.md) | [Français](../../fr-FR/engineering/iso-creation.md) | Deutsch | [Español](../../es-ES/engineering/iso-creation.md) | [Português (Brasil)](../../pt-BR/engineering/iso-creation.md) | [Русский](../../ru-RU/engineering/iso-creation.md)
 
 Das erste Schreibmodul erstellt ein einzelnes nicht startfähiges Datenabbild mit 2048-Byte-Sektoren, einem primären ISO9660-Namensraum und einem ergänzenden Joliet-Namensraum. Es folgt der [fünften Ausgabe von ECMA-119](https://ecma-international.org/wp-content/uploads/ECMA-119_5th_edition_december_2024.pdf), einschließlich der in Anhang C wiedergegebenen Joliet-Spezifikation. Es bindet oder startet kein externes Programm zur Abbild-Erstellung.
 

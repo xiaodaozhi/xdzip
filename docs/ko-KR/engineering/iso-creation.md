@@ -1,7 +1,7 @@
 <a name="xdzip-iso9660-and-joliet-creation"></a>
 # ISO9660 및 Joliet 이미지 만들기
 
-[English](../../engineering/iso-creation.md) | [简体中文](../../zh-CN/engineering/iso-creation.md) | [繁體中文（台灣）](../../zh-TW/engineering/iso-creation.md) | [日本語](../../ja-JP/engineering/iso-creation.md) | 한국어 | [Français](../../fr-FR/engineering/iso-creation.md) | [Deutsch](../../de-DE/engineering/iso-creation.md) | [Español](../../es-ES/engineering/iso-creation.md) | [Português (Brasil)](../../pt-BR/engineering/iso-creation.md) | [Русский](../../ru-RU/engineering/iso-creation.md)
+[English](../../engineering/iso-creation.md) | [简体中文](../../zh-CN/engineering/iso-creation.md) | [繁體中文](../../zh-TW/engineering/iso-creation.md) | [日本語](../../ja-JP/engineering/iso-creation.md) | 한국어 | [Français](../../fr-FR/engineering/iso-creation.md) | [Deutsch](../../de-DE/engineering/iso-creation.md) | [Español](../../es-ES/engineering/iso-creation.md) | [Português (Brasil)](../../pt-BR/engineering/iso-creation.md) | [Русский](../../ru-RU/engineering/iso-creation.md)
 
 첫 번째 쓰기 모듈은 2048바이트 섹터, ISO9660 기본 이름 공간과 Joliet 보조 이름 공간을 갖춘 부팅 불가 단일 데이터 이미지를 만듭니다. 부록 C에 실린 Joliet 사양을 비롯하여 [ECMA-119 제5판](https://ecma-international.org/wp-content/uploads/ECMA-119_5th_edition_december_2024.pdf)을 따릅니다. 외부 이미지 제작 엔진을 링크하거나 실행하지 않습니다.
 

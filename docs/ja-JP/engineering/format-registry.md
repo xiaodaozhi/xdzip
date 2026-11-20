@@ -2,7 +2,7 @@
 
 # 組み込み形式の宣言
 
-[English](../../engineering/format-registry.md) | [简体中文](../../zh-CN/engineering/format-registry.md) | [繁體中文（台灣）](../../zh-TW/engineering/format-registry.md) | 日本語 | [한국어](../../ko-KR/engineering/format-registry.md) | [Français](../../fr-FR/engineering/format-registry.md) | [Deutsch](../../de-DE/engineering/format-registry.md) | [Español](../../es-ES/engineering/format-registry.md) | [Português (Brasil)](../../pt-BR/engineering/format-registry.md) | [Русский](../../ru-RU/engineering/format-registry.md)
+[English](../../engineering/format-registry.md) | [简体中文](../../zh-CN/engineering/format-registry.md) | [繁體中文](../../zh-TW/engineering/format-registry.md) | 日本語 | [한국어](../../ko-KR/engineering/format-registry.md) | [Français](../../fr-FR/engineering/format-registry.md) | [Deutsch](../../de-DE/engineering/format-registry.md) | [Español](../../es-ES/engineering/format-registry.md) | [Português (Brasil)](../../pt-BR/engineering/format-registry.md) | [Русский](../../ru-RU/engineering/format-registry.md)
 
 組み込み形式の宣言元は [archive-formats.json](../../../specs/engineering/archive-formats.json) です。形式の安定 ID、表示名、コンテナーの種類、外側の圧縮方式、既存の専用ワーカー ID、対応する方式の系統、作成用の拡張子、検証範囲、利用できる入口の候補を定義します。方式の系統は個別の形式仕様を要約したものです。利用できるパラメーター、旧来の派生形式、組み合わせは、実際のレコード、ホストの方針、プラットフォームの機能によって操作前に絞り込まれます。
 

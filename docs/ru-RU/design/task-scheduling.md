@@ -2,7 +2,7 @@
 
 # Планирование, ход и отмена задач
 
-[English](../../design/task-scheduling.md) | [简体中文](../../zh-CN/design/task-scheduling.md) | [繁體中文（台灣）](../../zh-TW/design/task-scheduling.md) | [日本語](../../ja-JP/design/task-scheduling.md) | [한국어](../../ko-KR/design/task-scheduling.md) | [Français](../../fr-FR/design/task-scheduling.md) | [Deutsch](../../de-DE/design/task-scheduling.md) | [Español](../../es-ES/design/task-scheduling.md) | [Português (Brasil)](../../pt-BR/design/task-scheduling.md) | Русский
+[English](../../design/task-scheduling.md) | [简体中文](../../zh-CN/design/task-scheduling.md) | [繁體中文](../../zh-TW/design/task-scheduling.md) | [日本語](../../ja-JP/design/task-scheduling.md) | [한국어](../../ko-KR/design/task-scheduling.md) | [Français](../../fr-FR/design/task-scheduling.md) | [Deutsch](../../de-DE/design/task-scheduling.md) | [Español](../../es-ES/design/task-scheduling.md) | [Português (Brasil)](../../pt-BR/design/task-scheduling.md) | Русский
 
 XDZip использует один поток команд Rust и один поток задач на каждое соединение среды выполнения. Поток команд владеет текущим архивом и подготавливает входы задач. Поток задач выполняет принятые работы, пока поток команд продолжает обслуживать запросы метаданных. [Архитектура системы](system-architecture.md) описывает расположение потоков, а [мост Qt/Rust](qt-rust-bridge.md) — доставку результатов клиенту.
 

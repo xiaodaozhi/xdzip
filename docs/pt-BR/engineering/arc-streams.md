@@ -2,7 +2,7 @@
 
 # Contêineres ARC e perfis de fluxos compactados
 
-[English](../../engineering/arc-streams.md) | [简体中文](../../zh-CN/engineering/arc-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/arc-streams.md) | [日本語](../../ja-JP/engineering/arc-streams.md) | [한국어](../../ko-KR/engineering/arc-streams.md) | [Français](../../fr-FR/engineering/arc-streams.md) | [Deutsch](../../de-DE/engineering/arc-streams.md) | [Español](../../es-ES/engineering/arc-streams.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/arc-streams.md)
+[English](../../engineering/arc-streams.md) | [简体中文](../../zh-CN/engineering/arc-streams.md) | [繁體中文](../../zh-TW/engineering/arc-streams.md) | [日本語](../../ja-JP/engineering/arc-streams.md) | [한국어](../../ko-KR/engineering/arc-streams.md) | [Français](../../fr-FR/engineering/arc-streams.md) | [Deutsch](../../de-DE/engineering/arc-streams.md) | [Español](../../es-ES/engineering/arc-streams.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/arc-streams.md)
 
 `ArcReader` implementa decodificação bruta limitada dos métodos ARC 3–9. Os métodos 1 e 2 são perfis Store do contêiner. `xdzip-codec-arc` e `ArcCodec` conectam estrutura completa e CRC-16 obrigatório ao runtime, CLI e navegação, verificação e extração no desktop. O [registro de formatos](../../../specs/engineering/archive-formats.json) declara esse escopo somente de leitura; criação, modificação, senhas e volumes não estão disponíveis.
 

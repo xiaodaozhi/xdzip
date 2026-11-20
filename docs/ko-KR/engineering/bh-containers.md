@@ -2,7 +2,7 @@
 
 # BH 컨테이너와 허용된 BlakHole 프로필
 
-[English](../../engineering/bh-containers.md) | [简体中文](../../zh-CN/engineering/bh-containers.md) | [繁體中文（台灣）](../../zh-TW/engineering/bh-containers.md) | [日本語](../../ja-JP/engineering/bh-containers.md) | 한국어 | [Français](../../fr-FR/engineering/bh-containers.md) | [Deutsch](../../de-DE/engineering/bh-containers.md) | [Español](../../es-ES/engineering/bh-containers.md) | [Português (Brasil)](../../pt-BR/engineering/bh-containers.md) | [Русский](../../ru-RU/engineering/bh-containers.md)
+[English](../../engineering/bh-containers.md) | [简体中文](../../zh-CN/engineering/bh-containers.md) | [繁體中文](../../zh-TW/engineering/bh-containers.md) | [日本語](../../ja-JP/engineering/bh-containers.md) | 한국어 | [Français](../../fr-FR/engineering/bh-containers.md) | [Deutsch](../../de-DE/engineering/bh-containers.md) | [Español](../../es-ES/engineering/bh-containers.md) | [Português (Brasil)](../../pt-BR/engineering/bh-containers.md) | [Русский](../../ru-RU/engineering/bh-containers.md)
 
 `xdzip-codec-bh`는 호스트에서 관리하는 소스에서 BlakHole(`.bh`) 항목을 순차적으로 읽습니다. 프로필은 `BH 05 07` 접두부, 관찰된 고정 헤더 상수, 일반 파일 메타데이터, 정확한 압축 및 디코딩 크기, 각 항목에서 선언한 IEEE CRC-32를 요구합니다. 물리적 순서를 보존하므로 같은 이름의 항목도 별개로 유지됩니다. 고정된 행 식별자는 표시 이름 디코딩에 의존하지 않습니다.
 

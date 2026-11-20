@@ -2,7 +2,7 @@
 
 # Декларации встроенных форматов
 
-[English](../../engineering/format-registry.md) | [简体中文](../../zh-CN/engineering/format-registry.md) | [繁體中文（台灣）](../../zh-TW/engineering/format-registry.md) | [日本語](../../ja-JP/engineering/format-registry.md) | [한국어](../../ko-KR/engineering/format-registry.md) | [Français](../../fr-FR/engineering/format-registry.md) | [Deutsch](../../de-DE/engineering/format-registry.md) | [Español](../../es-ES/engineering/format-registry.md) | [Português (Brasil)](../../pt-BR/engineering/format-registry.md) | Русский
+[English](../../engineering/format-registry.md) | [简体中文](../../zh-CN/engineering/format-registry.md) | [繁體中文](../../zh-TW/engineering/format-registry.md) | [日本語](../../ja-JP/engineering/format-registry.md) | [한국어](../../ko-KR/engineering/format-registry.md) | [Français](../../fr-FR/engineering/format-registry.md) | [Deutsch](../../de-DE/engineering/format-registry.md) | [Español](../../es-ES/engineering/format-registry.md) | [Português (Brasil)](../../pt-BR/engineering/format-registry.md) | Русский
 
 Источником встроенных деклараций служит [archive-formats.json](../../../specs/engineering/archive-formats.json). В нём записаны стабильные идентификаторы и обозначения форматов, семейства контейнеров, внешнее сжатие, идентификаторы существующих внутренних процессов, поддерживаемые семейства методов, расширения для создания, охват проверок и возможные точки входа. Семейства методов обобщают контракты форматов. Перед операцией фактические записи, правила хоста и возможности платформы уточняют допустимые параметры, исторические варианты и сочетания.
 

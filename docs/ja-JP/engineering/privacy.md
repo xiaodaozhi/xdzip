@@ -1,7 +1,7 @@
 <a name="xdzip-data-lifecycle-and-diagnostics"></a>
 # データのライフサイクルと診断
 
-[English](../../engineering/privacy.md) | [简体中文](../../zh-CN/engineering/privacy.md) | [繁體中文（台灣）](../../zh-TW/engineering/privacy.md) | 日本語 | [한국어](../../ko-KR/engineering/privacy.md) | [Français](../../fr-FR/engineering/privacy.md) | [Deutsch](../../de-DE/engineering/privacy.md) | [Español](../../es-ES/engineering/privacy.md) | [Português (Brasil)](../../pt-BR/engineering/privacy.md) | [Русский](../../ru-RU/engineering/privacy.md)
+[English](../../engineering/privacy.md) | [简体中文](../../zh-CN/engineering/privacy.md) | [繁體中文](../../zh-TW/engineering/privacy.md) | 日本語 | [한국어](../../ko-KR/engineering/privacy.md) | [Français](../../fr-FR/engineering/privacy.md) | [Deutsch](../../de-DE/engineering/privacy.md) | [Español](../../es-ES/engineering/privacy.md) | [Português (Brasil)](../../pt-BR/engineering/privacy.md) | [Русский](../../ru-RU/engineering/privacy.md)
 
 [プライバシーポリシー](../../../PRIVACY.md)では、xdzip が扱うデータとユーザーが選べる設定を説明します。次の表はデータを保持する場所と削除する時期を示します。閲覧、圧縮、展開はオフラインで動作します。xdzip はテレメトリやアーカイブの内容をメンテナーに自動送信しません。
 

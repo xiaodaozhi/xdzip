@@ -2,7 +2,7 @@
 
 # CLDR から ICU 73.2 のデータを再構築
 
-[English](../../engineering/icu-cldr-rebuild.md) | [简体中文](../../zh-CN/engineering/icu-cldr-rebuild.md) | [繁體中文（台灣）](../../zh-TW/engineering/icu-cldr-rebuild.md) | 日本語 | [한국어](../../ko-KR/engineering/icu-cldr-rebuild.md) | [Français](../../fr-FR/engineering/icu-cldr-rebuild.md) | [Deutsch](../../de-DE/engineering/icu-cldr-rebuild.md) | [Español](../../es-ES/engineering/icu-cldr-rebuild.md) | [Português (Brasil)](../../pt-BR/engineering/icu-cldr-rebuild.md) | [Русский](../../ru-RU/engineering/icu-cldr-rebuild.md)
+[English](../../engineering/icu-cldr-rebuild.md) | [简体中文](../../zh-CN/engineering/icu-cldr-rebuild.md) | [繁體中文](../../zh-TW/engineering/icu-cldr-rebuild.md) | 日本語 | [한국어](../../ko-KR/engineering/icu-cldr-rebuild.md) | [Français](../../fr-FR/engineering/icu-cldr-rebuild.md) | [Deutsch](../../de-DE/engineering/icu-cldr-rebuild.md) | [Español](../../es-ES/engineering/icu-cldr-rebuild.md) | [Português (Brasil)](../../pt-BR/engineering/icu-cldr-rebuild.md) | [Русский](../../ru-RU/engineering/icu-cldr-rebuild.md)
 
 この Linux 手順では、提供された ICU ソース、CLDR 43.1 のサブセット、ICU 73.1 のブートストラップソースを使用して ICU 73.2 のロケールリソースを再構築します。サブセットには 5 個の ISO 639-3 ファイル、標準文書の `docs/ldml` ディレクトリー、ドキュメントのスクリーンショット 2 枚が含まれず、Web ツールの画像 963 点が置き換えられています。[Unicode が公開する UTS #35 バージョン 43.1](https://www.unicode.org/reports/tr35/tr35-69/tr35.html) は権利者の条件に従って別途利用できます。その他の用途や追加データには、出所と条件の個別確認が必要です。JDK 17、Ant、Maven、Python 3、C/C++ ツールチェーン、`make`、UTF-8 ロケールを備えた Ubuntu 24.04 x86_64 を使用してください。Maven は最初に依存関係のリポジトリーへのアクセスが必要です。`XDZIP_DELIVERY` に信頼できる配布物、`JAVA_HOME` に JDK 17 を設定します。既存のソースやビルド結果を上書きしないよう、新しい作業ディレクトリーを使用してください。ローカルでビルドしたブートストラップ JAR が上流公開物とバイト単位で一致するとは主張しません。CLDR サブセットの gzip バイト列はビルド環境によって変わることがあるため、信頼できる経路で取得したその配布物のマニフェストと照合してください。
 

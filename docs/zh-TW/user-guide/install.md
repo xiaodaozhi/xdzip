@@ -2,7 +2,7 @@
 
 # 安裝 XDZip 與開啟壓縮檔
 
-[English](../../user-guide/install.md) | [简体中文](../../zh-CN/user-guide/install.md) | 繁體中文（台灣） | [日本語](../../ja-JP/user-guide/install.md) | [한국어](../../ko-KR/user-guide/install.md) | [Français](../../fr-FR/user-guide/install.md) | [Deutsch](../../de-DE/user-guide/install.md) | [Español](../../es-ES/user-guide/install.md) | [Português (Brasil)](../../pt-BR/user-guide/install.md) | [Русский](../../ru-RU/user-guide/install.md)
+[English](../../user-guide/install.md) | [简体中文](../../zh-CN/user-guide/install.md) | 繁體中文 | [日本語](../../ja-JP/user-guide/install.md) | [한국어](../../ko-KR/user-guide/install.md) | [Français](../../fr-FR/user-guide/install.md) | [Deutsch](../../de-DE/user-guide/install.md) | [Español](../../es-ES/user-guide/install.md) | [Português (Brasil)](../../pt-BR/user-guide/install.md) | [Русский](../../ru-RU/user-guide/install.md)
 
 從 [GitHub 最新穩定版](https://github.com/xiaodaozhi/xdzip/releases/latest)選擇對應系統的下載包。Windows 使用者也可透過 Microsoft Store 安裝。GitHub 釋出頁列出檔名、版本和 `SHA256SUMS`，可用來核對直接下載的檔案。具體要求見[支援政策](../engineering/support-policy.md)。
 

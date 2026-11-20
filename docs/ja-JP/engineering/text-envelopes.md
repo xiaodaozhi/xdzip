@@ -2,7 +2,7 @@
 
 # UU、UUE、XXE のテキスト封装
 
-[English](../../engineering/text-envelopes.md) | [简体中文](../../zh-CN/engineering/text-envelopes.md) | [繁體中文（台灣）](../../zh-TW/engineering/text-envelopes.md) | 日本語 | [한국어](../../ko-KR/engineering/text-envelopes.md) | [Français](../../fr-FR/engineering/text-envelopes.md) | [Deutsch](../../de-DE/engineering/text-envelopes.md) | [Español](../../es-ES/engineering/text-envelopes.md) | [Português (Brasil)](../../pt-BR/engineering/text-envelopes.md) | [Русский](../../ru-RU/engineering/text-envelopes.md)
+[English](../../engineering/text-envelopes.md) | [简体中文](../../zh-CN/engineering/text-envelopes.md) | [繁體中文](../../zh-TW/engineering/text-envelopes.md) | 日本語 | [한국어](../../ko-KR/engineering/text-envelopes.md) | [Français](../../fr-FR/engineering/text-envelopes.md) | [Deutsch](../../de-DE/engineering/text-envelopes.md) | [Español](../../es-ES/engineering/text-envelopes.md) | [Português (Brasil)](../../pt-BR/engineering/text-envelopes.md) | [Русский](../../ru-RU/engineering/text-envelopes.md)
 
 従来の UU フィールドとビット順序は [NetBSD uuencode(5)](https://man.netbsd.org/uuencode.5) に従います。Base64 モードは [uuencode(1)](https://man.netbsd.org/uuencode.1) と [GNU Sharutils](https://www.gnu.org/software/sharutils/manual/sharutils.html) に記載されています。XX の文字集合は `+-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz` で、[UUDeview](https://github.com/hannob/uudeview) の公開エンコーダーと照合しています。Rust リーダーはこれらのフィールドとビット規則から独立して記述されています。参照 C 実装はテストツールのみであり、ランタイム依存関係にはなりません。
 

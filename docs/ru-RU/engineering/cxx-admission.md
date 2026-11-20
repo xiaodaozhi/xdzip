@@ -2,7 +2,7 @@
 
 # Причины выбора моста cxx
 
-[English](../../engineering/cxx-admission.md) | [简体中文](../../zh-CN/engineering/cxx-admission.md) | [繁體中文（台灣）](../../zh-TW/engineering/cxx-admission.md) | [日本語](../../ja-JP/engineering/cxx-admission.md) | [한국어](../../ko-KR/engineering/cxx-admission.md) | [Français](../../fr-FR/engineering/cxx-admission.md) | [Deutsch](../../de-DE/engineering/cxx-admission.md) | [Español](../../es-ES/engineering/cxx-admission.md) | [Português (Brasil)](../../pt-BR/engineering/cxx-admission.md) | Русский
+[English](../../engineering/cxx-admission.md) | [简体中文](../../zh-CN/engineering/cxx-admission.md) | [繁體中文](../../zh-TW/engineering/cxx-admission.md) | [日本語](../../ja-JP/engineering/cxx-admission.md) | [한국어](../../ko-KR/engineering/cxx-admission.md) | [Français](../../fr-FR/engineering/cxx-admission.md) | [Deutsch](../../de-DE/engineering/cxx-admission.md) | [Español](../../es-ES/engineering/cxx-admission.md) | [Português (Brasil)](../../pt-BR/engineering/cxx-admission.md) | Русский
 
 Qt и Rust используют типизированный мост с правилами владения, сгенерированный `cxx`. Объектами Qt владеет C++, а логикой предметной области и выполнения — Rust. Версии `cxx` и `cxx-build` должны точно совпадать согласно [Cargo.lock](../../../Cargo.lock) и [правилам инструментов сборки](toolchain.md). cxx не является стабильным ABI для сторонних расширений форматов. Рукописный C ABI сократил бы зависимости, но усложнил бы поддержку строк, свободных функций и инвариантов владения.
 

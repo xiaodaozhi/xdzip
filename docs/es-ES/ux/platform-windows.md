@@ -2,7 +2,7 @@
 
 # Ventanas de plataforma y barras de título
 
-[English](../../ux/platform-windows.md) | [简体中文](../../zh-CN/ux/platform-windows.md) | [繁體中文（台灣）](../../zh-TW/ux/platform-windows.md) | [日本語](../../ja-JP/ux/platform-windows.md) | [한국어](../../ko-KR/ux/platform-windows.md) | [Français](../../fr-FR/ux/platform-windows.md) | [Deutsch](../../de-DE/ux/platform-windows.md) | Español | [Português (Brasil)](../../pt-BR/ux/platform-windows.md) | [Русский](../../ru-RU/ux/platform-windows.md)
+[English](../../ux/platform-windows.md) | [简体中文](../../zh-CN/ux/platform-windows.md) | [繁體中文](../../zh-TW/ux/platform-windows.md) | [日本語](../../ja-JP/ux/platform-windows.md) | [한국어](../../ko-KR/ux/platform-windows.md) | [Français](../../fr-FR/ux/platform-windows.md) | [Deutsch](../../de-DE/ux/platform-windows.md) | Español | [Português (Brasil)](../../pt-BR/ux/platform-windows.md) | [Русский](../../ru-RU/ux/platform-windows.md)
 
 Las interfaces de operación de xdzip usan ventanas independientes de primer nivel, no hojas adjuntas a la ventana principal ni paneles superpuestos dibujados dentro de ella. Una ventana independiente no implica un proceso separado ni una entrada en la barra de tareas para cada ventana auxiliar. Los menús desplegables y las ayudas emergentes siguen siendo Popups ligeros y no son ventanas de operación.
 

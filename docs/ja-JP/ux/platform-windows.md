@@ -2,7 +2,7 @@
 
 # プラットフォームのウィンドウとタイトルバー
 
-[English](../../ux/platform-windows.md) | [简体中文](../../zh-CN/ux/platform-windows.md) | [繁體中文（台灣）](../../zh-TW/ux/platform-windows.md) | 日本語 | [한국어](../../ko-KR/ux/platform-windows.md) | [Français](../../fr-FR/ux/platform-windows.md) | [Deutsch](../../de-DE/ux/platform-windows.md) | [Español](../../es-ES/ux/platform-windows.md) | [Português (Brasil)](../../pt-BR/ux/platform-windows.md) | [Русский](../../ru-RU/ux/platform-windows.md)
+[English](../../ux/platform-windows.md) | [简体中文](../../zh-CN/ux/platform-windows.md) | [繁體中文](../../zh-TW/ux/platform-windows.md) | 日本語 | [한국어](../../ko-KR/ux/platform-windows.md) | [Français](../../fr-FR/ux/platform-windows.md) | [Deutsch](../../de-DE/ux/platform-windows.md) | [Español](../../es-ES/ux/platform-windows.md) | [Português (Brasil)](../../pt-BR/ux/platform-windows.md) | [Русский](../../ru-RU/ux/platform-windows.md)
 
 xdzip の操作画面は独立した最上位ウィンドウを使い、メインウィンドウに付属するシートや内部に描画する重ね合わせパネルを使いません。独立したウィンドウは別プロセスや、補助ウィンドウごとのタスクバー項目を意味しません。ドロップダウンメニューとツールチップは軽量な Popup のままで、操作ウィンドウには含みません。
 

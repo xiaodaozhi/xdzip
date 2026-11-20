@@ -2,7 +2,7 @@
 
 # 安全 ZIP 解壓實現
 
-[English](../../engineering/zip-safe-extraction.md) | [简体中文](../../zh-CN/engineering/zip-safe-extraction.md) | 繁體中文（台灣）
+[English](../../engineering/zip-safe-extraction.md) | [简体中文](../../zh-CN/engineering/zip-safe-extraction.md) | 繁體中文
 
 本契約定義宿主安全輸出、真實解壓、衝突、取消與提交行為；具體執行結果和目前缺陷記錄於對應 issue 及 Actions 工件，不在本頁累積驗收報告。
 

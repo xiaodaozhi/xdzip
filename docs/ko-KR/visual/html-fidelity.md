@@ -2,7 +2,7 @@
 
 # HTML 시각 충실도 검토
 
-[English](../../visual/html-fidelity.md) | [简体中文](../../zh-CN/visual/html-fidelity.md) | [繁體中文（台灣）](../../zh-TW/visual/html-fidelity.md) | [日本語](../../ja-JP/visual/html-fidelity.md) | 한국어 | [Français](../../fr-FR/visual/html-fidelity.md) | [Deutsch](../../de-DE/visual/html-fidelity.md) | [Español](../../es-ES/visual/html-fidelity.md) | [Português (Brasil)](../../pt-BR/visual/html-fidelity.md) | [Русский](../../ru-RU/visual/html-fidelity.md)
+[English](../../visual/html-fidelity.md) | [简体中文](../../zh-CN/visual/html-fidelity.md) | [繁體中文](../../zh-TW/visual/html-fidelity.md) | [日本語](../../ja-JP/visual/html-fidelity.md) | 한국어 | [Français](../../fr-FR/visual/html-fidelity.md) | [Deutsch](../../de-DE/visual/html-fidelity.md) | [Español](../../es-ES/visual/html-fidelity.md) | [Português (Brasil)](../../pt-BR/visual/html-fidelity.md) | [Русский](../../ru-RU/visual/html-fidelity.md)
 
 고충실도 이미지는 시각적 기준이며 HTML은 편집 가능한 구현입니다. 도구 모음 위와 아래의 치수는 현재 CSS에서 역산하지 않고 [고정된 최초 기본 창](../../../design/hifi/screens/main-light.png)에서 각각 측정합니다. 현재 표시는 [밝은 캡슐 탭 디자인](../../../design/hifi/screens/main-capsule-light.png)과 [어두운 디자인](../../../design/hifi/screens/main-capsule-dark.png)을 사용하며 [편집 가능한 원본](../../../design/hifi/sources/main.html)에서 내보냅니다. 이는 독립 측정을 대체하지 않습니다. 제목 표시줄은 layout-scale.json의 명시적 개정에 따라 검수합니다. 원본 그림에는 부드러운 가장자리와 생성된 글리프가 있으므로 테스트 개수만으로 전체 페이지의 픽셀 완전 일치를 입증할 수 없습니다.
 

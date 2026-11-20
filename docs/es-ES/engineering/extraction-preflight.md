@@ -2,7 +2,7 @@
 
 # Comprobación previa de extracción: fase de metadatos
 
-[English](../../engineering/extraction-preflight.md) | [简体中文](../../zh-CN/engineering/extraction-preflight.md) | [繁體中文（台灣）](../../zh-TW/engineering/extraction-preflight.md) | [日本語](../../ja-JP/engineering/extraction-preflight.md) | [한국어](../../ko-KR/engineering/extraction-preflight.md) | [Français](../../fr-FR/engineering/extraction-preflight.md) | [Deutsch](../../de-DE/engineering/extraction-preflight.md) | Español | [Português (Brasil)](../../pt-BR/engineering/extraction-preflight.md) | [Русский](../../ru-RU/engineering/extraction-preflight.md)
+[English](../../engineering/extraction-preflight.md) | [简体中文](../../zh-CN/engineering/extraction-preflight.md) | [繁體中文](../../zh-TW/engineering/extraction-preflight.md) | [日本語](../../ja-JP/engineering/extraction-preflight.md) | [한국어](../../ko-KR/engineering/extraction-preflight.md) | [Français](../../fr-FR/engineering/extraction-preflight.md) | [Deutsch](../../de-DE/engineering/extraction-preflight.md) | Español | [Português (Brasil)](../../pt-BR/engineering/extraction-preflight.md) | [Русский](../../ru-RU/engineering/extraction-preflight.md)
 
 Este módulo proporciona reglas de comprobación previa de metadatos. No tiene capacidad de autorizar destinos, decodificar, escribir, preparar temporalmente ni confirmar resultados.
 

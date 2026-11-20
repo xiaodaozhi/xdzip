@@ -1,6 +1,6 @@
 # DEB 容器契约
 
-[English](../../engineering/deb-containers.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/deb-containers.md) | [日本語](../../ja-JP/engineering/deb-containers.md) | [한국어](../../ko-KR/engineering/deb-containers.md) | [Français](../../fr-FR/engineering/deb-containers.md) | [Deutsch](../../de-DE/engineering/deb-containers.md) | [Español](../../es-ES/engineering/deb-containers.md) | [Português (Brasil)](../../pt-BR/engineering/deb-containers.md) | [Русский](../../ru-RU/engineering/deb-containers.md)
+[English](../../engineering/deb-containers.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/deb-containers.md) | [日本語](../../ja-JP/engineering/deb-containers.md) | [한국어](../../ko-KR/engineering/deb-containers.md) | [Français](../../fr-FR/engineering/deb-containers.md) | [Deutsch](../../de-DE/engineering/deb-containers.md) | [Español](../../es-ES/engineering/deb-containers.md) | [Português (Brasil)](../../pt-BR/engineering/deb-containers.md) | [Русский](../../ru-RU/engineering/deb-containers.md)
 
 软件包外层遵循 Debian 的 [deb(5)](https://manpages.debian.org/unstable/dpkg-dev/deb.5.en.html)，通用 ar 字段遵循 [ar(5)](https://man.netbsd.org/ar.5)。仅准入普通 `!<arch>\n` 布局。每个 60 字节头包含有界 ASCII 名称、时间、所有者、模式、尺寸和必需尾标记。验证十进制字段、八进制模式、精确载荷跨度、奇数成员的换行填充及物理 EOF。thin、历史布局和长名称扩展不支持，也不授予外部文件访问权。
 

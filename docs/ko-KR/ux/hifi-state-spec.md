@@ -2,7 +2,7 @@
 
 # 고충실도 상태와 구현 계약
 
-[English](../../ux/hifi-state-spec.md) | [简体中文](../../zh-CN/ux/hifi-state-spec.md) | [繁體中文（台灣）](../../zh-TW/ux/hifi-state-spec.md) | [日本語](../../ja-JP/ux/hifi-state-spec.md) | 한국어 | [Français](../../fr-FR/ux/hifi-state-spec.md) | [Deutsch](../../de-DE/ux/hifi-state-spec.md) | [Español](../../es-ES/ux/hifi-state-spec.md) | [Português (Brasil)](../../pt-BR/ux/hifi-state-spec.md) | [Русский](../../ru-RU/ux/hifi-state-spec.md)
+[English](../../ux/hifi-state-spec.md) | [简体中文](../../zh-CN/ux/hifi-state-spec.md) | [繁體中文](../../zh-TW/ux/hifi-state-spec.md) | [日本語](../../ja-JP/ux/hifi-state-spec.md) | 한국어 | [Français](../../fr-FR/ux/hifi-state-spec.md) | [Deutsch](../../de-DE/ux/hifi-state-spec.md) | [Español](../../es-ES/ux/hifi-state-spec.md) | [Português (Brasil)](../../pt-BR/ux/hifi-state-spec.md) | [Русский](../../ru-RU/ux/hifi-state-spec.md)
 
 이 안내서는 생성, 추출, 작업 창의 동작과 포커스 및 닫기 동작을 설명하고 [작업 상태 원본](../../../design/hifi/README.md)과 [공유 에셋 라이브러리](../../../design/assets/README.md)를 연결합니다. 표의 식별자는 디자인 아트보드를 가리키며 작업 프로토콜을 변경하지 않습니다.
 

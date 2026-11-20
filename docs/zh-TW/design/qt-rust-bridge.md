@@ -2,7 +2,7 @@
 
 # Qt/Rust 橋接與應用服務
 
-[English](../../design/qt-rust-bridge.md) | [简体中文](../../zh-CN/design/qt-rust-bridge.md) | 繁體中文（台灣） | [日本語](../../ja-JP/design/qt-rust-bridge.md) | [한국어](../../ko-KR/design/qt-rust-bridge.md) | [Français](../../fr-FR/design/qt-rust-bridge.md) | [Deutsch](../../de-DE/design/qt-rust-bridge.md) | [Español](../../es-ES/design/qt-rust-bridge.md) | [Português (Brasil)](../../pt-BR/design/qt-rust-bridge.md) | [Русский](../../ru-RU/design/qt-rust-bridge.md)
+[English](../../design/qt-rust-bridge.md) | [简体中文](../../zh-CN/design/qt-rust-bridge.md) | 繁體中文 | [日本語](../../ja-JP/design/qt-rust-bridge.md) | [한국어](../../ko-KR/design/qt-rust-bridge.md) | [Français](../../fr-FR/design/qt-rust-bridge.md) | [Deutsch](../../de-DE/design/qt-rust-bridge.md) | [Español](../../es-ES/design/qt-rust-bridge.md) | [Português (Brasil)](../../pt-BR/design/qt-rust-bridge.md) | [Русский](../../ru-RU/design/qt-rust-bridge.md)
 
 Qt 桌面透過連結到程式內的 `cxx` 橋接呼叫 Rust 執行時。每個 `BrowserController` 有自己的 `RuntimeConnection` 和對應的服務例項。橋接在桌面程序內傳遞型別化命令和自有資料的結果。CLI 直接呼叫同一個 Rust 服務實現。[系統架構](system-architecture.md)、[桌面會話](../engineering/application-sessions.md)
 

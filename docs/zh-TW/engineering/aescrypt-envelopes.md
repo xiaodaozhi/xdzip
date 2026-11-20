@@ -2,7 +2,7 @@
 
 # AES Crypt 只讀封裝
 
-[English](../../engineering/aescrypt-envelopes.md) | [简体中文](../../zh-CN/engineering/aescrypt-envelopes.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/aescrypt-envelopes.md) | [한국어](../../ko-KR/engineering/aescrypt-envelopes.md) | [Français](../../fr-FR/engineering/aescrypt-envelopes.md) | [Deutsch](../../de-DE/engineering/aescrypt-envelopes.md) | [Español](../../es-ES/engineering/aescrypt-envelopes.md) | [Português (Brasil)](../../pt-BR/engineering/aescrypt-envelopes.md) | [Русский](../../ru-RU/engineering/aescrypt-envelopes.md)
+[English](../../engineering/aescrypt-envelopes.md) | [简体中文](../../zh-CN/engineering/aescrypt-envelopes.md) | 繁體中文 | [日本語](../../ja-JP/engineering/aescrypt-envelopes.md) | [한국어](../../ko-KR/engineering/aescrypt-envelopes.md) | [Français](../../fr-FR/engineering/aescrypt-envelopes.md) | [Deutsch](../../de-DE/engineering/aescrypt-envelopes.md) | [Español](../../es-ES/engineering/aescrypt-envelopes.md) | [Português (Brasil)](../../pt-BR/engineering/aescrypt-envelopes.md) | [Русский](../../ru-RU/engineering/aescrypt-envelopes.md)
 
 獨立 Rust 後端 `xdzip-codec-aescrypt` 可讀取 AES Crypt 串流版本 0、1、2 和 3；應用程式版本號與串流版本分開。每個封裝呈現一個一般虛擬檔案，不提供建立、修改、分割檔案或擷取外部擴充資料的能力。此格式只加密資料而不壓縮，因此項目的方法顯示 Store，並標示為已加密。壓縮大小為完整實體封裝的長度。後端依內容偵測選擇，不依賴 `.aes` 副檔名。
 

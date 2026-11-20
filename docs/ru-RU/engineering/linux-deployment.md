@@ -2,7 +2,7 @@
 
 # Автономный каталог среды выполнения Linux и проверка
 
-[English](../../engineering/linux-deployment.md) | [简体中文](../../zh-CN/engineering/linux-deployment.md) | [繁體中文（台灣）](../../zh-TW/engineering/linux-deployment.md) | [日本語](../../ja-JP/engineering/linux-deployment.md) | [한국어](../../ko-KR/engineering/linux-deployment.md) | [Français](../../fr-FR/engineering/linux-deployment.md) | [Deutsch](../../de-DE/engineering/linux-deployment.md) | [Español](../../es-ES/engineering/linux-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/linux-deployment.md) | Русский
+[English](../../engineering/linux-deployment.md) | [简体中文](../../zh-CN/engineering/linux-deployment.md) | [繁體中文](../../zh-TW/engineering/linux-deployment.md) | [日本語](../../ja-JP/engineering/linux-deployment.md) | [한국어](../../ko-KR/engineering/linux-deployment.md) | [Français](../../fr-FR/engineering/linux-deployment.md) | [Deutsch](../../de-DE/engineering/linux-deployment.md) | [Español](../../es-ES/engineering/linux-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/linux-deployment.md) | Русский
 
 Текущая база развертывания для разработки — Ubuntu 24.04, x86_64 и X11. Цель — запуск текущего продукта без SDK Qt для разработки; это не обещает поддержку других дистрибутивов, старых версий glibc, Wayland или полноценного установщика. CI macOS сохраняет нативные сборку, тесты и проверку запуска. Локальные DMG для разработки следуют [руководству по развертыванию Mac](macos-deployment.md) и не затрагиваются этим процессом.
 

@@ -2,7 +2,7 @@
 
 # タスクウィンドウと整合性検査
 
-[English](../../ux/task-windows.md) | [简体中文](../../zh-CN/ux/task-windows.md) | [繁體中文（台灣）](../../zh-TW/ux/task-windows.md) | 日本語 | [한국어](../../ko-KR/ux/task-windows.md) | [Français](../../fr-FR/ux/task-windows.md) | [Deutsch](../../de-DE/ux/task-windows.md) | [Español](../../es-ES/ux/task-windows.md) | [Português (Brasil)](../../pt-BR/ux/task-windows.md) | [Русский](../../ru-RU/ux/task-windows.md)
+[English](../../ux/task-windows.md) | [简体中文](../../zh-CN/ux/task-windows.md) | [繁體中文](../../zh-TW/ux/task-windows.md) | 日本語 | [한국어](../../ko-KR/ux/task-windows.md) | [Français](../../fr-FR/ux/task-windows.md) | [Deutsch](../../de-DE/ux/task-windows.md) | [Español](../../es-ES/ux/task-windows.md) | [Português (Brasil)](../../pt-BR/ux/task-windows.md) | [Русский](../../ru-RU/ux/task-windows.md)
 
 アプリのタスク入口はすべてのセッションを集約し、セッション UUID とバックエンドのタスク ID を使って進捗、パスワード、競合、結果を振り分けます。ページを閉じてもコントローラーは保持され、明示的な終了時はすべての非同期 join を待ちます。[アプリケーションセッション契約](../engineering/application-sessions.md)を参照してください。
 

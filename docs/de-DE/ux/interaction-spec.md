@@ -2,7 +2,7 @@
 
 # Ergänzende Interaktions- und Textspezifikation
 
-[English](../../ux/interaction-spec.md) | [简体中文](../../zh-CN/ux/interaction-spec.md) | [繁體中文（台灣）](../../zh-TW/ux/interaction-spec.md) | [日本語](../../ja-JP/ux/interaction-spec.md) | [한국어](../../ko-KR/ux/interaction-spec.md) | [Français](../../fr-FR/ux/interaction-spec.md) | Deutsch | [Español](../../es-ES/ux/interaction-spec.md) | [Português (Brasil)](../../pt-BR/ux/interaction-spec.md) | [Русский](../../ru-RU/ux/interaction-spec.md)
+[English](../../ux/interaction-spec.md) | [简体中文](../../zh-CN/ux/interaction-spec.md) | [繁體中文](../../zh-TW/ux/interaction-spec.md) | [日本語](../../ja-JP/ux/interaction-spec.md) | [한국어](../../ko-KR/ux/interaction-spec.md) | [Français](../../fr-FR/ux/interaction-spec.md) | Deutsch | [Español](../../es-ES/ux/interaction-spec.md) | [Português (Brasil)](../../pt-BR/ux/interaction-spec.md) | [Русский](../../ru-RU/ux/interaction-spec.md)
 
 Hauptfenster und Entpackbestätigung werden durch die [Vorgangszustände](hifi-state-spec.md) für Erstellung, Konflikte, Aufgaben, Ergebnisse, Einstellungen und Plattformvergleiche ergänzt. Willkommen und Ladefortschritt stehen im [Vertrag der Startseite](welcome-opening.md). Aktuelle Entwürfe und Layoutwerte folgen der [Fensterregistrierung](../../../specs/visual/window-registry.json). Die jeweiligen technischen und Interaktionsverträge erläutern, welche Zustände implementiert und nativ visuell geprüft sind.
 

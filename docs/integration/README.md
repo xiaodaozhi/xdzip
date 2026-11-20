@@ -1,6 +1,6 @@
 # Use XDZip in scripts
 
-English | [简体中文](../zh-CN/integration/README.md) | [繁體中文（台灣）](../zh-TW/integration/README.md) | [日本語](../ja-JP/integration/README.md) | [한국어](../ko-KR/integration/README.md) | [Français](../fr-FR/integration/README.md) | [Deutsch](../de-DE/integration/README.md) | [Español](../es-ES/integration/README.md) | [Português (Brasil)](../pt-BR/integration/README.md) | [Русский](../ru-RU/integration/README.md)
+English | [简体中文](../zh-CN/integration/README.md) | [繁體中文](../zh-TW/integration/README.md) | [日本語](../ja-JP/integration/README.md) | [한국어](../ko-KR/integration/README.md) | [Français](../fr-FR/integration/README.md) | [Deutsch](../de-DE/integration/README.md) | [Español](../es-ES/integration/README.md) | [Português (Brasil)](../pt-BR/integration/README.md) | [Русский](../ru-RU/integration/README.md)
 
 The standalone CLI runs without Qt or a desktop session. Choose an `xdzip-cli-` package for your system from the [GitHub releases](https://github.com/xiaodaozhi/xdzip/releases). Unpack the whole package and keep its worker beside the executable. From the extracted directory, run `./bin/xdzip --help` on macOS or Linux, or `.\bin\xdzip.exe --help` in PowerShell.
 

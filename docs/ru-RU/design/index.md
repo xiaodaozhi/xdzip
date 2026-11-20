@@ -2,7 +2,7 @@
 
 # Руководство по проектированию XDZip
 
-[English](../../design/index.md) | [简体中文](../../zh-CN/design/index.md) | [繁體中文（台灣）](../../zh-TW/design/index.md) | [日本語](../../ja-JP/design/index.md) | [한국어](../../ko-KR/design/index.md) | [Français](../../fr-FR/design/index.md) | [Deutsch](../../de-DE/design/index.md) | [Español](../../es-ES/design/index.md) | [Português (Brasil)](../../pt-BR/design/index.md) | Русский
+[English](../../design/index.md) | [简体中文](../../zh-CN/design/index.md) | [繁體中文](../../zh-TW/design/index.md) | [日本語](../../ja-JP/design/index.md) | [한국어](../../ko-KR/design/index.md) | [Français](../../fr-FR/design/index.md) | [Deutsch](../../de-DE/design/index.md) | [Español](../../es-ES/design/index.md) | [Português (Brasil)](../../pt-BR/design/index.md) | Русский
 
 Начните с [архитектуры системы](system-architecture.md), чтобы узнать, как настольный интерфейс Qt Quick и независимая CLI на Rust обращаются к архивному ядру. Документы описывают текущие контракты, решения и область предлагаемых работ. Установка и повседневные операции описаны в [руководстве пользователя](../user-guide/README.md). Для сборки и изменений см. [Сборка и участие](../contributing/README.md).
 

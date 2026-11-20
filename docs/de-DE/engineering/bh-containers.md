@@ -2,7 +2,7 @@
 
 # BH-Container und das unterstützte BlakHole-Profil
 
-[English](../../engineering/bh-containers.md) | [简体中文](../../zh-CN/engineering/bh-containers.md) | [繁體中文（台灣）](../../zh-TW/engineering/bh-containers.md) | [日本語](../../ja-JP/engineering/bh-containers.md) | [한국어](../../ko-KR/engineering/bh-containers.md) | [Français](../../fr-FR/engineering/bh-containers.md) | Deutsch | [Español](../../es-ES/engineering/bh-containers.md) | [Português (Brasil)](../../pt-BR/engineering/bh-containers.md) | [Русский](../../ru-RU/engineering/bh-containers.md)
+[English](../../engineering/bh-containers.md) | [简体中文](../../zh-CN/engineering/bh-containers.md) | [繁體中文](../../zh-TW/engineering/bh-containers.md) | [日本語](../../ja-JP/engineering/bh-containers.md) | [한국어](../../ko-KR/engineering/bh-containers.md) | [Français](../../fr-FR/engineering/bh-containers.md) | Deutsch | [Español](../../es-ES/engineering/bh-containers.md) | [Português (Brasil)](../../pt-BR/engineering/bh-containers.md) | [Русский](../../ru-RU/engineering/bh-containers.md)
 
 `xdzip-codec-bh` liest BlakHole-Einträge (`.bh`) nacheinander aus der vom Host verwalteten Quelle. Das enge Profil verlangt das Präfix `BH 05 07`, die beobachteten Header-Konstanten, Metadaten regulärer Dateien, exakte komprimierte und dekodierte Größen und die je Eintrag deklarierte IEEE-CRC-32. Die physische Reihenfolge bleibt erhalten. Doppelte Namen bleiben unterscheidbar und die eingefrorene Zeilen-ID ist von der Dekodierung des Anzeigenamens unabhängig.
 

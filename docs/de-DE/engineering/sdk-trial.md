@@ -2,7 +2,7 @@
 
 # Externer schreibgeschützter SDK-Versuch
 
-[English](../../engineering/sdk-trial.md) | [简体中文](../../zh-CN/engineering/sdk-trial.md) | [繁體中文（台灣）](../../zh-TW/engineering/sdk-trial.md) | [日本語](../../ja-JP/engineering/sdk-trial.md) | [한국어](../../ko-KR/engineering/sdk-trial.md) | [Français](../../fr-FR/engineering/sdk-trial.md) | Deutsch | [Español](../../es-ES/engineering/sdk-trial.md) | [Português (Brasil)](../../pt-BR/engineering/sdk-trial.md) | [Русский](../../ru-RU/engineering/sdk-trial.md)
+[English](../../engineering/sdk-trial.md) | [简体中文](../../zh-CN/engineering/sdk-trial.md) | [繁體中文](../../zh-TW/engineering/sdk-trial.md) | [日本語](../../ja-JP/engineering/sdk-trial.md) | [한국어](../../ko-KR/engineering/sdk-trial.md) | [Français](../../fr-FR/engineering/sdk-trial.md) | Deutsch | [Español](../../es-ES/engineering/sdk-trial.md) | [Português (Brasil)](../../pt-BR/engineering/sdk-trial.md) | [Русский](../../ru-RU/engineering/sdk-trial.md)
 
 `xdzip-plugin-protocol` und `xdzip-plugin-host` implementieren den unabhängigen schreibgeschützten Versuch aus dem [Format-Erweiterungsdesign](../design/codec-extension-sdk.md). Er ist von Formatentdeckung in Desktop und CLI, Installation, Paketierung und automatischem Start ausgeschlossen. Benutzer führen den Versuchsbefehl ausdrücklich aus und wählen Paket und Quelle; Drittanbietererweiterungen bleiben im Produkt deaktiviert. Es wird nur `xdp1` ausgehandelt, ohne Erstellung, Passwörter, Teilarchive, Links, GUI oder beliebige Hostpfadberechtigungen. Dies ist weder ein vollständiges Plugin-Ökosystem noch eine SDK-Veröffentlichung.
 

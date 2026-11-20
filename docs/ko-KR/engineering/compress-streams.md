@@ -2,7 +2,7 @@
 
 # Unix compress Z 계약
 
-[English](../../engineering/compress-streams.md) | [简体中文](../../zh-CN/engineering/compress-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/compress-streams.md) | [日本語](../../ja-JP/engineering/compress-streams.md) | 한국어 | [Français](../../fr-FR/engineering/compress-streams.md) | [Deutsch](../../de-DE/engineering/compress-streams.md) | [Español](../../es-ES/engineering/compress-streams.md) | [Português (Brasil)](../../pt-BR/engineering/compress-streams.md) | [Русский](../../ru-RU/engineering/compress-streams.md)
+[English](../../engineering/compress-streams.md) | [简体中文](../../zh-CN/engineering/compress-streams.md) | [繁體中文](../../zh-TW/engineering/compress-streams.md) | [日本語](../../ja-JP/engineering/compress-streams.md) | 한국어 | [Français](../../fr-FR/engineering/compress-streams.md) | [Deutsch](../../de-DE/engineering/compress-streams.md) | [Español](../../es-ES/engineering/compress-streams.md) | [Português (Brasil)](../../pt-BR/engineering/compress-streams.md) | [Русский](../../ru-RU/engineering/compress-streams.md)
 
 이 계약은 독립적인 Rust LZW 리더의 바이트 형식과 단일 파일 및 TAR 조합을 정의합니다. 유틸리티의 역사와 9–16비트 사전 동작은 [OpenBSD compress(1)](https://man.openbsd.org/compress.1)과 [ncompress](https://vapier.github.io/ncompress/)를 따릅니다. POSIX는 전체 바이트 배치가 아니라 유틸리티를 규정합니다. 과거의 8코드 정렬과 9비트 호환성 차이는 [업스트림 논의](https://github.com/vapier/ncompress/issues/5)에 기록되어 있으며 내용이 알려진 독립 입력으로 확인합니다. 소스 관찰은 형식 규칙을 보완하며 Rust 구현은 참조 코드의 번역이 아닙니다.
 

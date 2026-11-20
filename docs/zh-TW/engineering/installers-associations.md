@@ -2,7 +2,7 @@
 
 # 安裝器與檔案關聯
 
-[English](../../engineering/installers-associations.md) | [简体中文](../../zh-CN/engineering/installers-associations.md) | 繁體中文（台灣）
+[English](../../engineering/installers-associations.md) | [简体中文](../../zh-CN/engineering/installers-associations.md) | 繁體中文
 
 Windows 11 x64 使用者可以在 Microsoft Store 搜尋 **XDZip**，安裝或更新商店版。Windows EXE 安裝器、便攜 ZIP 及 macOS、Linux 安裝包可從 [GitHub 最新發布頁](https://github.com/xiaodaozhi/xdzip/releases/latest)下載。兩條渠道獨立釋出，安裝前可在所選渠道核對版本。
 
@@ -159,4 +159,4 @@ Windows 更新協議夾具與真實 Qt 更新夾具同樣提供關聯啟動器�
 在 macOS 上，設定頁啟用已由安裝包以 Viewer／Alternate 宣告的型別開關。即使型別此前沒有預設應用，也能請求設為 xdzip。macOS 可能要求確認。收到成功回撥後，設定頁會短暫等待 Launch Services 返回新的預設應用。系統查詢確認切換為 xdzip 後，應用按系統內容型別在本地記錄原應用的包標識。關閉開關時，如果系統仍將原應用列為相容候選，則優先請求恢復。沒有相容的歷史應用或恢復失敗時，可以選擇其他相容的已安裝應用。沒有替代應用時，說明直接顯示在開關旁。取消後保留當前選擇，介面以重新查詢的系統狀態為準。Viewer／None 構建禁用關聯變更。
 
 
-採用自動偵測時，Windows 安裝程式依目前使用者的系統介面語言選擇關聯描述。繁體中文偏好使用台灣繁體中文，不支援的語言使用美式英語。手動選擇受支援的語言時優先採用該語言。安裝程式會保留自動偵測，應用程式啟動後再依系統語言同步自己的描述。
+採用自動偵測時，Windows 安裝程式依目前使用者的系統介面語言選擇關聯描述。繁體中文偏好使用繁體中文，不支援的語言使用美式英語。手動選擇受支援的語言時優先採用該語言。安裝程式會保留自動偵測，應用程式啟動後再依系統語言同步自己的描述。

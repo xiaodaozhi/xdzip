@@ -2,7 +2,7 @@
 
 # Индексация больших архивов и просмотр по требованию
 
-[English](../../engineering/large-index.md) | [简体中文](../../zh-CN/engineering/large-index.md) | [繁體中文（台灣）](../../zh-TW/engineering/large-index.md) | [日本語](../../ja-JP/engineering/large-index.md) | [한국어](../../ko-KR/engineering/large-index.md) | [Français](../../fr-FR/engineering/large-index.md) | [Deutsch](../../de-DE/engineering/large-index.md) | [Español](../../es-ES/engineering/large-index.md) | [Português (Brasil)](../../pt-BR/engineering/large-index.md) | Русский
+[English](../../engineering/large-index.md) | [简体中文](../../zh-CN/engineering/large-index.md) | [繁體中文](../../zh-TW/engineering/large-index.md) | [日本語](../../ja-JP/engineering/large-index.md) | [한국어](../../ko-KR/engineering/large-index.md) | [Français](../../fr-FR/engineering/large-index.md) | [Deutsch](../../de-DE/engineering/large-index.md) | [Español](../../es-ES/engineering/large-index.md) | [Português (Brasil)](../../pt-BR/engineering/large-index.md) | Русский
 
 Предел возможности исходного кода для обычного однофайлового ZIP/ZIP64 составляет миллион физических записей. Другие форматы и пути с многотомными архивами сохраняют действующий допуск в 100 000 записей; название формата не означает расширения пределов для всех сочетаний. Каталоги, повторяющиеся имена и записи, требующие проверки, учитываются как физические записи; неявные каталоги навигации добавляют только строки отображения.
 

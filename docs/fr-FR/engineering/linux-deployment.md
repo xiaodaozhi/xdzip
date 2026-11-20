@@ -2,7 +2,7 @@
 
 # Répertoire autonome d’exécution Linux et vérification
 
-[English](../../engineering/linux-deployment.md) | [简体中文](../../zh-CN/engineering/linux-deployment.md) | [繁體中文（台灣）](../../zh-TW/engineering/linux-deployment.md) | [日本語](../../ja-JP/engineering/linux-deployment.md) | [한국어](../../ko-KR/engineering/linux-deployment.md) | Français | [Deutsch](../../de-DE/engineering/linux-deployment.md) | [Español](../../es-ES/engineering/linux-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/linux-deployment.md) | [Русский](../../ru-RU/engineering/linux-deployment.md)
+[English](../../engineering/linux-deployment.md) | [简体中文](../../zh-CN/engineering/linux-deployment.md) | [繁體中文](../../zh-TW/engineering/linux-deployment.md) | [日本語](../../ja-JP/engineering/linux-deployment.md) | [한국어](../../ko-KR/engineering/linux-deployment.md) | Français | [Deutsch](../../de-DE/engineering/linux-deployment.md) | [Español](../../es-ES/engineering/linux-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/linux-deployment.md) | [Русский](../../ru-RU/engineering/linux-deployment.md)
 
 La base actuelle de déploiement pour le développement est Ubuntu 24.04, x86_64 et X11. L’objectif est d’exécuter le produit actuel sans le SDK Qt de développement ; cela ne promet pas d’autres distributions, une glibc plus ancienne, Wayland ou un installateur complet. La CI macOS conserve compilation, tests et vérification de démarrage natifs. Les DMG locaux de développement suivent le [guide de déploiement Mac](macos-deployment.md) et ne sont pas affectés par ce processus.
 

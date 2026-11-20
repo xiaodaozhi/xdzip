@@ -2,7 +2,7 @@
 
 # 大規模アーカイブの索引とオンデマンド参照
 
-[English](../../engineering/large-index.md) | [简体中文](../../zh-CN/engineering/large-index.md) | [繁體中文（台灣）](../../zh-TW/engineering/large-index.md) | 日本語 | [한국어](../../ko-KR/engineering/large-index.md) | [Français](../../fr-FR/engineering/large-index.md) | [Deutsch](../../de-DE/engineering/large-index.md) | [Español](../../es-ES/engineering/large-index.md) | [Português (Brasil)](../../pt-BR/engineering/large-index.md) | [Русский](../../ru-RU/engineering/large-index.md)
+[English](../../engineering/large-index.md) | [简体中文](../../zh-CN/engineering/large-index.md) | [繁體中文](../../zh-TW/engineering/large-index.md) | 日本語 | [한국어](../../ko-KR/engineering/large-index.md) | [Français](../../fr-FR/engineering/large-index.md) | [Deutsch](../../de-DE/engineering/large-index.md) | [Español](../../es-ES/engineering/large-index.md) | [Português (Brasil)](../../pt-BR/engineering/large-index.md) | [Русский](../../ru-RU/engineering/large-index.md)
 
 通常の単一ファイル ZIP/ZIP64 に対するソースコードの機能上限は物理レコード 100 万件です。他の形式と分割ボリュームの経路は従来の 100,000 項目の受け入れ上限を維持します。形式名だけで、すべての組み合わせの上限が拡張されたとは限りません。ディレクトリー、重複名、要確認レコードはいずれも物理項目に数え、暗黙の移動用ディレクトリーは表示行だけを増やします。
 

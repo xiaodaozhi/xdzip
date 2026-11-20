@@ -1,6 +1,6 @@
 # Руководство пользователя XDZip
 
-[English](../../user-guide/README.md) | [简体中文](../../zh-CN/user-guide/README.md) | [繁體中文（台灣）](../../zh-TW/user-guide/README.md) | [日本語](../../ja-JP/user-guide/README.md) | [한국어](../../ko-KR/user-guide/README.md) | [Français](../../fr-FR/user-guide/README.md) | [Deutsch](../../de-DE/user-guide/README.md) | [Español](../../es-ES/user-guide/README.md) | [Português (Brasil)](../../pt-BR/user-guide/README.md) | Русский
+[English](../../user-guide/README.md) | [简体中文](../../zh-CN/user-guide/README.md) | [繁體中文](../../zh-TW/user-guide/README.md) | [日本語](../../ja-JP/user-guide/README.md) | [한국어](../../ko-KR/user-guide/README.md) | [Français](../../fr-FR/user-guide/README.md) | [Deutsch](../../de-DE/user-guide/README.md) | [Español](../../es-ES/user-guide/README.md) | [Português (Brasil)](../../pt-BR/user-guide/README.md) | Русский
 
 Поддерживаемые конфигурации Windows, macOS и Ubuntu указаны в [инструкции по установке](install.md). Доступные операции для каждого архива перечислены в [таблице форматов](../../../README.ru-RU.md#xdzip-format-support). Для скачанной сборки прочитайте примечания к соответствующему [выпуску](https://github.com/xiaodaozhi/xdzip/releases).
 

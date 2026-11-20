@@ -2,7 +2,7 @@
 
 # Teste externo de SDK somente leitura
 
-[English](../../engineering/sdk-trial.md) | [简体中文](../../zh-CN/engineering/sdk-trial.md) | [繁體中文（台灣）](../../zh-TW/engineering/sdk-trial.md) | [日本語](../../ja-JP/engineering/sdk-trial.md) | [한국어](../../ko-KR/engineering/sdk-trial.md) | [Français](../../fr-FR/engineering/sdk-trial.md) | [Deutsch](../../de-DE/engineering/sdk-trial.md) | [Español](../../es-ES/engineering/sdk-trial.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/sdk-trial.md)
+[English](../../engineering/sdk-trial.md) | [简体中文](../../zh-CN/engineering/sdk-trial.md) | [繁體中文](../../zh-TW/engineering/sdk-trial.md) | [日本語](../../ja-JP/engineering/sdk-trial.md) | [한국어](../../ko-KR/engineering/sdk-trial.md) | [Français](../../fr-FR/engineering/sdk-trial.md) | [Deutsch](../../de-DE/engineering/sdk-trial.md) | [Español](../../es-ES/engineering/sdk-trial.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/sdk-trial.md)
 
 `xdzip-plugin-protocol` e `xdzip-plugin-host` implementam o teste independente somente leitura descrito no [design de extensão de formatos](../design/codec-extension-sdk.md). Ele fica fora da descoberta de formatos do desktop e da CLI, instalação, empacotamento e inicialização automática. O usuário executa explicitamente o comando de teste e seleciona pacote e origem; extensões de terceiros continuam desativadas no produto. Somente `xdp1` é negociado, sem criação, senhas, volumes, links, interface gráfica ou permissões arbitrárias de caminhos do hospedeiro. Isso não é um ecossistema completo de plugins nem uma publicação de SDK.
 

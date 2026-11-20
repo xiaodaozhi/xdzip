@@ -2,7 +2,7 @@
 
 # v0.1 インタラクション試作と機能の対応
 
-[English](../../ux/prototype-spec.md) | [简体中文](../../zh-CN/ux/prototype-spec.md) | [繁體中文（台灣）](../../zh-TW/ux/prototype-spec.md) | 日本語 | [한국어](../../ko-KR/ux/prototype-spec.md) | [Français](../../fr-FR/ux/prototype-spec.md) | [Deutsch](../../de-DE/ux/prototype-spec.md) | [Español](../../es-ES/ux/prototype-spec.md) | [Português (Brasil)](../../pt-BR/ux/prototype-spec.md) | [Русский](../../ru-RU/ux/prototype-spec.md)
+[English](../../ux/prototype-spec.md) | [简体中文](../../zh-CN/ux/prototype-spec.md) | [繁體中文](../../zh-TW/ux/prototype-spec.md) | 日本語 | [한국어](../../ko-KR/ux/prototype-spec.md) | [Français](../../fr-FR/ux/prototype-spec.md) | [Deutsch](../../de-DE/ux/prototype-spec.md) | [Español](../../es-ES/ux/prototype-spec.md) | [Português (Brasil)](../../pt-BR/ux/prototype-spec.md) | [Русский](../../ru-RU/ux/prototype-spec.md)
 
 状態：インタラクティブなデザイン検証用ドラフト。ソースは [design/html](../../../design/html/README.md)、入口は [index.html](../../../design/html/index.html) です。Figma のドラフトは過去の検討として残し、現在の機能と状態の詳細化はリポジトリ内で続けています。
 

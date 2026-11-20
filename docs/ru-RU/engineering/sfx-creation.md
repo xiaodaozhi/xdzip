@@ -1,6 +1,6 @@
 # Самораспаковывающиеся ZIP-архивы, созданные xdzip для Windows
 
-[English](../../engineering/sfx-creation.md) | [简体中文](../../zh-CN/engineering/sfx-creation.md) | [繁體中文（台灣）](../../zh-TW/engineering/sfx-creation.md) | [日本語](../../ja-JP/engineering/sfx-creation.md) | [한국어](../../ko-KR/engineering/sfx-creation.md) | [Français](../../fr-FR/engineering/sfx-creation.md) | [Deutsch](../../de-DE/engineering/sfx-creation.md) | [Español](../../es-ES/engineering/sfx-creation.md) | [Português (Brasil)](../../pt-BR/engineering/sfx-creation.md) | Русский
+[English](../../engineering/sfx-creation.md) | [简体中文](../../zh-CN/engineering/sfx-creation.md) | [繁體中文](../../zh-TW/engineering/sfx-creation.md) | [日本語](../../ja-JP/engineering/sfx-creation.md) | [한국어](../../ko-KR/engineering/sfx-creation.md) | [Français](../../fr-FR/engineering/sfx-creation.md) | [Deutsch](../../de-DE/engineering/sfx-creation.md) | [Español](../../es-ES/engineering/sfx-creation.md) | [Português (Brasil)](../../pt-BR/engineering/sfx-creation.md) | Русский
 
 Первый профиль SFX работает только на Windows x64 и создаётся с явным суффиксом `.sfx.exe`. Однотомный ZIP без шифрования, созданный методом Store или Deflate, помещается в модуль `xdzip-sfx.exe`, который собирается проектом. При создании модуль не запускается. Обычные файлы `.exe` исключены из создания, перетаскивания и регистрации системных ассоциаций.
 

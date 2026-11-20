@@ -2,7 +2,7 @@
 
 # 암호가 필요한 압축 풀기 상호 작용
 
-[English](../../ux/password-extraction.md) | [简体中文](../../zh-CN/ux/password-extraction.md) | [繁體中文（台灣）](../../zh-TW/ux/password-extraction.md) | [日本語](../../ja-JP/ux/password-extraction.md) | 한국어 | [Français](../../fr-FR/ux/password-extraction.md) | [Deutsch](../../de-DE/ux/password-extraction.md) | [Español](../../es-ES/ux/password-extraction.md) | [Português (Brasil)](../../pt-BR/ux/password-extraction.md) | [Русский](../../ru-RU/ux/password-extraction.md)
+[English](../../ux/password-extraction.md) | [简体中文](../../zh-CN/ux/password-extraction.md) | [繁體中文](../../zh-TW/ux/password-extraction.md) | [日本語](../../ja-JP/ux/password-extraction.md) | 한국어 | [Français](../../fr-FR/ux/password-extraction.md) | [Deutsch](../../de-DE/ux/password-extraction.md) | [Español](../../es-ES/ux/password-extraction.md) | [Português (Brasil)](../../pt-BR/ux/password-extraction.md) | [Русский](../../ru-RU/ux/password-extraction.md)
 
 지원되는 ZIP, 7z, RAR 작업은 암호가 필요한 항목을 만나면 `waiting_password` 상태가 됩니다. 런타임은 작업 ID와 요청 ID가 포함된 요청을 게시합니다. QML은 입력과 취소 의도만 전달하며 복호화, 인증과 파일 확정은 코어가 담당합니다. 암호 요청과 이름 충돌은 별도 상태입니다. 암호 요청을 충돌 창에 보내면 안 됩니다. 형식, 인증, 재시도와 출력 범위는 [기술 계약](../engineering/password-extraction.md)을 따릅니다.
 

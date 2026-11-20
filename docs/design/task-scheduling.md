@@ -1,6 +1,6 @@
 # Task scheduling, progress and cancellation
 
-English | [简体中文](../zh-CN/design/task-scheduling.md) | [繁體中文（台灣）](../zh-TW/design/task-scheduling.md) | [日本語](../ja-JP/design/task-scheduling.md) | [한국어](../ko-KR/design/task-scheduling.md) | [Français](../fr-FR/design/task-scheduling.md) | [Deutsch](../de-DE/design/task-scheduling.md) | [Español](../es-ES/design/task-scheduling.md) | [Português (Brasil)](../pt-BR/design/task-scheduling.md) | [Русский](../ru-RU/design/task-scheduling.md)
+English | [简体中文](../zh-CN/design/task-scheduling.md) | [繁體中文](../zh-TW/design/task-scheduling.md) | [日本語](../ja-JP/design/task-scheduling.md) | [한국어](../ko-KR/design/task-scheduling.md) | [Français](../fr-FR/design/task-scheduling.md) | [Deutsch](../de-DE/design/task-scheduling.md) | [Español](../es-ES/design/task-scheduling.md) | [Português (Brasil)](../pt-BR/design/task-scheduling.md) | [Русский](../ru-RU/design/task-scheduling.md)
 
 XDZip uses one Rust command thread and one task thread per runtime connection. The command thread owns the current archive and prepares task inputs. The task thread runs accepted jobs while the command thread can still serve metadata requests. The [system architecture](system-architecture.md) explains where these threads run, and the [Qt/Rust bridge](qt-rust-bridge.md) explains how results reach the client.
 

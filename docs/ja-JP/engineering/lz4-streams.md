@@ -2,7 +2,7 @@
 
 # LZ4 ストリーム仕様
 
-[English](../../engineering/lz4-streams.md) | [简体中文](../../zh-CN/engineering/lz4-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/lz4-streams.md) | 日本語 | [한국어](../../ko-KR/engineering/lz4-streams.md) | [Français](../../fr-FR/engineering/lz4-streams.md) | [Deutsch](../../de-DE/engineering/lz4-streams.md) | [Español](../../es-ES/engineering/lz4-streams.md) | [Português (Brasil)](../../pt-BR/engineering/lz4-streams.md) | [Русский](../../ru-RU/engineering/lz4-streams.md)
+[English](../../engineering/lz4-streams.md) | [简体中文](../../zh-CN/engineering/lz4-streams.md) | [繁體中文](../../zh-TW/engineering/lz4-streams.md) | 日本語 | [한국어](../../ko-KR/engineering/lz4-streams.md) | [Français](../../fr-FR/engineering/lz4-streams.md) | [Deutsch](../../de-DE/engineering/lz4-streams.md) | [Español](../../es-ES/engineering/lz4-streams.md) | [Português (Brasil)](../../pt-BR/engineering/lz4-streams.md) | [Русский](../../ru-RU/engineering/lz4-streams.md)
 
 標準フレームのプロファイルは、作者による[フレーム形式 1.6.5](https://github.com/lz4/lz4/blob/v1.11.1/doc/lz4_Frame_format.md)、[ブロック形式、2026-10-26](https://github.com/lz4/lz4/blob/v1.11.1/doc/lz4_Block_format.md)、[XXH32 の仕様](https://github.com/Cyan4973/xxHash/blob/v0.8.3/doc/xxhash_spec.md)に従います。製品のアルゴリズムは Rust による独立実装です。参照ツールと生成した実行結果はローカルの `build/` に保存し、再現可能な自作の入力パターンのみをバージョン管理します。ホストの権限と出力の確定については[単一ファイルストリーム](single-file-streams.md)を参照してください。
 

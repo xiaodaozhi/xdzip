@@ -1,6 +1,6 @@
 # Developer preparation guide
 
-English | [简体中文](../zh-CN/engineering/development.md) | [繁體中文（台灣）](../zh-TW/engineering/development.md) | [日本語](../ja-JP/engineering/development.md) | [한국어](../ko-KR/engineering/development.md) | [Français](../fr-FR/engineering/development.md) | [Deutsch](../de-DE/engineering/development.md) | [Español](../es-ES/engineering/development.md) | [Português (Brasil)](../pt-BR/engineering/development.md) | [Русский](../ru-RU/engineering/development.md)
+English | [简体中文](../zh-CN/engineering/development.md) | [繁體中文](../zh-TW/engineering/development.md) | [日本語](../ja-JP/engineering/development.md) | [한국어](../ko-KR/engineering/development.md) | [Français](../fr-FR/engineering/development.md) | [Deutsch](../de-DE/engineering/development.md) | [Español](../es-ES/engineering/development.md) | [Português (Brasil)](../pt-BR/engineering/development.md) | [Русский](../ru-RU/engineering/development.md)
 
 Use [Build and contribute](../contributing/README.md) to choose a build and verification path for the change. See the [system architecture](../design/system-architecture.md) and [repository layout](repository-layout.md) for the Qt, Rust runtime and codec boundaries.
 

@@ -2,7 +2,7 @@
 
 # Контейнеры BH и поддерживаемый профиль BlakHole
 
-[English](../../engineering/bh-containers.md) | [简体中文](../../zh-CN/engineering/bh-containers.md) | [繁體中文（台灣）](../../zh-TW/engineering/bh-containers.md) | [日本語](../../ja-JP/engineering/bh-containers.md) | [한국어](../../ko-KR/engineering/bh-containers.md) | [Français](../../fr-FR/engineering/bh-containers.md) | [Deutsch](../../de-DE/engineering/bh-containers.md) | [Español](../../es-ES/engineering/bh-containers.md) | [Português (Brasil)](../../pt-BR/engineering/bh-containers.md) | Русский
+[English](../../engineering/bh-containers.md) | [简体中文](../../zh-CN/engineering/bh-containers.md) | [繁體中文](../../zh-TW/engineering/bh-containers.md) | [日本語](../../ja-JP/engineering/bh-containers.md) | [한국어](../../ko-KR/engineering/bh-containers.md) | [Français](../../fr-FR/engineering/bh-containers.md) | [Deutsch](../../de-DE/engineering/bh-containers.md) | [Español](../../es-ES/engineering/bh-containers.md) | [Português (Brasil)](../../pt-BR/engineering/bh-containers.md) | Русский
 
 `xdzip-codec-bh` последовательно читает записи BlakHole (`.bh`) из источника, которым управляет хост. Профиль требует префикс `BH 05 07`, наблюдавшиеся константы заголовка, метаданные обычного файла, точные упакованный и декодированный размеры и объявленную каждой записью сумму IEEE CRC-32. Физический порядок сохраняется. Одноимённые записи остаются различимыми, а зафиксированный идентификатор строки не зависит от декодирования отображаемого имени.
 

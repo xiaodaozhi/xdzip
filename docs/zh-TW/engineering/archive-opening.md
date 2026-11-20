@@ -2,7 +2,7 @@
 
 # 分卷讀取與臨時開啟
 
-[English](../../engineering/archive-opening.md) | [简体中文](../../zh-CN/engineering/archive-opening.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/archive-opening.md) | [한국어](../../ko-KR/engineering/archive-opening.md) | [Français](../../fr-FR/engineering/archive-opening.md) | [Deutsch](../../de-DE/engineering/archive-opening.md) | [Español](../../es-ES/engineering/archive-opening.md) | [Português (Brasil)](../../pt-BR/engineering/archive-opening.md) | [Русский](../../ru-RU/engineering/archive-opening.md)
+[English](../../engineering/archive-opening.md) | [简体中文](../../zh-CN/engineering/archive-opening.md) | 繁體中文 | [日本語](../../ja-JP/engineering/archive-opening.md) | [한국어](../../ko-KR/engineering/archive-opening.md) | [Français](../../fr-FR/engineering/archive-opening.md) | [Deutsch](../../de-DE/engineering/archive-opening.md) | [Español](../../es-ES/engineering/archive-opening.md) | [Português (Brasil)](../../pt-BR/engineering/archive-opening.md) | [Русский](../../ru-RU/engineering/archive-opening.md)
 
 桌面檔案選擇、系統選單請求和 CLI 共用 Rust 的來源開啟規則。宿主解析允許的分卷組，記錄來源身份並探測已授權的位元組。選定的格式實現提供[瀏覽後設資料](readonly-browser.md)，部分格式經[隔離的格式工作程序](native-codecs.md)讀取。主動開啟條目時，應用會生成經過校驗的臨時副本，再交給系統關聯程式。驗證整包應單獨執行[完整性檢查](archive-checking.md)。
 

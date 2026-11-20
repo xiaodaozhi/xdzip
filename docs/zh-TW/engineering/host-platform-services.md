@@ -2,7 +2,7 @@
 
 # 格式工作程序的宿主日曆與編碼服務
 
-[English](../../engineering/host-platform-services.md) | [简体中文](../../zh-CN/engineering/host-platform-services.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/host-platform-services.md) | [한국어](../../ko-KR/engineering/host-platform-services.md) | [Français](../../fr-FR/engineering/host-platform-services.md) | [Deutsch](../../de-DE/engineering/host-platform-services.md) | [Español](../../es-ES/engineering/host-platform-services.md) | [Português (Brasil)](../../pt-BR/engineering/host-platform-services.md) | [Русский](../../ru-RU/engineering/host-platform-services.md)
+[English](../../engineering/host-platform-services.md) | [简体中文](../../zh-CN/engineering/host-platform-services.md) | 繁體中文 | [日本語](../../ja-JP/engineering/host-platform-services.md) | [한국어](../../ko-KR/engineering/host-platform-services.md) | [Français](../../fr-FR/engineering/host-platform-services.md) | [Deutsch](../../de-DE/engineering/host-platform-services.md) | [Español](../../es-ES/engineering/host-platform-services.md) | [Português (Brasil)](../../pt-BR/engineering/host-platform-services.md) | [Русский](../../ru-RU/engineering/host-platform-services.md)
 
 格式欄位、密碼相容規則和校驗由 Rust 處理。作業系統的歷史時區、OEM/ANSI 內碼表和本地 C 編碼屬於宿主環境，透過 `ReadSource` 的可選服務提供，不能由格式層根據檔名、HostOS 或目前 UTC 偏移猜測。服務不依賴 Qt，不授予路徑訪問或檔案釋出許可權。
 

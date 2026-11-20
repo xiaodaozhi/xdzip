@@ -1,7 +1,7 @@
 <a name="xdzip-system-support-and-maintenance-policy"></a>
 # システムのサポートとメンテナンスポリシー
 
-[English](../../engineering/support-policy.md) | [简体中文](../../zh-CN/engineering/support-policy.md) | [繁體中文（台灣）](../../zh-TW/engineering/support-policy.md) | 日本語 | [한국어](../../ko-KR/engineering/support-policy.md) | [Français](../../fr-FR/engineering/support-policy.md) | [Deutsch](../../de-DE/engineering/support-policy.md) | [Español](../../es-ES/engineering/support-policy.md) | [Português (Brasil)](../../pt-BR/engineering/support-policy.md) | [Русский](../../ru-RU/engineering/support-policy.md)
+[English](../../engineering/support-policy.md) | [简体中文](../../zh-CN/engineering/support-policy.md) | [繁體中文](../../zh-TW/engineering/support-policy.md) | 日本語 | [한국어](../../ko-KR/engineering/support-policy.md) | [Français](../../fr-FR/engineering/support-policy.md) | [Deutsch](../../de-DE/engineering/support-policy.md) | [Español](../../es-ES/engineering/support-policy.md) | [Português (Brasil)](../../pt-BR/engineering/support-policy.md) | [Русский](../../ru-RU/engineering/support-policy.md)
 
 プロジェクトの所有者は 2026-10-19 に初期サポート方針を承認し、`v0.1.0` は 2026-11-06 に公開されました。最新のバージョンとダウンロードは[リリースページ](https://github.com/xiaodaozhi/xdzip/releases)を参照してください。この方針はサポート範囲を定めます。最小バージョンのチェックは従来どおりです。CI とユーザーによる受け入れ確認の結果は、それぞれ検証済みの環境に適用されます。手動確認はユーザーの判断により完了しています。
 

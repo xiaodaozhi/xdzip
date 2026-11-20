@@ -2,7 +2,7 @@
 
 # Linux 독립 실행 디렉터리와 검증
 
-[English](../../engineering/linux-deployment.md) | [简体中文](../../zh-CN/engineering/linux-deployment.md) | [繁體中文（台灣）](../../zh-TW/engineering/linux-deployment.md) | [日本語](../../ja-JP/engineering/linux-deployment.md) | 한국어 | [Français](../../fr-FR/engineering/linux-deployment.md) | [Deutsch](../../de-DE/engineering/linux-deployment.md) | [Español](../../es-ES/engineering/linux-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/linux-deployment.md) | [Русский](../../ru-RU/engineering/linux-deployment.md)
+[English](../../engineering/linux-deployment.md) | [简体中文](../../zh-CN/engineering/linux-deployment.md) | [繁體中文](../../zh-TW/engineering/linux-deployment.md) | [日本語](../../ja-JP/engineering/linux-deployment.md) | 한국어 | [Français](../../fr-FR/engineering/linux-deployment.md) | [Deutsch](../../de-DE/engineering/linux-deployment.md) | [Español](../../es-ES/engineering/linux-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/linux-deployment.md) | [Русский](../../ru-RU/engineering/linux-deployment.md)
 
 현재 개발 배포 기준은 Ubuntu 24.04, x86_64, X11입니다. 목표는 개발용 Qt SDK 없이 현재 제품을 실행하는 것이며 다른 배포판, 더 오래된 glibc, Wayland 또는 완전한 설치 프로그램 지원을 약속하지 않습니다. macOS CI는 네이티브 빌드, 테스트, 시작 검증을 유지합니다. 로컬 개발 DMG는 [Mac 배포 안내서](macos-deployment.md)를 따르며 이 절차의 영향을 받지 않습니다.
 

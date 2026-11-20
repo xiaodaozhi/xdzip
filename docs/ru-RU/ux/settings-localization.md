@@ -2,7 +2,7 @@
 
 # Окно настроек и язык интерфейса
 
-[English](../../ux/settings-localization.md) | [简体中文](../../zh-CN/ux/settings-localization.md) | [繁體中文（台灣）](../../zh-TW/ux/settings-localization.md) | [日本語](../../ja-JP/ux/settings-localization.md) | [한국어](../../ko-KR/ux/settings-localization.md) | [Français](../../fr-FR/ux/settings-localization.md) | [Deutsch](../../de-DE/ux/settings-localization.md) | [Español](../../es-ES/ux/settings-localization.md) | [Português (Brasil)](../../pt-BR/ux/settings-localization.md) | Русский
+[English](../../ux/settings-localization.md) | [简体中文](../../zh-CN/ux/settings-localization.md) | [繁體中文](../../zh-TW/ux/settings-localization.md) | [日本語](../../ja-JP/ux/settings-localization.md) | [한국어](../../ko-KR/ux/settings-localization.md) | [Français](../../fr-FR/ux/settings-localization.md) | [Deutsch](../../de-DE/ux/settings-localization.md) | [Español](../../es-ES/ux/settings-localization.md) | [Português (Brasil)](../../pt-BR/ux/settings-localization.md) | Русский
 
 Если главное окно не видно, открытые из области уведомлений Настройки и О программе без окна-владельца центрируют полную нативную рамку в рабочей области экрана под указателем. Они используют размещение OperationWindow и повторно центрируются после создания нативного окна и определения высоты. Предел высоты опирается на доступное пространство выбранного QScreen и текущий отступ. Высота всего виртуального рабочего стола не используется, скрытые и свёрнутые главные окна не восстанавливаются. У входов с владельцем сохраняются его размещение, размеры и плотность.
 

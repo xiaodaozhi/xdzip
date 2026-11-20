@@ -1,6 +1,6 @@
 # XDZip 常见问题与排错
 
-[English](../../user-guide/troubleshooting.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/user-guide/troubleshooting.md) | [日本語](../../ja-JP/user-guide/troubleshooting.md) | [한국어](../../ko-KR/user-guide/troubleshooting.md) | [Français](../../fr-FR/user-guide/troubleshooting.md) | [Deutsch](../../de-DE/user-guide/troubleshooting.md) | [Español](../../es-ES/user-guide/troubleshooting.md) | [Português (Brasil)](../../pt-BR/user-guide/troubleshooting.md) | [Русский](../../ru-RU/user-guide/troubleshooting.md)
+[English](../../user-guide/troubleshooting.md) | 简体中文 | [繁體中文](../../zh-TW/user-guide/troubleshooting.md) | [日本語](../../ja-JP/user-guide/troubleshooting.md) | [한국어](../../ko-KR/user-guide/troubleshooting.md) | [Français](../../fr-FR/user-guide/troubleshooting.md) | [Deutsch](../../de-DE/user-guide/troubleshooting.md) | [Español](../../es-ES/user-guide/troubleshooting.md) | [Português (Brasil)](../../pt-BR/user-guide/troubleshooting.md) | [Русский](../../ru-RU/user-guide/troubleshooting.md)
 
 | 遇到的问题 | 可以怎么处理 |
 | --- | --- |

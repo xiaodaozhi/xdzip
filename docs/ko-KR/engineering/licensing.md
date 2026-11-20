@@ -2,7 +2,7 @@
 
 # 라이선스 결정과 타사 자료
 
-[English](../../engineering/licensing.md) | [简体中文](../../zh-CN/engineering/licensing.md) | [繁體中文（台灣）](../../zh-TW/engineering/licensing.md) | [日本語](../../ja-JP/engineering/licensing.md) | 한국어 | [Français](../../fr-FR/engineering/licensing.md) | [Deutsch](../../de-DE/engineering/licensing.md) | [Español](../../es-ES/engineering/licensing.md) | [Português (Brasil)](../../pt-BR/engineering/licensing.md) | [Русский](../../ru-RU/engineering/licensing.md)
+[English](../../engineering/licensing.md) | [简体中文](../../zh-CN/engineering/licensing.md) | [繁體中文](../../zh-TW/engineering/licensing.md) | [日本語](../../ja-JP/engineering/licensing.md) | 한국어 | [Français](../../fr-FR/engineering/licensing.md) | [Deutsch](../../de-DE/engineering/licensing.md) | [Español](../../es-ES/engineering/licensing.md) | [Português (Brasil)](../../pt-BR/engineering/licensing.md) | [Русский](../../ru-RU/engineering/licensing.md)
 
 상태: 채택됨. 프로젝트는 2026-10-11에 별도로 명시된 경우를 제외하고 프로젝트의 독창적인 코드, 문서와 기타 독창적 콘텐츠에 **Apache-2.0**을 적용하기로 했습니다. 이전 실험 문서의 MIT OR Apache-2.0 선택지는 이 저장소에 적용되지 않습니다.
 

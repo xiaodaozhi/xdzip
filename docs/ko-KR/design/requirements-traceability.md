@@ -2,7 +2,7 @@
 
 # 요구 사항과 검증 추적성
 
-[English](../../design/requirements-traceability.md) | [简体中文](../../zh-CN/design/requirements-traceability.md) | [繁體中文（台灣）](../../zh-TW/design/requirements-traceability.md) | [日本語](../../ja-JP/design/requirements-traceability.md) | 한국어 | [Français](../../fr-FR/design/requirements-traceability.md) | [Deutsch](../../de-DE/design/requirements-traceability.md) | [Español](../../es-ES/design/requirements-traceability.md) | [Português (Brasil)](../../pt-BR/design/requirements-traceability.md) | [Русский](../../ru-RU/design/requirements-traceability.md)
+[English](../../design/requirements-traceability.md) | [简体中文](../../zh-CN/design/requirements-traceability.md) | [繁體中文](../../zh-TW/design/requirements-traceability.md) | [日本語](../../ja-JP/design/requirements-traceability.md) | 한국어 | [Français](../../fr-FR/design/requirements-traceability.md) | [Deutsch](../../de-DE/design/requirements-traceability.md) | [Español](../../es-ES/design/requirements-traceability.md) | [Português (Brasil)](../../pt-BR/design/requirements-traceability.md) | [Русский](../../ru-RU/design/requirements-traceability.md)
 
 [제품 요구 사항](product-requirements.md)은 요구 사항 ID와 현재 범위를 정의합니다. 각 행은 해당 동작이 바뀔 때 검증할 내용을 설명합니다. 실행 결과, 플랫폼 범위와 제한은 해당 변경 기록에 남깁니다. [인수 사례](../../../developers/qa/acceptance.md)에 검증 진입점이 나와 있습니다.
 

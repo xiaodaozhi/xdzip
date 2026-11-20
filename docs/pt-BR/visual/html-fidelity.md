@@ -2,7 +2,7 @@
 
 # Revisão de fidelidade visual HTML
 
-[English](../../visual/html-fidelity.md) | [简体中文](../../zh-CN/visual/html-fidelity.md) | [繁體中文（台灣）](../../zh-TW/visual/html-fidelity.md) | [日本語](../../ja-JP/visual/html-fidelity.md) | [한국어](../../ko-KR/visual/html-fidelity.md) | [Français](../../fr-FR/visual/html-fidelity.md) | [Deutsch](../../de-DE/visual/html-fidelity.md) | [Español](../../es-ES/visual/html-fidelity.md) | Português (Brasil) | [Русский](../../ru-RU/visual/html-fidelity.md)
+[English](../../visual/html-fidelity.md) | [简体中文](../../zh-CN/visual/html-fidelity.md) | [繁體中文](../../zh-TW/visual/html-fidelity.md) | [日本語](../../ja-JP/visual/html-fidelity.md) | [한국어](../../ko-KR/visual/html-fidelity.md) | [Français](../../fr-FR/visual/html-fidelity.md) | [Deutsch](../../de-DE/visual/html-fidelity.md) | [Español](../../es-ES/visual/html-fidelity.md) | Português (Brasil) | [Русский](../../ru-RU/visual/html-fidelity.md)
 
 As imagens de alta fidelidade são a referência visual; HTML é a implementação editável. As dimensões acima e abaixo da barra de ferramentas são medidas separadamente na [janela principal inicial congelada](../../../design/hifi/screens/main-light.png), sem dedução retroativa do CSS atual. A apresentação atual usa o [desenho claro com abas em cápsula](../../../design/hifi/screens/main-capsule-light.png) e o [desenho escuro](../../../design/hifi/screens/main-capsule-dark.png), exportados da [fonte editável](../../../design/hifi/sources/main.html); eles não substituem a medição independente. A barra de título é aceita conforme a revisão explícita em layout-scale.json. Os originais têm bordas suavizadas e glifos gerados; contagens de testes não comprovam identidade perfeita de pixels na página inteira.
 

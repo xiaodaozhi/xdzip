@@ -2,7 +2,7 @@
 
 # Leitura de volumes e abertura temporária
 
-[English](../../engineering/archive-opening.md) | [简体中文](../../zh-CN/engineering/archive-opening.md) | [繁體中文（台灣）](../../zh-TW/engineering/archive-opening.md) | [日本語](../../ja-JP/engineering/archive-opening.md) | [한국어](../../ko-KR/engineering/archive-opening.md) | [Français](../../fr-FR/engineering/archive-opening.md) | [Deutsch](../../de-DE/engineering/archive-opening.md) | [Español](../../es-ES/engineering/archive-opening.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/archive-opening.md)
+[English](../../engineering/archive-opening.md) | [简体中文](../../zh-CN/engineering/archive-opening.md) | [繁體中文](../../zh-TW/engineering/archive-opening.md) | [日本語](../../ja-JP/engineering/archive-opening.md) | [한국어](../../ko-KR/engineering/archive-opening.md) | [Français](../../fr-FR/engineering/archive-opening.md) | [Deutsch](../../de-DE/engineering/archive-opening.md) | [Español](../../es-ES/engineering/archive-opening.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/archive-opening.md)
 
 A seleção no desktop, as solicitações do gerenciador de arquivos e a CLI usam as mesmas regras Rust para abrir fontes. O host resolve conjuntos de volumes permitidos, registra a identidade da fonte e examina os bytes autorizados. O mecanismo escolhido fornece [metadados de navegação](readonly-browser.md), às vezes pelo [processo de formato isolado](native-codecs.md). Abrir explicitamente uma entrada cria uma cópia temporária verificada para o aplicativo associado. Use uma [verificação de integridade](archive-checking.md) separada para conferir todo o arquivo compactado.
 

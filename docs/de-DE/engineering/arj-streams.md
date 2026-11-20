@@ -2,7 +2,7 @@
 
 # Komprimierte ARJ-Streams und Containerzulassung
 
-[English](../../engineering/arj-streams.md) | [简体中文](../../zh-CN/engineering/arj-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/arj-streams.md) | [日本語](../../ja-JP/engineering/arj-streams.md) | [한국어](../../ko-KR/engineering/arj-streams.md) | [Français](../../fr-FR/engineering/arj-streams.md) | Deutsch | [Español](../../es-ES/engineering/arj-streams.md) | [Português (Brasil)](../../pt-BR/engineering/arj-streams.md) | [Русский](../../ru-RU/engineering/arj-streams.md)
+[English](../../engineering/arj-streams.md) | [简体中文](../../zh-CN/engineering/arj-streams.md) | [繁體中文](../../zh-TW/engineering/arj-streams.md) | [日本語](../../ja-JP/engineering/arj-streams.md) | [한국어](../../ko-KR/engineering/arj-streams.md) | [Français](../../fr-FR/engineering/arj-streams.md) | Deutsch | [Español](../../es-ES/engineering/arj-streams.md) | [Português (Brasil)](../../pt-BR/engineering/arj-streams.md) | [Русский](../../ru-RU/engineering/arj-streams.md)
 
 `ArjReader` bietet begrenzte rohe Decodierung der ARJ-Methoden 1–4. Store gehört zum Container, nicht zu diesem Leser. `xdzip-codec-arj` stellt vollständige physische Struktur und CRC-geprüfte Mitgliedsbereitstellung über eine vom Host gehaltene Quelle bereit. `ArjCodec` verbindet zugelassene Profile mit Laufzeit, CLI und Desktop-Navigation, Prüfung und Entpacken. Das [Formatregister](../../../specs/engineering/archive-formats.json) erklärt den schreibgeschützten Umfang; Erstellen, Umschreiben, Passwörter und Volumes sind nicht verfügbar.
 

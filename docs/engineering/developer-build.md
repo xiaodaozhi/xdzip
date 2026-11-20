@@ -1,6 +1,6 @@
 # Development builds and platform verification
 
-English | [简体中文](../zh-CN/engineering/developer-build.md) | [繁體中文（台灣）](../zh-TW/engineering/developer-build.md)
+English | [简体中文](../zh-CN/engineering/developer-build.md) | [繁體中文](../zh-TW/engineering/developer-build.md)
 
 This is the unified entry point for preparing, building, testing, packaging, and verifying environments on three platforms. Shared orchestration is implemented by [scripts/desktop.py](../../scripts/desktop.py). Platform documents supplement deployment layouts, tool behavior, and system limits rather than maintaining separate routine commands.
 

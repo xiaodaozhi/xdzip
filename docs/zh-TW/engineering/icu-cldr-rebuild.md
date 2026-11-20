@@ -2,7 +2,7 @@
 
 # 從 CLDR 重建 ICU 73.2 資料
 
-[English](../../engineering/icu-cldr-rebuild.md) | [简体中文](../../zh-CN/engineering/icu-cldr-rebuild.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/icu-cldr-rebuild.md) | [한국어](../../ko-KR/engineering/icu-cldr-rebuild.md) | [Français](../../fr-FR/engineering/icu-cldr-rebuild.md) | [Deutsch](../../de-DE/engineering/icu-cldr-rebuild.md) | [Español](../../es-ES/engineering/icu-cldr-rebuild.md) | [Português (Brasil)](../../pt-BR/engineering/icu-cldr-rebuild.md) | [Русский](../../ru-RU/engineering/icu-cldr-rebuild.md)
+[English](../../engineering/icu-cldr-rebuild.md) | [简体中文](../../zh-CN/engineering/icu-cldr-rebuild.md) | 繁體中文 | [日本語](../../ja-JP/engineering/icu-cldr-rebuild.md) | [한국어](../../ko-KR/engineering/icu-cldr-rebuild.md) | [Français](../../fr-FR/engineering/icu-cldr-rebuild.md) | [Deutsch](../../de-DE/engineering/icu-cldr-rebuild.md) | [Español](../../es-ES/engineering/icu-cldr-rebuild.md) | [Português (Brasil)](../../pt-BR/engineering/icu-cldr-rebuild.md) | [Русский](../../ru-RU/engineering/icu-cldr-rebuild.md)
 
 此 Linux 流程使用交付的 ICU 原始碼、CLDR 43.1 子集與 ICU 73.1 引導程式原始碼，重新建置 ICU 73.2 地區設定資源。CLDR 子集排除五個 ISO 639-3 檔案、標準文件目錄 `docs/ldml` 和兩張文件截圖，並替換 963 張網頁工具圖片。[Unicode 發布的 43.1 版 UTS #35](https://www.unicode.org/reports/tr35/tr35-69/tr35.html)可依權利人的條件另行取得。其他用途或新增資料仍須分別檢查來源及條款。
 

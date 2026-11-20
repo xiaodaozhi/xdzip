@@ -1,6 +1,6 @@
 # 스크립트에서 XDZip 사용하기
 
-[English](../../integration/README.md) | [简体中文](../../zh-CN/integration/README.md) | [繁體中文（台灣）](../../zh-TW/integration/README.md) | [日本語](../../ja-JP/integration/README.md) | 한국어 | [Français](../../fr-FR/integration/README.md) | [Deutsch](../../de-DE/integration/README.md) | [Español](../../es-ES/integration/README.md) | [Português (Brasil)](../../pt-BR/integration/README.md) | [Русский](../../ru-RU/integration/README.md)
+[English](../../integration/README.md) | [简体中文](../../zh-CN/integration/README.md) | [繁體中文](../../zh-TW/integration/README.md) | [日本語](../../ja-JP/integration/README.md) | 한국어 | [Français](../../fr-FR/integration/README.md) | [Deutsch](../../de-DE/integration/README.md) | [Español](../../es-ES/integration/README.md) | [Português (Brasil)](../../pt-BR/integration/README.md) | [Русский](../../ru-RU/integration/README.md)
 
 독립 CLI는 Qt나 데스크톱 세션 없이 동작합니다. [GitHub 릴리스](https://github.com/xiaodaozhi/xdzip/releases)에서 시스템에 맞는 `xdzip-cli-` 패키지를 선택하세요. 패키지 전체를 풀고 워커를 실행 파일 옆에 두세요. 압축을 푼 폴더에서 macOS 또는 Linux는 `./bin/xdzip --help`, PowerShell은 `.\bin\xdzip.exe --help`를 실행합니다.
 

@@ -1,6 +1,6 @@
 # 在脚本中使用 XDZip
 
-[English](../../integration/README.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/integration/README.md) | [日本語](../../ja-JP/integration/README.md) | [한국어](../../ko-KR/integration/README.md) | [Français](../../fr-FR/integration/README.md) | [Deutsch](../../de-DE/integration/README.md) | [Español](../../es-ES/integration/README.md) | [Português (Brasil)](../../pt-BR/integration/README.md) | [Русский](../../ru-RU/integration/README.md)
+[English](../../integration/README.md) | 简体中文 | [繁體中文](../../zh-TW/integration/README.md) | [日本語](../../ja-JP/integration/README.md) | [한국어](../../ko-KR/integration/README.md) | [Français](../../fr-FR/integration/README.md) | [Deutsch](../../de-DE/integration/README.md) | [Español](../../es-ES/integration/README.md) | [Português (Brasil)](../../pt-BR/integration/README.md) | [Русский](../../ru-RU/integration/README.md)
 
 独立 CLI 无需 Qt 或桌面会话。从 [GitHub 发布页](https://github.com/xiaodaozhi/xdzip/releases)下载适合当前系统的 `xdzip-cli-` 包，完整解压，保留可执行文件旁的工作进程。从解压目录启动时，macOS 或 Linux 执行 `./bin/xdzip --help`，Windows PowerShell 执行 `.\bin\xdzip.exe --help`。
 

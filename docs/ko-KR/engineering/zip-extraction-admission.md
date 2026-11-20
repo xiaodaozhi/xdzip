@@ -2,7 +2,7 @@
 
 # ZIP 압축 풀기와 출력 의존성의 도입 기준
 
-[English](../../engineering/zip-extraction-admission.md) | [简体中文](../../zh-CN/engineering/zip-extraction-admission.md) | [繁體中文（台灣）](../../zh-TW/engineering/zip-extraction-admission.md) | [日本語](../../ja-JP/engineering/zip-extraction-admission.md) | 한국어 | [Français](../../fr-FR/engineering/zip-extraction-admission.md) | [Deutsch](../../de-DE/engineering/zip-extraction-admission.md) | [Español](../../es-ES/engineering/zip-extraction-admission.md) | [Português (Brasil)](../../pt-BR/engineering/zip-extraction-admission.md) | [Русский](../../ru-RU/engineering/zip-extraction-admission.md)
+[English](../../engineering/zip-extraction-admission.md) | [简体中文](../../zh-CN/engineering/zip-extraction-admission.md) | [繁體中文](../../zh-TW/engineering/zip-extraction-admission.md) | [日本語](../../ja-JP/engineering/zip-extraction-admission.md) | 한국어 | [Français](../../fr-FR/engineering/zip-extraction-admission.md) | [Deutsch](../../de-DE/engineering/zip-extraction-admission.md) | [Español](../../es-ES/engineering/zip-extraction-admission.md) | [Português (Brasil)](../../pt-BR/engineering/zip-extraction-admission.md) | [Русский](../../ru-RU/engineering/zip-extraction-admission.md)
 
 이 문서는 안전한 압축 풀기와 암호 압축 풀기에 공통으로 적용되는 의존성 경계를 정의합니다. 최초 도입 당시의 의존성 출처, 라이선스와 기능 발췌는 [고정된 기준 자료](../../../specs/engineering/zip-extraction-dependencies.json)에 있습니다. AES를 포함한 현재 정확한 버전과 crates.io 체크섬은 루트 Cargo.lock을 따릅니다. 전체 활성 의존성 그래프는 `cargo tree --locked -e features`로 확인하세요. 기준 발췌를 현재의 전체 의존성 목록으로 취급하지 마세요.
 

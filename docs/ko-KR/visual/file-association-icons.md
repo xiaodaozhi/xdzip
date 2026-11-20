@@ -2,7 +2,7 @@
 
 # 파일 연결 아이콘
 
-[English](../../visual/file-association-icons.md) | [简体中文](../../zh-CN/visual/file-association-icons.md) | [繁體中文（台灣）](../../zh-TW/visual/file-association-icons.md) | [日本語](../../ja-JP/visual/file-association-icons.md) | 한국어 | [Français](../../fr-FR/visual/file-association-icons.md) | [Deutsch](../../de-DE/visual/file-association-icons.md) | [Español](../../es-ES/visual/file-association-icons.md) | [Português (Brasil)](../../pt-BR/visual/file-association-icons.md) | [Русский](../../ru-RU/visual/file-association-icons.md)
+[English](../../visual/file-association-icons.md) | [简体中文](../../zh-CN/visual/file-association-icons.md) | [繁體中文](../../zh-TW/visual/file-association-icons.md) | [日本語](../../ja-JP/visual/file-association-icons.md) | 한국어 | [Français](../../fr-FR/visual/file-association-icons.md) | [Deutsch](../../de-DE/visual/file-association-icons.md) | [Español](../../es-ES/visual/file-association-icons.md) | [Português (Brasil)](../../pt-BR/visual/file-association-icons.md) | [Русский](../../ru-RU/visual/file-association-icons.md)
 
 시스템 파일 아이콘은 xdzip의 접힌 모서리 문서, 연속 곡률 배지, 엮인 네 띠와 열린 U자 마크를 재사용합니다. 디자인 진입점은 [고충실도 검토 페이지](../../../design/hifi/sources/file-association-icons.html), 매개변수는 [file-association-icons.json](../../../specs/visual/file-association-icons.json), 문서 아이콘 소스와 제품 플랫폼 컨테이너는 [file-associations](../../../design/assets/file-associations)에 있습니다. 기본 애플리케이션은 계속 사용자가 선택합니다.
 

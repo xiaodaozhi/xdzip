@@ -2,7 +2,7 @@
 
 # XDZip 설계 안내
 
-[English](../../design/index.md) | [简体中文](../../zh-CN/design/index.md) | [繁體中文（台灣）](../../zh-TW/design/index.md) | [日本語](../../ja-JP/design/index.md) | 한국어 | [Français](../../fr-FR/design/index.md) | [Deutsch](../../de-DE/design/index.md) | [Español](../../es-ES/design/index.md) | [Português (Brasil)](../../pt-BR/design/index.md) | [Русский](../../ru-RU/design/index.md)
+[English](../../design/index.md) | [简体中文](../../zh-CN/design/index.md) | [繁體中文](../../zh-TW/design/index.md) | [日本語](../../ja-JP/design/index.md) | 한국어 | [Français](../../fr-FR/design/index.md) | [Deutsch](../../de-DE/design/index.md) | [Español](../../es-ES/design/index.md) | [Português (Brasil)](../../pt-BR/design/index.md) | [Русский](../../ru-RU/design/index.md)
 
 [시스템 아키텍처](system-architecture.md)에서 Qt Quick 데스크톱과 독립 Rust CLI가 압축 실행 환경에 접근하는 방식을 볼 수 있습니다. 설계 문서는 현재 계약, 결정 사항 및 제안의 범위를 설명합니다. 설치와 일상적인 사용은 [사용자 설명서](../user-guide/README.md)를 참고하세요. 프로젝트를 빌드하거나 수정하려면 [빌드 및 기여](../contributing/README.md)를 보세요.
 

@@ -2,7 +2,7 @@
 
 # ARC 컨테이너와 압축 스트림 프로필
 
-[English](../../engineering/arc-streams.md) | [简体中文](../../zh-CN/engineering/arc-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/arc-streams.md) | [日本語](../../ja-JP/engineering/arc-streams.md) | 한국어 | [Français](../../fr-FR/engineering/arc-streams.md) | [Deutsch](../../de-DE/engineering/arc-streams.md) | [Español](../../es-ES/engineering/arc-streams.md) | [Português (Brasil)](../../pt-BR/engineering/arc-streams.md) | [Русский](../../ru-RU/engineering/arc-streams.md)
+[English](../../engineering/arc-streams.md) | [简体中文](../../zh-CN/engineering/arc-streams.md) | [繁體中文](../../zh-TW/engineering/arc-streams.md) | [日本語](../../ja-JP/engineering/arc-streams.md) | 한국어 | [Français](../../fr-FR/engineering/arc-streams.md) | [Deutsch](../../de-DE/engineering/arc-streams.md) | [Español](../../es-ES/engineering/arc-streams.md) | [Português (Brasil)](../../pt-BR/engineering/arc-streams.md) | [Русский](../../ru-RU/engineering/arc-streams.md)
 
 `ArcReader`는 ARC 방식 3–9의 제한된 원시 디코딩을 구현합니다. 방식 1과 2는 컨테이너의 Store 프로필입니다. `xdzip-codec-arc`와 `ArcCodec`은 완전한 구조와 필수 CRC-16을 런타임, CLI와 데스크톱 탐색, 검사 및 추출에 연결합니다. [형식 레지스트리](../../../specs/engineering/archive-formats.json)는 이 읽기 전용 범위를 선언하며 생성, 수정, 암호와 볼륨은 사용할 수 없습니다.
 

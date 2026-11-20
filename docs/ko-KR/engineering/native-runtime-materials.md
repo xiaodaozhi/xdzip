@@ -2,7 +2,7 @@
 
 # 네이티브 런타임 출처와 고지
 
-[English](../../engineering/native-runtime-materials.md) | [简体中文](../../zh-CN/engineering/native-runtime-materials.md) | [繁體中文（台灣）](../../zh-TW/engineering/native-runtime-materials.md) | [日本語](../../ja-JP/engineering/native-runtime-materials.md) | 한국어 | [Français](../../fr-FR/engineering/native-runtime-materials.md) | [Deutsch](../../de-DE/engineering/native-runtime-materials.md) | [Español](../../es-ES/engineering/native-runtime-materials.md) | [Português (Brasil)](../../pt-BR/engineering/native-runtime-materials.md) | [Русский](../../ru-RU/engineering/native-runtime-materials.md)
+[English](../../engineering/native-runtime-materials.md) | [简体中文](../../zh-CN/engineering/native-runtime-materials.md) | [繁體中文](../../zh-TW/engineering/native-runtime-materials.md) | [日本語](../../ja-JP/engineering/native-runtime-materials.md) | 한국어 | [Français](../../fr-FR/engineering/native-runtime-materials.md) | [Deutsch](../../de-DE/engineering/native-runtime-materials.md) | [Español](../../es-ES/engineering/native-runtime-materials.md) | [Português (Brasil)](../../pt-BR/engineering/native-runtime-materials.md) | [Русский](../../ru-RU/engineering/native-runtime-materials.md)
 
 이 계약은 실제 패키지에 포함된 Qt 이외의 네이티브 런타임을 다루며 [런타임 귀속](runtime-attribution.md)과 [대응 소스](source-delivery.md) 설명과 함께 사용합니다. 소스 버전, 파일 식별, 라이선스 조건과 실제 이행을 각각 확인합니다. 공급업체 파일 해시는 라이선스 승인이 아닙니다. `v0.1.0` 후보의 과거 결론과 보충 증거는 [#4](https://github.com/xiaodaozhi/xdzip/issues/4)와 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)에 있습니다. 이후 후보에는 새로운 릴리스 이슈를 사용하며 증거는 build/ 또는 CI 산출물에만 생성합니다.
 

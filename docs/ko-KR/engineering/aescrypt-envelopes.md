@@ -2,7 +2,7 @@
 
 # AES Crypt 읽기 전용 봉투
 
-[English](../../engineering/aescrypt-envelopes.md) | [简体中文](../../zh-CN/engineering/aescrypt-envelopes.md) | [繁體中文（台灣）](../../zh-TW/engineering/aescrypt-envelopes.md) | [日本語](../../ja-JP/engineering/aescrypt-envelopes.md) | 한국어 | [Français](../../fr-FR/engineering/aescrypt-envelopes.md) | [Deutsch](../../de-DE/engineering/aescrypt-envelopes.md) | [Español](../../es-ES/engineering/aescrypt-envelopes.md) | [Português (Brasil)](../../pt-BR/engineering/aescrypt-envelopes.md) | [Русский](../../ru-RU/engineering/aescrypt-envelopes.md)
+[English](../../engineering/aescrypt-envelopes.md) | [简体中文](../../zh-CN/engineering/aescrypt-envelopes.md) | [繁體中文](../../zh-TW/engineering/aescrypt-envelopes.md) | [日本語](../../ja-JP/engineering/aescrypt-envelopes.md) | 한국어 | [Français](../../fr-FR/engineering/aescrypt-envelopes.md) | [Deutsch](../../de-DE/engineering/aescrypt-envelopes.md) | [Español](../../es-ES/engineering/aescrypt-envelopes.md) | [Português (Brasil)](../../pt-BR/engineering/aescrypt-envelopes.md) | [Русский](../../ru-RU/engineering/aescrypt-envelopes.md)
 
 독립 Rust 백엔드 `xdzip-codec-aescrypt`는 AES Crypt 스트림 버전 0, 1, 2와 3을 읽습니다. 애플리케이션 버전 번호는 별개입니다. 일반 가상 파일 하나를 표시하며 생성, 수정, 볼륨 또는 외부 확장 가져오기 기능은 없습니다. 이 형식은 압축 없이 암호화된 데이터를 포함하므로 행의 방식은 Store이고 암호화 플래그는 참입니다. 압축 크기는 전체 물리적 봉투입니다. 백엔드는 `.aes`가 아니라 콘텐츠 감지로 선택합니다.
 

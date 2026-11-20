@@ -2,7 +2,7 @@
 
 # ファイル認可と安全な公開
 
-[English](../../design/file-security.md) | [简体中文](../../zh-CN/design/file-security.md) | [繁體中文（台灣）](../../zh-TW/design/file-security.md) | 日本語 | [한국어](../../ko-KR/design/file-security.md) | [Français](../../fr-FR/design/file-security.md) | [Deutsch](../../de-DE/design/file-security.md) | [Español](../../es-ES/design/file-security.md) | [Português (Brasil)](../../pt-BR/design/file-security.md) | [Русский](../../ru-RU/design/file-security.md)
+[English](../../design/file-security.md) | [简体中文](../../zh-CN/design/file-security.md) | [繁體中文](../../zh-TW/design/file-security.md) | 日本語 | [한국어](../../ko-KR/design/file-security.md) | [Français](../../fr-FR/design/file-security.md) | [Deutsch](../../de-DE/design/file-security.md) | [Español](../../es-ES/design/file-security.md) | [Português (Brasil)](../../pt-BR/design/file-security.md) | [Русский](../../ru-RU/design/file-security.md)
 
 ホストは開けるファイルと、検証済み出力を公開できる場所を制御します。バックエンドは分離されたアーカイブワーカー内で動作する場合も、上限付きのリーダーと出力先を受け取ります。アーカイブ名、宣言サイズ、チェックサム、ペイロードは入力データです。ホストのファイル検査は形式による検査とは独立して適用されます。[システムアーキテクチャー](system-architecture.md)、[アーカイブワーカープロトコル](../engineering/native-codecs.md)
 

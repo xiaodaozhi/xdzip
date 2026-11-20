@@ -2,7 +2,7 @@
 
 # Enveloppes texte UU, UUE et XXE
 
-[English](../../engineering/text-envelopes.md) | [简体中文](../../zh-CN/engineering/text-envelopes.md) | [繁體中文（台灣）](../../zh-TW/engineering/text-envelopes.md) | [日本語](../../ja-JP/engineering/text-envelopes.md) | [한국어](../../ko-KR/engineering/text-envelopes.md) | Français | [Deutsch](../../de-DE/engineering/text-envelopes.md) | [Español](../../es-ES/engineering/text-envelopes.md) | [Português (Brasil)](../../pt-BR/engineering/text-envelopes.md) | [Русский](../../ru-RU/engineering/text-envelopes.md)
+[English](../../engineering/text-envelopes.md) | [简体中文](../../zh-CN/engineering/text-envelopes.md) | [繁體中文](../../zh-TW/engineering/text-envelopes.md) | [日本語](../../ja-JP/engineering/text-envelopes.md) | [한국어](../../ko-KR/engineering/text-envelopes.md) | Français | [Deutsch](../../de-DE/engineering/text-envelopes.md) | [Español](../../es-ES/engineering/text-envelopes.md) | [Português (Brasil)](../../pt-BR/engineering/text-envelopes.md) | [Русский](../../ru-RU/engineering/text-envelopes.md)
 
 Les champs et l’ordre des bits UU traditionnels suivent [NetBSD uuencode(5)](https://man.netbsd.org/uuencode.5). Le mode Base64 est décrit par [uuencode(1)](https://man.netbsd.org/uuencode.1) et [GNU Sharutils](https://www.gnu.org/software/sharutils/manual/sharutils.html). L’alphabet XX est `+-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`, vérifié avec l’encodeur public de [UUDeview](https://github.com/hannob/uudeview). Le lecteur Rust est écrit indépendamment à partir de ces règles de champs et de bits. L’implémentation C de référence n’est qu’un outil de test, jamais une dépendance d’exécution.
 

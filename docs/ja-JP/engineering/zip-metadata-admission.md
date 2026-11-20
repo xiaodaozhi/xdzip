@@ -2,7 +2,7 @@
 
 # ZIP メタデータ依存の採用
 
-[English](../../engineering/zip-metadata-admission.md) | [简体中文](../../zh-CN/engineering/zip-metadata-admission.md) | [繁體中文（台灣）](../../zh-TW/engineering/zip-metadata-admission.md) | 日本語 | [한국어](../../ko-KR/engineering/zip-metadata-admission.md) | [Français](../../fr-FR/engineering/zip-metadata-admission.md) | [Deutsch](../../de-DE/engineering/zip-metadata-admission.md) | [Español](../../es-ES/engineering/zip-metadata-admission.md) | [Português (Brasil)](../../pt-BR/engineering/zip-metadata-admission.md) | [Русский](../../ru-RU/engineering/zip-metadata-admission.md)
+[English](../../engineering/zip-metadata-admission.md) | [简体中文](../../zh-CN/engineering/zip-metadata-admission.md) | [繁體中文](../../zh-TW/engineering/zip-metadata-admission.md) | 日本語 | [한국어](../../ko-KR/engineering/zip-metadata-admission.md) | [Français](../../fr-FR/engineering/zip-metadata-admission.md) | [Deutsch](../../de-DE/engineering/zip-metadata-admission.md) | [Español](../../es-ES/engineering/zip-metadata-admission.md) | [Português (Brasil)](../../pt-BR/engineering/zip-metadata-admission.md) | [Русский](../../ru-RU/engineering/zip-metadata-admission.md)
 
 このページは、最初の読み取り専用ディレクトリースキャンで行った 2026-10-11 の採用判断を記録します。展開、作成、サードパーティープラグインの実行は対象外です。現在の ZIP メタデータは[独立した Rust レコード層](independent-rust-codecs.md)が処理し、rawzip は開発時のテスト参照にのみ使います。
 

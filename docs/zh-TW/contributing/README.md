@@ -2,7 +2,7 @@
 
 # 構建並參與貢獻
 
-[English](../../contributing/README.md) | [简体中文](../../zh-CN/contributing/README.md) | 繁體中文（台灣） | [日本語](../../ja-JP/contributing/README.md) | [한국어](../../ko-KR/contributing/README.md) | [Français](../../fr-FR/contributing/README.md) | [Deutsch](../../de-DE/contributing/README.md) | [Español](../../es-ES/contributing/README.md) | [Português (Brasil)](../../pt-BR/contributing/README.md) | [Русский](../../ru-RU/contributing/README.md)
+[English](../../contributing/README.md) | [简体中文](../../zh-CN/contributing/README.md) | 繁體中文 | [日本語](../../ja-JP/contributing/README.md) | [한국어](../../ko-KR/contributing/README.md) | [Français](../../fr-FR/contributing/README.md) | [Deutsch](../../de-DE/contributing/README.md) | [Español](../../es-ES/contributing/README.md) | [Português (Brasil)](../../pt-BR/contributing/README.md) | [Русский](../../ru-RU/contributing/README.md)
 
 先閱讀[貢獻約定](../../../CONTRIBUTING.zh-CN.md)，查詢已有議題或為本次改動新建議題。寫明預期行為、適用平臺和可實際驗證的最小復現場景。使用專案自制或允許再分發的樣本。各模組的原始碼位置見[倉庫佈局](../engineering/repository-layout.md)。
 

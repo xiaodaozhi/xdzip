@@ -2,7 +2,7 @@
 
 # Admissão da dependência de metadados ZIP
 
-[English](../../engineering/zip-metadata-admission.md) | [简体中文](../../zh-CN/engineering/zip-metadata-admission.md) | [繁體中文（台灣）](../../zh-TW/engineering/zip-metadata-admission.md) | [日本語](../../ja-JP/engineering/zip-metadata-admission.md) | [한국어](../../ko-KR/engineering/zip-metadata-admission.md) | [Français](../../fr-FR/engineering/zip-metadata-admission.md) | [Deutsch](../../de-DE/engineering/zip-metadata-admission.md) | [Español](../../es-ES/engineering/zip-metadata-admission.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/zip-metadata-admission.md)
+[English](../../engineering/zip-metadata-admission.md) | [简体中文](../../zh-CN/engineering/zip-metadata-admission.md) | [繁體中文](../../zh-TW/engineering/zip-metadata-admission.md) | [日本語](../../ja-JP/engineering/zip-metadata-admission.md) | [한국어](../../ko-KR/engineering/zip-metadata-admission.md) | [Français](../../fr-FR/engineering/zip-metadata-admission.md) | [Deutsch](../../de-DE/engineering/zip-metadata-admission.md) | [Español](../../es-ES/engineering/zip-metadata-admission.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/zip-metadata-admission.md)
 
 Esta página registra a decisão de 2026-10-11 para a primeira varredura de diretório somente para leitura. Ela não aprova extração, criação nem execução de extensões de terceiros. Os metadados ZIP usam hoje a [camada independente de registros Rust](independent-rust-codecs.md). rawzip é apenas uma referência para testes de desenvolvimento.
 

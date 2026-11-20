@@ -2,7 +2,7 @@
 
 # デプロイ依存関係の検証と SBOM
 
-[English](../../engineering/deployment-audit.md) | [简体中文](../../zh-CN/engineering/deployment-audit.md) | [繁體中文（台灣）](../../zh-TW/engineering/deployment-audit.md) | 日本語 | [한국어](../../ko-KR/engineering/deployment-audit.md) | [Français](../../fr-FR/engineering/deployment-audit.md) | [Deutsch](../../de-DE/engineering/deployment-audit.md) | [Español](../../es-ES/engineering/deployment-audit.md) | [Português (Brasil)](../../pt-BR/engineering/deployment-audit.md) | [Русский](../../ru-RU/engineering/deployment-audit.md)
+[English](../../engineering/deployment-audit.md) | [简体中文](../../zh-CN/engineering/deployment-audit.md) | [繁體中文](../../zh-TW/engineering/deployment-audit.md) | 日本語 | [한국어](../../ko-KR/engineering/deployment-audit.md) | [Français](../../fr-FR/engineering/deployment-audit.md) | [Deutsch](../../de-DE/engineering/deployment-audit.md) | [Español](../../es-ES/engineering/deployment-audit.md) | [Português (Brasil)](../../pt-BR/engineering/deployment-audit.md) | [Русский](../../ru-RU/engineering/deployment-audit.md)
 
 デプロイ検証は既定で開発レビュー用資料を生成し、明示的に `incomplete` と記録します。リリース準備完了を自動的に証明するものではありません。正式 Release は同一候補の資料を別途収集し、リリース手順のレビュー後にパッケージとともに提供します。形式は[公式 CycloneDX 1.6 スキーマ](https://github.com/CycloneDX/specification/blob/55343ba19dee1785acf1ce9191540d5fd7b590db/schema/bom-1.6.schema.json)を使用します。上流コミットと 3 つのスキーマファイルの SHA-256 は[設定](../../../scripts/sbom-schemas.json)に固定されています。検証はこれらのリソースだけをダウンロードして解析し build/ にキャッシュします。SBOM 内の任意 URL からスキーマをダウンロードすることはありません。
 

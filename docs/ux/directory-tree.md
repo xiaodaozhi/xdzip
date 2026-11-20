@@ -1,6 +1,6 @@
 # Directory tree B: design, assets and integration
 
-English | [简体中文](../zh-CN/ux/directory-tree.md) | [繁體中文（台灣）](../zh-TW/ux/directory-tree.md)
+English | [简体中文](../zh-CN/ux/directory-tree.md) | [繁體中文](../zh-TW/ux/directory-tree.md)
 
 Status: **core directory interaction is integrated in HTML examples and Qt read-only browsing; boundary-state assets await integration**. Interaction follows the [read-only browsing contract](../engineering/readonly-browser.md). Normal directory browsing uses direct children, search recursively covers the current scope, and output authorization remains read-only.
 

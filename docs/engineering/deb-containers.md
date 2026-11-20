@@ -1,6 +1,6 @@
 # DEB container contract
 
-English | [简体中文](../zh-CN/engineering/deb-containers.md) | [繁體中文（台灣）](../zh-TW/engineering/deb-containers.md) | [日本語](../ja-JP/engineering/deb-containers.md) | [한국어](../ko-KR/engineering/deb-containers.md) | [Français](../fr-FR/engineering/deb-containers.md) | [Deutsch](../de-DE/engineering/deb-containers.md) | [Español](../es-ES/engineering/deb-containers.md) | [Português (Brasil)](../pt-BR/engineering/deb-containers.md) | [Русский](../ru-RU/engineering/deb-containers.md)
+English | [简体中文](../zh-CN/engineering/deb-containers.md) | [繁體中文](../zh-TW/engineering/deb-containers.md) | [日本語](../ja-JP/engineering/deb-containers.md) | [한국어](../ko-KR/engineering/deb-containers.md) | [Français](../fr-FR/engineering/deb-containers.md) | [Deutsch](../de-DE/engineering/deb-containers.md) | [Español](../es-ES/engineering/deb-containers.md) | [Português (Brasil)](../pt-BR/engineering/deb-containers.md) | [Русский](../ru-RU/engineering/deb-containers.md)
 
 The package envelope follows Debian's [deb(5)](https://manpages.debian.org/unstable/dpkg-dev/deb.5.en.html); common ar fields follow [ar(5)](https://man.netbsd.org/ar.5). Only the ordinary `!<arch>\n` layout is admitted. Each 60-byte header has bounded ASCII name/time/owner/mode/size fields and its required trailer. Validate decimal fields, octal mode, exact payload spans, newline padding of odd-length members and physical EOF. Thin archives, historical formats and long-name extensions are unsupported and grant no external file access.
 

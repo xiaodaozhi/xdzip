@@ -2,7 +2,7 @@
 
 # Indexação de arquivos compactados grandes e navegação sob demanda
 
-[English](../../engineering/large-index.md) | [简体中文](../../zh-CN/engineering/large-index.md) | [繁體中文（台灣）](../../zh-TW/engineering/large-index.md) | [日本語](../../ja-JP/engineering/large-index.md) | [한국어](../../ko-KR/engineering/large-index.md) | [Français](../../fr-FR/engineering/large-index.md) | [Deutsch](../../de-DE/engineering/large-index.md) | [Español](../../es-ES/engineering/large-index.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/large-index.md)
+[English](../../engineering/large-index.md) | [简体中文](../../zh-CN/engineering/large-index.md) | [繁體中文](../../zh-TW/engineering/large-index.md) | [日本語](../../ja-JP/engineering/large-index.md) | [한국어](../../ko-KR/engineering/large-index.md) | [Français](../../fr-FR/engineering/large-index.md) | [Deutsch](../../de-DE/engineering/large-index.md) | [Español](../../es-ES/engineering/large-index.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/large-index.md)
 
 O limite de capacidade do código para ZIP/ZIP64 comum de arquivo único é de um milhão de registros físicos. Outros formatos e caminhos com volumes divididos mantêm as admissões existentes de 100.000 entradas; o nome do formato não significa que todas as combinações tenham limites ampliados. Diretórios, nomes duplicados e registros que exigem revisão contam como entradas físicas; diretórios implícitos de navegação acrescentam apenas linhas de exibição.
 

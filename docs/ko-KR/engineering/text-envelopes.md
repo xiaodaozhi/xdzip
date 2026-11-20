@@ -2,7 +2,7 @@
 
 # UU, UUE 및 XXE 텍스트 봉투
 
-[English](../../engineering/text-envelopes.md) | [简体中文](../../zh-CN/engineering/text-envelopes.md) | [繁體中文（台灣）](../../zh-TW/engineering/text-envelopes.md) | [日本語](../../ja-JP/engineering/text-envelopes.md) | 한국어 | [Français](../../fr-FR/engineering/text-envelopes.md) | [Deutsch](../../de-DE/engineering/text-envelopes.md) | [Español](../../es-ES/engineering/text-envelopes.md) | [Português (Brasil)](../../pt-BR/engineering/text-envelopes.md) | [Русский](../../ru-RU/engineering/text-envelopes.md)
+[English](../../engineering/text-envelopes.md) | [简体中文](../../zh-CN/engineering/text-envelopes.md) | [繁體中文](../../zh-TW/engineering/text-envelopes.md) | [日本語](../../ja-JP/engineering/text-envelopes.md) | 한국어 | [Français](../../fr-FR/engineering/text-envelopes.md) | [Deutsch](../../de-DE/engineering/text-envelopes.md) | [Español](../../es-ES/engineering/text-envelopes.md) | [Português (Brasil)](../../pt-BR/engineering/text-envelopes.md) | [Русский](../../ru-RU/engineering/text-envelopes.md)
 
 전통적인 UU 필드와 비트 순서는 [NetBSD uuencode(5)](https://man.netbsd.org/uuencode.5)를 따릅니다. Base64 모드는 [uuencode(1)](https://man.netbsd.org/uuencode.1)과 [GNU Sharutils](https://www.gnu.org/software/sharutils/manual/sharutils.html)에 설명되어 있습니다. XX 문자표는 `+-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`이며 [UUDeview](https://github.com/hannob/uudeview)의 공개 인코더와 대조했습니다. Rust 판독기는 이 필드와 비트 규칙을 바탕으로 독립적으로 작성되었습니다. 참조 C 구현은 테스트 도구일 뿐이며 런타임 의존성이 아닙니다.
 

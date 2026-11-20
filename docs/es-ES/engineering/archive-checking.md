@@ -2,7 +2,7 @@
 
 # Comprobación de integridad de archivos comprimidos
 
-[English](../../engineering/archive-checking.md) | [简体中文](../../zh-CN/engineering/archive-checking.md) | [繁體中文（台灣）](../../zh-TW/engineering/archive-checking.md) | [日本語](../../ja-JP/engineering/archive-checking.md) | [한국어](../../ko-KR/engineering/archive-checking.md) | [Français](../../fr-FR/engineering/archive-checking.md) | [Deutsch](../../de-DE/engineering/archive-checking.md) | Español | [Português (Brasil)](../../pt-BR/engineering/archive-checking.md) | [Русский](../../ru-RU/engineering/archive-checking.md)
+[English](../../engineering/archive-checking.md) | [简体中文](../../zh-CN/engineering/archive-checking.md) | [繁體中文](../../zh-TW/engineering/archive-checking.md) | [日本語](../../ja-JP/engineering/archive-checking.md) | [한국어](../../ko-KR/engineering/archive-checking.md) | [Français](../../fr-FR/engineering/archive-checking.md) | [Deutsch](../../de-DE/engineering/archive-checking.md) | Español | [Português (Brasil)](../../pt-BR/engineering/archive-checking.md) | [Русский](../../ru-RU/engineering/archive-checking.md)
 
 La acción «Test» de la barra de herramientas realiza una comprobación real en segundo plano del archivo actual admisible y cubre todos los registros físicos, incluidos nombres duplicados, directorios y archivos vacíos, independientemente del directorio, búsqueda o selección actuales. La comprobación completa no se admite actualmente en archivos que usan índice en disco; consulta la [indexación de archivos grandes](large-index.md). La comprobación solo conserva fuentes de entrada y metadatos congelados. No obtiene autorización de destino, no crea archivos de preparación ni salida y no usa asignación de rutas de extracción ni publicación de enlaces.
 

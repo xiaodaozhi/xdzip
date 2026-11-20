@@ -1,7 +1,7 @@
 <a name="xdzip-host-calendar-and-encoding-services-for-format-workers"></a>
 # Serviços de calendário e codificação do sistema hospedeiro
 
-[English](../../engineering/host-platform-services.md) | [简体中文](../../zh-CN/engineering/host-platform-services.md) | [繁體中文（台灣）](../../zh-TW/engineering/host-platform-services.md) | [日本語](../../ja-JP/engineering/host-platform-services.md) | [한국어](../../ko-KR/engineering/host-platform-services.md) | [Français](../../fr-FR/engineering/host-platform-services.md) | [Deutsch](../../de-DE/engineering/host-platform-services.md) | [Español](../../es-ES/engineering/host-platform-services.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/host-platform-services.md)
+[English](../../engineering/host-platform-services.md) | [简体中文](../../zh-CN/engineering/host-platform-services.md) | [繁體中文](../../zh-TW/engineering/host-platform-services.md) | [日本語](../../ja-JP/engineering/host-platform-services.md) | [한국어](../../ko-KR/engineering/host-platform-services.md) | [Français](../../fr-FR/engineering/host-platform-services.md) | [Deutsch](../../de-DE/engineering/host-platform-services.md) | [Español](../../es-ES/engineering/host-platform-services.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/host-platform-services.md)
 
 O Rust processa campos do formato, regras de compatibilidade de senhas e validação. Regras históricas de fuso horário, páginas de código OEM e ANSI e a codificação C local pertencem ao sistema hospedeiro e são expostas por serviços opcionais de `ReadSource`. A camada de formato não deve deduzi-las do nome do arquivo, de HostOS ou do deslocamento UTC atual. Os serviços não dependem do Qt nem concedem acesso a caminhos ou autorização para publicar arquivos.
 

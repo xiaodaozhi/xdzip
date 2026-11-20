@@ -2,7 +2,7 @@
 
 # Fenêtres de plateforme et barres de titre
 
-[English](../../ux/platform-windows.md) | [简体中文](../../zh-CN/ux/platform-windows.md) | [繁體中文（台灣）](../../zh-TW/ux/platform-windows.md) | [日本語](../../ja-JP/ux/platform-windows.md) | [한국어](../../ko-KR/ux/platform-windows.md) | Français | [Deutsch](../../de-DE/ux/platform-windows.md) | [Español](../../es-ES/ux/platform-windows.md) | [Português (Brasil)](../../pt-BR/ux/platform-windows.md) | [Русский](../../ru-RU/ux/platform-windows.md)
+[English](../../ux/platform-windows.md) | [简体中文](../../zh-CN/ux/platform-windows.md) | [繁體中文](../../zh-TW/ux/platform-windows.md) | [日本語](../../ja-JP/ux/platform-windows.md) | [한국어](../../ko-KR/ux/platform-windows.md) | Français | [Deutsch](../../de-DE/ux/platform-windows.md) | [Español](../../es-ES/ux/platform-windows.md) | [Português (Brasil)](../../pt-BR/ux/platform-windows.md) | [Русский](../../ru-RU/ux/platform-windows.md)
 
 Les interfaces d’opération de xdzip utilisent des fenêtres autonomes de premier niveau, et non des feuilles rattachées à la fenêtre principale ou des panneaux superposés dessinés dans celle-ci. Une fenêtre autonome n’implique ni processus distinct ni entrée de barre des tâches pour chaque fenêtre auxiliaire. Les menus déroulants et les infobulles restent des Popups légers et ne sont pas des fenêtres d’opération.
 

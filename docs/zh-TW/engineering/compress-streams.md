@@ -2,7 +2,7 @@
 
 # Unix compress Z 契約
 
-[English](../../engineering/compress-streams.md) | [简体中文](../../zh-CN/engineering/compress-streams.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/compress-streams.md) | [한국어](../../ko-KR/engineering/compress-streams.md) | [Français](../../fr-FR/engineering/compress-streams.md) | [Deutsch](../../de-DE/engineering/compress-streams.md) | [Español](../../es-ES/engineering/compress-streams.md) | [Português (Brasil)](../../pt-BR/engineering/compress-streams.md) | [Русский](../../ru-RU/engineering/compress-streams.md)
+[English](../../engineering/compress-streams.md) | [简体中文](../../zh-CN/engineering/compress-streams.md) | 繁體中文 | [日本語](../../ja-JP/engineering/compress-streams.md) | [한국어](../../ko-KR/engineering/compress-streams.md) | [Français](../../fr-FR/engineering/compress-streams.md) | [Deutsch](../../de-DE/engineering/compress-streams.md) | [Español](../../es-ES/engineering/compress-streams.md) | [Português (Brasil)](../../pt-BR/engineering/compress-streams.md) | [Русский](../../ru-RU/engineering/compress-streams.md)
 
 本契約定義獨立 Rust LZW 讀取器及其單檔／TAR 組合的位元組設定。工具歷史與 9–16 位元字典行為依據 [OpenBSD compress(1)](https://man.openbsd.org/compress.1) 和 [ncompress](https://vapier.github.io/ncompress/)。POSIX 規定工具而非完整位元組配置；歷史上的八碼對齊與 9 位元相容性差異見[上游討論](https://github.com/vapier/ncompress/issues/5)，並以內容已知的獨立輸入核對。原始碼觀察只作為格式規則的補充；Rust 實作不是參考程式碼的翻譯。
 

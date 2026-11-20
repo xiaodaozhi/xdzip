@@ -2,7 +2,7 @@
 
 # Qt SDK와 소스 대응 관계 검증
 
-[English](../../engineering/qt-sdk-correspondence.md) | [简体中文](../../zh-CN/engineering/qt-sdk-correspondence.md) | [繁體中文（台灣）](../../zh-TW/engineering/qt-sdk-correspondence.md) | [日本語](../../ja-JP/engineering/qt-sdk-correspondence.md) | 한국어 | [Français](../../fr-FR/engineering/qt-sdk-correspondence.md) | [Deutsch](../../de-DE/engineering/qt-sdk-correspondence.md) | [Español](../../es-ES/engineering/qt-sdk-correspondence.md) | [Português (Brasil)](../../pt-BR/engineering/qt-sdk-correspondence.md) | [Русский](../../ru-RU/engineering/qt-sdk-correspondence.md)
+[English](../../engineering/qt-sdk-correspondence.md) | [简体中文](../../zh-CN/engineering/qt-sdk-correspondence.md) | [繁體中文](../../zh-TW/engineering/qt-sdk-correspondence.md) | [日本語](../../ja-JP/engineering/qt-sdk-correspondence.md) | 한국어 | [Français](../../fr-FR/engineering/qt-sdk-correspondence.md) | [Deutsch](../../de-DE/engineering/qt-sdk-correspondence.md) | [Español](../../es-ES/engineering/qt-sdk-correspondence.md) | [Português (Brasil)](../../pt-BR/engineering/qt-sdk-correspondence.md) | [Русский](../../ru-RU/engineering/qt-sdk-correspondence.md)
 
 소스 대응 관계 검증에는 공식 아카이브의 실제 바이트를 사용합니다. 버전 번호가 같다고 해서 SDK 빌드의 동등성이 입증되지는 않습니다. `scripts/qt_sdk_correspondence.py`는 고정된 소스 아카이브, SDK가 제공하는 소스 SPDX, 빌드 선언, 설치된 구성과 알려진 사용 측 패치를 연결하고 결과를 build/에 기록합니다. SDK를 수정하거나 라이선스 선택지를 승인하지 않습니다.
 

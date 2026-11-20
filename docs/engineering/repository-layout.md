@@ -1,6 +1,6 @@
 # Repository layout and dependencies
 
-English | [简体中文](../zh-CN/engineering/repository-layout.md) | [繁體中文（台灣）](../zh-TW/engineering/repository-layout.md) | [日本語](../ja-JP/engineering/repository-layout.md) | [한국어](../ko-KR/engineering/repository-layout.md) | [Français](../fr-FR/engineering/repository-layout.md) | [Deutsch](../de-DE/engineering/repository-layout.md) | [Español](../es-ES/engineering/repository-layout.md) | [Português (Brasil)](../pt-BR/engineering/repository-layout.md) | [Русский](../ru-RU/engineering/repository-layout.md)
+English | [简体中文](../zh-CN/engineering/repository-layout.md) | [繁體中文](../zh-TW/engineering/repository-layout.md) | [日本語](../ja-JP/engineering/repository-layout.md) | [한국어](../ko-KR/engineering/repository-layout.md) | [Français](../fr-FR/engineering/repository-layout.md) | [Deutsch](../de-DE/engineering/repository-layout.md) | [Español](../es-ES/engineering/repository-layout.md) | [Português (Brasil)](../pt-BR/engineering/repository-layout.md) | [Русский](../ru-RU/engineering/repository-layout.md)
 
 Current product modules are defined by root Cargo.toml and CMakeLists.txt. This table describes actual directories; future splits in architecture designs do not imply existing independent crates.
 

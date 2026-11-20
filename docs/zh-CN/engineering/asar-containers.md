@@ -1,6 +1,6 @@
 # ASAR 容器契约
 
-[English](../../engineering/asar-containers.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/asar-containers.md) | [日本語](../../ja-JP/engineering/asar-containers.md) | [한국어](../../ko-KR/engineering/asar-containers.md) | [Français](../../fr-FR/engineering/asar-containers.md) | [Deutsch](../../de-DE/engineering/asar-containers.md) | [Español](../../es-ES/engineering/asar-containers.md) | [Português (Brasil)](../../pt-BR/engineering/asar-containers.md) | [Русский](../../ru-RU/engineering/asar-containers.md)
+[English](../../engineering/asar-containers.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/asar-containers.md) | [日本語](../../ja-JP/engineering/asar-containers.md) | [한국어](../../ko-KR/engineering/asar-containers.md) | [Français](../../fr-FR/engineering/asar-containers.md) | [Deutsch](../../de-DE/engineering/asar-containers.md) | [Español](../../es-ES/engineering/asar-containers.md) | [Português (Brasil)](../../pt-BR/engineering/asar-containers.md) | [Русский](../../ru-RU/engineering/asar-containers.md)
 
 格式依据 Electron 的 [ASAR 说明](https://github.com/electron/asar#format)和 Chromium 的 [Pickle 契约](https://chromium.googlesource.com/chromium/src/+/main/base/pickle.h)。八字节尺寸 Pickle 后跟包含 JSON 目录树的字符串 Pickle，文件偏移以十进制字符串表示，相对于载荷区起点。即使多个文件共享同一段存储字节，每个树条目仍保留独立身份。可选完整性声明包含整个文件及各固定尺寸块的 SHA-256，这些是损坏检查，不代表软件包或应用认证。
 

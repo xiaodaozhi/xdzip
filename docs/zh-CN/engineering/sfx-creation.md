@@ -1,6 +1,6 @@
 # 自有 Windows ZIP 自解压包
 
-[English](../../engineering/sfx-creation.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/sfx-creation.md) | [日本語](../../ja-JP/engineering/sfx-creation.md) | [한국어](../../ko-KR/engineering/sfx-creation.md) | [Français](../../fr-FR/engineering/sfx-creation.md) | [Deutsch](../../de-DE/engineering/sfx-creation.md) | [Español](../../es-ES/engineering/sfx-creation.md) | [Português (Brasil)](../../pt-BR/engineering/sfx-creation.md) | [Русский](../../ru-RU/engineering/sfx-creation.md)
+[English](../../engineering/sfx-creation.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/sfx-creation.md) | [日本語](../../ja-JP/engineering/sfx-creation.md) | [한국어](../../ko-KR/engineering/sfx-creation.md) | [Français](../../fr-FR/engineering/sfx-creation.md) | [Deutsch](../../de-DE/engineering/sfx-creation.md) | [Español](../../es-ES/engineering/sfx-creation.md) | [Português (Brasil)](../../pt-BR/engineering/sfx-creation.md) | [Русский](../../ru-RU/engineering/sfx-creation.md)
 
 首版 SFX 配置仅支持 Windows x64，使用明确的 `.sfx.exe` 创建后缀。它把无加密、单卷 Store/Deflate ZIP 与项目编译的 `xdzip-sfx.exe` 解压程序封装。创建时绝不运行该程序。通用 `.exe` 不进入创建、拖放或系统关联登记。
 

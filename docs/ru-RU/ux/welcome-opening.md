@@ -2,7 +2,7 @@
 
 # Загрузка на начальной странице и завершение создания архива
 
-[English](../../ux/welcome-opening.md) | [简体中文](../../zh-CN/ux/welcome-opening.md) | [繁體中文（台灣）](../../zh-TW/ux/welcome-opening.md) | [日本語](../../ja-JP/ux/welcome-opening.md) | [한국어](../../ko-KR/ux/welcome-opening.md) | [Français](../../fr-FR/ux/welcome-opening.md) | [Deutsch](../../de-DE/ux/welcome-opening.md) | [Español](../../es-ES/ux/welcome-opening.md) | [Português (Brasil)](../../pt-BR/ux/welcome-opening.md) | Русский
+[English](../../ux/welcome-opening.md) | [简体中文](../../zh-CN/ux/welcome-opening.md) | [繁體中文](../../zh-TW/ux/welcome-opening.md) | [日本語](../../ja-JP/ux/welcome-opening.md) | [한국어](../../ko-KR/ux/welcome-opening.md) | [Français](../../fr-FR/ux/welcome-opening.md) | [Deutsch](../../de-DE/ux/welcome-opening.md) | [Español](../../es-ES/ux/welcome-opening.md) | [Português (Brasil)](../../pt-BR/ux/welcome-opening.md) | Русский
 
 Редакция от 2026-10-16. Параметры заданы в [welcome-reference.json](../../../specs/visual/welcome-reference.json). Интерактивный макет показывает [состояние загрузки на начальной странице](../../../design/hifi/sources/welcome.html?opening=1). Логические единицы главного окна, меню и начальной страницы, а также заголовок окна сохраняются.
 

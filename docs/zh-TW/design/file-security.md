@@ -2,7 +2,7 @@
 
 # 檔案授權與安全寫出
 
-[English](../../design/file-security.md) | [简体中文](../../zh-CN/design/file-security.md) | 繁體中文（台灣） | [日本語](../../ja-JP/design/file-security.md) | [한국어](../../ko-KR/design/file-security.md) | [Français](../../fr-FR/design/file-security.md) | [Deutsch](../../de-DE/design/file-security.md) | [Español](../../es-ES/design/file-security.md) | [Português (Brasil)](../../pt-BR/design/file-security.md) | [Русский](../../ru-RU/design/file-security.md)
+[English](../../design/file-security.md) | [简体中文](../../zh-CN/design/file-security.md) | 繁體中文 | [日本語](../../ja-JP/design/file-security.md) | [한국어](../../ko-KR/design/file-security.md) | [Français](../../fr-FR/design/file-security.md) | [Deutsch](../../de-DE/design/file-security.md) | [Español](../../es-ES/design/file-security.md) | [Português (Brasil)](../../pt-BR/design/file-security.md) | [Русский](../../ru-RU/design/file-security.md)
 
 由宿主決定可開啟哪些檔案，以及驗證後的內容可寫到哪裡。格式後端只能使用有界的讀取器和輸出接收器，獨立歸檔工作程序也遵循這一邊界。歸檔名稱、宣告大小、校驗和及內容都屬於輸入資料。宿主檔案檢查與格式校驗分別生效。[系統架構](system-architecture.md)、[歸檔工作程序協議](../engineering/native-codecs.md)
 

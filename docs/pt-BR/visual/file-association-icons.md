@@ -2,7 +2,7 @@
 
 # Ícones de associação de arquivos
 
-[English](../../visual/file-association-icons.md) | [简体中文](../../zh-CN/visual/file-association-icons.md) | [繁體中文（台灣）](../../zh-TW/visual/file-association-icons.md) | [日本語](../../ja-JP/visual/file-association-icons.md) | [한국어](../../ko-KR/visual/file-association-icons.md) | [Français](../../fr-FR/visual/file-association-icons.md) | [Deutsch](../../de-DE/visual/file-association-icons.md) | [Español](../../es-ES/visual/file-association-icons.md) | Português (Brasil) | [Русский](../../ru-RU/visual/file-association-icons.md)
+[English](../../visual/file-association-icons.md) | [简体中文](../../zh-CN/visual/file-association-icons.md) | [繁體中文](../../zh-TW/visual/file-association-icons.md) | [日本語](../../ja-JP/visual/file-association-icons.md) | [한국어](../../ko-KR/visual/file-association-icons.md) | [Français](../../fr-FR/visual/file-association-icons.md) | [Deutsch](../../de-DE/visual/file-association-icons.md) | [Español](../../es-ES/visual/file-association-icons.md) | Português (Brasil) | [Русский](../../ru-RU/visual/file-association-icons.md)
 
 Os ícones de arquivo do sistema reutilizam o documento de canto dobrado, selo de curvatura contínua, quatro faixas entrelaçadas e marca aberta em U do xdzip. A entrada de design é a [página de revisão de alta fidelidade](../../../design/hifi/sources/file-association-icons.html), os parâmetros vêm de [file-association-icons.json](../../../specs/visual/file-association-icons.json) e as fontes e contêineres de plataforma ficam em [file-associations](../../../design/assets/file-associations). Os usuários continuam escolhendo seus aplicativos padrão.
 

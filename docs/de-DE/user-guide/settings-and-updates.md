@@ -1,6 +1,6 @@
 # Einstellungen und Updates
 
-[English](../../user-guide/settings-and-updates.md) | [简体中文](../../zh-CN/user-guide/settings-and-updates.md) | [繁體中文（台灣）](../../zh-TW/user-guide/settings-and-updates.md) | [日本語](../../ja-JP/user-guide/settings-and-updates.md) | [한국어](../../ko-KR/user-guide/settings-and-updates.md) | [Français](../../fr-FR/user-guide/settings-and-updates.md) | Deutsch | [Español](../../es-ES/user-guide/settings-and-updates.md) | [Português (Brasil)](../../pt-BR/user-guide/settings-and-updates.md) | [Русский](../../ru-RU/user-guide/settings-and-updates.md)
+[English](../../user-guide/settings-and-updates.md) | [简体中文](../../zh-CN/user-guide/settings-and-updates.md) | [繁體中文](../../zh-TW/user-guide/settings-and-updates.md) | [日本語](../../ja-JP/user-guide/settings-and-updates.md) | [한국어](../../ko-KR/user-guide/settings-and-updates.md) | [Français](../../fr-FR/user-guide/settings-and-updates.md) | Deutsch | [Español](../../es-ES/user-guide/settings-and-updates.md) | [Português (Brasil)](../../pt-BR/user-guide/settings-and-updates.md) | [Русский](../../ru-RU/user-guide/settings-and-updates.md)
 
 <a name="xdzip-set-up-your-workspace"></a>
 

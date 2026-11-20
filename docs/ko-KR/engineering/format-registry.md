@@ -2,7 +2,7 @@
 
 # 내장 형식 선언
 
-[English](../../engineering/format-registry.md) | [简体中文](../../zh-CN/engineering/format-registry.md) | [繁體中文（台灣）](../../zh-TW/engineering/format-registry.md) | [日本語](../../ja-JP/engineering/format-registry.md) | 한국어 | [Français](../../fr-FR/engineering/format-registry.md) | [Deutsch](../../de-DE/engineering/format-registry.md) | [Español](../../es-ES/engineering/format-registry.md) | [Português (Brasil)](../../pt-BR/engineering/format-registry.md) | [Русский](../../ru-RU/engineering/format-registry.md)
+[English](../../engineering/format-registry.md) | [简体中文](../../zh-CN/engineering/format-registry.md) | [繁體中文](../../zh-TW/engineering/format-registry.md) | [日本語](../../ja-JP/engineering/format-registry.md) | 한국어 | [Français](../../fr-FR/engineering/format-registry.md) | [Deutsch](../../de-DE/engineering/format-registry.md) | [Español](../../es-ES/engineering/format-registry.md) | [Português (Brasil)](../../pt-BR/engineering/format-registry.md) | [Русский](../../ru-RU/engineering/format-registry.md)
 
 내장 형식의 선언 원본은 [archive-formats.json](../../../specs/engineering/archive-formats.json)입니다. 안정적인 형식 식별자와 표시 이름, 컨테이너 계열, 외부 압축, 기존 전용 작업 프로세스 식별자, 지원하는 압축 방식 계열, 생성용 확장자, 검사 범위 및 진입점 후보를 기록합니다. 방식 계열은 각 형식 계약을 요약합니다. 실제 레코드, 호스트 정책, 플랫폼 기능을 확인해 작업을 시작하기 전에 사용할 수 있는 매개변수, 이전 변형 및 조합을 결정합니다.
 

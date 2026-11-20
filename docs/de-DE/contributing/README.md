@@ -1,6 +1,6 @@
 # XDZip bauen und mitentwickeln
 
-[English](../../contributing/README.md) | [简体中文](../../zh-CN/contributing/README.md) | [繁體中文（台灣）](../../zh-TW/contributing/README.md) | [日本語](../../ja-JP/contributing/README.md) | [한국어](../../ko-KR/contributing/README.md) | [Français](../../fr-FR/contributing/README.md) | Deutsch | [Español](../../es-ES/contributing/README.md) | [Português (Brasil)](../../pt-BR/contributing/README.md) | [Русский](../../ru-RU/contributing/README.md)
+[English](../../contributing/README.md) | [简体中文](../../zh-CN/contributing/README.md) | [繁體中文](../../zh-TW/contributing/README.md) | [日本語](../../ja-JP/contributing/README.md) | [한국어](../../ko-KR/contributing/README.md) | [Français](../../fr-FR/contributing/README.md) | Deutsch | [Español](../../es-ES/contributing/README.md) | [Português (Brasil)](../../pt-BR/contributing/README.md) | [Русский](../../ru-RU/contributing/README.md)
 
 Lesen Sie die [Beitragsrichtlinien](../../../CONTRIBUTING.md) und suchen oder erstellen Sie ein Issue zur Änderung. Beschreiben Sie das erwartete Verhalten, die betroffenen Plattformen und ein kleines nachprüfbares Beispiel. Verwenden Sie projekteigene oder weiterverteilbare Testdateien. Die [Repository-Struktur](../engineering/repository-layout.md) zeigt, wo die einzelnen Teile der Implementierung liegen.
 

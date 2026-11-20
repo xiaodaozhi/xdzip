@@ -2,7 +2,7 @@
 
 # パスワードが必要な展開操作
 
-[English](../../ux/password-extraction.md) | [简体中文](../../zh-CN/ux/password-extraction.md) | [繁體中文（台灣）](../../zh-TW/ux/password-extraction.md) | 日本語 | [한국어](../../ko-KR/ux/password-extraction.md) | [Français](../../fr-FR/ux/password-extraction.md) | [Deutsch](../../de-DE/ux/password-extraction.md) | [Español](../../es-ES/ux/password-extraction.md) | [Português (Brasil)](../../pt-BR/ux/password-extraction.md) | [Русский](../../ru-RU/ux/password-extraction.md)
+[English](../../ux/password-extraction.md) | [简体中文](../../zh-CN/ux/password-extraction.md) | [繁體中文](../../zh-TW/ux/password-extraction.md) | 日本語 | [한국어](../../ko-KR/ux/password-extraction.md) | [Français](../../fr-FR/ux/password-extraction.md) | [Deutsch](../../de-DE/ux/password-extraction.md) | [Español](../../es-ES/ux/password-extraction.md) | [Português (Brasil)](../../pt-BR/ux/password-extraction.md) | [Русский](../../ru-RU/ux/password-extraction.md)
 
 対応する ZIP、7z、RAR のタスクは、パスワードが必要な項目に達すると `waiting_password` に移行します。ランタイムはタスク ID と要求 ID を含む要求を公開します。QML は入力とキャンセルの意図を伝え、復号、認証、ファイルの確定はコアが担当します。パスワード要求と名前の競合は別の状態です。パスワード要求を競合ウィンドウに送ってはいけません。形式、認証、再試行、出力の範囲は[技術契約](../engineering/password-extraction.md)に従います。
 

@@ -2,7 +2,7 @@
 
 # Nachverfolgbarkeit von Anforderungen und Prüfungen
 
-[English](../../design/requirements-traceability.md) | [简体中文](../../zh-CN/design/requirements-traceability.md) | [繁體中文（台灣）](../../zh-TW/design/requirements-traceability.md) | [日本語](../../ja-JP/design/requirements-traceability.md) | [한국어](../../ko-KR/design/requirements-traceability.md) | [Français](../../fr-FR/design/requirements-traceability.md) | Deutsch | [Español](../../es-ES/design/requirements-traceability.md) | [Português (Brasil)](../../pt-BR/design/requirements-traceability.md) | [Русский](../../ru-RU/design/requirements-traceability.md)
+[English](../../design/requirements-traceability.md) | [简体中文](../../zh-CN/design/requirements-traceability.md) | [繁體中文](../../zh-TW/design/requirements-traceability.md) | [日本語](../../ja-JP/design/requirements-traceability.md) | [한국어](../../ko-KR/design/requirements-traceability.md) | [Français](../../fr-FR/design/requirements-traceability.md) | Deutsch | [Español](../../es-ES/design/requirements-traceability.md) | [Português (Brasil)](../../pt-BR/design/requirements-traceability.md) | [Русский](../../ru-RU/design/requirements-traceability.md)
 
 Die [Produktanforderungen](product-requirements.md) definieren die IDs und ihren aktuellen Umfang. Jede Zeile nennt Prüfungen für Änderungen am jeweiligen Verhalten. Ergebnisse, Plattformumfang und Grenzen gehören zum Änderungsnachweis. Die [Abnahmefälle](../../../developers/qa/acceptance.md) nennen die Prüfeinstiege.
 

@@ -2,7 +2,7 @@
 
 # 압축 파일 무결성 검사
 
-[English](../../engineering/archive-checking.md) | [简体中文](../../zh-CN/engineering/archive-checking.md) | [繁體中文（台灣）](../../zh-TW/engineering/archive-checking.md) | [日本語](../../ja-JP/engineering/archive-checking.md) | 한국어 | [Français](../../fr-FR/engineering/archive-checking.md) | [Deutsch](../../de-DE/engineering/archive-checking.md) | [Español](../../es-ES/engineering/archive-checking.md) | [Português (Brasil)](../../pt-BR/engineering/archive-checking.md) | [Русский](../../ru-RU/engineering/archive-checking.md)
+[English](../../engineering/archive-checking.md) | [简体中文](../../zh-CN/engineering/archive-checking.md) | [繁體中文](../../zh-TW/engineering/archive-checking.md) | [日本語](../../ja-JP/engineering/archive-checking.md) | 한국어 | [Français](../../fr-FR/engineering/archive-checking.md) | [Deutsch](../../de-DE/engineering/archive-checking.md) | [Español](../../es-ES/engineering/archive-checking.md) | [Português (Brasil)](../../pt-BR/engineering/archive-checking.md) | [Русский](../../ru-RU/engineering/archive-checking.md)
 
 도구 모음의 ‘Test’ 동작은 조건에 맞는 현재 압축 파일을 실제 백그라운드 작업으로 한 번 검사합니다. 현재 디렉터리, 검색 또는 선택과 관계없이 중복 이름, 디렉터리와 빈 파일을 포함한 모든 물리 레코드를 다룹니다. 디스크 인덱스를 사용하는 압축 파일의 전체 검사는 현재 지원하지 않습니다. [대용량 압축 파일 인덱싱](large-index.md)을 참고하세요. 검사는 고정된 입력 원본과 메타데이터만 보유하며 대상 권한을 얻지 않고 준비 또는 출력 파일을 만들지 않으며 추출 경로 매핑이나 링크 게시를 사용하지 않습니다.
 

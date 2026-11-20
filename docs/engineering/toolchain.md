@@ -1,6 +1,6 @@
 # Toolchain and platform freeze
 
-English | [简体中文](../zh-CN/engineering/toolchain.md) | [繁體中文（台灣）](../zh-TW/engineering/toolchain.md) | [日本語](../ja-JP/engineering/toolchain.md) | [한국어](../ko-KR/engineering/toolchain.md) | [Français](../fr-FR/engineering/toolchain.md) | [Deutsch](../de-DE/engineering/toolchain.md) | [Español](../es-ES/engineering/toolchain.md) | [Português (Brasil)](../pt-BR/engineering/toolchain.md) | [Русский](../ru-RU/engineering/toolchain.md)
+English | [简体中文](../zh-CN/engineering/toolchain.md) | [繁體中文](../zh-TW/engineering/toolchain.md) | [日本語](../ja-JP/engineering/toolchain.md) | [한국어](../ko-KR/engineering/toolchain.md) | [Français](../fr-FR/engineering/toolchain.md) | [Deutsch](../de-DE/engineering/toolchain.md) | [Español](../es-ES/engineering/toolchain.md) | [Português (Brasil)](../pt-BR/engineering/toolchain.md) | [Русский](../ru-RU/engineering/toolchain.md)
 
 Development tool versions are pinned by rust-toolchain.toml, Cargo.lock, CMake and CI; support scope follows the [support policy](support-policy.md). This table defines verification for upgrades and releases. Specific observations remain in issues/Actions; a single machine's tool inventory is not a release dependency lock.
 

@@ -2,7 +2,7 @@
 
 # Ladeanzeige der Startseite und Abschluss der Archiverstellung
 
-[English](../../ux/welcome-opening.md) | [简体中文](../../zh-CN/ux/welcome-opening.md) | [繁體中文（台灣）](../../zh-TW/ux/welcome-opening.md) | [日本語](../../ja-JP/ux/welcome-opening.md) | [한국어](../../ko-KR/ux/welcome-opening.md) | [Français](../../fr-FR/ux/welcome-opening.md) | Deutsch | [Español](../../es-ES/ux/welcome-opening.md) | [Português (Brasil)](../../pt-BR/ux/welcome-opening.md) | [Русский](../../ru-RU/ux/welcome-opening.md)
+[English](../../ux/welcome-opening.md) | [简体中文](../../zh-CN/ux/welcome-opening.md) | [繁體中文](../../zh-TW/ux/welcome-opening.md) | [日本語](../../ja-JP/ux/welcome-opening.md) | [한국어](../../ko-KR/ux/welcome-opening.md) | [Français](../../fr-FR/ux/welcome-opening.md) | Deutsch | [Español](../../es-ES/ux/welcome-opening.md) | [Português (Brasil)](../../pt-BR/ux/welcome-opening.md) | [Русский](../../ru-RU/ux/welcome-opening.md)
 
 Überarbeitet am 2026-10-16. Die Parameter stehen in [welcome-reference.json](../../../specs/visual/welcome-reference.json). Der interaktive Detailentwurf zeigt den [Ladezustand der Startseite](../../../design/hifi/sources/welcome.html?opening=1). Die logischen Einheiten von Hauptfenster, Menü und Startseite sowie die Titelleiste bleiben erhalten.
 

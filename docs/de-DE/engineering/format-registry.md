@@ -2,7 +2,7 @@
 
 # Deklarationen der eingebauten Formate
 
-[English](../../engineering/format-registry.md) | [简体中文](../../zh-CN/engineering/format-registry.md) | [繁體中文（台灣）](../../zh-TW/engineering/format-registry.md) | [日本語](../../ja-JP/engineering/format-registry.md) | [한국어](../../ko-KR/engineering/format-registry.md) | [Français](../../fr-FR/engineering/format-registry.md) | Deutsch | [Español](../../es-ES/engineering/format-registry.md) | [Português (Brasil)](../../pt-BR/engineering/format-registry.md) | [Русский](../../ru-RU/engineering/format-registry.md)
+[English](../../engineering/format-registry.md) | [简体中文](../../zh-CN/engineering/format-registry.md) | [繁體中文](../../zh-TW/engineering/format-registry.md) | [日本語](../../ja-JP/engineering/format-registry.md) | [한국어](../../ko-KR/engineering/format-registry.md) | [Français](../../fr-FR/engineering/format-registry.md) | Deutsch | [Español](../../es-ES/engineering/format-registry.md) | [Português (Brasil)](../../pt-BR/engineering/format-registry.md) | [Русский](../../ru-RU/engineering/format-registry.md)
 
 Quelle der eingebauten Deklarationen ist [archive-formats.json](../../../specs/engineering/archive-formats.json). Die Datei erfasst stabile Format-IDs, Bezeichnungen, Containerfamilien, äußere Kompression, IDs vorhandener privater Prozesse, unterstützte Verfahrensfamilien, Endungen für die Erstellung, Prüfungsumfang und mögliche Einstiegspunkte. Die Verfahrensfamilien fassen die Verträge der Formate zusammen. Vor jedem Vorgang schränken tatsächliche Datensätze, Hostregeln und Plattformfunktionen die verfügbaren Parameter, historischen Varianten und Kombinationen ein.
 

@@ -2,7 +2,7 @@
 
 # Protótipo de interação v0.1 e mapeamento de recursos
 
-[English](../../ux/prototype-spec.md) | [简体中文](../../zh-CN/ux/prototype-spec.md) | [繁體中文（台灣）](../../zh-TW/ux/prototype-spec.md) | [日本語](../../ja-JP/ux/prototype-spec.md) | [한국어](../../ko-KR/ux/prototype-spec.md) | [Français](../../fr-FR/ux/prototype-spec.md) | [Deutsch](../../de-DE/ux/prototype-spec.md) | [Español](../../es-ES/ux/prototype-spec.md) | Português (Brasil) | [Русский](../../ru-RU/ux/prototype-spec.md)
+[English](../../ux/prototype-spec.md) | [简体中文](../../zh-CN/ux/prototype-spec.md) | [繁體中文](../../zh-TW/ux/prototype-spec.md) | [日本語](../../ja-JP/ux/prototype-spec.md) | [한국어](../../ko-KR/ux/prototype-spec.md) | [Français](../../fr-FR/ux/prototype-spec.md) | [Deutsch](../../de-DE/ux/prototype-spec.md) | [Español](../../es-ES/ux/prototype-spec.md) | Português (Brasil) | [Русский](../../ru-RU/ux/prototype-spec.md)
 
 Estado: rascunho interativo de validação de design. As fontes estão em [design/html](../../../design/html/README.md), com [index.html](../../../design/html/index.html) como entrada. O rascunho do Figma permanece uma exploração histórica; o refinamento atual de recursos e estados continua no repositório.
 

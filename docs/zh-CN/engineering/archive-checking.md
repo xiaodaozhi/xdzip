@@ -1,6 +1,6 @@
 # 压缩包完整性检查
 
-[English](../../engineering/archive-checking.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/archive-checking.md) | [日本語](../../ja-JP/engineering/archive-checking.md) | [한국어](../../ko-KR/engineering/archive-checking.md) | [Français](../../fr-FR/engineering/archive-checking.md) | [Deutsch](../../de-DE/engineering/archive-checking.md) | [Español](../../es-ES/engineering/archive-checking.md) | [Português (Brasil)](../../pt-BR/engineering/archive-checking.md) | [Русский](../../ru-RU/engineering/archive-checking.md)
+[English](../../engineering/archive-checking.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/archive-checking.md) | [日本語](../../ja-JP/engineering/archive-checking.md) | [한국어](../../ko-KR/engineering/archive-checking.md) | [Français](../../fr-FR/engineering/archive-checking.md) | [Deutsch](../../de-DE/engineering/archive-checking.md) | [Español](../../es-ES/engineering/archive-checking.md) | [Português (Brasil)](../../pt-BR/engineering/archive-checking.md) | [Русский](../../ru-RU/engineering/archive-checking.md)
 
 工具栏“测试”对符合条件的当前归档执行一次真实后台检查，覆盖全部物理记录，包含重复名称、目录和空文件，不受当前目录、搜索或选择影响。进入磁盘索引的归档暂不支持整包检查，见[大归档索引](large-index.md)。检查只持有冻结的输入来源与元数据，不取得目标目录授权、不创建暂存或输出文件，不使用解压路径映射和链接发布流程。
 

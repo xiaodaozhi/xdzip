@@ -2,7 +2,7 @@
 
 # 인터페이스 계약과 검사
 
-[English](../../engineering/contracts.md) | [简体中文](../../zh-CN/engineering/contracts.md) | [繁體中文（台灣）](../../zh-TW/engineering/contracts.md) | [日本語](../../ja-JP/engineering/contracts.md) | 한국어 | [Français](../../fr-FR/engineering/contracts.md) | [Deutsch](../../de-DE/engineering/contracts.md) | [Español](../../es-ES/engineering/contracts.md) | [Português (Brasil)](../../pt-BR/engineering/contracts.md) | [Русский](../../ru-RU/engineering/contracts.md)
+[English](../../engineering/contracts.md) | [简体中文](../../zh-CN/engineering/contracts.md) | [繁體中文](../../zh-TW/engineering/contracts.md) | [日本語](../../ja-JP/engineering/contracts.md) | 한국어 | [Français](../../fr-FR/engineering/contracts.md) | [Deutsch](../../de-DE/engineering/contracts.md) | [Español](../../es-ES/engineering/contracts.md) | [Português (Brasil)](../../pt-BR/engineering/contracts.md) | [Русский](../../ru-RU/engineering/contracts.md)
 
 공식 인터페이스는 [도메인과 데이터](../design/domain-data.md), [Qt/Rust 브리지](../design/qt-rust-bridge.md), [형식 확장 설계](../design/codec-extension-sdk.md), [작업 스케줄링](../design/task-scheduling.md)에 정의합니다. 이 페이지는 인터페이스를 확정하기 전에 실행할 검사를 정합니다. 내부 브리지, 두 종류의 핸들 및 수명 주기는 구현되었습니다. 범위는 [실행 환경 계약](product-runtime.md)을 참조하세요. 쿼리 세대, 소스 버전 검사, 생성 및 압축 풀기 작업도 구현되었습니다. [탐색](readonly-browser.md), [안전한 압축 풀기](zip-safe-extraction.md) 및 [생성 계약](zip-creation.md)을 참조하세요. 타사 프로세스 프로토콜은 별도의 [읽기 전용 SDK 시험](sdk-trial.md)을 제공합니다. 안정적인 SDK로 배포되거나 제품에 통합된 상태는 아닙니다. 표는 통합 전 확인할 사항을 설명합니다.
 

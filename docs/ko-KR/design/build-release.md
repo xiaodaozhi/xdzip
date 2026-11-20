@@ -2,7 +2,7 @@
 
 # 빌드, 배포 및 릴리스 아키텍처
 
-[English](../../design/build-release.md) | [简体中文](../../zh-CN/design/build-release.md) | [繁體中文（台灣）](../../zh-TW/design/build-release.md) | [日本語](../../ja-JP/design/build-release.md) | 한국어 | [Français](../../fr-FR/design/build-release.md) | [Deutsch](../../de-DE/design/build-release.md) | [Español](../../es-ES/design/build-release.md) | [Português (Brasil)](../../pt-BR/design/build-release.md) | [Русский](../../ru-RU/design/build-release.md)
+[English](../../design/build-release.md) | [简体中文](../../zh-CN/design/build-release.md) | [繁體中文](../../zh-TW/design/build-release.md) | [日本語](../../ja-JP/design/build-release.md) | 한국어 | [Français](../../fr-FR/design/build-release.md) | [Deutsch](../../de-DE/design/build-release.md) | [Español](../../es-ES/design/build-release.md) | [Português (Brasil)](../../pt-BR/design/build-release.md) | [Русский](../../ru-RU/design/build-release.md)
 
 <a name="xdzip-build-and-package-inputs"></a>
 

@@ -2,7 +2,7 @@
 
 # 설정 창과 인터페이스 언어
 
-[English](../../ux/settings-localization.md) | [简体中文](../../zh-CN/ux/settings-localization.md) | [繁體中文（台灣）](../../zh-TW/ux/settings-localization.md) | [日本語](../../ja-JP/ux/settings-localization.md) | 한국어 | [Français](../../fr-FR/ux/settings-localization.md) | [Deutsch](../../de-DE/ux/settings-localization.md) | [Español](../../es-ES/ux/settings-localization.md) | [Português (Brasil)](../../pt-BR/ux/settings-localization.md) | [Русский](../../ru-RU/ux/settings-localization.md)
+[English](../../ux/settings-localization.md) | [简体中文](../../zh-CN/ux/settings-localization.md) | [繁體中文](../../zh-TW/ux/settings-localization.md) | [日本語](../../ja-JP/ux/settings-localization.md) | 한국어 | [Français](../../fr-FR/ux/settings-localization.md) | [Deutsch](../../de-DE/ux/settings-localization.md) | [Español](../../es-ES/ux/settings-localization.md) | [Português (Brasil)](../../pt-BR/ux/settings-localization.md) | [Русский](../../ru-RU/ux/settings-localization.md)
 
 기본 창이 보이지 않을 때 알림 영역에서 소유자 없이 연 설정과 xdzip 정보 창은 포인터가 있는 화면의 작업 영역에 전체 네이티브 프레임을 중앙 배치합니다. OperationWindow의 화면 배치를 사용하고 네이티브 창 생성과 높이 결정이 끝난 뒤 다시 가운데로 맞춥니다. 높이 제한에는 선택한 QScreen의 실제 사용 가능 높이와 기존 여백을 사용합니다. 전체 가상 데스크톱 높이를 쓰거나 숨겨진 기본 창 또는 최소화된 기본 창을 복원하지 않습니다. 소유자가 있는 진입점은 호출한 창의 배치, 크기 및 밀도를 유지합니다.
 

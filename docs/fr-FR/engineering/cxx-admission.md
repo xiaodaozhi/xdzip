@@ -2,7 +2,7 @@
 
 # Choix de la passerelle cxx
 
-[English](../../engineering/cxx-admission.md) | [简体中文](../../zh-CN/engineering/cxx-admission.md) | [繁體中文（台灣）](../../zh-TW/engineering/cxx-admission.md) | [日本語](../../ja-JP/engineering/cxx-admission.md) | [한국어](../../ko-KR/engineering/cxx-admission.md) | Français | [Deutsch](../../de-DE/engineering/cxx-admission.md) | [Español](../../es-ES/engineering/cxx-admission.md) | [Português (Brasil)](../../pt-BR/engineering/cxx-admission.md) | [Русский](../../ru-RU/engineering/cxx-admission.md)
+[English](../../engineering/cxx-admission.md) | [简体中文](../../zh-CN/engineering/cxx-admission.md) | [繁體中文](../../zh-TW/engineering/cxx-admission.md) | [日本語](../../ja-JP/engineering/cxx-admission.md) | [한국어](../../ko-KR/engineering/cxx-admission.md) | Français | [Deutsch](../../de-DE/engineering/cxx-admission.md) | [Español](../../es-ES/engineering/cxx-admission.md) | [Português (Brasil)](../../pt-BR/engineering/cxx-admission.md) | [Русский](../../ru-RU/engineering/cxx-admission.md)
 
 Qt et Rust communiquent par une passerelle à propriété typée générée par `cxx`. C++ conserve les objets Qt et Rust conserve la logique de domaine et d’exécution. Les versions de `cxx` et `cxx-build` doivent être strictement identiques, comme l’indiquent [Cargo.lock](../../../Cargo.lock) et la [politique des outils](toolchain.md). cxx ne fournit pas d’ABI stable aux extensions de format externes. Une ABI C écrite à la main réduirait les dépendances et alourdirait la maintenance des chaînes, des fonctions libres et des règles de propriété.
 

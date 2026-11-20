@@ -1,6 +1,6 @@
 # 原生运行库来源与通知
 
-[English](../../engineering/native-runtime-materials.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/native-runtime-materials.md) | [日本語](../../ja-JP/engineering/native-runtime-materials.md) | [한국어](../../ko-KR/engineering/native-runtime-materials.md) | [Français](../../fr-FR/engineering/native-runtime-materials.md) | [Deutsch](../../de-DE/engineering/native-runtime-materials.md) | [Español](../../es-ES/engineering/native-runtime-materials.md) | [Português (Brasil)](../../pt-BR/engineering/native-runtime-materials.md) | [Русский](../../ru-RU/engineering/native-runtime-materials.md)
+[English](../../engineering/native-runtime-materials.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/native-runtime-materials.md) | [日本語](../../ja-JP/engineering/native-runtime-materials.md) | [한국어](../../ko-KR/engineering/native-runtime-materials.md) | [Français](../../fr-FR/engineering/native-runtime-materials.md) | [Deutsch](../../de-DE/engineering/native-runtime-materials.md) | [Español](../../es-ES/engineering/native-runtime-materials.md) | [Português (Brasil)](../../pt-BR/engineering/native-runtime-materials.md) | [Русский](../../ru-RU/engineering/native-runtime-materials.md)
 
 本契约覆盖实际包中的非 Qt 原生运行库，与[运行时归属](runtime-attribution.md)及[对应源码](source-delivery.md)共同使用。源版本、文件身份、许可条件和实际履约分别核对，不能将供应方文件哈希当作许可批准。`v0.1.0` 的历史候选结论和补证记录在 [#4](https://github.com/xiaodaozhi/xdzip/issues/4) 与 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)；未来候选使用新的发行 issue，证据只生成到 build/ 或 CI 工件。
 

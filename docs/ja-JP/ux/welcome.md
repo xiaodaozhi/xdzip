@@ -2,7 +2,7 @@
 
 # メインウィンドウのウェルカムページ
 
-[English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | [繁體中文（台灣）](../../zh-TW/ux/welcome.md) | 日本語 | [한국어](../../ko-KR/ux/welcome.md) | [Français](../../fr-FR/ux/welcome.md) | [Deutsch](../../de-DE/ux/welcome.md) | [Español](../../es-ES/ux/welcome.md) | [Português (Brasil)](../../pt-BR/ux/welcome.md) | [Русский](../../ru-RU/ux/welcome.md)
+[English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | [繁體中文](../../zh-TW/ux/welcome.md) | 日本語 | [한국어](../../ko-KR/ux/welcome.md) | [Français](../../fr-FR/ux/welcome.md) | [Deutsch](../../de-DE/ux/welcome.md) | [Español](../../es-ES/ux/welcome.md) | [Português (Brasil)](../../pt-BR/ux/welcome.md) | [Русский](../../ru-RU/ux/welcome.md)
 
 高忠実度デザインは確認済みで、[公式 HTML レビュー入口](../../../design/html/index.html?view=welcome&zoom=1)に統合されています。Qt は実際のオープンと作成を実装し、デスクトップの手動受け入れは別途記録します。[ウェルカムページの状態デザイン](../../../design/hifi/sources/welcome.html)と [welcome-reference.json](../../../specs/visual/welcome-reference.json)を参照してください。色とメインウィンドウの密度は既存のトークンと layout-scale を維持し、全体の規格は変更しません。四つの PNG はコードで描いたデザイン原稿の書き出しであり、実行中の製品のスクリーンショットではありません。
 

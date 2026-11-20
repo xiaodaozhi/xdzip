@@ -2,7 +2,7 @@
 
 # Festlegung von Toolchain und Plattformen
 
-[English](../../engineering/toolchain.md) | [简体中文](../../zh-CN/engineering/toolchain.md) | [繁體中文（台灣）](../../zh-TW/engineering/toolchain.md) | [日本語](../../ja-JP/engineering/toolchain.md) | [한국어](../../ko-KR/engineering/toolchain.md) | [Français](../../fr-FR/engineering/toolchain.md) | Deutsch | [Español](../../es-ES/engineering/toolchain.md) | [Português (Brasil)](../../pt-BR/engineering/toolchain.md) | [Русский](../../ru-RU/engineering/toolchain.md)
+[English](../../engineering/toolchain.md) | [简体中文](../../zh-CN/engineering/toolchain.md) | [繁體中文](../../zh-TW/engineering/toolchain.md) | [日本語](../../ja-JP/engineering/toolchain.md) | [한국어](../../ko-KR/engineering/toolchain.md) | [Français](../../fr-FR/engineering/toolchain.md) | Deutsch | [Español](../../es-ES/engineering/toolchain.md) | [Português (Brasil)](../../pt-BR/engineering/toolchain.md) | [Русский](../../ru-RU/engineering/toolchain.md)
 
 Die Versionen der Entwicklungswerkzeuge sind durch rust-toolchain.toml, Cargo.lock, CMake und CI festgelegt; der Unterstützungsumfang folgt der [Support-Richtlinie](support-policy.md). Die Tabelle bestimmt Prüfungen für Aktualisierungen und Lieferungen. Konkrete Beobachtungen bleiben in Issues oder Actions; das Werkzeugverzeichnis einer einzelnen Maschine ist keine Abhängigkeitssperre für eine Lieferung.
 

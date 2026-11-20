@@ -2,7 +2,7 @@
 
 # 작업 스케줄링, 진행과 취소
 
-[English](../../design/task-scheduling.md) | [简体中文](../../zh-CN/design/task-scheduling.md) | [繁體中文（台灣）](../../zh-TW/design/task-scheduling.md) | [日本語](../../ja-JP/design/task-scheduling.md) | 한국어 | [Français](../../fr-FR/design/task-scheduling.md) | [Deutsch](../../de-DE/design/task-scheduling.md) | [Español](../../es-ES/design/task-scheduling.md) | [Português (Brasil)](../../pt-BR/design/task-scheduling.md) | [Русский](../../ru-RU/design/task-scheduling.md)
+[English](../../design/task-scheduling.md) | [简体中文](../../zh-CN/design/task-scheduling.md) | [繁體中文](../../zh-TW/design/task-scheduling.md) | [日本語](../../ja-JP/design/task-scheduling.md) | 한국어 | [Français](../../fr-FR/design/task-scheduling.md) | [Deutsch](../../de-DE/design/task-scheduling.md) | [Español](../../es-ES/design/task-scheduling.md) | [Português (Brasil)](../../pt-BR/design/task-scheduling.md) | [Русский](../../ru-RU/design/task-scheduling.md)
 
 XDZip은 런타임 연결마다 Rust 명령 스레드 하나와 작업 스레드 하나를 사용합니다. 명령 스레드는 현재 압축 파일을 소유하고 작업 입력을 준비합니다. 작업 스레드가 승인된 작업을 실행하는 동안 명령 스레드는 메타데이터 요청을 계속 처리할 수 있습니다. [시스템 아키텍처](system-architecture.md)는 스레드 실행 위치를, [Qt/Rust 브리지](qt-rust-bridge.md)는 결과가 클라이언트에 도달하는 방법을 설명합니다.
 

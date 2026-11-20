@@ -1,6 +1,6 @@
 # High-fidelity states and implementation contract
 
-English | [简体中文](../zh-CN/ux/hifi-state-spec.md) | [繁體中文（台灣）](../zh-TW/ux/hifi-state-spec.md) | [日本語](../ja-JP/ux/hifi-state-spec.md) | [한국어](../ko-KR/ux/hifi-state-spec.md) | [Français](../fr-FR/ux/hifi-state-spec.md) | [Deutsch](../de-DE/ux/hifi-state-spec.md) | [Español](../es-ES/ux/hifi-state-spec.md) | [Português (Brasil)](../pt-BR/ux/hifi-state-spec.md) | [Русский](../ru-RU/ux/hifi-state-spec.md)
+English | [简体中文](../zh-CN/ux/hifi-state-spec.md) | [繁體中文](../zh-TW/ux/hifi-state-spec.md) | [日本語](../ja-JP/ux/hifi-state-spec.md) | [한국어](../ko-KR/ux/hifi-state-spec.md) | [Français](../fr-FR/ux/hifi-state-spec.md) | [Deutsch](../de-DE/ux/hifi-state-spec.md) | [Español](../es-ES/ux/hifi-state-spec.md) | [Português (Brasil)](../pt-BR/ux/hifi-state-spec.md) | [Русский](../ru-RU/ux/hifi-state-spec.md)
 
 This guide describes behavior, focus and closing actions for creation, extraction and task windows, with links to the [operation state originals](../../design/hifi/README.md) and [shared asset library](../../design/assets/README.md). The identifiers in the table refer to design artboards and do not change the task protocol.
 

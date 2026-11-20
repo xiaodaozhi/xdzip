@@ -2,7 +2,7 @@
 
 # Plattformfenster und Titelleisten
 
-[English](../../ux/platform-windows.md) | [简体中文](../../zh-CN/ux/platform-windows.md) | [繁體中文（台灣）](../../zh-TW/ux/platform-windows.md) | [日本語](../../ja-JP/ux/platform-windows.md) | [한국어](../../ko-KR/ux/platform-windows.md) | [Français](../../fr-FR/ux/platform-windows.md) | Deutsch | [Español](../../es-ES/ux/platform-windows.md) | [Português (Brasil)](../../pt-BR/ux/platform-windows.md) | [Русский](../../ru-RU/ux/platform-windows.md)
+[English](../../ux/platform-windows.md) | [简体中文](../../zh-CN/ux/platform-windows.md) | [繁體中文](../../zh-TW/ux/platform-windows.md) | [日本語](../../ja-JP/ux/platform-windows.md) | [한국어](../../ko-KR/ux/platform-windows.md) | [Français](../../fr-FR/ux/platform-windows.md) | Deutsch | [Español](../../es-ES/ux/platform-windows.md) | [Português (Brasil)](../../pt-BR/ux/platform-windows.md) | [Русский](../../ru-RU/ux/platform-windows.md)
 
 Die Bedienoberflächen von xdzip verwenden eigenständige Fenster der obersten Ebene, keine an das Hauptfenster angehängten Sheets oder darin gezeichneten Überlagerungen. Ein eigenständiges Fenster bedeutet weder einen eigenen Prozess noch für jedes Hilfsfenster einen Taskleisteneintrag. Aufklappmenüs und Tooltips bleiben leichtgewichtige Popups und sind keine Bedienfenster.
 

@@ -3,7 +3,7 @@
 
 # TAR/GZIP 實作契約
 
-[English](../../engineering/tar-gzip.md) | [简体中文](../../zh-CN/engineering/tar-gzip.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/tar-gzip.md) | [한국어](../../ko-KR/engineering/tar-gzip.md) | [Français](../../fr-FR/engineering/tar-gzip.md) | [Deutsch](../../de-DE/engineering/tar-gzip.md) | [Español](../../es-ES/engineering/tar-gzip.md) | [Português (Brasil)](../../pt-BR/engineering/tar-gzip.md) | [Русский](../../ru-RU/engineering/tar-gzip.md)
+[English](../../engineering/tar-gzip.md) | [简体中文](../../zh-CN/engineering/tar-gzip.md) | 繁體中文 | [日本語](../../ja-JP/engineering/tar-gzip.md) | [한국어](../../ko-KR/engineering/tar-gzip.md) | [Français](../../fr-FR/engineering/tar-gzip.md) | [Deutsch](../../de-DE/engineering/tar-gzip.md) | [Español](../../es-ES/engineering/tar-gzip.md) | [Português (Brasil)](../../pt-BR/engineering/tar-gzip.md) | [Русский](../../ru-RU/engineering/tar-gzip.md)
 
 本契約定義 TAR／TAR.GZ 的瀏覽、建立與安全解壓縮邊界。平台結果與人工驗收記錄在 issue 或 CI 成品中。此流程沿用[安全解壓縮](zip-safe-extraction.md)與 [ZIP 建立](zip-creation.md)的輸入授權、暫存、衝突、取消及整個壓縮檔的提交方式。
 

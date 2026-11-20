@@ -1,6 +1,6 @@
 # 领域模型与归档数据
 
-[English](../../design/domain-data.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/domain-data.md) | [日本語](../../ja-JP/design/domain-data.md) | [한국어](../../ko-KR/design/domain-data.md) | [Français](../../fr-FR/design/domain-data.md) | [Deutsch](../../de-DE/design/domain-data.md) | [Español](../../es-ES/design/domain-data.md) | [Português (Brasil)](../../pt-BR/design/domain-data.md) | [Русский](../../ru-RU/design/domain-data.md)
+[English](../../design/domain-data.md) | 简体中文 | [繁體中文](../../zh-TW/design/domain-data.md) | [日本語](../../ja-JP/design/domain-data.md) | [한국어](../../ko-KR/design/domain-data.md) | [Français](../../fr-FR/design/domain-data.md) | [Deutsch](../../de-DE/design/domain-data.md) | [Español](../../es-ES/design/domain-data.md) | [Português (Brasil)](../../pt-BR/design/domain-data.md) | [Русский](../../ru-RU/design/domain-data.md)
 
 归档会话、已完成的索引和会话内最新查询由运行时持有。Qt 保存结果的视图，CLI 通过独立的清单命令读取物理记录。两者都把操作交给同一个 Rust 服务实现。[系统架构](system-architecture.md)、[Qt/Rust 桥接](qt-rust-bridge.md)
 

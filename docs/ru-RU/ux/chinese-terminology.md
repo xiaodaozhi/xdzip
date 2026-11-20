@@ -2,7 +2,7 @@
 
 # Терминология интерфейса на упрощённом китайском
 
-[English](../../ux/chinese-terminology.md) | [简体中文](../../zh-CN/ux/chinese-terminology.md) | [繁體中文（台灣）](../../zh-TW/ux/chinese-terminology.md) | [日本語](../../ja-JP/ux/chinese-terminology.md) | [한국어](../../ko-KR/ux/chinese-terminology.md) | [Français](../../fr-FR/ux/chinese-terminology.md) | [Deutsch](../../de-DE/ux/chinese-terminology.md) | [Español](../../es-ES/ux/chinese-terminology.md) | [Português (Brasil)](../../pt-BR/ux/chinese-terminology.md) | Русский
+[English](../../ux/chinese-terminology.md) | [简体中文](../../zh-CN/ux/chinese-terminology.md) | [繁體中文](../../zh-TW/ux/chinese-terminology.md) | [日本語](../../ja-JP/ux/chinese-terminology.md) | [한국어](../../ko-KR/ux/chinese-terminology.md) | [Français](../../fr-FR/ux/chinese-terminology.md) | [Deutsch](../../de-DE/ux/chinese-terminology.md) | [Español](../../es-ES/ux/chinese-terminology.md) | [Português (Brasil)](../../pt-BR/ux/chinese-terminology.md) | Русский
 
 Тексты для пользователей на упрощённом китайском следуют [настройкам терминологии](../../../specs/ux/chinese-terminology.json). Статические строки Qt сохраняют стабильные идентификаторы в resources/i18n/zh-CN.json. HTML, действующие детализированные макеты и пользовательская документация используют термины из таблицы. Инженерные документы и спецификации форматов могут использовать специальные термины. Размеры компонентов, плотность 0.8 в главном окне и 1 в меню, DPR и параметры масштабирования сохраняются.
 

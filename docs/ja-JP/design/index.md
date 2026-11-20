@@ -2,7 +2,7 @@
 
 # XDZip の設計ガイド
 
-[English](../../design/index.md) | [简体中文](../../zh-CN/design/index.md) | [繁體中文（台灣）](../../zh-TW/design/index.md) | 日本語 | [한국어](../../ko-KR/design/index.md) | [Français](../../fr-FR/design/index.md) | [Deutsch](../../de-DE/design/index.md) | [Español](../../es-ES/design/index.md) | [Português (Brasil)](../../pt-BR/design/index.md) | [Русский](../../ru-RU/design/index.md)
+[English](../../design/index.md) | [简体中文](../../zh-CN/design/index.md) | [繁體中文](../../zh-TW/design/index.md) | 日本語 | [한국어](../../ko-KR/design/index.md) | [Français](../../fr-FR/design/index.md) | [Deutsch](../../de-DE/design/index.md) | [Español](../../es-ES/design/index.md) | [Português (Brasil)](../../pt-BR/design/index.md) | [Русский](../../ru-RU/design/index.md)
 
 まず[システム構成](system-architecture.md)を読むと、Qt Quick デスクトップと独立した Rust CLI がアーカイブのランタイムを呼び出す仕組みが分かります。設計文書は現在の仕様、決定事項、提案の範囲を説明します。インストールと日常操作は[ユーザーマニュアル](../user-guide/README.md)を参照してください。ビルドや変更は[ビルドとコントリビュート](../contributing/README.md)を参照してください。
 

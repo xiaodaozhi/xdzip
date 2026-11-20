@@ -2,7 +2,7 @@
 
 # 分割ボリュームの読み取りと一時的なオープン
 
-[English](../../engineering/archive-opening.md) | [简体中文](../../zh-CN/engineering/archive-opening.md) | [繁體中文（台灣）](../../zh-TW/engineering/archive-opening.md) | 日本語 | [한국어](../../ko-KR/engineering/archive-opening.md) | [Français](../../fr-FR/engineering/archive-opening.md) | [Deutsch](../../de-DE/engineering/archive-opening.md) | [Español](../../es-ES/engineering/archive-opening.md) | [Português (Brasil)](../../pt-BR/engineering/archive-opening.md) | [Русский](../../ru-RU/engineering/archive-opening.md)
+[English](../../engineering/archive-opening.md) | [简体中文](../../zh-CN/engineering/archive-opening.md) | [繁體中文](../../zh-TW/engineering/archive-opening.md) | 日本語 | [한국어](../../ko-KR/engineering/archive-opening.md) | [Français](../../fr-FR/engineering/archive-opening.md) | [Deutsch](../../de-DE/engineering/archive-opening.md) | [Español](../../es-ES/engineering/archive-opening.md) | [Português (Brasil)](../../pt-BR/engineering/archive-opening.md) | [Русский](../../ru-RU/engineering/archive-opening.md)
 
 デスクトップでのファイル選択、ファイルマネージャーからの要求、CLI は、同じ Rust のソースオープン規則を使います。ホストは許可されたボリューム集合を解決し、ソースの識別情報を記録して許可範囲のバイト列を調べます。選択されたバックエンドが、場合により[分離された形式ワーカー](native-codecs.md)を通して[閲覧用メタデータ](readonly-browser.md)を提供します。項目を明示的に開くと、関連付けられたアプリ用に検証済みの一時コピーが作成されます。アーカイブ全体を検証するには別途[整合性検査](archive-checking.md)を使います。
 

@@ -1,6 +1,6 @@
 # 部署依赖核验与 SBOM
 
-[English](../../engineering/deployment-audit.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/deployment-audit.md) | [日本語](../../ja-JP/engineering/deployment-audit.md) | [한국어](../../ko-KR/engineering/deployment-audit.md) | [Français](../../fr-FR/engineering/deployment-audit.md) | [Deutsch](../../de-DE/engineering/deployment-audit.md) | [Español](../../es-ES/engineering/deployment-audit.md) | [Português (Brasil)](../../pt-BR/engineering/deployment-audit.md) | [Русский](../../ru-RU/engineering/deployment-audit.md)
+[English](../../engineering/deployment-audit.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/deployment-audit.md) | [日本語](../../ja-JP/engineering/deployment-audit.md) | [한국어](../../ko-KR/engineering/deployment-audit.md) | [Français](../../fr-FR/engineering/deployment-audit.md) | [Deutsch](../../de-DE/engineering/deployment-audit.md) | [Español](../../es-ES/engineering/deployment-audit.md) | [Português (Brasil)](../../pt-BR/engineering/deployment-audit.md) | [Русский](../../ru-RU/engineering/deployment-audit.md)
 
 部署核验默认生成开发审阅材料，完整性明确标记 `incomplete`，不自动提升为可发行结论；正式 Release 会为同一候选另外收集并随包提供经过发布流程核对的材料。格式使用 [CycloneDX 1.6 官方 schema](https://github.com/CycloneDX/specification/blob/55343ba19dee1785acf1ce9191540d5fd7b590db/schema/bom-1.6.schema.json)。schema 的上游提交与三个文件 SHA-256 固定在 [配置](../../../scripts/sbom-schemas.json)，验证时只下载并解析这些资源，缓存到 build/，不会从 SBOM 中的任意 URL 下载 schema。
 

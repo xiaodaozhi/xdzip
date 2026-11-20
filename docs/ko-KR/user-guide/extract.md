@@ -1,6 +1,6 @@
 # 모든 파일 또는 선택한 파일의 압축 풀기
 
-[English](../../user-guide/extract.md) | [简体中文](../../zh-CN/user-guide/extract.md) | [繁體中文（台灣）](../../zh-TW/user-guide/extract.md) | [日本語](../../ja-JP/user-guide/extract.md) | 한국어 | [Français](../../fr-FR/user-guide/extract.md) | [Deutsch](../../de-DE/user-guide/extract.md) | [Español](../../es-ES/user-guide/extract.md) | [Português (Brasil)](../../pt-BR/user-guide/extract.md) | [Русский](../../ru-RU/user-guide/extract.md)
+[English](../../user-guide/extract.md) | [简体中文](../../zh-CN/user-guide/extract.md) | [繁體中文](../../zh-TW/user-guide/extract.md) | [日本語](../../ja-JP/user-guide/extract.md) | 한국어 | [Français](../../fr-FR/user-guide/extract.md) | [Deutsch](../../de-DE/user-guide/extract.md) | [Español](../../es-ES/user-guide/extract.md) | [Português (Brasil)](../../pt-BR/user-guide/extract.md) | [Русский](../../ru-RU/user-guide/extract.md)
 
 <a name="xdzip-from-the-archive-window"></a>
 

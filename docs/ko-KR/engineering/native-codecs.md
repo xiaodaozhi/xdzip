@@ -2,7 +2,7 @@
 
 # 격리된 형식 워커 계약
 
-[English](../../engineering/native-codecs.md) | [简体中文](../../zh-CN/engineering/native-codecs.md) | [繁體中文（台灣）](../../zh-TW/engineering/native-codecs.md) | [日本語](../../ja-JP/engineering/native-codecs.md) | 한국어 | [Français](../../fr-FR/engineering/native-codecs.md) | [Deutsch](../../de-DE/engineering/native-codecs.md) | [Español](../../es-ES/engineering/native-codecs.md) | [Português (Brasil)](../../pt-BR/engineering/native-codecs.md) | [Русский](../../ru-RU/engineering/native-codecs.md)
+[English](../../engineering/native-codecs.md) | [简体中文](../../zh-CN/engineering/native-codecs.md) | [繁體中文](../../zh-TW/engineering/native-codecs.md) | [日本語](../../ja-JP/engineering/native-codecs.md) | 한국어 | [Français](../../fr-FR/engineering/native-codecs.md) | [Deutsch](../../de-DE/engineering/native-codecs.md) | [Español](../../es-ES/engineering/native-codecs.md) | [Português (Brasil)](../../pt-BR/engineering/native-codecs.md) | [Русский](../../ru-RU/engineering/native-codecs.md)
 
 7z, RAR, CAB, ISO/UDF 읽기는 격리된 워커의 공유 CXX 경계 뒤에서 [내장 Rust 코덱](independent-rust-codecs.md)을 사용합니다. 같은 워커가 호스트가 제어하는 작업에서 7z 쓰기도 처리합니다. Rust 호스트는 ZIP, TAR, 압축 스트림, DEB와 [새 ISO9660/Joliet 이미지](iso-creation.md)를 프로세스 내부에서 처리합니다. 형식 선택은 내장 경로를 사용하며 어떤 경로도 PATH에서 명령줄 디코더를 찾지 않습니다.
 

@@ -1,6 +1,6 @@
 # Installers and file associations
 
-English | [简体中文](../zh-CN/engineering/installers-associations.md) | [繁體中文（台灣）](../zh-TW/engineering/installers-associations.md)
+English | [简体中文](../zh-CN/engineering/installers-associations.md) | [繁體中文](../zh-TW/engineering/installers-associations.md)
 
 On Windows 11 x64, search for **XDZip** in Microsoft Store to install or update the Store edition. Download the Windows EXE or portable ZIP, the macOS packages and the Linux packages from the [latest GitHub release](https://github.com/xiaodaozhi/xdzip/releases/latest). The two channels publish independently. Check the listing or release notes for the version you are installing.
 
@@ -134,4 +134,4 @@ Settings groups association suffixes using generated format data. Editable switc
 
 On macOS, Settings enables each switch whose system type is covered by the installed bundle's Viewer/Alternate declarations. An enabled switch can request xdzip as the default even when the type has no previous default. macOS may ask for confirmation. After a successful callback, Settings allows a short interval for Launch Services to report the new default. Once the system query confirms xdzip, the app records the previous app's bundle ID locally by system content type. Turning the switch off first requests that previous app if macOS still lists it as compatible. If there is no saved compatible app or restoration fails, Settings offers compatible installed alternatives. With no alternative, it explains this beside the switch. Cancelling preserves the current selection, and the displayed state follows a fresh system query. Viewer/None builds disable changes.
 
-In automatic language mode, Windows Setup selects an association description using the current user's system UI language. It uses Taiwan Traditional Chinese for Traditional Chinese preferences and English (US) for unsupported languages. A supported manual choice takes precedence. Setup preserves automatic mode so that the application can resolve the system language and synchronize owned descriptions at startup.
+In automatic language mode, Windows Setup selects an association description using the current user's system UI language. It uses Traditional Chinese for Traditional Chinese preferences and English (US) for unsupported languages. A supported manual choice takes precedence. Setup preserves automatic mode so that the application can resolve the system language and synchronize owned descriptions at startup.

@@ -2,7 +2,7 @@
 
 # Interaction pour l’extraction avec mot de passe
 
-[English](../../ux/password-extraction.md) | [简体中文](../../zh-CN/ux/password-extraction.md) | [繁體中文（台灣）](../../zh-TW/ux/password-extraction.md) | [日本語](../../ja-JP/ux/password-extraction.md) | [한국어](../../ko-KR/ux/password-extraction.md) | Français | [Deutsch](../../de-DE/ux/password-extraction.md) | [Español](../../es-ES/ux/password-extraction.md) | [Português (Brasil)](../../pt-BR/ux/password-extraction.md) | [Русский](../../ru-RU/ux/password-extraction.md)
+[English](../../ux/password-extraction.md) | [简体中文](../../zh-CN/ux/password-extraction.md) | [繁體中文](../../zh-TW/ux/password-extraction.md) | [日本語](../../ja-JP/ux/password-extraction.md) | [한국어](../../ko-KR/ux/password-extraction.md) | Français | [Deutsch](../../de-DE/ux/password-extraction.md) | [Español](../../es-ES/ux/password-extraction.md) | [Português (Brasil)](../../pt-BR/ux/password-extraction.md) | [Русский](../../ru-RU/ux/password-extraction.md)
 
 Les tâches ZIP, 7z et RAR prises en charge passent à l’état `waiting_password` lorsqu’une entrée exige un mot de passe. Le cœur publie une demande avec l’identifiant de tâche et celui de la demande. QML transmet uniquement la saisie et l’intention d’annuler. Le déchiffrement, l’authentification et la publication des fichiers sont confiés au cœur. Les demandes de mot de passe et les conflits de noms sont des états distincts. Une demande de mot de passe ne doit pas ouvrir la fenêtre de conflit. Les limites de format, d’authentification, de nouvelle tentative et de sortie suivent le [contrat technique](../engineering/password-extraction.md).
 

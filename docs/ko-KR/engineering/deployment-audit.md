@@ -2,7 +2,7 @@
 
 # 배포 의존성 검증과 SBOM
 
-[English](../../engineering/deployment-audit.md) | [简体中文](../../zh-CN/engineering/deployment-audit.md) | [繁體中文（台灣）](../../zh-TW/engineering/deployment-audit.md) | [日本語](../../ja-JP/engineering/deployment-audit.md) | 한국어 | [Français](../../fr-FR/engineering/deployment-audit.md) | [Deutsch](../../de-DE/engineering/deployment-audit.md) | [Español](../../es-ES/engineering/deployment-audit.md) | [Português (Brasil)](../../pt-BR/engineering/deployment-audit.md) | [Русский](../../ru-RU/engineering/deployment-audit.md)
+[English](../../engineering/deployment-audit.md) | [简体中文](../../zh-CN/engineering/deployment-audit.md) | [繁體中文](../../zh-TW/engineering/deployment-audit.md) | [日本語](../../ja-JP/engineering/deployment-audit.md) | 한국어 | [Français](../../fr-FR/engineering/deployment-audit.md) | [Deutsch](../../de-DE/engineering/deployment-audit.md) | [Español](../../es-ES/engineering/deployment-audit.md) | [Português (Brasil)](../../pt-BR/engineering/deployment-audit.md) | [Русский](../../ru-RU/engineering/deployment-audit.md)
 
 배포 검증은 기본적으로 `incomplete`로 명시된 개발 검토 자료를 생성하며 릴리스 준비가 완료되었음을 자동으로 입증하지 않습니다. 공식 Release는 동일 후보의 자료를 별도로 수집하고 릴리스 절차 검토 후 패키지와 함께 제공합니다. 형식은 [공식 CycloneDX 1.6 스키마](https://github.com/CycloneDX/specification/blob/55343ba19dee1785acf1ce9191540d5fd7b590db/schema/bom-1.6.schema.json)를 사용합니다. 상위 커밋과 세 스키마 파일의 SHA-256은 [설정](../../../scripts/sbom-schemas.json)에 고정되어 있습니다. 검증은 이 리소스만 다운로드하여 분석하고 build/에 캐시하며 SBOM의 임의 URL에서 스키마를 다운로드하지 않습니다.
 

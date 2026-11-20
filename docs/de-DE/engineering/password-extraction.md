@@ -2,7 +2,7 @@
 
 # Archivpasswörter und Öffnen verschlüsselter Verzeichnisse
 
-[English](../../engineering/password-extraction.md) | [简体中文](../../zh-CN/engineering/password-extraction.md) | [繁體中文（台灣）](../../zh-TW/engineering/password-extraction.md) | [日本語](../../ja-JP/engineering/password-extraction.md) | [한국어](../../ko-KR/engineering/password-extraction.md) | [Français](../../fr-FR/engineering/password-extraction.md) | Deutsch | [Español](../../es-ES/engineering/password-extraction.md) | [Português (Brasil)](../../pt-BR/engineering/password-extraction.md) | [Русский](../../ru-RU/engineering/password-extraction.md)
+[English](../../engineering/password-extraction.md) | [简体中文](../../zh-CN/engineering/password-extraction.md) | [繁體中文](../../zh-TW/engineering/password-extraction.md) | [日本語](../../ja-JP/engineering/password-extraction.md) | [한국어](../../ko-KR/engineering/password-extraction.md) | [Français](../../fr-FR/engineering/password-extraction.md) | Deutsch | [Español](../../es-ES/engineering/password-extraction.md) | [Português (Brasil)](../../pt-BR/engineering/password-extraction.md) | [Русский](../../ru-RU/engineering/password-extraction.md)
 
 Dieser Vertrag ergänzt das [sichere Entpacken](zip-safe-extraction.md) und definiert Passwörter, Authentifizierung und Aufgabeninteraktion. Format- und Dateisicherheitslogik bleiben unabhängig von Qt; das Passwortfenster übermittelt nur die Benutzerabsicht. Den tatsächlichen Fortschritt und die Plattformprüfung beschreibt [Issue #11](https://github.com/xiaodaozhi/xdzip/issues/11). Ausführungsberichte gehören nicht hierher.
 

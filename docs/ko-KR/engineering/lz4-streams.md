@@ -2,7 +2,7 @@
 
 # LZ4 스트림 계약
 
-[English](../../engineering/lz4-streams.md) | [简体中文](../../zh-CN/engineering/lz4-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/lz4-streams.md) | [日本語](../../ja-JP/engineering/lz4-streams.md) | 한국어 | [Français](../../fr-FR/engineering/lz4-streams.md) | [Deutsch](../../de-DE/engineering/lz4-streams.md) | [Español](../../es-ES/engineering/lz4-streams.md) | [Português (Brasil)](../../pt-BR/engineering/lz4-streams.md) | [Русский](../../ru-RU/engineering/lz4-streams.md)
+[English](../../engineering/lz4-streams.md) | [简体中文](../../zh-CN/engineering/lz4-streams.md) | [繁體中文](../../zh-TW/engineering/lz4-streams.md) | [日本語](../../ja-JP/engineering/lz4-streams.md) | 한국어 | [Français](../../fr-FR/engineering/lz4-streams.md) | [Deutsch](../../de-DE/engineering/lz4-streams.md) | [Español](../../es-ES/engineering/lz4-streams.md) | [Português (Brasil)](../../pt-BR/engineering/lz4-streams.md) | [Русский](../../ru-RU/engineering/lz4-streams.md)
 
 표준 프레임 프로필은 작성자의 [프레임 형식 1.6.5](https://github.com/lz4/lz4/blob/v1.11.1/doc/lz4_Frame_format.md), [블록 형식 2026-10-26](https://github.com/lz4/lz4/blob/v1.11.1/doc/lz4_Block_format.md) 및 [XXH32 명세](https://github.com/Cyan4973/xxHash/blob/v0.8.3/doc/xxhash_spec.md)를 따릅니다. 제품 알고리즘은 Rust로 독립 구현합니다. 참조 도구와 생성한 실행 증거는 로컬 `build/`에 보관하고, 프로젝트에서 만든 재현 가능한 입력 패턴만 버전 관리합니다. 호스트 권한과 최종 저장은 [단일 파일 스트림](single-file-streams.md)을 참조하세요.
 

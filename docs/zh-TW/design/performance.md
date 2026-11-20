@@ -2,7 +2,7 @@
 
 # 效能設計與測量
 
-[English](../../design/performance.md) | [简体中文](../../zh-CN/design/performance.md) | 繁體中文（台灣） | [日本語](../../ja-JP/design/performance.md) | [한국어](../../ko-KR/design/performance.md) | [Français](../../fr-FR/design/performance.md) | [Deutsch](../../de-DE/design/performance.md) | [Español](../../es-ES/design/performance.md) | [Português (Brasil)](../../pt-BR/design/performance.md) | [Русский](../../ru-RU/design/performance.md)
+[English](../../design/performance.md) | [简体中文](../../zh-CN/design/performance.md) | 繁體中文 | [日本語](../../ja-JP/design/performance.md) | [한국어](../../ko-KR/design/performance.md) | [Français](../../fr-FR/design/performance.md) | [Deutsch](../../de-DE/design/performance.md) | [Español](../../es-ES/design/performance.md) | [Português (Brasil)](../../pt-BR/design/performance.md) | [Русский](../../ru-RU/design/performance.md)
 
 XDZip 分別約束索引、傳輸、任務執行和圖片預覽的記憶體與工作量。下面的程式碼限額屬於實現規則。耗時、記憶體和吞吐資料取決於構建和工作負載，後文的參考指標是設計目標。
 

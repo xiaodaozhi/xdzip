@@ -1,6 +1,6 @@
 # Documentación de XDZip
 
-[English](../README.md) | [简体中文](../zh-CN/README.md) | [繁體中文（台灣）](../zh-TW/README.md) | [日本語](../ja-JP/README.md) | [한국어](../ko-KR/README.md) | [Français](../fr-FR/README.md) | [Deutsch](../de-DE/README.md) | Español | [Português (Brasil)](../pt-BR/README.md) | [Русский](../ru-RU/README.md)
+[English](../README.md) | [简体中文](../zh-CN/README.md) | [繁體中文](../zh-TW/README.md) | [日本語](../ja-JP/README.md) | [한국어](../ko-KR/README.md) | [Français](../fr-FR/README.md) | [Deutsch](../de-DE/README.md) | Español | [Português (Brasil)](../pt-BR/README.md) | [Русский](../ru-RU/README.md)
 
 Si es la primera vez que usas XDZip, empieza por [descargar e instalar XDZip](user-guide/install.md). Después puedes [abrir un archivo comprimido y explorar su contenido](user-guide/browse.md). La [tabla de formatos compatibles](../../README.es-ES.md#xdzip-format-support) indica qué formatos puedes abrir, crear o editar. Las [notas de la versión](https://github.com/xiaodaozhi/xdzip/releases) describen las funciones de la versión instalada.
 

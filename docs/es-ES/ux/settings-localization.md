@@ -2,7 +2,7 @@
 
 # Ventana de configuración e idioma de la interfaz
 
-[English](../../ux/settings-localization.md) | [简体中文](../../zh-CN/ux/settings-localization.md) | [繁體中文（台灣）](../../zh-TW/ux/settings-localization.md) | [日本語](../../ja-JP/ux/settings-localization.md) | [한국어](../../ko-KR/ux/settings-localization.md) | [Français](../../fr-FR/ux/settings-localization.md) | [Deutsch](../../de-DE/ux/settings-localization.md) | Español | [Português (Brasil)](../../pt-BR/ux/settings-localization.md) | [Русский](../../ru-RU/ux/settings-localization.md)
+[English](../../ux/settings-localization.md) | [简体中文](../../zh-CN/ux/settings-localization.md) | [繁體中文](../../zh-TW/ux/settings-localization.md) | [日本語](../../ja-JP/ux/settings-localization.md) | [한국어](../../ko-KR/ux/settings-localization.md) | [Français](../../fr-FR/ux/settings-localization.md) | [Deutsch](../../de-DE/ux/settings-localization.md) | Español | [Português (Brasil)](../../pt-BR/ux/settings-localization.md) | [Русский](../../ru-RU/ux/settings-localization.md)
 
 Cuando no hay una ventana principal visible, Configuración y Acerca de, abiertas desde el área de notificación sin ventana propietaria, centran el marco nativo completo en el área de trabajo de la pantalla donde está el puntero. Utilizan el posicionamiento de OperationWindow y se vuelven a centrar tras la creación nativa y el cálculo de altura. El límite se basa en la altura disponible de QScreen y el margen existente, sin usar la altura de todo el escritorio virtual ni restaurar ventanas principales ocultas o minimizadas. Las entradas con ventana propietaria mantienen su posición, dimensiones y densidad.
 

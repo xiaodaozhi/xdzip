@@ -2,7 +2,7 @@
 
 # Qt/Rust 브리지와 애플리케이션 서비스
 
-[English](../../design/qt-rust-bridge.md) | [简体中文](../../zh-CN/design/qt-rust-bridge.md) | [繁體中文（台灣）](../../zh-TW/design/qt-rust-bridge.md) | [日本語](../../ja-JP/design/qt-rust-bridge.md) | 한국어 | [Français](../../fr-FR/design/qt-rust-bridge.md) | [Deutsch](../../de-DE/design/qt-rust-bridge.md) | [Español](../../es-ES/design/qt-rust-bridge.md) | [Português (Brasil)](../../pt-BR/design/qt-rust-bridge.md) | [Русский](../../ru-RU/design/qt-rust-bridge.md)
+[English](../../design/qt-rust-bridge.md) | [简体中文](../../zh-CN/design/qt-rust-bridge.md) | [繁體中文](../../zh-TW/design/qt-rust-bridge.md) | [日本語](../../ja-JP/design/qt-rust-bridge.md) | 한국어 | [Français](../../fr-FR/design/qt-rust-bridge.md) | [Deutsch](../../de-DE/design/qt-rust-bridge.md) | [Español](../../es-ES/design/qt-rust-bridge.md) | [Português (Brasil)](../../pt-BR/design/qt-rust-bridge.md) | [Русский](../../ru-RU/design/qt-rust-bridge.md)
 
 Qt 데스크톱은 연결된 `cxx` 브리지를 통해 Rust 런타임을 호출합니다. 각 `BrowserController`는 별도 서비스 인스턴스를 가진 `RuntimeConnection`을 소유합니다. 브리지는 데스크톱 프로세스 안에서 타입이 지정된 명령과 소유권이 있는 결과를 전달합니다. CLI는 같은 Rust 서비스를 직접 사용합니다. [시스템 아키텍처](system-architecture.md), [데스크톱 세션](../engineering/application-sessions.md)
 

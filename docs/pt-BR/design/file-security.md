@@ -2,7 +2,7 @@
 
 # Autorização de arquivos e publicação segura
 
-[English](../../design/file-security.md) | [简体中文](../../zh-CN/design/file-security.md) | [繁體中文（台灣）](../../zh-TW/design/file-security.md) | [日本語](../../ja-JP/design/file-security.md) | [한국어](../../ko-KR/design/file-security.md) | [Français](../../fr-FR/design/file-security.md) | [Deutsch](../../de-DE/design/file-security.md) | [Español](../../es-ES/design/file-security.md) | Português (Brasil) | [Русский](../../ru-RU/design/file-security.md)
+[English](../../design/file-security.md) | [简体中文](../../zh-CN/design/file-security.md) | [繁體中文](../../zh-TW/design/file-security.md) | [日本語](../../ja-JP/design/file-security.md) | [한국어](../../ko-KR/design/file-security.md) | [Français](../../fr-FR/design/file-security.md) | [Deutsch](../../de-DE/design/file-security.md) | [Español](../../es-ES/design/file-security.md) | Português (Brasil) | [Русский](../../ru-RU/design/file-security.md)
 
 O host controla quais arquivos podem ser abertos e onde a saída verificada pode ser publicada. Um backend recebe leitores e coletores limitados, inclusive quando executado no processo de arquivo compactado isolado. Nomes, tamanhos declarados, somas de verificação e conteúdos do arquivo compactado são dados de entrada. As verificações de arquivo do host se aplicam independentemente das realizadas pelo formato. [Arquitetura do sistema](system-architecture.md), [Protocolo do processo de arquivo](../engineering/native-codecs.md)
 

@@ -2,7 +2,7 @@
 
 # Авторизация файлов и безопасная публикация
 
-[English](../../design/file-security.md) | [简体中文](../../zh-CN/design/file-security.md) | [繁體中文（台灣）](../../zh-TW/design/file-security.md) | [日本語](../../ja-JP/design/file-security.md) | [한국어](../../ko-KR/design/file-security.md) | [Français](../../fr-FR/design/file-security.md) | [Deutsch](../../de-DE/design/file-security.md) | [Español](../../es-ES/design/file-security.md) | [Português (Brasil)](../../pt-BR/design/file-security.md) | Русский
+[English](../../design/file-security.md) | [简体中文](../../zh-CN/design/file-security.md) | [繁體中文](../../zh-TW/design/file-security.md) | [日本語](../../ja-JP/design/file-security.md) | [한국어](../../ko-KR/design/file-security.md) | [Français](../../fr-FR/design/file-security.md) | [Deutsch](../../de-DE/design/file-security.md) | [Español](../../es-ES/design/file-security.md) | [Português (Brasil)](../../pt-BR/design/file-security.md) | Русский
 
 Хост контролирует, какие файлы можно открыть и где разрешено опубликовать проверенный результат. Обработчик получает ограниченные устройства чтения и приёмники, в том числе при работе в изолированном процессе архива. Имена, заявленные размеры, контрольные суммы и данные архива являются входными данными. Проверки файлов хостом применяются независимо от проверок формата. [Архитектура системы](system-architecture.md), [Протокол процесса архива](../engineering/native-codecs.md)
 

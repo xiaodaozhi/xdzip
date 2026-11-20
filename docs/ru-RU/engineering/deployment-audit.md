@@ -2,7 +2,7 @@
 
 # Проверка зависимостей развёртывания и SBOM
 
-[English](../../engineering/deployment-audit.md) | [简体中文](../../zh-CN/engineering/deployment-audit.md) | [繁體中文（台灣）](../../zh-TW/engineering/deployment-audit.md) | [日本語](../../ja-JP/engineering/deployment-audit.md) | [한국어](../../ko-KR/engineering/deployment-audit.md) | [Français](../../fr-FR/engineering/deployment-audit.md) | [Deutsch](../../de-DE/engineering/deployment-audit.md) | [Español](../../es-ES/engineering/deployment-audit.md) | [Português (Brasil)](../../pt-BR/engineering/deployment-audit.md) | Русский
+[English](../../engineering/deployment-audit.md) | [简体中文](../../zh-CN/engineering/deployment-audit.md) | [繁體中文](../../zh-TW/engineering/deployment-audit.md) | [日本語](../../ja-JP/engineering/deployment-audit.md) | [한국어](../../ko-KR/engineering/deployment-audit.md) | [Français](../../fr-FR/engineering/deployment-audit.md) | [Deutsch](../../de-DE/engineering/deployment-audit.md) | [Español](../../es-ES/engineering/deployment-audit.md) | [Português (Brasil)](../../pt-BR/engineering/deployment-audit.md) | Русский
 
 По умолчанию проверка развёртывания создаёт материалы для проверки разработки с явной отметкой `incomplete`; она не доказывает автоматически готовность к выпуску. Официальный Release отдельно собирает материалы того же кандидата и предоставляет их с пакетом после проверки процесса выпуска. Формат использует [официальную схему CycloneDX 1.6](https://github.com/CycloneDX/specification/blob/55343ba19dee1785acf1ce9191540d5fd7b590db/schema/bom-1.6.schema.json). Исходный коммит и SHA-256 трёх файлов схемы зафиксированы в [конфигурации](../../../scripts/sbom-schemas.json). Проверка загружает и разбирает только эти ресурсы, кешируя их в build/; схемы по произвольным URL из SBOM не загружаются.
 

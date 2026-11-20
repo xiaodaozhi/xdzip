@@ -1,7 +1,7 @@
 <a name="xdzip-system-support-and-maintenance-policy"></a>
 # Richtlinie für Systemunterstützung und Wartung
 
-[English](../../engineering/support-policy.md) | [简体中文](../../zh-CN/engineering/support-policy.md) | [繁體中文（台灣）](../../zh-TW/engineering/support-policy.md) | [日本語](../../ja-JP/engineering/support-policy.md) | [한국어](../../ko-KR/engineering/support-policy.md) | [Français](../../fr-FR/engineering/support-policy.md) | Deutsch | [Español](../../es-ES/engineering/support-policy.md) | [Português (Brasil)](../../pt-BR/engineering/support-policy.md) | [Русский](../../ru-RU/engineering/support-policy.md)
+[English](../../engineering/support-policy.md) | [简体中文](../../zh-CN/engineering/support-policy.md) | [繁體中文](../../zh-TW/engineering/support-policy.md) | [日本語](../../ja-JP/engineering/support-policy.md) | [한국어](../../ko-KR/engineering/support-policy.md) | [Français](../../fr-FR/engineering/support-policy.md) | Deutsch | [Español](../../es-ES/engineering/support-policy.md) | [Português (Brasil)](../../pt-BR/engineering/support-policy.md) | [Русский](../../ru-RU/engineering/support-policy.md)
 
 Der Projektinhaber genehmigte den ursprünglichen Supportumfang am 2026-10-19. Die Version `v0.1.0` wurde am 2026-11-06 öffentlich veröffentlicht. Aktuelle Versionen und Downloads stehen auf der [Veröffentlichungsseite](https://github.com/xiaodaozhi/xdzip/releases). Diese Richtlinie legt den Supportumfang fest. Die Prüfungen der Mindestversion bleiben gültig. CI-Ergebnisse und die Abnahme durch den Nutzer gelten für die jeweils geprüfte Umgebung. Der Nutzer hat die manuelle Prüfung abgenommen.
 

@@ -2,7 +2,7 @@
 
 # Zstandard ストリームの契約
 
-[English](../../engineering/zstandard-streams.md) | [简体中文](../../zh-CN/engineering/zstandard-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/zstandard-streams.md) | 日本語 | [한국어](../../ko-KR/engineering/zstandard-streams.md) | [Français](../../fr-FR/engineering/zstandard-streams.md) | [Deutsch](../../de-DE/engineering/zstandard-streams.md) | [Español](../../es-ES/engineering/zstandard-streams.md) | [Português (Brasil)](../../pt-BR/engineering/zstandard-streams.md) | [Русский](../../ru-RU/engineering/zstandard-streams.md)
+[English](../../engineering/zstandard-streams.md) | [简体中文](../../zh-CN/engineering/zstandard-streams.md) | [繁體中文](../../zh-TW/engineering/zstandard-streams.md) | 日本語 | [한국어](../../ko-KR/engineering/zstandard-streams.md) | [Français](../../fr-FR/engineering/zstandard-streams.md) | [Deutsch](../../de-DE/engineering/zstandard-streams.md) | [Español](../../es-ES/engineering/zstandard-streams.md) | [Português (Brasil)](../../pt-BR/engineering/zstandard-streams.md) | [Русский](../../ru-RU/engineering/zstandard-streams.md)
 
 バイナリプロファイルは [RFC 8878](https://www.rfc-editor.org/rfc/rfc8878.html)、作者の[形式仕様 0.4.3](https://github.com/facebook/zstd/blob/v1.5.7/doc/zstd_compression_format.md)、[XXH64 の仕様](https://github.com/Cyan4973/xxHash/blob/v0.8.3/doc/xxhash_spec.md)に従います。製品のアルゴリズムは Rust の独立実装です。独立した参照ライブラリーとプログラムは管理下の試験データの生成だけに使い、製品の依存関係には含めません。ホストの操作権限と出力確定は[単一ファイルストリーム](single-file-streams.md)の契約に従います。
 

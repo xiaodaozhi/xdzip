@@ -2,7 +2,7 @@
 
 # Verificação de integridade de arquivos compactados
 
-[English](../../engineering/archive-checking.md) | [简体中文](../../zh-CN/engineering/archive-checking.md) | [繁體中文（台灣）](../../zh-TW/engineering/archive-checking.md) | [日本語](../../ja-JP/engineering/archive-checking.md) | [한국어](../../ko-KR/engineering/archive-checking.md) | [Français](../../fr-FR/engineering/archive-checking.md) | [Deutsch](../../de-DE/engineering/archive-checking.md) | [Español](../../es-ES/engineering/archive-checking.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/archive-checking.md)
+[English](../../engineering/archive-checking.md) | [简体中文](../../zh-CN/engineering/archive-checking.md) | [繁體中文](../../zh-TW/engineering/archive-checking.md) | [日本語](../../ja-JP/engineering/archive-checking.md) | [한국어](../../ko-KR/engineering/archive-checking.md) | [Français](../../fr-FR/engineering/archive-checking.md) | [Deutsch](../../de-DE/engineering/archive-checking.md) | [Español](../../es-ES/engineering/archive-checking.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/archive-checking.md)
 
 A ação «Test» da barra de ferramentas executa uma verificação real em segundo plano do arquivo atual elegível, cobrindo todos os registros físicos, inclusive nomes duplicados, diretórios e arquivos vazios, independentemente do diretório, pesquisa ou seleção atuais. A verificação completa ainda não é suportada em arquivos que usam índice em disco; veja [indexação de arquivos grandes](large-index.md). A verificação mantém apenas fontes de entrada e metadados congelados. Ela não obtém autorização de destino, não cria arquivos de preparação ou saída e não usa mapeamento de caminhos de extração nem publicação de links.
 

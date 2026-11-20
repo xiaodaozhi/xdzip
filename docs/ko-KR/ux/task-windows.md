@@ -2,7 +2,7 @@
 
 # 작업 창과 무결성 검사
 
-[English](../../ux/task-windows.md) | [简体中文](../../zh-CN/ux/task-windows.md) | [繁體中文（台灣）](../../zh-TW/ux/task-windows.md) | [日本語](../../ja-JP/ux/task-windows.md) | 한국어 | [Français](../../fr-FR/ux/task-windows.md) | [Deutsch](../../de-DE/ux/task-windows.md) | [Español](../../es-ES/ux/task-windows.md) | [Português (Brasil)](../../pt-BR/ux/task-windows.md) | [Русский](../../ru-RU/ux/task-windows.md)
+[English](../../ux/task-windows.md) | [简体中文](../../zh-CN/ux/task-windows.md) | [繁體中文](../../zh-TW/ux/task-windows.md) | [日本語](../../ja-JP/ux/task-windows.md) | 한국어 | [Français](../../fr-FR/ux/task-windows.md) | [Deutsch](../../de-DE/ux/task-windows.md) | [Español](../../es-ES/ux/task-windows.md) | [Português (Brasil)](../../pt-BR/ux/task-windows.md) | [Русский](../../ru-RU/ux/task-windows.md)
 
 애플리케이션의 작업 진입점은 모든 세션을 모으고 세션 UUID와 백엔드 작업 ID로 진행률, 암호, 충돌, 결과를 전달합니다. 페이지를 닫아도 해당 컨트롤러는 유지되며 명시적으로 종료하면 모든 비동기 join이 끝날 때까지 기다립니다. [애플리케이션 세션 계약](../engineering/application-sessions.md)을 참조하세요.
 

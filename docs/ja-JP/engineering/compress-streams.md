@@ -2,7 +2,7 @@
 
 # Unix compress Z の契約
 
-[English](../../engineering/compress-streams.md) | [简体中文](../../zh-CN/engineering/compress-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/compress-streams.md) | 日本語 | [한국어](../../ko-KR/engineering/compress-streams.md) | [Français](../../fr-FR/engineering/compress-streams.md) | [Deutsch](../../de-DE/engineering/compress-streams.md) | [Español](../../es-ES/engineering/compress-streams.md) | [Português (Brasil)](../../pt-BR/engineering/compress-streams.md) | [Русский](../../ru-RU/engineering/compress-streams.md)
+[English](../../engineering/compress-streams.md) | [简体中文](../../zh-CN/engineering/compress-streams.md) | [繁體中文](../../zh-TW/engineering/compress-streams.md) | 日本語 | [한국어](../../ko-KR/engineering/compress-streams.md) | [Français](../../fr-FR/engineering/compress-streams.md) | [Deutsch](../../de-DE/engineering/compress-streams.md) | [Español](../../es-ES/engineering/compress-streams.md) | [Português (Brasil)](../../pt-BR/engineering/compress-streams.md) | [Русский](../../ru-RU/engineering/compress-streams.md)
 
 この契約は、独立した Rust LZW リーダーのバイト形式と、単一ファイルおよび TAR との合成を定義します。ツールの歴史と 9–16 ビットの辞書動作は [OpenBSD compress(1)](https://man.openbsd.org/compress.1) と [ncompress](https://vapier.github.io/ncompress/) に従います。POSIX はツールを規定しますが、完全なバイト配置は規定しません。歴史的な 8 コード単位の整列と 9 ビット互換性の違いは[上流の議論](https://github.com/vapier/ncompress/issues/5)に記録し、内容既知の独立した入力で確認します。ソースの観察は形式の規則を補足するもので、Rust 実装は参照コードの翻訳ではありません。
 
