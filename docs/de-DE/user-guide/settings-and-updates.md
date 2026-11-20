@@ -8,7 +8,7 @@
 
 Öffnen Sie die **Einstellungen** über das App-Menü oder die Symbolleiste. Wählen Sie Sprache, Farbschema, Schriftgröße und Oberflächendichte in den jeweiligen Einstellungen. Die automatische Sprachauswahl verwendet die Systemsprache, sofern sie unterstützt wird. Legen Sie fest, ob Archive in Tabs oder Fenstern geöffnet werden. Wenn die Plattform dies unterstützt, können Sie zuletzt geöffnete Dateien und das Symbol im Infobereich konfigurieren. Änderungen werden sofort angewendet. Kann eine Einstellung nicht gespeichert werden, lesen Sie die Fehlermeldung auf der Seite. [Verhalten der Einstellungen](../ux/settings-localization.md)
 
-Ändern Sie Dateizuordnungen in den Systemeinstellungen. Kontextmenüaktionen werden separat eingerichtet. Unter macOS aktiviert das System die Finder-Erweiterung. Registrierte Finder-Dienste sind ebenfalls verfügbar. [Aktionen des Dateimanagers](../../engineering/shell-actions.md)
+Ändern Sie Dateizuordnungen in den Systemeinstellungen. Kontextmenüaktionen werden separat eingerichtet. Unter macOS aktiviert das System die Finder-Erweiterung. Registrierte Finder-Dienste sind ebenfalls verfügbar. [Aktionen des Dateimanagers](../engineering/shell-actions.md)
 
 <a name="xdzip-update-the-app"></a>
 

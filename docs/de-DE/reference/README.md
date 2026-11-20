@@ -112,7 +112,7 @@ Die [Systemarchitektur](../../design/system-architecture.md) zeigt die Ausführu
 
 - [Installer und Dateizuordnungen](../../engineering/installers-associations.md)
 - [Systemunterstützung und Wartungsrichtlinie](../engineering/support-policy.md)
-- [Dateimanager-Aktionen und eigenständiger Aufgabenhost](../../engineering/shell-actions.md)
+- [Dateimanager-Aktionen und eigenständiger Aufgabenhost](../engineering/shell-actions.md)
 - [Vom Benutzer gestartete Updates](../../engineering/software-update.md)
 - [Datenlebenszyklus und Diagnose](../engineering/privacy.md)
 - [Produktversion und Build-Identität](../engineering/versioning.md)
