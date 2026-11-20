@@ -1,6 +1,6 @@
 # Product design and technical reference
 
-English | [简体中文](../zh-CN/reference/README.md) | [繁體中文（台灣）](../zh-TW/reference/README.md)
+English | [简体中文](../zh-CN/reference/README.md) | [繁體中文（台灣）](../zh-TW/reference/README.md) | [日本語](../ja-JP/reference/README.md) | [한국어](../ko-KR/reference/README.md) | [Français](../fr-FR/reference/README.md) | [Deutsch](../de-DE/reference/README.md) | [Español](../es-ES/reference/README.md) | [Português (Brasil)](../pt-BR/reference/README.md) | [Русский](../ru-RU/reference/README.md)
 
 Start with the [system architecture](../design/system-architecture.md) for the desktop and CLI execution paths. Use the sections below to locate the contract that owns a particular behavior. For supported operations at a glance, see the [format table](../../README.md#format-support). For operation steps or development setup, see the [user manual](../user-guide/README.md), [CLI examples](../integration/README.md) and [contribution guide](../contributing/README.md).
 

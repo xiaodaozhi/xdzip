@@ -1,6 +1,6 @@
 # cxx 桥接依赖依据
 
-[English](../../engineering/cxx-admission.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/cxx-admission.md)
+[English](../../engineering/cxx-admission.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/cxx-admission.md) | [日本語](../../ja-JP/engineering/cxx-admission.md) | [한국어](../../ko-KR/engineering/cxx-admission.md) | [Français](../../fr-FR/engineering/cxx-admission.md) | [Deutsch](../../de-DE/engineering/cxx-admission.md) | [Español](../../es-ES/engineering/cxx-admission.md) | [Português (Brasil)](../../pt-BR/engineering/cxx-admission.md) | [Русский](../../ru-RU/engineering/cxx-admission.md)
 
 Qt/Rust 采用 `cxx` 生成的类型化所有权桥接；C++ 保留 Qt 对象，Rust 保留领域和运行时。`cxx` 与 `cxx-build` 必须精确同版，以 [Cargo.lock](../../../Cargo.lock) 及[工具链策略](toolchain.md)为准。cxx 不作为第三方格式扩展的稳定 ABI。手写 C ABI 虽减少依赖，却增加字符串、释放函数与所有权不变量维护成本。
 

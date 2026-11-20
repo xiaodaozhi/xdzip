@@ -1,6 +1,6 @@
 # XDZip 设计指南
 
-[English](../../design/index.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/index.md)
+[English](../../design/index.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/index.md) | [日本語](../../ja-JP/design/index.md) | [한국어](../../ko-KR/design/index.md) | [Français](../../fr-FR/design/index.md) | [Deutsch](../../de-DE/design/index.md) | [Español](../../es-ES/design/index.md) | [Português (Brasil)](../../pt-BR/design/index.md) | [Русский](../../ru-RU/design/index.md)
 
 从[系统架构](system-architecture.md)了解 Qt Quick 桌面与独立 Rust CLI 如何调用归档运行时。这套文档说明当前实现契约、架构决策和拟议工作的范围。安装与日常操作见[用户手册](../user-guide/README.md)。需要构建或修改项目时，见[开发与贡献](../contributing/README.md)。
 

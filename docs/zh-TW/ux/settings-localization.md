@@ -2,7 +2,7 @@
 
 # 設定視窗與介面語言
 
-[English](../../ux/settings-localization.md) | [简体中文](../../zh-CN/ux/settings-localization.md) | 繁體中文（台灣）
+[English](../../ux/settings-localization.md) | [简体中文](../../zh-CN/ux/settings-localization.md) | 繁體中文（台灣） | [日本語](../../ja-JP/ux/settings-localization.md) | [한국어](../../ko-KR/ux/settings-localization.md) | [Français](../../fr-FR/ux/settings-localization.md) | [Deutsch](../../de-DE/ux/settings-localization.md) | [Español](../../es-ES/ux/settings-localization.md) | [Português (Brasil)](../../pt-BR/ux/settings-localization.md) | [Русский](../../ru-RU/ux/settings-localization.md)
 
 沒有可見主視窗時，從托盤開啟的設定和關於視窗沒有 owner，按指標所在顯示器的可用區域居中。複用 OperationWindow 的螢幕居中路徑，在原生視窗建立及高度確定後再次定位，完整原生邊框保持在工作區內；高度上限取選定 QScreen 的實際可用高度，保留既有螢幕留白，不使用虛擬桌面合併範圍推導位置或高度，不恢復隱藏或最小化的主視窗。已有 owner 的入口繼續跟隨呼叫視窗，視窗尺寸和密度不變。
 

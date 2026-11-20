@@ -1,0 +1,23 @@
+<a name="xdzip-interface-contracts-and-checks"></a>
+
+# Contratos de interfaces y comprobaciones
+
+[English](../../engineering/contracts.md) | [简体中文](../../zh-CN/engineering/contracts.md) | [繁體中文（台灣）](../../zh-TW/engineering/contracts.md) | [日本語](../../ja-JP/engineering/contracts.md) | [한국어](../../ko-KR/engineering/contracts.md) | [Français](../../fr-FR/engineering/contracts.md) | [Deutsch](../../de-DE/engineering/contracts.md) | Español | [Português (Brasil)](../../pt-BR/engineering/contracts.md) | [Русский](../../ru-RU/engineering/contracts.md)
+
+Las interfaces de referencia están descritas en [dominio y datos](../design/domain-data.md), el [puente Qt/Rust](../design/qt-rust-bridge.md), el [diseño de extensiones de formato](../design/codec-extension-sdk.md) y la [planificación de tareas](../design/task-scheduling.md). Esta página define las comprobaciones antes de fijar las interfaces. El puente interno, los dos identificadores de recursos y el ciclo de vida ya están implementados. Consulta el [contrato de ejecución](product-runtime.md) para sus límites. También están implementadas las generaciones de consultas, las comprobaciones de versión del origen y las tareas de creación y extracción. Consulta la [navegación](readonly-browser.md), la [extracción segura](zip-safe-extraction.md) y la [creación](zip-creation.md). El protocolo de procesos de terceros tiene un [ensayo independiente de SDK de solo lectura](sdk-trial.md). Todavía no se publica como SDK estable ni se integra en el producto. La tabla establece las condiciones de integración.
+
+| Límite | Qué confirmar antes de implementar | Fallos que se deben probar |
+| --- | --- | --- |
+| Interfaz → puente | Propiedad de identificadores de recursos, RequestId, envío sin bloqueo, rechazo durante el cierre | Cola llena, cierre repetido, objeto destruido |
+| Puente → interfaz | session/query/generation/revision, páginas por lotes, secuencia de eventos | Respuestas obsoletas descartadas, fallo al reducir un entero, estado final conservado |
+| Ejecución → códec | Capacidades, lector de entrada, receptor de salida, testigo de cancelación | Funciones incompatibles, errores de CRC, lecturas o escrituras incompletas |
+| Ejecución → E/S segura | Raíz autorizada, correspondencia, preparación, permiso y recibo de confirmación | Carreras de enlaces, disco lleno, destino de reemplazo modificado |
+| Extensión → host | Versión de negociación, límites de trama, capacidades, ciclo de vida de sesión | Tramas incorrectas o demasiado grandes, espera agotada, reordenación, rechazo de cancelación |
+
+Cada interfaz define la validez de entrada, la propiedad, los hilos, los presupuestos, las categorías de error, la idempotencia y los límites de cancelación. Un valor desconocido es distinto de cero. TaskId y EntryId cumplen funciones distintas. La selección está vinculada a las entradas, con independencia del número actual de cada fila.
+
+La CLI y la interfaz gráfica comparten servicios Rust. Catalog devuelve hasta 128 entradas físicas de metadatos por página. SelectMembers resuelve las rutas efectivas completas y los EntryId dentro de la misma sesión inmutable y después envía las tareas existentes. Los identificadores de lista solo pertenecen a ese escaneo y dejan de ser duraderos tras cambios del archivo comprimido. submit_wait espera únicamente el bloqueo breve de admisión. Se conservan las reglas de capacidad y rechazo durante el cierre. La interfaz gráfica no expone la codificación QML de estos comandos internos. La CLI no escribe archivos mediante texto de presentación escapado.
+
+Los metadatos fijos del host usan open_regular_nofollow junto con permisos de directorio y comprobaciones de tamaño e identidad. Se rechazan los enlaces simbólicos y puntos de reanálisis del último componente. La lectura de archivos comprimidos seleccionados por el usuario conserva sus reglas de alias de ruta. Las solicitudes de CLI al escritorio transfieren un directorio acotado por la extensión opcional `cli_protocol=1` de instancia única del mismo usuario. El protocolo anterior de apertura sigue en la versión 1. Una instancia sin la extensión no puede confirmar la entrega de la CLI. Consulta el [contrato de CLI](command-line.md) para resultados, códigos de salida y límites de instalación.
+
+Los contratos internos pueden cambiar con la implementación y se actualizan en el mismo commit. El protocolo para terceros se considera v1 estable cuando dos implementaciones independientes interoperan y superan las pruebas de compatibilidad. Las versiones desconocidas se rechazan explícitamente o pasan a otra compatible según la negociación.

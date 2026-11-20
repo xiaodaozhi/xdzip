@@ -1,0 +1,23 @@
+<a name="xdzip-interface-contracts-and-checks"></a>
+
+# Contrats d’interface et contrôles
+
+[English](../../engineering/contracts.md) | [简体中文](../../zh-CN/engineering/contracts.md) | [繁體中文（台灣）](../../zh-TW/engineering/contracts.md) | [日本語](../../ja-JP/engineering/contracts.md) | [한국어](../../ko-KR/engineering/contracts.md) | Français | [Deutsch](../../de-DE/engineering/contracts.md) | [Español](../../es-ES/engineering/contracts.md) | [Português (Brasil)](../../pt-BR/engineering/contracts.md) | [Русский](../../ru-RU/engineering/contracts.md)
+
+Les interfaces de référence sont décrites dans le [modèle de domaine et de données](../design/domain-data.md), la [passerelle Qt/Rust](../design/qt-rust-bridge.md), la [conception des extensions de format](../design/codec-extension-sdk.md) et l’[ordonnancement des tâches](../design/task-scheduling.md). Cette page énumère les contrôles avant de figer les interfaces. La passerelle interne, les deux poignées et le cycle de vie sont implémentés. Voir le [contrat d’exécution](product-runtime.md) pour leurs limites. Les générations de requêtes, la vérification de la version de la source et les tâches de création et d’extraction sont aussi implémentées. Voir le [contrat de navigation](readonly-browser.md), l’[extraction sûre](zip-safe-extraction.md) et le [contrat de création](zip-creation.md). Le protocole des processus tiers fait l’objet d’un [essai indépendant de SDK en lecture seule](sdk-trial.md). Il n’est ni publié comme SDK stable ni intégré au produit. Le tableau indique les conditions d’intégration.
+
+| Interface | Points à confirmer avant l’implémentation | Échecs à vérifier |
+| --- | --- | --- |
+| Interface → passerelle | Propriété des poignées, RequestId, soumission non bloquante, refus pendant l’arrêt | File pleine, arrêts répétés, objet détruit |
+| Passerelle → interface | session/query/generation/revision, pages par lots, séquence d’événements | Réponses obsolètes écartées, échec de conversion vers un entier plus petit, état final conservé |
+| Exécution → codec | Capacités plutôt qu’extensions, lecteur, sortie, jeton d’annulation | Fonctions non prises en charge, échecs CRC, lectures ou écritures incomplètes |
+| Exécution → E/S sécurisées | Racine autorisée, correspondance, préparation temporaire, autorisation et reçu de validation | Courses sur les liens, disque plein, cible de remplacement modifiée |
+| Extension → hôte | Version de négociation, limites de trame, capacités, durée de vie de la session | Trames incorrectes ou trop grandes, expiration, réordonnancement, refus d’annuler |
+
+Chaque interface définit la validité des entrées, la propriété, les fils d’exécution, les budgets, les catégories d’erreur, l’idempotence et les limites de l’annulation. Une valeur inconnue est distincte de zéro. TaskId et EntryId ont des usages distincts. Une sélection est liée aux entrées et reste indépendante de leurs numéros de ligne actuels.
+
+La CLI et l’interface graphique partagent les services Rust. Catalog renvoie au plus 128 entrées physiques de métadonnées par page. SelectMembers résout les chemins effectifs complets et les EntryId dans la même session immuable, puis soumet les tâches existantes. Les identifiants retournés par la liste sont propres au balayage et ne durent pas au-delà d’un changement d’archive. submit_wait attend seulement le bref verrou d’admission. La capacité de la file et les refus pendant l’arrêt restent inchangés. L’interface graphique n’expose pas l’encodage QML de ces commandes internes. La CLI n’écrit pas de fichiers à partir des noms d’affichage échappés.
+
+Les métadonnées fixes de l’hôte combinent open_regular_nofollow, l’autorisation de répertoire et la vérification de taille et d’identité. Les liens symboliques et points d’analyse au dernier composant sont refusés. La lecture des archives déjà choisies par l’utilisateur conserve ses règles d’alias de chemin. Les requêtes de la CLI au bureau transmettent un répertoire de requête borné via l’extension facultative `cli_protocol=1`, au sein d’une instance unique du même utilisateur. L’ancien protocole d’ouverture reste en version 1. Une instance dépourvue de l’extension ne peut pas accuser réception du transfert CLI. Voir le [contrat de la CLI](command-line.md) pour les résultats, les codes de sortie et les limites d’installation.
+
+Les contrats internes peuvent évoluer avec l’implémentation et sont mis à jour dans le même commit. Un protocole tiers est qualifié de v1 stable après interopérabilité entre deux implémentations indépendantes et réussite de la suite de compatibilité. Les versions inconnues sont refusées explicitement ou ramenées à une version compatible selon les règles de négociation.

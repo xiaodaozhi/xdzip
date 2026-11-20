@@ -1,6 +1,6 @@
 # Settings window and UI language
 
-English | [简体中文](../zh-CN/ux/settings-localization.md) | [繁體中文（台灣）](../zh-TW/ux/settings-localization.md)
+English | [简体中文](../zh-CN/ux/settings-localization.md) | [繁體中文（台灣）](../zh-TW/ux/settings-localization.md) | [日本語](../ja-JP/ux/settings-localization.md) | [한국어](../ko-KR/ux/settings-localization.md) | [Français](../fr-FR/ux/settings-localization.md) | [Deutsch](../de-DE/ux/settings-localization.md) | [Español](../es-ES/ux/settings-localization.md) | [Português (Brasil)](../pt-BR/ux/settings-localization.md) | [Русский](../ru-RU/ux/settings-localization.md)
 
 When no main window is visible, ownerless Settings and About windows opened from the tray center their complete native frame in the work area of the screen containing the pointer. They reuse OperationWindow screen placement and recenter after native creation and height determination. The height cap uses the selected QScreen actual available height and existing margin, rather than the combined virtual desktop, without restoring hidden or minimized main windows. Owned entry points retain their caller placement, dimensions and density.
 

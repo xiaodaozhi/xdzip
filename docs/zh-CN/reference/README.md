@@ -1,6 +1,6 @@
 # 产品设计与技术参考
 
-[English](../../reference/README.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/reference/README.md)
+[English](../../reference/README.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/reference/README.md) | [日本語](../../ja-JP/reference/README.md) | [한국어](../../ko-KR/reference/README.md) | [Français](../../fr-FR/reference/README.md) | [Deutsch](../../de-DE/reference/README.md) | [Español](../../es-ES/reference/README.md) | [Português (Brasil)](../../pt-BR/reference/README.md) | [Русский](../../ru-RU/reference/README.md)
 
 从[系统架构](../design/system-architecture.md)了解桌面与 CLI 的实际执行链路，再按下方主题查找说明相应行为的契约。各格式能做什么可速查[格式支持表](../../../README.zh-CN.md#格式支持)。使用步骤和开发环境见[用户手册](../user-guide/README.md)、[CLI 示例](../integration/README.md)与[贡献指南](../contributing/README.md)。
 

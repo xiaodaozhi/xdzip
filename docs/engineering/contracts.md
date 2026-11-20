@@ -1,6 +1,6 @@
 # Interface contracts and checks
 
-English | [简体中文](../zh-CN/engineering/contracts.md) | [繁體中文（台灣）](../zh-TW/engineering/contracts.md)
+English | [简体中文](../zh-CN/engineering/contracts.md) | [繁體中文（台灣）](../zh-TW/engineering/contracts.md) | [日本語](../ja-JP/engineering/contracts.md) | [한국어](../ko-KR/engineering/contracts.md) | [Français](../fr-FR/engineering/contracts.md) | [Deutsch](../de-DE/engineering/contracts.md) | [Español](../es-ES/engineering/contracts.md) | [Português (Brasil)](../pt-BR/engineering/contracts.md) | [Русский](../ru-RU/engineering/contracts.md)
 
 Authoritative interfaces are described in [domain and data](../design/domain-data.md), the [Qt/Rust bridge](../design/qt-rust-bridge.md), the [format extension design](../design/codec-extension-sdk.md), and [task scheduling](../design/task-scheduling.md). This page defines freeze checks rather than duplicating signatures. The internal bridge, dual handles, and lifecycle are implemented; see the [runtime contract](product-runtime.md) for boundaries. Query generations, source-version checks, and creation/extraction tasks have also been implemented; see the [browser contract](readonly-browser.md), [safe extraction](zip-safe-extraction.md), and [creation contract](zip-creation.md). The third-party process protocol has an independent [read-only SDK trial](sdk-trial.md), but is not released as a stable SDK or integrated into the product. The table defines integration gates.
 

@@ -1,6 +1,6 @@
 # 设置窗口与界面语言
 
-[English](../../ux/settings-localization.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/ux/settings-localization.md)
+[English](../../ux/settings-localization.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/ux/settings-localization.md) | [日本語](../../ja-JP/ux/settings-localization.md) | [한국어](../../ko-KR/ux/settings-localization.md) | [Français](../../fr-FR/ux/settings-localization.md) | [Deutsch](../../de-DE/ux/settings-localization.md) | [Español](../../es-ES/ux/settings-localization.md) | [Português (Brasil)](../../pt-BR/ux/settings-localization.md) | [Русский](../../ru-RU/ux/settings-localization.md)
 
 没有可见主窗口时，从托盘打开的设置和关于窗口没有 owner，按指针所在显示器的可用区域居中。复用 OperationWindow 的屏幕居中路径，在原生窗口创建及高度确定后再次定位，完整原生边框保持在工作区内；高度上限取选定 QScreen 的实际可用高度，保留既有屏幕留白，不使用虚拟桌面合并范围推导位置或高度，不恢复隐藏或最小化的主窗口。已有 owner 的入口继续跟随调用窗口，窗口尺寸和密度不变。
 

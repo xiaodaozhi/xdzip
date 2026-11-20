@@ -2,7 +2,7 @@
 
 # 產品設計與技術參考
 
-[English](../../reference/README.md) | [简体中文](../../zh-CN/reference/README.md) | 繁體中文（台灣）
+[English](../../reference/README.md) | [简体中文](../../zh-CN/reference/README.md) | 繁體中文（台灣） | [日本語](../../ja-JP/reference/README.md) | [한국어](../../ko-KR/reference/README.md) | [Français](../../fr-FR/reference/README.md) | [Deutsch](../../de-DE/reference/README.md) | [Español](../../es-ES/reference/README.md) | [Português (Brasil)](../../pt-BR/reference/README.md) | [Русский](../../ru-RU/reference/README.md)
 
 從[系統架構](../design/system-architecture.md)瞭解桌面與 CLI 的實際執行鏈路，再按下方主題查詢說明相應行為的契約。各格式能做什麼可速查[格式支援表](../../../README.zh-TW.md#xdzip-%E6%A0%BC%E5%BC%8F%E6%94%AF%E6%8C%81)。使用步驟和開發環境見[使用者手冊](../user-guide/README.md)、[CLI 示例](../integration/README.md)與[貢獻指南](../contributing/README.md)。
 
