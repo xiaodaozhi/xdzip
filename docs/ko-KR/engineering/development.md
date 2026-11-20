@@ -4,7 +4,7 @@
 
 [English](../../engineering/development.md) | [简体中文](../../zh-CN/engineering/development.md) | [繁體中文](../../zh-TW/engineering/development.md) | [日本語](../../ja-JP/engineering/development.md) | 한국어 | [Français](../../fr-FR/engineering/development.md) | [Deutsch](../../de-DE/engineering/development.md) | [Español](../../es-ES/engineering/development.md) | [Português (Brasil)](../../pt-BR/engineering/development.md) | [Русский](../../ru-RU/engineering/development.md)
 
-[빌드 및 기여](../contributing/README.md)에서 변경에 맞는 빌드와 검증 방법을 선택하세요. [시스템 아키텍처](../../design/system-architecture.md)와 [저장소 구조](repository-layout.md)는 Qt, Rust 실행 환경 및 코덱의 경계를 설명합니다.
+[빌드 및 기여](../contributing/README.md)에서 변경에 맞는 빌드와 검증 방법을 선택하세요. [시스템 아키텍처](../design/system-architecture.md)와 [저장소 구조](repository-layout.md)는 Qt, Rust 실행 환경 및 코덱의 경계를 설명합니다.
 
 <a name="xdzip-obtain-and-modify"></a>
 

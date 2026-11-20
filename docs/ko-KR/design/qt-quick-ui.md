@@ -4,7 +4,7 @@
 
 [English](../../design/qt-quick-ui.md) | [简体中文](../../zh-CN/design/qt-quick-ui.md) | [繁體中文](../../zh-TW/design/qt-quick-ui.md) | [日本語](../../ja-JP/design/qt-quick-ui.md) | 한국어 | [Français](../../fr-FR/design/qt-quick-ui.md) | [Deutsch](../../de-DE/design/qt-quick-ui.md) | [Español](../../es-ES/design/qt-quick-ui.md) | [Português (Brasil)](../../pt-BR/design/qt-quick-ui.md) | [Русский](../../ru-RU/design/qt-quick-ui.md)
 
-데스크톱은 표시와 상호 작용에 Qt Quick을 사용합니다. C++ 컨트롤러는 사용자 의도를 요청으로 변환하고 보기 상태를 유지합니다. Rust 런타임은 압축 파일 해석, 작업 정책과 파일 권한을 담당합니다. 아래 호출은 [시스템 아키텍처](../../design/system-architecture.md)와 [브리지 계약](qt-rust-bridge.md)에 설명되어 있습니다.
+데스크톱은 표시와 상호 작용에 Qt Quick을 사용합니다. C++ 컨트롤러는 사용자 의도를 요청으로 변환하고 보기 상태를 유지합니다. Rust 런타임은 압축 파일 해석, 작업 정책과 파일 권한을 담당합니다. 아래 호출은 [시스템 아키텍처](system-architecture.md)와 [브리지 계약](qt-rust-bridge.md)에 설명되어 있습니다.
 
 <a name="xdzip-windows-sessions-and-models"></a>
 

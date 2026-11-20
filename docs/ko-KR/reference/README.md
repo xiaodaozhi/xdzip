@@ -4,7 +4,7 @@
 
 [English](../../reference/README.md) | [简体中文](../../zh-CN/reference/README.md) | [繁體中文](../../zh-TW/reference/README.md) | [日本語](../../ja-JP/reference/README.md) | 한국어 | [Français](../../fr-FR/reference/README.md) | [Deutsch](../../de-DE/reference/README.md) | [Español](../../es-ES/reference/README.md) | [Português (Brasil)](../../pt-BR/reference/README.md) | [Русский](../../ru-RU/reference/README.md)
 
-데스크톱과 CLI 실행 경로는 [시스템 아키텍처](../../design/system-architecture.md)를 참조하세요. 아래 절에서 각 동작을 정의하는 계약을 찾을 수 있습니다. [지원 형식 표](../../../README.ko-KR.md#xdzip-format-support)는 지원 작업을 요약합니다. 사용 절차나 개발 환경 준비는 [사용자 설명서](../user-guide/README.md), [CLI 예제](../integration/README.md), [기여 안내](../contributing/README.md)를 참조하세요.
+데스크톱과 CLI 실행 경로는 [시스템 아키텍처](../design/system-architecture.md)를 참조하세요. 아래 절에서 각 동작을 정의하는 계약을 찾을 수 있습니다. [지원 형식 표](../../../README.ko-KR.md#xdzip-format-support)는 지원 작업을 요약합니다. 사용 절차나 개발 환경 준비는 [사용자 설명서](../user-guide/README.md), [CLI 예제](../integration/README.md), [기여 안내](../contributing/README.md)를 참조하세요.
 
 <a name="xdzip-architecture-and-interfaces"></a>
 

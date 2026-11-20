@@ -1,6 +1,6 @@
 # XDZip システムアーキテクチャ
 
-[English](../../design/system-architecture.md) | [简体中文](../../zh-CN/design/system-architecture.md) | [繁體中文](../../zh-TW/design/system-architecture.md) | 日本語 | [Français](../../fr-FR/design/system-architecture.md) | [Deutsch](../../de-DE/design/system-architecture.md) | [Español](../../es-ES/design/system-architecture.md) | [Português (Brasil)](../../pt-BR/design/system-architecture.md)
+[English](../../design/system-architecture.md) | [简体中文](../../zh-CN/design/system-architecture.md) | [繁體中文](../../zh-TW/design/system-architecture.md) | 日本語 | [한국어](../../ko-KR/design/system-architecture.md) | [Français](../../fr-FR/design/system-architecture.md) | [Deutsch](../../de-DE/design/system-architecture.md) | [Español](../../es-ES/design/system-architecture.md) | [Português (Brasil)](../../pt-BR/design/system-architecture.md)
 
 デスクトップとコマンドラインのクライアントは Rust アーカイブランタイムを共有します。ランタイムは選択されたソースをインデックス付きセッションに、操作を制限付きタスクに変換します。形式バックエンドはアーカイブデータを解釈します。ホストはファイルを認可し、出力先を制御して検証済みの結果を公開します。
 
