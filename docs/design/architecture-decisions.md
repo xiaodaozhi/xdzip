@@ -1,6 +1,6 @@
 # xdzip: Architecture decision records
 
-English | [简体中文](../zh-CN/design/architecture-decisions.md) | [繁體中文](../zh-TW/design/architecture-decisions.md) | [日本語](../ja-JP/design/architecture-decisions.md) | [Français](../fr-FR/design/architecture-decisions.md) | [Deutsch](../de-DE/design/architecture-decisions.md) | [Español](../es-ES/design/architecture-decisions.md) | [Português (Brasil)](../pt-BR/design/architecture-decisions.md)
+English | [简体中文](../zh-CN/design/architecture-decisions.md) | [繁體中文](../zh-TW/design/architecture-decisions.md) | [日本語](../ja-JP/design/architecture-decisions.md) | [한국어](../ko-KR/design/architecture-decisions.md) | [Français](../fr-FR/design/architecture-decisions.md) | [Deutsch](../de-DE/design/architecture-decisions.md) | [Español](../es-ES/design/architecture-decisions.md) | [Português (Brasil)](../pt-BR/design/architecture-decisions.md)
 
 The early records are dated 2026-10-11. Later records state their own dates. Acceptance adopts an architectural decision. The current implementation notes connect each decision to the maintained contracts and capability evidence. When superseding a decision, retain the original and append a new record.
 
