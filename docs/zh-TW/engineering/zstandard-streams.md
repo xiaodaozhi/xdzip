@@ -2,7 +2,7 @@
 
 # Zstandard 壓縮流契約
 
-[English](../../engineering/zstandard-streams.md) | [简体中文](../../zh-CN/engineering/zstandard-streams.md) | 繁體中文（台灣）
+[English](../../engineering/zstandard-streams.md) | [简体中文](../../zh-CN/engineering/zstandard-streams.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/zstandard-streams.md) | [한국어](../../ko-KR/engineering/zstandard-streams.md) | [Français](../../fr-FR/engineering/zstandard-streams.md) | [Deutsch](../../de-DE/engineering/zstandard-streams.md) | [Español](../../es-ES/engineering/zstandard-streams.md) | [Português (Brasil)](../../pt-BR/engineering/zstandard-streams.md) | [Русский](../../ru-RU/engineering/zstandard-streams.md)
 
 格式遵循 [RFC 8878](https://www.rfc-editor.org/rfc/rfc8878.html)、作者的[格式 0.4.3](https://github.com/facebook/zstd/blob/v1.5.7/doc/zstd_compression_format.md)及 [XXH64 規格](https://github.com/Cyan4973/xxHash/blob/v0.8.3/doc/xxhash_spec.md)。產品演算法由 Rust 獨立實現。獨立參考庫和程式僅處理專案自有測試內容，不進入產品依賴。宿主許可權與釋出遵循[單檔案壓縮流](single-file-streams.md)。
 
@@ -26,6 +26,6 @@
 
 已准入寫入器須對可壓縮的普通內容產生真實壓縮序列塊，不得僅以原始塊或 RLE 塊宣稱功能完成。提供的級別選擇有界匹配搜尋工作量，每級須獨立解碼驗證空輸入、不可壓縮內容和多塊輸入。輸出內容 XXH64，僅按格式使用原始塊回退。在超過每幀塊數策略前開始新標準幀，同時重置歷史、偏移、熵表和校驗。寫入前准入輸入與輸出緩衝，只有明確完成才輸出流尾。
 
-普通 Zstandard 只接受一個普通檔案，TAR.ZST 複用共享 TAR 解析和寫入。登記前須有對應宿主、實際 CLI 與 Qt 自動化，覆蓋凍結源複核、取消、精確位元組預算、暫存、失敗清理和最終釋出。建立方法和級別讀取共享格式登記，不增加密碼、分卷或修改能力。檢查使用 `format_declared_checks`，因為輸入可以省略內容校驗和。生成執行證據留在 `build/` 或 CI，實際平臺覆蓋和發行許可分別登記。
+獨立的 Zstandard 壓縮串流只接受一個一般檔案。TAR.ZST 採用共用的 TAR 剖析與寫入實作。登錄前須有對應主程式、實際 CLI 與 Qt 的自動化測試，涵蓋重新驗證已固定的來源、取消、精確位元組限額、暫存、失敗清理及最終寫入。建立方式和壓縮等級取自共用格式登錄表。兩種設定均不支援密碼或分割壓縮。獨立壓縮串流無法改寫。符合[修改壓縮檔規範](archive-transfers.md)的 TAR.ZST 可以改寫，並重新編碼外層 Zstandard 壓縮串流。輸入的資料框可以省略內容總和檢查碼，因此使用 `format_declared_checks` 檢查。產生的驗證證據儲存在 `build/` 或 CI，實際平台涵蓋範圍和發行許可分別記錄。
 
 有界寫入器使用 128 KiB 獨立匹配搜尋塊、原始字面量、規範預定義 FSE 表和顯式非重複偏移。與 LZ4 複用四位元組雜湊鏈匹配器，距離最多 65535 位元組，1/6/9 級分別搜尋最多 1/16/64 個候選。不可壓縮塊回退為原始塊，全同位元組塊可使用 RLE。幀宣告 128 KiB 視窗，不宣告內容尺寸，始終提供 XXH64；宿主仍驗證凍結輸入的精確長度。每幀最多 65536 塊，只有繼續輸入才開始下一幀。這些寫入選擇不縮減讀取器已准入的 Huffman、FSE、重複狀態或視窗配置。

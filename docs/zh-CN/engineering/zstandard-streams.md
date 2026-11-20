@@ -1,6 +1,6 @@
 # Zstandard 压缩流契约
 
-[English](../../engineering/zstandard-streams.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/zstandard-streams.md)
+[English](../../engineering/zstandard-streams.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/zstandard-streams.md) | [日本語](../../ja-JP/engineering/zstandard-streams.md) | [한국어](../../ko-KR/engineering/zstandard-streams.md) | [Français](../../fr-FR/engineering/zstandard-streams.md) | [Deutsch](../../de-DE/engineering/zstandard-streams.md) | [Español](../../es-ES/engineering/zstandard-streams.md) | [Português (Brasil)](../../pt-BR/engineering/zstandard-streams.md) | [Русский](../../ru-RU/engineering/zstandard-streams.md)
 
 格式遵循 [RFC 8878](https://www.rfc-editor.org/rfc/rfc8878.html)、作者的[格式 0.4.3](https://github.com/facebook/zstd/blob/v1.5.7/doc/zstd_compression_format.md)及 [XXH64 规格](https://github.com/Cyan4973/xxHash/blob/v0.8.3/doc/xxhash_spec.md)。产品算法由 Rust 独立实现。独立参考库和程序仅处理项目自有测试内容，不进入产品依赖。宿主权限与发布遵循[单文件压缩流](single-file-streams.md)。
 
@@ -18,6 +18,6 @@
 
 已准入写入器须对可压缩的普通内容产生真实压缩序列块，不得仅以原始块或 RLE 块宣称功能完成。提供的级别选择有界匹配搜索工作量，每级须独立解码验证空输入、不可压缩内容和多块输入。输出内容 XXH64，仅按格式使用原始块回退。在超过每帧块数策略前开始新标准帧，同时重置历史、偏移、熵表和校验。写入前准入输入与输出缓冲，只有明确完成才输出流尾。
 
-普通 Zstandard 只接受一个普通文件，TAR.ZST 复用共享 TAR 解析和写入。登记前须有对应宿主、实际 CLI 与 Qt 自动化，覆盖冻结源复核、取消、精确字节预算、暂存、失败清理和最终发布。创建方法和级别读取共享格式登记，不增加密码、分卷或修改能力。检查使用 `format_declared_checks`，因为输入可以省略内容校验和。生成执行证据留在 `build/` 或 CI，实际平台覆盖和发行许可分别登记。
+独立 Zstandard 压缩流只接受一个普通文件。TAR.ZST 复用共享 TAR 解析和写入。登记前须有对应宿主、实际 CLI 与 Qt 自动化，覆盖冻结源复核、取消、精确字节预算、暂存、失败清理和最终提交。创建方法和级别来自共享格式注册表。两种配置均不支持密码或分卷。独立压缩流不能重写。符合[压缩包修改规范](archive-transfers.md)的 TAR.ZST 可以重写，并重新编码外层 Zstandard 压缩流。检查使用 `format_declared_checks`，因为输入帧可以省略内容校验和。生成的验证证据保存在 `build/` 或 CI，实际平台覆盖和发行许可分别登记。
 
 有界写入器使用 128 KiB 独立匹配搜索块、原始字面量、规范预定义 FSE 表和显式非重复偏移。与 LZ4 复用四字节哈希链匹配器，距离最多 65535 字节，1/6/9 级分别搜索最多 1/16/64 个候选。不可压缩块回退为原始块，全同字节块可使用 RLE。帧声明 128 KiB 窗口，不声明内容尺寸，始终提供 XXH64；宿主仍验证冻结输入的精确长度。每帧最多 65536 块，只有继续输入才开始下一帧。这些写入选择不缩减读取器已准入的 Huffman、FSE、重复状态或窗口配置。

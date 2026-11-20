@@ -1,0 +1,31 @@
+<a name="xdzip-zstandard-stream-contract"></a>
+
+# Vertrag für Zstandard-Datenströme
+
+[English](../../engineering/zstandard-streams.md) | [简体中文](../../zh-CN/engineering/zstandard-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/zstandard-streams.md) | [日本語](../../ja-JP/engineering/zstandard-streams.md) | [한국어](../../ko-KR/engineering/zstandard-streams.md) | [Français](../../fr-FR/engineering/zstandard-streams.md) | Deutsch | [Español](../../es-ES/engineering/zstandard-streams.md) | [Português (Brasil)](../../pt-BR/engineering/zstandard-streams.md) | [Русский](../../ru-RU/engineering/zstandard-streams.md)
+
+Das Binärprofil folgt [RFC 8878](https://www.rfc-editor.org/rfc/rfc8878.html), dem [Format 0.4.3](https://github.com/facebook/zstd/blob/v1.5.7/doc/zstd_compression_format.md) des Autors und der [XXH64-Spezifikation](https://github.com/Cyan4973/xxHash/blob/v0.8.3/doc/xxhash_spec.md). Die Produktalgorithmen sind unabhängige Rust-Implementierungen. Eigenständige Referenzbibliotheken und Werkzeuge erzeugen nur kontrollierte Testdaten und bleiben außerhalb der Produktabhängigkeiten. Host-Berechtigungen und Veröffentlichung folgen dem [Vertrag für Einzeldateiströme](single-file-streams.md).
+
+<a name="xdzip-frame-and-resource-admission"></a>
+
+## Zulassung von Frames und Ressourcen
+
+Standardsignatur, reservierte Bits, Fensterberechnung, optionale Wörterbuch-ID und Inhaltsgröße, Blocktypen und -größen, Abschlussblock und optionale untere 32 Bits von XXH64 mit Startwert null prüfen. Das angegebene unbenutzte Kopfbit beim Lesen ignorieren und beim Schreiben auf null setzen. Die Wörterbuch-ID null fordert kein Wörterbuch an. Andere IDs und Verweise auf externen Verlauf werden nicht unterstützt. Kopf und Archivinhalt erlauben keine weiteren Pfade oder Ausführung. Auch Einzelsegment-Frames müssen vor der Speicherzuweisung ins Fensterbudget passen.
+
+Der Fensterverlauf ist auf 64 MiB innerhalb eines Arbeitslimits von 128 MiB begrenzt. Ein Block dekodiert höchstens den kleineren Wert aus Fenstergröße und 128 KiB. Arithmetik vor Speicherzuweisungen, Indizierung und Kopien prüfen. Für Roh-, RLE- und komprimierte Blöcke gilt dieselbe Abrechnung der dekodierten Daten. Verkettete Standardframes und überspringbare Frames sind unter der physischen Eingabegrenze, den Bytebudgets der Aufgabe und den Abbruchregeln zulässig. Mindestens ein Standardframe ist erforderlich. Die Blockzahl je Frame und die Gesamtzahl der Standardframes und überspringbaren Frames haben die Grenze 100.000. Die Erkennung nutzt höchstens 8 MiB komprimierte Eingabe und 512 Byte dekodierten Präfix. Ein eindeutig erkannter Frame oder TAR darf bei Beschädigung nicht zu einem schwächeren Profil zurückfallen. Die vollständige Prüfung bestätigt Abschluss und alle deklarierten Größen und Prüfwerte vor der Veröffentlichung einer beobachteten virtuellen Zeile.
+
+<a name="xdzip-entropy-and-sequence-processing"></a>
+
+## Entropie- und Sequenzverarbeitung
+
+Rückwärts-Bitströme ab ihrer von null verschiedenen Endmarke mit exaktem Verbrauch lesen. Normalisierte FSE-Häufigkeiten, Nullfolgen, Tabellengrößen-Logarithmen, Symbolgrenzen, Zustandsübergänge und Tabellenwiederverwendung ausdrücklich prüfen. Huffman-Gewichte, implizites letztes Gewicht, vollständiger Präfixraum und Literalgrenzen bei einem oder vier Strömen müssen zur beobachteten Ausgabe passen. Wiederverwendbare Entropietabellen und Wiederholungsoffsets werden an Frame-Grenzen zurückgesetzt und behalten zwischen Blöcken nur den vom Format definierten Zustand. Literallängen, Trefferlängen, Zusatzbits für Offsets, Anpassungen von Wiederholungsoffsets ohne Literale, Überlappung und zugänglichen Verlauf vor der Ausgabe prüfen. Unmögliche oder unvollständige Zustände zurückweisen und den Leser nach einem Fehler sperren. Endgültige Host-E/A-Fehler, Abbruch, Limits, ungültige Daten und nicht unterstützte Profile behalten ihre Klassifikation.
+
+<a name="xdzip-creation-and-product-integration"></a>
+
+## Erstellung und Produktintegration
+
+Ein zugelassener Schreiber erzeugt echte komprimierte Sequenzblöcke für gewöhnliche komprimierbare Daten. Jede angebotene Stufe begrenzt den Suchaufwand und muss sich mit leeren, nicht komprimierbaren und aus mehreren Blöcken bestehenden Eingaben unabhängig dekodieren lassen. XXH64 des Inhalts ausgeben und nur gültige Rohblöcke als Ausweichpfad verwenden. Vor Überschreiten der Blockgrenze einen neuen Standardframe beginnen und Verlauf, Offsets, Entropietabellen und Prüfsumme gemeinsam zurücksetzen. Eingabe- und Ausgabepuffer vor dem Schreiben zulassen und den Abschluss ausdrücklich melden.
+
+Eigenständiges Zstandard akzeptiert eine reguläre Datei. TAR.ZST nutzt den gemeinsamen TAR-Leser und -Schreiber. Zur Aufnahme gehören entsprechende automatische Prüfungen des Hosts, der tatsächlichen CLI und von Qt. Sie decken die erneute Prüfung der fixierten Quelle, Abbruch, genaue Bytelimits, Zwischenausgabe, Bereinigung nach Fehlern und endgültige Übernahme ab. Methoden und Stufen stammen aus dem gemeinsamen Formatregister. Beide Profile unterstützen keine Passwörter oder geteilten Volumes. Eigenständige Ströme lassen sich nicht umschreiben. Geeignete TAR.ZST-Archive lassen sich nach dem [Vertrag zur Archivänderung](archive-transfers.md) umschreiben. Dabei wird der äußere Zstandard-Strom neu kodiert. Die Prüfung verwendet `format_declared_checks`, weil Eingabeframes keine Inhaltsprüfsumme enthalten müssen. Erzeugte Nachweise bleiben unter `build/` oder in CI. Tatsächliche Plattformabdeckung und Freigabe zur Veröffentlichung werden getrennt verfolgt.
+
+Der begrenzte Schreiber nutzt unabhängige 128-KiB-Blöcke für die Treffersuche, rohe Literale, normativ vordefinierte FSE-Tabellen und ausdrückliche Offsets ohne Wiederholung. Mit LZ4 teilt er die Hashkettensuche über vier Byte. Der maximale Abstand beträgt 65.535 Byte, die Suchtiefen 1/16/64 für Stufe 1/6/9. Nicht komprimierbare Blöcke bleiben roh, gleichförmige Blöcke können RLE verwenden. Der Frame deklariert ein 128-KiB-Fenster, lässt die Inhaltsgröße aus und enthält immer XXH64. Der Host prüft die genaue fixierte Eingabelänge. Ein Frame endet nach höchstens 65.536 Blöcken. Ein weiterer beginnt erst bei zusätzlichen Eingaben. Die zulässigen Huffman-, FSE-, Wiederholungs- und Fensterprofile des Lesers bleiben erhalten.

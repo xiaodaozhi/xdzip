@@ -1,13 +1,19 @@
-# 产品界面语言资源
+# Product interface catalogs
 
-`zh-CN.json` 与 `en-US.json` 是 Qt 产品可见静态文案的唯一来源。`messages` 的键是稳定 ID，界面通过 `qsTrId`／`qtTrId` 引用，不能按文案修改重新生成既有 ID。语义键用于设置等新增入口；`ui.<hash>` 是从原有文案迁移而来的稳定标识，内容修改仍保留 ID。
+Add each static desktop message to every catalog defined by [the shared language registry](../ui-languages.json). The keys in `messages` are stable IDs referenced by `qsTrId` and `qtTrId`. Use semantic IDs for new messages and retain existing IDs, including `ui.<hash>`, when editing their text.
 
-值为字符串，或含 `one`／`other` 的复数对象。Qt 的 `%n` 接收数量，`%1` 等占位符接收运行数据，两种语言必须保持参数集合一致。具体语言使用自称，`language.auto` 随界面语言翻译，`format.*` 是用户可见时间的 Qt 格式，协议时间和数值不修改。首次默认“自动识别”（`auto`），按系统首选界面语言选择中文 (简体) 或 English (US)，其他语言及无可用系统语言均回退 English (US)。选择模式与实际生效语言分别保存、解析；每次启动重新解析自动模式，手动选择与切回自动均即时生效。
+Use strings or plural objects with the locale's integer plural categories. Keep placeholders consistent across translations. Qt uses `%n` for the quantity, and `%1` and subsequent placeholders for runtime values. Keep language endonyms as shown in the registry, translate `language.auto`, and use Qt patterns in `format.*` for displayed dates and times. Preserve protocol fields, user-entered names, fixture filenames, and code identifiers. Simplified Chinese follows the [terminology guide](../../docs/ux/chinese-terminology.md).
 
-English: The default selection is Auto-detect (`auto`). The preferred system UI language selects Simplified Chinese or English (US); unsupported or missing system languages fall back to English (US). The saved selection remains distinct from the resolved locale. Automatic mode resolves again at startup; manual selection and returning to automatic mode take effect immediately.
+Run `python3 scripts/check-ui-i18n.py` after editing. Run `python3 scripts/generate-ui-messages.py` to regenerate native shell strings and the HTML settings resources. Project-owned package metadata and installer messages are in [packaging-i18n.json](../packaging-i18n.json). Normal builds subset and check the [bundled fonts](../../design/assets/fonts/README.md). Keep generated fonts and test evidence under `build/` or `dist/`.
 
-新增文案同时填写两份目录，运行 `python3 scripts/check-ui-i18n.py`。HTML 设置设计所需目录由 `python3 scripts/generate-ui-messages.py` 生成；普通构建自动裁剪字体并检查当前文案覆盖，无需提交字体二进制，准备和预览方法见[共享字体指南](../../design/assets/fonts/README.md)。工程文档、高保真审阅说明、测试断言、示例归档内的文件名、用户内容和 Rust 协议标识不属于产品翻译资源。
+Auto-detect (`auto`) resolves the first system UI preference at launch and uses English (US) when it cannot match a supported language. Language changes take effect immediately after a successful save. See [settings and localization](../../docs/ux/settings-localization.md) for script and region matching, save rollback, and old-version fallback.
 
-设置与保存边界见[设置和界面语言](../../docs/ux/settings-localization.md)。运行验证报告仅生成到 build/ 或 dist/。
+## 产品界面语言资源
 
-简体中文产品用词遵循[中文术语规范](../../docs/ux/chinese-terminology.md)与 JSON 配置。`check-ui-i18n.py` 同时拒绝旧容器称呼和旧大小标签，保留 ID、占位符、英文 archive 及用户文件名称。
+每条静态桌面文案都须填写[共享语言清单](../ui-languages.json)中的全部目录。界面通过 `qsTrId` 和 `qtTrId` 引用 `messages` 中的稳定 ID。新增文案使用语义 ID，修改既有文案时保留 ID，包括 `ui.<hash>`。
+
+值可以是字符串，也可以是符合该语言整数复数类别的对象。各语言保留相同的占位符。Qt 用 `%n` 传递数量，用 `%1` 等传递运行数据。语言自称沿用清单，`language.auto` 随界面语言翻译，`format.*` 以 Qt 格式表示界面日期和时间。保留协议字段、用户输入的名称、测试夹具文件名和代码标识。简体中文遵循[界面术语规范](../../docs/zh-CN/ux/chinese-terminology.md)。
+
+编辑后运行 `python3 scripts/check-ui-i18n.py`。运行 `python3 scripts/generate-ui-messages.py` 更新原生菜单字符串和 HTML 设置资源。项目自有打包元数据和安装器文案维护在 [packaging-i18n.json](../packaging-i18n.json)。普通构建裁剪并检查[随附字体](../../design/assets/fonts/README.md)。生成的字体和测试证据保存在 `build/` 或 `dist/`。
+
+启动时，“自动识别”（`auto`）解析系统的首选界面语言。无法匹配支持的语言时使用美式英语。语言设置保存成功后即时生效。文字变体和地区匹配、保存失败回滚以及旧版回退规则见[设置和界面语言](../../docs/zh-CN/ux/settings-localization.md)。

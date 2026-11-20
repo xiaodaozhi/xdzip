@@ -1,0 +1,31 @@
+<a name="xdzip-zstandard-stream-contract"></a>
+
+# Contrato dos fluxos Zstandard
+
+[English](../../engineering/zstandard-streams.md) | [简体中文](../../zh-CN/engineering/zstandard-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/zstandard-streams.md) | [日本語](../../ja-JP/engineering/zstandard-streams.md) | [한국어](../../ko-KR/engineering/zstandard-streams.md) | [Français](../../fr-FR/engineering/zstandard-streams.md) | [Deutsch](../../de-DE/engineering/zstandard-streams.md) | [Español](../../es-ES/engineering/zstandard-streams.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/zstandard-streams.md)
+
+O perfil binário segue a [RFC 8878](https://www.rfc-editor.org/rfc/rfc8878.html), o [formato 0.4.3](https://github.com/facebook/zstd/blob/v1.5.7/doc/zstd_compression_format.md) do autor e a [especificação XXH64](https://github.com/Cyan4973/xxHash/blob/v0.8.3/doc/xxhash_spec.md). Os algoritmos do produto são implementações independentes em Rust. Bibliotecas e programas de referência independentes servem apenas para gerar dados de teste controlados e ficam fora das dependências do produto. A autorização do host e a publicação seguem o [contrato de fluxos de arquivo único](single-file-streams.md).
+
+<a name="xdzip-frame-and-resource-admission"></a>
+
+## Admissão de quadros e recursos
+
+Valide a assinatura padrão, os bits reservados, o cálculo da janela, o identificador de dicionário e o tamanho de conteúdo opcionais, os tipos e tamanhos dos blocos, o bloco final e os 32 bits inferiores opcionais do XXH64 com semente zero. Ignore o bit de cabeçalho sem uso especificado ao ler e grave zero nele. Identificador de dicionário zero dispensa o dicionário. Identificadores diferentes de zero e referências que precisam de histórico externo não têm suporte. O cabeçalho e o conteúdo do arquivo compactado não concedem outros caminhos ou direitos de execução. Quadros de segmento único também precisam respeitar a cota da janela antes de alocar memória.
+
+O histórico de janela está limitado a 64 MiB dentro de um limite de trabalho de 128 MiB. Um bloco decodifica até o menor valor entre o tamanho da janela e 128 KiB. Verifique a aritmética antes de alocar, indexar ou copiar. Blocos brutos, RLE e compactados usam a mesma contabilização de saída decodificada. Quadros padrão concatenados e quadros que podem ser pulados são admitidos dentro dos limites de entrada física e das cotas de bytes e cancelamento da tarefa. É necessário pelo menos um quadro padrão. O limite de blocos por quadro e o limite total de quadros padrão e ignoráveis são de 100.000. A detecção usa até 8 MiB de entrada compactada e um prefixo decodificado de 512 bytes. Um quadro ou TAR identificado com segurança não pode passar para um perfil de detecção mais fraco quando há dano. A análise completa valida o fim do fluxo e todos os tamanhos e verificações declarados antes de publicar a linha virtual observada.
+
+<a name="xdzip-entropy-and-sequence-processing"></a>
+
+## Processamento de entropia e sequências
+
+Leia fluxos inversos de bits a partir do marcador final diferente de zero e verifique o consumo exato. Valide explicitamente as contagens normalizadas de FSE, as sequências de zeros, os logaritmos do tamanho da tabela, os limites de símbolos, as transições de estado e a reutilização de tabelas. Os pesos de Huffman, o peso final implícito, o espaço completo de prefixos e os limites dos literais de um ou quatro fluxos devem corresponder à saída observada. Tabelas de entropia reutilizadas e deslocamentos repetidos são reiniciados entre quadros. Entre blocos preservam apenas o estado definido pelo formato. Verifique o comprimento de literais e correspondências, os bits adicionais de deslocamento, o ajuste de deslocamentos repetidos sem literais, a sobreposição e o histórico acessível antes de emitir dados. Rejeite estados impossíveis ou incompletos e invalide o leitor após erro. Erros finais de E/S do host, cancelamentos, limites, dados inválidos e perfis sem suporte mantêm sua classificação.
+
+<a name="xdzip-creation-and-product-integration"></a>
+
+## Criação e integração ao produto
+
+Um gravador admitido usa blocos de sequências de fato compactados para conteúdo comum compactável. Cada nível limita o esforço de busca e precisa ser decodificável independentemente, inclusive com entradas vazias, incompactáveis e com vários blocos. Emita XXH64 do conteúdo e use apenas blocos brutos válidos como alternativa. Comece outro quadro padrão antes de ultrapassar o limite de blocos e reinicie juntos o histórico, os deslocamentos, as tabelas de entropia e a soma de verificação. Autorize os buffers de entrada e saída antes da gravação e sinalize explicitamente a conclusão.
+
+Zstandard independente aceita um arquivo comum. TAR.ZST usa a leitura e gravação TAR compartilhadas. O registro exige verificações automatizadas concordantes do host, da CLI real e do Qt, incluindo a nova verificação da origem fixada, cancelamento, cotas exatas de bytes, preparação, limpeza após falha e publicação final. Os métodos e níveis de criação vêm do registro compartilhado. Nenhum dos perfis admite senhas ou volumes divididos. Fluxos independentes não podem ser regravados. Arquivos TAR.ZST qualificados podem ser regravados conforme o [contrato de modificação de arquivos compactados](archive-transfers.md), com nova codificação do fluxo Zstandard externo. A verificação usa `format_declared_checks`, pois os quadros de entrada podem omitir somas do conteúdo. As evidências geradas ficam em `build/` ou CI. A cobertura real de plataformas e a autorização de publicação são acompanhadas separadamente.
+
+O gravador limitado usa blocos independentes de busca de 128 KiB, literais brutos, tabelas FSE predefinidas pela norma e deslocamentos explícitos sem repetição. Compartilha com LZ4 a busca por cadeias de hash de quatro bytes. A distância máxima é de 65.535 bytes, com profundidades de busca 1/16/64 para os níveis 1/6/9. Blocos incompactáveis são gravados brutos e blocos uniformes podem usar RLE. O quadro declara uma janela de 128 KiB, omite o tamanho do conteúdo e sempre inclui XXH64. O host ainda valida o comprimento exato da entrada fixada. O quadro termina após, no máximo, 65.536 blocos. Outro só começa quando chega mais entrada. Essas escolhas preservam os perfis de Huffman, FSE, repetição e janela admitidos pelo leitor.
