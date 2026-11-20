@@ -67,4 +67,4 @@
 
 ## 官方参考
 
-[商店一览字段说明](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/add-and-edit-store-listing-info)规定说明、功能和补充字段，[MSIX 图片说明](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/screenshots-and-images)规定截图与品牌图的用途。当前页面可显示比文档更多的上传位置；本套每种语言提供四张界面截图及四组功能示意图，不因出现某类设备字段就推定产品支持某类设备。
+[商店一览字段说明](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/add-and-edit-store-listing-info)规定说明、功能和补充字段，[MSIX 图片说明](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/screenshots-and-images)规定截图与品牌图的用途。当前页面可显示比文档更多的上传位置；本套每种语言提供四张界面截图及四组功能示意图，不因出现某类设备字段就推定产品支持该设备。
