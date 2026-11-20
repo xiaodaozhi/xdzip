@@ -131,7 +131,7 @@ build/cli/bin/xdzip list archive.zip --json
 build/cli/bin/xdzip extract archive.zip -C output
 ```
 
-Windows では `python` を使い、実行ファイル名に `.exe` を付けてください。Linux で実行するには、システムに OpenSSL 3 と証明書が必要です。ビルドには `libssl-dev` と `pkg-config` も必要です。パスワード、非対話モード、終了コード、コマンドのインストール、更新の制限については [CLI ガイド](docs/engineering/command-line.md)を参照してください。
+Windows では `python` を使い、実行ファイル名に `.exe` を付けてください。Linux で実行するには、システムに OpenSSL 3 と証明書が必要です。ビルドには `libssl-dev` と `pkg-config` も必要です。パスワード、非対話モード、終了コード、コマンドのインストール、更新の制限については [CLI ガイド](docs/ja-JP/engineering/command-line.md)を参照してください。
 
 <a name="xdzip-build-from-source"></a>
 

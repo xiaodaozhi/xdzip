@@ -1,6 +1,6 @@
 # Contrato de ejecución de línea de comandos
 
-[English](../../engineering/command-line.md) | [简体中文](../../zh-CN/engineering/command-line.md) | [繁體中文](../../zh-TW/engineering/command-line.md) | [Français](../../fr-FR/engineering/command-line.md) | [Deutsch](../../de-DE/engineering/command-line.md) | Español | [Português (Brasil)](../../pt-BR/engineering/command-line.md) | [Русский](../../ru-RU/engineering/command-line.md)
+[English](../../engineering/command-line.md) | [简体中文](../../zh-CN/engineering/command-line.md) | [繁體中文](../../zh-TW/engineering/command-line.md) | [日本語](../../ja-JP/engineering/command-line.md) | [Français](../../fr-FR/engineering/command-line.md) | [Deutsch](../../de-DE/engineering/command-line.md) | Español | [Português (Brasil)](../../pt-BR/engineering/command-line.md) | [Русский](../../ru-RU/engineering/command-line.md)
 
 El CLI es un anfitrión Rust independiente que llama a los servicios de formatos y E/S segura mediante el mismo `xdzip-runtime`; no depende de Qt, QML ni de una sesión gráfica. 7z, RAR, CAB, ISO y UDF siguen utilizando procesos aislados incluidos y no buscan herramientas alternativas de extracción en PATH. Las plataformas y arquitecturas siguen la [política de soporte](support-policy.md). El CLI independiente de Linux no requiere X11; para ejecutarlo se necesitan OpenSSL 3 y certificados del sistema, y para compilarlo también libssl-dev y pkg-config.
 

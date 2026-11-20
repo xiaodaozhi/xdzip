@@ -1,6 +1,6 @@
 # Laufzeitvertrag der Befehlszeile
 
-[English](../../engineering/command-line.md) | [简体中文](../../zh-CN/engineering/command-line.md) | [繁體中文](../../zh-TW/engineering/command-line.md) | [Français](../../fr-FR/engineering/command-line.md) | Deutsch | [Español](../../es-ES/engineering/command-line.md) | [Português (Brasil)](../../pt-BR/engineering/command-line.md) | [Русский](../../ru-RU/engineering/command-line.md)
+[English](../../engineering/command-line.md) | [简体中文](../../zh-CN/engineering/command-line.md) | [繁體中文](../../zh-TW/engineering/command-line.md) | [日本語](../../ja-JP/engineering/command-line.md) | [Français](../../fr-FR/engineering/command-line.md) | Deutsch | [Español](../../es-ES/engineering/command-line.md) | [Português (Brasil)](../../pt-BR/engineering/command-line.md) | [Русский](../../ru-RU/engineering/command-line.md)
 
 Das CLI ist ein eigenständiger Rust-Host, der Format- und sichere E/A-Dienste über denselben `xdzip-runtime` aufruft. Es hängt weder von Qt noch QML oder einer grafischen Sitzung ab. 7z, RAR, CAB, ISO und UDF verwenden weiterhin mitgelieferte isolierte Worker und suchen nicht im PATH nach anderen Entpackprogrammen. Plattformen und Architekturen folgen der [Supportrichtlinie](support-policy.md). Das eigenständige Linux-CLI benötigt kein X11; zur Ausführung sind OpenSSL 3 und Zertifikate des Systems nötig, für den Build zusätzlich libssl-dev und pkg-config.
 

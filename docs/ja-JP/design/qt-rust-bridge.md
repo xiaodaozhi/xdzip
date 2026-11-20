@@ -45,7 +45,7 @@ CXX は値型と所有権を持つ Rust コンテナーを転送します。受�
 | `Snapshot`, `CloseSession` | 現在のアーカイブセッション ID またはゼロを返します。指定セッションを閉じると閲覧スナップショットを破棄しますが、独立して保持されたタスク入力は存続できます。 |
 | `cancel`, `cancel_task`, `decide_task`, `respond_password`, `release_export`, `shutdown` | 通常コマンドキュー外の制御メソッドです。要求キャンセルは独自の要求 ID と `Finished` を持ち、タスク制御は既存のタスクに作用します。 |
 
-Rust サービスは `Catalog` や `SelectMembers` など CLI 専用の操作も公開します。ブリッジは送信前に入力サイズと列挙値を検証します。たとえば作成パスは一つ 4 KiB、合計 4 MiB 以下です。ランタイムはセッションと操作の意味を検証し、I/O 層はファイルを開いて出力の権限を取得します。[ランタイムサービス契約](../engineering/product-runtime.md)、[CLI 契約](../../engineering/command-line.md)、[ファイル認可](file-security.md)
+Rust サービスは `Catalog` や `SelectMembers` など CLI 専用の操作も公開します。ブリッジは送信前に入力サイズと列挙値を検証します。たとえば作成パスは一つ 4 KiB、合計 4 MiB 以下です。ランタイムはセッションと操作の意味を検証し、I/O 層はファイルを開いて出力の権限を取得します。[ランタイムサービス契約](../engineering/product-runtime.md)、[CLI 契約](../engineering/command-line.md)、[ファイル認可](file-security.md)
 
 <a name="xdzip-event-delivery-and-backpressure"></a>
 

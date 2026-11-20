@@ -4,7 +4,7 @@
 
 [English](../../design/product-requirements.md) | [简体中文](../../zh-CN/design/product-requirements.md) | [繁體中文](../../zh-TW/design/product-requirements.md) | 日本語 | [한국어](../../ko-KR/design/product-requirements.md) | [Français](../../fr-FR/design/product-requirements.md) | [Deutsch](../../de-DE/design/product-requirements.md) | [Español](../../es-ES/design/product-requirements.md) | [Português (Brasil)](../../pt-BR/design/product-requirements.md) | [Русский](../../ru-RU/design/product-requirements.md)
 
-XDZip ではアーカイブをフォルダーのように閲覧し、選択した内容を扱えます。形式が対応する場合は作成や変更もできます。デスクトップと[独立 CLI](../../engineering/command-line.md) は同じアーカイブランタイムを使います。現在の機能と配布方法は[プロジェクト README](../../../README.ja-JP.md)を参照してください。以下は維持・検証する動作です。
+XDZip ではアーカイブをフォルダーのように閲覧し、選択した内容を扱えます。形式が対応する場合は作成や変更もできます。デスクトップと[独立 CLI](../engineering/command-line.md) は同じアーカイブランタイムを使います。現在の機能と配布方法は[プロジェクト README](../../../README.ja-JP.md)を参照してください。以下は維持・検証する動作です。
 
 <a name="xdzip-requirements-and-implementation"></a>
 
