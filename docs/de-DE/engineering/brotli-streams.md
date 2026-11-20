@@ -1,0 +1,45 @@
+<a name="xdzip-ordinary-brotli-stream-contract"></a>
+
+# Vertrag für gewöhnliche Brotli-Ströme
+
+[English](../../engineering/brotli-streams.md) | [简体中文](../../zh-CN/engineering/brotli-streams.md) | [繁體中文（台灣）](../../zh-TW/engineering/brotli-streams.md) | [日本語](../../ja-JP/engineering/brotli-streams.md) | [한국어](../../ko-KR/engineering/brotli-streams.md) | [Français](../../fr-FR/engineering/brotli-streams.md) | Deutsch | [Español](../../es-ES/engineering/brotli-streams.md) | [Português (Brasil)](../../pt-BR/engineering/brotli-streams.md) | [Русский](../../ru-RU/engineering/brotli-streams.md)
+
+`xdzip-compression::BrotliReader` dekodiert unabhängig einen gewöhnlichen Brotli-Strom nach RFC 7932. Er erhält eine dem Aufrufer gehörende `Read`-Fähigkeit und einen zugelassenen komprimierten Bereich; er besitzt keine Befugnis für Dateinamen, Dateisystem, Netzwerk, Prozesse oder Veröffentlichung von Ausgaben. Das Produkt registriert Brotli (`.br`) und TAR.BR (`.tar.br`) im [Formatregister](format-registry.md). Beide unterstützen Durchsuchen, Vorschau, Prüfen und Extrahieren ausgewählter Einträge nach den gemeinsamen Hostregeln für Quelle, Aufgabe, Quoten, Vorbereitung und Veröffentlichung. Geeignete vorhandene TAR.BR-Archive lassen sich durch Umschreiben mit standardmäßigen unkomprimierten Metablöcken bearbeiten. Keines der Profile unterstützt neue Archive oder geteilte Volumes. Siehe [Umschreiben komprimierter TAR-Archive](single-file-streams.md#xdzip-rewriting-compressed-tar-archives).
+
+<a name="xdzip-wire-profile"></a>
+
+## Datenformat
+
+Der Leser akzeptiert standardmäßig deklarierte Fenster 10–24, komprimierte, unkomprimierte und Metadaten-Metablöcke, einfache und komplexe kanonische Präfixcodes, verkettete Wiederholungen von Codelängen, alle drei Blockwechselkategorien, alle vier Literalkontexte, RLE- und inverse MTF-Kontexttabellen, explizite, jüngste, direkte und Postfix-Distanzen sowie überlappende Verlaufskopien. Wörterbuchkopien verwenden normative Wortlängen 4–24 und alle 121 Bytetransformationen einschließlich solcher mit null Ausgabebytes. Jüngste Distanzen bleiben über Metablöcke erhalten und werden nur für zulässige Verlaufsreferenzen aktualisiert. Rohbytes, Wörterbuchbytes und Verlaufskopien aktualisieren alle den Literalkontext.
+
+Quelle ist [RFC 7932](https://www.rfc-editor.org/rfc/rfc7932.txt), SHA-256 `394abd1879e016f4eac89512c2acaf92f7b2d67feb8ab58b6b118c213be07146`. Das bestätigte [Erratum 5948](https://www.rfc-editor.org/errata/eid5948) korrigiert einen redaktionellen Fehler in Abschnitt 3.5. [RFC 9841](https://www.rfc-editor.org/rfc/rfc9841.html) ergänzt gemeinsame Wörterbücher, große Fenster und einen gesonderten Container; diese Erweiterungen liegen außerhalb dieses gewöhnlichen Stromprofils. Das reservierte Erweiterungsfenster-Muster wird als nicht unterstützt gemeldet. Externe Wörterbücher werden nie gesucht oder abgerufen.
+
+Genau ein Strom muss mit zulässiger Nullauffüllung enden und seinen zugelassenen Bytebereich verbrauchen. Nichtkanonische Längenfelder, reservierte Metadatenbits, ungültige, überbelegte oder unvollständige Bäume, wiederholte Symbole, Lücken in Tabellen oder Typen, ungültige Distanzen oder Transformationen und Ausgabe außerhalb eines Blocks schlagen fehl. Das Profil lehnt Verkettung, zusätzliche Bytes und abgeschnittene Ströme ab. Brotli hat keine Inhaltsprüfsumme, deklarierte dekodierte Größe für den Gesamtstrom, Verschlüsselung, Mitgliedspfad oder Zeitstempel. Erfolgreiche Dekodierung belegt zugelassene Struktur, deklarierte Metablockgrößen und Lesbarkeit; eine Änderung, die einen gültigen Strom erhält, ist nicht als Beschädigung erkennbar.
+
+<a name="xdzip-product-discovery-and-presentation"></a>
+
+## Erkennung und Darstellung im Produkt
+
+Brotli hat keine feste Signatur. Starke Quellsignaturen, gültige gewöhnliche TAR-Metadaten und ZIP/SFX-Erkennung bleiben vorrangig. Im verbleibenden Erkennungsweg ohne Header schlägt ein begrenztes Brotli-Präfix eine gewöhnliche oder TAR-Kombination vor; vollständige Metadatenscans müssen den gesamten Strom validieren, bevor Format oder Zeilen veröffentlicht werden. Eine fehlgeschlagene gewöhnliche Vermutung kann zum bestehenden LZMA-Alone-Kandidaten übergehen. Ein nach Brotli-Dekodierung erkannter TAR-Header ist maßgeblich: Fehler beim TAR-Parsen werden nie zum Erfolg als normale Datei oder LZMA. Eine ungeprüfte rohe TAR-Markierung in komprimierten Bytes lässt sich nur durch vollständige gültige Brotli-Zulassung klären; bei ungültiger Vermutung bleibt der ursprüngliche TAR-Fehler erhalten. Quell-, Abbruch- und Ressourcenfehler sind endgültig.
+
+Ein gemeinsames Budget tatsächlicher Lesevorgänge von 24 GiB deckt Brotli/LZMA-Kandidatenproben und wiederholte Metadatenlesevorgänge ohne Erstattung zwischen Kandidaten. Andere Erkennung starker Formate und Textumschläge behält ihre getrennten Grenzen. Leere Brotli-Ströme aus einem Byte sind zulässig; leere physische Dateien sind ungültig. Dateiendungen validieren keinen Kandidaten. Erst nach vollständiger Validierung löst ein `.br`- oder `.tar.br`-Hinweis desselben Filters eine sonst mehrdeutige Ausgabe aus ausschließlich Nullen von mindestens 1024 Bytes auf; andere Hinweise behalten den Standard eines leeren TAR bei. Echte TAR-Header bleiben gegenüber einer gewöhnlichen Endung vorrangig.
+
+Gewöhnliches Brotli zeigt eine reguläre virtuelle Datei mit sicherem, vom Host abgeleitetem Basisnamen, bekannter dekodierter Größe und voller physischer komprimierter Größe. TAR.BR behält physische TAR-Eintragsidentitäten und unbekannte komprimierte Größen der Kinder. Beide zeigen die tatsächliche Brotli-Methode und einen Hinweis auf Strukturprüfung ohne Prüfsumme zu suggerieren. Das allgemeine Archivbild wird wiederverwendet; die vorhandene MIME-Deklaration `application/x-brotli` liefert einen gewöhnlichen Shell-Kandidaten.
+
+<a name="xdzip-resource-and-control-rules"></a>
+
+## Ressourcen und Steuerung
+
+Vor Allokation des Verlaufs `(1 << window_bits) + 2 MiB` zulassen. Der zweite Term deckt begrenzte Präfixsymbole, Block- und Kontextvektoren, Eingabepuffer und festen Zustand konservativ ab; jede deklarierte Anzahl ist zusätzlich unabhängig begrenzt. Pro Kategorie gibt es höchstens 256 Blocktypen oder Kontextbäume. Literaltabellen haben höchstens 16384 Einträge, Distanztabellen 1024; Präfixalphabete höchstens 704 Symbole. Statische normative Daten gewähren keinen externen Zugriff.
+
+Komprimierte Eingabe und kumulierte Ausgabe haben jeweils harte Grenzen von 24 GiB; Aufrufer dürfen sie senken. Tatsächliches Bitparsen, Präfixaufbau, Symbol- und Wiederholungsexpansion, Kontext-MTF-Bewegung und Ausgabe verbrauchen ein gemeinsames kumuliertes Arbeitsbudget von höchstens 96 GiB Einheiten; Fehler erstatten es nie. Deklarierte Metablockausgaben werden vor dem Dekodieren zugelassen und erweitern niemals die Aufruferquote. Leseaufrufe liefern höchstens 8192 dekodierte Bytes. `with_poll` ruft in begrenzten Arbeitsabständen einen befugnisfreien kooperativen Callback auf, auch bei Header- oder ausgabeloser Arbeit; Abbruch hängt daher nicht vom Bedarf weiterer Quellbytes ab. Callback-, Quell- und Quotenfehler sind endgültig. Nur bloße unterbrochene Lesevorgänge werden wiederholt; typisierte Unterbrechungen behalten ihr Fehlerobjekt ohne automatische Wiederholung durch Hilfsmethoden.
+
+Der Aufrufer muss bis EOF lesen und Ausgabe bis zum Erfolg privat halten. Ein späterer Fehler macht frühere Blöcke ungültig; die Primitive veröffentlicht sie nie. Ein fehlgeschlagener Leser kann nicht fortgesetzt werden. Kooperative Steuerung kann einen blockierten zugrunde liegenden Betriebssystem-Lesevorgang nicht unterbrechen. Einfrieren der Quelle und endgültige Veröffentlichung bleiben Aufgabe des Hosts.
+
+<a name="xdzip-normative-data-and-validation"></a>
+
+## Normative Daten und Validierung
+
+Das statische Wörterbuch und drei Kontexttabellen werden unmittelbar aus dem festgelegten RFC extrahiert und alle normativen Längen und CRCs geprüft. Worttiefen und Transformationskennungen werden ebenfalls validiert. [Datenherkunft und Lizenz](../../../third_party/brotli-rfc7932/README.md) gelten für diese Standardkonstanten; keine Brotli-Referenzimplementierung wird eingebunden. Den IETF-Hinweis zur revidierten BSD-Lizenz in Quellcode und verteilten Hinweisen behalten. Desktop- und CLI-Hinweissammler erfassen ihn getrennt von Cargo-Abhängigkeiten und Referenzlaufzeiten.
+
+[Eigene Testdaten](../../../tests/fixtures/brotli/README.md) werden erzeugt oder unabhängig konstruiert und anschließend von einem festgelegten Autorendekoder Byte für Byte geprüft. Sie decken Qualitätsstufen, Fenster, tatsächlich kontextabhängige Ausgabe, Blockwechsel, Distanzparameter, jede normative Transformation und Metadaten- sowie Rohblöcke ab. Exakte Quoten, Trunkierung, Auffüllung, kurze Eingabe, typisierte Fehler, Arbeitsabfragen und deterministische Mutationen ergänzen Interoperabilitätsfälle. Referenzen bleiben unter `build/toolchain/`, Nachweise unter `build/` oder CI. `FORMAT-BROTLI` in den [Abnahmeanforderungen](../../../developers/qa/acceptance.md) regelt die Produktintegration getrennt von Primitivtests.
