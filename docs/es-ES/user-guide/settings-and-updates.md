@@ -8,7 +8,7 @@
 
 Abre **Configuración** desde el menú de la aplicación o la barra de herramientas. Elige el idioma, el tema, el tamaño del texto y la densidad de la interfaz en los ajustes correspondientes. La opción automática usa el idioma del sistema si es compatible. Elige si los archivos comprimidos se abren en pestañas o ventanas. Puedes ajustar los archivos recientes y el icono de notificación si tu plataforma lo permite. Los cambios se aplican al momento. Si no se puede guardar un ajuste, consulta el error que aparece en la página. [Funcionamiento de la configuración](../ux/settings-localization.md)
 
-Cambia las asociaciones de archivos en el sistema operativo. Configura las acciones del menú contextual por separado. En macOS, la activación de la extensión de Finder se gestiona desde el sistema. Los servicios de Finder están disponibles si están registrados. [Acciones del gestor de archivos](../../engineering/shell-actions.md)
+Cambia las asociaciones de archivos en el sistema operativo. Configura las acciones del menú contextual por separado. En macOS, la activación de la extensión de Finder se gestiona desde el sistema. Los servicios de Finder están disponibles si están registrados. [Acciones del gestor de archivos](../engineering/shell-actions.md)
 
 <a name="xdzip-update-the-app"></a>
 

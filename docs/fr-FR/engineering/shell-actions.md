@@ -1,6 +1,6 @@
 # Actions du gestionnaire de fichiers et hôte autonome des tâches
 
-[English](../../engineering/shell-actions.md) | [简体中文](../../zh-CN/engineering/shell-actions.md) | [繁體中文](../../zh-TW/engineering/shell-actions.md) | Français | [Русский](../../ru-RU/engineering/shell-actions.md)
+[English](../../engineering/shell-actions.md) | [简体中文](../../zh-CN/engineering/shell-actions.md) | [繁體中文](../../zh-TW/engineering/shell-actions.md) | Français | [Español](../../es-ES/engineering/shell-actions.md) | [Русский](../../ru-RU/engineering/shell-actions.md)
 
 Les points d’entrée du système transmettent les sélections et les actions au processus de bureau de la même session. Sous Windows 11, l’extension ordinaire installée apparaît dans « Afficher plus d’options ». Sa classe COM expose `IContextMenu` et `IExplorerCommand`. MSIX déclare un gestionnaire classique distinct ; la compilation Store ajoute le gestionnaire moderne décrit ci-dessous. Le gestionnaire de fichiers d’Ubuntu 24.04 utilise une extension Nautilus 4.0. Sous macOS, un sous-menu Finder Sync, la commande Services et un panneau d’opération autonome sont proposés.
 

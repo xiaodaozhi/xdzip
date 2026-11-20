@@ -112,7 +112,7 @@ Empieza por la [arquitectura del sistema](../../design/system-architecture.md) p
 
 - [Instaladores y asociaciones de archivos](../../engineering/installers-associations.md)
 - [Compatibilidad y política de mantenimiento](../engineering/support-policy.md)
-- [Acciones del gestor de archivos y host de tareas independiente](../../engineering/shell-actions.md)
+- [Acciones del gestor de archivos y host de tareas independiente](../engineering/shell-actions.md)
 - [Actualización iniciada por el usuario](../../engineering/software-update.md)
 - [Ciclo de vida de datos y diagnóstico](../engineering/privacy.md)
 - [Versión del producto e identidad de compilación](../engineering/versioning.md)
