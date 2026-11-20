@@ -1,6 +1,6 @@
 # Qt Quick 桌面界面
 
-[English](../../design/qt-quick-ui.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/qt-quick-ui.md)
+[English](../../design/qt-quick-ui.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/qt-quick-ui.md) | [日本語](../../ja-JP/design/qt-quick-ui.md) | [한국어](../../ko-KR/design/qt-quick-ui.md) | [Français](../../fr-FR/design/qt-quick-ui.md) | [Deutsch](../../de-DE/design/qt-quick-ui.md) | [Español](../../es-ES/design/qt-quick-ui.md) | [Português (Brasil)](../../pt-BR/design/qt-quick-ui.md) | [Русский](../../ru-RU/design/qt-quick-ui.md)
 
 桌面使用 Qt Quick 呈现界面与交互，C++ 控制器转换操作意图并管理视图状态。归档解释、任务规则和文件授权由 Rust 运行时持有。下文调用关系见[系统架构](system-architecture.md)和[桥接契约](qt-rust-bridge.md)。
 

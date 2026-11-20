@@ -1,6 +1,6 @@
 # Welcome-page loading overlay and creation completion
 
-English | [简体中文](../zh-CN/ux/welcome-opening.md) | [繁體中文（台灣）](../zh-TW/ux/welcome-opening.md)
+English | [简体中文](../zh-CN/ux/welcome-opening.md) | [繁體中文（台灣）](../zh-TW/ux/welcome-opening.md) | [日本語](../ja-JP/ux/welcome-opening.md) | [한국어](../ko-KR/ux/welcome-opening.md) | [Français](../fr-FR/ux/welcome-opening.md) | [Deutsch](../de-DE/ux/welcome-opening.md) | [Español](../es-ES/ux/welcome-opening.md) | [Português (Brasil)](../pt-BR/ux/welcome-opening.md) | [Русский](../ru-RU/ux/welcome-opening.md)
 
 Revised 2026-10-16. Parameters come from [welcome-reference.json](../../specs/visual/welcome-reference.json); the dynamic high-fidelity entry is [welcome loading state](../../design/hifi/sources/welcome.html?opening=1). It retains the main window, menu and welcome-page logical units and leaves the title bar unchanged.
 

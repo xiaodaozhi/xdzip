@@ -2,7 +2,7 @@
 
 # 歡迎頁讀取遮罩與建立完成行為
 
-[English](../../ux/welcome-opening.md) | [简体中文](../../zh-CN/ux/welcome-opening.md) | 繁體中文（台灣）
+[English](../../ux/welcome-opening.md) | [简体中文](../../zh-CN/ux/welcome-opening.md) | 繁體中文（台灣） | [日本語](../../ja-JP/ux/welcome-opening.md) | [한국어](../../ko-KR/ux/welcome-opening.md) | [Français](../../fr-FR/ux/welcome-opening.md) | [Deutsch](../../de-DE/ux/welcome-opening.md) | [Español](../../es-ES/ux/welcome-opening.md) | [Português (Brasil)](../../pt-BR/ux/welcome-opening.md) | [Русский](../../ru-RU/ux/welcome-opening.md)
 
 2026-10-16 修訂，引數源為 [welcome-reference.json](../../../specs/visual/welcome-reference.json)，動態高保真入口為 [歡迎頁讀取狀態](../../../design/hifi/sources/welcome.html?opening=1)。沿用主視窗、選單和歡迎頁的邏輯單位，標題欄不變。
 
