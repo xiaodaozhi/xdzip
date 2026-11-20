@@ -2,7 +2,7 @@
 
 # ZIP 建立實現契約
 
-[English](../../engineering/zip-creation.md) | [简体中文](../../zh-CN/engineering/zip-creation.md) | 繁體中文 | [日本語](../../ja-JP/engineering/zip-creation.md) | [Français](../../fr-FR/engineering/zip-creation.md)
+[English](../../engineering/zip-creation.md) | [简体中文](../../zh-CN/engineering/zip-creation.md) | 繁體中文 | [日本語](../../ja-JP/engineering/zip-creation.md) | [Français](../../fr-FR/engineering/zip-creation.md) | [Deutsch](../../de-DE/engineering/zip-creation.md)
 
 從明確選擇的檔案與目錄建立新 ZIP；預設 2-正常壓縮，使用 Deflate 6；支援 Store 與 Deflate 1／6／9、WinZip AES-256 內容加密和編號分卷。TAR/GZIP 的建立與解壓見[格式說明](tar-gzip.md)，AES-256 讀取見[密碼解壓](password-extraction.md)；分卷讀取見[分卷契約](archive-opening.md)，普通單檔案歸檔的顯式新增使用[檔案拖放與修改契約](archive-transfers.md)，不復用新建歸檔的源保護例外。輸入授權、暫存、校驗、重名決策和最終儲存由宿主負責，格式層只接收條目、可讀輸入與可寫輸出。
 

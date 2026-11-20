@@ -12,7 +12,7 @@ Der Prüfungsumfang beschreibt das Ergebnis einer erfolgreichen [Integritätspr�
 
 | Vorgang | Eingebaute Unterstützung |
 | --- | --- |
-| Neues Archiv erstellen | ZIP, 7z, TAR, TAR.GZ (`.tar.gz`, `.tgz`), eigenständiges GZIP, XZ/TAR.XZ, LZ4/TAR.LZ4, Zstandard/TAR.ZST, LHA (`.lha`, `.lzh`), ISO9660/Joliet und die ZIP-SFX-Hülle für Windows x64. Ein eigenständiger Datenstrom akzeptiert eine reguläre Datei. Siehe [Erstellung](../../engineering/zip-creation.md) und [Einzeldateiströme](single-file-streams.md). |
+| Neues Archiv erstellen | ZIP, 7z, TAR, TAR.GZ (`.tar.gz`, `.tgz`), eigenständiges GZIP, XZ/TAR.XZ, LZ4/TAR.LZ4, Zstandard/TAR.ZST, LHA (`.lha`, `.lzh`), ISO9660/Joliet und die ZIP-SFX-Hülle für Windows x64. Ein eigenständiger Datenstrom akzeptiert eine reguläre Datei. Siehe [Erstellung](zip-creation.md) und [Einzeldateiströme](single-file-streams.md). |
 | Vorhandenes Archiv umschreiben | Geeignete Archive der Formate ZIP/ZIPX, 7z, LHA/LZH mit Headerstufe 2, TAR, TAR.GZ, TAR.XZ, TAR.ZST, TAR.LZ4, TAR.BZ2, TAR.LZMA, TAR.LZ, TAR.Z und TAR.BR. Verschlüsselte, geteilte und andere Archive mit nicht unterstützten Datensätzen oder Speicherarten sind ausgeschlossen. Siehe [Vertrag für Änderungen](../../engineering/archive-transfers.md). |
 | Durchsuchen, entpacken, Eintrag öffnen, exportieren oder prüfen | Jeder Vorgang hat eigene Prüfungen der Fähigkeiten und Datensätze. Bei bestimmten Installern lassen sich beispielsweise nur Metadaten ansehen. Siehe [schreibgeschützte Ansicht](../../engineering/readonly-browser.md) und [Prüfung](archive-checking.md). |
 

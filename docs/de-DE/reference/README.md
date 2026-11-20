@@ -43,7 +43,7 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 - [Integritätsprüfung von Archiven](../engineering/archive-checking.md)
 - [Einträge öffnen, Drag-and-drop und Änderungen](../../engineering/archive-transfers.md)
 - [Archivpasswörter und Öffnen verschlüsselter Verzeichnisse](../engineering/password-extraction.md)
-- [Vertrag für die ZIP-Erstellung](../../engineering/zip-creation.md)
+- [Vertrag für die ZIP-Erstellung](../engineering/zip-creation.md)
 - [ISO9660- und Joliet-Erstellung](../engineering/iso-creation.md)
 - [Eigene selbstentpackende ZIP-Archive für Windows](../engineering/sfx-creation.md)
 

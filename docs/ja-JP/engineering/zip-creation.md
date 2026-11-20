@@ -1,6 +1,6 @@
 # ZIP 作成の実装契約
 
-[English](../../engineering/zip-creation.md) | [简体中文](../../zh-CN/engineering/zip-creation.md) | [繁體中文](../../zh-TW/engineering/zip-creation.md) | 日本語 | [Français](../../fr-FR/engineering/zip-creation.md)
+[English](../../engineering/zip-creation.md) | [简体中文](../../zh-CN/engineering/zip-creation.md) | [繁體中文](../../zh-TW/engineering/zip-creation.md) | 日本語 | [Français](../../fr-FR/engineering/zip-creation.md) | [Deutsch](../../de-DE/engineering/zip-creation.md)
 
 明示的に選択したファイルとディレクトリから新しい ZIP アーカイブを作成します。既定はレベル 2 の通常圧縮で、Deflate 6 を使います。Store、Deflate 1/6/9、WinZip AES-256 による内容の暗号化、番号付き分割ボリュームに対応します。作成と展開は [TAR/GZIP](tar-gzip.md)、AES-256 の読み取りは[パスワード付き展開](password-extraction.md)、分割読み取りは[分割ボリューム契約](archive-opening.md)を参照してください。通常の単一ファイルアーカイブへの明示的な追加は[ドラッグ＆ドロップと変更の契約](../../engineering/archive-transfers.md)を使い、新規アーカイブ向けのソース保護例外を再利用しません。ホストは入力の認可、準備、検証、競合の判断と最終保存を所有します。フォーマット層が受け取るのはエントリー、読み取り可能な入力、書き込み可能な出力だけです。
 

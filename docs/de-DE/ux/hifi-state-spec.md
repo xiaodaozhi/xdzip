@@ -32,7 +32,7 @@ Dieser Leitfaden beschreibt Verhalten, Fokus und Schließaktionen für Erstellun
 - Die vier ZIP-Stufen entsprechen Store/Deflate 1/6/9, Standard ist 2 normal. TAR und TAR.GZ können erstellt werden; ein Formatwechsel synchronisiert Endungen und löscht Passwort und Teilarchiveinstellung. TAR deaktiviert die Stufe; TAR.GZ-Stufen 0/1/2/3 entsprechen GZIP 0/1/6/9. Ein Formatwechsel synchronisiert die Endung, darf Ziele aber nicht stillschweigend überschreiben.
 - Ohne Eingabe, bei leerem Namen, ungültigem Ziel oder fehlender Berechtigung ist Erstellen deaktiviert und der Grund erscheint am Feld. Fehlertext wird von Bildschirmlesern erfasst, statt nur die Rahmenfarbe zu ändern.
 - Der Kern behandelt doppelte Eingaben und Verzeichniserweiterung; die Oberfläche zeigt nur Auswahlzusammenfassungen. Bildsymbole bei der Erstellung zeigen den Typ, keine Bildvorschau.
-- ZIP und 7z zeigen ihre unterstützten Passwort- und Teilarchiveinstellungen. 7z kann auch Dateinamen verschlüsseln. Das Formatregister nennt die tatsächlichen Schreibfähigkeiten. [ZIP-Erstellung](../../engineering/zip-creation.md), [Formatregister](../engineering/format-registry.md)
+- ZIP und 7z zeigen ihre unterstützten Passwort- und Teilarchiveinstellungen. 7z kann auch Dateinamen verschlüsseln. Das Formatregister nennt die tatsächlichen Schreibfähigkeiten. [ZIP-Erstellung](../engineering/zip-creation.md), [Formatregister](../engineering/format-registry.md)
 
 <a name="xdzip-task-data-and-exceptions"></a>
 
