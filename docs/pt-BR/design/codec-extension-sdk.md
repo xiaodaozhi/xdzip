@@ -14,7 +14,7 @@
 | Processo de arquivos compactados incluído | `xdzip-codec-native` no host inicia `xdzip-native-codec`. Sua camada de protocolo C++ chama os backends Rust de 7z, RAR, CAB e mídias ópticas por `xdzip-codec-bridge`. O mesmo caminho trata criação e regravação 7z aplicáveis. A criação ISO usa seu gravador óptico no processo. |
 | Teste de SDK externo | `xdzip-plugin-host` e `xdzip-plugin-protocol` formam um experimento XDP1 separado e explícito. Compilações de produto desktop e CLI não descobrem, instalam nem executam extensões de terceiros. |
 
-Os dois primeiros caminhos são componentes integrados do produto. O processo incluído é separado, com protocolo privado e supervisão de recursos. O teste externo tem validação de pacote, negociação de versão e requisitos de permissão por plataforma próprios. [Arquitetura do sistema](../../design/system-architecture.md), [Contrato do processo de arquivos compactados](../engineering/native-codecs.md), [Contrato de teste do SDK](../engineering/sdk-trial.md)
+Os dois primeiros caminhos são componentes integrados do produto. O processo incluído é separado, com protocolo privado e supervisão de recursos. O teste externo tem validação de pacote, negociação de versão e requisitos de permissão por plataforma próprios. [Arquitetura do sistema](system-architecture.md), [Contrato do processo de arquivos compactados](../engineering/native-codecs.md), [Contrato de teste do SDK](../engineering/sdk-trial.md)
 
 <a name="xdzip-product-routing-and-operation-capabilities"></a>
 

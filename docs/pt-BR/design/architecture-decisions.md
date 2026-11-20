@@ -22,7 +22,7 @@ Condição de reavaliação: o Qt não atende aos requisitos de funcionalidade, 
 
 **Status: aceita.**
 
-**Implementação atual.** O ambiente Rust gerencia o estado dos arquivos compactados e as tarefas. A seleção de arquivos expressa uma intenção da interface; a camada de E/S do host autoriza o acesso ao sistema de arquivos. [Arquitetura do sistema](../../design/system-architecture.md)
+**Implementação atual.** O ambiente Rust gerencia o estado dos arquivos compactados e as tarefas. A seleção de arquivos expressa uma intenção da interface; a camada de E/S do host autoriza o acesso ao sistema de arquivos. [Arquitetura do sistema](system-architecture.md)
 
 Decisão: domínio, índices, planos, tarefas, cotas, políticas de caminhos e registro de formatos ficam no Rust. O Qt representa o estado, autoriza a seleção de arquivos do sistema e transmite as decisões do usuário. Os testes de lógica não precisam do Qt.
 

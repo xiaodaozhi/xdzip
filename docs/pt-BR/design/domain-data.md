@@ -4,7 +4,7 @@
 
 [English](../../design/domain-data.md) | [简体中文](../../zh-CN/design/domain-data.md) | [繁體中文](../../zh-TW/design/domain-data.md) | [日本語](../../ja-JP/design/domain-data.md) | [한국어](../../ko-KR/design/domain-data.md) | [Français](../../fr-FR/design/domain-data.md) | [Deutsch](../../de-DE/design/domain-data.md) | [Español](../../es-ES/design/domain-data.md) | Português (Brasil) | [Русский](../../ru-RU/design/domain-data.md)
 
-O runtime é dono da sessão do arquivo compactado, do índice concluído e da última consulta dessa sessão. O Qt mantém uma visualização do resultado e a CLI pode ler registros físicos por seu comando de catálogo separado. Ambos enviam operações ao mesmo serviço Rust. [Arquitetura do sistema](../../design/system-architecture.md), [Ponte Qt/Rust](qt-rust-bridge.md)
+O runtime é dono da sessão do arquivo compactado, do índice concluído e da última consulta dessa sessão. O Qt mantém uma visualização do resultado e a CLI pode ler registros físicos por seu comando de catálogo separado. Ambos enviam operações ao mesmo serviço Rust. [Arquitetura do sistema](system-architecture.md), [Ponte Qt/Rust](qt-rust-bridge.md)
 
 <a name="xdzip-identity-and-source-version"></a>
 

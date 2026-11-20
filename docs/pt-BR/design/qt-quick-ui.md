@@ -4,7 +4,7 @@
 
 [English](../../design/qt-quick-ui.md) | [简体中文](../../zh-CN/design/qt-quick-ui.md) | [繁體中文](../../zh-TW/design/qt-quick-ui.md) | [日本語](../../ja-JP/design/qt-quick-ui.md) | [한국어](../../ko-KR/design/qt-quick-ui.md) | [Français](../../fr-FR/design/qt-quick-ui.md) | [Deutsch](../../de-DE/design/qt-quick-ui.md) | [Español](../../es-ES/design/qt-quick-ui.md) | Português (Brasil) | [Русский](../../ru-RU/design/qt-quick-ui.md)
 
-O desktop usa Qt Quick para apresentação e interação. Os controladores C++ encaminham as intenções do usuário e mantêm o estado da visualização. O ambiente de execução Rust interpreta arquivos compactados e controla as regras de tarefas e as permissões sobre arquivos. A [arquitetura do sistema](../../design/system-architecture.md) e o [contrato da ponte](qt-rust-bridge.md) descrevem as chamadas abaixo.
+O desktop usa Qt Quick para apresentação e interação. Os controladores C++ encaminham as intenções do usuário e mantêm o estado da visualização. O ambiente de execução Rust interpreta arquivos compactados e controla as regras de tarefas e as permissões sobre arquivos. A [arquitetura do sistema](system-architecture.md) e o [contrato da ponte](qt-rust-bridge.md) descrevem as chamadas abaixo.
 
 <a name="xdzip-windows-sessions-and-models"></a>
 

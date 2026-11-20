@@ -4,7 +4,7 @@
 
 [English](../../engineering/development.md) | [简体中文](../../zh-CN/engineering/development.md) | [繁體中文](../../zh-TW/engineering/development.md) | [日本語](../../ja-JP/engineering/development.md) | [한국어](../../ko-KR/engineering/development.md) | [Français](../../fr-FR/engineering/development.md) | [Deutsch](../../de-DE/engineering/development.md) | [Español](../../es-ES/engineering/development.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/development.md)
 
-Use [Compilar e contribuir](../contributing/README.md) para escolher a compilação e as verificações adequadas. A [arquitetura](../../design/system-architecture.md) e a [estrutura do repositório](repository-layout.md) mostram os limites de Qt, da execução em Rust e dos codecs.
+Use [Compilar e contribuir](../contributing/README.md) para escolher a compilação e as verificações adequadas. A [arquitetura](../design/system-architecture.md) e a [estrutura do repositório](repository-layout.md) mostram os limites de Qt, da execução em Rust e dos codecs.
 
 <a name="xdzip-obtain-and-modify"></a>
 

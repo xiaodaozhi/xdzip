@@ -1,6 +1,6 @@
 # Arquitectura del sistema XDZip
 
-[English](../../design/system-architecture.md) | [简体中文](../../zh-CN/design/system-architecture.md) | [繁體中文](../../zh-TW/design/system-architecture.md) | [Français](../../fr-FR/design/system-architecture.md) | Español
+[English](../../design/system-architecture.md) | [简体中文](../../zh-CN/design/system-architecture.md) | [繁體中文](../../zh-TW/design/system-architecture.md) | [Français](../../fr-FR/design/system-architecture.md) | Español | [Português (Brasil)](../../pt-BR/design/system-architecture.md)
 
 Los clientes de escritorio y de línea de comandos comparten el motor de archivos Rust. El motor convierte un origen seleccionado en una sesión indexada y una operación en una tarea limitada. Los motores de formato interpretan los datos del archivo. El host autoriza archivos, controla la ubicación de salida y publica los resultados verificados.
 
