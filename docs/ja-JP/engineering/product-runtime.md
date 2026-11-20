@@ -4,7 +4,7 @@
 
 [English](../../engineering/product-runtime.md) | [简体中文](../../zh-CN/engineering/product-runtime.md) | [繁體中文](../../zh-TW/engineering/product-runtime.md) | 日本語 | [한국어](../../ko-KR/engineering/product-runtime.md) | [Français](../../fr-FR/engineering/product-runtime.md) | [Deutsch](../../de-DE/engineering/product-runtime.md) | [Español](../../es-ES/engineering/product-runtime.md) | [Português (Brasil)](../../pt-BR/engineering/product-runtime.md) | [Русский](../../ru-RU/engineering/product-runtime.md)
 
-このガイドは、デスクトップアプリがコマンドとイベントで Rust ランタイムに接続する仕組みを、キューのバックプレッシャー、シャットダウン、プラットフォーム別ビルドを含めて説明します。各機能の範囲は[読み取り専用の閲覧](../../engineering/readonly-browser.md)と[安全な展開](../../engineering/zip-safe-extraction.md)を参照してください。
+このガイドは、デスクトップアプリがコマンドとイベントで Rust ランタイムに接続する仕組みを、キューのバックプレッシャー、シャットダウン、プラットフォーム別ビルドを含めて説明します。各機能の範囲は[読み取り専用の閲覧](../../engineering/readonly-browser.md)と[安全な展開](zip-safe-extraction.md)を参照してください。
 
 <a name="xdzip-implemented-services"></a>
 
@@ -41,7 +41,7 @@ Qt コントローラーが受け入れ待ちとして保持するコマンド�
 
 個別のアーカイブを閉じたりウィンドウを閉じたりしても、アプリとタスクがトレイで動作し続ける場合があります。アプリ終了・再起動時、コーディネーターは受け入れを止め、キャンセルを要求し、Rust がセッションを解放する間イベントを取り出します。受信側は Rust の両スレッドの終了を待ってから `ShutdownReady` を返します。デスクトップは終了前に Qt 受信側の終了とメールボックスの排出を待ちます。GUI スレッドはファイル作業やイベント配信を待つスレッドの終了を待ちません。
 
-キャンセルとシャットダウンの制御はデータキュー容量に依存せず、上限付き状態操作を含む短いクリティカルセクションを使います。協調キャンセルでは OS によってブロックされた読み取りを中断できず、厳密なリアルタイム終了は保証しません。ここでの読み取り専用要求は出力トランザクションを生成しません。作成・展開の確定、一時領域のクリーンアップ、終了結果は[作成](../../engineering/zip-creation.md)と[安全な展開](../../engineering/zip-safe-extraction.md)の契約にそれぞれ従います。
+キャンセルとシャットダウンの制御はデータキュー容量に依存せず、上限付き状態操作を含む短いクリティカルセクションを使います。協調キャンセルでは OS によってブロックされた読み取りを中断できず、厳密なリアルタイム終了は保証しません。ここでの読み取り専用要求は出力トランザクションを生成しません。作成・展開の確定、一時領域のクリーンアップ、終了結果は[作成](../../engineering/zip-creation.md)と[安全な展開](zip-safe-extraction.md)の契約にそれぞれ従います。
 
 QObject が早期に破棄された場合、メールボックスを閉じ、受信側を起こし、サービスを停止します。バックグラウンド作業が保持するのは共有キューと Rust 受信側ハンドルのみで、コントローラーへのポインターは持ちません。Qt は破棄されたオブジェクトへの通知を自動的にキャンセルします。イベント消費コールバックが接続を同期的に破棄する場合も QPointer が寿命を保護します。受信を放棄するときデストラクターでスレッド終了を待たず、作業は協調的に終了します。正常な ShutdownReady のみがスレッド待機の完了を示します。
 

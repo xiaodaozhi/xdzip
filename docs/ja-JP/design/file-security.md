@@ -30,7 +30,7 @@
 
 ZIP シンボリックリンク出力は受理された Unix リンクグラフに限ります。ランタイムはリンク公開前に選択グラフと存在してはならない末端を検証し、通常ターゲットを先に確定します。タスクは内容を書き込むためにアーカイブが作成したリンクを決してたどりません。他の未対応リンクや特殊ファイルのプロファイルは明示的に失敗します。POSIX の通常ファイルモードは、所有者の読み書きに加え安全な読み取り・実行ビットをステージング上で復元できます。特権ビットと外部書き込みビットは除外します。展開経路は確定後にタイムスタンプを復元しません。
 
-[ポータブルパスパーサー](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-domain/src/path.rs)、[展開計画](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/plan.rs)、[プライベートオブジェクトの検査](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/private.rs)、[リンクとプラットフォームの詳細](../../engineering/zip-safe-extraction.md)
+[ポータブルパスパーサー](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-domain/src/path.rs)、[展開計画](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/plan.rs)、[プライベートオブジェクトの検査](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/private.rs)、[リンクとプラットフォームの詳細](../engineering/zip-safe-extraction.md)
 
 <a name="xdzip-staging-verification-and-commit"></a>
 
@@ -45,7 +45,7 @@ ZIP シンボリックリンク出力は受理された Unix リンクグラフ�
 | 分割ボリュームの作成 | ステージングされたアーカイブ内容を検証し、各部分を準備して既存ボリュームを上書きせず新しい平坦な集合を公開します。各部分は個別に見えるようになります。部分失敗時、ロールバックは新たに公開されたうち識別情報がまだ一致するオブジェクトだけの削除を試みます。ロールバック失敗により結果が不確実になることがあります。 |
 | 既存アーカイブの変更 | `ArchiveUpdate` は認可された親と期待される元アーカイブのバージョンを結び付けます。書き換えたアーカイブを再度開いて検証し、その権限で元を一度置き換えます。通常の展開がこの特別な置き換え経路を使ってソースを上書きすることはできません。 |
 
-公開ゲート前のキャンセルは現在の確定を防ぎます。すでに進行中の公開は決着し、実際の結果を報告することがあります。以前に確定した展開ファイルは見えたままです。終端スナップショットは `cancelled`、`failed`、クリーンアップ警告とともに確定データを報告することがあります。アーカイブ全体の公開が成功した後は、遅れてキャンセルが届いても成功を維持します。[タスクのキャンセル](task-scheduling.md)、[アーカイブ変更](../../engineering/archive-transfers.md)、[安全な展開](../../engineering/zip-safe-extraction.md)
+公開ゲート前のキャンセルは現在の確定を防ぎます。すでに進行中の公開は決着し、実際の結果を報告することがあります。以前に確定した展開ファイルは見えたままです。終端スナップショットは `cancelled`、`failed`、クリーンアップ警告とともに確定データを報告することがあります。アーカイブ全体の公開が成功した後は、遅れてキャンセルが届いても成功を維持します。[タスクのキャンセル](task-scheduling.md)、[アーカイブ変更](../../engineering/archive-transfers.md)、[安全な展開](../engineering/zip-safe-extraction.md)
 
 <a name="xdzip-output-budgets-and-integrity-scope"></a>
 
@@ -69,4 +69,4 @@ ZIP シンボリックリンク出力は受理された Unix リンクグラフ�
 
 ステージングジャーナルは準備と確定の際にタスクのコンテキストと相対出力名を記録します。通常のクリーンアップは所有者と識別情報を検査し、既知のステージングオブジェクトだけを削除します。プライベートジャーナルと残存オブジェクトは異常終了後の証拠になり得ます。ランタイムは出力先を検査する際、残存物の可能性を数えます。発見したジャーナルを使って書き込みを再実行したり、未知の内容を削除したりしません。プライベートな一時出力のキャッシュ期限切れには独自の識別情報とロックの検査があります。
 
-この境界を変更する場合はエラーコードだけでなく公開とクリーンアップを検証します。[I/O テスト](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/tests.rs)、[展開テスト](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/tests.rs)、[安全な展開契約](../../engineering/zip-safe-extraction.md)は異なる層を対象とします。ネイティブなプラットフォーム動作を変更する場合は、そのプラットフォーム固有の証拠が必要です。
+この境界を変更する場合はエラーコードだけでなく公開とクリーンアップを検証します。[I/O テスト](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/tests.rs)、[展開テスト](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/tests.rs)、[安全な展開契約](../engineering/zip-safe-extraction.md)は異なる層を対象とします。ネイティブなプラットフォーム動作を変更する場合は、そのプラットフォーム固有の証拠が必要です。

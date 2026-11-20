@@ -96,7 +96,7 @@ flowchart TB
 2. **デコード。** バックエンドは受け入れたソースを直接またはアーカイブワーカー経由で読み、プライベートな準備領域を背後に持つ計量シンクへバイトを送ります。パスワード再試行、展開、補助作業は操作の上限に従います。準備領域に送られたバイトは、デコード、サイズ検査、利用可能な形式検証が成功するまで暫定です。
 3. **確定と報告。** 公開前にホストはソースと関連する出力先の識別情報を再確認します。各適格ファイルを個別に確定し、実際に公開されたファイルとバイトを記録します。後の失敗やキャンセルで、先に確定したファイルが残ることがあります。未公開の準備領域は可能な限りクリーンアップし、終端結果は失敗、キャンセル、スキップ、クリーンアップ警告を報告します。
 
-[展開実行](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/execute.rs)、[アーカイブ検査](../engineering/archive-checking.md)、[パスワード操作](../engineering/password-extraction.md)、[ZIP の安全な展開](../../engineering/zip-safe-extraction.md)。
+[展開実行](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/execute.rs)、[アーカイブ検査](../engineering/archive-checking.md)、[パスワード操作](../engineering/password-extraction.md)、[ZIP の安全な展開](../engineering/zip-safe-extraction.md)。
 
 ## アーカイブの作成または変更
 

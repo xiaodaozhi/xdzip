@@ -4,7 +4,7 @@
 
 [English](../../engineering/contracts.md) | [简体中文](../../zh-CN/engineering/contracts.md) | [繁體中文](../../zh-TW/engineering/contracts.md) | 日本語 | [한국어](../../ko-KR/engineering/contracts.md) | [Français](../../fr-FR/engineering/contracts.md) | [Deutsch](../../de-DE/engineering/contracts.md) | [Español](../../es-ES/engineering/contracts.md) | [Português (Brasil)](../../pt-BR/engineering/contracts.md) | [Русский](../../ru-RU/engineering/contracts.md)
 
-正式なインターフェースは[ドメインとデータ](../design/domain-data.md)、[Qt/Rust ブリッジ](../design/qt-rust-bridge.md)、[形式拡張の設計](../design/codec-extension-sdk.md)、[タスクスケジューリング](../design/task-scheduling.md)を参照してください。このページは仕様を固定する前の検証項目を定めます。内部ブリッジ、二種類のハンドル、ライフサイクルは実装済みです。境界は[ランタイム仕様](product-runtime.md)を参照してください。クエリーの世代、ソースバージョンの確認、作成と展開のタスクも実装済みです。[閲覧仕様](../../engineering/readonly-browser.md)、[安全な展開](../../engineering/zip-safe-extraction.md)、[作成仕様](../../engineering/zip-creation.md)を参照してください。外部プロセス用のプロトコルには独立した[読み取り専用 SDK 試験](sdk-trial.md)があります。安定版の SDK としての公開や製品への統合は行っていません。表は統合の条件です。
+正式なインターフェースは[ドメインとデータ](../design/domain-data.md)、[Qt/Rust ブリッジ](../design/qt-rust-bridge.md)、[形式拡張の設計](../design/codec-extension-sdk.md)、[タスクスケジューリング](../design/task-scheduling.md)を参照してください。このページは仕様を固定する前の検証項目を定めます。内部ブリッジ、二種類のハンドル、ライフサイクルは実装済みです。境界は[ランタイム仕様](product-runtime.md)を参照してください。クエリーの世代、ソースバージョンの確認、作成と展開のタスクも実装済みです。[閲覧仕様](../../engineering/readonly-browser.md)、[安全な展開](zip-safe-extraction.md)、[作成仕様](../../engineering/zip-creation.md)を参照してください。外部プロセス用のプロトコルには独立した[読み取り専用 SDK 試験](sdk-trial.md)があります。安定版の SDK としての公開や製品への統合は行っていません。表は統合の条件です。
 
 | 境界 | 実装前に確認する事項 | 検証する失敗時の挙動 |
 | --- | --- | --- |

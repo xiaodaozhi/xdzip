@@ -39,7 +39,7 @@
 - [ファイル名の文字コード判定](../engineering/filename-encoding.md)
 - [内容のプレビュー](../engineering/content-preview.md)
 - [展開前のメタデータ検証](../engineering/extraction-preflight.md)
-- [安全な ZIP 展開の実装](../../engineering/zip-safe-extraction.md)
+- [安全な ZIP 展開の実装](../engineering/zip-safe-extraction.md)
 - [アーカイブの整合性検証](../engineering/archive-checking.md)
 - [項目を開く、ドラッグ＆ドロップ、アーカイブの変更](../../engineering/archive-transfers.md)
 - [アーカイブのパスワードと暗号化ディレクトリー](../engineering/password-extraction.md)

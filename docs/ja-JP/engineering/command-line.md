@@ -41,7 +41,7 @@ xdzip gui archive.zip
 
 `--limit` または `--offset` を指定するとページ分割します。オフセットは 0 から始まり、最大 1,000,000 です。`--limit` のみならオフセットは 0、`--offset` のみならリミットは 128 です。リミットの有効範囲は 1～4,096 です。JSON の `data` は `offset`、`total`、null になり得る `next_offset` を含みます。`summary.entries` は実際に返した行数です。通常の単一ファイル ZIP/ZIP64 は 100 万件をインデックスできますが、ページ分割しない一覧は合計 100,000 件を超えると拒否します。どちらもシリアライズした JSON 行と表示テキストを合わせて 16 MiB の予算を使います。超過時は部分行を返さず `resource_limit` を返します。ページ境界によって物理 ID は変わりません。[大規模アーカイブのインデックス](large-index.md)を参照してください。
 
-extract の既定の出力先は現在のディレクトリーです。`-C` が存在しないディレクトリーを指定した場合、無条件に再帰作成せず、最も近い既存の安全な親からコンポーネントごとに権限を取得します。出力先、ソースの識別情報、リンク、Unicode・大文字小文字の衝突、ステージング、検証、確定は引き続き[安全な展開](../../engineering/zip-safe-extraction.md)と[ファイル名のエンコーディング](filename-encoding.md)に従います。名前の競合は既定で Ask とし、`--conflict ask|skip|rename|overwrite` で明示的に方針を選びます。`--allow-high-ratio` は高い圧縮率だけを確認し、厳格なリソース制限を解除しません。
+extract の既定の出力先は現在のディレクトリーです。`-C` が存在しないディレクトリーを指定した場合、無条件に再帰作成せず、最も近い既存の安全な親からコンポーネントごとに権限を取得します。出力先、ソースの識別情報、リンク、Unicode・大文字小文字の衝突、ステージング、検証、確定は引き続き[安全な展開](zip-safe-extraction.md)と[ファイル名のエンコーディング](filename-encoding.md)に従います。名前の競合は既定で Ask とし、`--conflict ask|skip|rename|overwrite` で明示的に方針を選びます。`--allow-high-ratio` は高い圧縮率だけを確認し、厳格なリソース制限を解除しません。
 
 `create` は出力の[拡張子](format-registry.md)からプロファイルを選び、出力先の親ディレクトリーが存在する必要があります。`--level store|fast|normal|best` は選択プロファイルに対して検証します。通常の TAR と ISO はレベルを省略するか `store` を使います。LHA（`.lzh` または `.lha`）は `fast`、`normal`、`best` に LH5 のレベル 1、6、9 を使います。ZIP と 7z は `--encrypt` と `--volume-size` に対応し、7z はプロファイルに応じて `--encrypt-names` と `--solid` にも対応します。分割サイズには正の整数のバイト数または `KiB`、`MiB`、`GiB` の接尾辞を指定できます。選択プロファイルに未対応の引数は書き込み前に失敗します。
 
