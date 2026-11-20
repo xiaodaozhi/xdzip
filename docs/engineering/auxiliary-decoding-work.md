@@ -1,6 +1,6 @@
 # Auxiliary algorithm work accounting
 
-English | [简体中文](../zh-CN/engineering/auxiliary-decoding-work.md) | [繁體中文（台灣）](../zh-TW/engineering/auxiliary-decoding-work.md)
+English | [简体中文](../zh-CN/engineering/auxiliary-decoding-work.md) | [繁體中文（台灣）](../zh-TW/engineering/auxiliary-decoding-work.md) | [日本語](../ja-JP/engineering/auxiliary-decoding-work.md) | [한국어](../ko-KR/engineering/auxiliary-decoding-work.md) | [Français](../fr-FR/engineering/auxiliary-decoding-work.md) | [Deutsch](../de-DE/engineering/auxiliary-decoding-work.md) | [Español](../es-ES/engineering/auxiliary-decoding-work.md) | [Português (Brasil)](../pt-BR/engineering/auxiliary-decoding-work.md) | [Русский](../ru-RU/engineering/auxiliary-decoding-work.md)
 
 Extraction and checking separately accumulate file-decoded bytes, actual output, and auxiliary algorithm work. PPM model initialization, capacity restarts, and control/parameter decoding are not file content. They must not increase `decoded_bytes`, `written_bytes`, file progress, or compression expansion ratio, or produce prepaid delivery credit. Task snapshots do not add a user-facing auxiliary counter.
 
