@@ -1,6 +1,6 @@
 # TAR/GZIP implementation contract
 
-English | [简体中文](../zh-CN/engineering/tar-gzip.md) | [繁體中文（台灣）](../zh-TW/engineering/tar-gzip.md)
+English | [简体中文](../zh-CN/engineering/tar-gzip.md) | [繁體中文（台灣）](../zh-TW/engineering/tar-gzip.md) | [日本語](../ja-JP/engineering/tar-gzip.md) | [한국어](../ko-KR/engineering/tar-gzip.md) | [Français](../fr-FR/engineering/tar-gzip.md) | [Deutsch](../de-DE/engineering/tar-gzip.md) | [Español](../es-ES/engineering/tar-gzip.md) | [Português (Brasil)](../pt-BR/engineering/tar-gzip.md) | [Русский](../ru-RU/engineering/tar-gzip.md)
 
 This contract defines TAR/TAR.GZ browsing, creation, and safe extraction boundaries. Platform results and manual acceptance are recorded in issues/CI artifacts. It retains input authorization, staging, conflicts, cancellation, and whole-archive commit from [safe extraction](zip-safe-extraction.md) and [ZIP creation](zip-creation.md).
 
