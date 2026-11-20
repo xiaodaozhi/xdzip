@@ -1,0 +1,72 @@
+<a name="xdzip-file-authorization-and-safe-publication"></a>
+
+# Dateiautorisierung und sichere Veröffentlichung
+
+[English](../../design/file-security.md) | [简体中文](../../zh-CN/design/file-security.md) | [繁體中文（台灣）](../../zh-TW/design/file-security.md) | [日本語](../../ja-JP/design/file-security.md) | [한국어](../../ko-KR/design/file-security.md) | [Français](../../fr-FR/design/file-security.md) | Deutsch | [Español](../../es-ES/design/file-security.md) | [Português (Brasil)](../../pt-BR/design/file-security.md) | [Русский](../../ru-RU/design/file-security.md)
+
+Der Host kontrolliert, welche Dateien geöffnet und wo geprüfte Ausgaben veröffentlicht werden dürfen. Ein Backend erhält begrenzte Leser und Senken, auch im isolierten Archivworker. Archivnamen, angegebene Größen, Prüfsummen und Nutzlasten sind Eingabedaten. Dateiprüfungen des Hosts gelten unabhängig von Prüfungen des Formats. [Systemarchitektur](system-architecture.md), [Protokoll des Archivworkers](../engineering/native-codecs.md)
+
+<a name="xdzip-authorizing-the-source-and-destination"></a>
+
+## Quelle und Ziel autorisieren
+
+- **Archivquelle.** `Source::open` öffnet den gewählten Pfad über `xdzip-io::open_regular_readonly` und prüft den geöffneten Dateityp. Unter Unix blockiert das Klassifizierungsöffnen nicht, sodass ein FIFO es nicht aufhalten kann. Ein vom Benutzer gewählter Pfad darf über einen Link zu einer gewöhnlichen Datei aufgelöst werden. Die Suche nach geteilten Volumes ist begrenzt und formatspezifisch. Der Host friert zugelassene Nachbarteile ein und prüft deren Dateiidentitäten und Versionen. Ein Codec kann nur die bereitgestellten Streams adressieren. [Quellimplementierung](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/source.rs), [Volume-Behandlung](../engineering/archive-opening.md)
+- **Eingaben für Erstellung.** `InputTree` durchläuft die gewählten Eingaben mit begrenzten Metadaten und Dateiidentitäten. Lesevorgänge öffnen Mitglieder aus diesem Baum und prüfen ihre Versionen. Das aktuelle private Vorbereitungsverzeichnis wird aus seinem eigenen Eingabescan ausgeschlossen. Erkannte Quelländerungen stoppen den Auftrag. Identitäts-, Größen- und Zeitprüfungen erkennen Änderungen nach bestem Bemühen, bilden aber keinen vollständigen Inhalts-Snapshot. [Eingabebaum](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/input.rs), [Archiverstellung](../engineering/zip-creation.md)
+- **Ziel.** `Grant` hält das gewählte Verzeichnisobjekt und seine Identität. Entpacken übergibt zusätzlich die Identitäten aller Quellvolumes als geschützte Dateien. Erstellung und Bearbeitung prüfen eingefrorene Eingabe- oder ursprüngliche Archividentitäten in ihren eigenen Aufgabenpfaden. Unterordner und Vorbereitung werden über das gehaltene Verzeichnis erreicht; Elternidentitäten werden vor Veröffentlichung erneut geprüft. `CheckTarget` und die Entpackvorprüfung können vor Aufgabenstart hilfreiche Befunde liefern. Die Schreibautorisierung wird während des Vorgangs erneut geprüft. [Zielberechtigungen](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/target.rs), [Entpackvorprüfung](../engineering/extraction-preflight.md)
+
+<a name="xdzip-name-mapping-platform-protection-and-links"></a>
+
+## Namenszuordnung, Plattformschutz und Links
+
+1. **Archivrelative Schreibweise prüfen.** Die Laufzeit löst die eingefrorene Auswahl auf, entfernt gegebenenfalls das Präfix des ausgewählten Teilbaums und akzeptiert über `PortablePath` relative UTF-8-Komponenten. Absolute Pfade oder Laufwerkspfade, Steuerzeichen, mehrdeutige Trenner, Elternkomponenten, reservierte Gerätenamen sowie abschließende Leerzeichen oder Punkte werden abgelehnt. Eine validierte Schreibweise ist nur eine Eingabe für die Zielberechtigung.
+2. **Kollisionen vor Ausgabeerstellung planen.** Entpacken vergleicht gebräuchliche Groß-/Kleinschreibungs- und Unicode-Aliasse mit kleingeschriebenen NFD-Schlüsseln. Mehrdeutige Verzeichnisschreibweisen und Datei-/Verzeichniskollisionen lassen die Vorbereitung scheitern. Gewöhnliche Dateialiasse werden einer gemeinsamen Schreibweise zugeordnet, damit die Namenskonfliktregel angewendet werden kann. Die native exklusive Veröffentlichung entscheidet weiterhin, ob der gewünschte Name auf dem tatsächlichen Dateisystem frei ist. Angezeigte Schreibweise und physische Eintragsidentität bleiben getrennt.
+3. **Autorisierte Baumstruktur durchlaufen.** Die Ausgabe steigt von einer gehaltenen Verzeichnisberechtigung ab und öffnet Unterverzeichnisse, ohne Links zu folgen. Autorisierte Wurzel, Elternidentitäten und das zum Überschreiben erwartete Blattelement werden erneut geprüft. Ein ersetztes Ziel oder unsicherer Link wird abgelehnt. Eine letzte Prüfung vor dem Umbenennen auf demselben Volume reduziert Rennen. Gewöhnliches Umbenennen garantiert keinen Inhaltsvergleich mit atomarem Austausch gegenüber einem Prozess mit denselben Kontorechten.
+
+| Plattform | Prüfungen der Ausgabeobjekte |
+| --- | --- |
+| Linux und macOS | Eigentümer muss der aktuelle effektive Benutzer sein. Schreibrechte für Gruppe und andere werden abgelehnt, und eine vorhandene gewöhnliche Datei muss genau einen Hardlink haben. macOS prüft zusätzlich die native ACL einschließlich geerbter Änderungsrechte. |
+| Windows | Reparse Points, Eigentümer, Datei-ID, Hardlink-Anzahl gewöhnlicher Dateien und DACL der gehaltenen Objekte prüfen. Effektive und nur geerbte Zugriffsregeln müssen Änderungen auf vertrauenswürdige Prinzipale beschränken. Bestehende Freigaben nur zum Lesen können bestehen bleiben. |
+| Privater Klartext oder Arbeitsdaten | Zusätzliche Vertraulichkeitsprüfungen schließen unbeteiligte Leser aus. Unter Windows kann ein exklusiv erstelltes privates Cacheverzeichnis eine geschützte DACL erhalten. Gewöhnliche benutzergewählte Entpackziele behalten ihre Lesefreigaberegeln. |
+
+Die Ausgabe symbolischer ZIP-Links ist auf einen zugelassenen Unix-Linkgraphen beschränkt. Die Laufzeit prüft den ausgewählten Graphen und Blattelemente, die fehlen müssen, vor Veröffentlichung der Links; gewöhnliche Ziele werden zuerst übernommen. Die Aufgabe folgt niemals einem vom Archiv erstellten Link, um Inhalt zu schreiben. Andere nicht unterstützte Link- oder Spezialdateiprofile scheitern ausdrücklich. Gewöhnliche POSIX-Dateimodi können sichere Lese-/Ausführungsbits auf der Vorbereitung zusätzlich zu Lesen/Schreiben des Eigentümers wiederherstellen. Privileg- und externe Schreibbits sind ausgeschlossen. Der Entpackpfad stellt Zeitstempel nach Übernahme nicht wieder her.
+
+[Parser portabler Pfade](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-domain/src/path.rs), [Entpackplanung](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/plan.rs), [Prüfungen privater Objekte](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/private.rs), [Link- und Plattformdetails](../engineering/zip-safe-extraction.md)
+
+<a name="xdzip-staging-verification-and-commit"></a>
+
+## Vorbereitung, Prüfung und Übernahme
+
+Eine Zielberechtigung erstellt einen exklusiven privaten Arbeitsbereich auf demselben Volume. Der Host misst Codec-Ausgabe in dessen Vorbereitungsdatei. Decodierungsabschluss, erwartete Größe und vom Format gebotene Integritäts- oder Authentifizierungsprüfungen müssen vor Veröffentlichung bestehen. `Stage::finish` leert und synchronisiert die Datei und behält ihre geprüfte Version. Der Host prüft Vorbereitung und Ziel bei der Übernahme erneut. Datensynchronisation und atomare Sichtbarkeit einer Datei belegen keine Dauerhaftigkeit von Verzeichnismetadaten bei Stromausfall.
+
+| Vorgang | Veröffentlichungssemantik |
+| --- | --- |
+| Datei entpacken oder Dateiversprechen veröffentlichen | Jede geeignete Datei nach Prüfung veröffentlichen. Ohne Überschreiben exklusiv einen Hardlink auf demselben Volume erstellen und anschließend den privaten Vorbereitungslink entfernen. Mit Überschreiben verlangt Entpacken die erwartete sichere gewöhnliche Datei und ersetzt sie durch Umbenennen auf demselben Volume, ohne sie vorher abzuschneiden. Dateiversprechen werden immer ohne Überschreiben veröffentlicht. Fehlt die notwendige Dateisystemprimitive oder ändert sich das Ziel, scheitert die betroffene Ausgabe. Bereits veröffentlichte Dateien oder erstellte Verzeichnisse werden nicht aufgabenweit zurückgerollt. |
+| Einzelnes Archiv erstellen | In Vorbereitung codieren, erneut öffnen und erwartete Einträge und Inhalte des Erstellungsprofils prüfen, dann das ganze Archiv einmal veröffentlichen. Bei Namenskonflikt kann ein neuer Name gewählt oder ein zulässiges Ersetzen erlaubt werden. Eine geschützte Eingabe darf kein Überschreibziel werden. |
+| Geteilte Volumes erstellen | Vorbereiteten Archivinhalt prüfen, jeden Teil vorbereiten und den neuen flachen Satz ohne Überschreiben vorhandener Volumes veröffentlichen. Die Teile werden einzeln sichtbar. Bei Teilfehler versucht der Rücklauf nur neu veröffentlichte Objekte zu entfernen, deren Identitäten noch übereinstimmen. Fehlgeschlagener Rücklauf kann ein ungewisses Ergebnis hinterlassen. |
+| Bestehendes Archiv ändern | `ArchiveUpdate` bindet den autorisierten Elternordner und die erwartete Version des ursprünglichen Archivs. Das umgeschriebene Archiv erneut öffnen und prüfen, dann das Original über diese Autorität einmal ersetzen. Gewöhnliches Entpacken darf diesen besonderen Ersatzweg nicht nutzen, um seine Quelle zu überschreiben. |
+
+Abbruch vor der Veröffentlichungssperre verhindert die aktuelle Übernahme. Eine bereits laufende Veröffentlichung kann enden und ihr tatsächliches Ergebnis melden. Zuvor übernommene entpackte Dateien bleiben sichtbar. Der End-Snapshot kann übernommene Daten zusammen mit `cancelled`, `failed` oder einer Bereinigungswarnung melden. Eine erfolgreiche vollständige Archivveröffentlichung bleibt auch bei spätem Abbruch erfolgreich. [Aufgabenabbruch](task-scheduling.md), [Archivänderung](../engineering/archive-transfers.md), [Sicheres Entpacken](../engineering/zip-safe-extraction.md)
+
+<a name="xdzip-output-budgets-and-integrity-scope"></a>
+
+## Ausgabebudgets und Integritätsumfang
+
+Entpacken begrenzt angegebene und tatsächliche Ausgabe getrennt auf 8 GiB pro gewöhnlicher Datei und 20 GiB pro Aufgabe. Bei unterstützten Formaten kann eine Prüfung hoher Verhältnisse die Anfrage bei Zulassung ablehnen. Für ZIP erfordert ein angegebenes Verhältnis über 1.000 zu eins bei einem Eintrag über 1 MiB ausdrückliche Erlaubnis. Die harten Grenzen gelten mit Erlaubnis weiter. Solid- oder Streaming-Decoder können Arbeit an nicht ausgewählten Daten leisten. Diese Arbeit, wiederholte Lesevorgänge oder Versuche und Hilfsdecoderarbeit werden getrennt von veröffentlichten Bytes abgerechnet.
+
+Metadatennavigation, Aufgabenzulassung, Workerspeicher und Vorschau besitzen eigene Budgets. Ein großer festplattenbasierter ZIP-Index erhöht keine Entpack- oder Schreibgrenzen. Integritätsprüfungen gelten formatabhängig. Beispielsweise liefern ISO/UDF-Struktur und Lesbarkeit keine fehlende dateibezogene Prüfsumme. [Große Archivindizes](../engineering/large-index.md), [Integritätsprüfung](../engineering/archive-checking.md), [Hilfsdecoder-Abrechnung](../engineering/auxiliary-decoding-work.md)
+
+<a name="xdzip-preview-temporary-opening-and-secrets"></a>
+
+## Vorschau, temporäres Öffnen und Geheimnisse
+
+- **Vorschau.** Die Auswahl einer unterstützten Datei startet eine Vorschau in der sichtbaren Eigenschaftenkarte. Rust liest und prüft den gesamten zugelassenen Eintrag innerhalb seiner Budgets. Text ist auf 256 KiB begrenzt. Codierte Bilder sind auf 16 MiB begrenzt, mit separaten Grenzen für Originalmaße und Pixel. Der private Bildprozess erhält Bytes und liefert eine begrenzte Miniatur. Er erhält weder Archivnamen noch Passwort oder Zielhandle. Aktuelle Formate und Beschränkungen stehen im [Vorschauvertrag](../engineering/content-preview.md).
+- **Temporäres Öffnen.** Ein gewöhnlicher Eintrag wird nach den normalen Aufgabenprüfungen in den privaten Cache entpackt. Der Desktop übergibt die geprüfte Datei als lokale URL an die Systemzuordnung. Die Annahme belegt nicht, dass das externe Programm das Lesen beendet hat. Nach Ablauf der Aufbewahrungszeit prüft die Bereinigung bei einem späteren Vorgang Cacheidentität und Sperren. Änderungen an der Kopie sind unabhängig vom ursprünglichen Archiv. [Temporäres Öffnen](../engineering/archive-opening.md), [Archivübertragungen](../engineering/archive-transfers.md)
+- **Geheimnisse.** Passwörter für Öffnen und Entpacken verbleiben während der Sitzung oder Aufgabe in vorgangsspezifischen Containern, die beim Freigeben genullt werden. Sie gelangen nicht in Aufgaben-Snapshots oder das Vorbereitungsjournal. Regeln zu privater Speicherung, Aufbewahrung und Offenlegung von Benutzerdaten stehen im [Datenschutzvertrag](../engineering/privacy.md) und im [Passwortvertrag](../engineering/password-extraction.md).
+
+<a name="xdzip-journals-leftovers-and-verification"></a>
+
+## Journale, Reste und Prüfung
+
+Vorbereitungsjournale erfassen bei Vorbereitung und Übernahme Aufgabenkontext und relative Ausgabenamen. Normale Bereinigung prüft Eigentümer und Identitäten und entfernt nur bekannte Vorbereitungsobjekte. Private Journale und verbliebene Objekte können nach abnormalem Ende Hinweise liefern. Die Laufzeit zählt mögliche Reste bei der Zielprüfung. Sie verwendet ein gefundenes Journal nicht, um Schreibvorgänge erneut auszuführen oder unbekannte Inhalte zu löschen. Der Cacheablauf privater temporärer Ausgaben hat eigene Identitäts- und Sperrprüfungen.
+
+Bei Änderungen an dieser Grenze Veröffentlichung und Bereinigung sowie Fehlercodes prüfen. Die [E/A-Tests](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/tests.rs), [Entpacktests](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/tests.rs) und der [Vertrag zum sicheren Entpacken](../engineering/zip-safe-extraction.md) decken verschiedene Schichten ab. Änderungen nativen Plattformverhaltens erfordern plattformspezifische Nachweise.
