@@ -117,7 +117,7 @@ Comece pela [arquitetura do sistema](../../design/system-architecture.md) para c
 - [Ciclo de vida dos dados e diagnóstico](../engineering/privacy.md)
 - [Versão do produto e identidade da compilação](../engineering/versioning.md)
 - [Protocolo GitHub Release v1](../engineering/release-protocol.md)
-- [DMG de desenvolvimento local para macOS](../../engineering/macos-deployment.md)
+- [DMG de desenvolvimento local para macOS](../engineering/macos-deployment.md)
 - [Diretório de execução Linux independente e verificação](../engineering/linux-deployment.md)
 - [Verificação de dependências da implantação e SBOM](../engineering/deployment-audit.md)
 - [Atribuições e licenças dos componentes utilizados](../engineering/runtime-attribution.md)

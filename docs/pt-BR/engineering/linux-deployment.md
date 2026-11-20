@@ -4,7 +4,7 @@
 
 [English](../../engineering/linux-deployment.md) | [简体中文](../../zh-CN/engineering/linux-deployment.md) | [繁體中文](../../zh-TW/engineering/linux-deployment.md) | [日本語](../../ja-JP/engineering/linux-deployment.md) | [한국어](../../ko-KR/engineering/linux-deployment.md) | [Français](../../fr-FR/engineering/linux-deployment.md) | [Deutsch](../../de-DE/engineering/linux-deployment.md) | [Español](../../es-ES/engineering/linux-deployment.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/linux-deployment.md)
 
-A base atual de implantação para desenvolvimento é Ubuntu 24.04, x86_64 e X11. O objetivo é executar o produto atual sem o SDK Qt de desenvolvimento; isso não promete outras distribuições, glibc mais antiga, Wayland ou suporte completo a instalador. A CI do macOS mantém compilação, testes e verificação de inicialização nativos. DMGs locais de desenvolvimento seguem o [guia de implantação Mac](../../engineering/macos-deployment.md) e não são afetados por este processo.
+A base atual de implantação para desenvolvimento é Ubuntu 24.04, x86_64 e X11. O objetivo é executar o produto atual sem o SDK Qt de desenvolvimento; isso não promete outras distribuições, glibc mais antiga, Wayland ou suporte completo a instalador. A CI do macOS mantém compilação, testes e verificação de inicialização nativos. DMGs locais de desenvolvimento seguem o [guia de implantação Mac](macos-deployment.md) e não são afetados por este processo.
 
 <a name="xdzip-layout-and-generation"></a>
 
