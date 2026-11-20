@@ -49,7 +49,7 @@ Selecciona entradas y pulsa «Comprobar los metadatos antes de extraer…». Los
 
 ## Límite con la extracción real
 
-La [extracción segura real](../../engineering/zip-safe-extraction.md) implementa independientemente el cómputo de salida, la verificación CRC y estructural, autorización de destino, nuevas comprobaciones de rutas por plataforma, conflictos, preparación temporal y confirmaciones de archivos. No está limitada a las 128 selecciones de la comprobación previa y admite planes de 100 000 registros físicos y selecciones de directorios virtuales. Un informe previo no se reutiliza como permiso de escritura. Al iniciar una tarea deben obtenerse de nuevo la autorización de destino, validarse las fuentes y comprobarse el contenido real según la [especificación de seguridad de archivos](../design/file-security.md). Los fallos nativos y defectos conocidos se siguen en los contratos e incidencias correspondientes.
+La [extracción segura real](zip-safe-extraction.md) implementa independientemente el cómputo de salida, la verificación CRC y estructural, autorización de destino, nuevas comprobaciones de rutas por plataforma, conflictos, preparación temporal y confirmaciones de archivos. No está limitada a las 128 selecciones de la comprobación previa y admite planes de 100 000 registros físicos y selecciones de directorios virtuales. Un informe previo no se reutiliza como permiso de escritura. Al iniciar una tarea deben obtenerse de nuevo la autorización de destino, validarse las fuentes y comprobarse el contenido real según la [especificación de seguridad de archivos](../design/file-security.md). Los fallos nativos y defectos conocidos se siguen en los contratos e incidencias correspondientes.
 
 <a name="xdzip-window-and-result-presentation"></a>
 

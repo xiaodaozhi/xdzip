@@ -39,7 +39,7 @@ Empieza por la [arquitectura del sistema](../design/system-architecture.md) para
 - [Codificación adaptativa de nombres de archivo](../engineering/filename-encoding.md)
 - [Vista previa del contenido](../engineering/content-preview.md)
 - [Comprobación previa de metadatos para la extracción](../engineering/extraction-preflight.md)
-- [Extracción segura de ZIP](../../engineering/zip-safe-extraction.md)
+- [Extracción segura de ZIP](../engineering/zip-safe-extraction.md)
 - [Comprobación de integridad](../engineering/archive-checking.md)
 - [Apertura de entradas, arrastre y modificación](../../engineering/archive-transfers.md)
 - [Contraseñas y apertura de directorios cifrados](../engineering/password-extraction.md)

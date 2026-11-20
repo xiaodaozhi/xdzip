@@ -1,6 +1,6 @@
 # ZIP の安全な展開の実装
 
-[English](../../engineering/zip-safe-extraction.md) | [简体中文](../../zh-CN/engineering/zip-safe-extraction.md) | [繁體中文](../../zh-TW/engineering/zip-safe-extraction.md) | 日本語 | [Français](../../fr-FR/engineering/zip-safe-extraction.md) | [Deutsch](../../de-DE/engineering/zip-safe-extraction.md)
+[English](../../engineering/zip-safe-extraction.md) | [简体中文](../../zh-CN/engineering/zip-safe-extraction.md) | [繁體中文](../../zh-TW/engineering/zip-safe-extraction.md) | 日本語 | [Français](../../fr-FR/engineering/zip-safe-extraction.md) | [Deutsch](../../de-DE/engineering/zip-safe-extraction.md) | [Español](../../es-ES/engineering/zip-safe-extraction.md)
 
 この契約は、ホストによる安全な出力、実際の展開、競合、キャンセル、コミットの動作を定義します。実行結果や現在の不具合は、この文書に蓄積せず、該当する issue と Actions の成果物に記録します。
 

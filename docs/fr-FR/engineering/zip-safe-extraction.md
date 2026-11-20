@@ -1,6 +1,6 @@
 # Mise en œuvre de l'extraction ZIP sécurisée
 
-[English](../../engineering/zip-safe-extraction.md) | [简体中文](../../zh-CN/engineering/zip-safe-extraction.md) | [繁體中文](../../zh-TW/engineering/zip-safe-extraction.md) | [日本語](../../ja-JP/engineering/zip-safe-extraction.md) | Français | [Deutsch](../../de-DE/engineering/zip-safe-extraction.md)
+[English](../../engineering/zip-safe-extraction.md) | [简体中文](../../zh-CN/engineering/zip-safe-extraction.md) | [繁體中文](../../zh-TW/engineering/zip-safe-extraction.md) | [日本語](../../ja-JP/engineering/zip-safe-extraction.md) | Français | [Deutsch](../../de-DE/engineering/zip-safe-extraction.md) | [Español](../../es-ES/engineering/zip-safe-extraction.md)
 
 Ce contrat définit la sûreté des sorties assurée par l'hôte, l'extraction effective, les conflits, l'annulation et la validation. Les résultats d'exécution et les défauts actuels sont consignés dans les issues et les artefacts Actions correspondants, sans être accumulés ici.
 

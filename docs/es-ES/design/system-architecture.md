@@ -96,7 +96,7 @@ flowchart TB
 2. **Decodificar.** El motor de formato lee el origen admitido, directamente o mediante el proceso de archivo. Envía bytes a un receptor medido respaldado por una preparación privada. Los reintentos de contraseña, la expansión y el trabajo auxiliar siguen sujetos a los límites de la operación. Los bytes preparados son provisionales hasta que tengan éxito la decodificación, los controles de tamaño y las verificaciones disponibles del formato.
 3. **Confirmar e informar.** Antes de publicar, el host vuelve a comprobar la identidad del origen y del destino pertinente. Confirma cada archivo apto por separado y registra los archivos y bytes realmente publicados. Un fallo o cancelación posterior puede dejar los archivos previamente confirmados. La preparación no publicada se limpia cuando es posible y el resultado terminal informa de fallos, cancelación, omisiones y avisos de limpieza.
 
-[Ejecución de extracción](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/execute.rs), [comprobación de archivos](../engineering/archive-checking.md), [interacciones de contraseña](../engineering/password-extraction.md), [extracción ZIP segura](../../engineering/zip-safe-extraction.md).
+[Ejecución de extracción](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/execute.rs), [comprobación de archivos](../engineering/archive-checking.md), [interacciones de contraseña](../engineering/password-extraction.md), [extracción ZIP segura](../engineering/zip-safe-extraction.md).
 
 ## Crear o modificar un archivo
 

@@ -1,6 +1,6 @@
 # Implementierung der sicheren ZIP-Extraktion
 
-[English](../../engineering/zip-safe-extraction.md) | [简体中文](../../zh-CN/engineering/zip-safe-extraction.md) | [繁體中文](../../zh-TW/engineering/zip-safe-extraction.md) | [日本語](../../ja-JP/engineering/zip-safe-extraction.md) | [Français](../../fr-FR/engineering/zip-safe-extraction.md) | Deutsch
+[English](../../engineering/zip-safe-extraction.md) | [简体中文](../../zh-CN/engineering/zip-safe-extraction.md) | [繁體中文](../../zh-TW/engineering/zip-safe-extraction.md) | [日本語](../../ja-JP/engineering/zip-safe-extraction.md) | [Français](../../fr-FR/engineering/zip-safe-extraction.md) | Deutsch | [Español](../../es-ES/engineering/zip-safe-extraction.md)
 
 Dieser Vertrag definiert die durch den Host abgesicherte Ausgabe, die tatsächliche Extraktion, Konflikte, Abbruch und Commit. Tatsächliche Ausführungsergebnisse und aktuelle Fehler werden in den zugehörigen Issues und Actions-Artefakten festgehalten, nicht hier gesammelt.
 

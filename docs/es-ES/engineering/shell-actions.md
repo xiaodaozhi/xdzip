@@ -51,7 +51,7 @@ Las acciones de extracción aparecen si cada elemento seleccionado puede ser un 
 - Directorio por archivo: siempre añade una carpeta con el nombre del archivo comprimido. La reserva exclusivamente mediante la capacidad de destino retenida; nunca reutiliza archivos, directorios ni enlaces existentes. Elige un nombre numerado nuevo, como `name (2)`, con un máximo de diez mil intentos.
 - Directorio elegido: permite elegir un destino común en la ventana independiente de extracción. Por defecto se crean directorios por archivo, con alternativas de combinación inteligente o directa.
 
-La derivación de directorios sigue las reglas de nombres portables y del sufijo `.app` de [extracción segura](../../engineering/zip-safe-extraction.md). La detección inteligente no autoriza la salida; cada tarea debe volver a validar el destino, la fuente, el CRC o la autenticación, los conflictos y el permiso de publicación. El fallo de un archivo sigue la política existente de detener ese archivo completo; después el coordinador continúa con el siguiente.
+La derivación de directorios sigue las reglas de nombres portables y del sufijo `.app` de [extracción segura](zip-safe-extraction.md). La detección inteligente no autoriza la salida; cada tarea debe volver a validar el destino, la fuente, el CRC o la autenticación, los conflictos y el permiso de publicación. El fallo de un archivo sigue la política existente de detener ese archivo completo; después el coordinador continúa con el siguiente.
 
 ## Procesos, solicitudes y ventanas
 
