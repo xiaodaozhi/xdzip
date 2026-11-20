@@ -23,7 +23,8 @@ WEIGHTS = {
     # The ten-language layout matrices and expanded format fixtures are much
     # slower than an average function on hosted offscreen runners. Keep their
     # relative weights comparable to the older timing hints below.
-    'settingsChromeAndScrollbar': 370,
+    'settingsChromeAndScrollbar': 185,
+    'settingsChromeAndScrollbarExtended': 185,
     'filteredStreamsUseSharedBrowserAndTasks': 180,
     'settingsAllPagesLayout': 86,
     'localizedMainWindowAndMenuLayout': 84,

@@ -8443,10 +8443,19 @@ QtObject {
         QVERIFY(paintedWidth > 0 && paintedWidth <= label->width() + 1);
         QVERIFY(paintedHeight > 0 && paintedHeight <= label->height() + 1);
         QVERIFY(!label->property("truncated").toBool());
-        const QFontMetricsF labelMetrics(label->property("font").value<QFont>());
-        if (labelMetrics.horizontalAdvance(button->property("text").toString()) >
-            label->width() + 1)
+        QCOMPARE(label->property("text").toString(), button->property("text").toString());
+        // Use Text's own unwrapped width: a separately resolved QFontMetricsF can
+        // differ from the font and pixel size used by Qt Quick on some platforms.
+        if (label->property("implicitWidth").toReal() > label->width() + 1)
             QVERIFY(label->property("lineCount").toInt() > 1);
+        const auto originalText = button->property("text").toString();
+        QVERIFY(
+            button->setProperty("text", originalText + " " + originalText + " " + originalText));
+        QTRY_VERIFY(label->property("lineCount").toInt() > 1);
+        QTRY_VERIFY(label->property("paintedWidth").toReal() <= label->width() + 1);
+        QTRY_VERIFY(label->property("paintedHeight").toReal() <= label->height() + 1);
+        QVERIFY(!label->property("truncated").toBool());
+        QVERIFY(button->setProperty("text", originalText));
         QVERIFY(button->mapToScene(QPointF(button->width(), 0)).x() <= settings->width());
         const bool active = QAccessible::isActive();
         QAccessible::setActive(true);
@@ -8942,9 +8951,35 @@ QtObject {
 #endif
     }
     void settingsChromeAndScrollbar_data() {
-        settingsSelectorsHaveConsistentGeometry_data();
+        settingsChromeAndScrollbarData(false);
+    }
+    void settingsChromeAndScrollbarExtended_data() {
+        settingsChromeAndScrollbarData(true);
     }
     void settingsChromeAndScrollbar() {
+        verifySettingsChromeAndScrollbar();
+    }
+    void settingsChromeAndScrollbarExtended() {
+        verifySettingsChromeAndScrollbar();
+    }
+
+  private:
+    void settingsChromeAndScrollbarData(bool oddLanguages) {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<bool>("dark");
+        QTest::addColumn<double>("scale");
+        const auto languages = supportedUiLanguages();
+        for (qsizetype i = 0; i < languages.size(); ++i) {
+            if (bool(i % 2) != oddLanguages)
+                continue;
+            for (const bool dark : {false, true})
+                for (const double scale : {1., 1.25, 1.5})
+                    QTest::newRow(qPrintable(languages[i] + (dark ? "-dark-" : "-light-") +
+                                             QString::number(scale)))
+                        << languages[i] << dark << scale;
+        }
+    }
+    void verifySettingsChromeAndScrollbar() {
         QFETCH(QString, language);
         QFETCH(bool, dark);
         QFETCH(double, scale);
@@ -9532,6 +9567,8 @@ QtObject {
         QVERIFY(license->mapToItem(flick, QPointF(0, license->height())).y() > 0);
         settings->close();
     }
+
+  private slots:
     void settingsOpenModeSelectionPersists_data() {
         QTest::addColumn<bool>("pointer");
         QTest::newRow("pointer") << true;
@@ -9544,6 +9581,9 @@ QtObject {
             QCOMPARE(restored.openMode(), QStringLiteral("windows"));
             return;
         }
+        const auto previousLanguage = qApp->property("xdzipUiLanguage").toString();
+        const auto restoreLanguage =
+            qScopeGuard([previousLanguage] { initializeUiText(previousLanguage); });
         QTemporaryDir profile;
         test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH",
                                               profile.filePath("settings.ini"));
@@ -9686,10 +9726,12 @@ QtObject {
         QCOMPARE(systemDialogText("ui.1b59353f1874"),
                  expectedProductText.translate(nullptr, "ui.1b59353f1874", nullptr, -1));
         QTranslator expectedQtText;
-        if (loadQtSystemTranslation(expectedQtText, QLocale::system(),
-                                    QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
-            QCOMPARE(QCoreApplication::translate("QFileDialog", "Open"),
-                     expectedQtText.translate("QFileDialog", "Open"));
+        loadQtSystemTranslation(expectedQtText, QLocale::system(),
+                                QLibraryInfo::path(QLibraryInfo::TranslationsPath));
+        auto expectedOpen = expectedQtText.translate("QFileDialog", "Open");
+        if (expectedOpen.isNull())
+            expectedOpen = QStringLiteral("Open");
+        QCOMPARE(QCoreApplication::translate("QFileDialog", "Open"), expectedOpen);
         QCOMPARE(qtTrId("ui.2e84a56c5f19", 1), QStringLiteral("1 file"));
         QCOMPARE(qtTrId("ui.2e84a56c5f19", 2), QStringLiteral("2 files"));
         QQmlApplicationEngine engine;
@@ -10223,6 +10265,10 @@ QtObject {
         QVERIFY(QFileInfo::exists(output.filePath((QStringLiteral("renamed.") + suffix))));
     }
     void creationControlsMatchReviewedSource() {
+        const auto previousLanguage = qApp->property("xdzipUiLanguage").toString();
+        const auto restoreLanguage =
+            qScopeGuard([previousLanguage] { initializeUiText(previousLanguage); });
+        QVERIFY(initializeUiText(QStringLiteral("zh-CN")));
         const bool accessibilityWasActive = QAccessible::isActive();
         QAccessible::setActive(true);
         const auto restoreAccessibility =
