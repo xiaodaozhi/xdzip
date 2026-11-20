@@ -12,7 +12,7 @@
 
 ## xdzip 当前结论
 
-表格中的含义如下。“已准入”表示当前登记、runtime、CLI 和桌面路径已有自动化证据，且只承诺表中配置。“别名/配置”表示通过现有容器入口准入，仍以内容验证为准。“候选”表示后续入口，当前不声明解码。“阻塞”表示在公开、可独立测试的线格式规范和兼容实现可用前，不能负责任地准入。“明确不支持”表示项目已经明确决定不支持该格式，除非重新作出产品决定，不登记入口或探测器。
+表格中的含义如下。“已准入”表示当前登记、runtime、CLI 和桌面路径已有自动化证据，且只承诺表中配置。“别名/配置”表示通过现有容器入口准入，仍以内容验证为准。“候选”表示后续入口，当前不声明解码。“阻塞”表示在公开、可独立测试的线格式规范以及兼容实现或自有算法可用前，不能负责任地准入。“明确不支持”表示项目已经明确决定不支持该格式，除非重新作出产品决定，不登记入口或探测器。
 
 | Bandizip 名称 | xdzip 状态 | 当前可负责的范围或原因 |
 | --- | --- | --- |
@@ -39,7 +39,7 @@
 | LZMA | 已准入 | LZMA Alone 和 TAR.LZMA。 |
 | PMA | 已准入 | PM0/PM1/PM2 只读配置、CP/M 结构和 CRC 检查。 |
 | RAR / RAR5 | 已准入 | 自研 Rust RAR 后端，覆盖声明范围内的旧版、RAR5、RAR7 扩展、密码、固实和分卷。 |
-| SFX(EXE) | 别名/配置 | ZIP SFX 前缀由 ZIP 读取器验证，绝不授予执行权限；自有 Windows x64 Store/Deflate ZIP 创建通过显式 `.sfx.exe` 配置提供，不自动运行载荷。 |
+| SFX(EXE) | 别名/配置 | ZIP SFX 前缀由 ZIP 读取器验证，不允许通用可执行文件提取或执行；自有 Windows x64 Store/Deflate ZIP 创建通过显式 `.sfx.exe` 配置提供，不自动运行载荷。 |
 | TAR | 已准入 | TAR 及登记的 TAR.GZ、TAR.BZ2、TAR.LZMA、TAR.LZ、TAR.XZ、TAR.Z、TAR.BR、TAR.LZ4、TAR.ZST 配置。 |
 | TBZ / TBZ2 | 别名/配置 | BZip2 过滤的 TAR 别名。 |
 | TGZ | 别名/配置 | GZIP 过滤的 TAR 别名。 |
@@ -63,7 +63,7 @@
 
 因此不能仅因为扩展名加入通用 `BIN`、`IMG` 或 `SFX(EXE)` 处理器。这些名称可能指向可执行文件、磁盘镜像或安装器，扩展名不足以建立归档能力。NSIS 仅增加按内容验证的静态元数据读取器，不授予执行或载荷权限，登记的 `.exe` 也不参与拖放和系统关联。Compound(MSI) 已具备按内容验证的 CFB 读取器，但 `.msi` 后缀仍不授予执行权限。
 
-DAA、ISZ、ZPAQ、PEA、BOND 和 J2J 的判断依据见[磁盘镜像及其他归档格式资料](disk-image-archive-format-sources.md)。PEA 仅支持文档所述的保守只读配置。ACE、DAA、ISZ 和 ZPAQ 按产品决定不予支持。BOND 和 J2J 尚未确认为 Bandizip 归档格式，暂不支持。
+DAA、ISZ、ZPAQ、PEA、BOND 和 J2J 的判断依据见[磁盘镜像及其他归档格式资料](disk-image-archive-format-sources.md)。PEA 仅支持文档所述的保守只读配置。ACE、DAA、ISZ 和 ZPAQ 按产品决定不予支持。BOND 和 J2J 尚未确认为 Bandizip 归档格式，按产品决定不予支持。
 
 ## 详细推进方案
 
