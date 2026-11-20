@@ -4,7 +4,7 @@
 
 [English](../../design/qt-rust-bridge.md) | [简体中文](../../zh-CN/design/qt-rust-bridge.md) | [繁體中文](../../zh-TW/design/qt-rust-bridge.md) | [日本語](../../ja-JP/design/qt-rust-bridge.md) | [한국어](../../ko-KR/design/qt-rust-bridge.md) | Français | [Deutsch](../../de-DE/design/qt-rust-bridge.md) | [Español](../../es-ES/design/qt-rust-bridge.md) | [Português (Brasil)](../../pt-BR/design/qt-rust-bridge.md) | [Русский](../../ru-RU/design/qt-rust-bridge.md)
 
-Le bureau Qt appelle le runtime Rust par le pont `cxx` lié au produit. Chaque `BrowserController` possède une `RuntimeConnection` et une instance de service distincte. Le pont transporte des commandes typées et des résultats dont il transfère la propriété dans le processus de bureau. La CLI utilise directement le même service Rust. [Architecture du système](system-architecture.md), [Sessions de bureau](../../engineering/application-sessions.md)
+Le bureau Qt appelle le runtime Rust par le pont `cxx` lié au produit. Chaque `BrowserController` possède une `RuntimeConnection` et une instance de service distincte. Le pont transporte des commandes typées et des résultats dont il transfère la propriété dans le processus de bureau. La CLI utilise directement le même service Rust. [Architecture du système](system-architecture.md), [Sessions de bureau](../engineering/application-sessions.md)
 
 <a name="xdzip-handles-threads-and-ownership"></a>
 

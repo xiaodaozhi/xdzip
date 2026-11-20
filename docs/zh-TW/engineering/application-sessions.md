@@ -2,7 +2,7 @@
 
 # 應用會話與退出契約
 
-[English](../../engineering/application-sessions.md) | [简体中文](../../zh-CN/engineering/application-sessions.md) | 繁體中文 | [日本語](../../ja-JP/engineering/application-sessions.md) | [한국어](../../ko-KR/engineering/application-sessions.md)
+[English](../../engineering/application-sessions.md) | [简体中文](../../zh-CN/engineering/application-sessions.md) | 繁體中文 | [日本語](../../ja-JP/engineering/application-sessions.md) | [한국어](../../ko-KR/engineering/application-sessions.md) | [Français](../../fr-FR/engineering/application-sessions.md)
 
 標籤右鍵選單提供“關閉、關閉其他、關閉右側”，Shift+F10 或選單鍵作用於焦點標籤。右擊不切換目前頁，命令凍結標籤穩定身份，僅按該標籤所屬視窗的目前視覺順序操作，不能影響其他視窗。重排、視窗尺寸變化、目標消失或進入模態操作時關閉選單；沒有對應目標時禁用批次項。批次關閉一次提交，保留未被關閉的目前頁，否則切換到錨點標籤，避免逐頁閃切。最後一頁關閉後恢復起始頁，任務和結果繼續留在全域性任務入口。
 

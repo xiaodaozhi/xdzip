@@ -18,7 +18,7 @@ Le bureau utilise Qt Quick pour la présentation et les interactions. Les contr�
 | `TaskListModel` et fenêtres d’opération | Présentent des instantanés bornés, la progression, les résultats et la décision en attente. L’identité composite du bureau achemine chaque commande de tâche vers le contrôleur qui la possède. |
 | Paramètres et adaptateurs de plateforme | Gèrent l’apparence, la langue, la taille du texte et le comportement de l’application. Les adaptateurs natifs gèrent la zone de notification, l’activation, les dialogues de fichiers, les associations et le transfert au système selon la plateforme. |
 
-[Entrée du bureau](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/browser_main.cpp), [Page de session](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/ui/SessionPage.qml), [Contrôleur et modèles](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.h), [Sessions d’application](../../engineering/application-sessions.md), [Paramètres et localisation](../ux/settings-localization.md)
+[Entrée du bureau](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/browser_main.cpp), [Page de session](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/ui/SessionPage.qml), [Contrôleur et modèles](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.h), [Sessions d’application](../engineering/application-sessions.md), [Paramètres et localisation](../ux/settings-localization.md)
 
 <a name="xdzip-browsing-and-operation-flow"></a>
 

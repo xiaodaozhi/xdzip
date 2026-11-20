@@ -23,7 +23,7 @@ Consultez d’abord l’[architecture du système](../design/system-architecture
 - [Organisation du dépôt et dépendances](../engineering/repository-layout.md)
 - [Contrats d’interface et contrôles](../engineering/contracts.md)
 - [Exécution du produit et cycle de vie de Qt](../engineering/product-runtime.md)
-- [Sessions et arrêt de l’application](../../engineering/application-sessions.md)
+- [Sessions et arrêt de l’application](../engineering/application-sessions.md)
 - [Choix de la passerelle cxx](../engineering/cxx-admission.md)
 - [Services de calendrier et d’encodage de l’hôte](../engineering/host-platform-services.md)
 

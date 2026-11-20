@@ -4,7 +4,7 @@
 
 [English](../../ux/task-windows.md) | [简体中文](../../zh-CN/ux/task-windows.md) | [繁體中文](../../zh-TW/ux/task-windows.md) | [日本語](../../ja-JP/ux/task-windows.md) | [한국어](../../ko-KR/ux/task-windows.md) | Français | [Deutsch](../../de-DE/ux/task-windows.md) | [Español](../../es-ES/ux/task-windows.md) | [Português (Brasil)](../../pt-BR/ux/task-windows.md) | [Русский](../../ru-RU/ux/task-windows.md)
 
-L’entrée des tâches de l’application regroupe toutes les sessions et dirige progression, mots de passe, conflits et résultats à l’aide de l’UUID de session et de l’ID de tâche du moteur. Fermer une page conserve son contrôleur ; une sortie explicite attend toutes les jointures asynchrones. Voir le [contrat des sessions de l’application](../../engineering/application-sessions.md).
+L’entrée des tâches de l’application regroupe toutes les sessions et dirige progression, mots de passe, conflits et résultats à l’aide de l’UUID de session et de l’ID de tâche du moteur. Fermer une page conserve son contrôleur ; une sortie explicite attend toutes les jointures asynchrones. Voir le [contrat des sessions de l’application](../engineering/application-sessions.md).
 
 Les lignes du menu des tâches affichent l’icône d’opération, le nom de l’archive, l’étiquette de séquence et celle d’état. Les icônes utilisent les ressources partagées de création, extraction, contrôle, ajout, déplacement et export, sans préfixe textuel de type d’opération. Les deux étiquettes utilisent le même composant ; la séquence conserve le numéro du moteur et l’identité interne entre sessions reste inchangée. Les noms longs sont tronqués, tandis que les noms accessibles comprennent opération, numéro, fichier et état.
 

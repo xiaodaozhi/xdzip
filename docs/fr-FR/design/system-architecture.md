@@ -21,7 +21,7 @@ flowchart TB
   CPP --> IMAGE[Private image preview process]
 ```
 
-Les deux blocs de moteur représentent des instances distinctes de la même implémentation. Le bureau et le CLI possèdent chacun leur état d’archive et leurs tâches. L’IPC local du bureau transmet les demandes d’activation et d’intégration à l’instance graphique principale. Les commandes d’archive passent par le moteur dans le processus. [Sessions d’application](../../engineering/application-sessions.md), [contrat CLI](../engineering/command-line.md).
+Les deux blocs de moteur représentent des instances distinctes de la même implémentation. Le bureau et le CLI possèdent chacun leur état d’archive et leurs tâches. L’IPC local du bureau transmet les demandes d’activation et d’intégration à l’instance graphique principale. Les commandes d’archive passent par le moteur dans le processus. [Sessions d’application](../engineering/application-sessions.md), [contrat CLI](../engineering/command-line.md).
 
 ## Responsabilités des modules et direction des appels
 

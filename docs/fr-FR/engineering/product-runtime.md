@@ -55,4 +55,4 @@ Voir la [vérification générale](../../../developers/qa/README.md). Les tests 
 
 Les premières requêtes allouent une identité de résultat immuable ; les lots suivants doivent correspondre à tous les champs et paramètres de QueryKey. Qt annule les anciennes requêtes et regroupe la dernière intention tout en conservant les vérifications de séquence et d’identifiant. Un lot limite aussi les noms à 64 KiB et ne refiltre ni ne retrie. L’acceptation historique reste limitée aux capacités disponibles à son époque.
 
-La couche applicative peut créer plusieurs connexions indépendantes tandis que le runtime métier isole les sessions par connexion. Voir le [contrat des sessions](../../engineering/application-sessions.md) pour l’identité globale des tâches et l’admission sérielle des tâches lourdes.
+La couche applicative peut créer plusieurs connexions indépendantes tandis que le runtime métier isole les sessions par connexion. Voir le [contrat des sessions](application-sessions.md) pour l’identité globale des tâches et l’admission sérielle des tâches lourdes.
