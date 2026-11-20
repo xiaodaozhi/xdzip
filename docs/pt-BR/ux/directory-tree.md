@@ -1,6 +1,6 @@
 # Árvore de diretórios B: design, recursos e integração
 
-[English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | [繁體中文](../../zh-TW/ux/directory-tree.md) | [日本語](../../ja-JP/ux/directory-tree.md) | [한국어](../../ko-KR/ux/directory-tree.md) | [Français](../../fr-FR/ux/directory-tree.md) | [Deutsch](../../de-DE/ux/directory-tree.md) | [Español](../../es-ES/ux/directory-tree.md) | Português (Brasil)
+[English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | [繁體中文](../../zh-TW/ux/directory-tree.md) | [日本語](../../ja-JP/ux/directory-tree.md) | [한국어](../../ko-KR/ux/directory-tree.md) | [Français](../../fr-FR/ux/directory-tree.md) | [Deutsch](../../de-DE/ux/directory-tree.md) | [Español](../../es-ES/ux/directory-tree.md) | Português (Brasil) | [Русский](../../ru-RU/ux/directory-tree.md)
 
 Estado: **a interação principal de diretórios está integrada aos exemplos HTML e à navegação somente leitura do Qt; os recursos dos estados de limite aguardam integração**. A interação segue o [contrato de navegação somente leitura](../engineering/readonly-browser.md). A navegação normal usa filhos diretos, a busca cobre recursivamente o escopo atual e a autorização de saída é tratada separadamente da leitura.
 

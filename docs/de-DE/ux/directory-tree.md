@@ -1,6 +1,6 @@
 # Verzeichnisbaum B: Design, Ressourcen und Integration
 
-[English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | [繁體中文](../../zh-TW/ux/directory-tree.md) | [日本語](../../ja-JP/ux/directory-tree.md) | [한국어](../../ko-KR/ux/directory-tree.md) | [Français](../../fr-FR/ux/directory-tree.md) | Deutsch | [Español](../../es-ES/ux/directory-tree.md) | [Português (Brasil)](../../pt-BR/ux/directory-tree.md)
+[English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | [繁體中文](../../zh-TW/ux/directory-tree.md) | [日本語](../../ja-JP/ux/directory-tree.md) | [한국어](../../ko-KR/ux/directory-tree.md) | [Français](../../fr-FR/ux/directory-tree.md) | Deutsch | [Español](../../es-ES/ux/directory-tree.md) | [Português (Brasil)](../../pt-BR/ux/directory-tree.md) | [Русский](../../ru-RU/ux/directory-tree.md)
 
 Status: **Die grundlegende Verzeichnisinteraktion ist in HTML-Beispielen und der schreibgeschützten Qt-Navigation integriert; Ressourcen für Grenzzustände warten auf Integration**. Die Interaktion folgt dem [Vertrag für schreibgeschützte Navigation](../engineering/readonly-browser.md). Die gewöhnliche Verzeichnisnavigation verwendet direkte Kinder, die Suche erfasst den aktuellen Bereich rekursiv, und die Ausgabeberechtigung bleibt von der schreibgeschützten Navigation getrennt.
 

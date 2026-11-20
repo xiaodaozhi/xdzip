@@ -1,6 +1,6 @@
 # 디렉터리 트리 B: 디자인, 자산과 통합
 
-[English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | [繁體中文](../../zh-TW/ux/directory-tree.md) | [日本語](../../ja-JP/ux/directory-tree.md) | 한국어 | [Français](../../fr-FR/ux/directory-tree.md) | [Deutsch](../../de-DE/ux/directory-tree.md) | [Español](../../es-ES/ux/directory-tree.md) | [Português (Brasil)](../../pt-BR/ux/directory-tree.md)
+[English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | [繁體中文](../../zh-TW/ux/directory-tree.md) | [日本語](../../ja-JP/ux/directory-tree.md) | 한국어 | [Français](../../fr-FR/ux/directory-tree.md) | [Deutsch](../../de-DE/ux/directory-tree.md) | [Español](../../es-ES/ux/directory-tree.md) | [Português (Brasil)](../../pt-BR/ux/directory-tree.md) | [Русский](../../ru-RU/ux/directory-tree.md)
 
 상태: **핵심 디렉터리 상호 작용은 HTML 예제와 Qt 읽기 전용 탐색에 통합되었으며, 경계 상태 자산은 통합을 기다립니다**. 상호 작용은 [읽기 전용 탐색 계약](../engineering/readonly-browser.md)을 따릅니다. 일반 디렉터리 탐색은 직속 자식을 사용하고 검색은 현재 범위를 재귀적으로 탐색하며, 출력 권한은 읽기 전용 탐색과 별도로 다룹니다.
 
