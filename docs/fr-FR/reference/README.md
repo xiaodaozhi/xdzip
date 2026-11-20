@@ -61,7 +61,7 @@ Consultez d’abord l’[architecture du système](../../design/system-architect
 - [Choix des dépendances d’extraction et d’écriture ZIP](../engineering/zip-extraction-admission.md)
 - [Sources du format 7z et implémentation indépendante](../engineering/sevenzip-format-sources.md)
 - [Bases de l’implémentation RAR et limites de compatibilité](../../engineering/rar-format-sources.md)
-- [Sources du format CAB et bases d’implémentation](../../engineering/cab-format-sources.md)
+- [Sources du format CAB et bases d’implémentation](../engineering/cab-format-sources.md)
 - [Contrat d’implémentation TAR/GZIP](../engineering/tar-gzip.md)
 - [Flux à fichier unique et paquets dérivés de ZIP](../engineering/single-file-streams.md)
 - [Contrat des flux LZ4](../engineering/lz4-streams.md)
