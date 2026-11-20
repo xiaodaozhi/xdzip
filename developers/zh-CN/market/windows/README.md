@@ -10,6 +10,12 @@
 
 通过[本地导出与截图指南](capture.md)获取双语独立文件。例行发包时，若现有素材仍准确，可在合作伙伴中心沿用图片，并按需更新「此版本的新增功能」文案。
 
+## Store 一览语言规则
+
+语言清单以 MSIX 包中声明的区域语言为依据生成。英语始终只使用 `en-US`，即使软件包声明了其他英语地区，也不额外添加对应的一览。繁体中文以 `zh-TW` 作为文案和宣传图来源，合作伙伴中心提供时添加 `zh-HK`、`zh-MO` 等地区；`zh-CN` 保持独立并使用简体中文材料。
+
+对于西班牙语、德语、法语等其他语言族，只要软件包中存在匹配的 `xx-` 语言前缀，就添加合作伙伴中心提供的其他地区条目，并复用软件包中已有语言的文案和宣传图。软件包中没有对应前缀的语言族不添加，合作伙伴中心没有提供的地区代码跳过。每个新增地区都是独立的一览，必须随提交发布后才会显示；未提交的地区继续使用此前已发布的默认或回退一览。
+
 ## 文本字段
 
 | 合作伙伴中心字段 | 材料或填写决定 |
@@ -61,4 +67,4 @@
 
 ## 官方参考
 
-[商店一览字段说明](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/add-and-edit-store-listing-info)规定说明、功能和补充字段，[MSIX 图片说明](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/screenshots-and-images)规定截图与品牌图的用途。当前页面可显示比文档更多的上传位置；本套每种语言提供四张界面截图及四组功能示意图，不因出现某类设备字段就推定产品支持该设备。
+[商店一览字段说明](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/add-and-edit-store-listing-info)规定说明、功能和补充字段，[MSIX 图片说明](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/screenshots-and-images)规定截图与品牌图的用途。当前页面可显示比文档更多的上传位置；本套每种语言提供四张界面截图及四组功能示意图，不因出现某类设备字段就推定产品支持某类设备。
