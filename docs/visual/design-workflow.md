@@ -1,6 +1,6 @@
 # UI design and correction workflow
 
-English | [简体中文](../zh-CN/visual/design-workflow.md) | [繁體中文（台灣）](../zh-TW/visual/design-workflow.md)
+English | [简体中文](../zh-CN/visual/design-workflow.md) | [繁體中文（台灣）](../zh-TW/visual/design-workflow.md) | [日本語](../ja-JP/visual/design-workflow.md) | [한국어](../ko-KR/visual/design-workflow.md) | [Français](../fr-FR/visual/design-workflow.md) | [Deutsch](../de-DE/visual/design-workflow.md) | [Español](../es-ES/visual/design-workflow.md) | [Português (Brasil)](../pt-BR/visual/design-workflow.md) | [Русский](../ru-RU/visual/design-workflow.md)
 
 Perform this workflow before creating UI, not as documentation after implementation. The specification entry is the [UI design standard](design-standard.md).
 
