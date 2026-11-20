@@ -14,7 +14,7 @@
 | 同梱アーカイブワーカー | ホスト内の `xdzip-codec-native` が `xdzip-native-codec` を起動します。C++ プロトコル層は `xdzip-codec-bridge` を通じて Rust の 7z、RAR、CAB、光学メディアのバックエンドを呼び出します。該当する 7z の作成と書き換えも同じ経路を使用します。ISO 作成はプロセス内の光学メディア書き込みを使用します。 |
 | 外部 SDK 試行 | `xdzip-plugin-host` と `xdzip-plugin-protocol` は独立した明示的な XDP1 実験です。デスクトップと CLI の製品ビルドは第三者拡張機能を検出、インストール、実行しません。 |
 
-最初の 2 経路は組み込みの製品コンポーネントです。同梱ワーカーは専用プロトコルとリソース監督を持つ別プロセスです。外部試行は独自のパッケージ検証、バージョン交渉、プラットフォーム権限の条件を持ちます。[システムアーキテクチャー](../../design/system-architecture.md)、[アーカイブワーカー契約](../engineering/native-codecs.md)、[SDK 試行契約](../engineering/sdk-trial.md)
+最初の 2 経路は組み込みの製品コンポーネントです。同梱ワーカーは専用プロトコルとリソース監督を持つ別プロセスです。外部試行は独自のパッケージ検証、バージョン交渉、プラットフォーム権限の条件を持ちます。[システムアーキテクチャー](system-architecture.md)、[アーカイブワーカー契約](../engineering/native-codecs.md)、[SDK 試行契約](../engineering/sdk-trial.md)
 
 <a name="xdzip-product-routing-and-operation-capabilities"></a>
 

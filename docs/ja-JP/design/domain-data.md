@@ -4,7 +4,7 @@
 
 [English](../../design/domain-data.md) | [简体中文](../../zh-CN/design/domain-data.md) | [繁體中文](../../zh-TW/design/domain-data.md) | 日本語 | [한국어](../../ko-KR/design/domain-data.md) | [Français](../../fr-FR/design/domain-data.md) | [Deutsch](../../de-DE/design/domain-data.md) | [Español](../../es-ES/design/domain-data.md) | [Português (Brasil)](../../pt-BR/design/domain-data.md) | [Русский](../../ru-RU/design/domain-data.md)
 
-ランタイムはアーカイブのセッション、完成した索引、そのセッションの最新クエリーを所有します。Qt は結果のビューを保持し、CLI は別のカタログコマンドで物理レコードを読めます。両方とも同じ Rust サービスに操作を送信します。[システム構成](../../design/system-architecture.md)、[Qt/Rust ブリッジ](qt-rust-bridge.md)
+ランタイムはアーカイブのセッション、完成した索引、そのセッションの最新クエリーを所有します。Qt は結果のビューを保持し、CLI は別のカタログコマンドで物理レコードを読めます。両方とも同じ Rust サービスに操作を送信します。[システム構成](system-architecture.md)、[Qt/Rust ブリッジ](qt-rust-bridge.md)
 
 <a name="xdzip-identity-and-source-version"></a>
 

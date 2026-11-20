@@ -4,7 +4,7 @@
 
 [English](../../design/task-scheduling.md) | [简体中文](../../zh-CN/design/task-scheduling.md) | [繁體中文](../../zh-TW/design/task-scheduling.md) | 日本語 | [한국어](../../ko-KR/design/task-scheduling.md) | [Français](../../fr-FR/design/task-scheduling.md) | [Deutsch](../../de-DE/design/task-scheduling.md) | [Español](../../es-ES/design/task-scheduling.md) | [Português (Brasil)](../../pt-BR/design/task-scheduling.md) | [Русский](../../ru-RU/design/task-scheduling.md)
 
-XDZip はランタイム接続ごとに Rust のコマンドスレッドとタスクスレッドを一つずつ使います。コマンドスレッドは現在のアーカイブを所有してタスク入力を準備します。タスクスレッドが受理されたジョブを実行する間も、コマンドスレッドはメタデータ要求を処理できます。スレッドの実行場所は[システムアーキテクチャー](../../design/system-architecture.md)、結果のクライアントへの到達方法は [Qt/Rust ブリッジ](qt-rust-bridge.md)を参照してください。
+XDZip はランタイム接続ごとに Rust のコマンドスレッドとタスクスレッドを一つずつ使います。コマンドスレッドは現在のアーカイブを所有してタスク入力を準備します。タスクスレッドが受理されたジョブを実行する間も、コマンドスレッドはメタデータ要求を処理できます。スレッドの実行場所は[システムアーキテクチャー](system-architecture.md)、結果のクライアントへの到達方法は [Qt/Rust ブリッジ](qt-rust-bridge.md)を参照してください。
 
 <a name="xdzip-admission-and-task-ownership"></a>
 
