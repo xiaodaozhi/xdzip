@@ -12,7 +12,7 @@
 
 许可复核不要求本机长期安装大型 IDE。只使用下述 GitHub 标准托管环境构建与发布时，适用依据是托管 Visual Studio 使用授权及其 REDIST 条款，无需为托管 CI 另装本地 Community 或购买个人 Enterprise。Community 是维护者需要自有开发环境时的免费选择，不能把本地安装状态当作托管构建合法性的额外门槛。
 
-Community 第 3 节允许在符合条件的构建设备上使用软件文件和 Build Tools；第 4 节授予清单内 Distributable Code 的分发权，并规定功能、下游条款和限制。仅下载 VC_redist、安装 Build Tools 或附带一份许可文本，不单独证明开发工具的适用许可。Build Tools 的无 Visual Studio 许可例外针对第三方开源依赖的构建，不是自行开发所有 C++ 程序的通用例外。使用 VS Code 也不自动取得 MSVC 许可。参见[微软许可指南](https://www.microsoft.com/licensing/guidance/Visual-Studio)和 [Build Tools 条款](https://visualstudio.microsoft.com/license-terms/vs2022-ga-diagnosticbuildtools/)。
+Community 第 3 节允许在符合条件的构建设备上使用软件文件和 Build Tools；第 4 节授予清单内 Distributable Code 的分发权，并规定功能、下游条款和限制。仅下载 VC_redist、安装 Build Tools 或附带一份许可文本，不单独证明开发工具的适用许可。没有 Visual Studio 许可时，Build Tools 的例外仅涵盖编译和构建第三方发布、经 OSI 认可且为构建自己的应用合理所需的开源 C++ 组件。该例外不允许开发或测试这些依赖，除非为编译构建而进行必要的轻微修改，也不是自行开发所有 C++ 程序的通用例外。使用 VS Code 也不自动取得 MSVC 许可。参见[微软许可指南](https://www.microsoft.com/licensing/guidance/Visual-Studio)和 [Build Tools 条款](https://visualstudio.microsoft.com/license-terms/vs2022-ga-diagnosticbuildtools/)。
 
 本地应核对 `vswhere` 返回的产品、完整版本、非预览状态及 C++ 组件，进入实际实例的开发环境，再检查 `cl`、`link` 和 SDK。已安装的 2019 Build Tools 不记为 Community 2022，也不代替当前 MSVC 2022 工具链验证。通用 `desktop.py prepare` 不隐式安装系统 IDE／SDK，首次安装使用微软安装器，保留既有工具并禁止自动重启。
 
