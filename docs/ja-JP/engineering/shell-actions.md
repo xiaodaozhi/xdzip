@@ -1,6 +1,6 @@
 # ファイルマネージャーの操作と独立したタスクホスト
 
-[English](../../engineering/shell-actions.md) | [简体中文](../../zh-CN/engineering/shell-actions.md) | [繁體中文](../../zh-TW/engineering/shell-actions.md) | 日本語 | [Français](../../fr-FR/engineering/shell-actions.md) | [Deutsch](../../de-DE/engineering/shell-actions.md) | [Español](../../es-ES/engineering/shell-actions.md) | [Português (Brasil)](../../pt-BR/engineering/shell-actions.md) | [Русский](../../ru-RU/engineering/shell-actions.md)
+[English](../../engineering/shell-actions.md) | [简体中文](../../zh-CN/engineering/shell-actions.md) | [繁體中文](../../zh-TW/engineering/shell-actions.md) | 日本語 | [한국어](../../ko-KR/engineering/shell-actions.md) | [Français](../../fr-FR/engineering/shell-actions.md) | [Deutsch](../../de-DE/engineering/shell-actions.md) | [Español](../../es-ES/engineering/shell-actions.md) | [Português (Brasil)](../../pt-BR/engineering/shell-actions.md) | [Русский](../../ru-RU/engineering/shell-actions.md)
 
 システムの入口は、選択内容と操作を同じログインセッションのデスクトッププロセスに渡します。Windows 11 の通常のインストール版では、拡張機能は「その他のオプションを表示」にあります。COM クラスは `IContextMenu` と `IExplorerCommand` の両方を公開します。MSIX は独立した従来メニューハンドラーを宣言し、Store ビルドは後述するモダンメニューハンドラーも追加します。Ubuntu 24.04 の「ファイル」は Nautilus 4.0 拡張機能を使います。macOS では Finder Sync のサブメニュー、サービスコマンド、独立した操作パネルを利用できます。
 

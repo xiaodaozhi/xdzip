@@ -2,7 +2,7 @@
 
 # 檔案管理器操作與獨立任務宿主
 
-[English](../../engineering/shell-actions.md) | [简体中文](../../zh-CN/engineering/shell-actions.md) | 繁體中文 | [日本語](../../ja-JP/engineering/shell-actions.md) | [Français](../../fr-FR/engineering/shell-actions.md) | [Deutsch](../../de-DE/engineering/shell-actions.md) | [Español](../../es-ES/engineering/shell-actions.md) | [Português (Brasil)](../../pt-BR/engineering/shell-actions.md) | [Русский](../../ru-RU/engineering/shell-actions.md)
+[English](../../engineering/shell-actions.md) | [简体中文](../../zh-CN/engineering/shell-actions.md) | 繁體中文 | [日本語](../../ja-JP/engineering/shell-actions.md) | [한국어](../../ko-KR/engineering/shell-actions.md) | [Français](../../fr-FR/engineering/shell-actions.md) | [Deutsch](../../de-DE/engineering/shell-actions.md) | [Español](../../es-ES/engineering/shell-actions.md) | [Português (Brasil)](../../pt-BR/engineering/shell-actions.md) | [Русский](../../ru-RU/engineering/shell-actions.md)
 
 系統入口將選擇和動作交給同一登入會話中的桌面程序。Windows 11 的普通安裝版擴充套件位於“顯示更多選項”，其 COM 類同時提供 `IContextMenu` 和 `IExplorerCommand`。MSIX 單獨宣告經典處理程式，商店構建另外宣告現代選單處理程式，詳見下文。Ubuntu 24.04 的 Files 使用 Nautilus 4.0 擴充套件。macOS 提供 Finder Sync 子選單、“服務”命令及獨立操作面板。
 
