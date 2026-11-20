@@ -2,7 +2,7 @@
 
 # 檔案關聯圖示
 
-[English](../../visual/file-association-icons.md) | [简体中文](../../zh-CN/visual/file-association-icons.md) | 繁體中文（台灣）
+[English](../../visual/file-association-icons.md) | [简体中文](../../zh-CN/visual/file-association-icons.md) | 繁體中文（台灣） | [日本語](../../ja-JP/visual/file-association-icons.md) | [한국어](../../ko-KR/visual/file-association-icons.md) | [Français](../../fr-FR/visual/file-association-icons.md) | [Deutsch](../../de-DE/visual/file-association-icons.md) | [Español](../../es-ES/visual/file-association-icons.md) | [Português (Brasil)](../../pt-BR/visual/file-association-icons.md) | [Русский](../../ru-RU/visual/file-association-icons.md)
 
 系統檔案圖示沿用 xdzip 的折角文件、連續曲率徽章、四條交錯帶與開放 U 形標記。設計入口為[高保真審閱頁](../../../design/hifi/sources/file-association-icons.html)，引數來源為 [file-association-icons.json](../../../specs/visual/file-association-icons.json)，文件圖示源和產品所需平臺容器統一位於 [file-associations](../../../design/assets/file-associations)。預設應用仍由使用者選擇。
 
