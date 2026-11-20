@@ -138,4 +138,4 @@
 - [개발 환경 준비](../engineering/development.md)
 - [개발 빌드 및 플랫폼 검증](../../engineering/developer-build.md)
 - [도구 체인 및 플랫폼 버전 고정](../engineering/toolchain.md)
-- [CLI 명령, JSON, 설치 및 업데이트 영수증](../../engineering/command-line.md)
+- [CLI 명령, JSON, 설치 및 업데이트 영수증](../engineering/command-line.md)

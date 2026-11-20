@@ -2,7 +2,7 @@
 
 # 命令列執行契約
 
-[English](../../engineering/command-line.md) | [简体中文](../../zh-CN/engineering/command-line.md) | 繁體中文 | [日本語](../../ja-JP/engineering/command-line.md) | [Français](../../fr-FR/engineering/command-line.md) | [Deutsch](../../de-DE/engineering/command-line.md) | [Español](../../es-ES/engineering/command-line.md) | [Português (Brasil)](../../pt-BR/engineering/command-line.md) | [Русский](../../ru-RU/engineering/command-line.md)
+[English](../../engineering/command-line.md) | [简体中文](../../zh-CN/engineering/command-line.md) | 繁體中文 | [日本語](../../ja-JP/engineering/command-line.md) | [한국어](../../ko-KR/engineering/command-line.md) | [Français](../../fr-FR/engineering/command-line.md) | [Deutsch](../../de-DE/engineering/command-line.md) | [Español](../../es-ES/engineering/command-line.md) | [Português (Brasil)](../../pt-BR/engineering/command-line.md) | [Русский](../../ru-RU/engineering/command-line.md)
 
 CLI 是獨立的 Rust 宿主，透過同一個 `xdzip-runtime` 服務呼叫格式和安全 I/O，不依賴 Qt、QML 或顯示會話。7z、RAR、CAB、ISO、UDF 繼續使用隨包提供的隔離工作程序，不搜尋 PATH 中的替代解包工具。平臺和架構沿用[支援政策](support-policy.md)，獨立 Linux CLI 不要求 X11；執行需要系統 OpenSSL 3 和證書，構建另需 libssl-dev、pkg-config。
 

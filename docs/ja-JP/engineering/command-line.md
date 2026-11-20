@@ -1,6 +1,6 @@
 # コマンドラインのランタイム契約
 
-[English](../../engineering/command-line.md) | [简体中文](../../zh-CN/engineering/command-line.md) | [繁體中文](../../zh-TW/engineering/command-line.md) | 日本語 | [Français](../../fr-FR/engineering/command-line.md) | [Deutsch](../../de-DE/engineering/command-line.md) | [Español](../../es-ES/engineering/command-line.md) | [Português (Brasil)](../../pt-BR/engineering/command-line.md) | [Русский](../../ru-RU/engineering/command-line.md)
+[English](../../engineering/command-line.md) | [简体中文](../../zh-CN/engineering/command-line.md) | [繁體中文](../../zh-TW/engineering/command-line.md) | 日本語 | [한국어](../../ko-KR/engineering/command-line.md) | [Français](../../fr-FR/engineering/command-line.md) | [Deutsch](../../de-DE/engineering/command-line.md) | [Español](../../es-ES/engineering/command-line.md) | [Português (Brasil)](../../pt-BR/engineering/command-line.md) | [Русский](../../ru-RU/engineering/command-line.md)
 
 CLI は独立した Rust ホストで、同じ `xdzip-runtime` を通して形式と安全な I/O のサービスを呼び出します。Qt、QML、画面セッションには依存しません。7z、RAR、CAB、ISO、UDF は引き続き同梱の隔離ワーカーを使い、別の展開ツールを PATH から探しません。プラットフォームとアーキテクチャーは[サポート方針](support-policy.md)に従います。独立した Linux CLI に X11 は不要です。実行にはシステムの OpenSSL 3 と証明書、ビルドにはさらに libssl-dev と pkg-config が必要です。
 

@@ -4,7 +4,7 @@
 
 [English](../../design/product-requirements.md) | [简体中文](../../zh-CN/design/product-requirements.md) | [繁體中文](../../zh-TW/design/product-requirements.md) | [日本語](../../ja-JP/design/product-requirements.md) | 한국어 | [Français](../../fr-FR/design/product-requirements.md) | [Deutsch](../../de-DE/design/product-requirements.md) | [Español](../../es-ES/design/product-requirements.md) | [Português (Brasil)](../../pt-BR/design/product-requirements.md) | [Русский](../../ru-RU/design/product-requirements.md)
 
-XDZip은 압축 파일을 폴더처럼 살펴보고 선택한 내용을 다루며 형식이 지원하면 압축 파일을 만들거나 수정할 수 있게 합니다. 데스크톱과 [독립 CLI](../../engineering/command-line.md)는 같은 압축 파일 런타임을 사용합니다. [프로젝트 README](../../../README.ko-KR.md)에서 현재 기능과 배포 방식을 설명합니다. 아래 요구 사항은 유지하고 검증할 동작을 정의합니다.
+XDZip은 압축 파일을 폴더처럼 살펴보고 선택한 내용을 다루며 형식이 지원하면 압축 파일을 만들거나 수정할 수 있게 합니다. 데스크톱과 [독립 CLI](../engineering/command-line.md)는 같은 압축 파일 런타임을 사용합니다. [프로젝트 README](../../../README.ko-KR.md)에서 현재 기능과 배포 방식을 설명합니다. 아래 요구 사항은 유지하고 검증할 동작을 정의합니다.
 
 <a name="xdzip-requirements-and-implementation"></a>
 

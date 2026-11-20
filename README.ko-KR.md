@@ -132,7 +132,7 @@ build/cli/bin/xdzip list archive.zip --json
 build/cli/bin/xdzip extract archive.zip -C output
 ```
 
-Windows에서는 `python`을 사용하고 실행 파일 이름에 `.exe`를 붙이세요. Linux에서 실행하려면 시스템 OpenSSL 3과 인증서가 필요합니다. 빌드에는 `libssl-dev`와 `pkg-config`도 필요합니다. 암호, 비대화형 사용, 종료 코드, 명령 설치 및 업데이트 제한은 [CLI 안내](docs/engineering/command-line.md)를 참조하세요.
+Windows에서는 `python`을 사용하고 실행 파일 이름에 `.exe`를 붙이세요. Linux에서 실행하려면 시스템 OpenSSL 3과 인증서가 필요합니다. 빌드에는 `libssl-dev`와 `pkg-config`도 필요합니다. 암호, 비대화형 사용, 종료 코드, 명령 설치 및 업데이트 제한은 [CLI 안내](docs/ko-KR/engineering/command-line.md)를 참조하세요.
 
 <a name="xdzip-build-from-source"></a>
 

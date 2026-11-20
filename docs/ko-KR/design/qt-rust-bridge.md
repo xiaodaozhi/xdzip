@@ -45,7 +45,7 @@ CXX는 값 타입과 소유권을 가진 Rust 컨테이너를 전달합니다. �
 | `Snapshot`, `CloseSession` | 현재 압축 파일 세션 ID 또는 영을 반환합니다. 지정 세션을 닫으면 탐색 스냅샷은 버리지만 독립적으로 유지된 작업 입력은 살아 있을 수 있습니다. |
 | `cancel`, `cancel_task`, `decide_task`, `respond_password`, `release_export`, `shutdown` | 일반 명령 큐 밖의 제어 메서드입니다. 요청 취소에는 자체 요청 ID와 `Finished`가 있으며 작업 제어는 기존 작업에 적용됩니다. |
 
-Rust 서비스는 `Catalog`, `SelectMembers` 같은 CLI 전용 작업도 제공합니다. 브리지는 제출 전에 입력 크기와 열거형 값을 검증합니다. 예를 들어 생성 경로는 각각 4 KiB, 합계 4 MiB로 제한됩니다. 런타임은 세션과 작업 의미를 검증하고 I/O 계층은 파일을 열고 출력 권한을 얻습니다. [런타임 서비스 계약](../engineering/product-runtime.md), [CLI 계약](../../engineering/command-line.md), [파일 권한](file-security.md)
+Rust 서비스는 `Catalog`, `SelectMembers` 같은 CLI 전용 작업도 제공합니다. 브리지는 제출 전에 입력 크기와 열거형 값을 검증합니다. 예를 들어 생성 경로는 각각 4 KiB, 합계 4 MiB로 제한됩니다. 런타임은 세션과 작업 의미를 검증하고 I/O 계층은 파일을 열고 출력 권한을 얻습니다. [런타임 서비스 계약](../engineering/product-runtime.md), [CLI 계약](../engineering/command-line.md), [파일 권한](file-security.md)
 
 <a name="xdzip-event-delivery-and-backpressure"></a>
 

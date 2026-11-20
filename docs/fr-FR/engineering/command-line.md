@@ -1,6 +1,6 @@
 # Contrat d’exécution en ligne de commande
 
-[English](../../engineering/command-line.md) | [简体中文](../../zh-CN/engineering/command-line.md) | [繁體中文](../../zh-TW/engineering/command-line.md) | [日本語](../../ja-JP/engineering/command-line.md) | Français | [Deutsch](../../de-DE/engineering/command-line.md) | [Español](../../es-ES/engineering/command-line.md) | [Português (Brasil)](../../pt-BR/engineering/command-line.md) | [Русский](../../ru-RU/engineering/command-line.md)
+[English](../../engineering/command-line.md) | [简体中文](../../zh-CN/engineering/command-line.md) | [繁體中文](../../zh-TW/engineering/command-line.md) | [日本語](../../ja-JP/engineering/command-line.md) | [한국어](../../ko-KR/engineering/command-line.md) | Français | [Deutsch](../../de-DE/engineering/command-line.md) | [Español](../../es-ES/engineering/command-line.md) | [Português (Brasil)](../../pt-BR/engineering/command-line.md) | [Русский](../../ru-RU/engineering/command-line.md)
 
 La CLI est un hôte Rust indépendant qui appelle les services de formats et d’E/S sûres par le même `xdzip-runtime`. Elle ne dépend ni de Qt, ni de QML, ni d’une session graphique. Les formats 7z, RAR, CAB, ISO et UDF continuent d’utiliser les processus isolés fournis, sans rechercher d’autres programmes d’extraction dans PATH. Les plateformes et architectures suivent la [politique de support](support-policy.md). La CLI autonome Linux ne nécessite pas X11 ; son exécution exige OpenSSL 3 et les certificats du système, et sa compilation exige aussi libssl-dev et pkg-config.
 
