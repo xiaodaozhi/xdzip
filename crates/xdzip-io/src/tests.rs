@@ -300,6 +300,53 @@ fn windows_read_only_acl_allows_output_but_mutation_does_not() {
 }
 
 #[test]
+#[cfg(target_os = "linux")]
+fn snap_home_workspace_is_accessible_and_leftovers_are_reported() {
+    const VARIABLE: &str = "XDZIP_SNAP_HOME_TEST_TARGET";
+    if let Some(path) = std::env::var_os(VARIABLE) {
+        let root = std::path::PathBuf::from(path);
+        let grant = Grant::for_creation(&root).unwrap();
+        fs::create_dir(root.join(".xdzip-work-previous")).unwrap();
+        let mut workspace = grant.workspace(1).unwrap();
+        let mut stage = workspace.stage().unwrap();
+        stage.write_all(b"snap staging").unwrap();
+        drop(stage);
+        assert_eq!(grant.leftover_count().unwrap(), 2);
+        assert!(
+            fs::read_dir(&root)
+                .unwrap()
+                .filter_map(Result::ok)
+                .any(|entry| {
+                    entry
+                        .file_name()
+                        .to_string_lossy()
+                        .starts_with("xdzip-work-")
+                })
+        );
+        workspace.cleanup().unwrap();
+        assert_eq!(grant.leftover_count().unwrap(), 1);
+        assert!(root.join(".xdzip-work-previous").is_dir());
+        return;
+    }
+    let root = Owned::new();
+    let result = std::process::Command::new(std::env::current_exe().unwrap())
+        .args([
+            "--exact",
+            "tests::snap_home_workspace_is_accessible_and_leftovers_are_reported",
+        ])
+        .env(VARIABLE, &root.0)
+        .env("SNAP", "/snap/xdzip/x1")
+        .env("SNAP_REAL_HOME", &root.0)
+        .output()
+        .unwrap();
+    assert!(
+        result.status.success(),
+        "{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+}
+
+#[test]
 fn crashed_private_stage_is_reported_and_never_auto_removed() {
     const VARIABLE: &str = "XDZIP_OWNED_CRASH_TARGET";
     if let Some(path) = std::env::var_os(VARIABLE) {

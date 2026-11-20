@@ -12870,6 +12870,7 @@ QtObject {
         QTemporaryDir destination;
         QVERIFY(destination.isValid());
         BrowserController controller;
+        QSignalSpy extractionStarted(&controller, &BrowserController::extractionStarted);
         controller.m_pending = 9001;
         controller.m_busy = true;
         controller.m_result.extraction = true;
@@ -12895,6 +12896,7 @@ QtObject {
         finished.request_id = 9001;
         controller.receive(finished);
         QCOMPARE(recorder.count, 0);
+        QCOMPARE(extractionStarted.count(), 0);
         QVERIFY(controller.m_openAfterTasks.isEmpty());
         QTRY_VERIFY(controller.requestClose());
     }

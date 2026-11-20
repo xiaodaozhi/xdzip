@@ -3,6 +3,7 @@
 #include "ImagePreviewProtocol.h"
 #include "NativeDialogPolicy.h"
 #include "PreviewImages.h"
+#include "PrivateCache.h"
 #include "UiText.h"
 #include "rust/cxx.h"
 #include "xdzip-qt-bridge/src/lib.rs.h"
@@ -830,7 +831,7 @@ void BrowserController::enterDirectory(int row) {
             m_temporaryCacheOverride.isEmpty()
                 ? QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/opened-files"
                 : m_temporaryCacheOverride;
-        if (cache.isEmpty() || !QDir().mkpath(cache)) {
+        if (!preparePrivateCache(cache)) {
             m_message = explain("output_io");
             emit changed();
             return;
@@ -2399,7 +2400,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         }
         m_message = explain(m_result.error);
         if (m_result.extraction || m_result.creating || m_result.checking) {
-            const bool extraction = m_result.extraction;
+            const bool extraction = m_result.extraction && !m_result.exporting;
             const bool creating = m_result.creating;
             const bool updating = m_result.updating;
             const bool checking = m_result.checking;
