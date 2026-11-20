@@ -4,7 +4,7 @@
 
 [English](../../engineering/product-runtime.md) | [简体中文](../../zh-CN/engineering/product-runtime.md) | [繁體中文](../../zh-TW/engineering/product-runtime.md) | [日本語](../../ja-JP/engineering/product-runtime.md) | [한국어](../../ko-KR/engineering/product-runtime.md) | [Français](../../fr-FR/engineering/product-runtime.md) | [Deutsch](../../de-DE/engineering/product-runtime.md) | [Español](../../es-ES/engineering/product-runtime.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/product-runtime.md)
 
-Este guia explica como o aplicativo de desktop se conecta ao runtime Rust por comandos e eventos, incluindo contrapressão das filas, encerramento e builds por plataforma. Consulte [navegação somente para leitura](../../engineering/readonly-browser.md) e [extração segura](zip-safe-extraction.md) para os respectivos recursos.
+Este guia explica como o aplicativo de desktop se conecta ao runtime Rust por comandos e eventos, incluindo contrapressão das filas, encerramento e builds por plataforma. Consulte [navegação somente para leitura](readonly-browser.md) e [extração segura](zip-safe-extraction.md) para os respectivos recursos.
 
 <a name="xdzip-implemented-services"></a>
 

@@ -1,6 +1,6 @@
 # 読み取り専用閲覧の実装契約
 
-[English](../../engineering/readonly-browser.md) | [简体中文](../../zh-CN/engineering/readonly-browser.md) | [繁體中文](../../zh-TW/engineering/readonly-browser.md) | 日本語 | [한국어](../../ko-KR/engineering/readonly-browser.md) | [Français](../../fr-FR/engineering/readonly-browser.md) | [Español](../../es-ES/engineering/readonly-browser.md)
+[English](../../engineering/readonly-browser.md) | [简体中文](../../zh-CN/engineering/readonly-browser.md) | [繁體中文](../../zh-TW/engineering/readonly-browser.md) | 日本語 | [한국어](../../ko-KR/engineering/readonly-browser.md) | [Français](../../fr-FR/engineering/readonly-browser.md) | [Español](../../es-ES/engineering/readonly-browser.md) | [Português (Brasil)](../../pt-BR/engineering/readonly-browser.md)
 
 この文書は閲覧データ、リソース、操作の境界を定義し、[ドメインとデータ](../design/domain-data.md)、[Qt/Rust ブリッジ](../design/qt-rust-bridge.md)、[フォーマット拡張設計](../design/codec-extension-sdk.md)を補足します。第三者プロトコルや完全なフォーマット SDK を固定するものではありません。以下に ZIP 固有のメタデータ規則を示します。TAR/TAR.GZ は閲覧とクエリーのモデルを再利用します。フォーマットの違いは [TAR/GZIP 契約](tar-gzip.md)を参照してください。
 

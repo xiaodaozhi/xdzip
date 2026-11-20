@@ -32,7 +32,7 @@ Comece pela [arquitetura do sistema](../design/system-architecture.md) para conh
 ## Leitura e gravação de arquivos compactados
 
 - [Autorização, preparação e gravação segura](../design/file-security.md)
-- [Navegação somente para leitura](../../engineering/readonly-browser.md)
+- [Navegação somente para leitura](../engineering/readonly-browser.md)
 - [Navegação ZIP somente para leitura](../engineering/zip-readonly-browsing.md)
 - [Índices grandes e navegação sob demanda](../engineering/large-index.md)
 - [Leitura de volumes divididos e abertura temporária](../engineering/archive-opening.md)
