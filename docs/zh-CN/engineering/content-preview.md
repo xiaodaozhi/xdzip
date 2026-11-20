@@ -1,6 +1,6 @@
 # 内容预览
 
-[English](../../engineering/content-preview.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/content-preview.md)
+[English](../../engineering/content-preview.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/content-preview.md) | [日本語](../../ja-JP/engineering/content-preview.md) | [한국어](../../ko-KR/engineering/content-preview.md) | [Français](../../fr-FR/engineering/content-preview.md) | [Deutsch](../../de-DE/engineering/content-preview.md) | [Español](../../es-ES/engineering/content-preview.md) | [Português (Brasil)](../../pt-BR/engineering/content-preview.md) | [Русский](../../ru-RU/engineering/content-preview.md)
 
 属性卡可见时，单选支持的文件，选择稳定后自动开始预览。鼠标悬停预览区或键盘聚焦刷新按钮时，右上角会显示刷新图标，可重新加载所选文件。读取或解码失败时，卡片显示相应原因。选中多项时显示多选提示。主窗口与独立属性查看器共用上述交互和现有密码窗口，文件属性可独立查看。
 

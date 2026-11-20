@@ -2,7 +2,7 @@
 
 # 內容預覽
 
-[English](../../engineering/content-preview.md) | [简体中文](../../zh-CN/engineering/content-preview.md) | 繁體中文（台灣）
+[English](../../engineering/content-preview.md) | [简体中文](../../zh-CN/engineering/content-preview.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/content-preview.md) | [한국어](../../ko-KR/engineering/content-preview.md) | [Français](../../fr-FR/engineering/content-preview.md) | [Deutsch](../../de-DE/engineering/content-preview.md) | [Español](../../es-ES/engineering/content-preview.md) | [Português (Brasil)](../../pt-BR/engineering/content-preview.md) | [Русский](../../ru-RU/engineering/content-preview.md)
 
 屬性卡可見時，選取單一支援的檔案，待選取項目穩定後就會自動開始預覽。將滑鼠移到預覽區，或用鍵盤將焦點移到重新載入按鈕，即可使用右上角的圖示重新載入所選檔案。讀取或解碼失敗時，屬性卡會顯示原因。選取多個項目時會顯示多選提示。主視窗和獨立屬性檢視器共用上述操作和現有的密碼視窗。檔案屬性可以獨立查看。
 

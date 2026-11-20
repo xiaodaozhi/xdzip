@@ -1,6 +1,6 @@
 # Content preview
 
-English | [简体中文](../zh-CN/engineering/content-preview.md) | [繁體中文（台灣）](../zh-TW/engineering/content-preview.md)
+English | [简体中文](../zh-CN/engineering/content-preview.md) | [繁體中文（台灣）](../zh-TW/engineering/content-preview.md) | [日本語](../ja-JP/engineering/content-preview.md) | [한국어](../ko-KR/engineering/content-preview.md) | [Français](../fr-FR/engineering/content-preview.md) | [Deutsch](../de-DE/engineering/content-preview.md) | [Español](../es-ES/engineering/content-preview.md) | [Português (Brasil)](../pt-BR/engineering/content-preview.md) | [Русский](../ru-RU/engineering/content-preview.md)
 
 When the properties card is visible, selecting one supported file starts a preview after the selection settles. The refresh icon appears at the upper right when the pointer is over the preview or the button receives keyboard focus. It reloads the selected file. The card reports read or decode failures and shows a selection message for multiple items. The main window and standalone properties viewer share these behaviors and the existing password window. File metadata remains available independently.
 
