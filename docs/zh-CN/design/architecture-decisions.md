@@ -1,6 +1,6 @@
 # xdzip：架构决策记录
 
-[English](../../design/architecture-decisions.md) | 简体中文 | [繁體中文](../../zh-TW/design/architecture-decisions.md) | [Français](../../fr-FR/design/architecture-decisions.md)
+[English](../../design/architecture-decisions.md) | 简体中文 | [繁體中文](../../zh-TW/design/architecture-decisions.md) | [Français](../../fr-FR/design/architecture-decisions.md) | [Español](../../es-ES/design/architecture-decisions.md)
 
 早期记录日期为 2026-10-11，后续记录各自注明日期。已采用表示架构决策生效。各段的当前实现说明将决策关联到维护中的契约及能力依据。替代旧决策时，保留原记录并追加新记录。
 
