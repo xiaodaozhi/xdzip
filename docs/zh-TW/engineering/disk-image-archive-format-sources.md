@@ -2,7 +2,7 @@
 
 # 磁碟映像與其他歸檔格式的資料和許可
 
-[English](../../engineering/disk-image-archive-format-sources.md) | [简体中文](../../zh-CN/engineering/disk-image-archive-format-sources.md) | 繁體中文（台灣）
+[English](../../engineering/disk-image-archive-format-sources.md) | [简体中文](../../zh-CN/engineering/disk-image-archive-format-sources.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/disk-image-archive-format-sources.md) | [한국어](../../ko-KR/engineering/disk-image-archive-format-sources.md) | [Français](../../fr-FR/engineering/disk-image-archive-format-sources.md) | [Deutsch](../../de-DE/engineering/disk-image-archive-format-sources.md) | [Español](../../es-ES/engineering/disk-image-archive-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/disk-image-archive-format-sources.md) | [Русский](../../ru-RU/engineering/disk-image-archive-format-sources.md)
 
 本文介紹 DAA、ISZ、ZPAQ、PEA、BOND 和 J2J 等格式的公開技術資料、許可限制與支援條件。公開描述資料格式不等於允許釋出解碼器，參考實現也不一定可以作為產品依賴再分發；下列參考實現均不連結進 xdzip。格式進入產品登記前，須確認原始碼版本、許可文字、完整樣本、資源限制和失敗行為。
 
