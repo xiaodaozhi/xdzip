@@ -303,7 +303,8 @@ impl Grant {
             .iter()
             .map(|b| format!("{b:02x}"))
             .collect::<String>();
-        let name = format!(".xdzip-work-{nonce}");
+        let prefix = workspace_prefix(&self.path);
+        let name = format!("{prefix}{nonce}");
         self.dir
             .create_dir_with(&name, &private_builder())
             .map_err(failure)?;
@@ -342,11 +343,9 @@ impl Grant {
                 return Err(OutputError::Limit);
             }
             let item = item.map_err(failure)?;
-            if item
-                .file_name()
-                .to_string_lossy()
-                .starts_with(".xdzip-work-")
-            {
+            let name = item.file_name();
+            let name = name.to_string_lossy();
+            if name.starts_with(".xdzip-work-") || name.starts_with("xdzip-work-") {
                 count += 1;
             }
         }
@@ -484,6 +483,21 @@ impl Grant {
         private::check_confidential(&directory_file(&child.dir)?, true)?;
         Ok(child)
     }
+}
+
+fn workspace_prefix(path: &Path) -> &'static str {
+    #[cfg(target_os = "linux")]
+    {
+        if std::env::var_os("SNAP").is_some()
+            && std::env::var_os("SNAP_REAL_HOME")
+                .as_deref()
+                .is_some_and(|home| Path::new(home) == path)
+        {
+            return "xdzip-work-";
+        }
+    }
+    let _ = path;
+    ".xdzip-work-"
 }
 fn directory_file(dir: &Dir) -> Result<File, OutputError> {
     let mut options = OpenOptions::new();

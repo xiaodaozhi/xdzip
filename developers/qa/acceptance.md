@@ -2,6 +2,8 @@
 
 English | [简体中文](../zh-CN/qa/acceptance.md)
 
+SNAP-HOME: Verify the strict Snap can prepare and extract to the user's actual home directory and an existing child directory. Check that the visible private workspace is cleaned on success and that both workspace prefixes are counted after interruption.
+
 ## Directory-first sorting
 
 SORT-DIRECTORIES-FIRST: Every sort code (0–12), including archive order, keeps explicit and implicit directories before files in both directions. Cover ordinary browsing, recursive search, directory navigation, cross-page results, duplicate identities and unknown original sizes. Verify memory and actual external disk merge ordering agree; direction and unknown-size ordering apply inside each group. Exercise all five desktop columns and default archive order through the real controller.
