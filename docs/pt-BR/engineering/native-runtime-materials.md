@@ -1,0 +1,37 @@
+<a name="xdzip-native-runtime-provenance-and-notices"></a>
+
+# Procedência e avisos de componentes nativos de execução
+
+[English](../../engineering/native-runtime-materials.md) | [简体中文](../../zh-CN/engineering/native-runtime-materials.md) | [繁體中文（台灣）](../../zh-TW/engineering/native-runtime-materials.md) | [日本語](../../ja-JP/engineering/native-runtime-materials.md) | [한국어](../../ko-KR/engineering/native-runtime-materials.md) | [Français](../../fr-FR/engineering/native-runtime-materials.md) | [Deutsch](../../de-DE/engineering/native-runtime-materials.md) | [Español](../../es-ES/engineering/native-runtime-materials.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/native-runtime-materials.md)
+
+Este contrato cobre componentes nativos de execução que não são Qt nos pacotes reais e é usado com [atribuição em execução](runtime-attribution.md) e [código-fonte correspondente](source-delivery.md). Versão da fonte, identidade dos arquivos, condições de licença e cumprimento efetivo são verificados separadamente; hashes de arquivos do fornecedor não são aprovação de licença. As conclusões históricas do candidato `v0.1.0` e as evidências complementares estão em [#4](https://github.com/xiaodaozhi/xdzip/issues/4) e [#53](https://github.com/xiaodaozhi/xdzip/issues/53). Futuros candidatos usam novas issues de lançamento; evidências são geradas somente em build/ ou artefatos de CI.
+
+| Componente | Base original e materiais de entrega | Limite da revisão |
+| --- | --- | --- |
+| Qt 6.8.2 | SPDX do SDK, fontes originais de módulos e patches, avisos Qt, textos LGPLv3 e GPLv3, instruções para recompilar o aplicativo e substituir de modo compatível | A execução usa a opção LGPL; licenças de ferramentas e terceiros são separadas. Correspondência dos arquivos do SDK não é equivalência completa da compilação original |
+| Código de execução Rust | Cargo.lock, entradas realmente vinculadas, candidatos a dependências de execução, avisos vendor e originais completos, código-fonte da biblioteca padrão Rust | Entregar de forma conservadora os avisos do grafo de compilação sem informar ferramentas build/dev/proc-macro como código de execução vinculado |
+| Fontes derivadas de Noto Sans SC, TC, JP, KR e Noto Sans | Manifesto das fontes, textos OFL originais, fontes renomeadas, ponto de geração | A Apache-2.0 do projeto não se aplica às fontes; preservar explicações sobre alterações e nomes |
+| ICU 73.2 | Versão real da biblioteca, LICENSE original completo do ICU com avisos de terceiros, registros de procedência | Texto MIT genérico não substitui os próprios avisos do ICU; não confundir wrappers do sistema com os arquivos realmente empacotados |
+| Runtime Microsoft VC++ | Pacote oficial VC_redist e hashes de DLL fixados, licença original, inventário de versões e distribuição | Arquivos permanecem inalterados; elegibilidade do mantenedor e condições de redistribuição exigem revisão separada |
+| Bibliotecas de compiladores gráficos do Windows SDK | Excluídas dos novos pacotes; pacotes históricos mantêm licença SDK original, hashes por DLL e procedência | Condições de distribuição histórica continuam sendo revisadas separadamente e não mudam com a remoção dos novos pacotes |
+| Mecanismo instalador Inno Setup 6.7.3 | Pacote do compilador e commit de fonte fixados, licenças originais Inno e RemObjects Pascal Script, Installer-CREDITS.txt bilíngue | Preservar a interface de direitos autorais existente do mecanismo. Pascal Script também exige seu nome e URL de origem em Sobre ou na documentação; a licença geral Inno sozinha não basta |
+
+As [orientações de redistribuição de runtime da Microsoft](https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files) e a [lista redistribuível do VS 2022](https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution) vinculam direitos de redistribuição às licenças aplicáveis. O texto de licença do instalador não comprova a elegibilidade do mantenedor. As [obrigações de código aberto do Qt](https://www.qt.io/development/open-source-lgpl-obligations) exigem preservar os direitos dos usuários de obter o código correspondente, modificá-lo, vincular novamente e executar bibliotecas modificadas; vinculação dinâmica não substitui as demais obrigações.
+
+Consulte [licenças do Windows](windows-licensing.md) para a opção Community gratuita, a autorização separada para Enterprise hospedado e as condições de redistribuição. A implantação inclui licenças CRT/SDK originais, procedência e Windows-runtime-NOTICE.txt bilíngue tanto no runtime quanto nos materiais. Antes de compilar, o Setup verifica o hash do acordo CRT original e exibe sua página de licença. DLLs Microsoft não são relicenciadas sob Apache-2.0.
+
+<a name="xdzip-generation-and-verification"></a>
+
+## Geração e verificação
+
+`scripts/native-runtime-sources.json` fixa a versão de licença do ICU, a URL oficial e o SHA-256. `collect-notices.py` coleta a licença ICU completa no Linux e verifica novamente hashes de caches e downloads. Os pacotes atuais de desenvolvimento Windows omitem `opengl32sw.dll` e não coletam mais avisos Mesa/LLVM para ele. Se o diretório de saída de avisos contiver materiais específicos antigos, a coleta recusa a reutilização para não adicioná-los incorretamente a um novo candidato.
+
+`prepare-source-delivery.py` inclui a licença ICU e o inventário de fontes fixadas. Os materiais preservam os bytes originais; o manifesto de entrega recalcula tamanhos e hashes. Pacotes históricos com bibliotecas de renderização por software Mesa ainda exigem as fontes históricas correspondentes, avisos e obrigações; a nova política não pode reescrever entregas históricas.
+
+Anexos de materiais de plataforma devem conter os diretórios referenciados por `license_materials_base` no relatório de atribuição. Verifique novamente o hash de cada texto original de licença antes do empacotamento. Um texto idêntico em outro lugar do diretório de runtime não justifica um relatório que aponta para diretório relativo ausente.
+
+A implantação Windows desabilita buscas de ambiente do windeployqt por OpenGL por software, compiladores D3D e DXC e não copia mais as três bibliotecas de compiladores gráficos do Windows SDK. Rejeite a área de preparação que contenha esses nomes. Remova uma DLL de OpenGL por software remanescente na raiz da preparação controlada e rejeite arquivos remanescentes de mesmo nome em outros locais.
+
+O empacotamento macOS gera `deployment-audit.json`, `macos-deployment.json` e `runtime-attribution.json` enquanto o aplicativo final assinado ainda existe. O SBOM de arquivos usa os mesmos relatórios de auditoria e atribuição. Compare arquivos nativos Qt pelos segmentos arm64, todos os bytes das seções, UUID e versões de importação, permitindo a relocação de caminhos Qt necessária à implantação. Assinaturas, layout de comandos de carregamento e LINKEDIT ficam fora da conclusão dessa comparação. Associe recursos não nativos por bytes exatos. Permanecem arquivos sem associação e lacunas do SPDX original; esse processo não é equivalência binária completa.
+
+Se avisos ausentes forem encontrados após a publicação, materiais complementares não podem ser descritos como já incluídos no pacote original. Os ativos e somas de verificação da versão original permanecem imutáveis; pacotes corrigidos exigem nova versão e nova verificação. Registre explicitamente os materiais complementares e a que estão vinculados.
