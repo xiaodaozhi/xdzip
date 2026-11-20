@@ -94,7 +94,7 @@ Empieza por la [arquitectura del sistema](../design/system-architecture.md) para
 - [Revisión de fidelidad visual HTML](../visual/html-fidelity.md)
 - [Especificación adicional de interacción y textos](../ux/interaction-spec.md)
 - [Funciones, componentes e interacción de la ventana principal](../../ux/main-window-components.md)
-- [Diseño e integración del árbol de directorios](../../ux/directory-tree.md)
+- [Diseño e integración del árbol de directorios](../ux/directory-tree.md)
 - [Página de bienvenida de la ventana principal](../ux/welcome.md)
 - [Capa de carga de bienvenida y fin de creación](../ux/welcome-opening.md)
 - [Interacción con la contraseña de extracción](../ux/password-extraction.md)
