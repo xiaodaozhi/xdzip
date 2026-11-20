@@ -14,7 +14,7 @@
 
 LZMA 位流另參考 Igor Pavlov 2015-06-14 的[官方規格包](https://www.7-zip.org/a/lzma-specification.7z)，歸檔 SHA-256 為 `4529aca392d6b9598f72086e7d136b1e05d2863bf7a757836d3fd4f49e623b58`，其中規格文字 SHA-256 為 `6a4d441c2fa1d8d37b0189c7147a4b5424d5cdb122a7fc1fbebd022864ed54fb`。僅閱讀格式文字、規範數學與偽碼，不將包內參考解碼器作為 Rust 移植輸入；文件及樣本不因下載而獲得新的再分發許可。
 
-通用 Deflate 依據 RFC 1951，與 ZIP、GZIP 和 MSZIP 共用一套實現。Deflate64 在該實現中顯式選擇 64 KiB 歷史、距離碼 30/31 和長度碼 285 的擴充套件規則，普通 Deflate/MSZIP 不改變。[PKWARE APPNOTE](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT) 的增強 Deflate 段只提供概述，具體位流差異透過固定參考的事實分析和獨立讀取驗證補足，不能將概述冒充完整規格。AES-CBC 的數學和獨立向量依據 [NIST SP 800-38A](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf)，7z 的屬性、UTF-16LE 密碼派生和零填充是額外格式規則，不能從 ZIP AES 或 PKCS#7 推導。BZip2 手冊及 PPMd 的格式名稱沒有完整規定歷史位流、模型重啟和結束行為，不能將這些實現描述成只讀手冊即可完成。
+通用 Deflate 依據 RFC 1951，與 ZIP、GZIP 和 MSZIP 共用一套實現。Deflate64 在該實現中顯式選擇 64 KiB 歷史、距離碼 30/31 和長度碼 285 的擴展規則，普通 Deflate/MSZIP 不改變。[PKWARE APPNOTE](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT) 的增強 Deflate 段只提供概述，具體位流差異透過固定參考的事實分析和獨立讀取驗證補足，不能將概述冒充完整規格。AES-CBC 的數學和獨立向量依據 [NIST SP 800-38A](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf)，7z 的屬性、UTF-16LE 密碼派生和零填充是額外格式規則，不能從 ZIP AES 或 PKCS#7 推導。BZip2 手冊及 PPMd 的格式名稱沒有完整規定歷史位流、模型重啟和結束行為，不能將這些實現描述成只讀手冊即可完成。
 
 <a name="xdzip-参考分析与原创编码"></a>
 
@@ -28,12 +28,12 @@ LZMA 位流另參考 Igor Pavlov 2015-06-14 的[官方規格包](https://www.7-z
 | 容器細節 | `CPP/7zip/Archive/7z/7zIn.cpp` 的外部屬性、子流校驗繼承與檔案屬性相關部分 | 歸檔預設 LGPL-2.1-or-later |
 | 7z AES | `CPP/7zip/Crypto/7zAes.cpp/.h`，MyAes、FilterCoder 及 7z 編解碼包裝中的塊長、密碼、填充和完成相關部分 | 歸檔預設 LGPL-2.1-or-later，不讀取或移植底層 AES 實現 |
 | BZip2 | BZip2Decoder、Const、Crc，區分普通 7z 和獨立 bz2 包裝的錯誤處理 | 歸檔預設 LGPL-2.1-or-later，不據格式名稱套用其他實現的許可 |
-| PPMd7 | `C/Ppmd7.c/.h`、`Ppmd7Dec.c`、`Ppmd7Enc.c` 的數學狀態、虛擬容量和重啟事實，以及 C++ Ppmd 包裝的屬性與結束約束 | 這些 C 檔案宣告 Public domain；C++ 包裝適用歸檔預設條款，不復制上下文佈局、分配器實現或控制流程 |
+| PPMd7 | `C/Ppmd7.c/.h`、`Ppmd7Dec.c`、`Ppmd7Enc.c` 的數學狀態、虛擬容量和重啟事實，以及 C++ Ppmd 包裝的屬性與結束約束 | 這些 C 檔案宣告 Public domain；C++ 包裝適用歸檔預設條款，不複製上下文佈局、分配器實現或控制流程 |
 | Deflate64 | `CPP/7zip/Compress/DeflateConst.h`、DeflateDecoder 的 64 位模式相關範圍、Deflate64Register 及 7z 屬性准入 | 歸檔預設 LGPL-2.1-or-later，僅交接與普通 Deflate 的格式差異 |
 | ISA、Delta、Swap | `C/Bra.c`、`Bra86.c`、`Bra.h`、`Delta.c`、`SwapBytes.c` 的標量語義及 C++ 方法註冊/屬性/尾部包裝 | 這些 C 檔案宣告 Public domain；C++ 包裝單獨適用歸檔預設條款，SIMD 策略不作為格式 |
 | BCJ2 | `C/Bcj2.c/.h` 的四流和數學狀態，C++ Bcj2Coder 的解碼完成與尺寸包裝 | C 檔案宣告 Public domain；C++ 包裝適用歸檔預設條款，不分析或搬用編碼器主體 |
 
-固定歸檔及具體檔案的身份、實際閱讀範圍和事實交接摘要應隨開發證據保留，升級參照時重新核對，不能沿用舊行號證明新版本行為。規範常量、標識和數學關係可用於格式實現，內部最佳化及歷史未定義行為不作為產品許可權。Public domain 宣告不擴充套件到整個歸檔、文件、CPP 包裝或其他樣本。
+固定歸檔及具體檔案的身份、實際閱讀範圍和事實交接摘要應隨開發證據保留，升級參照時重新核對，不能沿用舊行號證明新版本行為。規範常量、標識和數學關係可用於格式實現，內部最佳化及歷史未定義行為不作為產品許可權。Public domain 宣告不延伸至整個歸檔、文件、CPP 包裝或其他樣本。
 
 這不是嚴格潔淨室或法律風險清零的宣告。第三方來源、含官方後端的歷史交付及獨立測試工具繼續遵守各自條款；目前產品不構建官方後端，見[許可](licensing.md)與[對應原始碼](source-delivery.md)。
 
