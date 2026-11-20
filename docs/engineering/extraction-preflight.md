@@ -21,19 +21,19 @@ Preflight runs through the command/event service with bounded admission and inde
 - Check exact duplicate names, collisions from Unicode lowercase comparison, parent-directory aliases differing in case, and file/directory conflicts in both insertion orders. An implicit parent directory may be supplemented by an explicit directory of the same name; duplicate explicit directory records still conflict.
 - Report declared per-file size above 8 GiB, totals above 20 GiB and integer overflow. For ZIP records, a declared compression ratio above 1000:1 prompts review. Directory sizes do not count toward output bytes.
 
-Unicode lowercase comparison is not full case folding or NFC/NFD filesystem equivalence. Any non-ASCII component marks the report “Requires destination filesystem review.” Even a report with no findings does not authorize output.
+Unicode lowercase comparison is not full case folding or NFC/NFD filesystem equivalence. Any non-ASCII component adds a notice that destination filesystem equivalence and collision checks are still required. Even a report with no findings does not authorize output.
 
 ## Resources and failures
 
 Check at most 100,000 snapshot records; selected/expanded names total at most 4 MiB. Comparison keys and original spelling stored in the collision index total at most 8 MiB, excluding container overhead. Component traversal depth is bounded, and cancellation is checked for each outer record. Reports count all findings, but at most 64 representative issues cross the bridge, containing only physical record IDs and stable reasons, not arbitrary archive error text.
 
-Empty selection, foreign IDs, index limits, or cancellation return errors rather than partially successful reports. Overflowing totals display “Cannot calculate” rather than truncating to zero. Basic findings are only reported; they do not automatically overwrite, rename, ignore, or skip.
+Empty selection, foreign IDs, index limits, or cancellation return errors rather than partially successful reports. Overflowing totals display “Unavailable” rather than truncating to zero. Basic findings are only reported; they do not automatically overwrite, rename, ignore, or skip.
 
 Unknown uncompressed sizes report the stable reason `unknown_size`. `declared_bytes=None` means an unknown total and is distinct from `Some(0)` for a known empty file. Unknown values do not fabricate total-size or unknown-method findings; actual integer overflow still produces a total-limit finding. Output tasks separately reject unknown-size records before decoding, staging, or password interaction.
 
 ## Desktop entry point
 
-Select entries and click “Extraction preflight.” Results use an independent non-modal top-level `OperationWindow`, with the main window as transient owner and the native title bar retained; macOS traffic-light buttons are not drawn by the application. Closing results closes only that window. Main-window closure uses cooperative cancellation and does not wait for workers on the GUI thread.
+Select entries and click “Extraction Metadata Preflight…”. Results use an independent non-modal top-level `OperationWindow`, with the main window as transient owner and the native title bar retained; macOS traffic-light buttons are not drawn by the application. Closing results closes only that window. Main-window closure uses cooperative cancellation and does not wait for workers on the GUI thread.
 
 ## Boundary with actual extraction
 
