@@ -4,7 +4,7 @@
 
 [English](../../design/qt-rust-bridge.md) | [简体中文](../../zh-CN/design/qt-rust-bridge.md) | [繁體中文](../../zh-TW/design/qt-rust-bridge.md) | [日本語](../../ja-JP/design/qt-rust-bridge.md) | [한국어](../../ko-KR/design/qt-rust-bridge.md) | [Français](../../fr-FR/design/qt-rust-bridge.md) | [Deutsch](../../de-DE/design/qt-rust-bridge.md) | Español | [Português (Brasil)](../../pt-BR/design/qt-rust-bridge.md) | [Русский](../../ru-RU/design/qt-rust-bridge.md)
 
-El escritorio Qt llama al entorno Rust mediante el puente `cxx` enlazado. Cada `BrowserController` posee una `RuntimeConnection` con una instancia de servicio independiente. El puente transporta comandos tipados y resultados con propiedad transferida dentro del proceso de escritorio. La CLI usa directamente el mismo servicio Rust. [Arquitectura del sistema](system-architecture.md), [Sesiones de escritorio](../../engineering/application-sessions.md)
+El escritorio Qt llama al entorno Rust mediante el puente `cxx` enlazado. Cada `BrowserController` posee una `RuntimeConnection` con una instancia de servicio independiente. El puente transporta comandos tipados y resultados con propiedad transferida dentro del proceso de escritorio. La CLI usa directamente el mismo servicio Rust. [Arquitectura del sistema](system-architecture.md), [Sesiones de escritorio](../engineering/application-sessions.md)
 
 <a name="xdzip-handles-threads-and-ownership"></a>
 

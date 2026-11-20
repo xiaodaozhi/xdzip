@@ -18,7 +18,7 @@ El escritorio usa Qt Quick para la presentación y la interacción. Los controla
 | `TaskListModel` y ventanas de operación | Presentan instantáneas acotadas de tareas, progreso, resultados y la decisión pendiente. La identidad de escritorio compuesta dirige cada comando de tarea al controlador responsable. |
 | Ajustes y adaptadores de plataforma | Mantienen la apariencia, el idioma, el tamaño del texto y el comportamiento de la aplicación. Los adaptadores nativos gestionan el área de notificación, la activación, los diálogos de archivo, las asociaciones y la entrega de transferencias según el sistema operativo. |
 
-[Entrada de escritorio](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/browser_main.cpp), [Página de sesión](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/ui/SessionPage.qml), [Controlador y modelos](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.h), [Sesiones de aplicación](../../engineering/application-sessions.md), [Ajustes e idiomas](../ux/settings-localization.md)
+[Entrada de escritorio](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/browser_main.cpp), [Página de sesión](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/ui/SessionPage.qml), [Controlador y modelos](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.h), [Sesiones de aplicación](../engineering/application-sessions.md), [Ajustes e idiomas](../ux/settings-localization.md)
 
 <a name="xdzip-browsing-and-operation-flow"></a>
 

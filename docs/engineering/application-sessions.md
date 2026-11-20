@@ -1,6 +1,6 @@
 # Application sessions and shutdown contract
 
-English | [简体中文](../zh-CN/engineering/application-sessions.md) | [繁體中文](../zh-TW/engineering/application-sessions.md) | [日本語](../ja-JP/engineering/application-sessions.md) | [한국어](../ko-KR/engineering/application-sessions.md) | [Français](../fr-FR/engineering/application-sessions.md) | [Deutsch](../de-DE/engineering/application-sessions.md)
+English | [简体中文](../zh-CN/engineering/application-sessions.md) | [繁體中文](../zh-TW/engineering/application-sessions.md) | [日本語](../ja-JP/engineering/application-sessions.md) | [한국어](../ko-KR/engineering/application-sessions.md) | [Français](../fr-FR/engineering/application-sessions.md) | [Deutsch](../de-DE/engineering/application-sessions.md) | [Español](../es-ES/engineering/application-sessions.md)
 
 The tab context menu offers “Close,” “Close Others,” and “Close Tabs to the Right.” Shift+F10 or the menu key acts on the focused tab. Right-click does not switch the current page. Commands freeze the tab's stable identity and operate only on the current visual order in its owning window; they must not affect other windows. Close the menu on reorder, window resize, target disappearance, or entry into a modal operation. Disable bulk actions without applicable targets. Submit a bulk close once. Preserve the current page if it remains open; otherwise switch to the anchor tab, avoiding repeated page flashes. Closing the last page restores the welcome page; tasks and results remain in the global task entry point.
 

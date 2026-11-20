@@ -19,7 +19,7 @@ El entorno de ejecución posee la sesión del archivo comprimido, el índice com
 | `QueryKey` | Combina sesión, identificador de consulta, generación y revisión de instantánea. El desplazamiento indica una posición de ese resultado. |
 | Identidad de petición, tarea y aviso | El servicio asigna números de petición y tarea dentro de una conexión. Un aviso pertenece a una tarea concreta. La entrada compartida de tareas de escritorio usa la identidad de sesión del controlador junto al número de tarea. |
 
-Los tipos de dominio exigen identidades de archivo comprimido y consulta distintas de cero. En el puente nativo los valores Rust tipados se representan mediante datos CXX generados. QML recibe cadenas opacas para identificadores que necesitan los 64 bits. Un número de fila es solo una posición en una consulta concreta. [Identidades de dominio](../../../crates/xdzip-domain/src/identity.rs), [Implementación del origen](../../../crates/xdzip-runtime/src/source.rs), [Sesiones de aplicación](../../engineering/application-sessions.md)
+Los tipos de dominio exigen identidades de archivo comprimido y consulta distintas de cero. En el puente nativo los valores Rust tipados se representan mediante datos CXX generados. QML recibe cadenas opacas para identificadores que necesitan los 64 bits. Un número de fila es solo una posición en una consulta concreta. [Identidades de dominio](../../../crates/xdzip-domain/src/identity.rs), [Implementación del origen](../../../crates/xdzip-runtime/src/source.rs), [Sesiones de aplicación](../engineering/application-sessions.md)
 
 <a name="xdzip-physical-entries-and-output-names"></a>
 

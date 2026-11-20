@@ -4,7 +4,7 @@
 
 [English](../../ux/task-windows.md) | [简体中文](../../zh-CN/ux/task-windows.md) | [繁體中文](../../zh-TW/ux/task-windows.md) | [日本語](../../ja-JP/ux/task-windows.md) | [한국어](../../ko-KR/ux/task-windows.md) | [Français](../../fr-FR/ux/task-windows.md) | [Deutsch](../../de-DE/ux/task-windows.md) | Español | [Português (Brasil)](../../pt-BR/ux/task-windows.md) | [Русский](../../ru-RU/ux/task-windows.md)
 
-La entrada de tareas de la aplicación agrupa todas las sesiones y dirige progreso, contraseñas, conflictos y resultados mediante el UUID de sesión y el ID de tarea del backend. Cerrar una página conserva su controlador; la salida explícita espera todas las uniones asíncronas. Véase el [contrato de sesiones de la aplicación](../../engineering/application-sessions.md).
+La entrada de tareas de la aplicación agrupa todas las sesiones y dirige progreso, contraseñas, conflictos y resultados mediante el UUID de sesión y el ID de tarea del backend. Cerrar una página conserva su controlador; la salida explícita espera todas las uniones asíncronas. Véase el [contrato de sesiones de la aplicación](../engineering/application-sessions.md).
 
 Las filas del menú de tareas muestran icono de operación, nombre del archivo comprimido, etiqueta de secuencia y etiqueta de estado. Los iconos usan recursos compartidos de creación, extracción, comprobación, adición, movimiento y exportación, sin prefijos textuales del tipo de operación. Ambas etiquetas usan el mismo componente; la secuencia conserva el número del backend y la identidad interna entre sesiones no cambia. Los nombres largos se truncan, mientras que los nombres accesibles incluyen operación, número, archivo y estado.
 

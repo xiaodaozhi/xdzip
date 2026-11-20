@@ -1,6 +1,6 @@
 # 앱 세션과 종료 계약
 
-[English](../../engineering/application-sessions.md) | [简体中文](../../zh-CN/engineering/application-sessions.md) | [繁體中文](../../zh-TW/engineering/application-sessions.md) | [日本語](../../ja-JP/engineering/application-sessions.md) | 한국어 | [Français](../../fr-FR/engineering/application-sessions.md) | [Deutsch](../../de-DE/engineering/application-sessions.md)
+[English](../../engineering/application-sessions.md) | [简体中文](../../zh-CN/engineering/application-sessions.md) | [繁體中文](../../zh-TW/engineering/application-sessions.md) | [日本語](../../ja-JP/engineering/application-sessions.md) | 한국어 | [Français](../../fr-FR/engineering/application-sessions.md) | [Deutsch](../../de-DE/engineering/application-sessions.md) | [Español](../../es-ES/engineering/application-sessions.md)
 
 탭 컨텍스트 메뉴는 “닫기”, “다른 탭 닫기”, “오른쪽 탭 닫기”를 제공합니다. Shift+F10 또는 메뉴 키는 포커스된 탭에 적용됩니다. 오른쪽 클릭은 현재 페이지를 바꾸지 않습니다. 명령은 탭의 안정적인 식별 정보를 고정하고 소유 창의 현재 시각 순서에만 적용하며 다른 창에 영향을 주면 안 됩니다. 순서 변경, 창 크기 변경, 대상 소멸 또는 모달 작업 진입 시 메뉴를 닫습니다. 적용할 대상이 없는 일괄 동작은 비활성화합니다. 일괄 닫기는 한 번만 제출합니다. 현재 페이지가 열린 채 남으면 유지하고 아니면 기준 탭으로 전환하여 페이지가 반복해서 깜박이지 않게 합니다. 마지막 페이지를 닫으면 시작 페이지가 복원되며 작업과 결과는 전역 작업 진입점에 남습니다.
 

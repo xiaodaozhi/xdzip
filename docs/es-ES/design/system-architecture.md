@@ -21,7 +21,7 @@ flowchart TB
   CPP --> IMAGE[Private image preview process]
 ```
 
-Los dos bloques del motor representan instancias separadas de la misma implementación. Escritorio y CLI poseen cada uno su propio estado de archivo y sus tareas. El IPC local de escritorio reenvía las solicitudes de activación e integración a la instancia gráfica principal. Los comandos de archivo pasan por el motor dentro del proceso. [Sesiones de aplicación](../../engineering/application-sessions.md), [contrato CLI](../engineering/command-line.md).
+Los dos bloques del motor representan instancias separadas de la misma implementación. Escritorio y CLI poseen cada uno su propio estado de archivo y sus tareas. El IPC local de escritorio reenvía las solicitudes de activación e integración a la instancia gráfica principal. Los comandos de archivo pasan por el motor dentro del proceso. [Sesiones de aplicación](../engineering/application-sessions.md), [contrato CLI](../engineering/command-line.md).
 
 ## Responsabilidades de módulos y dirección de llamadas
 

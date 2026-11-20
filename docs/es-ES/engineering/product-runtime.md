@@ -55,4 +55,4 @@ Consulta la [verificación general](../../../developers/qa/README.md). Las prueb
 
 Las consultas iniciales asignan una identidad de resultado inmutable; los lotes posteriores deben coincidir en todos los campos y parámetros de QueryKey. Qt cancela solicitudes antiguas y agrupa la última intención manteniendo las comprobaciones de secuencia e ID. Un lote también limita los nombres a 64 KiB y no vuelve a filtrar ni ordenar. La aceptación histórica se limita a las capacidades disponibles entonces.
 
-La capa de aplicación puede crear varias conexiones independientes mientras el entorno de dominio aísla las sesiones por conexión. Consulta el [contrato de sesiones](../../engineering/application-sessions.md) para la identidad global de tareas y la admisión secuencial de tareas pesadas.
+La capa de aplicación puede crear varias conexiones independientes mientras el entorno de dominio aísla las sesiones por conexión. Consulta el [contrato de sesiones](application-sessions.md) para la identidad global de tareas y la admisión secuencial de tareas pesadas.

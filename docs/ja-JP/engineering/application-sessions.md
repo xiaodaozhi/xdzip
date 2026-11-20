@@ -1,6 +1,6 @@
 # アプリケーションセッションと終了の契約
 
-[English](../../engineering/application-sessions.md) | [简体中文](../../zh-CN/engineering/application-sessions.md) | [繁體中文](../../zh-TW/engineering/application-sessions.md) | 日本語 | [한국어](../../ko-KR/engineering/application-sessions.md) | [Français](../../fr-FR/engineering/application-sessions.md) | [Deutsch](../../de-DE/engineering/application-sessions.md)
+[English](../../engineering/application-sessions.md) | [简体中文](../../zh-CN/engineering/application-sessions.md) | [繁體中文](../../zh-TW/engineering/application-sessions.md) | 日本語 | [한국어](../../ko-KR/engineering/application-sessions.md) | [Français](../../fr-FR/engineering/application-sessions.md) | [Deutsch](../../de-DE/engineering/application-sessions.md) | [Español](../../es-ES/engineering/application-sessions.md)
 
 タブのコンテキストメニューには「閉じる」「他のタブを閉じる」「右側のタブを閉じる」があります。Shift+F10 またはメニューキーはフォーカスされたタブに作用します。右クリックでは現在のページを切り替えません。コマンドはタブの安定した識別情報を固定し、所有ウィンドウ内の現在の表示順にのみ作用し、他のウィンドウに影響してはなりません。並べ替え、ウィンドウのリサイズ、対象の消失、モーダル操作への移行時にメニューを閉じます。対象がない一括操作は無効にします。一括クローズは一度だけ送信します。現在のページが残る場合は維持し、閉じる場合は基準タブに切り替えてページの繰り返しの点滅を避けます。最後のページを閉じるとウェルカムページが復帰し、タスクと結果はグローバルなタスク入口に残ります。
 

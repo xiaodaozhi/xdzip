@@ -23,7 +23,7 @@ Empieza por la [arquitectura del sistema](../design/system-architecture.md) para
 - [Estructura del repositorio y dependencias](../engineering/repository-layout.md)
 - [Contratos de interfaces y comprobaciones](../engineering/contracts.md)
 - [Entorno de ejecución y ciclo de vida de Qt](../engineering/product-runtime.md)
-- [Sesiones y cierre de la aplicación](../../engineering/application-sessions.md)
+- [Sesiones y cierre de la aplicación](../engineering/application-sessions.md)
 - [Motivos para usar el puente cxx](../engineering/cxx-admission.md)
 - [Servicios de calendario y codificación del host](../engineering/host-platform-services.md)
 
