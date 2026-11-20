@@ -1,6 +1,6 @@
 # Linux standalone runtime directory and verification
 
-English | [简体中文](../zh-CN/engineering/linux-deployment.md) | [繁體中文（台灣）](../zh-TW/engineering/linux-deployment.md)
+English | [简体中文](../zh-CN/engineering/linux-deployment.md) | [繁體中文（台灣）](../zh-TW/engineering/linux-deployment.md) | [日本語](../ja-JP/engineering/linux-deployment.md) | [한국어](../ko-KR/engineering/linux-deployment.md) | [Français](../fr-FR/engineering/linux-deployment.md) | [Deutsch](../de-DE/engineering/linux-deployment.md) | [Español](../es-ES/engineering/linux-deployment.md) | [Português (Brasil)](../pt-BR/engineering/linux-deployment.md) | [Русский](../ru-RU/engineering/linux-deployment.md)
 
 The current development deployment baseline is Ubuntu 24.04, x86_64, and X11. The goal is running the current product without the development Qt SDK; this does not promise other distributions, older glibc, Wayland, or complete installer support. macOS CI retains native build, test, and startup verification. Local development DMGs follow the [Mac deployment guide](macos-deployment.md) and are unaffected by this flow.
 

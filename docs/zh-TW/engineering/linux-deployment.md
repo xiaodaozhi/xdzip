@@ -2,7 +2,7 @@
 
 # Linux 獨立執行目錄與驗證
 
-[English](../../engineering/linux-deployment.md) | [简体中文](../../zh-CN/engineering/linux-deployment.md) | 繁體中文（台灣）
+[English](../../engineering/linux-deployment.md) | [简体中文](../../zh-CN/engineering/linux-deployment.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/linux-deployment.md) | [한국어](../../ko-KR/engineering/linux-deployment.md) | [Français](../../fr-FR/engineering/linux-deployment.md) | [Deutsch](../../de-DE/engineering/linux-deployment.md) | [Español](../../es-ES/engineering/linux-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/linux-deployment.md) | [Русский](../../ru-RU/engineering/linux-deployment.md)
 
 目前開發部署基線為 Ubuntu 24.04、x86_64、X11。目標是脫離開發 Qt SDK 執行目前產品，不據此承諾其他發行版、舊 glibc、Wayland 或完整安裝器支援。macOS CI 保持原生編譯、測試與啟動驗證，本地開發 DMG 按[Mac 部署指南](macos-deployment.md)處理，不受本流程影響。
 
