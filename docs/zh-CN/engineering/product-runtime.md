@@ -1,6 +1,6 @@
 # 产品运行时与 Qt 生命周期
 
-[English](../../engineering/product-runtime.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/product-runtime.md)
+[English](../../engineering/product-runtime.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/product-runtime.md) | [日本語](../../ja-JP/engineering/product-runtime.md) | [한국어](../../ko-KR/engineering/product-runtime.md) | [Français](../../fr-FR/engineering/product-runtime.md) | [Deutsch](../../de-DE/engineering/product-runtime.md) | [Español](../../es-ES/engineering/product-runtime.md) | [Português (Brasil)](../../pt-BR/engineering/product-runtime.md) | [Русский](../../ru-RU/engineering/product-runtime.md)
 
 本文介绍桌面程序如何通过命令与事件连接 Rust 运行时，包括队列背压、关闭流程与平台构建。归档浏览及安全解压的具体能力分别见[只读浏览](readonly-browser.md)与[安全解压](zip-safe-extraction.md)。
 
