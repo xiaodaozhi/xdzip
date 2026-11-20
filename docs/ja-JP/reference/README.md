@@ -43,7 +43,7 @@
 - [アーカイブの整合性検証](../engineering/archive-checking.md)
 - [項目を開く、ドラッグ＆ドロップ、アーカイブの変更](../../engineering/archive-transfers.md)
 - [アーカイブのパスワードと暗号化ディレクトリー](../engineering/password-extraction.md)
-- [ZIP 作成仕様](../../engineering/zip-creation.md)
+- [ZIP 作成仕様](../engineering/zip-creation.md)
 - [ISO9660 と Joliet の作成](../engineering/iso-creation.md)
 - [Windows 用の組み込み ZIP 自己展開アーカイブ](../engineering/sfx-creation.md)
 

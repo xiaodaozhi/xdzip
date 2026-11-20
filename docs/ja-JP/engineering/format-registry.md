@@ -12,7 +12,7 @@
 
 | 操作 | 組み込みの対応範囲 |
 | --- | --- |
-| 新しいアーカイブを作成 | ZIP、7z、TAR、TAR.GZ（`.tar.gz`、`.tgz`）、単独の GZIP、XZ/TAR.XZ、LZ4/TAR.LZ4、Zstandard/TAR.ZST、LHA（`.lha`、`.lzh`）、ISO9660/Joliet、Windows x64 用 ZIP SFX ラッパー。単独ストリームは通常ファイルを一つ受け取ります。[作成仕様](../../engineering/zip-creation.md)と[単一ファイルストリーム](single-file-streams.md)を参照してください。 |
+| 新しいアーカイブを作成 | ZIP、7z、TAR、TAR.GZ（`.tar.gz`、`.tgz`）、単独の GZIP、XZ/TAR.XZ、LZ4/TAR.LZ4、Zstandard/TAR.ZST、LHA（`.lha`、`.lzh`）、ISO9660/Joliet、Windows x64 用 ZIP SFX ラッパー。単独ストリームは通常ファイルを一つ受け取ります。[作成仕様](zip-creation.md)と[単一ファイルストリーム](single-file-streams.md)を参照してください。 |
 | 既存のアーカイブを書き換え | 条件を満たす ZIP/ZIPX、7z、レベル 2 の LHA/LZH、TAR、TAR.GZ、TAR.XZ、TAR.ZST、TAR.LZ4、TAR.BZ2、TAR.LZMA、TAR.LZ、TAR.Z、TAR.BR が対象です。暗号化、分割ボリューム、非対応のレコードや保存方式は対象外です。[変更仕様](../../engineering/archive-transfers.md)を参照してください。 |
 | 閲覧、展開、項目を開く、書き出し、検証 | 操作ごとに機能とレコードの条件を確認します。たとえば、一部のインストーラーで確認できるのはメタデータだけです。[読み取り専用の閲覧](../../engineering/readonly-browser.md)と[検証](archive-checking.md)を参照してください。 |
 
