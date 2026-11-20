@@ -1,6 +1,6 @@
 # Fonctionnalités, composants et contrat d’interaction de la fenêtre principale
 
-[English](../../ux/main-window-components.md) | [简体中文](../../zh-CN/ux/main-window-components.md) | [繁體中文](../../zh-TW/ux/main-window-components.md) | [日本語](../../ja-JP/ux/main-window-components.md) | [한국어](../../ko-KR/ux/main-window-components.md) | Français | [Español](../../es-ES/ux/main-window-components.md)
+[English](../../ux/main-window-components.md) | [简体中文](../../zh-CN/ux/main-window-components.md) | [繁體中文](../../zh-TW/ux/main-window-components.md) | [日本語](../../ja-JP/ux/main-window-components.md) | [한국어](../../ko-KR/ux/main-window-components.md) | Français | [Español](../../es-ES/ux/main-window-components.md) | [Português (Brasil)](../../pt-BR/ux/main-window-components.md)
 
 Les contrôles de la fenêtre principale assurent à la fois l’apparence et le comportement, avec des états explicites normal, survol, pressé, focus clavier, désactivé, sélectionné, occupé et erreur. HTML utilise des archives d’exemple pour vérifier les interactions ; Qt active les actions selon les capacités réelles de navigation, création, extraction, [vérification d’intégrité](../engineering/archive-checking.md) et [prévisualisation automatique du contenu](../engineering/content-preview.md). Les exemples HTML ne représentent pas des résultats réels en arrière-plan.
 

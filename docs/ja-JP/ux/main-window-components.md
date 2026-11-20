@@ -1,6 +1,6 @@
 # メインウィンドウの機能、コンポーネントと操作契約
 
-[English](../../ux/main-window-components.md) | [简体中文](../../zh-CN/ux/main-window-components.md) | [繁體中文](../../zh-TW/ux/main-window-components.md) | 日本語 | [한국어](../../ko-KR/ux/main-window-components.md) | [Français](../../fr-FR/ux/main-window-components.md) | [Español](../../es-ES/ux/main-window-components.md)
+[English](../../ux/main-window-components.md) | [简体中文](../../zh-CN/ux/main-window-components.md) | [繁體中文](../../zh-TW/ux/main-window-components.md) | 日本語 | [한국어](../../ko-KR/ux/main-window-components.md) | [Français](../../fr-FR/ux/main-window-components.md) | [Español](../../es-ES/ux/main-window-components.md) | [Português (Brasil)](../../pt-BR/ux/main-window-components.md)
 
 メインウィンドウのコントロールは外観と動作の両方を提供し、通常、ホバー、押下、キーボードフォーカス、無効、選択、処理中、エラーの状態を明示します。HTML はサンプルアーカイブで操作を確認し、Qt は実際の閲覧、作成、展開、[整合性検査](../engineering/archive-checking.md)、[自動コンテンツプレビュー](../engineering/content-preview.md)の機能に応じて操作を有効にします。HTML の例は実際のバックグラウンド処理結果ではありません。
 

@@ -1,6 +1,6 @@
 # Funcionalidad, componentes y contrato de interacción de la ventana principal
 
-[English](../../ux/main-window-components.md) | [简体中文](../../zh-CN/ux/main-window-components.md) | [繁體中文](../../zh-TW/ux/main-window-components.md) | [日本語](../../ja-JP/ux/main-window-components.md) | [한국어](../../ko-KR/ux/main-window-components.md) | [Français](../../fr-FR/ux/main-window-components.md) | Español
+[English](../../ux/main-window-components.md) | [简体中文](../../zh-CN/ux/main-window-components.md) | [繁體中文](../../zh-TW/ux/main-window-components.md) | [日本語](../../ja-JP/ux/main-window-components.md) | [한국어](../../ko-KR/ux/main-window-components.md) | [Français](../../fr-FR/ux/main-window-components.md) | Español | [Português (Brasil)](../../pt-BR/ux/main-window-components.md)
 
 Los controles de la ventana principal proporcionan aspecto y comportamiento, con estados explícitos normal, cursor encima, pulsado, foco de teclado, desactivado, seleccionado, ocupado y error. HTML usa archivos de ejemplo para verificar la interacción; Qt habilita acciones según las capacidades reales de exploración, creación, extracción, [comprobación de integridad](../engineering/archive-checking.md) y [vista previa automática del contenido](../engineering/content-preview.md). Los ejemplos HTML no representan resultados reales en segundo plano.
 
