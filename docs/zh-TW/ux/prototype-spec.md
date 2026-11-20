@@ -2,7 +2,7 @@
 
 # v0.1 互動原型與功能對映
 
-[English](../../ux/prototype-spec.md) | [简体中文](../../zh-CN/ux/prototype-spec.md) | 繁體中文（台灣）
+[English](../../ux/prototype-spec.md) | [简体中文](../../zh-CN/ux/prototype-spec.md) | 繁體中文（台灣） | [日本語](../../ja-JP/ux/prototype-spec.md) | [한국어](../../ko-KR/ux/prototype-spec.md) | [Français](../../fr-FR/ux/prototype-spec.md) | [Deutsch](../../de-DE/ux/prototype-spec.md) | [Español](../../es-ES/ux/prototype-spec.md) | [Português (Brasil)](../../pt-BR/ux/prototype-spec.md) | [Русский](../../ru-RU/ux/prototype-spec.md)
 
 狀態：可互動設計驗證稿。原始檔在 [design/html](../../../design/html/README.md)，入口為 [index.html](../../../design/html/index.html)。Figma 工作稿保留為歷史探索；目前功能與狀態細化在倉庫內繼續。
 
@@ -41,7 +41,7 @@
 
 ### 解壓與衝突
 
-- 最終路徑實時顯示，同名目錄只追加一次。空路徑或演示不可寫路徑阻止啟動，更改目標後重新預檢。
+- 最終路徑實時顯示，同名目錄只追加一次。空白或明確無法寫入的示範路徑會阻止啟動，更改目標後重新預檢。
 - 預設詢問重名；可選擇跳過、自動改名或覆蓋。覆蓋後果用鄰近文案解釋。
 - 衝突面板初始焦點是“跳過”，覆蓋不是預設 Enter。應用到後續衝突的選項限定本次任務；演示資料僅產生一個衝突。
 - 改名同時體現在完成摘要和檔案明細中。跳過不計為失敗；示例已有檔案不在完成寫入計數內。
@@ -102,4 +102,4 @@ HTML 僅驗證示例狀態，不證明真實任務排程、授權、路徑競態
 
 ## 設定視窗
 
-設定保留原稿的圖示標題、主題預覽卡片、密度、最近記錄和隱私說明，增加文字大小與介面語言。主題和字號預覽可取消；儲存與恢復預設均使用草稿。HTML 只在目前頁面內儲存演示狀態，HTML 的語言選擇僅示範下次啟動 Qt 時生效的設定，不將設計審閱頁或示例壓縮檔內容作為產品翻譯覆蓋證據。Qt 目前的語言切換、隨包資源與持久化行為詳見[設定與語言](settings-localization.md)。
+設定保留原稿的圖示標題、主題預覽卡片、密度、最近記錄和隱私說明，增加文字大小與介面語言。主題和字號預覽可取消；儲存與恢復預設均使用草稿。HTML 只在目前頁面內儲存演示狀態，其語言選擇僅示範下次啟動 Qt 時生效的設定，不將設計審閱頁或示例壓縮檔內容作為產品翻譯覆蓋證據。Qt 目前的語言切換、隨包資源與持久化行為詳見[設定與語言](settings-localization.md)。
