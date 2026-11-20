@@ -1,6 +1,6 @@
 # Rebuild ICU 73.2 data from CLDR
 
-English | [简体中文](../zh-CN/engineering/icu-cldr-rebuild.md) | [繁體中文（台灣）](../zh-TW/engineering/icu-cldr-rebuild.md)
+English | [简体中文](../zh-CN/engineering/icu-cldr-rebuild.md) | [繁體中文（台灣）](../zh-TW/engineering/icu-cldr-rebuild.md) | [日本語](../ja-JP/engineering/icu-cldr-rebuild.md) | [한국어](../ko-KR/engineering/icu-cldr-rebuild.md) | [Français](../fr-FR/engineering/icu-cldr-rebuild.md) | [Deutsch](../de-DE/engineering/icu-cldr-rebuild.md) | [Español](../es-ES/engineering/icu-cldr-rebuild.md) | [Português (Brasil)](../pt-BR/engineering/icu-cldr-rebuild.md) | [Русский](../ru-RU/engineering/icu-cldr-rebuild.md)
 
 This Linux workflow rebuilds ICU 73.2 locale resources using the delivered ICU source, a CLDR 43.1 subset and ICU 73.1 bootstrap source. The subset omits five ISO 639-3 files, the `docs/ldml` standards directory and two documentation screenshots, and replaces 963 web tool images. The [Unicode-published UTS #35 version 43.1](https://www.unicode.org/reports/tr35/tr35-69/tr35.html) is available separately under its owner's terms. Other uses or added data need separate provenance and terms review. Use Ubuntu 24.04 x86_64 with JDK 17, Ant, Maven, Python 3, a C/C++ toolchain, `make` and a UTF-8 locale. Maven initially needs its dependency repositories. Set `XDZIP_DELIVERY` to the trusted delivery and `JAVA_HOME` to JDK 17. Use a new working directory to avoid overwriting existing source or build results. The locally built bootstrap JARs are not claimed to be byte-identical to upstream published artifacts. Gzip bytes for the CLDR subset may vary across build environments, so verify it against that delivery's manifest; obtain the manifest through a trusted channel.
 
@@ -46,7 +46,7 @@ export XDZIP_CLDR="$XDZIP_WORK/sources/cldr-37d524354422f46731db74f3bd6b3f46516c
 export XDZIP_ICU731="$XDZIP_WORK/sources/icu-5861e1fd52f1d7673eee38bc3c965aa18b336062"
 ```
 
-Build the ICU4J bootstrap, CLDR API and ICU converter next. Maven caches and the converter's local Maven repository are confined to the extracted copies. The tools may attempt GitHub Packages metadata access; check each command's exit status and do not treat an authentication failure as a successful generation.
+Build the ICU4J bootstrap, CLDR API and ICU converter next. The Maven cache is in the working directory, and the converter's local Maven repository is in an extracted source copy. The tools may attempt GitHub Packages metadata access; check each command's exit status and do not treat an authentication failure as a successful generation.
 
 ```sh
 (set -eu
