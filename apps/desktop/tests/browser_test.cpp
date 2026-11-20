@@ -8608,6 +8608,13 @@ QtObject {
             }
             QVERIFY(tabText);
             QTRY_COMPARE(tabText->property("font").value<QFont>().pixelSize(), qRound(13 * scale));
+            auto *tabIcon =
+                findVisual(settings->contentItem(), "settingsTabIcon-" + QString::number(tab));
+            QVERIFY(tabIcon);
+            QTRY_VERIFY(tabText->property("glyphBounds").toRectF().height() > 0);
+            QTRY_VERIFY(
+                qAbs(tabText->mapToScene(tabText->property("glyphBounds").toRectF().center()).y() -
+                     tabIcon->mapToScene(QPointF(0, tabIcon->height() / 2)).y()) < .1);
             const QFontMetricsF tabMetrics(tabText->property("font").value<QFont>());
             for (const auto &word :
                  pageTitles[tab].split(QRegularExpression("\\s+"), Qt::SkipEmptyParts))

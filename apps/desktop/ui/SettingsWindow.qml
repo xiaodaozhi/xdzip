@@ -237,6 +237,7 @@ OperationWindow {
                                 contentItem: RowLayout {
                                     spacing: Theme.settingsSidebarIconGap
                                     Image {
+                                        id: tabIcon
                                         objectName: "settingsTabIcon-" + tab.index
                                         Layout.preferredWidth: Theme.settingsSidebarIconSize
                                         Layout.preferredHeight: Theme.settingsSidebarIconSize
@@ -247,6 +248,7 @@ OperationWindow {
                                     }
                                     Text {
                                         id: tabLabel
+                                        objectName: "settingsTabLabel-" + tab.index
                                         Layout.fillWidth: true
                                         Layout.rightMargin: Theme.settingsSidebarLabelRightInset
                                         text: tab.modelData
@@ -255,6 +257,14 @@ OperationWindow {
                                         font.bold: tab.checked
                                         color: tab.checked ? Theme.accentInk : Theme.text
                                         wrapMode: Text.Wrap
+                                        readonly property rect glyphBounds: UiFonts.visualTextBounds(text, font, width)
+                                        transform: Translate {
+                                            y: tabLabel.glyphBounds.height > 0
+                                               ? tabIcon.y + tabIcon.height / 2
+                                                 - tabLabel.y - tabLabel.glyphBounds.y
+                                                 - tabLabel.glyphBounds.height / 2
+                                               : 0
+                                        }
                                     }
                                 }
                             }
