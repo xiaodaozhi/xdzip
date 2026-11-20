@@ -117,7 +117,7 @@ Die [Systemarchitektur](../../design/system-architecture.md) zeigt die Ausführu
 - [Datenlebenszyklus und Diagnose](../engineering/privacy.md)
 - [Produktversion und Build-Identität](../engineering/versioning.md)
 - [GitHub-Release-Protokoll v1](../engineering/release-protocol.md)
-- [Lokales macOS-Entwicklungs-DMG](../../engineering/macos-deployment.md)
+- [Lokales macOS-Entwicklungs-DMG](../engineering/macos-deployment.md)
 - [Eigenständiges Linux-Laufzeitverzeichnis und Prüfung](../engineering/linux-deployment.md)
 - [Prüfung der Bereitstellungsabhängigkeiten und SBOM](../engineering/deployment-audit.md)
 - [Namensnennungen und Lizenzen der tatsächlich verwendeten Komponenten](../engineering/runtime-attribution.md)

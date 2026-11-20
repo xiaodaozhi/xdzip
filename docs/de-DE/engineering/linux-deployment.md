@@ -4,7 +4,7 @@
 
 [English](../../engineering/linux-deployment.md) | [简体中文](../../zh-CN/engineering/linux-deployment.md) | [繁體中文](../../zh-TW/engineering/linux-deployment.md) | [日本語](../../ja-JP/engineering/linux-deployment.md) | [한국어](../../ko-KR/engineering/linux-deployment.md) | [Français](../../fr-FR/engineering/linux-deployment.md) | Deutsch | [Español](../../es-ES/engineering/linux-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/linux-deployment.md) | [Русский](../../ru-RU/engineering/linux-deployment.md)
 
-Die aktuelle Entwicklungsbasis für Deployment ist Ubuntu 24.04, x86_64 und X11. Ziel ist die Ausführung des aktuellen Produkts ohne Entwicklungs-Qt-SDK; andere Distributionen, ältere glibc, Wayland oder vollständige Installer-Unterstützung werden damit nicht versprochen. macOS-CI behält native Build-, Test- und Startprüfung. Lokale Entwicklungs-DMGs folgen der [Mac-Deployment-Anleitung](../../engineering/macos-deployment.md) und sind von diesem Ablauf nicht betroffen.
+Die aktuelle Entwicklungsbasis für Deployment ist Ubuntu 24.04, x86_64 und X11. Ziel ist die Ausführung des aktuellen Produkts ohne Entwicklungs-Qt-SDK; andere Distributionen, ältere glibc, Wayland oder vollständige Installer-Unterstützung werden damit nicht versprochen. macOS-CI behält native Build-, Test- und Startprüfung. Lokale Entwicklungs-DMGs folgen der [Mac-Deployment-Anleitung](macos-deployment.md) und sind von diesem Ablauf nicht betroffen.
 
 <a name="xdzip-layout-and-generation"></a>
 
