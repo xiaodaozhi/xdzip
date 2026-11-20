@@ -1,6 +1,6 @@
 # XDZip 시스템 아키텍처
 
-[English](../../design/system-architecture.md) | [简体中文](../../zh-CN/design/system-architecture.md) | [繁體中文](../../zh-TW/design/system-architecture.md) | [日本語](../../ja-JP/design/system-architecture.md) | 한국어 | [Français](../../fr-FR/design/system-architecture.md) | [Deutsch](../../de-DE/design/system-architecture.md) | [Español](../../es-ES/design/system-architecture.md) | [Português (Brasil)](../../pt-BR/design/system-architecture.md)
+[English](../../design/system-architecture.md) | [简体中文](../../zh-CN/design/system-architecture.md) | [繁體中文](../../zh-TW/design/system-architecture.md) | [日本語](../../ja-JP/design/system-architecture.md) | 한국어 | [Français](../../fr-FR/design/system-architecture.md) | [Deutsch](../../de-DE/design/system-architecture.md) | [Español](../../es-ES/design/system-architecture.md) | [Português (Brasil)](../../pt-BR/design/system-architecture.md) | [Русский](../../ru-RU/design/system-architecture.md)
 
 데스크톱과 명령줄 클라이언트는 Rust 아카이브 런타임을 공유합니다. 런타임은 선택한 소스를 인덱싱된 세션으로, 작업을 제한된 태스크로 바꿉니다. 형식 백엔드는 아카이브 데이터를 해석합니다. 호스트는 파일을 승인하고 출력 위치를 제어하며 검증된 결과를 게시합니다.
 

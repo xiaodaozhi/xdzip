@@ -1,6 +1,6 @@
 # XDZip-Systemarchitektur
 
-[English](../../design/system-architecture.md) | [简体中文](../../zh-CN/design/system-architecture.md) | [繁體中文](../../zh-TW/design/system-architecture.md) | [日本語](../../ja-JP/design/system-architecture.md) | [한국어](../../ko-KR/design/system-architecture.md) | [Français](../../fr-FR/design/system-architecture.md) | Deutsch | [Español](../../es-ES/design/system-architecture.md) | [Português (Brasil)](../../pt-BR/design/system-architecture.md)
+[English](../../design/system-architecture.md) | [简体中文](../../zh-CN/design/system-architecture.md) | [繁體中文](../../zh-TW/design/system-architecture.md) | [日本語](../../ja-JP/design/system-architecture.md) | [한국어](../../ko-KR/design/system-architecture.md) | [Français](../../fr-FR/design/system-architecture.md) | Deutsch | [Español](../../es-ES/design/system-architecture.md) | [Português (Brasil)](../../pt-BR/design/system-architecture.md) | [Русский](../../ru-RU/design/system-architecture.md)
 
 Desktop- und Befehlszeilen-Clients teilen die Rust-Archivlaufzeit. Die Laufzeit macht eine ausgewählte Quelle zu einer indexierten Sitzung und eine Operation zu einer begrenzten Aufgabe. Format-Backends interpretieren Archivdaten. Der Host autorisiert Dateien, kontrolliert Ausgabeorte und veröffentlicht verifizierte Ergebnisse.
 

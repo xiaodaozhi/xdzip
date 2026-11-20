@@ -4,7 +4,7 @@
 
 [English](../../engineering/development.md) | [简体中文](../../zh-CN/engineering/development.md) | [繁體中文](../../zh-TW/engineering/development.md) | [日本語](../../ja-JP/engineering/development.md) | [한국어](../../ko-KR/engineering/development.md) | [Français](../../fr-FR/engineering/development.md) | [Deutsch](../../de-DE/engineering/development.md) | [Español](../../es-ES/engineering/development.md) | [Português (Brasil)](../../pt-BR/engineering/development.md) | Русский
 
-Выберите способ сборки и проверки в разделе [Сборка и участие](../contributing/README.md). [Архитектура системы](../../design/system-architecture.md) и [структура репозитория](repository-layout.md) описывают границы Qt, среды Rust и кодеков.
+Выберите способ сборки и проверки в разделе [Сборка и участие](../contributing/README.md). [Архитектура системы](../design/system-architecture.md) и [структура репозитория](repository-layout.md) описывают границы Qt, среды Rust и кодеков.
 
 <a name="xdzip-obtain-and-modify"></a>
 

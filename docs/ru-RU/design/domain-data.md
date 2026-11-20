@@ -4,7 +4,7 @@
 
 [English](../../design/domain-data.md) | [简体中文](../../zh-CN/design/domain-data.md) | [繁體中文](../../zh-TW/design/domain-data.md) | [日本語](../../ja-JP/design/domain-data.md) | [한국어](../../ko-KR/design/domain-data.md) | [Français](../../fr-FR/design/domain-data.md) | [Deutsch](../../de-DE/design/domain-data.md) | [Español](../../es-ES/design/domain-data.md) | [Português (Brasil)](../../pt-BR/design/domain-data.md) | Русский
 
-Среда выполнения владеет сеансом архива, готовым индексом и последним запросом этого сеанса. Qt хранит представление результата, а CLI может читать физические записи отдельной командой каталога. Оба передают операции одному сервису Rust. [Архитектура системы](../../design/system-architecture.md), [Мост Qt/Rust](qt-rust-bridge.md)
+Среда выполнения владеет сеансом архива, готовым индексом и последним запросом этого сеанса. Qt хранит представление результата, а CLI может читать физические записи отдельной командой каталога. Оба передают операции одному сервису Rust. [Архитектура системы](system-architecture.md), [Мост Qt/Rust](qt-rust-bridge.md)
 
 <a name="xdzip-identity-and-source-version"></a>
 

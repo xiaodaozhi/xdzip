@@ -2,7 +2,7 @@
 
 # XDZip 系統架構
 
-[English](../../design/system-architecture.md) | [简体中文](../../zh-CN/design/system-architecture.md) | 繁體中文 | [日本語](../../ja-JP/design/system-architecture.md) | [한국어](../../ko-KR/design/system-architecture.md) | [Français](../../fr-FR/design/system-architecture.md) | [Deutsch](../../de-DE/design/system-architecture.md) | [Español](../../es-ES/design/system-architecture.md) | [Português (Brasil)](../../pt-BR/design/system-architecture.md)
+[English](../../design/system-architecture.md) | [简体中文](../../zh-CN/design/system-architecture.md) | 繁體中文 | [日本語](../../ja-JP/design/system-architecture.md) | [한국어](../../ko-KR/design/system-architecture.md) | [Français](../../fr-FR/design/system-architecture.md) | [Deutsch](../../de-DE/design/system-architecture.md) | [Español](../../es-ES/design/system-architecture.md) | [Português (Brasil)](../../pt-BR/design/system-architecture.md) | [Русский](../../ru-RU/design/system-architecture.md)
 
 桌面程式與命令列工具共用 Rust 歸檔執行時。執行時把使用者選中的來源開啟為帶索引的會話，再把具體操作組織成受限任務。格式後端負責解釋歸檔資料，宿主負責檔案授權、確定寫出位置，以及在驗證後提交結果。
 

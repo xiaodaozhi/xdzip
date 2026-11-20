@@ -4,7 +4,7 @@
 
 [English](../../design/qt-quick-ui.md) | [简体中文](../../zh-CN/design/qt-quick-ui.md) | [繁體中文](../../zh-TW/design/qt-quick-ui.md) | [日本語](../../ja-JP/design/qt-quick-ui.md) | [한국어](../../ko-KR/design/qt-quick-ui.md) | [Français](../../fr-FR/design/qt-quick-ui.md) | [Deutsch](../../de-DE/design/qt-quick-ui.md) | [Español](../../es-ES/design/qt-quick-ui.md) | [Português (Brasil)](../../pt-BR/design/qt-quick-ui.md) | Русский
 
-Настольное приложение использует Qt Quick для отображения и взаимодействия. Контроллеры C++ преобразуют действия пользователя в запросы и поддерживают состояние представления. Среда выполнения Rust отвечает за интерпретацию архивов, правила задач и полномочия на файлы. Вызовы описаны в [архитектуре системы](../../design/system-architecture.md) и [контракте моста](qt-rust-bridge.md).
+Настольное приложение использует Qt Quick для отображения и взаимодействия. Контроллеры C++ преобразуют действия пользователя в запросы и поддерживают состояние представления. Среда выполнения Rust отвечает за интерпретацию архивов, правила задач и полномочия на файлы. Вызовы описаны в [архитектуре системы](system-architecture.md) и [контракте моста](qt-rust-bridge.md).
 
 <a name="xdzip-windows-sessions-and-models"></a>
 
