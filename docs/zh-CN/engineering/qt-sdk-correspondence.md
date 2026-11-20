@@ -1,6 +1,6 @@
 # Qt SDK 与源码对应核验
 
-[English](../../engineering/qt-sdk-correspondence.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/qt-sdk-correspondence.md)
+[English](../../engineering/qt-sdk-correspondence.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/qt-sdk-correspondence.md) | [日本語](../../ja-JP/engineering/qt-sdk-correspondence.md) | [한국어](../../ko-KR/engineering/qt-sdk-correspondence.md) | [Français](../../fr-FR/engineering/qt-sdk-correspondence.md) | [Deutsch](../../de-DE/engineering/qt-sdk-correspondence.md) | [Español](../../es-ES/engineering/qt-sdk-correspondence.md) | [Português (Brasil)](../../pt-BR/engineering/qt-sdk-correspondence.md) | [Русский](../../ru-RU/engineering/qt-sdk-correspondence.md)
 
 源码对应核验以官方归档的实际字节为准，不以相同版本号推断 SDK 构建等价。`scripts/qt_sdk_correspondence.py` 将固定源码归档、SDK 自带的源码 SPDX、构建声明、已安装配置与已知消费端补丁关联，输出到 build/；不修改 SDK，不批准许可分支。
 
