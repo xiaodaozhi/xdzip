@@ -8,7 +8,7 @@
 
 Abra **Configurações** no menu do aplicativo ou na barra de ferramentas. Escolha o idioma, o tema, o tamanho do texto e a densidade nos ajustes correspondentes. A detecção automática usa o idioma do sistema quando há suporte. Escolha se os arquivos compactados abrem em abas ou janelas. Você também pode configurar o histórico de arquivos recentes e o ícone na área de notificação se a plataforma oferecer essas opções. As mudanças são aplicadas de imediato. Se uma configuração não puder ser salva, veja a mensagem de erro da página. [Comportamento das configurações](../ux/settings-localization.md)
 
-Altere as associações de arquivos no sistema operacional. As ações do menu de contexto têm configurações próprias. No macOS, o sistema controla a ativação da extensão do Finder. Os serviços do Finder ficam disponíveis quando são registrados. [Ações do gerenciador de arquivos](../../engineering/shell-actions.md)
+Altere as associações de arquivos no sistema operacional. As ações do menu de contexto têm configurações próprias. No macOS, o sistema controla a ativação da extensão do Finder. Os serviços do Finder ficam disponíveis quando são registrados. [Ações do gerenciador de arquivos](../engineering/shell-actions.md)
 
 <a name="xdzip-update-the-app"></a>
 

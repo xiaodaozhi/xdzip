@@ -1,6 +1,6 @@
 # Acciones del gestor de archivos y anfitrión independiente de tareas
 
-[English](../../engineering/shell-actions.md) | [简体中文](../../zh-CN/engineering/shell-actions.md) | [繁體中文](../../zh-TW/engineering/shell-actions.md) | [Français](../../fr-FR/engineering/shell-actions.md) | Español | [Русский](../../ru-RU/engineering/shell-actions.md)
+[English](../../engineering/shell-actions.md) | [简体中文](../../zh-CN/engineering/shell-actions.md) | [繁體中文](../../zh-TW/engineering/shell-actions.md) | [Français](../../fr-FR/engineering/shell-actions.md) | Español | [Português (Brasil)](../../pt-BR/engineering/shell-actions.md) | [Русский](../../ru-RU/engineering/shell-actions.md)
 
 Las entradas del sistema pasan las selecciones y acciones al proceso de escritorio de la misma sesión de inicio. En Windows 11, la extensión ordinaria instalada aparece en «Mostrar más opciones». Su clase COM expone `IContextMenu` e `IExplorerCommand`. MSIX declara un controlador clásico independiente y la compilación Store añade el controlador moderno descrito más adelante. Archivos de Ubuntu 24.04 utiliza una extensión Nautilus 4.0. En macOS están disponibles el submenú Finder Sync, el comando Servicios y el panel independiente de operaciones.
 

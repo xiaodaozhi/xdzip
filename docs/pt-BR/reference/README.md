@@ -112,7 +112,7 @@ Comece pela [arquitetura do sistema](../../design/system-architecture.md) para c
 
 - [Instaladores e associações de arquivos](../../engineering/installers-associations.md)
 - [Suporte a sistemas e política de manutenção](../engineering/support-policy.md)
-- [Ações do gerenciador de arquivos e host de tarefas independente](../../engineering/shell-actions.md)
+- [Ações do gerenciador de arquivos e host de tarefas independente](../engineering/shell-actions.md)
 - [Atualização iniciada pelo usuário](../../engineering/software-update.md)
 - [Ciclo de vida dos dados e diagnóstico](../engineering/privacy.md)
 - [Versão do produto e identidade da compilação](../engineering/versioning.md)
