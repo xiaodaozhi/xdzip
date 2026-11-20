@@ -2,7 +2,7 @@
 
 # Unix compress Z 契約
 
-[English](../../engineering/compress-streams.md) | [简体中文](../../zh-CN/engineering/compress-streams.md) | 繁體中文（台灣）
+[English](../../engineering/compress-streams.md) | [简体中文](../../zh-CN/engineering/compress-streams.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/compress-streams.md) | [한국어](../../ko-KR/engineering/compress-streams.md) | [Français](../../fr-FR/engineering/compress-streams.md) | [Deutsch](../../de-DE/engineering/compress-streams.md) | [Español](../../es-ES/engineering/compress-streams.md) | [Português (Brasil)](../../pt-BR/engineering/compress-streams.md) | [Русский](../../ru-RU/engineering/compress-streams.md)
 
 本契約定義獨立 Rust LZW 讀取器及其單檔／TAR 組合的位元組設定。工具歷史與 9–16 位元字典行為依據 [OpenBSD compress(1)](https://man.openbsd.org/compress.1) 和 [ncompress](https://vapier.github.io/ncompress/)。POSIX 規定工具而非完整位元組配置；歷史上的八碼對齊與 9 位元相容性差異見[上游討論](https://github.com/vapier/ncompress/issues/5)，並以內容已知的獨立輸入核對。原始碼觀察只作為格式規則的補充；Rust 實作不是參考程式碼的翻譯。
 
@@ -16,7 +16,7 @@
 
 只有三個位元組的標頭代表空串流。非空的最後一組必須含完整碼；最後完整碼之後只能剩餘少於八個未使用位元。佔用完整剩餘位元組的不完整碼無效。此格式沒有明確 EOF 碼、原始大小、檔名、時間戳記、檢查碼或驗證欄位。額外位元組會解讀為碼；保持結構的任意變更或本身構成有效碼的尾部，不一定能與內容區分。不承諾支援串接成員或修復損壞的舊串流。
 
-讀取器對飽和的 9 位元字典遵循宣告的最大碼寬。修正後的 ncompress 1.0.2 能完整解碼專案自有的飽和 9 位元輸入；固定的 7-Zip 26.06 參考程式只解出前 256 位元組後回報資料錯誤。此結果記為參考程式的限制，不記為 7-Zip 檢查通過。較短的 9 位元、強制 CLEAR 和非區塊測試向量可分別由兩者接受。歷史上格式錯誤的 `-b9` 輸出不會靜默改用另一套碼寬政策重新解析。
+讀取器對飽和的 9 位元字典遵循宣告的最大碼寬。固定版本的 ncompress 1.0.2 能完整解碼專案自有的飽和 9 位元輸入；固定的 7-Zip 26.06 參考程式只解出前 256 位元組後回報資料錯誤。此結果記為參考程式的限制，不記為 7-Zip 檢查通過。較短的 9 位元、強制 CLEAR 和非區塊測試向量可分別由兩者接受。歷史上格式錯誤的 `-b9` 輸出不會靜默改用另一套碼寬政策重新解析。
 
 <a name="xdzip-准入与宿主集成"></a>
 
@@ -32,6 +32,6 @@
 
 ## 獨立輸入與自動化驗收
 
-專案自有產生器在 `build/toolchain/` 固定 ncompress 1.0.2 與 7-Zip 26.06 參考程式的識別；兩者都不進入產品相依套件。參考程式產生的輸入包括實際匹配、空串流、全零串流、碼寬增至最大、自然 CLEAR 與 TAR。額外的專案自有教科書式 LZW／碼封裝輸入涵蓋所有最大碼寬、滿字典、非區塊模式、明確重設及尚未定義碼特例。所有輸入都由修正後的 ncompress 完整解碼；除飽和 9 位元案例外，也都由固定的 7-Zip 完整解碼。須明確記錄此差異。
+專案自有產生器在 `build/toolchain/` 固定 ncompress 1.0.2 與 7-Zip 26.06 參考程式的識別；兩者都不進入產品相依套件。參考程式產生的輸入包括實際匹配、空串流、全零串流、碼寬增至最大、自然 CLEAR 與 TAR。額外的專案自有教科書式 LZW／碼封裝輸入涵蓋所有最大碼寬、滿字典、非區塊模式、明確重設及尚未定義碼特例。所有輸入都由固定版本的 ncompress 完整解碼；除飽和 9 位元案例外，也都由固定的 7-Zip 完整解碼。須明確記錄此差異。
 
 迴歸涵蓋精確記憶體與工作預算、短讀取、可重試的單純中斷與具型別的終止中斷、無效首碼與前向碼、保留屬性、不完整群組、結尾 CLEAR 及未指定的填補位元。格式登記還要求實際執行階段、CLI、Qt 的瀏覽、檢查、解壓縮與全零歧義驗證，以及唯讀與檢查強度提示、系統候選、雙語／主題／字級版面和共用主視窗與選單量測。進度和實際驗收記錄在交付 issue；產生的證據保留於 `build/` 或 CI。

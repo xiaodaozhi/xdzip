@@ -1,6 +1,6 @@
 # Unix compress Z contract
 
-English | [简体中文](../zh-CN/engineering/compress-streams.md) | [繁體中文（台灣）](../zh-TW/engineering/compress-streams.md)
+English | [简体中文](../zh-CN/engineering/compress-streams.md) | [繁體中文（台灣）](../zh-TW/engineering/compress-streams.md) | [日本語](../ja-JP/engineering/compress-streams.md) | [한국어](../ko-KR/engineering/compress-streams.md) | [Français](../fr-FR/engineering/compress-streams.md) | [Deutsch](../de-DE/engineering/compress-streams.md) | [Español](../es-ES/engineering/compress-streams.md) | [Português (Brasil)](../pt-BR/engineering/compress-streams.md) | [Русский](../ru-RU/engineering/compress-streams.md)
 
 This contract defines the byte profile for the independent Rust LZW reader and its single-file/TAR composition. The utility's history and 9–16-bit dictionary behavior follow [OpenBSD compress(1)](https://man.openbsd.org/compress.1) and [ncompress](https://vapier.github.io/ncompress/). POSIX specifies the utility rather than a complete byte layout. Historical eight-code alignment and 9-bit compatibility differences are documented in the [upstream discussion](https://github.com/vapier/ncompress/issues/5) and checked with independent known-content inputs. Source observations supplement the wire rules; the Rust implementation is not a translation of reference code.
 
@@ -12,7 +12,7 @@ Literal codes are 0–255. Block mode reserves 256 for CLEAR and starts new dict
 
 A three-byte header alone represents an empty stream. A nonempty final group must contain a complete code; after its last complete code, fewer than eight unused bits may remain. An incomplete code occupying a whole leftover byte is invalid. There is no explicit EOF code, original size, filename, timestamp, checksum or authentication field. Additional bytes are interpreted as codes; arbitrary structure-preserving changes or tails that themselves form valid codes cannot always be distinguished from content. No concatenated-member or damaged legacy-stream repair is promised.
 
-The reader follows the declared maximum for saturated 9-bit dictionaries. Fixed ncompress 1.0.2 decodes the owned saturated 9-bit input completely; the pinned 7-Zip 26.06 reference stops after its first 256 decoded bytes with a data error. This is recorded as a reference limitation, not a successful 7-Zip check. Short 9-bit, forced CLEAR and non-block vectors are independently accepted by both. Historical malformed `-b9` outputs are not silently reparsed under another width policy.
+The reader follows the declared maximum for saturated 9-bit dictionaries. Pinned ncompress 1.0.2 decodes the owned saturated 9-bit input completely; the pinned 7-Zip 26.06 reference stops after its first 256 decoded bytes with a data error. This is recorded as a reference limitation, not a successful 7-Zip check. Short 9-bit, forced CLEAR and non-block vectors are independently accepted by both. Historical malformed `-b9` outputs are not silently reparsed under another width policy.
 
 ## Admission and host integration
 
@@ -24,6 +24,6 @@ Browse, check and extract integrations must preserve immutable physical identity
 
 ## Independent inputs and automated acceptance
 
-The owned generator pins ncompress 1.0.2 and 7-Zip 26.06 reference identities under `build/toolchain/`; neither enters a production dependency. Reference-produced inputs include actual matches, empty and zero streams, full-width growth, natural CLEAR and TAR. Additional owned textbook LZW/code-packing inputs cover all maximum widths, full dictionaries, non-block mode, explicit resets and the not-yet-defined-code special case. Every input is fully decoded by fixed ncompress; all except saturated 9-bit are also fully decoded by pinned 7-Zip. Record that difference explicitly.
+The owned generator pins ncompress 1.0.2 and 7-Zip 26.06 reference identities under `build/toolchain/`; neither enters a production dependency. Reference-produced inputs include actual matches, empty and zero streams, full-width growth, natural CLEAR and TAR. Additional owned textbook LZW/code-packing inputs cover all maximum widths, full dictionaries, non-block mode, explicit resets and the not-yet-defined-code special case. Every input is fully decoded by pinned ncompress; all except saturated 9-bit are also fully decoded by pinned 7-Zip. Record that difference explicitly.
 
 Regressions cover exact memory/work budgets, short reads, bare retryable versus typed terminal interruptions, invalid initial/forward codes, reserved properties, incomplete groups, terminal CLEAR and unspecified padding. Format registration additionally requires actual runtime/CLI/Qt browse/check/extract and zero-only ambiguity, read-only/check-strength notes, system candidates, bilingual/theme/font layouts and shared main/menu measurements. Progress and actual acceptance belong in the delivery issue; generated evidence remains under `build/` or CI.
