@@ -94,7 +94,7 @@ Comece pela [arquitetura do sistema](../design/system-architecture.md) para conh
 - [Revisão de fidelidade visual HTML](../visual/html-fidelity.md)
 - [Especificação complementar de interação e textos](../ux/interaction-spec.md)
 - [Funções, componentes e interação da janela principal](../../ux/main-window-components.md)
-- [Design e integração da árvore de diretórios](../../ux/directory-tree.md)
+- [Design e integração da árvore de diretórios](../ux/directory-tree.md)
 - [Página inicial da janela principal](../ux/welcome.md)
 - [Camada de carregamento da página inicial e conclusão da criação](../ux/welcome-opening.md)
 - [Entrada de senha na extração](../ux/password-extraction.md)

@@ -1,6 +1,6 @@
 # Árbol de directorios B: diseño, recursos e integración
 
-[English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | [繁體中文](../../zh-TW/ux/directory-tree.md) | [日本語](../../ja-JP/ux/directory-tree.md) | [한국어](../../ko-KR/ux/directory-tree.md) | [Français](../../fr-FR/ux/directory-tree.md) | Español
+[English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | [繁體中文](../../zh-TW/ux/directory-tree.md) | [日本語](../../ja-JP/ux/directory-tree.md) | [한국어](../../ko-KR/ux/directory-tree.md) | [Français](../../fr-FR/ux/directory-tree.md) | Español | [Português (Brasil)](../../pt-BR/ux/directory-tree.md)
 
 Estado: **la interacción principal de directorios está integrada en los ejemplos HTML y en la exploración de solo lectura de Qt; los recursos de estados límite están pendientes de integración**. La interacción sigue el [contrato de exploración de solo lectura](../engineering/readonly-browser.md). La exploración normal usa hijos directos, la búsqueda cubre recursivamente el ámbito actual y la autorización de salida se trata por separado de la lectura.
 

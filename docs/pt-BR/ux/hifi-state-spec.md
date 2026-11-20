@@ -74,7 +74,7 @@ Os recursos ficam em `design/assets/`. `reference/` mantém recortes nos pixels 
 
 ## Adição da árvore de diretórios
 
-A navegação B01 adiciona a [especificação B da árvore de diretórios](../../ux/directory-tree.md), com três pranchetas formais e 26 recortes compartilhados. Setas de nós dependem de subdiretórios; expansão, diretório atual e foco do teclado são independentes. Carregamento, arquivos compactados vazios, arquivos na raiz, limites de navegação, falhas e caminhos atuais ocultos são especificados separadamente; o contrato de domínio somente leitura existente não muda. HTML e Qt integram a navegação principal, linhas de conexão e indicadores de ramo atual oculto; esqueletos e ícones específicos de limites continuam como recursos de design. Consulte a especificação da árvore para o escopo da integração.
+A navegação B01 adiciona a [especificação B da árvore de diretórios](directory-tree.md), com três pranchetas formais e 26 recortes compartilhados. Setas de nós dependem de subdiretórios; expansão, diretório atual e foco do teclado são independentes. Carregamento, arquivos compactados vazios, arquivos na raiz, limites de navegação, falhas e caminhos atuais ocultos são especificados separadamente; o contrato de domínio somente leitura existente não muda. HTML e Qt integram a navegação principal, linhas de conexão e indicadores de ramo atual oculto; esqueletos e ícones específicos de limites continuam como recursos de design. Consulte a especificação da árvore para o escopo da integração.
 
 <a name="xdzip-changes-and-revalidation"></a>
 
