@@ -2,7 +2,7 @@
 
 # 主視窗功能、元件與互動契約
 
-[English](../../ux/main-window-components.md) | [简体中文](../../zh-CN/ux/main-window-components.md) | 繁體中文
+[English](../../ux/main-window-components.md) | [简体中文](../../zh-CN/ux/main-window-components.md) | 繁體中文 | [日本語](../../ja-JP/ux/main-window-components.md)
 
 主視窗的控制元件同時交付外觀和行為：普通、懸停、按下、鍵盤焦點、禁用、選中、忙碌與錯誤均有明確狀態。HTML 使用示例壓縮檔驗證互動；Qt 根據真實瀏覽、建立、解壓、[完整性檢查](../engineering/archive-checking.md)和[內容預覽](../engineering/content-preview.md)的能力啟用動作，HTML 示例不代表真實背景結果。
 
