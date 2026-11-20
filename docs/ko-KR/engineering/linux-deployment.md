@@ -41,6 +41,12 @@ python3 scripts/desktop.py verify --kind all
 
 배포는 네이티브 Linux x86_64에서만 실행하며 기존 디렉터리를 덮어쓰지 않습니다. 패키징 사전 검사는 qmlimportscanner, ldd, patchelf, dpkg-query와 설치 프로그램에 필요한 dpkg-deb를 확인합니다. 이러한 빌드 도구는 제품에 포함되지 않습니다. 컨테이너 런타임 검증에는 Docker와 접근 가능한 데몬도 필요하며 빌드는 고정된 Ubuntu 이미지와 기록된 OS 패키지로 제한됩니다. Docker가 없어도 일반 빌드와 테스트는 차단하지 않지만 verify는 명시적으로 실패하며 실행하지 않은 격리 검사를 통과로 기록하지 않습니다. 일반 verify는 호스트에 .deb를 설치하거나 파일 연결을 변경하지 않습니다. 설치 수명 주기는 일회용 CI에서 검사합니다.
 
+<a name="xdzip-experimental-strict-snap"></a>
+
+## 실험적인 strict Snap
+
+strict confinement의 `core24` Snap은 별도의 실험적 배포입니다. 제한된 애플리케이션은 호스트의 XKB 설정을 `$SNAP/usr/share/X11/xkb`에 상속하지 않습니다. 실행기가 `QT_XKB_CONFIG_ROOT`를 이 경로로 설정하면 Snap에 고정된 Ubuntu 빌드 입력의 전체 XKB 트리를 포함해야 합니다. 이를 생략하면 Qt Wayland 플러그인이 로드되어 컴포지터에 연결되더라도 키보드 컨텍스트를 만들 때 `xkbcommon` 포함 경로 오류로 실패합니다. `xkb-data` 저작권 고지를 페이로드에 유지하고 패키지 버전, 결정적인 디렉터리 해시, 파일 수, 고지 해시를 후보 기록에 남깁니다. 완성된 Snap을 추출하여 검증한 후 오프스크린 및 Wayland 스모크 테스트를 각각 실행합니다. 이 검사는 실제 strict Snap 데스크톱 세션에서의 설치와 상호작용 검사를 대신하지 않습니다.
+
 <a name="xdzip-automated-evidence-without-the-sdk"></a>
 
 ## SDK 없는 자동화 증거

@@ -41,6 +41,12 @@ El directorio de compilación predeterminado es build/desktop, la salida build/p
 
 El despliegue solo se ejecuta en Linux x86_64 nativo y no sobrescribe directorios existentes. La comprobación previa del empaquetado verifica qmlimportscanner, ldd, patchelf, dpkg-query y dpkg-deb necesario para el instalador; estas herramientas de compilación no entran en el producto. La verificación de ejecución en contenedor requiere además Docker y un daemon accesible; las compilaciones se limitan a la imagen Ubuntu fijada y los paquetes de sistema registrados. La ausencia de Docker no bloquea compilación y pruebas ordinarias, pero verify falla explícitamente; una comprobación de aislamiento no ejecutada no se registra como superada. verify ordinario no instala el .deb en el anfitrión ni cambia asociaciones; el ciclo de instalación sigue siendo una comprobación CI desechable.
 
+<a name="xdzip-experimental-strict-snap"></a>
+
+## Snap estricto experimental
+
+El Snap `core24` con confinamiento estricto es una distribución experimental independiente. Una aplicación confinada no hereda la configuración XKB del anfitrión en `$SNAP/usr/share/X11/xkb`. Si el lanzador establece `QT_XKB_CONFIG_ROOT` en esa ruta, el Snap debe incluir el árbol XKB completo de la entrada de compilación Ubuntu fijada. Sin él, el complemento Qt Wayland puede cargarse y conectarse al compositor, pero falla al crear el contexto de teclado por un error de ruta de inclusión de `xkbcommon`. Conserve el aviso de copyright de `xkb-data` en el paquete y registre en el recibo del candidato la versión del paquete, el hash determinista del directorio, el número de archivos y el hash del aviso. Verifique el Snap final tras extraerlo y ejecute por separado las pruebas de arranque sin pantalla y en Wayland. Estas comprobaciones no sustituyen la instalación y la interacción en una sesión de escritorio real con Snap estricto.
+
 <a name="xdzip-automated-evidence-without-the-sdk"></a>
 
 ## Evidencia automatizada sin SDK

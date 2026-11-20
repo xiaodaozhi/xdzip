@@ -41,6 +41,12 @@ Das Standard-Buildverzeichnis ist build/desktop, die Auslieferung build/package 
 
 Deployment läuft nur auf nativem Linux x86_64 und überschreibt keine vorhandenen Verzeichnisse. Die Paketvorprüfung kontrolliert qmlimportscanner, ldd, patchelf, dpkg-query und das für Installer nötige dpkg-deb; diese Build-Werkzeuge gelangen nicht ins Produkt. Container-Laufzeitprüfung benötigt zusätzlich Docker und einen erreichbaren Daemon; Builds sind auf das fixierte Ubuntu-Image und erfasste OS-Pakete begrenzt. Fehlendes Docker blockiert gewöhnliche Builds und Tests nicht, verify schlägt jedoch ausdrücklich fehl; eine nicht ausgeführte Isolationsprüfung wird nicht als bestanden erfasst. Gewöhnliches verify installiert kein .deb auf dem Host und ändert keine Dateizuordnungen; der Installationslebenszyklus bleibt eine Prüfung in einer wegwerfbaren CI-Umgebung.
 
+<a name="xdzip-experimental-strict-snap"></a>
+
+## Experimenteller strikter Snap
+
+Der strikte `core24`-Snap ist eine separate experimentelle Auslieferung. Eine eingeschränkte Anwendung übernimmt die XKB-Konfiguration des Hosts nicht nach `$SNAP/usr/share/X11/xkb`. Setzt der Starter `QT_XKB_CONFIG_ROOT` auf diesen Pfad, muss der Snap den vollständigen XKB-Baum aus der fixierten Ubuntu-Build-Eingabe enthalten. Fehlt er, kann das Qt-Wayland-Plugin laden und sich mit dem Compositor verbinden, aber beim Erstellen des Tastaturkontexts mit einem `xkbcommon`-Include-Pfadfehler scheitern. Der Payload muss den Copyright-Hinweis von `xkb-data` enthalten; der Kandidatenbeleg erfasst Paketversion, deterministischen Verzeichnis-Hash, Dateizahl und Hash des Hinweises. Den fertigen Snap nach dem Entpacken prüfen und anschließend Offscreen- und Wayland-Smoke-Tests getrennt ausführen. Diese Prüfungen ersetzen keine Installations- und Interaktionsprüfung in einer tatsächlichen strikten Snap-Desktop-Sitzung.
+
 <a name="xdzip-automated-evidence-without-the-sdk"></a>
 
 ## Automatisierte Nachweise ohne SDK

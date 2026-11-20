@@ -41,7 +41,8 @@ inline std::string_view systemLanguage(std::string_view preferred) {
         return "zh-CN";
     }
     for (const auto &language : languages) {
-        // The registry has one regional variant per language other than Chinese.
+        // For other languages, the registry has one variant per base language,
+        // so the country (or region) subtag does not affect the choice.
         if (base == language.id.substr(0, 2))
             return language.id;
     }

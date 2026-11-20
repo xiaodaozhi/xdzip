@@ -41,6 +41,12 @@ python3 scripts/desktop.py verify --kind all
 
 デプロイはネイティブ Linux x86_64 上でのみ実行し、既存ディレクトリを上書きしません。パッケージングの事前検査は qmlimportscanner、ldd、patchelf、dpkg-query、インストーラーに必要な dpkg-deb を確認します。これらのビルドツールは製品に含まれません。コンテナーの実行時検証には Docker とアクセス可能なデーモンも必要で、ビルドは固定された Ubuntu イメージと記録された OS パッケージに限定します。Docker がなくても通常のビルド・テストは妨げませんが、verify は明示的に失敗し、未実行の分離検査を合格として記録しません。通常の verify はホストに .deb をインストールせず、ファイル関連付けも変更しません。インストールのライフサイクルは使い捨て CI で検査します。
 
+<a name="xdzip-experimental-strict-snap"></a>
+
+## 実験的な strict Snap
+
+strict confinement の `core24` Snap は別個の実験的な配布です。制限されたアプリはホストの XKB 設定を `$SNAP/usr/share/X11/xkb` に引き継ぎません。ランチャーが `QT_XKB_CONFIG_ROOT` をこのパスに設定する場合、Snap は固定された Ubuntu ビルド入力から XKB ツリー全体を含める必要があります。これがないと、Qt Wayland プラグインは読み込まれてコンポジターに接続できても、キーボードコンテキストの作成時に `xkbcommon` のインクルードパスエラーで失敗します。`xkb-data` の著作権通知を同梱し、パッケージバージョン、決定的なディレクトリハッシュ、ファイル数、通知のハッシュを候補の記録に残します。完成した Snap を展開して検証し、オフスクリーンと Wayland のスモークテストを別々に実行します。これらは実際の strict Snap デスクトップセッションでのインストールと操作の検証に代わるものではありません。
+
 <a name="xdzip-automated-evidence-without-the-sdk"></a>
 
 ## SDK なしの自動証拠

@@ -6,7 +6,7 @@ Use strings or plural objects with the locale's integer plural categories. Keep 
 
 Run `python3 scripts/check-ui-i18n.py` after editing. Run `python3 scripts/generate-ui-messages.py` to regenerate native shell strings and the HTML settings resources. Project-owned package metadata and installer messages are in [packaging-i18n.json](../packaging-i18n.json). Normal builds subset and check the [bundled fonts](../../design/assets/fonts/README.md). Keep generated fonts and test evidence under `build/` or `dist/`.
 
-Auto-detect (`auto`) resolves the first system UI preference at launch and uses English (US) when it cannot match a supported language. Language changes take effect immediately after a successful save. See [settings and localization](../../docs/ux/settings-localization.md) for script and region matching, save rollback, and old-version fallback.
+A language tag’s country (or region) code distinguishes locale variants; a language count is not a country or region count. Auto-detect (`auto`) resolves the first system UI preference at launch and uses English (US) when it cannot match a supported language. Language changes take effect immediately after a successful save. See [settings and localization](../../docs/ux/settings-localization.md) for script and region matching, save rollback, and old-version fallback.
 
 ## 产品界面语言资源
 
@@ -16,4 +16,4 @@ Auto-detect (`auto`) resolves the first system UI preference at launch and uses 
 
 编辑后运行 `python3 scripts/check-ui-i18n.py`。运行 `python3 scripts/generate-ui-messages.py` 更新原生菜单字符串和 HTML 设置资源。项目自有打包元数据和安装器文案维护在 [packaging-i18n.json](../packaging-i18n.json)。普通构建裁剪并检查[随附字体](../../design/assets/fonts/README.md)。生成的字体和测试证据保存在 `build/` 或 `dist/`。
 
-启动时，“自动识别”（`auto`）解析系统的首选界面语言。无法匹配支持的语言时使用美式英语。语言设置保存成功后即时生效。文字变体和地区匹配、保存失败回滚以及旧版回退规则见[设置和界面语言](../../docs/zh-CN/ux/settings-localization.md)。
+语言标识中的国家（地区）代码用于区分语言区域变体，语言数量不代表国家（地区）的数量。启动时，“自动识别”（`auto`）解析系统的首选界面语言。无法匹配支持的语言时使用美式英语。语言设置保存成功后即时生效。文字变体和地区匹配、保存失败回滚以及旧版回退规则见[设置和界面语言](../../docs/zh-CN/ux/settings-localization.md)。
