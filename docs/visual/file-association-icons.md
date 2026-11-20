@@ -6,7 +6,7 @@ System file icons reuse xdzip's folded-corner document, continuous-curvature bad
 
 ## Shape and identification
 
-Paper and brand geometry reuse [brand_assets.py](../../scripts/brand_assets.py). Formats share the same paper, fold, badge position and optical center, with labels identifying formats and accent colors aiding scanning. TAR.GZ, TGZ and GZ form a teal visual family. The generic fallback uses neutral gray-blue and document lines without inventing unsupported formats such as ARC.
+Paper and brand geometry reuse [brand_assets.py](../../scripts/brand_assets.py). Formats share the same paper, fold, badge position and optical center, with labels identifying formats and accent colors aiding scanning. TAR.GZ, TGZ and GZ form a teal visual family. The generic fallback uses neutral gray-blue and document lines without a format label.
 
 Labels strictly follow the original ZIP glyph style: height 61, stroke 14, square ends, rounded joins, top at master Y=817 and color #39465D. ZIP directly reuses the original master's complete text path; other letters are completed under the same metrics and stroke rules. No SVG text, system fonts, third-party icons or embedded bitmaps are used. Maximum width is 504. Preserve the full TAR.GZ label without stretching glyphs; only scale uniformly and vertically center when it exceeds the width budget. Color is not the only means of identification.
 

@@ -10,7 +10,7 @@
 
 ## 形狀與識別
 
-紙張與品牌幾何複用 [brand_assets.py](../../../scripts/brand_assets.py)。格式之間保持相同的紙張、折角、徽章位置和光學中心，透過標籤識別格式，輔助色幫助掃視。TAR.GZ、TGZ、GZ 屬於同一視覺家族，使用青綠色。通用後備採用中性灰藍和文件橫線，不虛構 ARC 等未支援格式。
+紙張與品牌幾何複用 [brand_assets.py](../../../scripts/brand_assets.py)。格式之間保持相同的紙張、折角、徽章位置和光學中心，透過標籤識別格式，輔助色幫助掃視。TAR.GZ、TGZ、GZ 屬於同一視覺家族，使用青綠色。通用後備採用中性灰藍和文件橫線，不加格式標籤。
 
 標籤嚴格沿用原 ZIP 的字形風格：高度 61、筆畫 14、方形端點、圓角連線，頂邊位於母版 Y=817，顏色為 #39465D。ZIP 直接複用原母版的完整文字路徑，其他字母在相同度量與筆畫規則下補齊；不使用 SVG text、系統字型、第三方圖示或嵌入點陣圖。最大寬度 504，保留完整的 TAR.GZ，不拉伸字形，只有超過寬度預算才等比縮小並垂直居中。顏色不承擔唯一識別職責。
 
@@ -18,7 +18,7 @@
 
 16、24 畫素採用放大的徽章和簡化紙張，32 畫素採用稍小的徽章；這三檔省去標籤與大圖陰影，保留品牌標記的原始寬高比。此時無法僅靠圖示可靠地區分全部格式，尤其是同色的 GZIP 家族，檔名／型別列承擔精確識別。48 畫素起使用帶標籤母版，長標籤在 64 畫素以上更易讀。各尺寸直接從向量渲染，不把 1024 PNG 連續縮小。
 
-介面中的 24 單點陣圖標、主視窗和選單密度繼續遵循 [layout-scale.json](../../../specs/visual/layout-scale.json)。本素材不新增 QML 視窗，也不改變主視窗或選單的邏輯尺寸。平臺 PNG 尺寸是影象取樣尺寸，不能寫入 QML 元件邏輯幾何。
+介面中的 24 單位圖示、主視窗和選單密度繼續遵循 [layout-scale.json](../../../specs/visual/layout-scale.json)。本素材不新增 QML 視窗，也不改變主視窗或選單的邏輯尺寸。平臺 PNG 尺寸是影象取樣尺寸，不能寫入 QML 元件邏輯幾何。
 
 <a name="xdzip-格式与平台映射"></a>
 
@@ -58,10 +58,10 @@ Windows 預設應用與“開啟方式”裡的應用入口使用 [品牌應用 
 python scripts/build-association-icons.py
 python scripts/build-design-assets.py --metadata-only
 python scripts/build-association-icons.py --check --check-runtime
-# 导出到本地工件，使用已有 Pillow、Playwright 环境与 Chromium。
+# 匯出至本機工件，使用現有的 Pillow、Playwright 環境與 Chromium。
 python scripts/build-association-icons.py --export build/file-association-icons
 python scripts/build-association-icons.py --check --export build/file-association-icons
-# 将本次需要的 ICO/ICNS 导出复制到规范素材目录后，校验并刷新清单。
+# 將需要的 ICO/ICNS 匯出結果複製到正式素材目錄後，驗證並更新清單。
 python scripts/build-design-assets.py --metadata-only --refresh-association-icons
 ```
 
