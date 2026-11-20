@@ -2,9 +2,9 @@
 
 # GitHub Release 協議 v1
 
-[English](../../engineering/release-protocol.md) | [简体中文](../../zh-CN/engineering/release-protocol.md) | 繁體中文
+[English](../../engineering/release-protocol.md) | [简体中文](../../zh-CN/engineering/release-protocol.md) | 繁體中文 | [日本語](../../ja-JP/engineering/release-protocol.md) | [한국어](../../ko-KR/engineering/release-protocol.md) | [Français](../../fr-FR/engineering/release-protocol.md) | [Deutsch](../../de-DE/engineering/release-protocol.md) | [Español](../../es-ES/engineering/release-protocol.md) | [Português (Brasil)](../../pt-BR/engineering/release-protocol.md) | [Русский](../../ru-RU/engineering/release-protocol.md)
 
-本流程負責 GitHub 下載包。[Microsoft Store MSIX 工作流](developer-build.md#xdzip-microsoft-store-msix)可基於同一版本原始碼生成商店包，商店認證和釋出在微軟合作夥伴中心完成。
+本流程負責 GitHub 下載包。[Microsoft Store MSIX 工作流](../../../.github/workflows/windows-store-msix.yml)可基於同一版本原始碼生成商店包，商店認證和釋出在微軟合作夥伴中心完成。
 
 專用 [Release 工作流](../../../.github/workflows/release.yml)透過 `workflow_dispatch` 手動執行。正式發行從 `main` 輸入已有版本標籤並凍結其提交。三個原生作業分別配置、建置、測試和打包一次。macOS 首次建置就使用發行所需的檔案關聯優先順序，部署 Qt 並進行 ad-hoc 完整性簽名，從同一應用生成 ZIP 和 DMG。普通 macOS Qt CI 使用 SDK 驗證。Developer ID、Apple 公證和 Windows 發行者證書不在目前發行政策範圍內。
 

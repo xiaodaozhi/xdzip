@@ -1,8 +1,8 @@
 # GitHub Release protocol v1
 
-English | [简体中文](../zh-CN/engineering/release-protocol.md) | [繁體中文](../zh-TW/engineering/release-protocol.md)
+English | [简体中文](../zh-CN/engineering/release-protocol.md) | [繁體中文](../zh-TW/engineering/release-protocol.md) | [日本語](../ja-JP/engineering/release-protocol.md) | [한국어](../ko-KR/engineering/release-protocol.md) | [Français](../fr-FR/engineering/release-protocol.md) | [Deutsch](../de-DE/engineering/release-protocol.md) | [Español](../es-ES/engineering/release-protocol.md) | [Português (Brasil)](../pt-BR/engineering/release-protocol.md) | [Русский](../ru-RU/engineering/release-protocol.md)
 
-This workflow serves GitHub downloads. The [Microsoft Store MSIX workflow](developer-build.md#microsoft-store-msix) packages the same versioned source for Microsoft Partner Center, which handles Store certification and publication.
+This workflow serves GitHub downloads. The [Microsoft Store MSIX workflow](../../.github/workflows/windows-store-msix.yml) packages the same versioned source for Microsoft Partner Center, which handles Store certification and publication.
 
 The dedicated [Release workflow](../../.github/workflows/release.yml) runs by manual `workflow_dispatch`. A formal run starts from `main` with an existing version tag and freezes the resolved commit. The three native jobs each configure, build, test, and package once. The macOS job uses the distribution handler rank from the initial build, then deploys Qt and applies ad-hoc integrity signing to create the ZIP and DMG from the same app. Ordinary macOS Qt CI verifies against the SDK. Developer ID, Apple notarization, and Windows publisher certificates are outside this release policy.
 

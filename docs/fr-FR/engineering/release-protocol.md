@@ -4,7 +4,7 @@
 
 [English](../../engineering/release-protocol.md) | [简体中文](../../zh-CN/engineering/release-protocol.md) | [繁體中文](../../zh-TW/engineering/release-protocol.md) | [日本語](../../ja-JP/engineering/release-protocol.md) | [한국어](../../ko-KR/engineering/release-protocol.md) | Français | [Deutsch](../../de-DE/engineering/release-protocol.md) | [Español](../../es-ES/engineering/release-protocol.md) | [Português (Brasil)](../../pt-BR/engineering/release-protocol.md) | [Русский](../../ru-RU/engineering/release-protocol.md)
 
-Ce flux produit les téléchargements GitHub. Le [flux Microsoft Store MSIX](developer-build.md#microsoft-store-msix) empaquette le même code source versionné pour Microsoft Partner Center, qui assure la certification et la publication dans le Store.
+Ce flux produit les téléchargements GitHub. Le [flux Microsoft Store MSIX](../../../.github/workflows/windows-store-msix.yml) empaquette le même code source versionné pour Microsoft Partner Center, qui assure la certification et la publication dans le Store.
 
 Le [flux Release](../../../.github/workflows/release.yml) dédié est lancé manuellement par `workflow_dispatch`. Une exécution officielle part de `main` avec une étiquette de version existante et fige le commit résolu. Chacune des trois tâches natives configure, compile, teste et empaquette une fois. Dès la compilation initiale, la tâche macOS utilise le rang d'association de la distribution, puis déploie Qt et applique une signature d'intégrité ad-hoc pour créer le ZIP et le DMG à partir de la même application. Le CI Qt macOS ordinaire vérifie avec le SDK. Developer ID, la notarisation Apple et les certificats d'éditeur Windows sont hors de cette politique.
 
