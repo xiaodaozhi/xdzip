@@ -2,7 +2,7 @@
 
 # CAB 格式來源與實現依據
 
-[English](../../engineering/cab-format-sources.md) | [简体中文](../../zh-CN/engineering/cab-format-sources.md) | 繁體中文 | [Français](../../fr-FR/engineering/cab-format-sources.md) | [Español](../../es-ES/engineering/cab-format-sources.md)
+[English](../../engineering/cab-format-sources.md) | [简体中文](../../zh-CN/engineering/cab-format-sources.md) | 繁體中文 | [Français](../../fr-FR/engineering/cab-format-sources.md) | [Español](../../es-ES/engineering/cab-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/cab-format-sources.md)
 
 本文記錄 CAB 容器、MSZIP、LZX 和 Quantum 的來源、適用範圍及獨立實現約束。產品能力、資源治理和逐格式替代規則分別由[隔離格式工作程序契約](native-codecs.md)、[自研 Rust 契約](independent-rust-codecs.md)及[分卷契約](archive-opening.md)定義。來源記錄不代替互操作驗收或發行許可複核。
 

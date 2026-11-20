@@ -1,0 +1,92 @@
+# Fontes do formato CAB e base da implementação
+
+[English](../../engineering/cab-format-sources.md) | [简体中文](../../zh-CN/engineering/cab-format-sources.md) | [繁體中文](../../zh-TW/engineering/cab-format-sources.md) | [Français](../../fr-FR/engineering/cab-format-sources.md) | [Español](../../es-ES/engineering/cab-format-sources.md) | Português (Brasil)
+
+Este documento registra fontes, escopo e restrições da implementação independente do contêiner CAB, MSZIP, LZX e Quantum. Os recursos do produto, a gestão de recursos e as regras de substituição por formato são definidos, respectivamente, pelo [contrato do processo isolado de formatos](native-codecs.md), pelo [contrato Rust próprio](../../engineering/independent-rust-codecs.md) e pelo [contrato de volumes divididos](archive-opening.md). Registros de fontes não substituem a aceitação de interoperabilidade nem a revisão de licenças de publicação.
+
+## Documentos técnicos da Microsoft
+
+Prefira a documentação de formato da Microsoft. A tabela fixa as cópias efetivamente lidas. As datas identificam versões dos documentos e não significam que uma URL sempre retornará bytes idênticos. Verifique cópias baixadas por SHA-256; títulos iguais não estabelecem versões idênticas.
+
+| Documento e acesso | Versão fixada | Escopo e limitações |
+| --- | --- | --- |
+| [Entrada oficial arquivada MS-CAB](https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprotlp/5641c1b2-35ed-4542-9058-a07ccab5b0a1), [PDF](https://officeprotocoldocs-f5hpbjgea6b8gneq.b02.azurefd.net/files/Archive_Exchange/%5BMS-CAB%5D.pdf) | Rodapé `v20110304`, publicação em 2011-03-04 | §2 CFHEADER, CFFOLDER, CFFILE, CFDATA; §3.1 método de soma de verificação. A Microsoft o lista como arquivado e alerta expressamente para não depender de material arquivado. Não o descreva como especificação atual mantida. Ele não define fluxos internos de bits dos algoritmos de compressão. |
+| [MS-MCI](https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-mci/27f0a9bf-9567-4e40-ad66-6ae9ab9d2786), [PDF](https://officeprotocoldocs-f5hpbjgea6b8gneq.b02.azurefd.net/files/MS-MCI/%5bMS-MCI%5d.pdf) | 2016-10-17, revisão 7.3 | §2 estruturas MSZIP, marcador CK, fluxos Deflate completos e tamanhos de blocos. O fluxo de bits Deflate também segue [RFC 1951](https://www.rfc-editor.org/rfc/rfc1951.html). |
+| [MS-PATCH](https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-patch/cc78752a-b4af-4eee-88cb-01f4d8a4c2bf), [PDF](https://officeprotocoldocs-f5hpbjgea6b8gneq.b02.azurefd.net/files/MS-PATCH/%5bMS-PATCH%5d.pdf) | 2025-08-19, revisão 14.1 | §2.1 fluxo de bits, janelas e distâncias; §2.2 cabeçalho e E8; §2.3 blocos; §2.4 árvores Huffman, apenas para comparar mecanismos comuns e diferenças. Descreve LZX Delta, não uma especificação substituta de CAB LZX. |
+
+| PDF fixado | SHA-256 |
+| --- | --- |
+| MS-CAB | `09f796a493547697ed7d4bc36222ac132bf3ca1bd6b1da76fbdc3b38b5307709` |
+| MS-MCI | `cb097c434e1cfccb368f0d7e9084ab4d47a65809a2eea94bbf41f9722c1a0343` |
+| MS-PATCH | `ea17466b97c9a9d4e2c815538387bf442fb2393ed29632c6f58b2c47ef1f29fe` |
+
+Os documentos Microsoft Open Specifications têm suas próprias condições de direitos autorais e propriedade intelectual, incluindo licenças de documentação necessárias para implementação e avisos de patentes. Eles não se tornam, por isso, material Apache-2.0 deste projeto, e a disponibilidade para download não estabelece que todas as questões de patentes ou redistribuição estejam resolvidas.
+
+## Documentos do SDK CAB de 1997
+
+Os títulos originais são Microsoft Cabinet File Format, Microsoft MSZIP Data Compression Format e Microsoft LZX Data Compression Format. As cópias lidas contêm aviso de direitos autorais da Microsoft de 1997 e são hospedadas por terceiros:
+
+| Original espelhado | Escopo lido | SHA-256 |
+| --- | --- | --- |
+| [CABFMT.DOC](https://am.net/lib/tools/Microsoft/cab-sdk/DOCS/CABFMT.DOC) | §2 estrutura do contêiner e semântica entre volumes, §3 exemplos fixos de contêineres, §4.1 definição da soma de verificação | `5a220658b76f8a66e9013e342b4eb236f057b597a8e6f3939c86f05efc51e83a` |
+| [MSZIPFMT.DOC](https://am.net/lib/tools/Microsoft/cab-sdk/DOCS/MSZIPFMT.DOC) | Introdução e detalhes de implementação, especialmente blocos Deflate independentes e histórico preservado | `046d283fa3b697e46c35b6a329bb90c86cbc9f4dedbed24c3ae43bd9b8ccf239` |
+| [LZXFMT.DOC](https://am.net/lib/tools/Microsoft/cab-sdk/DOCS/LZXFMT.DOC) | Conceitos, formato dos dados comprimidos LZX, codificação de árvores, distância/comprimento e pré-processamento E8 | `68ba4df86e08bece3259574133f1c61606d143d85f749b388f5f1e8ea46f8bef` |
+
+Esses arquivos `.DOC` são, na verdade, RTF. Seus títulos, avisos de direitos autorais e apresentação do CAB permitem usá-los como cópias de documentos escritos pela Microsoft, mas o host não é a Microsoft e eles não foram comparados byte a byte com um arquivo do SDK CAB publicado pela Microsoft. [Microsoft KB 310618 (arquivado)](https://mskb.pkisolutions.com/kb/310618) lista o conteúdo original do SDK e informa que o download antigo não está disponível. A entrada arquivada não autentica os arquivos espelhados. O escopo de leitura é a documentação do formato, não a implementação FCI/FDI do SDK ou seu código de exemplo.
+
+Os parâmetros públicos TCOMP também foram comparados com declarações de constantes do Windows SDK 10.0.19041.0 em `um/fdi_fci_types.h` e com a [documentação TCOMPfromLZXWindow](https://learn.microsoft.com/en-us/windows/win32/api/fdi_fci_types/nf-fdi_fci_types-tcompfromlzxwindow). O SHA-256 do cabeçalho é `27a1f6f7728f5db64d11e434d101819d646ca49270930606bb76c7989ebe0254`. Foram usados apenas intervalos de parâmetros e definições de bits públicos; algoritmos FCI/FDI não foram chamados ou analisados com essa base.
+
+Partes da visão geral, das tabelas e do texto de LZXFMT são conflitantes. MS-PATCH ajuda a identificar mecanismos comuns, mas seus dados de referência, correspondências longas estendidas, janelas de 128 KiB a 32 MiB e cabeçalhos adicionais de bloco não podem ser aplicados diretamente ao CAB. As janelas CAB LZX têm de 15 a 21 bits e exigem verificações independentes com o texto original, o comportamento de referência e vetores que distingam os casos.
+
+## Escopo do material Quantum
+
+O material obtido do fornecedor original do algoritmo é um [espelho do manual do usuário Cinematronics QUANTUM](https://carrero.es/wp-content/uploads/2025/07/QUANTUM.pdf), copyright Cinematronics 1993, 1994, 1995, todos os direitos reservados. SHA-256 do PDF: `a2d6ed51e47db407ea5849b42004750f2f36c82a380f263b983c5282838a8212`. A seção 6 descreve um contêiner de arquivo `.Q` independente, mas não define o fluxo de bits aritmético, atualizações de modelos de probabilidade nem a terminação de quadros exigidos pelo CAB Quantum. Não transfira como regras do CAB o estado do fluxo completo ou as verificações de arquivos de `.Q`.
+
+A [página de pesquisa Quantum de Matthew Russotto](http://www.russotto.net/quantumcomp.html) e arquivos históricos não forneceram texto original verificável. Seu conteúdo, portanto, não foi tratado como evidência de leitura. Não é possível determinar se o original define inteiramente o algoritmo ou inferir suas condições de licença.
+
+Adicionalmente, foi lido apenas o [README do UnQuantum de David Carrero](https://github.com/dcarrero/unquantum/blob/main/README.md), com SHA-256 da cópia `187af81f8231cfe4cc31aec0c76476b1e33179fe517a365c820fc49c1b8106e0`; o código-fonte do decodificador desse projeto não foi lido. É uma visão não oficial do projeto `.Q` e afirma usar Russotto, libmspack e pesquisa binária como referências. Não é o texto original de Russotto e não substitui completamente uma especificação do fluxo de bits CAB. O rótulo MIT do projeto não estabelece que todas as suas referências e fontes de algoritmos estejam sob licença MIT.
+
+Essas lacunas são tratadas por análise comportamental de uma implementação de referência oficial fixada. Material não oficial não é excluído categoricamente, e a implementação de referência não é chamada de especificação de formato da Microsoft.
+
+## Fonte de referência fixada e escopo da análise
+
+A referência é o [7-Zip oficial 26.05](https://github.com/ip7z/7zip/releases/tag/26.05), especificamente [7z2605-src.tar.xz](https://github.com/ip7z/7zip/releases/download/26.05/7z2605-src.tar.xz), SHA-256 do arquivo `0b6080b8c3e7a579161d2d495224c0e51c467576cb4c7048b0ab485ef44cc22e`. Consulte [native-codec-sources.json](../../../scripts/native-codec-sources.json) para o inventário das fontes de compilação. Esse inventário descreve as fontes oficiais completas; os registros abaixo identificam apenas arquivos realmente usados para análise de referência CAB.
+
+Segundo `DOC/License.txt` do arquivo, os seguintes arquivos do decodificador e arquivos comuns usam LGPL-2.1-or-later por padrão; não foram encontrados avisos alternativos nesses arquivos. O arquivo também contém termos BSD para outros arquivos. Não simplifique todo o arquivo para uma única licença sem exceções nem classifique incorretamente esses arquivos do decodificador como BSD.
+
+| Arquivo no pacote | Escopo real da análise | SHA-256 |
+| --- | --- | --- |
+| `CPP/7zip/Compress/QuantumDecoder.cpp` | Fluxo aritmético de bits, modelos, símbolos, terminação de quadros, estado do dicionário | `1a22429d792493573f542782a45a7f702b6e636e5aee1d47bdb3d1cf75ef11e2` |
+| `CPP/7zip/Compress/QuantumDecoder.h` | Alfabeto dos modelos e constantes de seleção | `7571ee0360a7abe8f297f4cd4e34df1863003f252c6fab66c61f8d1bd25a21b4` |
+| `CPP/7zip/Compress/Lzx.h` | Constantes do fluxo de bits LZX | `779b32ecaecfc5b8c135e0051394001786d680fca4cfda57a480884342500e99` |
+| `CPP/7zip/Compress/LzxDecoder.h` | Limites do estado preservado entre quadros | `18141528bc8587ade4f7b1e330ee35dc8e31d6c6ab34d86a2dff59d362d0d6c9` |
+| `CPP/7zip/Compress/LzxDecoder.cpp` | Árvores em modo CAB, blocos brutos, preenchimento, distâncias repetidas, E8, histórico e terminação; código otimizado e organização de memória não são projetos de implementação | `e78bf50f27f21e04966785fafe7f94fddc533a9e6103f79b81c4e7d7613d1aab` |
+| `CPP/7zip/Compress/HuffmanDecoder.h` | Apenas admissão de árvore completa ou vazia, aproximadamente linhas 109–164 e 430–497 da cópia fixada | `22f93e29b2408ce7e1c1bca5f5f807c1383a8d1634fe3ae6cfcab15f084109c0` |
+| `CPP/7zip/Archive/Cab/CabHandler.cpp` | Apenas métodos de compressão, quadros CFDATA e continuação do histórico, aproximadamente linhas 1020–1252 da cópia fixada | `77b82387eea40eda02929b90d3006877c08765089d6b96c5c12b9cfd3f56b8f7` |
+| `C/7zVersion.h` | Identidade da versão fixada | `f7dc58b3a3c01569e061eda9cfe633ad8983667eb0fa10ab94a6c364ddd7e699` |
+| `DOC/License.txt` | Regras de licenciamento padrão de arquivos e exceções | `9ac2b4a97ab5d523965534d8b2d5868e511b39096d51fff458ab72c38b80fccc` |
+| `DOC/copying.txt` | Hash de identidade do texto LGPL, não interpretado como aconselhamento jurídico | `1e7e6bae5a5bde32f1ae5a7c37a082d1ab03cf89354f7f936ac40be9e39a6531` |
+
+Os números de linha apenas delimitam a leitura dessa cópia fixada; a identidade do arquivo é estabelecida pelo hash. Ao atualizar a versão de referência, registre novamente as diferenças; reutilizar números de linha não estabelece que o comportamento permaneceu igual.
+
+## Separação entre análise e implementação independente
+
+A preparação inicial leu apenas documentação de formato e interfaces próprias do projeto. Depois, um analista de referência designado leu explicitamente os arquivos-fonte listados e transformou condições ausentes ou contraditórias de fluxo de bits, atualização matemática, reinicialização, terminação e erro em especificações comportamentais sem expressão de código, entregando-as aos implementadores de LZX e Quantum que não haviam lido essas fontes.
+
+Cada implementação Rust foi organizada independentemente por seu implementador sem ler a fonte de referência, incluindo estado, tipos, fluxo de controle e testes. O analista não implementou nenhum dos dois algoritmos em Rust e implementou separadamente o contêiner CAB. Isso não significa que ninguém envolvido no trabalho CAB tenha visto a fonte de referência e não pode ser chamado de processo estrito de sala limpa. As especificações comportamentais não devem conter código de referência, reescritas linha a linha, estruturas transplantadas ou comentários traduzidos; nomes de especificação, constantes e relações matemáticas mantêm suas fontes.
+
+Leitura da referência, programação independente e interoperabilidade de caixa-preta respondem a perguntas diferentes. Um codificador e decodificador próprios funcionarem juntos não estabelece compatibilidade independente. O sucesso de uma ferramenta de referência não prova que todo comportamento permissivo atenda ao contrato de integridade do projeto. Fontes, documentos, ferramentas e amostras de referência mantêm suas respectivas licenças. Uma reescrita em Rust não estabelece que o risco jurídico tenha sido eliminado. Consulte o [contrato de licenças](licensing.md) e o [contrato de fontes correspondentes](../../engineering/source-delivery.md) para requisitos de licença e publicação.
+
+## Distinções técnicas que devem ser preservadas
+
+Os seguintes limites de comportamento são conjuntamente restringidos pela documentação do formato e pela análise de referência delimitada; não prescrevem estruturas internas Rust ou métodos de otimização.
+
+- Uma pasta CAB é uma unidade de histórico comprimido; arquivos são intervalos de saída dentro dela. Limites de arquivos, limites CFDATA e continuação entre volumes não reiniciam o histórico automaticamente; somente uma nova pasta lógica o faz. Fragmentos comprimidos entre volumes com `cbUncomp=0` são concatenados em um quadro lógico, enquanto cada soma física CFDATA é verificada separadamente. Essa soma é XOR de bytes/palavras, inclui dados reservados e não pode ser substituída por CRC ou por uma única soma após a concatenação. Metadados, comprimentos, relações entre volumes e limites dos dados são verificados separadamente.
+- Cada quadro MSZIP contém CK e um fluxo Deflate bruto completo. Árvores e fluxos de bits reiniciam a cada quadro; no máximo 32 KiB de histórico persistem por pasta. Os quadros são limitados a 32.780 bytes comprimidos e 32.768 bytes de saída. Reutilize a interface compartilhada de histórico predefinido Deflate do projeto; não crie uma segunda implementação Deflate. Preencher fluxos truncados com zeros ou forçá-los ao tamanho esperado não substitui verificações estritas de terminação.
+- CAB LZX usa palavras de 16 bits little-endian, com o bit mais significativo primeiro dentro de cada palavra. As quantidades de posições para janelas de 15 a 21 bits são, respectivamente, 30, 32, 34, 36, 38, 42 e 50. As quantidades para janelas grandes da visão geral antiga devem ser corrigidas com a tabela completa de distâncias. Deltas de comprimento de árvore são subtraídos módulo 17; a árvore alinhada precede as árvores principal e de comprimento. As árvores principal, preliminar e alinhada devem estar completas; a árvore de comprimento pode estar totalmente vazia, mas solicitar essa árvore vazia deve falhar.
+- Blocos brutos LZX ainda têm o comprimento comum do bloco. Ignore de 1 a 16 bits zero antes dos dados brutos, incluindo uma palavra inteira quando já estiver alinhado a palavra. Um byte zero de preenchimento de bloco bruto ímpar pode ser consumido no início do próximo quadro; sua omissão é tolerada apenas no fim final da pasta sem próximo bloco. Quadros comprimidos comuns permitem somente de 0 a 15 bits zero de preenchimento, sem uma palavra completa adicional ou bytes finais arbitrários. Blocos LZX podem abranger quadros CFDATA. O `finish` final deve rejeitar um bloco cuja saída declarada ainda não terminou; não mantenha a ausência permissiva de verificação final da antiga integração CAB.
+- O histórico LZ do LZX armazena bytes antes da reversão E8; uma pasta nova não tem histórico zero válido para referência. E8 examina até os últimos dez bytes de cada quadro, excluindo-os. Interprete o tamanho da tradução como um valor completo de 32 bits sem sinal e acumule a posição ao longo da pasta. A descrição antiga dos últimos seis bytes e comparações válidas apenas para tamanhos positivos com sinal não podem ser aplicadas diretamente.
+- Quantum reinicia seu estado de código aritmético de intervalo fechado de 16 bits para cada quadro. Nove modelos de probabilidade e o histórico real do dicionário persistem ao longo da pasta. Sete valores de seletor não implicam apenas sete modelos. As frequências dos símbolos aumentam em 8 a cada ocorrência; reescale antes do próximo uso somente quando a frequência total for estritamente maior que 3800. A divisão pela metade da frequência acumulada por modelo, a reordenação na quarta e depois a cada quinquagésima vez e a ordem de frequências iguais são comportamentos do fluxo e não podem ser substituídos arbitrariamente pela ordenação padrão da linguagem. As janelas de dicionário têm 10–21 bits e os níveis são 1–7; o nível não muda a semântica de decodificação.
+- Quantum não tem token de fim separado; o contêiner fornece o comprimento exato da saída e os mesmos bytes comprimidos podem satisfazer comprimentos declarados legais diferentes. Após alcançar a saída esperada, consuma pelo menos dois bits zero e o mínimo necessário para chegar a um limite de byte, de 2 a 9 bits no total, e então esgote exatamente a entrada comprimida. Bytes zero adicionais, bits terminais não nulos, truncamento e correspondências entre quadros não podem ser aceitos. Uma pasta nova não pode referenciar conteúdo de janela ainda não gerado.
+
+O host continua responsável por fixar o conjunto de volumes e identidades de origem, analisar nomes, identificar entradas, verificar caminhos previamente, orçamentos das tarefas, cancelamento, preparação e confirmação. A camada de formato lê apenas fluxos autorizados pelo host e não abre arquivos independentemente por nomes internos CAB. Preserve nomes originais e declarações UTF-8 separadamente. Registros comuns com nomes duplicados não são mesclados; apenas arquivos continuados definidos expressamente pela especificação são combinados. Erros de algoritmo não devem mascarar cancelamento, quota ou erros de E/S do host. Contratos compartilhados regem interfaces e limites de recursos; não derive novas permissões do produto de tamanhos de buffer ou categorias HRESULT da referência.
