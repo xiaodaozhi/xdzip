@@ -61,7 +61,7 @@
 - [Допуск зависимостей распаковки и вывода ZIP](../engineering/zip-extraction-admission.md)
 - [Источники формата 7z и независимая реализация](../engineering/sevenzip-format-sources.md)
 - [Основы независимой реализации RAR и границы совместимости](../../engineering/rar-format-sources.md)
-- [Источники формата CAB и основы реализации](../../engineering/cab-format-sources.md)
+- [Источники формата CAB и основы реализации](../engineering/cab-format-sources.md)
 - [Контракт реализации TAR/GZIP](../engineering/tar-gzip.md)
 - [Потоки одного файла и пакеты на основе ZIP](../engineering/single-file-streams.md)
 - [Контракт потоков LZ4](../engineering/lz4-streams.md)

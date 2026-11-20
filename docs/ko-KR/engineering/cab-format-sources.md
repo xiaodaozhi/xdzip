@@ -1,6 +1,6 @@
 # CAB 형식 자료와 구현 근거
 
-[English](../../engineering/cab-format-sources.md) | [简体中文](../../zh-CN/engineering/cab-format-sources.md) | [繁體中文](../../zh-TW/engineering/cab-format-sources.md) | [日本語](../../ja-JP/engineering/cab-format-sources.md) | 한국어 | [Français](../../fr-FR/engineering/cab-format-sources.md) | [Deutsch](../../de-DE/engineering/cab-format-sources.md) | [Español](../../es-ES/engineering/cab-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/cab-format-sources.md)
+[English](../../engineering/cab-format-sources.md) | [简体中文](../../zh-CN/engineering/cab-format-sources.md) | [繁體中文](../../zh-TW/engineering/cab-format-sources.md) | [日本語](../../ja-JP/engineering/cab-format-sources.md) | 한국어 | [Français](../../fr-FR/engineering/cab-format-sources.md) | [Deutsch](../../de-DE/engineering/cab-format-sources.md) | [Español](../../es-ES/engineering/cab-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/cab-format-sources.md) | [Русский](../../ru-RU/engineering/cab-format-sources.md)
 
 이 문서는 CAB 컨테이너, MSZIP, LZX와 Quantum의 자료, 범위와 독립 구현 제약을 기록합니다. 제품 기능, 리소스 관리와 형식별 교체 규칙은 각각 [격리된 형식 작업 프로세스 계약](native-codecs.md), [자체 Rust 계약](../../engineering/independent-rust-codecs.md), [분할 볼륨 계약](archive-opening.md)에 정의되어 있습니다. 자료 기록은 상호 운용성 승인이나 릴리스 라이선스 검토를 대체하지 않습니다.
 

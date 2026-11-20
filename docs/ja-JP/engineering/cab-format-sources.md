@@ -1,6 +1,6 @@
 # CAB 形式の資料と実装根拠
 
-[English](../../engineering/cab-format-sources.md) | [简体中文](../../zh-CN/engineering/cab-format-sources.md) | [繁體中文](../../zh-TW/engineering/cab-format-sources.md) | 日本語 | [한국어](../../ko-KR/engineering/cab-format-sources.md) | [Français](../../fr-FR/engineering/cab-format-sources.md) | [Deutsch](../../de-DE/engineering/cab-format-sources.md) | [Español](../../es-ES/engineering/cab-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/cab-format-sources.md)
+[English](../../engineering/cab-format-sources.md) | [简体中文](../../zh-CN/engineering/cab-format-sources.md) | [繁體中文](../../zh-TW/engineering/cab-format-sources.md) | 日本語 | [한국어](../../ko-KR/engineering/cab-format-sources.md) | [Français](../../fr-FR/engineering/cab-format-sources.md) | [Deutsch](../../de-DE/engineering/cab-format-sources.md) | [Español](../../es-ES/engineering/cab-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/cab-format-sources.md) | [Русский](../../ru-RU/engineering/cab-format-sources.md)
 
 この文書は CAB コンテナ、MSZIP、LZX、Quantum の資料、範囲、独立実装の制約を記録します。製品機能、リソース管理、形式別の置換規則はそれぞれ[分離形式ワーカー契約](native-codecs.md)、[自社 Rust 契約](../../engineering/independent-rust-codecs.md)、[分割ボリューム契約](archive-opening.md)に定義します。資料の記録は相互運用性の受け入れやリリース時のライセンス審査の代わりにはなりません。
 

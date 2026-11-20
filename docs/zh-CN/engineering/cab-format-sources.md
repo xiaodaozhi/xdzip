@@ -1,6 +1,6 @@
 # CAB 格式来源与实现依据
 
-[English](../../engineering/cab-format-sources.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/cab-format-sources.md) | [日本語](../../ja-JP/engineering/cab-format-sources.md) | [한국어](../../ko-KR/engineering/cab-format-sources.md) | [Français](../../fr-FR/engineering/cab-format-sources.md) | [Deutsch](../../de-DE/engineering/cab-format-sources.md) | [Español](../../es-ES/engineering/cab-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/cab-format-sources.md)
+[English](../../engineering/cab-format-sources.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/cab-format-sources.md) | [日本語](../../ja-JP/engineering/cab-format-sources.md) | [한국어](../../ko-KR/engineering/cab-format-sources.md) | [Français](../../fr-FR/engineering/cab-format-sources.md) | [Deutsch](../../de-DE/engineering/cab-format-sources.md) | [Español](../../es-ES/engineering/cab-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/cab-format-sources.md) | [Русский](../../ru-RU/engineering/cab-format-sources.md)
 
 本文记录 CAB 容器、MSZIP、LZX 和 Quantum 的来源、适用范围及独立实现约束。产品能力、资源治理和逐格式替代规则分别由[隔离格式工作进程契约](native-codecs.md)、[自研 Rust 契约](independent-rust-codecs.md)及[分卷契约](archive-opening.md)定义。来源记录不代替互操作验收或发行许可复核。
 
