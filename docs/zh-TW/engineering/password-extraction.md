@@ -2,7 +2,7 @@
 
 # 壓縮檔密碼與加密目錄開啟
 
-[English](../../engineering/password-extraction.md) | [简体中文](../../zh-CN/engineering/password-extraction.md) | 繁體中文（台灣）
+[English](../../engineering/password-extraction.md) | [简体中文](../../zh-CN/engineering/password-extraction.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/password-extraction.md) | [한국어](../../ko-KR/engineering/password-extraction.md) | [Français](../../fr-FR/engineering/password-extraction.md) | [Deutsch](../../de-DE/engineering/password-extraction.md) | [Español](../../es-ES/engineering/password-extraction.md) | [Português (Brasil)](../../pt-BR/engineering/password-extraction.md) | [Русский](../../ru-RU/engineering/password-extraction.md)
 
 本契約補充[安全解壓](zip-safe-extraction.md)，定義密碼、認證和任務互動。格式與檔案安全邏輯仍獨立於 Qt，密碼視窗只提交使用者意圖。實際開發進度與平臺驗證見 [issue #11](https://github.com/xiaodaozhi/xdzip/issues/11)，本頁不儲存執行報告。
 

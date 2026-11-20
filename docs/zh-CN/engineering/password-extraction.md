@@ -1,6 +1,6 @@
 # 压缩包密码与加密目录打开
 
-[English](../../engineering/password-extraction.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/password-extraction.md)
+[English](../../engineering/password-extraction.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/password-extraction.md) | [日本語](../../ja-JP/engineering/password-extraction.md) | [한국어](../../ko-KR/engineering/password-extraction.md) | [Français](../../fr-FR/engineering/password-extraction.md) | [Deutsch](../../de-DE/engineering/password-extraction.md) | [Español](../../es-ES/engineering/password-extraction.md) | [Português (Brasil)](../../pt-BR/engineering/password-extraction.md) | [Русский](../../ru-RU/engineering/password-extraction.md)
 
 本契约补充[安全解压](zip-safe-extraction.md)，定义密码、认证和任务交互。格式与文件安全逻辑仍独立于 Qt，密码窗口只提交用户意图。实际开发进度与平台验证见 [issue #11](https://github.com/xiaodaozhi/xdzip/issues/11)，本页不保存执行报告。
 
