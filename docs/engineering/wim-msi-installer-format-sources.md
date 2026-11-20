@@ -1,6 +1,6 @@
 # WIM, MSI, and installer format sources and licenses
 
-English | [简体中文](../zh-CN/engineering/wim-msi-installer-format-sources.md) | [繁體中文（台灣）](../zh-TW/engineering/wim-msi-installer-format-sources.md)
+English | [简体中文](../zh-CN/engineering/wim-msi-installer-format-sources.md) | [繁體中文（台灣）](../zh-TW/engineering/wim-msi-installer-format-sources.md) | [日本語](../ja-JP/engineering/wim-msi-installer-format-sources.md) | [한국어](../ko-KR/engineering/wim-msi-installer-format-sources.md) | [Français](../fr-FR/engineering/wim-msi-installer-format-sources.md) | [Deutsch](../de-DE/engineering/wim-msi-installer-format-sources.md) | [Español](../es-ES/engineering/wim-msi-installer-format-sources.md) | [Português (Brasil)](../pt-BR/engineering/wim-msi-installer-format-sources.md) | [Русский](../ru-RU/engineering/wim-msi-installer-format-sources.md)
 
 This page describes technical references, licensing restrictions, and requirements for supporting WIM, MSI, and installer formats. References stay in `build/toolchain/references` or link to public specifications; none is a product dependency.
 

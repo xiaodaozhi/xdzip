@@ -3,7 +3,7 @@
 
 # WIM、MSI 和安裝程式格式的參考資料與授權
 
-[English](../../engineering/wim-msi-installer-format-sources.md) | [简体中文](../../zh-CN/engineering/wim-msi-installer-format-sources.md) | 繁體中文（台灣）
+[English](../../engineering/wim-msi-installer-format-sources.md) | [简体中文](../../zh-CN/engineering/wim-msi-installer-format-sources.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/wim-msi-installer-format-sources.md) | [한국어](../../ko-KR/engineering/wim-msi-installer-format-sources.md) | [Français](../../fr-FR/engineering/wim-msi-installer-format-sources.md) | [Deutsch](../../de-DE/engineering/wim-msi-installer-format-sources.md) | [Español](../../es-ES/engineering/wim-msi-installer-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/wim-msi-installer-format-sources.md) | [Русский](../../ru-RU/engineering/wim-msi-installer-format-sources.md)
 
 本文介紹 WIM、MSI 和安裝程式格式的技術參考資料、授權限制，以及支援這些格式所需的條件。參考資料保留在 `build/toolchain/references` 或連結至公開規範，均非產品依賴。
 
