@@ -2862,12 +2862,27 @@ QtObject {
         WindowActivation::reveal(window);
         for (auto *candidate : sessions.windows()) {
             QTRY_VERIFY(candidate->isVisible());
+            if (BuildInfo::linuxX11()) {
+                const auto area = candidate->screen()->availableGeometry();
+                const auto expected =
+                    area.topLeft() + QPoint((area.width() - candidate->width()) / 2,
+                                            (area.height() - candidate->height()) / 2);
+                QTRY_VERIFY((candidate->position() - expected).manhattanLength() <= 2);
+            }
             auto *controller = candidate->findChild<BrowserController *>();
             QTRY_VERIFY(controller->ready() && !controller->busy());
             QVERIFY(!candidate->property("activePage")
                          .value<QObject *>()
                          ->property("externalFileOpening")
                          .toBool());
+        }
+        if (BuildInfo::linuxX11()) {
+            const auto moved = window->position() + QPoint(30, 30);
+            window->setPosition(moved);
+            QTRY_COMPARE(window->position(), moved);
+            window->hide();
+            WindowActivation::reveal(window);
+            QTRY_COMPARE(window->position(), moved);
         }
         QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
         sessions.confirmQuit(false);
