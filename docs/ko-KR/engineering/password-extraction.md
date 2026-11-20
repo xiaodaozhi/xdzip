@@ -4,7 +4,7 @@
 
 [English](../../engineering/password-extraction.md) | [简体中文](../../zh-CN/engineering/password-extraction.md) | [繁體中文](../../zh-TW/engineering/password-extraction.md) | [日本語](../../ja-JP/engineering/password-extraction.md) | 한국어 | [Français](../../fr-FR/engineering/password-extraction.md) | [Deutsch](../../de-DE/engineering/password-extraction.md) | [Español](../../es-ES/engineering/password-extraction.md) | [Português (Brasil)](../../pt-BR/engineering/password-extraction.md) | [Русский](../../ru-RU/engineering/password-extraction.md)
 
-이 계약은 [안전한 추출](../../engineering/zip-safe-extraction.md)을 보완하며 암호, 인증과 작업 상호작용을 정의합니다. 형식과 파일 보안 로직은 Qt와 독립적으로 유지되며 암호 창은 사용자 의도만 제출합니다. 실제 진행과 플랫폼 검증은 [issue #11](https://github.com/xiaodaozhi/xdzip/issues/11)을 참고하세요. 실행 보고서는 여기에 두지 않습니다.
+이 계약은 [안전한 추출](zip-safe-extraction.md)을 보완하며 암호, 인증과 작업 상호작용을 정의합니다. 형식과 파일 보안 로직은 Qt와 독립적으로 유지되며 암호 창은 사용자 의도만 제출합니다. 실제 진행과 플랫폼 검증은 [issue #11](https://github.com/xiaodaozhi/xdzip/issues/11)을 참고하세요. 실행 보고서는 여기에 두지 않습니다.
 
 <a name="xdzip-capability-and-format-boundaries"></a>
 

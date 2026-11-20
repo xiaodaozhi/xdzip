@@ -96,7 +96,7 @@ flowchart TB
 2. **디코딩.** 백엔드는 직접 또는 아카이브 작업 프로세스를 통해 허용된 소스를 읽습니다. 바이트를 비공개 준비 영역에 연결된 계량 싱크로 보냅니다. 암호 재시도, 확장과 보조 작업은 작업 제한에 따릅니다. 준비 영역에 보낸 바이트는 디코딩, 크기 검사와 사용 가능한 형식 검증이 성공할 때까지 잠정적입니다.
 3. **확정과 보고.** 게시 전에 호스트는 소스와 관련 대상 식별 정보를 다시 확인합니다. 각 적격 파일을 따로 확정하고 실제 게시된 파일과 바이트를 기록합니다. 나중의 실패나 취소로 이미 확정한 파일이 남을 수 있습니다. 게시하지 않은 준비 영역은 가능한 한 정리하며 종료 결과는 실패, 취소, 건너뛰기와 정리 경고를 보고합니다.
 
-[추출 실행](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/execute.rs), [아카이브 검사](../engineering/archive-checking.md), [암호 상호 작용](../engineering/password-extraction.md), [ZIP 안전 추출](../../engineering/zip-safe-extraction.md).
+[추출 실행](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/execute.rs), [아카이브 검사](../engineering/archive-checking.md), [암호 상호 작용](../engineering/password-extraction.md), [ZIP 안전 추출](../engineering/zip-safe-extraction.md).
 
 ## 아카이브 생성 또는 수정
 

@@ -41,7 +41,7 @@ xdzip gui archive.zip
 
 `--limit` 또는 `--offset`을 지정하면 페이지를 나눕니다. 오프셋은 0부터 시작하며 최대 1,000,000입니다. `--limit`만 지정하면 오프셋은 0이고 `--offset`만 지정하면 한도는 128입니다. 유효한 한도는 1–4,096입니다. JSON `data`에는 `offset`, `total`, null일 수 있는 `next_offset`이 있습니다. `summary.entries`는 실제 반환한 행을 셉니다. 일반 단일 파일 ZIP/ZIP64는 100만 항목을 인덱싱할 수 있지만 페이지 없는 목록은 100,000개 초과를 거부합니다. 두 방식 모두 직렬화된 JSON 행과 렌더링 텍스트에 16 MiB 예산을 사용합니다. 한도 초과 시 부분 행 없이 `resource_limit`을 반환합니다. 페이지 경계는 물리 ID를 바꾸지 않습니다. [대형 압축 파일 인덱싱](large-index.md)을 참조하세요.
 
-extract의 기본 대상은 현재 디렉터리입니다. `-C`가 없는 디렉터리를 지정하면 무조건 재귀 생성하지 않고 가장 가까운 기존 안전 부모부터 구성 요소별로 권한을 얻습니다. 대상, 원본 ID, 링크, Unicode·대소문자 충돌, 준비, 검증과 확정은 계속 [안전한 압축 풀기](../../engineering/zip-safe-extraction.md)와 [파일 이름 인코딩](filename-encoding.md)을 따릅니다. 이름 충돌 기본값은 Ask이며 `--conflict ask|skip|rename|overwrite`로 명시적으로 선택합니다. `--allow-high-ratio`는 높은 압축률만 확인하며 강제 리소스 한도를 제거하지 않습니다.
+extract의 기본 대상은 현재 디렉터리입니다. `-C`가 없는 디렉터리를 지정하면 무조건 재귀 생성하지 않고 가장 가까운 기존 안전 부모부터 구성 요소별로 권한을 얻습니다. 대상, 원본 ID, 링크, Unicode·대소문자 충돌, 준비, 검증과 확정은 계속 [안전한 압축 풀기](zip-safe-extraction.md)와 [파일 이름 인코딩](filename-encoding.md)을 따릅니다. 이름 충돌 기본값은 Ask이며 `--conflict ask|skip|rename|overwrite`로 명시적으로 선택합니다. `--allow-high-ratio`는 높은 압축률만 확인하며 강제 리소스 한도를 제거하지 않습니다.
 
 `create`는 출력 [접미사](format-registry.md)에서 프로필을 선택하며 대상 부모 디렉터리가 존재해야 합니다. `--level store|fast|normal|best`는 선택한 프로필에 맞는지 검증합니다. 일반 TAR과 ISO에는 수준을 생략하거나 `store`를 선택합니다. LHA(`.lzh` 또는 `.lha`)는 `fast`, `normal`, `best`에 LH5 수준 1, 6, 9를 사용합니다. ZIP과 7z는 `--encrypt`와 `--volume-size`를 지원하며 7z는 프로필에 따라 `--encrypt-names`와 `--solid`도 지원합니다. 분할 크기는 양의 정수 바이트 또는 `KiB`, `MiB`, `GiB` 접미사를 받습니다. 선택 프로필이 지원하지 않는 인수는 쓰기 전에 실패합니다.
 

@@ -39,7 +39,7 @@
 - [파일 이름 인코딩 자동 판별](../engineering/filename-encoding.md)
 - [내용 미리보기](../engineering/content-preview.md)
 - [압축 풀기 전 메타데이터 검사](../engineering/extraction-preflight.md)
-- [안전한 ZIP 압축 풀기 구현](../../engineering/zip-safe-extraction.md)
+- [안전한 ZIP 압축 풀기 구현](../engineering/zip-safe-extraction.md)
 - [압축 파일 무결성 검사](../engineering/archive-checking.md)
 - [항목 열기, 끌어서 놓기 및 압축 파일 수정](../../engineering/archive-transfers.md)
 - [압축 파일 암호와 암호화된 디렉터리 열기](../engineering/password-extraction.md)

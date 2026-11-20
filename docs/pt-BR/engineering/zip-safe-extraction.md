@@ -1,6 +1,6 @@
 # Implementação da extração segura de ZIP
 
-[English](../../engineering/zip-safe-extraction.md) | [简体中文](../../zh-CN/engineering/zip-safe-extraction.md) | [繁體中文](../../zh-TW/engineering/zip-safe-extraction.md) | [日本語](../../ja-JP/engineering/zip-safe-extraction.md) | [Français](../../fr-FR/engineering/zip-safe-extraction.md) | [Deutsch](../../de-DE/engineering/zip-safe-extraction.md) | [Español](../../es-ES/engineering/zip-safe-extraction.md) | Português (Brasil)
+[English](../../engineering/zip-safe-extraction.md) | [简体中文](../../zh-CN/engineering/zip-safe-extraction.md) | [繁體中文](../../zh-TW/engineering/zip-safe-extraction.md) | [日本語](../../ja-JP/engineering/zip-safe-extraction.md) | [한국어](../../ko-KR/engineering/zip-safe-extraction.md) | [Français](../../fr-FR/engineering/zip-safe-extraction.md) | [Deutsch](../../de-DE/engineering/zip-safe-extraction.md) | [Español](../../es-ES/engineering/zip-safe-extraction.md) | Português (Brasil)
 
 Este contrato define a segurança da saída pelo host, a extração efetiva, os conflitos, o cancelamento e a confirmação. Resultados reais de execução e defeitos atuais são registrados nas issues e nos artefatos do Actions correspondentes, não acumulados aqui.
 

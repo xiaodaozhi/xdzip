@@ -30,7 +30,7 @@
 
 ZIP 심볼릭 링크 출력은 승인된 Unix 링크 그래프로 제한됩니다. 런타임은 링크 게시 전에 선택된 그래프와 없어야 하는 말단을 검증하고 일반 대상을 먼저 확정합니다. 작업은 콘텐츠를 쓰기 위해 압축 파일이 만든 링크를 따라가지 않습니다. 다른 미지원 링크나 특수 파일 프로필은 명시적으로 실패합니다. POSIX 일반 파일 모드는 소유자 읽기/쓰기와 함께 안전한 읽기/실행 비트를 준비 영역에 복원할 수 있습니다. 특권 비트와 외부 쓰기 비트는 제외합니다. 추출 경로는 확정 후 타임스탬프를 복원하지 않습니다.
 
-[이식 가능한 경로 파서](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-domain/src/path.rs), [추출 계획](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/plan.rs), [개인 객체 검사](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/private.rs), [링크와 플랫폼 세부 정보](../../engineering/zip-safe-extraction.md)
+[이식 가능한 경로 파서](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-domain/src/path.rs), [추출 계획](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/plan.rs), [개인 객체 검사](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/private.rs), [링크와 플랫폼 세부 정보](../engineering/zip-safe-extraction.md)
 
 <a name="xdzip-staging-verification-and-commit"></a>
 
@@ -45,7 +45,7 @@ ZIP 심볼릭 링크 출력은 승인된 Unix 링크 그래프로 제한됩니�
 | 분할 볼륨 생성 | 준비된 압축 파일 내용을 검증하고 모든 부분을 준비하여 기존 볼륨을 덮어쓰지 않고 새 평면 집합을 게시합니다. 부분들은 개별적으로 보이게 됩니다. 부분 실패 시 롤백은 새로 게시된 객체 중 식별 정보가 여전히 일치하는 것만 제거하려고 합니다. 롤백 실패는 불확실한 결과를 남길 수 있습니다. |
 | 기존 압축 파일 수정 | `ArchiveUpdate`는 승인된 부모와 예상되는 원본 압축 파일 버전을 연결합니다. 다시 쓴 압축 파일을 열어 검증한 뒤 해당 권한으로 원본을 한 번 교체합니다. 일반 추출은 이 특별한 교체 경로로 원본을 덮어쓸 수 없습니다. |
 
-게시 게이트 전 취소는 현재 확정을 막습니다. 이미 진행 중인 게시는 완료되어 실제 결과를 보고할 수 있습니다. 이전에 확정된 추출 파일은 계속 보입니다. 종료 스냅샷은 확정된 데이터를 `cancelled`, `failed` 또는 정리 경고와 함께 보고할 수 있습니다. 압축 파일 전체 게시가 성공하면 늦게 취소가 도착해도 성공을 유지합니다. [작업 취소](task-scheduling.md), [압축 파일 수정](../../engineering/archive-transfers.md), [안전한 추출](../../engineering/zip-safe-extraction.md)
+게시 게이트 전 취소는 현재 확정을 막습니다. 이미 진행 중인 게시는 완료되어 실제 결과를 보고할 수 있습니다. 이전에 확정된 추출 파일은 계속 보입니다. 종료 스냅샷은 확정된 데이터를 `cancelled`, `failed` 또는 정리 경고와 함께 보고할 수 있습니다. 압축 파일 전체 게시가 성공하면 늦게 취소가 도착해도 성공을 유지합니다. [작업 취소](task-scheduling.md), [압축 파일 수정](../../engineering/archive-transfers.md), [안전한 추출](../engineering/zip-safe-extraction.md)
 
 <a name="xdzip-output-budgets-and-integrity-scope"></a>
 
@@ -69,4 +69,4 @@ ZIP 심볼릭 링크 출력은 승인된 Unix 링크 그래프로 제한됩니�
 
 준비 저널은 준비와 확정 시 작업 컨텍스트와 상대 출력 이름을 기록합니다. 일반 정리는 소유권과 식별 정보를 검사하고 알려진 준비 객체만 제거합니다. 개인 저널과 남은 객체는 비정상 종료 후 증거를 제공할 수 있습니다. 런타임은 대상을 검사할 때 가능한 잔여물을 셉니다. 발견한 저널로 쓰기를 재실행하거나 알 수 없는 콘텐츠를 삭제하지 않습니다. 개인 임시 출력의 캐시 만료에는 자체 식별 및 잠금 검사가 있습니다.
 
-이 경계를 변경할 때 오류 코드뿐 아니라 게시와 정리도 검증합니다. [I/O 테스트](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/tests.rs), [추출 테스트](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/tests.rs), [안전한 추출 계약](../../engineering/zip-safe-extraction.md)은 서로 다른 계층을 다룹니다. 네이티브 플랫폼 동작을 변경하면 해당 플랫폼의 증거가 필요합니다.
+이 경계를 변경할 때 오류 코드뿐 아니라 게시와 정리도 검증합니다. [I/O 테스트](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/tests.rs), [추출 테스트](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/tests.rs), [안전한 추출 계약](../engineering/zip-safe-extraction.md)은 서로 다른 계층을 다룹니다. 네이티브 플랫폼 동작을 변경하면 해당 플랫폼의 증거가 필요합니다.
