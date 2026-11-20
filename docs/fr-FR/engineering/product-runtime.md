@@ -1,0 +1,58 @@
+<a name="xdzip-product-runtime-and-qt-lifecycle"></a>
+
+# Runtime du produit et cycle de vie Qt
+
+[English](../../engineering/product-runtime.md) | [简体中文](../../zh-CN/engineering/product-runtime.md) | [繁體中文（台灣）](../../zh-TW/engineering/product-runtime.md) | [日本語](../../ja-JP/engineering/product-runtime.md) | [한국어](../../ko-KR/engineering/product-runtime.md) | Français | [Deutsch](../../de-DE/engineering/product-runtime.md) | [Español](../../es-ES/engineering/product-runtime.md) | [Português (Brasil)](../../pt-BR/engineering/product-runtime.md) | [Русский](../../ru-RU/engineering/product-runtime.md)
+
+Ce guide présente la liaison de l’application de bureau au runtime Rust par commandes et événements, notamment la saturation des files, l’arrêt et les compilations par plateforme. Voir les contrats de [navigation en lecture seule](readonly-browser.md) et d’[extraction sûre](zip-safe-extraction.md) pour leurs capacités propres.
+
+<a name="xdzip-implemented-services"></a>
+
+## Services implémentés
+
+`xdzip-runtime::service` implémente le service produit. L’interface prend une seule fois `CommandClient` et un thread récepteur Qt dédié prend une seule fois `EventReceiver`. Le thread de commandes Rust possède l’archive ouverte de la connexion et l’instantané de navigation. Un thread de tâches Rust distinct reçoit le travail préparé avec la source et les paramètres nécessaires, puis publie les mises à jour. Les handles d’archive et les points d’entrée de balayage synchrone restent en Rust. Voir le [pont Qt/Rust](../design/qt-rust-bridge.md) pour l’ABI et l’[ordonnancement](../design/task-scheduling.md) pour la propriété et l’admission.
+
+Les commandes centrales incluent Open, Browse, Preflight, CloseSession et Snapshot ; la navigation et la vérification préalable réelles existantes les utilisent. Chaque requête ordinaire acceptée reçoit un identifiant non réutilisé, renvoie au plus un événement de données borné, puis exactement un Finished ; une erreur renvoie directement Finished. Les pages portent l’identité de session, requête et offset. Chaque RuntimeConnection possède une session et des requêtes d’interface en attente sérielles. Les requêtes portent aussi un identifiant complet de requête, une génération d’interface et une révision d’instantané ; voir le [contrat de navigation ZIP](zip-readonly-browsing.md). Une requête entre sessions renvoie stale_session.
+
+L’admission ordinaire de l’interface utilise try_lock sans attendre de place dans la file et valide les limites : chemins de 4 KiB, recherche de 1 KiB, 128 éléments sélectionnés, identifiants de répertoire de 21 octets et codes de tri 0–12. Un refus ne consomme pas d’identifiant ; Busy peut être réessayé. L’annulation dispose d’un canal de contrôle distinct d’au plus 128 éléments et de son propre accusé Finished ; cet accusé ne garantit pas que la cible ne soit pas déjà terminée. L’arrêt conserve un RequestId indépendant et idempotent et réserve le dernier identifiant disponible afin de fonctionner même si les identifiants ordinaires sont épuisés ou la file pleine.
+
+Le contrôleur Qt ne garde qu’une commande en attente d’admission. Un Busy transitoire est réessayé dans la boucle d’événements par un temporisateur unique de 1 ms, au plus 32 fois ; seule une saturation persistante invite à réessayer. Ce n’est pas un délai de fin. Annulation, arrêt ou déconnexion retirent immédiatement les commandes non acceptées ; aucun temporisateur de nouvelle tentative ne tourne au repos. Les arguments invalides et l’épuisement des identifiants sont signalés séparément, sans les présenter comme une saturation. Open est désactivé après déconnexion.
+
+<a name="xdzip-bounded-transport"></a>
+
+## Transport borné
+
+- Au plus 128 requêtes ordinaires sont en cours ; leur capacité n’est libérée que lorsque le récepteur prend Finished. Deux emplacements d’événement sont réservés par requête afin que les données n’évincent pas les états terminaux.
+- Les événements de données Rust partagent un budget cumulé de 32 MiB, images de 16 MiB maximum et leurs conteneurs compris. Au-delà, la publication attend ; annulation ou arrêt réveille l’attente et peut émettre un état terminal annulé. Un événement unique trop volumineux renvoie resource_limit.
+- Les commandes Rust conservent une limite cumulée de contenu de 8 MiB ; le dépassement est refusé à l’admission et le budget plus élevé des images ne la modifie pas.
+- La boîte Qt contient au plus 256 événements et 32 MiB de contenu. Au plus 128 emplacements sont destinés aux données ordinaires ; les autres sont réservés aux événements terminaux ou de contrôle. Elle ne crée pas un rappel Qt par événement Rust.
+- Une chaîne de notification traite au plus 32 événements ou environ 4 ms par tour, puis en programme un autre si nécessaire ; le traitement d’un événement unique n’est pas préemptible. Une file vide arrête la planification et le récepteur attend sur une variable de condition.
+- Page d’Open transporte aussi l’index complet borné des répertoires, au plus 32 768 nœuds et 4 MiB de noms/préfixes, marqué pour remplacement par `replace_directories` ; un index vide remplace lui aussi explicitement l’ancien. Browse ne le renvoie pas ; `navigation_limited` signale explicitement une indexation réduite. Rust compte les octets des noms et préfixes ; la boîte Qt compte aussi les chaînes d’identifiants de nœud et de parent générées par le pont. Les conteneurs de nœuds et la profondeur ont leurs propres limites. Appliquer ensemble la page et le modèle de répertoires après le Finished réussi de la requête correspondante.
+- Le `total` de Page compte les lignes de la liste courante ; `archive_total` conserve séparément le nombre d’enregistrements physiques de l’archive. La navigation normale liste les fichiers et dossiers directs du répertoire courant ; la recherche renvoie récursivement les correspondances physiques. Les dossiers sans enregistrement explicite utilisent `navigation_id` et `physical=false` ; les clés Qt sont `dN`, les identifiants physiques bruts restent séparés et les nœuds virtuels ne peuvent pas soumettre Preflight. Les métadonnées conservent les chemins complets ; l’affichage utilise respectivement le nom final en navigation et le chemin complet en recherche.
+- Les budgets de chaînes ne sont pas la RSS : conteneurs, instantanés et événement en conversion demandent de la mémoire supplémentaire, mais entrées et pages restent bornées. Les lots du pont contiennent au plus 128 éléments. Voir le [contrat de navigation ZIP](zip-readonly-browsing.md) pour la référence initiale de 100 000 entrées et l’[indexation des grandes archives](large-index.md) pour son extension ultérieure aux ZIP ordinaires à fichier unique.
+
+Les événements de contrôle et ordinaires sont prélevés en alternance afin que des accusés d’annulation continus n’affament pas les états terminaux ordinaires. Des numéros de séquence croissants sont attribués à la livraison. Qt ignore les anciennes séquences ; les accusés de contrôle et les request_id périmés ne modifient pas la vue courante.
+
+Les enveloppes `Task`/`TaskUpdate` du canal de tâches indépendant conservent le request_id original de création. Les enregistrements de corrélation restent dans les emplacements bornés de contrôle des tâches et sont libérés à la livraison de l’état terminal. Ils peuvent précéder les données d’acceptation ou suivre le Finished de la requête. Ils ne consomment pas un second emplacement de données ordinaires et ne libèrent ni ne terminent de nouveau la requête ; ils relient correctement les espaces réservés de préparation au TaskId et à la session source réels. Cet identifiant n’est pas un identifiant de requête d’annulation ; le contrôle des tâches utilise toujours TaskId.
+
+<a name="xdzip-shutdown-destruction-and-failure"></a>
+
+## Arrêt, destruction et défaillance
+
+Fermer une archive ou une fenêtre peut laisser l’application et ses tâches actives dans la zone de notification. À la sortie ou au redémarrage, le coordinateur arrête les admissions, demande l’annulation et vide les événements pendant que Rust libère les sessions. Le récepteur attend la fin des deux threads Rust avant de renvoyer `ShutdownReady`. Le bureau attend la fin du récepteur Qt et le vidage de la boîte avant de quitter. Le thread d’interface ne joint jamais des threads attendant une opération de fichier ou la livraison d’événements.
+
+Le contrôle d’annulation et d’arrêt utilise de courtes sections critiques aux opérations d’état bornées, indépendantes de la capacité de la file de données. L’annulation coopérative ne peut interrompre une lecture bloquée par le système ; elle ne garantit pas une sortie en temps réel. Les requêtes en lecture seule ne produisent pas ici de transaction de sortie. Les validations de création/extraction, le nettoyage temporaire et les résultats de sortie suivent séparément les contrats de [création](zip-creation.md) et d’[extraction sûre](zip-safe-extraction.md).
+
+Si un QObject est détruit prématurément, fermer la boîte, réveiller le récepteur et arrêter le service. Le travail en arrière-plan ne détient que les files partagées et le handle du récepteur Rust, jamais de pointeur vers le contrôleur. Qt annule automatiquement les notifications des objets détruits. QPointer protège aussi la durée de vie si un rappel de consommation détruit synchroniquement la connexion. En abandonnant la réception, ne pas attendre les threads dans le destructeur ; le travail se termine coopérativement. Seul un ShutdownReady normal établit que leur attente est terminée.
+
+Si un gestionnaire de lecture seule déclenche un panic déroulable, la frontière le capture, abandonne tout le service, émet RuntimeFault et termine les requêtes incomplètes avec runtime_unavailable ; la session n’est pas réutilisée. Cela définit uniquement l’échec en lecture seule et ne promet pas de récupérer des transactions de création ou d’extraction à moitié terminées. Les éléments validés, résultats incertains et nettoyages d’écriture suivent leurs contrats. Une allocation irrécupérable, l’abandon du processus ou des verrous internes empoisonnés ne garantissent pas la livraison d’un événement terminal. En cas d’EOF ou de rupture inattendue, Qt termine uniformément les états en attente pour éviter une occupation permanente.
+
+<a name="xdzip-verification-and-build"></a>
+
+## Vérification et compilation
+
+Voir la [vérification générale](../../../developers/qa/README.md). Les tests du cœur Rust ne nécessitent pas Qt ; les tests Qt de fenêtres, modèles, charge et arrêt sont compilés et exécutés nativement sur trois plateformes. La CI macOS vérifie arm64 et le démarrage Cocoa dans l’environnement SDK sans déployer ni téléverser d’application ; des DMG de développement locaux peuvent être produits sur demande explicite. Windows/Linux déploient Qt inclus et vérifient l’exécution sans SDK ; voir le [guide de compilation](developer-build.md). Ces vérifications ne constituent pas une autorisation de publication officielle.
+
+Les premières requêtes allouent une identité de résultat immuable ; les lots suivants doivent correspondre à tous les champs et paramètres de QueryKey. Qt annule les anciennes requêtes et regroupe la dernière intention tout en conservant les vérifications de séquence et d’identifiant. Un lot limite aussi les noms à 64 KiB et ne refiltre ni ne retrie. L’acceptation historique reste limitée aux capacités disponibles à son époque.
+
+La couche applicative peut créer plusieurs connexions indépendantes tandis que le runtime métier isole les sessions par connexion. Voir le [contrat des sessions](application-sessions.md) pour l’identité globale des tâches et l’admission sérielle des tâches lourdes.
