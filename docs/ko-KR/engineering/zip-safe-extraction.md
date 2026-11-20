@@ -1,6 +1,6 @@
 # 안전한 ZIP 추출 구현
 
-[English](../../engineering/zip-safe-extraction.md) | [简体中文](../../zh-CN/engineering/zip-safe-extraction.md) | [繁體中文](../../zh-TW/engineering/zip-safe-extraction.md) | [日本語](../../ja-JP/engineering/zip-safe-extraction.md) | 한국어 | [Français](../../fr-FR/engineering/zip-safe-extraction.md) | [Deutsch](../../de-DE/engineering/zip-safe-extraction.md) | [Español](../../es-ES/engineering/zip-safe-extraction.md) | [Português (Brasil)](../../pt-BR/engineering/zip-safe-extraction.md)
+[English](../../engineering/zip-safe-extraction.md) | [简体中文](../../zh-CN/engineering/zip-safe-extraction.md) | [繁體中文](../../zh-TW/engineering/zip-safe-extraction.md) | [日本語](../../ja-JP/engineering/zip-safe-extraction.md) | 한국어 | [Français](../../fr-FR/engineering/zip-safe-extraction.md) | [Deutsch](../../de-DE/engineering/zip-safe-extraction.md) | [Español](../../es-ES/engineering/zip-safe-extraction.md) | [Português (Brasil)](../../pt-BR/engineering/zip-safe-extraction.md) | [Русский](../../ru-RU/engineering/zip-safe-extraction.md)
 
 이 계약은 호스트의 안전한 출력, 실제 추출, 충돌, 취소와 커밋 동작을 정의합니다. 실제 실행 결과와 현재 결함은 여기에 누적하지 않고 관련 이슈와 Actions 아티팩트에 기록합니다.
 

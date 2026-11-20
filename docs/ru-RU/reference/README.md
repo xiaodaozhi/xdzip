@@ -39,7 +39,7 @@
 - [Адаптивная кодировка имён файлов](../engineering/filename-encoding.md)
 - [Предпросмотр содержимого](../engineering/content-preview.md)
 - [Предварительная проверка метаданных перед распаковкой](../engineering/extraction-preflight.md)
-- [Безопасная распаковка ZIP](../../engineering/zip-safe-extraction.md)
+- [Безопасная распаковка ZIP](../engineering/zip-safe-extraction.md)
 - [Проверка целостности архивов](../engineering/archive-checking.md)
 - [Открытие записей, перетаскивание и изменение архивов](../../engineering/archive-transfers.md)
 - [Пароли архивов и открытие зашифрованных каталогов](../engineering/password-extraction.md)

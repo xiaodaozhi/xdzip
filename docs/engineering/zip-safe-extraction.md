@@ -1,6 +1,6 @@
 # Safe ZIP extraction implementation
 
-English | [简体中文](../zh-CN/engineering/zip-safe-extraction.md) | [繁體中文](../zh-TW/engineering/zip-safe-extraction.md) | [日本語](../ja-JP/engineering/zip-safe-extraction.md) | [한국어](../ko-KR/engineering/zip-safe-extraction.md) | [Français](../fr-FR/engineering/zip-safe-extraction.md) | [Deutsch](../de-DE/engineering/zip-safe-extraction.md) | [Español](../es-ES/engineering/zip-safe-extraction.md) | [Português (Brasil)](../pt-BR/engineering/zip-safe-extraction.md)
+English | [简体中文](../zh-CN/engineering/zip-safe-extraction.md) | [繁體中文](../zh-TW/engineering/zip-safe-extraction.md) | [日本語](../ja-JP/engineering/zip-safe-extraction.md) | [한국어](../ko-KR/engineering/zip-safe-extraction.md) | [Français](../fr-FR/engineering/zip-safe-extraction.md) | [Deutsch](../de-DE/engineering/zip-safe-extraction.md) | [Español](../es-ES/engineering/zip-safe-extraction.md) | [Português (Brasil)](../pt-BR/engineering/zip-safe-extraction.md) | [Русский](../ru-RU/engineering/zip-safe-extraction.md)
 
 This contract defines host-safe output, actual extraction, conflicts, cancellation, and commit behavior. Actual execution results and current defects are recorded in relevant issues and Actions artifacts rather than accumulated here.
 
