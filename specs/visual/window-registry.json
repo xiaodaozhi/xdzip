@@ -111,6 +111,7 @@
       "width": "Theme.settingsLogicalWidth",
       "reason": "设置与关于共用 612 宽窗口，六个左侧标签，首项贴齐顶部及右分隔线；侧栏基准宽 144，大字号按最长单词增宽；正文独立滚动，无固定 footer，变更即时提交。文件关联候选由统一格式能力表生成，新增候选沿用既有行组件和滚动区域。",
       "design": "design/hifi/sources/settings.html",
+      "sidebar_text_alignment": "侧栏标签根据当前文字排版的可见字形边界与图标视觉中心动态对齐，语言、字体、字重、字号及换行变化时重新计算，无有效字形时使用原有布局居中。",
       "packaged_design": "design/hifi/sources/settings.html?tab=about&channel=msix",
       "packaged_association_policy": "MSIX 文件关联由 Windows 管理。文件关联页完整显示可关联类型，开关禁用，默认应用以 Windows 设置为准。共享按钮跳转当前包应用的默认应用页，身份查询失败时进入系统默认应用总页。",
       "packaged_association_design": "design/hifi/sources/settings.html?tab=associations&channel=msix",
