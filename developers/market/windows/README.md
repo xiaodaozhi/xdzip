@@ -10,6 +10,12 @@ The listing targets Windows 11 x64 under the [support policy](../../../docs/engi
 
 Use the [local export and capture guide](capture.md) to get the bilingual submission files. For routine package updates with accurate existing artwork, carry forward the images in Partner Center and update the release notes as needed.
 
+## Store listing language policy
+
+Build the listing language matrix from the locales declared by the MSIX package. English uses `en-US` only, even if another English region is declared in the package. For Traditional Chinese, use `zh-TW` as the copy and artwork source and add `zh-HK` and `zh-MO` when Partner Center offers those locales. Keep `zh-CN` separate and use its Simplified Chinese materials.
+
+For other language families, add the Partner Center region entries that are available when the package contains the matching `xx-` language prefix, and reuse the existing package language's copy and artwork for those region entries. Do not add a language family whose prefix is absent from the package, and skip region codes that Partner Center does not offer. Each added locale is an independent listing and must be included in a published submission before it is visible; an unsubmitted locale continues to use the previously published default or fallback listing.
+
 ## Text fields
 
 | Partner Center field | Material or decision |
