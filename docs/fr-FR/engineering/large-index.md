@@ -1,0 +1,43 @@
+<a name="xdzip-large-archive-indexing-and-on-demand-browsing"></a>
+
+# Indexation des grandes archives et navigation à la demande
+
+[English](../../engineering/large-index.md) | [简体中文](../../zh-CN/engineering/large-index.md) | [繁體中文（台灣）](../../zh-TW/engineering/large-index.md) | [日本語](../../ja-JP/engineering/large-index.md) | [한국어](../../ko-KR/engineering/large-index.md) | Français | [Deutsch](../../de-DE/engineering/large-index.md) | [Español](../../es-ES/engineering/large-index.md) | [Português (Brasil)](../../pt-BR/engineering/large-index.md) | [Русский](../../ru-RU/engineering/large-index.md)
+
+La limite de capacité du code pour ZIP/ZIP64 ordinaire en un seul fichier est d’un million d’enregistrements physiques. Les autres formats et les archives fractionnées conservent leurs admissions existantes de 100 000 entrées ; un nom de format ne signifie pas que toutes ses combinaisons bénéficient de limites accrues. Répertoires, doublons et enregistrements à examiner comptent comme entrées physiques ; les répertoires implicites de navigation ajoutent seulement des lignes d’affichage.
+
+<a name="xdzip-scanning-and-storage"></a>
+
+## Analyse et stockage
+
+ZIP analyse chaque enregistrement avec l’analyseur ZIP ordinaire : il termine d’abord un échantillonnage borné des noms pour l’encodage historique sur toute l’archive, puis effectue une seconde passe avec le même choix d’encodage. Les deux passes lisent ensemble au plus 512 MiB ; le répertoire central est limité à 256 MiB, les noms bruts à 128 MiB au total, les noms décodés et affichés ensemble à 128 MiB et chaque nom brut ou décodé à 4 KiB. Une fin endommagée, une annulation ou un changement de source fait échouer tout le résultat sans publier d’index partiel.
+
+À 64 MiB de métadonnées en mémoire active ou au-delà de 100 000 entrées, migrer les enregistrements un à un vers un stockage disque privé et libérer les noms et enregistrements existants sans conserver deux index complets simultanément. La table des positions physiques contient au plus un million de décalages u64. Les métadonnées disque sont limitées à 512 MiB ; noms et contenus de fichiers ne figurent pas dans les messages de diagnostic. L’arbre de répertoires reste limité à 32 768 nœuds, 64 niveaux et 4 MiB de noms. En cas de dépassement, ne pas publier l’arbre ; la navigation à la racine et la recherche physique restent disponibles.
+
+Les fichiers temporaires résident dans un répertoire `xdzip-index-*` nommé aléatoirement sous le répertoire temporaire de l’hôte, lisible et modifiable uniquement par l’utilisateur courant et manipulé par des descripteurs conservés de répertoire et de fichier ordinaire. Fermeture normale, remplacement de requête, échec et annulation nettoient les fichiers connus et les répertoires vides dont l’identité est vérifiée. Les restes après plantage sont identifiés par un marqueur de 16 octets correspondant à l’identité aléatoire du répertoire et par un bail exclusif. Une création ultérieure effectue des analyses bornées et ne nettoie que les fichiers connus inutilisés depuis plus de sept jours. Liens, identités non concordantes et objets inconnus sont conservés. Ne pas supprimer récursivement de contenu inconnu ni restaurer ou réutiliser les index entre lancements.
+
+Sous Windows, le répertoire nouvellement créé doit d’abord réussir les contrôles ordinaires de propriétaire et de droits de modification avant la protection de sa DACL pour le stockage confidentiel. Des droits de modification hérités pour des identités non concernées entraînent un refus avant toute écriture de bail ou de métadonnées ; l’exécution ne choisit pas silencieusement un emplacement moins privé. Pour une vérification isolée, diriger seulement `TMP` et `TEMP` du processus de test vers un nouveau répertoire possédé dont l’ACL ne permet la modification qu’à l’utilisateur courant, SYSTEM et Administrators. Ne pas modifier les ACL des vrais répertoires utilisateur ni assouplir les contrôles. Vérifier séparément allocation, requêtes et fusion sur disque réelles, baux actifs, nettoyage des fichiers connus et refus des droits de modification non liés.
+
+<a name="xdzip-queries-and-selection"></a>
+
+## Requêtes et sélection
+
+Recherche et tri produisent un ordre de lignes complet et immuable. Les clés de tri sont écrites dans des séquences privées de fusion d’au plus 8 MiB chacune, avec au plus 128 séquences et 512 MiB de stockage temporaire de tri. Les requêtes finales ne stockent que des jetons de ligne, sans seconde copie complète des noms. Les comparaisons conservent les entiers originaux, les règles existantes de nom et type et l’identité physique stable. Tous les tris placent les répertoires explicites et implicites avant les fichiers ; le sens s’applique dans chaque groupe. Les tailles inconnues suivent les valeurs connues dans leur groupe ; l’ordre décroissant ne modifie pas l’ordre d’identité des doublons. L’annulation est vérifiée autour de l’analyse, des séquences de tri et de leur fusion, sans modifier les relations d’ordre dans le comparateur.
+
+Le pont transfère au plus 128 lignes et 64 KiB de noms par lot. Les requêtes d’au plus 1 024 lignes conservent la validation complète existante. Les modèles Qt plus grands gardent le nombre logique complet de lignes et ne chargent que les positions visibles, avec au plus 1 024 lignes résidentes en cache. Une ligne non chargée ne peut pas soumettre d’action sur une entrée. Chaque page différée est liée à la session, la requête, la génération, la révision et le décalage demandé ; une page périmée ne peut entrer dans les nouveaux résultats.
+
+La sélection entre pages utilise au plus 4 096 plages bornées dans la requête courante immuable. Tout sélectionner couvre toute cette requête ; quitter le cache ne modifie pas la sélection. Avant la confirmation d’extraction, Rust fige les plages en identités physiques ou de navigation, utilisées même si la requête change. Une sélection dépassant la limite de 100 000 entrées de la tâche est explicitement refusée et non réduite silencieusement. La taille totale des sélections non résidentes n’est pas encore affichée. Une copie groupée vers le presse-papiers dépassant le contenu résident renvoie une limite de ressources au lieu de copier silencieusement une liste incomplète.
+
+<a name="xdzip-task-boundaries"></a>
+
+## Limites des tâches
+
+Les fichiers ordinaires sélectionnés depuis un index disque peuvent être extraits après revérification complète de la source, planification sûre, vérification de chaque entrée entière et validation autorisée existante. Un plan figé reste limité à 100 000 entrées et 64 MiB de métadonnées ; les limites de fichiers et d’octets réellement décodés suivent le [contrat d’extraction](zip-safe-extraction.md). Le développement d’un répertoire ne peut pas ignorer de noms non résolus ; les liens sélectionnés sont refusés dans cette configuration. Le lecteur ZIP revérifie les décalages physiques de tout le répertoire central, ne conserve que les emplacements des données sélectionnées et maintient les contrôles de chevauchement, en-tête local, taille, CRC, authentification et annulation.
+
+Les archives utilisant l’index disque ne prennent pas encore en charge la modification ou le test de l’archive entière ; une projection vide en mémoire ne peut pas être considérée comme archive complète. Les limites existantes de création, autres formats, volumes fractionnés et réécriture restent inchangées. Voir séparément l’[aperçu de contenu](content-preview.md). La liste physique et la sélection CLI réutilisent cet index ; la [pagination explicite](command-line.md#xdzip-archive-behavior) obtient toute la plage physique des grandes archives. Les réponses sans pagination gardent les budgets de 100 000 entrées et 16 MiB de données sérialisées ou de texte et échouent entièrement en cas de dépassement.
+
+<a name="xdzip-verification"></a>
+
+## Vérification
+
+`scripts/probe-large-index.py` génère un véritable ZIP64 sous `build/` avec noms chinois, doublons et répertoires imbriqués, puis appelle le véritable `xdzip-m2-probe`. La sonde lit chaque lot de requête et enregistre séparément analyse, tri, récupération, octets sur disque et métriques mémoire disponibles sur la plateforme. Le générateur d’échantillon ne construit pas en mémoire un tableau d’un million de noms. Portée, échec, annulation, nettoyage, pages périmées et sortie réelle des fichiers sélectionnés suivent les [exigences d’acceptation](../../../developers/qa/acceptance.md) ; les résultats restent dans les tickets, localement ou dans les artefacts CI. Les mesures ne prouvent que leur machine et leur charge réelles, sans garantie universelle de performance.
