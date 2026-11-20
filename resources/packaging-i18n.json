@@ -5,7 +5,7 @@
     "AppStreamSummary": "Browse, create and extract archives",
     "AppStreamDescription": "Browse archives, extract selected files, and create or update archives in supported formats.",
     "UpdateDescription": "Install a verified xdzip update",
-    "UpdateMessage": "Authentication is required to update xdzip",
+    "UpdateMessage": "Administrator authentication is required to update xdzip",
     "Archive": "%1 archive",
     "ZipDerived": "%1 ZIP-derived archive",
     "Stream": "%1 compressed stream",
@@ -43,8 +43,8 @@
     "IncompatibleSettings": "现有安装使用了更新的设置格式。为保护数据，已拒绝回退。",
     "UpdateAlreadyRunning": "另一个 xdzip 更新正在进行，请等待完成后重试。",
     "InvalidInstalledFiles": "现有安装文件清单无效，请修复或卸载现有安装后重试。",
-    "ModifiedInstalledFiles": "旧版安装文件已被修改或无法核验。为保留该文件，已停止安装。",
-    "InstalledFilesCleanupFailed": "安装已完成，但部分旧文件未能清理。请关闭占用安装目录的程序后重新运行安装程序。",
+    "ModifiedInstalledFiles": "有一个待移除的已安装文件已被修改或无法核验。为保留该文件，已停止安装。",
+    "InstalledFilesCleanupFailed": "安装已完成，但部分不再需要的文件未能移除。请关闭占用安装目录的程序后重新运行安装程序。",
     "AddCliPath": "将 xdzip 命令行工具加入用户 PATH"
   },
   "zh-TW": {
@@ -58,7 +58,7 @@
     "ZipDerived": "%1 ZIP 衍生壓縮檔",
     "Stream": "%1 壓縮串流",
     "File": "%1 檔案",
-    "CompressedTar": "已壓縮的 TAR 封存檔",
+    "CompressedTar": "已壓縮的 TAR 檔案",
     "Msi": "Microsoft Installer 安裝套件",
     "Iso": "ISO 映像檔",
     "Udf": "UDF 光碟映像檔",
@@ -67,8 +67,8 @@
     "IncompatibleSettings": "目前的安裝使用較新的設定格式。為保護資料，已拒絕降級。",
     "UpdateAlreadyRunning": "正在進行另一項 xdzip 更新。請等候更新完成後再試一次。",
     "InvalidInstalledFiles": "已安裝的檔案清單無效。請先修復或解除安裝，再試一次。",
-    "ModifiedInstalledFiles": "有舊版檔案已遭修改或無法驗證。為保留該檔案，已停止安裝。",
-    "InstalledFilesCleanupFailed": "安裝已完成，但有部分舊檔無法移除。請關閉使用安裝目錄的程式並重新執行安裝程式。",
+    "ModifiedInstalledFiles": "有一個待移除的已安裝檔案已被修改或無法驗證。為保留該檔案，已停止安裝。",
+    "InstalledFilesCleanupFailed": "安裝已完成，但有部分不再需要的檔案無法移除。請關閉使用安裝目錄的程式並重新執行安裝程式。",
     "AddCliPath": "將 xdzip 命令列工具加入使用者 PATH"
   },
   "ja-JP": {
@@ -91,8 +91,8 @@
     "IncompatibleSettings": "既存のインストールでは新しい形式の設定が使われています。データを保護するため、ダウングレードを中止しました。",
     "UpdateAlreadyRunning": "別の xdzip の更新が進行中です。完了を待ってからやり直してください。",
     "InvalidInstalledFiles": "インストール済みファイルの一覧が無効です。既存のインストールを修復またはアンインストールしてからやり直してください。",
-    "ModifiedInstalledFiles": "旧バージョンのファイルが変更されたか、検証できません。ファイルを保護するため、インストールを中止しました。",
-    "InstalledFilesCleanupFailed": "インストールは完了しましたが、一部の旧ファイルを削除できませんでした。インストール先を使用しているプログラムを終了し、セットアップを再実行してください。",
+    "ModifiedInstalledFiles": "削除対象のインストール済みファイルが変更されているか、検証できません。ファイルを保護するため、インストールを中止しました。",
+    "InstalledFilesCleanupFailed": "インストールは完了しましたが、不要になった一部のファイルを削除できませんでした。インストール先を使用しているプログラムを終了し、セットアップを再実行してください。",
     "AddCliPath": "xdzip コマンドラインツールをユーザーの PATH に追加する"
   },
   "ko-KR": {
@@ -106,7 +106,7 @@
     "ZipDerived": "%1 ZIP 파생 압축 파일",
     "Stream": "%1 압축 스트림",
     "File": "%1 파일",
-    "CompressedTar": "압축된 TAR 아카이브",
+    "CompressedTar": "압축된 TAR 파일",
     "Msi": "Microsoft Installer 패키지",
     "Iso": "ISO 이미지",
     "Udf": "UDF 디스크 이미지",
@@ -115,8 +115,8 @@
     "IncompatibleSettings": "현재 설치된 버전은 더 새로운 설정 형식을 사용합니다. 데이터를 보호하기 위해 이전 버전 설치를 중단했습니다.",
     "UpdateAlreadyRunning": "다른 xdzip 업데이트가 진행 중입니다. 업데이트가 끝난 뒤 다시 시도하세요.",
     "InvalidInstalledFiles": "설치된 파일의 목록이 올바르지 않습니다. 기존 설치를 복구하거나 제거한 뒤 다시 시도하세요.",
-    "ModifiedInstalledFiles": "이전 버전의 파일이 수정되었거나 검증할 수 없습니다. 파일을 보존하기 위해 설치를 중단했습니다.",
-    "InstalledFilesCleanupFailed": "설치는 완료되었지만 일부 이전 파일을 제거하지 못했습니다. 설치 폴더를 사용 중인 프로그램을 종료하고 설치 프로그램을 다시 실행하세요.",
+    "ModifiedInstalledFiles": "제거할 설치 파일이 수정되었거나 검증할 수 없습니다. 파일을 보존하기 위해 설치를 중단했습니다.",
+    "InstalledFilesCleanupFailed": "설치는 완료되었지만 더 이상 필요하지 않은 일부 파일을 제거하지 못했습니다. 설치 폴더를 사용 중인 프로그램을 종료하고 설치 프로그램을 다시 실행하세요.",
     "AddCliPath": "사용자 PATH에 xdzip 명령줄 도구 추가"
   },
   "fr-FR": {
@@ -125,7 +125,7 @@
     "AppStreamSummary": "Parcourir, créer et extraire des archives",
     "AppStreamDescription": "Parcourez les archives, extrayez les fichiers sélectionnés et créez ou mettez à jour des archives aux formats pris en charge.",
     "UpdateDescription": "Installer une mise à jour vérifiée de xdzip",
-    "UpdateMessage": "La mise à jour de xdzip nécessite une authentification",
+    "UpdateMessage": "La mise à jour de xdzip nécessite une authentification en tant qu’administrateur",
     "Archive": "Archive %1",
     "ZipDerived": "Archive %1 dérivée du format ZIP",
     "Stream": "Flux compressé %1",
@@ -139,8 +139,8 @@
     "IncompatibleSettings": "L’installation existante utilise un format de configuration plus récent. Le retour à une version antérieure a été refusé pour protéger vos données.",
     "UpdateAlreadyRunning": "Une autre mise à jour de xdzip est en cours. Attendez qu’elle se termine, puis réessayez.",
     "InvalidInstalledFiles": "Le manifeste des fichiers installés est invalide. Réparez ou désinstallez l’installation existante, puis réessayez.",
-    "ModifiedInstalledFiles": "Un fichier d’une version précédente a été modifié ou n’a pas pu être vérifié. L’installation a été interrompue pour le conserver.",
-    "InstalledFilesCleanupFailed": "L’installation est terminée, mais certains anciens fichiers n’ont pas pu être supprimés. Fermez les programmes qui utilisent le dossier d’installation, puis relancez le programme d’installation.",
+    "ModifiedInstalledFiles": "Un fichier installé qui devait être supprimé a été modifié ou ne peut pas être vérifié. L’installation a été interrompue pour le conserver.",
+    "InstalledFilesCleanupFailed": "L’installation est terminée, mais certains fichiers devenus inutiles n’ont pas pu être supprimés. Fermez les programmes qui utilisent le dossier d’installation, puis relancez le programme d’installation.",
     "AddCliPath": "Ajouter l’outil en ligne de commande xdzip au PATH utilisateur"
   },
   "de-DE": {
@@ -149,7 +149,7 @@
     "AppStreamSummary": "Archive durchsuchen, erstellen und entpacken",
     "AppStreamDescription": "Durchsuchen Sie Archive, entpacken Sie ausgewählte Dateien und erstellen oder aktualisieren Sie Archive in unterstützten Formaten.",
     "UpdateDescription": "Geprüftes xdzip-Update installieren",
-    "UpdateMessage": "Für das Update von xdzip ist eine Authentifizierung erforderlich",
+    "UpdateMessage": "Für das Update von xdzip ist eine Authentifizierung als Administrator erforderlich",
     "Archive": "%1-Archiv",
     "ZipDerived": "%1-Archiv auf ZIP-Basis",
     "Stream": "Komprimierter %1-Datenstrom",
@@ -163,8 +163,8 @@
     "IncompatibleSettings": "Die vorhandene Installation verwendet ein neueres Einstellungsformat. Zum Schutz Ihrer Daten wurde die Installation der älteren Version abgebrochen.",
     "UpdateAlreadyRunning": "Ein anderes xdzip-Update wird ausgeführt. Warten Sie auf dessen Abschluss und versuchen Sie es erneut.",
     "InvalidInstalledFiles": "Die Liste der installierten Dateien ist ungültig. Reparieren oder deinstallieren Sie die vorhandene Installation und versuchen Sie es erneut.",
-    "ModifiedInstalledFiles": "Eine Datei einer früheren Version wurde geändert oder konnte nicht überprüft werden. Die Installation wurde abgebrochen, um die Datei zu erhalten.",
-    "InstalledFilesCleanupFailed": "Die Installation ist abgeschlossen, einige alte Dateien konnten jedoch nicht entfernt werden. Schließen Sie Programme, die den Installationsordner verwenden, und starten Sie das Installationsprogramm erneut.",
+    "ModifiedInstalledFiles": "Eine zu entfernende installierte Datei wurde geändert oder lässt sich nicht überprüfen. Die Installation wurde abgebrochen, um die Datei zu erhalten.",
+    "InstalledFilesCleanupFailed": "Die Installation ist abgeschlossen, einige nicht mehr benötigte Dateien konnten jedoch nicht entfernt werden. Schließen Sie Programme, die den Installationsordner verwenden, und starten Sie das Installationsprogramm erneut.",
     "AddCliPath": "xdzip-Kommandozeilenprogramm zum Benutzer-PATH hinzufügen"
   },
   "es-ES": {
@@ -173,9 +173,9 @@
     "AppStreamSummary": "Explorar, crear y extraer archivos comprimidos",
     "AppStreamDescription": "Explora archivos comprimidos, extrae los archivos seleccionados y crea o actualiza archivos en formatos compatibles.",
     "UpdateDescription": "Instalar una actualización verificada de xdzip",
-    "UpdateMessage": "Se requiere autenticación para actualizar xdzip",
-    "Archive": "Archivo %1",
-    "ZipDerived": "Archivo %1 derivado de ZIP",
+    "UpdateMessage": "Se requiere autenticación como administrador para actualizar xdzip",
+    "Archive": "Archivo comprimido %1",
+    "ZipDerived": "Archivo comprimido %1 derivado de ZIP",
     "Stream": "Flujo comprimido %1",
     "File": "Archivo %1",
     "CompressedTar": "Archivo TAR comprimido",
@@ -187,8 +187,8 @@
     "IncompatibleSettings": "La instalación existente usa un formato de configuración más reciente. Se ha rechazado la instalación de la versión anterior para proteger tus datos.",
     "UpdateAlreadyRunning": "Hay otra actualización de xdzip en curso. Espera a que termine y vuelve a intentarlo.",
     "InvalidInstalledFiles": "El manifiesto de archivos instalados no es válido. Repara o desinstala la versión existente y vuelve a intentarlo.",
-    "ModifiedInstalledFiles": "Se ha modificado un archivo de una versión anterior o no se ha podido verificar. Se ha detenido la instalación para conservarlo.",
-    "InstalledFilesCleanupFailed": "La instalación ha terminado, pero no se han podido eliminar algunos archivos antiguos. Cierra los programas que usen la carpeta de instalación y ejecuta el instalador de nuevo.",
+    "ModifiedInstalledFiles": "Un archivo instalado que debía eliminarse se ha modificado o no se puede verificar. Se ha detenido la instalación para conservarlo.",
+    "InstalledFilesCleanupFailed": "La instalación ha terminado, pero no se han podido eliminar algunos archivos que ya no hacen falta. Cierra los programas que usen la carpeta de instalación y ejecuta el instalador de nuevo.",
     "AddCliPath": "Añadir la herramienta de línea de comandos de xdzip al PATH del usuario"
   },
   "pt-BR": {
@@ -197,9 +197,9 @@
     "AppStreamSummary": "Explorar, criar e extrair arquivos compactados",
     "AppStreamDescription": "Explore arquivos compactados, extraia os arquivos selecionados e crie ou atualize arquivos em formatos compatíveis.",
     "UpdateDescription": "Instalar uma atualização verificada do xdzip",
-    "UpdateMessage": "A atualização do xdzip requer autenticação",
-    "Archive": "Arquivo %1",
-    "ZipDerived": "Arquivo %1 derivado de ZIP",
+    "UpdateMessage": "A atualização do xdzip requer autenticação como administrador",
+    "Archive": "Arquivo compactado %1",
+    "ZipDerived": "Arquivo compactado %1 derivado de ZIP",
     "Stream": "Fluxo compactado %1",
     "File": "Arquivo %1",
     "CompressedTar": "Arquivo TAR compactado",
@@ -211,8 +211,8 @@
     "IncompatibleSettings": "A instalação existente usa um formato de configurações mais recente. A instalação da versão anterior foi interrompida para proteger seus dados.",
     "UpdateAlreadyRunning": "Outra atualização do xdzip está em andamento. Aguarde a conclusão e tente novamente.",
     "InvalidInstalledFiles": "O manifesto dos arquivos instalados é inválido. Repare ou desinstale a versão existente e tente novamente.",
-    "ModifiedInstalledFiles": "Um arquivo de uma versão anterior foi modificado ou não pôde ser verificado. A instalação foi interrompida para preservá-lo.",
-    "InstalledFilesCleanupFailed": "A instalação foi concluída, mas alguns arquivos antigos não puderam ser removidos. Feche os programas que usam a pasta de instalação e execute o instalador novamente.",
+    "ModifiedInstalledFiles": "Um arquivo instalado que seria removido foi modificado ou não pode ser verificado. A instalação foi interrompida para preservá-lo.",
+    "InstalledFilesCleanupFailed": "A instalação foi concluída, mas alguns arquivos que não são mais necessários não puderam ser removidos. Feche os programas que usam a pasta de instalação e execute o instalador novamente.",
     "AddCliPath": "Adicionar a ferramenta de linha de comando do xdzip ao PATH do usuário"
   },
   "ru-RU": {
@@ -221,7 +221,7 @@
     "AppStreamSummary": "Просмотр, создание и распаковка архивов",
     "AppStreamDescription": "Просматривайте архивы, извлекайте выбранные файлы, создавайте и обновляйте архивы в поддерживаемых форматах.",
     "UpdateDescription": "Установить проверенное обновление xdzip",
-    "UpdateMessage": "Для обновления xdzip требуется аутентификация",
+    "UpdateMessage": "Для обновления xdzip требуется аутентификация администратора",
     "Archive": "Архив %1",
     "ZipDerived": "Архив %1 на основе ZIP",
     "Stream": "Сжатый поток %1",
@@ -235,8 +235,8 @@
     "IncompatibleSettings": "Установленная версия использует более новый формат настроек. Установка более старой версии остановлена для защиты ваших данных.",
     "UpdateAlreadyRunning": "Уже выполняется другое обновление xdzip. Дождитесь его завершения и повторите попытку.",
     "InvalidInstalledFiles": "Манифест установленных файлов недействителен. Восстановите или удалите установленную версию и повторите попытку.",
-    "ModifiedInstalledFiles": "Файл предыдущей версии был изменён или его не удалось проверить. Установка остановлена, чтобы сохранить этот файл.",
-    "InstalledFilesCleanupFailed": "Установка завершена, но некоторые старые файлы удалить не удалось. Закройте программы, использующие папку установки, и запустите программу установки ещё раз.",
+    "ModifiedInstalledFiles": "Установленный файл, подлежащий удалению, изменён или не поддаётся проверке. Установка остановлена, чтобы сохранить этот файл.",
+    "InstalledFilesCleanupFailed": "Установка завершена, но некоторые файлы, которые больше не нужны, удалить не удалось. Закройте программы, использующие папку установки, и запустите программу установки ещё раз.",
     "AddCliPath": "Добавить инструмент командной строки xdzip в PATH пользователя"
   }
 }

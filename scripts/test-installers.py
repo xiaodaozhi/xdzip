@@ -54,19 +54,21 @@ class InstallerTests(unittest.TestCase):
         policy = ElementTree.fromstring(resources['org.xdzip.update.policy'])
         mime = ElementTree.fromstring(resources['xdzip-mime.xml'])
         language = '{http://www.w3.org/XML/1998/namespace}lang'
+        update_descriptions = {node.get(language): node.text for node in policy.iter('description')}
         update_messages = {node.get(language): node.text for node in policy.iter('message')}
         mime_comments = {node.get(language): node.text for node in mime.iter(
             '{http://www.freedesktop.org/standards/shared-mime-info}comment')}
-        for alias, locale in [('de', 'de-DE'), ('fr', 'fr-FR'), ('zh', 'zh-CN'),
+        for alias, locale in [(None, 'en-US'), ('de', 'de-DE'), ('fr', 'fr-FR'), ('zh', 'zh-CN'),
                               ('zh_HK', 'zh-TW'), ('zh_MO', 'zh-TW')]:
             with self.subTest(locale=alias):
                 catalog = catalogs[locale]
-                self.assertEqual(desktop['Desktop Entry'][f'Comment[{alias}]'],
-                                 catalog['DesktopComment'])
+                desktop_key = f'Comment[{alias}]' if alias else 'Comment'
+                self.assertEqual(desktop['Desktop Entry'][desktop_key], catalog['DesktopComment'])
+                self.assertEqual(update_descriptions[alias], catalog['UpdateDescription'])
                 self.assertEqual(update_messages[alias], catalog['UpdateMessage'])
                 self.assertEqual(mime_comments[alias], catalog['Udf'])
-                self.assertIn(f'  {alias}: ' + json.dumps(catalog['AppStreamSummary'],
-                                                          ensure_ascii=False),
+                self.assertIn(f"  {alias or 'C'}: " + json.dumps(catalog['AppStreamSummary'],
+                                                               ensure_ascii=False),
                               resources['xdzip-local.yml'])
 
     def test_linux_lifecycle_mounts_generated_format_registry(self):

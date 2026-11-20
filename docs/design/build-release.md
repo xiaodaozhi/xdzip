@@ -1,6 +1,6 @@
 # Build, deployment and release architecture
 
-English | [简体中文](../zh-CN/design/build-release.md) | [繁體中文（台灣）](../zh-TW/design/build-release.md)
+English | [简体中文](../zh-CN/design/build-release.md) | [繁體中文（台灣）](../zh-TW/design/build-release.md) | [日本語](../ja-JP/design/build-release.md) | [한국어](../ko-KR/design/build-release.md) | [Français](../fr-FR/design/build-release.md) | [Deutsch](../de-DE/design/build-release.md) | [Español](../es-ES/design/build-release.md) | [Português (Brasil)](../pt-BR/design/build-release.md) | [Русский](../ru-RU/design/build-release.md)
 
 ## Build and package inputs
 

@@ -43,16 +43,24 @@ def linux_resources():
     localized.update({locale: catalogs['zh-TW'] for locale in ('zh_HK', 'zh_MO')})
     desktop = (sources / 'xdzip.desktop').read_text(encoding='utf-8')
     # Linux chooses these values using the desktop locale, not the Qt preference.
-    comments = '\n'.join(f"Comment[{locale}]={catalog['DesktopComment']}"
-                         for locale, catalog in localized.items())
-    desktop = re.sub(r'^Comment\[zh_CN\]=[^\n]+$', lambda _: comments, desktop, flags=re.M)
+    comments = [f"Comment={catalogs['en-US']['DesktopComment']}"]
+    comments.extend(f"Comment[{locale}]={catalog['DesktopComment']}"
+                    for locale, catalog in localized.items())
+    desktop, matches = re.subn(r'^Comment=[^\n]+\nComment\[zh_CN\]=[^\n]+$',
+                               lambda _: '\n'.join(comments), desktop, flags=re.M)
+    if matches != 1:
+        raise ValueError('Missing or ambiguous desktop comments')
 
     def xml_labels(source, element, key):
-        labels = '\n'.join(f'    <{element} xml:lang="{locale}">'
-                           f'{escape(catalog[key])}</{element}>'
-                           for locale, catalog in localized.items())
-        pattern = rf'^    <{element} xml:lang="zh_CN">.*</{element}>$'
-        return re.sub(pattern, lambda _: labels, source, flags=re.M)
+        labels = [f"    <{element}>{escape(catalogs['en-US'][key])}</{element}>"]
+        labels.extend(f'    <{element} xml:lang="{locale}">{escape(catalog[key])}</{element}>'
+                      for locale, catalog in localized.items())
+        pattern = (rf'^    <{element}>.*</{element}>' '\n'
+                   rf'    <{element} xml:lang="zh_CN">.*</{element}>$')
+        rendered, matches = re.subn(pattern, lambda _: '\n'.join(labels), source, flags=re.M)
+        if matches != 1:
+            raise ValueError(f'Missing or ambiguous XML labels for {key}')
+        return rendered
 
     policy = (sources / 'org.xdzip.update.policy').read_text(encoding='utf-8')
     policy = xml_labels(policy, 'description', 'UpdateDescription')
