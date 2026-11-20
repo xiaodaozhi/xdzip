@@ -1,6 +1,6 @@
 # HTML visual fidelity review
 
-English | [简体中文](../zh-CN/visual/html-fidelity.md) | [繁體中文（台灣）](../zh-TW/visual/html-fidelity.md)
+English | [简体中文](../zh-CN/visual/html-fidelity.md) | [繁體中文（台灣）](../zh-TW/visual/html-fidelity.md) | [日本語](../ja-JP/visual/html-fidelity.md) | [한국어](../ko-KR/visual/html-fidelity.md) | [Français](../fr-FR/visual/html-fidelity.md) | [Deutsch](../de-DE/visual/html-fidelity.md) | [Español](../es-ES/visual/html-fidelity.md) | [Português (Brasil)](../pt-BR/visual/html-fidelity.md) | [Русский](../ru-RU/visual/html-fidelity.md)
 
 High-fidelity images are the visual reference; HTML is the editable implementation. Dimensions above and below the toolbar are measured independently from the [frozen initial main window](../../design/hifi/screens/main-light.png), not inferred backward from current CSS. Current display uses the [light capsule-tab design](../../design/hifi/screens/main-capsule-light.png) and [dark design](../../design/hifi/screens/main-capsule-dark.png), exported from the [editable source](../../design/hifi/sources/main.html); they do not replace independent measurement. The title bar is accepted against the explicit revision in layout-scale.json. Original artwork has softened edges and generated glyphs; test counts cannot establish whole-page pixel-perfect identity.
 
