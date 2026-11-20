@@ -2,7 +2,7 @@
 
 # 目錄樹 B：設計、素材與接入規格
 
-[English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | 繁體中文 | [日本語](../../ja-JP/ux/directory-tree.md)
+[English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | 繁體中文 | [日本語](../../ja-JP/ux/directory-tree.md) | [한국어](../../ko-KR/ux/directory-tree.md)
 
 狀態：**核心目錄互動已接入 HTML 示例和 Qt 只讀瀏覽，邊界狀態資源仍待接入**。互動遵循[只讀瀏覽契約](../engineering/readonly-browser.md)，普通目錄瀏覽採用直屬子項，搜尋遞迴目前範圍，輸出授權保持只讀。
 
