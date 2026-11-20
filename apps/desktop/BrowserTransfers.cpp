@@ -436,9 +436,8 @@ void BrowserController::startPreparedDrag() {
         drag->setPixmap(QPixmap::fromImage(preview));
         drag->setHotSpot(QPoint(0, 0));
     }
-    drag->exec(Qt::CopyAction, Qt::CopyAction);
+    executeNativeFileDrag(drag);
     setNativeDragActive(false);
-    drag->deleteLater();
 }
 bool BrowserController::handleTransferEvent(const xdzip::reader::Event &event) {
     using xdzip::reader::EventKind;

@@ -38,6 +38,8 @@ When preparing an experimental strict Snap, compare the final payload's runtime 
 
 Host `ldd` and `--version` can succeed using host libraries that a strict Snap cannot access; `--version` also exits before the GUI is initialized. Check the final package against the declared base without host-library fallback, and run the application’s offscreen `--smoke-test` to exercise GUI initialization. Dependency inspection cannot establish every library loaded dynamically at runtime. Record these checks separately from installation and interaction in an actual strict Snap desktop session; neither an isolated loader check nor an offscreen smoke test establishes desktop acceptance.
 
+For an experimental Wayland candidate, `scripts/deploy_linux.py --experimental-wayland` includes the Qt Wayland platform, shell and decoration plugins alongside X11. The Snap must also declare the `wayland` interface and select the appropriate Qt platform for the desktop session. Inspect the additional plugin dependencies in the final Snap and record actual Wayland startup and drag-and-drop separately; including the plugins does not establish Wayland support. The default standalone deployment remains X11.
+
 ## UI comparison regressions
 
 First-frame menu layout regressions locate sequence and status tags by object name and verify actual text metrics and shared padding scaled with font size. Cover Chinese and English, light and dark themes, 100%/125%/150% font scales, all eight combinations of sequence, status and shortcuts, and submenu arrows. Assert the first rendered frame after popup and font changes directly, without extra waits or wider tolerances to eliminate layout failures.

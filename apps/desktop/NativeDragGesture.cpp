@@ -1,10 +1,17 @@
 #include "NativeDragGesture.h"
 
+#include <QDrag>
 #include <QGuiApplication>
 
 #ifdef Q_OS_LINUX
 #include <X11/Xlib.h>
 #endif
+
+void executeNativeFileDrag(QDrag *drag) {
+    // Qt's X11 backend retains the drag until the recipient finishes its
+    // selection request, which can happen after exec() returns.
+    drag->exec(Qt::CopyAction, Qt::CopyAction);
+}
 
 bool nativeDragGestureHeld() {
 #ifdef Q_OS_LINUX

@@ -6,7 +6,7 @@ SNAP-HOME：验证 strict Snap 能在用户实际主目录和已有子目录完�
 
 LINUX-PRIVATE-CACHE：使用组可写 umask 和已有 0775 应用缓存根目录，验证临时打开和拖出将根目录设为私有、拒绝链接并保持外部接收方交接。在目标 Ubuntu 桌面确认双击、右键打开和拖出；拖动时不弹出解压结果窗口，松开后拖动状态正常结束。
 
-具备 `xvfb-run` 和 `libXtst.so.6` 时，`qt_x11_drag_gesture` 使用实际 X11 按键事件检查状态，包括 Qt 尚未处理鼠标松开事件的情况。该隔离检查不能代替 Ubuntu Files 的桌面交互验证。
+具备 `xvfb-run` 和 `libXtst.so.6` 时，`qt_x11_drag_gesture` 使用实际 X11 按键事件检查状态，包括 Qt 尚未处理鼠标松开事件的情况。`qt_x11_drag_handoff` 检查独立接收进程在源拖动循环返回后请求并复制文件。这些隔离检查不能代替 Ubuntu Files 的桌面交互验证。
 
 ## 文件夹优先排序
 

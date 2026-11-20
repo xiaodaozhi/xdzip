@@ -24,7 +24,7 @@ On Linux, the application-owned cache roots are restricted to the current user b
 
 Preparing a drag-out must not open the ordinary extraction result window. Export and copy tasks do not automatically open Explorer, Finder, or the destination directory after drag-out. Ordinary extraction's “open folder when finished” choice belongs only to that explicit extraction request and must not be inherited by later export or temporary-open requests. A user explicitly selecting Open in the result window retains the existing behavior.
 
-On X11, check the actual left-button state before handing a prepared copy to the native drag. If the user released the button during preparation, do not start a new drag.
+On X11, check the actual left-button state before handing a prepared copy to the native drag. If the user released the button during preparation, do not start a new drag. Qt manages the native drag object's lifetime; a receiving application may request its data after the drag loop returns, so the application must not destroy it at that point.
 
 ## External drop and confirmation
 

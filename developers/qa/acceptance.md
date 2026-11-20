@@ -6,7 +6,7 @@ SNAP-HOME: Verify the strict Snap can prepare and extract to the user's actual h
 
 LINUX-PRIVATE-CACHE: With a group-writable umask and existing 0775 application cache roots, verify temporary opening and drag-out prepare private roots, reject linked roots, and preserve the external consumer handoff. Confirm double-click, context-menu opening and drag-out in the target Ubuntu desktop; dragging does not open an extraction result window or leave a stuck drag after release.
 
-When `xvfb-run` and `libXtst.so.6` are available, `qt_x11_drag_gesture` exercises real X11 button events, including release before Qt processes the event. This isolated check does not replace the Ubuntu Files desktop interaction.
+When `xvfb-run` and `libXtst.so.6` are available, `qt_x11_drag_gesture` exercises real X11 button events, including release before Qt processes the event. `qt_x11_drag_handoff` checks a separate receiver that requests and copies a file after the source drag loop returns. These isolated checks do not replace the Ubuntu Files desktop interaction.
 
 ## Directory-first sorting
 
