@@ -2,7 +2,7 @@
 
 # 外部只讀 SDK 試驗
 
-[English](../../engineering/sdk-trial.md) | [简体中文](../../zh-CN/engineering/sdk-trial.md) | 繁體中文（台灣）
+[English](../../engineering/sdk-trial.md) | [简体中文](../../zh-CN/engineering/sdk-trial.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/sdk-trial.md) | [한국어](../../ko-KR/engineering/sdk-trial.md) | [Français](../../fr-FR/engineering/sdk-trial.md) | [Deutsch](../../de-DE/engineering/sdk-trial.md) | [Español](../../es-ES/engineering/sdk-trial.md) | [Português (Brasil)](../../pt-BR/engineering/sdk-trial.md) | [Русский](../../ru-RU/engineering/sdk-trial.md)
 
 `xdzip-plugin-protocol` 和 `xdzip-plugin-host` 實現[格式擴充功能設計](../design/codec-extension-sdk.md)的獨立只讀試驗。它不進入桌面／CLI 的格式發現、安裝、打包或自動啟動路徑。使用者顯式執行試驗命令並選擇包與來源；產品繼續禁用第三方擴充功能。目前僅協商 `xdp1`，不提供建立、密碼、分卷、連結、GUI 或任意宿主路徑許可權。這不是完整外掛生態或正式 SDK 釋出。
 
