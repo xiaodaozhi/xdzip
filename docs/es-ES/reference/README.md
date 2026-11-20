@@ -43,7 +43,7 @@ Empieza por la [arquitectura del sistema](../design/system-architecture.md) para
 - [Comprobación de integridad](../engineering/archive-checking.md)
 - [Apertura de entradas, arrastre y modificación](../../engineering/archive-transfers.md)
 - [Contraseñas y apertura de directorios cifrados](../engineering/password-extraction.md)
-- [Contrato de creación ZIP](../../engineering/zip-creation.md)
+- [Contrato de creación ZIP](../engineering/zip-creation.md)
 - [Creación ISO9660 y Joliet](../engineering/iso-creation.md)
 - [Archivos ZIP autoextraíbles propios para Windows](../engineering/sfx-creation.md)
 

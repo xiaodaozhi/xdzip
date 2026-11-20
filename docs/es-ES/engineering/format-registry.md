@@ -12,7 +12,7 @@ El alcance de verificación describe lo que acredita una [comprobación de integ
 
 | Operación | Compatibilidad integrada |
 | --- | --- |
-| Crear un archivo comprimido | ZIP, 7z, TAR, TAR.GZ (`.tar.gz`, `.tgz`), GZIP independiente, XZ/TAR.XZ, LZ4/TAR.LZ4, Zstandard/TAR.ZST, LHA (`.lha`, `.lzh`), ISO9660/Joliet y el envoltorio ZIP SFX para Windows x64. Un flujo independiente admite un solo archivo normal. Consulta la [creación](../../engineering/zip-creation.md) y los [flujos de un solo archivo](single-file-streams.md). |
+| Crear un archivo comprimido | ZIP, 7z, TAR, TAR.GZ (`.tar.gz`, `.tgz`), GZIP independiente, XZ/TAR.XZ, LZ4/TAR.LZ4, Zstandard/TAR.ZST, LHA (`.lha`, `.lzh`), ISO9660/Joliet y el envoltorio ZIP SFX para Windows x64. Un flujo independiente admite un solo archivo normal. Consulta la [creación](zip-creation.md) y los [flujos de un solo archivo](single-file-streams.md). |
 | Reescribir un archivo comprimido existente | ZIP/ZIPX, 7z, LHA/LZH de nivel 2, TAR, TAR.GZ, TAR.XZ, TAR.ZST, TAR.LZ4, TAR.BZ2, TAR.LZMA, TAR.LZ, TAR.Z y TAR.BR que cumplan los requisitos. Se excluyen los archivos cifrados, divididos y los que contengan registros o utilicen almacenamiento no compatibles. Consulta el [contrato de modificación](../../engineering/archive-transfers.md). |
 | Explorar, extraer, abrir una entrada, exportar o comprobar | Cada operación comprueba por separado las capacidades y el tipo de registro. Por ejemplo, de ciertos instaladores solo se pueden inspeccionar los metadatos. Consulta la [navegación de solo lectura](../../engineering/readonly-browser.md) y la [comprobación](archive-checking.md). |
 

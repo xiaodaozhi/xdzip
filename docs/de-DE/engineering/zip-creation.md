@@ -1,6 +1,6 @@
 # Implementierungsvertrag für die ZIP-Erstellung
 
-[English](../../engineering/zip-creation.md) | [简体中文](../../zh-CN/engineering/zip-creation.md) | [繁體中文](../../zh-TW/engineering/zip-creation.md) | [日本語](../../ja-JP/engineering/zip-creation.md) | [Français](../../fr-FR/engineering/zip-creation.md) | Deutsch
+[English](../../engineering/zip-creation.md) | [简体中文](../../zh-CN/engineering/zip-creation.md) | [繁體中文](../../zh-TW/engineering/zip-creation.md) | [日本語](../../ja-JP/engineering/zip-creation.md) | [Français](../../fr-FR/engineering/zip-creation.md) | Deutsch | [Español](../../es-ES/engineering/zip-creation.md)
 
 Neue ZIP-Archive werden aus ausdrücklich ausgewählten Dateien und Verzeichnissen erstellt. Standard ist Stufe 2, normale Kompression mit Deflate 6. Unterstützt werden Store und Deflate 1/6/9, WinZip-AES-256-Inhaltsverschlüsselung und nummerierte Volumes. [TAR/GZIP](tar-gzip.md) beschreibt Erstellung und Extraktion, [Passwortextraktion](password-extraction.md) das Lesen von AES-256 und der [Vertrag für geteilte Volumes](archive-opening.md) deren Lesen. Das ausdrückliche Hinzufügen zu gewöhnlichen Einzeldateiarchiven verwendet den [Vertrag für Drag-and-drop und Änderung](../../engineering/archive-transfers.md), nicht die Quellschutz-Ausnahme für neue Archive. Der Host ist für Eingabeautorisierung, Staging, Prüfung, Konfliktentscheidungen und endgültiges Speichern zuständig; die Formatschicht erhält nur Einträge, lesbare Eingabe und beschreibbare Ausgabe.
 
