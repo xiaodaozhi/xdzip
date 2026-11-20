@@ -113,7 +113,7 @@
       "design": "design/hifi/sources/settings.html",
       "sidebar_text_alignment": "侧栏标签根据当前文字排版的可见字形边界与图标视觉中心动态对齐，语言、字体、字重、字号及换行变化时重新计算，无有效字形时使用原有布局居中。",
       "packaged_design": "design/hifi/sources/settings.html?tab=about&channel=msix",
-      "packaged_association_policy": "MSIX 文件关联由 Windows 管理。文件关联页完整显示可关联类型，开关禁用，默认应用以 Windows 设置为准。共享按钮跳转当前包应用的默认应用页，身份查询失败时进入系统默认应用总页。",
+      "packaged_association_policy": "MSIX 文件关联由 Windows 管理。文件关联页完整显示可关联类型，开关禁用，默认应用以 Windows 设置为准。共享按钮跳转当前包应用的默认应用页，身份查询失败时进入系统默认应用总页。长译文或大字号下按钮不超出页面内容区，文字按可用宽度换行并保持可读。",
       "packaged_association_design": "design/hifi/sources/settings.html?tab=associations&channel=msix",
       "macos_association_policy": "文件关联沿用现有设置窗口尺寸与共享 SettingsToggle，两列等宽。应用内状态说明在对应开关下按现有字号换行。替代应用由 AppKit 原生选择面板呈现，使用系统布局；没有替代应用时仅显示行内说明。",
       "macos_association_status_design": "design/hifi/sources/settings.html?tab=associations&association=no-alternative",
@@ -122,7 +122,7 @@
       "header_design": "design/hifi/sources/operation-headers.html",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
       "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group.",
-      "language_policy": "语言下拉框默认自动识别，后续选项以共享语言清单顺序呈现已打包语言的自称，并保留已保存的选择模式。沿用共享 SettingsSelectRow 和 OperationSelect 的内容测量、窗口尺寸和逻辑密度。",
+      "language_policy": "语言下拉框默认自动识别，后续选项以共享语言清单顺序呈现已打包语言的自称，并保留已保存的选择模式。沿用共享 SettingsSelectRow 和 OperationSelect 的内容测量、窗口尺寸和逻辑密度；当文字与选择框无法并排完整显示时，说明位于选择框上方，选择框靠右且不超出内容区。",
       "shell_integration_policy": "文件管理器集成开关复用通用设置的共享 SettingsToggle，持久化成功后刷新自有注册。",
       "packaged_about_policy": "Windows 包身份不显示关于页更新标题、分隔线和操作，剩余区域按现有逻辑尺寸与分组间距重新排列。"
     },

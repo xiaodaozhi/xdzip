@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 
-RowLayout {
+GridLayout {
     id: root
     property string label: ""
     property string description: ""
@@ -11,11 +11,31 @@ RowLayout {
     property int selectedIndex: 0
     property string controlName: ""
     signal selectionRequested(int index)
-    spacing: 16
+    readonly property real preferredSelectWidth: Math.max(160 * Theme.fontScale,
+        select.widestOption + select.leftPadding + select.rightPadding + 4)
+    readonly property real minimumTextWidth: {
+        let widest = 0;
+        const parts = [
+            {text: root.label, metrics: labelMetrics},
+            {text: root.description, metrics: descriptionMetrics}
+        ];
+        for (const part of parts)
+            for (const word of part.text.split(/[\s\u2e80-\u9fff\uac00-\ud7af]+/))
+                widest = Math.max(widest, part.metrics.advanceWidth(word));
+        return Math.ceil(widest);
+    }
+    columns: width >= minimumTextWidth + preferredSelectWidth + columnSpacing ? 2 : 1
+    columnSpacing: 16
+    rowSpacing: 8
+    Layout.minimumWidth: 0
+    FontMetrics { id: labelMetrics; font: labelText.font }
+    FontMetrics { id: descriptionMetrics; font: descriptionText.font }
     ColumnLayout {
         Layout.fillWidth: true
+        Layout.minimumWidth: 0
         spacing: 4
         Text {
+            id: labelText
             Layout.fillWidth: true
             text: root.label
             textFormat: Text.PlainText
@@ -24,6 +44,7 @@ RowLayout {
             wrapMode: Text.Wrap
         }
         Text {
+            id: descriptionText
             visible: root.description.length > 0
             Layout.fillWidth: true
             text: root.description
@@ -37,9 +58,10 @@ RowLayout {
         id: select
         objectName: root.controlName
         Accessible.name: root.label
-        Layout.preferredWidth: Math.max(160 * Theme.fontScale,
-            select.widestOption + select.leftPadding + select.rightPadding + 4)
+        Layout.preferredWidth: Math.min(Math.max(80, root.width), root.preferredSelectWidth)
         Layout.minimumWidth: 80
+        Layout.maximumWidth: Math.max(80, root.width)
+        Layout.alignment: Qt.AlignRight
         density: Theme.settingsBodySize * Theme.fontScale / Theme.operationBodySize
         implicitHeight: Math.max(Theme.operationControlBodyButtonHeight, contentItem.implicitHeight + 8)
         model: root.options

@@ -18,6 +18,7 @@ Item {
         id: inspector; x: 330; width: 260; height: 380
         detail: ({id: "1", name: "a.txt", size: "1", packed: "1", method: "Store"})
         selectionCount: 0; canExtract: true
+        previewSelectionEntries: []
         sizeFormatter: value => value + " B"
         iconForFile: () => "qrc:/xdzip/assets/light/file-text.png"
     }

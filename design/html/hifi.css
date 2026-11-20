@@ -1122,6 +1122,9 @@ dialog[data-kind="settings"] > .shared-operation-header::after { content:""; pos
 .settings-pane .theme-card { flex:1; min-width:0; }
 .settings-detail-row, .settings-toggle-row { display:flex; align-items:center; gap:calc(16px * var(--ui-source-factor)); min-width:0; }
 .settings-detail-row > div:first-child, .settings-toggle-row > span:first-child { flex:1; min-width:0; }
+.settings-select-row { flex-wrap:wrap; }
+.settings-select-row > div:first-child { min-width:min-content; }
+.settings-select-row .ui-select { max-width:100%; margin-left:auto; }
 .settings-detail-row p, .settings-toggle-row small { display:block; margin-top:calc(4px * var(--ui-source-factor)); }
 .settings-detail-row .ui-select { min-width:calc(116px * var(--ui-source-factor)); }
 .settings-toggle-row { cursor:pointer; }
@@ -1136,6 +1139,7 @@ dialog[data-kind="settings"] > .shared-operation-header::after { content:""; pos
 .settings-note { padding:calc(14px * var(--ui-source-factor)); border:1px solid var(--border); border-radius:calc(6px * var(--ui-source-factor)); background:var(--canvas); }
 .settings-note p { margin-top:calc(4px * var(--ui-source-factor)); }
 .settings-associations { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:calc(8px * var(--ui-source-factor)) calc(12px * var(--ui-source-factor)); }
+.settings-default-apps { max-width:100%; white-space:normal; overflow-wrap:anywhere; }
 .settings-associations .settings-toggle-row { padding:calc(8px * var(--ui-source-factor)); border:1px solid var(--border); border-radius:calc(6px * var(--ui-source-factor)); }
 .settings-proxies { display:flex; flex-direction:column; gap:calc(8px * var(--ui-source-factor)); }
 .settings-proxies label { display:flex; gap:calc(8px * var(--ui-source-factor)); align-items:center; }

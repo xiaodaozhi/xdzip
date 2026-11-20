@@ -6380,18 +6380,22 @@ QtObject {
         settings->setProperty("currentTab", 1);
         QQuickItem *choice = nullptr;
         QTRY_VERIFY((choice = findVisual(settings->contentItem(), "settingsLanguage")));
+        const auto languageIds = prefs->languageIds();
+        const int chineseIndex = languageIds.indexOf(QStringLiteral("zh-CN"));
+        const int englishIndex = languageIds.indexOf(QStringLiteral("en-US"));
+        QVERIFY(chineseIndex > 0 && englishIndex > 0);
         QCOMPARE(prefs->language(), QStringLiteral("auto"));
         QCOMPARE(choice->property("currentIndex").toInt(), 0);
-        QCOMPARE(choice->property("count").toInt(), 3);
+        QCOMPARE(choice->property("count").toInt(), languageIds.size());
         QCOMPARE(choice->property("currentText").toString(), qtTrId("language.auto"));
         QString optionText;
         QVERIFY(QMetaObject::invokeMethod(choice, "textAt", Q_RETURN_ARG(QString, optionText),
-                                          Q_ARG(int, 1)));
+                                          Q_ARG(int, chineseIndex)));
         QCOMPARE(optionText, qtTrId("language.zhCN"));
         QVERIFY(QMetaObject::invokeMethod(choice, "textAt", Q_RETURN_ARG(QString, optionText),
-                                          Q_ARG(int, 2)));
+                                          Q_ARG(int, englishIndex)));
         QCOMPARE(optionText, QStringLiteral("English (US)"));
-        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 2)));
+        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, englishIndex)));
         QTRY_COMPARE(prefs->language(), QStringLiteral("en-US"));
         QTRY_COMPARE(prefs->activeLanguage(), QStringLiteral("en-US"));
         QTRY_COMPARE(settings->title(), QStringLiteral("Settings"));
@@ -6404,7 +6408,7 @@ QtObject {
         QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
         settings->setProperty("currentTab", 1);
         QTRY_VERIFY((choice = findVisual(settings->contentItem(), "settingsLanguage")));
-        QCOMPARE(choice->property("currentIndex").toInt(), 2);
+        QCOMPARE(choice->property("currentIndex").toInt(), englishIndex);
         QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 0)));
         QTRY_COMPARE(prefs->language(), QStringLiteral("auto"));
         QTRY_COMPARE(prefs->activeLanguage(), resolveUiLanguage("auto"));
@@ -8434,9 +8438,14 @@ QtObject {
         QVERIFY(button->width() > 0 && button->width() <= settings->width());
         auto *label = button->property("contentItem").value<QQuickItem *>();
         QVERIFY(label);
+        const auto paintedWidth = label->property("paintedWidth").toReal();
+        const auto paintedHeight = label->property("paintedHeight").toReal();
+        QVERIFY(paintedWidth > 0 && paintedWidth <= label->width() + 1);
+        QVERIFY(paintedHeight > 0 && paintedHeight <= label->height() + 1);
+        QVERIFY(!label->property("truncated").toBool());
         const QFontMetricsF labelMetrics(label->property("font").value<QFont>());
-        QVERIFY(labelMetrics.horizontalAdvance(button->property("text").toString()) <=
-                label->width() + 1);
+        if (labelMetrics.horizontalAdvance(button->property("text").toString()) > label->width() + 1)
+            QVERIFY(label->property("lineCount").toInt() > 1);
         QVERIFY(button->mapToScene(QPointF(button->width(), 0)).x() <= settings->width());
         const bool active = QAccessible::isActive();
         QAccessible::setActive(true);
@@ -8567,7 +8576,11 @@ QtObject {
             QTRY_VERIFY(qAbs(control->height() - control->property("implicitHeight").toReal()) < 1);
             if (!firstHeight)
                 firstHeight = control->height();
-            QTRY_VERIFY(qAbs(control->height() - firstHeight) < 1);
+            QTRY_VERIFY2(qAbs(control->height() - firstHeight) < 1,
+                         qPrintable(QStringLiteral("%1 height %2, first selector %3")
+                                        .arg(name)
+                                        .arg(control->height())
+                                        .arg(firstHeight)));
             auto *editor = control->property("contentItem").value<QQuickItem *>();
             auto *indicator = control->property("indicator").value<QQuickItem *>();
             QVERIFY(editor && indicator);
@@ -8577,7 +8590,11 @@ QtObject {
             const QFontMetricsF metrics(editor->property("font").value<QFont>());
             QVERIFY2(metrics.horizontalAdvance(editor->property("text").toString()) <=
                          editor->width() + 1,
-                     qPrintable(name + QStringLiteral(" text clipped")));
+                     qPrintable(name + QStringLiteral(" text clipped: editor %1, text %2, selector %3")
+                                           .arg(editor->width())
+                                           .arg(metrics.horizontalAdvance(
+                                               editor->property("text").toString()))
+                                           .arg(control->width())));
             if (name == QStringLiteral("settingsLanguage")) {
                 auto *popup = control->property("popup").value<QObject *>();
                 QVERIFY(popup && QMetaObject::invokeMethod(popup, "open"));

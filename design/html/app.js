@@ -1610,7 +1610,7 @@ function showSettings(tab = "appearance") {
     document.documentElement.style.setProperty("--list-density-factor",prefs.density === "compact" ? .8 : 1);
     const t = id => window.XDZIP_UI_MESSAGES[resolvedLanguage].messages[id] || id;
     const label = (id) => esc(t(id));
-    const row = (id, description, selectId, options, current) => `<div class="settings-detail-row"><div><strong>${label(id)}</strong><p>${label(description)}</p></div><select class="field-select" id="${selectId}" aria-label="${label(id)}">${options.map(([v,n])=>`<option value="${esc(v)}"${String(v)===String(current)?" selected":""}>${esc(n)}</option>`).join("")}</select></div>`;
+    const row = (id, description, selectId, options, current) => `<div class="settings-detail-row settings-select-row"><div><strong>${label(id)}</strong><p>${label(description)}</p></div><select class="field-select" id="${selectId}" aria-label="${label(id)}">${options.map(([v,n])=>`<option value="${esc(v)}"${String(v)===String(current)?" selected":""}>${esc(n)}</option>`).join("")}</select></div>`;
     const toggle = (id, title, description, checked, disabled = false) => `<label class="settings-toggle-row"><span><strong>${esc(title)}</strong>${description?`<small>${esc(description)}</small>`:""}</span><input type="checkbox" role="switch" id="${esc(id)}"${checked?" checked":""}${disabled?" disabled":""}><span class="settings-switch" aria-hidden="true"></span></label>`;
     const separator = `<hr class="settings-separator">`;
     let body = "";
@@ -1639,7 +1639,7 @@ function showSettings(tab = "appearance") {
                     !managed && (unavailable || prefs.associations[ext]), managed);
             }).join("")}</div>`);
         body = `<p>${label(managed ? "settings.associationPackaged" : "settings.associationDescription")}</p>`;
-        if (managed) body += `<div><button type="button" class="button operation-body-button">${label("settings.openDefaultApps")}</button></div>`;
+        if (managed) body += `<div><button type="button" class="button operation-body-button settings-default-apps">${label("settings.openDefaultApps")}</button></div>`;
         body += groups.join(separator);
         if (!managed) body += `<p>${label("settings.associationSystem")}</p>`;
     } else if (tab === "network") {

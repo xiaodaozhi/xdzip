@@ -111,6 +111,13 @@ NSBundle *makeBundle(const QString &root, NSString *name, NSString *identifier,
 NSString *lz4TypeIdentifier() {
     return [UTType typeWithFilenameExtension:@"lz4"].identifier;
 }
+
+bool associationIdle(FileAssociations &service) {
+    // Offscreen Qt does not run Cocoa's main loop. AppKit completions still
+    // reach the main dispatch queue, as they do in the native application.
+    CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.001, true);
+    return !service.busy();
+}
 } // namespace
 
 class MacAssociationTest : public QObject {
@@ -140,8 +147,10 @@ class MacAssociationTest : public QObject {
     void firstDefaultAndNoReplacement() {
         FileAssociations service;
         QVERIFY(service.available());
-        for (const auto suffix : xdzip_formats::ShellSuffixes)
-            QVERIFY(service.supportsExtension(QString::fromLatin1(suffix.data(), suffix.size())));
+        for (const auto suffix : xdzip_formats::ShellSuffixes) {
+            const auto extension = QString::fromLatin1(suffix.data(), suffix.size());
+            QVERIFY2(service.supportsExtension(extension), qPrintable(extension));
+        }
         service.refresh();
         service.requestChange(".exe", true);
         QCOMPARE(workspace.requests.count, 0u);
@@ -151,7 +160,7 @@ class MacAssociationTest : public QObject {
         workspace.nextPublicationDelayMs = 250;
         service.requestChange(".lz4", true);
         QVERIFY(service.busy());
-        QTRY_VERIFY(!service.busy());
+        QTRY_VERIFY(associationIdle(service));
         QCOMPARE(service.error(), QString());
         QCOMPARE(workspace.requests.count, 1u);
         QVERIFY(service.isDefault(".lz4"));
@@ -171,13 +180,13 @@ class MacAssociationTest : public QObject {
             FileAssociations service;
             service.refresh();
             service.requestChange(".tar.lz4", true);
-            QTRY_VERIFY(!service.busy());
+            QTRY_VERIFY(associationIdle(service));
             QVERIFY(service.isDefault(".lz4"));
         }
         FileAssociations service;
         service.refresh();
         service.requestChange(".lz4", false);
-        QTRY_VERIFY(!service.busy());
+        QTRY_VERIFY(associationIdle(service));
         QCOMPARE(service.error(), QString());
         QVERIFY([workspace.requests.lastObject isEqual:original]);
         QVERIFY(!service.isDefault(".tar.lz4"));
@@ -189,7 +198,7 @@ class MacAssociationTest : public QObject {
         FileAssociations service;
         service.refresh();
         service.requestChange(".lz4", true);
-        QTRY_VERIFY(!service.busy());
+        QTRY_VERIFY(associationIdle(service));
         QVERIFY(service.isDefault(".lz4"));
 
         workspace.candidates = @[ testBundle.bundleURL, xdzipCopy, other, duplicate ];
@@ -206,7 +215,7 @@ class MacAssociationTest : public QObject {
                                                   code:-10814
                                               userInfo:nil];
         service.requestChange(".lz4", false);
-        QTRY_VERIFY(!service.busy());
+        QTRY_VERIFY(associationIdle(service));
         QCOMPARE(chooserCount, 2);
         QVERIFY(([listedApps isEqualToArray:@[ other, original ]]));
         QVERIFY([workspace.requests.lastObject isEqual:other]);
@@ -219,22 +228,22 @@ class MacAssociationTest : public QObject {
         service.refresh();
         workspace.ignoreNextChange = YES;
         service.requestChange(".lz4", true);
-        QTRY_VERIFY(!service.busy());
+        QTRY_VERIFY(associationIdle(service));
         QCOMPARE(service.error(), QStringLiteral("settings.associationFailed"));
         QVERIFY(!service.isDefault(".lz4"));
 
         service.requestChange(".lz4", true);
-        QTRY_VERIFY(!service.busy());
+        QTRY_VERIFY(associationIdle(service));
         workspace.nextError = [NSError errorWithDomain:NSCocoaErrorDomain
                                                   code:NSUserCancelledError
                                               userInfo:nil];
         service.requestChange(".lz4", false);
-        QTRY_VERIFY(!service.busy());
+        QTRY_VERIFY(associationIdle(service));
         QCOMPARE(service.error(), QString());
         QVERIFY(service.isDefault(".lz4"));
         QCOMPARE(chooserCount, 0);
         service.requestChange(".tar.lz4", false);
-        QTRY_VERIFY(!service.busy());
+        QTRY_VERIFY(associationIdle(service));
         QVERIFY([workspace.requests.lastObject isEqual:original]);
         QCOMPARE(chooserCount, 0);
     }

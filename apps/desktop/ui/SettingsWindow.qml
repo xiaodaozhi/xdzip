@@ -476,6 +476,8 @@ OperationWindow {
                 objectName: "settingsOpenDefaultApps"
                 visible: root.associations && root.associations.systemManaged
                 enabled: root.associations && root.associations.available && !root.associations.busy
+                Layout.maximumWidth: parent.width
+                wrapLabel: true
                 text: qsTrId("settings.openDefaultApps")
                 onClicked: root.associations.openSystemSettings()
             }
