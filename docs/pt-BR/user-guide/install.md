@@ -16,6 +16,6 @@ A versão para desktop não oferece suporte a Windows ARM64, Macs com Intel, Lin
 
 ## Abrir um arquivo compactado
 
-Use **Abrir arquivo compactado** no XDZip ou arraste o arquivo para a tela inicial. No gerenciador de arquivos, use **Abrir com** quando o pacote instalado estiver registrado. Para tornar o XDZip o aplicativo padrão de um tipo de arquivo, selecione-o nas configurações do sistema. A edição da Microsoft Store oferece **Definir aplicativos padrão no Windows** na tela de associações de arquivos. Os aplicativos padrão e as ações de compactação do menu de contexto têm configurações diferentes. Consulte [extração pelo gerenciador de arquivos](extract.md#xdzip-from-the-file-manager) e [instalação e associações](../engineering/installers-associations.md).
+Use **Abrir arquivo compactado** no XDZip ou arraste o arquivo para a tela inicial. No gerenciador de arquivos, use **Abrir com** quando o pacote instalado estiver registrado. Para tornar o XDZip o aplicativo padrão de um tipo de arquivo, selecione-o nas configurações do sistema. A edição da Microsoft Store oferece **Abrir aplicativos padrão do Windows** na tela de associações de arquivos. Os aplicativos padrão e as ações de compactação do menu de contexto têm configurações diferentes. Consulte [extração pelo gerenciador de arquivos](extract.md#xdzip-from-the-file-manager) e [instalação e associações](../engineering/installers-associations.md).
 
 Em seguida, [navegue pelos arquivos e visualize seu conteúdo](browse.md).

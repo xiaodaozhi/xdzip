@@ -16,6 +16,6 @@ Die Desktopversion unterstützt Windows ARM64, Intel-Macs, Linux ARM64 und Wayla
 
 ## Ein Archiv öffnen
 
-Wählen Sie **Archiv öffnen** in XDZip oder ziehen Sie das Archiv auf die Startseite. Im Dateimanager können Sie **Öffnen mit** verwenden, sofern das installierte Paket registriert ist. Um XDZip als Standard-App für einen Dateityp einzurichten, wählen Sie es in den Systemeinstellungen aus. In der Microsoft-Store-Version steht auf der Seite für Dateizuordnungen **Standard-Apps in Windows festlegen** zur Verfügung. Standard-Apps und Komprimierungsaktionen im Kontextmenü werden getrennt eingestellt. Siehe [Entpacken aus dem Dateimanager](extract.md#xdzip-from-the-file-manager) und [Installation und Dateizuordnungen](../engineering/installers-associations.md).
+Wählen Sie **Archiv öffnen** in XDZip oder ziehen Sie das Archiv auf die Startseite. Im Dateimanager können Sie **Öffnen mit** verwenden, sofern das installierte Paket registriert ist. Um XDZip als Standard-App für einen Dateityp einzurichten, wählen Sie es in den Systemeinstellungen aus. In der Microsoft-Store-Version steht auf der Seite für Dateizuordnungen **Windows-Standard-Apps öffnen** zur Verfügung. Standard-Apps und Komprimierungsaktionen im Kontextmenü werden getrennt eingestellt. Siehe [Entpacken aus dem Dateimanager](extract.md#xdzip-from-the-file-manager) und [Installation und Dateizuordnungen](../engineering/installers-associations.md).
 
 Als Nächstes können Sie [Dateien durchsuchen und in der Vorschau anzeigen](browse.md).
