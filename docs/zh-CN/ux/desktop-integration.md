@@ -1,6 +1,6 @@
 # 系统菜单与托盘
 
-[English](../../ux/desktop-integration.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/ux/desktop-integration.md)
+[English](../../ux/desktop-integration.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/ux/desktop-integration.md) | [日本語](../../ja-JP/ux/desktop-integration.md) | [한국어](../../ko-KR/ux/desktop-integration.md) | [Français](../../fr-FR/ux/desktop-integration.md) | [Deutsch](../../de-DE/ux/desktop-integration.md) | [Español](../../es-ES/ux/desktop-integration.md) | [Português (Brasil)](../../pt-BR/ux/desktop-integration.md) | [Русский](../../ru-RU/ux/desktop-integration.md)
 
 多会话、单实例、窗口状态及全局退出以[应用会话契约](../engineering/application-sessions.md)为准。关闭非最后主窗口保留任务，最后窗口遵循托盘设置；退出确认覆盖所有会话。
 
