@@ -2,7 +2,7 @@
 
 # xdzip：架構決策記錄
 
-[English](../../design/architecture-decisions.md) | [简体中文](../../zh-CN/design/architecture-decisions.md) | 繁體中文 | [Français](../../fr-FR/design/architecture-decisions.md) | [Español](../../es-ES/design/architecture-decisions.md)
+[English](../../design/architecture-decisions.md) | [简体中文](../../zh-CN/design/architecture-decisions.md) | 繁體中文 | [Français](../../fr-FR/design/architecture-decisions.md) | [Español](../../es-ES/design/architecture-decisions.md) | [Português (Brasil)](../../pt-BR/design/architecture-decisions.md)
 
 早期記錄日期為 2026-10-11，後續記錄各自注明日期。已採用表示架構決策生效。各段的目前實現說明將決策關聯到維護中的契約及能力依據。替代舊決策時，保留原記錄並追加新記錄。
 

@@ -1,6 +1,6 @@
 # xdzip: registros de decisiones de arquitectura
 
-[English](../../design/architecture-decisions.md) | [简体中文](../../zh-CN/design/architecture-decisions.md) | [繁體中文](../../zh-TW/design/architecture-decisions.md) | [Français](../../fr-FR/design/architecture-decisions.md) | Español
+[English](../../design/architecture-decisions.md) | [简体中文](../../zh-CN/design/architecture-decisions.md) | [繁體中文](../../zh-TW/design/architecture-decisions.md) | [Français](../../fr-FR/design/architecture-decisions.md) | Español | [Português (Brasil)](../../pt-BR/design/architecture-decisions.md)
 
 Los primeros registros son del 11 de octubre de 2026. Los posteriores indican su propia fecha. Una decisión aceptada queda adoptada. Las notas de implementación actual relacionan cada decisión con los contratos mantenidos y la evidencia de capacidades. Para sustituir una decisión, conserva la original y añade un nuevo registro.
 
