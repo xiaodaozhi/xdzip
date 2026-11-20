@@ -117,7 +117,7 @@ Consultez d’abord l’[architecture du système](../../design/system-architect
 - [Cycle de vie des données et diagnostic](../engineering/privacy.md)
 - [Version du produit et identité du build](../engineering/versioning.md)
 - [Protocole GitHub Release v1](../engineering/release-protocol.md)
-- [DMG de développement local macOS](../../engineering/macos-deployment.md)
+- [DMG de développement local macOS](../engineering/macos-deployment.md)
 - [Répertoire d’exécution Linux autonome et vérification](../engineering/linux-deployment.md)
 - [Vérification des dépendances de déploiement et SBOM](../engineering/deployment-audit.md)
 - [Attributions et licences des composants utilisés](../engineering/runtime-attribution.md)
