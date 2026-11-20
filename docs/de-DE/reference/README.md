@@ -41,7 +41,7 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 - [Metadaten-Vorprüfung vor dem Entpacken](../engineering/extraction-preflight.md)
 - [Sicheres Entpacken von ZIP](../engineering/zip-safe-extraction.md)
 - [Integritätsprüfung von Archiven](../engineering/archive-checking.md)
-- [Einträge öffnen, Drag-and-drop und Änderungen](../../engineering/archive-transfers.md)
+- [Einträge öffnen, Drag-and-drop und Änderungen](../engineering/archive-transfers.md)
 - [Archivpasswörter und Öffnen verschlüsselter Verzeichnisse](../engineering/password-extraction.md)
 - [Vertrag für die ZIP-Erstellung](../engineering/zip-creation.md)
 - [ISO9660- und Joliet-Erstellung](../engineering/iso-creation.md)

@@ -1,6 +1,6 @@
 # Apertura desde la lista, arrastrar y soltar bidireccional y modificación de archivos
 
-[English](../../engineering/archive-transfers.md) | [简体中文](../../zh-CN/engineering/archive-transfers.md) | [繁體中文](../../zh-TW/engineering/archive-transfers.md) | [日本語](../../ja-JP/engineering/archive-transfers.md) | [한국어](../../ko-KR/engineering/archive-transfers.md) | [Français](../../fr-FR/engineering/archive-transfers.md) | Español | [Português (Brasil)](../../pt-BR/engineering/archive-transfers.md)
+[English](../../engineering/archive-transfers.md) | [简体中文](../../zh-CN/engineering/archive-transfers.md) | [繁體中文](../../zh-TW/engineering/archive-transfers.md) | [日本語](../../ja-JP/engineering/archive-transfers.md) | [한국어](../../ko-KR/engineering/archive-transfers.md) | [Français](../../fr-FR/engineering/archive-transfers.md) | [Deutsch](../../de-DE/engineering/archive-transfers.md) | Español | [Português (Brasil)](../../pt-BR/engineering/archive-transfers.md)
 
 «Abrir» del menú contextual actúa sobre la entrada pulsada con el botón derecho sin cambiar la selección múltiple y reutiliza el punto de entrada del doble clic y de Intro. Se entra en directorios; los archivos ordinarios usan las reglas de caché privada, contraseña y aplicación asociada de la [apertura temporal](archive-opening.md). Los cambios de sesión o consulta cierran el menú; la ejecución sigue verificando la identidad estable de la entrada.
 

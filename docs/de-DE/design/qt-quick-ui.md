@@ -28,7 +28,7 @@ Beim Öffnen wird ein abgeschlossener Metadatensnapshot veröffentlicht. Jede Su
 
 Das Öffnen eines Verzeichnisses navigiert hinein. Doppelklicken auf einen zulässigen regulären Eintrag oder der entsprechende Öffnungsbefehl startet die Aufgabe zum temporären Öffnen. Im Eigenschaftsbereich gibt es eine eigene Vorschauaktion. Konflikt- und Passwortdialoge behalten die Identität des aktuellen Vorgangs. Fortschritt und Ergebnisse sind über den Aufgabenbereich auch nach dem Schließen der Seite verfügbar. [Archive durchsuchen](../user-guide/browse.md), [Temporäres Öffnen](../engineering/archive-opening.md), [Inhaltsvorschau](../engineering/content-preview.md), [Aufgabenfenster](../ux/task-windows.md)
 
-Ablegen öffnet je nach Ziel Archive oder liefert Eingaben für die Erstellung. Zulässige Verschiebungen im Archiv und das Herausziehen werden als Aufgaben vorbereitet und plattformspezifisch übergeben. Die Plattform bestimmt die Transfermöglichkeiten, einschließlich asynchroner Inhalte und Schreibvorgänge am Ziel. [Archivtransfers](../../engineering/archive-transfers.md)
+Ablegen öffnet je nach Ziel Archive oder liefert Eingaben für die Erstellung. Zulässige Verschiebungen im Archiv und das Herausziehen werden als Aufgaben vorbereitet und plattformspezifisch übergeben. Die Plattform bestimmt die Transfermöglichkeiten, einschließlich asynchroner Inhalte und Schreibvorgänge am Ziel. [Archivtransfers](../engineering/archive-transfers.md)
 
 <a name="xdzip-shared-controls-and-native-boundaries"></a>
 
