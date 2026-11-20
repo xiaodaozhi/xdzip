@@ -4,7 +4,7 @@
 
 Die eigenständige CLI läuft ohne Qt und ohne Desktop-Sitzung. Wählen Sie bei den [GitHub-Veröffentlichungen](https://github.com/xiaodaozhi/xdzip/releases) ein Paket mit dem Präfix `xdzip-cli-` für Ihr System. Entpacken Sie das vollständige Paket und lassen Sie das Arbeitsprogramm neben der ausführbaren Datei. Führen Sie im entpackten Ordner unter macOS oder Linux `./bin/xdzip --help` aus, in PowerShell `.\bin\xdzip.exe --help`.
 
-Die Beispiele setzen `xdzip` in PATH voraus. Führen Sie mit der entpackten CLI `setup` aus, um einen Starter für Ihren Benutzer zu registrieren. Fügen Sie sein Befehlsverzeichnis bei Bedarf zu PATH hinzu. Mit `xdzip --version-json` prüfen Sie, ob der gefundene Befehl `"component":"cli"` meldet. Desktop-Starter und CLI können denselben Befehlsnamen haben. Verwenden Sie bei einem Konflikt den vollständigen Pfad zur entpackten CLI. [Befehl installieren oder entfernen](../../engineering/command-line.md#build-and-command-installation)
+Die Beispiele setzen `xdzip` in PATH voraus. Führen Sie mit der entpackten CLI `setup` aus, um einen Starter für Ihren Benutzer zu registrieren. Fügen Sie sein Befehlsverzeichnis bei Bedarf zu PATH hinzu. Mit `xdzip --version-json` prüfen Sie, ob der gefundene Befehl `"component":"cli"` meldet. Desktop-Starter und CLI können denselben Befehlsnamen haben. Verwenden Sie bei einem Konflikt den vollständigen Pfad zur entpackten CLI. [Befehl installieren oder entfernen](../engineering/command-line.md#xdzip-build-and-command-installation)
 
 <a name="xdzip-create-and-check"></a>
 
@@ -33,13 +33,13 @@ xdzip extract sample.zip docs/hello.txt -C output --conflict skip --json
 
 Pfade müssen genau mit den Einträgen übereinstimmen, unterscheiden Groß- und Kleinschreibung und verwenden Schrägstriche. Gibt es mehrere Einträge mit demselben Pfad, wählen Sie sie anhand der von `list` gelieferten `id`. IDs beginnen bei 1. Ersetzen Sie zum Beispiel im zweiten Befehl `docs/hello.txt` durch `--entry-id 2`, wenn die Liste für diese Datei ID 2 angibt. Für mehrere Einträge wiederholen Sie `--entry-id`. Verwenden Sie `path` zum Abgleich und `display_name` zur Anzeige. Nach Änderungen am Archiv rufen Sie die Liste erneut ab.
 
-Die erste Seite beginnt bei Offset 0. Übergeben Sie `data.next_offset` als `--offset` mit unverändertem `--limit`, um die nächste Seite zu lesen. Ist `next_offset` null, ist die Liste vollständig. Der Offset ist die nullbasierte Zeilenposition. Eine ID kennzeichnet einen physischen Datensatz. Jeder Befehl öffnet das Archiv erneut. Lassen Sie die Quelle zwischen den Seitenabrufen unverändert. [Auswahl und Grenzen beim Auflisten](../../engineering/command-line.md#archive-behavior)
+Die erste Seite beginnt bei Offset 0. Übergeben Sie `data.next_offset` als `--offset` mit unverändertem `--limit`, um die nächste Seite zu lesen. Ist `next_offset` null, ist die Liste vollständig. Der Offset ist die nullbasierte Zeilenposition. Eine ID kennzeichnet einen physischen Datensatz. Jeder Befehl öffnet das Archiv erneut. Lassen Sie die Quelle zwischen den Seitenabrufen unverändert. [Auswahl und Grenzen beim Auflisten](../engineering/command-line.md#xdzip-archive-behavior)
 
 <a name="xdzip-run-without-prompts"></a>
 
 ## Ohne Rückfragen ausführen
 
-`--json` deaktiviert interaktive Rückfragen. Wenn ein Auftrag unbeaufsichtigt fertig werden soll, geben Sie die Konfliktregel ausdrücklich an. Bei Befehlen mit Passwortunterstützung wie `extract`, `test` und verschlüsseltem `create` verwenden Sie `--password-stdin` und senden eine UTF-8-Passwortzeile über eine private Standardeingabe-Pipe. Zum verschlüsselten Erstellen ist zusätzlich `--encrypt` erforderlich. Fehlt eine notwendige Entscheidung oder ein Passwort, meldet die CLI `interaction_required`. [Passwort- und Formatoptionen](../../engineering/command-line.md#archive-behavior)
+`--json` deaktiviert interaktive Rückfragen. Wenn ein Auftrag unbeaufsichtigt fertig werden soll, geben Sie die Konfliktregel ausdrücklich an. Bei Befehlen mit Passwortunterstützung wie `extract`, `test` und verschlüsseltem `create` verwenden Sie `--password-stdin` und senden eine UTF-8-Passwortzeile über eine private Standardeingabe-Pipe. Zum verschlüsselten Erstellen ist zusätzlich `--encrypt` erforderlich. Fehlt eine notwendige Entscheidung oder ein Passwort, meldet die CLI `interaction_required`. [Passwort- und Formatoptionen](../engineering/command-line.md#xdzip-archive-behavior)
 
 <a name="xdzip-interpret-results"></a>
 
@@ -55,4 +55,4 @@ Lesen Sie bei Archivvorgängen mit `--json` das UTF-8-Objekt auf stdout aus. Pr�
 | 3 | Prüfen Sie die gemeldete Anforderung an Interaktion, Autorisierung, Plattform oder Installation. |
 | 130 | Der Abbruch wurde bestätigt. Prüfen Sie, welche Dateien bereits endgültig gespeichert wurden. |
 
-Unbekannte Werte können null sein. Bei Fehlern oder Abbruch können zuvor endgültig gespeicherte Dateien erhalten bleiben. Prüfen Sie vor einem erneuten Versuch `summary.committed_files`, wenn das Feld vorhanden ist. Die [CLI-Referenz](../../engineering/command-line.md) beschreibt die Übergabe an die Desktopanwendung, Updatebelege und das vollständige Ausgabeformat.
+Unbekannte Werte können null sein. Bei Fehlern oder Abbruch können zuvor endgültig gespeicherte Dateien erhalten bleiben. Prüfen Sie vor einem erneuten Versuch `summary.committed_files`, wenn das Feld vorhanden ist. Die [CLI-Referenz](../engineering/command-line.md) beschreibt die Übergabe an die Desktopanwendung, Updatebelege und das vollständige Ausgabeformat.

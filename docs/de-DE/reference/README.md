@@ -138,4 +138,4 @@ Die [Systemarchitektur](../../design/system-architecture.md) zeigt die Ausführu
 - [Vorbereitung der Entwicklungsumgebung](../engineering/development.md)
 - [Entwicklungsbuilds und Plattformprüfung](../../engineering/developer-build.md)
 - [Festgelegte Toolchain und Plattformen](../engineering/toolchain.md)
-- [CLI-Befehle, JSON, Installation und Aktualisierungsbelege](../../engineering/command-line.md)
+- [CLI-Befehle, JSON, Installation und Aktualisierungsbelege](../engineering/command-line.md)

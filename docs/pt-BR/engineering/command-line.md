@@ -1,6 +1,6 @@
 # Contrato de execução da linha de comando
 
-[English](../../engineering/command-line.md) | [简体中文](../../zh-CN/engineering/command-line.md) | [繁體中文](../../zh-TW/engineering/command-line.md) | [Français](../../fr-FR/engineering/command-line.md) | [Español](../../es-ES/engineering/command-line.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/command-line.md)
+[English](../../engineering/command-line.md) | [简体中文](../../zh-CN/engineering/command-line.md) | [繁體中文](../../zh-TW/engineering/command-line.md) | [Français](../../fr-FR/engineering/command-line.md) | [Deutsch](../../de-DE/engineering/command-line.md) | [Español](../../es-ES/engineering/command-line.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/command-line.md)
 
 O CLI é um hospedeiro Rust independente que chama serviços de formatos e E/S segura pelo mesmo `xdzip-runtime`; ele não depende de Qt, QML ou sessão gráfica. 7z, RAR, CAB, ISO e UDF continuam usando processos isolados fornecidos e não procuram ferramentas alternativas de extração no PATH. Plataformas e arquiteturas seguem a [política de suporte](support-policy.md). O CLI independente no Linux não requer X11; a execução exige OpenSSL 3 e certificados do sistema, e a compilação também exige libssl-dev e pkg-config.
 

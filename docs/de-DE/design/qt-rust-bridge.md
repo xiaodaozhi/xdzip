@@ -45,7 +45,7 @@ CXX überträgt Werttypen und besitzende Rust-Container. Der empfangende Qt-Code
 | `Snapshot`, `CloseSession` | Aktuelle Archivsitzungs-ID oder null zurückgeben. Das Schließen der angegebenen Sitzung verwirft ihren Navigations-Snapshot; unabhängig gehaltene Aufgabeneingaben können bestehen bleiben. |
 | `cancel`, `cancel_task`, `decide_task`, `respond_password`, `release_export`, `shutdown` | Steuermethoden außerhalb der gewöhnlichen Befehlswarteschlange. Der Abbruch einer Anfrage hat eine eigene Anfrage-ID und `Finished`; Aufgabensteuerungen wirken auf die bestehende Aufgabe. |
 
-Der Rust-Dienst bietet weitere CLI-spezifische Vorgänge wie `Catalog` und `SelectMembers`. Die Brücke prüft Eingabegröße und Enum-Werte vor der Einreichung. Erstellungspfade sind beispielsweise jeweils auf 4 KiB und insgesamt auf 4 MiB begrenzt. Die Laufzeit prüft Sitzung und Vorgangssemantik; die E/A-Schicht öffnet Dateien und beschafft Ausgabeberechtigungen. [Vertrag des Laufzeitdienstes](../engineering/product-runtime.md), [CLI-Vertrag](../../engineering/command-line.md), [Dateiautorisierung](file-security.md)
+Der Rust-Dienst bietet weitere CLI-spezifische Vorgänge wie `Catalog` und `SelectMembers`. Die Brücke prüft Eingabegröße und Enum-Werte vor der Einreichung. Erstellungspfade sind beispielsweise jeweils auf 4 KiB und insgesamt auf 4 MiB begrenzt. Die Laufzeit prüft Sitzung und Vorgangssemantik; die E/A-Schicht öffnet Dateien und beschafft Ausgabeberechtigungen. [Vertrag des Laufzeitdienstes](../engineering/product-runtime.md), [CLI-Vertrag](../engineering/command-line.md), [Dateiautorisierung](file-security.md)
 
 <a name="xdzip-event-delivery-and-backpressure"></a>
 

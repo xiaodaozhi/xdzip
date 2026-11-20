@@ -1,6 +1,6 @@
 # Контракт среды командной строки
 
-[English](../../engineering/command-line.md) | [简体中文](../../zh-CN/engineering/command-line.md) | [繁體中文](../../zh-TW/engineering/command-line.md) | [Français](../../fr-FR/engineering/command-line.md) | [Español](../../es-ES/engineering/command-line.md) | [Português (Brasil)](../../pt-BR/engineering/command-line.md) | Русский
+[English](../../engineering/command-line.md) | [简体中文](../../zh-CN/engineering/command-line.md) | [繁體中文](../../zh-TW/engineering/command-line.md) | [Français](../../fr-FR/engineering/command-line.md) | [Deutsch](../../de-DE/engineering/command-line.md) | [Español](../../es-ES/engineering/command-line.md) | [Português (Brasil)](../../pt-BR/engineering/command-line.md) | Русский
 
 CLI — независимый хост Rust, который вызывает службы форматов и безопасного ввода-вывода через тот же `xdzip-runtime`; он не зависит от Qt, QML или графического сеанса. Для 7z, RAR, CAB, ISO и UDF по-прежнему используются поставляемые изолированные рабочие процессы; поиск других программ распаковки в PATH не выполняется. Платформы и архитектуры определены [политикой поддержки](support-policy.md). Автономному CLI Linux не нужен X11; для запуска требуются системные OpenSSL 3 и сертификаты, а для сборки также libssl-dev и pkg-config.
 
