@@ -4,7 +4,7 @@
 
 [English](../../engineering/linux-deployment.md) | [简体中文](../../zh-CN/engineering/linux-deployment.md) | [繁體中文](../../zh-TW/engineering/linux-deployment.md) | [日本語](../../ja-JP/engineering/linux-deployment.md) | [한국어](../../ko-KR/engineering/linux-deployment.md) | [Français](../../fr-FR/engineering/linux-deployment.md) | [Deutsch](../../de-DE/engineering/linux-deployment.md) | Español | [Português (Brasil)](../../pt-BR/engineering/linux-deployment.md) | [Русский](../../ru-RU/engineering/linux-deployment.md)
 
-La base actual de despliegue para desarrollo es Ubuntu 24.04, x86_64 y X11. El objetivo es ejecutar el producto actual sin el SDK Qt de desarrollo; esto no promete otras distribuciones, versiones anteriores de glibc, Wayland ni compatibilidad completa del instalador. La CI de macOS conserva compilación, pruebas y verificación de inicio nativas. Los DMG locales de desarrollo siguen la [guía de despliegue Mac](../../engineering/macos-deployment.md) y no se ven afectados por este proceso.
+La base actual de despliegue para desarrollo es Ubuntu 24.04, x86_64 y X11. El objetivo es ejecutar el producto actual sin el SDK Qt de desarrollo; esto no promete otras distribuciones, versiones anteriores de glibc, Wayland ni compatibilidad completa del instalador. La CI de macOS conserva compilación, pruebas y verificación de inicio nativas. Los DMG locales de desarrollo siguen la [guía de despliegue Mac](macos-deployment.md) y no se ven afectados por este proceso.
 
 <a name="xdzip-layout-and-generation"></a>
 
