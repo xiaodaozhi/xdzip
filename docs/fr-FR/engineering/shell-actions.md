@@ -51,7 +51,7 @@ Les actions d’extraction apparaissent lorsque chaque élément sélectionné p
 - Dossier par archive : un dossier portant le nom de l’archive est toujours ajouté. Il est réservé exclusivement au moyen de la capacité de destination détenue ; les fichiers, dossiers et liens existants ne sont jamais réutilisés. Un nouveau nom numéroté, par exemple `name (2)`, est choisi en dix mille tentatives au plus.
 - Dossier choisi : une destination commune est choisie dans la fenêtre autonome d’extraction. Les dossiers par archive sont proposés par défaut, avec les alternatives de fusion intelligente ou directe.
 
-La dérivation des dossiers suit les règles de noms portables et de suffixe `.app` de l’[extraction sûre](../../engineering/zip-safe-extraction.md). La détection intelligente n’autorise pas la sortie : chaque tâche doit revérifier destination, source, CRC ou authentification, conflits et autorisation de publication. L’échec d’une archive suit la politique existante d’arrêt de cette archive ; le coordinateur passe ensuite à la suivante.
+La dérivation des dossiers suit les règles de noms portables et de suffixe `.app` de l’[extraction sûre](zip-safe-extraction.md). La détection intelligente n’autorise pas la sortie : chaque tâche doit revérifier destination, source, CRC ou authentification, conflits et autorisation de publication. L’échec d’une archive suit la politique existante d’arrêt de cette archive ; le coordinateur passe ensuite à la suivante.
 
 ## Processus, requêtes et fenêtres
 

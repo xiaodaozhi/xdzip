@@ -4,7 +4,7 @@
 
 [English](../../engineering/tar-gzip.md) | [简体中文](../../zh-CN/engineering/tar-gzip.md) | [繁體中文](../../zh-TW/engineering/tar-gzip.md) | [日本語](../../ja-JP/engineering/tar-gzip.md) | [한국어](../../ko-KR/engineering/tar-gzip.md) | Français | [Deutsch](../../de-DE/engineering/tar-gzip.md) | [Español](../../es-ES/engineering/tar-gzip.md) | [Português (Brasil)](../../pt-BR/engineering/tar-gzip.md) | [Русский](../../ru-RU/engineering/tar-gzip.md)
 
-Ce contrat définit les limites de navigation, création et extraction sûre de TAR/TAR.GZ. Les résultats par plateforme et l’acceptation manuelle sont consignés dans les tickets ou artefacts CI. Il conserve l’autorisation d’entrée, la préparation temporaire, les conflits, l’annulation et la publication de l’archive entière de l’[extraction sûre](../../engineering/zip-safe-extraction.md) et de la [création ZIP](../../engineering/zip-creation.md).
+Ce contrat définit les limites de navigation, création et extraction sûre de TAR/TAR.GZ. Les résultats par plateforme et l’acceptation manuelle sont consignés dans les tickets ou artefacts CI. Il conserve l’autorisation d’entrée, la préparation temporaire, les conflits, l’annulation et la publication de l’archive entière de l’[extraction sûre](zip-safe-extraction.md) et de la [création ZIP](../../engineering/zip-creation.md).
 
 <a name="xdzip-scope-and-capabilities"></a>
 

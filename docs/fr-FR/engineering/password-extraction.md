@@ -4,7 +4,7 @@
 
 [English](../../engineering/password-extraction.md) | [简体中文](../../zh-CN/engineering/password-extraction.md) | [繁體中文](../../zh-TW/engineering/password-extraction.md) | [日本語](../../ja-JP/engineering/password-extraction.md) | [한국어](../../ko-KR/engineering/password-extraction.md) | Français | [Deutsch](../../de-DE/engineering/password-extraction.md) | [Español](../../es-ES/engineering/password-extraction.md) | [Português (Brasil)](../../pt-BR/engineering/password-extraction.md) | [Русский](../../ru-RU/engineering/password-extraction.md)
 
-Ce contrat complète l’[extraction sûre](../../engineering/zip-safe-extraction.md) et définit mots de passe, authentification et interaction des tâches. La logique de format et de sécurité des fichiers reste indépendante de Qt ; la fenêtre de mot de passe ne soumet que l’intention de l’utilisateur. Voir [issue #11](https://github.com/xiaodaozhi/xdzip/issues/11) pour l’avancement réel et la vérification des plateformes. Les rapports d’exécution ne sont pas stockés ici.
+Ce contrat complète l’[extraction sûre](zip-safe-extraction.md) et définit mots de passe, authentification et interaction des tâches. La logique de format et de sécurité des fichiers reste indépendante de Qt ; la fenêtre de mot de passe ne soumet que l’intention de l’utilisateur. Voir [issue #11](https://github.com/xiaodaozhi/xdzip/issues/11) pour l’avancement réel et la vérification des plateformes. Les rapports d’exécution ne sont pas stockés ici.
 
 <a name="xdzip-capability-and-format-boundaries"></a>
 

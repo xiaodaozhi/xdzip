@@ -96,7 +96,7 @@ flowchart TB
 2. **Décoder.** Le moteur de format lit la source admise, directement ou par le worker d’archive. Il envoie les octets à un récepteur mesuré adossé à une préparation privée. Nouvelles tentatives de mot de passe, expansion et travail auxiliaire restent soumis aux limites de l’opération. Les octets préparés sont provisoires jusqu’à la réussite du décodage, des contrôles de taille et des vérifications disponibles du format.
 3. **Valider et rapporter.** Avant publication, l’hôte revérifie l’identité de la source et de la destination concernée. Il valide séparément chaque fichier admissible et enregistre les fichiers et octets effectivement publiés. Une erreur ou annulation ultérieure peut laisser en place les fichiers déjà validés. La préparation non publiée est nettoyée si possible et le résultat terminal rapporte échec, annulation, éléments ignorés et avertissements de nettoyage.
 
-[Exécution de l’extraction](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/execute.rs), [vérification d’archive](../engineering/archive-checking.md), [interactions de mot de passe](../engineering/password-extraction.md), [extraction ZIP sûre](../../engineering/zip-safe-extraction.md).
+[Exécution de l’extraction](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/execute.rs), [vérification d’archive](../engineering/archive-checking.md), [interactions de mot de passe](../engineering/password-extraction.md), [extraction ZIP sûre](../engineering/zip-safe-extraction.md).
 
 ## Création ou modification d’une archive
 
