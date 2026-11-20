@@ -7803,6 +7803,11 @@ QtObject {
         QFETCH(QString, language);
         QFETCH(bool, dark);
         QFETCH(double, scale);
+        QTemporaryDir profile;
+        QVERIFY(profile.isValid());
+        test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH",
+                                                      profile.filePath("settings.ini"));
+        QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
         const bool accessibilityWasActive = QAccessible::isActive();
         QAccessible::setActive(true);
         const auto restoreAccessibility =
@@ -7816,6 +7821,7 @@ QtObject {
         auto *preferences =
             engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
         QVERIFY(window && preferences);
+        QCOMPARE(preferences->openMode(), QStringLiteral("tabs"));
         preferences->preview(dark ? QStringLiteral("dark") : QStringLiteral("light"), scale);
         ApplicationSessions sessions(&engine, preferences);
         sessions.adopt(window);
