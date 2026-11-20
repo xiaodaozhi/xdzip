@@ -1,0 +1,25 @@
+<a name="xdzip-asar-container-contract"></a>
+
+# Contrato do contêiner ASAR
+
+[English](../../engineering/asar-containers.md) | [简体中文](../../zh-CN/engineering/asar-containers.md) | [繁體中文（台灣）](../../zh-TW/engineering/asar-containers.md) | [日本語](../../ja-JP/engineering/asar-containers.md) | [한국어](../../ko-KR/engineering/asar-containers.md) | [Français](../../fr-FR/engineering/asar-containers.md) | [Deutsch](../../de-DE/engineering/asar-containers.md) | [Español](../../es-ES/engineering/asar-containers.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/asar-containers.md)
+
+O formato segue a [descrição do ASAR](https://github.com/electron/asar#format) do Electron e o [contrato do Pickle](https://chromium.googlesource.com/chromium/src/+/main/base/pickle.h) do Chromium. Um Pickle de oito bytes com o tamanho antecede uma cadeia Pickle com uma árvore de diretórios em JSON. Os deslocamentos dos arquivos são cadeias decimais relativas à área de dados. Cada entrada mantém sua identidade mesmo quando os arquivos compartilham os mesmos bytes. A integridade opcional declara SHA-256 para o arquivo completo e cada bloco de tamanho fixo. As declarações detectam corrupção e não autenticam o pacote ou o aplicativo.
+
+<a name="xdzip-admission-and-identity"></a>
+
+## Admissão e identidade
+
+Antes de analisar a árvore, valide as quatro palavras de comprimento em little-endian, o alinhamento em quatro bytes, o comprimento exato da cadeia, o preenchimento com zeros e os limites da origem. Limite o cabeçalho a 8 MiB e o aninhamento a 64 componentes de caminho. Aplique os limites comuns de análise à quantidade de nós e aos bytes de nomes mantidos pelo módulo. Analise JSON genérico com limites, rejeite chaves duplicadas e mantenha a ordem dos objetos. Rejeite UTF-8 malformado, tipos de campo inválidos, tamanhos não inteiros ou fora da faixa segura, deslocamentos decimais com estouro e perfis obrigatórios desconhecidos. Valide cada componente de nome de forma independente do prefixo. Mantenha os nomes originais inseguros visíveis com aviso e indicação de falta de suporte, para que o host possa recusar a saída.
+
+Atribua identidades físicas na ordem da árvore JSON, incluindo diretórios explícitos e arquivos vazios. O objeto raiz é estrutural. Preserve entradas distintas para intervalos de dados idênticos. Rejeite sobreposição parcial, intervalos fora da origem autorizada e dados finais sem referência. Sem declaração de integridade, só se verificam estrutura e legibilidade. Valide por completo as declarações presentes, incluindo tamanho do resumo, algoritmo, tamanho e número de blocos e regra para arquivos vazios. Informe quando uma declaração não tiver suporte.
+
+<a name="xdzip-read-only-export-and-verification"></a>
+
+## Exportação somente para leitura e verificação
+
+O módulo recebe um fluxo autorizado com acesso por posição e uma interface de saída do host. Não abre outros caminhos, não segue links e não executa aplicativos. Registros `unpacked` ficam visíveis e sem suporte. Um diretório `.asar.unpacked` ao lado fica fora da autorização de entrada. Links declarados continuam sem suporte e preservam a identidade. O indicador de executável não autoriza restaurar o modo do arquivo nem executá-lo. Este perfil não inclui senhas, volumes, criação ou regravação.
+
+Releia todo o cabeçalho antes de usar os dados e compare o índice resultante com o instantâneo imutável do host. Mantenha internamente os deslocamentos limitados e os resumos opcionais. Leia aos poucos os intervalos armazenados sob os limites acumulados de entrada, bytes decodificados e cancelamento. Confirme o SHA-256 do arquivo inteiro e dos blocos, inclusive no caso de arquivos vazios, antes de indicar sucesso. Os dados podem ir para a área temporária privada durante a verificação. Só o host publica arquivos verificados. O trabalho de SHA-256 conta os blocos de compressão de 64 bytes realmente processados, incluindo o preenchimento. Entrada, bytes entregues e trabalho de hash têm limites privados separados de 24 GiB. Os limites das tarefas do host podem ser menores. Reler intervalos compartilhados não retorna créditos. Um erro impede o uso posterior do leitor aberto. As verificações de identidade detectam mudanças da origem na medida do possível, sem garantir um instantâneo atômico ou autenticado.
+
+O registro exige entradas controladas geradas ou lidas de forma independente pela versão fixada da ferramenta de referência. Cubra diretórios, arquivos vazios ou com nomes UTF-8, dados compartilhados, ausência e presença de integridade em vários blocos, registros externos e declarações de executável. As regressões cobrem chaves JSON duplicadas, aritmética, alinhamento, truncamento, sobreposição, resumos inválidos, nomes inseguros, mudanças na origem, cotas exatas, cancelamento e falha de saída. Automatize as tarefas reais no ambiente de execução, na CLI e no Qt e os comportamentos afetados de candidatos, somente leitura, notas de verificação e layout. Ferramentas de referência e evidências geradas ficam em `build/`. Entradas de teste e código do gerador ficam versionados. Registre o progresso e a aceitação efetiva na issue de entrega.

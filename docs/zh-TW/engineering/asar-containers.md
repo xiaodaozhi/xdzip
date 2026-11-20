@@ -2,7 +2,7 @@
 
 # ASAR 容器契約
 
-[English](../../engineering/asar-containers.md) | [简体中文](../../zh-CN/engineering/asar-containers.md) | 繁體中文（台灣）
+[English](../../engineering/asar-containers.md) | [简体中文](../../zh-CN/engineering/asar-containers.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/asar-containers.md) | [한국어](../../ko-KR/engineering/asar-containers.md) | [Français](../../fr-FR/engineering/asar-containers.md) | [Deutsch](../../de-DE/engineering/asar-containers.md) | [Español](../../es-ES/engineering/asar-containers.md) | [Português (Brasil)](../../pt-BR/engineering/asar-containers.md) | [Русский](../../ru-RU/engineering/asar-containers.md)
 
 格式依據 Electron 的 [ASAR 說明](https://github.com/electron/asar#format)和 Chromium 的 [Pickle 契約](https://chromium.googlesource.com/chromium/src/+/main/base/pickle.h)。八位元組尺寸 Pickle 後跟包含 JSON 目錄樹的字串 Pickle，檔案偏移以十進位制字串表示，相對於載荷區起點。即使多個檔案共享同一段儲存位元組，每個樹條目仍保留獨立身份。可選完整性宣告包含整個檔案及各固定尺寸塊的 SHA-256，這些是損壞檢查，不代表軟體包或應用認證。
 

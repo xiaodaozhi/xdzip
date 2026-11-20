@@ -1,6 +1,6 @@
 # 简体中文界面术语
 
-[English](../../ux/chinese-terminology.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/ux/chinese-terminology.md)
+[English](../../ux/chinese-terminology.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/ux/chinese-terminology.md) | [日本語](../../ja-JP/ux/chinese-terminology.md) | [한국어](../../ko-KR/ux/chinese-terminology.md) | [Français](../../fr-FR/ux/chinese-terminology.md) | [Deutsch](../../de-DE/ux/chinese-terminology.md) | [Español](../../es-ES/ux/chinese-terminology.md) | [Português (Brasil)](../../pt-BR/ux/chinese-terminology.md) | [Русский](../../ru-RU/ux/chinese-terminology.md)
 
 面向用户的中文文案以[术语配置](../../../specs/ux/chinese-terminology.json)为准。Qt 静态文案继续使用 resources/i18n/zh-CN.json 的稳定 ID，HTML、当前高保真设计与用户说明同步采用下表；工程和格式文档可以使用技术术语。此次不改变组件尺寸、主窗口 0.8／菜单 1 的密度、DPR 或缩放参数。
 
@@ -20,6 +20,6 @@
 
 当前高保真文案修订见[术语状态稿](../../../design/hifi/terminology.html)。原图、哈希及文字墨迹测量保持历史依据；[正文量测脚本](../../../scripts/check-html-body.py)仅通过显式的历史标签映射核验新文案，不修改几何目标或容差。标签变长后仍需验证主窗口、表头、预览与菜单均完整显示。
 
-运行 `python3 scripts/check-ui-i18n.py` 同时检查两份语言资源及中文术语。检查只针对产品静态文案，允许明确的“压缩文件”动词用法，不限制用户内容或工程术语。
+运行 `python3 scripts/check-ui-i18n.py` 检查全部产品语言资源和简体中文术语。术语检查只针对产品静态文案，允许明确的“压缩文件”动词用法，不限制用户内容或工程术语。
 
 系统文件管理器入口按所有者在 [#270](https://github.com/xiaodaozhi/xdzip/issues/270) 确认的菜单名称，保留“添加到压缩文件...”及“解压每个压缩文件到单独的文件夹”。配置只对这两个稳定 ID 的完整文字登记例外，不扩大其他中文容器名称的允许范围。

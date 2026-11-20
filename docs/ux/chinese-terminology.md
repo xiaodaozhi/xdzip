@@ -1,6 +1,6 @@
 # Simplified Chinese UI terminology
 
-English | [简体中文](../zh-CN/ux/chinese-terminology.md) | [繁體中文（台灣）](../zh-TW/ux/chinese-terminology.md)
+English | [简体中文](../zh-CN/ux/chinese-terminology.md) | [繁體中文（台灣）](../zh-TW/ux/chinese-terminology.md) | [日本語](../ja-JP/ux/chinese-terminology.md) | [한국어](../ko-KR/ux/chinese-terminology.md) | [Français](../fr-FR/ux/chinese-terminology.md) | [Deutsch](../de-DE/ux/chinese-terminology.md) | [Español](../es-ES/ux/chinese-terminology.md) | [Português (Brasil)](../pt-BR/ux/chinese-terminology.md) | [Русский](../ru-RU/ux/chinese-terminology.md)
 
 User-facing Chinese copy follows the [terminology configuration](../../specs/ux/chinese-terminology.json). Qt static text retains stable IDs in resources/i18n/zh-CN.json. HTML, current high-fidelity designs and user documentation follow the table below; engineering and format documents may use technical terminology. This change does not alter component dimensions, main-window 0.8/menu 1 density, DPR or scaling parameters.
 
@@ -20,6 +20,6 @@ Do not replace terminology in user-provided names or paths, filenames inside arc
 
 See the current [terminology state design](../../design/hifi/terminology.html). Original images, hashes and text-ink measurements remain historical evidence. The [body measurement script](../../scripts/check-html-body.py) verifies new copy only through explicit historical label mappings, without changing geometry targets or tolerances. Longer labels still require verification that the main window, headers, preview and menus display completely.
 
-Run `python3 scripts/check-ui-i18n.py` to check both language resources and Chinese terminology. The check applies only to static product copy, permits the explicitly allowed verb use of “压缩文件”, and does not restrict user content or engineering terms.
+Run `python3 scripts/check-ui-i18n.py` to check all product language resources and the Simplified Chinese terminology. The terminology check applies only to static product copy, permits the explicitly allowed verb use of “压缩文件”, and does not restrict user content or engineering terms.
 
 As confirmed by the owner in [#270](https://github.com/xiaodaozhi/xdzip/issues/270), system file-manager entries retain “添加到压缩文件...” and “解压每个压缩文件到单独的文件夹”. The configuration registers exceptions only for the complete text of these two stable IDs; it does not broaden permitted Chinese container names elsewhere.
