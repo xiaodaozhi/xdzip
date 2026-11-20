@@ -1,6 +1,6 @@
 # xdzip のアーキテクチャ決定記録
 
-[English](../../design/architecture-decisions.md) | [简体中文](../../zh-CN/design/architecture-decisions.md) | [繁體中文](../../zh-TW/design/architecture-decisions.md) | 日本語 | [한국어](../../ko-KR/design/architecture-decisions.md) | [Français](../../fr-FR/design/architecture-decisions.md) | [Deutsch](../../de-DE/design/architecture-decisions.md) | [Español](../../es-ES/design/architecture-decisions.md) | [Português (Brasil)](../../pt-BR/design/architecture-decisions.md)
+[English](../../design/architecture-decisions.md) | [简体中文](../../zh-CN/design/architecture-decisions.md) | [繁體中文](../../zh-TW/design/architecture-decisions.md) | 日本語 | [한국어](../../ko-KR/design/architecture-decisions.md) | [Français](../../fr-FR/design/architecture-decisions.md) | [Deutsch](../../de-DE/design/architecture-decisions.md) | [Español](../../es-ES/design/architecture-decisions.md) | [Português (Brasil)](../../pt-BR/design/architecture-decisions.md) | [Русский](../../ru-RU/design/architecture-decisions.md)
 
 初期の記録は 2026 年 10 月 11 日付です。後の記録にはそれぞれ日付を記載しています。「採用」はアーキテクチャ決定が採用されたことを示します。現在の実装に関する注記は、各決定を保守中の契約と機能の根拠に結び付けます。決定を置き換える場合は元の記録を残し、新しい記録を追加します。
 

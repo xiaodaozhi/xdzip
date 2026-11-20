@@ -1,6 +1,6 @@
 # xdzip: Architekturentscheidungen
 
-[English](../../design/architecture-decisions.md) | [简体中文](../../zh-CN/design/architecture-decisions.md) | [繁體中文](../../zh-TW/design/architecture-decisions.md) | [日本語](../../ja-JP/design/architecture-decisions.md) | [한국어](../../ko-KR/design/architecture-decisions.md) | [Français](../../fr-FR/design/architecture-decisions.md) | Deutsch | [Español](../../es-ES/design/architecture-decisions.md) | [Português (Brasil)](../../pt-BR/design/architecture-decisions.md)
+[English](../../design/architecture-decisions.md) | [简体中文](../../zh-CN/design/architecture-decisions.md) | [繁體中文](../../zh-TW/design/architecture-decisions.md) | [日本語](../../ja-JP/design/architecture-decisions.md) | [한국어](../../ko-KR/design/architecture-decisions.md) | [Français](../../fr-FR/design/architecture-decisions.md) | Deutsch | [Español](../../es-ES/design/architecture-decisions.md) | [Português (Brasil)](../../pt-BR/design/architecture-decisions.md) | [Русский](../../ru-RU/design/architecture-decisions.md)
 
 Die frühen Aufzeichnungen stammen vom 11. Oktober 2026. Spätere Entscheidungen nennen ihr eigenes Datum. Eine akzeptierte Entscheidung ist angenommen. Die Hinweise zur aktuellen Implementierung verknüpfen jede Entscheidung mit den gepflegten Verträgen und den Nachweisen ihrer Fähigkeiten. Wird eine Entscheidung ersetzt, bleibt die ursprüngliche Aufzeichnung erhalten und eine neue wird ergänzt.
 

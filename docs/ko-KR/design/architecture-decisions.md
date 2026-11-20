@@ -1,6 +1,6 @@
 # xdzip 아키텍처 결정 기록
 
-[English](../../design/architecture-decisions.md) | [简体中文](../../zh-CN/design/architecture-decisions.md) | [繁體中文](../../zh-TW/design/architecture-decisions.md) | [日本語](../../ja-JP/design/architecture-decisions.md) | 한국어 | [Français](../../fr-FR/design/architecture-decisions.md) | [Deutsch](../../de-DE/design/architecture-decisions.md) | [Español](../../es-ES/design/architecture-decisions.md) | [Português (Brasil)](../../pt-BR/design/architecture-decisions.md)
+[English](../../design/architecture-decisions.md) | [简体中文](../../zh-CN/design/architecture-decisions.md) | [繁體中文](../../zh-TW/design/architecture-decisions.md) | [日本語](../../ja-JP/design/architecture-decisions.md) | 한국어 | [Français](../../fr-FR/design/architecture-decisions.md) | [Deutsch](../../de-DE/design/architecture-decisions.md) | [Español](../../es-ES/design/architecture-decisions.md) | [Português (Brasil)](../../pt-BR/design/architecture-decisions.md) | [Русский](../../ru-RU/design/architecture-decisions.md)
 
 초기 기록은 2026년 10월 11일 자이며 이후 기록은 각각 날짜를 명시합니다. 수락은 해당 아키텍처 결정을 채택했다는 뜻입니다. 현재 구현에 관한 설명은 각 결정을 유지 중인 계약과 기능 근거에 연결합니다. 결정을 대체할 때는 원본을 보존하고 새 기록을 추가합니다.
 
