@@ -4,7 +4,7 @@
 
 [English](../../design/product-requirements.md) | [简体中文](../../zh-CN/design/product-requirements.md) | [繁體中文](../../zh-TW/design/product-requirements.md) | [日本語](../../ja-JP/design/product-requirements.md) | [한국어](../../ko-KR/design/product-requirements.md) | [Français](../../fr-FR/design/product-requirements.md) | [Deutsch](../../de-DE/design/product-requirements.md) | [Español](../../es-ES/design/product-requirements.md) | [Português (Brasil)](../../pt-BR/design/product-requirements.md) | Русский
 
-XDZip позволяет просматривать архивы как папки, работать с выбранным содержимым, создавать и изменять архивы, если формат это поддерживает. Настольное приложение и [отдельная CLI](../../engineering/command-line.md) используют общую среду работы с архивами. [README проекта](../../../README.ru-RU.md) описывает текущие возможности и распространение. Требования ниже определяют поведение, которое нужно сохранять и проверять.
+XDZip позволяет просматривать архивы как папки, работать с выбранным содержимым, создавать и изменять архивы, если формат это поддерживает. Настольное приложение и [отдельная CLI](../engineering/command-line.md) используют общую среду работы с архивами. [README проекта](../../../README.ru-RU.md) описывает текущие возможности и распространение. Требования ниже определяют поведение, которое нужно сохранять и проверять.
 
 <a name="xdzip-requirements-and-implementation"></a>
 

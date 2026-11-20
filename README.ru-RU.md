@@ -132,7 +132,7 @@ build/cli/bin/xdzip list archive.zip --json
 build/cli/bin/xdzip extract archive.zip -C output
 ```
 
-В Windows используйте `python` и добавьте `.exe` к имени исполняемого файла. Для запуска в Linux нужны системные OpenSSL 3 и сертификаты. Для сборки также нужны `libssl-dev` и `pkg-config`. Использование паролей, неинтерактивный режим, коды выхода, установка команды и ограничения обновления описаны в [руководстве по CLI](docs/engineering/command-line.md).
+В Windows используйте `python` и добавьте `.exe` к имени исполняемого файла. Для запуска в Linux нужны системные OpenSSL 3 и сертификаты. Для сборки также нужны `libssl-dev` и `pkg-config`. Использование паролей, неинтерактивный режим, коды выхода, установка команды и ограничения обновления описаны в [руководстве по CLI](docs/ru-RU/engineering/command-line.md).
 
 <a name="xdzip-build-from-source"></a>
 

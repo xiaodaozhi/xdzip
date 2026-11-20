@@ -138,4 +138,4 @@
 - [Подготовка среды разработки](../engineering/development.md)
 - [Сборки для разработки и проверки платформ](../../engineering/developer-build.md)
 - [Закреплённые версии инструментов и платформ](../engineering/toolchain.md)
-- [Команды CLI, JSON, установка и квитанции обновлений](../../engineering/command-line.md)
+- [Команды CLI, JSON, установка и квитанции обновлений](../engineering/command-line.md)
