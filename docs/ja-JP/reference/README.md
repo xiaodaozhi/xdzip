@@ -41,7 +41,7 @@
 - [展開前のメタデータ検証](../engineering/extraction-preflight.md)
 - [安全な ZIP 展開の実装](../engineering/zip-safe-extraction.md)
 - [アーカイブの整合性検証](../engineering/archive-checking.md)
-- [項目を開く、ドラッグ＆ドロップ、アーカイブの変更](../../engineering/archive-transfers.md)
+- [項目を開く、ドラッグ＆ドロップ、アーカイブの変更](../engineering/archive-transfers.md)
 - [アーカイブのパスワードと暗号化ディレクトリー](../engineering/password-extraction.md)
 - [ZIP 作成仕様](../engineering/zip-creation.md)
 - [ISO9660 と Joliet の作成](../engineering/iso-creation.md)
