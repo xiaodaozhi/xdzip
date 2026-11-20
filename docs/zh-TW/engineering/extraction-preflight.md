@@ -2,7 +2,7 @@
 
 # 解壓預檢：後設資料階段
 
-[English](../../engineering/extraction-preflight.md) | [简体中文](../../zh-CN/engineering/extraction-preflight.md) | 繁體中文（台灣）
+[English](../../engineering/extraction-preflight.md) | [简体中文](../../zh-CN/engineering/extraction-preflight.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/extraction-preflight.md) | [한국어](../../ko-KR/engineering/extraction-preflight.md) | [Français](../../fr-FR/engineering/extraction-preflight.md) | [Deutsch](../../de-DE/engineering/extraction-preflight.md) | [Español](../../es-ES/engineering/extraction-preflight.md) | [Português (Brasil)](../../pt-BR/engineering/extraction-preflight.md) | [Русский](../../ru-RU/engineering/extraction-preflight.md)
 
 本模組提供中繼資料預檢規則，不具備目標授權、解碼、寫入、暫存或提交能力。
 
