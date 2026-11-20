@@ -18,7 +18,7 @@
 | `TaskListModel` и окна операций | Представляют ограниченные снимки задач, прогресс, результаты и ожидаемое решение. Составной идентификатор настольного приложения направляет команду задачи ответственному контроллеру. |
 | Настройки и адаптеры платформы | Управляют оформлением, языком, размером текста и поведением приложения. Нативные адаптеры отвечают за область уведомлений, активацию, файловые диалоги, ассоциации и передачу данных в зависимости от ОС. |
 
-[Точка входа приложения](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/browser_main.cpp), [Страница сеанса](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/ui/SessionPage.qml), [Контроллер и модели](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.h), [Сеансы приложения](../../engineering/application-sessions.md), [Настройки и языки](../ux/settings-localization.md)
+[Точка входа приложения](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/browser_main.cpp), [Страница сеанса](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/ui/SessionPage.qml), [Контроллер и модели](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.h), [Сеансы приложения](../engineering/application-sessions.md), [Настройки и языки](../ux/settings-localization.md)
 
 <a name="xdzip-browsing-and-operation-flow"></a>
 

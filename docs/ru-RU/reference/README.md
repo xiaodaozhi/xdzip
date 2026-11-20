@@ -23,7 +23,7 @@
 - [Структура репозитория и зависимости](../engineering/repository-layout.md)
 - [Контракты интерфейсов и проверки](../engineering/contracts.md)
 - [Среда выполнения продукта и жизненный цикл Qt](../engineering/product-runtime.md)
-- [Сеансы и завершение приложения](../../engineering/application-sessions.md)
+- [Сеансы и завершение приложения](../engineering/application-sessions.md)
 - [Причины выбора моста cxx](../engineering/cxx-admission.md)
 - [Службы календаря и кодировки хоста для процессов форматов](../engineering/host-platform-services.md)
 
