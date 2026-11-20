@@ -1,6 +1,6 @@
 # PMA 容器与 PMarc 方法
 
-[English](../../engineering/pma-streams.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/pma-streams.md)
+[English](../../engineering/pma-streams.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/pma-streams.md) | [日本語](../../ja-JP/engineering/pma-streams.md) | [한국어](../../ko-KR/engineering/pma-streams.md) | [Français](../../fr-FR/engineering/pma-streams.md) | [Deutsch](../../de-DE/engineering/pma-streams.md) | [Español](../../es-ES/engineering/pma-streams.md) | [Português (Brasil)](../../pt-BR/engineering/pma-streams.md) | [Русский](../../ru-RU/engineering/pma-streams.md)
 
 PMarc 使用类似 LHA 的顺序头部，方法为 `-pm0-`、`-pm1-`、`-pm2-`。它们是不同算法，不能当成名称相近的 LH 方法。只读 PMA 配置准入 0 级头部的 PM0、PM1、PM2，支持浏览、检查和选中提取。未知方法仍可见，但带有内容不支持警告。创建、修改、加密、分卷和修复未准入，格式登记保持权威。
 
