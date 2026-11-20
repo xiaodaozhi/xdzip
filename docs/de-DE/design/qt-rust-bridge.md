@@ -4,7 +4,7 @@
 
 [English](../../design/qt-rust-bridge.md) | [简体中文](../../zh-CN/design/qt-rust-bridge.md) | [繁體中文](../../zh-TW/design/qt-rust-bridge.md) | [日本語](../../ja-JP/design/qt-rust-bridge.md) | [한국어](../../ko-KR/design/qt-rust-bridge.md) | [Français](../../fr-FR/design/qt-rust-bridge.md) | Deutsch | [Español](../../es-ES/design/qt-rust-bridge.md) | [Português (Brasil)](../../pt-BR/design/qt-rust-bridge.md) | [Русский](../../ru-RU/design/qt-rust-bridge.md)
 
-Der Qt-Desktop ruft die Rust-Laufzeit über die eingebundene `cxx`-Brücke auf. Jeder `BrowserController` besitzt eine `RuntimeConnection` mit eigener Dienstinstanz. Die Brücke überträgt typisierte Befehle und Ergebnisse mit übertragener Eigentümerschaft innerhalb des Desktopprozesses. Die CLI verwendet denselben Rust-Dienst direkt. [Systemarchitektur](../../design/system-architecture.md), [Desktop-Sitzungen](../../engineering/application-sessions.md)
+Der Qt-Desktop ruft die Rust-Laufzeit über die eingebundene `cxx`-Brücke auf. Jeder `BrowserController` besitzt eine `RuntimeConnection` mit eigener Dienstinstanz. Die Brücke überträgt typisierte Befehle und Ergebnisse mit übertragener Eigentümerschaft innerhalb des Desktopprozesses. Die CLI verwendet denselben Rust-Dienst direkt. [Systemarchitektur](system-architecture.md), [Desktop-Sitzungen](../../engineering/application-sessions.md)
 
 <a name="xdzip-handles-threads-and-ownership"></a>
 

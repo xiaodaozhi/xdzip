@@ -4,7 +4,7 @@
 
 [English](../../design/file-security.md) | [简体中文](../../zh-CN/design/file-security.md) | [繁體中文](../../zh-TW/design/file-security.md) | [日本語](../../ja-JP/design/file-security.md) | [한국어](../../ko-KR/design/file-security.md) | [Français](../../fr-FR/design/file-security.md) | Deutsch | [Español](../../es-ES/design/file-security.md) | [Português (Brasil)](../../pt-BR/design/file-security.md) | [Русский](../../ru-RU/design/file-security.md)
 
-Der Host kontrolliert, welche Dateien geöffnet und wo geprüfte Ausgaben veröffentlicht werden dürfen. Ein Backend erhält begrenzte Leser und Senken, auch im isolierten Archivworker. Archivnamen, angegebene Größen, Prüfsummen und Nutzlasten sind Eingabedaten. Dateiprüfungen des Hosts gelten unabhängig von Prüfungen des Formats. [Systemarchitektur](../../design/system-architecture.md), [Protokoll des Archivworkers](../engineering/native-codecs.md)
+Der Host kontrolliert, welche Dateien geöffnet und wo geprüfte Ausgaben veröffentlicht werden dürfen. Ein Backend erhält begrenzte Leser und Senken, auch im isolierten Archivworker. Archivnamen, angegebene Größen, Prüfsummen und Nutzlasten sind Eingabedaten. Dateiprüfungen des Hosts gelten unabhängig von Prüfungen des Formats. [Systemarchitektur](system-architecture.md), [Protokoll des Archivworkers](../engineering/native-codecs.md)
 
 <a name="xdzip-authorizing-the-source-and-destination"></a>
 

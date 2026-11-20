@@ -14,7 +14,7 @@
 | Mitgelieferter Archiv-Worker | `xdzip-codec-native` im Host startet `xdzip-native-codec`. Seine C++-Protokollschicht ruft über `xdzip-codec-bridge` die Rust-Backends für 7z, RAR, CAB und optische Medien auf. Derselbe Weg behandelt zulässige 7z-Erstellung und -Umschreibung. ISO-Erstellung nutzt den optischen Writer im Prozess. |
 | Externer SDK-Versuch | `xdzip-plugin-host` und `xdzip-plugin-protocol` bilden ein separates, ausdrücklich gestartetes XDP1-Experiment. Produktbuilds für Desktop und CLI entdecken, installieren oder starten keine Erweiterungen Dritter. |
 
-Die ersten beiden Pfade sind integrierte Produktkomponenten. Der mitgelieferte Worker ist ein eigener Prozess mit privatem Protokoll und Ressourcenüberwachung. Der externe Versuch besitzt eigene Paketprüfung, Versionsaushandlung und plattformspezifische Berechtigungsgrenzen. [Systemarchitektur](../../design/system-architecture.md), [Archiv-Worker-Vertrag](../engineering/native-codecs.md), [SDK-Versuchsvertrag](../engineering/sdk-trial.md)
+Die ersten beiden Pfade sind integrierte Produktkomponenten. Der mitgelieferte Worker ist ein eigener Prozess mit privatem Protokoll und Ressourcenüberwachung. Der externe Versuch besitzt eigene Paketprüfung, Versionsaushandlung und plattformspezifische Berechtigungsgrenzen. [Systemarchitektur](system-architecture.md), [Archiv-Worker-Vertrag](../engineering/native-codecs.md), [SDK-Versuchsvertrag](../engineering/sdk-trial.md)
 
 <a name="xdzip-product-routing-and-operation-capabilities"></a>
 

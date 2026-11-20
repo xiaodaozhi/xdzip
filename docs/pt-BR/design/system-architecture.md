@@ -1,6 +1,6 @@
 # Arquitetura do sistema XDZip
 
-[English](../../design/system-architecture.md) | [简体中文](../../zh-CN/design/system-architecture.md) | [繁體中文](../../zh-TW/design/system-architecture.md) | [Français](../../fr-FR/design/system-architecture.md) | [Español](../../es-ES/design/system-architecture.md) | Português (Brasil)
+[English](../../design/system-architecture.md) | [简体中文](../../zh-CN/design/system-architecture.md) | [繁體中文](../../zh-TW/design/system-architecture.md) | [Français](../../fr-FR/design/system-architecture.md) | [Deutsch](../../de-DE/design/system-architecture.md) | [Español](../../es-ES/design/system-architecture.md) | Português (Brasil)
 
 Os clientes de desktop e de linha de comando compartilham o runtime de arquivos compactados em Rust. O runtime transforma uma origem selecionada em sessão indexada e uma operação em tarefa limitada. Os backends de formato interpretam os dados do arquivo. O host autoriza arquivos, controla o local de saída e publica resultados verificados.
 

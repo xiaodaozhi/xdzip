@@ -4,7 +4,7 @@
 
 [English](../../design/index.md) | [简体中文](../../zh-CN/design/index.md) | [繁體中文](../../zh-TW/design/index.md) | [日本語](../../ja-JP/design/index.md) | [한국어](../../ko-KR/design/index.md) | [Français](../../fr-FR/design/index.md) | Deutsch | [Español](../../es-ES/design/index.md) | [Português (Brasil)](../../pt-BR/design/index.md) | [Русский](../../ru-RU/design/index.md)
 
-Die [Systemarchitektur](../../design/system-architecture.md) zeigt, wie der Qt-Quick-Desktop und die eigenständige Rust-CLI auf die Archivlaufzeit zugreifen. Die Entwurfsseiten erklären aktuelle Verträge, Entscheidungen und den Umfang vorgeschlagener Arbeiten. Installation und alltägliche Vorgänge stehen im [Benutzerhandbuch](../user-guide/README.md). Zum Bauen oder Ändern siehe [Bauen und beitragen](../contributing/README.md).
+Die [Systemarchitektur](system-architecture.md) zeigt, wie der Qt-Quick-Desktop und die eigenständige Rust-CLI auf die Archivlaufzeit zugreifen. Die Entwurfsseiten erklären aktuelle Verträge, Entscheidungen und den Umfang vorgeschlagener Arbeiten. Installation und alltägliche Vorgänge stehen im [Benutzerhandbuch](../user-guide/README.md). Zum Bauen oder Ändern siehe [Bauen und beitragen](../contributing/README.md).
 
 <a name="xdzip-find-a-design-topic"></a>
 

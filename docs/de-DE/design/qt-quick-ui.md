@@ -4,7 +4,7 @@
 
 [English](../../design/qt-quick-ui.md) | [简体中文](../../zh-CN/design/qt-quick-ui.md) | [繁體中文](../../zh-TW/design/qt-quick-ui.md) | [日本語](../../ja-JP/design/qt-quick-ui.md) | [한국어](../../ko-KR/design/qt-quick-ui.md) | [Français](../../fr-FR/design/qt-quick-ui.md) | Deutsch | [Español](../../es-ES/design/qt-quick-ui.md) | [Português (Brasil)](../../pt-BR/design/qt-quick-ui.md) | [Русский](../../ru-RU/design/qt-quick-ui.md)
 
-Die Desktopanwendung nutzt Qt Quick für Anzeige und Interaktion. C++-Controller leiten Benutzerabsichten weiter und halten den Ansichtsstatus. Die Rust-Laufzeit interpretiert Archive und verantwortet Aufgabenregeln und Dateiberechtigungen. Die [Systemarchitektur](../../design/system-architecture.md) und der [Brückenvertrag](qt-rust-bridge.md) beschreiben die folgenden Aufrufe.
+Die Desktopanwendung nutzt Qt Quick für Anzeige und Interaktion. C++-Controller leiten Benutzerabsichten weiter und halten den Ansichtsstatus. Die Rust-Laufzeit interpretiert Archive und verantwortet Aufgabenregeln und Dateiberechtigungen. Die [Systemarchitektur](system-architecture.md) und der [Brückenvertrag](qt-rust-bridge.md) beschreiben die folgenden Aufrufe.
 
 <a name="xdzip-windows-sessions-and-models"></a>
 

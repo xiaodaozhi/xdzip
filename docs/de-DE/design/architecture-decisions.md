@@ -22,7 +22,7 @@ Anlass zur Neubewertung: Qt erfüllt die erforderlichen Funktionen, Lizenz- oder
 
 **Status: akzeptiert.**
 
-**Aktuelle Implementierung.** Die Rust-Laufzeit verwaltet Archivzustand und Aufgaben. Die Dateiauswahl drückt eine Absicht der Oberfläche aus; die E/A-Schicht des Hosts autorisiert den Zugriff auf das Dateisystem. [Systemarchitektur](../../design/system-architecture.md)
+**Aktuelle Implementierung.** Die Rust-Laufzeit verwaltet Archivzustand und Aufgaben. Die Dateiauswahl drückt eine Absicht der Oberfläche aus; die E/A-Schicht des Hosts autorisiert den Zugriff auf das Dateisystem. [Systemarchitektur](system-architecture.md)
 
 Entscheidung: Domäne, Index, Pläne, Aufgaben, Kontingente, Pfadrichtlinien und Formatregistrierung liegen in Rust. Qt stellt den Zustand dar, autorisiert die Systemdateiauswahl und übermittelt Entscheidungen der Nutzer. Fachliche Tests benötigen kein Qt.
 
