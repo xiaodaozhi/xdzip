@@ -38,6 +38,8 @@
 
 对于实验性 Wayland 候选包，`scripts/deploy_linux.py --experimental-wayland` 在 X11 插件之外加入 Qt Wayland 平台、窗口协议和装饰插件。Snap 还须声明 `wayland` 接口，并按桌面会话选择相应的 Qt 平台。检查最终 Snap 中新增插件的依赖，单独记录实际 Wayland 启动和拖放结果；包含插件不代表 Wayland 支持已通过验收。默认独立部署仍使用 X11。
 
+Snap 应用使用私有的 `XDG_RUNTIME_DIR`，而合成器套接字可能位于其父目录。`apps/desktop/packaging/linux/snap-launch.sh` 将已有套接字衔接到私有目录，不替换已有路径；套接字不可用时回退到 X11。在 Linux 上运行 `python3 scripts/test-snap-launch.py`，检查套接字连接、回退和显式指定平台。离屏冒烟测试无法检查合成器连接，套接字测试也不能代替 strict Snap 的桌面验收。
+
 ## 界面对照回归
 
 菜单首帧布局回归按对象名称定位序号和状态标签，分别核对真实文字度量及随字号变化的共享内距。覆盖中英文、浅深色、100%／125%／150% 字号，序号、状态、快捷键的八种组合和子菜单箭头；弹出与字号改变后的首个渲染帧直接断言，不通过额外等待或扩大容差消除布局失败。

@@ -40,6 +40,8 @@ Host `ldd` and `--version` can succeed using host libraries that a strict Snap c
 
 For an experimental Wayland candidate, `scripts/deploy_linux.py --experimental-wayland` includes the Qt Wayland platform, shell and decoration plugins alongside X11. The Snap must also declare the `wayland` interface and select the appropriate Qt platform for the desktop session. Inspect the additional plugin dependencies in the final Snap and record actual Wayland startup and drag-and-drop separately; including the plugins does not establish Wayland support. The default standalone deployment remains X11.
 
+Snap applications use a private `XDG_RUNTIME_DIR`, while the compositor socket can be in its parent. `apps/desktop/packaging/linux/snap-launch.sh` bridges an existing socket into that private directory without replacing existing paths, and falls back to X11 if the socket is unavailable. Run `python3 scripts/test-snap-launch.py` on Linux to exercise socket connection, fallback and explicit platform selection. An offscreen smoke test cannot check the compositor connection, and the socket test does not replace strict Snap desktop acceptance.
+
 ## UI comparison regressions
 
 First-frame menu layout regressions locate sequence and status tags by object name and verify actual text metrics and shared padding scaled with font size. Cover Chinese and English, light and dark themes, 100%/125%/150% font scales, all eight combinations of sequence, status and shortcuts, and submenu arrows. Assert the first rendered frame after popup and font changes directly, without extra waits or wider tolerances to eliminate layout failures.
