@@ -32,7 +32,7 @@ Consultez d’abord l’[architecture du système](../design/system-architecture
 ## Lecture et écriture des archives
 
 - [Autorisations, préparation et publication sûre](../design/file-security.md)
-- [Navigation en lecture seule](../../engineering/readonly-browser.md)
+- [Navigation en lecture seule](../engineering/readonly-browser.md)
 - [Navigation ZIP en lecture seule](../engineering/zip-readonly-browsing.md)
 - [Indexation des grandes archives et navigation à la demande](../engineering/large-index.md)
 - [Lecture multivolume et ouverture temporaire](../engineering/archive-opening.md)
