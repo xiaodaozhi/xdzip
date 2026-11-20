@@ -1,6 +1,6 @@
 # ARJ 压缩流与容器准入
 
-[English](../../engineering/arj-streams.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/arj-streams.md)
+[English](../../engineering/arj-streams.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/arj-streams.md) | [日本語](../../ja-JP/engineering/arj-streams.md) | [한국어](../../ko-KR/engineering/arj-streams.md) | [Français](../../fr-FR/engineering/arj-streams.md) | [Deutsch](../../de-DE/engineering/arj-streams.md) | [Español](../../es-ES/engineering/arj-streams.md) | [Português (Brasil)](../../pt-BR/engineering/arj-streams.md) | [Русский](../../ru-RU/engineering/arj-streams.md)
 
 `ArjReader` 提供 ARJ 方法 1–4 的有界原始解码，Store 由容器处理。`xdzip-codec-arj` 在主机提供的源上完整验证物理结构，并按 CRC 交付成员。`ArjCodec` 将准入配置接入 runtime、CLI 和桌面的浏览、检查与提取，[格式登记](../../../specs/engineering/archive-formats.json) 声明只读边界，不支持创建、修改、密码或分卷。
 
