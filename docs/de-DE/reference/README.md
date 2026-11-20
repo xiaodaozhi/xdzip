@@ -32,7 +32,7 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 ## Archive lesen und schreiben
 
 - [Dateiberechtigungen, Zwischenspeicherung und sichere Übernahme](../design/file-security.md)
-- [Schreibgeschützte Archivansicht](../../engineering/readonly-browser.md)
+- [Schreibgeschützte Archivansicht](../engineering/readonly-browser.md)
 - [Schreibgeschützte ZIP-Ansicht](../engineering/zip-readonly-browsing.md)
 - [Große Archivindizes und bedarfsgesteuerte Ansicht](../engineering/large-index.md)
 - [Lesen geteilter Volumes und temporäres Öffnen](../engineering/archive-opening.md)

@@ -1,6 +1,6 @@
 # Read-only browsing implementation contract
 
-English | [简体中文](../zh-CN/engineering/readonly-browser.md) | [繁體中文](../zh-TW/engineering/readonly-browser.md) | [日本語](../ja-JP/engineering/readonly-browser.md) | [한국어](../ko-KR/engineering/readonly-browser.md) | [Français](../fr-FR/engineering/readonly-browser.md) | [Español](../es-ES/engineering/readonly-browser.md) | [Português (Brasil)](../pt-BR/engineering/readonly-browser.md)
+English | [简体中文](../zh-CN/engineering/readonly-browser.md) | [繁體中文](../zh-TW/engineering/readonly-browser.md) | [日本語](../ja-JP/engineering/readonly-browser.md) | [한국어](../ko-KR/engineering/readonly-browser.md) | [Français](../fr-FR/engineering/readonly-browser.md) | [Deutsch](../de-DE/engineering/readonly-browser.md) | [Español](../es-ES/engineering/readonly-browser.md) | [Português (Brasil)](../pt-BR/engineering/readonly-browser.md)
 
 This document defines browsing data, resource, and interaction boundaries, supplementing [domain and data](../design/domain-data.md), the [Qt/Rust bridge](../design/qt-rust-bridge.md), and the [format extension design](../design/codec-extension-sdk.md) without freezing a third-party protocol or complete format SDK. Specific ZIP metadata rules follow. TAR/TAR.GZ reuse browsing and query models; see the [TAR/GZIP contract](tar-gzip.md) for format differences.
 

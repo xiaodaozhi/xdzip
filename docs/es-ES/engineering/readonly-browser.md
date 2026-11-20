@@ -1,6 +1,6 @@
 # Contrato de implementación de la exploración de solo lectura
 
-[English](../../engineering/readonly-browser.md) | [简体中文](../../zh-CN/engineering/readonly-browser.md) | [繁體中文](../../zh-TW/engineering/readonly-browser.md) | [日本語](../../ja-JP/engineering/readonly-browser.md) | [한국어](../../ko-KR/engineering/readonly-browser.md) | [Français](../../fr-FR/engineering/readonly-browser.md) | Español | [Português (Brasil)](../../pt-BR/engineering/readonly-browser.md)
+[English](../../engineering/readonly-browser.md) | [简体中文](../../zh-CN/engineering/readonly-browser.md) | [繁體中文](../../zh-TW/engineering/readonly-browser.md) | [日本語](../../ja-JP/engineering/readonly-browser.md) | [한국어](../../ko-KR/engineering/readonly-browser.md) | [Français](../../fr-FR/engineering/readonly-browser.md) | [Deutsch](../../de-DE/engineering/readonly-browser.md) | Español | [Português (Brasil)](../../pt-BR/engineering/readonly-browser.md)
 
 Este documento define los límites de los datos, los recursos y la interacción de exploración. Complementa [dominio y datos](../design/domain-data.md), el [puente Qt/Rust](../design/qt-rust-bridge.md) y el [diseño de extensión de formatos](../design/codec-extension-sdk.md), sin fijar un protocolo de terceros ni un SDK completo de formatos. A continuación se describen reglas específicas de metadatos ZIP. TAR/TAR.GZ reutilizan los modelos de exploración y consulta; las diferencias de formato figuran en el [contrato TAR/GZIP](tar-gzip.md).
 
