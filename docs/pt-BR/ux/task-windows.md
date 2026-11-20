@@ -4,7 +4,7 @@
 
 [English](../../ux/task-windows.md) | [简体中文](../../zh-CN/ux/task-windows.md) | [繁體中文](../../zh-TW/ux/task-windows.md) | [日本語](../../ja-JP/ux/task-windows.md) | [한국어](../../ko-KR/ux/task-windows.md) | [Français](../../fr-FR/ux/task-windows.md) | [Deutsch](../../de-DE/ux/task-windows.md) | [Español](../../es-ES/ux/task-windows.md) | Português (Brasil) | [Русский](../../ru-RU/ux/task-windows.md)
 
-A entrada de tarefas do aplicativo reúne todas as sessões e encaminha progresso, senhas, conflitos e resultados usando UUID da sessão e ID da tarefa no backend. Fechar uma página mantém seu controlador; a saída explícita aguarda todas as junções assíncronas. Consulte o [contrato de sessões do aplicativo](../../engineering/application-sessions.md).
+A entrada de tarefas do aplicativo reúne todas as sessões e encaminha progresso, senhas, conflitos e resultados usando UUID da sessão e ID da tarefa no backend. Fechar uma página mantém seu controlador; a saída explícita aguarda todas as junções assíncronas. Consulte o [contrato de sessões do aplicativo](../engineering/application-sessions.md).
 
 As linhas do menu de tarefas exibem ícone da operação, nome do arquivo compactado, etiqueta de sequência e etiqueta de status. Os ícones usam recursos compartilhados para criação, extração, verificação, adição, movimentação e exportação, sem prefixos textuais de tipo de operação. Ambas as etiquetas usam o mesmo componente; a sequência mantém o número do backend e a identidade interna entre sessões não muda. Nomes longos são truncados, mas os nomes acessíveis incluem operação, número, arquivo e estado.
 

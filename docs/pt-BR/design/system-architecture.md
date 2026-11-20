@@ -21,7 +21,7 @@ flowchart TB
   CPP --> IMAGE[Private image preview process]
 ```
 
-As duas caixas de runtime representam instâncias separadas da mesma implementação. Desktop e CLI possuem, cada um, seu estado de arquivo e suas tarefas. O IPC local do desktop encaminha solicitações de ativação e integração à instância gráfica principal. Comandos de arquivo passam pelo runtime dentro do processo. [Sessões da aplicação](../../engineering/application-sessions.md), [contrato do CLI](../engineering/command-line.md).
+As duas caixas de runtime representam instâncias separadas da mesma implementação. Desktop e CLI possuem, cada um, seu estado de arquivo e suas tarefas. O IPC local do desktop encaminha solicitações de ativação e integração à instância gráfica principal. Comandos de arquivo passam pelo runtime dentro do processo. [Sessões da aplicação](../engineering/application-sessions.md), [contrato do CLI](../engineering/command-line.md).
 
 ## Responsabilidades dos módulos e direção das chamadas
 

@@ -55,4 +55,4 @@ Veja a [verificação geral](../../../developers/qa/README.md). Testes do núcle
 
 Consultas iniciais alocam uma identidade imutável de resultado; lotes posteriores devem corresponder a todos os campos e parâmetros de QueryKey. Qt cancela solicitações antigas e agrupa a intenção mais recente mantendo verificações de sequência e ID. Um lote também limita nomes a 64 KiB e não filtra nem ordena novamente. A aceitação histórica permanece limitada aos recursos disponíveis na época.
 
-A camada de aplicação pode criar várias conexões independentes enquanto o runtime de domínio isola sessões por conexão. Veja o [contrato de sessões](../../engineering/application-sessions.md) para identidade global de tarefas e admissão serial de tarefas pesadas.
+A camada de aplicação pode criar várias conexões independentes enquanto o runtime de domínio isola sessões por conexão. Veja o [contrato de sessões](application-sessions.md) para identidade global de tarefas e admissão serial de tarefas pesadas.

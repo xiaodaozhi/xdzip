@@ -23,7 +23,7 @@ Comece pela [arquitetura do sistema](../design/system-architecture.md) para conh
 - [Estrutura do repositório e dependências](../engineering/repository-layout.md)
 - [Contratos de interfaces e verificações](../engineering/contracts.md)
 - [Execução do produto e ciclo de vida do Qt](../engineering/product-runtime.md)
-- [Sessões e encerramento do aplicativo](../../engineering/application-sessions.md)
+- [Sessões e encerramento do aplicativo](../engineering/application-sessions.md)
 - [Justificativa para a ponte cxx](../engineering/cxx-admission.md)
 - [Serviços de calendário e codificação do host](../engineering/host-platform-services.md)
 

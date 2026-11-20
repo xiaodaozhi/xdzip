@@ -1,6 +1,6 @@
 # 应用会话与退出契约
 
-[English](../../engineering/application-sessions.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/application-sessions.md) | [日本語](../../ja-JP/engineering/application-sessions.md) | [한국어](../../ko-KR/engineering/application-sessions.md) | [Français](../../fr-FR/engineering/application-sessions.md) | [Deutsch](../../de-DE/engineering/application-sessions.md) | [Español](../../es-ES/engineering/application-sessions.md)
+[English](../../engineering/application-sessions.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/application-sessions.md) | [日本語](../../ja-JP/engineering/application-sessions.md) | [한국어](../../ko-KR/engineering/application-sessions.md) | [Français](../../fr-FR/engineering/application-sessions.md) | [Deutsch](../../de-DE/engineering/application-sessions.md) | [Español](../../es-ES/engineering/application-sessions.md) | [Português (Brasil)](../../pt-BR/engineering/application-sessions.md)
 
 标签右键菜单提供“关闭、关闭其他、关闭右侧”，Shift+F10 或菜单键作用于焦点标签。右击不切换当前页，命令冻结标签稳定身份，仅按该标签所属窗口的当前视觉顺序操作，不能影响其他窗口。重排、窗口尺寸变化、目标消失或进入模态操作时关闭菜单；没有对应目标时禁用批量项。批量关闭一次提交，保留未被关闭的当前页，否则切换到锚点标签，避免逐页闪切。最后一页关闭后恢复起始页，任务和结果继续留在全局任务入口。
 
