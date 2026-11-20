@@ -20,7 +20,11 @@ The supported Linux baseline is Ubuntu 24.04 x86_64 with X11. Prepare a private 
 
 Export and temporary-open caches are separate. Use random directories, identity markers, and active locks; preparation failure publishes no URL. Retain items for seven days and perform bounded later cleanup. Do not delete files when dragging returns if consumers may still need them. Closing a page retains the task's controller. Explicit exit cancels preparation and waits for Rust workers and native consumers to finish.
 
-Export and copy tasks do not automatically open Explorer, Finder, or the destination directory after drag-out. Ordinary extraction's “open folder when finished” choice belongs only to that explicit extraction request and must not be inherited by later export or temporary-open requests. A user explicitly selecting Open in the result window retains the existing behavior.
+On Linux, the application-owned cache roots are restricted to the current user before use, including directories created with a group-writable umask. A linked cache root, another owner's directory, or a failed permission change stops preparation.
+
+Preparing a drag-out must not open the ordinary extraction result window. Export and copy tasks do not automatically open Explorer, Finder, or the destination directory after drag-out. Ordinary extraction's “open folder when finished” choice belongs only to that explicit extraction request and must not be inherited by later export or temporary-open requests. A user explicitly selecting Open in the result window retains the existing behavior.
+
+On X11, check the actual left-button state before handing a prepared copy to the native drag. If the user released the button during preparation, do not start a new drag.
 
 ## External drop and confirmation
 

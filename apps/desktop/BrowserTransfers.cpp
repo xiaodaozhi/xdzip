@@ -2,6 +2,8 @@
 
 #include "ArchiveFormatsGenerated.h"
 #include "BrowserController.h"
+#include "NativeDragGesture.h"
+#include "PrivateCache.h"
 #include "xdzip-qt-bridge/src/lib.rs.h"
 #include <QDir>
 #include <QDrag>
@@ -316,7 +318,7 @@ void BrowserController::beginExport(int row, QWindow *owner) {
     m_exportKey = identity;
     m_exportCache =
         QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/exported-files";
-    if (!QDir().mkpath(m_exportCache)) {
+    if (!preparePrivateCache(m_exportCache)) {
         m_export->finish({}, "output_io");
         setNativeDragActive(false);
         return;
@@ -405,7 +407,7 @@ void BrowserController::publishExternalExport(const std::shared_ptr<NativeExport
     submit(std::move(command));
 }
 void BrowserController::startPreparedDrag() {
-    if (!m_export || !m_exportOwner || !(QGuiApplication::mouseButtons() & Qt::LeftButton)) {
+    if (!m_export || !m_exportOwner || !nativeDragGestureHeld()) {
         setNativeDragActive(false);
         return;
     }

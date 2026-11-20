@@ -4,6 +4,10 @@ English | [简体中文](../zh-CN/qa/acceptance.md)
 
 SNAP-HOME: Verify the strict Snap can prepare and extract to the user's actual home directory and an existing child directory. Check that the visible private workspace is cleaned on success and that both workspace prefixes are counted after interruption.
 
+LINUX-PRIVATE-CACHE: With a group-writable umask and existing 0775 application cache roots, verify temporary opening and drag-out prepare private roots, reject linked roots, and preserve the external consumer handoff. Confirm double-click, context-menu opening and drag-out in the target Ubuntu desktop; dragging does not open an extraction result window or leave a stuck drag after release.
+
+When `xvfb-run` and `libXtst.so.6` are available, `qt_x11_drag_gesture` exercises real X11 button events, including release before Qt processes the event. This isolated check does not replace the Ubuntu Files desktop interaction.
+
 ## Directory-first sorting
 
 SORT-DIRECTORIES-FIRST: Every sort code (0–12), including archive order, keeps explicit and implicit directories before files in both directions. Cover ordinary browsing, recursive search, directory navigation, cross-page results, duplicate identities and unknown original sizes. Verify memory and actual external disk merge ordering agree; direction and unknown-size ordering apply inside each group. Exercise all five desktop columns and default archive order through the real controller.
