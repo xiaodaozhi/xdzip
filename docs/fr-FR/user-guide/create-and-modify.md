@@ -15,9 +15,9 @@
 
 ## Ajouter, remplacer ou déplacer des fichiers
 
-Ouvrez une archive ZIP/ZIPX, 7z, LHA/LZH ou TAR (avec ou sans compression) compatible et accédez au dossier de destination dans l’archive. Déposez des fichiers ou dossiers locaux sur la liste ou la grille, puis vérifiez et confirmez l’ajout. Les options de conflit permettent notamment de remplacer certains fichiers ordinaires de l’archive. Pour déplacer une entrée existante, faites-la glisser vers un autre dossier de la même archive et confirmez. Faire glisser un élément hors de la fenêtre exporte une copie. [Glisser-déposer selon le système](../../engineering/archive-transfers.md)
+Ouvrez une archive ZIP/ZIPX, 7z, LHA/LZH ou TAR (avec ou sans compression) compatible et accédez au dossier de destination dans l’archive. Déposez des fichiers ou dossiers locaux sur la liste ou la grille, puis vérifiez et confirmez l’ajout. Les options de conflit permettent notamment de remplacer certains fichiers ordinaires de l’archive. Pour déplacer une entrée existante, faites-la glisser vers un autre dossier de la même archive et confirmez. Faire glisser un élément hors de la fenêtre exporte une copie. [Glisser-déposer selon le système](../engineering/archive-transfers.md)
 
-La création et l’ajout omettent les fichiers `.DS_Store` et les dossiers `__MACOSX` et `_MACOSX`. La possibilité de modifier une archive dépend de son format, de son contenu et de sa source. La procédure habituelle ne permet pas de modifier les archives chiffrées, fractionnées ou indexées sur disque. Si la modification est indisponible, extrayez dans un nouveau dossier et créez une nouvelle archive. [Règles de modification et de glisser-déposer](../../engineering/archive-transfers.md)
+La création et l’ajout omettent les fichiers `.DS_Store` et les dossiers `__MACOSX` et `_MACOSX`. La possibilité de modifier une archive dépend de son format, de son contenu et de sa source. La procédure habituelle ne permet pas de modifier les archives chiffrées, fractionnées ou indexées sur disque. Si la modification est indisponible, extrayez dans un nouveau dossier et créez une nouvelle archive. [Règles de modification et de glisser-déposer](../engineering/archive-transfers.md)
 
 <a name="xdzip-rename-or-delete-entries"></a>
 
@@ -28,4 +28,4 @@ Dans un dossier ordinaire d’une archive modifiable, faites un clic droit sur u
 - **Renommer** s’applique à un seul élément. Saisissez son nouveau nom dans le même dossier. Renommer un dossier met à jour les chemins de tout son contenu. Si le nom est déjà pris, choisissez-en un autre.
 - **Supprimer** s’applique à un ou plusieurs éléments sélectionnés. Vérifiez le nom ou le nombre d’éléments avant de confirmer. La suppression d’un dossier supprime aussi tout son contenu. Si vous supprimez tous les éléments de la racine, l’archive reste disponible sous forme d’archive vide. Utilisez un suffixe TAR composé comme `.tar.xz` si l’archive vide risque de s’ouvrir comme un flux compressé autonome.
 
-Pour modifier un élément trouvé par la recherche, ouvrez d’abord le dossier qui le contient. [Règles de modification des archives](../../engineering/archive-transfers.md)
+Pour modifier un élément trouvé par la recherche, ouvrez d’abord le dossier qui le contient. [Règles de modification des archives](../engineering/archive-transfers.md)

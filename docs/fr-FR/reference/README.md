@@ -41,7 +41,7 @@ Consultez d’abord l’[architecture du système](../design/system-architecture
 - [Vérification préalable des métadonnées à l’extraction](../engineering/extraction-preflight.md)
 - [Extraction ZIP sûre](../engineering/zip-safe-extraction.md)
 - [Vérification de l’intégrité des archives](../engineering/archive-checking.md)
-- [Ouverture d’entrées, glisser-déposer et modification](../../engineering/archive-transfers.md)
+- [Ouverture d’entrées, glisser-déposer et modification](../engineering/archive-transfers.md)
 - [Mots de passe et ouverture des répertoires chiffrés](../engineering/password-extraction.md)
 - [Contrat de création ZIP](../engineering/zip-creation.md)
 - [Création ISO9660 et Joliet](../engineering/iso-creation.md)

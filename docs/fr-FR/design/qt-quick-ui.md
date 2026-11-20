@@ -28,7 +28,7 @@ L’ouverture publie un instantané complet des métadonnées. Toute nouvelle re
 
 La commande d’ouverture d’un dossier permet de le parcourir. Double-cliquer sur un fichier ordinaire admissible, ou utiliser la commande d’ouverture équivalente, lance une tâche d’ouverture temporaire. Les propriétés offrent une action Aperçu distincte. Les invites de conflit et de mot de passe gardent l’identité de l’opération courante. L’accès aux tâches présente les résultats et la progression même après la fermeture de la page de navigation. [Navigation](../user-guide/browse.md), [Ouverture temporaire](../engineering/archive-opening.md), [Aperçu du contenu](../engineering/content-preview.md), [Fenêtres de tâches](../ux/task-windows.md)
 
-Un dépôt ouvre une archive ou fournit des entrées à la création selon la cible. Les déplacements internes et les glissements vers l’extérieur admissibles préparent une tâche et passent la main à la plateforme selon ses règles. Celle-ci détermine les capacités de transfert, dont le contenu asynchrone et les écritures à destination. [Transferts d’archives](../../engineering/archive-transfers.md)
+Un dépôt ouvre une archive ou fournit des entrées à la création selon la cible. Les déplacements internes et les glissements vers l’extérieur admissibles préparent une tâche et passent la main à la plateforme selon ses règles. Celle-ci détermine les capacités de transfert, dont le contenu asynchrone et les écritures à destination. [Transferts d’archives](../engineering/archive-transfers.md)
 
 <a name="xdzip-shared-controls-and-native-boundaries"></a>
 

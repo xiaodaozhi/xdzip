@@ -4,7 +4,7 @@
 
 # 檔案列表開啟、雙向拖放與歸檔修改
 
-[English](../../engineering/archive-transfers.md) | [简体中文](../../zh-CN/engineering/archive-transfers.md) | 繁體中文 | [日本語](../../ja-JP/engineering/archive-transfers.md) | [한국어](../../ko-KR/engineering/archive-transfers.md)
+[English](../../engineering/archive-transfers.md) | [简体中文](../../zh-CN/engineering/archive-transfers.md) | 繁體中文 | [日本語](../../ja-JP/engineering/archive-transfers.md) | [한국어](../../ko-KR/engineering/archive-transfers.md) | [Français](../../fr-FR/engineering/archive-transfers.md)
 
 右鍵“開啟”作用於右擊條目，保留多選，複用雙擊和 Enter 的入口。目錄進入，普通檔案使用[臨時開啟](archive-opening.md)的私有快取、密碼和關聯程式規則。會話、查詢變化關閉選單，執行時仍核對穩定條目身份。
 
