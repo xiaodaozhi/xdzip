@@ -138,4 +138,4 @@ Empieza por la [arquitectura del sistema](../../design/system-architecture.md) p
 - [Preparación del entorno de desarrollo](../engineering/development.md)
 - [Compilaciones de desarrollo y comprobación por plataforma](../../engineering/developer-build.md)
 - [Versiones fijadas de herramientas y plataformas](../engineering/toolchain.md)
-- [Comandos CLI, JSON, instalación y recibos de actualización](../../engineering/command-line.md)
+- [Comandos CLI, JSON, instalación y recibos de actualización](../engineering/command-line.md)
