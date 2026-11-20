@@ -1,6 +1,6 @@
 # Password extraction interaction
 
-English | [简体中文](../zh-CN/ux/password-extraction.md) | [繁體中文（台灣）](../zh-TW/ux/password-extraction.md)
+English | [简体中文](../zh-CN/ux/password-extraction.md) | [繁體中文（台灣）](../zh-TW/ux/password-extraction.md) | [日本語](../ja-JP/ux/password-extraction.md) | [한국어](../ko-KR/ux/password-extraction.md) | [Français](../fr-FR/ux/password-extraction.md) | [Deutsch](../de-DE/ux/password-extraction.md) | [Español](../es-ES/ux/password-extraction.md) | [Português (Brasil)](../pt-BR/ux/password-extraction.md) | [Русский](../ru-RU/ux/password-extraction.md)
 
 Supported ZIP, 7z and RAR tasks enter `waiting_password` upon an entry requiring a password. The runtime publishes a request with task ID and request ID; QML expresses input and cancellation intent only and does not decrypt, authenticate or publish files. Password requests and name conflicts are separate states; do not route password requests to the conflict window. Format, authentication, retry and output boundaries follow the [engineering contract](../engineering/password-extraction.md).
 
@@ -12,7 +12,7 @@ PasswordWindow is application-modal with the existing system title bar, client w
 
 The window shows the current encrypted entry's name, password field, show/hide action and task-scope explanation. The show action uses clear text and an accessible name, without a password-containing tooltip. Input is masked by default; submission, cancellation, window close or request ID change clears the field and restores masking. Passwords are not written to settings, clipboard, logs, task snapshots or reports. UI string cleanup does not claim to erase every historical Qt memory copy; the runtime contract governs the underlying secret container's lifetime.
 
-Passwords for external archives can be empty or contain control characters; do not trim them or apply the 1–128 byte creation-password limit. Extraction passwords are limited to 1,024 UTF-8 bytes, with at most 1,024 UTF-16 units in the field and a UTF-8 byte check before submission; the backend checks again. Exceeding the limit shows the actual error and retains input for editing. A wrong-password request uses a new request ID, clears old input and displays “Incorrect password. Try again.”
+Passwords for external archives can be empty or contain control characters; do not trim them or apply the 1–128 byte creation-password limit. Extraction passwords are limited to 1,024 UTF-8 bytes, with at most 1,024 UTF-16 units in the field and a UTF-8 byte check before submission; the backend checks again. Exceeding the limit shows the actual error and retains input for editing. A retry request uses a new request ID, clears old input and displays “The password does not match or the encrypted data is damaged. Try again.”
 
 Continue extraction submits the exact task ID, request ID and original password to the controller. Once accepted, immediately clear the field, restore masking and prevent duplicate submission; the window waits for the task snapshot to confirm departure from that request before closing. Expired, cancelled or duplicate requests cannot submit to another task. Immediate rejection retains the current valid request and input for retry. The controller presents parallel task requests sequentially; a later request cannot silently replace an unresolved task.
 
