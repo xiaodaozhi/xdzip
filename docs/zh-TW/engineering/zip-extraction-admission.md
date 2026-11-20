@@ -3,7 +3,7 @@
 
 # ZIP 解壓縮與輸出相依套件的採用條件
 
-[English](../../engineering/zip-extraction-admission.md) | [简体中文](../../zh-CN/engineering/zip-extraction-admission.md) | 繁體中文（台灣）
+[English](../../engineering/zip-extraction-admission.md) | [简体中文](../../zh-CN/engineering/zip-extraction-admission.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/zip-extraction-admission.md) | [한국어](../../ko-KR/engineering/zip-extraction-admission.md) | [Français](../../fr-FR/engineering/zip-extraction-admission.md) | [Deutsch](../../de-DE/engineering/zip-extraction-admission.md) | [Español](../../es-ES/engineering/zip-extraction-admission.md) | [Português (Brasil)](../../pt-BR/engineering/zip-extraction-admission.md) | [Русский](../../ru-RU/engineering/zip-extraction-admission.md)
 
 本頁定義安全解壓縮與密碼解壓縮共用的相依套件邊界。最初採用時的套件來源、授權及功能摘錄見[固定版本的基礎資料](../../../specs/engineering/zip-extraction-dependencies.json)。目前的確切版本，包括 AES，以及 crates.io 檢查碼以根目錄 Cargo.lock 為準；使用 `cargo tree --locked -e features` 檢查完整啟用的相依關係。基礎摘錄不能視為目前完整的相依套件清單。
 
