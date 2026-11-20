@@ -61,7 +61,7 @@ Die [Systemarchitektur](../../design/system-architecture.md) zeigt die Ausführu
 - [Zulassung der Abhängigkeiten für ZIP-Entpacken und Ausgabe](../engineering/zip-extraction-admission.md)
 - [7z-Formatquellen und eigenständige Implementierung](../engineering/sevenzip-format-sources.md)
 - [Grundlagen der RAR-Implementierung und Kompatibilitätsgrenzen](../../engineering/rar-format-sources.md)
-- [CAB-Formatquellen und Implementierungsgrundlagen](../../engineering/cab-format-sources.md)
+- [CAB-Formatquellen und Implementierungsgrundlagen](../engineering/cab-format-sources.md)
 - [Implementierungsvertrag für TAR/GZIP](../engineering/tar-gzip.md)
 - [Einzeldateiströme und ZIP-basierte Pakete](../engineering/single-file-streams.md)
 - [Vertrag für LZ4-Datenströme](../engineering/lz4-streams.md)

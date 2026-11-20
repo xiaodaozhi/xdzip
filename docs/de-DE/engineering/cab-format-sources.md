@@ -1,0 +1,92 @@
+# CAB-Formatquellen und Implementierungsgrundlage
+
+[English](../../engineering/cab-format-sources.md) | [简体中文](../../zh-CN/engineering/cab-format-sources.md) | [繁體中文](../../zh-TW/engineering/cab-format-sources.md) | [Français](../../fr-FR/engineering/cab-format-sources.md) | Deutsch | [Español](../../es-ES/engineering/cab-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/cab-format-sources.md)
+
+Dieses Dokument hält Quellen, Umfang und Einschränkungen der unabhängigen Implementierung des CAB-Containers sowie von MSZIP, LZX und Quantum fest. Produktfunktionen, Ressourcenverwaltung und formatspezifische Ersetzungsregeln sind im [Vertrag des isolierten Formatprozesses](native-codecs.md), im [Vertrag der eigenen Rust-Implementierung](../../engineering/independent-rust-codecs.md) beziehungsweise im [Vertrag für geteilte Volumes](archive-opening.md) definiert. Quellenangaben ersetzen weder Interoperabilitätsabnahme noch Release-Lizenzprüfung.
+
+## Technische Microsoft-Dokumente
+
+Die Microsoft-Formatdokumentation ist vorzuziehen. Die Tabelle legt die tatsächlich gelesenen Kopien fest. Daten bezeichnen Dokumentversionen und garantieren nicht, dass eine URL stets identische Bytes liefert. Prüfen Sie heruntergeladene Kopien per SHA-256; gleiche Titel belegen keine identischen Versionen.
+
+| Dokument und Zugang | Festgelegte Version | Umfang und Grenzen |
+| --- | --- | --- |
+| [Offizieller archivierter MS-CAB-Eintrag](https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprotlp/5641c1b2-35ed-4542-9058-a07ccab5b0a1), [PDF](https://officeprotocoldocs-f5hpbjgea6b8gneq.b02.azurefd.net/files/Archive_Exchange/%5BMS-CAB%5D.pdf) | Fußzeile `v20110304`, Veröffentlichung 2011-03-04 | §2 CFHEADER, CFFOLDER, CFFILE, CFDATA; §3.1 Prüfsummenmethode. Microsoft führt das Dokument als archiviert und warnt ausdrücklich davor, sich auf Archivmaterial zu verlassen. Es darf nicht als aktuelle, gepflegte Spezifikation bezeichnet werden. Interne Bitströme der Kompressionsalgorithmen definiert es nicht. |
+| [MS-MCI](https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-mci/27f0a9bf-9567-4e40-ad66-6ae9ab9d2786), [PDF](https://officeprotocoldocs-f5hpbjgea6b8gneq.b02.azurefd.net/files/MS-MCI/%5bMS-MCI%5d.pdf) | 2016-10-17, Revision 7.3 | §2 MSZIP-Strukturen, CK-Marker, vollständige Deflate-Ströme und Blockgrößen. Der Deflate-Bitstrom folgt außerdem [RFC 1951](https://www.rfc-editor.org/rfc/rfc1951.html). |
+| [MS-PATCH](https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-patch/cc78752a-b4af-4eee-88cb-01f4d8a4c2bf), [PDF](https://officeprotocoldocs-f5hpbjgea6b8gneq.b02.azurefd.net/files/MS-PATCH/%5bMS-PATCH%5d.pdf) | 2025-08-19, Revision 14.1 | §2.1 Bitstrom, Fenster und Distanzen; §2.2 Header und E8; §2.3 Blöcke; §2.4 Huffman-Bäume, ausschließlich zum Vergleich gemeinsamer Mechanismen und Unterschiede. Beschreibt LZX Delta und ist keine Ersatzspezifikation für CAB LZX. |
+
+| Festgelegtes PDF | SHA-256 |
+| --- | --- |
+| MS-CAB | `09f796a493547697ed7d4bc36222ac132bf3ca1bd6b1da76fbdc3b38b5307709` |
+| MS-MCI | `cb097c434e1cfccb368f0d7e9084ab4d47a65809a2eea94bbf41f9722c1a0343` |
+| MS-PATCH | `ea17466b97c9a9d4e2c815538387bf442fb2393ed29632c6f58b2c47ef1f29fe` |
+
+Microsoft-Open-Specifications-Dokumente unterliegen eigenen Urheber- und Schutzrechtsbedingungen, einschließlich der für die Implementierung nötigen Dokumentationslizenzen und Patenthinweise. Sie werden dadurch nicht zu Apache-2.0-Material dieses Projekts; die Verfügbarkeit zum Download belegt nicht, dass alle Patent- oder Weiterverbreitungsfragen geklärt sind.
+
+## CAB-SDK-Dokumente von 1997
+
+Die Originaltitel lauten Microsoft Cabinet File Format, Microsoft MSZIP Data Compression Format und Microsoft LZX Data Compression Format. Die gelesenen Kopien enthalten den Microsoft-Copyright-Hinweis von 1997 und werden von Dritten gehostet:
+
+| Gespiegeltes Original | Gelesener Umfang | SHA-256 |
+| --- | --- | --- |
+| [CABFMT.DOC](https://am.net/lib/tools/Microsoft/cab-sdk/DOCS/CABFMT.DOC) | §2 Containeraufbau und volumenübergreifende Semantik, §3 feste Containerbeispiele, §4.1 Prüfsummendefinition | `5a220658b76f8a66e9013e342b4eb236f057b597a8e6f3939c86f05efc51e83a` |
+| [MSZIPFMT.DOC](https://am.net/lib/tools/Microsoft/cab-sdk/DOCS/MSZIPFMT.DOC) | Einführung und Implementierungsdetails, insbesondere unabhängige Deflate-Blöcke und erhaltener Verlauf | `046d283fa3b697e46c35b6a329bb90c86cbc9f4dedbed24c3ae43bd9b8ccf239` |
+| [LZXFMT.DOC](https://am.net/lib/tools/Microsoft/cab-sdk/DOCS/LZXFMT.DOC) | Konzepte, LZX-Komprimatformat, Baumkodierung, Distanz/Länge und E8-Vorverarbeitung | `68ba4df86e08bece3259574133f1c61606d143d85f749b388f5f1e8ea46f8bef` |
+
+Diese `.DOC`-Dateien sind tatsächlich RTF. Titel, Copyright-Hinweise und CAB-Darstellung stützen ihre Verwendung als Kopien von Microsoft-Dokumenten. Der Host ist jedoch nicht Microsoft, und ein byteweiser Vergleich mit einem von Microsoft veröffentlichten CAB-SDK-Archiv wurde nicht durchgeführt. [Microsoft KB 310618 (archiviert)](https://mskb.pkisolutions.com/kb/310618) listet den ursprünglichen SDK-Inhalt und vermerkt, dass der alte Download nicht verfügbar ist. Der Archiveintrag authentifiziert die gespiegelten Dateien nicht. Gelesen wurde die Formatdokumentation, nicht die FCI/FDI-Implementierung oder Beispielcode des SDK.
+
+Öffentliche TCOMP-Parameter wurden außerdem mit Konstantendeklarationen des Windows SDK 10.0.19041.0 in `um/fdi_fci_types.h` und der [TCOMPfromLZXWindow-Dokumentation](https://learn.microsoft.com/en-us/windows/win32/api/fdi_fci_types/nf-fdi_fci_types-tcompfromlzxwindow) abgeglichen. Der SHA-256 des Headers lautet `27a1f6f7728f5db64d11e434d101819d646ca49270930606bb76c7989ebe0254`. Verwendet wurden nur öffentliche Parameterbereiche und Bitdefinitionen; FCI/FDI-Algorithmen wurden auf dieser Grundlage weder aufgerufen noch analysiert.
+
+Teile von Überblick, Tabellen und Text von LZXFMT widersprechen sich. MS-PATCH hilft, gemeinsame Mechanismen zu erkennen, doch seine Referenzdaten, erweiterten langen Übereinstimmungen, Fenster von 128 KiB bis 32 MiB und zusätzlichen Blockheader lassen sich nicht direkt auf CAB übertragen. CAB-LZX-Fenster umfassen 15 bis 21 Bit und erfordern unabhängige Prüfungen anhand des Originaltexts, Referenzverhaltens und unterscheidender Testvektoren.
+
+## Umfang des Quantum-Materials
+
+Das erhaltene Material des ursprünglichen Algorithmusanbieters ist ein [Spiegel des Cinematronics-QUANTUM-Benutzerhandbuchs](https://carrero.es/wp-content/uploads/2025/07/QUANTUM.pdf), Copyright Cinematronics 1993, 1994, 1995, alle Rechte vorbehalten. PDF-SHA-256: `a2d6ed51e47db407ea5849b42004750f2f36c82a380f263b983c5282838a8212`. Abschnitt 6 beschreibt einen unabhängigen `.Q`-Archivcontainer, definiert aber weder den arithmetischen Bitstrom noch Aktualisierungen des Wahrscheinlichkeitsmodells oder den für CAB Quantum nötigen Frameabschluss. Übertragen Sie weder den Gesamtstromzustand noch Dateiprüfungen von `.Q` als Regeln auf CAB.
+
+[Matthew Russottos Quantum-Forschungsseite](http://www.russotto.net/quantumcomp.html) und historische Archive lieferten keinen überprüfbaren Originaltext. Der Inhalt wurde daher nicht als gelesener Nachweis gewertet. Es lässt sich nicht bestimmen, ob das Original den Algorithmus vollständig definiert, oder seine Lizenzbedingungen ableiten.
+
+Zusätzlich wurde nur [David Carreros UnQuantum-README](https://github.com/dcarrero/unquantum/blob/main/README.md) gelesen, Kopie-SHA-256 `187af81f8231cfe4cc31aec0c76476b1e33179fe517a365c820fc49c1b8106e0`; der Decoderquellcode dieses Projekts wurde nicht gelesen. Es handelt sich um einen inoffiziellen Überblick zum `.Q`-Projekt, der Russotto, libmspack und Binärforschung als Referenzen nennt. Er ist nicht Russottos Originaltext und kann eine CAB-Bitstromspezifikation nicht vollständig ersetzen. Die MIT-Kennzeichnung des Projekts belegt nicht, dass alle Referenzen und Algorithmusquellen MIT-lizenziert sind.
+
+Diese Lücken werden durch Verhaltensanalyse einer festgelegten offiziellen Referenzimplementierung behandelt. Inoffizielles Material wird nicht grundsätzlich ausgeschlossen, und die Referenzimplementierung wird nicht als Microsoft-Formatspezifikation bezeichnet.
+
+## Festgelegte Referenzquelle und Analyseumfang
+
+Die Referenz ist [offizielles 7-Zip 26.05](https://github.com/ip7z/7zip/releases/tag/26.05), konkret [7z2605-src.tar.xz](https://github.com/ip7z/7zip/releases/download/26.05/7z2605-src.tar.xz), Archiv-SHA-256 `0b6080b8c3e7a579161d2d495224c0e51c467576cb4c7048b0ab485ef44cc22e`. Das Build-Quellinventar steht in [native-codec-sources.json](../../../scripts/native-codec-sources.json). Es beschreibt vollständige offizielle Quellen; die folgenden Einträge bezeichnen nur für die CAB-Referenzanalyse tatsächlich verwendete Dateien.
+
+Nach `DOC/License.txt` des Archivs unterliegen folgende Decoder- und gemeinsame Dateien standardmäßig LGPL-2.1-or-later; alternative Lizenzhinweise wurden darin nicht gefunden. Das Archiv enthält auch BSD-Bedingungen für andere Dateien. Vereinfachen Sie das gesamte Archiv nicht zu einer einzigen ausnahmslosen Lizenz und bezeichnen Sie diese Decoderdateien nicht fälschlich als BSD.
+
+| Datei im Archiv | Tatsächlicher Analyseumfang | SHA-256 |
+| --- | --- | --- |
+| `CPP/7zip/Compress/QuantumDecoder.cpp` | Arithmetischer Bitstrom, Modelle, Symbole, Frameabschluss, Wörterbuchzustand | `1a22429d792493573f542782a45a7f702b6e636e5aee1d47bdb3d1cf75ef11e2` |
+| `CPP/7zip/Compress/QuantumDecoder.h` | Modellalphabet und Selektorkonstanten | `7571ee0360a7abe8f297f4cd4e34df1863003f252c6fab66c61f8d1bd25a21b4` |
+| `CPP/7zip/Compress/Lzx.h` | LZX-Bitstromkonstanten | `779b32ecaecfc5b8c135e0051394001786d680fca4cfda57a480884342500e99` |
+| `CPP/7zip/Compress/LzxDecoder.h` | Grenzen des frameübergreifend erhaltenen Zustands | `18141528bc8587ade4f7b1e330ee35dc8e31d6c6ab34d86a2dff59d362d0d6c9` |
+| `CPP/7zip/Compress/LzxDecoder.cpp` | Bäume im CAB-Modus, Rohblöcke, Padding, wiederholte Distanzen, E8, Verlauf und Abschluss; optimierter Code und Speicherlayout sind keine Implementierungsvorlagen | `e78bf50f27f21e04966785fafe7f94fddc533a9e6103f79b81c4e7d7613d1aab` |
+| `CPP/7zip/Compress/HuffmanDecoder.h` | Nur Zulassung vollständiger oder leerer Bäume, ungefähr Zeilen 109–164 und 430–497 der festgelegten Kopie | `22f93e29b2408ce7e1c1bca5f5f807c1383a8d1634fe3ae6cfcab15f084109c0` |
+| `CPP/7zip/Archive/Cab/CabHandler.cpp` | Nur Kompressionsmethoden, CFDATA-Frames und Fortsetzung des Verlaufs, ungefähr Zeilen 1020–1252 der festgelegten Kopie | `77b82387eea40eda02929b90d3006877c08765089d6b96c5c12b9cfd3f56b8f7` |
+| `C/7zVersion.h` | Identität der festgelegten Version | `f7dc58b3a3c01569e061eda9cfe633ad8983667eb0fa10ab94a6c364ddd7e699` |
+| `DOC/License.txt` | Standard-Lizenzregeln der Dateien und Ausnahmen | `9ac2b4a97ab5d523965534d8b2d5868e511b39096d51fff458ab72c38b80fccc` |
+| `DOC/copying.txt` | Identitäts-Hash des LGPL-Texts, nicht als Rechtsberatung ausgelegt | `1e7e6bae5a5bde32f1ae5a7c37a082d1ab03cf89354f7f936ac40be9e39a6531` |
+
+Zeilennummern begrenzen nur den Leseumfang dieser festgelegten Kopie; die Dateiidentität wird durch den Hash belegt. Bei Aktualisierung der Referenzversion Unterschiede erneut dokumentieren; gleiche Zeilennummern belegen kein unverändertes Verhalten.
+
+## Trennung von Analyse und unabhängiger Implementierung
+
+Die anfängliche Vorbereitung las nur Formatdokumentation und projekteigene Schnittstellen. Ein benannter Referenzanalyst las anschließend ausdrücklich die oben aufgeführten Quelldateien und überführte fehlende oder widersprüchliche Bedingungen zu Bitstrom, mathematischer Aktualisierung, Zurücksetzung, Abschluss und Fehlern in Verhaltensspezifikationen ohne Codeausdruck. Diese gab er an LZX- und Quantum-Implementierer weiter, die jene Quellen nicht gelesen hatten.
+
+Jede Rust-Implementierung wurde von ihrem Implementierer unabhängig organisiert, ohne die Referenzquelle zu lesen; dies umfasst Zustand, Typen, Kontrollfluss und Tests. Der Analyst implementierte keinen der beiden Algorithmen in Rust und implementierte den CAB-Container gesondert. Das bedeutet nicht, dass niemand an der CAB-Arbeit die Referenzquelle sah, und darf nicht als strikter Clean Room bezeichnet werden. Verhaltensspezifikationen dürfen keinen Referenzcode, zeilenweise Umschreibungen, übernommene Strukturen oder übersetzte Kommentare enthalten; Spezifikationsnamen, Konstanten und mathematische Beziehungen behalten ihre Quellen.
+
+Referenzlektüre, unabhängige Programmierung und Black-Box-Interoperabilität beantworten unterschiedliche Fragen. Dass ein eigener Encoder und Decoder zusammen funktionieren, belegt keine unabhängige Kompatibilität. Erfolg mit einem Referenzwerkzeug beweist nicht, dass jedes permissive Verhalten den Integritätsvertrag des Projekts erfüllt. Referenzquellen, Dokumente, Werkzeuge und Beispiele behalten ihre jeweiligen Lizenzen. Eine Rust-Neuschreibung belegt nicht die Beseitigung rechtlicher Risiken. Lizenz- und Release-Anforderungen stehen im [Lizenzvertrag](licensing.md) und im [Vertrag zum entsprechenden Quellcode](../../engineering/source-delivery.md).
+
+## Zu bewahrende technische Unterschiede
+
+Folgende Verhaltensgrenzen ergeben sich gemeinsam aus Formatdokumentation und begrenzter Referenzanalyse; sie schreiben keine internen Rust-Strukturen oder Optimierungsmethoden vor.
+
+- Ein CAB-Ordner ist eine Einheit komprimierten Verlaufs; Dateien sind Ausgabebereiche darin. Datei- und CFDATA-Grenzen sowie volumenübergreifende Fortsetzungen setzen den Verlauf nicht automatisch zurück; nur ein neuer logischer Ordner tut dies. Volumenübergreifende komprimierte Fragmente mit `cbUncomp=0` werden zu einem logischen Frame verbunden, während jede physische CFDATA-Prüfsumme separat geprüft wird. Diese Prüfsumme ist Byte-/Wort-XOR, schließt reservierte Daten ein und darf weder durch CRC noch durch eine einzige Prüfsumme nach dem Verbinden ersetzt werden. Metadaten, Längen, Volumenbeziehungen und Nutzdatengrenzen werden getrennt geprüft.
+- Jeder MSZIP-Frame enthält CK und einen vollständigen rohen Deflate-Strom. Bäume und Bitströme werden pro Frame zurückgesetzt; pro Ordner bleiben höchstens 32 KiB Verlauf erhalten. Frames sind auf 32.780 komprimierte Bytes und 32.768 Ausgabebytes begrenzt. Verwenden Sie die gemeinsame Deflate-Schnittstelle des Projekts für vorgegebenen Verlauf; erstellen Sie keine zweite Deflate-Implementierung. Nullauffüllung oder erzwungenes Auffüllen abgeschnittener Ströme ersetzt keine strikte Abschlussprüfung.
+- CAB LZX verwendet Little-Endian-16-Bit-Wörter mit dem höchstwertigen Bit zuerst innerhalb jedes Wortes. Die Zahlen der Positionsslots für 15- bis 21-Bit-Fenster sind 30, 32, 34, 36, 38, 42 und 50. Zahlen für große Fenster im alten Überblick sind anhand der vollständigen Distanztabelle zu korrigieren. Baumlängendeltas werden modulo 17 subtrahiert; der ausgerichtete Baum steht vor Haupt- und Längenbaum. Haupt-, Vor- und ausgerichteter Baum müssen vollständig sein; der Längenbaum darf vollständig leer sein, seine Anforderung muss dann aber fehlschlagen.
+- LZX-Rohblöcke haben weiterhin die gemeinsame Blocklänge. Überspringen Sie vor Rohdaten 1 bis 16 Nullbits, bei bereits wortausgerichtetem Strom einschließlich eines ganzen Wortes. Ein Null-Padbyte eines ungeraden Rohblocks kann am Anfang des nächsten Frames verbraucht werden; sein Fehlen wird nur am endgültigen Ordnerende ohne nächsten Block toleriert. Gewöhnliche komprimierte Frames erlauben nur 0 bis 15 Null-Paddingbits, kein zusätzliches vollständiges Wort oder beliebige Folgebytes. LZX-Blöcke können CFDATA-Frames überspannen. Das abschließende `finish` muss einen Block mit noch nicht abgeschlossener deklarierter Ausgabe ablehnen; die alte permissive fehlende Endprüfung der CAB-Integration darf nicht erhalten bleiben.
+- Der LZX-LZ-Verlauf speichert Bytes vor der E8-Umkehr; ein neuer Ordner hat keinen gültigen Nullverlauf als Referenz. E8 untersucht jeden Frame bis auf die letzten zehn Bytes. Interpretieren Sie die Übersetzungsgröße als vollständigen vorzeichenlosen 32-Bit-Wert und summieren Sie die Position über den Ordner. Die ältere Beschreibung der letzten sechs Bytes und Vergleiche nur für positive vorzeichenbehaftete Größen sind nicht direkt anwendbar.
+- Quantum setzt seinen 16-Bit-Arithmetikcode-Zustand mit geschlossenem Intervall für jeden Frame zurück. Neun Wahrscheinlichkeitsmodelle und tatsächlicher Wörterbuchverlauf bleiben über den Ordner erhalten. Sieben Selektorwerte bedeuten nicht nur sieben Modelle. Symbolhäufigkeiten steigen jeweils um 8; vor der nächsten Verwendung wird nur neu skaliert, wenn die Gesamtfrequenz strikt größer als 3800 ist. Halbierung kumulativer Frequenzen pro Modell, Umordnung beim vierten und dann jedem fünfzigsten Mal sowie Reihenfolge gleicher Frequenzen gehören zum Bitstromverhalten und dürfen nicht beliebig durch sprachübliche Sortierung ersetzt werden. Wörterbuchfenster umfassen 10–21 Bit und Stufen 1–7; die Stufe ändert die Decodiersemantik nicht.
+- Quantum hat kein separates Endsymbol; der Container gibt die exakte Ausgabelänge vor, und dieselben komprimierten Bytes können unterschiedliche zulässige deklarierte Längen erfüllen. Nach Erreichen der erwarteten Ausgabe mindestens zwei Nullbits und das Minimum bis zur nächsten Bytegrenze verbrauchen, insgesamt 2 bis 9 Bits, und anschließend die komprimierte Eingabe exakt ausschöpfen. Angehängte Nullbytes, Nichtnull-Endbits, Abschneidung und frameübergreifende Übereinstimmungen dürfen nicht erfolgreich sein. Ein neuer Ordner darf keinen noch nicht erzeugten Fensterinhalt referenzieren.
+
+Der Host bleibt für das Fixieren der Volume-Menge und Quellidentitäten, Namensanalyse, Eintragsidentitäten, Pfadvorprüfung, Aufgabenbudgets, Abbruch, Vorbereitung und Commit verantwortlich. Die Formatschicht liest nur vom Host autorisierte Ströme und öffnet keine Dateien selbstständig anhand CAB-interner Namen. Originalnamen und UTF-8-Deklarationen getrennt bewahren. Gewöhnliche Datensätze mit doppelten Namen werden nicht zusammengeführt; kombiniert werden nur ausdrücklich durch die Spezifikation definierte fortgesetzte Dateien. Algorithmusfehler dürfen Host-Abbruch, Quoten- oder E/A-Fehler nicht verdecken. Gemeinsame Verträge regeln Schnittstellen und Ressourcengrenzen; aus Referenzpuffergrößen oder HRESULT-Kategorien dürfen keine neuen Produktberechtigungen abgeleitet werden.
