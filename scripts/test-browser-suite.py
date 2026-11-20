@@ -156,6 +156,23 @@ class BrowserSuiteTest(unittest.TestCase):
         self.assertEqual(len(manifest['shards']), 4)
         self.assertEqual(self.output.read_text().count('() entering'), 6)
 
+    def test_expensive_localization_and_format_tests_are_spread_across_workers(self):
+        slow = [
+            'settingsChromeAndScrollbar', 'filteredStreamsUseSharedBrowserAndTasks',
+            'settingsAllPagesLayout', 'localizedMainWindowAndMenuLayout',
+            'settingsAssociationFollowsSystemResult', 'packagedAssociationSettings',
+            'settingsSelectorsHaveConsistentGeometry',
+        ]
+        names = slow + [f'otherTest{index}' for index in range(120)]
+        with mock.patch.object(runner, 'worker_count', return_value=3):
+            groups = runner.partition(names)
+        self.assertCountEqual([name for group in groups for name in group], names)
+        heavy = slow[:2]
+        self.assertTrue(all(not all(name in group for name in heavy) for group in groups))
+        chrome_group = next(group for group in groups if slow[0] in group)
+        self.assertNotIn('settingsAllPagesLayout', chrome_group)
+        self.assertNotIn('localizedMainWindowAndMenuLayout', chrome_group)
+
     def test_a_missing_function_and_a_failed_worker_fail_the_suite(self):
         self.env['PROBE_OMIT'] = 'testGamma'
         self.assertEqual(self.run_probe(), 1)

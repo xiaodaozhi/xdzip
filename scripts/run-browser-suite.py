@@ -20,6 +20,19 @@ import uuid
 
 # Relative scheduling hints only. Unknown/new functions are always included.
 WEIGHTS = {
+    # The ten-language layout matrices and expanded format fixtures are much
+    # slower than an average function on hosted offscreen runners. Keep their
+    # relative weights comparable to the older timing hints below.
+    'settingsChromeAndScrollbar': 370,
+    'filteredStreamsUseSharedBrowserAndTasks': 180,
+    'settingsAllPagesLayout': 86,
+    'localizedMainWindowAndMenuLayout': 84,
+    'settingsAssociationFollowsSystemResult': 81,
+    'packagedAssociationSettings': 79,
+    'settingsSelectorsHaveConsistentGeometry': 74,
+    'aesCryptUsesOpeningPasswordAndSharedTasks': 38,
+    'tabCloseTracksWelcomeAndSessionState': 36,
+    'singleStreamCreationUsesStableCapability': 27,
     'treeMoveRejectsEverySelectedFolderAndDescendant': 59,
     'closingWindowClearsTabsBeforeTrayRestore': 68,
     'readonlyFormatsUseSharedBrowserAndTasks': 61,
