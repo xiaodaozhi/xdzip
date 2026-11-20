@@ -1,6 +1,6 @@
 # ディレクトリツリー B：デザイン、素材、統合
 
-[English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | [繁體中文](../../zh-TW/ux/directory-tree.md) | 日本語 | [한국어](../../ko-KR/ux/directory-tree.md)
+[English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | [繁體中文](../../zh-TW/ux/directory-tree.md) | 日本語 | [한국어](../../ko-KR/ux/directory-tree.md) | [Français](../../fr-FR/ux/directory-tree.md)
 
 状態：**ディレクトリの基本操作は HTML の例と Qt の読み取り専用ブラウザーに統合済みです。境界状態の素材は統合待ちです**。操作は[読み取り専用ブラウザー契約](../engineering/readonly-browser.md)に従います。通常のディレクトリ閲覧は直下の項目を対象とし、検索は現在の範囲を再帰的に対象とします。出力の認可は読み取り専用操作とは別です。
 

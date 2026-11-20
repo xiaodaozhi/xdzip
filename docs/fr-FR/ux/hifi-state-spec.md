@@ -74,7 +74,7 @@ Les ressources résident sous `design/assets/`. `reference/` conserve les décou
 
 ## Ajout de l’arborescence
 
-La navigation B01 ajoute la [spécification B de l’arborescence](../../ux/directory-tree.md), avec trois plans de travail formels et 26 découpes partagées. Les flèches des nœuds dépendent des sous-dossiers ; développement, dossier courant et focus clavier sont indépendants. Chargement, archives vides, fichiers à la racine, limites de navigation, échecs et chemins courants masqués sont spécifiés séparément ; le contrat de domaine existant en lecture seule ne change pas. HTML et Qt intègrent la navigation principale, les lignes de connexion et les indicateurs de branche courante masquée ; les squelettes et icônes dédiées aux limites restent des ressources de conception. Voir la spécification de l’arborescence pour le périmètre d’intégration.
+La navigation B01 ajoute la [spécification B de l’arborescence](directory-tree.md), avec trois plans de travail formels et 26 découpes partagées. Les flèches des nœuds dépendent des sous-dossiers ; développement, dossier courant et focus clavier sont indépendants. Chargement, archives vides, fichiers à la racine, limites de navigation, échecs et chemins courants masqués sont spécifiés séparément ; le contrat de domaine existant en lecture seule ne change pas. HTML et Qt intègrent la navigation principale, les lignes de connexion et les indicateurs de branche courante masquée ; les squelettes et icônes dédiées aux limites restent des ressources de conception. Voir la spécification de l’arborescence pour le périmètre d’intégration.
 
 <a name="xdzip-changes-and-revalidation"></a>
 

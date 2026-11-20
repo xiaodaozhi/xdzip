@@ -94,7 +94,7 @@ Consultez d’abord l’[architecture du système](../design/system-architecture
 - [Vérification de la fidélité visuelle HTML](../visual/html-fidelity.md)
 - [Interaction et libellés complémentaires](../ux/interaction-spec.md)
 - [Fonctionnement, composants et interactions de la fenêtre principale](../../ux/main-window-components.md)
-- [Conception et intégration de l’arborescence](../../ux/directory-tree.md)
+- [Conception et intégration de l’arborescence](../ux/directory-tree.md)
 - [Page d’accueil de la fenêtre principale](../ux/welcome.md)
 - [Chargement sur la page d’accueil et fin de création](../ux/welcome-opening.md)
 - [Saisie du mot de passe pour l’extraction](../ux/password-extraction.md)
