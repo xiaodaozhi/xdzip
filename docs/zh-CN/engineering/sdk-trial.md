@@ -62,8 +62,8 @@ Source token、sink 和每块信用均为随机 128 位值，不能复用到其�
 
 | 平台 | 试验策略与失败行为 |
 | --- | --- |
-| macOS | 固定 `/usr/bin/sandbox-exec` deny-default，精确私有可执行副本、系统库／dyld cache、根目录加载器读取及 `/var` 元数据。禁止用户文件、写入、网络和 fork；清空环境，继承仅 stdio。原生 rlimit 加 20ms RSS 监督，超过 512MiB 或计数读取失败即终止。RSS 为定期监督，采样间短暂峰值可超过阈值；该接口不承诺可用于未来正式分发。 |
-| Linux x86_64／aarch64 | Landlock ABI ≥3，处理全部 v3 文件权利，无写规则，仅程序与系统加载库读取；`no_new_privs` 加架构核对后的 seccomp syscall 允许表，含 Rust 标准管道所需的 readv／writev，拒绝 socket、fork/clone、ptrace、io_uring 等。CPU／AS 512MiB 等 rlimit。规则、ABI、seccomp 或所需系统调用不可用，exec 前失败。原生 CI 才能建立该平台的实际结论。 |
+| macOS | 固定 `/usr/bin/sandbox-exec` deny-default，仅允许精确的私有可执行副本、系统库／dyld cache、根目录加载器读取及 `/var` 元数据。禁止用户文件、写入、网络和 fork；清空环境，继承仅 stdio。原生 rlimit 加 20ms RSS 监督，超过 512MiB 或计数读取失败即终止。RSS 为定期监督，采样间短暂峰值可超过阈值；该接口不承诺可用于未来正式分发。 |
+| Linux x86_64／aarch64 | Landlock ABI ≥3，处理全部 v3 文件权利，无写规则，仅程序与系统加载库读取；`no_new_privs` 加架构核对后的 seccomp syscall 允许表，含 Rust 标准管道所需的 readv／writev，拒绝 socket、fork/clone、ptrace、io_uring 等。CPU 上限 3 秒、地址空间上限 512 MiB，并应用其他 rlimit。规则、ABI、seccomp 或所需系统调用不可用，exec 前失败。原生 CI 才能建立该平台的实际结论。 |
 | Windows 及其他平台 | 固定拒绝执行。未实现并验证 AppContainer、Job 和句柄白名单，不用普通子进程代替沙箱。 |
 
 Linux API 依据[内核 Landlock 文档](https://docs.kernel.org/userspace-api/landlock.html)与 UAPI，Windows 后续依据 [AppContainer 隔离](https://learn.microsoft.com/en-us/windows/win32/secauthz/appcontainer-isolation)。宿主 native unsafe 限于沙箱模块，注明布局、调用前提和失败行为；pre-exec 不做分配或日志。参考 peer 仅在显式审计模式增加受控 fork／_exit／waitpid 探针，子进程不运行 Rust 清理或格式逻辑。平台回归以自有可读／可写标记、自有 localhost 监听器和 self-exec 先作正向对照，再验证内核拒绝读取、写入、联网、直接 fork 和 self-exec，核对标记、文件和连接真实状态。没有测试的平台不记通过，也不启用桌面第三方执行。
