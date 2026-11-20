@@ -1,6 +1,6 @@
 # DMG local de desarrollo para macOS
 
-[English](../../engineering/macos-deployment.md) | [简体中文](../../zh-CN/engineering/macos-deployment.md) | [繁體中文](../../zh-TW/engineering/macos-deployment.md) | [日本語](../../ja-JP/engineering/macos-deployment.md) | [한국어](../../ko-KR/engineering/macos-deployment.md) | [Français](../../fr-FR/engineering/macos-deployment.md) | [Deutsch](../../de-DE/engineering/macos-deployment.md) | Español | [Português (Brasil)](../../pt-BR/engineering/macos-deployment.md)
+[English](../../engineering/macos-deployment.md) | [简体中文](../../zh-CN/engineering/macos-deployment.md) | [繁體中文](../../zh-TW/engineering/macos-deployment.md) | [日本語](../../ja-JP/engineering/macos-deployment.md) | [한국어](../../ko-KR/engineering/macos-deployment.md) | [Français](../../fr-FR/engineering/macos-deployment.md) | [Deutsch](../../de-DE/engineering/macos-deployment.md) | Español | [Português (Brasil)](../../pt-BR/engineering/macos-deployment.md) | [Русский](../../ru-RU/engineering/macos-deployment.md)
 
 El flujo Release dedicado permite el despliegue nativo, la firma ad hoc necesaria, el empaquetado de app.zip y DMG y su subida. El trabajo de macOS del flujo Qt bajo demanda conserva la verificación del SDK. Una misma aplicación .app desplegada, firmada y verificada sirve para ambos paquetes de publicación; la aplicación extraída del ZIP también se comprueba tras cambiarla de ubicación. Consulte el [protocolo de publicación](release-protocol.md).
 

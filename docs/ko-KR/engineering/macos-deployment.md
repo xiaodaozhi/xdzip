@@ -1,6 +1,6 @@
 # 로컬 macOS 개발용 DMG
 
-[English](../../engineering/macos-deployment.md) | [简体中文](../../zh-CN/engineering/macos-deployment.md) | [繁體中文](../../zh-TW/engineering/macos-deployment.md) | [日本語](../../ja-JP/engineering/macos-deployment.md) | 한국어 | [Français](../../fr-FR/engineering/macos-deployment.md) | [Deutsch](../../de-DE/engineering/macos-deployment.md) | [Español](../../es-ES/engineering/macos-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/macos-deployment.md)
+[English](../../engineering/macos-deployment.md) | [简体中文](../../zh-CN/engineering/macos-deployment.md) | [繁體中文](../../zh-TW/engineering/macos-deployment.md) | [日本語](../../ja-JP/engineering/macos-deployment.md) | 한국어 | [Français](../../fr-FR/engineering/macos-deployment.md) | [Deutsch](../../de-DE/engineering/macos-deployment.md) | [Español](../../es-ES/engineering/macos-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/macos-deployment.md) | [Русский](../../ru-RU/engineering/macos-deployment.md)
 
 전용 Release 워크플로는 네이티브 배포, 필요한 ad-hoc 서명, app.zip 및 DMG 패키징과 업로드를 허용합니다. 요청 시 실행하는 Qt 워크플로의 macOS 작업은 SDK 검증을 유지합니다. 두 릴리스 패키지에 배포·서명·검증된 동일한 .app을 사용하며, ZIP을 푼 앱도 위치를 옮긴 뒤 시작을 검증합니다. [릴리스 프로토콜](release-protocol.md)을 참조하세요.
 

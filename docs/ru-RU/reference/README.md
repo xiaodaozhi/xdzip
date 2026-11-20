@@ -117,7 +117,7 @@
 - [Жизненный цикл данных и диагностика](../engineering/privacy.md)
 - [Версия продукта и идентичность сборки](../engineering/versioning.md)
 - [Протокол GitHub Release v1](../engineering/release-protocol.md)
-- [Локальный DMG для разработки под macOS](../../engineering/macos-deployment.md)
+- [Локальный DMG для разработки под macOS](../engineering/macos-deployment.md)
 - [Автономный каталог среды Linux и его проверка](../engineering/linux-deployment.md)
 - [Проверка зависимостей развёртывания и SBOM](../engineering/deployment-audit.md)
 - [Указание авторства и лицензии фактически используемых компонентов](../engineering/runtime-attribution.md)
