@@ -1,6 +1,6 @@
 # ARC containers and compressed stream profiles
 
-English | [简体中文](../zh-CN/engineering/arc-streams.md) | [繁體中文（台灣）](../zh-TW/engineering/arc-streams.md)
+English | [简体中文](../zh-CN/engineering/arc-streams.md) | [繁體中文（台灣）](../zh-TW/engineering/arc-streams.md) | [日本語](../ja-JP/engineering/arc-streams.md) | [한국어](../ko-KR/engineering/arc-streams.md) | [Français](../fr-FR/engineering/arc-streams.md) | [Deutsch](../de-DE/engineering/arc-streams.md) | [Español](../es-ES/engineering/arc-streams.md) | [Português (Brasil)](../pt-BR/engineering/arc-streams.md) | [Русский](../ru-RU/engineering/arc-streams.md)
 
 `ArcReader` implements bounded raw decoding for ARC methods 3–9. Methods 1 and 2 are container Store profiles. `xdzip-codec-arc` and `ArcCodec` connect complete framing and required CRC-16 to runtime, CLI and desktop browsing, checking and extraction. The [format registry](../../specs/engineering/archive-formats.json) declares this read-only scope; creation, modification, passwords and volumes are unavailable.
 

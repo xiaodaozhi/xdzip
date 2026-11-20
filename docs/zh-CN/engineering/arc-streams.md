@@ -1,6 +1,6 @@
 # ARC 容器与压缩流配置
 
-[English](../../engineering/arc-streams.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/arc-streams.md)
+[English](../../engineering/arc-streams.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/arc-streams.md) | [日本語](../../ja-JP/engineering/arc-streams.md) | [한국어](../../ko-KR/engineering/arc-streams.md) | [Français](../../fr-FR/engineering/arc-streams.md) | [Deutsch](../../de-DE/engineering/arc-streams.md) | [Español](../../es-ES/engineering/arc-streams.md) | [Português (Brasil)](../../pt-BR/engineering/arc-streams.md) | [Русский](../../ru-RU/engineering/arc-streams.md)
 
 `ArcReader` 提供 ARC 方法 3–9 的有界原始解码，方法 1、2 由容器按 Store 处理。`xdzip-codec-arc` 和 `ArcCodec` 将完整结构及必需 CRC-16 接入 runtime、CLI 和桌面的浏览、检查与提取。[格式登记](../../../specs/engineering/archive-formats.json)声明该只读范围，不支持创建、修改、密码或分卷。
 
