@@ -1,6 +1,6 @@
 # Main-window welcome page
 
-English | [简体中文](../zh-CN/ux/welcome.md) | [繁體中文（台灣）](../zh-TW/ux/welcome.md)
+English | [简体中文](../zh-CN/ux/welcome.md) | [繁體中文（台灣）](../zh-TW/ux/welcome.md) | [日本語](../ja-JP/ux/welcome.md) | [한국어](../ko-KR/ux/welcome.md) | [Français](../fr-FR/ux/welcome.md) | [Deutsch](../de-DE/ux/welcome.md) | [Español](../es-ES/ux/welcome.md) | [Português (Brasil)](../pt-BR/ux/welcome.md) | [Русский](../ru-RU/ux/welcome.md)
 
 The high-fidelity design is confirmed and integrated into the [official HTML review entry](../../design/html/index.html?view=welcome&zoom=1). Qt implements real opening and creation; desktop manual acceptance is recorded separately. See the [welcome page state design](../../design/hifi/sources/welcome.html) and [welcome-reference.json](../../specs/visual/welcome-reference.json). Colors and main-window density retain existing tokens and layout-scale without changing global standards. Four PNGs are exports of code-drawn design originals, not product runtime screenshots.
 

@@ -1,6 +1,6 @@
 # 主窗口欢迎页
 
-[English](../../ux/welcome.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/ux/welcome.md)
+[English](../../ux/welcome.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/ux/welcome.md) | [日本語](../../ja-JP/ux/welcome.md) | [한국어](../../ko-KR/ux/welcome.md) | [Français](../../fr-FR/ux/welcome.md) | [Deutsch](../../de-DE/ux/welcome.md) | [Español](../../es-ES/ux/welcome.md) | [Português (Brasil)](../../pt-BR/ux/welcome.md) | [Русский](../../ru-RU/ux/welcome.md)
 
 高保真设计已确认，现已接入[正式 HTML 审阅入口](../../../design/html/index.html?view=welcome&zoom=1)。Qt 已接入真实打开与新建，桌面人工验收另行登记。设计入口见[欢迎页状态稿](../../../design/hifi/sources/welcome.html)，参数见 [welcome-reference.json](../../../specs/visual/welcome-reference.json)。颜色、主窗口密度沿用现有 tokens 和 layout-scale，不调整全局规范。四张 PNG 为代码绘制的设计原稿导出，不是产品运行截图。
 
