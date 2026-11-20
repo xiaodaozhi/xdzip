@@ -2,7 +2,7 @@
 
 # 分卷讀取與臨時開啟
 
-[English](../../engineering/archive-opening.md) | [简体中文](../../zh-CN/engineering/archive-opening.md) | 繁體中文（台灣）
+[English](../../engineering/archive-opening.md) | [简体中文](../../zh-CN/engineering/archive-opening.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/archive-opening.md) | [한국어](../../ko-KR/engineering/archive-opening.md) | [Français](../../fr-FR/engineering/archive-opening.md) | [Deutsch](../../de-DE/engineering/archive-opening.md) | [Español](../../es-ES/engineering/archive-opening.md) | [Português (Brasil)](../../pt-BR/engineering/archive-opening.md) | [Русский](../../ru-RU/engineering/archive-opening.md)
 
 桌面檔案選擇、系統選單請求和 CLI 共用 Rust 的來源開啟規則。宿主解析允許的分卷組，記錄來源身份並探測已授權的位元組。選定的格式實現提供[瀏覽後設資料](readonly-browser.md)，部分格式經[隔離的格式工作程序](native-codecs.md)讀取。主動開啟條目時，應用會生成經過校驗的臨時副本，再交給系統關聯程式。驗證整包應單獨執行[完整性檢查](archive-checking.md)。
 
@@ -35,7 +35,7 @@ PKZIP 歸一化僅處理已准入的中央記錄，不支援中央目錄數字�
 
 7z 編號卷使用 name.7z.001、.002 等連續位元組流。RAR 使用 name.partN.rar 或 name.rar、name.r00 等舊式卷名，將各卷交給隔離的 Rust RAR 讀取器時，保留每個 RAR 實體分卷的邊界。兩者均可從任意現存捲開始定位同目錄卷組；上限 1024 卷，目錄發現上限十萬項，缺卷、名稱編號衝突、連結和重解析點均明確拒絕。
 
-Rust 儲存每卷控制代碼身份、長度和時間，並透過 ReadSource::volume_lengths() 向原生介面卡宣告授權邊界。原生程序只能請求宿主讀取已授權範圍；換卷不接納任意歸檔提供的主機路徑。所有卷參與來源複核和輸出覆蓋保護，單卷或後續捲髮生變化均停止任務。
+Rust 儲存每卷控制代碼身份、長度和時間，並透過 ReadSource::volume_lengths() 向原生介面卡宣告授權邊界。原生程序只能請求宿主讀取已授權範圍；換卷不接納任意歸檔提供的主機路徑。所有卷參與來源複核和輸出覆蓋保護，第一卷或任何後續卷發生變化均停止任務。
 
 7z 和 RAR 檔名加密可能在開啟階段要求密碼。普通 Open 返回 password_required 時不釋出索引，Qt 複用密碼視窗，以 OpenWithPassword 重新提交原選中檔案與受限秘密；錯誤驗證值返回 wrong_password。成功後密碼只由會話及其已准入任務持有，關閉會話釋放會話副本，不寫設定和恢復記錄。
 
@@ -68,8 +68,8 @@ CAB 的卷名來自包頭，允許任意合法檔名，不能套用編號卷的�
 驗收覆蓋成功自動隱藏、失敗保留、取消、密碼重試、重複檔名、Unicode 和
 特殊字元、關閉頁面後任務路由、臨時目錄安全和退出清理策略。
 
-只讀 [Brotli/TAR.BR](brotli-streams.md) 在釋出條目前完整驗證無魔數候選，Brotli/LZMA 共用候選讀取預算，保留強源簽名及合法 TAR/ZIP 識別優先順序，解碼後損壞的 TAR 不能降級為普通流。
+只讀 [Brotli/TAR.BR](brotli-streams.md) 在釋出條目前完整驗證無標頭候選，Brotli/LZMA 共用候選讀取預算，保留強源簽名及合法 TAR/ZIP 識別優先順序，解碼後損壞的 TAR 不能降級為普通流。
 
-[LHA/LZH](lha-containers.md) 候選須在釋出前完整驗證有界頭部與名稱，包括單零位元組空歸檔。LHA、Brotli 和 LZMA 弱候選共享實際讀取賬本。有效強容器識別仍優先，完整 LHA 准入可消歧無效原始 TAR 標記；尚不準入密碼、分卷和修復配置。
+[LHA/LZH](lha-containers.md) 候選須在釋出前完整驗證有界頭部與名稱，包括單零位元組空歸檔。LHA、Brotli 和 LZMA 弱候選共享實際讀取帳本。有效強容器識別仍優先，完整 LHA 准入可消歧無效原始 TAR 標記；尚不準入密碼、分卷和修復配置。
 
-[PMA](pma-streams.md) 共用弱探測賬本，完整驗證後設資料、準確零終止和可選有界 CP/M 填充。0 級頭部 PM0/PM1/PM2 內容受支援，未知方法可見但不支援。帶填充的空 CP/M 容器識別為 PMA，無法區分的單個零終止仍沿用先前 LZH 選擇。建立、密碼、分卷、修改和修復配置未准入。
+[PMA](pma-streams.md) 共用弱探測帳本，完整驗證後設資料、準確零終止和可選有界 CP/M 填充。0 級頭部 PM0/PM1/PM2 內容受支援，未知方法可見但不支援。帶填充的空 CP/M 容器識別為 PMA，無法區分的單個零終止仍沿用先前 LZH 選擇。建立、密碼、分卷、修改和修復配置未准入。
