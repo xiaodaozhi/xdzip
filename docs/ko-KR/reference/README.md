@@ -93,7 +93,7 @@
 - [파일 연결 아이콘](../visual/file-association-icons.md)
 - [HTML 시각 일치 검토](../visual/html-fidelity.md)
 - [추가 상호 작용 및 문구 사양](../ux/interaction-spec.md)
-- [기본 창의 기능, 구성 요소 및 상호 작용](../../ux/main-window-components.md)
+- [기본 창의 기능, 구성 요소 및 상호 작용](../ux/main-window-components.md)
 - [디렉터리 트리 디자인 및 통합](../ux/directory-tree.md)
 - [기본 창의 시작 페이지](../ux/welcome.md)
 - [시작 페이지의 로딩 오버레이와 생성 완료](../ux/welcome-opening.md)
