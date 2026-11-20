@@ -1,6 +1,7 @@
 // apps/desktop/ApplicationSessions.cpp
 
 #include "ApplicationSessions.h"
+#include "BuildInfo.h"
 #include "DesktopIntegration.h"
 #include "ShellBatchController.h"
 #include "UiPreferences.h"
@@ -58,6 +59,8 @@ ApplicationSessions::~ApplicationSessions() {
             delete window.data();
 }
 void ApplicationSessions::adopt(QQuickWindow *window) {
+    if (BuildInfo::linuxX11() && !window->isVisible())
+        BuildInfo().centerOnScreen(window);
     window->setProperty("sessionManager", QVariant::fromValue(static_cast<QObject *>(this)));
     window->setProperty("managedWindow", true);
     m_windows.append(window);
