@@ -375,6 +375,10 @@ class ShellTest : public QObject {
     }
 #endif
     void shellSettingsAccessibleActionsUpdateTheRealModel() {
+        const bool accessibilityWasActive = QAccessible::isActive();
+        QAccessible::setActive(true);
+        const auto restoreAccessibility =
+            qScopeGuard([&] { QAccessible::setActive(accessibilityWasActive); });
         QQmlApplicationEngine engine;
         auto *settings = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
         QVERIFY(settings);
@@ -390,6 +394,8 @@ class ShellTest : public QObject {
         std::unique_ptr<QObject> object(component.create());
         QVERIFY2(object, qPrintable(component.errorString()));
         QVERIFY(QMetaObject::invokeMethod(object.get(), "configureTab", Q_ARG(QVariant, 1)));
+        auto *window = qobject_cast<QQuickWindow *>(object.get());
+        QVERIFY(window && QTest::qWaitForWindowExposed(window));
         auto *control = object->findChild<QQuickItem *>("settingsShellIntegration");
         QTRY_VERIFY(control = object->findChild<QQuickItem *>("settingsShellIntegration"));
         QVERIFY(control->isEnabled());
@@ -397,19 +403,25 @@ class ShellTest : public QObject {
         QVERIFY(accessible);
         QVERIFY(accessible->actionInterface());
         QVERIFY(!accessible->text(QAccessible::Name).isEmpty());
+        QSignalSpy clicks(control, SIGNAL(clicked()));
+        QSignalSpy toggles(control, SIGNAL(toggled()));
+        QVERIFY(clicks.isValid() && toggles.isValid());
         const auto before = settings->shellEnabled();
         accessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
-        QCOMPARE(settings->shellEnabled(), !before);
+        QTRY_COMPARE(settings->shellEnabled(), !before);
         QCOMPARE(nativeEnabled, !before);
         QCOMPARE(control->property("checked").toBool(), !before);
         accessible->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
-        QCOMPARE(settings->shellEnabled(), before);
+        QTRY_COMPARE(settings->shellEnabled(), before);
         QCOMPARE(nativeEnabled, before);
+        QCOMPARE(clicks.count(), 2);
+        QCOMPARE(toggles.count(), 2);
         integration.m_applyOverride = [](bool) { return false; };
         accessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
-        QCOMPARE(settings->shellEnabled(), before);
-        QCOMPARE(control->property("checked").toBool(), before);
-        QVERIFY(!integration.error().isEmpty());
+        QTRY_COMPARE(clicks.count(), 3);
+        QTRY_COMPARE(settings->shellEnabled(), before);
+        QTRY_COMPARE(control->property("checked").toBool(), before);
+        QTRY_VERIFY(!integration.error().isEmpty());
     }
     void shellLayoutMatrix_data() {
         QTest::addColumn<QString>("language");
