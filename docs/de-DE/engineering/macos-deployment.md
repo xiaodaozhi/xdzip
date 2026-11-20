@@ -1,6 +1,6 @@
 # Lokales macOS-Entwicklungs-DMG
 
-[English](../../engineering/macos-deployment.md) | [简体中文](../../zh-CN/engineering/macos-deployment.md) | [繁體中文](../../zh-TW/engineering/macos-deployment.md) | [Français](../../fr-FR/engineering/macos-deployment.md) | Deutsch | [Español](../../es-ES/engineering/macos-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/macos-deployment.md)
+[English](../../engineering/macos-deployment.md) | [简体中文](../../zh-CN/engineering/macos-deployment.md) | [繁體中文](../../zh-TW/engineering/macos-deployment.md) | [日本語](../../ja-JP/engineering/macos-deployment.md) | [Français](../../fr-FR/engineering/macos-deployment.md) | Deutsch | [Español](../../es-ES/engineering/macos-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/macos-deployment.md)
 
 Der dedizierte Release-Workflow erlaubt die native Bereitstellung, die erforderliche Ad-hoc-Signierung, die Paketierung von app.zip und DMG sowie deren Upload. Der macOS-Job des Qt-Workflows auf Abruf behält die SDK-Prüfung bei. Für beide Release-Pakete wird dieselbe bereitgestellte, signierte und geprüfte .app verwendet; die aus dem ZIP entpackte App wird zusätzlich nach einem Ortswechsel auf Startfähigkeit geprüft. Siehe das [Release-Protokoll](release-protocol.md).
 

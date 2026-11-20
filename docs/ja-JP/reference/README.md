@@ -117,7 +117,7 @@
 - [データのライフサイクルと診断](../engineering/privacy.md)
 - [製品バージョンとビルドの識別](../engineering/versioning.md)
 - [GitHub Release プロトコル v1](../engineering/release-protocol.md)
-- [macOS のローカル開発用 DMG](../../engineering/macos-deployment.md)
+- [macOS のローカル開発用 DMG](../engineering/macos-deployment.md)
 - [Linux の独立ランタイムディレクトリーと検証](../engineering/linux-deployment.md)
 - [配布依存関係の検証と SBOM](../engineering/deployment-audit.md)
 - [実際のコンポーネントの帰属表示とライセンス資料](../engineering/runtime-attribution.md)

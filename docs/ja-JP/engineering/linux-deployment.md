@@ -4,7 +4,7 @@
 
 [English](../../engineering/linux-deployment.md) | [简体中文](../../zh-CN/engineering/linux-deployment.md) | [繁體中文](../../zh-TW/engineering/linux-deployment.md) | 日本語 | [한국어](../../ko-KR/engineering/linux-deployment.md) | [Français](../../fr-FR/engineering/linux-deployment.md) | [Deutsch](../../de-DE/engineering/linux-deployment.md) | [Español](../../es-ES/engineering/linux-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/linux-deployment.md) | [Русский](../../ru-RU/engineering/linux-deployment.md)
 
-現在の開発用デプロイの基準は Ubuntu 24.04、x86_64、X11 です。目的は開発用 Qt SDK なしで現在の製品を実行することであり、他のディストリビューション、古い glibc、Wayland、完全なインストーラー対応を約束するものではありません。macOS CI はネイティブのビルド、テスト、起動検証を維持します。ローカル開発用 DMG は[Mac デプロイガイド](../../engineering/macos-deployment.md)に従い、このフローの影響を受けません。
+現在の開発用デプロイの基準は Ubuntu 24.04、x86_64、X11 です。目的は開発用 Qt SDK なしで現在の製品を実行することであり、他のディストリビューション、古い glibc、Wayland、完全なインストーラー対応を約束するものではありません。macOS CI はネイティブのビルド、テスト、起動検証を維持します。ローカル開発用 DMG は[Mac デプロイガイド](macos-deployment.md)に従い、このフローの影響を受けません。
 
 <a name="xdzip-layout-and-generation"></a>
 
