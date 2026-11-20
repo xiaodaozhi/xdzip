@@ -28,7 +28,7 @@ La apertura publica una instantánea completa de los metadatos. Cada búsqueda, 
 
 Abrir un directorio navega a su interior. Haz doble clic sobre una entrada de archivo normal compatible o usa la opción de abrir para iniciar la apertura temporal. La vista de propiedades incluye una acción de vista previa independiente. Los avisos de conflicto o contraseña mantienen la identidad de la operación en curso. El acceso a las tareas muestra el progreso y los resultados aun cuando se ha cerrado la página de exploración. [Exploración](../user-guide/browse.md), [Apertura temporal](../engineering/archive-opening.md), [Vista previa del contenido](../engineering/content-preview.md), [Ventanas de tareas](../ux/task-windows.md)
 
-Soltar un archivo puede abrir un archivo comprimido o añadir entradas para su creación, según el destino. Los movimientos internos admitidos y el arrastre al exterior usan tareas de preparación y transferencias específicas de la plataforma. La plataforma determina las capacidades de transferencia, incluidos el contenido asíncrono y las escrituras en el destino. [Transferencias de archivos comprimidos](../../engineering/archive-transfers.md)
+Soltar un archivo puede abrir un archivo comprimido o añadir entradas para su creación, según el destino. Los movimientos internos admitidos y el arrastre al exterior usan tareas de preparación y transferencias específicas de la plataforma. La plataforma determina las capacidades de transferencia, incluidos el contenido asíncrono y las escrituras en el destino. [Transferencias de archivos comprimidos](../engineering/archive-transfers.md)
 
 <a name="xdzip-shared-controls-and-native-boundaries"></a>
 

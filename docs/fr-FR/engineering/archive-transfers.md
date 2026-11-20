@@ -1,6 +1,6 @@
 # Ouverture depuis la liste, glisser-déposer bidirectionnel et modification d’archive
 
-[English](../../engineering/archive-transfers.md) | [简体中文](../../zh-CN/engineering/archive-transfers.md) | [繁體中文](../../zh-TW/engineering/archive-transfers.md) | [日本語](../../ja-JP/engineering/archive-transfers.md) | [한국어](../../ko-KR/engineering/archive-transfers.md) | Français
+[English](../../engineering/archive-transfers.md) | [简体中文](../../zh-CN/engineering/archive-transfers.md) | [繁體中文](../../zh-TW/engineering/archive-transfers.md) | [日本語](../../ja-JP/engineering/archive-transfers.md) | [한국어](../../ko-KR/engineering/archive-transfers.md) | Français | [Español](../../es-ES/engineering/archive-transfers.md)
 
 « Ouvrir » dans le menu contextuel agit sur l’entrée cliquée avec le bouton droit sans modifier la sélection multiple et réutilise le point d’entrée du double-clic et d’Entrée. Les répertoires sont ouverts ; les fichiers ordinaires suivent les règles de cache privé, de mot de passe et d’application associée pour l’[ouverture temporaire](archive-opening.md). Un changement de session ou de requête ferme le menu ; l’exécution vérifie toujours l’identité stable de l’entrée.
 

@@ -41,7 +41,7 @@ Empieza por la [arquitectura del sistema](../design/system-architecture.md) para
 - [Comprobación previa de metadatos para la extracción](../engineering/extraction-preflight.md)
 - [Extracción segura de ZIP](../engineering/zip-safe-extraction.md)
 - [Comprobación de integridad](../engineering/archive-checking.md)
-- [Apertura de entradas, arrastre y modificación](../../engineering/archive-transfers.md)
+- [Apertura de entradas, arrastre y modificación](../engineering/archive-transfers.md)
 - [Contraseñas y apertura de directorios cifrados](../engineering/password-extraction.md)
 - [Contrato de creación ZIP](../engineering/zip-creation.md)
 - [Creación ISO9660 y Joliet](../engineering/iso-creation.md)
