@@ -1,6 +1,6 @@
 # ファイルリストからの開く操作、双方向ドラッグ＆ドロップ、アーカイブの変更
 
-[English](../../engineering/archive-transfers.md) | [简体中文](../../zh-CN/engineering/archive-transfers.md) | [繁體中文](../../zh-TW/engineering/archive-transfers.md) | 日本語
+[English](../../engineering/archive-transfers.md) | [简体中文](../../zh-CN/engineering/archive-transfers.md) | [繁體中文](../../zh-TW/engineering/archive-transfers.md) | 日本語 | [한국어](../../ko-KR/engineering/archive-transfers.md)
 
 コンテキストメニューの「開く」は複数選択を変更せず、右クリックした項目に対して実行され、ダブルクリックと Enter の入口を再利用します。ディレクトリには移動し、通常ファイルには[一時的に開く](archive-opening.md)ためのプライベートキャッシュ、パスワード、関連アプリケーションの規則を適用します。セッションや問い合わせが変わるとメニューを閉じ、実行時にも安定した項目の識別情報を検証します。
 

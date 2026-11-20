@@ -56,7 +56,7 @@ flowchart TB
 | 이미지 미리 보기 작업 프로세스 | Rust가 적격 아카이브 항목을 읽고 검증한 후 데스크톱이 제한된 인코딩 이미지 바이트를 `xdzip-image-preview`에 보냅니다. 작업 프로세스는 제한된 RGBA 썸네일을 반환합니다. 요청에는 아카이브 경로, 암호 또는 대상 핸들이 없습니다. 미리 보기 제공자는 일치하는 현재 요청에만 결과를 게시합니다. 텍스트 미리 보기는 Rust 런타임에서 처리합니다. |
 | 플랫폼 전달 | 데스크톱 어댑터는 파일 관리자 활성화, 비공개 추출 복사본의 외부 앱 열기와 업데이트 설치를 조정합니다. 업데이트 도우미 또는 macOS Sparkle은 자체 설치 전달을 수행합니다. Store 관리 업데이트는 플랫폼 채널을 따릅니다. 형식 작업 프로세스는 이 요청을 처리하지 않습니다. |
 
-[아카이브 작업 프로토콜](../engineering/native-codecs.md), [이미지 미리 보기 계약](../engineering/content-preview.md), [플랫폼 통합](../../engineering/installers-associations.md), [아카이브 전송](../../engineering/archive-transfers.md), [업데이트 전달](../../engineering/software-update.md).
+[아카이브 작업 프로토콜](../engineering/native-codecs.md), [이미지 미리 보기 계약](../engineering/content-preview.md), [플랫폼 통합](../../engineering/installers-associations.md), [아카이브 전송](../engineering/archive-transfers.md), [업데이트 전달](../../engineering/software-update.md).
 
 ## 아카이브 열기와 탐색
 
@@ -103,7 +103,7 @@ flowchart TB
 생성과 아카이브 수정은 아카이브를 하나의 단위로 준비하고 검증합니다. 런타임은 작업을 조정하고 형식 인코더는 호스트 소유 출력 인터페이스로 씁니다. 결과를 게시할 수 있는 것은 호스트뿐입니다.
 
 1. **생성.** 런타임은 출력 형식과 설정을 검증하고 승인된 대상을 얻은 뒤 허용된 입력 트리를 순회하며 고정합니다. 인코더는 메타데이터를 받고 입력 인덱스로 스트림을 열 수 있습니다. 비공개 준비 영역에 씁니다. ZIP과 TAR 작성기는 프로세스 내부에서 실행하고 7z는 아카이브 작업 프로세스를 사용합니다. ISO 탐색은 작업 프로세스를 사용하지만 ISO 생성은 프로세스 내부 Rust 광학 작성기를 사용합니다. [생성 작업](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/creation.rs), [ISO 작성기](../engineering/iso-creation.md).
-2. **수정.** 적격 아카이브에서 런타임은 소스와 추가 항목을 고정하고 유지, 추가, 교체 또는 이동할 항목의 계획을 만듭니다. 재작성은 준비 영역에 새 아카이브를 생성합니다. 런타임은 결과를 다시 열어 예상 항목과 내용을 검증한 뒤 호스트의 아카이브 업데이트 권한으로 원본을 교체합니다. 지원하지 않는 항목, 암호화되거나 분할된 소스와 다른 비호환 사례는 형식과 작업 규칙에 따라 거부합니다. 교체 성공 후 소스를 계속 보고 있는 데스크톱 세션은 스냅샷을 새로 고칩니다. [아카이브 업데이트 작업](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/updating.rs), [아카이브 수정과 전송](../../engineering/archive-transfers.md).
+2. **수정.** 적격 아카이브에서 런타임은 소스와 추가 항목을 고정하고 유지, 추가, 교체 또는 이동할 항목의 계획을 만듭니다. 재작성은 준비 영역에 새 아카이브를 생성합니다. 런타임은 결과를 다시 열어 예상 항목과 내용을 검증한 뒤 호스트의 아카이브 업데이트 권한으로 원본을 교체합니다. 지원하지 않는 항목, 암호화되거나 분할된 소스와 다른 비호환 사례는 형식과 작업 규칙에 따라 거부합니다. 교체 성공 후 소스를 계속 보고 있는 데스크톱 세션은 스냅샷을 새로 고칩니다. [아카이브 업데이트 작업](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/updating.rs), [아카이브 수정과 전송](../engineering/archive-transfers.md).
 3. **검증과 게시.** 호스트는 준비된 생성 출력을 다시 열고 형식과 생성 프로필에 따라 구조, 예상 항목과 내용을 검사합니다. 출력 충돌을 해결하고 확정 전에 관련 권한을 다시 확인합니다. 단일 파일 아카이브에는 확정 지점 하나가 있습니다. 분할 생성은 새 집합을 게시하기 전에 모든 부분을 준비하고 기존 집합의 덮어쓰기를 거부하며 중간에 게시가 실패하면 롤백을 시도합니다. 각 부분에는 자체 게시 단계가 있습니다. 작업 보고서는 정리나 롤백 문제를 기록할 수 있습니다. [ZIP 생성](../engineering/zip-creation.md), [파일 확정 계약](file-security.md).
 
 **결과 읽기.** `TaskAccepted`는 큐에 들어간 작업을 식별합니다. `Finished`는 일반 요청을 종료합니다. 별도의 종료 작업 스냅샷은 검증, 게시, 건너뛰기 또는 미완료된 내용을 보고합니다. 디코딩한 바이트와 게시한 바이트는 다를 수 있습니다. 취소는 협력적으로 수행되며 전체 아카이브 확정 성공 후의 요청은 게시를 되돌리지 않습니다.

@@ -2,7 +2,7 @@
 
 [English](../../engineering/zip-creation.md) | [简体中文](../../zh-CN/engineering/zip-creation.md) | [繁體中文](../../zh-TW/engineering/zip-creation.md) | [日本語](../../ja-JP/engineering/zip-creation.md) | 한국어 | [Français](../../fr-FR/engineering/zip-creation.md) | [Deutsch](../../de-DE/engineering/zip-creation.md) | [Español](../../es-ES/engineering/zip-creation.md) | [Português (Brasil)](../../pt-BR/engineering/zip-creation.md) | [Русский](../../ru-RU/engineering/zip-creation.md)
 
-명시적으로 선택한 파일과 디렉터리로 새 ZIP 아카이브를 만듭니다. 기본값은 레벨 2의 일반 압축이며 Deflate 6을 사용합니다. Store와 Deflate 1/6/9, WinZip AES-256 콘텐츠 암호화와 번호가 붙은 분할 볼륨을 지원합니다. 생성과 추출은 [TAR/GZIP](tar-gzip.md), AES-256 읽기는 [암호 추출](password-extraction.md), 분할 읽기는 [분할 볼륨 계약](archive-opening.md)을 참조하세요. 일반 단일 파일 아카이브에 명시적으로 추가할 때는 [끌어 놓기와 수정 계약](../../engineering/archive-transfers.md)을 사용하며 새 아카이브의 소스 보호 예외를 재사용하지 않습니다. 호스트는 입력 승인, 준비, 검증, 충돌 결정과 최종 저장을 소유합니다. 형식 계층은 항목, 읽을 수 있는 입력과 쓸 수 있는 출력만 받습니다.
+명시적으로 선택한 파일과 디렉터리로 새 ZIP 아카이브를 만듭니다. 기본값은 레벨 2의 일반 압축이며 Deflate 6을 사용합니다. Store와 Deflate 1/6/9, WinZip AES-256 콘텐츠 암호화와 번호가 붙은 분할 볼륨을 지원합니다. 생성과 추출은 [TAR/GZIP](tar-gzip.md), AES-256 읽기는 [암호 추출](password-extraction.md), 분할 읽기는 [분할 볼륨 계약](archive-opening.md)을 참조하세요. 일반 단일 파일 아카이브에 명시적으로 추가할 때는 [끌어 놓기와 수정 계약](archive-transfers.md)을 사용하며 새 아카이브의 소스 보호 예외를 재사용하지 않습니다. 호스트는 입력 승인, 준비, 검증, 충돌 결정과 최종 저장을 소유합니다. 형식 계층은 항목, 읽을 수 있는 입력과 쓸 수 있는 출력만 받습니다.
 
 ## 입력 트리와 제한
 
