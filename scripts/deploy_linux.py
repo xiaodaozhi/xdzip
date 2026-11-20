@@ -189,7 +189,7 @@ def strip_runtime(root, files):
     return {'tool_version':version,'files':records}
 
 
-def deploy(app,sdk,output,notices,*,strip_symbols=True):
+def deploy(app,sdk,output,notices,*,strip_symbols=True,experimental_wayland=False):
     if sys.platform!='linux' or platform.machine()!='x86_64':raise ValueError('Deployment requires native Linux x86_64')
     app,sdk,output=app.resolve(),sdk.resolve(),output.resolve()
     if not within(output,ROOT/'build') and not within(output,ROOT/'dist'):
@@ -242,12 +242,18 @@ def deploy(app,sdk,output,notices,*,strip_symbols=True):
             if not within(item,sdk):raise ValueError('QML SDK symlink escapes its root')
         shutil.copytree(source,output/'qml'/name,ignore=shutil.ignore_patterns('*.a','*.debug','*.prl'))
     removed_qml=prune_qml(output/'qml')
-    # The initial tested desktop contract is X11. Do not ship untested EGLFS,
-    # direct-framebuffer or Wayland platform plugins as if they were validated.
-    for name in ['libqxcb.so','libqoffscreen.so']:
-        source=sdk/'plugins/platforms'/name
-        if not source.is_file():raise ValueError('Required platform plugin missing: '+name)
-        copy(source,output/'plugins/platforms'/name)
+    # Wayland is opt-in for experimental desktop testing; the validated
+    # standalone baseline remains X11.
+    plugins=['platforms/libqxcb.so','platforms/libqoffscreen.so']
+    if experimental_wayland:
+        plugins += ['platforms/libqwayland-generic.so',
+                    'wayland-shell-integration/libxdg-shell.so',
+                    'wayland-decoration-client/libadwaita.so']
+    for name in plugins:
+        source=sdk/'plugins'/name
+        if not source.is_file() or not within(source,sdk):
+            raise ValueError('Required platform plugin missing: '+name)
+        copy(source,output/'plugins'/name)
     for group in ['imageformats','iconengines','platforminputcontexts','xcbglintegrations']:
         source=sdk/'plugins'/group
         if source.is_dir():shutil.copytree(source,output/'plugins'/group)
@@ -302,6 +308,7 @@ exec "$xdzip_dir/bin/xdzip" "$@"
     shutil.copy2(ROOT/'design/assets/brand/xdzip.png',output/'share/xdzip.png')
     shutil.copy2(ROOT/'apps/desktop/packaging/linux/README.md',output/'README.md')
     report={'schema_version':1,'baseline':'Ubuntu 24.04 x86_64, X11','qt':'6.8.2',
+            'experimental_qt_wayland':experimental_wayland,
             'quick_style':'Basic','removed_qml':removed_qml,
             'symbol_stripping':stripped,
             'entry':'xdzip','executable':'bin/xdzip','qml_roots':roots,'optional_native_modules_omitted':omitted,
@@ -330,8 +337,9 @@ def main():
     parser.add_argument('--app',type=Path,required=True);parser.add_argument('--qt-prefix',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True);parser.add_argument('--notices',type=Path,required=True)
     parser.add_argument('--keep-symbols',action='store_true',help='Keep native symbol tables in a diagnostic deployment copy')
+    parser.add_argument('--experimental-wayland',action='store_true',help='Include Qt Wayland plugins for an experimental desktop candidate')
     args=parser.parse_args()
-    try:report=deploy(args.app,args.qt_prefix,args.output,args.notices,strip_symbols=not args.keep_symbols)
+    try:report=deploy(args.app,args.qt_prefix,args.output,args.notices,strip_symbols=not args.keep_symbols,experimental_wayland=args.experimental_wayland)
     except (ValueError,OSError,subprocess.SubprocessError) as error:raise SystemExit(str(error))
     print(f'Linux runtime directory: {report["patched_elf_files"]} relocated ELF files, {len(report["system_packages"])} OS packages')
 
