@@ -12,7 +12,7 @@ Le niveau de vérification indique ce qu’atteste un [contrôle d’intégrité
 
 | Opération | Prise en charge intégrée |
 | --- | --- |
-| Créer une archive | ZIP, 7z, TAR, TAR.GZ (`.tar.gz`, `.tgz`), GZIP autonome, XZ/TAR.XZ, LZ4/TAR.LZ4, Zstandard/TAR.ZST, LHA (`.lha`, `.lzh`), ISO9660/Joliet et le générateur ZIP SFX pour Windows x64. Un flux autonome accepte un fichier ordinaire. Voir la [création](../../engineering/zip-creation.md) et les [flux à fichier unique](single-file-streams.md). |
+| Créer une archive | ZIP, 7z, TAR, TAR.GZ (`.tar.gz`, `.tgz`), GZIP autonome, XZ/TAR.XZ, LZ4/TAR.LZ4, Zstandard/TAR.ZST, LHA (`.lha`, `.lzh`), ISO9660/Joliet et le générateur ZIP SFX pour Windows x64. Un flux autonome accepte un fichier ordinaire. Voir la [création](zip-creation.md) et les [flux à fichier unique](single-file-streams.md). |
 | Réécrire une archive existante | Archives admissibles ZIP/ZIPX, 7z, LHA/LZH de niveau 2, TAR, TAR.GZ, TAR.XZ, TAR.ZST, TAR.LZ4, TAR.BZ2, TAR.LZMA, TAR.LZ, TAR.Z et TAR.BR. Les archives chiffrées, fractionnées ou dont les enregistrements ou le stockage ne sont pas pris en charge sont exclues. Voir [contrat de modification](../../engineering/archive-transfers.md). |
 | Parcourir, extraire, ouvrir une entrée, exporter ou vérifier | Chaque opération dispose de ses propres contrôles de capacité et d’enregistrement. Pour certains installateurs, seules les métadonnées sont consultables. Voir la [navigation en lecture seule](../../engineering/readonly-browser.md) et la [vérification](archive-checking.md). |
 

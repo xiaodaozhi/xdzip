@@ -32,7 +32,7 @@ Ce guide décrit le comportement, le focus et les actions de fermeture des fenê
 - Les quatre niveaux ZIP correspondent à Store/Deflate 1/6/9, avec 2 normal par défaut. TAR et TAR.GZ peuvent être créés ; changer de format synchronise les extensions et efface le mot de passe et le découpage en volumes. TAR désactive le niveau ; les niveaux TAR.GZ 0/1/2/3 correspondent à GZIP 0/1/6/9. Le changement de format synchronise l’extension sans écraser silencieusement une cible.
 - Sans entrée, avec un nom vide, une destination invalide ou une autorisation manquante, Créer est désactivé et la raison apparaît près du champ. Le texte d’erreur est accessible à la lecture d’écran, au lieu de modifier seulement la couleur de bordure.
 - Le cœur traite les entrées en double et le développement des dossiers ; l’interface affiche seulement des résumés de sélection. Les icônes d’image de la création indiquent un type, sans prévisualiser l’image.
-- ZIP et 7z présentent leurs réglages de mot de passe et de volumes pris en charge. 7z peut aussi chiffrer les noms de fichiers. Le registre des formats indique les capacités d’écriture réelles. [Création ZIP](../../engineering/zip-creation.md), [registre des formats](../engineering/format-registry.md)
+- ZIP et 7z présentent leurs réglages de mot de passe et de volumes pris en charge. 7z peut aussi chiffrer les noms de fichiers. Le registre des formats indique les capacités d’écriture réelles. [Création ZIP](../engineering/zip-creation.md), [registre des formats](../engineering/format-registry.md)
 
 <a name="xdzip-task-data-and-exceptions"></a>
 
