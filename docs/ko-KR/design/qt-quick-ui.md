@@ -18,7 +18,7 @@
 | `TaskListModel` 및 작업 창 | 한도가 있는 작업 스냅샷, 진행, 결과와 현재 필요한 결정을 표시합니다. 합성 데스크톱 식별 정보를 사용하여 작업 명령을 담당 컨트롤러에 전달합니다. |
 | 설정 및 플랫폼 어댑터 | 모양, 언어, 글자 크기와 앱 동작을 관리합니다. 네이티브 어댑터는 운영 체제에 따라 알림 영역, 활성화, 파일 대화상자, 파일 연결 및 전송 인계를 담당합니다. |
 
-[데스크톱 진입점](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/browser_main.cpp), [세션 페이지](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/ui/SessionPage.qml), [컨트롤러와 모델](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.h), [앱 세션](../../engineering/application-sessions.md), [설정과 언어](../ux/settings-localization.md)
+[데스크톱 진입점](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/browser_main.cpp), [세션 페이지](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/ui/SessionPage.qml), [컨트롤러와 모델](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.h), [앱 세션](../engineering/application-sessions.md), [설정과 언어](../ux/settings-localization.md)
 
 <a name="xdzip-browsing-and-operation-flow"></a>
 

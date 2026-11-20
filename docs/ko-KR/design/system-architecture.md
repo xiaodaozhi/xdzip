@@ -21,7 +21,7 @@ flowchart TB
   CPP --> IMAGE[Private image preview process]
 ```
 
-두 런타임 상자는 같은 구현의 별도 인스턴스를 나타냅니다. 데스크톱과 CLI는 각각 자체 아카이브 상태와 작업을 소유합니다. 데스크톱 로컬 IPC는 데스크톱 활성화와 통합 요청을 기본 GUI 인스턴스에 전달합니다. 아카이브 명령은 프로세스 내부 런타임을 통과합니다. [애플리케이션 세션](../../engineering/application-sessions.md), [CLI 계약](../engineering/command-line.md).
+두 런타임 상자는 같은 구현의 별도 인스턴스를 나타냅니다. 데스크톱과 CLI는 각각 자체 아카이브 상태와 작업을 소유합니다. 데스크톱 로컬 IPC는 데스크톱 활성화와 통합 요청을 기본 GUI 인스턴스에 전달합니다. 아카이브 명령은 프로세스 내부 런타임을 통과합니다. [애플리케이션 세션](../engineering/application-sessions.md), [CLI 계약](../engineering/command-line.md).
 
 ## 모듈 책임과 호출 방향
 

@@ -4,7 +4,7 @@
 
 [English](../../ux/task-windows.md) | [简体中文](../../zh-CN/ux/task-windows.md) | [繁體中文](../../zh-TW/ux/task-windows.md) | [日本語](../../ja-JP/ux/task-windows.md) | 한국어 | [Français](../../fr-FR/ux/task-windows.md) | [Deutsch](../../de-DE/ux/task-windows.md) | [Español](../../es-ES/ux/task-windows.md) | [Português (Brasil)](../../pt-BR/ux/task-windows.md) | [Русский](../../ru-RU/ux/task-windows.md)
 
-애플리케이션의 작업 진입점은 모든 세션을 모으고 세션 UUID와 백엔드 작업 ID로 진행률, 암호, 충돌, 결과를 전달합니다. 페이지를 닫아도 해당 컨트롤러는 유지되며 명시적으로 종료하면 모든 비동기 join이 끝날 때까지 기다립니다. [애플리케이션 세션 계약](../../engineering/application-sessions.md)을 참조하세요.
+애플리케이션의 작업 진입점은 모든 세션을 모으고 세션 UUID와 백엔드 작업 ID로 진행률, 암호, 충돌, 결과를 전달합니다. 페이지를 닫아도 해당 컨트롤러는 유지되며 명시적으로 종료하면 모든 비동기 join이 끝날 때까지 기다립니다. [애플리케이션 세션 계약](../engineering/application-sessions.md)을 참조하세요.
 
 작업 메뉴 행에는 작업 아이콘, 압축 파일 이름, 순번 태그, 상태 태그가 표시됩니다. 아이콘은 생성, 추출, 검사, 추가, 이동, 내보내기용 공유 에셋을 사용하며 작업 유형 텍스트 접두사는 표시하지 않습니다. 두 태그는 같은 구성 요소를 사용합니다. 순번은 백엔드 번호를 유지하며 세션 간 내부 식별 정보는 바뀌지 않습니다. 긴 파일 이름은 생략하지만 접근 가능한 이름에는 작업, 번호, 파일 이름, 상태를 포함합니다.
 

@@ -23,7 +23,7 @@
 - [저장소 구조와 의존성](../engineering/repository-layout.md)
 - [인터페이스 계약과 검사](../engineering/contracts.md)
 - [제품 실행 환경과 Qt 수명 주기](../engineering/product-runtime.md)
-- [앱 세션과 종료](../../engineering/application-sessions.md)
+- [앱 세션과 종료](../engineering/application-sessions.md)
 - [cxx 브리지 선택 이유](../engineering/cxx-admission.md)
 - [형식 작업 프로세스용 호스트 달력 및 인코딩 서비스](../engineering/host-platform-services.md)
 

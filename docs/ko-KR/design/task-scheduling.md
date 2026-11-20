@@ -17,7 +17,7 @@ XDZip은 런타임 연결마다 Rust 명령 스레드 하나와 작업 스레드
 | 런타임 작업 큐 | 추출, 임시 열기, 생성, 검사, 편집과 내보내기를 필요에 따라 연결 내 큐 순서대로 한 번에 한 작업씩 실행합니다. 서비스마다 최대 32개 작업을 추적하며 보유 작업의 총 예산은 64 MiB입니다. 이 예산은 보유 입력과 예약된 비밀 정보 공간을 포함합니다. 실제 디코딩, 인덱싱, 작업 프로세스와 출력 자원에는 별도 제한이 있습니다. 포화 상태는 `task_busy`로 보고합니다. |
 | 독립 CLI | 자체 명령 프로세스에서 같은 Rust 스케줄링 규칙을 사용합니다. 독립 CLI 프로세스마다 별도 큐가 있고 데스크톱도 마찬가지입니다. 안전한 출력 권한과 충돌 검사는 각 프로세스에 적용됩니다. |
 
-`TaskAccepted`는 승인된 작업을 식별합니다. 일반 요청의 `Finished`는 그 요청을 닫습니다. 작업은 상관관계에 원래 요청 ID를, 제어에 작업 ID를 사용해 `TaskUpdate` 스냅샷을 계속 생성할 수 있습니다. 앱 작업 항목은 탭을 닫아도 소유 컨트롤러를 보유해 프롬프트와 결과를 올바른 연결에 귀속합니다. [작업 큐 소스](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/service/tasks.rs), [데스크톱 승인과 작업 라우팅](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.cpp), [데스크톱 세션](../../engineering/application-sessions.md)
+`TaskAccepted`는 승인된 작업을 식별합니다. 일반 요청의 `Finished`는 그 요청을 닫습니다. 작업은 상관관계에 원래 요청 ID를, 제어에 작업 ID를 사용해 `TaskUpdate` 스냅샷을 계속 생성할 수 있습니다. 앱 작업 항목은 탭을 닫아도 소유 컨트롤러를 보유해 프롬프트와 결과를 올바른 연결에 귀속합니다. [작업 큐 소스](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/service/tasks.rs), [데스크톱 승인과 작업 라우팅](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.cpp), [데스크톱 세션](../engineering/application-sessions.md)
 
 <a name="xdzip-states-and-reported-progress"></a>
 
