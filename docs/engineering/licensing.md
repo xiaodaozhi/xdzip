@@ -1,6 +1,6 @@
 # License decision and third-party materials
 
-English | [简体中文](../zh-CN/engineering/licensing.md) | [繁體中文（台灣）](../zh-TW/engineering/licensing.md)
+English | [简体中文](../zh-CN/engineering/licensing.md) | [繁體中文（台灣）](../zh-TW/engineering/licensing.md) | [日本語](../ja-JP/engineering/licensing.md) | [한국어](../ko-KR/engineering/licensing.md) | [Français](../fr-FR/engineering/licensing.md) | [Deutsch](../de-DE/engineering/licensing.md) | [Español](../es-ES/engineering/licensing.md) | [Português (Brasil)](../pt-BR/engineering/licensing.md) | [Русский](../ru-RU/engineering/licensing.md)
 
 Status: Adopted. On 2026-10-11 the project established **Apache-2.0** for original project code, documentation, and other original content except where otherwise declared. The MIT OR Apache-2.0 choice in earlier experimental documents does not apply to this repository.
 

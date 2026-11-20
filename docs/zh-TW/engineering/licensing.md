@@ -3,7 +3,7 @@
 
 # 授權決策與第三方資料
 
-[English](../../engineering/licensing.md) | [简体中文](../../zh-CN/engineering/licensing.md) | 繁體中文（台灣）
+[English](../../engineering/licensing.md) | [简体中文](../../zh-CN/engineering/licensing.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/licensing.md) | [한국어](../../ko-KR/engineering/licensing.md) | [Français](../../fr-FR/engineering/licensing.md) | [Deutsch](../../de-DE/engineering/licensing.md) | [Español](../../es-ES/engineering/licensing.md) | [Português (Brasil)](../../pt-BR/engineering/licensing.md) | [Русский](../../ru-RU/engineering/licensing.md)
 
 狀態：已採用。專案於 2026-10-11 確立以 **Apache-2.0** 授權專案原創程式碼、文件及其他原創內容，另有聲明的資料除外。先前實驗文件中的 MIT OR Apache-2.0 選擇不適用於本儲存庫。
 
