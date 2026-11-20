@@ -1,36 +1,37 @@
 <a name="xdzip-部署依赖核验与-sbom"></a>
+<a name="部署依賴核驗與-sbom"></a>
 
-# 部署依賴核驗與 SBOM
+# 部署相依套件驗證與 SBOM
 
 [English](../../engineering/deployment-audit.md) | [简体中文](../../zh-CN/engineering/deployment-audit.md) | 繁體中文（台灣）
 
-部署核驗預設生成開發審閱材料，完整性明確標記 `incomplete`，不自動提升為可發行結論；正式 Release 會為同一候選另外收集並隨包提供經過釋出流程核對的材料。格式使用 [CycloneDX 1.6 官方 schema](https://github.com/CycloneDX/specification/blob/55343ba19dee1785acf1ce9191540d5fd7b590db/schema/bom-1.6.schema.json)。schema 的上游提交與三個檔案 SHA-256 固定在 [配置](../../../scripts/sbom-schemas.json)，驗證時只下載並解析這些資源，快取到 build/，不會從 SBOM 中的任意 URL 下載 schema。
+部署驗證預設產生開發審查資料，明確標示為 `incomplete`，不會自動證明已可發行。正式 Release 會另外為同一候選版本收集資料，經發行流程審查後隨套件提供。格式使用 [CycloneDX 1.6 官方結構描述](https://github.com/CycloneDX/specification/blob/55343ba19dee1785acf1ce9191540d5fd7b590db/schema/bom-1.6.schema.json)。上游提交與三個結構描述檔的 SHA-256 固定在[設定](../../../scripts/sbom-schemas.json)中；驗證只下載並解析這些資源，快取於 build/，不會從 SBOM 內任意網址下載結構描述。
 
-| 工件 | 資料來源與用途 | 不能證明的事項 |
+| 成品 | 資料來源與用途 | 無法證明的事項 |
 | --- | --- | --- |
-| source-build.cdx.json | Cargo 宿主解析的工作區依賴圖，含開發／構建工具；宣告的 Qt 模組；字型和品牌原始檔雜湊 | 某個 Rust 包一定靜態連結進產品、所有 Qt 外掛／內嵌第三方均已識別 |
-| deployment-audit.json | 指定實際工件根的檔案 SHA-256、原生二進位制匯入、SDK／系統／未解析依賴以及實際 CLI 構建身份 | 所有按名稱動態載入的 QML／外掛、乾淨安裝、系統 ABI、簽名或許可證合規 |
-| artifact-files.cdx.json | 實際工件及觀察到的外部 SDK 檔案，按原生匯入建立已知邊；繫結原始碼清單和實際可執行檔案版本／提交／dirty | 完整部署元件身份、靜態連結歸屬、Qt 內嵌庫許可、正式產品 SBOM 已完成 |
-| 可選桌面記錄 | 按實際改動和可用環境記錄執行過的桌面檢查及限制 | 未執行的操作、其他平臺或發行批准 |
+| source-build.cdx.json | Cargo 針對主機解析的工作區相依圖，包含開發與建置工具；宣告的 Qt 模組；字型與品牌原始檔雜湊 | Rust 套件必定靜態連結至產品，或所有 Qt 外掛程式及內嵌第三方元件均已識別 |
+| deployment-audit.json | 指定實際成品根目錄下的檔案 SHA-256、原生二進位檔匯入、SDK／系統／未解析相依套件，以及實際 CLI 建置識別 | 所有依名稱動態載入的 QML／外掛程式、乾淨安裝、系統 ABI、簽章或授權合規 |
+| artifact-files.cdx.json | 實際成品與觀察到的外部 SDK 檔案，原生匯入的已知關聯，綁定原始碼清單及實際執行檔的版本／提交／dirty 狀態 | 已完整識別部署元件、靜態連結歸屬、Qt 內嵌函式庫授權，或已完成正式產品 SBOM |
+| 選用的桌面紀錄 | 依變更與可用環境記錄已執行的桌面檢查及限制 | 未執行的動作、其他平台或發行核准 |
 
-原始碼不把 Cargo 的路徑型 opaque ID 寫入記錄，工作區包不偽造 crates.io purl。工件路徑相對於指定根或 Qt SDK 記錄，其他外部依賴以內容雜湊和檔名標識，不輸出私人 SDK 絕對路徑。字型使用 OFL-1.1，原創品牌源沿用素材庫的 Apache-2.0；宣告 Qt 模組不據此推斷所有實際部署元件的許可證。
+原始碼紀錄不包含 Cargo 路徑型的不透明 ID，也不為工作區套件虛構 crates.io purl。成品路徑以指定根目錄或 Qt SDK 為相對基準；其他外部相依套件依內容雜湊與檔名識別，不輸出私人 SDK 絕對路徑。字型使用 OFL-1.1，原創品牌素材沿用素材庫的 Apache-2.0。宣告 Qt 模組不能據此推斷所有實際部署元件的授權。
 
 <a name="xdzip-自动核验"></a>
 
 ## 自動核驗
 
-`deployment_audit.py` 只檢查明確指定的自有可信構建，不接收使用者壓縮檔。macOS 使用 otool 解析匯入和 RPATH；Windows 使用 MSVC dumpbin 解析普通及延遲 DLL 匯入；Linux 使用 ldd，禁止用於來源不明的可執行檔案。檔案符號連結若逃逸指定工件根，核驗失敗；報告必須寫到根外，避免把輸出包含進自身清單。
+`deployment_audit.py` 只檢查明確指定、可信的專案建置，不檢查使用者壓縮檔。macOS 使用 otool 分析匯入與 RPATH；Windows 使用 MSVC dumpbin 分析一般及延遲 DLL 匯入；Linux 使用 ldd，不得用於來源不明的執行檔。檔案符號連結若超出指定成品根目錄，驗證即失敗。報告必須寫在根目錄之外，避免清單包含自己的輸出。
 
-- `--mode sdk` 允許解析到外部 Qt SDK，並明確顯示不獨立；未解析匯入仍失敗。遞迴範圍為工件及宣告的 Qt SDK，其他外部庫僅記錄雜湊與未遞迴計數，不視為閉包已核驗。
-- `--mode deployed` 不允許非系統外部依賴或未解析匯入。Windows 的 MSVCP、VCRUNTIME 等 VC++ 匯入必須來自包內，不允許開發機 System32 掩蓋缺失；Windows 系統自帶的 UCRT 和 API 合約仍由系統提供。同時繼續執行清除 Qt 開發搜尋路徑後的原生啟動冒煙。
-- 未解析匯入、原始碼與實際二進位制版本／提交／dirty 不符、官方 schema 雜湊或格式不符、重複／懸空元件引用均阻斷相關檢查。
-- 原生匯入閉合不能替代按名稱載入外掛的覆蓋和乾淨機器檢查。Windows 已部署目錄的匯入透過也不等於安裝器驗收。
+- `--mode sdk` 允許解析至外部 Qt SDK，並明確標示此建置不是獨立版本；未解析的匯入仍會失敗。遞迴範圍涵蓋成品及宣告的 Qt SDK；其他外部函式庫只記錄雜湊與未遍歷數量，不視為已驗證完整依賴閉包。
+- `--mode deployed` 不允許非系統外部相依套件或未解析匯入。Windows 的 MSVCP、VCRUNTIME 等 VC++ 匯入必須來自套件，不能讓開發電腦的 System32 掩蓋缺失；系統 UCRT 與 API 契約仍由系統提供。仍須清除 Qt 開發搜尋路徑後執行原生啟動冒煙測試。
+- 未解析匯入、原始碼與實際二進位檔的版本／提交／dirty 狀態不符、官方結構描述的雜湊或格式不符、重複或懸空的元件參照，均會阻斷相關檢查。
+- 原生匯入閉包不能取代依名稱載入的外掛程式覆蓋及乾淨電腦檢查。Windows 已部署目錄的匯入檢查通過也不代表安裝程式驗收通過。
 
-按需三平臺 Qt 工作流儲存根目錄下的兩個 cdx.json 和 deployment-audit.json，不自動生成待填寫的人工表。macOS 只讀取本地編譯 .app 與 SDK，普通檢查不執行 macdeployqt、簽名、壓縮或上傳應用包。Linux 透過[獨立執行目錄](linux-deployment.md)提供 Qt／QML／外掛，使用 deployed 核驗及無 SDK 容器驗證；下載 tar.gz 保留執行位。目前只宣告 Ubuntu 24.04、x86_64、X11 基線，不稱為通用 Linux 安裝器。
+按需執行的三平台 Qt 工作流程保留根目錄中的兩個 cdx.json 和 deployment-audit.json，不會自動產生空白人工表單。macOS 只讀取本機建置的 .app 與 SDK；一般檢查不執行 macdeployqt，也不簽署、壓縮或上傳應用程式套件。Linux 透過[獨立執行階段目錄](linux-deployment.md)提供 Qt／QML／外掛程式，使用 deployed 驗證和不含 SDK 的容器；下載的 tar.gz 保留執行權限位元。目前只宣告 Ubuntu 24.04、x86_64、X11 基線，不宣稱是通用 Linux 安裝程式。
 
-Windows 可對自有可信安裝器的獨立提取結果和同一候選的便攜 ZIP 執行 `python scripts/check-windows-package-payload.py --installer-app <提取的应用目录> --portable <便携包.zip> --output build/review/payload-comparison.json`。檢查逐檔案雜湊、安裝清單和不應攜帶的 SDK 圖形 DLL；輸出路徑須是新檔案。此靜態對照不執行安裝器或更新，也不代替實際安裝驗證。
+對可信的專案 Windows 成品，請獨立擷取安裝程式，並執行 `python scripts/check-windows-package-payload.py --installer-app <extracted-app-directory> --portable <portable-package.zip> --output build/review/payload-comparison.json`，將其應用程式目錄與同一候選版本的可攜 ZIP 比較。檢查逐檔雜湊、安裝清單及不應包含的 SDK 圖形 DLL；輸出路徑必須是新檔案。此靜態比較不執行安裝程式或更新，也不取代實際安裝驗證。
 
-本地 macOS 示例，先從一致原始碼重新構建，然後執行：
+本機 macOS 範例，從一致的原始碼重新建置後執行：
 
 ```sh
 python3 scripts/collect-notices.py build/review/wp12/notices
@@ -45,12 +46,13 @@ python3 scripts/sbom.py \
   --output build/review/wp12/artifact-files.cdx.json
 ```
 
-在隔離驗證環境安裝 jsonschema==4.23.0 後，使用該環境的 Python 執行 `scripts/validate-sbom.py`，傳入上述兩個 cdx.json。參考的登錄檔用法見 [jsonschema 4.23 文件](https://python-jsonschema.readthedocs.io/en/v4.23.0/referencing/)。驗證環境的工具不部署到產品中。
+在隔離驗證環境安裝 jsonschema==4.23.0 後，使用該環境的 Python 執行 `scripts/validate-sbom.py`，傳入上述兩個 cdx.json。登錄表的用法見 [jsonschema 4.23 文件](https://python-jsonschema.readthedocs.io/en/v4.23.0/referencing/)。驗證工具不部署至產品。
 
 <a name="xdzip-下一层发行门槛"></a>
+<a name="下一層發行門檻"></a>
 
-## 下一層發行門檻
+## 歸屬結果與驗證限制
 
-已接入[實際元件歸屬](runtime-attribution.md)：使用 SDK SPDX 關聯實際檔案、Qt 模組與內嵌第三方，交付固定雜湊的官方許可文字，記錄 SDK 與上游雜湊差異及未確認歸屬。Rust 普通執行時候選與構建／開發／過程宏工具分開。新增元件關係繫結實際審計併合入工件 SBOM，仍明確標記不完整。
+已整合[實際元件歸屬](runtime-attribution.md)：以 SDK SPDX 關聯實際檔案、Qt 模組與內嵌第三方，交付固定雜湊的官方授權文字，並記錄 SDK 與上游雜湊差異及尚未確認的歸屬。一般 Rust 執行階段候選與建置／開發／程序巨集工具分開。新增元件關係綁定實際稽核並合入成品 SBOM，但仍明確標示為不完整。
 
-在實際安裝目錄中逐一關聯 DLL、framework 和外掛的上游元件、版本、許可與對應原始碼。Qt 內嵌第三方、靜態 Rust 連結及工具鏈來源也納入歸屬檢查。發行材料如何判定和登記，見[維護者許可複核指南](../../../developers/qa/release-review.md)。
+在實際安裝目錄中，逐一將交付的 DLL、framework 和外掛程式關聯至其上游元件、版本、授權與對應原始碼。Qt 內嵌元件、靜態 Rust 連結歸屬和工具鏈來源須分別審查。候選版本的判定見[發行審查指南](../../../developers/qa/release-review.md)。
