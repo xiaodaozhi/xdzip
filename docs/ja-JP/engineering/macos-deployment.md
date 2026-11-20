@@ -1,6 +1,6 @@
 # ローカル macOS 開発用 DMG
 
-[English](../../engineering/macos-deployment.md) | [简体中文](../../zh-CN/engineering/macos-deployment.md) | [繁體中文](../../zh-TW/engineering/macos-deployment.md) | 日本語 | [Français](../../fr-FR/engineering/macos-deployment.md) | [Deutsch](../../de-DE/engineering/macos-deployment.md) | [Español](../../es-ES/engineering/macos-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/macos-deployment.md)
+[English](../../engineering/macos-deployment.md) | [简体中文](../../zh-CN/engineering/macos-deployment.md) | [繁體中文](../../zh-TW/engineering/macos-deployment.md) | 日本語 | [한국어](../../ko-KR/engineering/macos-deployment.md) | [Français](../../fr-FR/engineering/macos-deployment.md) | [Deutsch](../../de-DE/engineering/macos-deployment.md) | [Español](../../es-ES/engineering/macos-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/macos-deployment.md)
 
 専用 Release ワークフローでは、ネイティブ配置、必要な ad-hoc 署名、app.zip と DMG の作成とアップロードを許可します。オンデマンド Qt ワークフローの macOS ジョブでは SDK の検証を維持します。2 つのリリースパッケージには、配置、署名、検証済みの同一の .app を使用し、ZIP から展開したアプリは移動後の起動も検証します。[リリースプロトコル](release-protocol.md)を参照してください。
 

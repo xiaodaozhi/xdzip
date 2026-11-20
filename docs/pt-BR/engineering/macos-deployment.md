@@ -1,6 +1,6 @@
 # DMG local de desenvolvimento para macOS
 
-[English](../../engineering/macos-deployment.md) | [简体中文](../../zh-CN/engineering/macos-deployment.md) | [繁體中文](../../zh-TW/engineering/macos-deployment.md) | [日本語](../../ja-JP/engineering/macos-deployment.md) | [Français](../../fr-FR/engineering/macos-deployment.md) | [Deutsch](../../de-DE/engineering/macos-deployment.md) | [Español](../../es-ES/engineering/macos-deployment.md) | Português (Brasil)
+[English](../../engineering/macos-deployment.md) | [简体中文](../../zh-CN/engineering/macos-deployment.md) | [繁體中文](../../zh-TW/engineering/macos-deployment.md) | [日本語](../../ja-JP/engineering/macos-deployment.md) | [한국어](../../ko-KR/engineering/macos-deployment.md) | [Français](../../fr-FR/engineering/macos-deployment.md) | [Deutsch](../../de-DE/engineering/macos-deployment.md) | [Español](../../es-ES/engineering/macos-deployment.md) | Português (Brasil)
 
 O fluxo Release dedicado permite implantação nativa, assinatura ad hoc necessária, empacotamento de app.zip e DMG e envio dos arquivos. A tarefa macOS do fluxo Qt sob demanda mantém a verificação do SDK. Uma única aplicação .app implantada, assinada e verificada é usada nos dois pacotes de publicação; o ZIP extraído também passa por verificação de inicialização após mudança de local. Consulte o [protocolo de publicação](release-protocol.md).
 

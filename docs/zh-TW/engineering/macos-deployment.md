@@ -2,7 +2,7 @@
 
 # 本地 macOS 開發 DMG
 
-[English](../../engineering/macos-deployment.md) | [简体中文](../../zh-CN/engineering/macos-deployment.md) | 繁體中文 | [日本語](../../ja-JP/engineering/macos-deployment.md) | [Français](../../fr-FR/engineering/macos-deployment.md) | [Deutsch](../../de-DE/engineering/macos-deployment.md) | [Español](../../es-ES/engineering/macos-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/macos-deployment.md)
+[English](../../engineering/macos-deployment.md) | [简体中文](../../zh-CN/engineering/macos-deployment.md) | 繁體中文 | [日本語](../../ja-JP/engineering/macos-deployment.md) | [한국어](../../ko-KR/engineering/macos-deployment.md) | [Français](../../fr-FR/engineering/macos-deployment.md) | [Deutsch](../../de-DE/engineering/macos-deployment.md) | [Español](../../es-ES/engineering/macos-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/macos-deployment.md)
 
 專用 Release 工作流允許原生部署、必要的 ad-hoc 簽名、app.zip 與 DMG 打包及上傳，按需 Qt 工作流的 macOS 作業保持 SDK 驗證策略。同一份已部署、簽名並驗證的 .app 用於兩個釋出包，ZIP 解包後另作重定位啟動核驗，詳見[釋出協議](release-protocol.md)。
 

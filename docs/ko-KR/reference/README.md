@@ -117,7 +117,7 @@
 - [데이터 수명 주기 및 진단](../engineering/privacy.md)
 - [제품 버전 및 빌드 식별자](../engineering/versioning.md)
 - [GitHub Release 프로토콜 v1](../engineering/release-protocol.md)
-- [macOS 로컬 개발용 DMG](../../engineering/macos-deployment.md)
+- [macOS 로컬 개발용 DMG](../engineering/macos-deployment.md)
 - [Linux 독립 실행 디렉터리 및 검증](../engineering/linux-deployment.md)
 - [배포 의존성 검증 및 SBOM](../engineering/deployment-audit.md)
 - [실제 구성 요소의 저작권 표시와 라이선스 자료](../engineering/runtime-attribution.md)
