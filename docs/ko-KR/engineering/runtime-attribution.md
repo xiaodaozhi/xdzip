@@ -14,9 +14,9 @@ Qt 6.8부터 빌드에 대응하는 [SPDX 목록](https://doc.qt.io/qt-6.8/licen
 
 `scripts/qt-license-sources.json`은 공식 Qt 소스와 SPDX license-list-data 커밋, 라이선스 텍스트 URL 및 SHA-256을 고정합니다. 다운로드는 build/ 아래에 캐시하며 캐시나 다운로드 해시가 일치하지 않으면 실패합니다. 자료 다운로드에 임의의 SPDX URL을 따라가지 않습니다. LICENSES/의 표준 텍스트 외에도 Qt GUI의 부드러운 크기 조정 알고리즘과 SVG의 원본 고지, 시스템 의존성 선언에서 참조하는 LGPL-2.1 텍스트를 포함합니다. 업스트림 LicenseRef 텍스트와 저작권은 선언 JSON에 유지합니다.
 
-Qt 런타임 고지에는 Qt Network가 사용하는 고정된 편집 가능한 Public Suffix List 소스, MPL-2.0 텍스트, 취득 방법도 포함됩니다. 수집기는 업스트림 blob, SHA-256, 라이선스 바이트를 검증합니다. 소스 제공은 이 입력이 Qt 아카이브의 생성된 데이터 두 형태를 재현하는지 별도로 검증합니다. [해당 소스 자료](source-delivery.md)를 참조하세요. 이는 다른 Qt 모듈의 소스 및 대체 검사를 대신하지 않습니다.
+Qt 런타임 고지에는 Qt Network가 사용하는 고정된 편집 가능한 Public Suffix List 소스, MPL-2.0 텍스트, 취득 방법도 포함됩니다. 수집기는 업스트림 blob, SHA-256, 라이선스 바이트를 검증합니다. 소스 제공은 이 입력이 Qt 아카이브의 생성된 데이터 두 형태를 재현하는지 별도로 검증합니다. [해당 소스 자료](../../engineering/source-delivery.md)를 참조하세요. 이는 다른 Qt 모듈의 소스 및 대체 검사를 대신하지 않습니다.
 
-Qt Core의 Tika MIME 고지는 Apache Software Foundation과 영국 국립기록원의 PRONOM에 대한 관련 귀속, Apache-2.0 및 OGL-UK-3.0 라이선스 텍스트, 고정된 전체 업스트림 NOTICE를 보존합니다. 전체 NOTICE는 다른 업스트림 Tika 구성 요소도 설명하지만 이것이 해당 구성 요소가 제품과 함께 제공된다는 뜻은 아닙니다. 원본 MIME 데이터와 Qt 변환 검증은 [해당 소스 자료](source-delivery.md)를 참조하세요.
+Qt Core의 Tika MIME 고지는 Apache Software Foundation과 영국 국립기록원의 PRONOM에 대한 관련 귀속, Apache-2.0 및 OGL-UK-3.0 라이선스 텍스트, 고정된 전체 업스트림 NOTICE를 보존합니다. 전체 NOTICE는 다른 업스트림 Tika 구성 요소도 설명하지만 이것이 해당 구성 요소가 제품과 함께 제공된다는 뜻은 아닙니다. 원본 MIME 데이터와 Qt 변환 검증은 [해당 소스 자료](../../engineering/source-delivery.md)를 참조하세요.
 
 <a name="xdzip-file-and-component-association"></a>
 
@@ -66,7 +66,7 @@ runtime-attribution.json에는 파일, 구성 요소, 관계, 업스트림 선�
 
 ## 해결되지 않은 릴리스 조건
 
-[소스 제공 수집기](source-delivery.md)는 실제 프로젝트 소스, Rust vendor, 실행용 Qt 모듈 아카이브 네 개, 빌드 모듈 아카이브 두 개, 재빌드 및 동적 교체 지침을 보존합니다. 항목별 SDK와 업스트림 빌드 동등성을 증명하지는 않습니다. 각 릴리스에서는 정확한 정적 링크 귀속, OS 및 재배포 런타임, 모든 내장 리소스의 개별 라이선스, 오픈소스 라이선스 분기 선택과 의무 이행을 계속 검토해야 합니다. [로컬 Mac 배포 검증](macos-deployment.md)의 메타데이터 변경과 교체, [Qt 소스의 실제 빌드·로드·교체](../../../developers/engineering/candidate-verification.md#qt-source-and-compatible-replacement)는 증거가 분리된 별개의 절차입니다. 어느 쪽도 임의 SDK의 바이트 단위 빌드 동등성을 입증하지 않습니다. 소스 목록과 SPDX 필드는 라이선스 의무를 대신하지 않습니다. 과거 `v0.1.0` 후보의 출처와 라이선스는 [#4](https://github.com/xiaodaozhi/xdzip/issues/4)와 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)에 있으며 이후 후보는 별도 검토가 필요합니다. 유료 서명 식별 정보는 필수 조건이 아닙니다. 기존 데스크톱 수용은 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)에 남아 있습니다.
+[소스 제공 수집기](../../engineering/source-delivery.md)는 실제 프로젝트 소스, Rust vendor, 실행용 Qt 모듈 아카이브 네 개, 빌드 모듈 아카이브 두 개, 재빌드 및 동적 교체 지침을 보존합니다. 항목별 SDK와 업스트림 빌드 동등성을 증명하지는 않습니다. 각 릴리스에서는 정확한 정적 링크 귀속, OS 및 재배포 런타임, 모든 내장 리소스의 개별 라이선스, 오픈소스 라이선스 분기 선택과 의무 이행을 계속 검토해야 합니다. [로컬 Mac 배포 검증](../../engineering/macos-deployment.md)의 메타데이터 변경과 교체, [Qt 소스의 실제 빌드·로드·교체](../../../developers/engineering/candidate-verification.md#qt-source-and-compatible-replacement)는 증거가 분리된 별개의 절차입니다. 어느 쪽도 임의 SDK의 바이트 단위 빌드 동등성을 입증하지 않습니다. 소스 목록과 SPDX 필드는 라이선스 의무를 대신하지 않습니다. 과거 `v0.1.0` 후보의 출처와 라이선스는 [#4](https://github.com/xiaodaozhi/xdzip/issues/4)와 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)에 있으며 이후 후보는 별도 검토가 필요합니다. 유료 서명 식별 정보는 필수 조건이 아닙니다. 기존 데스크톱 수용은 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)에 남아 있습니다.
 
 [Qt SDK 대응 검증](qt-sdk-correspondence.md)은 고정된 아카이브 커밋, SDK 소스 선언의 파일별 해시, 설치된 구성, 알려진 AGL 소비자 패치도 기록합니다. 선언된 범위의 일치가 SDK 전체 빌드 동등성을 증명하지 않으며 기존 릴리스 차단 조건도 유지됩니다.
 

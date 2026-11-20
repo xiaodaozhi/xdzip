@@ -4,7 +4,7 @@
 
 [English](../../design/task-scheduling.md) | [简体中文](../../zh-CN/design/task-scheduling.md) | [繁體中文](../../zh-TW/design/task-scheduling.md) | 日本語 | [한국어](../../ko-KR/design/task-scheduling.md) | [Français](../../fr-FR/design/task-scheduling.md) | [Deutsch](../../de-DE/design/task-scheduling.md) | [Español](../../es-ES/design/task-scheduling.md) | [Português (Brasil)](../../pt-BR/design/task-scheduling.md) | [Русский](../../ru-RU/design/task-scheduling.md)
 
-XDZip はランタイム接続ごとに Rust のコマンドスレッドとタスクスレッドを一つずつ使います。コマンドスレッドは現在のアーカイブを所有してタスク入力を準備します。タスクスレッドが受理されたジョブを実行する間も、コマンドスレッドはメタデータ要求を処理できます。スレッドの実行場所は[システムアーキテクチャー](system-architecture.md)、結果のクライアントへの到達方法は [Qt/Rust ブリッジ](qt-rust-bridge.md)を参照してください。
+XDZip はランタイム接続ごとに Rust のコマンドスレッドとタスクスレッドを一つずつ使います。コマンドスレッドは現在のアーカイブを所有してタスク入力を準備します。タスクスレッドが受理されたジョブを実行する間も、コマンドスレッドはメタデータ要求を処理できます。スレッドの実行場所は[システムアーキテクチャー](../../design/system-architecture.md)、結果のクライアントへの到達方法は [Qt/Rust ブリッジ](qt-rust-bridge.md)を参照してください。
 
 <a name="xdzip-admission-and-task-ownership"></a>
 
@@ -17,7 +17,7 @@ XDZip はランタイム接続ごとに Rust のコマンドスレッドとタ�
 | ランタイムのタスクキュー | 展開、一時オープン、作成、検査、編集、エクスポートを必要に応じ、接続内でキュー順に一度に一ジョブ実行します。サービスごとに最大 32 タスクを追跡し、保持ジョブの合計予算は 64 MiB です。この予算は保持入力と予約された秘密情報領域を含みます。実際のデコード、インデックス、ワーカー、出力リソースは別の上限があります。飽和は `task_busy` と報告します。 |
 | 独立した CLI | 自分のコマンドプロセス内で同じ Rust スケジューリング規則を使います。複数の独立 CLI プロセスとデスクトップはそれぞれ別のキューを持ちます。安全な出力認可と競合検査は各プロセスに適用されます。 |
 
-`TaskAccepted` は受理済みジョブを識別します。通常要求の `Finished` はその要求を終了します。ジョブは関連付け用の元要求 ID と制御用タスク ID を使い、`TaskUpdate` スナップショットを引き続き生成できます。アプリのタスク項目はタブを閉じても所有コントローラーを保持し、プロンプトと結果を正しい接続に結び付けます。[タスクキューのソース](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/service/tasks.rs)、[デスクトップの受け入れとタスク振り分け](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.cpp)、[デスクトップセッション](../engineering/application-sessions.md)
+`TaskAccepted` は受理済みジョブを識別します。通常要求の `Finished` はその要求を終了します。ジョブは関連付け用の元要求 ID と制御用タスク ID を使い、`TaskUpdate` スナップショットを引き続き生成できます。アプリのタスク項目はタブを閉じても所有コントローラーを保持し、プロンプトと結果を正しい接続に結び付けます。[タスクキューのソース](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/service/tasks.rs)、[デスクトップの受け入れとタスク振り分け](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.cpp)、[デスクトップセッション](../../engineering/application-sessions.md)
 
 <a name="xdzip-states-and-reported-progress"></a>
 
@@ -98,4 +98,4 @@ stateDiagram-v2
 
 スキップは対応する競合判断に適用されます。デコード、リソース、ソース、出力先の安全性のエラーはジョブを停止し得ます。公開済みファイルは記録に残り、成功した公開にステージングのクリーンアップエラーが伴う場合があります。予期しないワーカー障害や巻き戻し可能なタスク panic は失敗または不確実な結果を生むことがあります。panic 経路は `task_abandoned` を報告し、該当ランタイムを障害状態にします。プロセス終了後に終端応答がないことは、何がディスクに書かれたかを証明しません。
 
-進捗ウィンドウやアーカイブタブを閉じるのは表示上の操作です。受理されたジョブと結果はアプリのタスク項目から引き続き利用できます。アクティブなパスワードプロンプトを閉じると、そのタスクがキャンセルされる場合があります。明示的な終了は実行中の作業を処理し、シャットダウン開始時に受け入れを止め、待機を起こしてイベントを取り出し続けます。受信側は Rust ワーカーを待ってから `ShutdownReady` を生成します。Qt はイベントを取り出し終え、GUI スレッドをブロックする待機なしに受信側の終了を待ちます。外部ネイティブ転送の完了も必要な場合があります。[ランタイムのライフサイクル](../engineering/product-runtime.md)、[アーカイブ転送](../engineering/archive-transfers.md)
+進捗ウィンドウやアーカイブタブを閉じるのは表示上の操作です。受理されたジョブと結果はアプリのタスク項目から引き続き利用できます。アクティブなパスワードプロンプトを閉じると、そのタスクがキャンセルされる場合があります。明示的な終了は実行中の作業を処理し、シャットダウン開始時に受け入れを止め、待機を起こしてイベントを取り出し続けます。受信側は Rust ワーカーを待ってから `ShutdownReady` を生成します。Qt はイベントを取り出し終え、GUI スレッドをブロックする待機なしに受信側の終了を待ちます。外部ネイティブ転送の完了も必要な場合があります。[ランタイムのライフサイクル](../engineering/product-runtime.md)、[アーカイブ転送](../../engineering/archive-transfers.md)

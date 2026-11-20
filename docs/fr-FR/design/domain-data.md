@@ -4,7 +4,7 @@
 
 [English](../../design/domain-data.md) | [简体中文](../../zh-CN/design/domain-data.md) | [繁體中文](../../zh-TW/design/domain-data.md) | [日本語](../../ja-JP/design/domain-data.md) | [한국어](../../ko-KR/design/domain-data.md) | Français | [Deutsch](../../de-DE/design/domain-data.md) | [Español](../../es-ES/design/domain-data.md) | [Português (Brasil)](../../pt-BR/design/domain-data.md) | [Русский](../../ru-RU/design/domain-data.md)
 
-Le runtime possède la session d’archive, l’index achevé et la dernière requête de cette session. Qt conserve une vue du résultat et la CLI peut lire les enregistrements physiques par sa commande de catalogue distincte. Les deux soumettent leurs opérations au même service Rust. [Architecture système](system-architecture.md), [Pont Qt/Rust](qt-rust-bridge.md)
+Le runtime possède la session d’archive, l’index achevé et la dernière requête de cette session. Qt conserve une vue du résultat et la CLI peut lire les enregistrements physiques par sa commande de catalogue distincte. Les deux soumettent leurs opérations au même service Rust. [Architecture système](../../design/system-architecture.md), [Pont Qt/Rust](qt-rust-bridge.md)
 
 <a name="xdzip-identity-and-source-version"></a>
 
@@ -19,7 +19,7 @@ Le runtime possède la session d’archive, l’index achevé et la dernière re
 | `QueryKey` | Combine session, identifiant de requête, génération et révision d’instantané. Le décalage désigne une position dans ce résultat. |
 | Identité de demande, tâche et invite | Le service attribue les numéros de demande et de tâche dans une connexion. Une invite appartient à une tâche donnée. L’entrée de tâche desktop partagée utilise l’identité de session du contrôleur et le numéro de tâche. |
 
-Les types du domaine imposent des identités d’archive et de requête non nulles. Dans le pont natif, les valeurs Rust typées sont représentées par les données CXX générées. QML reçoit des chaînes opaques pour les identifiants nécessitant les 64 bits. Un numéro de ligne n’est qu’une position dans une requête donnée. [Identités du domaine](../../../crates/xdzip-domain/src/identity.rs), [Implémentation de la source](../../../crates/xdzip-runtime/src/source.rs), [Sessions d’application](../engineering/application-sessions.md)
+Les types du domaine imposent des identités d’archive et de requête non nulles. Dans le pont natif, les valeurs Rust typées sont représentées par les données CXX générées. QML reçoit des chaînes opaques pour les identifiants nécessitant les 64 bits. Un numéro de ligne n’est qu’une position dans une requête donnée. [Identités du domaine](../../../crates/xdzip-domain/src/identity.rs), [Implémentation de la source](../../../crates/xdzip-runtime/src/source.rs), [Sessions d’application](../../engineering/application-sessions.md)
 
 <a name="xdzip-physical-entries-and-output-names"></a>
 

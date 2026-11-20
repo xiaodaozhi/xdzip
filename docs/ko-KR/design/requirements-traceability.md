@@ -21,7 +21,7 @@
 | P07 파일과 리소스 경계 보호 | [파일 승인](file-security.md), [형식](codec-extension-sdk.md) | T07 해당하는 네이티브 링크 및 식별 검사, 경로 검증, 할당량과 보호 대상을 확인합니다. |
 | P08 접근 가능한 데스크톱 제공 | [데스크톱](qt-quick-ui.md) | T08 영향받는 플랫폼에서 모델과 컨트롤, 네이티브 키보드, IME, 접근성, 배율과 포커스를 확인합니다. |
 | P09 리소스 제한 및 측정 | [성능](performance.md) | T09 변경에 따라 비교 가능한 빌드, 프로세스 트리 지표, 시작, 정렬, 출력 속도 또는 패키지 크기를 확인합니다. |
-| P10 형식 로직에서 Qt 분리 | [아키텍처](system-architecture.md), [형식](codec-extension-sdk.md) | T10 Qt 없는 코어, 명시적 어댑터 선택과 형식별 회귀를 확인합니다. |
+| P10 형식 로직에서 Qt 분리 | [아키텍처](../../design/system-architecture.md), [형식](codec-extension-sdk.md) | T10 Qt 없는 코어, 명시적 어댑터 선택과 형식별 회귀를 확인합니다. |
 | P11 비밀 정보와 데이터 보호 | [파일 승인](file-security.md), [개인정보](../engineering/privacy.md) | T11 용도가 제한된 암호, 민감 정보가 제거된 진단과 의도된 네트워크 접근을 확인합니다. |
 | P12 배포 감사 | [품질](quality-engineering.md), [릴리스](build-release.md) | T12 고정 입력과 결과물 식별, 구성 목록, 라이선스 자료, 패키지 신뢰 및 필요한 설치 검사를 확인합니다. |
 | P13 외부 확장 통제 | [형식](codec-extension-sdk.md), [SDK 실험](../engineering/sdk-trial.md) | T13 실험 범위의 상호 운용성과 네이티브 권한을 확인합니다. 제품의 확장 설치는 설계 옵션입니다. |

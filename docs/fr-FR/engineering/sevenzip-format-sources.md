@@ -4,7 +4,7 @@
 
 [English](../../engineering/sevenzip-format-sources.md) | [简体中文](../../zh-CN/engineering/sevenzip-format-sources.md) | [繁體中文](../../zh-TW/engineering/sevenzip-format-sources.md) | [日本語](../../ja-JP/engineering/sevenzip-format-sources.md) | [한국어](../../ko-KR/engineering/sevenzip-format-sources.md) | Français | [Deutsch](../../de-DE/engineering/sevenzip-format-sources.md) | [Español](../../es-ES/engineering/sevenzip-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/sevenzip-format-sources.md) | [Русский](../../ru-RU/engineering/sevenzip-format-sources.md)
 
-Ce document décrit les sources réutilisables et les limites d’implémentation. L’acceptation de la migration et les capacités restantes sont suivies dans le [ticket #50](https://github.com/xiaodaozhi/xdzip/issues/50) ; le routage Rust fixé et la suppression de la dépendance officielle du produit ne démontrent pas automatiquement l’acceptation multiplateforme, manuelle ou de livraison. Les règles générales de remplacement figurent dans le [contrat d’implémentation indépendante](independent-rust-codecs.md).
+Ce document décrit les sources réutilisables et les limites d’implémentation. L’acceptation de la migration et les capacités restantes sont suivies dans le [ticket #50](https://github.com/xiaodaozhi/xdzip/issues/50) ; le routage Rust fixé et la suppression de la dépendance officielle du produit ne démontrent pas automatiquement l’acceptation multiplateforme, manuelle ou de livraison. Les règles générales de remplacement figurent dans le [contrat d’implémentation indépendante](../../engineering/independent-rust-codecs.md).
 
 <a name="xdzip-specifications-and-reference-identity"></a>
 
@@ -35,7 +35,7 @@ Un analyste lit sélectivement les groupes suivants dans l’archive originale f
 
 Conserver avec les preuves de développement l’identité de l’archive et des fichiers fixés, le périmètre réellement lu et les résumés factuels transmis. Revérifier à la mise à niveau de la référence ; d’anciens numéros de ligne ne prouvent pas le comportement d’une nouvelle version. Constantes de spécification, identifiants et relations mathématiques peuvent servir à l’implémentation ; optimisations internes et comportements historiquement indéfinis ne donnent pas d’autorisations au produit. Les déclarations de domaine public ne s’étendent pas à toute l’archive, à la documentation, aux enveloppes C++ ou à d’autres échantillons.
 
-Ce n’est pas une déclaration de salle blanche stricte ni de risque juridique nul. Les sources tierces, anciennes livraisons contenant le moteur officiel et outils de test indépendants restent soumis à leurs conditions respectives. Le produit actuel ne compile pas le moteur officiel ; voir [licences](licensing.md) et [sources correspondantes](source-delivery.md).
+Ce n’est pas une déclaration de salle blanche stricte ni de risque juridique nul. Les sources tierces, anciennes livraisons contenant le moteur officiel et outils de test indépendants restent soumis à leurs conditions respectives. Le produit actuel ne compile pas le moteur officiel ; voir [licences](licensing.md) et [sources correspondantes](../../engineering/source-delivery.md).
 
 <a name="xdzip-interoperability-boundaries"></a>
 

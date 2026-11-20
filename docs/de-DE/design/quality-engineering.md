@@ -26,7 +26,7 @@ Dokumentieren Sie Invarianten und den Zustand nach Fehlern. Bei Dateicode erklä
 | Desktop, Qt und Barrierefreiheit | Modell- und Controllertests, QML- und Steuerelementprüfungen, bei Bedarf native Bedienung und tatsächliche visuelle oder assistive Nachweise für das Verhalten. |
 | Leistung und Auslieferung | Commitgebundene Arbeitslasten, Renderer- und Ressourcenwerte oder kanalbezogene Build-Identität, Installations- und Update-Ergebnisse sowie Abhängigkeitsnachweise. |
 
-Der [Prüfleitfaden](../../../developers/qa/README.md) bestimmt notwendige Prüfungen. Protokollkonformität, Testmaterial oder Offscreen, native Automatisierung und manuelle Desktop-Beobachtung belegen unterschiedliche Aspekte. Vorhandene Prüfeinstiege und Liefergrenzen stehen in der [Build-Anleitung](../engineering/developer-build.md) und der [Nachverfolgbarkeit](requirements-traceability.md).
+Der [Prüfleitfaden](../../../developers/qa/README.md) bestimmt notwendige Prüfungen. Protokollkonformität, Testmaterial oder Offscreen, native Automatisierung und manuelle Desktop-Beobachtung belegen unterschiedliche Aspekte. Vorhandene Prüfeinstiege und Liefergrenzen stehen in der [Build-Anleitung](../../engineering/developer-build.md) und der [Nachverfolgbarkeit](requirements-traceability.md).
 
 <a name="xdzip-existing-ci-and-additional-techniques"></a>
 

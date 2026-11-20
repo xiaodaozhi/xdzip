@@ -10,7 +10,7 @@
 
 Frühe Framework-Experimente verwendeten eine synthetische Archivliste und simulierte Aufgaben. Das Produkt übernahm Qt Quick und eine typisierte CXX-Brücke. Die tatsächlichen Archiv-, Aufgaben- und Dateioperationen wurden danach in Rust implementiert. JSON, C-ABI und Zeitmessungen des Prototyps gehören zu diesen Experimenten. Die [Architekturentscheidungen](architecture-decisions.md) halten Gründe und Bedingungen für eine Neubewertung fest.
 
-Das Produkt begrenzt die Zeilenmodelle und prüft die Identität von Abfragen, damit veraltete Ergebnisse die neue Ansicht nicht überschreiben. Es ergänzt physische Eintrags-IDs, ausdrückliche Formatfähigkeiten, Dateiberechtigungen, Zwischenspeicherung und geprüfte Veröffentlichung. Die eigenständige CLI nutzt denselben Kern ohne Qt. Siehe [Systemarchitektur](system-architecture.md) und [Domänenmodell](domain-data.md).
+Das Produkt begrenzt die Zeilenmodelle und prüft die Identität von Abfragen, damit veraltete Ergebnisse die neue Ansicht nicht überschreiben. Es ergänzt physische Eintrags-IDs, ausdrückliche Formatfähigkeiten, Dateiberechtigungen, Zwischenspeicherung und geprüfte Veröffentlichung. Die eigenständige CLI nutzt denselben Kern ohne Qt. Siehe [Systemarchitektur](../../design/system-architecture.md) und [Domänenmodell](domain-data.md).
 
 <a name="xdzip-current-experimental-and-proposed-work"></a>
 

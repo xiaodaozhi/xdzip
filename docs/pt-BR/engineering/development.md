@@ -4,7 +4,7 @@
 
 [English](../../engineering/development.md) | [简体中文](../../zh-CN/engineering/development.md) | [繁體中文](../../zh-TW/engineering/development.md) | [日本語](../../ja-JP/engineering/development.md) | [한국어](../../ko-KR/engineering/development.md) | [Français](../../fr-FR/engineering/development.md) | [Deutsch](../../de-DE/engineering/development.md) | [Español](../../es-ES/engineering/development.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/development.md)
 
-Use [Compilar e contribuir](../contributing/README.md) para escolher a compilação e as verificações adequadas. A [arquitetura](../design/system-architecture.md) e a [estrutura do repositório](repository-layout.md) mostram os limites de Qt, da execução em Rust e dos codecs.
+Use [Compilar e contribuir](../contributing/README.md) para escolher a compilação e as verificações adequadas. A [arquitetura](../../design/system-architecture.md) e a [estrutura do repositório](repository-layout.md) mostram os limites de Qt, da execução em Rust e dos codecs.
 
 <a name="xdzip-obtain-and-modify"></a>
 
@@ -28,7 +28,7 @@ Execute `python3 scripts/check-docs.py` para verificar a cobertura de traduçõe
 
 No macOS, prepare Xcode Command Line Tools e Qt. No Windows, use MSVC Build Tools, Windows SDK e Qt compatível. No Linux, são necessários um compilador, o ambiente glibc do destino e as dependências Qt Wayland/X11. As versões de desenvolvimento são fixadas nos arquivos da raiz e na CI. Registre fontes e licenças na [tabela de ferramentas](toolchain.md). A [política de suporte](support-policy.md) informa sistemas e manutenção. Use a issue de revisão da versão para questões específicas de origem ou licenças.
 
-O [aplicativo Qt de desenvolvimento](../../../apps/desktop/README.md) documenta os comandos para compilar e executar em uma cópia limpa, opções CMake, arquitetura e destino do macOS e limites dos testes sem tela. Após mudanças de compilação ou instalação, teste de novo caminhos com espaços e caracteres chineses. O desenvolvimento local dispensa identidade de assinatura paga. O [guia de compilação](developer-build.md) descreve a assinatura ad hoc do DMG local e o limite da CI que exclui a implantação do aplicativo Mac.
+O [aplicativo Qt de desenvolvimento](../../../apps/desktop/README.md) documenta os comandos para compilar e executar em uma cópia limpa, opções CMake, arquitetura e destino do macOS e limites dos testes sem tela. Após mudanças de compilação ou instalação, teste de novo caminhos com espaços e caracteres chineses. O desenvolvimento local dispensa identidade de assinatura paga. O [guia de compilação](../../engineering/developer-build.md) descreve a assinatura ad hoc do DMG local e o limite da CI que exclui a implantação do aplicativo Mac.
 
 <a name="xdzip-independent-engineering-probes"></a>
 

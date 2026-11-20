@@ -4,7 +4,7 @@
 
 スタンドアロン CLI は Qt やデスクトップセッションなしで動作します。[GitHub のリリース](https://github.com/xiaodaozhi/xdzip/releases)から、お使いのシステム向けの `xdzip-cli-` パッケージを選択してください。パッケージ全体を展開し、同梱のワーカーを実行ファイルの隣に置きます。展開したディレクトリから、macOS または Linux では `./bin/xdzip --help`、PowerShell では `.\bin\xdzip.exe --help` を実行します。
 
-例では PATH にある `xdzip` を使います。展開した CLI の `setup` でユーザー用のランチャーを登録し、必要に応じてコマンドのディレクトリを PATH に追加します。`xdzip --version-json` を実行し、見つかったプログラムが `"component":"cli"` を返すことを確認します。デスクトップランチャーと CLI のコマンド名が同じ場合があります。競合したら、展開した CLI を明示的なパスで指定してください。[コマンドのインストールと削除](../engineering/command-line.md#xdzip-build-and-command-installation)
+例では PATH にある `xdzip` を使います。展開した CLI の `setup` でユーザー用のランチャーを登録し、必要に応じてコマンドのディレクトリを PATH に追加します。`xdzip --version-json` を実行し、見つかったプログラムが `"component":"cli"` を返すことを確認します。デスクトップランチャーと CLI のコマンド名が同じ場合があります。競合したら、展開した CLI を明示的なパスで指定してください。[コマンドのインストールと削除](../../engineering/command-line.md#build-and-command-installation)
 
 <a name="xdzip-create-and-check"></a>
 
@@ -33,13 +33,13 @@ xdzip extract sample.zip docs/hello.txt -C output --conflict skip --json
 
 メンバーのパスは正確に指定し、大文字と小文字を区別し、区切りにはスラッシュを使います。同じパスのレコードが複数ある場合は、`list` が返した `id` で選択します。ID は 1 から始まります。例えば一覧で対象ファイルの ID が 2 なら、2 番目のコマンドの `docs/hello.txt` を `--entry-id 2` に置き換えます。複数のメンバーには `--entry-id` を繰り返し指定します。照合には `path`、表示には `display_name` を使います。アーカイブを変更した後は一覧を取り直してください。
 
-最初のページのオフセットは 0 です。同じ `--limit` を使い、`data.next_offset` を `--offset` として渡すと次のページを読めます。`next_offset` が null になったら終了です。オフセットは 0 から始まる行位置で、ID は物理レコードを識別します。各コマンドはアーカイブを開き直すため、ページ取得の途中でソースを変更しないでください。[項目の選択と一覧表示の上限](../engineering/command-line.md#xdzip-archive-behavior)
+最初のページのオフセットは 0 です。同じ `--limit` を使い、`data.next_offset` を `--offset` として渡すと次のページを読めます。`next_offset` が null になったら終了です。オフセットは 0 から始まる行位置で、ID は物理レコードを識別します。各コマンドはアーカイブを開き直すため、ページ取得の途中でソースを変更しないでください。[項目の選択と一覧表示の上限](../../engineering/command-line.md#archive-behavior)
 
 <a name="xdzip-run-without-prompts"></a>
 
 ## 確認を求めずに実行
 
-`--json` は対話形式の確認を無効にします。無人で処理を終えるには競合時の方針を明示してください。パスワードに対応する `extract`、`test`、暗号化付きの `create` などには `--password-stdin` を指定し、専用の標準入力パイプで UTF-8 のパスワードを 1 行送ります。暗号化して作成する場合は `--encrypt` も必要です。必要な判断やパスワードを受け取れない場合、CLI は `interaction_required` を返します。[パスワードと形式のオプション](../engineering/command-line.md#xdzip-archive-behavior)
+`--json` は対話形式の確認を無効にします。無人で処理を終えるには競合時の方針を明示してください。パスワードに対応する `extract`、`test`、暗号化付きの `create` などには `--password-stdin` を指定し、専用の標準入力パイプで UTF-8 のパスワードを 1 行送ります。暗号化して作成する場合は `--encrypt` も必要です。必要な判断やパスワードを受け取れない場合、CLI は `interaction_required` を返します。[パスワードと形式のオプション](../../engineering/command-line.md#archive-behavior)
 
 <a name="xdzip-interpret-results"></a>
 
@@ -55,4 +55,4 @@ xdzip extract sample.zip docs/hello.txt -C output --conflict skip --json
 | 3 | 対話操作、認証、プラットフォーム、インストールについて報告された要件を確認します。 |
 | 130 | キャンセルが確認されました。保存が確定したファイルがあるか確認します。 |
 
-不明な値は null の場合があります。失敗やキャンセルの前に保存が確定したファイルは残ることがあります。再試行する前に、`summary.committed_files` があれば確認してください。デスクトップへの受け渡し、更新結果の記録、出力の全仕様は [CLI リファレンス](../engineering/command-line.md) を参照してください。
+不明な値は null の場合があります。失敗やキャンセルの前に保存が確定したファイルは残ることがあります。再試行する前に、`summary.committed_files` があれば確認してください。デスクトップへの受け渡し、更新結果の記録、出力の全仕様は [CLI リファレンス](../../engineering/command-line.md) を参照してください。

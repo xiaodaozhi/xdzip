@@ -4,7 +4,7 @@
 
 [English](../../ux/desktop-integration.md) | [简体中文](../../zh-CN/ux/desktop-integration.md) | [繁體中文](../../zh-TW/ux/desktop-integration.md) | 日本語 | [한국어](../../ko-KR/ux/desktop-integration.md) | [Français](../../fr-FR/ux/desktop-integration.md) | [Deutsch](../../de-DE/ux/desktop-integration.md) | [Español](../../es-ES/ux/desktop-integration.md) | [Português (Brasil)](../../pt-BR/ux/desktop-integration.md) | [Русский](../../ru-RU/ux/desktop-integration.md)
 
-複数セッション、単一インスタンス、ウィンドウ状態、全体終了は[アプリケーションセッション契約](../engineering/application-sessions.md)に従います。最後以外のメインウィンドウを閉じてもタスクは保持され、最後のウィンドウはトレイ設定に従います。終了確認はすべてのセッションを対象とします。
+複数セッション、単一インスタンス、ウィンドウ状態、全体終了は[アプリケーションセッション契約](../../engineering/application-sessions.md)に従います。最後以外のメインウィンドウを閉じてもタスクは保持され、最後のウィンドウはトレイ設定に従います。終了確認はすべてのセッションを対象とします。
 
 タスクのパスワードまたは競合確認が表示されていても、システム、メニュー、トレイから明示的な終了を選ぶと全体の確認を開けます。macOS のアプリケーションメニューの終了と Command-Q は引き続き使えます。戻るを選ぶとタスクと確認画面を保持します。ネイティブファイル選択画面やその他のブロックするモーダル画面は先に完了または閉じる必要があります。その画面に阻止された終了要求は破棄します。
 

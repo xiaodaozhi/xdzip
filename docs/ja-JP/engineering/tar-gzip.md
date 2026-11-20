@@ -4,7 +4,7 @@
 
 [English](../../engineering/tar-gzip.md) | [简体中文](../../zh-CN/engineering/tar-gzip.md) | [繁體中文](../../zh-TW/engineering/tar-gzip.md) | 日本語 | [한국어](../../ko-KR/engineering/tar-gzip.md) | [Français](../../fr-FR/engineering/tar-gzip.md) | [Deutsch](../../de-DE/engineering/tar-gzip.md) | [Español](../../es-ES/engineering/tar-gzip.md) | [Português (Brasil)](../../pt-BR/engineering/tar-gzip.md) | [Русский](../../ru-RU/engineering/tar-gzip.md)
 
-この契約は TAR/TAR.GZ の閲覧、作成、安全な展開の境界を定義します。プラットフォームの結果と手動受け入れは issue または CI 成果物に記録します。[安全な展開](zip-safe-extraction.md)と [ZIP 作成](zip-creation.md)の入力承認、一時準備、競合、キャンセル、アーカイブ全体のコミットを維持します。
+この契約は TAR/TAR.GZ の閲覧、作成、安全な展開の境界を定義します。プラットフォームの結果と手動受け入れは issue または CI 成果物に記録します。[安全な展開](../../engineering/zip-safe-extraction.md)と [ZIP 作成](../../engineering/zip-creation.md)の入力承認、一時準備、競合、キャンセル、アーカイブ全体のコミットを維持します。
 
 <a name="xdzip-scope-and-capabilities"></a>
 
@@ -12,7 +12,7 @@
 
 TAR と TAR.GZ の閲覧、作成、安全な展開をサポートします。TAR はコンテナー、GZIP は圧縮フィルターです。読み取り時は拡張子でバックエンドを選ばず内容を検出します。ZIP の動作は互換性を維持します。ネストした自動展開、暗号化、分割 TAR は有効にしません。通常の単一ファイル GZIP は別の[ストリーム契約](single-file-streams.md)を使用します。
 
-TAR ヘッダー、数値、PAX、ストリーミングエンコード、書き換えには独立した Rust レコード層を使用します。GZIP フレーミング、CRC-32、Deflate の LZ77/Huffman は共通の `xdzip-compression` を使用します。`tar` と `flate2` は開発テストの参照用であり、これらの crate の製品依存関係の閉包には入りません。仕様、ソース、制限は[独自形式契約](independent-rust-codecs.md)を参照してください。
+TAR ヘッダー、数値、PAX、ストリーミングエンコード、書き換えには独立した Rust レコード層を使用します。GZIP フレーミング、CRC-32、Deflate の LZ77/Huffman は共通の `xdzip-compression` を使用します。`tar` と `flate2` は開発テストの参照用であり、これらの crate の製品依存関係の閉包には入りません。仕様、ソース、制限は[独自形式契約](../../engineering/independent-rust-codecs.md)を参照してください。
 
 TAR は通常ファイルとディレクトリーを受け入れ、PAX パスと GNU 長い名前を解析します。シンボリックリンク、ハードリンク、デバイス、FIFO、スパースファイル、未知の型は展開できません。すべての出力名は引き続き PortablePath とホストの競合事前検査を通り、形式ライブラリーにはファイルパスや展開権限を与えません。ディレクトリー権限、所有者、特殊モードは復元しません。日付は表示用メタデータであり、復元は保証しません。
 

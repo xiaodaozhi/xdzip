@@ -20,7 +20,7 @@ O PMarc 2.00 original é executado em uma emulação CP/M fixada por hash e veri
 
 ## Requisitos do contêiner
 
-Cabeçalhos e intervalos de dados PMA exigem as mesmas regras de [LHA](lha-containers.md) para aritmética, somas de verificação, nomes, duplicatas, origem congelada e objetos especiais. PM0 é Store com tamanhos compactado e original iguais. PM1 e PM2 não devem ser encaminhados a decodificadores LH. Os CRC-16 presentes nos dados devem ser verificados após a decodificação completa; abrir ou listar um método não comprova a validade do conteúdo.
+Cabeçalhos e intervalos de dados PMA exigem as mesmas regras de [LHA](../../engineering/lha-containers.md) para aritmética, somas de verificação, nomes, duplicatas, origem congelada e objetos especiais. PM0 é Store com tamanhos compactado e original iguais. PM1 e PM2 não devem ser encaminhados a decodificadores LH. Os CRC-16 presentes nos dados devem ser verificados após a decodificação completa; abrir ou listar um método não comprova a validade do conteúdo.
 
 Um arquivo CP/M original termina com um byte zero e preenchimento `0x1a` suficiente para alcançar o próximo limite de registro de 128 bytes. A forma preenchida admitida deve estar exatamente alinhada, com no máximo 127 bytes de preenchimento, todos com esse valor. Um terminador zero exato também pode delimitar um contêiner sem preenchimento. São requisitos específicos de enquadramento, não permissão para ignorar bytes finais arbitrários, fabricar terminador ausente ou acrescentar bytes EOF decodificados. O preenchimento do contêiner nunca pertence ao intervalo compactado de um membro. O congelamento da origem deve incluir todo o arquivo físico, inclusive o preenchimento.
 

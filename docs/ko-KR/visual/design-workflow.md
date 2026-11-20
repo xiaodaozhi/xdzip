@@ -4,7 +4,7 @@
 
 [English](../../visual/design-workflow.md) | [简体中文](../../zh-CN/visual/design-workflow.md) | [繁體中文](../../zh-TW/visual/design-workflow.md) | [日本語](../../ja-JP/visual/design-workflow.md) | 한국어 | [Français](../../fr-FR/visual/design-workflow.md) | [Deutsch](../../de-DE/visual/design-workflow.md) | [Español](../../es-ES/visual/design-workflow.md) | [Português (Brasil)](../../pt-BR/visual/design-workflow.md) | [Русский](../../ru-RU/visual/design-workflow.md)
 
-이 절차는 UI를 만들기 전에 수행하며 구현 후에 문서를 보충하는 절차가 아닙니다. 사양의 출발점은 [UI 디자인 표준](design-standard.md)입니다.
+이 절차는 UI를 만들기 전에 수행하며 구현 후에 문서를 보충하는 절차가 아닙니다. 사양의 출발점은 [UI 디자인 표준](../../visual/design-standard.md)입니다.
 
 1. **목표와 환경을 정의합니다.** 기능, 실제 데이터와 부족한 기능을 나열합니다. 플랫폼과 논리 창, 접근성 글자 크기, 메뉴, 독립 창의 치수 범위를 지정합니다. 시스템 배율, 검토 배율과 DPR을 기록하고 HTML 프로토타입을 사용할 때는 브라우저 페이지 확대율도 기록합니다.
 2. **먼저 매개변수를 정의합니다.** 크기, 타이포그래피, 슬롯, 안쪽 여백, 정렬과 상태에 사양 JSON을 사용합니다. 좌표계와 구성 요소별 밀도를 기록합니다. 기본 창과 메뉴의 측정 기준은 독립적이며 각 독립 창은 창 등록부의 수식을 사용합니다. 작업 본문 배율과 공통 바닥글 치수는 별도로 확인합니다. 실제 픽셀은 측정 증거를 읽을 때만 DPR로 변환합니다.

@@ -4,7 +4,7 @@
 
 [English](../../engineering/development.md) | [简体中文](../../zh-CN/engineering/development.md) | [繁體中文](../../zh-TW/engineering/development.md) | [日本語](../../ja-JP/engineering/development.md) | [한국어](../../ko-KR/engineering/development.md) | Français | [Deutsch](../../de-DE/engineering/development.md) | [Español](../../es-ES/engineering/development.md) | [Português (Brasil)](../../pt-BR/engineering/development.md) | [Русский](../../ru-RU/engineering/development.md)
 
-Le [guide pour compiler et contribuer](../contributing/README.md) aide à choisir la construction et les vérifications adaptées au changement. L’[architecture](../design/system-architecture.md) et l’[organisation du dépôt](repository-layout.md) décrivent les frontières de Qt, de l’exécution Rust et des codecs.
+Le [guide pour compiler et contribuer](../contributing/README.md) aide à choisir la construction et les vérifications adaptées au changement. L’[architecture](../../design/system-architecture.md) et l’[organisation du dépôt](repository-layout.md) décrivent les frontières de Qt, de l’exécution Rust et des codecs.
 
 <a name="xdzip-obtain-and-modify"></a>
 
@@ -28,7 +28,7 @@ Exécutez `python3 scripts/check-docs.py` pour contrôler la couverture des trad
 
 Installez Xcode Command Line Tools et Qt sur macOS. Windows nécessite les outils MSVC, le SDK Windows et un Qt compatible. Linux nécessite le compilateur, un environnement glibc correspondant à la cible et les dépendances Qt Wayland/X11. Les fichiers d’outils à la racine et la CI fixent les versions. Consignez les sources et licences dans le [tableau des versions d’outils](toolchain.md). Suivez la [politique de prise en charge](support-policy.md) pour les systèmes et la maintenance. Pour examiner une provenance ou une licence, utilisez le ticket de revue du lancement concerné.
 
-L’[application de développement Qt](../../../apps/desktop/README.md) fournit les commandes pour construire et lancer depuis un dossier propre, les options CMake, les architectures et cibles de déploiement macOS ainsi que les limites de l’essai hors écran. Revérifiez les chemins comportant des espaces ou des caractères chinois après une modification de la construction ou de l’installation. Ce projet ne requiert pas d’identité de signature payante pour le développement. Voir le [guide de construction](developer-build.md) pour la signature locale ad hoc du DMG et la limite de la CI qui exclut le déploiement de l’application Mac.
+L’[application de développement Qt](../../../apps/desktop/README.md) fournit les commandes pour construire et lancer depuis un dossier propre, les options CMake, les architectures et cibles de déploiement macOS ainsi que les limites de l’essai hors écran. Revérifiez les chemins comportant des espaces ou des caractères chinois après une modification de la construction ou de l’installation. Ce projet ne requiert pas d’identité de signature payante pour le développement. Voir le [guide de construction](../../engineering/developer-build.md) pour la signature locale ad hoc du DMG et la limite de la CI qui exclut le déploiement de l’application Mac.
 
 <a name="xdzip-independent-engineering-probes"></a>
 

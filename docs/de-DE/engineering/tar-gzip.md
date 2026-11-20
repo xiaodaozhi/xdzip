@@ -4,7 +4,7 @@
 
 [English](../../engineering/tar-gzip.md) | [简体中文](../../zh-CN/engineering/tar-gzip.md) | [繁體中文](../../zh-TW/engineering/tar-gzip.md) | [日本語](../../ja-JP/engineering/tar-gzip.md) | [한국어](../../ko-KR/engineering/tar-gzip.md) | [Français](../../fr-FR/engineering/tar-gzip.md) | Deutsch | [Español](../../es-ES/engineering/tar-gzip.md) | [Português (Brasil)](../../pt-BR/engineering/tar-gzip.md) | [Русский](../../ru-RU/engineering/tar-gzip.md)
 
-Dieser Vertrag definiert Grenzen für Browsen, Erstellen und sicheres Extrahieren von TAR/TAR.GZ. Plattformresultate und manuelle Abnahme werden in Issues oder CI-Artefakten festgehalten. Eingabeautorisierung, Staging, Konflikte, Abbruch und Gesamtarchiv-Commit aus [sicherer Extraktion](zip-safe-extraction.md) und [ZIP-Erstellung](zip-creation.md) bleiben erhalten.
+Dieser Vertrag definiert Grenzen für Browsen, Erstellen und sicheres Extrahieren von TAR/TAR.GZ. Plattformresultate und manuelle Abnahme werden in Issues oder CI-Artefakten festgehalten. Eingabeautorisierung, Staging, Konflikte, Abbruch und Gesamtarchiv-Commit aus [sicherer Extraktion](../../engineering/zip-safe-extraction.md) und [ZIP-Erstellung](../../engineering/zip-creation.md) bleiben erhalten.
 
 <a name="xdzip-scope-and-capabilities"></a>
 
@@ -12,7 +12,7 @@ Dieser Vertrag definiert Grenzen für Browsen, Erstellen und sicheres Extrahiere
 
 Browsen, Erstellen und sicheres Extrahieren von TAR und TAR.GZ werden unterstützt. TAR ist ein Container und GZIP ein Kompressionsfilter; beim Lesen wird Inhalt erkannt statt ein Backend anhand der Endung gewählt. ZIP-Verhalten bleibt kompatibel. Automatisches verschachteltes Entfalten, Verschlüsselung und geteiltes TAR sind nicht aktiviert. Gewöhnliches GZIP für eine Datei verwendet den separaten [Stromvertrag](single-file-streams.md).
 
-TAR-Header, Zahlen, PAX, Streaming-Kodierung und Umschreiben verwenden eine unabhängige Rust-Datensatzschicht. GZIP-Rahmung, CRC-32 und Deflate LZ77/Huffman verwenden das gemeinsame `xdzip-compression`. `tar` und `flate2` dienen nur als Entwicklungstest-Referenzen und gelangen nicht in Produktionsabhängigkeitsschließungen dieser Crates. Spezifikationen, Quellen und Grenzen stehen im [Vertrag eigener Formate](independent-rust-codecs.md).
+TAR-Header, Zahlen, PAX, Streaming-Kodierung und Umschreiben verwenden eine unabhängige Rust-Datensatzschicht. GZIP-Rahmung, CRC-32 und Deflate LZ77/Huffman verwenden das gemeinsame `xdzip-compression`. `tar` und `flate2` dienen nur als Entwicklungstest-Referenzen und gelangen nicht in Produktionsabhängigkeitsschließungen dieser Crates. Spezifikationen, Quellen und Grenzen stehen im [Vertrag eigener Formate](../../engineering/independent-rust-codecs.md).
 
 TAR akzeptiert reguläre Dateien und Verzeichnisse und analysiert PAX-Pfade und lange GNU-Namen. Symbolische und harte Links, Geräte, FIFOs, Sparse-Dateien und unbekannte Typen können nicht extrahiert werden. Alle Ausgabenamen durchlaufen weiterhin PortablePath und die Host-Konfliktvorprüfung; Formatbibliotheken erhalten weder Dateipfade noch Entpackberechtigung. Verzeichnisrechte, Eigentümer und Spezialmodi werden nicht wiederhergestellt. Datumsangaben sind Anzeigemetadaten ohne Wiederherstellungsgarantie.
 

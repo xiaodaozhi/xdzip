@@ -4,7 +4,7 @@
 
 La CLI autonome fonctionne sans Qt ni session de bureau. Choisissez un paquet `xdzip-cli-` pour votre système dans les [versions GitHub](https://github.com/xiaodaozhi/xdzip/releases). Décompressez le paquet complet et conservez son programme auxiliaire à côté de l’exécutable. Depuis le répertoire extrait, lancez `./bin/xdzip --help` sous macOS ou Linux, ou `.\bin\xdzip.exe --help` dans PowerShell.
 
-Les exemples supposent que `xdzip` est dans PATH. Lancez `setup` depuis la CLI extraite pour enregistrer un lanceur utilisateur, puis ajoutez son répertoire de commande à PATH si nécessaire. Vérifiez avec `xdzip --version-json` que le programme trouvé indique `"component":"cli"`. Le lanceur du bureau et la CLI peuvent avoir le même nom de commande. En cas de conflit, utilisez le chemin explicite de la CLI extraite. [Installer et retirer la commande](../engineering/command-line.md#xdzip-build-and-command-installation)
+Les exemples supposent que `xdzip` est dans PATH. Lancez `setup` depuis la CLI extraite pour enregistrer un lanceur utilisateur, puis ajoutez son répertoire de commande à PATH si nécessaire. Vérifiez avec `xdzip --version-json` que le programme trouvé indique `"component":"cli"`. Le lanceur du bureau et la CLI peuvent avoir le même nom de commande. En cas de conflit, utilisez le chemin explicite de la CLI extraite. [Installer et retirer la commande](../../engineering/command-line.md#build-and-command-installation)
 
 <a name="xdzip-create-and-check"></a>
 
@@ -33,13 +33,13 @@ xdzip extract sample.zip docs/hello.txt -C output --conflict skip --json
 
 Les chemins de membres sont exacts, distinguent les majuscules des minuscules et utilisent des barres obliques. Si plusieurs enregistrements ont le même chemin, sélectionnez-les avec l’`id` renvoyé par `list`. Les identifiants commencent à 1. Par exemple, remplacez `docs/hello.txt` par `--entry-id 2` dans la seconde commande si la liste indique l’identifiant 2 pour ce fichier. Répétez `--entry-id` pour d’autres membres. Utilisez `path` pour retrouver le membre et `display_name` pour son affichage. Relancez la liste après toute modification de l’archive.
 
-La première page commence au décalage 0. Passez `data.next_offset` à `--offset` avec le même `--limit` pour lire la page suivante. Arrêtez lorsque `next_offset` vaut null. Le décalage est une position de ligne qui commence à zéro. Un identifiant désigne un enregistrement physique. Chaque commande rouvre l’archive. Laissez la source intacte entre les appels paginés. [Limites de sélection et de liste](../engineering/command-line.md#xdzip-archive-behavior)
+La première page commence au décalage 0. Passez `data.next_offset` à `--offset` avec le même `--limit` pour lire la page suivante. Arrêtez lorsque `next_offset` vaut null. Le décalage est une position de ligne qui commence à zéro. Un identifiant désigne un enregistrement physique. Chaque commande rouvre l’archive. Laissez la source intacte entre les appels paginés. [Limites de sélection et de liste](../../engineering/command-line.md#archive-behavior)
 
 <a name="xdzip-run-without-prompts"></a>
 
 ## Exécuter sans invite
 
-`--json` désactive les invites interactives. Pour une exécution sans surveillance, choisissez explicitement la règle en cas de conflit. Pour les commandes qui acceptent un mot de passe, comme `extract`, `test` ou `create` avec chiffrement, utilisez `--password-stdin` et transmettez une ligne UTF-8 contenant le mot de passe par un canal privé d’entrée standard. La création chiffrée exige aussi `--encrypt`. Si une décision ou un mot de passe requis manque, la CLI renvoie `interaction_required`. [Options de mot de passe et de format](../engineering/command-line.md#xdzip-archive-behavior)
+`--json` désactive les invites interactives. Pour une exécution sans surveillance, choisissez explicitement la règle en cas de conflit. Pour les commandes qui acceptent un mot de passe, comme `extract`, `test` ou `create` avec chiffrement, utilisez `--password-stdin` et transmettez une ligne UTF-8 contenant le mot de passe par un canal privé d’entrée standard. La création chiffrée exige aussi `--encrypt`. Si une décision ou un mot de passe requis manque, la CLI renvoie `interaction_required`. [Options de mot de passe et de format](../../engineering/command-line.md#archive-behavior)
 
 <a name="xdzip-interpret-results"></a>
 
@@ -55,4 +55,4 @@ Pour les opérations d’archive avec `--json`, lisez l’objet UTF-8 sur stdout
 | 3 | Vérifiez l’exigence signalée d’interaction, d’autorisation, de plateforme ou d’installation. |
 | 130 | L’annulation est confirmée. Vérifiez quels fichiers ont déjà été enregistrés définitivement. |
 
-Les valeurs inconnues peuvent être null. Après un échec ou une annulation, des fichiers enregistrés précédemment peuvent rester sur disque. Vérifiez `summary.committed_files`, quand le champ existe, avant de réessayer. La [référence CLI](../engineering/command-line.md) couvre la transmission au bureau, les reçus de mise à jour et le contrat de sortie complet.
+Les valeurs inconnues peuvent être null. Après un échec ou une annulation, des fichiers enregistrés précédemment peuvent rester sur disque. Vérifiez `summary.committed_files`, quand le champ existe, avant de réessayer. La [référence CLI](../../engineering/command-line.md) couvre la transmission au bureau, les reçus de mise à jour et le contrat de sortie complet.

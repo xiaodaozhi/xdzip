@@ -10,7 +10,7 @@
 
 Los primeros experimentos con frameworks usaban una lista de archivos comprimidos ficticia y tareas simuladas. El producto adoptó Qt Quick y un puente CXX tipado. Después se implementaron en Rust las operaciones reales sobre archivos comprimidos, tareas y archivos del sistema. El JSON, la ABI C y los tiempos del prototipo pertenecen a esos experimentos. Las [decisiones de arquitectura](architecture-decisions.md) conservan los motivos y las condiciones para reconsiderarlas.
 
-El producto acota los modelos de filas y comprueba la identidad de las consultas para que los resultados antiguos no sustituyan a una vista nueva. Añade identificadores físicos de entradas, capacidades de formato explícitas, autorizaciones de archivos, preparación temporal y publicación verificada. La CLI independiente llama al mismo núcleo sin Qt. Consulta la [arquitectura del sistema](system-architecture.md) y el [modelo de dominio](domain-data.md).
+El producto acota los modelos de filas y comprueba la identidad de las consultas para que los resultados antiguos no sustituyan a una vista nueva. Añade identificadores físicos de entradas, capacidades de formato explícitas, autorizaciones de archivos, preparación temporal y publicación verificada. La CLI independiente llama al mismo núcleo sin Qt. Consulta la [arquitectura del sistema](../../design/system-architecture.md) y el [modelo de dominio](domain-data.md).
 
 <a name="xdzip-current-experimental-and-proposed-work"></a>
 

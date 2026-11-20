@@ -16,6 +16,6 @@
 
 ## 압축 파일 열기
 
-XDZip에서 **압축 파일 열기**를 선택하거나 시작 화면으로 압축 파일을 끌어 놓으세요. 설치된 패키지가 등록되어 있으면 파일 관리자에서 **연결 프로그램**을 선택할 수 있습니다. 특정 파일 형식의 기본 앱으로 XDZip을 사용하려면 시스템 설정에서 지정하세요. Microsoft Store 버전은 파일 연결 페이지에서 **Windows 기본 앱 열기**을 제공합니다. 기본 앱과 파일 관리자 메뉴의 압축 작업은 별도로 설정합니다. [파일 관리자에서 압축 풀기](extract.md#xdzip-from-the-file-manager) 및 [설치 및 파일 연결](../engineering/installers-associations.md)을 참조하세요.
+XDZip에서 **압축 파일 열기**를 선택하거나 시작 화면으로 압축 파일을 끌어 놓으세요. 설치된 패키지가 등록되어 있으면 파일 관리자에서 **연결 프로그램**을 선택할 수 있습니다. 특정 파일 형식의 기본 앱으로 XDZip을 사용하려면 시스템 설정에서 지정하세요. Microsoft Store 버전은 파일 연결 페이지에서 **Windows 기본 앱 열기**을 제공합니다. 기본 앱과 파일 관리자 메뉴의 압축 작업은 별도로 설정합니다. [파일 관리자에서 압축 풀기](extract.md#xdzip-from-the-file-manager) 및 [설치 및 파일 연결](../../engineering/installers-associations.md)을 참조하세요.
 
 이어서 [파일을 탐색하고 미리 보는 방법](browse.md)을 알아보세요.

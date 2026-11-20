@@ -4,7 +4,7 @@
 
 [English](../../engineering/archive-opening.md) | [简体中文](../../zh-CN/engineering/archive-opening.md) | [繁體中文](../../zh-TW/engineering/archive-opening.md) | [日本語](../../ja-JP/engineering/archive-opening.md) | 한국어 | [Français](../../fr-FR/engineering/archive-opening.md) | [Deutsch](../../de-DE/engineering/archive-opening.md) | [Español](../../es-ES/engineering/archive-opening.md) | [Português (Brasil)](../../pt-BR/engineering/archive-opening.md) | [Русский](../../ru-RU/engineering/archive-opening.md)
 
-데스크톱 파일 선택, 파일 관리자 요청과 CLI는 같은 Rust 원본 열기 규칙을 사용합니다. 호스트는 허용된 볼륨 집합을 확인하고 원본 식별 정보를 기록한 뒤 허가된 바이트를 검사합니다. 선택된 백엔드는 때로 [격리된 형식 작업 프로세스](native-codecs.md)를 통해 [탐색 메타데이터](readonly-browser.md)를 제공합니다. 항목을 명시적으로 열면 연결된 앱을 위한 검증된 임시 사본이 만들어집니다. 전체 압축 파일을 확인하려면 별도의 [무결성 검사](archive-checking.md)를 사용합니다.
+데스크톱 파일 선택, 파일 관리자 요청과 CLI는 같은 Rust 원본 열기 규칙을 사용합니다. 호스트는 허용된 볼륨 집합을 확인하고 원본 식별 정보를 기록한 뒤 허가된 바이트를 검사합니다. 선택된 백엔드는 때로 [격리된 형식 작업 프로세스](native-codecs.md)를 통해 [탐색 메타데이터](../../engineering/readonly-browser.md)를 제공합니다. 항목을 명시적으로 열면 연결된 앱을 위한 검증된 임시 사본이 만들어집니다. 전체 압축 파일을 확인하려면 별도의 [무결성 검사](archive-checking.md)를 사용합니다.
 
 <a name="xdzip-split-zip"></a>
 
@@ -54,6 +54,6 @@ CAB 볼륨 이름은 헤더에서 가져오며 유효한 파일 이름이면 무
 
 읽기 전용 [Brotli/TAR.BR](brotli-streams.md) 승인은 행을 게시하기 전에 헤더 없는 후보를 완전히 검증하고 Brotli/LZMA 후보 읽기 장부를 공유합니다. 강한 원본과 유효한 TAR/ZIP 발견의 우선순위를 유지하며 손상된 디코딩 TAR을 일반 스트림으로 낮추지 않습니다.
 
-[LHA/LZH](lha-containers.md) 후보는 게시 전에 헤더와 이름의 완전하고 제한된 검증이 필요하며 0 하나로 된 빈 압축 파일도 포함합니다. 약한 LHA, Brotli, LZMA 후보는 실제 읽기 장부 하나를 공유합니다. 강하고 유효한 컨테이너 발견이 우선하며 완전한 LHA 승인은 유효하지 않은 원시 TAR 표식의 모호함을 해소할 수 있습니다. 암호, 볼륨, 복구 프로필은 승인하지 않습니다.
+[LHA/LZH](../../engineering/lha-containers.md) 후보는 게시 전에 헤더와 이름의 완전하고 제한된 검증이 필요하며 0 하나로 된 빈 압축 파일도 포함합니다. 약한 LHA, Brotli, LZMA 후보는 실제 읽기 장부 하나를 공유합니다. 강하고 유효한 컨테이너 발견이 우선하며 완전한 LHA 승인은 유효하지 않은 원시 TAR 표식의 모호함을 해소할 수 있습니다. 암호, 볼륨, 복구 프로필은 승인하지 않습니다.
 
 [PMA](pma-streams.md)는 같은 약한 탐색 공유 장부와 완전한 메타데이터 승인을 사용하며 정확한 0 종료자와 선택적인 제한된 CP/M 채우기를 허용합니다. 레벨 0 PM0/PM1/PM2 콘텐츠를 지원하고 알 수 없는 방식은 표시하되 지원하지 않습니다. 채워진 빈 CP/M 컨테이너는 PMA로 식별하며 구별할 수 없는 1바이트 0 종료자는 이전 LZH 선택을 유지합니다. 생성, 암호, 볼륨, 수정, 복구 프로필은 승인하지 않습니다.

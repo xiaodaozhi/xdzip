@@ -32,7 +32,7 @@ Este guia descreve comportamento, foco e ações de fechamento das janelas de cr
 - Os quatro níveis ZIP correspondem a Store/Deflate 1/6/9, com 2 normal como padrão. TAR e TAR.GZ podem ser criados; mudar o formato sincroniza extensões e limpa a senha e a divisão em volumes. TAR desativa o nível; os níveis TAR.GZ 0/1/2/3 correspondem a GZIP 0/1/6/9. A mudança sincroniza a extensão sem sobrescrever destinos silenciosamente.
 - Sem entrada, com nome vazio, destino inválido ou permissão ausente, Criar fica desativado e o motivo aparece ao lado do campo. O texto do erro participa da leitura de tela, em vez de mudar apenas a cor da borda.
 - O núcleo trata entradas duplicadas e expansão de diretórios; a interface mostra apenas resumos da seleção. Ícones de imagem na criação indicam o tipo, não são prévias de imagem.
-- ZIP e 7z expõem suas configurações compatíveis de senha e volumes. 7z também pode criptografar nomes de arquivos. O registro de formatos lista os recursos reais de gravação. [Criação ZIP](../engineering/zip-creation.md), [registro de formatos](../engineering/format-registry.md)
+- ZIP e 7z expõem suas configurações compatíveis de senha e volumes. 7z também pode criptografar nomes de arquivos. O registro de formatos lista os recursos reais de gravação. [Criação ZIP](../../engineering/zip-creation.md), [registro de formatos](../engineering/format-registry.md)
 
 <a name="xdzip-task-data-and-exceptions"></a>
 
@@ -58,7 +58,7 @@ Os orçamentos de saída padrão do hospedeiro existente são 8 GiB por arquivo 
 
 Todas as janelas de operação seguem a [especificação de janelas por plataforma](platform-windows.md). Barras de título nativas do macOS não usam botões de semáforo recortados. A camada de plataforma verifica posição e estados desativados dos botões de título do Windows/Linux, menus do sistema e movimentação. Controles à direita em imagens de comparação do Linux não são uma promessa fixada no código para todos os ambientes de desktop.
 
-As dimensões atuais seguem [layout-scale.json](../../../specs/visual/layout-scale.json), o [registro de janelas](../../../specs/visual/window-registry.json) e o [padrão de design](../visual/design-standard.md), substituindo sugestões iniciais grandes demais. Criação, extração, conflito, progresso e resultados compartilham largura 491; configurações usa 612 como diferença registrada para sua finalidade. Título 20, corpo 13, botões de rodapé 13 e texto de apoio 12. A altura segue o conteúdo e o limite de cada janela; o corpo rola. Janelas de operação com rodapé o mantêm fixo e acessível; configurações não tem rodapé. Configurações oferece tamanhos de fonte 100%/125%/150%; não deduzir dimensões de componentes do escalonamento global ou dos pixels físicos de capturas.
+As dimensões atuais seguem [layout-scale.json](../../../specs/visual/layout-scale.json), o [registro de janelas](../../../specs/visual/window-registry.json) e o [padrão de design](../../visual/design-standard.md), substituindo sugestões iniciais grandes demais. Criação, extração, conflito, progresso e resultados compartilham largura 491; configurações usa 612 como diferença registrada para sua finalidade. Título 20, corpo 13, botões de rodapé 13 e texto de apoio 12. A altura segue o conteúdo e o limite de cada janela; o corpo rola. Janelas de operação com rodapé o mantêm fixo e acessível; configurações não tem rodapé. Configurações oferece tamanhos de fonte 100%/125%/150%; não deduzir dimensões de componentes do escalonamento global ou dos pixels físicos de capturas.
 
 | Uso | Recursos adicionados | Partes compartilhadas / dinâmicas |
 | --- | --- | --- |
@@ -74,7 +74,7 @@ Os recursos ficam em `design/assets/`. `reference/` mantém recortes nos pixels 
 
 ## Adição da árvore de diretórios
 
-A navegação B01 adiciona a [especificação B da árvore de diretórios](directory-tree.md), com três pranchetas formais e 26 recortes compartilhados. Setas de nós dependem de subdiretórios; expansão, diretório atual e foco do teclado são independentes. Carregamento, arquivos compactados vazios, arquivos na raiz, limites de navegação, falhas e caminhos atuais ocultos são especificados separadamente; o contrato de domínio somente leitura existente não muda. HTML e Qt integram a navegação principal, linhas de conexão e indicadores de ramo atual oculto; esqueletos e ícones específicos de limites continuam como recursos de design. Consulte a especificação da árvore para o escopo da integração.
+A navegação B01 adiciona a [especificação B da árvore de diretórios](../../ux/directory-tree.md), com três pranchetas formais e 26 recortes compartilhados. Setas de nós dependem de subdiretórios; expansão, diretório atual e foco do teclado são independentes. Carregamento, arquivos compactados vazios, arquivos na raiz, limites de navegação, falhas e caminhos atuais ocultos são especificados separadamente; o contrato de domínio somente leitura existente não muda. HTML e Qt integram a navegação principal, linhas de conexão e indicadores de ramo atual oculto; esqueletos e ícones específicos de limites continuam como recursos de design. Consulte a especificação da árvore para o escopo da integração.
 
 <a name="xdzip-changes-and-revalidation"></a>
 

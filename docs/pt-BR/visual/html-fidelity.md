@@ -19,7 +19,7 @@ As imagens de alta fidelidade são a referência visual; HTML é a implementaç�
 
 ## Tamanho de exibição e pixels de origem
 
-A exibição normal usa a [janela com largura de 1024 pixels lógicos](README.md), mapeando uniformemente coordenadas de origem por `1024 / 1548`. A janela principal aparece com 1024 × aproximadamente 621,81 pixels CSS; o original usa a mesma escala. Essa proporção é uma convenção explícita de design, não uma dedução sobre Retina ou DPI a partir de um PNG.
+A exibição normal usa a [janela com largura de 1024 pixels lógicos](../../visual/README.md), mapeando uniformemente coordenadas de origem por `1024 / 1548`. A janela principal aparece com 1024 × aproximadamente 621,81 pixels CSS; o original usa a mesma escala. Essa proporção é uma convenção explícita de design, não uma dedução sobre Retina ou DPI a partir de um PNG.
 
 `display-spec.js` é a única fonte das dimensões das pranchetas e escalas de exibição. O desktop usa por padrão o tamanho normal e dispositivos móveis usam ajuste; a escala ajustada é limitada ao tamanho normal para evitar ampliação automática em telas largas. O modo de pixels originais usa `scale=1`, preservando dimensões originais e rolagem tanto no HTML quanto na imagem. A proporção de pixels do dispositivo afeta apenas a densidade de rasterização, não a largura lógica CSS.
 
@@ -87,4 +87,4 @@ O arquivo offline de cabeçalho é `dist/xdzip-header-review.html` e o de corpo 
 
 Execute essas verificações HTML e revisões offline localmente quando necessário; elas não fazem parte da CI padrão do produto desktop. Investigue falhas de âncora e examine sobreposições mesmo após aprovação geométrica. Verificações HTML da janela principal não substituem a calibração de outras páginas ou do produto Qt nem a aceitação nativa de desktop.
 
-A densidade normal da janela principal e do menu segue o [padrão de interface](design-standard.md). As proporções de tamanho de fonte de menus e listas Qt devem ser verificadas juntas. Ao revisar HTML localmente, confira o zoom real da página conforme o [método de verificação](../../../developers/qa/README.md); corresponder às coordenadas antigas da imagem de origem não substitui essa verificação.
+A densidade normal da janela principal e do menu segue o [padrão de interface](../../visual/design-standard.md). As proporções de tamanho de fonte de menus e listas Qt devem ser verificadas juntas. Ao revisar HTML localmente, confira o zoom real da página conforme o [método de verificação](../../../developers/qa/README.md); corresponder às coordenadas antigas da imagem de origem não substitui essa verificação.

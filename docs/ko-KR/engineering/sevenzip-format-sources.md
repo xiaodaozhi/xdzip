@@ -4,7 +4,7 @@
 
 [English](../../engineering/sevenzip-format-sources.md) | [简体中文](../../zh-CN/engineering/sevenzip-format-sources.md) | [繁體中文](../../zh-TW/engineering/sevenzip-format-sources.md) | [日本語](../../ja-JP/engineering/sevenzip-format-sources.md) | 한국어 | [Français](../../fr-FR/engineering/sevenzip-format-sources.md) | [Deutsch](../../de-DE/engineering/sevenzip-format-sources.md) | [Español](../../es-ES/engineering/sevenzip-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/sevenzip-format-sources.md) | [Русский](../../ru-RU/engineering/sevenzip-format-sources.md)
 
-이 문서는 재사용 가능한 출처와 구현 경계를 기록합니다. 마이그레이션 승인과 남은 기능은 [issue #50](https://github.com/xiaodaozhi/xdzip/issues/50)에서 추적합니다. Rust 경로 고정과 제품의 공식 의존성 제거가 플랫폼 간, 수동 또는 릴리스 승인을 자동으로 입증하지는 않습니다. 일반적인 대체 규칙은 [독립 구현 계약](independent-rust-codecs.md)에 있습니다.
+이 문서는 재사용 가능한 출처와 구현 경계를 기록합니다. 마이그레이션 승인과 남은 기능은 [issue #50](https://github.com/xiaodaozhi/xdzip/issues/50)에서 추적합니다. Rust 경로 고정과 제품의 공식 의존성 제거가 플랫폼 간, 수동 또는 릴리스 승인을 자동으로 입증하지는 않습니다. 일반적인 대체 규칙은 [독립 구현 계약](../../engineering/independent-rust-codecs.md)에 있습니다.
 
 <a name="xdzip-specifications-and-reference-identity"></a>
 
@@ -35,7 +35,7 @@ LZMA 비트스트림은 Igor Pavlov의 2015-06-14 [공식 사양 패키지](http
 
 고정 아카이브와 파일의 식별 정보, 실제 읽은 범위와 사실 인계 요약을 개발 증거와 함께 보관합니다. 참조를 업그레이드할 때 다시 확인하며 오래된 줄 번호로 새 버전의 동작을 입증하지 않습니다. 사양 상수, 식별자와 수학 관계는 형식 구현에 사용할 수 있지만 내부 최적화와 과거에 정의되지 않은 동작은 제품에 권한을 부여하지 않습니다. 퍼블릭 도메인 선언은 전체 아카이브, 문서, C++ 래퍼나 다른 샘플로 확장되지 않습니다.
 
-이는 엄격한 클린룸이나 법적 위험이 없다는 주장이 아닙니다. 제3자 출처, 공식 백엔드를 포함한 과거 배포와 독립 테스트 도구는 각자의 조건을 따릅니다. 현재 제품은 공식 백엔드를 빌드하지 않습니다. [라이선스](licensing.md)와 [대응 소스](source-delivery.md)를 참조하세요.
+이는 엄격한 클린룸이나 법적 위험이 없다는 주장이 아닙니다. 제3자 출처, 공식 백엔드를 포함한 과거 배포와 독립 테스트 도구는 각자의 조건을 따릅니다. 현재 제품은 공식 백엔드를 빌드하지 않습니다. [라이선스](licensing.md)와 [대응 소스](../../engineering/source-delivery.md)를 참조하세요.
 
 <a name="xdzip-interoperability-boundaries"></a>
 

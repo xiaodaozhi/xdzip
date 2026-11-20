@@ -6,7 +6,7 @@
 
 이 Linux 절차는 제공된 ICU 소스, CLDR 43.1 부분 집합과 ICU 73.1 부트스트랩 소스를 사용하여 ICU 73.2 로캘 리소스를 다시 빌드합니다. 부분 집합은 ISO 639-3 파일 5개, 표준 문서 디렉터리 `docs/ldml`, 문서 스크린샷 2개를 제외하고 웹 도구 이미지 963개를 대체합니다. [Unicode가 게시한 UTS #35 버전 43.1](https://www.unicode.org/reports/tr35/tr35-69/tr35.html)은 권리자의 조건에 따라 별도로 제공됩니다. 다른 용도나 추가 데이터는 출처와 조건을 별도로 검토해야 합니다. JDK 17, Ant, Maven, Python 3, C/C++ 도구 체인, `make`, UTF-8 로캘이 설치된 Ubuntu 24.04 x86_64를 사용하세요. Maven은 처음에 의존성 저장소에 접근해야 합니다. `XDZIP_DELIVERY`는 신뢰할 수 있는 전달물로, `JAVA_HOME`은 JDK 17로 설정합니다. 기존 소스나 빌드 결과를 덮어쓰지 않도록 새 작업 디렉터리를 사용하세요. 로컬에서 빌드한 부트스트랩 JAR이 상위 프로젝트에서 게시한 산출물과 바이트 단위로 동일하다고 주장하지 않습니다. CLDR 부분 집합의 gzip 바이트는 빌드 환경에 따라 달라질 수 있으므로 신뢰할 수 있는 경로로 받은 해당 전달물의 매니페스트와 대조하세요.
 
-부분 집합의 다른 파일에는 ISO 639-3과 일치하는 언어 식별자와 별칭이 다수 남아 있으며 언어 하위 태그 레지스트리도 포함됩니다. 원래 표 5개를 제외하는 것만으로 해당 데이터의 출처나 사용 권한이 해결되지는 않습니다. [소스 전달 가이드](source-delivery.md)와 [#140](https://github.com/xiaodaozhi/xdzip/issues/140#issuecomment-6589292716)에 비교 내용과 버전 간 한계가 설명되어 있습니다.
+부분 집합의 다른 파일에는 ISO 639-3과 일치하는 언어 식별자와 별칭이 다수 남아 있으며 언어 하위 태그 레지스트리도 포함됩니다. 원래 표 5개를 제외하는 것만으로 해당 데이터의 출처나 사용 권한이 해결되지는 않습니다. [소스 전달 가이드](../../engineering/source-delivery.md)와 [#140](https://github.com/xiaodaozhi/xdzip/issues/140#issuecomment-6589292716)에 비교 내용과 버전 간 한계가 설명되어 있습니다.
 
 ```sh
 export XDZIP_DELIVERY=/path/to/source-delivery

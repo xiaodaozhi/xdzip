@@ -4,7 +4,7 @@
 
 [English](../../design/product-requirements.md) | [简体中文](../../zh-CN/design/product-requirements.md) | [繁體中文](../../zh-TW/design/product-requirements.md) | 日本語 | [한국어](../../ko-KR/design/product-requirements.md) | [Français](../../fr-FR/design/product-requirements.md) | [Deutsch](../../de-DE/design/product-requirements.md) | [Español](../../es-ES/design/product-requirements.md) | [Português (Brasil)](../../pt-BR/design/product-requirements.md) | [Русский](../../ru-RU/design/product-requirements.md)
 
-XDZip ではアーカイブをフォルダーのように閲覧し、選択した内容を扱えます。形式が対応する場合は作成や変更もできます。デスクトップと[独立 CLI](../engineering/command-line.md) は同じアーカイブランタイムを使います。現在の機能と配布方法は[プロジェクト README](../../../README.ja-JP.md)を参照してください。以下は維持・検証する動作です。
+XDZip ではアーカイブをフォルダーのように閲覧し、選択した内容を扱えます。形式が対応する場合は作成や変更もできます。デスクトップと[独立 CLI](../../engineering/command-line.md) は同じアーカイブランタイムを使います。現在の機能と配布方法は[プロジェクト README](../../../README.ja-JP.md)を参照してください。以下は維持・検証する動作です。
 
 <a name="xdzip-requirements-and-implementation"></a>
 
@@ -33,8 +33,8 @@ XDZip ではアーカイブをフォルダーのように閲覧し、選択し�
 ## 操作と範囲
 
 - **開いて確認。** ファイルを開く要求はデスクトップのセッション管理へ送られます。走査に成功するとセッションを公開し、検索と並べ替えは新しい照会を作ります。ダブルクリックでフォルダーに入り、対応するファイルは一時コピーを介して開きます。プロパティパネルが見えているときは、対応ファイルを一つ選ぶとプレビューが始まります。[閲覧とプレビュー](../user-guide/browse.md)、[一時的に開く](../engineering/archive-opening.md)
-- **展開。**「すべて展開」はアーカイブ全体を対象とします。一致項目だけを展開するには、検索結果から選び、対象範囲を確認します。メタデータの事前検査は書き込み許可の前に問題を報告します。ファイルごとに確定するため、後の失敗やキャンセル後も完了済みファイルは残ります。[展開](../engineering/zip-safe-extraction.md)、[タスクのスケジュール](task-scheduling.md)
-- **作成、変更、検査。** 作成と対応する変更は一時出力を検証してから確定します。検査は対応アーカイブを形式に従って調べ、出力の権限は得ません。操作の可否は形式、項目、入力元のプロファイルによります。[形式レジストリ](../engineering/format-registry.md)、[アーカイブ転送](../engineering/archive-transfers.md)、[アーカイブ検査](../engineering/archive-checking.md)
+- **展開。**「すべて展開」はアーカイブ全体を対象とします。一致項目だけを展開するには、検索結果から選び、対象範囲を確認します。メタデータの事前検査は書き込み許可の前に問題を報告します。ファイルごとに確定するため、後の失敗やキャンセル後も完了済みファイルは残ります。[展開](../../engineering/zip-safe-extraction.md)、[タスクのスケジュール](task-scheduling.md)
+- **作成、変更、検査。** 作成と対応する変更は一時出力を検証してから確定します。検査は対応アーカイブを形式に従って調べ、出力の権限は得ません。操作の可否は形式、項目、入力元のプロファイルによります。[形式レジストリ](../engineering/format-registry.md)、[アーカイブ転送](../../engineering/archive-transfers.md)、[アーカイブ検査](../engineering/archive-checking.md)
 
 <a name="xdzip-planned-scope-and-verification"></a>
 

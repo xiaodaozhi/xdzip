@@ -4,7 +4,7 @@
 
 [English](../../engineering/windows-licensing.md) | [简体中文](../../zh-CN/engineering/windows-licensing.md) | [繁體中文](../../zh-TW/engineering/windows-licensing.md) | [日本語](../../ja-JP/engineering/windows-licensing.md) | 한국어 | [Français](../../fr-FR/engineering/windows-licensing.md) | [Deutsch](../../de-DE/engineering/windows-licensing.md) | [Español](../../es-ES/engineering/windows-licensing.md) | [Português (Brasil)](../../pt-BR/engineering/windows-licensing.md) | [Русский](../../ru-RU/engineering/windows-licensing.md)
 
-이 페이지는 Windows 빌드와 재배포에 적용되는 경로를 정의하며 [네이티브 런타임 자료](native-runtime-materials.md), [개발자 빌드 진입점](developer-build.md), [설치 계약](installers-associations.md)과 함께 사용합니다. 구체적인 환경, 검증 커밋, 자료 해시와 승인 결론은 issue와 로컬 또는 CI 산출물에 기록하며 이 페이지는 특정 기기의 라이선스 증명을 보관하지 않습니다.
+이 페이지는 Windows 빌드와 재배포에 적용되는 경로를 정의하며 [네이티브 런타임 자료](native-runtime-materials.md), [개발자 빌드 진입점](../../engineering/developer-build.md), [설치 계약](../../engineering/installers-associations.md)과 함께 사용합니다. 구체적인 환경, 검증 커밋, 자료 해시와 승인 결론은 issue와 로컬 또는 CI 산출물에 기록하며 이 페이지는 특정 기기의 라이선스 증명을 보관하지 않습니다.
 
 <a name="xdzip-free-community-path-and-local-choice"></a>
 

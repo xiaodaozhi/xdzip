@@ -4,7 +4,7 @@
 
 [English](../../design/product-requirements.md) | [简体中文](../../zh-CN/design/product-requirements.md) | [繁體中文](../../zh-TW/design/product-requirements.md) | [日本語](../../ja-JP/design/product-requirements.md) | [한국어](../../ko-KR/design/product-requirements.md) | Français | [Deutsch](../../de-DE/design/product-requirements.md) | [Español](../../es-ES/design/product-requirements.md) | [Português (Brasil)](../../pt-BR/design/product-requirements.md) | [Русский](../../ru-RU/design/product-requirements.md)
 
-XDZip permet de parcourir les archives comme des dossiers, de travailler sur une sélection et de créer ou modifier les archives lorsque le format le permet. Le bureau et la [CLI autonome](../engineering/command-line.md) partagent le cœur de traitement des archives. Le [README du projet](../../../README.fr-FR.md) décrit les capacités et distributions actuelles. Les exigences suivantes définissent le comportement à préserver et vérifier.
+XDZip permet de parcourir les archives comme des dossiers, de travailler sur une sélection et de créer ou modifier les archives lorsque le format le permet. Le bureau et la [CLI autonome](../../engineering/command-line.md) partagent le cœur de traitement des archives. Le [README du projet](../../../README.fr-FR.md) décrit les capacités et distributions actuelles. Les exigences suivantes définissent le comportement à préserver et vérifier.
 
 <a name="xdzip-requirements-and-implementation"></a>
 
@@ -33,8 +33,8 @@ XDZip permet de parcourir les archives comme des dossiers, de travailler sur une
 ## Parcours et périmètre
 
 - **Ouvrir et examiner.** La demande d’ouverture atteint le coordinateur de sessions. Une analyse réussie publie une session. Recherche et tri créent une nouvelle requête. Un double-clic ouvre un dossier ou un fichier admissible via une copie temporaire. Avec le panneau des propriétés visible, sélectionner un fichier pris en charge lance son aperçu. [Navigation et aperçu](../user-guide/browse.md), [Ouverture temporaire](../engineering/archive-opening.md)
-- **Extraire.** « Tout extraire » concerne l’archive entière. Pour limiter l’extraction aux résultats, sélectionnez-les dans la recherche et vérifiez la portée. La vérification préalable des métadonnées fournit des constats avant l’autorisation d’écriture. Les validations fichier par fichier conservent les fichiers achevés après un échec ou une annulation ultérieurs. [Extraction](../engineering/zip-safe-extraction.md), [Ordonnancement](task-scheduling.md)
-- **Créer, modifier ou vérifier.** La création et les modifications admissibles vérifient la sortie temporaire avant publication. Vérifier contrôle une archive admissible selon son format sans obtenir d’autorisation de sortie. Les opérations dépendent du format, de l’entrée et du profil source. [Registre des formats](../engineering/format-registry.md), [Transferts](../engineering/archive-transfers.md), [Vérification des archives](../engineering/archive-checking.md)
+- **Extraire.** « Tout extraire » concerne l’archive entière. Pour limiter l’extraction aux résultats, sélectionnez-les dans la recherche et vérifiez la portée. La vérification préalable des métadonnées fournit des constats avant l’autorisation d’écriture. Les validations fichier par fichier conservent les fichiers achevés après un échec ou une annulation ultérieurs. [Extraction](../../engineering/zip-safe-extraction.md), [Ordonnancement](task-scheduling.md)
+- **Créer, modifier ou vérifier.** La création et les modifications admissibles vérifient la sortie temporaire avant publication. Vérifier contrôle une archive admissible selon son format sans obtenir d’autorisation de sortie. Les opérations dépendent du format, de l’entrée et du profil source. [Registre des formats](../engineering/format-registry.md), [Transferts](../../engineering/archive-transfers.md), [Vérification des archives](../engineering/archive-checking.md)
 
 <a name="xdzip-planned-scope-and-verification"></a>
 

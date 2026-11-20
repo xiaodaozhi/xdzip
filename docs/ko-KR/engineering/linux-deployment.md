@@ -4,7 +4,7 @@
 
 [English](../../engineering/linux-deployment.md) | [简体中文](../../zh-CN/engineering/linux-deployment.md) | [繁體中文](../../zh-TW/engineering/linux-deployment.md) | [日本語](../../ja-JP/engineering/linux-deployment.md) | 한국어 | [Français](../../fr-FR/engineering/linux-deployment.md) | [Deutsch](../../de-DE/engineering/linux-deployment.md) | [Español](../../es-ES/engineering/linux-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/linux-deployment.md) | [Русский](../../ru-RU/engineering/linux-deployment.md)
 
-현재 개발 배포 기준은 Ubuntu 24.04, x86_64, X11입니다. 목표는 개발용 Qt SDK 없이 현재 제품을 실행하는 것이며 다른 배포판, 더 오래된 glibc, Wayland 또는 완전한 설치 프로그램 지원을 약속하지 않습니다. macOS CI는 네이티브 빌드, 테스트, 시작 검증을 유지합니다. 로컬 개발 DMG는 [Mac 배포 안내서](macos-deployment.md)를 따르며 이 절차의 영향을 받지 않습니다.
+현재 개발 배포 기준은 Ubuntu 24.04, x86_64, X11입니다. 목표는 개발용 Qt SDK 없이 현재 제품을 실행하는 것이며 다른 배포판, 더 오래된 glibc, Wayland 또는 완전한 설치 프로그램 지원을 약속하지 않습니다. macOS CI는 네이티브 빌드, 테스트, 시작 검증을 유지합니다. 로컬 개발 DMG는 [Mac 배포 안내서](../../engineering/macos-deployment.md)를 따르며 이 절차의 영향을 받지 않습니다.
 
 <a name="xdzip-layout-and-generation"></a>
 
@@ -29,7 +29,7 @@ patchelf는 각 ELF에 상대 `$ORIGIN` RPATH를 설정하고 각 플러그인�
 
 상대 RPATH를 다시 쓴 뒤 배포는 불필요한 네이티브 심볼 테이블을 제거하고 모든 DT_NEEDED 및 RPATH/RUNPATH 항목이 변하지 않았는지 검증합니다. 각 ELF의 도구 버전, 전후 해시와 바이트 수를 `symbol_stripping`에 기록하며 SDK 입력과 원본 빌드 바이너리는 건드리지 않습니다. 진단 복사본에는 하위 배포 스크립트가 `--keep-symbols`를 허용합니다. 최종 SDK 귀속과 애플리케이션 해시는 변환된 파일을 설명합니다. 이는 패키지 크기를 줄이는 것이며 측정된 메모리 또는 처리량 개선을 뜻하지 않습니다.
 
-일상적인 생성과 검증에는 [통합 빌드 진입점](developer-build.md)을 단계별로 사용합니다. 먼저 같은 구성의 빌드, 테스트, 패키징 준비를 마친 다음 실행합니다.
+일상적인 생성과 검증에는 [통합 빌드 진입점](../../engineering/developer-build.md)을 단계별로 사용합니다. 먼저 같은 구성의 빌드, 테스트, 패키징 준비를 마친 다음 실행합니다.
 
 ```sh
 python3 scripts/desktop.py doctor --for-stage package
@@ -77,4 +77,4 @@ CI는 xdzip-linux-x86_64.tar.gz를 생성하고 SHA-256과 실행 파일 해시�
 
 여기서 생성한 `build/package` 런타임 디렉터리, tar.gz와 .deb는 실험적 개발 제공물이며 자동 설치하거나 기본 연결을 변경하지 않습니다. 공식 Release용 Ubuntu tar.gz와 .deb는 전용 Release 워크플로에서 생성하고 [릴리스 프로토콜](release-protocol.md)에 따라 제공합니다. 플랫폼 범위는 [지원 정책](support-policy.md)을 따르며 다른 배포판과 데스크톱, Wayland 및 관련 확장은 별도 issue가 필요합니다. 기존 데스크톱 수용은 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)에 남습니다. 이후 변경은 영향을 받는 실제 IME와 화면 읽기 프로그램, 클린 설치·업그레이드·제거 검사를 다시 검증하며 디렉터리 재빌드만으로 기존 수용을 반복할 필요는 없습니다. 과거 `v0.1.0` 구성 요소 검토는 [#4](https://github.com/xiaodaozhi/xdzip/issues/4)와 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)에 있으며 디렉터리 실행 성공이 향후 릴리스 조건을 자동으로 완료하지는 않습니다.
 
-Ubuntu .deb 설치, 업그레이드, 롤백, 제거, 런타임 잠금과 데스크톱 MIME 자동화는 [설치와 연결](installers-associations.md)을 참조하세요. 런타임 컨테이너 통과는 실제 데스크톱 검사나 릴리스 라이선스 검토를 대신하지 않습니다.
+Ubuntu .deb 설치, 업그레이드, 롤백, 제거, 런타임 잠금과 데스크톱 MIME 자동화는 [설치와 연결](../../engineering/installers-associations.md)을 참조하세요. 런타임 컨테이너 통과는 실제 데스크톱 검사나 릴리스 라이선스 검토를 대신하지 않습니다.

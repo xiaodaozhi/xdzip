@@ -12,7 +12,7 @@ python3 scripts/qt_sdk_correspondence.py \
   --output build/review/qt-sdk-correspondence.json
 ```
 
-Standardmäßig wird build/source-cache offline gelesen und bei Fehlen ein Fehler ausgegeben. Nur ein ausdrücklich angegebenes --fetch lädt offizielle Archive aus dem [festgelegten Manifest](../../../scripts/corresponding-sources.json) und prüft sie. Die bei Bedarf gestarteten Qt-Workflows für drei Plattformen führen --fetch nach Installation des festgelegten SDK aus und bewahren JSON mit den anderen Prüfnachweisen auf. Auf dem Mac werden weiterhin nur Nachweise hochgeladen, ohne Apps zu deployen, zu signieren oder zu paketieren. Erhält der Sammler für Quelllieferungen --qt-prefix, nimmt er diesen Nachweis, Patches und das festgelegte Manifest in die Lieferhashes auf; siehe [Quelllieferung](source-delivery.md).
+Standardmäßig wird build/source-cache offline gelesen und bei Fehlen ein Fehler ausgegeben. Nur ein ausdrücklich angegebenes --fetch lädt offizielle Archive aus dem [festgelegten Manifest](../../../scripts/corresponding-sources.json) und prüft sie. Die bei Bedarf gestarteten Qt-Workflows für drei Plattformen führen --fetch nach Installation des festgelegten SDK aus und bewahren JSON mit den anderen Prüfnachweisen auf. Auf dem Mac werden weiterhin nur Nachweise hochgeladen, ohne Apps zu deployen, zu signieren oder zu paketieren. Erhält der Sammler für Quelllieferungen --qt-prefix, nimmt er diesen Nachweis, Patches und das festgelegte Manifest in die Lieferhashes auf; siehe [Quelllieferung](../../engineering/source-delivery.md).
 
 <a name="xdzip-verification-layers"></a>
 

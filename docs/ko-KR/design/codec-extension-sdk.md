@@ -14,7 +14,7 @@
 | 함께 제공되는 아카이브 작업자 | 호스트의 `xdzip-codec-native`가 `xdzip-native-codec`를 시작합니다. C++ 프로토콜 계층은 `xdzip-codec-bridge`를 통해 Rust 7z, RAR, CAB와 광학 미디어 백엔드를 호출합니다. 적용 가능한 7z 생성과 다시 쓰기도 같은 경로를 사용합니다. ISO 생성은 프로세스 내부의 광학 기록기를 사용합니다. |
 | 외부 SDK 시험 | `xdzip-plugin-host`와 `xdzip-plugin-protocol`은 독립적이고 명시적인 XDP1 실험을 구성합니다. 데스크톱과 CLI 제품 빌드는 타사 확장을 찾거나 설치하거나 실행하지 않습니다. |
 
-처음 두 경로는 제품 내장 구성 요소입니다. 제공되는 작업자는 전용 프로토콜과 리소스 감독을 가진 별도 프로세스입니다. 외부 시험에는 자체 패키지 검증, 버전 협상과 플랫폼 권한 조건이 있습니다. [시스템 아키텍처](system-architecture.md), [아카이브 작업자 계약](../engineering/native-codecs.md), [SDK 시험 계약](../engineering/sdk-trial.md)
+처음 두 경로는 제품 내장 구성 요소입니다. 제공되는 작업자는 전용 프로토콜과 리소스 감독을 가진 별도 프로세스입니다. 외부 시험에는 자체 패키지 검증, 버전 협상과 플랫폼 권한 조건이 있습니다. [시스템 아키텍처](../../design/system-architecture.md), [아카이브 작업자 계약](../engineering/native-codecs.md), [SDK 시험 계약](../engineering/sdk-trial.md)
 
 <a name="xdzip-product-routing-and-operation-capabilities"></a>
 
@@ -37,7 +37,7 @@
 
 경로, 원본 재검증, 취소, 암호, 할당량과 모든 최종 게시는 호스트가 소유합니다. 코덱은 작업에 필요한 인터페이스를 통해 권한을 받습니다. 아카이브 작업자는 허용된 원본 구간을 요청하고 제한된 레코드 또는 출력 블록을 전달합니다. 호스트는 동작 전에 프로토콜 상태와 바이트 할당량을 검증합니다. 작업자 오류나 잘못된 응답은 게시를 승인할 수 없습니다. 작업자 경계는 장애와 리소스를 격리합니다. 임의의 외부 코드에 대한 커널 권한 제한은 시험의 별도 요구 사항입니다. [메타데이터 계약](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-codec-api/src/lib.rs), [데이터 계약](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-codec-api/src/payload.rs), [인코딩과 다시 쓰기 계약](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-codec-api/src/encode.rs), [파일 권한](file-security.md)
 
-이 Rust trait는 내부 소스 인터페이스입니다. 제품 어댑터는 작업 공간과 명시적 런타임 라우팅에 통합됩니다. 허용된 각 작업은 유효한 파일, 미지원 기능, 리소스 제한, 손상과 출력 동작에 대한 별도 테스트가 필요합니다. [독립 Rust 코덱 계약](../engineering/independent-rust-codecs.md)과 [개발 가이드](../contributing/README.md)를 사용하세요.
+이 Rust trait는 내부 소스 인터페이스입니다. 제품 어댑터는 작업 공간과 명시적 런타임 라우팅에 통합됩니다. 허용된 각 작업은 유효한 파일, 미지원 기능, 리소스 제한, 손상과 출력 동작에 대한 별도 테스트가 필요합니다. [독립 Rust 코덱 계약](../../engineering/independent-rust-codecs.md)과 [개발 가이드](../contributing/README.md)를 사용하세요.
 
 <a name="xdzip-implemented-external-sdk-trial"></a>
 

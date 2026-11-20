@@ -4,7 +4,7 @@
 
 [English](../../engineering/windows-licensing.md) | [简体中文](../../zh-CN/engineering/windows-licensing.md) | [繁體中文](../../zh-TW/engineering/windows-licensing.md) | [日本語](../../ja-JP/engineering/windows-licensing.md) | [한국어](../../ko-KR/engineering/windows-licensing.md) | [Français](../../fr-FR/engineering/windows-licensing.md) | Deutsch | [Español](../../es-ES/engineering/windows-licensing.md) | [Português (Brasil)](../../pt-BR/engineering/windows-licensing.md) | [Русский](../../ru-RU/engineering/windows-licensing.md)
 
-Diese Seite definiert anwendbare Windows-Build- und Weiterverbreitungswege und wird zusammen mit [nativen Laufzeitmaterialien](native-runtime-materials.md), dem [Entwickler-Buildeinstieg](developer-build.md) und dem [Installationsvertrag](installers-associations.md) verwendet. Konkrete Umgebungen, Prüfcommits, Materialhashes und Abnahmeergebnisse gehören in Issues und lokale oder CI-Artefakte; diese Seite bewahrt keinen Lizenznachweis einer Maschine.
+Diese Seite definiert anwendbare Windows-Build- und Weiterverbreitungswege und wird zusammen mit [nativen Laufzeitmaterialien](native-runtime-materials.md), dem [Entwickler-Buildeinstieg](../../engineering/developer-build.md) und dem [Installationsvertrag](../../engineering/installers-associations.md) verwendet. Konkrete Umgebungen, Prüfcommits, Materialhashes und Abnahmeergebnisse gehören in Issues und lokale oder CI-Artefakte; diese Seite bewahrt keinen Lizenznachweis einer Maschine.
 
 <a name="xdzip-free-community-path-and-local-choice"></a>
 

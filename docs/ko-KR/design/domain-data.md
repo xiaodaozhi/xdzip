@@ -4,7 +4,7 @@
 
 [English](../../design/domain-data.md) | [简体中文](../../zh-CN/design/domain-data.md) | [繁體中文](../../zh-TW/design/domain-data.md) | [日本語](../../ja-JP/design/domain-data.md) | 한국어 | [Français](../../fr-FR/design/domain-data.md) | [Deutsch](../../de-DE/design/domain-data.md) | [Español](../../es-ES/design/domain-data.md) | [Português (Brasil)](../../pt-BR/design/domain-data.md) | [Русский](../../ru-RU/design/domain-data.md)
 
-런타임은 압축 파일 세션, 완료된 인덱스와 해당 세션의 최신 쿼리를 소유합니다. Qt는 결과의 뷰를 유지하고 CLI는 별도의 카탈로그 명령으로 물리 레코드를 읽을 수 있습니다. 둘 다 같은 Rust 서비스에 작업을 제출합니다. [시스템 아키텍처](system-architecture.md), [Qt/Rust 브리지](qt-rust-bridge.md)
+런타임은 압축 파일 세션, 완료된 인덱스와 해당 세션의 최신 쿼리를 소유합니다. Qt는 결과의 뷰를 유지하고 CLI는 별도의 카탈로그 명령으로 물리 레코드를 읽을 수 있습니다. 둘 다 같은 Rust 서비스에 작업을 제출합니다. [시스템 아키텍처](../../design/system-architecture.md), [Qt/Rust 브리지](qt-rust-bridge.md)
 
 <a name="xdzip-identity-and-source-version"></a>
 
@@ -19,7 +19,7 @@
 | `QueryKey` | 세션, 쿼리 ID, 세대와 스냅샷 수정 버전을 결합한다. 오프셋은 이 결과의 위치를 가리킨다. |
 | 요청, 작업과 확인 신원 | 서비스는 연결 내에서 요청과 작업 번호를 할당한다. 확인은 특정 작업에 속한다. 공통 데스크톱 작업 항목은 컨트롤러의 세션 신원과 작업 번호를 함께 사용한다. |
 
-도메인 타입은 압축 파일과 쿼리 신원이 0이 아니도록 보장합니다. 네이티브 브리지에서는 타입이 지정된 Rust 값을 생성된 CXX 데이터로 나타냅니다. 64비트 전체가 필요한 ID는 불투명 문자열로 QML에 전달합니다. 행 번호는 특정 쿼리의 위치일 뿐입니다. [도메인 신원](../../../crates/xdzip-domain/src/identity.rs), [소스 구현](../../../crates/xdzip-runtime/src/source.rs), [애플리케이션 세션](../engineering/application-sessions.md)
+도메인 타입은 압축 파일과 쿼리 신원이 0이 아니도록 보장합니다. 네이티브 브리지에서는 타입이 지정된 Rust 값을 생성된 CXX 데이터로 나타냅니다. 64비트 전체가 필요한 ID는 불투명 문자열로 QML에 전달합니다. 행 번호는 특정 쿼리의 위치일 뿐입니다. [도메인 신원](../../../crates/xdzip-domain/src/identity.rs), [소스 구현](../../../crates/xdzip-runtime/src/source.rs), [애플리케이션 세션](../../engineering/application-sessions.md)
 
 <a name="xdzip-physical-entries-and-output-names"></a>
 

@@ -4,7 +4,7 @@
 
 [English](../../design/qt-rust-bridge.md) | [简体中文](../../zh-CN/design/qt-rust-bridge.md) | [繁體中文](../../zh-TW/design/qt-rust-bridge.md) | 日本語 | [한국어](../../ko-KR/design/qt-rust-bridge.md) | [Français](../../fr-FR/design/qt-rust-bridge.md) | [Deutsch](../../de-DE/design/qt-rust-bridge.md) | [Español](../../es-ES/design/qt-rust-bridge.md) | [Português (Brasil)](../../pt-BR/design/qt-rust-bridge.md) | [Русский](../../ru-RU/design/qt-rust-bridge.md)
 
-Qt デスクトップはリンクされた `cxx` ブリッジを通じて Rust ランタイムを呼び出します。各 `BrowserController` は別のサービスインスタンスを持つ `RuntimeConnection` を所有します。ブリッジは型付きコマンドと所有権のある結果をデスクトッププロセス内で転送します。CLI は同じ Rust サービスを直接使います。[システムアーキテクチャー](system-architecture.md)、[デスクトップセッション](../engineering/application-sessions.md)
+Qt デスクトップはリンクされた `cxx` ブリッジを通じて Rust ランタイムを呼び出します。各 `BrowserController` は別のサービスインスタンスを持つ `RuntimeConnection` を所有します。ブリッジは型付きコマンドと所有権のある結果をデスクトッププロセス内で転送します。CLI は同じ Rust サービスを直接使います。[システムアーキテクチャー](../../design/system-architecture.md)、[デスクトップセッション](../../engineering/application-sessions.md)
 
 <a name="xdzip-handles-threads-and-ownership"></a>
 
@@ -45,7 +45,7 @@ CXX は値型と所有権を持つ Rust コンテナーを転送します。受�
 | `Snapshot`, `CloseSession` | 現在のアーカイブセッション ID またはゼロを返します。指定セッションを閉じると閲覧スナップショットを破棄しますが、独立して保持されたタスク入力は存続できます。 |
 | `cancel`, `cancel_task`, `decide_task`, `respond_password`, `release_export`, `shutdown` | 通常コマンドキュー外の制御メソッドです。要求キャンセルは独自の要求 ID と `Finished` を持ち、タスク制御は既存のタスクに作用します。 |
 
-Rust サービスは `Catalog` や `SelectMembers` など CLI 専用の操作も公開します。ブリッジは送信前に入力サイズと列挙値を検証します。たとえば作成パスは一つ 4 KiB、合計 4 MiB 以下です。ランタイムはセッションと操作の意味を検証し、I/O 層はファイルを開いて出力の権限を取得します。[ランタイムサービス契約](../engineering/product-runtime.md)、[CLI 契約](../engineering/command-line.md)、[ファイル認可](file-security.md)
+Rust サービスは `Catalog` や `SelectMembers` など CLI 専用の操作も公開します。ブリッジは送信前に入力サイズと列挙値を検証します。たとえば作成パスは一つ 4 KiB、合計 4 MiB 以下です。ランタイムはセッションと操作の意味を検証し、I/O 層はファイルを開いて出力の権限を取得します。[ランタイムサービス契約](../engineering/product-runtime.md)、[CLI 契約](../../engineering/command-line.md)、[ファイル認可](file-security.md)
 
 <a name="xdzip-event-delivery-and-backpressure"></a>
 
@@ -66,4 +66,4 @@ Rust サービスは `Catalog` や `SelectMembers` など CLI 専用の操作も
 - 安定したエラーコードが受け入れ、要求、タスクの結果を表します。例は `stale_session`、`stale_query`、`source_changed`、`unsafe_target`、`target_changed`、`disk_full`、`password_required` です。コントローラーは表示用にコードを翻訳します。ソースの変更は該当する閲覧スナップショットを無効にします。`RuntimeFault` と予期しない切断は保留中の UI 作業を `runtime_unavailable` で無効にします。接続喪失により元の終端イベントが届かない場合があります。
 - `shutdown` は受け入れを閉じ、入力待ちのタスクを含む受理済み作業をキャンセルします。Qt 受信側は Rust スレッドの終了中もイベントを取り出し続けます。Rust 受信側はスレッドを待ってから `ShutdownReady` を返し、その後ブリッジが `End` を返します。Qt はメールボックスを空にした後、正常な切断を報告します。接続が早期に破棄された場合、GUI スレッドで待機せずメールボックスを閉じて受信側を起こします。[タスクの終了](task-scheduling.md)、[ランタイムのライフサイクル](../engineering/product-runtime.md)
 
-この境界を変更するときは、[ブリッジ検査ツール](https://github.com/xiaodaozhi/xdzip/blob/main/tools/bridge-probe/README.md)、Rust サービスのテスト、[デスクトップコントローラーのテスト](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/tests/browser_test.cpp)が異なる層をカバーします。対象の確認には[開発ビルドガイド](../engineering/developer-build.md)を使います。
+この境界を変更するときは、[ブリッジ検査ツール](https://github.com/xiaodaozhi/xdzip/blob/main/tools/bridge-probe/README.md)、Rust サービスのテスト、[デスクトップコントローラーのテスト](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/tests/browser_test.cpp)が異なる層をカバーします。対象の確認には[開発ビルドガイド](../../engineering/developer-build.md)を使います。

@@ -52,7 +52,7 @@ Microsoft Store 版は GitHub とは別に公開され、更新は Microsoft Sto
 - **複数のアーカイブ。** 既定では新しいタブで開きます。新しいウィンドウで開くように設定できます。同じログインセッションではアプリのプロセスとトレイを共有します。閲覧画面を閉じても、タスク一覧からバックグラウンドのタスクを参照できます。
 - **ファイルマネージャーの操作。** インストール版の Windows 11 では **その他のオプションを表示** からクラシックメニューを開けます。Store 版は新しいメニューにも表示されます。Ubuntu では拡張機能をインストールした「ファイル」(Nautilus) を使用します。macOS ではシステム設定で Finder 拡張機能を有効にするか、登録済みの Finder サービスを使用します。[ファイルマネージャーから展開](docs/ja-JP/user-guide/extract.md#xdzip-from-the-file-manager)を参照してください。
 
-アーカイブの作成やファイルの追加時には、`.DS_Store` ファイルおよび `__MACOSX` と `_MACOSX` ディレクトリを除外します。展開時はパスと展開先の権限を確認し、名前の競合を処理し、出力を一時領域に書き込みます。対応する形式では内容も検証します。特殊オブジェクトやリンクの扱いは形式とプラットフォームによって異なります。[安全な展開の仕様](docs/ja-JP/engineering/zip-safe-extraction.md)を参照してください。
+アーカイブの作成やファイルの追加時には、`.DS_Store` ファイルおよび `__MACOSX` と `_MACOSX` ディレクトリを除外します。展開時はパスと展開先の権限を確認し、名前の競合を処理し、出力を一時領域に書き込みます。対応する形式では内容も検証します。特殊オブジェクトやリンクの扱いは形式とプラットフォームによって異なります。[安全な展開の仕様](docs/engineering/zip-safe-extraction.md)を参照してください。
 
 <a name="xdzip-format-support"></a>
 
@@ -96,15 +96,15 @@ Microsoft Store 版は GitHub とは別に公開され、更新は Microsoft Sto
 - ZIP の AES-256 は内容だけを暗号化します。ファイル名は表示されます。AES-128/192 と従来の ZipCrypto には対応していません。`.zip.001`、PKZIP の `.z01` など関連する命名規則の分割アーカイブを読み取れます。作成時は連番ボリュームを使用します。[パスワード付きアーカイブの展開](docs/ja-JP/engineering/password-extraction.md)と[分割アーカイブを開く](docs/ja-JP/engineering/archive-opening.md)を参照してください。
 - 単独の BZip2、LZMA Alone、Lzip v1 は読み取り専用です。LZMA には内容のチェックサムがないため、構造、サイズ、読み取り可否を検証します。拡張子、項目、メモリー上限、受け入れ条件については[単一ファイルストリームの仕様](docs/ja-JP/engineering/single-file-streams.md)を参照してください。
 - XZ は各ストリームが宣言する内容の検証を行います。None を宣言したストリームの検証は構造と読み取り可否が対象です。ZIPX は表に記載した ZIP 方式に対応し、PPMd、JPEG、WavPack の派生形式には対応しません。ZIP/ZIPX の編集では保持する項目の圧縮データと方式を引き継ぎ、新しい項目は Deflate を使います。
-- 7z の変更ではアーカイブを再構築します。保持する内容と追加する内容には 512 MiB の作業メモリ上限があります。新規作成では入力をストリームで読み取るため、この再構築上限は適用されません。暗号化された ZIP や 7z、および分割された ZIP や 7z は変更できません。[アーカイブの変更](docs/ja-JP/engineering/archive-transfers.md)を参照してください。
-- RAR、CAB、UDF は読み取り専用です。[ISO の作成](docs/ja-JP/engineering/iso-creation.md)は、通常ファイルとディレクトリ、単一ボリューム、4 GiB 未満のファイルに対応し、Joliet 名は各構成要素が UCS-2 で最大 64 文字です。起動可能イメージ、UDF や Rock Ridge の書き込み、イメージの更新には対応していません。イメージを読み取るときにマウントや実行はしません。[RAR の仕様](docs/ja-JP/engineering/rar-format-sources.md)と[形式バックエンドの仕様](docs/ja-JP/engineering/native-codecs.md)を参照してください。
+- 7z の変更ではアーカイブを再構築します。保持する内容と追加する内容には 512 MiB の作業メモリ上限があります。新規作成では入力をストリームで読み取るため、この再構築上限は適用されません。暗号化された ZIP や 7z、および分割された ZIP や 7z は変更できません。[アーカイブの変更](docs/engineering/archive-transfers.md)を参照してください。
+- RAR、CAB、UDF は読み取り専用です。[ISO の作成](docs/ja-JP/engineering/iso-creation.md)は、通常ファイルとディレクトリ、単一ボリューム、4 GiB 未満のファイルに対応し、Joliet 名は各構成要素が UCS-2 で最大 64 文字です。起動可能イメージ、UDF や Rock Ridge の書き込み、イメージの更新には対応していません。イメージを読み取るときにマウントや実行はしません。[RAR の仕様](docs/engineering/rar-format-sources.md)と[形式バックエンドの仕様](docs/ja-JP/engineering/native-codecs.md)を参照してください。
 - [ZIP 自己展開ファイル（SFX）の作成](docs/ja-JP/engineering/sfx-creation.md)では、Qt や xdzip のインストールを必要としない Windows x64 向けの展開プログラムを生成します。展開先の選択、競合の処理、キャンセルが可能です。展開されたファイルを実行しません。パスワード、分割ボリューム、自動起動コマンドには対応していません。一般の `.exe` はファイルの関連付けの対象外です。
 - DEB は `members/`、`control/`、`data/` をエクスポート用のビューとして表示します。すべて展開すると raw メンバーと展開した内容の双方が対象になります。インストールやスクリプト実行は行いません。制御データは無圧縮、GZIP、XZ、Zstandard に対応し、データはさらに BZip2 と LZMA に対応します。検証ではコンテナの読み取りと宣言された項目を確認します。パッケージの署名確認は行いません。[DEB の仕様](docs/ja-JP/engineering/deb-containers.md)を参照してください。
 - Z と TAR.Z は構造と読み取り可否を検証します。チェックサムはありません。単独の Z の作成と、壊れた旧形式ストリームの修復には対応しません。[Unix compress の仕様](docs/ja-JP/engineering/compress-streams.md)を参照してください。
 - UU/UUE と XXE はチェックサム無しで構造と読み取り可能性を検証します。ヘッダー内のパスやモードは、出力や実行の権限を与えません。GNU のエンコード済みファイル名と複数部分の修復は、対応する[テキストエンベロープのプロファイル](docs/ja-JP/engineering/text-envelopes.md)の範囲外です。
 - 読み取り専用の ASAR を開いたり展開したりしても、アプリは起動しません。外部の `unpacked` データと宣言されたリンクは表示されますが、処理の対象外です。隣接ディレクトリへのアクセスや実行属性の復元は行いません。任意のハッシュがある場合は破損を検出し、ハッシュがないレコードは構造と読み取り可能性だけを検証します。[ASAR の仕様](docs/ja-JP/engineering/asar-containers.md)を参照してください。
 - NSIS は、PE オーバーレイに上限内の有効な `firstheader` レコードがある場合のみ検出します。xdzip はその静的メタデータ行を表示します。PE スタブ、インストーラースクリプト、プラグイン、ペイロードを実行しません。インストーラーヘッダーの解凍やペイロードの展開も行いません。`.exe` はドラッグ＆ドロップとシェルの関連付けには表示されません。一般の実行ファイルを扱う機能ではありません。
-- LHA/LZH の作成には LH5、レベル 2 のヘッダー、UTF-8 の名前を使います。古い Windows ツールでは旧コードページで名前が表示される場合があります。条件を満たすレベル 2 のアーカイブは編集できます。旧形式の名前は区切り文字を解釈する前にデコードし、内容のデコード時に存在する CRC を検証します。CRC のない古い項目では構造と読み取り可否を検証します。パスワード、分割ボリューム、修復には対応していません。PMA は別の読み取り専用プロファイルです。[LHA の仕様](docs/ja-JP/engineering/lha-containers.md)を参照してください。
+- LHA/LZH の作成には LH5、レベル 2 のヘッダー、UTF-8 の名前を使います。古い Windows ツールでは旧コードページで名前が表示される場合があります。条件を満たすレベル 2 のアーカイブは編集できます。旧形式の名前は区切り文字を解釈する前にデコードし、内容のデコード時に存在する CRC を検証します。CRC のない古い項目では構造と読み取り可否を検証します。パスワード、分割ボリューム、修復には対応していません。PMA は別の読み取り専用プロファイルです。[LHA の仕様](docs/engineering/lha-containers.md)を参照してください。
 - ARJ は読み取り専用です。バイナリと従来のテキストのメンバーは、OS による改行変換を行わず、CRC の対象になっているアーカイブのバイト列をそのまま返します。パスワード、分割ボリューム、復旧またはセキュリティに関するプロファイル、リンク、特殊オブジェクトは対象外です。不明な方式は表示され、アーカイブ全体の検証は失敗します。
 - ARC は読み取り専用です。通常ファイルは順に処理し、終端を厳密に検証します。パスワードによるデコード、分割ボリューム、SFX、Spark 拡張は対象外です。不明な方式は ZIP 方式に読み替えずに表示し、アーカイブ全体の検証は失敗します。旧式の XOR 暗号にはヘッダーフラグがありません。デコードには有効なストリーム、厳密なサイズ、CRC が必要です。パスワードや修復で代用することはありません。
 - BH は `BH 05 07` の方式 8 の raw Deflate プロファイルを読み取れます。不明な方式、暗号化、ディレクトリ、ボリューム、末尾データ、SFX 接頭部は対象外です。
@@ -131,7 +131,7 @@ build/cli/bin/xdzip list archive.zip --json
 build/cli/bin/xdzip extract archive.zip -C output
 ```
 
-Windows では `python` を使い、実行ファイル名に `.exe` を付けてください。Linux で実行するには、システムに OpenSSL 3 と証明書が必要です。ビルドには `libssl-dev` と `pkg-config` も必要です。パスワード、非対話モード、終了コード、コマンドのインストール、更新の制限については [CLI ガイド](docs/ja-JP/engineering/command-line.md)を参照してください。
+Windows では `python` を使い、実行ファイル名に `.exe` を付けてください。Linux で実行するには、システムに OpenSSL 3 と証明書が必要です。ビルドには `libssl-dev` と `pkg-config` も必要です。パスワード、非対話モード、終了コード、コマンドのインストール、更新の制限については [CLI ガイド](docs/engineering/command-line.md)を参照してください。
 
 <a name="xdzip-build-from-source"></a>
 
@@ -152,7 +152,7 @@ python3 scripts/desktop.py build
 python3 scripts/desktop.py test
 ```
 
-Windows では MSVC x64 開発環境、macOS では Apple Silicon ネイティブのターミナルと Xcode Command Line Tools を使用します。既定の Qt 6.8.2 ツールチェーンは `build/toolchain/` にあります。Qt がインストール済みの場合は `--qt-prefix` を指定できます。依存関係、起動、パッケージ化、検証は[開発者向けビルドガイド](docs/ja-JP/engineering/developer-build.md)を参照してください。CLI とデスクトップのビルド手順は独立しています。デスクトップビルドには専用 CLI も同梱されます。コマンドのエントリーポイントは明示的に有効化してください。
+Windows では MSVC x64 開発環境、macOS では Apple Silicon ネイティブのターミナルと Xcode Command Line Tools を使用します。既定の Qt 6.8.2 ツールチェーンは `build/toolchain/` にあります。Qt がインストール済みの場合は `--qt-prefix` を指定できます。依存関係、起動、パッケージ化、検証は[開発者向けビルドガイド](docs/engineering/developer-build.md)を参照してください。CLI とデスクトップのビルド手順は独立しています。デスクトップビルドには専用 CLI も同梱されます。コマンドのエントリーポイントは明示的に有効化してください。
 
 開発用パッケージは実験版です。Windows と Linux の開発成果物は、[Qt コンポーネントのワークフロー](https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml)の成功した手動実行からもダウンロードできます。通常の CI では開発用パッケージは自動生成されません。
 
@@ -176,4 +176,4 @@ Windows では MSVC x64 開発環境、macOS では Apple Silicon ネイティ�
 
 ## ライセンス
 
-プロジェクトが独自に作成した内容は [Apache License 2.0](LICENSE) で提供されます。[COPYRIGHT](COPYRIGHT) も参照してください。Qt、コーデック、フォント、その他の依存関係には個別のライセンスが適用されます。出典と通知は[ライセンス文書](docs/ja-JP/engineering/licensing.md)を参照してください。公式リリースでは、対応するソースコードのアーカイブを別途配布しません。詳しくは[ソースの提供](docs/ja-JP/engineering/source-delivery.md)を参照してください。適用されるソース提供、再リンク、通知の義務は引き続き適用されます。リリース候補は個別に確認します。過去の記録は [#4](https://github.com/xiaodaozhi/xdzip/issues/4) と [#53](https://github.com/xiaodaozhi/xdzip/issues/53) を参照してください。
+プロジェクトが独自に作成した内容は [Apache License 2.0](LICENSE) で提供されます。[COPYRIGHT](COPYRIGHT) も参照してください。Qt、コーデック、フォント、その他の依存関係には個別のライセンスが適用されます。出典と通知は[ライセンス文書](docs/ja-JP/engineering/licensing.md)を参照してください。公式リリースでは、対応するソースコードのアーカイブを別途配布しません。詳しくは[ソースの提供](docs/engineering/source-delivery.md)を参照してください。適用されるソース提供、再リンク、通知の義務は引き続き適用されます。リリース候補は個別に確認します。過去の記録は [#4](https://github.com/xiaodaozhi/xdzip/issues/4) と [#53](https://github.com/xiaodaozhi/xdzip/issues/53) を参照してください。

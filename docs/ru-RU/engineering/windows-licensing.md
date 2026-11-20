@@ -4,7 +4,7 @@
 
 [English](../../engineering/windows-licensing.md) | [简体中文](../../zh-CN/engineering/windows-licensing.md) | [繁體中文](../../zh-TW/engineering/windows-licensing.md) | [日本語](../../ja-JP/engineering/windows-licensing.md) | [한국어](../../ko-KR/engineering/windows-licensing.md) | [Français](../../fr-FR/engineering/windows-licensing.md) | [Deutsch](../../de-DE/engineering/windows-licensing.md) | [Español](../../es-ES/engineering/windows-licensing.md) | [Português (Brasil)](../../pt-BR/engineering/windows-licensing.md) | Русский
 
-Эта страница определяет применимые пути сборки и распространения Windows и используется вместе с [материалами системной среды](native-runtime-materials.md), [точкой сборки для разработчика](developer-build.md) и [контрактом установки](installers-associations.md). Конкретные среды, проверочные коммиты, хеши материалов и результаты приемки записываются в issue и локальные или CI-артефакты; страница не хранит доказательство лицензии отдельной машины.
+Эта страница определяет применимые пути сборки и распространения Windows и используется вместе с [материалами системной среды](native-runtime-materials.md), [точкой сборки для разработчика](../../engineering/developer-build.md) и [контрактом установки](../../engineering/installers-associations.md). Конкретные среды, проверочные коммиты, хеши материалов и результаты приемки записываются в issue и локальные или CI-артефакты; страница не хранит доказательство лицензии отдельной машины.
 
 <a name="xdzip-free-community-path-and-local-choice"></a>
 

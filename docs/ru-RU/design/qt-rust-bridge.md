@@ -4,7 +4,7 @@
 
 [English](../../design/qt-rust-bridge.md) | [简体中文](../../zh-CN/design/qt-rust-bridge.md) | [繁體中文](../../zh-TW/design/qt-rust-bridge.md) | [日本語](../../ja-JP/design/qt-rust-bridge.md) | [한국어](../../ko-KR/design/qt-rust-bridge.md) | [Français](../../fr-FR/design/qt-rust-bridge.md) | [Deutsch](../../de-DE/design/qt-rust-bridge.md) | [Español](../../es-ES/design/qt-rust-bridge.md) | [Português (Brasil)](../../pt-BR/design/qt-rust-bridge.md) | Русский
 
-Настольное приложение Qt вызывает среду Rust через скомпонованный мост `cxx`. Каждый `BrowserController` владеет `RuntimeConnection` с отдельным экземпляром службы. Мост передаёт типизированные команды и результаты с передачей владения внутри процесса приложения. CLI напрямую использует ту же службу Rust. [Архитектура системы](system-architecture.md), [Сеансы приложения](../engineering/application-sessions.md)
+Настольное приложение Qt вызывает среду Rust через скомпонованный мост `cxx`. Каждый `BrowserController` владеет `RuntimeConnection` с отдельным экземпляром службы. Мост передаёт типизированные команды и результаты с передачей владения внутри процесса приложения. CLI напрямую использует ту же службу Rust. [Архитектура системы](../../design/system-architecture.md), [Сеансы приложения](../../engineering/application-sessions.md)
 
 <a name="xdzip-handles-threads-and-ownership"></a>
 
@@ -45,7 +45,7 @@ CXX передаёт типы значений и владеющие конте�
 | `Snapshot`, `CloseSession` | Вернуть ID сеанса текущего архива или ноль. Закрытие указанного сеанса отбрасывает его снимок просмотра, а отдельно удерживаемые входы задач могут оставаться активными. |
 | `cancel`, `cancel_task`, `decide_task`, `respond_password`, `release_export`, `shutdown` | Методы управления вне обычной очереди команд. Отмена запроса имеет собственный ID и `Finished`; управление задачей действует на существующую задачу. |
 
-Служба Rust предоставляет дополнительные операции CLI, например `Catalog` и `SelectMembers`. Мост проверяет размер входа и значения перечислений до отправки. Например, пути создания ограничены 4 KiB каждый и 4 MiB в сумме. Среда проверяет сеанс и семантику операции, а слой ввода-вывода открывает файлы и получает полномочия на вывод. [Контракт службы среды](../engineering/product-runtime.md), [Контракт CLI](../engineering/command-line.md), [Авторизация файлов](file-security.md)
+Служба Rust предоставляет дополнительные операции CLI, например `Catalog` и `SelectMembers`. Мост проверяет размер входа и значения перечислений до отправки. Например, пути создания ограничены 4 KiB каждый и 4 MiB в сумме. Среда проверяет сеанс и семантику операции, а слой ввода-вывода открывает файлы и получает полномочия на вывод. [Контракт службы среды](../engineering/product-runtime.md), [Контракт CLI](../../engineering/command-line.md), [Авторизация файлов](file-security.md)
 
 <a name="xdzip-event-delivery-and-backpressure"></a>
 
@@ -66,4 +66,4 @@ CXX передаёт типы значений и владеющие конте�
 - Стабильные коды описывают результаты допуска, запроса и задачи. Например, `stale_session`, `stale_query`, `source_changed`, `unsafe_target`, `target_changed`, `disk_full` и `password_required`. Контроллер переводит коды для отображения. Изменение источника делает соответствующий снимок просмотра недействительным. `RuntimeFault` и неожиданные разъединения делают ожидающую работу интерфейса недействительной с `runtime_unavailable`; потеря соединения может помешать доставке исходных конечных событий.
 - `shutdown` закрывает допуск и отменяет принятую работу, включая задачи, ожидающие ввода. Получатель Qt продолжает извлекать события во время завершения потоков Rust. Получатель Rust ожидает потоки перед выдачей `ShutdownReady`, затем мост выдаёт `End`. Qt сообщает о чистом разъединении после опустошения ящика. При раннем уничтожении соединения оно закрывает ящик и пробуждает получателя, не ожидая его в потоке интерфейса. [Завершение задач](task-scheduling.md), [Жизненный цикл среды](../engineering/product-runtime.md)
 
-При изменениях этой границы [проверка моста](https://github.com/xiaodaozhi/xdzip/blob/main/tools/bridge-probe/README.md), тесты службы Rust и [тесты контроллера приложения](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/tests/browser_test.cpp) охватывают разные уровни. Нужные цели указаны в [руководстве по сборке](../engineering/developer-build.md).
+При изменениях этой границы [проверка моста](https://github.com/xiaodaozhi/xdzip/blob/main/tools/bridge-probe/README.md), тесты службы Rust и [тесты контроллера приложения](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/tests/browser_test.cpp) охватывают разные уровни. Нужные цели указаны в [руководстве по сборке](../../engineering/developer-build.md).

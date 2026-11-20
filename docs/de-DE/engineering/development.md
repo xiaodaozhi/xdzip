@@ -4,7 +4,7 @@
 
 [English](../../engineering/development.md) | [简体中文](../../zh-CN/engineering/development.md) | [繁體中文](../../zh-TW/engineering/development.md) | [日本語](../../ja-JP/engineering/development.md) | [한국어](../../ko-KR/engineering/development.md) | [Français](../../fr-FR/engineering/development.md) | Deutsch | [Español](../../es-ES/engineering/development.md) | [Português (Brasil)](../../pt-BR/engineering/development.md) | [Русский](../../ru-RU/engineering/development.md)
 
-Unter [Bauen und beitragen](../contributing/README.md) finden Sie passende Build- und Prüfpfade für Ihre Änderung. [Systemarchitektur](../design/system-architecture.md) und [Repository-Struktur](repository-layout.md) erklären die Grenzen zwischen Qt, Rust-Laufzeit und Codecs.
+Unter [Bauen und beitragen](../contributing/README.md) finden Sie passende Build- und Prüfpfade für Ihre Änderung. [Systemarchitektur](../../design/system-architecture.md) und [Repository-Struktur](repository-layout.md) erklären die Grenzen zwischen Qt, Rust-Laufzeit und Codecs.
 
 <a name="xdzip-obtain-and-modify"></a>
 
@@ -28,7 +28,7 @@ Die Dokumentationswerkzeuge benötigen Python 3.10+, lxml, Pandoc und Graphviz. 
 
 Unter macOS werden Xcode Command Line Tools und Qt benötigt. Unter Windows sind es MSVC Build Tools, Windows SDK und ein passendes Qt. Linux benötigt einen Compiler, eine glibc-Umgebung für das Ziel und Qt-Abhängigkeiten für Wayland/X11. Die Toolchain-Dateien im Stammverzeichnis und CI legen die Versionen fest. Quellen und Lizenzen stehen in der [Toolchain-Tabelle](toolchain.md). Die [Support-Richtlinie](support-policy.md) erklärt unterstützte Systeme und Wartung. Für Herkunft und Lizenzen dient das Ticket zur jeweiligen Freigabeprüfung.
 
-Die [Qt-Entwicklungsanwendung](../../../apps/desktop/README.md) dokumentiert Befehle für Build und Start aus einem sauberen Checkout, CMake-Optionen, macOS-Architektur und Bereitstellungsziele sowie die Grenzen der Offscreen-Tests. Prüfen Sie nach Änderungen an Build oder Installation erneut Pfade mit Leerzeichen und chinesischen Zeichen. Für die lokale Entwicklung ist keine kostenpflichtige Signaturidentität erforderlich. Die [Build-Anleitung](developer-build.md) beschreibt die lokale Ad-hoc-Integritätssignatur der DMG und die CI-Grenze für Mac-App-Bereitstellung.
+Die [Qt-Entwicklungsanwendung](../../../apps/desktop/README.md) dokumentiert Befehle für Build und Start aus einem sauberen Checkout, CMake-Optionen, macOS-Architektur und Bereitstellungsziele sowie die Grenzen der Offscreen-Tests. Prüfen Sie nach Änderungen an Build oder Installation erneut Pfade mit Leerzeichen und chinesischen Zeichen. Für die lokale Entwicklung ist keine kostenpflichtige Signaturidentität erforderlich. Die [Build-Anleitung](../../engineering/developer-build.md) beschreibt die lokale Ad-hoc-Integritätssignatur der DMG und die CI-Grenze für Mac-App-Bereitstellung.
 
 <a name="xdzip-independent-engineering-probes"></a>
 

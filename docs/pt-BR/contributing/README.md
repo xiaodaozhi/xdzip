@@ -8,7 +8,7 @@ Leia as [regras de contribuição](../../../CONTRIBUTING.md) e encontre ou abra 
 
 ## Compilar a parte necessária
 
-Execute os comandos na raiz do repositório. No Windows, use `python` em um ambiente de desenvolvimento MSVC x64. No macOS, use um terminal Apple Silicon nativo e as ferramentas de linha de comando do Xcode. No Ubuntu, siga a lista de dependências da plataforma. O [guia de compilação](../engineering/developer-build.md#xdzip-environment-and-entry-points) detalha os requisitos e as versões de Rust e Qt fixadas pelo repositório.
+Execute os comandos na raiz do repositório. No Windows, use `python` em um ambiente de desenvolvimento MSVC x64. No macOS, use um terminal Apple Silicon nativo e as ferramentas de linha de comando do Xcode. No Ubuntu, siga a lista de dependências da plataforma. O [guia de compilação](../../engineering/developer-build.md#environment-and-entry-points) detalha os requisitos e as versões de Rust e Qt fixadas pelo repositório.
 
 Para a primeira compilação do desktop:
 
@@ -18,7 +18,7 @@ python3 scripts/desktop.py doctor --for-stage build
 python3 scripts/desktop.py build
 ```
 
-As opções de preparação usam o rustup existente para instalar as ferramentas fixadas e baixam o SDK do Qt fixado quando necessário. Reutilize as dependências compartilhadas de `build/toolchain/` se já estiverem prontas. Com um SDK do Qt compatível instalado em outro local, passe o mesmo `--qt-prefix` às etapas aplicáveis. Quando a mudança precisar dos testes de desktop, execute `python3 scripts/desktop.py test` com uma compilação concluída da mesma configuração. Consulte a [preparação de entradas de teste](../engineering/developer-build.md) para as suítes completas do programa auxiliar.
+As opções de preparação usam o rustup existente para instalar as ferramentas fixadas e baixam o SDK do Qt fixado quando necessário. Reutilize as dependências compartilhadas de `build/toolchain/` se já estiverem prontas. Com um SDK do Qt compatível instalado em outro local, passe o mesmo `--qt-prefix` às etapas aplicáveis. Quando a mudança precisar dos testes de desktop, execute `python3 scripts/desktop.py test` com uma compilação concluída da mesma configuração. Consulte a [preparação de entradas de teste](../../engineering/developer-build.md) para as suítes completas do programa auxiliar.
 
 Para a CLI independente, compile e teste a CLI gerada e seu programa auxiliar:
 
@@ -27,7 +27,7 @@ python3 scripts/cli.py build
 python3 scripts/cli.py test
 ```
 
-A saída padrão é `build/cli`. A compilação usa as ferramentas fixadas de Rust, CMake e as ferramentas C++ da plataforma. No Ubuntu, também exige `libssl-dev` e `pkg-config`. A [especificação de compilação da CLI](../engineering/command-line.md#xdzip-build-and-command-installation) detalha as plataformas.
+A saída padrão é `build/cli`. A compilação usa as ferramentas fixadas de Rust, CMake e as ferramentas C++ da plataforma. No Ubuntu, também exige `libssl-dev` e `pkg-config`. A [especificação de compilação da CLI](../../engineering/command-line.md#build-and-command-installation) detalha as plataformas.
 
 <a name="xdzip-verify-the-affected-behavior"></a>
 
@@ -43,10 +43,10 @@ git diff --check
 | Mudança | Código e especificação | O que executar ou verificar |
 | --- | --- | --- |
 | Documentação e exemplos | Atualize as traduções, os links e as âncoras de seção. O README raiz e `docs/` têm dez versões de idioma. Os guias de `developers/` usam inglês dos Estados Unidos e chinês simplificado. Use a especificação correspondente e confira os comandos alterados com um pequeno arquivo de teste próprio. | Execute a verificação de documentação acima. Abra os links de seção alterados e confira a saída gerada quando um gerador usar a página. |
-| CLI | Comece em `crates/xdzip-cli` e siga o ambiente Rust compartilhado. [Especificação da CLI](../engineering/command-line.md) | Execute as verificações da CLI independente na sua compilação. Se comandos ou saídas mudarem, confira stdout, stderr, o código de saída e os arquivos gravados, incluindo um caso de falha aplicável. |
+| CLI | Comece em `crates/xdzip-cli` e siga o ambiente Rust compartilhado. [Especificação da CLI](../../engineering/command-line.md) | Execute as verificações da CLI independente na sua compilação. Se comandos ou saídas mudarem, confira stdout, stderr, o código de saída e os arquivos gravados, incluindo um caso de falha aplicável. |
 | Domínio Rust, formatos ou tarefas de arquivo | Comece em `xdzip-domain`, no codec correspondente, em `xdzip-runtime` ou em `xdzip-io`. Para um comando do desktop, siga `BrowserController` e `RuntimeConnection`. [Registro de formatos](../engineering/format-registry.md), [execução](../engineering/product-runtime.md), [segurança de arquivos](../design/file-security.md) | Execute `cargo fmt --all -- --check` e os testes dos crates afetados. Verifique o fluxo real e as falhas, cancelamentos ou gravações definitivas pertinentes. Se usar o programa auxiliar nativo de formatos, execute os [testes desse programa](../../../developers/qa/runtime-worker-tests.md). Quando o registro mudar, regenere com `python3 scripts/generate-format-registry.py`, confira com `--check` e execute `python3 scripts/test-format-registry.py`. |
-| Janelas QML, controles ou localização | Comece em `apps/desktop/ui`, `resources/i18n` e `specs/visual`. Antes de mudar uma janela, leia a [especificação visual](../visual/design-standard.md) e o [processo de design](../visual/design-workflow.md) e registre seu contrato no [registro de janelas](../../../specs/visual/window-registry.json). | Para janelas, execute `python3 scripts/check-window-contracts.py --self-test`, `python3 scripts/check-operation-components.py` e os testes bilíngues de layout afetados com vários tamanhos de texto. Para localização, execute `python3 scripts/check-ui-i18n.py`. Quando exigido, confira a interação ou aparência nativa na plataforma relevante. |
-| Instalação, integração ou atualizações | Consulte o [guia de compilação e implantação](../engineering/developer-build.md), a [especificação de associações](../engineering/installers-associations.md) e a de [atualizações](../engineering/software-update.md). | Confira a instalação ou o registro afetado, a identidade do pacote real, os erros e a recuperação. Use a [política de CI](../../../developers/engineering/ci-policy.md) para localizar o fluxo da plataforma. |
+| Janelas QML, controles ou localização | Comece em `apps/desktop/ui`, `resources/i18n` e `specs/visual`. Antes de mudar uma janela, leia a [especificação visual](../../visual/design-standard.md) e o [processo de design](../visual/design-workflow.md) e registre seu contrato no [registro de janelas](../../../specs/visual/window-registry.json). | Para janelas, execute `python3 scripts/check-window-contracts.py --self-test`, `python3 scripts/check-operation-components.py` e os testes bilíngues de layout afetados com vários tamanhos de texto. Para localização, execute `python3 scripts/check-ui-i18n.py`. Quando exigido, confira a interação ou aparência nativa na plataforma relevante. |
+| Instalação, integração ou atualizações | Consulte o [guia de compilação e implantação](../../engineering/developer-build.md), a [especificação de associações](../../engineering/installers-associations.md) e a de [atualizações](../../engineering/software-update.md). | Confira a instalação ou o registro afetado, a identidade do pacote real, os erros e a recuperação. Use a [política de CI](../../../developers/engineering/ci-policy.md) para localizar o fluxo da plataforma. |
 
 <a name="xdzip-describe-the-evidence"></a>
 

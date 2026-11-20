@@ -4,7 +4,7 @@
 
 [English](../../design/index.md) | [简体中文](../../zh-CN/design/index.md) | [繁體中文](../../zh-TW/design/index.md) | [日本語](../../ja-JP/design/index.md) | [한국어](../../ko-KR/design/index.md) | Français | [Deutsch](../../de-DE/design/index.md) | [Español](../../es-ES/design/index.md) | [Português (Brasil)](../../pt-BR/design/index.md) | [Русский](../../ru-RU/design/index.md)
 
-Commencez par l’[architecture du système](system-architecture.md) pour voir comment le bureau Qt Quick et la CLI Rust indépendante accèdent au moteur d’archives. Les pages de conception décrivent les contrats actuels, les décisions et le périmètre des propositions. L’installation et les opérations courantes sont décrites dans le [manuel](../user-guide/README.md). Pour compiler ou modifier le projet, consultez [Compiler et contribuer](../contributing/README.md).
+Commencez par l’[architecture du système](../../design/system-architecture.md) pour voir comment le bureau Qt Quick et la CLI Rust indépendante accèdent au moteur d’archives. Les pages de conception décrivent les contrats actuels, les décisions et le périmètre des propositions. L’installation et les opérations courantes sont décrites dans le [manuel](../user-guide/README.md). Pour compiler ou modifier le projet, consultez [Compiler et contribuer](../contributing/README.md).
 
 <a name="xdzip-find-a-design-topic"></a>
 

@@ -12,7 +12,7 @@ python3 scripts/qt_sdk_correspondence.py \
   --output build/review/qt-sdk-correspondence.json
 ```
 
-기본적으로 build/source-cache를 오프라인으로 읽고 없으면 실패합니다. --fetch를 명시한 경우에만 [고정 매니페스트](../../../scripts/corresponding-sources.json)의 공식 아카이브를 다운로드하고 검증합니다. 필요할 때 실행하는 세 플랫폼 Qt 워크플로는 고정 SDK를 설치한 뒤 --fetch를 실행하고 JSON을 다른 검증 기록과 함께 보관합니다. Mac에서는 여전히 기록만 업로드하며 앱을 배포, 서명 또는 패키징하지 않습니다. 소스 전달 수집기가 --qt-prefix를 받으면 이 기록, 패치와 고정 매니페스트를 전달 해시에 포함합니다. [소스 전달](source-delivery.md)을 참고하세요.
+기본적으로 build/source-cache를 오프라인으로 읽고 없으면 실패합니다. --fetch를 명시한 경우에만 [고정 매니페스트](../../../scripts/corresponding-sources.json)의 공식 아카이브를 다운로드하고 검증합니다. 필요할 때 실행하는 세 플랫폼 Qt 워크플로는 고정 SDK를 설치한 뒤 --fetch를 실행하고 JSON을 다른 검증 기록과 함께 보관합니다. Mac에서는 여전히 기록만 업로드하며 앱을 배포, 서명 또는 패키징하지 않습니다. 소스 전달 수집기가 --qt-prefix를 받으면 이 기록, 패치와 고정 매니페스트를 전달 해시에 포함합니다. [소스 전달](../../engineering/source-delivery.md)을 참고하세요.
 
 <a name="xdzip-verification-layers"></a>
 

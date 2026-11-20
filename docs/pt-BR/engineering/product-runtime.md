@@ -4,7 +4,7 @@
 
 [English](../../engineering/product-runtime.md) | [简体中文](../../zh-CN/engineering/product-runtime.md) | [繁體中文](../../zh-TW/engineering/product-runtime.md) | [日本語](../../ja-JP/engineering/product-runtime.md) | [한국어](../../ko-KR/engineering/product-runtime.md) | [Français](../../fr-FR/engineering/product-runtime.md) | [Deutsch](../../de-DE/engineering/product-runtime.md) | [Español](../../es-ES/engineering/product-runtime.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/product-runtime.md)
 
-Este guia explica como o aplicativo de desktop se conecta ao runtime Rust por comandos e eventos, incluindo contrapressão das filas, encerramento e builds por plataforma. Consulte [navegação somente para leitura](readonly-browser.md) e [extração segura](zip-safe-extraction.md) para os respectivos recursos.
+Este guia explica como o aplicativo de desktop se conecta ao runtime Rust por comandos e eventos, incluindo contrapressão das filas, encerramento e builds por plataforma. Consulte [navegação somente para leitura](../../engineering/readonly-browser.md) e [extração segura](../../engineering/zip-safe-extraction.md) para os respectivos recursos.
 
 <a name="xdzip-implemented-services"></a>
 
@@ -41,7 +41,7 @@ Envelopes `Task`/`TaskUpdate` no canal independente de tarefas mantêm o request
 
 Fechar um arquivo ou dispensar uma janela pode deixar o aplicativo e as tarefas ativos na bandeja. Ao sair ou reiniciar, o coordenador interrompe admissões, solicita cancelamento e esvazia eventos enquanto Rust libera sessões. O receptor aguarda as duas threads Rust antes de retornar `ShutdownReady`. O desktop espera o receptor Qt terminar e a caixa esvaziar antes de sair. A thread da interface nunca espera threads que estejam aguardando trabalho de arquivo ou entrega de eventos.
 
-O controle de cancelamento e encerramento usa seções críticas curtas com operações de estado limitadas, independentes da capacidade da fila de dados. Cancelamento cooperativo não interrompe uma leitura bloqueada pelo sistema operacional e não garante saída em tempo real rígido. As solicitações somente de leitura aqui não produzem transações de saída. Confirmações de criação/extração, limpeza temporária e resultados de saída seguem separadamente os contratos de [criação](zip-creation.md) e [extração segura](zip-safe-extraction.md).
+O controle de cancelamento e encerramento usa seções críticas curtas com operações de estado limitadas, independentes da capacidade da fila de dados. Cancelamento cooperativo não interrompe uma leitura bloqueada pelo sistema operacional e não garante saída em tempo real rígido. As solicitações somente de leitura aqui não produzem transações de saída. Confirmações de criação/extração, limpeza temporária e resultados de saída seguem separadamente os contratos de [criação](../../engineering/zip-creation.md) e [extração segura](../../engineering/zip-safe-extraction.md).
 
 Se um QObject for destruído antes da hora, feche a caixa, desperte o receptor e interrompa o serviço. O trabalho em segundo plano mantém apenas filas compartilhadas e o handle do receptor Rust, não ponteiros para o controlador. Qt cancela automaticamente notificações de objetos destruídos. QPointer também protege a vida útil se um callback de consumo destruir a conexão de forma síncrona. Ao abandonar a recepção, não aguarde threads no destrutor; o trabalho termina cooperativamente. Apenas um ShutdownReady normal comprova que a espera terminou.
 
@@ -51,8 +51,8 @@ Se um manipulador de leitura do processo de trabalho encontrar um panic que perm
 
 ## Verificação e build
 
-Veja a [verificação geral](../../../developers/qa/README.md). Testes do núcleo Rust não exigem Qt; casos Qt de janela, modelo, estresse e encerramento são compilados e executados nativamente nas três plataformas. A CI do macOS verifica arm64 e inicialização Cocoa no ambiente SDK sem implantar ou enviar apps; DMGs de desenvolvimento locais podem ser produzidos mediante pedido explícito. Windows/Linux implantam Qt incluído e verificam execução sem SDK; veja o [guia de build](developer-build.md). Essas verificações não são aprovação de lançamento oficial.
+Veja a [verificação geral](../../../developers/qa/README.md). Testes do núcleo Rust não exigem Qt; casos Qt de janela, modelo, estresse e encerramento são compilados e executados nativamente nas três plataformas. A CI do macOS verifica arm64 e inicialização Cocoa no ambiente SDK sem implantar ou enviar apps; DMGs de desenvolvimento locais podem ser produzidos mediante pedido explícito. Windows/Linux implantam Qt incluído e verificam execução sem SDK; veja o [guia de build](../../engineering/developer-build.md). Essas verificações não são aprovação de lançamento oficial.
 
 Consultas iniciais alocam uma identidade imutável de resultado; lotes posteriores devem corresponder a todos os campos e parâmetros de QueryKey. Qt cancela solicitações antigas e agrupa a intenção mais recente mantendo verificações de sequência e ID. Um lote também limita nomes a 64 KiB e não filtra nem ordena novamente. A aceitação histórica permanece limitada aos recursos disponíveis na época.
 
-A camada de aplicação pode criar várias conexões independentes enquanto o runtime de domínio isola sessões por conexão. Veja o [contrato de sessões](application-sessions.md) para identidade global de tarefas e admissão serial de tarefas pesadas.
+A camada de aplicação pode criar várias conexões independentes enquanto o runtime de domínio isola sessões por conexão. Veja o [contrato de sessões](../../engineering/application-sessions.md) para identidade global de tarefas e admissão serial de tarefas pesadas.

@@ -12,9 +12,9 @@
 
 | 操作 | 組み込みの対応範囲 |
 | --- | --- |
-| 新しいアーカイブを作成 | ZIP、7z、TAR、TAR.GZ（`.tar.gz`、`.tgz`）、単独の GZIP、XZ/TAR.XZ、LZ4/TAR.LZ4、Zstandard/TAR.ZST、LHA（`.lha`、`.lzh`）、ISO9660/Joliet、Windows x64 用 ZIP SFX ラッパー。単独ストリームは通常ファイルを一つ受け取ります。[作成仕様](zip-creation.md)と[単一ファイルストリーム](single-file-streams.md)を参照してください。 |
-| 既存のアーカイブを書き換え | 条件を満たす ZIP/ZIPX、7z、レベル 2 の LHA/LZH、TAR、TAR.GZ、TAR.XZ、TAR.ZST、TAR.LZ4、TAR.BZ2、TAR.LZMA、TAR.LZ、TAR.Z、TAR.BR が対象です。暗号化、分割ボリューム、非対応のレコードや保存方式は対象外です。[変更仕様](archive-transfers.md)を参照してください。 |
-| 閲覧、展開、項目を開く、書き出し、検証 | 操作ごとに機能とレコードの条件を確認します。たとえば、一部のインストーラーで確認できるのはメタデータだけです。[読み取り専用の閲覧](readonly-browser.md)と[検証](archive-checking.md)を参照してください。 |
+| 新しいアーカイブを作成 | ZIP、7z、TAR、TAR.GZ（`.tar.gz`、`.tgz`）、単独の GZIP、XZ/TAR.XZ、LZ4/TAR.LZ4、Zstandard/TAR.ZST、LHA（`.lha`、`.lzh`）、ISO9660/Joliet、Windows x64 用 ZIP SFX ラッパー。単独ストリームは通常ファイルを一つ受け取ります。[作成仕様](../../engineering/zip-creation.md)と[単一ファイルストリーム](single-file-streams.md)を参照してください。 |
+| 既存のアーカイブを書き換え | 条件を満たす ZIP/ZIPX、7z、レベル 2 の LHA/LZH、TAR、TAR.GZ、TAR.XZ、TAR.ZST、TAR.LZ4、TAR.BZ2、TAR.LZMA、TAR.LZ、TAR.Z、TAR.BR が対象です。暗号化、分割ボリューム、非対応のレコードや保存方式は対象外です。[変更仕様](../../engineering/archive-transfers.md)を参照してください。 |
+| 閲覧、展開、項目を開く、書き出し、検証 | 操作ごとに機能とレコードの条件を確認します。たとえば、一部のインストーラーで確認できるのはメタデータだけです。[読み取り専用の閲覧](../../engineering/readonly-browser.md)と[検証](archive-checking.md)を参照してください。 |
 
 仕様を変更したら `python3 scripts/generate-format-registry.py` を実行します。Rust のコーデック記述子、ドラッグ＆ドロップ用とシェル用の C++ 形式候補、JavaScript UI の選択肢、インストーラー用の Python アイコン対応表が生成されます。`--check` はファイルを変更せず、生成物の欠落や古い内容を検出します。`python3 scripts/test-format-registry.py` は、矛盾する機能、ID や拡張子の重複、出力言語で無効な値、更新されていない参照先を検査します。通常の CI で両方の検査を実行します。
 
@@ -22,6 +22,6 @@
 
 入口は必要に応じてドラッグ＆ドロップとシェルメニューを区別します。通常の `.gz` は両方の入口と単一ファイルからの作成に対応します。`.tar.gz` と `.tgz` は TAR コンテナーの意味を保ちます。XPI/APK/IPA/CBZ は ZIP の検証と許可されたプロファイルを使います。[単一ファイルストリーム](single-file-streams.md)を参照してください。分割ボリュームの命名とソースの許可には[アーカイブを開くときの仕様](archive-opening.md)が適用されます。レジストリーで番号付きファイルを別の形式に解釈することはありません。Windows のアイコンは最後の拡張子に従うため、`.tar.gz` は `gz` の関連付けを使います。
 
-実装済みで自動検証がある宣言だけを追加します。ソースを変更する場合は、関係する[独自形式の仕様](independent-rust-codecs.md)、[形式ワーカーの仕様](native-codecs.md)、機能説明、[受け入れ項目](../../../developers/qa/acceptance.md)を更新します。計画や進捗、実行結果は Issue に、生成した検証結果は `build/` または CI の成果物に保存します。
+実装済みで自動検証がある宣言だけを追加します。ソースを変更する場合は、関係する[独自形式の仕様](../../engineering/independent-rust-codecs.md)、[形式ワーカーの仕様](native-codecs.md)、機能説明、[受け入れ項目](../../../developers/qa/acceptance.md)を更新します。計画や進捗、実行結果は Issue に、生成した検証結果は `build/` または CI の成果物に保存します。
 
 `creation_wrappers` は Windows x64 の ZIP SFX ラッパーと、その専用拡張子 `.sfx.exe` を宣言します。ZIP の方式 ID を再利用し、暗号化と分割ボリュームを無効にします。一般の EXE ファイルは対象外です。ISO9660 の作成にはホスト方式 ID 260 と固定レベル 0 を使用します。[ISO 作成](iso-creation.md)と[組み込みの SFX 作成](sfx-creation.md)を参照してください。

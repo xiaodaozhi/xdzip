@@ -18,4 +18,4 @@ A [política de privacidade](../../../PRIVACY.md) explica os dados tratados pelo
 | Comprovantes de transações de atualização | Localmente, inclusive após reinícios durante a instalação | O arquivo separado `update-state.ini` ao lado das configurações guarda a identidade da transação e do destino. Downloads com falha podem ficar no cache privado de atualização. O atualizador lê apenas os arquivos de comprovante previstos e não executa seu conteúdo. |
 | Estado e diagnóstico | Interface, terminal ou registros locais, conforme o recurso | O aplicativo não envia diagnósticos automaticamente. Copiar dados de versão ou de arquivo os grava na área de transferência. Confira nomes, caminhos e outras informações privadas antes de compartilhar um erro, registro ou captura de tela. |
 
-Consulte a [especificação de atualizações](software-update.md) para rede, assinaturas, encaminhamento da instalação e recuperação.
+Consulte a [especificação de atualizações](../../engineering/software-update.md) para rede, assinaturas, encaminhamento da instalação e recuperação.

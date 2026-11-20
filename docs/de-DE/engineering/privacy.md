@@ -18,4 +18,4 @@ Die [Datenschutzerklärung](../../../PRIVACY.md) beschreibt, welche Daten xdzip 
 | Belege für Updatevorgänge | Lokal, auch nach Neustarts während der Installation | Die separate Datei `update-state.ini` neben den Einstellungen speichert die Identität des Vorgangs und des Ziels. Fehlgeschlagene Downloads können im privaten Updatecache bleiben. Der Updater liest nur festgelegte Belegdateien und führt ihren Inhalt nicht aus. |
 | Status und Diagnose | Je nach Funktion in Oberfläche, Terminal oder lokalen Aufzeichnungen | Die Anwendung lädt Diagnosen nicht automatisch hoch. Beim Kopieren von Versions- oder Dateiinformationen werden sie in die Systemzwischenablage geschrieben. Prüfen Sie Dateinamen, Pfade und andere private Angaben vor dem Teilen einer Fehlermeldung, eines Protokolls oder eines Screenshots. |
 
-Die [Spezifikation für Softwareupdates](software-update.md) beschreibt Netzwerkzugriffe, Signaturen, Installationsübergabe und Wiederherstellung.
+Die [Spezifikation für Softwareupdates](../../engineering/software-update.md) beschreibt Netzwerkzugriffe, Signaturen, Installationsübergabe und Wiederherstellung.

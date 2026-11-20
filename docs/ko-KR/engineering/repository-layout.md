@@ -12,12 +12,12 @@
 | crates/xdzip-cli | Qt 없이 인수, 터미널, JSON, 관리형 설치 및 업데이트 호스트를 처리합니다. 런타임, 안전한 I/O, 업데이트 코어에 직접 의존하고 형식 해석은 위임합니다. |
 | crates/xdzip-domain | 순수 타입과 불변 조건. Qt나 구체적인 코덱에 의존할 수 없습니다. |
 | crates/xdzip-codec-api | 기능, 빌린 입력, 인코딩 출력 및 취소 계약. 도메인에 의존합니다. |
-| crates/xdzip-compression | Deflate/Deflate64/GZIP, LZMA/LZMA2, BZip2, PPMd7, MSZIP, LZX, Quantum의 공통 알고리즘과 래퍼. 운영용 타사 종속성이나 경로 및 출력 확정 권한이 없습니다. [계약](independent-rust-codecs.md)을 참고하세요. |
+| crates/xdzip-compression | Deflate/Deflate64/GZIP, LZMA/LZMA2, BZip2, PPMd7, MSZIP, LZX, Quantum의 공통 알고리즘과 래퍼. 운영용 타사 종속성이나 경로 및 출력 확정 권한이 없습니다. [계약](../../engineering/independent-rust-codecs.md)을 참고하세요. |
 | crates/xdzip-crypto | 형식과 독립적인 고정 메모리 SHA/HMAC 및 BLAKE 해시. 민감한 상태를 0으로 지울 수 있으며 이미 채택한 원시 기능을 재사용합니다. 압축 파일 암호를 해석하거나 출력을 확정할지 결정하지 않습니다. |
 | crates/xdzip-codec-zip, xdzip-codec-tar | ZIP 및 TAR/GZIP 구현. 임의의 출력 경로를 다루지 않습니다. |
-| crates/xdzip-codec-lha, xdzip-codec-arj, xdzip-codec-arc, xdzip-codec-bh | [LHA](lha-containers.md)/[PMA](pma-streams.md), [ARJ](arj-streams.md), [ARC](arc-streams.md), [BH](bh-containers.md)의 독립 프레임 및 항목 프로필. 파일 시스템 권한이 없으며 제품 내 사용 가능 여부는 형식 레지스트리에서 결정합니다. |
+| crates/xdzip-codec-lha, xdzip-codec-arj, xdzip-codec-arc, xdzip-codec-bh | [LHA](../../engineering/lha-containers.md)/[PMA](pma-streams.md), [ARJ](arj-streams.md), [ARC](arc-streams.md), [BH](bh-containers.md)의 독립 프레임 및 항목 프로필. 파일 시스템 권한이 없으며 제품 내 사용 가능 여부는 형식 레지스트리에서 결정합니다. |
 | crates/xdzip-codec-7z | 자체 7z 컨테이너, 방식 그래프, 필터, AES 결합, 스트리밍 생성과 한도가 있는 다시 쓰기. 파일 경로에 대한 권한은 없습니다. |
-| crates/xdzip-codec-cab | 호스트가 승인한 볼륨과 공통 알고리즘을 사용하는 자체 읽기 전용 CAB 컨테이너. 원본 이름, UTF-8 선언 및 일반적인 중복 이름 레코드를 보존합니다. 볼륨 검색과 출력 확정은 호스트의 책임입니다. [계약](independent-rust-codecs.md#cab只读规格) 및 [자료](cab-format-sources.md)를 참고하세요. |
+| crates/xdzip-codec-cab | 호스트가 승인한 볼륨과 공통 알고리즘을 사용하는 자체 읽기 전용 CAB 컨테이너. 원본 이름, UTF-8 선언 및 일반적인 중복 이름 레코드를 보존합니다. 볼륨 검색과 출력 확정은 호스트의 책임입니다. [계약](../../engineering/independent-rust-codecs.md#cab只读规格) 및 [자료](../../engineering/cab-format-sources.md)를 참고하세요. |
 | crates/xdzip-codec-optical | ISO9660/Joliet/Rock Ridge/UDF 읽기와 새 데이터 이미지를 위한 ISO9660/Joliet 쓰기. 경로 권한 없이 스트림을 사용합니다. |
 | crates/xdzip-codec-bridge | 격리 프로세스와 Rust 7z, RAR, CAB 및 광학 매체 코덱을 잇는 얇은 CXX 경계. 승인된 스트림, 리소스 제한 및 취소를 다룹니다. |
 | crates/xdzip-codec-native, tools/native-codec | Rust 7z/RAR/광학 매체/CAB 백엔드 격리 프로세스. 얇은 C++ 계층은 프로토콜과 시스템 달력 및 인코딩 서비스만 제공합니다. 네이티브 수신자는 미리 집계한 출력과 보조 작업량을 독립적으로 검사합니다. [I/O 계약](native-codecs.md)을 참고하세요. |
@@ -37,8 +37,8 @@
 
 독립 xdzip-index, xdzip-platform 및 완전한 외부 형식 적합성 도구는 향후 아키텍처에 포함됩니다. 현재 인덱싱은 런타임에 있고, 플랫폼별 파일 작업은 io와 데스크톱 어댑터에 있습니다. 기존 plugin-host는 [읽기 전용 SDK 실험](sdk-trial.md)에 사용합니다. 테스트는 주로 Rust 모듈, apps/desktop/tests 및 스크립트 검사에서 관리합니다. 구현이 없는 빈 모듈은 만들지 않습니다.
 
-제품의 CAB 경로는 Rust로 고정됩니다. 공식 Cab 처리기와 CAB 전용 LZX/Quantum은 컴파일에 포함되지 않습니다. 호출은 제품 실행 파일이나 테스트 스위치, 실패 시 대체 경로를 추가하지 않고 동일한 격리 프로세스를 사용합니다. codec-api는 완전한 프레임의 작업량을 미리 집계하는 방식을 정의합니다. 컨테이너는 프레임별 허용량을 보유하며 네이티브 수신자와 런타임은 각각의 허용량과 출력 제한을 독립적으로 확인합니다. [자체 코덱 계약](independent-rust-codecs.md#cab只读规格)을 참고하세요.
+제품의 CAB 경로는 Rust로 고정됩니다. 공식 Cab 처리기와 CAB 전용 LZX/Quantum은 컴파일에 포함되지 않습니다. 호출은 제품 실행 파일이나 테스트 스위치, 실패 시 대체 경로를 추가하지 않고 동일한 격리 프로세스를 사용합니다. codec-api는 완전한 프레임의 작업량을 미리 집계하는 방식을 정의합니다. 컨테이너는 프레임별 허용량을 보유하며 네이티브 수신자와 런타임은 각각의 허용량과 출력 제한을 독립적으로 확인합니다. [자체 코덱 계약](../../engineering/independent-rust-codecs.md#cab只读规格)을 참고하세요.
 
-종속성 설계는 [시스템 아키텍처](../design/system-architecture.md)를 참고하세요. 도메인에서 런타임으로의 역방향 종속성, 코덱의 직접적인 QML 알림, 플랫폼 계층의 UI 문구 결정을 피하세요. 생성한 바인딩, 샘플, 보고서 및 빌드 결과는 소스 디렉터리 밖의 build/, target/, dist/에 둡니다. [설치 및 연결](installers-associations.md#兼容基线的长期输入)에는 이전 버전과의 호환성을 확인하기 위해 유지할 입력이 나와 있습니다.
+종속성 설계는 [시스템 아키텍처](../../design/system-architecture.md)를 참고하세요. 도메인에서 런타임으로의 역방향 종속성, 코덱의 직접적인 QML 알림, 플랫폼 계층의 UI 문구 결정을 피하세요. 생성한 바인딩, 샘플, 보고서 및 빌드 결과는 소스 디렉터리 밖의 build/, target/, dist/에 둡니다. [설치 및 연결](../../engineering/installers-associations.md#兼容基线的长期输入)에는 이전 버전과의 호환성을 확인하기 위해 유지할 입력이 나와 있습니다.
 
 `tools/image-preview/`는 정적 이미지용 내부 QtGui/QtSvg 프로세스입니다. 검증되고 한도가 적용된 입력을 받아 한도가 적용된 RGBA를 반환하며 압축 파일이나 대상의 경로는 보유하지 않습니다. 플랫폼 지원과 실패 시 동작은 [미리 보기 계약](content-preview.md)을 참고하세요.

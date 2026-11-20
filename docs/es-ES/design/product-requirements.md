@@ -4,7 +4,7 @@
 
 [English](../../design/product-requirements.md) | [简体中文](../../zh-CN/design/product-requirements.md) | [繁體中文](../../zh-TW/design/product-requirements.md) | [日本語](../../ja-JP/design/product-requirements.md) | [한국어](../../ko-KR/design/product-requirements.md) | [Français](../../fr-FR/design/product-requirements.md) | [Deutsch](../../de-DE/design/product-requirements.md) | Español | [Português (Brasil)](../../pt-BR/design/product-requirements.md) | [Русский](../../ru-RU/design/product-requirements.md)
 
-XDZip permite explorar archivos comprimidos como carpetas, trabajar con el contenido seleccionado y crear o editar archivos cuando el formato lo permite. El escritorio y la [CLI independiente](../engineering/command-line.md) comparten el entorno de ejecución. El [README del proyecto](../../../README.es-ES.md) describe las capacidades y distribuciones actuales. Los siguientes requisitos definen el comportamiento que hay que conservar y verificar.
+XDZip permite explorar archivos comprimidos como carpetas, trabajar con el contenido seleccionado y crear o editar archivos cuando el formato lo permite. El escritorio y la [CLI independiente](../../engineering/command-line.md) comparten el entorno de ejecución. El [README del proyecto](../../../README.es-ES.md) describe las capacidades y distribuciones actuales. Los siguientes requisitos definen el comportamiento que hay que conservar y verificar.
 
 <a name="xdzip-requirements-and-implementation"></a>
 
@@ -33,8 +33,8 @@ XDZip permite explorar archivos comprimidos como carpetas, trabajar con el conte
 ## Flujos y alcance
 
 - **Abrir y examinar.** La solicitud llega al coordinador de sesiones. Un análisis correcto publica una sesión. La búsqueda y la ordenación crean consultas nuevas. Un doble clic abre un directorio o un archivo compatible mediante una copia temporal. Con el panel de propiedades visible, seleccionar un archivo compatible inicia su vista previa. [Exploración y vista previa](../user-guide/browse.md), [Apertura temporal](../engineering/archive-opening.md)
-- **Extraer.** «Extraer todo» abarca el archivo comprimido completo. Para extraer solo coincidencias, selecciónalas en la consulta y revisa el alcance. La comprobación previa de metadatos informa antes de autorizar la escritura. La confirmación por archivo conserva los archivos completados ante fallos o cancelaciones posteriores. [Extracción](../engineering/zip-safe-extraction.md), [Planificación de tareas](task-scheduling.md)
-- **Crear, modificar o comprobar.** La creación y las ediciones admitidas verifican la salida temporal antes de guardarla. Comprobar revisa un archivo compatible según su formato sin obtener permiso de salida. Las operaciones dependen del formato, la entrada y el perfil de origen. [Registro de formatos](../engineering/format-registry.md), [Transferencias](../engineering/archive-transfers.md), [Comprobación](../engineering/archive-checking.md)
+- **Extraer.** «Extraer todo» abarca el archivo comprimido completo. Para extraer solo coincidencias, selecciónalas en la consulta y revisa el alcance. La comprobación previa de metadatos informa antes de autorizar la escritura. La confirmación por archivo conserva los archivos completados ante fallos o cancelaciones posteriores. [Extracción](../../engineering/zip-safe-extraction.md), [Planificación de tareas](task-scheduling.md)
+- **Crear, modificar o comprobar.** La creación y las ediciones admitidas verifican la salida temporal antes de guardarla. Comprobar revisa un archivo compatible según su formato sin obtener permiso de salida. Las operaciones dependen del formato, la entrada y el perfil de origen. [Registro de formatos](../engineering/format-registry.md), [Transferencias](../../engineering/archive-transfers.md), [Comprobación](../engineering/archive-checking.md)
 
 <a name="xdzip-planned-scope-and-verification"></a>
 

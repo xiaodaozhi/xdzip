@@ -4,7 +4,7 @@
 
 [English](../../ux/desktop-integration.md) | [简体中文](../../zh-CN/ux/desktop-integration.md) | [繁體中文](../../zh-TW/ux/desktop-integration.md) | [日本語](../../ja-JP/ux/desktop-integration.md) | 한국어 | [Français](../../fr-FR/ux/desktop-integration.md) | [Deutsch](../../de-DE/ux/desktop-integration.md) | [Español](../../es-ES/ux/desktop-integration.md) | [Português (Brasil)](../../pt-BR/ux/desktop-integration.md) | [Русский](../../ru-RU/ux/desktop-integration.md)
 
-다중 세션, 단일 인스턴스, 창 상태와 전체 종료는 [애플리케이션 세션 계약](../engineering/application-sessions.md)을 따릅니다. 마지막이 아닌 기본 창을 닫아도 작업은 유지되며 마지막 창은 트레이 설정을 따릅니다. 종료 확인은 모든 세션을 포함합니다.
+다중 세션, 단일 인스턴스, 창 상태와 전체 종료는 [애플리케이션 세션 계약](../../engineering/application-sessions.md)을 따릅니다. 마지막이 아닌 기본 창을 닫아도 작업은 유지되며 마지막 창은 트레이 설정을 따릅니다. 종료 확인은 모든 세션을 포함합니다.
 
 작업 암호나 충돌 확인이 표시된 상태에서도 시스템, 메뉴 또는 트레이의 명시적 종료로 전체 확인 창을 열 수 있습니다. macOS에서는 애플리케이션 메뉴의 종료와 Command-Q를 계속 사용할 수 있습니다. 돌아가기를 선택하면 작업과 확인 창이 유지됩니다. 네이티브 파일 선택기나 다른 차단 모달 창은 먼저 완료하거나 닫아야 합니다. 애플리케이션은 그 모달 창에 의해 차단된 종료 시도를 버립니다.
 

@@ -4,14 +4,14 @@
 
 [English](../../design/file-security.md) | [简体中文](../../zh-CN/design/file-security.md) | [繁體中文](../../zh-TW/design/file-security.md) | 日本語 | [한국어](../../ko-KR/design/file-security.md) | [Français](../../fr-FR/design/file-security.md) | [Deutsch](../../de-DE/design/file-security.md) | [Español](../../es-ES/design/file-security.md) | [Português (Brasil)](../../pt-BR/design/file-security.md) | [Русский](../../ru-RU/design/file-security.md)
 
-ホストは開けるファイルと、検証済み出力を公開できる場所を制御します。バックエンドは分離されたアーカイブワーカー内で動作する場合も、上限付きのリーダーと出力先を受け取ります。アーカイブ名、宣言サイズ、チェックサム、ペイロードは入力データです。ホストのファイル検査は形式による検査とは独立して適用されます。[システムアーキテクチャー](system-architecture.md)、[アーカイブワーカープロトコル](../engineering/native-codecs.md)
+ホストは開けるファイルと、検証済み出力を公開できる場所を制御します。バックエンドは分離されたアーカイブワーカー内で動作する場合も、上限付きのリーダーと出力先を受け取ります。アーカイブ名、宣言サイズ、チェックサム、ペイロードは入力データです。ホストのファイル検査は形式による検査とは独立して適用されます。[システムアーキテクチャー](../../design/system-architecture.md)、[アーカイブワーカープロトコル](../engineering/native-codecs.md)
 
 <a name="xdzip-authorizing-the-source-and-destination"></a>
 
 ## ソースと出力先の認可
 
 - **アーカイブソース。** `Source::open` は選択されたパスを `xdzip-io::open_regular_readonly` で開き、開いたファイルの種類を検査します。Unix では分類用のオープンはノンブロッキングなので FIFO がオープンを妨げることはありません。ユーザーが選択したパスはリンクを経由して通常ファイルに解決されてもかまいません。分割ボリュームの探索は上限があり形式ごとに異なります。ホストは受理された隣接部分を固定し、そのファイル識別情報とバージョンを検査します。コーデックがアクセスできるのは提供されたストリームだけです。[ソース実装](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/source.rs)、[ボリューム処理](../engineering/archive-opening.md)
-- **作成入力。** `InputTree` は選択された入力を上限付きのメタデータとファイル識別情報を用いて走査します。読み取り時にはバージョンを確認しながらそのツリーからメンバーを開きます。現在のプライベートなステージングディレクトリは自身の入力走査から除外されます。ソースの変更を検出するとジョブを停止します。識別情報、サイズ、時刻の検査はベストエフォートの変更検出であり、完全な内容スナップショットではありません。[入力ツリー](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/input.rs)、[アーカイブ作成](../engineering/zip-creation.md)
+- **作成入力。** `InputTree` は選択された入力を上限付きのメタデータとファイル識別情報を用いて走査します。読み取り時にはバージョンを確認しながらそのツリーからメンバーを開きます。現在のプライベートなステージングディレクトリは自身の入力走査から除外されます。ソースの変更を検出するとジョブを停止します。識別情報、サイズ、時刻の検査はベストエフォートの変更検出であり、完全な内容スナップショットではありません。[入力ツリー](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/input.rs)、[アーカイブ作成](../../engineering/zip-creation.md)
 - **出力先。** `Grant` は選択されたディレクトリオブジェクトとその識別情報を保持します。展開ではすべてのソースボリュームの識別情報を保護ファイルとして渡します。作成と編集はそれぞれのタスク経路で固定入力または元アーカイブの識別情報を検査します。サブフォルダーとステージングは保持ディレクトリを通じてアクセスし、公開前に親の識別情報を再検査します。`CheckTarget` と展開の事前確認はタスク開始前に役立つ結果を提供できます。書き込みの認可は操作中に再検査します。[出力先の認可](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/target.rs)、[展開の事前確認](../engineering/extraction-preflight.md)
 
 <a name="xdzip-name-mapping-platform-protection-and-links"></a>
@@ -30,7 +30,7 @@
 
 ZIP シンボリックリンク出力は受理された Unix リンクグラフに限ります。ランタイムはリンク公開前に選択グラフと存在してはならない末端を検証し、通常ターゲットを先に確定します。タスクは内容を書き込むためにアーカイブが作成したリンクを決してたどりません。他の未対応リンクや特殊ファイルのプロファイルは明示的に失敗します。POSIX の通常ファイルモードは、所有者の読み書きに加え安全な読み取り・実行ビットをステージング上で復元できます。特権ビットと外部書き込みビットは除外します。展開経路は確定後にタイムスタンプを復元しません。
 
-[ポータブルパスパーサー](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-domain/src/path.rs)、[展開計画](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/plan.rs)、[プライベートオブジェクトの検査](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/private.rs)、[リンクとプラットフォームの詳細](../engineering/zip-safe-extraction.md)
+[ポータブルパスパーサー](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-domain/src/path.rs)、[展開計画](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/plan.rs)、[プライベートオブジェクトの検査](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/private.rs)、[リンクとプラットフォームの詳細](../../engineering/zip-safe-extraction.md)
 
 <a name="xdzip-staging-verification-and-commit"></a>
 
@@ -45,7 +45,7 @@ ZIP シンボリックリンク出力は受理された Unix リンクグラフ�
 | 分割ボリュームの作成 | ステージングされたアーカイブ内容を検証し、各部分を準備して既存ボリュームを上書きせず新しい平坦な集合を公開します。各部分は個別に見えるようになります。部分失敗時、ロールバックは新たに公開されたうち識別情報がまだ一致するオブジェクトだけの削除を試みます。ロールバック失敗により結果が不確実になることがあります。 |
 | 既存アーカイブの変更 | `ArchiveUpdate` は認可された親と期待される元アーカイブのバージョンを結び付けます。書き換えたアーカイブを再度開いて検証し、その権限で元を一度置き換えます。通常の展開がこの特別な置き換え経路を使ってソースを上書きすることはできません。 |
 
-公開ゲート前のキャンセルは現在の確定を防ぎます。すでに進行中の公開は決着し、実際の結果を報告することがあります。以前に確定した展開ファイルは見えたままです。終端スナップショットは `cancelled`、`failed`、クリーンアップ警告とともに確定データを報告することがあります。アーカイブ全体の公開が成功した後は、遅れてキャンセルが届いても成功を維持します。[タスクのキャンセル](task-scheduling.md)、[アーカイブ変更](../engineering/archive-transfers.md)、[安全な展開](../engineering/zip-safe-extraction.md)
+公開ゲート前のキャンセルは現在の確定を防ぎます。すでに進行中の公開は決着し、実際の結果を報告することがあります。以前に確定した展開ファイルは見えたままです。終端スナップショットは `cancelled`、`failed`、クリーンアップ警告とともに確定データを報告することがあります。アーカイブ全体の公開が成功した後は、遅れてキャンセルが届いても成功を維持します。[タスクのキャンセル](task-scheduling.md)、[アーカイブ変更](../../engineering/archive-transfers.md)、[安全な展開](../../engineering/zip-safe-extraction.md)
 
 <a name="xdzip-output-budgets-and-integrity-scope"></a>
 
@@ -60,7 +60,7 @@ ZIP シンボリックリンク出力は受理された Unix リンクグラフ�
 ## プレビュー、一時オープン、秘密情報
 
 - **プレビュー。** 対応ファイルを選択すると表示中のプロパティカードでプレビューが始まります。Rust は予算内で受理された項目全体を読み取り検証します。テキストは 256 KiB 以下です。エンコード画像は 16 MiB 以下で、元の寸法とピクセル数に別の上限があります。プライベートな画像プロセスはバイトを受け取り、上限付きサムネイルを返します。アーカイブ名、パスワード、出力先ハンドルは受け取りません。現在の形式と制限は[プレビュー契約](../engineering/content-preview.md)を参照してください。
-- **一時オープン。** 通常項目をタスクの通常の検証規則でプライベートキャッシュに展開します。デスクトップは検証済みファイルをローカル URL としてシステムの関連付けに渡します。受理は外部プログラムが読み終えたことを証明しません。保持期間経過後の後続操作でクリーンアップはキャッシュの識別情報とロックを確認します。コピーへの編集は元アーカイブとは独立しています。[一時オープン](../engineering/archive-opening.md)、[アーカイブ転送](../engineering/archive-transfers.md)
+- **一時オープン。** 通常項目をタスクの通常の検証規則でプライベートキャッシュに展開します。デスクトップは検証済みファイルをローカル URL としてシステムの関連付けに渡します。受理は外部プログラムが読み終えたことを証明しません。保持期間経過後の後続操作でクリーンアップはキャッシュの識別情報とロックを確認します。コピーへの編集は元アーカイブとは独立しています。[一時オープン](../engineering/archive-opening.md)、[アーカイブ転送](../../engineering/archive-transfers.md)
 - **秘密情報。** オープンと展開のパスワードはセッションまたはタスクの寿命中、操作固有のゼロ化されるコンテナーに保持します。タスクスナップショットやステージングジャーナルには入りません。ユーザーデータのプライベート保存、保持、開示の規則は[プライバシー契約](../engineering/privacy.md)と[パスワード契約](../engineering/password-extraction.md)に記載されています。
 
 <a name="xdzip-journals-leftovers-and-verification"></a>
@@ -69,4 +69,4 @@ ZIP シンボリックリンク出力は受理された Unix リンクグラフ�
 
 ステージングジャーナルは準備と確定の際にタスクのコンテキストと相対出力名を記録します。通常のクリーンアップは所有者と識別情報を検査し、既知のステージングオブジェクトだけを削除します。プライベートジャーナルと残存オブジェクトは異常終了後の証拠になり得ます。ランタイムは出力先を検査する際、残存物の可能性を数えます。発見したジャーナルを使って書き込みを再実行したり、未知の内容を削除したりしません。プライベートな一時出力のキャッシュ期限切れには独自の識別情報とロックの検査があります。
 
-この境界を変更する場合はエラーコードだけでなく公開とクリーンアップを検証します。[I/O テスト](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/tests.rs)、[展開テスト](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/tests.rs)、[安全な展開契約](../engineering/zip-safe-extraction.md)は異なる層を対象とします。ネイティブなプラットフォーム動作を変更する場合は、そのプラットフォーム固有の証拠が必要です。
+この境界を変更する場合はエラーコードだけでなく公開とクリーンアップを検証します。[I/O テスト](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/tests.rs)、[展開テスト](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/tests.rs)、[安全な展開契約](../../engineering/zip-safe-extraction.md)は異なる層を対象とします。ネイティブなプラットフォーム動作を変更する場合は、そのプラットフォーム固有の証拠が必要です。

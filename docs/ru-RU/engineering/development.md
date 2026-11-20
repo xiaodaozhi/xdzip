@@ -4,7 +4,7 @@
 
 [English](../../engineering/development.md) | [简体中文](../../zh-CN/engineering/development.md) | [繁體中文](../../zh-TW/engineering/development.md) | [日本語](../../ja-JP/engineering/development.md) | [한국어](../../ko-KR/engineering/development.md) | [Français](../../fr-FR/engineering/development.md) | [Deutsch](../../de-DE/engineering/development.md) | [Español](../../es-ES/engineering/development.md) | [Português (Brasil)](../../pt-BR/engineering/development.md) | Русский
 
-Выберите способ сборки и проверки в разделе [Сборка и участие](../contributing/README.md). [Архитектура системы](../design/system-architecture.md) и [структура репозитория](repository-layout.md) описывают границы Qt, среды Rust и кодеков.
+Выберите способ сборки и проверки в разделе [Сборка и участие](../contributing/README.md). [Архитектура системы](../../design/system-architecture.md) и [структура репозитория](repository-layout.md) описывают границы Qt, среды Rust и кодеков.
 
 <a name="xdzip-obtain-and-modify"></a>
 
@@ -28,7 +28,7 @@
 
 Для macOS подготовьте Xcode Command Line Tools и Qt. Для Windows нужны MSVC Build Tools, Windows SDK и совместимый Qt. Для Linux нужны компилятор, целевая среда glibc и зависимости Qt Wayland/X11. Версии зафиксированы в корневых файлах инструментов и CI. Источники и лицензии вносите в [таблицу инструментов](toolchain.md). Системы и сопровождение описаны в [политике поддержки](support-policy.md). Проверку конкретной лицензии и происхождения ведите в задаче по соответствующему выпуску.
 
-В [Qt-приложении для разработки](../../../apps/desktop/README.md) приведены команды сборки и запуска из чистой рабочей копии, параметры CMake, архитектуры и цели macOS и ограничения внеэкранных тестов. После изменений сборки или установки перепроверьте пути с пробелами и китайскими символами. Для локальной разработки платная идентификация подписи не требуется. [Руководство по сборке](developer-build.md) описывает локальную ad-hoc подпись целостности DMG и ограничения CI на развёртывание приложения Mac.
+В [Qt-приложении для разработки](../../../apps/desktop/README.md) приведены команды сборки и запуска из чистой рабочей копии, параметры CMake, архитектуры и цели macOS и ограничения внеэкранных тестов. После изменений сборки или установки перепроверьте пути с пробелами и китайскими символами. Для локальной разработки платная идентификация подписи не требуется. [Руководство по сборке](../../engineering/developer-build.md) описывает локальную ad-hoc подпись целостности DMG и ограничения CI на развёртывание приложения Mac.
 
 <a name="xdzip-independent-engineering-probes"></a>
 

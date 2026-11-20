@@ -4,7 +4,7 @@
 
 [English](../../engineering/linux-deployment.md) | [简体中文](../../zh-CN/engineering/linux-deployment.md) | [繁體中文](../../zh-TW/engineering/linux-deployment.md) | [日本語](../../ja-JP/engineering/linux-deployment.md) | [한국어](../../ko-KR/engineering/linux-deployment.md) | [Français](../../fr-FR/engineering/linux-deployment.md) | [Deutsch](../../de-DE/engineering/linux-deployment.md) | Español | [Português (Brasil)](../../pt-BR/engineering/linux-deployment.md) | [Русский](../../ru-RU/engineering/linux-deployment.md)
 
-La base actual de despliegue para desarrollo es Ubuntu 24.04, x86_64 y X11. El objetivo es ejecutar el producto actual sin el SDK Qt de desarrollo; esto no promete otras distribuciones, versiones anteriores de glibc, Wayland ni compatibilidad completa del instalador. La CI de macOS conserva compilación, pruebas y verificación de inicio nativas. Los DMG locales de desarrollo siguen la [guía de despliegue Mac](macos-deployment.md) y no se ven afectados por este proceso.
+La base actual de despliegue para desarrollo es Ubuntu 24.04, x86_64 y X11. El objetivo es ejecutar el producto actual sin el SDK Qt de desarrollo; esto no promete otras distribuciones, versiones anteriores de glibc, Wayland ni compatibilidad completa del instalador. La CI de macOS conserva compilación, pruebas y verificación de inicio nativas. Los DMG locales de desarrollo siguen la [guía de despliegue Mac](../../engineering/macos-deployment.md) y no se ven afectados por este proceso.
 
 <a name="xdzip-layout-and-generation"></a>
 
@@ -29,7 +29,7 @@ patchelf establece un RPATH `$ORIGIN` relativo en cada ELF, calculando la distan
 
 Tras reescribir el RPATH relativo, el despliegue elimina tablas de símbolos nativas innecesarias y comprueba que cada entrada DT_NEEDED y RPATH/RUNPATH no haya cambiado. Registra versión de herramienta, hashes y número de bytes antes y después para cada ELF en `symbol_stripping`; las entradas SDK y los binarios de compilación originales permanecen intactos. Para una copia de diagnóstico el script de despliegue subyacente admite `--keep-symbols`. La atribución SDK final y los hashes de la aplicación describen los archivos transformados. Esto reduce el tamaño del paquete, no demuestra una mejora medida de memoria o rendimiento.
 
-Usar por etapas el [punto de entrada unificado de compilación](developer-build.md) para generación y verificación habituales. Completar primero compilación, pruebas y preparación del empaquetado con la misma configuración y ejecutar:
+Usar por etapas el [punto de entrada unificado de compilación](../../engineering/developer-build.md) para generación y verificación habituales. Completar primero compilación, pruebas y preparación del empaquetado con la misma configuración y ejecutar:
 
 ```sh
 python3 scripts/desktop.py doctor --for-stage package
@@ -77,4 +77,4 @@ La CI genera xdzip-linux-x86_64.tar.gz y registra SHA-256 y hashes del ejecutabl
 
 El directorio de ejecución `build/package`, tar.gz y .deb generados aquí son entregas experimentales de desarrollo y no instalan ni cambian asociaciones predeterminadas automáticamente. Los tar.gz y .deb oficiales de Ubuntu para Release se generan en el flujo Release dedicado y se entregan según el [protocolo de publicación](release-protocol.md). El alcance de plataformas sigue la [política de soporte](support-policy.md); otras distribuciones o escritorios, Wayland y ampliaciones requieren incidencias separadas. La aceptación existente de escritorio permanece en [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5). Para cambios posteriores volver a verificar las comprobaciones afectadas de IME y lector de pantalla reales y de instalación, actualización y desinstalación limpias; reconstruir un directorio no exige por sí solo repetir la aceptación existente. La revisión histórica de componentes de `v0.1.0` está en [#4](https://github.com/xiaodaozhi/xdzip/issues/4) y [#53](https://github.com/xiaodaozhi/xdzip/issues/53); ejecutar correctamente el directorio no completa automáticamente los requisitos de futuras publicaciones.
 
-Véase [instalación y asociaciones](installers-associations.md) para instalación, actualización, reversión y desinstalación de Ubuntu .deb, bloqueos de ejecución y automatización MIME de escritorio. Superar el contenedor de ejecución no sustituye las comprobaciones reales de escritorio ni la revisión de licencias de publicación.
+Véase [instalación y asociaciones](../../engineering/installers-associations.md) para instalación, actualización, reversión y desinstalación de Ubuntu .deb, bloqueos de ejecución y automatización MIME de escritorio. Superar el contenedor de ejecución no sustituye las comprobaciones reales de escritorio ni la revisión de licencias de publicación.

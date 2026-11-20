@@ -4,7 +4,7 @@
 
 [English](../../design/qt-quick-ui.md) | [简体中文](../../zh-CN/design/qt-quick-ui.md) | [繁體中文](../../zh-TW/design/qt-quick-ui.md) | [日本語](../../ja-JP/design/qt-quick-ui.md) | [한국어](../../ko-KR/design/qt-quick-ui.md) | [Français](../../fr-FR/design/qt-quick-ui.md) | [Deutsch](../../de-DE/design/qt-quick-ui.md) | [Español](../../es-ES/design/qt-quick-ui.md) | Português (Brasil) | [Русский](../../ru-RU/design/qt-quick-ui.md)
 
-O desktop usa Qt Quick para apresentação e interação. Os controladores C++ encaminham as intenções do usuário e mantêm o estado da visualização. O ambiente de execução Rust interpreta arquivos compactados e controla as regras de tarefas e as permissões sobre arquivos. A [arquitetura do sistema](system-architecture.md) e o [contrato da ponte](qt-rust-bridge.md) descrevem as chamadas abaixo.
+O desktop usa Qt Quick para apresentação e interação. Os controladores C++ encaminham as intenções do usuário e mantêm o estado da visualização. O ambiente de execução Rust interpreta arquivos compactados e controla as regras de tarefas e as permissões sobre arquivos. A [arquitetura do sistema](../../design/system-architecture.md) e o [contrato da ponte](qt-rust-bridge.md) descrevem as chamadas abaixo.
 
 <a name="xdzip-windows-sessions-and-models"></a>
 
@@ -18,7 +18,7 @@ O desktop usa Qt Quick para apresentação e interação. Os controladores C++ e
 | `TaskListModel` e janelas de operações | Exibem instantâneos limitados das tarefas, progresso, resultados e a decisão pendente. A identidade composta do desktop encaminha comandos ao controlador responsável. |
 | Configurações e adaptadores da plataforma | Mantêm aparência, idioma, tamanho do texto e comportamento do aplicativo. Os adaptadores nativos tratam área de notificação, ativação, seletores de arquivo, associações e encaminhamento de transferências de acordo com o sistema operacional. |
 
-[Entrada de desktop](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/browser_main.cpp), [Página de sessão](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/ui/SessionPage.qml), [Controlador e modelos](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.h), [Sessões do aplicativo](../engineering/application-sessions.md), [Configurações e idiomas](../ux/settings-localization.md)
+[Entrada de desktop](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/browser_main.cpp), [Página de sessão](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/ui/SessionPage.qml), [Controlador e modelos](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.h), [Sessões do aplicativo](../../engineering/application-sessions.md), [Configurações e idiomas](../ux/settings-localization.md)
 
 <a name="xdzip-browsing-and-operation-flow"></a>
 
@@ -28,13 +28,13 @@ A abertura publica um instantâneo completo dos metadados. Cada nova solicitaç�
 
 Abra um diretório para navegar até ele. Um clique duplo em uma entrada de arquivo comum compatível ou a ação equivalente inicia a abertura temporária. A visualização de propriedades oferece uma ação de prévia separada. As solicitações de conflito e senha preservam a identidade da operação atual. O acesso às tarefas mostra progresso e resultados mesmo após fechar a página de navegação. [Navegação](../user-guide/browse.md), [Abertura temporária](../engineering/archive-opening.md), [Prévia de conteúdo](../engineering/content-preview.md), [Janelas de tarefas](../ux/task-windows.md)
 
-Soltar arquivos pode abrir arquivos compactados ou fornecer entradas para criação, dependendo do alvo. Movimentações internas permitidas e o arraste para fora usam preparação de tarefas e transferência conforme a plataforma. A plataforma determina as possibilidades de transferência, incluindo o conteúdo assíncrono e as gravações no destino. [Transferências de arquivos compactados](../engineering/archive-transfers.md)
+Soltar arquivos pode abrir arquivos compactados ou fornecer entradas para criação, dependendo do alvo. Movimentações internas permitidas e o arraste para fora usam preparação de tarefas e transferência conforme a plataforma. A plataforma determina as possibilidades de transferência, incluindo o conteúdo assíncrono e as gravações no destino. [Transferências de arquivos compactados](../../engineering/archive-transfers.md)
 
 <a name="xdzip-shared-controls-and-native-boundaries"></a>
 
 ## Controles compartilhados e limites nativos
 
-As telas de operações reutilizam `OperationButton`, `OperationFooterButton`, `OperationFrame`, `OperationSelect` e `OperationSegmentedGroup`. Componentes compartilhados definem medidas e interação. Os controles de seleção comuns encaminham ações de mouse, teclado e acessibilidade para o mesmo modelo de estado. Texto de interface e dados de arquivo seguem as regras de fontes e localização do [padrão de design](../visual/design-standard.md). Os nomes dentro de arquivos compactados permanecem como dados e são exibidos de forma segura.
+As telas de operações reutilizam `OperationButton`, `OperationFooterButton`, `OperationFrame`, `OperationSelect` e `OperationSegmentedGroup`. Componentes compartilhados definem medidas e interação. Os controles de seleção comuns encaminham ações de mouse, teclado e acessibilidade para o mesmo modelo de estado. Texto de interface e dados de arquivo seguem as regras de fontes e localização do [padrão de design](../../visual/design-standard.md). Os nomes dentro de arquivos compactados permanecem como dados e são exibidos de forma segura.
 
 As janelas de operações independentes usam o registro de janelas e as regras de modalidade e fechamento de cada janela. O macOS usa controles nativos da barra de título. Windows e Linux usam seus adaptadores de sistema. O [contrato de janelas da plataforma](../ux/platform-windows.md) define a aceitação das janelas reais. O [contrato de integração de desktop](../ux/desktop-integration.md) descreve a área de notificação e a ativação.
 

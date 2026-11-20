@@ -49,7 +49,7 @@ Selecione entradas e clique em “Verificar metadados antes de extrair…”. Os
 
 ## Limite com a extração real
 
-A [extração segura real](zip-safe-extraction.md) implementa independentemente contabilização de saída, verificação CRC e estrutural, autorização de destino, novas verificações de caminho por plataforma, conflitos, preparação e confirmações de arquivos. Ela não se limita às 128 seleções da pré-verificação e suporta planos para 100.000 registros físicos e seleções de diretórios virtuais. Um relatório prévio não é reutilizado como permissão de gravação. Ao iniciar uma tarefa, é necessário obter novamente autorização de destino, revalidar origens e verificar conteúdo real conforme a [especificação de segurança de arquivos](../design/file-security.md). Falhas nativas e defeitos conhecidos são acompanhados pelos contratos e issues correspondentes.
+A [extração segura real](../../engineering/zip-safe-extraction.md) implementa independentemente contabilização de saída, verificação CRC e estrutural, autorização de destino, novas verificações de caminho por plataforma, conflitos, preparação e confirmações de arquivos. Ela não se limita às 128 seleções da pré-verificação e suporta planos para 100.000 registros físicos e seleções de diretórios virtuais. Um relatório prévio não é reutilizado como permissão de gravação. Ao iniciar uma tarefa, é necessário obter novamente autorização de destino, revalidar origens e verificar conteúdo real conforme a [especificação de segurança de arquivos](../design/file-security.md). Falhas nativas e defeitos conhecidos são acompanhados pelos contratos e issues correspondentes.
 
 <a name="xdzip-window-and-result-presentation"></a>
 

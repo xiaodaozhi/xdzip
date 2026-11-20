@@ -4,7 +4,7 @@
 
 [English](../../design/domain-data.md) | [简体中文](../../zh-CN/design/domain-data.md) | [繁體中文](../../zh-TW/design/domain-data.md) | [日本語](../../ja-JP/design/domain-data.md) | [한국어](../../ko-KR/design/domain-data.md) | [Français](../../fr-FR/design/domain-data.md) | Deutsch | [Español](../../es-ES/design/domain-data.md) | [Português (Brasil)](../../pt-BR/design/domain-data.md) | [Русский](../../ru-RU/design/domain-data.md)
 
-Die Laufzeit besitzt die Archivsitzung, den abgeschlossenen Index und die letzte Abfrage dieser Sitzung. Qt hält eine Ansicht des Ergebnisses; die CLI kann physische Datensätze über ihren eigenen Katalogbefehl lesen. Beide übergeben Operationen an denselben Rust-Dienst. [Systemarchitektur](system-architecture.md), [Qt/Rust-Brücke](qt-rust-bridge.md)
+Die Laufzeit besitzt die Archivsitzung, den abgeschlossenen Index und die letzte Abfrage dieser Sitzung. Qt hält eine Ansicht des Ergebnisses; die CLI kann physische Datensätze über ihren eigenen Katalogbefehl lesen. Beide übergeben Operationen an denselben Rust-Dienst. [Systemarchitektur](../../design/system-architecture.md), [Qt/Rust-Brücke](qt-rust-bridge.md)
 
 <a name="xdzip-identity-and-source-version"></a>
 
@@ -19,7 +19,7 @@ Die Laufzeit besitzt die Archivsitzung, den abgeschlossenen Index und die letzte
 | `QueryKey` | Kombiniert Sitzung, Abfrage-ID, Generation und Snapshot-Revision. Offset bezeichnet eine Position in diesem Ergebnis. |
 | Anfrage-, Aufgaben- und Abfrageaufforderungsidentität | Der Dienst vergibt Anfrage- und Aufgabennummern innerhalb einer Verbindung. Eine Aufforderung gehört zu einer bestimmten Aufgabe. Der gemeinsame Desktop-Aufgabeneintrag nutzt die Sitzungsidentität des Controllers und die Aufgabennummer. |
 
-Domänentypen erzwingen Archiv- und Abfrageidentitäten ungleich null. An der nativen Brücke werden typisierte Rust-Werte in generierten CXX-Daten dargestellt. QML erhält undurchsichtige Zeichenfolgen für IDs, die alle 64 Bits benötigen. Eine Zeilennummer ist nur eine Position in einer bestimmten Abfrage. [Domänenidentitäten](../../../crates/xdzip-domain/src/identity.rs), [Quellimplementierung](../../../crates/xdzip-runtime/src/source.rs), [Anwendungssitzungen](../engineering/application-sessions.md)
+Domänentypen erzwingen Archiv- und Abfrageidentitäten ungleich null. An der nativen Brücke werden typisierte Rust-Werte in generierten CXX-Daten dargestellt. QML erhält undurchsichtige Zeichenfolgen für IDs, die alle 64 Bits benötigen. Eine Zeilennummer ist nur eine Position in einer bestimmten Abfrage. [Domänenidentitäten](../../../crates/xdzip-domain/src/identity.rs), [Quellimplementierung](../../../crates/xdzip-runtime/src/source.rs), [Anwendungssitzungen](../../engineering/application-sessions.md)
 
 <a name="xdzip-physical-entries-and-output-names"></a>
 

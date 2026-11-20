@@ -4,7 +4,7 @@
 
 [English](../../engineering/linux-deployment.md) | [简体中文](../../zh-CN/engineering/linux-deployment.md) | [繁體中文](../../zh-TW/engineering/linux-deployment.md) | 日本語 | [한국어](../../ko-KR/engineering/linux-deployment.md) | [Français](../../fr-FR/engineering/linux-deployment.md) | [Deutsch](../../de-DE/engineering/linux-deployment.md) | [Español](../../es-ES/engineering/linux-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/linux-deployment.md) | [Русский](../../ru-RU/engineering/linux-deployment.md)
 
-現在の開発用デプロイの基準は Ubuntu 24.04、x86_64、X11 です。目的は開発用 Qt SDK なしで現在の製品を実行することであり、他のディストリビューション、古い glibc、Wayland、完全なインストーラー対応を約束するものではありません。macOS CI はネイティブのビルド、テスト、起動検証を維持します。ローカル開発用 DMG は[Mac デプロイガイド](macos-deployment.md)に従い、このフローの影響を受けません。
+現在の開発用デプロイの基準は Ubuntu 24.04、x86_64、X11 です。目的は開発用 Qt SDK なしで現在の製品を実行することであり、他のディストリビューション、古い glibc、Wayland、完全なインストーラー対応を約束するものではありません。macOS CI はネイティブのビルド、テスト、起動検証を維持します。ローカル開発用 DMG は[Mac デプロイガイド](../../engineering/macos-deployment.md)に従い、このフローの影響を受けません。
 
 <a name="xdzip-layout-and-generation"></a>
 
@@ -29,7 +29,7 @@ patchelf は各 ELF に相対 `$ORIGIN` RPATH を設定し、各プラグイン�
 
 相対 RPATH の書き換え後、デプロイは不要なネイティブシンボルテーブルを削除し、すべての DT_NEEDED と RPATH/RUNPATH エントリーが変わらないことを検証します。各 ELF のツールバージョン、前後のハッシュとバイト数を `symbol_stripping` に記録し、SDK 入力と元のビルドバイナリは変更しません。診断用コピーには下位のデプロイスクリプトで `--keep-symbols` を指定できます。最終的な SDK 帰属とアプリのハッシュは変換後のファイルを表します。これはパッケージサイズの削減であり、メモリーや処理速度の改善を測定したという意味ではありません。
 
-通常の生成と検証には[統一ビルド入口](developer-build.md)を段階的に使用します。先に同じ構成でビルド、テスト、パッケージ準備を完了してから実行します。
+通常の生成と検証には[統一ビルド入口](../../engineering/developer-build.md)を段階的に使用します。先に同じ構成でビルド、テスト、パッケージ準備を完了してから実行します。
 
 ```sh
 python3 scripts/desktop.py doctor --for-stage package
@@ -77,4 +77,4 @@ CI は xdzip-linux-x86_64.tar.gz を生成し、SHA-256 と実行ファイルの
 
 ここで生成する `build/package` 実行ディレクトリ、tar.gz、.deb は実験的な開発用配布物であり、自動インストールや既定の関連付けの変更は行いません。公式 Release の Ubuntu tar.gz と .deb は専用 Release ワークフローが生成し、[リリースプロトコル](release-protocol.md)に従って提供します。プラットフォーム範囲は[サポートポリシー](support-policy.md)に従い、他のディストリビューションやデスクトップ、Wayland などの拡張には別の issue が必要です。既存のデスクトップ受け入れは [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5) にあります。後続の変更では影響を受ける実際の IME・スクリーンリーダーとクリーンなインストール・アップグレード・アンインストールを再検証します。ディレクトリの再ビルドだけで既存の受け入れを繰り返す必要はありません。過去の `v0.1.0` のコンポーネントレビューは [#4](https://github.com/xiaodaozhi/xdzip/issues/4) と [#53](https://github.com/xiaodaozhi/xdzip/issues/53) にあり、ディレクトリの実行成功だけでは将来のリリース条件は自動的に完了しません。
 
-Ubuntu .deb のインストール、アップグレード、ロールバック、アンインストール、実行時ロック、デスクトップ MIME の自動化は[インストールと関連付け](installers-associations.md)を参照してください。実行時コンテナーの合格は実際のデスクトップ検査やリリースライセンスレビューの代わりにはなりません。
+Ubuntu .deb のインストール、アップグレード、ロールバック、アンインストール、実行時ロック、デスクトップ MIME の自動化は[インストールと関連付け](../../engineering/installers-associations.md)を参照してください。実行時コンテナーの合格は実際のデスクトップ検査やリリースライセンスレビューの代わりにはなりません。

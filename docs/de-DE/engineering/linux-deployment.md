@@ -4,7 +4,7 @@
 
 [English](../../engineering/linux-deployment.md) | [简体中文](../../zh-CN/engineering/linux-deployment.md) | [繁體中文](../../zh-TW/engineering/linux-deployment.md) | [日本語](../../ja-JP/engineering/linux-deployment.md) | [한국어](../../ko-KR/engineering/linux-deployment.md) | [Français](../../fr-FR/engineering/linux-deployment.md) | Deutsch | [Español](../../es-ES/engineering/linux-deployment.md) | [Português (Brasil)](../../pt-BR/engineering/linux-deployment.md) | [Русский](../../ru-RU/engineering/linux-deployment.md)
 
-Die aktuelle Entwicklungsbasis für Deployment ist Ubuntu 24.04, x86_64 und X11. Ziel ist die Ausführung des aktuellen Produkts ohne Entwicklungs-Qt-SDK; andere Distributionen, ältere glibc, Wayland oder vollständige Installer-Unterstützung werden damit nicht versprochen. macOS-CI behält native Build-, Test- und Startprüfung. Lokale Entwicklungs-DMGs folgen der [Mac-Deployment-Anleitung](macos-deployment.md) und sind von diesem Ablauf nicht betroffen.
+Die aktuelle Entwicklungsbasis für Deployment ist Ubuntu 24.04, x86_64 und X11. Ziel ist die Ausführung des aktuellen Produkts ohne Entwicklungs-Qt-SDK; andere Distributionen, ältere glibc, Wayland oder vollständige Installer-Unterstützung werden damit nicht versprochen. macOS-CI behält native Build-, Test- und Startprüfung. Lokale Entwicklungs-DMGs folgen der [Mac-Deployment-Anleitung](../../engineering/macos-deployment.md) und sind von diesem Ablauf nicht betroffen.
 
 <a name="xdzip-layout-and-generation"></a>
 
@@ -29,7 +29,7 @@ patchelf setzt auf jedem ELF einen relativen `$ORIGIN`-RPATH und berechnet für 
 
 Nach relativer RPATH-Umschreibung entfernt das Deployment unnötige native Symboltabellen und prüft, dass alle DT_NEEDED- und RPATH/RUNPATH-Einträge unverändert bleiben. Für jedes ELF werden Werkzeugversion, Hashes und Bytezahlen vor und nachher in `symbol_stripping` erfasst; SDK-Eingaben und ursprüngliche Build-Binärdateien bleiben unangetastet. Für eine Diagnosekopie akzeptiert das zugrunde liegende Deployment-Skript `--keep-symbols`. Endgültige SDK-Zuordnung und Anwendungshashes beschreiben die transformierten Dateien. Dies verringert Paketgröße, belegt aber keinen gemessenen Speicher- oder Durchsatzgewinn.
 
-Zur regelmäßigen Erzeugung und Prüfung den [einheitlichen Build-Einstieg](developer-build.md) stufenweise verwenden. Zuerst Build, Test und Paketvorbereitung mit derselben Konfiguration abschließen, danach ausführen:
+Zur regelmäßigen Erzeugung und Prüfung den [einheitlichen Build-Einstieg](../../engineering/developer-build.md) stufenweise verwenden. Zuerst Build, Test und Paketvorbereitung mit derselben Konfiguration abschließen, danach ausführen:
 
 ```sh
 python3 scripts/desktop.py doctor --for-stage package
@@ -77,4 +77,4 @@ CI erzeugt xdzip-linux-x86_64.tar.gz und erfasst SHA-256 sowie ausführbare Hash
 
 Das hier erzeugte Laufzeitverzeichnis `build/package`, tar.gz und .deb sind experimentelle Entwicklungsartefakte und installieren nichts oder ändern Standardzuordnungen nicht automatisch. Offizielle Ubuntu-tar.gz und .deb für Release erzeugt der dedizierte Release-Workflow gemäß [Veröffentlichungsprotokoll](release-protocol.md). Der Plattformumfang folgt der [Unterstützungsrichtlinie](support-policy.md); andere Distributionen und Desktops, Wayland und Erweiterungen benötigen eigene Issues. Die bestehende Desktop-Abnahme bleibt in [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5). Für spätere Änderungen betroffene Prüfungen mit echtem IME/Screenreader und sauberer Installation, Upgrade und Deinstallation wiederholen; der reine Neubau eines Verzeichnisses verlangt keine Wiederholung bestehender Abnahme. Die historische Komponentenprüfung zu `v0.1.0` steht in [#4](https://github.com/xiaodaozhi/xdzip/issues/4) und [#53](https://github.com/xiaodaozhi/xdzip/issues/53); erfolgreiche Verzeichnisausführung erfüllt zukünftige Release-Bedingungen nicht automatisch.
 
-[Installation und Zuordnungen](installers-associations.md) beschreibt Ubuntu-.deb-Installation, Upgrade, Rollback und Deinstallation, Laufzeitsperren und Desktop-MIME-Automatisierung. Ein bestandener Laufzeitcontainer ersetzt weder echte Desktopprüfungen noch die Lizenzprüfung für Veröffentlichungen.
+[Installation und Zuordnungen](../../engineering/installers-associations.md) beschreibt Ubuntu-.deb-Installation, Upgrade, Rollback und Deinstallation, Laufzeitsperren und Desktop-MIME-Automatisierung. Ein bestandener Laufzeitcontainer ersetzt weder echte Desktopprüfungen noch die Lizenzprüfung für Veröffentlichungen.

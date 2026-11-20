@@ -4,7 +4,7 @@
 
 [English](../../design/qt-rust-bridge.md) | [简体中文](../../zh-CN/design/qt-rust-bridge.md) | [繁體中文](../../zh-TW/design/qt-rust-bridge.md) | [日本語](../../ja-JP/design/qt-rust-bridge.md) | 한국어 | [Français](../../fr-FR/design/qt-rust-bridge.md) | [Deutsch](../../de-DE/design/qt-rust-bridge.md) | [Español](../../es-ES/design/qt-rust-bridge.md) | [Português (Brasil)](../../pt-BR/design/qt-rust-bridge.md) | [Русский](../../ru-RU/design/qt-rust-bridge.md)
 
-Qt 데스크톱은 연결된 `cxx` 브리지를 통해 Rust 런타임을 호출합니다. 각 `BrowserController`는 별도 서비스 인스턴스를 가진 `RuntimeConnection`을 소유합니다. 브리지는 데스크톱 프로세스 안에서 타입이 지정된 명령과 소유권이 있는 결과를 전달합니다. CLI는 같은 Rust 서비스를 직접 사용합니다. [시스템 아키텍처](system-architecture.md), [데스크톱 세션](../engineering/application-sessions.md)
+Qt 데스크톱은 연결된 `cxx` 브리지를 통해 Rust 런타임을 호출합니다. 각 `BrowserController`는 별도 서비스 인스턴스를 가진 `RuntimeConnection`을 소유합니다. 브리지는 데스크톱 프로세스 안에서 타입이 지정된 명령과 소유권이 있는 결과를 전달합니다. CLI는 같은 Rust 서비스를 직접 사용합니다. [시스템 아키텍처](../../design/system-architecture.md), [데스크톱 세션](../../engineering/application-sessions.md)
 
 <a name="xdzip-handles-threads-and-ownership"></a>
 
@@ -45,7 +45,7 @@ CXX는 값 타입과 소유권을 가진 Rust 컨테이너를 전달합니다. �
 | `Snapshot`, `CloseSession` | 현재 압축 파일 세션 ID 또는 영을 반환합니다. 지정 세션을 닫으면 탐색 스냅샷은 버리지만 독립적으로 유지된 작업 입력은 살아 있을 수 있습니다. |
 | `cancel`, `cancel_task`, `decide_task`, `respond_password`, `release_export`, `shutdown` | 일반 명령 큐 밖의 제어 메서드입니다. 요청 취소에는 자체 요청 ID와 `Finished`가 있으며 작업 제어는 기존 작업에 적용됩니다. |
 
-Rust 서비스는 `Catalog`, `SelectMembers` 같은 CLI 전용 작업도 제공합니다. 브리지는 제출 전에 입력 크기와 열거형 값을 검증합니다. 예를 들어 생성 경로는 각각 4 KiB, 합계 4 MiB로 제한됩니다. 런타임은 세션과 작업 의미를 검증하고 I/O 계층은 파일을 열고 출력 권한을 얻습니다. [런타임 서비스 계약](../engineering/product-runtime.md), [CLI 계약](../engineering/command-line.md), [파일 권한](file-security.md)
+Rust 서비스는 `Catalog`, `SelectMembers` 같은 CLI 전용 작업도 제공합니다. 브리지는 제출 전에 입력 크기와 열거형 값을 검증합니다. 예를 들어 생성 경로는 각각 4 KiB, 합계 4 MiB로 제한됩니다. 런타임은 세션과 작업 의미를 검증하고 I/O 계층은 파일을 열고 출력 권한을 얻습니다. [런타임 서비스 계약](../engineering/product-runtime.md), [CLI 계약](../../engineering/command-line.md), [파일 권한](file-security.md)
 
 <a name="xdzip-event-delivery-and-backpressure"></a>
 
@@ -66,4 +66,4 @@ Rust 서비스는 `Catalog`, `SelectMembers` 같은 CLI 전용 작업도 제공�
 - 안정적인 오류 코드는 승인, 요청 및 작업 결과를 설명합니다. 예를 들면 `stale_session`, `stale_query`, `source_changed`, `unsafe_target`, `target_changed`, `disk_full`, `password_required`가 있습니다. 컨트롤러는 표시할 코드를 번역합니다. 원본이 바뀌면 해당 탐색 스냅샷이 무효화됩니다. `RuntimeFault`와 예상치 못한 연결 해제는 대기 중인 UI 작업을 `runtime_unavailable`로 무효화하며 연결 손실로 원래 종료 이벤트가 도착하지 않을 수 있습니다.
 - `shutdown`은 승인을 닫고 입력 대기 작업을 포함한 승인된 작업을 취소합니다. Qt 수신자는 Rust 스레드가 끝나는 동안 계속 이벤트를 비웁니다. Rust 수신자는 스레드를 기다린 뒤 `ShutdownReady`를 내보내고 이어 브리지가 `End`를 내보냅니다. Qt는 메일박스를 비운 후 정상 연결 해제를 보고합니다. 연결이 일찍 소멸하면 GUI 스레드에서 기다리지 않고 메일박스를 닫고 수신자를 깨웁니다. [작업 종료](task-scheduling.md), [런타임 수명 주기](../engineering/product-runtime.md)
 
-이 경계를 변경할 때 [브리지 검사 도구](https://github.com/xiaodaozhi/xdzip/blob/main/tools/bridge-probe/README.md), Rust 서비스 테스트와 [데스크톱 컨트롤러 테스트](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/tests/browser_test.cpp)는 서로 다른 계층을 검증합니다. 관련 대상을 찾으려면 [개발 빌드 안내](../engineering/developer-build.md)를 사용하세요.
+이 경계를 변경할 때 [브리지 검사 도구](https://github.com/xiaodaozhi/xdzip/blob/main/tools/bridge-probe/README.md), Rust 서비스 테스트와 [데스크톱 컨트롤러 테스트](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/tests/browser_test.cpp)는 서로 다른 계층을 검증합니다. 관련 대상을 찾으려면 [개발 빌드 안내](../../engineering/developer-build.md)를 사용하세요.

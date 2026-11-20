@@ -14,7 +14,7 @@
 | Mitgelieferter Archiv-Worker | `xdzip-codec-native` im Host startet `xdzip-native-codec`. Seine C++-Protokollschicht ruft über `xdzip-codec-bridge` die Rust-Backends für 7z, RAR, CAB und optische Medien auf. Derselbe Weg behandelt zulässige 7z-Erstellung und -Umschreibung. ISO-Erstellung nutzt den optischen Writer im Prozess. |
 | Externer SDK-Versuch | `xdzip-plugin-host` und `xdzip-plugin-protocol` bilden ein separates, ausdrücklich gestartetes XDP1-Experiment. Produktbuilds für Desktop und CLI entdecken, installieren oder starten keine Erweiterungen Dritter. |
 
-Die ersten beiden Pfade sind integrierte Produktkomponenten. Der mitgelieferte Worker ist ein eigener Prozess mit privatem Protokoll und Ressourcenüberwachung. Der externe Versuch besitzt eigene Paketprüfung, Versionsaushandlung und plattformspezifische Berechtigungsgrenzen. [Systemarchitektur](system-architecture.md), [Archiv-Worker-Vertrag](../engineering/native-codecs.md), [SDK-Versuchsvertrag](../engineering/sdk-trial.md)
+Die ersten beiden Pfade sind integrierte Produktkomponenten. Der mitgelieferte Worker ist ein eigener Prozess mit privatem Protokoll und Ressourcenüberwachung. Der externe Versuch besitzt eigene Paketprüfung, Versionsaushandlung und plattformspezifische Berechtigungsgrenzen. [Systemarchitektur](../../design/system-architecture.md), [Archiv-Worker-Vertrag](../engineering/native-codecs.md), [SDK-Versuchsvertrag](../engineering/sdk-trial.md)
 
 <a name="xdzip-product-routing-and-operation-capabilities"></a>
 
@@ -37,7 +37,7 @@ Lesen, Vorschau, Extraktion, Gesamtarchivprüfung, Erstellung und Umschreiben ha
 
 Der Host besitzt Pfade, erneute Quellprüfung, Abbruch, Passwörter, Quoten und jede endgültige Veröffentlichung. Ein Codec erhält Fähigkeiten über die für die Operation nötigen Schnittstellen. Der Archiv-Worker fordert erlaubte Quellbereiche an und liefert begrenzte Datensätze oder Ausgabeblöcke. Der Host validiert Protokollzustand und Bytequoten vor jeder Aktion. Ein Workerfehler oder eine ungültige Antwort kann keine Veröffentlichung autorisieren. Die Workergrenze isoliert Fehler und Ressourcen. Kernel-Berechtigungsbeschränkungen für beliebigen externen Code sind eine separate Anforderung des Versuchs. [Metadatenverträge](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-codec-api/src/lib.rs), [Nutzdatenverträge](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-codec-api/src/payload.rs), [Kodier- und Umschreibverträge](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-codec-api/src/encode.rs), [Dateiautorisierung](file-security.md)
 
-Diese Rust-Traits sind interne Quellschnittstellen. Ein Produktadapter wird in den Workspace und die explizite Laufzeitweiterleitung integriert. Seine erlaubten Operationen benötigen getrennte Tests für gültige Dateien, nicht unterstützte Funktionen, Ressourcengrenzen, Beschädigung und Ausgabeverhalten. Nutzen Sie die [Verträge unabhängiger Rust-Codecs](../engineering/independent-rust-codecs.md) und den [Entwicklungsleitfaden](../contributing/README.md).
+Diese Rust-Traits sind interne Quellschnittstellen. Ein Produktadapter wird in den Workspace und die explizite Laufzeitweiterleitung integriert. Seine erlaubten Operationen benötigen getrennte Tests für gültige Dateien, nicht unterstützte Funktionen, Ressourcengrenzen, Beschädigung und Ausgabeverhalten. Nutzen Sie die [Verträge unabhängiger Rust-Codecs](../../engineering/independent-rust-codecs.md) und den [Entwicklungsleitfaden](../contributing/README.md).
 
 <a name="xdzip-implemented-external-sdk-trial"></a>
 

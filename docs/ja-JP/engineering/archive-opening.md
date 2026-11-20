@@ -4,7 +4,7 @@
 
 [English](../../engineering/archive-opening.md) | [简体中文](../../zh-CN/engineering/archive-opening.md) | [繁體中文](../../zh-TW/engineering/archive-opening.md) | 日本語 | [한국어](../../ko-KR/engineering/archive-opening.md) | [Français](../../fr-FR/engineering/archive-opening.md) | [Deutsch](../../de-DE/engineering/archive-opening.md) | [Español](../../es-ES/engineering/archive-opening.md) | [Português (Brasil)](../../pt-BR/engineering/archive-opening.md) | [Русский](../../ru-RU/engineering/archive-opening.md)
 
-デスクトップでのファイル選択、ファイルマネージャーからの要求、CLI は、同じ Rust のソースオープン規則を使います。ホストは許可されたボリューム集合を解決し、ソースの識別情報を記録して許可範囲のバイト列を調べます。選択されたバックエンドが、場合により[分離された形式ワーカー](native-codecs.md)を通して[閲覧用メタデータ](readonly-browser.md)を提供します。項目を明示的に開くと、関連付けられたアプリ用に検証済みの一時コピーが作成されます。アーカイブ全体を検証するには別途[整合性検査](archive-checking.md)を使います。
+デスクトップでのファイル選択、ファイルマネージャーからの要求、CLI は、同じ Rust のソースオープン規則を使います。ホストは許可されたボリューム集合を解決し、ソースの識別情報を記録して許可範囲のバイト列を調べます。選択されたバックエンドが、場合により[分離された形式ワーカー](native-codecs.md)を通して[閲覧用メタデータ](../../engineering/readonly-browser.md)を提供します。項目を明示的に開くと、関連付けられたアプリ用に検証済みの一時コピーが作成されます。アーカイブ全体を検証するには別途[整合性検査](archive-checking.md)を使います。
 
 <a name="xdzip-split-zip"></a>
 
@@ -54,6 +54,6 @@ CAB のボリューム名はヘッダーから得られ、有効な任意のフ�
 
 読み取り専用の [Brotli/TAR.BR](brotli-streams.md) の受け入れでは、行を公開する前にヘッダーなし候補を完全に検証し、Brotli/LZMA 候補の読み取り台帳を共有します。強いソースと有効な TAR/ZIP の検出を優先し、デコード後に破損した TAR を通常ストリームに格下げしません。
 
-[LHA/LZH](lha-containers.md) の候補は公開前にヘッダーと名前の完全な上限付き検証を必要とし、ゼロ一つだけの空アーカイブも対象です。弱い LHA、Brotli、LZMA 候補は実際の読み取り台帳を共有します。強く有効なコンテナーの検出が優先され、完全な LHA 受け入れにより無効な生 TAR マーカーの曖昧さを解消できます。パスワード、分割、修復のプロファイルは受け入れません。
+[LHA/LZH](../../engineering/lha-containers.md) の候補は公開前にヘッダーと名前の完全な上限付き検証を必要とし、ゼロ一つだけの空アーカイブも対象です。弱い LHA、Brotli、LZMA 候補は実際の読み取り台帳を共有します。強く有効なコンテナーの検出が優先され、完全な LHA 受け入れにより無効な生 TAR マーカーの曖昧さを解消できます。パスワード、分割、修復のプロファイルは受け入れません。
 
 [PMA](pma-streams.md) は同じ弱い検査の共有台帳と完全なメタデータ受け入れを使い、正確なゼロ終端と任意の上限付き CP/M 埋め草に対応します。レベル 0 の PM0/PM1/PM2 データをサポートし、未知の方式は表示されますが未対応です。埋め草付きの空 CP/M コンテナーは PMA と判定し、区別できない 1 バイトのゼロ終端は従来の LZH 選択を維持します。作成、パスワード、分割、変更、修復のプロファイルは受け入れません。

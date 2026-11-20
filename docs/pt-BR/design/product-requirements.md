@@ -4,7 +4,7 @@
 
 [English](../../design/product-requirements.md) | [简体中文](../../zh-CN/design/product-requirements.md) | [繁體中文](../../zh-TW/design/product-requirements.md) | [日本語](../../ja-JP/design/product-requirements.md) | [한국어](../../ko-KR/design/product-requirements.md) | [Français](../../fr-FR/design/product-requirements.md) | [Deutsch](../../de-DE/design/product-requirements.md) | [Español](../../es-ES/design/product-requirements.md) | Português (Brasil) | [Русский](../../ru-RU/design/product-requirements.md)
 
-O XDZip permite explorar arquivos compactados como pastas, trabalhar com o conteúdo selecionado e criar ou editar arquivos quando o formato permite. O desktop e a [CLI autônoma](../engineering/command-line.md) compartilham o ambiente de execução. O [README do projeto](../../../README.pt-BR.md) descreve os recursos e distribuições atuais. Os requisitos abaixo definem o comportamento a preservar e verificar.
+O XDZip permite explorar arquivos compactados como pastas, trabalhar com o conteúdo selecionado e criar ou editar arquivos quando o formato permite. O desktop e a [CLI autônoma](../../engineering/command-line.md) compartilham o ambiente de execução. O [README do projeto](../../../README.pt-BR.md) descreve os recursos e distribuições atuais. Os requisitos abaixo definem o comportamento a preservar e verificar.
 
 <a name="xdzip-requirements-and-implementation"></a>
 
@@ -33,8 +33,8 @@ O XDZip permite explorar arquivos compactados como pastas, trabalhar com o conte
 ## Fluxos e escopo
 
 - **Abrir e examinar.** A solicitação chega ao coordenador de sessões. Uma análise bem-sucedida publica uma sessão. Busca e ordenação criam consultas novas. Clique duplo abre uma pasta ou um arquivo compatível por meio de cópia temporária. Com o painel de propriedades visível, selecionar um arquivo compatível inicia a prévia. [Navegação e prévia](../user-guide/browse.md), [Abertura temporária](../engineering/archive-opening.md)
-- **Extrair.** “Extrair tudo” abrange o arquivo compactado inteiro. Para extrair apenas correspondências, selecione-as na busca e confira o escopo. A verificação prévia dos metadados informa problemas antes da autorização de gravação. A confirmação por arquivo preserva os arquivos concluídos após falha ou cancelamento posterior. [Extração](../engineering/zip-safe-extraction.md), [Agendamento de tarefas](task-scheduling.md)
-- **Criar, modificar ou verificar.** Criação e edições permitidas verificam a saída temporária antes da publicação. Verificar analisa um arquivo compatível conforme seu formato sem receber autorização de saída. As operações dependem do formato, da entrada e do perfil de origem. [Registro de formatos](../engineering/format-registry.md), [Transferências](../engineering/archive-transfers.md), [Verificação](../engineering/archive-checking.md)
+- **Extrair.** “Extrair tudo” abrange o arquivo compactado inteiro. Para extrair apenas correspondências, selecione-as na busca e confira o escopo. A verificação prévia dos metadados informa problemas antes da autorização de gravação. A confirmação por arquivo preserva os arquivos concluídos após falha ou cancelamento posterior. [Extração](../../engineering/zip-safe-extraction.md), [Agendamento de tarefas](task-scheduling.md)
+- **Criar, modificar ou verificar.** Criação e edições permitidas verificam a saída temporária antes da publicação. Verificar analisa um arquivo compatível conforme seu formato sem receber autorização de saída. As operações dependem do formato, da entrada e do perfil de origem. [Registro de formatos](../engineering/format-registry.md), [Transferências](../../engineering/archive-transfers.md), [Verificação](../engineering/archive-checking.md)
 
 <a name="xdzip-planned-scope-and-verification"></a>
 

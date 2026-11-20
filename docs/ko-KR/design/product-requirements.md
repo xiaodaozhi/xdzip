@@ -4,7 +4,7 @@
 
 [English](../../design/product-requirements.md) | [简体中文](../../zh-CN/design/product-requirements.md) | [繁體中文](../../zh-TW/design/product-requirements.md) | [日本語](../../ja-JP/design/product-requirements.md) | 한국어 | [Français](../../fr-FR/design/product-requirements.md) | [Deutsch](../../de-DE/design/product-requirements.md) | [Español](../../es-ES/design/product-requirements.md) | [Português (Brasil)](../../pt-BR/design/product-requirements.md) | [Русский](../../ru-RU/design/product-requirements.md)
 
-XDZip은 압축 파일을 폴더처럼 살펴보고 선택한 내용을 다루며 형식이 지원하면 압축 파일을 만들거나 수정할 수 있게 합니다. 데스크톱과 [독립 CLI](../engineering/command-line.md)는 같은 압축 파일 런타임을 사용합니다. [프로젝트 README](../../../README.ko-KR.md)에서 현재 기능과 배포 방식을 설명합니다. 아래 요구 사항은 유지하고 검증할 동작을 정의합니다.
+XDZip은 압축 파일을 폴더처럼 살펴보고 선택한 내용을 다루며 형식이 지원하면 압축 파일을 만들거나 수정할 수 있게 합니다. 데스크톱과 [독립 CLI](../../engineering/command-line.md)는 같은 압축 파일 런타임을 사용합니다. [프로젝트 README](../../../README.ko-KR.md)에서 현재 기능과 배포 방식을 설명합니다. 아래 요구 사항은 유지하고 검증할 동작을 정의합니다.
 
 <a name="xdzip-requirements-and-implementation"></a>
 
@@ -33,8 +33,8 @@ XDZip은 압축 파일을 폴더처럼 살펴보고 선택한 내용을 다루�
 ## 작업 흐름과 범위
 
 - **열고 확인.** 파일 열기 요청은 데스크톱 세션 조정기로 전달됩니다. 검색이 성공하면 세션을 게시하고 검색과 정렬은 새 쿼리를 만듭니다. 두 번 클릭하면 폴더에 들어가거나 적합한 파일을 임시 복사본으로 엽니다. 속성 패널이 보일 때 지원 파일 하나를 선택하면 미리 보기가 시작됩니다. [탐색과 미리 보기](../user-guide/browse.md), [임시 열기](../engineering/archive-opening.md)
-- **압축 풀기.** 「모두 풀기」는 전체 압축 파일에 적용됩니다. 검색 결과만 풀려면 쿼리에서 선택하고 범위를 확인하세요. 메타데이터 사전 검사는 쓰기 승인 전에 결과를 제공합니다. 파일별 확정으로 이후 실패나 취소에도 완료된 파일을 보존합니다. [압축 풀기](../engineering/zip-safe-extraction.md), [작업 예약](task-scheduling.md)
-- **만들기, 수정 또는 검사.** 만들기와 지원되는 수정은 임시 출력을 검증한 뒤 확정합니다. 검사 동작은 지원되는 압축 파일을 형식에 따라 검사하며 출력 권한을 얻지 않습니다. 가능한 동작은 형식, 항목과 원본 프로필에 따라 다릅니다. [형식 레지스트리](../engineering/format-registry.md), [압축 파일 전송](../engineering/archive-transfers.md), [압축 파일 검사](../engineering/archive-checking.md)
+- **압축 풀기.** 「모두 풀기」는 전체 압축 파일에 적용됩니다. 검색 결과만 풀려면 쿼리에서 선택하고 범위를 확인하세요. 메타데이터 사전 검사는 쓰기 승인 전에 결과를 제공합니다. 파일별 확정으로 이후 실패나 취소에도 완료된 파일을 보존합니다. [압축 풀기](../../engineering/zip-safe-extraction.md), [작업 예약](task-scheduling.md)
+- **만들기, 수정 또는 검사.** 만들기와 지원되는 수정은 임시 출력을 검증한 뒤 확정합니다. 검사 동작은 지원되는 압축 파일을 형식에 따라 검사하며 출력 권한을 얻지 않습니다. 가능한 동작은 형식, 항목과 원본 프로필에 따라 다릅니다. [형식 레지스트리](../engineering/format-registry.md), [압축 파일 전송](../../engineering/archive-transfers.md), [압축 파일 검사](../engineering/archive-checking.md)
 
 <a name="xdzip-planned-scope-and-verification"></a>
 

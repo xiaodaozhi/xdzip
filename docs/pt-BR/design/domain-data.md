@@ -4,7 +4,7 @@
 
 [English](../../design/domain-data.md) | [简体中文](../../zh-CN/design/domain-data.md) | [繁體中文](../../zh-TW/design/domain-data.md) | [日本語](../../ja-JP/design/domain-data.md) | [한국어](../../ko-KR/design/domain-data.md) | [Français](../../fr-FR/design/domain-data.md) | [Deutsch](../../de-DE/design/domain-data.md) | [Español](../../es-ES/design/domain-data.md) | Português (Brasil) | [Русский](../../ru-RU/design/domain-data.md)
 
-O runtime é dono da sessão do arquivo compactado, do índice concluído e da última consulta dessa sessão. O Qt mantém uma visualização do resultado e a CLI pode ler registros físicos por seu comando de catálogo separado. Ambos enviam operações ao mesmo serviço Rust. [Arquitetura do sistema](system-architecture.md), [Ponte Qt/Rust](qt-rust-bridge.md)
+O runtime é dono da sessão do arquivo compactado, do índice concluído e da última consulta dessa sessão. O Qt mantém uma visualização do resultado e a CLI pode ler registros físicos por seu comando de catálogo separado. Ambos enviam operações ao mesmo serviço Rust. [Arquitetura do sistema](../../design/system-architecture.md), [Ponte Qt/Rust](qt-rust-bridge.md)
 
 <a name="xdzip-identity-and-source-version"></a>
 
@@ -19,7 +19,7 @@ O runtime é dono da sessão do arquivo compactado, do índice concluído e da �
 | `QueryKey` | Combina sessão, ID da consulta, geração e revisão de snapshot. O deslocamento indica uma posição nesse resultado. |
 | Identidade de solicitação, tarefa e aviso | O serviço atribui números de solicitação e tarefa dentro de uma conexão. Um aviso pertence a uma tarefa específica. A entrada compartilhada de tarefas desktop usa a identidade da sessão do controlador junto com o número da tarefa. |
 
-Os tipos de domínio exigem identidades de arquivo compactado e consulta diferentes de zero. Na ponte nativa, valores Rust tipados são representados em dados CXX gerados. O QML recebe strings opacas para IDs que precisam de todos os 64 bits. Um número de linha é apenas uma posição em uma consulta específica. [Identidades do domínio](../../../crates/xdzip-domain/src/identity.rs), [Implementação da fonte](../../../crates/xdzip-runtime/src/source.rs), [Sessões do aplicativo](../engineering/application-sessions.md)
+Os tipos de domínio exigem identidades de arquivo compactado e consulta diferentes de zero. Na ponte nativa, valores Rust tipados são representados em dados CXX gerados. O QML recebe strings opacas para IDs que precisam de todos os 64 bits. Um número de linha é apenas uma posição em uma consulta específica. [Identidades do domínio](../../../crates/xdzip-domain/src/identity.rs), [Implementação da fonte](../../../crates/xdzip-runtime/src/source.rs), [Sessões do aplicativo](../../engineering/application-sessions.md)
 
 <a name="xdzip-physical-entries-and-output-names"></a>
 

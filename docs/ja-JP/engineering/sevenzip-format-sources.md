@@ -4,7 +4,7 @@
 
 [English](../../engineering/sevenzip-format-sources.md) | [简体中文](../../zh-CN/engineering/sevenzip-format-sources.md) | [繁體中文](../../zh-TW/engineering/sevenzip-format-sources.md) | 日本語 | [한국어](../../ko-KR/engineering/sevenzip-format-sources.md) | [Français](../../fr-FR/engineering/sevenzip-format-sources.md) | [Deutsch](../../de-DE/engineering/sevenzip-format-sources.md) | [Español](../../es-ES/engineering/sevenzip-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/sevenzip-format-sources.md) | [Русский](../../ru-RU/engineering/sevenzip-format-sources.md)
 
-この文書は再利用可能な資料と実装の境界を記録します。移行の受け入れと残る機能は [issue #50](https://github.com/xiaodaozhi/xdzip/issues/50) で追跡します。Rust への固定ルーティングと製品の公式依存関係の除去は、複数プラットフォーム、手動、リリースの受け入れを自動的に証明するものではありません。一般的な置換規則は[独立実装契約](independent-rust-codecs.md)にあります。
+この文書は再利用可能な資料と実装の境界を記録します。移行の受け入れと残る機能は [issue #50](https://github.com/xiaodaozhi/xdzip/issues/50) で追跡します。Rust への固定ルーティングと製品の公式依存関係の除去は、複数プラットフォーム、手動、リリースの受け入れを自動的に証明するものではありません。一般的な置換規則は[独立実装契約](../../engineering/independent-rust-codecs.md)にあります。
 
 <a name="xdzip-specifications-and-reference-identity"></a>
 
@@ -35,7 +35,7 @@ LZMA ビットストリームは Igor Pavlov による 2015-06-14 の[公式仕�
 
 固定アーカイブとファイルの識別情報、実際に読んだ範囲、事実の引き継ぎ要約を開発証拠とともに保持します。参照資料を更新したら再確認し、古い行番号で新バージョンの動作を証明しません。仕様の定数、識別子、数学的関係は形式実装に使えますが、内部最適化や歴史的に未定義の動作は製品への許可を与えません。パブリックドメイン宣言はアーカイブ全体、文書、C++ ラッパー、その他のサンプルには及びません。
 
-これは厳密なクリーンルームや法的リスクゼロを主張するものではありません。第三者資料、公式バックエンドを含む過去の配布、独立したテストツールはそれぞれの条件に従います。現在の製品は公式バックエンドをビルドしません。[ライセンス](licensing.md)と[対応するソース](source-delivery.md)を参照してください。
+これは厳密なクリーンルームや法的リスクゼロを主張するものではありません。第三者資料、公式バックエンドを含む過去の配布、独立したテストツールはそれぞれの条件に従います。現在の製品は公式バックエンドをビルドしません。[ライセンス](licensing.md)と[対応するソース](../../engineering/source-delivery.md)を参照してください。
 
 <a name="xdzip-interoperability-boundaries"></a>
 

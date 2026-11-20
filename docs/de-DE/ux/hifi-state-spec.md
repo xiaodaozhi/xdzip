@@ -32,7 +32,7 @@ Dieser Leitfaden beschreibt Verhalten, Fokus und Schließaktionen für Erstellun
 - Die vier ZIP-Stufen entsprechen Store/Deflate 1/6/9, Standard ist 2 normal. TAR und TAR.GZ können erstellt werden; ein Formatwechsel synchronisiert Endungen und löscht Passwort und Teilarchiveinstellung. TAR deaktiviert die Stufe; TAR.GZ-Stufen 0/1/2/3 entsprechen GZIP 0/1/6/9. Ein Formatwechsel synchronisiert die Endung, darf Ziele aber nicht stillschweigend überschreiben.
 - Ohne Eingabe, bei leerem Namen, ungültigem Ziel oder fehlender Berechtigung ist Erstellen deaktiviert und der Grund erscheint am Feld. Fehlertext wird von Bildschirmlesern erfasst, statt nur die Rahmenfarbe zu ändern.
 - Der Kern behandelt doppelte Eingaben und Verzeichniserweiterung; die Oberfläche zeigt nur Auswahlzusammenfassungen. Bildsymbole bei der Erstellung zeigen den Typ, keine Bildvorschau.
-- ZIP und 7z zeigen ihre unterstützten Passwort- und Teilarchiveinstellungen. 7z kann auch Dateinamen verschlüsseln. Das Formatregister nennt die tatsächlichen Schreibfähigkeiten. [ZIP-Erstellung](../engineering/zip-creation.md), [Formatregister](../engineering/format-registry.md)
+- ZIP und 7z zeigen ihre unterstützten Passwort- und Teilarchiveinstellungen. 7z kann auch Dateinamen verschlüsseln. Das Formatregister nennt die tatsächlichen Schreibfähigkeiten. [ZIP-Erstellung](../../engineering/zip-creation.md), [Formatregister](../engineering/format-registry.md)
 
 <a name="xdzip-task-data-and-exceptions"></a>
 
@@ -58,7 +58,7 @@ Die standardmäßigen Ausgabebudgets des vorhandenen Hosts betragen 8 GiB pro Da
 
 Alle Operationsfenster folgen der [plattformbezogenen Fensterspezifikation](platform-windows.md). Native macOS-Titelleisten verwenden keine ausgeschnittenen Ampelknöpfe. Die Plattformschicht prüft Position und deaktivierte Zustände der Titelschaltflächen unter Windows/Linux, Systemmenüs und Verschieben. Rechtsseitige Linux-Bedienelemente in Plattformvergleichsbildern sind kein fest codiertes Versprechen für jede Desktopumgebung.
 
-Aktuelle Maße folgen [layout-scale.json](../../../specs/visual/layout-scale.json), dem [Fensterregister](../../../specs/visual/window-registry.json) und dem [Designstandard](../visual/design-standard.md) und ersetzen frühe übergroße Vorschläge. Erstellung, Extraktion, Konflikt, Fortschritt und Ergebnisse teilen Breite 491; Einstellungen verwendet 612 als registrierten zweckbezogenen Unterschied. Titel 20, Text 13, Fußschaltflächen 13 und Zusatztext 12. Die Höhe folgt Inhalt und Grenze des jeweiligen Fensters; der Inhalt ist scrollbar. Operationsfenster mit Fußbereich halten ihn fest und erreichbar; Einstellungen hat keinen Fußbereich. Einstellungen bietet Schriftgrößen 100%/125%/150%; Komponentenmaße nicht aus globaler Skalierung oder physischen Screenshot-Pixeln ableiten.
+Aktuelle Maße folgen [layout-scale.json](../../../specs/visual/layout-scale.json), dem [Fensterregister](../../../specs/visual/window-registry.json) und dem [Designstandard](../../visual/design-standard.md) und ersetzen frühe übergroße Vorschläge. Erstellung, Extraktion, Konflikt, Fortschritt und Ergebnisse teilen Breite 491; Einstellungen verwendet 612 als registrierten zweckbezogenen Unterschied. Titel 20, Text 13, Fußschaltflächen 13 und Zusatztext 12. Die Höhe folgt Inhalt und Grenze des jeweiligen Fensters; der Inhalt ist scrollbar. Operationsfenster mit Fußbereich halten ihn fest und erreichbar; Einstellungen hat keinen Fußbereich. Einstellungen bietet Schriftgrößen 100%/125%/150%; Komponentenmaße nicht aus globaler Skalierung oder physischen Screenshot-Pixeln ableiten.
 
 | Verwendung | Hinzugefügte Ressourcen | Gemeinsame / dynamische Teile |
 | --- | --- | --- |
@@ -74,7 +74,7 @@ Ressourcen liegen unter `design/assets/`. `reference/` enthält Ausschnitte in O
 
 ## Ergänzung des Verzeichnisbaums
 
-Die B01-Navigation ergänzt die [Verzeichnisbaum-Spezifikation B](directory-tree.md) mit drei formalen Zeichenflächen und 26 gemeinsamen Ausschnitten. Knotenpfeile hängen von Unterverzeichnissen ab; Aufklappen, aktuelles Verzeichnis und Tastaturfokus sind unabhängig. Laden, leere Archive, Dateien im Wurzelverzeichnis, Navigationsgrenzen, Fehler und verborgene aktuelle Pfade sind getrennt spezifiziert; der bestehende schreibgeschützte Domänenvertrag bleibt unverändert. HTML und Qt integrieren Kernnavigation, Verbindungslinien und Anzeigen für verborgene aktuelle Zweige; Skelette und spezielle Grenzsymbole bleiben Designressourcen. Den Integrationsumfang beschreibt die Verzeichnisbaum-Spezifikation.
+Die B01-Navigation ergänzt die [Verzeichnisbaum-Spezifikation B](../../ux/directory-tree.md) mit drei formalen Zeichenflächen und 26 gemeinsamen Ausschnitten. Knotenpfeile hängen von Unterverzeichnissen ab; Aufklappen, aktuelles Verzeichnis und Tastaturfokus sind unabhängig. Laden, leere Archive, Dateien im Wurzelverzeichnis, Navigationsgrenzen, Fehler und verborgene aktuelle Pfade sind getrennt spezifiziert; der bestehende schreibgeschützte Domänenvertrag bleibt unverändert. HTML und Qt integrieren Kernnavigation, Verbindungslinien und Anzeigen für verborgene aktuelle Zweige; Skelette und spezielle Grenzsymbole bleiben Designressourcen. Den Integrationsumfang beschreibt die Verzeichnisbaum-Spezifikation.
 
 <a name="xdzip-changes-and-revalidation"></a>
 

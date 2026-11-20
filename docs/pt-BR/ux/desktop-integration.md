@@ -4,7 +4,7 @@
 
 [English](../../ux/desktop-integration.md) | [简体中文](../../zh-CN/ux/desktop-integration.md) | [繁體中文](../../zh-TW/ux/desktop-integration.md) | [日本語](../../ja-JP/ux/desktop-integration.md) | [한국어](../../ko-KR/ux/desktop-integration.md) | [Français](../../fr-FR/ux/desktop-integration.md) | [Deutsch](../../de-DE/ux/desktop-integration.md) | [Español](../../es-ES/ux/desktop-integration.md) | Português (Brasil) | [Русский](../../ru-RU/ux/desktop-integration.md)
 
-Múltiplas sessões, instância única, estado das janelas e saída global seguem o [contrato de sessões](../engineering/application-sessions.md). Fechar uma janela principal que não seja a última mantém as tarefas; a última segue as configurações de bandeja. A confirmação de saída abrange todas as sessões.
+Múltiplas sessões, instância única, estado das janelas e saída global seguem o [contrato de sessões](../../engineering/application-sessions.md). Fechar uma janela principal que não seja a última mantém as tarefas; a última segue as configurações de bandeja. A confirmação de saída abrange todas as sessões.
 
 Sair explicitamente pelo sistema, menu ou bandeja pode abrir a confirmação global enquanto há um aviso de senha ou conflito de tarefa. No macOS, Sair no menu do aplicativo e Command-Q permanecem disponíveis. Escolher Voltar mantém a tarefa e o aviso. Um seletor nativo de arquivos ou outra janela modal bloqueante deve terminar ou ser fechado primeiro. O aplicativo descarta uma tentativa de saída bloqueada por ela.
 

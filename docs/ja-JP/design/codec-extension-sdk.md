@@ -14,7 +14,7 @@
 | 同梱アーカイブワーカー | ホスト内の `xdzip-codec-native` が `xdzip-native-codec` を起動します。C++ プロトコル層は `xdzip-codec-bridge` を通じて Rust の 7z、RAR、CAB、光学メディアのバックエンドを呼び出します。該当する 7z の作成と書き換えも同じ経路を使用します。ISO 作成はプロセス内の光学メディア書き込みを使用します。 |
 | 外部 SDK 試行 | `xdzip-plugin-host` と `xdzip-plugin-protocol` は独立した明示的な XDP1 実験です。デスクトップと CLI の製品ビルドは第三者拡張機能を検出、インストール、実行しません。 |
 
-最初の 2 経路は組み込みの製品コンポーネントです。同梱ワーカーは専用プロトコルとリソース監督を持つ別プロセスです。外部試行は独自のパッケージ検証、バージョン交渉、プラットフォーム権限の条件を持ちます。[システムアーキテクチャー](system-architecture.md)、[アーカイブワーカー契約](../engineering/native-codecs.md)、[SDK 試行契約](../engineering/sdk-trial.md)
+最初の 2 経路は組み込みの製品コンポーネントです。同梱ワーカーは専用プロトコルとリソース監督を持つ別プロセスです。外部試行は独自のパッケージ検証、バージョン交渉、プラットフォーム権限の条件を持ちます。[システムアーキテクチャー](../../design/system-architecture.md)、[アーカイブワーカー契約](../engineering/native-codecs.md)、[SDK 試行契約](../engineering/sdk-trial.md)
 
 <a name="xdzip-product-routing-and-operation-capabilities"></a>
 
@@ -37,7 +37,7 @@
 
 パス、ソースの再検証、キャンセル、パスワード、割り当て、最終公開はホストが管理します。コーデックは操作に必要なインターフェースを通じて能力を受け取ります。アーカイブワーカーは許可されたソース範囲を要求し、制限されたレコードまたは出力ブロックを渡します。ホストは動作前にプロトコル状態とバイト割り当てを検証します。ワーカーの障害や無効な応答は公開を承認できません。ワーカー境界は障害とリソースを分離します。任意の外部コードに対するカーネル権限制限は試行の別の要件です。[メタデータ契約](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-codec-api/src/lib.rs)、[データ契約](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-codec-api/src/payload.rs)、[エンコードと書き換えの契約](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-codec-api/src/encode.rs)、[ファイル承認](file-security.md)
 
-これらの Rust trait は内部のソースインターフェースです。製品アダプターはワークスペースと明示的なランタイムルーティングに統合します。許可された操作については、有効なファイル、未対応機能、リソース制限、破損、出力動作をそれぞれテストする必要があります。[独立した Rust コーデック契約](../engineering/independent-rust-codecs.md)と[開発ガイド](../contributing/README.md)を使用してください。
+これらの Rust trait は内部のソースインターフェースです。製品アダプターはワークスペースと明示的なランタイムルーティングに統合します。許可された操作については、有効なファイル、未対応機能、リソース制限、破損、出力動作をそれぞれテストする必要があります。[独立した Rust コーデック契約](../../engineering/independent-rust-codecs.md)と[開発ガイド](../contributing/README.md)を使用してください。
 
 <a name="xdzip-implemented-external-sdk-trial"></a>
 

@@ -4,7 +4,7 @@
 
 [English](../../design/domain-data.md) | [简体中文](../../zh-CN/design/domain-data.md) | [繁體中文](../../zh-TW/design/domain-data.md) | 日本語 | [한국어](../../ko-KR/design/domain-data.md) | [Français](../../fr-FR/design/domain-data.md) | [Deutsch](../../de-DE/design/domain-data.md) | [Español](../../es-ES/design/domain-data.md) | [Português (Brasil)](../../pt-BR/design/domain-data.md) | [Русский](../../ru-RU/design/domain-data.md)
 
-ランタイムはアーカイブのセッション、完成した索引、そのセッションの最新クエリーを所有します。Qt は結果のビューを保持し、CLI は別のカタログコマンドで物理レコードを読めます。両方とも同じ Rust サービスに操作を送信します。[システム構成](system-architecture.md)、[Qt/Rust ブリッジ](qt-rust-bridge.md)
+ランタイムはアーカイブのセッション、完成した索引、そのセッションの最新クエリーを所有します。Qt は結果のビューを保持し、CLI は別のカタログコマンドで物理レコードを読めます。両方とも同じ Rust サービスに操作を送信します。[システム構成](../../design/system-architecture.md)、[Qt/Rust ブリッジ](qt-rust-bridge.md)
 
 <a name="xdzip-identity-and-source-version"></a>
 
@@ -19,7 +19,7 @@
 | `QueryKey` | セッション、クエリー ID、世代、スナップショットのリビジョンを組み合わせる。オフセットはこの結果内の位置を指す。 |
 | 要求、タスク、確認画面の識別情報 | サービスは接続内で要求番号とタスク番号を割り当てる。確認画面は特定のタスクに属する。共通デスクトップのタスク項目はコントローラーのセッション識別情報とタスク番号を組み合わせる。 |
 
-ドメイン型はアーカイブとクエリーの識別子がゼロでないことを保証します。ネイティブブリッジでは型付き Rust 値を生成された CXX データで表現します。64 ビットすべてを必要とする ID は不透明な文字列として QML に渡します。行番号は特定のクエリー内の位置にすぎません。[ドメインの識別子](../../../crates/xdzip-domain/src/identity.rs)、[ソース実装](../../../crates/xdzip-runtime/src/source.rs)、[アプリケーションセッション](../engineering/application-sessions.md)
+ドメイン型はアーカイブとクエリーの識別子がゼロでないことを保証します。ネイティブブリッジでは型付き Rust 値を生成された CXX データで表現します。64 ビットすべてを必要とする ID は不透明な文字列として QML に渡します。行番号は特定のクエリー内の位置にすぎません。[ドメインの識別子](../../../crates/xdzip-domain/src/identity.rs)、[ソース実装](../../../crates/xdzip-runtime/src/source.rs)、[アプリケーションセッション](../../engineering/application-sessions.md)
 
 <a name="xdzip-physical-entries-and-output-names"></a>
 

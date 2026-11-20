@@ -4,7 +4,7 @@
 
 [English](../../design/task-scheduling.md) | [简体中文](../../zh-CN/design/task-scheduling.md) | [繁體中文](../../zh-TW/design/task-scheduling.md) | [日本語](../../ja-JP/design/task-scheduling.md) | 한국어 | [Français](../../fr-FR/design/task-scheduling.md) | [Deutsch](../../de-DE/design/task-scheduling.md) | [Español](../../es-ES/design/task-scheduling.md) | [Português (Brasil)](../../pt-BR/design/task-scheduling.md) | [Русский](../../ru-RU/design/task-scheduling.md)
 
-XDZip은 런타임 연결마다 Rust 명령 스레드 하나와 작업 스레드 하나를 사용합니다. 명령 스레드는 현재 압축 파일을 소유하고 작업 입력을 준비합니다. 작업 스레드가 승인된 작업을 실행하는 동안 명령 스레드는 메타데이터 요청을 계속 처리할 수 있습니다. [시스템 아키텍처](system-architecture.md)는 스레드 실행 위치를, [Qt/Rust 브리지](qt-rust-bridge.md)는 결과가 클라이언트에 도달하는 방법을 설명합니다.
+XDZip은 런타임 연결마다 Rust 명령 스레드 하나와 작업 스레드 하나를 사용합니다. 명령 스레드는 현재 압축 파일을 소유하고 작업 입력을 준비합니다. 작업 스레드가 승인된 작업을 실행하는 동안 명령 스레드는 메타데이터 요청을 계속 처리할 수 있습니다. [시스템 아키텍처](../../design/system-architecture.md)는 스레드 실행 위치를, [Qt/Rust 브리지](qt-rust-bridge.md)는 결과가 클라이언트에 도달하는 방법을 설명합니다.
 
 <a name="xdzip-admission-and-task-ownership"></a>
 
@@ -17,7 +17,7 @@ XDZip은 런타임 연결마다 Rust 명령 스레드 하나와 작업 스레드
 | 런타임 작업 큐 | 추출, 임시 열기, 생성, 검사, 편집과 내보내기를 필요에 따라 연결 내 큐 순서대로 한 번에 한 작업씩 실행합니다. 서비스마다 최대 32개 작업을 추적하며 보유 작업의 총 예산은 64 MiB입니다. 이 예산은 보유 입력과 예약된 비밀 정보 공간을 포함합니다. 실제 디코딩, 인덱싱, 작업 프로세스와 출력 자원에는 별도 제한이 있습니다. 포화 상태는 `task_busy`로 보고합니다. |
 | 독립 CLI | 자체 명령 프로세스에서 같은 Rust 스케줄링 규칙을 사용합니다. 독립 CLI 프로세스마다 별도 큐가 있고 데스크톱도 마찬가지입니다. 안전한 출력 권한과 충돌 검사는 각 프로세스에 적용됩니다. |
 
-`TaskAccepted`는 승인된 작업을 식별합니다. 일반 요청의 `Finished`는 그 요청을 닫습니다. 작업은 상관관계에 원래 요청 ID를, 제어에 작업 ID를 사용해 `TaskUpdate` 스냅샷을 계속 생성할 수 있습니다. 앱 작업 항목은 탭을 닫아도 소유 컨트롤러를 보유해 프롬프트와 결과를 올바른 연결에 귀속합니다. [작업 큐 소스](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/service/tasks.rs), [데스크톱 승인과 작업 라우팅](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.cpp), [데스크톱 세션](../engineering/application-sessions.md)
+`TaskAccepted`는 승인된 작업을 식별합니다. 일반 요청의 `Finished`는 그 요청을 닫습니다. 작업은 상관관계에 원래 요청 ID를, 제어에 작업 ID를 사용해 `TaskUpdate` 스냅샷을 계속 생성할 수 있습니다. 앱 작업 항목은 탭을 닫아도 소유 컨트롤러를 보유해 프롬프트와 결과를 올바른 연결에 귀속합니다. [작업 큐 소스](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/service/tasks.rs), [데스크톱 승인과 작업 라우팅](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.cpp), [데스크톱 세션](../../engineering/application-sessions.md)
 
 <a name="xdzip-states-and-reported-progress"></a>
 
@@ -98,4 +98,4 @@ stateDiagram-v2
 
 건너뛰기는 지원되는 충돌 결정에 적용됩니다. 디코딩, 자원, 원본 또는 대상 안전 오류로 작업이 중지될 수 있습니다. 이미 게시된 파일은 기록에 남고 준비 영역 정리 오류가 성공적인 게시와 함께 나타날 수 있습니다. 예상치 못한 작업 프로세스 실패나 스택 해제가 가능한 작업 panic은 실패 또는 불확실한 결과를 낼 수 있습니다. panic 경로는 `task_abandoned`를 보고하고 해당 런타임을 오류 상태로 만듭니다. 프로세스 종료 후 종료 응답이 없다는 사실은 디스크에 무엇이 기록되었는지 입증하지 않습니다.
 
-진행 창이나 압축 파일 탭 닫기는 표시 동작입니다. 승인된 작업과 결과는 앱 작업 항목에서 계속 사용할 수 있습니다. 활성 암호 프롬프트를 닫으면 해당 작업이 취소될 수 있습니다. 명시적 종료는 활성 작업을 처리하고 종료 시작 시 승인을 멈추며 대기자를 깨우고 이벤트를 계속 비웁니다. 수신자는 Rust 작업 스레드를 기다린 뒤 `ShutdownReady`를 생성합니다. Qt는 이벤트를 모두 처리하고 GUI 스레드에서 차단되는 대기 없이 수신자 종료를 기다립니다. 외부 네이티브 전송도 끝나야 할 수 있습니다. [런타임 수명 주기](../engineering/product-runtime.md), [압축 파일 전송](../engineering/archive-transfers.md)
+진행 창이나 압축 파일 탭 닫기는 표시 동작입니다. 승인된 작업과 결과는 앱 작업 항목에서 계속 사용할 수 있습니다. 활성 암호 프롬프트를 닫으면 해당 작업이 취소될 수 있습니다. 명시적 종료는 활성 작업을 처리하고 종료 시작 시 승인을 멈추며 대기자를 깨우고 이벤트를 계속 비웁니다. 수신자는 Rust 작업 스레드를 기다린 뒤 `ShutdownReady`를 생성합니다. Qt는 이벤트를 모두 처리하고 GUI 스레드에서 차단되는 대기 없이 수신자 종료를 기다립니다. 외부 네이티브 전송도 끝나야 할 수 있습니다. [런타임 수명 주기](../engineering/product-runtime.md), [압축 파일 전송](../../engineering/archive-transfers.md)

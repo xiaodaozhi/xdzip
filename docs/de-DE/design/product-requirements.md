@@ -4,7 +4,7 @@
 
 [English](../../design/product-requirements.md) | [简体中文](../../zh-CN/design/product-requirements.md) | [繁體中文](../../zh-TW/design/product-requirements.md) | [日本語](../../ja-JP/design/product-requirements.md) | [한국어](../../ko-KR/design/product-requirements.md) | [Français](../../fr-FR/design/product-requirements.md) | Deutsch | [Español](../../es-ES/design/product-requirements.md) | [Português (Brasil)](../../pt-BR/design/product-requirements.md) | [Русский](../../ru-RU/design/product-requirements.md)
 
-XDZip lässt Archive wie Ordner durchsuchen, ausgewählte Inhalte bearbeiten und Archive erstellen oder ändern, wenn das Format dies unterstützt. Desktop und [eigenständige CLI](../engineering/command-line.md) teilen sich die Archivlaufzeit. Die [Projekt-README](../../../README.de-DE.md) beschreibt aktuelle Funktionen und Distributionen. Die folgenden Anforderungen legen das zu bewahrende und zu prüfende Verhalten fest.
+XDZip lässt Archive wie Ordner durchsuchen, ausgewählte Inhalte bearbeiten und Archive erstellen oder ändern, wenn das Format dies unterstützt. Desktop und [eigenständige CLI](../../engineering/command-line.md) teilen sich die Archivlaufzeit. Die [Projekt-README](../../../README.de-DE.md) beschreibt aktuelle Funktionen und Distributionen. Die folgenden Anforderungen legen das zu bewahrende und zu prüfende Verhalten fest.
 
 <a name="xdzip-requirements-and-implementation"></a>
 
@@ -33,8 +33,8 @@ XDZip lässt Archive wie Ordner durchsuchen, ausgewählte Inhalte bearbeiten und
 ## Abläufe und Umfang
 
 - **Öffnen und ansehen.** Eine Öffnungsanforderung erreicht die Desktop-Sitzungssteuerung. Ein erfolgreicher Scan veröffentlicht eine Sitzung. Suche und Sortierung erzeugen neue Abfragen. Doppelklick öffnet einen Ordner oder eine geeignete Datei über eine temporäre Kopie. Bei sichtbarem Eigenschaftsbereich startet die Auswahl einer unterstützten Datei deren Vorschau. [Durchsuchen und Vorschau](../user-guide/browse.md), [Temporäres Öffnen](../engineering/archive-opening.md)
-- **Entpacken.** „Alles entpacken“ umfasst das ganze Archiv. Für einzelne Treffer diese in der Suche auswählen und den Bereich prüfen. Eine Metadaten-Vorprüfung liefert Hinweise vor der Schreibautorisierung. Bereits übernommene Dateien bleiben bei späterem Fehler oder Abbruch erhalten. [Entpacken](../engineering/zip-safe-extraction.md), [Aufgabenplanung](task-scheduling.md)
-- **Erstellen, ändern oder prüfen.** Erstellung und zulässige Änderungen prüfen die Zwischenausgabe vor der Übernahme. „Prüfen“ kontrolliert ein geeignetes Archiv entsprechend seinem Format ohne Ausgabeberechtigung. Verfügbare Aktionen hängen von Format, Eintrag und Quellprofil ab. [Formatregister](../engineering/format-registry.md), [Archivtransfers](../engineering/archive-transfers.md), [Archivprüfung](../engineering/archive-checking.md)
+- **Entpacken.** „Alles entpacken“ umfasst das ganze Archiv. Für einzelne Treffer diese in der Suche auswählen und den Bereich prüfen. Eine Metadaten-Vorprüfung liefert Hinweise vor der Schreibautorisierung. Bereits übernommene Dateien bleiben bei späterem Fehler oder Abbruch erhalten. [Entpacken](../../engineering/zip-safe-extraction.md), [Aufgabenplanung](task-scheduling.md)
+- **Erstellen, ändern oder prüfen.** Erstellung und zulässige Änderungen prüfen die Zwischenausgabe vor der Übernahme. „Prüfen“ kontrolliert ein geeignetes Archiv entsprechend seinem Format ohne Ausgabeberechtigung. Verfügbare Aktionen hängen von Format, Eintrag und Quellprofil ab. [Formatregister](../engineering/format-registry.md), [Archivtransfers](../../engineering/archive-transfers.md), [Archivprüfung](../engineering/archive-checking.md)
 
 <a name="xdzip-planned-scope-and-verification"></a>
 

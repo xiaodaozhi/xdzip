@@ -4,7 +4,7 @@
 
 [English](../../engineering/contracts.md) | [简体中文](../../zh-CN/engineering/contracts.md) | [繁體中文](../../zh-TW/engineering/contracts.md) | 日本語 | [한국어](../../ko-KR/engineering/contracts.md) | [Français](../../fr-FR/engineering/contracts.md) | [Deutsch](../../de-DE/engineering/contracts.md) | [Español](../../es-ES/engineering/contracts.md) | [Português (Brasil)](../../pt-BR/engineering/contracts.md) | [Русский](../../ru-RU/engineering/contracts.md)
 
-正式なインターフェースは[ドメインとデータ](../design/domain-data.md)、[Qt/Rust ブリッジ](../design/qt-rust-bridge.md)、[形式拡張の設計](../design/codec-extension-sdk.md)、[タスクスケジューリング](../design/task-scheduling.md)を参照してください。このページは仕様を固定する前の検証項目を定めます。内部ブリッジ、二種類のハンドル、ライフサイクルは実装済みです。境界は[ランタイム仕様](product-runtime.md)を参照してください。クエリーの世代、ソースバージョンの確認、作成と展開のタスクも実装済みです。[閲覧仕様](readonly-browser.md)、[安全な展開](zip-safe-extraction.md)、[作成仕様](zip-creation.md)を参照してください。外部プロセス用のプロトコルには独立した[読み取り専用 SDK 試験](sdk-trial.md)があります。安定版の SDK としての公開や製品への統合は行っていません。表は統合の条件です。
+正式なインターフェースは[ドメインとデータ](../design/domain-data.md)、[Qt/Rust ブリッジ](../design/qt-rust-bridge.md)、[形式拡張の設計](../design/codec-extension-sdk.md)、[タスクスケジューリング](../design/task-scheduling.md)を参照してください。このページは仕様を固定する前の検証項目を定めます。内部ブリッジ、二種類のハンドル、ライフサイクルは実装済みです。境界は[ランタイム仕様](product-runtime.md)を参照してください。クエリーの世代、ソースバージョンの確認、作成と展開のタスクも実装済みです。[閲覧仕様](../../engineering/readonly-browser.md)、[安全な展開](../../engineering/zip-safe-extraction.md)、[作成仕様](../../engineering/zip-creation.md)を参照してください。外部プロセス用のプロトコルには独立した[読み取り専用 SDK 試験](sdk-trial.md)があります。安定版の SDK としての公開や製品への統合は行っていません。表は統合の条件です。
 
 | 境界 | 実装前に確認する事項 | 検証する失敗時の挙動 |
 | --- | --- | --- |
@@ -18,6 +18,6 @@
 
 CLI と GUI は Rust サービスを共有します。Catalog はページごとに最大 128 件の物理メタデータ項目を返します。SelectMembers は同じ不変のセッションで完全な有効パスと EntryId を解決し、既存のタスクを送信します。一覧 ID はそのスキャンにだけ属し、アーカイブの変更後に持続する識別子ではありません。submit_wait が待つのは短時間の受理ロックだけです。キュー容量と終了中の拒否の規則は変わりません。GUI はこれらの内部コマンドの QML エンコードを公開せず、CLI はエスケープされた表示テキストを使ってファイルを書きません。
 
-固定のホストメタデータには open_regular_nofollow とディレクトリーの許可、サイズと識別子の検証を使います。最後のパス要素にあるシンボリックリンクと再解析ポイントは拒否します。ユーザーが選んだアーカイブの読み取りには従来のパスエイリアス規則を適用します。デスクトップに対する CLI リクエストは、同一ユーザーの単一インスタンス用の任意拡張 `cli_protocol=1` で上限付きのリクエストディレクトリーを渡します。従来のオープンプロトコルはバージョン 1 のままです。拡張のないインスタンスは CLI の受け渡しを確認できません。結果、終了コード、インストール範囲は[CLI 仕様](command-line.md)を参照してください。
+固定のホストメタデータには open_regular_nofollow とディレクトリーの許可、サイズと識別子の検証を使います。最後のパス要素にあるシンボリックリンクと再解析ポイントは拒否します。ユーザーが選んだアーカイブの読み取りには従来のパスエイリアス規則を適用します。デスクトップに対する CLI リクエストは、同一ユーザーの単一インスタンス用の任意拡張 `cli_protocol=1` で上限付きのリクエストディレクトリーを渡します。従来のオープンプロトコルはバージョン 1 のままです。拡張のないインスタンスは CLI の受け渡しを確認できません。結果、終了コード、インストール範囲は[CLI 仕様](../../engineering/command-line.md)を参照してください。
 
 内部仕様は実装に合わせて変わる場合があり、同じコミットで更新します。外部向け通信プロトコルの安定版 v1 を名乗るには、独立した二つの実装が相互運用し、互換性試験に合格する必要があります。不明なバージョンは明示的に拒否するか、ネゴシエーション規則に従って互換バージョンへ切り替えます。

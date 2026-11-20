@@ -56,7 +56,7 @@ AES Crypt는 `format_declared_checks`와 보유한 열기 암호를 사용합니
 
 Brotli와 TAR.BR은 `structure_and_readability`를 사용합니다. 전체 스트림 종료, 선언된 메타블록 크기와 승인된 모든 사전/이력 변환이 통과해야 하지만 Brotli에는 콘텐츠 체크섬이 없습니다. [Brotli 계약](brotli-streams.md)을 참고하세요.
 
-LHA/LZH는 `format_declared_checks`를 사용합니다. 지원되는 모든 일반 파일을 실제로 디코딩하고 정확한 길이와 존재하는 모든 헤더/페이로드 CRC-16을 검증합니다. 오래된 레벨 0 멤버는 CRC를 생략할 수 있으며 이 경우 구조, 크기, 읽기 가능성만 검사합니다. LH2는 CRC에 연결된 유한 변형 승인이 필요합니다. 알 수 없는 방식, 의심스러운 이름, 링크 또는 특수 객체는 전체 성공을 막습니다. [LHA 계약](lha-containers.md)을 참고하세요.
+LHA/LZH는 `format_declared_checks`를 사용합니다. 지원되는 모든 일반 파일을 실제로 디코딩하고 정확한 길이와 존재하는 모든 헤더/페이로드 CRC-16을 검증합니다. 오래된 레벨 0 멤버는 CRC를 생략할 수 있으며 이 경우 구조, 크기, 읽기 가능성만 검사합니다. LH2는 CRC에 연결된 유한 변형 승인이 필요합니다. 알 수 없는 방식, 의심스러운 이름, 링크 또는 특수 객체는 전체 성공을 막습니다. [LHA 계약](../../engineering/lha-containers.md)을 참고하세요.
 
 PMA는 `format_declared_checks`를 사용하며 승인된 PM0/PM1/PM2 멤버를 완전히 디코딩하고 정확한 크기와 존재하는 모든 페이로드 CRC-16을 검증합니다. CRC 없는 멤버는 구조, 크기와 읽기 가능성만 확인합니다. 알 수 없는 방식과 다른 미지원 항목은 전체 성공을 막습니다. CP/M 채우기는 압축된 멤버 범위 밖의 물리 컨테이너 구조로 검증합니다. [PMA 계약](pma-streams.md)을 참고하세요.
 

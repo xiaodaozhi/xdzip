@@ -14,7 +14,7 @@
 | Processo de arquivos compactados incluído | `xdzip-codec-native` no host inicia `xdzip-native-codec`. Sua camada de protocolo C++ chama os backends Rust de 7z, RAR, CAB e mídias ópticas por `xdzip-codec-bridge`. O mesmo caminho trata criação e regravação 7z aplicáveis. A criação ISO usa seu gravador óptico no processo. |
 | Teste de SDK externo | `xdzip-plugin-host` e `xdzip-plugin-protocol` formam um experimento XDP1 separado e explícito. Compilações de produto desktop e CLI não descobrem, instalam nem executam extensões de terceiros. |
 
-Os dois primeiros caminhos são componentes integrados do produto. O processo incluído é separado, com protocolo privado e supervisão de recursos. O teste externo tem validação de pacote, negociação de versão e requisitos de permissão por plataforma próprios. [Arquitetura do sistema](system-architecture.md), [Contrato do processo de arquivos compactados](../engineering/native-codecs.md), [Contrato de teste do SDK](../engineering/sdk-trial.md)
+Os dois primeiros caminhos são componentes integrados do produto. O processo incluído é separado, com protocolo privado e supervisão de recursos. O teste externo tem validação de pacote, negociação de versão e requisitos de permissão por plataforma próprios. [Arquitetura do sistema](../../design/system-architecture.md), [Contrato do processo de arquivos compactados](../engineering/native-codecs.md), [Contrato de teste do SDK](../engineering/sdk-trial.md)
 
 <a name="xdzip-product-routing-and-operation-capabilities"></a>
 
@@ -37,7 +37,7 @@ Leitura, prévia, extração, verificação do arquivo inteiro, criação e regr
 
 O host controla caminhos, revalidação da origem, cancelamento, senhas, cotas e toda publicação final. Um codec recebe capacidades pelas interfaces necessárias à operação. O processo de arquivos compactados solicita intervalos permitidos da origem e entrega registros ou blocos de saída limitados. O host valida o estado do protocolo e cotas de bytes antes de agir. Falha do processo ou resposta inválida não pode autorizar publicação. A fronteira do processo isola falhas e recursos. Restrições de permissão do núcleo para código externo arbitrário são requisito separado do teste. [Contratos de metadados](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-codec-api/src/lib.rs), [Contratos de conteúdo](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-codec-api/src/payload.rs), [Contratos de codificação e regravação](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-codec-api/src/encode.rs), [Autorização de arquivos](file-security.md)
 
-Esses traits Rust são interfaces internas de código-fonte. Um adaptador de produto é integrado ao espaço de trabalho e ao roteamento explícito de execução. Suas operações permitidas precisam de testes separados de arquivos válidos, recursos não suportados, limites de recursos, corrupção e comportamento de saída. Use os [contratos de codecs Rust independentes](../engineering/independent-rust-codecs.md) e o [guia de desenvolvimento](../contributing/README.md).
+Esses traits Rust são interfaces internas de código-fonte. Um adaptador de produto é integrado ao espaço de trabalho e ao roteamento explícito de execução. Suas operações permitidas precisam de testes separados de arquivos válidos, recursos não suportados, limites de recursos, corrupção e comportamento de saída. Use os [contratos de codecs Rust independentes](../../engineering/independent-rust-codecs.md) e o [guia de desenvolvimento](../contributing/README.md).
 
 <a name="xdzip-implemented-external-sdk-trial"></a>
 

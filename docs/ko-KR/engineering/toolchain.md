@@ -20,7 +20,7 @@ Windows에서 데스크톱 빌드, Qt 소스 빌드와 제공 소스 재빌드�
 
 GitHub 호스팅 Apple Silicon 작업은 macOS 15 러너를 사용하지만 제품 배포 대상은 macOS 14.0으로 유지됩니다. 러너 업그레이드는 macOS 14 실제 기기 검증을 입증하지 않으며 플랫폼 호환성과 수동 승인을 별도로 기록합니다.
 
-일상적인 준비, 검사, 실행은 [개발자 빌드 안내](developer-build.md)를 참조하세요. `scripts/desktop.py doctor`는 기본적으로 build를 확인하고 `doctor --for-stage package`는 전체 패키징 체인을 미리 확인합니다. prepare의 `--install-rust`, `--install-qt`, `--packaging`은 각 도구와 고정된 자료를 명시적으로 준비합니다. 시스템 컴파일러와 SDK는 개발자가 설치하며 사전 검사는 암묵적인 설치 프로그램이 아닙니다.
+일상적인 준비, 검사, 실행은 [개발자 빌드 안내](../../engineering/developer-build.md)를 참조하세요. `scripts/desktop.py doctor`는 기본적으로 build를 확인하고 `doctor --for-stage package`는 전체 패키징 체인을 미리 확인합니다. prepare의 `--install-rust`, `--install-qt`, `--packaging`은 각 도구와 고정된 자료를 명시적으로 준비합니다. 시스템 컴파일러와 SDK는 개발자가 설치하며 사전 검사는 암묵적인 설치 프로그램이 아닙니다.
 
 고정된 로컬 도구 체인 디렉터리는 `build/toolchain/`입니다. Qt SDK, `qmllint`, `qmake`는 `build/toolchain/Qt/6.8.2/<platform-subdirectory>`를 사용하고 `aqtinstall`과 공통 Python 도구는 `build/toolchain/desktop-tools`, Qt 다운로드 준비는 `build/toolchain/qt-install-tool`을 사용합니다. 공통 진입점은 빌드, 테스트, 패키지 또는 개별 Qt 검사용 별도 캐시 대신 이 디렉터리를 사용합니다. 러너 임시 디렉터리를 쓰는 CI는 로컬 기본 구조를 바꾸지 않고 명시적 매개변수를 전달해야 합니다.
 

@@ -4,7 +4,7 @@
 
 [English](../../engineering/linux-deployment.md) | [简体中文](../../zh-CN/engineering/linux-deployment.md) | [繁體中文](../../zh-TW/engineering/linux-deployment.md) | [日本語](../../ja-JP/engineering/linux-deployment.md) | [한국어](../../ko-KR/engineering/linux-deployment.md) | [Français](../../fr-FR/engineering/linux-deployment.md) | [Deutsch](../../de-DE/engineering/linux-deployment.md) | [Español](../../es-ES/engineering/linux-deployment.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/linux-deployment.md)
 
-A base atual de implantação para desenvolvimento é Ubuntu 24.04, x86_64 e X11. O objetivo é executar o produto atual sem o SDK Qt de desenvolvimento; isso não promete outras distribuições, glibc mais antiga, Wayland ou suporte completo a instalador. A CI do macOS mantém compilação, testes e verificação de inicialização nativos. DMGs locais de desenvolvimento seguem o [guia de implantação Mac](macos-deployment.md) e não são afetados por este processo.
+A base atual de implantação para desenvolvimento é Ubuntu 24.04, x86_64 e X11. O objetivo é executar o produto atual sem o SDK Qt de desenvolvimento; isso não promete outras distribuições, glibc mais antiga, Wayland ou suporte completo a instalador. A CI do macOS mantém compilação, testes e verificação de inicialização nativos. DMGs locais de desenvolvimento seguem o [guia de implantação Mac](../../engineering/macos-deployment.md) e não são afetados por este processo.
 
 <a name="xdzip-layout-and-generation"></a>
 
@@ -29,7 +29,7 @@ patchelf define RPATH `$ORIGIN` relativo em cada ELF, calculando a distância re
 
 Após reescrever o RPATH relativo, a implantação remove tabelas de símbolos nativas desnecessárias e verifica que cada entrada DT_NEEDED e RPATH/RUNPATH permaneceu inalterada. Registra versão da ferramenta, hashes e contagens de bytes antes e depois para cada ELF em `symbol_stripping`; entradas do SDK e binários de compilação originais não são alterados. Para uma cópia de diagnóstico, o script de implantação subjacente aceita `--keep-symbols`. A atribuição final do SDK e hashes do aplicativo descrevem os arquivos transformados. Isso reduz o tamanho do pacote, não comprova melhoria medida de memória ou vazão.
 
-Use por etapas o [ponto de entrada unificado de compilação](developer-build.md) para geração e verificação de rotina. Conclua primeiro compilação, testes e preparação de empacotamento na mesma configuração e execute:
+Use por etapas o [ponto de entrada unificado de compilação](../../engineering/developer-build.md) para geração e verificação de rotina. Conclua primeiro compilação, testes e preparação de empacotamento na mesma configuração e execute:
 
 ```sh
 python3 scripts/desktop.py doctor --for-stage package
@@ -77,4 +77,4 @@ A CI gera xdzip-linux-x86_64.tar.gz e registra SHA-256 e hashes do executável. 
 
 O diretório de execução `build/package`, tar.gz e .deb gerados aqui são entregas experimentais de desenvolvimento e não instalam nem alteram associações padrão automaticamente. Os tar.gz e .deb oficiais do Ubuntu para Release são gerados pelo fluxo Release dedicado e fornecidos conforme o [protocolo de publicação](release-protocol.md). O escopo de plataformas segue a [política de suporte](support-policy.md); outras distribuições e desktops, Wayland e ampliações relacionadas exigem issues separadas. A aceitação existente do desktop permanece em [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5). Para alterações posteriores, verificar novamente os itens afetados com IME e leitor de tela reais e instalação, atualização e desinstalação limpas; reconstruir um diretório por si só não exige repetir a aceitação existente. A revisão histórica de componentes de `v0.1.0` está em [#4](https://github.com/xiaodaozhi/xdzip/issues/4) e [#53](https://github.com/xiaodaozhi/xdzip/issues/53); executar o diretório com sucesso não completa automaticamente as condições de futuras publicações.
 
-Consulte [instalação e associações](installers-associations.md) para instalação, atualização, reversão e desinstalação de Ubuntu .deb, bloqueios de execução e automação MIME do desktop. Passar no contêiner de execução não substitui verificações reais do desktop nem revisão de licenças de publicação.
+Consulte [instalação e associações](../../engineering/installers-associations.md) para instalação, atualização, reversão e desinstalação de Ubuntu .deb, bloqueios de execução e automação MIME do desktop. Passar no contêiner de execução não substitui verificações reais do desktop nem revisão de licenças de publicação.

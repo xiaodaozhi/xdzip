@@ -4,7 +4,7 @@
 
 [English](../../engineering/sevenzip-format-sources.md) | [简体中文](../../zh-CN/engineering/sevenzip-format-sources.md) | [繁體中文](../../zh-TW/engineering/sevenzip-format-sources.md) | [日本語](../../ja-JP/engineering/sevenzip-format-sources.md) | [한국어](../../ko-KR/engineering/sevenzip-format-sources.md) | [Français](../../fr-FR/engineering/sevenzip-format-sources.md) | Deutsch | [Español](../../es-ES/engineering/sevenzip-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/sevenzip-format-sources.md) | [Русский](../../ru-RU/engineering/sevenzip-format-sources.md)
 
-Dieses Dokument hält wiederverwendbare Quellen und Implementierungsgrenzen fest. Migrationsabnahme und verbleibende Fähigkeiten werden in [Issue #50](https://github.com/xiaodaozhi/xdzip/issues/50) verfolgt; feste Rust-Routen und die Entfernung der offiziellen Produktabhängigkeit belegen nicht automatisch plattformübergreifende, manuelle oder Release-Abnahme. Allgemeine Ersatzregeln stehen im [Vertrag für unabhängige Implementierungen](independent-rust-codecs.md).
+Dieses Dokument hält wiederverwendbare Quellen und Implementierungsgrenzen fest. Migrationsabnahme und verbleibende Fähigkeiten werden in [Issue #50](https://github.com/xiaodaozhi/xdzip/issues/50) verfolgt; feste Rust-Routen und die Entfernung der offiziellen Produktabhängigkeit belegen nicht automatisch plattformübergreifende, manuelle oder Release-Abnahme. Allgemeine Ersatzregeln stehen im [Vertrag für unabhängige Implementierungen](../../engineering/independent-rust-codecs.md).
 
 <a name="xdzip-specifications-and-reference-identity"></a>
 
@@ -35,7 +35,7 @@ Eine analysierende Person liest gezielt folgende Gruppen im festgelegten Origina
 
 Identitäten des festgelegten Archivs und der Dateien, tatsächlichen Leseumfang und sachliche Übergabezusammenfassungen mit Entwicklungsnachweisen aufbewahren. Bei Aktualisierung der Referenz erneut prüfen; alte Zeilennummern belegen nicht das Verhalten einer neuen Version. Spezifikationskonstanten, Kennungen und mathematische Beziehungen können zur Formatimplementierung genutzt werden; interne Optimierungen und historisch undefiniertes Verhalten gewähren dem Produkt keine Befugnisse. Public-Domain-Erklärungen gelten nicht für das gesamte Archiv, Dokumentation, C++-Wrapper oder andere Beispiele.
 
-Dies behauptet weder einen strengen Reinraum noch null Rechtsrisiko. Fremdquellen, frühere Lieferungen mit offiziellem Backend und unabhängige Testwerkzeuge unterliegen ihren jeweiligen Bedingungen. Das aktuelle Produkt baut das offizielle Backend nicht; siehe [Lizenzen](licensing.md) und [korrespondierenden Quellcode](source-delivery.md).
+Dies behauptet weder einen strengen Reinraum noch null Rechtsrisiko. Fremdquellen, frühere Lieferungen mit offiziellem Backend und unabhängige Testwerkzeuge unterliegen ihren jeweiligen Bedingungen. Das aktuelle Produkt baut das offizielle Backend nicht; siehe [Lizenzen](licensing.md) und [korrespondierenden Quellcode](../../engineering/source-delivery.md).
 
 <a name="xdzip-interoperability-boundaries"></a>
 

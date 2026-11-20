@@ -4,7 +4,7 @@
 
 [English](../../reference/README.md) | [简体中文](../../zh-CN/reference/README.md) | [繁體中文](../../zh-TW/reference/README.md) | [日本語](../../ja-JP/reference/README.md) | [한국어](../../ko-KR/reference/README.md) | [Français](../../fr-FR/reference/README.md) | Deutsch | [Español](../../es-ES/reference/README.md) | [Português (Brasil)](../../pt-BR/reference/README.md) | [Русский](../../ru-RU/reference/README.md)
 
-Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungspfade von Desktop und CLI. Die folgenden Abschnitte führen zum Vertrag für das jeweilige Verhalten. Die [Formattabelle](../../../README.de-DE.md#xdzip-format-support) zeigt die unterstützten Vorgänge. Bedienung und Einrichtung erläutern das [Benutzerhandbuch](../user-guide/README.md), die [CLI-Beispiele](../integration/README.md) und der [Leitfaden zum Mitwirken](../contributing/README.md).
+Die [Systemarchitektur](../../design/system-architecture.md) zeigt die Ausführungspfade von Desktop und CLI. Die folgenden Abschnitte führen zum Vertrag für das jeweilige Verhalten. Die [Formattabelle](../../../README.de-DE.md#xdzip-format-support) zeigt die unterstützten Vorgänge. Bedienung und Einrichtung erläutern das [Benutzerhandbuch](../user-guide/README.md), die [CLI-Beispiele](../integration/README.md) und der [Leitfaden zum Mitwirken](../contributing/README.md).
 
 <a name="xdzip-architecture-and-interfaces"></a>
 
@@ -23,7 +23,7 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 - [Repository-Struktur und Abhängigkeiten](../engineering/repository-layout.md)
 - [Schnittstellenverträge und Prüfungen](../engineering/contracts.md)
 - [Produktlaufzeit und Qt-Lebenszyklus](../engineering/product-runtime.md)
-- [Anwendungssitzungen und Beenden](../engineering/application-sessions.md)
+- [Anwendungssitzungen und Beenden](../../engineering/application-sessions.md)
 - [Begründung für die cxx-Brücke](../engineering/cxx-admission.md)
 - [Kalender- und Kodierungsdienste des Hosts](../engineering/host-platform-services.md)
 
@@ -32,18 +32,18 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 ## Archive lesen und schreiben
 
 - [Dateiberechtigungen, Zwischenspeicherung und sichere Übernahme](../design/file-security.md)
-- [Schreibgeschützte Archivansicht](../engineering/readonly-browser.md)
+- [Schreibgeschützte Archivansicht](../../engineering/readonly-browser.md)
 - [Schreibgeschützte ZIP-Ansicht](../engineering/zip-readonly-browsing.md)
 - [Große Archivindizes und bedarfsgesteuerte Ansicht](../engineering/large-index.md)
 - [Lesen geteilter Volumes und temporäres Öffnen](../engineering/archive-opening.md)
 - [Adaptive Dateinamenskodierung](../engineering/filename-encoding.md)
 - [Inhaltsvorschau](../engineering/content-preview.md)
 - [Metadaten-Vorprüfung vor dem Entpacken](../engineering/extraction-preflight.md)
-- [Sicheres Entpacken von ZIP](../engineering/zip-safe-extraction.md)
+- [Sicheres Entpacken von ZIP](../../engineering/zip-safe-extraction.md)
 - [Integritätsprüfung von Archiven](../engineering/archive-checking.md)
-- [Einträge öffnen, Drag-and-drop und Änderungen](../engineering/archive-transfers.md)
+- [Einträge öffnen, Drag-and-drop und Änderungen](../../engineering/archive-transfers.md)
 - [Archivpasswörter und Öffnen verschlüsselter Verzeichnisse](../engineering/password-extraction.md)
-- [Vertrag für die ZIP-Erstellung](../engineering/zip-creation.md)
+- [Vertrag für die ZIP-Erstellung](../../engineering/zip-creation.md)
 - [ISO9660- und Joliet-Erstellung](../engineering/iso-creation.md)
 - [Eigene selbstentpackende ZIP-Archive für Windows](../engineering/sfx-creation.md)
 
@@ -55,20 +55,20 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 - [Formatadapter und Entwurf des externen SDK-Versuchs](../design/codec-extension-sdk.md)
 - [Externer schreibgeschützter SDK-Versuch und Ausführungsumfang](../engineering/sdk-trial.md)
 - [Vertrag für isolierte Formatprozesse](../engineering/native-codecs.md)
-- [Eigene Rust-Formate und -Algorithmen](../engineering/independent-rust-codecs.md)
+- [Eigene Rust-Formate und -Algorithmen](../../engineering/independent-rust-codecs.md)
 - [Abrechnung zusätzlicher Algorithmusarbeit](../engineering/auxiliary-decoding-work.md)
 - [Zulassung der Abhängigkeit für ZIP-Metadaten](../engineering/zip-metadata-admission.md)
 - [Zulassung der Abhängigkeiten für ZIP-Entpacken und Ausgabe](../engineering/zip-extraction-admission.md)
 - [7z-Formatquellen und eigenständige Implementierung](../engineering/sevenzip-format-sources.md)
-- [Grundlagen der RAR-Implementierung und Kompatibilitätsgrenzen](../engineering/rar-format-sources.md)
-- [CAB-Formatquellen und Implementierungsgrundlagen](../engineering/cab-format-sources.md)
+- [Grundlagen der RAR-Implementierung und Kompatibilitätsgrenzen](../../engineering/rar-format-sources.md)
+- [CAB-Formatquellen und Implementierungsgrundlagen](../../engineering/cab-format-sources.md)
 - [Implementierungsvertrag für TAR/GZIP](../engineering/tar-gzip.md)
 - [Einzeldateiströme und ZIP-basierte Pakete](../engineering/single-file-streams.md)
 - [Vertrag für LZ4-Datenströme](../engineering/lz4-streams.md)
 - [Vertrag für Zstandard-Datenströme](../engineering/zstandard-streams.md)
 - [Vertrag für Unix compress Z](../engineering/compress-streams.md)
 - [Vertrag für gewöhnliche Brotli-Datenströme](../engineering/brotli-streams.md)
-- [Datenstruktur und Algorithmen von LHA](../engineering/lha-containers.md)
+- [Datenstruktur und Algorithmen von LHA](../../engineering/lha-containers.md)
 - [PMA-Container und PMarc-Verfahren](../engineering/pma-streams.md)
 - [Komprimierte ARJ-Datenströme und Containerzulassung](../engineering/arj-streams.md)
 - [ARC-Container und Profile komprimierter Datenströme](../engineering/arc-streams.md)
@@ -87,14 +87,14 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 ## Desktop-Interaktion und Gestaltung
 
 - [Qt-Quick-Ansichten und Controller-Aufgaben](../design/qt-quick-ui.md)
-- [Visuelle Desktop-Spezifikationen](../visual/README.md)
-- [UI-Designstandard](../visual/design-standard.md)
+- [Visuelle Desktop-Spezifikationen](../../visual/README.md)
+- [UI-Designstandard](../../visual/design-standard.md)
 - [Ablauf für UI-Entwurf und Überarbeitung](../visual/design-workflow.md)
 - [Symbole für Dateizuordnungen](../visual/file-association-icons.md)
 - [Prüfung der visuellen HTML-Übereinstimmung](../visual/html-fidelity.md)
 - [Ergänzende Interaktions- und Textspezifikation](../ux/interaction-spec.md)
-- [Funktionen, Komponenten und Interaktion des Hauptfensters](../ux/main-window-components.md)
-- [Entwurf und Integration des Verzeichnisbaums](../ux/directory-tree.md)
+- [Funktionen, Komponenten und Interaktion des Hauptfensters](../../ux/main-window-components.md)
+- [Entwurf und Integration des Verzeichnisbaums](../../ux/directory-tree.md)
 - [Startseite im Hauptfenster](../ux/welcome.md)
 - [Ladeanzeige der Startseite und Abschluss der Erstellung](../ux/welcome-opening.md)
 - [Passworteingabe beim Entpacken](../ux/password-extraction.md)
@@ -110,14 +110,14 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 
 ## Plattformintegration, Veröffentlichung und Vertrauen
 
-- [Installer und Dateizuordnungen](../engineering/installers-associations.md)
+- [Installer und Dateizuordnungen](../../engineering/installers-associations.md)
 - [Systemunterstützung und Wartungsrichtlinie](../engineering/support-policy.md)
-- [Dateimanager-Aktionen und eigenständiger Aufgabenhost](../engineering/shell-actions.md)
-- [Vom Benutzer gestartete Updates](../engineering/software-update.md)
+- [Dateimanager-Aktionen und eigenständiger Aufgabenhost](../../engineering/shell-actions.md)
+- [Vom Benutzer gestartete Updates](../../engineering/software-update.md)
 - [Datenlebenszyklus und Diagnose](../engineering/privacy.md)
 - [Produktversion und Build-Identität](../engineering/versioning.md)
 - [GitHub-Release-Protokoll v1](../engineering/release-protocol.md)
-- [Lokales macOS-Entwicklungs-DMG](../engineering/macos-deployment.md)
+- [Lokales macOS-Entwicklungs-DMG](../../engineering/macos-deployment.md)
 - [Eigenständiges Linux-Laufzeitverzeichnis und Prüfung](../engineering/linux-deployment.md)
 - [Prüfung der Bereitstellungsabhängigkeiten und SBOM](../engineering/deployment-audit.md)
 - [Namensnennungen und Lizenzen der tatsächlich verwendeten Komponenten](../engineering/runtime-attribution.md)
@@ -125,8 +125,8 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 - [Prüfung der Übereinstimmung von Qt-SDK und Quellcode](../engineering/qt-sdk-correspondence.md)
 - [Lizenzen für Windows-Entwicklungswerkzeuge und Laufzeit](../engineering/windows-licensing.md)
 - [Lizenzentscheidung und Drittanbietermaterial](../engineering/licensing.md)
-- [Zulassung von Abhängigkeiten und Format-Backends](../engineering/dependencies.md)
-- [Zugehöriger Quellcode und Materialien für den erneuten Build](../engineering/source-delivery.md)
+- [Zulassung von Abhängigkeiten und Format-Backends](../../engineering/dependencies.md)
+- [Zugehöriger Quellcode und Materialien für den erneuten Build](../../engineering/source-delivery.md)
 - [ICU-73.2-Daten aus CLDR neu erstellen](../engineering/icu-cldr-rebuild.md)
 
 <a name="xdzip-build-and-cli-reference"></a>
@@ -136,6 +136,6 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 - [Build, Bereitstellung und Veröffentlichung](../design/build-release.md)
 - [Programmierkonventionen und Prüfebenen](../design/quality-engineering.md)
 - [Vorbereitung der Entwicklungsumgebung](../engineering/development.md)
-- [Entwicklungsbuilds und Plattformprüfung](../engineering/developer-build.md)
+- [Entwicklungsbuilds und Plattformprüfung](../../engineering/developer-build.md)
 - [Festgelegte Toolchain und Plattformen](../engineering/toolchain.md)
-- [CLI-Befehle, JSON, Installation und Aktualisierungsbelege](../engineering/command-line.md)
+- [CLI-Befehle, JSON, Installation und Aktualisierungsbelege](../../engineering/command-line.md)

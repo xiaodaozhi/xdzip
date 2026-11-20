@@ -56,7 +56,7 @@ AES Crypt verwendet `format_declared_checks` und das behaltene Öffnungspasswort
 
 Brotli und TAR.BR verwenden `structure_and_readability`. Vollständiges Streamende, angegebene Metablockgrößen und alle zugelassenen Wörterbuch-/Historientransformationen müssen bestehen, Brotli bietet aber keine Inhaltsprüfsumme. Siehe [Brotli-Vertrag](brotli-streams.md).
 
-LHA/LZH verwendet `format_declared_checks`: Jede unterstützte gewöhnliche Datei tatsächlich decodieren und exakte Längen sowie alle vorhandenen Header-/Nutzlast-CRC-16 prüfen. Alte Mitglieder der Stufe 0 können CRC weglassen und bieten dann nur Struktur-, Größen- und Lesbarkeitsprüfung. LH2 verlangt CRC-gebundene Zulassung endlicher Varianten. Unbekannte Methoden, verdächtige Namen, Links oder Spezialobjekte verhindern Gesamterfolg. Siehe [LHA-Vertrag](lha-containers.md).
+LHA/LZH verwendet `format_declared_checks`: Jede unterstützte gewöhnliche Datei tatsächlich decodieren und exakte Längen sowie alle vorhandenen Header-/Nutzlast-CRC-16 prüfen. Alte Mitglieder der Stufe 0 können CRC weglassen und bieten dann nur Struktur-, Größen- und Lesbarkeitsprüfung. LH2 verlangt CRC-gebundene Zulassung endlicher Varianten. Unbekannte Methoden, verdächtige Namen, Links oder Spezialobjekte verhindern Gesamterfolg. Siehe [LHA-Vertrag](../../engineering/lha-containers.md).
 
 PMA verwendet `format_declared_checks` und decodiert zugelassene PM0/PM1/PM2-Mitglieder vollständig mit exakten Größen und allen vorhandenen Nutzlast-CRC-16. Mitglieder ohne CRC belegen nur Struktur, Größe und Lesbarkeit. Unbekannte Methoden und andere nicht unterstützte Einträge verhindern Gesamterfolg. CP/M-Füllung wird als physische Containerstruktur außerhalb gepackter Mitgliederbereiche geprüft. Siehe [PMA-Vertrag](pma-streams.md).
 

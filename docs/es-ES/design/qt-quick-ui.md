@@ -4,7 +4,7 @@
 
 [English](../../design/qt-quick-ui.md) | [简体中文](../../zh-CN/design/qt-quick-ui.md) | [繁體中文](../../zh-TW/design/qt-quick-ui.md) | [日本語](../../ja-JP/design/qt-quick-ui.md) | [한국어](../../ko-KR/design/qt-quick-ui.md) | [Français](../../fr-FR/design/qt-quick-ui.md) | [Deutsch](../../de-DE/design/qt-quick-ui.md) | Español | [Português (Brasil)](../../pt-BR/design/qt-quick-ui.md) | [Русский](../../ru-RU/design/qt-quick-ui.md)
 
-El escritorio usa Qt Quick para la presentación y la interacción. Los controladores C++ traducen las acciones del usuario y mantienen el estado de la vista. El entorno de ejecución Rust interpreta los archivos comprimidos y controla las reglas de las tareas y los permisos sobre archivos. La [arquitectura del sistema](system-architecture.md) y el [contrato del puente](qt-rust-bridge.md) explican estas llamadas.
+El escritorio usa Qt Quick para la presentación y la interacción. Los controladores C++ traducen las acciones del usuario y mantienen el estado de la vista. El entorno de ejecución Rust interpreta los archivos comprimidos y controla las reglas de las tareas y los permisos sobre archivos. La [arquitectura del sistema](../../design/system-architecture.md) y el [contrato del puente](qt-rust-bridge.md) explican estas llamadas.
 
 <a name="xdzip-windows-sessions-and-models"></a>
 
@@ -18,7 +18,7 @@ El escritorio usa Qt Quick para la presentación y la interacción. Los controla
 | `TaskListModel` y ventanas de operación | Presentan instantáneas acotadas de tareas, progreso, resultados y la decisión pendiente. La identidad de escritorio compuesta dirige cada comando de tarea al controlador responsable. |
 | Ajustes y adaptadores de plataforma | Mantienen la apariencia, el idioma, el tamaño del texto y el comportamiento de la aplicación. Los adaptadores nativos gestionan el área de notificación, la activación, los diálogos de archivo, las asociaciones y la entrega de transferencias según el sistema operativo. |
 
-[Entrada de escritorio](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/browser_main.cpp), [Página de sesión](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/ui/SessionPage.qml), [Controlador y modelos](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.h), [Sesiones de aplicación](../engineering/application-sessions.md), [Ajustes e idiomas](../ux/settings-localization.md)
+[Entrada de escritorio](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/browser_main.cpp), [Página de sesión](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/ui/SessionPage.qml), [Controlador y modelos](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.h), [Sesiones de aplicación](../../engineering/application-sessions.md), [Ajustes e idiomas](../ux/settings-localization.md)
 
 <a name="xdzip-browsing-and-operation-flow"></a>
 
@@ -28,13 +28,13 @@ La apertura publica una instantánea completa de los metadatos. Cada búsqueda, 
 
 Abrir un directorio navega a su interior. Haz doble clic sobre una entrada de archivo normal compatible o usa la opción de abrir para iniciar la apertura temporal. La vista de propiedades incluye una acción de vista previa independiente. Los avisos de conflicto o contraseña mantienen la identidad de la operación en curso. El acceso a las tareas muestra el progreso y los resultados aun cuando se ha cerrado la página de exploración. [Exploración](../user-guide/browse.md), [Apertura temporal](../engineering/archive-opening.md), [Vista previa del contenido](../engineering/content-preview.md), [Ventanas de tareas](../ux/task-windows.md)
 
-Soltar un archivo puede abrir un archivo comprimido o añadir entradas para su creación, según el destino. Los movimientos internos admitidos y el arrastre al exterior usan tareas de preparación y transferencias específicas de la plataforma. La plataforma determina las capacidades de transferencia, incluidos el contenido asíncrono y las escrituras en el destino. [Transferencias de archivos comprimidos](../engineering/archive-transfers.md)
+Soltar un archivo puede abrir un archivo comprimido o añadir entradas para su creación, según el destino. Los movimientos internos admitidos y el arrastre al exterior usan tareas de preparación y transferencias específicas de la plataforma. La plataforma determina las capacidades de transferencia, incluidos el contenido asíncrono y las escrituras en el destino. [Transferencias de archivos comprimidos](../../engineering/archive-transfers.md)
 
 <a name="xdzip-shared-controls-and-native-boundaries"></a>
 
 ## Controles compartidos y límites nativos
 
-Las pantallas de operación reutilizan `OperationButton`, `OperationFooterButton`, `OperationFrame`, `OperationSelect` y `OperationSegmentedGroup`. Los componentes compartidos definen las medidas y la interacción. Los controles comunes de selección dirigen ratón, teclado y accesibilidad al mismo modelo de estado. El texto y los datos de archivo siguen las reglas de tipografía y localización de la [norma de diseño](../visual/design-standard.md). Los nombres de archivo comprimido se conservan como datos y se muestran de forma segura.
+Las pantallas de operación reutilizan `OperationButton`, `OperationFooterButton`, `OperationFrame`, `OperationSelect` y `OperationSegmentedGroup`. Los componentes compartidos definen las medidas y la interacción. Los controles comunes de selección dirigen ratón, teclado y accesibilidad al mismo modelo de estado. El texto y los datos de archivo siguen las reglas de tipografía y localización de la [norma de diseño](../../visual/design-standard.md). Los nombres de archivo comprimido se conservan como datos y se muestran de forma segura.
 
 Las ventanas de operación independientes siguen el registro de ventanas y las reglas propias de modalidad y cierre. macOS usa controles nativos de la barra de título. Windows y Linux usan adaptadores de sistema. El [contrato de ventanas de plataforma](../ux/platform-windows.md) define la aceptación de ventanas reales y el [contrato de integración de escritorio](../ux/desktop-integration.md) explica el área de notificación y la activación.
 

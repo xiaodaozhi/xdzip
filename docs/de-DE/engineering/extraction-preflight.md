@@ -49,7 +49,7 @@ Einträge auswählen und „Vor dem Entpacken Metadaten prüfen…“ anklicken.
 
 ## Grenze zur tatsächlichen Extraktion
 
-[Tatsächliche sichere Extraktion](zip-safe-extraction.md) implementiert Ausgabezählung, CRC- und Strukturprüfung, Zielautorisierung, plattformspezifische Pfadnachprüfungen, Konflikte, Staging und Datei-Commits unabhängig. Sie ist nicht auf die 128 Vorprüfungsauswahlen beschränkt und unterstützt Pläne für 100.000 physische Datensätze und virtuelle Verzeichnisauswahlen. Ein Vorprüfungsbericht wird nicht als Schreibberechtigung wiederverwendet. Beim Aufgabenstart müssen Zielautorisierung erneut eingeholt, Quellen neu validiert und tatsächliche Inhalte gemäß [Dateisicherheitsspezifikation](../design/file-security.md) geprüft werden. Native Fehler und aktuell bekannte Mängel werden in den betreffenden Verträgen und Issues verfolgt.
+[Tatsächliche sichere Extraktion](../../engineering/zip-safe-extraction.md) implementiert Ausgabezählung, CRC- und Strukturprüfung, Zielautorisierung, plattformspezifische Pfadnachprüfungen, Konflikte, Staging und Datei-Commits unabhängig. Sie ist nicht auf die 128 Vorprüfungsauswahlen beschränkt und unterstützt Pläne für 100.000 physische Datensätze und virtuelle Verzeichnisauswahlen. Ein Vorprüfungsbericht wird nicht als Schreibberechtigung wiederverwendet. Beim Aufgabenstart müssen Zielautorisierung erneut eingeholt, Quellen neu validiert und tatsächliche Inhalte gemäß [Dateisicherheitsspezifikation](../design/file-security.md) geprüft werden. Native Fehler und aktuell bekannte Mängel werden in den betreffenden Verträgen und Issues verfolgt.
 
 <a name="xdzip-window-and-result-presentation"></a>
 

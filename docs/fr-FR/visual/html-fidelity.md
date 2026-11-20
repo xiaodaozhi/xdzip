@@ -19,7 +19,7 @@ Les images haute fidélité constituent la référence visuelle ; le HTML est l�
 
 ## Taille d’affichage et pixels source
 
-L’affichage normal utilise la [largeur de fenêtre de 1024 pixels logiques](README.md), en appliquant uniformément aux coordonnées source le rapport `1024 / 1548`. La fenêtre principale s’affiche à 1024 × environ 621,81 pixels CSS ; l’original utilise la même échelle. Ce rapport est une convention de conception explicite et non une déduction sur Retina ou les DPI à partir d’un PNG.
+L’affichage normal utilise la [largeur de fenêtre de 1024 pixels logiques](../../visual/README.md), en appliquant uniformément aux coordonnées source le rapport `1024 / 1548`. La fenêtre principale s’affiche à 1024 × environ 621,81 pixels CSS ; l’original utilise la même échelle. Ce rapport est une convention de conception explicite et non une déduction sur Retina ou les DPI à partir d’un PNG.
 
 `display-spec.js` est l’unique source des dimensions de plan de travail et des échelles d’affichage. Le bureau utilise par défaut la taille normale et le mobile l’ajustement ; celui-ci est plafonné à la taille normale pour éviter un agrandissement automatique sur écran large. Le mode pixels d’origine utilise `scale=1`, conserve les dimensions en pixels d’origine et le défilement côté HTML comme côté image. Le ratio de pixels de l’appareil n’affecte que la densité de pixellisation, pas la largeur logique CSS.
 
@@ -87,4 +87,4 @@ Le fichier d’en-tête hors ligne est `dist/xdzip-header-review.html` et celui 
 
 Exécuter ces contrôles et revues hors ligne localement selon les besoins ; ils ne font pas partie par défaut de la CI du produit de bureau. Examiner les échecs d’ancrage et les superpositions même si la géométrie passe. Les contrôles HTML de la fenêtre principale ne remplacent pas le calibrage des autres pages ou du produit Qt, ni l’acceptation native du bureau.
 
-La densité normale de la fenêtre principale et des menus suit la [norme d’interface](design-standard.md). Les rapports de taille des polices de menus et listes Qt doivent être vérifiés ensemble. Lors de la revue HTML locale, vérifier le zoom réel selon la [méthode de vérification](../../../developers/qa/README.md) ; la correspondance avec les anciennes coordonnées de l’image source ne la remplace pas.
+La densité normale de la fenêtre principale et des menus suit la [norme d’interface](../../visual/design-standard.md). Les rapports de taille des polices de menus et listes Qt doivent être vérifiés ensemble. Lors de la revue HTML locale, vérifier le zoom réel selon la [méthode de vérification](../../../developers/qa/README.md) ; la correspondance avec les anciennes coordonnées de l’image source ne la remplace pas.

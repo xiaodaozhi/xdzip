@@ -4,7 +4,7 @@
 
 [English](../../engineering/product-runtime.md) | [简体中文](../../zh-CN/engineering/product-runtime.md) | [繁體中文](../../zh-TW/engineering/product-runtime.md) | [日本語](../../ja-JP/engineering/product-runtime.md) | 한국어 | [Français](../../fr-FR/engineering/product-runtime.md) | [Deutsch](../../de-DE/engineering/product-runtime.md) | [Español](../../es-ES/engineering/product-runtime.md) | [Português (Brasil)](../../pt-BR/engineering/product-runtime.md) | [Русский](../../ru-RU/engineering/product-runtime.md)
 
-이 문서는 데스크톱 앱이 명령과 이벤트로 Rust 런타임에 연결되는 방식과 큐 역압, 종료 및 플랫폼별 빌드를 설명합니다. 각 기능의 범위는 [읽기 전용 탐색](readonly-browser.md)과 [안전한 추출](zip-safe-extraction.md)을 참고하세요.
+이 문서는 데스크톱 앱이 명령과 이벤트로 Rust 런타임에 연결되는 방식과 큐 역압, 종료 및 플랫폼별 빌드를 설명합니다. 각 기능의 범위는 [읽기 전용 탐색](../../engineering/readonly-browser.md)과 [안전한 추출](../../engineering/zip-safe-extraction.md)을 참고하세요.
 
 <a name="xdzip-implemented-services"></a>
 
@@ -41,7 +41,7 @@ Qt 컨트롤러는 승인 대기 명령을 하나만 보유합니다. 일시적�
 
 개별 압축 파일을 닫거나 창을 닫아도 앱과 작업이 트레이에서 계속 실행될 수 있습니다. 앱을 종료하거나 재시작할 때 조정자는 승인을 중단하고 취소를 요청하며 Rust가 세션을 해제하는 동안 이벤트를 비웁니다. 수신자는 Rust 스레드 둘의 종료를 기다린 뒤 `ShutdownReady`를 반환합니다. 데스크톱은 Qt 수신자가 끝나고 메일박스가 비워진 뒤 종료합니다. GUI 스레드는 파일 작업이나 이벤트 전달을 기다리는 스레드의 종료를 기다리지 않습니다.
 
-취소와 종료 제어는 데이터 큐 용량과 무관하게 제한된 상태 연산을 포함한 짧은 임계 구역을 사용합니다. 협력적 취소는 운영체제가 막고 있는 읽기를 중단하지 못하므로 엄격한 실시간 종료를 보장하지 않습니다. 여기의 읽기 전용 요청은 출력 트랜잭션을 만들지 않습니다. 생성/추출 확정, 임시 영역 정리와 종료 결과는 [생성](zip-creation.md) 및 [안전한 추출](zip-safe-extraction.md) 계약을 각각 따릅니다.
+취소와 종료 제어는 데이터 큐 용량과 무관하게 제한된 상태 연산을 포함한 짧은 임계 구역을 사용합니다. 협력적 취소는 운영체제가 막고 있는 읽기를 중단하지 못하므로 엄격한 실시간 종료를 보장하지 않습니다. 여기의 읽기 전용 요청은 출력 트랜잭션을 만들지 않습니다. 생성/추출 확정, 임시 영역 정리와 종료 결과는 [생성](../../engineering/zip-creation.md) 및 [안전한 추출](../../engineering/zip-safe-extraction.md) 계약을 각각 따릅니다.
 
 QObject가 일찍 소멸하면 메일박스를 닫고 수신자를 깨우며 서비스를 중단합니다. 백그라운드 작업은 공유 큐와 Rust 수신자 핸들만 보유하고 컨트롤러 포인터는 보유하지 않습니다. Qt는 소멸된 객체의 알림을 자동으로 취소합니다. 이벤트 소비 콜백이 연결을 동기적으로 소멸시킬 때도 QPointer가 수명을 보호합니다. 수신을 포기할 때 소멸자에서 스레드를 기다리지 않으며 작업은 협력적으로 끝납니다. 정상 ShutdownReady만 스레드 대기 완료를 입증합니다.
 
@@ -51,8 +51,8 @@ QObject가 일찍 소멸하면 메일박스를 닫고 수신자를 깨우며 서
 
 ## 검증과 빌드
 
-[일반 검증](../../../developers/qa/README.md)을 참고하세요. Rust 핵심 테스트에는 Qt가 필요하지 않으며 Qt 창, 모델, 스트레스 및 종료 사례는 세 플랫폼에서 네이티브로 빌드하고 실행합니다. macOS CI는 앱을 배포하거나 업로드하지 않고 arm64와 SDK 환경의 Cocoa 시작을 검증합니다. 명시적 요청 시 로컬 개발 DMG를 만들 수 있습니다. Windows/Linux는 포함된 Qt를 배포하고 SDK 없는 실행을 검증합니다. [빌드 안내](developer-build.md)를 참고하세요. 이 검사는 정식 출시 승인이 아닙니다.
+[일반 검증](../../../developers/qa/README.md)을 참고하세요. Rust 핵심 테스트에는 Qt가 필요하지 않으며 Qt 창, 모델, 스트레스 및 종료 사례는 세 플랫폼에서 네이티브로 빌드하고 실행합니다. macOS CI는 앱을 배포하거나 업로드하지 않고 arm64와 SDK 환경의 Cocoa 시작을 검증합니다. 명시적 요청 시 로컬 개발 DMG를 만들 수 있습니다. Windows/Linux는 포함된 Qt를 배포하고 SDK 없는 실행을 검증합니다. [빌드 안내](../../engineering/developer-build.md)를 참고하세요. 이 검사는 정식 출시 승인이 아닙니다.
 
 초기 쿼리는 불변 결과 식별 정보를 할당하며 이후 배치는 모든 QueryKey 필드와 매개변수에 일치해야 합니다. Qt는 이전 요청을 취소하고 최신 의도를 합치면서 시퀀스와 요청 ID 검사를 유지합니다. 배치는 이름도 64 KiB로 제한하고 다시 필터링하거나 정렬하지 않습니다. 과거 검수는 당시 사용 가능한 기능에만 한정됩니다.
 
-애플리케이션 계층은 여러 독립 연결을 만들 수 있으며 도메인 런타임은 연결별로 세션을 격리합니다. 전역 작업 식별과 무거운 작업의 순차 승인은 [애플리케이션 세션 계약](application-sessions.md)을 참고하세요.
+애플리케이션 계층은 여러 독립 연결을 만들 수 있으며 도메인 런타임은 연결별로 세션을 격리합니다. 전역 작업 식별과 무거운 작업의 순차 승인은 [애플리케이션 세션 계약](../../engineering/application-sessions.md)을 참고하세요.

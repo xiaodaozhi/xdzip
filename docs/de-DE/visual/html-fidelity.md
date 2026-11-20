@@ -19,7 +19,7 @@ Hochauflösende Entwurfsbilder sind die visuelle Referenz; HTML ist die bearbeit
 
 ## Anzeigegröße und Quellpixel
 
-Die normale Entwurfsanzeige verwendet die [Fensterbreite von 1024 logischen Pixeln](README.md) und bildet Quellkoordinaten einheitlich mit `1024 / 1548` ab. Das Hauptfenster erscheint mit 1024 × ungefähr 621,81 CSS-Pixeln; das Original verwendet denselben Maßstab. Dieses Verhältnis ist eine ausdrückliche Gestaltungskonvention und keine aus einem PNG abgeleitete Aussage über Retina oder DPI.
+Die normale Entwurfsanzeige verwendet die [Fensterbreite von 1024 logischen Pixeln](../../visual/README.md) und bildet Quellkoordinaten einheitlich mit `1024 / 1548` ab. Das Hauptfenster erscheint mit 1024 × ungefähr 621,81 CSS-Pixeln; das Original verwendet denselben Maßstab. Dieses Verhältnis ist eine ausdrückliche Gestaltungskonvention und keine aus einem PNG abgeleitete Aussage über Retina oder DPI.
 
 `display-spec.js` ist die einzige Quelle aller Zeichenflächengrößen und Anzeigeskalen. Auf dem Desktop ist die normale Entwurfsgröße voreingestellt, mobil die Einpassung; diese wird auf die Normalgröße begrenzt, um automatische Vergrößerung auf breiten Bildschirmen zu verhindern. Der Originalpixelmodus verwendet `scale=1`, erhält ursprüngliche Pixelmaße und ermöglicht sowohl auf HTML- als auch auf Bildseite Scrollen. Das Gerätepixelverhältnis beeinflusst nur die Rasterdichte, nicht die logische CSS-Breite.
 
@@ -87,4 +87,4 @@ Die Offline-Datei für den Kopf ist `dist/xdzip-header-review.html`, die für de
 
 Diese HTML-Prüfungen und Offline-Ansichten bei Bedarf lokal ausführen; sie gehören nicht standardmäßig zur Desktopprodukt-CI. Ankerfehler untersuchen und Überlagerungen auch nach bestandener Geometrie prüfen. HTML-Prüfungen des Hauptfensters ersetzen weder die Kalibrierung anderer Seiten oder des Qt-Produkts noch die native Desktopabnahme.
 
-Die normale Dichte von Hauptfenster und Menü folgt dem [UI-Standard](design-standard.md). Schriftgrößenverhältnisse von Qt-Menüs und Listen müssen gemeinsam geprüft werden. Bei lokaler HTML-Prüfung den tatsächlichen Seitenzoom nach der [Prüfmethode](../../../developers/qa/README.md) prüfen; Übereinstimmung mit alten Quellbildkoordinaten ersetzt dies nicht.
+Die normale Dichte von Hauptfenster und Menü folgt dem [UI-Standard](../../visual/design-standard.md). Schriftgrößenverhältnisse von Qt-Menüs und Listen müssen gemeinsam geprüft werden. Bei lokaler HTML-Prüfung den tatsächlichen Seitenzoom nach der [Prüfmethode](../../../developers/qa/README.md) prüfen; Übereinstimmung mit alten Quellbildkoordinaten ersetzt dies nicht.
