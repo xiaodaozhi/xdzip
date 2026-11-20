@@ -1,6 +1,6 @@
 # XDZip 系统架构
 
-[English](../../design/system-architecture.md) | 简体中文 | [繁體中文](../../zh-TW/design/system-architecture.md) | [Français](../../fr-FR/design/system-architecture.md)
+[English](../../design/system-architecture.md) | 简体中文 | [繁體中文](../../zh-TW/design/system-architecture.md) | [Français](../../fr-FR/design/system-architecture.md) | [Español](../../es-ES/design/system-architecture.md)
 
 桌面程序与命令行工具共用 Rust 归档运行时。运行时把用户选中的来源打开为带索引的会话，再把具体操作组织成受限任务。格式后端负责解释归档数据，宿主负责文件授权、确定写出位置，以及在验证后提交结果。
 

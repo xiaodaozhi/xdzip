@@ -22,7 +22,7 @@ Condición de revisión: Qt no satisface la funcionalidad, licencias o mantenimi
 
 **Estado: aceptada.**
 
-**Implementación actual.** El entorno Rust gestiona el estado de los archivos comprimidos y las tareas. La selección de archivos expresa una intención del escritorio y la capa de E/S del host autoriza el acceso al sistema de archivos. [Arquitectura del sistema](../../design/system-architecture.md)
+**Implementación actual.** El entorno Rust gestiona el estado de los archivos comprimidos y las tareas. La selección de archivos expresa una intención del escritorio y la capa de E/S del host autoriza el acceso al sistema de archivos. [Arquitectura del sistema](system-architecture.md)
 
 Decisión: dominio, índices, planes, tareas, cuotas, políticas de rutas y registro de formatos residen en Rust. Qt representa el estado, autoriza la selección de archivos del sistema y transmite las decisiones del usuario. Las pruebas de negocio no requieren Qt.
 

@@ -4,7 +4,7 @@
 
 [English](../../design/domain-data.md) | [简体中文](../../zh-CN/design/domain-data.md) | [繁體中文](../../zh-TW/design/domain-data.md) | [日本語](../../ja-JP/design/domain-data.md) | [한국어](../../ko-KR/design/domain-data.md) | [Français](../../fr-FR/design/domain-data.md) | [Deutsch](../../de-DE/design/domain-data.md) | Español | [Português (Brasil)](../../pt-BR/design/domain-data.md) | [Русский](../../ru-RU/design/domain-data.md)
 
-El entorno de ejecución posee la sesión del archivo comprimido, el índice completado y la última consulta de esa sesión. Qt mantiene una vista del resultado y la CLI puede leer registros físicos mediante su comando de catálogo independiente. Ambos envían operaciones al mismo servicio Rust. [Arquitectura del sistema](../../design/system-architecture.md), [Puente Qt/Rust](qt-rust-bridge.md)
+El entorno de ejecución posee la sesión del archivo comprimido, el índice completado y la última consulta de esa sesión. Qt mantiene una vista del resultado y la CLI puede leer registros físicos mediante su comando de catálogo independiente. Ambos envían operaciones al mismo servicio Rust. [Arquitectura del sistema](system-architecture.md), [Puente Qt/Rust](qt-rust-bridge.md)
 
 <a name="xdzip-identity-and-source-version"></a>
 
