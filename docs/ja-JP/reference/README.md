@@ -68,7 +68,7 @@
 - [Zstandard ストリーム仕様](../engineering/zstandard-streams.md)
 - [Unix compress Z の仕様](../engineering/compress-streams.md)
 - [通常の Brotli ストリーム仕様](../engineering/brotli-streams.md)
-- [LHA のデータ構造とアルゴリズム](../../engineering/lha-containers.md)
+- [LHA のデータ構造とアルゴリズム](../engineering/lha-containers.md)
 - [PMA コンテナーと PMarc 方式](../engineering/pma-streams.md)
 - [ARJ の圧縮ストリームとコンテナーの対応範囲](../engineering/arj-streams.md)
 - [ARC コンテナーと圧縮ストリームのプロファイル](../engineering/arc-streams.md)

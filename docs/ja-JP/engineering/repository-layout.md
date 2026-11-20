@@ -15,7 +15,7 @@
 | crates/xdzip-compression | Deflate/Deflate64/GZIP、LZMA/LZMA2、BZip2、PPMd7、MSZIP、LZX、Quantum の共通アルゴリズムとラッパー。サードパーティーの本番依存関係や、パスおよび出力の確定に関する権限を持ちません。[契約](../../engineering/independent-rust-codecs.md)を参照してください。 |
 | crates/xdzip-crypto | 形式に依存しない固定メモリの SHA/HMAC および BLAKE ハッシュ。機密状態をゼロで消去でき、採用済みのプリミティブを再利用します。パスワードの解釈や出力の確定判断は担当しません。 |
 | crates/xdzip-codec-zip, xdzip-codec-tar | ZIP と TAR/GZIP の実装。任意の出力パスを扱いません。 |
-| crates/xdzip-codec-lha, xdzip-codec-arj, xdzip-codec-arc, xdzip-codec-bh | [LHA](../../engineering/lha-containers.md)/[PMA](pma-streams.md)、[ARJ](arj-streams.md)、[ARC](arc-streams.md)、[BH](bh-containers.md) のフレームとメンバーの独立プロファイル。ファイルシステムの権限は持ちません。製品での利用可否は形式レジストリで決まります。 |
+| crates/xdzip-codec-lha, xdzip-codec-arj, xdzip-codec-arc, xdzip-codec-bh | [LHA](lha-containers.md)/[PMA](pma-streams.md)、[ARJ](arj-streams.md)、[ARC](arc-streams.md)、[BH](bh-containers.md) のフレームとメンバーの独立プロファイル。ファイルシステムの権限は持ちません。製品での利用可否は形式レジストリで決まります。 |
 | crates/xdzip-codec-7z | 自前の 7z コンテナー、方式グラフ、フィルター、AES の組み合わせ、ストリーミング作成、上限付きの書き換え。ファイルパスは管理しません。 |
 | crates/xdzip-codec-cab | 読み取り専用の自前 CAB コンテナー。ホストが許可したボリュームと共通アルゴリズムを使います。元の名前、UTF-8 の宣言、通常の同名レコードを保持します。ボリュームの検出と出力の確定はホストの担当です。[契約](../../engineering/independent-rust-codecs.md#cab只读规格)と[資料](cab-format-sources.md)を参照してください。 |
 | crates/xdzip-codec-optical | ISO9660/Joliet/Rock Ridge/UDF リーダーと、新しいデータイメージ用の ISO9660/Joliet ライター。パスを管理せず、ストリームを使用します。 |
