@@ -28,7 +28,7 @@ A abertura publica um instantâneo completo dos metadados. Cada nova solicitaç�
 
 Abra um diretório para navegar até ele. Um clique duplo em uma entrada de arquivo comum compatível ou a ação equivalente inicia a abertura temporária. A visualização de propriedades oferece uma ação de prévia separada. As solicitações de conflito e senha preservam a identidade da operação atual. O acesso às tarefas mostra progresso e resultados mesmo após fechar a página de navegação. [Navegação](../user-guide/browse.md), [Abertura temporária](../engineering/archive-opening.md), [Prévia de conteúdo](../engineering/content-preview.md), [Janelas de tarefas](../ux/task-windows.md)
 
-Soltar arquivos pode abrir arquivos compactados ou fornecer entradas para criação, dependendo do alvo. Movimentações internas permitidas e o arraste para fora usam preparação de tarefas e transferência conforme a plataforma. A plataforma determina as possibilidades de transferência, incluindo o conteúdo assíncrono e as gravações no destino. [Transferências de arquivos compactados](../../engineering/archive-transfers.md)
+Soltar arquivos pode abrir arquivos compactados ou fornecer entradas para criação, dependendo do alvo. Movimentações internas permitidas e o arraste para fora usam preparação de tarefas e transferência conforme a plataforma. A plataforma determina as possibilidades de transferência, incluindo o conteúdo assíncrono e as gravações no destino. [Transferências de arquivos compactados](../engineering/archive-transfers.md)
 
 <a name="xdzip-shared-controls-and-native-boundaries"></a>
 
