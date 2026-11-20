@@ -169,8 +169,12 @@ def collect(scope, root, context, role=None):
         facts['browser'] = browser_evidence(reader, context['revision'])
         session = reader.json('build/review/native-sessions.json')
         tree = ast.parse((root / 'scripts/check-native-sessions.py').read_text(encoding='utf-8'))
-        cases = next(ast.literal_eval(row.value) for row in tree.body if isinstance(row, ast.Assign)
-                     and any(isinstance(t, ast.Name) and t.id == 'CASES' for t in row.targets))
+        declarations = {target.id: ast.literal_eval(row.value)
+                        for row in tree.body if isinstance(row, ast.Assign)
+                        for target in row.targets if isinstance(target, ast.Name)
+                        and target.id in ('CASES', 'PLATFORM_CASES')}
+        platform_key = {'Windows': 'win32', 'Linux': 'linux', 'macOS': 'darwin'}[context['platform']]
+        cases = declarations['CASES'] + declarations['PLATFORM_CASES'][platform_key]
         require(session.get('status') == 'passed' and session.get('timed_out') is False
                 and session.get('cases') == cases
                 and session.get('native_plugin') == {'Windows': 'windows', 'Linux': 'xcb', 'macOS': 'cocoa'}[context['platform']],

@@ -26,6 +26,7 @@ CASES = ['windowHoverEndsBeforeRestore', 'windowHoverSensorsEndBeforeRestore',
          'globalQuitReturnsToPasswordTaskThenCancelsAndJoinsEverySession',
          'directoryContextExpansionReasons',
          'globalWaitForExitDoesNotCloseACompletedPageEarly']
+PLATFORM_CASES = {'linux': ['linuxMainFrameOutline'], 'win32': [], 'darwin': []}
 
 
 def main():
@@ -54,7 +55,7 @@ def main():
     try:
         if sys.platform == 'linux':
             window_manager = OpenboxSession(env, output.parent).start()
-        cases = CASES + (['linuxMainFrameOutline'] if window_manager else [])
+        cases = CASES + PLATFORM_CASES[sys.platform]
         command = [str(args.tests.resolve()), *cases, '-o', str(log)+',txt']
         timed_out = False
         try:

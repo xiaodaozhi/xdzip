@@ -32,7 +32,9 @@ class EvidenceTests(unittest.TestCase):
                          run_heavy=True, changed_files=1, base='b' * 40,
                          **{k: self.context[k] for k in ('revision', 'run_id', 'run_attempt')})
         self.needs = {job: {'result': 'success'} for job in ci.JOBS['qt']}
-        self.write('scripts/check-native-sessions.py', "CASES = ['ownedNative']\n")
+        self.write('scripts/check-native-sessions.py',
+                   "CASES = ['ownedNative']\n"
+                   "PLATFORM_CASES = {'linux': ['linuxMainFrameOutline'], 'win32': [], 'darwin': []}\n")
         self.write_json('build/review/ci-timings.json', dict(schema_version=1, scope='qt',
             **{k: self.context[k] for k in ('revision', 'run_id', 'run_attempt')},
             commands=[dict(phase=phase, command='owned.py', status='passed', exit_code=0, elapsed_ms=1) for phase in QT_PHASES]))
@@ -189,6 +191,27 @@ class EvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'missing-or-failed-native-sessions'):self.qt()
         self.write('build/review/diagnostics/qml-initial.log', 'Totals: 4 passed, 1 failed, 0 skipped\nFinished testing\n')
         with self.assertRaisesRegex(ValueError, 'incomplete-or-failed-qt-log'):self.qt()
+
+    def test_linux_native_sessions_require_platform_case_and_its_raw_log(self):
+        self.context['platform'] = 'Linux'
+        self.write_json('build/review/build.json', dict(commit=SOURCE, platform='linux',
+                        architecture='X64', packaged=True, dependencyAuditMode='deployed'))
+        session = dict(status='passed', timed_out=False, native_plugin='xcb',
+                       cases=['ownedNative', 'linuxMainFrameOutline'])
+        self.write_json('build/review/native-sessions.json', session)
+        log = ('PASS : BrowserTest::ownedNative()\n'
+               'PASS : BrowserTest::linuxMainFrameOutline()\n'
+               'Totals: 2 passed, 0 failed, 0 skipped, 0 blacklisted, 1ms\nFinished testing\n')
+        self.write('build/review/native-sessions.log', log)
+        self.assertEqual(self.qt()['facts']['native_sessions']['passed'], 2)
+        for cases in (['ownedNative'], session['cases'] + ['unexpected']):
+            self.write_json('build/review/native-sessions.json', dict(session, cases=cases))
+            with self.subTest(cases=cases), self.assertRaisesRegex(ValueError, 'missing-or-failed-native-sessions'):
+                self.qt()
+        self.write_json('build/review/native-sessions.json', session)
+        self.write('build/review/native-sessions.log', log.replace('BrowserTest::linuxMainFrameOutline()', 'Other::unrelated()'))
+        with self.assertRaisesRegex(ValueError, 'missing-native-session-case-log'):
+            self.qt()
 
     def test_isolated_build_tooling_is_clean_but_root_environment_and_source_edits_are_rejected(self):
         self.write('.gitignore', '/build/\n/dist/\n')
