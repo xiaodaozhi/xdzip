@@ -13,6 +13,7 @@
 @property(nonatomic, strong) NSMutableDictionary<NSString *, NSURL *> *defaults;
 @property(nonatomic, copy) NSArray<NSURL *> *candidates;
 @property(nonatomic, strong) NSMutableArray<NSURL *> *requests;
+@property(nonatomic, strong) NSMutableArray<NSString *> *requestedTypes;
 @property(nonatomic, strong) NSError *nextError;
 @property(nonatomic) BOOL ignoreNextChange;
 @property(nonatomic) int nextPublicationDelayMs;
@@ -31,6 +32,7 @@
                  toOpenContentType:(UTType *)type
                  completionHandler:(void (^)(NSError *))completion {
     [self.requests addObject:url];
+    [self.requestedTypes addObject:type.identifier];
     NSError *error = self.nextError;
     if (!error && !self.ignoreNextChange) {
         const int delay = self.nextPublicationDelayMs;
@@ -50,12 +52,55 @@
 }
 @end
 
+// The workspace is simulated, so an imported type in the unregistered test
+// bundle must not depend on whether a real application registered it first.
+@interface AssociationFixtureType : NSObject
+@property(nonatomic, copy) NSString *identifier;
+@end
+
+@implementation AssociationFixtureType
+@end
+
 namespace {
 NSBundle *testBundle;
 AssociationWorkspace *workspace;
 NSArray<NSURL *> *listedApps;
 int chooserCount;
 NSModalResponse chooserResponse;
+IMP originalFilenameType;
+IMP originalIdentifierType;
+bool forceDynamicRar;
+bool forceMissingRar;
+
+UTType *fixtureType(NSString *identifier) {
+    // The tested code reads only identifier, and all workspace methods that
+    // receive this object are replaced below. It must never reach AppKit.
+    AssociationFixtureType *type = [[AssociationFixtureType alloc] init];
+    type.identifier = identifier;
+    return (UTType *)(id)type;
+}
+
+UTType *fixtureFilenameType(id receiver, SEL selector, NSString *extension) {
+    if (forceDynamicRar && [extension isEqualToString:@"rar"])
+        return fixtureType(@"dyn.xdzip-test-rar");
+    return ((UTType * (*)(id, SEL, NSString *)) originalFilenameType)(receiver, selector,
+                                                                      extension);
+}
+
+UTType *fixtureIdentifierType(id receiver, SEL selector, NSString *identifier) {
+    if (forceMissingRar && [identifier isEqualToString:@"com.rarlab.rar-archive"])
+        return nil;
+    UTType *resolved = ((UTType * (*)(id, SEL, NSString *))
+                            originalIdentifierType)(receiver, selector, identifier);
+    if (resolved)
+        return resolved;
+    for (NSDictionary *declaration in
+         [testBundle objectForInfoDictionaryKey:@"UTImportedTypeDeclarations"]) {
+        if ([declaration[@"UTTypeIdentifier"] isEqualToString:identifier])
+            return fixtureType(identifier);
+    }
+    return nil;
+}
 
 NSBundle *fixtureBundle(id, SEL) {
     return testBundle;
@@ -133,6 +178,7 @@ class MacAssociationTest : public QObject {
     void init() {
         workspace.defaults = [NSMutableDictionary dictionary];
         workspace.requests = [NSMutableArray array];
+        workspace.requestedTypes = [NSMutableArray array];
         workspace.candidates = @[ testBundle.bundleURL, xdzipCopy, original, other, duplicate ];
         workspace.nextError = nil;
         workspace.ignoreNextChange = NO;
@@ -140,6 +186,8 @@ class MacAssociationTest : public QObject {
         chooserCount = 0;
         listedApps = @[];
         chooserResponse = NSAlertFirstButtonReturn;
+        forceDynamicRar = false;
+        forceMissingRar = false;
         QVERIFY(QFile::remove(qEnvironmentVariable("XDZIP_SETTINGS_PATH") + ".associations.ini") ||
                 !QFile::exists(qEnvironmentVariable("XDZIP_SETTINGS_PATH") + ".associations.ini"));
     }
@@ -191,6 +239,29 @@ class MacAssociationTest : public QObject {
         QVERIFY([workspace.requests.lastObject isEqual:original]);
         QVERIFY(!service.isDefault(".tar.lz4"));
         QCOMPARE(chooserCount, 0);
+    }
+
+    void missingImportedTypeDoesNotChangeDefault() {
+        forceDynamicRar = true;
+        forceMissingRar = true;
+        FileAssociations service;
+        QVERIFY(!service.supportsExtension(".rar"));
+        service.refresh();
+        service.requestChange(".rar", true);
+        QCOMPARE(workspace.requests.count, 0u);
+    }
+
+    void importedTypeIsUsedWhenPreferredTypeIsDynamic() {
+        forceDynamicRar = true;
+        FileAssociations service;
+        QVERIFY(service.supportsExtension(".rar"));
+        service.refresh();
+        service.requestChange(".rar", true);
+        QTRY_VERIFY(associationIdle(service));
+        QCOMPARE(service.error(), QString());
+        QCOMPARE(workspace.requestedTypes.count, 1u);
+        QVERIFY([workspace.requestedTypes.firstObject isEqualToString:@"com.rarlab.rar-archive"]);
+        QVERIFY(service.isDefault(".rar"));
     }
 
     void missingOrRejectedPriorAppOffersCompatibleChoices() {
@@ -283,6 +354,15 @@ int main(int argc, char **argv) {
 
         const ScopedImplementation mainBundle(
             class_getClassMethod(NSBundle.class, @selector(mainBundle)), (IMP)fixtureBundle);
+        Method filenameType =
+            class_getClassMethod(UTType.class, @selector(typeWithFilenameExtension:));
+        Method identifierType = class_getClassMethod(UTType.class, @selector(typeWithIdentifier:));
+        if (!filenameType || !identifierType)
+            return 2;
+        originalFilenameType = method_getImplementation(filenameType);
+        originalIdentifierType = method_getImplementation(identifierType);
+        const ScopedImplementation filenameTypeLookup(filenameType, (IMP)fixtureFilenameType);
+        const ScopedImplementation identifierTypeLookup(identifierType, (IMP)fixtureIdentifierType);
         const Class workspaceClass = object_getClass(NSWorkspace.sharedWorkspace);
         const ScopedImplementation defaultApplication(
             class_getInstanceMethod(workspaceClass, @selector(URLForApplicationToOpenContentType:)),
