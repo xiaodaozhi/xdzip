@@ -1,6 +1,6 @@
 # Ações do gerenciador de arquivos e hospedeiro independente de tarefas
 
-[English](../../engineering/shell-actions.md) | [简体中文](../../zh-CN/engineering/shell-actions.md) | [繁體中文](../../zh-TW/engineering/shell-actions.md) | [Français](../../fr-FR/engineering/shell-actions.md) | [Deutsch](../../de-DE/engineering/shell-actions.md) | [Español](../../es-ES/engineering/shell-actions.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/shell-actions.md)
+[English](../../engineering/shell-actions.md) | [简体中文](../../zh-CN/engineering/shell-actions.md) | [繁體中文](../../zh-TW/engineering/shell-actions.md) | [日本語](../../ja-JP/engineering/shell-actions.md) | [Français](../../fr-FR/engineering/shell-actions.md) | [Deutsch](../../de-DE/engineering/shell-actions.md) | [Español](../../es-ES/engineering/shell-actions.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/shell-actions.md)
 
 As entradas do sistema passam seleções e ações ao processo de desktop na mesma sessão de login. No Windows 11, a extensão comum instalada aparece em “Mostrar mais opções”. Sua classe COM oferece `IContextMenu` e `IExplorerCommand`. O MSIX declara um manipulador clássico separado e a compilação Store acrescenta o manipulador moderno descrito abaixo. O Arquivos do Ubuntu 24.04 usa uma extensão Nautilus 4.0. No macOS estão disponíveis o submenu Finder Sync, o comando Serviços e o painel independente de operações.
 

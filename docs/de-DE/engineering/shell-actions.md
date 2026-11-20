@@ -1,6 +1,6 @@
 # Dateimanager-Aktionen und eigenständiger Aufgabenhost
 
-[English](../../engineering/shell-actions.md) | [简体中文](../../zh-CN/engineering/shell-actions.md) | [繁體中文](../../zh-TW/engineering/shell-actions.md) | [Français](../../fr-FR/engineering/shell-actions.md) | Deutsch | [Español](../../es-ES/engineering/shell-actions.md) | [Português (Brasil)](../../pt-BR/engineering/shell-actions.md) | [Русский](../../ru-RU/engineering/shell-actions.md)
+[English](../../engineering/shell-actions.md) | [简体中文](../../zh-CN/engineering/shell-actions.md) | [繁體中文](../../zh-TW/engineering/shell-actions.md) | [日本語](../../ja-JP/engineering/shell-actions.md) | [Français](../../fr-FR/engineering/shell-actions.md) | Deutsch | [Español](../../es-ES/engineering/shell-actions.md) | [Português (Brasil)](../../pt-BR/engineering/shell-actions.md) | [Русский](../../ru-RU/engineering/shell-actions.md)
 
 Systemeintritte übergeben Auswahl und Aktionen an den Desktopprozess derselben Anmeldesitzung. Unter Windows 11 erscheint die gewöhnliche installierte Erweiterung unter „Weitere Optionen anzeigen“. Ihre COM-Klasse stellt `IContextMenu` und `IExplorerCommand` bereit. MSIX deklariert einen eigenen klassischen Handler; der Store-Build ergänzt den unten beschriebenen modernen Handler. Dateien unter Ubuntu 24.04 verwendet eine Nautilus-4.0-Erweiterung. macOS bietet das Finder-Sync-Untermenü, den Dienste-Befehl und das eigenständige Operationsfenster.
 

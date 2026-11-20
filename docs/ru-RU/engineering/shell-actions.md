@@ -1,6 +1,6 @@
 # Действия файлового менеджера и автономное окно задач
 
-[English](../../engineering/shell-actions.md) | [简体中文](../../zh-CN/engineering/shell-actions.md) | [繁體中文](../../zh-TW/engineering/shell-actions.md) | [Français](../../fr-FR/engineering/shell-actions.md) | [Deutsch](../../de-DE/engineering/shell-actions.md) | [Español](../../es-ES/engineering/shell-actions.md) | [Português (Brasil)](../../pt-BR/engineering/shell-actions.md) | Русский
+[English](../../engineering/shell-actions.md) | [简体中文](../../zh-CN/engineering/shell-actions.md) | [繁體中文](../../zh-TW/engineering/shell-actions.md) | [日本語](../../ja-JP/engineering/shell-actions.md) | [Français](../../fr-FR/engineering/shell-actions.md) | [Deutsch](../../de-DE/engineering/shell-actions.md) | [Español](../../es-ES/engineering/shell-actions.md) | [Português (Brasil)](../../pt-BR/engineering/shell-actions.md) | Русский
 
 Системные точки входа передают выбранные объекты и действия настольному процессу в том же сеансе входа. В Windows 11 обычное установленное расширение находится в меню «Показать дополнительные параметры». Его класс COM предоставляет `IContextMenu` и `IExplorerCommand`. MSIX объявляет отдельный класс классического меню, а сборка Store также добавляет обработчик современного меню, как описано ниже. Файловый менеджер Ubuntu 24.04 использует расширение Nautilus 4.0. В macOS доступны подменю Finder Sync, команда «Службы» и автономное окно операции.
 
