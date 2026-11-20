@@ -73,12 +73,15 @@ int main(int argc, char **argv) {
                                  withIntermediateDirectories:YES
                                                   attributes:nil
                                                        error:nil];
-        const auto entries = [&](NSArray<NSURL *> *urls, bool english, NSInteger expected) {
-            auto *menu = xdzip_shell::finderMenu(urls, english ? "en-US" : "zh-CN", nil,
-                                                 @selector(description));
+        const auto entries = [&](NSArray<NSURL *> *urls, std::string_view language,
+                                 NSInteger expected) {
+            auto *menu = xdzip_shell::finderMenu(urls, language, nil, @selector(description));
             auto *submenu = menu.itemArray.firstObject.submenu;
             check(menu.numberOfItems == 1 && submenu.numberOfItems == expected,
                   "dynamic menu count");
+            auto *title =
+                [NSString stringWithUTF8String:xdzip_shell::text(language, "shell.title").c_str()];
+            check([menu.itemArray.firstObject.title isEqualToString:title], "localized menu title");
             for (NSMenuItem *item in submenu.itemArray) {
                 auto *url = encode(item.representedObject);
                 auto *request = decode(url);
@@ -86,16 +89,19 @@ int main(int argc, char **argv) {
             }
             return submenu;
         };
-        auto *single = entries(@[ file ], false, 3);
+        auto *single = entries(@[ file ], "zh-CN", 3);
         check([single.itemArray.firstObject.title containsString:@"a & 中文.txt.zip"],
               "full filename");
-        entries(@[ archive ], true, 7);
-        entries(@[ archive, volume ], false, 8);
-        entries(@[ archive, file ], true, 4);
-        entries(@[ directory ], false, 3);
-        check(!xdzip_shell::finderMenu(@[], false, nil, nullptr), "empty selection");
+        for (const auto &language : xdzip_i18n::languages) {
+            entries(@[ file ], language.id, 3);
+            entries(@[ archive ], language.id, 7);
+            entries(@[ archive, volume ], language.id, 8);
+            entries(@[ archive, file ], language.id, 4);
+            entries(@[ directory ], language.id, 3);
+        }
+        check(!xdzip_shell::finderMenu(@[], "zh-CN", nil, nullptr), "empty selection");
         xdzip_shell::FinderMenuSession session;
-        auto *snapshot = session.prepare(@[ file ], false, nil, @selector(description));
+        auto *snapshot = session.prepare(@[ file ], "zh-CN", nil, @selector(description));
         auto *originalItem = snapshot.itemArray.firstObject.submenu.itemArray.firstObject;
         auto *proxy = [[NSMenuItem alloc] initWithTitle:originalItem.title
                                                  action:nullptr
@@ -103,7 +109,7 @@ int main(int argc, char **argv) {
         proxy.tag = originalItem.tag;
         check([session.request(proxy) isEqual:originalItem.representedObject],
               "Finder tag-only proxy");
-        session.prepare(@[ archive ], true, nil, @selector(description));
+        session.prepare(@[ archive ], "en-US", nil, @selector(description));
         check(!session.request(proxy), "stale tag cannot select another file");
         check(!xdzip_shell::finderRequest(
                   @"zip", @[ [NSURL URLWithString:@"https://example.invalid/a.zip"] ]),
