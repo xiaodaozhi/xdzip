@@ -66,7 +66,7 @@ O projeto existente usa uma referência Apple Silicon com 16 GiB de memória, SS
 | Abrir e consultar 100.000 registros ZIP em cache | P95 de no máximo 1 s para preparar metadados e 80 ms da consulta indexada até ficar visível |
 | Salto de página em cache e escalonamento GUI | P95 de no máximo 50 ms para salto visível e 8 ms de bloqueio contínuo da thread GUI |
 | Memória | Meta para árvore de processos de até 150 MiB vazia e 256 MiB ao navegar em 100.000 entradas sem visualização ou dicionário de decodificação |
-| CPU ociosa | Média de no máximo 0.5% de um núcleo lógico após estabilização |
+| CPU ociosa | Média de no máximo 0,5% de um núcleo lógico após estabilização |
 | Cancelamento | P95 de no máximo 50 ms para resposta e 250 ms para parada cooperativa local em fluxo, medidos separadamente |
 | Extração e distribuição | Comparar GUI e núcleo com carga e E/S idênticas, com meta de perda de vazão de até 10%. Metas Mac de arquitetura única são no máximo 100 MiB baixados e 250 MiB instalados. |
 

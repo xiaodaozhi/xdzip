@@ -33,7 +33,7 @@ Unicode-Kleinschreibvergleich ist weder vollständiges Casefolding noch NFC/NFD-
 
 ## Ressourcen und Fehler
 
-Höchstens 100,000 Snapshot-Datensätze prüfen; ausgewählte oder erweiterte Namen umfassen zusammen höchstens 4 MiB. Im Kollisionsindex gespeicherte Vergleichsschlüssel und Originalschreibweisen umfassen höchstens 8 MiB, ohne Container-Overhead. Die Traversierungstiefe ist begrenzt, und bei jedem äußeren Datensatz wird Abbruch geprüft. Berichte zählen alle Befunde, aber höchstens 64 repräsentative Probleme passieren die Brücke; sie enthalten nur physische Datensatz-IDs und stabile Gründe, keinen beliebigen Archivfehlertext.
+Höchstens 100.000 Snapshot-Datensätze prüfen; ausgewählte oder erweiterte Namen umfassen zusammen höchstens 4 MiB. Im Kollisionsindex gespeicherte Vergleichsschlüssel und Originalschreibweisen umfassen höchstens 8 MiB, ohne Container-Overhead. Die Traversierungstiefe ist begrenzt, und bei jedem äußeren Datensatz wird Abbruch geprüft. Berichte zählen alle Befunde, aber höchstens 64 repräsentative Probleme passieren die Brücke; sie enthalten nur physische Datensatz-IDs und stabile Gründe, keinen beliebigen Archivfehlertext.
 
 Leere Auswahl, fremde IDs, Indexlimits oder Abbruch liefern Fehler statt teilweise erfolgreicher Berichte. Überlaufende Summen zeigen „Nicht verfügbar“ statt auf null abgeschnitten zu werden. Grundbefunde werden nur gemeldet; sie überschreiben, benennen, ignorieren oder überspringen nichts automatisch.
 
@@ -49,7 +49,7 @@ Einträge auswählen und „Vor dem Entpacken Metadaten prüfen…“ anklicken.
 
 ## Grenze zur tatsächlichen Extraktion
 
-[Tatsächliche sichere Extraktion](zip-safe-extraction.md) implementiert Ausgabezählung, CRC- und Strukturprüfung, Zielautorisierung, plattformspezifische Pfadnachprüfungen, Konflikte, Staging und Datei-Commits unabhängig. Sie ist nicht auf die 128 Vorprüfungsauswahlen beschränkt und unterstützt Pläne für 100,000 physische Datensätze und virtuelle Verzeichnisauswahlen. Ein Vorprüfungsbericht wird nicht als Schreibberechtigung wiederverwendet. Beim Aufgabenstart müssen Zielautorisierung erneut eingeholt, Quellen neu validiert und tatsächliche Inhalte gemäß [Dateisicherheitsspezifikation](../design/file-security.md) geprüft werden. Native Fehler und aktuell bekannte Mängel werden in den betreffenden Verträgen und Issues verfolgt.
+[Tatsächliche sichere Extraktion](zip-safe-extraction.md) implementiert Ausgabezählung, CRC- und Strukturprüfung, Zielautorisierung, plattformspezifische Pfadnachprüfungen, Konflikte, Staging und Datei-Commits unabhängig. Sie ist nicht auf die 128 Vorprüfungsauswahlen beschränkt und unterstützt Pläne für 100.000 physische Datensätze und virtuelle Verzeichnisauswahlen. Ein Vorprüfungsbericht wird nicht als Schreibberechtigung wiederverwendet. Beim Aufgabenstart müssen Zielautorisierung erneut eingeholt, Quellen neu validiert und tatsächliche Inhalte gemäß [Dateisicherheitsspezifikation](../design/file-security.md) geprüft werden. Native Fehler und aktuell bekannte Mängel werden in den betreffenden Verträgen und Issues verfolgt.
 
 <a name="xdzip-window-and-result-presentation"></a>
 

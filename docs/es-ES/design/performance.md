@@ -66,7 +66,7 @@ El diseño existente usa una referencia Apple Silicon con 16 GiB de memoria, SSD
 | Abrir y consultar 100 000 registros ZIP en caché | P95 de como máximo 1 s para preparar metadatos y 80 ms desde consulta indexada hasta visibilidad |
 | Salto de página en caliente y planificación GUI | P95 de como máximo 50 ms para un salto visible y 8 ms de bloqueo continuo del hilo GUI |
 | Memoria | Objetivo del árbol de procesos de hasta 150 MiB vacío y 256 MiB al navegar por 100 000 entradas sin vista previa ni diccionario de decodificación |
-| CPU inactiva | Media de como máximo 0.5% de un núcleo lógico tras estabilización |
+| CPU inactiva | Media de como máximo 0,5% de un núcleo lógico tras estabilización |
 | Cancelación | P95 de como máximo 50 ms para respuesta y 250 ms para parada cooperativa local en flujo, medidos por separado |
 | Extracción y distribución | Comparar interfaz y núcleo con carga y E/S idénticas, con objetivo de pérdida de rendimiento de hasta 10%. Los objetivos Mac de una arquitectura son como máximo 100 MiB descargados y 250 MiB instalados. |
 

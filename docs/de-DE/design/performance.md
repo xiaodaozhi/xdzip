@@ -66,7 +66,7 @@ Der bestehende Entwurf nutzt eine Apple-Silicon-Referenz mit 16 GiB Speicher, lo
 | 100.000 gecachte ZIP-Datensätze öffnen und abfragen | P95 höchstens 1 s für Metadatenvorbereitung und höchstens 80 ms von indizierter Abfrage bis Sichtbarkeit |
 | Warmer Seitensprung und GUI-Planung | P95 höchstens 50 ms für sichtbaren Seitensprung und 8 ms für kontinuierliche GUI-Threadblockierung |
 | Speicher | Prozessbaumziel höchstens 150 MiB leer und 256 MiB beim Durchsuchen von 100.000 Einträgen ohne Vorschau oder Decoderwörterbuch |
-| Leerlauf-CPU | Nach Stabilisierung durchschnittlich höchstens 0.5% eines logischen Kerns |
+| Leerlauf-CPU | Nach Stabilisierung durchschnittlich höchstens 0,5% eines logischen Kerns |
 | Abbruch | P95 höchstens 50 ms für Rückmeldung und 250 ms für lokalen kooperativen Streaming-Stopp, getrennt gemessen |
 | Extraktion und Distribution | GUI und Kern bei identischer Arbeitslast und E/A vergleichen, mit Entwurfsziel höchstens 10% Durchsatzverlust. Mac-Ziele für eine Architektur: höchstens 100 MiB Download und 250 MiB installiert. |
 

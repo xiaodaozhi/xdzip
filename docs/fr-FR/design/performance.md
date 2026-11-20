@@ -66,7 +66,7 @@ La conception existante utilise comme référence un Apple Silicon avec 16 GiB d
 | Ouvrir et interroger 100 000 enregistrements ZIP en cache | P95 au plus 1 s pour préparer les métadonnées et 80 ms entre requête indexée et affichage |
 | Saut de page à chaud et ordonnancement GUI | P95 au plus 50 ms pour un saut visible et 8 ms pour un blocage continu du thread GUI |
 | Mémoire | Objectif pour l’arbre de processus : au plus 150 MiB à vide et 256 MiB en naviguant dans 100 000 entrées sans aperçu ni dictionnaire de décodage |
-| CPU au repos | Moyenne au plus 0.5% d’un cœur logique après stabilisation |
+| CPU au repos | Moyenne au plus 0,5% d’un cœur logique après stabilisation |
 | Annulation | P95 au plus 50 ms pour le retour et 250 ms pour l’arrêt coopératif local en flux, mesurés séparément |
 | Extraction et distribution | Comparer GUI et cœur à charge et E/S identiques, avec un objectif de perte de débit au plus 10%. Les objectifs Mac monoarchitecture sont au plus 100 MiB téléchargés et 250 MiB installés. |
 

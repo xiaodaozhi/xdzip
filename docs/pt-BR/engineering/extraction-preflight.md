@@ -33,7 +33,7 @@ Comparação Unicode em minúsculas não é conversão completa de caixa nem equ
 
 ## Recursos e falhas
 
-Verificar no máximo 100,000 registros do retrato; nomes selecionados ou expandidos totalizam no máximo 4 MiB. Chaves de comparação e grafias originais no índice de colisões totalizam no máximo 8 MiB, sem sobrecarga do contêiner. A profundidade de percurso é limitada e o cancelamento é verificado em cada registro externo. Relatórios contam todos os achados, mas no máximo 64 problemas representativos atravessam a ponte, com apenas IDs físicos e motivos estáveis, sem texto arbitrário de erro do arquivo compactado.
+Verificar no máximo 100.000 registros do retrato; nomes selecionados ou expandidos totalizam no máximo 4 MiB. Chaves de comparação e grafias originais no índice de colisões totalizam no máximo 8 MiB, sem sobrecarga do contêiner. A profundidade de percurso é limitada e o cancelamento é verificado em cada registro externo. Relatórios contam todos os achados, mas no máximo 64 problemas representativos atravessam a ponte, com apenas IDs físicos e motivos estáveis, sem texto arbitrário de erro do arquivo compactado.
 
 Seleção vazia, IDs externos, limites do índice ou cancelamento retornam erros, não relatórios parcialmente bem-sucedidos. Totais com estouro exibem “Indisponível” em vez de serem truncados para zero. Achados básicos são apenas informados; não sobrescrevem, renomeiam, ignoram ou pulam automaticamente.
 
@@ -49,7 +49,7 @@ Selecione entradas e clique em “Verificar metadados antes de extrair…”. Os
 
 ## Limite com a extração real
 
-A [extração segura real](zip-safe-extraction.md) implementa independentemente contabilização de saída, verificação CRC e estrutural, autorização de destino, novas verificações de caminho por plataforma, conflitos, preparação e confirmações de arquivos. Ela não se limita às 128 seleções da pré-verificação e suporta planos para 100,000 registros físicos e seleções de diretórios virtuais. Um relatório prévio não é reutilizado como permissão de gravação. Ao iniciar uma tarefa, é necessário obter novamente autorização de destino, revalidar origens e verificar conteúdo real conforme a [especificação de segurança de arquivos](../design/file-security.md). Falhas nativas e defeitos conhecidos são acompanhados pelos contratos e issues correspondentes.
+A [extração segura real](zip-safe-extraction.md) implementa independentemente contabilização de saída, verificação CRC e estrutural, autorização de destino, novas verificações de caminho por plataforma, conflitos, preparação e confirmações de arquivos. Ela não se limita às 128 seleções da pré-verificação e suporta planos para 100.000 registros físicos e seleções de diretórios virtuais. Um relatório prévio não é reutilizado como permissão de gravação. Ao iniciar uma tarefa, é necessário obter novamente autorização de destino, revalidar origens e verificar conteúdo real conforme a [especificação de segurança de arquivos](../design/file-security.md). Falhas nativas e defeitos conhecidos são acompanhados pelos contratos e issues correspondentes.
 
 <a name="xdzip-window-and-result-presentation"></a>
 

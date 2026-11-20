@@ -33,7 +33,7 @@ La comparaison Unicode en minuscules n’est ni un repli complet de casse ni l�
 
 ## Ressources et échecs
 
-Vérifier au plus 100,000 enregistrements de l’instantané ; les noms sélectionnés ou développés totalisent au plus 4 MiB. Les clés de comparaison et graphies originales stockées dans l’index de collisions totalisent au plus 8 MiB, hors surcharge du conteneur. La profondeur de parcours des composants est bornée et l’annulation est vérifiée à chaque enregistrement externe. Les rapports comptent tous les constats, mais au plus 64 problèmes représentatifs traversent le pont, avec seulement les ID physiques et raisons stables, sans texte d’erreur arbitraire de l’archive.
+Vérifier au plus 100 000 enregistrements de l’instantané ; les noms sélectionnés ou développés totalisent au plus 4 MiB. Les clés de comparaison et graphies originales stockées dans l’index de collisions totalisent au plus 8 MiB, hors surcharge du conteneur. La profondeur de parcours des composants est bornée et l’annulation est vérifiée à chaque enregistrement externe. Les rapports comptent tous les constats, mais au plus 64 problèmes représentatifs traversent le pont, avec seulement les ID physiques et raisons stables, sans texte d’erreur arbitraire de l’archive.
 
 Une sélection vide, des ID étrangers, des limites d’index ou une annulation renvoient des erreurs, pas des rapports partiellement réussis. Les totaux en débordement affichent « Indisponible » au lieu d’être tronqués à zéro. Les constats élémentaires sont seulement signalés ; ils n’écrasent, ne renomment, n’ignorent ni ne sautent automatiquement rien.
 
@@ -49,7 +49,7 @@ Sélectionnez des entrées puis cliquez sur « Vérifier les métadonnées avant
 
 ## Limite avec l’extraction réelle
 
-L’[extraction sûre réelle](zip-safe-extraction.md) implémente indépendamment la comptabilisation de sortie, la vérification CRC et structurelle, l’autorisation de destination, les nouvelles vérifications de chemins par plateforme, les conflits, la préparation et la validation des fichiers. Elle n’est pas limitée aux 128 sélections du précontrôle et prend en charge des plans de 100,000 enregistrements physiques et des sélections de répertoires virtuels. Un rapport de précontrôle n’est pas réutilisé comme autorisation d’écriture. Le démarrage d’une tâche doit obtenir à nouveau l’autorisation de destination, revalider les sources et vérifier le contenu réel selon la [spécification de sécurité des fichiers](../design/file-security.md). Les comportements d’échec natifs et défauts connus sont suivis par les contrats et tickets concernés.
+L’[extraction sûre réelle](zip-safe-extraction.md) implémente indépendamment la comptabilisation de sortie, la vérification CRC et structurelle, l’autorisation de destination, les nouvelles vérifications de chemins par plateforme, les conflits, la préparation et la validation des fichiers. Elle n’est pas limitée aux 128 sélections du précontrôle et prend en charge des plans de 100 000 enregistrements physiques et des sélections de répertoires virtuels. Un rapport de précontrôle n’est pas réutilisé comme autorisation d’écriture. Le démarrage d’une tâche doit obtenir à nouveau l’autorisation de destination, revalider les sources et vérifier le contenu réel selon la [spécification de sécurité des fichiers](../design/file-security.md). Les comportements d’échec natifs et défauts connus sont suivis par les contrats et tickets concernés.
 
 <a name="xdzip-window-and-result-presentation"></a>
 

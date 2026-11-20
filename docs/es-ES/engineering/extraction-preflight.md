@@ -33,7 +33,7 @@ La comparación Unicode en minúsculas no es plegado completo de mayúsculas ni 
 
 ## Recursos y fallos
 
-Comprobar como máximo 100,000 registros de la instantánea; los nombres seleccionados o expandidos suman como máximo 4 MiB. Las claves de comparación y grafías originales almacenadas en el índice de colisiones suman como máximo 8 MiB, sin contar la sobrecarga del contenedor. La profundidad de recorrido está acotada y se comprueba la cancelación en cada registro externo. Los informes cuentan todos los hallazgos, pero como máximo 64 problemas representativos cruzan el puente, con solo ID físicos y razones estables, sin texto arbitrario de error del archivo comprimido.
+Comprobar como máximo 100 000 registros de la instantánea; los nombres seleccionados o expandidos suman como máximo 4 MiB. Las claves de comparación y grafías originales almacenadas en el índice de colisiones suman como máximo 8 MiB, sin contar la sobrecarga del contenedor. La profundidad de recorrido está acotada y se comprueba la cancelación en cada registro externo. Los informes cuentan todos los hallazgos, pero como máximo 64 problemas representativos cruzan el puente, con solo ID físicos y razones estables, sin texto arbitrario de error del archivo comprimido.
 
 Una selección vacía, ID ajenos, límites del índice o cancelación devuelven errores, no informes parcialmente satisfactorios. Los totales desbordados muestran «No disponible» en lugar de truncarse a cero. Los hallazgos básicos solo se informan; no sobrescriben, renombran, ignoran ni omiten automáticamente.
 
@@ -49,7 +49,7 @@ Selecciona entradas y pulsa «Comprobar los metadatos antes de extraer…». Los
 
 ## Límite con la extracción real
 
-La [extracción segura real](zip-safe-extraction.md) implementa independientemente el cómputo de salida, la verificación CRC y estructural, autorización de destino, nuevas comprobaciones de rutas por plataforma, conflictos, preparación temporal y confirmaciones de archivos. No está limitada a las 128 selecciones de la comprobación previa y admite planes de 100,000 registros físicos y selecciones de directorios virtuales. Un informe previo no se reutiliza como permiso de escritura. Al iniciar una tarea deben obtenerse de nuevo la autorización de destino, validarse las fuentes y comprobarse el contenido real según la [especificación de seguridad de archivos](../design/file-security.md). Los fallos nativos y defectos conocidos se siguen en los contratos e incidencias correspondientes.
+La [extracción segura real](zip-safe-extraction.md) implementa independientemente el cómputo de salida, la verificación CRC y estructural, autorización de destino, nuevas comprobaciones de rutas por plataforma, conflictos, preparación temporal y confirmaciones de archivos. No está limitada a las 128 selecciones de la comprobación previa y admite planes de 100 000 registros físicos y selecciones de directorios virtuales. Un informe previo no se reutiliza como permiso de escritura. Al iniciar una tarea deben obtenerse de nuevo la autorización de destino, validarse las fuentes y comprobarse el contenido real según la [especificación de seguridad de archivos](../design/file-security.md). Los fallos nativos y defectos conocidos se siguen en los contratos e incidencias correspondientes.
 
 <a name="xdzip-window-and-result-presentation"></a>
 
