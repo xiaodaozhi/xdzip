@@ -2,7 +2,7 @@
 
 # 文件列表打开、双向拖放与归档修改
 
-[English](../../engineering/archive-transfers.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/archive-transfers.md) | [日本語](../../ja-JP/engineering/archive-transfers.md) | [한국어](../../ko-KR/engineering/archive-transfers.md) | [Français](../../fr-FR/engineering/archive-transfers.md) | [Deutsch](../../de-DE/engineering/archive-transfers.md) | [Español](../../es-ES/engineering/archive-transfers.md) | [Português (Brasil)](../../pt-BR/engineering/archive-transfers.md)
+[English](../../engineering/archive-transfers.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/archive-transfers.md) | [日本語](../../ja-JP/engineering/archive-transfers.md) | [한국어](../../ko-KR/engineering/archive-transfers.md) | [Français](../../fr-FR/engineering/archive-transfers.md) | [Deutsch](../../de-DE/engineering/archive-transfers.md) | [Español](../../es-ES/engineering/archive-transfers.md) | [Português (Brasil)](../../pt-BR/engineering/archive-transfers.md) | [Русский](../../ru-RU/engineering/archive-transfers.md)
 
 右键“打开”作用于右击条目，保留多选，复用双击和 Enter 的入口。目录进入，普通文件使用[临时打开](archive-opening.md)的私有缓存、密码和关联程序规则。会话、查询变化关闭菜单，执行时仍核对稳定条目身份。
 

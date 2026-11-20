@@ -1,6 +1,6 @@
 # Öffnen aus der Dateiliste, bidirektionales Drag-and-drop und Archivänderung
 
-[English](../../engineering/archive-transfers.md) | [简体中文](../../zh-CN/engineering/archive-transfers.md) | [繁體中文](../../zh-TW/engineering/archive-transfers.md) | [日本語](../../ja-JP/engineering/archive-transfers.md) | [한국어](../../ko-KR/engineering/archive-transfers.md) | [Français](../../fr-FR/engineering/archive-transfers.md) | Deutsch | [Español](../../es-ES/engineering/archive-transfers.md) | [Português (Brasil)](../../pt-BR/engineering/archive-transfers.md)
+[English](../../engineering/archive-transfers.md) | [简体中文](../../zh-CN/engineering/archive-transfers.md) | [繁體中文](../../zh-TW/engineering/archive-transfers.md) | [日本語](../../ja-JP/engineering/archive-transfers.md) | [한국어](../../ko-KR/engineering/archive-transfers.md) | [Français](../../fr-FR/engineering/archive-transfers.md) | Deutsch | [Español](../../es-ES/engineering/archive-transfers.md) | [Português (Brasil)](../../pt-BR/engineering/archive-transfers.md) | [Русский](../../ru-RU/engineering/archive-transfers.md)
 
 „Öffnen“ im Kontextmenü wirkt auf den rechts angeklickten Eintrag, ohne die Mehrfachauswahl zu ändern, und verwendet den Einstiegspunkt von Doppelklick und Eingabetaste wieder. Verzeichnisse werden betreten; reguläre Dateien folgen den Regeln für privaten Cache, Passwort und zugeordnete Anwendung beim [temporären Öffnen](archive-opening.md). Sitzungs- oder Abfrageänderungen schließen das Menü; bei der Ausführung wird die stabile Eintragsidentität weiterhin geprüft.
 

@@ -1,6 +1,6 @@
 # 파일 목록 열기, 양방향 드래그 앤 드롭과 아카이브 수정
 
-[English](../../engineering/archive-transfers.md) | [简体中文](../../zh-CN/engineering/archive-transfers.md) | [繁體中文](../../zh-TW/engineering/archive-transfers.md) | [日本語](../../ja-JP/engineering/archive-transfers.md) | 한국어 | [Français](../../fr-FR/engineering/archive-transfers.md) | [Deutsch](../../de-DE/engineering/archive-transfers.md) | [Español](../../es-ES/engineering/archive-transfers.md) | [Português (Brasil)](../../pt-BR/engineering/archive-transfers.md)
+[English](../../engineering/archive-transfers.md) | [简体中文](../../zh-CN/engineering/archive-transfers.md) | [繁體中文](../../zh-TW/engineering/archive-transfers.md) | [日本語](../../ja-JP/engineering/archive-transfers.md) | 한국어 | [Français](../../fr-FR/engineering/archive-transfers.md) | [Deutsch](../../de-DE/engineering/archive-transfers.md) | [Español](../../es-ES/engineering/archive-transfers.md) | [Português (Brasil)](../../pt-BR/engineering/archive-transfers.md) | [Русский](../../ru-RU/engineering/archive-transfers.md)
 
 컨텍스트 메뉴의 “열기”는 다중 선택을 바꾸지 않고 오른쪽 클릭한 항목에 적용하며 두 번 클릭과 Enter 진입점을 재사용합니다. 디렉터리는 들어가고 일반 파일에는 [임시 열기](archive-opening.md)의 비공개 캐시, 비밀번호와 연결된 응용 프로그램 규칙을 적용합니다. 세션이나 조회가 바뀌면 메뉴를 닫고 실행 시 안정적인 항목 ID를 다시 검증합니다.
 
