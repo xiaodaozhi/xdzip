@@ -8,9 +8,9 @@
 
 目前唯一準入的載荷方法是方法 8，即 raw RFC 1951 Deflate。共享有界 Deflate 讀取器要求碼流完整結束並準確消費壓縮區間；尾隨位元組、截斷、解碼長度不符和 CRC 不符都會使載荷任務失敗。未知方法保留為帶警告的可見記錄，不能解壓，也不能計入已驗證內容。
 
-目前准入的頭部佈局是五位元組固定字首，隨後依次為小端 16 位頭部長度、常量位元組 `25 d8 0c 00`、方法、四位元組 DOS 形狀時間戳、壓縮長度、解碼長度、CRC-32、屬性 `0x20`、五個零保留位元組、四位元組檔名長度和檔名。頭部長度必須等於 `37 + 文件名长度`；成員連續排列，最後一個載荷必須準確結束於物理 EOF。不接受歸檔尾部、目錄記錄、自解壓字首、重新同步、填充或鄰接檔案掃描。
+目前准入的頭部佈局是五位元組固定字首，隨後依次為小端 16 位頭部長度、常量位元組 `25 d8 0c 00`、方法、四位元組 DOS 形狀時間戳、壓縮長度、解碼長度、CRC-32、屬性 `0x20`、五個零保留位元組、四位元組檔名長度和檔名。頭部長度必須等於 `37 + filename_length`；成員連續排列，最後一個載荷必須準確結束於物理 EOF。不接受歸檔尾部、目錄記錄、自解壓字首、重新同步、填充或鄰接檔案掃描。
 
-BH 沒有公開且持續維護的正式規範。格式觀察固定使用 `ashang/libxad` 的 `support/formats/BLAKHOLE.TXT`（revision `dbe67a865207e49cd917ad9170a11b9eaa83998a`，SHA-256 `a77d570bba1ceafc443fa2404dfaccc8d8872a6a`）和 Hawkynt/CompressionWorkbench 的 `docs/BLAKHOLE-ON-DISK.md`（commit `ab61c59f789d82c628d3c5b4bac264afbdc0c7a7`，SHA-256 `2b7572396683e96f8b5a47ff0b3f0dde2de4b839`）。後者只有一個帶來源記錄的五成員樣本，不能證明 Store、加密、目錄、固實或分卷行為。
+BH 沒有公開且持續維護的正式規範。格式觀察固定使用 `ashang/libxad` 的 `support/formats/BLAKHOLE.TXT`（revision `dbe67a865207e49cd917ad9170a11b9eaa83998a`，SHA-256 `fdb2b4d2fffa7760eef4b3ccbabdcd6b2d43df33949a1b793f9efb7e4c2c0f2d`）和 Hawkynt/CompressionWorkbench 的 `docs/BLAKHOLE-ON-DISK.md`（commit `ab61c59f789d82c628d3c5b4bac264afbdc0c7a7`，SHA-256 `f79f66d98d6c922ea4b64bde3ff5540a4d894de6632375513f3db89876e27bca`）。後者只有一個帶來源記錄的五成員樣本，不能證明 Store、加密、目錄、固實或分卷行為。
 
 IZArc Command Line Add-On v1.1 作為僅構建期參考儲存。官方下載公佈的 MD5 是 `9002c7634768e5336244f9accb2223b0`，本地 `IZArcCL.exe` 的 SHA-256 是 `959050AFC513C64FD61F9EE15837054D0FAEE5EFB98C9107B4DC5D9A528A62D4`。目前環境中，解包得到的 `IZARCC.exe` 和 `IZARCE.exe` 都在產出結果前以 Windows `0xC0000005` 退出，因此 Store、壓縮級別、密碼或提取能力均不以該工具作為證據。參考工具只保留在 `build/toolchain`，不進入產品依賴。
 

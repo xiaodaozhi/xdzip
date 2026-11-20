@@ -12,17 +12,17 @@
 
 ```mermaid
 flowchart TB
-  UI[Qt Quick 界面] --> CPP[桌面会话、控制器和模型]
-  CPP --> BR[进程内 CXX 命令与事件桥接]
-  BR --> RT[桌面进程内的 Rust 归档运行时]
-  CLI[Rust 命令行入口] --> CLIRT[命令行进程内的 Rust 归档运行时]
-  RT --> CORE[共用的来源、索引与任务实现]
+  UI[Qt Quick 介面] --> CPP[桌面工作階段、控制器和模型]
+  CPP --> BR[程序內 CXX 命令與事件橋接]
+  BR --> RT[桌面程序內的 Rust 壓縮檔執行環境]
+  CLI[Rust 命令列入口] --> CLIRT[命令列程序內的 Rust 壓縮檔執行環境]
+  RT --> CORE[共用的來源、索引與任務實作]
   CLIRT --> CORE
-  CORE --> IO[宿主文件授权、暂存和提交]
-  CORE --> CODEC[格式能力与路由]
-  CODEC --> DIRECT[进程内 Rust 格式后端]
-  CODEC --> NATIVE[专用归档工作进程]
-  CPP --> IMAGE[专用图片预览进程]
+  CORE --> IO[宿主檔案授權、暫存和提交]
+  CORE --> CODEC[格式能力與路由]
+  CODEC --> DIRECT[程序內 Rust 格式後端]
+  CODEC --> NATIVE[專用壓縮檔工作程序]
+  CPP --> IMAGE[專用圖片預覽程序]
 ```
 
 圖中的兩個執行時是同一套實現的獨立例項。桌面和 CLI 各自持有歸檔狀態和任務。桌面的本地程序間通訊將啟用和系統整合請求轉發給主介面例項，歸檔命令由各自程序內的執行時處理。[應用會話](../engineering/application-sessions.md)、[命令列契約](../engineering/command-line.md)
@@ -96,14 +96,14 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-  INTENT[已冻结的选区和目标选项] --> PLAN[运行时路径与重名计划]
-  PLAN --> AUTH[宿主授权的目标目录]
-  SOURCE[宿主授权的来源或分卷] --> DECODE[格式后端]
-  AUTH --> STAGE[私有暂存文件]
+  INTENT[已凍結的選取範圍和目標選項] --> PLAN[執行時路徑與重名計畫]
+  PLAN --> AUTH[宿主授權的目標目錄]
+  SOURCE[宿主授權的來源或分卷] --> DECODE[格式後端]
+  AUTH --> STAGE[私有暫存檔案]
   DECODE --> STAGE
-  STAGE --> VERIFY[完成解码并核对完整性与来源]
-  VERIFY --> COMMIT[宿主提交文件]
-  COMMIT --> RESULT[任务结果与清理]
+  STAGE --> VERIFY[完成解碼並核對完整性與來源]
+  VERIFY --> COMMIT[宿主提交檔案]
+  COMMIT --> RESULT[任務結果與清理]
 ```
 
 1. **規劃。** 執行時使用凍結的選區校驗可移植的相對路徑並檢測輸出衝突。`xdzip-io` 將目標限制在已授權的目錄範圍內。執行時處理詢問、跳過、重新命名或符合條件的覆蓋。格式後端不能授權覆蓋受到保護的輸入檔案或已變化的目標，也不能允許經過不安全的連結寫出。

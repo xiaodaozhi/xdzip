@@ -8,7 +8,7 @@
 
 当前准入的头部布局是五字节固定前缀，随后依次为小端 16 位头部长度、常量字节 `25 d8 0c 00`、方法、四字节 DOS 形状时间戳、压缩长度、解码长度、CRC-32、属性 `0x20`、五个零保留字节、四字节文件名长度和文件名。头部长度必须等于 `37 + 文件名长度`；成员连续排列，最后一个载荷必须准确结束于物理 EOF。不接受归档尾部、目录记录、自解压前缀、重新同步、填充或邻接文件扫描。
 
-BH 没有公开且持续维护的正式规范。格式观察固定使用 `ashang/libxad` 的 `support/formats/BLAKHOLE.TXT`（revision `dbe67a865207e49cd917ad9170a11b9eaa83998a`，SHA-256 `a77d570bba1ceafc443fa2404dfaccc8d8872a6a`）和 Hawkynt/CompressionWorkbench 的 `docs/BLAKHOLE-ON-DISK.md`（commit `ab61c59f789d82c628d3c5b4bac264afbdc0c7a7`，SHA-256 `2b7572396683e96f8b5a47ff0b3f0dde2de4b839`）。后者只有一个带来源记录的五成员样本，不能证明 Store、加密、目录、固实或分卷行为。
+BH 没有公开且持续维护的正式规范。格式观察固定使用 `ashang/libxad` 的 `support/formats/BLAKHOLE.TXT`（revision `dbe67a865207e49cd917ad9170a11b9eaa83998a`，SHA-256 `fdb2b4d2fffa7760eef4b3ccbabdcd6b2d43df33949a1b793f9efb7e4c2c0f2d`）和 Hawkynt/CompressionWorkbench 的 `docs/BLAKHOLE-ON-DISK.md`（commit `ab61c59f789d82c628d3c5b4bac264afbdc0c7a7`，SHA-256 `f79f66d98d6c922ea4b64bde3ff5540a4d894de6632375513f3db89876e27bca`）。后者只有一个带来源记录的五成员样本，不能证明 Store、加密、目录、固实或分卷行为。
 
 IZArc Command Line Add-On v1.1 作为仅构建期参考保存。官方下载公布的 MD5 是 `9002c7634768e5336244f9accb2223b0`，本地 `IZArcCL.exe` 的 SHA-256 是 `959050AFC513C64FD61F9EE15837054D0FAEE5EFB98C9107B4DC5D9A528A62D4`。当前环境中，解包得到的 `IZARCC.exe` 和 `IZARCE.exe` 都在产出结果前以 Windows `0xC0000005` 退出，因此 Store、压缩级别、密码或提取能力均不以该工具作为证据。参考工具只保留在 `build/toolchain`，不进入产品依赖。
 

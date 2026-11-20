@@ -4,14 +4,14 @@
 
 [English](../../engineering/versioning.md) | [简体中文](../../zh-CN/engineering/versioning.md) | 繁體中文 | [日本語](../../ja-JP/engineering/versioning.md) | [한국어](../../ko-KR/engineering/versioning.md) | [Français](../../fr-FR/engineering/versioning.md) | [Deutsch](../../de-DE/engineering/versioning.md) | [Español](../../es-ES/engineering/versioning.md) | [Português (Brasil)](../../pt-BR/engineering/versioning.md) | [Русский](../../ru-RU/engineering/versioning.md)
 
-可選 `prerelease_number` 分離預釋出序號與構建號。例如 alpha.1 對應 build 14，後續 alpha.2 仍繼續遞增 build。預設保留歷史 `渠道.build` 讀取方式。釋出清單和資產命名見[釋出協議](release-protocol.md)。
+可選 `prerelease_number` 分離預釋出序號與構建號。例如 alpha.1 對應 build 14，後續 alpha.2 仍繼續遞增 build。預設保留歷史 `channel.build` 讀取方式。釋出清單和資產命名見[釋出協議](release-protocol.md)。
 
 [VERSION.json](../../../VERSION.json) 是產品版本、渠道與構建號的唯一維護入口。目前值由構建系統讀取，不在本文另行維護。版本變更見[變更日誌](../../../CHANGELOG.zh-CN.md)，各批次交付與驗證見[專案 issue](https://github.com/xiaodaozhi/xdzip/issues)；版本遞增本身不代表發行獲批。
 
 歷史相容檢查使用固定原始碼基線，與目前構建共同驗證安裝升級、回退及設定相容。完整產品基線由[歷史產品準備指令碼](../../../scripts/prepare-previous-product.py)維護，設定基線由[相容檢查指令碼](../../../scripts/check-settings-compat.py)維護；不在本文複製隨實現變化的提交或目前版本。設定 schema 與產品版本分別管理。
 
 - `version` 使用無前導零的 `major.minor.patch`。不相容變更、相容功能與修復分別按版本範圍管理，0.x 階段仍須說明相容邊界。
-- `channel` 支援 development、alpha、beta、rc、stable。非 stable 顯示為 `version-渠道缩写.build`，development 縮寫為 dev；stable 顯示基礎版本。
+- `channel` 支援 development、alpha、beta、rc、stable。非 stable 顯示為 `version-channel-abbreviation.build`，development 縮寫為 dev；stable 顯示基礎版本。
 - `build` 為 1～65535 的整數。準備新的對外交付構建時遞增，不按本機每次編譯自動遞增，也不自動建立標籤或釋出。數字版本各段同樣不超過 65535，以相容 Windows 資源。
 - CMake 直接讀取 JSON。Cargo workspace 與 HTML 的派生版本由 `python3 scripts/sync-version.py` 更新，`--check` 用於 CI；所有內部 Rust 包繼承 workspace 版本。同步後更新 Cargo.lock，並檢查 `cargo check --workspace --locked`。
 - Windows 四段數值資源為基礎版本加構建號，文字版本保留渠道；macOS 的 `CFBundleShortVersionString` 為基礎版本，`CFBundleVersion` 為構建號，長版本保留渠道。格式遵循 [Apple bundle 版本說明](https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleversion)；它們使用各平臺允許的數值格式，不把 Git 提交塞入系統數值欄位。

@@ -10,7 +10,7 @@
 
 対象のヘッダーは 5 バイトの固定接頭部、リトルエンディアンの 16 ビットのヘッダー長、固定バイト `25 d8 0c 00`、方式、DOS 形式に準じた 4 バイトの時刻、圧縮サイズ、デコード後サイズ、CRC-32、属性 `0x20`、ゼロの予約用 5 バイト、4 バイトのファイル名長、ファイル名のバイト列です。ヘッダー長は `37 + filename_length` と一致する必要があります。項目は隙間なく続き、最後の内容は物理ファイルの終端と一致します。アーカイブのトレーラー、ディレクトリーレコード、SFX 接頭部、再同期、パディング、隣接ファイルの検索は対象外です。
 
-BH には現在も保守されている公開仕様がありません。形式の観測結果は `ashang/libxad` の `support/formats/BLAKHOLE.TXT`（リビジョン `dbe67a865207e49cd917ad9170a11b9eaa83998a`、SHA-256 `a77d570bba1ceafc443fa2404dfaccc8d8872a6a`）と、Hawkynt/CompressionWorkbench の `docs/BLAKHOLE-ON-DISK.md`（コミット `ab61c59f789d82c628d3c5b4bac264afbdc0c7a7`、SHA-256 `2b7572396683e96f8b5a47ff0b3f0dde2de4b839`）の指定版を使います。後者のサンプルは出所が確認できる 5 項目入りの一件です。Store、暗号化、ディレクトリー、ソリッドブロック、分割ボリュームの動作を示すものではありません。
+BH には現在も保守されている公開仕様がありません。形式の観測結果は `ashang/libxad` の `support/formats/BLAKHOLE.TXT`（リビジョン `dbe67a865207e49cd917ad9170a11b9eaa83998a`、SHA-256 `fdb2b4d2fffa7760eef4b3ccbabdcd6b2d43df33949a1b793f9efb7e4c2c0f2d`）と、Hawkynt/CompressionWorkbench の `docs/BLAKHOLE-ON-DISK.md`（コミット `ab61c59f789d82c628d3c5b4bac264afbdc0c7a7`、SHA-256 `f79f66d98d6c922ea4b64bde3ff5540a4d894de6632375513f3db89876e27bca`）の指定版を使います。後者のサンプルは出所が確認できる 5 項目入りの一件です。Store、暗号化、ディレクトリー、ソリッドブロック、分割ボリュームの動作を示すものではありません。
 
 IZArc Command Line Add-On v1.1 はビルド時の参照用です。公式ダウンロードの MD5 は `9002c7634768e5336244f9accb2223b0`、ローカルの `IZArcCL.exe` の SHA-256 は `959050AFC513C64FD61F9EE15837054D0FAEE5EFB98C9107B4DC5D9A528A62D4` です。この環境では展開した `IZARCC.exe` と `IZARCE.exe` が、出力前に Windows の `0xC0000005` で終了します。このツールを根拠に Store、圧縮レベル、パスワード、展開への対応は主張しません。参照物は `build/toolchain` にあり、製品の依存関係には含まれません。
 
