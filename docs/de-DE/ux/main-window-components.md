@@ -1,6 +1,6 @@
 # Hauptfenster: Funktionalität, Komponenten und Interaktionsvertrag
 
-[English](../../ux/main-window-components.md) | [简体中文](../../zh-CN/ux/main-window-components.md) | [繁體中文](../../zh-TW/ux/main-window-components.md) | [日本語](../../ja-JP/ux/main-window-components.md) | [한국어](../../ko-KR/ux/main-window-components.md) | [Français](../../fr-FR/ux/main-window-components.md) | Deutsch | [Español](../../es-ES/ux/main-window-components.md) | [Português (Brasil)](../../pt-BR/ux/main-window-components.md)
+[English](../../ux/main-window-components.md) | [简体中文](../../zh-CN/ux/main-window-components.md) | [繁體中文](../../zh-TW/ux/main-window-components.md) | [日本語](../../ja-JP/ux/main-window-components.md) | [한국어](../../ko-KR/ux/main-window-components.md) | [Français](../../fr-FR/ux/main-window-components.md) | Deutsch | [Español](../../es-ES/ux/main-window-components.md) | [Português (Brasil)](../../pt-BR/ux/main-window-components.md) | [Русский](../../ru-RU/ux/main-window-components.md)
 
 Die Steuerungen des Hauptfensters liefern Aussehen und Verhalten mit ausdrücklichen Zuständen für normal, Hover, gedrückt, Tastaturfokus, deaktiviert, ausgewählt, beschäftigt und Fehler. HTML verwendet Beispielarchive zur Interaktionsprüfung; Qt aktiviert Aktionen entsprechend den tatsächlichen Fähigkeiten für Navigation, Erstellung, Extraktion, [Integritätsprüfung](../engineering/archive-checking.md) und [automatische Inhaltsvorschau](../engineering/content-preview.md). HTML-Beispiele stellen keine echten Hintergrundresultate dar.
 

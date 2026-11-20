@@ -1,6 +1,6 @@
 # Funcionalidade, componentes e contrato de interação da janela principal
 
-[English](../../ux/main-window-components.md) | [简体中文](../../zh-CN/ux/main-window-components.md) | [繁體中文](../../zh-TW/ux/main-window-components.md) | [日本語](../../ja-JP/ux/main-window-components.md) | [한국어](../../ko-KR/ux/main-window-components.md) | [Français](../../fr-FR/ux/main-window-components.md) | [Deutsch](../../de-DE/ux/main-window-components.md) | [Español](../../es-ES/ux/main-window-components.md) | Português (Brasil)
+[English](../../ux/main-window-components.md) | [简体中文](../../zh-CN/ux/main-window-components.md) | [繁體中文](../../zh-TW/ux/main-window-components.md) | [日本語](../../ja-JP/ux/main-window-components.md) | [한국어](../../ko-KR/ux/main-window-components.md) | [Français](../../fr-FR/ux/main-window-components.md) | [Deutsch](../../de-DE/ux/main-window-components.md) | [Español](../../es-ES/ux/main-window-components.md) | Português (Brasil) | [Русский](../../ru-RU/ux/main-window-components.md)
 
 Os controles da janela principal fornecem aparência e comportamento, com estados explícitos normal, passagem do cursor, pressionado, foco do teclado, desativado, selecionado, ocupado e erro. HTML usa arquivos de exemplo para verificar a interação; Qt habilita ações conforme as capacidades reais de navegação, criação, extração, [verificação de integridade](../engineering/archive-checking.md) e [prévia automática de conteúdo](../engineering/content-preview.md). Exemplos HTML não representam resultados reais em segundo plano.
 
