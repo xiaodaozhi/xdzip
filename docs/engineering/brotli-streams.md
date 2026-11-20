@@ -1,6 +1,6 @@
 # Ordinary Brotli stream contract
 
-English | [简体中文](../zh-CN/engineering/brotli-streams.md) | [繁體中文（台灣）](../zh-TW/engineering/brotli-streams.md)
+English | [简体中文](../zh-CN/engineering/brotli-streams.md) | [繁體中文（台灣）](../zh-TW/engineering/brotli-streams.md) | [日本語](../ja-JP/engineering/brotli-streams.md) | [한국어](../ko-KR/engineering/brotli-streams.md) | [Français](../fr-FR/engineering/brotli-streams.md) | [Deutsch](../de-DE/engineering/brotli-streams.md) | [Español](../es-ES/engineering/brotli-streams.md) | [Português (Brasil)](../pt-BR/engineering/brotli-streams.md) | [Русский](../ru-RU/engineering/brotli-streams.md)
 
 `xdzip-compression::BrotliReader` independently decodes one ordinary RFC 7932 Brotli stream. It takes a caller-owned `Read` capability and an admitted packed span; it has no filename, filesystem, network, process or output-publication authority. The product registers Brotli (`.br`) and TAR.BR (`.tar.br`) through the [format registry](format-registry.md). They support browsing, preview, checking and selected extraction, using the shared host source, task, quota, staging and publication rules. Existing eligible TAR.BR archives can be edited by rewriting with standard uncompressed meta-blocks. Neither profile supports new archive creation or split volumes. See [rewriting compressed TAR archives](single-file-streams.md#rewriting-compressed-tar-archives).
 
