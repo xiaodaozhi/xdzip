@@ -45,7 +45,7 @@ CXX transporta tipos por valor e contêineres Rust proprietários. O código Qt 
 | `Snapshot`, `CloseSession` | Retornar o ID de sessão do arquivo atual ou zero. Fechar a sessão identificada descarta seu instantâneo de navegação, enquanto entradas de tarefas mantidas separadamente podem continuar ativas. |
 | `cancel`, `cancel_task`, `decide_task`, `respond_password`, `release_export`, `shutdown` | Métodos de controle fora da fila comum de comandos. O cancelamento de solicitação tem ID próprio e `Finished`; controles de tarefa atuam sobre a tarefa existente. |
 
-O serviço Rust expõe operações adicionais específicas da CLI, como `Catalog` e `SelectMembers`. A ponte valida tamanho da entrada e valores de enumeração antes do envio. Por exemplo, caminhos de criação são limitados a 4 KiB cada e 4 MiB no total. O runtime valida a sessão e a semântica da operação, enquanto a camada de E/S abre arquivos e obtém capacidades de saída. [Contrato do serviço runtime](../engineering/product-runtime.md), [Contrato da CLI](../../engineering/command-line.md), [Autorização de arquivos](file-security.md)
+O serviço Rust expõe operações adicionais específicas da CLI, como `Catalog` e `SelectMembers`. A ponte valida tamanho da entrada e valores de enumeração antes do envio. Por exemplo, caminhos de criação são limitados a 4 KiB cada e 4 MiB no total. O runtime valida a sessão e a semântica da operação, enquanto a camada de E/S abre arquivos e obtém capacidades de saída. [Contrato do serviço runtime](../engineering/product-runtime.md), [Contrato da CLI](../engineering/command-line.md), [Autorização de arquivos](file-security.md)
 
 <a name="xdzip-event-delivery-and-backpressure"></a>
 

@@ -4,7 +4,7 @@
 
 A CLI independente funciona sem Qt ou sessão de desktop. Escolha um pacote `xdzip-cli-` para seu sistema nas [versões do GitHub](https://github.com/xiaodaozhi/xdzip/releases). Descompacte o pacote inteiro e deixe o programa auxiliar ao lado do executável. No diretório extraído, execute `./bin/xdzip --help` no macOS ou Linux, ou `.\bin\xdzip.exe --help` no PowerShell.
 
-Os exemplos usam `xdzip` no PATH. Execute `setup` com a CLI extraída para registrar um inicializador para seu usuário. Se necessário, adicione o diretório do comando ao PATH. Use `xdzip --version-json` para confirmar que o programa encontrado informa `"component":"cli"`. O inicializador de desktop e a CLI podem ter o mesmo nome de comando. Se houver conflito, use o caminho explícito da CLI extraída. [Instalar e remover o comando](../../engineering/command-line.md#build-and-command-installation)
+Os exemplos usam `xdzip` no PATH. Execute `setup` com a CLI extraída para registrar um inicializador para seu usuário. Se necessário, adicione o diretório do comando ao PATH. Use `xdzip --version-json` para confirmar que o programa encontrado informa `"component":"cli"`. O inicializador de desktop e a CLI podem ter o mesmo nome de comando. Se houver conflito, use o caminho explícito da CLI extraída. [Instalar e remover o comando](../engineering/command-line.md#xdzip-build-and-command-installation)
 
 <a name="xdzip-create-and-check"></a>
 
@@ -33,13 +33,13 @@ xdzip extract sample.zip docs/hello.txt -C output --conflict skip --json
 
 Os caminhos dos membros são exatos, distinguem maiúsculas de minúsculas e usam barras normais. Se vários registros tiverem o mesmo caminho, selecione pelo `id` retornado por `list`. Os IDs começam em 1. Por exemplo, substitua `docs/hello.txt` por `--entry-id 2` no segundo comando se a lista atribuir o ID 2 ao arquivo. Repita `--entry-id` para mais membros. Use `path` para localizar membros e `display_name` para exibi-los. Gere nova lista após alterar o arquivo compactado.
 
-A primeira página começa no deslocamento 0. Passe `data.next_offset` a `--offset` com o mesmo `--limit` para ler a próxima página. Pare quando `next_offset` for null. O deslocamento é a posição de uma linha, contada a partir de zero. O ID identifica um registro físico. Cada comando abre o arquivo novamente. Mantenha a origem inalterada entre chamadas paginadas. [Limites de seleção e listagem](../../engineering/command-line.md#archive-behavior)
+A primeira página começa no deslocamento 0. Passe `data.next_offset` a `--offset` com o mesmo `--limit` para ler a próxima página. Pare quando `next_offset` for null. O deslocamento é a posição de uma linha, contada a partir de zero. O ID identifica um registro físico. Cada comando abre o arquivo novamente. Mantenha a origem inalterada entre chamadas paginadas. [Limites de seleção e listagem](../engineering/command-line.md#xdzip-archive-behavior)
 
 <a name="xdzip-run-without-prompts"></a>
 
 ## Executar sem perguntas
 
-`--json` desativa as perguntas interativas. Quando uma tarefa precisar terminar sem supervisão, indique uma política de conflitos. Para um comando que aceita senhas, como `extract`, `test` ou `create` com criptografia, use `--password-stdin` e envie uma linha UTF-8 com a senha por um canal privado de entrada padrão. A criação criptografada também exige `--encrypt`. Se faltar uma decisão ou senha obrigatória, a CLI retorna `interaction_required`. [Opções de senha e formato](../../engineering/command-line.md#archive-behavior)
+`--json` desativa as perguntas interativas. Quando uma tarefa precisar terminar sem supervisão, indique uma política de conflitos. Para um comando que aceita senhas, como `extract`, `test` ou `create` com criptografia, use `--password-stdin` e envie uma linha UTF-8 com a senha por um canal privado de entrada padrão. A criação criptografada também exige `--encrypt`. Se faltar uma decisão ou senha obrigatória, a CLI retorna `interaction_required`. [Opções de senha e formato](../engineering/command-line.md#xdzip-archive-behavior)
 
 <a name="xdzip-interpret-results"></a>
 
@@ -55,4 +55,4 @@ Para operações em arquivos compactados com `--json`, interprete o objeto UTF-8
 | 3 | Confira o requisito informado de interação, autorização, plataforma ou instalação. |
 | 130 | O cancelamento foi confirmado. Confira se há arquivos já gravados em definitivo. |
 
-Valores desconhecidos podem ser null. Uma falha ou um cancelamento pode preservar arquivos já gravados. Antes de tentar novamente, confira `summary.committed_files`, quando disponível. A [referência da CLI](../../engineering/command-line.md) descreve o encaminhamento ao desktop, os comprovantes de atualização e o formato completo da saída.
+Valores desconhecidos podem ser null. Uma falha ou um cancelamento pode preservar arquivos já gravados. Antes de tentar novamente, confira `summary.committed_files`, quando disponível. A [referência da CLI](../engineering/command-line.md) descreve o encaminhamento ao desktop, os comprovantes de atualização e o formato completo da saída.

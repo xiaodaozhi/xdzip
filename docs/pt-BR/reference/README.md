@@ -138,4 +138,4 @@ Comece pela [arquitetura do sistema](../../design/system-architecture.md) para c
 - [Preparação do ambiente de desenvolvimento](../engineering/development.md)
 - [Compilações de desenvolvimento e verificação por plataforma](../../engineering/developer-build.md)
 - [Versões fixadas de ferramentas e plataformas](../engineering/toolchain.md)
-- [Comandos CLI, JSON, instalação e comprovantes de atualização](../../engineering/command-line.md)
+- [Comandos CLI, JSON, instalação e comprovantes de atualização](../engineering/command-line.md)
