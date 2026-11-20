@@ -1,6 +1,6 @@
 # Product version and build identity
 
-English | [简体中文](../zh-CN/engineering/versioning.md) | [繁體中文（台灣）](../zh-TW/engineering/versioning.md)
+English | [简体中文](../zh-CN/engineering/versioning.md) | [繁體中文（台灣）](../zh-TW/engineering/versioning.md) | [日本語](../ja-JP/engineering/versioning.md) | [한국어](../ko-KR/engineering/versioning.md) | [Français](../fr-FR/engineering/versioning.md) | [Deutsch](../de-DE/engineering/versioning.md) | [Español](../es-ES/engineering/versioning.md) | [Português (Brasil)](../pt-BR/engineering/versioning.md) | [Русский](../ru-RU/engineering/versioning.md)
 
 The optional `prerelease_number` separates prerelease sequence from build number. For example, alpha.1 can use build 14 while later alpha.2 continues incrementing build. When absent, the historical `channel.build` interpretation remains. Release manifests and asset names are specified in the [release protocol](release-protocol.md).
 
@@ -22,6 +22,6 @@ QML module, bridge protocol and settings schema versions are independent of the 
 
 The large About icon uses the platform's corresponding 512 px PNG; HTML uses the vector from the same source rather than enlarging a 72 px UI icon.
 
-About uses the settings window's logical parameters without a footer, and supports Simplified Chinese, English (US), light/dark themes and 100%/125%/150% font sizes. See the current [About settings design](../../design/hifi/sources/settings.html?tab=about). HTML version information is generated from the same JSON; unknown native Qt or commit values are not fabricated.
+About uses the settings window's logical parameters without a footer. It supports the [packaged interface languages](../ux/settings-localization.md), light and dark themes, and font sizes of 100%, 125% and 150%. See the [About settings design](../../design/hifi/sources/settings.html?tab=about). HTML version information is generated from the same JSON. Native Qt or commit values remain unknown when unavailable.
 
 Verification entries are `scripts/check-build-version.py` against the actual CLI and native version resources, `scripts/test-version.py`, `scripts/check-html-about.py` and `BrowserTest::versionAboutWindow`. Screenshots and measurements stay under `build/review/about/`. Source, system metadata and actual running versions must agree; a version number itself does not establish signing, manual acceptance or compatibility.

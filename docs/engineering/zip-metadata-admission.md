@@ -1,6 +1,6 @@
 # ZIP metadata dependency admission
 
-English | [简体中文](../zh-CN/engineering/zip-metadata-admission.md) | [繁體中文（台灣）](../zh-TW/engineering/zip-metadata-admission.md)
+English | [简体中文](../zh-CN/engineering/zip-metadata-admission.md) | [繁體中文（台灣）](../zh-TW/engineering/zip-metadata-admission.md) | [日本語](../ja-JP/engineering/zip-metadata-admission.md) | [한국어](../ko-KR/engineering/zip-metadata-admission.md) | [Français](../fr-FR/engineering/zip-metadata-admission.md) | [Deutsch](../de-DE/engineering/zip-metadata-admission.md) | [Español](../es-ES/engineering/zip-metadata-admission.md) | [Português (Brasil)](../pt-BR/engineering/zip-metadata-admission.md) | [Русский](../ru-RU/engineering/zip-metadata-admission.md)
 
 This page retains the historical 2026-10-11 admission for the first read-only directory scan; it does not approve extraction, creation or third-party plugin execution. Current ZIP metadata has migrated to the [independent Rust record layer](independent-rust-codecs.md), with rawzip used only as a development-test reference. The historical selection below is not a current production dependency.
 

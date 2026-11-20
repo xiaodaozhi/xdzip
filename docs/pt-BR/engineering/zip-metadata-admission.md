@@ -1,0 +1,19 @@
+<a name="xdzip-zip-metadata-dependency-admission"></a>
+
+# Admissão da dependência de metadados ZIP
+
+[English](../../engineering/zip-metadata-admission.md) | [简体中文](../../zh-CN/engineering/zip-metadata-admission.md) | [繁體中文（台灣）](../../zh-TW/engineering/zip-metadata-admission.md) | [日本語](../../ja-JP/engineering/zip-metadata-admission.md) | [한국어](../../ko-KR/engineering/zip-metadata-admission.md) | [Français](../../fr-FR/engineering/zip-metadata-admission.md) | [Deutsch](../../de-DE/engineering/zip-metadata-admission.md) | [Español](../../es-ES/engineering/zip-metadata-admission.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/zip-metadata-admission.md)
+
+Esta página registra a decisão de 2026-10-11 para a primeira varredura de diretório somente para leitura. Ela não aprova extração, criação nem execução de extensões de terceiros. Os metadados ZIP usam hoje a [camada independente de registros Rust](independent-rust-codecs.md). rawzip é apenas uma referência para testes de desenvolvimento.
+
+A escolha foi [rawzip 0.5.2](https://github.com/nickbabcock/rawzip), com versão e soma exatas no [manifesto fixado](../../../specs/engineering/zip-metadata-dependencies.json) e no Cargo.lock da raiz. Recursos padrão foram desativados e std foi ativado explicitamente. Não havia dependências de execução nem build.rs. A licença MIT completa está em [third_party/rawzip/LICENSE](../../../third_party/rawzip/LICENSE) e acompanha lançamentos com a dependência.
+
+A avaliação histórica examinou README, configuração Cargo e o código de leitura do diretório. Registros do diretório central eram lidos individualmente de uma entrada emprestada Read + Seek. A ordem física e nomes duplicados eram preservados. O host limitava bytes lidos e o tamanho acumulado dos nomes. zip 9.0.1 foi avaliado, mas seu índice por nome não preservava registros físicos duplicados. zip-rs 9.0.3 foi incluído separadamente para gravação AES e não substituiu o índice físico de leitura. A implementação independente atual mantém essas regras.
+
+Nenhum aviso rawzip foi encontrado no instantâneo RustSec `7eebec69c352c7191b1f13eb95dd510eeca5d1de`. RUSTSEC-2026-0202 afeta let_cxx_string! no cxx anterior a 1.0.195. A versão fixada 1.0.205 inclui a correção. O registro é de uma verificação específica desses avisos.
+
+O adaptador de metadados não ativa decodificadores nem verifica conteúdo, CRC ou correspondência de cabeçalhos locais com o diretório central. Métodos desconhecidos aparecem só pelo número. A listagem não comprova a possibilidade de extração. No escopo de leitura M2, foram admitidos metadados ZIP64 de volume único, com teste de 100.000 registros e tamanhos declarados exatos acima de 2^53. O [host de volumes](archive-opening.md) converte conjuntos aceitos em uma visão lógica de volume único. O adaptador rejeita registros de vários discos não convertidos. Extensões Unicode e codificação antiga seguem o [contrato de codificação](filename-encoding.md). O conteúdo é decodificado separadamente sob a [admissão de extração](zip-extraction-admission.md) e o [contrato de extração segura](zip-safe-extraction.md). Limites e erros estão no [contrato de implementação](readonly-browser.md).
+
+Regressões cobrem ZIP64 real, localizadores e registros finais malformados, disco inicial de extensões ZIP64, limites de nomes, exibição e leitura, cancelamento e mudança de origem. A implementação independente também cobre deslocamentos de arquivos autoextraíveis, registros finais ambíguos e mutações limitadas com semente fixa. A verificação das dependências de produção comprova a remoção da biblioteca de formato. Dependências de teste podem permanecer no arquivo de bloqueio.
+
+A decodificação e a escrita do host adicionadas na extração M3 aparecem na [admissão de extração](zip-extraction-admission.md). Esta página registra o escopo histórico M2 de leitura.

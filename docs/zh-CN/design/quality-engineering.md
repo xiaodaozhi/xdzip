@@ -1,6 +1,6 @@
 # 编码规范与质量工程
 
-[English](../../design/quality-engineering.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/quality-engineering.md)
+[English](../../design/quality-engineering.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/quality-engineering.md) | [日本語](../../ja-JP/design/quality-engineering.md) | [한국어](../../ko-KR/design/quality-engineering.md) | [Français](../../fr-FR/design/quality-engineering.md) | [Deutsch](../../de-DE/design/quality-engineering.md) | [Español](../../es-ES/design/quality-engineering.md) | [Português (Brasil)](../../pt-BR/design/quality-engineering.md) | [Русский](../../ru-RU/design/quality-engineering.md)
 
 ## 代码与所有权
 
@@ -30,4 +30,4 @@
 
 ## 维护设计
 
-实现改动涉及身份、命令、能力、任务或文件写出边界时，同步更新对应设计、工程参考及验收引用，并保持双语一致。[架构决策](architecture-decisions.md)记录取舍，[性能设计](performance.md)定义测量规则。实际结果及限制另行记录到对应变更。
+实现改动涉及身份、命令、能力、任务或文件写出边界时，同步更新对应设计、工程参考及验收引用，并保持各语言版本一致。[架构决策](architecture-decisions.md)记录取舍，[性能设计](performance.md)定义测量规则。实际结果及限制另行记录到对应变更。

@@ -1,12 +1,12 @@
 # Developer preparation guide
 
-English | [简体中文](../zh-CN/engineering/development.md) | [繁體中文（台灣）](../zh-TW/engineering/development.md)
+English | [简体中文](../zh-CN/engineering/development.md) | [繁體中文（台灣）](../zh-TW/engineering/development.md) | [日本語](../ja-JP/engineering/development.md) | [한국어](../ko-KR/engineering/development.md) | [Français](../fr-FR/engineering/development.md) | [Deutsch](../de-DE/engineering/development.md) | [Español](../es-ES/engineering/development.md) | [Português (Brasil)](../pt-BR/engineering/development.md) | [Русский](../ru-RU/engineering/development.md)
 
 Use [Build and contribute](../contributing/README.md) to choose a build and verification path for the change. See the [system architecture](../design/system-architecture.md) and [repository layout](repository-layout.md) for the Qt, Rust runtime and codec boundaries.
 
 ## Obtain and modify
 
-Start from current `main` and preserve other work in the checkout. Follow the [contribution policy](../../CONTRIBUTING.md) for scope and review and the [repository delivery guide](../../developers/engineering/repository-hygiene.md) for authorized integration. When a contract changes, update both language versions and the affected verification cases. Use `specs/visual` for colors and geometry.
+Start from current `main` and preserve other work in the checkout. Follow the [contribution policy](../../CONTRIBUTING.md) for scope and review and the [repository delivery guide](../../developers/engineering/repository-hygiene.md) for authorized integration. When a contract changes, update its language editions and the affected verification cases. Use `specs/visual` for colors and geometry.
 
 ## Documentation builds
 

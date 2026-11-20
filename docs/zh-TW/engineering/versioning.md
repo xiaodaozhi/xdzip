@@ -2,7 +2,7 @@
 
 # 產品版本與構建身份
 
-[English](../../engineering/versioning.md) | [简体中文](../../zh-CN/engineering/versioning.md) | 繁體中文（台灣）
+[English](../../engineering/versioning.md) | [简体中文](../../zh-CN/engineering/versioning.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/versioning.md) | [한국어](../../ko-KR/engineering/versioning.md) | [Français](../../fr-FR/engineering/versioning.md) | [Deutsch](../../de-DE/engineering/versioning.md) | [Español](../../es-ES/engineering/versioning.md) | [Português (Brasil)](../../pt-BR/engineering/versioning.md) | [Русский](../../ru-RU/engineering/versioning.md)
 
 可選 `prerelease_number` 分離預釋出序號與構建號。例如 alpha.1 對應 build 14，後續 alpha.2 仍繼續遞增 build。預設保留歷史 `渠道.build` 讀取方式。釋出清單和資產命名見[釋出協議](release-protocol.md)。
 
@@ -24,6 +24,6 @@ QML 模組、橋接協議和設定 schema 的版本獨立於產品版本，不�
 
 關於的大圖示使用對應平臺的 512px PNG，HTML 使用同源向量，不放大 72px 的介面小圖。
 
-關於頁使用設定視窗的邏輯引數，無 footer，支援簡體中文、English (US)、淺深色與 100%／125%／150% 字號。目前設計見[設定的關於頁](../../../design/hifi/sources/settings.html?tab=about)，HTML 版本資訊由同一 JSON 生成，原生 Qt／提交未知時不偽造數值。
+關於頁沿用設定視窗的邏輯參數，不含頁尾，支援[隨附的介面語言](../ux/settings-localization.md)、淺色和深色主題，以及 100%、125% 和 150% 字級。目前設計見[設定的關於頁](../../../design/hifi/sources/settings.html?tab=about)。HTML 版本資訊由同一份 JSON 產生，無法取得的原生 Qt 版本或提交值顯示為未知。
 
 驗證入口：`scripts/check-build-version.py` 對照實際 CLI 與原生版本資源，`scripts/test-version.py`、`scripts/check-html-about.py`、`BrowserTest::versionAboutWindow`。截圖與測量僅儲存在 `build/review/about/`。原始碼、系統後設資料與實際執行版本一致是檢查條件；版本號本身不證明簽名、人工驗收或相容性已經透過。

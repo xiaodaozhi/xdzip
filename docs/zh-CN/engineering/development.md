@@ -1,12 +1,12 @@
 # 开发者准备指南
 
-[English](../../engineering/development.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/development.md)
+[English](../../engineering/development.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/development.md) | [日本語](../../ja-JP/engineering/development.md) | [한국어](../../ko-KR/engineering/development.md) | [Français](../../fr-FR/engineering/development.md) | [Deutsch](../../de-DE/engineering/development.md) | [Español](../../es-ES/engineering/development.md) | [Português (Brasil)](../../pt-BR/engineering/development.md) | [Русский](../../ru-RU/engineering/development.md)
 
 从[开发与贡献](../contributing/README.md)选择适合这次改动的构建和验证入口。[系统架构](../design/system-architecture.md)与[仓库结构](repository-layout.md)说明 Qt、Rust 运行时和各格式模块的边界。
 
 ## 获取与修改
 
-从当前 `main` 开始，保留工作区中的其他改动。按[贡献约定](../../../CONTRIBUTING.zh-CN.md)处理范围与审查，按[仓库交付指南](../../../developers/zh-CN/engineering/repository-hygiene.md)完成已授权的合入。改动契约时同步两种语言及受影响的验证用例。颜色和尺寸以 `specs/visual` 为准。
+从当前 `main` 开始，保留工作区中的其他改动。按[贡献约定](../../../CONTRIBUTING.zh-CN.md)处理范围与审查，按[仓库交付指南](../../../developers/zh-CN/engineering/repository-hygiene.md)完成已授权的合入。改动契约时同步各语言版本及受影响的验证用例。颜色和尺寸以 `specs/visual` 为准。
 
 ## 文档构建
 

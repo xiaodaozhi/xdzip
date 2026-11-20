@@ -2,7 +2,7 @@
 
 # XDZip 術語與實現限額
 
-[English](../../design/glossary.md) | [简体中文](../../zh-CN/design/glossary.md) | 繁體中文（台灣）
+[English](../../design/glossary.md) | [简体中文](../../zh-CN/design/glossary.md) | 繁體中文（台灣） | [日本語](../../ja-JP/design/glossary.md) | [한국어](../../ko-KR/design/glossary.md) | [Français](../../fr-FR/design/glossary.md) | [Deutsch](../../de-DE/design/glossary.md) | [Español](../../es-ES/design/glossary.md) | [Português (Brasil)](../../pt-BR/design/glossary.md) | [Русский](../../ru-RU/design/glossary.md)
 
 <a name="xdzip-1-术语"></a>
 

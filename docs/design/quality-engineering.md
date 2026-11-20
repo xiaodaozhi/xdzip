@@ -1,6 +1,6 @@
 # Coding conventions and quality engineering
 
-English | [简体中文](../zh-CN/design/quality-engineering.md) | [繁體中文（台灣）](../zh-TW/design/quality-engineering.md)
+English | [简体中文](../zh-CN/design/quality-engineering.md) | [繁體中文（台灣）](../zh-TW/design/quality-engineering.md) | [日本語](../ja-JP/design/quality-engineering.md) | [한국어](../ko-KR/design/quality-engineering.md) | [Français](../fr-FR/design/quality-engineering.md) | [Deutsch](../de-DE/design/quality-engineering.md) | [Español](../es-ES/design/quality-engineering.md) | [Português (Brasil)](../pt-BR/design/quality-engineering.md) | [Русский](../ru-RU/design/quality-engineering.md)
 
 ## Code and ownership
 
@@ -30,4 +30,4 @@ Fuzzing, sanitizers, model checking and performance benchmarks are methods to ap
 
 ## Maintaining the design
 
-When an implementation changes an identity, command, capability, task or write boundary, update the matching design and engineering reference and its acceptance links. Keep the paired language versions aligned. Use [architecture decisions](architecture-decisions.md) for design rationale and [performance design](performance.md) for measurement rules. Record actual results and limitations separately for the change under review.
+When an implementation changes an identity, command, capability, task or write boundary, update the matching design and engineering reference and its acceptance links. Keep all language editions aligned. Use [architecture decisions](architecture-decisions.md) for design rationale and [performance design](performance.md) for measurement rules. Record actual results and limitations separately for the change under review.

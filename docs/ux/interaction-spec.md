@@ -1,6 +1,6 @@
 # Additional interaction and copy specification
 
-English | [简体中文](../zh-CN/ux/interaction-spec.md) | [繁體中文（台灣）](../zh-TW/ux/interaction-spec.md)
+English | [简体中文](../zh-CN/ux/interaction-spec.md) | [繁體中文（台灣）](../zh-TW/ux/interaction-spec.md) | [日本語](../ja-JP/ux/interaction-spec.md) | [한국어](../ko-KR/ux/interaction-spec.md) | [Français](../fr-FR/ux/interaction-spec.md) | [Deutsch](../de-DE/ux/interaction-spec.md) | [Español](../es-ES/ux/interaction-spec.md) | [Português (Brasil)](../pt-BR/ux/interaction-spec.md) | [Русский](../ru-RU/ux/interaction-spec.md)
 
 The main-window and extraction-confirmation visual baseline is supplemented by the [operation state specification](hifi-state-spec.md) for creation, conflicts, tasks, results, settings and platform comparisons. See the [welcome-page contract](welcome-opening.md) for welcome and opening progress; current originals and layout references follow the [window registry](../../specs/visual/window-registry.json). A state specification does not mean all designs are implemented or have passed native visual acceptance; implementation boundaries are in the corresponding engineering and interaction contracts.
 

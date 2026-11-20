@@ -2,7 +2,7 @@
 
 # 編碼規範與質量工程
 
-[English](../../design/quality-engineering.md) | [简体中文](../../zh-CN/design/quality-engineering.md) | 繁體中文（台灣）
+[English](../../design/quality-engineering.md) | [简体中文](../../zh-CN/design/quality-engineering.md) | 繁體中文（台灣） | [日本語](../../ja-JP/design/quality-engineering.md) | [한국어](../../ko-KR/design/quality-engineering.md) | [Français](../../fr-FR/design/quality-engineering.md) | [Deutsch](../../de-DE/design/quality-engineering.md) | [Español](../../es-ES/design/quality-engineering.md) | [Português (Brasil)](../../pt-BR/design/quality-engineering.md) | [Русский](../../ru-RU/design/quality-engineering.md)
 
 <a name="xdzip-代码与所有权"></a>
 
@@ -40,4 +40,4 @@
 
 ## 維護設計
 
-實現改動涉及身份、命令、能力、任務或檔案寫出邊界時，同步更新對應設計、工程參考及驗收引用，並保持雙語一致。[架構決策](architecture-decisions.md)記錄取捨，[效能設計](performance.md)定義測量規則。實際結果及限制另行記錄到對應變更。
+實作變更若涉及識別資訊、命令、能力、任務或檔案寫入範圍，請同步更新對應設計、工程參考及驗收連結，並維持各語言版本一致。[架構決策](architecture-decisions.md)記錄取捨，[效能設計](performance.md)定義量測規則。實際結果與限制另行記錄於對應變更。
