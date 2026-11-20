@@ -8444,7 +8444,8 @@ QtObject {
         QVERIFY(paintedHeight > 0 && paintedHeight <= label->height() + 1);
         QVERIFY(!label->property("truncated").toBool());
         const QFontMetricsF labelMetrics(label->property("font").value<QFont>());
-        if (labelMetrics.horizontalAdvance(button->property("text").toString()) > label->width() + 1)
+        if (labelMetrics.horizontalAdvance(button->property("text").toString()) >
+            label->width() + 1)
             QVERIFY(label->property("lineCount").toInt() > 1);
         QVERIFY(button->mapToScene(QPointF(button->width(), 0)).x() <= settings->width());
         const bool active = QAccessible::isActive();
@@ -8537,6 +8538,49 @@ QtObject {
         QCOMPARE(restored.proxyAddress(), QStringLiteral("socks5://127.0.0.1:1080"));
         QCOMPARE(restored.mirrorAddress(), QStringLiteral("https://mirror.example.test"));
     }
+    void settingsSelectorHeightWithDifferentSelectedLanguageFont() {
+        QTemporaryDir profile;
+        QVERIFY(profile.isValid());
+        test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH",
+                                                      profile.filePath("settings.ini"));
+        QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
+        QSettings saved(profile.filePath("settings.ini"), QSettings::IniFormat);
+        saved.setValue("locale/language", "zh-CN");
+        saved.sync();
+        QCOMPARE(saved.status(), QSettings::NoError);
+        const auto restore = qScopeGuard([] { initializeUiText("zh-CN"); });
+        QVERIFY(initializeUiText("fr-FR"));
+
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *prefs = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
+        QVERIFY(settings && prefs && QMetaObject::invokeMethod(settings, "configure"));
+        QVERIFY(QTest::qWaitForWindowExposed(settings));
+        QCOMPARE(prefs->language(), QStringLiteral("zh-CN"));
+        prefs->preview(QStringLiteral("light"), 1.25);
+        auto *density = findVisual(settings->contentItem(), "settingsDensity");
+        QVERIFY(density);
+        QTRY_COMPARE(density->property("font").value<QFont>().pixelSize(), 16);
+        QTRY_VERIFY(density->height() >= density->property("implicitHeight").toReal() - 1);
+        const auto referenceHeight = density->height();
+        const auto referenceFamily = density->property("font").value<QFont>().family();
+        settings->setProperty("currentTab", 1);
+        QQuickItem *language = nullptr;
+        QTRY_VERIFY((language = findVisual(settings->contentItem(), "settingsLanguage")));
+        auto *editor = language->property("contentItem").value<QQuickItem *>();
+        QVERIFY(editor);
+        const auto selectedFont = editor->property("font").value<QFont>();
+        QVERIFY(selectedFont.family() != referenceFamily);
+        QTRY_VERIFY(qAbs(language->height() - referenceHeight) < 1);
+        QVERIFY(editor->height() <= language->height());
+        QVERIFY(
+            QFontMetricsF(selectedFont).horizontalAdvance(editor->property("text").toString()) <=
+            editor->width() + 1);
+        settings->close();
+    }
     void settingsSelectorsHaveConsistentGeometry_data() {
         QTest::addColumn<QString>("language");
         QTest::addColumn<bool>("dark");
@@ -8588,13 +8632,14 @@ QtObject {
             QVERIFY(indicator->y() >= 0 &&
                     indicator->y() + indicator->height() <= control->height());
             const QFontMetricsF metrics(editor->property("font").value<QFont>());
-            QVERIFY2(metrics.horizontalAdvance(editor->property("text").toString()) <=
-                         editor->width() + 1,
-                     qPrintable(name + QStringLiteral(" text clipped: editor %1, text %2, selector %3")
-                                           .arg(editor->width())
-                                           .arg(metrics.horizontalAdvance(
-                                               editor->property("text").toString()))
-                                           .arg(control->width())));
+            QVERIFY2(
+                metrics.horizontalAdvance(editor->property("text").toString()) <=
+                    editor->width() + 1,
+                qPrintable(name +
+                           QStringLiteral(" text clipped: editor %1, text %2, selector %3")
+                               .arg(editor->width())
+                               .arg(metrics.horizontalAdvance(editor->property("text").toString()))
+                               .arg(control->width())));
             if (name == QStringLiteral("settingsLanguage")) {
                 auto *popup = control->property("popup").value<QObject *>();
                 QVERIFY(popup && QMetaObject::invokeMethod(popup, "open"));
@@ -9093,11 +9138,14 @@ QtObject {
         auto *runtimeValue = findVisual(settings->contentItem(), "aboutValue-runtime");
         auto *revisionLabel = findVisual(settings->contentItem(), "aboutLabel-revision");
         QVERIFY(runtimeValue && revisionLabel);
+        qreal widestVersionLabel = 0;
         for (const auto *name : {"aboutLabel-version", "aboutLabel-build", "aboutLabel-revision",
                                  "aboutLabel-runtime"}) {
             auto *label = findVisual(settings->contentItem(), QString::fromLatin1(name));
             QVERIFY(label);
             const QFontMetricsF metrics(label->property("font").value<QFont>());
+            widestVersionLabel = qMax(
+                widestVersionLabel, metrics.horizontalAdvance(label->property("text").toString()));
             // Text shaping and QFontMetrics can round a glyph advance differently.
             // Check the actual QML layout and painted result rather than a second
             // measurement that can disagree by one logical pixel.
@@ -9115,7 +9163,13 @@ QtObject {
         }
         const auto originalRevision = revisionLabel->property("text").toString();
         const auto originalValueX = runtimeValue->mapToItem(pageContent, QPointF()).x();
-        QVERIFY(revisionLabel->setProperty("text", QStringLiteral("Additional field label")));
+        const QFontMetricsF revisionMetrics(revisionLabel->property("font").value<QFont>());
+        auto longerRevision = originalRevision;
+        while (revisionMetrics.horizontalAdvance(longerRevision) <= widestVersionLabel + 12 &&
+               longerRevision.size() < 128)
+            longerRevision += QLatin1Char('W');
+        QVERIFY(revisionMetrics.horizontalAdvance(longerRevision) > widestVersionLabel + 12);
+        QVERIFY(revisionLabel->setProperty("text", longerRevision));
         QTRY_VERIFY(runtimeValue->mapToItem(pageContent, QPointF()).x() > originalValueX + 1);
         QVERIFY(revisionLabel->setProperty("text", originalRevision));
         QTRY_VERIFY(qAbs(runtimeValue->mapToItem(pageContent, QPointF()).x() - originalValueX) < 1);
@@ -9231,7 +9285,8 @@ QtObject {
         QTRY_VERIFY(download->isVisible());
         QVERIFY(!check->isVisible());
         QTest::qWait(50);
-        QCOMPARE(download->mapToScene(QPointF(download->width(), 0)).x(), checkRight);
+        QCOMPARE(qRound(download->mapToScene(QPointF(download->width(), 0)).x()),
+                 qRound(checkRight));
         if (!updateCaptures.isEmpty())
             QVERIFY(visual_audit::save(settings, updateCaptures,
                                        language + (dark ? "-dark-" : "-light-") +
@@ -9244,7 +9299,8 @@ QtObject {
         QTRY_COMPARE(service->property("state").toString(), QStringLiteral("downloading"));
         QTRY_VERIFY(cancelDownload->isVisible() && progress->isVisible());
         QCOMPARE(cancelDownload->property("text").toString(), qtTrId("update.cancelDownload"));
-        QCOMPARE(cancelDownload->mapToScene(QPointF(cancelDownload->width(), 0)).x(), checkRight);
+        QCOMPARE(qRound(cancelDownload->mapToScene(QPointF(cancelDownload->width(), 0)).x()),
+                 qRound(checkRight));
         if (!updateCaptures.isEmpty())
             QVERIFY(visual_audit::save(settings, updateCaptures,
                                        language + (dark ? "-dark-" : "-light-") +
@@ -10474,6 +10530,7 @@ QtObject {
         QTest::addColumn<QString>("fixture");
         QTest::addColumn<QString>("format");
         QTest::addColumn<QString>("language");
+        QTest::addColumn<bool>("editable");
         const QList<QPair<QString, QString>> formats{{"phrase.bz2", "BZip2"},
                                                      {"phrase.lzma", "LZMA"},
                                                      {"phrase.lz", "Lzip"},
@@ -10519,9 +10576,14 @@ QtObject {
                                                      {"../arc/m8-phrase.arc", "ARC"},
                                                      {"../arc/m9-phrase.arc", "ARC"}};
         for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
-            for (const auto &[fixture, format] : formats)
+            for (const auto &[fixture, format] : formats) {
+                // These TAR and ZIPX profiles and level-2 LZH fixtures support updates;
+                // standalone streams and older LZH headers remain read-only.
+                const bool editable = format.startsWith("TAR.") || format == "ZIP" ||
+                                      (format == "LZH" && fixture.endsWith("-h2.lzh"));
                 QTest::newRow(qPrintable(fixture + "-" + language))
-                    << fixture << format << language;
+                    << fixture << format << language << editable;
+            }
     }
     void arjUnknownMethodKeepsItsOwnNumericIdentity() {
         QTemporaryDir owned;
@@ -10596,6 +10658,7 @@ QtObject {
         QFETCH(QString, fixture);
         QFETCH(QString, format);
         QFETCH(QString, language);
+        QFETCH(bool, editable);
         const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
         QVERIFY(initializeUiText(language));
         QTemporaryDir owned;
@@ -10612,7 +10675,7 @@ QtObject {
         QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
         QCOMPARE(controller->formatLabel(), format);
         QCOMPARE(controller->archiveTotal(), 1);
-        QVERIFY(!controller->canUpdateArchive());
+        QCOMPARE(controller->canUpdateArchive(), editable);
         QCOMPARE(controller->m_model.rowCount(), 1);
         const auto *row = controller->m_model.rowAt(0);
         QVERIFY(row);

@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
+import Xdzip.Settings 1.0
 
 GridLayout {
     id: root
@@ -63,7 +64,8 @@ GridLayout {
         Layout.maximumWidth: Math.max(80, root.width)
         Layout.alignment: Qt.AlignRight
         density: Theme.settingsBodySize * Theme.fontScale / Theme.operationBodySize
-        implicitHeight: Math.max(Theme.operationControlBodyButtonHeight, contentItem.implicitHeight + 8)
+        implicitHeight: Math.ceil(Math.max(Theme.operationControlBodyButtonHeight,
+                                           UiFonts.maxUiLineHeight(font) + 8))
         model: root.options
         optionFonts: root.optionFonts
         currentIndex: root.selectedIndex

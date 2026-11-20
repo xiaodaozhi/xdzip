@@ -37,6 +37,13 @@ class UiFonts : public QObject {
     Q_INVOKABLE qreal measure(const QString &text, const QFont &font, const QString &family) const {
         return QFontMetricsF(useFamily(font, family)).horizontalAdvance(text);
     }
+    Q_INVOKABLE qreal maxUiLineHeight(const QFont &font) const {
+        const auto families = QGuiApplication::instance()->property("xdzipUiFontFamilies").toMap();
+        qreal height = QFontMetricsF(font).height();
+        for (auto it = families.cbegin(); it != families.cend(); ++it)
+            height = qMax(height, QFontMetricsF(useFamily(font, it.value().toString())).height());
+        return height;
+    }
     Q_INVOKABLE QRectF visualTextBounds(const QString &text, const QFont &font, qreal width) const {
         if (text.trimmed().isEmpty() || width <= 0)
             return {};
