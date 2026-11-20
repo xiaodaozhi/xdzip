@@ -147,10 +147,13 @@ class ShellTest : public QObject {
             ShellBatchController batch;
             batch.begin(request("choose", {candidate}));
             QCOMPARE(batch.actions().size(), 7);
-            QCOMPARE(xdzip_shell::menu({xdzip_shell::fs::u8path(candidate.toUtf8().toStdString())},
-                                       false)
-                         .size(),
-                     size_t(7));
+            const auto nativePath = xdzip_shell::fs::u8path(candidate.toUtf8().toStdString());
+            for (const auto &language : xdzip_i18n::languages) {
+                const auto entries = xdzip_shell::menu({nativePath}, language.id, false);
+                QCOMPARE(entries.size(), size_t(7));
+                QVERIFY(entries[3].action == "extract-here");
+                QVERIFY(entries[3].label == xdzip_shell::text(language.id, "shell.extractHere"));
+            }
         }
         const auto native =
             xdzip_shell::requestFile("zip", {xdzip_shell::fs::u8path(path.toUtf8().toStdString())});
