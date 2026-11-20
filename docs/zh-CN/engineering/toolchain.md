@@ -1,6 +1,6 @@
 # 工具链与平台冻结表
 
-[English](../../engineering/toolchain.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/toolchain.md)
+[English](../../engineering/toolchain.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/engineering/toolchain.md) | [日本語](../../ja-JP/engineering/toolchain.md) | [한국어](../../ko-KR/engineering/toolchain.md) | [Français](../../fr-FR/engineering/toolchain.md) | [Deutsch](../../de-DE/engineering/toolchain.md) | [Español](../../es-ES/engineering/toolchain.md) | [Português (Brasil)](../../pt-BR/engineering/toolchain.md) | [Русский](../../ru-RU/engineering/toolchain.md)
 
 开发工具版本由 rust-toolchain.toml、Cargo.lock、CMake 和 CI 固定，支持范围遵循[支持政策](support-policy.md)。本表定义升级及发行前的核验要求，具体观测记录留在 issue／Actions，不把单机工具列表当作发行依赖锁。
 
