@@ -2,7 +2,7 @@
 
 # 大歸檔索引與按需瀏覽
 
-[English](../../engineering/large-index.md) | [简体中文](../../zh-CN/engineering/large-index.md) | 繁體中文（台灣）
+[English](../../engineering/large-index.md) | [简体中文](../../zh-CN/engineering/large-index.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/large-index.md) | [한국어](../../ko-KR/engineering/large-index.md) | [Français](../../fr-FR/engineering/large-index.md) | [Deutsch](../../de-DE/engineering/large-index.md) | [Español](../../es-ES/engineering/large-index.md) | [Português (Brasil)](../../pt-BR/engineering/large-index.md) | [Русский](../../ru-RU/engineering/large-index.md)
 
 普通單檔案 ZIP/ZIP64 的原始碼能力上限為一百萬條物理記錄。其他格式和分卷路徑保持各自現有的十萬條准入；格式名稱不表示所有組合都已擴大上限。目錄、重複名稱和待檢查記錄均計入物理數量，隱式導航目錄只增加展示行。
 
