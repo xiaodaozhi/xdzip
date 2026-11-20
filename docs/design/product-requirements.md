@@ -1,6 +1,6 @@
 # XDZip product requirements
 
-English | [简体中文](../zh-CN/design/product-requirements.md) | [繁體中文（台灣）](../zh-TW/design/product-requirements.md)
+English | [简体中文](../zh-CN/design/product-requirements.md) | [繁體中文（台灣）](../zh-TW/design/product-requirements.md) | [日本語](../ja-JP/design/product-requirements.md) | [한국어](../ko-KR/design/product-requirements.md) | [Français](../fr-FR/design/product-requirements.md) | [Deutsch](../de-DE/design/product-requirements.md) | [Español](../es-ES/design/product-requirements.md) | [Português (Brasil)](../pt-BR/design/product-requirements.md) | [Русский](../ru-RU/design/product-requirements.md)
 
 XDZip lets people inspect archives like folders, work with selected content, and create or edit archives when the format supports it. The desktop and [standalone CLI](../engineering/command-line.md) share the archive runtime. The [project README](../../README.md) describes current capabilities and distribution. The requirements below describe the behavior to preserve and verify.
 
@@ -21,12 +21,12 @@ XDZip lets people inspect archives like folders, work with selected content, and
 | P11 | Protect passwords and user data | Archive operations work offline. Passwords are kept in scoped, zeroizing storage. Privacy, diagnostic output and explicit update access have their own contracts. |
 | P12 | Make release contents and provenance auditable | Use the defined packaging channels, locked inputs, manifests, checksums, license material and platform checks. Results apply to the build and distribution actually verified. |
 | P13 | Allow third-party extensions only with validated trust and permissions | The XDP1 read-only trial is implemented separately. Product-side installation and activation remain design work. |
-| P14 | Preview or temporarily open only on explicit action | Properties can request bounded text/image preview. Opening a regular entry uses a verified private copy and delegates to the system association. |
+| P14 | Provide bounded preview and temporary opening | When the properties panel is visible, selecting one supported file starts a bounded text or image preview. Explicitly opening an eligible regular entry uses a verified private copy and delegates to the system association. |
 | P15 | Report failures and uncertain results accurately | Stable errors and bounded results cover source change, disk failure, skipped entries and cleanup. Automatic restart recovery remains a design option. |
 
 ## Workflows and scope
 
-- **Open and inspect.** A file-open intent enters the desktop session coordinator. A successful scan publishes a session; search and sorting make a new query. Double-click enters a directory or opens an eligible file through the temporary-copy workflow. Preview is initiated separately from the properties view. [Browsing and preview](../user-guide/browse.md), [Temporary opening](../engineering/archive-opening.md)
+- **Open and inspect.** A file-open intent enters the desktop session coordinator. A successful scan publishes a session; search and sorting make a new query. Double-click enters a directory or opens an eligible file through the temporary-copy workflow. When the properties panel is visible, selecting one supported file starts its preview. [Browsing and preview](../user-guide/browse.md), [Temporary opening](../engineering/archive-opening.md)
 - **Extract.** “Extract all” refers to the archive. To extract only matches, select within the query and review the resulting scope. A metadata preflight provides findings before write authorization. Per-file commits preserve already completed files on a later failure or cancellation. [Extraction](../engineering/zip-safe-extraction.md), [Task scheduling](task-scheduling.md)
 - **Create, modify or test.** Creation and eligible edits verify staged output before publication. The Test action checks an eligible archive according to its format and obtains no output authorization. Available operations depend on the format, entry and source profile. [Format registry](../engineering/format-registry.md), [Archive transfers](../engineering/archive-transfers.md), [Archive checking](../engineering/archive-checking.md)
 

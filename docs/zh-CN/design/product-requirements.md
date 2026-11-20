@@ -1,6 +1,6 @@
 # XDZip 产品要求
 
-[English](../../design/product-requirements.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/product-requirements.md)
+[English](../../design/product-requirements.md) | 简体中文 | [繁體中文（台灣）](../../zh-TW/design/product-requirements.md) | [日本語](../../ja-JP/design/product-requirements.md) | [한국어](../../ko-KR/design/product-requirements.md) | [Français](../../fr-FR/design/product-requirements.md) | [Deutsch](../../de-DE/design/product-requirements.md) | [Español](../../es-ES/design/product-requirements.md) | [Português (Brasil)](../../pt-BR/design/product-requirements.md) | [Русский](../../ru-RU/design/product-requirements.md)
 
 XDZip 支持像浏览文件夹一样查看归档、处理选定的内容，并在格式允许时创建或修改归档。桌面与[独立 CLI](../engineering/command-line.md)共用归档运行时。[项目首页](../../../README.zh-CN.md)说明当前能力与分发方式。下列要求说明需要保留和验证的行为。
 
@@ -21,12 +21,12 @@ XDZip 支持像浏览文件夹一样查看归档、处理选定的内容，并�
 | P11 | 保护密码与用户数据 | 归档操作可离线使用。密码保存在限定作用域的可清零容器中。隐私、诊断输出及主动更新访问各有契约。 |
 | P12 | 发行内容和来源可审计 | 使用规定的打包渠道、锁定输入、清单、校验和、许可材料和平台检查。验证结论对应实际检查的构建与发行渠道。 |
 | P13 | 第三方扩展须通过信任和权限校验 | XDP1 只读试验已独立实现。产品内安装与激活仍属于设计工作。 |
-| P14 | 按明确操作预览或临时打开 | 属性面板可请求有界文本或图片预览。打开普通条目使用已验证的私有副本，并交给系统关联应用。 |
+| P14 | 提供有界预览和临时打开 | 属性面板可见时，选中一个受支持的文件会自动开始有界文本或图片预览。明确打开符合条件的普通文件条目时，使用已验证的私有副本并交给系统关联应用。 |
 | P15 | 准确报告失败与不确定结果 | 稳定的错误码和有界结果涵盖来源变化、磁盘失败、跳过与清理。重启后自动恢复仍为设计选项。 |
 
 ## 工作流程与操作范围
 
-- **打开和查看。** 打开意图进入桌面会话协调器。扫描成功后发布会话，搜索和排序生成新查询。双击进入目录，或通过临时副本打开符合条件的文件。预览在属性面板单独发起。[浏览与预览](../user-guide/browse.md)、[临时打开](../engineering/archive-opening.md)
+- **打开和查看。** 打开意图进入桌面会话协调器。扫描成功后发布会话，搜索和排序生成新查询。双击进入目录，或通过临时副本打开符合条件的文件。属性面板可见时，选中一个受支持的文件会自动开始预览。[浏览与预览](../user-guide/browse.md)、[临时打开](../engineering/archive-opening.md)
 - **解压。** “解压全部”指整个归档。只解压匹配项时，在查询中选择并检查实际范围。元数据预检在取得写权限前报告发现。逐文件提交使已完成文件在后续失败或取消时仍能保留。[解压](../engineering/zip-safe-extraction.md)、[任务调度](task-scheduling.md)
 - **创建、修改或检查。** 创建与符合条件的编辑在发布前验证暂存输出。整包检查按对应格式核验符合条件的归档，不取得输出授权。支持的操作取决于格式、条目及来源配置。[格式注册表](../engineering/format-registry.md)、[归档传输](../engineering/archive-transfers.md)、[归档检查](../engineering/archive-checking.md)
 
