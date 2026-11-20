@@ -4,7 +4,7 @@
 
 [English](../../engineering/tar-gzip.md) | [简体中文](../../zh-CN/engineering/tar-gzip.md) | [繁體中文](../../zh-TW/engineering/tar-gzip.md) | [日本語](../../ja-JP/engineering/tar-gzip.md) | 한국어 | [Français](../../fr-FR/engineering/tar-gzip.md) | [Deutsch](../../de-DE/engineering/tar-gzip.md) | [Español](../../es-ES/engineering/tar-gzip.md) | [Português (Brasil)](../../pt-BR/engineering/tar-gzip.md) | [Русский](../../ru-RU/engineering/tar-gzip.md)
 
-이 계약은 TAR/TAR.GZ 탐색, 생성과 안전한 압축 풀기의 경계를 정의합니다. 플랫폼 결과와 수동 수락은 이슈 또는 CI 산출물에 기록합니다. [안전한 압축 풀기](zip-safe-extraction.md)와 [ZIP 생성](../../engineering/zip-creation.md)의 입력 권한, 임시 준비, 충돌, 취소와 전체 아카이브 커밋을 유지합니다.
+이 계약은 TAR/TAR.GZ 탐색, 생성과 안전한 압축 풀기의 경계를 정의합니다. 플랫폼 결과와 수동 수락은 이슈 또는 CI 산출물에 기록합니다. [안전한 압축 풀기](zip-safe-extraction.md)와 [ZIP 생성](zip-creation.md)의 입력 권한, 임시 준비, 충돌, 취소와 전체 아카이브 커밋을 유지합니다.
 
 <a name="xdzip-scope-and-capabilities"></a>
 

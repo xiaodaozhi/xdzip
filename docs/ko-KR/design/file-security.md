@@ -11,7 +11,7 @@
 ## 원본과 대상 승인
 
 - **압축 파일 원본.** `Source::open`은 선택된 경로를 `xdzip-io::open_regular_readonly`로 열고 열린 파일의 유형을 검사합니다. Unix에서는 분류용 열기가 비차단 방식이므로 FIFO가 열기를 막지 못합니다. 사용자가 선택한 경로는 링크를 통해 일반 파일로 해석될 수 있습니다. 분할 볼륨 검색은 제한되며 형식별로 다릅니다. 호스트는 승인된 인접 부분을 고정하고 파일 식별 정보와 버전을 검사합니다. 코덱은 제공된 스트림만 지정할 수 있습니다. [원본 구현](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/source.rs), [볼륨 처리](../engineering/archive-opening.md)
-- **생성 입력.** `InputTree`는 제한된 메타데이터와 파일 식별 정보로 선택된 입력을 순회합니다. 읽기는 버전을 검사하면서 해당 트리에서 멤버를 엽니다. 현재 개인 준비 디렉터리는 자신의 입력 스캔에서 제외됩니다. 감지된 원본 변경은 작업을 중지합니다. 파일 식별 정보, 크기와 시간 검사는 최선의 변경 감지이며 완전한 콘텐츠 스냅샷은 아닙니다. [입력 트리](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/input.rs), [압축 파일 생성](../../engineering/zip-creation.md)
+- **생성 입력.** `InputTree`는 제한된 메타데이터와 파일 식별 정보로 선택된 입력을 순회합니다. 읽기는 버전을 검사하면서 해당 트리에서 멤버를 엽니다. 현재 개인 준비 디렉터리는 자신의 입력 스캔에서 제외됩니다. 감지된 원본 변경은 작업을 중지합니다. 파일 식별 정보, 크기와 시간 검사는 최선의 변경 감지이며 완전한 콘텐츠 스냅샷은 아닙니다. [입력 트리](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/input.rs), [압축 파일 생성](../engineering/zip-creation.md)
 - **대상.** `Grant`는 선택한 디렉터리 객체와 식별 정보를 보유합니다. 추출은 모든 원본 볼륨 식별 정보도 보호 파일로 전달합니다. 생성과 편집은 각 작업 경로에서 고정된 입력 또는 원래 압축 파일 식별 정보를 검사합니다. 하위 폴더와 준비 영역은 보유한 디렉터리를 통해 접근하고 게시 전에 부모 식별 정보를 다시 검사합니다. `CheckTarget`과 추출 사전 검사는 작업 시작 전에 유용한 결과를 제공할 수 있습니다. 쓰기 권한은 작업 중 다시 검사합니다. [대상 권한](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/target.rs), [추출 사전 검사](../engineering/extraction-preflight.md)
 
 <a name="xdzip-name-mapping-platform-protection-and-links"></a>

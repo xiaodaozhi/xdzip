@@ -12,7 +12,7 @@
 
 | 작업 | 내장 지원 범위 |
 | --- | --- |
-| 새 압축 파일 만들기 | ZIP, 7z, TAR, TAR.GZ (`.tar.gz`, `.tgz`), 독립 GZIP, XZ/TAR.XZ, LZ4/TAR.LZ4, Zstandard/TAR.ZST, LHA (`.lha`, `.lzh`), ISO9660/Joliet 및 Windows x64용 ZIP SFX 래퍼입니다. 독립 스트림은 일반 파일 하나를 받습니다. [생성](../../engineering/zip-creation.md)과 [단일 파일 스트림](single-file-streams.md)을 참조하세요. |
+| 새 압축 파일 만들기 | ZIP, 7z, TAR, TAR.GZ (`.tar.gz`, `.tgz`), 독립 GZIP, XZ/TAR.XZ, LZ4/TAR.LZ4, Zstandard/TAR.ZST, LHA (`.lha`, `.lzh`), ISO9660/Joliet 및 Windows x64용 ZIP SFX 래퍼입니다. 독립 스트림은 일반 파일 하나를 받습니다. [생성](zip-creation.md)과 [단일 파일 스트림](single-file-streams.md)을 참조하세요. |
 | 기존 압축 파일 다시 쓰기 | 조건을 충족하는 ZIP/ZIPX, 7z, 레벨 2 LHA/LZH, TAR, TAR.GZ, TAR.XZ, TAR.ZST, TAR.LZ4, TAR.BZ2, TAR.LZMA, TAR.LZ, TAR.Z, TAR.BR를 지원합니다. 암호화되거나 분할된 압축 파일, 지원하지 않는 레코드나 저장 방식을 쓰는 압축 파일은 제외합니다. 자세한 내용은 [수정 계약](../../engineering/archive-transfers.md)을 참조하세요. |
 | 탐색, 압축 풀기, 항목 열기, 내보내기 또는 검사 | 작업마다 기능과 레코드를 별도로 검사합니다. 예를 들어 일부 설치 프로그램은 메타데이터만 확인할 수 있습니다. [읽기 전용 탐색](../../engineering/readonly-browser.md)과 [검사](archive-checking.md)를 참조하세요. |
 

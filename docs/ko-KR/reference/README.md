@@ -43,7 +43,7 @@
 - [압축 파일 무결성 검사](../engineering/archive-checking.md)
 - [항목 열기, 끌어서 놓기 및 압축 파일 수정](../../engineering/archive-transfers.md)
 - [압축 파일 암호와 암호화된 디렉터리 열기](../engineering/password-extraction.md)
-- [ZIP 생성 계약](../../engineering/zip-creation.md)
+- [ZIP 생성 계약](../engineering/zip-creation.md)
 - [ISO9660 및 Joliet 생성](../engineering/iso-creation.md)
 - [Windows용 내장 ZIP 자동 압축 풀기 파일](../engineering/sfx-creation.md)
 

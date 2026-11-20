@@ -1,6 +1,6 @@
 # ZIP 创建实现契约
 
-[English](../../engineering/zip-creation.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/zip-creation.md) | [日本語](../../ja-JP/engineering/zip-creation.md) | [Français](../../fr-FR/engineering/zip-creation.md) | [Deutsch](../../de-DE/engineering/zip-creation.md) | [Español](../../es-ES/engineering/zip-creation.md) | [Português (Brasil)](../../pt-BR/engineering/zip-creation.md)
+[English](../../engineering/zip-creation.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/zip-creation.md) | [日本語](../../ja-JP/engineering/zip-creation.md) | [한국어](../../ko-KR/engineering/zip-creation.md) | [Français](../../fr-FR/engineering/zip-creation.md) | [Deutsch](../../de-DE/engineering/zip-creation.md) | [Español](../../es-ES/engineering/zip-creation.md) | [Português (Brasil)](../../pt-BR/engineering/zip-creation.md)
 
 从明确选择的文件与目录创建新 ZIP；默认 2-正常压缩，使用 Deflate 6；支持 Store 与 Deflate 1／6／9、WinZip AES-256 内容加密和编号分卷。TAR/GZIP 的创建与解压见[格式说明](tar-gzip.md)，AES-256 读取见[密码解压](password-extraction.md)；分卷读取见[分卷契约](archive-opening.md)，普通单文件归档的显式添加使用[文件拖放与修改契约](archive-transfers.md)，不复用新建归档的源保护例外。输入授权、暂存、校验、重名决策和最终保存由宿主负责，格式层只接收条目、可读输入与可写输出。
 
