@@ -10,7 +10,7 @@
 
 Les premiers essais de frameworks utilisaient une liste d’archives fictive et des tâches simulées. Le produit a adopté Qt Quick et une passerelle CXX typée, puis a mis en œuvre les opérations réelles sur les archives, les tâches et les fichiers dans Rust. Le JSON, l’ABI C et les mesures de durée du prototype se rapportent à ces essais. Les [décisions d’architecture](architecture-decisions.md) expliquent les choix et les conditions de leur réexamen.
 
-Le produit utilise des modèles de lignes bornés et vérifie l’identité des requêtes pour empêcher qu’une ancienne réponse remplace la vue courante. Il ajoute des identifiants d’entrées physiques, des capacités de format explicites, des autorisations de fichiers, une sortie temporaire et une publication vérifiée. La CLI indépendante emploie le même cœur sans Qt. Voir l’[architecture du système](../../design/system-architecture.md) et le [modèle de domaine](domain-data.md).
+Le produit utilise des modèles de lignes bornés et vérifie l’identité des requêtes pour empêcher qu’une ancienne réponse remplace la vue courante. Il ajoute des identifiants d’entrées physiques, des capacités de format explicites, des autorisations de fichiers, une sortie temporaire et une publication vérifiée. La CLI indépendante emploie le même cœur sans Qt. Voir l’[architecture du système](system-architecture.md) et le [modèle de domaine](domain-data.md).
 
 <a name="xdzip-current-experimental-and-proposed-work"></a>
 

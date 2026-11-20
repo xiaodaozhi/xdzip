@@ -4,7 +4,7 @@
 
 [English](../../engineering/development.md) | [简体中文](../../zh-CN/engineering/development.md) | [繁體中文](../../zh-TW/engineering/development.md) | [日本語](../../ja-JP/engineering/development.md) | [한국어](../../ko-KR/engineering/development.md) | Français | [Deutsch](../../de-DE/engineering/development.md) | [Español](../../es-ES/engineering/development.md) | [Português (Brasil)](../../pt-BR/engineering/development.md) | [Русский](../../ru-RU/engineering/development.md)
 
-Le [guide pour compiler et contribuer](../contributing/README.md) aide à choisir la construction et les vérifications adaptées au changement. L’[architecture](../../design/system-architecture.md) et l’[organisation du dépôt](repository-layout.md) décrivent les frontières de Qt, de l’exécution Rust et des codecs.
+Le [guide pour compiler et contribuer](../contributing/README.md) aide à choisir la construction et les vérifications adaptées au changement. L’[architecture](../design/system-architecture.md) et l’[organisation du dépôt](repository-layout.md) décrivent les frontières de Qt, de l’exécution Rust et des codecs.
 
 <a name="xdzip-obtain-and-modify"></a>
 

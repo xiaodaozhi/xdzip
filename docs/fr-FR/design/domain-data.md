@@ -4,7 +4,7 @@
 
 [English](../../design/domain-data.md) | [简体中文](../../zh-CN/design/domain-data.md) | [繁體中文](../../zh-TW/design/domain-data.md) | [日本語](../../ja-JP/design/domain-data.md) | [한국어](../../ko-KR/design/domain-data.md) | Français | [Deutsch](../../de-DE/design/domain-data.md) | [Español](../../es-ES/design/domain-data.md) | [Português (Brasil)](../../pt-BR/design/domain-data.md) | [Русский](../../ru-RU/design/domain-data.md)
 
-Le runtime possède la session d’archive, l’index achevé et la dernière requête de cette session. Qt conserve une vue du résultat et la CLI peut lire les enregistrements physiques par sa commande de catalogue distincte. Les deux soumettent leurs opérations au même service Rust. [Architecture système](../../design/system-architecture.md), [Pont Qt/Rust](qt-rust-bridge.md)
+Le runtime possède la session d’archive, l’index achevé et la dernière requête de cette session. Qt conserve une vue du résultat et la CLI peut lire les enregistrements physiques par sa commande de catalogue distincte. Les deux soumettent leurs opérations au même service Rust. [Architecture système](system-architecture.md), [Pont Qt/Rust](qt-rust-bridge.md)
 
 <a name="xdzip-identity-and-source-version"></a>
 

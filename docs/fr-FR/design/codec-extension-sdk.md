@@ -14,7 +14,7 @@
 | Processus d’archive fourni | `xdzip-codec-native` dans l’hôte lance `xdzip-native-codec`. Sa couche protocolaire C++ appelle les backends Rust 7z, RAR, CAB et optiques via `xdzip-codec-bridge`. La création et la réécriture 7z admissibles empruntent le même chemin. La création ISO utilise son propre module d’écriture optique dans le processus. |
 | Essai SDK externe | `xdzip-plugin-host` et `xdzip-plugin-protocol` constituent une expérience XDP1 distincte et explicite. Les versions produit du bureau et de la CLI ne découvrent, n’installent ni n’exécutent d’extensions tierces. |
 
-Les deux premiers chemins sont des composants intégrés du produit. Le processus fourni est séparé et possède un protocole privé et une surveillance des ressources. L’essai externe dispose de sa propre validation de paquet, négociation de version et conditions de permission par plateforme. [Architecture système](../../design/system-architecture.md), [Contrat du processus d’archive](../engineering/native-codecs.md), [Contrat de l’essai SDK](../engineering/sdk-trial.md)
+Les deux premiers chemins sont des composants intégrés du produit. Le processus fourni est séparé et possède un protocole privé et une surveillance des ressources. L’essai externe dispose de sa propre validation de paquet, négociation de version et conditions de permission par plateforme. [Architecture système](system-architecture.md), [Contrat du processus d’archive](../engineering/native-codecs.md), [Contrat de l’essai SDK](../engineering/sdk-trial.md)
 
 <a name="xdzip-product-routing-and-operation-capabilities"></a>
 

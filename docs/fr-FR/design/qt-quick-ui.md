@@ -4,7 +4,7 @@
 
 [English](../../design/qt-quick-ui.md) | [简体中文](../../zh-CN/design/qt-quick-ui.md) | [繁體中文](../../zh-TW/design/qt-quick-ui.md) | [日本語](../../ja-JP/design/qt-quick-ui.md) | [한국어](../../ko-KR/design/qt-quick-ui.md) | Français | [Deutsch](../../de-DE/design/qt-quick-ui.md) | [Español](../../es-ES/design/qt-quick-ui.md) | [Português (Brasil)](../../pt-BR/design/qt-quick-ui.md) | [Русский](../../ru-RU/design/qt-quick-ui.md)
 
-Le bureau utilise Qt Quick pour la présentation et les interactions. Les contrôleurs C++ transmettent les intentions et maintiennent l’état des vues. Le cœur Rust interprète les archives et détient la politique des tâches et les autorisations sur les fichiers. L’[architecture du système](../../design/system-architecture.md) et le [contrat de la passerelle](qt-rust-bridge.md) décrivent les appels ci-dessous.
+Le bureau utilise Qt Quick pour la présentation et les interactions. Les contrôleurs C++ transmettent les intentions et maintiennent l’état des vues. Le cœur Rust interprète les archives et détient la politique des tâches et les autorisations sur les fichiers. L’[architecture du système](system-architecture.md) et le [contrat de la passerelle](qt-rust-bridge.md) décrivent les appels ci-dessous.
 
 <a name="xdzip-windows-sessions-and-models"></a>
 

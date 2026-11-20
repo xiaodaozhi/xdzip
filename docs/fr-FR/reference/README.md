@@ -4,7 +4,7 @@
 
 [English](../../reference/README.md) | [简体中文](../../zh-CN/reference/README.md) | [繁體中文](../../zh-TW/reference/README.md) | [日本語](../../ja-JP/reference/README.md) | [한국어](../../ko-KR/reference/README.md) | Français | [Deutsch](../../de-DE/reference/README.md) | [Español](../../es-ES/reference/README.md) | [Português (Brasil)](../../pt-BR/reference/README.md) | [Русский](../../ru-RU/reference/README.md)
 
-Consultez d’abord l’[architecture du système](../../design/system-architecture.md) pour les chemins d’exécution du bureau et de la CLI. Les sections ci-dessous mènent au contrat qui définit chaque comportement. Le [tableau des formats](../../../README.fr-FR.md#xdzip-format-support) présente les opérations prises en charge. Pour les étapes d’utilisation ou la préparation du développement, consultez le [manuel](../user-guide/README.md), les [exemples de CLI](../integration/README.md) et le [guide de contribution](../contributing/README.md).
+Consultez d’abord l’[architecture du système](../design/system-architecture.md) pour les chemins d’exécution du bureau et de la CLI. Les sections ci-dessous mènent au contrat qui définit chaque comportement. Le [tableau des formats](../../../README.fr-FR.md#xdzip-format-support) présente les opérations prises en charge. Pour les étapes d’utilisation ou la préparation du développement, consultez le [manuel](../user-guide/README.md), les [exemples de CLI](../integration/README.md) et le [guide de contribution](../contributing/README.md).
 
 <a name="xdzip-architecture-and-interfaces"></a>
 

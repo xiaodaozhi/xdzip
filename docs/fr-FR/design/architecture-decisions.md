@@ -22,7 +22,7 @@ Réexamen : Qt ne satisfait pas les besoins de fonctionnalité, de licence ou de
 
 **État : acceptée.**
 
-**Implémentation actuelle.** L’environnement Rust gère l’état des archives et les tâches. La sélection des fichiers exprime une intention du bureau ; la couche d’E/S de l’hôte autorise les accès au système de fichiers. [Architecture du système](../../design/system-architecture.md)
+**Implémentation actuelle.** L’environnement Rust gère l’état des archives et les tâches. La sélection des fichiers exprime une intention du bureau ; la couche d’E/S de l’hôte autorise les accès au système de fichiers. [Architecture du système](system-architecture.md)
 
 Décision : domaine, index, plans, tâches, quotas, règles de chemins et registre des formats résident dans Rust. Qt représente l’état, autorise la sélection de fichiers système et transmet les décisions de l’utilisateur. Les tests métier ne nécessitent pas Qt.
 
