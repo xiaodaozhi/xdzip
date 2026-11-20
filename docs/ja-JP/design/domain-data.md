@@ -19,7 +19,7 @@
 | `QueryKey` | セッション、クエリー ID、世代、スナップショットのリビジョンを組み合わせる。オフセットはこの結果内の位置を指す。 |
 | 要求、タスク、確認画面の識別情報 | サービスは接続内で要求番号とタスク番号を割り当てる。確認画面は特定のタスクに属する。共通デスクトップのタスク項目はコントローラーのセッション識別情報とタスク番号を組み合わせる。 |
 
-ドメイン型はアーカイブとクエリーの識別子がゼロでないことを保証します。ネイティブブリッジでは型付き Rust 値を生成された CXX データで表現します。64 ビットすべてを必要とする ID は不透明な文字列として QML に渡します。行番号は特定のクエリー内の位置にすぎません。[ドメインの識別子](../../../crates/xdzip-domain/src/identity.rs)、[ソース実装](../../../crates/xdzip-runtime/src/source.rs)、[アプリケーションセッション](../../engineering/application-sessions.md)
+ドメイン型はアーカイブとクエリーの識別子がゼロでないことを保証します。ネイティブブリッジでは型付き Rust 値を生成された CXX データで表現します。64 ビットすべてを必要とする ID は不透明な文字列として QML に渡します。行番号は特定のクエリー内の位置にすぎません。[ドメインの識別子](../../../crates/xdzip-domain/src/identity.rs)、[ソース実装](../../../crates/xdzip-runtime/src/source.rs)、[アプリケーションセッション](../engineering/application-sessions.md)
 
 <a name="xdzip-physical-entries-and-output-names"></a>
 

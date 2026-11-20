@@ -21,7 +21,7 @@ flowchart TB
   CPP --> IMAGE[Private image preview process]
 ```
 
-2 つのランタイム枠は同じ実装の別インスタンスです。デスクトップと CLI はそれぞれのアーカイブ状態とタスクを所有します。デスクトップのローカル IPC は、デスクトップのアクティブ化と統合の要求を主 GUI インスタンスに転送します。アーカイブコマンドはプロセス内ランタイムを通ります。[アプリケーションセッション](../../engineering/application-sessions.md)、[CLI 契約](../engineering/command-line.md)。
+2 つのランタイム枠は同じ実装の別インスタンスです。デスクトップと CLI はそれぞれのアーカイブ状態とタスクを所有します。デスクトップのローカル IPC は、デスクトップのアクティブ化と統合の要求を主 GUI インスタンスに転送します。アーカイブコマンドはプロセス内ランタイムを通ります。[アプリケーションセッション](../engineering/application-sessions.md)、[CLI 契約](../engineering/command-line.md)。
 
 ## モジュールの責任と呼び出し方向
 

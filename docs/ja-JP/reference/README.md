@@ -23,7 +23,7 @@
 - [リポジトリー構成と依存関係](../engineering/repository-layout.md)
 - [インターフェース仕様と検証](../engineering/contracts.md)
 - [製品のランタイムと Qt のライフサイクル](../engineering/product-runtime.md)
-- [アプリのセッションと終了](../../engineering/application-sessions.md)
+- [アプリのセッションと終了](../engineering/application-sessions.md)
 - [cxx ブリッジの採用理由](../engineering/cxx-admission.md)
 - [形式ワーカーで使うホストの暦と文字コード](../engineering/host-platform-services.md)
 

@@ -18,7 +18,7 @@
 | `TaskListModel` と操作ウィンドウ | 上限付きのタスクスナップショット、進行状況、結果と処理待ちの判断を表示します。タスクコマンドは複合のデスクトップ識別情報を使って担当コントローラーへ送ります。 |
 | 設定とプラットフォームアダプター | 外観、言語、文字サイズ、アプリの動作を管理します。通知領域、アクティブ化、ファイルダイアログ、関連付け、転送の引き渡しは OS に応じてネイティブアダプターが扱います。 |
 
-[デスクトップの入口](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/browser_main.cpp)、[セッションページ](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/ui/SessionPage.qml)、[コントローラーとモデル](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.h)、[アプリのセッション](../../engineering/application-sessions.md)、[設定と言語](../ux/settings-localization.md)
+[デスクトップの入口](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/browser_main.cpp)、[セッションページ](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/ui/SessionPage.qml)、[コントローラーとモデル](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/BrowserController.h)、[アプリのセッション](../engineering/application-sessions.md)、[設定と言語](../ux/settings-localization.md)
 
 <a name="xdzip-browsing-and-operation-flow"></a>
 
