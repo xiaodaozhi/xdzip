@@ -2,7 +2,7 @@
 
 # 隔離格式工作程序契約
 
-[English](../../engineering/native-codecs.md) | [简体中文](../../zh-CN/engineering/native-codecs.md) | 繁體中文（台灣）
+[English](../../engineering/native-codecs.md) | [简体中文](../../zh-CN/engineering/native-codecs.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/native-codecs.md) | [한국어](../../ko-KR/engineering/native-codecs.md) | [Français](../../fr-FR/engineering/native-codecs.md) | [Deutsch](../../de-DE/engineering/native-codecs.md) | [Español](../../es-ES/engineering/native-codecs.md) | [Português (Brasil)](../../pt-BR/engineering/native-codecs.md) | [Русский](../../ru-RU/engineering/native-codecs.md)
 
 7z、RAR、CAB 和 ISO／UDF 的讀取由隔離工作程序內的[內建 Rust 實現](independent-rust-codecs.md)透過共享 CXX 邊界提供。7z 寫入也經該工作程序執行，任務由宿主控制。ZIP、TAR、壓縮流、DEB 和[新建 ISO9660/Joliet 映像](iso-creation.md)在 Rust 宿主程序內處理。格式按內建規則選擇，所有路徑均不會從 PATH 尋找命令列解碼工具。
 
