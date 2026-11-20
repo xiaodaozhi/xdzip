@@ -1,0 +1,48 @@
+<a name="xdzip-7z-format-sources-and-independent-implementation"></a>
+
+# Sources du format 7z et implémentation indépendante
+
+[English](../../engineering/sevenzip-format-sources.md) | [简体中文](../../zh-CN/engineering/sevenzip-format-sources.md) | [繁體中文（台灣）](../../zh-TW/engineering/sevenzip-format-sources.md) | [日本語](../../ja-JP/engineering/sevenzip-format-sources.md) | [한국어](../../ko-KR/engineering/sevenzip-format-sources.md) | Français | [Deutsch](../../de-DE/engineering/sevenzip-format-sources.md) | [Español](../../es-ES/engineering/sevenzip-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/sevenzip-format-sources.md) | [Русский](../../ru-RU/engineering/sevenzip-format-sources.md)
+
+Ce document décrit les sources réutilisables et les limites d’implémentation. L’acceptation de la migration et les capacités restantes sont suivies dans le [ticket #50](https://github.com/xiaodaozhi/xdzip/issues/50) ; le routage Rust fixé et la suppression de la dépendance officielle du produit ne démontrent pas automatiquement l’acceptation multiplateforme, manuelle ou de livraison. Les règles générales de remplacement figurent dans le [contrat d’implémentation indépendante](independent-rust-codecs.md).
+
+<a name="xdzip-specifications-and-reference-identity"></a>
+
+## Spécifications et identité des références
+
+Les champs du conteneur, entiers à longueur variable, graphes de méthodes, propriétés et correspondances de fichiers suivent les documents officiels `DOC/7zFormat.txt` et `DOC/Methods.txt`. La référence fixée est l’[archive officielle des sources 7-Zip 26.05](https://github.com/ip7z/7zip/releases/download/26.05/7z2605-src.tar.xz), SHA-256 `0b6080b8c3e7a579161d2d495224c0e51c467576cb4c7048b0ab485ef44cc22e`. Les SHA-256 des deux documents sont respectivement `8ec976b73ca88710286be1e991e49dbab485d9c0bf2410a80fa87e657850f82b` et `b16ea5fdc50345fa2cb031f06fe410cea0b089f74a4138ac8141b9e2d816ffc7`.
+
+Le flux de bits LZMA se réfère aussi au [paquet de spécification officiel](https://www.7-zip.org/a/lzma-specification.7z) d’Igor Pavlov du 2015-06-14, SHA-256 de l’archive `4529aca392d6b9598f72086e7d136b1e05d2863bf7a757836d3fd4f49e623b58`, dont le texte de spécification a pour SHA-256 `6a4d441c2fa1d8d37b0189c7147a4b5424d5cdb122a7fc1fbebd022864ed54fb`. Seuls le texte du format, les mathématiques et le pseudocode de la spécification sont lus ; le décodeur de référence du paquet ne sert pas d’entrée à un portage Rust. Télécharger des documents ou échantillons ne donne aucune nouvelle licence de redistribution.
+
+Deflate générique suit RFC 1951 et partage une implémentation avec ZIP, GZIP et MSZIP. Deflate64 sélectionne explicitement les règles étendues de cette implémentation : historique 64 KiB, codes de distance 30/31 et code de longueur 285 ; Deflate/MSZIP ordinaires ne changent pas. La section Deflate amélioré de [PKWARE APPNOTE](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT) n’est qu’une vue d’ensemble. Les différences précises du flux sont complétées par une analyse factuelle de la référence fixée et une vérification de lecture indépendante ; cette vue ne doit pas être présentée comme spécification complète. Les mathématiques AES-CBC et les vecteurs indépendants suivent [NIST SP 800-38A](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf). Les propriétés 7z, la dérivation du mot de passe UTF-16LE et le remplissage zéro sont des règles supplémentaires du format, impossibles à déduire de ZIP AES ou PKCS#7. Le manuel BZip2 et le nom de format PPMd ne spécifient pas complètement les flux historiques, les redémarrages du modèle ou la terminaison ; ces implémentations ne peuvent être présentées comme réalisables par la seule lecture des manuels.
+
+<a name="xdzip-reference-analysis-and-original-coding"></a>
+
+## Analyse des références et code original
+
+Un analyste lit sélectivement les groupes suivants dans l’archive originale fixée afin de compléter les champs omis, états mathématiques, redémarrages à capacité, terminaison et relations d’erreur. Les transmissions ne contiennent que des faits et exigences d’identification, sans code de référence, réécriture ligne par ligne, disposition de classes ou tableaux, découpage de fonctions, flux de contrôle copié ni commentaires traduits. Les algorithmes Rust sont organisés indépendamment par des auteurs n’ayant pas lu les implémentations de référence correspondantes ; un analyste n’implémente pas un algorithme qu’il a analysé. L’auteur du conteneur n’a pas non plus lu son implémentation officielle et code indépendamment à partir de la documentation et des faits transmis.
+
+| Sujet d’analyse | Périmètre de référence dans l’archive fixée | Distinction de licence |
+| --- | --- | --- |
+| LZMA1/LZMA2 | `C/LzmaDec.c/.h`, `C/Lzma2Dec.c/.h`, parties range, chunk/reset et propriétés des encodeurs, et enveloppes C++ Lzma/Lzma2 | Ces fichiers C déclarent le domaine public ; les enveloppes C++ suivent les conditions par défaut de l’archive |
+| Détails du conteneur | Attributs externes, héritage des sommes de contrôle de sous-flux et propriétés de fichiers dans `CPP/7zip/Archive/7z/7zIn.cpp` | LGPL-2.1-or-later par défaut de l’archive |
+| 7z AES | `CPP/7zip/Crypto/7zAes.cpp/.h`, parties longueur de bloc, mot de passe, remplissage et terminaison de MyAes, FilterCoder et enveloppes du codec 7z | LGPL-2.1-or-later par défaut ; l’implémentation AES sous-jacente n’est ni lue ni portée |
+| BZip2 | BZip2Decoder, Const, Crc, en distinguant le traitement des erreurs des enveloppes 7z et bz2 autonome | LGPL-2.1-or-later par défaut ; ne pas attribuer la licence d’une autre implémentation selon le nom du format |
+| PPMd7 | États mathématiques, capacité virtuelle et faits de redémarrage dans `C/Ppmd7.c/.h`, `Ppmd7Dec.c`, `Ppmd7Enc.c` ; contraintes de propriétés et de terminaison de l’enveloppe C++ Ppmd | Ces fichiers C déclarent le domaine public ; les enveloppes C++ suivent les conditions par défaut. La disposition des contextes, l’allocateur et le flux de contrôle ne sont pas copiés |
+| Deflate64 | Parties mode 64 bits de `CPP/7zip/Compress/DeflateConst.h` et DeflateDecoder, Deflate64Register et admission des propriétés 7z | LGPL-2.1-or-later par défaut ; transmission limitée aux différences de format avec Deflate ordinaire |
+| ISA, Delta, Swap | Sémantique scalaire dans `C/Bra.c`, `Bra86.c`, `Bra.h`, `Delta.c`, `SwapBytes.c` et enveloppes C++ d’enregistrement, propriétés et fin | Ces fichiers C déclarent le domaine public ; les enveloppes C++ suivent séparément les conditions par défaut. La stratégie SIMD n’est pas une règle du format |
+| BCJ2 | Quatre flux et état mathématique dans `C/Bcj2.c/.h` ; enveloppes C++ Bcj2Coder de fin du décodage et de taille | Les fichiers C déclarent le domaine public ; les enveloppes C++ suivent les conditions par défaut. Le corps de l’encodeur n’est ni analysé ni copié |
+
+Conserver avec les preuves de développement l’identité de l’archive et des fichiers fixés, le périmètre réellement lu et les résumés factuels transmis. Revérifier à la mise à niveau de la référence ; d’anciens numéros de ligne ne prouvent pas le comportement d’une nouvelle version. Constantes de spécification, identifiants et relations mathématiques peuvent servir à l’implémentation ; optimisations internes et comportements historiquement indéfinis ne donnent pas d’autorisations au produit. Les déclarations de domaine public ne s’étendent pas à toute l’archive, à la documentation, aux enveloppes C++ ou à d’autres échantillons.
+
+Ce n’est pas une déclaration de salle blanche stricte ni de risque juridique nul. Les sources tierces, anciennes livraisons contenant le moteur officiel et outils de test indépendants restent soumis à leurs conditions respectives. Le produit actuel ne compile pas le moteur officiel ; voir [licences](licensing.md) et [sources correspondantes](source-delivery.md).
+
+<a name="xdzip-interoperability-boundaries"></a>
+
+## Limites d’interopérabilité
+
+La réussite entre notre encodeur et notre lecteur ne remplace pas une référence indépendante. Les tests vérifient séparément les sorties connues de compresseurs indépendants, la lecture officielle de nos flux comprimés, la consommation de toutes les entrées, la terminaison, le CRC, la corruption, les quotas, l’annulation et les erreurs de source. La vérification des composants et l’acceptation de l’hôte, du processus et des plateformes sont enregistrées séparément.
+
+Les tolérances de compatibilité historiques exigent chacune confirmation. Par exemple, un nœud 7z BZip2 peut accepter des bits inutilisés non nuls dans le dernier octet et exactement quatre octets répétés en fin de bloc sans octet de compte supplémentaire, mais exige toujours un CRC correct, la taille déclarée et la terminaison complète du flux. Cela n’autorise ni octets supplémentaires ni flux concaténés. Les bits du dernier octet et les octets supplémentaires ne sont pas le même remplissage.
+
+PPMd7 distingue les profils de terminaison selon que la longueur externe est connue ou non. Après la sortie exacte, un nœud 7z à longueur connue vérifie l’état terminal du range et la plage comprimée sans consommer de symbole END supplémentaire ; le lecteur partagé à longueur inconnue exige END. Les redémarrages de capacité du modèle définis par le format et l’admission mémoire de l’hôte sont distincts : une mémoire insuffisante ne doit pas provoquer un redémarrage de format fabriqué. Les entrées de comparaison indépendantes comprennent des flux à redémarrage de capacité produits par l’encodeur C officiel fixé. Le générateur et la source originale de référence sont des outils de test locaux uniquement, sans dépendance de production.
