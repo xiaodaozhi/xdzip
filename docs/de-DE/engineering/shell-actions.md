@@ -51,7 +51,7 @@ Entpackaktionen erscheinen, wenn jedes ausgewählte Element anhand unterstützte
 - Verzeichnis pro Archiv: Immer einen nach dem Archiv benannten Ordner hinzufügen. Er wird über die gehaltene Zielberechtigung exklusiv reserviert; vorhandene Dateien, Verzeichnisse und Links werden nie wiederverwendet. Ein neuer nummerierter Name wie `name (2)` wird mit höchstens zehntausend Versuchen gewählt.
 - Ausgewähltes Verzeichnis: Im eigenständigen Entpackfenster ein gemeinsames Ziel wählen. Standard sind Verzeichnisse pro Archiv; intelligente oder direkte Zusammenführung sind Alternativen.
 
-Die Verzeichnisbildung folgt den Regeln für portable Namen und die Endung `.app` der [sicheren Extraktion](../../engineering/zip-safe-extraction.md). Die intelligente Erkennung autorisiert keine Ausgabe; jede Aufgabe prüft Ziel, Quelle, CRC oder Authentifizierung, Konflikte und Veröffentlichungsberechtigung erneut. Ein einzelner Archivfehler folgt der bestehenden Abbruchregel für das ganze Archiv; danach fährt der Stapelkoordinator mit dem nächsten fort.
+Die Verzeichnisbildung folgt den Regeln für portable Namen und die Endung `.app` der [sicheren Extraktion](zip-safe-extraction.md). Die intelligente Erkennung autorisiert keine Ausgabe; jede Aufgabe prüft Ziel, Quelle, CRC oder Authentifizierung, Konflikte und Veröffentlichungsberechtigung erneut. Ein einzelner Archivfehler folgt der bestehenden Abbruchregel für das ganze Archiv; danach fährt der Stapelkoordinator mit dem nächsten fort.
 
 ## Prozesse, Anfragen und Fenster
 

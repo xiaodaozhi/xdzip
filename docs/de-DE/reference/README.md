@@ -39,7 +39,7 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 - [Adaptive Dateinamenskodierung](../engineering/filename-encoding.md)
 - [Inhaltsvorschau](../engineering/content-preview.md)
 - [Metadaten-Vorprüfung vor dem Entpacken](../engineering/extraction-preflight.md)
-- [Sicheres Entpacken von ZIP](../../engineering/zip-safe-extraction.md)
+- [Sicheres Entpacken von ZIP](../engineering/zip-safe-extraction.md)
 - [Integritätsprüfung von Archiven](../engineering/archive-checking.md)
 - [Einträge öffnen, Drag-and-drop und Änderungen](../../engineering/archive-transfers.md)
 - [Archivpasswörter und Öffnen verschlüsselter Verzeichnisse](../engineering/password-extraction.md)

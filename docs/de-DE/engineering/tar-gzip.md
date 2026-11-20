@@ -4,7 +4,7 @@
 
 [English](../../engineering/tar-gzip.md) | [简体中文](../../zh-CN/engineering/tar-gzip.md) | [繁體中文](../../zh-TW/engineering/tar-gzip.md) | [日本語](../../ja-JP/engineering/tar-gzip.md) | [한국어](../../ko-KR/engineering/tar-gzip.md) | [Français](../../fr-FR/engineering/tar-gzip.md) | Deutsch | [Español](../../es-ES/engineering/tar-gzip.md) | [Português (Brasil)](../../pt-BR/engineering/tar-gzip.md) | [Русский](../../ru-RU/engineering/tar-gzip.md)
 
-Dieser Vertrag definiert Grenzen für Browsen, Erstellen und sicheres Extrahieren von TAR/TAR.GZ. Plattformresultate und manuelle Abnahme werden in Issues oder CI-Artefakten festgehalten. Eingabeautorisierung, Staging, Konflikte, Abbruch und Gesamtarchiv-Commit aus [sicherer Extraktion](../../engineering/zip-safe-extraction.md) und [ZIP-Erstellung](../../engineering/zip-creation.md) bleiben erhalten.
+Dieser Vertrag definiert Grenzen für Browsen, Erstellen und sicheres Extrahieren von TAR/TAR.GZ. Plattformresultate und manuelle Abnahme werden in Issues oder CI-Artefakten festgehalten. Eingabeautorisierung, Staging, Konflikte, Abbruch und Gesamtarchiv-Commit aus [sicherer Extraktion](zip-safe-extraction.md) und [ZIP-Erstellung](../../engineering/zip-creation.md) bleiben erhalten.
 
 <a name="xdzip-scope-and-capabilities"></a>
 

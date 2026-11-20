@@ -96,7 +96,7 @@ flowchart TB
 2. **Decodieren.** Das Backend liest die zugelassene Quelle direkt oder über den Archiv-Worker. Es sendet Bytes an einen gemessenen Sink mit privater Vorbereitungsdatei. Passwortwiederholungen, Expansion und Hilfsarbeit unterliegen den Grenzen der Operation. Vorbereitete Bytes sind vorläufig, bis Decodierung, Größenprüfungen und verfügbare Formatprüfung erfolgreich sind.
 3. **Commit und Bericht.** Vor Veröffentlichung prüft der Host die Identität der Quelle und des relevanten Ziels erneut. Er bestätigt jede geeignete Datei einzeln und erfasst tatsächlich veröffentlichte Dateien und Bytes. Spätere Fehler oder Abbruch können zuvor bestätigte Dateien belassen. Nicht veröffentlichte Vorbereitung wird nach Möglichkeit bereinigt; das terminale Ergebnis meldet Fehler, Abbruch, Übersprungenes und Bereinigungswarnungen.
 
-[Extraktionsausführung](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/execute.rs), [Archivprüfung](../engineering/archive-checking.md), [Passwortinteraktionen](../engineering/password-extraction.md), [sichere ZIP-Extraktion](../../engineering/zip-safe-extraction.md).
+[Extraktionsausführung](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/extraction/execute.rs), [Archivprüfung](../engineering/archive-checking.md), [Passwortinteraktionen](../engineering/password-extraction.md), [sichere ZIP-Extraktion](../engineering/zip-safe-extraction.md).
 
 ## Archiv erstellen oder ändern
 

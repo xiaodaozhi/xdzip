@@ -1,6 +1,6 @@
 # 安全 ZIP 解压实现
 
-[English](../../engineering/zip-safe-extraction.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/zip-safe-extraction.md) | [日本語](../../ja-JP/engineering/zip-safe-extraction.md) | [Français](../../fr-FR/engineering/zip-safe-extraction.md)
+[English](../../engineering/zip-safe-extraction.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/zip-safe-extraction.md) | [日本語](../../ja-JP/engineering/zip-safe-extraction.md) | [Français](../../fr-FR/engineering/zip-safe-extraction.md) | [Deutsch](../../de-DE/engineering/zip-safe-extraction.md)
 
 本契约定义宿主安全输出、真实解压、冲突、取消与提交行为；具体执行结果和当前缺陷记录于对应 issue 及 Actions 工件，不在本页累积验收报告。
 
