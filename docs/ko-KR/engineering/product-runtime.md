@@ -4,7 +4,7 @@
 
 [English](../../engineering/product-runtime.md) | [简体中文](../../zh-CN/engineering/product-runtime.md) | [繁體中文](../../zh-TW/engineering/product-runtime.md) | [日本語](../../ja-JP/engineering/product-runtime.md) | 한국어 | [Français](../../fr-FR/engineering/product-runtime.md) | [Deutsch](../../de-DE/engineering/product-runtime.md) | [Español](../../es-ES/engineering/product-runtime.md) | [Português (Brasil)](../../pt-BR/engineering/product-runtime.md) | [Русский](../../ru-RU/engineering/product-runtime.md)
 
-이 문서는 데스크톱 앱이 명령과 이벤트로 Rust 런타임에 연결되는 방식과 큐 역압, 종료 및 플랫폼별 빌드를 설명합니다. 각 기능의 범위는 [읽기 전용 탐색](../../engineering/readonly-browser.md)과 [안전한 추출](zip-safe-extraction.md)을 참고하세요.
+이 문서는 데스크톱 앱이 명령과 이벤트로 Rust 런타임에 연결되는 방식과 큐 역압, 종료 및 플랫폼별 빌드를 설명합니다. 각 기능의 범위는 [읽기 전용 탐색](readonly-browser.md)과 [안전한 추출](zip-safe-extraction.md)을 참고하세요.
 
 <a name="xdzip-implemented-services"></a>
 

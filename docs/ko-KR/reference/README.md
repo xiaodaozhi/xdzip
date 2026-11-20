@@ -32,7 +32,7 @@
 ## 압축 파일 읽기와 쓰기
 
 - [파일 권한, 임시 출력 및 안전한 최종 저장](../design/file-security.md)
-- [읽기 전용 탐색 구현](../../engineering/readonly-browser.md)
+- [읽기 전용 탐색 구현](../engineering/readonly-browser.md)
 - [읽기 전용 ZIP 탐색](../engineering/zip-readonly-browsing.md)
 - [대용량 압축 파일의 인덱싱과 필요 시 탐색](../engineering/large-index.md)
 - [분할 볼륨 읽기 및 임시 열기](../engineering/archive-opening.md)

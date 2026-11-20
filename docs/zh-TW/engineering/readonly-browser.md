@@ -2,7 +2,7 @@
 
 # 只讀瀏覽實現契約
 
-[English](../../engineering/readonly-browser.md) | [简体中文](../../zh-CN/engineering/readonly-browser.md) | 繁體中文 | [日本語](../../ja-JP/engineering/readonly-browser.md)
+[English](../../engineering/readonly-browser.md) | [简体中文](../../zh-CN/engineering/readonly-browser.md) | 繁體中文 | [日本語](../../ja-JP/engineering/readonly-browser.md) | [한국어](../../ko-KR/engineering/readonly-browser.md)
 
 本文規定瀏覽階段的資料、資源及互動邊界，補充[領域與資料](../design/domain-data.md)、[Qt/Rust 橋接](../design/qt-rust-bridge.md)和[格式擴充套件設計](../design/codec-extension-sdk.md)，不凍結第三方協議或完整格式 SDK。ZIP 的具體後設資料規則如下；TAR/TAR.GZ 複用瀏覽與查詢模型，格式差異見 [TAR/GZIP 契約](tar-gzip.md)。
 

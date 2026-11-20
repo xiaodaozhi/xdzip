@@ -4,7 +4,7 @@
 
 [English](../../engineering/archive-opening.md) | [简体中文](../../zh-CN/engineering/archive-opening.md) | [繁體中文](../../zh-TW/engineering/archive-opening.md) | [日本語](../../ja-JP/engineering/archive-opening.md) | 한국어 | [Français](../../fr-FR/engineering/archive-opening.md) | [Deutsch](../../de-DE/engineering/archive-opening.md) | [Español](../../es-ES/engineering/archive-opening.md) | [Português (Brasil)](../../pt-BR/engineering/archive-opening.md) | [Русский](../../ru-RU/engineering/archive-opening.md)
 
-데스크톱 파일 선택, 파일 관리자 요청과 CLI는 같은 Rust 원본 열기 규칙을 사용합니다. 호스트는 허용된 볼륨 집합을 확인하고 원본 식별 정보를 기록한 뒤 허가된 바이트를 검사합니다. 선택된 백엔드는 때로 [격리된 형식 작업 프로세스](native-codecs.md)를 통해 [탐색 메타데이터](../../engineering/readonly-browser.md)를 제공합니다. 항목을 명시적으로 열면 연결된 앱을 위한 검증된 임시 사본이 만들어집니다. 전체 압축 파일을 확인하려면 별도의 [무결성 검사](archive-checking.md)를 사용합니다.
+데스크톱 파일 선택, 파일 관리자 요청과 CLI는 같은 Rust 원본 열기 규칙을 사용합니다. 호스트는 허용된 볼륨 집합을 확인하고 원본 식별 정보를 기록한 뒤 허가된 바이트를 검사합니다. 선택된 백엔드는 때로 [격리된 형식 작업 프로세스](native-codecs.md)를 통해 [탐색 메타데이터](readonly-browser.md)를 제공합니다. 항목을 명시적으로 열면 연결된 앱을 위한 검증된 임시 사본이 만들어집니다. 전체 압축 파일을 확인하려면 별도의 [무결성 검사](archive-checking.md)를 사용합니다.
 
 <a name="xdzip-split-zip"></a>
 
