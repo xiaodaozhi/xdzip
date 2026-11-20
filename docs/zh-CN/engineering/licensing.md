@@ -26,4 +26,4 @@ Windows 维护者需要自有开发环境时，可采用符合条件的 Visual S
 
 首个 ZIP 元数据后端曾采用 MIT 许可 rawzip，版本与通知见[历史准入记录](zip-metadata-admission.md)。当前 ZIP、TAR 和 GZIP/Deflate 采用[独立 Rust 实现](independent-rust-codecs.md)，格式参照库仅用于开发测试。旧版交付与测试参照的许可义务继续保留，通用密码学基础库按[依赖契约](dependencies.md)收集通知。项目原创许可仍为 Apache-2.0。
 
-HTML 与 Qt 固定界面文案采用官方 Noto Sans SC 的衍生子集，许可为 OFL-1.1。家族名、固定来源、版本与哈希见 [字体材料清单](../../../specs/dependencies/ui-font.json)和[原生 TTF 导出](../../../design/assets/fonts/README.md)；完整许可为 [OFL.txt](../../../design/assets/fonts/OFL.txt)。字体及其衍生字体不适用项目 Apache-2.0；离线 HTML 包含字体二进制与完整通知，Qt 分发包的 notices 包含同一 OFL 原文。产品未引入完整上游 CJK 字体。
+HTML 设计使用官方 Noto Sans SC 衍生子集。Qt 固定界面文案还按语言使用 Noto Sans TC、JP、KR 和 Noto Sans 衍生子集。这些字体采用 OFL-1.1，不适用项目的 Apache-2.0。家族名、固定来源、版本与哈希见[字体材料清单](../../../specs/dependencies/ui-font.json)和[原生 TTF 导出](../../../design/assets/fonts/README.md)；原始许可全文分别为 [CJK OFL](../../../design/assets/fonts/OFL.txt) 和 [Noto Sans OFL](../../../design/assets/fonts/NotoSans-OFL.txt)。离线 HTML 包含其字体二进制与完整通知；Qt 分发包的通知包含对应字体许可原文。产品未引入完整上游 CJK 字体。
