@@ -2,7 +2,7 @@
 
 # DEB 容器契約
 
-[English](../../engineering/deb-containers.md) | [简体中文](../../zh-CN/engineering/deb-containers.md) | 繁體中文（台灣）
+[English](../../engineering/deb-containers.md) | [简体中文](../../zh-CN/engineering/deb-containers.md) | 繁體中文（台灣） | [日本語](../../ja-JP/engineering/deb-containers.md) | [한국어](../../ko-KR/engineering/deb-containers.md) | [Français](../../fr-FR/engineering/deb-containers.md) | [Deutsch](../../de-DE/engineering/deb-containers.md) | [Español](../../es-ES/engineering/deb-containers.md) | [Português (Brasil)](../../pt-BR/engineering/deb-containers.md) | [Русский](../../ru-RU/engineering/deb-containers.md)
 
 套件外層遵循 Debian 的 [deb(5)](https://manpages.debian.org/unstable/dpkg-dev/deb.5.en.html)，一般 ar 欄位遵循 [ar(5)](https://man.netbsd.org/ar.5)。只接受一般的 `!<arch>\n` 版面。每個 60 位元組標頭包含長度受限的 ASCII 名稱、時間、擁有者、模式、大小欄位及必要的結尾標記。驗證十進位欄位、八進位模式、精確的資料範圍、奇數長度成員的換行填補與實際檔案結尾。thin 壓縮檔、歷史格式和長名稱擴充均不支援，也不授予外部檔案存取權。
 
