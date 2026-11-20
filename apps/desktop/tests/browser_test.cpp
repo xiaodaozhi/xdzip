@@ -16049,6 +16049,9 @@ QtObject {
         QVERIFY(initializeUiText(language));
         QTemporaryDir fixture;
         QVERIFY(fixture.isValid());
+        test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH",
+                                                      fixture.filePath("settings.ini"));
+        QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
         const auto source = fixture.filePath("edit.zip");
         QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/visual-main.zip"), source));
         const auto readBytes = [&] {
@@ -16077,15 +16080,36 @@ QtObject {
         auto *dialog = window->findChild<QQuickWindow *>("archiveEntryEditWindow");
         auto *task = window->findChild<QQuickWindow *>("taskWindow");
         QVERIFY(menu && rename && remove && dialog && task);
+        auto *menuViewport = qvariant_cast<QQuickItem *>(menu->property("contentItem"));
+        QVERIFY(menuViewport);
         const auto click = [](QQuickItem *item, Qt::MouseButton button = Qt::LeftButton) {
             QTest::mouseClick(
                 item->window(), button, Qt::NoModifier,
                 item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint());
         };
+        const auto clickMenu = [&](QQuickItem *item) {
+            QTRY_VERIFY(menu->property("opened").toBool());
+            // Popup placement is finalized during Qt Quick polish. Hit-test
+            // the displayed menu, including its clipped scroll viewport.
+            QSignalSpy frame(window, &QQuickWindow::frameSwapped);
+            window->requestUpdate();
+            QVERIFY(!frame.isEmpty() || frame.wait(5000));
+            const QRectF client(QPointF(), QSizeF(window->size()));
+            const auto bounds = item->mapRectToScene(item->boundingRect());
+            const auto viewport = menuViewport->mapRectToScene(menuViewport->boundingRect());
+            const auto point = bounds.center().toPoint();
+            QVERIFY2(client.contains(point) && viewport.contains(point),
+                     qPrintable(QStringLiteral("%1 center (%2, %3) is outside the menu viewport")
+                                    .arg(item->objectName())
+                                    .arg(point.x())
+                                    .arg(point.y())));
+            QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, point);
+        };
         const auto pressDialogKey = [&](Qt::Key key) {
-            // Some Cocoa test launches have no foreground window. Verify the focused
-            // Qt control's key path without requiring activation of another app.
-            if (QGuiApplication::focusWindow() == dialog) {
+            // Offscreen windows and inactive Cocoa test launches cannot reliably
+            // route keys through platform focus. Exercise the focused control directly.
+            if (QGuiApplication::platformName() != "offscreen" &&
+                QGuiApplication::focusWindow() == dialog) {
                 QTest::keyClick(dialog, key);
             } else {
                 auto *focused = dialog->activeFocusItem();
@@ -16133,7 +16157,7 @@ QtObject {
             QVERIFY(QDir().mkpath(audit));
             QVERIFY(visual_audit::save(window, audit, "entry-menu-" + tag));
         }
-        click(remove);
+        clickMenu(remove);
         QTRY_VERIFY(dialog->isVisible());
         auto *cancel = findVisual(dialog->contentItem(), "archiveEntryEditCancel");
         QVERIFY(cancel);
@@ -16158,7 +16182,7 @@ QtObject {
         QTRY_VERIFY(menu->property("visible").toBool());
         QCOMPARE(controller->selectedCount(), 1);
         QVERIFY(rename->isEnabled());
-        click(rename);
+        clickMenu(rename);
         QTRY_VERIFY(dialog->isVisible());
         const auto stale = dialog->property("token").toString();
         controller->selectOnlyRow(fileRow);
@@ -16169,7 +16193,7 @@ QtObject {
         QTRY_VERIFY((cell = rowItem(fileRow)));
         click(cell, Qt::RightButton);
         QTRY_VERIFY(menu->property("visible").toBool());
-        click(rename);
+        clickMenu(rename);
         QTRY_VERIFY(dialog->isVisible());
         auto *field = findVisual(dialog->contentItem(), "archiveEntryNameField");
         auto *confirm = findVisual(dialog->contentItem(), "archiveEntryEditConfirm");
@@ -16204,7 +16228,7 @@ QtObject {
         click(cell, Qt::RightButton);
         QTRY_VERIFY(menu->property("visible").toBool());
         QVERIFY(remove->isEnabled() && !rename->isEnabled());
-        click(remove);
+        clickMenu(remove);
         QTRY_VERIFY(dialog->isVisible());
         confirm = findVisual(dialog->contentItem(), "archiveEntryEditConfirm");
         QVERIFY(confirm && confirm->isEnabled());
