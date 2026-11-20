@@ -1,6 +1,6 @@
 # Read-only browsing implementation contract
 
-English | [简体中文](../zh-CN/engineering/readonly-browser.md) | [繁體中文](../zh-TW/engineering/readonly-browser.md)
+English | [简体中文](../zh-CN/engineering/readonly-browser.md) | [繁體中文](../zh-TW/engineering/readonly-browser.md) | [日本語](../ja-JP/engineering/readonly-browser.md)
 
 This document defines browsing data, resource, and interaction boundaries, supplementing [domain and data](../design/domain-data.md), the [Qt/Rust bridge](../design/qt-rust-bridge.md), and the [format extension design](../design/codec-extension-sdk.md) without freezing a third-party protocol or complete format SDK. Specific ZIP metadata rules follow. TAR/TAR.GZ reuse browsing and query models; see the [TAR/GZIP contract](tar-gzip.md) for format differences.
 
@@ -59,7 +59,7 @@ Record actual tests and screenshots in issues/artifacts under [verification](../
 
 ## Browsing interaction increments
 
-- Safe explicit archive directories can be entered by double-clicking or focusing the checkbox and pressing Enter; “Root directory” returns to root scope. Ordinary directories show direct files/directories only, not recursive descendants; search recursively covers current scope and shows full archive paths. Ordinary list names show only basenames without changing internal full paths, copying, or navigation. Dangerous names cannot be navigation nodes but remain in the archive snapshot for search and metadata inspection.
+- Safe explicit archive directories can be entered by double-clicking or focusing the checkbox and pressing Enter; “Root folder” returns to root scope. Ordinary directories show direct files/directories only, not recursive descendants; search recursively covers current scope and shows full archive paths. Ordinary list names show only basenames without changing internal full paths, copying, or navigation. Dangerous names cannot be navigation nodes but remain in the archive snapshot for search and metadata inspection.
 - Enter submits name search, using literal substring matching after Unicode lowercase; no regex or locale sorting. Search input is at most 256 UTF-16 units; the Rust entry point at most 1,024 UTF-8 bytes. Search covers current-directory scope. Returning to root retains search terms; a new session clears them.
 - Ordinary memory queries filter the loaded snapshot of at most 100,000 entries, then sort as requested and return at most 128. Check cancellation per filtered record and before/after sorting. Directory parameters are physical EntryIds or `d`-prefixed virtual directory IDs validated by Rust for current-session eligibility, not GUI-concatenated file paths.
 - This is a single-worker, bounded, versioned query. Pages carry complete QueryKey. Qt coalesces latest intent and cancels old work. Stale requests or mismatched session/query/generation/revision/offset cannot replace the current view. Out-of-range offsets return errors; empty results are Ready. Directory jumps and searches start at the first page.

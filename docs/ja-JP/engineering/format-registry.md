@@ -14,7 +14,7 @@
 | --- | --- |
 | 新しいアーカイブを作成 | ZIP、7z、TAR、TAR.GZ（`.tar.gz`、`.tgz`）、単独の GZIP、XZ/TAR.XZ、LZ4/TAR.LZ4、Zstandard/TAR.ZST、LHA（`.lha`、`.lzh`）、ISO9660/Joliet、Windows x64 用 ZIP SFX ラッパー。単独ストリームは通常ファイルを一つ受け取ります。[作成仕様](zip-creation.md)と[単一ファイルストリーム](single-file-streams.md)を参照してください。 |
 | 既存のアーカイブを書き換え | 条件を満たす ZIP/ZIPX、7z、レベル 2 の LHA/LZH、TAR、TAR.GZ、TAR.XZ、TAR.ZST、TAR.LZ4、TAR.BZ2、TAR.LZMA、TAR.LZ、TAR.Z、TAR.BR が対象です。暗号化、分割ボリューム、非対応のレコードや保存方式は対象外です。[変更仕様](../../engineering/archive-transfers.md)を参照してください。 |
-| 閲覧、展開、項目を開く、書き出し、検証 | 操作ごとに機能とレコードの条件を確認します。たとえば、一部のインストーラーで確認できるのはメタデータだけです。[読み取り専用の閲覧](../../engineering/readonly-browser.md)と[検証](archive-checking.md)を参照してください。 |
+| 閲覧、展開、項目を開く、書き出し、検証 | 操作ごとに機能とレコードの条件を確認します。たとえば、一部のインストーラーで確認できるのはメタデータだけです。[読み取り専用の閲覧](readonly-browser.md)と[検証](archive-checking.md)を参照してください。 |
 
 仕様を変更したら `python3 scripts/generate-format-registry.py` を実行します。Rust のコーデック記述子、ドラッグ＆ドロップ用とシェル用の C++ 形式候補、JavaScript UI の選択肢、インストーラー用の Python アイコン対応表が生成されます。`--check` はファイルを変更せず、生成物の欠落や古い内容を検出します。`python3 scripts/test-format-registry.py` は、矛盾する機能、ID や拡張子の重複、出力言語で無効な値、更新されていない参照先を検査します。通常の CI で両方の検査を実行します。
 

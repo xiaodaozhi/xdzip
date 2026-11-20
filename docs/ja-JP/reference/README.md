@@ -32,7 +32,7 @@
 ## アーカイブの読み書き
 
 - [ファイルの許可、一時出力、安全な確定](../design/file-security.md)
-- [読み取り専用の閲覧仕様](../../engineering/readonly-browser.md)
+- [読み取り専用の閲覧仕様](../engineering/readonly-browser.md)
 - [読み取り専用の ZIP 閲覧](../engineering/zip-readonly-browsing.md)
 - [大規模アーカイブの索引とオンデマンド閲覧](../engineering/large-index.md)
 - [分割ボリュームの読み取りと一時的な展開](../engineering/archive-opening.md)
