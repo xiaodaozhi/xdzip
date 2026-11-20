@@ -1,6 +1,6 @@
 # xdzip : décisions d’architecture
 
-[English](../../design/architecture-decisions.md) | [简体中文](../../zh-CN/design/architecture-decisions.md) | [繁體中文](../../zh-TW/design/architecture-decisions.md) | Français | [Deutsch](../../de-DE/design/architecture-decisions.md) | [Español](../../es-ES/design/architecture-decisions.md) | [Português (Brasil)](../../pt-BR/design/architecture-decisions.md)
+[English](../../design/architecture-decisions.md) | [简体中文](../../zh-CN/design/architecture-decisions.md) | [繁體中文](../../zh-TW/design/architecture-decisions.md) | [日本語](../../ja-JP/design/architecture-decisions.md) | Français | [Deutsch](../../de-DE/design/architecture-decisions.md) | [Español](../../es-ES/design/architecture-decisions.md) | [Português (Brasil)](../../pt-BR/design/architecture-decisions.md)
 
 Les premières décisions datent du 11 octobre 2026. Les suivantes indiquent leur propre date. Une décision acceptée est adoptée. Les notes sur l’implémentation actuelle relient chaque décision aux contrats maintenus et aux éléments attestant les capacités. Lorsqu’une décision est remplacée, conservez l’original et ajoutez une nouvelle décision.
 
