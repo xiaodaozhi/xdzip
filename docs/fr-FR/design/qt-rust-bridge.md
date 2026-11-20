@@ -45,7 +45,7 @@ CXX transporte des types valeur et des conteneurs Rust propriétaires. Le code Q
 | `Snapshot`, `CloseSession` | Renvoyer l’ID de session de l’archive courante ou zéro. Fermer la session identifiée abandonne son instantané de navigation, mais les entrées de tâches conservées indépendamment peuvent rester actives. |
 | `cancel`, `cancel_task`, `decide_task`, `respond_password`, `release_export`, `shutdown` | Méthodes de contrôle hors de la file ordinaire. L’annulation d’une requête possède son propre ID et son `Finished` ; les contrôles de tâche agissent sur la tâche existante. |
 
-Le service Rust expose d’autres opérations propres à la CLI comme `Catalog` et `SelectMembers`. Le pont valide la taille des entrées et les valeurs d’énumération avant soumission. Par exemple, les chemins de création sont limités à 4 KiB chacun et 4 MiB au total. Le runtime valide la session et la sémantique de l’opération ; la couche d’E/S ouvre les fichiers et obtient les capacités de sortie. [Contrat du service runtime](../engineering/product-runtime.md), [Contrat CLI](../../engineering/command-line.md), [Autorisation des fichiers](file-security.md)
+Le service Rust expose d’autres opérations propres à la CLI comme `Catalog` et `SelectMembers`. Le pont valide la taille des entrées et les valeurs d’énumération avant soumission. Par exemple, les chemins de création sont limités à 4 KiB chacun et 4 MiB au total. Le runtime valide la session et la sémantique de l’opération ; la couche d’E/S ouvre les fichiers et obtient les capacités de sortie. [Contrat du service runtime](../engineering/product-runtime.md), [Contrat CLI](../engineering/command-line.md), [Autorisation des fichiers](file-security.md)
 
 <a name="xdzip-event-delivery-and-backpressure"></a>
 

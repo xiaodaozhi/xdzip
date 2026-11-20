@@ -131,7 +131,7 @@ build/cli/bin/xdzip list archive.zip --json
 build/cli/bin/xdzip extract archive.zip -C output
 ```
 
-Sous Windows, utilisez `python` et ajoutez `.exe` au nom du programme. Sous Linux, l’exécution exige OpenSSL 3 et les certificats du système. La compilation exige aussi `libssl-dev` et `pkg-config`. Le [guide de la CLI](docs/engineering/command-line.md) décrit les mots de passe, le mode non interactif, les codes de sortie, l’installation de la commande et les limites de mise à jour.
+Sous Windows, utilisez `python` et ajoutez `.exe` au nom du programme. Sous Linux, l’exécution exige OpenSSL 3 et les certificats du système. La compilation exige aussi `libssl-dev` et `pkg-config`. Le [guide de la CLI](docs/fr-FR/engineering/command-line.md) décrit les mots de passe, le mode non interactif, les codes de sortie, l’installation de la commande et les limites de mise à jour.
 
 <a name="xdzip-build-from-source"></a>
 

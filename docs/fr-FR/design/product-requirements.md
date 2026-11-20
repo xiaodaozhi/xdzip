@@ -4,7 +4,7 @@
 
 [English](../../design/product-requirements.md) | [简体中文](../../zh-CN/design/product-requirements.md) | [繁體中文](../../zh-TW/design/product-requirements.md) | [日本語](../../ja-JP/design/product-requirements.md) | [한국어](../../ko-KR/design/product-requirements.md) | Français | [Deutsch](../../de-DE/design/product-requirements.md) | [Español](../../es-ES/design/product-requirements.md) | [Português (Brasil)](../../pt-BR/design/product-requirements.md) | [Русский](../../ru-RU/design/product-requirements.md)
 
-XDZip permet de parcourir les archives comme des dossiers, de travailler sur une sélection et de créer ou modifier les archives lorsque le format le permet. Le bureau et la [CLI autonome](../../engineering/command-line.md) partagent le cœur de traitement des archives. Le [README du projet](../../../README.fr-FR.md) décrit les capacités et distributions actuelles. Les exigences suivantes définissent le comportement à préserver et vérifier.
+XDZip permet de parcourir les archives comme des dossiers, de travailler sur une sélection et de créer ou modifier les archives lorsque le format le permet. Le bureau et la [CLI autonome](../engineering/command-line.md) partagent le cœur de traitement des archives. Le [README du projet](../../../README.fr-FR.md) décrit les capacités et distributions actuelles. Les exigences suivantes définissent le comportement à préserver et vérifier.
 
 <a name="xdzip-requirements-and-implementation"></a>
 
