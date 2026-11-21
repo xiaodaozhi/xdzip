@@ -1,6 +1,6 @@
 # Visuelle Spezifikationen von xdzip
 
-[English](../../visual/README.md) | [简体中文](../../zh-CN/visual/README.md) | [繁體中文](../../zh-TW/visual/README.md) | [日本語](../../ja-JP/visual/README.md) | [Français](../../fr-FR/visual/README.md) | Deutsch | [Español](../../es-ES/visual/README.md) | [Português (Brasil)](../../pt-BR/visual/README.md)
+[English](../../visual/README.md) | [简体中文](../../zh-CN/visual/README.md) | [繁體中文](../../zh-TW/visual/README.md) | [日本語](../../ja-JP/visual/README.md) | [한국어](../../ko-KR/visual/README.md) | [Français](../../fr-FR/visual/README.md) | Deutsch | [Español](../../es-ES/visual/README.md) | [Português (Brasil)](../../pt-BR/visual/README.md) | [Русский](../../ru-RU/visual/README.md)
 
 Einstiege in die Spezifikationen: [UI-Designstandard](../../visual/design-standard.md), [verbindlicher Designablauf](design-workflow.md) und [Dichte- und Einheitenvertrag](../../../specs/visual/layout-scale.json). Die erneute Prüfung der Proportionen von Hauptfenster und Menü wird nach der [allgemeinen Methode](../../../developers/qa/README.md) erfasst.
 

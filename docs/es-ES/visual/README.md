@@ -1,6 +1,6 @@
 # Especificaciones visuales de xdzip
 
-[English](../../visual/README.md) | [简体中文](../../zh-CN/visual/README.md) | [繁體中文](../../zh-TW/visual/README.md) | [日本語](../../ja-JP/visual/README.md) | [Français](../../fr-FR/visual/README.md) | [Deutsch](../../de-DE/visual/README.md) | Español | [Português (Brasil)](../../pt-BR/visual/README.md)
+[English](../../visual/README.md) | [简体中文](../../zh-CN/visual/README.md) | [繁體中文](../../zh-TW/visual/README.md) | [日本語](../../ja-JP/visual/README.md) | [한국어](../../ko-KR/visual/README.md) | [Français](../../fr-FR/visual/README.md) | [Deutsch](../../de-DE/visual/README.md) | Español | [Português (Brasil)](../../pt-BR/visual/README.md) | [Русский](../../ru-RU/visual/README.md)
 
 Entradas de especificación: [norma de diseño de interfaz](../../visual/design-standard.md), [flujo obligatorio de diseño](design-workflow.md) y [contrato de densidad y unidades](../../../specs/visual/layout-scale.json). La nueva verificación de proporciones de la ventana principal y los menús se registra mediante el [método general](../../../developers/qa/README.md).
 

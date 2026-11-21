@@ -1,6 +1,6 @@
 # xdzip ビジュアル仕様
 
-[English](../../visual/README.md) | [简体中文](../../zh-CN/visual/README.md) | [繁體中文](../../zh-TW/visual/README.md) | 日本語 | [Français](../../fr-FR/visual/README.md) | [Deutsch](../../de-DE/visual/README.md) | [Español](../../es-ES/visual/README.md) | [Português (Brasil)](../../pt-BR/visual/README.md)
+[English](../../visual/README.md) | [简体中文](../../zh-CN/visual/README.md) | [繁體中文](../../zh-TW/visual/README.md) | 日本語 | [한국어](../../ko-KR/visual/README.md) | [Français](../../fr-FR/visual/README.md) | [Deutsch](../../de-DE/visual/README.md) | [Español](../../es-ES/visual/README.md) | [Português (Brasil)](../../pt-BR/visual/README.md) | [Русский](../../ru-RU/visual/README.md)
 
 仕様の入口：[UI デザイン基準](../../visual/design-standard.md)、[必須デザインワークフロー](design-workflow.md)、[密度と単位の契約](../../../specs/visual/layout-scale.json)。メインウィンドウとメニューの比率の再検証は[共通の方法](../../../developers/qa/README.md)に従って記録します。
 

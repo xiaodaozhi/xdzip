@@ -1,6 +1,6 @@
 # xdzip 视觉规范
 
-[English](../../visual/README.md) | 简体中文 | [繁體中文](../../zh-TW/visual/README.md) | [日本語](../../ja-JP/visual/README.md) | [Français](../../fr-FR/visual/README.md) | [Deutsch](../../de-DE/visual/README.md) | [Español](../../es-ES/visual/README.md) | [Português (Brasil)](../../pt-BR/visual/README.md)
+[English](../../visual/README.md) | 简体中文 | [繁體中文](../../zh-TW/visual/README.md) | [日本語](../../ja-JP/visual/README.md) | [한국어](../../ko-KR/visual/README.md) | [Français](../../fr-FR/visual/README.md) | [Deutsch](../../de-DE/visual/README.md) | [Español](../../es-ES/visual/README.md) | [Português (Brasil)](../../pt-BR/visual/README.md) | [Русский](../../ru-RU/visual/README.md)
 
 规范入口：[界面设计规范](design-standard.md)、[强制设计流程](design-workflow.md)、[密度与单位契约](../../../specs/visual/layout-scale.json)。主窗口与菜单比例的复验按[通用方法](../../../developers/zh-CN/qa/README.md)记录。
 
