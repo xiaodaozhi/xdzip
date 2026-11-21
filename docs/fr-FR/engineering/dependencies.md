@@ -1,6 +1,6 @@
 # Admission des dépendances et des moteurs de formats
 
-[English](../../engineering/dependencies.md) | [简体中文](../../zh-CN/engineering/dependencies.md) | [繁體中文](../../zh-TW/engineering/dependencies.md) | [日本語](../../ja-JP/engineering/dependencies.md) | Français | [Español](../../es-ES/engineering/dependencies.md) | [Português (Brasil)](../../pt-BR/engineering/dependencies.md)
+[English](../../engineering/dependencies.md) | [简体中文](../../zh-CN/engineering/dependencies.md) | [繁體中文](../../zh-TW/engineering/dependencies.md) | [日本語](../../ja-JP/engineering/dependencies.md) | Français | [Deutsch](../../de-DE/engineering/dependencies.md) | [Español](../../es-ES/engineering/dependencies.md) | [Português (Brasil)](../../pt-BR/engineering/dependencies.md)
 
 ## Essai du SDK externe
 

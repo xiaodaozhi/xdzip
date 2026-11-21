@@ -125,7 +125,7 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 - [Prüfung der Übereinstimmung von Qt-SDK und Quellcode](../engineering/qt-sdk-correspondence.md)
 - [Lizenzen für Windows-Entwicklungswerkzeuge und Laufzeit](../engineering/windows-licensing.md)
 - [Lizenzentscheidung und Drittanbietermaterial](../engineering/licensing.md)
-- [Zulassung von Abhängigkeiten und Format-Backends](../../engineering/dependencies.md)
+- [Zulassung von Abhängigkeiten und Format-Backends](../engineering/dependencies.md)
 - [Zugehöriger Quellcode und Materialien für den erneuten Build](../engineering/source-delivery.md)
 - [ICU-73.2-Daten aus CLDR neu erstellen](../engineering/icu-cldr-rebuild.md)
 
