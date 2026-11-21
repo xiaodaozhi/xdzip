@@ -1,6 +1,6 @@
 # 설치 프로그램과 파일 연결
 
-[English](../../engineering/installers-associations.md) | [简体中文](../../zh-CN/engineering/installers-associations.md) | [繁體中文](../../zh-TW/engineering/installers-associations.md) | [日本語](../../ja-JP/engineering/installers-associations.md) | 한국어 | [Français](../../fr-FR/engineering/installers-associations.md) | [Deutsch](../../de-DE/engineering/installers-associations.md) | [Español](../../es-ES/engineering/installers-associations.md) | [Português (Brasil)](../../pt-BR/engineering/installers-associations.md)
+[English](../../engineering/installers-associations.md) | [简体中文](../../zh-CN/engineering/installers-associations.md) | [繁體中文](../../zh-TW/engineering/installers-associations.md) | [日本語](../../ja-JP/engineering/installers-associations.md) | 한국어 | [Français](../../fr-FR/engineering/installers-associations.md) | [Deutsch](../../de-DE/engineering/installers-associations.md) | [Español](../../es-ES/engineering/installers-associations.md) | [Português (Brasil)](../../pt-BR/engineering/installers-associations.md) | [Русский](../../ru-RU/engineering/installers-associations.md)
 
 Windows 11 x64에서는 Microsoft Store에서 **XDZip**을 검색해 Store 버전을 설치하거나 업데이트하세요. Windows EXE 또는 포터블 ZIP, macOS 패키지와 Linux 패키지는 [최신 GitHub 릴리스](https://github.com/xiaodaozhi/xdzip/releases/latest)에서 다운로드합니다. 두 채널은 독립적으로 게시됩니다. 설치할 버전의 목록이나 릴리스 노트를 확인하세요.
 

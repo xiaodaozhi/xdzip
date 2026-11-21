@@ -110,7 +110,7 @@
 
 ## Интеграция, выпуски и доверие
 
-- [Установщики и ассоциации файлов](../../engineering/installers-associations.md)
+- [Установщики и ассоциации файлов](../engineering/installers-associations.md)
 - [Поддержка систем и политика сопровождения](../engineering/support-policy.md)
 - [Действия файлового менеджера и отдельный хост задач](../engineering/shell-actions.md)
 - [Обновления по инициативе пользователя](../engineering/software-update.md)

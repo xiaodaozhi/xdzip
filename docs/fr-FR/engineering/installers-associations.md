@@ -1,6 +1,6 @@
 # Installateurs et associations de fichiers
 
-[English](../../engineering/installers-associations.md) | [简体中文](../../zh-CN/engineering/installers-associations.md) | [繁體中文](../../zh-TW/engineering/installers-associations.md) | [日本語](../../ja-JP/engineering/installers-associations.md) | [한국어](../../ko-KR/engineering/installers-associations.md) | Français | [Deutsch](../../de-DE/engineering/installers-associations.md) | [Español](../../es-ES/engineering/installers-associations.md) | [Português (Brasil)](../../pt-BR/engineering/installers-associations.md)
+[English](../../engineering/installers-associations.md) | [简体中文](../../zh-CN/engineering/installers-associations.md) | [繁體中文](../../zh-TW/engineering/installers-associations.md) | [日本語](../../ja-JP/engineering/installers-associations.md) | [한국어](../../ko-KR/engineering/installers-associations.md) | Français | [Deutsch](../../de-DE/engineering/installers-associations.md) | [Español](../../es-ES/engineering/installers-associations.md) | [Português (Brasil)](../../pt-BR/engineering/installers-associations.md) | [Русский](../../ru-RU/engineering/installers-associations.md)
 
 Sous Windows 11 x64, recherchez **XDZip** dans Microsoft Store pour installer ou mettre à jour l’édition Store. Téléchargez l’EXE ou le ZIP portable Windows, les paquets macOS et les paquets Linux depuis la [dernière publication GitHub](https://github.com/xiaodaozhi/xdzip/releases/latest). Les deux canaux publient indépendamment. Consultez la fiche ou les notes de la version que vous installez.
 
