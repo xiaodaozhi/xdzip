@@ -31,7 +31,7 @@ La [política de soporte](../engineering/support-policy.md) define los sistemas 
 
 El [flujo de CI habitual](https://github.com/xiaodaozhi/xdzip/blob/main/.github/workflows/docs.yml) ejecuta comprobaciones ligeras. Los trabajos nativos Foundation y Qt se ejecutan en flujos manuales separados. La CI habitual de Apple Silicon compila, prueba y verifica el inicio sin desplegar aplicaciones descargables. El flujo específico de publicación tiene sus propios pasos autorizados para desplegar, firmar, empaquetar y publicar. El [protocolo de publicación](../engineering/release-protocol.md) y la [política de CI](../../../developers/engineering/ci-policy.md) definen los requisitos y las pruebas de cumplimiento.
 
-Los manifiestos de publicación, las sumas de comprobación, los inventarios, la SBOM y los documentos de licencia describen los artefactos entregados. El flujo de publicación no genera ni sube ZIP del código fuente del proyecto. GitHub genera sus propias instantáneas de etiquetas mediante otro mecanismo. Las obligaciones dependen de los componentes entregados, el [registro de licencias](../engineering/licensing.md) y la [política de entrega del código fuente](../../engineering/source-delivery.md).
+Los manifiestos de publicación, las sumas de comprobación, los inventarios, la SBOM y los documentos de licencia describen los artefactos entregados. El flujo de publicación no genera ni sube ZIP del código fuente del proyecto. GitHub genera sus propias instantáneas de etiquetas mediante otro mecanismo. Las obligaciones dependen de los componentes entregados, el [registro de licencias](../engineering/licensing.md) y la [política de entrega del código fuente](../engineering/source-delivery.md).
 
 <a name="xdzip-update-and-future-distribution"></a>
 

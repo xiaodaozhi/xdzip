@@ -2,7 +2,7 @@
 
 # 對應原始碼與重建材料
 
-[English](../../engineering/source-delivery.md) | [简体中文](../../zh-CN/engineering/source-delivery.md) | 繁體中文 | [日本語](../../ja-JP/engineering/source-delivery.md)
+[English](../../engineering/source-delivery.md) | [简体中文](../../zh-CN/engineering/source-delivery.md) | 繁體中文 | [日本語](../../ja-JP/engineering/source-delivery.md) | [Español](../../es-ES/engineering/source-delivery.md)
 
 **發行邊界，2026-11-05：**按所有者決定，此收集器僅供本地審查和重建驗證，不再把對應原始碼壓縮檔作為 GitHub Release 或 Actions 工件提供。公開歷史 Release 和仍可下載的發行 Actions 工件中的對應原始碼包已撤下，後續釋出流程禁止生成或上傳。該決定不改變元件許可，不表示對應原始碼、重連結或其他許可義務已滿足；GitHub 公共倉庫自動生成的標籤原始碼快照不屬於這些 Release 附件。
 

@@ -35,7 +35,7 @@ Una persona analista lee selectivamente los siguientes grupos del archivo origin
 
 Conservar con la evidencia de desarrollo las identidades del archivo fijado y sus archivos, el alcance real de lectura y los resúmenes factuales entregados. Volver a comprobar al actualizar la referencia; números de línea antiguos no demuestran el comportamiento de una versión nueva. Las constantes de especificación, identificadores y relaciones matemáticas pueden usarse para implementar el formato; optimizaciones internas y comportamiento históricamente indefinido no conceden permisos al producto. Las declaraciones de dominio público no abarcan todo el archivo, documentación, envolturas C++ ni otras muestras.
 
-Esto no afirma una sala limpia estricta ni ausencia de riesgo jurídico. Las fuentes de terceros, entregas históricas con el motor oficial y herramientas de prueba independientes siguen sujetas a sus propios términos. El producto actual no compila el motor oficial; consulta [licencias](licensing.md) y [código correspondiente](../../engineering/source-delivery.md).
+Esto no afirma una sala limpia estricta ni ausencia de riesgo jurídico. Las fuentes de terceros, entregas históricas con el motor oficial y herramientas de prueba independientes siguen sujetas a sus propios términos. El producto actual no compila el motor oficial; consulta [licencias](licensing.md) y [código correspondiente](source-delivery.md).
 
 <a name="xdzip-interoperability-boundaries"></a>
 
