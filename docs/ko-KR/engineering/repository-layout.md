@@ -15,7 +15,7 @@
 | crates/xdzip-compression | Deflate/Deflate64/GZIP, LZMA/LZMA2, BZip2, PPMd7, MSZIP, LZX, Quantum의 공통 알고리즘과 래퍼. 운영용 타사 종속성이나 경로 및 출력 확정 권한이 없습니다. [계약](../../engineering/independent-rust-codecs.md)을 참고하세요. |
 | crates/xdzip-crypto | 형식과 독립적인 고정 메모리 SHA/HMAC 및 BLAKE 해시. 민감한 상태를 0으로 지울 수 있으며 이미 채택한 원시 기능을 재사용합니다. 압축 파일 암호를 해석하거나 출력을 확정할지 결정하지 않습니다. |
 | crates/xdzip-codec-zip, xdzip-codec-tar | ZIP 및 TAR/GZIP 구현. 임의의 출력 경로를 다루지 않습니다. |
-| crates/xdzip-codec-lha, xdzip-codec-arj, xdzip-codec-arc, xdzip-codec-bh | [LHA](../../engineering/lha-containers.md)/[PMA](pma-streams.md), [ARJ](arj-streams.md), [ARC](arc-streams.md), [BH](bh-containers.md)의 독립 프레임 및 항목 프로필. 파일 시스템 권한이 없으며 제품 내 사용 가능 여부는 형식 레지스트리에서 결정합니다. |
+| crates/xdzip-codec-lha, xdzip-codec-arj, xdzip-codec-arc, xdzip-codec-bh | [LHA](lha-containers.md)/[PMA](pma-streams.md), [ARJ](arj-streams.md), [ARC](arc-streams.md), [BH](bh-containers.md)의 독립 프레임 및 항목 프로필. 파일 시스템 권한이 없으며 제품 내 사용 가능 여부는 형식 레지스트리에서 결정합니다. |
 | crates/xdzip-codec-7z | 자체 7z 컨테이너, 방식 그래프, 필터, AES 결합, 스트리밍 생성과 한도가 있는 다시 쓰기. 파일 경로에 대한 권한은 없습니다. |
 | crates/xdzip-codec-cab | 호스트가 승인한 볼륨과 공통 알고리즘을 사용하는 자체 읽기 전용 CAB 컨테이너. 원본 이름, UTF-8 선언 및 일반적인 중복 이름 레코드를 보존합니다. 볼륨 검색과 출력 확정은 호스트의 책임입니다. [계약](../../engineering/independent-rust-codecs.md#cab只读规格) 및 [자료](cab-format-sources.md)를 참고하세요. |
 | crates/xdzip-codec-optical | ISO9660/Joliet/Rock Ridge/UDF 읽기와 새 데이터 이미지를 위한 ISO9660/Joliet 쓰기. 경로 권한 없이 스트림을 사용합니다. |

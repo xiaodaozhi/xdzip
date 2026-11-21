@@ -68,7 +68,7 @@
 - [Zstandard 스트림 계약](../engineering/zstandard-streams.md)
 - [Unix compress Z 계약](../engineering/compress-streams.md)
 - [일반 Brotli 스트림 계약](../engineering/brotli-streams.md)
-- [LHA 데이터 구조 및 알고리즘](../../engineering/lha-containers.md)
+- [LHA 데이터 구조 및 알고리즘](../engineering/lha-containers.md)
 - [PMA 컨테이너와 PMarc 방식](../engineering/pma-streams.md)
 - [ARJ 압축 스트림과 컨테이너 허용 범위](../engineering/arj-streams.md)
 - [ARC 컨테이너 및 압축 스트림 프로필](../engineering/arc-streams.md)
