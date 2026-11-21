@@ -18,6 +18,21 @@ EXTENSIONS=list(WINDOWS_ICONS)
 
 
 MANIFEST_NAME='install-manifest.txt'
+TRADITIONAL_MESSAGES = ROOT/'resources/windows-installer-zh-TW.json'
+TRADITIONAL_MESSAGE_KEYS = {
+    'ArchiveIncorrectPassword', 'ArchiveIsCorrupted', 'ArchiveUnsupportedFormat',
+    'ButtonStopExtraction', 'DownloadingLabel2', 'ErrorDownloading', 'ErrorExtracting',
+    'ErrorExtractionAborted', 'ErrorExtractionFailed', 'ExtractingLabel',
+    'RetryCancelCancel', 'RetryCancelRetry', 'RetryCancelSelectAction',
+    'SourceVerificationFailed', 'StatusDownloadFiles', 'StopExtraction',
+    'VerificationFileHashIncorrect', 'VerificationFileNameIncorrect',
+    'VerificationFileSizeIncorrect', 'VerificationFileTagIncorrect',
+    'VerificationKeyNotFound', 'VerificationSignatureDoesntExist', 'VerificationSignatureInvalid',
+}
+TRADITIONAL_PARAMETERIZED = {
+    'ErrorExtractionFailed', 'SourceVerificationFailed', 'VerificationKeyNotFound',
+    'VerificationSignatureDoesntExist', 'VerificationSignatureInvalid',
+}
 
 
 def runtime_agreement(root):
@@ -87,6 +102,14 @@ def installer_language_sections(chinese, catalogs):
     names = {'en-US': 'english', 'zh-CN': 'chinesesimplified', 'zh-TW': 'chinesetraditional',
              'ja-JP': 'japanese', 'ko-KR': 'korean', 'fr-FR': 'french', 'de-DE': 'german',
              'es-ES': 'spanish', 'pt-BR': 'brazilianportuguese', 'ru-RU': 'russian'}
+    traditional = json.loads(TRADITIONAL_MESSAGES.read_text(encoding='utf-8'))
+    if not isinstance(traditional, dict) or set(traditional) != TRADITIONAL_MESSAGE_KEYS:
+        raise ValueError('Traditional Chinese installer message overrides are incomplete')
+    for key, value in traditional.items():
+        expected = ['%1'] if key in TRADITIONAL_PARAMETERIZED else []
+        if (not isinstance(value, str) or not value.strip() or any(ord(c) < 32 for c in value)
+                or re.findall(r'%\d+', value) != expected):
+            raise ValueError('Invalid Traditional Chinese installer message ' + key)
     languages, messages, custom = [], [], []
     for locale in packaging_languages():
         name, path, catalog = names[locale], files[locale], catalogs[locale]
@@ -94,6 +117,8 @@ def installer_language_sections(chinese, catalogs):
             raise ValueError('Installer language path contains an unsafe character')
         languages.append(f'Name: "{name}"; MessagesFile: "{path}"')
         messages.append(f'{name}.LicenseLabel3={catalog["LicenseLabel3"]}')
+        if locale == 'zh-TW':
+            messages.extend(f'{name}.{key}={traditional[key]}' for key in sorted(traditional))
         for key in ('IncompatibleSettings', 'UpdateAlreadyRunning', 'InvalidInstalledFiles',
                     'ModifiedInstalledFiles', 'InstalledFilesCleanupFailed', 'AddCliPath'):
             custom.append(f'{name}.{key}={catalog[key]}')

@@ -33,6 +33,28 @@ linux=module('build-linux-installer');windows=module('build-windows-installer');
 
 
 class InstallerTests(unittest.TestCase):
+    def test_windows_traditional_messages_cover_inno_fallbacks(self):
+        sections = windows.installer_language_sections(Path('ChineseSimplified.isl'), packaging_catalogs())
+        prefix = 'chinesetraditional.'
+        lines = [line for line in sections['MESSAGES'].splitlines() if line.startswith(prefix)]
+        messages = dict(line[len(prefix):].split('=', 1) for line in lines)
+        self.assertEqual(set(messages) - {'LicenseLabel3'}, windows.TRADITIONAL_MESSAGE_KEYS)
+        self.assertEqual(messages['RetryCancelSelectAction'], '選擇動作')
+        self.assertEqual(messages['RetryCancelRetry'], '重試(&T)')
+        self.assertEqual(messages['RetryCancelCancel'], '取消')
+        self.assertEqual(messages['VerificationSignatureInvalid'], '簽章檔案「%1」無效')
+        self.assertFalse(any(line.startswith('english.RetryCancel') for line in sections['MESSAGES'].splitlines()))
+
+    def test_windows_traditional_messages_reject_missing_or_bad_placeholder(self):
+        original = json.loads(windows.TRADITIONAL_MESSAGES.read_text(encoding='utf-8'))
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp)/'messages.json'
+            for invalid in (dict(original, ErrorExtractionFailed='解壓縮失敗'),
+                            {key: value for key, value in original.items() if key != 'RetryCancelCancel'}):
+                path.write_text(json.dumps(invalid, ensure_ascii=False), encoding='utf-8')
+                with patch.object(windows, 'TRADITIONAL_MESSAGES', path), self.assertRaises(ValueError):
+                    windows.installer_language_sections(Path('ChineseSimplified.isl'), packaging_catalogs())
+
     def test_macos_localizes_all_declared_document_types(self):
         catalog = packaging_catalogs()
         with tempfile.TemporaryDirectory() as directory:
