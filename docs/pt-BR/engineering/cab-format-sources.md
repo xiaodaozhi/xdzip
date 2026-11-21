@@ -2,7 +2,7 @@
 
 [English](../../engineering/cab-format-sources.md) | [简体中文](../../zh-CN/engineering/cab-format-sources.md) | [繁體中文](../../zh-TW/engineering/cab-format-sources.md) | [日本語](../../ja-JP/engineering/cab-format-sources.md) | [한국어](../../ko-KR/engineering/cab-format-sources.md) | [Français](../../fr-FR/engineering/cab-format-sources.md) | [Deutsch](../../de-DE/engineering/cab-format-sources.md) | [Español](../../es-ES/engineering/cab-format-sources.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/cab-format-sources.md)
 
-Este documento registra fontes, escopo e restrições da implementação independente do contêiner CAB, MSZIP, LZX e Quantum. Os recursos do produto, a gestão de recursos e as regras de substituição por formato são definidos, respectivamente, pelo [contrato do processo isolado de formatos](native-codecs.md), pelo [contrato Rust próprio](../../engineering/independent-rust-codecs.md) e pelo [contrato de volumes divididos](archive-opening.md). Registros de fontes não substituem a aceitação de interoperabilidade nem a revisão de licenças de publicação.
+Este documento registra fontes, escopo e restrições da implementação independente do contêiner CAB, MSZIP, LZX e Quantum. Os recursos do produto, a gestão de recursos e as regras de substituição por formato são definidos, respectivamente, pelo [contrato do processo isolado de formatos](native-codecs.md), pelo [contrato Rust próprio](independent-rust-codecs.md) e pelo [contrato de volumes divididos](archive-opening.md). Registros de fontes não substituem a aceitação de interoperabilidade nem a revisão de licenças de publicação.
 
 ## Documentos técnicos da Microsoft
 

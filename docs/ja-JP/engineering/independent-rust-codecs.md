@@ -1,6 +1,6 @@
 # 自社 Rust フォーマットとアルゴリズムの契約
 
-[English](../../engineering/independent-rust-codecs.md) | [简体中文](../../zh-CN/engineering/independent-rust-codecs.md) | [繁體中文](../../zh-TW/engineering/independent-rust-codecs.md) | 日本語 | [Français](../../fr-FR/engineering/independent-rust-codecs.md) | [Español](../../es-ES/engineering/independent-rust-codecs.md)
+[English](../../engineering/independent-rust-codecs.md) | [简体中文](../../zh-CN/engineering/independent-rust-codecs.md) | [繁體中文](../../zh-TW/engineering/independent-rust-codecs.md) | 日本語 | [Français](../../fr-FR/engineering/independent-rust-codecs.md) | [Español](../../es-ES/engineering/independent-rust-codecs.md) | [Português (Brasil)](../../pt-BR/engineering/independent-rust-codecs.md)
 
 この契約は内蔵 Rust フォーマット実装、対応プロファイル、互換性の検証方法を説明します。許可された操作は[フォーマット登録表](format-registry.md)、プロセスのルーティングは[ワーカー契約](native-codecs.md)を参照してください。
 

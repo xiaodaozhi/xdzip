@@ -2,7 +2,7 @@
 
 # 自研 Rust 格式與演算法契約
 
-[English](../../engineering/independent-rust-codecs.md) | [简体中文](../../zh-CN/engineering/independent-rust-codecs.md) | 繁體中文 | [日本語](../../ja-JP/engineering/independent-rust-codecs.md) | [Français](../../fr-FR/engineering/independent-rust-codecs.md) | [Español](../../es-ES/engineering/independent-rust-codecs.md)
+[English](../../engineering/independent-rust-codecs.md) | [简体中文](../../zh-CN/engineering/independent-rust-codecs.md) | 繁體中文 | [日本語](../../ja-JP/engineering/independent-rust-codecs.md) | [Français](../../fr-FR/engineering/independent-rust-codecs.md) | [Español](../../es-ES/engineering/independent-rust-codecs.md) | [Português (Brasil)](../../pt-BR/engineering/independent-rust-codecs.md)
 
 本文說明內建 Rust 格式實現、支援範圍及相容性驗證方法。可執行的操作由[格式登記表](format-registry.md)宣告，程序分工見[格式工作程序契約](native-codecs.md)。
 

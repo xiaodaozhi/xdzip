@@ -55,7 +55,7 @@ Comece pela [arquitetura do sistema](../design/system-architecture.md) para conh
 - [Adaptadores de formato e projeto do experimento de SDK externo](../design/codec-extension-sdk.md)
 - [Experimento de SDK externo somente para leitura e escopo de execução](../engineering/sdk-trial.md)
 - [Contrato de processo isolado de formatos](../engineering/native-codecs.md)
-- [Formatos e algoritmos próprios em Rust](../../engineering/independent-rust-codecs.md)
+- [Formatos e algoritmos próprios em Rust](../engineering/independent-rust-codecs.md)
 - [Contabilização do trabalho auxiliar de decodificação](../engineering/auxiliary-decoding-work.md)
 - [Admissão da dependência de metadados ZIP](../engineering/zip-metadata-admission.md)
 - [Admissão de dependências de extração e saída ZIP](../engineering/zip-extraction-admission.md)
