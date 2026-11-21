@@ -55,7 +55,7 @@
 - [形式アダプターと外部 SDK 試験の設計](../design/codec-extension-sdk.md)
 - [読み取り専用の外部 SDK 試験と実行範囲](../engineering/sdk-trial.md)
 - [隔離された形式ワーカーの仕様](../engineering/native-codecs.md)
-- [自作の Rust 形式とアルゴリズム仕様](../../engineering/independent-rust-codecs.md)
+- [自作の Rust 形式とアルゴリズム仕様](../engineering/independent-rust-codecs.md)
 - [補助アルゴリズムの作業量計上](../engineering/auxiliary-decoding-work.md)
 - [ZIP メタデータ依存の採用](../engineering/zip-metadata-admission.md)
 - [ZIP 展開と出力の依存採用](../engineering/zip-extraction-admission.md)

@@ -37,7 +37,7 @@
 
 パス、ソースの再検証、キャンセル、パスワード、割り当て、最終公開はホストが管理します。コーデックは操作に必要なインターフェースを通じて能力を受け取ります。アーカイブワーカーは許可されたソース範囲を要求し、制限されたレコードまたは出力ブロックを渡します。ホストは動作前にプロトコル状態とバイト割り当てを検証します。ワーカーの障害や無効な応答は公開を承認できません。ワーカー境界は障害とリソースを分離します。任意の外部コードに対するカーネル権限制限は試行の別の要件です。[メタデータ契約](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-codec-api/src/lib.rs)、[データ契約](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-codec-api/src/payload.rs)、[エンコードと書き換えの契約](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-codec-api/src/encode.rs)、[ファイル承認](file-security.md)
 
-これらの Rust trait は内部のソースインターフェースです。製品アダプターはワークスペースと明示的なランタイムルーティングに統合します。許可された操作については、有効なファイル、未対応機能、リソース制限、破損、出力動作をそれぞれテストする必要があります。[独立した Rust コーデック契約](../../engineering/independent-rust-codecs.md)と[開発ガイド](../contributing/README.md)を使用してください。
+これらの Rust trait は内部のソースインターフェースです。製品アダプターはワークスペースと明示的なランタイムルーティングに統合します。許可された操作については、有効なファイル、未対応機能、リソース制限、破損、出力動作をそれぞれテストする必要があります。[独立した Rust コーデック契約](../engineering/independent-rust-codecs.md)と[開発ガイド](../contributing/README.md)を使用してください。
 
 <a name="xdzip-implemented-external-sdk-trial"></a>
 

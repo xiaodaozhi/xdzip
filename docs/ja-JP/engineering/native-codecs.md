@@ -4,9 +4,9 @@
 
 [English](../../engineering/native-codecs.md) | [简体中文](../../zh-CN/engineering/native-codecs.md) | [繁體中文](../../zh-TW/engineering/native-codecs.md) | 日本語 | [한국어](../../ko-KR/engineering/native-codecs.md) | [Français](../../fr-FR/engineering/native-codecs.md) | [Deutsch](../../de-DE/engineering/native-codecs.md) | [Español](../../es-ES/engineering/native-codecs.md) | [Português (Brasil)](../../pt-BR/engineering/native-codecs.md) | [Русский](../../ru-RU/engineering/native-codecs.md)
 
-7z、RAR、CAB、ISO/UDF の読み取りは、分離ワーカー内の共有 CXX 境界を介した[組み込み Rust codec](../../engineering/independent-rust-codecs.md)を使用します。同じワーカーはホストが制御するタスク内で 7z の書き込みも扱います。Rust ホストは ZIP、TAR、圧縮ストリーム、DEB、[新しい ISO9660/Joliet イメージ](iso-creation.md)をプロセス内で処理します。形式の選択には組み込み経路を使用し、どの経路も PATH からコマンドラインデコーダーを探しません。
+7z、RAR、CAB、ISO/UDF の読み取りは、分離ワーカー内の共有 CXX 境界を介した[組み込み Rust codec](independent-rust-codecs.md)を使用します。同じワーカーはホストが制御するタスク内で 7z の書き込みも扱います。Rust ホストは ZIP、TAR、圧縮ストリーム、DEB、[新しい ISO9660/Joliet イメージ](iso-creation.md)をプロセス内で処理します。形式の選択には組み込み経路を使用し、どの経路も PATH からコマンドラインデコーダーを探しません。
 
-製品の CAB は常に独立した Rust 経路を使用し、テストスイッチ、公式ハンドラー、失敗時フォールバックはありません。完全なフレーム、共有アルゴリズム、リソース範囲は[自前の契約](../../engineering/independent-rust-codecs.md#cab-read-only-specification)、出所と参照分析の役割は[CAB ソース](cab-format-sources.md)を参照してください。
+製品の CAB は常に独立した Rust 経路を使用し、テストスイッチ、公式ハンドラー、失敗時フォールバックはありません。完全なフレーム、共有アルゴリズム、リソース範囲は[自前の契約](independent-rust-codecs.md#cab只读规格)、出所と参照分析の役割は[CAB ソース](cab-format-sources.md)を参照してください。
 
 ホストは runtime 起動前に検証済みの絶対ワーカーパスを一つ登録できます。同じ登録の繰り返しは成功し、競合するパスや相対パスは選択を変更せず拒否します。明示的な開発者オーバーライドが優先され、次に登録済みパスを使用し、登録がない場合のみ実行ファイルに隣接するワーカーを使います。デスクトップ CLI バンドルはこの登録でデスクトップワーカーを共有します。独立パッケージはローカルワーカーを持ち、近くのディレクトリから他のデスクトップインストールを推測しません。
 
@@ -48,11 +48,11 @@ RAR の実効的な現代アルゴリズム 1 は[制限付きの正確なペー
 
 暗号化されず分割されておらず、すべての項目を安全に保持できる 7z アーカイブは、追加、置換、内部移動を再利用できます。ソリッド内容は制限付き再構築を使用します。暗号化、分割、リンク、未対応の特殊レコードの変更は引き続き拒否します。ソースの再確認と完全な検証を経て、同一ボリューム上で原子的に置換します。独立した削除・名前変更の入口はこの拡張の範囲外です。
 
-RAR は常に `xdzip-codec-rar` を使用し、公式フォールバックなしの読み取り専用です。旧形式、RAR5、RAR 7 拡張、パスワード、ヘッダー暗号化、ソリッドアーカイブ、分割は別々に検証し、アルゴリズムと互換性の制限は[自前の仕様](../../engineering/independent-rust-codecs.md#rar-read-only-specification)に従います。作成、変更、修復、パスワード回復は提供しません。RAR の初期化・制御作業は補助チャネルを使い、実際のデコード出力は WORK と前払い配信を使用し、モデル初期化をファイルサイズや展開率に含めません。
+RAR は常に `xdzip-codec-rar` を使用し、公式フォールバックなしの読み取り専用です。旧形式、RAR5、RAR 7 拡張、パスワード、ヘッダー暗号化、ソリッドアーカイブ、分割は別々に検証し、アルゴリズムと互換性の制限は[自前の仕様](independent-rust-codecs.md#rar只读规格)に従います。作成、変更、修復、パスワード回復は提供しません。RAR の初期化・制御作業は補助チャネルを使い、実際のデコード出力は WORK と前払い配信を使用し、モデル初期化をファイルサイズや展開率に含めません。
 
 CAB は Store、MSZip、Quantum、LZX に対応し、単一および同じディレクトリ内の分割ボリュームは読み取り専用です。Rust はヘッダー関係から許可済みボリューム集合を検証・固定した後、元のボリューム名と境界をワーカーへ送ります。ボリュームの欠落や不一致で部分インデックスは公開できません。[分割ボリューム契約](archive-opening.md)を参照してください。CAB の生名と UTF-8 宣言を保持し、旧形式の名前には[共有ファイル名解決](filename-encoding.md)を使用し、出力パスをホストコードページから推測しません。
 
-`xdzip-codec-optical` は公式 Iso/Udf ハンドラーをリンクせず ISO9660、Joliet、Rock Ridge、UDF を解析します。ハイブリッドイメージは UDF 名前空間を優先し、認識された UDF の破損時に ISO へ黙ってフォールバックしません。拡張子ではなく内容で検出します。ISO/UDF リーダーはマウントや起動イメージの実行なしに閲覧、展開、一時オープン、エクスポート、検査をサポートします。プロセス内の [ISO9660/Joliet ライター](iso-creation.md)は通常のデータイメージを作成し、UDF の作成と更新は未対応です。起動イメージレコードは読み取り可能なファイルのみで、リンクと特殊オブジェクトは出力できません。イメージ検査は構造、範囲、実際の読み取り可能性を検証し、通常ファイルに内容チェックサムがあるとは主張しません。パーティションマップと未対応拡張の明示的な範囲は[自前の仕様](../../engineering/independent-rust-codecs.md#iso-and-udf-read-only-specification)を参照してください。
+`xdzip-codec-optical` は公式 Iso/Udf ハンドラーをリンクせず ISO9660、Joliet、Rock Ridge、UDF を解析します。ハイブリッドイメージは UDF 名前空間を優先し、認識された UDF の破損時に ISO へ黙ってフォールバックしません。拡張子ではなく内容で検出します。ISO/UDF リーダーはマウントや起動イメージの実行なしに閲覧、展開、一時オープン、エクスポート、検査をサポートします。プロセス内の [ISO9660/Joliet ライター](iso-creation.md)は通常のデータイメージを作成し、UDF の作成と更新は未対応です。起動イメージレコードは読み取り可能なファイルのみで、リンクと特殊オブジェクトは出力できません。イメージ検査は構造、範囲、実際の読み取り可能性を検証し、通常ファイルに内容チェックサムがあるとは主張しません。パーティションマップと未対応拡張の明示的な範囲は[自前の仕様](independent-rust-codecs.md#iso与udf只读规格)を参照してください。
 
 <a name="xdzip-verification-and-delivery"></a>
 

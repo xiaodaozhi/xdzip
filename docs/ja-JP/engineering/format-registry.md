@@ -22,6 +22,6 @@
 
 入口は必要に応じてドラッグ＆ドロップとシェルメニューを区別します。通常の `.gz` は両方の入口と単一ファイルからの作成に対応します。`.tar.gz` と `.tgz` は TAR コンテナーの意味を保ちます。XPI/APK/IPA/CBZ は ZIP の検証と許可されたプロファイルを使います。[単一ファイルストリーム](single-file-streams.md)を参照してください。分割ボリュームの命名とソースの許可には[アーカイブを開くときの仕様](archive-opening.md)が適用されます。レジストリーで番号付きファイルを別の形式に解釈することはありません。Windows のアイコンは最後の拡張子に従うため、`.tar.gz` は `gz` の関連付けを使います。
 
-実装済みで自動検証がある宣言だけを追加します。ソースを変更する場合は、関係する[独自形式の仕様](../../engineering/independent-rust-codecs.md)、[形式ワーカーの仕様](native-codecs.md)、機能説明、[受け入れ項目](../../../developers/qa/acceptance.md)を更新します。計画や進捗、実行結果は Issue に、生成した検証結果は `build/` または CI の成果物に保存します。
+実装済みで自動検証がある宣言だけを追加します。ソースを変更する場合は、関係する[独自形式の仕様](independent-rust-codecs.md)、[形式ワーカーの仕様](native-codecs.md)、機能説明、[受け入れ項目](../../../developers/qa/acceptance.md)を更新します。計画や進捗、実行結果は Issue に、生成した検証結果は `build/` または CI の成果物に保存します。
 
 `creation_wrappers` は Windows x64 の ZIP SFX ラッパーと、その専用拡張子 `.sfx.exe` を宣言します。ZIP の方式 ID を再利用し、暗号化と分割ボリュームを無効にします。一般の EXE ファイルは対象外です。ISO9660 の作成にはホスト方式 ID 260 と固定レベル 0 を使用します。[ISO 作成](iso-creation.md)と[組み込みの SFX 作成](sfx-creation.md)を参照してください。
