@@ -2,8 +2,8 @@
   "default": "en-US",
   "languages": [
     {"id": "zh-CN", "name": "中文 (简体)", "documentName": "简体中文", "legacy": "zh-CN", "plural": "other", "font": "sc"},
+    {"id": "zh-TW", "name": "中文 (繁体)", "documentName": "繁體中文", "legacy": "zh-CN", "plural": "other", "font": "tc"},
     {"id": "en-US", "name": "English (US)", "documentName": "English", "legacy": "en-US", "plural": "one", "font": "sc"},
-    {"id": "zh-TW", "name": "繁體中文", "legacy": "zh-CN", "plural": "other", "font": "tc"},
     {"id": "ja-JP", "name": "日本語", "legacy": "en-US", "plural": "other", "font": "jp"},
     {"id": "ko-KR", "name": "한국어", "legacy": "en-US", "plural": "other", "font": "kr"},
     {"id": "fr-FR", "name": "Français", "legacy": "en-US", "plural": "zeroOneMillion", "font": "latin"},
