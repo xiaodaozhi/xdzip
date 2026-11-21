@@ -2,7 +2,7 @@
 
 # 安裝器與檔案關聯
 
-[English](../../engineering/installers-associations.md) | [简体中文](../../zh-CN/engineering/installers-associations.md) | 繁體中文 | [日本語](../../ja-JP/engineering/installers-associations.md)
+[English](../../engineering/installers-associations.md) | [简体中文](../../zh-CN/engineering/installers-associations.md) | 繁體中文 | [日本語](../../ja-JP/engineering/installers-associations.md) | [Español](../../es-ES/engineering/installers-associations.md)
 
 Windows 11 x64 使用者可以在 Microsoft Store 搜尋 **XDZip**，安裝或更新商店版。Windows EXE 安裝器、便攜 ZIP 及 macOS、Linux 安裝包可從 [GitHub 最新發布頁](https://github.com/xiaodaozhi/xdzip/releases/latest)下載。兩條渠道獨立釋出，安裝前可在所選渠道核對版本。
 

@@ -23,7 +23,7 @@ El paquete de escritorio incluye las bibliotecas Qt, los módulos QML, los recur
 | Ubuntu 24.04 LTS x86_64 | GitHub proporciona un archivo comprimido con el directorio de ejecución y un DEB. La base compatible incluye X11 y glibc 2.39 o posterior. |
 | CLI independiente | Se publica con sus propias identidades de paquete y actualización. La CLI que se instala con la aplicación de escritorio sigue las reglas de integración y transferencia de su paquete. |
 
-La [política de soporte](../engineering/support-policy.md) define los sistemas operativos y las arquitecturas compatibles. Consulta el [README del proyecto](../../../README.es-ES.md) y las notas de la versión para ver los archivos publicados. La [guía del instalador](../../engineering/installers-associations.md) detalla los límites de asociación e integración.
+La [política de soporte](../engineering/support-policy.md) define los sistemas operativos y las arquitecturas compatibles. Consulta el [README del proyecto](../../../README.es-ES.md) y las notas de la versión para ver los archivos publicados. La [guía del instalador](../engineering/installers-associations.md) detalla los límites de asociación e integración.
 
 <a name="xdzip-routine-checks-native-builds-and-release"></a>
 

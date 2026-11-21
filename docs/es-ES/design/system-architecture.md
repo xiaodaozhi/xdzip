@@ -56,7 +56,7 @@ Los dos bloques del motor representan instancias separadas de la misma implement
 | Proceso de vista previa de imágenes | Después de que Rust lea y verifique una entrada apta, el escritorio envía bytes limitados de imagen codificada a `xdzip-image-preview`. El proceso devuelve una miniatura RGBA limitada. La solicitud no lleva ruta de archivo, contraseña ni handle de destino. El proveedor publica el resultado solo para la solicitud actual coincidente. La vista previa de texto se gestiona en el motor Rust. |
 | Transferencia a la plataforma | Los adaptadores coordinan activación del gestor de archivos, apertura de una copia privada extraída en una aplicación externa e instalación de actualizaciones. Los auxiliares de actualización o Sparkle de macOS realizan su propia transferencia de instalación. Las actualizaciones gestionadas por Store siguen el canal de plataforma. El proceso de formato no gestiona estas solicitudes. |
 
-[Protocolo del proceso de archivos](../engineering/native-codecs.md), [contrato de vista previa](../engineering/content-preview.md), [integración de plataforma](../../engineering/installers-associations.md), [transferencias de archivo](../engineering/archive-transfers.md), [transferencia de actualización](../engineering/software-update.md).
+[Protocolo del proceso de archivos](../engineering/native-codecs.md), [contrato de vista previa](../engineering/content-preview.md), [integración de plataforma](../engineering/installers-associations.md), [transferencias de archivo](../engineering/archive-transfers.md), [transferencia de actualización](../engineering/software-update.md).
 
 ## Abrir y explorar un archivo
 
