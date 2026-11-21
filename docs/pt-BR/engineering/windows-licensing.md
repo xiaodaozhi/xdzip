@@ -4,7 +4,7 @@
 
 [English](../../engineering/windows-licensing.md) | [简体中文](../../zh-CN/engineering/windows-licensing.md) | [繁體中文](../../zh-TW/engineering/windows-licensing.md) | [日本語](../../ja-JP/engineering/windows-licensing.md) | [한국어](../../ko-KR/engineering/windows-licensing.md) | [Français](../../fr-FR/engineering/windows-licensing.md) | [Deutsch](../../de-DE/engineering/windows-licensing.md) | [Español](../../es-ES/engineering/windows-licensing.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/windows-licensing.md)
 
-Esta página define os caminhos aplicáveis de compilação e redistribuição no Windows e é usada com os [materiais nativos](native-runtime-materials.md), a [entrada de compilação para desenvolvedores](../../engineering/developer-build.md) e o [contrato de instalação](../../engineering/installers-associations.md). Ambientes específicos, commits de verificação, hashes de materiais e conclusões de aceitação ficam em issues e artefatos locais ou CI; esta página não guarda prova de licença de uma máquina.
+Esta página define os caminhos aplicáveis de compilação e redistribuição no Windows e é usada com os [materiais nativos](native-runtime-materials.md), a [entrada de compilação para desenvolvedores](../../engineering/developer-build.md) e o [contrato de instalação](installers-associations.md). Ambientes específicos, commits de verificação, hashes de materiais e conclusões de aceitação ficam em issues e artefatos locais ou CI; esta página não guarda prova de licença de uma máquina.
 
 <a name="xdzip-free-community-path-and-local-choice"></a>
 

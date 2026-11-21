@@ -56,7 +56,7 @@ As duas caixas de runtime representam instâncias separadas da mesma implementa�
 | Processo de pré-visualização de imagens | Após o Rust ler e verificar uma entrada elegível, o desktop envia bytes limitados de imagem codificada ao `xdzip-image-preview`. O processo retorna uma miniatura RGBA limitada. A solicitação não contém caminho do arquivo, senha ou handle de destino. O provedor publica o resultado apenas para a solicitação atual correspondente. A pré-visualização de texto é tratada no runtime Rust. |
 | Transferência à plataforma | Adaptadores de desktop coordenam ativação pelo gerenciador de arquivos, abertura de cópia extraída privada em aplicação externa e instalação de atualização. Auxiliares de atualização ou Sparkle no macOS executam sua própria transferência de instalação. Atualizações gerenciadas pela Store seguem o canal da plataforma. O worker de formato não trata essas solicitações. |
 
-[Protocolo do worker de arquivo](../engineering/native-codecs.md), [contrato de pré-visualização](../engineering/content-preview.md), [integração de plataforma](../../engineering/installers-associations.md), [transferências de arquivo](../engineering/archive-transfers.md), [transferência de atualização](../engineering/software-update.md).
+[Protocolo do worker de arquivo](../engineering/native-codecs.md), [contrato de pré-visualização](../engineering/content-preview.md), [integração de plataforma](../engineering/installers-associations.md), [transferências de arquivo](../engineering/archive-transfers.md), [transferência de atualização](../engineering/software-update.md).
 
 ## Abrir e navegar em um arquivo
 

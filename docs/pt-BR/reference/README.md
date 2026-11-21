@@ -110,7 +110,7 @@ Comece pela [arquitetura do sistema](../design/system-architecture.md) para conh
 
 ## Integração, lançamentos e confiança
 
-- [Instaladores e associações de arquivos](../../engineering/installers-associations.md)
+- [Instaladores e associações de arquivos](../engineering/installers-associations.md)
 - [Suporte a sistemas e política de manutenção](../engineering/support-policy.md)
 - [Ações do gerenciador de arquivos e host de tarefas independente](../engineering/shell-actions.md)
 - [Atualização iniciada pelo usuário](../engineering/software-update.md)

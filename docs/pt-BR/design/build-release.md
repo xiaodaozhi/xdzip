@@ -23,7 +23,7 @@ O pacote de desktop implanta as bibliotecas Qt, os módulos QML, os recursos da 
 | Ubuntu 24.04 LTS x86_64 | O GitHub fornece um arquivo compactado do diretório de execução e um DEB. A configuração mínima inclui X11 e glibc 2.39 ou posterior. |
 | CLI autônoma | Publicada com identidades próprias de pacote e atualização. A CLI incluída na instalação de desktop segue as regras de integração e transferência do próprio pacote. |
 
-A [política de suporte](../engineering/support-policy.md) define os sistemas operacionais e as arquiteturas atendidos. Consulte o [README do projeto](../../../README.pt-BR.md) e as notas da versão correspondente para ver os arquivos publicados. O [guia de instalação](../../engineering/installers-associations.md) descreve os limites de associação e integração.
+A [política de suporte](../engineering/support-policy.md) define os sistemas operacionais e as arquiteturas atendidos. Consulte o [README do projeto](../../../README.pt-BR.md) e as notas da versão correspondente para ver os arquivos publicados. O [guia de instalação](../engineering/installers-associations.md) descreve os limites de associação e integração.
 
 <a name="xdzip-routine-checks-native-builds-and-release"></a>
 
