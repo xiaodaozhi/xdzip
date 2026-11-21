@@ -1,6 +1,6 @@
 # Norma de design da interface
 
-[English](../../visual/design-standard.md) | [简体中文](../../zh-CN/visual/design-standard.md) | [繁體中文](../../zh-TW/visual/design-standard.md) | [日本語](../../ja-JP/visual/design-standard.md) | [Français](../../fr-FR/visual/design-standard.md) | [Español](../../es-ES/visual/design-standard.md) | Português (Brasil)
+[English](../../visual/design-standard.md) | [简体中文](../../zh-CN/visual/design-standard.md) | [繁體中文](../../zh-TW/visual/design-standard.md) | [日本語](../../ja-JP/visual/design-standard.md) | [Français](../../fr-FR/visual/design-standard.md) | [Deutsch](../../de-DE/visual/design-standard.md) | [Español](../../es-ES/visual/design-standard.md) | Português (Brasil)
 
 Esta norma rege a criação da interface, a entrega do design HTML e a implementação Qt. As conversões de dimensões seguem [layout-scale.json](../../../specs/visual/layout-scale.json); cores, controles compartilhados e árvores de diretórios seguem, respectivamente, [tokens.json](../../../specs/visual/tokens.json), [controls.json](../../../specs/visual/controls.json) e [directory-tree.json](../../../specs/visual/directory-tree.json). As medidas originais estão em [qt-main-reference.json](../../../specs/visual/qt-main-reference.json); não reescreva os originais a partir dos resultados da implementação.
 

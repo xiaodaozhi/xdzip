@@ -87,4 +87,4 @@ Die Offline-Datei für den Kopf ist `dist/xdzip-header-review.html`, die für de
 
 Diese HTML-Prüfungen und Offline-Ansichten bei Bedarf lokal ausführen; sie gehören nicht standardmäßig zur Desktopprodukt-CI. Ankerfehler untersuchen und Überlagerungen auch nach bestandener Geometrie prüfen. HTML-Prüfungen des Hauptfensters ersetzen weder die Kalibrierung anderer Seiten oder des Qt-Produkts noch die native Desktopabnahme.
 
-Die normale Dichte von Hauptfenster und Menü folgt dem [UI-Standard](../../visual/design-standard.md). Schriftgrößenverhältnisse von Qt-Menüs und Listen müssen gemeinsam geprüft werden. Bei lokaler HTML-Prüfung den tatsächlichen Seitenzoom nach der [Prüfmethode](../../../developers/qa/README.md) prüfen; Übereinstimmung mit alten Quellbildkoordinaten ersetzt dies nicht.
+Die normale Dichte von Hauptfenster und Menü folgt dem [UI-Standard](design-standard.md). Schriftgrößenverhältnisse von Qt-Menüs und Listen müssen gemeinsam geprüft werden. Bei lokaler HTML-Prüfung den tatsächlichen Seitenzoom nach der [Prüfmethode](../../../developers/qa/README.md) prüfen; Übereinstimmung mit alten Quellbildkoordinaten ersetzt dies nicht.

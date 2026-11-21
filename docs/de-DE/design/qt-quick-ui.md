@@ -34,7 +34,7 @@ Ablegen öffnet je nach Ziel Archive oder liefert Eingaben für die Erstellung. 
 
 ## Gemeinsame Bedienelemente und native Grenzen
 
-Vorgangsfenster verwenden `OperationButton`, `OperationFooterButton`, `OperationFrame`, `OperationSelect` und `OperationSegmentedGroup`. Gemeinsame Komponenten legen Maße und Interaktion fest. Gemeinsame Auswahlkomponenten leiten Maus-, Tastatur- und Barrierefreiheitsaktionen an dasselbe Zustandsmodell. UI-Texte und Dateidaten befolgen die Schrift- und Lokalisierungsregeln im [Gestaltungsstandard](../../visual/design-standard.md). Archivnamen bleiben Daten und werden sicher angezeigt.
+Vorgangsfenster verwenden `OperationButton`, `OperationFooterButton`, `OperationFrame`, `OperationSelect` und `OperationSegmentedGroup`. Gemeinsame Komponenten legen Maße und Interaktion fest. Gemeinsame Auswahlkomponenten leiten Maus-, Tastatur- und Barrierefreiheitsaktionen an dasselbe Zustandsmodell. UI-Texte und Dateidaten befolgen die Schrift- und Lokalisierungsregeln im [Gestaltungsstandard](../visual/design-standard.md). Archivnamen bleiben Daten und werden sicher angezeigt.
 
 Eigenständige Vorgangsfenster folgen der Fensterregistrierung und den Regeln für Modalität und Schließen des jeweiligen Fensters. macOS nutzt native Elemente der Titelleiste. Windows und Linux verwenden ihre Systemadapter. Der [Vertrag für Plattformfenster](../ux/platform-windows.md) legt die Abnahme echter Fenster fest. Der [Vertrag für Desktopintegration](../ux/desktop-integration.md) beschreibt Infobereich und Aktivierung.
 

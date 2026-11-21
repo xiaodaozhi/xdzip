@@ -88,7 +88,7 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 
 - [Qt-Quick-Ansichten und Controller-Aufgaben](../design/qt-quick-ui.md)
 - [Visuelle Desktop-Spezifikationen](../visual/README.md)
-- [UI-Designstandard](../../visual/design-standard.md)
+- [UI-Designstandard](../visual/design-standard.md)
 - [Ablauf für UI-Entwurf und Überarbeitung](../visual/design-workflow.md)
 - [Symbole für Dateizuordnungen](../visual/file-association-icons.md)
 - [Prüfung der visuellen HTML-Übereinstimmung](../visual/html-fidelity.md)

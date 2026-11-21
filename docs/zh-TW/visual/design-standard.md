@@ -2,7 +2,7 @@
 
 # 介面設計規範
 
-[English](../../visual/design-standard.md) | [简体中文](../../zh-CN/visual/design-standard.md) | 繁體中文 | [日本語](../../ja-JP/visual/design-standard.md) | [Français](../../fr-FR/visual/design-standard.md) | [Español](../../es-ES/visual/design-standard.md) | [Português (Brasil)](../../pt-BR/visual/design-standard.md)
+[English](../../visual/design-standard.md) | [简体中文](../../zh-CN/visual/design-standard.md) | 繁體中文 | [日本語](../../ja-JP/visual/design-standard.md) | [Français](../../fr-FR/visual/design-standard.md) | [Deutsch](../../de-DE/visual/design-standard.md) | [Español](../../es-ES/visual/design-standard.md) | [Português (Brasil)](../../pt-BR/visual/design-standard.md)
 
 [任務路徑與結果摘要修訂](../../../design/hifi/sources/task-windows.html)將進行中的“當前檔案”限制為單行、中間省略，保留完整純文字輔助功能名稱，路徑長度不改變卡片或視窗高度。普通解壓結果摘要僅含完整任務統計中的已提交檔案數，不依賴保留的明細記錄；壓縮結果摘要僅顯示“N 個檔案”，不顯示名稱或容量；普通壓縮使用 outputParts，批次壓縮使用成功任務數。批次壓縮結果不顯示卷組去重計數，批次解壓結果仍顯示該計數；可展開明細保留現有行為。邏輯尺寸、密度與大字號適配繼續沿用既有規範。
 

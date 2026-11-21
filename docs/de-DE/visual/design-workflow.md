@@ -4,7 +4,7 @@
 
 [English](../../visual/design-workflow.md) | [简体中文](../../zh-CN/visual/design-workflow.md) | [繁體中文](../../zh-TW/visual/design-workflow.md) | [日本語](../../ja-JP/visual/design-workflow.md) | [한국어](../../ko-KR/visual/design-workflow.md) | [Français](../../fr-FR/visual/design-workflow.md) | Deutsch | [Español](../../es-ES/visual/design-workflow.md) | [Português (Brasil)](../../pt-BR/visual/design-workflow.md) | [Русский](../../ru-RU/visual/design-workflow.md)
 
-Führen Sie diesen Ablauf vor der Erstellung der Oberfläche durch, nicht als nachträgliche Dokumentation. Einstieg in die Vorgaben ist der [UI-Designstandard](../../visual/design-standard.md).
+Führen Sie diesen Ablauf vor der Erstellung der Oberfläche durch, nicht als nachträgliche Dokumentation. Einstieg in die Vorgaben ist der [UI-Designstandard](design-standard.md).
 
 1. **Ziele und Umgebung festlegen.** Funktionen, echte Daten und fehlende Fähigkeiten auflisten. Plattform und Dimensionsbereiche für logische Fenster, barrierefreie Schriftgrößen, Menüs und eigenständige Fenster festlegen. Systemskalierung, Prüfskalierung und DPR erfassen; bei HTML-Prototypen auch den Seitenzoom des Browsers.
 2. **Zuerst Parameter festlegen.** Das Spezifikations-JSON für Maße, Typografie, Slots, Innenabstände, Ausrichtung und Zustände verwenden. Koordinatensystem und komponentenspezifische Dichte dokumentieren. Hauptfenster und Menüs haben unabhängige Messgrößen; jedes eigenständige Fenster verwendet die Ausdrücke im Fensterregister. Skalierung des Operationsinhalts und gemeinsame Fußleistenmaße getrennt prüfen. Physische Pixel nur beim Lesen von Messnachweisen mit DPR umrechnen.

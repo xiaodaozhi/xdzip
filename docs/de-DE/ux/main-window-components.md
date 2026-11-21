@@ -4,7 +4,7 @@
 
 Die Steuerungen des Hauptfensters liefern Aussehen und Verhalten mit ausdrücklichen Zuständen für normal, Hover, gedrückt, Tastaturfokus, deaktiviert, ausgewählt, beschäftigt und Fehler. HTML verwendet Beispielarchive zur Interaktionsprüfung; Qt aktiviert Aktionen entsprechend den tatsächlichen Fähigkeiten für Navigation, Erstellung, Extraktion, [Integritätsprüfung](../engineering/archive-checking.md) und [automatische Inhaltsvorschau](../engineering/content-preview.md). HTML-Beispiele stellen keine echten Hintergrundresultate dar.
 
-Datei-, Verzeichnis- und Archivnamen sowie Pfade verwenden bevorzugt die beim Start eingestellte Systemstandardschrift mit Plattform-Fallback für fehlende Glyphen. Feste UI-Texte verwenden weiterhin die mitgelieferte Teilmenge. Verzeichnisbaum und Ziehvorschauen werden mit ihren jeweiligen Textschriften gemessen; siehe [visueller Standard](../../visual/design-standard.md#界面字体与用户数据).
+Datei-, Verzeichnis- und Archivnamen sowie Pfade verwenden bevorzugt die beim Start eingestellte Systemstandardschrift mit Plattform-Fallback für fehlende Glyphen. Feste UI-Texte verwenden weiterhin die mitgelieferte Teilmenge. Verzeichnisbaum und Ziehvorschauen werden mit ihren jeweiligen Textschriften gemessen; siehe [visueller Standard](../visual/design-standard.md#界面字体与用户数据).
 
 ## Funktionen und Komponenten
 
