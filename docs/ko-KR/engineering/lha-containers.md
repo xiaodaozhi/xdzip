@@ -1,6 +1,6 @@
 # LHA 와이어 형식과 알고리즘 계약
 
-[English](../../engineering/lha-containers.md) | [简体中文](../../zh-CN/engineering/lha-containers.md) | [繁體中文](../../zh-TW/engineering/lha-containers.md) | [日本語](../../ja-JP/engineering/lha-containers.md) | 한국어 | [Français](../../fr-FR/engineering/lha-containers.md)
+[English](../../engineering/lha-containers.md) | [简体中文](../../zh-CN/engineering/lha-containers.md) | [繁體中文](../../zh-TW/engineering/lha-containers.md) | [日本語](../../ja-JP/engineering/lha-containers.md) | 한국어 | [Français](../../fr-FR/engineering/lha-containers.md) | [Español](../../es-ES/engineering/lha-containers.md)
 
 LHA/LZH와 역사적인 LArc는 멤버를 순차적으로 저장하는 컨테이너 계열입니다. 파일 확장자, 알아볼 수 있는 방식 문자열 또는 Store 멤버의 성공만으로 다른 방식의 디코딩 지원을 증명하지 않습니다. `xdzip-compression`의 원시 프리미티브는 허용된 압축 범위와 독립적으로 검증된 디코딩 크기를 받으며 파일 시스템, 프로세스, 파일 이름 또는 게시 권한이 없습니다. 제품 등록과 컨테이너 수용에는 아래의 별도 검수가 필요합니다.
 

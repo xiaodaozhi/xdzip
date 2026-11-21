@@ -1,6 +1,6 @@
 # LHA 数据与算法契约
 
-[English](../../engineering/lha-containers.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/lha-containers.md) | [日本語](../../ja-JP/engineering/lha-containers.md) | [한국어](../../ko-KR/engineering/lha-containers.md) | [Français](../../fr-FR/engineering/lha-containers.md)
+[English](../../engineering/lha-containers.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/lha-containers.md) | [日本語](../../ja-JP/engineering/lha-containers.md) | [한국어](../../ko-KR/engineering/lha-containers.md) | [Français](../../fr-FR/engineering/lha-containers.md) | [Español](../../es-ES/engineering/lha-containers.md)
 
 LHA/LZH 与历史 LArc 是按成员顺序排列的容器家族。后缀、可识别的方法字符串或成功的 Store 成员，都不能证明另一方法可解码。`xdzip-compression` 原语只接收已准入的压缩跨度和经容器独立验证的解码大小，没有文件系统、进程、文件名或输出发布权限。产品登记和容器准入另按下述条件验收。
 

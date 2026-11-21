@@ -1,6 +1,6 @@
 # LHA wire and algorithm contract
 
-English | [简体中文](../zh-CN/engineering/lha-containers.md) | [繁體中文](../zh-TW/engineering/lha-containers.md) | [日本語](../ja-JP/engineering/lha-containers.md) | [한국어](../ko-KR/engineering/lha-containers.md) | [Français](../fr-FR/engineering/lha-containers.md)
+English | [简体中文](../zh-CN/engineering/lha-containers.md) | [繁體中文](../zh-TW/engineering/lha-containers.md) | [日本語](../ja-JP/engineering/lha-containers.md) | [한국어](../ko-KR/engineering/lha-containers.md) | [Français](../fr-FR/engineering/lha-containers.md) | [Español](../es-ES/engineering/lha-containers.md)
 
 LHA/LZH and historical LArc are a family of sequential member containers. A filename extension, recognizable method string or successful Store member does not establish decoding support for another method. The raw primitives in `xdzip-compression` receive an admitted packed span and an independently validated decoded size, without filesystem, process, filename or publication authority. Product registration and container admission require the separate acceptance below.
 
