@@ -19,7 +19,7 @@ Les images haute fidélité constituent la référence visuelle ; le HTML est l�
 
 ## Taille d’affichage et pixels source
 
-L’affichage normal utilise la [largeur de fenêtre de 1024 pixels logiques](../../visual/README.md), en appliquant uniformément aux coordonnées source le rapport `1024 / 1548`. La fenêtre principale s’affiche à 1024 × environ 621,81 pixels CSS ; l’original utilise la même échelle. Ce rapport est une convention de conception explicite et non une déduction sur Retina ou les DPI à partir d’un PNG.
+L’affichage normal utilise la [largeur de fenêtre de 1024 pixels logiques](README.md), en appliquant uniformément aux coordonnées source le rapport `1024 / 1548`. La fenêtre principale s’affiche à 1024 × environ 621,81 pixels CSS ; l’original utilise la même échelle. Ce rapport est une convention de conception explicite et non une déduction sur Retina ou les DPI à partir d’un PNG.
 
 `display-spec.js` est l’unique source des dimensions de plan de travail et des échelles d’affichage. Le bureau utilise par défaut la taille normale et le mobile l’ajustement ; celui-ci est plafonné à la taille normale pour éviter un agrandissement automatique sur écran large. Le mode pixels d’origine utilise `scale=1`, conserve les dimensions en pixels d’origine et le défilement côté HTML comme côté image. Le ratio de pixels de l’appareil n’affecte que la densité de pixellisation, pas la largeur logique CSS.
 

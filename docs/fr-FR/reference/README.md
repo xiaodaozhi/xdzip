@@ -87,7 +87,7 @@ Consultez d’abord l’[architecture du système](../design/system-architecture
 ## Interactions et design du bureau
 
 - [Vues Qt Quick et responsabilités des contrôleurs](../design/qt-quick-ui.md)
-- [Spécifications visuelles du bureau](../../visual/README.md)
+- [Spécifications visuelles du bureau](../visual/README.md)
 - [Norme de conception de l’interface](../../visual/design-standard.md)
 - [Conception et correction de l’interface](../visual/design-workflow.md)
 - [Icônes d’association de fichiers](../visual/file-association-icons.md)
