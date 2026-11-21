@@ -29,7 +29,7 @@ patchelf establece un RPATH `$ORIGIN` relativo en cada ELF, calculando la distan
 
 Tras reescribir el RPATH relativo, el despliegue elimina tablas de símbolos nativas innecesarias y comprueba que cada entrada DT_NEEDED y RPATH/RUNPATH no haya cambiado. Registra versión de herramienta, hashes y número de bytes antes y después para cada ELF en `symbol_stripping`; las entradas SDK y los binarios de compilación originales permanecen intactos. Para una copia de diagnóstico el script de despliegue subyacente admite `--keep-symbols`. La atribución SDK final y los hashes de la aplicación describen los archivos transformados. Esto reduce el tamaño del paquete, no demuestra una mejora medida de memoria o rendimiento.
 
-Usar por etapas el [punto de entrada unificado de compilación](../../engineering/developer-build.md) para generación y verificación habituales. Completar primero compilación, pruebas y preparación del empaquetado con la misma configuración y ejecutar:
+Usar por etapas el [punto de entrada unificado de compilación](../engineering/developer-build.md) para generación y verificación habituales. Completar primero compilación, pruebas y preparación del empaquetado con la misma configuración y ejecutar:
 
 ```sh
 python3 scripts/desktop.py doctor --for-stage package

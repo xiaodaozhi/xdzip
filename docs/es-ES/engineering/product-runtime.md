@@ -51,7 +51,7 @@ Si un manejador de lectura de un proceso de trabajo encuentra un panic que permi
 
 ## Verificación y compilación
 
-Consulta la [verificación general](../../../developers/qa/README.md). Las pruebas del núcleo Rust no necesitan Qt; los casos Qt de ventana, modelo, estrés y cierre se compilan y ejecutan de forma nativa en tres plataformas. La CI de macOS verifica arm64 y el inicio de Cocoa en el entorno SDK sin desplegar ni subir aplicaciones; pueden producirse DMG de desarrollo locales bajo petición expresa. Windows/Linux despliegan Qt incluido y verifican la ejecución sin SDK; consulta la [guía de compilación](../../engineering/developer-build.md). Estas comprobaciones no constituyen autorización de publicación oficial.
+Consulta la [verificación general](../../../developers/qa/README.md). Las pruebas del núcleo Rust no necesitan Qt; los casos Qt de ventana, modelo, estrés y cierre se compilan y ejecutan de forma nativa en tres plataformas. La CI de macOS verifica arm64 y el inicio de Cocoa en el entorno SDK sin desplegar ni subir aplicaciones; pueden producirse DMG de desarrollo locales bajo petición expresa. Windows/Linux despliegan Qt incluido y verifican la ejecución sin SDK; consulta la [guía de compilación](../engineering/developer-build.md). Estas comprobaciones no constituyen autorización de publicación oficial.
 
 Las consultas iniciales asignan una identidad de resultado inmutable; los lotes posteriores deben coincidir en todos los campos y parámetros de QueryKey. Qt cancela solicitudes antiguas y agrupa la última intención manteniendo las comprobaciones de secuencia e ID. Un lote también limita los nombres a 64 KiB y no vuelve a filtrar ni ordenar. La aceptación histórica se limita a las capacidades disponibles entonces.
 

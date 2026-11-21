@@ -136,6 +136,6 @@ Empieza por la [arquitectura del sistema](../design/system-architecture.md) para
 - [Diseño de compilación, despliegue y publicación](../design/build-release.md)
 - [Convenciones de código y niveles de comprobación](../design/quality-engineering.md)
 - [Preparación del entorno de desarrollo](../engineering/development.md)
-- [Compilaciones de desarrollo y comprobación por plataforma](../../engineering/developer-build.md)
+- [Compilaciones de desarrollo y comprobación por plataforma](../engineering/developer-build.md)
 - [Versiones fijadas de herramientas y plataformas](../engineering/toolchain.md)
 - [Comandos CLI, JSON, instalación y recibos de actualización](../engineering/command-line.md)

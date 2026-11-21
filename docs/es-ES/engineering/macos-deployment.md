@@ -8,7 +8,7 @@ Un DMG local de desarrollo es un entregable de desarrollo permitido. El flujo Qt
 
 ## Compilar y verificar
 
-La comprobación previa del entorno y las opciones de cada etapa siguen la [guía de compilación para desarrolladores](../../engineering/developer-build.md). Prepare las herramientas de empaquetado, compile una aplicación principal Release separada desde un commit limpio y después empaquete y verifique:
+La comprobación previa del entorno y las opciones de cada etapa siguen la [guía de compilación para desarrolladores](../engineering/developer-build.md). Prepare las herramientas de empaquetado, compile una aplicación principal Release separada desde un commit limpio y después empaquete y verifique:
 
 ```sh
 python3 scripts/desktop.py prepare --packaging
