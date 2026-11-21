@@ -136,6 +136,6 @@ Comece pela [arquitetura do sistema](../design/system-architecture.md) para conh
 - [Projeto de compilação, implantação e lançamento](../design/build-release.md)
 - [Convenções de código e camadas de verificação](../design/quality-engineering.md)
 - [Preparação do ambiente de desenvolvimento](../engineering/development.md)
-- [Compilações de desenvolvimento e verificação por plataforma](../../engineering/developer-build.md)
+- [Compilações de desenvolvimento e verificação por plataforma](../engineering/developer-build.md)
 - [Versões fixadas de ferramentas e plataformas](../engineering/toolchain.md)
 - [Comandos CLI, JSON, instalação e comprovantes de atualização](../engineering/command-line.md)

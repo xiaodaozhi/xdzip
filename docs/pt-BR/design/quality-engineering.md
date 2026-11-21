@@ -26,7 +26,7 @@ Documente as invariantes e o que permanece após falhas. No código de arquivos,
 | Desktop, Qt e acessibilidade | Testes de modelos e controladores, verificações QML e de controles compartilhados, interação nativa quando pertinente e evidência visual ou de tecnologia assistiva. |
 | Desempenho e entrega | Cargas ligadas ao commit, métricas do renderizador e dos recursos, ou identidade de compilação por canal, resultados de instalação e atualização e comprovantes de dependências. |
 
-O [guia de verificação](../../../developers/qa/README.md) determina os controles necessários. Conformidade do protocolo, testes de dados ou sem tela, automação nativa e observação manual comprovam aspectos diferentes. Consulte o [guia de compilação](../../engineering/developer-build.md) e a [matriz de rastreabilidade](requirements-traceability.md) para pontos de teste existentes e limites dos entregáveis.
+O [guia de verificação](../../../developers/qa/README.md) determina os controles necessários. Conformidade do protocolo, testes de dados ou sem tela, automação nativa e observação manual comprovam aspectos diferentes. Consulte o [guia de compilação](../engineering/developer-build.md) e a [matriz de rastreabilidade](requirements-traceability.md) para pontos de teste existentes e limites dos entregáveis.
 
 <a name="xdzip-existing-ci-and-additional-techniques"></a>
 

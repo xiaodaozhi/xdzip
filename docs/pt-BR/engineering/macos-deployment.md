@@ -8,7 +8,7 @@ Um DMG local de desenvolvimento é uma entrega de desenvolvimento permitida. O f
 
 ## Compilar e verificar
 
-A verificação prévia do ambiente e as opções de cada etapa seguem o [guia de compilação para desenvolvedores](../../engineering/developer-build.md). Prepare as ferramentas de empacotamento, compile uma aplicação principal Release separada a partir de um commit limpo e, em seguida, empacote e verifique:
+A verificação prévia do ambiente e as opções de cada etapa seguem o [guia de compilação para desenvolvedores](../engineering/developer-build.md). Prepare as ferramentas de empacotamento, compile uma aplicação principal Release separada a partir de um commit limpo e, em seguida, empacote e verifique:
 
 ```sh
 python3 scripts/desktop.py prepare --packaging
