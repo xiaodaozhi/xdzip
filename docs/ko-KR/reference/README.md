@@ -110,7 +110,7 @@
 
 ## 플랫폼 통합, 릴리스 및 신뢰
 
-- [설치 프로그램과 파일 연결](../../engineering/installers-associations.md)
+- [설치 프로그램과 파일 연결](../engineering/installers-associations.md)
 - [시스템 지원 및 유지보수 정책](../engineering/support-policy.md)
 - [파일 관리자 동작과 독립 작업 호스트](../engineering/shell-actions.md)
 - [사용자가 시작하는 업데이트 계약](../engineering/software-update.md)

@@ -56,7 +56,7 @@ flowchart TB
 | 이미지 미리 보기 작업 프로세스 | Rust가 적격 아카이브 항목을 읽고 검증한 후 데스크톱이 제한된 인코딩 이미지 바이트를 `xdzip-image-preview`에 보냅니다. 작업 프로세스는 제한된 RGBA 썸네일을 반환합니다. 요청에는 아카이브 경로, 암호 또는 대상 핸들이 없습니다. 미리 보기 제공자는 일치하는 현재 요청에만 결과를 게시합니다. 텍스트 미리 보기는 Rust 런타임에서 처리합니다. |
 | 플랫폼 전달 | 데스크톱 어댑터는 파일 관리자 활성화, 비공개 추출 복사본의 외부 앱 열기와 업데이트 설치를 조정합니다. 업데이트 도우미 또는 macOS Sparkle은 자체 설치 전달을 수행합니다. Store 관리 업데이트는 플랫폼 채널을 따릅니다. 형식 작업 프로세스는 이 요청을 처리하지 않습니다. |
 
-[아카이브 작업 프로토콜](../engineering/native-codecs.md), [이미지 미리 보기 계약](../engineering/content-preview.md), [플랫폼 통합](../../engineering/installers-associations.md), [아카이브 전송](../engineering/archive-transfers.md), [업데이트 전달](../engineering/software-update.md).
+[아카이브 작업 프로토콜](../engineering/native-codecs.md), [이미지 미리 보기 계약](../engineering/content-preview.md), [플랫폼 통합](../engineering/installers-associations.md), [아카이브 전송](../engineering/archive-transfers.md), [업데이트 전달](../engineering/software-update.md).
 
 ## 아카이브 열기와 탐색
 

@@ -23,7 +23,7 @@ CMake는 Qt 데스크톱 앱, C++ 어댑터와 네이티브 보조 프로그램�
 | Ubuntu 24.04 LTS x86_64 | GitHub에서 실행 디렉터리를 압축한 파일과 DEB를 제공합니다. 지원 기준은 X11과 glibc 2.39 이상입니다. |
 | 독립 실행형 CLI | 패키지와 업데이트에 고유한 식별 정보를 사용합니다. 데스크톱 앱에 포함된 CLI는 해당 패키지의 통합 및 인계 규칙을 따릅니다. |
 
-[지원 정책](../engineering/support-policy.md)에 지원하는 운영 체제와 아키텍처가 나와 있습니다. 실제 배포 파일은 [프로젝트 README](../../../README.ko-KR.md)와 해당 릴리스 노트를 참고하세요. 연결 및 통합 제한은 [설치 프로그램 가이드](../../engineering/installers-associations.md)에 설명되어 있습니다.
+[지원 정책](../engineering/support-policy.md)에 지원하는 운영 체제와 아키텍처가 나와 있습니다. 실제 배포 파일은 [프로젝트 README](../../../README.ko-KR.md)와 해당 릴리스 노트를 참고하세요. 연결 및 통합 제한은 [설치 프로그램 가이드](../engineering/installers-associations.md)에 설명되어 있습니다.
 
 <a name="xdzip-routine-checks-native-builds-and-release"></a>
 

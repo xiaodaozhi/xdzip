@@ -1,6 +1,6 @@
 # Installer und Dateizuordnungen
 
-[English](../../engineering/installers-associations.md) | [简体中文](../../zh-CN/engineering/installers-associations.md) | [繁體中文](../../zh-TW/engineering/installers-associations.md) | [日本語](../../ja-JP/engineering/installers-associations.md) | [Français](../../fr-FR/engineering/installers-associations.md) | Deutsch | [Español](../../es-ES/engineering/installers-associations.md) | [Português (Brasil)](../../pt-BR/engineering/installers-associations.md)
+[English](../../engineering/installers-associations.md) | [简体中文](../../zh-CN/engineering/installers-associations.md) | [繁體中文](../../zh-TW/engineering/installers-associations.md) | [日本語](../../ja-JP/engineering/installers-associations.md) | [한국어](../../ko-KR/engineering/installers-associations.md) | [Français](../../fr-FR/engineering/installers-associations.md) | Deutsch | [Español](../../es-ES/engineering/installers-associations.md) | [Português (Brasil)](../../pt-BR/engineering/installers-associations.md)
 
 Unter Windows 11 x64 können Sie im Microsoft Store nach **XDZip** suchen, um die Store-Ausgabe zu installieren oder zu aktualisieren. Windows-EXE oder portables ZIP, macOS- und Linux-Pakete erhalten Sie über das [neueste GitHub-Release](https://github.com/xiaodaozhi/xdzip/releases/latest). Die beiden Kanäle veröffentlichen unabhängig voneinander. Prüfen Sie den Eintrag oder die Release-Hinweise der zu installierenden Version.
 

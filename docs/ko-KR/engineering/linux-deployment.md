@@ -77,4 +77,4 @@ CI는 xdzip-linux-x86_64.tar.gz를 생성하고 SHA-256과 실행 파일 해시�
 
 여기서 생성한 `build/package` 런타임 디렉터리, tar.gz와 .deb는 실험적 개발 제공물이며 자동 설치하거나 기본 연결을 변경하지 않습니다. 공식 Release용 Ubuntu tar.gz와 .deb는 전용 Release 워크플로에서 생성하고 [릴리스 프로토콜](release-protocol.md)에 따라 제공합니다. 플랫폼 범위는 [지원 정책](support-policy.md)을 따르며 다른 배포판과 데스크톱, Wayland 및 관련 확장은 별도 issue가 필요합니다. 기존 데스크톱 수용은 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)에 남습니다. 이후 변경은 영향을 받는 실제 IME와 화면 읽기 프로그램, 클린 설치·업그레이드·제거 검사를 다시 검증하며 디렉터리 재빌드만으로 기존 수용을 반복할 필요는 없습니다. 과거 `v0.1.0` 구성 요소 검토는 [#4](https://github.com/xiaodaozhi/xdzip/issues/4)와 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)에 있으며 디렉터리 실행 성공이 향후 릴리스 조건을 자동으로 완료하지는 않습니다.
 
-Ubuntu .deb 설치, 업그레이드, 롤백, 제거, 런타임 잠금과 데스크톱 MIME 자동화는 [설치와 연결](../../engineering/installers-associations.md)을 참조하세요. 런타임 컨테이너 통과는 실제 데스크톱 검사나 릴리스 라이선스 검토를 대신하지 않습니다.
+Ubuntu .deb 설치, 업그레이드, 롤백, 제거, 런타임 잠금과 데스크톱 MIME 자동화는 [설치와 연결](installers-associations.md)을 참조하세요. 런타임 컨테이너 통과는 실제 데스크톱 검사나 릴리스 라이선스 검토를 대신하지 않습니다.
