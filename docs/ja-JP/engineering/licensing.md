@@ -26,6 +26,6 @@ RAR の有限なワイヤー形式マッピングと公開テストデータは�
 
 3 枚の視覚画像は生成デザインツールで作成され、Bandizip のスクリーンショットではありません。参照リンクは研究上の根拠を記録するだけです。生成素材の独占性は保証しません。リリース用アイコン、サンプル画像、フォントには別々の出所記録が必要であり、デザイン画像から切り抜くだけでは素材監査は完了しません。
 
-最初の ZIP メタデータバックエンドは MIT ライセンスの rawzip を使用しました。バージョンと通知は[過去の採用記録](zip-metadata-admission.md)を参照してください。現在の ZIP、TAR、GZIP/Deflate は[独立した Rust 実装](../../engineering/independent-rust-codecs.md)を使用し、形式参照ライブラリーは開発テストだけに使用します。過去の配布とテスト参照のライセンス義務は残ります。汎用暗号基盤の通知は[依存関係契約](../../engineering/dependencies.md)に従って収集します。プロジェクト独自のライセンスは引き続き Apache-2.0 です。
+最初の ZIP メタデータバックエンドは MIT ライセンスの rawzip を使用しました。バージョンと通知は[過去の採用記録](zip-metadata-admission.md)を参照してください。現在の ZIP、TAR、GZIP/Deflate は[独立した Rust 実装](../../engineering/independent-rust-codecs.md)を使用し、形式参照ライブラリーは開発テストだけに使用します。過去の配布とテスト参照のライセンス義務は残ります。汎用暗号基盤の通知は[依存関係契約](../engineering/dependencies.md)に従って収集します。プロジェクト独自のライセンスは引き続き Apache-2.0 です。
 
 HTML デザインは公式 Noto Sans SC の派生サブセットを使用します。Qt の固定 UI テキストは、言語に応じて Noto Sans TC、JP、KR と Noto Sans の派生サブセットも使用します。これらのフォントは OFL-1.1 であり、プロジェクトの Apache-2.0 は適用されません。ファミリー名、固定ソース、バージョン、ハッシュは[フォント一覧](../../../specs/dependencies/ui-font.json)と[ネイティブ TTF 出力](../../../design/assets/fonts/README.en.md)を参照してください。元のライセンス全文は [CJK OFL](../../../design/assets/fonts/OFL.txt) と [Noto Sans OFL](../../../design/assets/fonts/NotoSans-OFL.txt) です。オフライン HTML はそのフォントバイナリーと完全な通知を含み、Qt 配布通知は対応するフォントライセンス文を含みます。製品には上流の完全な CJK フォントは含まれません。

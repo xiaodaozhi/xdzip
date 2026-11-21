@@ -236,7 +236,7 @@ Windows／Linux の成果物には同一コミットのソースとライセン�
 
 ## macOS 更新フレームワーク
 
-ネイティブビルドは `prepare-sparkle.py` で `build/toolchain/Sparkle/2.10.0-xdzip-proxy.2` を準備します。フレームワークのメインライブラリーは固定上流ソースとプロキシパッチからコンパイルし、インストールヘルパー、リソース、署名ツールは公式 SDK の来歴を維持します。[依存関係契約](../../engineering/dependencies.md#macos-更新提供者)を参照してください。有効なビルド回執は再利用できますが、古い公式 SDK でプロキシインターフェースを持つ派生フレームワークを置き換えることはできません。CI は一時 SDK ディレクトリーを明示的に選択できます。
+ネイティブビルドは `prepare-sparkle.py` で `build/toolchain/Sparkle/2.10.0-xdzip-proxy.2` を準備します。フレームワークのメインライブラリーは固定上流ソースとプロキシパッチからコンパイルし、インストールヘルパー、リソース、署名ツールは公式 SDK の来歴を維持します。[依存関係契約](../engineering/dependencies.md#macos-更新提供者)を参照してください。有効なビルド回執は再利用できますが、古い公式 SDK でプロキシインターフェースを持つ派生フレームワークを置き換えることはできません。CI は一時 SDK ディレクトリーを明示的に選択できます。
 
 `python3 scripts/prepare-sparkle.py --output build/toolchain/Sparkle/2.10.0-xdzip-proxy.2` は既存の Xcode Command Line Tools または Xcode のネイティブ Clang を使用し、別の Qt SDK を必要としません。元の SDK とソースアーカイブは `build/source-cache/` にキャッシュし、オフライン動作では `--archive` と `--source-archive` を別々に指定できます。ビルドはダウンロードしたソースのスクリプトを実行せず、システムプロキシを変更せず、本番署名鍵にアクセスせず、プロジェクトのソース資料アーカイブを収集しません。
 
