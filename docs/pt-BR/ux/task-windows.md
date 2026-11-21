@@ -14,7 +14,7 @@ O [registro integrado](../engineering/format-registry.md) define as opções de 
 
 A verificação de integridade reutiliza o mesmo layout TaskWindow. O botão real “Verificar” da barra de ferramentas envia uma tarefa de segundo plano somente leitura para todo o arquivo, mostrando leitura, espera de senha, cancelamento e estados terminais como `kind=check`. Ela independe da seleção atual, para no primeiro erro e mostra separadamente contagens verificadas e não verificadas. Contagens confirmadas de extração ou criação não são contagens de verificação. Consulte o [contrato de verificação](../engineering/archive-checking.md) para os limites de formato e segurança. Prévias de desenvolvimento de componentes ainda oferecem uma IntegrityWindow separada, claramente identificada como “Prévia da interface. Nenhuma verificação é feita.”.
 
-O botão de verificação HTML executa uma demonstração de interface explicitamente identificada. Fechar ou voltar à navegação mantém o estado da demonstração e reabri-la mostra o progresso atual; cancelar encerra a demonstração e estados terminais não podem continuar avançando. Conclusão e cancelamento usam a mesma estrutura e rodapé. Caminho do objeto, bytes lidos, número de arquivos, velocidade, estimativa restante, fase e item atual são campos de dados; a interface não examina, lê nem extrai arquivos. Números de exemplo não são resultados reais de verificação.
+Conclusão e cancelamento usam a mesma estrutura e rodapé. Caminho do objeto, bytes lidos, número de arquivos, velocidade, estimativa restante, fase e item atual são campos de dados; a interface não examina, lê nem extrai arquivos.
 
 Largura da janela, densidade, fontes, raios, bordas, barras de progresso, espaços de ícones e alinhamento das explicações vêm do [padrão visual](../visual/design-standard.md) e do [original congelado](../../../specs/visual/integrity-reference.json). Totais desconhecidos não mostram porcentagem definida; texto grande permite rolar o corpo mantendo o rodapé acessível. Fechar não emite cancelamento; Cancelar o solicita explicitamente. Um estado terminal de verificação não deve mostrar arquivos salvos nem abrir uma pasta de destino.
 
@@ -38,7 +38,7 @@ O botão da barra de status conta linhas de tarefas mantidas em todo o aplicativ
 
 O acesso às tarefas preserva a identidade das entradas pelo ID. Progresso e estado são atualizados no próprio lugar sem reconstruir a lista ou interromper passagem do ponteiro, destaque ou foco do teclado. Novas tarefas e remoção de histórico inserem ou removem apenas entradas afetadas, preservando identidade e seleção das demais. A ordem continua decrescente por ID; ativação por mouse ou teclado sempre reabre o ID correspondente. O modelo de dados QML é apenas projeção de interface do histórico e não altera a semântica de instantâneo, cancelamento, confirmação, estado terminal ou barreira de saída.
 
-Esta atualização não altera layouts existentes de janelas e menus, unidades lógicas ou estados visuais. O menu de tarefas do design HTML não reconstrói nós durante o progresso contínuo e preserva os originais existentes. A verificação em execução ainda cobre ponteiro parado, navegação por teclado, atualizações no próprio lugar, adição de tarefas e remoção de histórico.
+Esta atualização não altera layouts existentes de janelas e menus, unidades lógicas ou estados visuais. A verificação em execução ainda cobre ponteiro parado, navegação por teclado, atualizações no próprio lugar, adição de tarefas e remoção de histórico.
 
 <a name="xdzip-native-picker-and-drag-activation"></a>
 

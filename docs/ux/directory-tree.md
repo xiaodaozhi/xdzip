@@ -8,7 +8,7 @@ The three current artboards are [multi-level expansion](../../design/hifi/screen
 
 Artboards are enlarged and individual card scales differ. Text, radii and pixel dimensions in images cannot directly define control sizes; [component parameters](../../specs/visual/directory-tree.json) explicitly record implemented logical dimensions and the asset manifest separately records physical crop coordinates. The implementation uses a 1024 logical-width and shared source-canvas transform; do not enlarge the entire new component set again.
 
-Qt uses the logical values below directly. The existing HTML main design maps a 1548 source-pixel window to 1024 logical pixels according to layout-scale.json: `source CSS = logical / (1024/1548)`. Thus row height 32 corresponds to 48.375 source CSS pixels, font 11.2 to 16.93125, icon slot 16 to 24.1875 and indentation 12.8 to 19.35. Preview scaling applies uniformly to the whole window after conversion. DPR determines sampling density and line alignment only and does not enter logical-size conversion.
+Qt uses the logical values below directly. The 1548-pixel reference maps to 1024 logical pixels according to layout-scale.json. DPR determines sampling density and line alignment and does not enter logical-size conversion.
 
 ## Tree structure and counts
 
@@ -55,7 +55,7 @@ The hierarchy region scrolls horizontally. Width uses only actual names, indenta
 
 All directories use the same folder asset. Branch dots, filled information/warning icons and segmented spinners have light/dark SVGs and 1×/2×/3× PNGs; lines, focus frames, backgrounds, skeletons, text and prompts are dynamic components. Dark parameters reuse global theme with additional line and marker colors; **the complete dark directory-tree original remains outstanding** and dark icon exports do not replace the full artboard. Existing rendering and desktop acceptance conclusions are recorded separately in corresponding issues and artifacts.
 
-Record HTML/Qt interaction consistency under the [verification method](../../developers/qa/README.md). Artboards and slices retain original design history; current row counts, focus and corners follow this page and the logical specification.
+Record Qt interaction under the [verification method](../../developers/qa/README.md). Artboards and slices retain original design history; current row counts, focus and corners follow this page and the logical specification.
 
 ## Interactions and independent states
 

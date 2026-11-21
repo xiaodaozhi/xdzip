@@ -4,13 +4,13 @@
 
 [English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | 繁體中文 | [日本語](../../ja-JP/ux/directory-tree.md) | [한국어](../../ko-KR/ux/directory-tree.md) | [Français](../../fr-FR/ux/directory-tree.md) | [Deutsch](../../de-DE/ux/directory-tree.md) | [Español](../../es-ES/ux/directory-tree.md) | [Português (Brasil)](../../pt-BR/ux/directory-tree.md) | [Русский](../../ru-RU/ux/directory-tree.md)
 
-狀態：**核心目錄互動已接入 HTML 示例和 Qt 只讀瀏覽，邊界狀態資源仍待接入**。互動遵循[只讀瀏覽契約](../engineering/readonly-browser.md)，普通目錄瀏覽採用直屬子項，搜尋遞迴目前範圍，輸出授權保持只讀。
+狀態：**核心目錄互動已接入 Qt 只讀瀏覽，邊界狀態資源仍待接入**。互動遵循[只讀瀏覽契約](../engineering/readonly-browser.md)，普通目錄瀏覽採用直屬子項，搜尋遞迴目前範圍，輸出授權保持只讀。
 
 三張目前圖板位於 [多級展開](../../../design/hifi/screens/directory-tree-capsule.png)、[節點與互動狀態](../../../design/hifi/screens/directory-tree-states.png)、[空態與導航邊界](../../../design/hifi/screens/directory-tree-boundaries.png)。統一畫廊展示整幅圖板，[素材庫](../../../design/assets/index.html#directory-tree)提供逐項切圖。多級展開圖從可編輯設計源匯出，標題欄同步目前膠囊標籤；圖板中的頂部和中央列表僅提供上下文，不重新定義標題欄、工具欄或檔案表格。[歷史多級展開原圖](../../../design/hifi/screens/directory-tree.png)保持原樣，繼續作為 26 張切片的來源及獨立量測依據。
 
 圖板採用放大展示，每張卡片的區域性比例不完全相同。圖片中的文字、圓角和畫素尺寸不能直接當作控制元件尺寸；[元件引數](../../../specs/visual/directory-tree.json)明確記錄落地的邏輯尺寸，資產清單單獨記錄原圖裁剪的物理座標。實現採用 1024 邏輯寬度及統一源畫布變換，不能把這一組新元件再整體放大。
 
-Qt 直接使用下表的邏輯值。現有 HTML 主稿採用 1548 源畫素視窗對映到 1024 邏輯畫素，轉換遵循 layout-scale.json：`source CSS = logical / (1024/1548)`。因此 32 行高對應 48.375 源 CSS 畫素，11.2 字號對應 16.93125，16 圖示槽對應 24.1875，12.8 縮排對應 19.35。預覽縮放在換算之後統一作用於整個視窗；DPR 只決定取樣密度和線條對齊，不參與邏輯尺寸換算。
+Qt 直接使用下表的邏輯值。1548 源畫素參考依 layout-scale.json 對映到 1024 邏輯畫素；DPR 只決定取樣密度和線條對齊，不參與邏輯尺寸換算。
 
 <a name="xdzip-树结构与计数"></a>
 
@@ -61,7 +61,7 @@ Qt 直接使用下表的邏輯值。現有 HTML 主稿採用 1548 源畫素視�
 
 所有目錄使用同一個資料夾資源。分支圓點、實心資訊 / 警告、分段轉輪有淺深色 SVG 和 1×/2×/3× PNG；連線線、焦點框、背景、骨架、文字與提示屬於動態元件。深色引數沿用全域性主題並補充線條和標記顏色；**完整深色目錄樹原稿仍待補齊**，不能以深色圖示匯出代替完整圖板。現有渲染與桌面驗收結論另由對應 issue 和工件記錄。
 
-HTML／Qt 互動一致性按[驗證方法](../../../developers/qa/README.md)記錄。圖板和切圖保留原始設計歷史；目前行內計數、焦點與邊角以本文及邏輯規範為準。
+Qt 互動按[驗證方法](../../../developers/qa/README.md)記錄。圖板和切圖保留原始設計歷史；目前行內計數、焦點與邊角以本文及邏輯規範為準。
 
 <a name="xdzip-交互与独立状态"></a>
 
@@ -112,13 +112,13 @@ HTML／Qt 互動一致性按[驗證方法](../../../developers/qa/README.md)記�
 
 | 部分 | 資源 / 繪製方式 | 目前接入情況 |
 | --- | --- | --- |
-| 資料夾、左右 / 向下箭頭 | `folder`、`chevron-right`、`chevron-down`，複用統一素材庫 | 既有共享資源可用；B 共享圖示與 B 尺寸已用於遞迴 HTML 行和 Qt 委託 |
+| 資料夾、左右 / 向下箭頭 | `folder`、`chevron-right`、`chevron-down`，複用統一素材庫 | 既有共享資源可用；B 共享圖示與 B 尺寸已用於Qt 委託 |
 | 讀取、資訊、警告 | 新增 `tree-spinner`、`tree-info`、`tree-warning` | 八張淺深色 SVG 與 24 張透明 PNG 的一部分；保留圖板實心與分段造型，未用既有輪廓圖示代替 |
 | 隱藏目前分支 | 新增 `tree-active-branch` | 兩主題六張透明 PNG 已交付；Qt 均消費該資源，標記最近的可見摺疊祖先 |
 | 連線線、目前背景、焦點、骨架、提示 | 動態繪製，引數檔案定義尺寸和主題 | 樣式與邏輯已規定，未交付第二套點陣圖控制元件 |
 | 正式圖板 | `hifi/screens/directory-tree*.png` | 保留確認稿原始位元組，用於設計核對 |
 
-Qt 已接入連線線、分支圓點、16 資料夾槽和目錄右鍵；HTML 示例採用完整遞迴層級，Qt 使用真實受限索引。收起目前祖先不提交查詢。載入骨架、專用資訊／錯誤圖示仍為設計資源，深色完整圖板仍待補齊；圖示接入不證明逐平臺讀屏或 HiDPI 驗收，既有人工專項結論以 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)為準。
+Qt 已接入連線線、分支圓點、16 資料夾槽和目錄右鍵；Qt 使用真實受限索引。收起目前祖先不提交查詢。載入骨架、專用資訊／錯誤圖示仍為設計資源，深色完整圖板仍待補齊；圖示接入不證明逐平臺讀屏或 HiDPI 驗收，既有人工專項結論以 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)為準。
 
 <a name="xdzip-接入后的验收标准"></a>
 

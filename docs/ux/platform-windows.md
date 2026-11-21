@@ -30,11 +30,9 @@ Each operation window has its own title, border, shadow and draggable title bar;
 
 Custom Windows/Linux title bars need actual platform window movement, resizing and system-menu support, not simulated system dragging by manually changing QML positions. `WindowController` handles window lifecycle, ownership, close requests and reopening task views. The core owns tasks; destroying a view cannot destroy an active task. Cross-thread window state updates use only defined bridge events.
 
-## Prototype evidence and limits
+## Product behavior
 
-The HTML prototype simulates standalone window appearance, title-bar dragging, blocking/nonblocking interactions and close semantics. The top “Platform” selector compares macOS, Windows and Linux and is not a product setting. Browser `dialog` remains in one browser page and cannot provide actual native windows, system buttons, system minimization, taskbar or multi-display behavior. Minimizing a task window is simulated by hiding details.
-
-Platform controls on the prototype main window are appearance illustrations. Returning from overwrite confirmation to creation still resets the example form; the product implementation must preserve the draft. These limitations cannot serve as evidence of completed native acceptance.
+Returning from overwrite confirmation to creation must preserve the draft. Native acceptance requires actual platform verification.
 
 ## Real-device acceptance criteria
 

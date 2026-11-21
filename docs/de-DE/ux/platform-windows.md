@@ -40,11 +40,9 @@ Angepasste Windows-/Linux-Titelleisten benötigen echte Plattformfunktionen für
 
 <a name="xdzip-prototype-evidence-and-limits"></a>
 
-## Prototypnachweise und Grenzen
+## Produktverhalten
 
-Der HTML-Prototyp simuliert das Aussehen eigenständiger Fenster, das Ziehen der Titelleiste, blockierende und nicht blockierende Interaktionen sowie das Schließverhalten. Die obere Auswahl „Platform“ vergleicht macOS, Windows und Linux und ist keine Produkteinstellung. Der Browser-`dialog` bleibt innerhalb einer Browserseite und bietet keine echten nativen Fenster, Systemknöpfe, Systemminimierung, Taskleiste oder Mehrbildschirmfunktion. Die Minimierung eines Aufgabenfensters wird durch Ausblenden der Details simuliert.
-
-Die Plattformbedienelemente des Prototyp-Hauptfensters veranschaulichen das Aussehen. Bei der Rückkehr von der Überschreibbestätigung zum Erstellen wird das Beispielformular noch zurückgesetzt; die Produktimplementierung muss den Entwurf erhalten. Diese Grenzen sind kein Nachweis einer abgeschlossenen nativen Abnahme.
+Beim Rückweg von der Überschreibbestätigung zur Erstellung muss der Entwurf erhalten bleiben. Die native Abnahme erfordert eine Prüfung auf der tatsächlichen Plattform.
 
 <a name="xdzip-real-device-acceptance-criteria"></a>
 

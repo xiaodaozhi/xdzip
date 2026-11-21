@@ -2,13 +2,13 @@
 
 [English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | [繁體中文](../../zh-TW/ux/directory-tree.md) | [日本語](../../ja-JP/ux/directory-tree.md) | [한국어](../../ko-KR/ux/directory-tree.md) | [Français](../../fr-FR/ux/directory-tree.md) | [Deutsch](../../de-DE/ux/directory-tree.md) | Español | [Português (Brasil)](../../pt-BR/ux/directory-tree.md) | [Русский](../../ru-RU/ux/directory-tree.md)
 
-Estado: **la interacción principal de directorios está integrada en los ejemplos HTML y en la exploración de solo lectura de Qt; los recursos de estados límite están pendientes de integración**. La interacción sigue el [contrato de exploración de solo lectura](../engineering/readonly-browser.md). La exploración normal usa hijos directos, la búsqueda cubre recursivamente el ámbito actual y la autorización de salida se trata por separado de la lectura.
+Estado: **la interacción principal de directorios está integrada en la exploración de solo lectura de Qt; los recursos de estados límite están pendientes de integración**. La interacción sigue el [contrato de exploración de solo lectura](../engineering/readonly-browser.md). La exploración normal usa hijos directos, la búsqueda cubre recursivamente el ámbito actual y la autorización de salida se trata por separado de la lectura.
 
 Las tres mesas de trabajo actuales son [expansión multinivel](../../../design/hifi/screens/directory-tree-capsule.png), [estados de nodos e interacción](../../../design/hifi/screens/directory-tree-states.png) y [límites de navegación y estados vacíos](../../../design/hifi/screens/directory-tree-boundaries.png). La galería compartida muestra las mesas completas y la [biblioteca de recursos](../../../design/assets/index.html#directory-tree) proporciona los recortes individuales. La expansión multinivel se exporta desde la fuente editable, con la barra de título sincronizada con las pestañas actuales en cápsulas. Las listas superior y central de la mesa solo aportan contexto y no redefinen la barra de título, la barra de herramientas ni la tabla de archivos. El [original histórico multinivel](../../../design/hifi/screens/directory-tree.png) permanece intacto como fuente de 26 recortes y referencia independiente de medición.
 
 Las mesas están ampliadas y las escalas de las tarjetas son distintas. El texto, los radios y las dimensiones en píxeles de las imágenes no pueden definir directamente los tamaños de los controles; los [parámetros de componentes](../../../specs/visual/directory-tree.json) registran explícitamente las dimensiones lógicas implementadas y el manifiesto de recursos registra por separado las coordenadas físicas de recorte. La implementación usa una anchura lógica de 1024 y una transformación compartida del lienzo de origen; no amplíe de nuevo todo el conjunto de componentes.
 
-Qt usa directamente los valores lógicos siguientes. El diseño principal HTML existente asigna una ventana de 1548 píxeles de origen a 1024 píxeles lógicos según layout-scale.json: `source CSS = logical / (1024/1548)`. Así, una altura de fila de 32 corresponde a 48.375 píxeles CSS de origen, una fuente de 11.2 a 16.93125, un espacio de icono de 16 a 24.1875 y una sangría de 12.8 a 19.35. La escala de vista previa se aplica uniformemente a toda la ventana después de la conversión. El DPR solo determina la densidad de muestreo y la alineación de líneas y no interviene en la conversión de tamaños lógicos.
+Qt usa directamente los valores lógicos siguientes. La referencia de 1548 píxeles corresponde a 1024 píxeles lógicos según layout-scale.json. El DPR solo determina la densidad de muestreo y la alineación de líneas, sin intervenir en las dimensiones lógicas.
 
 ## Estructura del árbol y recuentos
 
@@ -100,13 +100,13 @@ Los 26 recortes en píxeles originales están en `design/assets/reference/tree-*
 
 | Parte | Recurso / dibujo | Integración actual |
 | --- | --- | --- |
-| Carpeta, flechas derecha/abajo | `folder`, `chevron-right`, `chevron-down` de recursos compartidos | Recursos compartidos existentes disponibles; iconos y dimensiones B usados por filas HTML recursivas y delegados Qt |
+| Carpeta, flechas derecha/abajo | `folder`, `chevron-right`, `chevron-down` de recursos compartidos | Recursos compartidos existentes disponibles; iconos y dimensiones B usados por delegados Qt |
 | Carga, información, advertencia | Nuevos `tree-spinner`, `tree-info`, `tree-warning` | Parte de ocho SVG claros/oscuros y 24 PNG transparentes; conservar las formas rellenas y segmentadas de las mesas en vez de usar iconos de contorno existentes |
 | Rama actual oculta | Nuevo `tree-active-branch` | Seis PNG transparentes entregados para dos temas; Qt usan el recurso para marcar el antepasado contraído visible más cercano |
 | Líneas, fondo actual, foco, esqueleto, avisos | Dibujados dinámicamente con dimensiones y temas del archivo de parámetros | Estilo y lógica especificados; no se entrega un segundo conjunto de controles de mapa de bits |
 | Mesas oficiales | `hifi/screens/directory-tree*.png` | Conservar los bytes de los originales confirmados para comparar el diseño |
 
-Qt integran líneas de conexión, puntos de rama, espacios de carpeta de 16 unidades y menús contextuales de directorio. HTML usa una jerarquía de ejemplo recursiva completa; Qt usa el índice real acotado. Contraer el antepasado actual no envía una consulta. Los esqueletos de carga y los iconos específicos de información y error siguen siendo recursos de diseño; la mesa oscura completa está pendiente. La integración de iconos no demuestra la aceptación de lectores de pantalla o HiDPI en cada plataforma; las conclusiones manuales existentes siguen [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5).
+Qt integra líneas de conexión, puntos de rama, espacios de carpeta de 16 unidades y menús contextuales de directorio. Qt usa el índice real acotado. Contraer el antepasado actual no envía una consulta. Los esqueletos de carga y los iconos específicos de información y error siguen siendo recursos de diseño; la mesa oscura completa está pendiente. La integración de iconos no demuestra la aceptación de lectores de pantalla o HiDPI en cada plataforma; las conclusiones manuales existentes siguen [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5).
 
 ## Aceptación tras la integración
 

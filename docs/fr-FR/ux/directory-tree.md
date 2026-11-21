@@ -2,13 +2,13 @@
 
 [English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | [繁體中文](../../zh-TW/ux/directory-tree.md) | [日本語](../../ja-JP/ux/directory-tree.md) | [한국어](../../ko-KR/ux/directory-tree.md) | Français | [Deutsch](../../de-DE/ux/directory-tree.md) | [Español](../../es-ES/ux/directory-tree.md) | [Português (Brasil)](../../pt-BR/ux/directory-tree.md) | [Русский](../../ru-RU/ux/directory-tree.md)
 
-État : **les interactions essentielles des répertoires sont intégrées aux exemples HTML et à la navigation Qt en lecture seule ; les ressources des états limites restent à intégrer**. Les interactions suivent le [contrat de navigation en lecture seule](../engineering/readonly-browser.md). La navigation ordinaire utilise les enfants directs, la recherche couvre récursivement la portée courante et l’autorisation de sortie reste distincte de la lecture seule.
+État : **les interactions essentielles des répertoires sont intégrées à la navigation Qt en lecture seule ; les ressources des états limites restent à intégrer**. Les interactions suivent le [contrat de navigation en lecture seule](../engineering/readonly-browser.md). La navigation ordinaire utilise les enfants directs, la recherche couvre récursivement la portée courante et l’autorisation de sortie reste distincte de la lecture seule.
 
 Les trois planches actuelles présentent le [développement multiniveau](../../../design/hifi/screens/directory-tree-capsule.png), les [états des nœuds et des interactions](../../../design/hifi/screens/directory-tree-states.png) et les [limites de navigation et états vides](../../../design/hifi/screens/directory-tree-boundaries.png). La galerie partagée montre les planches complètes et la [bibliothèque de ressources](../../../design/assets/index.html#directory-tree) fournit les découpes individuelles. Le développement multiniveau est exporté depuis la source modifiable, avec une barre de titre synchronisée aux onglets en capsules actuels. Les listes en haut et au centre de la planche fournissent seulement le contexte et ne redéfinissent ni la barre de titre, ni la barre d’outils, ni le tableau des fichiers. L’[original multiniveau historique](../../../design/hifi/screens/directory-tree.png) reste inchangé comme source de 26 découpes et référence de mesure indépendante.
 
 Les planches sont agrandies et les échelles des cartes diffèrent. Le texte, les rayons et les dimensions en pixels des images ne définissent pas directement la taille des contrôles ; les [paramètres des composants](../../../specs/visual/directory-tree.json) consignent explicitement les dimensions logiques implémentées et le manifeste des ressources les coordonnées physiques des découpes séparément. L’implémentation utilise une largeur logique de 1024 et une transformation commune du canevas source ; ne pas agrandir de nouveau l’ensemble des nouveaux composants.
 
-Qt utilise directement les valeurs logiques ci-dessous. La conception principale HTML existante associe une fenêtre source de 1548 pixels à 1024 pixels logiques selon layout-scale.json : `source CSS = logical / (1024/1548)`. Ainsi, une hauteur de ligne de 32 correspond à 48.375 pixels CSS source, une police de 11.2 à 16.93125, un emplacement d’icône de 16 à 24.1875 et un retrait de 12.8 à 19.35. L’échelle de prévisualisation s’applique uniformément à toute la fenêtre après conversion. Le DPR détermine uniquement la densité d’échantillonnage et l’alignement des lignes ; il n’entre pas dans la conversion des dimensions logiques.
+Qt utilise directement les valeurs logiques ci-dessous. La référence de 1548 pixels correspond à 1024 pixels logiques selon layout-scale.json. Le DPR détermine uniquement la densité d’échantillonnage et l’alignement des lignes, sans modifier les dimensions logiques.
 
 ## Structure de l’arbre et décomptes
 
@@ -55,7 +55,7 @@ La zone hiérarchique défile horizontalement. Sa largeur utilise uniquement les
 
 Tous les répertoires utilisent la même ressource de dossier. Les points de branche, icônes d’information et d’avertissement pleines et indicateurs de chargement segmentés existent en SVG clair/sombre et PNG 1×/2×/3× ; lignes, cadres de focus, fonds, squelettes, textes et invites sont des composants dynamiques. Les paramètres sombres réutilisent le thème global avec des couleurs supplémentaires pour les lignes et marqueurs ; **l’original complet sombre de l’arborescence reste à réaliser** et l’export des icônes sombres ne remplace pas la planche complète. Les conclusions existantes de rendu et d’acceptation sur bureau sont consignées séparément dans les issues et artefacts correspondants.
 
-Consigner la cohérence des interactions HTML/Qt selon la [méthode de vérification](../../../developers/qa/README.md). Les planches et découpes conservent l’historique de la conception d’origine ; les nombres de lignes, le focus et les coins actuels suivent cette page et la spécification logique.
+Consigner la cohérence des interactions Qt selon la [méthode de vérification](../../../developers/qa/README.md). Les planches et découpes conservent l’historique de la conception d’origine ; les nombres de lignes, le focus et les coins actuels suivent cette page et la spécification logique.
 
 ## Interactions et états indépendants
 
@@ -100,13 +100,13 @@ Les 26 découpes aux pixels d’origine se trouvent dans `design/assets/referenc
 
 | Partie | Ressource / dessin | Intégration actuelle |
 | --- | --- | --- |
-| Dossier, flèches droite/bas | `folder`, `chevron-right`, `chevron-down` des ressources partagées | Ressources communes existantes disponibles ; icônes et dimensions B utilisées par les lignes HTML récursives et les délégués Qt |
+| Dossier, flèches droite/bas | `folder`, `chevron-right`, `chevron-down` des ressources partagées | Ressources communes existantes disponibles ; icônes et dimensions B utilisées par les délégués Qt |
 | Chargement, information, avertissement | Nouveaux `tree-spinner`, `tree-info`, `tree-warning` | Partie des huit SVG clair/sombre et 24 PNG transparents ; conserver les formes pleines et segmentées des planches au lieu d’icônes contour existantes |
 | Branche courante masquée | Nouveau `tree-active-branch` | Six PNG transparents livrés pour deux thèmes ; Qt utilisent la ressource pour marquer l’ancêtre replié visible le plus proche |
 | Lignes, fond courant, focus, squelette, indices | Dessin dynamique selon les dimensions et thèmes du fichier de paramètres | Style et logique spécifiés ; aucun second ensemble de contrôles bitmap livré |
 | Planches officielles | `hifi/screens/directory-tree*.png` | Conserver les octets des originaux confirmés pour la comparaison de conception |
 
-Qt intègrent les lignes de connexion, points de branche, emplacements de dossier de 16 unités et menus contextuels de répertoire. HTML utilise une hiérarchie d’exemple récursive complète ; Qt utilise l’index réel borné. Réduire l’ancêtre courant ne soumet pas de requête. Les squelettes de chargement et icônes dédiées d’information et d’erreur restent des ressources de conception ; la planche sombre complète reste à faire. L’intégration des icônes ne prouve pas l’acceptation des lecteurs d’écran ou du HiDPI sur chaque plateforme ; les conclusions manuelles existantes suivent [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5).
+Qt intègre les lignes de connexion, points de branche, emplacements de dossier de 16 unités et menus contextuels de répertoire. Qt utilise l’index réel borné. Réduire l’ancêtre courant ne soumet pas de requête. Les squelettes de chargement et icônes dédiées d’information et d’erreur restent des ressources de conception ; la planche sombre complète reste à faire. L’intégration des icônes ne prouve pas l’acceptation des lecteurs d’écran ou du HiDPI sur chaque plateforme ; les conclusions manuelles existantes suivent [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5).
 
 ## Acceptation après intégration
 

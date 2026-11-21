@@ -6,7 +6,7 @@ Specification entries: [UI design standard](design-standard.md), [mandatory desi
 
 Current design references are in [design/hifi](../../design/hifi/README.md).
 
-[tokens.json](../../specs/visual/tokens.json) holds theme and shared implementation parameters; visual machine-readable inputs reside in `specs/visual/`. Main-window geometry and fonts are generated from the independently frozen [qt-main-reference.json](../../specs/visual/qt-main-reference.json), based on high-fidelity originals and accepted HTML measurements, scaled by 1024/1548. The prior 1280-wide baseline was converted to normal density. Rounding, actual screenshots and unimplemented capabilities are recorded separately under the [verification method](../../developers/qa/README.md); implementation parameters cannot become their own design acceptance baseline.
+[tokens.json](../../specs/visual/tokens.json) holds theme and shared implementation parameters; visual machine-readable inputs reside in `specs/visual/`. Main-window geometry and fonts are generated from the independently frozen [qt-main-reference.json](../../specs/visual/qt-main-reference.json), based on high-fidelity references, scaled by 1024/1548. The prior 1280-wide baseline was converted to normal density. Rounding, actual screenshots and unimplemented capabilities are recorded separately under the [verification method](../../developers/qa/README.md); implementation parameters cannot become their own design acceptance baseline.
 
 ## Research basis and adaptation
 
@@ -22,7 +22,7 @@ Research was conducted 2026-10-11 using public official screenshots, demonstrati
 
 Use warm-gray backgrounds, cobalt primary actions and a graphite dark theme. Do not replace information hierarchy with large gradients or frosted backgrounds. Normal file lists retain a clear flat structure; shadows are reserved for overlays. The left answers “Where?”, the center “What is here?”, and the right “What is selected?”.
 
-Qt uses glyphs and metrics from [Xdzip Design Sans SC](../../design/assets/fonts/README.en.md); Qt uses same-source TTF and platform fallback for archive names outside the subset. Main list text is 13, headers and toolbar 12, pane titles 13 logical pixels, rounded to integer Qt font pixels. Filenames retain complete accessible names; visual truncation uses ellipsis and a full-name hover hint. File icons share an approximately 31.75-logical-pixel slot without per-type size compensation.
+Qt uses [Xdzip Design Sans SC](../../design/assets/fonts/README.en.md) TTF and platform fallback for archive names outside the subset. Main list text is 13, headers and toolbar 12, pane titles 13 logical pixels, rounded to integer Qt font pixels. Filenames retain complete accessible names; visual truncation uses ellipsis and a full-name hover hint. File icons share an approximately 31.75-logical-pixel slot without per-type size compensation.
 
 Initial main window is 1024 × 622, minimum 832 × 544 logical pixels. Sidebar and preview source measurements are approximately 193.16 / 257.98, rounded to Qt structural boundaries 193 / 258. Directory rows are approximately 43 and file rows 44.65. Pane titles are 46 high, table headers 34, search and primary button approximately 33.74. Directory tree B independently retains height 32 and icon slot 16. Below width 928 the preview collapses and opens via a button in a standalone native window. Settings offer 100%/125%/150% font size; historical 200% reads as 150%. Large fonts use real layout, scrolling and a standalone details window rather than global scaling to conceal overflow. Pane dragging and width persistence are not implemented.
 
@@ -78,9 +78,9 @@ All transparent icons share a 24×24 canvas. PDF, text, code and Markdown icons 
 
 File-list breadcrumbs and right preview/details titles share bar height, font size and vertical text center. Qt uses `PaneHeader` and `Theme.mainPaneTitleSize`. Titles remain above scrolling content and large fonts increase both pane heights together. Actual measurements are retained in execution artifacts under the [verification method](../../developers/qa/README.md).
 
-HTML photo previews start directly below the pane title, with top aligned to the file-list header and no extra top gap. When search hints appear, align according to their actual occupied space. Keep existing image height and spacing below. Photo alignment rechecks cover two sample images, light/dark themes, three window decorations and search changes.
+Photo previews start directly below the pane title, with top aligned to the file-list header and no extra top gap. When search hints appear, align according to their actual occupied space. Keep existing image height and spacing below. Photo alignment rechecks cover two sample images, light/dark themes, three window decorations and search changes.
 
-File-list original-size and compressed-size headers and values align right; type headers and content align left, with shared content padding per column. HTML retains original column widths and row heights: size-column right padding 26 and 22 source-space pixels, type-column left padding 28 source-space pixels. Reverification records text layout edges for all visible rows.
+File-list original-size and compressed-size headers and values align right; type headers and content align left, with shared content padding per column. Reverification records text layout edges for all visible rows.
 
 Record icon silhouette, original-pixel slice dimensions and runtime canvas dimensions separately. Folders need not be stretched into paper shapes; SVGs must not be distorted to fill slots. Make visual changes at the graphic source, review in the asset gallery, then synchronize both implementations.
 
@@ -96,7 +96,7 @@ Ordinary left/right toolbar actions and search/primary actions form groups. Larg
 
 ## Application branding and platform icons
 
-System document icons for each format use the [file association icon specification](file-association-icons.md) and high-fidelity review page. This family reuses brand geometry below with distinct format labels, accents and small-size simplifications as design assets for later per-format integration.
+System document icons for each format use the [file association icon specification](file-association-icons.md). This family reuses brand geometry below with distinct format labels, accents and small-size simplifications as design assets for later per-format integration.
 
 Branding uses four interwoven bands and an open U-shaped bottom, with geometry maintained in `scripts/brand_assets.py`. Standalone mark, application icon and ZIP document master are in `design/assets/brand/`. UI `app-mark`, `archive` and `archive-grey` identify the application, blue archive and gray archive, all generated from the same brand geometry. The application uses a blue rounded exterior and documents use paper with a folded corner: identity is shared while frames serve different roles.
 

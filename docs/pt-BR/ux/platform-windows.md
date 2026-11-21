@@ -40,11 +40,9 @@ Barras de título personalizadas em Windows/Linux exigem recursos reais da plata
 
 <a name="xdzip-prototype-evidence-and-limits"></a>
 
-## Evidências e limites do protótipo
+## Comportamento do produto
 
-O protótipo HTML simula aparência de janelas independentes, arraste da barra de título, interações bloqueantes ou não e comportamento de fechamento. O seletor superior “Platform” compara macOS, Windows e Linux e não é uma configuração do produto. O `dialog` do navegador permanece em uma página e não oferece janelas nativas reais, botões do sistema, minimização do sistema, barra de tarefas ou comportamento em múltiplas telas. A minimização de uma janela de tarefa é simulada ocultando os detalhes.
-
-Os controles de plataforma da janela principal do protótipo ilustram a aparência. Ao voltar da confirmação de sobrescrita para a criação, o formulário de exemplo ainda é redefinido; a implementação do produto deve preservar o rascunho. Esses limites não comprovam uma aceitação nativa concluída.
+Ao voltar da confirmação de substituição para a criação, o rascunho deve ser preservado. A aceitação nativa exige verificação na plataforma real.
 
 <a name="xdzip-real-device-acceptance-criteria"></a>
 

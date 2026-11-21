@@ -2,13 +2,13 @@
 
 [English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | [繁體中文](../../zh-TW/ux/directory-tree.md) | [日本語](../../ja-JP/ux/directory-tree.md) | [한국어](../../ko-KR/ux/directory-tree.md) | [Français](../../fr-FR/ux/directory-tree.md) | Deutsch | [Español](../../es-ES/ux/directory-tree.md) | [Português (Brasil)](../../pt-BR/ux/directory-tree.md) | [Русский](../../ru-RU/ux/directory-tree.md)
 
-Status: **Die grundlegende Verzeichnisinteraktion ist in HTML-Beispielen und der schreibgeschützten Qt-Navigation integriert; Ressourcen für Grenzzustände warten auf Integration**. Die Interaktion folgt dem [Vertrag für schreibgeschützte Navigation](../engineering/readonly-browser.md). Die gewöhnliche Verzeichnisnavigation verwendet direkte Kinder, die Suche erfasst den aktuellen Bereich rekursiv, und die Ausgabeberechtigung bleibt von der schreibgeschützten Navigation getrennt.
+Status: **Die grundlegende Verzeichnisinteraktion ist in der schreibgeschützten Qt-Navigation integriert; Ressourcen für Grenzzustände warten auf Integration**. Die Interaktion folgt dem [Vertrag für schreibgeschützte Navigation](../engineering/readonly-browser.md). Die gewöhnliche Verzeichnisnavigation verwendet direkte Kinder, die Suche erfasst den aktuellen Bereich rekursiv, und die Ausgabeberechtigung bleibt von der schreibgeschützten Navigation getrennt.
 
 Die drei aktuellen Artboards zeigen [mehrstufiges Aufklappen](../../../design/hifi/screens/directory-tree-capsule.png), [Knoten- und Interaktionszustände](../../../design/hifi/screens/directory-tree-states.png) sowie [Leerzustände und Navigationsgrenzen](../../../design/hifi/screens/directory-tree-boundaries.png). Die gemeinsame Galerie zeigt vollständige Artboards, die [Ressourcenbibliothek](../../../design/assets/index.html#directory-tree) einzelne Ausschnitte. Das mehrstufige Aufklappen wird aus der editierbaren Quelle exportiert; die Titelleiste ist mit den aktuellen Kapseltabs synchronisiert. Die obere und mittlere Liste auf dem Board liefern nur Kontext und definieren Titelleiste, Werkzeugleiste oder Dateitabelle nicht neu. Das [historische mehrstufige Original](../../../design/hifi/screens/directory-tree.png) bleibt unverändert als Quelle von 26 Ausschnitten und unabhängige Messreferenz erhalten.
 
 Artboards sind vergrößert, und einzelne Karten haben unterschiedliche Maßstäbe. Text, Radien und Pixelmaße in Bildern dürfen Steuerungsgrößen nicht direkt festlegen; [Komponentenparameter](../../../specs/visual/directory-tree.json) dokumentieren implementierte logische Maße ausdrücklich, und das Ressourcenmanifest hält physische Ausschnittskoordinaten separat fest. Die Implementierung nutzt eine logische Breite von 1024 und eine gemeinsame Transformation der Quellzeichenfläche; den gesamten neuen Komponentensatz nicht erneut vergrößern.
 
-Qt verwendet die folgenden logischen Werte direkt. Das bestehende HTML-Hauptdesign bildet gemäß layout-scale.json ein Fenster mit 1548 Quellpixeln auf 1024 logische Pixel ab: `source CSS = logical / (1024/1548)`. Damit entsprechen Zeilenhöhe 32 genau 48.375 Quell-CSS-Pixeln, Schrift 11.2 entspricht 16.93125, Symbolplatz 16 entspricht 24.1875 und Einzug 12.8 entspricht 19.35. Die Vorschauskalierung gilt nach der Umrechnung gleichmäßig für das gesamte Fenster. DPR bestimmt nur Abtastdichte und Linienausrichtung und geht nicht in die Umrechnung logischer Größen ein.
+Qt verwendet die folgenden logischen Werte direkt. Die Referenz mit 1548 Pixeln entspricht gemäß layout-scale.json 1024 logischen Pixeln. DPR bestimmt nur Abtastdichte und Linienausrichtung und geht nicht in die Umrechnung logischer Größen ein.
 
 ## Baumstruktur und Anzahlen
 
@@ -55,7 +55,7 @@ Der Hierarchiebereich scrollt horizontal. Die Breite verwendet nur tatsächliche
 
 Alle Verzeichnisse verwenden dieselbe Ordnerressource. Zweigpunkte, gefüllte Informations-/Warnsymbole und segmentierte Ladeindikatoren liegen als helle/dunkle SVGs und 1×/2×/3×-PNGs vor; Linien, Fokusrahmen, Hintergründe, Skelette, Text und Hinweise sind dynamische Komponenten. Dunkle Parameter verwenden das globale Thema mit zusätzlichen Linien- und Markerfarben; **das vollständige dunkle Verzeichnisbaumoriginal steht noch aus**, und dunkle Symbolexporte ersetzen nicht das vollständige Artboard. Bestehende Ergebnisse zu Rendering und Desktop-Abnahme werden separat in zugehörigen Issues und Artefakten dokumentiert.
 
-Konsistenz der HTML-/Qt-Interaktion gemäß [Verifizierungsmethode](../../../developers/qa/README.md) festhalten. Artboards und Ausschnitte bewahren die ursprüngliche Designhistorie; aktuelle Zeilenzahlen, Fokus und Ecken folgen dieser Seite und der logischen Spezifikation.
+Konsistenz der Qt-Interaktion gemäß [Verifizierungsmethode](../../../developers/qa/README.md) festhalten. Artboards und Ausschnitte bewahren die ursprüngliche Designhistorie; aktuelle Zeilenzahlen, Fokus und Ecken folgen dieser Seite und der logischen Spezifikation.
 
 ## Interaktionen und unabhängige Zustände
 
@@ -100,13 +100,13 @@ Die 26 Ausschnitte in Originalpixeln liegen unter `design/assets/reference/tree-
 
 | Teil | Ressource / Zeichnung | Aktuelle Integration |
 | --- | --- | --- |
-| Ordner, Rechts-/Abwärtspfeile | `folder`, `chevron-right`, `chevron-down` aus gemeinsamen Ressourcen | Bestehende gemeinsame Ressourcen verfügbar; B-Symbole und Maße in rekursiven HTML-Zeilen und Qt-Delegates verwendet |
+| Ordner, Rechts-/Abwärtspfeile | `folder`, `chevron-right`, `chevron-down` aus gemeinsamen Ressourcen | Bestehende gemeinsame Ressourcen verfügbar; B-Symbole und Maße in Qt-Delegates verwendet |
 | Laden, Information, Warnung | Neue `tree-spinner`, `tree-info`, `tree-warning` | Teil von acht hellen/dunklen SVGs und 24 transparenten PNGs; gefüllte und segmentierte Boardformen beibehalten statt vorhandener Umrisssymbole |
 | Verborgener aktueller Zweig | Neues `tree-active-branch` | Sechs transparente PNGs für zwei Themen geliefert; Qt markieren damit den nächsten sichtbaren zugeklappten Vorfahren |
 | Linien, aktueller Hintergrund, Fokus, Skelett, Hinweise | Dynamisch mit Maßen und Themen der Parameterdatei gezeichnet | Stil und Logik spezifiziert; kein zweiter Satz Bitmap-Steuerungen geliefert |
 | Offizielle Artboards | `hifi/screens/directory-tree*.png` | Bytes bestätigter Originale zum Designvergleich erhalten |
 
-Qt integrieren Verbindungslinien, Zweigpunkte, Ordnerplätze mit 16 Einheiten und Verzeichniskontextmenüs. HTML verwendet eine vollständige rekursive Beispielhierarchie, Qt den tatsächlichen begrenzten Index. Das Zuklappen des aktuellen Vorfahren sendet keine Abfrage. Ladeskelette und eigene Informations-/Fehlersymbole bleiben Designressourcen; das vollständige dunkle Artboard steht aus. Symbolintegration belegt keine plattformweise Screenreader- oder HiDPI-Abnahme; bestehende manuelle Ergebnisse folgen [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5).
+Qt integriert Verbindungslinien, Zweigpunkte, Ordnerplätze mit 16 Einheiten und Verzeichniskontextmenüs. Qt verwendet den tatsächlichen begrenzten Index. Das Zuklappen des aktuellen Vorfahren sendet keine Abfrage. Ladeskelette und eigene Informations-/Fehlersymbole bleiben Designressourcen; das vollständige dunkle Artboard steht aus. Symbolintegration belegt keine plattformweise Screenreader- oder HiDPI-Abnahme; bestehende manuelle Ergebnisse folgen [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5).
 
 ## Abnahme nach Integration
 

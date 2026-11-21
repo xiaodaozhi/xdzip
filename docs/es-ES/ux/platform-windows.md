@@ -40,11 +40,9 @@ Las barras de título personalizadas de Windows/Linux necesitan movimiento, camb
 
 <a name="xdzip-prototype-evidence-and-limits"></a>
 
-## Evidencia y límites del prototipo
+## Comportamiento del producto
 
-El prototipo HTML simula el aspecto de ventanas independientes, el arrastre de la barra de título, las interacciones bloqueantes o no bloqueantes y la semántica de cierre. El selector superior «Platform» compara macOS, Windows y Linux y no es un ajuste del producto. El `dialog` del navegador permanece en una página y no ofrece ventanas nativas reales, botones del sistema, minimización del sistema, barra de tareas ni comportamiento multipantalla. La minimización de una ventana de tarea se simula ocultando los detalles.
-
-Los controles de plataforma de la ventana principal del prototipo ilustran su aspecto. Al volver de la confirmación de sobrescritura a la creación aún se reinicia el formulario de ejemplo; la implementación del producto debe conservar el borrador. Estas limitaciones no son prueba de aceptación nativa completada.
+Al volver de la confirmación de sobrescritura a la creación se debe conservar el borrador. La aceptación nativa requiere verificación en la plataforma real.
 
 <a name="xdzip-real-device-acceptance-criteria"></a>
 

@@ -2,13 +2,13 @@
 
 [English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | [繁體中文](../../zh-TW/ux/directory-tree.md) | [日本語](../../ja-JP/ux/directory-tree.md) | [한국어](../../ko-KR/ux/directory-tree.md) | [Français](../../fr-FR/ux/directory-tree.md) | [Deutsch](../../de-DE/ux/directory-tree.md) | [Español](../../es-ES/ux/directory-tree.md) | Português (Brasil) | [Русский](../../ru-RU/ux/directory-tree.md)
 
-Estado: **a interação principal de diretórios está integrada aos exemplos HTML e à navegação somente leitura do Qt; os recursos dos estados de limite aguardam integração**. A interação segue o [contrato de navegação somente leitura](../engineering/readonly-browser.md). A navegação normal usa filhos diretos, a busca cobre recursivamente o escopo atual e a autorização de saída é tratada separadamente da leitura.
+Estado: **a interação principal de diretórios está integrada à navegação somente leitura do Qt; os recursos dos estados de limite aguardam integração**. A interação segue o [contrato de navegação somente leitura](../engineering/readonly-browser.md). A navegação normal usa filhos diretos, a busca cobre recursivamente o escopo atual e a autorização de saída é tratada separadamente da leitura.
 
 As três pranchas atuais são [expansão multinível](../../../design/hifi/screens/directory-tree-capsule.png), [estados de nós e interação](../../../design/hifi/screens/directory-tree-states.png) e [limites de navegação e estados vazios](../../../design/hifi/screens/directory-tree-boundaries.png). A galeria compartilhada mostra as pranchas completas e a [biblioteca de recursos](../../../design/assets/index.html#directory-tree) fornece os recortes individuais. A expansão multinível é exportada da fonte editável, com a barra de título sincronizada com as abas em cápsula atuais. As listas superior e central da prancha fornecem apenas contexto e não redefinem barra de título, barra de ferramentas ou tabela de arquivos. O [original multinível histórico](../../../design/hifi/screens/directory-tree.png) permanece inalterado como fonte de 26 recortes e referência independente de medição.
 
 As pranchas são ampliadas e as escalas dos cartões diferem. Texto, raios e dimensões em pixels das imagens não podem definir diretamente o tamanho dos controles; os [parâmetros de componentes](../../../specs/visual/directory-tree.json) registram explicitamente as dimensões lógicas implementadas e o manifesto de recursos registra separadamente as coordenadas físicas dos recortes. A implementação usa largura lógica 1024 e uma transformação compartilhada do canvas de origem; não amplie novamente todo o novo conjunto de componentes.
 
-O Qt usa diretamente os valores lógicos abaixo. O design principal HTML existente mapeia uma janela de 1548 pixels de origem para 1024 pixels lógicos conforme layout-scale.json: `source CSS = logical / (1024/1548)`. Assim, altura de linha 32 corresponde a 48.375 pixels CSS de origem, fonte 11.2 a 16.93125, espaço de ícone 16 a 24.1875 e recuo 12.8 a 19.35. A escala da prévia aplica-se uniformemente à janela inteira após a conversão. O DPR determina apenas a densidade de amostragem e o alinhamento de linhas e não entra na conversão do tamanho lógico.
+O Qt usa diretamente os valores lógicos abaixo. A referência de 1548 pixels corresponde a 1024 pixels lógicos conforme layout-scale.json. O DPR determina apenas a densidade de amostragem e o alinhamento das linhas, sem alterar as dimensões lógicas.
 
 ## Estrutura da árvore e contagens
 
@@ -100,13 +100,13 @@ Os 26 recortes em pixels originais ficam em `design/assets/reference/tree-*.png`
 
 | Parte | Recurso / desenho | Integração atual |
 | --- | --- | --- |
-| Pasta, setas direita/baixo | `folder`, `chevron-right`, `chevron-down` dos recursos compartilhados | Recursos compartilhados existentes disponíveis; ícones e dimensões B usados por linhas HTML recursivas e delegados Qt |
+| Pasta, setas direita/baixo | `folder`, `chevron-right`, `chevron-down` dos recursos compartilhados | Recursos compartilhados existentes disponíveis; ícones e dimensões B usados por delegados Qt |
 | Carregamento, informação, aviso | Novos `tree-spinner`, `tree-info`, `tree-warning` | Parte de oito SVG claros/escuros e 24 PNG transparentes; mantenha as formas preenchidas e segmentadas das pranchas em vez de ícones de contorno existentes |
 | Ramo atual oculto | Novo `tree-active-branch` | Seis PNG transparentes para dois temas entregues; Qt usam o recurso para marcar o ancestral recolhido visível mais próximo |
 | Linhas, fundo atual, foco, esqueleto, dicas | Desenho dinâmico com dimensões e temas do arquivo de parâmetros | Estilo e lógica especificados; nenhum segundo conjunto de controles bitmap entregue |
 | Pranchas oficiais | `hifi/screens/directory-tree*.png` | Preservar bytes dos originais confirmados para comparação do design |
 
-Qt integram linhas de conexão, pontos de ramo, espaços de pasta de 16 unidades e menus de contexto de diretório. HTML usa uma hierarquia recursiva de exemplo completa; Qt usa o índice real limitado. Recolher o ancestral atual não envia consulta. Esqueletos de carregamento e ícones dedicados de informação e erro permanecem como recursos de design; a prancha escura completa está pendente. A integração de ícones não comprova aceitação de leitores de tela ou HiDPI em cada plataforma; conclusões manuais existentes seguem [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5).
+Qt integra linhas de conexão, pontos de ramo, espaços de pasta de 16 unidades e menus de contexto de diretório. Qt usa o índice real limitado. Recolher o ancestral atual não envia consulta. Esqueletos de carregamento e ícones dedicados de informação e erro permanecem como recursos de design; a prancha escura completa está pendente. A integração de ícones não comprova aceitação de leitores de tela ou HiDPI em cada plataforma; conclusões manuais existentes seguem [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5).
 
 ## Aceitação após integração
 

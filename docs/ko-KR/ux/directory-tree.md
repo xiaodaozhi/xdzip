@@ -2,13 +2,13 @@
 
 [English](../../ux/directory-tree.md) | [简体中文](../../zh-CN/ux/directory-tree.md) | [繁體中文](../../zh-TW/ux/directory-tree.md) | [日本語](../../ja-JP/ux/directory-tree.md) | 한국어 | [Français](../../fr-FR/ux/directory-tree.md) | [Deutsch](../../de-DE/ux/directory-tree.md) | [Español](../../es-ES/ux/directory-tree.md) | [Português (Brasil)](../../pt-BR/ux/directory-tree.md) | [Русский](../../ru-RU/ux/directory-tree.md)
 
-상태: **핵심 디렉터리 상호 작용은 HTML 예제와 Qt 읽기 전용 탐색에 통합되었으며, 경계 상태 자산은 통합을 기다립니다**. 상호 작용은 [읽기 전용 탐색 계약](../engineering/readonly-browser.md)을 따릅니다. 일반 디렉터리 탐색은 직속 자식을 사용하고 검색은 현재 범위를 재귀적으로 탐색하며, 출력 권한은 읽기 전용 탐색과 별도로 다룹니다.
+상태: **핵심 디렉터리 상호 작용은 Qt 읽기 전용 탐색에 통합되었으며, 경계 상태 자산은 통합을 기다립니다**. 상호 작용은 [읽기 전용 탐색 계약](../engineering/readonly-browser.md)을 따릅니다. 일반 디렉터리 탐색은 직속 자식을 사용하고 검색은 현재 범위를 재귀적으로 탐색하며, 출력 권한은 읽기 전용 탐색과 별도로 다룹니다.
 
 현재 세 아트보드는 [다단계 확장](../../../design/hifi/screens/directory-tree-capsule.png), [노드 및 상호 작용 상태](../../../design/hifi/screens/directory-tree-states.png), [빈 상태와 탐색 경계](../../../design/hifi/screens/directory-tree-boundaries.png)입니다. 공유 갤러리에서 전체 아트보드를 보고 [자산 라이브러리](../../../design/assets/index.html#directory-tree)에서 개별 슬라이스를 볼 수 있습니다. 다단계 확장은 편집 가능한 원본에서 내보내며 제목 표시줄은 현재 캡슐 탭과 동기화합니다. 보드 상단과 중앙의 목록은 맥락만 제공하며 제목 표시줄, 도구 모음이나 파일 표를 다시 정의하지 않습니다. [과거 다단계 원본](../../../design/hifi/screens/directory-tree.png)은 26개 슬라이스의 출처와 독립 측정 기준으로 변경하지 않고 보존합니다.
 
 아트보드는 확대되어 있고 각 카드의 배율이 다릅니다. 이미지의 텍스트, 반경과 픽셀 치수를 직접 컨트롤 크기로 사용할 수 없습니다. [구성 요소 매개변수](../../../specs/visual/directory-tree.json)는 구현된 논리 치수를 명시하고 자산 매니페스트는 물리적 자르기 좌표를 별도로 기록합니다. 구현은 논리 너비 1024와 공유 소스 캔버스 변환을 사용합니다. 새 구성 요소 전체를 다시 확대하지 마세요.
 
-Qt는 아래 논리 값을 직접 사용합니다. 기존 HTML 메인 디자인은 layout-scale.json에 따라 소스 픽셀 너비 1548의 창을 논리 픽셀 1024에 매핑합니다: `source CSS = logical / (1024/1548)`. 따라서 행 높이 32는 소스 CSS 픽셀 48.375, 글꼴 11.2는 16.93125, 아이콘 슬롯 16은 24.1875, 들여쓰기 12.8은 19.35에 해당합니다. 변환 후 미리 보기 배율은 창 전체에 균일하게 적용합니다. DPR은 샘플링 밀도와 선 정렬만 결정하며 논리 크기 변환에는 들어가지 않습니다.
+Qt는 아래 논리 값을 직접 사용합니다. 1548픽셀 참조는 layout-scale.json에 따라 논리 픽셀 1024에 대응합니다. DPR은 샘플링 밀도와 선 정렬만 결정하며 논리 크기 변환에는 들어가지 않습니다.
 
 ## 트리 구조와 개수
 
@@ -100,7 +100,7 @@ Qt의 상호 작용 일관성은 [검증 방법](../../../developers/qa/README.m
 
 | 부분 | 자산 / 그리기 | 현재 통합 |
 | --- | --- | --- |
-| 폴더, 오른쪽/아래 화살표 | 공유 자산의 `folder`, `chevron-right`, `chevron-down` | 기존 공유 리소스를 사용할 수 있음. 재귀 HTML 행과 Qt 델리게이트에 B 아이콘과 치수 사용 |
+| 폴더, 오른쪽/아래 화살표 | 공유 자산의 `folder`, `chevron-right`, `chevron-down` | 기존 공유 리소스를 사용할 수 있음. Qt 델리게이트에 B 아이콘과 치수 사용 |
 | 로딩, 정보, 경고 | 새 `tree-spinner`, `tree-info`, `tree-warning` | 밝은/어두운 SVG 8개와 투명 PNG 24개의 일부. 기존 윤곽 아이콘으로 바꾸지 않고 보드의 채워진 형태와 분할 형태 유지 |
 | 숨겨진 현재 가지 | 새 `tree-active-branch` | 두 테마용 투명 PNG 6개 제공. Qt가 가장 가까운 표시된 접힌 조상을 표시할 때 사용 |
 | 선, 현재 배경, 포커스, 스켈레톤, 힌트 | 매개변수 파일의 치수와 테마로 동적 그리기 | 스타일과 로직 명세 완료. 두 번째 비트맵 컨트롤 세트는 제공하지 않음 |

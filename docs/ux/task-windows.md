@@ -12,7 +12,7 @@ The [built-in registry](../engineering/format-registry.md) drives creation choic
 
 Integrity checking reuses the same TaskWindow layout. The real toolbar “Test” submits a whole-archive read-only background task, showing reading, password waiting, cancellation and terminal states as `kind=check`. It is independent of current selection, stops on first error and displays verified and unchecked counts separately. Extraction or creation commit counts are not checking counts. See the [checking contract](../engineering/archive-checking.md) for format and safety boundaries. Component development previews still offer a separate IntegrityWindow explicitly labeled “UI preview, no actual verification”.
 
-The HTML check button runs an explicitly labeled UI demonstration. Close or return to browsing retains demo state and reopening shows current progress; cancellation ends the demo and terminal states must not keep advancing. Completion and cancellation use the same structure and footer. Object path, bytes read, file count, speed, remaining estimate, phase and current entry are data slots; the UI does not scan, read or extract files. Example numbers are not real check results.
+Completion and cancellation use the same structure and footer. Object path, bytes read, file count, speed, remaining estimate, phase and current entry are data slots; the UI does not scan, read or extract files.
 
 Window width, density, fonts, radii, borders, progress bars, icon slots and explanation alignment come from the [visual standard](../visual/design-standard.md) and [frozen original](../../specs/visual/integrity-reference.json). Unknown totals show no definite percentage; large text allows body scrolling while keeping the footer reachable. Close emits no cancellation; Cancel explicitly requests it. A check terminal must not show saved files or open a destination folder.
 
@@ -34,7 +34,7 @@ The status-bar button counts retained task rows across the application. The acti
 
 Task discovery retains entry identity by task ID. Progress and state update in place without rebuilding the list or interrupting hover, highlight or keyboard focus. New tasks and history eviction insert or remove only affected entries, preserving the identity and selection of others. Sort remains descending by task ID; mouse or keyboard activation always reopens the matching ID. The QML data model is only a UI projection of task history and changes no snapshot, cancellation, commit, terminal or exit-barrier semantics.
 
-This update does not change existing window/menu layouts, logical units or visual states. The HTML design's task menu does not rebuild nodes on continuous progress and retains existing originals. Runtime verification still covers stationary hover, keyboard navigation, in-place state updates, task addition and history eviction.
+This update does not change existing window/menu layouts, logical units or visual states. Runtime verification still covers stationary hover, keyboard navigation, in-place state updates, task addition and history eviction.
 
 ## Native picker and drag activation
 

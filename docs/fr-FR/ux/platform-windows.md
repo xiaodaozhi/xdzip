@@ -40,11 +40,9 @@ Les barres de titre personnalisées Windows/Linux nécessitent de véritables fo
 
 <a name="xdzip-prototype-evidence-and-limits"></a>
 
-## Éléments du prototype et limites
+## Comportement du produit
 
-Le prototype HTML simule l’apparence des fenêtres autonomes, le déplacement de la barre de titre, les interactions bloquantes ou non et la fermeture. Le sélecteur « Platform » en haut compare macOS, Windows et Linux ; ce n’est pas un paramètre du produit. Le `dialog` du navigateur reste dans une seule page et ne fournit ni véritables fenêtres natives, boutons système, réduction système, barre des tâches ni comportement multiécran. La réduction d’une fenêtre de tâche est simulée en masquant les détails.
-
-Les commandes de plateforme de la fenêtre principale du prototype illustrent l’apparence. Le retour de la confirmation d’écrasement vers la création réinitialise encore le formulaire d’exemple ; l’implémentation du produit doit préserver le brouillon. Ces limites ne constituent pas une preuve d’acceptation native achevée.
+Le retour de la confirmation d’écrasement à la création doit conserver le brouillon. La validation native exige une vérification sur la plateforme réelle.
 
 <a name="xdzip-real-device-acceptance-criteria"></a>
 
