@@ -1,6 +1,6 @@
 # Contrato interno de formatos y algoritmos Rust
 
-[English](../../engineering/independent-rust-codecs.md) | [简体中文](../../zh-CN/engineering/independent-rust-codecs.md) | [繁體中文](../../zh-TW/engineering/independent-rust-codecs.md) | [日本語](../../ja-JP/engineering/independent-rust-codecs.md) | [Français](../../fr-FR/engineering/independent-rust-codecs.md) | Español | [Português (Brasil)](../../pt-BR/engineering/independent-rust-codecs.md)
+[English](../../engineering/independent-rust-codecs.md) | [简体中文](../../zh-CN/engineering/independent-rust-codecs.md) | [繁體中文](../../zh-TW/engineering/independent-rust-codecs.md) | [日本語](../../ja-JP/engineering/independent-rust-codecs.md) | [Français](../../fr-FR/engineering/independent-rust-codecs.md) | [Deutsch](../../de-DE/engineering/independent-rust-codecs.md) | Español | [Português (Brasil)](../../pt-BR/engineering/independent-rust-codecs.md)
 
 Este contrato describe las implementaciones Rust integradas de los formatos, sus perfiles compatibles y cómo verificar la compatibilidad. El [registro de formatos](format-registry.md) recoge las operaciones admitidas y el [contrato del proceso de trabajo](native-codecs.md) describe el enrutamiento de procesos.
 

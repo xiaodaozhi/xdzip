@@ -4,7 +4,7 @@
 
 [English](../../engineering/sevenzip-format-sources.md) | [简体中文](../../zh-CN/engineering/sevenzip-format-sources.md) | [繁體中文](../../zh-TW/engineering/sevenzip-format-sources.md) | [日本語](../../ja-JP/engineering/sevenzip-format-sources.md) | [한국어](../../ko-KR/engineering/sevenzip-format-sources.md) | [Français](../../fr-FR/engineering/sevenzip-format-sources.md) | Deutsch | [Español](../../es-ES/engineering/sevenzip-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/sevenzip-format-sources.md) | [Русский](../../ru-RU/engineering/sevenzip-format-sources.md)
 
-Dieses Dokument hält wiederverwendbare Quellen und Implementierungsgrenzen fest. Migrationsabnahme und verbleibende Fähigkeiten werden in [Issue #50](https://github.com/xiaodaozhi/xdzip/issues/50) verfolgt; feste Rust-Routen und die Entfernung der offiziellen Produktabhängigkeit belegen nicht automatisch plattformübergreifende, manuelle oder Release-Abnahme. Allgemeine Ersatzregeln stehen im [Vertrag für unabhängige Implementierungen](../../engineering/independent-rust-codecs.md).
+Dieses Dokument hält wiederverwendbare Quellen und Implementierungsgrenzen fest. Migrationsabnahme und verbleibende Fähigkeiten werden in [Issue #50](https://github.com/xiaodaozhi/xdzip/issues/50) verfolgt; feste Rust-Routen und die Entfernung der offiziellen Produktabhängigkeit belegen nicht automatisch plattformübergreifende, manuelle oder Release-Abnahme. Allgemeine Ersatzregeln stehen im [Vertrag für unabhängige Implementierungen](independent-rust-codecs.md).
 
 <a name="xdzip-specifications-and-reference-identity"></a>
 

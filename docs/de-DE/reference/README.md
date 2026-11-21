@@ -55,7 +55,7 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 - [Formatadapter und Entwurf des externen SDK-Versuchs](../design/codec-extension-sdk.md)
 - [Externer schreibgeschützter SDK-Versuch und Ausführungsumfang](../engineering/sdk-trial.md)
 - [Vertrag für isolierte Formatprozesse](../engineering/native-codecs.md)
-- [Eigene Rust-Formate und -Algorithmen](../../engineering/independent-rust-codecs.md)
+- [Eigene Rust-Formate und -Algorithmen](../engineering/independent-rust-codecs.md)
 - [Abrechnung zusätzlicher Algorithmusarbeit](../engineering/auxiliary-decoding-work.md)
 - [Zulassung der Abhängigkeit für ZIP-Metadaten](../engineering/zip-metadata-admission.md)
 - [Zulassung der Abhängigkeiten für ZIP-Entpacken und Ausgabe](../engineering/zip-extraction-admission.md)

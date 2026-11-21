@@ -2,7 +2,7 @@
 
 [English](../../engineering/cab-format-sources.md) | [简体中文](../../zh-CN/engineering/cab-format-sources.md) | [繁體中文](../../zh-TW/engineering/cab-format-sources.md) | [日本語](../../ja-JP/engineering/cab-format-sources.md) | [한국어](../../ko-KR/engineering/cab-format-sources.md) | [Français](../../fr-FR/engineering/cab-format-sources.md) | Deutsch | [Español](../../es-ES/engineering/cab-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/cab-format-sources.md) | [Русский](../../ru-RU/engineering/cab-format-sources.md)
 
-Dieses Dokument hält Quellen, Umfang und Einschränkungen der unabhängigen Implementierung des CAB-Containers sowie von MSZIP, LZX und Quantum fest. Produktfunktionen, Ressourcenverwaltung und formatspezifische Ersetzungsregeln sind im [Vertrag des isolierten Formatprozesses](native-codecs.md), im [Vertrag der eigenen Rust-Implementierung](../../engineering/independent-rust-codecs.md) beziehungsweise im [Vertrag für geteilte Volumes](archive-opening.md) definiert. Quellenangaben ersetzen weder Interoperabilitätsabnahme noch Release-Lizenzprüfung.
+Dieses Dokument hält Quellen, Umfang und Einschränkungen der unabhängigen Implementierung des CAB-Containers sowie von MSZIP, LZX und Quantum fest. Produktfunktionen, Ressourcenverwaltung und formatspezifische Ersetzungsregeln sind im [Vertrag des isolierten Formatprozesses](native-codecs.md), im [Vertrag der eigenen Rust-Implementierung](independent-rust-codecs.md) beziehungsweise im [Vertrag für geteilte Volumes](archive-opening.md) definiert. Quellenangaben ersetzen weder Interoperabilitätsabnahme noch Release-Lizenzprüfung.
 
 ## Technische Microsoft-Dokumente
 
