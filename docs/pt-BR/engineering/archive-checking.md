@@ -56,7 +56,7 @@ AES Crypt usa `format_declared_checks` e a senha de abertura mantida. O HMAC com
 
 Brotli e TAR.BR usam `structure_and_readability`. Término completo do fluxo, tamanhos declarados de metablocos e todas as transformações admitidas de dicionário/histórico devem passar, mas Brotli não fornece soma de conteúdo. Veja o [contrato Brotli](brotli-streams.md).
 
-LHA/LZH usa `format_declared_checks`: decodificar de fato cada arquivo comum suportado e verificar comprimentos exatos e todos os CRC-16 de cabeçalho/conteúdo presentes. Membros antigos de nível 0 podem omitir CRC e oferecem apenas verificações de estrutura, tamanho e legibilidade. LH2 exige admissão de variante finita vinculada a CRC. Métodos desconhecidos, nomes suspeitos, links ou objetos especiais impedem sucesso completo. Veja o [contrato LHA](../../engineering/lha-containers.md).
+LHA/LZH usa `format_declared_checks`: decodificar de fato cada arquivo comum suportado e verificar comprimentos exatos e todos os CRC-16 de cabeçalho/conteúdo presentes. Membros antigos de nível 0 podem omitir CRC e oferecem apenas verificações de estrutura, tamanho e legibilidade. LH2 exige admissão de variante finita vinculada a CRC. Métodos desconhecidos, nomes suspeitos, links ou objetos especiais impedem sucesso completo. Veja o [contrato LHA](lha-containers.md).
 
 PMA usa `format_declared_checks` e decodifica integralmente membros PM0/PM1/PM2 admitidos com tamanhos exatos e todos os CRC-16 de conteúdo presentes. Membros sem CRC estabelecem apenas estrutura, tamanho e legibilidade. Métodos desconhecidos e outras entradas sem suporte impedem sucesso completo. O preenchimento CP/M é validado como estrutura física do contêiner fora dos intervalos compactados dos membros. Veja o [contrato PMA](pma-streams.md).
 

@@ -68,7 +68,7 @@ Comece pela [arquitetura do sistema](../design/system-architecture.md) para conh
 - [Contrato de fluxos Zstandard](../engineering/zstandard-streams.md)
 - [Contrato de Unix compress Z](../engineering/compress-streams.md)
 - [Contrato de fluxos Brotli comuns](../engineering/brotli-streams.md)
-- [Estrutura e algoritmos LHA](../../engineering/lha-containers.md)
+- [Estrutura e algoritmos LHA](../engineering/lha-containers.md)
 - [Contêineres PMA e métodos PMarc](../engineering/pma-streams.md)
 - [Fluxos compactados e admissão de contêineres ARJ](../engineering/arj-streams.md)
 - [Contêineres ARC e perfis de fluxos compactados](../engineering/arc-streams.md)

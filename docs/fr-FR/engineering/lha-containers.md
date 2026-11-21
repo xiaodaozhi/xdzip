@@ -1,6 +1,6 @@
 # Contrat du format LHA et des algorithmes
 
-[English](../../engineering/lha-containers.md) | [简体中文](../../zh-CN/engineering/lha-containers.md) | [繁體中文](../../zh-TW/engineering/lha-containers.md) | [日本語](../../ja-JP/engineering/lha-containers.md) | [한국어](../../ko-KR/engineering/lha-containers.md) | Français | [Español](../../es-ES/engineering/lha-containers.md)
+[English](../../engineering/lha-containers.md) | [简体中文](../../zh-CN/engineering/lha-containers.md) | [繁體中文](../../zh-TW/engineering/lha-containers.md) | [日本語](../../ja-JP/engineering/lha-containers.md) | [한국어](../../ko-KR/engineering/lha-containers.md) | Français | [Español](../../es-ES/engineering/lha-containers.md) | [Português (Brasil)](../../pt-BR/engineering/lha-containers.md)
 
 LHA/LZH et le format historique LArc constituent une famille de conteneurs à membres séquentiels. Une extension de fichier, une chaîne de méthode reconnaissable ou le traitement réussi d'un membre Store ne prouvent pas la prise en charge du décodage d'une autre méthode. Les primitives brutes de `xdzip-compression` reçoivent une plage compressée admise et une taille décodée validée indépendamment, sans autorité sur le système de fichiers, les processus, les noms ou la publication. L'enregistrement dans le produit et l'admission du conteneur exigent les vérifications distinctes ci-dessous.
 
