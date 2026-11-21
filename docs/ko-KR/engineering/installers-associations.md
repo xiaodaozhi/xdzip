@@ -4,7 +4,7 @@
 
 Windows 11 x64에서는 Microsoft Store에서 **XDZip**을 검색해 Store 버전을 설치하거나 업데이트하세요. Windows EXE 또는 포터블 ZIP, macOS 패키지와 Linux 패키지는 [최신 GitHub 릴리스](https://github.com/xiaodaozhi/xdzip/releases/latest)에서 다운로드합니다. 두 채널은 독립적으로 게시됩니다. 설치할 버전의 목록이나 릴리스 노트를 확인하세요.
 
-Windows MSIX는 패키지 매니페스트에서 같은 확장자를 ‘연결 프로그램’ 후보로 선언하며 사용자의 기본 선택을 빼앗지 않습니다. 연결 페이지에는 모든 적격 형식이 비활성화된 스위치와 함께 표시됩니다. 현재 기본값은 Windows 설정에서 확인합니다. ‘기본 앱 설정 열기’는 `registeredAUMID`를 사용해 현재 패키지로 이동합니다. ID 조회가 실패하면 일반 기본 앱 선택기를 엽니다. 패키지는 일반 설치 버전의 등록을 패키지 상태로 읽거나 UserChoice 값을 쓰지 않습니다. 실제 파일 활성화, 아이콘, 공존과 제거는 대상 시스템의 수용 검증이 필요합니다. [MSIX 빌드](../../engineering/developer-build.md#windows-msix-实验构建)를 참조하세요.
+Windows MSIX는 패키지 매니페스트에서 같은 확장자를 ‘연결 프로그램’ 후보로 선언하며 사용자의 기본 선택을 빼앗지 않습니다. 연결 페이지에는 모든 적격 형식이 비활성화된 스위치와 함께 표시됩니다. 현재 기본값은 Windows 설정에서 확인합니다. ‘기본 앱 설정 열기’는 `registeredAUMID`를 사용해 현재 패키지로 이동합니다. ID 조회가 실패하면 일반 기본 앱 선택기를 엽니다. 패키지는 일반 설치 버전의 등록을 패키지 상태로 읽거나 UserChoice 값을 쓰지 않습니다. 실제 파일 활성화, 아이콘, 공존과 제거는 대상 시스템의 수용 검증이 필요합니다. [MSIX 빌드](../engineering/developer-build.md#windows-msix-实验构建)를 참조하세요.
 
 형식별 이미지와 플랫폼 매핑은 [파일 연결 아이콘 명세](../visual/file-association-icons.md)를 참조하세요. Linux는 시스템 MIME 아이콘을 유지합니다. 설치는 기본값이나 기존 등록 범위를 변경하지 않습니다.
 
@@ -12,7 +12,7 @@ MSIX 연결은 일반 Windows 설치 프로그램과 같은 정규 ICO 프레임
 
 `v0.2.0`부터의 데스크톱 패키지와 현재 소스 빌드는 CLI를 별도 `cli/` 디렉터리, macOS에서는 `Contents/Helpers/cli/`에 배치하고 기존 GUI 및 파일 연결 진입점을 유지합니다. 이전 릴리스 에셋에 이 기능이 소급 추가되지는 않습니다. Windows 설치 프로그램은 선택적인 사용자별 PATH 옵션을 제공하고 같은 이름의 명령 충돌을 감지합니다. 제거할 때는 자신의 설치 디렉터리만 등록 해제합니다. Mac/Linux는 비공개 CLI의 `setup`을 명시적으로 실행합니다. 독립 CLI 패키지도 `setup`으로 사용자 수준 버전 디렉터리와 안정된 실행기를 설치하며 셸 구성을 변경하지 않습니다. `setup --remove`는 등록을 해제하고 검사용 버전 디렉터리는 유지합니다. [CLI 설치 계약](command-line.md#xdzip-build-and-command-installation)을 참조하세요.
 
-아래 패키징 명령은 실험적인 개발 아티팩트를 생성합니다. 공식 GitHub 패키지는 [릴리스 프로토콜](release-protocol.md), Store 패키지는 [MSIX 워크플로](../../engineering/developer-build.md#microsoft-store-msix)를 따릅니다. macOS 직접 다운로드는 Developer ID나 공증 없이 ad-hoc 무결성 서명을 사용합니다. 지원 시스템은 [지원 정책](support-policy.md)을 참조하세요.
+아래 패키징 명령은 실험적인 개발 아티팩트를 생성합니다. 공식 GitHub 패키지는 [릴리스 프로토콜](release-protocol.md), Store 패키지는 [MSIX 워크플로](../engineering/developer-build.md#microsoft-store-msix)를 따릅니다. macOS 직접 다운로드는 Developer ID나 공증 없이 ad-hoc 무결성 서명을 사용합니다. 지원 시스템은 [지원 정책](support-policy.md)을 참조하세요.
 
 현재 소스 빌드는 Windows 설치 프로그램 게시자, Linux 패키지 관리자와 업데이트 정책 공급자로 `xiaodaozhi`를 사용합니다. 이 메타데이터는 게시자 인증서 서명을 대체하지 않으며 기존 릴리스는 원래 메타데이터를 유지합니다.
 
@@ -22,7 +22,7 @@ macOS 수동 업데이트에는 해당 Release DMG를 권장합니다. app.zip�
 
 ## 공유 빌드 진입점
 
-환경 준비와 순서는 [개발자 빌드 가이드](../../engineering/developer-build.md)를 참조하세요. 같은 커밋의 깨끗한 빌드와 테스트 후 `python3 scripts/desktop.py prepare --packaging`으로 고정 자료를 준비하고 package와 verify를 실행합니다. 일반 개발에서는 전체 CI 스크립트를 직접 사용하지 않습니다.
+환경 준비와 순서는 [개발자 빌드 가이드](../engineering/developer-build.md)를 참조하세요. 같은 커밋의 깨끗한 빌드와 테스트 후 `python3 scripts/desktop.py prepare --packaging`으로 고정 자료를 준비하고 package와 verify를 실행합니다. 일반 개발에서는 전체 CI 스크립트를 직접 사용하지 않습니다.
 
 Windows/Linux의 `package --kind runtime|installer|all`은 배포와 감사 체인을 공유하며 기본값은 `all`입니다. runtime이 먼저 배포 디렉터리를 생성하고 installer는 같은 output-dir의 검증된 runtime에서 빌드하며 Linux는 tar.gz도 만듭니다. macOS는 로컬 `all` 개발 DMG만 지원합니다. 아티팩트와 영수증은 지정 output-dir에 있으며 기본값은 build/package입니다. 준비 과정에서 고정 패키징 도구와 자료를 다운로드할 수 있지만 xdzip이나 시스템 컴파일러·SDK를 자동 설치하지 않습니다. Windows는 CRT/Inno Setup을 준비하고 Linux는 미리 설치된 patchelf와 Debian 도구가 필요하며 Mac은 시스템 배포 및 ad-hoc 무결성 도구를 사용합니다.
 

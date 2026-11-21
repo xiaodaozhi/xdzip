@@ -2,7 +2,7 @@
 
 # 開發構建與平臺驗證
 
-[English](../../engineering/developer-build.md) | [简体中文](../../zh-CN/engineering/developer-build.md) | 繁體中文 | [日本語](../../ja-JP/engineering/developer-build.md) | [Français](../../fr-FR/engineering/developer-build.md) | [Deutsch](../../de-DE/engineering/developer-build.md) | [Español](../../es-ES/engineering/developer-build.md) | [Português (Brasil)](../../pt-BR/engineering/developer-build.md)
+[English](../../engineering/developer-build.md) | [简体中文](../../zh-CN/engineering/developer-build.md) | 繁體中文 | [日本語](../../ja-JP/engineering/developer-build.md) | [한국어](../../ko-KR/engineering/developer-build.md) | [Français](../../fr-FR/engineering/developer-build.md) | [Deutsch](../../de-DE/engineering/developer-build.md) | [Español](../../es-ES/engineering/developer-build.md) | [Português (Brasil)](../../pt-BR/engineering/developer-build.md)
 
 本文是三平臺環境準備、構建、測試、打包和驗證的統一入口。共用編排由 [scripts/desktop.py](../../../scripts/desktop.py) 實現；平臺文件僅補充部署佈局、工具行為和系統限制，不再另維護一套日常命令。
 

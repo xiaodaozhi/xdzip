@@ -26,7 +26,7 @@
 | 데스크톱, Qt 및 접근성 | 모델과 컨트롤러 테스트, QML 및 공용 컨트롤 검사, 해당하는 네이티브 상호 작용, 실제 시각 또는 보조 기술 검증 증거. |
 | 성능 및 배포 | 커밋에 연결된 작업 부하, 렌더러와 자원 측정값, 또는 채널별 빌드 ID, 설치와 업데이트 결과 및 의존성 기록. |
 
-[검증 안내](../../../developers/qa/README.md)에 따라 변경에 필요한 검사를 정합니다. 프로토콜 준수, 테스트 자료나 오프스크린 검사, 네이티브 자동화, 수동 데스크톱 관찰은 각기 다른 사실을 확인합니다. 기존 회귀 진입점과 제공 범위는 [개발 빌드 안내](../../engineering/developer-build.md)와 [요구 사항 추적](requirements-traceability.md)에 연결되어 있습니다.
+[검증 안내](../../../developers/qa/README.md)에 따라 변경에 필요한 검사를 정합니다. 프로토콜 준수, 테스트 자료나 오프스크린 검사, 네이티브 자동화, 수동 데스크톱 관찰은 각기 다른 사실을 확인합니다. 기존 회귀 진입점과 제공 범위는 [개발 빌드 안내](../engineering/developer-build.md)와 [요구 사항 추적](requirements-traceability.md)에 연결되어 있습니다.
 
 <a name="xdzip-existing-ci-and-additional-techniques"></a>
 

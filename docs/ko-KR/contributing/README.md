@@ -8,7 +8,7 @@
 
 ## 필요한 부분 빌드
 
-저장소 루트에서 명령을 실행하세요. Windows는 x64 MSVC 개발 환경에서 `python`을 사용합니다. macOS는 네이티브 Apple Silicon 터미널과 Xcode Command Line Tools를 사용합니다. Ubuntu는 해당 플랫폼의 종속성 목록을 따릅니다. [빌드 안내](../../engineering/developer-build.md#environment-and-entry-points)에는 필수 조건과 저장소에 고정된 Rust 및 Qt 도구 체인이 나와 있습니다.
+저장소 루트에서 명령을 실행하세요. Windows는 x64 MSVC 개발 환경에서 `python`을 사용합니다. macOS는 네이티브 Apple Silicon 터미널과 Xcode Command Line Tools를 사용합니다. Ubuntu는 해당 플랫폼의 종속성 목록을 따릅니다. [빌드 안내](../engineering/developer-build.md#environment-and-entry-points)에는 필수 조건과 저장소에 고정된 Rust 및 Qt 도구 체인이 나와 있습니다.
 
 첫 데스크톱 빌드에서는 아래 명령을 실행합니다.
 
@@ -18,7 +18,7 @@ python3 scripts/desktop.py doctor --for-stage build
 python3 scripts/desktop.py build
 ```
 
-준비 옵션은 기존 rustup으로 고정된 도구 체인을 설치하고 필요한 경우 고정된 Qt SDK를 내려받습니다. 공유 `build/toolchain/` 종속성이 이미 준비되어 있다면 다시 사용하세요. 기본 경로 밖에 호환되는 Qt SDK가 있으면 관련 단계에 동일한 `--qt-prefix`를 전달하세요. 데스크톱 테스트가 필요한 변경은 같은 구성으로 빌드가 끝난 결과를 대상으로 `python3 scripts/desktop.py test`를 실행하세요. 전체 워커 테스트는 [테스트 입력 준비](../../engineering/developer-build.md)를 참조하세요.
+준비 옵션은 기존 rustup으로 고정된 도구 체인을 설치하고 필요한 경우 고정된 Qt SDK를 내려받습니다. 공유 `build/toolchain/` 종속성이 이미 준비되어 있다면 다시 사용하세요. 기본 경로 밖에 호환되는 Qt SDK가 있으면 관련 단계에 동일한 `--qt-prefix`를 전달하세요. 데스크톱 테스트가 필요한 변경은 같은 구성으로 빌드가 끝난 결과를 대상으로 `python3 scripts/desktop.py test`를 실행하세요. 전체 워커 테스트는 [테스트 입력 준비](../engineering/developer-build.md)를 참조하세요.
 
 독립 CLI를 작업할 때는 CLI와 워커를 빌드하고 테스트하세요.
 
@@ -46,7 +46,7 @@ git diff --check
 | CLI | `crates/xdzip-cli`에서 공유 Rust 런타임을 따라갑니다. [CLI 규칙](../engineering/command-line.md) | 빌드한 독립 CLI를 검사하세요. 명령이나 출력이 바뀌면 stdout, stderr, 종료 코드와 기록된 파일을 검증합니다. 관련 실패 사례도 포함하세요. |
 | Rust 도메인, 형식 또는 압축 파일 작업 | `xdzip-domain`, 관련 코덱, `xdzip-runtime` 또는 `xdzip-io`에서 시작합니다. 데스크톱 명령은 `BrowserController`와 `RuntimeConnection`을 따라갑니다. [형식 목록](../engineering/format-registry.md), [런타임](../engineering/product-runtime.md), [파일 안전성](../design/file-security.md) | `cargo fmt --all -- --check`와 영향받는 crate 테스트를 실행합니다. 실제 런타임 경로와 관련 실패, 취소, 최종 저장 동작을 확인하세요. 네이티브 형식 워커를 사용하면 [워커 테스트 진입점](../../../developers/qa/runtime-worker-tests.md)에서 검증합니다. 목록이 바뀌면 `python3 scripts/generate-format-registry.py`로 다시 생성하고 `--check`로 확인한 뒤 `python3 scripts/test-format-registry.py`를 실행합니다. |
 | QML 창, 컨트롤 또는 현지화 | `apps/desktop/ui`, `resources/i18n`, `specs/visual`에서 시작합니다. 창을 편집하기 전에 [시각 사양](../../visual/design-standard.md)과 [디자인 절차](../visual/design-workflow.md)를 읽고 [창 레지스트리](../../../specs/visual/window-registry.json)에 계약을 기록하세요. | 창 변경은 `python3 scripts/check-window-contracts.py --self-test`, `python3 scripts/check-operation-components.py` 및 해당하는 두 언어와 여러 글자 크기의 레이아웃 테스트를 실행합니다. 현지화는 `python3 scripts/check-ui-i18n.py`을 실행합니다. 필요한 경우 관련 플랫폼에서 네이티브 상호작용이나 화면을 확인하세요. |
-| 설치, 셸 통합 또는 업데이트 | [빌드 및 배포 안내](../../engineering/developer-build.md), [파일 연결 규칙](../engineering/installers-associations.md), [업데이트 규칙](../engineering/software-update.md)을 사용합니다. | 영향을 받는 설치 또는 등록 경로, 실제 결과물 식별 정보, 오류 및 복구를 확인합니다. 해당 플랫폼 워크플로는 [CI 정책](../../../developers/engineering/ci-policy.md)을 참조하세요. |
+| 설치, 셸 통합 또는 업데이트 | [빌드 및 배포 안내](../engineering/developer-build.md), [파일 연결 규칙](../engineering/installers-associations.md), [업데이트 규칙](../engineering/software-update.md)을 사용합니다. | 영향을 받는 설치 또는 등록 경로, 실제 결과물 식별 정보, 오류 및 복구를 확인합니다. 해당 플랫폼 워크플로는 [CI 정책](../../../developers/engineering/ci-policy.md)을 참조하세요. |
 
 <a name="xdzip-describe-the-evidence"></a>
 

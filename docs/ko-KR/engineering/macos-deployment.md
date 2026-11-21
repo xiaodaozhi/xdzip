@@ -8,7 +8,7 @@
 
 ## 빌드와 검증
 
-환경 사전 검사와 단계 옵션은 [개발자 빌드 가이드](../../engineering/developer-build.md)를 따릅니다. 패키징 도구를 준비하고 깨끗한 커밋에서 별도의 Release 주 앱을 빌드한 다음 패키징하고 검증합니다.
+환경 사전 검사와 단계 옵션은 [개발자 빌드 가이드](../engineering/developer-build.md)를 따릅니다. 패키징 도구를 준비하고 깨끗한 커밋에서 별도의 Release 주 앱을 빌드한 다음 패키징하고 검증합니다.
 
 ```sh
 python3 scripts/desktop.py prepare --packaging

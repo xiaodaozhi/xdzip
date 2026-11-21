@@ -29,7 +29,7 @@ patchelf는 각 ELF에 상대 `$ORIGIN` RPATH를 설정하고 각 플러그인�
 
 상대 RPATH를 다시 쓴 뒤 배포는 불필요한 네이티브 심볼 테이블을 제거하고 모든 DT_NEEDED 및 RPATH/RUNPATH 항목이 변하지 않았는지 검증합니다. 각 ELF의 도구 버전, 전후 해시와 바이트 수를 `symbol_stripping`에 기록하며 SDK 입력과 원본 빌드 바이너리는 건드리지 않습니다. 진단 복사본에는 하위 배포 스크립트가 `--keep-symbols`를 허용합니다. 최종 SDK 귀속과 애플리케이션 해시는 변환된 파일을 설명합니다. 이는 패키지 크기를 줄이는 것이며 측정된 메모리 또는 처리량 개선을 뜻하지 않습니다.
 
-일상적인 생성과 검증에는 [통합 빌드 진입점](../../engineering/developer-build.md)을 단계별로 사용합니다. 먼저 같은 구성의 빌드, 테스트, 패키징 준비를 마친 다음 실행합니다.
+일상적인 생성과 검증에는 [통합 빌드 진입점](../engineering/developer-build.md)을 단계별로 사용합니다. 먼저 같은 구성의 빌드, 테스트, 패키징 준비를 마친 다음 실행합니다.
 
 ```sh
 python3 scripts/desktop.py doctor --for-stage package

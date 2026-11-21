@@ -28,7 +28,7 @@
 
 macOS에는 Xcode Command Line Tools와 Qt가 필요합니다. Windows에는 MSVC Build Tools, Windows SDK 및 호환 Qt가 필요합니다. Linux에는 컴파일러, 대상 glibc 환경 및 Qt의 Wayland/X11 의존성이 필요합니다. 루트 도구 체인 파일과 CI가 버전을 고정합니다. 소스와 라이선스는 [도구 체인 표](toolchain.md)에 기록하세요. 지원 운영체제와 유지보수 범위는 [지원 정책](support-policy.md)을 참조하세요. 개별 출처와 라이선스는 해당 릴리스 검토 이슈에서 다룹니다.
 
-[Qt 개발 앱](../../../apps/desktop/README.md)은 깨끗한 체크아웃에서 빌드하고 실행하는 명령, CMake 옵션, macOS 아키텍처 및 배포 대상, 오프스크린 테스트 범위를 설명합니다. 빌드 또는 설치가 바뀌면 공백과 중국어 문자가 있는 경로를 다시 확인하세요. 로컬 개발은 유료 서명 ID를 요구하지 않습니다. 로컬 DMG의 ad-hoc 무결성 서명과 Mac 앱을 배포하지 않는 CI의 범위는 [빌드 안내](../../engineering/developer-build.md)를 참조하세요.
+[Qt 개발 앱](../../../apps/desktop/README.md)은 깨끗한 체크아웃에서 빌드하고 실행하는 명령, CMake 옵션, macOS 아키텍처 및 배포 대상, 오프스크린 테스트 범위를 설명합니다. 빌드 또는 설치가 바뀌면 공백과 중국어 문자가 있는 경로를 다시 확인하세요. 로컬 개발은 유료 서명 ID를 요구하지 않습니다. 로컬 DMG의 ad-hoc 무결성 서명과 Mac 앱을 배포하지 않는 CI의 범위는 [빌드 안내](../engineering/developer-build.md)를 참조하세요.
 
 <a name="xdzip-independent-engineering-probes"></a>
 

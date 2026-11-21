@@ -8,7 +8,7 @@
 
 ## 빌드 및 패키징 입력
 
-CMake는 Qt 데스크톱 앱, C++ 어댑터와 네이티브 보조 프로그램을 빌드합니다. Cargo는 Rust 런타임을 빌드하고 앱에 링크할 CXX 브리지를 생성합니다. 독립 실행형 CLI는 별도의 빌드 진입점이 있으며 Qt가 필요하지 않습니다. `scripts/desktop.py`와 `scripts/cli.py`가 빌드 및 테스트 단계를 조정합니다. 소스는 Rust 1.99.0과 Qt 6.8.2 SDK를 고정합니다. 결과를 비교할 때는 빌드 식별 정보, 대상 아키텍처, 잠금 파일과 도구 모음의 출처를 함께 확인합니다. [도구 모음](../engineering/toolchain.md), [개발 빌드 가이드](../../engineering/developer-build.md)
+CMake는 Qt 데스크톱 앱, C++ 어댑터와 네이티브 보조 프로그램을 빌드합니다. Cargo는 Rust 런타임을 빌드하고 앱에 링크할 CXX 브리지를 생성합니다. 독립 실행형 CLI는 별도의 빌드 진입점이 있으며 Qt가 필요하지 않습니다. `scripts/desktop.py`와 `scripts/cli.py`가 빌드 및 테스트 단계를 조정합니다. 소스는 Rust 1.99.0과 Qt 6.8.2 SDK를 고정합니다. 결과를 비교할 때는 빌드 식별 정보, 대상 아키텍처, 잠금 파일과 도구 모음의 출처를 함께 확인합니다. [도구 모음](../engineering/toolchain.md), [개발 빌드 가이드](../engineering/developer-build.md)
 
 데스크톱 패키지는 필요한 Qt 라이브러리, QML 모듈, 플랫폼 리소스, 번들 보조 프로그램을 배포합니다. 내부 이미지 처리 프로세스는 이미지 디코딩과 정적 SVG 표시에 Qt를 씁니다. CLI 배포본에는 필요한 압축 파일 처리 프로세스가 포함됩니다. 빌드 프로필, 패키지에 허용된 파일 목록과 배포 검사는 스크립트와 플랫폼 계약에서 관리합니다. 설치되는 종속 구성 요소와 전체 크기는 패키지 전체를 확인해야 알 수 있습니다. [배포 및 종속성 감사](../engineering/deployment-audit.md), [CLI 배포](../engineering/command-line.md)
 

@@ -153,7 +153,7 @@ python3 scripts/desktop.py build
 python3 scripts/desktop.py test
 ```
 
-Windows에서는 MSVC x64 개발 환경을, macOS에서는 네이티브 Apple Silicon 터미널과 Xcode Command Line Tools를 사용하세요. 기본 Qt 6.8.2 도구 체인은 `build/toolchain/`에 있습니다. Qt가 이미 설치되어 있다면 `--qt-prefix`를 지정하세요. 종속성, 실행, 패키징 및 검증은 [개발자 빌드 안내](docs/engineering/developer-build.md)를 참조하세요. CLI와 데스크톱의 빌드 진입점은 별개입니다. 데스크톱 빌드에는 명령 진입점을 명시적으로 활성화해야 하는 전용 CLI도 포함됩니다.
+Windows에서는 MSVC x64 개발 환경을, macOS에서는 네이티브 Apple Silicon 터미널과 Xcode Command Line Tools를 사용하세요. 기본 Qt 6.8.2 도구 체인은 `build/toolchain/`에 있습니다. Qt가 이미 설치되어 있다면 `--qt-prefix`를 지정하세요. 종속성, 실행, 패키징 및 검증은 [개발자 빌드 안내](docs/ko-KR/engineering/developer-build.md)를 참조하세요. CLI와 데스크톱의 빌드 진입점은 별개입니다. 데스크톱 빌드에는 명령 진입점을 명시적으로 활성화해야 하는 전용 CLI도 포함됩니다.
 
 개발 패키지는 실험 빌드입니다. Windows와 Linux 개발 결과물은 수동으로 실행해 성공한 [Qt 구성 요소 워크플로](https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml)에서도 받을 수 있습니다. 일상적인 CI에서는 개발 패키지를 자동으로 만들지 않습니다.
 
