@@ -1,6 +1,6 @@
 # 对应源码与重建材料
 
-[English](../../engineering/source-delivery.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/source-delivery.md)
+[English](../../engineering/source-delivery.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/source-delivery.md) | [日本語](../../ja-JP/engineering/source-delivery.md)
 
 **发行边界，2026-11-05：**按所有者决定，此收集器仅供本地审查和重建验证，不再把对应源码压缩包作为 GitHub Release 或 Actions 工件提供。公开历史 Release 和仍可下载的发行 Actions 工件中的对应源码包已撤下，后续发布流程禁止生成或上传。该决定不改变组件许可，不表示对应源码、重链接或其他许可义务已满足；GitHub 公共仓库自动生成的标签源码快照不属于这些 Release 附件。
 

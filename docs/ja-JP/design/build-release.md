@@ -31,7 +31,7 @@ CMake は Qt デスクトップアプリ、C++ アダプター、ネイティブ
 
 通常の [CI ワークフロー](https://github.com/xiaodaozhi/xdzip/blob/main/.github/workflows/docs.yml)は軽量な検査を実行します。ネイティブの Foundation と Qt のジョブは、別々の手動ワークフローです。通常の Apple Silicon CI はビルド、テスト、起動確認を行い、ダウンロード用アプリの配置は行いません。専用のリリースワークフローには、許可された配置、署名、パッケージ化、公開の手順があります。[リリース手順](../engineering/release-protocol.md)と [CI 方針](../../../developers/engineering/ci-policy.md)に必要条件と検証記録を定めます。
 
-リリースマニフェスト、チェックサム、構成一覧、SBOM、ライセンス資料は配布する成果物を記述します。リリースワークフローでプロジェクトのソース ZIP を生成したりアップロードしたりすることはありません。GitHub のタグスナップショットは別の仕組みで提供されます。実際に同梱するコンポーネントと[ライセンス記録](../engineering/licensing.md)、[ソース提供方針](../../engineering/source-delivery.md)に基づいて義務を確認します。
+リリースマニフェスト、チェックサム、構成一覧、SBOM、ライセンス資料は配布する成果物を記述します。リリースワークフローでプロジェクトのソース ZIP を生成したりアップロードしたりすることはありません。GitHub のタグスナップショットは別の仕組みで提供されます。実際に同梱するコンポーネントと[ライセンス記録](../engineering/licensing.md)、[ソース提供方針](../engineering/source-delivery.md)に基づいて義務を確認します。
 
 <a name="xdzip-update-and-future-distribution"></a>
 

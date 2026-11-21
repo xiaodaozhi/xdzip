@@ -4,7 +4,7 @@
 
 [English](../../engineering/native-runtime-materials.md) | [简体中文](../../zh-CN/engineering/native-runtime-materials.md) | [繁體中文](../../zh-TW/engineering/native-runtime-materials.md) | 日本語 | [한국어](../../ko-KR/engineering/native-runtime-materials.md) | [Français](../../fr-FR/engineering/native-runtime-materials.md) | [Deutsch](../../de-DE/engineering/native-runtime-materials.md) | [Español](../../es-ES/engineering/native-runtime-materials.md) | [Português (Brasil)](../../pt-BR/engineering/native-runtime-materials.md) | [Русский](../../ru-RU/engineering/native-runtime-materials.md)
 
-この契約は実際のパッケージ内の Qt 以外のネイティブランタイムを対象とし、[ランタイムの帰属](runtime-attribution.md)と[対応するソース](../../engineering/source-delivery.md)と併せて使用します。ソースのバージョン、ファイルの同一性、ライセンス条件、実際の履行は別々に確認します。供給元ファイルのハッシュはライセンス承認ではありません。`v0.1.0` の過去の候補に関する結論と補足証拠は [#4](https://github.com/xiaodaozhi/xdzip/issues/4) と [#53](https://github.com/xiaodaozhi/xdzip/issues/53) にあります。今後の候補には新しいリリース issue を使用し、証拠は build/ または CI 成果物にのみ生成します。
+この契約は実際のパッケージ内の Qt 以外のネイティブランタイムを対象とし、[ランタイムの帰属](runtime-attribution.md)と[対応するソース](source-delivery.md)と併せて使用します。ソースのバージョン、ファイルの同一性、ライセンス条件、実際の履行は別々に確認します。供給元ファイルのハッシュはライセンス承認ではありません。`v0.1.0` の過去の候補に関する結論と補足証拠は [#4](https://github.com/xiaodaozhi/xdzip/issues/4) と [#53](https://github.com/xiaodaozhi/xdzip/issues/53) にあります。今後の候補には新しいリリース issue を使用し、証拠は build/ または CI 成果物にのみ生成します。
 
 | コンポーネント | 元の根拠と配布資料 | レビューの境界 |
 | --- | --- | --- |

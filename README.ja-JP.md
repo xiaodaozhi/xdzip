@@ -176,4 +176,4 @@ Windows では MSVC x64 開発環境、macOS では Apple Silicon ネイティ�
 
 ## ライセンス
 
-プロジェクトが独自に作成した内容は [Apache License 2.0](LICENSE) で提供されます。[COPYRIGHT](COPYRIGHT) も参照してください。Qt、コーデック、フォント、その他の依存関係には個別のライセンスが適用されます。出典と通知は[ライセンス文書](docs/ja-JP/engineering/licensing.md)を参照してください。公式リリースでは、対応するソースコードのアーカイブを別途配布しません。詳しくは[ソースの提供](docs/engineering/source-delivery.md)を参照してください。適用されるソース提供、再リンク、通知の義務は引き続き適用されます。リリース候補は個別に確認します。過去の記録は [#4](https://github.com/xiaodaozhi/xdzip/issues/4) と [#53](https://github.com/xiaodaozhi/xdzip/issues/53) を参照してください。
+プロジェクトが独自に作成した内容は [Apache License 2.0](LICENSE) で提供されます。[COPYRIGHT](COPYRIGHT) も参照してください。Qt、コーデック、フォント、その他の依存関係には個別のライセンスが適用されます。出典と通知は[ライセンス文書](docs/ja-JP/engineering/licensing.md)を参照してください。公式リリースでは、対応するソースコードのアーカイブを別途配布しません。詳しくは[ソースの提供](docs/ja-JP/engineering/source-delivery.md)を参照してください。適用されるソース提供、再リンク、通知の義務は引き続き適用されます。リリース候補は個別に確認します。過去の記録は [#4](https://github.com/xiaodaozhi/xdzip/issues/4) と [#53](https://github.com/xiaodaozhi/xdzip/issues/53) を参照してください。

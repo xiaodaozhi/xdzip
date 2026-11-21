@@ -126,7 +126,7 @@
 - [Windows 開発ツールとランタイムのライセンス](../engineering/windows-licensing.md)
 - [ライセンス決定と第三者の資料](../engineering/licensing.md)
 - [依存関係と形式バックエンドの採用](../../engineering/dependencies.md)
-- [対応するソースと再ビルド用の資料](../../engineering/source-delivery.md)
+- [対応するソースと再ビルド用の資料](../engineering/source-delivery.md)
 - [CLDR から ICU 73.2 のデータを再構築](../engineering/icu-cldr-rebuild.md)
 
 <a name="xdzip-build-and-cli-reference"></a>

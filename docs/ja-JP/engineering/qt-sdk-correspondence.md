@@ -12,7 +12,7 @@ python3 scripts/qt_sdk_correspondence.py \
   --output build/review/qt-sdk-correspondence.json
 ```
 
-既定では build/source-cache をオフラインで読み取り、なければ失敗します。--fetch を明示した場合に限り、[固定マニフェスト](../../../scripts/corresponding-sources.json)から公式アーカイブをダウンロードして検証します。必要に応じて実行する 3 プラットフォームの Qt ワークフローは、固定 SDK のインストール後に --fetch を実行し、JSON を他の検証記録とともに保存します。Mac では引き続き記録のみをアップロードし、アプリの配置、署名、パッケージ化は行いません。ソース配布収集ツールに --qt-prefix を渡すと、この記録、パッチ、固定マニフェストが配布ハッシュに含まれます。[ソース配布](../../engineering/source-delivery.md)を参照してください。
+既定では build/source-cache をオフラインで読み取り、なければ失敗します。--fetch を明示した場合に限り、[固定マニフェスト](../../../scripts/corresponding-sources.json)から公式アーカイブをダウンロードして検証します。必要に応じて実行する 3 プラットフォームの Qt ワークフローは、固定 SDK のインストール後に --fetch を実行し、JSON を他の検証記録とともに保存します。Mac では引き続き記録のみをアップロードし、アプリの配置、署名、パッケージ化は行いません。ソース配布収集ツールに --qt-prefix を渡すと、この記録、パッチ、固定マニフェストが配布ハッシュに含まれます。[ソース配布](source-delivery.md)を参照してください。
 
 <a name="xdzip-verification-layers"></a>
 

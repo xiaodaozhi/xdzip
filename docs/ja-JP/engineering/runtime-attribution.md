@@ -14,9 +14,9 @@ Qt 6.8 以降はビルドに対応する [SPDX インベントリー](https://do
 
 `scripts/qt-license-sources.json` は公式 Qt ソースと SPDX license-list-data のコミット、ライセンステキスト URL、SHA-256 を固定します。ダウンロードは build/ にキャッシュし、キャッシュまたはダウンロードのハッシュ不一致は失敗します。資料の取得に任意の SPDX URL はたどりません。LICENSES/ の標準テキストに加え、Qt GUI の平滑拡大縮小アルゴリズムと SVG の元の通知、およびシステム依存関係の宣言が参照する LGPL-2.1 テキストを含めます。upstream の LicenseRef テキストと著作権は宣言 JSON に保持します。
 
-Qt の実行時通知には、Qt Network が使う固定された編集可能な Public Suffix List ソース、MPL-2.0 テキスト、取得方法も含めます。収集器は upstream blob、SHA-256、ライセンスのバイト列を検証します。ソース配布では、この入力が Qt アーカイブ内の 2 種類の生成データを再現することを別途検証します。[対応するソース資料](../../engineering/source-delivery.md)を参照してください。これは他の Qt モジュールのソースおよび置換確認の代わりにはなりません。
+Qt の実行時通知には、Qt Network が使う固定された編集可能な Public Suffix List ソース、MPL-2.0 テキスト、取得方法も含めます。収集器は upstream blob、SHA-256、ライセンスのバイト列を検証します。ソース配布では、この入力が Qt アーカイブ内の 2 種類の生成データを再現することを別途検証します。[対応するソース資料](source-delivery.md)を参照してください。これは他の Qt モジュールのソースおよび置換確認の代わりにはなりません。
 
-Qt Core の Tika MIME 通知は、Apache Software Foundation と英国国立公文書館 PRONOM の関連する帰属表示、Apache-2.0 と OGL-UK-3.0 のライセンステキスト、固定された upstream の完全な NOTICE を保持します。完全な NOTICE は他の upstream Tika コンポーネントも説明していますが、それらが本製品に同梱されることを意味しません。元の MIME データと Qt 変換の検証は[対応するソース資料](../../engineering/source-delivery.md)を参照してください。
+Qt Core の Tika MIME 通知は、Apache Software Foundation と英国国立公文書館 PRONOM の関連する帰属表示、Apache-2.0 と OGL-UK-3.0 のライセンステキスト、固定された upstream の完全な NOTICE を保持します。完全な NOTICE は他の upstream Tika コンポーネントも説明していますが、それらが本製品に同梱されることを意味しません。元の MIME データと Qt 変換の検証は[対応するソース資料](source-delivery.md)を参照してください。
 
 <a name="xdzip-file-and-component-association"></a>
 
@@ -66,7 +66,7 @@ runtime-attribution.json はファイル、コンポーネント、関係、upst
 
 ## 未解決のリリース条件
 
-[ソース配布の収集器](../../engineering/source-delivery.md)は実際のプロジェクトソース、Rust vendor、4 つの実行時 Qt モジュールアーカイブ、2 つのビルドモジュールアーカイブ、再ビルドと動的置換の手順を保持します。SDK と upstream の各項目のビルド同等性を証明するものではありません。各リリースでは、正確な静的リンクの帰属、OS と再配布可能な実行時ライブラリー、組み込みリソースごとのライセンス、オープンソースライセンス分岐の選択と義務の履行を引き続き確認します。[ローカル Mac デプロイ検証](macos-deployment.md)におけるメタデータの変更・置換と、[Qt ソースの実際のビルド・読み込み・置換](../../../developers/engineering/candidate-verification.md#qt-source-and-compatible-replacement)は別のフローであり、証拠も別々です。どちらも任意の SDK のバイト単位のビルド同等性を証明しません。ソースインベントリーと SPDX フィールドはライセンス義務の代わりにはなりません。過去の `v0.1.0` 候補の出所とライセンスは [#4](https://github.com/xiaodaozhi/xdzip/issues/4) と [#53](https://github.com/xiaodaozhi/xdzip/issues/53) を参照し、後の候補は個別にレビューします。有料の署名 ID は条件ではありません。既存のデスクトップ受け入れは [#5](https://github.com/xiaodaozhi/xdzip/issues/5) にあります。
+[ソース配布の収集器](source-delivery.md)は実際のプロジェクトソース、Rust vendor、4 つの実行時 Qt モジュールアーカイブ、2 つのビルドモジュールアーカイブ、再ビルドと動的置換の手順を保持します。SDK と upstream の各項目のビルド同等性を証明するものではありません。各リリースでは、正確な静的リンクの帰属、OS と再配布可能な実行時ライブラリー、組み込みリソースごとのライセンス、オープンソースライセンス分岐の選択と義務の履行を引き続き確認します。[ローカル Mac デプロイ検証](macos-deployment.md)におけるメタデータの変更・置換と、[Qt ソースの実際のビルド・読み込み・置換](../../../developers/engineering/candidate-verification.md#qt-source-and-compatible-replacement)は別のフローであり、証拠も別々です。どちらも任意の SDK のバイト単位のビルド同等性を証明しません。ソースインベントリーと SPDX フィールドはライセンス義務の代わりにはなりません。過去の `v0.1.0` 候補の出所とライセンスは [#4](https://github.com/xiaodaozhi/xdzip/issues/4) と [#53](https://github.com/xiaodaozhi/xdzip/issues/53) を参照し、後の候補は個別にレビューします。有料の署名 ID は条件ではありません。既存のデスクトップ受け入れは [#5](https://github.com/xiaodaozhi/xdzip/issues/5) にあります。
 
 [Qt SDK 対応確認](qt-sdk-correspondence.md)は、固定アーカイブのコミット、SDK ソース宣言内のファイルごとのハッシュ、インストール済み設定、既知の AGL 利用側パッチも記録します。宣言範囲内の一致は SDK ビルド全体の同等性を証明せず、既存のリリース阻止条件は残ります。
 
