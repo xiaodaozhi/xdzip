@@ -102,7 +102,7 @@ Os 26 recortes em pixels originais ficam em `design/assets/reference/tree-*.png`
 | --- | --- | --- |
 | Pasta, setas direita/baixo | `folder`, `chevron-right`, `chevron-down` dos recursos compartilhados | Recursos compartilhados existentes disponíveis; ícones e dimensões B usados por delegados Qt |
 | Carregamento, informação, aviso | Novos `tree-spinner`, `tree-info`, `tree-warning` | Parte de oito SVG claros/escuros e 24 PNG transparentes; mantenha as formas preenchidas e segmentadas das pranchas em vez de ícones de contorno existentes |
-| Ramo atual oculto | Novo `tree-active-branch` | Seis PNG transparentes para dois temas entregues; Qt usam o recurso para marcar o ancestral recolhido visível mais próximo |
+| Ramo atual oculto | Novo `tree-active-branch` | Seis PNG transparentes para dois temas entregues; Qt usa o recurso para marcar o ancestral recolhido visível mais próximo |
 | Linhas, fundo atual, foco, esqueleto, dicas | Desenho dinâmico com dimensões e temas do arquivo de parâmetros | Estilo e lógica especificados; nenhum segundo conjunto de controles bitmap entregue |
 | Pranchas oficiais | `hifi/screens/directory-tree*.png` | Preservar bytes dos originais confirmados para comparação do design |
 

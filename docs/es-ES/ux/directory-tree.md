@@ -102,7 +102,7 @@ Los 26 recortes en píxeles originales están en `design/assets/reference/tree-*
 | --- | --- | --- |
 | Carpeta, flechas derecha/abajo | `folder`, `chevron-right`, `chevron-down` de recursos compartidos | Recursos compartidos existentes disponibles; iconos y dimensiones B usados por delegados Qt |
 | Carga, información, advertencia | Nuevos `tree-spinner`, `tree-info`, `tree-warning` | Parte de ocho SVG claros/oscuros y 24 PNG transparentes; conservar las formas rellenas y segmentadas de las mesas en vez de usar iconos de contorno existentes |
-| Rama actual oculta | Nuevo `tree-active-branch` | Seis PNG transparentes entregados para dos temas; Qt usan el recurso para marcar el antepasado contraído visible más cercano |
+| Rama actual oculta | Nuevo `tree-active-branch` | Seis PNG transparentes entregados para dos temas; Qt usa el recurso para marcar el antepasado contraído visible más cercano |
 | Líneas, fondo actual, foco, esqueleto, avisos | Dibujados dinámicamente con dimensiones y temas del archivo de parámetros | Estilo y lógica especificados; no se entrega un segundo conjunto de controles de mapa de bits |
 | Mesas oficiales | `hifi/screens/directory-tree*.png` | Conservar los bytes de los originales confirmados para comparar el diseño |
 

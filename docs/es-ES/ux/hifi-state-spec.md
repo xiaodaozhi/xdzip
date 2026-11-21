@@ -74,7 +74,7 @@ Los recursos están en `design/assets/`. `reference/` conserva recortes en píxe
 
 ## Incorporación del árbol de directorios
 
-La navegación B01 añade la [especificación B del árbol de directorios](directory-tree.md), con tres mesas de trabajo formales y 26 recortes compartidos. Las flechas de nodo dependen de los subdirectorios; expansión, directorio actual y foco de teclado son independientes. La carga, los archivos vacíos, los archivos raíz, los límites de navegación, los fallos y las rutas actuales ocultas se especifican por separado; el contrato de dominio de solo lectura existente no cambia. Qt integran la navegación principal, las líneas de conexión y los indicadores de rama actual oculta; los esqueletos y los iconos específicos de límites siguen siendo recursos de diseño. Véase la especificación del árbol para el alcance de integración.
+La navegación B01 añade la [especificación B del árbol de directorios](directory-tree.md), con tres mesas de trabajo formales y 26 recortes compartidos. Las flechas de nodo dependen de los subdirectorios; expansión, directorio actual y foco de teclado son independientes. La carga, los archivos vacíos, los archivos raíz, los límites de navegación, los fallos y las rutas actuales ocultas se especifican por separado; el contrato de dominio de solo lectura existente no cambia. Qt integra la navegación principal, las líneas de conexión y los indicadores de rama actual oculta; los esqueletos y los iconos específicos de límites siguen siendo recursos de diseño. Véase la especificación del árbol para el alcance de integración.
 
 <a name="xdzip-changes-and-revalidation"></a>
 

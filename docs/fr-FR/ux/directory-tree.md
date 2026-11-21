@@ -102,7 +102,7 @@ Les 26 découpes aux pixels d’origine se trouvent dans `design/assets/referenc
 | --- | --- | --- |
 | Dossier, flèches droite/bas | `folder`, `chevron-right`, `chevron-down` des ressources partagées | Ressources communes existantes disponibles ; icônes et dimensions B utilisées par les délégués Qt |
 | Chargement, information, avertissement | Nouveaux `tree-spinner`, `tree-info`, `tree-warning` | Partie des huit SVG clair/sombre et 24 PNG transparents ; conserver les formes pleines et segmentées des planches au lieu d’icônes contour existantes |
-| Branche courante masquée | Nouveau `tree-active-branch` | Six PNG transparents livrés pour deux thèmes ; Qt utilisent la ressource pour marquer l’ancêtre replié visible le plus proche |
+| Branche courante masquée | Nouveau `tree-active-branch` | Six PNG transparents livrés pour deux thèmes ; Qt utilise la ressource pour marquer l’ancêtre replié visible le plus proche |
 | Lignes, fond courant, focus, squelette, indices | Dessin dynamique selon les dimensions et thèmes du fichier de paramètres | Style et logique spécifiés ; aucun second ensemble de contrôles bitmap livré |
 | Planches officielles | `hifi/screens/directory-tree*.png` | Conserver les octets des originaux confirmés pour la comparaison de conception |
 
