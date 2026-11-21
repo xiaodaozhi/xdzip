@@ -1,6 +1,6 @@
 # RAR 独立实现依据与兼容边界
 
-[English](../../engineering/rar-format-sources.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/rar-format-sources.md) | [日本語](../../ja-JP/engineering/rar-format-sources.md)
+[English](../../engineering/rar-format-sources.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/rar-format-sources.md) | [日本語](../../ja-JP/engineering/rar-format-sources.md) | [Français](../../fr-FR/engineering/rar-format-sources.md)
 
 RAR 自研迁移保留旧版、RAR5、RAR7、密码、头部加密、固实与授权分卷的完整只读范围，不开发 RAR 编码器。能力替代及官方依赖退出仍由[迁移任务 #51](https://github.com/xiaodaozhi/xdzip/issues/51)验收；容器代码或 Store 读取存在不代表完整迁移。现有产品路由与来源见[隔离后端契约](native-codecs.md)。
 
