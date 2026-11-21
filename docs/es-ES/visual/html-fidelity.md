@@ -19,7 +19,7 @@ Las imágenes de alta fidelidad son la referencia visual; HTML es la implementac
 
 ## Tamaño de presentación y píxeles de origen
 
-La presentación normal usa la [ventana de 1024 píxeles lógicos de ancho](../../visual/README.md), con una conversión uniforme de coordenadas de origen mediante `1024 / 1548`. La ventana principal se muestra a 1024 × aproximadamente 621,81 píxeles CSS; el original usa la misma escala. Esta relación es una convención de diseño explícita, no una deducción sobre Retina o DPI a partir de un PNG.
+La presentación normal usa la [ventana de 1024 píxeles lógicos de ancho](README.md), con una conversión uniforme de coordenadas de origen mediante `1024 / 1548`. La ventana principal se muestra a 1024 × aproximadamente 621,81 píxeles CSS; el original usa la misma escala. Esta relación es una convención de diseño explícita, no una deducción sobre Retina o DPI a partir de un PNG.
 
 `display-spec.js` es la única fuente de dimensiones del lienzo y escalas de presentación. El escritorio usa por defecto el tamaño normal y el móvil el ajuste; este se limita al tamaño normal para evitar ampliaciones automáticas en pantallas anchas. El modo de píxeles originales usa `scale=1`, conserva las dimensiones originales y permite desplazamiento tanto en HTML como en la imagen. La relación de píxeles del dispositivo solo afecta a la densidad de rasterización, no al ancho lógico CSS.
 
