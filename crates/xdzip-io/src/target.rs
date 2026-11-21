@@ -1380,6 +1380,26 @@ mod scratch_tests {
     use super::*;
     #[test]
     fn leases_protect_live_indexes_and_reclaim_only_verified_crash_files() {
+        const CHILD_ROOT: &str = "XDZIP_SCRATCH_CRASH_FIXTURE";
+        if let Some(root) = std::env::var_os(CHILD_ROOT) {
+            let root = PathBuf::from(root);
+            let parent = Dir::open_ambient_dir(&root, cap_std::ambient_authority()).unwrap();
+            let mut space = ScratchSpace::new_in(parent).unwrap();
+            let mut file = space.file().unwrap();
+            file.write_all(b"owned metadata").unwrap();
+            space
+                .lease
+                .as_ref()
+                .unwrap()
+                .set_times(std::fs::FileTimes::new().set_modified(std::time::UNIX_EPOCH))
+                .unwrap();
+            std::fs::write(root.join("pending"), &space.name).unwrap();
+            std::fs::rename(root.join("pending"), root.join("ready")).unwrap();
+            let mut signal = [0];
+            std::io::stdin().read_exact(&mut signal).unwrap();
+            // The owned child exits without dropping its scratch owner or stage.
+            std::process::exit(73);
+        }
         let root = std::env::temp_dir().join(format!(
             "xdzip-scratch-test-{}-{}",
             std::process::id(),
@@ -1392,20 +1412,42 @@ mod scratch_tests {
         let parent = Dir::open_ambient_dir(&root, cap_std::ambient_authority()).unwrap();
         let minimum_age = std::time::Duration::from_secs(60);
         let expired = std::fs::FileTimes::new().set_modified(std::time::UNIX_EPOCH);
-        let mut space = ScratchSpace::new_in(parent.try_clone().unwrap()).unwrap();
-        let name = space.name.clone();
-        let mut file = space.file().unwrap();
-        file.write_all(b"owned metadata").unwrap();
-        // Control expiry independently of filesystem and runner clock precision.
-        space.lease.as_ref().unwrap().set_times(expired).unwrap();
+        struct ChildGuard(std::process::Child);
+        impl Drop for ChildGuard {
+            fn drop(&mut self) {
+                let _ = self.0.kill();
+                let _ = self.0.wait();
+            }
+        }
+        let mut child = ChildGuard(
+            std::process::Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "target::scratch_tests::leases_protect_live_indexes_and_reclaim_only_verified_crash_files",
+                    "--quiet",
+                ])
+                .env(CHILD_ROOT, &root)
+                .stdin(std::process::Stdio::piped())
+                .spawn()
+                .unwrap(),
+        );
+        let start = std::time::Instant::now();
+        while !root.join("ready").is_file() {
+            assert!(
+                child.0.try_wait().unwrap().is_none(),
+                "crash fixture exited early"
+            );
+            assert!(
+                start.elapsed() < std::time::Duration::from_secs(10),
+                "crash fixture did not become ready"
+            );
+            std::thread::sleep(std::time::Duration::from_millis(10));
+        }
+        let name = std::fs::read_to_string(root.join("ready")).unwrap();
         ScratchSpace::reap(&parent, minimum_age).unwrap();
         assert!(parent.open_dir_nofollow(&name).is_ok());
-        // Emulate a process crash by closing all handles while retaining known files.
-        file.published = true;
-        drop(file);
-        space.lease.take();
-        space.dir.take();
-        drop(space);
+        child.0.stdin.take().unwrap().write_all(b"x").unwrap();
+        assert_eq!(child.0.wait().unwrap().code(), Some(73));
         ScratchSpace::reap(&parent, minimum_age).unwrap();
         if let Ok(remaining) = parent.open_dir_nofollow(&name) {
             let mut options = private_options();
@@ -1446,11 +1488,12 @@ mod scratch_tests {
         let identity = FileIdentity::read(&unknown).unwrap();
         drop(unknown);
         space.lease.as_ref().unwrap().set_times(expired).unwrap();
-        space.lease.take();
+        space.lease.take().unwrap().unlock().unwrap();
         ScratchSpace::reap(&parent, minimum_age).unwrap();
         assert!(parent.open_dir_nofollow(&name).is_ok());
         remove_known(space.dir.as_ref().unwrap(), "keep-unknown", identity).unwrap();
         space.cleanup().unwrap();
+        std::fs::remove_file(root.join("ready")).unwrap();
         drop(parent);
         std::fs::remove_dir(root).unwrap();
     }

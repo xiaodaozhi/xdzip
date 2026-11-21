@@ -5,6 +5,7 @@ import copy
 from concurrent.futures import ThreadPoolExecutor
 import gzip
 import hashlib
+import http.client
 import io
 import json
 from pathlib import Path, PurePosixPath
@@ -12,6 +13,8 @@ import re
 import shutil
 import subprocess
 import tarfile
+import time
+import urllib.error
 import urllib.request
 from deployment_audit import digest, within
 from native_runtime_materials import configuration, fetch
@@ -44,8 +47,24 @@ def archive_source(item, cache):
     if not target.exists():
         temporary = target.with_suffix(target.suffix+'.partial')
         try:
-            with urllib.request.urlopen(item['url'], timeout=60) as source, temporary.open('wb') as output:
-                shutil.copyfileobj(source, output)
+            for attempt in range(3):
+                try:
+                    with urllib.request.urlopen(item['url'], timeout=60) as source, temporary.open('wb') as output:
+                        shutil.copyfileobj(source, output)
+                    break
+                except urllib.error.HTTPError as error:
+                    if error.code not in (408, 429, 500, 502, 503, 504) or attempt == 2:
+                        raise
+                    error.close()
+                except urllib.error.URLError as error:
+                    if not isinstance(error.reason, (TimeoutError, ConnectionError)) or attempt == 2:
+                        raise
+                except (TimeoutError, ConnectionError, http.client.IncompleteRead):
+                    if attempt == 2:
+                        raise
+                temporary.unlink(missing_ok=True)
+                print(f"Qt source download interrupted for {item['file']}; retry {attempt + 1}/2")
+                time.sleep(2 ** (attempt + 1))
             if digest(temporary) != item['sha256']:
                 raise ValueError('Pinned Qt source checksum mismatch')
             temporary.replace(target)

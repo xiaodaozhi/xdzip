@@ -9,6 +9,7 @@ from pathlib import Path
 import tarfile
 import tempfile
 import unittest
+import urllib.error
 from unittest.mock import patch
 import qt_sdk_correspondence as audit
 import qt_source_identity as identity
@@ -32,6 +33,70 @@ class CorrespondenceTests(unittest.TestCase):
         item = {'module': 'owned', 'file': archive.name, 'sha256': audit.digest(archive),
                 'source_commit': 'a'*40}
         return archive, declaration, item
+
+    def test_interrupted_qt_download_restarts_and_verifies_the_complete_archive(self):
+        class Interrupted(io.BytesIO):
+            def read(self, size=-1):
+                data = super().read(12)
+                if data:
+                    return data
+                raise TimeoutError('owned timeout')
+
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            archive, _, item = self.fixture(root)
+            content = archive.read_bytes()
+            archive.unlink()
+            item['url'] = 'https://invalid.test/owned'
+            with patch.object(source.urllib.request, 'urlopen', side_effect=[
+                    Interrupted(content[:12]),
+                    urllib.error.HTTPError(item['url'], 503, 'unavailable', None, None),
+                    io.BytesIO(content)]) as download, \
+                    patch.object(source.time, 'sleep') as sleep:
+                self.assertEqual(source.archive_source(item, root), archive)
+            self.assertEqual(archive.read_bytes(), content)
+            self.assertEqual(download.call_count, 3)
+            self.assertEqual([call.args[0] for call in sleep.call_args_list], [2, 4])
+            self.assertFalse(archive.with_suffix('.xz.partial').exists())
+
+    def test_qt_download_does_not_retry_integrity_or_permanent_http_failures(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            archive, _, item = self.fixture(root)
+            archive.unlink()
+            item['url'] = 'https://invalid.test/owned'
+            partial = archive.with_suffix('.xz.partial')
+            with patch.object(source.urllib.request, 'urlopen', return_value=io.BytesIO(b'wrong')) as download, \
+                    patch.object(source.time, 'sleep') as sleep:
+                with self.assertRaisesRegex(ValueError, 'checksum'):
+                    source.archive_source(item, root)
+                self.assertEqual(download.call_count, 1)
+                sleep.assert_not_called()
+            self.assertFalse(archive.exists())
+            self.assertFalse(partial.exists())
+            failure = urllib.error.HTTPError(item['url'], 404, 'not found', None, None)
+            self.addCleanup(failure.close)
+            with patch.object(source.urllib.request, 'urlopen', side_effect=failure) as download, \
+                    patch.object(source.time, 'sleep') as sleep:
+                with self.assertRaises(urllib.error.HTTPError):
+                    source.archive_source(item, root)
+                self.assertEqual(download.call_count, 1)
+                sleep.assert_not_called()
+            self.assertFalse(partial.exists())
+
+    def test_qt_download_exhaustion_does_not_publish_partial_bytes(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            archive, _, item = self.fixture(root)
+            archive.unlink()
+            item['url'] = 'https://invalid.test/owned'
+            with patch.object(source.urllib.request, 'urlopen', side_effect=TimeoutError('owned timeout')) as download, \
+                    patch.object(source.time, 'sleep'):
+                with self.assertRaises(TimeoutError):
+                    source.archive_source(item, root)
+                self.assertEqual(download.call_count, 3)
+            self.assertFalse(archive.exists())
+            self.assertFalse(archive.with_suffix('.xz.partial').exists())
 
     def test_source_match_and_incomplete_coverage(self):
         with tempfile.TemporaryDirectory() as temp:
