@@ -1,6 +1,6 @@
 # 의존성과 형식 백엔드 채택
 
-[English](../../engineering/dependencies.md) | [简体中文](../../zh-CN/engineering/dependencies.md) | [繁體中文](../../zh-TW/engineering/dependencies.md) | [日本語](../../ja-JP/engineering/dependencies.md) | 한국어 | [Français](../../fr-FR/engineering/dependencies.md) | [Deutsch](../../de-DE/engineering/dependencies.md) | [Español](../../es-ES/engineering/dependencies.md) | [Português (Brasil)](../../pt-BR/engineering/dependencies.md)
+[English](../../engineering/dependencies.md) | [简体中文](../../zh-CN/engineering/dependencies.md) | [繁體中文](../../zh-TW/engineering/dependencies.md) | [日本語](../../ja-JP/engineering/dependencies.md) | 한국어 | [Français](../../fr-FR/engineering/dependencies.md) | [Deutsch](../../de-DE/engineering/dependencies.md) | [Español](../../es-ES/engineering/dependencies.md) | [Português (Brasil)](../../pt-BR/engineering/dependencies.md) | [Русский](../../ru-RU/engineering/dependencies.md)
 
 ## 외부 SDK 시험
 

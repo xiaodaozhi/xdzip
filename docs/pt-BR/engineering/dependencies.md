@@ -1,6 +1,6 @@
 # Admissão de dependências e backends de formatos
 
-[English](../../engineering/dependencies.md) | [简体中文](../../zh-CN/engineering/dependencies.md) | [繁體中文](../../zh-TW/engineering/dependencies.md) | [日本語](../../ja-JP/engineering/dependencies.md) | [한국어](../../ko-KR/engineering/dependencies.md) | [Français](../../fr-FR/engineering/dependencies.md) | [Deutsch](../../de-DE/engineering/dependencies.md) | [Español](../../es-ES/engineering/dependencies.md) | Português (Brasil)
+[English](../../engineering/dependencies.md) | [简体中文](../../zh-CN/engineering/dependencies.md) | [繁體中文](../../zh-TW/engineering/dependencies.md) | [日本語](../../ja-JP/engineering/dependencies.md) | [한국어](../../ko-KR/engineering/dependencies.md) | [Français](../../fr-FR/engineering/dependencies.md) | [Deutsch](../../de-DE/engineering/dependencies.md) | [Español](../../es-ES/engineering/dependencies.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/dependencies.md)
 
 ## Teste de SDK externo
 
