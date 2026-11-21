@@ -148,7 +148,7 @@ Decisión: usar implementaciones Rust independientes para el análisis de format
 
 El plan contemplaba aceptar y sustituir ZIP, TAR, TAR.GZ, 7z, RAR, CAB, ISO y UDF individualmente según las capacidades del momento. Conservar la implementación actual de los formatos que no hayan superado la aceptación; no recurrir silenciosamente a otra implementación ni ampliar el alcance de solo lectura de RAR, CAB, ISO o UDF. Reutilizar los algoritmos de compresión compartidos. Los nombres, identidades, E/S autorizadas, recursos, cancelación y publicaciones siguen bajo el host Rust; el aislamiento de procesos no desaparece por migrar a Rust.
 
-Costes: mantener de forma independiente y a largo plazo compatibilidad, seguridad, rendimiento, fuzzing y algoritmos. Pueden usarse referencias de terceros en pruebas, pero los formatos migrados deben retirar los motores correspondientes de las dependencias y archivos entregados. El [contrato de motores propios](../../engineering/independent-rust-codecs.md) recoge las fuentes y reglas de interfaz; el progreso y la aceptación real se siguen en [#45](https://github.com/xiaodaozhi/xdzip/issues/45).
+Costes: mantener de forma independiente y a largo plazo compatibilidad, seguridad, rendimiento, fuzzing y algoritmos. Pueden usarse referencias de terceros en pruebas, pero los formatos migrados deben retirar los motores correspondientes de las dependencias y archivos entregados. El [contrato de motores propios](../engineering/independent-rust-codecs.md) recoge las fuentes y reglas de interfaz; el progreso y la aceptación real se siguen en [#45](https://github.com/xiaodaozhi/xdzip/issues/45).
 
 <a name="xdzip-adr-013-standalone-windows-sfx-host"></a>
 

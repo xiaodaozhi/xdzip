@@ -1,6 +1,6 @@
 # In-house Rust format and algorithm contract
 
-English | [简体中文](../zh-CN/engineering/independent-rust-codecs.md) | [繁體中文](../zh-TW/engineering/independent-rust-codecs.md) | [日本語](../ja-JP/engineering/independent-rust-codecs.md) | [Français](../fr-FR/engineering/independent-rust-codecs.md)
+English | [简体中文](../zh-CN/engineering/independent-rust-codecs.md) | [繁體中文](../zh-TW/engineering/independent-rust-codecs.md) | [日本語](../ja-JP/engineering/independent-rust-codecs.md) | [Français](../fr-FR/engineering/independent-rust-codecs.md) | [Español](../es-ES/engineering/independent-rust-codecs.md)
 
 This contract describes the built-in Rust format implementations, their supported profiles and how to verify compatibility. The [format registry](format-registry.md) records admitted operations, and the [worker contract](native-codecs.md) covers process routing.
 

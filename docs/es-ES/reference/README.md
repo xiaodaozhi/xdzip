@@ -55,7 +55,7 @@ Empieza por la [arquitectura del sistema](../design/system-architecture.md) para
 - [Adaptadores de formato y diseño del ensayo SDK externo](../design/codec-extension-sdk.md)
 - [Ensayo de SDK externo de solo lectura y alcance de ejecución](../engineering/sdk-trial.md)
 - [Contrato del proceso de formato aislado](../engineering/native-codecs.md)
-- [Formatos y algoritmos propios en Rust](../../engineering/independent-rust-codecs.md)
+- [Formatos y algoritmos propios en Rust](../engineering/independent-rust-codecs.md)
 - [Contabilidad del trabajo auxiliar de descodificación](../engineering/auxiliary-decoding-work.md)
 - [Admisión de la dependencia para metadatos ZIP](../engineering/zip-metadata-admission.md)
 - [Admisión de dependencias de extracción y escritura ZIP](../engineering/zip-extraction-admission.md)

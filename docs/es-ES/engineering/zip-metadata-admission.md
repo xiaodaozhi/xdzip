@@ -4,7 +4,7 @@
 
 [English](../../engineering/zip-metadata-admission.md) | [简体中文](../../zh-CN/engineering/zip-metadata-admission.md) | [繁體中文](../../zh-TW/engineering/zip-metadata-admission.md) | [日本語](../../ja-JP/engineering/zip-metadata-admission.md) | [한국어](../../ko-KR/engineering/zip-metadata-admission.md) | [Français](../../fr-FR/engineering/zip-metadata-admission.md) | [Deutsch](../../de-DE/engineering/zip-metadata-admission.md) | Español | [Português (Brasil)](../../pt-BR/engineering/zip-metadata-admission.md) | [Русский](../../ru-RU/engineering/zip-metadata-admission.md)
 
-Esta página conserva la decisión del 2026-10-11 para el primer escaneo de directorio de solo lectura. No aprueba extracción, creación ni ejecución de extensiones de terceros. Los metadatos ZIP usan ahora la [capa independiente de registros Rust](../../engineering/independent-rust-codecs.md). rawzip solo sirve de referencia para pruebas de desarrollo.
+Esta página conserva la decisión del 2026-10-11 para el primer escaneo de directorio de solo lectura. No aprueba extracción, creación ni ejecución de extensiones de terceros. Los metadatos ZIP usan ahora la [capa independiente de registros Rust](independent-rust-codecs.md). rawzip solo sirve de referencia para pruebas de desarrollo.
 
 Se eligió [rawzip 0.5.2](https://github.com/nickbabcock/rawzip), con versión y suma exactas en el [manifiesto fijado](../../../specs/engineering/zip-metadata-dependencies.json) y Cargo.lock de la raíz. Se desactivaron las características predeterminadas y se activó std expresamente. No había dependencias de ejecución ni build.rs. La licencia MIT completa está en [third_party/rawzip/LICENSE](../../../third_party/rawzip/LICENSE) y acompaña las publicaciones que usan la dependencia.
 
