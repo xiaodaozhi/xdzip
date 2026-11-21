@@ -8,7 +8,7 @@ Ein lokales Entwicklungs-DMG ist ein zulässiges Entwicklungsergebnis. Der Qt-Wo
 
 ## Erstellen und prüfen
 
-Umgebungsprüfung und Optionen der einzelnen Schritte folgen der [Build-Anleitung für Entwickler](../../engineering/developer-build.md). Bereiten Sie die Paketwerkzeuge vor, erstellen Sie eine separate Release-Hauptanwendung aus einem sauberen Commit und paketieren und prüfen Sie anschließend:
+Umgebungsprüfung und Optionen der einzelnen Schritte folgen der [Build-Anleitung für Entwickler](../engineering/developer-build.md). Bereiten Sie die Paketwerkzeuge vor, erstellen Sie eine separate Release-Hauptanwendung aus einem sauberen Commit und paketieren und prüfen Sie anschließend:
 
 ```sh
 python3 scripts/desktop.py prepare --packaging

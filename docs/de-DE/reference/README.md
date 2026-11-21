@@ -136,6 +136,6 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 - [Build, Bereitstellung und Veröffentlichung](../design/build-release.md)
 - [Programmierkonventionen und Prüfebenen](../design/quality-engineering.md)
 - [Vorbereitung der Entwicklungsumgebung](../engineering/development.md)
-- [Entwicklungsbuilds und Plattformprüfung](../../engineering/developer-build.md)
+- [Entwicklungsbuilds und Plattformprüfung](../engineering/developer-build.md)
 - [Festgelegte Toolchain und Plattformen](../engineering/toolchain.md)
 - [CLI-Befehle, JSON, Installation und Aktualisierungsbelege](../engineering/command-line.md)

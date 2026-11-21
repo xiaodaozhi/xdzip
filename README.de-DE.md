@@ -152,7 +152,7 @@ python3 scripts/desktop.py build
 python3 scripts/desktop.py test
 ```
 
-Verwenden Sie unter Windows eine MSVC-x64-Entwicklungsumgebung. Verwenden Sie unter macOS ein natives Apple-Silicon-Terminal und die Xcode Command Line Tools. Die Standard-Toolchain für Qt 6.8.2 liegt unter `build/toolchain/`. Geben Sie `--qt-prefix` an, wenn Sie Qt bereits installiert haben. Die [Build-Anleitung](docs/engineering/developer-build.md) beschreibt Abhängigkeiten, Start, Paketierung und Überprüfung. Für CLI und Desktop gibt es getrennte Build-Befehle. Der Desktop-Build enthält auch eine private CLI, deren Befehlseinstieg ausdrücklich aktiviert werden muss.
+Verwenden Sie unter Windows eine MSVC-x64-Entwicklungsumgebung. Verwenden Sie unter macOS ein natives Apple-Silicon-Terminal und die Xcode Command Line Tools. Die Standard-Toolchain für Qt 6.8.2 liegt unter `build/toolchain/`. Geben Sie `--qt-prefix` an, wenn Sie Qt bereits installiert haben. Die [Build-Anleitung](docs/de-DE/engineering/developer-build.md) beschreibt Abhängigkeiten, Start, Paketierung und Überprüfung. Für CLI und Desktop gibt es getrennte Build-Befehle. Der Desktop-Build enthält auch eine private CLI, deren Befehlseinstieg ausdrücklich aktiviert werden muss.
 
 Entwicklungspakete sind experimentelle Builds. Windows- und Linux-Entwicklungsartefakte können auch aus erfolgreichen manuellen Läufen des [Workflows für Qt-Komponenten](https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml) heruntergeladen werden. Die reguläre CI erstellt Entwicklungspakete nicht automatisch.
 

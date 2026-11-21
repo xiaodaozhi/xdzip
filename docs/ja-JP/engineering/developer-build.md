@@ -1,6 +1,6 @@
 # 開発ビルドとプラットフォーム検証
 
-[English](../../engineering/developer-build.md) | [简体中文](../../zh-CN/engineering/developer-build.md) | [繁體中文](../../zh-TW/engineering/developer-build.md) | 日本語 | [Français](../../fr-FR/engineering/developer-build.md) | [Español](../../es-ES/engineering/developer-build.md) | [Português (Brasil)](../../pt-BR/engineering/developer-build.md)
+[English](../../engineering/developer-build.md) | [简体中文](../../zh-CN/engineering/developer-build.md) | [繁體中文](../../zh-TW/engineering/developer-build.md) | 日本語 | [Français](../../fr-FR/engineering/developer-build.md) | [Deutsch](../../de-DE/engineering/developer-build.md) | [Español](../../es-ES/engineering/developer-build.md) | [Português (Brasil)](../../pt-BR/engineering/developer-build.md)
 
 このページは、3 つのプラットフォームで環境の準備、ビルド、テスト、パッケージ化、検証を行うための共通入口です。共通の処理は [scripts/desktop.py](../../../scripts/desktop.py) で実行します。各プラットフォームの文書は、通常のコマンドを別々に管理するのではなく、配置構成、ツールの動作、システム上の制約を補足します。
 

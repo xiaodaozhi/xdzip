@@ -51,7 +51,7 @@ Löst ein schreibgeschützter Worker-Handler einen abwickelbaren Panic aus, fän
 
 ## Prüfung und Build
 
-Siehe [allgemeine Prüfung](../../../developers/qa/README.md). Rust-Kerntests benötigen kein Qt; Qt-Fenster-, Modell-, Last- und Abschalttests werden auf drei Plattformen nativ gebaut und ausgeführt. macOS-CI prüft arm64 und Cocoa-Start in der SDK-Umgebung ohne App-Deployment oder Upload; lokale Entwicklungs-DMGs sind auf ausdrückliche Anfrage möglich. Windows/Linux deployen das mitgelieferte Qt und prüfen Ausführung ohne SDK; siehe [Build-Anleitung](../../engineering/developer-build.md). Diese Prüfungen sind keine Freigabe einer offiziellen Veröffentlichung.
+Siehe [allgemeine Prüfung](../../../developers/qa/README.md). Rust-Kerntests benötigen kein Qt; Qt-Fenster-, Modell-, Last- und Abschalttests werden auf drei Plattformen nativ gebaut und ausgeführt. macOS-CI prüft arm64 und Cocoa-Start in der SDK-Umgebung ohne App-Deployment oder Upload; lokale Entwicklungs-DMGs sind auf ausdrückliche Anfrage möglich. Windows/Linux deployen das mitgelieferte Qt und prüfen Ausführung ohne SDK; siehe [Build-Anleitung](../engineering/developer-build.md). Diese Prüfungen sind keine Freigabe einer offiziellen Veröffentlichung.
 
 Erste Abfragen vergeben eine unveränderliche Ergebnisidentität; spätere Batches müssen allen QueryKey-Feldern und Parametern entsprechen. Qt bricht alte Anfragen ab und bündelt die neueste Absicht, während Sequenz und Anfrage-ID weiter geprüft werden. Ein Batch begrenzt Namen zusätzlich auf 64 KiB und filtert oder sortiert nicht erneut. Historische Abnahme bleibt auf die damals verfügbaren Fähigkeiten begrenzt.
 
