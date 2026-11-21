@@ -56,7 +56,7 @@ Les deux blocs de moteur représentent des instances distinctes de la même impl
 | Worker de prévisualisation d’image | Après lecture et vérification par Rust d’une entrée admissible, le bureau envoie des octets d’image encodés et limités à `xdzip-image-preview`. Le worker renvoie une miniature RGBA limitée. La demande ne contient ni chemin d’archive, ni mot de passe, ni handle de destination. Le fournisseur ne publie le résultat que pour la demande courante correspondante. La prévisualisation de texte est traitée dans le moteur Rust. |
 | Transmission à la plateforme | Les adaptateurs de bureau coordonnent l’activation par le gestionnaire de fichiers, l’ouverture d’une copie extraite privée dans une application externe et l’installation des mises à jour. Les assistants de mise à jour ou Sparkle macOS assurent leur propre transmission d’installation. Les mises à jour gérées par le Store suivent le canal de la plateforme. Le worker de format ne traite pas ces demandes. |
 
-[Protocole du worker d’archive](../engineering/native-codecs.md), [contrat de prévisualisation](../engineering/content-preview.md), [intégration système](../../engineering/installers-associations.md), [transferts d’archive](../engineering/archive-transfers.md), [transmission de mise à jour](../engineering/software-update.md).
+[Protocole du worker d’archive](../engineering/native-codecs.md), [contrat de prévisualisation](../engineering/content-preview.md), [intégration système](../engineering/installers-associations.md), [transferts d’archive](../engineering/archive-transfers.md), [transmission de mise à jour](../engineering/software-update.md).
 
 ## Ouverture et navigation d’une archive
 

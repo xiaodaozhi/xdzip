@@ -4,7 +4,7 @@
 
 [English](../../engineering/windows-licensing.md) | [简体中文](../../zh-CN/engineering/windows-licensing.md) | [繁體中文](../../zh-TW/engineering/windows-licensing.md) | [日本語](../../ja-JP/engineering/windows-licensing.md) | [한국어](../../ko-KR/engineering/windows-licensing.md) | Français | [Deutsch](../../de-DE/engineering/windows-licensing.md) | [Español](../../es-ES/engineering/windows-licensing.md) | [Português (Brasil)](../../pt-BR/engineering/windows-licensing.md) | [Русский](../../ru-RU/engineering/windows-licensing.md)
 
-Cette page définit les voies applicables à la compilation et à la redistribution Windows, avec les [composants natifs](native-runtime-materials.md), l’[entrée de compilation développeur](../../engineering/developer-build.md) et le [contrat d’installation](../../engineering/installers-associations.md). Environnements précis, commits de vérification, empreintes des composants et conclusions d’acceptation sont consignés dans les tickets et artefacts locaux ou CI ; cette page ne conserve pas de preuve de licence propre à une machine.
+Cette page définit les voies applicables à la compilation et à la redistribution Windows, avec les [composants natifs](native-runtime-materials.md), l’[entrée de compilation développeur](../../engineering/developer-build.md) et le [contrat d’installation](installers-associations.md). Environnements précis, commits de vérification, empreintes des composants et conclusions d’acceptation sont consignés dans les tickets et artefacts locaux ou CI ; cette page ne conserve pas de preuve de licence propre à une machine.
 
 <a name="xdzip-free-community-path-and-local-choice"></a>
 

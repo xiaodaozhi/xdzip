@@ -23,7 +23,7 @@ Le paquet de bureau déploie les bibliothèques Qt, les modules QML, les ressour
 | Ubuntu 24.04 LTS x86_64 | GitHub fournit une archive du répertoire d’exécution et un DEB. Le périmètre pris en charge comprend X11 et glibc 2.39 ou une version ultérieure. |
 | CLI autonome | La CLI a ses propres identités de paquet et de mise à jour. La CLI fournie avec l’application de bureau suit les règles d’intégration et de transfert de son paquet. |
 
-La [politique de prise en charge](../engineering/support-policy.md) définit les systèmes et architectures couverts. Pour les fichiers publiés, consultez le [README du projet](../../../README.fr-FR.md) et les notes de la version correspondante. Le [guide d’installation](../../engineering/installers-associations.md) précise les limites des associations et de l’intégration.
+La [politique de prise en charge](../engineering/support-policy.md) définit les systèmes et architectures couverts. Pour les fichiers publiés, consultez le [README du projet](../../../README.fr-FR.md) et les notes de la version correspondante. Le [guide d’installation](../engineering/installers-associations.md) précise les limites des associations et de l’intégration.
 
 <a name="xdzip-routine-checks-native-builds-and-release"></a>
 

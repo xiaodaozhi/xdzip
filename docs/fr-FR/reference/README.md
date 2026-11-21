@@ -110,7 +110,7 @@ Consultez d’abord l’[architecture du système](../design/system-architecture
 
 ## Intégration système, publication et confiance
 
-- [Installateurs et associations de fichiers](../../engineering/installers-associations.md)
+- [Installateurs et associations de fichiers](../engineering/installers-associations.md)
 - [Prise en charge et maintenance des systèmes](../engineering/support-policy.md)
 - [Actions du gestionnaire de fichiers et hôte de tâches autonome](../engineering/shell-actions.md)
 - [Mises à jour lancées par l’utilisateur](../engineering/software-update.md)
