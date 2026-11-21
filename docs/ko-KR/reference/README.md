@@ -60,7 +60,7 @@
 - [ZIP 메타데이터 의존성 허용](../engineering/zip-metadata-admission.md)
 - [ZIP 압축 풀기 및 출력 의존성 허용](../engineering/zip-extraction-admission.md)
 - [7z 형식 출처 및 독립 구현](../engineering/sevenzip-format-sources.md)
-- [RAR 독립 구현의 근거 및 호환성 경계](../../engineering/rar-format-sources.md)
+- [RAR 독립 구현의 근거 및 호환성 경계](../engineering/rar-format-sources.md)
 - [CAB 형식 출처 및 구현 근거](../engineering/cab-format-sources.md)
 - [TAR/GZIP 구현 계약](../engineering/tar-gzip.md)
 - [단일 파일 스트림과 ZIP 파생 패키지](../engineering/single-file-streams.md)

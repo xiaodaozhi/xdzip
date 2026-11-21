@@ -1,6 +1,6 @@
 # RAR independent implementation basis and compatibility boundaries
 
-English | [简体中文](../zh-CN/engineering/rar-format-sources.md) | [繁體中文](../zh-TW/engineering/rar-format-sources.md) | [日本語](../ja-JP/engineering/rar-format-sources.md) | [Français](../fr-FR/engineering/rar-format-sources.md) | [Deutsch](../de-DE/engineering/rar-format-sources.md) | [Español](../es-ES/engineering/rar-format-sources.md) | [Português (Brasil)](../pt-BR/engineering/rar-format-sources.md)
+English | [简体中文](../zh-CN/engineering/rar-format-sources.md) | [繁體中文](../zh-TW/engineering/rar-format-sources.md) | [日本語](../ja-JP/engineering/rar-format-sources.md) | [한국어](../ko-KR/engineering/rar-format-sources.md) | [Français](../fr-FR/engineering/rar-format-sources.md) | [Deutsch](../de-DE/engineering/rar-format-sources.md) | [Español](../es-ES/engineering/rar-format-sources.md) | [Português (Brasil)](../pt-BR/engineering/rar-format-sources.md)
 
 In-house RAR migration retains complete read-only scope for legacy, RAR5, RAR7, passwords, header encryption, solid archives, and authorized volumes; no RAR encoder is developed. Capability replacement and removal of official dependencies remain subject to [migration task #51](https://github.com/xiaodaozhi/xdzip/issues/51). Container code or Store reading alone does not establish full migration. See the [isolated backend contract](native-codecs.md) for current routing and sources.
 
