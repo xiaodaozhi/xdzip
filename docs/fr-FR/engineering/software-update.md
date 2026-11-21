@@ -1,6 +1,6 @@
 # Contrat de mise à jour lancée par l’utilisateur
 
-[English](../../engineering/software-update.md) | [简体中文](../../zh-CN/engineering/software-update.md) | [繁體中文](../../zh-TW/engineering/software-update.md) | [日本語](../../ja-JP/engineering/software-update.md) | [한국어](../../ko-KR/engineering/software-update.md) | Français | [Deutsch](../../de-DE/engineering/software-update.md) | [Español](../../es-ES/engineering/software-update.md) | [Português (Brasil)](../../pt-BR/engineering/software-update.md)
+[English](../../engineering/software-update.md) | [简体中文](../../zh-CN/engineering/software-update.md) | [繁體中文](../../zh-TW/engineering/software-update.md) | [日本語](../../ja-JP/engineering/software-update.md) | [한국어](../../ko-KR/engineering/software-update.md) | Français | [Deutsch](../../de-DE/engineering/software-update.md) | [Español](../../es-ES/engineering/software-update.md) | [Português (Brasil)](../../pt-BR/engineering/software-update.md) | [Русский](../../ru-RU/engineering/software-update.md)
 
 Sous une identité de paquet MSIX Windows, la fenêtre À propos ne propose pas de mise à jour intégrée et le contrôleur refuse la vérification GitHub existante. Microsoft Store gère les mises à jour de son édition ; aucune mise à jour automatique intégrée n’est garantie pour les paquets installés hors Store. Les erreurs de requête d’identité sont traitées comme une identité de paquet afin d’éviter l’utilisation incorrecte des mises à jour de l’installateur. Les installations ordinaires et les autres plateformes restent inchangées.
 

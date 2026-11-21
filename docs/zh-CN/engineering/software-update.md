@@ -1,6 +1,6 @@
 # 用户主动更新契约
 
-[English](../../engineering/software-update.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/software-update.md) | [日本語](../../ja-JP/engineering/software-update.md) | [한국어](../../ko-KR/engineering/software-update.md) | [Français](../../fr-FR/engineering/software-update.md) | [Deutsch](../../de-DE/engineering/software-update.md) | [Español](../../es-ES/engineering/software-update.md) | [Português (Brasil)](../../pt-BR/engineering/software-update.md)
+[English](../../engineering/software-update.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/software-update.md) | [日本語](../../ja-JP/engineering/software-update.md) | [한국어](../../ko-KR/engineering/software-update.md) | [Français](../../fr-FR/engineering/software-update.md) | [Deutsch](../../de-DE/engineering/software-update.md) | [Español](../../es-ES/engineering/software-update.md) | [Português (Brasil)](../../pt-BR/engineering/software-update.md) | [Русский](../../ru-RU/engineering/software-update.md)
 
 Windows MSIX 包身份下关于页不显示应用内更新区域，更新控制器也拒绝发起现有 GitHub 更新检查。商店交付时由 Microsoft Store 管理更新；侧载包不获得本应用的自动更新承诺。身份查询异常按包身份处理，避免误用安装器更新。现有普通安装与其他平台行为不变。
 

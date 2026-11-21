@@ -1,6 +1,6 @@
 # 사용자가 시작하는 업데이트 계약
 
-[English](../../engineering/software-update.md) | [简体中文](../../zh-CN/engineering/software-update.md) | [繁體中文](../../zh-TW/engineering/software-update.md) | [日本語](../../ja-JP/engineering/software-update.md) | 한국어 | [Français](../../fr-FR/engineering/software-update.md) | [Deutsch](../../de-DE/engineering/software-update.md) | [Español](../../es-ES/engineering/software-update.md) | [Português (Brasil)](../../pt-BR/engineering/software-update.md)
+[English](../../engineering/software-update.md) | [简体中文](../../zh-CN/engineering/software-update.md) | [繁體中文](../../zh-TW/engineering/software-update.md) | [日本語](../../ja-JP/engineering/software-update.md) | 한국어 | [Français](../../fr-FR/engineering/software-update.md) | [Deutsch](../../de-DE/engineering/software-update.md) | [Español](../../es-ES/engineering/software-update.md) | [Português (Brasil)](../../pt-BR/engineering/software-update.md) | [Русский](../../ru-RU/engineering/software-update.md)
 
 Windows MSIX 패키지 ID가 있으면 정보 창에 앱 내 업데이트가 표시되지 않으며 업데이트 컨트롤러는 기존 GitHub 업데이트 확인을 거부합니다. Store 버전의 업데이트는 Microsoft Store가 관리하며 사이드로드한 패키지에는 앱 내 자동 업데이트를 보장하지 않습니다. ID 조회 오류는 설치 프로그램 업데이트의 오용을 방지하기 위해 패키지 ID로 취급합니다. 일반 설치와 다른 플랫폼은 그대로 유지됩니다.
 

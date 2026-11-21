@@ -113,7 +113,7 @@
 - [Установщики и ассоциации файлов](../../engineering/installers-associations.md)
 - [Поддержка систем и политика сопровождения](../engineering/support-policy.md)
 - [Действия файлового менеджера и отдельный хост задач](../engineering/shell-actions.md)
-- [Обновления по инициативе пользователя](../../engineering/software-update.md)
+- [Обновления по инициативе пользователя](../engineering/software-update.md)
 - [Жизненный цикл данных и диагностика](../engineering/privacy.md)
 - [Версия продукта и идентичность сборки](../engineering/versioning.md)
 - [Протокол GitHub Release v1](../engineering/release-protocol.md)
