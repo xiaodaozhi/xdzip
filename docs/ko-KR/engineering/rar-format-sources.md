@@ -1,6 +1,6 @@
 # RAR 독립 구현 근거 및 호환성 경계
 
-[English](../../engineering/rar-format-sources.md) | [简体中文](../../zh-CN/engineering/rar-format-sources.md) | [繁體中文](../../zh-TW/engineering/rar-format-sources.md) | [日本語](../../ja-JP/engineering/rar-format-sources.md) | 한국어 | [Français](../../fr-FR/engineering/rar-format-sources.md) | [Deutsch](../../de-DE/engineering/rar-format-sources.md) | [Español](../../es-ES/engineering/rar-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/rar-format-sources.md)
+[English](../../engineering/rar-format-sources.md) | [简体中文](../../zh-CN/engineering/rar-format-sources.md) | [繁體中文](../../zh-TW/engineering/rar-format-sources.md) | [日本語](../../ja-JP/engineering/rar-format-sources.md) | 한국어 | [Français](../../fr-FR/engineering/rar-format-sources.md) | [Deutsch](../../de-DE/engineering/rar-format-sources.md) | [Español](../../es-ES/engineering/rar-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/rar-format-sources.md) | [Русский](../../ru-RU/engineering/rar-format-sources.md)
 
 자체 RAR 이전은 레거시, RAR5, RAR7, 비밀번호, 헤더 암호화, 솔리드 압축 파일 및 승인된 볼륨에 대한 완전한 읽기 전용 범위를 유지하며 RAR 인코더는 개발하지 않습니다. 기능 대체와 공식 의존성 제거는 [이전 작업 #51](https://github.com/xiaodaozhi/xdzip/issues/51)의 적용을 받습니다. 컨테이너 코드나 Store 읽기만으로 전체 이전이 입증되지는 않습니다. 현재 라우팅과 출처는 [격리 백엔드 계약](native-codecs.md)을 참조합니다.
 
