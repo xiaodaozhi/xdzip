@@ -1,0 +1,214 @@
+{
+  "schema_version": 1,
+  "platform": "macos",
+  "purpose": "Reusable local website or product presentation assets; not a store submission.",
+  "visual_source": "specs/marketing/windows-store.json",
+  "scenes": [
+    "01-browse",
+    "02-create",
+    "03-preview",
+    "04-workspace"
+  ],
+  "locales": {
+    "en-US": {
+      "promotions": [
+        {
+          "id": "01-browse",
+          "eyebrow": "FIND YOUR FILES",
+          "headline": [
+            "Browse first.",
+            "Extract what",
+            "matters."
+          ],
+          "body": [
+            "Look inside an archive.",
+            "Take only the files you need."
+          ],
+          "caption": "Feature illustration: browse supported archives, find files and extract selected items. Not an application screenshot."
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "PACK YOUR WAY",
+          "headline": [
+            "A place for",
+            "everything."
+          ],
+          "body": [
+            "Create archives or ISO disc images.",
+            "Protect ZIP and 7z with passwords."
+          ],
+          "caption": "Feature illustration showing archive and ISO image creation, with password protection for ZIP and 7z."
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "LOOK CLOSER",
+          "headline": [
+            "A closer look.",
+            "On demand."
+          ],
+          "body": [
+            "Preview supported text and images",
+            "before you extract."
+          ],
+          "caption": "Feature illustration: request previews of supported text, images and static SVG. Not an application screenshot."
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "KEEP YOUR FLOW",
+          "headline": [
+            "Keep it",
+            "all together."
+          ],
+          "body": [
+            "Browse with tabs, light or dark themes,",
+            "and ten interface languages."
+          ],
+          "caption": "Feature illustration: organize multiple archives and choose a light or dark appearance. Not an application screenshot."
+        }
+      ],
+      "screenshot_captions": {
+        "01-browse": "Browse an archive's folder tree, select individual files and view their properties.",
+        "02-create": "Create an archive from selected files and choose ZIP compression settings.",
+        "03-preview": "Request an image preview next to archive entries and file properties.",
+        "04-workspace": "Keep two archives open in tabs and browse selected files in grid view."
+      },
+      "illustration_label": "Feature illustration",
+      "poster_headline": [
+        "Pack. Unpack.",
+        "Carry on."
+      ],
+      "square_tagline": "Make archives a little simpler.",
+      "product_name": "xdzip",
+      "short_description": "Browse, create and extract archives on macOS. Preview supported files and edit eligible archive entries.",
+      "description": "xdzip is an open-source archive manager for macOS. Browse archives, find files and extract selected items without unpacking everything. Basic archive operations work offline.\n\nBrowse ZIP, 7z, RAR, TAR, CAB, ISO, UDF and other supported formats. Search, sort, navigate folders and open multiple archives in tabs or separate windows. Preview supported text and images.\n\nCreate supported archive formats and ISO9660/Joliet data images. Eligible regular single-file archives can be edited. Format and encryption support varies; opening a file in another application uses a temporary copy and does not write edits back.\n\nUse the Finder extension or registered Finder service to create or extract archives. Choose from ten interface languages, light and dark themes, and adjustable text sizes.\n\nmacOS 14 or later on Apple Silicon.",
+      "features": [
+        "Browse supported archives without extracting everything.",
+        "Search, sort and navigate archive folders.",
+        "Extract selected files and folders.",
+        "Create archives and ISO data images.",
+        "Use supported encryption and split archive profiles.",
+        "Edit entries in eligible archives.",
+        "Preview supported text and images.",
+        "Open multiple archives in tabs or separate windows.",
+        "Use the Finder extension or registered Finder service to create or extract archives.",
+        "Choose interface language, theme and text size."
+      ],
+      "keywords": [
+        "archive",
+        "extract",
+        "zip",
+        "7z",
+        "rar",
+        "compression",
+        "file manager"
+      ],
+      "copyright": "Copyright © 2026 xiaodaozhi. Third-party components retain their respective copyrights and trademarks.",
+      "system_requirements": [
+        "macOS 14 or later on Apple Silicon."
+      ],
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md"
+    },
+    "zh-CN": {
+      "promotions": [
+        {
+          "id": "01-browse",
+          "eyebrow": "找到需要的文件",
+          "headline": [
+            "先浏览，",
+            "再解压。"
+          ],
+          "body": [
+            "查看包内内容，",
+            "只提取需要的文件。"
+          ],
+          "caption": "功能示意图：浏览受支持的压缩包，查找并选择性解压文件。此图不是软件实机截图。"
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "按自己的方式打包",
+          "headline": [
+            "文件归整，",
+            "分享从容。"
+          ],
+          "body": [
+            "创建压缩包或 ISO 光盘映像，",
+            "为 ZIP 和 7z 设置密码。"
+          ],
+          "caption": "演示创建压缩包和 ISO 光盘映像，以及为 ZIP 和 7z 设置密码的功能示意图。"
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "内容预览，按需查看",
+          "headline": [
+            "先看内容，",
+            "再做决定。"
+          ],
+          "body": [
+            "按需预览受支持的文本与图像，",
+            "再决定提取哪些文件。"
+          ],
+          "caption": "功能示意图：按需预览受支持的文本、图像和静态 SVG。此图不是软件实机截图。"
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "让工作保持条理",
+          "headline": [
+            "多个压缩包，",
+            "从容切换。"
+          ],
+          "body": [
+            "多标签浏览，浅色或深色主题，",
+            "支持十种界面语言。"
+          ],
+          "caption": "功能示意图：管理多个压缩包，并选择浅色或深色外观。此图不是软件实机截图。"
+        }
+      ],
+      "screenshot_captions": {
+        "01-browse": "浏览压缩包目录树，选择文件并查看属性。",
+        "02-create": "将选中的文件整理成压缩包，并设置 ZIP 压缩选项。",
+        "03-preview": "在文件列表和属性旁，按需加载图像预览。",
+        "04-workspace": "在标签页中同时打开两个压缩包，并以网格视图浏览选中的文件。"
+      },
+      "illustration_label": "功能示意图",
+      "poster_headline": [
+        "打包与解压，",
+        "都简单一点。"
+      ],
+      "square_tagline": "打包与解压，都简单一点。",
+      "product_name": "xdzip",
+      "short_description": "在 macOS 上浏览、创建和解压归档，预览受支持文件并编辑符合条件的条目。",
+      "description": "xdzip 是一款开源 macOS 压缩包管理工具。先查看包内内容，找到需要的文件，再选择性解压，无需每次解开整个压缩包。基础归档操作可离线使用。\n\n浏览 ZIP、7z、RAR、TAR、CAB、ISO、UDF 等受支持格式，通过搜索、排序和目录导航查找文件，在多个标签页或独立窗口中打开归档，并预览受支持的文本和图片。\n\n创建受支持的压缩包和 ISO9660/Joliet 数据镜像，编辑符合条件的普通单文件归档。不同格式的功能和加密支持有所区别；使用其他应用打开包内文件时会生成临时副本，修改不会自动写回。\n\n通过 Finder 扩展或已注册的 Finder 服务创建和解压归档。界面支持十种语言、浅色和深色主题及字号调整。\n\nmacOS 14 或更高版本，Apple Silicon。",
+      "features": [
+        "浏览受支持的归档，无需全部解压。",
+        "通过搜索、排序和目录导航查找文件。",
+        "选择性解压文件或文件夹。",
+        "创建压缩包和 ISO 数据镜像。",
+        "使用受支持的加密与分卷格式。",
+        "编辑符合条件的归档条目。",
+        "预览受支持的文本和图片。",
+        "在多标签或独立窗口中打开归档。",
+        "通过 Finder 扩展或已注册的 Finder 服务创建和解压归档。",
+        "选择界面语言、主题和字号。"
+      ],
+      "keywords": [
+        "压缩软件",
+        "解压缩",
+        "ZIP",
+        "7z",
+        "RAR",
+        "文件压缩",
+        "压缩包管理"
+      ],
+      "copyright": "版权所有 © 2026 xiaodaozhi。第三方组件保留各自的版权和商标权。",
+      "system_requirements": [
+        "macOS 14 或更高版本，Apple Silicon。"
+      ],
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.zh-CN.md"
+    }
+  },
+  "links": {
+    "website": "https://xdzip.xiaodaozhi.com",
+    "support": "https://github.com/xiaodaozhi/xdzip/issues",
+    "license": "https://github.com/xiaodaozhi/xdzip/blob/main/LICENSE"
+  }
+}

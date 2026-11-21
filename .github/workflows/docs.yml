@@ -40,6 +40,10 @@ jobs:
           python3 scripts/test-macos-finder.py
           python3 scripts/check-docs.py
           node scripts/build-windows-store-assets.cjs --check
+          python3 scripts/test-platform-store-captures.py
+          node --check scripts/build-platform-store-assets.cjs
+          node --check scripts/build-macos-store-assets.cjs
+          node --check scripts/build-linux-store-assets.cjs
           python3 scripts/test-check-docs.py
           python3 scripts/check-ui-i18n.py
           python3 scripts/generate-qml-theme.py --check

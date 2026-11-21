@@ -3,7 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const rootIndex = process.argv.indexOf('--root');
+const rootIndex = require.main === module ? process.argv.indexOf('--root') : -1;
 const repository = path.resolve(__dirname, '..');
 const listingsOnly = rootIndex === -1;
 const ROOT = listingsOnly ? repository : path.resolve(process.argv[rootIndex + 1]);
@@ -52,10 +52,10 @@ function promo(locale, index, width, height) {
   body += scene(index) + rect(1492, 70, 310, 50, 25, '#E6EDFD') + text(1647, 103, locale.illustration_label, 22, '#536C94', 500, 'middle');
   return svg(width, height, body);
 }
-function screenshotPromo(locale, index, capture, width, height) {
+function screenshotPromo(locale, index, capture, width, height, layoutEngine = imageTools) {
   const item = locale.promotions[index];
   const layout = spec.screenshot_artwork;
-  const box = imageTools.placement(spec,capture,width,height);
+  const box = layoutEngine.placement(spec,capture,width,height);
   const ratio = width / 1920;
   let body = rect(0, 0, 1920, 1080, 0, v.background);
   body += '<ellipse cx="1440" cy="430" rx="820" ry="670" fill="url(#glow)"/>';
@@ -241,4 +241,5 @@ async function main() {
   if (!check) fs.writeFileSync(indexFile,JSON.stringify({schema_version:1,brand_source:'design/assets/brand/xdzip.svg',assets:entries},null,2)+'\n');
   console.log(`${check?'Validated':'Rendered'} ${jobs.length} PNG assets; bilingual field limits and source hashes passed.`);
 }
-main().catch(e=>{console.error(e.message);process.exitCode=1;});
+module.exports = {screenshotPromo, promo, poster, square, hero, icon};
+if (require.main === module) main().catch(e=>{console.error(e.message);process.exitCode=1;});

@@ -10,5 +10,6 @@
 | 选择并执行验证 | [验证指南](qa/README.md)、[验收用例](qa/acceptance.md)、[测试夹具](qa/fixtures.md)、[工作进程测试](qa/runtime-worker-tests.md)、[桌面验证](qa/private-test-manual.md)、[CI 策略](engineering/ci-policy.md) |
 | 准备发行 | [发布手册](engineering/release-runbook.md)、[候选材料](engineering/release-candidate.md)、[候选验证](engineering/candidate-verification.md)、[许可复核](qa/release-review.md) |
 | 准备 Microsoft Store 材料 | [文案与图片](market/windows/README.md)、[本地截图流程](market/windows/capture.md)、[审核说明](market/windows/reviewer-notes.md)、[可复用截图工具](engineering/windows-screenshots.md) |
+| 准备 macOS 和 Linux 宣传素材 | [macOS](market/macos/README.md)、[Linux](market/linux/README.md)、[截图与导出](engineering/platform-marketing.md) |
 
 用 [GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues) 跟踪进展和验收，已发行版本见[更新日志](../../CHANGELOG.zh-CN.md)。
