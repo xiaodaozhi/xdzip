@@ -1,6 +1,6 @@
 # User-initiated update contract
 
-English | [简体中文](../zh-CN/engineering/software-update.md) | [繁體中文](../zh-TW/engineering/software-update.md) | [日本語](../ja-JP/engineering/software-update.md)
+English | [简体中文](../zh-CN/engineering/software-update.md) | [繁體中文](../zh-TW/engineering/software-update.md) | [日本語](../ja-JP/engineering/software-update.md) | [Español](../es-ES/engineering/software-update.md)
 
 Under Windows MSIX package identity, About does not show in-app updates and the update controller refuses the existing GitHub update check. Microsoft Store manages Store updates; sideloaded packages do not receive an in-app automatic-update commitment. Identity-query errors are treated as packaged identity to prevent misuse of installer updates. Ordinary installations and other platforms remain unchanged.
 

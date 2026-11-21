@@ -130,7 +130,7 @@ Costes: mantenimiento continuo de despliegue y licencias. Una compilación está
 
 **Estado: aceptada el 19 de octubre de 2026 con aprobación explícita del propietario del proyecto.**
 
-**Implementación actual.** La [política de compatibilidad](../engineering/support-policy.md) y el [contrato de actualización](../../engineering/software-update.md) definen el soporte y las actualizaciones actuales. La cláusula de actualización manual describe v0.1.
+**Implementación actual.** La [política de compatibilidad](../engineering/support-policy.md) y el [contrato de actualización](../engineering/software-update.md) definen el soporte y las actualizaciones actuales. La cláusula de actualización manual describe v0.1.
 
 Decisión: admitir inicialmente macOS 14 o posterior en Apple Silicon arm64, versiones mantenidas de Windows 11 x86_64 y Ubuntu 24.04 LTS x86_64 con X11 y glibc 2.39 o posterior. Priorizar únicamente la última versión pública, atender los comentarios según los medios disponibles sin un plazo fijo de respuesta, usar actualizaciones manuales en v0.1 y mantener las versiones preliminares de desarrollo como experimentales. Véase la [política de compatibilidad](../engineering/support-policy.md).
 

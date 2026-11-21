@@ -18,4 +18,4 @@ La [política de privacidad](../../../PRIVACY.md) explica qué datos maneja xdzi
 | Comprobantes de transacciones de actualización | Localmente, también tras reinicios de la instalación | El archivo separado `update-state.ini` junto a los ajustes conserva la identidad de la transacción y del destino. Las descargas fallidas pueden permanecer en la caché privada. El actualizador solo lee archivos de comprobante previstos y no ejecuta su contenido. |
 | Estado y diagnóstico | Interfaz, terminal o registros locales según la función | La aplicación no sube diagnósticos automáticamente. Copiar datos de versión o de archivo los coloca en el portapapeles del sistema. Revisa nombres, rutas y otros datos privados antes de compartir un error, un registro o una captura. |
 
-Consulta la [especificación de actualizaciones](../../engineering/software-update.md) para los accesos de red, las firmas, la entrega al instalador y la recuperación.
+Consulta la [especificación de actualizaciones](software-update.md) para los accesos de red, las firmas, la entrega al instalador y la recuperación.

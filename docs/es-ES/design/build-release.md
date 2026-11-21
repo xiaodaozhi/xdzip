@@ -37,6 +37,6 @@ Los manifiestos de publicación, las sumas de comprobación, los inventarios, la
 
 ## Actualizaciones y futuras distribuciones
 
-La selección y la verificación de actualizaciones son independientes de las tareas de archivos comprimidos. Las instalaciones elegibles siguen el contrato de actualización para los metadatos de confianza, los archivos verificados, la identidad de instalación y la transferencia cuando hay tareas activas. Windows y Linux usan el auxiliar correspondiente, macOS usa Sparkle y Microsoft Store mantiene su edición. Las configuraciones portátiles y de desarrollo tienen sus propios límites. [Actualizaciones del programa](../../engineering/software-update.md)
+La selección y la verificación de actualizaciones son independientes de las tareas de archivos comprimidos. Las instalaciones elegibles siguen el contrato de actualización para los metadatos de confianza, los archivos verificados, la identidad de instalación y la transferencia cuando hay tareas activas. Windows y Linux usan el auxiliar correspondiente, macOS usa Sparkle y Microsoft Store mantiene su edición. Las configuraciones portátiles y de desarrollo tienen sus propios límites. [Actualizaciones del programa](../engineering/software-update.md)
 
 Cada ampliación a otra arquitectura, versión mínima de un sistema, formato de paquete o tienda requiere sus propias pruebas de compilación y aceptación. Los [registros de decisiones de arquitectura](architecture-decisions.md) recogen las decisiones anteriores sobre distribución y los motivos para reconsiderarlas.
