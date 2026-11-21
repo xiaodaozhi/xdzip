@@ -130,7 +130,7 @@ Custos: manutenção contínua de implantação e licenças. Compilação estát
 
 **Status: aceita em 19 de outubro de 2026, com aprovação explícita do proprietário do projeto.**
 
-**Implementação atual.** A [política de compatibilidade](../engineering/support-policy.md) e o [contrato de atualização](../../engineering/software-update.md) definem o suporte e as atualizações atuais. A cláusula de atualização manual descreve a v0.1.
+**Implementação atual.** A [política de compatibilidade](../engineering/support-policy.md) e o [contrato de atualização](../engineering/software-update.md) definem o suporte e as atualizações atuais. A cláusula de atualização manual descreve a v0.1.
 
 Decisão: oferecer suporte inicial a macOS 14 ou posterior em Apple Silicon arm64, versões mantidas do Windows 11 x86_64 e Ubuntu 24.04 LTS x86_64 com X11 e glibc 2.39 ou posterior. Priorizar somente a versão pública mais recente, tratar os comentários conforme os recursos disponíveis sem prazo fixo de resposta, usar atualizações manuais na v0.1 e manter as prévias de desenvolvimento como experimentais. Veja a [política de compatibilidade](../engineering/support-policy.md).
 

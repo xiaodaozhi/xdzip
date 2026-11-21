@@ -37,6 +37,6 @@ Os manifestos de publicação, as somas de verificação, os inventários, a SBO
 
 ## Atualizações e distribuição futura
 
-A seleção e a verificação de atualizações são independentes das tarefas com arquivos compactados. As instalações qualificadas seguem o contrato de atualização para metadados de confiança, arquivos verificados, identidade da instalação e encaminhamento quando há tarefas ativas. Windows e Linux usam o auxiliar aplicável, o macOS usa o Sparkle e a Microsoft Store mantém sua edição. Configurações portáteis e de desenvolvimento têm limites próprios. [Atualizações de software](../../engineering/software-update.md)
+A seleção e a verificação de atualizações são independentes das tarefas com arquivos compactados. As instalações qualificadas seguem o contrato de atualização para metadados de confiança, arquivos verificados, identidade da instalação e encaminhamento quando há tarefas ativas. Windows e Linux usam o auxiliar aplicável, o macOS usa o Sparkle e a Microsoft Store mantém sua edição. Configurações portáteis e de desenvolvimento têm limites próprios. [Atualizações de software](../engineering/software-update.md)
 
 Expandir para outras arquiteturas, versões mínimas de sistemas, formatos de pacote ou lojas exige evidências próprias de compilação e aceitação. Os [registros de decisões de arquitetura](architecture-decisions.md) mantêm as decisões anteriores de distribuição e as condições para revê-las.
