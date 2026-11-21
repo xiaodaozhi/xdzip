@@ -1,6 +1,6 @@
 # UI design standard
 
-English | [简体中文](../zh-CN/visual/design-standard.md) | [繁體中文](../zh-TW/visual/design-standard.md) | [日本語](../ja-JP/visual/design-standard.md) | [Français](../fr-FR/visual/design-standard.md) | [Español](../es-ES/visual/design-standard.md)
+English | [简体中文](../zh-CN/visual/design-standard.md) | [繁體中文](../zh-TW/visual/design-standard.md) | [日本語](../ja-JP/visual/design-standard.md) | [Français](../fr-FR/visual/design-standard.md) | [Español](../es-ES/visual/design-standard.md) | [Português (Brasil)](../pt-BR/visual/design-standard.md)
 
 This standard governs UI creation, HTML design delivery and Qt implementation. Dimension conversions follow [layout-scale.json](../../specs/visual/layout-scale.json); colors, shared controls and directory trees follow [tokens.json](../../specs/visual/tokens.json), [controls.json](../../specs/visual/controls.json) and [directory-tree.json](../../specs/visual/directory-tree.json), respectively. Original measurements are in [qt-main-reference.json](../../specs/visual/qt-main-reference.json); do not rewrite originals backward from implementation results.
 

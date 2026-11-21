@@ -34,7 +34,7 @@ Soltar arquivos pode abrir arquivos compactados ou fornecer entradas para criaç
 
 ## Controles compartilhados e limites nativos
 
-As telas de operações reutilizam `OperationButton`, `OperationFooterButton`, `OperationFrame`, `OperationSelect` e `OperationSegmentedGroup`. Componentes compartilhados definem medidas e interação. Os controles de seleção comuns encaminham ações de mouse, teclado e acessibilidade para o mesmo modelo de estado. Texto de interface e dados de arquivo seguem as regras de fontes e localização do [padrão de design](../../visual/design-standard.md). Os nomes dentro de arquivos compactados permanecem como dados e são exibidos de forma segura.
+As telas de operações reutilizam `OperationButton`, `OperationFooterButton`, `OperationFrame`, `OperationSelect` e `OperationSegmentedGroup`. Componentes compartilhados definem medidas e interação. Os controles de seleção comuns encaminham ações de mouse, teclado e acessibilidade para o mesmo modelo de estado. Texto de interface e dados de arquivo seguem as regras de fontes e localização do [padrão de design](../visual/design-standard.md). Os nomes dentro de arquivos compactados permanecem como dados e são exibidos de forma segura.
 
 As janelas de operações independentes usam o registro de janelas e as regras de modalidade e fechamento de cada janela. O macOS usa controles nativos da barra de título. Windows e Linux usam seus adaptadores de sistema. O [contrato de janelas da plataforma](../ux/platform-windows.md) define a aceitação das janelas reais. O [contrato de integração de desktop](../ux/desktop-integration.md) descreve a área de notificação e a ativação.
 

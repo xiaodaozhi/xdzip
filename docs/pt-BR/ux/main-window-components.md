@@ -4,7 +4,7 @@
 
 Os controles da janela principal fornecem aparência e comportamento, com estados explícitos normal, passagem do cursor, pressionado, foco do teclado, desativado, selecionado, ocupado e erro. HTML usa arquivos de exemplo para verificar a interação; Qt habilita ações conforme as capacidades reais de navegação, criação, extração, [verificação de integridade](../engineering/archive-checking.md) e [prévia automática de conteúdo](../engineering/content-preview.md). Exemplos HTML não representam resultados reais em segundo plano.
 
-Nomes de arquivos, diretórios e arquivos compactados, bem como caminhos, usam preferencialmente a fonte padrão do sistema na inicialização, com fallback da plataforma para glifos ausentes. Textos fixos da interface continuam usando o subconjunto incluído. A árvore de diretórios e as prévias de arraste são medidas com suas respectivas fontes; consulte o [padrão visual](../../visual/design-standard.md#界面字体与用户数据).
+Nomes de arquivos, diretórios e arquivos compactados, bem como caminhos, usam preferencialmente a fonte padrão do sistema na inicialização, com fallback da plataforma para glifos ausentes. Textos fixos da interface continuam usando o subconjunto incluído. A árvore de diretórios e as prévias de arraste são medidas com suas respectivas fontes; consulte o [padrão visual](../visual/design-standard.md#界面字体与用户数据).
 
 ## Recursos e componentes
 

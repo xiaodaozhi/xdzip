@@ -4,7 +4,7 @@
 
 [English](../../visual/design-workflow.md) | [简体中文](../../zh-CN/visual/design-workflow.md) | [繁體中文](../../zh-TW/visual/design-workflow.md) | [日本語](../../ja-JP/visual/design-workflow.md) | [한국어](../../ko-KR/visual/design-workflow.md) | [Français](../../fr-FR/visual/design-workflow.md) | [Deutsch](../../de-DE/visual/design-workflow.md) | [Español](../../es-ES/visual/design-workflow.md) | Português (Brasil) | [Русский](../../ru-RU/visual/design-workflow.md)
 
-Execute este fluxo antes de criar a interface, não como documentação posterior à implementação. A referência é o [padrão de design de interface](../../visual/design-standard.md).
+Execute este fluxo antes de criar a interface, não como documentação posterior à implementação. A referência é o [padrão de design de interface](design-standard.md).
 
 1. **Definir objetivos e ambiente.** Liste funcionalidades, dados reais e capacidades ausentes. Especifique plataformas e faixas de dimensões para janelas lógicas, tamanhos de fonte de acessibilidade, menus e janelas independentes. Registre escala do sistema, escala de revisão e DPR; ao usar protótipo HTML, registre também o zoom da página no navegador.
 2. **Definir primeiro os parâmetros.** Use o JSON da especificação para dimensões, tipografia, espaços, preenchimento, alinhamento e estados. Registre o sistema de coordenadas e a densidade própria de cada componente. A janela principal e seus menus têm medidas independentes, e cada janela independente usa as expressões do registro de janelas. Verifique separadamente a escala do corpo da operação e as medidas do rodapé compartilhado. Converta pixels físicos com DPR somente ao ler evidências de medição.

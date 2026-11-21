@@ -2,7 +2,7 @@
 
 [English](../../visual/README.md) | [简体中文](../../zh-CN/visual/README.md) | [繁體中文](../../zh-TW/visual/README.md) | [日本語](../../ja-JP/visual/README.md) | [한국어](../../ko-KR/visual/README.md) | [Français](../../fr-FR/visual/README.md) | [Deutsch](../../de-DE/visual/README.md) | [Español](../../es-ES/visual/README.md) | Português (Brasil) | [Русский](../../ru-RU/visual/README.md)
 
-Entradas de especificação: [padrão de design de interface](../../visual/design-standard.md), [fluxo obrigatório de design](design-workflow.md) e [contrato de densidade e unidades](../../../specs/visual/layout-scale.json). A reverificação das proporções da janela principal e dos menus é registrada pelo [método geral](../../../developers/qa/README.md).
+Entradas de especificação: [padrão de design de interface](design-standard.md), [fluxo obrigatório de design](design-workflow.md) e [contrato de densidade e unidades](../../../specs/visual/layout-scale.json). A reverificação das proporções da janela principal e dos menus é registrada pelo [método geral](../../../developers/qa/README.md).
 
 Os originais atuais estão em [design/hifi](../../../design/hifi/README.md); a entrega HTML interativa está em [design/html](../../../design/html/README.md). Propostas iniciais não adotadas não são a base atual. Não dependa do histórico reorganizado do main para encontrar designs antigos; os originais e o manifesto atuais são a referência.
 
