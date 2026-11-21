@@ -17,10 +17,10 @@
 #include <dlfcn.h>
 
 class Receiver final : public QWindow {
-public:
+  public:
     explicit Receiver(QString destination) : m_destination(std::move(destination)) {}
 
-protected:
+  protected:
     bool event(QEvent *event) override {
         if (event->type() == QEvent::DragEnter || event->type() == QEvent::DragMove) {
             auto *drag = static_cast<QDropEvent *>(event);
@@ -45,7 +45,7 @@ protected:
         return QWindow::event(event);
     }
 
-private:
+  private:
     QString m_destination;
 };
 
@@ -55,7 +55,10 @@ int main(int argc, char **argv) {
         Receiver receiver(application.arguments().at(2));
         receiver.setGeometry(500, 30, 300, 300);
         receiver.show();
-        QTimer::singleShot(100, &receiver, [] { fprintf(stdout, "ready\n"); fflush(stdout); });
+        QTimer::singleShot(100, &receiver, [] {
+            fprintf(stdout, "ready\n");
+            fflush(stdout);
+        });
         QTimer::singleShot(10000, qApp, [] { QCoreApplication::exit(4); });
         return application.exec();
     }
@@ -65,13 +68,14 @@ int main(int argc, char **argv) {
     auto *display = xcb->display();
     void *xtest = dlopen("libXtst.so.6", RTLD_NOW | RTLD_LOCAL);
     using FakeButton = int (*)(Display *, unsigned int, int, unsigned long);
-    auto fakeButton = xtest ? reinterpret_cast<FakeButton>(dlsym(xtest, "XTestFakeButtonEvent"))
-                            : nullptr;
+    auto fakeButton =
+        xtest ? reinterpret_cast<FakeButton>(dlsym(xtest, "XTestFakeButtonEvent")) : nullptr;
     if (!fakeButton)
         return 6;
     QTemporaryDir fixture;
     QFile input(fixture.filePath("source.txt"));
-    if (!fixture.isValid() || !input.open(QIODevice::WriteOnly) || input.write("drag-handoff") != 12)
+    if (!fixture.isValid() || !input.open(QIODevice::WriteOnly) ||
+        input.write("drag-handoff") != 12)
         return 7;
     input.close();
     const auto destination = fixture.filePath("received.txt");
