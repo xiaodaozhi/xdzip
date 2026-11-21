@@ -60,7 +60,7 @@ Comece pela [arquitetura do sistema](../design/system-architecture.md) para conh
 - [Admissão da dependência de metadados ZIP](../engineering/zip-metadata-admission.md)
 - [Admissão de dependências de extração e saída ZIP](../engineering/zip-extraction-admission.md)
 - [Fontes do formato 7z e implementação independente](../engineering/sevenzip-format-sources.md)
-- [Bases da implementação independente RAR e limites de compatibilidade](../../engineering/rar-format-sources.md)
+- [Bases da implementação independente RAR e limites de compatibilidade](../engineering/rar-format-sources.md)
 - [Fontes do formato CAB e bases da implementação](../engineering/cab-format-sources.md)
 - [Contrato de implementação TAR/GZIP](../engineering/tar-gzip.md)
 - [Fluxos de um único arquivo e pacotes derivados de ZIP](../engineering/single-file-streams.md)
