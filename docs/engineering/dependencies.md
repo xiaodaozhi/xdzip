@@ -1,6 +1,6 @@
 # Dependency and format backend admission
 
-English | [简体中文](../zh-CN/engineering/dependencies.md) | [繁體中文](../zh-TW/engineering/dependencies.md) | [日本語](../ja-JP/engineering/dependencies.md) | [Español](../es-ES/engineering/dependencies.md)
+English | [简体中文](../zh-CN/engineering/dependencies.md) | [繁體中文](../zh-TW/engineering/dependencies.md) | [日本語](../ja-JP/engineering/dependencies.md) | [Español](../es-ES/engineering/dependencies.md) | [Português (Brasil)](../pt-BR/engineering/dependencies.md)
 
 ## External SDK trial
 
