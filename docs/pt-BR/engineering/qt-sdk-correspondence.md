@@ -12,7 +12,7 @@ python3 scripts/qt_sdk_correspondence.py \
   --output build/review/qt-sdk-correspondence.json
 ```
 
-Por padrão, lê build/source-cache offline e falha se estiver ausente. Apenas --fetch explicitamente informado baixa e verifica arquivos oficiais do [manifesto fixado](../../../scripts/corresponding-sources.json). Os fluxos Qt sob demanda para as três plataformas executam --fetch após instalar o SDK fixado e guardam o JSON com os demais registros de verificação. No Mac continuam sendo enviados apenas registros, sem implantar, assinar ou empacotar aplicativos. Quando o coletor de entrega de fontes recebe --qt-prefix, inclui esse registro, patches e o manifesto fixado nos hashes da entrega; consulte [entrega de fontes](../../engineering/source-delivery.md).
+Por padrão, lê build/source-cache offline e falha se estiver ausente. Apenas --fetch explicitamente informado baixa e verifica arquivos oficiais do [manifesto fixado](../../../scripts/corresponding-sources.json). Os fluxos Qt sob demanda para as três plataformas executam --fetch após instalar o SDK fixado e guardam o JSON com os demais registros de verificação. No Mac continuam sendo enviados apenas registros, sem implantar, assinar ou empacotar aplicativos. Quando o coletor de entrega de fontes recebe --qt-prefix, inclui esse registro, patches e o manifesto fixado nos hashes da entrega; consulte [entrega de fontes](source-delivery.md).
 
 <a name="xdzip-verification-layers"></a>
 

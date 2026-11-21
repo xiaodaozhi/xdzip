@@ -35,7 +35,7 @@ Uma pessoa analista lê seletivamente os grupos abaixo no arquivo original fixad
 
 Manter com as evidências de desenvolvimento as identidades do arquivo fixado e de seus arquivos, o escopo efetivamente lido e os resumos factuais transferidos. Reavaliar ao atualizar a referência; números de linha antigos não comprovam o comportamento de nova versão. Constantes da especificação, identificadores e relações matemáticas podem ser usados para implementar o formato; otimizações internas e comportamento historicamente indefinido não concedem permissões ao produto. Declarações de domínio público não se estendem ao arquivo inteiro, documentação, wrappers C++ ou outras amostras.
 
-Isso não afirma uma sala limpa estrita nem risco jurídico zero. Fontes de terceiros, entregas históricas com o backend oficial e ferramentas independentes de teste continuam sujeitas aos respectivos termos. O produto atual não compila o backend oficial; consulte [licenças](licensing.md) e [código correspondente](../../engineering/source-delivery.md).
+Isso não afirma uma sala limpa estrita nem risco jurídico zero. Fontes de terceiros, entregas históricas com o backend oficial e ferramentas independentes de teste continuam sujeitas aos respectivos termos. O produto atual não compila o backend oficial; consulte [licenças](licensing.md) e [código correspondente](source-delivery.md).
 
 <a name="xdzip-interoperability-boundaries"></a>
 

@@ -126,7 +126,7 @@ Comece pela [arquitetura do sistema](../design/system-architecture.md) para conh
 - [Licenças de ferramentas de desenvolvimento e execução no Windows](../engineering/windows-licensing.md)
 - [Decisão de licença e materiais de terceiros](../engineering/licensing.md)
 - [Admissão de dependências e mecanismos de formato](../../engineering/dependencies.md)
-- [Código-fonte correspondente e materiais de recompilação](../../engineering/source-delivery.md)
+- [Código-fonte correspondente e materiais de recompilação](../engineering/source-delivery.md)
 - [Reconstruir dados ICU 73.2 a partir do CLDR](../engineering/icu-cldr-rebuild.md)
 
 <a name="xdzip-build-and-cli-reference"></a>
