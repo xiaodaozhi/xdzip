@@ -4,7 +4,7 @@
 
 [English](../../visual/file-association-icons.md) | [简体中文](../../zh-CN/visual/file-association-icons.md) | [繁體中文](../../zh-TW/visual/file-association-icons.md) | [日本語](../../ja-JP/visual/file-association-icons.md) | [한국어](../../ko-KR/visual/file-association-icons.md) | [Français](../../fr-FR/visual/file-association-icons.md) | Deutsch | [Español](../../es-ES/visual/file-association-icons.md) | [Português (Brasil)](../../pt-BR/visual/file-association-icons.md) | [Русский](../../ru-RU/visual/file-association-icons.md)
 
-Systemdateisymbole verwenden xdzip-Dokument mit umgefalteter Ecke, Badge mit stetiger Krümmung, vier verflochtene Bänder und offene U-förmige Marke. Der Entwurf liegt auf der hochauflösenden Prüfseite, Parameter stammen aus [file-association-icons.json](../../../specs/visual/file-association-icons.json), Dokumentsymbolquellen und Produktplattformcontainer aus [file-associations](../../../design/assets/file-associations). Benutzer wählen ihre Standardanwendungen weiterhin selbst.
+Systemdateisymbole verwenden xdzip-Dokument mit umgefalteter Ecke, Badge mit stetiger Krümmung, vier verflochtene Bänder und offene U-förmige Marke. Parameter stammen aus [file-association-icons.json](../../../specs/visual/file-association-icons.json), Dokumentsymbolquellen und Produktplattformcontainer aus [file-associations](../../../design/assets/file-associations). Benutzer wählen ihre Standardanwendungen weiterhin selbst.
 
 <a name="xdzip-shape-and-identification"></a>
 
@@ -65,7 +65,7 @@ python scripts/build-association-icons.py --check --export build/file-associatio
 python scripts/build-design-assets.py --metadata-only --refresh-association-icons
 ```
 
-`XDZIP_CHROMIUM` kann einen vorhandenen Chromium-/Edge-Pfad angeben. SVG-Master, Quellen für kleine Größen, Spezifikation und Prüfseite sind versioniert; Ressourcenquellen stehen im Haupt-[manifest.json](../../../design/assets/manifest.json). Der Generierungseinstieg ist [build-association-icons.py](../../../scripts/build-association-icons.py), Kompositionen stehen in [association_icon_assets.py](../../../scripts/association_icon_assets.py).
+`XDZIP_CHROMIUM` kann einen vorhandenen Chromium-/Edge-Pfad angeben. SVG-Master, Quellen für kleine Größen, und Spezifikation sind versioniert; Ressourcenquellen stehen im Haupt-[manifest.json](../../../design/assets/manifest.json). Der Generierungseinstieg ist [build-association-icons.py](../../../scripts/build-association-icons.py), Kompositionen stehen in [association_icon_assets.py](../../../scripts/association_icon_assets.py).
 
 Exporte enthalten generische und macOS-PNGs von 16 bis 1024 Pixeln pro Format sowie ICO und ICNS. Produkt-ICO und ICNS, vom Formatregister erfasst, liegen neben Vektorquellen in `file-associations/`; ZIP-Container behalten ihre ursprünglichen Bytes vor der Migration, die anderen stammen aus entsprechenden Exporten. Gewöhnliche Builds lesen diese Container direkt und benötigen keinen Browser. Temporäre PNGs, vollständige Exporte, Kontaktbögen und Belege bleiben in `build/` oder `dist/`.
 
@@ -75,4 +75,4 @@ Exporte enthalten generische und macOS-PNGs von 16 bis 1024 Pixeln pro Format so
 
 Generierungsprüfungen verifizieren SVG-Übereinstimmung mit der Spezifikation und das Fehlen von Schrift- und externen Bildabhängigkeiten. Plattformprüfungen umfassen Zeichenfläche und RGBA, transparente Ecken, sichtbare Körperhöhe und Zentrierung, Vektordigests und Übereinstimmung dekodierter Pixel jeder ICO-/ICNS-Darstellung. Körpergrenzen werden bei alpha ≥ 128 gemessen, mit der Markentoleranz von 1,25 physischen Pixeln.
 
-Visuelle Prüfung umfasst helle, dunkle und ausgewählte Hintergründe, Größen von 16 bis 256 Pixeln und tatsächliches Rendering bei normalem und hohem DPR. Die Prüfseite nutzt CSS-Pixel; Browserscreenshots dürfen nicht als native Explorer-, Finder- oder Linux-Abnahme bezeichnet werden. Spätere Integration muss echte Dateinamen, zusammengesetzte Endungen, Symbolcaches, vor und nach Standardauswahl sowie Anzeige nach Installation und Deinstallation prüfen. Phasenstatus und tatsächlichen Umfang in GitHub-Issues dokumentieren statt hier Testberichte anzusammeln.
+Visuelle Prüfung umfasst helle, dunkle und ausgewählte Hintergründe, Größen von 16 bis 256 Pixeln und tatsächliches Rendering bei normalem und hohem DPR. Die native Abnahme erfordert eine Prüfung auf der tatsächlichen Plattform. Spätere Integration muss echte Dateinamen, zusammengesetzte Endungen, Symbolcaches, vor und nach Standardauswahl sowie Anzeige nach Installation und Deinstallation prüfen. Phasenstatus und tatsächlichen Umfang in GitHub-Issues dokumentieren statt hier Testberichte anzusammeln.

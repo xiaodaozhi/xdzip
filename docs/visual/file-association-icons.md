@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/visual/file-association-icons.md) | [繁體中文](../zh-TW/visual/file-association-icons.md) | [日本語](../ja-JP/visual/file-association-icons.md) | [한국어](../ko-KR/visual/file-association-icons.md) | [Français](../fr-FR/visual/file-association-icons.md) | [Deutsch](../de-DE/visual/file-association-icons.md) | [Español](../es-ES/visual/file-association-icons.md) | [Português (Brasil)](../pt-BR/visual/file-association-icons.md) | [Русский](../ru-RU/visual/file-association-icons.md)
 
-System file icons reuse xdzip's folded-corner document, continuous-curvature badge, four interwoven bands and open U-shaped mark. The design entry is the high-fidelity review page, parameters come from [file-association-icons.json](../../specs/visual/file-association-icons.json), and document icon sources and product platform containers reside in [file-associations](../../design/assets/file-associations). Users still choose their default applications.
+System file icons reuse xdzip's folded-corner document, continuous-curvature badge, four interwoven bands and open U-shaped mark. Parameters come from [file-association-icons.json](../../specs/visual/file-association-icons.json), and document icon sources and product platform containers reside in [file-associations](../../design/assets/file-associations). Users still choose their default applications.
 
 ## Shape and identification
 
@@ -57,7 +57,7 @@ python scripts/build-association-icons.py --check --export build/file-associatio
 python scripts/build-design-assets.py --metadata-only --refresh-association-icons
 ```
 
-`XDZIP_CHROMIUM` can identify an existing Chromium/Edge path. SVG masters, small-size sources, specification and high-fidelity review page are versioned; asset sources are registered in the main [manifest.json](../../design/assets/manifest.json). The generation entry is [build-association-icons.py](../../scripts/build-association-icons.py), with composition definitions in [association_icon_assets.py](../../scripts/association_icon_assets.py).
+`XDZIP_CHROMIUM` can identify an existing Chromium/Edge path. SVG masters, small-size sources, and specification are versioned; asset sources are registered in the main [manifest.json](../../design/assets/manifest.json). The generation entry is [build-association-icons.py](../../scripts/build-association-icons.py), with composition definitions in [association_icon_assets.py](../../scripts/association_icon_assets.py).
 
 Exported artifacts contain generic and macOS PNGs from 16 through 1024 pixels per format, plus ICO and ICNS. Product ICO and ICNS files, inventoried by the format registry, reside beside vector sources in `file-associations/`; ZIP containers retain their original pre-migration bytes and the others come from corresponding exports. Ordinary builds read these containers directly and do not require a browser. Temporary PNGs, complete exports, contact sheets and receipts stay in `build/` or `dist/`.
 
@@ -65,4 +65,4 @@ Exported artifacts contain generic and macOS PNGs from 16 through 1024 pixels pe
 
 Generation checks verify SVGs match the specification and have no font or external-image dependencies. Platform checks cover canvas and RGBA, transparent corners, visible body height and centering, vector digests and decoded pixel agreement for each ICO/ICNS representation. Body bounds are measured at alpha ≥ 128, using the brand tolerance of 1.25 physical pixels.
 
-Visual review covers light, dark and selected backgrounds, sizes 16 through 256 pixels, and actual rendering at normal and high DPR. The review page uses CSS pixels; browser screenshots must not be labeled Explorer, Finder or Linux native acceptance. Later integration must check real filenames, compound suffixes, icon caches, before and after default selection, and display after installation/uninstallation. Record stage status and actual execution scope in GitHub issues rather than accumulating test reports here.
+Visual review covers light, dark and selected backgrounds, sizes 16 through 256 pixels, and actual rendering at normal and high DPR. Native acceptance requires actual platform verification. Later integration must check real filenames, compound suffixes, icon caches, before and after default selection, and display after installation/uninstallation. Record stage status and actual execution scope in GitHub issues rather than accumulating test reports here.

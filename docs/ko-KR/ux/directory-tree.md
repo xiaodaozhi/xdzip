@@ -4,7 +4,7 @@
 
 상태: **핵심 디렉터리 상호 작용은 Qt 읽기 전용 탐색에 통합되었으며, 경계 상태 자산은 통합을 기다립니다**. 상호 작용은 [읽기 전용 탐색 계약](../engineering/readonly-browser.md)을 따릅니다. 일반 디렉터리 탐색은 직속 자식을 사용하고 검색은 현재 범위를 재귀적으로 탐색하며, 출력 권한은 읽기 전용 탐색과 별도로 다룹니다.
 
-현재 세 아트보드는 [다단계 확장](../../../design/hifi/screens/directory-tree-capsule.png), [노드 및 상호 작용 상태](../../../design/hifi/screens/directory-tree-states.png), [빈 상태와 탐색 경계](../../../design/hifi/screens/directory-tree-boundaries.png)입니다. 공유 갤러리에서 전체 아트보드를 보고 [자산 라이브러리](../../../design/assets/index.html#directory-tree)에서 개별 슬라이스를 볼 수 있습니다. 다단계 확장은 편집 가능한 원본에서 내보내며 제목 표시줄은 현재 캡슐 탭과 동기화합니다. 보드 상단과 중앙의 목록은 맥락만 제공하며 제목 표시줄, 도구 모음이나 파일 표를 다시 정의하지 않습니다. [과거 다단계 원본](../../../design/hifi/screens/directory-tree.png)은 26개 슬라이스의 출처와 독립 측정 기준으로 변경하지 않고 보존합니다.
+현재 세 아트보드는 [다단계 확장](../../../design/hifi/screens/directory-tree-capsule.png), [노드 및 상호 작용 상태](../../../design/hifi/screens/directory-tree-states.png), [빈 상태와 탐색 경계](../../../design/hifi/screens/directory-tree-boundaries.png)입니다. [자산 라이브러리](../../../design/assets/index.html#directory-tree)에서 개별 슬라이스를 볼 수 있습니다. 다단계 확장의 제목 표시줄은 현재 캡슐 탭과 동기화합니다. 보드 상단과 중앙의 목록은 맥락만 제공하며 제목 표시줄, 도구 모음이나 파일 표를 다시 정의하지 않습니다. [과거 다단계 원본](../../../design/hifi/screens/directory-tree.png)은 26개 슬라이스의 출처와 독립 측정 기준으로 변경하지 않고 보존합니다.
 
 아트보드는 확대되어 있고 각 카드의 배율이 다릅니다. 이미지의 텍스트, 반경과 픽셀 치수를 직접 컨트롤 크기로 사용할 수 없습니다. [구성 요소 매개변수](../../../specs/visual/directory-tree.json)는 구현된 논리 치수를 명시하고 자산 매니페스트는 물리적 자르기 좌표를 별도로 기록합니다. 구현은 논리 너비 1024와 공유 소스 캔버스 변환을 사용합니다. 새 구성 요소 전체를 다시 확대하지 마세요.
 

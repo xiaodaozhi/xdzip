@@ -81,7 +81,6 @@ Start with the [system architecture](../design/system-architecture.md) for the d
 - [UI design standard](../visual/design-standard.md)
 - [UI design and correction workflow](../visual/design-workflow.md)
 - [File association icons](../visual/file-association-icons.md)
-- HTML visual fidelity review
 - [Additional interaction and copy specification](../ux/interaction-spec.md)
 - [Main-window functionality, components and interaction contract](../ux/main-window-components.md)
 - [Directory tree design and integration](../ux/directory-tree.md)
@@ -94,7 +93,6 @@ Start with the [system architecture](../design/system-architecture.md) for the d
 - [System menus and tray](../ux/desktop-integration.md)
 - [Platform windows and title bars](../ux/platform-windows.md)
 - [High-fidelity states and implementation contract](../ux/hifi-state-spec.md)
-- v0.1 interaction prototype and feature mapping
 
 ## Platform integration, releases and trust
 

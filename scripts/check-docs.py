@@ -315,6 +315,26 @@ def markdown_links(root, documents, languages=None):
     return links, fragments, failures
 
 
+def hifi_catalog(root):
+    failures = []
+    catalog_path = root / 'design/hifi/catalog.json'
+    try:
+        catalog = json.loads(catalog_path.read_text(encoding='utf-8'))
+        for entry in catalog['screens']:
+            if 'source' in entry:
+                source = (catalog_path.parent / entry['source']).resolve()
+                if not source.is_relative_to(root.resolve()) or not source.is_file():
+                    failures.append(f"High-fidelity source missing: {entry['source']}")
+            image = (catalog_path.parent / entry['file']).resolve()
+            if not image.is_relative_to(catalog_path.parent.resolve()) or not image.is_file():
+                failures.append(f"High-fidelity artwork missing: {entry['file']}")
+            elif hashlib.sha256(image.read_bytes()).hexdigest() != entry['sha256']:
+                failures.append(f"High-fidelity artwork digest mismatch: {entry['file']}")
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        failures.append(f'High-fidelity catalog: {error}')
+    return failures
+
+
 def main():
     failures = violations(ROOT)
     # Read the index so this also rejects files staged with `git add --force`.
@@ -322,7 +342,7 @@ def main():
     for name in tracked.split('\0'):
         if name and 'dist' in Path(name).parts[:-1]:
             failures.append(f'{name}: generated dist/ files must not be tracked by Git')
-        if name.startswith(('design/html/screenshots/', 'design/assets/preview/')) or name in {
+        if name.startswith('design/assets/preview/') or name in {
                 'design/assets/validation.json', 'design/assets/fonts/validation.json',
                 'docs/html/VALIDATION.json', 'docs/html/BROWSER-VALIDATION.json'}:
             failures.append(f'{name}: generated review evidence must not be tracked by Git')
@@ -337,17 +357,7 @@ def main():
             json.loads(path.read_text(encoding='utf-8'))
         except (ValueError, UnicodeError) as error:
             failures.append(f'{path.relative_to(ROOT)}: {error}')
-    catalog_path = ROOT / 'design/hifi/catalog.json'
-    try:
-        catalog = json.loads(catalog_path.read_text(encoding='utf-8'))
-        for entry in catalog['screens']:
-            image = (catalog_path.parent / entry['file']).resolve()
-            if not image.is_relative_to(catalog_path.parent.resolve()) or not image.is_file():
-                failures.append(f"High-fidelity artwork missing: {entry['file']}")
-            elif hashlib.sha256(image.read_bytes()).hexdigest() != entry['sha256']:
-                failures.append(f"High-fidelity artwork digest mismatch: {entry['file']}")
-    except (OSError, ValueError, KeyError, TypeError) as error:
-        failures.append(f'High-fidelity catalog: {error}')
+    failures.extend(hifi_catalog(ROOT))
     print(json.dumps({'markdown_documents': len(documents), 'localized_topics': topics, 'local_file_links': links,
                       'markdown_anchor_links': fragments,
                       'json_files': len(json_files), 'failures': failures}, ensure_ascii=False, indent=2))

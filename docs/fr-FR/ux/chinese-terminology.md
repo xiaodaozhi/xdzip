@@ -4,7 +4,7 @@
 
 [English](../../ux/chinese-terminology.md) | [简体中文](../../zh-CN/ux/chinese-terminology.md) | [繁體中文](../../zh-TW/ux/chinese-terminology.md) | [日本語](../../ja-JP/ux/chinese-terminology.md) | [한국어](../../ko-KR/ux/chinese-terminology.md) | Français | [Deutsch](../../de-DE/ux/chinese-terminology.md) | [Español](../../es-ES/ux/chinese-terminology.md) | [Português (Brasil)](../../pt-BR/ux/chinese-terminology.md) | [Русский](../../ru-RU/ux/chinese-terminology.md)
 
-Les textes destinés aux utilisateurs en chinois simplifié suivent la [configuration terminologique](../../../specs/ux/chinese-terminology.json). Les textes statiques Qt gardent leurs ID stables dans resources/i18n/zh-CN.json. Le HTML, les maquettes haute fidélité actuelles et la documentation utilisateur emploient les termes du tableau. Les documents techniques et de format peuvent utiliser leur propre terminologie. Les dimensions des composants, les densités de 0.8 pour la fenêtre principale et de 1 pour les menus, le DPR et les paramètres de mise à l’échelle sont conservés.
+Les textes destinés aux utilisateurs en chinois simplifié suivent la [configuration terminologique](../../../specs/ux/chinese-terminology.json). Les textes statiques Qt gardent leurs ID stables dans resources/i18n/zh-CN.json. Les maquettes haute fidélité actuelles et la documentation utilisateur emploient les termes du tableau. Les documents techniques et de format peuvent utiliser leur propre terminologie. Les dimensions des composants, les densités de 0.8 pour la fenêtre principale et de 1 pour les menus, le DPR et les paramètres de mise à l’échelle sont conservés.
 
 | Sens | Terme normalisé en chinois simplifié | Emploi |
 | --- | --- | --- |

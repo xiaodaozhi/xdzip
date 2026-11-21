@@ -282,7 +282,6 @@
       "group": "historical",
       "sha256": "9c2020d1886caaf87037377613fcdf25dd3422b5d9fdf093cb1594c89da181b6",
       "role": "code-authored-design",
-      "source": "sources/settings.html",
       "spec": "../../docs/ux/settings-localization.md"
     },
     {
@@ -291,7 +290,6 @@
       "group": "historical",
       "sha256": "5a40147e54e223273165fdceae83007b9ca1bae4ed7b7ce69b01c94eaf592ada",
       "role": "code-authored-design",
-      "source": "sources/settings.html",
       "spec": "../../docs/ux/settings-localization.md"
     },
     {

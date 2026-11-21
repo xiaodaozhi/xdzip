@@ -42,4 +42,4 @@ Las ventanas de operación independientes siguen el registro de ventanas y las r
 
 ## Alcance del diseño y de la verificación
 
-El código y las pruebas describen el comportamiento del producto. Los diseños HTML de alta fidelidad ilustran la disposición y los estados simulados para su revisión. Los cambios en el foco nativo, los menús, el IME, las acciones de accesibilidad, la escala de pantalla y los gestores de archivos requieren pruebas en las plataformas afectadas. Las configuraciones de escritorio y las ventanas de operación nuevas requieren su propia implementación y aceptación. [Flujo de diseño visual](../visual/design-workflow.md), [Ingeniería de calidad](quality-engineering.md)
+El código y las pruebas describen el comportamiento del producto. Los cambios en el foco nativo, los menús, el IME, las acciones de accesibilidad, la escala de pantalla y los gestores de archivos requieren pruebas en las plataformas afectadas. Las configuraciones de escritorio y las ventanas de operación nuevas requieren su propia implementación y aceptación. [Flujo de diseño visual](../visual/design-workflow.md), [Ingeniería de calidad](quality-engineering.md)

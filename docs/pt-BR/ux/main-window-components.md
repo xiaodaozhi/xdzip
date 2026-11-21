@@ -2,7 +2,7 @@
 
 [English](../../ux/main-window-components.md) | [简体中文](../../zh-CN/ux/main-window-components.md) | [繁體中文](../../zh-TW/ux/main-window-components.md) | [日本語](../../ja-JP/ux/main-window-components.md) | [한국어](../../ko-KR/ux/main-window-components.md) | [Français](../../fr-FR/ux/main-window-components.md) | [Deutsch](../../de-DE/ux/main-window-components.md) | [Español](../../es-ES/ux/main-window-components.md) | Português (Brasil) | [Русский](../../ru-RU/ux/main-window-components.md)
 
-Os controles da janela principal fornecem aparência e comportamento, com estados explícitos normal, passagem do cursor, pressionado, foco do teclado, desativado, selecionado, ocupado e erro. HTML usa arquivos de exemplo para verificar a interação; Qt habilita ações conforme as capacidades reais de navegação, criação, extração, [verificação de integridade](../engineering/archive-checking.md) e [prévia automática de conteúdo](../engineering/content-preview.md). Exemplos HTML não representam resultados reais em segundo plano.
+Os controles da janela principal fornecem aparência e comportamento, com estados explícitos normal, passagem do cursor, pressionado, foco do teclado, desativado, selecionado, ocupado e erro. Qt habilita ações conforme as capacidades reais de navegação, criação, extração, [verificação de integridade](../engineering/archive-checking.md) e [prévia automática de conteúdo](../engineering/content-preview.md).
 
 Nomes de arquivos, diretórios e arquivos compactados, bem como caminhos, usam preferencialmente a fonte padrão do sistema na inicialização, com fallback da plataforma para glifos ausentes. Textos fixos da interface continuam usando o subconjunto incluído. A árvore de diretórios e as prévias de arraste são medidas com suas respectivas fontes; consulte o [padrão visual](../visual/design-standard.md#界面字体与用户数据).
 
@@ -42,7 +42,7 @@ Linhas normais, de caixa, de opção e de submenu e separadores são componentes
 - Baixo/cima movem entre itens disponíveis; Home/End vão ao primeiro/último; Enter/Espaço ativam, direita entra em submenu e esquerda volta ao pai.
 - Escape fecha um nível por vez; fechar a raiz retorna o foco ao controle acionador ou à entrada original. Tab fecha o menu e continua a ordem normal de foco da página. A busca pelo primeiro caractere do nome é suportada; composição IME não aciona a busca do menu.
 - A passagem do cursor destaca sem executar. Submenus abrem após um atraso e mantêm o item pai durante a entrada. Mouse e teclado podem se suceder sem múltiplos destaques ou menus raiz persistentes.
-- Cliques externos fecham sem roubar o foco do alvo externo. Rolagem da área principal, redimensionamento da janela, entrada em janelas de operação ou troca de arquivo fecham menus; rolar o próprio menu não fecha. Controles compartilhados HTML registram as posições reais de rolagem dos contêineres existentes ao abrir; eventos concluídos antes da abertura, mas entregues tarde, não fecham o menu, enquanto mudanças posteriores de posição fecham.
+- Cliques externos fecham sem roubar o foco do alvo externo. Rolagem da área principal, redimensionamento da janela, entrada em janelas de operação ou troca de arquivo fecham menus; rolar o próprio menu não fecha.
 - Evite bordas inferior e direita da área visível, abrindo à esquerda ou para cima quando necessário. Posicione em coordenadas do host, distinguindo dimensões lógicas, pixels originais de origem, DPR e escala de revisão.
 - Shift+F10/tecla Menu abre o menu de contexto da entrada atual. Toque prolongado e clique direito compartilham contexto e não destroem a seleção múltipla como um clique simples faria.
 
@@ -59,7 +59,7 @@ Linhas normais, de caixa, de opção e de submenu e separadores são componentes
 | Ocupado | Estado e escopo desativado seguem a tarefa | Impedir envio duplicado; permitir navegação durante trabalho em segundo plano |
 | Erro | Texto adjacente explica problema e recuperação | Cor não é a única informação e sucesso não é inventado |
 
-Ícones compartilhados vêm de `design/assets`. Controles implementam texto, marcas, fundos, linhas de conexão e posicionamento de menus; recortes em pixels originais servem para comparação. HTML mantém coordenadas de origem do design principal e converte primeiro novos parâmetros de controle de pixels lógicos; Qt usa a mesma especificação lógica.
+Ícones compartilhados vêm de `design/assets`. Controles implementam texto, marcas, fundos, linhas de conexão e posicionamento de menus; recortes em pixels originais servem para comparação. Qt usa a mesma especificação lógica.
 
 ## Aceitação
 
@@ -83,7 +83,7 @@ Menus Qt usam explicitamente `Popup.Item` com delegados compartilhados para que 
 
 A árvore de diretórios e os estados de cursor sobre Abrir, Novo, Verificar, Mais e Extrair da barra principal não têm dicas flutuantes. Ações de menu desativadas também não têm dica visível; outros botões usam dicas compartilhadas com atraso. Raiz e subdiretórios comuns listam apenas arquivos e pastas diretos, enquanto a busca cobre recursivamente o escopo atual. Nomes comuns mostram o último componente; a busca mostra caminhos completos. Hover na lista cobre a linha inteira; grades mantêm margem horizontal fixa e caixas ao passar o cursor ou selecionar. Menus usam sombras suaves em todos os lados e intervalo de 4 pixels lógicos dos botões que os invocam. Preserve evidências separadas de interação e escala conforme o [método geral](../../../developers/qa/README.md).
 
-Todos os modos de ordenação mantêm diretórios antes dos arquivos. Ordem crescente e decrescente aplica-se dentro de cada grupo. A ordenação por tipo agrupa arquivos sem extensão separadamente dos diretórios e mantém ordem estável de identidade para tipos iguais. Ordene a consulta completa antes de dividi-la em lotes internos de transferência. Arquivos HTML sem propriedade folder são tratados como false; não converta undefined em NaN para comparação.
+Todos os modos de ordenação mantêm diretórios antes dos arquivos. Ordem crescente e decrescente aplica-se dentro de cada grupo. A ordenação por tipo agrupa arquivos sem extensão separadamente dos diretórios e mantém ordem estável de identidade para tipos iguais. Ordene a consulta completa antes de dividi-la em lotes internos de transferência.
 
 ## Seleção, tarefas e dicas
 
@@ -91,7 +91,7 @@ Selecionar tudo mantém o foco dos detalhes no último item da lista atual, com 
 
 “Tarefas N” na parte inferior mostra a contagem do histórico mantido; a contagem ativa é usada apenas para dicas e lógica de saída. Cada entrada do menu de tarefas mostra criação/extração e número à esquerda e cor de estado à direita; ativação por mouse ou teclado reabre a mesma tarefa. Menus de tarefas compartilham densidade, tamanho de fonte e limites de rolagem com outros menus. Sem seleção, ações de escopo selecionado e verificação prévia no menu de escopo de extração ficam desativadas sem linhas extras de dica.
 
-Dicas flutuantes aparecem apenas após o ponteiro permanecer continuamente parado no mesmo controle por 1200 ms. Movimento, saída, pressionamento ou abertura de menu cancelam a exibição e temporizadores antigos; mover entre controles exige nova espera completa, não um despertar rápido da dica anterior. Prefira acima do controle; use abaixo se não houver espaço superior suficiente para impedir que limites da borda empurrem a dica sobre o controle e causem oscilação de hover. O CommandTooltip compartilhado do Qt usa temporizador explícito de imobilidade, sincronizado com data-tooltip do HTML. Nomes completos da lista não usam title nativo do navegador para contornar essa política. O tempo das dicas de menus e bandeja nativos é controlado pelo sistema e não se afirma que seja controlável por QML. O tempo não escala com fonte, DPR ou densidade; a geometria visual permanece igual.
+Dicas flutuantes aparecem apenas após o ponteiro permanecer continuamente parado no mesmo controle por 1200 ms. Movimento, saída, pressionamento ou abertura de menu cancelam a exibição e temporizadores antigos; mover entre controles exige nova espera completa, não um despertar rápido da dica anterior. Prefira acima do controle; use abaixo se não houver espaço superior suficiente para impedir que limites da borda empurrem a dica sobre o controle e causem oscilação de hover. O CommandTooltip compartilhado do Qt usa temporizador explícito de imobilidade. O tempo das dicas de menus e bandeja nativos é controlado pelo sistema e não se afirma que seja controlável por QML. O tempo não escala com fonte, DPR ou densidade; a geometria visual permanece igual.
 
 Abas de arquivo também mostram nomes completos como texto simples na dica compartilhada com atraso de imobilidade; pressionar, reordenar ou abrir menu ou lista de abas a oculta. Entradas globais de tarefas primeiro fecham o menu e depois abrem apenas a janela da tarefa, sem trocar abas de arquivo ou reabrir páginas de arquivo fechadas.
 

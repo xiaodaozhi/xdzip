@@ -2,7 +2,7 @@
 
 [English](../../visual/file-association-icons.md) | 简体中文 | [繁體中文](../../zh-TW/visual/file-association-icons.md) | [日本語](../../ja-JP/visual/file-association-icons.md) | [한국어](../../ko-KR/visual/file-association-icons.md) | [Français](../../fr-FR/visual/file-association-icons.md) | [Deutsch](../../de-DE/visual/file-association-icons.md) | [Español](../../es-ES/visual/file-association-icons.md) | [Português (Brasil)](../../pt-BR/visual/file-association-icons.md) | [Русский](../../ru-RU/visual/file-association-icons.md)
 
-系统文件图标沿用 xdzip 的折角文档、连续曲率徽章、四条交错带与开放 U 形标记。设计入口为高保真审阅页，参数来源为 [file-association-icons.json](../../../specs/visual/file-association-icons.json)，文档图标源和产品所需平台容器统一位于 [file-associations](../../../design/assets/file-associations)。默认应用仍由用户选择。
+系统文件图标沿用 xdzip 的折角文档、连续曲率徽章、四条交错带与开放 U 形标记。参数来源为 [file-association-icons.json](../../../specs/visual/file-association-icons.json)，文档图标源和产品所需平台容器统一位于 [file-associations](../../../design/assets/file-associations)。默认应用仍由用户选择。
 
 ## 形状与识别
 
@@ -57,7 +57,7 @@ python scripts/build-association-icons.py --check --export build/file-associatio
 python scripts/build-design-assets.py --metadata-only --refresh-association-icons
 ```
 
-`XDZIP_CHROMIUM` 可指定已有 Chromium／Edge 路径。SVG 母版、小尺寸源、规范和高保真审阅页纳入版本管理；素材源在主 [manifest.json](../../../design/assets/manifest.json) 中登记。生成入口是 [build-association-icons.py](../../../scripts/build-association-icons.py)，组合定义见 [association_icon_assets.py](../../../scripts/association_icon_assets.py)。
+`XDZIP_CHROMIUM` 可指定已有 Chromium／Edge 路径。SVG 母版、小尺寸源和规范纳入版本管理；素材源在主 [manifest.json](../../../design/assets/manifest.json) 中登记。生成入口是 [build-association-icons.py](../../../scripts/build-association-icons.py)，组合定义见 [association_icon_assets.py](../../../scripts/association_icon_assets.py)。
 
 导出工件每格式包含 16 至 1024 像素的通用与 macOS PNG，以及 ICO 和 ICNS。产品 ICO、ICNS 由格式能力表登记，与矢量源同放 `file-associations/`；ZIP 容器保留迁移前原字节，其他容器来自相应导出。普通构建直接读取这些容器，不依赖浏览器。临时 PNG、完整导出、联系表和回执保留在 `build/` 或 `dist/`。
 
@@ -65,4 +65,4 @@ python scripts/build-design-assets.py --metadata-only --refresh-association-icon
 
 生成检查验证 SVG 与规格一致、无字体／外部图像依赖。平台检查包括画布与 RGBA、透明角、可见主体高度和居中、矢量摘要以及每种 ICO／ICNS 表示解码后的像素一致性。主体边界按 alpha ≥ 128 测量，容差沿用品牌的 1.25 物理像素。
 
-视觉审阅同时覆盖浅色、深色与选中背景，16 至 256 像素，以及普通和高 DPR 的实际渲染。审阅页按 CSS 像素呈现，不将浏览器截图标记为 Explorer、Finder 或 Linux 原生验收。后续接入须检查真实文件名、复合后缀、图标缓存、默认选择前后和安装／卸载后的显示。阶段状态和实际执行范围在 GitHub issue 中记录，不在本规范累积测试报告。
+视觉审阅同时覆盖浅色、深色与选中背景，16 至 256 像素，以及普通和高 DPR 的实际渲染。原生验收需要实际的平台验证。后续接入须检查真实文件名、复合后缀、图标缓存、默认选择前后和安装／卸载后的显示。阶段状态和实际执行范围在 GitHub issue 中记录，不在本规范累积测试报告。

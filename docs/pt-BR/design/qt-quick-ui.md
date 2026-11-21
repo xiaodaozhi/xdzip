@@ -42,4 +42,4 @@ As janelas de operações independentes usam o registro de janelas e as regras d
 
 ## Escopo de design e verificação
 
-Código-fonte e testes descrevem o comportamento do produto. O HTML de alta fidelidade ilustra o layout e estados simulados para revisão. Alterações no foco nativo, nos menus, no IME, em ações de acessibilidade, na escala da tela e nos gerenciadores de arquivos exigem evidências próprias nas plataformas afetadas. Novas configurações de desktop e janelas de operações têm sua própria implementação e aceitação. [Fluxo visual](../visual/design-workflow.md), [Engenharia de qualidade](quality-engineering.md)
+Código-fonte e testes descrevem o comportamento do produto. Alterações no foco nativo, nos menus, no IME, em ações de acessibilidade, na escala da tela e nos gerenciadores de arquivos exigem evidências próprias nas plataformas afetadas. Novas configurações de desktop e janelas de operações têm sua própria implementação e aceitação. [Fluxo visual](../visual/design-workflow.md), [Engenharia de qualidade](quality-engineering.md)

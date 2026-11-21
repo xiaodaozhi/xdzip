@@ -91,7 +91,6 @@ Comece pela [arquitetura do sistema](../design/system-architecture.md) para conh
 - [Padrão de design da interface](../visual/design-standard.md)
 - [Fluxo de design e correção da interface](../visual/design-workflow.md)
 - [Ícones de associações de arquivos](../visual/file-association-icons.md)
-- Revisão de fidelidade visual HTML
 - [Especificação complementar de interação e textos](../ux/interaction-spec.md)
 - [Funções, componentes e interação da janela principal](../ux/main-window-components.md)
 - [Design e integração da árvore de diretórios](../ux/directory-tree.md)
@@ -104,7 +103,6 @@ Comece pela [arquitetura do sistema](../design/system-architecture.md) para conh
 - [Menus do sistema e área de notificação](../ux/desktop-integration.md)
 - [Janelas e barras de título por plataforma](../ux/platform-windows.md)
 - [Estados de alta fidelidade e contrato de implementação](../ux/hifi-state-spec.md)
-- Protótipo de interação v0.1 e mapeamento de recursos
 
 <a name="xdzip-platform-integration-releases-and-trust"></a>
 

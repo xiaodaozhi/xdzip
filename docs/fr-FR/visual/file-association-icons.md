@@ -4,7 +4,7 @@
 
 [English](../../visual/file-association-icons.md) | [简体中文](../../zh-CN/visual/file-association-icons.md) | [繁體中文](../../zh-TW/visual/file-association-icons.md) | [日本語](../../ja-JP/visual/file-association-icons.md) | [한국어](../../ko-KR/visual/file-association-icons.md) | Français | [Deutsch](../../de-DE/visual/file-association-icons.md) | [Español](../../es-ES/visual/file-association-icons.md) | [Português (Brasil)](../../pt-BR/visual/file-association-icons.md) | [Русский](../../ru-RU/visual/file-association-icons.md)
 
-Les icônes système réutilisent le document à coin replié de xdzip, le badge à courbure continue, les quatre bandes entrelacées et la marque ouverte en U. L’entrée de conception est la page de revue haute fidélité, les paramètres proviennent de [file-association-icons.json](../../../specs/visual/file-association-icons.json), et les sources et conteneurs de plateforme se trouvent dans [file-associations](../../../design/assets/file-associations). Les utilisateurs choisissent toujours leurs applications par défaut.
+Les icônes système réutilisent le document à coin replié de xdzip, le badge à courbure continue, les quatre bandes entrelacées et la marque ouverte en U. Les paramètres proviennent de [file-association-icons.json](../../../specs/visual/file-association-icons.json), et les sources et conteneurs de plateforme se trouvent dans [file-associations](../../../design/assets/file-associations). Les utilisateurs choisissent toujours leurs applications par défaut.
 
 <a name="xdzip-shape-and-identification"></a>
 
@@ -65,7 +65,7 @@ python scripts/build-association-icons.py --check --export build/file-associatio
 python scripts/build-design-assets.py --metadata-only --refresh-association-icons
 ```
 
-`XDZIP_CHROMIUM` peut désigner un chemin Chromium/Edge existant. Maîtres SVG, sources petites tailles, spécification et page de revue sont versionnés ; les sources sont inscrites dans le [manifest.json](../../../design/assets/manifest.json) principal. L’entrée de génération est [build-association-icons.py](../../../scripts/build-association-icons.py), avec compositions dans [association_icon_assets.py](../../../scripts/association_icon_assets.py).
+`XDZIP_CHROMIUM` peut désigner un chemin Chromium/Edge existant. Maîtres SVG, sources petites tailles, et spécification sont versionnés ; les sources sont inscrites dans le [manifest.json](../../../design/assets/manifest.json) principal. L’entrée de génération est [build-association-icons.py](../../../scripts/build-association-icons.py), avec compositions dans [association_icon_assets.py](../../../scripts/association_icon_assets.py).
 
 Les exports contiennent des PNG génériques et macOS de 16 à 1024 pixels par format, ainsi que des ICO et ICNS. Les ICO et ICNS du produit, recensés par le registre des formats, résident à côté des sources vectorielles dans `file-associations/` ; les conteneurs ZIP gardent leurs octets d’origine avant migration et les autres proviennent des exports correspondants. Les compilations ordinaires lisent directement ces conteneurs sans navigateur. PNG temporaires, exports complets, planches de contact et reçus restent dans `build/` ou `dist/`.
 
@@ -75,4 +75,4 @@ Les exports contiennent des PNG génériques et macOS de 16 à 1024 pixels par f
 
 Les contrôles de génération vérifient que les SVG correspondent à la spécification et n’ont aucune dépendance de police ou d’image externe. Les contrôles de plateforme couvrent canevas et RGBA, coins transparents, hauteur et centrage visibles, empreintes vectorielles et concordance des pixels décodés de chaque représentation ICO/ICNS. Les limites du corps sont mesurées à alpha ≥ 128, avec la tolérance de marque de 1,25 pixel physique.
 
-La revue visuelle couvre fonds clair, sombre et sélectionné, tailles de 16 à 256 pixels et rendu réel en DPR normal et élevé. La page de revue utilise les pixels CSS ; les captures du navigateur ne doivent pas être présentées comme acceptation native Explorer, Finder ou Linux. L’intégration ultérieure doit vérifier noms réels, suffixes composés, caches d’icônes, avant et après choix par défaut, et affichage après installation ou désinstallation. L’état d’étape et le périmètre réel sont enregistrés dans les issues GitHub plutôt que d’accumuler les rapports ici.
+La revue visuelle couvre fonds clair, sombre et sélectionné, tailles de 16 à 256 pixels et rendu réel en DPR normal et élevé. La validation native exige une vérification sur la plateforme réelle. L’intégration ultérieure doit vérifier noms réels, suffixes composés, caches d’icônes, avant et après choix par défaut, et affichage après installation ou désinstallation. L’état d’étape et le périmètre réel sont enregistrés dans les issues GitHub plutôt que d’accumuler les rapports ici.

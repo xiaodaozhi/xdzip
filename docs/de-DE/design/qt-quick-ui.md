@@ -42,4 +42,4 @@ Eigenständige Vorgangsfenster folgen der Fensterregistrierung und den Regeln f�
 
 ## Umfang der Gestaltung und Prüfung
 
-Quellcode und Tests beschreiben das Produktverhalten. Detailentwürfe in HTML zeigen Layouts und simulierte Zustände zur Überprüfung. Änderungen an nativem Fokus, Menüs, IME, Barrierefreiheitsaktionen, Bildschirmskalierung und Systemdateimanagern brauchen Nachweise auf den betroffenen Plattformen. Neue Desktopkonfigurationen und neue Vorgangsfenster erfordern die zugehörige Implementierung und Abnahme. [Visueller Arbeitsablauf](../visual/design-workflow.md), [Qualitätssicherung](quality-engineering.md)
+Quellcode und Tests beschreiben das Produktverhalten. Änderungen an nativem Fokus, Menüs, IME, Barrierefreiheitsaktionen, Bildschirmskalierung und Systemdateimanagern brauchen Nachweise auf den betroffenen Plattformen. Neue Desktopkonfigurationen und neue Vorgangsfenster erfordern die zugehörige Implementierung und Abnahme. [Visueller Arbeitsablauf](../visual/design-workflow.md), [Qualitätssicherung](quality-engineering.md)

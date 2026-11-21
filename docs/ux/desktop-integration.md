@@ -6,7 +6,7 @@ Multi-session, single-instance, window state and global exit follow the [applica
 
 Explicit system, menu and tray Quit can open the global confirmation while a task password or conflict prompt is present. On macOS the application-menu Quit item and Command-Q remain available. Choosing Return leaves the task and prompt in place. A native file picker or other blocking modal must finish or be dismissed first. The app discards a Quit attempt blocked by that modal.
 
-The macOS menu bar and tray on all three platforms use native OS menus while retaining the existing main-window title bar. See [desktop integration parameters](../../specs/visual/desktop-integration.json), the interaction design and high-fidelity entry. Native fonts, row heights, menu widths and system highlights do not use in-app CommandMenu density parameters; HTML explains interaction and is not native pixel acceptance.
+The macOS menu bar and tray on all three platforms use native OS menus while retaining the existing main-window title bar. See [desktop integration parameters](../../specs/visual/desktop-integration.json), the interaction design and high-fidelity entry. Native fonts, row heights, menu widths and system highlights do not use in-app CommandMenu density parameters.
 
 macOS menus are xdzip, File, Edit, View, Operation, Window and Help. Help offers “User Guide” and “Report an Issue”, opening the project README and Issues in the default browser without submitting feedback; after a separator, “About xdzip” opens the About page of the same settings window used by application and tray menus. Help's About uses NoRole and stays in place; the application menu uses AboutRole, PreferencesRole and QuitRole, while the system supplies Services, Hide and Show All. File includes Open, New, Recent, Close Archive and Close Window. Edit offers Undo, Redo, Cut, Copy, Paste, Select All and Find according to current text focus. View includes list, grid and preview. Operation includes extract all, extract selected and metadata preflight. Window includes minimize, zoom, main window, tasks and visible product windows.
 
@@ -20,7 +20,7 @@ Closing the last main window with an available tray clears that window's browsin
 
 macOS uses a template tray icon derived from the existing brand mark. All other platforms, including Windows and Linux, reuse the application icon and let the system select its display size. The application icon does not change with application or system themes and does not depend on registry theme readings. Icons do not blink or animate continuously.
 
-The View menu retains a non-collapsible separator after “File Preview and Properties” to separate AppKit's automatically appended fullscreen command, preventing the system fullscreen icon from reserving an extra icon column for preview. Preview text aligns with list and grid; the system still draws checkmarks. Do not compensate with spaces, fixed widths or custom menus. HTML/high-fidelity interactions express application commands only; native desktop verification covers system-appended items.
+The View menu retains a non-collapsible separator after “File Preview and Properties” to separate AppKit's automatically appended fullscreen command, preventing the system fullscreen icon from reserving an extra icon column for preview. Preview text aligns with list and grid; the system still draws checkmarks. Do not compensate with spaces, fixed widths or custom menus. Native desktop verification covers system-appended items.
 
 ## Verification
 

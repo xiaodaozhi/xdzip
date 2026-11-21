@@ -4,7 +4,7 @@
 
 [English](../../visual/file-association-icons.md) | [简体中文](../../zh-CN/visual/file-association-icons.md) | [繁體中文](../../zh-TW/visual/file-association-icons.md) | [日本語](../../ja-JP/visual/file-association-icons.md) | 한국어 | [Français](../../fr-FR/visual/file-association-icons.md) | [Deutsch](../../de-DE/visual/file-association-icons.md) | [Español](../../es-ES/visual/file-association-icons.md) | [Português (Brasil)](../../pt-BR/visual/file-association-icons.md) | [Русский](../../ru-RU/visual/file-association-icons.md)
 
-시스템 파일 아이콘은 xdzip의 접힌 모서리 문서, 연속 곡률 배지, 엮인 네 띠와 열린 U자 마크를 재사용합니다. 디자인 진입점은 고충실도 검토 페이지, 매개변수는 [file-association-icons.json](../../../specs/visual/file-association-icons.json), 문서 아이콘 소스와 제품 플랫폼 컨테이너는 [file-associations](../../../design/assets/file-associations)에 있습니다. 기본 애플리케이션은 계속 사용자가 선택합니다.
+시스템 파일 아이콘은 xdzip의 접힌 모서리 문서, 연속 곡률 배지, 엮인 네 띠와 열린 U자 마크를 재사용합니다. 매개변수는 [file-association-icons.json](../../../specs/visual/file-association-icons.json), 문서 아이콘 소스와 제품 플랫폼 컨테이너는 [file-associations](../../../design/assets/file-associations)에 있습니다. 기본 애플리케이션은 계속 사용자가 선택합니다.
 
 <a name="xdzip-shape-and-identification"></a>
 
@@ -65,7 +65,7 @@ python scripts/build-association-icons.py --check --export build/file-associatio
 python scripts/build-design-assets.py --metadata-only --refresh-association-icons
 ```
 
-`XDZIP_CHROMIUM`으로 기존 Chromium/Edge 경로를 지정할 수 있습니다. SVG 마스터, 작은 크기 소스, 사양과 검토 페이지는 버전 관리하며 자산 소스는 기본 [manifest.json](../../../design/assets/manifest.json)에 등록합니다. 생성 진입점은 [build-association-icons.py](../../../scripts/build-association-icons.py), 구성 정의는 [association_icon_assets.py](../../../scripts/association_icon_assets.py)에 있습니다.
+`XDZIP_CHROMIUM`으로 기존 Chromium/Edge 경로를 지정할 수 있습니다. SVG 마스터, 작은 크기 소스, 사양은 버전 관리하며 자산 소스는 기본 [manifest.json](../../../design/assets/manifest.json)에 등록합니다. 생성 진입점은 [build-association-icons.py](../../../scripts/build-association-icons.py), 구성 정의는 [association_icon_assets.py](../../../scripts/association_icon_assets.py)에 있습니다.
 
 내보낸 산출물에는 형식마다 16~1024픽셀의 일반 및 macOS PNG와 ICO, ICNS가 있습니다. 형식 레지스트리에서 관리하는 제품 ICO와 ICNS는 `file-associations/`의 벡터 소스 옆에 있습니다. ZIP 컨테이너는 마이그레이션 전 원래 바이트를 유지하고 나머지는 해당 내보내기에서 생성됩니다. 일반 빌드는 브라우저 없이 이 컨테이너를 직접 읽습니다. 임시 PNG, 전체 내보내기, 연락 시트와 확인 기록은 `build/` 또는 `dist/`에 남깁니다.
 
@@ -75,4 +75,4 @@ python scripts/build-design-assets.py --metadata-only --refresh-association-icon
 
 생성 검사는 SVG가 사양과 일치하고 글꼴이나 외부 이미지 의존성이 없는지 확인합니다. 플랫폼 검사는 캔버스와 RGBA, 투명한 모서리, 보이는 본체 높이와 중앙 정렬, 벡터 다이제스트와 각 ICO/ICNS 표현의 디코딩된 픽셀 일치를 다룹니다. 본체 경계는 alpha ≥ 128에서 측정하며 브랜드 허용 오차인 1.25 물리 픽셀을 사용합니다.
 
-시각 검토는 밝은 배경, 어두운 배경, 선택된 배경, 16~256픽셀 크기와 일반 및 높은 DPR의 실제 렌더링을 다룹니다. 검토 페이지는 CSS 픽셀을 사용하며 브라우저 스크린샷을 Explorer, Finder 또는 Linux 네이티브 승인으로 표시해서는 안 됩니다. 이후 통합에서는 실제 파일 이름, 복합 접미사, 아이콘 캐시, 기본 선택 전후 및 설치와 제거 후 표시를 확인해야 합니다. 단계 상태와 실제 실행 범위는 GitHub issue에 기록하고 여기에는 테스트 보고서를 누적하지 않습니다.
+시각 검토는 밝은 배경, 어두운 배경, 선택된 배경, 16~256픽셀 크기와 일반 및 높은 DPR의 실제 렌더링을 다룹니다. 네이티브 인수에는 실제 플랫폼 검증이 필요합니다. 이후 통합에서는 실제 파일 이름, 복합 접미사, 아이콘 캐시, 기본 선택 전후 및 설치와 제거 후 표시를 확인해야 합니다. 단계 상태와 실제 실행 범위는 GitHub issue에 기록하고 여기에는 테스트 보고서를 누적하지 않습니다.

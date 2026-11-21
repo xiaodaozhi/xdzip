@@ -32,4 +32,4 @@ Independent operation windows use the window registry and per-window modality an
 
 ## Design and verification scope
 
-Source code and tests describe product behavior. High-fidelity HTML illustrates layout and simulated states for review. Native focus, menus, IME, accessibility actions, display scaling and system file-manager behavior still need platform-specific evidence when affected. Extending desktop support to more platform configurations or adding new operation windows requires the corresponding implementation and acceptance. [Visual workflow](../visual/design-workflow.md), [Quality engineering](quality-engineering.md)
+Source code and tests describe product behavior. Native focus, menus, IME, accessibility actions, display scaling and system file-manager behavior still need platform-specific evidence when affected. Extending desktop support to more platform configurations or adding new operation windows requires the corresponding implementation and acceptance. [Visual workflow](../visual/design-workflow.md), [Quality engineering](quality-engineering.md)

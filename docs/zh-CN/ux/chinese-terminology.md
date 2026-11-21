@@ -2,7 +2,7 @@
 
 [English](../../ux/chinese-terminology.md) | 简体中文 | [繁體中文](../../zh-TW/ux/chinese-terminology.md) | [日本語](../../ja-JP/ux/chinese-terminology.md) | [한국어](../../ko-KR/ux/chinese-terminology.md) | [Français](../../fr-FR/ux/chinese-terminology.md) | [Deutsch](../../de-DE/ux/chinese-terminology.md) | [Español](../../es-ES/ux/chinese-terminology.md) | [Português (Brasil)](../../pt-BR/ux/chinese-terminology.md) | [Русский](../../ru-RU/ux/chinese-terminology.md)
 
-面向用户的中文文案以[术语配置](../../../specs/ux/chinese-terminology.json)为准。Qt 静态文案继续使用 resources/i18n/zh-CN.json 的稳定 ID，HTML、当前高保真设计与用户说明同步采用下表；工程和格式文档可以使用技术术语。此次不改变组件尺寸、主窗口 0.8／菜单 1 的密度、DPR 或缩放参数。
+面向用户的中文文案以[术语配置](../../../specs/ux/chinese-terminology.json)为准。Qt 静态文案继续使用 resources/i18n/zh-CN.json 的稳定 ID，当前高保真设计与用户说明同步采用下表；工程和格式文档可以使用技术术语。此次不改变组件尺寸、主窗口 0.8／菜单 1 的密度、DPR 或缩放参数。
 
 | 语义 | 统一用语 | 使用示例 |
 | --- | --- | --- |

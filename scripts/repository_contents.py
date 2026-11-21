@@ -2,7 +2,7 @@
 from pathlib import PurePosixPath
 import subprocess
 
-GENERATED_PREFIXES = ('docs/html/', 'design/assets/preview/', 'design/html/screenshots/')
+GENERATED_PREFIXES = ('docs/html/', 'design/assets/preview/')
 RETIRED_REPORTS = {
     'docs/qa/private-test-readiness.md', 'docs/qa/wp12-closeout-actions.md',
     'docs/planning/preparation-record.md', 'docs/engineering/toolchain-candidates.json',

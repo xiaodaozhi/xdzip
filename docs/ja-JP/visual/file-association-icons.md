@@ -4,7 +4,7 @@
 
 [English](../../visual/file-association-icons.md) | [简体中文](../../zh-CN/visual/file-association-icons.md) | [繁體中文](../../zh-TW/visual/file-association-icons.md) | 日本語 | [한국어](../../ko-KR/visual/file-association-icons.md) | [Français](../../fr-FR/visual/file-association-icons.md) | [Deutsch](../../de-DE/visual/file-association-icons.md) | [Español](../../es-ES/visual/file-association-icons.md) | [Português (Brasil)](../../pt-BR/visual/file-association-icons.md) | [Русский](../../ru-RU/visual/file-association-icons.md)
 
-システムのファイルアイコンは xdzip の折り返した角の文書、連続曲率のバッジ、交差する四本の帯、開いた U 字のマークを再利用します。設計入口は高忠実度レビュー画面、パラメーターは [file-association-icons.json](../../../specs/visual/file-association-icons.json)、文書アイコンのソースと製品のプラットフォーム用コンテナーは [file-associations](../../../design/assets/file-associations) にあります。既定のアプリは引き続きユーザーが選択します。
+システムのファイルアイコンは xdzip の折り返した角の文書、連続曲率のバッジ、交差する四本の帯、開いた U 字のマークを再利用します。パラメーターは [file-association-icons.json](../../../specs/visual/file-association-icons.json)、文書アイコンのソースと製品のプラットフォーム用コンテナーは [file-associations](../../../design/assets/file-associations) にあります。既定のアプリは引き続きユーザーが選択します。
 
 <a name="xdzip-shape-and-identification"></a>
 
@@ -65,7 +65,7 @@ python scripts/build-association-icons.py --check --export build/file-associatio
 python scripts/build-design-assets.py --metadata-only --refresh-association-icons
 ```
 
-`XDZIP_CHROMIUM` には既存の Chromium/Edge のパスを指定できます。SVG マスター、小サイズのソース、仕様、レビュー画面はバージョン管理し、素材ソースはメインの [manifest.json](../../../design/assets/manifest.json) に登録します。生成入口は [build-association-icons.py](../../../scripts/build-association-icons.py)、構成定義は [association_icon_assets.py](../../../scripts/association_icon_assets.py) にあります。
+`XDZIP_CHROMIUM` には既存の Chromium/Edge のパスを指定できます。SVG マスター、小サイズのソース、仕様はバージョン管理し、素材ソースはメインの [manifest.json](../../../design/assets/manifest.json) に登録します。生成入口は [build-association-icons.py](../../../scripts/build-association-icons.py)、構成定義は [association_icon_assets.py](../../../scripts/association_icon_assets.py) にあります。
 
 出力成果物は形式ごとに 16〜1024 ピクセルの汎用と macOS 用 PNG、および ICO と ICNS を含みます。形式レジストリーで管理する製品 ICO と ICNS は `file-associations/` のベクターソースの隣に置きます。ZIP コンテナーは移行前の元バイトを保持し、他は対応する出力から生成します。通常のビルドはこれらを直接読み取り、ブラウザーを必要としません。一時 PNG、完全な出力、コンタクトシート、記録は `build/` または `dist/` に保持します。
 
@@ -75,4 +75,4 @@ python scripts/build-design-assets.py --metadata-only --refresh-association-icon
 
 生成検査は SVG が仕様に一致し、フォントや外部画像に依存しないことを確認します。プラットフォーム検査はキャンバスと RGBA、透明な角、本体の見える高さと中央配置、ベクターのダイジェスト、各 ICO/ICNS 表現のデコード後のピクセル一致を対象とします。本体の境界は alpha ≥ 128 で測定し、ブランドの許容差 1.25 物理ピクセルを使います。
 
-視覚レビューは明色、暗色、選択状態の背景、16〜256 ピクセル、通常と高 DPR での実際の描画を対象とします。レビュー画面は CSS ピクセルを使い、ブラウザーのスクリーンショットを Explorer、Finder、Linux のネイティブ受け入れとして扱ってはいけません。後の統合では実際のファイル名、複合拡張子、アイコンキャッシュ、既定選択の前後、インストールやアンインストール後の表示を確認します。段階の状態と実際の実行範囲は GitHub issue に記録し、この文書にテスト報告を蓄積しません。
+視覚レビューは明色、暗色、選択状態の背景、16〜256 ピクセル、通常と高 DPR での実際の描画を対象とします。ネイティブの受け入れには実際のプラットフォーム検証が必要です。後の統合では実際のファイル名、複合拡張子、アイコンキャッシュ、既定選択の前後、インストールやアンインストール後の表示を確認します。段階の状態と実際の実行範囲は GitHub issue に記録し、この文書にテスト報告を蓄積しません。

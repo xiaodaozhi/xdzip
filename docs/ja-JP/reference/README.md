@@ -91,7 +91,6 @@
 - [UI 設計標準](../visual/design-standard.md)
 - [UI 設計と修正の手順](../visual/design-workflow.md)
 - [ファイルの関連付けアイコン](../visual/file-association-icons.md)
-- HTML のビジュアル再現性検証
 - [操作と文言の補足仕様](../ux/interaction-spec.md)
 - [メインウィンドウの機能、コンポーネント、操作](../ux/main-window-components.md)
 - [ディレクトリーツリーの設計と統合](../ux/directory-tree.md)
@@ -104,7 +103,6 @@
 - [システムメニューと通知領域](../ux/desktop-integration.md)
 - [各プラットフォームのウィンドウとタイトルバー](../ux/platform-windows.md)
 - [高忠実度の状態設計と実装仕様](../ux/hifi-state-spec.md)
-- v0.1 の操作プロトタイプと機能対応
 
 <a name="xdzip-platform-integration-releases-and-trust"></a>
 

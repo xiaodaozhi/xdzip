@@ -91,7 +91,6 @@ Empieza por la [arquitectura del sistema](../design/system-architecture.md) para
 - [Norma de diseño de interfaz](../visual/design-standard.md)
 - [Proceso de diseño y corrección de interfaz](../visual/design-workflow.md)
 - [Iconos de asociaciones de archivos](../visual/file-association-icons.md)
-- Revisión de fidelidad visual HTML
 - [Especificación adicional de interacción y textos](../ux/interaction-spec.md)
 - [Funciones, componentes e interacción de la ventana principal](../ux/main-window-components.md)
 - [Diseño e integración del árbol de directorios](../ux/directory-tree.md)
@@ -104,7 +103,6 @@ Empieza por la [arquitectura del sistema](../design/system-architecture.md) para
 - [Menús del sistema y área de notificación](../ux/desktop-integration.md)
 - [Ventanas y barras de título por plataforma](../ux/platform-windows.md)
 - [Estados de alta fidelidad y contrato de implementación](../ux/hifi-state-spec.md)
-- Prototipo de interacción v0.1 y correspondencia de funciones
 
 <a name="xdzip-platform-integration-releases-and-trust"></a>
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Regressions for document discovery, bilingual navigation and local links."""
+import hashlib
 import importlib.util
+import json
 from pathlib import Path
 import subprocess
 import tempfile
@@ -57,6 +59,20 @@ class DocumentTests(unittest.TestCase):
             files.append(self.write(f'{topic}.md', f'# Title\n\nEnglish | [简体中文]({topic}.zh-CN.md)\n'))
             files.append(self.write(f'{topic}.zh-CN.md', f'# 标题\n\n[English]({topic}.md) | 简体中文\n'))
         return files
+
+    def test_hifi_catalog_checks_artwork_digest_and_optional_source(self):
+        image = self.write('design/hifi/screens/test.png', 'artwork')
+        source = self.write('design/hifi/reference/test.svg', 'source')
+        catalog = self.root / 'design/hifi/catalog.json'
+        record = {'screens': [{'file': 'screens/test.png', 'source': 'reference/test.svg',
+                               'sha256': hashlib.sha256(image.read_bytes()).hexdigest()}]}
+        catalog.write_text(json.dumps(record), encoding='utf-8')
+        self.assertEqual(check_docs.hifi_catalog(self.root), [])
+        source.unlink()
+        image.write_text('changed', encoding='utf-8')
+        failures = check_docs.hifi_catalog(self.root)
+        self.assertTrue(any('source missing' in failure for failure in failures))
+        self.assertTrue(any('digest mismatch' in failure for failure in failures))
 
     def test_language_selectors_are_reciprocal_in_both_trees(self):
         files = self.root_pairs()

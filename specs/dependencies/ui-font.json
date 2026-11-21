@@ -62,9 +62,7 @@
     "apps/desktop/**/*.mm",
     "resources/i18n/*.json"
   ],
-  "exclude_names": [
-    "assets.js"
-  ],
+  "exclude_names": [],
   "exclude_prefixes": [
     "apps/desktop/tests/",
     "apps/desktop/shell/NativeMessages.h"

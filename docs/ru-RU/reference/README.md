@@ -91,7 +91,6 @@
 - [Стандарт оформления интерфейса](../visual/design-standard.md)
 - [Процесс проектирования и корректировки интерфейса](../visual/design-workflow.md)
 - [Значки ассоциаций файлов](../visual/file-association-icons.md)
-- Проверка визуального соответствия HTML
 - [Дополнительные требования к взаимодействию и текстам](../ux/interaction-spec.md)
 - [Функции, компоненты и взаимодействие главного окна](../ux/main-window-components.md)
 - [Проектирование и интеграция дерева каталогов](../ux/directory-tree.md)
@@ -104,7 +103,6 @@
 - [Системные меню и область уведомлений](../ux/desktop-integration.md)
 - [Окна и заголовки по платформам](../ux/platform-windows.md)
 - [Состояния макетов высокой точности и контракт реализации](../ux/hifi-state-spec.md)
-- Прототип взаимодействия v0.1 и соответствие функций
 
 <a name="xdzip-platform-integration-releases-and-trust"></a>
 

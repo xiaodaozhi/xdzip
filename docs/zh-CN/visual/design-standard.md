@@ -42,7 +42,7 @@ Qt 启动时保存系统默认字体家族，再安装内置的 Noto Sans SC 衍
 
 已打开压缩包的修改等待复用该卡片参数，背景采用 layout-scale.json 的 operation_overlay 透明政策，原文件页继续显示且阻止重复操作。标题、说明、进度辅助名称和取消按钮按真实添加、移动、重命名或删除操作命名，任务清理和目录刷新完成后恢复操作。取消请求已接纳时立即关闭失效的重名与密码提示，进度窗显示取消中并继续跟随真实终态；重名窗口绑定具体任务及提示令牌，切换任务或令牌失效时关闭。
 
-当前[浅色主窗口](../../../design/hifi/screens/main-capsule-light.png)、[深色主窗口](../../../design/hifi/screens/main-capsule-dark.png)和[多级目录图](../../../design/hifi/screens/directory-tree-capsule.png)同步此标题区，来自可编辑设计源。旧主窗口与目录树原图在画廊历史区保存，原有独立量测、SHA-256 和切片来源保持不变；当前设计导出不用于替代独立几何验收。
+当前[浅色主窗口](../../../design/hifi/screens/main-capsule-light.png)、[深色主窗口](../../../design/hifi/screens/main-capsule-dark.png)和[多级目录图](../../../design/hifi/screens/directory-tree-capsule.png)同步此标题区。旧主窗口与目录树原图保存在 `design/hifi/screens`，原有独立量测、SHA-256 和切片来源保持不变；当前设计导出不用于替代独立几何验收。
 
 列表和网格的条目菜单共用归档条目编辑设计和正常菜单密度。重命名和删除复用 491 逻辑像素宽的共享确认窗口，可滚动正文，页脚固定。文件名采用系统用户数据字体。重命名打开时聚焦共享输入框，文件默认选中主名。删除打开时聚焦取消按钮。
 

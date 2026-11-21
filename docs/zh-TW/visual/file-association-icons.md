@@ -4,7 +4,7 @@
 
 [English](../../visual/file-association-icons.md) | [简体中文](../../zh-CN/visual/file-association-icons.md) | 繁體中文 | [日本語](../../ja-JP/visual/file-association-icons.md) | [한국어](../../ko-KR/visual/file-association-icons.md) | [Français](../../fr-FR/visual/file-association-icons.md) | [Deutsch](../../de-DE/visual/file-association-icons.md) | [Español](../../es-ES/visual/file-association-icons.md) | [Português (Brasil)](../../pt-BR/visual/file-association-icons.md) | [Русский](../../ru-RU/visual/file-association-icons.md)
 
-系統檔案圖示沿用 xdzip 的折角文件、連續曲率徽章、四條交錯帶與開放 U 形標記。設計入口為高保真審閱頁，引數來源為 [file-association-icons.json](../../../specs/visual/file-association-icons.json)，文件圖示源和產品所需平臺容器統一位於 [file-associations](../../../design/assets/file-associations)。預設應用仍由使用者選擇。
+系統檔案圖示沿用 xdzip 的折角文件、連續曲率徽章、四條交錯帶與開放 U 形標記。引數來源為 [file-association-icons.json](../../../specs/visual/file-association-icons.json)，文件圖示源和產品所需平臺容器統一位於 [file-associations](../../../design/assets/file-associations)。預設應用仍由使用者選擇。
 
 <a name="xdzip-形状与识别"></a>
 
@@ -65,7 +65,7 @@ python scripts/build-association-icons.py --check --export build/file-associatio
 python scripts/build-design-assets.py --metadata-only --refresh-association-icons
 ```
 
-`XDZIP_CHROMIUM` 可指定已有 Chromium／Edge 路徑。SVG 母版、小尺寸源、規範和高保真審閱頁納入版本管理；素材源在主 [manifest.json](../../../design/assets/manifest.json) 中登記。生成入口是 [build-association-icons.py](../../../scripts/build-association-icons.py)，組合定義見 [association_icon_assets.py](../../../scripts/association_icon_assets.py)。
+`XDZIP_CHROMIUM` 可指定已有 Chromium／Edge 路徑。SVG 母版、小尺寸源和規範納入版本管理；素材源在主 [manifest.json](../../../design/assets/manifest.json) 中登記。生成入口是 [build-association-icons.py](../../../scripts/build-association-icons.py)，組合定義見 [association_icon_assets.py](../../../scripts/association_icon_assets.py)。
 
 匯出工件每格式包含 16 至 1024 畫素的通用與 macOS PNG，以及 ICO 和 ICNS。產品 ICO、ICNS 由格式能力表登記，與向量源同放 `file-associations/`；ZIP 容器保留遷移前原位元組，其他容器來自相應匯出。普通構建直接讀取這些容器，不依賴瀏覽器。臨時 PNG、完整匯出、聯絡表和回執保留在 `build/` 或 `dist/`。
 
@@ -75,4 +75,4 @@ python scripts/build-design-assets.py --metadata-only --refresh-association-icon
 
 生成檢查驗證 SVG 與規格一致、無字型／外部影象依賴。平臺檢查包括畫布與 RGBA、透明角、可見主體高度和居中、向量摘要以及每種 ICO／ICNS 表示解碼後的畫素一致性。主體邊界按 alpha ≥ 128 測量，容差沿用品牌的 1.25 物理畫素。
 
-視覺審閱同時覆蓋淺色、深色與選中背景，16 至 256 畫素，以及普通和高 DPR 的實際渲染。審閱頁按 CSS 畫素呈現，不將瀏覽器截圖示記為 Explorer、Finder 或 Linux 原生驗收。後續接入須檢查真實檔名、複合字尾、圖示快取、預設選擇前後和安裝／解除安裝後的顯示。階段狀態和實際執行範圍在 GitHub issue 中記錄，不在本規範累積測試報告。
+視覺審閱同時覆蓋淺色、深色與選中背景，16 至 256 畫素，以及普通和高 DPR 的實際渲染。原生驗收需要實際的平台驗證。後續接入須檢查真實檔名、複合字尾、圖示快取、預設選擇前後和安裝／解除安裝後的顯示。階段狀態和實際執行範圍在 GitHub issue 中記錄，不在本規範累積測試報告。

@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/ux/chinese-terminology.md) | [繁體中文](../zh-TW/ux/chinese-terminology.md) | [日本語](../ja-JP/ux/chinese-terminology.md) | [한국어](../ko-KR/ux/chinese-terminology.md) | [Français](../fr-FR/ux/chinese-terminology.md) | [Deutsch](../de-DE/ux/chinese-terminology.md) | [Español](../es-ES/ux/chinese-terminology.md) | [Português (Brasil)](../pt-BR/ux/chinese-terminology.md) | [Русский](../ru-RU/ux/chinese-terminology.md)
 
-User-facing Chinese copy follows the [terminology configuration](../../specs/ux/chinese-terminology.json). Qt static text retains stable IDs in resources/i18n/zh-CN.json. HTML, current high-fidelity designs and user documentation follow the table below; engineering and format documents may use technical terminology. This change does not alter component dimensions, main-window 0.8/menu 1 density, DPR or scaling parameters.
+User-facing Chinese copy follows the [terminology configuration](../../specs/ux/chinese-terminology.json). Qt static text retains stable IDs in resources/i18n/zh-CN.json. Current high-fidelity designs and user documentation follow the table below; engineering and format documents may use technical terminology. This change does not alter component dimensions, main-window 0.8/menu 1 density, DPR or scaling parameters.
 
 | Meaning | Standard Chinese wording | Example use |
 | --- | --- | --- |

@@ -4,7 +4,7 @@
 
 [English](../../ux/chinese-terminology.md) | [简体中文](../../zh-CN/ux/chinese-terminology.md) | [繁體中文](../../zh-TW/ux/chinese-terminology.md) | [日本語](../../ja-JP/ux/chinese-terminology.md) | [한국어](../../ko-KR/ux/chinese-terminology.md) | [Français](../../fr-FR/ux/chinese-terminology.md) | Deutsch | [Español](../../es-ES/ux/chinese-terminology.md) | [Português (Brasil)](../../pt-BR/ux/chinese-terminology.md) | [Русский](../../ru-RU/ux/chinese-terminology.md)
 
-Texte für Benutzer auf vereinfachtem Chinesisch folgen der [Terminologiekonfiguration](../../../specs/ux/chinese-terminology.json). Statische Qt-Texte behalten ihre stabilen IDs in resources/i18n/zh-CN.json. HTML, aktuelle Detailentwürfe und Benutzeranleitungen übernehmen die Tabellenbegriffe. Technik- und Formatdokumente dürfen Fachbegriffe verwenden. Komponentenmaße, Dichte 0.8 im Hauptfenster und 1 im Menü, DPR und Skalierungsparameter gelten wie bisher.
+Texte für Benutzer auf vereinfachtem Chinesisch folgen der [Terminologiekonfiguration](../../../specs/ux/chinese-terminology.json). Statische Qt-Texte behalten ihre stabilen IDs in resources/i18n/zh-CN.json. Aktuelle Detailentwürfe und Benutzeranleitungen übernehmen die Tabellenbegriffe. Technik- und Formatdokumente dürfen Fachbegriffe verwenden. Komponentenmaße, Dichte 0.8 im Hauptfenster und 1 im Menü, DPR und Skalierungsparameter gelten wie bisher.
 
 | Bedeutung | Standardtext auf vereinfachtem Chinesisch | Verwendung |
 | --- | --- | --- |

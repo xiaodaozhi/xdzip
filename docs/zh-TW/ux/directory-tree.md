@@ -6,7 +6,7 @@
 
 狀態：**核心目錄互動已接入 Qt 只讀瀏覽，邊界狀態資源仍待接入**。互動遵循[只讀瀏覽契約](../engineering/readonly-browser.md)，普通目錄瀏覽採用直屬子項，搜尋遞迴目前範圍，輸出授權保持只讀。
 
-三張目前圖板位於 [多級展開](../../../design/hifi/screens/directory-tree-capsule.png)、[節點與互動狀態](../../../design/hifi/screens/directory-tree-states.png)、[空態與導航邊界](../../../design/hifi/screens/directory-tree-boundaries.png)。統一畫廊展示整幅圖板，[素材庫](../../../design/assets/index.html#directory-tree)提供逐項切圖。多級展開圖從可編輯設計源匯出，標題欄同步目前膠囊標籤；圖板中的頂部和中央列表僅提供上下文，不重新定義標題欄、工具欄或檔案表格。[歷史多級展開原圖](../../../design/hifi/screens/directory-tree.png)保持原樣，繼續作為 26 張切片的來源及獨立量測依據。
+三張目前圖板位於 [多級展開](../../../design/hifi/screens/directory-tree-capsule.png)、[節點與互動狀態](../../../design/hifi/screens/directory-tree-states.png)、[空態與導航邊界](../../../design/hifi/screens/directory-tree-boundaries.png)。[素材庫](../../../design/assets/index.html#directory-tree)提供逐項切圖。多級展開圖的標題欄同步目前膠囊標籤；圖板中的頂部和中央列表僅提供上下文，不重新定義標題欄、工具欄或檔案表格。[歷史多級展開原圖](../../../design/hifi/screens/directory-tree.png)保持原樣，繼續作為 26 張切片的來源及獨立量測依據。
 
 圖板採用放大展示，每張卡片的區域性比例不完全相同。圖片中的文字、圓角和畫素尺寸不能直接當作控制元件尺寸；[元件引數](../../../specs/visual/directory-tree.json)明確記錄落地的邏輯尺寸，資產清單單獨記錄原圖裁剪的物理座標。實現採用 1024 邏輯寬度及統一源畫布變換，不能把這一組新元件再整體放大。
 

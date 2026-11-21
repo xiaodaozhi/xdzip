@@ -4,7 +4,7 @@
 
 状態：**ディレクトリの基本操作は Qt の読み取り専用ブラウザーに統合済みです。境界状態の素材は統合待ちです**。操作は[読み取り専用ブラウザー契約](../engineering/readonly-browser.md)に従います。通常のディレクトリ閲覧は直下の項目を対象とし、検索は現在の範囲を再帰的に対象とします。出力の認可は読み取り専用操作とは別です。
 
-現在の三つのアートボードは、[多階層の展開](../../../design/hifi/screens/directory-tree-capsule.png)、[ノードと操作の状態](../../../design/hifi/screens/directory-tree-states.png)、[空状態とナビゲーションの境界](../../../design/hifi/screens/directory-tree-boundaries.png)です。共有ギャラリーでアートボード全体を確認でき、[素材ライブラリ](../../../design/assets/index.html#directory-tree)に個別の切り出しがあります。多階層展開は編集可能な原稿から書き出し、タイトルバーは現在のカプセル型タブと同期しています。ボード上部と中央のリストは文脈を示すだけで、タイトルバー、ツールバー、ファイル表を再定義しません。[過去の多階層原稿](../../../design/hifi/screens/directory-tree.png)は 26 枚の切り出しの元データと独立した測定基準として変更せず保持します。
+現在の三つのアートボードは、[多階層の展開](../../../design/hifi/screens/directory-tree-capsule.png)、[ノードと操作の状態](../../../design/hifi/screens/directory-tree-states.png)、[空状態とナビゲーションの境界](../../../design/hifi/screens/directory-tree-boundaries.png)です。[素材ライブラリ](../../../design/assets/index.html#directory-tree)に個別の切り出しがあります。多階層展開のタイトルバーは現在のカプセル型タブと同期しています。ボード上部と中央のリストは文脈を示すだけで、タイトルバー、ツールバー、ファイル表を再定義しません。[過去の多階層原稿](../../../design/hifi/screens/directory-tree.png)は 26 枚の切り出しの元データと独立した測定基準として変更せず保持します。
 
 アートボードは拡大表示され、各カードの倍率は異なります。画像中の文字、角丸、ピクセル寸法をそのままコントロールの寸法に使うことはできません。[コンポーネントパラメーター](../../../specs/visual/directory-tree.json)には実装の論理寸法を明記し、素材マニフェストには物理的な切り出し座標を別に記録します。実装は論理幅 1024 と共有の原稿キャンバス変換を使用します。新しいコンポーネント全体をさらに拡大しないでください。
 

@@ -91,7 +91,6 @@
 - [UI 디자인 표준](../visual/design-standard.md)
 - [UI 디자인 및 수정 절차](../visual/design-workflow.md)
 - [파일 연결 아이콘](../visual/file-association-icons.md)
-- HTML 시각 일치 검토
 - [추가 상호 작용 및 문구 사양](../ux/interaction-spec.md)
 - [기본 창의 기능, 구성 요소 및 상호 작용](../ux/main-window-components.md)
 - [디렉터리 트리 디자인 및 통합](../ux/directory-tree.md)
@@ -104,7 +103,6 @@
 - [시스템 메뉴와 알림 영역](../ux/desktop-integration.md)
 - [플랫폼 창 및 제목 표시줄](../ux/platform-windows.md)
 - [고해상도 디자인 상태 및 구현 계약](../ux/hifi-state-spec.md)
-- v0.1 상호 작용 프로토타입과 기능 매핑
 
 <a name="xdzip-platform-integration-releases-and-trust"></a>
 
