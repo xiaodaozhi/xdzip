@@ -34,7 +34,7 @@ Un dépôt ouvre une archive ou fournit des entrées à la création selon la ci
 
 ## Composants partagés et limites natives
 
-Les écrans d’opération réutilisent `OperationButton`, `OperationFooterButton`, `OperationFrame`, `OperationSelect` et `OperationSegmentedGroup`. Les composants communs définissent dimensions et interactions. Les choix discrets acheminent les actions à la souris, au clavier et via l’accessibilité vers le même modèle d’état. Les textes et données de fichiers suivent les règles de police et de traduction de la [norme de conception](../../visual/design-standard.md). Les noms contenus dans les archives restent des données et s’affichent en toute sécurité.
+Les écrans d’opération réutilisent `OperationButton`, `OperationFooterButton`, `OperationFrame`, `OperationSelect` et `OperationSegmentedGroup`. Les composants communs définissent dimensions et interactions. Les choix discrets acheminent les actions à la souris, au clavier et via l’accessibilité vers le même modèle d’état. Les textes et données de fichiers suivent les règles de police et de traduction de la [norme de conception](../visual/design-standard.md). Les noms contenus dans les archives restent des données et s’affichent en toute sécurité.
 
 Les fenêtres d’opération autonomes suivent le registre des fenêtres et les règles de modalité et de fermeture propres à chacune. macOS utilise les contrôles natifs de la barre de titre. Windows et Linux utilisent leurs adaptateurs système. Le [contrat des fenêtres de plateforme](../ux/platform-windows.md) définit la validation des fenêtres réelles et le [contrat d’intégration au bureau](../ux/desktop-integration.md) décrit la zone de notification et l’activation.
 

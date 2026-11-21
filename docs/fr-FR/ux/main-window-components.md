@@ -4,7 +4,7 @@
 
 Les contrôles de la fenêtre principale assurent à la fois l’apparence et le comportement, avec des états explicites normal, survol, pressé, focus clavier, désactivé, sélectionné, occupé et erreur. HTML utilise des archives d’exemple pour vérifier les interactions ; Qt active les actions selon les capacités réelles de navigation, création, extraction, [vérification d’intégrité](../engineering/archive-checking.md) et [prévisualisation automatique du contenu](../engineering/content-preview.md). Les exemples HTML ne représentent pas des résultats réels en arrière-plan.
 
-Les noms de fichiers, répertoires et archives ainsi que les chemins utilisent de préférence la police système par défaut au démarrage, avec une police de remplacement de la plateforme si des glyphes manquent. Les textes fixes de l’interface continuent d’utiliser le sous-ensemble inclus. L’arborescence et les aperçus de glissement sont mesurés avec leurs polices respectives ; voir la [norme visuelle](../../visual/design-standard.md#界面字体与用户数据).
+Les noms de fichiers, répertoires et archives ainsi que les chemins utilisent de préférence la police système par défaut au démarrage, avec une police de remplacement de la plateforme si des glyphes manquent. Les textes fixes de l’interface continuent d’utiliser le sous-ensemble inclus. L’arborescence et les aperçus de glissement sont mesurés avec leurs polices respectives ; voir la [norme visuelle](../visual/design-standard.md#界面字体与用户数据).
 
 ## Fonctions et composants
 
