@@ -19,7 +19,7 @@ As imagens de alta fidelidade são a referência visual; HTML é a implementaç�
 
 ## Tamanho de exibição e pixels de origem
 
-A exibição normal usa a [janela com largura de 1024 pixels lógicos](../../visual/README.md), mapeando uniformemente coordenadas de origem por `1024 / 1548`. A janela principal aparece com 1024 × aproximadamente 621,81 pixels CSS; o original usa a mesma escala. Essa proporção é uma convenção explícita de design, não uma dedução sobre Retina ou DPI a partir de um PNG.
+A exibição normal usa a [janela com largura de 1024 pixels lógicos](README.md), mapeando uniformemente coordenadas de origem por `1024 / 1548`. A janela principal aparece com 1024 × aproximadamente 621,81 pixels CSS; o original usa a mesma escala. Essa proporção é uma convenção explícita de design, não uma dedução sobre Retina ou DPI a partir de um PNG.
 
 `display-spec.js` é a única fonte das dimensões das pranchetas e escalas de exibição. O desktop usa por padrão o tamanho normal e dispositivos móveis usam ajuste; a escala ajustada é limitada ao tamanho normal para evitar ampliação automática em telas largas. O modo de pixels originais usa `scale=1`, preservando dimensões originais e rolagem tanto no HTML quanto na imagem. A proporção de pixels do dispositivo afeta apenas a densidade de rasterização, não a largura lógica CSS.
 

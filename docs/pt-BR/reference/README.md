@@ -87,7 +87,7 @@ Comece pela [arquitetura do sistema](../design/system-architecture.md) para conh
 ## Interação e design do desktop
 
 - [Visualizações Qt Quick e responsabilidades dos controladores](../design/qt-quick-ui.md)
-- [Especificações visuais do desktop](../../visual/README.md)
+- [Especificações visuais do desktop](../visual/README.md)
 - [Padrão de design da interface](../../visual/design-standard.md)
 - [Fluxo de design e correção da interface](../visual/design-workflow.md)
 - [Ícones de associações de arquivos](../visual/file-association-icons.md)
