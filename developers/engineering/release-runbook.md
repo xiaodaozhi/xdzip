@@ -6,6 +6,18 @@ Cross-platform stable releases and prereleases use [release protocol v1](../../d
 
 Development acceptance, [release license review](../qa/release-review.md) and release execution are recorded separately. License conclusions bind the actual candidate. Before publication, resolve concrete gaps in provenance, notices and applicable source and replacement obligations.
 
+## Choose the minimum release runs
+
+Before dispatching a long release or pre-release workflow, check the intended outcome, the actual entry points and their default inputs, and existing runs, source revisions, package identities, environments and evidence. Record the necessary checks and any remaining risk in the release issue. Reuse evidence whose identity, environment and coverage still apply; do not turn optional diagnostics, previous recommendations or an executor's preference into release gates.
+
+For an authorized ordinary release, complete the applicable local preflight and reviewed notes, freeze the version and dispatch **one formal Release run directly**. Do not first run the complete `candidate=true` rehearsal, a separate three-platform packaging workflow or another equivalent full build merely for confidence, habit, or to confirm that the formal run is likely to pass. The formal run itself builds and verifies all required platforms before signing and publication. Investigate known risks first with the smallest checks that cover the actual entry point and inputs.
+
+A separate candidate rehearsal is allowed only when the user explicitly requests it, an applicable specification requires it, or a concrete change or failure creates a risk that the required targeted checks cannot resolve. Before starting it, record the specific condition, its scope, why smaller checks are insufficient and whether a formal release is intended. A rehearsal is not release approval and must not be added as a new default prerequisite.
+
+The current workflow cannot promote another run's candidate packages into a formal release: formal verification, signing and publication accept artifacts from their own run. Check this limitation **before** selecting a rehearsal. A successful rehearsal can supply applicable evidence, but it cannot replace verification of the actual formal packages or eliminate the formal run's builds. Do not start a rehearsal first and then discover that this rule forces a second full build. Cross-run promotion requires a separately implemented and verified workflow; do not bypass same-run identity, package hashes, signatures, licensing review or release authorization to avoid repetition.
+
+When a job fails, preserve its logs and passing artifacts, diagnose the affected boundary, and first rerun the failed job within the original run when its frozen source and inputs remain valid and the workflow supports it. If changed source, configuration, environment, missing artifacts or another actual constraint invalidates that retry, explain the reason in the issue and rerun the affected checks using a suitable new run. Never mix artifacts from different commits or runs in violation of the handoff contract, and never treat a failed or unperformed check as passed.
+
 ## Dispatch and verify the release
 
 Before creating the version tag, run the relevant local checks with the candidate's pinned inputs. Validate synchronized version files and the reviewed notes from the repository root:
@@ -46,7 +58,7 @@ A local Mac can produce a [development DMG](../../docs/engineering/macos-deploym
 
 ## Rehearse and resume the release workflow
 
-Run the dedicated Release workflow from the branch containing the proposed workflow change.
+Only when the selection criteria above require a rehearsal, run the dedicated Release workflow from the branch containing the proposed workflow change or other candidate under investigation:
 
 ```sh
 gh workflow run release.yml --ref BRANCH -f candidate=true
