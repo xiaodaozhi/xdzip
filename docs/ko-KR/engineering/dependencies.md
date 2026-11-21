@@ -65,9 +65,9 @@ M2는 Windows 런타임에서 정확한 `winapi-util = 0.1.11`의 안전한 `fil
 
 `xdzip-codec-7z`는 프로젝트 API/도메인, 타사 제품 의존성이 없는 공통 압축 알고리즘과 범용 암호화 기본 요소를 사용합니다. AES 0.9.3은 zeroize를 활성화하며 getrandom 0.4.2와 zeroize 1.9.1은 ZIP 버전을 재사용합니다. 영점화 가능한 SHA-256은 형식에 독립적인 `xdzip-crypto`로 분리해 형식마다 래퍼를 중복하지 않고 채택된 sha2 0.10.9 compress 기본 요소 위에서 프로젝트 소유의 증분 상태를 관리합니다. 공통 크레이트는 공개 수학 명세에 따라 HMAC-SHA256과 BLAKE2s/BLAKE2sp도 구현합니다. 소스와 경계는 해당 [README](../../../crates/xdzip-crypto/README.md)를 참조하세요. 압축 파일이나 공개 권한을 부여하지 않으며 타사 암호화 버전을 업그레이드하지 않습니다. 형식 속성, CBC 구성, KDF, 생성과 다시 쓰기는 독립 구현이며 기반 라이브러리가 제공하는 압축 파일 처리가 아닙니다. 소스, 분석 역할과 라이선스 차이는 [7z 근거](sevenzip-format-sources.md)를 참조하세요.
 
-`xdzip-codec-optical` 형식 로직은 표준 라이브러리와 프로젝트 codec API/도메인만 사용하며 ISO/UDF 또는 범용 압축 파일 라이브러리를 사용하지 않습니다. 명세, 범위와 오류는 [독립 구현 계약](../../engineering/independent-rust-codecs.md#iso与udf只读规格)을 참조하세요. `xdzip-codec-bridge`는 잠금된 cxx/cxx-build 버전과 생성을 재사용하며 새 외부 버전, 다운로드하는 빌드 스크립트 또는 형식 알고리즘 라이브러리를 추가하지 않습니다. 프로세스 내부 라우팅으로 교체하면 기존 광학 작업 프로세스 관리가 사라지므로 작업 프로세스와 제어된 스트림 프로토콜을 유지합니다.
+`xdzip-codec-optical` 형식 로직은 표준 라이브러리와 프로젝트 codec API/도메인만 사용하며 ISO/UDF 또는 범용 압축 파일 라이브러리를 사용하지 않습니다. 명세, 범위와 오류는 [독립 구현 계약](independent-rust-codecs.md#iso与udf只读规格)을 참조하세요. `xdzip-codec-bridge`는 잠금된 cxx/cxx-build 버전과 생성을 재사용하며 새 외부 버전, 다운로드하는 빌드 스크립트 또는 형식 알고리즘 라이브러리를 추가하지 않습니다. 프로세스 내부 라우팅으로 교체하면 기존 광학 작업 프로세스 관리가 사라지므로 작업 프로세스와 제어된 스트림 프로토콜을 유지합니다.
 
-`xdzip-codec-cab`은 프로젝트 API, 도메인과 타사 제품 의존성이 없는 `xdzip-compression`에만 의존합니다. MSZIP은 ZIP/GZIP Deflate를 재사용하며 LZX와 Quantum은 추가 Deflate나 범용 압축 파일 라이브러리가 없는 독립 알고리즘 모듈입니다. 7z, CAB와 광학 백엔드는 `xdzip-codec-bridge`와 호스트가 인가한 스트림을 공유합니다. 생성은 범용 경계를 중복하지 않고 제어 입력과 무작위 임시 배치 콜백만 추가합니다. 제품은 Rust를 사용하며 공식 Cab 및 CAB 전용 LZX/Quantum은 빌드에 들어가지 않습니다. 리소스와 형식은 [자체 구현 계약](../../engineering/independent-rust-codecs.md#cab只读规格), 참조 분석 범위와 라이선스는 [CAB 소스](cab-format-sources.md)를 참조하세요.
+`xdzip-codec-cab`은 프로젝트 API, 도메인과 타사 제품 의존성이 없는 `xdzip-compression`에만 의존합니다. MSZIP은 ZIP/GZIP Deflate를 재사용하며 LZX와 Quantum은 추가 Deflate나 범용 압축 파일 라이브러리가 없는 독립 알고리즘 모듈입니다. 7z, CAB와 광학 백엔드는 `xdzip-codec-bridge`와 호스트가 인가한 스트림을 공유합니다. 생성은 범용 경계를 중복하지 않고 제어 입력과 무작위 임시 배치 콜백만 추가합니다. 제품은 Rust를 사용하며 공식 Cab 및 CAB 전용 LZX/Quantum은 빌드에 들어가지 않습니다. 리소스와 형식은 [자체 구현 계약](independent-rust-codecs.md#cab只读规格), 참조 분석 범위와 라이선스는 [CAB 소스](cab-format-sources.md)를 참조하세요.
 
 `xdzip-codec-rar`는 RAR이나 다른 압축 파일 라이브러리를 도입하지 않고 같은 codec API, 공통 압축 알고리즘과 암호화 기본 요소를 재사용합니다. PPMd H 통계 모델은 7z와 RAR이 공유하며 각 형식이 자체 범위, 재설정과 종료를 정의합니다. 특수한 기존 암호 호환 조합은 RAR 모듈에 유지합니다. 시스템 달력과 OEM/ANSI/로컬 인코딩은 얇은 작업 프로세스 콜백을 사용하며 Rust가 형식 필드, 암호 절단과 검증을 처리합니다. Qt는 형식 로직에 들어가지 않습니다.
 
@@ -81,7 +81,7 @@ M2는 Windows 런타임에서 정확한 `winapi-util = 0.1.11`의 안전한 `fil
 
 ## 자체 ZIP과 범용 암호화 기본 요소
 
-ZIP 컨테이너, 스트리밍 생성, 일반 다시 쓰기와 AES 래핑은 [독립 Rust 구현](../../engineering/independent-rust-codecs.md)을 사용하며 Deflate/CRC-32는 `xdzip-compression`을 재사용합니다. `rawzip = 0.5.2`, `zip = 9.0.3`, `flate2 = 1.1.10`은 개발 테스트 참조 전용으로 ZIP 제품 또는 빌드 의존 집합에 들어가지 않습니다. 범용 압축 해제를 호출하거나 임의 경로를 인가하지 않습니다. 이를 사용한 과거 제공물의 라이선스 의무는 유지됩니다.
+ZIP 컨테이너, 스트리밍 생성, 일반 다시 쓰기와 AES 래핑은 [독립 Rust 구현](independent-rust-codecs.md)을 사용하며 Deflate/CRC-32는 `xdzip-compression`을 재사용합니다. `rawzip = 0.5.2`, `zip = 9.0.3`, `flate2 = 1.1.10`은 개발 테스트 참조 전용으로 ZIP 제품 또는 빌드 의존 집합에 들어가지 않습니다. 범용 압축 해제를 호출하거나 임의 경로를 인가하지 않습니다. 이를 사용한 과거 제공물의 라이선스 의무는 유지됩니다.
 
 암호화 기본 요소는 기존 전이 의존성에서 직접 의존성으로 승격한 정확한 버전을 재사용합니다. RustCrypto `aes = 0.9.3`, `hmac = 0.13.0`, `sha1 = 0.11.0`, `pbkdf2 = 0.13.0`과 `getrandom = 0.4.2`, `constant_time_eq = 0.6.1`입니다. PBKDF2는 hmac만 활성화합니다. SHA1은 기본 alloc/oid를 비활성화하고 zeroize만 활성화하며 AES/HMAC도 zeroize를 활성화합니다. 형식 라이브러리, 네이티브 압축 라이브러리 또는 실행 시 다운로드를 추가하지 않습니다. CTR, 무작위 솔트 래핑, 파생 결과 분할, 암호 검증 값과 인증된 EOF는 프로젝트가 구현합니다. 범용 기본 요소가 ZIP 파서를 다시 도입해서는 안 됩니다.
 
@@ -91,7 +91,7 @@ ZIP 컨테이너, 스트리밍 생성, 일반 다시 쓰기와 AES 래핑은 [�
 
 ## WP-11 TAR/GZIP
 
-[tar 0.4.46](https://docs.rs/tar/0.4.46/tar/)을 정확히 고정하고(crates.io, [업스트림 소스](https://github.com/alexcrichton/tar-rs), MIT 또는 Apache-2.0) 기본 xattr 기능을 비활성화합니다. 독립적인 개발 테스트 읽기/쓰기 참조 전용입니다. 제품 TAR 헤더, PAX, 생성과 다시 쓰기는 타사 TAR 파서나 Builder, 범용 압축 해제 또는 소유자/권한 복원이 아닌 [독립 Rust 레코드 계층](../../engineering/independent-rust-codecs.md)을 사용합니다. 제품 의존 집합에 tar와 filetime이 돌아오는 것을 금지하며 테스트 및 과거 제공물 라이선스는 유지합니다. 인코딩 시 플랫폼 간 이름 상호 운용을 위해 PAX UTF-8 경로와 범위를 벗어난 숫자를 명시적으로 기록합니다.
+[tar 0.4.46](https://docs.rs/tar/0.4.46/tar/)을 정확히 고정하고(crates.io, [업스트림 소스](https://github.com/alexcrichton/tar-rs), MIT 또는 Apache-2.0) 기본 xattr 기능을 비활성화합니다. 독립적인 개발 테스트 읽기/쓰기 참조 전용입니다. 제품 TAR 헤더, PAX, 생성과 다시 쓰기는 타사 TAR 파서나 Builder, 범용 압축 해제 또는 소유자/권한 복원이 아닌 [독립 Rust 레코드 계층](independent-rust-codecs.md)을 사용합니다. 제품 의존 집합에 tar와 filetime이 돌아오는 것을 금지하며 테스트 및 과거 제공물 라이선스는 유지합니다. 인코딩 시 플랫폼 간 이름 상호 운용을 위해 PAX UTF-8 경로와 범위를 벗어난 숫자를 명시적으로 기록합니다.
 
 GZIP은 타사 제품 의존성이 없는 독립 `xdzip-compression` 구현을 사용하며 RFC 1951 Deflate, RFC 1952 프레이밍과 CRC-32를 포함합니다. 압축 입력과 디코딩 출력에는 호스트 취소와 바이트 예산이 적용됩니다. 완전한 디코딩은 각 구성원의 CRC와 ISIZE를 검증합니다. `flate2` 1.1.10은 개발 테스트 참조입니다. ZIP과 GZIP은 같은 자체 Deflate 알고리즘을 사용합니다. 실행 라우팅은 논리 파일 하나를 제공하는 [독립 GZIP](single-file-streams.md)과 TAR 디렉터리 트리를 제공하는 [TAR.GZ](tar-gzip.md)를 구분합니다.
 

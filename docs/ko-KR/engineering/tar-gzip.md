@@ -12,7 +12,7 @@
 
 TAR과 TAR.GZ의 탐색, 생성과 안전한 압축 풀기를 지원합니다. TAR은 컨테이너이고 GZIP은 압축 필터입니다. 읽을 때 확장자로 백엔드를 선택하지 않고 내용을 감지합니다. ZIP 동작은 호환성을 유지합니다. 중첩 자동 확장, 암호화와 분할 TAR은 활성화하지 않습니다. 일반 단일 파일 GZIP은 별도의 [스트림 계약](single-file-streams.md)을 사용합니다.
 
-TAR 헤더, 숫자, PAX, 스트리밍 인코딩과 다시 쓰기는 독립 Rust 레코드 계층을 사용합니다. GZIP 프레이밍, CRC-32와 Deflate LZ77/Huffman은 공통 `xdzip-compression`을 사용합니다. `tar`와 `flate2`는 개발 테스트 참고용일 뿐이며 이 crate들의 제품 의존성 집합에 들어가지 않습니다. 사양, 출처와 제한은 [자체 형식 계약](../../engineering/independent-rust-codecs.md)을 참고하세요.
+TAR 헤더, 숫자, PAX, 스트리밍 인코딩과 다시 쓰기는 독립 Rust 레코드 계층을 사용합니다. GZIP 프레이밍, CRC-32와 Deflate LZ77/Huffman은 공통 `xdzip-compression`을 사용합니다. `tar`와 `flate2`는 개발 테스트 참고용일 뿐이며 이 crate들의 제품 의존성 집합에 들어가지 않습니다. 사양, 출처와 제한은 [자체 형식 계약](independent-rust-codecs.md)을 참고하세요.
 
 TAR은 일반 파일과 디렉터리를 허용하고 PAX 경로와 GNU 긴 이름을 분석합니다. 심볼릭 링크, 하드 링크, 장치, FIFO, 스파스 파일과 알 수 없는 유형은 추출할 수 없습니다. 모든 출력 이름은 계속 PortablePath와 호스트 충돌 사전 검사를 통과해야 하며 형식 라이브러리는 파일 경로나 압축 해제 권한을 받지 않습니다. 디렉터리 권한, 소유자와 특수 모드는 복원하지 않습니다. 날짜는 표시용 메타데이터이며 복원을 보장하지 않습니다.
 

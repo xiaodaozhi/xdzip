@@ -55,7 +55,7 @@
 - [형식 어댑터 및 외부 SDK 시험 설계](../design/codec-extension-sdk.md)
 - [읽기 전용 외부 SDK 시험 및 실행 범위](../engineering/sdk-trial.md)
 - [격리된 형식 작업 프로세스 계약](../engineering/native-codecs.md)
-- [자체 Rust 형식 및 알고리즘 계약](../../engineering/independent-rust-codecs.md)
+- [자체 Rust 형식 및 알고리즘 계약](../engineering/independent-rust-codecs.md)
 - [보조 디코딩 작업량 계산](../engineering/auxiliary-decoding-work.md)
 - [ZIP 메타데이터 의존성 허용](../engineering/zip-metadata-admission.md)
 - [ZIP 압축 풀기 및 출력 의존성 허용](../engineering/zip-extraction-admission.md)

@@ -22,6 +22,6 @@
 
 필요에 따라 끌어서 놓기와 셸 메뉴 진입점을 구분합니다. 일반 `.gz`는 두 진입점과 단일 파일 생성을 지원합니다. `.tar.gz`와 `.tgz`는 TAR 컨테이너 동작을 유지합니다. XPI/APK/IPA/CBZ는 ZIP 검증과 허용된 프로필을 따릅니다. [단일 파일 스트림](single-file-streams.md)을 참조하세요. 분할 볼륨의 이름 표기와 소스 접근 권한은 [압축 파일 열기](archive-opening.md)를 따릅니다. 번호가 붙은 파일은 레지스트리에서 별도로 재해석하지 않습니다. Windows는 마지막 확장자로 아이콘을 연결하므로 `.tar.gz`는 `gz` 연결을 사용합니다.
 
-구현되었고 자동 검증이 마련된 선언만 추가하세요. 소스를 변경하면 관련 [자체 형식 계약](../../engineering/independent-rust-codecs.md), [형식 작업 프로세스 계약](native-codecs.md), 사용자 기능 문서와 [인수 기준](../../../developers/qa/acceptance.md)을 함께 업데이트하세요. 계획과 진행 상황, 실행 결과는 이슈에 기록하고 생성된 테스트 증거는 `build/` 또는 CI 결과물에 보관하세요.
+구현되었고 자동 검증이 마련된 선언만 추가하세요. 소스를 변경하면 관련 [자체 형식 계약](independent-rust-codecs.md), [형식 작업 프로세스 계약](native-codecs.md), 사용자 기능 문서와 [인수 기준](../../../developers/qa/acceptance.md)을 함께 업데이트하세요. 계획과 진행 상황, 실행 결과는 이슈에 기록하고 생성된 테스트 증거는 `build/` 또는 CI 결과물에 보관하세요.
 
 `creation_wrappers`는 Windows x64용 ZIP SFX 래퍼와 명시적 확장자 `.sfx.exe`를 선언합니다. ZIP 방식 식별자를 재사용하며 암호화와 분할 볼륨은 비활성화합니다. 일반 EXE 처리 기능은 포함되지 않습니다. ISO9660 생성은 호스트 방식 식별자 260과 고정된 수준 0을 사용합니다. [ISO 생성](iso-creation.md)과 [내장 SFX 생성](sfx-creation.md)을 참조하세요.

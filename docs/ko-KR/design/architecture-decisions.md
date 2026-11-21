@@ -148,7 +148,7 @@
 
 이전 계획은 당시 기능에 따라 ZIP, TAR, TAR.GZ, 7z, RAR, CAB, ISO 및 UDF를 각각 수락하고 교체하는 것이었습니다. 아직 통과하지 못한 형식은 현재 구현을 유지하고 조용한 대체 실행이나 RAR/CAB/ISO/UDF의 읽기 전용 범위 확대를 하지 않습니다. 공통 압축 알고리즘은 재사용합니다. 이름, 신원, 허용된 I/O, 자원, 취소 및 확정은 계속 Rust 호스트가 관리하며 Rust로 바뀌어도 작업 프로세스 격리는 없어지지 않습니다.
 
-비용: 호환성, 보안, 성능, 퍼징 및 알고리즘을 장기적으로 독립 유지해야 합니다. 제3자 참조 구현은 테스트에 사용할 수 있지만 이전한 형식은 해당 엔진을 제품 의존성과 배포 파일에서 제거해야 합니다. 자료와 인터페이스 규칙은 [자체 백엔드 계약](../../engineering/independent-rust-codecs.md), 진행 상황과 실제 수락은 [#45](https://github.com/xiaodaozhi/xdzip/issues/45)를 참조하세요.
+비용: 호환성, 보안, 성능, 퍼징 및 알고리즘을 장기적으로 독립 유지해야 합니다. 제3자 참조 구현은 테스트에 사용할 수 있지만 이전한 형식은 해당 엔진을 제품 의존성과 배포 파일에서 제거해야 합니다. 자료와 인터페이스 규칙은 [자체 백엔드 계약](../engineering/independent-rust-codecs.md), 진행 상황과 실제 수락은 [#45](https://github.com/xiaodaozhi/xdzip/issues/45)를 참조하세요.
 
 <a name="xdzip-adr-013-standalone-windows-sfx-host"></a>
 

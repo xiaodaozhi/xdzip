@@ -4,9 +4,9 @@
 
 [English](../../engineering/native-codecs.md) | [简体中文](../../zh-CN/engineering/native-codecs.md) | [繁體中文](../../zh-TW/engineering/native-codecs.md) | [日本語](../../ja-JP/engineering/native-codecs.md) | 한국어 | [Français](../../fr-FR/engineering/native-codecs.md) | [Deutsch](../../de-DE/engineering/native-codecs.md) | [Español](../../es-ES/engineering/native-codecs.md) | [Português (Brasil)](../../pt-BR/engineering/native-codecs.md) | [Русский](../../ru-RU/engineering/native-codecs.md)
 
-7z, RAR, CAB, ISO/UDF 읽기는 격리된 워커의 공유 CXX 경계 뒤에서 [내장 Rust 코덱](../../engineering/independent-rust-codecs.md)을 사용합니다. 같은 워커가 호스트가 제어하는 작업에서 7z 쓰기도 처리합니다. Rust 호스트는 ZIP, TAR, 압축 스트림, DEB와 [새 ISO9660/Joliet 이미지](iso-creation.md)를 프로세스 내부에서 처리합니다. 형식 선택은 내장 경로를 사용하며 어떤 경로도 PATH에서 명령줄 디코더를 찾지 않습니다.
+7z, RAR, CAB, ISO/UDF 읽기는 격리된 워커의 공유 CXX 경계 뒤에서 [내장 Rust 코덱](independent-rust-codecs.md)을 사용합니다. 같은 워커가 호스트가 제어하는 작업에서 7z 쓰기도 처리합니다. Rust 호스트는 ZIP, TAR, 압축 스트림, DEB와 [새 ISO9660/Joliet 이미지](iso-creation.md)를 프로세스 내부에서 처리합니다. 형식 선택은 내장 경로를 사용하며 어떤 경로도 PATH에서 명령줄 디코더를 찾지 않습니다.
 
-CAB는 제품에서 항상 독립 Rust 경로를 사용하며 테스트 스위치, 공식 처리기, 실패 폴백이 없습니다. 전체 프레임, 공유 알고리즘과 리소스 범위는 [자체 계약](../../engineering/independent-rust-codecs.md#cab-read-only-specification), 출처와 참조 분석 역할은 [CAB 소스](cab-format-sources.md)를 참조하세요.
+CAB는 제품에서 항상 독립 Rust 경로를 사용하며 테스트 스위치, 공식 처리기, 실패 폴백이 없습니다. 전체 프레임, 공유 알고리즘과 리소스 범위는 [자체 계약](independent-rust-codecs.md#cab只读规格), 출처와 참조 분석 역할은 [CAB 소스](cab-format-sources.md)를 참조하세요.
 
 호스트는 runtime 시작 전에 검증된 절대 워커 경로 하나를 등록할 수 있습니다. 같은 등록을 반복하면 성공하고 충돌하거나 상대적인 경로는 선택을 바꾸지 않고 거부합니다. 명시적인 개발자 워커 재정의가 우선이고 그다음 등록된 경로를 사용하며 아무것도 등록되지 않은 경우에만 실행 파일 옆 워커를 사용합니다. 데스크톱 CLI 번들은 이 등록으로 데스크톱 워커를 공유합니다. 독립 패키지는 로컬 워커를 유지하며 주변 디렉터리에서 다른 데스크톱 설치를 추론하지 않습니다.
 
@@ -48,11 +48,11 @@ RAR 현대 유효 알고리즘 1은 [제한된 정확한 페이지 기록](../..
 
 암호화되지 않고 분할되지 않았으며 모든 항목을 안전하게 유지할 수 있는 7z 압축 파일은 추가, 교체, 내부 이동을 재사용할 수 있습니다. 솔리드 콘텐츠는 제한된 재구성을 사용합니다. 암호화, 분할, 링크, 지원하지 않는 특수 레코드는 계속 수정할 수 없습니다. 원본 재확인과 완전한 검증 뒤에 같은 볼륨에서 원자적으로 교체합니다. 독립 삭제와 이름 변경 진입점은 이 확장 범위 밖입니다.
 
-RAR는 항상 `xdzip-codec-rar`를 사용하며 공식 폴백 없는 읽기 전용입니다. 구형, RAR5, RAR 7 확장, 암호, 헤더 암호화, 솔리드 압축 파일과 분할 볼륨을 별도로 검증하며 알고리즘과 호환성 제한은 [자체 명세](../../engineering/independent-rust-codecs.md#rar-read-only-specification)를 따릅니다. 생성, 수정, 복구, 암호 복원은 제공하지 않습니다. RAR 초기화/제어 작업은 보조 채널을 사용하고 실제 디코딩 출력은 WORK와 선불 전달을 사용하며 모델 초기화를 파일 크기나 확장 비율에 포함하지 않습니다.
+RAR는 항상 `xdzip-codec-rar`를 사용하며 공식 폴백 없는 읽기 전용입니다. 구형, RAR5, RAR 7 확장, 암호, 헤더 암호화, 솔리드 압축 파일과 분할 볼륨을 별도로 검증하며 알고리즘과 호환성 제한은 [자체 명세](independent-rust-codecs.md#rar只读规格)를 따릅니다. 생성, 수정, 복구, 암호 복원은 제공하지 않습니다. RAR 초기화/제어 작업은 보조 채널을 사용하고 실제 디코딩 출력은 WORK와 선불 전달을 사용하며 모델 초기화를 파일 크기나 확장 비율에 포함하지 않습니다.
 
 CAB는 Store, MSZip, Quantum, LZX를 지원하며 단일 볼륨과 같은 디렉터리의 분할 볼륨은 읽기 전용입니다. Rust는 헤더 관계에 따라 승인된 볼륨 집합을 검증하고 고정한 뒤 원래 볼륨 이름과 경계를 워커로 보냅니다. 볼륨이 없거나 일치하지 않으면 부분 인덱스를 게시할 수 없습니다. [분할 볼륨 계약](archive-opening.md)을 참조하세요. CAB 원시 이름과 UTF-8 선언을 보존하며 구형 이름은 [공유 파일 이름 해석](filename-encoding.md)을 사용하고 호스트 코드 페이지로 출력 경로를 추측하지 않습니다.
 
-`xdzip-codec-optical`은 공식 Iso/Udf 처리기를 링크하지 않고 ISO9660, Joliet, Rock Ridge, UDF를 파싱합니다. 하이브리드 이미지는 UDF 네임스페이스를 우선하며 인식된 UDF 손상 시 ISO로 조용히 폴백하지 않습니다. 승인에는 확장자 대신 콘텐츠를 탐지합니다. ISO/UDF 판독기는 마운트나 부팅 이미지 실행 없이 탐색, 추출, 임시 열기, 내보내기와 검사를 지원합니다. 프로세스 내부 [ISO9660/Joliet 기록기](iso-creation.md)는 일반 데이터 이미지를 생성하며 UDF 생성과 업데이트는 지원하지 않습니다. 부팅 이미지 레코드는 읽을 수 있는 파일일 뿐이며 링크와 특수 객체는 출력할 수 없습니다. 이미지 검사는 구조, 범위와 실제 읽기 가능성을 검증하며 일반 파일에 콘텐츠 체크섬을 보장한다고 주장하지 않습니다. 파티션 맵과 지원하지 않는 확장의 명시적 범위는 [자체 명세](../../engineering/independent-rust-codecs.md#iso-and-udf-read-only-specification)를 참조하세요.
+`xdzip-codec-optical`은 공식 Iso/Udf 처리기를 링크하지 않고 ISO9660, Joliet, Rock Ridge, UDF를 파싱합니다. 하이브리드 이미지는 UDF 네임스페이스를 우선하며 인식된 UDF 손상 시 ISO로 조용히 폴백하지 않습니다. 승인에는 확장자 대신 콘텐츠를 탐지합니다. ISO/UDF 판독기는 마운트나 부팅 이미지 실행 없이 탐색, 추출, 임시 열기, 내보내기와 검사를 지원합니다. 프로세스 내부 [ISO9660/Joliet 기록기](iso-creation.md)는 일반 데이터 이미지를 생성하며 UDF 생성과 업데이트는 지원하지 않습니다. 부팅 이미지 레코드는 읽을 수 있는 파일일 뿐이며 링크와 특수 객체는 출력할 수 없습니다. 이미지 검사는 구조, 범위와 실제 읽기 가능성을 검증하며 일반 파일에 콘텐츠 체크섬을 보장한다고 주장하지 않습니다. 파티션 맵과 지원하지 않는 확장의 명시적 범위는 [자체 명세](independent-rust-codecs.md#iso与udf只读规格)를 참조하세요.
 
 <a name="xdzip-verification-and-delivery"></a>
 
