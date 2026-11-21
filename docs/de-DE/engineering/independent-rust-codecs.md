@@ -1,6 +1,6 @@
 # Vertrag für eigene Rust-Formate und Algorithmen
 
-[English](../../engineering/independent-rust-codecs.md) | [简体中文](../../zh-CN/engineering/independent-rust-codecs.md) | [繁體中文](../../zh-TW/engineering/independent-rust-codecs.md) | [日本語](../../ja-JP/engineering/independent-rust-codecs.md) | [한국어](../../ko-KR/engineering/independent-rust-codecs.md) | [Français](../../fr-FR/engineering/independent-rust-codecs.md) | Deutsch | [Español](../../es-ES/engineering/independent-rust-codecs.md) | [Português (Brasil)](../../pt-BR/engineering/independent-rust-codecs.md)
+[English](../../engineering/independent-rust-codecs.md) | [简体中文](../../zh-CN/engineering/independent-rust-codecs.md) | [繁體中文](../../zh-TW/engineering/independent-rust-codecs.md) | [日本語](../../ja-JP/engineering/independent-rust-codecs.md) | [한국어](../../ko-KR/engineering/independent-rust-codecs.md) | [Français](../../fr-FR/engineering/independent-rust-codecs.md) | Deutsch | [Español](../../es-ES/engineering/independent-rust-codecs.md) | [Português (Brasil)](../../pt-BR/engineering/independent-rust-codecs.md) | [Русский](../../ru-RU/engineering/independent-rust-codecs.md)
 
 Dieser Vertrag beschreibt die integrierten Rust-Formatimplementierungen, ihre unterstützten Profile und die Überprüfung der Kompatibilität. Das [Formatregister](format-registry.md) erfasst zugelassene Operationen; der [Worker-Vertrag](native-codecs.md) beschreibt die Prozesszuordnung.
 

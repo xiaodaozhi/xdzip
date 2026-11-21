@@ -55,7 +55,7 @@
 - [Адаптеры форматов и проект испытания внешнего SDK](../design/codec-extension-sdk.md)
 - [Испытание внешнего SDK в режиме чтения и область выполнения](../engineering/sdk-trial.md)
 - [Контракт изолированного процесса форматов](../engineering/native-codecs.md)
-- [Контракт собственных форматов и алгоритмов Rust](../../engineering/independent-rust-codecs.md)
+- [Контракт собственных форматов и алгоритмов Rust](../engineering/independent-rust-codecs.md)
 - [Учёт вспомогательной работы декодирования](../engineering/auxiliary-decoding-work.md)
 - [Допуск зависимости метаданных ZIP](../engineering/zip-metadata-admission.md)
 - [Допуск зависимостей распаковки и вывода ZIP](../engineering/zip-extraction-admission.md)

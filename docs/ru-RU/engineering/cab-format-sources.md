@@ -2,7 +2,7 @@
 
 [English](../../engineering/cab-format-sources.md) | [简体中文](../../zh-CN/engineering/cab-format-sources.md) | [繁體中文](../../zh-TW/engineering/cab-format-sources.md) | [日本語](../../ja-JP/engineering/cab-format-sources.md) | [한국어](../../ko-KR/engineering/cab-format-sources.md) | [Français](../../fr-FR/engineering/cab-format-sources.md) | [Deutsch](../../de-DE/engineering/cab-format-sources.md) | [Español](../../es-ES/engineering/cab-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/cab-format-sources.md) | Русский
 
-В документе зафиксированы источники, область и ограничения независимой реализации контейнера CAB, MSZIP, LZX и Quantum. Возможности продукта, управление ресурсами и правила замены по форматам определены соответственно [контрактом изолированного процесса форматов](native-codecs.md), [контрактом собственной реализации Rust](../../engineering/independent-rust-codecs.md) и [контрактом разделённых томов](archive-opening.md). Записи об источниках не заменяют приёмку совместимости или проверку лицензий выпуска.
+В документе зафиксированы источники, область и ограничения независимой реализации контейнера CAB, MSZIP, LZX и Quantum. Возможности продукта, управление ресурсами и правила замены по форматам определены соответственно [контрактом изолированного процесса форматов](native-codecs.md), [контрактом собственной реализации Rust](independent-rust-codecs.md) и [контрактом разделённых томов](archive-opening.md). Записи об источниках не заменяют приёмку совместимости или проверку лицензий выпуска.
 
 ## Технические документы Microsoft
 

@@ -1,6 +1,6 @@
 # 자체 Rust 형식 및 알고리즘 계약
 
-[English](../../engineering/independent-rust-codecs.md) | [简体中文](../../zh-CN/engineering/independent-rust-codecs.md) | [繁體中文](../../zh-TW/engineering/independent-rust-codecs.md) | [日本語](../../ja-JP/engineering/independent-rust-codecs.md) | 한국어 | [Français](../../fr-FR/engineering/independent-rust-codecs.md) | [Deutsch](../../de-DE/engineering/independent-rust-codecs.md) | [Español](../../es-ES/engineering/independent-rust-codecs.md) | [Português (Brasil)](../../pt-BR/engineering/independent-rust-codecs.md)
+[English](../../engineering/independent-rust-codecs.md) | [简体中文](../../zh-CN/engineering/independent-rust-codecs.md) | [繁體中文](../../zh-TW/engineering/independent-rust-codecs.md) | [日本語](../../ja-JP/engineering/independent-rust-codecs.md) | 한국어 | [Français](../../fr-FR/engineering/independent-rust-codecs.md) | [Deutsch](../../de-DE/engineering/independent-rust-codecs.md) | [Español](../../es-ES/engineering/independent-rust-codecs.md) | [Português (Brasil)](../../pt-BR/engineering/independent-rust-codecs.md) | [Русский](../../ru-RU/engineering/independent-rust-codecs.md)
 
 이 계약은 내장 Rust 형식 구현, 지원 프로파일 및 호환성 검증 방법을 설명합니다. [형식 레지스트리](format-registry.md)는 허용된 작업을 기록하고 [워커 계약](native-codecs.md)은 프로세스 라우팅을 설명합니다.
 

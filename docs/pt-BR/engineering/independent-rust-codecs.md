@@ -1,6 +1,6 @@
 # Contrato interno de formatos e algoritmos Rust
 
-[English](../../engineering/independent-rust-codecs.md) | [简体中文](../../zh-CN/engineering/independent-rust-codecs.md) | [繁體中文](../../zh-TW/engineering/independent-rust-codecs.md) | [日本語](../../ja-JP/engineering/independent-rust-codecs.md) | [한국어](../../ko-KR/engineering/independent-rust-codecs.md) | [Français](../../fr-FR/engineering/independent-rust-codecs.md) | [Deutsch](../../de-DE/engineering/independent-rust-codecs.md) | [Español](../../es-ES/engineering/independent-rust-codecs.md) | Português (Brasil)
+[English](../../engineering/independent-rust-codecs.md) | [简体中文](../../zh-CN/engineering/independent-rust-codecs.md) | [繁體中文](../../zh-TW/engineering/independent-rust-codecs.md) | [日本語](../../ja-JP/engineering/independent-rust-codecs.md) | [한국어](../../ko-KR/engineering/independent-rust-codecs.md) | [Français](../../fr-FR/engineering/independent-rust-codecs.md) | [Deutsch](../../de-DE/engineering/independent-rust-codecs.md) | [Español](../../es-ES/engineering/independent-rust-codecs.md) | Português (Brasil) | [Русский](../../ru-RU/engineering/independent-rust-codecs.md)
 
 Este contrato descreve as implementações Rust integradas dos formatos, seus perfis compatíveis e como verificar a compatibilidade. O [registro de formatos](format-registry.md) documenta as operações admitidas e o [contrato do processo de trabalho](native-codecs.md) descreve o roteamento de processos.
 
