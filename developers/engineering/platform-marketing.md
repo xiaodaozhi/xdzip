@@ -2,11 +2,11 @@
 
 English | [简体中文](../zh-CN/engineering/platform-marketing.md)
 
-This workflow produces reusable screenshots, backgrounds and promotional images for a website or other presentation. It does not publish anything or assert that the images meet a particular store's submission requirements. The two platforms use the same visual composition as the [Windows materials](../market/windows/README.md), with separate [macOS copy](../../specs/marketing/macos-store.json) and [Linux copy](../../specs/marketing/linux-store.json). Each covers `en-US` and `zh-CN` and four scenes: browse, create, preview and workspace.
+This workflow produces reusable screenshots, backgrounds and promotional images for a website or other presentation. It does not publish anything or assert that the images meet a particular store's submission requirements. The two platforms use the same visual composition as the [Windows materials](../market/windows/README.md), with separate [macOS copy](../../specs/marketing/macos-store.json) and [Linux copy](../../specs/marketing/linux-store.json). Each covers the ten languages in [the product language inventory](../../resources/ui-languages.json) and four scenes: browse, create, preview and workspace.
 
 ## Prepare the image renderer
 
-Node.js and the same pinned `sharp` dependency as the Windows generator are required. Install it once in the shared local toolchain:
+Node.js and the same pinned `sharp` dependency as the Windows generator are required. Install suitable system fonts for the selected languages, including region-specific Chinese, Japanese and Korean fonts when needed, and review the rendered glyphs before use. Install it once in the shared local toolchain:
 
 ```sh
 npm install --prefix build/toolchain/windows-store-tools --no-save --no-package-lock sharp@0.34.5
@@ -23,7 +23,7 @@ Omit `--output` for a timestamped directory under `build/<platform>-store-assets
 
 ## Capture real application windows
 
-Capture on the target OS using the actual xdzip build. Prepare each scene and language in the application, using non-sensitive demonstration data. Review each window for correct content and unobstructed presentation. On macOS, interactive capture uses `screencapture` and asks you to select a window. On Linux it uses `gnome-screenshot`; install it if necessary and activate the desired window during the countdown. Scene preparation and window selection are manual; this workflow does not run the Windows UI automation on other platforms.
+Capture on the target OS using the actual xdzip build. By default the recorder requests all ten languages. Use `--languages ja-JP fr-FR` to select only the languages needed. Prepare each scene and language in the application, using non-sensitive demonstration data. Review each window for correct content and unobstructed presentation. On macOS, interactive capture uses `screencapture` and asks you to select a window. On Linux it uses `gnome-screenshot`; install it if necessary and activate the desired window during the countdown. Scene preparation and window selection are manual; this workflow does not run the Windows UI automation on other platforms.
 
 | Scene | Prepare in the application |
 | --- | --- |
@@ -41,7 +41,7 @@ python3 scripts/capture-platform-store-assets.py --platform linux --executable /
 
 On macOS select the executable inside the `.app/Contents/MacOS/` bundle. The recorder reads its `--version-json` identity, checks the digest before and after capture, and records the operating system, architecture, scene, language, PNG dimensions and digest. `--source-revision` optionally records a full commit matching the executable's abbreviated revision. The identity belongs to the chosen executable: it does not prove which window was captured. The operator must verify the screenshot subject and scene.
 
-Alternatively, arrange already captured native PNGs under `en-US/` and `zh-CN/` using `01-browse.png`, `02-create.png`, `03-preview.png` and `04-workspace.png`, then replace `--interactive` with `--from-directory /path/to/images`. Run the recorder on the corresponding OS with the actual build. The receipt records these as operator-supplied; it cannot establish when, where or from which executable the files were created.
+Alternatively, arrange already captured native PNGs under one directory per selected language, such as `ja-JP/` and `fr-FR/`, using `01-browse.png`, `02-create.png`, `03-preview.png` and `04-workspace.png`, then replace `--interactive` with `--from-directory /path/to/images`. Run the recorder on the corresponding OS with the actual build. The receipt records these as operator-supplied; it cannot establish when, where or from which executable the files were created.
 
 ## Export and review
 
@@ -50,6 +50,6 @@ node scripts/build-macos-store-assets.cjs --captures build/macos-captures --outp
 node scripts/build-linux-store-assets.cjs --captures build/linux-captures --output build/linux-marketing-with-screenshots
 ```
 
-The exporter validates the platform, complete scene set, screenshot digests and dimensions, and refuses to overwrite an existing output. Per language, `screenshots/` contains original PNGs, `backgrounds/` contains the reusable frames, `promotional/` contains composites, and `feature-illustrations/`, `branding/` and `text/` contain other artwork and copy. `capture-source/` preserves the original receipt and PNGs for re-export. `manifest.json` records the output roles and source identity, and `SHA256SUMS.txt` covers all exported files including the manifest. Screenshots are not enlarged; review the generated images and their provenance before use. Do not commit captures or exports.
+The exporter validates the platform, complete four-scene set for each captured language, screenshot digests and dimensions, and refuses to overwrite an existing output. Per language, `screenshots/` contains original PNGs, `backgrounds/` contains the reusable frames, `promotional/` contains composites only for captured languages, and `feature-illustrations/`, `branding/` and `text/` contain other artwork and copy. `capture-source/` preserves the original receipt and PNGs for re-export. `manifest.json` records the output roles and source identity, and `SHA256SUMS.txt` covers all exported files including the manifest. Screenshots are not enlarged; review the generated images and their provenance before use. Do not commit captures or exports.
 
 Run `python3 scripts/test-platform-store-captures.py` and `node scripts/test-platform-store-assets.cjs` for the focused capture and rendering checks. The rendering test uses synthetic fixtures, not actual application screenshots.

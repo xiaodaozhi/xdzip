@@ -2,11 +2,11 @@
 
 [English](../../engineering/platform-marketing.md) | 简体中文
 
-此流程生成可用于官网或其他展示场景的截图、底图和宣传图，不会发布素材，也不声称符合特定商店的上架要求。两个平台沿用 [Windows 素材](../market/windows/README.md)的视觉构图，分别维护 [macOS 文案](../../../specs/marketing/macos-store.json)和 [Linux 文案](../../../specs/marketing/linux-store.json)。当前与 Windows 一致，覆盖 `en-US`、`zh-CN` 和浏览、创建、预览、工作区四个场景。
+此流程生成可用于官网或其他展示场景的截图、底图和宣传图，不会发布素材，也不声称符合特定商店的上架要求。两个平台沿用 [Windows 素材](../market/windows/README.md)的视觉构图，分别维护 [macOS 文案](../../../specs/marketing/macos-store.json)和 [Linux 文案](../../../specs/marketing/linux-store.json)。当前与 Windows 一致，覆盖[产品语言清单](../../../resources/ui-languages.json)中的十种语言和浏览、创建、预览、工作区四个场景。
 
 ## 准备图片生成环境
 
-需要 Node.js 及与 Windows 生成器相同的固定版本 `sharp`，在共享本地工具链中安装一次：
+需要 Node.js 及与 Windows 生成器相同的固定版本 `sharp`。请为目标语言安装适合的系统字体，中文、日文和韩文需要相应地区的字形字体，并在使用前检查渲染结果。在共享本地工具链中安装一次：
 
 ```sh
 npm install --prefix build/toolchain/windows-store-tools --no-save --no-package-lock sharp@0.34.5
@@ -23,7 +23,7 @@ node scripts/build-linux-store-assets.cjs --output build/linux-marketing
 
 ## 截取真实应用窗口
 
-在目标操作系统上使用实际的 xdzip 构建，逐个准备对应语言和场景，并使用不含敏感信息的演示数据。检查窗口内容正确且没有遮挡。macOS 的交互截图使用 `screencapture` 并提示选择窗口。Linux 使用 `gnome-screenshot`，缺少时先安装，在倒计时内激活目标窗口。场景准备和选窗由操作人员完成，此流程不会在其他平台运行 Windows 界面自动化。
+在目标操作系统上使用实际的 xdzip 构建。记录器默认采集十种语言，可用 `--languages ja-JP fr-FR` 仅选择所需语言。逐个准备对应语言和场景，并使用不含敏感信息的演示数据。检查窗口内容正确且没有遮挡。macOS 的交互截图使用 `screencapture` 并提示选择窗口。Linux 使用 `gnome-screenshot`，缺少时先安装，在倒计时内激活目标窗口。场景准备和选窗由操作人员完成，此流程不会在其他平台运行 Windows 界面自动化。
 
 | 场景 | 应用中需准备的内容 |
 | --- | --- |
@@ -41,7 +41,7 @@ python3 scripts/capture-platform-store-assets.py --platform linux --executable /
 
 macOS 请指定 `.app/Contents/MacOS/` 中的可执行文件。记录器读取其 `--version-json` 身份，截图前后检查摘要，并记录操作系统、架构、场景、语言、PNG 尺寸及摘要。可使用 `--source-revision` 记录与程序短提交号匹配的完整提交号。记录的身份属于所选程序，不能证明截图来自哪个窗口；操作人员必须核对截图主体和场景。
 
-也可先在目标平台截图，分别放入 `en-US/`、`zh-CN/` 目录，文件名为 `01-browse.png`、`02-create.png`、`03-preview.png`、`04-workspace.png`，然后将 `--interactive` 换成 `--from-directory /path/to/images`。仍需在对应系统使用实际构建运行记录器。回执将这些图片标记为操作人员提供，不能证明其拍摄时间、地点或对应程序。
+也可先在目标平台截图，分别放入所选语言目录，例如 `ja-JP/`、`fr-FR/`，文件名为 `01-browse.png`、`02-create.png`、`03-preview.png`、`04-workspace.png`，然后将 `--interactive` 换成 `--from-directory /path/to/images`。仍需在对应系统使用实际构建运行记录器。回执将这些图片标记为操作人员提供，不能证明其拍摄时间、地点或对应程序。
 
 ## 导出和检查
 
@@ -50,6 +50,6 @@ node scripts/build-macos-store-assets.cjs --captures build/macos-captures --outp
 node scripts/build-linux-store-assets.cjs --captures build/linux-captures --output build/linux-marketing-with-screenshots
 ```
 
-导出器检查平台、完整场景、截图摘要和尺寸，并拒绝覆盖已有输出。各语言目录中，`screenshots/` 是 PNG 原图，`backgrounds/` 是可复用底图，`promotional/` 是融合图，`feature-illustrations/`、`branding/` 和 `text/` 分别包含其他图形与文案。`capture-source/` 保留原始回执与 PNG，供再次导出使用。`manifest.json` 记录输出用途和来源身份，`SHA256SUMS.txt` 覆盖包括清单在内的所有导出文件。截图不会被放大，使用前应检查图片和来源。不要提交截图或导出结果。
+导出器检查平台、每种已采集语言的完整四场景、截图摘要和尺寸，并拒绝覆盖已有输出。各语言目录中，`screenshots/` 是 PNG 原图，`backgrounds/` 是可复用底图，`promotional/` 是已采集语言的融合图，`feature-illustrations/`、`branding/` 和 `text/` 分别包含其他图形与文案。`capture-source/` 保留原始回执与 PNG，供再次导出使用。`manifest.json` 记录输出用途和来源身份，`SHA256SUMS.txt` 覆盖包括清单在内的所有导出文件。截图不会被放大，使用前应检查图片和来源。不要提交截图或导出结果。
 
 执行 `python3 scripts/test-platform-store-captures.py` 和 `node scripts/test-platform-store-assets.cjs` 可定向检查截图记录和渲染。渲染测试使用合成素材，不是真实应用截图。

@@ -41,16 +41,16 @@
         },
         {
           "id": "03-preview",
-          "eyebrow": "LOOK CLOSER",
+          "eyebrow": "SEE THE CONTENT",
           "headline": [
             "A closer look.",
-            "On demand."
+            "Before you extract."
           ],
           "body": [
             "Preview supported text and images",
             "before you extract."
           ],
-          "caption": "Feature illustration: request previews of supported text, images and static SVG. Not an application screenshot."
+          "caption": "Feature illustration: preview supported text, images and static SVG. Not an application screenshot."
         },
         {
           "id": "04-workspace",
@@ -69,7 +69,7 @@
       "screenshot_captions": {
         "01-browse": "Browse an archive's folder tree, select individual files and view their properties.",
         "02-create": "Create an archive from selected files and choose ZIP compression settings.",
-        "03-preview": "Request an image preview next to archive entries and file properties.",
+        "03-preview": "Show an image preview next to archive entries and file properties.",
         "04-workspace": "Keep two archives open in tabs and browse selected files in grid view."
       },
       "illustration_label": "Feature illustration",
@@ -106,7 +106,8 @@
       "system_requirements": [
         "Ubuntu 24.04, x86_64, X11."
       ],
-      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md"
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
+      "font_family": "Segoe UI, Noto Sans, sans-serif"
     },
     "zh-CN": {
       "promotions": [
@@ -138,16 +139,16 @@
         },
         {
           "id": "03-preview",
-          "eyebrow": "内容预览，按需查看",
+          "eyebrow": "预览文件内容",
           "headline": [
             "先看内容，",
             "再做决定。"
           ],
           "body": [
-            "按需预览受支持的文本与图像，",
+            "预览受支持的文本与图像，",
             "再决定提取哪些文件。"
           ],
-          "caption": "功能示意图：按需预览受支持的文本、图像和静态 SVG。此图不是软件实机截图。"
+          "caption": "功能示意图：预览受支持的文本、图像和静态 SVG。此图不是软件实机截图。"
         },
         {
           "id": "04-workspace",
@@ -166,7 +167,7 @@
       "screenshot_captions": {
         "01-browse": "浏览压缩包目录树，选择文件并查看属性。",
         "02-create": "将选中的文件整理成压缩包，并设置 ZIP 压缩选项。",
-        "03-preview": "在文件列表和属性旁，按需加载图像预览。",
+        "03-preview": "在文件列表和属性旁显示图像预览。",
         "04-workspace": "在标签页中同时打开两个压缩包，并以网格视图浏览选中的文件。"
       },
       "illustration_label": "功能示意图",
@@ -203,7 +204,740 @@
       "system_requirements": [
         "Ubuntu 24.04，x86_64，X11。"
       ],
-      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.zh-CN.md"
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.zh-CN.md",
+      "font_family": "Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif"
+    },
+    "zh-TW": {
+      "promotions": [
+        {
+          "id": "01-browse",
+          "eyebrow": "尋找檔案",
+          "headline": [
+            "先瀏覽，再解壓"
+          ],
+          "body": [
+            "找到並提取需要的檔案。"
+          ],
+          "caption": "瀏覽歸檔並選擇性解壓的功能示意圖。"
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "建立歸檔",
+          "headline": [
+            "整理檔案"
+          ],
+          "body": [
+            "建立歸檔，保護 ZIP 和 7z。"
+          ],
+          "caption": "建立歸檔與 ISO 映像及密碼保護的功能示意圖。"
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "內容預覽",
+          "headline": [
+            "先看內容"
+          ],
+          "body": [
+            "預覽受支援的文字和圖片。"
+          ],
+          "caption": "預覽受支援文字和圖片的功能示意圖。"
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "工作區",
+          "headline": [
+            "有序切換"
+          ],
+          "body": [
+            "多個歸檔，十種介面語言。"
+          ],
+          "caption": "管理多個歸檔及外觀的功能示意圖。"
+        }
+      ],
+      "screenshot_captions": {
+        "01-browse": "瀏覽歸檔目錄，選取檔案並檢視屬性。",
+        "02-create": "建立壓縮檔並設定 ZIP 壓縮選項。",
+        "03-preview": "在檔案列表和屬性旁顯示圖片預覽。",
+        "04-workspace": "在標籤頁中開啟兩個歸檔並以網格檢視檔案。"
+      },
+      "illustration_label": "功能示意圖",
+      "poster_headline": [
+        "打包與解壓，都簡單一點。"
+      ],
+      "square_tagline": "打包與解壓，都簡單一點。",
+      "product_name": "xdzip",
+      "short_description": "開源壓縮檔管理工具。瀏覽、搜尋並選擇性解壓，支援加密與分卷歸檔。",
+      "description": "xdzip 是開源壓縮檔管理工具。瀏覽 ZIP、7z、RAR、TAR、CAB、ISO、UDF 等格式，搜尋檔案並選擇性解壓，無需解開整個歸檔。\n\n建立受支援的壓縮檔與 ISO 資料映像，使用支援的密碼保護，並在符合條件的單檔案歸檔中修改項目。支援依格式而異。\n\n在標籤頁或視窗中開啟多個歸檔，預覽受支援的文字和圖片，選擇淺色或深色主題並使用十種介面語言。基礎操作可離線進行。以其他應用程式開啟的檔案是暫存副本，修改不會自動寫回。\n\n適用於 Ubuntu 24.04 LTS x86_64、X11 和 glibc 2.39 以上，可使用已安裝的 Files（Nautilus）擴充功能。",
+      "features": [
+        "瀏覽 ZIP、7z、RAR、TAR、CAB、ISO 和 UDF。",
+        "搜尋、排序並瀏覽資料夾。",
+        "選擇性解壓檔案和資料夾。",
+        "建立受支援的壓縮檔和 ISO 資料映像。",
+        "使用 ZIP AES-256 和受支援的 7z 密碼保護。",
+        "使用受支援的分卷和固實歸檔。",
+        "修改符合條件的單檔案歸檔項目。",
+        "預覽受支援的文字、圖片和靜態 SVG。",
+        "在標籤頁或視窗中管理多個歸檔。",
+        "檢視任務進度並可請求取消。"
+      ],
+      "keywords": [
+        "壓縮檔管理",
+        "zip",
+        "解壓縮",
+        "7z",
+        "rar",
+        "檔案壓縮",
+        "歸檔解壓"
+      ],
+      "copyright": "版權所有 © 2026 xiaodaozhi。第三方元件保留各自的版權和商標。",
+      "system_requirements": [
+        "Ubuntu 24.04 LTS，x86_64，X11，glibc 2.39 以上。"
+      ],
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
+      "font_family": "Microsoft JhengHei, PingFang TC, Noto Sans CJK TC, sans-serif"
+    },
+    "ja-JP": {
+      "promotions": [
+        {
+          "id": "01-browse",
+          "eyebrow": "ファイルを探す",
+          "headline": [
+            "中身を見て展開"
+          ],
+          "body": [
+            "必要なファイルだけを展開。"
+          ],
+          "caption": "アーカイブの閲覧と選択展開を示す機能イメージ。"
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "アーカイブ作成",
+          "headline": [
+            "すっきり整理"
+          ],
+          "body": [
+            "アーカイブを作成し、ZIP と 7z を保護。"
+          ],
+          "caption": "アーカイブと ISO の作成、パスワード保護を示す機能イメージ。"
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "プレビュー",
+          "headline": [
+            "中身を確認"
+          ],
+          "body": [
+            "対応するテキストや画像をプレビュー。"
+          ],
+          "caption": "対応するテキストと画像のプレビューを示す機能イメージ。"
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "ワークスペース",
+          "headline": [
+            "まとめて管理"
+          ],
+          "body": [
+            "複数のアーカイブ、10 言語の画面。"
+          ],
+          "caption": "複数のアーカイブと外観設定を示す機能イメージ。"
+        }
+      ],
+      "screenshot_captions": {
+        "01-browse": "アーカイブのフォルダーを閲覧し、選択したファイルのプロパティを表示。",
+        "02-create": "ファイルからアーカイブを作成し、ZIP の圧縮設定を選択。",
+        "03-preview": "ファイル一覧とプロパティの横に画像をプレビュー。",
+        "04-workspace": "2 つのアーカイブをタブで開き、グリッド表示で閲覧。"
+      },
+      "illustration_label": "機能イメージ",
+      "poster_headline": [
+        "圧縮と展開を、もっと手軽に。"
+      ],
+      "square_tagline": "圧縮と展開を、もっと手軽に。",
+      "product_name": "xdzip",
+      "short_description": "オープンソースのアーカイブ管理ツール。閲覧、検索、選択したファイルの展開に対応します。",
+      "description": "xdzip はオープンソースのアーカイブ管理ツールです。ZIP、7z、RAR、TAR、CAB、ISO、UDF などを閲覧し、必要なファイルだけを検索して展開できます。\n\n対応するアーカイブや ISO データイメージを作成し、対応するパスワード保護を使用できます。条件を満たす単一ファイルのアーカイブでは項目を変更できます。機能は形式によって異なります。\n\n複数のアーカイブをタブやウィンドウで開き、対応するテキストや画像をプレビューできます。ライト／ダークテーマと 10 言語の画面表示を選べます。基本操作はオフラインで利用できます。他のアプリで開くファイルは一時コピーであり、変更は自動で書き戻されません。\n\nUbuntu 24.04 LTS x86_64、X11、glibc 2.39 以降向け。インストール済みの「ファイル」(Nautilus) 拡張機能を利用できます。",
+      "features": [
+        "ZIP、7z、RAR、TAR、CAB、ISO、UDF を閲覧。",
+        "検索、並べ替え、フォルダー移動。",
+        "必要なファイルやフォルダーだけを展開。",
+        "対応するアーカイブと ISO データイメージを作成。",
+        "ZIP AES-256 と対応する 7z パスワード保護。",
+        "対応する分割・ソリッドアーカイブを利用。",
+        "条件を満たす単一ファイルのアーカイブを変更。",
+        "対応するテキスト、画像、静的 SVG をプレビュー。",
+        "複数のアーカイブをタブやウィンドウで管理。",
+        "タスクの進行状況を確認し、キャンセルを要求。"
+      ],
+      "keywords": [
+        "アーカイブ管理",
+        "zip",
+        "解凍",
+        "7z",
+        "rar",
+        "ファイル圧縮",
+        "アーカイブ展開"
+      ],
+      "copyright": "Copyright © 2026 xiaodaozhi。第三者のコンポーネントにはそれぞれの著作権と商標が適用されます。",
+      "system_requirements": [
+        "Ubuntu 24.04 LTS、x86_64、X11、glibc 2.39 以降。"
+      ],
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
+      "font_family": "Yu Gothic, Hiragino Sans, Noto Sans CJK JP, sans-serif"
+    },
+    "ko-KR": {
+      "promotions": [
+        {
+          "id": "01-browse",
+          "eyebrow": "파일 찾기",
+          "headline": [
+            "먼저 보고 풀기"
+          ],
+          "body": [
+            "필요한 파일만 찾아서 풉니다."
+          ],
+          "caption": "압축 파일 탐색과 선택 압축 풀기를 보여 주는 기능 예시."
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "압축 파일 만들기",
+          "headline": [
+            "파일 정리"
+          ],
+          "body": [
+            "압축 파일을 만들고 ZIP과 7z를 보호합니다."
+          ],
+          "caption": "압축 파일과 ISO 생성 및 암호 보호를 보여 주는 기능 예시."
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "미리보기",
+          "headline": [
+            "내용 미리보기"
+          ],
+          "body": [
+            "지원하는 텍스트와 이미지를 확인합니다."
+          ],
+          "caption": "지원하는 텍스트와 이미지 미리보기를 보여 주는 기능 예시."
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "작업 공간",
+          "headline": [
+            "한곳에서 관리"
+          ],
+          "body": [
+            "여러 압축 파일과 열 가지 언어."
+          ],
+          "caption": "여러 압축 파일과 테마를 보여 주는 기능 예시."
+        }
+      ],
+      "screenshot_captions": {
+        "01-browse": "압축 폴더를 탐색하고 파일을 선택해 속성을 확인합니다.",
+        "02-create": "파일로 압축 파일을 만들고 ZIP 압축 설정을 선택합니다.",
+        "03-preview": "파일 목록과 속성 옆에 이미지 미리보기를 표시합니다.",
+        "04-workspace": "두 압축 파일을 탭으로 열고 격자로 탐색합니다."
+      },
+      "illustration_label": "기능 예시",
+      "poster_headline": [
+        "압축과 풀기를 조금 더 쉽게"
+      ],
+      "square_tagline": "압축과 풀기를 조금 더 쉽게",
+      "product_name": "xdzip",
+      "short_description": "오픈 소스 압축 파일 관리자. 파일을 탐색하고 검색하여 필요한 항목만 풀 수 있습니다.",
+      "description": "xdzip은 오픈 소스 압축 파일 관리자입니다. ZIP, 7z, RAR, TAR, CAB, ISO, UDF 등을 탐색하고 필요한 파일을 검색하여 선택적으로 풀 수 있습니다.\n\n지원하는 압축 파일과 ISO 데이터 이미지를 만들고 지원하는 암호 보호를 사용할 수 있습니다. 조건에 맞는 단일 파일 압축 파일의 항목도 수정할 수 있습니다. 기능은 형식에 따라 다릅니다.\n\n여러 압축 파일을 탭이나 창으로 열고 지원하는 텍스트와 이미지를 미리 볼 수 있습니다. 밝은 테마와 어두운 테마, 열 가지 인터페이스 언어를 선택할 수 있습니다. 기본 작업은 오프라인에서 가능합니다. 다른 앱으로 여는 파일은 임시 복사본이며 변경 사항이 자동으로 반영되지 않습니다.\n\nUbuntu 24.04 LTS x86_64, X11, glibc 2.39 이상용입니다. 설치된 파일 앱(Nautilus) 확장을 사용할 수 있습니다.",
+      "features": [
+        "ZIP, 7z, RAR, TAR, CAB, ISO, UDF 탐색.",
+        "검색, 정렬 및 폴더 이동.",
+        "선택한 파일과 폴더만 압축 풀기.",
+        "지원하는 압축 파일과 ISO 데이터 이미지 만들기.",
+        "ZIP AES-256 및 지원하는 7z 암호 보호.",
+        "지원하는 분할 및 솔리드 압축 파일 사용.",
+        "조건에 맞는 단일 파일 압축 항목 수정.",
+        "지원하는 텍스트, 이미지 및 정적 SVG 미리보기.",
+        "여러 압축 파일을 탭이나 창으로 관리.",
+        "작업 진행 상황 확인 및 취소 요청."
+      ],
+      "keywords": [
+        "압축 파일 관리",
+        "zip",
+        "압축 풀기",
+        "7z",
+        "rar",
+        "파일 압축",
+        "압축 해제"
+      ],
+      "copyright": "Copyright © 2026 xiaodaozhi. 타사 구성 요소에는 각 저작권과 상표가 적용됩니다.",
+      "system_requirements": [
+        "Ubuntu 24.04 LTS, x86_64, X11, glibc 2.39 이상."
+      ],
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
+      "font_family": "Malgun Gothic, Apple SD Gothic Neo, Noto Sans CJK KR, sans-serif"
+    },
+    "fr-FR": {
+      "promotions": [
+        {
+          "id": "01-browse",
+          "eyebrow": "TROUVER",
+          "headline": [
+            "Parcourir",
+            "puis extraire"
+          ],
+          "body": [
+            "Trouvez et extrayez les fichiers utiles."
+          ],
+          "caption": "Illustration : parcourir et extraire une sélection."
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "CRÉER",
+          "headline": [
+            "Tout",
+            "organiser"
+          ],
+          "body": [
+            "Créez des archives et protégez ZIP et 7z."
+          ],
+          "caption": "Illustration : créer des archives et des images ISO, avec protection par mot de passe."
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "PRÉVISUALISER",
+          "headline": [
+            "Voir avant",
+            "d’extraire"
+          ],
+          "body": [
+            "Prévisualisez les textes et images compatibles."
+          ],
+          "caption": "Illustration : prévisualiser les textes et images pris en charge."
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "ESPACE DE TRAVAIL",
+          "headline": [
+            "Tout garder",
+            "à portée"
+          ],
+          "body": [
+            "Plusieurs archives et dix langues."
+          ],
+          "caption": "Illustration : gérer plusieurs archives et choisir un thème."
+        }
+      ],
+      "screenshot_captions": {
+        "01-browse": "Parcourez les dossiers, sélectionnez un fichier et consultez ses propriétés.",
+        "02-create": "Créez une archive et choisissez les paramètres de compression ZIP.",
+        "03-preview": "Affichez un aperçu d’image à côté de la liste et des propriétés.",
+        "04-workspace": "Ouvrez deux archives en onglets et parcourez les fichiers en grille."
+      },
+      "illustration_label": "Illustration",
+      "poster_headline": [
+        "Compresser et extraire, plus simplement"
+      ],
+      "square_tagline": "Compresser et extraire, plus simplement",
+      "product_name": "xdzip",
+      "short_description": "Gestionnaire d’archives libre : parcourez, recherchez et extrayez les fichiers de votre choix.",
+      "description": "xdzip est un gestionnaire d’archives libre. Parcourez les formats ZIP, 7z, RAR, TAR, CAB, ISO, UDF et d’autres, recherchez des fichiers et extrayez une sélection sans tout décompresser.\n\nCréez des archives et des images de données ISO prises en charge, utilisez la protection par mot de passe disponible et modifiez les entrées des archives admissibles à fichier unique. Les fonctions dépendent du format.\n\nOuvrez plusieurs archives dans des onglets ou des fenêtres, prévisualisez les textes et images pris en charge et choisissez un thème clair ou sombre parmi dix langues d’interface. Les fonctions de base marchent hors ligne. Les fichiers ouverts dans une autre application sont des copies temporaires dont les modifications ne sont pas réimportées automatiquement.\n\nPour Ubuntu 24.04 LTS x86_64, X11 et glibc 2.39 ou ultérieur. Utilisez l’extension Fichiers (Nautilus) installée.",
+      "features": [
+        "Parcourir les archives ZIP, 7z, RAR, TAR, CAB, ISO et UDF.",
+        "Rechercher, trier et naviguer dans les dossiers.",
+        "Extraire uniquement les fichiers et dossiers sélectionnés.",
+        "Créer des archives et des images de données ISO prises en charge.",
+        "Utiliser AES-256 pour ZIP et la protection 7z prise en charge.",
+        "Utiliser les archives multivolumes et solides compatibles.",
+        "Modifier les entrées des archives admissibles à fichier unique.",
+        "Prévisualiser les textes, images et SVG statiques compatibles.",
+        "Gérer plusieurs archives dans des onglets ou des fenêtres.",
+        "Suivre les tâches et demander leur annulation."
+      ],
+      "keywords": [
+        "gestion archives",
+        "zip",
+        "décompresser",
+        "7z",
+        "rar",
+        "compression",
+        "extraction"
+      ],
+      "copyright": "Copyright © 2026 xiaodaozhi. Les composants tiers conservent leurs droits d’auteur et marques.",
+      "system_requirements": [
+        "Ubuntu 24.04 LTS, x86_64, X11, glibc 2.39 ou ultérieur."
+      ],
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
+      "font_family": "Segoe UI, Noto Sans, sans-serif"
+    },
+    "de-DE": {
+      "promotions": [
+        {
+          "id": "01-browse",
+          "eyebrow": "DATEIEN FINDEN",
+          "headline": [
+            "Erst ansehen,",
+            "dann entpacken"
+          ],
+          "body": [
+            "Nur benötigte Dateien entpacken."
+          ],
+          "caption": "Funktionsgrafik: Archive durchsuchen und Auswahl entpacken."
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "ARCHIVE ERSTELLEN",
+          "headline": [
+            "Alles",
+            "organisieren"
+          ],
+          "body": [
+            "Archive erstellen und ZIP und 7z schützen."
+          ],
+          "caption": "Funktionsgrafik: Archive und ISO-Abbilder erstellen und schützen."
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "VORSCHAU",
+          "headline": [
+            "Inhalte",
+            "ansehen"
+          ],
+          "body": [
+            "Unterstützte Texte und Bilder ansehen."
+          ],
+          "caption": "Funktionsgrafik: unterstützte Texte und Bilder ansehen."
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "ARBEITSBEREICH",
+          "headline": [
+            "Alles",
+            "im Blick"
+          ],
+          "body": [
+            "Mehrere Archive, zehn Sprachen."
+          ],
+          "caption": "Funktionsgrafik: mehrere Archive und Designs verwalten."
+        }
+      ],
+      "screenshot_captions": {
+        "01-browse": "Archivordner durchsuchen, Datei auswählen und Eigenschaften anzeigen.",
+        "02-create": "Ein Archiv erstellen und ZIP-Komprimierung einstellen.",
+        "03-preview": "Eine Bildvorschau neben Dateiliste und Eigenschaften anzeigen.",
+        "04-workspace": "Zwei Archive in Tabs öffnen und Dateien im Raster ansehen."
+      },
+      "illustration_label": "Funktionsgrafik",
+      "poster_headline": [
+        "Packen und Entpacken, einfacher"
+      ],
+      "square_tagline": "Packen und Entpacken, einfacher",
+      "product_name": "xdzip",
+      "short_description": "Open-Source-Archivverwaltung: Archive durchsuchen und ausgewählte Dateien entpacken.",
+      "description": "xdzip ist eine quelloffene Archivverwaltung. Durchsuchen Sie ZIP, 7z, RAR, TAR, CAB, ISO, UDF und weitere Formate und entpacken Sie nur die benötigten Dateien.\n\nErstellen Sie unterstützte Archive und ISO-Datenabbilder, nutzen Sie verfügbaren Passwortschutz und ändern Sie Einträge in geeigneten Einzeldateiarchiven. Die Funktionen hängen vom Format ab.\n\nÖffnen Sie mehrere Archive in Tabs oder Fenstern, betrachten Sie unterstützte Texte und Bilder und wählen Sie ein helles oder dunkles Design sowie eine von zehn Oberflächensprachen. Grundfunktionen arbeiten offline. In anderen Anwendungen geöffnete Dateien sind temporäre Kopien; Änderungen werden nicht automatisch zurückgeschrieben.\n\nFür Ubuntu 24.04 LTS x86_64, X11 und glibc 2.39 oder neuer. Verwenden Sie die installierte Erweiterung für Dateien (Nautilus).",
+      "features": [
+        "ZIP-, 7z-, RAR-, TAR-, CAB-, ISO- und UDF-Archive durchsuchen.",
+        "Suchen, sortieren und durch Ordner navigieren.",
+        "Ausgewählte Dateien und Ordner entpacken.",
+        "Unterstützte Archive und ISO-Datenabbilder erstellen.",
+        "ZIP AES-256 und unterstützten 7z-Passwortschutz nutzen.",
+        "Unterstützte geteilte und solide Archive verwenden.",
+        "Einträge in geeigneten Einzeldateiarchiven ändern.",
+        "Unterstützte Texte, Bilder und statische SVGs anzeigen.",
+        "Mehrere Archive in Tabs oder Fenstern verwalten.",
+        "Aufgabenfortschritt anzeigen und Abbruch anfordern."
+      ],
+      "keywords": [
+        "Archivverwaltung",
+        "zip",
+        "entpacken",
+        "7z",
+        "rar",
+        "Komprimierung",
+        "Extraktion"
+      ],
+      "copyright": "Copyright © 2026 xiaodaozhi. Komponenten Dritter behalten ihre Urheberrechte und Marken.",
+      "system_requirements": [
+        "Ubuntu 24.04 LTS, x86_64, X11, glibc 2.39 oder neuer."
+      ],
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
+      "font_family": "Segoe UI, Noto Sans, sans-serif"
+    },
+    "es-ES": {
+      "promotions": [
+        {
+          "id": "01-browse",
+          "eyebrow": "BUSCAR",
+          "headline": [
+            "Explora y",
+            "extrae"
+          ],
+          "body": [
+            "Encuentra y extrae lo que necesitas."
+          ],
+          "caption": "Ilustración: explorar y extraer una selección."
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "CREAR",
+          "headline": [
+            "Todo en",
+            "su lugar"
+          ],
+          "body": [
+            "Crea archivos y protege ZIP y 7z."
+          ],
+          "caption": "Ilustración: crear archivos e imágenes ISO y protegerlos con contraseña."
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "VISTA PREVIA",
+          "headline": [
+            "Mira antes",
+            "de extraer"
+          ],
+          "body": [
+            "Previsualiza texto e imágenes compatibles."
+          ],
+          "caption": "Ilustración: previsualizar texto e imágenes compatibles."
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "ESPACIO DE TRABAJO",
+          "headline": [
+            "Todo",
+            "a mano"
+          ],
+          "body": [
+            "Varios archivos y diez idiomas."
+          ],
+          "caption": "Ilustración: gestionar varios archivos y elegir un tema."
+        }
+      ],
+      "screenshot_captions": {
+        "01-browse": "Explora las carpetas, selecciona un archivo y consulta sus propiedades.",
+        "02-create": "Crea un archivo y elige las opciones de compresión ZIP.",
+        "03-preview": "Muestra la vista previa de una imagen junto a la lista y las propiedades.",
+        "04-workspace": "Abre dos archivos en pestañas y explora los ficheros en cuadrícula."
+      },
+      "illustration_label": "Ilustración",
+      "poster_headline": [
+        "Comprimir y extraer, más fácilmente"
+      ],
+      "square_tagline": "Comprimir y extraer, más fácilmente",
+      "product_name": "xdzip",
+      "short_description": "Gestor de archivos comprimidos de código abierto. Explora, busca y extrae solo lo que necesites.",
+      "description": "xdzip es un gestor de archivos comprimidos de código abierto. Explora ZIP, 7z, RAR, TAR, CAB, ISO, UDF y otros formatos, busca archivos y extrae una selección sin descomprimirlo todo.\n\nCrea archivos e imágenes de datos ISO compatibles, usa la protección por contraseña disponible y modifica entradas en archivos de un solo fichero que cumplan los requisitos. Las funciones dependen del formato.\n\nAbre varios archivos comprimidos en pestañas o ventanas, previsualiza texto e imágenes compatibles y elige un tema claro u oscuro y uno de los diez idiomas de la interfaz. Las operaciones básicas funcionan sin conexión. Los archivos abiertos en otras aplicaciones son copias temporales cuyos cambios no se escriben automáticamente en el original.\n\nPara Ubuntu 24.04 LTS x86_64, X11 y glibc 2.39 o posterior. Usa la extensión instalada de Archivos (Nautilus).",
+      "features": [
+        "Explorar ZIP, 7z, RAR, TAR, CAB, ISO y UDF.",
+        "Buscar, ordenar y navegar por carpetas.",
+        "Extraer solo los archivos y carpetas seleccionados.",
+        "Crear archivos e imágenes de datos ISO compatibles.",
+        "Usar AES-256 para ZIP y protección compatible para 7z.",
+        "Usar archivos multivolumen y sólidos compatibles.",
+        "Modificar entradas en archivos de un solo fichero admitidos.",
+        "Previsualizar texto, imágenes y SVG estático compatibles.",
+        "Gestionar varios archivos en pestañas o ventanas.",
+        "Consultar el progreso y solicitar la cancelación."
+      ],
+      "keywords": [
+        "gestor de archivos",
+        "zip",
+        "descomprimir",
+        "7z",
+        "rar",
+        "compresión",
+        "extracción"
+      ],
+      "copyright": "Copyright © 2026 xiaodaozhi. Los componentes de terceros conservan sus derechos y marcas.",
+      "system_requirements": [
+        "Ubuntu 24.04 LTS, x86_64, X11, glibc 2.39 o posterior."
+      ],
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
+      "font_family": "Segoe UI, Noto Sans, sans-serif"
+    },
+    "pt-BR": {
+      "promotions": [
+        {
+          "id": "01-browse",
+          "eyebrow": "ENCONTRAR",
+          "headline": [
+            "Veja antes",
+            "de extrair"
+          ],
+          "body": [
+            "Encontre e extraia o que precisa."
+          ],
+          "caption": "Ilustração: navegar e extrair uma seleção."
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "CRIAR",
+          "headline": [
+            "Tudo em",
+            "seu lugar"
+          ],
+          "body": [
+            "Crie arquivos e proteja ZIP e 7z."
+          ],
+          "caption": "Ilustração: criar arquivos e imagens ISO e protegê-los com senha."
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "PRÉVIA",
+          "headline": [
+            "Confira",
+            "o conteúdo"
+          ],
+          "body": [
+            "Visualize textos e imagens compatíveis."
+          ],
+          "caption": "Ilustração: visualizar textos e imagens compatíveis."
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "ÁREA DE TRABALHO",
+          "headline": [
+            "Tudo",
+            "à mão"
+          ],
+          "body": [
+            "Vários arquivos e dez idiomas."
+          ],
+          "caption": "Ilustração: gerenciar vários arquivos e escolher um tema."
+        }
+      ],
+      "screenshot_captions": {
+        "01-browse": "Navegue pelas pastas, selecione um arquivo e veja suas propriedades.",
+        "02-create": "Crie um arquivo compactado e escolha as opções ZIP.",
+        "03-preview": "Mostre a prévia de uma imagem ao lado da lista e das propriedades.",
+        "04-workspace": "Abra dois arquivos em abas e navegue na visualização em grade."
+      },
+      "illustration_label": "Ilustração",
+      "poster_headline": [
+        "Compactar e extrair com mais facilidade"
+      ],
+      "square_tagline": "Compactar e extrair com mais facilidade",
+      "product_name": "xdzip",
+      "short_description": "Gerenciador de arquivos compactados de código aberto. Navegue, pesquise e extraia o que precisar.",
+      "description": "xdzip é um gerenciador de arquivos compactados de código aberto. Navegue por ZIP, 7z, RAR, TAR, CAB, ISO, UDF e outros formatos, pesquise arquivos e extraia uma seleção sem descompactar tudo.\n\nCrie arquivos e imagens de dados ISO compatíveis, use a proteção por senha disponível e altere entradas em arquivos de um único arquivo que atendam aos requisitos. Os recursos variam conforme o formato.\n\nAbra vários arquivos compactados em abas ou janelas, visualize textos e imagens compatíveis e escolha um tema claro ou escuro e um dos dez idiomas da interface. As operações básicas funcionam offline. Arquivos abertos em outros aplicativos são cópias temporárias cujas alterações não são gravadas automaticamente no original.\n\nPara Ubuntu 24.04 LTS x86_64, X11 e glibc 2.39 ou posterior. Use a extensão instalada do Arquivos (Nautilus).",
+      "features": [
+        "Navegar por ZIP, 7z, RAR, TAR, CAB, ISO e UDF.",
+        "Pesquisar, ordenar e navegar pelas pastas.",
+        "Extrair somente arquivos e pastas selecionados.",
+        "Criar arquivos e imagens de dados ISO compatíveis.",
+        "Usar AES-256 no ZIP e proteção compatível no 7z.",
+        "Usar arquivos divididos e sólidos compatíveis.",
+        "Alterar entradas em arquivos de um único arquivo compatíveis.",
+        "Visualizar textos, imagens e SVG estático compatíveis.",
+        "Gerenciar vários arquivos em abas ou janelas.",
+        "Acompanhar o progresso e solicitar o cancelamento."
+      ],
+      "keywords": [
+        "gerenciador de arquivos",
+        "zip",
+        "descompactar",
+        "7z",
+        "rar",
+        "compactação",
+        "extração"
+      ],
+      "copyright": "Copyright © 2026 xiaodaozhi. Componentes de terceiros mantêm seus direitos autorais e marcas.",
+      "system_requirements": [
+        "Ubuntu 24.04 LTS, x86_64, X11, glibc 2.39 ou posterior."
+      ],
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
+      "font_family": "Segoe UI, Noto Sans, sans-serif"
+    },
+    "ru-RU": {
+      "promotions": [
+        {
+          "id": "01-browse",
+          "eyebrow": "ПОИСК",
+          "headline": [
+            "Сначала",
+            "просмотр"
+          ],
+          "body": [
+            "Найдите и извлеките нужные файлы."
+          ],
+          "caption": "Иллюстрация: просмотр архива и выборочное извлечение."
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "СОЗДАНИЕ",
+          "headline": [
+            "Всё",
+            "по местам"
+          ],
+          "body": [
+            "Создавайте архивы и защищайте ZIP и 7z."
+          ],
+          "caption": "Иллюстрация: создание архивов и ISO с защитой паролем."
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "ПРЕДПРОСМОТР",
+          "headline": [
+            "Проверьте",
+            "содержимое"
+          ],
+          "body": [
+            "Просматривайте тексты и изображения."
+          ],
+          "caption": "Иллюстрация: просмотр поддерживаемых текстов и изображений."
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "РАБОЧАЯ ОБЛАСТЬ",
+          "headline": [
+            "Всё",
+            "под рукой"
+          ],
+          "body": [
+            "Несколько архивов и десять языков."
+          ],
+          "caption": "Иллюстрация: несколько архивов и выбор темы."
+        }
+      ],
+      "screenshot_captions": {
+        "01-browse": "Просмотр папок архива, выбор файла и его свойств.",
+        "02-create": "Создание архива и выбор параметров сжатия ZIP.",
+        "03-preview": "Предпросмотр изображения рядом со списком и свойствами.",
+        "04-workspace": "Два архива во вкладках и просмотр файлов сеткой."
+      },
+      "illustration_label": "Иллюстрация",
+      "poster_headline": [
+        "Упаковывать и распаковывать проще"
+      ],
+      "square_tagline": "Упаковывать и распаковывать проще",
+      "product_name": "xdzip",
+      "short_description": "Открытый менеджер архивов: просматривайте, ищите и извлекайте нужные файлы.",
+      "description": "xdzip — менеджер архивов с открытым исходным кодом. Просматривайте ZIP, 7z, RAR, TAR, CAB, ISO, UDF и другие форматы, ищите файлы и извлекайте выбранное без полной распаковки.\n\nСоздавайте поддерживаемые архивы и образы данных ISO, используйте доступную защиту паролем и изменяйте записи в подходящих однофайловых архивах. Возможности зависят от формата.\n\nОткрывайте несколько архивов во вкладках или окнах, просматривайте поддерживаемые тексты и изображения, выбирайте светлую или тёмную тему и один из десяти языков интерфейса. Основные операции работают без сети. Файлы, открываемые в других приложениях, являются временными копиями; изменения не записываются в архив автоматически.\n\nДля Ubuntu 24.04 LTS x86_64, X11 и glibc 2.39 или новее. Используйте установленное расширение «Файлы» (Nautilus).",
+      "features": [
+        "Просмотр ZIP, 7z, RAR, TAR, CAB, ISO и UDF.",
+        "Поиск, сортировка и навигация по папкам.",
+        "Извлечение выбранных файлов и папок.",
+        "Создание поддерживаемых архивов и образов данных ISO.",
+        "ZIP AES-256 и поддерживаемая защита паролем 7z.",
+        "Работа с поддерживаемыми многотомными и непрерывными архивами.",
+        "Изменение записей в подходящих однофайловых архивах.",
+        "Просмотр поддерживаемых текстов, изображений и статических SVG.",
+        "Несколько архивов во вкладках или окнах.",
+        "Отслеживание и запрос отмены задач."
+      ],
+      "keywords": [
+        "менеджер архивов",
+        "zip",
+        "распаковка",
+        "7z",
+        "rar",
+        "сжатие файлов",
+        "извлечение"
+      ],
+      "copyright": "Copyright © 2026 xiaodaozhi. Сторонние компоненты сохраняют свои авторские права и товарные знаки.",
+      "system_requirements": [
+        "Ubuntu 24.04 LTS, x86_64, X11, glibc 2.39 и новее."
+      ],
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
+      "font_family": "Segoe UI, Noto Sans, sans-serif"
     }
   },
   "links": {

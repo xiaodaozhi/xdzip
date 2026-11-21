@@ -5,18 +5,23 @@ const path = require('node:path');
 const sharp = require('./windows-store-sharp.cjs');
 const {hash,makeCutout} = require('./windows-store-image-utils.cjs');
 async function main() {
-  if (process.argv.length !== 6 || process.argv[4] !== '--root') {
+  const rootIndex = process.argv.indexOf('--root');
+  if (rootIndex < 3 || rootIndex !== process.argv.length - 2) {
     throw Error('Import captures with refresh-windows-store-screenshots.py or supply an explicit --root staging directory');
   }
-  const root = path.resolve(process.argv[5]);
+  const root = path.resolve(process.argv[rootIndex + 1]);
   if (root === path.resolve(__dirname,'..')) throw Error('Import screenshots into an export staging directory');
   const spec = JSON.parse(fs.readFileSync(path.join(root,'specs/marketing/windows-store.json'),'utf8'));
   const inputs = [];
-  for (const [index,locale] of ['en-US','zh-CN'].entries()) {
-    const directory = path.resolve(process.argv[index+2]);
+  const seen = new Set();
+  for (const argument of process.argv.slice(2, rootIndex)) {
+    const directory = path.resolve(argument);
     const sessionBytes = fs.readFileSync(path.join(directory,'capture-session.json'));
     const session = JSON.parse(sessionBytes.toString('utf8').replace(/^\uFEFF/,''));
-    if (!session.complete || session.language !== locale || session.baseline_revision !== spec.baseline.revision ||
+    const locale = session.language;
+    if (!spec.locales[locale] || seen.has(locale)) throw Error('Unknown or duplicate capture language');
+    seen.add(locale);
+    if (!session.complete || session.baseline_revision !== spec.baseline.revision ||
         session.runtime_exe_sha256 !== spec.baseline.runtime_exe_sha256 || !session.pinned_store_candidate) throw Error(`Unverified candidate session: ${locale}`);
     const scenes = spec.locales[locale].promotions.map(p=>p.id).sort();
     if (JSON.stringify(session.images.map(c=>c.scene).sort()) !== JSON.stringify(scenes)) throw Error(`Incomplete scene set: ${locale}`);
@@ -42,7 +47,7 @@ async function main() {
   // All source sets have passed before any existing Store input is replaced.
   for (const input of inputs) {
     const {locale,source,bytes,pixels,cutout,caption,sessionHash} = input;
-    const base = locale === 'en-US' ? 'developers/market/windows' : 'developers/zh-CN/market/windows';
+    const base = locale === 'en-US' ? 'developers/market/windows' : locale === 'zh-CN' ? 'developers/zh-CN/market/windows' : `developers/market/windows/locales/${locale}`;
     const file = `${base}/images/screenshots/${source.scene}.png`;
     const nativeFile = `design/assets/marketing/windows-store-native/${locale}/${source.scene}.png`;
     for (const destination of [file,nativeFile]) fs.mkdirSync(path.dirname(path.join(root,destination)),{recursive:true});

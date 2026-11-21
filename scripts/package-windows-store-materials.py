@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export checked bilingual Store text/images, without binaries or source archives."""
+"""Export checked multilingual Store text/images, without binaries or source archives."""
 import argparse
 import csv
 from datetime import datetime
@@ -32,7 +32,11 @@ def write_json(path, value):
 
 
 def store_base(locale):
-    return Path('developers/market/windows' if locale == 'en-US' else 'developers/zh-CN/market/windows')
+    if locale == 'en-US':
+        return Path('developers/market/windows')
+    if locale == 'zh-CN':
+        return Path('developers/zh-CN/market/windows')
+    return Path('developers/market/windows/locales') / locale
 
 
 def stage_capture_source(archive, stage):
@@ -50,8 +54,10 @@ def stage_capture_source(archive, stage):
     expected = {(locale, scene): caption for locale, copy in spec['locales'].items()
                 for scene, caption in copy['screenshot_captions'].items()}
     actual = [(image['locale'], image['scene']) for image in captures['images']]
-    if len(actual) != len(expected) or set(actual) != set(expected):
-        raise ValueError('Capture source must contain all scenes for both languages')
+    captured_languages = {locale for locale, _ in actual}
+    required = {key for key in expected if key[0] in captured_languages}
+    if not captured_languages or len(actual) != len(required) or set(actual) != required:
+        raise ValueError('Each captured language must contain every scene exactly once')
     spec['baseline'] = baseline
     canvas = saved['screenshot_artwork']['store_canvas']
     if (not isinstance(canvas, list) or len(canvas) != 2
@@ -93,7 +99,7 @@ def export_materials(stage, output, spec, capture_files, msix_version):
     payload = {f'capture-source/{file.as_posix()}': (stage / file).read_bytes() for file in capture_files}
     image_count = 0
     for locale, copy in spec['locales'].items():
-        base = ROOT / store_base(locale)
+        base = ROOT / store_base('zh-CN' if locale == 'zh-CN' else 'en-US')
         field_files = {
             'description.txt': copy['description'],
             'whats-new.txt': copy['release_notes'],
@@ -109,8 +115,11 @@ def export_materials(stage, output, spec, capture_files, msix_version):
                   'keywords', 'copyright', 'additional_license_terms', 'system_requirements', 'privacy_url')}
         fields.update(website=spec['links']['website'], support=spec['links']['support'])
         payload[f'{locale}/text/fields.json'] = (json.dumps(fields, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
-        notes = re.findall(r'```text\n(.*?)\n```', (base / 'reviewer-notes.md').read_text(encoding='utf-8'), re.S)
-        if len(notes) != 2:
+        if 'review_notes' in copy:
+            notes = [copy['review_notes'][key] for key in ('runFullTrust', 'certification')]
+        else:
+            notes = re.findall(r'```text\n(.*?)\n```', (base / 'reviewer-notes.md').read_text(encoding='utf-8'), re.S)
+        if len(notes) != 2 or not all(notes):
             raise ValueError('Expected capability and certification notes')
         for name, value in zip(('runFullTrust.txt', 'certification-notes.txt'), notes):
             payload[f'{locale}/review/{name}'] = (value + '\n').encode('utf-8')
@@ -148,7 +157,7 @@ def export_materials(stage, output, spec, capture_files, msix_version):
                     raise ValueError('Desktop screenshot is too small')
             if role == 'screenshot-artwork' and dimensions == [1920, 1080]:
                 scenes.append(name.removesuffix('-1920x1080.png'))
-        if sorted(scenes) != sorted(copy['screenshot_captions']):
+        if scenes and sorted(scenes) != sorted(copy['screenshot_captions']):
             raise ValueError('Desktop screenshot set is incomplete')
     guide = '''# xdzip Microsoft Store materials / 商店材料
 
@@ -156,8 +165,8 @@ Listing export / 一览导出版本: MSIX {version}, x64
 
 Screenshot source / 实机截图采集版本: MSIX {capture_version}
 
-Use en-US for English (United States), zh-CN for Chinese (China).
-英语（美国）使用 en-US，中文（中国）使用 zh-CN。
+Each language has localized copy and illustrations. Screenshots and composites are included only for languages with verified captures.
+每种语言均有本地化文案和插图，只有存在已验证截图的语言才包含截图和融合图。
 
 | Partner Center field / 页面字段 | File / 文件 |
 | --- | --- |
@@ -180,11 +189,11 @@ Use en-US for English (United States), zh-CN for Chinese (China).
 
 The screenshots folder contains {store_dimensions} plain app views. The promotional
 folder contains 1920 x 1080 artwork with borders, shadows and localized copy.
-Use --4k when exporting to add 3840 x 2160 versions. Review both language versions as individual images.
+Use --4k when exporting to add 3840 x 2160 versions. Review each available language version as individual images.
 Upload the four 1920 x 1080 files in promotional/ to the desktop screenshot field.
 
 screenshots/ 是 {store_dimensions} 的纯应用界面。promotional/ 提供带圆角细边框、阴影和对应语言文案的
-1920 x 1080 宣传图。导出时加 --4k 可另得 3840 x 2160 版本。请逐张审阅两种语言的图片。
+1920 x 1080 宣传图。导出时加 --4k 可另得 3840 x 2160 版本。请逐张审阅已生成语言的图片。
 桌面截图栏上传 promotional/ 中的四张 1920 x 1080 融合宣传图。
 
 Keep this directory as individual files in your backup after submitting updated assets.
@@ -213,6 +222,7 @@ Pricing, age ratings and other account-level submission sections are completed s
     files = [{'file': name, 'bytes': len(data), 'sha256': digest(data)} for name, data in sorted(payload.items())]
     manifest = {'schema_version': 1, 'baseline': spec['baseline'], 'msix_version': msix_version,
                 'render_revision': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
+                'captured_languages': sorted({image['locale'] for image in read_json(stage / CAPTURES)['images']}),
                 'image_count': image_count,
                 'asset_inventory_sha256': digest((stage / ASSETS).read_bytes()), 'files': files}
     payload['manifest.json'] = (json.dumps(manifest, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
@@ -228,7 +238,7 @@ Pricing, age ratings and other account-level submission sections are completed s
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--from-archive', type=Path, required=True, help='capture-source directory from a verified export or backup')
-    parser.add_argument('--output', type=Path, help='new directory for individual bilingual files')
+    parser.add_argument('--output', type=Path, help='new directory for individual multilingual files')
     parser.add_argument('--4k', dest='include_4k', action='store_true', help='also render 3840 × 2160 artwork')
     args = parser.parse_args()
     version = read_json(ROOT / 'VERSION.json')

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Focused checks for the shared native screenshot recording contract."""
 import importlib.util
+import contextlib
+import io
 import json
 from pathlib import Path
 import struct
@@ -47,7 +49,7 @@ class CaptureTests(unittest.TestCase):
                          'dirty': False, 'revision': 'a' * 12}
 
     def record(self, host='darwin'):
-        with patch.object(capture.sys, 'platform', host), patch.object(capture.subprocess, 'run',
+        with contextlib.redirect_stdout(io.StringIO()), patch.object(capture.sys, 'platform', host), patch.object(capture.subprocess, 'run',
                 return_value=SimpleNamespace(stdout=json.dumps(self.identity))):
             capture.capture(self.args)
 
@@ -74,7 +76,7 @@ class CaptureTests(unittest.TestCase):
             self.assertEqual(receipt['platform'], platform)
             self.assertEqual(receipt['provenance'], 'operator-supplied')
             self.assertEqual(receipt['identity']['source_revision'], 'a' * 40)
-            self.assertEqual(len(receipt['images']), 8)
+            self.assertEqual(len(receipt['images']), 4 * len(capture.LANGUAGES))
             for image in receipt['images']:
                 data = (self.args.output / image['file']).read_bytes()
                 self.assertEqual(data, (self.source / image['file']).read_bytes())
@@ -96,15 +98,22 @@ class CaptureTests(unittest.TestCase):
                 Path(destination).write_bytes(png())
                 return SimpleNamespace()
 
-            with patch.object(capture.sys, 'platform', host), patch.object(capture.subprocess, 'run', side_effect=run), \
+            with contextlib.redirect_stdout(io.StringIO()), patch.object(capture.sys, 'platform', host), patch.object(capture.subprocess, 'run', side_effect=run), \
                     patch.object(capture.shutil, 'which', return_value='/available'), patch('builtins.input', return_value=''):
                 capture.capture(self.args)
-            self.assertEqual(len(commands), 8)
+            self.assertEqual(len(commands), 4 * len(capture.LANGUAGES))
             self.assertEqual(commands[0][0], 'screencapture' if target == 'macos' else 'gnome-screenshot')
             if target == 'macos':
                 self.assertIn('-o', commands[0])
             receipt = json.loads((self.args.output / 'capture-session.json').read_text())
             self.assertEqual(receipt['capture_method'], 'interactive-window')
+
+    def test_selected_languages_are_complete(self):
+        self.args.languages = ['ja-JP']
+        self.record()
+        receipt = json.loads((self.args.output / 'capture-session.json').read_text())
+        self.assertEqual(len(receipt['images']), 4)
+        self.assertTrue(all(image['language'] == 'ja-JP' for image in receipt['images']))
 
     def test_corruption_and_missing_files_do_not_leave_output(self):
         item = self.source / 'zh-CN/04-workspace.png'

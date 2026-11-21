@@ -2,7 +2,7 @@
 Set-StrictMode -Version Latest
 
 function New-WindowsStoreDemo {
-    param([string]$Directory, [ValidateSet('en-US', 'zh-CN')][string]$Language)
+    param([string]$Directory, [ValidateSet('zh-CN', 'en-US', 'zh-TW', 'ja-JP', 'ko-KR', 'fr-FR', 'de-DE', 'es-ES', 'pt-BR', 'ru-RU')][string]$Language)
     if (Test-Path -LiteralPath $Directory) { throw 'Demo directory already exists.' }
     if (!('XdzipStoreDemoImages' -as [type])) {
         Add-Type -ReferencedAssemblies System.Drawing @'

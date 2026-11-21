@@ -23,7 +23,7 @@ Browse ZIP, 7z, RAR, TAR, CAB, ISO, UDF and more. Search and sort entries, keep 
 
 Create ZIP, TAR, TAR.GZ, 7z and LZH archives, ISO9660/Joliet data images and Windows x64 ZIP self-extracting files. Use AES-256 ZIP encryption or supported 7z password protection. Compatible formats also support split or solid archives and changes to entries in eligible regular single-file archives.
 
-Choose a light or dark appearance, adjust text size, and use English (US) or Simplified Chinese. View task progress and request cancellation when needed.
+Choose a light or dark appearance, adjust text size, and choose from ten interface languages. View task progress and request cancellation when needed.
 
 Features vary by format. RAR, CAB and UDF are read-only. Existing ISO images cannot be modified. Opening a file in another application creates a temporary local copy. Edits to that copy are not written back automatically.
 
@@ -127,7 +127,7 @@ Feature illustration showing archive and ISO image creation, with password prote
 ### 03-preview
 
 ```text
-Feature illustration: request previews of supported text, images and static SVG. Not an application screenshot.
+Feature illustration: preview supported text, images and static SVG. Not an application screenshot.
 ```
 
 ### 04-workspace
@@ -155,7 +155,7 @@ Create an archive from selected files and choose ZIP compression settings.
 ### 03-preview
 
 ```text
-Request an image preview next to archive entries and file properties.
+Show an image preview next to archive entries and file properties.
 ```
 
 ### 04-workspace

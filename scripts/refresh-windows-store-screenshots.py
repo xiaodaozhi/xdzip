@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Capture and prepare both languages of Microsoft Store imagery on Windows."""
+"""Capture and prepare selected languages of Microsoft Store imagery on Windows."""
 
 import argparse
 from datetime import datetime
@@ -16,7 +16,7 @@ from zipfile import ZipFile
 ROOT = Path(__file__).resolve().parents[1]
 CAPTURE = Path('specs/capture/windows-store.json')
 MARKETING = Path('specs/marketing/windows-store.json')
-LANGUAGES = ('en-US', 'zh-CN')
+LANGUAGES = tuple(item['id'] for item in json.loads((ROOT / 'resources/ui-languages.json').read_text(encoding='utf-8'))['languages'])
 
 
 def read_json(path):
@@ -57,7 +57,7 @@ def verified_package(directory):
     }
 
 
-def capture_pair(package, baseline, output, configuration):
+def capture_languages(package, baseline, output, configuration, languages):
     runtime = output / 'runtime'
     with ZipFile(package) as archive:
         archive.extractall(runtime)
@@ -65,10 +65,11 @@ def capture_pair(package, baseline, output, configuration):
     with executable.open('rb') as stream:
         if digest(stream) != baseline['runtime_exe_sha256']:
             raise ValueError('Extracted xdzip executable differs from the verified package')
-    directories = [output / language for language in LANGUAGES]
+    directories = [output / language for language in languages]
     # Keep the example destination short enough for the default creation window.
     with tempfile.TemporaryDirectory(prefix='', dir=ROOT / 'build') as demo:
-        for language, directory, folder in zip(LANGUAGES, directories, ('Pics', '图片')):
+        for index, (language, directory) in enumerate(zip(languages, directories)):
+            folder = ('图片' if language == 'zh-CN' else 'Pics') + str(index)
             subprocess.run([
                 'powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
                 str(ROOT / 'scripts/capture-windows-store.ps1'), '-Language', language,
@@ -79,9 +80,9 @@ def capture_pair(package, baseline, output, configuration):
     return directories
 
 
-def store_canvas(directories, expected_dpi, canvas, trim):
+def store_canvas(directories, languages, expected_dpi, canvas, trim):
     images = []
-    for directory, language in zip(directories, LANGUAGES):
+    for directory, language in zip(directories, languages):
         receipt = read_json(directory / 'capture-session.json')
         if receipt.get('schema_version') != 3 or receipt.get('complete') is not True or receipt['language'] != language:
             raise ValueError(f'{language} capture session is incomplete or has the wrong language')
@@ -100,11 +101,19 @@ def store_canvas(directories, expected_dpi, canvas, trim):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--package-dir', type=Path, required=True, help='verified store-msix-package directory')
-    parser.add_argument('--output', type=Path, help='new directory below build/ for individual bilingual files')
+    parser.add_argument('--output', type=Path, help='new directory below build/ for individual multilingual files')
     parser.add_argument('--dpi', type=int, default=144, help='expected Windows window DPI, 144 for 150%% scaling')
-    parser.add_argument('--from-captures', nargs=2, metavar=('EN', 'ZH'), type=Path, help='reuse two completed local sessions')
+    parser.add_argument('--languages', nargs='+', choices=LANGUAGES, help='capture or reuse these languages in order; defaults to all when capturing')
+    parser.add_argument('--from-captures', nargs='+', metavar='DIR', type=Path, help='reuse completed sessions in --languages order')
     parser.add_argument('--4k', dest='include_4k', action='store_true', help='also render 3840 × 2160 artwork')
     args = parser.parse_args()
+    if args.languages is None:
+        args.languages = ([read_json(directory / 'capture-session.json')['language'] for directory in args.from_captures]
+                          if args.from_captures else LANGUAGES)
+    if any(language not in LANGUAGES for language in args.languages):
+        parser.error('Capture session has an unknown language')
+    if len(set(args.languages)) != len(args.languages) or (args.from_captures and len(args.from_captures) != len(args.languages)):
+        parser.error('Select unique languages and one capture directory per language')
     if args.dpi <= 0:
         parser.error('--dpi must be positive')
 
@@ -121,11 +130,11 @@ def main():
         config = read_json(ROOT / CAPTURE)
         config['baseline'].update({key: baseline[key] for key in config['baseline']})
         write_json(staging / CAPTURE, config)
-        directories = args.from_captures or capture_pair(package, baseline, staging, staging / CAPTURE)
+        directories = args.from_captures or capture_languages(package, baseline, staging, staging / CAPTURE, args.languages)
         spec = read_json(ROOT / MARKETING)
         spec['baseline'].update(baseline)
         artwork = spec['screenshot_artwork']
-        artwork['store_canvas'] = store_canvas(directories, args.dpi, artwork['store_canvas'], artwork['cleanup']['top_trim_pixels'])
+        artwork['store_canvas'] = store_canvas(directories, args.languages, args.dpi, artwork['store_canvas'], artwork['cleanup']['top_trim_pixels'])
         write_json(staging / MARKETING, spec)
         subprocess.run(['node', str(ROOT / 'scripts/import-windows-store-captures.cjs'),
                         *(str(path.resolve()) for path in directories), '--root', str(staging)], cwd=ROOT, check=True)

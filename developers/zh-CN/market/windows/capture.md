@@ -4,11 +4,19 @@
 
 ## 从审核过的截图集导出
 
-首次使用时，在仓库根目录安装共享的图像工具。
+为目标语言安装适合的系统字体，中文、日文和韩文需要相应地区的字形字体，使用前检查渲染结果。首次使用时，在仓库根目录安装共享的图像工具。
 
 ```powershell
 npm install --prefix build/toolchain/windows-store-tools --no-save --no-package-lock sharp@0.34.5
 ```
+
+如只需十语言文案、底图和插图，可先运行：
+
+```powershell
+node scripts/build-windows-store-assets.cjs --backgrounds-only
+```
+
+该输出不包含原生截图或融合图。可用 `--output build/windows-backgrounds` 指定尚不存在的目录，或加 `--4k` 生成额外的 4K 图片。
 
 使用已审核的导出目录或备份中的 `capture-source`。导出复用原始截图像素，与当前版本的宣传版式和一览文案合成。
 
@@ -18,15 +26,15 @@ python scripts/package-windows-store-materials.py --from-archive "D:/Store-backu
 
 命令会打印 `build/store-listing/` 下的新目录。用 `--output` 可指定目录，加 `--4k` 可另得 3840 × 2160 成品。审阅导出的图片，商店桌面截图栏使用对应语言 `promotional/` 下的 1920 × 1080 文件。提交新图后，把整个目录作为独立文件归档。
 
-## 用已校验 MSIX 截取两种语言
+## 用已校验 MSIX 截取指定语言
 
-需要刷新截图时，在 Windows 桌面执行以下命令。它核验商店程序包和回执，采集两种语言的四个场景，并导出相同结构的目录。
+需要刷新截图时，在 Windows 桌面执行以下命令。它核验商店程序包和回执，默认采集十种产品语言的四个场景，并导出相同结构的目录。
 
 ```powershell
 python scripts/refresh-windows-store-screenshots.py --package-dir build/store-msix-package
 ```
 
-默认截图 DPI 为 144（150% 缩放）。如已有两套匹配的捕获会话，可传入 `--from-captures EN ZH`。原图和采集来源一并导出到 `capture-source/`，`manifest.json` 记录采集和导出的身份。
+默认截图 DPI 为 144（150% 缩放）。可用 `--languages en-US zh-CN` 选择部分语言。如已有匹配的捕获会话，可按相同顺序传入 `--languages en-US zh-CN --from-captures EN ZH`。原有双语截图备份仍可按上述导出命令复用，其他语言仅生成文案和插图，不伪造截图。原图和采集来源一并导出到 `capture-source/`，`manifest.json` 记录采集和导出的身份。
 
 ## 只截图一种语言
 
@@ -41,7 +49,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/capture-windows-
 
 `-ExecutionPolicy Bypass` 只对这次调用生效，不修改已保存的执行策略。脚本按[截图配置](../../../../specs/capture/windows-store.json)中的 SHA-256 查找匹配的完整运行目录，包括打包输出或已有候选目录；工作树也可以复用主检出目录的运行文件。脚本不构建或安装应用。每次运行都会从[源码](../../../../scripts/windows-store-demo.psm1)在新输出目录中生成自有演示图片和压缩包，不下载素材。
 
-运行文件位于其他位置时可以指定 `-Executable`。为新构建截图时，还需传入预期的 `-ExpectedSha256`，并可提供已知的 `-SourceRevision`，见[工具更新与复用](../../engineering/windows-screenshots.md)。其他构建不会被标为固定商店候选。`-DemoDirectory` 表示明确复用自有演示文件，不重新生成；中文需要 `设计交付.zip`、`图片精选.zip`，英文需要 `Design delivery.zip`、`Photo collection.zip`，另需 `coastline.png`、`dusk.png`、`forest.png`。指定的 `-OutputDirectory` 已存在时会拒绝运行，防止覆盖此前图片。
+运行文件位于其他位置时可以指定 `-Executable`。为新构建截图时，还需传入预期的 `-ExpectedSha256`，并可提供已知的 `-SourceRevision`，见[工具更新与复用](../../engineering/windows-screenshots.md)。其他构建不会被标为固定商店候选。`-DemoDirectory` 表示明确复用自有演示文件，不重新生成；简体中文需要 `设计交付.zip`、`图片精选.zip`，其他语言需要 `Design delivery.zip`、`Photo collection.zip`，另需 `coastline.png`、`dusk.png`、`forest.png`。指定的 `-OutputDirectory` 已存在时会拒绝运行，防止覆盖此前图片。
 
 可用 `-CreationDemoDirectory build/Photos-zh` 指定尚不存在的短路径，让创建截图中的演示目录更简洁。脚本为新目录设置受保护的权限，复制三张演示图片，将压缩包命名为“图片合集.zip”（英文为 `Photos.zip`），并在截图前聚焦 ZIP 控件。不指定时使用输出目录内的 `create-demo/`。已有目录会被拒绝，不会覆盖。
 

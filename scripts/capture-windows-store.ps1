@@ -16,7 +16,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/capture-windows-stor
 [CmdletBinding(DefaultParameterSetName = 'Capture')]
 param(
     [Parameter(Mandatory = $true, ParameterSetName = 'Capture')]
-    [ValidateSet('zh-CN', 'en-US')][string]$Language,
+    [ValidateSet('zh-CN', 'en-US', 'zh-TW', 'ja-JP', 'ko-KR', 'fr-FR', 'de-DE', 'es-ES', 'pt-BR', 'ru-RU')][string]$Language,
     [Parameter(ParameterSetName = 'Capture')][string]$Executable,
     [Parameter(ParameterSetName = 'Capture')][string]$DemoDirectory,
     [Parameter(ParameterSetName = 'Capture')][string]$CreationDemoDirectory,

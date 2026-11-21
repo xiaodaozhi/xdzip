@@ -4,11 +4,19 @@ English | [简体中文](../../zh-CN/market/windows/capture.md)
 
 ## Export from an approved capture set
 
-Install the shared image tooling once from the repository root.
+Install suitable system fonts for the selected languages, including region-specific Chinese, Japanese and Korean fonts where needed. Review the rendered glyphs before use. Install the shared image tooling once from the repository root.
 
 ```powershell
 npm install --prefix build/toolchain/windows-store-tools --no-save --no-package-lock sharp@0.34.5
 ```
+
+To generate ten-language copy, backgrounds and illustrations without screenshots, run:
+
+```powershell
+node scripts/build-windows-store-assets.cjs --backgrounds-only
+```
+
+This output contains no native screenshots or composites. Add `--output build/windows-backgrounds` for a chosen fresh directory, or `--4k` for additional 4K artwork.
 
 Use the `capture-source` folder from a reviewed export or backup. This reuses the actual screenshot pixels and uses the current artwork and listing copy.
 
@@ -18,15 +26,15 @@ python scripts/package-windows-store-materials.py --from-archive "D:/Store-backu
 
 The command prints the new output directory under `build/store-listing/`. Override it with `--output` or add `--4k` for 3840 × 2160 artwork. Review the exported images and use each language's 1920 × 1080 files in `promotional/` for the Store desktop screenshot field. Keep the directory as individual files after submitting new artwork.
 
-## Capture both languages from a verified MSIX
+## Capture languages from a verified MSIX
 
-When screenshots need refreshing, use this command on a Windows desktop. It validates the Store package and its receipts, captures all four scenes in both languages, and exports the same directory layout.
+When screenshots need refreshing, use this command on a Windows desktop. It validates the Store package and its receipts, captures all four scenes in all ten product languages, and exports the same directory layout.
 
 ```powershell
 python scripts/refresh-windows-store-screenshots.py --package-dir build/store-msix-package
 ```
 
-The default capture DPI is 144 (150% scaling). A matching pair of existing capture sessions can be passed with `--from-captures EN ZH`. The raw screenshot provenance is copied to `capture-source/`. The source and output identities are recorded in `manifest.json`.
+The default capture DPI is 144 (150% scaling). Use `--languages en-US zh-CN` to select a subset. Matching completed sessions can be reused with `--languages en-US zh-CN --from-captures EN ZH` in the same order. Archived bilingual captures remain usable with the export command above; other languages receive text and illustrations, not invented screenshots. The raw screenshot provenance is copied to `capture-source/`. The source and output identities are recorded in `manifest.json`.
 
 ## Capture just one language
 
@@ -41,7 +49,7 @@ For a double-click entry point, open [capture-windows-store-zh-CN.cmd](../../../
 
 `-ExecutionPolicy Bypass` applies only to this invocation; it does not change the saved execution policy. The script looks for a complete runtime matching the SHA-256 in the [capture configuration](../../../specs/capture/windows-store.json), including the package output or an existing candidate directory. A worktree can reuse that runtime from the main checkout. It does not build or install the application. Owned demonstration images and archives are generated from [source](../../../scripts/windows-store-demo.psm1) inside each fresh output directory, without downloads.
 
-Pass `-Executable` for another location. To capture a newer build, also supply its intended `-ExpectedSha256`, and optionally its known `-SourceRevision`; see [updating and reusing the tools](../../engineering/windows-screenshots.md). Other builds are not labeled as the pinned Store candidate. `-DemoDirectory` explicitly reuses an owned demo set instead of generating one. It must contain `设计交付.zip` and `图片精选.zip` for Chinese, or `Design delivery.zip` and `Photo collection.zip` for English, plus `coastline.png`, `dusk.png` and `forest.png`. An existing `-OutputDirectory` is rejected to preserve earlier images.
+Pass `-Executable` for another location. To capture a newer build, also supply its intended `-ExpectedSha256`, and optionally its known `-SourceRevision`; see [updating and reusing the tools](../../engineering/windows-screenshots.md). Other builds are not labeled as the pinned Store candidate. `-DemoDirectory` explicitly reuses an owned demo set instead of generating one. It must contain `设计交付.zip` and `图片精选.zip` for Simplified Chinese, or `Design delivery.zip` and `Photo collection.zip` for all other languages, plus `coastline.png`, `dusk.png` and `forest.png`. An existing `-OutputDirectory` is rejected to preserve earlier images.
 
 Use `-CreationDemoDirectory build/Photos-en` (or another fresh directory) to give the creation screenshot a short demonstration path. The script creates it with a protected ACL, copies the three images, sets a localized archive name (`Photos.zip` or `图片合集.zip`) and focuses the ZIP control before capture. Without this option, it uses `create-demo/` inside the output directory. Existing directories are rejected, not overwritten.
 

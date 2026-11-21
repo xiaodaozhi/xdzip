@@ -9,7 +9,7 @@ const artwork = require('./build-windows-store-assets.cjs');
 const ROOT = path.resolve(__dirname, '..');
 const hash = data => crypto.createHash('sha256').update(data).digest('hex');
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
-const languageNames = ['en-US', 'zh-CN'];
+const languageNames = readJson(path.join(ROOT, 'resources/ui-languages.json')).languages.map(item => item.id);
 const scenes = ['01-browse', '02-create', '03-preview', '04-workspace'];
 
 function argumentsFor(platform, args) {
@@ -46,7 +46,7 @@ function capturesFor(options) {
   if (fs.lstatSync(manifestFile).isSymbolicLink()) throw Error('Capture receipt cannot be a symlink');
   const session = readJson(manifestFile);
   if (session.schema_version !== 1 || session.platform !== options.platform || session.complete !== true ||
-      session.provenance !== 'operator-supplied' || !Array.isArray(session.images) || session.images.length !== 8 ||
+      session.provenance !== 'operator-supplied' || !Array.isArray(session.images) || !session.images.length || session.images.length % scenes.length !== 0 ||
       !session.identity || typeof session.identity.version !== 'string' || !Number.isInteger(session.identity.build) ||
       typeof session.identity.dirty !== 'boolean' || !/^[a-f0-9]{12}$/.test(session.identity.revision) ||
       !/^[a-f0-9]{64}$/.test(session.identity.executable_sha256) ||
@@ -73,15 +73,17 @@ function capturesFor(options) {
     if (hash(bytes) !== entry.sha256) throw Error(`Capture digest differs: ${key}`);
     byScene.set(key, {entry, bytes});
   }
-  for (const language of languageNames) for (const scene of scenes)
+  const capturedLanguages = new Set(session.images.map(entry => entry.language));
+  for (const language of capturedLanguages) for (const scene of scenes)
     if (!byScene.has(`${language}/${scene}`)) throw Error('Capture scenes are incomplete');
   return {session, byScene, manifest: fs.readFileSync(manifestFile)};
 }
 
 async function build(platform, args = process.argv.slice(2)) {
-  if (!['macos', 'linux'].includes(platform)) throw Error('Unsupported platform');
+  if (!['windows', 'macos', 'linux'].includes(platform)) throw Error('Unsupported platform');
   const options = argumentsFor(platform, args);
   if (!options) return;
+  if (platform === 'windows' && options.captures) throw Error('Use the Windows verified capture export workflow for screenshots');
   const config = readJson(path.join(ROOT, 'specs', 'marketing', `${platform}-store.json`));
   if (config.schema_version !== 1 || config.platform !== platform ||
       JSON.stringify(config.scenes) !== JSON.stringify(scenes) ||
@@ -159,6 +161,7 @@ async function build(platform, args = process.argv.slice(2)) {
         await save(`${language}/branding/hero-${width}x${height}.png`, await renderSvg(artwork.hero(width, height)), 'hero', language);
     }
     const manifest = {schema_version: 1, platform, purpose: config.purpose,
+      captured_languages: captures ? [...new Set(captures.session.images.map(entry => entry.language))] : [],
       status: captures ? 'operator-supplied-captures' : 'backgrounds-only',
       provenance_note: 'Screenshot subject, scene and application identity require operator review; no native capture is inferred from PNG bytes.',
       capture: captures?.session.identity ?? null,
@@ -176,4 +179,4 @@ async function build(platform, args = process.argv.slice(2)) {
   }
 }
 
-module.exports = {build};
+module.exports = {build, capturesFor};

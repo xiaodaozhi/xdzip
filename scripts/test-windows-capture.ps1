@@ -52,7 +52,8 @@ Expect-Rejection { Test-WindowsCaptureSession $OutputDirectory } 'missing scene'
 $receipt.expected_scenes = @('test'); Write-Receipt
 
 Add-Type -AssemblyName System.IO.Compression
-foreach ($language in @('en-US', 'zh-CN')) {
+$languageInventory = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../resources/ui-languages.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+foreach ($language in $languageInventory.languages.id) {
     $directory = Join-Path $OutputDirectory $language
     $null = New-WindowsStoreDemo -Directory $directory -Language $language
     $archiveNames = @(Get-ChildItem -LiteralPath $directory -Filter '*.zip')
@@ -75,4 +76,4 @@ foreach ($language in @('en-US', 'zh-CN')) {
         if ((Get-WindowsCaptureHash $file.FullName) -ne (Get-WindowsCaptureHash (Join-Path $repeat $file.Name))) { throw 'Demo inputs are not reproducible.' }
     }
 }
-Write-Host 'PASS: PNG/RGBA, exact crop pixels, JPEG rejection, dimensions, exclusive writes, receipt hashes/scenes/paths, bounded waits, bilingual reproducible fixtures. No desktop capture.'
+Write-Host 'PASS: PNG/RGBA, exact crop pixels, JPEG rejection, dimensions, exclusive writes, receipt hashes/scenes/paths, bounded waits, ten-language reproducible fixtures. No desktop capture.'

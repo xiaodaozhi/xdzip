@@ -4,11 +4,11 @@ English | [简体中文](../../zh-CN/market/windows/README.md)
 
 [Build and submit the Store package](build.md).
 
-[Copy-ready listing text](listing.md) contains the description, ten product features, supplemental fields, seven keywords, copyright, developer information, links and image captions. Use the English page for `en-US` and the [Chinese page](../../zh-CN/market/windows/listing.md) for `zh-CN`.
+[Copy-ready listing text](listing.md) contains the description, ten product features, supplemental fields, seven keywords, copyright, developer information, links and image captions. Use the English page for `en-US` and the [Chinese page](../../zh-CN/market/windows/listing.md) for `zh-CN`. All ten languages are maintained in the marketing configuration and exported as per-language text files.
 
 The listing targets Windows 11 x64 under the [support policy](../../../docs/engineering/support-policy.md). Store updates are managed by Microsoft Store. The Store build declares modern and classic Explorer menus, and modern commands require a Microsoft Store signature.
 
-Use the [local export and capture guide](capture.md) to get the bilingual submission files. For routine package updates with accurate existing artwork, carry forward the images in Partner Center and update the release notes as needed.
+Use the [local export and capture guide](capture.md) to get the ten-language material files. For routine package updates with accurate existing artwork, carry forward the images in Partner Center and update the release notes as needed.
 
 ## Store listing language policy
 
@@ -20,7 +20,7 @@ For other language families, add the Partner Center region entries that are avai
 
 | Partner Center field | Material or decision |
 | --- | --- |
-| Product name | `xdzip`, unchanged in both languages |
+| Product name | `xdzip`, unchanged in all languages |
 | Description | Plain-text block in [listing.md](listing.md), below 10,000 characters |
 | What's new | Localized text in [listing.md](listing.md#whats-new-in-this-version) |
 | Product features | Ten separate entries, each below 200 characters; the portal adds bullets |
@@ -38,7 +38,7 @@ The app's existing Apache-2.0 license and third-party notices are unchanged by t
 
 ## App screenshots and combined promotional artwork
 
-Export the approved capture set or [capture both languages from a verified MSIX](capture.md). Review the exported PNGs at their intended size. The capture uses default window dimensions and owned demonstration files. The exporter trims the top pixel row, cleans the corners and adds a thin inner border before compositing the window with localized copy and a soft shadow.
+Export the approved capture set or [capture selected languages from a verified MSIX](capture.md). Review the exported PNGs at their intended size. The capture uses default window dimensions and owned demonstration files. The exporter trims the top pixel row, cleans the corners and adds a thin inner border before compositing the window with localized copy and a soft shadow.
 
 Upload the four **1920 × 1080** combined images in each language's `promotional/` directory to the desktop screenshot field in this order.
 
@@ -57,13 +57,13 @@ Each language's `branding/` directory includes 71, 150 and 300 px app icons, 512
 
 ## Editing and regeneration
 
-Edit [the marketing specification](../../../specs/marketing/windows-store.json) for bilingual copy and the [artwork generator](../../../scripts/build-windows-store-assets.cjs) for composition. Refresh the Markdown copy with `node scripts/build-windows-store-assets.cjs`. Use the [local export command](capture.md#export-from-an-approved-capture-set) to re-render archived screenshots with updated copy or artwork. The preview template is included in the export.
+Edit [the marketing specification](../../../specs/marketing/windows-store.json) for ten-language copy and the [artwork generator](../../../scripts/build-windows-store-assets.cjs) for composition. Refresh the Markdown copy with `node scripts/build-windows-store-assets.cjs`. Use the [local export command](capture.md#export-from-an-approved-capture-set) to re-render archived screenshots with updated copy or artwork. A capture-based export includes composites only for languages with verified captures.
 
 After submitting updated images, copy the reviewed export directory to your backup location. Keep `capture-source/`, the uploaded images and `manifest.json` so you can re-render or reproduce the submission. The manifest records the capture package separately from the listing export version. Root README screenshots are maintained independently.
 
 ## Reviewer fields
 
-[Reviewer notes](reviewer-notes.md) provide copy-ready `runFullTrust` justification and certification instructions in both languages. Use them in their corresponding submission fields. The material pack does not indicate approval of a restricted capability or submission for certification. Pricing, age ratings and account-level questionnaires remain separate Partner Center sections.
+[Reviewer notes](reviewer-notes.md) provide copy-ready English and Simplified Chinese `runFullTrust` justification and certification instructions. The ten-language export includes localized reviewer notes. Use them in their corresponding submission fields. The material pack does not indicate approval of a restricted capability or submission for certification. Pricing, age ratings and account-level questionnaires remain separate Partner Center sections.
 
 ## Official references
 

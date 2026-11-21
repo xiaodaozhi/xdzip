@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 const {spawnSync} = require('node:child_process');
 const sharp = require('./windows-store-sharp.cjs');
 const root = path.resolve(__dirname, '..');
-const languages = ['en-US', 'zh-CN'];
+const languages = require('../resources/ui-languages.json').languages.map(item => item.id);
 const scenes = ['01-browse', '02-create', '03-preview', '04-workspace'];
 const hash = data => crypto.createHash('sha256').update(data).digest('hex');
 const run = (platform, args, success = true) => {
@@ -30,6 +30,14 @@ const run = (platform, args, success = true) => {
       }
       const session = {schema_version: 1, platform, complete: true, provenance: 'operator-supplied',
         identity: {version: 'test', build: 1, revision: 'a'.repeat(12), source_revision: 'a'.repeat(40), dirty: false, executable_sha256: 'b'.repeat(64)}, images: records};
+      fs.writeFileSync(path.join(input, 'capture-session.json'), JSON.stringify(session));
+      const readCapture = require('./build-platform-store-assets.cjs').capturesFor;
+      const subset = {...session, images: session.images.filter(entry => entry.language === 'ja-JP')};
+      fs.writeFileSync(path.join(input, 'capture-session.json'), JSON.stringify(subset));
+      assert.equal(readCapture({platform, captures: input}).byScene.size, 4);
+      subset.images.pop();
+      fs.writeFileSync(path.join(input, 'capture-session.json'), JSON.stringify(subset));
+      assert.throws(() => readCapture({platform, captures: input}), /Incomplete|incomplete/);
       fs.writeFileSync(path.join(input, 'capture-session.json'), JSON.stringify(session));
       const output = path.join(base, `${platform}-export`);
       run(platform, ['--captures', input, '--output', output]);

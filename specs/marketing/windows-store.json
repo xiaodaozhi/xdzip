@@ -60,7 +60,7 @@
       "voice_title": "",
       "developer": "xiaodaozhi",
       "short_description": "Pack and unpack, a little simpler. Open and switch between multiple archives in one window. Work with encrypted archives, split archives, and ISO disc images. Add, delete, or rename files directly inside ZIP archives.",
-      "description": "Pack and unpack, a little simpler\n\nxdzip is an open-source archive manager for Windows. Look inside an archive, find the files you need, and extract selected items without unpacking everything. Basic compression, extraction and browsing work offline, with archive contents processed on your PC. No xdzip account is required.\n\nBrowse ZIP, 7z, RAR, TAR, CAB, ISO, UDF and more. Search and sort entries, keep folders first, and open several archives in tabs or separate windows. Preview supported text, images or static SVG before extracting.\n\nCreate ZIP, TAR, TAR.GZ, 7z and LZH archives, ISO9660/Joliet data images and Windows x64 ZIP self-extracting files. Use AES-256 ZIP encryption or supported 7z password protection. Compatible formats also support split or solid archives and changes to entries in eligible regular single-file archives.\n\nChoose a light or dark appearance, adjust text size, and use English (US) or Simplified Chinese. View task progress and request cancellation when needed.\n\nFeatures vary by format. RAR, CAB and UDF are read-only. Existing ISO images cannot be modified. Opening a file in another application creates a temporary local copy. Edits to that copy are not written back automatically.\n\nDesigned for Windows 11 PCs with x64 processors. Create or extract archives using either the modern File Explorer menu or the classic menu under Show more options. Choose default file types in Windows Settings. Microsoft Store manages updates for this edition.",
+      "description": "Pack and unpack, a little simpler\n\nxdzip is an open-source archive manager for Windows. Look inside an archive, find the files you need, and extract selected items without unpacking everything. Basic compression, extraction and browsing work offline, with archive contents processed on your PC. No xdzip account is required.\n\nBrowse ZIP, 7z, RAR, TAR, CAB, ISO, UDF and more. Search and sort entries, keep folders first, and open several archives in tabs or separate windows. Preview supported text, images or static SVG before extracting.\n\nCreate ZIP, TAR, TAR.GZ, 7z and LZH archives, ISO9660/Joliet data images and Windows x64 ZIP self-extracting files. Use AES-256 ZIP encryption or supported 7z password protection. Compatible formats also support split or solid archives and changes to entries in eligible regular single-file archives.\n\nChoose a light or dark appearance, adjust text size, and choose from ten interface languages. View task progress and request cancellation when needed.\n\nFeatures vary by format. RAR, CAB and UDF are read-only. Existing ISO images cannot be modified. Opening a file in another application creates a temporary local copy. Edits to that copy are not written back automatically.\n\nDesigned for Windows 11 PCs with x64 processors. Create or extract archives using either the modern File Explorer menu or the classic menu under Show more options. Choose default file types in Windows Settings. Microsoft Store manages updates for this edition.",
       "release_notes": "Restored the XDZip tray menu after the tray icon is turned back on.",
       "features": [
         "Browse ZIP, 7z, RAR, TAR, CAB, ISO, UDF and other archive formats.",
@@ -93,7 +93,7 @@
       "screenshot_captions": {
         "01-browse": "Browse an archive's folder tree, select individual files and view their properties.",
         "02-create": "Create an archive from selected files and choose ZIP compression settings.",
-        "03-preview": "Request an image preview next to archive entries and file properties.",
+        "03-preview": "Show an image preview next to archive entries and file properties.",
         "04-workspace": "Keep two archives open in tabs and browse selected files in grid view."
       },
       "poster_headline": [
@@ -131,16 +131,16 @@
         },
         {
           "id": "03-preview",
-          "eyebrow": "LOOK CLOSER",
+          "eyebrow": "SEE THE CONTENT",
           "headline": [
             "A closer look.",
-            "On demand."
+            "Before you extract."
           ],
           "body": [
             "Preview supported text and images",
             "before you extract."
           ],
-          "caption": "Feature illustration: request previews of supported text, images and static SVG. Not an application screenshot."
+          "caption": "Feature illustration: preview supported text, images and static SVG. Not an application screenshot."
         },
         {
           "id": "04-workspace",
@@ -151,12 +151,13 @@
           ],
           "body": [
             "Multiple archives. Light or dark.",
-            "English and Simplified Chinese."
+            "Ten interface languages."
           ],
           "caption": "Feature illustration: organize multiple archives and choose a light or dark appearance. Not an application screenshot."
         }
       ],
-      "sort_title": ""
+      "sort_title": "",
+      "font_family": "Segoe UI, Noto Sans, sans-serif"
     },
     "zh-CN": {
       "product_name": "xdzip",
@@ -164,7 +165,7 @@
       "voice_title": "",
       "developer": "xiaodaozhi",
       "short_description": "打包与解压，都简单一点。在同一个窗口打开并切换多个压缩包，支持加密包、分卷包和 ISO 光盘映像。想调整包内内容，可以直接在 ZIP 包里添加、删除或重命名文件。",
-      "description": "打包与解压，都简单一点。\n\nxdzip 是一款开源 Windows 压缩包管理工具。先查看包内内容，找到需要的文件，再选择性解压，不必每次都解开整个压缩包。基础压缩、解压和浏览可离线使用，归档内容在你的电脑上处理，无需注册 xdzip 账户。\n\n浏览 ZIP、7z、RAR、TAR、CAB、ISO、UDF 等格式。通过搜索、排序和目录导航查找文件，排序时文件夹优先。可在多个标签页或独立窗口中打开压缩包，并在解压前预览受支持的文本、图像或静态 SVG。\n\n创建 ZIP、TAR、TAR.GZ、7z 和 LZH 压缩包、ISO9660/Joliet 数据镜像及 Windows x64 ZIP 自解压文件。可使用 ZIP AES-256 加密或受支持的 7z 密码保护。分卷、固实归档和编辑单文件压缩包条目取决于具体格式及配置。\n\n按喜好选择浅色或深色外观，调整字号，在简体中文与英语之间切换。任务进度清晰可见，需要时可以请求取消。\n\n不同格式的功能有所区别。RAR、CAB 和 UDF 为只读，已有 ISO 镜像无法修改。使用其他应用打开包内文件时会生成本地临时副本，对副本的编辑不会自动写回压缩包。\n\n面向配备 x64 处理器的 Windows 11 电脑。可通过文件资源管理器的现代右键菜单或“显示更多选项”中的传统菜单创建、解压归档，也可以在 Windows 设置中选择默认打开的文件类型。此版本由 Microsoft Store 管理更新。",
+      "description": "打包与解压，都简单一点。\n\nxdzip 是一款开源 Windows 压缩包管理工具。先查看包内内容，找到需要的文件，再选择性解压，不必每次都解开整个压缩包。基础压缩、解压和浏览可离线使用，归档内容在你的电脑上处理，无需注册 xdzip 账户。\n\n浏览 ZIP、7z、RAR、TAR、CAB、ISO、UDF 等格式。通过搜索、排序和目录导航查找文件，排序时文件夹优先。可在多个标签页或独立窗口中打开压缩包，并在解压前预览受支持的文本、图像或静态 SVG。\n\n创建 ZIP、TAR、TAR.GZ、7z 和 LZH 压缩包、ISO9660/Joliet 数据镜像及 Windows x64 ZIP 自解压文件。可使用 ZIP AES-256 加密或受支持的 7z 密码保护。分卷、固实归档和编辑单文件压缩包条目取决于具体格式及配置。\n\n按喜好选择浅色或深色外观，调整字号，选择十种界面语言。任务进度清晰可见，需要时可以请求取消。\n\n不同格式的功能有所区别。RAR、CAB 和 UDF 为只读，已有 ISO 镜像无法修改。使用其他应用打开包内文件时会生成本地临时副本，对副本的编辑不会自动写回压缩包。\n\n面向配备 x64 处理器的 Windows 11 电脑。可通过文件资源管理器的现代右键菜单或“显示更多选项”中的传统菜单创建、解压归档，也可以在 Windows 设置中选择默认打开的文件类型。此版本由 Microsoft Store 管理更新。",
       "release_notes": "修复重新启用托盘图标后无法打开 xdzip 托盘菜单的问题。",
       "features": [
         "浏览 ZIP、7z、RAR、TAR、CAB、ISO、UDF 等归档格式。",
@@ -197,7 +198,7 @@
       "screenshot_captions": {
         "01-browse": "浏览压缩包目录树，选择文件并查看属性。",
         "02-create": "将选中的文件整理成压缩包，并设置 ZIP 压缩选项。",
-        "03-preview": "在文件列表和属性旁，按需加载图像预览。",
+        "03-preview": "在文件列表和属性旁显示图像预览。",
         "04-workspace": "在标签页中同时打开两个压缩包，并以网格视图浏览选中的文件。"
       },
       "poster_headline": [
@@ -234,16 +235,16 @@
         },
         {
           "id": "03-preview",
-          "eyebrow": "内容预览，按需查看",
+          "eyebrow": "预览文件内容",
           "headline": [
             "先看内容，",
             "再做决定。"
           ],
           "body": [
-            "按需预览受支持的文本与图像，",
+            "预览受支持的文本与图像，",
             "再决定提取哪些文件。"
           ],
-          "caption": "功能示意图：按需预览受支持的文本、图像和静态 SVG。此图不是软件实机截图。"
+          "caption": "功能示意图：预览受支持的文本、图像和静态 SVG。此图不是软件实机截图。"
         },
         {
           "id": "04-workspace",
@@ -254,12 +255,834 @@
           ],
           "body": [
             "多标签浏览，浅色或深色主题，",
-            "支持简体中文与英语。"
+            "支持十种界面语言。"
           ],
           "caption": "功能示意图：管理多个压缩包，并选择浅色或深色外观。此图不是软件实机截图。"
         }
       ],
-      "sort_title": ""
+      "sort_title": "",
+      "font_family": "Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif"
+    },
+    "zh-TW": {
+      "product_name": "xdzip",
+      "short_title": "xdzip",
+      "voice_title": "",
+      "developer": "xiaodaozhi",
+      "short_description": "開源壓縮檔管理工具。瀏覽、搜尋並選擇性解壓，支援加密與分卷歸檔。",
+      "description": "xdzip 是開源壓縮檔管理工具。瀏覽 ZIP、7z、RAR、TAR、CAB、ISO、UDF 等格式，搜尋檔案並選擇性解壓，無需解開整個歸檔。\n\n建立受支援的壓縮檔與 ISO 資料映像，使用支援的密碼保護，並在符合條件的單檔案歸檔中修改項目。支援依格式而異。\n\n在標籤頁或視窗中開啟多個歸檔，預覽受支援的文字和圖片，選擇淺色或深色主題並使用十種介面語言。基礎操作可離線進行。以其他應用程式開啟的檔案是暫存副本，修改不會自動寫回。\n\n適用於 Windows 11 x64，可使用檔案總管的現代或傳統選單建立及解壓歸檔。Microsoft Store 版由商店管理更新。",
+      "release_notes": "修復重新啟用通知區域圖示後無法開啟托盤選單的問題。",
+      "features": [
+        "瀏覽 ZIP、7z、RAR、TAR、CAB、ISO 和 UDF。",
+        "搜尋、排序並瀏覽資料夾。",
+        "選擇性解壓檔案和資料夾。",
+        "建立受支援的壓縮檔和 ISO 資料映像。",
+        "使用 ZIP AES-256 和受支援的 7z 密碼保護。",
+        "使用受支援的分卷和固實歸檔。",
+        "修改符合條件的單檔案歸檔項目。",
+        "預覽受支援的文字、圖片和靜態 SVG。",
+        "在標籤頁或視窗中管理多個歸檔。",
+        "檢視任務進度並可請求取消。"
+      ],
+      "keywords": [
+        "壓縮檔管理",
+        "zip",
+        "解壓縮",
+        "7z",
+        "rar",
+        "檔案壓縮",
+        "歸檔解壓"
+      ],
+      "copyright": "版權所有 © 2026 xiaodaozhi。第三方元件保留各自的版權和商標。",
+      "additional_license_terms": "",
+      "system_requirements": [
+        "Windows 11，x64 電腦。"
+      ],
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
+      "illustration_label": "功能示意圖",
+      "screenshot_captions": {
+        "01-browse": "瀏覽歸檔目錄，選取檔案並檢視屬性。",
+        "02-create": "建立壓縮檔並設定 ZIP 壓縮選項。",
+        "03-preview": "在檔案列表和屬性旁顯示圖片預覽。",
+        "04-workspace": "在標籤頁中開啟兩個歸檔並以網格檢視檔案。"
+      },
+      "poster_headline": [
+        "打包與解壓，都簡單一點。"
+      ],
+      "square_tagline": "打包與解壓，都簡單一點。",
+      "promotions": [
+        {
+          "id": "01-browse",
+          "eyebrow": "尋找檔案",
+          "headline": [
+            "先瀏覽，再解壓"
+          ],
+          "body": [
+            "找到並提取需要的檔案。"
+          ],
+          "caption": "瀏覽歸檔並選擇性解壓的功能示意圖。"
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "建立歸檔",
+          "headline": [
+            "整理檔案"
+          ],
+          "body": [
+            "建立歸檔，保護 ZIP 和 7z。"
+          ],
+          "caption": "建立歸檔與 ISO 映像及密碼保護的功能示意圖。"
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "內容預覽",
+          "headline": [
+            "先看內容"
+          ],
+          "body": [
+            "預覽受支援的文字和圖片。"
+          ],
+          "caption": "預覽受支援文字和圖片的功能示意圖。"
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "工作區",
+          "headline": [
+            "有序切換"
+          ],
+          "body": [
+            "多個歸檔，十種介面語言。"
+          ],
+          "caption": "管理多個歸檔及外觀的功能示意圖。"
+        }
+      ],
+      "sort_title": "",
+      "font_family": "Microsoft JhengHei, PingFang TC, Noto Sans CJK TC, sans-serif",
+      "review_notes": {
+        "runFullTrust": "xdzip 是使用 Qt Quick 和 Rust 的 x64 桌面歸檔管理工具。runFullTrust 用於啟動現有桌面程式，並使用檔案 API 瀏覽、建立及解壓使用者選取的歸檔。程式會啟動隨附工作程序，暫存檔用於處理和使用者要求的開啟操作。一般操作不要求系統管理員或提權，也不安裝服務或驅動程式。現代檔案總管選單需要 Microsoft Store 簽章；MSIX 版本的應用程式內更新器停用，由 Microsoft Store 管理更新。基本功能可離線使用，無需帳戶；歸檔內容、路徑及密碼不會自動上傳。",
+        "certification": "基本功能無需登入、訂閱、測試帳密或外部解壓程式。開啟包含文字和 PNG 的 ZIP，選取檔案並顯示屬性與預覽，再開啟另一個歸檔以測試標籤頁和檢視切換。可選取檔案建立 ZIP，或選取歸檔項目並解壓到可寫入位置；檢查進度及取消。RAR、CAB、UDF 為唯讀；可建立但不能修改現有 ISO。加密與分卷支援依格式而異。以其他應用程式開啟時使用暫存副本，修改不會自動寫回。商店安裝後可檢查檔案關聯及檔案總管現代、傳統選單；應用程式不會自動變更預設程式。目標為 Windows 11 x64，展示截圖使用自有示範內容。"
+      }
+    },
+    "ja-JP": {
+      "product_name": "xdzip",
+      "short_title": "xdzip",
+      "voice_title": "",
+      "developer": "xiaodaozhi",
+      "short_description": "オープンソースのアーカイブ管理ツール。閲覧、検索、選択したファイルの展開に対応します。",
+      "description": "xdzip はオープンソースのアーカイブ管理ツールです。ZIP、7z、RAR、TAR、CAB、ISO、UDF などを閲覧し、必要なファイルだけを検索して展開できます。\n\n対応するアーカイブや ISO データイメージを作成し、対応するパスワード保護を使用できます。条件を満たす単一ファイルのアーカイブでは項目を変更できます。機能は形式によって異なります。\n\n複数のアーカイブをタブやウィンドウで開き、対応するテキストや画像をプレビューできます。ライト／ダークテーマと 10 言語の画面表示を選べます。基本操作はオフラインで利用できます。他のアプリで開くファイルは一時コピーであり、変更は自動で書き戻されません。\n\nWindows 11 x64 向け。エクスプローラーの新しいメニューまたはクラシックメニューから作成と展開ができます。Microsoft Store 版の更新はストアが管理します。",
+      "release_notes": "トレイアイコンを再び有効にした後、トレイメニューを開けない問題を修正しました。",
+      "features": [
+        "ZIP、7z、RAR、TAR、CAB、ISO、UDF を閲覧。",
+        "検索、並べ替え、フォルダー移動。",
+        "必要なファイルやフォルダーだけを展開。",
+        "対応するアーカイブと ISO データイメージを作成。",
+        "ZIP AES-256 と対応する 7z パスワード保護。",
+        "対応する分割・ソリッドアーカイブを利用。",
+        "条件を満たす単一ファイルのアーカイブを変更。",
+        "対応するテキスト、画像、静的 SVG をプレビュー。",
+        "複数のアーカイブをタブやウィンドウで管理。",
+        "タスクの進行状況を確認し、キャンセルを要求。"
+      ],
+      "keywords": [
+        "アーカイブ管理",
+        "zip",
+        "解凍",
+        "7z",
+        "rar",
+        "ファイル圧縮",
+        "アーカイブ展開"
+      ],
+      "copyright": "Copyright © 2026 xiaodaozhi。第三者のコンポーネントにはそれぞれの著作権と商標が適用されます。",
+      "additional_license_terms": "",
+      "system_requirements": [
+        "Windows 11、x64 PC。"
+      ],
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
+      "illustration_label": "機能イメージ",
+      "screenshot_captions": {
+        "01-browse": "アーカイブのフォルダーを閲覧し、選択したファイルのプロパティを表示。",
+        "02-create": "ファイルからアーカイブを作成し、ZIP の圧縮設定を選択。",
+        "03-preview": "ファイル一覧とプロパティの横に画像をプレビュー。",
+        "04-workspace": "2 つのアーカイブをタブで開き、グリッド表示で閲覧。"
+      },
+      "poster_headline": [
+        "圧縮と展開を、もっと手軽に。"
+      ],
+      "square_tagline": "圧縮と展開を、もっと手軽に。",
+      "promotions": [
+        {
+          "id": "01-browse",
+          "eyebrow": "ファイルを探す",
+          "headline": [
+            "中身を見て展開"
+          ],
+          "body": [
+            "必要なファイルだけを展開。"
+          ],
+          "caption": "アーカイブの閲覧と選択展開を示す機能イメージ。"
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "アーカイブ作成",
+          "headline": [
+            "すっきり整理"
+          ],
+          "body": [
+            "アーカイブを作成し、ZIP と 7z を保護。"
+          ],
+          "caption": "アーカイブと ISO の作成、パスワード保護を示す機能イメージ。"
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "プレビュー",
+          "headline": [
+            "中身を確認"
+          ],
+          "body": [
+            "対応するテキストや画像をプレビュー。"
+          ],
+          "caption": "対応するテキストと画像のプレビューを示す機能イメージ。"
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "ワークスペース",
+          "headline": [
+            "まとめて管理"
+          ],
+          "body": [
+            "複数のアーカイブ、10 言語の画面。"
+          ],
+          "caption": "複数のアーカイブと外観設定を示す機能イメージ。"
+        }
+      ],
+      "sort_title": "",
+      "font_family": "Yu Gothic, Hiragino Sans, Noto Sans CJK JP, sans-serif",
+      "review_notes": {
+        "runFullTrust": "xdzip は Qt Quick と Rust を使用する x64 デスクトップアーカイブマネージャーです。runFullTrust は既存のデスクトップアプリを起動し、ユーザーが選択したアーカイブをデスクトップ API で閲覧、作成、展開するために必要です。付属のワーカープロセスと一時ファイルを処理やユーザーが要求したファイルのオープンに使用します。通常操作では管理者権限や昇格を要求せず、サービスやドライバーもインストールしません。新しいエクスプローラーメニューには Microsoft Store の署名が必要です。MSIX ではアプリ内更新機能を無効にし、Store が更新を管理します。基本機能はオフラインで利用でき、アカウントは不要です。内容、パス、パスワードは自動送信されません。",
+        "certification": "基本操作にサインイン、サブスクリプション、テスト資格情報、外部展開ツールは不要です。テキストと PNG を含む ZIP を開き、ファイルを選択してプロパティとプレビューを確認してください。別のアーカイブでタブと表示切替を確認できます。ZIP を作成し、選択した項目を書き込み可能な場所に展開して進行とキャンセルを確認してください。RAR、CAB、UDF は読み取り専用です。ISO は作成できますが既存のものは変更できません。暗号化と分割は形式により異なります。他のアプリで開くのは一時コピーで、変更は自動で書き戻されません。Store インストール後に関連付けと新旧のエクスプローラーメニューを確認できます。既定アプリは自動変更されません。対象は Windows 11 x64、スクリーンショットは自社のデモ素材です。"
+      }
+    },
+    "ko-KR": {
+      "product_name": "xdzip",
+      "short_title": "xdzip",
+      "voice_title": "",
+      "developer": "xiaodaozhi",
+      "short_description": "오픈 소스 압축 파일 관리자. 파일을 탐색하고 검색하여 필요한 항목만 풀 수 있습니다.",
+      "description": "xdzip은 오픈 소스 압축 파일 관리자입니다. ZIP, 7z, RAR, TAR, CAB, ISO, UDF 등을 탐색하고 필요한 파일을 검색하여 선택적으로 풀 수 있습니다.\n\n지원하는 압축 파일과 ISO 데이터 이미지를 만들고 지원하는 암호 보호를 사용할 수 있습니다. 조건에 맞는 단일 파일 압축 파일의 항목도 수정할 수 있습니다. 기능은 형식에 따라 다릅니다.\n\n여러 압축 파일을 탭이나 창으로 열고 지원하는 텍스트와 이미지를 미리 볼 수 있습니다. 밝은 테마와 어두운 테마, 열 가지 인터페이스 언어를 선택할 수 있습니다. 기본 작업은 오프라인에서 가능합니다. 다른 앱으로 여는 파일은 임시 복사본이며 변경 사항이 자동으로 반영되지 않습니다.\n\nWindows 11 x64용입니다. 파일 탐색기의 최신 메뉴 또는 클래식 메뉴에서 압축 파일을 만들거나 풀 수 있습니다. Microsoft Store 버전의 업데이트는 스토어가 관리합니다.",
+      "release_notes": "트레이 아이콘을 다시 켠 후 트레이 메뉴가 열리지 않는 문제를 수정했습니다.",
+      "features": [
+        "ZIP, 7z, RAR, TAR, CAB, ISO, UDF 탐색.",
+        "검색, 정렬 및 폴더 이동.",
+        "선택한 파일과 폴더만 압축 풀기.",
+        "지원하는 압축 파일과 ISO 데이터 이미지 만들기.",
+        "ZIP AES-256 및 지원하는 7z 암호 보호.",
+        "지원하는 분할 및 솔리드 압축 파일 사용.",
+        "조건에 맞는 단일 파일 압축 항목 수정.",
+        "지원하는 텍스트, 이미지 및 정적 SVG 미리보기.",
+        "여러 압축 파일을 탭이나 창으로 관리.",
+        "작업 진행 상황 확인 및 취소 요청."
+      ],
+      "keywords": [
+        "압축 파일 관리",
+        "zip",
+        "압축 풀기",
+        "7z",
+        "rar",
+        "파일 압축",
+        "압축 해제"
+      ],
+      "copyright": "Copyright © 2026 xiaodaozhi. 타사 구성 요소에는 각 저작권과 상표가 적용됩니다.",
+      "additional_license_terms": "",
+      "system_requirements": [
+        "Windows 11, x64 PC."
+      ],
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
+      "illustration_label": "기능 예시",
+      "screenshot_captions": {
+        "01-browse": "압축 폴더를 탐색하고 파일을 선택해 속성을 확인합니다.",
+        "02-create": "파일로 압축 파일을 만들고 ZIP 압축 설정을 선택합니다.",
+        "03-preview": "파일 목록과 속성 옆에 이미지 미리보기를 표시합니다.",
+        "04-workspace": "두 압축 파일을 탭으로 열고 격자로 탐색합니다."
+      },
+      "poster_headline": [
+        "압축과 풀기를 조금 더 쉽게"
+      ],
+      "square_tagline": "압축과 풀기를 조금 더 쉽게",
+      "promotions": [
+        {
+          "id": "01-browse",
+          "eyebrow": "파일 찾기",
+          "headline": [
+            "먼저 보고 풀기"
+          ],
+          "body": [
+            "필요한 파일만 찾아서 풉니다."
+          ],
+          "caption": "압축 파일 탐색과 선택 압축 풀기를 보여 주는 기능 예시."
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "압축 파일 만들기",
+          "headline": [
+            "파일 정리"
+          ],
+          "body": [
+            "압축 파일을 만들고 ZIP과 7z를 보호합니다."
+          ],
+          "caption": "압축 파일과 ISO 생성 및 암호 보호를 보여 주는 기능 예시."
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "미리보기",
+          "headline": [
+            "내용 미리보기"
+          ],
+          "body": [
+            "지원하는 텍스트와 이미지를 확인합니다."
+          ],
+          "caption": "지원하는 텍스트와 이미지 미리보기를 보여 주는 기능 예시."
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "작업 공간",
+          "headline": [
+            "한곳에서 관리"
+          ],
+          "body": [
+            "여러 압축 파일과 열 가지 언어."
+          ],
+          "caption": "여러 압축 파일과 테마를 보여 주는 기능 예시."
+        }
+      ],
+      "sort_title": "",
+      "font_family": "Malgun Gothic, Apple SD Gothic Neo, Noto Sans CJK KR, sans-serif",
+      "review_notes": {
+        "runFullTrust": "xdzip은 Qt Quick과 Rust로 만든 x64 데스크톱 압축 파일 관리자입니다. runFullTrust는 기존 데스크톱 앱을 실행하고 사용자가 선택한 압축 파일을 데스크톱 API로 탐색, 생성, 해제하는 데 필요합니다. 포함된 작업 프로세스와 임시 파일은 처리 및 사용자가 요청한 파일 열기에 사용됩니다. 일반 작업은 관리자 권한이나 권한 상승을 요구하지 않으며 서비스나 드라이버를 설치하지 않습니다. 최신 탐색기 메뉴에는 Microsoft Store 서명이 필요합니다. MSIX에서는 앱 내 업데이트를 비활성화하고 Store가 업데이트를 관리합니다. 기본 기능은 계정 없이 오프라인으로 동작하며 내용, 경로, 암호를 자동 업로드하지 않습니다.",
+        "certification": "기본 사용에는 로그인, 구독, 테스트 자격 증명 또는 외부 압축 프로그램이 필요하지 않습니다. 텍스트와 PNG가 들어 있는 ZIP을 열고 파일을 선택해 속성과 미리보기를 확인하세요. 다른 압축 파일을 열어 탭과 보기 전환을 확인하세요. ZIP을 만들고 선택한 항목을 쓰기 가능한 위치에 풀어 진행과 취소를 확인하세요. RAR, CAB, UDF는 읽기 전용입니다. ISO는 만들 수 있지만 기존 이미지는 수정할 수 없습니다. 암호화와 분할 지원은 형식에 따라 다릅니다. 다른 앱으로 여는 파일은 임시 복사본이며 수정 사항은 자동으로 반영되지 않습니다. Store 설치 후 파일 연결과 최신 및 클래식 탐색기 메뉴를 확인할 수 있습니다. 기본 앱은 자동으로 변경하지 않습니다. 대상은 Windows 11 x64이며 스크린샷은 자체 데모 콘텐츠를 사용합니다."
+      }
+    },
+    "fr-FR": {
+      "product_name": "xdzip",
+      "short_title": "xdzip",
+      "voice_title": "",
+      "developer": "xiaodaozhi",
+      "short_description": "Gestionnaire d’archives libre : parcourez, recherchez et extrayez les fichiers de votre choix.",
+      "description": "xdzip est un gestionnaire d’archives libre. Parcourez les formats ZIP, 7z, RAR, TAR, CAB, ISO, UDF et d’autres, recherchez des fichiers et extrayez une sélection sans tout décompresser.\n\nCréez des archives et des images de données ISO prises en charge, utilisez la protection par mot de passe disponible et modifiez les entrées des archives admissibles à fichier unique. Les fonctions dépendent du format.\n\nOuvrez plusieurs archives dans des onglets ou des fenêtres, prévisualisez les textes et images pris en charge et choisissez un thème clair ou sombre parmi dix langues d’interface. Les fonctions de base marchent hors ligne. Les fichiers ouverts dans une autre application sont des copies temporaires dont les modifications ne sont pas réimportées automatiquement.\n\nPour Windows 11 x64. Créez ou extrayez des archives depuis le menu moderne ou classique de l’Explorateur. Microsoft Store gère les mises à jour de son édition.",
+      "release_notes": "Correction de l’ouverture du menu de la zone de notification après la réactivation de son icône.",
+      "features": [
+        "Parcourir les archives ZIP, 7z, RAR, TAR, CAB, ISO et UDF.",
+        "Rechercher, trier et naviguer dans les dossiers.",
+        "Extraire uniquement les fichiers et dossiers sélectionnés.",
+        "Créer des archives et des images de données ISO prises en charge.",
+        "Utiliser AES-256 pour ZIP et la protection 7z prise en charge.",
+        "Utiliser les archives multivolumes et solides compatibles.",
+        "Modifier les entrées des archives admissibles à fichier unique.",
+        "Prévisualiser les textes, images et SVG statiques compatibles.",
+        "Gérer plusieurs archives dans des onglets ou des fenêtres.",
+        "Suivre les tâches et demander leur annulation."
+      ],
+      "keywords": [
+        "gestion archives",
+        "zip",
+        "décompresser",
+        "7z",
+        "rar",
+        "compression",
+        "extraction"
+      ],
+      "copyright": "Copyright © 2026 xiaodaozhi. Les composants tiers conservent leurs droits d’auteur et marques.",
+      "additional_license_terms": "",
+      "system_requirements": [
+        "Windows 11, PC x64."
+      ],
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
+      "illustration_label": "Illustration",
+      "screenshot_captions": {
+        "01-browse": "Parcourez les dossiers, sélectionnez un fichier et consultez ses propriétés.",
+        "02-create": "Créez une archive et choisissez les paramètres de compression ZIP.",
+        "03-preview": "Affichez un aperçu d’image à côté de la liste et des propriétés.",
+        "04-workspace": "Ouvrez deux archives en onglets et parcourez les fichiers en grille."
+      },
+      "poster_headline": [
+        "Compresser et extraire, plus simplement"
+      ],
+      "square_tagline": "Compresser et extraire, plus simplement",
+      "promotions": [
+        {
+          "id": "01-browse",
+          "eyebrow": "TROUVER",
+          "headline": [
+            "Parcourir",
+            "puis extraire"
+          ],
+          "body": [
+            "Trouvez et extrayez les fichiers utiles."
+          ],
+          "caption": "Illustration : parcourir et extraire une sélection."
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "CRÉER",
+          "headline": [
+            "Tout",
+            "organiser"
+          ],
+          "body": [
+            "Créez des archives et protégez ZIP et 7z."
+          ],
+          "caption": "Illustration : créer des archives et des images ISO, avec protection par mot de passe."
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "PRÉVISUALISER",
+          "headline": [
+            "Voir avant",
+            "d’extraire"
+          ],
+          "body": [
+            "Prévisualisez les textes et images compatibles."
+          ],
+          "caption": "Illustration : prévisualiser les textes et images pris en charge."
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "ESPACE DE TRAVAIL",
+          "headline": [
+            "Tout garder",
+            "à portée"
+          ],
+          "body": [
+            "Plusieurs archives et dix langues."
+          ],
+          "caption": "Illustration : gérer plusieurs archives et choisir un thème."
+        }
+      ],
+      "sort_title": "",
+      "font_family": "Segoe UI, Noto Sans, sans-serif",
+      "review_notes": {
+        "runFullTrust": "xdzip est un gestionnaire d’archives x64 pour ordinateur, utilisant Qt Quick et Rust. runFullTrust permet de lancer cette application existante et d’utiliser les API de bureau pour parcourir, créer et extraire les archives choisies. Des processus inclus et des fichiers temporaires servent au traitement et à l’ouverture demandée par l’utilisateur. Les opérations normales ne demandent ni élévation ni compte administrateur et n’installent ni service ni pilote. Le menu moderne exige une signature Microsoft Store. La mise à jour intégrée est désactivée sous MSIX et le Store gère les mises à jour. Les fonctions de base sont locales, sans compte ; contenus, chemins et mots de passe ne sont pas envoyés automatiquement.",
+        "certification": "Aucune connexion, aucun abonnement, identifiant de test ou programme externe n’est nécessaire pour les fonctions de base. Ouvrez un ZIP contenant du texte et des PNG, sélectionnez un fichier et vérifiez ses propriétés et son aperçu. Ouvrez une autre archive pour tester les onglets et les vues. Créez un ZIP et extrayez une sélection vers un dossier accessible en écriture ; vérifiez progression et annulation. RAR, CAB et UDF sont en lecture seule. Les ISO existantes ne sont pas modifiables ; chiffrement et volumes dépendent du format. Les fichiers ouverts ailleurs sont des copies temporaires non réimportées automatiquement. Après installation Store, vérifiez les associations et les menus moderne et classique ; l’application ne change pas les valeurs par défaut. Cible : Windows 11 x64. Les captures utilisent des données de démonstration propres au projet."
+      }
+    },
+    "de-DE": {
+      "product_name": "xdzip",
+      "short_title": "xdzip",
+      "voice_title": "",
+      "developer": "xiaodaozhi",
+      "short_description": "Open-Source-Archivverwaltung: Archive durchsuchen und ausgewählte Dateien entpacken.",
+      "description": "xdzip ist eine quelloffene Archivverwaltung. Durchsuchen Sie ZIP, 7z, RAR, TAR, CAB, ISO, UDF und weitere Formate und entpacken Sie nur die benötigten Dateien.\n\nErstellen Sie unterstützte Archive und ISO-Datenabbilder, nutzen Sie verfügbaren Passwortschutz und ändern Sie Einträge in geeigneten Einzeldateiarchiven. Die Funktionen hängen vom Format ab.\n\nÖffnen Sie mehrere Archive in Tabs oder Fenstern, betrachten Sie unterstützte Texte und Bilder und wählen Sie ein helles oder dunkles Design sowie eine von zehn Oberflächensprachen. Grundfunktionen arbeiten offline. In anderen Anwendungen geöffnete Dateien sind temporäre Kopien; Änderungen werden nicht automatisch zurückgeschrieben.\n\nFür Windows 11 x64. Erstellen oder entpacken Sie Archive über das moderne oder klassische Explorer-Menü. Microsoft Store verwaltet Updates seiner Ausgabe.",
+      "release_notes": "Das Menü im Infobereich öffnet sich nach erneutem Aktivieren des Symbols wieder.",
+      "features": [
+        "ZIP-, 7z-, RAR-, TAR-, CAB-, ISO- und UDF-Archive durchsuchen.",
+        "Suchen, sortieren und durch Ordner navigieren.",
+        "Ausgewählte Dateien und Ordner entpacken.",
+        "Unterstützte Archive und ISO-Datenabbilder erstellen.",
+        "ZIP AES-256 und unterstützten 7z-Passwortschutz nutzen.",
+        "Unterstützte geteilte und solide Archive verwenden.",
+        "Einträge in geeigneten Einzeldateiarchiven ändern.",
+        "Unterstützte Texte, Bilder und statische SVGs anzeigen.",
+        "Mehrere Archive in Tabs oder Fenstern verwalten.",
+        "Aufgabenfortschritt anzeigen und Abbruch anfordern."
+      ],
+      "keywords": [
+        "Archivverwaltung",
+        "zip",
+        "entpacken",
+        "7z",
+        "rar",
+        "Komprimierung",
+        "Extraktion"
+      ],
+      "copyright": "Copyright © 2026 xiaodaozhi. Komponenten Dritter behalten ihre Urheberrechte und Marken.",
+      "additional_license_terms": "",
+      "system_requirements": [
+        "Windows 11, x64-PC."
+      ],
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
+      "illustration_label": "Funktionsgrafik",
+      "screenshot_captions": {
+        "01-browse": "Archivordner durchsuchen, Datei auswählen und Eigenschaften anzeigen.",
+        "02-create": "Ein Archiv erstellen und ZIP-Komprimierung einstellen.",
+        "03-preview": "Eine Bildvorschau neben Dateiliste und Eigenschaften anzeigen.",
+        "04-workspace": "Zwei Archive in Tabs öffnen und Dateien im Raster ansehen."
+      },
+      "poster_headline": [
+        "Packen und Entpacken, einfacher"
+      ],
+      "square_tagline": "Packen und Entpacken, einfacher",
+      "promotions": [
+        {
+          "id": "01-browse",
+          "eyebrow": "DATEIEN FINDEN",
+          "headline": [
+            "Erst ansehen,",
+            "dann entpacken"
+          ],
+          "body": [
+            "Nur benötigte Dateien entpacken."
+          ],
+          "caption": "Funktionsgrafik: Archive durchsuchen und Auswahl entpacken."
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "ARCHIVE ERSTELLEN",
+          "headline": [
+            "Alles",
+            "organisieren"
+          ],
+          "body": [
+            "Archive erstellen und ZIP und 7z schützen."
+          ],
+          "caption": "Funktionsgrafik: Archive und ISO-Abbilder erstellen und schützen."
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "VORSCHAU",
+          "headline": [
+            "Inhalte",
+            "ansehen"
+          ],
+          "body": [
+            "Unterstützte Texte und Bilder ansehen."
+          ],
+          "caption": "Funktionsgrafik: unterstützte Texte und Bilder ansehen."
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "ARBEITSBEREICH",
+          "headline": [
+            "Alles",
+            "im Blick"
+          ],
+          "body": [
+            "Mehrere Archive, zehn Sprachen."
+          ],
+          "caption": "Funktionsgrafik: mehrere Archive und Designs verwalten."
+        }
+      ],
+      "sort_title": "",
+      "font_family": "Segoe UI, Noto Sans, sans-serif",
+      "review_notes": {
+        "runFullTrust": "xdzip ist eine x64-Desktoparchivverwaltung mit Qt Quick und Rust. runFullTrust startet die bestehende Desktopanwendung und ermöglicht Desktop-Datei-APIs zum Durchsuchen, Erstellen und Entpacken ausgewählter Archive. Mitgelieferte Arbeitsprozesse und temporäre Dateien dienen der Verarbeitung und dem angeforderten Öffnen. Normale Vorgänge benötigen weder Administratorkonto noch Rechteerhöhung und installieren keinen Dienst oder Treiber. Das moderne Explorer-Menü benötigt eine Microsoft-Store-Signatur. Unter MSIX ist der integrierte Updater deaktiviert; der Store verwaltet Updates. Grundfunktionen arbeiten lokal ohne Konto; Inhalte, Pfade und Passwörter werden nicht automatisch hochgeladen.",
+        "certification": "Für Grundfunktionen sind weder Anmeldung, Abo, Testzugang noch externes Archivprogramm nötig. Öffnen Sie ein ZIP mit Text und PNG, wählen Sie eine Datei und prüfen Sie Eigenschaften und Vorschau. Öffnen Sie ein weiteres Archiv und testen Sie Tabs und Ansichten. Erstellen Sie ein ZIP und entpacken Sie eine Auswahl in einen beschreibbaren Ordner; prüfen Sie Fortschritt und Abbruch. RAR, CAB und UDF sind schreibgeschützt. Bestehende ISO-Abbilder lassen sich nicht ändern; Verschlüsselung und Teilarchive hängen vom Format ab. In anderen Anwendungen geöffnete Dateien sind temporäre Kopien ohne automatisches Zurückschreiben. Prüfen Sie nach Store-Installation Zuordnungen sowie modernes und klassisches Explorer-Menü; Standardanwendungen werden nicht automatisch geändert. Ziel: Windows 11 x64. Die Screenshots nutzen eigene Beispieldaten."
+      }
+    },
+    "es-ES": {
+      "product_name": "xdzip",
+      "short_title": "xdzip",
+      "voice_title": "",
+      "developer": "xiaodaozhi",
+      "short_description": "Gestor de archivos comprimidos de código abierto. Explora, busca y extrae solo lo que necesites.",
+      "description": "xdzip es un gestor de archivos comprimidos de código abierto. Explora ZIP, 7z, RAR, TAR, CAB, ISO, UDF y otros formatos, busca archivos y extrae una selección sin descomprimirlo todo.\n\nCrea archivos e imágenes de datos ISO compatibles, usa la protección por contraseña disponible y modifica entradas en archivos de un solo fichero que cumplan los requisitos. Las funciones dependen del formato.\n\nAbre varios archivos comprimidos en pestañas o ventanas, previsualiza texto e imágenes compatibles y elige un tema claro u oscuro y uno de los diez idiomas de la interfaz. Las operaciones básicas funcionan sin conexión. Los archivos abiertos en otras aplicaciones son copias temporales cuyos cambios no se escriben automáticamente en el original.\n\nPara Windows 11 x64. Crea o extrae archivos desde el menú moderno o clásico del Explorador. Microsoft Store gestiona las actualizaciones de su edición.",
+      "release_notes": "Se ha corregido la apertura del menú de la bandeja tras volver a activar su icono.",
+      "features": [
+        "Explorar ZIP, 7z, RAR, TAR, CAB, ISO y UDF.",
+        "Buscar, ordenar y navegar por carpetas.",
+        "Extraer solo los archivos y carpetas seleccionados.",
+        "Crear archivos e imágenes de datos ISO compatibles.",
+        "Usar AES-256 para ZIP y protección compatible para 7z.",
+        "Usar archivos multivolumen y sólidos compatibles.",
+        "Modificar entradas en archivos de un solo fichero admitidos.",
+        "Previsualizar texto, imágenes y SVG estático compatibles.",
+        "Gestionar varios archivos en pestañas o ventanas.",
+        "Consultar el progreso y solicitar la cancelación."
+      ],
+      "keywords": [
+        "gestor de archivos",
+        "zip",
+        "descomprimir",
+        "7z",
+        "rar",
+        "compresión",
+        "extracción"
+      ],
+      "copyright": "Copyright © 2026 xiaodaozhi. Los componentes de terceros conservan sus derechos y marcas.",
+      "additional_license_terms": "",
+      "system_requirements": [
+        "Windows 11, PC x64."
+      ],
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
+      "illustration_label": "Ilustración",
+      "screenshot_captions": {
+        "01-browse": "Explora las carpetas, selecciona un archivo y consulta sus propiedades.",
+        "02-create": "Crea un archivo y elige las opciones de compresión ZIP.",
+        "03-preview": "Muestra la vista previa de una imagen junto a la lista y las propiedades.",
+        "04-workspace": "Abre dos archivos en pestañas y explora los ficheros en cuadrícula."
+      },
+      "poster_headline": [
+        "Comprimir y extraer, más fácilmente"
+      ],
+      "square_tagline": "Comprimir y extraer, más fácilmente",
+      "promotions": [
+        {
+          "id": "01-browse",
+          "eyebrow": "BUSCAR",
+          "headline": [
+            "Explora y",
+            "extrae"
+          ],
+          "body": [
+            "Encuentra y extrae lo que necesitas."
+          ],
+          "caption": "Ilustración: explorar y extraer una selección."
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "CREAR",
+          "headline": [
+            "Todo en",
+            "su lugar"
+          ],
+          "body": [
+            "Crea archivos y protege ZIP y 7z."
+          ],
+          "caption": "Ilustración: crear archivos e imágenes ISO y protegerlos con contraseña."
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "VISTA PREVIA",
+          "headline": [
+            "Mira antes",
+            "de extraer"
+          ],
+          "body": [
+            "Previsualiza texto e imágenes compatibles."
+          ],
+          "caption": "Ilustración: previsualizar texto e imágenes compatibles."
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "ESPACIO DE TRABAJO",
+          "headline": [
+            "Todo",
+            "a mano"
+          ],
+          "body": [
+            "Varios archivos y diez idiomas."
+          ],
+          "caption": "Ilustración: gestionar varios archivos y elegir un tema."
+        }
+      ],
+      "sort_title": "",
+      "font_family": "Segoe UI, Noto Sans, sans-serif",
+      "review_notes": {
+        "runFullTrust": "xdzip es un gestor de archivos comprimidos de escritorio x64 con Qt Quick y Rust. runFullTrust permite ejecutar la aplicación existente y usar las API de escritorio para explorar, crear y extraer los archivos seleccionados. Los procesos incluidos y los archivos temporales se usan para procesar contenido y abrir copias a petición del usuario. Las operaciones normales no requieren administrador ni elevación y no instalan servicios ni controladores. El menú moderno del Explorador requiere una firma de Microsoft Store. En MSIX se desactiva el actualizador interno y la Store gestiona las actualizaciones. Las funciones básicas son locales y no requieren cuenta; el contenido, las rutas y las contraseñas no se envían automáticamente.",
+        "certification": "El uso básico no requiere inicio de sesión, suscripción, credenciales de prueba ni programas externos. Abre un ZIP con texto y PNG, selecciona un archivo y comprueba sus propiedades y vista previa. Abre otro para probar las pestañas y vistas. Crea un ZIP y extrae una selección a una carpeta con permiso de escritura; comprueba el progreso y la cancelación. RAR, CAB y UDF son de solo lectura. No se modifican ISO existentes; el cifrado y los volúmenes dependen del formato. Los archivos abiertos en otras aplicaciones son copias temporales cuyos cambios no se guardan automáticamente en el original. Tras instalar desde la Store, comprueba las asociaciones y los menús moderno y clásico; la aplicación no cambia las aplicaciones predeterminadas automáticamente. Destino: Windows 11 x64. Las capturas utilizan contenido de demostración propio."
+      }
+    },
+    "pt-BR": {
+      "product_name": "xdzip",
+      "short_title": "xdzip",
+      "voice_title": "",
+      "developer": "xiaodaozhi",
+      "short_description": "Gerenciador de arquivos compactados de código aberto. Navegue, pesquise e extraia o que precisar.",
+      "description": "xdzip é um gerenciador de arquivos compactados de código aberto. Navegue por ZIP, 7z, RAR, TAR, CAB, ISO, UDF e outros formatos, pesquise arquivos e extraia uma seleção sem descompactar tudo.\n\nCrie arquivos e imagens de dados ISO compatíveis, use a proteção por senha disponível e altere entradas em arquivos de um único arquivo que atendam aos requisitos. Os recursos variam conforme o formato.\n\nAbra vários arquivos compactados em abas ou janelas, visualize textos e imagens compatíveis e escolha um tema claro ou escuro e um dos dez idiomas da interface. As operações básicas funcionam offline. Arquivos abertos em outros aplicativos são cópias temporárias cujas alterações não são gravadas automaticamente no original.\n\nPara Windows 11 x64. Crie ou extraia arquivos pelo menu moderno ou clássico do Explorador. A Microsoft Store gerencia as atualizações de sua edição.",
+      "release_notes": "Corrigida a abertura do menu da bandeja após reativar seu ícone.",
+      "features": [
+        "Navegar por ZIP, 7z, RAR, TAR, CAB, ISO e UDF.",
+        "Pesquisar, ordenar e navegar pelas pastas.",
+        "Extrair somente arquivos e pastas selecionados.",
+        "Criar arquivos e imagens de dados ISO compatíveis.",
+        "Usar AES-256 no ZIP e proteção compatível no 7z.",
+        "Usar arquivos divididos e sólidos compatíveis.",
+        "Alterar entradas em arquivos de um único arquivo compatíveis.",
+        "Visualizar textos, imagens e SVG estático compatíveis.",
+        "Gerenciar vários arquivos em abas ou janelas.",
+        "Acompanhar o progresso e solicitar o cancelamento."
+      ],
+      "keywords": [
+        "gerenciador de arquivos",
+        "zip",
+        "descompactar",
+        "7z",
+        "rar",
+        "compactação",
+        "extração"
+      ],
+      "copyright": "Copyright © 2026 xiaodaozhi. Componentes de terceiros mantêm seus direitos autorais e marcas.",
+      "additional_license_terms": "",
+      "system_requirements": [
+        "Windows 11, PC x64."
+      ],
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
+      "illustration_label": "Ilustração",
+      "screenshot_captions": {
+        "01-browse": "Navegue pelas pastas, selecione um arquivo e veja suas propriedades.",
+        "02-create": "Crie um arquivo compactado e escolha as opções ZIP.",
+        "03-preview": "Mostre a prévia de uma imagem ao lado da lista e das propriedades.",
+        "04-workspace": "Abra dois arquivos em abas e navegue na visualização em grade."
+      },
+      "poster_headline": [
+        "Compactar e extrair com mais facilidade"
+      ],
+      "square_tagline": "Compactar e extrair com mais facilidade",
+      "promotions": [
+        {
+          "id": "01-browse",
+          "eyebrow": "ENCONTRAR",
+          "headline": [
+            "Veja antes",
+            "de extrair"
+          ],
+          "body": [
+            "Encontre e extraia o que precisa."
+          ],
+          "caption": "Ilustração: navegar e extrair uma seleção."
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "CRIAR",
+          "headline": [
+            "Tudo em",
+            "seu lugar"
+          ],
+          "body": [
+            "Crie arquivos e proteja ZIP e 7z."
+          ],
+          "caption": "Ilustração: criar arquivos e imagens ISO e protegê-los com senha."
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "PRÉVIA",
+          "headline": [
+            "Confira",
+            "o conteúdo"
+          ],
+          "body": [
+            "Visualize textos e imagens compatíveis."
+          ],
+          "caption": "Ilustração: visualizar textos e imagens compatíveis."
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "ÁREA DE TRABALHO",
+          "headline": [
+            "Tudo",
+            "à mão"
+          ],
+          "body": [
+            "Vários arquivos e dez idiomas."
+          ],
+          "caption": "Ilustração: gerenciar vários arquivos e escolher um tema."
+        }
+      ],
+      "sort_title": "",
+      "font_family": "Segoe UI, Noto Sans, sans-serif",
+      "review_notes": {
+        "runFullTrust": "xdzip é um gerenciador de arquivos compactados x64 para desktop, feito com Qt Quick e Rust. runFullTrust permite executar o aplicativo existente e usar APIs de desktop para navegar, criar e extrair os arquivos escolhidos. Processos incluídos e arquivos temporários apoiam o processamento e a abertura solicitada pelo usuário. Operações normais não exigem administrador ou elevação e não instalam serviço nem driver. O menu moderno do Explorador exige assinatura da Microsoft Store. No MSIX o atualizador interno fica desativado e a Store gerencia as atualizações. As funções básicas são locais e não exigem conta; conteúdo, caminhos e senhas não são enviados automaticamente.",
+        "certification": "O uso básico não exige login, assinatura, credenciais de teste ou programa externo. Abra um ZIP com texto e PNG, selecione um arquivo e confira propriedades e prévia. Abra outro para testar abas e modos de visualização. Crie um ZIP e extraia uma seleção para uma pasta com permissão de gravação; confira o progresso e o cancelamento. RAR, CAB e UDF são somente leitura. ISOs existentes não podem ser alteradas; criptografia e volumes dependem do formato. Arquivos abertos em outros aplicativos são cópias temporárias cujas alterações não são gravadas automaticamente no original. Após instalar pela Store, confira associações e os menus moderno e clássico; o aplicativo não altera os padrões automaticamente. Alvo: Windows 11 x64. As capturas usam conteúdo de demonstração próprio."
+      }
+    },
+    "ru-RU": {
+      "product_name": "xdzip",
+      "short_title": "xdzip",
+      "voice_title": "",
+      "developer": "xiaodaozhi",
+      "short_description": "Открытый менеджер архивов: просматривайте, ищите и извлекайте нужные файлы.",
+      "description": "xdzip — менеджер архивов с открытым исходным кодом. Просматривайте ZIP, 7z, RAR, TAR, CAB, ISO, UDF и другие форматы, ищите файлы и извлекайте выбранное без полной распаковки.\n\nСоздавайте поддерживаемые архивы и образы данных ISO, используйте доступную защиту паролем и изменяйте записи в подходящих однофайловых архивах. Возможности зависят от формата.\n\nОткрывайте несколько архивов во вкладках или окнах, просматривайте поддерживаемые тексты и изображения, выбирайте светлую или тёмную тему и один из десяти языков интерфейса. Основные операции работают без сети. Файлы, открываемые в других приложениях, являются временными копиями; изменения не записываются в архив автоматически.\n\nДля Windows 11 x64. Создавайте и распаковывайте архивы через современное или классическое меню Проводника. Обновления версии Microsoft Store управляются магазином.",
+      "release_notes": "Исправлено открытие меню области уведомлений после повторного включения значка.",
+      "features": [
+        "Просмотр ZIP, 7z, RAR, TAR, CAB, ISO и UDF.",
+        "Поиск, сортировка и навигация по папкам.",
+        "Извлечение выбранных файлов и папок.",
+        "Создание поддерживаемых архивов и образов данных ISO.",
+        "ZIP AES-256 и поддерживаемая защита паролем 7z.",
+        "Работа с поддерживаемыми многотомными и непрерывными архивами.",
+        "Изменение записей в подходящих однофайловых архивах.",
+        "Просмотр поддерживаемых текстов, изображений и статических SVG.",
+        "Несколько архивов во вкладках или окнах.",
+        "Отслеживание и запрос отмены задач."
+      ],
+      "keywords": [
+        "менеджер архивов",
+        "zip",
+        "распаковка",
+        "7z",
+        "rar",
+        "сжатие файлов",
+        "извлечение"
+      ],
+      "copyright": "Copyright © 2026 xiaodaozhi. Сторонние компоненты сохраняют свои авторские права и товарные знаки.",
+      "additional_license_terms": "",
+      "system_requirements": [
+        "Windows 11, ПК x64."
+      ],
+      "privacy_url": "https://github.com/xiaodaozhi/xdzip/blob/main/PRIVACY.md",
+      "illustration_label": "Иллюстрация",
+      "screenshot_captions": {
+        "01-browse": "Просмотр папок архива, выбор файла и его свойств.",
+        "02-create": "Создание архива и выбор параметров сжатия ZIP.",
+        "03-preview": "Предпросмотр изображения рядом со списком и свойствами.",
+        "04-workspace": "Два архива во вкладках и просмотр файлов сеткой."
+      },
+      "poster_headline": [
+        "Упаковывать и распаковывать проще"
+      ],
+      "square_tagline": "Упаковывать и распаковывать проще",
+      "promotions": [
+        {
+          "id": "01-browse",
+          "eyebrow": "ПОИСК",
+          "headline": [
+            "Сначала",
+            "просмотр"
+          ],
+          "body": [
+            "Найдите и извлеките нужные файлы."
+          ],
+          "caption": "Иллюстрация: просмотр архива и выборочное извлечение."
+        },
+        {
+          "id": "02-create",
+          "eyebrow": "СОЗДАНИЕ",
+          "headline": [
+            "Всё",
+            "по местам"
+          ],
+          "body": [
+            "Создавайте архивы и защищайте ZIP и 7z."
+          ],
+          "caption": "Иллюстрация: создание архивов и ISO с защитой паролем."
+        },
+        {
+          "id": "03-preview",
+          "eyebrow": "ПРЕДПРОСМОТР",
+          "headline": [
+            "Проверьте",
+            "содержимое"
+          ],
+          "body": [
+            "Просматривайте тексты и изображения."
+          ],
+          "caption": "Иллюстрация: просмотр поддерживаемых текстов и изображений."
+        },
+        {
+          "id": "04-workspace",
+          "eyebrow": "РАБОЧАЯ ОБЛАСТЬ",
+          "headline": [
+            "Всё",
+            "под рукой"
+          ],
+          "body": [
+            "Несколько архивов и десять языков."
+          ],
+          "caption": "Иллюстрация: несколько архивов и выбор темы."
+        }
+      ],
+      "sort_title": "",
+      "font_family": "Segoe UI, Noto Sans, sans-serif",
+      "review_notes": {
+        "runFullTrust": "xdzip — настольный менеджер архивов x64 на Qt Quick и Rust. runFullTrust нужен для запуска существующего приложения и использования настольных файловых API для просмотра, создания и распаковки выбранных пользователем архивов. Входящие в комплект рабочие процессы и временные файлы используются при обработке и открытии по запросу пользователя. Обычные операции не требуют администратора или повышения прав и не устанавливают службы или драйверы. Современное меню Проводника требует подписи Microsoft Store. В MSIX встроенное обновление отключено, обновлениями управляет Store. Основные функции работают локально без учётной записи; содержимое, пути и пароли автоматически не отправляются.",
+        "certification": "Для основных функций не нужны вход, подписка, тестовые данные или внешняя программа. Откройте ZIP с текстом и PNG, выберите файл и проверьте свойства и предпросмотр. Откройте второй архив и проверьте вкладки и режимы просмотра. Создайте ZIP и извлеките выбранное в доступную для записи папку; проверьте ход и отмену. RAR, CAB и UDF доступны только для чтения. Существующие ISO изменить нельзя; шифрование и тома зависят от формата. В других приложениях открываются временные копии, изменения автоматически не возвращаются в архив. После установки из Store проверьте ассоциации и современное и классическое меню Проводника; приложение автоматически не меняет приложения по умолчанию. Целевая система: Windows 11 x64. На снимках используются собственные демонстрационные данные."
+      }
     }
-  }
+  },
+  "platform": "windows",
+  "purpose": "Reusable Windows marketing and presentation assets",
+  "visual_source": "specs/marketing/windows-store.json",
+  "scenes": [
+    "01-browse",
+    "02-create",
+    "03-preview",
+    "04-workspace"
+  ]
 }

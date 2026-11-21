@@ -16,7 +16,7 @@ import zlib
 from datetime import datetime, timezone
 
 ROOT = Path(__file__).resolve().parents[1]
-LANGUAGES = ('en-US', 'zh-CN')
+LANGUAGES = tuple(item['id'] for item in json.loads((ROOT / 'resources/ui-languages.json').read_text(encoding='utf-8'))['languages'])
 SCENES = ('01-browse', '02-create', '03-preview', '04-workspace')
 
 
@@ -63,6 +63,9 @@ def safe_output(value, target):
 
 
 def capture(args):
+    languages = getattr(args, 'languages', None) or LANGUAGES
+    if len(set(languages)) != len(languages) or any(language not in LANGUAGES for language in languages):
+        raise ValueError('Unknown or duplicate language')
     host = {'darwin': 'macos', 'linux': 'linux'}.get(sys.platform)
     if host != args.platform:
         raise ValueError('Capture must be recorded on its native platform')
@@ -91,7 +94,7 @@ def capture(args):
         stage = Path(temporary) / 'capture'
         stage.mkdir(mode=0o700)
         records = []
-        for language in LANGUAGES:
+        for language in languages:
             for scene in SCENES:
                 relative = Path(language) / (scene + '.png')
                 destination = stage / relative
@@ -147,8 +150,9 @@ def main():
     parser.add_argument('--expected-sha256', required=True)
     parser.add_argument('--source-revision', help='optional full commit matching the executable identity')
     source = parser.add_mutually_exclusive_group(required=True)
-    source.add_argument('--from-directory', type=Path, help='existing en-US/ and zh-CN/ PNG captures')
+    source.add_argument('--from-directory', type=Path, help='existing PNGs organized by language')
     source.add_argument('--interactive', action='store_true', help='select actual windows for the eight scenes')
+    parser.add_argument('--languages', nargs='+', choices=LANGUAGES, help='capture selected languages; default is all product languages')
     parser.add_argument('--delay', type=int, default=5, help='Linux seconds to activate the application window')
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()

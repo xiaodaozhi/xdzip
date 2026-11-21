@@ -12,8 +12,16 @@
     "02-create"
   ],
   "languages": [
+    "zh-CN",
     "en-US",
-    "zh-CN"
+    "zh-TW",
+    "ja-JP",
+    "ko-KR",
+    "fr-FR",
+    "de-DE",
+    "es-ES",
+    "pt-BR",
+    "ru-RU"
   ],
   "runtime_candidates": [
     "build/package/windows/xdzip.exe",

@@ -23,8 +23,36 @@ const largeSizes = process.argv.includes('--4k') ? [[1920,1080],[3840,2160]] : [
 const hash = data => crypto.createHash('sha256').update(data).digest('hex');
 const esc = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 const v = spec.visual;
+let activeFont = v.font;
 const svg = (width, height, body, view = '0 0 1920 1080') => `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${view}"><defs><linearGradient id="paper" x2=".9" y2="1"><stop stop-color="#FFFFFF"/><stop offset="1" stop-color="#E8F0FF"/></linearGradient><linearGradient id="ocean" x2=".85" y2="1"><stop stop-color="#145DE5"/><stop offset=".48" stop-color="#2057FF"/><stop offset="1" stop-color="#142C95"/></linearGradient><linearGradient id="night" x2="1" y2="1"><stop stop-color="#213756"/><stop offset="1" stop-color="#0A1530"/></linearGradient><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#73B7FF"/><stop offset="1" stop-color="#C6ECF4"/></linearGradient><radialGradient id="glow"><stop stop-color="#BBDEFF" stop-opacity=".8"/><stop offset="1" stop-color="#BBDEFF" stop-opacity="0"/></radialGradient><filter id="shadow" x="-40%" y="-40%" width="180%" height="200%"><feDropShadow dx="0" dy="26" stdDeviation="26" flood-color="#203E7B" flood-opacity=".17"/></filter></defs>${body}</svg>`;
-const text = (x, y, content, size = 32, color = v.ink, weight = 400, anchor = 'start') => `<text x="${x}" y="${y}" font-family="${v.font}" font-size="${size}" font-weight="${weight}" fill="${color}" text-anchor="${anchor}">${esc(content)}</text>`;
+const text = (x, y, content, size = 32, color = v.ink, weight = 400, anchor = 'start', maxWidth = Infinity) => {
+  const units = [...String(content)].reduce((sum, c) => sum + (/[^\u0000-\u04ff]/u.test(c) ? 1 : .72), 0);
+  size = Math.min(size, maxWidth / Math.max(units, 1));
+  return `<text x="${x}" y="${y}" font-family="${esc(activeFont)}" font-size="${size}" font-weight="${weight}" fill="${color}" text-anchor="${anchor}">${esc(content)}</text>`;
+};
+// Keep localized copy readable within the artwork column instead of shrinking long lines.
+function wrapped(lines, maxUnits) {
+  const result = [];
+  for (const line of lines) {
+    let remaining = String(line).trim();
+    while (remaining) {
+      let used = 0, end = 0, space = -1;
+      for (const char of remaining) {
+        const width = /[^\u0000-\u04ff]/u.test(char) ? 1 : .72;
+        if (used + width > maxUnits) break;
+        used += width;
+        end += char.length;
+        if (/\s/u.test(char)) space = end;
+      }
+      if (end >= remaining.length) { result.push(remaining); break; }
+      if (space > 0) end = space;
+      if (!end) throw Error('Text column is too narrow');
+      result.push(remaining.slice(0, end).trimEnd());
+      remaining = remaining.slice(end).trimStart();
+    }
+  }
+  return result;
+}
 const logo = (x, y, size) => `<image x="${x}" y="${y}" width="${size}" height="${size}" href="${brandUri}"/>`;
 const rect = (x, y, w, h, r, fill, extra = '') => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${fill}" ${extra}/>`;
 const lines = (x, y, width, color = '#C6D4EA') => [0, 1, 2].map((n) => rect(x, y + n * 27, width - n * 24, 9, 4.5, color)).join('');
@@ -42,17 +70,19 @@ function scene(index) {
   return `${archive(1005, 218, 330, -12)}${archive(1430, 247, 330, 11, true)}${archive(1195, 405, 355, -1)}<circle cx="1040" cy="787" r="40" fill="#FFF" stroke="#D8E3F6" stroke-width="3"/><path d="M1040 728v-14m0 146v-14m-59-59h-14m146 0h-14m-101-42-10-10m103 103-10-10m-83 0-10 10m103-103-10 10" stroke="#A5BADF" stroke-width="6" stroke-linecap="round"/><circle cx="1740" cy="735" r="47" fill="#1B3153"/><circle cx="1759" cy="715" r="42" fill="${v.background}"/>`;
 }
 function promo(locale, index, width, height) {
+  activeFont = locale.font_family || v.font;
   const item = locale.promotions[index];
   let body = rect(0, 0, 1920, 1080, 0, v.background) + '<ellipse cx="1450" cy="430" rx="740" ry="620" fill="url(#glow)"/>';
   body += '<path d="M930 0v1080M0 922h1920" stroke="#E5EDFA" stroke-width="2"/>';
   body += logo(112, 63, 58) + text(186, 108, 'xdzip', 37, v.ink, 650) + text(112, 215, item.eyebrow, 23, v.blue, 600);
-  item.headline.forEach((line, n) => body += text(108, 346 + n * 115, line, v.headline_size, v.ink, 650));
+  item.headline.forEach((line, n) => body += text(108, 346 + n * 115, line, v.headline_size, v.ink, 650, 'start', 760));
   const base = item.headline.length === 3 ? 655 : 578;
-  item.body.forEach((line, n) => body += text(113, base + n * 49, line, v.body_size, v.muted));
+  wrapped(item.body, 760 / v.body_size).forEach((line, n) => body += text(113, base + n * 49, line, v.body_size, v.muted, 400, 'start', 760));
   body += scene(index) + rect(1492, 70, 310, 50, 25, '#E6EDFD') + text(1647, 103, locale.illustration_label, 22, '#536C94', 500, 'middle');
   return svg(width, height, body);
 }
 function screenshotPromo(locale, index, capture, width, height, layoutEngine = imageTools) {
+  activeFont = locale.font_family || v.font;
   const item = locale.promotions[index];
   const layout = spec.screenshot_artwork;
   const box = layoutEngine.placement(spec,capture,width,height);
@@ -61,10 +91,10 @@ function screenshotPromo(locale, index, capture, width, height, layoutEngine = i
   body += '<ellipse cx="1440" cy="430" rx="820" ry="670" fill="url(#glow)"/>';
   body += '<path d="M-80 1050Q720 590 2030 1090M-80 1105Q720 645 2030 1145" fill="none" stroke="#D9E7FE" stroke-width="3"/>';
   body += logo(76, 66, 62) + text(154, 111, 'xdzip', 40, v.ink, 650);
-  body += text(78, 235, item.eyebrow, 22, v.blue, 600);
-  item.headline.forEach((line, n) => body += text(74, 345 + n * 86, line, layout.headline_size, v.ink, 650));
+  body += text(78, 235, item.eyebrow, 22, v.blue, 600, 'start', 490);
+  item.headline.forEach((line, n) => body += text(74, 345 + n * 86, line, layout.headline_size, v.ink, 650, 'start', 490));
   const base = item.headline.length === 3 ? 667 : 594;
-  item.body.forEach((line, n) => body += text(78, base + n * 41, line, layout.body_size, v.muted));
+  wrapped(item.body, 490 / layout.body_size).forEach((line, n) => body += text(78, base + n * 41, line, layout.body_size, v.muted, 400, 'start', 490));
   body += `<g transform="translate(82 792) rotate(-7)">${logo(0, 0, 120)}</g>`;
   // The screenshot supplies its own border; this background adds only shadow.
   body += `<defs><filter id="capture-shadow" x="-25%" y="-20%" width="150%" height="160%"><feDropShadow dx="0" dy="${layout.shadow_offset_y}" stdDeviation="${layout.shadow_blur}" flood-color="#173763" flood-opacity=".18"/></filter></defs>`;
@@ -73,14 +103,16 @@ function screenshotPromo(locale, index, capture, width, height, layoutEngine = i
   return svg(width, height, body);
 }
 function poster(locale, width, height) {
+  activeFont = locale.font_family || v.font;
   let body = rect(0, 0, 720, 1080, 0, 'url(#ocean)') + '<circle cx="675" cy="125" r="350" fill="#66D7F2" opacity=".12"/><path d="M-60 850Q350 600 800 935M-60 918Q350 668 800 1003M-60 986Q350 736 800 1071" fill="none" stroke="#B1D9FF" stroke-opacity=".16" stroke-width="2"/>';
   body += text(64, 111, 'xdzip', 66, '#FFFFFF', 650);
-  locale.poster_headline.forEach((line, n) => body += text(64, 202 + n * 65, line, 51, '#FFFFFF', 600));
+  locale.poster_headline.forEach((line, n) => body += text(64, 202 + n * 65, line, 51, '#FFFFFF', 600, 'start', 590));
   body += logo(155, 306, 410);
   return svg(width, height, body, '0 0 720 1080');
 }
 function square(locale, width, height) {
-  const body = rect(0, 0, 1080, 1080, 0, 'url(#ocean)') + '<circle cx="1000" cy="0" r="660" fill="#7DE4FF" opacity=".13"/><path d="M-100 1030Q550 610 1220 1010M-100 1090Q550 670 1220 1070" fill="none" stroke="#B1D9FF" stroke-opacity=".16" stroke-width="2"/>' + logo(310, 58, 460) + text(540, 618, 'xdzip', 104, '#FFFFFF', 650, 'middle') + text(540, 693, locale.square_tagline, 34, '#E4EEFF', 400, 'middle');
+  activeFont = locale.font_family || v.font;
+  const body = rect(0, 0, 1080, 1080, 0, 'url(#ocean)') + '<circle cx="1000" cy="0" r="660" fill="#7DE4FF" opacity=".13"/><path d="M-100 1030Q550 610 1220 1010M-100 1090Q550 670 1220 1070" fill="none" stroke="#B1D9FF" stroke-opacity=".16" stroke-width="2"/>' + logo(310, 58, 460) + text(540, 618, 'xdzip', 104, '#FFFFFF', 650, 'middle') + text(540, 693, locale.square_tagline, 34, '#E4EEFF', 400, 'middle', 930);
   return svg(width, height, body, '0 0 1080 1080');
 }
 function hero(width, height) {
@@ -95,10 +127,11 @@ function icon(size) {
 }
 const en = 'developers/market/windows';
 const zh = 'developers/zh-CN/market/windows';
+const localeBase = key => key === 'en-US' ? en : key === 'zh-CN' ? zh : `${en}/locales/${key}`;
 for (const size of [71, 150, 300, 512, 1024]) jobs.push({file:`${en}/images/branding/${size <= 300 ? 'app-icon' : 'avatar'}-${size}.png`, width:size, height:size, role:size <= 300 ? 'app-tile-icon' : 'reusable-avatar', locale:'shared', source:icon(size), transparent:true});
 for (const [w,h] of largeSizes) jobs.push({file:`${en}/images/branding/hero-${w}x${h}.png`, width:w,height:h,role:'text-free-hero',locale:'shared',source:hero(w,h)});
 for (const [key, locale] of Object.entries(spec.locales)) {
-  const base = key === 'en-US' ? en : zh;
+  const base = localeBase(key);
   for (const [w,h] of [[720,1080],[1440,2160]]) jobs.push({file:`${base}/images/branding/poster-${w}x${h}.png`,width:w,height:h,role:'poster',locale:key,source:poster(locale,w,h)});
   for (const size of [1080,2160]) jobs.push({file:`${base}/images/branding/box-art-${size}.png`,width:size,height:size,role:'box-art',locale:key,source:square(locale,size,size)});
   for (let i=0;i<locale.promotions.length;i++) for (const [w,h] of largeSizes) jobs.push({file:`${base}/images/promotional/${locale.promotions[i].id}-${w}x${h}.png`,width:w,height:h,role:'feature-illustration',locale:key,source:promo(locale,i,w,h)});
@@ -116,7 +149,7 @@ if (captures) {
     jobs.push({file:capture.native_file,width:capture.native_width,height:capture.native_height,role:'native-screenshot-source',locale:capture.locale,source:nativeBytes,input:true,capture});
     const cutoutBytes = fs.readFileSync(path.join(ROOT,capture.cutout_file));
     if (hash(cutoutBytes) !== capture.cutout_sha256) throw Error(`Changed screenshot cutout ${capture.cutout_file}`);
-    const base = capture.locale === 'en-US' ? en : zh;
+    const base = localeBase(capture.locale);
     const [minimumWidth,minimumHeight] = spec.screenshot_artwork.store_canvas;
     const canvas = {width:minimumWidth,height:minimumHeight,background:spec.screenshot_artwork.store_background};
     if (capture.cutout_width > canvas.width || capture.cutout_height > canvas.height) throw Error('Native screenshot exceeds Store canvas');
@@ -134,12 +167,16 @@ if (captures) {
   }
 }
 function validateCopy() {
-  if (Object.keys(spec.locales).sort().join(',')!=='en-US,zh-CN') throw Error('Expected the two listing locales');
+  const productLanguages = JSON.parse(fs.readFileSync(path.join(repository,'resources/ui-languages.json'),'utf8')).languages.map(item => item.id).sort();
+  if (JSON.stringify(Object.keys(spec.locales).sort()) !== JSON.stringify(productLanguages)) throw Error('Store languages differ from product languages');
   const a=spec.locales['en-US'],b=spec.locales['zh-CN'];
-  if(a.features.length!==b.features.length || a.promotions.length!==4 || JSON.stringify(a.promotions.map(p=>p.id))!==JSON.stringify(b.promotions.map(p=>p.id))) throw Error('Bilingual feature or artwork inventory differs');
+  if(a.features.length!==b.features.length || a.promotions.length!==4 || JSON.stringify(a.promotions.map(p=>p.id))!==JSON.stringify(b.promotions.map(p=>p.id))) throw Error('Feature or artwork inventory differs');
   for (const [key, l] of Object.entries(spec.locales)) {
+    if (l.features.length !== a.features.length || JSON.stringify(l.promotions.map(p=>p.id)) !== JSON.stringify(a.promotions.map(p=>p.id))) throw Error(`${key} artwork inventory differs`);
     const limits = {product_name:50,short_title:50,sort_title:255,voice_title:255,developer:255,short_description:270,description:10000,release_notes:1500,copyright:200,additional_license_terms:10000};
     for (const [name,max] of Object.entries(limits)) if (l[name].length > max) throw Error(`${key} ${name} exceeds ${max}`);
+    if (!l.description.trim() || !l.short_description.trim() || l.features.some(value => !value.trim()) || l.keywords.some(value => !value.trim())) throw Error(`${key} copy is incomplete`);
+    if (l.promotions.some(p => !p.eyebrow || !p.headline.length || p.headline.length > 3 || !p.body.length || !p.caption || wrapped(p.body, 490 / spec.screenshot_artwork.body_size).length > 4 || wrapped(p.body, 760 / v.body_size).length > 4)) throw Error(`${key} promotional copy is incomplete or too long`);
     if (l.features.length > 20 || l.features.some(s=>s.length>200)) throw Error(`${key} features exceed portal limits`);
     if (l.keywords.length > 7 || l.keywords.some(s=>s.length>40) || l.keywords.join(' ').trim().split(/\s+/).length>21) throw Error(`${key} keywords exceed portal limits`);
     if (l.promotions.some(p=>p.caption.length>200)) throw Error(`${key} caption exceeds 200`);
@@ -154,7 +191,9 @@ function validateCopy() {
   if (jobs.filter(j=>j.role==='text-free-hero').some(j=>/<text\b/.test(j.source))) throw Error('Hero artwork must not contain text');
   if (captures) {
     if (captures.baseline_revision !== spec.baseline.revision || captures.package_sha256 !== spec.baseline.package_sha256 || captures.runtime_exe_sha256 !== spec.baseline.runtime_exe_sha256) throw Error('Screenshot candidate differs from listing baseline');
-    const expected = Object.entries(spec.locales).flatMap(([key,l]) => l.promotions.map(p => `${key}/${p.id}`)).sort();
+    const capturedLanguages = [...new Set(captures.images.map(c => c.locale))];
+    if (!capturedLanguages.length || capturedLanguages.some(key => !spec.locales[key])) throw Error('Unknown capture language');
+    const expected = capturedLanguages.flatMap(key => spec.locales[key].promotions.map(p => `${key}/${p.id}`)).sort();
     const actual = captures.images.map(c => `${c.locale}/${c.scene}`).sort();
     if (JSON.stringify(expected) !== JSON.stringify(actual)) throw Error('Screenshot language or scene inventory differs');
     if (captures.schema_version !== 3 || captures.window_mode !== 'default') throw Error('Cleaned screenshots with native source inventory required');
@@ -184,14 +223,15 @@ function listingMarkdown(key,l) {
 async function main() {
   validateCopy(); const entries=[];
   if (listingsOnly) {
-    for(const [key,l] of Object.entries(spec.locales)) {
+    for(const key of ['en-US','zh-CN']) {
+      const l = spec.locales[key];
       const destination=path.join(ROOT,key==='en-US'?en:zh,'listing.md');
       const content=listingMarkdown(key,l);
       if(check) {
         if(fs.readFileSync(destination,'utf8').replaceAll('\r\n','\n')!==content) throw Error(`Stale listing copy ${key}`);
       } else fs.writeFileSync(destination,content);
     }
-    console.log('Bilingual Store listing copy and field limits passed.');
+    console.log('Ten-language Store copy, bilingual listing documents and field limits passed.');
     return;
   }
   for (const job of jobs) {
@@ -239,7 +279,11 @@ async function main() {
   }
   if (check && previous.assets.length!==jobs.length) throw Error('Unexpected asset inventory entries');
   if (!check) fs.writeFileSync(indexFile,JSON.stringify({schema_version:1,brand_source:'design/assets/brand/xdzip.svg',assets:entries},null,2)+'\n');
-  console.log(`${check?'Validated':'Rendered'} ${jobs.length} PNG assets; bilingual field limits and source hashes passed.`);
+  console.log(`${check?'Validated':'Rendered'} ${jobs.length} PNG assets; field limits and source hashes passed.`);
 }
 module.exports = {screenshotPromo, promo, poster, square, hero, icon};
-if (require.main === module) main().catch(e=>{console.error(e.message);process.exitCode=1;});
+if (require.main === module) {
+  const standalone = process.argv.includes('--backgrounds-only');
+  const work = standalone ? require('./build-platform-store-assets.cjs').build('windows', process.argv.slice(2).filter(arg => arg !== '--backgrounds-only')) : main();
+  work.catch(e=>{console.error(e.message);process.exitCode=1;});
+}
