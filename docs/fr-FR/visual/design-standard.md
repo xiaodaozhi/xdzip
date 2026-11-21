@@ -1,6 +1,6 @@
 # Norme de conception de l'interface
 
-[English](../../visual/design-standard.md) | [简体中文](../../zh-CN/visual/design-standard.md) | [繁體中文](../../zh-TW/visual/design-standard.md) | [日本語](../../ja-JP/visual/design-standard.md) | [한국어](../../ko-KR/visual/design-standard.md) | Français | [Deutsch](../../de-DE/visual/design-standard.md) | [Español](../../es-ES/visual/design-standard.md) | [Português (Brasil)](../../pt-BR/visual/design-standard.md)
+[English](../../visual/design-standard.md) | [简体中文](../../zh-CN/visual/design-standard.md) | [繁體中文](../../zh-TW/visual/design-standard.md) | [日本語](../../ja-JP/visual/design-standard.md) | [한국어](../../ko-KR/visual/design-standard.md) | Français | [Deutsch](../../de-DE/visual/design-standard.md) | [Español](../../es-ES/visual/design-standard.md) | [Português (Brasil)](../../pt-BR/visual/design-standard.md) | [Русский](../../ru-RU/visual/design-standard.md)
 
 Cette norme régit la création de l'interface, la livraison des conceptions HTML et l'implémentation Qt. Les conversions de dimensions suivent [layout-scale.json](../../../specs/visual/layout-scale.json) ; les couleurs, contrôles partagés et arbres de répertoires suivent respectivement [tokens.json](../../../specs/visual/tokens.json), [controls.json](../../../specs/visual/controls.json) et [directory-tree.json](../../../specs/visual/directory-tree.json). Les mesures originales figurent dans [qt-main-reference.json](../../../specs/visual/qt-main-reference.json) ; ne pas réécrire les originaux à partir des résultats de l'implémentation.
 

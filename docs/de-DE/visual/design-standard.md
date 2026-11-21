@@ -1,6 +1,6 @@
 # UI-Designstandard
 
-[English](../../visual/design-standard.md) | [简体中文](../../zh-CN/visual/design-standard.md) | [繁體中文](../../zh-TW/visual/design-standard.md) | [日本語](../../ja-JP/visual/design-standard.md) | [한국어](../../ko-KR/visual/design-standard.md) | [Français](../../fr-FR/visual/design-standard.md) | Deutsch | [Español](../../es-ES/visual/design-standard.md) | [Português (Brasil)](../../pt-BR/visual/design-standard.md)
+[English](../../visual/design-standard.md) | [简体中文](../../zh-CN/visual/design-standard.md) | [繁體中文](../../zh-TW/visual/design-standard.md) | [日本語](../../ja-JP/visual/design-standard.md) | [한국어](../../ko-KR/visual/design-standard.md) | [Français](../../fr-FR/visual/design-standard.md) | Deutsch | [Español](../../es-ES/visual/design-standard.md) | [Português (Brasil)](../../pt-BR/visual/design-standard.md) | [Русский](../../ru-RU/visual/design-standard.md)
 
 Dieser Standard gilt für UI-Erstellung, HTML-Designlieferung und Qt-Implementierung. Maßumrechnungen folgen [layout-scale.json](../../../specs/visual/layout-scale.json); Farben, gemeinsame Steuerelemente und Verzeichnisbäume folgen jeweils [tokens.json](../../../specs/visual/tokens.json), [controls.json](../../../specs/visual/controls.json) und [directory-tree.json](../../../specs/visual/directory-tree.json). Ursprüngliche Messungen stehen in [qt-main-reference.json](../../../specs/visual/qt-main-reference.json); Originale nicht rückwirkend aus Implementierungsergebnissen umschreiben.
 

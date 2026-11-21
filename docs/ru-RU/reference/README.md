@@ -88,7 +88,7 @@
 
 - [Представления Qt Quick и обязанности контроллеров](../design/qt-quick-ui.md)
 - [Спецификации оформления приложения](../visual/README.md)
-- [Стандарт оформления интерфейса](../../visual/design-standard.md)
+- [Стандарт оформления интерфейса](../visual/design-standard.md)
 - [Процесс проектирования и корректировки интерфейса](../visual/design-workflow.md)
 - [Значки ассоциаций файлов](../visual/file-association-icons.md)
 - [Проверка визуального соответствия HTML](../visual/html-fidelity.md)

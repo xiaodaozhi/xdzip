@@ -1,6 +1,6 @@
 # UI 디자인 표준
 
-[English](../../visual/design-standard.md) | [简体中文](../../zh-CN/visual/design-standard.md) | [繁體中文](../../zh-TW/visual/design-standard.md) | [日本語](../../ja-JP/visual/design-standard.md) | 한국어 | [Français](../../fr-FR/visual/design-standard.md) | [Deutsch](../../de-DE/visual/design-standard.md) | [Español](../../es-ES/visual/design-standard.md) | [Português (Brasil)](../../pt-BR/visual/design-standard.md)
+[English](../../visual/design-standard.md) | [简体中文](../../zh-CN/visual/design-standard.md) | [繁體中文](../../zh-TW/visual/design-standard.md) | [日本語](../../ja-JP/visual/design-standard.md) | 한국어 | [Français](../../fr-FR/visual/design-standard.md) | [Deutsch](../../de-DE/visual/design-standard.md) | [Español](../../es-ES/visual/design-standard.md) | [Português (Brasil)](../../pt-BR/visual/design-standard.md) | [Русский](../../ru-RU/visual/design-standard.md)
 
 이 표준은 UI 제작, HTML 디자인 제공 및 Qt 구현에 적용됩니다. 치수 변환은 [layout-scale.json](../../../specs/visual/layout-scale.json), 색상, 공유 컨트롤 및 디렉터리 트리는 각각 [tokens.json](../../../specs/visual/tokens.json), [controls.json](../../../specs/visual/controls.json), [directory-tree.json](../../../specs/visual/directory-tree.json)을 따릅니다. 원본 측정값은 [qt-main-reference.json](../../../specs/visual/qt-main-reference.json)에 있으며 구현 결과로부터 원본을 역으로 다시 쓰지 않습니다.
 

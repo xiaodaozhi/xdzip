@@ -1,6 +1,6 @@
 # UI デザイン標準
 
-[English](../../visual/design-standard.md) | [简体中文](../../zh-CN/visual/design-standard.md) | [繁體中文](../../zh-TW/visual/design-standard.md) | 日本語 | [한국어](../../ko-KR/visual/design-standard.md) | [Français](../../fr-FR/visual/design-standard.md) | [Deutsch](../../de-DE/visual/design-standard.md) | [Español](../../es-ES/visual/design-standard.md) | [Português (Brasil)](../../pt-BR/visual/design-standard.md)
+[English](../../visual/design-standard.md) | [简体中文](../../zh-CN/visual/design-standard.md) | [繁體中文](../../zh-TW/visual/design-standard.md) | 日本語 | [한국어](../../ko-KR/visual/design-standard.md) | [Français](../../fr-FR/visual/design-standard.md) | [Deutsch](../../de-DE/visual/design-standard.md) | [Español](../../es-ES/visual/design-standard.md) | [Português (Brasil)](../../pt-BR/visual/design-standard.md) | [Русский](../../ru-RU/visual/design-standard.md)
 
 この標準は UI の作成、HTML デザインの提供、Qt 実装に適用します。寸法変換は [layout-scale.json](../../../specs/visual/layout-scale.json)、色、共通コントロール、ディレクトリーツリーはそれぞれ [tokens.json](../../../specs/visual/tokens.json)、[controls.json](../../../specs/visual/controls.json)、[directory-tree.json](../../../specs/visual/directory-tree.json)に従います。原稿の測定値は [qt-main-reference.json](../../../specs/visual/qt-main-reference.json)にあり、実装結果から逆算して原稿を書き換えてはいけません。
 

@@ -2,7 +2,7 @@
 
 [English](../../visual/README.md) | [简体中文](../../zh-CN/visual/README.md) | [繁體中文](../../zh-TW/visual/README.md) | [日本語](../../ja-JP/visual/README.md) | [한국어](../../ko-KR/visual/README.md) | [Français](../../fr-FR/visual/README.md) | [Deutsch](../../de-DE/visual/README.md) | [Español](../../es-ES/visual/README.md) | [Português (Brasil)](../../pt-BR/visual/README.md) | Русский
 
-Основные документы: [стандарт дизайна интерфейса](../../visual/design-standard.md), [обязательный порядок проектирования](design-workflow.md) и [контракт плотности и единиц](../../../specs/visual/layout-scale.json). Повторную проверку пропорций главного окна и меню регистрируют по [общей методике](../../../developers/qa/README.md).
+Основные документы: [стандарт дизайна интерфейса](design-standard.md), [обязательный порядок проектирования](design-workflow.md) и [контракт плотности и единиц](../../../specs/visual/layout-scale.json). Повторную проверку пропорций главного окна и меню регистрируют по [общей методике](../../../developers/qa/README.md).
 
 Текущие оригиналы находятся в [design/hifi](../../../design/hifi/README.md), интерактивные HTML-материалы — в [design/html](../../../design/html/README.md). Ранние предложения, которые не были приняты, не являются текущим стандартом. Не следует искать прежние дизайны в реорганизованной истории main: источником служат текущие оригиналы и манифест.
 
