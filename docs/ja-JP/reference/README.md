@@ -87,7 +87,7 @@
 ## デスクトップの操作とビジュアル設計
 
 - [Qt Quick のビューとコントローラーの責務](../design/qt-quick-ui.md)
-- [デスクトップのビジュアル仕様](../../visual/README.md)
+- [デスクトップのビジュアル仕様](../visual/README.md)
 - [UI 設計標準](../../visual/design-standard.md)
 - [UI 設計と修正の手順](../visual/design-workflow.md)
 - [ファイルの関連付けアイコン](../visual/file-association-icons.md)

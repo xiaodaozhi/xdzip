@@ -2,7 +2,7 @@
 
 # xdzip 視覺規範
 
-[English](../../visual/README.md) | [简体中文](../../zh-CN/visual/README.md) | 繁體中文
+[English](../../visual/README.md) | [简体中文](../../zh-CN/visual/README.md) | 繁體中文 | [日本語](../../ja-JP/visual/README.md)
 
 規範入口：[介面設計規範](design-standard.md)、[強制設計流程](design-workflow.md)、[密度與單位契約](../../../specs/visual/layout-scale.json)。主視窗與選單比例的複驗按[通用方法](../../../developers/qa/README.md)記錄。
 

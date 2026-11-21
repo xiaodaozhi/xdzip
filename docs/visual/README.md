@@ -1,6 +1,6 @@
 # xdzip visual specifications
 
-English | [简体中文](../zh-CN/visual/README.md) | [繁體中文](../zh-TW/visual/README.md)
+English | [简体中文](../zh-CN/visual/README.md) | [繁體中文](../zh-TW/visual/README.md) | [日本語](../ja-JP/visual/README.md)
 
 Specification entries: [UI design standard](design-standard.md), [mandatory design workflow](design-workflow.md), and [density and unit contract](../../specs/visual/layout-scale.json). Reverification of main-window and menu proportions is recorded under the [general method](../../developers/qa/README.md).
 
