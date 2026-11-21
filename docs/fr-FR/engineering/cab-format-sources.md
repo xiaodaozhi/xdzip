@@ -2,7 +2,7 @@
 
 [English](../../engineering/cab-format-sources.md) | [简体中文](../../zh-CN/engineering/cab-format-sources.md) | [繁體中文](../../zh-TW/engineering/cab-format-sources.md) | [日本語](../../ja-JP/engineering/cab-format-sources.md) | [한국어](../../ko-KR/engineering/cab-format-sources.md) | Français | [Deutsch](../../de-DE/engineering/cab-format-sources.md) | [Español](../../es-ES/engineering/cab-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/cab-format-sources.md) | [Русский](../../ru-RU/engineering/cab-format-sources.md)
 
-Ce document présente les sources, le périmètre et les contraintes d’implémentation indépendante du conteneur CAB, de MSZIP, de LZX et de Quantum. Les capacités du produit, la gestion des ressources et les règles de remplacement propres à chaque format relèvent respectivement du [contrat du processus de formats isolé](native-codecs.md), du [contrat Rust développé en interne](../../engineering/independent-rust-codecs.md) et du [contrat des volumes fractionnés](archive-opening.md). Les références ne remplacent ni la validation de l’interopérabilité ni l’examen des licences avant publication.
+Ce document présente les sources, le périmètre et les contraintes d’implémentation indépendante du conteneur CAB, de MSZIP, de LZX et de Quantum. Les capacités du produit, la gestion des ressources et les règles de remplacement propres à chaque format relèvent respectivement du [contrat du processus de formats isolé](native-codecs.md), du [contrat Rust développé en interne](independent-rust-codecs.md) et du [contrat des volumes fractionnés](archive-opening.md). Les références ne remplacent ni la validation de l’interopérabilité ni l’examen des licences avant publication.
 
 ## Documents techniques Microsoft
 

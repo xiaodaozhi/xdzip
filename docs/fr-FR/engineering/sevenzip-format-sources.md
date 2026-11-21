@@ -4,7 +4,7 @@
 
 [English](../../engineering/sevenzip-format-sources.md) | [简体中文](../../zh-CN/engineering/sevenzip-format-sources.md) | [繁體中文](../../zh-TW/engineering/sevenzip-format-sources.md) | [日本語](../../ja-JP/engineering/sevenzip-format-sources.md) | [한국어](../../ko-KR/engineering/sevenzip-format-sources.md) | Français | [Deutsch](../../de-DE/engineering/sevenzip-format-sources.md) | [Español](../../es-ES/engineering/sevenzip-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/sevenzip-format-sources.md) | [Русский](../../ru-RU/engineering/sevenzip-format-sources.md)
 
-Ce document décrit les sources réutilisables et les limites d’implémentation. L’acceptation de la migration et les capacités restantes sont suivies dans le [ticket #50](https://github.com/xiaodaozhi/xdzip/issues/50) ; le routage Rust fixé et la suppression de la dépendance officielle du produit ne démontrent pas automatiquement l’acceptation multiplateforme, manuelle ou de livraison. Les règles générales de remplacement figurent dans le [contrat d’implémentation indépendante](../../engineering/independent-rust-codecs.md).
+Ce document décrit les sources réutilisables et les limites d’implémentation. L’acceptation de la migration et les capacités restantes sont suivies dans le [ticket #50](https://github.com/xiaodaozhi/xdzip/issues/50) ; le routage Rust fixé et la suppression de la dépendance officielle du produit ne démontrent pas automatiquement l’acceptation multiplateforme, manuelle ou de livraison. Les règles générales de remplacement figurent dans le [contrat d’implémentation indépendante](independent-rust-codecs.md).
 
 <a name="xdzip-specifications-and-reference-identity"></a>
 

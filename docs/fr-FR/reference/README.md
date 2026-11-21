@@ -55,7 +55,7 @@ Consultez d’abord l’[architecture du système](../design/system-architecture
 - [Adaptateurs de format et conception de l’essai SDK externe](../design/codec-extension-sdk.md)
 - [Essai du SDK externe en lecture seule et périmètre d’exécution](../engineering/sdk-trial.md)
 - [Contrat du processus de format isolé](../engineering/native-codecs.md)
-- [Formats et algorithmes Rust internes](../../engineering/independent-rust-codecs.md)
+- [Formats et algorithmes Rust internes](../engineering/independent-rust-codecs.md)
 - [Décompte du travail algorithmique auxiliaire](../engineering/auxiliary-decoding-work.md)
 - [Choix de la dépendance pour les métadonnées ZIP](../engineering/zip-metadata-admission.md)
 - [Choix des dépendances d’extraction et d’écriture ZIP](../engineering/zip-extraction-admission.md)
