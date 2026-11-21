@@ -68,7 +68,7 @@
 - [Контракт потоков Zstandard](../engineering/zstandard-streams.md)
 - [Контракт Unix compress Z](../engineering/compress-streams.md)
 - [Контракт обычных потоков Brotli](../engineering/brotli-streams.md)
-- [Структура данных и алгоритмы LHA](../../engineering/lha-containers.md)
+- [Структура данных и алгоритмы LHA](../engineering/lha-containers.md)
 - [Контейнеры PMA и методы PMarc](../engineering/pma-streams.md)
 - [Сжатые потоки и допуск контейнеров ARJ](../engineering/arj-streams.md)
 - [Контейнеры ARC и профили сжатых потоков](../engineering/arc-streams.md)

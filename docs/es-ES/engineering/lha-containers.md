@@ -1,6 +1,6 @@
 # Contrato del formato y los algoritmos LHA
 
-[English](../../engineering/lha-containers.md) | [简体中文](../../zh-CN/engineering/lha-containers.md) | [繁體中文](../../zh-TW/engineering/lha-containers.md) | [日本語](../../ja-JP/engineering/lha-containers.md) | [한국어](../../ko-KR/engineering/lha-containers.md) | [Français](../../fr-FR/engineering/lha-containers.md) | [Deutsch](../../de-DE/engineering/lha-containers.md) | Español | [Português (Brasil)](../../pt-BR/engineering/lha-containers.md)
+[English](../../engineering/lha-containers.md) | [简体中文](../../zh-CN/engineering/lha-containers.md) | [繁體中文](../../zh-TW/engineering/lha-containers.md) | [日本語](../../ja-JP/engineering/lha-containers.md) | [한국어](../../ko-KR/engineering/lha-containers.md) | [Français](../../fr-FR/engineering/lha-containers.md) | [Deutsch](../../de-DE/engineering/lha-containers.md) | Español | [Português (Brasil)](../../pt-BR/engineering/lha-containers.md) | [Русский](../../ru-RU/engineering/lha-containers.md)
 
 LHA/LZH y el histórico LArc forman una familia de contenedores de miembros secuenciales. Una extensión, una cadena de método reconocible o un miembro Store procesado correctamente no demuestran compatibilidad de decodificación con otro método. Las primitivas básicas de `xdzip-compression` reciben un intervalo comprimido admitido y un tamaño decodificado validado de forma independiente, sin autoridad sobre el sistema de archivos, los procesos, los nombres ni la publicación. El registro en el producto y la admisión del contenedor requieren las comprobaciones independientes siguientes.
 
