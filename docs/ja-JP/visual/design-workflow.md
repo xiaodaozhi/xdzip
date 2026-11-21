@@ -4,7 +4,7 @@
 
 [English](../../visual/design-workflow.md) | [简体中文](../../zh-CN/visual/design-workflow.md) | [繁體中文](../../zh-TW/visual/design-workflow.md) | 日本語 | [한국어](../../ko-KR/visual/design-workflow.md) | [Français](../../fr-FR/visual/design-workflow.md) | [Deutsch](../../de-DE/visual/design-workflow.md) | [Español](../../es-ES/visual/design-workflow.md) | [Português (Brasil)](../../pt-BR/visual/design-workflow.md) | [Русский](../../ru-RU/visual/design-workflow.md)
 
-この手順は UI を作成する前に実施し、実装後に文書を補うためのものとはしません。仕様の入口は [UI 設計標準](../../visual/design-standard.md)です。
+この手順は UI を作成する前に実施し、実装後に文書を補うためのものとはしません。仕様の入口は [UI 設計標準](design-standard.md)です。
 
 1. **目標と環境を定義する。** 機能、実データ、不足している能力を列挙します。プラットフォームと、論理ウィンドウ、アクセシビリティ用文字サイズ、メニュー、独立ウィンドウの寸法範囲を指定します。システム倍率、レビュー倍率、DPR を記録し、HTML プロトタイプではブラウザーのページ倍率も記録します。
 2. **最初にパラメーターを定義する。** 寸法、タイポグラフィ、スロット、内側の余白、配置、状態には仕様 JSON を使用します。座標系とコンポーネント固有の密度を記録します。メインウィンドウとメニューの測定基準は独立しており、各独立ウィンドウはウィンドウ登録簿の式を使用します。操作本文の拡大率と共通フッターの寸法は別々に確認します。物理ピクセルは測定証拠を読むときだけ DPR で換算します。

@@ -34,7 +34,7 @@
 
 ## 共通コントロールとネイティブの範囲
 
-操作画面は `OperationButton`、`OperationFooterButton`、`OperationFrame`、`OperationSelect`、`OperationSegmentedGroup` を再利用します。寸法と操作は共通コンポーネントで定めます。選択用の共通コントロールはマウス、キーボード、アクセシビリティの操作を同じ状態モデルに送ります。UI 文言とファイルデータは[デザイン標準](../../visual/design-standard.md)のフォントと言語の規則に従います。アーカイブ内の名前はデータとして安全に表示します。
+操作画面は `OperationButton`、`OperationFooterButton`、`OperationFrame`、`OperationSelect`、`OperationSegmentedGroup` を再利用します。寸法と操作は共通コンポーネントで定めます。選択用の共通コントロールはマウス、キーボード、アクセシビリティの操作を同じ状態モデルに送ります。UI 文言とファイルデータは[デザイン標準](../visual/design-standard.md)のフォントと言語の規則に従います。アーカイブ内の名前はデータとして安全に表示します。
 
 独立した操作ウィンドウはウィンドウレジストリと各ウィンドウのモダリティおよび閉じる動作に従います。macOS ではネイティブのタイトルバーコントロールを使い、Windows と Linux では各 OS のアダプターを使います。[プラットフォームのウィンドウ契約](../ux/platform-windows.md)に実ウィンドウの受け入れ基準があり、[デスクトップ統合の契約](../ux/desktop-integration.md)に通知領域とアクティブ化の動作があります。
 

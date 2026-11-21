@@ -2,7 +2,7 @@
 
 [English](../../visual/README.md) | [简体中文](../../zh-CN/visual/README.md) | [繁體中文](../../zh-TW/visual/README.md) | 日本語 | [한국어](../../ko-KR/visual/README.md) | [Français](../../fr-FR/visual/README.md) | [Deutsch](../../de-DE/visual/README.md) | [Español](../../es-ES/visual/README.md) | [Português (Brasil)](../../pt-BR/visual/README.md) | [Русский](../../ru-RU/visual/README.md)
 
-仕様の入口：[UI デザイン基準](../../visual/design-standard.md)、[必須デザインワークフロー](design-workflow.md)、[密度と単位の契約](../../../specs/visual/layout-scale.json)。メインウィンドウとメニューの比率の再検証は[共通の方法](../../../developers/qa/README.md)に従って記録します。
+仕様の入口：[UI デザイン基準](design-standard.md)、[必須デザインワークフロー](design-workflow.md)、[密度と単位の契約](../../../specs/visual/layout-scale.json)。メインウィンドウとメニューの比率の再検証は[共通の方法](../../../developers/qa/README.md)に従って記録します。
 
 現在の原稿は [design/hifi](../../../design/hifi/README.md)、インタラクティブな HTML 成果物は [design/html](../../../design/html/README.md)にあります。採用されなかった初期提案は現在の基準ではありません。再編された main 履歴から旧デザインを探すことに依存せず、現在の原稿とマニフェストを基準とします。
 
