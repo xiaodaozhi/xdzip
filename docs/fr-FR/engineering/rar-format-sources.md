@@ -1,6 +1,6 @@
 # Base d'implémentation indépendante de RAR et limites de compatibilité
 
-[English](../../engineering/rar-format-sources.md) | [简体中文](../../zh-CN/engineering/rar-format-sources.md) | [繁體中文](../../zh-TW/engineering/rar-format-sources.md) | [日本語](../../ja-JP/engineering/rar-format-sources.md) | Français
+[English](../../engineering/rar-format-sources.md) | [简体中文](../../zh-CN/engineering/rar-format-sources.md) | [繁體中文](../../zh-TW/engineering/rar-format-sources.md) | [日本語](../../ja-JP/engineering/rar-format-sources.md) | Français | [Español](../../es-ES/engineering/rar-format-sources.md)
 
 La migration RAR interne conserve l'ensemble du périmètre en lecture seule pour les anciens formats, RAR5, RAR7, les mots de passe, le chiffrement d'en-tête, les archives solides et les volumes autorisés ; aucun encodeur RAR n'est développé. Le remplacement des capacités et le retrait des dépendances officielles restent soumis à la [tâche de migration #51](https://github.com/xiaodaozhi/xdzip/issues/51). Le code du conteneur ou la seule lecture Store ne démontrent pas une migration complète. Voir le [contrat du moteur isolé](native-codecs.md) pour le routage et les sources actuels.
 
