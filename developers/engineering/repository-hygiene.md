@@ -20,7 +20,7 @@ The source repository retains durable inputs needed to understand, build, and ma
 
 Use the corresponding-source collector for local review and rebuild verification only when the user separately and explicitly requests source collection. Routine release and acceptance do not run it; it is not a GitHub Release or Actions download attachment. See the [release protocol](../../docs/engineering/release-protocol.md).
 
-`design/html` is an interactive high-fidelity design; `docs/html` is a Markdown-derived reading edition, serving a different purpose. The latter is generated under `build/docs-html/` by default; the former's source and necessary assets remain maintained. Historical design originals and durable dependency provenance materials are not categorically deleted merely because they are binary or generated.
+`design/hifi` contains static design references and `design/assets` contains maintained assets. The Markdown-derived reading edition is generated under `build/docs-html/` by default. Historical design originals and durable dependency provenance materials are not categorically deleted merely because they are binary or generated.
 
 ## Routine checks
 

@@ -16,7 +16,7 @@ Use the `capture-source` folder from a reviewed export or backup. This reuses th
 python scripts/package-windows-store-materials.py --from-archive "D:/Store-backup/approved/capture-source"
 ```
 
-The command prints the new output directory under `build/store-listing/`. Override it with `--output` or add `--4k` for 3840 × 2160 artwork. Inspect `preview.html` and use each language's 1920 × 1080 files in `promotional/` for the Store desktop screenshot field. Keep the directory as individual files after submitting new artwork.
+The command prints the new output directory under `build/store-listing/`. Override it with `--output` or add `--4k` for 3840 × 2160 artwork. Review the exported images and use each language's 1920 × 1080 files in `promotional/` for the Store desktop screenshot field. Keep the directory as individual files after submitting new artwork.
 
 ## Capture both languages from a verified MSIX
 

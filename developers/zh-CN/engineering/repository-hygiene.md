@@ -20,7 +20,7 @@
 
 对应源码收集器只在用户针对源码收集另行明确要求时用于本地审查和重建核验，常规发行及验收不运行；不作为 GitHub Release 或 Actions 下载附件，具体边界见[发布协议](../../../docs/zh-CN/engineering/release-protocol.md)。
 
-`design/html` 是可操作高保真设计，`docs/html` 是 Markdown 派生阅读版，二者用途不同。后者默认生成到 `build/docs-html/`；前者的源文件与必要素材继续维护。历史设计原稿与永久依赖来源材料不按“二进制”或“生成”一刀切删除。
+`design/hifi` 保存静态设计参考，`design/assets` 保存需要维护的素材。Markdown 派生阅读版默认生成到 `build/docs-html/`。历史设计原稿与永久依赖来源材料不按“二进制”或“生成”一刀切删除。
 
 ## 日常检查
 

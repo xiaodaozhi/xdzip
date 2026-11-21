@@ -180,11 +180,11 @@ Use en-US for English (United States), zh-CN for Chinese (China).
 
 The screenshots folder contains {store_dimensions} plain app views. The promotional
 folder contains 1920 x 1080 artwork with borders, shadows and localized copy.
-Use --4k when exporting to add 3840 x 2160 versions. Open preview.html to review both languages.
+Use --4k when exporting to add 3840 x 2160 versions. Review both language versions as individual images.
 Upload the four 1920 x 1080 files in promotional/ to the desktop screenshot field.
 
 screenshots/ 是 {store_dimensions} 的纯应用界面。promotional/ 提供带圆角细边框、阴影和对应语言文案的
-1920 x 1080 宣传图。导出时加 --4k 可另得 3840 x 2160 版本。打开 preview.html 可审阅两个语言版本。
+1920 x 1080 宣传图。导出时加 --4k 可另得 3840 x 2160 版本。请逐张审阅两种语言的图片。
 桌面截图栏上传 promotional/ 中的四张 1920 x 1080 融合宣传图。
 
 Keep this directory as individual files in your backup after submitting updated assets.
@@ -210,7 +210,6 @@ Pricing, age ratings and other account-level submission sections are completed s
 '''.format(version=msix_version, capture_version=spec['baseline']['package_version'],
            store_dimensions=store_dimensions)
     payload['UPLOAD.md'] = guide.encode('utf-8')
-    payload['preview.html'] = (ROOT / 'design/hifi/sources/windows-store-artwork.html').read_bytes()
     files = [{'file': name, 'bytes': len(data), 'sha256': digest(data)} for name, data in sorted(payload.items())]
     manifest = {'schema_version': 1, 'baseline': spec['baseline'], 'msix_version': msix_version,
                 'render_revision': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),

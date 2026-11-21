@@ -4,7 +4,7 @@
 
 [English](../../ux/welcome-opening.md) | [简体中文](../../zh-CN/ux/welcome-opening.md) | 繁體中文 | [日本語](../../ja-JP/ux/welcome-opening.md) | [한국어](../../ko-KR/ux/welcome-opening.md) | [Français](../../fr-FR/ux/welcome-opening.md) | [Deutsch](../../de-DE/ux/welcome-opening.md) | [Español](../../es-ES/ux/welcome-opening.md) | [Português (Brasil)](../../pt-BR/ux/welcome-opening.md) | [Русский](../../ru-RU/ux/welcome-opening.md)
 
-2026-10-16 修訂，引數源為 [welcome-reference.json](../../../specs/visual/welcome-reference.json)，動態高保真入口為 [歡迎頁讀取狀態](../../../design/hifi/sources/welcome.html?opening=1)。沿用主視窗、選單和歡迎頁的邏輯單位，標題欄不變。
+2026-10-16 修訂，引數源為 [welcome-reference.json](../../../specs/visual/welcome-reference.json)，動態高保真入口為 歡迎頁讀取狀態。沿用主視窗、選單和歡迎頁的邏輯單位，標題欄不變。
 
 歡迎頁開啟真實壓縮檔時，在正文上方居中顯示浮動卡片及半透明遮罩。卡片正常寬 360、內距 24、間距 12、圓角 8、標題 16，窄視窗按可用寬度約束；檔名中間省略，狀態說明可換行，取消按鈕始終可達。淺深色均複用共享主題，輔助字號沿用全域性設定。
 
@@ -22,4 +22,4 @@ HTML 設計原型用可取消的示例等待展示該狀態，不讀取拖入檔
 
 外部檔案啟動修訂：透過命令列、Windows 開啟方式、Linux 桌面入口或 macOS 檔案開啟事件進入時，在首次顯示主視窗前接收已知開啟意圖並提交真實讀取。視窗不等待讀取完成，直接顯示現有可取消進度卡片，隱藏歡迎頁的品牌說明、開啟／新建卡片與拖入區域；成功後顯示檔案列表，失敗或取消後恢復歡迎頁及真實意見回饋。正常空啟動仍顯示歡迎頁，歡迎頁內主動開啟仍保留原遮罩效果。標題欄、主視窗與選單的尺寸比例不變，不增加延時閾值或偽造進度。
 
-高保真外部啟動入口為 [external=1](../../../design/hifi/sources/welcome.html?external=1)，HTML 僅展示相同狀態，不模擬系統檔案關聯。迴歸覆蓋隱藏視窗預提交、首次呈現時歡迎內容不可見、失敗恢復和各平臺真實系統開啟；關聯探針記錄實際 frameSwapped 次數及歡迎內容可見次數，不以單純成功讀取替代啟動顯示檢查。
+高保真外部啟動入口為 external=1，HTML 僅展示相同狀態，不模擬系統檔案關聯。迴歸覆蓋隱藏視窗預提交、首次呈現時歡迎內容不可見、失敗恢復和各平臺真實系統開啟；關聯探針記錄實際 frameSwapped 次數及歡迎內容可見次數，不以單純成功讀取替代啟動顯示檢查。

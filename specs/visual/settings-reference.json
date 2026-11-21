@@ -9,7 +9,11 @@
   "note_size": 12,
   "maximum_height": 720,
   "default_language_selection": "auto",
-  "language_selections": ["auto", "zh-CN", "en-US"],
+  "language_selections": [
+    "auto",
+    "zh-CN",
+    "en-US"
+  ],
   "fallback_language": "en-US",
   "languages": [
     "zh-CN",
@@ -41,7 +45,7 @@
   "authoring_dpr": 1,
   "authoring_browser_zoom": 1,
   "export_padding": 20,
-  "authoring_source": "design/hifi/sources/settings.html",
+  "authoring_source": "design/hifi/screens/settings-appearance-light.png",
   "theme_artwork_width": 72,
   "theme_artwork_height": 66,
   "theme_card_gap": 10,

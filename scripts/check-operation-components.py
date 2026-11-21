@@ -27,7 +27,7 @@ for name in windows:
     forbidden = r'\b(cornerRadius|radius|density|labelSize|font|surfaceColor|outlineColor|baseHeight|horizontalInset|verticalInset|minimumWidth)\s*:'
     if any(re.search(forbidden, b) for b in actions):
         failures.append(f'{name}: footer presentation override')
-for folder in ['apps', 'crates', 'design/html', 'scripts', 'tools']:
+for folder in ['apps', 'crates', 'scripts', 'tools']:
     for path in (ROOT/folder).rglob('*'):
         if path.suffix in {'.qml','.cpp','.h','.js','.html','.css','.py','.rs','.ps1'} and not any(p in {'build','target','dist','__pycache__'} for p in path.parts):
             if '\u00b7' in path.read_text(encoding="utf-8"):

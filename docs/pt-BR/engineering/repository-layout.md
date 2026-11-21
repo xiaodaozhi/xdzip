@@ -30,7 +30,7 @@ Os arquivos Cargo.toml e CMakeLists.txt da raiz definem os módulos atuais do pr
 | tools | Sondas independentes da ponte, formatos, E/S e contagem de processos. A interface gráfica tem seus próprios pontos de entrada. |
 | scripts, .github | Geração, verificações, ferramentas de implantação, CI e modelos de colaboração. |
 | release-notes | Notas revisáveis de cada versão e metadados de versão e compilação. Relatórios de execução e pacotes gerados ficam em outros diretórios. |
-| design/hifi, design/html, design/assets | Originais de alta fidelidade, projetos interativos e recursos de entrada do ambiente de execução. |
+| design/hifi, design/assets | Imagens de projeto de alta fidelidade e recursos de entrada do ambiente de execução. |
 | docs | Projetos duradouros em Markdown, contratos técnicos, métodos de verificação reutilizáveis e imagens necessárias. Os relatórios de execução ficam em outros diretórios. |
 | specs | Inventários de aspectos visuais, terminologia e dependências legíveis por máquina. Atendem aos recursos do produto, geradores e verificações. |
 | third_party | Fontes de terceiros e materiais de licença mantidos com o código. |

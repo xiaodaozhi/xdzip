@@ -8,9 +8,7 @@ the tracked product containers. No operating-system association is changed.
 from __future__ import annotations
 
 import argparse
-import base64
 import hashlib
-import html
 import io
 import json
 import os
@@ -22,72 +20,13 @@ from association_icon_assets import ASSETS, ROOT, SPEC, icon_svg, source_specs
 from brand_assets import ICO_SIZES, ICNS_CHUNKS, master_svg, png_name
 from association_types import WINDOWS_ICONS, MACOS_ICONS
 
-GALLERY = ROOT / 'design/hifi/sources/file-association-icons.html'
-
 
 def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def image_tag(icon: dict, size: int, platform: str = 'default') -> str:
-    encoded = base64.b64encode(icon_svg(icon, size, platform).encode()).decode()
-    return (f'<img src="data:image/svg+xml;base64,{encoded}" width="{size}" height="{size}" '
-            f'alt="{html.escape(icon["name"])}" draggable="false">')
-
-
-def gallery() -> str:
-    cards, rows = [], []
-    for icon in SPEC['icons']:
-        caption = icon['label'] or '通用归档'
-        suffix = ' / '.join(icon['extensions']) or '无专属格式时使用'
-        cards.append(f'<article class="card"><div class="art">{image_tag(icon, 128)}</div>'
-                     f'<h2>{caption}</h2><p>{suffix}</p></article>')
-        samples = ''.join(f'<div class="sample">{image_tag(icon, size)}</div>'
-                          for size in [16, 24, 32, 48, 64, 128])
-        rows.append(f'<div class="size-row"><strong>{caption}</strong>{samples}</div>')
-    cards.append('<article class="card identity"><div class="art"><img width="112" height="112" '
-                 'src="../../assets/brand/xdzip-128.png" alt="xdzip 应用图标"></div>'
-                 '<h2>同一品牌</h2><p>交错带与开放 U 形</p></article>')
-    head = '''<!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>xdzip 文件关联图标</title><style>
-*{box-sizing:border-box} :root{color-scheme:light;--page:#f5f5f3;--card:#fff;--ink:#20232a;--muted:#657084;--line:#dce2ec;--blue:#2455cd;--selection:#e6eeff}
-html[data-theme=dark]{color-scheme:dark;--page:#20242d;--card:#292e39;--ink:#f0f2f6;--muted:#adb8cc;--line:#434e62;--blue:#9cbbff;--selection:#35445e}
-body{margin:0;background:var(--page);color:var(--ink);font:15px/1.6 "Segoe UI","Microsoft YaHei",sans-serif}
-main{max-width:1200px;margin:auto;padding:48px 48px 64px}header{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:32px}
-.eyebrow{font-size:12px;font-weight:700;letter-spacing:2px;color:var(--blue);margin:0 0 10px}h1{font-size:34px;line-height:1.3;letter-spacing:-1px;margin:0 0 12px}header p{color:var(--muted);margin:0;max-width:720px}
-.toolbar{display:flex;gap:8px;flex-shrink:0;padding-top:6px}button,a{color:var(--blue)}button{font:inherit;border:1px solid var(--line);border-radius:8px;background:var(--card);padding:8px 14px;cursor:pointer}button:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 12px 18px;text-align:center;min-width:0}.art{height:154px;display:flex;align-items:center;justify-content:center}.art img{display:block}.card h2{font-size:16px;margin:0;font-weight:650;letter-spacing:.4px}.card p{font-size:12px;color:var(--muted);margin:3px 0 0}.identity{background:transparent;border-style:dashed}
-.principles{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin:32px 0 0}.principles strong{font-size:14px}.principles p{font-size:13px;color:var(--muted);margin:5px 0 0}
-.sizes{margin-top:48px}.sizes h2{font-size:23px;margin:0 0 4px}.hint{font-size:13px;color:var(--muted);margin:0 0 22px}.table{border:1px solid var(--line);border-radius:12px;overflow:auto;background:var(--card)}
-.size-row{display:grid;grid-template-columns:100px 64px 64px 64px 80px 96px 156px;align-items:center;justify-content:space-between;gap:12px;min-width:770px;padding:12px 24px;border-bottom:1px solid var(--line)}.size-row:last-child{border:0}.size-row strong{font-size:13px}.sample{display:flex;align-items:center;justify-content:center;min-height:40px}.sample img{display:block}.size-head{font-size:12px;text-align:center;color:var(--muted)}
-html[data-selected=true] .card,html[data-selected=true] .size-row:not(.size-head){background:var(--selection)}
-footer{margin-top:28px;border-top:1px solid var(--line);padding-top:18px;font-size:12px;color:var(--muted)}footer p{margin:4px 0}footer a{margin-right:18px}
-@media(max-width:850px){main{padding:28px 20px}header{display:block}.toolbar{margin-top:16px}.grid{grid-template-columns:repeat(3,1fr)}.principles{gap:16px}}
-@media(max-width:560px){.grid{grid-template-columns:repeat(2,1fr)}h1{font-size:27px}.principles{grid-template-columns:1fr}.art{height:144px}}
-</style></head><body><main>
-<section id="overview"><header><div><p class="eyebrow">XDZIP / FILE ASSOCIATIONS</p><h1>一眼识别，每一种归档。</h1>
-<p>沿用折角文档与编织标记，以格式名称为主、辅助色为辅。<br>10 个格式图标与 1 个通用后备图标，共用一套形状与留白。</p></div>
-<div class="toolbar"><button id="theme" aria-pressed="false">深色背景</button><button id="selected" aria-pressed="false">选中背景</button></div></header>
-<div class="grid">'''
-    foot = '''</div><div class="principles"><div><strong>品牌一致</strong><p>纸张、折角与品牌标记复用现有几何，格式标签全部使用矢量轮廓。</p></div><div><strong>小尺寸做减法</strong><p>16 / 24 / 32 px 省去微字，扩大标记。文件名承担精确的格式识别。</p></div><div><strong>同族有联系</strong><p>TAR.GZ、TGZ、GZ 共用青绿色。GZ 图标覆盖独立 GZIP 及 TAR.GZ 外层，实际能力由内容和格式契约决定。</p></div></div></section>
-<section class="sizes"><h2>按实际尺寸检查</h2><p class="hint">浏览器 100% 下按 CSS 像素显示，保持透明边缘，不把预览倍率写进图标几何。48 px 起保留标签，长标签优先在 64 px 以上阅读。</p><div class="table"><div class="size-row size-head"><strong>格式</strong><span>16</span><span>24</span><span>32</span><span>48</span><span>64</span><span>128</span></div>'''
-    end = '''</div></section><footer><p>Windows 和 macOS 使用各自可识别的文档图标，Linux 保留系统 MIME 图标。Explorer 和 Finder 的原生显示需单独验收。</p>
-<p><a href="../../../docs/visual/file-association-icons.md">设计与映射规范</a><a href="../../assets/index.html">统一素材库</a><a href="../index.html">高保真总览</a></p></footer></main>
-<script>
-const params=new URLSearchParams(location.search);if(params.get('theme')==='dark')document.documentElement.dataset.theme='dark';
-const theme=document.getElementById('theme'),selected=document.getElementById('selected');
-function sync(){const dark=document.documentElement.dataset.theme==='dark';theme.textContent=dark?'浅色背景':'深色背景';theme.setAttribute('aria-pressed',String(dark));selected.setAttribute('aria-pressed',String(document.documentElement.dataset.selected==='true'))}sync();
-theme.addEventListener('click',()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark';sync()});
-selected.addEventListener('click',()=>{document.documentElement.dataset.selected=String(document.documentElement.dataset.selected!=='true');sync()});
-</script></body></html>
-'''
-    return head + ''.join(cards) + foot + ''.join(rows) + end
-
-
 def write_sources(check: bool) -> None:
     sources = {ASSETS / name: icon_svg(icon, size) for icon, _, size, name in source_specs()}
-    sources[GALLERY] = gallery()
     for path, data in sources.items():
         if check:
             if not path.exists() or path.read_text(encoding='utf-8') != data:
@@ -95,7 +34,7 @@ def write_sources(check: bool) -> None:
         else:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(data, encoding='utf-8', newline='\n')
-    print(f'{len(sources) - 1} SVG sources and design gallery are consistent')
+    print(f'{len(sources)} SVG sources are consistent')
 
 
 def containers(output: Path, stem: str) -> dict[str, bytes]:

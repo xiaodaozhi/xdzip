@@ -18,7 +18,7 @@ User-facing Chinese copy follows the [terminology configuration](../../specs/ux/
 
 Do not replace terminology in user-provided names or paths, filenames inside archives, protocol fields, code identifiers or historical high-fidelity images. English retains the standard word “archive” according to English grammar; “全部内容” is “All contents”. English size properties retain “Compressed” as an abbreviation for compressed size suitable for narrow headers. Do not replace English code identifiers according to Chinese vocabulary.
 
-See the current [terminology state design](../../design/hifi/terminology.html). Original images, hashes and text-ink measurements remain historical evidence. The [body measurement script](../../scripts/check-html-body.py) verifies new copy only through explicit historical label mappings, without changing geometry targets or tolerances. Longer labels still require verification that the main window, headers, preview and menus display completely.
+See the current terminology state design. Original images, hashes and text-ink measurements remain historical evidence. The body measurement script verifies new copy only through explicit historical label mappings, without changing geometry targets or tolerances. Longer labels still require verification that the main window, headers, preview and menus display completely.
 
 Run `python3 scripts/check-ui-i18n.py` to check all product language resources and the Simplified Chinese terminology. The terminology check applies only to static product copy, permits the explicitly allowed verb use of “压缩文件”, and does not restrict user content or engineering terms.
 

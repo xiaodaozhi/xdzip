@@ -81,7 +81,7 @@
 - [界面设计规范](../visual/design-standard.md)
 - [界面设计与修正流程](../visual/design-workflow.md)
 - [文件关联图标](../visual/file-association-icons.md)
-- [HTML 视觉一致性复核](../visual/html-fidelity.md)
+- HTML 视觉一致性复核
 - [补充交互与文案规范](../ux/interaction-spec.md)
 - [主窗口功能、组件与交互契约](../ux/main-window-components.md)
 - [目录树设计与接入](../ux/directory-tree.md)
@@ -94,7 +94,7 @@
 - [系统菜单与托盘](../ux/desktop-integration.md)
 - [平台窗口与标题栏规范](../ux/platform-windows.md)
 - [高保真状态与实现契约](../ux/hifi-state-spec.md)
-- [v0.1 交互原型与功能映射](../ux/prototype-spec.md)
+- v0.1 交互原型与功能映射
 
 ## 平台集成、发布与信任
 

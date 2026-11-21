@@ -29,8 +29,6 @@ jobs:
           if ($LASTEXITCODE) { throw 'Cannot prepare pinned font source' }
           & $fontPython scripts/test-ui-fonts.py
           if ($LASTEXITCODE) { throw 'Font regression failed' }
-          & $fontPython scripts/build-html-design.py --check
-          if ($LASTEXITCODE) { throw 'HTML font integration failed' }
           New-Item -ItemType Directory -Force build/font-verification | Out-Null
           Copy-Item build/generated/fonts/manifest.json "build/font-verification/ui-font-${{ runner.os }}.json"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -49,7 +47,7 @@ jobs:
           pattern: ui-font-*
           path: build/font-verification
           merge-multiple: true
-      - name: Require identical native and web font bytes
+      - name: Require identical generated font bytes
         run: |
           python3 - <<'PY'
           import json

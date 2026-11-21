@@ -150,7 +150,7 @@ El ejemplo de componentes `xdzip-ui-preview` no sirve para aceptación con archi
 
 `prepare` instala FontTools/Brotli fijados en el entorno compartido y guarda en caché las fuentes de interfaz upstream verificadas por hash. Cada compilación de escritorio recopila automáticamente los catálogos de idiomas admitidos y el texto fijo QML/C++ y genera los subconjuntos de fuentes bajo `<build-directory>/generated/fonts/`. Añadir caracteres no exige incluir binarios de fuentes en commits. Tras la preparación se puede compilar sin conexión; una caché ausente o dañada falla explícitamente. Las compilaciones CMake directas deben seleccionar ese entorno mediante `Python3_EXECUTABLE`.
 
-Para vista previa solo HTML, exportación sin conexión, importación manual de fuentes y comprobaciones de tipografía, consulte la [guía de fuentes compartidas](../../../design/assets/fonts/README.en.md). El empaquetado valida el manifiesto de fuentes de la compilación de producto correspondiente sin regenerarlo. El texto fijo de interfaz y la selección de fuentes del sistema para datos de usuario conservan sus funciones existentes.
+Para importación manual de fuentes y comprobaciones de tipografía, consulte la [guía de fuentes compartidas](../../../design/assets/fonts/README.en.md). El empaquetado valida el manifiesto de fuentes de la compilación de producto correspondiente sin regenerarlo. El texto fijo de interfaz y la selección de fuentes del sistema para datos de usuario conservan sus funciones existentes.
 
 ## Empaquetado y verificación
 

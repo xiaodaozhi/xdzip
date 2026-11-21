@@ -2,13 +2,13 @@
 
 [English](../../ux/directory-tree.md) | 简体中文 | [繁體中文](../../zh-TW/ux/directory-tree.md) | [日本語](../../ja-JP/ux/directory-tree.md) | [한국어](../../ko-KR/ux/directory-tree.md) | [Français](../../fr-FR/ux/directory-tree.md) | [Deutsch](../../de-DE/ux/directory-tree.md) | [Español](../../es-ES/ux/directory-tree.md) | [Português (Brasil)](../../pt-BR/ux/directory-tree.md) | [Русский](../../ru-RU/ux/directory-tree.md)
 
-状态：**核心目录交互已接入 HTML 示例和 Qt 只读浏览，边界状态资源仍待接入**。交互遵循[只读浏览契约](../engineering/readonly-browser.md)，普通目录浏览采用直属子项，搜索递归当前范围，输出授权保持只读。
+状态：**核心目录交互已接入 Qt 只读浏览，边界状态资源仍待接入**。交互遵循[只读浏览契约](../engineering/readonly-browser.md)，普通目录浏览采用直属子项，搜索递归当前范围，输出授权保持只读。
 
-三张当前图板位于 [多级展开](../../../design/hifi/screens/directory-tree-capsule.png)、[节点与交互状态](../../../design/hifi/screens/directory-tree-states.png)、[空态与导航边界](../../../design/hifi/screens/directory-tree-boundaries.png)。[统一画廊](../../../design/hifi/index.html#components)展示整幅图板，[素材库](../../../design/assets/index.html#directory-tree)提供逐项切图。多级展开图从[可编辑设计源](../../../design/hifi/sources/main.html?tree=expanded)导出，标题栏同步当前胶囊标签；图板中的顶部和中央列表仅提供上下文，不重新定义标题栏、工具栏或文件表格。[历史多级展开原图](../../../design/hifi/screens/directory-tree.png)保持原样，继续作为 26 张切片的来源及独立量测依据。
+三张当前图板位于 [多级展开](../../../design/hifi/screens/directory-tree-capsule.png)、[节点与交互状态](../../../design/hifi/screens/directory-tree-states.png)、[空态与导航边界](../../../design/hifi/screens/directory-tree-boundaries.png)。统一画廊展示整幅图板，[素材库](../../../design/assets/index.html#directory-tree)提供逐项切图。多级展开图从可编辑设计源导出，标题栏同步当前胶囊标签；图板中的顶部和中央列表仅提供上下文，不重新定义标题栏、工具栏或文件表格。[历史多级展开原图](../../../design/hifi/screens/directory-tree.png)保持原样，继续作为 26 张切片的来源及独立量测依据。
 
 图板采用放大展示，每张卡片的局部比例不完全相同。图片中的文字、圆角和像素尺寸不能直接当作控件尺寸；[组件参数](../../../specs/visual/directory-tree.json)明确记录落地的逻辑尺寸，资产清单单独记录原图裁剪的物理坐标。实现采用 1024 逻辑宽度及统一源画布变换，不能把这一组新组件再整体放大。
 
-Qt 直接使用下表的逻辑值。现有 HTML 主稿采用 1548 源像素窗口映射到 1024 逻辑像素，转换遵循 [display-spec.js](../../../design/html/display-spec.js)：`source CSS = logical / (1024/1548)`。因此 32 行高对应 48.375 源 CSS 像素，11.2 字号对应 16.93125，16 图标槽对应 24.1875，12.8 缩进对应 19.35。预览缩放在换算之后统一作用于整个窗口；DPR 只决定采样密度和线条对齐，不参与逻辑尺寸换算。
+Qt 直接使用下表的逻辑值。现有 HTML 主稿采用 1548 源像素窗口映射到 1024 逻辑像素，转换遵循 layout-scale.json：`source CSS = logical / (1024/1548)`。因此 32 行高对应 48.375 源 CSS 像素，11.2 字号对应 16.93125，16 图标槽对应 24.1875，12.8 缩进对应 19.35。预览缩放在换算之后统一作用于整个窗口；DPR 只决定采样密度和线条对齐，不参与逻辑尺寸换算。
 
 ## 树结构与计数
 
@@ -100,13 +100,13 @@ HTML／Qt 交互一致性按[验证方法](../../../developers/zh-CN/qa/README.m
 
 | 部分 | 资源 / 绘制方式 | 当前接入情况 |
 | --- | --- | --- |
-| 文件夹、左右 / 向下箭头 | `folder`、`chevron-right`、`chevron-down`，复用统一素材库 | 既有共享资源可用；B 共享图标与 B 尺寸已用于递归 HTML 行和 Qt 委托 |
+| 文件夹、左右 / 向下箭头 | `folder`、`chevron-right`、`chevron-down`，复用统一素材库 | 既有共享资源可用；B 共享图标与 B 尺寸已用于Qt 委托 |
 | 读取、信息、警告 | 新增 `tree-spinner`、`tree-info`、`tree-warning` | 八张浅深色 SVG 与 24 张透明 PNG 的一部分；保留图板实心与分段造型，未用既有轮廓图标代替 |
-| 隐藏当前分支 | 新增 `tree-active-branch` | 两主题六张透明 PNG 已交付；HTML 与 Qt 均消费该资源，标记最近的可见折叠祖先 |
+| 隐藏当前分支 | 新增 `tree-active-branch` | 两主题六张透明 PNG 已交付；Qt 均消费该资源，标记最近的可见折叠祖先 |
 | 连接线、当前背景、焦点、骨架、提示 | 动态绘制，参数文件定义尺寸和主题 | 样式与逻辑已规定，未交付第二套位图控件 |
 | 正式图板 | `hifi/screens/directory-tree*.png` | 保留确认稿原始字节，用于设计核对 |
 
-HTML 与 Qt 已接入连接线、分支圆点、16 文件夹槽和目录右键；HTML 示例采用完整递归层级，Qt 使用真实受限索引。收起当前祖先不提交查询。加载骨架、专用信息／错误图标仍为设计资源，深色完整图板仍待补齐；图标接入不证明逐平台读屏或 HiDPI 验收，既有人工专项结论以 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)为准。
+Qt 已接入连接线、分支圆点、16 文件夹槽和目录右键；Qt 使用真实受限索引。收起当前祖先不提交查询。加载骨架、专用信息／错误图标仍为设计资源，深色完整图板仍待补齐；图标接入不证明逐平台读屏或 HiDPI 验收，既有人工专项结论以 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)为准。
 
 ## 接入后的验收标准
 

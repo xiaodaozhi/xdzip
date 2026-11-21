@@ -30,7 +30,7 @@
 | tools | 獨立橋接、格式、I/O 與程序計數探針，不作為 GUI 產品入口 |
 | scripts、.github | 生成、檢查、部署工具與 CI、協作模板 |
 | release-notes | 可審閱的版本專屬發行說明及 version/build 後設資料，不存執行報告或生成包 |
-| design/hifi、design/html、design/assets | 高保真原稿、可操作設計及執行素材輸入 |
+| design/hifi, design/assets | 高保真設計圖及執行素材輸入 |
 | docs | Markdown 格式的持久設計、工程契約與可複用驗證方法，以及必要圖片；不累積執行報告 |
 | specs | 機器可讀的視覺、術語與依賴清單；供產品資源、生成器和檢查工具使用 |
 | third_party | 隨程式碼保留的第三方來源與許可材料 |

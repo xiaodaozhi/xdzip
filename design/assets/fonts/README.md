@@ -21,24 +21,13 @@ Xdzip Design Sans SC 是官方 Noto Sans SC 2.004-H2 的可变字体子集，用
 ```sh
 build/toolchain/desktop-tools/bin/python -m pip install -r design/assets/fonts/requirements.txt
 python3 scripts/ui-fonts.py prepare
-build/toolchain/desktop-tools/bin/python scripts/preview-html-design.py
-```
-
-Windows 将工具环境的 `bin/python` 换成 `Scripts/python.exe`，将 `python3` 换成 `python`。预览命令输出本机地址，按 Ctrl+C 关闭。通过此入口打开源码 HTML，预览服务器将原字体 URL 映射到 `build/generated/fonts/`；直接双击源码 HTML 不再自动提供字体。
-
-生成独立离线页面：
-
-```sh
-build/toolchain/desktop-tools/bin/python scripts/build-html-design.py
 build/toolchain/desktop-tools/bin/python scripts/ui-fonts.py check
 ```
 
-`dist/` 中的页面嵌入 WOFF2 和完整许可，可以离线打开。检查生成资源可使用 `build-html-design.py --check`。已有完整上游字体时，可用 `python scripts/ui-fonts.py prepare --source /path/to/NotoSansSC.ttf` 导入，仍须通过固定哈希检查；准备后可用 `prepare --offline` 检查源缓存。
-
-HTML 导出以 UTF-8 读取源文本和清单、写入生成页面，不依赖系统默认代码页；生成资源检查与嵌入的字体许可同样遵循此约定。嵌入的 WOFF2 固定使用 `font/woff2`，不要求系统预先登记该 MIME 类型。
+已有完整上游字体时，可用 `python scripts/ui-fonts.py prepare --source /path/to/NotoSansSC.ttf` 导入，仍须通过固定哈希检查；准备后可用 `prepare --offline` 检查源缓存。Windows 将 `bin/python` 换成 `Scripts/python.exe`，将 `python3` 换成 `python`。
 
 ## 来源与许可
 
 固定来源为 [Google Fonts](https://github.com/google/fonts/tree/a85815a42757630ce188fdad368c2dfc444d4773/ofl/notosanssc) 提交 `a85815a42757630ce188fdad368c2dfc444d4773`，上游 `NotoSansSC[wght].ttf` 的 SHA-256 为 `a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da`。原始来源、版本和工具版本见固定配置，生成结果的哈希和实际字符清单见构建目录中的 `manifest.json`。
 
-版权为 Adobe 2014–2021，保留字体名为 `Source`，派生字体采用独立家族名。字体及其派生字体遵循 [OFL-1.1](OFL.txt)，不适用项目 Apache-2.0。离线 HTML 和产品许可材料保留完整版权及许可。字体统一不代表与历史图片的未知原始字体完全一致，平台抗锯齿和用户数据的实际字形仍有差异。
+版权为 Adobe 2014–2021，保留字体名为 `Source`，派生字体采用独立家族名。字体及其派生字体遵循 [OFL-1.1](OFL.txt)，不适用项目 Apache-2.0。产品许可材料保留完整版权及许可。字体统一不代表与历史图片的未知原始字体完全一致，平台抗锯齿和用户数据的实际字形仍有差异。

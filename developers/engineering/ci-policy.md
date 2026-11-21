@@ -6,7 +6,7 @@ English | [简体中文](../zh-CN/engineering/ci-policy.md)
 
 [CI](../../.github/workflows/docs.yml) runs one Linux job on pushes to main, pull requests, and manual dispatch. It checks documentation links and JSON, versions and UI text, generated-resource consistency, window/shared-control contracts, Rust and C/C++ formatting, workflow structure, and whitespace errors. It does not build the desktop product or run complete Rust, three-platform Qt, archive-format interoperability, packaging, or installation lifecycle checks. The target is usually under five minutes; queue and download times follow actual run records.
 
-Each PR update can cancel older runs for the same PR; main and manual runs use independent run identities. Failures and cancellations do not count as passes. Workflows use read-only repository permissions and pinned dependencies, without release keys. Routine CI does not start Playwright, Chromium, or another web browser; static HTML design-generation checks still run.
+Each PR update can cancel older runs for the same PR; main and manual runs use independent run identities. Failures and cancellations do not count as passes. Workflows use read-only repository permissions and pinned dependencies, without release keys. Routine CI does not start Playwright, Chromium, or another web browser.
 
 ### Change classification and fallback
 
@@ -40,7 +40,7 @@ Qt on-demand `test --skip-rust` marks the Rust workspace as not executed. When a
 
 Foundation and Qt use pinned-input caches containing only Cargo downloads, pip downloads, pinned Qt corresponding-source archives and (for Qt) the hash-verified upstream UI font, not compiled products, generated font subsets, installed Qt SDKs, test conclusions, or credentials. Trusted manual main runs may save hash-sealed caches; other branches only restore and verify them. Cache hits do not replace rerunning checks.
 
-[UI font generation](../../.github/workflows/ui-fonts.yml) is a lightweight manual three-platform check for automatic glyph coverage, offline cache failures, concurrent generation, HTML integration and identical TTF/WOFF2 output hashes. It uploads JSON only, without building or deploying Qt applications. Routine CI runs the font regressions on Linux. See the [font guide](../../design/assets/fonts/README.en.md) for preparation and preview commands.
+[UI font generation](../../.github/workflows/ui-fonts.yml) is a lightweight manual three-platform check for automatic glyph coverage, offline cache failures, concurrent generation and identical TTF/WOFF2 output hashes. It uploads JSON only, without building or deploying Qt applications. Routine CI runs the font regressions on Linux. See the [font guide](../../design/assets/fonts/README.en.md) for preparation and preview commands.
 
 Foundation natively builds and runs CLI regressions without Qt on all three platforms, clearing display-session and Qt search paths and retaining JSON receipts. Qt builds also verify private CLI layout and same-user update handoff. Standalone package generation requires passing receipts bound to the same executable, worker hash, and build identity. Three-platform CLI release packages and independent signing manifests are produced only by an authorized Release workflow. Ordinary macOS CI still uploads only logs and JSON.
 

@@ -42,15 +42,11 @@ jobs:
           node scripts/build-windows-store-assets.cjs --check
           python3 scripts/test-check-docs.py
           python3 scripts/check-ui-i18n.py
-          node scripts/test-folder-sorting.cjs
-          python3 scripts/generate-ui-messages.py --check
           python3 scripts/generate-qml-theme.py --check
-          python3 scripts/generate-control-tokens.py --check
           python3 scripts/generate-format-registry.py --check
           python3 scripts/test-format-registry.py
           python3 scripts/test-runtime-worker-tests.py
           build/ci-check-tools/bin/python scripts/test-ui-fonts.py
-          build/ci-check-tools/bin/python scripts/build-html-design.py --check
           python3 scripts/check-window-contracts.py --self-test
           python3 scripts/check-operation-components.py
       - name: Check Rust and C++ formatting

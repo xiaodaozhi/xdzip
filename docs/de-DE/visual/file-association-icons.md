@@ -4,7 +4,7 @@
 
 [English](../../visual/file-association-icons.md) | [简体中文](../../zh-CN/visual/file-association-icons.md) | [繁體中文](../../zh-TW/visual/file-association-icons.md) | [日本語](../../ja-JP/visual/file-association-icons.md) | [한국어](../../ko-KR/visual/file-association-icons.md) | [Français](../../fr-FR/visual/file-association-icons.md) | Deutsch | [Español](../../es-ES/visual/file-association-icons.md) | [Português (Brasil)](../../pt-BR/visual/file-association-icons.md) | [Русский](../../ru-RU/visual/file-association-icons.md)
 
-Systemdateisymbole verwenden xdzip-Dokument mit umgefalteter Ecke, Badge mit stetiger Krümmung, vier verflochtene Bänder und offene U-förmige Marke. Der Entwurf liegt auf der [hochauflösenden Prüfseite](../../../design/hifi/sources/file-association-icons.html), Parameter stammen aus [file-association-icons.json](../../../specs/visual/file-association-icons.json), Dokumentsymbolquellen und Produktplattformcontainer aus [file-associations](../../../design/assets/file-associations). Benutzer wählen ihre Standardanwendungen weiterhin selbst.
+Systemdateisymbole verwenden xdzip-Dokument mit umgefalteter Ecke, Badge mit stetiger Krümmung, vier verflochtene Bänder und offene U-förmige Marke. Der Entwurf liegt auf der hochauflösenden Prüfseite, Parameter stammen aus [file-association-icons.json](../../../specs/visual/file-association-icons.json), Dokumentsymbolquellen und Produktplattformcontainer aus [file-associations](../../../design/assets/file-associations). Benutzer wählen ihre Standardanwendungen weiterhin selbst.
 
 <a name="xdzip-shape-and-identification"></a>
 

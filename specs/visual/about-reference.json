@@ -9,7 +9,7 @@
   "title_size": 20,
   "body_size": 13,
   "note_size": 12,
-  "source": "design/hifi/about.html",
+  "source": "design/hifi/screens/settings-about-light.png",
   "states": [
     "light",
     "dark",

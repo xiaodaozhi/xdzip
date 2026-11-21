@@ -43,7 +43,7 @@ def main():
         assert hashlib.sha256(path.read_bytes()).hexdigest() == item['sha256']
         with Image.open(path) as original:
             assert original.size == tuple(item.get('size', [1024, 1536])), item['file']
-        if item.get('role') == 'editable-design-export':
+        if item.get('role') == 'fixed-design-artwork':
             assert item['supersedes'] == 'screens/directory-tree.png'
         else:
             assert item['status'] == 'approved-design-with-core-interactions'
@@ -132,7 +132,7 @@ def main():
         'checks': ['Design source files match the canonical inventories', 'Every cut matches its exact bounded source rectangle',
                    'Six-unit marker is centered on every shared canvas',
                    'Counts, leaf arrows and hidden-current sample are internally consistent'],
-        'coordinate_conversion': 'Qt logical values and HTML source values map to the same 1024-wide design size',
+        'coordinate_conversion': 'Qt logical values follow the 1024-wide design scale',
         'integration_status': spec['status'],
         'limits': ['Boundary notice glyphs and skeleton remain design resources',
                    'Asset checks do not prove live keyboard or screen-reader behavior; see the component interaction review',

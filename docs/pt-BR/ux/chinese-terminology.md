@@ -20,7 +20,7 @@ O texto apresentado em chinês simplificado segue a [configuração de terminolo
 
 Preserve nomes e caminhos fornecidos pelo usuário, nomes internos aos arquivos compactados, campos de protocolo, identificadores do código e imagens históricas dos projetos. Em inglês, use “archive” conforme a gramática inglesa e “All contents” para “全部内容”. Em cabeçalhos estreitos, “Compressed” abrevia “compressed size”. Preserve os identificadores do código em inglês.
 
-Consulte o [projeto de estados da terminologia](../../../design/hifi/terminology.html). As imagens originais, os hashes e as medições da área visível do texto permanecem como evidências históricas. O [script de medição do conteúdo](../../../scripts/check-html-body.py) verifica os textos novos com correspondências explícitas dos rótulos anteriores, mantendo as metas geométricas e as tolerâncias. Verifique a exibição completa dos textos longos na janela principal, nos cabeçalhos, na prévia e nos menus.
+Consulte o projeto de estados da terminologia. As imagens originais, os hashes e as medições da área visível do texto permanecem como evidências históricas. O script de medição do conteúdo verifica os textos novos com correspondências explícitas dos rótulos anteriores, mantendo as metas geométricas e as tolerâncias. Verifique a exibição completa dos textos longos na janela principal, nos cabeçalhos, na prévia e nos menus.
 
 Execute `python3 scripts/check-ui-i18n.py` para verificar todos os recursos de idioma do produto e a terminologia em chinês simplificado. A verificação de terminologia cobre os textos estáticos do produto e admite o uso verbal autorizado de “压缩文件”. Conteúdo do usuário e termos técnicos ficam fora desse controle.
 

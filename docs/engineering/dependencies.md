@@ -73,11 +73,11 @@ Version provenance, features, and native compilation behavior were checked; Wind
 
 Production dependency policy checks ordinary/build dependency closures for both format and bridge crates. Official 7-Zip and UnRAR containers, algorithms, and general utilities have all left product CMake manifests; the product source-preparation list is empty, with no failure fallback. Historical delivery license obligations remain. Independent pycdlib, Microsoft IMAPI, mkudffs/udfclient fixtures, official reference workers, and specification vectors are tests only; their sources and licenses are managed separately and do not enter application runtime dependencies. Small fixed project-owned inputs and generators are versioned in test directories; expanded images and execution evidence remain in build/.
 
-## HTML review fonts and tools
+## Interface fonts and tools
 
 Use an offline variable subset of official Noto Sans SC 2.004-H2 instead of review-device system fallback fonts. See the [materials inventory](../../specs/dependencies/ui-font.json) for the pinned Google Fonts commit, the original source hash and generation recipe, copyright, and OFL-1.1 license. Builds generate WOFF2 with weights 400–750 and a same-source native TTF in the build directory; the source repository retains no generated font binaries, without external services, transitive runtime dependencies, or native compilation. System fonts would yield different cross-platform text metrics, so review designs bundle the font. Each build checks current text coverage; unknown generated-design fonts still cannot be assumed to match. Upstream remains maintained; reassess the pinned version as maintenance changes.
 
-Desktop resource static checks use Pillow (HPND), FontTools (MIT), Brotli (MIT), and PyYAML (MIT) for workflow checks, with versions pinned in [desktop asset tool requirements](../../scripts/desktop-asset-requirements.txt) and installed in a separate venv. Playwright (Apache-2.0) and Chromium are used only for on-demand local HTML design review; versions are in [local design tool requirements](../../scripts/html-design-requirements.txt). They do not enter default CI, the application, or offline design delivery. None of these tools enter product runtime code.
+Desktop resource static checks use Pillow (HPND), FontTools (MIT), Brotli (MIT), and PyYAML (MIT) for workflow checks, with versions pinned in [desktop asset tool requirements](../../scripts/desktop-asset-requirements.txt) and installed in a separate venv. Playwright (Apache-2.0) and Chromium support optional local asset rendering and do not enter the application. None of these tools enter product runtime code.
 
 ## In-house ZIP and general cryptographic primitives
 

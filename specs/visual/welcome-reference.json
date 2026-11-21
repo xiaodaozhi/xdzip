@@ -2,7 +2,7 @@
   "schema_version": 1,
   "status": "dimension-and-behavior-contract",
   "units": "CSS px / Qt device-independent pixels",
-  "source": "../../design/hifi/sources/welcome.html",
+  "source": "../../design/hifi/screens/welcome-top-light.png",
   "theme_source": "tokens.json",
   "window_source": "layout-scale.json",
   "window": [

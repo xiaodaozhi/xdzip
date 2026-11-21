@@ -38,7 +38,7 @@ The app's existing Apache-2.0 license and third-party notices are unchanged by t
 
 ## App screenshots and combined promotional artwork
 
-Export the approved capture set or [capture both languages from a verified MSIX](capture.md). Open the exported `preview.html` and review the PNGs at their intended size. The capture uses default window dimensions and owned demonstration files. The exporter trims the top pixel row, cleans the corners and adds a thin inner border before compositing the window with localized copy and a soft shadow.
+Export the approved capture set or [capture both languages from a verified MSIX](capture.md). Review the exported PNGs at their intended size. The capture uses default window dimensions and owned demonstration files. The exporter trims the top pixel row, cleans the corners and adds a thin inner border before compositing the window with localized copy and a soft shadow.
 
 Upload the four **1920 × 1080** combined images in each language's `promotional/` directory to the desktop screenshot field in this order.
 
@@ -57,7 +57,7 @@ Each language's `branding/` directory includes 71, 150 and 300 px app icons, 512
 
 ## Editing and regeneration
 
-Edit [the marketing specification](../../../specs/marketing/windows-store.json) for bilingual copy and the [artwork generator](../../../scripts/build-windows-store-assets.cjs) for composition. Refresh the Markdown copy with `node scripts/build-windows-store-assets.cjs`. Use the [local export command](capture.md#export-from-an-approved-capture-set) to re-render archived screenshots with updated copy or artwork. The [preview template](../../../design/hifi/sources/windows-store-artwork.html) is included in the export.
+Edit [the marketing specification](../../../specs/marketing/windows-store.json) for bilingual copy and the [artwork generator](../../../scripts/build-windows-store-assets.cjs) for composition. Refresh the Markdown copy with `node scripts/build-windows-store-assets.cjs`. Use the [local export command](capture.md#export-from-an-approved-capture-set) to re-render archived screenshots with updated copy or artwork. The preview template is included in the export.
 
 After submitting updated images, copy the reviewed export directory to your backup location. Keep `capture-source/`, the uploaded images and `manifest.json` so you can re-render or reproduce the submission. The manifest records the capture package separately from the listing export version. Root README screenshots are maintained independently.
 

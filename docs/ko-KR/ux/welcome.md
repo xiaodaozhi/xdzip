@@ -4,7 +4,7 @@
 
 [English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | [繁體中文](../../zh-TW/ux/welcome.md) | [日本語](../../ja-JP/ux/welcome.md) | 한국어 | [Français](../../fr-FR/ux/welcome.md) | [Deutsch](../../de-DE/ux/welcome.md) | [Español](../../es-ES/ux/welcome.md) | [Português (Brasil)](../../pt-BR/ux/welcome.md) | [Русский](../../ru-RU/ux/welcome.md)
 
-고충실도 디자인은 확인되어 [공식 HTML 검토 진입점](../../../design/html/index.html?view=welcome&zoom=1)에 통합되었습니다. Qt는 실제 열기와 생성을 구현하며 데스크톱 수동 검수는 별도 기록합니다. [환영 페이지 상태 디자인](../../../design/hifi/sources/welcome.html)과 [welcome-reference.json](../../../specs/visual/welcome-reference.json)을 참고하세요. 색상과 기본 창 밀도는 기존 토큰과 layout-scale을 유지하며 전역 표준을 바꾸지 않습니다. PNG 네 개는 코드로 그린 디자인 원본의 내보내기이며 실행 중인 제품 스크린샷이 아닙니다.
+고충실도 디자인은 확인되어 공식 HTML 검토 진입점에 통합되었습니다. Qt는 실제 열기와 생성을 구현하며 데스크톱 수동 검수는 별도 기록합니다. 환영 페이지 상태 디자인과 [welcome-reference.json](../../../specs/visual/welcome-reference.json)을 참고하세요. 색상과 기본 창 밀도는 기존 토큰과 layout-scale을 유지하며 전역 표준을 바꾸지 않습니다. PNG 네 개는 코드로 그린 디자인 원본의 내보내기이며 실행 중인 제품 스크린샷이 아닙니다.
 
 <a name="xdzip-information-and-layout"></a>
 
@@ -36,7 +36,7 @@
 
 밝은/어두운 테마, 최소 창, 끌기 상태와 메뉴/제목 표시줄 비율을 다루고 DPR 1, 1.25, 2 및 실제 브라우저 페이지 확대율을 검사합니다. 축소 스크린샷으로 레이아웃을 대체하거나 CSS 크기 조정으로 브라우저 페이지 확대율을 대체하지 않습니다. 결과, 이미지와 형상 보고서는 로컬/CI 산출물에만 보관하고 상태는 해당 issue에 기록합니다.
 
-HTML 상호작용 검사는 `scripts/check-html-welcome.py`, Qt는 환영 페이지와 브라우저 회귀 검사를 사용합니다. HTML 끌어 놓기는 예제만 선택하고 사용자 파일을 읽지 않으며 Qt는 실제 제품 진입점으로 파일을 엽니다. 완성된 어두운 환영 페이지가 모든 페이지의 어두운 원본 완성을 뜻하지 않으며 자동 검사는 네이티브 끌어서 놓기, 화면 판독기 또는 IME 검증을 대체하지 않습니다.
+Qt 환영 페이지와 브라우저 회귀 검사를 사용하며 실제 제품 진입점으로 파일을 엽니다. 자동 검사는 네이티브 끌어서 놓기, 화면 판독기 또는 IME 검증을 대체하지 않습니다.
 
 <a name="xdzip-real-qt-integration"></a>
 
@@ -52,7 +52,7 @@ WelcomePage와 WelcomeAction은 레이아웃과 의도만 표현합니다. 환�
 
 자동화 진입점은 tst_welcome.qml, browser_test.cpp의 welcomeOpensRealArchivesAndReturns, scripts/check-qt-welcome.py입니다. 필요 시 세 플랫폼 Qt 워크플로는 실제 열기, 닫기, 실패 복구와 DPR 1, 1.25, 2에서 36개 형상 항목을 검사하고 메뉴 너비 240과 글꼴 13도 검사합니다. 네이티브 놓기, 파일 선택기, 화면 판독기와 IME는 필요에 따라 확인하며 오프스크린 결과를 수행하지 않은 데스크톱 조작으로 제시하지 않습니다.
 
-제목 표시줄 개정: 초기 버전의 환영 전용 제목 표시줄 스타일을 제거했습니다. Qt ArchiveTabs는 통합 전 구성 요소로 변경 없이 복원했고 HTML은 기본 창의 기존 원본 캔버스와 배율을 재사용합니다. 환영 페이지는 본문만 바꿉니다. 이전 PNG와 해시는 역사 기록으로 남으며 개정본은 design/hifi/sources/welcome.html에서 만든 `screens/welcome-titlebar-*.png`입니다. 회귀 검사는 압축 파일을 열기 전후 제목 표시줄, 탭과 모양 버튼의 형상을 비교해 빈 상태가 앱 프레임을 다시 바꾸지 않게 합니다.
+환영 페이지는 본문만 바꾸고 동일한 Qt ArchiveTabs 구성 요소를 재사용합니다. `screens/welcome-titlebar-*.png`는 제목 표시줄 디자인을 보존합니다. 회귀 검사는 압축 파일을 열기 전후 제목 표시줄, 탭과 모양 버튼의 형상을 비교합니다.
 
 로딩 상태: 초기 열기 취소 진입점이 본문의 떠 있는 오버레이로 이동했습니다. 진행률을 모르면 모의 백분율 없이 활성 진행 표시줄을 사용합니다. [로딩 오버레이 계약](welcome-opening.md)을 참고하세요. 원본 환영 비트맵을 유지하며 동적 디자인은 `opening=1`을 제공합니다.
 

@@ -30,7 +30,7 @@ Les fichiers Cargo.toml et CMakeLists.txt à la racine définissent les modules 
 | tools | Sondes indépendantes pour la passerelle, les formats, les E/S et le nombre de processus. L’interface graphique a ses propres points d’entrée. |
 | scripts, .github | Génération, contrôles, outils de déploiement, CI et modèles de collaboration. |
 | release-notes | Notes relisibles propres à chaque version et métadonnées de version et de compilation. Les rapports d’exécution et les paquets sont conservés ailleurs. |
-| design/hifi, design/html, design/assets | Maquettes haute fidélité, conceptions interactives et ressources d’entrée pour l’exécution. |
+| design/hifi, design/assets | Images de conception haute fidélité et ressources d’entrée pour l’exécution. |
 | docs | Conception durable en Markdown, contrats techniques, méthodes de vérification réutilisables et images nécessaires. Les rapports d’exécution sont conservés ailleurs. |
 | specs | Inventaires lisibles par machine pour les aspects visuels, la terminologie et les dépendances. Ils alimentent les ressources du produit, les générateurs et les contrôles. |
 | third_party | Sources tierces et documents de licence conservés avec le code. |

@@ -2,7 +2,7 @@
 
 [English](../../ux/welcome-opening.md) | 简体中文 | [繁體中文](../../zh-TW/ux/welcome-opening.md) | [日本語](../../ja-JP/ux/welcome-opening.md) | [한국어](../../ko-KR/ux/welcome-opening.md) | [Français](../../fr-FR/ux/welcome-opening.md) | [Deutsch](../../de-DE/ux/welcome-opening.md) | [Español](../../es-ES/ux/welcome-opening.md) | [Português (Brasil)](../../pt-BR/ux/welcome-opening.md) | [Русский](../../ru-RU/ux/welcome-opening.md)
 
-2026-10-16 修订，参数源为 [welcome-reference.json](../../../specs/visual/welcome-reference.json)，动态高保真入口为 [欢迎页读取状态](../../../design/hifi/sources/welcome.html?opening=1)。沿用主窗口、菜单和欢迎页的逻辑单位，标题栏不变。
+2026-10-16 修订，参数源为 [welcome-reference.json](../../../specs/visual/welcome-reference.json)，动态高保真入口为 欢迎页读取状态。沿用主窗口、菜单和欢迎页的逻辑单位，标题栏不变。
 
 欢迎页打开真实压缩包时，在正文上方居中显示浮动卡片及半透明遮罩。卡片正常宽 360、内距 24、间距 12、圆角 8、标题 16，窄窗口按可用宽度约束；文件名中间省略，状态说明可换行，取消按钮始终可达。浅深色均复用共享主题，辅助字号沿用全局设置。
 
@@ -20,4 +20,4 @@ HTML 设计原型用可取消的示例等待展示该状态，不读取拖入文
 
 外部文件启动修订：通过命令行、Windows 打开方式、Linux 桌面入口或 macOS 文件打开事件进入时，在首次显示主窗口前接收已知打开意图并提交真实读取。窗口不等待读取完成，直接显示现有可取消进度卡片，隐藏欢迎页的品牌说明、打开／新建卡片与拖入区域；成功后显示文件列表，失败或取消后恢复欢迎页及真实反馈。正常空启动仍显示欢迎页，欢迎页内主动打开仍保留原遮罩效果。标题栏、主窗口与菜单的尺寸比例不变，不增加延时阈值或伪造进度。
 
-高保真外部启动入口为 [external=1](../../../design/hifi/sources/welcome.html?external=1)，HTML 仅展示相同状态，不模拟系统文件关联。回归覆盖隐藏窗口预提交、首次呈现时欢迎内容不可见、失败恢复和各平台真实系统打开；关联探针记录实际 frameSwapped 次数及欢迎内容可见次数，不以单纯成功读取替代启动显示检查。
+高保真外部启动入口为 external=1，HTML 仅展示相同状态，不模拟系统文件关联。回归覆盖隐藏窗口预提交、首次呈现时欢迎内容不可见、失败恢复和各平台真实系统打开；关联探针记录实际 frameSwapped 次数及欢迎内容可见次数，不以单纯成功读取替代启动显示检查。

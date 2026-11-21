@@ -21,18 +21,18 @@
       "role": "main",
       "width": "Theme.mainWindowWidth + 2 * linuxShadowMargin",
       "linux_frame_policy": "Ubuntu X11 integrates window controls in the titlebar. Normal windows have an antialiased outline and rounded corners, with click-through client shadow margins when X11 composition and input shaping are available. Margins are outside the standard content dimensions. Maximized and fullscreen windows have square corners and no outline or shadow.",
-      "linux_frame_design": "design/hifi/sources/main.html?platform=linux",
+      "linux_frame_design": "design/hifi/screens/main-capsule-light.png",
       "linux_initial_placement": "Center each newly created main window on the available geometry of the screen containing the pointer before its first presentation. Restoring an existing window retains its position.",
-      "welcome_format_policy": "欢迎页按内置扩展名分组并计数，默认展开压缩包，分类区沿用页面底色，选中分类用强调色与字重区分。扩展名使用常规界面字体和浅底细描边标签，圆角为 3 逻辑像素。小写主体居中，同一行共享文字基线。单行仅显示完整标签，超出时显示省略号。区域保留 608 逻辑像素内容宽度，依据 welcome-reference.json 排版。高保真入口为 design/hifi/sources/welcome.html。",
+      "welcome_format_policy": "欢迎页按内置扩展名分组并计数，默认展开压缩包，分类区沿用页面底色，选中分类用强调色与字重区分。扩展名使用常规界面字体和浅底细描边标签，圆角为 3 逻辑像素。小写主体居中，同一行共享文字基线。单行仅显示完整标签，超出时显示省略号。区域保留 608 逻辑像素内容宽度，依据 welcome-reference.json 排版。高保真入口为 design/hifi/screens/welcome-top-light.png。",
       "statusbar_policy": "Welcome and archive pages share a 32-unit minimum status bar, growing by the same task-control metrics for larger text. Both task buttons use the same 16-unit task-list icon from layout-scale.json main.interaction.taskIconSize.",
       "reopen_wait_policy": "A pending reopen during an archive modification reuses the welcome opening overlay and its existing dimensions; the message identifies the wait and cancellation affects only the new open request.",
       "owned_dialog_policy": "Closing the main window dismisses all its dialogs and releases their native surfaces; retained tasks reopen views only on explicit task activation.",
       "operation_overlay_policy": "Archive edits retain the file page below a transparent blocking overlay using the existing welcome opening card metrics and operation-specific text. Rename and Delete share the list and grid context menu and preserve the existing menu density.",
-      "operation_overlay_design": "design/hifi/sources/main.html?operation=add",
+      "operation_overlay_design": "design/hifi/screens/main-capsule-light.png",
       "task_menu_policy": "Task rows show an operation-specific shared icon, archive filename, backend sequence tag, then status tag. Both tags reuse CommandMenuTag; operation names remain accessible without a visible text prefix.",
-      "reason": "主窗口独立密度与最小尺寸，胶囊标签支持按稳定身份关闭、关闭其他和关闭右侧，文件操作按钮采用固定尺寸与间距，列宽在本次运行各窗口共享，大小列排序箭头位于右对齐标题左侧，其他列位于标题右侧，均保留 6 逻辑像素间距，选框到文件图标槽的留白为 12 逻辑像素，图标、文件名和名称表头同步左移，关闭窗口清除标签并保留后台任务入口，包内移动复用文件行和树行既有密度，拖入高亮及拒绝说明见 design/hifi/sources/archive-move.html。CAB、ISO、UDF 只读接入沿用格式徽标及欢迎页既有字号和间距，不增加创建选项或窗口",
-      "design": "design/hifi/sources/main.html",
-      "content_preview_policy": "可见属性卡自动预览单个受支持的文件，悬停或键盘聚焦时显示右上角刷新图标。多选、读取、密码和失败共用原卡片，主窗口与菜单密度沿用现有依据。预览状态稿为 design/hifi/sources/content-preview.html。"
+      "reason": "主窗口独立密度与最小尺寸，胶囊标签支持按稳定身份关闭、关闭其他和关闭右侧，文件操作按钮采用固定尺寸与间距，列宽在本次运行各窗口共享，大小列排序箭头位于右对齐标题左侧，其他列位于标题右侧，均保留 6 逻辑像素间距，选框到文件图标槽的留白为 12 逻辑像素，图标、文件名和名称表头同步左移，关闭窗口清除标签并保留后台任务入口，包内移动复用文件行和树行既有密度，拖入高亮及拒绝说明见 docs/ux/main-window-components.md。CAB、ISO、UDF 只读接入沿用格式徽标及欢迎页既有字号和间距，不增加创建选项或窗口",
+      "design": "design/hifi/screens/main-capsule-light.png",
+      "content_preview_policy": "可见属性卡自动预览单个受支持的文件，悬停或键盘聚焦时显示右上角刷新图标。多选、读取、密码和失败共用原卡片，主窗口与菜单密度沿用现有依据。预览状态以逻辑规格和实际界面为准。"
     },
     "Preview": {
       "parent": "ApplicationWindow",
@@ -44,9 +44,9 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationCreateWidth",
-      "design": "design/hifi/sources/create-format-selector.html",
+      "design": "design/hifi/screens/create.png",
       "reason": "保持 C01 既有窗口尺寸，文件选择区与添加窗口共享。格式使用共享 OperationSelect，选项由统一能力表生成，以稳定标识决定后缀和选项能力，避免格式增多挤压标签。最小宽度按最长文字和共享控件内边距测量。单文件压缩流只接受一个普通文件，方法编号与可选级别读取统一登记，LZ4、Zstandard、XZ 及其 TAR 组合仅显示已实现的三个压缩级别。固实和文件名加密使用共享复选控件，正文滚动和固定 footer 不变。系统选择入口直接检查预填目标，不先访问默认下载目录。ISO/Joliet 创建沿用同一窗口和共享控件，压缩级别固定为不压缩，密码与分卷禁用，能力说明可换行",
-      "header_design": "design/hifi/sources/operation-headers.html",
+      "header_design": "design/hifi/screens/create.png",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
       "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."
     },
@@ -54,9 +54,9 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationExtractWidth",
-      "design": "design/html/canvas.html?view=extract",
+      "design": "design/hifi/screens/extract-macos.png",
       "reason": "原生与正文标题均为解压文件，正文与共享 footer 沿用冻结尺寸；目标状态复用创建窗口的图标与提示，保留原有路径框及同名文件夹布局",
-      "header_design": "design/hifi/sources/operation-headers.html",
+      "header_design": "design/hifi/screens/create.png",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
       "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."
     },
@@ -65,18 +65,18 @@
       "role": "operation",
       "width": "Theme.operationProgressWidth",
       "current_file_policy": "进行中的当前文件使用单行、中间省略，完整路径保留在文本数据与辅助功能名称中；相同状态和字号下路径长度不改变卡片或窗口高度。普通解压结果摘要仅显示 committedFiles 的数量；压缩结果摘要仅显示 N 个文件，普通压缩使用 outputParts，批量压缩使用成功任务数；批量解压同样按成功任务数显示 N 个文件，不拼接名称或容量。",
-      "content_design": "design/hifi/sources/task-windows.html",
+      "content_design": "design/hifi/screens/task-states.png",
       "batch_result_policy": "批量统计每行三列，默认显示已完成、未完成和已取消，卡片底部使用共享 OperationButton 的胶囊形展开按钮查看其余统计，按钮仅显示水平和垂直居中的箭头，展开后箭头向上，悬停说明和辅助功能名称保留展开或收起含义；切换任务时恢复折叠，同一任务更新保留展开状态；批量压缩只显示完成、未完成、已取消和未执行计数，批量压缩及批量解压的目标位置摘要均按成功任务数显示 N 个文件；批量解压将同一分卷组重复选择而跳过的文件计为“同组跳过”；压缩和解压的未完成文件及原因显示在处理明细中，任务级错误仍单独提示；处理明细列表只在相邻行之间显示分隔线，最后一项不显示底部边框。",
       "reason": "复用既有解压进度尺寸，承载真实只读完整性检查及其密码等待和结果。临时打开任务在系统接受打开后自动隐藏，失败保留并可重试打开文件，更新归档和外部拖放沿用同一任务尺寸与独立操作类型，不把准备完成宣称为系统复制完成，包内移动沿用归档更新的校验及结果布局，保留独立移动任务标识。无文件内容校验和的格式由能力表登记，TAR、LZMA、TAR.LZMA、ISO 和 UDF 的说明，以及 XZ 与 TAR.XZ 按流声明校验的说明，复用既有可换行 footer，不改变窗口尺寸",
-      "design": "design/html/canvas.html?view=progress",
-      "header_design": "design/hifi/sources/operation-headers.html",
+      "design": "design/hifi/screens/progress.png",
+      "header_design": "design/hifi/screens/create.png",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
       "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."
     },
     "IntegrityWindow": {
       "parent": "TaskWindow",
       "role": "inherited",
-      "design": "design/html/canvas.html?view=archive-test"
+      "design": "design/hifi/screens/integrity-progress.png"
     },
     "ConflictWindow": {
       "parent": "OperationWindow",
@@ -84,8 +84,8 @@
       "lifecycle_policy": "A decision window owns one task and prompt token. Cancellation, shutdown, task switching or token expiry dismisses it; explicit reopening validates the current token.",
       "width": "Theme.operationConflictWidth",
       "reason": "重名守卫保持 491 宽、最高 560，长标题与说明在正文内换行，禁止辅助字号撑宽内容，共享 footer 固定可达，包内添加和移动使用文件重名分支及应用到后续冲突，普通创建仍使用整包重名分支",
-      "design": "design/html/canvas.html?view=conflict",
-      "header_design": "design/hifi/sources/operation-headers.html",
+      "design": "design/hifi/screens/conflict.png",
+      "header_design": "design/hifi/screens/create.png",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
       "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."
     },
@@ -94,32 +94,33 @@
       "role": "operation",
       "width": "Theme.passwordLogicalWidth",
       "reason": "打开加密目录、解压与只读检查共用应用模态密码请求，491 宽，内容自适应，最高 600，固定共享 footer。打开请求使用独立身份且取消只取消打开，不创建任务。关闭会话保留任务请求，主动进入全局任务后显示。退出确认及取消清理期间暂停所有会话的密码显示，返回或选择等待后仅恢复仍有效的请求，尺寸与高保真依据不变",
-      "design": "design/hifi/sources/password-extraction.html",
+      "design": "design/hifi/screens/extract-macos.png",
       "content_preview_policy": "预览密码沿用 P02 尺寸、字段和共享 footer，仅增加任务类型对应的双语文案。",
-      "shell_cancel_policy": "独立批次中的密码取消路由到批次取消，停止剩余项并保留已提交输出；普通会话沿用原任务取消。"
+      "shell_cancel_policy": "独立批次中的密码取消路由到批次取消，停止剩余项并保留已提交输出；普通会话沿用原任务取消。",
+      "design_reference_scope": "参考图仅为共享窗口基底，具体状态与交互以本登记和视觉规格为准，不视为专用状态图或验收证据。"
     },
     "PreflightWindow": {
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.preflightLogicalWidth",
-      "design": "design/html/canvas.html?view=preflight"
+      "design": "design/hifi/screens/preflight-light.png"
     },
     "SettingsWindow": {
       "parent": "OperationWindow",
       "role": "settings",
-        "placement_policy": "无 owner 的托盘设置和关于窗口按指针所在显示器的可用区域居中，原生窗口创建及高度确定后再次定位；高度按实际 QScreen 可用工作区限制，不取虚拟桌面合并高度，完整原生边框必须留在可用区域内。",
+      "placement_policy": "无 owner 的托盘设置和关于窗口按指针所在显示器的可用区域居中，原生窗口创建及高度确定后再次定位；高度按实际 QScreen 可用工作区限制，不取虚拟桌面合并高度，完整原生边框必须留在可用区域内。",
       "width": "Theme.settingsLogicalWidth",
       "reason": "设置与关于共用 612 宽窗口，六个左侧标签，首项贴齐顶部及右分隔线；侧栏基准宽 144，大字号按最长单词增宽；正文独立滚动，无固定 footer，变更即时提交。文件关联候选由统一格式能力表生成，新增候选沿用既有行组件和滚动区域。",
-      "design": "design/hifi/sources/settings.html",
+      "design": "design/hifi/screens/settings-appearance-light.png",
       "sidebar_text_alignment": "侧栏标签根据当前文字排版的可见字形边界与图标视觉中心动态对齐，语言、字体、字重、字号及换行变化时重新计算，无有效字形时使用原有布局居中。",
-      "packaged_design": "design/hifi/sources/settings.html?tab=about&channel=msix",
+      "packaged_design": "design/hifi/screens/settings-about-light.png",
       "packaged_association_policy": "MSIX 文件关联由 Windows 管理。文件关联页完整显示可关联类型，开关禁用，默认应用以 Windows 设置为准。共享按钮跳转当前包应用的默认应用页，身份查询失败时进入系统默认应用总页。长译文或大字号下按钮不超出页面内容区，文字按可用宽度换行并保持可读。",
-      "packaged_association_design": "design/hifi/sources/settings.html?tab=associations&channel=msix",
+      "packaged_association_design": "design/hifi/screens/settings-associations-light.png",
       "macos_association_policy": "文件关联沿用现有设置窗口尺寸与共享 SettingsToggle，两列等宽。应用内状态说明在对应开关下按现有字号换行。替代应用由 AppKit 原生选择面板呈现，使用系统布局；没有替代应用时仅显示行内说明。",
-      "macos_association_status_design": "design/hifi/sources/settings.html?tab=associations&association=no-alternative",
+      "macos_association_status_design": "design/hifi/screens/settings-associations-light.png",
       "scrollbar_policy": "The content viewport uses the default Qt vertical scrollbar at the right edge, spanning the viewport; its thumb tracks and controls scrolling.",
       "version_labels_policy": "The About version-information grid sizes its label column to the label text; the value column receives remaining width and wraps as needed.",
-      "header_design": "design/hifi/sources/operation-headers.html",
+      "header_design": "design/hifi/screens/create.png",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
       "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group.",
       "language_policy": "语言下拉框默认自动识别，后续选项以共享语言清单顺序呈现已打包语言的自称，并保留已保存的选择模式。沿用共享 SettingsSelectRow 和 OperationSelect 的内容测量、窗口尺寸和逻辑密度；当文字与选择框无法并排完整显示时，说明位于选择框上方，选择框靠右且不超出内容区。",
@@ -130,37 +131,42 @@
       "parent": "OperationConfirmationWindow",
       "role": "confirmation",
       "reason": "全会话退出决定优先于延迟密码提示，返回保留同一请求，取消仍等待全部 Rust join，共享确认尺寸不变",
-      "design": "design/hifi/sources/confirmations.html"
+      "design": "design/hifi/screens/conflict.png",
+      "design_reference_scope": "参考图仅为共享窗口基底，具体状态与交互以本登记和视觉规格为准，不视为专用状态图或验收证据。"
     },
     "RestartWindow": {
       "parent": "OperationConfirmationWindow",
       "role": "confirmation",
-      "design": "design/hifi/sources/confirmations.html"
+      "design": "design/hifi/screens/conflict.png",
+      "design_reference_scope": "参考图仅为共享窗口基底，具体状态与交互以本登记和视觉规格为准，不视为专用状态图或验收证据。"
     },
     "ArchiveEntryEditWindow": {
       "parent": "OperationConfirmationWindow",
       "role": "confirmation",
       "reason": "包内重命名和删除复用 491 逻辑宽度、可滚动正文和固定共享 footer。重命名使用共享输入框，删除默认聚焦取消。",
-      "design": "design/hifi/sources/archive-entry-edit.html"
+      "design": "design/hifi/screens/conflict.png",
+      "design_reference_scope": "参考图仅为共享窗口基底，具体状态与交互以本登记和视觉规格为准，不视为专用状态图或验收证据。"
     },
     "UpdateWindow": {
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationCreateWidth",
       "reason": "以 C01 创建原稿为依据，491 逻辑宽度，图标标题与三块卡片，共享输入选择区和 footer，正文自适应并滚动，最高沿用创建窗上限，目标归档及包内目录只读。用户目录路径使用系统字体，静态根目录说明使用界面字体，尺寸沿用原规范",
-      "design": "design/hifi/sources/archive-add.html",
-      "header_design": "design/hifi/sources/operation-headers.html",
+      "design": "design/hifi/screens/create.png",
+      "header_design": "design/hifi/screens/create.png",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
-      "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."
+      "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group.",
+      "design_reference_scope": "参考图仅为共享窗口基底，具体状态与交互以本登记和视觉规格为准，不视为专用状态图或验收证据。"
     },
     "ShellActionsWindow": {
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationProgressWidth",
       "reason": "右键服务操作选择与批次准备，共享任务密度，正文滚动与固定 footer；进度和结果使用 TaskWindow，主窗口不创建。",
-      "design": "design/hifi/sources/shell-actions.html",
-      "header_design": "design/hifi/sources/shell-actions.html",
-      "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content."
+      "design": "design/hifi/screens/progress.png",
+      "header_design": "design/hifi/screens/create.png",
+      "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
+      "design_reference_scope": "参考图仅为共享窗口基底，具体状态与交互以本登记和视觉规格为准，不视为专用状态图或验收证据。"
     }
   },
   "inline_windows": {
@@ -171,7 +177,8 @@
       "height": 600,
       "reason": "大字号时的独立属性查看器，可调整大小，无操作 footer",
       "content_preview_policy": "沿用 360×600 可调整大小的属性查看器，在同一 InspectorPanel 中承载自动预览和悬停刷新，卡片尺寸依据与主窗口相同。",
-      "design": "design/hifi/sources/content-preview.html"
+      "design": "design/hifi/screens/main-capsule-light.png",
+      "design_reference_scope": "参考图仅展示主窗口属性区域，独立查看器状态须按规格和实际界面核对。"
     }
   },
   "native_dialogs": {
@@ -182,7 +189,6 @@
     },
     "sfx_host": {
       "source": "crates/xdzip-cli/src/sfx/windows.rs",
-      "design": "design/hifi/sources/sfx-native.html",
       "reason": "独立 Windows 自解压程序复用系统文件夹选择器与 TaskDialog，布局、字体、DPI 和辅助功能由系统负责，不加载 Qt。普通桌面仍沿用 Qt Quick。"
     }
   }

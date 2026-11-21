@@ -48,7 +48,7 @@ Snap applications use a private `XDG_RUNTIME_DIR`, while the compositor socket c
 
 First-frame menu layout regressions locate sequence and status tags by object name and verify actual text metrics and shared padding scaled with font size. Cover Chinese and English, light and dark themes, 100%/125%/150% font scales, all eight combinations of sequence, status and shortcuts, and submenu arrows. Assert the first rendered frame after popup and font changes directly, without extra waits or wider tolerances to eliminate layout failures.
 
-HTML body comparisons retain frozen artwork and hashes. Task-entry icons use the approved 16 logical-pixel revision, strictly measuring actual SVG size, vertical center and position between button and text; old artwork ink is retained as review history without rewriting the target. Qt logical dimensions and DPR matrices check main-window/menu proportions; actual browser zoom may optionally be checked locally for HTML.
+Task-entry icons use the approved 16 logical-pixel revision, strictly measuring actual SVG size, vertical center and position between button and text; old artwork ink is retained as review history without rewriting the target. Qt logical dimensions and DPR matrices check main-window/menu proportions.
 
 On Windows, after building Qt browser tests, optionally run `scripts/check-windows-update-uia.ps1` with `-TestExecutable`, `-QtBin` and a nonexistent `-OutputDirectory`. It checks whether Windows UI Automation can read bilingual update text in an isolated test process with simulated update states; output stays under `build/`. It does not connect to a real update service or replace real screen-reader or other-platform checks.
 

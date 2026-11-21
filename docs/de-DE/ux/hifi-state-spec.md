@@ -74,10 +74,10 @@ Ressourcen liegen unter `design/assets/`. `reference/` enthält Ausschnitte in O
 
 ## Ergänzung des Verzeichnisbaums
 
-Die B01-Navigation ergänzt die [Verzeichnisbaum-Spezifikation B](directory-tree.md) mit drei formalen Zeichenflächen und 26 gemeinsamen Ausschnitten. Knotenpfeile hängen von Unterverzeichnissen ab; Aufklappen, aktuelles Verzeichnis und Tastaturfokus sind unabhängig. Laden, leere Archive, Dateien im Wurzelverzeichnis, Navigationsgrenzen, Fehler und verborgene aktuelle Pfade sind getrennt spezifiziert; der bestehende schreibgeschützte Domänenvertrag bleibt unverändert. HTML und Qt integrieren Kernnavigation, Verbindungslinien und Anzeigen für verborgene aktuelle Zweige; Skelette und spezielle Grenzsymbole bleiben Designressourcen. Den Integrationsumfang beschreibt die Verzeichnisbaum-Spezifikation.
+Die B01-Navigation ergänzt die [Verzeichnisbaum-Spezifikation B](directory-tree.md) mit drei formalen Zeichenflächen und 26 gemeinsamen Ausschnitten. Knotenpfeile hängen von Unterverzeichnissen ab; Aufklappen, aktuelles Verzeichnis und Tastaturfokus sind unabhängig. Laden, leere Archive, Dateien im Wurzelverzeichnis, Navigationsgrenzen, Fehler und verborgene aktuelle Pfade sind getrennt spezifiziert; der bestehende schreibgeschützte Domänenvertrag bleibt unverändert. Qt integrieren Kernnavigation, Verbindungslinien und Anzeigen für verborgene aktuelle Zweige; Skelette und spezielle Grenzsymbole bleiben Designressourcen. Den Integrationsumfang beschreibt die Verzeichnisbaum-Spezifikation.
 
 <a name="xdzip-changes-and-revalidation"></a>
 
 ## Änderungen und erneute Validierung
 
-Wichtige Zustände wurden in HTML und Qt verwendet. Bei späteren Änderungen weiterhin Originalentwürfe und überarbeitete Parameter, Zuordnung von Steuerelementen zu Funktionen, gemeinsame Komponenten und Fensterverträge prüfen und betroffene Plattformen verifizieren. Entwürfe oder statische Prüfungen allein belegen weder native Funktion noch Barrierefreiheit. Tatsächliche Ergebnisse im zugehörigen Issue dokumentieren; frühere Abnahmen werden durch diese Liste nicht zurückgesetzt.
+Wichtige Zustände wurden in Qt verwendet. Bei späteren Änderungen weiterhin Originalentwürfe und überarbeitete Parameter, Zuordnung von Steuerelementen zu Funktionen, gemeinsame Komponenten und Fensterverträge prüfen und betroffene Plattformen verifizieren. Entwürfe oder statische Prüfungen allein belegen weder native Funktion noch Barrierefreiheit. Tatsächliche Ergebnisse im zugehörigen Issue dokumentieren; frühere Abnahmen werden durch diese Liste nicht zurückgesetzt.

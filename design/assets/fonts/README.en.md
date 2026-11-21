@@ -21,21 +21,10 @@ HTML-only review uses the same `build/toolchain/desktop-tools` environment. If i
 ```sh
 build/toolchain/desktop-tools/bin/python -m pip install -r design/assets/fonts/requirements.txt
 python3 scripts/ui-fonts.py prepare
-build/toolchain/desktop-tools/bin/python scripts/preview-html-design.py
-```
-
-On Windows replace the tool environment's `bin/python` with `Scripts/python.exe` and `python3` with `python`. The preview prints a loopback URL; stop it with Ctrl+C. Open source HTML through this entry point: the server maps existing font URLs to `build/generated/fonts/`. Opening raw source HTML directly no longer supplies the font automatically.
-
-Generate standalone offline pages:
-
-```sh
-build/toolchain/desktop-tools/bin/python scripts/build-html-design.py
 build/toolchain/desktop-tools/bin/python scripts/ui-fonts.py check
 ```
 
-Pages in `dist/` embed WOFF2 and complete notices and can be opened offline. Use `build-html-design.py --check` to check generated resources. To import an existing complete upstream font, run `python scripts/ui-fonts.py prepare --source /path/to/NotoSansSC.ttf`; the fixed hash is still mandatory. After preparation, `prepare --offline` checks the cached source.
-
-HTML export reads source text and manifests and writes generated pages as UTF-8, independently of the system's default code page. The same rule applies to the resource check and embedded font notices. Embedded WOFF2 always uses `font/woff2`, without requiring a system MIME registration.
+To import an existing complete upstream font, use `python scripts/ui-fonts.py prepare --source /path/to/NotoSansSC.ttf`; the fixed hash remains mandatory. Use `prepare --offline` to check the source cache. On Windows, replace `bin/python` with `Scripts/python.exe` and `python3` with `python`.
 
 ## Source and license
 

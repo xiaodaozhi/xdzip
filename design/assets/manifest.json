@@ -30835,7 +30835,7 @@
       "inset": 28,
       "usage": "runtime-and-design",
       "source": "../../specs/visual/layout-scale.json",
-      "source_sha256": "d420c0cc7eea60b9762c94a12187410890505273ec93e308c47ffa837bfe7c1b",
+      "source_sha256": "b4f58a55662b660349ea0e3ab288ee81b95207b52a55bc99ec800a76406e73da",
       "sha256": "675ac4e86a8a8a2e3cbd66f61db589f7c4ef4eafb75bbeb46723386b85f831dc",
       "id": "linux-window-shadow/light"
     },
@@ -30851,7 +30851,7 @@
       "inset": 28,
       "usage": "runtime-and-design",
       "source": "../../specs/visual/layout-scale.json",
-      "source_sha256": "d420c0cc7eea60b9762c94a12187410890505273ec93e308c47ffa837bfe7c1b",
+      "source_sha256": "b4f58a55662b660349ea0e3ab288ee81b95207b52a55bc99ec800a76406e73da",
       "sha256": "9a49269db77e55b1b6c3d09437e7806b413d771921b4ed8e1a20a874b9f8fb20",
       "id": "linux-window-shadow/dark"
     }

@@ -2,7 +2,7 @@
 
 [English](../../ux/welcome.md) | 简体中文 | [繁體中文](../../zh-TW/ux/welcome.md) | [日本語](../../ja-JP/ux/welcome.md) | [한국어](../../ko-KR/ux/welcome.md) | [Français](../../fr-FR/ux/welcome.md) | [Deutsch](../../de-DE/ux/welcome.md) | [Español](../../es-ES/ux/welcome.md) | [Português (Brasil)](../../pt-BR/ux/welcome.md) | [Русский](../../ru-RU/ux/welcome.md)
 
-高保真设计已确认，现已接入[正式 HTML 审阅入口](../../../design/html/index.html?view=welcome&zoom=1)。Qt 已接入真实打开与新建，桌面人工验收另行登记。设计入口见[欢迎页状态稿](../../../design/hifi/sources/welcome.html)，参数见 [welcome-reference.json](../../../specs/visual/welcome-reference.json)。颜色、主窗口密度沿用现有 tokens 和 layout-scale，不调整全局规范。四张 PNG 为代码绘制的设计原稿导出，不是产品运行截图。
+高保真设计已确认。Qt 已接入真实打开与新建，桌面人工验收另行登记。设计入口见欢迎页状态稿，参数见 [welcome-reference.json](../../../specs/visual/welcome-reference.json)。颜色、主窗口密度沿用现有 tokens 和 layout-scale，不调整全局规范。四张 PNG 为代码绘制的设计原稿导出，不是产品运行截图。
 
 ## 信息与布局
 
@@ -19,7 +19,7 @@
 - 首次启动、最后一个压缩包标签关闭、打开失败后没有可浏览压缩包时可进入欢迎页；后台任务继续运行，不因欢迎页重置。
 - 打开入口调用系统文件选择器，取消停留欢迎页。打开成功后切换真实压缩包标签，失败显示可恢复错误，不能伪造成功列表。
 - 新建入口打开既有创建窗口，取消保留欢迎页。快捷键候选 macOS 为 ⌘O、⌘N，Windows/Linux 为 Ctrl+O、Ctrl+N；实施前核对应用快捷键绑定，本稿不表示已接入。
-- 拖入符合条件的选择时，拖入区用 2 逻辑像素的强调色边框和选中底色高亮，移出后恢复。桌面与 HTML 审阅稿各有准入规则，实际打开见 [Qt 接入](#qt-真实接入)。
+- 拖入符合条件的选择时，拖入区用 2 逻辑像素的强调色边框和选中底色高亮，移出后恢复。实际打开见 [Qt 接入](#qt-真实接入)。
 - 卡片完整区域可点击，标题栏之后的键盘顺序为打开、新建、任务。键盘焦点不增加外框，遵循全窗口统一失焦规则。Hover、pressed 使用共享 accentHover、accentPressed，不能只改变透明度。
 - 打开请求进行中时，打开卡片以忙碌标记和“正在打开…”替代标题，临时禁止重复打开和拖入；禁用使用 accentDisabled、accentDisabledText。新建窗口是否可并行沿用宿主规则，不借欢迎页改变任务语义。忙碌、禁用与错误为实施契约，四张静态原稿未展示这些状态。
 - 设置和任务弹出菜单沿用 240 宽、13 字号、32 最小行高，与正文 13 字号比例为 1；欢迎页不另造菜单样式。卡片 16 字号是入口标题，不能作为菜单密度比较基准。
@@ -28,7 +28,7 @@
 
 欢迎页需覆盖浅深色、最小窗口、拖入状态和菜单／标题栏比例，检查 DPR 1、1.25、2 及真实页面缩放。不要用缩小截图代替布局或将 CSS 缩放当成浏览器页面缩放。执行结果、图片和几何报告只进入本地／CI 工件，状态由对应 issue 记录。
 
-HTML 交互检查使用 `scripts/check-html-welcome.py`，Qt 使用欢迎页及浏览器回归。HTML 拖入只选择示例，不读取用户文件；Qt 通过实际产品入口打开文件。完整深色欢迎页不代表所有页面都有完整深色原稿，自动检查不能替代原生拖放、读屏和输入法验证。
+Qt 使用欢迎页及浏览器回归，并通过实际产品入口打开文件。完整深色欢迎页不代表所有页面都有完整深色原稿，自动检查不能替代原生拖放、读屏和输入法验证。
 
 ## Qt 真实接入
 
@@ -42,7 +42,7 @@ WelcomePage、WelcomeAction 仅表达布局和意图。启动及关闭压缩包�
 
 自动化入口为 tst_welcome.qml、browser_test.cpp 的 welcomeOpensRealArchivesAndReturns 与 scripts/check-qt-welcome.py。按需三平台 Qt 工作流在 DPR 1、1.25、2 检查真实打开、关闭、失败恢复及 36 项几何，菜单同时检查 240 宽、13 字号。原生拖放、文件选择器、读屏和输入法按需检查，离屏结果不冒充未执行的桌面操作。
 
-标题栏修订：初版欢迎页中对标题栏的专属样式已撤销。Qt ArchiveTabs 恢复接入前的组件原样，HTML 复用主窗口原有源画布及相同比例；欢迎页只替换正文。旧 PNG 与哈希保持历史记录，新修订为 screens/welcome-titlebar-*.png，源为 design/hifi/sources/welcome.html。回归比较欢迎页与打开压缩包后的标题栏、标签及外观按钮几何，防止空态再次改变应用框架。
+标题栏修订：初版欢迎页中对标题栏的专属样式已撤销。Qt ArchiveTabs 恢复接入前的组件原样；欢迎页只替换正文。旧 PNG 与哈希保持历史记录，新修订为 screens/welcome-titlebar-*.png。回归比较欢迎页与打开压缩包后的标题栏、标签及外观按钮几何，防止空态再次改变应用框架。
 
 读取状态：首次打开期间的取消入口移入正文浮动遮罩，进度未知时显示活动进度条，不模拟百分比；详见 [读取遮罩契约](welcome-opening.md)。原始欢迎页位图保留，动态稿提供 opening=1 状态。
 

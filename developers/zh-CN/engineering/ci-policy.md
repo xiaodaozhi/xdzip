@@ -6,7 +6,7 @@
 
 [CI](../../../.github/workflows/docs.yml) 在 main 推送、pull request 和手动触发时执行一个 Linux 作业。它检查文档链接与 JSON、版本与界面文案、生成资源一致性、窗口与共享控件契约、Rust 与 C/C++ 格式、工作流结构及空白错误。作业不构建桌面产品，不执行完整 Rust、三平台 Qt、压缩格式互操作、打包或安装生命周期。目标是通常在五分钟内完成，排队和下载时间以实际运行记录为准。
 
-每次 PR 更新可以取消同一 PR 的旧运行；main 和手动运行使用独立运行身份。失败或取消不能记为通过。工作流使用只读仓库权限和固定版本的依赖，不使用发布密钥。普通 CI 不启动 Playwright、Chromium 或其他网页浏览器；HTML 设计的静态生成检查仍会执行。
+每次 PR 更新可以取消同一 PR 的旧运行；main 和手动运行使用独立运行身份。失败或取消不能记为通过。工作流使用只读仓库权限和固定版本的依赖，不使用发布密钥。普通 CI 不启动 Playwright、Chromium 或其他网页浏览器。
 
 ### 变更分类与回退
 
@@ -40,7 +40,7 @@ Qt 按需运行的 `test --skip-rust` 将 Rust workspace 标记为未执行。�
 
 Foundation 和 Qt 使用固定输入缓存，缓存仅包含 Cargo 下载、pip 下载、固定 Qt 对应源码归档，以及 Qt 检查所需的已核对哈希的上游界面字体，不包含已编译产品、生成字体子集、安装的 Qt SDK、测试结论或凭据。可信 main 的手动运行可保存经过哈希封存的缓存；其他分支仅恢复并核验。缓存命中不能代替重新执行检查。
 
-[界面字体生成](../../../.github/workflows/ui-fonts.yml) 是轻量的三平台手动检查，覆盖新增字形、离线缓存失败、并发生成、HTML 集成和 TTF/WOFF2 输出哈希一致性。它只上传 JSON，不构建或部署 Qt 应用。普通 CI 在 Linux 执行字体回归。准备和预览命令见[字体指南](../../../design/assets/fonts/README.md)。
+[界面字体生成](../../../.github/workflows/ui-fonts.yml) 是轻量的三平台手动检查，覆盖新增字形、离线缓存失败、并发生成和 TTF/WOFF2 输出哈希一致性。它只上传 JSON，不构建或部署 Qt 应用。普通 CI 在 Linux 执行字体回归。准备和预览命令见[字体指南](../../../design/assets/fonts/README.md)。
 
 Foundation 在三平台原生构建并执行无 Qt 的 CLI 回归，清除显示会话和 Qt 搜索路径，保留 JSON 回执。Qt 构建同时验证私有 CLI 布局及同用户更新交接。独立包生成要求同一可执行文件、worker 哈希和构建身份的通过回执；三平台 CLI 发行包及独立签名清单仅由已授权的 Release 流程产出。普通 macOS CI 仍只上传日志与 JSON。
 

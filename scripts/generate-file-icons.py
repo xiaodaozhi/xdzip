@@ -1,10 +1,9 @@
 # scripts/generate-file-icons.py
 
-"""Generate identical extension hints for Qt and the HTML design."""
+"""Generate extension hints for Qt."""
 import argparse
 import json
 from pathlib import Path
-import re
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -31,18 +30,12 @@ def main():
            '    function fileIcon(name: string, directory: bool, large: bool): string {\n'
            '        return "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + iconKind(name, directory) + (large ? "-large" : "") + ".png";\n'
            '    }\n}\n')
-    app = ROOT / 'design/html/app.js'
-    source = app.read_text(encoding='utf-8')
-    function = ('function fileIcon(e) {\n'
-                '    const suffix = e.name.toLowerCase().split(".").pop();\n'
-                f'    return {selection.replace("directory ?", "e.folder ?")};\n}}')
-    html = re.sub(r'function fileIcon\(e\) \{.*?\n\}', lambda _: function, source, count=1, flags=re.S)
-    for path, expected in [(ROOT / 'apps/desktop/ui/AssetLibrary.qml', qml), (app, html)]:
+    for path, expected in [(ROOT / 'apps/desktop/ui/AssetLibrary.qml', qml)]:
         if check:
             assert path.read_text(encoding='utf-8') == expected, f'Stale file icon selector: {path.name}'
         else:
             path.write_text(expected, encoding='utf-8', newline='\n')
-    print(f'File icon hints: {len(seen)} extensions, Qt and HTML agree')
+    print(f'File icon hints: {len(seen)} extensions, Qt matches the specification')
 
 
 if __name__ == '__main__':

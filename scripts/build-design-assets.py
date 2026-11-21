@@ -319,12 +319,12 @@ def gallery(entries: list[dict]) -> str:
     return ('<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
             '<title>xdzip — 统一素材库</title><style>' + styles + '</style><main><h1>xdzip — 统一素材库</h1>'
             f'<p>一套命名、一份清单、一组透明画布。{len(vectors)} 类共享图标提供浅色 / 深色 SVG 与 1× / 2× / 3× PNG；原稿参考和演示照片集中保存。</p>'
-            '<p><a href="../hifi/index.html">完整高保真原稿</a>，<a href="../html/index.html">HTML 高保真界面</a>，'
+            '<p><a href="../hifi/README.md">高保真设计图</a>，'
             '<a href="../../developers/qa/README.md">本地／CI 质量复核</a>，<a href="manifest.json">资产清单</a></p>'
             '<div class="banner"><p>每个运行图标均使用 24 × 24 逻辑画布；下列浅深色对照固定显示为 48 × 48。文档可见高度一致，目录保留自然横向比例。原稿栏包含背景，只用于核对造型；透明运行素材来自独立矢量重建。</p></div>'
             '<nav>' + ''.join(f'<a href="#{group}">{title}</a>' for group, title in GROUP_TITLES.items()) +
-            '<a href="#platform-brand">平台品牌导出</a><a href="../hifi/sources/file-association-icons.html">文件关联图标</a><a href="#directory-tree">目录树 B 切图</a><a href="#references">原像素参考</a></nav>' + ''.join(sections) + platform_section + operation_section +
-            f'<section id="directory-tree"><h2>目录树 B，{len(component_cards)} 张原稿切图</h2><p><a href="../hifi/index.html#components">三张正式图板</a>，<a href="../../docs/ux/directory-tree.md">交互与接入规范</a>，<a href="../../specs/visual/directory-tree.json">精确逻辑尺寸</a>。切片保留原始背景与裁剪尺寸，用于评审；动态行、连接线、提示和状态不作为整块控件贴图。文件夹、箭头与分支圆点已用于 HTML 和 Qt 目录树；实心信息 / 警告、分段转轮与骨架仍为待接入的边界状态资源。</p><div class="component-cuts references">' + ''.join(component_cards) + '</div></section>' +
+            '<a href="#platform-brand">平台品牌导出</a><a href="../../docs/visual/file-association-icons.md">文件关联图标</a><a href="#directory-tree">目录树 B 切图</a><a href="#references">原像素参考</a></nav>' + ''.join(sections) + platform_section + operation_section +
+            f'<section id="directory-tree"><h2>目录树 B，{len(component_cards)} 张原稿切图</h2><p><a href="../hifi/screens/directory-tree-capsule.png">多级目录图板</a>，<a href="../../docs/ux/directory-tree.md">交互与接入规范</a>，<a href="../../specs/visual/directory-tree.json">精确逻辑尺寸</a>。切片保留原始背景与裁剪尺寸，用于评审；动态行、连接线、提示和状态不作为整块控件贴图。文件夹、箭头与分支圆点已用于 Qt 目录树；实心信息 / 警告、分段转轮与骨架仍为待接入的边界状态资源。</p><div class="component-cuts references">' + ''.join(component_cards) + '</div></section>' +
             '<section id="references"><h2>原像素参考与演示照片</h2><p>45 张原稿参考保留原始背景和不同裁剪矩形，每项都有对应的独立命名 SVG；3 张演示照片保留源分辨率。下方链接可直接查看对应素材。两张历史品牌参考保留原像素，当前标识采用独立修订的品牌母版。</p><div class="references">' + ''.join(cut_cards) + '</div></section></main></html>\n')
 
 

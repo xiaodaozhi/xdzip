@@ -4,7 +4,7 @@
 
 [English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | [繁體中文](../../zh-TW/ux/welcome.md) | [日本語](../../ja-JP/ux/welcome.md) | [한국어](../../ko-KR/ux/welcome.md) | [Français](../../fr-FR/ux/welcome.md) | [Deutsch](../../de-DE/ux/welcome.md) | [Español](../../es-ES/ux/welcome.md) | Português (Brasil) | [Русский](../../ru-RU/ux/welcome.md)
 
-O design de alta fidelidade está confirmado e integrado à [entrada oficial de revisão HTML](../../../design/html/index.html?view=welcome&zoom=1). Qt implementa abertura e criação reais; a aceitação manual de desktop é registrada separadamente. Veja o [design dos estados de boas-vindas](../../../design/hifi/sources/welcome.html) e [welcome-reference.json](../../../specs/visual/welcome-reference.json). Cores e densidade da janela principal mantêm tokens e layout-scale existentes sem alterar padrões globais. Quatro PNGs são exportações de originais desenhados por código, não capturas do produto em execução.
+O design de alta fidelidade está confirmado e integrado à entrada oficial de revisão HTML. Qt implementa abertura e criação reais; a aceitação manual de desktop é registrada separadamente. Veja o design dos estados de boas-vindas e [welcome-reference.json](../../../specs/visual/welcome-reference.json). Cores e densidade da janela principal mantêm tokens e layout-scale existentes sem alterar padrões globais. Quatro PNGs são exportações de originais desenhados por código, não capturas do produto em execução.
 
 <a name="xdzip-information-and-layout"></a>
 
@@ -36,7 +36,7 @@ Não mostrar arquivos recentes de exemplo, tamanhos fictícios ou capacidades de
 
 Cobrir temas claro/escuro, janela mínima, estados de arrastar e proporções de menu/barra de título, verificando DPR 1, 1,25 e 2 e zoom real da página no navegador. Captura reduzida não substitui layout e escala CSS não substitui zoom do navegador. Resultados, imagens e relatórios geométricos pertencem apenas a artefatos locais ou de CI; o estado é registrado no issue correspondente.
 
-As verificações de interação HTML usam `scripts/check-html-welcome.py`; Qt usa regressões de boas-vindas e navegador. Arrastar no HTML seleciona apenas exemplos e não lê arquivos do usuário; Qt abre arquivos pela entrada real do produto. Uma página escura completa não implica originais escuros completos para todas as páginas; verificações automatizadas não substituem validação nativa de arrastar e soltar, leitor de tela ou IME.
+Qt usa regressões da página de boas-vindas e do navegador e abre arquivos pela entrada real do produto. Verificações automatizadas não substituem a validação nativa de arrastar e soltar, leitor de tela ou IME.
 
 <a name="xdzip-real-qt-integration"></a>
 
@@ -52,7 +52,7 @@ Dimensões vêm de welcome-reference.json para Theme por generate-qml-theme.py. 
 
 As entradas de automação são tst_welcome.qml, welcomeOpensRealArchivesAndReturns em browser_test.cpp e scripts/check-qt-welcome.py. Workflows Qt sob demanda em três plataformas verificam abertura real, fechamento, recuperação de falha e 36 itens geométricos em DPR 1, 1,25 e 2, além de largura de menu 240 e fonte 13. Soltura nativa, seletor de arquivos, leitor de tela e IME são verificados conforme necessário; resultados fora de tela não são apresentados como operações de desktop não realizadas.
 
-Revisão da barra de título: o estilo específico de boas-vindas da versão inicial foi removido. Qt ArchiveTabs foi restaurado sem mudanças ao componente anterior à integração; HTML reutiliza a área de origem e a escala existentes da janela principal. A página altera apenas o corpo. PNGs e hashes antigos permanecem como registros históricos; a revisão é `screens/welcome-titlebar-*.png`, originada de design/hifi/sources/welcome.html. A regressão compara geometria da barra de título, abas e botão de aparência antes e depois de abrir um arquivo para impedir que o estado vazio altere novamente a moldura.
+A página de boas-vindas altera apenas o conteúdo e reutiliza o mesmo componente Qt ArchiveTabs. `screens/welcome-titlebar-*.png` preserva o projeto da barra de título. A regressão compara a geometria da barra, abas e botão de aparência antes e depois de abrir um arquivo.
 
 Estado de carregamento: a entrada de cancelamento da abertura inicial foi movida para uma sobreposição flutuante do corpo. Progresso desconhecido usa barra ativa sem porcentagens simuladas; veja o [contrato da sobreposição de carregamento](welcome-opening.md). Os bitmaps originais são mantidos; o design dinâmico oferece `opening=1`.
 

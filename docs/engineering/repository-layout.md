@@ -28,7 +28,7 @@ Current product modules are defined by root Cargo.toml and CMakeLists.txt. This 
 | tools | Independent bridge, format, I/O, and process-count probes, not GUI product entry points |
 | scripts, .github | Generation, checking, deployment tools, CI, and collaboration templates |
 | release-notes | Reviewable version-specific release notes and version/build metadata; no execution reports or generated packages |
-| design/hifi, design/html, design/assets | High-fidelity originals, interactive designs, and runtime asset inputs |
+| design/hifi, design/assets | High-fidelity artwork and runtime asset inputs |
 | docs | Durable Markdown design, engineering contracts, reusable verification methods, and necessary images; no accumulated execution reports |
 | specs | Machine-readable visual, terminology, and dependency inventories for product resources, generators, and checks |
 | third_party | Third-party sources and license materials retained with code |

@@ -8,6 +8,7 @@ from html import unescape
 from html.parser import HTMLParser
 from pathlib import Path
 import json
+import hashlib
 import re
 import subprocess
 import sys
@@ -336,14 +337,17 @@ def main():
             json.loads(path.read_text(encoding='utf-8'))
         except (ValueError, UnicodeError) as error:
             failures.append(f'{path.relative_to(ROOT)}: {error}')
-    result = subprocess.run([sys.executable, str(ROOT / 'scripts/build-hifi-gallery.py'), '--check'],
-                            capture_output=True, text=True)
-    if result.returncode:
-        failures.append('High-fidelity catalog/gallery: ' + (result.stderr or result.stdout).strip())
-    result = subprocess.run([sys.executable, str(ROOT / 'scripts/build-directory-tree-delivery.py'), '--check'],
-                            capture_output=True, text=True)
-    if result.returncode:
-        failures.append('Directory-tree design delivery: ' + (result.stderr or result.stdout).strip())
+    catalog_path = ROOT / 'design/hifi/catalog.json'
+    try:
+        catalog = json.loads(catalog_path.read_text(encoding='utf-8'))
+        for entry in catalog['screens']:
+            image = (catalog_path.parent / entry['file']).resolve()
+            if not image.is_relative_to(catalog_path.parent.resolve()) or not image.is_file():
+                failures.append(f"High-fidelity artwork missing: {entry['file']}")
+            elif hashlib.sha256(image.read_bytes()).hexdigest() != entry['sha256']:
+                failures.append(f"High-fidelity artwork digest mismatch: {entry['file']}")
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        failures.append(f'High-fidelity catalog: {error}')
     print(json.dumps({'markdown_documents': len(documents), 'localized_topics': topics, 'local_file_links': links,
                       'markdown_anchor_links': fragments,
                       'json_files': len(json_files), 'failures': failures}, ensure_ascii=False, indent=2))

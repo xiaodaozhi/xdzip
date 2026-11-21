@@ -150,7 +150,7 @@ L'exemple de composant `xdzip-ui-preview` ne sert pas à l'acceptation sur fichi
 
 `prepare` installe FontTools/Brotli épinglés dans l'environnement partagé et met en cache les polices d'interface upstream vérifiées par hash. Chaque compilation bureau collecte automatiquement les catalogues de langues prises en charge et le texte fixe QML/C++, puis génère les sous-ensembles de polices sous `<build-directory>/generated/fonts/`. Ajouter des caractères ne nécessite pas de commiter un binaire de police. Après préparation, les compilations fonctionnent hors ligne ; un cache source manquant ou corrompu provoque un échec explicite. Les compilations CMake directes doivent sélectionner cet environnement via `Python3_EXECUTABLE`.
 
-Pour la prévisualisation HTML seule, l'export hors ligne, l'import manuel de sources et les contrôles de police, voir le [guide des polices partagées](../../../design/assets/fonts/README.en.md). L'empaquetage valide le manifeste de polices de la compilation produit correspondante sans le régénérer. Le texte fixe d'interface et la sélection de police système pour les données utilisateur conservent leurs rôles respectifs.
+Pour l'import manuel de sources et les contrôles de police, voir le [guide des polices partagées](../../../design/assets/fonts/README.en.md). L'empaquetage valide le manifeste de polices de la compilation produit correspondante sans le régénérer. Le texte fixe d'interface et la sélection de police système pour les données utilisateur conservent leurs rôles respectifs.
 
 ## Empaquetage et vérification
 

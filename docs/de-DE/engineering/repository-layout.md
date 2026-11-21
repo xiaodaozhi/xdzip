@@ -30,7 +30,7 @@ Cargo.toml und CMakeLists.txt im Stammverzeichnis definieren die aktuellen Produ
 | tools | Eigenständige Prüfprogramme für Brücke, Formate, E/A und Prozesszahlen. Die grafische Oberfläche hat eigene Einstiegspunkte. |
 | scripts, .github | Generierung, Prüfungen, Bereitstellungswerkzeuge, CI und Vorlagen für die Zusammenarbeit. |
 | release-notes | Prüfbare Versionshinweise und Versions- und Build-Metadaten. Laufberichte und erzeugte Pakete liegen separat. |
-| design/hifi, design/html, design/assets | Originalentwürfe, interaktive Designs und Eingaberessourcen für die Laufzeit. |
+| design/hifi, design/assets | Originalentwürfe und Eingaberessourcen für die Laufzeit. |
 | docs | Dauerhafte Markdown-Entwürfe, technische Verträge, wiederverwendbare Prüfmethoden und erforderliche Bilder. Laufberichte liegen separat. |
 | specs | Maschinenlesbare Inventare für Gestaltung, Terminologie und Abhängigkeiten. Sie dienen Produktressourcen, Generatoren und Prüfungen. |
 | third_party | Quellen und Lizenzmaterialien Dritter, die mit dem Code aufbewahrt werden. |

@@ -16,7 +16,7 @@ npm install --prefix build/toolchain/windows-store-tools --no-save --no-package-
 python scripts/package-windows-store-materials.py --from-archive "D:/Store-backup/approved/capture-source"
 ```
 
-命令会打印 `build/store-listing/` 下的新目录。用 `--output` 可指定目录，加 `--4k` 可另得 3840 × 2160 成品。打开 `preview.html` 审阅，商店桌面截图栏使用对应语言 `promotional/` 下的 1920 × 1080 文件。提交新图后，把整个目录作为独立文件归档。
+命令会打印 `build/store-listing/` 下的新目录。用 `--output` 可指定目录，加 `--4k` 可另得 3840 × 2160 成品。审阅导出的图片，商店桌面截图栏使用对应语言 `promotional/` 下的 1920 × 1080 文件。提交新图后，把整个目录作为独立文件归档。
 
 ## 用已校验 MSIX 截取两种语言
 

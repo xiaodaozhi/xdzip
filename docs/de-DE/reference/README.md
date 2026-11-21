@@ -91,7 +91,7 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 - [UI-Designstandard](../visual/design-standard.md)
 - [Ablauf für UI-Entwurf und Überarbeitung](../visual/design-workflow.md)
 - [Symbole für Dateizuordnungen](../visual/file-association-icons.md)
-- [Prüfung der visuellen HTML-Übereinstimmung](../visual/html-fidelity.md)
+- Prüfung der visuellen HTML-Übereinstimmung
 - [Ergänzende Interaktions- und Textspezifikation](../ux/interaction-spec.md)
 - [Funktionen, Komponenten und Interaktion des Hauptfensters](../ux/main-window-components.md)
 - [Entwurf und Integration des Verzeichnisbaums](../ux/directory-tree.md)
@@ -104,7 +104,7 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 - [Systemmenüs und Infobereich](../ux/desktop-integration.md)
 - [Plattformfenster und Titelleisten](../ux/platform-windows.md)
 - [Detailentwürfe und Implementierungsvertrag](../ux/hifi-state-spec.md)
-- [Interaktionsprototyp v0.1 und Funktionszuordnung](../ux/prototype-spec.md)
+- Interaktionsprototyp v0.1 und Funktionszuordnung
 
 <a name="xdzip-platform-integration-releases-and-trust"></a>
 

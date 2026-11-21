@@ -10,7 +10,7 @@
   "count_size": 22,
   "card_radius": 6,
   "card_inset": 12,
-  "source": "design/hifi/sources/preflight.html",
+  "source": "design/hifi/screens/preflight-light.png",
   "notes": [
     "Metadata findings only, never an output authorization",
     "Content-driven height, fixed shared footer, scroll bounded body",

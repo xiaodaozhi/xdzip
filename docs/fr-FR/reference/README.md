@@ -91,7 +91,7 @@ Consultez d’abord l’[architecture du système](../design/system-architecture
 - [Norme de conception de l’interface](../visual/design-standard.md)
 - [Conception et correction de l’interface](../visual/design-workflow.md)
 - [Icônes d’association de fichiers](../visual/file-association-icons.md)
-- [Vérification de la fidélité visuelle HTML](../visual/html-fidelity.md)
+- Vérification de la fidélité visuelle HTML
 - [Interaction et libellés complémentaires](../ux/interaction-spec.md)
 - [Fonctionnement, composants et interactions de la fenêtre principale](../ux/main-window-components.md)
 - [Conception et intégration de l’arborescence](../ux/directory-tree.md)
@@ -104,7 +104,7 @@ Consultez d’abord l’[architecture du système](../design/system-architecture
 - [Menus système et zone de notification](../ux/desktop-integration.md)
 - [Fenêtres et barres de titre par plateforme](../ux/platform-windows.md)
 - [États détaillés et contrat d’implémentation](../ux/hifi-state-spec.md)
-- [Prototype d’interaction v0.1 et correspondance des fonctions](../ux/prototype-spec.md)
+- Prototype d’interaction v0.1 et correspondance des fonctions
 
 <a name="xdzip-platform-integration-releases-and-trust"></a>
 

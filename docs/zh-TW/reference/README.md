@@ -91,7 +91,7 @@
 - [介面設計規範](../visual/design-standard.md)
 - [介面設計與修正流程](../visual/design-workflow.md)
 - [檔案關聯圖示](../visual/file-association-icons.md)
-- [HTML 視覺一致性複核](../visual/html-fidelity.md)
+- HTML 視覺一致性複核
 - [補充互動與文案規範](../ux/interaction-spec.md)
 - [主視窗功能、元件與互動契約](../ux/main-window-components.md)
 - [目錄樹設計與接入](../ux/directory-tree.md)
@@ -104,7 +104,7 @@
 - [系統選單與托盤](../ux/desktop-integration.md)
 - [平臺視窗與標題欄規範](../ux/platform-windows.md)
 - [高保真狀態與實現契約](../ux/hifi-state-spec.md)
-- [v0.1 互動原型與功能對映](../ux/prototype-spec.md)
+- v0.1 互動原型與功能對映
 
 <a name="xdzip-平台集成发布与信任"></a>
 

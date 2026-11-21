@@ -35,7 +35,7 @@ class ContentsTests(unittest.TestCase):
             subprocess.run(['git', 'init', '-q', str(root)], check=True)
             (root/'.gitignore').write_text('build/\ndocs/html/\n')
             good = ['crates/core/src/lib.rs', 'tests/fixtures/owned.zip',
-                    'design/hifi/screens/original.png', 'design/html/app.js',
+                    'design/hifi/screens/original.png', 'design/assets/brand/mark.svg',
                     'developers/qa/acceptance.md', 'docs/design/architecture-decisions.md',
                     'docs/images/main-window.png', 'specs/visual/tokens.json']
             bad = ['build/test/report.md', 'docs/html/index.html', 'docs/qa/results.json',

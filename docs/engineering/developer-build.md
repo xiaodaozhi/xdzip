@@ -148,7 +148,7 @@ The `xdzip-ui-preview` component example is not for real-file acceptance. Adjust
 
 `prepare` installs pinned FontTools/Brotli in the shared tools environment and caches the hash-verified upstream UI fonts. Each desktop build automatically collects the supported language catalogs and fixed QML/C++ text and generates the font subsets under `<build-directory>/generated/fonts/`. Adding characters requires no font binary commit. Builds work offline after preparation; missing or corrupt source caches fail explicitly. Direct CMake builds must select that environment through `Python3_EXECUTABLE`.
 
-For HTML-only preview, offline export, manual source import and font checks, see the [shared font guide](../../design/assets/fonts/README.en.md). Packaging validates the font manifest from the matching product build without regenerating it. Fixed UI text and user-data system-font selection retain their existing roles.
+For manual source import and font checks, see the [shared font guide](../../design/assets/fonts/README.en.md). Packaging validates the font manifest from the matching product build without regenerating it. Fixed UI text and user-data system-font selection retain their existing roles.
 
 ## Packaging and verification
 

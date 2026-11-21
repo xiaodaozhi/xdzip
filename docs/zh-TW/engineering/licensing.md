@@ -29,4 +29,4 @@ Windows 維護者若需要自己的開發環境，可在符合資格時使用 Vi
 
 第一個 ZIP 中繼資料後端曾使用 MIT 授權的 rawzip，版本與通知見[歷史准入紀錄](zip-metadata-admission.md)。目前 ZIP、TAR 與 GZIP/Deflate 使用[獨立 Rust 實作](independent-rust-codecs.md)，格式參考函式庫僅供開發測試。歷史交付與測試參考的授權義務仍然保留；通用密碼學基礎元件依[相依套件契約](dependencies.md)收集通知。專案原創內容仍使用 Apache-2.0。
 
-HTML 設計使用官方 Noto Sans SC 衍生子集。Qt 固定介面文字也依語言使用 Noto Sans TC、JP、KR 和 Noto Sans 衍生子集。這些字型使用 OFL-1.1，不適用專案的 Apache-2.0。字族名稱、固定來源、版本與雜湊見[字型資訊清單](../../../specs/dependencies/ui-font.json)和[原生 TTF 匯出](../../../design/assets/fonts/README.md)；原始授權全文分別為 [CJK OFL](../../../design/assets/fonts/OFL.txt) 和 [Noto Sans OFL](../../../design/assets/fonts/NotoSans-OFL.txt)。離線 HTML 包含其字型二進位檔與完整通知；Qt 散布套件的通知包含對應字型授權全文。產品未包含完整的上游 CJK 字型。
+Qt 固定介面文字使用官方 Noto Sans SC 衍生子集，並依語言使用 Noto Sans TC、JP、KR 和 Noto Sans 衍生子集。這些字型使用 OFL-1.1，不適用專案的 Apache-2.0。字族名稱、固定來源、版本與雜湊見[字型資訊清單](../../../specs/dependencies/ui-font.json)和[原生 TTF 匯出](../../../design/assets/fonts/README.md)；原始授權全文分別為 [CJK OFL](../../../design/assets/fonts/OFL.txt) 和 [Noto Sans OFL](../../../design/assets/fonts/NotoSans-OFL.txt)。Qt 散布套件的通知包含對應字型授權全文。產品未包含完整的上游 CJK 字型。

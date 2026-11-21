@@ -56,9 +56,6 @@
   },
   "extra_characters": " ·×–—‘’”…‰′″›←↑→↓−三循第遵",
   "inputs": [
-    "design/html/**/*.html",
-    "design/html/**/*.css",
-    "design/html/**/*.js",
     "apps/desktop/ui/**/*.qml",
     "apps/desktop/**/*.cpp",
     "apps/desktop/**/*.h",

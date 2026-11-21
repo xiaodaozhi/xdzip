@@ -87,11 +87,11 @@ M2 在 Windows 執行時直接使用精確版本 `winapi-util = 0.1.11` 的 `fil
 
 <a name="xdzip-html-复核字体与工具"></a>
 
-## HTML 複核字型與工具
+## 界面字型與工具
 
 採用官方 Noto Sans SC 2.004-H2 的離線可變子集，替代審閱裝置的系統回退字型。固定 Google Fonts 提交、原始雜湊和生成配置、版權和 OFL-1.1 許可見 [材料清單](../../../specs/dependencies/ui-font.json)。構建時在構建目錄生成含 400–750 字重的 WOFF2 及同源 TTF，原始碼倉庫不儲存生成字型二進位制；無外部服務、傳遞執行依賴或原生編譯。保留系統字型方案會導致跨平臺文字度量不同，因此審閱稿採用隨包字型。每次構建檢查目前文字覆蓋，未知生成原稿字型仍不能證明匹配。字型上游持續維護，固定版本需隨維護情況複核。
 
-桌面資源靜態檢查使用 Pillow（HPND）、FontTools（MIT）、Brotli（MIT）和工作流檢查所需 PyYAML（MIT），版本固定於[桌面資源工具要求](../../../scripts/desktop-asset-requirements.txt)，透過獨立 venv 安裝。Playwright（Apache-2.0）及 Chromium 只用於按需執行的本地 HTML 設計複核，其版本見[本地設計工具要求](../../../scripts/html-design-requirements.txt)；它們不進入預設 CI、應用或離線設計交付。上述工具均不進入產品執行程式碼。
+桌面資源靜態檢查使用 Pillow（HPND）、FontTools（MIT）、Brotli（MIT）和工作流檢查所需 PyYAML（MIT），版本固定於[桌面資源工具要求](../../../scripts/desktop-asset-requirements.txt)，透過獨立 venv 安裝。Playwright（Apache-2.0）及 Chromium 用於按需在本機渲染素材，不進入產品執行程式碼。
 
 <a name="xdzip-自研-zip-与通用密码学基础库"></a>
 

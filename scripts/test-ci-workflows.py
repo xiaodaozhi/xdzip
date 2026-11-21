@@ -222,9 +222,7 @@ class WorkflowTests(unittest.TestCase):
     def test_workflows_do_not_start_web_browser_tests(self):
         browser_drivers = re.compile(r'playwright|chromium|webdriver|selenium', re.I)
         web_scripts = re.compile(
-            r'scripts/(?:check-html-[\w-]+|check-tab-strip|check-integrity-progress|'
-            r'check-extract-fidelity|check-directory-tree-delivery|export-hifi-titlebars|'
-            r'export-welcome-design|render-design-assets)\.py', re.I)
+            r'scripts/(?:render-design-assets)\.py', re.I)
         for name, workflow in self.workflows.items():
             for job in workflow.get('jobs', {}).values():
                 for step in job.get('steps', []):

@@ -46,6 +46,6 @@ After the welcome page accepts a valid local archive drop, the receiving window 
 
 QuitWindow and RestartWindow inherit OperationConfirmationWindow with application modality, normal density, adaptive height, scrollable body and fixed footer. Buttons retain their return, wait, cancel exit, later and restart intents; existing controllers handle file publication and task cleanup. While stopping, decision actions and Escape close are disabled, and changes to title or description do not restore old dimensions.
 
-Task exit success was previously checked without confirmation-window visuals; functional and visual evidence are now recorded separately. See the [mandatory workflow](../visual/design-workflow.md) for window integrity, base-class and dimension checks, and [confirmation states](../../design/hifi/sources/confirmations.html) for designs.
+Task exit success was previously checked without confirmation-window visuals; functional and visual evidence are now recorded separately. See the [mandatory workflow](../visual/design-workflow.md) for window integrity, base-class and dimension checks, and confirmation states for designs.
 
 Password extraction uses its own `waiting_password` state and request identity. TaskWindow shows waiting for password and offers to reopen; application-modal PasswordWindow handles input and cancellation. It does not use a conflict `promptId`; see [password extraction interaction](password-extraction.md) for lifecycle.

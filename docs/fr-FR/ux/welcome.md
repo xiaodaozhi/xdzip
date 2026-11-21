@@ -4,7 +4,7 @@
 
 [English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | [繁體中文](../../zh-TW/ux/welcome.md) | [日本語](../../ja-JP/ux/welcome.md) | [한국어](../../ko-KR/ux/welcome.md) | Français | [Deutsch](../../de-DE/ux/welcome.md) | [Español](../../es-ES/ux/welcome.md) | [Português (Brasil)](../../pt-BR/ux/welcome.md) | [Русский](../../ru-RU/ux/welcome.md)
 
-Le design haute fidélité est confirmé et intégré à l’[entrée officielle de revue HTML](../../../design/html/index.html?view=welcome&zoom=1). Qt implémente l’ouverture et la création réelles ; l’acceptation manuelle du bureau est enregistrée séparément. Voir le [design des états de la page d’accueil](../../../design/hifi/sources/welcome.html) et [welcome-reference.json](../../../specs/visual/welcome-reference.json). Les couleurs et la densité de fenêtre conservent les jetons et layout-scale existants sans modifier les normes globales. Quatre PNG sont des exports des originaux dessinés par code, pas des captures du produit en exécution.
+Le design haute fidélité est confirmé et intégré à l’entrée officielle de revue HTML. Qt implémente l’ouverture et la création réelles ; l’acceptation manuelle du bureau est enregistrée séparément. Voir le design des états de la page d’accueil et [welcome-reference.json](../../../specs/visual/welcome-reference.json). Les couleurs et la densité de fenêtre conservent les jetons et layout-scale existants sans modifier les normes globales. Quatre PNG sont des exports des originaux dessinés par code, pas des captures du produit en exécution.
 
 <a name="xdzip-information-and-layout"></a>
 
@@ -36,7 +36,7 @@ Ne pas afficher de récents exemples, de tailles fictives ni de capacités de fo
 
 Couvrir thèmes clair/sombre, fenêtre minimale, états de glisser-déposer et proportions menu/barre de titre, en vérifiant DPR 1, 1,25 et 2 ainsi que le zoom réel du navigateur. Une capture réduite ne remplace pas la mise en page et une échelle CSS ne remplace pas le zoom navigateur. Résultats, images et rapports géométriques restent dans les artefacts locaux/CI ; l’état est consigné dans l’issue correspondante.
 
-Les interactions HTML utilisent `scripts/check-html-welcome.py` ; Qt utilise les régressions de page d’accueil et de navigateur. Le dépôt HTML ne choisit que des exemples et ne lit pas les fichiers utilisateur ; Qt ouvre les fichiers par la vraie entrée produit. Une page d’accueil sombre complète ne signifie pas que toutes les pages ont des originaux sombres complets ; les tests automatisés ne remplacent pas la vérification native du glisser-déposer, du lecteur d’écran ou de l’IME.
+Qt utilise les tests de régression de la page d’accueil et du navigateur et ouvre les fichiers par le point d’entrée réel. Les tests automatisés ne remplacent pas la validation native du glisser-déposer, du lecteur d’écran ou de l’IME.
 
 <a name="xdzip-real-qt-integration"></a>
 
@@ -52,7 +52,7 @@ Les dimensions proviennent de welcome-reference.json et entrent dans Theme via g
 
 Les entrées d’automatisation sont tst_welcome.qml, welcomeOpensRealArchivesAndReturns dans browser_test.cpp et scripts/check-qt-welcome.py. Les workflows Qt à la demande sur trois plateformes vérifient ouverture réelle, fermeture, récupération après échec et 36 éléments géométriques à DPR 1, 1,25 et 2, ainsi que largeur de menu 240 et police 13. Dépôt natif, sélecteur de fichiers, lecteur d’écran et IME sont vérifiés selon les besoins ; les résultats hors écran ne sont pas présentés comme des opérations de bureau non effectuées.
 
-Révision de barre de titre : le style propre à la page d’accueil initiale a été retiré. Qt ArchiveTabs a été restauré sans modification à son composant d’avant intégration ; HTML réutilise le canevas source et l’échelle existants de la fenêtre principale. La page d’accueil ne modifie que le corps. Les anciens PNG et leurs empreintes restent des archives historiques ; la révision est `screens/welcome-titlebar-*.png`, issue de design/hifi/sources/welcome.html. La régression compare la géométrie de la barre de titre, des onglets et du bouton d’apparence avant et après ouverture d’une archive afin que l’état vide ne modifie plus le cadre de l’application.
+La page d’accueil ne modifie que le contenu et réutilise le même composant Qt ArchiveTabs. Les images `screens/welcome-titlebar-*.png` conservent la conception de la barre de titre. La régression compare la géométrie de la barre, des onglets et du bouton d’apparence avant et après ouverture d’une archive.
 
 État de chargement : la commande d’annulation de l’ouverture initiale a été déplacée dans une superposition flottante du corps. Une progression inconnue utilise une barre active sans pourcentage simulé ; voir le [contrat de superposition de chargement](welcome-opening.md). Les images d’accueil originales sont conservées ; le design dynamique fournit `opening=1`.
 

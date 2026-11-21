@@ -20,7 +20,7 @@ Texte für Benutzer auf vereinfachtem Chinesisch folgen der [Terminologiekonfigu
 
 Von Benutzern vorgegebene Namen und Pfade, Namen innerhalb von Archiven, Protokollfelder, Codebezeichner und historische Entwurfsbilder bleiben im Original. Englisch verwendet das übliche „archive“ nach eigenen Sprachregeln und „All contents“ für „全部内容“. In schmalen Spaltenüberschriften kürzt „Compressed“ den Ausdruck „compressed size“ ab. Englische Codebezeichner bleiben erhalten.
 
-Siehe [Entwurf der Terminologiezustände](../../../design/hifi/terminology.html). Originalbilder, Prüfsummen und Messungen der sichtbaren Textfläche bleiben historische Nachweise. Das [Skript zur Inhaltsmessung](../../../scripts/check-html-body.py) prüft neue Texte über explizite Zuordnungen alter Bezeichnungen. Geometrievorgaben und Toleranzen gelten weiter. Prüfen Sie, ob längere Texte im Hauptfenster, in Tabellenköpfen, in der Vorschau und in Menüs vollständig angezeigt werden.
+Siehe Entwurf der Terminologiezustände. Originalbilder, Prüfsummen und Messungen der sichtbaren Textfläche bleiben historische Nachweise. Das Skript zur Inhaltsmessung prüft neue Texte über explizite Zuordnungen alter Bezeichnungen. Geometrievorgaben und Toleranzen gelten weiter. Prüfen Sie, ob längere Texte im Hauptfenster, in Tabellenköpfen, in der Vorschau und in Menüs vollständig angezeigt werden.
 
 `python3 scripts/check-ui-i18n.py` prüft alle Sprachressourcen und die Terminologie für vereinfachtes Chinesisch. Die Terminologieprüfung gilt für statische Produkttexte. Sie erlaubt die ausdrücklich zugelassene Verwendung von „压缩文件“ als Verb und erfasst weder Benutzerinhalte noch Fachbegriffe in technischen Dokumenten.
 

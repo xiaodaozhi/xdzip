@@ -55,6 +55,6 @@ HTML 的檢查按鈕執行明確標註的介面演示。關閉或返回瀏覽保
 
 QuitWindow 和 RestartWindow 繼承 OperationConfirmationWindow，統一應用模態、正常密度、自適應高度、可滾動正文與固定頁尾。按鈕繼續表達原有返回、等待、取消退出、稍後和重啟意圖，檔案提交與任務清理仍由既有控制器處理。正在停止時禁用決策動作與 Escape 關閉，標題和說明變化不恢復舊尺寸。
 
-此前僅驗證任務退出成功而遺漏確認框視覺，現將功能與視覺證據分開記錄。視窗完整性、基類和尺寸檢查見[強制流程](../visual/design-workflow.md)，對應狀態稿見[確認視窗](../../../design/hifi/sources/confirmations.html)。
+此前僅驗證任務退出成功而遺漏確認框視覺，現將功能與視覺證據分開記錄。視窗完整性、基類和尺寸檢查見[強制流程](../visual/design-workflow.md)，對應狀態稿見確認視窗。
 
 密碼解壓使用獨立的 `waiting_password` 狀態和請求身份，TaskWindow 顯示等待輸入密碼並提供重開動作，應用模態 PasswordWindow 處理輸入與取消。它不使用重名衝突的 `promptId`；具體生命週期見[密碼解壓互動](password-extraction.md)。

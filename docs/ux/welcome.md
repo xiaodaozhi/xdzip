@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/ux/welcome.md) | [繁體中文](../zh-TW/ux/welcome.md) | [日本語](../ja-JP/ux/welcome.md) | [한국어](../ko-KR/ux/welcome.md) | [Français](../fr-FR/ux/welcome.md) | [Deutsch](../de-DE/ux/welcome.md) | [Español](../es-ES/ux/welcome.md) | [Português (Brasil)](../pt-BR/ux/welcome.md) | [Русский](../ru-RU/ux/welcome.md)
 
-The high-fidelity design is confirmed and integrated into the [official HTML review entry](../../design/html/index.html?view=welcome&zoom=1). Qt implements real opening and creation; desktop manual acceptance is recorded separately. See the [welcome page state design](../../design/hifi/sources/welcome.html) and [welcome-reference.json](../../specs/visual/welcome-reference.json). Colors and main-window density retain existing tokens and layout-scale without changing global standards. Four PNGs are exports of code-drawn design originals, not product runtime screenshots.
+The high-fidelity design is confirmed. Qt implements real opening and creation; desktop manual acceptance is recorded separately. See the welcome page state design and [welcome-reference.json](../../specs/visual/welcome-reference.json). Colors and main-window density retain existing tokens and layout-scale without changing global standards. Four PNGs are exports of code-drawn design originals, not product runtime screenshots.
 
 ## Information and layout
 
@@ -19,7 +19,7 @@ Do not show example recent files, sample sizes or format capabilities the produc
 - The welcome page may appear at first launch, after closing the last archive tab, or after opening fails with no browsable archive. Background tasks continue and are not reset by the welcome page.
 - Open invokes the system file picker; cancellation stays on the welcome page. Success switches to the real archive tab; failure displays a recoverable error and must not fabricate a successful list.
 - Create opens the existing creation window; cancellation retains the welcome page. Candidate shortcuts are ⌘O/⌘N on macOS and Ctrl+O/Ctrl+N on Windows/Linux. Check actual application bindings before implementation; this design does not claim they are integrated.
-- Dragging an eligible selection highlights the drop area with a 2-logical-pixel accent border and selection fill. Leaving restores the normal state. The desktop and HTML review have separate admission rules. See [Real Qt integration](#real-qt-integration) for actual file opening.
+- Dragging an eligible selection highlights the drop area with a 2-logical-pixel accent border and selection fill. Leaving restores the normal state. See [Real Qt integration](#real-qt-integration) for actual file opening.
 - The entire card is clickable. Keyboard order after the title bar is open, create, tasks. Keyboard focus adds no outline and follows the window-wide focus-loss rule. Hover and pressed use shared accentHover and accentPressed, not opacity alone.
 - While opening, the open card replaces its title with a busy indicator and “Opening…” and temporarily prevents repeated opening and drops; disabled appearance uses accentDisabled and accentDisabledText. Whether the creation window can run concurrently follows host rules; the welcome page does not change task semantics. Busy, disabled and error are implementation contracts not depicted in the four static originals.
 - Settings and task popups retain width 240, font 13 and minimum row height 32, a 1:1 ratio with body font 13; the welcome page introduces no separate menu style. Card font 16 is an entry heading, not a menu-density comparison baseline.
@@ -28,7 +28,7 @@ Do not show example recent files, sample sizes or format capabilities the produc
 
 Cover light/dark themes, minimum window, drag states and menu/title-bar proportions, checking DPR 1, 1.25 and 2 and actual browser page zoom. Do not substitute a downscaled screenshot for layout or CSS scaling for browser page zoom. Results, images and geometry reports belong only in local/CI artifacts; status is recorded in the corresponding issue.
 
-HTML interaction checks use `scripts/check-html-welcome.py`; Qt uses welcome-page and browser regressions. HTML drag-in only selects examples and does not read user files; Qt opens files through the real product entry. A complete dark welcome page does not imply complete dark originals for every page, and automated checks do not replace native drag-and-drop, screen-reader or IME verification.
+Qt uses welcome-page and browser regressions and opens files through the real product entry. A complete dark welcome page does not imply complete dark originals for every page, and automated checks do not replace native drag-and-drop, screen-reader or IME verification.
 
 ## Real Qt integration
 
@@ -42,7 +42,7 @@ Dimensions come from welcome-reference.json into Theme through generate-qml-them
 
 Automation entries are tst_welcome.qml, welcomeOpensRealArchivesAndReturns in browser_test.cpp and scripts/check-qt-welcome.py. On-demand three-platform Qt workflows check real opening, closing, recovery from failure and 36 geometry items at DPR 1, 1.25 and 2, while also checking menu width 240 and font 13. Native drop, file picker, screen reader and IME are checked as needed; offscreen results are not presented as unperformed desktop operations.
 
-Title-bar revision: welcome-specific title-bar styling from the initial version was removed. Qt ArchiveTabs was restored unchanged to its pre-integration component; HTML reuses the main window's existing source canvas and scale. The welcome page changes only the body. Old PNGs and hashes remain historical records; the revision is `screens/welcome-titlebar-*.png`, sourced from design/hifi/sources/welcome.html. Regression compares title bar, tabs and appearance-button geometry before and after opening an archive to prevent the empty state from changing the application frame again.
+Title-bar revision: welcome-specific title-bar styling from the initial version was removed. Qt ArchiveTabs was restored unchanged to its pre-integration component. The welcome page changes only the body. Old PNGs and hashes remain historical records; the revision is `screens/welcome-titlebar-*.png`. Regression compares title bar, tabs and appearance-button geometry before and after opening an archive to prevent the empty state from changing the application frame again.
 
 Loading state: the initial-open cancellation entry moved into a floating body overlay. Unknown progress uses an active progress bar without simulated percentages; see the [loading overlay contract](welcome-opening.md). Original welcome bitmaps are retained; the dynamic design provides `opening=1`.
 

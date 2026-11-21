@@ -1,20 +1,15 @@
 #!/usr/bin/env python3
 """Exercise automatic glyph updates, offline integrity, concurrency and consumers."""
-import base64
 import copy
-from functools import partial
 import importlib.util
 import io
 import json
 from pathlib import Path
-import shutil
 import subprocess
 import sys
 import tempfile
-from threading import Thread
 import unittest
 from unittest.mock import patch
-import urllib.request
 import xml.etree.ElementTree as ET
 
 from fontTools.ttLib import TTFont
@@ -149,21 +144,8 @@ class FontTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'build/'):
             fonts.generate(self.root / 'design/assets/fonts', root=self.root)
 
-    def test_preview_urls_serve_generated_fonts_and_resource_audit_binds_bytes(self):
-        from html_review_server import ReviewHTTPServer, ReviewHTTPRequestHandler
+    def test_resource_audit_binds_font_bytes(self):
         fonts.generate()
-        server = ReviewHTTPServer(('127.0.0.1', 0), partial(ReviewHTTPRequestHandler, directory=str(ROOT)))
-        thread = Thread(target=server.serve_forever, daemon=True)
-        thread.start()
-        try:
-            for suffix in ('.woff2', '.ttf'):
-                name = fonts.FONT_NAME + suffix
-                with urllib.request.urlopen(f'http://127.0.0.1:{server.server_port}/design/assets/fonts/{name}?test=1', timeout=10) as response:
-                    self.assertEqual(response.read(), (fonts.DEFAULT_OUTPUT / name).read_bytes())
-        finally:
-            server.shutdown()
-            server.server_close()
-            thread.join(timeout=5)
         spec = importlib.util.spec_from_file_location('font_resources', ROOT / 'scripts/check-runtime-resources.py')
         resources = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(resources)
@@ -184,48 +166,6 @@ class FontTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'bytes'):
             resources.check(report, fonts.DEFAULT_OUTPUT)
 
-    def test_html_export_is_independent_of_legacy_encoding_and_font_mime_registry(self):
-        fonts.generate()
-        spec = importlib.util.spec_from_file_location('html_font_export', ROOT / 'scripts/build-html-design.py')
-        exporter = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(exporter)
-        assets = self.root / 'design/assets'
-        manifest = json.loads((ROOT / 'design/assets/manifest.json').read_text(encoding='utf-8'))
-        for relative in ['manifest.json', 'brand/xdzip.svg', 'brand/xdzip.png',
-                         *[entry['file'] for entry in manifest['assets'] if entry['kind'] == 'vector-reconstruction'],
-                         'demo/photo-lake-thumbnail.png', 'demo/photo-lake-preview.png', 'demo/photo-sunrise-thumbnail.png',
-                         'tray/black-22.png']:
-            target = assets / relative
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(ROOT / 'design/assets' / relative, target)
-        catalog = self.root / 'design/hifi/catalog.json'
-        catalog.parent.mkdir(parents=True, exist_ok=True)
-        catalog.write_text(json.dumps({'screens': []}), encoding='utf-8')
-        original_read = Path.read_text
-        original_write = Path.write_text
-        original_guess = exporter.mimetypes.guess_type
-
-        def legacy_read(path, encoding=None, errors=None, **options):
-            return original_read(path, encoding=encoding or 'cp1252', errors=errors, **options)
-
-        def legacy_write(path, data, encoding=None, errors=None, **options):
-            return original_write(path, data, encoding=encoding or 'cp1252', errors=errors, **options)
-
-        def without_font_registration(name, *args, **options):
-            return (None, None) if str(name).endswith('.woff2') else original_guess(name, *args, **options)
-
-        with patch.object(Path, 'read_text', legacy_read), patch.object(Path, 'write_text', legacy_write), \
-                patch.object(exporter.mimetypes, 'guess_type', without_font_registration):
-            with patch.object(sys, 'argv', ['build-html-design.py', '--check']):
-                exporter.main()
-            with patch.object(exporter, 'ROOT', self.root), patch.object(sys, 'argv', ['build-html-design.py']):
-                exporter.main()
-        output = (self.root / 'dist/xdzip-hifi-design.html').read_text(encoding='utf-8')
-        embedded_font = 'data:font/woff2;base64,' + base64.b64encode(
-            (fonts.DEFAULT_OUTPUT / (fonts.FONT_NAME + '.woff2')).read_bytes()).decode()
-        self.assertTrue(embedded_font in output, 'Offline HTML font MIME or embedded bytes differ')
-        self.assertTrue('Copyright' in output, 'Offline HTML lost its font license')
-        self.assertTrue('设置' in output, 'Offline HTML lost UTF-8 interface text')
 
 
 if __name__ == '__main__':

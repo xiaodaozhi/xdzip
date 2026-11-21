@@ -38,7 +38,7 @@
 
 ## 应用截图与融合宣传图
 
-从审核过的截图集导出，或[用已校验 MSIX 采集两种语言](capture.md)。在导出目录打开 `preview.html`，按成品尺寸审阅 PNG。拍摄采用默认窗口尺寸和自有演示文件。导出时裁去顶部的一行像素、清理四角并绘制内侧细边框，再与本地化文案和柔和阴影合成。
+从审核过的截图集导出，或[用已校验 MSIX 采集两种语言](capture.md)。按成品尺寸审阅导出的 PNG。拍摄采用默认窗口尺寸和自有演示文件。导出时裁去顶部的一行像素、清理四角并绘制内侧细边框，再与本地化文案和柔和阴影合成。
 
 按以下顺序，把每种语言 `promotional/` 目录中的四张 **1920 × 1080** 融合宣传图上传到桌面截图栏。
 
@@ -57,7 +57,7 @@
 
 ## 编辑与重新生成
 
-在[营销规格](../../../../specs/marketing/windows-store.json)修改双语文案，在[宣传图生成脚本](../../../../scripts/build-windows-store-assets.cjs)调整构图。用 `node scripts/build-windows-store-assets.cjs` 刷新 Markdown 一览文案。文案或版式更新后，可[重新导出审核过的截图集](capture.md#从审核过的截图集导出)。导出目录包含[预览模板](../../../../design/hifi/sources/windows-store-artwork.html)呈现的双语成品。
+在[营销规格](../../../../specs/marketing/windows-store.json)修改双语文案，在[宣传图生成脚本](../../../../scripts/build-windows-store-assets.cjs)调整构图。用 `node scripts/build-windows-store-assets.cjs` 刷新 Markdown 一览文案。文案或版式更新后，可[重新导出审核过的截图集](capture.md#从审核过的截图集导出)。导出目录包含预览模板呈现的双语成品。
 
 提交新的图片后，把审核过的导出目录复制到备份位置。保留 `capture-source/`、实际上传的图片和 `manifest.json`，便于重新渲染或还原提交。清单分别记录采集截图的程序包和一览导出版本。根 README 的展示图单独维护。
 

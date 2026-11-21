@@ -192,14 +192,13 @@ This table specifies requirements; runtime results, screenshots and measurements
 | UI-REV-08 | Hover and press preview extraction action | Hover/pressed/focus visible; unauthorized state disabled. |
 | UI-REV-09 | Complete multiple tasks and reopen from bottom menu | Accurate history count, active count still 0, status badges right, normal menu density and keyboard navigation. |
 | UI-REV-10 | Clear selection and open Extract All dropdown | Selected and preflight disabled without extra selection hint line. |
-| UI-REV-11 | HTML 100%/125%, Qt DPR 1/1.25/2, long paths and accessibility fonts | Logical dimensions independent of DPR, correct body/menu ratio and reachable footer. |
+| UI-REV-11 | Qt DPR 1/1.25/2, long paths and accessibility fonts | Logical dimensions independent of DPR, correct body/menu ratio and reachable footer. |
 | UI-REV-12 | Root, ordinary parent and leaf context menus using right-click, Menu and Shift+F10 in both languages/themes and three sizes | Root Collapse Subdirectories disabled; no unavailable item shows visible hint, reason line or tooltip; accessible descriptions give accurate root/leaf reasons. Parents expand/collapse and disabled actions change no selection/path. Measure label centering within 0.5 logical pixels in the command's local coordinates independently of ancestor translation; do not ignore scale, rotation or custom transforms. Check current text height and conditional slots at first observed rendering after closed and open font changes. |
-| UI-REV-13 | Delayed scroll events in shared HTML menus | Real right-click changes non-ancestor position before menu opens; a delayed trusted scroll with position unchanged since opening does not close it, while a later position change does. Retain all 18 directory input/language/text-scale combinations. |
 | UI-REV-14 | Launch and open creation window in both languages/themes and three sizes | Labels wrap, all four format captions fit and footer remains reachable; initialization and presentation produce no Qt Quick recursive-layout warning. |
 | UI-REV-15 | Mouse/keyboard select and replace text in main search, regular/password inputs and editable dropdowns in both themes | Selected foreground and background readable; password mode and editing behavior intact. |
 | UI-REV-16 | One idle welcome page, loading/error, single archive and multiple tabs across themes and sizes | Sole ordinary idle welcome tab hides close and removes it from focus; other cases retain existing mouse, keyboard and accessibility closing behavior. Hover/pressed close backgrounds are circular; main/menu ratio unchanged. |
 
-Implementation regressions are in tst_operationrevisions.qml, browser_test.cpp and shared-control scripts; high-fidelity and HTML revisions are in design/hifi/operation-revisions.html.
+Implementation regressions are in tst_operationrevisions.qml, browser_test.cpp and shared-control scripts.
 
 ## WP-11 TAR/GZIP
 
@@ -231,7 +230,7 @@ Historical desktop permission or device blockers are not current status. Manual 
 
 Automation records go only to build/review/welcome/ or CI artifacts. Select native drag-and-drop, system picker cancellation, screen-reader, IME and platform appearance checks according to changes; record unexecuted limits rather than marking offscreen screenshots passed.
 
-W01-07: welcome and opened-archive title bars, tabs and appearance buttons use the same component positions, dimensions, fonts and icons; welcome-specific rearrangement is forbidden. Automation compares actual Qt geometry and HTML shared-title source coordinates.
+W01-07: welcome and opened-archive title bars, tabs and appearance buttons use the same component positions, dimensions, fonts and icons; welcome-specific rearrangement is forbidden. Automation compares actual Qt geometry.
 
 ### Window-wide focus and title-bar revision
 
@@ -278,7 +277,7 @@ Preflight footer regression: at 100/125/150% match shared action-only footer hei
 - M5-01: actual windows produce rendered frames and record rendering API; hardware-verification mode rejects software and Null backends.
 - M5-02: Chinese pre-edit does not submit early, Chinese and non-BMP filenames commit correctly and text remains after Escape leaves focus.
 - M5-03: real Qt accessibility provides input role, name, value and text interfaces, with correct button names and disabled states.
-- M5-04: selected fills at both ends of format segments have smooth outer corners and square internal seams; Qt software/GPU, DPR 1/2 and HTML do not double-inset.
+- M5-04: selected fills at both ends of format segments have smooth outer corners and square internal seams; Qt software/GPU, DPR 1/2 do not double-inset.
 
 Historical results are in [private-test admission](https://github.com/xiaodaozhi/xdzip/issues/5). Check system IME/screen readers as needed; synthetic events and interface checks are not performed human checks.
 
@@ -306,7 +305,7 @@ Check application and ZIP document PNG, ICO and ICNS at 16–1024 pixels. Generi
 
 Product entry filenames are Linux `xdzip`, Windows `xdzip.exe` and macOS `xdzip.app/Contents/MacOS/xdzip`; verify actual entries in ordinary builds and deployed packages. Tests and diagnostics retain their own names and are not user launch entries.
 
-Verify `VERSION.json`, Cargo workspace, CLI, Windows version resources, macOS bundle and settings About agree. Cover development/stable channels, invalid version and build limits, no-Git unknown, dirty markers, both languages/themes, 100/125/150% and high DPR. Copied JSON has no personal paths; all About entries reach the same settings page. HTML does not fabricate native Qt or commit identity. See [WP-12](https://github.com/xiaodaozhi/xdzip/issues/5) for complete process resource observation and limitations.
+Verify `VERSION.json`, Cargo workspace, CLI, Windows version resources, macOS bundle and settings About agree. Cover development/stable channels, invalid version and build limits, no-Git unknown, dirty markers, both languages/themes, 100/125/150% and high DPR. Copied JSON has no personal paths; all About entries reach the same settings page. See [WP-12](https://github.com/xiaodaozhi/xdzip/issues/5) for complete process resource observation and limitations.
 
 ### Settings, associations and networking
 
@@ -314,7 +313,7 @@ Verify `VERSION.json`, Cargo workspace, CLI, Windows version resources, macOS bu
 - Both languages at 100/125/150%: sidebar fits actual words, English wraps only between words, and sidebar/body remain reachable without horizontal overflow.
 - The six bodies do not repeat page names or their divider. During update checks, Cancel Check occupies the original button position and works via mouse/keyboard; other update actions remain available.
 - During discovery, download, downloaded and recovery states, primary action is right of status and copy/behavior reflects trust and install capability. Download progress and Cancel Download work, available open-folder entries remain, and state changes do not auto-scroll or alter thumb height.
-- Light/dark design, HTML and Qt match header divider, sidebar hover and icon left padding. In both languages and 100/125/150%, mouse-driven checks and state changes preserve body scroll position and scrollbar-thumb height; keyboard navigation reveals offscreen controls and bottom licenses remain reachable.
+- Light/dark design and Qt match header divider, sidebar hover and icon left padding. In both languages and 100/125/150%, mouse-driven checks and state changes preserve body scroll position and scrollbar-thumb height; keyboard navigation reveals offscreen controls and bottom licenses remain reachable.
 - Language changes immediately refresh UI, native and tray menus including application About/Settings/Quit, task submenu and tooltip without interrupting tasks or restart prompts. Write failure preserves previous language; system items follow system language. Clearing history is immediate without deleting original files.
 - Supported types show actual system defaults; refusals/cancellations are not falsified. Verify Windows system confirmation, macOS content types, Linux MIME and shared compound extensions.
 - Verify direct, system, custom proxies and HTTPS mirrors for validation, persistence, update traffic, failure messages and signature verification; active updates retain their configuration. macOS native installation supports system, direct and custom HTTP CONNECT/SOCKS5. Disposable hosted runner static-proxy/PAC controls must first prove actual system-mode feed/archive hits, then zero direct hits, checking HTTPS routing, untrusted TLS refusal and restored original settings. Check custom-proxy failure has no direct fallback, actual direct product upgrade and active-configuration snapshot, signatures, task exit and recovery. Download success alone does not prove proxy use.
@@ -351,7 +350,7 @@ Opening Settings or About from platform trays must leave existing main windows h
 - Exit, stop and restart confirmations remain width 491, title 20 and body 13 across both languages/themes, 100/125/150% and DPR 1/1.25/2. Short content leaves no large blank; long bodies and small screens scroll, with fixed footer reachable in client area.
 - Three buttons stay on one row; English large text may wrap inside buttons without clipping, overflow or custom footer styles.
 - Verify existing return, wait, cancel exit, later and restart intents; decision buttons disable while stopping. Record function and visuals separately.
-- Run `python3 scripts/check-window-contracts.py --self-test`, `python3 scripts/check-operation-components.py`, Qt `ConfirmationWindows` tests and `scripts/check-html-confirmations.py`. Screenshots/measurements go only to build/ or dist/.
+- Run `python3 scripts/check-window-contracts.py --self-test`, `python3 scripts/check-operation-components.py`, Qt `ConfirmationWindows` tests. Screenshots/measurements go only to build/ or dist/.
 
 ## Windows fixed installation directory
 

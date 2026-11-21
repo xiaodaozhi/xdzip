@@ -150,7 +150,7 @@ O exemplo de componente `xdzip-ui-preview` não serve para aceitação com arqui
 
 `prepare` instala FontTools/Brotli fixados no ambiente compartilhado e mantém em cache as fontes de interface upstream verificadas por hash. Cada build do desktop coleta automaticamente os catálogos de idiomas suportados e o texto fixo QML/C++ e gera os subconjuntos de fontes sob `<build-directory>/generated/fonts/`. Acrescentar caracteres não exige commit de binário de fonte. Após a preparação, builds funcionam offline; caches ausentes ou corrompidos falham explicitamente. Builds CMake diretos devem selecionar esse ambiente por `Python3_EXECUTABLE`.
 
-Para prévia somente HTML, exportação offline, importação manual de fontes e verificações de fonte, consulte o [guia de fontes compartilhadas](../../../design/assets/fonts/README.en.md). O empacotamento valida o manifesto de fontes do build correspondente sem regenerá-lo. O texto fixo da interface e a seleção de fonte do sistema para dados de usuário mantêm seus papéis existentes.
+Para importação manual de fontes e verificações de fonte, consulte o [guia de fontes compartilhadas](../../../design/assets/fonts/README.en.md). O empacotamento valida o manifesto de fontes do build correspondente sem regenerá-lo. O texto fixo da interface e a seleção de fonte do sistema para dados de usuário mantêm seus papéis existentes.
 
 ## Empacotamento e verificação
 

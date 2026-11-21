@@ -6,7 +6,7 @@
 
 規範入口：[介面設計規範](design-standard.md)、[強制設計流程](design-workflow.md)、[密度與單位契約](../../../specs/visual/layout-scale.json)。主視窗與選單比例的複驗按[通用方法](../../../developers/qa/README.md)記錄。
 
-目前原稿見 [design/hifi](../../../design/hifi/README.md)，可操作 HTML 交付見 [design/html](../../../design/html/README.md)。未採用的早期提案不作為目前基線；不要依賴已整理的 main 歷史查詢舊稿，目前原稿以此目錄及清單為準。
+目前設計參考見 [design/hifi](../../../design/hifi/README.md)。
 
 [tokens.json](../../../specs/visual/tokens.json) 儲存主題與通用實現引數，視覺機器可讀輸入統一位於 `specs/visual/`。主視窗幾何和字號從獨立凍結的 [qt-main-reference.json](../../../specs/visual/qt-main-reference.json) 生成，依據高保真原稿及已驗收 HTML 的量測，按 1024/1548 等比換算；此前 1280 寬的基準折算為正常密度。取整、實際截圖和未實現能力按[驗證方法](../../../developers/qa/README.md)分別記錄；實現引數不能反過來充當設計驗收基準。
 
@@ -28,7 +28,7 @@
 
 採用暖灰底色、鈷藍主操作和石墨深色主題。避免以大面積漸變或磨砂背景替代資訊層級。正常檔案列表保持清晰平面結構；陰影只用於浮層。左側回答“在哪裡”，中間回答“有什麼”，右側回答“選中了什麼”。
 
-HTML 與 Qt 共用 [Xdzip Design Sans SC 字型](../../../design/assets/fonts/README.md)的字形與度量，Qt 使用同源 TTF，超出子集的歸檔名稱使用平臺回退。主列表 13、列頭與工具欄 12、分欄標題 13 邏輯畫素；字型採用 Qt 整數畫素取整。檔名保留完整可訪問名稱；視覺截斷顯示省略號並提供懸停全文。檔案圖示共用約 31.75 邏輯畫素槽位，不按檔案型別分別補償尺寸。
+Qt 共用 [Xdzip Design Sans SC 字型](../../../design/assets/fonts/README.md)的字形與度量，Qt 使用同源 TTF，超出子集的歸檔名稱使用平臺回退。主列表 13、列頭與工具欄 12、分欄標題 13 邏輯畫素；字型採用 Qt 整數畫素取整。檔名保留完整可訪問名稱；視覺截斷顯示省略號並提供懸停全文。檔案圖示共用約 31.75 邏輯畫素槽位，不按檔案型別分別補償尺寸。
 
 主視窗初始 1024 × 622、最小 832 × 544 邏輯畫素。側欄與預覽欄的源測量約 193.16 / 257.98，Qt 結構邊界取整為 193 / 258；目錄行約 43，檔案行約 44.65。分欄標題高 46，表頭高 34，搜尋與主按鈕約 33.74。目錄樹 B 獨立保持 32 高與 16 圖示槽。窄於 928 時預覽欄收起，透過按鈕開啟獨立原生視窗。設定提供 100%／125%／150% 字號，舊 200% 配置按 150% 讀取；大字號透過真實佈局、滾動和獨立詳情視窗適配，不以整體縮放掩蓋溢位。分欄拖拽與寬度記憶尚未實現。
 
@@ -76,7 +76,7 @@ Qt 使用共享 `Theme` 與生成的尺寸引數。`ArchiveTabs`、`ArchiveToolb
 
 macOS、Windows、Linux 共用內容佈局與互動模型；視窗按鈕、選單與快捷鍵遵循各平臺習慣。這裡繪製 macOS 視窗外框，不要求其他平臺複製交通燈按鈕。大面積實時模糊不作為實現要求；截圖中的背景弱化可用靜態遮罩實現。
 
-可審閱主視窗的[淺色](../../../design/hifi/sources/main.html?theme=light)或[深色](../../../design/hifi/sources/main.html?theme=dark)，以及[任務狀態](../../../design/hifi/sources/task-windows.html)、[設定](../../../design/hifi/sources/settings.html)和[桌面整合](../../../design/hifi/sources/desktop-integration.html)。其他狀態與尺寸例外見[視窗登記](../../../specs/visual/window-registry.json)。設計頁可以展示原生視窗或選單的內容。裝飾、啟用、縮放和系統選單的實際表現須在對應平臺核對。
+可審閱主視窗的淺色或深色，以及任務狀態、設定和桌面整合。其他狀態與尺寸例外見[視窗登記](../../../specs/visual/window-registry.json)。設計頁可以展示原生視窗或選單的內容。裝飾、啟用、縮放和系統選單的實際表現須在對應平臺核對。
 
 <a name="xdzip-平台窗口修订"></a>
 
@@ -106,7 +106,7 @@ HTML 照片預覽從分欄標題下邊緣直接開始，頂邊與檔案列表表
 
 ## 目錄樹 B 元件修訂（2026-10-12）
 
-新增三張正式圖板定義多級展開、節點互動和導航邊界，見[目錄樹規格](../ux/directory-tree.md)。26 張原畫素切片進入統一 `assets/reference`，分支圓點、實心狀態圖示與分段轉輪使用兩主題 SVG 與三倍率 PNG。連線線、狀態背景、焦點與文字按[獨立元件引數](../../../specs/visual/directory-tree.json)動態繪製；引數不自動覆蓋現有全域性 tokens。目前圖板為放大視覺說明，精確邏輯尺寸與源畫素矩形分別記錄。HTML 與 Qt 已接入遞迴目錄、連線線及隱藏目前分支標記；專用邊界圖示／骨架仍為設計資源，完整深色元件圖板待補齊。
+新增三張正式圖板定義多級展開、節點互動和導航邊界，見[目錄樹規格](../ux/directory-tree.md)。26 張原畫素切片進入統一 `assets/reference`，分支圓點、實心狀態圖示與分段轉輪使用兩主題 SVG 與三倍率 PNG。連線線、狀態背景、焦點與文字按[獨立元件引數](../../../specs/visual/directory-tree.json)動態繪製；引數不自動覆蓋現有全域性 tokens。目前圖板為放大視覺說明，精確邏輯尺寸與源畫素矩形分別記錄。Qt 已接入遞迴目錄、連線線及隱藏目前分支標記；專用邊界圖示／骨架仍為設計資源，完整深色元件圖板待補齊。
 
 <a name="xdzip-当前主稿的工具栏修订2026-10-12"></a>
 
@@ -120,7 +120,7 @@ HTML 照片預覽從分欄標題下邊緣直接開始，頂邊與檔案列表表
 
 ## 應用品牌與平臺圖示
 
-各格式的系統文件圖示使用[檔案關聯圖示規範](file-association-icons.md)和[高保真審閱頁](../../../design/hifi/sources/file-association-icons.html)。該家族複用以下品牌幾何，提供獨立格式標籤、輔助色與小尺寸簡化；作為後續逐格式接入的設計素材。
+各格式的系統文件圖示使用[檔案關聯圖示規範](file-association-icons.md)和高保真審閱頁。該家族複用以下品牌幾何，提供獨立格式標籤、輔助色與小尺寸簡化；作為後續逐格式接入的設計素材。
 
 應用品牌採用四條交錯帶與開放的 U 形下部，幾何統一維護在 `scripts/brand_assets.py`。獨立標記、應用圖示與 ZIP 文件母版位於 `design/assets/brand/`；介面的 `app-mark`、`archive`、`archive-grey` 分別用於應用、藍色歸檔和灰色歸檔身份，均從同一品牌幾何生成。應用使用藍色圓角外形，文件使用紙張與折角外形，身份共用而外框各有職責。
 
@@ -138,4 +138,4 @@ HTML 照片預覽從分欄標題下邊緣直接開始，頂邊與檔案列表表
 
 ## 可操作控制元件規範
 
-[controls.json](../../../specs/visual/controls.json)定義選單四列、行高、圓角、顏色、焦點和提示時序；[directory-tree.json](../../../specs/visual/directory-tree.json)定義目錄層級。兩份規格生成 HTML 控制元件引數和 QML Theme，透過檢查避免手工複製尺寸與主題。主稿的邏輯 / 源畫素比例從 `display-spec.js` 讀取；[元件審閱頁](../../../design/html/components.html)採用 1:1 邏輯尺寸，主畫布仍使用源座標。功能清單與輸入契約在[主視窗元件說明](../ux/main-window-components.md)，真實渲染與行為按[驗證方法](../../../developers/qa/README.md)儲存到對應 issue 與工件。
+[controls.json](../../../specs/visual/controls.json)定義選單四列、行高、圓角、顏色、焦點和提示時序；[directory-tree.json](../../../specs/visual/directory-tree.json)定義目錄層級。兩份規格生成 HTML 控制元件引數和 QML Theme，透過檢查避免手工複製尺寸與主題。主稿的邏輯 / 源畫素比例從 `layout-scale.json` 讀取；元件審閱頁採用 1:1 邏輯尺寸，主畫布仍使用源座標。功能清單與輸入契約在[主視窗元件說明](../ux/main-window-components.md)，真實渲染與行為按[驗證方法](../../../developers/qa/README.md)儲存到對應 issue 與工件。

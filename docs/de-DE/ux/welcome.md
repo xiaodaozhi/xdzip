@@ -4,7 +4,7 @@
 
 [English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | [繁體中文](../../zh-TW/ux/welcome.md) | [日本語](../../ja-JP/ux/welcome.md) | [한국어](../../ko-KR/ux/welcome.md) | [Français](../../fr-FR/ux/welcome.md) | Deutsch | [Español](../../es-ES/ux/welcome.md) | [Português (Brasil)](../../pt-BR/ux/welcome.md) | [Русский](../../ru-RU/ux/welcome.md)
 
-Der hochauflösende Entwurf ist bestätigt und in den [offiziellen HTML-Prüfeinstieg](../../../design/html/index.html?view=welcome&zoom=1) integriert. Qt implementiert tatsächliches Öffnen und Erstellen; die manuelle Desktopabnahme wird getrennt erfasst. Siehe [Zustandsentwurf der Willkommensseite](../../../design/hifi/sources/welcome.html) und [welcome-reference.json](../../../specs/visual/welcome-reference.json). Farben und Hauptfensterdichte behalten bestehende Tokens und layout-scale bei, ohne globale Standards zu ändern. Vier PNGs sind Exporte codegezeichneter Entwurfsoriginale, keine Screenshots des laufenden Produkts.
+Der hochauflösende Entwurf ist bestätigt und in den offiziellen HTML-Prüfeinstieg integriert. Qt implementiert tatsächliches Öffnen und Erstellen; die manuelle Desktopabnahme wird getrennt erfasst. Siehe Zustandsentwurf der Willkommensseite und [welcome-reference.json](../../../specs/visual/welcome-reference.json). Farben und Hauptfensterdichte behalten bestehende Tokens und layout-scale bei, ohne globale Standards zu ändern. Vier PNGs sind Exporte codegezeichneter Entwurfsoriginale, keine Screenshots des laufenden Produkts.
 
 <a name="xdzip-information-and-layout"></a>
 
@@ -36,7 +36,7 @@ Keine beispielhaften zuletzt verwendeten Dateien, Beispielgrößen oder nicht vo
 
 Helles/dunkles Thema, Mindestfenster, Ziehzustände und Menü-/Titelleistenproportionen abdecken und DPR 1, 1,25 und 2 sowie tatsächlichen Browser-Seitenzoom prüfen. Ein herunterskaliertes Bildschirmbild ersetzt kein Layout, CSS-Skalierung keinen Browser-Seitenzoom. Ergebnisse, Bilder und Geometrieberichte gehören ausschließlich in lokale/CI-Artefakte; der Status steht im zugehörigen Issue.
 
-HTML-Interaktionsprüfungen nutzen `scripts/check-html-welcome.py`; Qt verwendet Willkommensseiten- und Browserregressionen. HTML-Drop wählt nur Beispiele und liest keine Benutzerdateien; Qt öffnet Dateien über den echten Produkteinstieg. Eine vollständige dunkle Willkommensseite bedeutet keine vollständigen dunklen Originale aller Seiten; automatische Prüfungen ersetzen keine native Prüfung von Drag-and-drop, Screenreader oder IME.
+Qt verwendet Regressionstests für Startseite und Browser und öffnet Dateien über den tatsächlichen Produkteinstieg. Automatische Tests ersetzen keine native Prüfung von Drag-and-drop, Bildschirmleser oder IME.
 
 <a name="xdzip-real-qt-integration"></a>
 
@@ -52,7 +52,7 @@ Maße gelangen aus welcome-reference.json über generate-qml-theme.py in Theme. 
 
 Automatisierungseinstiege sind tst_welcome.qml, welcomeOpensRealArchivesAndReturns in browser_test.cpp und scripts/check-qt-welcome.py. Qt-Workflows auf Abruf für drei Plattformen prüfen tatsächliches Öffnen, Schließen, Wiederherstellung nach Fehlern und 36 Geometrieelemente bei DPR 1, 1,25 und 2 sowie Menübreite 240 und Schrift 13. Nativer Drop, Dateiauswahl, Screenreader und IME werden nach Bedarf geprüft; Offscreen-Ergebnisse werden nicht als nicht ausgeführte Desktopaktionen dargestellt.
 
-Titelleistenrevision: Die anfängliche willkommensspezifische Titelleistengestaltung wurde entfernt. Qt ArchiveTabs wurde unverändert auf die Komponente vor der Integration zurückgesetzt; HTML verwendet vorhandene Quellfläche und Skalierung des Hauptfensters. Die Willkommensseite ändert nur den Inhalt. Alte PNGs und Hashes bleiben historische Dokumente; die Revision ist `screens/welcome-titlebar-*.png` aus design/hifi/sources/welcome.html. Die Regression vergleicht Titelleiste, Tabs und Darstellungsschaltfläche vor und nach dem Öffnen eines Archivs, damit der Leerzustand den Anwendungsrahmen nicht erneut verändert.
+Die Startseite ändert nur den Inhalt und verwendet dieselbe Qt-ArchiveTabs-Komponente. `screens/welcome-titlebar-*.png` bewahrt den Titelleistenentwurf. Der Regressionstest vergleicht Titelleiste, Tabs und Darstellungsschaltfläche vor und nach dem Öffnen eines Archivs.
 
 Ladezustand: Der Abbrucheinstieg des anfänglichen Öffnens wurde in eine schwebende Inhaltsüberlagerung verschoben. Unbekannter Fortschritt nutzt einen aktiven Fortschrittsbalken ohne simulierte Prozentwerte; siehe [Vertrag der Ladeüberlagerung](welcome-opening.md). Ursprüngliche Willkommensbitmaps bleiben erhalten; der dynamische Entwurf bietet `opening=1`.
 

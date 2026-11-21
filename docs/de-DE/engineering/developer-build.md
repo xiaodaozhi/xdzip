@@ -150,7 +150,7 @@ Das Komponentenbeispiel `xdzip-ui-preview` dient nicht zur Abnahme mit echten Da
 
 `prepare` installiert festgelegtes FontTools/Brotli in der gemeinsamen Werkzeugumgebung und hält hashgeprüfte Upstream-UI-Schriften im Cache. Jeder Desktop-Build sammelt automatisch unterstützte Sprachkataloge und festen QML-/C++-Text und erzeugt Schrift-Subsets unter `<build-directory>/generated/fonts/`. Neue Zeichen erfordern keinen Commit von Schriftbinaries. Nach Vorbereitung funktionieren Builds offline; fehlende oder beschädigte Quellcaches scheitern ausdrücklich. Direkte CMake-Builds müssen diese Umgebung über `Python3_EXECUTABLE` wählen.
 
-Für reine HTML-Vorschau, Offline-Export, manuellen Quellimport und Schriftprüfungen siehe [gemeinsame Schriftanleitung](../../../design/assets/fonts/README.en.md). Paketierung prüft das Schriftmanifest des passenden Produktbuilds ohne Regenerierung. Fester UI-Text und Systemschriftwahl für Nutzerdaten behalten ihre bestehenden Rollen.
+Für manuellen Quellimport und Schriftprüfungen siehe [gemeinsame Schriftanleitung](../../../design/assets/fonts/README.en.md). Paketierung prüft das Schriftmanifest des passenden Produktbuilds ohne Regenerierung. Fester UI-Text und Systemschriftwahl für Nutzerdaten behalten ihre bestehenden Rollen.
 
 ## Paketierung und Prüfung
 

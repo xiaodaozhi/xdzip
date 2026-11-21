@@ -4,7 +4,7 @@
 
 [English](../../ux/welcome.md) | [简体中文](../../zh-CN/ux/welcome.md) | 繁體中文 | [日本語](../../ja-JP/ux/welcome.md) | [한국어](../../ko-KR/ux/welcome.md) | [Français](../../fr-FR/ux/welcome.md) | [Deutsch](../../de-DE/ux/welcome.md) | [Español](../../es-ES/ux/welcome.md) | [Português (Brasil)](../../pt-BR/ux/welcome.md) | [Русский](../../ru-RU/ux/welcome.md)
 
-高保真設計已確認，現已接入[正式 HTML 審閱入口](../../../design/html/index.html?view=welcome&zoom=1)。Qt 已接入真實開啟與新建，桌面人工驗收另行登記。設計入口見[歡迎頁狀態稿](../../../design/hifi/sources/welcome.html)，引數見 [welcome-reference.json](../../../specs/visual/welcome-reference.json)。顏色、主視窗密度沿用現有 tokens 和 layout-scale，不調整全域性規範。四張 PNG 為程式碼繪製的設計原稿匯出，不是產品執行截圖。
+高保真設計已確認，現已接入正式 HTML 審閱入口。Qt 已接入真實開啟與新建，桌面人工驗收另行登記。設計入口見歡迎頁狀態稿，引數見 [welcome-reference.json](../../../specs/visual/welcome-reference.json)。顏色、主視窗密度沿用現有 tokens 和 layout-scale，不調整全域性規範。四張 PNG 為程式碼繪製的設計原稿匯出，不是產品執行截圖。
 
 <a name="xdzip-信息与布局"></a>
 
@@ -36,7 +36,7 @@
 
 歡迎頁需覆蓋淺深色、最小視窗、拖入狀態和選單／標題欄比例，檢查 DPR 1、1.25、2 及真實頁面縮放。不要用縮小截圖代替佈局或將 CSS 縮放當成瀏覽器頁面縮放。執行結果、圖片和幾何報告只進入本地／CI 工件，狀態由對應 issue 記錄。
 
-HTML 互動檢查使用 `scripts/check-html-welcome.py`，Qt 使用歡迎頁及瀏覽器迴歸。HTML 拖入只選擇示例，不讀取使用者檔案；Qt 透過實際產品入口開啟檔案。完整深色歡迎頁不代表所有頁面都有完整深色原稿，自動檢查不能替代原生拖放、讀屏和輸入法驗證。
+Qt 使用歡迎頁及瀏覽器迴歸，並透過實際產品入口開啟檔案。自動檢查不能替代原生拖放、螢幕閱讀器和輸入法驗證。
 
 <a name="xdzip-qt-真实接入"></a>
 
@@ -52,7 +52,7 @@ WelcomePage、WelcomeAction 僅表達佈局和意圖。啟動及關閉壓縮檔�
 
 自動化入口為 tst_welcome.qml、browser_test.cpp 的 welcomeOpensRealArchivesAndReturns 與 scripts/check-qt-welcome.py。按需三平臺 Qt 工作流在 DPR 1、1.25、2 檢查真實開啟、關閉、失敗恢復及 36 項幾何，選單同時檢查 240 寬、13 字號。原生拖放、檔案選擇器、讀屏和輸入法按需檢查，離屏結果不冒充未執行的桌面操作。
 
-標題欄修訂：初版歡迎頁中對標題欄的專屬樣式已撤銷。Qt ArchiveTabs 恢復接入前的元件原樣，HTML 複用主視窗原有源畫布及相同比例；歡迎頁只替換正文。舊 PNG 與雜湊保持歷史記錄，新修訂為 screens/welcome-titlebar-*.png，源為 design/hifi/sources/welcome.html。迴歸比較歡迎頁與開啟壓縮檔後的標題欄、標籤及外觀按鈕幾何，防止空態再次改變應用框架。
+歡迎頁只替換內容，並複用相同的 Qt ArchiveTabs 元件。`screens/welcome-titlebar-*.png` 保留標題列設計。迴歸比較開啟壓縮檔前後的標題列、分頁及外觀按鈕幾何。
 
 讀取狀態：首次開啟期間的取消入口移入正文浮動遮罩，進度未知時顯示活動進度條，不模擬百分比；詳見 [讀取遮罩契約](welcome-opening.md)。原始歡迎頁點陣圖保留，動態稿提供 opening=1 狀態。
 

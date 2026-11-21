@@ -44,7 +44,7 @@ When encrypted symbolic links are selected, authenticate and verify all selected
 
 ## Interface and verification
 
-See [password interaction](../ux/password-extraction.md) for password window, HTML, and high-fidelity sources. The application-modal window appears automatically when tasks wait and can be reopened from the task window. Error responses use new tokens and clear old input; accepted responses prevent duplicate submission. System close or Cancel cancels the current task. Escape retains the shared rule: first leave control focus, then close the window.
+See [password interaction](../ux/password-extraction.md) for password window and high-fidelity references. The application-modal window appears automatically when tasks wait and can be reopened from the task window. Error responses use new tokens and clear old input; accepted responses prevent duplicate submission. System close or Cancel cancels the current task. Escape retains the shared rule: first leave control focus, then close the window.
 
 Creation and extraction password fields expose accessibility names through explicit UI labels independent of input. Qt 6.8.2 suppresses attached names in password state, so the desktop app installs a dedicated accessibility interface for these two fields, overriding only names while retaining Qt state, text/value, and actions. Password flags and masking remain unchanged. This interface subclasses a private Qt Quick class and requires matching Qt Quick build/runtime versions. On library upgrade or replacement, rebuild and reverify interfaces, password secrecy, and three-platform compatibility. Automated interface checks and manual system screen-reader acceptance are recorded separately.
 
