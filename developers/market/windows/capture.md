@@ -68,7 +68,7 @@ The script resolves controls in a fresh Windows UI Automation tree restricted to
 
 Each scene must satisfy its state checks, then produce an unchanged frame across several samples. This avoids capturing pending layout or image loading. Foreign foreground windows, ambiguous controls, maximization, changed main-window dimensions, off-screen bounds and overlapping windows stop the run instead of requesting manual capture. Do not switch applications or operate xdzip during this short session.
 
-For a checked ZIP of a completed export, see [packaging marketing assets](../../engineering/marketing-archive.md).
+To synchronize a completed export, see [latest-only Drive sync](../../engineering/marketing-archive.md).
 
 ## Output and image quality
 

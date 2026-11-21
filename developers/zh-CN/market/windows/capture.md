@@ -68,7 +68,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/capture-windows-
 
 每个场景通过状态检查后，还需要连续多次取得不变的画面，避免截到布局或图像加载中的状态。其他程序取得前台、控件不唯一、窗口最大化、主窗口尺寸变化、越出屏幕或受到遮挡时，脚本会停止，不转为手动截图。短暂运行期间不要切换程序或操作 xdzip。
 
-完成导出后，可参阅[宣传素材打包归档](../../engineering/marketing-archive.md)生成经过校验的 ZIP。
+完成导出后，可参阅[最新版同步](../../engineering/marketing-archive.md)归档到 Drive。
 
 ## 输出与画质
 

@@ -43,7 +43,7 @@ macOS 请指定 `.app/Contents/MacOS/` 中的可执行文件。记录器读取�
 
 也可先在目标平台截图，分别放入所选语言目录，例如 `ja-JP/`、`fr-FR/`，文件名为 `01-browse.png`、`02-create.png`、`03-preview.png`、`04-workspace.png`，然后将 `--interactive` 换成 `--from-directory /path/to/images`。仍需在对应系统使用实际构建运行记录器。回执将这些图片标记为操作人员提供，不能证明其拍摄时间、地点或对应程序。
 
-完成的平台素材如需打包，请参阅[宣传素材打包归档](marketing-archive.md)。
+完成的平台素材请参阅[最新版同步](marketing-archive.md)归档到 Drive。
 
 ## 导出和检查
 

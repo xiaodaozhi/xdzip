@@ -43,7 +43,7 @@ On macOS select the executable inside the `.app/Contents/MacOS/` bundle. The rec
 
 Alternatively, arrange already captured native PNGs under one directory per selected language, such as `ja-JP/` and `fr-FR/`, using `01-browse.png`, `02-create.png`, `03-preview.png` and `04-workspace.png`, then replace `--interactive` with `--from-directory /path/to/images`. Run the recorder on the corresponding OS with the actual build. The receipt records these as operator-supplied; it cannot establish when, where or from which executable the files were created.
 
-For a verified ZIP of any completed platform export, see [packaging marketing assets](marketing-archive.md).
+To synchronize a completed export, see [latest-only Drive sync](marketing-archive.md).
 
 ## Export and review
 
