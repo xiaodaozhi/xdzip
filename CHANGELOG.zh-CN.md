@@ -6,6 +6,14 @@
 
 - 提供独立只读 SDK 试验，包含有界 CBOR、受控 I/O、两个独立协议实现与失败关闭的沙箱门禁；产品继续禁用第三方扩展。
 
+## 0.3.0
+
+- 桌面界面、系统菜单和用户文档支持十种语言，可自动跟随系统语言或手动选择。
+- 更多受支持的格式支持归档编辑，包括对符合条件的条目进行添加、替换、移动、重命名和删除。
+- 文件预览自动加载并可按需刷新，改进归档操作入口、macOS 文件关联，以及 Ubuntu 窗口和文件交接。
+
+平台支持、验收范围和已知限制见[发布说明](release-notes/0.3.0.md)和 [GitHub Release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.3.0)。
+
 ## 0.2.1
 
 - 扩展 LHA/LZH、ARJ、ARC、DEB、ASAR、Zstandard 和 LZ4 等格式的浏览和解压支持，新增 LZH、ISO9660/Joliet 数据镜像和 Windows x64 ZIP 自解压文件的创建支持。

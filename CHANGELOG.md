@@ -6,6 +6,14 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 - Add a standalone read-only SDK trial with bounded CBOR, controlled I/O, two independent protocol implementations and a sandbox gate that refuses unsafe execution. Third-party extensions remain disabled in the product.
 
+## 0.3.0
+
+- Support ten languages in the desktop interface, system menus and user documentation, with automatic system-language selection and a manual setting.
+- Extend archive editing to more supported formats, including adding, replacing, moving, renaming and deleting eligible entries.
+- Load file previews automatically with an on-demand refresh, and improve archive actions, macOS file associations, and Ubuntu window and file handoff behavior.
+
+See the [release notes](release-notes/0.3.0.md) and [GitHub release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.3.0) for platform support, verification scope and known limitations.
+
 ## 0.2.1
 
 - Extend browsing and extraction for formats including LHA/LZH, ARJ, ARC, DEB, ASAR, Zstandard and LZ4. Add creation for LZH, ISO9660/Joliet data images and Windows x64 ZIP self-extracting files.
