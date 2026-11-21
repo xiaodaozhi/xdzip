@@ -125,7 +125,7 @@ Consultez d’abord l’[architecture du système](../design/system-architecture
 - [Correspondance du SDK Qt et de ses sources](../engineering/qt-sdk-correspondence.md)
 - [Licences des outils et composants Windows](../engineering/windows-licensing.md)
 - [Choix de licence et ressources tierces](../engineering/licensing.md)
-- [Admission des dépendances et moteurs de format](../../engineering/dependencies.md)
+- [Admission des dépendances et moteurs de format](../engineering/dependencies.md)
 - [Sources correspondantes et matériaux de reconstruction](../engineering/source-delivery.md)
 - [Reconstruction des données ICU 73.2 depuis CLDR](../engineering/icu-cldr-rebuild.md)
 
