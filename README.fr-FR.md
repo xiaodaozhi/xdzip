@@ -152,7 +152,7 @@ python3 scripts/desktop.py build
 python3 scripts/desktop.py test
 ```
 
-Sous Windows, utilisez un environnement de développement MSVC x64. Sous macOS, utilisez un terminal natif Apple Silicon et les outils en ligne de commande de Xcode. La chaîne d’outils Qt 6.8.2 par défaut se trouve dans `build/toolchain/`. Passez `--qt-prefix` si Qt est déjà installé. Le [guide de compilation](docs/engineering/developer-build.md) décrit les dépendances, le lancement, la préparation des paquets et les vérifications. La CLI et l’application de bureau se compilent par des points d’entrée distincts. La compilation de bureau fournit également une CLI privée dont le point d’entrée doit être activé explicitement.
+Sous Windows, utilisez un environnement de développement MSVC x64. Sous macOS, utilisez un terminal natif Apple Silicon et les outils en ligne de commande de Xcode. La chaîne d’outils Qt 6.8.2 par défaut se trouve dans `build/toolchain/`. Passez `--qt-prefix` si Qt est déjà installé. Le [guide de compilation](docs/fr-FR/engineering/developer-build.md) décrit les dépendances, le lancement, la préparation des paquets et les vérifications. La CLI et l’application de bureau se compilent par des points d’entrée distincts. La compilation de bureau fournit également une CLI privée dont le point d’entrée doit être activé explicitement.
 
 Les paquets de développement sont des versions expérimentales. Les fichiers de développement Windows et Linux sont également disponibles après certaines exécutions manuelles réussies du [workflow des composants Qt](https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml). La CI quotidienne ne produit pas automatiquement ces paquets.
 

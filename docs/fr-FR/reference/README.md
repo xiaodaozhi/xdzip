@@ -136,6 +136,6 @@ Consultez d’abord l’[architecture du système](../design/system-architecture
 - [Construction, déploiement et publication](../design/build-release.md)
 - [Conventions de code et niveaux de vérification](../design/quality-engineering.md)
 - [Préparation de l’environnement de développement](../engineering/development.md)
-- [Builds de développement et vérification par plateforme](../../engineering/developer-build.md)
+- [Builds de développement et vérification par plateforme](../engineering/developer-build.md)
 - [Versions des outils et plateformes de référence](../engineering/toolchain.md)
 - [Commandes CLI, JSON, installation et reçus de mise à jour](../engineering/command-line.md)

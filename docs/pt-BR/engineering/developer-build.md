@@ -1,6 +1,6 @@
 # Compilações de desenvolvimento e verificação por plataforma
 
-[English](../../engineering/developer-build.md) | [简体中文](../../zh-CN/engineering/developer-build.md) | [繁體中文](../../zh-TW/engineering/developer-build.md) | [日本語](../../ja-JP/engineering/developer-build.md) | [Español](../../es-ES/engineering/developer-build.md) | Português (Brasil)
+[English](../../engineering/developer-build.md) | [简体中文](../../zh-CN/engineering/developer-build.md) | [繁體中文](../../zh-TW/engineering/developer-build.md) | [日本語](../../ja-JP/engineering/developer-build.md) | [Français](../../fr-FR/engineering/developer-build.md) | [Español](../../es-ES/engineering/developer-build.md) | Português (Brasil)
 
 Esta página é a entrada unificada para preparar, compilar, testar, empacotar e verificar ambientes nas três plataformas. A coordenação compartilhada é implementada em [scripts/desktop.py](../../../scripts/desktop.py). Os documentos de plataforma complementam layouts de implantação, comportamento das ferramentas e limites do sistema, sem manter comandos rotineiros separados.
 

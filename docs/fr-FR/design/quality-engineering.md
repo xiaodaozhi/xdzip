@@ -26,7 +26,7 @@ Documentez les invariants et l’état laissé après un échec. Pour les fichie
 | Bureau, Qt et accessibilité | Tests des modèles et contrôleurs, contrôles QML et des composants partagés, interactions natives si pertinentes et preuves visuelles ou d’assistance réelles pour le comportement visé. |
 | Performance et livraison | Charges liées au commit, mesures du rendu et des ressources, ou identité du build par canal, résultats d’installation et de mise à jour et justificatifs de dépendances. |
 
-Le [guide de vérification](../../../developers/qa/README.md) fixe les contrôles nécessaires au changement. La conformité au protocole, les tests de fichiers ou hors écran, l’automatisation native et l’observation du bureau établissent des faits différents. Les [builds de développement](../../engineering/developer-build.md) et la [matrice de traçabilité](requirements-traceability.md) renvoient aux tests existants et aux limites des livrables.
+Le [guide de vérification](../../../developers/qa/README.md) fixe les contrôles nécessaires au changement. La conformité au protocole, les tests de fichiers ou hors écran, l’automatisation native et l’observation du bureau établissent des faits différents. Les [builds de développement](../engineering/developer-build.md) et la [matrice de traçabilité](requirements-traceability.md) renvoient aux tests existants et aux limites des livrables.
 
 <a name="xdzip-existing-ci-and-additional-techniques"></a>
 
