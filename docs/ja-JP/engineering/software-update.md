@@ -1,6 +1,6 @@
 # ユーザーが開始する更新の契約
 
-[English](../../engineering/software-update.md) | [简体中文](../../zh-CN/engineering/software-update.md) | [繁體中文](../../zh-TW/engineering/software-update.md) | 日本語 | [Français](../../fr-FR/engineering/software-update.md) | [Deutsch](../../de-DE/engineering/software-update.md) | [Español](../../es-ES/engineering/software-update.md) | [Português (Brasil)](../../pt-BR/engineering/software-update.md)
+[English](../../engineering/software-update.md) | [简体中文](../../zh-CN/engineering/software-update.md) | [繁體中文](../../zh-TW/engineering/software-update.md) | 日本語 | [한국어](../../ko-KR/engineering/software-update.md) | [Français](../../fr-FR/engineering/software-update.md) | [Deutsch](../../de-DE/engineering/software-update.md) | [Español](../../es-ES/engineering/software-update.md) | [Português (Brasil)](../../pt-BR/engineering/software-update.md)
 
 Windows の MSIX パッケージ識別情報がある場合、「xdzip について」にアプリ内更新を表示せず、更新コントローラーは既存の GitHub 更新確認を拒否します。Store 版の更新は Microsoft Store が管理し、サイドロードされたパッケージにはアプリ内自動更新を保証しません。識別情報の問い合わせエラーは、インストーラー更新の誤使用を防ぐためパッケージ化された識別情報として扱います。通常のインストールとその他のプラットフォームは変更しません。
 

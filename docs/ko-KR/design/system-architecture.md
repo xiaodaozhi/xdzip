@@ -35,7 +35,7 @@ flowchart TB
 | `xdzip-domain`, `xdzip-codec-api`, `xdzip-extract-plan` | 도메인은 식별 정보, 메타데이터와 경로 불변 조건을 정의합니다. 코덱 API는 `ReadSource`, `PayloadCodec`, `DecodedSink`, `EncodeInput`, `EncodeOutput`과 같은 형식 기능과 계약을 정의합니다. 추출 계획기는 메타데이터와 선택에서 보고서를 도출합니다. 대상 승인은 호스트에 남습니다. [도메인과 데이터](domain-data.md), [코덱 인터페이스](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-codec-api/src/lib.rs), [추출 사전 검사](../engineering/extraction-preflight.md). |
 | `xdzip-codec-*`, `xdzip-compression`, `xdzip-crypto` | 코덱 crate는 컨테이너 프레이밍, 메타데이터 검사, 페이로드 읽기와 형식별 쓰기 기능을 구현합니다. 압축과 암호화 crate는 재사용 가능한 알고리즘을 제공합니다. 코덱 인터페이스는 호스트가 제공하는 스트림과 싱크를 사용합니다. 기능 레지스트리는 가능한 작업을 설명하고 런타임 라우팅은 실제 아카이브와 항목을 검사합니다. [런타임 라우팅](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/formats.rs), [형식 레지스트리](../engineering/format-registry.md). |
 | `xdzip-io` | 일반 입력 파일을 열고 네이티브 파일 객체를 식별하며 승인된 생성 입력을 고정하고 대상 권한, 준비와 확정을 제공합니다. 파일 경계에서 플랫폼 검사를 구현하고 런타임이 수행할 작업과 게시 시점을 결정합니다. [입력 승인](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/input.rs), [출력 권한과 확정](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/target.rs), [파일 안전](file-security.md). |
-| 업데이트와 개발 도구 | `UpdateController`와 `xdzip-update`가 업데이트 선택, 검증과 전달을 처리합니다. 설치된 빌드는 플랫폼별 설치 경로를 사용합니다. SDK 호스트와 형식 프로브에는 독립 진입점이 있습니다. 제품 아카이브 검색은 내장 레지스트리를 사용합니다. [소프트웨어 업데이트](../../engineering/software-update.md), [SDK 시험](../engineering/sdk-trial.md), [저장소와 모듈 지도](../engineering/repository-layout.md). |
+| 업데이트와 개발 도구 | `UpdateController`와 `xdzip-update`가 업데이트 선택, 검증과 전달을 처리합니다. 설치된 빌드는 플랫폼별 설치 경로를 사용합니다. SDK 호스트와 형식 프로브에는 독립 진입점이 있습니다. 제품 아카이브 검색은 내장 레지스트리를 사용합니다. [소프트웨어 업데이트](../engineering/software-update.md), [SDK 시험](../engineering/sdk-trial.md), [저장소와 모듈 지도](../engineering/repository-layout.md). |
 
 ## 데스크톱 요청과 수명 주기
 
@@ -56,7 +56,7 @@ flowchart TB
 | 이미지 미리 보기 작업 프로세스 | Rust가 적격 아카이브 항목을 읽고 검증한 후 데스크톱이 제한된 인코딩 이미지 바이트를 `xdzip-image-preview`에 보냅니다. 작업 프로세스는 제한된 RGBA 썸네일을 반환합니다. 요청에는 아카이브 경로, 암호 또는 대상 핸들이 없습니다. 미리 보기 제공자는 일치하는 현재 요청에만 결과를 게시합니다. 텍스트 미리 보기는 Rust 런타임에서 처리합니다. |
 | 플랫폼 전달 | 데스크톱 어댑터는 파일 관리자 활성화, 비공개 추출 복사본의 외부 앱 열기와 업데이트 설치를 조정합니다. 업데이트 도우미 또는 macOS Sparkle은 자체 설치 전달을 수행합니다. Store 관리 업데이트는 플랫폼 채널을 따릅니다. 형식 작업 프로세스는 이 요청을 처리하지 않습니다. |
 
-[아카이브 작업 프로토콜](../engineering/native-codecs.md), [이미지 미리 보기 계약](../engineering/content-preview.md), [플랫폼 통합](../../engineering/installers-associations.md), [아카이브 전송](../engineering/archive-transfers.md), [업데이트 전달](../../engineering/software-update.md).
+[아카이브 작업 프로토콜](../engineering/native-codecs.md), [이미지 미리 보기 계약](../engineering/content-preview.md), [플랫폼 통합](../../engineering/installers-associations.md), [아카이브 전송](../engineering/archive-transfers.md), [업데이트 전달](../engineering/software-update.md).
 
 ## 아카이브 열기와 탐색
 

@@ -1,6 +1,6 @@
 # Vertrag für benutzerseitig gestartete Updates
 
-[English](../../engineering/software-update.md) | [简体中文](../../zh-CN/engineering/software-update.md) | [繁體中文](../../zh-TW/engineering/software-update.md) | [日本語](../../ja-JP/engineering/software-update.md) | [Français](../../fr-FR/engineering/software-update.md) | Deutsch | [Español](../../es-ES/engineering/software-update.md) | [Português (Brasil)](../../pt-BR/engineering/software-update.md)
+[English](../../engineering/software-update.md) | [简体中文](../../zh-CN/engineering/software-update.md) | [繁體中文](../../zh-TW/engineering/software-update.md) | [日本語](../../ja-JP/engineering/software-update.md) | [한국어](../../ko-KR/engineering/software-update.md) | [Français](../../fr-FR/engineering/software-update.md) | Deutsch | [Español](../../es-ES/engineering/software-update.md) | [Português (Brasil)](../../pt-BR/engineering/software-update.md)
 
 Unter einer Windows-MSIX-Paketidentität zeigt „Über“ keine integrierten Updates an, und der Update-Controller lehnt die vorhandene GitHub-Updateprüfung ab. Microsoft Store verwaltet Updates seiner Ausgabe; für per Sideload installierte Pakete wird kein automatisches Update innerhalb der Anwendung zugesichert. Fehler bei der Identitätsabfrage werden als Paketidentität behandelt, um eine missbräuchliche Verwendung von Installer-Updates zu verhindern. Gewöhnliche Installationen und andere Plattformen bleiben unverändert.
 

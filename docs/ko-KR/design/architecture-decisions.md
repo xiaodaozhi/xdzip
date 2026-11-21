@@ -130,7 +130,7 @@
 
 **상태: 2026년 10월 19일 수락, 프로젝트 소유자가 명시적으로 승인.**
 
-**현재 구현.** 현재 지원과 업데이트에는 [지원 정책](../engineering/support-policy.md)과 [업데이트 계약](../../engineering/software-update.md)을 적용합니다. 수동 업데이트 조항은 v0.1을 설명합니다.
+**현재 구현.** 현재 지원과 업데이트에는 [지원 정책](../engineering/support-policy.md)과 [업데이트 계약](../engineering/software-update.md)을 적용합니다. 수동 업데이트 조항은 v0.1을 설명합니다.
 
 결정: 초기에는 Apple Silicon arm64의 macOS 14 이상, 유지 중인 Windows 11 x86_64, X11과 glibc 2.39 이상을 사용하는 Ubuntu 24.04 LTS x86_64를 지원합니다. 최신 공개 버전만 우선 유지하고 고정 응답 시간을 약속하지 않은 채 가능한 범위에서 피드백을 처리합니다. v0.1은 수동 업데이트를 사용하고 개발 미리보기는 실험 상태로 유지합니다. [지원 정책](../engineering/support-policy.md)을 참조하세요.
 
