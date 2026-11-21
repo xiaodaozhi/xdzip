@@ -19,7 +19,7 @@ Hochauflösende Entwurfsbilder sind die visuelle Referenz; HTML ist die bearbeit
 
 ## Anzeigegröße und Quellpixel
 
-Die normale Entwurfsanzeige verwendet die [Fensterbreite von 1024 logischen Pixeln](../../visual/README.md) und bildet Quellkoordinaten einheitlich mit `1024 / 1548` ab. Das Hauptfenster erscheint mit 1024 × ungefähr 621,81 CSS-Pixeln; das Original verwendet denselben Maßstab. Dieses Verhältnis ist eine ausdrückliche Gestaltungskonvention und keine aus einem PNG abgeleitete Aussage über Retina oder DPI.
+Die normale Entwurfsanzeige verwendet die [Fensterbreite von 1024 logischen Pixeln](README.md) und bildet Quellkoordinaten einheitlich mit `1024 / 1548` ab. Das Hauptfenster erscheint mit 1024 × ungefähr 621,81 CSS-Pixeln; das Original verwendet denselben Maßstab. Dieses Verhältnis ist eine ausdrückliche Gestaltungskonvention und keine aus einem PNG abgeleitete Aussage über Retina oder DPI.
 
 `display-spec.js` ist die einzige Quelle aller Zeichenflächengrößen und Anzeigeskalen. Auf dem Desktop ist die normale Entwurfsgröße voreingestellt, mobil die Einpassung; diese wird auf die Normalgröße begrenzt, um automatische Vergrößerung auf breiten Bildschirmen zu verhindern. Der Originalpixelmodus verwendet `scale=1`, erhält ursprüngliche Pixelmaße und ermöglicht sowohl auf HTML- als auch auf Bildseite Scrollen. Das Gerätepixelverhältnis beeinflusst nur die Rasterdichte, nicht die logische CSS-Breite.
 
