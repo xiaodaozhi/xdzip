@@ -20,7 +20,7 @@ Das ursprüngliche PMarc 2.00 läuft in einer per Hash fixierten und anhand des 
 
 ## Anforderungen an den Container
 
-Für PMA-Header und Nutzdatenbereiche gelten dieselben Regeln wie für [LHA](../../engineering/lha-containers.md) bezüglich Arithmetik, Prüfsumme, Namen, Duplikaten, eingefrorener Quelle und spezieller Objekte. PM0 ist Store mit gleichen gepackten und ursprünglichen Größen. PM1 und PM2 dürfen nicht an LH-Dekoder geleitet werden. Vorhandene CRC-16-Werte der Nutzdaten müssen nach vollständiger Dekodierung stimmen; das Öffnen oder Auflisten einer Methode belegt keine gültigen Inhalte.
+Für PMA-Header und Nutzdatenbereiche gelten dieselben Regeln wie für [LHA](lha-containers.md) bezüglich Arithmetik, Prüfsumme, Namen, Duplikaten, eingefrorener Quelle und spezieller Objekte. PM0 ist Store mit gleichen gepackten und ursprünglichen Größen. PM1 und PM2 dürfen nicht an LH-Dekoder geleitet werden. Vorhandene CRC-16-Werte der Nutzdaten müssen nach vollständiger Dekodierung stimmen; das Öffnen oder Auflisten einer Methode belegt keine gültigen Inhalte.
 
 Ein ursprüngliches CP/M-Archiv endet mit einem Nullbyte und so viel `0x1a`-Füllung, dass die nächste 128-Byte-Satzgrenze erreicht wird. Die zugelassene aufgefüllte Form muss exakt ausgerichtet sein, mit höchstens 127 Füllbytes, die alle diesen Wert haben. Ein exakter Nullterminator kann auch einen ungefüllten Container abschließen. Diese Rahmenregeln erlauben weder das Ignorieren beliebiger nachfolgender Bytes noch das Erzeugen eines fehlenden Terminators oder das Anhängen dekodierter EOF-Bytes. Containerfüllung gehört nie zum gepackten Bereich eines Eintrags. Das Einfrieren der Quelle muss die gesamte physische Datei einschließlich Füllung umfassen.
 

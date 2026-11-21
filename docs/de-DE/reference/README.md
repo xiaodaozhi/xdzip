@@ -68,7 +68,7 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 - [Vertrag für Zstandard-Datenströme](../engineering/zstandard-streams.md)
 - [Vertrag für Unix compress Z](../engineering/compress-streams.md)
 - [Vertrag für gewöhnliche Brotli-Datenströme](../engineering/brotli-streams.md)
-- [Datenstruktur und Algorithmen von LHA](../../engineering/lha-containers.md)
+- [Datenstruktur und Algorithmen von LHA](../engineering/lha-containers.md)
 - [PMA-Container und PMarc-Verfahren](../engineering/pma-streams.md)
 - [Komprimierte ARJ-Datenströme und Containerzulassung](../engineering/arj-streams.md)
 - [ARC-Container und Profile komprimierter Datenströme](../engineering/arc-streams.md)
