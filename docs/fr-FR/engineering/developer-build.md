@@ -1,6 +1,6 @@
 # Compilations de développement et vérification par plateforme
 
-[English](../../engineering/developer-build.md) | [简体中文](../../zh-CN/engineering/developer-build.md) | [繁體中文](../../zh-TW/engineering/developer-build.md) | [日本語](../../ja-JP/engineering/developer-build.md) | [한국어](../../ko-KR/engineering/developer-build.md) | Français | [Deutsch](../../de-DE/engineering/developer-build.md) | [Español](../../es-ES/engineering/developer-build.md) | [Português (Brasil)](../../pt-BR/engineering/developer-build.md)
+[English](../../engineering/developer-build.md) | [简体中文](../../zh-CN/engineering/developer-build.md) | [繁體中文](../../zh-TW/engineering/developer-build.md) | [日本語](../../ja-JP/engineering/developer-build.md) | [한국어](../../ko-KR/engineering/developer-build.md) | Français | [Deutsch](../../de-DE/engineering/developer-build.md) | [Español](../../es-ES/engineering/developer-build.md) | [Português (Brasil)](../../pt-BR/engineering/developer-build.md) | [Русский](../../ru-RU/engineering/developer-build.md)
 
 Cette page est l'entrée unifiée pour préparer, compiler, tester, empaqueter et vérifier les environnements des trois plateformes. L'orchestration commune est implémentée par [scripts/desktop.py](../../../scripts/desktop.py). Les documents de plateforme complètent les structures de déploiement, le comportement des outils et les limites système sans maintenir des commandes courantes séparées.
 

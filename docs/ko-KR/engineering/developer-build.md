@@ -1,6 +1,6 @@
 # 개발 빌드와 플랫폼 검증
 
-[English](../../engineering/developer-build.md) | [简体中文](../../zh-CN/engineering/developer-build.md) | [繁體中文](../../zh-TW/engineering/developer-build.md) | [日本語](../../ja-JP/engineering/developer-build.md) | 한국어 | [Français](../../fr-FR/engineering/developer-build.md) | [Deutsch](../../de-DE/engineering/developer-build.md) | [Español](../../es-ES/engineering/developer-build.md) | [Português (Brasil)](../../pt-BR/engineering/developer-build.md)
+[English](../../engineering/developer-build.md) | [简体中文](../../zh-CN/engineering/developer-build.md) | [繁體中文](../../zh-TW/engineering/developer-build.md) | [日本語](../../ja-JP/engineering/developer-build.md) | 한국어 | [Français](../../fr-FR/engineering/developer-build.md) | [Deutsch](../../de-DE/engineering/developer-build.md) | [Español](../../es-ES/engineering/developer-build.md) | [Português (Brasil)](../../pt-BR/engineering/developer-build.md) | [Русский](../../ru-RU/engineering/developer-build.md)
 
 이 문서는 세 플랫폼에서 환경을 준비, 빌드, 테스트, 패키징하고 검증하는 통합 진입점입니다. 공통 조정은 [scripts/desktop.py](../../../scripts/desktop.py)에서 구현합니다. 플랫폼 문서는 별도의 일상 명령을 유지하지 않고 배포 구조, 도구 동작과 시스템 제한을 보충합니다.
 

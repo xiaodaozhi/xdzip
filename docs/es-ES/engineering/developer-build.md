@@ -1,6 +1,6 @@
 # Compilaciones de desarrollo y verificación por plataforma
 
-[English](../../engineering/developer-build.md) | [简体中文](../../zh-CN/engineering/developer-build.md) | [繁體中文](../../zh-TW/engineering/developer-build.md) | [日本語](../../ja-JP/engineering/developer-build.md) | [한국어](../../ko-KR/engineering/developer-build.md) | [Français](../../fr-FR/engineering/developer-build.md) | [Deutsch](../../de-DE/engineering/developer-build.md) | Español | [Português (Brasil)](../../pt-BR/engineering/developer-build.md)
+[English](../../engineering/developer-build.md) | [简体中文](../../zh-CN/engineering/developer-build.md) | [繁體中文](../../zh-TW/engineering/developer-build.md) | [日本語](../../ja-JP/engineering/developer-build.md) | [한국어](../../ko-KR/engineering/developer-build.md) | [Français](../../fr-FR/engineering/developer-build.md) | [Deutsch](../../de-DE/engineering/developer-build.md) | Español | [Português (Brasil)](../../pt-BR/engineering/developer-build.md) | [Русский](../../ru-RU/engineering/developer-build.md)
 
 Esta página es el punto de entrada común para preparar, compilar, probar, empaquetar y verificar entornos en tres plataformas. La coordinación compartida se implementa en [scripts/desktop.py](../../../scripts/desktop.py). Los documentos de cada plataforma complementan las estructuras de despliegue, el comportamiento de las herramientas y los límites del sistema, sin mantener comandos rutinarios separados.
 

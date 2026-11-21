@@ -1,6 +1,6 @@
 # Entwicklungsbuilds und Plattformprüfung
 
-[English](../../engineering/developer-build.md) | [简体中文](../../zh-CN/engineering/developer-build.md) | [繁體中文](../../zh-TW/engineering/developer-build.md) | [日本語](../../ja-JP/engineering/developer-build.md) | [한국어](../../ko-KR/engineering/developer-build.md) | [Français](../../fr-FR/engineering/developer-build.md) | Deutsch | [Español](../../es-ES/engineering/developer-build.md) | [Português (Brasil)](../../pt-BR/engineering/developer-build.md)
+[English](../../engineering/developer-build.md) | [简体中文](../../zh-CN/engineering/developer-build.md) | [繁體中文](../../zh-TW/engineering/developer-build.md) | [日本語](../../ja-JP/engineering/developer-build.md) | [한국어](../../ko-KR/engineering/developer-build.md) | [Français](../../fr-FR/engineering/developer-build.md) | Deutsch | [Español](../../es-ES/engineering/developer-build.md) | [Português (Brasil)](../../pt-BR/engineering/developer-build.md) | [Русский](../../ru-RU/engineering/developer-build.md)
 
 Dies ist der gemeinsame Einstieg für Vorbereitung, Build, Tests, Paketierung und Prüfung von Umgebungen auf drei Plattformen. Die gemeinsame Orchestrierung implementiert [scripts/desktop.py](../../../scripts/desktop.py). Plattformdokumente ergänzen Bereitstellungslayouts, Werkzeugverhalten und Systemgrenzen, statt getrennte Routinebefehle zu pflegen.
 

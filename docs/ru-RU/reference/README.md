@@ -136,6 +136,6 @@
 - [Проект сборки, развёртывания и выпуска](../design/build-release.md)
 - [Соглашения по коду и уровни проверок](../design/quality-engineering.md)
 - [Подготовка среды разработки](../engineering/development.md)
-- [Сборки для разработки и проверки платформ](../../engineering/developer-build.md)
+- [Сборки для разработки и проверки платформ](../engineering/developer-build.md)
 - [Закреплённые версии инструментов и платформ](../engineering/toolchain.md)
 - [Команды CLI, JSON, установка и квитанции обновлений](../engineering/command-line.md)
