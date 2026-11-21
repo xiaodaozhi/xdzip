@@ -88,7 +88,7 @@
 
 - [Qt Quick 화면과 컨트롤러 책임](../design/qt-quick-ui.md)
 - [데스크톱 시각 사양](../visual/README.md)
-- [UI 디자인 표준](../../visual/design-standard.md)
+- [UI 디자인 표준](../visual/design-standard.md)
 - [UI 디자인 및 수정 절차](../visual/design-workflow.md)
 - [파일 연결 아이콘](../visual/file-association-icons.md)
 - [HTML 시각 일치 검토](../visual/html-fidelity.md)

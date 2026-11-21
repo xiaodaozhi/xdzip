@@ -2,7 +2,7 @@
 
 [English](../../visual/README.md) | [简体中文](../../zh-CN/visual/README.md) | [繁體中文](../../zh-TW/visual/README.md) | [日本語](../../ja-JP/visual/README.md) | 한국어 | [Français](../../fr-FR/visual/README.md) | [Deutsch](../../de-DE/visual/README.md) | [Español](../../es-ES/visual/README.md) | [Português (Brasil)](../../pt-BR/visual/README.md) | [Русский](../../ru-RU/visual/README.md)
 
-사양의 출발점은 [UI 디자인 표준](../../visual/design-standard.md), [필수 디자인 절차](design-workflow.md), [밀도와 단위 계약](../../../specs/visual/layout-scale.json)입니다. 기본 창과 메뉴의 비율 재검증은 [공통 방법](../../../developers/qa/README.md)에 따라 기록합니다.
+사양의 출발점은 [UI 디자인 표준](design-standard.md), [필수 디자인 절차](design-workflow.md), [밀도와 단위 계약](../../../specs/visual/layout-scale.json)입니다. 기본 창과 메뉴의 비율 재검증은 [공통 방법](../../../developers/qa/README.md)에 따라 기록합니다.
 
 현재 원본은 [design/hifi](../../../design/hifi/README.md)에, 대화형 HTML 결과물은 [design/html](../../../design/html/README.md)에 있습니다. 채택되지 않은 초기 제안은 현재 기준이 아닙니다. 재구성된 main 기록에서 이전 디자인을 찾는 데 의존하지 말고 현재 원본과 매니페스트를 기준으로 삼습니다.
 

@@ -34,7 +34,7 @@
 
 ## 공통 컨트롤과 네이티브 범위
 
-작업 화면은 `OperationButton`, `OperationFooterButton`, `OperationFrame`, `OperationSelect` 및 `OperationSegmentedGroup`을 재사용합니다. 공통 구성 요소가 치수와 상호 작용을 관리합니다. 공통 선택 컨트롤은 마우스, 키보드 및 접근성 동작을 동일한 상태 모델로 전달합니다. UI 문구와 파일 데이터는 [디자인 표준](../../visual/design-standard.md)의 글꼴 및 현지화 규칙을 따릅니다. 압축 파일 안의 이름은 데이터로 유지하며 안전하게 표시합니다.
+작업 화면은 `OperationButton`, `OperationFooterButton`, `OperationFrame`, `OperationSelect` 및 `OperationSegmentedGroup`을 재사용합니다. 공통 구성 요소가 치수와 상호 작용을 관리합니다. 공통 선택 컨트롤은 마우스, 키보드 및 접근성 동작을 동일한 상태 모델로 전달합니다. UI 문구와 파일 데이터는 [디자인 표준](../visual/design-standard.md)의 글꼴 및 현지화 규칙을 따릅니다. 압축 파일 안의 이름은 데이터로 유지하며 안전하게 표시합니다.
 
 독립 작업 창은 창 레지스트리와 창별 모달 및 닫기 규칙을 따릅니다. macOS는 네이티브 제목 표시줄 컨트롤을 사용합니다. Windows와 Linux는 시스템 어댑터를 사용합니다. [플랫폼 창 계약](../ux/platform-windows.md)은 실제 창의 인수 조건을 정하고 [데스크톱 통합 계약](../ux/desktop-integration.md)은 알림 영역과 활성화 동작을 설명합니다.
 
