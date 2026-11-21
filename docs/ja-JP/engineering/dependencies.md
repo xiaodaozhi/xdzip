@@ -1,6 +1,6 @@
 # 依存関係とフォーマットバックエンドの採用
 
-[English](../../engineering/dependencies.md) | [简体中文](../../zh-CN/engineering/dependencies.md) | [繁體中文](../../zh-TW/engineering/dependencies.md) | 日本語 | [Français](../../fr-FR/engineering/dependencies.md) | [Deutsch](../../de-DE/engineering/dependencies.md) | [Español](../../es-ES/engineering/dependencies.md) | [Português (Brasil)](../../pt-BR/engineering/dependencies.md)
+[English](../../engineering/dependencies.md) | [简体中文](../../zh-CN/engineering/dependencies.md) | [繁體中文](../../zh-TW/engineering/dependencies.md) | 日本語 | [한국어](../../ko-KR/engineering/dependencies.md) | [Français](../../fr-FR/engineering/dependencies.md) | [Deutsch](../../de-DE/engineering/dependencies.md) | [Español](../../es-ES/engineering/dependencies.md) | [Português (Brasil)](../../pt-BR/engineering/dependencies.md)
 
 ## 外部 SDK 試行
 

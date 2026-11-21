@@ -125,7 +125,7 @@
 - [Qt SDK와 소스의 일치 검증](../engineering/qt-sdk-correspondence.md)
 - [Windows 개발 도구 및 실행 구성 요소 라이선스](../engineering/windows-licensing.md)
 - [라이선스 결정과 타사 자료](../engineering/licensing.md)
-- [의존성 및 형식 백엔드 허용](../../engineering/dependencies.md)
+- [의존성 및 형식 백엔드 허용](../engineering/dependencies.md)
 - [대응 소스 및 재빌드 자료](../engineering/source-delivery.md)
 - [CLDR에서 ICU 73.2 데이터 다시 빌드](../engineering/icu-cldr-rebuild.md)
 

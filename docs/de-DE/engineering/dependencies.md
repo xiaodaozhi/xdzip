@@ -1,6 +1,6 @@
 # Aufnahme von Abhängigkeiten und Format-Backends
 
-[English](../../engineering/dependencies.md) | [简体中文](../../zh-CN/engineering/dependencies.md) | [繁體中文](../../zh-TW/engineering/dependencies.md) | [日本語](../../ja-JP/engineering/dependencies.md) | [Français](../../fr-FR/engineering/dependencies.md) | Deutsch | [Español](../../es-ES/engineering/dependencies.md) | [Português (Brasil)](../../pt-BR/engineering/dependencies.md)
+[English](../../engineering/dependencies.md) | [简体中文](../../zh-CN/engineering/dependencies.md) | [繁體中文](../../zh-TW/engineering/dependencies.md) | [日本語](../../ja-JP/engineering/dependencies.md) | [한국어](../../ko-KR/engineering/dependencies.md) | [Français](../../fr-FR/engineering/dependencies.md) | Deutsch | [Español](../../es-ES/engineering/dependencies.md) | [Português (Brasil)](../../pt-BR/engineering/dependencies.md)
 
 ## Erprobung eines externen SDK
 
