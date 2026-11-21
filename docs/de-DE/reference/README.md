@@ -110,7 +110,7 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 
 ## Plattformintegration, Veröffentlichung und Vertrauen
 
-- [Installer und Dateizuordnungen](../../engineering/installers-associations.md)
+- [Installer und Dateizuordnungen](../engineering/installers-associations.md)
 - [Systemunterstützung und Wartungsrichtlinie](../engineering/support-policy.md)
 - [Dateimanager-Aktionen und eigenständiger Aufgabenhost](../engineering/shell-actions.md)
 - [Vom Benutzer gestartete Updates](../engineering/software-update.md)

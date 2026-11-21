@@ -1,6 +1,6 @@
 # Instaladores y asociaciones de archivos
 
-[English](../../engineering/installers-associations.md) | [简体中文](../../zh-CN/engineering/installers-associations.md) | [繁體中文](../../zh-TW/engineering/installers-associations.md) | [日本語](../../ja-JP/engineering/installers-associations.md) | [Français](../../fr-FR/engineering/installers-associations.md) | Español | [Português (Brasil)](../../pt-BR/engineering/installers-associations.md)
+[English](../../engineering/installers-associations.md) | [简体中文](../../zh-CN/engineering/installers-associations.md) | [繁體中文](../../zh-TW/engineering/installers-associations.md) | [日本語](../../ja-JP/engineering/installers-associations.md) | [Français](../../fr-FR/engineering/installers-associations.md) | [Deutsch](../../de-DE/engineering/installers-associations.md) | Español | [Português (Brasil)](../../pt-BR/engineering/installers-associations.md)
 
 En Windows 11 x64, busque **XDZip** en Microsoft Store para instalar o actualizar la edición Store. Descargue el EXE o ZIP portátil de Windows, los paquetes macOS y los paquetes Linux desde la [última publicación de GitHub](https://github.com/xiaodaozhi/xdzip/releases/latest). Los dos canales publican independientemente. Consulte la ficha o las notas de la versión que va a instalar.
 

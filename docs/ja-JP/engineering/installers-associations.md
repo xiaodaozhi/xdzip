@@ -1,6 +1,6 @@
 # インストーラーとファイルの関連付け
 
-[English](../../engineering/installers-associations.md) | [简体中文](../../zh-CN/engineering/installers-associations.md) | [繁體中文](../../zh-TW/engineering/installers-associations.md) | 日本語 | [Français](../../fr-FR/engineering/installers-associations.md) | [Español](../../es-ES/engineering/installers-associations.md) | [Português (Brasil)](../../pt-BR/engineering/installers-associations.md)
+[English](../../engineering/installers-associations.md) | [简体中文](../../zh-CN/engineering/installers-associations.md) | [繁體中文](../../zh-TW/engineering/installers-associations.md) | 日本語 | [Français](../../fr-FR/engineering/installers-associations.md) | [Deutsch](../../de-DE/engineering/installers-associations.md) | [Español](../../es-ES/engineering/installers-associations.md) | [Português (Brasil)](../../pt-BR/engineering/installers-associations.md)
 
 Windows 11 x64 では Microsoft Store で **XDZip** を検索して Store 版をインストールまたは更新できます。Windows EXE またはポータブル ZIP、macOS パッケージ、Linux パッケージは[最新の GitHub リリース](https://github.com/xiaodaozhi/xdzip/releases/latest)からダウンロードします。2 つのチャネルは独立して公開されます。インストールするバージョンの掲載内容またはリリースノートを確認してください。
 

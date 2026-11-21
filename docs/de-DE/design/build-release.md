@@ -23,7 +23,7 @@ Die Desktopbereitstellung umfasst die Qt-Bibliotheken, QML-Module, Plattformress
 | Ubuntu 24.04 LTS x86_64 | GitHub stellt ein Archiv des Laufzeitverzeichnisses und ein DEB bereit. Die unterstützte Basis umfasst X11 und glibc 2.39 oder neuer. |
 | Eigenständige CLI | Hat eigene Paket- und Update-Identitäten. Für die mit der Desktopanwendung installierte CLI gelten die Integrations- und Übergaberegeln ihres Pakets. |
 
-Die [Support-Richtlinie](../engineering/support-policy.md) legt unterstützte Betriebssysteme und Architekturen fest. Verfügbare Dateien stehen in der [Projekt-README](../../../README.de-DE.md) und den zugehörigen Versionshinweisen. Grenzen der Dateizuordnung und Integration beschreibt die [Installationsanleitung](../../engineering/installers-associations.md).
+Die [Support-Richtlinie](../engineering/support-policy.md) legt unterstützte Betriebssysteme und Architekturen fest. Verfügbare Dateien stehen in der [Projekt-README](../../../README.de-DE.md) und den zugehörigen Versionshinweisen. Grenzen der Dateizuordnung und Integration beschreibt die [Installationsanleitung](../engineering/installers-associations.md).
 
 <a name="xdzip-routine-checks-native-builds-and-release"></a>
 

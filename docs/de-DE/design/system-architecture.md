@@ -56,7 +56,7 @@ Die beiden Laufzeitblöcke stellen getrennte Instanzen derselben Implementierung
 | Bildvorschau-Worker | Nachdem Rust einen geeigneten Archiveintrag gelesen und geprüft hat, sendet der Desktop begrenzte kodierte Bildbytes an `xdzip-image-preview`. Der Worker gibt eine begrenzte RGBA-Miniatur zurück. Die Anfrage enthält weder Archivpfad noch Passwort oder Ziel-Handle. Der Vorschauanbieter veröffentlicht das Ergebnis nur für die passende aktuelle Anfrage. Textvorschau wird in der Rust-Laufzeit behandelt. |
 | Plattformübergabe | Desktop-Adapter koordinieren Dateimanager-Aktivierung, Öffnen einer privaten extrahierten Kopie in einer externen App und Update-Installation. Update-Helfer oder macOS Sparkle führen ihre eigene Installationsübergabe aus. Store-verwaltete Updates folgen dem Plattformkanal. Der Format-Worker behandelt diese Anfragen nicht. |
 
-[Archiv-Worker-Protokoll](../engineering/native-codecs.md), [Bildvorschauvertrag](../engineering/content-preview.md), [Plattformintegration](../../engineering/installers-associations.md), [Archivübertragungen](../engineering/archive-transfers.md), [Update-Übergabe](../engineering/software-update.md).
+[Archiv-Worker-Protokoll](../engineering/native-codecs.md), [Bildvorschauvertrag](../engineering/content-preview.md), [Plattformintegration](../engineering/installers-associations.md), [Archivübertragungen](../engineering/archive-transfers.md), [Update-Übergabe](../engineering/software-update.md).
 
 ## Archiv öffnen und durchsuchen
 
