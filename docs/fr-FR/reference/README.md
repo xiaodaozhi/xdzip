@@ -113,7 +113,7 @@ Consultez d’abord l’[architecture du système](../design/system-architecture
 - [Installateurs et associations de fichiers](../../engineering/installers-associations.md)
 - [Prise en charge et maintenance des systèmes](../engineering/support-policy.md)
 - [Actions du gestionnaire de fichiers et hôte de tâches autonome](../engineering/shell-actions.md)
-- [Mises à jour lancées par l’utilisateur](../../engineering/software-update.md)
+- [Mises à jour lancées par l’utilisateur](../engineering/software-update.md)
 - [Cycle de vie des données et diagnostic](../engineering/privacy.md)
 - [Version du produit et identité du build](../engineering/versioning.md)
 - [Protocole GitHub Release v1](../engineering/release-protocol.md)

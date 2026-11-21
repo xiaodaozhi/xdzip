@@ -18,4 +18,4 @@ La [politique de confidentialité](../../../PRIVACY.md) décrit les données tra
 | Reçus de transaction de mise à jour | Localement, y compris après les redémarrages liés à l’installation | Le fichier séparé `update-state.ini`, à côté des paramètres, garde l’identité de la transaction et de la cible. Les téléchargements échoués peuvent rester dans le cache privé de mise à jour. Le programme de mise à jour lit uniquement les reçus prévus et n’en exécute pas le contenu. |
 | État et diagnostics | Interface, terminal ou fichiers locaux, selon la fonction | L’application ne téléverse pas automatiquement ses diagnostics. Copier les informations de version ou de fichier les place dans le presse-papiers système. Vérifiez les chemins, les noms de fichiers et les autres données privées avant de partager une erreur, un journal ou une capture d’écran. |
 
-La [spécification des mises à jour](../../engineering/software-update.md) décrit les accès réseau, les signatures, la transmission à l’installateur et la récupération.
+La [spécification des mises à jour](software-update.md) décrit les accès réseau, les signatures, la transmission à l’installateur et la récupération.

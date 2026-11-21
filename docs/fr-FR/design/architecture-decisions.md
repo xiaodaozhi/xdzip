@@ -130,7 +130,7 @@ Coûts : maintenance continue du déploiement et des licences. Une construction 
 
 **État : acceptée le 19 octobre 2026, avec l’approbation explicite du propriétaire du projet.**
 
-**Implémentation actuelle.** La [politique de prise en charge](../engineering/support-policy.md) et le [contrat de mise à jour](../../engineering/software-update.md) définissent les règles actuelles. La clause de mise à jour manuelle décrit v0.1.
+**Implémentation actuelle.** La [politique de prise en charge](../engineering/support-policy.md) et le [contrat de mise à jour](../engineering/software-update.md) définissent les règles actuelles. La clause de mise à jour manuelle décrit v0.1.
 
 Décision : prendre initialement en charge macOS 14 et ultérieur sur Apple Silicon arm64, les versions maintenues de Windows 11 x86_64 et Ubuntu 24.04 LTS x86_64 avec X11 et glibc 2.39 ou ultérieure. Donner la priorité à la seule dernière version publique, traiter les retours selon les moyens disponibles sans délai de réponse garanti, utiliser des mises à jour manuelles pour v0.1 et conserver le caractère expérimental des aperçus de développement. Voir la [politique de prise en charge](../engineering/support-policy.md).
 

@@ -37,6 +37,6 @@ Les manifestes de publication, les sommes de contrôle, les inventaires, la nome
 
 ## Mises à jour et distributions futures
 
-La sélection et la vérification des mises à jour sont indépendantes des tâches d’archives. Les installations admissibles suivent le contrat de mise à jour pour les métadonnées de confiance, les fichiers vérifiés, l’identité d’installation et le traitement des tâches actives avant le transfert. Windows et Linux utilisent l’auxiliaire applicable, macOS utilise Sparkle et le Microsoft Store met à jour son édition. Les versions portables et de développement ont leurs propres limites. [Mises à jour logicielles](../../engineering/software-update.md)
+La sélection et la vérification des mises à jour sont indépendantes des tâches d’archives. Les installations admissibles suivent le contrat de mise à jour pour les métadonnées de confiance, les fichiers vérifiés, l’identité d’installation et le traitement des tâches actives avant le transfert. Windows et Linux utilisent l’auxiliaire applicable, macOS utilise Sparkle et le Microsoft Store met à jour son édition. Les versions portables et de développement ont leurs propres limites. [Mises à jour logicielles](../engineering/software-update.md)
 
 Toute extension à une autre architecture, version minimale de système, forme de paquet ou boutique exige des preuves distinctes de compilation et de validation. Les [décisions d’architecture](architecture-decisions.md) conservent l’historique des choix de distribution et les conditions de leur réexamen.

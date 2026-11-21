@@ -1,6 +1,6 @@
 # Contrato de actualización iniciada por el usuario
 
-[English](../../engineering/software-update.md) | [简体中文](../../zh-CN/engineering/software-update.md) | [繁體中文](../../zh-TW/engineering/software-update.md) | [日本語](../../ja-JP/engineering/software-update.md) | Español | [Português (Brasil)](../../pt-BR/engineering/software-update.md)
+[English](../../engineering/software-update.md) | [简体中文](../../zh-CN/engineering/software-update.md) | [繁體中文](../../zh-TW/engineering/software-update.md) | [日本語](../../ja-JP/engineering/software-update.md) | [Français](../../fr-FR/engineering/software-update.md) | Español | [Português (Brasil)](../../pt-BR/engineering/software-update.md)
 
 Con identidad de paquete MSIX en Windows, Acerca de no muestra actualizaciones internas y el controlador rechaza la comprobación de actualización de GitHub existente. Microsoft Store gestiona las actualizaciones de la edición Store; los paquetes instalados por carga lateral no tienen garantía de actualización automática en la aplicación. Los errores al consultar la identidad se tratan como identidad de paquete para evitar el uso indebido de actualizaciones del instalador. Las instalaciones ordinarias y las demás plataformas no cambian.
 
