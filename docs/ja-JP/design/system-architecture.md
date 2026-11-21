@@ -56,7 +56,7 @@ flowchart TB
 | 画像プレビューワーカー | Rust が適格なアーカイブエントリを読み取り検証した後、デスクトップは制限付きの符号化画像バイトを `xdzip-image-preview` に送ります。ワーカーは制限付き RGBA サムネイルを返します。要求にはアーカイブパス、パスワード、出力先ハンドルを含めません。プレビュープロバイダーは一致する現在の要求にのみ結果を公開します。テキストプレビューは Rust ランタイムで扱います。 |
 | プラットフォーム引き渡し | デスクトップアダプターはファイルマネージャーからの起動、プライベートに展開したコピーの外部アプリでのオープン、更新のインストールを調整します。更新ヘルパーまたは macOS Sparkle は独自のインストール引き渡しを行います。Store 管理の更新はプラットフォームのチャネルに従います。形式ワーカーはこれらの要求を扱いません。 |
 
-[アーカイブワーカープロトコル](../engineering/native-codecs.md)、[画像プレビュー契約](../engineering/content-preview.md)、[プラットフォーム統合](../../engineering/installers-associations.md)、[アーカイブ転送](../engineering/archive-transfers.md)、[更新引き渡し](../engineering/software-update.md)。
+[アーカイブワーカープロトコル](../engineering/native-codecs.md)、[画像プレビュー契約](../engineering/content-preview.md)、[プラットフォーム統合](../engineering/installers-associations.md)、[アーカイブ転送](../engineering/archive-transfers.md)、[更新引き渡し](../engineering/software-update.md)。
 
 ## アーカイブのオープンと閲覧
 

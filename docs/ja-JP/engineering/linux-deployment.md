@@ -77,4 +77,4 @@ CI は xdzip-linux-x86_64.tar.gz を生成し、SHA-256 と実行ファイルの
 
 ここで生成する `build/package` 実行ディレクトリ、tar.gz、.deb は実験的な開発用配布物であり、自動インストールや既定の関連付けの変更は行いません。公式 Release の Ubuntu tar.gz と .deb は専用 Release ワークフローが生成し、[リリースプロトコル](release-protocol.md)に従って提供します。プラットフォーム範囲は[サポートポリシー](support-policy.md)に従い、他のディストリビューションやデスクトップ、Wayland などの拡張には別の issue が必要です。既存のデスクトップ受け入れは [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5) にあります。後続の変更では影響を受ける実際の IME・スクリーンリーダーとクリーンなインストール・アップグレード・アンインストールを再検証します。ディレクトリの再ビルドだけで既存の受け入れを繰り返す必要はありません。過去の `v0.1.0` のコンポーネントレビューは [#4](https://github.com/xiaodaozhi/xdzip/issues/4) と [#53](https://github.com/xiaodaozhi/xdzip/issues/53) にあり、ディレクトリの実行成功だけでは将来のリリース条件は自動的に完了しません。
 
-Ubuntu .deb のインストール、アップグレード、ロールバック、アンインストール、実行時ロック、デスクトップ MIME の自動化は[インストールと関連付け](../../engineering/installers-associations.md)を参照してください。実行時コンテナーの合格は実際のデスクトップ検査やリリースライセンスレビューの代わりにはなりません。
+Ubuntu .deb のインストール、アップグレード、ロールバック、アンインストール、実行時ロック、デスクトップ MIME の自動化は[インストールと関連付け](installers-associations.md)を参照してください。実行時コンテナーの合格は実際のデスクトップ検査やリリースライセンスレビューの代わりにはなりません。

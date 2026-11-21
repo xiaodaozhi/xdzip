@@ -110,7 +110,7 @@
 
 ## プラットフォーム統合、リリース、信頼性
 
-- [インストーラーとファイルの関連付け](../../engineering/installers-associations.md)
+- [インストーラーとファイルの関連付け](../engineering/installers-associations.md)
 - [対応システムと保守方針](../engineering/support-policy.md)
 - [ファイルマネージャーの操作と独立タスクホスト](../engineering/shell-actions.md)
 - [ユーザーが開始する更新の仕様](../engineering/software-update.md)
