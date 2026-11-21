@@ -113,7 +113,7 @@
 - [インストーラーとファイルの関連付け](../../engineering/installers-associations.md)
 - [対応システムと保守方針](../engineering/support-policy.md)
 - [ファイルマネージャーの操作と独立タスクホスト](../engineering/shell-actions.md)
-- [ユーザーが開始する更新の仕様](../../engineering/software-update.md)
+- [ユーザーが開始する更新の仕様](../engineering/software-update.md)
 - [データのライフサイクルと診断](../engineering/privacy.md)
 - [製品バージョンとビルドの識別](../engineering/versioning.md)
 - [GitHub Release プロトコル v1](../engineering/release-protocol.md)

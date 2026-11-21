@@ -35,7 +35,7 @@ flowchart TB
 | `xdzip-domain`、`xdzip-codec-api`、`xdzip-extract-plan` | ドメインは識別情報、メタデータ、パスの不変条件を定義します。コーデック API は `ReadSource`、`PayloadCodec`、`DecodedSink`、`EncodeInput`、`EncodeOutput` などの形式能力と契約を定義します。展開プランナーはメタデータと選択からレポートを導出します。出力先の認可はホストに残ります。[ドメインとデータ](domain-data.md)、[コーデックインターフェース](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-codec-api/src/lib.rs)、[展開前検査](../engineering/extraction-preflight.md)。 |
 | `xdzip-codec-*`、`xdzip-compression`、`xdzip-crypto` | コーデック crate はコンテナのフレーミング、メタデータ走査、ペイロード読み取り、形式ごとに利用可能な書き込み操作を実装します。圧縮と暗号の crate は再利用可能なアルゴリズムを提供します。コーデックインターフェースはホストが提供するストリームとシンクを消費します。能力レジストリは利用可能な操作を記述し、ランタイムルーティングは実際のアーカイブとエントリを確認します。[ランタイムルーティング](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-runtime/src/formats.rs)、[形式レジストリ](../engineering/format-registry.md)。 |
 | `xdzip-io` | 通常の入力ファイルを開き、ネイティブファイルオブジェクトを識別し、認可された作成入力を固定し、出力先の権限、準備、確定を提供します。ファイル境界のプラットフォーム検査を実装し、ランタイムが実行する操作と公開時点を決定します。[入力認可](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/input.rs)、[出力権限と確定](https://github.com/xiaodaozhi/xdzip/blob/main/crates/xdzip-io/src/target.rs)、[ファイル安全性](file-security.md)。 |
-| 更新と開発ツール | `UpdateController` と `xdzip-update` は更新の選択、検証、引き渡しを扱います。インストール版はプラットフォーム固有のインストールパスを使用します。SDK ホストと形式プローブには独立した入口があります。製品のアーカイブ検出は組み込みレジストリを使用します。[ソフトウェア更新](../../engineering/software-update.md)、[SDK 試用](../engineering/sdk-trial.md)、[リポジトリとモジュールの地図](../engineering/repository-layout.md)。 |
+| 更新と開発ツール | `UpdateController` と `xdzip-update` は更新の選択、検証、引き渡しを扱います。インストール版はプラットフォーム固有のインストールパスを使用します。SDK ホストと形式プローブには独立した入口があります。製品のアーカイブ検出は組み込みレジストリを使用します。[ソフトウェア更新](../engineering/software-update.md)、[SDK 試用](../engineering/sdk-trial.md)、[リポジトリとモジュールの地図](../engineering/repository-layout.md)。 |
 
 ## デスクトップ要求とライフサイクル
 
@@ -56,7 +56,7 @@ flowchart TB
 | 画像プレビューワーカー | Rust が適格なアーカイブエントリを読み取り検証した後、デスクトップは制限付きの符号化画像バイトを `xdzip-image-preview` に送ります。ワーカーは制限付き RGBA サムネイルを返します。要求にはアーカイブパス、パスワード、出力先ハンドルを含めません。プレビュープロバイダーは一致する現在の要求にのみ結果を公開します。テキストプレビューは Rust ランタイムで扱います。 |
 | プラットフォーム引き渡し | デスクトップアダプターはファイルマネージャーからの起動、プライベートに展開したコピーの外部アプリでのオープン、更新のインストールを調整します。更新ヘルパーまたは macOS Sparkle は独自のインストール引き渡しを行います。Store 管理の更新はプラットフォームのチャネルに従います。形式ワーカーはこれらの要求を扱いません。 |
 
-[アーカイブワーカープロトコル](../engineering/native-codecs.md)、[画像プレビュー契約](../engineering/content-preview.md)、[プラットフォーム統合](../../engineering/installers-associations.md)、[アーカイブ転送](../engineering/archive-transfers.md)、[更新引き渡し](../../engineering/software-update.md)。
+[アーカイブワーカープロトコル](../engineering/native-codecs.md)、[画像プレビュー契約](../engineering/content-preview.md)、[プラットフォーム統合](../../engineering/installers-associations.md)、[アーカイブ転送](../engineering/archive-transfers.md)、[更新引き渡し](../engineering/software-update.md)。
 
 ## アーカイブのオープンと閲覧
 

@@ -130,7 +130,7 @@
 
 **状態: 2026 年 10 月 19 日に採用。プロジェクト所有者が明示的に承認。**
 
-**現在の実装。** 現在のサポートと更新は[サポート方針](../engineering/support-policy.md)と[更新契約](../../engineering/software-update.md)に従います。手動更新の条項は v0.1 を説明しています。
+**現在の実装。** 現在のサポートと更新は[サポート方針](../engineering/support-policy.md)と[更新契約](../engineering/software-update.md)に従います。手動更新の条項は v0.1 を説明しています。
 
 決定: 初期対象は Apple Silicon arm64 の macOS 14 以降、保守中の Windows 11 x86_64、X11 と glibc 2.39 以降を使う Ubuntu 24.04 LTS x86_64 です。最新の公開版だけを優先し、固定の応答期限を約束せず可能な範囲でフィードバックを処理します。v0.1 は手動更新とし、開発プレビューは実験版のままとします。[サポート方針](../engineering/support-policy.md)を参照してください。
 
