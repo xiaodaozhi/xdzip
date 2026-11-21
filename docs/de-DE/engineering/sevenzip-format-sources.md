@@ -35,7 +35,7 @@ Eine analysierende Person liest gezielt folgende Gruppen im festgelegten Origina
 
 Identitäten des festgelegten Archivs und der Dateien, tatsächlichen Leseumfang und sachliche Übergabezusammenfassungen mit Entwicklungsnachweisen aufbewahren. Bei Aktualisierung der Referenz erneut prüfen; alte Zeilennummern belegen nicht das Verhalten einer neuen Version. Spezifikationskonstanten, Kennungen und mathematische Beziehungen können zur Formatimplementierung genutzt werden; interne Optimierungen und historisch undefiniertes Verhalten gewähren dem Produkt keine Befugnisse. Public-Domain-Erklärungen gelten nicht für das gesamte Archiv, Dokumentation, C++-Wrapper oder andere Beispiele.
 
-Dies behauptet weder einen strengen Reinraum noch null Rechtsrisiko. Fremdquellen, frühere Lieferungen mit offiziellem Backend und unabhängige Testwerkzeuge unterliegen ihren jeweiligen Bedingungen. Das aktuelle Produkt baut das offizielle Backend nicht; siehe [Lizenzen](licensing.md) und [korrespondierenden Quellcode](../../engineering/source-delivery.md).
+Dies behauptet weder einen strengen Reinraum noch null Rechtsrisiko. Fremdquellen, frühere Lieferungen mit offiziellem Backend und unabhängige Testwerkzeuge unterliegen ihren jeweiligen Bedingungen. Das aktuelle Produkt baut das offizielle Backend nicht; siehe [Lizenzen](licensing.md) und [korrespondierenden Quellcode](source-delivery.md).
 
 <a name="xdzip-interoperability-boundaries"></a>
 

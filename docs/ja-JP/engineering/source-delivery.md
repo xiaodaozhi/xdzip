@@ -1,6 +1,6 @@
 # 対応するソースと再ビルド資料
 
-[English](../../engineering/source-delivery.md) | [简体中文](../../zh-CN/engineering/source-delivery.md) | [繁體中文](../../zh-TW/engineering/source-delivery.md) | 日本語 | [Français](../../fr-FR/engineering/source-delivery.md) | [Español](../../es-ES/engineering/source-delivery.md) | [Português (Brasil)](../../pt-BR/engineering/source-delivery.md)
+[English](../../engineering/source-delivery.md) | [简体中文](../../zh-CN/engineering/source-delivery.md) | [繁體中文](../../zh-TW/engineering/source-delivery.md) | 日本語 | [Français](../../fr-FR/engineering/source-delivery.md) | [Deutsch](../../de-DE/engineering/source-delivery.md) | [Español](../../es-ES/engineering/source-delivery.md) | [Português (Brasil)](../../pt-BR/engineering/source-delivery.md)
 
 **リリースの境界、2026-11-05：** 所有者の方針により、この収集ツールはローカルレビューと再ビルド検証専用です。対応するソースのアーカイブは GitHub Release や Actions アーティファクトとして提供しなくなりました。過去の公開 Release アセットと、これらのアーカイブを含むダウンロード可能だったリリース Actions アーティファクトは取り下げられ、今後のリリースワークフローはその生成またはアップロードを拒否します。この判断はコンポーネントのライセンスを変更せず、対応するソース、再リンクなどの義務が満たされたことを示すものではありません。公開リポジトリのタグについて GitHub が自動生成するソーススナップショットは、これらの Release 添付物とは別です。
 

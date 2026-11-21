@@ -31,7 +31,7 @@ Die [Support-Richtlinie](../engineering/support-policy.md) legt unterstützte Be
 
 Der reguläre [CI-Workflow](https://github.com/xiaodaozhi/xdzip/blob/main/.github/workflows/docs.yml) führt schnelle Prüfungen aus. Die nativen Foundation- und Qt-Aufgaben haben getrennte manuelle Workflows. Die reguläre CI auf Apple Silicon baut und testet die App und prüft ihren Start, ohne eine herunterladbare App bereitzustellen. Der dedizierte Release-Workflow hat eigene autorisierte Schritte für Bereitstellung, Signierung, Paketierung und Veröffentlichung. [Veröffentlichungsprotokoll](../engineering/release-protocol.md) und [CI-Richtlinie](../../../developers/engineering/ci-policy.md) definieren die Freigabebedingungen und Nachweise.
 
-Release-Manifeste, Prüfsummen, Inventare, SBOM und Lizenzunterlagen beschreiben die ausgelieferten Artefakte. Der Release-Workflow erzeugt keine Projektquellcode-ZIPs und lädt keine hoch. GitHub erzeugt seine eigenen Tag-Snapshots separat. Die Verpflichtungen ergeben sich aus den tatsächlich ausgelieferten Komponenten, dem [Lizenzverzeichnis](../engineering/licensing.md) und der [Richtlinie zur Quellcodebereitstellung](../../engineering/source-delivery.md).
+Release-Manifeste, Prüfsummen, Inventare, SBOM und Lizenzunterlagen beschreiben die ausgelieferten Artefakte. Der Release-Workflow erzeugt keine Projektquellcode-ZIPs und lädt keine hoch. GitHub erzeugt seine eigenen Tag-Snapshots separat. Die Verpflichtungen ergeben sich aus den tatsächlich ausgelieferten Komponenten, dem [Lizenzverzeichnis](../engineering/licensing.md) und der [Richtlinie zur Quellcodebereitstellung](../engineering/source-delivery.md).
 
 <a name="xdzip-update-and-future-distribution"></a>
 

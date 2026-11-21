@@ -1,6 +1,6 @@
 # Fuentes correspondientes y materiales de recompilación
 
-[English](../../engineering/source-delivery.md) | [简体中文](../../zh-CN/engineering/source-delivery.md) | [繁體中文](../../zh-TW/engineering/source-delivery.md) | [日本語](../../ja-JP/engineering/source-delivery.md) | [Français](../../fr-FR/engineering/source-delivery.md) | Español | [Português (Brasil)](../../pt-BR/engineering/source-delivery.md)
+[English](../../engineering/source-delivery.md) | [简体中文](../../zh-CN/engineering/source-delivery.md) | [繁體中文](../../zh-TW/engineering/source-delivery.md) | [日本語](../../ja-JP/engineering/source-delivery.md) | [Français](../../fr-FR/engineering/source-delivery.md) | [Deutsch](../../de-DE/engineering/source-delivery.md) | Español | [Português (Brasil)](../../pt-BR/engineering/source-delivery.md)
 
 **Límite de publicación, 2026-11-05:** Por decisión del propietario, este recopilador se usa solo para revisión local y verificación de recompilación. Los archivos de fuentes correspondientes ya no se ofrecen como recursos de GitHub Release ni como artefactos de Actions. Se retiraron los recursos históricos públicos de Release y los artefactos descargables de Actions de publicación que contenían esos archivos, y los futuros flujos de publicación rechazan su generación o subida. Esta decisión no modifica las licencias de los componentes ni demuestra que se cumplan las obligaciones de fuentes correspondientes, reenlace u otras. Las instantáneas de fuentes que GitHub genera automáticamente para etiquetas del repositorio público son distintas de esos adjuntos de Release.
 

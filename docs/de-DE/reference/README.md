@@ -126,7 +126,7 @@ Die [Systemarchitektur](../design/system-architecture.md) zeigt die Ausführungs
 - [Lizenzen für Windows-Entwicklungswerkzeuge und Laufzeit](../engineering/windows-licensing.md)
 - [Lizenzentscheidung und Drittanbietermaterial](../engineering/licensing.md)
 - [Zulassung von Abhängigkeiten und Format-Backends](../../engineering/dependencies.md)
-- [Zugehöriger Quellcode und Materialien für den erneuten Build](../../engineering/source-delivery.md)
+- [Zugehöriger Quellcode und Materialien für den erneuten Build](../engineering/source-delivery.md)
 - [ICU-73.2-Daten aus CLDR neu erstellen](../engineering/icu-cldr-rebuild.md)
 
 <a name="xdzip-build-and-cli-reference"></a>
