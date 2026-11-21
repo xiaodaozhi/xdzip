@@ -1,6 +1,6 @@
 # Base da implementação independente de RAR e limites de compatibilidade
 
-[English](../../engineering/rar-format-sources.md) | [简体中文](../../zh-CN/engineering/rar-format-sources.md) | [繁體中文](../../zh-TW/engineering/rar-format-sources.md) | [日本語](../../ja-JP/engineering/rar-format-sources.md) | [Français](../../fr-FR/engineering/rar-format-sources.md) | [Español](../../es-ES/engineering/rar-format-sources.md) | Português (Brasil)
+[English](../../engineering/rar-format-sources.md) | [简体中文](../../zh-CN/engineering/rar-format-sources.md) | [繁體中文](../../zh-TW/engineering/rar-format-sources.md) | [日本語](../../ja-JP/engineering/rar-format-sources.md) | [Français](../../fr-FR/engineering/rar-format-sources.md) | [Deutsch](../../de-DE/engineering/rar-format-sources.md) | [Español](../../es-ES/engineering/rar-format-sources.md) | Português (Brasil)
 
 A migração interna de RAR preserva todo o escopo somente leitura para formatos antigos, RAR5, RAR7, senhas, criptografia de cabeçalhos, arquivos compactados sólidos e volumes autorizados; nenhum codificador RAR é desenvolvido. A substituição de capacidades e a remoção de dependências oficiais continuam sujeitas à [tarefa de migração #51](https://github.com/xiaodaozhi/xdzip/issues/51). Código de contêiner ou leitura Store isoladamente não comprovam a migração completa. Consulte o [contrato do mecanismo isolado](native-codecs.md) para roteamento e fontes atuais.
 

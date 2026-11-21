@@ -1,6 +1,6 @@
 # RAR 独立実装の根拠と互換性の境界
 
-[English](../../engineering/rar-format-sources.md) | [简体中文](../../zh-CN/engineering/rar-format-sources.md) | [繁體中文](../../zh-TW/engineering/rar-format-sources.md) | 日本語 | [Français](../../fr-FR/engineering/rar-format-sources.md) | [Español](../../es-ES/engineering/rar-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/rar-format-sources.md)
+[English](../../engineering/rar-format-sources.md) | [简体中文](../../zh-CN/engineering/rar-format-sources.md) | [繁體中文](../../zh-TW/engineering/rar-format-sources.md) | 日本語 | [Français](../../fr-FR/engineering/rar-format-sources.md) | [Deutsch](../../de-DE/engineering/rar-format-sources.md) | [Español](../../es-ES/engineering/rar-format-sources.md) | [Português (Brasil)](../../pt-BR/engineering/rar-format-sources.md)
 
 自社 RAR 移行では、旧形式、RAR5、RAR7、パスワード、ヘッダー暗号化、ソリッドアーカイブ、認可されたボリュームを含む読み取り専用の全範囲を維持し、RAR エンコーダーは開発しません。機能の置換と公式依存関係の除去は引き続き[移行タスク #51](https://github.com/xiaodaozhi/xdzip/issues/51)に従います。コンテナーコードや Store の読み取りだけでは完全移行を証明できません。現在のルーティングとソースは[分離バックエンド契約](native-codecs.md)を参照してください。
 
