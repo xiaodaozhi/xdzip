@@ -1,6 +1,6 @@
 # LHA ワイヤー形式とアルゴリズムの契約
 
-[English](../../engineering/lha-containers.md) | [简体中文](../../zh-CN/engineering/lha-containers.md) | [繁體中文](../../zh-TW/engineering/lha-containers.md) | 日本語 | [한국어](../../ko-KR/engineering/lha-containers.md)
+[English](../../engineering/lha-containers.md) | [简体中文](../../zh-CN/engineering/lha-containers.md) | [繁體中文](../../zh-TW/engineering/lha-containers.md) | 日本語 | [한국어](../../ko-KR/engineering/lha-containers.md) | [Français](../../fr-FR/engineering/lha-containers.md)
 
 LHA/LZH と歴史的な LArc は、メンバーを順に格納するコンテナーの一群です。ファイル拡張子、認識可能なメソッド文字列、または Store メンバーの成功は、別のメソッドのデコード対応を示しません。`xdzip-compression` の低水準プリミティブは、許容された圧縮範囲と独立に検証された展開後サイズを受け取り、ファイルシステム、プロセス、ファイル名、公開に関する権限を持ちません。製品への登録とコンテナーの受け入れには、以下の別個の検証が必要です。
 

@@ -68,7 +68,7 @@ Consultez d’abord l’[architecture du système](../design/system-architecture
 - [Contrat des flux Zstandard](../engineering/zstandard-streams.md)
 - [Contrat Unix compress Z](../engineering/compress-streams.md)
 - [Contrat des flux Brotli ordinaires](../engineering/brotli-streams.md)
-- [Structure et algorithmes LHA](../../engineering/lha-containers.md)
+- [Structure et algorithmes LHA](../engineering/lha-containers.md)
 - [Conteneurs PMA et méthodes PMarc](../engineering/pma-streams.md)
 - [Flux compressés et conteneurs ARJ](../engineering/arj-streams.md)
 - [Conteneurs ARC et profils de flux compressés](../engineering/arc-streams.md)

@@ -20,7 +20,7 @@ PMarc 2.00 d’origine s’exécute dans une émulation CP/M fixée par empreint
 
 ## Exigences du conteneur
 
-Les en-têtes et plages de données PMA suivent les mêmes règles que [LHA](../../engineering/lha-containers.md) pour l’arithmétique, les sommes de contrôle, les noms, les doublons, la source figée et les objets spéciaux. PM0 est Store avec des tailles comprimée et d’origine égales. PM1 et PM2 ne doivent pas être dirigés vers les décodeurs LH. Les CRC-16 présents sur les données doivent réussir après décodage complet ; ouvrir ou lister une méthode ne prouve pas la validité du contenu.
+Les en-têtes et plages de données PMA suivent les mêmes règles que [LHA](lha-containers.md) pour l’arithmétique, les sommes de contrôle, les noms, les doublons, la source figée et les objets spéciaux. PM0 est Store avec des tailles comprimée et d’origine égales. PM1 et PM2 ne doivent pas être dirigés vers les décodeurs LH. Les CRC-16 présents sur les données doivent réussir après décodage complet ; ouvrir ou lister une méthode ne prouve pas la validité du contenu.
 
 Une archive CP/M d’origine se termine par un octet nul suivi d’assez d’octets `0x1a` pour atteindre la limite de l’enregistrement de 128 octets suivant. La forme avec remplissage admise doit être exactement alignée, avec au plus 127 octets de remplissage ayant tous cette valeur. Un terminateur nul exact peut aussi délimiter un conteneur sans remplissage. Ces règles de cadrage n’autorisent ni à ignorer des octets finaux arbitraires, ni à fabriquer un terminateur manquant, ni à ajouter des octets EOF décodés. Le remplissage du conteneur ne fait jamais partie de la plage comprimée d’un membre. Le gel de la source couvre tout le fichier physique, remplissage compris.
 
