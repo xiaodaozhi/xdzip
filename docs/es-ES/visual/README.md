@@ -82,7 +82,7 @@ Las vistas previas fotográficas comienzan justo bajo el título del panel, con 
 
 Las cabeceras y valores de tamaño original y comprimido de la lista se alinean a la derecha; la cabecera y contenido de tipo se alinean a la izquierda, con relleno de contenido compartido por columna. La nueva verificación registra los bordes de distribución de texto de todas las filas visibles.
 
-Registre por separado la silueta de icono, las dimensiones del recorte en píxeles originales y las dimensiones del lienzo de runtime. No es necesario estirar carpetas para darles forma de papel; los SVG no deben deformarse para llenar espacios. Haga cambios visuales en la fuente gráfica, revíselos en la galería de recursos y sincronice ambas implementaciones.
+Registre por separado la silueta de icono, las dimensiones del recorte en píxeles originales y las dimensiones del lienzo de runtime. No es necesario estirar carpetas para darles forma de papel; los SVG no deben deformarse para llenar espacios. Haga cambios visuales en la fuente gráfica, revíselos en la galería de recursos y sincronice los recursos Qt.
 
 ## Revisión del árbol de directorios B (2026-10-12)
 

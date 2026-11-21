@@ -82,7 +82,7 @@ Pré-visualizações fotográficas começam logo abaixo do título do painel, co
 
 Cabeçalhos e valores de tamanho original e compactado da lista alinham-se à direita; cabeçalho e conteúdo de tipo alinham-se à esquerda, com preenchimento de conteúdo compartilhado por coluna. A reverificação registra bordas de layout de texto de todas as linhas visíveis.
 
-Registre separadamente silhueta do ícone, dimensões do recorte em pixels originais e dimensões da tela de runtime. Pastas não precisam ser esticadas em formato de papel; SVGs não devem ser distorcidos para preencher espaços. Faça alterações visuais na fonte gráfica, revise-as na galeria de assets e sincronize ambas as implementações.
+Registre separadamente silhueta do ícone, dimensões do recorte em pixels originais e dimensões da tela de runtime. Pastas não precisam ser esticadas em formato de papel; SVGs não devem ser distorcidos para preencher espaços. Faça alterações visuais na fonte gráfica, revise-as na galeria de assets e sincronize os recursos Qt.
 
 ## Revisão da árvore de diretórios B (2026-10-12)
 

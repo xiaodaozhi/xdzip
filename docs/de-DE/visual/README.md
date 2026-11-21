@@ -82,7 +82,7 @@ Fotovorschauen beginnen unmittelbar unter dem Bereichstitel, oben am Dateilisten
 
 Header und Werte für Original- und komprimierte Größe in Dateilisten sind rechtsbündig; Typheader und -inhalt linksbündig, mit gemeinsamer Inhaltsauffüllung je Spalte. Die erneute Prüfung erfasst Textlayoutkanten aller sichtbaren Zeilen.
 
-Symbolsilhouette, Abmessungen von Originalpixelausschnitten und Laufzeitzeichenfläche getrennt erfassen. Ordner müssen nicht in Papierformen gestreckt werden; SVGs dürfen nicht zum Füllen von Slots verzerrt werden. Visuelle Änderungen an der Grafikquelle vornehmen, in der Assetgalerie prüfen und dann beide Implementierungen synchronisieren.
+Symbolsilhouette, Abmessungen von Originalpixelausschnitten und Laufzeitzeichenfläche getrennt erfassen. Ordner müssen nicht in Papierformen gestreckt werden; SVGs dürfen nicht zum Füllen von Slots verzerrt werden. Visuelle Änderungen an der Grafikquelle vornehmen, in der Assetgalerie prüfen und dann die Qt-Ressourcen synchronisieren.
 
 ## Revision Verzeichnisbaum B (2026-10-12)
 

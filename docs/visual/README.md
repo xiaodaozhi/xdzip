@@ -82,7 +82,7 @@ Photo previews start directly below the pane title, with top aligned to the file
 
 File-list original-size and compressed-size headers and values align right; type headers and content align left, with shared content padding per column. Reverification records text layout edges for all visible rows.
 
-Record icon silhouette, original-pixel slice dimensions and runtime canvas dimensions separately. Folders need not be stretched into paper shapes; SVGs must not be distorted to fill slots. Make visual changes at the graphic source, review in the asset gallery, then synchronize both implementations.
+Record icon silhouette, original-pixel slice dimensions and runtime canvas dimensions separately. Folders need not be stretched into paper shapes; SVGs must not be distorted to fill slots. Make visual changes at the graphic source, review in the asset gallery, then synchronize the Qt assets.
 
 ## Directory tree B revision (2026-10-12)
 

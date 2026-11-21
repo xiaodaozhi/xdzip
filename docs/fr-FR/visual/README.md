@@ -82,7 +82,7 @@ Les aperçus photo commencent immédiatement sous le titre du volet, avec le hau
 
 Les en-têtes et valeurs de taille d’origine et compressée de la liste sont alignés à droite ; l’en-tête et le contenu du type sont alignés à gauche, avec un remplissage partagé par colonne. La nouvelle vérification enregistre les bords de mise en page du texte pour toutes les lignes visibles.
 
-Enregistrez séparément la silhouette de l’icône, les dimensions de la découpe en pixels d’origine et les dimensions du canevas d’exécution. Les dossiers n’ont pas besoin d’être étirés en formes de papier ; les SVG ne doivent pas être déformés pour remplir les emplacements. Faites les changements visuels à la source graphique, examinez-les dans la galerie de ressources, puis synchronisez les deux implémentations.
+Enregistrez séparément la silhouette de l’icône, les dimensions de la découpe en pixels d’origine et les dimensions du canevas d’exécution. Les dossiers n’ont pas besoin d’être étirés en formes de papier ; les SVG ne doivent pas être déformés pour remplir les emplacements. Faites les changements visuels à la source graphique, examinez-les dans la galerie de ressources, puis synchronisez les ressources Qt.
 
 ## Révision de l’arbre de répertoires B (2026-10-12)
 
