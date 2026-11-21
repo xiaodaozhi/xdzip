@@ -126,7 +126,7 @@
 - [Лицензии инструментов разработки и среды Windows](../engineering/windows-licensing.md)
 - [Выбор лицензии и сторонние материалы](../engineering/licensing.md)
 - [Допуск зависимостей и модулей форматов](../../engineering/dependencies.md)
-- [Соответствующие исходники и материалы для пересборки](../../engineering/source-delivery.md)
+- [Соответствующие исходники и материалы для пересборки](../engineering/source-delivery.md)
 - [Пересборка данных ICU 73.2 из CLDR](../engineering/icu-cldr-rebuild.md)
 
 <a name="xdzip-build-and-cli-reference"></a>

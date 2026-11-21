@@ -1,6 +1,6 @@
 # 대응 소스와 재빌드 자료
 
-[English](../../engineering/source-delivery.md) | [简体中文](../../zh-CN/engineering/source-delivery.md) | [繁體中文](../../zh-TW/engineering/source-delivery.md) | [日本語](../../ja-JP/engineering/source-delivery.md) | 한국어 | [Français](../../fr-FR/engineering/source-delivery.md) | [Deutsch](../../de-DE/engineering/source-delivery.md) | [Español](../../es-ES/engineering/source-delivery.md) | [Português (Brasil)](../../pt-BR/engineering/source-delivery.md)
+[English](../../engineering/source-delivery.md) | [简体中文](../../zh-CN/engineering/source-delivery.md) | [繁體中文](../../zh-TW/engineering/source-delivery.md) | [日本語](../../ja-JP/engineering/source-delivery.md) | 한국어 | [Français](../../fr-FR/engineering/source-delivery.md) | [Deutsch](../../de-DE/engineering/source-delivery.md) | [Español](../../es-ES/engineering/source-delivery.md) | [Português (Brasil)](../../pt-BR/engineering/source-delivery.md) | [Русский](../../ru-RU/engineering/source-delivery.md)
 
 **릴리스 경계, 2026-11-05:** 소유자 지시에 따라 이 수집기는 로컬 검토와 재빌드 검증 전용입니다. 대응 소스 아카이브는 더 이상 GitHub Release 또는 Actions 아티팩트로 제공하지 않습니다. 이러한 아카이브를 포함한 과거 공개 Release 에셋과 아직 다운로드할 수 있었던 릴리스 Actions 아티팩트는 철회되었고, 향후 릴리스 워크플로는 생성이나 업로드를 거부합니다. 이 결정은 구성 요소 라이선스를 변경하지 않으며 대응 소스, 재링크 또는 기타 의무가 충족되었음을 입증하지 않습니다. 공개 저장소의 태그에 대해 GitHub가 자동 생성하는 소스 스냅샷은 이러한 Release 첨부 파일과 별개입니다.
 
