@@ -1,6 +1,6 @@
 # Development builds and platform verification
 
-English | [简体中文](../zh-CN/engineering/developer-build.md) | [繁體中文](../zh-TW/engineering/developer-build.md)
+English | [简体中文](../zh-CN/engineering/developer-build.md) | [繁體中文](../zh-TW/engineering/developer-build.md) | [日本語](../ja-JP/engineering/developer-build.md)
 
 This is the unified entry point for preparing, building, testing, packaging, and verifying environments on three platforms. Shared orchestration is implemented by [scripts/desktop.py](../../scripts/desktop.py). Platform documents supplement deployment layouts, tool behavior, and system limits rather than maintaining separate routine commands.
 
@@ -146,7 +146,7 @@ The `xdzip-ui-preview` component example is not for real-file acceptance. Adjust
 
 ## UI font generation
 
-`prepare` installs pinned FontTools/Brotli in the shared tools environment and caches the hash-verified upstream UI font. Each desktop build automatically collects current bilingual copy and fixed QML/C++ text and generates the shared subset under `<build-directory>/generated/fonts/`. Adding characters requires no font binary commit. Builds work offline after preparation; missing or corrupt source caches fail explicitly. Direct CMake builds must select that environment through `Python3_EXECUTABLE`.
+`prepare` installs pinned FontTools/Brotli in the shared tools environment and caches the hash-verified upstream UI fonts. Each desktop build automatically collects the supported language catalogs and fixed QML/C++ text and generates the font subsets under `<build-directory>/generated/fonts/`. Adding characters requires no font binary commit. Builds work offline after preparation; missing or corrupt source caches fail explicitly. Direct CMake builds must select that environment through `Python3_EXECUTABLE`.
 
 For HTML-only preview, offline export, manual source import and font checks, see the [shared font guide](../../design/assets/fonts/README.en.md). Packaging validates the font manifest from the matching product build without regenerating it. Fixed UI text and user-data system-font selection retain their existing roles.
 
@@ -222,7 +222,7 @@ Application icons include scale variants and exact target sizes with default, da
 
 The example uses the default `--msix-channel sideload`, which registers only the Windows 11 classic menu. For a Store upload use `package --kind msix --msix-channel store` with the exact Partner Center identity. This declares both modern and classic menus; the modern entry remains hidden until the package actually has a Store system signature. Channel markers are added during packaging and do not require rebuilding the audited runtime. Keep outputs in separate directories. See the [menu channel policy](shell-actions.md#windows-package-boundary). Licensing, real installation, associations, uninstall, Store signing and actual target-system acceptance remain separate from packaging success.
 
-The MSIX manifest explicitly declares `en-US` and `zh-CN` to match built-in English and Simplified Chinese catalogs; receipts record and verify the language list. This MakeAppx flow does not automatically convert Qt translation resources into package language declarations. Partner Center's “Languages supported by the package” reflects the uploaded package; after correcting source, rebuild and replace the draft package to update it. “Additional Store listing languages” are configured independently and cannot substitute for manifest declarations. See [Microsoft's manifest language documentation](https://learn.microsoft.com/windows/apps/design/globalizing/manage-language-and-region).
+The MSIX manifest declares the ten languages in the shared language registry, matching the built-in catalogs; receipts record and verify the language list. This MakeAppx flow does not automatically convert Qt translation resources into package language declarations. Partner Center's “Languages supported by the package” reflects the uploaded package; after correcting source, rebuild and replace the draft package to update it. “Additional Store listing languages” are configured independently and cannot substitute for manifest declarations. See [Microsoft's manifest language documentation](https://learn.microsoft.com/windows/apps/design/globalizing/manage-language-and-region).
 
 ## Evidence and reverification
 

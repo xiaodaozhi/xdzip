@@ -152,7 +152,7 @@ python3 scripts/desktop.py build
 python3 scripts/desktop.py test
 ```
 
-Windows では MSVC x64 開発環境、macOS では Apple Silicon ネイティブのターミナルと Xcode Command Line Tools を使用します。既定の Qt 6.8.2 ツールチェーンは `build/toolchain/` にあります。Qt がインストール済みの場合は `--qt-prefix` を指定できます。依存関係、起動、パッケージ化、検証は[開発者向けビルドガイド](docs/engineering/developer-build.md)を参照してください。CLI とデスクトップのビルド手順は独立しています。デスクトップビルドには専用 CLI も同梱されます。コマンドのエントリーポイントは明示的に有効化してください。
+Windows では MSVC x64 開発環境、macOS では Apple Silicon ネイティブのターミナルと Xcode Command Line Tools を使用します。既定の Qt 6.8.2 ツールチェーンは `build/toolchain/` にあります。Qt がインストール済みの場合は `--qt-prefix` を指定できます。依存関係、起動、パッケージ化、検証は[開発者向けビルドガイド](docs/ja-JP/engineering/developer-build.md)を参照してください。CLI とデスクトップのビルド手順は独立しています。デスクトップビルドには専用 CLI も同梱されます。コマンドのエントリーポイントは明示的に有効化してください。
 
 開発用パッケージは実験版です。Windows と Linux の開発成果物は、[Qt コンポーネントのワークフロー](https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml)の成功した手動実行からもダウンロードできます。通常の CI では開発用パッケージは自動生成されません。
 

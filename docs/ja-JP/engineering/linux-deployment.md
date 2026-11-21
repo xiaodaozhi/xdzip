@@ -29,7 +29,7 @@ patchelf は各 ELF に相対 `$ORIGIN` RPATH を設定し、各プラグイン�
 
 相対 RPATH の書き換え後、デプロイは不要なネイティブシンボルテーブルを削除し、すべての DT_NEEDED と RPATH/RUNPATH エントリーが変わらないことを検証します。各 ELF のツールバージョン、前後のハッシュとバイト数を `symbol_stripping` に記録し、SDK 入力と元のビルドバイナリは変更しません。診断用コピーには下位のデプロイスクリプトで `--keep-symbols` を指定できます。最終的な SDK 帰属とアプリのハッシュは変換後のファイルを表します。これはパッケージサイズの削減であり、メモリーや処理速度の改善を測定したという意味ではありません。
 
-通常の生成と検証には[統一ビルド入口](../../engineering/developer-build.md)を段階的に使用します。先に同じ構成でビルド、テスト、パッケージ準備を完了してから実行します。
+通常の生成と検証には[統一ビルド入口](../engineering/developer-build.md)を段階的に使用します。先に同じ構成でビルド、テスト、パッケージ準備を完了してから実行します。
 
 ```sh
 python3 scripts/desktop.py doctor --for-stage package

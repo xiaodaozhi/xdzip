@@ -136,6 +136,6 @@
 - [ビルド、配備、リリースの設計](../design/build-release.md)
 - [コーディング規約と検証の層](../design/quality-engineering.md)
 - [開発環境の準備](../engineering/development.md)
-- [開発ビルドとプラットフォーム検証](../../engineering/developer-build.md)
+- [開発ビルドとプラットフォーム検証](../engineering/developer-build.md)
 - [ツールチェーンとプラットフォームの固定](../engineering/toolchain.md)
 - [CLI コマンド、JSON、インストール、更新の記録](../engineering/command-line.md)

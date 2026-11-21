@@ -8,7 +8,7 @@
 
 ## ビルドと検証
 
-環境の事前確認と各段階のオプションは[開発者向けビルドガイド](../../engineering/developer-build.md)に従います。パッケージツールを準備し、クリーンなコミットから別の Release 主アプリをビルドした後、パッケージ化して検証します。
+環境の事前確認と各段階のオプションは[開発者向けビルドガイド](../engineering/developer-build.md)に従います。パッケージツールを準備し、クリーンなコミットから別の Release 主アプリをビルドした後、パッケージ化して検証します。
 
 ```sh
 python3 scripts/desktop.py prepare --packaging

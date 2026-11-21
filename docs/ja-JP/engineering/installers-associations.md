@@ -4,7 +4,7 @@
 
 Windows 11 x64 では Microsoft Store で **XDZip** を検索して Store 版をインストールまたは更新できます。Windows EXE またはポータブル ZIP、macOS パッケージ、Linux パッケージは[最新の GitHub リリース](https://github.com/xiaodaozhi/xdzip/releases/latest)からダウンロードします。2 つのチャネルは独立して公開されます。インストールするバージョンの掲載内容またはリリースノートを確認してください。
 
-Windows MSIX はパッケージマニフェストで同じ拡張子を「プログラムから開く」の候補として宣言し、ユーザーの既定選択を奪いません。関連付けページには対象となる全種類が無効なスイッチとともに表示されます。現在の既定値は Windows の設定に表示されます。「既定のアプリ設定を開く」は `registeredAUMID` で現在のパッケージを開きます。ID の取得に失敗した場合は一般の既定アプリ選択画面を開きます。パッケージは通常インストール版の登録をパッケージ状態として読み取らず、UserChoice 値を書き込みません。実際のファイル起動、アイコン、共存とアンインストールには対象システムでの受け入れが必要です。[MSIX ビルド](../../engineering/developer-build.md#windows-msix-实验构建)を参照してください。
+Windows MSIX はパッケージマニフェストで同じ拡張子を「プログラムから開く」の候補として宣言し、ユーザーの既定選択を奪いません。関連付けページには対象となる全種類が無効なスイッチとともに表示されます。現在の既定値は Windows の設定に表示されます。「既定のアプリ設定を開く」は `registeredAUMID` で現在のパッケージを開きます。ID の取得に失敗した場合は一般の既定アプリ選択画面を開きます。パッケージは通常インストール版の登録をパッケージ状態として読み取らず、UserChoice 値を書き込みません。実際のファイル起動、アイコン、共存とアンインストールには対象システムでの受け入れが必要です。[MSIX ビルド](../engineering/developer-build.md#windows-msix-实验构建)を参照してください。
 
 形式別のデザインとプラットフォーム対応は[ファイル関連付けアイコン仕様](../visual/file-association-icons.md)を参照してください。Linux はシステムの MIME アイコンを維持します。インストールは既定値や既存の登録範囲を変更しません。
 
@@ -12,7 +12,7 @@ MSIX の関連付けは、通常の Windows インストーラーと同じ正規
 
 `v0.2.0` 以降のデスクトップパッケージと現在のソースビルドは、CLI を別の `cli/` ディレクトリ、macOS では `Contents/Helpers/cli/` に配置し、既存の GUI とファイル関連付けの入口を維持します。以前のリリースアセットにこの機能が遡って追加されるわけではありません。Windows インストーラーは任意選択のユーザー単位 PATH オプションを提供し、同名コマンドの競合を検出します。アンインストールは自身のインストールディレクトリだけを登録解除します。Mac/Linux では非公開 CLI の `setup` を明示的に実行します。独立 CLI パッケージも `setup` でユーザー単位のバージョンディレクトリと安定ランチャーをインストールし、シェル設定を変更しません。`setup --remove` は登録を解除し、確認用にバージョンディレクトリを残します。[CLI インストール契約](command-line.md#xdzip-build-and-command-installation)を参照してください。
 
-以下のパッケージングコマンドは実験的な開発アーティファクトを生成します。公式 GitHub パッケージは[リリースプロトコル](release-protocol.md)、Store パッケージは [MSIX ワークフロー](../../engineering/developer-build.md#microsoft-store-msix)に従います。macOS の直接ダウンロードは Developer ID と公証なしの ad-hoc 完全性署名を使用します。対応システムは[サポートポリシー](support-policy.md)を参照してください。
+以下のパッケージングコマンドは実験的な開発アーティファクトを生成します。公式 GitHub パッケージは[リリースプロトコル](release-protocol.md)、Store パッケージは [MSIX ワークフロー](../engineering/developer-build.md#microsoft-store-msix)に従います。macOS の直接ダウンロードは Developer ID と公証なしの ad-hoc 完全性署名を使用します。対応システムは[サポートポリシー](support-policy.md)を参照してください。
 
 現在のソースビルドは Windows インストーラーの発行元、Linux パッケージのメンテナー、更新ポリシーのベンダーとして `xiaodaozhi` を使用します。これらのメタデータ欄は発行元証明書による署名を代替せず、既存リリースは元のメタデータを維持します。
 
@@ -22,7 +22,7 @@ macOS の手動更新には対応する Release DMG を推奨します。app.zip
 
 ## 共通ビルド入口
 
-環境準備と手順は[開発者向けビルドガイド](../../engineering/developer-build.md)を参照してください。同じコミットのクリーンビルドとテスト後、`python3 scripts/desktop.py prepare --packaging` で固定資料を準備し、package と verify を実行します。通常開発では完全な CI スクリプトを直接使用しません。
+環境準備と手順は[開発者向けビルドガイド](../engineering/developer-build.md)を参照してください。同じコミットのクリーンビルドとテスト後、`python3 scripts/desktop.py prepare --packaging` で固定資料を準備し、package と verify を実行します。通常開発では完全な CI スクリプトを直接使用しません。
 
 Windows/Linux の `package --kind runtime|installer|all` はデプロイと監査のチェーンを共有し、既定値は `all` です。runtime がまずデプロイ済みディレクトリを生成し、installer は同じ output-dir の検証済み runtime から作成され、Linux では tar.gz も作成します。macOS はローカルの `all` 開発 DMG のみをサポートします。アーティファクトと受領記録は指定 output-dir、既定では build/package にあります。準備は固定パッケージングツールや資料をダウンロードする場合がありますが、xdzip やシステムコンパイラー・SDK を自動インストールしません。Windows は CRT/Inno Setup を準備し、Linux は事前インストール済みの patchelf と Debian ツールを必要とし、Mac はシステムのデプロイと ad-hoc 完全性ツールを使用します。
 

@@ -4,7 +4,7 @@
 
 [English](../../engineering/windows-licensing.md) | [简体中文](../../zh-CN/engineering/windows-licensing.md) | [繁體中文](../../zh-TW/engineering/windows-licensing.md) | 日本語 | [한국어](../../ko-KR/engineering/windows-licensing.md) | [Français](../../fr-FR/engineering/windows-licensing.md) | [Deutsch](../../de-DE/engineering/windows-licensing.md) | [Español](../../es-ES/engineering/windows-licensing.md) | [Português (Brasil)](../../pt-BR/engineering/windows-licensing.md) | [Русский](../../ru-RU/engineering/windows-licensing.md)
 
-このページは Windows のビルドと再配布に適用される経路を定義し、[ネイティブランタイム資料](native-runtime-materials.md)、[開発者向けビルド入口](../../engineering/developer-build.md)、[インストール契約](installers-associations.md)と併せて使用します。具体的な環境、検証コミット、資料のハッシュ、受け入れ結論は issue とローカルまたは CI 成果物に記録し、このページに個々のマシンのライセンス証明は保存しません。
+このページは Windows のビルドと再配布に適用される経路を定義し、[ネイティブランタイム資料](native-runtime-materials.md)、[開発者向けビルド入口](../engineering/developer-build.md)、[インストール契約](installers-associations.md)と併せて使用します。具体的な環境、検証コミット、資料のハッシュ、受け入れ結論は issue とローカルまたは CI 成果物に記録し、このページに個々のマシンのライセンス証明は保存しません。
 
 <a name="xdzip-free-community-path-and-local-choice"></a>
 

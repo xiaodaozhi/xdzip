@@ -20,7 +20,7 @@ Windows ではデスクトップ、Qt ソース、提供ソースの再ビルド
 
 GitHub ホストの Apple Silicon ジョブは macOS 15 ランナーを使いますが、製品の配置ターゲットは macOS 14.0 のままです。ランナー更新は macOS 14 実機での検証を意味せず、プラットフォーム互換性と手動受け入れを別々に記録します。
 
-日常の準備、確認、実行は[開発者向けビルドガイド](../../engineering/developer-build.md)を参照してください。`scripts/desktop.py doctor` は既定で build を検査し、`doctor --for-stage package` はパッケージ全体のチェーンを事前に検査します。prepare の `--install-rust`、`--install-qt`、`--packaging` はそれぞれ対応するツールと固定材料を明示的に準備します。システムのコンパイラーと SDK は引き続き開発者がインストールし、事前検査は暗黙のインストーラーではありません。
+日常の準備、確認、実行は[開発者向けビルドガイド](../engineering/developer-build.md)を参照してください。`scripts/desktop.py doctor` は既定で build を検査し、`doctor --for-stage package` はパッケージ全体のチェーンを事前に検査します。prepare の `--install-rust`、`--install-qt`、`--packaging` はそれぞれ対応するツールと固定材料を明示的に準備します。システムのコンパイラーと SDK は引き続き開発者がインストールし、事前検査は暗黙のインストーラーではありません。
 
 固定されたローカルツールチェーンは `build/toolchain/` にあります。Qt SDK、`qmllint`、`qmake` は `build/toolchain/Qt/6.8.2/<platform-subdirectory>`、`aqtinstall` と共通 Python ツールは `build/toolchain/desktop-tools`、Qt ダウンロードの一時配置は `build/toolchain/qt-install-tool` を使います。共通入口はビルド、テスト、パッケージ、個別 Qt 検査ごとに別のキャッシュを作らず、これらを共有します。CI がランナーの一時ディレクトリーを使う場合は明示的な引数を渡し、ローカル既定の配置は変えません。
 

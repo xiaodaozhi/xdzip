@@ -28,7 +28,7 @@
 
 macOS では Xcode Command Line Tools と Qt、Windows では MSVC Build Tools、Windows SDK、対応する Qt を用意します。Linux ではコンパイラー、対象の glibc 環境、Qt の Wayland/X11 依存関係が必要です。開発用バージョンはルートのツールチェーンファイルと CI で固定します。ソースとライセンスは[ツールチェーン表](toolchain.md)に記録します。対応 OS と保守は[サポート方針](support-policy.md)を参照してください。個々の出所とライセンスは該当するリリース審査の Issue で確認します。
 
-[Qt 開発アプリ](../../../apps/desktop/README.md)には、クリーンなチェックアウトからビルドと起動を行うコマンド、CMake のオプション、macOS のアーキテクチャーと配備対象、オフスクリーン試験の境界があります。ビルドやインストールを変更したら、空白や中国語文字を含むパスを再検証します。ローカル開発に有料の署名 ID は不要です。ローカル DMG の ad-hoc 完全性署名と、CI で Mac アプリの配備を行わない範囲は[ビルドガイド](../../engineering/developer-build.md)を参照してください。
+[Qt 開発アプリ](../../../apps/desktop/README.md)には、クリーンなチェックアウトからビルドと起動を行うコマンド、CMake のオプション、macOS のアーキテクチャーと配備対象、オフスクリーン試験の境界があります。ビルドやインストールを変更したら、空白や中国語文字を含むパスを再検証します。ローカル開発に有料の署名 ID は不要です。ローカル DMG の ad-hoc 完全性署名と、CI で Mac アプリの配備を行わない範囲は[ビルドガイド](../engineering/developer-build.md)を参照してください。
 
 <a name="xdzip-independent-engineering-probes"></a>
 

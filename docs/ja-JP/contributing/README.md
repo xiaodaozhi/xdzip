@@ -8,7 +8,7 @@
 
 ## 必要な部分をビルドする
 
-コマンドはリポジトリのルートから実行します。Windows では x64 MSVC 開発環境で `python` を使用します。macOS では Apple Silicon ネイティブのターミナルと Xcode Command Line Tools を使います。Ubuntu ではプラットフォーム向けの依存関係一覧に従います。[ビルドガイド](../../engineering/developer-build.md#environment-and-entry-points)には前提条件と、リポジトリで固定した Rust と Qt のツールチェーンが記載されています。
+コマンドはリポジトリのルートから実行します。Windows では x64 MSVC 開発環境で `python` を使用します。macOS では Apple Silicon ネイティブのターミナルと Xcode Command Line Tools を使います。Ubuntu ではプラットフォーム向けの依存関係一覧に従います。[ビルドガイド](../engineering/developer-build.md#environment-and-entry-points)には前提条件と、リポジトリで固定した Rust と Qt のツールチェーンが記載されています。
 
 デスクトップを初めてビルドする場合は次のコマンドを使います。
 
@@ -18,7 +18,7 @@ python3 scripts/desktop.py doctor --for-stage build
 python3 scripts/desktop.py build
 ```
 
-準備オプションは既存の rustup を使って固定バージョンをインストールし、必要に応じて固定した Qt SDK をダウンロードします。準備済みなら共有の `build/toolchain/` にある依存関係を再利用します。既定の場所以外に互換性のある Qt SDK がある場合は、該当する各段階で同じ `--qt-prefix` を指定します。デスクトップのテストが必要な変更では、同じ設定で完了したビルドに対して `python3 scripts/desktop.py test` を実行してください。ワーカーの全テストは[テスト入力の準備](../../engineering/developer-build.md)を参照してください。
+準備オプションは既存の rustup を使って固定バージョンをインストールし、必要に応じて固定した Qt SDK をダウンロードします。準備済みなら共有の `build/toolchain/` にある依存関係を再利用します。既定の場所以外に互換性のある Qt SDK がある場合は、該当する各段階で同じ `--qt-prefix` を指定します。デスクトップのテストが必要な変更では、同じ設定で完了したビルドに対して `python3 scripts/desktop.py test` を実行してください。ワーカーの全テストは[テスト入力の準備](../engineering/developer-build.md)を参照してください。
 
 スタンドアロン CLI を変更する場合は、CLI と同梱ワーカーをビルドして検証します。
 
@@ -46,7 +46,7 @@ git diff --check
 | CLI | `crates/xdzip-cli` から共有の Rust ランタイムをたどります。[CLI 仕様](../engineering/command-line.md) | ビルドしたスタンドアロン CLI を検証します。コマンドまたは出力を変更した場合は、stdout、stderr、終了コード、書き込みファイルを確認します。対応する失敗ケースも含めます。 |
 | Rust のドメイン、形式、アーカイブタスク | `xdzip-domain`、対象のコーデック、`xdzip-runtime`、または `xdzip-io` を確認します。デスクトップのコマンドは `BrowserController` と `RuntimeConnection` をたどります。[形式一覧](../engineering/format-registry.md)、[ランタイム](../engineering/product-runtime.md)、[ファイル安全性](../design/file-security.md) | `cargo fmt --all -- --check` と対象 crate のテストを実行します。実際のランタイム経路と、該当する失敗、キャンセル、書き込み確定の動作を検証します。ネイティブ形式ワーカーを使う経路は[ワーカーのテスト入口](../../../developers/qa/runtime-worker-tests.md)から検証します。登録表を変えた場合は `python3 scripts/generate-format-registry.py` で再生成し、`--check` で確認して `python3 scripts/test-format-registry.py` を実行します。 |
 | QML ウィンドウ、コントロール、ローカライズ | `apps/desktop/ui`、`resources/i18n`、`specs/visual` を確認します。ウィンドウの変更前に[ビジュアル仕様](../../visual/design-standard.md)と[デザイン手順](../visual/design-workflow.md)を読み、[ウィンドウ登録表](../../../specs/visual/window-registry.json)に仕様を記録してください。 | ウィンドウを変更したら `python3 scripts/check-window-contracts.py --self-test`、`python3 scripts/check-operation-components.py`、該当する 2 言語と複数の文字サイズのレイアウトテストを実行します。ローカライズには `python3 scripts/check-ui-i18n.py` を実行します。必要に応じて、対象プラットフォームのネイティブ操作や表示を確認します。 |
-| インストール、シェル統合、更新 | [ビルドと配置のガイド](../../engineering/developer-build.md)、[ファイルの関連付けの仕様](../engineering/installers-associations.md)、[更新仕様](../engineering/software-update.md)を参照します。 | 影響するインストールまたは登録経路、実際の成果物の識別情報、エラー、復旧を確認します。該当するプラットフォームのワークフローは [CI 方針](../../../developers/engineering/ci-policy.md)を参照してください。 |
+| インストール、シェル統合、更新 | [ビルドと配置のガイド](../engineering/developer-build.md)、[ファイルの関連付けの仕様](../engineering/installers-associations.md)、[更新仕様](../engineering/software-update.md)を参照します。 | 影響するインストールまたは登録経路、実際の成果物の識別情報、エラー、復旧を確認します。該当するプラットフォームのワークフローは [CI 方針](../../../developers/engineering/ci-policy.md)を参照してください。 |
 
 <a name="xdzip-describe-the-evidence"></a>
 

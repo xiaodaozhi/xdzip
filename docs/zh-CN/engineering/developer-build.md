@@ -1,6 +1,6 @@
 # 开发构建与平台验证
 
-[English](../../engineering/developer-build.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/developer-build.md)
+[English](../../engineering/developer-build.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/developer-build.md) | [日本語](../../ja-JP/engineering/developer-build.md)
 
 本文是三平台环境准备、构建、测试、打包和验证的统一入口。共用编排由 [scripts/desktop.py](../../../scripts/desktop.py) 实现；平台文档仅补充部署布局、工具行为和系统限制，不再另维护一套日常命令。
 
@@ -149,7 +149,7 @@ test 仅对子进程启用 offscreen／software，不污染后续命令的桌面
 
 ## 界面字体生成
 
-`prepare` 在共享工具环境安装固定版本的 FontTools/Brotli，并缓存经过哈希验证的上游字体。每次桌面构建自动收集当前双语文案和 QML/C++ 固定文字，在 `<构建目录>/generated/fonts/` 生成共享子集。增加文字不需要提交字体二进制。准备完成后可以离线构建，源缓存缺失或损坏时明确失败。直接使用 CMake 时，通过 `Python3_EXECUTABLE` 选择同一工具环境。
+`prepare` 在共享工具环境安装固定版本的 FontTools/Brotli，并缓存经过哈希验证的上游字体。每次桌面构建自动收集受支持的语言目录和 QML/C++ 固定文字，在 `<构建目录>/generated/fonts/` 生成字体子集。增加文字不需要提交字体二进制。准备完成后可以离线构建，源缓存缺失或损坏时明确失败。直接使用 CMake 时，通过 `Python3_EXECUTABLE` 选择同一工具环境。
 
 仅进行 HTML 预览、离线导出、导入现有源字体和字体检查时，参阅[共享字体指南](../../../design/assets/fonts/README.md)。打包检查对应产品构建的字体清单，不重新生成字体。固定界面文案和用户数据系统字体的既有分工保持不变。
 
@@ -224,7 +224,7 @@ python scripts/desktop.py verify --kind msix
 示例使用默认的 `--msix-channel sideload`，仅登记 Windows 11 传统菜单。商店上传时使用 `package --kind msix --msix-channel store` 及 Partner Center 中的准确身份，同时声明现代、传统菜单；现代入口在包实际获得 Store 系统签名前保持隐藏。渠道标记在打包时加入，无须因此重编已审计运行目录；两种输出须使用不同目录，参见[菜单渠道策略](shell-actions.md#windows-package-boundary)。许可、真实安装、文件关联、卸载、商店签名及目标系统实际验收独立于打包成功。
 
 
-MSIX 清单显式声明 `en-US` 和 `zh-CN`，与应用内置的英文、简体中文目录对应，回执同时记录并校验语言列表。Qt 自有翻译资源不会由本项目的 MakeAppx 流程自动转换为包语言声明。Partner Center 的“软件包中支持的语言”以已上传包为准，修正源码后须重新构建并替换草稿中的包才会更新；“其他 Store 一览语言”可独立配置，不能代替包清单声明。参见 [Microsoft 清单语言说明](https://learn.microsoft.com/windows/apps/design/globalizing/manage-language-and-region)。
+MSIX 清单声明共享语言清单中的十种语言，与应用内置目录对应，回执同时记录并校验语言列表。Qt 自有翻译资源不会由本项目的 MakeAppx 流程自动转换为包语言声明。Partner Center 的“软件包中支持的语言”以已上传包为准，修正源码后须重新构建并替换草稿中的包才会更新；“其他 Store 一览语言”可独立配置，不能代替包清单声明。参见 [Microsoft 清单语言说明](https://learn.microsoft.com/windows/apps/design/globalizing/manage-language-and-region)。
 
 
 ## 证据与复验

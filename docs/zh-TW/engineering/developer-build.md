@@ -2,7 +2,7 @@
 
 # 開發構建與平臺驗證
 
-[English](../../engineering/developer-build.md) | [简体中文](../../zh-CN/engineering/developer-build.md) | 繁體中文
+[English](../../engineering/developer-build.md) | [简体中文](../../zh-CN/engineering/developer-build.md) | 繁體中文 | [日本語](../../ja-JP/engineering/developer-build.md)
 
 本文是三平臺環境準備、構建、測試、打包和驗證的統一入口。共用編排由 [scripts/desktop.py](../../../scripts/desktop.py) 實現；平臺文件僅補充部署佈局、工具行為和系統限制，不再另維護一套日常命令。
 
@@ -159,7 +159,7 @@ test 僅對子程序啟用 offscreen／software，不汙染後續命令的桌面
 
 ## 介面字型生成
 
-`prepare` 在共享工具環境安裝固定版本的 FontTools/Brotli，並快取經過雜湊驗證的上游字型。每次桌面構建自動收集當前雙語文案和 QML/C++ 固定文字，在 `<构建目录>/generated/fonts/` 生成共享子集。增加文字不需要提交字型二進位制。準備完成後可以離線構建，源快取缺失或損壞時明確失敗。直接使用 CMake 時，透過 `Python3_EXECUTABLE` 選擇同一工具環境。
+`prepare` 在共享工具環境安裝固定版本的 FontTools/Brotli，並快取經過雜湊驗證的上游字型。每次桌面構建自動收集支援的語言目錄和 QML/C++ 固定文字，在 `<构建目录>/generated/fonts/` 生成字型子集。增加文字不需要提交字型二進位制。準備完成後可以離線構建，源快取缺失或損壞時明確失敗。直接使用 CMake 時，透過 `Python3_EXECUTABLE` 選擇同一工具環境。
 
 僅進行 HTML 預覽、離線匯出、匯入現有源字型和字型檢查時，參閱[共享字型指南](../../../design/assets/fonts/README.md)。打包檢查對應產品構建的字型清單，不重新生成字型。固定介面文案和使用者資料系統字型的既有分工保持不變。
 
@@ -244,7 +244,7 @@ python scripts/desktop.py verify --kind msix
 示例使用預設的 `--msix-channel sideload`，僅登記 Windows 11 傳統選單。商店上傳時使用 `package --kind msix --msix-channel store` 及 Partner Center 中的準確身份，同時宣告現代、傳統選單；現代入口在包實際獲得 Store 系統簽名前保持隱藏。渠道標記在打包時加入，無須因此重編已審計執行目錄；兩種輸出須使用不同目錄，參見[選單渠道策略](shell-actions.md#windows-package-boundary)。許可、真實安裝、檔案關聯、解除安裝、商店簽名及目標系統實際驗收獨立於打包成功。
 
 
-MSIX 清單顯式宣告 `en-US` 和 `zh-CN`，與應用內建的英文、簡體中文目錄對應，回執同時記錄並校驗語言列表。Qt 自有翻譯資源不會由本專案的 MakeAppx 流程自動轉換為包語言宣告。Partner Center 的“軟體包中支援的語言”以已上傳包為準，修正原始碼後須重新構建並替換草稿中的包才會更新；“其他 Store 一覽語言”可獨立配置，不能代替包清單宣告。參見 [Microsoft 清單語言說明](https://learn.microsoft.com/windows/apps/design/globalizing/manage-language-and-region)。
+MSIX 清單宣告共用語言清單中的十種語言，與應用內建目錄對應，回執同時記錄並校驗語言列表。Qt 自有翻譯資源不會由本專案的 MakeAppx 流程自動轉換為包語言宣告。Partner Center 的“軟體包中支援的語言”以已上傳包為準，修正原始碼後須重新構建並替換草稿中的包才會更新；“其他 Store 一覽語言”可獨立配置，不能代替包清單宣告。參見 [Microsoft 清單語言說明](https://learn.microsoft.com/windows/apps/design/globalizing/manage-language-and-region)。
 
 
 <a name="xdzip-证据与复验"></a>
