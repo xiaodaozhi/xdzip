@@ -37,6 +37,6 @@ Release-Manifeste, Prüfsummen, Inventare, SBOM und Lizenzunterlagen beschreiben
 
 ## Updates und künftige Distribution
 
-Die Auswahl und Prüfung von Updates erfolgt unabhängig von Archivaufgaben. Unterstützte Installationen folgen dem Updatevertrag für Vertrauensmetadaten, geprüfte Dateien, Installationsidentität und die Übergabe bei laufenden Aufgaben. Windows und Linux verwenden das jeweilige Hilfsprogramm, macOS verwendet Sparkle und die Store-Ausgabe wird vom Microsoft Store aktualisiert. Portable und Entwicklungskonfigurationen haben eigene Grenzen. [Softwareupdates](../../engineering/software-update.md)
+Die Auswahl und Prüfung von Updates erfolgt unabhängig von Archivaufgaben. Unterstützte Installationen folgen dem Updatevertrag für Vertrauensmetadaten, geprüfte Dateien, Installationsidentität und die Übergabe bei laufenden Aufgaben. Windows und Linux verwenden das jeweilige Hilfsprogramm, macOS verwendet Sparkle und die Store-Ausgabe wird vom Microsoft Store aktualisiert. Portable und Entwicklungskonfigurationen haben eigene Grenzen. [Softwareupdates](../engineering/software-update.md)
 
 Weitere Architekturen, Betriebssystem-Mindestversionen, Paketformate oder Stores erfordern eigene Build- und Abnahmenachweise. Frühere Distributionsentscheidungen und die Bedingungen für ihre Neubewertung stehen in den [Architekturentscheidungsprotokollen](architecture-decisions.md).

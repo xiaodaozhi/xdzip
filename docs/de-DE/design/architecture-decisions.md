@@ -130,7 +130,7 @@ Kosten: fortlaufende Wartung von Bereitstellung und Lizenzen. Statische Qt-Build
 
 **Status: am 19. Oktober 2026 mit ausdrücklicher Zustimmung des Projekteigentümers akzeptiert.**
 
-**Aktuelle Implementierung.** Für aktuelle Unterstützung und Updates gelten die [Unterstützungsrichtlinie](../engineering/support-policy.md) und der [Updatevertrag](../../engineering/software-update.md). Die Klausel zum manuellen Update beschreibt v0.1.
+**Aktuelle Implementierung.** Für aktuelle Unterstützung und Updates gelten die [Unterstützungsrichtlinie](../engineering/support-policy.md) und der [Updatevertrag](../engineering/software-update.md). Die Klausel zum manuellen Update beschreibt v0.1.
 
 Entscheidung: Zunächst macOS 14 und neuer auf Apple Silicon arm64, gewartete Versionen von Windows 11 x86_64 sowie Ubuntu 24.04 LTS x86_64 mit X11 und glibc 2.39 oder neuer unterstützen. Nur die neueste öffentliche Version priorisieren, Rückmeldungen nach Möglichkeit ohne feste Antwortzeit bearbeiten, für v0.1 manuelle Updates verwenden und Entwicklungsvorschauen experimentell halten. Siehe [Unterstützungsrichtlinie](../engineering/support-policy.md).
 

@@ -1,6 +1,6 @@
 # Contrato de atualização iniciada pelo usuário
 
-[English](../../engineering/software-update.md) | [简体中文](../../zh-CN/engineering/software-update.md) | [繁體中文](../../zh-TW/engineering/software-update.md) | [日本語](../../ja-JP/engineering/software-update.md) | [Français](../../fr-FR/engineering/software-update.md) | [Español](../../es-ES/engineering/software-update.md) | Português (Brasil)
+[English](../../engineering/software-update.md) | [简体中文](../../zh-CN/engineering/software-update.md) | [繁體中文](../../zh-TW/engineering/software-update.md) | [日本語](../../ja-JP/engineering/software-update.md) | [Français](../../fr-FR/engineering/software-update.md) | [Deutsch](../../de-DE/engineering/software-update.md) | [Español](../../es-ES/engineering/software-update.md) | Português (Brasil)
 
 Com identidade de pacote MSIX no Windows, a janela Sobre não exibe atualizações internas e o controlador recusa a verificação existente de atualização pelo GitHub. A Microsoft Store gerencia as atualizações da edição Store; pacotes instalados por carregamento lateral não têm garantia de atualização automática no aplicativo. Erros ao consultar a identidade são tratados como identidade de pacote para impedir o uso indevido das atualizações do instalador. Instalações comuns e outras plataformas permanecem inalteradas.
 
