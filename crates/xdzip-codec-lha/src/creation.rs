@@ -109,7 +109,7 @@ fn name_parts(name: &str, directory: bool) -> Result<(&[u8], Vec<u8>), EncodeErr
 
 fn seal_length(header: &mut Vec<u8>) -> Result<(), EncodeError> {
     // A zero low size byte would be read as an archive terminator.
-    if header.len() % 256 == 0 {
+    if header.len().is_multiple_of(256) {
         header.push(0);
     }
     let length = u16::try_from(header.len()).map_err(|_| EncodeError::Limit)?;

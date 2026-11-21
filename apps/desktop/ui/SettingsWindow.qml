@@ -568,16 +568,19 @@ OperationWindow {
     Component {
         id: aboutPage
         ColumnLayout {
+            id: aboutColumn
             objectName: "settingsPage-about"
             spacing: Theme.settingsPageSectionGap
+            readonly property real updateContentWidth: Math.max(1, pageScroll.availableWidth - Theme.settingsPageInset * 2)
             readonly property real stablePageHeight: aboutBeforeUpdate.implicitHeight +
                 (root.showAppUpdates ? updateReserveHeight + Theme.settingsPageSectionGap : 0) +
                 aboutAfterUpdate.implicitHeight + Theme.settingsPageSectionGap
-            readonly property real updateActionHeight: openUpdateSecondary.implicitHeight
+            readonly property real updateActionHeight: Math.max(checkUpdate.baseHeight * checkUpdate.density,
+                                                                  updateMeasurements.actionHeight)
             readonly property real updateReserveHeight: Math.max(
-                Math.max(updateMeasurements.statusHeight, updateActionSlot.implicitHeight)
+                Math.max(updateMeasurements.statusHeight, updateActionHeight)
                     + Theme.aboutUpdateProgressHeight + updateActionHeight + Theme.settingsPageSectionGap * 2,
-                Math.max(updateMeasurements.installStatusHeight, updateActionSlot.implicitHeight)
+                Math.max(updateMeasurements.installStatusHeight, updateActionHeight)
                     + updateMeasurements.noteHeight + updateActionHeight + Theme.settingsPageSectionGap * 2)
             Item {
                 id: updateMeasurements
@@ -599,6 +602,22 @@ OperationWindow {
                         if (item) height = Math.max(height, item.implicitHeight);
                     }
                     return height;
+                }
+                readonly property real actionHeight: {
+                    let height = revision * 0;
+                    for (let i = 0; i < actionMeasures.count; ++i) {
+                        const item = actionMeasures.itemAt(i);
+                        if (item) height = Math.max(height, item.implicitHeight);
+                    }
+                    return height + checkUpdate.verticalInset * 2 * checkUpdate.density;
+                }
+                function heightForAction(text) {
+                    let height = revision * 0;
+                    for (let i = 0; i < actionMeasures.count; ++i) {
+                        const item = actionMeasures.itemAt(i);
+                        if (item && item["text"] === text) height = Math.max(height, item.implicitHeight); // qmllint disable missing-property
+                    }
+                    return height + checkUpdate.verticalInset * 2 * checkUpdate.density;
                 }
                 readonly property real noteHeight: {
                     let height = revision * 0;
@@ -625,9 +644,11 @@ OperationWindow {
                             qsTrId("update.download"), qsTrId("update.release"), qsTrId("update.openDownload")]
                     delegate: Text {
                         required property string modelData
+                        width: Math.max(1, updateActionSlot.implicitWidth - checkUpdate.horizontalInset * 2 * checkUpdate.density)
                         text: modelData
                         textFormat: Text.PlainText
                         font.pixelSize: checkUpdate.labelPixelSize
+                        wrapMode: Text.Wrap
                     }
                 }
                 Repeater {
@@ -732,15 +753,22 @@ OperationWindow {
                             if (openUpdate.visible) return Math.max(checkWidth, openUpdate.implicitWidth);
                             return checkWidth;
                         }
-                        Layout.preferredWidth: activeWidth
+                        Layout.preferredWidth: Math.min(activeWidth, implicitWidth)
                         Layout.preferredHeight: implicitHeight
                         Layout.alignment: Qt.AlignTop
-                        implicitWidth: Math.max(updateMeasurements.actionWidth, checkWidth)
-                        implicitHeight: Math.max(checkUpdate.implicitHeight, cancelCheck.implicitHeight,
-                                                 cancelUpdate.implicitHeight, installUpdate.implicitHeight,
-                                                 recoveryUpdate.implicitHeight, openUpdate.implicitHeight)
+                        implicitWidth: Math.min(Math.max(updateMeasurements.actionWidth, checkWidth),
+                                                Math.max(1, aboutColumn.updateContentWidth / 2))
+                        implicitHeight: Math.max(checkUpdate.baseHeight * checkUpdate.density,
+                                                 updateMeasurements.heightForAction(checkUpdate.text),
+                                                 updateMeasurements.heightForAction(cancelCheck.text),
+                                                 updateMeasurements.heightForAction(
+                                                     installUpdate.visible ? installUpdate.text :
+                                                     cancelUpdate.visible ? cancelUpdate.text :
+                                                     recoveryUpdate.visible ? recoveryUpdate.text :
+                                                     openUpdate.visible ? openUpdate.text : ""))
                         OperationButton {
                             id: checkUpdate
+                            wrapLabel: true
                             objectName: "aboutCheckUpdate"
                             anchors.fill: parent
                             visible: !["checking", "available", "downloaded", "downloading", "verifying",
@@ -751,6 +779,7 @@ OperationWindow {
                         }
                         OperationButton {
                             id: cancelCheck
+                            wrapLabel: true
                             objectName: "aboutCancelCheck"
                             anchors.fill: parent
                             visible: root.updater && root.updateState === "checking"
@@ -759,6 +788,7 @@ OperationWindow {
                         }
                         OperationButton {
                             id: cancelUpdate
+                            wrapLabel: true
                             objectName: "aboutCancelUpdate"
                             anchors.fill: parent
                             visible: root.updater && root.updater.busy && !["checking", "installing"].includes(root.updateState)
@@ -767,6 +797,7 @@ OperationWindow {
                         }
                         OperationButton {
                             id: installUpdate
+                            wrapLabel: true
                             objectName: "aboutInstallUpdate"
                             anchors.fill: parent
                             visible: root.updater && (root.updateState === "available" ||
@@ -782,6 +813,7 @@ OperationWindow {
                         }
                         OperationButton {
                             id: recoveryUpdate
+                            wrapLabel: true
                             objectName: "aboutRecoveryUpdate"
                             anchors.fill: parent
                             visible: root.updater && root.updateState === "recovery_required"
@@ -790,6 +822,7 @@ OperationWindow {
                         }
                         OperationButton {
                             id: openUpdate
+                            wrapLabel: true
                             objectName: "aboutOpenDownload"
                             anchors.fill: parent
                             visible: root.updater && root.updateState === "downloaded" && root.updater.downloaded && !root.updater.canInstall
@@ -824,6 +857,8 @@ OperationWindow {
                     Item { Layout.fillWidth: true }
                     OperationButton {
                         id: openReleaseSecondary
+                        Layout.maximumWidth: Math.max(1, (aboutColumn.updateContentWidth - parent.spacing) / 2)
+                        wrapLabel: true
                         objectName: "aboutOpenReleaseSecondary"
                         visible: root.macosManualUpdate && root.updater.trusted
                         text: qsTrId("update.release")
@@ -831,6 +866,8 @@ OperationWindow {
                     }
                     OperationButton {
                         id: openUpdateSecondary
+                        Layout.maximumWidth: Math.max(1, (aboutColumn.updateContentWidth - parent.spacing) / 2)
+                        wrapLabel: true
                         objectName: "aboutOpenDownloadSecondary"
                         visible: root.updater && root.updater.downloaded &&
                                  !(root.updateState === "downloaded" && !root.updater.canInstall)

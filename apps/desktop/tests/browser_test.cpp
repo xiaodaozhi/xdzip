@@ -9171,7 +9171,8 @@ QtObject {
         auto *download = findVisual(settings->contentItem(), "aboutInstallUpdate");
         auto *cancelDownload = findVisual(settings->contentItem(), "aboutCancelUpdate");
         auto *progress = findVisual(settings->contentItem(), "aboutUpdateProgress");
-        QVERIFY(cancelCheck && download && cancelDownload && progress);
+        auto *updateStatus = findVisual(settings->contentItem(), "aboutUpdateStatus");
+        QVERIFY(cancelCheck && download && cancelDownload && progress && updateStatus);
         auto *scroll = findVisual(settings->contentItem(), "settingsScroll");
         auto *bar = findVisual(settings->contentItem(), "settingsVerticalScrollBar");
         auto *pageContent = findVisual(settings->contentItem(), "settingsPageContent");
@@ -9386,6 +9387,21 @@ QtObject {
                                  QStringLiteral("65535.65535.65535-alpha.65535"));
             service->setProperty("state", state);
             QTest::qWait(30);
+            QVERIFY2(updateStatus->width() >= pageContent->width() * .35,
+                     qPrintable(state + QStringLiteral(" update status is too narrow")));
+            for (const auto *name :
+                 {"aboutCheckUpdate", "aboutCancelCheck", "aboutInstallUpdate", "aboutCancelUpdate",
+                  "aboutRecoveryUpdate", "aboutOpenDownload", "aboutOpenReleaseSecondary",
+                  "aboutOpenDownloadSecondary"}) {
+                auto *button = findVisual(settings->contentItem(), QString::fromLatin1(name));
+                QVERIFY(button);
+                if (!button->isVisible())
+                    continue;
+                auto *label = button->property("contentItem").value<QQuickItem *>();
+                QVERIFY(label);
+                QTRY_VERIFY2(label->property("contentHeight").toReal() <= label->height() + .5,
+                             qPrintable(state + QStringLiteral(" clipped ") + name));
+            }
             QVERIFY2(flick->property("contentHeight").toReal() + .5 >=
                          pageContent->implicitHeight(),
                      qPrintable(state));

@@ -1407,7 +1407,36 @@ mod scratch_tests {
         space.dir.take();
         drop(space);
         ScratchSpace::reap(&parent, minimum_age).unwrap();
-        assert!(parent.open_dir_nofollow(&name).is_err());
+        if let Ok(remaining) = parent.open_dir_nofollow(&name) {
+            let mut options = private_options();
+            options.read(true).write(true);
+            let lease = remaining.open_with("lease", &options).map(|f| f.into_std());
+            let details = match lease {
+                Ok(mut lease) => {
+                    let age = lease
+                        .metadata()
+                        .and_then(|m| m.modified())
+                        .ok()
+                        .and_then(|t| std::time::SystemTime::now().duration_since(t).ok());
+                    let private = private::check_confidential(&lease, false).is_ok();
+                    let mut marker = [0; 16];
+                    let marker_matches = lease.read_exact(&mut marker).is_ok()
+                        && name.strip_prefix("xdzip-index-").is_some_and(|hex| {
+                            marker
+                                .iter()
+                                .map(|b| format!("{b:02x}"))
+                                .collect::<String>()
+                                == hex
+                        });
+                    let lock = lease.try_lock();
+                    format!(
+                        "lease age={age:?}, private={private}, marker_matches={marker_matches}, lock={lock:?}"
+                    )
+                }
+                Err(error) => format!("lease open failed: {error}"),
+            };
+            panic!("expired scratch directory was not reclaimed: {details}");
+        }
         let mut space = ScratchSpace::new_in(parent.try_clone().unwrap()).unwrap();
         let name = space.name.clone();
         let dir = space.dir.as_ref().unwrap();

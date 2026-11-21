@@ -230,10 +230,10 @@ impl Edit {
         if let Some(destination) = &self.destination {
             // An implicit destination directory is a conflict too. A spelling-only
             // rename may reuse the canonical key belonging to its own source root.
-            if let Some((original, _, _)) = planner.names.get(&key(destination)) {
-                if !self.selection.roots.contains_key(original) {
-                    return Err("entry_name_exists");
-                }
+            if let Some((original, _, _)) = planner.names.get(&key(destination))
+                && !self.selection.roots.contains_key(original)
+            {
+                return Err("entry_name_exists");
             }
         }
         for (index, row) in planner.rows.iter().enumerate() {
