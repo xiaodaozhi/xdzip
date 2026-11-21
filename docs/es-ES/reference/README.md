@@ -88,7 +88,7 @@ Empieza por la [arquitectura del sistema](../design/system-architecture.md) para
 
 - [Vistas Qt Quick y responsabilidades de los controladores](../design/qt-quick-ui.md)
 - [Especificaciones visuales de escritorio](../visual/README.md)
-- [Norma de diseño de interfaz](../../visual/design-standard.md)
+- [Norma de diseño de interfaz](../visual/design-standard.md)
 - [Proceso de diseño y corrección de interfaz](../visual/design-workflow.md)
 - [Iconos de asociaciones de archivos](../visual/file-association-icons.md)
 - [Revisión de fidelidad visual HTML](../visual/html-fidelity.md)

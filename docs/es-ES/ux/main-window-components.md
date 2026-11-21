@@ -4,7 +4,7 @@
 
 Los controles de la ventana principal proporcionan aspecto y comportamiento, con estados explícitos normal, cursor encima, pulsado, foco de teclado, desactivado, seleccionado, ocupado y error. HTML usa archivos de ejemplo para verificar la interacción; Qt habilita acciones según las capacidades reales de exploración, creación, extracción, [comprobación de integridad](../engineering/archive-checking.md) y [vista previa automática del contenido](../engineering/content-preview.md). Los ejemplos HTML no representan resultados reales en segundo plano.
 
-Los nombres de archivos, directorios y archivos comprimidos, así como las rutas, usan preferentemente la fuente predeterminada del sistema al inicio, con alternativas de plataforma para glifos ausentes. El texto fijo de la interfaz sigue usando el subconjunto incluido. El árbol de directorios y las vistas previas de arrastre se miden con sus respectivas fuentes de texto; consulte el [estándar visual](../../visual/design-standard.md#界面字体与用户数据).
+Los nombres de archivos, directorios y archivos comprimidos, así como las rutas, usan preferentemente la fuente predeterminada del sistema al inicio, con alternativas de plataforma para glifos ausentes. El texto fijo de la interfaz sigue usando el subconjunto incluido. El árbol de directorios y las vistas previas de arrastre se miden con sus respectivas fuentes de texto; consulte el [estándar visual](../visual/design-standard.md#界面字体与用户数据).
 
 ## Funciones y componentes
 

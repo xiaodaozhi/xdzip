@@ -4,7 +4,7 @@
 
 [English](../../visual/design-workflow.md) | [简体中文](../../zh-CN/visual/design-workflow.md) | [繁體中文](../../zh-TW/visual/design-workflow.md) | [日本語](../../ja-JP/visual/design-workflow.md) | [한국어](../../ko-KR/visual/design-workflow.md) | [Français](../../fr-FR/visual/design-workflow.md) | [Deutsch](../../de-DE/visual/design-workflow.md) | Español | [Português (Brasil)](../../pt-BR/visual/design-workflow.md) | [Русский](../../ru-RU/visual/design-workflow.md)
 
-Realiza este proceso antes de crear la interfaz, no como documentación posterior a la implementación. La referencia es el [estándar de diseño de interfaz](../../visual/design-standard.md).
+Realiza este proceso antes de crear la interfaz, no como documentación posterior a la implementación. La referencia es el [estándar de diseño de interfaz](design-standard.md).
 
 1. **Definir objetivos y entorno.** Enumera funciones, datos reales y capacidades ausentes. Especifica plataformas y rangos de dimensiones para ventanas lógicas, tamaños de letra de accesibilidad, menús y ventanas independientes. Registra escala del sistema, escala de revisión y DPR; con prototipos HTML registra también el zoom de página del navegador.
 2. **Definir primero los parámetros.** Usa el JSON de especificación para dimensiones, tipografía, espacios, relleno, alineación y estados. Registra el sistema de coordenadas y la densidad propia de cada componente. La ventana principal y sus menús tienen medidas independientes, y cada ventana independiente utiliza las expresiones del registro de ventanas. Comprueba por separado la escala del cuerpo de operaciones y las medidas del pie compartido. Convierte píxeles físicos con DPR solo al leer la evidencia de medición.

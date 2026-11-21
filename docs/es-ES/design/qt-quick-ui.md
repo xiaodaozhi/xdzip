@@ -34,7 +34,7 @@ Soltar un archivo puede abrir un archivo comprimido o añadir entradas para su c
 
 ## Controles compartidos y límites nativos
 
-Las pantallas de operación reutilizan `OperationButton`, `OperationFooterButton`, `OperationFrame`, `OperationSelect` y `OperationSegmentedGroup`. Los componentes compartidos definen las medidas y la interacción. Los controles comunes de selección dirigen ratón, teclado y accesibilidad al mismo modelo de estado. El texto y los datos de archivo siguen las reglas de tipografía y localización de la [norma de diseño](../../visual/design-standard.md). Los nombres de archivo comprimido se conservan como datos y se muestran de forma segura.
+Las pantallas de operación reutilizan `OperationButton`, `OperationFooterButton`, `OperationFrame`, `OperationSelect` y `OperationSegmentedGroup`. Los componentes compartidos definen las medidas y la interacción. Los controles comunes de selección dirigen ratón, teclado y accesibilidad al mismo modelo de estado. El texto y los datos de archivo siguen las reglas de tipografía y localización de la [norma de diseño](../visual/design-standard.md). Los nombres de archivo comprimido se conservan como datos y se muestran de forma segura.
 
 Las ventanas de operación independientes siguen el registro de ventanas y las reglas propias de modalidad y cierre. macOS usa controles nativos de la barra de título. Windows y Linux usan adaptadores de sistema. El [contrato de ventanas de plataforma](../ux/platform-windows.md) define la aceptación de ventanas reales y el [contrato de integración de escritorio](../ux/desktop-integration.md) explica el área de notificación y la activación.
 
