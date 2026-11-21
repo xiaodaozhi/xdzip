@@ -26,6 +26,8 @@ python scripts/package-windows-store-materials.py --from-archive "D:/Store-backu
 
 The command prints the new output directory under `build/store-listing/`. Override it with `--output` or add `--4k` for 3840 × 2160 artwork. Review the exported images and use each language's 1920 × 1080 files in `promotional/` for the Store desktop screenshot field. Keep the directory as individual files after submitting new artwork.
 
+Native marketing captures on all three platforms follow the [150% scale standard](../../engineering/marketing-screenshot-scale.md).
+
 ## Capture languages from a verified MSIX
 
 When screenshots need refreshing, use this command on a Windows desktop. It validates the Store package and its receipts, captures all four scenes in all ten product languages, and exports the same directory layout.

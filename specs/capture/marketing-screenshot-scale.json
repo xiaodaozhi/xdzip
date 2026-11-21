@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "scope": "Native promotional and Store application screenshots for Windows, macOS and Linux",
+  "physical_pixels_per_qt_logical_pixel": 1.5,
+  "reference": {
+    "file": "docs/images/main-window.png",
+    "logical_main_client": [1024, 622],
+    "native_main_client": [1536, 933],
+    "published_image": [1536, 932],
+    "processing": "The published Windows reference removes one top pixel row; the native client capture is 1536 by 933 at 144 DPI."
+  },
+  "constraints": [
+    "Measure client pixels against the actual Qt logical client dimensions, not native frame or shadow.",
+    "Use native capture at the target scale; do not resize the screenshot to simulate the scale.",
+    "Platform display settings and Qt scale factors are capture environment settings, not component dimensions.",
+    "Record the actual measured scale and dimensions and do not claim a pass without evidence."
+  ]
+}

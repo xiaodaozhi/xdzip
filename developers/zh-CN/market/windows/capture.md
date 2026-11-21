@@ -26,6 +26,8 @@ python scripts/package-windows-store-materials.py --from-archive "D:/Store-backu
 
 命令会打印 `build/store-listing/` 下的新目录。用 `--output` 可指定目录，加 `--4k` 可另得 3840 × 2160 成品。审阅导出的图片，商店桌面截图栏使用对应语言 `promotional/` 下的 1920 × 1080 文件。提交新图后，把整个目录作为独立文件归档。
 
+三平台的原生宣传截图均遵循 [150% 缩放规范](../../engineering/marketing-screenshot-scale.md)。
+
 ## 用已校验 MSIX 截取指定语言
 
 需要刷新截图时，在 Windows 桌面执行以下命令。它核验商店程序包和回执，默认采集十种产品语言的四个场景，并导出相同结构的目录。

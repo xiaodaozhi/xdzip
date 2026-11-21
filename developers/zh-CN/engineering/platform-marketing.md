@@ -21,6 +21,8 @@ node scripts/build-linux-store-assets.cjs --output build/linux-marketing
 
 省略 `--output` 时，结果保存到 `build/<平台>-store-assets/` 下的时间戳目录。增加 `--4k` 可额外生成 3840 × 2160 底图、插图和融合图。素材包含文案、带截图框的底图、功能插图、图标、头像、海报、方图和横幅。不提供截图时，不生成截图和融合图。
 
+三平台统一采用 [150% 原生截图比例](marketing-screenshot-scale.md)，记录前须测量实际客户区几何。
+
 ## 截取真实应用窗口
 
 在目标操作系统上使用实际的 xdzip 构建。记录器默认采集十种语言，可用 `--languages ja-JP fr-FR` 仅选择所需语言。逐个准备对应语言和场景，并使用不含敏感信息的演示数据。检查窗口内容正确且没有遮挡。macOS 的交互截图使用 `screencapture` 并提示选择窗口。Linux 使用 `gnome-screenshot`，缺少时先安装，在倒计时内激活目标窗口。场景准备和选窗由操作人员完成，此流程不会在其他平台运行 Windows 界面自动化。

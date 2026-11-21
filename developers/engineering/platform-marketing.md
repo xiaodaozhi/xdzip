@@ -21,6 +21,8 @@ node scripts/build-linux-store-assets.cjs --output build/linux-marketing
 
 Omit `--output` for a timestamped directory under `build/<platform>-store-assets/`. Add `--4k` for additional 3840 × 2160 backgrounds, illustrations and composites. Artwork includes text, backgrounds with screenshot frames, feature illustrations, icons, avatars, posters, square artwork and heroes. A background-only export contains no screenshots or composites.
 
+All three platforms use the [150% native screenshot scale](marketing-screenshot-scale.md); measure the actual client geometry before recording.
+
 ## Capture real application windows
 
 Capture on the target OS using the actual xdzip build. By default the recorder requests all ten languages. Use `--languages ja-JP fr-FR` to select only the languages needed. Prepare each scene and language in the application, using non-sensitive demonstration data. Review each window for correct content and unobstructed presentation. On macOS, interactive capture uses `screencapture` and asks you to select a window. On Linux it uses `gnome-screenshot`; install it if necessary and activate the desired window during the countdown. Scene preparation and window selection are manual; this workflow does not run the Windows UI automation on other platforms.
