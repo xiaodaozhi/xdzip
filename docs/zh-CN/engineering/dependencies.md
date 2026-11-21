@@ -1,6 +1,6 @@
 # 依赖与格式后端准入
 
-[English](../../engineering/dependencies.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/dependencies.md) | [日本語](../../ja-JP/engineering/dependencies.md)
+[English](../../engineering/dependencies.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/dependencies.md) | [日本語](../../ja-JP/engineering/dependencies.md) | [Español](../../es-ES/engineering/dependencies.md)
 
 ## 外部 SDK 试验
 

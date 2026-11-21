@@ -125,7 +125,7 @@ Empieza por la [arquitectura del sistema](../design/system-architecture.md) para
 - [Correspondencia entre Qt SDK y código fuente](../engineering/qt-sdk-correspondence.md)
 - [Licencias de herramientas y entorno de ejecución de Windows](../engineering/windows-licensing.md)
 - [Decisión de licencia y materiales de terceros](../engineering/licensing.md)
-- [Admisión de dependencias y motores de formato](../../engineering/dependencies.md)
+- [Admisión de dependencias y motores de formato](../engineering/dependencies.md)
 - [Código fuente correspondiente y recursos de recompilación](../engineering/source-delivery.md)
 - [Reconstruir datos ICU 73.2 a partir de CLDR](../engineering/icu-cldr-rebuild.md)
 
