@@ -31,7 +31,7 @@ CMake는 Qt 데스크톱 앱, C++ 어댑터와 네이티브 보조 프로그램�
 
 일반 [CI 워크플로](https://github.com/xiaodaozhi/xdzip/blob/main/.github/workflows/docs.yml)는 간단한 검사를 실행합니다. Foundation과 Qt 네이티브 작업은 각각 별도의 수동 워크플로에서 실행합니다. 일반 Apple Silicon CI는 빌드, 테스트 및 시작 검사를 수행하며 다운로드용 앱은 배포하지 않습니다. 전용 릴리스 워크플로에는 승인된 배포, 서명, 패키징 및 게시 단계가 있습니다. [릴리스 절차](../engineering/release-protocol.md)와 [CI 정책](../../../developers/engineering/ci-policy.md)은 통과 조건과 증빙을 정의합니다.
 
-릴리스 매니페스트, 체크섬, 구성 요소 목록, SBOM과 라이선스 자료는 제공하는 결과물을 설명합니다. 릴리스 워크플로는 프로젝트 소스 ZIP을 생성하거나 업로드하지 않습니다. GitHub의 태그 스냅샷은 별도 방식으로 제공됩니다. 실제로 제공하는 구성 요소와 [라이선스 기록](../engineering/licensing.md), [소스 제공 정책](../../engineering/source-delivery.md)에 따라 의무를 확인합니다.
+릴리스 매니페스트, 체크섬, 구성 요소 목록, SBOM과 라이선스 자료는 제공하는 결과물을 설명합니다. 릴리스 워크플로는 프로젝트 소스 ZIP을 생성하거나 업로드하지 않습니다. GitHub의 태그 스냅샷은 별도 방식으로 제공됩니다. 실제로 제공하는 구성 요소와 [라이선스 기록](../engineering/licensing.md), [소스 제공 정책](../engineering/source-delivery.md)에 따라 의무를 확인합니다.
 
 <a name="xdzip-update-and-future-distribution"></a>
 

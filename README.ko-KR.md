@@ -177,4 +177,4 @@ Windows에서는 MSVC x64 개발 환경을, macOS에서는 네이티브 Apple Si
 
 ## 라이선스
 
-프로젝트 자체 콘텐츠에는 [Apache License 2.0](LICENSE)이 적용됩니다. [COPYRIGHT](COPYRIGHT)도 참조하세요. Qt, 코덱, 글꼴 및 기타 종속성에는 각각의 라이선스가 적용됩니다. 출처와 고지는 [라이선스 문서](docs/ko-KR/engineering/licensing.md)를 참조하세요. 공식 릴리스는 해당 소스 코드의 별도 압축 파일을 제공하지 않습니다. [소스 코드 제공](docs/engineering/source-delivery.md)을 참조하세요. 소스 제공, 다시 링크하기 및 고지에 관한 적용 의무는 그대로 적용됩니다. 각 릴리스 후보는 개별 검토가 필요합니다. 이전 기록은 [#4](https://github.com/xiaodaozhi/xdzip/issues/4)와 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)을 참조하세요.
+프로젝트 자체 콘텐츠에는 [Apache License 2.0](LICENSE)이 적용됩니다. [COPYRIGHT](COPYRIGHT)도 참조하세요. Qt, 코덱, 글꼴 및 기타 종속성에는 각각의 라이선스가 적용됩니다. 출처와 고지는 [라이선스 문서](docs/ko-KR/engineering/licensing.md)를 참조하세요. 공식 릴리스는 해당 소스 코드의 별도 압축 파일을 제공하지 않습니다. [소스 코드 제공](docs/ko-KR/engineering/source-delivery.md)을 참조하세요. 소스 제공, 다시 링크하기 및 고지에 관한 적용 의무는 그대로 적용됩니다. 각 릴리스 후보는 개별 검토가 필요합니다. 이전 기록은 [#4](https://github.com/xiaodaozhi/xdzip/issues/4)와 [#53](https://github.com/xiaodaozhi/xdzip/issues/53)을 참조하세요.
