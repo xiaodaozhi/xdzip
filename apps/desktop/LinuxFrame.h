@@ -40,3 +40,33 @@ class LinuxFrame : public QObject {
     int m_nativeInset = 0;
     WId m_id = 0;
 };
+
+// Typed logical insets shared by the window and its transient controls.
+class WindowInsets : public QObject {
+    Q_OBJECT
+    QML_ELEMENT
+    QML_UNCREATABLE("WindowInsets is attached to a window")
+    QML_ATTACHED(WindowInsets)
+    Q_PROPERTY(int frameInset READ frameInset WRITE setFrameInset NOTIFY frameInsetChanged)
+
+  public:
+    using QObject::QObject;
+    static WindowInsets *qmlAttachedProperties(QObject *object) {
+        return new WindowInsets(object);
+    }
+    int frameInset() const {
+        return m_frameInset;
+    }
+    void setFrameInset(int inset) {
+        if (m_frameInset == inset)
+            return;
+        m_frameInset = inset;
+        emit frameInsetChanged();
+    }
+
+  signals:
+    void frameInsetChanged();
+
+  private:
+    int m_frameInset = 0;
+};

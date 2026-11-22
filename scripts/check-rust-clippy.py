@@ -1,16 +1,20 @@
-"""Run the release Clippy check when the CI comparison includes Rust inputs."""
+"""Run Rust lint and dependency policy checks when CI includes Rust inputs."""
 
 import os
 from pathlib import Path
 import re
 import subprocess
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 STRICT_CLIPPY = ['cargo', 'clippy', '--workspace', '--all-targets', '--locked', '--', '-D', 'warnings']
 RUST_INPUTS = [
     '*.rs', 'Cargo.toml', 'Cargo.lock', ':(glob)**/Cargo.toml', ':(glob)**/Cargo.lock',
     'rust-toolchain.toml', '.cargo', 'crates', 'third_party/brotli-rfc7932/dictionary.bin',
+    'VERSION.json', 'resources/update-trust.json', 'resources/ui-languages.json',
+    'resources/i18n', 'scripts/build_identity.py',
     '.github/workflows/docs.yml', 'scripts/check-rust-clippy.py',
+    'scripts/check-rust-codec-policy.py', 'scripts/rust-codec-policy.json',
 ]
 
 
@@ -35,7 +39,10 @@ def should_run(root, event, before):
 
 def main():
     if should_run(ROOT, os.environ.get('XDZIP_EVENT_NAME', ''), os.environ.get('XDZIP_PUSH_BEFORE', '')):
-        return subprocess.run(STRICT_CLIPPY, cwd=ROOT).returncode
+        result = subprocess.run(STRICT_CLIPPY, cwd=ROOT)
+        if result.returncode:
+            return result.returncode
+        return subprocess.run([sys.executable, 'scripts/check-rust-codec-policy.py'], cwd=ROOT).returncode
     print('No Rust inputs changed')
     return 0
 

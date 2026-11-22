@@ -1,17 +1,5 @@
 //! Generate the same VERSION.json and Git identity used by the desktop.
-use std::{env, fs, path::PathBuf, process::Command};
-
-fn git(root: &std::path::Path, args: &[&str]) -> Option<String> {
-    let output = Command::new("git")
-        .args(args)
-        .current_dir(root)
-        .output()
-        .ok()?;
-    output
-        .status
-        .success()
-        .then(|| String::from_utf8_lossy(&output.stdout).trim().to_owned())
-}
+use std::{env, fs, path::PathBuf};
 
 fn write_sfx_messages(root: &std::path::Path) {
     let resources = root.join("resources");
@@ -68,26 +56,23 @@ fn main() {
             value["prerelease_number"].as_u64().unwrap_or(build)
         )
     };
-    let is_root = git(&root, &["rev-parse", "--show-toplevel"])
-        .is_some_and(|p| fs::canonicalize(p).ok() == fs::canonicalize(&root).ok());
-    let revision = if is_root {
-        git(&root, &["rev-parse", "--short=12", "HEAD"]).unwrap_or("unknown".into())
-    } else {
-        "unknown".into()
-    };
-    let dirty = is_root
-        && git(
-            &root,
-            &["status", "--porcelain", "--untracked-files=normal"],
-        )
-        .is_some_and(|s| !s.is_empty());
+    // Managed builds supply evaluated provenance on every invocation. Cargo
+    // fingerprints the value, so a source edit with the same identity is fresh.
+    let identity: serde_json::Value = env::var("XDZIP_BUILD_SOURCE")
+        .ok()
+        .map(|value| serde_json::from_str(&value).expect("invalid build identity"))
+        .unwrap_or_default();
+    let revision = identity["revision"].as_str().unwrap_or("unknown");
+    let dirty = identity["dirty"].as_bool().unwrap_or(false);
+    let configuration =
+        env::var("XDZIP_CLI_CONFIGURATION").unwrap_or_else(|_| env::var("PROFILE").unwrap());
     for (name, value) in [
         ("XDZIP_DISPLAY_VERSION", version),
         ("XDZIP_CHANNEL", channel.to_owned()),
         ("XDZIP_BUILD", build.to_string()),
-        ("XDZIP_REVISION", revision),
+        ("XDZIP_REVISION", revision.to_owned()),
         ("XDZIP_DIRTY", dirty.to_string()),
-        ("XDZIP_CONFIGURATION", env::var("PROFILE").unwrap()),
+        ("XDZIP_CONFIGURATION", configuration),
         (
             "XDZIP_DISTRIBUTION",
             if env::var("XDZIP_CLI_RELEASE_BUILD").as_deref() == Ok("1") {
@@ -101,22 +86,17 @@ fn main() {
         println!("cargo:rustc-env={name}={value}");
     }
     println!("cargo:rerun-if-env-changed=XDZIP_CLI_RELEASE_BUILD");
-    // Re-evaluate tracked/untracked state like the desktop's always-run identity target.
+    println!("cargo:rerun-if-env-changed=XDZIP_BUILD_SOURCE");
+    println!("cargo:rerun-if-env-changed=XDZIP_CLI_CONFIGURATION");
     println!(
         "cargo:rerun-if-changed={}",
         root.join("VERSION.json").display()
     );
-    if let Some(files) = git(
-        &root,
-        &["ls-files", "--cached", "--others", "--exclude-standard"],
-    ) {
-        for path in files.lines() {
-            println!("cargo:rerun-if-changed={}", root.join(path).display());
-        }
-    }
-    if let Some(git_dir) = git(&root, &["rev-parse", "--absolute-git-dir"]) {
-        println!("cargo:rerun-if-changed={git_dir}/HEAD");
-        println!("cargo:rerun-if-changed={git_dir}/index");
-        println!("cargo:rerun-if-changed={git_dir}/refs");
+    if env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows") {
+        println!("cargo:rerun-if-changed=sfx.manifest");
+        println!(
+            "cargo:rerun-if-changed={}",
+            root.join("resources/ui-languages.json").display()
+        );
     }
 }

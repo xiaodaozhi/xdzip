@@ -29,6 +29,7 @@ execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${XDZIP_LANGUAGE_GENERATOR}"
 include_directories("${XDZIP_BUILD_INFO_DIR}")
 add_custom_target(xdzip-build-info
     COMMAND "${CMAKE_COMMAND}" "-DXDZIP_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+        "-DXDZIP_IDENTITY_PYTHON=${Python3_EXECUTABLE}"
         "-DXDZIP_OUTPUT_DIR=${XDZIP_BUILD_INFO_DIR}" "-DXDZIP_DISPLAY_VERSION=${XDZIP_DISPLAY_VERSION}"
         "-DXDZIP_BUILD_NUMBER=${XDZIP_BUILD_NUMBER}" "-DXDZIP_CHANNEL=${XDZIP_CHANNEL}"
         "-DXDZIP_CONFIGURATION=${CMAKE_BUILD_TYPE}"
@@ -198,14 +199,12 @@ if(WIN32)
 endif()
 # Keep the internal target stable while using the product name on every platform.
 set_target_properties(xdzip-browser PROPERTIES OUTPUT_NAME xdzip)
-set(XDZIP_CLI_PROFILE debug)
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(XDZIP_CLI_PROFILE release)
-endif()
+xdzip_rust_profile(XDZIP_CLI_PROFILE)
 set(XDZIP_CLI_BUILD "${CMAKE_BINARY_DIR}/cli")
 set(XDZIP_CLI_BUNDLE "${CMAKE_CURRENT_BINARY_DIR}/cli")
 if(APPLE)
-    set(XDZIP_CLI_BUNDLE "${CMAKE_CURRENT_BINARY_DIR}/xdzip.app/Contents/Helpers/cli")
+    set(XDZIP_APP_BUNDLE "${CMAKE_CURRENT_BINARY_DIR}/xdzip.app/Contents")
+    set(XDZIP_CLI_BUNDLE "${XDZIP_APP_BUNDLE}/Helpers/cli")
 endif()
 add_custom_target(xdzip-command
     COMMAND Python3::Interpreter "${PROJECT_SOURCE_DIR}/scripts/cli.py" build
@@ -367,7 +366,9 @@ if(BUILD_TESTING)
     endif()
     add_test(NAME qt_association_descriptions COMMAND xdzip-association-description-tests
         -o "${CMAKE_CURRENT_BINARY_DIR}/association-descriptions-tests.log,txt" -o -,txt)
-    add_executable(xdzip-browser-tests tests/browser_test.cpp tests/test_environment.cpp tests/test_environment.h)
+    add_executable(xdzip-browser-tests tests/browser_test.cpp
+        tests/BrowserRequestTests.cpp tests/BrowserRequestTests.h
+        tests/test_environment.cpp tests/test_environment.h)
     target_compile_definitions(xdzip-browser-tests PRIVATE XDZIP_TEST_TEMP_ROOT="${PROJECT_SOURCE_DIR}/build/test-tmp")
     if(APPLE)
         target_sources(xdzip-browser-tests PRIVATE tests/native_dialog_mac.mm)
@@ -514,36 +515,42 @@ elseif(APPLE)
     target_compile_options(xdzip-finder-sync PRIVATE -fapplication-extension)
     target_link_options(xdzip-finder-sync PRIVATE -e _NSExtensionMain)
     target_link_libraries(xdzip-finder-sync PRIVATE "-framework FinderSync")
-    add_dependencies(xdzip-browser xdzip-finder-sync xdzip-shell-relay)
-    set_property(TARGET xdzip-browser APPEND PROPERTY LINK_DEPENDS
-        "${CMAKE_CURRENT_BINARY_DIR}/Finder-Info.plist"
-        "${CMAKE_CURRENT_BINARY_DIR}/Relay-Info.plist"
-        "${CMAKE_CURRENT_SOURCE_DIR}/shell/Finder.entitlements")
-    set(finder_bundle "$<TARGET_BUNDLE_DIR:xdzip-browser>/Contents/PlugIns/xdzip-finder-sync.appex/Contents")
-    set(relay_bundle "$<TARGET_BUNDLE_DIR:xdzip-browser>/Contents/Helpers/xdzip-shell-relay.app/Contents")
-    add_custom_command(TARGET xdzip-browser POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E make_directory "${finder_bundle}/MacOS" "${finder_bundle}/Resources" "${relay_bundle}/MacOS"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:xdzip-finder-sync>" "${finder_bundle}/MacOS/xdzip-finder-sync"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:xdzip-shell-relay>" "${relay_bundle}/MacOS/xdzip-shell-relay"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_CURRENT_BINARY_DIR}/Finder-Info.plist" "${finder_bundle}/Info.plist"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_CURRENT_BINARY_DIR}/Relay-Info.plist" "${relay_bundle}/Info.plist"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/shell/Finder.entitlements" "${finder_bundle}/Resources/Finder.entitlements" VERBATIM)
+    set(finder_bundle "${XDZIP_APP_BUNDLE}/PlugIns/xdzip-finder-sync.appex/Contents")
+    set(relay_bundle "${XDZIP_APP_BUNDLE}/Helpers/xdzip-shell-relay.app/Contents")
+    xdzip_stage_file("${finder_bundle}/MacOS/xdzip-finder-sync" "$<TARGET_FILE:xdzip-finder-sync>")
+    xdzip_stage_file("${relay_bundle}/MacOS/xdzip-shell-relay" "$<TARGET_FILE:xdzip-shell-relay>")
+    xdzip_stage_file("${finder_bundle}/Info.plist" "${CMAKE_CURRENT_BINARY_DIR}/Finder-Info.plist")
+    xdzip_stage_file("${relay_bundle}/Info.plist" "${CMAKE_CURRENT_BINARY_DIR}/Relay-Info.plist")
+    xdzip_stage_file("${finder_bundle}/Resources/Finder.entitlements" "${CMAKE_CURRENT_SOURCE_DIR}/shell/Finder.entitlements")
     add_executable(xdzip-shell-service shell/MacService.mm)
     set_target_properties(xdzip-shell-service PROPERTIES OBJCXX_STANDARD 17 OBJCXX_STANDARD_REQUIRED ON)
     set_source_files_properties(shell/MacService.mm MacShellService.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc;-fblocks")
     target_link_libraries(xdzip-shell-service PRIVATE "-framework AppKit" "-framework UniformTypeIdentifiers")
     target_compile_options(xdzip-shell-service PRIVATE -Wall -Wextra -Werror)
     target_sources(xdzip-browser PRIVATE MacShellService.mm MacFinderIntegration.mm)
-    add_dependencies(xdzip-browser xdzip-shell-service)
-    set(service_bundle "$<TARGET_BUNDLE_DIR:xdzip-browser>/Contents/Helpers/xdzip.service/Contents")
-    file(GLOB_RECURSE XDZIP_MACOS_LOCALIZED_FILES "${XDZIP_PACKAGING_TRANSLATIONS}/*.strings")
-    set_property(TARGET xdzip-browser APPEND PROPERTY LINK_DEPENDS ${XDZIP_MACOS_LOCALIZED_FILES})
-    add_custom_command(TARGET xdzip-browser POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E make_directory "${service_bundle}/MacOS" "${service_bundle}/Resources"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:xdzip-shell-service>" "${service_bundle}/MacOS/xdzip-shell-service"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/shell/Service-Info.plist" "${service_bundle}/Info.plist"
-        COMMAND "${CMAKE_COMMAND}" -E copy_directory "${XDZIP_PACKAGING_TRANSLATIONS}/service" "${service_bundle}/Resources"
-        COMMAND "${CMAKE_COMMAND}" -E copy_directory "${XDZIP_PACKAGING_TRANSLATIONS}/bundle" "$<TARGET_BUNDLE_DIR:xdzip-browser>/Contents/Resources" VERBATIM)
+    set(service_bundle "${XDZIP_APP_BUNDLE}/Helpers/xdzip.service/Contents")
+    xdzip_stage_file("${service_bundle}/MacOS/xdzip-shell-service" "$<TARGET_FILE:xdzip-shell-service>")
+    xdzip_stage_file("${service_bundle}/Info.plist" "${CMAKE_CURRENT_SOURCE_DIR}/shell/Service-Info.plist")
+    set(mac_outputs
+        "${finder_bundle}/MacOS/xdzip-finder-sync" "${finder_bundle}/Info.plist"
+        "${finder_bundle}/Resources/Finder.entitlements"
+        "${relay_bundle}/MacOS/xdzip-shell-relay" "${relay_bundle}/Info.plist"
+        "${service_bundle}/MacOS/xdzip-shell-service" "${service_bundle}/Info.plist")
+    foreach(kind service bundle)
+        set(resources "${XDZIP_APP_BUNDLE}/Resources")
+        if(kind STREQUAL "service")
+            set(resources "${service_bundle}/Resources")
+        endif()
+        file(GLOB_RECURSE localized RELATIVE "${XDZIP_PACKAGING_TRANSLATIONS}/${kind}"
+            "${XDZIP_PACKAGING_TRANSLATIONS}/${kind}/*.strings")
+        foreach(path IN LISTS localized)
+            set(destination "${resources}/${path}")
+            xdzip_stage_file("${destination}" "${XDZIP_PACKAGING_TRANSLATIONS}/${kind}/${path}")
+            list(APPEND mac_outputs "${destination}")
+        endforeach()
+    endforeach()
+    add_custom_target(xdzip-macos-shell-stage DEPENDS ${mac_outputs})
+    add_dependencies(xdzip-browser xdzip-macos-shell-stage)
 elseif(UNIX)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(NAUTILUS4 REQUIRED IMPORTED_TARGET libnautilus-extension-4)

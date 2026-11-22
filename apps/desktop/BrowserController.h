@@ -136,7 +136,6 @@ class BrowserController : public QObject {
     Q_PROPERTY(QVariantList creationInputs READ creationInputs NOTIFY creationInputsChanged)
     Q_PROPERTY(int total READ total NOTIFY changed)
     Q_PROPERTY(int archiveTotal READ archiveTotal NOTIFY changed)
-    Q_PROPERTY(int offset READ offset NOTIFY changed)
     Q_PROPERTY(QVariantMap extractionIntent READ extractionIntent NOTIFY extractionChanged)
     Q_PROPERTY(QVariantMap targetCheck READ targetCheck NOTIFY extractionChanged)
     Q_PROPERTY(QVariantMap creationTargetCheck READ creationTargetCheck NOTIFY extractionChanged)
@@ -270,9 +269,6 @@ class BrowserController : public QObject {
     }
     int archiveTotal() const {
         return m_archiveTotal;
-    }
-    int offset() const {
-        return m_offset;
     }
     QString sessionId() const {
         return m_session;
@@ -410,6 +406,7 @@ class BrowserController : public QObject {
     void tasksChanged();
 
   private:
+    friend class BrowserRequestTests;
     friend class BrowserTest;          // The native test suite injects a receiver-fault event.
     friend class UpdateControllerTest; // Controlled task states exercise the global update barrier.
     struct DirectoryRow {
@@ -507,6 +504,7 @@ class BrowserController : public QObject {
     int m_selectionAnchorRow = -1;
     int m_deferredDetailRow = -1;
     quint64 m_pageQuery = 0, m_pageGeneration = 0, m_pageRevision = 0;
+    void clearListing();
     void invalidateSnapshot();
     void showRowDetail(int row);
     void updateSelectionSummary() const;
@@ -516,8 +514,7 @@ class BrowserController : public QObject {
     mutable quint64 m_summaryRevision = std::numeric_limits<quint64>::max();
     mutable QString m_summaryBytes;
     mutable bool m_summaryPhysical = true;
-    void start(const QString &path, int offset, const QString &password = {},
-               bool withPassword = false);
+    void start(const QString &path, const QString &password = {}, bool withPassword = false);
     static QString explain(const QString &code);
     void replaceDirectories(const QList<DirectoryRow> &rows);
     ArchiveTableModel m_model;
@@ -544,6 +541,11 @@ class BrowserController : public QObject {
     void beginCancelledOpenCleanup();
     void finishCancelledOpenCleanup(const QString &error);
     void receive(const xdzip::reader::Event &event);
+    void receiveTaskUpdate(const xdzip::reader::Event &event);
+    QVariantMap projectTaskSnapshot(const xdzip::reader::TaskSnapshot &snapshot,
+                                    const QString &status, bool terminal) const;
+    void receivePage(const xdzip::reader::Event &event);
+    void finishRequest(const xdzip::reader::Event &event);
     static RequestKind requestKind(xdzip::reader::CommandKind command);
     void submit(xdzip::reader::Command command);
     void submitQuery(xdzip::reader::Command command, QueryState criteria);
@@ -621,5 +623,4 @@ class BrowserController : public QObject {
     QString m_message;
     QString m_session;
     int m_total = 0;
-    int m_offset = 0;
 };

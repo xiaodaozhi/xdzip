@@ -1,5 +1,10 @@
 {
   "rules": [
+    {"package": "xdzip-domain", "allowed_local_dependencies": []},
+    {"package": "xdzip-codec-api", "allowed_local_dependencies": ["xdzip-domain"]},
+    {"package": "xdzip-extract-plan", "allowed_local_dependencies": ["xdzip-domain", "xdzip-codec-api"]},
+    {"package": "xdzip-qt-bridge", "forbidden_runtime_dependencies": ["xdzip-plugin-host", "xdzip-plugin-protocol"]},
+    {"package": "xdzip-cli", "forbidden_runtime_dependencies": ["xdzip-plugin-host", "xdzip-plugin-protocol"]},
     {
       "package": "xdzip-codec-rar",
       "forbidden_runtime_dependencies": ["unrar", "unrar_sys", "unrar-sys", "rar", "unar", "libarchive", "libarchive3-sys", "sevenz-rust", "sevenz-rust2", "rawzip", "zip", "tar", "cab", "flate2", "miniz_oxide", "zlib-rs", "libz-sys", "ppmd-rust", "ppmd-sys"]
@@ -34,7 +39,7 @@
     },
     {
       "package": "xdzip-codec-bridge",
-      "forbidden_runtime_dependencies": ["iso9660", "udf", "libarchive", "libarchive3-sys", "sevenz-rust", "sevenz-rust2", "unrar", "unrar_sys", "unrar-sys", "cab", "rawzip", "zip", "tar", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
+      "forbidden_runtime_dependencies": ["xdzip-runtime", "xdzip-plugin-host", "xdzip-plugin-protocol", "iso9660", "udf", "libarchive", "libarchive3-sys", "sevenz-rust", "sevenz-rust2", "unrar", "unrar_sys", "unrar-sys", "cab", "rawzip", "zip", "tar", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
     },
     {
       "package": "xdzip-codec-native",
@@ -42,7 +47,7 @@
     },
     {
       "package": "xdzip-runtime",
-      "forbidden_runtime_dependencies": ["brotli", "brotli-decompressor", "brotli-sys", "brotli2", "unrar", "unrar_sys", "unrar-sys", "libarchive", "libarchive3-sys", "rawzip", "zip", "tar", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
+      "forbidden_runtime_dependencies": ["xdzip-plugin-host", "xdzip-plugin-protocol", "brotli", "brotli-decompressor", "brotli-sys", "brotli2", "unrar", "unrar_sys", "unrar-sys", "libarchive", "libarchive3-sys", "rawzip", "zip", "tar", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
     },
     {
       "package": "xdzip-codec-aescrypt",

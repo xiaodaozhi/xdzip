@@ -11,7 +11,6 @@ Item {
     property bool preventOrphanedClose: false
     property bool centerOnScreen: false
     property var shellBatch: null
-    property var cancelHandler: null
     property string activeTaskId: ""
     property var taskSnapshot: ({})
     property var batchSnapshot: null
@@ -20,9 +19,13 @@ Item {
     readonly property alias conflictWindow: conflictWindow
     readonly property alias passwordWindow: passwordWindow
     signal orphanedClose()
+    signal cancelBatch()
+    function cancelTask(task: string) {
+        if (root.shellBatch) root.cancelBatch();
+        else root.controller.cancelTask(task);
+    }
     function cancelCurrent() {
-        if (cancelHandler) cancelHandler();
-        else controller.cancelTask(activeTaskId);
+        root.cancelTask(root.activeTaskId);
     }
     Connections {
         target: root.controller
@@ -213,7 +216,7 @@ Item {
         decisionsAvailable: root.controller.runtimeAvailable
         sizeFormatter: root.formatSize
         onDecision: (taskId, promptId, policy, all) => {
-            if (root.cancelHandler && root.taskSnapshot.creating && policy === 1) { root.cancelCurrent(); conflictWindow.close(); return; }
+            if (root.shellBatch && root.taskSnapshot.creating && policy === 1) { root.cancelCurrent(); conflictWindow.close(); return; }
             if (root.controller.decideTask(taskId, promptId, policy, all))
                 conflictWindow.close();
         }
@@ -223,7 +226,7 @@ Item {
         centerOnScreen: root.centerOnScreen
         owner: root.owner || (taskWindow.visible ? taskWindow : null)
         controller: root.controller
-        cancelHandler: root.cancelHandler
+        function cancelTask(task: string) { root.cancelTask(task); }
         automaticPresentation: root.automaticPresentation
         presentationBlocked: root.presentationBlocked
     }

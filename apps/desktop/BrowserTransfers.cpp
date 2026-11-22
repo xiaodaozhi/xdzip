@@ -536,7 +536,7 @@ void BrowserController::refreshAfterUpdate(const QString &session, const QString
     m_location.clear();
     m_search.clear();
     m_sort = 0;
-    start(source, 0);
+    start(source);
 }
 bool BrowserController::restoreUpdatedLocation() {
     if (!m_restoreAfterUpdate)
@@ -546,7 +546,7 @@ bool BrowserController::restoreUpdatedLocation() {
     m_location = m_directory.isEmpty() ? QString{} : m_updateLocation;
     m_sort = m_updateSort;
     if (!m_directory.isEmpty() || m_sort != 0) {
-        start({}, 0);
+        start({});
         return true;
     }
     return false;

@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
+import Xdzip.Settings 1.0
 
 ToolTip {
     id: root
@@ -75,7 +76,7 @@ ToolTip {
     popupType: Popup.Item
     delay: 0
     timeout: Theme.tooltipDurationMs
-    margins: Theme.menuViewportInset + (parent?.Window.window?.linuxFrameInset ?? 0)
+    margins: Theme.menuViewportInset + (parent?.Window.window?.WindowInsets.frameInset ?? 0)
     padding: Theme.tooltipPadding
     // Measure wrapped text independently of the popup's own content geometry.
     implicitWidth: Math.min(Theme.tooltipMaxWidth, naturalText.advanceWidth + padding * 2)

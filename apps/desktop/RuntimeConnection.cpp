@@ -1,5 +1,4 @@
 #include "RuntimeConnection.h"
-#include "ImagePreviewProtocol.h"
 #include <QElapsedTimer>
 #include <QPointer>
 #include <QScopeGuard>
@@ -10,7 +9,6 @@
 
 namespace {
 constexpr std::size_t MailboxCapacity = 256;
-constexpr std::size_t MailboxBytes = ImagePreview::EventQueueLimit;
 std::atomic<int> liveReceivers{0};
 bool isPayload(const xdzip::reader::Event &event) {
     using xdzip::reader::EventKind;
@@ -20,29 +18,16 @@ bool isPayload(const xdzip::reader::Event &event) {
            event.kind == EventKind::Inputs || event.kind == EventKind::ExportManifest ||
            event.kind == EventKind::Preview || event.kind == EventKind::Selected;
 }
-std::size_t payloadBytes(const xdzip::reader::Event &event) {
-    std::size_t bytes =
-        event.error.size() + event.report.declared_bytes.size() + event.content.size();
-    for (const auto &selector : event.selectors)
-        bytes += selector.size() + sizeof(rust::String);
-    bytes += event.inputs.size() * sizeof(xdzip::reader::InputInfo);
-    for (const auto &row : event.rows)
-        bytes += row.name.size() + row.id.size() + row.navigation_id.size();
-    for (const auto &node : event.directories)
-        bytes += node.id.size() + node.parent.size() + node.name.size() + node.path.size();
-    for (const auto &finding : event.report.findings)
-        bytes += finding.size();
-    bytes += event.task.kind.size() + event.task.source.size() + event.task.format.size() +
-             event.task.status.size() + event.task.target.size() + event.task.current.size() +
-             event.task.error.size() + event.task.prompt_name.size() +
-             event.task.password_prompt_name.size();
-    return bytes;
-}
+struct QueuedEvent {
+    xdzip::reader::Event event;
+    std::size_t bytes;
+    bool payload;
+};
 } // namespace
 struct RuntimeMailbox {
     std::mutex mutex;
     std::condition_variable space;
-    std::deque<xdzip::reader::Event> queue;
+    std::deque<QueuedEvent> queue;
     std::size_t bytes = 0;
     std::size_t payloads = 0;
     bool notified = false;
@@ -64,13 +49,15 @@ int RuntimeReceiver::activeReceivers() {
     return liveReceivers.load();
 }
 void RuntimeReceiver::run() {
+    const auto byteLimit = xdzip::reader::mailbox_byte_limit();
     try {
         for (;;) {
             auto event = m_receiver->next_event();
             if (event.kind == xdzip::reader::EventKind::End)
                 break;
-            const auto bytes = payloadBytes(event);
-            if (bytes > MailboxBytes)
+            const auto bytes = xdzip::reader::event_mailbox_bytes(event);
+            const bool payload = isPayload(event);
+            if (bytes > byteLimit)
                 break; // connection loss is reported, never silently dropped
             bool notify = false;
             {
@@ -78,15 +65,15 @@ void RuntimeReceiver::run() {
                 m_mailbox->space.wait(lock, [&] {
                     return m_mailbox->closed ||
                            (m_mailbox->queue.size() < MailboxCapacity &&
-                            (!isPayload(event) || m_mailbox->payloads < MailboxCapacity / 2) &&
-                            m_mailbox->bytes + bytes <= MailboxBytes);
+                            (!payload || m_mailbox->payloads < MailboxCapacity / 2) &&
+                            m_mailbox->bytes + bytes <= byteLimit);
                 });
                 if (m_mailbox->closed)
                     break;
                 m_mailbox->bytes += bytes;
-                if (isPayload(event))
+                if (payload)
                     ++m_mailbox->payloads;
-                m_mailbox->queue.push_back(std::move(event));
+                m_mailbox->queue.push_back({std::move(event), bytes, payload});
                 m_mailbox->peakQueued = std::max(m_mailbox->peakQueued, m_mailbox->queue.size());
                 m_mailbox->peakBytes = std::max(m_mailbox->peakBytes, m_mailbox->bytes);
                 if (!m_mailbox->notified) {
@@ -187,10 +174,11 @@ void RuntimeConnection::drain() {
             std::lock_guard<std::mutex> lock(m_mailbox->mutex);
             if (m_mailbox->queue.empty())
                 break;
-            m_mailbox->bytes -= payloadBytes(m_mailbox->queue.front());
-            if (isPayload(m_mailbox->queue.front()))
+            auto &queued = m_mailbox->queue.front();
+            m_mailbox->bytes -= queued.bytes;
+            if (queued.payload)
                 --m_mailbox->payloads;
-            event.emplace(std::move(m_mailbox->queue.front()));
+            event.emplace(std::move(queued.event));
             m_mailbox->queue.pop_front();
         }
         m_mailbox->space.notify_one();

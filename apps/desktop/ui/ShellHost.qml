@@ -95,7 +95,7 @@ Item {
         automaticPresentation: !root.userHidden
         presentationBlocked: root.sessionManager.quitDecisionPending
         preventOrphanedClose: batch.active && !root.taskEntryAvailable
-        cancelHandler: () => batch.cancel()
+        onCancelBatch: batch.cancel()
         onOrphanedClose: { root.globalQuit = false; quitWindow.present(); }
         Connections {
             target: operations.taskWindow

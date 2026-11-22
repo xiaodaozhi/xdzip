@@ -213,6 +213,8 @@ mod ffi {
         type CommandClient;
         type EventReceiver;
         fn metadata_limits() -> MetadataLimits;
+        fn mailbox_byte_limit() -> usize;
+        fn event_mailbox_bytes(event: &Event) -> usize;
         fn supports_preview_name(name: &str) -> bool;
         fn valid_entry_name(name: &str) -> bool;
         fn sum_declared_sizes(values: &[u64]) -> String;
@@ -231,6 +233,59 @@ mod ffi {
         fn next_event(self: &mut EventReceiver) -> Event;
     }
 }
+fn mailbox_byte_limit() -> usize {
+    service::MAX_EVENT_BYTES
+}
+
+// Account for the converted event, including strings and buffers created by this bridge.
+fn event_mailbox_bytes(event: &ffi::Event) -> usize {
+    use std::mem::size_of;
+    let task = &event.task;
+    let mut bytes = [
+        &event.format,
+        &event.folder_name,
+        &event.source_group,
+        &event.error,
+        &event.report.declared_bytes,
+        &task.kind,
+        &task.source,
+        &task.format,
+        &task.status,
+        &task.target,
+        &task.open_path,
+        &task.current,
+        &task.error,
+        &task.prompt_name,
+        &task.existing_modified,
+        &task.password_prompt_name,
+    ]
+    .into_iter()
+    .map(String::capacity)
+    .sum::<usize>();
+    bytes += event.content.capacity();
+    bytes += event.inputs.capacity() * size_of::<ffi::InputInfo>();
+    bytes += event.rows.capacity() * size_of::<ffi::Row>();
+    bytes += event.directories.capacity() * size_of::<ffi::Directory>();
+    bytes += task.details.capacity() * size_of::<ffi::TaskOutcome>();
+    for strings in [&event.selectors, &event.report.findings] {
+        bytes += strings.capacity() * size_of::<String>();
+        bytes += strings.iter().map(String::capacity).sum::<usize>();
+    }
+    for row in &event.rows {
+        bytes += row.name.capacity() + row.id.capacity() + row.navigation_id.capacity();
+    }
+    for node in &event.directories {
+        bytes += node.id.capacity()
+            + node.parent.capacity()
+            + node.name.capacity()
+            + node.path.capacity();
+    }
+    for detail in &task.details {
+        bytes += detail.name.capacity() + detail.status.capacity() + detail.error.capacity();
+    }
+    bytes
+}
+
 /// Borrow the display name for a format allowlist check, with no I/O or retained data.
 pub fn supports_preview_name(name: &str) -> bool {
     xdzip_runtime::preview::supports_name(name)
@@ -616,41 +671,7 @@ impl EventReceiver {
 
     /// Block without polling, return an owned typed event or explicit end-of-stream.
     pub fn next_event(&mut self) -> ffi::Event {
-        let mut event = ffi::Event {
-            kind: ffi::EventKind::End,
-            sequence: 0,
-            request_id: 0,
-            session: 0,
-            offset: 0,
-            total: 0,
-            archive_total: 0,
-            update_allowed: false,
-            edit_restriction: 4,
-            format: String::new(),
-            folder_name: String::new(),
-            source_group: String::new(),
-            query: 0,
-            generation: 0,
-            revision: 0,
-            rows: Vec::new(),
-            inputs: Vec::new(),
-            directories: Vec::new(),
-            replace_directories: false,
-            navigation_limited: false,
-            content: Vec::new(),
-            content_kind: 0,
-            content_entry: 0,
-            selectors: Vec::new(),
-            error: String::new(),
-            task: empty_task(),
-            report: ffi::PreflightReport {
-                entries: 0,
-                declared_bytes: String::new(),
-                findings: Vec::new(),
-                finding_count: 0,
-                unicode_review: false,
-            },
-        };
+        let mut event = empty_event();
         if !self.export_rows.is_empty() {
             event.request_id = self.export_request;
             event.kind = ffi::EventKind::ExportManifest;
@@ -815,6 +836,44 @@ impl EventReceiver {
     }
 }
 
+fn empty_event() -> ffi::Event {
+    ffi::Event {
+        kind: ffi::EventKind::End,
+        sequence: 0,
+        request_id: 0,
+        session: 0,
+        offset: 0,
+        total: 0,
+        archive_total: 0,
+        update_allowed: false,
+        edit_restriction: 4,
+        format: String::new(),
+        folder_name: String::new(),
+        source_group: String::new(),
+        query: 0,
+        generation: 0,
+        revision: 0,
+        rows: Vec::new(),
+        inputs: Vec::new(),
+        directories: Vec::new(),
+        replace_directories: false,
+        navigation_limited: false,
+        content: Vec::new(),
+        content_kind: 0,
+        content_entry: 0,
+        selectors: Vec::new(),
+        error: String::new(),
+        task: empty_task(),
+        report: ffi::PreflightReport {
+            entries: 0,
+            declared_bytes: String::new(),
+            findings: Vec::new(),
+            finding_count: 0,
+            unicode_review: false,
+        },
+    }
+}
+
 fn empty_task() -> ffi::TaskSnapshot {
     ffi::TaskSnapshot {
         kind: String::new(),
@@ -923,6 +982,29 @@ fn task_snapshot(s: xdzip_runtime::extraction::Snapshot) -> ffi::TaskSnapshot {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn mailbox_accounts_for_converted_metadata_and_task_detail_allocations() {
+        let mut event = empty_event();
+        let baseline = event_mailbox_bytes(&event);
+        event.folder_name = String::with_capacity(101);
+        event.task.open_path = String::with_capacity(211);
+        event.task.details.push(ffi::TaskOutcome {
+            name: String::from("result name"),
+            size: 0,
+            status: String::from("completed"),
+            error: String::new(),
+        });
+        let detail = &event.task.details[0];
+        assert_eq!(
+            event_mailbox_bytes(&event) - baseline,
+            event.folder_name.capacity()
+                + event.task.open_path.capacity()
+                + event.task.details.capacity() * std::mem::size_of::<ffi::TaskOutcome>()
+                + detail.name.capacity()
+                + detail.status.capacity()
+        );
+    }
+
     #[test]
     fn check_command_delivers_read_only_kind_and_verified_counters() {
         fn submit(client: &CommandClient, make: impl Fn() -> ffi::Command) -> ffi::Submission {

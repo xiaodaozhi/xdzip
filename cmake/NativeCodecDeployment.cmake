@@ -1,16 +1,19 @@
-# cmake/NativeCodecDeployment.cmake
-
-# Native codecs are a product dependency. Keep the worker beside each consumer,
-# including the macOS bundle executable, so deployment needs no developer PATH.
-foreach(consumer xdzip-browser xdzip-browser-tests xdzip-ui-preview xdzip-ui-tests)
+# Keep the worker beside every consumer without making it a linker input.
+include("${CMAKE_CURRENT_LIST_DIR}/StageFiles.cmake")
+set(codec_name "xdzip-native-codec${CMAKE_EXECUTABLE_SUFFIX}")
+set(codec_copy "${CMAKE_CURRENT_BINARY_DIR}/${codec_name}")
+xdzip_stage_file("${codec_copy}" "$<TARGET_FILE:xdzip-native-codec>")
+add_custom_target(xdzip-codec-stage DEPENDS "${codec_copy}")
+foreach(consumer xdzip-browser-tests xdzip-ui-preview xdzip-ui-tests)
     if(TARGET ${consumer})
-        add_dependencies(${consumer} xdzip-native-codec)
-        # A worker-only rebuild must refresh the consumer's copy of its wire protocol.
-        set_property(TARGET ${consumer} APPEND PROPERTY LINK_DEPENDS "$<TARGET_FILE:xdzip-native-codec>")
-        add_custom_command(TARGET ${consumer} POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-                "$<TARGET_FILE:xdzip-native-codec>"
-                "$<TARGET_FILE_DIR:${consumer}>/$<TARGET_FILE_NAME:xdzip-native-codec>"
-            VERBATIM)
+        add_dependencies(${consumer} xdzip-codec-stage)
     endif()
 endforeach()
+if(APPLE)
+    set(bundle_codec "${XDZIP_APP_BUNDLE}/MacOS/${codec_name}")
+    xdzip_stage_file("${bundle_codec}" "$<TARGET_FILE:xdzip-native-codec>")
+    add_custom_target(xdzip-product-codec-stage DEPENDS "${bundle_codec}")
+    add_dependencies(xdzip-browser xdzip-product-codec-stage)
+else()
+    add_dependencies(xdzip-browser xdzip-codec-stage)
+endif()

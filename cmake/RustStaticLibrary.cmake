@@ -1,3 +1,5 @@
+include("${CMAKE_CURRENT_LIST_DIR}/RustBuild.cmake")
+
 # Native-only cxx static libraries, built from the same locked workspace as the UI.
 function(xdzip_rust_library target package stem)
     set(rust_workspace "${PROJECT_SOURCE_DIR}")
@@ -18,12 +20,7 @@ function(xdzip_rust_library target package stem)
     if(NOT rust_host)
         message(FATAL_ERROR "Unable to identify the native Rust target")
     endif()
-    set(profile debug)
-    set(cargo_profile dev)
-    if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        set(profile release)
-        set(cargo_profile release)
-    endif()
+    xdzip_rust_profile(profile cargo_profile)
     set(output "${CMAKE_CURRENT_BINARY_DIR}/rust")
     set(archive "${output}/${rust_host}/${profile}/${CMAKE_STATIC_LIBRARY_PREFIX}${stem}${CMAKE_STATIC_LIBRARY_SUFFIX}")
     set(cargo_environment)
@@ -33,26 +30,7 @@ function(xdzip_rust_library target package stem)
         endif()
         list(APPEND cargo_environment "MACOSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}")
     endif()
-    set(input_script "${rust_workspace}/scripts/rust-bridge-inputs.py")
-    execute_process(COMMAND "${Python3_EXECUTABLE}" "${input_script}"
-        --cargo "${CARGO_EXECUTABLE}" --target "${rust_host}" --package "${package}"
-        WORKING_DIRECTORY "${rust_workspace}" OUTPUT_VARIABLE rust_crates
-        OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
-    file(GLOB workspace_manifests CONFIGURE_DEPENDS
-        "${rust_workspace}/crates/*/Cargo.toml" "${rust_workspace}/tools/*/Cargo.toml")
-    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${workspace_manifests}
-        "${rust_workspace}/Cargo.toml" "${rust_workspace}/Cargo.lock"
-        "${rust_workspace}/rust-toolchain.toml" "${input_script}")
-    set(rust_sources)
-    foreach(crate IN LISTS rust_crates)
-        file(GLOB_RECURSE crate_sources CONFIGURE_DEPENDS
-            "${crate}/*.rs" "${crate}/*.h" "${crate}/*.hpp" "${crate}/data/*")
-        list(APPEND rust_sources "${crate}/Cargo.toml" ${crate_sources})
-        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${crate}/Cargo.toml")
-    endforeach()
-    if("${rust_workspace}/crates/xdzip-compression" IN_LIST rust_crates)
-        list(APPEND rust_sources "${rust_workspace}/third_party/brotli-rfc7932/dictionary.bin")
-    endif()
+    xdzip_rust_inputs(rust_sources "${rust_workspace}" "${CARGO_EXECUTABLE}" "${rust_host}" "${package}")
     file(MAKE_DIRECTORY "${output}/cxxbridge")
     set(bridge_headers "${output}/cxxbridge/${package}/src/lib.rs.h" "${output}/cxxbridge/rust/cxx.h")
     if(package STREQUAL "xdzip-qt-bridge")
@@ -64,8 +42,7 @@ function(xdzip_rust_library target package stem)
             "${rust_workspace}/scripts/build-rust-bridge.py" --cargo "${CARGO_EXECUTABLE}"
             --root "${rust_workspace}" --package "${package}"
             --target-dir "${output}" --target "${rust_host}" --profile "${cargo_profile}"
-        DEPENDS ${rust_sources} "${rust_workspace}/Cargo.lock" "${rust_workspace}/Cargo.toml"
-            "${rust_workspace}/rust-toolchain.toml"
+        DEPENDS ${rust_sources}
             "${rust_workspace}/scripts/build-rust-bridge.py"
         WORKING_DIRECTORY "${rust_workspace}" VERBATIM)
     add_custom_target(${target}-build DEPENDS "${archive}")

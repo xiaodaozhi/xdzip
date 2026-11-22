@@ -20,6 +20,7 @@ ApplicationWindow {
     readonly property real linuxFrameRadius: linuxRestoredFrame ? Theme.mainLinuxCornerRadius : 0
     readonly property int linuxShadowMargin: linuxFrame.shadowAvailable ? Theme.mainLinuxShadowInset : 0
     readonly property int linuxFrameInset: linuxRestoredFrame ? linuxShadowMargin : 0
+    WindowInsets.frameInset: linuxFrameInset
     readonly property Item sessionContent: linuxTitlebar ? frame : contentItem
     readonly property bool windowsTitlebar: Qt.platform.os === "windows" || linuxTitlebar
     property bool integratedTitlebar: false

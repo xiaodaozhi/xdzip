@@ -181,6 +181,14 @@ class WorkflowTests(unittest.TestCase):
             git('-c', 'user.name=XDZip CI test', '-c', 'user.email=ci@example.invalid',
                 'merge', '--no-ff', '--no-edit', 'contribution')
             self.assertTrue(clippy.should_run(root, 'pull_request', ''))
+            for rust_input in ('VERSION.json', 'resources/update-trust.json',
+                               'resources/ui-languages.json', 'resources/i18n/en-US.json',
+                               'scripts/check-rust-codec-policy.py', 'scripts/rust-codec-policy.json'):
+                (root / rust_input).parent.mkdir(parents=True, exist_ok=True)
+                before = git('rev-parse', 'HEAD')
+                commit(rust_input)
+                self.assertTrue(clippy.should_run(root, 'push', before), rust_input)
+
 
     def test_full_workflows_are_manually_dispatched_and_keep_their_gates(self):
         for filename, scope in [('foundation.yml', 'foundation'), ('qt-components.yml', 'qt')]:

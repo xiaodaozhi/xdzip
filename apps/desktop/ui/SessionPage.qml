@@ -1726,34 +1726,21 @@ Item {
                             HoverHandler {
                                 id: hover
                             }
-                            MouseArea {
+                            ArchiveEntryPointer {
                                 id: cellPointer
                                 anchors.fill: parent
-                                acceptedButtons: Qt.LeftButton | Qt.RightButton
                                 enabled: reader.runtimeAvailable && !reader.browsingBusy
-                                property point pressedAt
-                                preventStealing: true
-                                property bool transferStarted: false
-                                onPressed: mouse => { pressedAt = Qt.point(mouse.x, mouse.y); transferStarted = false; }
-                                onPositionChanged: mouse => {
-                                    if (pressed && (pressedButtons & Qt.LeftButton) && !transferStarted && Math.hypot(mouse.x - pressedAt.x, mouse.y - pressedAt.y) >= Application.styleHints.startDragDistance) {
-                                        transferStarted = true;
-                                        root.beginTransfer(this, cell.row, mouse);
-                                    }
-                                    if (transferStarted) root.continueTransfer(this, mouse);
+                                onTransferStartedAt: point => root.beginTransfer(cellPointer, cell.row, point)
+                                onTransferMovedTo: point => root.continueTransfer(cellPointer, point)
+                                onTransferReleased: root.finishTransfer()
+                                onTransferCancelled: root.deferCancelledTransfer()
+                                onContextRequested: point => root.entryMenuAt(cell, cell.row, cell.entryId,
+                                    cell.isDirectory, cell.canNavigate, point.x, point.y)
+                                onSelectionRequested: modifiers => {
+                                    root.selectWithModifiers(cell.row, modifiers);
+                                    cell.forceActiveFocus(Qt.MouseFocusReason);
                                 }
-                                onReleased: if (transferStarted) root.finishTransfer()
-                                onCanceled: root.deferCancelledTransfer()
-                                onClicked: function (mouse) {
-                                    if (transferStarted) return;
-                                    if (mouse.button === Qt.RightButton)
-                                        root.entryMenuAt(cell, cell.row, cell.entryId, cell.isDirectory, cell.canNavigate, mouse.x, mouse.y);
-                                    else {
-                                        root.selectWithModifiers(cell.row, mouse.modifiers);
-                                        cell.forceActiveFocus(Qt.MouseFocusReason);
-                                    }
-                                }
-                                onDoubleClicked: reader.enterDirectory(cell.row)
+                                onActivationRequested: reader.enterDirectory(cell.row)
                             }
                             Keys.onPressed: function (event) {
                                 if (event.key === Qt.Key_Menu || (event.key === Qt.Key_F10 && (event.modifiers & Qt.ShiftModifier))) {
@@ -1870,34 +1857,21 @@ Item {
                             HoverHandler {
                                 id: gridHover
                             }
-                            MouseArea {
+                            ArchiveEntryPointer {
                                 id: gridPointer
                                 anchors.fill: parent
-                                acceptedButtons: Qt.LeftButton | Qt.RightButton
                                 enabled: reader.runtimeAvailable && !reader.browsingBusy
-                                property point pressedAt
-                                preventStealing: true
-                                property bool transferStarted: false
-                                onPressed: mouse => { pressedAt = Qt.point(mouse.x, mouse.y); transferStarted = false; }
-                                onPositionChanged: mouse => {
-                                    if (pressed && (pressedButtons & Qt.LeftButton) && !transferStarted && Math.hypot(mouse.x - pressedAt.x, mouse.y - pressedAt.y) >= Application.styleHints.startDragDistance) {
-                                        transferStarted = true;
-                                        root.beginTransfer(this, gridEntry.index, mouse);
-                                    }
-                                    if (transferStarted) root.continueTransfer(this, mouse);
+                                onTransferStartedAt: point => root.beginTransfer(gridPointer, gridEntry.index, point)
+                                onTransferMovedTo: point => root.continueTransfer(gridPointer, point)
+                                onTransferReleased: root.finishTransfer()
+                                onTransferCancelled: root.deferCancelledTransfer()
+                                onContextRequested: point => root.entryMenuAt(gridEntry, gridEntry.index, gridEntry.entryId,
+                                    gridEntry.isDirectory, gridEntry.canNavigate, point.x, point.y)
+                                onSelectionRequested: modifiers => {
+                                    root.selectWithModifiers(gridEntry.index, modifiers);
+                                    gridEntry.forceActiveFocus(Qt.MouseFocusReason);
                                 }
-                                onReleased: if (transferStarted) root.finishTransfer()
-                                onCanceled: root.deferCancelledTransfer()
-                                onClicked: function (mouse) {
-                                    if (transferStarted) return;
-                                    if (mouse.button === Qt.RightButton)
-                                        root.entryMenuAt(gridEntry, gridEntry.index, gridEntry.entryId, gridEntry.isDirectory, gridEntry.canNavigate, mouse.x, mouse.y);
-                                    else {
-                                        root.selectWithModifiers(gridEntry.index, mouse.modifiers);
-                                        gridEntry.forceActiveFocus(Qt.MouseFocusReason);
-                                    }
-                                }
-                                onDoubleClicked: reader.enterDirectory(gridEntry.index)
+                                onActivationRequested: reader.enterDirectory(gridEntry.index)
                             }
                             SelectionCheck {
                                 objectName: "gridSelection-" + gridEntry.index

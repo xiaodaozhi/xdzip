@@ -5,7 +5,6 @@
 namespace ImagePreview {
 constexpr qsizetype EncodedLimit = 16 * 1024 * 1024;
 constexpr qsizetype PendingLimit = 32 * 1024 * 1024;
-constexpr qsizetype EventQueueLimit = 32 * 1024 * 1024;
 constexpr qint64 SourcePixels = 32 * 1024 * 1024;
 constexpr int SourceDimension = 16384;
 constexpr int ThumbnailSide = 512;

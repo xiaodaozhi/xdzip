@@ -7,7 +7,6 @@ OperationWindow {
     id: root
     objectName: "passwordWindow"
     required property var controller
-    property var cancelHandler: null
     property var prompt: controller.passwordPrompt || ({})
     property real availableClientHeight: Screen.desktopAvailableHeight - Theme.passwordScreenMargin
     property bool uiReady: false
@@ -40,9 +39,11 @@ OperationWindow {
         clearSecret();
         if (!dismissing && task && token && String(prompt.taskId || "") === task
                 && String(prompt.promptId || "") === token) {
-            if (cancelHandler) cancelHandler();
-            else controller.cancelTask(task);
+            root.cancelTask(task);
         }
+    }
+    function cancelTask(task: string) {
+        root.controller.cancelTask(task);
     }
     function utf8Size(value: string): int {
         let size = 0;

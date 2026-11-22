@@ -346,7 +346,7 @@ class Workflow:
         self.script('check-window-contracts.py', '--self-test', env=env)
         self.script('check-operation-components.py', env=env)
         self.run([self.qt/'bin'/('qmllint.exe' if self.system == 'windows' else 'qmllint'),
-                  '-I', self.build/'qml', *sorted((ROOT/'apps/desktop/ui').glob('*.qml'))], env=env)
+                  '--max-warnings', '0', '-I', self.build/'qml', *sorted((ROOT/'apps/desktop/ui').glob('*.qml'))], env=env)
         self.run(['ctest', '--test-dir', self.build, '--no-tests=error', '--output-on-failure'], env=env)
         self.build_receipt()
         return {'source': receipt['source'], 'product_sha256': receipt['product_sha256'],

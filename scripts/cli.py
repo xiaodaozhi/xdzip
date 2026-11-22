@@ -13,6 +13,8 @@ import subprocess
 import tarfile
 import zipfile
 
+from build_identity import source_identity
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -73,25 +75,27 @@ def exe(name):
 
 def build(args):
     directory = generated(args.build_dir)
-    environment = dict(os.environ, CARGO_TARGET_DIR=str(directory/'target'))
+    environment = dict(os.environ, CARGO_TARGET_DIR=str(directory/'target'),
+                       XDZIP_BUILD_SOURCE=json.dumps(source_identity(ROOT)),
+                       XDZIP_CLI_CONFIGURATION=args.profile)
     if platform.system() == 'Darwin':
         environment['MACOSX_DEPLOYMENT_TARGET'] = '14.0'
     command = ['cargo', 'build', '--locked', '-p', 'xdzip-cli']
-    if args.profile == 'release':
-        command.append('--release')
+    cargo_profile = 'dev' if args.profile == 'debug' else args.profile
+    configuration = {'debug': 'Debug', 'release': 'Release', 'relwithdebinfo': 'RelWithDebInfo'}[args.profile]
+    command.extend(['--profile', cargo_profile])
     run(command, env=environment)
     if os.name == 'nt':
         for name in ['xdzip-launcher', 'xdzip-sfx']:
             launcher = ['cargo','rustc','--locked','-p','xdzip-cli','--bin',name]
-            if args.profile == 'release':
-                launcher.append('--release')
+            launcher.extend(['--profile', cargo_profile])
             # Launcher and independently distributed SFX cannot require the app-local CRT.
             run([*launcher,'--','-C','target-feature=+crt-static'],env=environment)
     worker = args.codec
     if worker is None:
         codec = directory/'codec'
         configure = ['cmake', '-S', ROOT/'tools/native-codec', '-B', codec,
-                     '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release', '-DBUILD_TESTING=OFF']
+                     '-G', 'Ninja', '-DCMAKE_BUILD_TYPE='+configuration, '-DBUILD_TESTING=OFF']
         if platform.system() == 'Darwin':
             configure += ['-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0']
         run(configure, env=environment)
@@ -232,7 +236,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('stage', choices=['build','test','bundle','package'])
     parser.add_argument('--build-dir', type=Path, default=ROOT/'build/cli')
-    parser.add_argument('--profile', choices=['debug','release'], default='release')
+    parser.add_argument('--profile', choices=['debug', 'release', 'relwithdebinfo'], default='release')
     parser.add_argument('--codec', type=Path)
     parser.add_argument('--output', type=Path)
     parser.add_argument('--runtime', type=Path)

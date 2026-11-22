@@ -19,3 +19,7 @@ missing_docs = "warn"
 
 [workspace.lints.clippy]
 all = "warn"
+
+[profile.relwithdebinfo]
+inherits = "release"
+debug = 2

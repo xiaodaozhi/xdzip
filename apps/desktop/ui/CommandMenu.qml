@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
+import Xdzip.Settings 1.0
 
 Menu {
     id: root
@@ -28,7 +29,7 @@ Menu {
     implicitWidth: Math.max(Theme.menuMinWidth, Theme.menuWidth)
     padding: Theme.menuPadding
     bottomPadding: padding + footerHeight
-    margins: Theme.menuViewportInset + (parent?.Window.window?.linuxFrameInset ?? 0)
+    margins: Theme.menuViewportInset + (parent?.Window.window?.WindowInsets.frameInset ?? 0)
     font.pixelSize: Theme.menuLabelSize
     delegate: CommandMenuItem {}
     function focusBoundary(last) {

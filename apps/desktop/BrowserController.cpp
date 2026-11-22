@@ -354,14 +354,10 @@ BrowserController::BrowserController(QObject *parent)
             m_faulted = true;
             m_result = {};
             m_total = 0;
-            m_offset = 0;
             m_session.clear();
             m_message = explain("runtime_unavailable");
             m_ready = false;
-            m_model.replace({});
-            replaceDirectories({});
-            clearContentPreview();
-            m_detail.clear();
+            clearListing();
             m_preflightReport.clear();
             for (auto &task : m_tasks) {
                 if (task.value("terminal").toBool())
@@ -573,11 +569,10 @@ void BrowserController::openPath(const QString &path) {
     m_openPasswordPrompt.clear();
     emit tasksChanged();
     m_total = 0;
-    m_offset = 0;
     m_session.clear();
     m_model.replace({});
     replaceDirectories({});
-    start(path, 0);
+    start(path);
 }
 void BrowserController::discardBrowsing() {
     if (m_browsingDetached)
@@ -598,14 +593,11 @@ void BrowserController::discardBrowsing() {
     m_updateSort = 0;
     m_restoreAfterUpdate = false;
     m_ready = false;
-    m_total = m_archiveTotal = m_offset = 0;
+    m_total = m_archiveTotal = 0;
     m_navigationLimited = false;
     m_selectionAnchor.clear();
     m_selectionAnchorRow = -1;
-    m_model.replace({});
-    replaceDirectories({});
-    clearContentPreview();
-    m_detail.clear();
+    clearListing();
     m_preflightReport.clear();
     m_result.rows.clear();
     m_result.directories.clear();
@@ -847,7 +839,7 @@ void BrowserController::enterDirectory(int row) {
     m_directory = item->navigationId.isEmpty() ? m_directoryPaths.value(item->path, item->id)
                                                : item->navigationId;
     m_location = item->path;
-    start({}, 0);
+    start({});
 }
 QVariantList BrowserController::breadcrumbs() const {
     QVariantList result;
@@ -924,7 +916,7 @@ void BrowserController::navigateDirectory(const QString &id) {
         return;
     m_directory = id;
     m_location = item->data(Qt::UserRole + 2).toString();
-    start({}, 0);
+    start({});
 }
 void BrowserController::sortByColumn(int column) {
     if (archiveMutationPending())
@@ -935,7 +927,7 @@ void BrowserController::sortByColumn(int column) {
         return;
     const int ascending = column < 3 ? column * 2 + 1 : column == 3 ? 9 : 11;
     m_sort = column == -1 ? 0 : (m_sort == ascending ? ascending + 1 : ascending);
-    start({}, 0);
+    start({});
 }
 void BrowserController::showRoot() {
     if (archiveMutationPending())
@@ -945,7 +937,7 @@ void BrowserController::showRoot() {
         return;
     m_directory.clear();
     m_location.clear();
-    start({}, 0);
+    start({});
 }
 void BrowserController::search(const QString &text) {
     if (archiveMutationPending())
@@ -955,7 +947,7 @@ void BrowserController::search(const QString &text) {
         text.toUtf8().size() > 1024)
         return;
     m_search = text;
-    start({}, 0);
+    start({});
 }
 QVariantList BrowserController::tasks() const {
     QVariantList result;
@@ -1342,7 +1334,7 @@ bool BrowserController::submitPassword(const QString &id, const QString &prompt,
             return false;
         m_openPasswordPrompt.clear();
         emit tasksChanged();
-        start(m_sourcePath, 0, password, true);
+        start(m_sourcePath, password, true);
         return true;
     }
     const auto task = m_tasks.constFind(id.toULongLong());
@@ -1405,20 +1397,24 @@ void BrowserController::restoreQuery() {
     m_search = m_committedQuery.search;
     m_sort = m_committedQuery.sort;
 }
+void BrowserController::clearListing() {
+    m_model.replace({});
+    replaceDirectories({});
+    clearContentPreview();
+    m_detail.clear();
+}
+
 void BrowserController::invalidateSnapshot() {
     m_archiveOperation.clear();
     m_ready = false;
     m_committedQuery = {};
     restoreQuery();
-    m_total = m_archiveTotal = m_offset = 0;
+    m_total = m_archiveTotal = 0;
     m_session.clear();
     m_navigationLimited = false;
     m_selectionAnchor.clear();
     m_selectionAnchorRow = -1;
-    m_model.replace({});
-    replaceDirectories({});
-    clearContentPreview();
-    m_detail.clear();
+    clearListing();
 }
 void BrowserController::cancel() {
     // Cleanup is part of the original cancellation and must not itself be cancelled.
@@ -1665,8 +1661,7 @@ void BrowserController::fetchPage(int offset) {
     result.session = m_session;
     submitPrepared(std::move(command), std::move(result));
 }
-void BrowserController::start(const QString &path, int offset, const QString &password,
-                              bool withPassword) {
+void BrowserController::start(const QString &path, const QString &password, bool withPassword) {
     if (archiveMutationPending())
         return;
     xdzip::reader::Command command{};
@@ -1684,7 +1679,6 @@ void BrowserController::start(const QString &path, int offset, const QString &pa
     command.path = rust::String(bytes.constData(), static_cast<std::size_t>(bytes.size()));
     command.directory = rust::String(m_directory.toStdString());
     command.text = rust::String(m_search.toStdString());
-    command.offset = static_cast<std::uint64_t>(offset);
     command.sort = static_cast<std::uint8_t>(m_sort);
     if (!path.isEmpty())
         m_generation = 0;
@@ -1873,11 +1867,538 @@ void BrowserController::attemptSubmission() {
     m_pending = result.request_id;
     emit changed();
 }
+static QString eventText(const rust::String &value) {
+    return QString::fromUtf8(value.data(), static_cast<qsizetype>(value.size()));
+}
+
+QVariantMap BrowserController::projectTaskSnapshot(const xdzip::reader::TaskSnapshot &t,
+                                                   const QString &status, bool terminal) const {
+    const auto previous = m_tasks.value(t.id);
+    QVariantList details;
+    for (const auto &entry : t.details)
+        details.append(QVariantMap{{"name", eventText(entry.name)},
+                                   {"size", QString::number(entry.size)},
+                                   {"status", eventText(entry.status)},
+                                   {"errorCode", eventText(entry.error)},
+                                   {"error", explain(eventText(entry.error))}});
+    QVariantMap value{
+        {"openPath", eventText(t.open_path)},
+        {"openAccepted", previous.value("openAccepted", false)},
+        {"openError", previous.value("openError")},
+        {"details", details},
+        {"omittedDetails", QString::number(t.omitted_details)},
+        {"externalReader", t.external_reader},
+        {"outputParts", QString::number(t.output_parts)},
+        {"creating", t.creating},
+        {"kind", eventText(t.kind)},
+        {"format", eventText(t.format)},
+        {"source", eventText(t.source)},
+        {"totalKnown", t.total_known},
+        {"archive",
+         t.creating
+             ? QVariant(QFileInfo(eventText(t.target)).fileName())
+             : previous.value("archive", !t.source.empty()
+                                             ? QVariant(QFileInfo(eventText(t.source)).fileName())
+                                             : m_extractionIntent.value("archive", m_title))},
+        {"id", QString::number(t.id)},
+        {"session", QString::number(t.session)},
+        {"status", status},
+        {"terminal", terminal},
+        {"target", eventText(t.target)},
+        {"current", eventText(t.current)},
+        {"files", QString::number(t.files)},
+        {"declaredBytes", QString::number(t.declared_bytes)},
+        {"decodedBytes", QString::number(t.decoded_bytes)},
+        {"readBytes", QString::number(t.read_bytes)},
+        {"verifiedFiles", QString::number(t.verified_files)},
+        {"verifiedBytes", QString::number(t.verified_bytes)},
+        {"writtenBytes", QString::number(t.written_bytes)},
+        {"committedBytes", QString::number(t.committed_bytes)},
+        {"committedFiles", QString::number(t.committed_files)},
+        {"skippedFiles", QString::number(t.skipped_files)},
+        {"createdDirectories", QString::number(t.created_directories)},
+        {"elapsedMs", QString::number(t.elapsed_ms)},
+        {"errorCode", eventText(t.error)},
+        {"error", t.error.empty()                     ? previous.value("openError").toString()
+                  : eventText(t.error) == "cancelled" ? qtTrId("ui.d7df27ca8d31")
+                                                      : explain(eventText(t.error))},
+        {"cleanupWarning", t.cleanup_warning},
+        {"outcomeUncertain", t.outcome_uncertain},
+        {"leftovers", QString::number(t.leftovers)},
+        {"promptId", t.prompt_id ? QString::number(t.prompt_id) : QString{}},
+        {"promptName", eventText(t.prompt_name)},
+        {"passwordPromptId",
+         t.password_prompt_id ? QString::number(t.password_prompt_id) : QString{}},
+        {"passwordPromptName", eventText(t.password_prompt_name)},
+        {"passwordRetry", t.password_retry},
+        {"existingBytes", QString::number(t.existing_bytes)},
+        {"incomingBytes", QString::number(t.incoming_bytes)},
+        {"overwriteAllowed", t.overwrite_allowed}};
+    const auto incoming = t.incoming_modified_dos;
+    const QDate date(1980 + (incoming >> 25), (incoming >> 21) & 15, (incoming >> 16) & 31);
+    const QTime time((incoming >> 11) & 31, (incoming >> 5) & 63, (incoming & 31) * 2);
+    value.insert("incomingModified", date.isValid() && time.isValid()
+                                         ? QLocale().toString(date, qtTrId("format.date")) + " " +
+                                               QLocale().toString(time, qtTrId("format.time"))
+                                         : QString{});
+    bool validTime = false;
+    const auto existingTime = eventText(t.existing_modified).toLongLong(&validTime);
+    value.insert("existingModified",
+                 validTime ? QLocale().toString(QDateTime::fromSecsSinceEpoch(existingTime),
+                                                qtTrId("format.dateTime"))
+                           : QString{});
+    return value;
+}
+
+void BrowserController::receiveTaskUpdate(const xdzip::reader::Event &event) {
+    const auto &t = event.task;
+    // The independent task lane can publish before TaskAccepted. Bind only
+    // this pending request/session; the real acknowledgement still gates UI intent.
+    if (taskStarting() && m_pending && event.request_id == m_pending && t.id &&
+        t.session == m_result.taskSession && !m_result.observedTask)
+        m_result.observedTask = t.id;
+    handleTransferTask(t);
+    const auto status = eventText(t.status);
+    const bool terminal = status == "succeeded" || status == "failed" || status == "cancelled";
+    if (m_tasks.value(t.id).value("terminal").toBool() && !terminal)
+        return;
+    if (terminal)
+        m_cancellingTasks.remove(t.id);
+    const bool firstSuccess =
+        status == "succeeded" && !m_tasks.value(t.id).value("terminal").toBool();
+    m_tasks.insert(t.id, projectTaskSnapshot(t, status, terminal));
+    if (firstSuccess && !t.open_path.empty())
+        openTemporaryOutput(t.id);
+    if (isArchiveEditTask(eventText(t.kind)) && terminal &&
+        !m_tasks.value(t.id).value("updateRefreshed").toBool()) {
+        m_tasks[t.id].insert("updateRefreshed", true);
+        const auto session = QString::number(t.session), source = eventText(t.source);
+        if (session == m_session)
+            m_updateActive = true;
+        QTimer::singleShot(0, this,
+                           [this, session, source] { refreshAfterUpdate(session, source); });
+    }
+    if (eventText(t.kind) == "create" && firstSuccess && !shellOperation) {
+        m_createdArchivesToOpen.append(eventText(t.target));
+        QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
+    }
+    while (m_tasks.size() > 64) {
+        auto oldest = std::find_if(m_tasks.begin(), m_tasks.end(),
+                                   [](const auto &v) { return v.value("terminal").toBool(); });
+        if (oldest == m_tasks.end())
+            break;
+        m_hiddenFinishedTasks.remove(oldest.key());
+        m_tasks.erase(oldest);
+    }
+    if (eventText(t.error) == "source_changed" && QString::number(t.session) == m_session) {
+        m_result.error = "source_changed";
+        m_deferredQuery.reset();
+        if (m_pending)
+            m_connection->cancel(m_pending);
+        invalidateSnapshot();
+        m_message = explain("source_changed");
+        emit changed();
+    }
+    if (terminal && m_openAfterTasks.remove(t.id) && status == "succeeded" && !t.creating)
+        QDesktopServices::openUrl(QUrl::fromLocalFile(eventText(t.target)));
+    emit tasksChanged();
+}
+
+void BrowserController::receivePage(const xdzip::reader::Event &event) {
+    if (m_deferredQuery)
+        return; // superseded generation never adds rows or commits
+    const bool viewportPage = m_result.kind == RequestKind::ViewportPage;
+    if (!viewportPage && !m_result.isQuery()) {
+        m_result.error = "stale_query";
+        return;
+    }
+    const auto limits = xdzip::reader::metadata_limits();
+    if (event.query == 0 || event.revision == 0 || event.generation != m_result.generation ||
+        (m_result.query && (event.query != m_result.query || event.revision != m_result.revision ||
+                            QString::number(event.session) != m_result.session))) {
+        m_result.error = "stale_query";
+        return;
+    }
+    if (event.archive_total > limits.entries || event.total > limits.entries ||
+        event.offset > event.total || event.rows.size() > limits.rows_per_batch ||
+        event.directories.size() > limits.directories ||
+        event.offset + event.rows.size() > event.total ||
+        (event.rows.empty() && event.offset < event.total) ||
+        event.offset !=
+            static_cast<quint64>(viewportPage ? m_result.viewportOffset : m_result.rows.size())) {
+        m_result.error = "resource_limit";
+        return;
+    }
+    if (!m_result.query) {
+        m_result.query = event.query;
+        m_result.revision = event.revision;
+        m_result.rows.reserve(static_cast<qsizetype>(std::min<std::uint64_t>(event.total, 1024)));
+    }
+    m_result.replaceDirectories = m_result.replaceDirectories || event.replace_directories;
+    m_result.navigationLimited = event.navigation_limited;
+    for (const auto &node : event.directories) {
+        if (node.count > limits.entries) {
+            m_result.error = "resource_limit";
+            return;
+        }
+        m_result.directories.append({eventText(node.id), eventText(node.parent),
+                                     eventText(node.name), eventText(node.path),
+                                     static_cast<int>(node.count)});
+    }
+    m_result.total = static_cast<int>(event.total);
+    m_result.archiveTotal = static_cast<int>(event.archive_total);
+    m_format = eventText(event.format);
+    m_updateAllowed = event.update_allowed;
+    m_editRestriction = event.edit_restriction;
+    m_archiveFolder = eventText(event.folder_name);
+    m_sourceGroup = eventText(event.source_group);
+    m_result.session = QString::number(event.session);
+    const bool nativeFormat =
+        QStringList{QStringLiteral("7z"), QStringLiteral("RAR"), QStringLiteral("CAB"),
+                    QStringLiteral("ISO"), QStringLiteral("UDF")}
+            .contains(m_format, Qt::CaseInsensitive);
+    const auto formatLabel = m_format.toStdString();
+    const bool unknownPacked =
+        std::find(xdzip_formats::UnknownPackedLabels.begin(),
+                  xdzip_formats::UnknownPackedLabels.end(),
+                  std::string_view(formatLabel)) != xdzip_formats::UnknownPackedLabels.end();
+    for (const auto &row : event.rows) {
+        const bool lz4 = m_format == QStringLiteral("LZ4") || m_format == QStringLiteral("TAR.LZ4");
+        const bool zstd = m_format == QStringLiteral("ZSTD") ||
+                          m_format == QStringLiteral("TAR.ZST") ||
+                          m_format == QStringLiteral("DEB");
+        const bool textEnvelope =
+            m_format == QStringLiteral("UU") || m_format == QStringLiteral("XXE");
+        const bool unixCompress =
+            m_format == QStringLiteral("Z") || m_format == QStringLiteral("TAR.Z");
+        const bool brotli =
+            m_format == QStringLiteral("Brotli") || m_format == QStringLiteral("TAR.BR");
+        const bool lha = m_format == QStringLiteral("LZH");
+        const auto lhaMethod = row.method >= 1 && row.method <= 7
+                                   ? QStringLiteral("LH%1").arg(row.method)
+                               : row.method == 8                     ? QStringLiteral("LZS")
+                               : row.method == 9                     ? QStringLiteral("LZ5")
+                               : row.method == 0 || row.method == 10 ? QStringLiteral("Store")
+                                                                     : QString::number(row.method);
+        const auto arjMethod = row.method == 0   ? QStringLiteral("Store")
+                               : row.method <= 4 ? QStringLiteral("ARJ%1").arg(row.method)
+                                                 : QString::number(row.method);
+        const auto arcMethod = row.method == 1 || row.method == 2 ? QStringLiteral("Store")
+                               : row.method >= 3 && row.method <= 9
+                                   ? QStringLiteral("ARC%1").arg(row.method)
+                                   : QString::number(row.method);
+        const auto method = m_format == QStringLiteral("ARC")   ? arcMethod
+                            : m_format == QStringLiteral("ARJ") ? arjMethod
+                            : m_format == QStringLiteral("PMA") && row.method == 0
+                                ? QStringLiteral("Store")
+                            : m_format == QStringLiteral("PMA") && row.method <= 2
+                                ? QStringLiteral("PM%1").arg(row.method)
+                            : lha                               ? lhaMethod
+                            : textEnvelope && row.method == 0   ? QStringLiteral("UU")
+                            : textEnvelope && row.method == 1   ? QStringLiteral("XXE")
+                            : textEnvelope && row.method == 2   ? QStringLiteral("Base64")
+                            : unixCompress && row.method == 257 ? QStringLiteral("LZW")
+                            : brotli && row.method == 258       ? QStringLiteral("Brotli")
+                            : zstd && row.method == 93          ? QStringLiteral("Zstandard")
+                            : lz4 && row.method == 256          ? QStringLiteral("LZ4")
+                            : nativeFormat                      ? m_format
+                            : m_format == QStringLiteral("TAR") ? qtTrId("ui.695e3ecda20b")
+                            : row.method == 0                   ? QStringLiteral("Store")
+                            : row.method == 8                   ? QStringLiteral("Deflate")
+                            : row.method == 9                   ? QStringLiteral("Deflate64")
+                            : row.method == 12                  ? QStringLiteral("BZip2")
+                            : row.method == 14                  ? QStringLiteral("LZMA")
+                            : row.method == 95                  ? QStringLiteral("XZ")
+                                                                : QString::number(row.method);
+        QStringList status;
+        if (row.directory)
+            status << qtTrId("ui.52daa71ebc31");
+        if (row.encrypted)
+            status << qtTrId("ui.320c254572c4");
+        if (row.warning)
+            status << qtTrId("ui.ffcf372a457f");
+        if (row.physical && !row.size_known)
+            status << qtTrId("archive.unknownSize");
+        const auto path = eventText(row.name);
+        auto name = path;
+        if (m_result.criteria.search.isEmpty()) {
+            while (name.endsWith('/'))
+                name.chop(1);
+            name = name.section('/', -1);
+        }
+        auto type = row.directory ? qtTrId("ui.7c7802d8adae") : QFileInfo(name).suffix().toUpper();
+        if (type == QStringLiteral("JPG"))
+            type = QStringLiteral("JPEG");
+        if (type.isEmpty())
+            type = qtTrId("ui.39932f24fe11");
+        // DOS values describe archive-local wall time, with no timezone information.
+        const auto packed = row.modified_dos;
+        const QDate date(1980 + (packed >> 25), (packed >> 21) & 15, (packed >> 16) & 31);
+        const QTime time((packed >> 11) & 31, (packed >> 5) & 63, (packed & 31) * 2);
+        const auto modified = date.isValid() && time.isValid()
+                                  ? QLocale().toString(date, qtTrId("format.date"))
+                                  : QString{};
+        m_result.rows.append(
+            {eventText(row.id),
+             {name, row.physical && row.size_known ? QString::number(row.size) : QString{},
+              row.physical && !unknownPacked &&
+                      !(m_format == QStringLiteral("DEB") && row.method != 0)
+                  ? QString::number(row.packed_size)
+                  : QString{},
+              type, modified},
+             row.directory,
+             row.directory && !row.warning,
+             row.physical ? method : QString{},
+             status.isEmpty() ? qtTrId("ui.aeae1c799c94") : status.join(qtTrId("common.separator")),
+             row.warning || row.encrypted,
+             path,
+             eventText(row.navigation_id),
+             row.physical,
+             row.size_known,
+             modified.isEmpty() ? QString{}
+                                : modified + " " + time.toString(QStringLiteral("HH:mm:ss"))});
+    }
+    m_hasPayload = true;
+}
+
+void BrowserController::finishRequest(const xdzip::reader::Event &event) {
+    m_busy = false;
+    m_pending = 0;
+    if (m_openCancellation == OpenCancellation::AwaitingOpen) {
+        beginCancelledOpenCleanup();
+        return;
+    }
+    if (m_openCancellation == OpenCancellation::Snapshot ||
+        m_openCancellation == OpenCancellation::Closing) {
+        auto error = eventText(event.error);
+        if (error.isEmpty() && !m_hasPayload)
+            error = QStringLiteral("runtime_unavailable");
+        if (error.isEmpty() && m_openCancellation == OpenCancellation::Snapshot &&
+            m_cancelledOpenSession) {
+            xdzip::reader::Command command{};
+            command.kind = xdzip::reader::CommandKind::CloseSession;
+            command.session = m_cancelledOpenSession;
+            m_openCancellation = OpenCancellation::Closing;
+            submit(std::move(command));
+            return;
+        }
+        finishCancelledOpenCleanup(error);
+        return;
+    }
+    // Even a failed query must release a queued successful creation output.
+    if (!m_createdArchivesToOpen.isEmpty())
+        QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
+    if (m_deferredQuery && eventText(event.error) != "source_changed") {
+        m_creationPreviewPending |= m_result.kind == RequestKind::InspectInputs;
+        auto latest = std::move(*m_deferredQuery);
+        m_deferredQuery.reset();
+        submitQuery(std::move(latest.command), std::move(latest.criteria));
+        return;
+    }
+    m_deferredQuery.reset();
+    if (!event.error.empty())
+        m_result.error = eventText(event.error);
+    if (m_result.kind == RequestKind::Open &&
+        (m_result.error == "password_required" || m_result.error == "wrong_password" ||
+         m_result.error == "password_or_integrity")) {
+        if (m_openPasswordGeneration == std::numeric_limits<quint64>::max()) {
+            m_result.error = "resource_limit";
+        } else {
+            m_openPasswordPrompt = {{"taskId", "open"},
+                                    {"promptId", QString::number(++m_openPasswordGeneration)},
+                                    {"name", m_title},
+                                    {"kind", "open"},
+                                    {"retry", m_result.error != "password_required"}};
+            m_result = {};
+            m_message.clear();
+            emit changed();
+            emit tasksChanged();
+            return;
+        }
+    }
+    if (!m_hasPayload && m_result.error.isEmpty())
+        m_result.error = "runtime_unavailable";
+    if (m_result.kind == RequestKind::FreezeSelection) {
+        if (m_result.error.isEmpty()) {
+            m_extractionSelectors = std::move(m_result.frozenSelectors);
+            m_result = {};
+            presentExtractionIntent(false);
+        } else {
+            m_message = explain(m_result.error);
+            m_result = {};
+            emit changed();
+        }
+        return;
+    }
+    if (m_result.kind == RequestKind::InspectInputs) {
+        if (m_result.previewPaths == m_creationPreviewPaths && m_result.error.isEmpty()) {
+            m_creationInputs = m_result.inputInfo;
+            emit creationInputsChanged();
+        }
+        m_result = {};
+        emit changed();
+        QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
+        return;
+    }
+    if (m_result.kind == RequestKind::ViewportPage) {
+        if (m_result.error.isEmpty()) {
+            m_model.installPage(m_result.viewportOffset, std::move(m_result.rows));
+            m_summaryRevision = std::numeric_limits<quint64>::max();
+            if (m_deferredDetailRow >= 0 && m_model.rowAt(m_deferredDetailRow))
+                showRowDetail(m_deferredDetailRow);
+        } else if (m_result.error == "source_changed" || m_result.error == "stale_session")
+            invalidateSnapshot();
+        m_result = {};
+        emit changed();
+        QTimer::singleShot(0, this, &BrowserController::drainPage);
+        return;
+    }
+    // Fetch bounded transport batches until the current query is complete. The model
+    // commits once, preserving row identity and avoiding visible paging or partial sorts.
+    if (m_result.error.isEmpty() && m_result.isQuery() && m_result.total <= 1024 &&
+        m_result.rows.size() < m_result.total) {
+        xdzip::reader::Command command{};
+        command.kind = xdzip::reader::CommandKind::Browse;
+        command.session = m_result.session.toULongLong();
+        command.directory = rust::String(m_result.criteria.directory.toStdString());
+        command.text = rust::String(m_result.criteria.search.toStdString());
+        command.query = m_result.query;
+        command.generation = m_result.generation;
+        command.revision = m_result.revision;
+        command.offset = static_cast<std::uint64_t>(m_result.rows.size());
+        command.sort = static_cast<std::uint8_t>(m_result.criteria.sort);
+        submitPrepared(std::move(command), std::move(m_result));
+        return;
+    }
+    if (m_result.kind == RequestKind::CheckTarget) {
+        const auto error = m_result.error;
+        const bool currentSource = m_activeTarget && !m_activeTarget->creation &&
+                                   m_activeTarget->revision == m_targetRevision &&
+                                   m_activeTarget->session == m_session &&
+                                   m_extractionIntent.value("session").toString() == m_session;
+        finishTargetCheck(error, m_result.leftovers);
+        if (currentSource && (error == "source_changed" || error == "stale_session")) {
+            invalidateSnapshot();
+            m_message = explain(error);
+        }
+        m_result = {};
+        emit changed();
+        emit extractionChanged();
+        QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
+        return;
+    }
+    m_message = explain(m_result.error);
+    if (m_result.startsTask()) {
+        const bool extraction = m_result.kind == RequestKind::Extraction;
+        const bool creating = m_result.isCreationTask();
+        const bool updating = m_result.kind == RequestKind::ArchiveEdit;
+        const bool checking = m_result.kind == RequestKind::ArchiveCheck;
+        if (creating)
+            m_creationError = m_result.error.isEmpty() ? QString{} : m_message;
+        const QString taskId = m_result.taskId;
+        if (updating && taskId.isEmpty()) {
+            if (isEntryEdit(m_archiveOperation))
+                m_entryEditError = m_message;
+            m_archiveOperation.clear();
+        }
+        m_extractionIntent.insert("error", m_message);
+        if (m_result.error == "source_changed" || m_result.error == "stale_session")
+            invalidateSnapshot();
+        m_result = {};
+        emit changed();
+        emit extractionChanged();
+        emit tasksChanged();
+        if (extraction && !taskId.isEmpty())
+            emit extractionStarted(taskId);
+        if (updating && !taskId.isEmpty())
+            emit updateStarted(taskId);
+        else if (creating && !taskId.isEmpty())
+            emit creationStarted(taskId);
+        if (checking && !taskId.isEmpty())
+            emit archiveTestStarted(taskId);
+        QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
+        return;
+    }
+    if (m_result.kind == RequestKind::CloseSession && m_result.error.isEmpty()) {
+        m_ready = false;
+        m_title.clear();
+        m_session.clear();
+        m_committedQuery = {};
+        restoreQuery();
+        m_total = m_archiveTotal = 0;
+        m_selectionAnchor.clear();
+        m_selectionAnchorRow = -1;
+        clearListing();
+        m_preflightReport.clear();
+        m_result = {};
+        emit changed();
+    } else if (m_result.kind == RequestKind::Preflight) {
+        m_preflightReport =
+            m_result.error.isEmpty() ? m_result.report : QVariantMap{{"error", m_message}};
+        if (m_result.error == "source_changed" || m_result.error == "stale_session" ||
+            m_result.error == "runtime_unavailable")
+            invalidateSnapshot();
+        m_result = {};
+        QPointer<BrowserController> alive(this);
+        emit changed();
+        if (alive)
+            emit preflightReady();
+    } else {
+        if (!m_result.error.isEmpty() && m_ready && !m_result.replaceDirectories &&
+            m_result.error != "source_changed" && m_result.error != "stale_session" &&
+            m_result.error != "runtime_unavailable") {
+            restoreQuery();
+            m_result = {};
+            emit changed();
+            return;
+        }
+        if (!m_result.error.isEmpty()) {
+            invalidateSnapshot();
+            m_result = {};
+            emit changed();
+            return;
+        }
+        m_ready = true;
+        if (m_result.replaceDirectories)
+            emit archiveOpened(m_sourcePath);
+        m_committedQuery = m_result.criteria;
+        restoreQuery();
+        if (m_result.replaceDirectories)
+            m_archiveTotal = m_ready ? m_result.archiveTotal : 0;
+        if (!m_ready || m_result.replaceDirectories)
+            replaceDirectories(m_ready ? m_result.directories : QList<DirectoryRow>{});
+        m_navigationLimited = m_ready && m_result.navigationLimited;
+        m_selectionAnchor.clear();
+        m_selectionAnchorRow = -1;
+        m_desiredPage = -1;
+        m_deferredDetailRow = -1;
+        m_selectionAnchorRow = -1;
+        m_pageQuery = m_result.query;
+        m_pageGeneration = m_result.generation;
+        m_pageRevision = m_result.revision;
+        if (m_result.total > 1024)
+            m_model.replacePaged(m_result.total, std::move(m_result.rows),
+                                 QStringLiteral("%1.%2.%3")
+                                     .arg(m_pageQuery)
+                                     .arg(m_pageGeneration)
+                                     .arg(m_pageRevision));
+        else
+            m_model.replace(m_ready ? std::move(m_result.rows) : QList<BrowserRow>{});
+        clearContentPreview();
+        m_detail.clear();
+        m_total = m_ready ? m_result.total : 0;
+        m_session = m_ready ? m_result.session : QString{};
+        m_result = {};
+        if (restoreUpdatedLocation())
+            return;
+        m_archiveOperation.clear();
+        emit changed();
+    }
+    QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
+}
+
 void BrowserController::receive(const xdzip::reader::Event &event) {
     using xdzip::reader::EventKind;
-    const auto text = [](const rust::String &value) {
-        return QString::fromUtf8(value.data(), static_cast<qsizetype>(value.size()));
-    };
     if (event.kind == EventKind::RuntimeFault) {
         setNativeDragActive(false);
         m_admissionRetry.stop();
@@ -1890,15 +2411,11 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         invalidateTarget();
         invalidateCreationTarget();
         m_total = 0;
-        m_offset = 0;
         m_session.clear();
         m_pending = 0;
         m_busy = false;
         m_ready = false;
-        m_model.replace({});
-        replaceDirectories({});
-        clearContentPreview();
-        m_detail.clear();
+        clearListing();
         m_preflightReport.clear();
         m_openPasswordPrompt.clear();
         m_message = explain("runtime_unavailable");
@@ -1909,131 +2426,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
     if (handleTransferEvent(event))
         return;
     if (event.kind == EventKind::TaskUpdate) {
-        const auto &t = event.task;
-        // The independent task lane can publish before TaskAccepted. Bind only
-        // this pending request/session; the real acknowledgement still gates UI intent.
-        if (taskStarting() && m_pending && event.request_id == m_pending && t.id &&
-            t.session == m_result.taskSession && !m_result.observedTask)
-            m_result.observedTask = t.id;
-        handleTransferTask(t);
-        const auto status = text(t.status);
-        const bool terminal = status == "succeeded" || status == "failed" || status == "cancelled";
-        if (m_tasks.value(t.id).value("terminal").toBool() && !terminal)
-            return;
-        if (terminal)
-            m_cancellingTasks.remove(t.id);
-        QVariantList details;
-        for (const auto &entry : t.details)
-            details.append(QVariantMap{{"name", text(entry.name)},
-                                       {"size", QString::number(entry.size)},
-                                       {"status", text(entry.status)},
-                                       {"errorCode", text(entry.error)},
-                                       {"error", explain(text(entry.error))}});
-        QVariantMap value{
-            {"openPath", text(t.open_path)},
-            {"openAccepted", m_tasks.value(t.id).value("openAccepted", false)},
-            {"openError", m_tasks.value(t.id).value("openError")},
-            {"details", details},
-            {"omittedDetails", QString::number(t.omitted_details)},
-            {"externalReader", t.external_reader},
-            {"outputParts", QString::number(t.output_parts)},
-            {"creating", t.creating},
-            {"kind", text(t.kind)},
-            {"format", text(t.format)},
-            {"source", text(t.source)},
-            {"totalKnown", t.total_known},
-            {"archive", t.creating
-                            ? QVariant(QFileInfo(text(t.target)).fileName())
-                            : m_tasks.value(t.id).value(
-                                  "archive", !t.source.empty()
-                                                 ? QVariant(QFileInfo(text(t.source)).fileName())
-                                                 : m_extractionIntent.value("archive", m_title))},
-            {"id", QString::number(t.id)},
-            {"session", QString::number(t.session)},
-            {"status", status},
-            {"terminal", terminal},
-            {"target", text(t.target)},
-            {"current", text(t.current)},
-            {"files", QString::number(t.files)},
-            {"declaredBytes", QString::number(t.declared_bytes)},
-            {"decodedBytes", QString::number(t.decoded_bytes)},
-            {"readBytes", QString::number(t.read_bytes)},
-            {"verifiedFiles", QString::number(t.verified_files)},
-            {"verifiedBytes", QString::number(t.verified_bytes)},
-            {"writtenBytes", QString::number(t.written_bytes)},
-            {"committedBytes", QString::number(t.committed_bytes)},
-            {"committedFiles", QString::number(t.committed_files)},
-            {"skippedFiles", QString::number(t.skipped_files)},
-            {"createdDirectories", QString::number(t.created_directories)},
-            {"elapsedMs", QString::number(t.elapsed_ms)},
-            {"errorCode", text(t.error)},
-            {"error", t.error.empty() ? m_tasks.value(t.id).value("openError").toString()
-                      : text(t.error) == "cancelled" ? qtTrId("ui.d7df27ca8d31")
-                                                     : explain(text(t.error))},
-            {"cleanupWarning", t.cleanup_warning},
-            {"outcomeUncertain", t.outcome_uncertain},
-            {"leftovers", QString::number(t.leftovers)},
-            {"promptId", t.prompt_id ? QString::number(t.prompt_id) : QString{}},
-            {"promptName", text(t.prompt_name)},
-            {"passwordPromptId",
-             t.password_prompt_id ? QString::number(t.password_prompt_id) : QString{}},
-            {"passwordPromptName", text(t.password_prompt_name)},
-            {"passwordRetry", t.password_retry},
-            {"existingBytes", QString::number(t.existing_bytes)},
-            {"incomingBytes", QString::number(t.incoming_bytes)},
-            {"overwriteAllowed", t.overwrite_allowed}};
-        const auto incoming = t.incoming_modified_dos;
-        const QDate date(1980 + (incoming >> 25), (incoming >> 21) & 15, (incoming >> 16) & 31);
-        const QTime time((incoming >> 11) & 31, (incoming >> 5) & 63, (incoming & 31) * 2);
-        value.insert("incomingModified", date.isValid() && time.isValid()
-                                             ? QLocale().toString(date, qtTrId("format.date")) +
-                                                   " " +
-                                                   QLocale().toString(time, qtTrId("format.time"))
-                                             : QString{});
-        bool validTime = false;
-        const auto existingTime = text(t.existing_modified).toLongLong(&validTime);
-        value.insert("existingModified",
-                     validTime ? QLocale().toString(QDateTime::fromSecsSinceEpoch(existingTime),
-                                                    qtTrId("format.dateTime"))
-                               : QString{});
-        const bool firstSuccess =
-            status == "succeeded" && !m_tasks.value(t.id).value("terminal").toBool();
-        m_tasks.insert(t.id, value);
-        if (firstSuccess && !t.open_path.empty())
-            openTemporaryOutput(t.id);
-        if (isArchiveEditTask(text(t.kind)) && terminal &&
-            !m_tasks.value(t.id).value("updateRefreshed").toBool()) {
-            m_tasks[t.id].insert("updateRefreshed", true);
-            const auto session = QString::number(t.session), source = text(t.source);
-            if (session == m_session)
-                m_updateActive = true;
-            QTimer::singleShot(0, this,
-                               [this, session, source] { refreshAfterUpdate(session, source); });
-        }
-        if (text(t.kind) == "create" && firstSuccess && !shellOperation) {
-            m_createdArchivesToOpen.append(text(t.target));
-            QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
-        }
-        while (m_tasks.size() > 64) {
-            auto oldest = std::find_if(m_tasks.begin(), m_tasks.end(),
-                                       [](const auto &v) { return v.value("terminal").toBool(); });
-            if (oldest == m_tasks.end())
-                break;
-            m_hiddenFinishedTasks.remove(oldest.key());
-            m_tasks.erase(oldest);
-        }
-        if (text(t.error) == "source_changed" && QString::number(t.session) == m_session) {
-            m_result.error = "source_changed";
-            m_deferredQuery.reset();
-            if (m_pending)
-                m_connection->cancel(m_pending);
-            invalidateSnapshot();
-            m_message = explain("source_changed");
-            emit changed();
-        }
-        if (terminal && m_openAfterTasks.remove(t.id) && status == "succeeded" && !t.creating)
-            QDesktopServices::openUrl(QUrl::fromLocalFile(text(t.target)));
-        emit tasksChanged();
+        receiveTaskUpdate(event);
         return;
     }
     if (m_previewRequest && event.request_id == m_previewRequest && !m_closing) {
@@ -2097,167 +2490,10 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             return;
         }
         for (const auto &id : event.selectors)
-            m_result.frozenSelectors.append(text(id));
+            m_result.frozenSelectors.append(eventText(id));
         m_hasPayload = true;
     } else if (event.kind == EventKind::Page) {
-        if (m_deferredQuery)
-            return; // superseded generation never adds rows or commits
-        const bool viewportPage = m_result.kind == RequestKind::ViewportPage;
-        if (!viewportPage && !m_result.isQuery()) {
-            m_result.error = "stale_query";
-            return;
-        }
-        const auto limits = xdzip::reader::metadata_limits();
-        if (event.query == 0 || event.revision == 0 || event.generation != m_result.generation ||
-            (m_result.query &&
-             (event.query != m_result.query || event.revision != m_result.revision ||
-              QString::number(event.session) != m_result.session))) {
-            m_result.error = "stale_query";
-            return;
-        }
-        if (event.archive_total > limits.entries || event.total > limits.entries ||
-            event.offset > event.total || event.rows.size() > limits.rows_per_batch ||
-            event.directories.size() > limits.directories ||
-            event.offset + event.rows.size() > event.total ||
-            (event.rows.empty() && event.offset < event.total) ||
-            event.offset != static_cast<quint64>(viewportPage ? m_result.viewportOffset
-                                                              : m_result.rows.size())) {
-            m_result.error = "resource_limit";
-            return;
-        }
-        if (!m_result.query) {
-            m_result.query = event.query;
-            m_result.revision = event.revision;
-            m_result.rows.reserve(
-                static_cast<qsizetype>(std::min<std::uint64_t>(event.total, 1024)));
-        }
-        m_result.replaceDirectories = m_result.replaceDirectories || event.replace_directories;
-        m_result.navigationLimited = event.navigation_limited;
-        for (const auto &node : event.directories) {
-            if (node.count > limits.entries) {
-                m_result.error = "resource_limit";
-                return;
-            }
-            m_result.directories.append({text(node.id), text(node.parent), text(node.name),
-                                         text(node.path), static_cast<int>(node.count)});
-        }
-        m_result.total = static_cast<int>(event.total);
-        m_result.archiveTotal = static_cast<int>(event.archive_total);
-        m_format = text(event.format);
-        m_updateAllowed = event.update_allowed;
-        m_editRestriction = event.edit_restriction;
-        m_archiveFolder = text(event.folder_name);
-        m_sourceGroup = text(event.source_group);
-        m_result.session = QString::number(event.session);
-        const bool nativeFormat =
-            QStringList{QStringLiteral("7z"), QStringLiteral("RAR"), QStringLiteral("CAB"),
-                        QStringLiteral("ISO"), QStringLiteral("UDF")}
-                .contains(m_format, Qt::CaseInsensitive);
-        const auto formatLabel = m_format.toStdString();
-        const bool unknownPacked =
-            std::find(xdzip_formats::UnknownPackedLabels.begin(),
-                      xdzip_formats::UnknownPackedLabels.end(),
-                      std::string_view(formatLabel)) != xdzip_formats::UnknownPackedLabels.end();
-        for (const auto &row : event.rows) {
-            const bool lz4 =
-                m_format == QStringLiteral("LZ4") || m_format == QStringLiteral("TAR.LZ4");
-            const bool zstd = m_format == QStringLiteral("ZSTD") ||
-                              m_format == QStringLiteral("TAR.ZST") ||
-                              m_format == QStringLiteral("DEB");
-            const bool textEnvelope =
-                m_format == QStringLiteral("UU") || m_format == QStringLiteral("XXE");
-            const bool unixCompress =
-                m_format == QStringLiteral("Z") || m_format == QStringLiteral("TAR.Z");
-            const bool brotli =
-                m_format == QStringLiteral("Brotli") || m_format == QStringLiteral("TAR.BR");
-            const bool lha = m_format == QStringLiteral("LZH");
-            const auto lhaMethod =
-                row.method >= 1 && row.method <= 7    ? QStringLiteral("LH%1").arg(row.method)
-                : row.method == 8                     ? QStringLiteral("LZS")
-                : row.method == 9                     ? QStringLiteral("LZ5")
-                : row.method == 0 || row.method == 10 ? QStringLiteral("Store")
-                                                      : QString::number(row.method);
-            const auto arjMethod = row.method == 0   ? QStringLiteral("Store")
-                                   : row.method <= 4 ? QStringLiteral("ARJ%1").arg(row.method)
-                                                     : QString::number(row.method);
-            const auto arcMethod = row.method == 1 || row.method == 2 ? QStringLiteral("Store")
-                                   : row.method >= 3 && row.method <= 9
-                                       ? QStringLiteral("ARC%1").arg(row.method)
-                                       : QString::number(row.method);
-            const auto method = m_format == QStringLiteral("ARC")   ? arcMethod
-                                : m_format == QStringLiteral("ARJ") ? arjMethod
-                                : m_format == QStringLiteral("PMA") && row.method == 0
-                                    ? QStringLiteral("Store")
-                                : m_format == QStringLiteral("PMA") && row.method <= 2
-                                    ? QStringLiteral("PM%1").arg(row.method)
-                                : lha                               ? lhaMethod
-                                : textEnvelope && row.method == 0   ? QStringLiteral("UU")
-                                : textEnvelope && row.method == 1   ? QStringLiteral("XXE")
-                                : textEnvelope && row.method == 2   ? QStringLiteral("Base64")
-                                : unixCompress && row.method == 257 ? QStringLiteral("LZW")
-                                : brotli && row.method == 258       ? QStringLiteral("Brotli")
-                                : zstd && row.method == 93          ? QStringLiteral("Zstandard")
-                                : lz4 && row.method == 256          ? QStringLiteral("LZ4")
-                                : nativeFormat                      ? m_format
-                                : m_format == QStringLiteral("TAR") ? qtTrId("ui.695e3ecda20b")
-                                : row.method == 0                   ? QStringLiteral("Store")
-                                : row.method == 8                   ? QStringLiteral("Deflate")
-                                : row.method == 9                   ? QStringLiteral("Deflate64")
-                                : row.method == 12                  ? QStringLiteral("BZip2")
-                                : row.method == 14                  ? QStringLiteral("LZMA")
-                                : row.method == 95                  ? QStringLiteral("XZ")
-                                                                    : QString::number(row.method);
-            QStringList status;
-            if (row.directory)
-                status << qtTrId("ui.52daa71ebc31");
-            if (row.encrypted)
-                status << qtTrId("ui.320c254572c4");
-            if (row.warning)
-                status << qtTrId("ui.ffcf372a457f");
-            if (row.physical && !row.size_known)
-                status << qtTrId("archive.unknownSize");
-            const auto path = text(row.name);
-            auto name = path;
-            if (m_result.criteria.search.isEmpty()) {
-                while (name.endsWith('/'))
-                    name.chop(1);
-                name = name.section('/', -1);
-            }
-            auto type =
-                row.directory ? qtTrId("ui.7c7802d8adae") : QFileInfo(name).suffix().toUpper();
-            if (type == QStringLiteral("JPG"))
-                type = QStringLiteral("JPEG");
-            if (type.isEmpty())
-                type = qtTrId("ui.39932f24fe11");
-            // DOS values describe archive-local wall time, with no timezone information.
-            const auto packed = row.modified_dos;
-            const QDate date(1980 + (packed >> 25), (packed >> 21) & 15, (packed >> 16) & 31);
-            const QTime time((packed >> 11) & 31, (packed >> 5) & 63, (packed & 31) * 2);
-            const auto modified = date.isValid() && time.isValid()
-                                      ? QLocale().toString(date, qtTrId("format.date"))
-                                      : QString{};
-            m_result.rows.append(
-                {text(row.id),
-                 {name, row.physical && row.size_known ? QString::number(row.size) : QString{},
-                  row.physical && !unknownPacked &&
-                          !(m_format == QStringLiteral("DEB") && row.method != 0)
-                      ? QString::number(row.packed_size)
-                      : QString{},
-                  type, modified},
-                 row.directory,
-                 row.directory && !row.warning,
-                 row.physical ? method : QString{},
-                 status.isEmpty() ? qtTrId("ui.aeae1c799c94")
-                                  : status.join(qtTrId("common.separator")),
-                 row.warning || row.encrypted,
-                 path,
-                 text(row.navigation_id),
-                 row.physical,
-                 row.size_known,
-                 modified.isEmpty() ? QString{}
-                                    : modified + " " + time.toString(QStringLiteral("HH:mm:ss"))});
-        }
-        m_hasPayload = true;
+        receivePage(event);
     } else if (event.kind == EventKind::Snapshot && m_result.kind == RequestKind::Snapshot &&
                m_openCancellation == OpenCancellation::Snapshot) {
         m_cancelledOpenSession = event.session;
@@ -2279,255 +2515,19 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             {"high_ratio", qtTrId("ui.998c9646d2cd")}};
         QStringList findings;
         for (const auto &finding : report.findings) {
-            const auto value = text(finding);
+            const auto value = eventText(finding);
             const auto split = value.indexOf(':');
             findings << qtTrId("ui.a1881d3f7bb1")
                             .arg(value.left(split),
                                  reasons.value(value.mid(split + 1), qtTrId("ui.85ab227ee09d")));
         }
         m_result.report = {{"entries", QString::number(report.entries)},
-                           {"bytes", text(report.declared_bytes)},
+                           {"bytes", eventText(report.declared_bytes)},
                            {"findingCount", QString::number(report.finding_count)},
                            {"findings", findings},
                            {"unicodeReview", report.unicode_review}};
         m_hasPayload = true;
     } else if (event.kind == EventKind::Finished) {
-        m_busy = false;
-        m_pending = 0;
-        if (m_openCancellation == OpenCancellation::AwaitingOpen) {
-            beginCancelledOpenCleanup();
-            return;
-        }
-        if (m_openCancellation == OpenCancellation::Snapshot ||
-            m_openCancellation == OpenCancellation::Closing) {
-            auto error = text(event.error);
-            if (error.isEmpty() && !m_hasPayload)
-                error = QStringLiteral("runtime_unavailable");
-            if (error.isEmpty() && m_openCancellation == OpenCancellation::Snapshot &&
-                m_cancelledOpenSession) {
-                xdzip::reader::Command command{};
-                command.kind = xdzip::reader::CommandKind::CloseSession;
-                command.session = m_cancelledOpenSession;
-                m_openCancellation = OpenCancellation::Closing;
-                submit(std::move(command));
-                return;
-            }
-            finishCancelledOpenCleanup(error);
-            return;
-        }
-        // Even a failed query must release a queued successful creation output.
-        if (!m_createdArchivesToOpen.isEmpty())
-            QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
-        if (m_deferredQuery && text(event.error) != "source_changed") {
-            m_creationPreviewPending |= m_result.kind == RequestKind::InspectInputs;
-            auto latest = std::move(*m_deferredQuery);
-            m_deferredQuery.reset();
-            submitQuery(std::move(latest.command), std::move(latest.criteria));
-            return;
-        }
-        m_deferredQuery.reset();
-        if (!event.error.empty())
-            m_result.error = text(event.error);
-        if (m_result.kind == RequestKind::Open &&
-            (m_result.error == "password_required" || m_result.error == "wrong_password" ||
-             m_result.error == "password_or_integrity")) {
-            if (m_openPasswordGeneration == std::numeric_limits<quint64>::max()) {
-                m_result.error = "resource_limit";
-            } else {
-                m_openPasswordPrompt = {{"taskId", "open"},
-                                        {"promptId", QString::number(++m_openPasswordGeneration)},
-                                        {"name", m_title},
-                                        {"kind", "open"},
-                                        {"retry", m_result.error != "password_required"}};
-                m_result = {};
-                m_message.clear();
-                emit changed();
-                emit tasksChanged();
-                return;
-            }
-        }
-        if (!m_hasPayload && m_result.error.isEmpty())
-            m_result.error = "runtime_unavailable";
-        if (m_result.kind == RequestKind::FreezeSelection) {
-            if (m_result.error.isEmpty()) {
-                m_extractionSelectors = std::move(m_result.frozenSelectors);
-                m_result = {};
-                presentExtractionIntent(false);
-            } else {
-                m_message = explain(m_result.error);
-                m_result = {};
-                emit changed();
-            }
-            return;
-        }
-        if (m_result.kind == RequestKind::InspectInputs) {
-            if (m_result.previewPaths == m_creationPreviewPaths && m_result.error.isEmpty()) {
-                m_creationInputs = m_result.inputInfo;
-                emit creationInputsChanged();
-            }
-            m_result = {};
-            emit changed();
-            QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
-            return;
-        }
-        if (m_result.kind == RequestKind::ViewportPage) {
-            if (m_result.error.isEmpty()) {
-                m_model.installPage(m_result.viewportOffset, std::move(m_result.rows));
-                m_summaryRevision = std::numeric_limits<quint64>::max();
-                if (m_deferredDetailRow >= 0 && m_model.rowAt(m_deferredDetailRow))
-                    showRowDetail(m_deferredDetailRow);
-            } else if (m_result.error == "source_changed" || m_result.error == "stale_session")
-                invalidateSnapshot();
-            m_result = {};
-            emit changed();
-            QTimer::singleShot(0, this, &BrowserController::drainPage);
-            return;
-        }
-        // Fetch bounded transport batches until the current query is complete. The model
-        // commits once, preserving row identity and avoiding visible paging or partial sorts.
-        if (m_result.error.isEmpty() && m_result.isQuery() && m_result.total <= 1024 &&
-            m_result.rows.size() < m_result.total) {
-            xdzip::reader::Command command{};
-            command.kind = xdzip::reader::CommandKind::Browse;
-            command.session = m_result.session.toULongLong();
-            command.directory = rust::String(m_result.criteria.directory.toStdString());
-            command.text = rust::String(m_result.criteria.search.toStdString());
-            command.query = m_result.query;
-            command.generation = m_result.generation;
-            command.revision = m_result.revision;
-            command.offset = static_cast<std::uint64_t>(m_result.rows.size());
-            command.sort = static_cast<std::uint8_t>(m_result.criteria.sort);
-            submitPrepared(std::move(command), std::move(m_result));
-            return;
-        }
-        if (m_result.kind == RequestKind::CheckTarget) {
-            const auto error = m_result.error;
-            const bool currentSource = m_activeTarget && !m_activeTarget->creation &&
-                                       m_activeTarget->revision == m_targetRevision &&
-                                       m_activeTarget->session == m_session &&
-                                       m_extractionIntent.value("session").toString() == m_session;
-            finishTargetCheck(error, m_result.leftovers);
-            if (currentSource && (error == "source_changed" || error == "stale_session")) {
-                invalidateSnapshot();
-                m_message = explain(error);
-            }
-            m_result = {};
-            emit changed();
-            emit extractionChanged();
-            QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
-            return;
-        }
-        m_message = explain(m_result.error);
-        if (m_result.startsTask()) {
-            const bool extraction = m_result.kind == RequestKind::Extraction;
-            const bool creating = m_result.isCreationTask();
-            const bool updating = m_result.kind == RequestKind::ArchiveEdit;
-            const bool checking = m_result.kind == RequestKind::ArchiveCheck;
-            if (creating)
-                m_creationError = m_result.error.isEmpty() ? QString{} : m_message;
-            const QString taskId = m_result.taskId;
-            if (updating && taskId.isEmpty()) {
-                if (isEntryEdit(m_archiveOperation))
-                    m_entryEditError = m_message;
-                m_archiveOperation.clear();
-            }
-            m_extractionIntent.insert("error", m_message);
-            if (m_result.error == "source_changed" || m_result.error == "stale_session")
-                invalidateSnapshot();
-            m_result = {};
-            emit changed();
-            emit extractionChanged();
-            emit tasksChanged();
-            if (extraction && !taskId.isEmpty())
-                emit extractionStarted(taskId);
-            if (updating && !taskId.isEmpty())
-                emit updateStarted(taskId);
-            else if (creating && !taskId.isEmpty())
-                emit creationStarted(taskId);
-            if (checking && !taskId.isEmpty())
-                emit archiveTestStarted(taskId);
-            QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
-            return;
-        }
-        if (m_result.kind == RequestKind::CloseSession && m_result.error.isEmpty()) {
-            m_ready = false;
-            m_title.clear();
-            m_session.clear();
-            m_committedQuery = {};
-            restoreQuery();
-            m_total = m_archiveTotal = m_offset = 0;
-            m_selectionAnchor.clear();
-            m_selectionAnchorRow = -1;
-            m_model.replace({});
-            replaceDirectories({});
-            clearContentPreview();
-            m_detail.clear();
-            m_preflightReport.clear();
-            m_result = {};
-            emit changed();
-        } else if (m_result.kind == RequestKind::Preflight) {
-            m_preflightReport =
-                m_result.error.isEmpty() ? m_result.report : QVariantMap{{"error", m_message}};
-            if (m_result.error == "source_changed" || m_result.error == "stale_session" ||
-                m_result.error == "runtime_unavailable")
-                invalidateSnapshot();
-            m_result = {};
-            QPointer<BrowserController> alive(this);
-            emit changed();
-            if (alive)
-                emit preflightReady();
-        } else {
-            if (!m_result.error.isEmpty() && m_ready && !m_result.replaceDirectories &&
-                m_result.error != "source_changed" && m_result.error != "stale_session" &&
-                m_result.error != "runtime_unavailable") {
-                restoreQuery();
-                m_result = {};
-                emit changed();
-                return;
-            }
-            if (!m_result.error.isEmpty()) {
-                invalidateSnapshot();
-                m_result = {};
-                emit changed();
-                return;
-            }
-            m_ready = true;
-            if (m_result.replaceDirectories)
-                emit archiveOpened(m_sourcePath);
-            m_committedQuery = m_result.criteria;
-            restoreQuery();
-            if (m_result.replaceDirectories)
-                m_archiveTotal = m_ready ? m_result.archiveTotal : 0;
-            if (!m_ready || m_result.replaceDirectories)
-                replaceDirectories(m_ready ? m_result.directories : QList<DirectoryRow>{});
-            m_navigationLimited = m_ready && m_result.navigationLimited;
-            m_selectionAnchor.clear();
-            m_selectionAnchorRow = -1;
-            m_desiredPage = -1;
-            m_deferredDetailRow = -1;
-            m_selectionAnchorRow = -1;
-            m_pageQuery = m_result.query;
-            m_pageGeneration = m_result.generation;
-            m_pageRevision = m_result.revision;
-            if (m_result.total > 1024)
-                m_model.replacePaged(m_result.total, std::move(m_result.rows),
-                                     QStringLiteral("%1.%2.%3")
-                                         .arg(m_pageQuery)
-                                         .arg(m_pageGeneration)
-                                         .arg(m_pageRevision));
-            else
-                m_model.replace(m_ready ? std::move(m_result.rows) : QList<BrowserRow>{});
-            clearContentPreview();
-            m_detail.clear();
-            m_total = m_ready ? m_result.total : 0;
-            m_offset = 0;
-            m_session = m_ready ? m_result.session : QString{};
-            m_result = {};
-            if (restoreUpdatedLocation())
-                return;
-            m_archiveOperation.clear();
-            emit changed();
-        }
-        QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
+        finishRequest(event);
     }
 }

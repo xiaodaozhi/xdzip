@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reject retired format libraries in production dependency closures, including build dependencies."""
+"""Check production dependency closures, including build dependencies."""
 import json
 from pathlib import Path
 import subprocess
@@ -20,9 +20,15 @@ def main():
         names = {line.split()[0] for line in tree.stdout.decode('utf-8').splitlines() if line.strip()}
         if rule['package'] not in names:
             raise SystemExit('Missing policy root: ' + rule['package'])
-        forbidden = names.intersection(rule['forbidden_runtime_dependencies'])
+        forbidden = names.intersection(rule.get('forbidden_runtime_dependencies', []))
         if forbidden:
-            raise SystemExit(rule['package'] + ': retired dependencies reachable: ' + ', '.join(sorted(forbidden)))
+            raise SystemExit(rule['package'] + ': forbidden dependencies reachable: ' + ', '.join(sorted(forbidden)))
+        if 'allowed_local_dependencies' in rule:
+            local = {name for name in names if name.startswith('xdzip-')} - {rule['package']}
+            unexpected = local.difference(rule['allowed_local_dependencies'])
+            if unexpected:
+                raise SystemExit(rule['package'] + ': unexpected local dependencies: ' +
+                                 ', '.join(sorted(unexpected)))
         print(rule['package'] + ': production dependency policy passed')
 
 
