@@ -6,6 +6,8 @@
 
 La selección en el escritorio, las solicitudes del gestor de archivos y la CLI usan las mismas reglas Rust para abrir fuentes. El anfitrión resuelve los conjuntos de volúmenes permitidos, registra su identidad y examina los bytes autorizados. El motor seleccionado proporciona los [metadatos de navegación](readonly-browser.md), a veces mediante el [proceso de formato aislado](native-codecs.md). Al abrir expresamente una entrada se crea una copia temporal verificada para la aplicación asociada. Usa una [comprobación de integridad](archive-checking.md) independiente para verificar todo el archivo comprimido.
 
+Si la cabecera parece ser TAR pero falla la comprobación estructural completa, se usa el mismo orden de candidatos y el mismo límite de entrada compartido que para una fuente no identificada. Solo se prueba LZMA independiente al final, cuando no se ha identificado una cabecera TAR ni un ZIP autoextraíble válido.
+
 <a name="xdzip-split-zip"></a>
 
 ## ZIP dividido

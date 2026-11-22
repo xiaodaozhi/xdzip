@@ -6,6 +6,8 @@
 
 Dateiauswahl auf dem Desktop, Anfragen der Dateiverwaltung und die CLI verwenden dieselben Rust-Regeln zum Öffnen von Quellen. Der Host löst zulässige Teilmengen auf, erfasst die Identität der Quelle und prüft die zugelassenen Bytes. Das gewählte Backend liefert [Metadaten zum Durchsuchen](readonly-browser.md), gegebenenfalls über den [isolierten Formatprozess](native-codecs.md). Beim ausdrücklichen Öffnen eines Eintrags entsteht eine geprüfte temporäre Kopie für die zugeordnete Anwendung. Zur Prüfung des gesamten Archivs dient eine gesonderte [Integritätsprüfung](archive-checking.md).
 
+Scheitert die vollständige Strukturprüfung eines vermeintlichen TAR-Headers, verwendet die Formaterkennung dieselbe Kandidatenreihenfolge und dasselbe gemeinsame Eingabelimit wie bei einer nicht erkannten Quelle. Eigenständiges LZMA wird erst zuletzt geprüft, wenn weder ein TAR-Header noch ein gültiges selbstentpackendes ZIP-Archiv erkannt wurde.
+
 <a name="xdzip-split-zip"></a>
 
 ## Geteilte ZIP-Archive

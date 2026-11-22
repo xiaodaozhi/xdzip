@@ -6,6 +6,8 @@
 
 La sélection dans le bureau, les demandes du gestionnaire de fichiers et la CLI suivent les mêmes règles Rust d’ouverture des sources. L’hôte résout les ensembles de volumes autorisés, relève leur identité et examine les octets autorisés. Le moteur sélectionné fournit les [métadonnées de navigation](readonly-browser.md), parfois par le [processus de format isolé](native-codecs.md). L’ouverture explicite d’une entrée crée une copie temporaire vérifiée pour l’application associée. Une [vérification d’intégrité](archive-checking.md) distincte permet de contrôler l’archive entière.
 
+Si un en-tête présente les caractéristiques de TAR mais que l’analyse complète de la structure échoue, la détection applique le même ordre de candidats et la même limite de lecture partagée que pour une source non reconnue. Le format LZMA autonome n’est essayé qu’en dernier recours, en l’absence d’en-tête TAR et d’archive ZIP autoextractible valide.
+
 <a name="xdzip-split-zip"></a>
 
 ## ZIP fractionné

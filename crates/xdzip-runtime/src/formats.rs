@@ -3,7 +3,7 @@ use std::io::{Read, SeekFrom};
 use xdzip_codec_aescrypt::AesCryptCodec;
 use xdzip_codec_alz::AlzCodec;
 use xdzip_codec_api::{
-    Format, MetadataCodec, ReadSource, ScanError,
+    Cancellation, Entry, Format, MetadataCodec, ReadSource, ScanError,
     encode::{CreationCodec, RewriteCodec},
     payload::PayloadCodec,
 };
@@ -413,32 +413,10 @@ pub(crate) fn detect_lzma(
 /// and quotas are authoritative. Invalid/unsupported guesses publish no format or rows.
 pub(crate) fn discover_weak(
     source: &mut dyn ReadSource,
-    control: &xdzip_codec_api::Cancellation,
-) -> Result<Option<(Format, Vec<xdzip_codec_api::Entry>)>, ScanError> {
-    let mut input = WeakInput {
-        source,
-        control,
-        remaining: 24 * 1024 * 1024 * 1024,
-    };
-    if let Some(found) = validate_arj(&mut input, control)? {
-        return Ok(Some(found));
-    }
-    if let Some(found) = validate_arc(&mut input, control)? {
-        return Ok(Some(found));
-    }
-    if let Some(found) = validate_bh(&mut input, control)? {
-        return Ok(Some(found));
-    }
-    if let Some(found) = validate_alz(&mut input, control)? {
-        return Ok(Some(found));
-    }
-    if let Some(found) = validate_egg(&mut input, control)? {
-        return Ok(Some(found));
-    }
-    if let Some(found) = validate_lha(&mut input, control)? {
-        return Ok(Some(found));
-    }
-    if let Some(found) = validate_brotli(&mut input, control)? {
+    control: &Cancellation,
+) -> Result<Option<(Format, Vec<Entry>)>, ScanError> {
+    let mut input = WeakInput::new(source, control);
+    if let Some(found) = discover_common_candidates(&mut input, control)? {
         return Ok(Some(found));
     }
     let Some(mut candidate) = detect_lzma(&mut input, control)? else {
@@ -447,101 +425,42 @@ pub(crate) fn discover_weak(
     let rows = scan(&mut candidate, &mut input, control, None)?;
     Ok(Some((candidate, rows)))
 }
-/// Disambiguate an unvalidated raw TAR marker with complete ARJ, LHA or Brotli admission.
+/// Disambiguate an unvalidated raw TAR marker using the common candidates.
 /// A malformed TAR reached through decoded Brotli is never exposed as an ordinary file.
 pub(crate) fn discover_ambiguous_tar(
     source: &mut dyn ReadSource,
-    control: &xdzip_codec_api::Cancellation,
-) -> Result<Option<(Format, Vec<xdzip_codec_api::Entry>)>, ScanError> {
-    let mut input = WeakInput {
-        source,
-        control,
-        remaining: 24 * 1024 * 1024 * 1024,
-    };
-    if let Some(found) = validate_arj(&mut input, control)? {
-        return Ok(Some(found));
-    }
-    if let Some(found) = validate_arc(&mut input, control)? {
-        return Ok(Some(found));
-    }
-    if let Some(found) = validate_bh(&mut input, control)? {
-        return Ok(Some(found));
-    }
-    if let Some(found) = validate_alz(&mut input, control)? {
-        return Ok(Some(found));
-    }
-    if let Some(found) = validate_egg(&mut input, control)? {
-        return Ok(Some(found));
-    }
-    if let Some(found) = validate_lha(&mut input, control)? {
-        return Ok(Some(found));
-    }
-    validate_brotli(&mut input, control)
+    control: &Cancellation,
+) -> Result<Option<(Format, Vec<Entry>)>, ScanError> {
+    discover_common_candidates(&mut WeakInput::new(source, control), control)
 }
-fn validate_arc(
-    source: &mut dyn ReadSource,
-    control: &xdzip_codec_api::Cancellation,
-) -> Result<Option<(Format, Vec<xdzip_codec_api::Entry>)>, ScanError> {
-    if !ArcCodec::candidate(source, control)? {
-        return Ok(None);
+
+type CandidateProbe = fn(&mut dyn ReadSource, &Cancellation) -> Result<bool, ScanError>;
+
+fn discover_common_candidates(
+    input: &mut WeakInput<'_>,
+    control: &Cancellation,
+) -> Result<Option<(Format, Vec<Entry>)>, ScanError> {
+    const CANDIDATES: [(Format, CandidateProbe); 5] = [
+        (Format::Arj, ArjCodec::candidate),
+        (Format::Arc, ArcCodec::candidate),
+        (Format::Bh, BhCodec::candidate),
+        (Format::Alz, AlzCodec::candidate),
+        (Format::Egg, EggCodec::candidate),
+    ];
+    for (format, probe) in CANDIDATES {
+        if !probe(input, control)? {
+            continue;
+        }
+        match codec(format).scan(input, control, limits(format)) {
+            Ok(rows) => return Ok(Some((format, rows))),
+            Err(ScanError::Invalid) => {}
+            Err(error) => return Err(error),
+        }
     }
-    match ArcCodec.scan(source, control, limits(Format::Arc)) {
-        Ok(rows) => Ok(Some((Format::Arc, rows))),
-        Err(ScanError::Invalid) => Ok(None),
-        Err(error) => Err(error),
+    if let Some(found) = validate_lha(input, control)? {
+        return Ok(Some(found));
     }
-}
-fn validate_bh(
-    source: &mut dyn ReadSource,
-    control: &xdzip_codec_api::Cancellation,
-) -> Result<Option<(Format, Vec<xdzip_codec_api::Entry>)>, ScanError> {
-    if !BhCodec::candidate(source, control)? {
-        return Ok(None);
-    }
-    match BhCodec.scan(source, control, limits(Format::Bh)) {
-        Ok(rows) => Ok(Some((Format::Bh, rows))),
-        Err(ScanError::Invalid) => Ok(None),
-        Err(error) => Err(error),
-    }
-}
-fn validate_alz(
-    source: &mut dyn ReadSource,
-    control: &xdzip_codec_api::Cancellation,
-) -> Result<Option<(Format, Vec<xdzip_codec_api::Entry>)>, ScanError> {
-    if !AlzCodec::candidate(source, control)? {
-        return Ok(None);
-    }
-    match AlzCodec.scan(source, control, limits(Format::Alz)) {
-        Ok(rows) => Ok(Some((Format::Alz, rows))),
-        Err(ScanError::Invalid) => Ok(None),
-        Err(error) => Err(error),
-    }
-}
-fn validate_egg(
-    source: &mut dyn ReadSource,
-    control: &xdzip_codec_api::Cancellation,
-) -> Result<Option<(Format, Vec<xdzip_codec_api::Entry>)>, ScanError> {
-    if !EggCodec::candidate(source, control)? {
-        return Ok(None);
-    }
-    match EggCodec.scan(source, control, limits(Format::Egg)) {
-        Ok(rows) => Ok(Some((Format::Egg, rows))),
-        Err(ScanError::Invalid) => Ok(None),
-        Err(error) => Err(error),
-    }
-}
-fn validate_arj(
-    source: &mut dyn ReadSource,
-    control: &xdzip_codec_api::Cancellation,
-) -> Result<Option<(Format, Vec<xdzip_codec_api::Entry>)>, ScanError> {
-    if !ArjCodec::candidate(source, control)? {
-        return Ok(None);
-    }
-    match ArjCodec.scan(source, control, limits(Format::Arj)) {
-        Ok(rows) => Ok(Some((Format::Arj, rows))),
-        Err(ScanError::Invalid) => Ok(None),
-        Err(error) => Err(error),
-    }
+    validate_brotli(input, control)
 }
 fn validate_lha(
     source: &mut dyn ReadSource,
@@ -581,8 +500,17 @@ fn validate_brotli(
 }
 struct WeakInput<'a> {
     source: &'a mut dyn ReadSource,
-    control: &'a xdzip_codec_api::Cancellation,
+    control: &'a Cancellation,
     remaining: u64,
+}
+impl<'a> WeakInput<'a> {
+    fn new(source: &'a mut dyn ReadSource, control: &'a Cancellation) -> Self {
+        Self {
+            source,
+            control,
+            remaining: 24 * 1024 * 1024 * 1024,
+        }
+    }
 }
 impl Read for WeakInput<'_> {
     fn read(&mut self, bytes: &mut [u8]) -> std::io::Result<usize> {
@@ -792,33 +720,58 @@ mod tests {
             }
             assert_eq!(input.remaining, 0);
         }
-        for error in [
-            ScanError::Io,
-            ScanError::Limit,
-            ScanError::Cancelled,
-            ScanError::SourceChanged,
+        for discover in [
+            discover_weak as fn(&mut dyn ReadSource, &Cancellation) -> _,
+            discover_ambiguous_tar,
         ] {
+            for error in [
+                ScanError::Io,
+                ScanError::Limit,
+                ScanError::Cancelled,
+                ScanError::SourceChanged,
+            ] {
+                let calls = Rc::new(Cell::new(0));
+                let mut source = Source {
+                    data: Cursor::new(bytes.clone()),
+                    reads: Rc::clone(&calls),
+                    error: Some(error),
+                };
+                assert!(matches!(discover(&mut source, &cancel), Err(e) if e == error));
+                assert_eq!(calls.get(), 1);
+            }
             let calls = Rc::new(Cell::new(0));
             let mut source = Source {
                 data: Cursor::new(bytes.clone()),
                 reads: Rc::clone(&calls),
-                error: Some(error),
+                error: None,
             };
-            assert!(matches!(discover_weak(&mut source,&cancel),Err(e) if e==error));
-            assert_eq!(calls.get(), 1);
+            let cancelled = Cancellation::default();
+            cancelled.cancel();
+            assert!(matches!(
+                discover(&mut source, &cancelled),
+                Err(ScanError::Cancelled)
+            ));
+            assert_eq!(calls.get(), 0);
         }
-        let calls = Rc::new(Cell::new(0));
-        let mut source = Source {
-            data: Cursor::new(bytes),
-            reads: Rc::clone(&calls),
-            error: None,
+
+        let mut source = Cursor::new(bytes.as_slice());
+        let mut input = WeakInput::new(&mut source, &cancel);
+        let (format, _) = discover_common_candidates(&mut input, &cancel)
+            .unwrap()
+            .unwrap();
+        assert_eq!(format, Format::Brotli);
+        let cost = 24 * 1024 * 1024 * 1024 - input.remaining;
+        assert!(cost > 10, "earlier probes must consume the same ledger");
+        let mut source = Cursor::new(bytes.as_slice());
+        let mut input = WeakInput {
+            remaining: cost - 1,
+            ..WeakInput::new(&mut source, &cancel)
         };
-        cancel.cancel();
         assert!(matches!(
-            discover_weak(&mut source, &cancel),
-            Err(ScanError::Cancelled)
+            discover_common_candidates(&mut input, &cancel),
+            Err(ScanError::Limit)
         ));
-        assert_eq!(calls.get(), 0);
+        assert_eq!(input.remaining, 0);
     }
     #[test]
     fn unnamed_zero_only_stream_retains_the_empty_tar_default() {

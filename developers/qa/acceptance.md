@@ -20,6 +20,8 @@ FORMAT-STREAM: Validate ordinary GZIP against independent readers and writers at
 
 FORMAT-REGISTRY: Generate and check all Rust, C++ and installer consumers from the shared specification. Reject duplicate format/worker identities, ambiguous suffixes, invalid generated-language values and write profiles without corresponding read support. Exercise real creation routing, worker protocol IDs, drag-and-drop and Shell candidates, including mixed case, compound suffixes, numbered volumes, directories, unknown files and ordinary `.gz` candidates. A candidate is not successful content detection or extraction. Verification uses automated component and integration checks; record actual scope in the delivery issue.
 
+Verify the ordinary weak-probe path and the fallback for an invalid TAR candidate. Check the shared input budget across consecutive probes and immediate termination on cancellation, quota exhaustion or source failure. Keep TAR and ZIP SFX precedence ahead of standalone LZMA.
+
 ## Task path and result summaries
 
 Check that desktop creation opens the new archive once inside XDZip, including when an explicit open arrives before the queued automatic open. With the open-folder option enabled, successful explicit extraction opens the target directory once whether the terminal update arrives before or after task acceptance. Failed extraction and native drag-out exports leave the directory closed.
