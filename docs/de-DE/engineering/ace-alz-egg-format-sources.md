@@ -39,6 +39,8 @@ Die UnEGG-Lizenz verlangt für kommerzielle Nutzung die Zustimmung von ESTsoft, 
 
 Das Dateiformat lässt sich unabhängig vom eingeschränkten Modul implementieren. xdzip unterstützt eine eigene Implementierung von Store und rohem Deflate in einteiligen Archiven ohne Verschlüsselung und Solid-Verarbeitung. Tests für Codec, Laufzeit, CLI und Zuordnungen prüfen exakte Blockgrößen und CRC-32. Standard-BZip2 und die dokumentierten LZMA-Rahmen benötigen eigene vollständige Testdateien und Prüfung. AZO, AES/LEA, ZipCrypto, mehrteilige und Solid-Archive bleiben außerhalb des aktuellen Umfangs.
 
+ALZ und EGG prüfen ihre Container-Header unabhängig und gleichen physische Einträge mit dem jeweiligen Metadaten-Snapshot ab. Nach der Zulassung nutzen beide denselben begrenzten Leser für Store und rohes Deflate. Er prüft deklarierte Länge und CRC-32 und erfasst Eingabe, dekodierte Bytes und Aufwand über alle Einträge hinweg.
+
 <a name="xdzip-required-implementation-gates"></a>
 
 ## Voraussetzungen für die Implementierung

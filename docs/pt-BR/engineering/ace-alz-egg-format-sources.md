@@ -39,6 +39,8 @@ A licença UnEGG exige aprovação da ESTsoft para uso comercial, restringe a re
 
 É possível implementar o formato independentemente do módulo restrito. O xdzip admite uma implementação própria de Store e Deflate bruto em volume único, sem criptografia ou modo sólido. Testes do codec, do ambiente de execução, da CLI e das associações verificam tamanhos exatos de blocos e CRC-32. BZip2 padrão e o enquadramento LZMA documentado ainda exigem amostras completas separadas e revisão. AZO, AES/LEA, ZipCrypto e arquivos divididos ou sólidos continuam fora do escopo atual.
 
+ALZ e EGG validam separadamente os cabeçalhos do contêiner e conferem as entradas físicas com seus respectivos instantâneos de metadados. Após a admissão, ambos usam o mesmo leitor com limites para Store e Deflate bruto. Ele confere o tamanho declarado e o CRC-32 e contabiliza entrada, bytes decodificados e trabalho acumulado entre as entradas.
+
 <a name="xdzip-required-implementation-gates"></a>
 
 ## Requisitos de admissão da implementação

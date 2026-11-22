@@ -39,6 +39,8 @@ UnEGG 許可寫明商業使用需要 ESTsoft 批准，模組可在非商業條�
 
 線格式與受限模組在技術上可以分離。xdzip 現在已獨立實現並准入無加密、非固實普通單卷 Store/raw Deflate 切片，codec、runtime、CLI 和關聯測試覆蓋準確塊尺寸與 CRC-32。標準 BZip2 和文件定義的 LZMA 封裝仍需獨立完整樣本和複核。AZO、AES/LEA、ZipCrypto、分卷和固實配置繼續排除在目前產品邊界外。
 
+ALZ 與 EGG 分別驗證容器標頭，並依各自的中繼資料快照確認實體項目。項目通過檢查後，Store 和原始 Deflate 共用有界讀取器，核對宣告的長度及 CRC-32，並累計各項目的輸入、解碼位元組與工作量。
+
 <a name="xdzip-必要实现门槛"></a>
 
 ## 必要實現門檻

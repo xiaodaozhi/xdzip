@@ -1,0 +1,14 @@
+[package]
+name = "xdzip-codec-deflate-member"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+xdzip-codec-api = { path = "../xdzip-codec-api" }
+xdzip-compression = { path = "../xdzip-compression" }
+
+[lints]
+workspace = true

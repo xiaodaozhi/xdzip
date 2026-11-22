@@ -1776,6 +1776,7 @@ name = "xdzip-codec-alz"
 version = "0.3.0"
 dependencies = [
  "xdzip-codec-api",
+ "xdzip-codec-deflate-member",
  "xdzip-compression",
  "xdzip-crypto",
  "xdzip-domain",
@@ -1872,10 +1873,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-deflate-member"
+version = "0.3.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-compression",
+]
+
+[[package]]
 name = "xdzip-codec-egg"
 version = "0.3.0"
 dependencies = [
  "xdzip-codec-api",
+ "xdzip-codec-deflate-member",
  "xdzip-compression",
  "xdzip-crypto",
  "xdzip-domain",

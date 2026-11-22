@@ -1,21 +1,12 @@
 use std::io::{self, SeekFrom};
 use xdzip_codec_api::{Cancellation, ReadSource, ScanError, ScanLimits};
+use xdzip_codec_deflate_member::source_error;
 use xdzip_crypto::SecretSha256;
 
 const MAX_INPUT: u64 = 24 * 1024 * 1024 * 1024;
 const ALZ_HEADER: [u8; 4] = [0x41, 0x4c, 0x5a, 0x01];
 const LOCAL_HEADER: [u8; 4] = [0x42, 0x4c, 0x5a, 0x01];
 const END_HEADER: [u8; 4] = [0x43, 0x4c, 0x5a, 0x02];
-
-pub(crate) fn source_error(error: &io::Error) -> ScanError {
-    match ScanError::from_source_error(error) {
-        stop @ (ScanError::Cancelled
-        | ScanError::Limit
-        | ScanError::Io
-        | ScanError::SourceChanged) => stop,
-        _ => ScanError::Io,
-    }
-}
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Record {

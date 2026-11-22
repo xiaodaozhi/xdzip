@@ -31,6 +31,8 @@ The UnEGG license says commercial use requires ESTsoft approval, redistribution 
 
 The line format is technically separable from the restricted module. xdzip now admits an independently implemented non-encrypted, non-solid single-volume Store/raw-Deflate slice, with exact block sizes and CRC-32 covered by codec, runtime, CLI and association tests. Standard BZip2 and the documented LZMA framing still require separate complete samples and review. AZO, AES/LEA, ZipCrypto, split and solid archives remain outside the current product boundary.
 
+ALZ and EGG independently validate container headers and resolve physical entries against their metadata snapshots. After admission, both use the same bounded reader for Store and raw Deflate. It checks the declared length and CRC-32 and accounts for input, decoded bytes and work across members.
+
 ## Required implementation gates
 
 1. Keep these references outside the product tree and verify the pinned hashes before use.

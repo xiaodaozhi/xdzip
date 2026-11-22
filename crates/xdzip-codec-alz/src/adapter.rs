@@ -9,6 +9,7 @@ use xdzip_codec_api::{
     names::{self, NameEncoding, NameSample},
     payload::{DecodeError, DecodedSink, PayloadCodec, PayloadReader},
 };
+use xdzip_codec_deflate_member::source_error;
 use xdzip_domain::identity::EntryId;
 
 /// Independent read-only ALZ profiles. Creation, rewrite, encryption and volumes remain unavailable.
@@ -22,14 +23,14 @@ impl AlzCodec {
         cancel.check()?;
         source
             .seek(SeekFrom::Start(0))
-            .map_err(|e| crate::header::source_error(&e))?;
+            .map_err(|e| source_error(&e))?;
         let mut magic = [0u8; 4];
         let mut used = 0usize;
         while used < magic.len() {
             cancel.check()?;
             match source.read(&mut magic[used..]) {
                 Err(e) if e.kind() == ErrorKind::Interrupted && e.get_ref().is_none() => continue,
-                Err(e) => return Err(crate::header::source_error(&e)),
+                Err(e) => return Err(source_error(&e)),
                 Ok(0) => break,
                 Ok(n) if n <= magic.len() - used => used += n,
                 Ok(_) => return Err(ScanError::Io),
@@ -37,7 +38,7 @@ impl AlzCodec {
         }
         source
             .seek(SeekFrom::Start(0))
-            .map_err(|e| crate::header::source_error(&e))?;
+            .map_err(|e| source_error(&e))?;
         Ok(used == 4 && magic == [0x41, 0x4c, 0x5a, 0x01])
     }
 }

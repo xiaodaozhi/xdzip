@@ -22,6 +22,8 @@ FORMAT-REGISTRY: Generate and check all Rust, C++ and installer consumers from t
 
 Verify the ordinary weak-probe path and the fallback for an invalid TAR candidate. Check the shared input budget across consecutive probes and immediate termination on cancellation, quota exhaustion or source failure. Keep TAR and ZIP SFX precedence ahead of standalone LZMA.
 
+For ALZ and EGG, check Store and raw Deflate using owned archives. Verify the exact extracted bytes, cumulative quotas across members, and terminal failure on cancellation, CRC mismatch or incorrect Deflate termination. A failed member must leave an existing destination intact and clear staging files.
+
 ## Task path and result summaries
 
 Check that desktop creation opens the new archive once inside XDZip, including when an explicit open arrives before the queued automatic open. With the open-folder option enabled, successful explicit extraction opens the target directory once whether the terminal update arrives before or after task acceptance. Failed extraction and native drag-out exports leave the directory closed.
