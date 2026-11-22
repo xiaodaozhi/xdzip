@@ -233,13 +233,13 @@ class ShellTest : public QObject {
         ShellBatchController batch;
         batch.begin(request("create", {input}));
         batch.configuringCreation();
-        batch.reader()->startCreation({input}, source.path(), "../bad.zip", 8, 6, false);
+        batch.reader()->startCreation({input}, source.path(), "../bad.zip", 8, 6);
         QTRY_VERIFY(!batch.active());
         QVERIFY(!batch.finished());
         QVERIFY(!batch.reader()->creationError().isEmpty());
         QVERIFY(batch.results().isEmpty());
         batch.configuringCreation();
-        batch.reader()->startCreation({input}, source.path(), "one.zip", 8, 6, false);
+        batch.reader()->startCreation({input}, source.path(), "one.zip", 8, 6);
         QTRY_VERIFY_WITH_TIMEOUT(batch.finished(), 10000);
         QCOMPARE(batch.results().size(), 1);
         QCOMPARE(batch.results().first().toMap().value("status").toString(), QString("succeeded"));

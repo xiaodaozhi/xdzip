@@ -1127,7 +1127,7 @@ void BrowserController::checkCreationTarget(const QString &path) {
     queueTargetCheck(path, true);
 }
 void BrowserController::startCreation(const QStringList &inputs, const QString &target,
-                                      const QString &name, int method, int level, bool openAfter,
+                                      const QString &name, int method, int level,
                                       qulonglong volumeBytes, const QString &password, bool solid,
                                       bool encryptHeaders) {
     if (m_busy || !runtimeAvailable() || m_closing)
@@ -1168,9 +1168,6 @@ void BrowserController::startCreation(const QStringList &inputs, const QString &
     command.password = rust::String(password.toUtf8().toStdString());
     command.conflict = 0;
     m_creationError.clear();
-    // Creation auto-opens in this application; the legacy folder option is ignored.
-    Q_UNUSED(openAfter)
-    m_pendingOpenAfter = false;
     submit(std::move(command));
 }
 bool BrowserController::targetMatches(const QString &path) const {
@@ -2006,8 +2003,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             emit changed();
         }
         if (terminal && m_openAfterTasks.remove(t.id) && status == "succeeded" && !t.creating)
-            QDesktopServices::openUrl(QUrl::fromLocalFile(
-                t.creating ? QFileInfo(text(t.target)).absolutePath() : text(t.target)));
+            QDesktopServices::openUrl(QUrl::fromLocalFile(text(t.target)));
         emit tasksChanged();
         return;
     }
@@ -2044,11 +2040,9 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             m_pendingOpenAfter = false;
             const auto existing = m_tasks.value(event.task.id);
             if (existing.value("terminal").toBool()) {
-                if (existing.value("status") == "succeeded")
-                    QDesktopServices::openUrl(QUrl::fromLocalFile(
-                        existing.value("creating").toBool()
-                            ? QFileInfo(existing.value("target").toString()).absolutePath()
-                            : existing.value("target").toString()));
+                if (existing.value("status") == "succeeded" && !existing.value("creating").toBool())
+                    QDesktopServices::openUrl(
+                        QUrl::fromLocalFile(existing.value("target").toString()));
             } else
                 m_openAfterTasks.insert(event.task.id);
         }

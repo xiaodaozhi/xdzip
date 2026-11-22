@@ -433,7 +433,7 @@ OperationWindow {
                 onClicked: {
                     const method = root.hasStoreMethod && (root.compressedMethod === 0 || level.currentIndex === 0) ? 0 : root.compressedMethod;
                     root.submitting();
-                    root.controller.startCreation(root.inputs.map(item => item.path), target.text, fileName.text.trim(), method, root.levelValues[level.currentIndex], false, root.volumeBytes, root.supportsPasswordAndVolumes && usePassword.checked ? password.text : "", root.sevenZip && solid.checked, root.sevenZip && usePassword.checked && encryptHeader.checked);
+                    root.controller.startCreation(root.inputs.map(item => item.path), target.text, fileName.text.trim(), method, root.levelValues[level.currentIndex], root.volumeBytes, root.supportsPasswordAndVolumes && usePassword.checked ? password.text : "", root.sevenZip && solid.checked, root.sevenZip && usePassword.checked && encryptHeader.checked);
                     password.text = "";
                 }
             }

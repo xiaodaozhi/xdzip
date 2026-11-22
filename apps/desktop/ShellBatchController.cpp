@@ -144,7 +144,7 @@ void ShellBatchController::next() {
         m_stage = Submitting;
         m_reader.startCreation(inputs, QFileInfo(inputs.first()).absolutePath(),
                                base(inputs) + (m_request.action == "7z" ? ".7z" : ".zip"),
-                               m_request.action == "7z" ? 32 : 8, 6, false);
+                               m_request.action == "7z" ? 32 : 8, 6);
     } else {
         m_stage = Opening;
         m_reader.openPath(inputs.first());

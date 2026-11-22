@@ -810,7 +810,7 @@ class BrowserTest : public QObject {
         QVERIFY(controller);
         const int method = extension == "tar" ? 0 : extension == "7z" ? 32 : 8;
         controller->startCreation({png, jpeg, broken, textPath, invalidText, unsupported},
-                                  fixture.path(), "owned-images." + extension, method, 6, false);
+                                  fixture.path(), "owned-images." + extension, method, 6);
         QTRY_VERIFY_WITH_TIMEOUT(
             controller->ready() && !controller->busy() && controller->archiveTotal() == 6, 15000);
         auto *model = qobject_cast<ArchiveTableModel *>(controller->entries());
@@ -903,7 +903,7 @@ class BrowserTest : public QObject {
         auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
         auto *controller = window->findChild<BrowserController *>();
         QVERIFY(controller);
-        controller->startCreation(files, fixture.path(), "expanded-images.zip", 8, 6, false);
+        controller->startCreation(files, fixture.path(), "expanded-images.zip", 8, 6);
         QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy() &&
                                      controller->archiveTotal() == files.size(),
                                  15000);
@@ -964,7 +964,7 @@ class BrowserTest : public QObject {
         auto *controller = window->findChild<BrowserController *>();
         QVERIFY(controller);
         controller->startCreation({file.fileName()}, fixture.path(), "encrypted-preview.zip", 8, 6,
-                                  false, 0, secret);
+                                  0, secret);
         QTRY_VERIFY_WITH_TIMEOUT(
             controller->ready() && !controller->busy() && controller->archiveTotal() == 1, 10000);
         controller->selectOnlyRow(0);
@@ -1015,8 +1015,7 @@ class BrowserTest : public QObject {
                                              "tabs"));
             auto *controller = window->findChild<BrowserController *>();
             QVERIFY(controller);
-            controller->startCreation({textPath, pngPath}, fixture.path(), language + ".zip", 0, 6,
-                                      false);
+            controller->startCreation({textPath, pngPath}, fixture.path(), language + ".zip", 0, 6);
             QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy() &&
                                          controller->archiveTotal() == 2,
                                      15000);
@@ -2989,8 +2988,8 @@ QtObject {
         bool overlapping = false;
         connect(second, &BrowserController::creationStarted, this,
                 [&] { overlapping |= first->activeTaskCount() > 0; });
-        first->startCreation({input}, output.path(), "first.zip", 0, 6, false);
-        second->startCreation({input}, output.path(), "second.zip", 0, 6, false);
+        first->startCreation({input}, output.path(), "first.zip", 0, 6);
+        second->startCreation({input}, output.path(), "second.zip", 0, 6);
         QVERIFY(first->taskStarting());
         QVERIFY(second->taskStarting());
         const auto firstTab =
@@ -11479,7 +11478,7 @@ QtObject {
         archiveFile.close();
         // Drive the actual conflict action, then prove whole-archive cancellation
         // preserves the existing file and removes only our staging directory.
-        controller->startCreation({source}, output.path(), QStringLiteral("创建.zip"), 8, 6, false);
+        controller->startCreation({source}, output.path(), QStringLiteral("创建.zip"), 8, 6);
         auto *conflict = window->findChild<QQuickWindow *>("conflictWindow");
         QVERIFY(conflict);
         QTRY_VERIFY(conflict->isVisible());
@@ -11753,7 +11752,7 @@ QtObject {
             QTRY_VERIFY(controller->ready() && !controller->busy());
             controller->startUpdate(inputs, controller->sessionId(), controller->directoryId(), 0);
         } else {
-            controller->startCreation(inputs, output.path(), "archive.zip", 8, 6, false);
+            controller->startCreation(inputs, output.path(), "archive.zip", 8, 6);
         }
         QTRY_COMPARE(accepted.count(), 1);
         QTRY_VERIFY_WITH_TIMEOUT(controller->activeTaskCount() == 0 && !controller->busy(), 10000);
@@ -11971,7 +11970,7 @@ QtObject {
             }
         });
         QSignalSpy opened(&controller, &BrowserController::archiveOpened);
-        controller.startCreation({source}, output.path(), "created.zip", 8, 6, true);
+        controller.startCreation({source}, output.path(), "created.zip", 8, 6);
         QTRY_VERIFY_WITH_TIMEOUT(openedExplicitly && controller.ready() && !controller.busy(),
                                  10000);
         QTest::qWait(100);
@@ -12896,7 +12895,7 @@ QtObject {
         auto *controller = window->findChild<BrowserController *>();
         QVERIFY(controller);
         controller->startCreation({source}, archives.path(), QStringLiteral("encrypted.zip"), 8, 6,
-                                  false, 0, password);
+                                  0, password);
         QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy() &&
                                      controller->title() == QStringLiteral("encrypted.zip"),
                                  10000);
@@ -13115,17 +13114,21 @@ QtObject {
         QTRY_VERIFY(controller.requestClose());
 #endif
     }
-    void nativeExportDoesNotOpenDestination_data() {
+    void destinationOpensOnlyAfterSuccessfulExplicitExtraction_data() {
         QTest::addColumn<QString>("kind");
         QTest::addColumn<bool>("terminalFirst");
-        for (const auto &kind : {QString("export"), QString("export-copy")})
+        QTest::addColumn<QString>("status");
+        for (const auto &kind : {QString("extract"), QString("export"), QString("export-copy")})
             for (const bool terminalFirst : {false, true})
                 QTest::newRow(qPrintable(kind + QString::number(terminalFirst)))
-                    << kind << terminalFirst;
+                    << kind << terminalFirst << QString("succeeded");
+        QTest::newRow("failed-extract") << QString("extract") << false << QString("failed");
     }
-    void nativeExportDoesNotOpenDestination() {
+    void destinationOpensOnlyAfterSuccessfulExplicitExtraction() {
         QFETCH(QString, kind);
         QFETCH(bool, terminalFirst);
+        QFETCH(QString, status);
+        const bool exporting = kind != "extract";
         DesktopUrlRecorder recorder;
         QDesktopServices::setUrlHandler("file", &recorder, "record");
         const auto restoreHandler = qScopeGuard([] { QDesktopServices::unsetUrlHandler("file"); });
@@ -13136,13 +13139,13 @@ QtObject {
         controller.m_pending = 9001;
         controller.m_busy = true;
         controller.m_result.extraction = true;
-        controller.m_result.exporting = true;
+        controller.m_result.exporting = exporting;
         controller.m_pendingOpenAfter = true;
         xdzip::reader::Event completed{};
         completed.kind = xdzip::reader::EventKind::TaskUpdate;
         completed.task.id = 91;
         completed.task.kind = rust::String(kind.toStdString());
-        completed.task.status = rust::String("succeeded");
+        completed.task.status = rust::String(status.toStdString());
         completed.task.target = rust::String(destination.path().toStdString());
         xdzip::reader::Event accepted{};
         accepted.kind = xdzip::reader::EventKind::TaskAccepted;
@@ -13157,8 +13160,8 @@ QtObject {
         finished.kind = xdzip::reader::EventKind::Finished;
         finished.request_id = 9001;
         controller.receive(finished);
-        QCOMPARE(recorder.count, 0);
-        QCOMPARE(extractionStarted.count(), 0);
+        QCOMPARE(recorder.count, !exporting && status == "succeeded" ? 1 : 0);
+        QCOMPARE(extractionStarted.count(), exporting ? 0 : 1);
         QVERIFY(controller.m_openAfterTasks.isEmpty());
         QTRY_VERIFY(controller.requestClose());
     }

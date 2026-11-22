@@ -353,7 +353,7 @@ class BrowserController : public QObject {
         emit changed();
     }
     Q_INVOKABLE void startCreation(const QStringList &inputs, const QString &target,
-                                   const QString &name, int method, int level, bool openAfter,
+                                   const QString &name, int method, int level,
                                    qulonglong volumeBytes = 0, const QString &password = QString(),
                                    bool solid = false, bool encryptHeaders = false);
     Q_INVOKABLE void checkTarget(const QString &path);

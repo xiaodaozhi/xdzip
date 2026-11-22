@@ -22,6 +22,8 @@ FORMAT-REGISTRY: Generate and check all Rust, C++ and installer consumers from t
 
 ## Task path and result summaries
 
+Check that desktop creation opens the new archive once inside XDZip, including when an explicit open arrives before the queued automatic open. With the open-folder option enabled, successful explicit extraction opens the target directory once whether the terminal update arrives before or after task acceptance. Failed extraction and native drag-out exports leave the directory closed.
+
 TASK-PATH-SUMMARY: In both languages, themes and 100%/125%/150% font sizes, alternate short paths, deep directories and long filenames while tasks run. “Current file” stays on one line with middle elision and retains the full plain text and accessible name. Card, body and window heights stay stable, and the footer remains reachable. Ordinary extraction counts only `committedFiles`. Cover zero, one, multiple, partial-failure and truncated-detail cases, excluding skipped and unfinished files. Creation shows only “N files”, using `outputParts` for ordinary outputs and successful-task counts for batches. Cover zero, ordinary and split outputs, and truncated details, with no names or sizes in the summary. Batch creation omits the volume-group deduplication count and batch extraction retains it. Other counts and expandable details keep their existing behavior. Inspect images of the affected windows and record native visual coverage separately.
 
 ## Windows MSIX, AC-04 / AC-07 / AC-12
