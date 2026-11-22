@@ -3,6 +3,8 @@
 import importlib.util
 from pathlib import Path
 import re
+import subprocess
+import tempfile
 import tomllib
 import unittest
 
@@ -119,7 +121,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertNotIn('tags', workflow['on']['push'])
         self.assertEqual(set(workflow['jobs']), {'checks'})
         runs = '\n'.join(step.get('run', '') for step in workflow['jobs']['checks']['steps'])
-        for required in ['cargo fmt --all -- --check', 'clang-format --dry-run --Werror',
+        for required in ['cargo fmt --all -- --check', 'scripts/check-native-format.py',
                          'scripts/check-docs.py', 'scripts/check-ui-i18n.py',
                          'scripts/check-window-contracts.py', 'scripts/check-operation-components.py',
                          'scripts/test-ci-workflows.py']:
@@ -127,6 +129,58 @@ class WorkflowTests(unittest.TestCase):
         for heavy in ['cargo test', 'cmake --build', 'ctest ', 'ci-desktop.ps1',
                       'check-foundation.ps1', 'ci-evidence.py', 'ci-plan.py']:
             self.assertNotIn(heavy, runs)
+
+    def test_native_format_checks_share_the_tracked_source_inventory(self):
+        foundation = self.workflows['foundation.yml']['jobs']['cpp-format']['steps']
+        self.assertTrue(any('scripts/check-native-format.py' in step.get('run', '') for step in foundation))
+        native_format = import_script('workflow_native_format', 'check-native-format.py')
+        sources = native_format.native_sources(ROOT)
+        self.assertIn('apps/desktop/shell/NativeMessages.h', sources)
+        self.assertIn('apps/desktop/tests/sparkle_proxy_probe.m', sources)
+        self.assertIn('apps/desktop/MacTitlebar.mm', sources)
+        self.assertNotIn('apps/desktop/ArchiveFormatsGenerated.h', sources)
+        self.assertNotIn('apps/desktop/tests/preferences-compat/previous/UiPreferences.cpp', sources)
+
+    def test_strict_clippy_checks_the_whole_push_or_pull_request_tree_difference(self):
+        steps = self.workflows['docs.yml']['jobs']['checks']['steps']
+        step, = (step for step in steps if 'scripts/check-rust-clippy.py' in step.get('run', ''))
+        self.assertEqual(step['env'], {'XDZIP_EVENT_NAME': '${{ github.event_name }}',
+                                       'XDZIP_PUSH_BEFORE': '${{ github.event.before }}'})
+        clippy = import_script('workflow_rust_clippy', 'check-rust-clippy.py')
+        release_steps = self.workflows['release.yml']['jobs']['contracts']['steps']
+        self.assertTrue(any(' '.join(clippy.STRICT_CLIPPY) in step.get('run', '')
+                            for step in release_steps))
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+
+            def git(*args):
+                return subprocess.check_output(['git', *args], cwd=root, text=True).strip()
+
+            def commit(path):
+                (root / path).write_text(path, encoding='utf-8')
+                git('add', path)
+                git('-c', 'user.name=XDZip CI test', '-c', 'user.email=ci@example.invalid',
+                    'commit', '-qm', path)
+                return git('rev-parse', 'HEAD')
+
+            git('init', '-qb', 'main')
+            base = commit('README.md')
+            rust = commit('lib.rs')
+            docs = commit('notes.md')
+            self.assertTrue(clippy.should_run(root, 'push', base))  # Rust changed before the last commit.
+            self.assertFalse(clippy.should_run(root, 'push', rust))
+            self.assertTrue(clippy.should_run(root, 'push', '0' * 40))
+            self.assertTrue(clippy.should_run(root, 'workflow_dispatch', docs))
+            with tempfile.TemporaryDirectory() as clone_dir:
+                clone = Path(clone_dir).resolve()
+                git('clone', '-q', '--depth=2', root.resolve().as_uri(), str(clone))
+                self.assertTrue(clippy.should_run(clone, 'push', base))  # Fetch the missing base.
+            git('branch', 'contribution')
+            git('checkout', '-qb', 'target', base)
+            commit('maintainers.md')
+            git('-c', 'user.name=XDZip CI test', '-c', 'user.email=ci@example.invalid',
+                'merge', '--no-ff', '--no-edit', 'contribution')
+            self.assertTrue(clippy.should_run(root, 'pull_request', ''))
 
     def test_full_workflows_are_manually_dispatched_and_keep_their_gates(self):
         for filename, scope in [('foundation.yml', 'foundation'), ('qt-components.yml', 'qt')]:

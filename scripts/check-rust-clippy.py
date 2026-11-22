@@ -1,0 +1,44 @@
+"""Run the release Clippy check when the CI comparison includes Rust inputs."""
+
+import os
+from pathlib import Path
+import re
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[1]
+STRICT_CLIPPY = ['cargo', 'clippy', '--workspace', '--all-targets', '--locked', '--', '-D', 'warnings']
+RUST_INPUTS = [
+    '*.rs', 'Cargo.toml', 'Cargo.lock', ':(glob)**/Cargo.toml', ':(glob)**/Cargo.lock',
+    'rust-toolchain.toml', '.cargo', 'crates', 'third_party/brotli-rfc7932/dictionary.bin',
+    '.github/workflows/docs.yml', 'scripts/check-rust-clippy.py',
+]
+
+
+def should_run(root, event, before):
+    def git(*args, quiet=False):
+        output = subprocess.DEVNULL if quiet else None
+        return subprocess.run(['git', *args], cwd=root, stdout=output, stderr=output).returncode
+
+    if event == 'pull_request' and git('rev-parse', '--verify', 'HEAD^2', quiet=True) == 0:
+        # The checked-out test merge has the actual target tree as its first parent.
+        base = 'HEAD^1'
+    elif event == 'push' and re.fullmatch('[0-9a-f]{40}', before) and before != '0' * 40:
+        base = before
+        if git('cat-file', '-e', f'{base}^{{commit}}', quiet=True) != 0:
+            if git('fetch', '--no-tags', '--depth=1', 'origin', base) != 0:
+                return True
+    else:
+        return True
+    # A failed comparison also requires Clippy.
+    return git('diff', '--quiet', base, 'HEAD', '--', *RUST_INPUTS) != 0
+
+
+def main():
+    if should_run(ROOT, os.environ.get('XDZIP_EVENT_NAME', ''), os.environ.get('XDZIP_PUSH_BEFORE', '')):
+        return subprocess.run(STRICT_CLIPPY, cwd=ROOT).returncode
+    print('No Rust inputs changed')
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

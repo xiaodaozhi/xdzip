@@ -175,11 +175,11 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Check handwritten C and C++ formatting
+      - name: Check handwritten native source formatting
         run: |
           python3 -m venv /tmp/xdzip-format
           /tmp/xdzip-format/bin/pip install clang-format==18.1.8
-          /tmp/xdzip-format/bin/clang-format --dry-run --Werror tools/bridge-probe/smoke.cpp tools/toolchain-probe/main.cpp tools/process-metrics/main.cpp tools/launch-services-probe/main.mm tools/native-codec/*.cpp tools/native-codec/*.hpp tools/image-preview/*.cpp crates/xdzip-codec-bridge/include/*.hpp apps/desktop/*.cpp apps/desktop/*.h apps/desktop/tests/*.cpp tests/fixtures/native/*.c
+          python3 scripts/check-native-format.py --clang-format /tmp/xdzip-format/bin/clang-format
 
   foundation-gate:
     if: always() && !inputs.sdk_only && !inputs.image_only

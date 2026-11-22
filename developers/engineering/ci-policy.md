@@ -4,7 +4,9 @@ English | [简体中文](../zh-CN/engineering/ci-policy.md)
 
 ## Routine checks
 
-[CI](../../.github/workflows/docs.yml) runs one Linux job on pushes to main, pull requests, and manual dispatch. It checks documentation links and JSON, versions and UI text, generated-resource consistency, window/shared-control contracts, Rust and C/C++ formatting, workflow structure, and whitespace errors. It does not build the desktop product or run complete Rust, three-platform Qt, archive-format interoperability, packaging, or installation lifecycle checks. The target is usually under five minutes; queue and download times follow actual run records.
+[CI](../../.github/workflows/docs.yml) runs one Linux job on pushes to main, pull requests, and manual dispatch. It checks documentation links and JSON, versions and UI text, generated-resource consistency, window/shared-control contracts, Rust and native source formatting, workflow structure, and whitespace errors. Rust input changes run the same strict workspace Clippy command as release validation. CI compares the full push or pull request difference and runs Clippy on manual dispatch or when the comparison base is unavailable. It does not build the desktop product or run complete Rust, three-platform Qt, archive-format interoperability, packaging, or installation lifecycle checks. The target is usually under five minutes; queue and download times follow actual run records.
+
+Routine CI and Foundation use `scripts/check-native-format.py` with clang-format 18.1.8. The check covers tracked handwritten C, C++, Objective-C, and Objective-C++ sources. The format registry generator checks its generated native header, and the archived preferences compatibility fixture keeps its original source.
 
 Each PR update can cancel older runs for the same PR; main and manual runs use independent run identities. Failures and cancellations do not count as passes. Workflows use read-only repository permissions and pinned dependencies, without release keys. Routine CI does not start Playwright, Chromium, or another web browser.
 
@@ -27,6 +29,8 @@ Before committing and pushing, complete the build or verification appropriate to
 | Packaging, installation, and updates | Run affected local tests; use appropriate workflows as needed for isolated systems, other platforms, or real installations. |
 
 For native bridge build changes, check the desktop and isolated worker targets. Each tracks the local normal and build dependencies resolved by Cargo for its native target. Verify that a shared source change reaches the appropriate bridges and that unrelated crate sources leave them up to date. For incremental CLI staging, rebuild with the same inputs and check that staged binaries, identity and desktop context retain their timestamps. Then check that changed input bytes propagate even when size and timestamp match.
+
+The desktop product and its browser, shell and update checks link the shared session target and its `Xdzip.Native` QML registration. Keep target-specific fixtures and definitions on the executable that uses them. For changes to this target, check that its common sources compile once and verify QML loading in the product and affected test entry points.
 
 See the [developer build guide](../../docs/engineering/developer-build.md) for commands and toolchain prerequisites. Prefer the environment available on the current machine. When required tools are missing, report unexecuted checks; do not report preflight or another platform's results as a local pass. Routine checks do not require a full IDE installed locally and do not automatically install the product or change file associations.
 

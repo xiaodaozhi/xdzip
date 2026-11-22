@@ -558,11 +558,11 @@ void startMacUpdate(UpdateController *owner, const QJsonObject &candidate,
     driver->updater.automaticallyDownloadsUpdates = NO;
     NSError *error = nil;
     NSURL *proxyURL = transport.proxyMode == "custom"
-                         ? [NSURL URLWithString:native(transport.proxyAddress)]
-                         : nil;
+                          ? [NSURL URLWithString:native(transport.proxyAddress)]
+                          : nil;
     const auto proxyMode = transport.proxyMode == "none"     ? SPUXdzipDownloadProxyDirect
                            : transport.proxyMode == "custom" ? SPUXdzipDownloadProxyCustom
-                                                              : SPUXdzipDownloadProxySystem;
+                                                             : SPUXdzipDownloadProxySystem;
     if ((transport.proxyMode == "custom" && proxyURL == nil) ||
         ![driver->updater xdzip_setDownloadProxyMode:proxyMode proxyURL:proxyURL error:&error]) {
         [driver failure];

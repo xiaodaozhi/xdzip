@@ -166,10 +166,11 @@ int main(int argc, char **argv) {
         NSURL *proxy =
             parameters[@"proxy_url"] ? [NSURL URLWithString:parameters[@"proxy_url"]] : nil;
         NSString *mode = parameters[@"mode"] ?: @"custom";
-        SPUXdzipDownloadProxyMode policy = [mode isEqualToString:@"direct"] ? SPUXdzipDownloadProxyDirect
+        SPUXdzipDownloadProxyMode policy =
+            [mode isEqualToString:@"direct"]   ? SPUXdzipDownloadProxyDirect
             : [mode isEqualToString:@"system"] ? SPUXdzipDownloadProxySystem
             : [mode isEqualToString:@"custom"] ? SPUXdzipDownloadProxyCustom
-            : (SPUXdzipDownloadProxyMode)999;
+                                               : (SPUXdzipDownloadProxyMode)999;
         if (![updater xdzip_setDownloadProxyMode:policy proxyURL:proxy error:&error])
             finish(@"configuration_rejected", error);
         if (![updater startUpdater:&error])

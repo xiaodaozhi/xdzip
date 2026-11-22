@@ -274,8 +274,8 @@ bool verifyMacDesktopMenus() {
             quit = QString::fromNSString(item.title) == qtTrId("desktop.quit");
     }
     if (!about || !preferences || !quit) {
-        qWarning("Native application roles missing: about=%d preferences=%d quit=%d",
-                 about, preferences, quit);
+        qWarning("Native application roles missing: about=%d preferences=%d quit=%d", about,
+                 preferences, quit);
         return false;
     }
     int visibleGroups = 0;

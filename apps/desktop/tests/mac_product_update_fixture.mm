@@ -223,11 +223,10 @@ QString macProductUpdateFixtureFeed(const QJsonObject &candidate) {
     const auto config = configuration();
     const auto target = config.value("loopback_appcast_url").toString();
     const QUrl url(target);
-    const bool ownedHost = url.host() == "127.0.0.1" ||
-                           (config.value("native_proxy").toBool() &&
-                            url.host() == "xdzip-owned-proxy.invalid") ||
-                           (config.value("native_direct").toBool() &&
-                            url.host() == "xdzip-owned-direct.invalid");
+    const bool ownedHost =
+        url.host() == "127.0.0.1" ||
+        (config.value("native_proxy").toBool() && url.host() == "xdzip-owned-proxy.invalid") ||
+        (config.value("native_direct").toBool() && url.host() == "xdzip-owned-direct.invalid");
     if (!oldProduct() || candidate.value("appcast_url") != config.value("fixed_appcast_url") ||
         candidate.value("asset_url") != config.value("fixed_asset_url") ||
         candidate.value("version") != "0.2.0-alpha.2" || candidate.value("build").toInt() != 201 ||
@@ -241,17 +240,16 @@ QString macProductUpdateFixtureAsset(const QJsonObject &candidate, const QString
     const auto config = configuration();
     const auto target = config.value("loopback_asset_url").toString();
     const QUrl url(target);
-    const bool ownedHost = url.host() == "127.0.0.1" ||
-                           (config.value("native_proxy").toBool() &&
-                            url.host() == "xdzip-owned-proxy.invalid") ||
-                           (config.value("native_direct").toBool() &&
-                            url.host() == "xdzip-owned-direct.invalid");
+    const bool ownedHost =
+        url.host() == "127.0.0.1" ||
+        (config.value("native_proxy").toBool() && url.host() == "xdzip-owned-proxy.invalid") ||
+        (config.value("native_direct").toBool() && url.host() == "xdzip-owned-direct.invalid");
     if (!oldProduct() || candidate.value("appcast_url") != config.value("fixed_appcast_url") ||
         candidate.value("asset_url") != config.value("fixed_asset_url") ||
         requestUrl != candidate.value("asset_url").toString() ||
         candidate.value("version") != "0.2.0-alpha.2" || candidate.value("build").toInt() != 201 ||
-        url.scheme() != "http" || !ownedHost || url.port() <= 0 ||
-        !url.userInfo().isEmpty() || url.hasQuery() || url.hasFragment() ||
+        url.scheme() != "http" || !ownedHost || url.port() <= 0 || !url.userInfo().isEmpty() ||
+        url.hasQuery() || url.hasFragment() ||
         url.path() != "/owned/" + QUrl(requestUrl).fileName()) {
         failure("authenticated_asset_request_mapping");
         return {};
@@ -294,9 +292,8 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
     if (oldProduct() && scenario == "proxy-upgrade") {
         const QUrl proxy(config.value("native_proxy_address").toString());
         if ((proxy.scheme() != "http" && proxy.scheme() != "socks5") ||
-            proxy.host() != "127.0.0.1" || proxy.port() <= 0 ||
-            !proxy.userInfo().isEmpty() || !proxy.path().isEmpty() || proxy.hasQuery() ||
-            proxy.hasFragment()) {
+            proxy.host() != "127.0.0.1" || proxy.port() <= 0 || !proxy.userInfo().isEmpty() ||
+            !proxy.path().isEmpty() || proxy.hasQuery() || proxy.hasFragment()) {
             failure("native_proxy_origin");
             return;
         }
@@ -362,7 +359,8 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
         } else if (scenario == "immutable-replacement") {
             // Only this fresh installed app root is locked, after Sparkle has
             // prepared its unprivileged helper. Native commit remains unchanged.
-            struct stat before{}, after{};
+            struct stat before {
+            }, after{};
             const auto path = QFile::encodeName(installed);
             const bool owned = ::lstat(path.constData(), &before) == 0 && S_ISDIR(before.st_mode) &&
                                before.st_uid == ::geteuid();
@@ -423,15 +421,14 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
             return;
         }
         if (oldProduct() && (scenario == "proxy-upgrade" || scenario == "direct-upgrade") &&
-            state->install && updates->busy() &&
-            !state->transportChanged) {
+            state->install && updates->busy() && !state->transportChanged) {
             state->transportChanged = true;
             if (scenario == "direct-upgrade")
                 updates->configureNetwork("custom", "http://127.0.0.1:1", {});
             else
                 updates->configureNetwork("none", {}, {});
-            write("proxy-settings-deferred.json", {{"changed_while_busy", true},
-                                                     {"can_install", updates->canInstall()}});
+            write("proxy-settings-deferred.json",
+                  {{"changed_while_busy", true}, {"can_install", updates->canInstall()}});
         }
         if (!oldProduct() || (!fallback && state->install) ||
             !QFileInfo::exists(directory() + "/upgrade.json"))
