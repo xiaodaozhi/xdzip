@@ -97,6 +97,37 @@ def license_materials(output, cache):
     return materials
 
 
+def image_license_materials(output, sdk, image):
+    if not image:
+        return {}
+    target = output/'license-texts'
+    target.mkdir(parents=True, exist_ok=True)
+    materials = {}
+    for key, pin in image['components'].items():
+        filename = f'xdzip-{key}-LICENSE.txt'
+        source = sdk/'licenses'/filename
+        if digest(source) != pin['license_sha256']:
+            raise ValueError('Qt image security license material does not match the receipt')
+        shutil.copyfile(source, target/filename)
+        materials['xdzip-'+key] = {'file': 'license-texts/'+filename,
+                                  'sha256': pin['license_sha256'], 'url': pin['url']}
+    return materials
+
+
+def pin_image_components(packages, image):
+    if not image:
+        return
+    names = {'BundledLibpng': 'libpng', 'QTiffPlugin_Attribution_libtiff': 'libtiff'}
+    found = set()
+    for package in packages.values():
+        if key := names.get(package['name']):
+            pin = image['components'][key]
+            package.update(version=pin['version'], source=pin['url'], image_security_variant=image['variant'])
+            found.add(key)
+    if found != set(image['components']):
+        raise ValueError('Installed Qt SPDX lacks owners for the patched image modules')
+
+
 def closure(seeds, packages, dependencies):
     selected, missing = set(), set()
     pending = list(seeds)
@@ -116,13 +147,18 @@ def attribute(audit, root, sdk, deployment=None):
         raise ValueError('Cannot attribute failed deployment audit')
     packages, dependencies, index, documents, extracted = load_qt(sdk)
     from qt_network_security import identity as network_identity, library as sdk_library
+    from qt_image_security import identity as image_identity, image_modules
     network = network_identity(sdk, required=False)
+    image = image_identity(sdk, required=False)
+    image_paths = {path.resolve(): key for key, path in image_modules(sdk).items()} if image else {}
+    pin_image_components(packages, image)
     network_path = sdk_library(sdk, 'Network').resolve() if network else None
     provenance = {p['path']: p for p in (deployment or {}).get('sdk_files', [])}
     by_name = {}
     for relative in index:
         by_name.setdefault(PurePosixPath(relative).name, []).append(relative)
     files, seeds, gaps = [], set(), []
+    confirmed_images = set()
     macos_aliases = None
     for item in audit['files'] + audit['external_files']:
         external = item in audit['external_files']
@@ -190,6 +226,12 @@ def attribute(audit, root, sdk, deployment=None):
                 'evidence': evidence, 'owners': owners, 'upstream_checksums': checks})
             if network and sdk_file.resolve() == network_path:
                 files[-1]['network_security_variant'] = network['variant']
+            if component := image_paths.get(sdk_file.resolve()):
+                if evidence == 'filename-only-unverified-rewrite':
+                    raise ValueError('Patched Qt image module lacks verified deployment provenance')
+                files[-1]['image_security_variant'] = image['variant']
+                files[-1]['image_security_component'] = component
+                confirmed_images.add(component)
             if evidence == 'filename-only-unverified-rewrite':
                 gaps.append({'kind': 'unverified-rewrite', 'file': relative})
             if any(not c['matches_sdk'] for c in checks):
@@ -201,6 +243,8 @@ def attribute(audit, root, sdk, deployment=None):
         elif actual and actual.is_file() and native(actual, audit['platform']):
             # Includes the product and platform redistributables; do not guess their supplier.
             gaps.append({'kind': 'native-outside-qt-attribution', 'file': relative})
+    if image and audit['mode'] == 'deployed' and confirmed_images != set(image['components']):
+        raise ValueError('Deployment did not verify both patched Qt image modules')
     selected, missing = closure(seeds, packages, dependencies)
     for key in sorted(missing):
         gaps.append({'kind': 'upstream-package-reference-missing', 'ref': key})
@@ -211,7 +255,7 @@ def attribute(audit, root, sdk, deployment=None):
     return {'schema_version': 1, 'status': 'evidence-generated-release-review-required',
         'identity': audit['identity'], 'platform': audit['platform'], 'mode': audit['mode'],
         'qt_version': QT_VERSION, 'audit_sha256': hashlib.sha256(json.dumps(audit,sort_keys=True,separators=(',',':')).encode()).hexdigest(),
-        'upstream_documents': documents, 'files': files, 'network_security': network,
+        'upstream_documents': documents, 'files': files, 'network_security': network, 'image_security': image,
         'components': [packages[k] for k in sorted(selected)],
         'dependencies': [{'ref': k, 'dependsOn': sorted(dependencies.get(k, set()) & selected)} for k in sorted(selected)],
         'gaps': gaps, 'extracted_license_texts': {k: v for k, v in extracted.items() if k.split(':')[0] in {packages[s]['repository'] for s in selected}},
@@ -234,6 +278,8 @@ def main():
     report = attribute(json.loads(args.audit.read_text()), args.root.resolve(), args.qt_prefix.resolve(),
         json.loads(args.deployment.read_text()) if args.deployment else None)
     materials = license_materials(args.output.parent / 'runtime-notices', args.license_cache)
+    materials.update(image_license_materials(args.output.parent/'runtime-notices', args.qt_prefix,
+                                            report['image_security']))
     report['license_materials'] = materials
     report['license_materials_base'] = 'runtime-notices'
     for component in report['components']:

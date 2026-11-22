@@ -141,7 +141,7 @@ Windows 빌드는 프로젝트 런타임 디렉터리의 사용자별 설치 프
 
 고정 Qt 6.8.2를 유지하고 공식 qtimageformats를 추가합니다. 소스 커밋과 아카이브 다이제스트는 [구성 요소 설정](../../../scripts/corresponding-sources.json)에 있습니다. qwebp, qtiff, qtga, qicns를 사용합니다. macOS는 시스템 ImageIO를 사용하는 qmacheif도 사용합니다. libheif/libavif나 추가 이미지 백엔드를 도입하지 않습니다. GIF, BMP, ICO/CUR와 JPEG는 QtGui를 재사용하고 SVG는 제한 없는 리소스 로드 없이 기존 QtSvg를 재사용합니다.
 
-고정 모듈에는 libwebp 1.5.0과 libtiff 4.7.0이 포함되며 실제 SDK SPDX 표식으로 출처를 식별합니다. 원본 COPYING/COPYRIGHT 텍스트는 고정 커밋과 SHA-256으로 수집합니다. 일반적인 NOASSERTION 표식은 그 자체로 확인된 라이선스 결함이 아닙니다. 동적 Qt 모듈은 기존 라이선스 경로를 유지하며 실제 제공된 타사 구성 요소의 공지를 포함합니다. 정확한 버전 의존성 조회와 세 플랫폼의 디코딩, 잘못된 입력, 배포 결과는 issue와 아티팩트에 남습니다. 공지가 없는 한 번의 조회는 취약점 부재 주장이 아닙니다.
+QtImageFormats에는 libwebp 1.5.0이 포함됩니다. XDZip은 libpng 1.6.59로 QtGui를, libtiff 4.7.2로 TIFF 플러그인을 다시 빌드합니다. [고정 소스](../../../scripts/qt-image-security.json)와 SDK 출처 기록으로 제공되는 구성 요소를 식별합니다. 원본 COPYING/COPYRIGHT 텍스트는 고정 커밋과 SHA-256으로 수집합니다. 일반적인 NOASSERTION 표식은 그 자체로 확인된 라이선스 결함이 아닙니다. 동적 Qt 모듈은 기존 라이선스 경로를 유지하며 실제 제공된 타사 구성 요소의 공지를 포함합니다. 정확한 버전 의존성 조회와 세 플랫폼의 디코딩, 잘못된 입력, 배포 결과는 issue와 아티팩트에 남습니다. 공지가 없는 한 번의 조회는 취약점 부재 주장이 아닙니다.
 
 이미지 런타임은 고정된 도우미를 사용합니다. 원본 이미지, 픽셀, 작업 프로세스, 입력/출력과 실패 제한은 [미리 보기 계약](content-preview.md)을 참조하세요. 기본 준비는 기존 도구체인을 보완하고 빌드 전에 플러그인을 검사하며 배포 시 실제 도우미를 검증합니다. 두 번째 Qt SDK는 추가하지 않습니다.
 

@@ -18,7 +18,7 @@
 
 Visual Studio の PowerShell 環境を読み込むときは `USERPROFILE`、`LOCALAPPDATA`、`APPDATA` の Unicode 値を保持し、読み込み処理でエンコーディングが変わった場合は復元します。Qt は既定のキャッシュや設定パスにこれらの場所を使うため、値が壊れるとコンパイラー自体が動作してもファイルシステム操作が失敗することがあります。
 
-`prepare` は既存 SDK 内に、CVE-2026-116337 と CVE-2026-105946 に対応するセキュリティ修正済み QtNetwork をビルドして検証します。再ビルドしたライブラリーで他の実行時モジュールを置き換えることはありません。Perl、make（Windows では nmake）、OpenSSL コマンドラインツールも必要です。Ubuntu には `zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libzstd-dev libkrb5-dev` が必要です。ソース、生成宣言、ビルドキャッシュは `build/` 内に保持し、既定では `build/toolchain/qt-network-security/<platform>` を再利用します。入力と実際のライブラリーのダイジェストが一致しない場合、製品ビルドとパッケージ化は直ちに失敗します。`prepare` を再実行してください。来歴、ABI、TLS 機能、障害からの復旧は[パッチ保守ノート](../../../patches/qt/README.md)を参照してください。
+`prepare` は既存 SDK 内に、CVE-2026-116337 と CVE-2026-105946 に対応するセキュリティ修正済み QtNetwork をビルドして検証します。[固定したプレビュー用ソース](content-preview.md)から QtGui と TIFF プラグインも再構築します。Perl、make（Windows では nmake）、OpenSSL コマンドラインツールも必要です。Ubuntu には `zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libzstd-dev libkrb5-dev` が必要です。ソース、生成宣言、ビルドキャッシュは `build/` 内に保持し、既定では `build/toolchain/qt-network-security/<platform>` を再利用します。入力と実際のライブラリーのダイジェストが一致しない場合、製品ビルドとパッケージ化は直ちに失敗します。`prepare` を再実行してください。来歴、ABI、TLS 機能、障害からの復旧は[パッチ保守ノート](../../../patches/qt/README.md)を参照してください。Ubuntu では、[共通 CI 設定](../../../.github/actions/linux-release-dependencies/action.yml)に記載されたグラフィックス、アクセシビリティ、X11 の開発パッケージも必要です。
 
 共通入口のローカル依存関係には、Git が無視しコミットしない `build/toolchain/` のみを使います。
 

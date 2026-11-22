@@ -137,11 +137,18 @@ def artifact_bom(audit, source, attribution=None):
             network = attribution['network_security']
             bom['metadata']['properties'] += properties(qt_network_variant=network['variant'],
                 qt_network_sha256=network['network_sha256'], qt_network_inputs_sha256=network['inputs_sha256'])
+        if attribution.get('image_security'):
+            images = attribution['image_security']
+            bom['metadata']['properties'] += properties(qt_image_variant=images['variant'],
+                qt_image_recipe_sha256=images['recipe_sha256'],
+                qt_gui_sha256=images['module_sha256']['libpng'], qt_tiff_sha256=images['module_sha256']['libtiff'])
         for p in attribution['components']:
             c={'type':'library','bom-ref':'runtime:'+p['ref'],'name':p['name'],
                 'properties':properties(evidence='SDK upstream SPDX; not a licensing decision', upstream_ref=p['ref'],
                     license_declared=p['license_declared'], license_concluded_by_upstream=p['license_concluded_by_upstream'])}
             if p.get('version'):c['version']=p['version']
+            if p.get('image_security_variant'):
+                c['properties'] += properties(image_security_variant=p['image_security_variant'])
             if p['copyright']!='NOASSERTION':c['copyright']=p['copyright']
             if p['source'].startswith(('https://','http://','git://')):
                 c['externalReferences']=[{'type':'vcs','url':p['source']}]

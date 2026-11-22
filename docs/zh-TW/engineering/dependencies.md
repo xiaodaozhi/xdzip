@@ -172,7 +172,7 @@ Windows 構建引入 Inno Setup 6.7.3，僅用於編譯自有執行目錄的目�
 
 沿用固定 Qt 6.8.2，增加官方 qtimageformats 模組，原始碼提交、歸檔摘要見[元件配置](../../../scripts/corresponding-sources.json)。使用 qwebp、qtiff、qtga、qicns；macOS 另使用 qmacheif 呼叫系統 ImageIO，不引入 libheif／libavif 或額外圖片後端。GIF、BMP、ICO／CUR、JPEG 複用 QtGui，SVG 複用既有 QtSvg，但不開放不受限資源載入。
 
-該固定模組自帶 libwebp 1.5.0 和 libtiff 4.7.0，實際 SDK SPDX 標記其歸屬；COPYING／COPYRIGHT 原文透過固定提交和 SHA-256 收集，不把通用 NOASSERTION 標記等同於已確認許可缺陷。動態 Qt 模組沿用現有許可路線，第三方通知按具體交付元件保留。精確版本依賴查詢、三平臺解碼／壞輸入／部署結果留在 issue 和工件，不據一次未返回公告的查詢宣稱無漏洞。
+QtImageFormats 自帶 libwebp 1.5.0。XDZip 使用 libpng 1.6.59 重新建置 QtGui，使用 libtiff 4.7.2 重新建置 TIFF 外掛程式。[固定原始碼](../../../scripts/qt-image-security.json)與 SDK 歸屬記錄對應交付的元件。COPYING／COPYRIGHT 原文透過固定提交和 SHA-256 收集，不把通用 NOASSERTION 標記等同於已確認許可缺陷。動態 Qt 模組沿用現有許可路線，第三方通知按具體交付元件保留。精確版本依賴查詢、三平臺解碼／壞輸入／部署結果留在 issue 和工件，不據一次未返回公告的查詢宣稱無漏洞。
 
 圖片執行庫經固定 helper 使用，原圖、畫素、工作程序、輸入輸出及失敗限制見[預覽契約](content-preview.md)。預設準備補齊已有工具鏈，構建前檢查外掛，部署驗證實際 helper；不新增另一套 Qt SDK。
 

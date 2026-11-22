@@ -22,7 +22,7 @@
 
 透過 PowerShell 載入 Visual Studio 開發環境時，應保留 `USERPROFILE`、`LOCALAPPDATA` 和 `APPDATA` 的 Unicode 值；如果載入器改變了它們的編碼，在繼續執行前恢復原值。Qt 使用這些位置確定預設快取和配置目錄，因此即使編譯器工作正常，目錄變數損壞也可能導致檔案操作失敗。
 
-`prepare` 會在原 SDK 中構建並驗證 QtNetwork 安全補丁，修復 CVE-2026-116337 與 CVE-2026-105946，其他執行模組不被重建庫替換。另需 Perl、make（Windows 為 nmake）和 OpenSSL 命令列工具；Ubuntu 需 `zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libzstd-dev libkrb5-dev`。原始碼、生成宣告及構建快取統一在 `build/`，預設複用 `build/toolchain/qt-network-security/<平台>`。輸入和實際庫摘要不匹配時，產品構建與打包直接失敗，重新執行 `prepare`；來源、ABI、TLS 功能及失敗恢復見[補丁維護說明](../../../patches/qt/README.md)。
+`prepare` 會在原 SDK 中構建並驗證 QtNetwork 安全補丁，修復 CVE-2026-116337 與 CVE-2026-105946。它也使用[固定的預覽元件原始碼](content-preview.md)重新建置 QtGui 和 TIFF 外掛程式。另需 Perl、make（Windows 為 nmake）和 OpenSSL 命令列工具；Ubuntu 需 `zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libzstd-dev libkrb5-dev`。原始碼、生成宣告及構建快取統一在 `build/`，預設複用 `build/toolchain/qt-network-security/<平台>`。輸入和實際庫摘要不匹配時，產品構建與打包直接失敗，重新執行 `prepare`；來源、ABI、TLS 功能及失敗恢復見[補丁維護說明](../../../patches/qt/README.md)。Ubuntu 還需要[共用 CI 設定](../../../.github/actions/linux-release-dependencies/action.yml)列出的圖形、輔助功能及 X11 開發套件。
 
 
 統一入口的本地依賴只使用 `build/toolchain/`，該目錄及其內容被 Git 忽略，不提交到倉庫：

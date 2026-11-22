@@ -36,15 +36,26 @@ def main():
         return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind+data))
     png = (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', 1, 1, 8, 6, 0, 0, 0))
            + chunk(b'IDAT', zlib.compress(b'\0\x12\x34\x56\xff')) + chunk(b'IEND', b''))
-    request = b'XIP1' + struct.pack('<II', 2, len(png)) + png
-    decoded = subprocess.run([str(worker)], input=request, env=env, capture_output=True, timeout=7, check=True)
-    assert decoded.stdout[:4] == b'XIR1' and len(decoded.stdout) >= 16
-    width, height, length = struct.unpack('<III', decoded.stdout[4:16])
-    assert 0 < width <= 512 and 0 < height <= 512 and length == width*height*4
-    assert len(decoded.stdout) == 16+length
-    record = {'schema': 1, 'status': 'passed', 'formats': formats, 'native_png_dimensions': [width, height],
+    def decode(kind, source, pixel):
+        request = b'XIP1' + struct.pack('<II', kind, len(source)) + source
+        result = subprocess.run([str(worker)], input=request, env=env, capture_output=True, timeout=7, check=True)
+        assert result.stdout[:4] == b'XIR1' and len(result.stdout) >= 16
+        width, height, length = struct.unpack('<III', result.stdout[4:16])
+        assert 0 < width <= 512 and 0 < height <= 512 and length == width*height*4
+        assert result.stdout[16:] == pixel * (width*height)
+        return [width, height]
+
+    # A one-pixel, single-strip grayscale TIFF. It uses the packaged TIFF decoder.
+    identity = [(256, 4, 1), (257, 4, 1), (258, 3, 8), (259, 3, 1), (262, 3, 1),
+                (273, 4, 134), (277, 3, 1), (278, 4, 1), (279, 4, 1), (284, 3, 1)]
+    tiff = (b'II*\0\x08\0\0\0' + struct.pack('<H', len(identity)) +
+            b''.join(struct.pack('<HHII', tag, field_type, 1, value) for tag, field_type, value in identity) +
+            b'\0\0\0\0\x40')
+    record = {'schema': 1, 'status': 'passed', 'formats': formats,
+              'native_png_dimensions': decode(2, png, b'\x12\x34\x56\xff'),
+              'native_tiff_dimensions': decode(8, tiff, b'\x40\x40\x40\xff'),
               'worker_sha256': hashlib.sha256(worker.read_bytes()).hexdigest(),
-              'scope': 'Actual executable/plugin availability and owned PNG; format decoding regressions are separate.'}
+              'scope': 'Actual executable/plugin availability and owned PNG and TIFF.'}
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(record, indent=2)+'\n')
     print(json.dumps(record))

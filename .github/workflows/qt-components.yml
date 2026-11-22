@@ -48,7 +48,7 @@ jobs:
       - name: Validate native macOS attribution links
         if: runner.os == 'macOS'
         run: python3 scripts/test-macos-attribution.py
-      - name: Install Linux graphics development files
+      - name: Select the Ubuntu package mirror
         if: runner.os == 'Linux'
         run: |
           sudo python3 - <<'PY'
@@ -66,15 +66,8 @@ jobs:
                   if updated != original:
                       path.write_bytes(updated)
           PY
-          apt_options=(-o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o Acquire::Retries=2)
-          sudo apt-get "${apt_options[@]}" update
-          sudo apt-get "${apt_options[@]}" install -y \
-            libssl-dev pkg-config zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libnautilus-extension-dev libzstd-dev libkrb5-dev libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-0 \
-            libxcb1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
-            libxcb-render0 libxcb-render-util0 libxcb-shape0 libxcb-randr0 \
-            libxcb-xfixes0 libxcb-sync1 libxcb-shm0 libxcb-util1 libxcb-xinerama0 libxcb-xkb1 \
-            libx11-dev libxext-dev libx11-6 libx11-xcb1 libxrender1 libxext6 libxi6 libxfixes3 libxrandr2 \
-            libfontconfig1 libfreetype6 libice6 libsm6 fonts-noto-cjk 7zip zip patchelf xvfb xauth openbox x11-utils
+      - if: runner.os == 'Linux'
+        uses: ./.github/actions/linux-release-dependencies
       - name: Build and validate native product
         id: build_product
         shell: pwsh

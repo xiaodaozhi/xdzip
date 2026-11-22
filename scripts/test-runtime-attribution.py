@@ -53,6 +53,37 @@ class AttributionTests(unittest.TestCase):
             self.assertEqual(report['files'][0]['evidence'],'filename-only-unverified-rewrite')
             self.assertIn('unverified-rewrite',{g['kind'] for g in report['gaps']})
 
+    def test_deployed_image_modules_require_both_copies(self):
+        with tempfile.TemporaryDirectory() as temp:
+            sdk, root, audit = self.fixture(Path(temp))
+            document = sdk/'sbom/qtbase-6.8.2.spdx.json'
+            data = json.loads(document.read_text())
+            data['packages'] += [{'SPDXID': key, 'name': name} for key, name in (
+                ('libpng', 'BundledLibpng'), ('libtiff', 'QTiffPlugin_Attribution_libtiff'))]
+            document.write_text(json.dumps(data))
+            png = sdk/'lib/libQt6Core.so.6'
+            tiff = sdk/'plugins/libqtiff.so'
+            tiff.parent.mkdir()
+            tiff.write_bytes(b'\x7fELFowned TIFF test')
+            image = {'variant': 'test', 'components': {
+                key: {'version': '1', 'url': 'https://example.test/' + key}
+                for key in ('libpng', 'libtiff')}}
+            with (patch('qt_image_security.identity', return_value=image),
+                  patch('qt_image_security.image_modules', return_value={'libpng': png, 'libtiff': tiff})):
+                with self.assertRaisesRegex(ValueError, 'both patched Qt image modules'):
+                    attribute(audit, root, sdk)
+                # An SDK import inventory may omit plugins loaded by name.
+                audit['mode'] = 'sdk'
+                self.assertEqual(attribute(audit, root, sdk)['image_security'], image)
+                audit['mode'] = 'deployed'
+                deployed = root/tiff.relative_to(sdk)
+                deployed.parent.mkdir()
+                deployed.write_bytes(tiff.read_bytes())
+                audit['files'].append({'path': deployed.relative_to(root).as_posix(),
+                                       'sha256': hashlib.sha256(deployed.read_bytes()).hexdigest()})
+                files = attribute(audit, root, sdk)['files']
+                self.assertEqual({item['image_security_component'] for item in files}, {'libpng', 'libtiff'})
+
     def test_sdk_metadata_escape_and_version_mismatch_fail(self):
         with tempfile.TemporaryDirectory() as temp:
             sdk,root,audit=self.fixture(Path(temp))

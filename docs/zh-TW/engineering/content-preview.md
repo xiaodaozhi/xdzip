@@ -55,4 +55,6 @@ SVG 在三個桌面平臺使用同一 Qt Svg 渲染路徑。進入渲染器前�
 
 `desktop.py prepare --install-qt` 為新安裝或既有 SDK 補齊固定 Qt 6.8.2 的 qtimageformats；doctor 在構建前檢查 Svg 與必需外掛。官方原始碼、摘要、通知和 SDK 對應關係納入統一配置，Qt 自帶 libwebp／libtiff 與獨立新增格式庫分別管理。`check-image-preview.py` 核對實際工作程序、外掛和最小解碼，在預設測試、Windows／Linux 部署驗證及獲授權的 Mac 打包中執行；Mac 顯式補齊 offscreen 並在自檢前清除 SDK 搜尋覆蓋，不能以開發 SDK 的外掛目錄代替實際執行包驗證。
 
+桌面建置使用 Qt 6.8.2，其中 QtGui 使用 libpng 1.6.59 重新建置，TIFF 外掛程式使用 libtiff 4.7.2 重新建置。SDK 回執將這些二進位檔與固定的原始碼和授權條文對應。部署驗證使用自有 PNG 和 TIFF 圖片，並核對解碼後的像素。
+
 迴歸使用自有圖片覆蓋各型別、動畫首幀、TIFF 首頁、透明度、12MP 照片、macOS HEIC 及其他平臺拒絕、SVG 內部定義和外部資源拒絕、損壞輸入、畫素超限、異常幀、超時和取消。真實歸檔鏈路繼續覆蓋密碼、完整性、來源身份及 UI 失效清理。佈局沿用[視覺規範](../visual/design-standard.md#xdzip-%E4%B8%BB%E5%8A%A8%E5%86%85%E5%AE%B9%E9%A2%84%E8%A7%88)，按[驗證方法](../../../developers/qa/README.md)複用未改變的佈局證據，並觀察新增圖片的實際顯示。

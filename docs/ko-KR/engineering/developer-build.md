@@ -18,7 +18,7 @@
 
 Visual Studio PowerShell 환경을 로드할 때 `USERPROFILE`, `LOCALAPPDATA`, `APPDATA`의 Unicode 값을 보존하고 로더가 인코딩을 변경하면 복원합니다. Qt는 기본 캐시와 구성 경로에 이 위치를 사용하므로 값이 손상되면 컴파일러가 작동하더라도 파일 시스템 오류가 발생할 수 있습니다.
 
-`prepare`는 기존 SDK에서 CVE-2026-116337과 CVE-2026-105946에 대한 보안 패치가 적용된 QtNetwork를 빌드하고 검증합니다. 다시 빌드한 라이브러리로 다른 런타임 모듈을 교체하지 않습니다. Perl, make(Windows에서는 nmake), OpenSSL 명령줄 도구도 필요합니다. Ubuntu에는 `zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libzstd-dev libkrb5-dev`가 필요합니다. 소스, 생성된 선언과 빌드 캐시는 `build/` 아래에 두며 기본적으로 `build/toolchain/qt-network-security/<platform>`을 재사용합니다. 입력과 실제 라이브러리 다이제스트가 일치하지 않으면 제품 빌드와 패키징이 즉시 실패하므로 `prepare`를 다시 실행하세요. 출처, ABI, TLS 기능과 실패 복구는 [패치 유지 관리 노트](../../../patches/qt/README.md)를 참조하세요.
+`prepare`는 기존 SDK에서 CVE-2026-116337과 CVE-2026-105946에 대한 보안 패치가 적용된 QtNetwork를 빌드하고 검증합니다. [고정된 미리 보기 소스](content-preview.md)로 QtGui와 TIFF 플러그인도 다시 빌드합니다. Perl, make(Windows에서는 nmake), OpenSSL 명령줄 도구도 필요합니다. Ubuntu에는 `zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libzstd-dev libkrb5-dev`가 필요합니다. 소스, 생성된 선언과 빌드 캐시는 `build/` 아래에 두며 기본적으로 `build/toolchain/qt-network-security/<platform>`을 재사용합니다. 입력과 실제 라이브러리 다이제스트가 일치하지 않으면 제품 빌드와 패키징이 즉시 실패하므로 `prepare`를 다시 실행하세요. 출처, ABI, TLS 기능과 실패 복구는 [패치 유지 관리 노트](../../../patches/qt/README.md)를 참조하세요. Ubuntu에는 [공유 CI 설정](../../../.github/actions/linux-release-dependencies/action.yml)에 나온 그래픽, 접근성, X11 개발 패키지도 필요합니다.
 
 통합 진입점의 로컬 의존성은 Git이 무시하고 커밋하지 않는 `build/toolchain/`만 사용합니다.
 

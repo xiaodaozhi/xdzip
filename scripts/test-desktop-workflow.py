@@ -27,6 +27,9 @@ class WorkflowTests(unittest.TestCase):
         self.network_identity = {'variant': 'owned-fixture', 'inputs_sha256': '1'*64,
                                  'core_sha256': '2'*64, 'network_sha256': '3'*64}
         patch.object(desktop, 'qt_network_identity', return_value=self.network_identity).start()
+        patch.object(desktop, 'qt_image_identity', return_value={
+            'variant': 'owned-image-fixture', 'recipe_sha256': '4'*64,
+            'module_sha256': {'libpng': '5'*64, 'libtiff': '6'*64}}).start()
         self.qt = self.root/'sdk'
         for name in ['qmake', 'qmake.exe']:
             path = self.qt/'bin'/name

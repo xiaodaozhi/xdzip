@@ -19,6 +19,7 @@ from desktop_environment import PYTHON_PACKAGES, QT_VERSION, check_environment, 
 from association_types import WINDOWS_ICONS
 from windows_ninja_safety import check_dependencies, utf8_console
 from qt_network_security import identity as qt_network_identity
+from qt_image_security import identity as qt_image_identity
 import msix_shell_policy
 import msix_icon_assets
 
@@ -215,10 +216,13 @@ class Workflow:
     def sdk_identity(self):
         qmake = self.qt/'bin'/('qmake.exe' if self.system == 'windows' else 'qmake')
         network = qt_network_identity(self.qt)
+        images = qt_image_identity(self.qt)
         return {'prefix_key': hashlib.sha256(str(self.qt).encode()).hexdigest(),
                 'version': QT_VERSION, 'qmake_sha256': digest(qmake),
                 'network_security': {name: network[name] for name in
-                                     ('variant', 'inputs_sha256', 'core_sha256', 'network_sha256')}}
+                                     ('variant', 'inputs_sha256', 'core_sha256', 'network_sha256')},
+                'image_security': {name: images[name] for name in
+                                   ('variant', 'recipe_sha256', 'module_sha256')}}
 
     def check_cached_sdk(self, *, configured=False):
         cache = self.build/'CMakeCache.txt'
@@ -275,6 +279,8 @@ class Workflow:
         self.prepare_tools_and_qt()
         self.script('ui-fonts.py', 'prepare')
         self.script('prepare-qt-network.py', '--qt-prefix', self.qt)
+        self.script('qt_image_security.py', '--qt-prefix', self.qt,
+                    '--work-dir', self.toolchain/'qt-image-security'/self.system)
         self.doctor('build')
         self.run(['cargo', 'fetch', '--locked'])
         self.script('prepare-native-codecs.py')
@@ -305,6 +311,7 @@ class Workflow:
     def build_product(self):
         self.doctor('build')
         before = self.source()
+        sdk = self.sdk_identity()
         self.check_cached_sdk()
         self.script('sync-version.py', '--check')
         self.script('prepare-native-codecs.py', '--offline')
@@ -324,7 +331,9 @@ class Workflow:
         identity = self.run([self.app, '--version'], capture=True).strip()
         if self.source() != before:
             raise ValueError('Source changed during build; rebuild before continuing')
-        return {'source': before, 'qt_sdk': self.sdk_identity(), 'configuration': self.args.configuration,
+        if self.sdk_identity() != sdk:
+            raise ValueError('Qt SDK changed during build; rebuild before continuing')
+        return {'source': before, 'qt_sdk': sdk, 'configuration': self.args.configuration,
                 'product': label(self.app), 'product_sha256': digest(self.app),
                 'identity_text': identity, 'cmake_cache_sha256': digest(self.build/'CMakeCache.txt'),
                 'font_manifest_sha256': digest(self.build/'generated/fonts/manifest.json'),

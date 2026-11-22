@@ -5,5 +5,17 @@ runs:
   steps:
     - shell: bash
       run: |
-        sudo apt-get update
-        sudo apt-get install -y zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libnautilus-extension-dev libzstd-dev libkrb5-dev libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-0 libxcb1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render0 libxcb-render-util0 libxcb-randr0 libxcb-sync1 libxcb-xfixes0 libxcb-xinerama0 libxcb-xkb1 libx11-dev libxext-dev libx11-6 libx11-xcb1 libxrender1 libxext6 libxi6 libxrandr2 libfontconfig1 libfreetype6 libice6 libsm6 fonts-noto-cjk 7zip patchelf xvfb xauth openbox x11-utils
+        apt_options=(-o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o Acquire::Retries=2)
+        sudo apt-get "${apt_options[@]}" update
+        sudo apt-get "${apt_options[@]}" install -y \
+          libssl-dev pkg-config zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libnautilus-extension-dev \
+          libzstd-dev libkrb5-dev libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-0 libxcb1 \
+          libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render0 libxcb-render-util0 \
+          libxcb-shape0 libxcb-randr0 libxcb-xfixes0 libxcb-sync1 libxcb-shm0 libxcb-util1 libxcb-xinerama0 \
+          libxcb-xkb1 libx11-dev libxext-dev libx11-6 libx11-xcb1 libxrender1 libxext6 libxi6 libxfixes3 \
+          libxrandr2 libfontconfig1 libfreetype6 libice6 libsm6 fonts-noto-cjk 7zip zip patchelf xvfb xauth \
+          openbox x11-utils libxkbcommon-x11-dev libxcb-cursor-dev libxcb-icccm4-dev libxcb-image0-dev \
+          libxcb-keysyms1-dev libxcb-render-util0-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-xfixes0-dev \
+          libxcb-sync-dev libxcb-shm0-dev libxcb-util-dev libxcb-xinerama0-dev libxcb-xkb-dev libfontconfig-dev \
+          libfreetype-dev libx11-xcb-dev libxrender-dev libxi-dev libxfixes-dev libxrandr-dev libice-dev libsm-dev \
+          libdbus-1-dev libatspi2.0-dev libdrm-dev libgbm-dev libwayland-dev libxcb-glx0-dev

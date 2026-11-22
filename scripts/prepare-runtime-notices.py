@@ -3,7 +3,8 @@
 import argparse
 import json
 from pathlib import Path
-from runtime_attribution import ROOT, license_materials, load_qt
+from runtime_attribution import ROOT, image_license_materials, license_materials, load_qt, pin_image_components
+from qt_image_security import identity as image_identity
 from qt_psl_source import collect_runtime_source
 from qt_tika_materials import collect_runtime as collect_tika_runtime
 
@@ -14,6 +15,9 @@ parser.add_argument('--license-cache',type=Path,default=ROOT/'build/review/qt-li
 args=parser.parse_args()
 packages,dependencies,index,documents,extracted=load_qt(args.qt_prefix.resolve())
 materials=license_materials(args.output,args.license_cache)
+images=image_identity(args.qt_prefix.resolve(),required=False)
+pin_image_components(packages,images)
+materials.update(image_license_materials(args.output,args.qt_prefix,images))
 psl_source=collect_runtime_source(args.output)
 tika_materials=collect_tika_runtime(args.output)
 config=json.loads((ROOT/'scripts/qt-license-sources.json').read_text())
@@ -24,6 +28,7 @@ report={'scope':'Reference declarations for installed Qt SDK, including unused m
         'source_delivery':'URL only; no corresponding-source archive is attached to releases under owner policy; applicable source and relinking obligations remain release checks.',
         'upstream_documents':documents,'packages':list(packages.values()),'extracted_license_texts':extracted,
         'license_materials':materials,'psl_source_material':psl_source,'tika_materials':tika_materials,
+        'image_security':images,
         'licensing_decision':'No automatic license selection or compliance approval.'}
 (args.output/'qt-sdk-declarations.json').write_text(json.dumps(report,indent=2)+'\n')
 print(f'Prepared {len(materials)} pinned license texts and {len(packages)} SDK reference declarations')
