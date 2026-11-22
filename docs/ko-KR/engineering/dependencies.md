@@ -81,7 +81,7 @@ M2는 Windows 런타임에서 정확한 `winapi-util = 0.1.11`의 안전한 `fil
 
 ## 자체 ZIP과 범용 암호화 기본 요소
 
-ZIP 컨테이너, 스트리밍 생성, 일반 다시 쓰기와 AES 래핑은 [독립 Rust 구현](independent-rust-codecs.md)을 사용하며 Deflate/CRC-32는 `xdzip-compression`을 재사용합니다. `rawzip = 0.5.2`, `zip = 9.0.3`, `flate2 = 1.1.10`은 개발 테스트 참조 전용으로 ZIP 제품 또는 빌드 의존 집합에 들어가지 않습니다. 범용 압축 해제를 호출하거나 임의 경로를 인가하지 않습니다. 이를 사용한 과거 제공물의 라이선스 의무는 유지됩니다.
+ZIP 컨테이너, 스트리밍 생성, 일반 다시 쓰기와 AES 래핑은 [독립 Rust 구현](independent-rust-codecs.md)을 사용하며 Deflate/CRC-32는 `xdzip-compression`을 재사용합니다. `rawzip = 0.5.2`, `zip = 9.0.5`, `flate2 = 1.1.10`은 개발 테스트 참조 전용으로 ZIP 제품 또는 빌드 의존 집합에 들어가지 않습니다. 범용 압축 해제를 호출하거나 임의 경로를 인가하지 않습니다. 이를 사용한 과거 제공물의 라이선스 의무는 유지됩니다.
 
 암호화 기본 요소는 기존 전이 의존성에서 직접 의존성으로 승격한 정확한 버전을 재사용합니다. RustCrypto `aes = 0.9.3`, `hmac = 0.13.0`, `sha1 = 0.11.0`, `pbkdf2 = 0.13.0`과 `getrandom = 0.4.2`, `constant_time_eq = 0.6.1`입니다. PBKDF2는 hmac만 활성화합니다. SHA1은 기본 alloc/oid를 비활성화하고 zeroize만 활성화하며 AES/HMAC도 zeroize를 활성화합니다. 형식 라이브러리, 네이티브 압축 라이브러리 또는 실행 시 다운로드를 추가하지 않습니다. CTR, 무작위 솔트 래핑, 파생 결과 분할, 암호 검증 값과 인증된 EOF는 프로젝트가 구현합니다. 범용 기본 요소가 ZIP 파서를 다시 도입해서는 안 됩니다.
 

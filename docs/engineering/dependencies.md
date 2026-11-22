@@ -81,7 +81,7 @@ Desktop resource static checks use Pillow (HPND), FontTools (MIT), Brotli (MIT),
 
 ## In-house ZIP and general cryptographic primitives
 
-ZIP containers, streaming creation, regular rewriting, and AES wrapping use an [independent Rust implementation](independent-rust-codecs.md); Deflate/CRC-32 reuse `xdzip-compression`. `rawzip = 0.5.2`, `zip = 9.0.3`, and `flate2 = 1.1.10` are development-test references only and do not enter ZIP production or build dependency closures. They do not call generic unpack or authorize arbitrary paths. Historical deliveries using them retain their license obligations.
+ZIP containers, streaming creation, regular rewriting, and AES wrapping use an [independent Rust implementation](independent-rust-codecs.md); Deflate/CRC-32 reuse `xdzip-compression`. `rawzip = 0.5.2`, `zip = 9.0.5`, and `flate2 = 1.1.10` are development-test references only and do not enter ZIP production or build dependency closures. They do not call generic unpack or authorize arbitrary paths. Historical deliveries using them retain their license obligations.
 
 Cryptographic primitives reuse exact versions of existing transitive dependencies promoted to direct dependencies: RustCrypto `aes = 0.9.3`, `hmac = 0.13.0`, `sha1 = 0.11.0`, `pbkdf2 = 0.13.0`, plus `getrandom = 0.4.2` and `constant_time_eq = 0.6.1`. PBKDF2 enables only hmac. SHA1 disables default alloc/oid and enables only zeroize; AES/HMAC also enable zeroize. No format library, native compression library, or runtime download is added. CTR, random-salt wrapping, derived-result splitting, password verification values, and authenticated EOF are implemented by the project; general primitives must not reintroduce a ZIP parser.
 

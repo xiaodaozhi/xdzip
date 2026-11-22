@@ -12,10 +12,10 @@
 | xdzip-compression | 專案自有的共用 Deflate 和 CRC-32 實作，使用固定緩衝區，嚴格檢查最終區塊及壓縮位元組的精確消耗量。獨立格式層處理 ZIP 容器、描述項和 AES 封裝，借用主程式的輸入與輸出接收端，維持輸出授權和完整驗證邊界。flate2 僅供開發測試參考。 |
 | cap-std / cap-fs-ext 4.0.3 | 持有目錄能力，以 nofollow 開啟子目錄、獨占暫存並以相對路徑發布。不同於串接字串並在 canonicalize 後建立檔案，主程式會驗證各路徑元件的授權並重新確認識別；不呼叫通用 unpack。cap-primitives 等間接相依套件也固定版本。 |
 | getrandom 0.4.2 | 使用作業系統亂數產生私人工作區 nonce，絕不使用時間戳記、偽隨機值或壓縮檔名稱。停用預設功能。 |
-| rustix 1.1.5 | 提供 POSIX 有效使用者身分與檔案系統基礎操作，沿用固定版本。停用預設功能，只啟用 std/process 和間接需要的 fs。 |
+| rustix 1.1.6 | 提供 POSIX 有效使用者身分與檔案系統基礎操作，沿用固定版本。停用預設功能，只啟用 std/process 和間接需要的 fs。 |
 | windows-sys 0.61.2 | 查詢 Windows 物件擁有者及 DACL，並檢查 SID。手寫 unsafe 程式碼經隔離，借用有效控制代碼、DWORD 對齊的緩衝區，並以 RAII 呼叫 LocalFree。不同於只檢查唯讀屬性，DACL 檢查可確認私人輸出的前提。新增 FFI 必須驗證控制代碼、緩衝區、釋放前提及查詢失敗時的行為。 |
 | unicode-normalization 0.1.25 | 為工作名稱別名產生 NFD 加小寫的採用判斷鍵，保留原本的輸出名稱；此鍵不視為完整的檔案系統大小寫折疊。相較於僅用 ASCII 小寫，它涵蓋 macOS 常見的 Unicode 等價名稱。 |
-| AES、HMAC、SHA-1、PBKDF2、constant_time_eq | 已採用的通用密碼學基礎元件；確切版本和功能見[相依套件契約](dependencies.md)。ZIP CTR 計數、鹽值和驗證值的配置、密文驗證及錯誤分類由專案獨立實作。zip 9.0.3 僅供開發測試參考。 |
+| AES、HMAC、SHA-1、PBKDF2、constant_time_eq | 已採用的通用密碼學基礎元件；確切版本和功能見[相依套件契約](dependencies.md)。ZIP CTR 計數、鹽值和驗證值的配置、密文驗證及錯誤分類由專案獨立實作。zip 9.0.5 僅供開發測試參考。 |
 | zeroize 1.9.1 | 管理密碼、衍生金鑰及測試探針受限 stdin 緩衝區的清零生命週期；AES/HMAC/SHA-1 也啟用各自的清理功能。不保證擦除 Qt、輸入法或所有歷史記憶體副本。 |
 
 通用相依套件須核對 Cargo 設定、授權與公開 API；獨立格式實作的來源規則見[獨立實作契約](independent-rust-codecs.md)。cap 系列由 Bytecode Alliance 維護，getrandom 和 rustix 提供系統介面，Unicode normalization 是通用 Unicode 函式庫。升級仍須固定版本並重跑原生邊界迴歸測試，維護者身分不能取代迴歸測試或安全公告檢查。新增套件在執行時不發出網路請求；含建置指令碼的套件僅探測編譯器與目標設定，或選擇 Rust 系統呼叫後端，不下載外部程式碼，也不編譯 C 解碼器。授權通知收集完整的上游原文，實際授權表示式以固定資料為準。

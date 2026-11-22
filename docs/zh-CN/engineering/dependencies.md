@@ -81,7 +81,7 @@ M2 在 Windows 运行时直接使用精确版本 `winapi-util = 0.1.11` 的 `fil
 
 ## 自研 ZIP 与通用密码学基础库
 
-ZIP 容器、流式创建、普通重写与 AES 封装采用[独立 Rust 实现](independent-rust-codecs.md)，Deflate/CRC-32 复用 `xdzip-compression`。`rawzip = 0.5.2`、`zip = 9.0.3`、`flate2 = 1.1.10` 仅为开发测试参照，不进入 ZIP 生产或构建依赖闭包，不调用通用 unpack 或授权任意文件路径。历史上使用它们的交付继续保留原有许可义务。
+ZIP 容器、流式创建、普通重写与 AES 封装采用[独立 Rust 实现](independent-rust-codecs.md)，Deflate/CRC-32 复用 `xdzip-compression`。`rawzip = 0.5.2`、`zip = 9.0.5`、`flate2 = 1.1.10` 仅为开发测试参照，不进入 ZIP 生产或构建依赖闭包，不调用通用 unpack 或授权任意文件路径。历史上使用它们的交付继续保留原有许可义务。
 
 密码学基础原语复用原有传递依赖的精确版本，提升为直接依赖：RustCrypto `aes = 0.9.3`、`hmac = 0.13.0`、`sha1 = 0.11.0`、`pbkdf2 = 0.13.0`，以及 `getrandom = 0.4.2`、`constant_time_eq = 0.6.1`。PBKDF2 只启用 hmac，SHA1 关闭默认 alloc/oid，只启用 zeroize；AES/HMAC 同时启用 zeroize。没有新增格式、原生压缩库或运行下载。CTR、随机盐封装、派生结果分割、密码验证值和认证 EOF 由项目实现，不能借通用基础库重新引回 ZIP 解析器。
 

@@ -97,7 +97,7 @@ M2 在 Windows 執行時直接使用精確版本 `winapi-util = 0.1.11` 的 `fil
 
 ## 自研 ZIP 與通用密碼學基礎庫
 
-ZIP 容器、流式建立、普通重寫與 AES 封裝採用[獨立 Rust 實現](independent-rust-codecs.md)，Deflate/CRC-32 複用 `xdzip-compression`。`rawzip = 0.5.2`、`zip = 9.0.3`、`flate2 = 1.1.10` 僅為開發測試參照，不進入 ZIP 生產或構建依賴閉包，不呼叫通用 unpack 或授權任意檔案路徑。歷史上使用它們的交付繼續保留原有許可義務。
+ZIP 容器、流式建立、普通重寫與 AES 封裝採用[獨立 Rust 實現](independent-rust-codecs.md)，Deflate/CRC-32 複用 `xdzip-compression`。`rawzip = 0.5.2`、`zip = 9.0.5`、`flate2 = 1.1.10` 僅為開發測試參照，不進入 ZIP 生產或構建依賴閉包，不呼叫通用 unpack 或授權任意檔案路徑。歷史上使用它們的交付繼續保留原有許可義務。
 
 密碼學基礎原語複用原有傳遞依賴的精確版本，提升為直接依賴：RustCrypto `aes = 0.9.3`、`hmac = 0.13.0`、`sha1 = 0.11.0`、`pbkdf2 = 0.13.0`，以及 `getrandom = 0.4.2`、`constant_time_eq = 0.6.1`。PBKDF2 只啟用 hmac，SHA1 關閉預設 alloc/oid，只啟用 zeroize；AES/HMAC 同時啟用 zeroize。沒有新增格式、原生壓縮庫或執行下載。CTR、隨機鹽封裝、派生結果分割、密碼驗證值和認證 EOF 由專案實現，不能借通用基礎庫重新引回 ZIP 解析器。
 
