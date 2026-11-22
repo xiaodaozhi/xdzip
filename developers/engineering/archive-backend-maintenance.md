@@ -1,0 +1,35 @@
+# Archive backend upstream fix and advisory review
+
+English | [简体中文](../zh-CN/engineering/archive-backend-maintenance.md)
+
+Use this procedure when a maintainer asks to sync archive backend patches, follow upstream format fixes, or review extraction dependency advisories. “Sync patches” means review applicability and carry confirmed, in-scope fixes through verification and integration. For a review-only request, deliver findings and follow-up items. Use the full registry unless the maintainer explicitly narrows the scope. A periodic review can use this same procedure. Triage a security report that may affect a supported release as it arrives.
+
+## Establish coverage
+
+1. Check existing issues and review records, related branches or PRs, and remote `main`. Record its exact commit, the latest supported stable release tag and commit, and any additional versions or channels in scope. Use the [security policy](../../SECURITY.md) for supported releases. Evaluate each baseline separately when its implementation or dependencies differ.
+2. Start with `formats` and `creation_wrappers` in the [format registry](../../specs/engineering/archive-formats.json) for each baseline. For an older baseline without a registry, derive the inventory from its actual routing and capability documentation. Map the admitted profiles to their container, stream filters, shared algorithms, host or worker, and dependencies. Include standalone and nested streams, split and encrypted profiles, metadata-only readers, and applicable wrappers. Aliases can share a review row when their paths and behavior match. Trace each shared component to all registered consumers. Use the [format registry contract](../../docs/engineering/format-registry.md), [independent implementations](../../docs/engineering/independent-rust-codecs.md), and [worker routing](../../docs/engineering/native-codecs.md) to locate the code.
+3. For each source, review changes since the last documented coverage through the current review cutoff, including previously open gaps. For a first review, choose and record a starting point using relevant pinned dependency or reference versions and dates. Check known advisories for exact deployed versions regardless of publication date. Record the date range, source and version checked, and any missing or inaccessible coverage.
+
+## Check upstream sources and the product path
+
+| Source | What to check |
+| --- | --- |
+| Format owners and maintained reference implementations | Use the format contract and source notes to find specifications, release notes, and advisories. Examples include [PKWARE APPNOTE](https://www.pkware.com/documents/casestudies/APPNOTE.TXT), the [7-Zip change history](https://www.7-zip.org/history.txt), and [RARLAB's change notes](https://www.rarlab.com/rarnew.htm). Follow sources for the shared algorithms as well as the containers. |
+| Locked dependencies and packaged components | Compare affected ranges in maintainer advisories and [RustSec](https://rustsec.org/) or [OSV](https://osv.dev/) with exact versions in `Cargo.lock` and other pinned build or packaging inputs. Use the selected features and target-specific normal and build dependency trees alongside the actual release inventory or SBOM where available. Record separately whether the component ships, runs during the build, or is used only for tests. See [dependency admission](../../docs/engineering/dependencies.md) and [runtime attribution](../../docs/engineering/runtime-attribution.md). |
+| Legacy formats or incomplete notices | When there is no maintained official implementation, use available specifications and release or advisory records from relevant maintained readers. Identify the implementation each report describes. Mark missing disclosures, uncertain applicability, and failed queries as unresolved with the reason. |
+
+Match each relevant change to the supported format or profile, algorithm, platform, operation and call path. Check whether the same input condition exists in xdzip and whether the affected path is reachable. Follow the issue across the applicable parser, decoder, bridge, worker and host boundaries. In particular, output paths, link handling, resource limits and file publication may be enforced outside the parser. A format name or version match alone does not establish impact. An empty advisory query establishes only the result of that query.
+
+## Decide and verify
+
+- **Independent backend or host.** Treat upstream fixes as leads. Apply a change to xdzip when the same defect or a supported compatibility gap is confirmed. Derive the behavior from the specification or a factual handoff and follow the repo's [independent implementation rules](../../docs/engineering/independent-rust-codecs.md#sources-and-independent-implementation). If an existing check already handles the condition, cite that check and its evidence.
+- **Affected dependency.** Upgrade or patch the affected component and review its locked resolution, target features and packaging impact. Keep findings limited to build or test tools in that scope. Refresh a pinned reference tool when the review needs its corrected behavior or the tool itself presents an applicable risk.
+- **Unresolved or outside scope.** Record the missing facts or the concrete reason the change does not apply, such as an unsupported profile or an upstream-only code path. An announced feature or broader compatibility change goes through the normal capability review.
+
+Prioritize confirmed security defects reachable in supported releases. Follow the [security policy](../../SECURITY.md) for private reporting and coordinated disclosure. Keep sensitive samples and exploit details out of public issues and artifacts. For an authorized fix, follow the [verification guide](../qa/README.md). Cover the original failure condition with a focused regression and use the affected product entry points and shared consumers to select additional checks. Record actual results and update the relevant contracts and acceptance cases when behavior changes.
+
+## Record and close
+
+Use the review issue or a private security record for the baseline commits, source intervals, registry coverage, decisions, and remaining checks. For each finding, capture the upstream reference or advisory ID, affected profile/component and version, evidence of product reachability, disposition, and verification or follow-up link. Keep raw responses and test evidence in local or approved CI artifacts under the applicable privacy rules.
+
+A full review accounts for every registry identifier and applicable wrapper. Include the reason and follow-up for gaps, and advance the cutoff only for each source and scope actually covered. Keep unresolved findings tracked. Integrate authorized fixes using the [repository handoff procedure](repository-hygiene.md) and record the final revision and evidence. If a supported release needs a fix, identify the affected channels and use the [release runbook](release-runbook.md) for a separately authorized release.
