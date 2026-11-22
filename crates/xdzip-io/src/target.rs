@@ -1074,6 +1074,13 @@ pub struct Stage {
     sealed: Option<FileVersion>,
 }
 impl Stage {
+    /// Attach a Windows origin zone to the private file before it can be published.
+    #[cfg(windows)]
+    pub fn preserve_origin(&mut self, zone: crate::OriginZone) -> Result<(), OutputError> {
+        zone.write(self.file.as_ref().ok_or(OutputError::Io)?)
+            .map_err(failure)
+    }
+
     /// Borrow a read handle for post-write verification. Writing has finished before this call.
     /// A duplicated handle may share its cursor; this method is deliberately sequential.
     pub fn verification_reader(&mut self) -> Result<File, OutputError> {

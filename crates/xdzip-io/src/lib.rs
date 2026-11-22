@@ -10,12 +10,17 @@ mod private;
 mod target;
 #[cfg(test)]
 mod tests;
+#[cfg(windows)]
+#[allow(unsafe_code)]
+mod windows_origin;
 pub use identity::{FileIdentity, FileVersion};
 pub use input::{InputEntry, InputError, InputReader, InputTree};
 pub use target::{
     ArchiveUpdate, CommitReceipt, ExistingFile, Grant, ScratchSpace, SetCommitError, Stage,
     Workspace,
 };
+#[cfg(windows)]
+pub use windows_origin::OriginZone;
 
 /// Open a source without allowing a special file to block the caller.
 /// Unix uses a nonblocking classification open before normal reads.

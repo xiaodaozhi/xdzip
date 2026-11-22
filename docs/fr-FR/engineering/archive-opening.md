@@ -10,6 +10,8 @@ Si un en-tête présente les caractéristiques de TAR mais que l’analyse compl
 
 <a name="xdzip-split-zip"></a>
 
+Sous Windows, l’extraction et l’ouverture temporaire conservent la zone d’origine Windows de l’archive (Mark of the Web). Pour une archive fractionnée, la zone la plus élevée de tous les volumes autorisés s’applique. XDZip écrit la zone dans le fichier temporaire privé avant de le publier. Si la destination ne peut pas stocker le marquage requis, le fichier n’est pas publié.
+
 ## ZIP fractionné
 
 La couche de lecture prend en charge les flux continus numérotés comme `name.zip.001`, `.002` et les volumes PKZIP comme `name.z01`, `.z02` et le dernier `name.zip`. L’ouverture peut partir de n’importe quel volume. Les volumes doivent se trouver dans le même dossier, avec des noms consécutifs, et leur nombre est limité à 1 024 ; les volumes manquants, liens et fichiers spéciaux sont refusés. Les extensions servent uniquement à découvrir les volumes voisins. Le conteneur réel est identifié par ses octets sources puis intégralement analysé par son moteur.

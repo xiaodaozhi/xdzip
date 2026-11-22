@@ -360,6 +360,19 @@ impl Source {
             .map(|p| p.version.protected_identity)
             .collect())
     }
+    #[cfg(windows)]
+    pub fn origin_zone(&self) -> Result<Option<xdzip_io::OriginZone>, ScanError> {
+        let mut zone = None;
+        for part in &self.parts {
+            let file = xdzip_io::open_regular_readonly(&part.path)
+                .map_err(|_| ScanError::SourceChanged)?;
+            if SourceVersion::read(&file)? != part.version {
+                return Err(ScanError::SourceChanged);
+            }
+            zone = zone.max(xdzip_io::OriginZone::read(&file).map_err(|_| ScanError::Io)?);
+        }
+        Ok(zone)
+    }
     pub fn retained_bytes(&self) -> usize {
         self.parts
             .iter()

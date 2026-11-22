@@ -10,6 +10,8 @@ Scheitert die vollständige Strukturprüfung eines vermeintlichen TAR-Headers, v
 
 <a name="xdzip-split-zip"></a>
 
+Unter Windows bleiben beim Entpacken und temporären Öffnen die Windows-Herkunftszone des Archivs (Mark of the Web) erhalten. Bei mehrteiligen Archiven gilt die höchste Zone aller autorisierten Teile. XDZip schreibt die Zone vor der Bereitstellung in die private temporäre Datei. Kann das Ziel die erforderliche Markierung nicht speichern, wird die Datei nicht bereitgestellt.
+
 ## Geteilte ZIP-Archive
 
 Die Leseschicht unterstützt fortlaufende nummerierte Bytefolgen wie `name.zip.001`, `.002` sowie PKZIP-Teile wie `name.z01`, `.z02` und die abschließende `name.zip`. Jeder Teil kann als Einstieg zum Öffnen dienen. Die Teile müssen im selben Verzeichnis liegen und fortlaufend benannt sein; höchstens 1.024 Teile sind zulässig. Fehlende Teile, Links und Spezialdateien werden abgelehnt. Erweiterungen dienen nur zum Auffinden benachbarter Teile. Der tatsächliche Container wird anhand der Quellbytes erkannt und vom Backend vollständig geprüft.

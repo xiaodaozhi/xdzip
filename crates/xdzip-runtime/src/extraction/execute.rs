@@ -82,6 +82,11 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
     let result = (|| -> Result<(), &'static str> {
         control.cancel.check().map_err(|_| "cancelled")?;
         job.source.validate().map_err(|_| "source_changed")?;
+        #[cfg(windows)]
+        let origin = job.source.origin_zone().map_err(|error| match error {
+            xdzip_codec_api::ScanError::SourceChanged => "source_changed",
+            _ => "source_io",
+        })?;
         let mut interaction = Interaction::with_password(job.password.clone());
         let mut source = job.source.fork().map_err(|_| "source_changed")?;
         let opened = if job.subset {
@@ -354,6 +359,10 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
             )?;
             if entry.unix_mode != 0 {
                 stage.restore_mode(entry.unix_mode).map_err(output)?;
+            }
+            #[cfg(windows)]
+            if let Some(zone) = origin {
+                stage.preserve_origin(zone).map_err(output)?;
             }
             control.begin_commit()?;
             stats.status = Status::Committing;

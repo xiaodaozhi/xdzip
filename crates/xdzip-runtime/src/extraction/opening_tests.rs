@@ -203,6 +203,79 @@ fn temporary_open_is_exactly_one_verified_ordinary_file_and_survives_job_complet
             .is_err()
     );
 }
+
+#[cfg(windows)]
+#[test]
+fn windows_archive_origin_is_preserved_for_extraction_and_temporary_open() {
+    fn zone_stream(path: &Path) -> PathBuf {
+        let mut name = path.as_os_str().to_os_string();
+        name.push(":Zone.Identifier:$DATA");
+        PathBuf::from(name)
+    }
+
+    let source = Target::new();
+    let output = Target::new();
+    let cache = Target::new();
+    let path = source.0.join("origin-example.zip");
+    let input = bytes("stored.zip");
+    std::fs::write(&path, &input).unwrap();
+    let marker = b"[ZoneTransfer]\r\nZoneId=3\r\n";
+    std::fs::write(zone_stream(&path), marker).unwrap();
+    assert_eq!(std::fs::read(zone_stream(&path)).unwrap(), marker);
+    let archive = crate::Archive::open(&path, &Cancellation::default()).unwrap();
+    let entry = archive.rows.iter().find(|row| !row.directory).unwrap();
+    let leaf = std::str::from_utf8(&entry.raw_name).unwrap();
+
+    let extracted = execute(&archive, output.options(), &Control::default(), |_| {});
+    assert_eq!(extracted.status, Status::Succeeded, "{}", extracted.error);
+    let extracted_path = output.0.join(leaf);
+    let job = archive
+        .open_entry_job(entry.id.get(), &cache.0, &Cancellation::default())
+        .unwrap();
+    let opened_path = PathBuf::from(&job.open_path);
+    let mut opened = None;
+    run(job, 43, &Control::default(), &mut |s| opened = Some(s));
+    let opened = opened.unwrap();
+    assert_eq!(opened.status, Status::Succeeded, "{}", opened.error);
+    assert_eq!(
+        std::fs::read(&extracted_path).unwrap(),
+        std::fs::read(&opened_path).unwrap()
+    );
+    assert_eq!(std::fs::metadata(&opened_path).unwrap().len(), entry.size);
+
+    let unmarked = source.0.join("local-example.zip");
+    std::fs::write(&unmarked, input).unwrap();
+    let unmarked = crate::Archive::open(&unmarked, &Cancellation::default()).unwrap();
+    let local = Target::new();
+    assert_eq!(
+        execute(&unmarked, local.options(), &Control::default(), |_| {}).status,
+        Status::Succeeded
+    );
+    assert!(!zone_stream(&local.0.join(leaf)).exists());
+
+    let extraction_marker = std::fs::read(zone_stream(&extracted_path)).ok();
+    let temporary_marker = std::fs::read(zone_stream(&opened_path)).ok();
+    assert_eq!(
+        (extraction_marker.as_deref(), temporary_marker.as_deref()),
+        (Some(marker.as_slice()), Some(marker.as_slice())),
+        "ordinary text outputs must retain the Windows origin marker"
+    );
+
+    let parts = numbered(&source.0, &bytes("stored.zip"), 40);
+    let restricted = b"[ZoneTransfer]\r\nZoneId=4\r\n";
+    std::fs::write(zone_stream(&parts[0]), marker).unwrap();
+    std::fs::write(zone_stream(parts.last().unwrap()), restricted).unwrap();
+    let split = crate::Archive::open(&parts[0], &Cancellation::default()).unwrap();
+    let mut overwrite = output.options();
+    overwrite.conflict = ConflictPolicy::Overwrite;
+    let replaced = execute(&split, overwrite, &Control::default(), |_| {});
+    assert_eq!(replaced.status, Status::Succeeded, "{}", replaced.error);
+    assert_eq!(
+        std::fs::read(zone_stream(&extracted_path)).unwrap(),
+        restricted
+    );
+}
+
 #[test]
 fn encrypted_split_temporary_open_retries_password_and_cancel_never_publishes() {
     let source = Target::new();

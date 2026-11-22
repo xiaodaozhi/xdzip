@@ -394,6 +394,7 @@ Opening Settings or About from platform trays must leave existing main windows h
 | OPEN-04 | Temporary extraction succeeds; system accepts or rejects open | Acceptance auto-hides its progress window; rejection retains error/retry. Failure, cancellation and password waiting do not automatically open or hide. |
 | OPEN-05 | Chinese, spaces, percent, command characters, duplicate names, closing tabs and exit | Pass local file URLs exactly without shell; tasks retain unified lifecycle and temporary copies survive asynchronous open. |
 | OPEN-06 | Expired, active-locked, foreign-marked and linked cache entries | Clean only expired unlocked app-owned directories, preserving active/foreign objects. Buttons/errors remain reachable in both languages, three font sizes and DPR. |
+| OPEN-07 | Extract and temporarily open an ordinary Windows file from a marked archive, then replace it from a split archive | Both paths retain the source zone, the strictest authorized volume wins, and an unmarked archive produces an unmarked copy. A required marker that cannot be written prevents publication. |
 
 ## Legacy filename encoding adaptation
 

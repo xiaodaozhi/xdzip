@@ -10,6 +10,8 @@ Se um cabeçalho que parece ser TAR falhar na verificação completa da estrutur
 
 <a name="xdzip-split-zip"></a>
 
+No Windows, a extração e a abertura temporária preservam a zona de origem do arquivo compactado (Mark of the Web). Em arquivos divididos, vale a zona mais alta entre os volumes autorizados. O XDZip grava a zona no arquivo temporário privado antes de publicá-lo. Se o destino não puder armazenar a marca necessária, o arquivo não será publicado.
+
 ## ZIP dividido
 
 A camada de leitura aceita fluxos contínuos numerados como `name.zip.001`, `.002` e volumes PKZIP como `name.z01`, `.z02` e o último `name.zip`. Qualquer volume pode ser usado para abrir o conjunto. Os volumes devem estar na mesma pasta, com nomes consecutivos e no máximo 1.024 volumes; volumes ausentes, links e arquivos especiais são rejeitados. As extensões servem apenas para descobrir conjuntos adjacentes. O contêiner real é identificado pelos bytes da fonte e examinado integralmente pelo mecanismo.
