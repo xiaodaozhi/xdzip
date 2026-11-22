@@ -358,7 +358,6 @@ int main(int argc, char **argv) {
     }
     qputenv("XDZIP_SETTINGS_PATH", (directory + "/settings.ini").toUtf8());
     QQuickStyle::setStyle("Basic");
-    qmlRegisterType<BrowserController>("Xdzip.Native", 1, 0, "BrowserController");
     if (!initializeUiText() || !installUiFont())
         return 65;
     QQmlApplicationEngine engine;
@@ -390,9 +389,10 @@ int main(int argc, char **argv) {
     setMacUpdateCommitCallback(&guard, [&] { facade.releaseCommittedQuitGuard(); });
     QObject::connect(&updates, &UpdateController::quitForUpdate, &application, &QApplication::quit);
     QQmlComponent component(&engine, QUrl("qrc:/xdzip/ui/SettingsWindow.qml"));
-    std::unique_ptr<QObject> aboutObject(component.createWithInitialProperties(
-        {{"owner", QVariant::fromValue(window)}, {"updater", QVariant::fromValue(&facade)},
-         {"currentTab", 5}}));
+    std::unique_ptr<QObject> aboutObject(
+        component.createWithInitialProperties({{"owner", QVariant::fromValue(window)},
+                                               {"updater", QVariant::fromValue(&facade)},
+                                               {"currentTab", 5}}));
     auto *about = qobject_cast<QQuickWindow *>(aboutObject.get());
     if (!about)
         return 67;

@@ -1188,7 +1188,7 @@ class BrowserTest : public QObject {
         DesktopProbe probe(&controller, &window, fixture, nullptr);
         controller.m_ready = true;
         controller.m_busy = true;
-        controller.m_result.closeSession = true;
+        controller.m_result.kind = BrowserController::RequestKind::CloseSession;
         probe.closeForCancel();
         // Exceed both old delays (200 ms before closing, 300 ms before reopening).
         QTest::qWait(750);
@@ -1227,9 +1227,10 @@ class BrowserTest : public QObject {
         controller.m_pending = 10001;
         controller.m_busy = true;
         controller.m_result = {};
-        controller.m_result.extraction = kind == 0;
-        controller.m_result.creating = kind == 1;
-        controller.m_result.checking = kind == 2;
+        using RequestKind = BrowserController::RequestKind;
+        controller.m_result.kind = kind == 0   ? RequestKind::Extraction
+                                   : kind == 1 ? RequestKind::Creation
+                                               : RequestKind::ArchiveCheck;
         controller.m_result.taskSession = kind == 1 ? 0 : 23;
         const auto session = controller.m_result.taskSession;
         QCOMPARE(controller.activeTaskCount(), 1);
@@ -1337,6 +1338,12 @@ class BrowserTest : public QObject {
             row.directory = i == 3;
             page.rows.push_back(std::move(row));
         }
+        controller.m_result.kind = BrowserController::RequestKind::Preflight;
+        controller.receive(page);
+        QCOMPARE(controller.m_result.error, QStringLiteral("stale_query"));
+        QVERIFY(controller.m_result.rows.isEmpty());
+        controller.m_result = {};
+        controller.m_result.kind = BrowserController::RequestKind::Query;
         controller.receive(page);
         QVERIFY(controller.m_result.error.isEmpty());
         QCOMPARE(controller.m_result.rows.size(), 4);
@@ -1376,7 +1383,7 @@ class BrowserTest : public QObject {
             controller.m_busy = true;
             controller.m_title = QStringLiteral("owned-encrypted-header.7z");
             controller.m_result = {};
-            controller.m_result.opening = true;
+            controller.m_result.kind = BrowserController::RequestKind::Open;
             xdzip::reader::Event event{};
             event.kind = xdzip::reader::EventKind::Finished;
             event.request_id = 10001;
@@ -7797,8 +7804,6 @@ QtObject {
                      ? QFontDatabase::systemFont(QFontDatabase::GeneralFont).family()
                      : systemFontFamily);
         QCOMPARE(QGuiApplication::font().family(), QStringLiteral("Xdzip Design Sans SC"));
-        qmlRegisterType<ShellBatchController>("Xdzip.Native", 1, 0, "ShellBatchController");
-        qmlRegisterType<BrowserController>("Xdzip.Native", 1, 0, "BrowserController");
     }
     void init() {
         // Platform offscreen notices are expected; broken bindings or image
@@ -12148,7 +12153,7 @@ QtObject {
         controller.m_activeTarget =
             BrowserController::TargetRequest{QStringLiteral("old"), session, 1, 1, false};
         controller.m_result = {};
-        controller.m_result.targetCheck = true;
+        controller.m_result.kind = BrowserController::RequestKind::CheckTarget;
         controller.m_pending = 10001;
         controller.m_busy = true;
         xdzip::reader::Event event{};
@@ -12164,7 +12169,7 @@ QtObject {
 
         controller.m_activeTarget =
             BrowserController::TargetRequest{QStringLiteral("new"), session, 2, 2, false};
-        controller.m_result.targetCheck = true;
+        controller.m_result.kind = BrowserController::RequestKind::CheckTarget;
         controller.m_pending = 10002;
         controller.m_busy = true;
         event.request_id = 10002;
@@ -13160,8 +13165,8 @@ QtObject {
         QSignalSpy extractionStarted(&controller, &BrowserController::extractionStarted);
         controller.m_pending = 9001;
         controller.m_busy = true;
-        controller.m_result.extraction = true;
-        controller.m_result.exporting = exporting;
+        controller.m_result.kind = exporting ? BrowserController::RequestKind::Export
+                                             : BrowserController::RequestKind::Extraction;
         controller.m_pendingOpenAfter = true;
         xdzip::reader::Event completed{};
         completed.kind = xdzip::reader::EventKind::TaskUpdate;
@@ -14480,7 +14485,8 @@ QtObject {
             bool sawManifest = false;
             bool replacedBrowser = false;
             const auto observed = connect(controller, &BrowserController::changed, window, [&] {
-                if (controller->busy() && controller->m_result.exportManifest) {
+                if (controller->busy() &&
+                    controller->m_result.kind == BrowserController::RequestKind::ExportManifest) {
                     sawManifest = true;
                     replacedBrowser |= controller->browsingBusy() || !controller->ready();
                 }
@@ -14696,7 +14702,7 @@ QtObject {
         controller->m_pending = 10001;
         controller->m_busy = true;
         controller->m_result = {};
-        controller->m_result.extraction = true;
+        controller->m_result.kind = BrowserController::RequestKind::Extraction;
         QSignalSpy visibility(progress, &QWindow::visibleChanged);
         xdzip::reader::Event event{};
         event.kind = xdzip::reader::EventKind::TaskUpdate;

@@ -147,7 +147,40 @@ endforeach()
 find_package(Qt6 6.8 REQUIRED COMPONENTS Widgets Network)
 include(${PROJECT_SOURCE_DIR}/cmake/RustStaticLibrary.cmake)
 xdzip_rust_library(xdzip-reader-rust xdzip-qt-bridge xdzip_qt_bridge)
+add_library(xdzip-desktop-session STATIC)
+qt_add_qml_module(xdzip-desktop-session
+    URI Xdzip.Native VERSION 1.0
+    DEPENDENCIES QtQml.Models
+    OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml/Xdzip/Native"
+    SOURCES BrowserController.h BrowserController.cpp BrowserTransfers.cpp
+        RuntimeConnection.h RuntimeConnection.cpp DesktopIntegration.h DesktopIntegration.cpp
+        ApplicationSessions.h ApplicationSessions.cpp SingleInstance.h SingleInstance.cpp
+        ShellBatchController.h ShellBatchController.cpp ShellActionRequest.h ShellActionRequest.cpp
+        NativeExport.h NativeExport.cpp NativeDragGesture.h NativeDragGesture.cpp
+        PrivateCache.h PrivateCache.cpp)
+target_link_libraries(xdzip-desktop-session
+    PUBLIC xdzip-reader-rust Qt6::Widgets Qt6::Network Qt6::Quick
+    PRIVATE xdzip-ui-resources ${CMAKE_DL_LIBS})
+if(WIN32)
+    target_sources(xdzip-desktop-session PRIVATE NativeExportWindows.cpp)
+    target_link_libraries(xdzip-desktop-session PRIVATE ole32 shell32 shlwapi)
+elseif(APPLE)
+    enable_language(OBJCXX)
+    target_sources(xdzip-desktop-session PRIVATE MacTitlebar.mm MacWindowActivation.mm MacQuitMenu.mm NativeExportMac.mm)
+    set_source_files_properties(MacQuitMenu.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
+    set_source_files_properties(NativeExportMac.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc;-fblocks;-Werror=protocol")
+    set_target_properties(xdzip-desktop-session PROPERTIES OBJCXX_STANDARD 17
+        OBJCXX_STANDARD_REQUIRED ON OBJCXX_EXTENSIONS OFF)
+    target_link_libraries(xdzip-desktop-session PRIVATE "-framework AppKit" "-framework Security")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_link_libraries(xdzip-desktop-session PRIVATE X11::X11)
+endif()
+
+set(xdzip_update_sources CliRequestBroker.h CliRequestBroker.cpp UpdateController.h UpdateController.cpp
+    UpdateHandoff.h UpdateHandoff.cpp)
 qt_add_executable(xdzip-browser browser_main.cpp ShellIntegration.h ShellIntegration.cpp)
+target_sources(xdzip-browser PRIVATE ${xdzip_update_sources} FileAssociations.h FileAssociations.cpp)
+target_link_libraries(xdzip-browser PRIVATE xdzip-desktop-sessionplugin xdzip-desktop-session Qt6::QuickControls2)
 if(WIN32)
     target_link_libraries(xdzip-browser PRIVATE windowsapp)
 endif()
@@ -212,7 +245,6 @@ if(WIN32)
     target_sources(xdzip-association-launcher PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/xdzip-association.rc")
 endif()
 if(APPLE)
-    enable_language(OBJCXX)
     set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${XDZIP_LANGUAGE_CATALOGS}
         "${CMAKE_CURRENT_SOURCE_DIR}/packaging/macos/Info.plist.in")
     execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${XDZIP_PACKAGING_GENERATOR}"
@@ -231,8 +263,7 @@ if(APPLE)
     include(${PROJECT_SOURCE_DIR}/cmake/Sparkle.cmake)
     set_target_properties(xdzip-browser PROPERTIES OBJCXX_STANDARD 17
         OBJCXX_STANDARD_REQUIRED ON OBJCXX_EXTENSIONS OFF)
-    target_sources(xdzip-browser PRIVATE MacTitlebar.mm MacWindowActivation.mm MacFileAssociations.mm MacQuitMenu.mm)
-    set_source_files_properties(MacQuitMenu.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
+    target_sources(xdzip-browser PRIVATE MacFileAssociations.mm)
     set_source_files_properties(MacFileAssociations.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc;-fblocks")
     target_link_libraries(xdzip-browser PRIVATE "-framework UniformTypeIdentifiers")
     target_sources(xdzip-browser PRIVATE MacUpdateProvider.mm MacUpdateProvider.h)
@@ -258,13 +289,6 @@ if(APPLE)
         target_sources(xdzip-browser PRIVATE "${document_icon}")
     endforeach()
 endif()
-qt_add_qml_module(xdzip-browser
-    URI Xdzip.Native VERSION 1.0
-    DEPENDENCIES QtQml.Models
-    OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml/Xdzip/Native"
-    SOURCES ShellBatchController.h ShellBatchController.cpp ShellActionRequest.h ShellActionRequest.cpp CliRequestBroker.h CliRequestBroker.cpp BrowserController.h BrowserController.cpp RuntimeConnection.h RuntimeConnection.cpp DesktopIntegration.h DesktopIntegration.cpp ApplicationSessions.h ApplicationSessions.cpp SingleInstance.h SingleInstance.cpp UpdateController.h UpdateController.cpp UpdateHandoff.h UpdateHandoff.cpp FileAssociations.h FileAssociations.cpp)
-target_link_libraries(xdzip-browser PRIVATE xdzip-reader-rust
-    Qt6::Widgets Qt6::Network Qt6::Quick Qt6::QuickControls2 ${CMAKE_DL_LIBS})
 include(${PROJECT_SOURCE_DIR}/cmake/UpdateHelper.cmake)
 option(XDZIP_NATIVE_UPDATE_FIXTURE "Compile private native updater regression instrumentation" OFF)
 option(XDZIP_NATIVE_MAC_UPDATE_FIXTURE "Compile private macOS product updater regression instrumentation" OFF)
@@ -343,10 +367,10 @@ if(BUILD_TESTING)
     endif()
     add_test(NAME qt_association_descriptions COMMAND xdzip-association-description-tests
         -o "${CMAKE_CURRENT_BINARY_DIR}/association-descriptions-tests.log,txt" -o -,txt)
-    add_executable(xdzip-browser-tests tests/browser_test.cpp tests/test_environment.cpp tests/test_environment.h BrowserController.cpp BrowserController.h RuntimeConnection.cpp RuntimeConnection.h DesktopIntegration.h DesktopIntegration.cpp ApplicationSessions.h ApplicationSessions.cpp SingleInstance.h SingleInstance.cpp)
+    add_executable(xdzip-browser-tests tests/browser_test.cpp tests/test_environment.cpp tests/test_environment.h)
     target_compile_definitions(xdzip-browser-tests PRIVATE XDZIP_TEST_TEMP_ROOT="${PROJECT_SOURCE_DIR}/build/test-tmp")
     if(APPLE)
-        target_sources(xdzip-browser-tests PRIVATE MacTitlebar.mm MacWindowActivation.mm MacQuitMenu.mm tests/native_dialog_mac.mm)
+        target_sources(xdzip-browser-tests PRIVATE tests/native_dialog_mac.mm)
         target_link_libraries(xdzip-browser-tests PRIVATE "-framework AppKit")
         set_target_properties(xdzip-browser-tests PROPERTIES OBJCXX_STANDARD 17 OBJCXX_STANDARD_REQUIRED ON)
         add_executable(xdzip-macos-association-probe tests/macos_association_probe.mm MacFileAssociations.mm)
@@ -389,8 +413,8 @@ if(BUILD_TESTING)
     target_compile_definitions(xdzip-browser-tests PRIVATE XDZIP_READONLY_FIXTURES="${XDZIP_READONLY_FIXTURES}")
     add_dependencies(xdzip-browser-tests xdzip-m2-fixtures)
     target_compile_definitions(xdzip-browser-tests PRIVATE XDZIP_FIXTURES="${PROJECT_SOURCE_DIR}/tests/fixtures/zip" XDZIP_M2_FIXTURE="${XDZIP_M2_FIXTURE}" XDZIP_M2_HIERARCHICAL="${XDZIP_M2_HIERARCHICAL}")
-    target_link_libraries(xdzip-browser-tests PRIVATE xdzip-reader-rust
-        Qt6::Widgets Qt6::Network Qt6::Quick Qt6::QuickControls2 Qt6::QuickTest Qt6::Test)
+    target_link_libraries(xdzip-browser-tests PRIVATE xdzip-desktop-sessionplugin xdzip-desktop-session
+        Qt6::QuickControls2 Qt6::QuickTest Qt6::Test)
     add_test(NAME qt_zip_browser COMMAND Python3::Interpreter
         "${PROJECT_SOURCE_DIR}/scripts/run-browser-suite.py"
         --executable "$<TARGET_FILE:xdzip-browser-tests>"
@@ -406,18 +430,13 @@ if(BUILD_TESTING)
         set_tests_properties(qt_zip_browser PROPERTIES TIMEOUT 240)
     endif()
     add_test(NAME qt_browser_load COMMAND xdzip-browser --smoke-test)
-    add_executable(xdzip-update-tests tests/update_controller_test.cpp
-        CliRequestBroker.cpp CliRequestBroker.h
-        UpdateController.cpp UpdateController.h UpdateHandoff.cpp UpdateHandoff.h
-        BrowserController.cpp BrowserController.h RuntimeConnection.cpp RuntimeConnection.h
-        DesktopIntegration.cpp DesktopIntegration.h ApplicationSessions.cpp ApplicationSessions.h
-        SingleInstance.cpp SingleInstance.h)
+    add_executable(xdzip-update-tests tests/update_controller_test.cpp ${xdzip_update_sources})
     target_include_directories(xdzip-update-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
     target_compile_definitions(xdzip-update-tests PRIVATE XDZIP_UPDATE_FIXTURES="${PROJECT_SOURCE_DIR}/tests/fixtures/update")
-    target_link_libraries(xdzip-update-tests PRIVATE xdzip-reader-rust xdzip-ui-resourcesplugin
-        Qt6::Widgets Qt6::Network Qt6::Quick Qt6::QuickControls2 Qt6::Test)
+    target_link_libraries(xdzip-update-tests PRIVATE xdzip-desktop-sessionplugin xdzip-desktop-session xdzip-ui-resourcesplugin
+        Qt6::QuickControls2 Qt6::Test)
     if(APPLE)
-        target_sources(xdzip-update-tests PRIVATE MacTitlebar.mm MacWindowActivation.mm MacQuitMenu.mm MacUpdateProvider.mm)
+        target_sources(xdzip-update-tests PRIVATE MacUpdateProvider.mm)
         target_compile_definitions(xdzip-update-tests PRIVATE XDZIP_UPDATE_TESTS)
         target_link_libraries(xdzip-update-tests PRIVATE "-framework AppKit" "${XDZIP_SPARKLE_FRAMEWORK}")
         set_property(TARGET xdzip-update-tests APPEND PROPERTY BUILD_RPATH "${XDZIP_SPARKLE_SDK}")
@@ -428,16 +447,15 @@ if(BUILD_TESTING)
             if(NOT XDZIP_MAC_UPDATE_PROBE_BUILD MATCHES "^[0-9]+$")
                 message(FATAL_ERROR "Invalid Mac updater fixture build")
             endif()
-            get_target_property(probe_sources xdzip-update-tests SOURCES)
-            list(FILTER probe_sources EXCLUDE REGEX "tests/update_controller_test\\.cpp$")
             file(READ "${XDZIP_MACOS_BUNDLE_PLIST}" update_probe_info)
             string(REPLACE "<key>XdzipFinderSyncProtocol</key><integer>1</integer>" ""
                 update_probe_info "${update_probe_info}")
             file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/UpdateProbe-Info.plist.in" "${update_probe_info}")
-            add_executable(xdzip-mac-update-probe MACOSX_BUNDLE tests/mac_update_probe.mm ${probe_sources})
+            add_executable(xdzip-mac-update-probe MACOSX_BUNDLE tests/mac_update_probe.mm
+                ${xdzip_update_sources} MacUpdateProvider.mm)
             target_include_directories(xdzip-mac-update-probe PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-            target_link_libraries(xdzip-mac-update-probe PRIVATE xdzip-reader-rust xdzip-ui-resourcesplugin
-                Qt6::Widgets Qt6::Network Qt6::Quick Qt6::QuickControls2 Qt6::Test
+            target_link_libraries(xdzip-mac-update-probe PRIVATE xdzip-desktop-sessionplugin xdzip-desktop-session xdzip-ui-resourcesplugin
+                Qt6::QuickControls2 Qt6::Test
                 "-framework AppKit" "${XDZIP_SPARKLE_FRAMEWORK}")
             target_compile_options(xdzip-mac-update-probe PRIVATE -Wall -Wextra -Werror)
             set_property(TARGET xdzip-mac-update-probe APPEND PROPERTY BUILD_RPATH "${XDZIP_SPARKLE_SDK}")
@@ -454,7 +472,7 @@ if(BUILD_TESTING)
     add_test(NAME qt_updates COMMAND xdzip-update-tests -v1 -o "${CMAKE_CURRENT_BINARY_DIR}/update-tests.log,txt")
     set_tests_properties(qt_updates PROPERTIES TIMEOUT 60)
 endif()
-foreach(target xdzip-browser xdzip-browser-tests xdzip-update-tests xdzip-association-description-tests xdzip-macos-association-probe xdzip-macos-association-tests xdzip-image-tests xdzip-image-fault)
+foreach(target xdzip-desktop-session xdzip-browser xdzip-browser-tests xdzip-update-tests xdzip-association-description-tests xdzip-macos-association-probe xdzip-macos-association-tests xdzip-image-tests xdzip-image-fault)
     if(TARGET ${target})
         if(MSVC)
             target_compile_options(${target} PRIVATE /W4 /WX /utf-8)
@@ -470,30 +488,7 @@ foreach(target xdzip-ui-preview xdzip-ui-tests xdzip-browser xdzip-browser-tests
     endif()
 endforeach()
 
-# External file transfers share the controller and immutable private-copy lifetime.
-foreach(transfer_target xdzip-browser xdzip-browser-tests xdzip-update-tests xdzip-mac-update-probe)
-    if(TARGET ${transfer_target})
-        target_sources(${transfer_target} PRIVATE BrowserTransfers.cpp NativeExport.cpp NativeDragGesture.cpp NativeDragGesture.h PrivateCache.cpp PrivateCache.h)
-        if(WIN32)
-            target_sources(${transfer_target} PRIVATE NativeExportWindows.cpp)
-            target_link_libraries(${transfer_target} PRIVATE ole32 shell32 shlwapi)
-        elseif(APPLE)
-            target_sources(${transfer_target} PRIVATE NativeExportMac.mm)
-            set_source_files_properties(NativeExportMac.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc;-fblocks;-Werror=protocol")
-            target_link_libraries(${transfer_target} PRIVATE "-framework AppKit")
-        elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-            target_link_libraries(${transfer_target} PRIVATE X11::X11)
-        endif()
-    endif()
-endforeach()
-
 include("${PROJECT_SOURCE_DIR}/cmake/NativeCodecDeployment.cmake")
-
-foreach(shell_test xdzip-browser-tests xdzip-update-tests)
-    if(TARGET ${shell_test})
-        target_sources(${shell_test} PRIVATE ShellBatchController.h ShellBatchController.cpp ShellActionRequest.h ShellActionRequest.cpp)
-    endif()
-endforeach()
 
 if(WIN32)
     add_library(xdzip-shell-extension SHARED shell/WindowsContextMenu.cpp shell/WindowsContextMenu.def)
@@ -559,12 +554,12 @@ elseif(UNIX)
 endif()
 
 if(BUILD_TESTING)
-    get_target_property(shell_test_sources xdzip-browser-tests SOURCES)
-    list(FILTER shell_test_sources EXCLUDE REGEX "tests/browser_test\\.cpp$")
-    add_executable(xdzip-shell-tests tests/shell_actions_test.cpp ShellIntegration.cpp ShellIntegration.h ${shell_test_sources})
+    add_executable(xdzip-shell-tests tests/shell_actions_test.cpp ShellIntegration.cpp ShellIntegration.h
+        tests/test_environment.cpp tests/test_environment.h)
     target_include_directories(xdzip-shell-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
     target_compile_definitions(xdzip-shell-tests PRIVATE XDZIP_TEST_TEMP_ROOT="${PROJECT_SOURCE_DIR}/build/test-tmp" XDZIP_SHELL_FIXTURES="${PROJECT_SOURCE_DIR}/tests/fixtures/extract")
-    target_link_libraries(xdzip-shell-tests PRIVATE xdzip-reader-rust xdzip-ui-resourcesplugin xdzip-password-accessibility Qt6::Widgets Qt6::Network Qt6::Quick Qt6::QuickControls2 Qt6::Test)
+    target_link_libraries(xdzip-shell-tests PRIVATE xdzip-desktop-sessionplugin xdzip-desktop-session xdzip-ui-resourcesplugin
+        xdzip-password-accessibility Qt6::QuickControls2 Qt6::Test)
     if(APPLE)
         target_sources(xdzip-shell-tests PRIVATE MacShellService.mm MacFinderIntegration.mm)
         set_target_properties(xdzip-shell-tests PROPERTIES OBJCXX_STANDARD 17 OBJCXX_STANDARD_REQUIRED ON)
@@ -614,12 +609,4 @@ elseif(BUILD_TESTING AND APPLE)
     target_link_libraries(xdzip-mac-finder-test PRIVATE Qt6::Core "-framework AppKit" "-framework UniformTypeIdentifiers")
     add_dependencies(xdzip-mac-finder-test xdzip-browser)
     add_test(NAME native_mac_finder COMMAND xdzip-mac-finder-test "${PROJECT_SOURCE_DIR}/build/test-tmp" "$<TARGET_BUNDLE_DIR:xdzip-browser>")
-endif()
-
-if(APPLE)
-    foreach(session_target xdzip-browser xdzip-browser-tests xdzip-shell-tests xdzip-update-tests xdzip-mac-update-probe)
-        if(TARGET ${session_target})
-            target_link_libraries(${session_target} PRIVATE "-framework Security")
-        endif()
-    endforeach()
 endif()

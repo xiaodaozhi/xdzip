@@ -265,8 +265,6 @@ class UpdateControllerTest final : public QObject {
         qputenv("XDZIP_SETTINGS_PATH", m_profile.filePath("settings.ini").toUtf8());
         Q_INIT_RESOURCE(ui);
         QQuickStyle::setStyle("Basic");
-        qmlRegisterType<ShellBatchController>("Xdzip.Native", 1, 0, "ShellBatchController");
-        qmlRegisterType<BrowserController>("Xdzip.Native", 1, 0, "BrowserController");
         QVERIFY(initializeUiText());
         QVERIFY(installUiFont());
     }

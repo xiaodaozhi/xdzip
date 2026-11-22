@@ -589,9 +589,7 @@ void BrowserController::discardBrowsing() {
     m_creationPreviewPending = false;
     m_creationPreviewPaths.clear();
     m_creationInputs.clear();
-    const bool browseRequest = m_busy && !archiveMutationPending() && !m_result.extraction &&
-                               !m_result.creating && !m_result.checking && !m_result.targetCheck &&
-                               !m_result.inputPreview && !m_result.exportManifest;
+    const bool browseRequest = m_busy && !archiveMutationPending() && !m_result.survivesDetach();
     if (browseRequest)
         cancel();
     m_committedQuery = {};
@@ -615,7 +613,7 @@ void BrowserController::discardBrowsing() {
     emit changed();
 }
 void BrowserController::selectRow(int row) {
-    if ((m_busy && !m_result.pageFetch) || !m_ready)
+    if ((m_busy && m_result.kind != RequestKind::ViewportPage) || !m_ready)
         return;
     const auto *item = m_model.rowAt(row);
     if (!item)
@@ -731,7 +729,7 @@ void BrowserController::closeArchive() {
     submit(std::move(command));
 }
 void BrowserController::selectOnlyRow(int row) {
-    if ((m_busy && !m_result.pageFetch) || !m_ready || !m_model.rowAt(row))
+    if ((m_busy && m_result.kind != RequestKind::ViewportPage) || !m_ready || !m_model.rowAt(row))
         return;
     m_selectionAnchor = m_model.rowAt(row)->id;
     m_selectionAnchorRow = row;
@@ -741,7 +739,7 @@ void BrowserController::selectOnlyRow(int row) {
     emit changed();
 }
 void BrowserController::selectRangeTo(int row) {
-    if ((m_busy && !m_result.pageFetch) || !m_ready || !m_model.rowAt(row))
+    if ((m_busy && m_result.kind != RequestKind::ViewportPage) || !m_ready || !m_model.rowAt(row))
         return;
     int anchor = m_model.paged() && m_selectionAnchorRow >= 0 ? m_selectionAnchorRow : row;
     bool foundAnchor = m_model.paged() && m_selectionAnchorRow >= 0;
@@ -759,7 +757,7 @@ void BrowserController::selectRangeTo(int row) {
     emit changed();
 }
 void BrowserController::selectForContext(int row) {
-    if ((m_busy && !m_result.pageFetch) || !m_ready || !m_model.rowAt(row))
+    if ((m_busy && m_result.kind != RequestKind::ViewportPage) || !m_ready || !m_model.rowAt(row))
         return;
     if (!m_model.isSelected(row)) {
         selectOnlyRow(row);
@@ -771,7 +769,7 @@ void BrowserController::selectForContext(int row) {
     emit changed();
 }
 void BrowserController::selectAll(bool selected) {
-    if ((m_busy && !m_result.pageFetch) || !m_ready)
+    if ((m_busy && m_result.kind != RequestKind::ViewportPage) || !m_ready)
         return;
     m_model.selectAll(selected);
     m_selectionAnchor.clear();
@@ -816,7 +814,7 @@ void BrowserController::openContextEntry(const QString &session, const QString &
     }
 }
 void BrowserController::enterDirectory(int row) {
-    if (m_updateActive || (m_busy && m_result.updating))
+    if (archiveMutationPending())
         return;
     if (m_busy || !m_ready)
         return;
@@ -916,9 +914,10 @@ QStringList BrowserController::directoryAncestors(const QString &id) const {
     return ancestors;
 }
 void BrowserController::navigateDirectory(const QString &id) {
-    if (m_updateActive || (m_busy && m_result.updating))
+    if (archiveMutationPending())
         return;
-    if (!m_ready || m_closing || m_result.preflight || m_result.extraction || m_result.targetCheck)
+    if (!m_ready || m_closing || m_result.kind == RequestKind::Preflight ||
+        m_result.isExtractionTask() || m_result.kind == RequestKind::CheckTarget)
         return;
     const auto *item = m_directoryItems.value(id, nullptr);
     if (!item)
@@ -928,29 +927,32 @@ void BrowserController::navigateDirectory(const QString &id) {
     start({}, 0);
 }
 void BrowserController::sortByColumn(int column) {
-    if (m_updateActive || (m_busy && m_result.updating))
+    if (archiveMutationPending())
         return;
-    if (!m_ready || m_closing || m_result.preflight || m_result.extraction ||
-        m_result.targetCheck || column < -1 || column > 4)
+    if (!m_ready || m_closing || m_result.kind == RequestKind::Preflight ||
+        m_result.isExtractionTask() || m_result.kind == RequestKind::CheckTarget || column < -1 ||
+        column > 4)
         return;
     const int ascending = column < 3 ? column * 2 + 1 : column == 3 ? 9 : 11;
     m_sort = column == -1 ? 0 : (m_sort == ascending ? ascending + 1 : ascending);
     start({}, 0);
 }
 void BrowserController::showRoot() {
-    if (m_updateActive || (m_busy && m_result.updating))
+    if (archiveMutationPending())
         return;
-    if (!m_ready || m_closing || m_result.preflight || m_result.extraction || m_result.targetCheck)
+    if (!m_ready || m_closing || m_result.kind == RequestKind::Preflight ||
+        m_result.isExtractionTask() || m_result.kind == RequestKind::CheckTarget)
         return;
     m_directory.clear();
     m_location.clear();
     start({}, 0);
 }
 void BrowserController::search(const QString &text) {
-    if (m_updateActive || (m_busy && m_result.updating))
+    if (archiveMutationPending())
         return;
-    if (!m_ready || m_closing || m_result.preflight || m_result.extraction ||
-        m_result.targetCheck || text.toUtf8().size() > 1024)
+    if (!m_ready || m_closing || m_result.kind == RequestKind::Preflight ||
+        m_result.isExtractionTask() || m_result.kind == RequestKind::CheckTarget ||
+        text.toUtf8().size() > 1024)
         return;
     m_search = text;
     start({}, 0);
@@ -989,9 +991,8 @@ void BrowserController::clearFinishedTasks() {
 int BrowserController::activeTaskCount() const {
     const auto pendingTask =
         m_result.taskId.isEmpty() ? m_result.observedTask : m_result.taskId.toULongLong();
-    const bool preparing = m_busy &&
-                           (m_result.extraction || m_result.creating || m_result.checking) &&
-                           (!pendingTask || !m_tasks.contains(pendingTask));
+    const bool preparing =
+        m_busy && (m_result.startsTask()) && (!pendingTask || !m_tasks.contains(pendingTask));
     const auto count = static_cast<int>(std::count_if(
                            m_tasks.cbegin(), m_tasks.cend(),
                            [](const auto &v) { return !v.value("terminal").toBool(); })) +
@@ -1298,7 +1299,8 @@ void BrowserController::cancelTask(const QString &id) {
         const auto state = m_tasks.value(task);
         if ((state.value("session").toString() == m_session &&
              isArchiveEditTask(state.value("kind").toString())) ||
-            (m_result.updating && (m_result.taskId == id || m_result.observedTask == task)))
+            (m_result.kind == RequestKind::ArchiveEdit &&
+             (m_result.taskId == id || m_result.observedTask == task)))
             m_archiveCancellationRequested = true;
         emit tasksChanged();
         emit changed();
@@ -1395,7 +1397,7 @@ void BrowserController::inspectSelection() {
     command.session = m_session.toULongLong();
     for (const auto &id : m_model.physicalSelectedIds())
         command.selected.push_back(id.toULongLong());
-    submit(std::move(command), true);
+    submit(std::move(command));
 }
 void BrowserController::restoreQuery() {
     m_directory = m_committedQuery.directory;
@@ -1423,7 +1425,7 @@ void BrowserController::cancel() {
     if (m_openCancellation != OpenCancellation::None)
         return;
     m_deferredQuery.reset();
-    if (m_result.updating) {
+    if (m_result.kind == RequestKind::ArchiveEdit) {
         const auto task =
             m_result.taskId.isEmpty() ? m_result.observedTask : m_result.taskId.toULongLong();
         if (task) {
@@ -1443,7 +1445,7 @@ void BrowserController::cancel() {
     if (m_waiting) {
         m_admissionRetry.stop();
         m_waiting.reset();
-        if (m_result.opening) {
+        if (m_result.kind == RequestKind::Open) {
             beginCancelledOpenCleanup();
             return;
         }
@@ -1455,7 +1457,7 @@ void BrowserController::cancel() {
         return;
     }
     if (m_pending) {
-        if (m_result.opening)
+        if (m_result.kind == RequestKind::Open)
             m_openCancellation = OpenCancellation::AwaitingOpen;
         m_connection->cancel(m_pending);
     }
@@ -1654,8 +1656,8 @@ void BrowserController::fetchPage(int offset) {
     command.generation = m_pageGeneration;
     command.revision = m_pageRevision;
     Result result;
-    result.pageFetch = true;
-    result.offset = offset;
+    result.kind = RequestKind::ViewportPage;
+    result.viewportOffset = offset;
     result.generation = m_pageGeneration;
     result.criteria = m_committedQuery;
     result.query = m_pageQuery;
@@ -1665,7 +1667,7 @@ void BrowserController::fetchPage(int offset) {
 }
 void BrowserController::start(const QString &path, int offset, const QString &password,
                               bool withPassword) {
-    if (m_updateActive || (m_busy && m_result.updating))
+    if (archiveMutationPending())
         return;
     xdzip::reader::Command command{};
     command.kind = path.isEmpty() ? xdzip::reader::CommandKind::Browse
@@ -1694,7 +1696,7 @@ void BrowserController::start(const QString &path, int offset, const QString &pa
     command.generation = ++m_generation;
     const QueryState criteria{m_directory, m_location, m_search, m_sort};
     if (m_busy) {
-        if (m_result.targetCheck)
+        if (m_result.kind == RequestKind::CheckTarget)
             deferActiveTarget();
         m_deferredQuery.emplace(DeferredQuery{std::move(command), criteria});
         if (m_waiting) {
@@ -1714,29 +1716,58 @@ void BrowserController::start(const QString &path, int offset, const QString &pa
 }
 void BrowserController::submitQuery(xdzip::reader::Command command, QueryState criteria) {
     Result result;
-    result.opening = command.kind != xdzip::reader::CommandKind::Browse;
+    result.kind = requestKind(command.kind);
     result.criteria = std::move(criteria);
     result.generation = command.generation;
     submitPrepared(std::move(command), std::move(result));
 }
-void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
+BrowserController::RequestKind BrowserController::requestKind(xdzip::reader::CommandKind command) {
+    using xdzip::reader::CommandKind;
+    switch (command) {
+    case CommandKind::Open:
+    case CommandKind::OpenWithPassword:
+        return RequestKind::Open;
+    case CommandKind::Browse:
+        return RequestKind::Query;
+    case CommandKind::Snapshot:
+        return RequestKind::Snapshot;
+    case CommandKind::CloseSession:
+        return RequestKind::CloseSession;
+    case CommandKind::FreezeSelection:
+        return RequestKind::FreezeSelection;
+    case CommandKind::Preflight:
+        return RequestKind::Preflight;
+    case CommandKind::CheckTarget:
+        return RequestKind::CheckTarget;
+    case CommandKind::InspectInputs:
+        return RequestKind::InspectInputs;
+    case CommandKind::Extract:
+    case CommandKind::OpenEntry:
+        return RequestKind::Extraction;
+    case CommandKind::Create:
+        return RequestKind::Creation;
+    case CommandKind::Update:
+    case CommandKind::Move:
+    case CommandKind::RenameEntry:
+    case CommandKind::DeleteEntries:
+        return RequestKind::ArchiveEdit;
+    case CommandKind::Check:
+        return RequestKind::ArchiveCheck;
+    case CommandKind::ExportManifest:
+        return RequestKind::ExportManifest;
+    case CommandKind::Export:
+    case CommandKind::PublishExport:
+        return RequestKind::Export;
+    case CommandKind::Preview:
+        break; // Content preview has its own admission and response state.
+    }
+    Q_UNREACHABLE_RETURN(RequestKind::None);
+}
+
+void BrowserController::submit(xdzip::reader::Command command) {
     Result result;
-    result.opening = command.kind == xdzip::reader::CommandKind::Open ||
-                     command.kind == xdzip::reader::CommandKind::OpenWithPassword;
-    result.preflight = preflight;
-    result.freezeSelection = command.kind == xdzip::reader::CommandKind::FreezeSelection;
-    result.extraction = command.kind == xdzip::reader::CommandKind::Extract ||
-                        command.kind == xdzip::reader::CommandKind::OpenEntry;
-    result.exporting = command.kind == xdzip::reader::CommandKind::Export ||
-                       command.kind == xdzip::reader::CommandKind::PublishExport;
-    result.exportManifest = command.kind == xdzip::reader::CommandKind::ExportManifest;
-    result.extraction |= result.exporting;
-    result.creating = command.kind == xdzip::reader::CommandKind::Create;
-    result.checking = command.kind == xdzip::reader::CommandKind::Check;
+    result.kind = requestKind(command.kind);
     result.taskSession = command.session;
-    result.inputPreview = command.kind == xdzip::reader::CommandKind::InspectInputs;
-    result.targetCheck = command.kind == xdzip::reader::CommandKind::CheckTarget;
-    result.closeSession = command.kind == xdzip::reader::CommandKind::CloseSession;
     submitPrepared(std::move(command), std::move(result));
 }
 void BrowserController::submitPrepared(xdzip::reader::Command command, Result result) {
@@ -1747,12 +1778,9 @@ void BrowserController::submitPrepared(xdzip::reader::Command command, Result re
     if (command.kind != xdzip::reader::CommandKind::CheckTarget &&
         command.kind != xdzip::reader::CommandKind::InspectInputs)
         m_preflightReport.clear();
-    const auto edit = archiveEditOperation(command.kind);
-    result.updating = !edit.isEmpty();
     m_entryEditError.clear();
-    if (result.updating) {
-        result.creating = true;
-        m_archiveOperation = edit;
+    if (result.kind == RequestKind::ArchiveEdit) {
+        m_archiveOperation = archiveEditOperation(command.kind);
         m_archiveCancellationRequested = false;
     }
     m_result = std::move(result);
@@ -1762,12 +1790,12 @@ void BrowserController::submitPrepared(xdzip::reader::Command command, Result re
     // before they enter its queue, without discarding a preview already displayed.
     if (m_waitingPreview || m_previewRequest || m_openPasswordPrompt.value("taskId") == "preview")
         clearContentPreview();
-    if (!m_result.targetCheck && !m_result.inputPreview)
-        m_message = m_result.creating     ? qtTrId("ui.33495b6653c6")
-                    : m_result.checking   ? qtTrId("integrity.starting")
-                    : m_result.extraction ? qtTrId("ui.8cf09709f8f6")
-                    : m_result.preflight  ? qtTrId("ui.d37d23d13df0")
-                                          : qtTrId("ui.5126629edae6");
+    if (m_result.kind != RequestKind::CheckTarget && m_result.kind != RequestKind::InspectInputs)
+        m_message = m_result.isCreationTask()                    ? qtTrId("ui.33495b6653c6")
+                    : m_result.kind == RequestKind::ArchiveCheck ? qtTrId("integrity.starting")
+                    : m_result.isExtractionTask()                ? qtTrId("ui.8cf09709f8f6")
+                    : m_result.kind == RequestKind::Preflight    ? qtTrId("ui.d37d23d13df0")
+                                                                 : qtTrId("ui.5126629edae6");
     m_waiting.emplace(std::move(command));
     m_admissionAttempts = 0;
     attemptSubmission();
@@ -1778,13 +1806,7 @@ void BrowserController::attemptSubmission() {
     // One process-wide heavy operation, including preparation and cleanup. A
     // queued controller retains its bounded command and remains cancellable.
     static QPointer<BrowserController> heavyOwner;
-    const bool heavy = m_waiting->kind == xdzip::reader::CommandKind::PublishExport ||
-                       !archiveEditOperation(m_waiting->kind).isEmpty() ||
-                       m_waiting->kind == xdzip::reader::CommandKind::Export ||
-                       m_waiting->kind == xdzip::reader::CommandKind::Create ||
-                       m_waiting->kind == xdzip::reader::CommandKind::OpenEntry ||
-                       m_waiting->kind == xdzip::reader::CommandKind::Extract ||
-                       m_waiting->kind == xdzip::reader::CommandKind::Check;
+    const bool heavy = m_result.startsTask();
     if (heavy && heavyOwner && heavyOwner != this &&
         (heavyOwner->activeTaskCount() > 0 || heavyOwner->taskStarting())) {
         m_admissionRetry.start(100);
@@ -1810,7 +1832,7 @@ void BrowserController::attemptSubmission() {
                           : result.status == xdzip::reader::Admission::Exhausted
                               ? "identifier_exhausted"
                               : "busy";
-        if (m_result.targetCheck) {
+        if (m_result.kind == RequestKind::CheckTarget) {
             finishTargetCheck(QString::fromLatin1(code));
             m_result = {};
             emit extractionChanged();
@@ -1818,7 +1840,7 @@ void BrowserController::attemptSubmission() {
             QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
             return;
         }
-        if (m_result.inputPreview) {
+        if (m_result.kind == RequestKind::InspectInputs) {
             m_result = {};
             emit creationInputsChanged();
             emit changed();
@@ -1832,14 +1854,14 @@ void BrowserController::attemptSubmission() {
         }
         restoreQuery();
         m_message = explain(code);
-        if (m_result.creating)
+        if (m_result.isCreationTask())
             m_creationError = m_message;
-        if (m_result.updating) {
+        if (m_result.kind == RequestKind::ArchiveEdit) {
             if (isEntryEdit(m_archiveOperation))
                 m_entryEditError = m_message;
             m_archiveOperation.clear();
         }
-        if (m_result.exporting && m_export)
+        if (m_result.kind == RequestKind::Export && m_export)
             m_export->finish({}, "runtime_unavailable");
         if (m_exportCopy) {
             m_exportCopy->finish("runtime_unavailable");
@@ -2023,8 +2045,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         return;
     const bool discardedBrowse =
         m_browsingDetached && m_openCancellation == OpenCancellation::None &&
-        !m_result.extraction && !m_result.creating && !m_result.checking && !m_result.targetCheck &&
-        !m_result.inputPreview && !m_result.exportManifest && !m_result.closeSession;
+        !m_result.survivesDetach() && m_result.kind != RequestKind::CloseSession;
     if (discardedBrowse) {
         if (event.kind == EventKind::Finished) {
             m_pending = 0;
@@ -2038,12 +2059,12 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         return;
     if (event.kind == EventKind::TaskAccepted) {
         m_result.taskId = QString::number(event.task.id);
-        if (m_result.updating) {
+        if (m_result.kind == RequestKind::ArchiveEdit) {
             m_updateActive = true;
             m_ready = false;
         }
         m_hasPayload = true;
-        if (m_pendingOpenAfter && m_result.extraction && !m_result.exporting) {
+        if (m_pendingOpenAfter && m_result.kind == RequestKind::Extraction) {
             m_pendingOpenAfter = false;
             const auto existing = m_tasks.value(event.task.id);
             if (existing.value("terminal").toBool()) {
@@ -2071,7 +2092,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_result.leftovers = event.total;
         m_hasPayload = true;
     } else if (event.kind == EventKind::Selected) {
-        if (!m_result.freezeSelection || event.selectors.size() > 100000) {
+        if (m_result.kind != RequestKind::FreezeSelection || event.selectors.size() > 100000) {
             m_result.error = "invalid_selection";
             return;
         }
@@ -2081,6 +2102,11 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
     } else if (event.kind == EventKind::Page) {
         if (m_deferredQuery)
             return; // superseded generation never adds rows or commits
+        const bool viewportPage = m_result.kind == RequestKind::ViewportPage;
+        if (!viewportPage && !m_result.isQuery()) {
+            m_result.error = "stale_query";
+            return;
+        }
         const auto limits = xdzip::reader::metadata_limits();
         if (event.query == 0 || event.revision == 0 || event.generation != m_result.generation ||
             (m_result.query &&
@@ -2094,8 +2120,8 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             event.directories.size() > limits.directories ||
             event.offset + event.rows.size() > event.total ||
             (event.rows.empty() && event.offset < event.total) ||
-            event.offset !=
-                static_cast<quint64>(m_result.pageFetch ? m_result.offset : m_result.rows.size())) {
+            event.offset != static_cast<quint64>(viewportPage ? m_result.viewportOffset
+                                                              : m_result.rows.size())) {
             m_result.error = "resource_limit";
             return;
         }
@@ -2122,8 +2148,6 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_editRestriction = event.edit_restriction;
         m_archiveFolder = text(event.folder_name);
         m_sourceGroup = text(event.source_group);
-        if (!m_result.pageFetch)
-            m_result.offset = 0;
         m_result.session = QString::number(event.session);
         const bool nativeFormat =
             QStringList{QStringLiteral("7z"), QStringLiteral("RAR"), QStringLiteral("CAB"),
@@ -2234,11 +2258,11 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                                     : modified + " " + time.toString(QStringLiteral("HH:mm:ss"))});
         }
         m_hasPayload = true;
-    } else if (event.kind == EventKind::Snapshot &&
+    } else if (event.kind == EventKind::Snapshot && m_result.kind == RequestKind::Snapshot &&
                m_openCancellation == OpenCancellation::Snapshot) {
         m_cancelledOpenSession = event.session;
         m_hasPayload = true;
-    } else if (event.kind == EventKind::Snapshot && m_result.closeSession) {
+    } else if (event.kind == EventKind::Snapshot && m_result.kind == RequestKind::CloseSession) {
         m_hasPayload = event.session == 0;
     } else if (event.kind == EventKind::Preflight) {
         const auto &report = event.report;
@@ -2295,7 +2319,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         if (!m_createdArchivesToOpen.isEmpty())
             QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
         if (m_deferredQuery && text(event.error) != "source_changed") {
-            m_creationPreviewPending |= m_result.inputPreview;
+            m_creationPreviewPending |= m_result.kind == RequestKind::InspectInputs;
             auto latest = std::move(*m_deferredQuery);
             m_deferredQuery.reset();
             submitQuery(std::move(latest.command), std::move(latest.criteria));
@@ -2304,7 +2328,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_deferredQuery.reset();
         if (!event.error.empty())
             m_result.error = text(event.error);
-        if (m_result.opening &&
+        if (m_result.kind == RequestKind::Open &&
             (m_result.error == "password_required" || m_result.error == "wrong_password" ||
              m_result.error == "password_or_integrity")) {
             if (m_openPasswordGeneration == std::numeric_limits<quint64>::max()) {
@@ -2324,7 +2348,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         }
         if (!m_hasPayload && m_result.error.isEmpty())
             m_result.error = "runtime_unavailable";
-        if (m_result.freezeSelection) {
+        if (m_result.kind == RequestKind::FreezeSelection) {
             if (m_result.error.isEmpty()) {
                 m_extractionSelectors = std::move(m_result.frozenSelectors);
                 m_result = {};
@@ -2336,7 +2360,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             }
             return;
         }
-        if (m_result.inputPreview) {
+        if (m_result.kind == RequestKind::InspectInputs) {
             if (m_result.previewPaths == m_creationPreviewPaths && m_result.error.isEmpty()) {
                 m_creationInputs = m_result.inputInfo;
                 emit creationInputsChanged();
@@ -2346,9 +2370,9 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
             return;
         }
-        if (m_result.pageFetch) {
+        if (m_result.kind == RequestKind::ViewportPage) {
             if (m_result.error.isEmpty()) {
-                m_model.installPage(m_result.offset, std::move(m_result.rows));
+                m_model.installPage(m_result.viewportOffset, std::move(m_result.rows));
                 m_summaryRevision = std::numeric_limits<quint64>::max();
                 if (m_deferredDetailRow >= 0 && m_model.rowAt(m_deferredDetailRow))
                     showRowDetail(m_deferredDetailRow);
@@ -2361,9 +2385,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         }
         // Fetch bounded transport batches until the current query is complete. The model
         // commits once, preserving row identity and avoiding visible paging or partial sorts.
-        if (m_result.error.isEmpty() && !m_result.preflight && !m_result.closeSession &&
-            !m_result.extraction && !m_result.creating && !m_result.checking &&
-            !m_result.targetCheck && m_result.total <= 1024 &&
+        if (m_result.error.isEmpty() && m_result.isQuery() && m_result.total <= 1024 &&
             m_result.rows.size() < m_result.total) {
             xdzip::reader::Command command{};
             command.kind = xdzip::reader::CommandKind::Browse;
@@ -2378,7 +2400,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             submitPrepared(std::move(command), std::move(m_result));
             return;
         }
-        if (m_result.targetCheck) {
+        if (m_result.kind == RequestKind::CheckTarget) {
             const auto error = m_result.error;
             const bool currentSource = m_activeTarget && !m_activeTarget->creation &&
                                        m_activeTarget->revision == m_targetRevision &&
@@ -2396,11 +2418,11 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             return;
         }
         m_message = explain(m_result.error);
-        if (m_result.extraction || m_result.creating || m_result.checking) {
-            const bool extraction = m_result.extraction && !m_result.exporting;
-            const bool creating = m_result.creating;
-            const bool updating = m_result.updating;
-            const bool checking = m_result.checking;
+        if (m_result.startsTask()) {
+            const bool extraction = m_result.kind == RequestKind::Extraction;
+            const bool creating = m_result.isCreationTask();
+            const bool updating = m_result.kind == RequestKind::ArchiveEdit;
+            const bool checking = m_result.kind == RequestKind::ArchiveCheck;
             if (creating)
                 m_creationError = m_result.error.isEmpty() ? QString{} : m_message;
             const QString taskId = m_result.taskId;
@@ -2427,7 +2449,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
             return;
         }
-        if (m_result.closeSession && m_result.error.isEmpty()) {
+        if (m_result.kind == RequestKind::CloseSession && m_result.error.isEmpty()) {
             m_ready = false;
             m_title.clear();
             m_session.clear();
@@ -2443,7 +2465,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             m_preflightReport.clear();
             m_result = {};
             emit changed();
-        } else if (m_result.preflight) {
+        } else if (m_result.kind == RequestKind::Preflight) {
             m_preflightReport =
                 m_result.error.isEmpty() ? m_result.report : QVariantMap{{"error", m_message}};
             if (m_result.error == "source_changed" || m_result.error == "stale_session" ||
@@ -2498,7 +2520,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             clearContentPreview();
             m_detail.clear();
             m_total = m_ready ? m_result.total : 0;
-            m_offset = m_ready ? m_result.offset : 0;
+            m_offset = 0;
             m_session = m_ready ? m_result.session : QString{};
             m_result = {};
             if (restoreUpdatedLocation())

@@ -62,8 +62,6 @@ class ShellTest : public QObject {
         QQuickStyle::setStyle("Basic");
         QVERIFY(initializeUiText("zh-CN"));
         QVERIFY(installUiFont());
-        qmlRegisterType<BrowserController>("Xdzip.Native", 1, 0, "BrowserController");
-        qmlRegisterType<ShellBatchController>("Xdzip.Native", 1, 0, "ShellBatchController");
     }
     void registeredCandidatesPreserveEntryPointBoundaries() {
         QTemporaryDir source;

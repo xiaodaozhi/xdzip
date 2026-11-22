@@ -452,7 +452,8 @@ bool BrowserController::handleTransferEvent(const xdzip::reader::Event &event) {
         m_hasPayload = true;
         return true;
     }
-    if (event.kind == EventKind::TaskAccepted && m_result.exporting && !m_exportCopy)
+    if (event.kind == EventKind::TaskAccepted && m_result.kind == RequestKind::Export &&
+        !m_exportCopy)
         m_exportTask = event.task.id;
     if (event.kind == EventKind::TaskAccepted && m_exportCopy)
         m_exportCopyTask = event.task.id;
@@ -461,7 +462,7 @@ bool BrowserController::handleTransferEvent(const xdzip::reader::Event &event) {
         m_exportCopy.reset();
         m_exportCopyTask = 0;
     }
-    if (event.kind != EventKind::Finished || !m_result.exportManifest)
+    if (event.kind != EventKind::Finished || m_result.kind != RequestKind::ExportManifest)
         return false;
     m_pending = 0;
     m_busy = false;
@@ -562,7 +563,8 @@ void BrowserController::handleTransferTask(const xdzip::reader::TaskSnapshot &ta
     const auto kind = QString::fromUtf8(task.kind.data(), qsizetype(task.kind.size()));
     // The task lane may publish a terminal snapshot before metadata admission
     // reaches Qt. Bind the first matching task before resolving its terminal.
-    if (kind == "export" && m_export && m_result.exporting && !m_exportCopy && m_exportTask == 0)
+    if (kind == "export" && m_export && m_result.kind == RequestKind::Export && !m_exportCopy &&
+        m_exportTask == 0)
         m_exportTask = task.id;
     if (kind == "export-copy" && m_exportCopy && m_exportCopyTask == 0)
         m_exportCopyTask = task.id;

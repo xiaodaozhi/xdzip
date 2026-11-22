@@ -159,7 +159,7 @@ class BrowserController : public QObject {
     }
     void discardBrowsing();
     bool archiveMutationPending() const {
-        return m_updateActive || (m_busy && m_result.updating);
+        return m_updateActive || (m_busy && m_result.kind == RequestKind::ArchiveEdit);
     }
     bool shutdownComplete() const {
         return m_connection->stopped();
@@ -210,20 +210,21 @@ class BrowserController : public QObject {
         return !m_closing && !m_faulted && !m_connection->stopped();
     }
     bool queryAvailable() const {
-        return m_ready && !m_updateActive && !(m_busy && m_result.updating) && !m_closing &&
-               !m_result.preflight && !m_result.closeSession && !m_result.extraction &&
-               !m_result.checking && !m_result.targetCheck;
+        return m_ready && !archiveMutationPending() && !m_closing &&
+               m_result.kind != RequestKind::Preflight &&
+               m_result.kind != RequestKind::CloseSession && !m_result.isExtractionTask() &&
+               m_result.kind != RequestKind::ArchiveCheck &&
+               m_result.kind != RequestKind::CheckTarget;
     }
     bool taskStarting() const {
-        return m_busy && !m_closing && !m_faulted &&
-               (m_result.extraction || m_result.creating || m_result.checking);
+        return m_busy && !m_closing && !m_faulted && m_result.startsTask();
     }
     bool browsingBusy() const {
         // Operation preparation and drag manifests keep the committed browser snapshot.
-        return m_updateActive || (m_busy && m_result.updating) ||
-               (m_busy && (m_closing || m_faulted ||
-                           (!taskStarting() && !m_result.targetCheck && !m_result.inputPreview &&
-                            !m_result.exportManifest && !m_result.pageFetch)));
+        return archiveMutationPending() ||
+               (m_busy &&
+                (m_closing || m_faulted ||
+                 (!m_result.survivesDetach() && m_result.kind != RequestKind::ViewportPage)));
     }
     QString archiveOperation() const {
         return runtimeAvailable() && browsingBusy() ? m_archiveOperation : QString{};
@@ -242,7 +243,8 @@ class BrowserController : public QObject {
         return m_busy;
     }
     bool inputActionsEnabled() const {
-        return runtimeAvailable() && (!m_busy || m_result.targetCheck || m_result.inputPreview);
+        return runtimeAvailable() && (!m_busy || m_result.kind == RequestKind::CheckTarget ||
+                                      m_result.kind == RequestKind::InspectInputs);
     }
     bool ready() const {
         return m_ready;
@@ -418,27 +420,49 @@ class BrowserController : public QObject {
         QString directory, location, search;
         int sort = 0;
     };
+    enum class RequestKind {
+        None,
+        Open,
+        Query,
+        ViewportPage,
+        Snapshot,
+        CloseSession,
+        FreezeSelection,
+        Preflight,
+        CheckTarget,
+        InspectInputs,
+        Extraction,
+        Creation,
+        ArchiveEdit,
+        ArchiveCheck,
+        ExportManifest,
+        Export,
+    };
     struct Result {
-        bool opening = false;
-        bool freezeSelection = false;
+        RequestKind kind = RequestKind::None;
+        bool isQuery() const {
+            return kind == RequestKind::Open || kind == RequestKind::Query;
+        }
+        bool isCreationTask() const {
+            return kind == RequestKind::Creation || kind == RequestKind::ArchiveEdit;
+        }
+        bool isExtractionTask() const {
+            return kind == RequestKind::Extraction || kind == RequestKind::Export;
+        }
+        bool startsTask() const {
+            return isCreationTask() || isExtractionTask() || kind == RequestKind::ArchiveCheck;
+        }
+        bool survivesDetach() const {
+            return startsTask() || kind == RequestKind::CheckTarget ||
+                   kind == RequestKind::InspectInputs || kind == RequestKind::ExportManifest;
+        }
         QStringList frozenSelectors;
-        bool pageFetch = false;
-        bool preflight = false;
-        bool extraction = false;
-        bool creating = false;
-        bool updating = false;
-        bool exporting = false;
-        bool exportManifest = false;
-        bool checking = false;
-        bool inputPreview = false;
         QStringList previewPaths;
         QVariantList inputInfo;
-        bool targetCheck = false;
         QString taskId;
         quint64 observedTask = 0;
         quint64 taskSession = 0;
         quint64 leftovers = 0;
-        bool closeSession = false;
         QVariantMap report;
         QList<BrowserRow> rows;
         QList<DirectoryRow> directories;
@@ -450,7 +474,7 @@ class BrowserController : public QObject {
         quint64 query = 0, generation = 0, revision = 0;
         int total = 0;
         int archiveTotal = 0;
-        int offset = 0;
+        int viewportOffset = 0;
     };
     struct DeferredQuery {
         xdzip::reader::Command command;
@@ -520,7 +544,8 @@ class BrowserController : public QObject {
     void beginCancelledOpenCleanup();
     void finishCancelledOpenCleanup(const QString &error);
     void receive(const xdzip::reader::Event &event);
-    void submit(xdzip::reader::Command command, bool preflight = false);
+    static RequestKind requestKind(xdzip::reader::CommandKind command);
+    void submit(xdzip::reader::Command command);
     void submitQuery(xdzip::reader::Command command, QueryState criteria);
     void submitPrepared(xdzip::reader::Command command, Result result);
     void attemptSubmission();
