@@ -4,6 +4,8 @@
 
 此流程生成可用于官网或其他展示场景的截图、底图和宣传图，不会发布素材，也不声称符合特定商店的上架要求。两个平台沿用 [Windows 素材](../market/windows/README.md)的视觉构图，分别维护 [macOS 文案](../../../specs/marketing/macos-store.json)和 [Linux 文案](../../../specs/marketing/linux-store.json)。当前与 Windows 一致，覆盖[产品语言清单](../../../resources/ui-languages.json)中的十种语言和浏览、创建、预览、工作区四个场景。
 
+单平台采集并生成跨平台宣传图的设计见[跨平台宣传截图方案](cross-platform-marketing.md)。
+
 ## 准备图片生成环境
 
 需要 Node.js 及与 Windows 生成器相同的固定版本 `sharp`。请为目标语言安装适合的系统字体，中文、日文和韩文需要相应地区的字形字体，并在使用前检查渲染结果。在共享本地工具链中安装一次：

@@ -4,6 +4,8 @@ English | [简体中文](../zh-CN/engineering/platform-marketing.md)
 
 This workflow produces reusable screenshots, backgrounds and promotional images for a website or other presentation. It does not publish anything or assert that the images meet a particular store's submission requirements. The two platforms use the same visual composition as the [Windows materials](../market/windows/README.md), with separate [macOS copy](../../specs/marketing/macos-store.json) and [Linux copy](../../specs/marketing/linux-store.json). Each covers the ten languages in [the product language inventory](../../resources/ui-languages.json) and four scenes: browse, create, preview and workspace.
 
+For the planned single-source cross-platform workflow, see [cross-platform marketing screenshots](cross-platform-marketing.md).
+
 ## Prepare the image renderer
 
 Node.js and the same pinned `sharp` dependency as the Windows generator are required. Install suitable system fonts for the selected languages, including region-specific Chinese, Japanese and Korean fonts when needed, and review the rendered glyphs before use. Install it once in the shared local toolchain:
