@@ -5,20 +5,23 @@ const crypto = require('node:crypto');
 const sharp = require('./windows-store-sharp.cjs');
 const images = require('./windows-store-image-utils.cjs');
 const artwork = require('./build-windows-store-assets.cjs');
+const {frameClient} = require('./marketing-window-frame.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const hash = data => crypto.createHash('sha256').update(data).digest('hex');
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 const languageNames = readJson(path.join(ROOT, 'resources/ui-languages.json')).languages.map(item => item.id);
-const scenes = ['01-browse', '02-create', '03-preview', '04-workspace'];
+const scenes = ['01-welcome', '02-create', '03-preview', '04-workspace'];
 
 function argumentsFor(platform, args) {
-  const result = {platform, captures: null, output: null, include4k: false};
+  const result = {platform, captures: null, output: null, include4k: false, createClientOnly: false, createWindow: false};
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--4k') result.include4k = true;
+    else if (args[i] === '--create-client-only') result.createClientOnly = true;
+    else if (args[i] === '--create-window') result.createWindow = true;
     else if (['--output', '--captures'].includes(args[i]) && args[i + 1]) result[args[i].slice(2)] = args[++i];
     else if (args[i] === '--help') {
-      console.log(`Usage: node scripts/build-${platform}-store-assets.cjs [--captures DIR] [--output DIR] [--4k]`);
+      console.log(`Usage: node scripts/build-${platform}-store-assets.cjs [--captures DIR] [--output DIR] [--4k] [--create-client-only | --create-window]`);
       return null;
     } else throw Error(`Unknown or incomplete argument: ${args[i]}`);
   }
@@ -30,6 +33,8 @@ function argumentsFor(platform, args) {
     throw Error('Output must be below build/ or dist/, or outside the repository');
   }
   if (fs.existsSync(result.output)) throw Error('Output already exists');
+  if (result.createClientOnly && result.createWindow) throw Error('Choose one creation window scope');
+  if ((result.createClientOnly || result.createWindow) && !result.captures) throw Error('Creation window scope requires captures');
   if (result.captures) {
     result.captures = fs.realpathSync(result.captures);
     const belowCapture = path.relative(result.captures, result.output);
@@ -91,6 +96,8 @@ async function build(platform, args = process.argv.slice(2)) {
       config.visual_source !== 'specs/marketing/windows-store.json') throw Error('Invalid platform marketing configuration');
   const visual = readJson(path.join(ROOT, config.visual_source));
   const captures = capturesFor(options);
+  if (captures && !options.createClientOnly && !options.createWindow && captures.session.capture_method !== 'interactive-window')
+    throw Error('Declare whether 02-create is client-only (--create-client-only) or already includes the titlebar (--create-window)');
   const sizes = options.include4k ? [[1920, 1080], [3840, 2160]] : [[1920, 1080]];
   const outputParent = path.dirname(options.output);
   let ancestor = outputParent;
@@ -99,6 +106,7 @@ async function build(platform, args = process.argv.slice(2)) {
   fs.mkdirSync(outputParent, {recursive: true});
   const stage = fs.mkdtempSync(path.join(outputParent, '.marketing-export-'));
   const entries = [];
+  const transformations = [];
   async function save(name, bytes, role, language = 'shared', scene = null) {
     const file = path.join(stage, name);
     fs.mkdirSync(path.dirname(file), {recursive: true});
@@ -129,13 +137,23 @@ async function build(platform, args = process.argv.slice(2)) {
       for (const [index, scene] of scenes.entries()) {
         const input = captures?.byScene.get(`${language}/${scene}`);
         let capture = {cutout_width: visual.screenshot_artwork.frame[2], cutout_height: visual.screenshot_artwork.frame[3], corner_radius: 8};
+        let presentationBytes = input?.bytes;
         if (input) {
           const info = await sharp(input.bytes, {limitInputPixels: 40_000_000}).metadata();
           if (info.format !== 'png' || info.width !== input.entry.width || info.height !== input.entry.height ||
               !info.width || !info.height) throw Error(`Invalid PNG dimensions: ${language}/${scene}`);
-          capture = {cutout_width: info.width, cutout_height: info.height, corner_radius: 8};
+          let outWidth = info.width, outHeight = info.height;
+          if (scene === '02-create' && options.createClientOnly) {
+            const framed = await frameClient(input.bytes, platform, language);
+            presentationBytes = framed.png;
+            outWidth = framed.width; outHeight = framed.height;
+            const {png, ...receipt} = framed;
+            transformations.push({...receipt, scene, file: `${language}/screenshots/${scene}.png`});
+          }
+          capture = {cutout_width: outWidth, cutout_height: outHeight, corner_radius: 8};
           await save(`capture-source/${language}/${scene}.png`, input.bytes, 'original-capture', language, scene);
-          await save(`${language}/screenshots/${scene}.png`, input.bytes, 'screenshot', language, scene);
+          await save(`${language}/screenshots/${scene}.png`, presentationBytes,
+            scene === '02-create' && options.createClientOnly ? 'composite-screenshot' : 'screenshot', language, scene);
         }
         for (const [width, height] of sizes) {
           const background = await renderSvg(artwork.screenshotPromo(locale, index, capture, width, height, images));
@@ -144,7 +162,7 @@ async function build(platform, args = process.argv.slice(2)) {
           await save(`${language}/feature-illustrations/${suffix}`, await renderSvg(artwork.promo(locale, index, width, height)), 'feature-illustration', language, scene);
           if (input) {
             const box = images.placement(visual, capture, width, height);
-            const layer = await images.screenshotLayer(input.bytes, box);
+            const layer = await images.screenshotLayer(presentationBytes, box);
             const composed = await images.composite(background, layer, box.imageX, box.imageY);
             await images.assertOverlay(composed, layer, box.imageX, box.imageY, background);
             await save(`${language}/promotional/${suffix}`, composed, 'combined-artwork', language, scene);
@@ -162,9 +180,9 @@ async function build(platform, args = process.argv.slice(2)) {
     }
     const manifest = {schema_version: 1, platform, purpose: config.purpose,
       captured_languages: captures ? [...new Set(captures.session.images.map(entry => entry.language))] : [],
-      status: captures ? 'operator-supplied-captures' : 'backgrounds-only',
-      provenance_note: 'Screenshot subject, scene and application identity require operator review; no native capture is inferred from PNG bytes.',
-      capture: captures?.session.identity ?? null,
+      status: captures ? (transformations.length ? 'operator-supplied-with-composites' : 'operator-supplied-captures') : 'backgrounds-only',
+      provenance_note: 'Screenshot subject, scene and application identity require operator review; synthetic titlebars are composites, not native captures.',
+      capture: captures?.session.identity ?? null, transformations,
       config_sha256: hash(fs.readFileSync(path.join(ROOT, 'specs', 'marketing', `${platform}-store.json`))),
       visual_sha256: hash(fs.readFileSync(path.join(ROOT, config.visual_source))), assets: entries};
     await save('manifest.json', Buffer.from(JSON.stringify(manifest, null, 2) + '\n'), 'manifest');

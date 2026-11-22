@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/platform-marketing.md)
 
-This workflow produces reusable screenshots, backgrounds and promotional images for a website or other presentation. It does not publish anything or assert that the images meet a particular store's submission requirements. The two platforms use the same visual composition as the [Windows materials](../market/windows/README.md), with separate [macOS copy](../../specs/marketing/macos-store.json) and [Linux copy](../../specs/marketing/linux-store.json). Each covers the ten languages in [the product language inventory](../../resources/ui-languages.json) and four scenes: browse, create, preview and workspace.
+This workflow produces reusable screenshots, backgrounds and promotional images for a website or other presentation. It does not publish anything or assert that the images meet a particular store's submission requirements. The two platforms use the same visual composition as the [Windows materials](../market/windows/README.md), with separate [macOS copy](../../specs/marketing/macos-store.json) and [Linux copy](../../specs/marketing/linux-store.json). Each covers the ten languages in [the product language inventory](../../resources/ui-languages.json) and four scenes: welcome, create, preview and workspace.
 
 For the planned single-source cross-platform workflow, see [cross-platform marketing screenshots](cross-platform-marketing.md).
 
@@ -31,7 +31,7 @@ Capture on the target OS using the actual xdzip build. By default the recorder r
 
 | Scene | Prepare in the application |
 | --- | --- |
-| `01-browse` | Browse the archive tree, select a file and show its properties. |
+| `01-welcome` | Show the start page before opening an archive. |
 | `02-create` | Open archive creation for selected files and show ZIP settings. |
 | `03-preview` | Show an image preview beside the file list and properties. |
 | `04-workspace` | Open two archives in tabs and show the selected files in grid view. |
@@ -45,7 +45,7 @@ python3 scripts/capture-platform-store-assets.py --platform linux --executable /
 
 On macOS select the executable inside the `.app/Contents/MacOS/` bundle. The recorder reads its `--version-json` identity, checks the digest before and after capture, and records the operating system, architecture, scene, language, PNG dimensions and digest. `--source-revision` optionally records a full commit matching the executable's abbreviated revision. The identity belongs to the chosen executable: it does not prove which window was captured. The operator must verify the screenshot subject and scene.
 
-Alternatively, arrange already captured native PNGs under one directory per selected language, such as `ja-JP/` and `fr-FR/`, using `01-browse.png`, `02-create.png`, `03-preview.png` and `04-workspace.png`, then replace `--interactive` with `--from-directory /path/to/images`. Run the recorder on the corresponding OS with the actual build. The receipt records these as operator-supplied; it cannot establish when, where or from which executable the files were created.
+Alternatively, arrange already captured native PNGs under one directory per selected language, such as `ja-JP/` and `fr-FR/`, using `01-welcome.png`, `02-create.png`, `03-preview.png` and `04-workspace.png`, then replace `--interactive` with `--from-directory /path/to/images`. Run the recorder on the corresponding OS with the actual build. The receipt records these as operator-supplied; it cannot establish when, where or from which executable the files were created.
 
 To synchronize a completed export, see [latest-only Drive sync](marketing-archive.md).
 
@@ -56,6 +56,8 @@ node scripts/build-macos-store-assets.cjs --captures build/macos-captures --outp
 node scripts/build-linux-store-assets.cjs --captures build/linux-captures --output build/linux-marketing-with-screenshots
 ```
 
-The exporter validates the platform, complete four-scene set for each captured language, screenshot digests and dimensions, and refuses to overwrite an existing output. Per language, `screenshots/` contains original PNGs, `backgrounds/` contains the reusable frames, `promotional/` contains composites only for captured languages, and `feature-illustrations/`, `branding/` and `text/` contain other artwork and copy. `capture-source/` preserves the original receipt and PNGs for re-export. `manifest.json` records the output roles and source identity, and `SHA256SUMS.txt` covers all exported files including the manifest. Screenshots are not enlarged; review the generated images and their provenance before use. Do not commit captures or exports.
+If `02-create` contains only the client area, append `--create-client-only` to the export command. It adds a synthetic target-platform titlebar at 150% and records the transformation while preserving the source PNG. Interactive window captures include the titlebar by default. For imported PNGs, pass `--create-window` when the creation image already includes the titlebar, or `--create-client-only` when it does not; the exporter refuses to guess an undeclared input scope.
+
+The exporter validates the platform, complete four-scene set for each captured language, screenshot digests and dimensions, and refuses to overwrite an existing output. Per language, `screenshots/` contains the presentation images, `backgrounds/` contains the reusable frames, `promotional/` contains composites only for captured languages, and `feature-illustrations/`, `branding/` and `text/` contain other artwork and copy. `capture-source/` preserves the original receipt and PNGs for re-export. `manifest.json` records the output roles and source identity, and `SHA256SUMS.txt` covers all exported files including the manifest. Screenshots are not enlarged; review the generated images and their provenance before use. Do not commit captures or exports.
 
 Run `python3 scripts/test-platform-store-captures.py` and `node scripts/test-platform-store-assets.cjs` for the focused capture and rendering checks. The rendering test uses synthetic fixtures, not actual application screenshots.

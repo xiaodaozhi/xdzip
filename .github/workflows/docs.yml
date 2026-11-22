@@ -48,6 +48,7 @@ jobs:
           python3 scripts/test-windows-store-languages.py
           node --check scripts/import-windows-store-captures.cjs
           node --check scripts/build-platform-store-assets.cjs
+          node --check scripts/marketing-window-frame.cjs
           node --check scripts/build-macos-store-assets.cjs
           node --check scripts/build-linux-store-assets.cjs
           python3 scripts/test-check-docs.py

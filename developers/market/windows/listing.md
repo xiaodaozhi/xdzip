@@ -112,10 +112,10 @@ Windows 11, x64 PC.
 
 These images are feature illustrations, not app screenshots. Their files and captions do not establish that the required screenshot field is satisfied.
 
-### 01-browse
+### 01-welcome
 
 ```text
-Feature illustration: browse supported archives, find files and extract selected items. Not an application screenshot.
+Illustration of the xdzip start page.
 ```
 
 ### 02-create
@@ -140,10 +140,10 @@ Feature illustration: organize multiple archives and choose a light or dark appe
 
 Upload the 1920 × 1080 combined artwork in promotional/ from the local export to the desktop screenshot field.
 
-### 01-browse
+### 01-welcome
 
 ```text
-Browse an archive's folder tree, select individual files and view their properties.
+xdzip start page with actions to open or create an archive.
 ```
 
 ### 02-create

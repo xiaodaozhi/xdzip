@@ -7,7 +7,7 @@ const {spawnSync} = require('node:child_process');
 const sharp = require('./windows-store-sharp.cjs');
 const root = path.resolve(__dirname, '..');
 const languages = require('../resources/ui-languages.json').languages.map(item => item.id);
-const scenes = ['01-browse', '02-create', '03-preview', '04-workspace'];
+const scenes = ['01-welcome', '02-create', '03-preview', '04-workspace'];
 const hash = data => crypto.createHash('sha256').update(data).digest('hex');
 const run = (platform, args, success = true) => {
   const result = spawnSync(process.execPath, [path.join(root, 'scripts', `build-${platform}-store-assets.cjs`), ...args], {encoding: 'utf8'});
@@ -28,7 +28,7 @@ const run = (platform, args, success = true) => {
         fs.writeFileSync(path.join(input, name), fixture);
         records.push({language: lang, scene, file: name, width: 800, height: 500, sha256: hash(fixture)});
       }
-      const session = {schema_version: 1, platform, complete: true, provenance: 'operator-supplied',
+      const session = {schema_version: 1, platform, complete: true, provenance: 'operator-supplied', capture_method: 'interactive-window',
         identity: {version: 'test', build: 1, revision: 'a'.repeat(12), source_revision: 'a'.repeat(40), dirty: false, executable_sha256: 'b'.repeat(64)}, images: records};
       fs.writeFileSync(path.join(input, 'capture-session.json'), JSON.stringify(session));
       const readCapture = require('./build-platform-store-assets.cjs').capturesFor;
@@ -38,6 +38,21 @@ const run = (platform, args, success = true) => {
       subset.images.pop();
       fs.writeFileSync(path.join(input, 'capture-session.json'), JSON.stringify(subset));
       assert.throws(() => readCapture({platform, captures: input}), /Incomplete|incomplete/);
+      const framedSession = {...session, capture_method:'existing-png', images: session.images.filter(entry => entry.language === 'ja-JP')};
+      fs.writeFileSync(path.join(input, 'capture-session.json'), JSON.stringify(framedSession));
+      run(platform, ['--captures', input, '--output', path.join(base, `${platform}-undeclared`)], false);
+      const framedOutput = path.join(base, `${platform}-framed`);
+      run(platform, ['--captures', input, '--output', framedOutput, '--create-client-only']);
+      const frameManifest = JSON.parse(fs.readFileSync(path.join(framedOutput, 'manifest.json')));
+      assert.equal(frameManifest.status, 'operator-supplied-with-composites');
+      assert.equal(frameManifest.transformations.length, 1);
+      assert.equal(frameManifest.transformations[0].method, 'synthetic-operation-titlebar');
+      const framed = fs.readFileSync(path.join(framedOutput, 'ja-JP/screenshots/02-create.png'));
+      const frameInfo = await sharp(framed).metadata();
+      assert.deepEqual([frameInfo.width, frameInfo.height], [800, 548]);
+      assert.deepEqual(await sharp(framed).extract({left:0,top:48,width:800,height:500}).ensureAlpha().raw().toBuffer(),
+                       await sharp(fixture).ensureAlpha().raw().toBuffer());
+      assert.deepEqual(fs.readFileSync(path.join(framedOutput, 'capture-source/ja-JP/02-create.png')), fixture);
       fs.writeFileSync(path.join(input, 'capture-session.json'), JSON.stringify(session));
       const output = path.join(base, `${platform}-export`);
       run(platform, ['--captures', input, '--output', output]);
@@ -72,7 +87,7 @@ const run = (platform, args, success = true) => {
     const manifest = JSON.parse(fs.readFileSync(path.join(output, 'manifest.json')));
     assert.equal(manifest.status, 'backgrounds-only');
     assert.equal(manifest.capture, null);
-    assert.ok(fs.existsSync(path.join(output, 'zh-CN/backgrounds/01-browse-3840x2160.png')));
+    assert.ok(fs.existsSync(path.join(output, 'zh-CN/backgrounds/01-welcome-3840x2160.png')));
     assert.ok(!fs.existsSync(path.join(output, 'zh-CN/promotional')));
     console.log('Platform export tests passed (synthetic fixtures).');
   } finally { fs.rmSync(base, {recursive: true, force: true}); }

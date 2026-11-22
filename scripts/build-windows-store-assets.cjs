@@ -53,6 +53,11 @@ function wrapped(lines, maxUnits) {
   }
   return result;
 }
+// Use one headline size for the welcome slogan so line breaks retain a consistent hierarchy.
+function headlineSize(lines, size, width) {
+  const units = line => [...String(line)].reduce((sum, c) => sum + (/[^\u0000-\u04ff]/u.test(c) ? 1 : .72), 0);
+  return Math.min(size, ...lines.map(line => width / Math.max(units(line), 1)));
+}
 const logo = (x, y, size) => `<image x="${x}" y="${y}" width="${size}" height="${size}" href="${brandUri}"/>`;
 const rect = (x, y, w, h, r, fill, extra = '') => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${fill}" ${extra}/>`;
 const lines = (x, y, width, color = '#C6D4EA') => [0, 1, 2].map((n) => rect(x, y + n * 27, width - n * 24, 9, 4.5, color)).join('');
@@ -64,7 +69,7 @@ function archive(x, y, size, rotation = 0, dark = false) {
   return `<g transform="translate(${x} ${y}) rotate(${rotation})" filter="url(#shadow)">${rect(0, 0, size, size * 1.12, 48, dark ? 'url(#night)' : 'url(#paper)', 'stroke="#CBD9EE" stroke-width="2"')}${rect(size * .12, size * .12, size * .76, size * .06, size * .03, dark ? '#475D7F' : '#D5E2F6')}${logo(size * .15, size * .26, size * .7)}</g>`;
 }
 function scene(index) {
-  if (index === 0) return `${sheet(1225, 166, 290, 340, '#F6FAFF', 12, 'TXT')}${archive(1050, 288, 410, -10)}${sheet(1435, 418, 265, 320, '#FFFFFF', 12, 'PNG')}<path d="M990 430Q947 488 980 550" fill="none" stroke="#63CFE5" stroke-width="8" stroke-linecap="round"/><circle cx="979" cy="552" r="13" fill="#2057FF"/>${tag(1140, 828, 'ZIP')}${tag(1250, 828, '7z')}${tag(1360, 828, 'RAR')}${tag(1485, 828, 'TAR')}`;
+  if (index === 0) return `<g transform="translate(1010 180)" filter="url(#shadow)">${rect(0,0,760,680,28,'#FFFFFF','stroke="#DCE5F3" stroke-width="2"')}${rect(0,0,760,65,28,'#F7F8FA')}${rect(0,33,760,32,0,'#F7F8FA')}${logo(24,16,34)}${rect(82,28,78,9,4.5,'#B8C6DC')}${rect(216,22,138,22,11,'#FFFFFF','stroke="#DCE5F3"')}${logo(332,116,96)}${rect(230,237,300,15,7.5,'#C2D0E5')}${rect(277,266,206,9,4.5,'#DAE4F1')}${rect(91,326,275,112,18,'#2057FF')}${rect(394,326,275,112,18,'#F8FAFE','stroke="#DCE5F3" stroke-width="2"')}${rect(120,353,52,52,13,'#FFFFFF','opacity=".25"')}${rect(423,353,52,52,13,'#E5EEFF')}${rect(188,354,142,10,5,'#FFFFFF','opacity=".9"')}${rect(491,354,142,10,5,'#9AAEC9')}${rect(188,377,113,8,4,'#FFFFFF','opacity=".55"')}${rect(491,377,113,8,4,'#D0DCEC')}${rect(91,468,578,108,18,'#F6F9FF','stroke="#CBD9EE" stroke-width="2" stroke-dasharray="8 8"')}${rect(265,511,230,10,5,'#C8D7EB')}${rect(0,624,760,56,0,'#F8FAFD')}</g>`;
   if (index === 1) return `${sheet(1020, 170, 285, 330, '#FFFFFF', -14, 'TAR')}${sheet(1470, 207, 265, 305, '#F9FCFF', 14, '7z')}<path d="M1175 420Q1320 540 1415 446" fill="none" stroke="#9BB8FF" stroke-width="8" stroke-linecap="round"/>${archive(1185, 390, 390, -4)}<g transform="translate(1570 650)" filter="url(#shadow)"><path d="M24 60V34a42 42 0 0 1 84 0v26" fill="none" stroke="#FAFCFF" stroke-width="18"/>${rect(0, 54, 132, 106, 28, '#2057FF')}<circle cx="66" cy="101" r="11" fill="white"/><path d="M66 110v20" stroke="white" stroke-width="8" stroke-linecap="round"/></g>`;
   if (index === 2) return `<g transform="translate(1085 235) rotate(-8)" filter="url(#shadow)">${rect(0, 0, 610, 430, 34, 'white')}${rect(20, 20, 570, 346, 22, 'url(#sky)')}<circle cx="420" cy="112" r="58" fill="#FFF7DC"/><path d="M20 275Q142 140 285 254T590 215V366H20" fill="#6EAFC3"/><path d="M20 322Q250 225 590 318V366H20" fill="#F7E9D0"/>${rect(28, 389, 190, 8, 4, '#D0DCF0')}</g>${sheet(1455, 520, 280, 305, '#FFFFFF', 9, 'TXT')}<circle cx="1127" cy="722" r="88" fill="#2057FF" filter="url(#shadow)"/><path d="M1078 722q49-66 98 0-49 66-98 0" fill="none" stroke="white" stroke-width="8"/><circle cx="1127" cy="722" r="14" fill="white"/>`;
   return `${archive(1005, 218, 330, -12)}${archive(1430, 247, 330, 11, true)}${archive(1195, 405, 355, -1)}<circle cx="1040" cy="787" r="40" fill="#FFF" stroke="#D8E3F6" stroke-width="3"/><path d="M1040 728v-14m0 146v-14m-59-59h-14m146 0h-14m-101-42-10-10m103 103-10-10m-83 0-10 10m103-103-10 10" stroke="#A5BADF" stroke-width="6" stroke-linecap="round"/><circle cx="1740" cy="735" r="47" fill="#1B3153"/><circle cx="1759" cy="715" r="42" fill="${v.background}"/>`;
@@ -75,7 +80,8 @@ function promo(locale, index, width, height) {
   let body = rect(0, 0, 1920, 1080, 0, v.background) + '<ellipse cx="1450" cy="430" rx="740" ry="620" fill="url(#glow)"/>';
   body += '<path d="M930 0v1080M0 922h1920" stroke="#E5EDFA" stroke-width="2"/>';
   body += logo(112, 63, 58) + text(186, 108, 'xdzip', 37, v.ink, 650) + text(112, 215, item.eyebrow, 23, v.blue, 600);
-  item.headline.forEach((line, n) => body += text(108, 346 + n * 115, line, v.headline_size, v.ink, 650, 'start', 760));
+  const titleSize = index === 0 ? headlineSize(item.headline, v.headline_size, 760) : v.headline_size;
+  item.headline.forEach((line, n) => body += text(108, 346 + n * 115, line, titleSize, v.ink, 650, 'start', 760));
   const base = item.headline.length === 3 ? 655 : 578;
   wrapped(item.body, 760 / v.body_size).forEach((line, n) => body += text(113, base + n * 49, line, v.body_size, v.muted, 400, 'start', 760));
   body += scene(index) + rect(1492, 70, 310, 50, 25, '#E6EDFD') + text(1647, 103, locale.illustration_label, 22, '#536C94', 500, 'middle');
@@ -92,7 +98,8 @@ function screenshotPromo(locale, index, capture, width, height, layoutEngine = i
   body += '<path d="M-80 1050Q720 590 2030 1090M-80 1105Q720 645 2030 1145" fill="none" stroke="#D9E7FE" stroke-width="3"/>';
   body += logo(76, 66, 62) + text(154, 111, 'xdzip', 40, v.ink, 650);
   body += text(78, 235, item.eyebrow, 22, v.blue, 600, 'start', 490);
-  item.headline.forEach((line, n) => body += text(74, 345 + n * 86, line, layout.headline_size, v.ink, 650, 'start', 490));
+  const titleSize = index === 0 ? headlineSize(item.headline, layout.headline_size, 490) : layout.headline_size;
+  item.headline.forEach((line, n) => body += text(74, 345 + n * 86, line, titleSize, v.ink, 650, 'start', 490));
   const base = item.headline.length === 3 ? 667 : 594;
   wrapped(item.body, 490 / layout.body_size).forEach((line, n) => body += text(78, base + n * 41, line, layout.body_size, v.muted, 400, 'start', 490));
   body += `<g transform="translate(82 792) rotate(-7)">${logo(0, 0, 120)}</g>`;

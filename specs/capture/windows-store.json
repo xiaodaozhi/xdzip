@@ -6,7 +6,7 @@
     "runtime_exe_sha256": "fc723aabe72f2178840208fe908a36fa4c4eff9ca96a59dfc7432414fb9c8bfb"
   },
   "scenes": [
-    "01-browse",
+    "01-welcome",
     "03-preview",
     "04-workspace",
     "02-create"

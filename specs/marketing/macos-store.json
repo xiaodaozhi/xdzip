@@ -4,7 +4,7 @@
   "purpose": "Reusable local website or product presentation assets; not a store submission.",
   "visual_source": "specs/marketing/windows-store.json",
   "scenes": [
-    "01-browse",
+    "01-welcome",
     "02-create",
     "03-preview",
     "04-workspace"
@@ -13,18 +13,17 @@
     "en-US": {
       "promotions": [
         {
-          "id": "01-browse",
-          "eyebrow": "FIND YOUR FILES",
+          "id": "01-welcome",
+          "eyebrow": "XDZIP",
           "headline": [
-            "Browse first.",
-            "Extract what",
-            "matters."
+            "Pack and",
+            "unpack,",
+            "a little simpler."
           ],
           "body": [
-            "Look inside an archive.",
-            "Take only the files you need."
+            "Open or create an archive."
           ],
-          "caption": "Feature illustration: browse supported archives, find files and extract selected items. Not an application screenshot."
+          "caption": "Illustration of the xdzip start page."
         },
         {
           "id": "02-create",
@@ -67,7 +66,7 @@
         }
       ],
       "screenshot_captions": {
-        "01-browse": "Browse an archive's folder tree, select individual files and view their properties.",
+        "01-welcome": "xdzip start page with actions to open or create an archive.",
         "02-create": "Create an archive from selected files and choose ZIP compression settings.",
         "03-preview": "Show an image preview next to archive entries and file properties.",
         "04-workspace": "Keep two archives open in tabs and browse selected files in grid view."
@@ -112,17 +111,16 @@
     "zh-CN": {
       "promotions": [
         {
-          "id": "01-browse",
-          "eyebrow": "找到需要的文件",
+          "id": "01-welcome",
+          "eyebrow": "XDZIP",
           "headline": [
-            "先浏览，",
-            "再解压。"
+            "压缩和解压，",
+            "都简单一点。"
           ],
           "body": [
-            "查看包内内容，",
-            "只提取需要的文件。"
+            "从起始页打开或创建压缩包。"
           ],
-          "caption": "功能示意图：浏览受支持的压缩包，查找并选择性解压文件。此图不是软件实机截图。"
+          "caption": "xdzip 起始页功能示意图。"
         },
         {
           "id": "02-create",
@@ -165,7 +163,7 @@
         }
       ],
       "screenshot_captions": {
-        "01-browse": "浏览压缩包目录树，选择文件并查看属性。",
+        "01-welcome": "xdzip 起始页，可打开或创建压缩包。",
         "02-create": "将选中的文件整理成压缩包，并设置 ZIP 压缩选项。",
         "03-preview": "在文件列表和属性旁显示图像预览。",
         "04-workspace": "在标签页中同时打开两个压缩包，并以网格视图浏览选中的文件。"
@@ -210,21 +208,22 @@
     "zh-TW": {
       "promotions": [
         {
-          "id": "01-browse",
-          "eyebrow": "尋找檔案",
+          "id": "01-welcome",
+          "eyebrow": "XDZIP",
           "headline": [
-            "先瀏覽，再解壓"
+            "打包與解壓，",
+            "都簡單一點。"
           ],
           "body": [
-            "找到並提取需要的檔案。"
+            "從起始頁開啟或建立壓縮檔。"
           ],
-          "caption": "瀏覽歸檔並選擇性解壓的功能示意圖。"
+          "caption": "xdzip 起始頁功能示意圖。"
         },
         {
           "id": "02-create",
           "eyebrow": "建立歸檔",
           "headline": [
-            "整理檔案"
+            "整理檔案。"
           ],
           "body": [
             "建立歸檔，保護 ZIP 和 7z。"
@@ -235,7 +234,7 @@
           "id": "03-preview",
           "eyebrow": "內容預覽",
           "headline": [
-            "先看內容"
+            "先看內容。"
           ],
           "body": [
             "預覽受支援的文字和圖片。"
@@ -246,7 +245,7 @@
           "id": "04-workspace",
           "eyebrow": "工作區",
           "headline": [
-            "有序切換"
+            "有序切換。"
           ],
           "body": [
             "多個歸檔，十種介面語言。"
@@ -255,7 +254,7 @@
         }
       ],
       "screenshot_captions": {
-        "01-browse": "瀏覽歸檔目錄，選取檔案並檢視屬性。",
+        "01-welcome": "xdzip 起始頁，可開啟或建立壓縮檔。",
         "02-create": "建立壓縮檔並設定 ZIP 壓縮選項。",
         "03-preview": "在檔案列表和屬性旁顯示圖片預覽。",
         "04-workspace": "在標籤頁中開啟兩個歸檔並以網格檢視檔案。"
@@ -299,21 +298,22 @@
     "ja-JP": {
       "promotions": [
         {
-          "id": "01-browse",
-          "eyebrow": "ファイルを探す",
+          "id": "01-welcome",
+          "eyebrow": "XDZIP",
           "headline": [
-            "中身を見て展開"
+            "圧縮と展開を、",
+            "もう少し手軽に。"
           ],
           "body": [
-            "必要なファイルだけを展開。"
+            "スタート画面から開くか、新規作成。"
           ],
-          "caption": "アーカイブの閲覧と選択展開を示す機能イメージ。"
+          "caption": "xdzip のスタート画面のイメージ。"
         },
         {
           "id": "02-create",
           "eyebrow": "アーカイブ作成",
           "headline": [
-            "すっきり整理"
+            "すっきり整理。"
           ],
           "body": [
             "アーカイブを作成し、ZIP と 7z を保護。"
@@ -324,7 +324,7 @@
           "id": "03-preview",
           "eyebrow": "プレビュー",
           "headline": [
-            "中身を確認"
+            "中身を確認。"
           ],
           "body": [
             "対応するテキストや画像をプレビュー。"
@@ -335,7 +335,7 @@
           "id": "04-workspace",
           "eyebrow": "ワークスペース",
           "headline": [
-            "まとめて管理"
+            "まとめて管理。"
           ],
           "body": [
             "複数のアーカイブ、10 言語の画面。"
@@ -344,7 +344,7 @@
         }
       ],
       "screenshot_captions": {
-        "01-browse": "アーカイブのフォルダーを閲覧し、選択したファイルのプロパティを表示。",
+        "01-welcome": "アーカイブを開くか新規作成できる xdzip のスタート画面。",
         "02-create": "ファイルからアーカイブを作成し、ZIP の圧縮設定を選択。",
         "03-preview": "ファイル一覧とプロパティの横に画像をプレビュー。",
         "04-workspace": "2 つのアーカイブをタブで開き、グリッド表示で閲覧。"
@@ -388,21 +388,23 @@
     "ko-KR": {
       "promotions": [
         {
-          "id": "01-browse",
-          "eyebrow": "파일 찾기",
+          "id": "01-welcome",
+          "eyebrow": "XDZIP",
           "headline": [
-            "먼저 보고 풀기"
+            "압축과 압축",
+            "풀기를 조금 더",
+            "쉽게."
           ],
           "body": [
-            "필요한 파일만 찾아서 풉니다."
+            "시작 화면에서 열거나 새로 만드세요."
           ],
-          "caption": "압축 파일 탐색과 선택 압축 풀기를 보여 주는 기능 예시."
+          "caption": "xdzip 시작 화면을 나타낸 그림."
         },
         {
           "id": "02-create",
           "eyebrow": "압축 파일 만들기",
           "headline": [
-            "파일 정리"
+            "파일 정리."
           ],
           "body": [
             "압축 파일을 만들고 ZIP과 7z를 보호합니다."
@@ -413,7 +415,7 @@
           "id": "03-preview",
           "eyebrow": "미리보기",
           "headline": [
-            "내용 미리보기"
+            "내용 미리보기."
           ],
           "body": [
             "지원하는 텍스트와 이미지를 확인합니다."
@@ -424,7 +426,7 @@
           "id": "04-workspace",
           "eyebrow": "작업 공간",
           "headline": [
-            "한곳에서 관리"
+            "한곳에서 관리."
           ],
           "body": [
             "여러 압축 파일과 열 가지 언어."
@@ -433,7 +435,7 @@
         }
       ],
       "screenshot_captions": {
-        "01-browse": "압축 폴더를 탐색하고 파일을 선택해 속성을 확인합니다.",
+        "01-welcome": "압축 파일을 열거나 만들 수 있는 xdzip 시작 화면.",
         "02-create": "파일로 압축 파일을 만들고 ZIP 압축 설정을 선택합니다.",
         "03-preview": "파일 목록과 속성 옆에 이미지 미리보기를 표시합니다.",
         "04-workspace": "두 압축 파일을 탭으로 열고 격자로 탐색합니다."
@@ -477,23 +479,24 @@
     "fr-FR": {
       "promotions": [
         {
-          "id": "01-browse",
-          "eyebrow": "TROUVER",
+          "id": "01-welcome",
+          "eyebrow": "XDZIP",
           "headline": [
-            "Parcourir",
-            "puis extraire"
+            "Compresser et",
+            "décompresser,",
+            "plus simplement."
           ],
           "body": [
-            "Trouvez et extrayez les fichiers utiles."
+            "Ouvrez ou créez une archive depuis l’accueil."
           ],
-          "caption": "Illustration : parcourir et extraire une sélection."
+          "caption": "Illustration de la page d’accueil de xdzip."
         },
         {
           "id": "02-create",
           "eyebrow": "CRÉER",
           "headline": [
             "Tout",
-            "organiser"
+            "organiser."
           ],
           "body": [
             "Créez des archives et protégez ZIP et 7z."
@@ -505,7 +508,7 @@
           "eyebrow": "PRÉVISUALISER",
           "headline": [
             "Voir avant",
-            "d’extraire"
+            "d’extraire."
           ],
           "body": [
             "Prévisualisez les textes et images compatibles."
@@ -517,7 +520,7 @@
           "eyebrow": "ESPACE DE TRAVAIL",
           "headline": [
             "Tout garder",
-            "à portée"
+            "à portée."
           ],
           "body": [
             "Plusieurs archives et dix langues."
@@ -526,7 +529,7 @@
         }
       ],
       "screenshot_captions": {
-        "01-browse": "Parcourez les dossiers, sélectionnez un fichier et consultez ses propriétés.",
+        "01-welcome": "Page d’accueil de xdzip pour ouvrir ou créer une archive.",
         "02-create": "Créez une archive et choisissez les paramètres de compression ZIP.",
         "03-preview": "Affichez un aperçu d’image à côté de la liste et des propriétés.",
         "04-workspace": "Ouvrez deux archives en onglets et parcourez les fichiers en grille."
@@ -570,23 +573,24 @@
     "de-DE": {
       "promotions": [
         {
-          "id": "01-browse",
-          "eyebrow": "DATEIEN FINDEN",
+          "id": "01-welcome",
+          "eyebrow": "XDZIP",
           "headline": [
-            "Erst ansehen,",
-            "dann entpacken"
+            "Packen und",
+            "entpacken, ein",
+            "bisschen einfacher."
           ],
           "body": [
-            "Nur benötigte Dateien entpacken."
+            "Archiv auf der Startseite öffnen oder erstellen."
           ],
-          "caption": "Funktionsgrafik: Archive durchsuchen und Auswahl entpacken."
+          "caption": "Illustration der xdzip-Startseite."
         },
         {
           "id": "02-create",
           "eyebrow": "ARCHIVE ERSTELLEN",
           "headline": [
             "Alles",
-            "organisieren"
+            "organisieren."
           ],
           "body": [
             "Archive erstellen und ZIP und 7z schützen."
@@ -598,7 +602,7 @@
           "eyebrow": "VORSCHAU",
           "headline": [
             "Inhalte",
-            "ansehen"
+            "ansehen."
           ],
           "body": [
             "Unterstützte Texte und Bilder ansehen."
@@ -610,7 +614,7 @@
           "eyebrow": "ARBEITSBEREICH",
           "headline": [
             "Alles",
-            "im Blick"
+            "im Blick."
           ],
           "body": [
             "Mehrere Archive, zehn Sprachen."
@@ -619,7 +623,7 @@
         }
       ],
       "screenshot_captions": {
-        "01-browse": "Archivordner durchsuchen, Datei auswählen und Eigenschaften anzeigen.",
+        "01-welcome": "Startseite von xdzip zum Öffnen oder Erstellen eines Archivs.",
         "02-create": "Ein Archiv erstellen und ZIP-Komprimierung einstellen.",
         "03-preview": "Eine Bildvorschau neben Dateiliste und Eigenschaften anzeigen.",
         "04-workspace": "Zwei Archive in Tabs öffnen und Dateien im Raster ansehen."
@@ -663,23 +667,24 @@
     "es-ES": {
       "promotions": [
         {
-          "id": "01-browse",
-          "eyebrow": "BUSCAR",
+          "id": "01-welcome",
+          "eyebrow": "XDZIP",
           "headline": [
-            "Explora y",
-            "extrae"
+            "Comprimir y",
+            "descomprimir,",
+            "un poco más fácil."
           ],
           "body": [
-            "Encuentra y extrae lo que necesitas."
+            "Abre o crea un archivo desde el inicio."
           ],
-          "caption": "Ilustración: explorar y extraer una selección."
+          "caption": "Ilustración de la pantalla de inicio de xdzip."
         },
         {
           "id": "02-create",
           "eyebrow": "CREAR",
           "headline": [
             "Todo en",
-            "su lugar"
+            "su lugar."
           ],
           "body": [
             "Crea archivos y protege ZIP y 7z."
@@ -691,7 +696,7 @@
           "eyebrow": "VISTA PREVIA",
           "headline": [
             "Mira antes",
-            "de extraer"
+            "de extraer."
           ],
           "body": [
             "Previsualiza texto e imágenes compatibles."
@@ -703,7 +708,7 @@
           "eyebrow": "ESPACIO DE TRABAJO",
           "headline": [
             "Todo",
-            "a mano"
+            "a mano."
           ],
           "body": [
             "Varios archivos y diez idiomas."
@@ -712,7 +717,7 @@
         }
       ],
       "screenshot_captions": {
-        "01-browse": "Explora las carpetas, selecciona un archivo y consulta sus propiedades.",
+        "01-welcome": "Pantalla de inicio de xdzip para abrir o crear archivos comprimidos.",
         "02-create": "Crea un archivo y elige las opciones de compresión ZIP.",
         "03-preview": "Muestra la vista previa de una imagen junto a la lista y las propiedades.",
         "04-workspace": "Abre dos archivos en pestañas y explora los ficheros en cuadrícula."
@@ -756,23 +761,24 @@
     "pt-BR": {
       "promotions": [
         {
-          "id": "01-browse",
-          "eyebrow": "ENCONTRAR",
+          "id": "01-welcome",
+          "eyebrow": "XDZIP",
           "headline": [
-            "Veja antes",
-            "de extrair"
+            "Compactar e",
+            "extrair, com",
+            "mais facilidade."
           ],
           "body": [
-            "Encontre e extraia o que precisa."
+            "Abra ou crie um arquivo na tela inicial."
           ],
-          "caption": "Ilustração: navegar e extrair uma seleção."
+          "caption": "Ilustração da tela inicial do xdzip."
         },
         {
           "id": "02-create",
           "eyebrow": "CRIAR",
           "headline": [
             "Tudo em",
-            "seu lugar"
+            "seu lugar."
           ],
           "body": [
             "Crie arquivos e proteja ZIP e 7z."
@@ -784,7 +790,7 @@
           "eyebrow": "PRÉVIA",
           "headline": [
             "Confira",
-            "o conteúdo"
+            "o conteúdo."
           ],
           "body": [
             "Visualize textos e imagens compatíveis."
@@ -796,7 +802,7 @@
           "eyebrow": "ÁREA DE TRABALHO",
           "headline": [
             "Tudo",
-            "à mão"
+            "à mão."
           ],
           "body": [
             "Vários arquivos e dez idiomas."
@@ -805,7 +811,7 @@
         }
       ],
       "screenshot_captions": {
-        "01-browse": "Navegue pelas pastas, selecione um arquivo e veja suas propriedades.",
+        "01-welcome": "Tela inicial do xdzip para abrir ou criar arquivos compactados.",
         "02-create": "Crie um arquivo compactado e escolha as opções ZIP.",
         "03-preview": "Mostre a prévia de uma imagem ao lado da lista e das propriedades.",
         "04-workspace": "Abra dois arquivos em abas e navegue na visualização em grade."
@@ -849,23 +855,24 @@
     "ru-RU": {
       "promotions": [
         {
-          "id": "01-browse",
-          "eyebrow": "ПОИСК",
+          "id": "01-welcome",
+          "eyebrow": "XDZIP",
           "headline": [
-            "Сначала",
-            "просмотр"
+            "Упаковка и",
+            "распаковка стали",
+            "немного проще."
           ],
           "body": [
-            "Найдите и извлеките нужные файлы."
+            "Откройте или создайте архив на главном экране."
           ],
-          "caption": "Иллюстрация: просмотр архива и выборочное извлечение."
+          "caption": "Иллюстрация начального экрана xdzip."
         },
         {
           "id": "02-create",
           "eyebrow": "СОЗДАНИЕ",
           "headline": [
             "Всё",
-            "по местам"
+            "по местам."
           ],
           "body": [
             "Создавайте архивы и защищайте ZIP и 7z."
@@ -877,7 +884,7 @@
           "eyebrow": "ПРЕДПРОСМОТР",
           "headline": [
             "Проверьте",
-            "содержимое"
+            "содержимое."
           ],
           "body": [
             "Просматривайте тексты и изображения."
@@ -889,7 +896,7 @@
           "eyebrow": "РАБОЧАЯ ОБЛАСТЬ",
           "headline": [
             "Всё",
-            "под рукой"
+            "под рукой."
           ],
           "body": [
             "Несколько архивов и десять языков."
@@ -898,7 +905,7 @@
         }
       ],
       "screenshot_captions": {
-        "01-browse": "Просмотр папок архива, выбор файла и его свойств.",
+        "01-welcome": "Начальный экран xdzip для открытия или создания архива.",
         "02-create": "Создание архива и выбор параметров сжатия ZIP.",
         "03-preview": "Предпросмотр изображения рядом со списком и свойствами.",
         "04-workspace": "Два архива во вкладках и просмотр файлов сеткой."

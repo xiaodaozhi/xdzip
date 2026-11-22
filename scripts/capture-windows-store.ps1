@@ -4,7 +4,7 @@
 Automatically prepare and capture all four Store scenes for one language.
 .DESCRIPTION
 Run in Windows PowerShell 5.1. The assistant starts the candidate with isolated
-settings and two demo archives. It selects files, requests image preview,
+settings and the start page, then opens two demo archives. It selects files, requests image preview,
 switches to grid view and opens a populated creation window automatically.
 F10 cancels. It saves native-resolution, lossless client and window PNGs.
 It does not change system scaling, install packages or upload.
@@ -200,9 +200,7 @@ try {
     $start.FileName = $Executable
     $start.WorkingDirectory = $DemoDirectory
     $start.UseShellExecute = $false
-    # Paths are literal argv data, never a shell command. Windows filenames
-    # cannot contain quotes and these archive paths have no trailing backslash.
-    $start.Arguments = '-- "' + (Join-Path $DemoDirectory $browseName) + '" "' + (Join-Path $DemoDirectory $photoName) + '"'
+    $start.Arguments = ''
     $start.EnvironmentVariables['XDZIP_SETTINGS_PATH'] = $settings
     $start.EnvironmentVariables['XDZIP_LANGUAGE'] = $Language
     foreach ($name in @('QT_QPA_PLATFORM', 'QT_QUICK_BACKEND', 'QSG_RHI_BACKEND', 'QT_SCALE_FACTOR', 'QT_SCREEN_SCALE_FACTORS', 'QT_FONT_DPI', 'QT_DEVICE_PIXEL_RATIO', 'QT_ENABLE_HIGHDPI_SCALING')) {
@@ -220,12 +218,18 @@ try {
     $pointer = [Xdzip.WindowsCapture.Native]::Pointer()
     Write-Host "Automatic capture: $Language. F10 cancels."
     [Xdzip.WindowsCapture.Native]::Activate($process.Id, $mainWindow)
-    Select-Tab $browseName
-    Invoke-Control $mainWindow $catalog.messages.'ui.d56220435194' 'Button'
-    Select-File 'README.md'
-    Wait-State 'loaded text preview' { [Xdzip.WindowsCapture.Driver]::ReadyObject($process.Id, $mainWindow, $catalog.messages.'preview.action', 'contentPreviewText') }
-    Save-Scene '01-browse' $mainWindow '' @{ tab = $browseName; selected = 'README.md'; view = 'list' }
+    Wait-Control $mainWindow $catalog.messages.'ui.80c2aec8adfc' 'Button'
+    Wait-Control $mainWindow $catalog.messages.'ui.fe189b616c1d' 'Button'
+    Save-Scene '01-welcome' $mainWindow '' @{ page = 'welcome'; archives = 0 }
 
+    # Forward two literal paths to the same instance only after capturing its start page.
+    $start.Arguments = '-- "' + (Join-Path $DemoDirectory $browseName) + '" "' + (Join-Path $DemoDirectory $photoName) + '"'
+    $relay = [Diagnostics.Process]::Start($start)
+    try {
+        if (!$relay.WaitForExit(10000)) { $relay.Kill(); throw 'Archive opening relay timed out.' }
+        if ($relay.ExitCode -ne 0) { throw 'Candidate rejected the archive opening request.' }
+    } finally { $relay.Dispose() }
+    Wait-Control $mainWindow $browseName 'TabItem'
     Select-Tab $photoName
     Select-File 'coastline.png'
     Wait-State 'loaded image preview' { [Xdzip.WindowsCapture.Driver]::ReadyObject($process.Id, $mainWindow, 'coastline.png', 'contentPreviewImage') }

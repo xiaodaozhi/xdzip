@@ -90,8 +90,8 @@ def store_canvas(directories, languages, expected_dpi, canvas, trim):
     if not images or any(image['dpi'] != expected_dpi for image in images):
         actual = sorted({image['dpi'] for image in images})
         raise ValueError(f'Capture DPI is {actual}; expected {expected_dpi}. Capture at the selected Windows display scale.')
-    width = max(image['width'] for image in images)
-    height = max(image['height'] for image in images) - trim
+    width = max(image['window_dimensions'][0] if image['scene'] == '02-create' else image['width'] for image in images)
+    height = max(image['window_dimensions'][1] if image['scene'] == '02-create' else image['height'] for image in images) - trim
     for candidate in (canvas, [2560, 1440], [3840, 2160]):
         if width <= candidate[0] and height <= candidate[1]:
             return candidate

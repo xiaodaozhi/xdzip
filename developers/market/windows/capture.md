@@ -36,7 +36,7 @@ When screenshots need refreshing, use this command on a Windows desktop. It vali
 python scripts/refresh-windows-store-screenshots.py --package-dir build/store-msix-package
 ```
 
-The default capture DPI is 144 (150% scaling). Use `--languages en-US zh-CN` to select a subset. Matching completed sessions can be reused with `--languages en-US zh-CN --from-captures EN ZH` in the same order. Archived bilingual captures remain usable with the export command above; other languages receive text and illustrations, not invented screenshots. The raw screenshot provenance is copied to `capture-source/`. The source and output identities are recorded in `manifest.json`.
+The default capture DPI is 144 (150% scaling). Use `--languages en-US zh-CN` to select a subset. Matching completed sessions can be reused with `--languages en-US zh-CN --from-captures EN ZH` in the same order. Older captures with the former `01-browse` scene cannot be reused as the new start-page scene; capture it again. The raw screenshot provenance is copied to `capture-source/`. The source and output identities are recorded in `manifest.json`.
 
 ## Capture just one language
 
@@ -61,7 +61,7 @@ Leave the desktop available while the script runs. It temporarily activates only
 
 | Capture order | Automatic preparation and checks | Scene name |
 | --- | --- | --- |
-| 1 | Activate the design-delivery tab, use list view and select only `README.md`. Wait for file selection and preview/property actions. | `01-browse` |
+| 1 | Start without an archive and wait for the open and create actions on the welcome page. Capture before forwarding the two demo archives. | `01-welcome` |
 | 2 | Activate the photo tab, select only `coastline.png`, request Preview and wait for the image-preview object and the Preview again action. | `03-preview` |
 | 3 | Keep both archive tabs open, change to grid view and check the selected image tile. | `04-workspace` |
 | 4 | Copy the three demo PNGs into a new private directory and send a `create` shell request. Check the three inputs and the enabled Create archive action, without invoking it. | `02-create` |

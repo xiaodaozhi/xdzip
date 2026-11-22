@@ -68,6 +68,10 @@ def stage_capture_source(archive, stage):
     files = [MARKETING, CAPTURES]
     for image in captures['images']:
         locale, scene = image['locale'], image['scene']
+        if scene == '02-create' and (not isinstance(image.get('source_client_crop'), list)
+                or len(image['source_client_crop']) != 4 or image['source_client_crop'][1] <= 0
+                or image.get('source_window_sha256') != image['source_sha256']):
+            raise ValueError('Creation screenshot requires its native window reference and titlebar')
         native = Path('design/assets/marketing/windows-store-native') / locale / (scene + '.png')
         cutout = store_base(locale) / 'images/screenshots' / (scene + '.png')
         if (image['native_file'] != native.as_posix() or image['file'] != cutout.as_posix()
@@ -177,7 +181,7 @@ Each language has localized copy and illustrations. Screenshots and composites a
 | Keywords / 关键字 | <language>/text/keywords.txt, one entry per line / 每行单独填写 |
 | Copyright / 版权 | <language>/text/copyright.txt |
 | Other fields and links / 其他字段与链接 | <language>/text/fields.json |
-| Desktop screenshots / 桌面截图 | <language>/promotional/01-browse-1920x1080.png through 04-workspace-1920x1080.png |
+| Desktop screenshots / 桌面截图 | <language>/promotional/01-welcome-1920x1080.png through 04-workspace-1920x1080.png |
 | Screenshot captions / 截图说明 | <language>/text/screenshot-captions.csv, reference only / 仅供对应填写 |
 | App icons / 应用图标 | <language>/branding/app-icon-300.png, app-icon-150.png, app-icon-71.png |
 | Avatars / 头像 | <language>/branding/avatar-512.png, avatar-1024.png, reusable brand exports / 补充品牌导出 |

@@ -38,7 +38,9 @@ class StoreLanguages(unittest.TestCase):
                     target.write_bytes(data)
                 self.images.append({'locale': language, 'scene': scene, 'native_file': native.as_posix(),
                                     'file': cutout.as_posix(), 'cutout_file': cutout.as_posix(),
-                                    'source_sha256': module.digest(data), 'cutout_sha256': module.digest(data)})
+                                    'source_sha256': module.digest(data), 'cutout_sha256': module.digest(data),
+                                    'source_window_sha256': module.digest(data),
+                                    'source_client_crop': [0, 32, 320, 200]})
         self.write_source()
 
     def write_source(self):

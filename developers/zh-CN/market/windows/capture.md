@@ -36,7 +36,7 @@ python scripts/package-windows-store-materials.py --from-archive "D:/Store-backu
 python scripts/refresh-windows-store-screenshots.py --package-dir build/store-msix-package
 ```
 
-默认截图 DPI 为 144（150% 缩放）。可用 `--languages en-US zh-CN` 选择部分语言。如已有匹配的捕获会话，可按相同顺序传入 `--languages en-US zh-CN --from-captures EN ZH`。原有双语截图备份仍可按上述导出命令复用，其他语言仅生成文案和插图，不伪造截图。原图和采集来源一并导出到 `capture-source/`，`manifest.json` 记录采集和导出的身份。
+默认截图 DPI 为 144（150% 缩放）。可用 `--languages en-US zh-CN` 选择部分语言。如已有匹配的捕获会话，可按相同顺序传入 `--languages en-US zh-CN --from-captures EN ZH`。旧版 `01-browse` 截图不能作为新的起始页截图复用；需要重新采集。原图和采集来源一并导出到 `capture-source/`，`manifest.json` 记录采集和导出的身份。
 
 ## 只截图一种语言
 
@@ -61,7 +61,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/capture-windows-
 
 | 截取顺序 | 自动准备与检查 | 场景名称 |
 | --- | --- | --- |
-| 1 | 激活设计交付标签，使用列表视图，仅选中 `README.md`，等待文件选择及预览、属性操作就绪。 | `01-browse` |
+| 1 | 不打开压缩包启动，等待起始页的打开和创建操作就绪；截图后再转发两个演示压缩包。 | `01-welcome` |
 | 2 | 激活图片标签，仅选中 `coastline.png`，请求预览，等待图像预览对象和“重新预览”操作出现。 | `03-preview` |
 | 3 | 保留两个压缩包标签，切换为网格视图，确认图片磁贴已选中。 | `04-workspace` |
 | 4 | 将三张演示 PNG 复制到新的私有目录，通过 `create` 文件管理器请求打开创建窗口。核对三个输入和已启用的“创建压缩包”按钮，但不点击创建。 | `02-create` |

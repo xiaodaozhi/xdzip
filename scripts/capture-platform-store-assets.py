@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 
 ROOT = Path(__file__).resolve().parents[1]
 LANGUAGES = tuple(item['id'] for item in json.loads((ROOT / 'resources/ui-languages.json').read_text(encoding='utf-8'))['languages'])
-SCENES = ('01-browse', '02-create', '03-preview', '04-workspace')
+SCENES = ('01-welcome', '02-create', '03-preview', '04-workspace')
 
 
 def sha256(data):

@@ -44,7 +44,7 @@ Upload the four **1920 × 1080** combined images in each language's `promotional
 
 | Order | Scene | File |
 | --- | --- | --- |
-| 1 | Browse folders and select a file | `01-browse-1920x1080.png` |
+| 1 | Start page | `01-welcome-1920x1080.png` |
 | 2 | Creation window and ZIP settings | `02-create-1920x1080.png` |
 | 3 | On-demand image preview | `03-preview-1920x1080.png` |
 | 4 | Multiple tabs and grid browsing | `04-workspace-1920x1080.png` |
