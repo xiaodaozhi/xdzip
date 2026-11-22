@@ -263,10 +263,8 @@ impl DiskQuery {
         let mut bytes = [0u8; 128 * 8];
         let bytes = &mut bytes[..(self.total - offset).min(128) * 8];
         io(file.read_exact(bytes))?;
-        Ok(bytes
-            .chunks_exact(8)
-            .map(|token| u64::from_le_bytes(token.try_into().unwrap()))
-            .collect())
+        let (tokens, _) = bytes.as_chunks::<8>();
+        Ok(tokens.iter().copied().map(u64::from_le_bytes).collect())
     }
 }
 pub(crate) fn navigation_token(token: u64) -> Option<usize> {
