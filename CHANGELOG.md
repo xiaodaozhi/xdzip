@@ -1,6 +1,6 @@
 # Changelog
 
-English | [简体中文](CHANGELOG.zh-CN.md)
+English | [简体中文](CHANGELOG.zh-CN.md) | [繁體中文](CHANGELOG.zh-TW.md) | [日本語](CHANGELOG.ja-JP.md) | [한국어](CHANGELOG.ko-KR.md) | [Français](CHANGELOG.fr-FR.md) | [Deutsch](CHANGELOG.de-DE.md) | [Español](CHANGELOG.es-ES.md) | [Português (Brasil)](CHANGELOG.pt-BR.md) | [Русский](CHANGELOG.ru-RU.md)
 
 ## Unreleased
 

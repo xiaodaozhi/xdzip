@@ -20,6 +20,7 @@ from ui_languages import document_languages
 ROOT = Path(__file__).resolve().parents[1]
 ROOT_LANGUAGES = ('README', 'CHANGELOG', 'CODE_OF_CONDUCT', 'CONTRIBUTING',
                   'GOVERNANCE', 'PRIVACY', 'SECURITY')
+LOCALIZED_ROOT_TOPICS = {Path('README.md'), Path('CHANGELOG.md')}
 DEFAULT_LOCALE = 'en-US'
 BILINGUAL = ('en-US', 'zh-CN')
 ZH_SUFFIX = '.zh-CN.md'
@@ -94,11 +95,12 @@ def local_path(root, parent, url_path):
 
 def document_topic(path, languages):
     """Identify the language and the corresponding default-English path."""
-    if path == Path('README.md'):
+    if path in LOCALIZED_ROOT_TOPICS:
         return DEFAULT_LOCALE, path
     if len(path.parts) == 1:
-        match = re.fullmatch(r'README\.([a-z]{2}-[A-Z]{2})\.md', path.name)
-        return (match[1], Path('README.md')) if match and match[1] in languages else None
+        stem, _, locale = path.stem.rpartition('.')
+        topic = path.with_name(stem + path.suffix)
+        return (locale, topic) if locale in languages and topic in LOCALIZED_ROOT_TOPICS else None
     if path.parts[0] in ('docs', 'developers'):
         tree, *parts = path.parts
         if parts[0] in languages:
@@ -134,7 +136,7 @@ def localized_documents(root, documents, languages=None):
 
     complete = 0
     for topic in sorted(topics):
-        locales = languages if topic == Path('README.md') or topic.parts[0] == 'docs' else BILINGUAL
+        locales = languages if topic in LOCALIZED_ROOT_TOPICS or topic.parts[0] == 'docs' else BILINGUAL
         counterparts = {locale: language_path(topic, locale) for locale in locales}
         missing = [path.as_posix() for path in counterparts.values() if path not in paths]
         if missing:

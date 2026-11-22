@@ -6,7 +6,7 @@
 
 Das optionale Feld `prerelease_number` trennt die Vorabversionsnummer von der Buildnummer. So kann alpha.1 Build 14 verwenden, während die Buildnummer bei alpha.2 weiter erhöht wird. Ohne Feld gilt die bisherige Auslegung `channel.build`. Das [Veröffentlichungsprotokoll](release-protocol.md) legt Manifeste und Dateinamen fest.
 
-[VERSION.json](../../../VERSION.json) ist die einzige gepflegte Quelle für Version, Kanal und Buildnummer. Der Build liest die aktuellen Werte. Versionsänderungen stehen in der [Änderungshistorie](../../../CHANGELOG.md) und Lieferungen und Prüfungen in den [Projekt-Issues](https://github.com/xiaodaozhi/xdzip/issues). Eine höhere Versionsnummer genehmigt keine Veröffentlichung.
+[VERSION.json](../../../VERSION.json) ist die einzige gepflegte Quelle für Version, Kanal und Buildnummer. Der Build liest die aktuellen Werte. Versionsänderungen stehen in der [Änderungshistorie](../../../CHANGELOG.de-DE.md) und Lieferungen und Prüfungen in den [Projekt-Issues](https://github.com/xiaodaozhi/xdzip/issues). Eine höhere Versionsnummer genehmigt keine Veröffentlichung.
 
 Kompatibilitätsprüfungen verwenden festgelegte frühere Quellstände zusammen mit dem aktuellen Build, um Upgrades, Rückkehr zur früheren Version und Einstellungsübernahme zu prüfen. Das [Skript für das frühere Produkt](../../../scripts/prepare-previous-product.py) pflegt den vollständigen Produktstand, das [Kompatibilitätsskript für Einstellungen](../../../scripts/check-settings-compat.py) den Einstellungsstand. Wechselnde Commits und Versionswerte werden hier nicht kopiert. Einstellungsschema und Produktversion werden getrennt verwaltet.
 

@@ -166,7 +166,7 @@ Les paquets de développement sont des versions expérimentales. Les fichiers de
 | Conception et implémentation du produit | [Référence technique](docs/fr-FR/reference/README.md) |
 | Confidentialité et traitement des données | [Politique de confidentialité](PRIVACY.md), [version chinoise](PRIVACY.zh-CN.md) |
 | Compiler et contribuer | [Guide des contributions](docs/fr-FR/contributing/README.md) |
-| Modifications et travaux prévus | [Historique des modifications](CHANGELOG.md), [tickets GitHub](https://github.com/xiaodaozhi/xdzip/issues) |
+| Modifications et travaux prévus | [Historique des modifications](CHANGELOG.fr-FR.md), [tickets GitHub](https://github.com/xiaodaozhi/xdzip/issues) |
 | Contributions | [Règles de contribution](CONTRIBUTING.md), [code de conduite](CODE_OF_CONDUCT.md) |
 | Politiques du projet | [Gouvernance](GOVERNANCE.md), [sécurité](SECURITY.md) |
 

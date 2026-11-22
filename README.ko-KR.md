@@ -167,7 +167,7 @@ Windows에서는 MSVC x64 개발 환경을, macOS에서는 네이티브 Apple Si
 | 제품 설계와 구현 | [기술 문서](docs/ko-KR/reference/README.md) |
 | 개인정보와 데이터 처리 | [개인정보 처리방침](PRIVACY.md), [중국어판](PRIVACY.zh-CN.md) |
 | 빌드와 기여 | [기여 안내](docs/ko-KR/contributing/README.md) |
-| 변경 내용과 예정된 작업 | [변경 이력](CHANGELOG.md), [GitHub 이슈](https://github.com/xiaodaozhi/xdzip/issues) |
+| 변경 내용과 예정된 작업 | [변경 이력](CHANGELOG.ko-KR.md), [GitHub 이슈](https://github.com/xiaodaozhi/xdzip/issues) |
 | 기여 절차 | [기여 규칙](CONTRIBUTING.md), [행동 강령](CODE_OF_CONDUCT.md) |
 | 프로젝트 정책 | [프로젝트 운영](GOVERNANCE.md), [보안](SECURITY.md) |
 

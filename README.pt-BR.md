@@ -167,7 +167,7 @@ Os pacotes de desenvolvimento são experimentais. Os arquivos de desenvolvimento
 | Projeto e implementação | [Referência técnica](docs/pt-BR/reference/README.md) |
 | Privacidade e tratamento dos dados | [Política de privacidade](PRIVACY.md), [versão em chinês](PRIVACY.zh-CN.md) |
 | Compilar e contribuir | [Guia de contribuição](docs/pt-BR/contributing/README.md) |
-| Alterações e trabalho planejado | [Histórico de alterações](CHANGELOG.md), [issues do GitHub](https://github.com/xiaodaozhi/xdzip/issues) |
+| Alterações e trabalho planejado | [Histórico de alterações](CHANGELOG.pt-BR.md), [issues do GitHub](https://github.com/xiaodaozhi/xdzip/issues) |
 | Contribuições | [Regras de contribuição](CONTRIBUTING.md), [código de conduta](CODE_OF_CONDUCT.md) |
 | Políticas do projeto | [Governança](GOVERNANCE.md), [segurança](SECURITY.md) |
 

@@ -167,7 +167,7 @@ python3 scripts/desktop.py test
 | Проектирование и реализация | [Технический справочник](docs/ru-RU/reference/README.md) |
 | Конфиденциальность и обработка данных | [Политика конфиденциальности](PRIVACY.md), [версия на китайском](PRIVACY.zh-CN.md) |
 | Сборка и участие | [Руководство для участников](docs/ru-RU/contributing/README.md) |
-| Изменения и планы | [Журнал изменений](CHANGELOG.md), [задачи GitHub](https://github.com/xiaodaozhi/xdzip/issues) |
+| Изменения и планы | [Журнал изменений](CHANGELOG.ru-RU.md), [задачи GitHub](https://github.com/xiaodaozhi/xdzip/issues) |
 | Вклад в проект | [Правила участия](CONTRIBUTING.md), [кодекс поведения](CODE_OF_CONDUCT.md) |
 | Политика проекта | [Управление проектом](GOVERNANCE.md), [безопасность](SECURITY.md) |
 

@@ -166,7 +166,7 @@ Entwicklungspakete sind experimentelle Builds. Windows- und Linux-Entwicklungsar
 | Produktdesign und Implementierung | [Technische Referenz](docs/de-DE/reference/README.md) |
 | Datenschutz und Datenverarbeitung | [Datenschutzerklärung](PRIVACY.md), [chinesische Fassung](PRIVACY.zh-CN.md) |
 | Bauen und mitarbeiten | [Anleitung zur Mitarbeit](docs/de-DE/contributing/README.md) |
-| Änderungen und geplante Arbeiten | [Änderungsprotokoll](CHANGELOG.md), [GitHub-Issues](https://github.com/xiaodaozhi/xdzip/issues) |
+| Änderungen und geplante Arbeiten | [Änderungsprotokoll](CHANGELOG.de-DE.md), [GitHub-Issues](https://github.com/xiaodaozhi/xdzip/issues) |
 | Beiträge | [Beitragsrichtlinien](CONTRIBUTING.md), [Verhaltenskodex](CODE_OF_CONDUCT.md) |
 | Projektrichtlinien | [Projektorganisation](GOVERNANCE.md), [Sicherheit](SECURITY.md) |
 

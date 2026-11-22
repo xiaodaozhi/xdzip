@@ -137,6 +137,10 @@ class DocumentTests(unittest.TestCase):
                        ' | <a href="README.fr-FR.md">Français</a></p>\n'),
             self.write('README.fr-FR.md', '<h1>XDZip</h1>\n<p><a href="README.md">English</a> | '
                        '<a href="README.zh-CN.md">简体中文</a> | Français</p>\n'),
+            self.write('CHANGELOG.md', '# Changelog\n\nEnglish | [简体中文](CHANGELOG.zh-CN.md) | '
+                       '[Français](CHANGELOG.fr-FR.md)\n'),
+            self.write('CHANGELOG.zh-CN.md', '# 变更日志\n\n[English](CHANGELOG.md) | 简体中文 | '
+                       '[Français](CHANGELOG.fr-FR.md)\n'),
             self.write('docs/guide.md', '# Guide\n\nEnglish | [简体中文](zh-CN/guide.md) | '
                        '[Français](fr-FR/guide.md)\n'),
             self.write('docs/zh-CN/guide.md', '# 指南\n\n[English](../guide.md) | 简体中文 | '
@@ -145,8 +149,11 @@ class DocumentTests(unittest.TestCase):
             self.write('developers/zh-CN/guide.md', '# 指南\n\n[English](../guide.md) | 简体中文\n'),
         ])
         count, failures = check_docs.localized_documents(self.root, files, languages)
-        self.assertEqual(count, 8)
-        self.assertEqual(failures, ['docs/fr-FR/guide.md: missing language counterpart'])
+        self.assertEqual(count, 7)
+        self.assertEqual(failures, ['CHANGELOG.fr-FR.md: missing language counterpart',
+                                    'docs/fr-FR/guide.md: missing language counterpart'])
+        files.append(self.write('CHANGELOG.fr-FR.md', '# Journal des changements\n\n[English](CHANGELOG.md) | '
+                                '[简体中文](CHANGELOG.zh-CN.md) | Français\n'))
         files.append(self.write('docs/fr-FR/guide.md', '# Guide\n\n[English](../guide.md) | '
                                 '[简体中文](../zh-CN/guide.md) | Français\n'))
         self.assertEqual(check_docs.localized_documents(self.root, files, languages), (9, []))
@@ -154,20 +161,25 @@ class DocumentTests(unittest.TestCase):
     def test_reader_links_follow_their_language_and_use_english_developers_fallback(self):
         self.write('docs/guide.md', '# Guide\n')
         target = self.write('docs/fr-FR/guide.md', '# Guide\n\n## Démarrage\n')
+        self.write('CHANGELOG.md', '# Changelog\n\n## Unreleased\n')
+        self.write('CHANGELOG.fr-FR.md', '# Journal des changements\n\n<a id="unreleased"></a>\n\n## Non publié\n')
         self.write('developers/qa.md', '# Verification\n\n## Layout\n')
         self.write('developers/zh-CN/qa.md', '# 验证\n\n## 布局\n')
         index = self.write('docs/fr-FR/index.md', '# XDZip\n\n'
                            '[Guide](guide.md#démarrage)\n'
+                           '[Changelog](../../CHANGELOG.fr-FR.md#unreleased)\n'
                            '[Check](../../developers/qa.md#layout)\n'
                            '[Wrong language](../guide.md)\n'
+                           '[Wrong changelog](../../CHANGELOG.md#unreleased)\n'
                            '[Wrong developers](https://github.com/xiaodaozhi/xdzip/blob/main/developers/zh-CN/qa.md#布局)\n'
                            '[Wrong section](../../developers/qa.md#布局)\n')
         links, fragments, failures = check_docs.markdown_links(self.root, [index, target])
-        self.assertEqual((links, fragments), (5, 4))
-        self.assertEqual(len(failures), 3)
+        self.assertEqual((links, fragments), (7, 6))
+        self.assertEqual(len(failures), 4)
         self.assertIn('expected docs/fr-FR/guide.md', failures[0])
-        self.assertIn('expected developers/qa.md', failures[1])
-        self.assertIn('missing Markdown anchor', failures[2])
+        self.assertIn('expected CHANGELOG.fr-FR.md', failures[1])
+        self.assertIn('expected developers/qa.md', failures[2])
+        self.assertIn('missing Markdown anchor', failures[3])
 
     def test_markdown_anchor_styles_and_local_targets(self):
         topic = self.write('docs/归档 名称 (FAQ).md', """# **格式** 与 _安全_：\x60file_name\x60 ###

@@ -167,7 +167,7 @@ Los paquetes de desarrollo son experimentales. También puedes descargar los arc
 | Diseño e implementación del producto | [Referencia técnica](docs/es-ES/reference/README.md) |
 | Privacidad y tratamiento de datos | [Política de privacidad](PRIVACY.md), [versión en chino](PRIVACY.zh-CN.md) |
 | Compilar y contribuir | [Guía de contribución](docs/es-ES/contributing/README.md) |
-| Cambios y trabajo previsto | [Registro de cambios](CHANGELOG.md), [incidencias de GitHub](https://github.com/xiaodaozhi/xdzip/issues) |
+| Cambios y trabajo previsto | [Registro de cambios](CHANGELOG.es-ES.md), [incidencias de GitHub](https://github.com/xiaodaozhi/xdzip/issues) |
 | Contribuciones | [Normas de contribución](CONTRIBUTING.md), [código de conducta](CODE_OF_CONDUCT.md) |
 | Políticas del proyecto | [Gobernanza](GOVERNANCE.md), [seguridad](SECURITY.md) |
 

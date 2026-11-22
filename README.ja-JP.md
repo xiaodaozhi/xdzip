@@ -166,7 +166,7 @@ Windows では MSVC x64 開発環境、macOS では Apple Silicon ネイティ�
 | 設計と実装 | [技術リファレンス](docs/ja-JP/reference/README.md) |
 | プライバシーとデータの取り扱い | [プライバシーポリシー](PRIVACY.md)、[中国語版](PRIVACY.zh-CN.md) |
 | ビルドと貢献 | [貢献の手引き](docs/ja-JP/contributing/README.md) |
-| 変更と今後の作業 | [変更履歴](CHANGELOG.md)、[GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues) |
+| 変更と今後の作業 | [変更履歴](CHANGELOG.ja-JP.md)、[GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues) |
 | 貢献 | [貢献ガイド](CONTRIBUTING.md)、[行動規範](CODE_OF_CONDUCT.md) |
 | プロジェクトの方針 | [運営](GOVERNANCE.md)、[セキュリティ](SECURITY.md) |
 

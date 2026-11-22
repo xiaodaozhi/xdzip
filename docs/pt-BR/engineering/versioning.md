@@ -6,7 +6,7 @@
 
 O campo opcional `prerelease_number` separa a sequência de pré-lançamento do número de compilação. Por exemplo, alpha.1 pode usar a compilação 14 enquanto o número de compilação continua subindo em alpha.2. Sem esse campo, vale a interpretação histórica `channel.build`. O [protocolo de lançamento](release-protocol.md) define manifestos e nomes de arquivos.
 
-[VERSION.json](../../../VERSION.json) é a única fonte mantida da versão, do canal e do número de compilação. A compilação lê os valores atuais. Veja o [histórico de alterações](../../../CHANGELOG.md) para as versões e as [issues](https://github.com/xiaodaozhi/xdzip/issues) para entregas e verificações. Aumentar a versão não aprova um lançamento.
+[VERSION.json](../../../VERSION.json) é a única fonte mantida da versão, do canal e do número de compilação. A compilação lê os valores atuais. Veja o [histórico de alterações](../../../CHANGELOG.pt-BR.md) para as versões e as [issues](https://github.com/xiaodaozhi/xdzip/issues) para entregas e verificações. Aumentar a versão não aprova um lançamento.
 
 As verificações de compatibilidade usam fontes históricas fixas junto da compilação atual para testar atualização, reversão e configurações. O [script de preparação do produto anterior](../../../scripts/prepare-previous-product.py) mantém a referência completa. O [script de compatibilidade das configurações](../../../scripts/check-settings-compat.py) mantém a referência de configurações. Versões e commits atuais não são repetidos aqui. O esquema das configurações e a versão do produto são gerenciados separadamente.
 

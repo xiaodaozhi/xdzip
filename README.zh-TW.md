@@ -167,7 +167,7 @@ Windows 使用 MSVC x64 開發環境；macOS 使用 Apple Silicon 原生終端�
 | 產品設計與實現 | [技術參考](docs/zh-TW/reference/README.md) |
 | 隱私與資料處理 | [隱私政策](PRIVACY.zh-CN.md)、[Privacy Policy](PRIVACY.md) |
 | 開發與貢獻 | [開發與貢獻指南](docs/zh-TW/contributing/README.md) |
-| 版本變化和待辦 | [變更日誌](CHANGELOG.zh-CN.md)、[GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues) |
+| 版本變化和待辦 | [變更日誌](CHANGELOG.zh-TW.md)、[GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues) |
 | 貢獻 | [貢獻指南](CONTRIBUTING.zh-CN.md)、[行為規範](CODE_OF_CONDUCT.zh-CN.md) |
 | 專案政策 | [專案治理](GOVERNANCE.zh-CN.md)、[安全政策](SECURITY.zh-CN.md) |
 

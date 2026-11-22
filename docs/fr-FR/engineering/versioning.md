@@ -6,7 +6,7 @@
 
 La clé facultative `prerelease_number` sépare le numéro de préversion du numéro de build. Par exemple, alpha.1 peut correspondre au build 14, et le numéro de build continue d’augmenter pour alpha.2. Sans cette clé, l’interprétation historique `channel.build` s’applique. Le [protocole de publication](release-protocol.md) définit les manifestes et les noms d’artefacts.
 
-[VERSION.json](../../../VERSION.json) est la seule source maintenue pour la version, le canal et le numéro de build. Le build lit les valeurs actuelles. Le [journal des changements](../../../CHANGELOG.md) décrit les versions et les [tickets](https://github.com/xiaodaozhi/xdzip/issues) suivent la livraison et les vérifications. Une augmentation du numéro de version ne vaut pas approbation d’une publication.
+[VERSION.json](../../../VERSION.json) est la seule source maintenue pour la version, le canal et le numéro de build. Le build lit les valeurs actuelles. Le [journal des changements](../../../CHANGELOG.fr-FR.md) décrit les versions et les [tickets](https://github.com/xiaodaozhi/xdzip/issues) suivent la livraison et les vérifications. Une augmentation du numéro de version ne vaut pas approbation d’une publication.
 
 Les contrôles de compatibilité utilisent des sources historiques figées et le build actuel pour vérifier la mise à niveau, le retour à une version antérieure et les paramètres. Le [script du produit précédent](../../../scripts/prepare-previous-product.py) maintient la référence du produit complet. Le [script de compatibilité des paramètres](../../../scripts/check-settings-compat.py) maintient la référence de configuration. Les versions et les commits courants ne sont pas recopiés ici. Le schéma des paramètres et la version du produit évoluent séparément.
 

@@ -6,7 +6,7 @@
 
 可選 `prerelease_number` 分離預釋出序號與構建號。例如 alpha.1 對應 build 14，後續 alpha.2 仍繼續遞增 build。預設保留歷史 `channel.build` 讀取方式。釋出清單和資產命名見[釋出協議](release-protocol.md)。
 
-[VERSION.json](../../../VERSION.json) 是產品版本、渠道與構建號的唯一維護入口。目前值由構建系統讀取，不在本文另行維護。版本變更見[變更日誌](../../../CHANGELOG.zh-CN.md)，各批次交付與驗證見[專案 issue](https://github.com/xiaodaozhi/xdzip/issues)；版本遞增本身不代表發行獲批。
+[VERSION.json](../../../VERSION.json) 是產品版本、渠道與構建號的唯一維護入口。目前值由構建系統讀取，不在本文另行維護。版本變更見[變更日誌](../../../CHANGELOG.zh-TW.md)，各批次交付與驗證見[專案 issue](https://github.com/xiaodaozhi/xdzip/issues)；版本遞增本身不代表發行獲批。
 
 歷史相容檢查使用固定原始碼基線，與目前構建共同驗證安裝升級、回退及設定相容。完整產品基線由[歷史產品準備指令碼](../../../scripts/prepare-previous-product.py)維護，設定基線由[相容檢查指令碼](../../../scripts/check-settings-compat.py)維護；不在本文複製隨實現變化的提交或目前版本。設定 schema 與產品版本分別管理。
 

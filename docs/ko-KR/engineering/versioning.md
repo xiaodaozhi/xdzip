@@ -6,7 +6,7 @@
 
 선택 항목인 `prerelease_number`는 사전 릴리스 순번과 빌드 번호를 구분합니다. 예를 들어 alpha.1은 빌드 14를 쓰고 이후 alpha.2에서도 빌드 번호를 계속 올릴 수 있습니다. 값이 없으면 기존의 `channel.build` 해석을 유지합니다. 릴리스 매니페스트와 배포 파일 이름은 [릴리스 프로토콜](release-protocol.md)에서 정의합니다.
 
-[VERSION.json](../../../VERSION.json)은 제품 버전, 채널, 빌드 번호를 관리하는 유일한 원본입니다. 빌드는 현재 값을 읽습니다. 버전 변경은 [변경 기록](../../../CHANGELOG.md), 제공 및 검증은 [프로젝트 이슈](https://github.com/xiaodaozhi/xdzip/issues)를 참조하세요. 버전 번호를 올리는 것만으로 릴리스가 승인되지는 않습니다.
+[VERSION.json](../../../VERSION.json)은 제품 버전, 채널, 빌드 번호를 관리하는 유일한 원본입니다. 빌드는 현재 값을 읽습니다. 버전 변경은 [변경 기록](../../../CHANGELOG.ko-KR.md), 제공 및 검증은 [프로젝트 이슈](https://github.com/xiaodaozhi/xdzip/issues)를 참조하세요. 버전 번호를 올리는 것만으로 릴리스가 승인되지는 않습니다.
 
 이전 버전 호환성 검사는 고정된 소스 기준과 현재 빌드로 업그레이드, 이전 버전 복귀 및 설정 호환성을 검사합니다. [이전 제품 준비 스크립트](../../../scripts/prepare-previous-product.py)는 전체 제품 기준을, [설정 호환성 스크립트](../../../scripts/check-settings-compat.py)는 설정 기준을 관리합니다. 바뀌는 커밋과 버전 값은 여기에서 반복하지 않습니다. 설정 스키마와 제품 버전은 별도로 관리합니다.
 

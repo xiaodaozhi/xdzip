@@ -1,6 +1,8 @@
 # 变更日志
 
-[English](CHANGELOG.md) | 简体中文
+[English](CHANGELOG.md) | 简体中文 | [繁體中文](CHANGELOG.zh-TW.md) | [日本語](CHANGELOG.ja-JP.md) | [한국어](CHANGELOG.ko-KR.md) | [Français](CHANGELOG.fr-FR.md) | [Deutsch](CHANGELOG.de-DE.md) | [Español](CHANGELOG.es-ES.md) | [Português (Brasil)](CHANGELOG.pt-BR.md) | [Русский](CHANGELOG.ru-RU.md)
+
+<a id="unreleased"></a>
 
 ## 未发布
 
@@ -154,6 +156,8 @@
 - 增加离线 HTML 交互设计原型，覆盖浏览、选择、解压、新建、任务与主要异常状态，并关联需求/验收编号。
 
 - 采用 Apache-2.0，添加完整 LICENSE 并同步贡献与发行文档。
+
+<a id="pre-development-baseline-2026-10-11"></a>
 
 ### 开发前基线 — 2026-10-11
 
