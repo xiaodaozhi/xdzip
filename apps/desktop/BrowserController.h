@@ -247,6 +247,9 @@ class BrowserController : public QObject {
     bool ready() const {
         return m_ready;
     }
+    quint64 committedQueryId() const {
+        return m_pageQuery;
+    }
     bool searchActive() const {
         // The visible rows still belong to the last committed query during a retry or cancellation.
         return m_ready && !m_committedQuery.search.isEmpty();
@@ -518,6 +521,8 @@ class BrowserController : public QObject {
     void finishCancelledOpenCleanup(const QString &error);
     void receive(const xdzip::reader::Event &event);
     void submit(xdzip::reader::Command command, bool preflight = false);
+    void submitQuery(xdzip::reader::Command command, QueryState criteria);
+    void submitPrepared(xdzip::reader::Command command, Result result);
     void attemptSubmission();
     bool m_busy = false;
     bool m_ready = false;

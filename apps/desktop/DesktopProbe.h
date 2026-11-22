@@ -59,6 +59,8 @@ class DesktopProbe final : public QObject {
         std::fflush(stdout);
     }
     int m_idleMs = 1500, m_browseMs = 0, m_targetAttempts = 0;
+    quint64 m_previousQuery = 0;
+    int m_openRows = 0, m_searchRows = 0, m_sortOrder = 0;
     bool m_createFolder = false;
     void scheduleReopenAfterClose() {
         QTimer::singleShot(0, this, [this] {
@@ -105,15 +107,23 @@ class DesktopProbe final : public QObject {
     }
     void queryFrame() {
         if (m_phase == Phase::SearchFrame) {
+            m_searchRows = m_controller->entries()->rowCount();
             emitEvent(QStringLiteral("search_frame"),
                       {{"elapsed_ms", m_stage.nsecsElapsed() / 1e6},
-                       {"rows", m_controller->entries()->rowCount()}});
+                       {"rows", m_searchRows},
+                       {"query", QString::number(m_controller->committedQueryId())}});
             m_phase = Phase::Sort;
+            m_previousQuery = m_controller->committedQueryId();
+            m_sortOrder = m_controller->sortOrder() == 3 ? 4 : 3;
             m_stage.restart();
             m_controller->sortByColumn(1);
         } else if (m_phase == Phase::SortFrame) {
-            emitEvent(QStringLiteral("sort_frame"), {{"elapsed_ms", m_stage.nsecsElapsed() / 1e6}});
+            emitEvent(QStringLiteral("sort_frame"),
+                      {{"elapsed_ms", m_stage.nsecsElapsed() / 1e6},
+                       {"rows", m_controller->entries()->rowCount()},
+                       {"query", QString::number(m_controller->committedQueryId())}});
             m_phase = Phase::Reset;
+            m_previousQuery = m_controller->committedQueryId();
             m_controller->search(QString());
         } else if (m_phase == Phase::ResetFrame) {
             m_phase = Phase::Closing;
@@ -133,16 +143,30 @@ class DesktopProbe final : public QObject {
     void changed() {
         if (m_phase == Phase::Opening && m_controller->ready() && !m_controller->browsingBusy()) {
             m_phase = Phase::Closing;
+            m_openRows = m_controller->entries()->rowCount();
             emitEvent(QStringLiteral("open_ready"),
                       {{"elapsed_ms", m_stage.elapsed()},
                        {"records", m_controller->archiveTotal()},
-                       {"visible_rows", m_controller->entries()->rowCount()}});
+                       {"visible_rows", m_openRows},
+                       {"query", QString::number(m_controller->committedQueryId())}});
             m_phase = Phase::Search;
+            m_previousQuery = m_controller->committedQueryId();
             m_stage.restart();
             m_controller->search(QStringLiteral("item-000"));
         } else if ((m_phase == Phase::Search || m_phase == Phase::Sort ||
                     m_phase == Phase::Reset) &&
-                   m_controller->ready() && !m_controller->browsingBusy()) {
+                   !m_controller->busy() && !m_controller->browsingBusy()) {
+            const int rows = m_controller->entries()->rowCount();
+            if (!m_controller->ready() || m_controller->committedQueryId() <= m_previousQuery ||
+                m_controller->searchActive() != (m_phase != Phase::Reset) ||
+                (m_phase == Phase::Sort &&
+                 (m_controller->sortOrder() != m_sortOrder || rows != m_searchRows)) ||
+                (m_phase == Phase::Reset && rows != m_openRows)) {
+                m_phase = Phase::Done;
+                emitEvent(QStringLiteral("query_not_committed"), {{"rows", rows}});
+                QCoreApplication::exit(9);
+                return;
+            }
             m_phase = m_phase == Phase::Search ? Phase::SearchFrame
                       : m_phase == Phase::Sort ? Phase::SortFrame
                                                : Phase::ResetFrame;

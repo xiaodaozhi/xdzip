@@ -5,6 +5,7 @@ use std::collections::{BTreeMap, BinaryHeap};
 use std::io::{BufReader, BufWriter, Read, Seek, SeekFrom, Write};
 use std::sync::Mutex;
 use xdzip_codec_api::{Cancellation, Entry, Format, ScanError, names::NameEncoding};
+use xdzip_domain::identity::EntryId;
 use xdzip_io::{ScratchSpace, Stage};
 
 pub(crate) const HOT_BYTES: usize = 64 * 1024 * 1024;
@@ -95,16 +96,25 @@ impl DiskIndex {
         control: &Cancellation,
         visit: &mut dyn FnMut(&Entry) -> Result<(), ScanError>,
     ) -> Result<(), ScanError> {
+        self.each_record(control, |record| visit(&record.into_entry()))
+    }
+
+    fn each_record(
+        &self,
+        control: &Cancellation,
+        mut visit: impl FnMut(DiskRecord<'_>) -> Result<(), ScanError>,
+    ) -> Result<(), ScanError> {
         let mut file = self.data.lock().map_err(|_| ScanError::Io)?;
         io(file.seek(SeekFrom::Start(0)))?;
         let mut reader = BufReader::with_capacity(256 * 1024, &mut *file);
+        let mut buffer = Vec::new();
         for id in 1..=self.len() as u64 {
             control.check()?;
-            let entry = decode(&mut reader)?;
+            let entry = read_record(&mut reader, &mut buffer)?;
             if entry.id.get() != id {
                 return Err(ScanError::Invalid);
             }
-            visit(&entry)?;
+            visit(entry)?;
         }
         Ok(())
     }
@@ -145,8 +155,8 @@ impl DiskIndex {
             .filter(|d| parent(d.path.as_bytes()) == Some(prefix))
             .map(|d| (d.path.as_bytes(), d))
             .collect();
-        self.each(control, &mut |entry| {
-            if entry.directory && !entry.warning {
+        self.each_record(control, |entry| {
+            if entry.directory() && entry.flags & 32 == 0 {
                 virtuals.remove(entry.name_bytes());
             }
             let name = entry.name_bytes();
@@ -155,7 +165,7 @@ impl DiskIndex {
             } else {
                 name.starts_with(prefix)
                     && (prefix.is_empty() || name != prefix)
-                    && entry.display_name.to_lowercase().contains(&needle)
+                    && contains_folded_name(entry.display_name, &needle)
             };
             if matches {
                 let key = SortRow::physical(entry, sort);
@@ -250,9 +260,13 @@ impl DiskQuery {
         }
         let mut file = self.order.lock().map_err(|_| ScanError::Io)?;
         io(file.seek(SeekFrom::Start(offset as u64 * 8)))?;
-        (offset..self.total.min(offset + 128))
-            .map(|_| read_u64(&mut *file))
-            .collect()
+        let mut bytes = [0u8; 128 * 8];
+        let bytes = &mut bytes[..(self.total - offset).min(128) * 8];
+        io(file.read_exact(bytes))?;
+        Ok(bytes
+            .chunks_exact(8)
+            .map(|token| u64::from_le_bytes(token.try_into().unwrap()))
+            .collect())
     }
 }
 pub(crate) fn navigation_token(token: u64) -> Option<usize> {
@@ -278,12 +292,12 @@ struct SortRow {
     group: u8,
 }
 impl SortRow {
-    fn physical(e: &Entry, sort: u8) -> Self {
+    fn physical(e: DiskRecord<'_>, sort: u8) -> Self {
         Self {
             token: e.id.get(),
             text: match sort {
-                1 | 2 => e.display_name.clone(),
-                9 | 10 => crate::entry_type(e),
+                1 | 2 => e.display_name.to_owned(),
+                9 | 10 => crate::entry_type(e.directory(), e.display_name),
                 _ => String::new(),
             },
             number: match sort {
@@ -293,7 +307,7 @@ impl SortRow {
                 11 | 12 => u64::from(e.modified_dos),
                 _ => 0,
             },
-            group: crate::entry_sort_group(e, sort),
+            group: crate::sort_group(e.directory(), e.flags & 4 != 0, sort),
         }
     }
     fn compare(&self, other: &Self, sort: u8) -> Ordering {
@@ -433,48 +447,103 @@ fn encode(e: &Entry) -> Vec<u8> {
     }
     out
 }
-fn decode(reader: &mut impl Read) -> Result<Entry, ScanError> {
+struct DiskRecord<'a> {
+    id: EntryId,
+    size: u64,
+    packed_size: u64,
+    unix_mode: u32,
+    modified_dos: u32,
+    method: u16,
+    flags: u8,
+    raw_name: &'a [u8],
+    decoded_name: Option<&'a str>,
+    display_name: &'a str,
+    name_encoding: NameEncoding,
+}
+
+impl DiskRecord<'_> {
+    fn directory(&self) -> bool {
+        self.flags & 1 != 0
+    }
+
+    fn name_bytes(&self) -> &[u8] {
+        self.decoded_name.map_or(self.raw_name, str::as_bytes)
+    }
+
+    fn into_entry(self) -> Entry {
+        Entry {
+            format: Format::Zip,
+            id: self.id,
+            size: self.size,
+            packed_size: self.packed_size,
+            unix_mode: self.unix_mode,
+            modified_dos: self.modified_dos,
+            method: self.method,
+            raw_name: self.raw_name.to_vec(),
+            decoded_name: self.decoded_name.map(str::to_owned),
+            display_name: self.display_name.to_owned(),
+            name_encoding: self.name_encoding,
+            directory: self.directory(),
+            link: self.flags & 2 != 0,
+            size_known: self.flags & 4 != 0,
+            encrypted: self.flags & 8 != 0,
+            password_supported: self.flags & 16 != 0,
+            warning: self.flags & 32 != 0,
+        }
+    }
+}
+
+fn contains_folded_name(name: &str, needle: &str) -> bool {
+    if name
+        .bytes()
+        .all(|byte| byte.is_ascii() && !byte.is_ascii_uppercase())
+    {
+        name.contains(needle)
+    } else {
+        name.to_lowercase().contains(needle)
+    }
+}
+
+fn read_field<'a>(record: &mut &'a [u8], max: usize) -> Result<&'a [u8], ScanError> {
+    let (length, bytes) = record.split_first_chunk().ok_or(ScanError::Io)?;
+    let len = u32::from_le_bytes(*length) as usize;
+    let (field, tail) = bytes
+        .split_at_checked(len)
+        .filter(|_| len <= max)
+        .ok_or(ScanError::Invalid)?;
+    *record = tail;
+    Ok(field)
+}
+
+fn read_record<'a>(
+    reader: &mut impl Read,
+    buffer: &'a mut Vec<u8>,
+) -> Result<DiskRecord<'a>, ScanError> {
     let mut len = [0; 4];
     io(reader.read_exact(&mut len))?;
     let len = u32::from_le_bytes(len) as usize;
     if !(52..=64 * 1024).contains(&len) {
         return Err(ScanError::Invalid);
     }
-    let mut bytes = vec![0; len];
-    io(reader.read_exact(&mut bytes))?;
-    let mut r = std::io::Cursor::new(bytes);
-    let id = read_u64(&mut r)?
+    buffer.resize(len, 0);
+    io(reader.read_exact(buffer))?;
+    let (fixed, mut fields) = buffer.split_at(36);
+    let id = u64::from_le_bytes(fixed[..8].try_into().unwrap())
         .try_into()
         .map_err(|_| ScanError::Invalid)?;
-    let size = read_u64(&mut r)?;
-    let packed_size = read_u64(&mut r)?;
-    let mut fixed = [0; 12];
-    io(r.read_exact(&mut fixed))?;
-    let unix_mode = u32::from_le_bytes(fixed[..4].try_into().unwrap());
-    let modified_dos = u32::from_le_bytes(fixed[4..8].try_into().unwrap());
-    let method = u16::from_le_bytes(fixed[8..10].try_into().unwrap());
-    let flags = fixed[10];
-    let encoding = fixed[11];
+    let flags = fixed[34];
     if flags & !127 != 0 {
         return Err(ScanError::Invalid);
     }
-    let mut fields = Vec::new();
-    for max in [4096, 4096, 32 * 1024, 64] {
-        let mut field_len = [0; 4];
-        io(r.read_exact(&mut field_len))?;
-        let n = u32::from_le_bytes(field_len) as usize;
-        if n > max || r.position() + n as u64 > r.get_ref().len() as u64 {
-            return Err(ScanError::Invalid);
-        }
-        let mut value = vec![0; n];
-        io(r.read_exact(&mut value))?;
-        fields.push(value);
-    }
-    if r.position() != r.get_ref().len() as u64 {
+    let raw_name = read_field(&mut fields, 4096)?;
+    let decoded = read_field(&mut fields, 4096)?;
+    let display = read_field(&mut fields, 32 * 1024)?;
+    let label = read_field(&mut fields, 64)?;
+    if !fields.is_empty() {
         return Err(ScanError::Invalid);
     }
-    let label = std::str::from_utf8(&fields[3]).map_err(|_| ScanError::Invalid)?;
-    let name_encoding = match encoding {
+    let label = std::str::from_utf8(label).map_err(|_| ScanError::Invalid)?;
+    let name_encoding = match fixed[35] {
         0 => NameEncoding::Utf8,
         1 => NameEncoding::UnmarkedUtf8,
         2 => NameEncoding::UnicodePath,
@@ -484,32 +553,25 @@ fn decode(reader: &mut impl Read) -> Result<Entry, ScanError> {
         4 => NameEncoding::Unresolved,
         _ => return Err(ScanError::Invalid),
     };
-    let display_name =
-        String::from_utf8(std::mem::take(&mut fields[2])).map_err(|_| ScanError::Invalid)?;
-    let decoded_name = if flags & 64 == 0 {
-        None
-    } else {
-        Some(String::from_utf8(std::mem::take(&mut fields[1])).map_err(|_| ScanError::Invalid)?)
-    };
-    Ok(Entry {
-        format: Format::Zip,
+    Ok(DiskRecord {
         id,
-        size,
-        packed_size,
-        unix_mode,
-        modified_dos,
-        method,
-        raw_name: std::mem::take(&mut fields[0]),
-        decoded_name,
-        display_name,
+        size: u64::from_le_bytes(fixed[8..16].try_into().unwrap()),
+        packed_size: u64::from_le_bytes(fixed[16..24].try_into().unwrap()),
+        unix_mode: u32::from_le_bytes(fixed[24..28].try_into().unwrap()),
+        modified_dos: u32::from_le_bytes(fixed[28..32].try_into().unwrap()),
+        method: u16::from_le_bytes(fixed[32..34].try_into().unwrap()),
+        flags,
+        raw_name,
+        decoded_name: (flags & 64 != 0)
+            .then(|| std::str::from_utf8(decoded).map_err(|_| ScanError::Invalid))
+            .transpose()?,
+        display_name: std::str::from_utf8(display).map_err(|_| ScanError::Invalid)?,
         name_encoding,
-        directory: flags & 1 != 0,
-        link: flags & 2 != 0,
-        size_known: flags & 4 != 0,
-        encrypted: flags & 8 != 0,
-        password_supported: flags & 16 != 0,
-        warning: flags & 32 != 0,
     })
+}
+
+fn decode(reader: &mut impl Read) -> Result<Entry, ScanError> {
+    Ok(read_record(reader, &mut Vec::new())?.into_entry())
 }
 
 #[cfg(test)]
@@ -566,6 +628,8 @@ mod tests {
                     .step_by(128)
                     .flat_map(|offset| query.page(offset).unwrap())
                     .collect::<Vec<_>>();
+                assert!(query.page(query.total).unwrap().is_empty());
+                assert!(matches!(query.page(query.total + 1), Err(ScanError::Limit)));
                 let mut files_started = false;
                 for token in &tokens {
                     let directory =
@@ -584,6 +648,24 @@ mod tests {
                     .collect::<Vec<_>>();
                 assert_eq!(tokens, expected, "{text}/{sort}");
             }
+        }
+    }
+
+    #[test]
+    fn borrowed_search_preserves_unicode_case_matching() {
+        for (name, needle, expected) in [
+            ("item-000.txt", "item-000", true),
+            ("ITEM-000.txt", "item-000", true),
+            ("说明.txt", "说明", true),
+            ("ΟΣ", "ος", true),
+            ("ΟΣΤ.txt", "ος", false),
+            ("IZMİR.txt", "i\u{307}r", true),
+        ] {
+            assert_eq!(contains_folded_name(name, needle), expected, "{name}");
+            assert_eq!(
+                contains_folded_name(name, needle),
+                name.to_lowercase().contains(needle)
+            );
         }
     }
 

@@ -563,20 +563,27 @@ impl Archive {
 
 // Direction applies only within groups. Unknown sizes remain last in their group.
 fn entry_sort_group(entry: &Entry, sort: u8) -> u8 {
-    2 * u8::from(!entry.directory) + u8::from(matches!(sort, 3 | 4) && !entry.size_known)
+    sort_group(entry.directory, entry.size_known, sort)
+}
+
+fn sort_group(directory: bool, size_known: bool, sort: u8) -> u8 {
+    2 * u8::from(!directory) + u8::from(matches!(sort, 3 | 4) && !size_known)
 }
 
 // Keep directory identity separate from the extension category and translated labels.
 // Only the category is reversed for descending type order; directories remain first.
 fn entry_type_key(entry: &Entry) -> (bool, String) {
-    (!entry.directory, entry_type(entry))
+    (
+        !entry.directory,
+        entry_type(entry.directory, &entry.display_name),
+    )
 }
 
-fn entry_type(entry: &Entry) -> String {
-    if entry.directory {
+fn entry_type(directory: bool, display_name: &str) -> String {
+    if directory {
         return String::new();
     }
-    let name = entry.display_name.rsplit('/').next().unwrap_or_default();
+    let name = display_name.rsplit('/').next().unwrap_or_default();
     let extension = name.rsplit_once('.').map_or("", |(_, extension)| extension);
     if extension.eq_ignore_ascii_case("jpg") {
         "JPEG".to_owned()

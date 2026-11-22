@@ -30,6 +30,8 @@ La sélection entre pages utilise au plus 4 096 plages bornées dans la requête
 
 <a name="xdzip-task-boundaries"></a>
 
+Les requêtes sur disque réutilisent un tampon d’enregistrement pour comparer les noms et construisent les entrées lors de l’envoi des lignes. Une recherche ou un tri de petite taille reste en cours jusqu’à la collecte de tous les lots et à la validation du résultat. Les demandes de pages de la zone visible alimentent le cache d’une requête déjà validée.
+
 ## Limites des tâches
 
 Les fichiers ordinaires sélectionnés depuis un index disque peuvent être extraits après revérification complète de la source, planification sûre, vérification de chaque entrée entière et validation autorisée existante. Un plan figé reste limité à 100 000 entrées et 64 MiB de métadonnées ; les limites de fichiers et d’octets réellement décodés suivent le [contrat d’extraction](zip-safe-extraction.md). Le développement d’un répertoire ne peut pas ignorer de noms non résolus ; les liens sélectionnés sont refusés dans cette configuration. Le lecteur ZIP revérifie les décalages physiques de tout le répertoire central, ne conserve que les emplacements des données sélectionnées et maintient les contrôles de chevauchement, en-tête local, taille, CRC, authentification et annulation.

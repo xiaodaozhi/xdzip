@@ -22,6 +22,8 @@ The bridge transfers at most 128 rows and 64 KiB of names per batch. Queries of 
 
 Cross-page selection uses bounded ranges in the current immutable query, at most 4,096 ranges. Select All covers the entire current query; leaving the cache does not change selection. Before extraction confirmation, Rust freezes ranges into physical/navigation identities, which remain in use even if the query changes. Selections exceeding the task's 100,000-entry limit are explicitly rejected rather than silently reduced. Total size for nonresident selections is not currently shown. Bulk clipboard copying beyond resident content returns a resource limit rather than silently copying an incomplete list.
 
+Disk queries reuse a record buffer when testing names and materialize entry records when sending rows. A new small search or sort remains busy until all of its batches have been assembled and committed. Viewport page requests populate the cache of an already committed query.
+
 ## Task boundaries
 
 Regular files selected from a disk index may be extracted after complete source revalidation, safe planning, whole-entry verification, and existing authorized commit. A frozen plan remains limited to 100,000 entries and 64 MiB metadata; file and actual decoded-byte limits follow the [extraction contract](zip-safe-extraction.md). Directory expansion cannot skip unresolved names; selected links are rejected in this index configuration. The ZIP reader rechecks physical offsets for the entire central directory, retains only selected payload locations, and preserves overlap, local-header, size, CRC, authentication, and cancellation checks.

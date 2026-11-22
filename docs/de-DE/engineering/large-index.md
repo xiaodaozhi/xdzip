@@ -30,6 +30,8 @@ Seitenübergreifende Auswahl nutzt höchstens 4.096 begrenzte Bereiche in der ak
 
 <a name="xdzip-task-boundaries"></a>
 
+Datenträgerabfragen verwenden für den Namensvergleich einen gemeinsamen Datensatzpuffer und erzeugen Eintragsdatensätze bei der Zeilenausgabe. Eine kleine Suche oder Sortierung gilt als laufend, bis alle Batches gesammelt und das Ergebnis übernommen wurde. Seitenanforderungen für den sichtbaren Bereich füllen den Cache einer bereits übernommenen Abfrage.
+
 ## Aufgabengrenzen
 
 Aus einem Festplattenindex ausgewählte reguläre Dateien können nach vollständiger erneuter Quellprüfung, sicherer Planung, Prüfung des gesamten Eintrags und bestehendem autorisiertem Commit extrahiert werden. Ein eingefrorener Plan bleibt auf 100.000 Einträge und 64 MiB Metadaten begrenzt; Datei- und tatsächliche dekodierte Bytegrenzen folgen dem [Extraktionsvertrag](zip-safe-extraction.md). Verzeichniserweiterung darf ungeklärte Namen nicht überspringen; ausgewählte Links werden in dieser Indexkonfiguration abgelehnt. Der ZIP-Leser prüft physische Offsets des gesamten Zentralverzeichnisses erneut, behält nur Positionen ausgewählter Nutzdaten und erhält Prüfungen auf Überlappung, lokalen Header, Größe, CRC, Authentifizierung und Abbruch.

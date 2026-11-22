@@ -666,6 +666,28 @@ class BrowserTest : public QObject {
         QTRY_VERIFY(!controller.busy());
         QCOMPARE(extraction.count(), 1);
         QCOMPARE(controller.m_extractionSelectors, QStringList{"1000000"});
+        // A query smaller than the model cache can still span several transport batches.
+        // Its continuation must never emit the idle state of a viewport page fetch.
+        const auto previousQuery = controller.committedQueryId();
+        bool reportedIdleBeforeCommit = false;
+        const auto observation = connect(&controller, &BrowserController::changed, this, [&] {
+            if (controller.committedQueryId() == previousQuery && !controller.browsingBusy())
+                reportedIdleBeforeCommit = true;
+        });
+        controller.search("item-000");
+        QTRY_VERIFY_WITH_TIMEOUT(!controller.busy() && controller.total() == 990, 10000);
+        disconnect(observation);
+        QVERIFY(!reportedIdleBeforeCommit);
+        QVERIFY(!model->paged());
+        QCOMPARE(model->rowCount(), 990);
+        QCOMPARE(controller.selectedCount(), 0);
+        const auto searchQuery = controller.committedQueryId();
+        controller.sortByColumn(1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller.busy() && controller.committedQueryId() > searchQuery,
+                                 10000);
+        QCOMPARE(model->rowCount(), 990);
+        controller.search(QString());
+        QTRY_VERIFY_WITH_TIMEOUT(!controller.busy() && model->paged(), 10000);
         controller.search("099999");
         QTRY_VERIFY_WITH_TIMEOUT(!controller.busy() && controller.total() == 1, 10000);
         QCOMPARE(model->rowCount(), 1);

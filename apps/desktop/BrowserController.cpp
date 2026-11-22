@@ -1653,14 +1653,15 @@ void BrowserController::fetchPage(int offset) {
     command.query = m_pageQuery;
     command.generation = m_pageGeneration;
     command.revision = m_pageRevision;
-    submit(std::move(command));
-    m_result.pageFetch = true;
-    m_result.offset = offset;
-    m_result.generation = m_pageGeneration;
-    m_result.criteria = m_committedQuery;
-    m_result.query = m_pageQuery;
-    m_result.revision = m_pageRevision;
-    m_result.session = m_session;
+    Result result;
+    result.pageFetch = true;
+    result.offset = offset;
+    result.generation = m_pageGeneration;
+    result.criteria = m_committedQuery;
+    result.query = m_pageQuery;
+    result.revision = m_pageRevision;
+    result.session = m_session;
+    submitPrepared(std::move(command), std::move(result));
 }
 void BrowserController::start(const QString &path, int offset, const QString &password,
                               bool withPassword) {
@@ -1701,9 +1702,7 @@ void BrowserController::start(const QString &path, int offset, const QString &pa
             m_waiting.reset();
             auto latest = std::move(*m_deferredQuery);
             m_deferredQuery.reset();
-            submit(std::move(latest.command));
-            m_result.criteria = latest.criteria;
-            m_result.generation = m_generation;
+            submitQuery(std::move(latest.command), std::move(latest.criteria));
         } else if (m_pending)
             m_connection->cancel(m_pending);
         emit changed();
@@ -1711,11 +1710,36 @@ void BrowserController::start(const QString &path, int offset, const QString &pa
     }
     clearContentPreview();
     m_detail.clear();
-    submit(std::move(command));
-    m_result.criteria = criteria;
-    m_result.generation = m_generation;
+    submitQuery(std::move(command), criteria);
+}
+void BrowserController::submitQuery(xdzip::reader::Command command, QueryState criteria) {
+    Result result;
+    result.opening = command.kind != xdzip::reader::CommandKind::Browse;
+    result.criteria = std::move(criteria);
+    result.generation = command.generation;
+    submitPrepared(std::move(command), std::move(result));
 }
 void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
+    Result result;
+    result.opening = command.kind == xdzip::reader::CommandKind::Open ||
+                     command.kind == xdzip::reader::CommandKind::OpenWithPassword;
+    result.preflight = preflight;
+    result.freezeSelection = command.kind == xdzip::reader::CommandKind::FreezeSelection;
+    result.extraction = command.kind == xdzip::reader::CommandKind::Extract ||
+                        command.kind == xdzip::reader::CommandKind::OpenEntry;
+    result.exporting = command.kind == xdzip::reader::CommandKind::Export ||
+                       command.kind == xdzip::reader::CommandKind::PublishExport;
+    result.exportManifest = command.kind == xdzip::reader::CommandKind::ExportManifest;
+    result.extraction |= result.exporting;
+    result.creating = command.kind == xdzip::reader::CommandKind::Create;
+    result.checking = command.kind == xdzip::reader::CommandKind::Check;
+    result.taskSession = command.session;
+    result.inputPreview = command.kind == xdzip::reader::CommandKind::InspectInputs;
+    result.targetCheck = command.kind == xdzip::reader::CommandKind::CheckTarget;
+    result.closeSession = command.kind == xdzip::reader::CommandKind::CloseSession;
+    submitPrepared(std::move(command), std::move(result));
+}
+void BrowserController::submitPrepared(xdzip::reader::Command command, Result result) {
     // Only an explicit Extract request owns the optional folder-opening intent.
     // Native exports and temporary file opens must not inherit an earlier choice.
     if (command.kind != xdzip::reader::CommandKind::Extract)
@@ -1723,32 +1747,15 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
     if (command.kind != xdzip::reader::CommandKind::CheckTarget &&
         command.kind != xdzip::reader::CommandKind::InspectInputs)
         m_preflightReport.clear();
-    m_result = {};
-    m_result.opening = command.kind == xdzip::reader::CommandKind::Open ||
-                       command.kind == xdzip::reader::CommandKind::OpenWithPassword;
-    m_result.preflight = preflight;
-    m_result.freezeSelection = command.kind == xdzip::reader::CommandKind::FreezeSelection;
-    m_result.pageFetch =
-        command.kind == xdzip::reader::CommandKind::Browse && command.query != 0 && m_model.paged();
-    m_result.extraction = command.kind == xdzip::reader::CommandKind::Extract ||
-                          command.kind == xdzip::reader::CommandKind::OpenEntry;
     const auto edit = archiveEditOperation(command.kind);
+    result.updating = !edit.isEmpty();
     m_entryEditError.clear();
-    m_result.updating = !edit.isEmpty();
-    if (m_result.updating) {
+    if (result.updating) {
+        result.creating = true;
         m_archiveOperation = edit;
         m_archiveCancellationRequested = false;
     }
-    m_result.exporting = command.kind == xdzip::reader::CommandKind::Export ||
-                         command.kind == xdzip::reader::CommandKind::PublishExport;
-    m_result.exportManifest = command.kind == xdzip::reader::CommandKind::ExportManifest;
-    m_result.extraction |= m_result.exporting;
-    m_result.creating = command.kind == xdzip::reader::CommandKind::Create || m_result.updating;
-    m_result.checking = command.kind == xdzip::reader::CommandKind::Check;
-    m_result.taskSession = command.session;
-    m_result.inputPreview = command.kind == xdzip::reader::CommandKind::InspectInputs;
-    m_result.targetCheck = command.kind == xdzip::reader::CommandKind::CheckTarget;
-    m_result.closeSession = command.kind == xdzip::reader::CommandKind::CloseSession;
+    m_result = std::move(result);
     m_hasPayload = false;
     m_busy = true;
     // Both lanes share the reader worker. Foreground commands supersede preview reads
@@ -1759,7 +1766,7 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
         m_message = m_result.creating     ? qtTrId("ui.33495b6653c6")
                     : m_result.checking   ? qtTrId("integrity.starting")
                     : m_result.extraction ? qtTrId("ui.8cf09709f8f6")
-                    : preflight           ? qtTrId("ui.d37d23d13df0")
+                    : m_result.preflight  ? qtTrId("ui.d37d23d13df0")
                                           : qtTrId("ui.5126629edae6");
     m_waiting.emplace(std::move(command));
     m_admissionAttempts = 0;
@@ -2291,9 +2298,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             m_creationPreviewPending |= m_result.inputPreview;
             auto latest = std::move(*m_deferredQuery);
             m_deferredQuery.reset();
-            submit(std::move(latest.command));
-            m_result.criteria = latest.criteria;
-            m_result.generation = m_generation;
+            submitQuery(std::move(latest.command), std::move(latest.criteria));
             return;
         }
         m_deferredQuery.reset();
@@ -2370,9 +2375,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             command.revision = m_result.revision;
             command.offset = static_cast<std::uint64_t>(m_result.rows.size());
             command.sort = static_cast<std::uint8_t>(m_result.criteria.sort);
-            auto accumulated = std::move(m_result);
-            submit(std::move(command));
-            m_result = std::move(accumulated);
+            submitPrepared(std::move(command), std::move(m_result));
             return;
         }
         if (m_result.targetCheck) {

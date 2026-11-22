@@ -155,6 +155,7 @@ def main():
     parser.add_argument('--app',type=Path,required=True);parser.add_argument('--fixture',type=Path,required=True)
     parser.add_argument('--metrics',type=Path,required=True);parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--expected-records',type=int,default=100000);parser.add_argument('--runs',type=int,default=30)
+    parser.add_argument('--expected-search-rows', type=int, help='Require this many rows in the committed search and sort frames')
     parser.add_argument('--idle-ms',type=int,default=1500);parser.add_argument('--browse-ms',type=int,default=0)
     parser.add_argument('--operation-extract',action='store_true');parser.add_argument('--require-backend')
     args=parser.parse_args()
@@ -167,6 +168,13 @@ def main():
         r=run_once(app,fixture,args.metrics.resolve(),args.output.parent,index,args.idle_ms,args.browse_ms,args.operation_extract,220+(args.idle_ms+args.browse_ms)/1000)
         events={e['event']:e for e in r['events']}
         if events['open_ready']['records']!=args.expected_records:raise ValueError('Fixture record count mismatch')
+        if args.expected_search_rows is not None:
+            query_frames = [events[name] for name in ('open_ready', 'search_frame', 'sort_frame')]
+            if any(frame.get('rows') != args.expected_search_rows for frame in query_frames[1:]):
+                raise ValueError('Committed search or sort row count mismatch')
+            queries = [int(frame.get('query', 0)) for frame in query_frames]
+            if not 0 < queries[0] < queries[1] < queries[2]:
+                raise ValueError('Search and sort did not commit distinct successive queries')
         if args.require_backend and r['identity']['backend']!=args.require_backend:raise ValueError('Required renderer unavailable; software fallback is not accepted')
         if runs and any(r['identity'][k]!=runs[0]['identity'][k] for k in ['revision','dirty','configuration','backend']):raise ValueError('Mixed build or renderer identity')
         runs.append(r);print('Measured product run '+str(index+1),flush=True)

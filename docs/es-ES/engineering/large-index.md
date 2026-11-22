@@ -30,6 +30,8 @@ La selección entre páginas usa hasta 4 096 rangos acotados de la consulta actu
 
 <a name="xdzip-task-boundaries"></a>
 
+Las consultas en disco reutilizan un búfer de registros para comparar nombres y construyen los registros de las entradas al enviar las filas. Una búsqueda u ordenación con pocos resultados sigue en curso hasta que se reúnen todos sus lotes y se aplican los resultados. Las solicitudes de página del área visible llenan la caché de una consulta ya aplicada.
+
 ## Límites de tareas
 
 Los archivos ordinarios seleccionados de un índice en disco pueden extraerse tras volver a validar completamente el origen, planificar de forma segura, verificar la entrada completa y aplicar la confirmación autorizada existente. Un plan congelado sigue limitado a 100 000 entradas y 64 MiB de metadatos; los límites de archivos y bytes realmente decodificados siguen el [contrato de extracción](zip-safe-extraction.md). La expansión de directorios no puede omitir nombres sin resolver; los enlaces seleccionados se rechazan en esta configuración. El lector ZIP vuelve a comprobar los desplazamientos físicos de todo el directorio central, conserva solo las ubicaciones de datos seleccionadas y mantiene las comprobaciones de solapamiento, cabecera local, tamaño, CRC, autenticación y cancelación.
