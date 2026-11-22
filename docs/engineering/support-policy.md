@@ -2,13 +2,13 @@
 
 English | [简体中文](../zh-CN/engineering/support-policy.md) | [繁體中文](../zh-TW/engineering/support-policy.md) | [日本語](../ja-JP/engineering/support-policy.md) | [한국어](../ko-KR/engineering/support-policy.md) | [Français](../fr-FR/engineering/support-policy.md) | [Deutsch](../de-DE/engineering/support-policy.md) | [Español](../es-ES/engineering/support-policy.md) | [Português (Brasil)](../pt-BR/engineering/support-policy.md) | [Русский](../ru-RU/engineering/support-policy.md)
 
-The project owner approved the initial support policy on 2026-10-19, and `v0.1.0` was released publicly on 2026-11-06. See the [releases page](https://github.com/xiaodaozhi/xdzip/releases) for current versions and downloads. This document defines support scope; it does not change minimum-version checks or extend CI host results or user acceptance without environment details into guarantees for all system versions. The manual review was completed according to the user's conclusion and need not be repeated.
+This policy describes the systems XDZip supports and how the project is maintained. Get the right package from the [latest stable release](https://github.com/xiaodaozhi/xdzip/releases/latest) and check its release notes for known limitations.
 
 ## Initial support scope
 
 | Platform | Initial support | Engineering evidence and limits |
 | --- | --- | --- |
-| macOS | macOS 14 or later, Apple Silicon arm64 | Deployment target 14.0, native CI and local development DMG; no Intel or Universal package and no promise for every future system version |
+| macOS | macOS 14 or later, Apple Silicon arm64 | Deployment target 14.0. GitHub provides a DMG and app ZIP for Apple Silicon. Both contain the same ad hoc-signed app. |
 | Windows | Windows 11 x86_64 versions still maintained by Microsoft | MSVC build, per-user installer, actual installation/upgrade/rollback/uninstall CI; Server CI does not establish support for every Windows 11 version; no ARM64 package |
 | Linux | Ubuntu 24.04 LTS x86_64, X11, glibc 2.39 or later | Current .deb and isolated runtime verification without the Qt SDK; no claim for arbitrary distributions, older glibc, Wayland or ARM64 |
 
@@ -22,6 +22,6 @@ Candidates remain pinned to Qt 6.8.2 and the existing locked Rust/Cargo versions
 
 ## Approved scope and changes
 
-Approval covers the initial platforms, best-effort maintenance of only the latest public release, no fixed response time and experimental labeling of development builds. Actual `v0.1.0` release results are recorded separately in the Release and historical review issues; this policy does not extend one release into performance guarantees for all system versions. Expansion to architectures, systems or distribution channels requires implementation and verification before updating this policy; see [ADR-011](../design/architecture-decisions.md#adr-011首批支持范围与个人项目维护政策).
+Support for a new architecture, system or distribution channel is implemented and verified before this page is updated. See [ADR-011](../design/architecture-decisions.md#adr-011首批支持范围与个人项目维护政策) for the original platform decision.
 
-The user has cancelled formal signing, notarization and paid-account requirements; do not request them again. Report vulnerabilities according to the [security policy](../../SECURITY.md).
+To report a vulnerability, follow the [security policy](../../SECURITY.md).

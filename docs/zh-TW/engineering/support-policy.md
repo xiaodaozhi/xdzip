@@ -4,7 +4,7 @@
 
 [English](../../engineering/support-policy.md) | [简体中文](../../zh-CN/engineering/support-policy.md) | 繁體中文 | [日本語](../../ja-JP/engineering/support-policy.md) | [한국어](../../ko-KR/engineering/support-policy.md) | [Français](../../fr-FR/engineering/support-policy.md) | [Deutsch](../../de-DE/engineering/support-policy.md) | [Español](../../es-ES/engineering/support-policy.md) | [Português (Brasil)](../../pt-BR/engineering/support-policy.md) | [Русский](../../ru-RU/engineering/support-policy.md)
 
-專案所有者於 2026-10-19 批准首批支援政策，`v0.1.0` 於 2026-11-06 公開。目前版本與下載見[釋出頁](https://github.com/xiaodaozhi/xdzip/releases)。本文確定支援範圍，不修改應用最低版本檢查，不將 CI 宿主或未附環境明細的使用者驗收擴大為全部系統版本保證。人工專項已按使用者結論完成，無需重複。
+本頁列出 XDZip 目前支援的系統與維護方式。請從[最新穩定版](https://github.com/xiaodaozhi/xdzip/releases/latest)下載對應平台的安裝套件，並查閱版本說明中的已知限制。
 
 <a name="xdzip-首批支持范围"></a>
 
@@ -12,7 +12,7 @@
 
 | 平臺 | 首批支援範圍 | 目前工程依據與邊界 |
 | --- | --- | --- |
-| macOS | macOS 14 及以上，Apple Silicon arm64 | 目前部署目標 14.0，原生 CI 和本地開發 DMG；不提供 Intel 或 Universal 包，不承諾所有未來系統版本 |
+| macOS | macOS 14 及以上，Apple Silicon arm64 | 部署目標為 14.0。GitHub 為 Apple Silicon 提供 DMG 與應用程式 ZIP，兩者包含同一份採用 ad-hoc 完整性簽署的應用程式。 |
 | Windows | 仍受 Microsoft 維護的 Windows 11，x86_64 | MSVC 構建、目前使用者安裝器、實際安裝／升級／回退／解除安裝 CI；Server CI 不替代對所有 Windows 11 版本的支援宣告，不提供 ARM64 包 |
 | Linux | Ubuntu 24.04 LTS x86_64，X11，glibc 2.39 及以上 | 目前 .deb 和無 Qt SDK 的隔離執行驗證；不宣稱任意發行版、較舊 glibc、Wayland 或 ARM64 可用 |
 
@@ -30,6 +30,6 @@ Mac 最低版本取目前專案部署目標，不反向採用舊設計中未驗�
 
 ## 批准範圍與變更
 
-本次批准首批平臺範圍、只維護最新公開版本的盡力維護方式、無固定響應時限及實驗性開發構建標記。`v0.1.0` 的實際發行結果另由 Release 和歷史審查 issue 記錄；本政策不把一次釋出擴大為所有系統版本的效能保證。後續擴大架構、系統或發行渠道時，補充實現與驗證再更新本政策，見 [ADR-011](../design/architecture-decisions.md#xdzip-adr-011%E9%A6%96%E6%89%B9%E6%94%AF%E6%8C%81%E8%8C%83%E5%9B%B4%E4%B8%8E%E4%B8%AA%E4%BA%BA%E9%A1%B9%E7%9B%AE%E7%BB%B4%E6%8A%A4%E6%94%BF%E7%AD%96)。
+新增架構、系統或發行管道時，先實作並驗證支援，再更新本頁。平台範圍的依據見 [ADR-011](../design/architecture-decisions.md#xdzip-adr-011%E9%A6%96%E6%89%B9%E6%94%AF%E6%8C%81%E8%8C%83%E5%9B%B4%E4%B8%8E%E4%B8%AA%E4%BA%BA%E9%A1%B9%E7%9B%AE%E7%BB%B4%E6%8A%A4%E6%94%BF%E7%AD%96)。
 
-正式簽名、公證、付費賬號已由使用者取消，不重新要求。漏洞意見回饋按[安全政策](../../../SECURITY.zh-CN.md)處理。
+漏洞通報請參閱[安全政策](../../../SECURITY.zh-CN.md)。

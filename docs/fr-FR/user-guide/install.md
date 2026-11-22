@@ -12,10 +12,14 @@ Téléchargez le paquet de votre système depuis la [dernière version stable su
 
 L’application de bureau ne prend pas en charge Windows ARM64, les Mac Intel, Linux ARM64 ni Wayland. L’interface en ligne de commande autonome sous Linux fonctionne sans X11 et nécessite OpenSSL 3 et les certificats du système. Choisissez un fichier dont le nom commence par `xdzip-cli-` et suivez le [guide de démarrage en ligne de commande](../integration/README.md).
 
+Après l’installation du paquet DEB, vous pouvez retrouver et désinstaller XDZip depuis la liste des applications installées dans le Centre d’applications d’Ubuntu.
+
 <a name="xdzip-open-an-archive"></a>
 
 ## Ouvrir une archive
 
 Choisissez **Ouvrir une archive** dans XDZip ou déposez un fichier sur la page d’accueil. Dans le gestionnaire de fichiers, choisissez **Ouvrir avec** si le paquet installé a enregistré cette action. Pour définir XDZip comme application par défaut pour un type de fichier, sélectionnez-le dans les réglages système. L’édition du Microsoft Store propose **Ouvrir les applications par défaut de Windows** sur sa page d’associations de fichiers. Les applications par défaut et les actions de compression du menu contextuel se règlent séparément. Voir [l’extraction depuis le gestionnaire de fichiers](extract.md#xdzip-from-the-file-manager) et [l’installation et les associations](../engineering/installers-associations.md).
+
+Si macOS continue de répertorier XDZip comme seule application capable d’ouvrir un type de fichier, la désactivation de l’association affiche un message et le système conserve XDZip par défaut.
 
 Étape suivante, [parcourir et prévisualiser les fichiers](browse.md).

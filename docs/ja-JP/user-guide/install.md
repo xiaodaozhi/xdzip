@@ -12,10 +12,14 @@
 
 デスクトップ版は Windows ARM64、Intel Mac、Linux ARM64 および Wayland に対応していません。Linux の独立した CLI は X11 なしで動作し、システムの OpenSSL 3 と証明書が必要です。`xdzip-cli-` から始まるファイルを選び、[CLI クイックスタート](../integration/README.md)に従ってください。
 
+DEB パッケージでインストールした XDZip は、Ubuntu の App Center のインストール済み一覧からアンインストールできます。
+
 <a name="xdzip-open-an-archive"></a>
 
 ## アーカイブを開く
 
 XDZip の **アーカイブを開く** を選ぶか、初期画面にアーカイブをドロップします。インストール済みのパッケージが登録されていれば、ファイルマネージャーの **プログラムから開く** も使えます。特定のファイルの種類で XDZip を使うには、システム設定で既定のアプリに指定します。Microsoft Store 版では、ファイルの関連付けページから **Windows の既定のアプリを開く** を開けます。既定のアプリと、コンテキストメニューの圧縮操作は別々に設定します。[ファイルマネージャーからの展開](extract.md#xdzip-from-the-file-manager)と[インストールとファイルの関連付け](../engineering/installers-associations.md)を参照してください。
+
+macOS であるファイルの種類を開けるアプリが XDZip だけの場合、関連付けをオフにしようとするとメッセージが表示され、既定のアプリは XDZip のままになります。
 
 次に、[ファイルを閲覧してプレビューする](browse.md)方法を確認します。

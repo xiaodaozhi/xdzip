@@ -12,10 +12,14 @@ Descarga el paquete para tu sistema desde la [última versión estable en GitHub
 
 La aplicación de escritorio no es compatible con Windows ARM64, los Mac con Intel, Linux ARM64 ni Wayland. La herramienta independiente de línea de comandos de Linux funciona sin X11 y requiere OpenSSL 3 y los certificados del sistema. Para usarla, elige un archivo cuyo nombre comience por `xdzip-cli-` y sigue la [guía rápida de la línea de comandos](../integration/README.md).
 
+Tras instalar el paquete DEB, puedes buscar y desinstalar XDZip en la lista de aplicaciones instaladas del Centro de aplicaciones de Ubuntu.
+
 <a name="xdzip-open-an-archive"></a>
 
 ## Abrir un archivo comprimido
 
 Usa **Abrir un archivo comprimido** en XDZip o arrastra el archivo a la página de bienvenida. En el gestor de archivos, elige **Abrir con** si el paquete instalado está registrado. Para elegir XDZip como aplicación predeterminada de un tipo de archivo, selecciónalo en los ajustes del sistema. La edición de Microsoft Store incluye **Abrir aplicaciones predeterminadas de Windows** en la página de asociaciones de archivos. Las aplicaciones predeterminadas y las acciones de compresión del menú contextual se configuran por separado. Consulta [extracción desde el gestor de archivos](extract.md#xdzip-from-the-file-manager) e [instalación y asociaciones](../engineering/installers-associations.md).
+
+Si macOS sigue indicando que XDZip es la única aplicación capaz de abrir un tipo de archivo, al desactivar la asociación aparece un aviso y el sistema mantiene XDZip como opción predeterminada.
 
 Después, [explora los archivos y obtén vistas previas](browse.md).

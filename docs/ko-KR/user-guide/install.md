@@ -12,10 +12,14 @@
 
 데스크톱 버전은 Windows ARM64, Intel Mac, Linux ARM64 또는 Wayland를 지원하지 않습니다. Linux용 독립 CLI는 X11 없이 실행되며 시스템의 OpenSSL 3 및 인증서가 필요합니다. 파일 이름이 `xdzip-cli-`로 시작하는 항목을 선택하고 [CLI 빠른 시작](../integration/README.md)을 참조하세요.
 
+DEB 패키지로 설치한 XDZip은 Ubuntu 앱 센터의 설치됨 목록에서 찾아 제거할 수 있습니다.
+
 <a name="xdzip-open-an-archive"></a>
 
 ## 압축 파일 열기
 
 XDZip에서 **압축 파일 열기**를 선택하거나 시작 화면으로 압축 파일을 끌어 놓으세요. 설치된 패키지가 등록되어 있으면 파일 관리자에서 **연결 프로그램**을 선택할 수 있습니다. 특정 파일 형식의 기본 앱으로 XDZip을 사용하려면 시스템 설정에서 지정하세요. Microsoft Store 버전은 파일 연결 페이지에서 **Windows 기본 앱 열기**을 제공합니다. 기본 앱과 파일 관리자 메뉴의 압축 작업은 별도로 설정합니다. [파일 관리자에서 압축 풀기](extract.md#xdzip-from-the-file-manager) 및 [설치 및 파일 연결](../engineering/installers-associations.md)을 참조하세요.
+
+macOS에서 특정 파일 유형을 열 수 있는 앱이 XDZip뿐이면 연결을 끌 때 안내가 표시되고 시스템은 XDZip을 기본 앱으로 유지합니다.
 
 이어서 [파일을 탐색하고 미리 보는 방법](browse.md)을 알아보세요.

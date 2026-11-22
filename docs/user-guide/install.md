@@ -12,8 +12,12 @@ Download the package for your system from the [latest stable GitHub release](htt
 
 The desktop support scope excludes Windows ARM64, Intel Macs, and Linux ARM64 and Wayland. The standalone Linux CLI works without X11 and requires system OpenSSL 3 and certificates. To use it, choose an asset starting with `xdzip-cli-` and follow the [CLI quick start](../integration/README.md).
 
+After installing the DEB package, you can find and remove XDZip under Installed in Ubuntu App Center.
+
 ## Open an archive
 
 Use **Open archive** in XDZip or drop the archive onto the welcome page. From a file manager, choose **Open with** where the installed package is registered. To make XDZip the default for a file type, choose it in the system settings. The Windows Store edition provides **Set default apps in Windows** from its file associations page. Default apps and compression context-menu actions have separate settings. See [file-manager extraction](extract.md#from-the-file-manager) and [installation and associations](../engineering/installers-associations.md).
+
+If macOS still lists XDZip as the only app that can open a file type, turning off that association shows a message and macOS keeps XDZip as the default.
 
 Next, [browse and preview files](browse.md).

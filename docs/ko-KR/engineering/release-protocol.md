@@ -8,11 +8,13 @@
 
 전용 [Release 워크플로](../../../.github/workflows/release.yml)는 `workflow_dispatch`로 수동 실행합니다. 정식 실행은 `main`에서 기존 버전 태그로 시작하고 확인된 커밋을 고정합니다. 세 네이티브 작업은 각각 설정, 빌드, 테스트, 패키징을 한 번 수행합니다. macOS 작업은 첫 빌드부터 배포용 파일 연결 우선순위를 사용한 뒤 Qt를 배포하고 ad-hoc 무결성 서명을 적용하여 같은 앱에서 ZIP과 DMG를 만듭니다. 일반 macOS Qt CI는 SDK를 기준으로 검증합니다. Developer ID, Apple 공증 및 Windows 게시자 인증서는 이 릴리스 정책의 범위 밖입니다.
 
+제품 소스는 태그가 가리키는 커밋에서 가져옵니다. 초안 작성, 공개 릴리스 및 공개 다운로드 검증은 모두 워크플로를 실행한 시점의 `main` 커밋에서 동일한 검토 완료 릴리스 노트를 읽습니다.
+
 전체 태그는 VERSION.json에서 도출한 의미 버전 앞에 `v`를 붙입니다. `prerelease_number`는 선택적인 양의 정수이며 없으면 기존 빌드 번호와의 호환성을 유지합니다. alpha.1과 build 14는 서로 다른 식별값입니다. Windows 숫자 리소스와 macOS CFBundleVersion은 계속 단조 증가하는 빌드 번호를 사용합니다. 같은 버전의 공개 자산은 교체할 수 없으며 수정에는 새 버전이 필요합니다. 초안은 다시 실행할 수 있습니다.
 
 릴리스 노트는 지속적으로 보존하고 검토할 수 있는 버전 입력입니다. 기본 경로는 `release-notes/<full-version>.md`이며 CLI에서 `--notes-file`로 검토된 파일을 지정할 수 있습니다. 파일에는 `<!-- xdzip-release {"version":"0.1.0-alpha.6","build":19} -->` 메타데이터 한 줄과 일치하는 버전 제목이 들어갑니다. 버전과 빌드 번호는 VERSION.json과 같아야 합니다. 먼저 `python3 scripts/publish-release.py --check-notes`를 실행합니다. 이 검사는 GitHub에 접속하지 않습니다. 전용 워크플로도 빌드 전에 같은 사전 검사를 수행합니다. 새 버전에는 새 노트가 필요하며 이전 기능 목록이나 승인 상태를 자동으로 상속하지 않습니다.
 
-노트는 플랫폼별 승인 범위, 실제 커밋과 증거를 중국어와 영어로 기록합니다. 기존 수동 승인과 실행하지 않은 검사는 구분하여 보존하고 단계 진행은 계속 issue로 추적합니다. 초안 생성과 게시는 같은 노트 스냅샷을 사용합니다. 초안을 재실행할 때 본문이 검토된 파일과 다르면 자산을 업로드하거나 삭제하기 전에 중단하고 입력을 명시적으로 일치시켜야 합니다. 이미 공개된 버전은 자산을 교체하는 재실행을 계속 거부합니다. `CHANGELOG.md`에는 실제 공개된 버전만 보관하며 로컬 개발 산출물을 공개 릴리스 기록으로 꾸미지 않습니다.
+노트는 플랫폼별 승인 범위, 실제 커밋과 증거를 중국어와 영어로 기록합니다. 기존 수동 승인과 실행하지 않은 검사는 구분하여 보존하고 단계 진행은 계속 issue로 추적합니다. 초안 생성과 게시는 같은 노트 스냅샷을 사용합니다. 초안을 재실행할 때 본문이 검토된 파일과 다르면 자산을 업로드하거나 삭제하기 전에 중단하고 입력을 명시적으로 일치시켜야 합니다. 이미 공개된 버전은 자산을 교체하는 재실행을 계속 거부합니다. 아직 공개하지 않은 변경 사항은 `CHANGELOG.md`의 Unreleased에 기록하고, 공개 후 버전을 기록합니다.
 
 초안의 자산을 바꾸기 전 게시 도구가 GitHub 태그, 초안 상태와 채널 표시를 다시 읽습니다. stable은 사전 릴리스가 아니어야 하고 GitHub Latest가 되어야 합니다. alpha, beta, rc는 사전 릴리스로 유지하고 Latest를 교체해서는 안 됩니다. 게시 후와 공개 첨부 검증 후 각각 상태를 다시 확인하고 모두 일치할 때만 성공을 보고합니다. 게시 후 검사가 실패해도 릴리스는 이미 공개되었을 수 있습니다. 스크립트는 소유자의 처리를 위해 중단하며 공개 릴리스나 자산을 자동으로 철회, 수정 또는 교체하지 않습니다.
 
@@ -48,7 +50,7 @@ macOS 앱 ZIP, DMG와 고지 자료는 배포하고 서명한 동일한 임시 �
 
 새 릴리스에는 schema_version=1, algorithm=ed25519, key_id와 128자의 소문자 16진수 서명을 담은 `release.json.sig`가 포함됩니다. 서명은 `release.json`의 정확한 원시 바이트를 대상으로 하므로 검증 전에 파싱하고 다시 직렬화하지 않습니다. 클라이언트와 Qt 없는 설치 도우미는 각각 내장된 `resources/update-trust.json` 공개키 집합을 사용하며 다운로드한 매니페스트나 사용자 요청의 신뢰 루트는 허용하지 않습니다. 설치 시 알 수 없는 공개키, 중복 key_id, 취약한 키와 빈 신뢰 집합을 거부합니다.
 
-app.zip의 최종 이름을 정한 후 macOS 네이티브 단계는 `xdzip-update-tool sign-archive`로 schema_version, version, build, filename, bytes, sha256 및 Sparkle base64 `ed_signature`가 담긴 `macos-update.json`을 만듭니다. 조립 단계가 압축 파일과 서명을 다시 확인하고 같은 불변 후보만 포함한 `appcast.xml`을 생성합니다. 선택적 매니페스트 필드 `macos_appcast_url`은 같은 태그 아래의 해당 파일에 고정됩니다. 피드는 build를 Sparkle 버전으로, 전체 의미 버전을 shortVersionString으로, macOS 14.0을 최소 버전으로 사용하며 간단한 노트만 포함합니다. 전체 노트는 GitHub Release 본문에 남고 클라이언트는 외부 노트를 가져오지 않습니다.
+macOS 네이티브 작업은 앱 ZIP을 패키징하고 검증합니다. 이어 Linux `sign` 작업은 검증된 바이트를 받아 `scripts/sign-macos-update.py`를 실행하고 `xdzip-update-tool sign-archive`를 호출하여 `macos-update.json`을 만듭니다. 이 파일에는 schema_version, version, build, filename, bytes, sha256 및 Sparkle base64 `ed_signature`가 기록됩니다. 조립 단계가 압축 파일과 서명을 다시 확인하고 같은 불변 후보만 포함한 `appcast.xml`을 생성합니다. 선택적 매니페스트 필드 `macos_appcast_url`은 같은 태그 아래의 해당 파일에 고정됩니다. 피드는 build를 Sparkle 버전으로, 전체 의미 버전을 shortVersionString으로, macOS 14.0을 최소 버전으로 사용하며 간단한 노트만 포함합니다. 전체 노트는 GitHub Release 본문에 남고 클라이언트는 외부 노트를 가져오지 않습니다.
 
 압축 파일과 피드는 별도의 Sparkle 키를 사용하며 피드 자체도 서명해야 합니다. 크로스 플랫폼 릴리스 도구는 [Sparkle 원본 서명 형식](https://github.com/sparkle-project/Sparkle/blob/2.x/common_cli/Signing.swift)에 따라 전체 원시 XML에 서명하고 base64 edSignature와 원시 바이트 길이가 든 sparkle-signatures 주석 블록을 추가합니다. 첨부 파일만 서명하는 방식이 아닙니다. 생성 후 독립적으로 검증하며 바이트가 바뀌면 다시 서명해야 합니다. Mac 패키지의 SUPublicEDKey는 `resources/sparkle-update-key.json`의 공개키와 일치해야 합니다.
 

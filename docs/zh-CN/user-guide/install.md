@@ -12,8 +12,12 @@
 
 桌面支持范围不涵盖 Windows ARM64、Intel Mac、Linux ARM64 和 Wayland。Linux 独立 CLI 无需 X11，运行需要系统 OpenSSL 3 和证书。可选用以 `xdzip-cli-` 开头的下载包，并按[命令行入门](../integration/README.md)启动。
 
+通过 DEB 安装后，可在 Ubuntu 应用中心的“已安装”列表找到 XDZip 并卸载。
+
 ## 打开压缩包
 
 在 XDZip 中选择“打开压缩包”，或把压缩包拖到欢迎页。已注册文件类型也可从文件管理器的“打开方式”选择 XDZip。要设为某种类型的默认应用，请在系统设置中挑选。Windows 商店版可从文件关联页选择“在 Windows 中设置默认应用”。默认应用与右键压缩解压动作分别设置。详见[从文件管理器解压](extract.md#从文件管理器解压)与[安装和文件关联说明](../engineering/installers-associations.md)。
+
+如果 macOS 仍将 XDZip 视为某个类型的唯一打开方式，关闭该类型的关联开关时会显示提示，系统继续使用 XDZip。
 
 接下来可以[浏览和预览文件](browse.md)。

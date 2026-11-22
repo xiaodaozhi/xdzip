@@ -12,10 +12,14 @@ Laden Sie das Paket für Ihr System von der [letzten stabilen Version auf GitHub
 
 Die Desktopversion unterstützt Windows ARM64, Intel-Macs, Linux ARM64 und Wayland nicht. Die eigenständige Befehlszeilenversion unter Linux funktioniert ohne X11 und benötigt OpenSSL 3 sowie die Systemzertifikate. Wählen Sie dazu eine Datei mit dem Namensanfang `xdzip-cli-` und folgen Sie der [Kurzanleitung für die Befehlszeile](../integration/README.md).
 
+Nach der Installation des DEB-Pakets können Sie XDZip im Ubuntu App Center unter den installierten Anwendungen finden und entfernen.
+
 <a name="xdzip-open-an-archive"></a>
 
 ## Ein Archiv öffnen
 
 Wählen Sie **Archiv öffnen** in XDZip oder ziehen Sie das Archiv auf die Startseite. Im Dateimanager können Sie **Öffnen mit** verwenden, sofern das installierte Paket registriert ist. Um XDZip als Standard-App für einen Dateityp einzurichten, wählen Sie es in den Systemeinstellungen aus. In der Microsoft-Store-Version steht auf der Seite für Dateizuordnungen **Windows-Standard-Apps öffnen** zur Verfügung. Standard-Apps und Komprimierungsaktionen im Kontextmenü werden getrennt eingestellt. Siehe [Entpacken aus dem Dateimanager](extract.md#xdzip-from-the-file-manager) und [Installation und Dateizuordnungen](../engineering/installers-associations.md).
+
+Wenn macOS XDZip weiterhin als einzige Anwendung für einen Dateityp führt, erscheint beim Ausschalten der Zuordnung ein Hinweis und XDZip bleibt die Standardanwendung.
 
 Als Nächstes können Sie [Dateien durchsuchen und in der Vorschau anzeigen](browse.md).

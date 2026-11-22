@@ -2,13 +2,13 @@
 
 [English](../../engineering/support-policy.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/support-policy.md) | [日本語](../../ja-JP/engineering/support-policy.md) | [한국어](../../ko-KR/engineering/support-policy.md) | [Français](../../fr-FR/engineering/support-policy.md) | [Deutsch](../../de-DE/engineering/support-policy.md) | [Español](../../es-ES/engineering/support-policy.md) | [Português (Brasil)](../../pt-BR/engineering/support-policy.md) | [Русский](../../ru-RU/engineering/support-policy.md)
 
-项目所有者于 2026-10-19 批准首批支持政策，`v0.1.0` 于 2026-11-06 公开。当前版本与下载见[发布页](https://github.com/xiaodaozhi/xdzip/releases)。本文确定支持范围，不修改应用最低版本检查，不将 CI 宿主或未附环境明细的用户验收扩大为全部系统版本保证。人工专项已按用户结论完成，无需重复。
+本页列出 XDZip 当前支持的系统和维护方式。可在[最新稳定版](https://github.com/xiaodaozhi/xdzip/releases/latest)下载对应平台的安装包，并在版本说明中查看已知限制。
 
 ## 首批支持范围
 
 | 平台 | 首批支持范围 | 当前工程依据与边界 |
 | --- | --- | --- |
-| macOS | macOS 14 及以上，Apple Silicon arm64 | 当前部署目标 14.0，原生 CI 和本地开发 DMG；不提供 Intel 或 Universal 包，不承诺所有未来系统版本 |
+| macOS | macOS 14 及以上，Apple Silicon arm64 | 部署目标为 14.0。GitHub 为 Apple Silicon 提供 DMG 和应用 ZIP，两者包含同一份采用 ad-hoc 完整性签名的应用。 |
 | Windows | 仍受 Microsoft 维护的 Windows 11，x86_64 | MSVC 构建、当前用户安装器、实际安装／升级／回退／卸载 CI；Server CI 不替代对所有 Windows 11 版本的支持声明，不提供 ARM64 包 |
 | Linux | Ubuntu 24.04 LTS x86_64，X11，glibc 2.39 及以上 | 当前 .deb 和无 Qt SDK 的隔离运行验证；不宣称任意发行版、较旧 glibc、Wayland 或 ARM64 可用 |
 
@@ -22,6 +22,6 @@ Mac 最低版本取当前项目部署目标，不反向采用旧设计中未验�
 
 ## 批准范围与变更
 
-本次批准首批平台范围、只维护最新公开版本的尽力维护方式、无固定响应时限及实验性开发构建标记。`v0.1.0` 的实际发行结果另由 Release 和历史审查 issue 记录；本政策不把一次发布扩大为所有系统版本的性能保证。后续扩大架构、系统或发行渠道时，补充实现与验证再更新本政策，见 [ADR-011](../design/architecture-decisions.md#adr-011首批支持范围与个人项目维护政策)。
+新增架构、系统或发行渠道时，先实现并验证支持，再更新本页。平台范围的依据见 [ADR-011](../design/architecture-decisions.md#adr-011首批支持范围与个人项目维护政策)。
 
-正式签名、公证、付费账号已由用户取消，不重新要求。漏洞反馈按[安全政策](../../../SECURITY.zh-CN.md)处理。
+漏洞反馈见 [安全政策](../../../SECURITY.zh-CN.md)。

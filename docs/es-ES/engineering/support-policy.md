@@ -3,14 +3,14 @@
 
 [English](../../engineering/support-policy.md) | [简体中文](../../zh-CN/engineering/support-policy.md) | [繁體中文](../../zh-TW/engineering/support-policy.md) | [日本語](../../ja-JP/engineering/support-policy.md) | [한국어](../../ko-KR/engineering/support-policy.md) | [Français](../../fr-FR/engineering/support-policy.md) | [Deutsch](../../de-DE/engineering/support-policy.md) | Español | [Português (Brasil)](../../pt-BR/engineering/support-policy.md) | [Русский](../../ru-RU/engineering/support-policy.md)
 
-El propietario del proyecto aprobó la política inicial el 2026-10-19. La versión `v0.1.0` se publicó el 2026-11-06. Consulta la [página de versiones](https://github.com/xiaodaozhi/xdzip/releases) para encontrar las versiones y descargas actuales. Esta política define el alcance de la compatibilidad. Se mantienen las comprobaciones de versión mínima. Los resultados de CI y las pruebas de aceptación del usuario se refieren a los entornos probados. El usuario dio por concluida la revisión manual.
+Esta página describe los sistemas compatibles con XDZip y cómo se mantiene el proyecto. Descarga el paquete adecuado desde la [última versión estable](https://github.com/xiaodaozhi/xdzip/releases/latest) y consulta sus notas para conocer las limitaciones.
 
 <a name="xdzip-initial-support-scope"></a>
 ## Alcance inicial
 
 | Plataforma | Alcance inicial | Comprobaciones y límites |
 | --- | --- | --- |
-| macOS | macOS 14 o posterior, Apple Silicon arm64 | Objetivo de despliegue 14.0, CI nativa y DMG local de desarrollo. Sin paquete Intel ni universal. No se garantiza la compatibilidad con todas las versiones futuras. |
+| macOS | macOS 14 o posterior, Apple Silicon arm64 | El objetivo de despliegue es 14.0. GitHub ofrece un DMG y un ZIP para Apple Silicon. Ambos contienen la misma aplicación con firma ad hoc para comprobar su integridad. |
 | Windows | Versiones x86_64 de Windows 11 que Microsoft sigue manteniendo | Compilación con MSVC, instalador por usuario y pruebas reales de instalación, actualización, reversión y desinstalación en CI. Las pruebas en Windows Server no cubren todas las versiones de Windows 11. Sin paquete ARM64. |
 | Linux | Ubuntu 24.04 LTS x86_64, X11, glibc 2.39 o posterior | Verificación del .deb actual y de la ejecución en un entorno aislado sin el SDK de Qt. Quedan fuera otras distribuciones, versiones anteriores de glibc, Wayland y ARM64. |
 
@@ -26,6 +26,6 @@ Las versiones candidatas siguen fijadas en Qt 6.8.2 y en las versiones de Rust y
 <a name="xdzip-approved-scope-and-changes"></a>
 ## Alcance aprobado y cambios
 
-El alcance aprobado abarca las plataformas iniciales, el mantenimiento de la última versión pública según los recursos disponibles, la ausencia de un plazo de respuesta fijo y el etiquetado de las compilaciones de desarrollo como experimentales. Los resultados de `v0.1.0` figuran en la publicación y en sus incidencias de aceptación. Esos resultados no constituyen una garantía de rendimiento para todas las versiones de los sistemas. Cualquier arquitectura, sistema o canal de distribución adicional debe implementarse y verificarse antes de actualizar esta política. Consulta [ADR-011](../design/architecture-decisions.md#xdzip-adr-011-initial-support-scope-and-personal-project-maintenance-policy).
+El soporte de una nueva arquitectura, sistema o canal de distribución se implementa y verifica antes de actualizar esta página. Consulta [ADR-011](../design/architecture-decisions.md#xdzip-adr-011-initial-support-scope-and-personal-project-maintenance-policy) para conocer la decisión inicial sobre las plataformas.
 
-Ya no se exigen la firma oficial, la notarización ni las cuentas de pago. Para comunicar una vulnerabilidad, consulta la [política de seguridad](../../../SECURITY.md).
+Para comunicar una vulnerabilidad, sigue la [política de seguridad](../../../SECURITY.md).

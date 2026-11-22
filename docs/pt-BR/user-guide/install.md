@@ -12,10 +12,14 @@ Baixe o pacote para seu sistema na [última versão estável do GitHub](https://
 
 A versão para desktop não oferece suporte a Windows ARM64, Macs com Intel, Linux ARM64 ou Wayland. A ferramenta independente de linha de comando para Linux funciona sem X11 e exige OpenSSL 3 e os certificados do sistema. Escolha um arquivo cujo nome comece com `xdzip-cli-` e siga o [guia rápido da linha de comando](../integration/README.md).
 
+Depois de instalar o pacote DEB, você pode localizar e remover o XDZip na lista de aplicativos instalados da Central de Aplicativos do Ubuntu.
+
 <a name="xdzip-open-an-archive"></a>
 
 ## Abrir um arquivo compactado
 
 Use **Abrir arquivo compactado** no XDZip ou arraste o arquivo para a tela inicial. No gerenciador de arquivos, use **Abrir com** quando o pacote instalado estiver registrado. Para tornar o XDZip o aplicativo padrão de um tipo de arquivo, selecione-o nas configurações do sistema. A edição da Microsoft Store oferece **Abrir aplicativos padrão do Windows** na tela de associações de arquivos. Os aplicativos padrão e as ações de compactação do menu de contexto têm configurações diferentes. Consulte [extração pelo gerenciador de arquivos](extract.md#xdzip-from-the-file-manager) e [instalação e associações](../engineering/installers-associations.md).
+
+Se o macOS ainda listar o XDZip como o único aplicativo capaz de abrir um tipo de arquivo, ao desativar a associação será exibido um aviso e o sistema manterá o XDZip como padrão.
 
 Em seguida, [navegue pelos arquivos e visualize seu conteúdo](browse.md).

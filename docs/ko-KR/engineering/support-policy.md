@@ -3,14 +3,14 @@
 
 [English](../../engineering/support-policy.md) | [简体中文](../../zh-CN/engineering/support-policy.md) | [繁體中文](../../zh-TW/engineering/support-policy.md) | [日本語](../../ja-JP/engineering/support-policy.md) | 한국어 | [Français](../../fr-FR/engineering/support-policy.md) | [Deutsch](../../de-DE/engineering/support-policy.md) | [Español](../../es-ES/engineering/support-policy.md) | [Português (Brasil)](../../pt-BR/engineering/support-policy.md) | [Русский](../../ru-RU/engineering/support-policy.md)
 
-프로젝트 소유자는 2026-10-19에 초기 지원 정책을 승인했으며, `v0.1.0`은 2026-11-06에 공개되었습니다. 최신 버전과 다운로드는 [릴리스 페이지](https://github.com/xiaodaozhi/xdzip/releases)를 참조하세요. 이 정책은 지원 범위를 정합니다. 최소 버전 확인은 그대로 적용됩니다. CI와 사용자 인수 검증 결과는 실제로 테스트한 환경에 적용됩니다. 수동 검토는 사용자의 결정에 따라 완료되었습니다.
+XDZip이 지원하는 시스템과 유지보수 방침을 설명합니다. [최신 안정 릴리스](https://github.com/xiaodaozhi/xdzip/releases/latest)에서 플랫폼에 맞는 패키지를 내려받고 릴리스 노트에서 알려진 제한 사항을 확인하세요.
 
 <a name="xdzip-initial-support-scope"></a>
 ## 초기 지원 범위
 
 | 플랫폼 | 초기 지원 범위 | 검증과 제한 |
 | --- | --- | --- |
-| macOS | macOS 14 이상, Apple Silicon arm64 | 배포 대상 14.0, 네이티브 CI, 로컬 개발용 DMG. Intel 및 Universal 패키지는 제공하지 않으며 이후 모든 시스템 버전을 보장하지 않습니다. |
+| macOS | macOS 14 이상, Apple Silicon arm64 | 배포 대상은 14.0입니다. GitHub에서 Apple Silicon용 DMG와 앱 ZIP을 제공합니다. 두 패키지에는 무결성을 위해 ad-hoc 서명한 동일한 앱이 들어 있습니다. |
 | Windows | Microsoft에서 계속 유지보수하는 Windows 11 x86_64 버전 | MSVC 빌드, 사용자별 설치 프로그램, CI에서 실제 설치, 업그레이드, 롤백, 제거 검증. Windows Server CI가 모든 Windows 11 버전을 검증하지는 않습니다. ARM64 패키지는 제공하지 않습니다. |
 | Linux | Ubuntu 24.04 LTS x86_64, X11, glibc 2.39 이상 | 현재 .deb 패키지와 Qt SDK 없는 격리된 실행 환경을 검증합니다. 다른 배포판, 이전 glibc, Wayland, ARM64는 대상이 아닙니다. |
 
@@ -26,6 +26,6 @@
 <a name="xdzip-approved-scope-and-changes"></a>
 ## 승인 범위와 변경
 
-승인 범위는 초기 플랫폼, 가용한 자원 내에서 최신 공개 버전만 유지보수하는 것, 응답 기한을 정하지 않는 것, 개발 빌드를 실험용으로 표시하는 것입니다. `v0.1.0` 결과는 릴리스와 당시 검증 이슈에 기록되어 있습니다. 이 결과가 모든 시스템 버전에서의 성능을 보장하지는 않습니다. 아키텍처, 시스템, 배포 경로를 추가하려면 구현과 검증을 거친 뒤 이 정책을 갱신합니다. [ADR-011](../design/architecture-decisions.md#xdzip-adr-011-initial-support-scope-and-personal-project-maintenance-policy)을 참조하세요.
+새 아키텍처, 시스템 또는 배포 경로는 지원을 구현하고 검증한 뒤 이 페이지에 반영합니다. 플랫폼 범위의 근거는 [ADR-011](../design/architecture-decisions.md#xdzip-adr-011-initial-support-scope-and-personal-project-maintenance-policy)에서 확인할 수 있습니다.
 
-공식 서명, 공증, 유료 계정은 더 이상 요구 사항이 아닙니다. 취약점 신고 방법은 [보안 정책](../../../SECURITY.md)을 참조하세요.
+취약점은 [보안 정책](../../../SECURITY.md)에 따라 신고하세요.

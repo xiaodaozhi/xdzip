@@ -4,6 +4,7 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 ## Unreleased
 
+- Place Simplified and Traditional Chinese together at the top of the manual language choices, labeled “中文 (简体)” and “中文 (繁体)”.
 - Add a standalone read-only SDK trial with bounded CBOR, controlled I/O, two independent protocol implementations and a sandbox gate that refuses unsafe execution. Third-party extensions remain disabled in the product.
 
 ## 0.3.0

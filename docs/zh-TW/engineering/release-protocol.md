@@ -8,11 +8,13 @@
 
 專用 [Release 工作流](../../../.github/workflows/release.yml)透過 `workflow_dispatch` 手動執行。正式發行從 `main` 輸入已有版本標籤並凍結其提交。三個原生作業分別配置、建置、測試和打包一次。macOS 首次建置就使用發行所需的檔案關聯優先順序，部署 Qt 並進行 ad-hoc 完整性簽名，從同一應用生成 ZIP 和 DMG。普通 macOS Qt CI 使用 SDK 驗證。Developer ID、Apple 公證和 Windows 發行者證書不在目前發行政策範圍內。
 
+產品原始碼取自標籤指向的提交。草稿、公開發行及公開下載複核皆從觸發工作流程時的 `main` 提交讀取同一份已審閱的發行說明。
+
 完整標籤等於 `v` 加 VERSION.json 派生的語義版本。`prerelease_number` 是可選正整數，未設定時仍相容歷史建置號；alpha.1 與 build 14 是不同身份。Windows 數值資源和 macOS CFBundleVersion 仍使用單調遞增建置號。公開同一版本的資產不可替換，修訂必須使用新版本；草稿可重跑。
 
 發行說明是持久且可審閱的版本輸入，預設讀取 `release-notes/<完整版本>.md`；CLI 也可透過 `--notes-file` 指定已審閱檔案。檔案含一個 `<!-- xdzip-release {"version":"0.1.0-alpha.6","build":19} -->` 中繼資料行及對應版本標題，版本與建置號必須匹配 VERSION.json。先執行 `python3 scripts/publish-release.py --check-notes`，該檢查不聯絡 GitHub，專用工作流在建置前執行同樣的預檢。更新版本須新建對應說明，不自動借用舊版功能列表或驗收狀態。
 
-說明按平台、實際提交和證據記錄中英文驗收邊界，已有人工驗收與未執行項分別保留；階段進展仍由 issue 管理。初建草稿和公開使用同一份說明快照。草稿重跑若發現其正文與已審閱檔案不同，會在上傳／刪除資產前停止，要求顯式對齊輸入；公開版本繼續拒絕重跑替換資產。`CHANGELOG.zh-CN.md` 只歸檔實際公開版本，本地開發交付不補造為公開版本史。
+說明按平台、實際提交和證據記錄中英文驗收邊界，已有人工驗收與未執行項分別保留；階段進展仍由 issue 管理。初建草稿和公開使用同一份說明快照。草稿重跑若發現其正文與已審閱檔案不同，會在上傳／刪除資產前停止，要求顯式對齊輸入；公開版本繼續拒絕重跑替換資產。將待發行的變更記在 `CHANGELOG.zh-CN.md` 的「未發布」下，公開後再登記版本。
 
 釋出器在改動草稿資產前回讀 GitHub 標籤、草稿狀態和通道標記。stable 通道必須保持非預釋出狀態並成為 GitHub Latest；alpha、beta、rc 通道必須保持預釋出狀態且不能取代 Latest。公開操作後及公開附件複核結束後再次核對相應狀態，全部符合才報告成功。公開後的核對失敗時，版本可能已經對外可見，指令碼會停止並要求所有者處理，不自動撤回、修改或替換已公開版本及資產。
 
@@ -48,7 +50,7 @@ macOS 的應用 ZIP、DMG 與通知材料必須在同一已部署、簽名的臨
 
 新發行附帶 `release.json.sig`，格式為 schema_version=1、algorithm=ed25519、key_id 和 128 字元小寫十六進位 signature。簽名覆蓋 `release.json` 的精確原始位元組，不能解析後重新序列化再驗籤。客戶端和無 Qt 安裝助手使用各自內建的 `resources/update-trust.json` 公鑰集；不接受下載的清單或使用者請求攜帶的信任根。未知公鑰、重複 key_id、弱公鑰和空信任集均拒絕安裝。
 
-macOS 原生階段在最終 app.zip 定名後，透過 `xdzip-update-tool sign-archive` 輸出 `macos-update.json`，記錄 schema_version、version、build、filename、bytes、sha256 與 Sparkle base64 `ed_signature`。彙總階段重新核對歸檔及其簽名，生成只含同一個不可變候選的 `appcast.xml`，清單可選欄位 `macos_appcast_url` 固定指向同一標籤下的該檔案。feed 使用 build 作 Sparkle version、完整語義版本作 shortVersionString、macOS 14.0 作最低系統版本，僅內嵌簡短版本說明。完整發行說明仍作為 GitHub Release 正文，客戶端不讀取外部發布說明。
+原生 macOS 作業封裝應用程式 ZIP 並驗證交付套件。Linux 的 `sign` 作業取得已驗證的交付位元組後，執行 `scripts/sign-macos-update.py`，由 `xdzip-update-tool sign-archive` 產生 `macos-update.json`，記錄 schema_version、version、build、filename、bytes、sha256 與 Sparkle base64 `ed_signature`。彙總階段重新核對歸檔及其簽名，生成只含同一個不可變候選的 `appcast.xml`，清單可選欄位 `macos_appcast_url` 固定指向同一標籤下的該檔案。feed 使用 build 作 Sparkle version、完整語義版本作 shortVersionString、macOS 14.0 作最低系統版本，僅內嵌簡短版本說明。完整發行說明仍作為 GitHub Release 正文，客戶端不讀取外部發布說明。
 
 歸檔和 feed 使用獨立 Sparkle 金鑰，feed 自身也必須簽名。跨平台釋出工具按 [Sparkle 上游簽名格式](https://github.com/sparkle-project/Sparkle/blob/2.x/common_cli/Signing.swift)對完整原始 XML 簽名，並在末尾追加 sparkle-signatures 註釋塊，包含 base64 edSignature 與原始位元組 length；這不是隻給 enclosure 新增簽名。生成後再次獨立驗證，修改任意位元組須重新簽名。Mac 包的 SUPublicEDKey 必須與 `resources/sparkle-update-key.json` 中的公鑰一致。
 

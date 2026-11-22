@@ -108,7 +108,7 @@ The T01–T18 mapping is in [requirements traceability](../../docs/design/requir
 | AC-05 / T05 | Create AES-256/numbered volumes and independently check; read supported AES-256, numbered and PKZIP volumes, then other encryption | Two-way interoperability for supported password creation/extraction; unsupported reads explicitly rejected and unauthenticated files not published |
 | AC-06 / T06/T16 | Full queue, cancel, repeated cancel, app close and commit races | No deadlock, terminal once, pre-cancel committed items traceable |
 | AC-07 / T07 | Inject ../, absolute paths, link replacement, ADS and more on native OS | No change outside authorized directory; existing targets not modified without authorization |
-| AC-08 / T08 | Chinese IME, keyboard, screen reader and 125/150/200% scaling on three platforms | Critical actions reachable, no clipped text/lost focus, states announced |
+| AC-08 / T08 | Chinese IME, keyboard, screen reader, 100/125/150% text size and applicable system display scaling on three platforms | Critical actions reachable, no clipped text/lost focus, states announced |
 | AC-09 / T09 | Cold/warm startup, idle, multitasking and real I/O on a fixed reference machine | Report entire process tree and complete package data, compare with budgets and explain error |
 | AC-10 / T10/T13 | Core tests without Qt and the separate XDP1 SDK trial | One-way dependencies and explicit built-in capabilities. The trial verifies independent peer interoperability, permission checks and malformed-frame rejection. |
 | AC-11 / T11 | Default use, errors and diagnostic export | No default network transfer; no secrets or full paths |
@@ -120,7 +120,7 @@ The T01–T18 mapping is in [requirements traceability](../../docs/design/requir
 
 Record commit, case, platform/filesystem/architecture, tool versions, sample hashes, steps, expected and actual results, status, log location, executor and date. Status is only not run/pass/fail/blocked; skipping is not passing.
 
-The first release executes only applicable capabilities; record inapplicability for later third-party extension/preview cases. Select affected cases for each change; execute the complete declared-capability set before release.
+Select affected cases for each change and record why any relevant case is inapplicable. Before release, verify that the evidence covers the applicable cases for the capabilities declared in the release. Reuse evidence whose source and scope still apply, and run the checks needed to cover the remaining cases. Follow the [verification guide](README.md) and [release runbook](../engineering/release-runbook.md).
 
 ## Overlapping creation inputs and output, AC-04 / AC-06 / AC-07 / AC-14
 
