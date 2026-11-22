@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import platform
 import shutil
+import stat
 import subprocess
 import tarfile
 import zipfile
@@ -21,6 +22,34 @@ def digest(path):
         for block in iter(lambda: source.read(65536), b''):
             sha.update(block)
     return sha.hexdigest()
+
+
+def copy_program_if_changed(source, target):
+    source_info = source.stat()
+    try:
+        target_info = target.stat()
+    except FileNotFoundError:
+        shutil.copy2(source, target)
+        return
+    if os.path.samestat(source_info, target_info):
+        raise shutil.SameFileError(f'{source} and {target} are the same file')
+    if (not stat.S_ISREG(target_info.st_mode) or source_info.st_size != target_info.st_size
+            or stat.S_IMODE(source_info.st_mode) != stat.S_IMODE(target_info.st_mode)):
+        shutil.copy2(source, target)
+        return
+    with source.open('rb') as original, target.open('rb') as existing:
+        for block in iter(lambda: original.read(65536), b''):
+            if block != existing.read(len(block)):
+                break
+        else:
+            return
+    shutil.copy2(source, target)
+
+
+def write_text_if_changed(path, text):
+    contents = text.replace('\n', os.linesep).encode('utf-8')
+    if not path.exists() or path.read_bytes() != contents:
+        path.write_bytes(contents)
 
 
 def generated(path):
@@ -71,16 +100,18 @@ def build(args):
     output = directory/'bin'
     output.mkdir(parents=True, exist_ok=True)
     for name in ['xdzip', 'xdzip-launcher'] + (['xdzip-sfx'] if os.name == 'nt' else []):
-        shutil.copy2(directory/'target'/args.profile/exe(name), output/exe(name))
-    shutil.copy2(worker, output/exe('xdzip-native-codec'))
+        copy_program_if_changed(directory/'target'/args.profile/exe(name), output/exe(name))
+    copy_program_if_changed(Path(worker), output/exe('xdzip-native-codec'))
     identity = json.loads(run([output/exe('xdzip'), '--version-json'], capture=True, env=environment))
-    (directory/'identity.json').write_text(json.dumps(identity, indent=2)+'\n')
+    write_text_if_changed(directory/'identity.json', json.dumps(identity, indent=2)+'\n')
     print('CLI build completed: '+identity['version'])
 
 
 def bundle(args):
     directory = generated(args.build_dir)
     output = generated(args.output)
+    if output == (directory/'bin').resolve():
+        raise ValueError('Desktop CLI output must differ from the build bin directory')
     context = output/'xdzip-cli-context.json'
     if platform.system() == 'Darwin':
         if output.name != 'cli' or output.parent.name != 'Helpers' or output.parent.parent.name != 'Contents':
@@ -90,7 +121,7 @@ def bundle(args):
     worker_name = 'xdzip-native-codec'+('.exe' if platform.system()=='Windows' else '')
     for path in (directory/'bin').iterdir():
         if path.is_file() and path.name!=worker_name:
-            shutil.copy2(path, output/path.name)
+            copy_program_if_changed(path, output/path.name)
     duplicate=output/worker_name
     if duplicate.is_symlink() or duplicate.is_dir():
         raise ValueError('Unexpected desktop CLI worker path')
@@ -98,8 +129,8 @@ def bundle(args):
     relative = {'Darwin':'../../MacOS/xdzip', 'Windows':'../xdzip.exe', 'Linux':'../xdzip'}[platform.system()]
     worker_relative='../../MacOS/'+worker_name if platform.system()=='Darwin' else '../'+worker_name
     context.parent.mkdir(parents=True, exist_ok=True)
-    context.write_text(json.dumps(dict(schema_version=1, kind='desktop', desktop_relative=relative,
-                                      worker_relative=worker_relative))+'\n')
+    write_text_if_changed(context, json.dumps(dict(schema_version=1, kind='desktop', desktop_relative=relative,
+                                                  worker_relative=worker_relative))+'\n')
     if platform.system() == 'Darwin':
         (output/'xdzip-cli-context.json').unlink(missing_ok=True)
 

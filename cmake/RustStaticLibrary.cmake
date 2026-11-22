@@ -33,10 +33,26 @@ function(xdzip_rust_library target package stem)
         endif()
         list(APPEND cargo_environment "MACOSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}")
     endif()
-    file(GLOB_RECURSE rust_sources CONFIGURE_DEPENDS
-        "${rust_workspace}/crates/*.rs" "${rust_workspace}/crates/*.h" "${rust_workspace}/crates/*.hpp" "${rust_workspace}/crates/Cargo.toml"
-        "${rust_workspace}/crates/*/Cargo.toml")
-    list(APPEND rust_sources "${rust_workspace}/third_party/brotli-rfc7932/dictionary.bin")
+    set(input_script "${rust_workspace}/scripts/rust-bridge-inputs.py")
+    execute_process(COMMAND "${Python3_EXECUTABLE}" "${input_script}"
+        --cargo "${CARGO_EXECUTABLE}" --target "${rust_host}" --package "${package}"
+        WORKING_DIRECTORY "${rust_workspace}" OUTPUT_VARIABLE rust_crates
+        OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
+    file(GLOB workspace_manifests CONFIGURE_DEPENDS
+        "${rust_workspace}/crates/*/Cargo.toml" "${rust_workspace}/tools/*/Cargo.toml")
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${workspace_manifests}
+        "${rust_workspace}/Cargo.toml" "${rust_workspace}/Cargo.lock"
+        "${rust_workspace}/rust-toolchain.toml" "${input_script}")
+    set(rust_sources)
+    foreach(crate IN LISTS rust_crates)
+        file(GLOB_RECURSE crate_sources CONFIGURE_DEPENDS
+            "${crate}/*.rs" "${crate}/*.h" "${crate}/*.hpp" "${crate}/data/*")
+        list(APPEND rust_sources "${crate}/Cargo.toml" ${crate_sources})
+        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${crate}/Cargo.toml")
+    endforeach()
+    if("${rust_workspace}/crates/xdzip-compression" IN_LIST rust_crates)
+        list(APPEND rust_sources "${rust_workspace}/third_party/brotli-rfc7932/dictionary.bin")
+    endif()
     file(MAKE_DIRECTORY "${output}/cxxbridge")
     set(bridge_headers "${output}/cxxbridge/${package}/src/lib.rs.h" "${output}/cxxbridge/rust/cxx.h")
     if(package STREQUAL "xdzip-qt-bridge")

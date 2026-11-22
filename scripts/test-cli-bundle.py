@@ -44,7 +44,22 @@ class DesktopBundleTests(unittest.TestCase):
         args = argparse.Namespace(build_dir=directory, output=output)
         with patch.object(cli.platform, 'system', return_value=system):
             cli.bundle(args)
+            marker = (output.parent.parent/'Resources/xdzip-cli-context.json'
+                      if system == 'Darwin' else output/'xdzip-cli-context.json')
+            program = output/('xdzip'+suffix)
+            # copy2 restores the source mtime, so use a deliberate destination-only timestamp.
+            for path in (program, marker):
+                os.utime(path, (1000000000, 1000000000))
             cli.bundle(args)
+            for path in (program, marker):
+                self.assertEqual(path.stat().st_mtime, 1000000000)
+            source = directory/'bin'/program.name
+            source_info = source.stat()
+            source.write_bytes(b'newer program')
+            os.utime(source, ns=(source_info.st_atime_ns, source_info.st_mtime_ns))
+            os.utime(program, ns=(source_info.st_atime_ns, source_info.st_mtime_ns))
+            cli.bundle(args)
+            self.assertEqual(program.read_bytes(), b'newer program')
         return output
 
     def test_repeated_bundles_place_metadata_in_the_platform_resource_location(self):
@@ -67,6 +82,17 @@ class DesktopBundleTests(unittest.TestCase):
                 if system == 'Darwin':
                     self.assertFalse((output/marker.name).exists())
                     self.assertEqual(len(list(output.iterdir())), 2)
+
+    def test_bundle_cannot_remove_the_worker_from_its_build_directory(self):
+        directory = self.root/'build/cli'
+        output = directory/'bin'
+        output.mkdir(parents=True)
+        worker = output/'xdzip-native-codec'
+        worker.write_bytes(b'owned worker')
+        with patch.object(cli.platform, 'system', return_value='Linux'):
+            with self.assertRaises(ValueError):
+                cli.bundle(argparse.Namespace(build_dir=directory, output=output))
+        self.assertEqual(worker.read_bytes(), b'owned worker')
 
     def test_windows_package_preserves_bytes_with_pre_1980_runtime_timestamps(self):
         directory = self.root/'build/cli'

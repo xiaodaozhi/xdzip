@@ -26,6 +26,8 @@ Before committing and pushing, complete the build or verification appropriate to
 | QML windows | Check window contracts, shared controls, and bilingual multi-font-size layouts. For radio or checkbox behavior changes, exercise actual accessibility actions and inspect the selection model. |
 | Packaging, installation, and updates | Run affected local tests; use appropriate workflows as needed for isolated systems, other platforms, or real installations. |
 
+For native bridge build changes, check the desktop and isolated worker targets. Each tracks the local normal and build dependencies resolved by Cargo for its native target. Verify that a shared source change reaches the appropriate bridges and that unrelated crate sources leave them up to date. For incremental CLI staging, rebuild with the same inputs and check that staged binaries, identity and desktop context retain their timestamps. Then check that changed input bytes propagate even when size and timestamp match.
+
 See the [developer build guide](../../docs/engineering/developer-build.md) for commands and toolchain prerequisites. Prefer the environment available on the current machine. When required tools are missing, report unexecuted checks; do not report preflight or another platform's results as a local pass. Routine checks do not require a full IDE installed locally and do not automatically install the product or change file associations.
 
 ## Full checks on demand
