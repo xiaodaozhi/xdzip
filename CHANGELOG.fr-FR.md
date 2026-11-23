@@ -6,8 +6,16 @@
 
 ## Non publié
 
-- Placer le chinois simplifié et le chinois traditionnel en tête de la sélection manuelle de langue, sous les noms « 中文 (简体) » et « 中文 (繁体) ».
 - Ajouter un SDK autonome expérimental en lecture seule avec un traitement CBOR borné, des entrées-sorties contrôlées, deux implémentations indépendantes du protocole et un contrôle de bac à sable qui refuse les exécutions dangereuses. Les extensions tierces restent désactivées dans le produit.
+
+## 0.3.1
+
+- Placer le chinois simplifié et le chinois traditionnel en tête de la sélection manuelle de langue, sous les noms « 中文 (简体) » et « 中文 (繁体) ».
+- Améliorer les catégories de formats et la pagination de la page d’accueil, et corriger la disposition de la barre d’outils et des fenêtres d’opération.
+- Corriger le signalement prématuré de fin des requêtes paginées et conserver les informations d’origine des fichiers extraits sous Windows.
+- Mettre à jour les dépendances de l’aperçu des images.
+
+Consultez les [notes de version](release-notes/0.3.1.md) et la [version GitHub](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.3.1) pour les plateformes, les vérifications et les limites connues.
 
 ## 0.3.0
 

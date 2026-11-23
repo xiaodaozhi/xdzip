@@ -6,8 +6,16 @@
 
 ## Unveröffentlicht
 
-- Vereinfachtes und traditionelles Chinesisch stehen mit den Bezeichnungen „中文 (简体)“ und „中文 (繁体)“ gemeinsam oben in der manuellen Sprachauswahl.
 - Einen eigenständigen, schreibgeschützten SDK-Versuch mit begrenzter CBOR-Verarbeitung, kontrollierter Ein-/Ausgabe, zwei unabhängigen Protokollimplementierungen und einer Sandbox-Prüfung hinzufügen, die unsichere Ausführung ablehnt. Drittanbietererweiterungen bleiben im Produkt deaktiviert.
+
+## 0.3.1
+
+- Vereinfachtes und traditionelles Chinesisch stehen mit den Bezeichnungen „中文 (简体)“ und „中文 (繁体)“ gemeinsam oben in der manuellen Sprachauswahl.
+- Formatkategorien und Blättern auf der Startseite verbessern sowie Layoutfehler der Symbolleiste und der Vorgangsfenster beheben.
+- Die vorzeitige Abschlussmeldung bei paginierten Archivabfragen beheben und unter Windows Herkunftsinformationen extrahierter Dateien erhalten.
+- Abhängigkeiten der Bildvorschau aktualisieren.
+
+Die [Versionshinweise](release-notes/0.3.1.md) und das [GitHub-Release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.3.1) beschreiben Plattformen, Prüfumfang und bekannte Einschränkungen.
 
 ## 0.3.0
 

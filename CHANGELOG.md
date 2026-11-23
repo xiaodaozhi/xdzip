@@ -4,8 +4,16 @@ English | [简体中文](CHANGELOG.zh-CN.md) | [繁體中文](CHANGELOG.zh-TW.md
 
 ## Unreleased
 
-- Place Simplified and Traditional Chinese together at the top of the manual language choices, labeled “中文 (简体)” and “中文 (繁体)”.
 - Add a standalone read-only SDK trial with bounded CBOR, controlled I/O, two independent protocol implementations and a sandbox gate that refuses unsafe execution. Third-party extensions remain disabled in the product.
+
+## 0.3.1
+
+- Place Simplified and Traditional Chinese together at the top of the manual language choices, labeled “中文 (简体)” and “中文 (繁体)”.
+- Improve start-page format categories and paging, and fix toolbar and operation-window layout.
+- Fix premature reporting of completion for paged archive queries and preserve Windows origin information when extracting files.
+- Update image-preview dependencies.
+
+See the [release notes](release-notes/0.3.1.md) and [GitHub release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.3.1) for platform support, verification scope and known limitations.
 
 ## 0.3.0
 
