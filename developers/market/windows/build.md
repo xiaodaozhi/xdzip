@@ -9,3 +9,5 @@ For a Store submission, first commit the increased `build` in `VERSION.json` and
 Check the commit, package version and SHA-256 in `package-msix.json` and `windows-msix.json` before uploading the MSIX to Partner Center. Confirm that the package version is higher than the published Store version. Update the Store listings and submit for certification. In a manual publishing submission, select **Publish now** after certification. Microsoft signs and distributes the package, and the installed Store build can then be checked on Windows.
 
 See the [Store materials guide](README.md) for listing fields and artwork.
+
+When working in Partner Center, prefer the browser extension plugin for submissions, listing fields and material uploads. Use the computer use plugin when the extension does not support the required operation.
