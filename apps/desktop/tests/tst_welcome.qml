@@ -127,9 +127,20 @@ Item {
             const [firstLabel, firstCount] = groups[0].contentItem.children;
             const labelBaseline = baseline(firstLabel);
             const countBaseline = baseline(firstCount);
-            for (const group of groups) {
+            for (const [index, group] of groups.entries()) {
                 compare(group.mapToItem(strip, 0, 0).y, groups[0].mapToItem(strip, 0, 0).y);
                 const [label, count] = group.contentItem.children;
+                const tag = findChild(count, "welcomeFormatCountTag");
+                verify(tag && tag.visible);
+                verify(tag.radius > 0 && tag.width > count.contentWidth && tag.height > 0);
+                compare(tag.color, index === 0 ? Ui.Theme.selection : Ui.Theme.canvas);
+                const leftGap = tag.mapToItem(strip, 0, 0).x - label.mapToItem(strip, label.width, 0).x;
+                fuzzyCompare(leftGap, Ui.Theme.welcomeFormatCountGap, 0.5);
+                if (index + 1 < groups.length) {
+                    const nextLabel = groups[index + 1].contentItem.children[0];
+                    const rightGap = nextLabel.mapToItem(strip, 0, 0).x - tag.mapToItem(strip, tag.width, 0).x;
+                    verify(rightGap > leftGap);
+                }
                 fuzzyCompare(baseline(label), labelBaseline, 0.01);
                 fuzzyCompare(baseline(count), countBaseline, 0.01);
                 const labelCenter = label.mapToItem(group, 0, label.referenceCenter).y;
@@ -151,6 +162,7 @@ Item {
             keyClick(Qt.Key_Space);
             tryCompare(page, "expandedFormatGroup", "text-envelopes");
             fuzzyCompare(baseline(textEnvelopes.contentItem.children[0]), labelBaseline, 0.01);
+            compare(findChild(textEnvelopes.contentItem.children[1], "welcomeFormatCountTag").color, Ui.Theme.selection);
             compare(preview.suffixes, Formats.formatGroups.find(group => group.id === "text-envelopes").suffixes);
             keyClick(Qt.Key_Space);
             tryCompare(preview, "visible", false);

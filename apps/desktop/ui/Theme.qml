@@ -22,6 +22,9 @@ QtObject {
     readonly property real welcomeFormatFontSize: 12
     readonly property real welcomeFormatTitleSize: 13
     readonly property real welcomeFormatCountSize: 11
+    readonly property real welcomeFormatCountGap: 2
+    readonly property real welcomeFormatCountInset: 3
+    readonly property real welcomeFormatCountVerticalInset: 3
     readonly property real welcomeFormatGroupGap: 8
     readonly property real welcomeFormatGroupHeight: 32
     readonly property real welcomeFormatChipGap: 8

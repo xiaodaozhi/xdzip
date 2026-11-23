@@ -328,7 +328,7 @@ Rectangle {
                                     contentItem: RowLayout {
                                         id: groupCaption
                                         readonly property real alignmentCenter: formatGroupRow.height / 2 - y
-                                        spacing: Theme.welcomeFormatChipGap
+                                        spacing: Theme.welcomeFormatCountGap
                                         FormatGroupText {
                                             text: badge.text
                                             referenceMetrics: labelMetrics
@@ -337,10 +337,24 @@ Rectangle {
                                             color: badge.expanded || badge.hovered ? Theme.accentInk : Theme.text
                                         }
                                         FormatGroupText {
+                                            id: countLabel
                                             text: String(badge.modelData.suffixes.length)
                                             referenceMetrics: countMetrics
                                             alignmentCenter: groupCaption.alignmentCenter
+                                            leftPadding: Theme.welcomeFormatCountInset
+                                            rightPadding: Theme.welcomeFormatCountInset
                                             color: badge.expanded ? Theme.accentInk : Theme.textSecondary
+                                            Rectangle {
+                                                objectName: "welcomeFormatCountTag"
+                                                z: -1
+                                                width: countLabel.width
+                                                height: Math.ceil(countMetrics.tightBoundingRect.height) + 2 * Theme.welcomeFormatCountVerticalInset
+                                                y: countLabel.referenceCenter - height / 2
+                                                radius: height / 2
+                                                color: badge.expanded ? Theme.selection : Theme.canvas
+                                                border.width: badge.expanded ? 0 : 1
+                                                border.color: Theme.border
+                                            }
                                         }
                                     }
                                 }

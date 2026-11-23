@@ -236,7 +236,7 @@ Historical desktop permission or device blockers are not current status. Manual 
 
 Automation records go only to build/review/welcome/ or CI artifacts. Select native drag-and-drop, system picker cancellation, screen-reader, IME and platform appearance checks according to changes; record unexecuted limits rather than marking offscreen screenshots passed.
 
-W01-07: welcome and opened-archive title bars, tabs and appearance buttons use the same component positions, dimensions, fonts and icons. The welcome format categories stay in one row at minimum width and 100%, 125% and 150% text sizes. Keyboard focus reveals any clipped category. The category names share one baseline across the row, including the selected name. Counts share their own baseline, with their reference digit centered on the reference capital. Automation compares actual Qt geometry.
+W01-07: welcome and opened-archive title bars, tabs and appearance buttons use the same component positions, dimensions, fonts and icons. The welcome format categories stay in one row at minimum width and 100%, 125% and 150% text sizes. Keyboard focus reveals any clipped category. The category names share one baseline across the row, including the selected name. Counts share their own baseline, with their reference digit centered on the reference capital. The rounded count tag sits closer to its name than to the following category and uses the selection palette when expanded. Automation compares actual Qt geometry.
 
 ### Window-wide focus and title-bar revision
 
