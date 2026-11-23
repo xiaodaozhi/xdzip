@@ -80,8 +80,9 @@ Rectangle {
     }
     component FormatPageButton: ArchiveAction {
         id: pageButton
-        width: Theme.mainTabControlSize
+        width: formatPreview.chipHeight
         height: width
+        glyphSize: Math.round(width * 0.6)
         asset: "chevron-right"
         explanation: Accessible.name
         onActiveFocusChanged: if (activeFocus) root.revealAction(pageButton)
@@ -411,6 +412,7 @@ Rectangle {
                         readonly property var suffixes: root.expandedFormatIndex < 0 ? []
                             : ArchiveFormats.formatGroups[root.expandedFormatIndex].suffixes
                         readonly property bool truncated: extensionRow.implicitWidth > width
+                        readonly property real chipHeight: chipTextSample.implicitHeight + 2 * Theme.welcomeFormatChipVerticalInset
                         Layout.fillWidth: true
                         implicitHeight: extensionRow.implicitHeight
                         visible: root.expandedFormatIndex >= 0
@@ -422,6 +424,12 @@ Rectangle {
                             font.family: Theme.uiFontFamily
                             font.weight: Font.Normal
                             font.pixelSize: Math.round(Theme.welcomeFormatFontSize * Theme.fontScale)
+                        }
+                        Text {
+                            id: chipTextSample
+                            visible: false
+                            text: lowercaseMetrics.text
+                            font: lowercaseMetrics.font
                         }
                         Item {
                             id: extensionViewport
@@ -439,10 +447,11 @@ Rectangle {
                                     delegate: Rectangle {
                                         id: chip
                                         required property string modelData
+                                        objectName: "welcomeFormatSuffix-" + modelData
                                         // Keep the row's measured width even if a chip would be clipped.
                                         opacity: x + width <= extensionViewport.width ? 1 : 0
                                         implicitWidth: suffix.implicitWidth + 2 * Theme.welcomeFormatChipInset
-                                        implicitHeight: suffix.implicitHeight + 2 * Theme.welcomeFormatChipVerticalInset
+                                        implicitHeight: formatPreview.chipHeight
                                         color: Theme.operationButtonSurface
                                         border.color: Theme.operationFieldBorder
                                         border.width: 1
