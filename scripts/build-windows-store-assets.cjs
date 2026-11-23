@@ -87,12 +87,10 @@ function promo(locale, index, width, height) {
   body += scene(index) + rect(1492, 70, 310, 50, 25, '#E6EDFD') + text(1647, 103, locale.illustration_label, 22, '#536C94', 500, 'middle');
   return svg(width, height, body);
 }
-function screenshotPromo(locale, index, capture, width, height, layoutEngine = imageTools) {
+function screenshotPromo(locale, index, width, height) {
   activeFont = locale.font_family || v.font;
   const item = locale.promotions[index];
   const layout = spec.screenshot_artwork;
-  const box = layoutEngine.placement(spec,capture,width,height);
-  const ratio = width / 1920;
   let body = rect(0, 0, 1920, 1080, 0, v.background);
   body += '<ellipse cx="1440" cy="430" rx="820" ry="670" fill="url(#glow)"/>';
   body += '<path d="M-80 1050Q720 590 2030 1090M-80 1105Q720 645 2030 1145" fill="none" stroke="#D9E7FE" stroke-width="3"/>';
@@ -103,10 +101,6 @@ function screenshotPromo(locale, index, capture, width, height, layoutEngine = i
   const base = item.headline.length === 3 ? 667 : 594;
   wrapped(item.body, 490 / layout.body_size).forEach((line, n) => body += text(78, base + n * 41, line, layout.body_size, v.muted, 400, 'start', 490));
   body += `<g transform="translate(82 792) rotate(-7)">${logo(0, 0, 120)}</g>`;
-  // The screenshot supplies its own border; this background adds only shadow.
-  body += `<defs><filter id="capture-shadow" x="-25%" y="-20%" width="150%" height="160%"><feDropShadow dx="0" dy="${layout.shadow_offset_y}" stdDeviation="${layout.shadow_blur}" flood-color="#173763" flood-opacity=".18"/></filter></defs>`;
-  body += rect(box.imageX/ratio,box.imageY/ratio,box.imageWidth/ratio,box.imageHeight/ratio,
-    capture.corner_radius*box.scale/ratio,'#FFFFFF','filter="url(#capture-shadow)"');
   return svg(width, height, body);
 }
 function poster(locale, width, height) {
@@ -166,10 +160,11 @@ if (captures) {
       role:'store-screenshot', locale:capture.locale, source:JSON.stringify({capture_sha256:capture.cutout_sha256,canvas,left,top}),
       canvas, left, top, capture});
     for (const [width,height] of largeSizes) {
-      const background = screenshotPromo(locale,index,capture,width,height);
+      const background = screenshotPromo(locale,index,width,height);
       const box = imageTools.placement(spec,capture,width,height);
       jobs.push({file:`${base}/images/combined/${capture.scene}-${width}x${height}.png`,width,height,role:'screenshot-artwork',locale:capture.locale,capture,
-        source:JSON.stringify({background,box,capture_sha256:capture.cutout_sha256}),background,box});
+        source:JSON.stringify({background,box,capture_sha256:capture.cutout_sha256,
+          shadow_blur:spec.screenshot_artwork.shadow_blur,shadow_offset_y:spec.screenshot_artwork.shadow_offset_y}),background,box});
     }
   }
 }
@@ -245,17 +240,19 @@ async function main() {
     const destination=path.join(ROOT,job.file); const source_sha256=hash(job.source);
     const old=previous?.assets.find(a=>a.file===job.file);
     const unchanged = old && old.source_sha256 === source_sha256 && fs.existsSync(destination) && hash(fs.readFileSync(destination)) === old.sha256;
-    let background = null,layer = null;
+    let background = null,layer = null,left = job.left,top = job.top;
     if (job.canvas) {
       background = await sharp({create:{...job.canvas,channels:3}}).png().toBuffer();
       layer = fs.readFileSync(path.join(ROOT,job.capture.cutout_file));
     } else if (job.background) {
       background = await sharp(Buffer.from(job.background)).png().toBuffer();
-      layer = await imageTools.screenshotLayer(fs.readFileSync(path.join(ROOT,job.capture.cutout_file)),job.box);
+      const prepared = await imageTools.promotionalLayer(fs.readFileSync(path.join(ROOT,job.capture.cutout_file)),
+        job.box, spec.screenshot_artwork.cleanup.corner_radius_logical, spec.screenshot_artwork, job);
+      ({png:layer,left,top} = prepared);
     }
     if (!check && !job.input && !unchanged) {
       fs.mkdirSync(path.dirname(destination),{recursive:true});
-      if (background) fs.writeFileSync(destination,await imageTools.composite(background,layer,job.canvas?job.left:job.box.imageX,job.canvas?job.top:job.box.imageY));
+      if (background) fs.writeFileSync(destination,await imageTools.composite(background,layer,left,top));
       else await sharp(Buffer.from(job.source)).png({compressionLevel:9}).toFile(destination);
     }
     const bytes=fs.readFileSync(destination); const meta=await sharp(bytes).metadata();
@@ -276,7 +273,7 @@ async function main() {
     }
     if (job.role === 'screenshot-artwork') {
       if (job.box.scale > 1 || (job.width === 3840 && job.box.scale !== 1)) throw Error(`Native screenshot scale differs ${job.file}`);
-      await imageTools.assertOverlay(bytes,layer,job.box.imageX,job.box.imageY,background);
+      await imageTools.assertOverlay(bytes,layer,left,top,background);
     }
     const entry={file:job.file,width:job.width,height:job.height,role:job.role,locale:job.locale,source_sha256,sha256:hash(bytes)};
     if (check) {

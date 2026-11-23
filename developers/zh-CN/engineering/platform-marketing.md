@@ -58,6 +58,8 @@ node scripts/build-linux-store-assets.cjs --captures build/linux-captures --outp
 
 如果 `02-create` 只有客户区、缺少原生标题栏，在导出命令后增加 `--create-client-only`，按目标平台样式补绘 150% 的操作窗口标题栏。清单记录此合成处理并保留来源原图；交互选窗采集默认包含标题栏。导入已有 PNG 时，若创建窗口已包含标题栏则传 `--create-window`；若缺少标题栏则传 `--create-client-only`，不允许在未声明的情况下猜测。
 
-导出器检查平台、每种已采集语言的完整四场景、截图摘要和尺寸，并拒绝覆盖已有输出。各语言目录中，`screenshots/` 是展示用 PNG，`backgrounds/` 是可复用底图，`promotional/` 是已采集语言的融合图，`feature-illustrations/`、`branding/` 和 `text/` 分别包含其他图形与文案。`capture-source/` 保留原始回执与 PNG，供再次导出使用。`manifest.json` 记录输出用途和来源身份，`SHA256SUMS.txt` 覆盖包括清单在内的所有导出文件。截图不会被放大，使用前应检查图片和来源。不要提交截图或导出结果。
+导出器检查平台、每种已采集语言的完整四场景、截图摘要和尺寸，并拒绝覆盖已有输出。各语言目录中，`screenshots/` 是展示用 PNG，`backgrounds/` 是只有背景设计和本地化文案的底图，`promotional/` 是已采集语言的融合图。`feature-illustrations/`、`branding/` 和 `text/` 分别包含其他图形与文案。`capture-source/` 保留原始回执与 PNG，供再次导出使用。`manifest.json` 记录输出用途和来源身份，`SHA256SUMS.txt` 覆盖包括清单在内的所有导出文件。
+
+合成时保留截图已有的窗口透明轮廓。对于不透明截图，按平台和窗口类型的圆角处理。把窗口缩放到摆放尺寸，依据该尺寸的透明轮廓生成阴影，再将窗口及阴影作为一个图层放到底图上。逐一核对成品的四角、直边与阴影过渡。截图不得放大，截图和导出结果仅在本地或工件中保存。
 
 执行 `python3 scripts/test-platform-store-captures.py` 和 `node scripts/test-platform-store-assets.cjs` 可定向检查截图记录和渲染。渲染测试使用合成素材，不是真实应用截图。

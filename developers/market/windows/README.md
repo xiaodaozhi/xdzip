@@ -38,7 +38,7 @@ The app's existing Apache-2.0 license and third-party notices are unchanged by t
 
 ## App screenshots and combined promotional artwork
 
-Export the approved capture set or [capture selected languages from a verified MSIX](capture.md). Review the exported PNGs at their intended size. The capture uses default window dimensions and owned demonstration files. The exporter trims the top pixel row, cleans the corners and adds a thin inner border before compositing the window with localized copy and a soft shadow.
+Export the approved capture set or [capture selected languages from a verified MSIX](capture.md). Review the exported PNGs at their intended size. The capture uses default window dimensions and owned demonstration files. The exporter trims the top pixel row, cleans the corners and adds a thin inner border. The resized window casts a soft shadow from its own outline before the prepared layer is placed over the localized artwork.
 
 Upload the four **1920 × 1080** combined images in each language's `promotional/` directory to the desktop screenshot field in this order.
 

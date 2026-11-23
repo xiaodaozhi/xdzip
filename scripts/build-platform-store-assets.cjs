@@ -7,6 +7,8 @@ const images = require('./windows-store-image-utils.cjs');
 const artwork = require('./build-windows-store-assets.cjs');
 const {frameClient} = require('./marketing-window-frame.cjs');
 const crossPlatform = require('./marketing-platform-composite.cjs');
+const frames = require('../specs/marketing/cross-platform-frames.json');
+const {main: mainLayout} = require('../specs/visual/layout-scale.json');
 
 const ROOT = path.resolve(__dirname, '..');
 const hash = data => crypto.createHash('sha256').update(data).digest('hex');
@@ -14,6 +16,13 @@ const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 const languageNames = readJson(path.join(ROOT, 'resources/ui-languages.json')).languages.map(item => item.id);
 const scenes = ['01-welcome', '02-create', '03-preview', '04-workspace'];
 const outputScale = readJson(path.join(ROOT, 'specs/capture/marketing-screenshot-scale.json')).physical_pixels_per_qt_logical_pixel;
+
+function opaqueCornerRadius(platform, scene) {
+  if (platform === 'macos')
+    return scene === '02-create' ? frames.source.opaque_operation_radius : frames.source.opaque_main_radius;
+  if (scene === '02-create') return frames.targets[platform].operation_radius;
+  return platform === 'linux' ? mainLayout.linux_frame.cornerRadius : frames.targets.windows.main_radius;
+}
 
 function argumentsFor(platform, args) {
   const result = {platform, captures: null, compositeFromMacos: null, alternateMacos: null, compositionLayout: null, output: null,
@@ -159,7 +168,7 @@ async function build(platform, args = process.argv.slice(2)) {
         const key = `${language}/${scene}`;
         const selectedCapture = composition?.alternateScenes.has(key) ? alternate : captures;
         const input = selectedCapture?.byScene.get(key);
-        let capture = {cutout_width: visual.screenshot_artwork.frame[2], cutout_height: visual.screenshot_artwork.frame[3], corner_radius: 8};
+        let capture;
         let presentationBytes = input?.bytes;
         if (input) {
           const info = await sharp(input.bytes, {limitInputPixels: 40_000_000}).metadata();
@@ -191,21 +200,22 @@ async function build(platform, args = process.argv.slice(2)) {
             const {png, ...receipt} = framed;
             transformations.push({...receipt, scene, file});
           }
-          capture = {cutout_width: outWidth, cutout_height: outHeight, corner_radius: 8};
+          capture = {cutout_width: outWidth, cutout_height: outHeight};
           if (!composition) await save(`capture-source/${language}/${scene}.png`, input.bytes, 'original-capture', language, scene);
           await save(`${language}/screenshots/${scene}.png`, presentationBytes,
             composition || (scene === '02-create' && options.createClientOnly) ? 'composite-screenshot' : 'screenshot', language, scene);
         }
         for (const [width, height] of sizes) {
-          const background = await renderSvg(artwork.screenshotPromo(locale, index, capture, width, height, images));
+          const background = await renderSvg(artwork.screenshotPromo(locale, index, width, height));
           const suffix = `${scene}-${width}x${height}.png`;
           await save(`${language}/backgrounds/${suffix}`, background, 'background', language, scene);
           await save(`${language}/feature-illustrations/${suffix}`, await renderSvg(artwork.promo(locale, index, width, height)), 'feature-illustration', language, scene);
           if (input) {
             const box = images.placement(visual, capture, width, height);
-            const layer = await images.screenshotLayer(presentationBytes, box);
-            const composed = await images.composite(background, layer, box.imageX, box.imageY);
-            await images.assertOverlay(composed, layer, box.imageX, box.imageY, background);
+            const layer = await images.promotionalLayer(presentationBytes, box, opaqueCornerRadius(platform, scene),
+              visual.screenshot_artwork, {width, height});
+            const composed = await images.composite(background, layer.png, layer.left, layer.top);
+            await images.assertOverlay(composed, layer.png, layer.left, layer.top, background);
             await save(`${language}/promotional/${suffix}`, composed, 'combined-artwork', language, scene);
           }
         }

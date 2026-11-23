@@ -38,7 +38,7 @@
     ],
     "headline_size": 68,
     "body_size": 26,
-    "rationale": "Keep native sources unchanged. Published screenshots remove the top border row, clear desktop colors from the corner squares, apply rounded alpha and add a one-pixel inner border. Preserve UI pixels elsewhere, image dimensions and outer alpha. Compose raster UI separately at integer positions, never upscale it. Store screenshots use a neutral canvas at 1:1.",
+    "rationale": "Keep native sources unchanged. Published Windows Store cutouts remove the top border row, clear desktop colors from the corner squares, apply rounded alpha and add a one-pixel inner border. Preserve UI pixels elsewhere, image dimensions and outer alpha. Derive the promotional shadow from the final-sized window alpha and composite the prepared window layer over the artwork. Place the layer at integer coordinates and never enlarge UI. Store screenshots use a neutral canvas at 1:1.",
     "cleanup": {
       "top_trim_pixels": 1,
       "corner_radius_logical": 8,

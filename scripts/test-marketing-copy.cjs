@@ -5,7 +5,6 @@ const path = require('node:path');
 const artwork = require('./build-windows-store-assets.cjs');
 const languages = require('../resources/ui-languages.json').languages.map(item => item.id).sort();
 const scenes = ['01-welcome', '02-create', '03-preview', '04-workspace'];
-const layout = {placement: () => ({imageX:638,imageY:186,imageWidth:1206,imageHeight:790,scale:1})};
 for (const platform of ['windows', 'macos', 'linux']) {
   const config = require(`../specs/marketing/${platform}-store.json`);
   assert.deepEqual(Object.keys(config.locales).sort(), languages);
@@ -25,7 +24,8 @@ for (const platform of ['windows', 'macos', 'linux']) {
     for (let index = 0; index < scenes.length; index++) {
       assert.ok(copy.promotions[index].headline.at(-1).endsWith(['zh-CN','zh-TW','ja-JP'].includes(language) ? '。' : '.'), `${platform} ${language} punctuation`);
       assert.ok(copy.screenshot_captions[scenes[index]], language);
-      const svg = artwork.screenshotPromo(copy, index, {corner_radius:8}, 1920, 1080, layout);
+      const svg = artwork.screenshotPromo(copy, index, 1920, 1080);
+      assert.ok(!svg.includes('capture-shadow'), 'The base must exclude the screenshot silhouette');
       assert.ok(svg.includes(`font-family="${copy.font_family}"`), `${platform} ${language} font`);
       assert.ok(!svg.includes('undefined'), `${platform} ${language} missing artwork text`);
     }

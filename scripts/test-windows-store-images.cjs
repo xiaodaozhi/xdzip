@@ -2,7 +2,32 @@
 /* Reproduce a captured top border and desktop colors behind rounded corners. */
 const assert = require('node:assert/strict');
 const sharp = require('./windows-store-sharp.cjs');
-const {makeCutout} = require('./windows-store-image-utils.cjs');
+const {makeCutout, promotionalLayer, composite, assertOverlay} = require('./windows-store-image-utils.cjs');
+
+async function checkScreenshotShadow() {
+  const width=90,height=65;
+  const color='#f8dc73';
+  const source=await sharp({create:{width,height,channels:3,background:color}}).png().toBuffer();
+  const round=await makeCutout(source,width,height,96,{top_trim_pixels:0,corner_radius_logical:20});
+  const box={imageWidth:width,imageHeight:height,imageX:100,imageY:100};
+  const artwork={shadow_blur:6,shadow_offset_y:8};
+  const canvas={width:1920,height:1080};
+  const existing=await promotionalLayer(round.png,box,1,artwork,canvas);
+  const fallback=await promotionalLayer(source,box,1,artwork,canvas);
+  async function pixel(layer,x,y) {
+    return [...await sharp(layer.png).extract({left:x-layer.left,top:y-layer.top,width:1,height:1})
+      .ensureAlpha().raw().toBuffer()];
+  }
+  assert.ok((await pixel(existing,105,105))[3]<255, 'The native corner must retain its shape');
+  assert.equal((await pixel(fallback,105,105))[3],255, 'Opaque captures must use the declared fallback radius');
+  assert.deepEqual(await pixel(existing,145,130),[248,220,115,255], 'Shadow must remain behind the UI');
+  const lowerShadow=(await pixel(existing,145,173))[3];
+  assert.ok(lowerShadow>0 && lowerShadow<46, 'The window must cast a soft shadow beyond its lower edge');
+  assert.equal((await pixel(existing,existing.left,existing.top))[3],0,'Padded shadow must reach clear alpha');
+  const base=await sharp({create:{...canvas,channels:3,background:'#444455'}}).png().toBuffer();
+  const finished=await composite(base,existing.png,existing.left,existing.top);
+  await assertOverlay(finished,existing.png,existing.left,existing.top,base);
+}
 
 async function main() {
   const width=42,height=38,radius=6;
@@ -51,6 +76,7 @@ async function main() {
     const p=(y*width+x)*4;
     assert.deepEqual([...pixels.subarray(p,p+4)],[200,212,230,255],'Border missing or color differs');
   }
-  console.log('PASS: top crop, clean corners, visible one-pixel border, unchanged dimensions/alpha and interior UI pixels.');
+  await checkScreenshotShadow();
+  console.log('PASS: clean window alpha, unchanged UI pixels and shadows derived from the screenshot shape.');
 }
 main().catch(error=>{console.error(error);process.exitCode=1});

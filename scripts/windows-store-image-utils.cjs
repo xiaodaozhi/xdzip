@@ -64,6 +64,56 @@ async function screenshotLayer(bytes, box) {
   return sharp(bytes).resize(box.imageWidth,box.imageHeight,{fit:'fill',kernel:'lanczos3'}).png().toBuffer();
 }
 
+async function promotionalLayer(bytes, box, radius, artwork, canvas) {
+  const info = await sharp(bytes).metadata();
+  if (box.imageWidth > info.width || box.imageHeight > info.height) throw Error('Screenshot upscaling is forbidden');
+  const {width, height} = info;
+  const alpha = await sharp(bytes).ensureAlpha().extractChannel('alpha').raw().toBuffer();
+  const clearlyRounded = [0, width - 1, width * (height - 1), width * height - 1].some(i => alpha[i] < 255);
+  // Recorded window silhouettes and their anti-aliased borders stay intact. Only opaque captures need a cutout.
+  const input = clearlyRounded ? bytes : (await makeCutout(bytes, width, height, 144, {
+    top_trim_pixels: 0,
+    corner_radius_logical: radius,
+  })).png;
+  const image = await screenshotLayer(input, box);
+
+  const {imageWidth, imageHeight, imageX, imageY} = box;
+  const ratio = canvas.width / 1920;
+  const sigma = artwork.shadow_blur * ratio;
+  const offset = Math.round(artwork.shadow_offset_y * ratio);
+  if (!Number.isFinite(sigma) || sigma < .3 || !Number.isInteger(offset))
+    throw Error('Invalid promotional shadow geometry');
+  const padding = Math.ceil(4 * sigma);
+  const imageTop = padding + Math.max(0, -offset);
+  const shadowWidth = imageWidth + 2 * padding;
+  const shadowHeight = imageHeight + 2 * padding + Math.abs(offset);
+  const left = imageX - padding, top = imageY - imageTop;
+  if (left < 0 || top < 0 || left + shadowWidth > canvas.width || top + shadowHeight > canvas.height)
+    throw Error('Promotional screenshot shadow exceeds the canvas');
+
+  // Blur the actual final-size window alpha, including its corner shape. The extra space keeps the shadow uncut.
+  const windowAlpha = await sharp(image).ensureAlpha().extractChannel('alpha').raw().toBuffer();
+  const mask = Buffer.alloc(shadowWidth * shadowHeight);
+  for (let y = 0; y < imageHeight; y++) {
+    windowAlpha.copy(mask, (y + imageTop + offset) * shadowWidth + padding, y * imageWidth, (y + 1) * imageWidth);
+  }
+  const raw = {width: shadowWidth, height: shadowHeight, channels: 1};
+  const blurred = await sharp(mask, {raw}).blur(sigma).toColourspace('b-w').raw().toBuffer();
+  const pixels = Buffer.alloc(blurred.length * 4);
+  for (let i = 0; i < blurred.length; i++) {
+    const opacity = Math.round(blurred[i] * .18);
+    if (!opacity) continue;
+    const p = i * 4;
+    pixels[p] = 23;
+    pixels[p+1] = 55;
+    pixels[p+2] = 99;
+    pixels[p+3] = opacity;
+  }
+  const png = await sharp(pixels, {raw: {...raw, channels: 4}})
+    .composite([{input: image, left: padding, top: imageTop}]).png().toBuffer();
+  return {png, left, top};
+}
+
 async function composite(background, layer, left, top) {
   return sharp(background).composite([{input:layer,left,top}]).png({compressionLevel:9}).toBuffer();
 }
@@ -81,4 +131,4 @@ async function assertOverlay(output,layer,left,top,background) {
   }
 }
 
-module.exports = {hash,makeCutout,placement,screenshotLayer,composite,assertOverlay};
+module.exports = {hash,makeCutout,placement,promotionalLayer,composite,assertOverlay};

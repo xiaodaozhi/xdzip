@@ -5,6 +5,8 @@
     "appearance": "light",
     "operation_titlebar_height": 32,
     "operation_path_field": "/private/tmp/xdzip-demo",
+    "opaque_main_radius": 16,
+    "opaque_operation_radius": 16,
     "main_tab_counts": {"01-welcome": 1, "03-preview": 2, "04-workspace": 2}
   },
   "targets": {

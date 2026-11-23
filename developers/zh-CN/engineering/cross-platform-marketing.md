@@ -44,6 +44,8 @@ node scripts/build-linux-store-assets.cjs --composite-from-macos build/macos-cap
 
 清单以 `cross-platform-composites` 标记导出，按摘要、语言和场景追溯每张原图，并记录区域图、模板及来源回执的摘要。导出时替换窗框、起始页快捷键和演示路径。主窗口成品为 1536 × 933，含目标标题栏的创建窗口为 737 × 1152。融合宣传图使用共用的 1920 × 1080 版式。Mac 原图和回执随采集留存。
 
+宣传图保留对应平台和窗口类型的实际截图轮廓。渲染器按摆放尺寸的轮廓生成阴影，再把处理好的截图图层放在干净底图上。
+
 如果预览或工作区被面包屑悬停提示遮挡，可选用同一产品版本和构建号的另一份已核对 Mac 原图。在区域图中添加 `alternate_capture`，记录备选回执的 `source_receipt_sha256` 和 `scenes` 列表，条目格式为 `{ "language": "en-US", "scene": "04-workspace" }`。两条命令均追加 `--alternate-macos DIR`。每张成品保留所用来源回执与提交的标识。起始页和创建窗口使用主采集。
 
 逐一检查四场景、十语言、登记区域之外的画面及输出摘要。窗框应对照视觉规格及对应平台已有原生参考图，注明参考不足的部分。用 `node scripts/test-platform-store-assets.cjs` 运行合成夹具回归。图片通过核对后，按[最新版同步](marketing-archive.md)原位更新 Drive 的现有平台目录，最后发布清单。实际交付证据记录在 [issue #409](https://github.com/xiaodaozhi/xdzip/issues/409)。
