@@ -78,6 +78,20 @@ Rectangle {
             y: inkText.alignmentCenter - inkText.y - inkText.referenceCenter
         }
     }
+    component FormatPageButton: ArchiveAction {
+        id: pageButton
+        width: Theme.mainTabControlSize
+        height: width
+        asset: "chevron-right"
+        explanation: Accessible.name
+        onActiveFocusChanged: if (activeFocus) root.revealAction(pageButton)
+        background: Rectangle {
+            radius: Theme.welcomeFormatChipRadius
+            color: !pageButton.enabled ? Theme.canvas
+                : pageButton.down ? Theme.controlPressed : pageButton.hovered ? Theme.controlHover : Theme.canvas
+            border.color: pageButton.visualFocus ? Theme.accentInk : Theme.border
+        }
+    }
     color: Theme.surface
     ScrollView {
         objectName: "welcomeContent"
@@ -271,93 +285,123 @@ Rectangle {
                             }
                         }
                     }
-                    Flickable {
-                        id: formatGroups
-                        objectName: "welcomeFormatGroups"
+                    RowLayout {
+                        id: formatNavigation
                         Layout.fillWidth: true
-                        Layout.preferredHeight: formatGroupRow.height + (contentWidth > width ? groupScrollbar.height : 0)
-                        contentWidth: formatGroupRow.width
-                        contentHeight: height
-                        clip: true
-                        flickableDirection: Flickable.HorizontalFlick
-                        boundsBehavior: Flickable.StopAtBounds
-                        ScrollBar.horizontal: ScrollBar {
-                            id: groupScrollbar
-                            policy: formatGroups.contentWidth > formatGroups.width ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
-                        }
-                        function reveal(badge) {
-                            const left = badge.mapToItem(contentItem, 0, 0).x;
-                            const right = left + badge.width;
-                            const target = left < contentX || badge.width > width ? left
-                                : right > contentX + width ? right - width : contentX;
-                            contentX = Math.max(0, Math.min(target, contentWidth - width));
-                        }
-                        Row {
-                            id: formatGroupRow
-                            spacing: Theme.welcomeFormatGroupGap
-                            TextMetrics {
-                                id: labelMetrics
-                                text: "H"
-                                font.pixelSize: Math.round(Theme.welcomeFormatTitleSize * Theme.fontScale)
+                        spacing: Theme.welcomeFormatGroupGap
+                        readonly property bool overflowing: formatGroups.contentWidth > width
+                        Flickable {
+                            id: formatGroups
+                            objectName: "welcomeFormatGroups"
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: formatGroupRow.height
+                            contentWidth: formatGroupRow.width
+                            contentHeight: height
+                            clip: true
+                            flickableDirection: Flickable.HorizontalFlick
+                            boundsBehavior: Flickable.StopAtBounds
+                            readonly property real maximumContentX: Math.max(0, contentWidth - width)
+                            onMaximumContentXChanged: if (contentX > maximumContentX)
+                                scrollTo(maximumContentX)
+                            function scrollTo(offset) {
+                                cancelFlick();
+                                contentX = Math.max(0, Math.min(offset, maximumContentX));
                             }
-                            TextMetrics {
-                                id: countMetrics
-                                text: "0"
-                                font.pixelSize: Math.round(Theme.welcomeFormatCountSize * Theme.fontScale)
+                            function page(direction) {
+                                scrollTo(contentX + direction * width);
                             }
-                            Repeater {
-                                model: ArchiveFormats.formatGroups
-                                delegate: FormatTextButton {
-                                    id: badge
-                                    required property var modelData
-                                    objectName: "welcomeFormatGroup-" + modelData.id
-                                    readonly property bool expanded: root.expandedFormatGroup === modelData.id
-                                    text: root.formatGroupLabel(modelData.id)
-                                    Accessible.name: qsTrId("welcome.formatGroupCount", modelData.suffixes.length).arg(text)
-                                    Accessible.checkable: true
-                                    Accessible.checked: expanded
-                                    Accessible.onPressAction: if (enabled) click()
-                                    Accessible.onToggleAction: if (enabled) click()
-                                    onClicked: root.toggleFormatGroup(modelData.id)
-                                    onActiveFocusChanged: if (activeFocus) {
-                                        formatGroups.reveal(badge);
-                                        root.revealAction(badge);
-                                    }
-                                    baseHeight: Theme.welcomeFormatGroupHeight
-                                    labelSize: Theme.welcomeFormatTitleSize * Theme.fontScale
-                                    contentItem: RowLayout {
-                                        id: groupCaption
-                                        readonly property real alignmentCenter: formatGroupRow.height / 2 - y
-                                        spacing: Theme.welcomeFormatCountGap
-                                        FormatGroupText {
-                                            text: badge.text
-                                            referenceMetrics: labelMetrics
-                                            alignmentCenter: groupCaption.alignmentCenter
-                                            font.weight: badge.expanded ? Font.DemiBold : Font.Normal
-                                            color: badge.expanded || badge.hovered ? Theme.accentInk : Theme.text
+                            function reveal(badge) {
+                                const left = badge.mapToItem(contentItem, 0, 0).x;
+                                const right = left + badge.width;
+                                if (left < contentX || badge.width > width)
+                                    scrollTo(left);
+                                else if (right > contentX + width)
+                                    scrollTo(right - width);
+                            }
+                            Row {
+                                id: formatGroupRow
+                                spacing: Theme.welcomeFormatGroupGap
+                                TextMetrics {
+                                    id: labelMetrics
+                                    text: "H"
+                                    font.pixelSize: Math.round(Theme.welcomeFormatTitleSize * Theme.fontScale)
+                                }
+                                TextMetrics {
+                                    id: countMetrics
+                                    text: "0"
+                                    font.pixelSize: Math.round(Theme.welcomeFormatCountSize * Theme.fontScale)
+                                }
+                                Repeater {
+                                    model: ArchiveFormats.formatGroups
+                                    delegate: FormatTextButton {
+                                        id: badge
+                                        required property var modelData
+                                        objectName: "welcomeFormatGroup-" + modelData.id
+                                        readonly property bool expanded: root.expandedFormatGroup === modelData.id
+                                        text: root.formatGroupLabel(modelData.id)
+                                        Accessible.name: qsTrId("welcome.formatGroupCount", modelData.suffixes.length).arg(text)
+                                        Accessible.checkable: true
+                                        Accessible.checked: expanded
+                                        Accessible.onPressAction: if (enabled) click()
+                                        Accessible.onToggleAction: if (enabled) click()
+                                        onClicked: root.toggleFormatGroup(modelData.id)
+                                        onActiveFocusChanged: if (activeFocus) {
+                                            formatGroups.reveal(badge);
+                                            root.revealAction(badge);
                                         }
-                                        FormatGroupText {
-                                            id: countLabel
-                                            text: String(badge.modelData.suffixes.length)
-                                            referenceMetrics: countMetrics
-                                            alignmentCenter: groupCaption.alignmentCenter
-                                            leftPadding: Theme.welcomeFormatCountInset
-                                            rightPadding: Theme.welcomeFormatCountInset
-                                            color: badge.expanded ? Theme.accentInk : Theme.textSecondary
-                                            Rectangle {
-                                                objectName: "welcomeFormatCountTag"
-                                                z: -1
-                                                width: countLabel.width
-                                                height: Math.ceil(countMetrics.tightBoundingRect.height) + 2 * Theme.welcomeFormatCountVerticalInset
-                                                y: countLabel.referenceCenter - height / 2
-                                                radius: height / 2
-                                                color: badge.expanded ? Theme.selection : Theme.canvas
-                                                border.width: badge.expanded ? 0 : 1
-                                                border.color: Theme.border
+                                        baseHeight: Theme.welcomeFormatGroupHeight
+                                        labelSize: Theme.welcomeFormatTitleSize * Theme.fontScale
+                                        contentItem: RowLayout {
+                                            id: groupCaption
+                                            readonly property real alignmentCenter: formatGroupRow.height / 2 - y
+                                            spacing: Theme.welcomeFormatCountGap
+                                            FormatGroupText {
+                                                text: badge.text
+                                                referenceMetrics: labelMetrics
+                                                alignmentCenter: groupCaption.alignmentCenter
+                                                font.weight: badge.expanded ? Font.DemiBold : Font.Normal
+                                                color: badge.expanded || badge.hovered ? Theme.accentInk : Theme.text
+                                            }
+                                            FormatGroupText {
+                                                id: countLabel
+                                                text: String(badge.modelData.suffixes.length)
+                                                referenceMetrics: countMetrics
+                                                alignmentCenter: groupCaption.alignmentCenter
+                                                leftPadding: Theme.welcomeFormatCountInset
+                                                rightPadding: Theme.welcomeFormatCountInset
+                                                color: badge.expanded ? Theme.accentInk : Theme.textSecondary
+                                                Rectangle {
+                                                    objectName: "welcomeFormatCountTag"
+                                                    z: -1
+                                                    width: countLabel.width
+                                                    height: Math.ceil(countMetrics.tightBoundingRect.height) + 2 * Theme.welcomeFormatCountVerticalInset
+                                                    y: countLabel.referenceCenter - height / 2
+                                                    radius: height / 2
+                                                    color: badge.expanded ? Theme.selection : Theme.canvas
+                                                    border.width: badge.expanded ? 0 : 1
+                                                    border.color: Theme.border
+                                                }
                                             }
                                         }
                                     }
                                 }
+                            }
+                        }
+                        Row {
+                            visible: formatNavigation.overflowing
+                            spacing: Theme.mainTabControlGap
+                            FormatPageButton {
+                                objectName: "welcomeFormatPrevious"
+                                glyphMirrored: true
+                                enabled: visible && formatGroups.contentX > 0.5
+                                Accessible.name: qsTrId("tabs.previous")
+                                onClicked: formatGroups.page(-1)
+                            }
+                            FormatPageButton {
+                                objectName: "welcomeFormatNext"
+                                enabled: visible && formatGroups.contentX < formatGroups.maximumContentX - 0.5
+                                Accessible.name: qsTrId("tabs.next")
+                                onClicked: formatGroups.page(1)
                             }
                         }
                     }

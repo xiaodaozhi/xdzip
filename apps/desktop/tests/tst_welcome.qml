@@ -167,6 +167,38 @@ Item {
             keyClick(Qt.Key_Space);
             tryCompare(preview, "visible", false);
         }
+        function test_format_paging() {
+            const strip = findChild(page, "welcomeFormatGroups");
+            const previous = findChild(page, "welcomeFormatPrevious");
+            const next = findChild(page, "welcomeFormatNext");
+            tryVerify(() => !previous.visible && !next.visible);
+            surface.width = 320;
+            Ui.Theme.fontScale = 1.5;
+            tryVerify(() => previous.visible && next.visible && next.enabled);
+            verify(!previous.enabled);
+            compare(next.width, next.height);
+            verify(next.background.radius > 0 && next.background.radius < next.width / 2);
+            verify(previous.mapToItem(strip, 0, 0).x > strip.width);
+            verify(waitForRendering(page));
+            page.revealAction(next);
+            const center = next.mapToItem(page, next.width / 2, next.height / 2);
+            verify(center.x > 0 && center.x < page.width && center.y > 0 && center.y < page.height,
+                   "Next button center must be inside the view: " + JSON.stringify(center));
+            const firstPage = Math.min(strip.width, strip.maximumContentX);
+            mouseClick(page, center.x, center.y);
+            tryCompare(strip, "contentX", firstPage);
+            verify(previous.enabled);
+            previous.forceActiveFocus(Qt.TabFocusReason);
+            keyClick(Qt.Key_Space);
+            tryCompare(strip, "contentX", 0);
+            verify(!previous.enabled);
+            strip.contentX = strip.maximumContentX;
+            tryVerify(() => previous.enabled && !next.enabled);
+            surface.width = 1024;
+            Ui.Theme.fontScale = 1;
+            tryVerify(() => !previous.visible && !next.visible);
+            tryCompare(strip, "contentX", 0);
+        }
         function test_feedback_preserves_top_anchors_data() {
             const cases=[];
             for (const scale of [1,1.25,1.5])
