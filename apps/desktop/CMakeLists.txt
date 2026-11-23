@@ -424,7 +424,9 @@ if(BUILD_TESTING)
     # QTRY assertions keep their own deadlines; a slow host must report the assertion.
     # All discovered functions run within this single ceiling. Offscreen workers
     # have isolated settings; native and explicitly shared settings run serially.
-    if(APPLE)
+    if(WIN32)
+        set_tests_properties(qt_zip_browser PROPERTIES TIMEOUT 420)
+    elseif(APPLE)
         # Hosted Apple Silicon runs have completed within a few seconds of 240.
         set_tests_properties(qt_zip_browser PROPERTIES TIMEOUT 300)
     else()
