@@ -377,10 +377,9 @@ Rectangle {
                                                     width: countLabel.width
                                                     height: Math.ceil(countMetrics.tightBoundingRect.height) + 2 * Theme.welcomeFormatCountVerticalInset
                                                     y: countLabel.referenceCenter - height / 2
-                                                    radius: height / 2
+                                                    radius: Theme.welcomeFormatChipRadius
                                                     color: badge.expanded ? Theme.selection : Theme.canvas
-                                                    border.width: badge.expanded ? 0 : 1
-                                                    border.color: Theme.border
+                                                    border.width: 0
                                                 }
                                             }
                                         }

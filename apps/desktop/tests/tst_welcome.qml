@@ -132,7 +132,9 @@ Item {
                 const [label, count] = group.contentItem.children;
                 const tag = findChild(count, "welcomeFormatCountTag");
                 verify(tag && tag.visible);
-                verify(tag.radius > 0 && tag.width > count.contentWidth && tag.height > 0);
+                verify(tag.width > count.contentWidth && tag.height > 0);
+                compare(tag.radius, Ui.Theme.welcomeFormatChipRadius);
+                compare(tag.border.width, 0);
                 compare(tag.color, index === 0 ? Ui.Theme.selection : Ui.Theme.canvas);
                 const leftGap = tag.mapToItem(strip, 0, 0).x - label.mapToItem(strip, label.width, 0).x;
                 fuzzyCompare(leftGap, Ui.Theme.welcomeFormatCountGap, 0.5);
