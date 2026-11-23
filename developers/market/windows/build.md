@@ -21,4 +21,3 @@ When working in Partner Center, prefer the browser extension plugin for submissi
 5. Once all target locales have been reviewed, check the package version, validation status and publishing choice, then submit for certification. A listing marked Complete by the portal does not establish that the images, captions and other materials required for this submission have been reviewed. Confirm that the page enters certification after submission; report publishing progress according to its actual state after certification succeeds and publishing begins.
 
 For manual publishing, select **Publish now** after certification. Microsoft signs and distributes the package, and the installed Store build can then be checked on Windows.
-
