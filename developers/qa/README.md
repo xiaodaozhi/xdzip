@@ -46,6 +46,8 @@ Check that the packaged launcher sets libxkbcommon's `XKB_CONFIG_ROOT` to the bu
 
 Snap applications use a private `XDG_RUNTIME_DIR`, while the compositor socket can be in its parent. `apps/desktop/packaging/linux/snap-launch.sh` bridges an existing socket into that private directory without replacing existing paths, and falls back to X11 if the socket is unavailable. Run `python3 scripts/test-snap-launch.py` on Linux to exercise socket connection, fallback and explicit platform selection. An offscreen smoke test cannot check the compositor connection, and the socket test does not replace strict Snap desktop acceptance.
 
+The main window uses the same integrated titlebar, outline and shadow on X11 and native Wayland. On a Wayland compositor, run the `linuxMainFrameOutline` browser test with `QT_QPA_PLATFORM=wayland` to check caption visibility, restored content size, the shadow's input region and maximize and restore transitions. In the installed Snap, also verify titlebar movement, edge resizing and dragging an archive entry into Files in the same session.
+
 ## UI comparison regressions
 
 First-frame menu layout regressions locate sequence and status tags by object name and verify actual text metrics and shared padding scaled with font size. Cover Chinese and English, light and dark themes, 100%/125%/150% font scales, all eight combinations of sequence, status and shortcuts, and submenu arrows. Assert the first rendered frame after popup and font changes directly, without extra waits or wider tolerances to eliminate layout failures.

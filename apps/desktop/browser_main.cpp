@@ -10,6 +10,7 @@
 #include "FileOpenRouter.h"
 #include "FocusDismissPolicy.h"
 #include "InstalledRuntimeGuard.h"
+#include "LinuxFrame.h"
 #include "PasswordAccessibility.h"
 #include "ShellActionRequest.h"
 #include "ShellIntegration.h"
@@ -81,7 +82,7 @@ int main(int argc, char *argv[]) {
     }
     QApplication application(argc, argv);
 #ifdef Q_OS_LINUX
-    if (BuildInfo::linuxX11())
+    if (LinuxFrame::clientFrameAvailable())
         QQuickWindow::setDefaultAlphaBuffer(true);
 #endif
     installPasswordAccessibility();

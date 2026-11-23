@@ -8,12 +8,18 @@
 class LinuxFrame : public QObject {
     Q_OBJECT
     QML_ELEMENT
+    Q_PROPERTY(bool clientFrameAvailable READ clientFrameAvailable CONSTANT)
+    Q_PROPERTY(bool wayland READ wayland CONSTANT)
     Q_PROPERTY(bool shadowAvailable READ shadowAvailable CONSTANT)
     Q_PROPERTY(QWindow *window READ window WRITE setWindow NOTIFY windowChanged)
     Q_PROPERTY(int inset READ inset WRITE setInset NOTIFY insetChanged)
 
   public:
     explicit LinuxFrame(QObject *parent = nullptr);
+    static bool clientFrameAvailable();
+    bool wayland() const {
+        return m_setWaylandMargins != nullptr;
+    }
     bool shadowAvailable() const {
         return m_shadowAvailable;
     }
@@ -34,6 +40,7 @@ class LinuxFrame : public QObject {
   private:
     void updateNativeFrame(int inset);
 
+    void (*m_setWaylandMargins)(QWindow *, const QMargins &) = nullptr;
     bool m_shadowAvailable = false;
     QPointer<QWindow> m_window;
     int m_inset = 0;

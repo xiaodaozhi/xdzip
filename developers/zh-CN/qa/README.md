@@ -40,6 +40,8 @@
 
 对于实验性 Wayland 候选包，`scripts/deploy_linux.py --experimental-wayland` 在 X11 插件之外加入 Qt Wayland 平台、窗口协议和装饰插件。Snap 还须声明 `wayland` 接口，并按桌面会话选择相应的 Qt 平台。检查最终 Snap 中新增插件的依赖，单独记录实际 Wayland 启动和拖放结果；包含插件不代表 Wayland 支持已通过验收。默认独立部署仍使用 X11。
 
+主窗口在 X11 和原生 Wayland 下共用集成标题栏、边框和阴影。在 Wayland 合成器中设置 `QT_QPA_PLATFORM=wayland` 运行浏览器测试 `linuxMainFrameOutline`，检查标题栏按钮是否可见、还原时的客户区尺寸、阴影区域是否透过鼠标输入，以及最大化和还原状态。在同一会话内使用已安装的 Snap 验证标题栏移动、边缘缩放和归档条目拖到 Files。
+
 检查包内启动脚本是否将 libxkbcommon 的 `XKB_CONFIG_ROOT` 指向随包的 XKB 数据。如果启动脚本回退到 `/usr/share/X11/xkb`，带有系统 XKB 数据的宿主机可能会掩盖这一问题。在已安装的 Snap 上执行 `XKB_LOG_LEVEL=debug snap run xdzip`，可查看初始化键盘时实际使用的数据搜索路径。
 
 Snap 应用使用私有的 `XDG_RUNTIME_DIR`，而合成器套接字可能位于其父目录。`apps/desktop/packaging/linux/snap-launch.sh` 将已有套接字衔接到私有目录，不替换已有路径；套接字不可用时回退到 X11。在 Linux 上运行 `python3 scripts/test-snap-launch.py`，检查套接字连接、回退和显式指定平台。离屏冒烟测试无法检查合成器连接，套接字测试也不能代替 strict Snap 的桌面验收。

@@ -1,8 +1,12 @@
 #include "LinuxFrame.h"
+#include "BuildInfo.h"
 
 #include <QGuiApplication>
 #include <QPlatformSurfaceEvent>
 #ifdef Q_OS_LINUX
+#include <QRegion>
+#include <private/qhighdpiscaling_p.h>
+#include <qpa/qplatformnativeinterface.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/shape.h>
@@ -11,10 +15,40 @@ static Display *x11Display() {
     auto *xcb = qGuiApp->nativeInterface<QNativeInterface::QX11Application>();
     return xcb ? xcb->display() : nullptr;
 }
+
+using WaylandMarginSetter = void (*)(QWindow *, const QMargins &);
+
+static WaylandMarginSetter waylandMarginSetter() {
+    const auto platform = QGuiApplication::platformName();
+    if (platform != QStringLiteral("wayland") && platform != QStringLiteral("wayland-egl"))
+        return nullptr;
+    // Qt's Wayland plugin provides this hook. If it is unavailable the window
+    // keeps its platform decoration, which also owns its resize geometry.
+    auto *native = QGuiApplication::platformNativeInterface();
+    if (!native)
+        return nullptr;
+    const auto resource = native->nativeResourceFunctionForWindow("setmargins");
+    // Qt passes the setter as an opaque address through the generic resource
+    // function type. Restore the signature used by the Wayland plugin.
+    return reinterpret_cast<WaylandMarginSetter>(reinterpret_cast<void *>(resource));
+}
 #endif
+
+bool LinuxFrame::clientFrameAvailable() {
+#ifdef Q_OS_LINUX
+    return BuildInfo::linuxX11() || waylandMarginSetter();
+#else
+    return false;
+#endif
+}
 
 LinuxFrame::LinuxFrame(QObject *parent) : QObject(parent) {
 #ifdef Q_OS_LINUX
+    m_setWaylandMargins = waylandMarginSetter();
+    if (wayland()) {
+        m_shadowAvailable = true;
+        return;
+    }
     // Check the session before reserving any transparent space. On an
     // uncomposited desktop the QML outline still uses the original geometry.
     if (auto *display = x11Display()) {
@@ -72,10 +106,25 @@ bool LinuxFrame::eventFilter(QObject *watched, QEvent *event) {
 
 void LinuxFrame::updateNativeFrame(int inset) {
 #ifdef Q_OS_LINUX
-    // Only touch Qt's existing XID. A destroyed/replaced native surface has
+    // Only touch Qt's existing platform window. A destroyed/replaced surface has
     // no frame properties to clear; the next surface is configured afresh.
     if (!m_shadowAvailable || !m_window || !m_window->handle())
         return;
+    if (wayland()) {
+        const auto nativeInset =
+            QHighDpi::toNativeLocalPosition(QPoint(inset, inset), m_window.data()).x();
+        if (nativeInset != m_nativeInset) {
+            m_nativeInset = nativeInset;
+            m_setWaylandMargins(m_window,
+                                QMargins(nativeInset, nativeInset, nativeInset, nativeInset));
+        }
+        // Qt maps the mask to the surface's input region. The alpha buffer
+        // still includes the shadow, and xdg-shell receives the content bounds.
+        const auto bounds = QRect(QPoint(), m_window->size());
+        const auto input = bounds.adjusted(inset, inset, -inset, -inset);
+        m_window->setMask(inset && !input.isEmpty() ? QRegion(input) : QRegion());
+        return;
+    }
     auto *display = x11Display();
     if (!display)
         return;

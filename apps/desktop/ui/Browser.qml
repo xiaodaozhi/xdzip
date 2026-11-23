@@ -7,15 +7,15 @@ import Xdzip.Settings 1.0
 
 ApplicationWindow {
     id: root
-    width: Theme.mainWindowWidth + 2 * linuxShadowMargin
-    height: Theme.mainWindowHeight + 2 * linuxShadowMargin
+    width: Theme.mainWindowWidth + (linuxFrame.wayland ? 0 : 2 * linuxShadowMargin)
+    height: Theme.mainWindowHeight + (linuxFrame.wayland ? 0 : 2 * linuxShadowMargin)
     minimumWidth: Theme.mainMinimumWidth + 2 * linuxFrameInset
     minimumHeight: Theme.mainMinimumHeight + 2 * linuxFrameInset
     visible: true
     flags: Qt.Window | (linuxTitlebar ? Qt.FramelessWindowHint : 0)
     color: linuxTitlebar ? "transparent" : Theme.surface
     title: activePage && !activePage.closedPage && activePage.controller.title.length ? activePage.controller.title : "xdzip"
-    readonly property bool linuxTitlebar: BuildInfo.linuxX11
+    readonly property bool linuxTitlebar: linuxFrame.clientFrameAvailable
     readonly property bool linuxRestoredFrame: linuxTitlebar && visibility !== Window.Maximized && visibility !== Window.FullScreen
     readonly property real linuxFrameRadius: linuxRestoredFrame ? Theme.mainLinuxCornerRadius : 0
     readonly property int linuxShadowMargin: linuxFrame.shadowAvailable ? Theme.mainLinuxShadowInset : 0

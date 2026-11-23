@@ -3,6 +3,7 @@
 // apps/desktop/tests/browser_test.cpp
 
 #include "../BuildInfo.h"
+#include "../LinuxFrame.h"
 #include "AppQuitGuard.h"
 #include "ApplicationSessions.h"
 #include "ArchiveFormatsGenerated.h"
@@ -70,6 +71,7 @@
 #include <QQuickItem>
 #include <QQuickStyle>
 #include <QQuickWindow>
+#include <QRegion>
 #include <QRegularExpression>
 #include <QSGRendererInterface>
 #include <QScopeGuard>
@@ -7462,8 +7464,9 @@ QtObject {
 #endif
     }
     void linuxMainFrameOutline() {
-        if (!BuildInfo::linuxX11())
-            QSKIP("Main window client frame requires X11");
+        if (!LinuxFrame::clientFrameAvailable())
+            QSKIP("Main window client frame requires X11 or Wayland");
+        const bool wayland = !BuildInfo::linuxX11();
         QQuickWindow::setDefaultAlphaBuffer(true);
         const auto resetAlpha = qScopeGuard([] { QQuickWindow::setDefaultAlphaBuffer(false); });
         QQmlApplicationEngine engine;
@@ -7471,9 +7474,15 @@ QtObject {
         QVERIFY(!engine.rootObjects().isEmpty());
         auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
         QVERIFY(window && QTest::qWaitForWindowExposed(window));
+        QVERIFY(window->flags().testFlag(Qt::FramelessWindowHint));
+        for (const auto *name : {"windowMinimize", "windowMaximize", "windowClose"}) {
+            auto *caption = findVisual(window->contentItem(), name);
+            QVERIFY(caption && caption->isVisible());
+        }
         auto *frame = window->property("sessionContent").value<QQuickItem *>();
         QVERIFY(frame);
-        QCOMPARE(frame->size(), QSizeF(1024, 622));
+        const QSizeF restoredSize(1024, 622);
+        QTRY_COMPARE(frame->size(), restoredSize);
 
         const auto pixel = [window, frame](int offset) {
             const auto image = window->grabWindow();
@@ -7484,18 +7493,34 @@ QtObject {
         window->setProperty("darkMode", false);
         QTRY_COMPARE(pixel(0), QColor("#DDE3EF"));
         QVERIFY(pixel(3) != pixel(0));
+        if (wayland) {
+            QCOMPARE(frame->position(), QPointF(28, 28));
+            QCOMPARE(window->mask(), QRegion(QRect(28, 28, 1024, 622)));
+            const auto shadowAlpha = pixel(-4).alpha();
+            QVERIFY(shadowAlpha > 0 && shadowAlpha < 255);
+        }
         window->setProperty("darkMode", true);
         QTRY_COMPARE(pixel(0), QColor("#3B465B"));
         QVERIFY(pixel(3) != pixel(0));
 
+        const auto restoredSurfaceSize = window->size();
         window->showMaximized();
         QTRY_COMPARE(window->visibility(), QWindow::Maximized);
+        // Wayland reports the requested state before the compositor applies
+        // it. Wait for the maximized geometry before requesting restore.
+        if (wayland)
+            QTRY_VERIFY(window->size() != restoredSurfaceSize &&
+                        QSizeF(window->size()) != restoredSize);
         QTRY_COMPARE(frame->size(), QSizeF(window->size()));
         QTRY_COMPARE(pixel(0), pixel(3));
+        if (wayland)
+            QVERIFY(window->mask().isEmpty());
         window->showNormal();
         QTRY_COMPARE(window->visibility(), QWindow::Windowed);
-        QTRY_COMPARE(frame->size(), QSizeF(1024, 622));
+        QTRY_COMPARE(frame->size(), restoredSize);
         QTRY_COMPARE(pixel(0), QColor("#3B465B"));
+        if (wayland)
+            QCOMPARE(window->mask(), QRegion(QRect(28, 28, 1024, 622)));
     }
     void initTestCase() {
         WindowActivation::install(QCoreApplication::instance());
