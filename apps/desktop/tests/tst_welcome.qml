@@ -167,19 +167,28 @@ Item {
             keyClick(Qt.Key_Space);
             tryCompare(preview, "visible", false);
         }
-        function test_format_paging() {
+        function test_format_paging_data() {
+            return [1, 1.5].map(scale => ({tag: String(scale), scale: scale}));
+        }
+        function test_format_paging(data) {
             const strip = findChild(page, "welcomeFormatGroups");
             const previous = findChild(page, "welcomeFormatPrevious");
             const next = findChild(page, "welcomeFormatNext");
+            page.expandedFormatGroup = "archives";
             tryVerify(() => !previous.visible && !next.visible);
             surface.width = 320;
-            Ui.Theme.fontScale = 1.5;
+            Ui.Theme.fontScale = data.scale;
             tryVerify(() => previous.visible && next.visible && next.enabled);
             verify(!previous.enabled);
-            compare(next.width, next.height);
-            verify(next.background.radius > 0 && next.background.radius < next.width / 2);
+            const chip = findChild(page, "welcomeFormatSuffix-.zip");
+            verify(chip);
+            tryVerify(() => chip.height > 0 && [previous, next].every(button =>
+                button.width === chip.height && button.height === chip.height
+                && button.background.radius === chip.radius));
+            const controlRow = previous.parent;
+            tryCompare(strip, "width", strip.parent.width - strip.parent.spacing
+                       - 2 * chip.height - controlRow.spacing);
             verify(previous.mapToItem(strip, 0, 0).x > strip.width);
-            verify(waitForRendering(page));
             page.revealAction(next);
             const center = next.mapToItem(page, next.width / 2, next.height / 2);
             verify(center.x > 0 && center.x < page.width && center.y > 0 && center.y < page.height,
