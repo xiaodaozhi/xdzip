@@ -6,8 +6,16 @@
 
 ## Sin publicar
 
-- Colocar el chino simplificado y el chino tradicional al principio del selector manual de idioma, con las etiquetas «中文 (简体)» y «中文 (繁体)».
 - Añadir un SDK experimental independiente de solo lectura con procesamiento de CBOR acotado, E/S controlada, dos implementaciones independientes del protocolo y una comprobación del aislamiento que rechaza las ejecuciones inseguras. Las extensiones de terceros siguen desactivadas en el producto.
+
+## 0.3.1
+
+- Colocar el chino simplificado y el chino tradicional al principio del selector manual de idioma, con las etiquetas «中文 (简体)» y «中文 (繁体)».
+- Mejorar las categorías de formatos y la paginación de la página inicial, y corregir la disposición de la barra de herramientas y las ventanas de operación.
+- Corregir el aviso prematuro de finalización de consultas paginadas y conservar la información de origen de los archivos extraídos en Windows.
+- Actualizar las dependencias de vista previa de imágenes.
+
+Consulta las [notas de la versión](release-notes/0.3.1.md) y la [versión de GitHub](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.3.1) para conocer las plataformas, las comprobaciones y las limitaciones.
 
 ## 0.3.0
 
