@@ -123,11 +123,17 @@ Item {
                 available: formats.parent.width, width: formats.width}));
             const strip = findChild(page, "welcomeFormatGroups");
             verify(strip);
+            const baseline = item => item.mapToItem(strip, 0, item.baselineOffset).y;
+            const [firstLabel, firstCount] = groups[0].contentItem.children;
+            const labelBaseline = baseline(firstLabel);
+            const countBaseline = baseline(firstCount);
             for (const group of groups) {
                 compare(group.mapToItem(strip, 0, 0).y, groups[0].mapToItem(strip, 0, 0).y);
                 const [label, count] = group.contentItem.children;
-                const labelCenter = label.mapToItem(group, 0, label.inkCenter).y;
-                const countCenter = count.mapToItem(group, 0, count.inkCenter).y;
+                fuzzyCompare(baseline(label), labelBaseline, 0.01);
+                fuzzyCompare(baseline(count), countBaseline, 0.01);
+                const labelCenter = label.mapToItem(group, 0, label.referenceCenter).y;
+                const countCenter = count.mapToItem(group, 0, count.referenceCenter).y;
                 verify(Math.abs(labelCenter - countCenter) <= 0.5);
             }
             const last = groups[groups.length - 1];
@@ -144,6 +150,7 @@ Item {
             textEnvelopes.forceActiveFocus(Qt.TabFocusReason);
             keyClick(Qt.Key_Space);
             tryCompare(page, "expandedFormatGroup", "text-envelopes");
+            fuzzyCompare(baseline(textEnvelopes.contentItem.children[0]), labelBaseline, 0.01);
             compare(preview.suffixes, Formats.formatGroups.find(group => group.id === "text-envelopes").suffixes);
             keyClick(Qt.Key_Space);
             tryCompare(preview, "visible", false);

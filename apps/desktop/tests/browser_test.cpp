@@ -10255,6 +10255,13 @@ QtObject {
         QVERIFY(groupStrip);
         const auto *first = findVisual(window->contentItem(), "welcomeFormatGroup-archives");
         QVERIFY(first);
+        auto *firstContent = first->property("contentItem").value<QQuickItem *>();
+        QVERIFY(firstContent);
+        const auto firstLabels = firstContent->childItems();
+        QCOMPARE(firstLabels.size(), 2);
+        const auto baseline = [groupStrip](QQuickItem *item) {
+            return item->mapToItem(groupStrip, QPointF(0, item->baselineOffset())).y();
+        };
         for (const auto &group : {"archives", "compressed-tar", "compressed-streams",
                                   "text-envelopes", "installer-metadata"}) {
             auto *badge = findVisual(window->contentItem(),
@@ -10266,8 +10273,12 @@ QtObject {
             QVERIFY(content);
             const auto labels = content->childItems();
             QCOMPARE(labels.size(), 2);
+            QTRY_VERIFY(qAbs(baseline(labels[0]) - baseline(firstLabels[0])) <= 0.01);
+            QTRY_VERIFY(qAbs(baseline(labels[1]) - baseline(firstLabels[1])) <= 0.01);
             const auto center = [badge](QQuickItem *item) {
-                return item->mapToItem(badge, QPointF(0, item->property("inkCenter").toReal())).y();
+                return item
+                    ->mapToItem(badge, QPointF(0, item->property("referenceCenter").toReal()))
+                    .y();
             };
             QTRY_VERIFY(qAbs(center(labels[0]) - center(labels[1])) <= 0.5);
             badge->forceActiveFocus(Qt::TabFocusReason);

@@ -67,14 +67,15 @@ Rectangle {
     }
     component FormatGroupText: Text {
         id: inkText
-        readonly property real inkCenter: baselineOffset + metrics.tightBoundingRect.y + metrics.tightBoundingRect.height / 2
+        required property TextMetrics referenceMetrics
+        required property real alignmentCenter
+        readonly property real referenceCenter: baselineOffset
+            + referenceMetrics.tightBoundingRect.y + referenceMetrics.tightBoundingRect.height / 2
+        font.pixelSize: referenceMetrics.font.pixelSize
         Layout.alignment: Qt.AlignVCenter
         Accessible.ignored: true
-        transform: Translate { y: inkText.height / 2 - inkText.inkCenter }
-        TextMetrics {
-            id: metrics
-            text: inkText.text
-            font: inkText.font
+        transform: Translate {
+            y: inkText.alignmentCenter - inkText.y - inkText.referenceCenter
         }
     }
     color: Theme.surface
@@ -294,6 +295,16 @@ Rectangle {
                         Row {
                             id: formatGroupRow
                             spacing: Theme.welcomeFormatGroupGap
+                            TextMetrics {
+                                id: labelMetrics
+                                text: "H"
+                                font.pixelSize: Math.round(Theme.welcomeFormatTitleSize * Theme.fontScale)
+                            }
+                            TextMetrics {
+                                id: countMetrics
+                                text: "0"
+                                font.pixelSize: Math.round(Theme.welcomeFormatCountSize * Theme.fontScale)
+                            }
                             Repeater {
                                 model: ArchiveFormats.formatGroups
                                 delegate: FormatTextButton {
@@ -315,16 +326,20 @@ Rectangle {
                                     baseHeight: Theme.welcomeFormatGroupHeight
                                     labelSize: Theme.welcomeFormatTitleSize * Theme.fontScale
                                     contentItem: RowLayout {
+                                        id: groupCaption
+                                        readonly property real alignmentCenter: formatGroupRow.height / 2 - y
                                         spacing: Theme.welcomeFormatChipGap
                                         FormatGroupText {
                                             text: badge.text
-                                            font.pixelSize: Math.round(badge.labelPixelSize)
+                                            referenceMetrics: labelMetrics
+                                            alignmentCenter: groupCaption.alignmentCenter
                                             font.weight: badge.expanded ? Font.DemiBold : Font.Normal
                                             color: badge.expanded || badge.hovered ? Theme.accentInk : Theme.text
                                         }
                                         FormatGroupText {
                                             text: String(badge.modelData.suffixes.length)
-                                            font.pixelSize: Math.round(Theme.welcomeFormatCountSize * Theme.fontScale)
+                                            referenceMetrics: countMetrics
+                                            alignmentCenter: groupCaption.alignmentCenter
                                             color: badge.expanded ? Theme.accentInk : Theme.textSecondary
                                         }
                                     }
