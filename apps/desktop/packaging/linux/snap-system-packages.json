@@ -101,6 +101,18 @@
       ]
     },
     {
+      "package": "libopengl0",
+      "architecture": "amd64",
+      "version": "1.7.0-1build1",
+      "source_package": "libglvnd",
+      "source_version": "1.7.0-1build1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libg/libglvnd/libopengl0_1.7.0-1build1_amd64.deb",
+      "sha256": "da36bd4d30c13b40b697fa8b72cc09d309ff36a5bd9750341ef78492bf3f3966",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libOpenGL.so.0"
+      ]
+    },
+    {
       "package": "libsm6",
       "architecture": "amd64",
       "version": "2:1.2.3-1build3",
