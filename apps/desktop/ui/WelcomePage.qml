@@ -69,9 +69,9 @@ Rectangle {
         id: inkText
         required property TextMetrics referenceMetrics
         required property real alignmentCenter
-        readonly property real referenceCenter: baselineOffset
-            + referenceMetrics.tightBoundingRect.y + referenceMetrics.tightBoundingRect.height / 2
-        font.pixelSize: referenceMetrics.font.pixelSize
+        readonly property rect referenceBounds: referenceMetrics?.tightBoundingRect ?? Qt.rect(0, 0, 0, 0)
+        readonly property real referenceCenter: baselineOffset + referenceBounds.y + referenceBounds.height / 2
+        font.pixelSize: referenceMetrics?.font.pixelSize ?? Theme.welcomeFormatTitleSize
         Layout.alignment: Qt.AlignVCenter
         Accessible.ignored: true
         transform: Translate {
@@ -375,7 +375,7 @@ Rectangle {
                                                     objectName: "welcomeFormatCountTag"
                                                     z: -1
                                                     width: countLabel.width
-                                                    height: Math.ceil(countMetrics.tightBoundingRect.height) + 2 * Theme.welcomeFormatCountVerticalInset
+                                                    height: Math.ceil(countLabel.referenceBounds.height) + 2 * Theme.welcomeFormatCountVerticalInset
                                                     y: countLabel.referenceCenter - height / 2
                                                     radius: Theme.welcomeFormatChipRadius
                                                     color: badge.expanded ? Theme.selection : Theme.canvas

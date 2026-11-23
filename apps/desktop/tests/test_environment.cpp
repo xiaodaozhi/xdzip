@@ -4,10 +4,12 @@
 #include <QFile>
 #include <QLockFile>
 #include <QSaveFile>
+#include <QScopeGuard>
 #include <QSettings>
 #include <QThread>
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
+#include <sddl.h>
 #else
 #include <sys/un.h>
 #endif
@@ -29,6 +31,20 @@ bool writeCrt(const QByteArray &name, const QString &value) {
 bool writeProcess(const QByteArray &name, const QString &value) {
     return SetEnvironmentVariableW(QString::fromLatin1(name).toStdWString().c_str(),
                                    value.isNull() ? nullptr : value.toStdWString().c_str());
+}
+
+// Create a fresh child inside the owned temporary directory with inheritance
+// disabled from the start. Any failure stops setup before tests write into it.
+DWORD createPrivateFixtureRoot(const QString &directory) {
+    PSECURITY_DESCRIPTOR descriptor = nullptr;
+    if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(
+            L"D:P(A;OICI;FA;;;OW)(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)", SDDL_REVISION_1, &descriptor,
+            nullptr))
+        return GetLastError();
+    const auto release = qScopeGuard([&] { LocalFree(descriptor); });
+    SECURITY_ATTRIBUTES attributes{sizeof(SECURITY_ATTRIBUTES), descriptor, FALSE};
+    const auto path = QDir::toNativeSeparators(directory).toStdWString();
+    return CreateDirectoryW(path.c_str(), &attributes) ? ERROR_SUCCESS : GetLastError();
 }
 #endif
 bool sameValue(const QString &left, const QString &right) {
@@ -171,6 +187,15 @@ Runtime::Runtime(const QString &buildRoot) {
             return;
         }
         root = m_directory->path();
+#ifdef Q_OS_WIN
+        root = m_directory->filePath("private");
+        const auto status = createPrivateFixtureRoot(root);
+        if (status != ERROR_SUCCESS) {
+            m_error = QStringLiteral("Fixture precondition: cannot create private root (Win32 %1)")
+                          .arg(status);
+            return;
+        }
+#endif
     } else if (!root.startsWith(QDir::cleanPath(QDir::fromNativeSeparators(buildRoot)) + "/")) {
         m_error =
             QStringLiteral("Fixture precondition: inherited temporary root is outside the build");

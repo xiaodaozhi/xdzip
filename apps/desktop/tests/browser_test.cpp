@@ -444,12 +444,14 @@ static QQuickItem *findVisual(QQuickItem *item, const QString &name) {
     return nullptr;
 }
 
-// Missing images can leave layout dimensions intact. Verify the actual resource state.
 static QSizeF operationClientSize(const QQuickWindow *window) {
+    if (!window->property("waylandFrame").toBool())
+        return window->size();
     const auto *area = findVisual(window->contentItem(), "operationClientArea");
     return area ? area->size() : QSizeF{};
 }
 
+// Missing images can leave layout dimensions intact. Verify the actual resource state.
 static bool visibleImagesReady(QQuickItem *item) {
     if (!item->isVisible())
         return true;
@@ -15979,17 +15981,15 @@ QtObject {
                     [&, control] { stable &= control->isEnabled(); });
         }
         bool sawBrowse = false;
-        connect(controller, &BrowserController::changed, &monitor, [&] {
-            sawBrowse |= controller->browsingBusy();
-        });
+        connect(controller, &BrowserController::changed, &monitor,
+                [&] { sawBrowse |= controller->browsingBusy(); });
         auto *archiveLink = findVisual(window->contentItem(), "breadcrumbSegment-0");
         QVERIFY(archiveLink);
         QTest::mouseClick(
             window, Qt::LeftButton, Qt::NoModifier,
             archiveLink->mapToScene(QPointF(archiveLink->width() / 2, archiveLink->height() / 2))
                 .toPoint());
-        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->directoryId().isEmpty(),
-                                 5000);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->directoryId().isEmpty(), 5000);
         QVERIFY(sawBrowse);
         QVERIFY(stable);
     }

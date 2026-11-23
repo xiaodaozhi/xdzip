@@ -85,7 +85,7 @@ Item {
             quit.availableClientHeight = 210;
             quit.present(); verify(waitForRendering(quit.contentItem));
             const client = findChild(quit, "operationClientArea");
-            compare(client.height,210);
+            tryCompare(client, "height", 210);
             verify(quit.bodyItem.contentHeight > quit.bodyItem.height);
             verify(quit.footerItem.y >= 0);
             grabImage(quit.contentItem).save("small-screen.png");
