@@ -4,7 +4,7 @@ English | [简体中文](../zh-CN/engineering/platform-marketing.md)
 
 This workflow produces reusable screenshots, backgrounds and promotional images for a website or other presentation. It does not publish anything or assert that the images meet a particular store's submission requirements. The two platforms use the same visual composition as the [Windows materials](../market/windows/README.md), with separate [macOS copy](../../specs/marketing/macos-store.json) and [Linux copy](../../specs/marketing/linux-store.json). Each covers the ten languages in [the product language inventory](../../resources/ui-languages.json) and four scenes: welcome, create, preview and workspace.
 
-For the planned single-source cross-platform workflow, see [cross-platform marketing screenshots](cross-platform-marketing.md).
+For Windows- or Ubuntu-styled artwork using the same Mac originals, see [cross-platform marketing screenshots](cross-platform-marketing.md).
 
 ## Prepare the image renderer
 

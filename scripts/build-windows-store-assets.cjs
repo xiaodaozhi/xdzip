@@ -290,7 +290,7 @@ async function main() {
 }
 module.exports = {screenshotPromo, promo, poster, square, hero, icon};
 if (require.main === module) {
-  const standalone = process.argv.includes('--backgrounds-only');
+  const standalone = process.argv.includes('--backgrounds-only') || process.argv.includes('--composite-from-macos');
   const work = standalone ? require('./build-platform-store-assets.cjs').build('windows', process.argv.slice(2).filter(arg => arg !== '--backgrounds-only')) : main();
   work.catch(e=>{console.error(e.message);process.exitCode=1;});
 }

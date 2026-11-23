@@ -4,7 +4,7 @@
 
 此流程生成可用于官网或其他展示场景的截图、底图和宣传图，不会发布素材，也不声称符合特定商店的上架要求。两个平台沿用 [Windows 素材](../market/windows/README.md)的视觉构图，分别维护 [macOS 文案](../../../specs/marketing/macos-store.json)和 [Linux 文案](../../../specs/marketing/linux-store.json)。当前与 Windows 一致，覆盖[产品语言清单](../../../resources/ui-languages.json)中的十种语言和起始页、创建、预览、工作区四个场景。
 
-单平台采集并生成跨平台宣传图的设计见[跨平台宣传截图方案](cross-platform-marketing.md)。
+如需用同一批 Mac 原图制作 Windows 或 Ubuntu 风格的宣传图，见[跨平台宣传截图方案](cross-platform-marketing.md)。
 
 ## 准备图片生成环境
 

@@ -6,6 +6,7 @@ const sharp = require('./windows-store-sharp.cjs');
 const images = require('./windows-store-image-utils.cjs');
 const artwork = require('./build-windows-store-assets.cjs');
 const {frameClient} = require('./marketing-window-frame.cjs');
+const crossPlatform = require('./marketing-platform-composite.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const hash = data => crypto.createHash('sha256').update(data).digest('hex');
@@ -15,14 +16,19 @@ const scenes = ['01-welcome', '02-create', '03-preview', '04-workspace'];
 const outputScale = readJson(path.join(ROOT, 'specs/capture/marketing-screenshot-scale.json')).physical_pixels_per_qt_logical_pixel;
 
 function argumentsFor(platform, args) {
-  const result = {platform, captures: null, output: null, include4k: false, createClientOnly: false, createWindow: false};
+  const result = {platform, captures: null, compositeFromMacos: null, alternateMacos: null, compositionLayout: null, output: null,
+    include4k: false, createClientOnly: false, createWindow: false};
+  const valueArgs = {'--output': 'output', '--captures': 'captures',
+    '--composite-from-macos': 'compositeFromMacos', '--alternate-macos': 'alternateMacos', '--composition-layout': 'compositionLayout'};
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--4k') result.include4k = true;
     else if (args[i] === '--create-client-only') result.createClientOnly = true;
     else if (args[i] === '--create-window') result.createWindow = true;
-    else if (['--output', '--captures'].includes(args[i]) && args[i + 1]) result[args[i].slice(2)] = args[++i];
+    else if (Object.hasOwn(valueArgs, args[i]) && args[i + 1]) result[valueArgs[args[i]]] = args[++i];
     else if (args[i] === '--help') {
       console.log(`Usage: node scripts/build-${platform}-store-assets.cjs [--captures DIR] [--output DIR] [--4k] [--create-client-only | --create-window]`);
+      if (platform !== 'macos')
+        console.log('       --composite-from-macos DIR --composition-layout FILE [--alternate-macos DIR] [--output DIR] [--4k]');
       return null;
     } else throw Error(`Unknown or incomplete argument: ${args[i]}`);
   }
@@ -36,9 +42,14 @@ function argumentsFor(platform, args) {
   if (fs.existsSync(result.output)) throw Error('Output already exists');
   if (result.createClientOnly && result.createWindow) throw Error('Choose one creation window scope');
   if ((result.createClientOnly || result.createWindow) && !result.captures) throw Error('Creation window scope requires captures');
-  if (result.captures) {
-    result.captures = fs.realpathSync(result.captures);
-    const belowCapture = path.relative(result.captures, result.output);
+  if (Boolean(result.compositeFromMacos) !== Boolean(result.compositionLayout) ||
+      (result.alternateMacos && !result.compositeFromMacos) ||
+      (result.compositeFromMacos && (platform === 'macos' || result.captures)))
+    throw Error('Use a measured macOS composite source and layout only for Windows or Linux, separately from native captures');
+  for (const source of ['captures', 'compositeFromMacos', 'alternateMacos']) {
+    if (!result[source]) continue;
+    result[source] = fs.realpathSync(result[source]);
+    const belowCapture = path.relative(result[source], result.output);
     if (!belowCapture || (!belowCapture.startsWith('..' + path.sep) && belowCapture !== '..')) {
       throw Error('Output must not be inside the capture source');
     }
@@ -100,8 +111,13 @@ async function build(platform, args = process.argv.slice(2)) {
       JSON.stringify(Object.keys(config.locales).sort()) !== JSON.stringify([...languageNames].sort()) ||
       config.visual_source !== 'specs/marketing/windows-store.json') throw Error('Invalid platform marketing configuration');
   const visual = readJson(path.join(ROOT, config.visual_source));
-  const captures = capturesFor(options);
-  if (captures && !options.createClientOnly && !options.createWindow && captures.session.capture_method !== 'interactive-window')
+  const captures = capturesFor(options.compositeFromMacos
+    ? {...options, platform: 'macos', captures: options.compositeFromMacos} : options);
+  const alternate = options.alternateMacos
+    ? capturesFor({...options, platform: 'macos', captures: options.alternateMacos}) : null;
+  const composition = options.compositeFromMacos
+    ? crossPlatform.readComposition(options.compositionLayout, captures, languageNames, alternate) : null;
+  if (captures && !composition && !options.createClientOnly && !options.createWindow && captures.session.capture_method !== 'interactive-window')
     throw Error('Declare whether 02-create is client-only (--create-client-only) or already includes the titlebar (--create-window)');
   const sizes = options.include4k ? [[1920, 1080], [3840, 2160]] : [[1920, 1080]];
   const outputParent = path.dirname(options.output);
@@ -120,7 +136,7 @@ async function build(platform, args = process.argv.slice(2)) {
   }
   async function renderSvg(svg) { return sharp(Buffer.from(svg)).png({compressionLevel: 9}).toBuffer(); }
   try {
-    if (captures) await save('capture-source/capture-session.json', captures.manifest, 'capture-receipt');
+    if (captures && !composition) await save('capture-source/capture-session.json', captures.manifest, 'capture-receipt');
     for (const language of languageNames) {
       const locale = config.locales[language];
       if (!locale || locale.promotions.length !== scenes.length ||
@@ -140,7 +156,9 @@ async function build(platform, args = process.argv.slice(2)) {
       await save(`${language}/text/fields.json`, Buffer.from(JSON.stringify({product_name: locale.product_name,
         system_requirements: locale.system_requirements, privacy_url: locale.privacy_url, links: config.links}, null, 2) + '\n'), 'copy', language);
       for (const [index, scene] of scenes.entries()) {
-        const input = captures?.byScene.get(`${language}/${scene}`);
+        const key = `${language}/${scene}`;
+        const selectedCapture = composition?.alternateScenes.has(key) ? alternate : captures;
+        const input = selectedCapture?.byScene.get(key);
         let capture = {cutout_width: visual.screenshot_artwork.frame[2], cutout_height: visual.screenshot_artwork.frame[3], corner_radius: 8};
         let presentationBytes = input?.bytes;
         if (input) {
@@ -150,7 +168,14 @@ async function build(platform, args = process.argv.slice(2)) {
           let outWidth = info.width, outHeight = info.height;
           const sourceScale = captures.session.reported_native_scale;
           const file = `${language}/screenshots/${scene}.png`;
-          if (sourceScale > outputScale) {
+          if (composition) {
+            const {png, ...receipt} = await crossPlatform.compose(input, composition, platform, language, scene);
+            presentationBytes = png;
+            outWidth = receipt.width; outHeight = receipt.height;
+            transformations.push({...receipt, scene, file,
+              source_revision: selectedCapture.session.identity.source_revision,
+              source_receipt_sha256: selectedCapture === alternate ? composition.alternateDigest : composition.sourceDigest});
+          } else if (sourceScale > outputScale) {
             const ratio = outputScale / sourceScale;
             outWidth = Math.max(1, Math.round(info.width * ratio));
             outHeight = Math.max(1, Math.round(info.height * ratio));
@@ -167,9 +192,9 @@ async function build(platform, args = process.argv.slice(2)) {
             transformations.push({...receipt, scene, file});
           }
           capture = {cutout_width: outWidth, cutout_height: outHeight, corner_radius: 8};
-          await save(`capture-source/${language}/${scene}.png`, input.bytes, 'original-capture', language, scene);
+          if (!composition) await save(`capture-source/${language}/${scene}.png`, input.bytes, 'original-capture', language, scene);
           await save(`${language}/screenshots/${scene}.png`, presentationBytes,
-            scene === '02-create' && options.createClientOnly ? 'composite-screenshot' : 'screenshot', language, scene);
+            composition || (scene === '02-create' && options.createClientOnly) ? 'composite-screenshot' : 'screenshot', language, scene);
         }
         for (const [width, height] of sizes) {
           const background = await renderSvg(artwork.screenshotPromo(locale, index, capture, width, height, images));
@@ -194,11 +219,20 @@ async function build(platform, args = process.argv.slice(2)) {
       for (const [width, height] of sizes)
         await save(`${language}/branding/hero-${width}x${height}.png`, await renderSvg(artwork.hero(width, height)), 'hero', language);
     }
+    const capture = composition ? {source_platform: 'macos', version: captures.session.identity.version,
+      build: captures.session.identity.build, source_revision: captures.session.identity.source_revision,
+      source_receipt_sha256: composition.sourceDigest, layout_sha256: composition.digest, template_sha256: composition.templateDigest,
+      ...(alternate ? {alternate_source_revision: alternate.session.identity.source_revision,
+        alternate_source_receipt_sha256: composition.alternateDigest} : {})}
+      : captures?.session.identity ?? null;
     const manifest = {schema_version: 1, platform, purpose: config.purpose,
       captured_languages: captures ? [...new Set(captures.session.images.map(entry => entry.language))] : [],
-      status: captures ? (options.createClientOnly ? 'operator-supplied-with-composites' : 'operator-supplied-captures') : 'backgrounds-only',
-      provenance_note: 'Screenshot subject, scene and application identity require operator review; synthetic titlebars are composites, not native captures.',
-      capture: captures?.session.identity ?? null, transformations,
+      status: composition ? 'cross-platform-composites'
+        : captures ? (options.createClientOnly ? 'operator-supplied-with-composites' : 'operator-supplied-captures') : 'backgrounds-only',
+      provenance_note: composition
+        ? 'Target-framed illustrations derived from reviewed macOS renders for presentation. Source files remain with the original Mac capture.'
+        : 'Screenshot subject, scene and application identity require operator review; synthetic titlebars are composites, not native captures.',
+      capture, transformations,
       config_sha256: hash(fs.readFileSync(path.join(ROOT, 'specs', 'marketing', `${platform}-store.json`))),
       visual_sha256: hash(fs.readFileSync(path.join(ROOT, config.visual_source))), assets: entries};
     await save('manifest.json', Buffer.from(JSON.stringify(manifest, null, 2) + '\n'), 'manifest');

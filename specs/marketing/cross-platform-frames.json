@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "source": {
+    "platform": "macos",
+    "appearance": "light",
+    "operation_titlebar_height": 32,
+    "operation_path_field": "/private/tmp/xdzip-demo",
+    "main_tab_counts": {"01-welcome": 1, "03-preview": 2, "04-workspace": 2}
+  },
+  "targets": {
+    "windows": {
+      "main_radius": 8,
+      "main_outline": "#CBD2DE",
+      "operation_radius": 8,
+      "operation_outline": "#CBD2DE",
+      "operation_demo_path": "C:\\Demo\\xdzip"
+    },
+    "linux": {
+      "main_outline": "#DDE3EF",
+      "operation_radius": 12,
+      "operation_outline": "#D6D6D6",
+      "operation_demo_path": "/tmp/xdzip-demo"
+    }
+  }
+}

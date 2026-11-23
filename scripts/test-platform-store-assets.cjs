@@ -9,15 +9,76 @@ const root = path.resolve(__dirname, '..');
 const languages = require('../resources/ui-languages.json').languages.map(item => item.id);
 const scenes = ['01-welcome', '02-create', '03-preview', '04-workspace'];
 const hash = data => crypto.createHash('sha256').update(data).digest('hex');
+const {readComposition, compose} = require('./marketing-platform-composite.cjs');
+const readPixel = async (png, left, top) =>
+  [...await sharp(png).extract({left, top, width: 1, height: 1}).ensureAlpha().raw().toBuffer()];
 const run = (platform, args, success = true) => {
   const result = spawnSync(process.execPath, [path.join(root, 'scripts', `build-${platform}-store-assets.cjs`), ...args], {encoding: 'utf8'});
   if (success) assert.equal(result.status, 0, result.stderr);
   else assert.notEqual(result.status, 0, 'invalid input should fail');
 };
+
+async function checkCrossPlatform(base) {
+  const regions = {shortcuts: [[539, 656, 131, 30], [1163, 656, 130, 30]], path: [228, 942, 510, 40]};
+  const receipt = Buffer.from('test capture receipt');
+  const source = {manifest: receipt, session: {platform: 'macos', reported_native_scale: 2,
+    identity: {source_revision: 'a'.repeat(40), dirty: false}, images: Array(40).fill(null)}};
+  const profile = path.join(base, 'regions.json');
+  const map = {schema_version: 1, source_receipt_sha256: hash(receipt),
+    regions: Object.fromEntries(languages.map(language => [language, regions]))};
+  fs.writeFileSync(profile, JSON.stringify(map));
+  const composition = readComposition(profile, source, languages);
+  assert.throws(() => readComposition(profile, {...source, manifest: Buffer.from('unrelated')}, languages), /measured region map/);
+  const alternateReceipt = Buffer.from('alternate receipt');
+  const alternate = {...source, manifest: alternateReceipt, byScene: new Map([['en-US/04-workspace', {}]])};
+  map.alternate_capture = {source_receipt_sha256: hash(alternateReceipt), scenes: [{language: 'en-US', scene: '04-workspace'}]};
+  fs.writeFileSync(profile, JSON.stringify(map));
+  assert.throws(() => readComposition(profile, source, languages), /Declare both/);
+  assert.deepEqual([...readComposition(profile, source, languages, alternate).alternateScenes], ['en-US/04-workspace']);
+  map.alternate_capture.scenes.push({language: 'en-US', scene: '01-welcome'});
+  fs.writeFileSync(profile, JSON.stringify(map));
+  assert.throws(() => readComposition(profile, source, languages, alternate), /Invalid or duplicate/);
+
+  async function input(width, height, layers) {
+    const svg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">${layers}</svg>`);
+    const bytes = await sharp(svg).png().toBuffer();
+    return {bytes, entry: {width, height, sha256: hash(bytes)}};
+  }
+  const main = await input(2048, 1244, '<rect width="2048" height="1244" fill="white"/>' +
+    '<rect width="2048" height="96" fill="#F7F8FA"/><rect x="16" y="24" width="36" height="36" fill="red"/>' +
+    '<rect x="430" y="530" width="520" height="200" fill="#0058FF"/>' +
+    '<rect x="550" y="666" width="18" height="13" fill="white"/><rect x="1170" y="666" width="18" height="13" fill="#626B86"/>' +
+    '<rect x="800" y="900" width="80" height="80" fill="#669933"/>');
+  const create = await input(982, 1536, '<rect width="982" height="1536" fill="white"/>' +
+    '<rect width="982" height="64" fill="red"/><rect x="245" y="953" width="255" height="15" fill="#141827"/>');
+  const derived = [];
+  for (const target of ['windows', 'linux']) {
+    const welcome = await compose(main, composition, target, 'en-US', '01-welcome');
+    assert.deepEqual([welcome.width, welcome.height, welcome.output_scale], [1536, 933, 1.5]);
+    assert.equal(welcome.method, 'cross-platform-composite');
+    assert.equal(welcome.target_platform, target);
+    assert.equal(welcome.source_sha256, main.entry.sha256);
+    assert.deepEqual(await readPixel(welcome.png, 32, 33), [247, 248, 250, 255]);
+    assert.deepEqual(await readPixel(welcome.png, 626, 700), [102, 153, 51, 255]);
+    derived.push(welcome);
+    const dialog = await compose(create, composition, target, 'en-US', '02-create');
+    assert.deepEqual([dialog.width, dialog.height, dialog.header_pixels], [737, 1152, 48]);
+    assert.equal(dialog.titlebar, 'synthetic-native-decoration');
+    assert.notDeepEqual(await readPixel(dialog.png, 280, 33), [255, 0, 0, 255]);
+  }
+  assert.notEqual(derived[0].sha256, derived[1].sha256);
+  const invalid = {...composition, regions: {'en-US': {...regions, shortcuts: [[0, 0, 8, 8], regions.shortcuts[1]]}}};
+  await assert.rejects(compose(main, invalid, 'windows', 'en-US', '01-welcome'), /outside/);
+  const occluded = await input(2048, 1244, '<rect width="2048" height="1244" fill="white"/>' +
+    '<rect x="400" y="152" width="260" height="60" fill="#142036"/>');
+  await assert.rejects(compose(occluded, composition, 'windows', 'en-US', '04-workspace'), /breadcrumb tooltip/);
+}
+
 (async () => {
   fs.mkdirSync(path.join(root, 'build'), {recursive: true});
   const base = fs.mkdtempSync(path.join(root, 'build', 'test-platform-export-'));
   try {
+    await checkCrossPlatform(base);
     const fixture = await sharp({create: {width: 800, height: 500, channels: 4, background: '#abcdef'}}).png().toBuffer();
     for (const platform of ['macos', 'linux']) {
       const input = path.join(base, `${platform}-captures`);
