@@ -71,7 +71,8 @@ int main(int argc, char **argv) {
     auto *provider = NAUTILUS_MENU_PROVIDER(g_object_new(types[0], nullptr));
     const std::string action = argc == 5 ? std::string("xdzip::") + argv[3] : "";
     int checks = 0;
-    const auto check = [&](const std::vector<std::string> &uris, int expected, bool activate = false) {
+    const auto check = [&](const std::vector<std::string> &uris, int expected,
+                           bool activate = false) {
         GList *files = nullptr;
         for (const auto &uri : uris) {
             auto *file = reinterpret_cast<TestFile *>(g_object_new(test_file_get_type(), nullptr));
@@ -126,12 +127,13 @@ int main(int argc, char **argv) {
     } else if (argc == 3 && std::string_view(argv[2]) == "--hidden") {
         if (!check({"file:///tmp/xdzip-test.zip"}, 0))
             return 1;
-    } else if (!check({"file:///tmp/xdzip-test.txt"}, 3) || !check({"file:///tmp/xdzip-test.zip"}, 7) ||
-        !check({"file:///tmp/xdzip-test.zip", "file:///tmp/xdzip-test.7z"}, 8) ||
-        !check({"file:///tmp/xdzip-test.zip", "file:///tmp/xdzip-test.txt"}, 4) ||
-        !check({"file:///tmp/xdzip-test.opaque"}, 7) ||
-        !check({"smb://example.invalid/archive.zip"}, 0) || !check({}, 0) ||
-        !check(std::vector<std::string>(129, "file:///tmp/xdzip-test.txt"), 0))
+    } else if (!check({"file:///tmp/xdzip-test.txt"}, 3) ||
+               !check({"file:///tmp/xdzip-test.zip"}, 7) ||
+               !check({"file:///tmp/xdzip-test.zip", "file:///tmp/xdzip-test.7z"}, 8) ||
+               !check({"file:///tmp/xdzip-test.zip", "file:///tmp/xdzip-test.txt"}, 4) ||
+               !check({"file:///tmp/xdzip-test.opaque"}, 7) ||
+               !check({"smb://example.invalid/archive.zip"}, 0) || !check({}, 0) ||
+               !check(std::vector<std::string>(129, "file:///tmp/xdzip-test.txt"), 0))
         return 1;
     g_object_unref(provider);
     // GLib owns the registered dynamic types until process teardown.

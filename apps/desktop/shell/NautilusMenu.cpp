@@ -26,7 +26,8 @@ bool snapAvailable() {
 std::pair<bool, std::string> preferences() {
     auto *settings = g_key_file_new();
 #ifdef XDZIP_NAUTILUS_SNAP
-    const std::string file = std::string(g_get_home_dir()) + "/snap/xdzip/current/.config/xdzip/settings.ini";
+    const std::string file =
+        std::string(g_get_home_dir()) + "/snap/xdzip/current/.config/xdzip/settings.ini";
 #else
     const std::string file = std::string(g_get_user_config_dir()) + "/xdzip/settings.ini";
 #endif
@@ -51,8 +52,8 @@ struct Invocation {
 };
 #ifdef XDZIP_NAUTILUS_SNAP
 bool launchSnap(const Invocation &call) {
-    const auto bytes = xdzip_shell::requestBytes(call.action, call.paths, call.archiveCandidates, {},
-                                                  xdzip_shell::randomHex());
+    const auto bytes = xdzip_shell::requestBytes(call.action, call.paths, call.archiveCandidates,
+                                                 {}, xdzip_shell::randomHex());
     if (bytes.empty() || !snapAvailable())
         return false;
     auto *process = g_subprocess_new(G_SUBPROCESS_FLAGS_STDIN_PIPE, nullptr, XDZIP_SNAP_COMMAND,
@@ -64,11 +65,10 @@ bool launchSnap(const Invocation &call) {
     g_bytes_unref(buffer);
     // The asynchronous splice owns both streams. Closing the write end lets the
     // confined launcher see EOF without pausing the Files UI or waiting for XDZip.
-    g_output_stream_splice_async(
-        g_subprocess_get_stdin_pipe(process), input,
-        GOutputStreamSpliceFlags(G_OUTPUT_STREAM_SPLICE_CLOSE_SOURCE |
-                                 G_OUTPUT_STREAM_SPLICE_CLOSE_TARGET),
-        G_PRIORITY_DEFAULT, nullptr, nullptr, nullptr);
+    g_output_stream_splice_async(g_subprocess_get_stdin_pipe(process), input,
+                                 GOutputStreamSpliceFlags(G_OUTPUT_STREAM_SPLICE_CLOSE_SOURCE |
+                                                          G_OUTPUT_STREAM_SPLICE_CLOSE_TARGET),
+                                 G_PRIORITY_DEFAULT, nullptr, nullptr, nullptr);
     g_object_unref(input);
     g_object_unref(process);
     return true;
