@@ -51,22 +51,23 @@ Item {
                 for (const name of normalNames)
                     tryCompare(findChild(window,name),"height",32);
             }
-            compare(window.width,491);
+            const client = findChild(window, "operationClientArea");
+            compare(client.width,491);
             compare(window.headingItem.font.pixelSize,20 * data.scale);
             compare(window.messageItem.font.pixelSize,Math.round(13 * data.scale));
             compare(window.modality,Qt.ApplicationModal);
-            verify(window.height <= Math.min(600,Screen.desktopAvailableHeight-80));
-            verify(window.height < 350, "Short confirmation must not retain legacy blank height");
+            verify(client.height <= Math.min(600,Screen.desktopAvailableHeight-80));
+            verify(client.height < 350, "Short confirmation must not retain legacy blank height");
             const footer = window.footerItem;
-            verify(Math.abs(footer.y + footer.height - window.height) <= 1);
+            verify(Math.abs(footer.y + footer.height - client.height) <= 1);
             const names = data.kind === "restart" ? ["restartLater","restartNow"] : ["quitReturn","quitWait","quitCancel"];
             let top = -1;
             for (const name of names) {
                 const button = findChild(window,name);
-                const pos = button.mapToItem(window.contentItem,0,0);
+                const pos = button.mapToItem(client,0,0);
                 if (top < 0) top = pos.y;
                 verify(Math.abs(pos.y-top) <= 1,"Footer actions stay on one row");
-                verify(pos.x >= 0 && pos.x+button.width <= window.width+1,"Footer action must remain inside client area");
+                verify(pos.x >= 0 && pos.x+button.width <= client.width+1,"Footer action must remain inside client area");
                 verify(button.contentItem.paintedWidth <= button.availableWidth+1,"Button label must fit, using wrapping when needed");
                 verify(button.contentItem.paintedHeight <= button.availableHeight+1,"Wrapped footer label must not be clipped");
                 compare(button.contentItem.font.pixelSize,Math.round(13 * data.scale));
@@ -74,7 +75,7 @@ Item {
                 if (data.scale === 1) compare(button.height,32,"Normal footer actions retain the approved 32-pixel height");
                 compare(button.enabled,data.kind !== "stopping");
             }
-            console.info("CONFIRMATION_GEOMETRY " + JSON.stringify({kind:data.kind,dark:data.dark,english:data.english,fontScale:data.scale,dpr:Screen.devicePixelRatio,width:window.width,height:window.height,footerHeight:footer.height,titleSize:window.headingItem.font.pixelSize,bodySize:window.messageItem.font.pixelSize}));
+            console.info("CONFIRMATION_GEOMETRY " + JSON.stringify({kind:data.kind,dark:data.dark,english:data.english,fontScale:data.scale,dpr:Screen.devicePixelRatio,width:client.width,height:client.height,footerHeight:footer.height,titleSize:window.headingItem.font.pixelSize,bodySize:window.messageItem.font.pixelSize}));
             grabImage(window.contentItem).save("confirmation-"+data.tag+".png");
         }
         function test_small_screen_scroll_keeps_footer_reachable() {
@@ -83,11 +84,12 @@ Item {
             quit.message = "Committed files will be kept. ".repeat(100);
             quit.availableClientHeight = 210;
             quit.present(); verify(waitForRendering(quit.contentItem));
-            compare(quit.height,210);
+            const client = findChild(quit, "operationClientArea");
+            compare(client.height,210);
             verify(quit.bodyItem.contentHeight > quit.bodyItem.height);
             verify(quit.footerItem.y >= 0);
             grabImage(quit.contentItem).save("small-screen.png");
-            verify(Math.abs(quit.footerItem.y+quit.footerItem.height-quit.height)<=1);
+            verify(Math.abs(quit.footerItem.y+quit.footerItem.height-client.height)<=1);
             const compact = quit.height;
             quit.message = "Files will be kept.";
             verify(waitForRendering(quit.contentItem));

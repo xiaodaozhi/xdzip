@@ -88,16 +88,17 @@ ComboBox {
         onTriggered: root.activateOption(index)
     }
     popup: CommandMenu {
+        readonly property real viewportHeight: root.Window.height - 2 * (margins - Theme.menuViewportInset)
         // Keep the normal gap on either side of the field, including short windows.
         y: {
-            const expectedHeight = Math.min(Math.max(root.count * Theme.menuRowHeight, contentItem.implicitHeight) + padding * 2, root.Window.height - 40);
+            const expectedHeight = Math.min(Math.max(root.count * Theme.menuRowHeight, contentItem.implicitHeight) + padding * 2, viewportHeight - 40);
             const fieldTop = root.mapToItem(null, 0, 0).y;
-            return fieldTop + root.height + Theme.mainPopupGap + expectedHeight > root.Window.height - Theme.menuViewportInset ? -expectedHeight - Theme.mainPopupGap : root.height + Theme.mainPopupGap;
+            return fieldTop + root.height + Theme.mainPopupGap + expectedHeight > root.Window.height - margins ? -expectedHeight - Theme.mainPopupGap : root.height + Theme.mainPopupGap;
         }
         x: root.width - width
         width: Math.max(root.width, Math.min(Math.ceil(root.widestOption) + Theme.menuIconSize + Theme.menuLabelInset * 3 + padding * 2,
-            Theme.selectPopupMaxWidth / Theme.fontScale, root.Window.width - Theme.menuViewportInset * 2))
-        implicitHeight: Math.min(contentItem.implicitHeight + topPadding + bottomPadding, root.Window.height - 40)
+            Theme.selectPopupMaxWidth / Theme.fontScale, root.Window.width - margins * 2))
+        implicitHeight: Math.min(contentItem.implicitHeight + topPadding + bottomPadding, viewportHeight - 40)
         onOpened: {
             choices.currentIndex = root.currentIndex;
             choices.positionViewAtIndex(root.currentIndex, ListView.Contain);

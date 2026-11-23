@@ -124,7 +124,7 @@ OperationWindow {
         });
     }
     onCurrentTabChanged: if (currentTab === 3 && associations) associations.refresh()
-    width: Theme.settingsLogicalWidth
+    clientWidth: Theme.settingsLogicalWidth
     requestedHeight: Math.min(Theme.settingsClientHeight, root.screenAvailableHeight - 80)
 
     component SectionTitle: Text {

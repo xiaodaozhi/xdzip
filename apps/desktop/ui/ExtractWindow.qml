@@ -16,7 +16,7 @@ OperationWindow {
     property int shellLayout: 2
     readonly property real density: Theme.operationExtractDensity
     function unit(value: real): real { return value * density; }
-    width: Theme.operationExtractWidth
+    clientWidth: Theme.operationExtractWidth
     requestedHeight: Math.min(Math.round(unit(Theme.operationExtractClientHeight)), Screen.desktopAvailableHeight - 80)
     title: qsTrId("extract.windowTitle")
     onVisibleChanged: if (!visible) controller.invalidateTarget()

@@ -5,11 +5,12 @@
 #include <QPlatformSurfaceEvent>
 #ifdef Q_OS_LINUX
 #include <QRegion>
-#include <private/qhighdpiscaling_p.h>
-#include <qpa/qplatformnativeinterface.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/shape.h>
+#include <private/qhighdpiscaling_p.h>
+#include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformwindow.h>
 
 static Display *x11Display() {
     auto *xcb = qGuiApp->nativeInterface<QNativeInterface::QX11Application>();
@@ -114,9 +115,15 @@ void LinuxFrame::updateNativeFrame(int inset) {
         const auto nativeInset =
             QHighDpi::toNativeLocalPosition(QPoint(inset, inset), m_window.data()).x();
         if (nativeInset != m_nativeInset) {
+            const auto geometry = m_window->handle()->geometry();
+            const auto fixedSize = m_window->minimumSize() == m_window->maximumSize();
             m_nativeInset = nativeInset;
             m_setWaylandMargins(m_window,
                                 QMargins(nativeInset, nativeInset, nativeInset, nativeInset));
+            // Fixed-size dialogs reserve their shadow before surface creation.
+            // Qt's margin setter grows the surface, so keep its specified size.
+            if (fixedSize)
+                m_window->handle()->setGeometry(geometry);
         }
         // Qt maps the mask to the surface's input region. The alpha buffer
         // still includes the shadow, and xdg-shell receives the content bounds.

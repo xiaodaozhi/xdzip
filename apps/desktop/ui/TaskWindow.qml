@@ -9,7 +9,7 @@ OperationWindow {
     objectName: "taskWindow"
     readonly property real density: Theme.operationProgressDensity
     function unit(value: real): real { return value * density; }
-    width: Theme.operationProgressWidth
+    clientWidth: Theme.operationProgressWidth
     requestedHeight: Math.min(Math.ceil(taskContent.implicitHeight + footer.implicitHeight), Theme.operationResultClientHeight, Screen.desktopAvailableHeight - 80)
     property bool creating: false
     property string operationKind: creating ? "create" : "extract"

@@ -14,7 +14,7 @@ OperationWindow {
     function unit(value: real): real {
         return value * density;
     }
-    width: Theme.operationCreateWidth
+    clientWidth: Theme.operationCreateWidth
     requestedHeight: Math.min(Theme.operationCreateClientHeight, Screen.desktopAvailableHeight - 60)
     title: qsTrId("ui.fe189b616c1d")
     readonly property bool targetReady: Boolean(controller.creationTargetCheck.valid) && controller.creationTargetMatches(target.text)

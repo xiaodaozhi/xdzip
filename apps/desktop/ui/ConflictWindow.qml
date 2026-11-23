@@ -30,7 +30,7 @@ OperationWindow {
     readonly property bool archiveCreation: task.creating === true && task.kind !== "move" && task.kind !== "update"
     readonly property real density: Theme.operationExtractDensity
     function unit(value: real): real { return value * density; }
-    width: Theme.operationConflictWidth
+    clientWidth: Theme.operationConflictWidth
     requestedHeight: Math.min(Math.ceil(conflictContent.implicitHeight + footer.implicitHeight), Theme.operationConflictClientHeight, Screen.desktopAvailableHeight - 80)
     title: qsTrId("ui.bbd2a22f3a54")
     ColumnLayout {

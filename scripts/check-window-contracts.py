@@ -27,10 +27,11 @@ def inspect(sources, registry):
         text = sources[name]
         if parents[name] != policy['parent']:
             errors.append(f'{name}: parent must remain {policy["parent"]}')
-        if 'width' in policy and not re.search(r'^    width:\s*' + re.escape(policy['width']) + r'\s*$', text, re.M):
-            errors.append(f'{name}: width must use reviewed expression {policy["width"]}')
+        field = 'clientWidth' if policy['parent'] in {'OperationWindow', 'OperationConfirmationWindow'} else 'width'
+        if 'width' in policy and not re.search(r'^    ' + field + r':\s*' + re.escape(policy['width']) + r'\s*$', text, re.M):
+            errors.append(f'{name}: {field} must use reviewed expression {policy["width"]}')
         if policy['role'] == 'confirmation':
-            if re.search(r'\b(?:width|height|requestedHeight|font\.pixelSize)\s*:', text):
+            if re.search(r'\b(?:width|clientWidth|height|requestedHeight|font\.pixelSize)\s*:', text):
                 errors.append(f'{name}: confirmation geometry and typography belong to the shared component')
             if 'OperationFooterButton {' not in text:
                 errors.append(f'{name}: confirmation must use shared footer actions')

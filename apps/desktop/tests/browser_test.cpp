@@ -445,6 +445,11 @@ static QQuickItem *findVisual(QQuickItem *item, const QString &name) {
 }
 
 // Missing images can leave layout dimensions intact. Verify the actual resource state.
+static QSizeF operationClientSize(const QQuickWindow *window) {
+    const auto *area = findVisual(window->contentItem(), "operationClientArea");
+    return area ? area->size() : QSizeF{};
+}
+
 static bool visibleImagesReady(QQuickItem *item) {
     if (!item->isVisible())
         return true;
@@ -2137,7 +2142,7 @@ QtObject {
                 auto *scroll = findVisual(popup->contentItem(), "settingsScroll");
                 QVERIFY(scroll);
                 QVERIFY(!findVisual(popup->contentItem(), "settingsFooter"));
-                QCOMPARE(popup->width(), 612);
+                QCOMPARE(operationClientSize(popup).width(), 612);
             }
             popup->close();
         }
@@ -2282,9 +2287,10 @@ QtObject {
         QVERIFY(operation);
         QVERIFY(QMetaObject::invokeMethod(operation, "present"));
         QTRY_VERIFY(operation->isVisible());
-        QTRY_COMPARE(operation->height(), 320);
-        QTRY_COMPARE(operation->minimumHeight(), 320);
-        QTRY_COMPARE(operation->maximumHeight(), 320);
+        const auto frameHeight = operation->property("frameHeight").toInt();
+        QTRY_COMPARE(operation->height(), 320 + frameHeight);
+        QTRY_COMPARE(operation->minimumHeight(), operation->height());
+        QTRY_COMPARE(operation->maximumHeight(), operation->height());
 
         bool boundsValid = true;
         QObject observer;
@@ -2295,12 +2301,86 @@ QtObject {
         connect(operation, &QWindow::maximumHeightChanged, &observer, check);
         for (const int desired : {420, 340, 360, 320}) {
             QVERIFY(operation->setProperty("requestedHeight", desired));
-            QTRY_COMPARE(operation->height(), desired);
-            QTRY_COMPARE(operation->minimumHeight(), desired);
-            QTRY_COMPARE(operation->maximumHeight(), desired);
+            QTRY_COMPARE(operationClientSize(operation).height(), desired);
+            QTRY_COMPARE(operation->minimumHeight(), desired + frameHeight);
+            QTRY_COMPARE(operation->maximumHeight(), desired + frameHeight);
             QVERIFY2(boundsValid, "The native window briefly received inverted height limits");
         }
         operation->close();
+    }
+    void waylandOperationWindowsUseFixedCloseOnlyFrame() {
+        if (!LinuxFrame().wayland())
+            QSKIP("Requires a Wayland compositor");
+        QQuickWindow::setDefaultAlphaBuffer(true);
+        const auto restoreAlpha = qScopeGuard([] { QQuickWindow::setDefaultAlphaBuffer(false); });
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *browser = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(browser && QTest::qWaitForWindowExposed(browser));
+
+        for (const auto *name :
+             {"createWindow", "extractWindow", "settingsWindow", "taskWindow", "restartWindow"}) {
+            auto *dialog = browser->findChild<QQuickWindow *>(name);
+            QVERIFY2(dialog, name);
+            // Drive a fixed client height here so asynchronous content layout
+            // cannot be mistaken for a resize caused by the titlebar.
+            QVERIFY(QQmlProperty(dialog, "requestedHeight").write(420));
+            QVERIFY(QMetaObject::invokeMethod(dialog, "present"));
+            QVERIFY(QTest::qWaitForWindowExposed(dialog));
+            QVERIFY(dialog->flags().testFlag(Qt::FramelessWindowHint));
+            QVERIFY(!dialog->flags().testFlag(Qt::WindowMinimizeButtonHint));
+            QVERIFY(!dialog->flags().testFlag(Qt::WindowMaximizeButtonHint));
+            QTRY_COMPARE(dialog->minimumSize(), dialog->size());
+            QTRY_COMPARE(dialog->maximumSize(), dialog->size());
+            QCOMPARE(dialog->transientParent(), browser);
+
+            const auto client = operationClientSize(dialog);
+            const auto inset = dialog->property("shadowInset").toInt();
+            const auto titleHeight = dialog->property("titlebarHeight").toInt();
+            QVERIFY(inset > 0 && titleHeight > 0 && client.height() > 0);
+            QCOMPARE(client.width(), dialog->property("clientWidth").toReal());
+            QCOMPARE(dialog->size(),
+                     QSize(client.width() + 2 * inset, client.height() + 2 * inset + titleHeight));
+            QCOMPARE(dialog->mask(),
+                     QRegion(QRect(inset, inset, client.width(), client.height() + titleHeight)));
+            auto *titlebar = findVisual(dialog->contentItem(), "operationTitlebar");
+            QVERIFY(titlebar && titlebar->isVisible());
+            auto *close = findVisual(titlebar, "operationWindowClose");
+            QVERIFY(close && close->isVisible());
+            const auto children = titlebar->childItems();
+            QCOMPARE(std::count_if(children.begin(), children.end(),
+                                   [](QQuickItem *item) {
+                                       return item->isVisible() &&
+                                              item->property("captionAction").isValid();
+                                   }),
+                     1);
+            auto *accessible = QAccessible::queryAccessibleInterface(close);
+            QVERIFY(accessible && !accessible->text(QAccessible::Name).isEmpty());
+            QTRY_VERIFY(visibleImagesReady(titlebar));
+            const auto rendered = dialog->grabWindow();
+            const auto dpr = rendered.devicePixelRatio();
+            const QPoint shadow(qRound((inset - 4) * dpr), rendered.height() / 2);
+            QVERIFY(rendered.valid(shadow));
+            QVERIFY(rendered.pixelColor(shadow).alpha() > 0);
+            QVERIFY(rendered.pixelColor(shadow).alpha() < 255);
+            const auto center = close->mapToScene({close->width() / 2, close->height() / 2});
+            const auto background = rendered.pixelColor((center + QPointF(10, 0)).toPoint() * dpr);
+            bool glyphVisible = false;
+            for (int y = -4; y <= 4; ++y)
+                for (int x = -4; x <= 4; ++x)
+                    glyphVisible |=
+                        rendered.pixelColor((center + QPointF(x, y)).toPoint() * dpr) != background;
+            QVERIFY(glyphVisible);
+            const auto originalSize = dialog->size();
+            QTest::mouseDClick(
+                dialog, Qt::LeftButton, Qt::NoModifier,
+                titlebar->mapToScene({titlebar->width() / 2, titleHeight / 2.0}).toPoint());
+            QCOMPARE(dialog->visibility(), QWindow::Windowed);
+            QCOMPARE(dialog->size(), originalSize);
+            QTest::mouseClick(dialog, Qt::LeftButton, Qt::NoModifier, center.toPoint());
+            QTRY_VERIFY(!dialog->isVisible());
+        }
     }
     void nativeDragSuppressesSourceNameTooltips_data() {
         QTest::addColumn<QString>("view");
@@ -6836,7 +6916,7 @@ QtObject {
                                 QQmlProperty::read(progress, "palette.midlight").value<QColor>(),
                                 QColor(dark ? "#384353" : "#DFE4ED"));
                         }
-                        QCOMPARE(settings->width(), 612);
+                        QCOMPARE(operationClientSize(settings).width(), 612);
                         QTRY_VERIFY(status->property("paintedWidth").toReal() <=
                                     status->width() + 1);
                         QTRY_VERIFY(status->property("paintedHeight").toReal() <=
@@ -6991,7 +7071,7 @@ QtObject {
             QCOMPARE(info.value("version").toString(), BuildInfo::version());
             QCOMPARE(info.value("build").toInt(), BuildInfo::buildNumber());
             QVERIFY(!info.contains("path"));
-            QCOMPARE(settings->width(), 612);
+            QCOMPARE(operationClientSize(settings).width(), 612);
             QVERIFY(!findVisual(settings->contentItem(), "settingsFooter"));
             const auto captures = qEnvironmentVariable("XDZIP_ABOUT_AUDIT");
             QQmlComponent theme(&engine);
@@ -8533,11 +8613,11 @@ QtObject {
         auto *bar = findVisual(settings->contentItem(), "settingsVerticalScrollBar");
         QVERIFY(sidebar && scroll && bar);
         QVERIFY(settings->setProperty("requestedHeight", 420));
-        QTRY_COMPARE(settings->height(), 420);
+        QTRY_COMPARE(operationClientSize(settings).height(), 420);
         auto *flick = scroll->property("contentItem").value<QQuickItem *>();
         QVERIFY(flick);
         int scrollablePages = 0;
-        QCOMPARE(settings->width(), 612);
+        QCOMPARE(operationClientSize(settings).width(), 612);
         QVERIFY(sidebar->width() >= 144.);
         if (scale == 1. && (language == "zh-CN" || language == "en-US"))
             QCOMPARE(sidebar->width(), 144.);
@@ -8794,7 +8874,7 @@ QtObject {
         auto *icon = findVisual(settings->contentItem(), "settingsTabIcon-1");
         QVERIFY(divider && header && sidebar && selected && other && icon);
         QCOMPARE(divider->height(), 1.);
-        QCOMPARE(divider->width(), settings->width());
+        QCOMPARE(divider->width(), operationClientSize(settings).width());
         QCOMPARE(divider->property("color").value<QColor>(), QColor(dark ? "#363D4B" : "#E3E7EF"));
         QCOMPARE(divider->mapToItem(header, QPointF(0, divider->height())).y(), header->height());
         QTRY_COMPARE(icon->mapToItem(other, QPointF()).x(), 15.);
@@ -8927,7 +9007,7 @@ QtObject {
         QTest::mouseClick(settings, Qt::LeftButton, Qt::NoModifier, aboutPos);
         QTRY_COMPARE(settings->property("currentTab").toInt(), 5);
         QVERIFY(settings->setProperty("requestedHeight", 420));
-        QTRY_COMPARE(settings->height(), 420);
+        QTRY_COMPARE(operationClientSize(settings).height(), 420);
         QQuickItem *check = nullptr;
         QTRY_VERIFY((check = findVisual(settings->contentItem(), "aboutCheckUpdate")));
         auto *cancelCheck = findVisual(settings->contentItem(), "aboutCancelCheck");
@@ -9447,7 +9527,7 @@ QtObject {
         auto *prefs = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
         QVERIFY(settings && QMetaObject::invokeMethod(settings, "configure"));
         QVERIFY(QTest::qWaitForWindowExposed(settings));
-        QCOMPARE(settings->width(), 612);
+        QCOMPARE(operationClientSize(settings).width(), 612);
         QVERIFY(!findVisual(settings->contentItem(), "settingsFooter"));
         auto *dark = findVisual(settings->contentItem(), "settingsTheme-2");
         QVERIFY(dark && QMetaObject::invokeMethod(dark, "click"));
@@ -9754,7 +9834,7 @@ QtObject {
         auto *formats = findVisual(create->contentItem(), "createFormat");
         QVERIFY(formats);
         formats->setProperty("currentIndex", 3);
-        QCOMPARE(create->width(), 491);
+        QCOMPARE(operationClientSize(create).width(), 491);
         QTRY_VERIFY(formats->width() > 0);
 #ifdef Q_OS_WIN
         const int expectedFormatCount = 14;
@@ -10365,8 +10445,8 @@ QtObject {
             QTRY_VERIFY(label->height() + 1 >= label->property("contentHeight").toReal());
             QTRY_VERIFY(cancel->mapToScene(QPointF(cancel->width(), cancel->height())).y() <=
                         task->height() + 1);
-            QCOMPARE(task->width(), 491);
-            QVERIFY(task->height() <= 600);
+            QCOMPARE(operationClientSize(task).width(), 491);
+            QVERIFY(operationClientSize(task).height() <= 600);
             const auto captures = qEnvironmentVariable("XDZIP_READONLY_UI_AUDIT");
             if (!captures.isEmpty()) {
                 QVERIFY(QDir().mkpath(captures));
@@ -11063,7 +11143,7 @@ QtObject {
             QVERIFY(controller && create);
             QVERIFY(QMetaObject::invokeMethod(create, "configure"));
             QTRY_VERIFY(create->isVisible() && !controller->busy());
-            QCOMPARE(create->width(), 491);
+            QCOMPARE(operationClientSize(create).width(), 491);
             const auto captures = qEnvironmentVariable("XDZIP_TAR_VISUAL_AUDIT");
             if (!captures.isEmpty())
                 QVERIFY(QDir().mkpath(captures));
@@ -11185,7 +11265,7 @@ QtObject {
                 .toPoint());
         QTRY_VERIFY(create->isVisible());
         QTRY_VERIFY(!controller->busy());
-        QCOMPARE(create->width(), 491);
+        QCOMPARE(operationClientSize(create).width(), 491);
         QVERIFY(QMetaObject::invokeMethod(create, "addInputPaths",
                                           Q_ARG(QVariant, QVariant(QStringList{source})),
                                           Q_ARG(bool, true)));
@@ -12726,7 +12806,7 @@ QtObject {
         QVERIFY(promptWindow);
         QTRY_VERIFY(promptWindow->isVisible());
         QCOMPARE(promptWindow->modality(), Qt::ApplicationModal);
-        QCOMPARE(promptWindow->width(), 491);
+        QCOMPARE(operationClientSize(promptWindow).width(), 491);
         auto *field = findVisual(promptWindow->contentItem(), "extractionPassword");
         auto *submit = findVisual(promptWindow->contentItem(), "passwordSubmit");
         QVERIFY(field && submit);
@@ -13310,7 +13390,7 @@ QtObject {
         auto *dialog = window->findChild<QQuickWindow *>("updateWindow");
         QVERIFY(dialog);
         QTRY_VERIFY(dialog->isVisible());
-        QCOMPARE(dialog->width(), 491);
+        QCOMPARE(operationClientSize(dialog).width(), 491);
         QVERIFY(dialog->height() <= QGuiApplication::primaryScreen()->availableGeometry().height());
         auto *start = findVisual(dialog->contentItem(), "startUpdate");
         QVERIFY(start);
@@ -13631,7 +13711,7 @@ QtObject {
         QCOMPARE(archiveLabel->property("text").toString(), archiveName);
         QTRY_VERIFY(archiveLabel->property("contentWidth").toReal() <= archiveLabel->width() + 1);
         QTRY_VERIFY(archiveLabel->property("contentHeight").toReal() <= archiveLabel->height() + 1);
-        QCOMPARE(dialog->width(), 491);
+        QCOMPARE(operationClientSize(dialog).width(), 491);
         QVERIFY(dialog->height() <= 736);
         QVERIFY(start->isEnabled());
         const auto audit = qEnvironmentVariable("XDZIP_ADD_DIALOG_AUDIT");
@@ -14496,7 +14576,7 @@ QtObject {
         QVERIFY(extract);
         QTRY_VERIFY(extract->isVisible());
         QTRY_VERIFY(visibleImagesReady(extract->contentItem()));
-        QCOMPARE(extract->width(), 491);
+        QCOMPARE(operationClientSize(extract).width(), 491);
         auto *targetField = findVisual(extract->contentItem(), "extractTarget");
         QVERIFY(targetField);
         for (const auto key : {Qt::Key_Escape, Qt::Key_Return, Qt::Key_Enter}) {
@@ -14573,8 +14653,9 @@ QtObject {
         QVERIFY(task);
         QTRY_VERIFY(task->isVisible());
         QTRY_VERIFY(visibleImagesReady(task->contentItem()));
-        QCOMPARE(task->width(), 491);
-        QVERIFY(!(task->flags() & Qt::FramelessWindowHint));
+        QCOMPARE(operationClientSize(task).width(), 491);
+        QCOMPARE(task->flags().testFlag(Qt::FramelessWindowHint),
+                 task->property("waylandFrame").toBool());
         QCOMPARE(task->transientParent(), window);
         const auto button = findVisual(task->contentItem(), "cancelButton");
         QVERIFY(button);
@@ -14636,7 +14717,7 @@ QtObject {
         const auto availableHeight =
             std::min(600, task->screen()->availableGeometry().height() - 80);
         QTRY_VERIFY(task->height() > collapsedHeight || collapsedHeight >= availableHeight);
-        QVERIFY(task->height() <= 600);
+        QVERIFY(operationClientSize(task).height() <= 600);
         QTRY_VERIFY(visibleImagesReady(task->contentItem()));
         QVERIFY(capture(task, "task-result-details"));
         QTest::keyClick(task, Qt::Key_Space);
@@ -14664,7 +14745,7 @@ QtObject {
         QVERIFY(conflict);
         QTRY_VERIFY(conflict->isVisible());
         QTRY_VERIFY(visibleImagesReady(conflict->contentItem()));
-        QCOMPARE(conflict->width(), 491);
+        QCOMPARE(operationClientSize(conflict).width(), 491);
         QVERIFY(capture(conflict, "conflict"));
         QVERIFY(capture(task, "task-waiting"));
         conflict->close();
@@ -16181,7 +16262,7 @@ QtObject {
         auto *cancel = findVisual(dialog->contentItem(), "archiveEntryEditCancel");
         QVERIFY(cancel);
         QTRY_VERIFY(cancel->hasActiveFocus());
-        QCOMPARE(dialog->width(), 491);
+        QCOMPARE(operationClientSize(dialog).width(), 491);
         QCOMPARE(dialog->property("intent").toMap().value("count").toInt(), 2);
         QVERIFY(dialog->property("intent").toMap().value("includesDirectory").toBool());
         if (!audit.isEmpty())

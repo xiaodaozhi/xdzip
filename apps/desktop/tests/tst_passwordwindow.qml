@@ -145,12 +145,13 @@ Item {
             testController.passwordPrompt = {taskId:"task-1",promptId:"small",name:"A long synthetic entry name / ".repeat(30),retry:true};
             tryCompare(passwordWindow,"visible",true);
             verify(waitForRendering(passwordWindow.contentItem));
-            compare(passwordWindow.height,220);
+            const client = findChild(passwordWindow, "operationClientArea");
+            compare(client.height,220);
             const flick = passwordWindow.bodyItem.contentItem;
             verify(flick.contentHeight > flick.height);
             const footer = passwordWindow.footerItem;
             verify(footer.y >= 0);
-            verify(Math.abs(footer.y + footer.height - passwordWindow.height) <= 1);
+            verify(Math.abs(footer.y + footer.height - client.height) <= 1);
             grabImage(passwordWindow.contentItem).save("password-small-screen.png");
         }
         function test_z_geometry_data() {
@@ -178,32 +179,33 @@ Item {
             for (const name in labels) findChild(passwordWindow,name).text = labels[name][data.english ? 1 : 0];
             passwordWindow.fieldItem.placeholderText = data.english ? "Enter the archive password" : "输入此压缩包的密码";
             verify(waitForRendering(passwordWindow.contentItem));
-            compare(passwordWindow.width,491);
+            const client = findChild(passwordWindow, "operationClientArea");
+            compare(client.width,491);
             compare(passwordWindow.headingItem.font.pixelSize,Math.round(20 * data.scale));
             compare(passwordWindow.fieldItem.font.pixelSize,Math.round(13 * data.scale));
             compare(passwordWindow.modality,Qt.ApplicationModal);
-            verify(passwordWindow.height <= Math.min(600,Screen.desktopAvailableHeight - 80));
+            verify(client.height <= Math.min(600,Screen.desktopAvailableHeight - 80));
             const footer = passwordWindow.footerItem;
             // A rendered frame need not include the layout polish queued by a
             // native resize notification after language or font changes.
-            tryVerify(() => Math.abs(footer.y + footer.height - passwordWindow.height) <= 1, 5000,
+            tryVerify(() => Math.abs(footer.y + footer.height - client.height) <= 1, 5000,
                       "Footer must settle at the client bottom: " + JSON.stringify({
-                          tag:data.tag,windowHeight:passwordWindow.height,
+                          tag:data.tag,clientHeight:client.height,
                           requestedHeight:passwordWindow.requestedHeight,
                           footerY:footer.y,footerHeight:footer.height,
                           bodyHeight:passwordWindow.bodyItem.height}));
             let top = -1;
             for (const name of ["passwordCancel","passwordSubmit"]) {
-                const button = findChild(passwordWindow,name), point = button.mapToItem(passwordWindow.contentItem,0,0);
+                const button = findChild(passwordWindow,name), point = button.mapToItem(client,0,0);
                 if (top < 0) top = point.y;
                 verify(Math.abs(top - point.y) <= 1);
-                verify(point.x >= 0 && point.x + button.width <= passwordWindow.width + 1);
+                verify(point.x >= 0 && point.x + button.width <= client.width + 1);
                 verify(button.contentItem.paintedHeight <= button.availableHeight + 1);
                 verify(button.contentItem.paintedWidth <= button.availableWidth + 1);
                 compare(button.contentItem.font.pixelSize,Math.round(13 * data.scale));
                 compare(button.background.radius,5);
             }
-            console.info("PASSWORD_GEOMETRY " + JSON.stringify({dark:data.dark,english:data.english,scale:data.scale,dpr:Screen.devicePixelRatio,width:passwordWindow.width,height:passwordWindow.height,footerHeight:footer.height}));
+            console.info("PASSWORD_GEOMETRY " + JSON.stringify({dark:data.dark,english:data.english,scale:data.scale,dpr:Screen.devicePixelRatio,width:client.width,height:client.height,footerHeight:footer.height}));
             grabImage(passwordWindow.contentItem).save("password-"+data.tag+".png");
         }
     }

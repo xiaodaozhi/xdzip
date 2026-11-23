@@ -18,14 +18,13 @@ OperationWindow {
     readonly property alias bodyItem: scroll
     readonly property alias footerItem: footer
     modality: Qt.ApplicationModal
-    width: Theme.confirmationLogicalWidth
+    clientWidth: Theme.confirmationLogicalWidth
     requestedHeight: Math.min(Math.ceil(content.implicitHeight + footer.implicitHeight),
                               Theme.confirmationMaximumHeight, availableClientHeight)
     onActiveFocusItemChanged: if (visible) Qt.callLater(() => root.revealFocus(scroll))
     ColumnLayout {
         // Native resize notifications can lag behind the reconciled client height.
-        width: root.width
-        height: root.height
+        anchors.fill: parent
         spacing: 0
         ScrollView {
             id: scroll

@@ -25,7 +25,7 @@ OperationWindow {
     readonly property alias fieldItem: password
     title: root.prompt.kind === "preview" ? qsTrId("preview.passwordTitle") : root.prompt.kind === "open" ? qsTrId("password.openTitle") : root.prompt.kind === "check" ? qsTrId("integrity.passwordTitle") : qsTrId("password.title")
     modality: Qt.ApplicationModal
-    width: Theme.passwordLogicalWidth
+    clientWidth: Theme.passwordLogicalWidth
     requestedHeight: Math.min(Math.ceil(content.implicitHeight + footer.implicitHeight),
                               Theme.passwordMaximumHeight, availableClientHeight)
     onActiveFocusItemChanged: if (visible) Qt.callLater(() => root.revealFocus(scroll))
@@ -113,8 +113,7 @@ OperationWindow {
         }
     }
     ColumnLayout {
-        width: root.width
-        height: root.height
+        anchors.fill: parent
         spacing: 0
         ScrollView {
             id: scroll

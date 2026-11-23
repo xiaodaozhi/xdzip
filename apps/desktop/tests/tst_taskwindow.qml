@@ -57,7 +57,7 @@ Item {
         function test_native_window_close_does_not_cancel() {
             compare(task.transientParent, ownerWindow);
             compare(task.modality, Qt.NonModal);
-            verify((task.flags & Qt.FramelessWindowHint) === 0);
+            compare(Boolean(task.flags & Qt.FramelessWindowHint), task.waylandFrame);
             task.close();
             compare(task.visible, false);
             compare(cancelSpy.count, 0);
@@ -99,8 +99,9 @@ Item {
             flickable.contentY = flickable.contentHeight - flickable.height;
             waitForRendering(task.contentItem);
             const button = findChild(task, "cancelButton");
-            const point = button.mapToItem(task.contentItem, button.width / 2, button.height / 2);
-            verify(point.y > 0 && point.y < task.height);
+            const client = findChild(task, "operationClientArea");
+            const point = button.mapToItem(client, button.width / 2, button.height / 2);
+            verify(point.y > 0 && point.y < client.height);
             grabImage(task.contentItem).save("task-window-large-type-bottom.png");
             mouseClick(button);
             compare(cancelSpy.count, 1);
@@ -115,10 +116,11 @@ Item {
         function test_normal_footer_shares_one_row() {
             waitForRendering(task.contentItem);
             const button = findChild(task, "cancelButton");
-            const hintCenter = task.closingHint.mapToItem(task.contentItem, 0, task.closingHint.height / 2);
-            const buttonCenter = button.mapToItem(task.contentItem, 0, button.height / 2);
+            const client = findChild(task, "operationClientArea");
+            const hintCenter = task.closingHint.mapToItem(client, 0, task.closingHint.height / 2);
+            const buttonCenter = button.mapToItem(client, 0, button.height / 2);
             verify(Math.abs(hintCenter.y - buttonCenter.y) <= 1);
-            verify(buttonCenter.y < task.height);
+            verify(buttonCenter.y < client.height);
         }
         function test_filename_is_plain_text() {
             task.currentFile = "目录/<b>不能作为富文本</b>/图片.jpg";

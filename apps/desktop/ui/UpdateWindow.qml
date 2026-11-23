@@ -15,7 +15,7 @@ OperationWindow {
     property string targetLabel: ""
     property string archiveLabel: ""
     readonly property real density: Theme.operationCreateDensity
-    width: Theme.operationCreateWidth
+    clientWidth: Theme.operationCreateWidth
     requestedHeight: Math.min(Math.ceil(updateContent.implicitHeight + footer.implicitHeight), Theme.operationCreateClientHeight, Screen.desktopAvailableHeight - Theme.operationAddingScreenMargin)
     title: qsTrId("update.title")
     function configure(paths) {

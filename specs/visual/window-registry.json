@@ -6,8 +6,10 @@
     "OperationWindow": {
       "parent": "Window",
       "role": "base",
+      "design": "design/hifi/screens/create.png",
       "height_constraint_policy": "动态客户区高度变化时先放宽必要的上下限，再设置目标高度，最后恢复固定上下限；尺寸使用原有逻辑单位。展示前选定显示器并刷新 screenAvailableHeight，供设置窗口沿用既有高度政策限制到实际工作区。",
-      "reason": "平台装饰与固定客户区约束",
+      "linux_frame_policy": "Linux 操作弹窗只提供关闭按钮，窗口宽高均由客户区规格约束。原生 Wayland 共用主窗口的关闭图标、边框与阴影。标题栏高度为 Linux 标题栏按钮尺寸加两侧共享内边距。窗框留白和标题栏位于各操作窗原有客户区之外，空间不足时由正文滚动，底部按钮保持可达。",
+      "reason": "固定客户区约束与共享操作弹窗窗框。系统文件选择器和独立属性查看器遵循各自既有登记。",
       "owner_policy": "Owner is optional for shell operations. Shell windows center their native frame in the selected screen's available geometry; prompts belong to the visible operation window."
     },
     "OperationConfirmationWindow": {

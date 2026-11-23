@@ -39,7 +39,7 @@ for role in ['extract', 'create', 'progress', 'result', 'conflict']:
     if widths[role] != 491:
         failures.append(f'{role}: normal operation width must be 491 logical pixels')
 conflict = (ROOT/'apps/desktop/ui/ConflictWindow.qml').read_text(encoding="utf-8")
-if 'width: Theme.operationConflictWidth' not in conflict or 'OperationHeader {' not in conflict:
+if 'clientWidth: Theme.operationConflictWidth' not in conflict or 'OperationHeader {' not in conflict:
     failures.append('ConflictWindow: width and typography must use normal-density operation policy')
 for name, policy in registry['windows'].items():
     if policy.get('header_policy'):

@@ -138,8 +138,9 @@ Item {
         }
         function test_conflict_normal_density() {
             conflict.presentPrompt(true); waitForRendering(conflict.contentItem);
-            compare(conflict.width, 491);
-            verify(conflict.height <= Math.min(560, Screen.desktopAvailableHeight - 80));
+            const client = findChild(conflict, "operationClientArea");
+            compare(client.width, 491);
+            verify(client.height <= Math.min(560, Screen.desktopAvailableHeight - 80));
             const rename = findChild(conflict, "conflictRename");
             compare(rename.contentItem.font.pixelSize, 13);
             compare(rename.background.radius, 5);
@@ -147,9 +148,9 @@ Item {
             grabImage(conflict.contentItem).save("conflict-normal-density.png");
             Ui.Theme.fontScale = 2;
             waitForRendering(conflict.contentItem);
-            verify(conflict.height <= Math.min(560, Screen.desktopAvailableHeight - 80));
-            const p = rename.mapToItem(conflict.contentItem, 0, rename.height);
-            verify(p.y <= conflict.height + 1);
+            verify(client.height <= Math.min(560, Screen.desktopAvailableHeight - 80));
+            const p = rename.mapToItem(client, 0, rename.height);
+            verify(p.y <= client.height + 1);
         }
     }
 }

@@ -33,16 +33,17 @@ Item {
         function cleanup() { task.close(); Ui.Theme.fontScale = 1; }
         function test_native_shared_layout() {
             compare(task.transientParent, ownerWindow);
-            verify((task.flags & Qt.FramelessWindowHint) === 0);
-            compare(task.width, 491);
-            verify(task.height > 0 && task.height <= Math.min(600, Screen.desktopAvailableHeight - 80));
+            compare(Boolean(task.flags & Qt.FramelessWindowHint), task.waylandFrame);
+            const client = findChild(task, "operationClientArea");
+            compare(client.width, 491);
+            verify(client.height > 0 && client.height <= Math.min(600, Screen.desktopAvailableHeight - 80));
             compare(task.heading, "正在检查压缩包");
             compare(findChild(task, "progressLabel").text, "60%");
             compare(task.closingHint.text, "界面预览，不执行实际校验。");
             const bodyText = task.timingHint.labelItem.mapToItem(task.contentItem, 0, 0);
             const footerText = task.closingHint.labelItem.mapToItem(task.contentItem, 0, 0);
             compare(bodyText.x, footerText.x);
-            if (task.height === 490) {
+            if (client.height === 490) {
                 const footer = findChild(task, "taskFooter");
                 const bodyBottom = task.timingHint.mapToItem(task.contentItem, 0, task.timingHint.height).y;
                 verify(bodyBottom <= footer.mapToItem(task.contentItem, 0, 0).y);
@@ -75,8 +76,9 @@ Item {
             Ui.Theme.dark = true; Ui.Theme.fontScale = 2;
             waitForRendering(task.contentItem);
             const cancel = findChild(task, "cancelButton");
-            const top = cancel.mapToItem(task.contentItem, 0, 0);
-            verify(top.y >= 0 && top.y + cancel.height <= task.height);
+            const client = findChild(task, "operationClientArea");
+            const top = cancel.mapToItem(client, 0, 0);
+            verify(top.y >= 0 && top.y + cancel.height <= client.height);
             verify(cancel.width >= cancel.contentItem.implicitWidth);
             grabImage(task.contentItem).save("integrity-progress-large-dark.png");
         }

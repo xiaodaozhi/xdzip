@@ -3,28 +3,40 @@ import Xdzip.Settings 1.0
 
 Window {
     id: root
+    default property alias operationData: body.data
     property Window owner: null
     property bool allowMinimize: false
     property bool escapeClosesWindow: true
     property bool centerOnScreen: false
     property int screenAvailableHeight: BuildInfo.availableScreenHeight(root)
     // Constraints depend on requested geometry, never the constrained height.
+    property int clientWidth: Theme.operationDefaultWidth
     property int requestedHeight: Math.min(720, Screen.desktopAvailableHeight - 80)
+    readonly property bool waylandFrame: linuxFrame.wayland
+    readonly property int shadowInset: waylandFrame ? Theme.mainLinuxShadowInset : 0
+    readonly property int titlebarHeight: waylandFrame ? Theme.mainLinuxCaptionSize + 2 * Theme.mainLinuxCaptionRightInset : 0
+    readonly property int frameHeight: 2 * shadowInset + titlebarHeight
+    readonly property int surfaceWidth: clientWidth + 2 * shadowInset
+    readonly property int surfaceHeight: waylandFrame
+        ? Math.min(requestedHeight + frameHeight, Math.max(frameHeight + 1, screenAvailableHeight))
+        : requestedHeight
+    WindowInsets.frameInset: shadowInset
     transientParent: owner
     modality: Qt.NonModal
-    // Keep native decorations on every platform; never draw macOS traffic lights.
-    flags: Qt.Window | Qt.WindowTitleHint | Qt.WindowSystemMenuHint | Qt.WindowCloseButtonHint
-           | (allowMinimize ? Qt.WindowMinimizeButtonHint : 0)
-    color: Theme.surface
+    flags: waylandFrame
+           ? Qt.Dialog | Qt.FramelessWindowHint
+           : Qt.Window | Qt.WindowTitleHint | Qt.WindowSystemMenuHint | Qt.WindowCloseButtonHint
+             | (allowMinimize && Qt.platform.os !== "linux" ? Qt.WindowMinimizeButtonHint : 0)
+    color: waylandFrame ? "transparent" : Theme.surface
     visible: false
-    width: Theme.operationDefaultWidth
-    minimumWidth: width
-    maximumWidth: width
+    width: surfaceWidth
+    minimumWidth: surfaceWidth
+    maximumWidth: surfaceWidth
 
     // Widen the range before resizing so the native window never receives
     // inverted limits or a target outside its current constraints.
     function applyRequestedHeight() {
-        const desired = requestedHeight;
+        const desired = surfaceHeight;
         if (minimumHeight > desired) minimumHeight = desired;
         if (maximumHeight < desired) maximumHeight = desired;
         if (height !== desired) height = desired;
@@ -32,11 +44,11 @@ Window {
         if (maximumHeight !== desired) maximumHeight = desired;
     }
     Component.onCompleted: applyRequestedHeight()
-    onRequestedHeightChanged: Qt.callLater(applyRequestedHeight)
+    onSurfaceHeightChanged: Qt.callLater(applyRequestedHeight)
     onScreenChanged: screenAvailableHeight = BuildInfo.availableScreenHeight(root)
     // Cocoa can deliver an older resize after the content limits have changed.
     onHeightChanged: if (visible) {
-        if (height !== requestedHeight) Qt.callLater(applyRequestedHeight);
+        if (height !== surfaceHeight) Qt.callLater(applyRequestedHeight);
         if (centerOnScreen) Qt.callLater(() => { if (root.visible) BuildInfo.centerOnScreen(root, root.owner || root); });
     }
 
@@ -78,9 +90,88 @@ Window {
         else if (bottom > flick.contentY + flick.height)
             flick.contentY = Math.min(flick.contentHeight - flick.height,bottom - flick.height);
     }
-    Shortcut {
-        sequence: "Escape"
-        enabled: root.visible && root.active && root.escapeClosesWindow
-        onActivated: root.close()
-    }
+    data: [
+        LinuxFrame {
+            id: linuxFrame
+            window: root
+            inset: root.shadowInset
+        },
+        Item {
+            anchors.fill: parent
+            BorderImage {
+                anchors.fill: parent
+                visible: root.waylandFrame
+                source: visible ? "qrc:/xdzip/assets/frame/linux-" + (Theme.dark ? "dark" : "light") + ".png" : ""
+                border.left: Theme.mainLinuxShadowInset + Theme.mainLinuxCornerRadius
+                border.top: border.left
+                border.right: border.left
+                border.bottom: border.left
+            }
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: root.shadowInset
+                radius: root.waylandFrame ? Theme.mainLinuxCornerRadius : 0
+                color: root.waylandFrame ? Theme.surface : "transparent"
+                antialiasing: root.waylandFrame
+                Item {
+                    id: body
+                    objectName: "operationClientArea"
+                    anchors.fill: parent
+                    anchors.topMargin: root.titlebarHeight
+                }
+                Rectangle {
+                    objectName: "operationTitlebar"
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: root.titlebarHeight
+                    visible: root.waylandFrame
+                    topLeftRadius: Theme.mainLinuxCornerRadius
+                    topRightRadius: Theme.mainLinuxCornerRadius
+                    color: Theme.canvas
+                    antialiasing: true
+                    Text {
+                        anchors.centerIn: parent
+                        width: Math.max(0, parent.width - 2 * (closeButton.width + Theme.mainLinuxCaptionRightInset))
+                        horizontalAlignment: Text.AlignHCenter
+                        text: root.title
+                        textFormat: Text.PlainText
+                        elide: Text.ElideRight
+                        color: Theme.text
+                        font.pixelSize: Math.round(Theme.menuLabelSize)
+                        font.weight: Font.DemiBold
+                    }
+                    DragHandler {
+                        target: null
+                        acceptedButtons: Qt.LeftButton
+                        onActiveChanged: if (active) root.startSystemMove()
+                    }
+                    WindowCaptionButton {
+                        id: closeButton
+                        objectName: "operationWindowClose"
+                        anchors.right: parent.right
+                        anchors.rightMargin: Theme.mainLinuxCaptionRightInset
+                        height: parent.height
+                        linuxStyle: true
+                        captionAction: "close"
+                        text: qsTrId("window.close")
+                        onClicked: root.close()
+                    }
+                }
+                Rectangle {
+                    anchors.fill: parent
+                    visible: root.waylandFrame
+                    radius: parent.radius
+                    color: "transparent"
+                    border.width: Theme.mainLinuxOutlineWidth
+                    border.color: Theme.menuBorder
+                    antialiasing: true
+                }
+            }
+        },
+        Shortcut {
+            sequence: "Escape"
+            enabled: root.visible && root.active && root.escapeClosesWindow
+            onActivated: root.close()
+        }
+    ]
 }

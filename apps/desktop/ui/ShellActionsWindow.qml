@@ -9,7 +9,7 @@ OperationWindow {
     required property var batch
     signal cancelRequested()
     signal dismissed()
-    width: Theme.operationProgressWidth
+    clientWidth: Theme.operationProgressWidth
     requestedHeight: Math.min(Math.ceil(content.implicitHeight + footer.implicitHeight), Theme.operationResultClientHeight, Screen.desktopAvailableHeight - 80)
     title: qsTrId("shell.title")
     onClosing: root.dismissed()

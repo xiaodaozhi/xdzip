@@ -8,7 +8,7 @@ OperationWindow {
     objectName: "preflightWindow"
     title: qsTrId("ui.ff6f3ae7c4fb")
     property var report: ({})
-    width: Theme.preflightLogicalWidth
+    clientWidth: Theme.preflightLogicalWidth
     requestedHeight: Math.min(Math.ceil(content.implicitHeight + footer.implicitHeight), Theme.preflightMaximumHeight, Screen.desktopAvailableHeight - 80)
     ColumnLayout {
         anchors.fill: parent
