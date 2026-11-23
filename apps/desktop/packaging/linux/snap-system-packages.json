@@ -1,0 +1,416 @@
+{
+  "origin": "Ubuntu 24.04 LTS",
+  "packages": [
+    {
+      "package": "fonts-dejavu-core",
+      "architecture": "all",
+      "version": "2.37-8",
+      "source_package": "fonts-dejavu",
+      "source_version": "2.37-8",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/f/fonts-dejavu/fonts-dejavu-core_2.37-8_all.deb",
+      "sha256": "40049660c194f3b8a2541fc7369efebb10e9f94bdac836a2f38fafedd10fa73a",
+      "paths": [
+        "usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
+        "usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf"
+      ]
+    },
+    {
+      "package": "libegl1",
+      "architecture": "amd64",
+      "version": "1.7.0-1build1",
+      "source_package": "libglvnd",
+      "source_version": "1.7.0-1build1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libg/libglvnd/libegl1_1.7.0-1build1_amd64.deb",
+      "sha256": "e549f7776216f7bd3b1c216729fb40a97a562e2eb7c563cde632b4931f9a4e57",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libEGL.so.1"
+      ]
+    },
+    {
+      "package": "libfontconfig1",
+      "architecture": "amd64",
+      "version": "2.15.0-1.1ubuntu2",
+      "source_package": "fontconfig",
+      "source_version": "2.15.0-1.1ubuntu2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/f/fontconfig/libfontconfig1_2.15.0-1.1ubuntu2_amd64.deb",
+      "sha256": "a2bc05cfef021fdb84285036f98eda5ebec3c4b7a378f5aa2bdba5c4d3d8d586",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libfontconfig.so.1"
+      ]
+    },
+    {
+      "package": "libgl1",
+      "architecture": "amd64",
+      "version": "1.7.0-1build1",
+      "source_package": "libglvnd",
+      "source_version": "1.7.0-1build1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libg/libglvnd/libgl1_1.7.0-1build1_amd64.deb",
+      "sha256": "e2b2fadeb883f073b566ad1d7874f6702397514d258473e96152a89d4d502a09",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libGL.so.1"
+      ]
+    },
+    {
+      "package": "libglvnd0",
+      "architecture": "amd64",
+      "version": "1.7.0-1build1",
+      "source_package": "libglvnd",
+      "source_version": "1.7.0-1build1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libg/libglvnd/libglvnd0_1.7.0-1build1_amd64.deb",
+      "sha256": "33f5e07c74f73c2bfb44086ae0f9e6da52acd6c104d30ffe8fd768d8253d5e82",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libGLdispatch.so.0"
+      ]
+    },
+    {
+      "package": "libglx0",
+      "architecture": "amd64",
+      "version": "1.7.0-1build1",
+      "source_package": "libglvnd",
+      "source_version": "1.7.0-1build1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libg/libglvnd/libglx0_1.7.0-1build1_amd64.deb",
+      "sha256": "aa4953182f30abde90cb5b072e83d7286b557b325769b8686196a7bd396d8795",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libGLX.so.0"
+      ]
+    },
+    {
+      "package": "libice6",
+      "architecture": "amd64",
+      "version": "2:1.0.10-1build3",
+      "source_package": "libice",
+      "source_version": "2:1.0.10-1build3",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libi/libice/libice6_1.0.10-1build3_amd64.deb",
+      "sha256": "ad1edb5303574fee154e487947177e5bd15363aa71b92f78f5a2a7145fdb81c5",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libICE.so.6"
+      ]
+    },
+    {
+      "package": "libnautilus-extension4",
+      "architecture": "amd64",
+      "version": "1:46.4-0ubuntu0.2",
+      "source_package": "nautilus",
+      "source_version": "1:46.4-0ubuntu0.2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/n/nautilus/libnautilus-extension4_46.4-0ubuntu0.2_amd64.deb",
+      "sha256": "e5e4c915b01c4eb398813315b63b9d7d31a4d899a302e6a962d20d678610836e",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libnautilus-extension.so.4"
+      ]
+    },
+    {
+      "package": "libsm6",
+      "architecture": "amd64",
+      "version": "2:1.2.3-1build3",
+      "source_package": "libsm",
+      "source_version": "2:1.2.3-1build3",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libs/libsm/libsm6_1.2.3-1build3_amd64.deb",
+      "sha256": "1d27ebc381b499075a28c504be4d7d424c63b6866354736ac7f8d25813860cdf",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libSM.so.6"
+      ]
+    },
+    {
+      "package": "libwayland-client0",
+      "architecture": "amd64",
+      "version": "1.22.0-2.1build1",
+      "source_package": "wayland",
+      "source_version": "1.22.0-2.1build1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/w/wayland/libwayland-client0_1.22.0-2.1build1_amd64.deb",
+      "sha256": "6af0aed41d75149bea22fa468f01eb058ffe3e35ef07ff2f13fb88a90387881d",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libwayland-client.so.0"
+      ]
+    },
+    {
+      "package": "libwayland-cursor0",
+      "architecture": "amd64",
+      "version": "1.22.0-2.1build1",
+      "source_package": "wayland",
+      "source_version": "1.22.0-2.1build1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/w/wayland/libwayland-cursor0_1.22.0-2.1build1_amd64.deb",
+      "sha256": "29c20da27e8e37c984cf0518635c11cd0441f4cb6a2919a9f6eee1809171d327",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libwayland-cursor.so.0"
+      ]
+    },
+    {
+      "package": "libx11-6",
+      "architecture": "amd64",
+      "version": "2:1.8.7-1ubuntu0.1",
+      "source_package": "libx11",
+      "source_version": "2:1.8.7-1ubuntu0.1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libx11/libx11-6_1.8.7-1ubuntu0.1_amd64.deb",
+      "sha256": "9102f73477081a9a57994c80587ca9760341f644ed51bdfa46f2248083d418b3",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libX11.so.6"
+      ]
+    },
+    {
+      "package": "libx11-xcb1",
+      "architecture": "amd64",
+      "version": "2:1.8.7-1ubuntu0.1",
+      "source_package": "libx11",
+      "source_version": "2:1.8.7-1ubuntu0.1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libx11/libx11-xcb1_1.8.7-1ubuntu0.1_amd64.deb",
+      "sha256": "5ce7093e58aaaf753ed0904351a4e07f209e0c282ee8ef4f5f7988d0b40dccc1",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libX11-xcb.so.1"
+      ]
+    },
+    {
+      "package": "libxau6",
+      "architecture": "amd64",
+      "version": "1:1.0.9-1build6",
+      "source_package": "libxau",
+      "source_version": "1:1.0.9-1build6",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxau/libxau6_1.0.9-1build6_amd64.deb",
+      "sha256": "e40d29f1d1a62393bacaedebe0da3d9006084152a9f7e5e029293f08ce1c5c80",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libXau.so.6"
+      ]
+    },
+    {
+      "package": "libxcb-cursor0",
+      "architecture": "amd64",
+      "version": "0.1.4-1build1",
+      "source_package": "xcb-util-cursor",
+      "source_version": "0.1.4-1build1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/universe/x/xcb-util-cursor/libxcb-cursor0_0.1.4-1build1_amd64.deb",
+      "sha256": "137cf52479b5a9d8c5926d70d311af04be41941a32ee777340d704cc458c06d8",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libxcb-cursor.so.0"
+      ]
+    },
+    {
+      "package": "libxcb-glx0",
+      "architecture": "amd64",
+      "version": "1.15-1ubuntu2",
+      "source_package": "libxcb",
+      "source_version": "1.15-1ubuntu2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxcb/libxcb-glx0_1.15-1ubuntu2_amd64.deb",
+      "sha256": "d07cde26c70fe92df7c327928371e495cc4570fed2d6518758a5db5715cb34c1",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libxcb-glx.so.0"
+      ]
+    },
+    {
+      "package": "libxcb-icccm4",
+      "architecture": "amd64",
+      "version": "0.4.1-1.1build3",
+      "source_package": "xcb-util-wm",
+      "source_version": "0.4.1-1.1build3",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/x/xcb-util-wm/libxcb-icccm4_0.4.1-1.1build3_amd64.deb",
+      "sha256": "9e0e349f3904cd5bc07fea45498c4d03527a5d1178edd78555e84fdbd3793708",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libxcb-icccm.so.4"
+      ]
+    },
+    {
+      "package": "libxcb-image0",
+      "architecture": "amd64",
+      "version": "0.4.0-2build1",
+      "source_package": "xcb-util-image",
+      "source_version": "0.4.0-2build1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/x/xcb-util-image/libxcb-image0_0.4.0-2build1_amd64.deb",
+      "sha256": "6af300eeef5523aa0d8dbfab3a23c1fe7006ecc19f8abdc5c636d734d7bb5287",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libxcb-image.so.0"
+      ]
+    },
+    {
+      "package": "libxcb-keysyms1",
+      "architecture": "amd64",
+      "version": "0.4.0-1build4",
+      "source_package": "xcb-util-keysyms",
+      "source_version": "0.4.0-1build4",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/x/xcb-util-keysyms/libxcb-keysyms1_0.4.0-1build4_amd64.deb",
+      "sha256": "6c261aae923175b88a032018c530873ffb40f2bf96b045fdda42bd8bc74cb1c3",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libxcb-keysyms.so.1"
+      ]
+    },
+    {
+      "package": "libxcb-randr0",
+      "architecture": "amd64",
+      "version": "1.15-1ubuntu2",
+      "source_package": "libxcb",
+      "source_version": "1.15-1ubuntu2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxcb/libxcb-randr0_1.15-1ubuntu2_amd64.deb",
+      "sha256": "b5cb519823a05a617b543dc9b6a9289b7648b20048244abe021caa706309835a",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libxcb-randr.so.0"
+      ]
+    },
+    {
+      "package": "libxcb-render-util0",
+      "architecture": "amd64",
+      "version": "0.3.9-1build4",
+      "source_package": "xcb-util-renderutil",
+      "source_version": "0.3.9-1build4",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/x/xcb-util-renderutil/libxcb-render-util0_0.3.9-1build4_amd64.deb",
+      "sha256": "95d895ceb921e38e4edd85555b407b1a0564d8ad097ec7566e261764ce27787b",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libxcb-render-util.so.0"
+      ]
+    },
+    {
+      "package": "libxcb-render0",
+      "architecture": "amd64",
+      "version": "1.15-1ubuntu2",
+      "source_package": "libxcb",
+      "source_version": "1.15-1ubuntu2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxcb/libxcb-render0_1.15-1ubuntu2_amd64.deb",
+      "sha256": "7d83a0668b1a693b5ea2e496206e8371fb6beda4c54a2b4b3902005915c272c5",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libxcb-render.so.0"
+      ]
+    },
+    {
+      "package": "libxcb-shape0",
+      "architecture": "amd64",
+      "version": "1.15-1ubuntu2",
+      "source_package": "libxcb",
+      "source_version": "1.15-1ubuntu2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxcb/libxcb-shape0_1.15-1ubuntu2_amd64.deb",
+      "sha256": "ad57fed687ec9c2a4808b8e30ab1753d57daeddc9ad7fb883bfa0701f6da57c8",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libxcb-shape.so.0"
+      ]
+    },
+    {
+      "package": "libxcb-shm0",
+      "architecture": "amd64",
+      "version": "1.15-1ubuntu2",
+      "source_package": "libxcb",
+      "source_version": "1.15-1ubuntu2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxcb/libxcb-shm0_1.15-1ubuntu2_amd64.deb",
+      "sha256": "229d1280d459f1ba44c22939d3f9b61d9d20932d9a646b3fe4ce50be4cdf2325",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libxcb-shm.so.0"
+      ]
+    },
+    {
+      "package": "libxcb-sync1",
+      "architecture": "amd64",
+      "version": "1.15-1ubuntu2",
+      "source_package": "libxcb",
+      "source_version": "1.15-1ubuntu2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxcb/libxcb-sync1_1.15-1ubuntu2_amd64.deb",
+      "sha256": "14286795a258593259923619073e50c15345673befae2733f7b0577b07359aa8",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libxcb-sync.so.1"
+      ]
+    },
+    {
+      "package": "libxcb-util1",
+      "architecture": "amd64",
+      "version": "0.4.0-1build3",
+      "source_package": "xcb-util",
+      "source_version": "0.4.0-1build3",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/x/xcb-util/libxcb-util1_0.4.0-1build3_amd64.deb",
+      "sha256": "b6ff05729519514bddcbcd460f8be7e55c986daa5a97ecdc612b2815614194ab",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libxcb-util.so.1"
+      ]
+    },
+    {
+      "package": "libxcb-xfixes0",
+      "architecture": "amd64",
+      "version": "1.15-1ubuntu2",
+      "source_package": "libxcb",
+      "source_version": "1.15-1ubuntu2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxcb/libxcb-xfixes0_1.15-1ubuntu2_amd64.deb",
+      "sha256": "0b2ab64af92a71e3d1a35e3c819880ee28d04bfac81360df68ae8d8e9663ebd2",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libxcb-xfixes.so.0"
+      ]
+    },
+    {
+      "package": "libxcb-xkb1",
+      "architecture": "amd64",
+      "version": "1.15-1ubuntu2",
+      "source_package": "libxcb",
+      "source_version": "1.15-1ubuntu2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxcb/libxcb-xkb1_1.15-1ubuntu2_amd64.deb",
+      "sha256": "53bc0a58834c981fa8ce5c3ab6195387e5c8a417039d82cc7a8b49724fa53228",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libxcb-xkb.so.1"
+      ]
+    },
+    {
+      "package": "libxcb1",
+      "architecture": "amd64",
+      "version": "1.15-1ubuntu2",
+      "source_package": "libxcb",
+      "source_version": "1.15-1ubuntu2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxcb/libxcb1_1.15-1ubuntu2_amd64.deb",
+      "sha256": "e1c6611d11ad7398326f1bf028afc34c3b14c51d917a3426b966ed4b9687fa58",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libxcb.so.1"
+      ]
+    },
+    {
+      "package": "libxdmcp6",
+      "architecture": "amd64",
+      "version": "1:1.1.3-0ubuntu6",
+      "source_package": "libxdmcp",
+      "source_version": "1:1.1.3-0ubuntu6",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxdmcp/libxdmcp6_1.1.3-0ubuntu6_amd64.deb",
+      "sha256": "bcd336fce11ce2a45f34d0f95e6980af22529f22147e8f98c156e5cee8ee42bb",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libXdmcp.so.6"
+      ]
+    },
+    {
+      "package": "libxext6",
+      "architecture": "amd64",
+      "version": "2:1.3.4-1build2",
+      "source_package": "libxext",
+      "source_version": "2:1.3.4-1build2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxext/libxext6_1.3.4-1build2_amd64.deb",
+      "sha256": "45783969a9ece9d7b7b733b8c60981584c53c6bc5ee3b42d295d2f80d1285679",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libXext.so.6"
+      ]
+    },
+    {
+      "package": "libxkbcommon-x11-0",
+      "architecture": "amd64",
+      "version": "1.6.0-1build1",
+      "source_package": "libxkbcommon",
+      "source_version": "1.6.0-1build1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxkbcommon/libxkbcommon-x11-0_1.6.0-1build1_amd64.deb",
+      "sha256": "3befe840ce612ddfc0998d8610c6eed295726722a78e75cd08520bbd75065a23",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libxkbcommon-x11.so.0"
+      ]
+    },
+    {
+      "package": "libxkbcommon0",
+      "architecture": "amd64",
+      "version": "1.6.0-1build1",
+      "source_package": "libxkbcommon",
+      "source_version": "1.6.0-1build1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxkbcommon/libxkbcommon0_1.6.0-1build1_amd64.deb",
+      "sha256": "2b9caeb423efb540296a1cb20b872cc630c23908407ecb5c1c787a617622d664",
+      "paths": [
+        "usr/lib/x86_64-linux-gnu/libxkbcommon.so.0"
+      ]
+    },
+    {
+      "package": "xkb-data",
+      "architecture": "all",
+      "version": "2.41-2ubuntu1.1",
+      "source_package": "xkeyboard-config",
+      "source_version": "2.41-2ubuntu1.1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/x/xkeyboard-config/xkb-data_2.41-2ubuntu1.1_all.deb",
+      "sha256": "e99f2a0b4c56cdf35dec489e56b6a8418826cab8ce6306ec6d0bd98e2cd0014a",
+      "paths": [
+        "usr/share/X11/xkb"
+      ]
+    }
+  ]
+}

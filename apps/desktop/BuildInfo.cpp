@@ -49,6 +49,8 @@ bool BuildInfo::packaged() {
     // Only the documented no-package result permits the standalone updater.
     // Treat unexpected API failures as packaged to avoid crossing channels.
     return GetCurrentPackageFullName(&length, nullptr) != APPMODEL_ERROR_NO_PACKAGE;
+#elif defined(Q_OS_LINUX)
+    return qgetenv("SNAP_NAME") == "xdzip" && !qEnvironmentVariableIsEmpty("SNAP");
 #else
     return false;
 #endif

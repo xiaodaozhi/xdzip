@@ -34,6 +34,12 @@
 
 ## Snap 候选包的运行库检查
 
+在 Ubuntu 24.04 amd64 上使用 `scripts/desktop.py` 准备共享 Qt SDK，并从干净源码构建。使用 `scripts/collect-notices.py` 和 `scripts/prepare-runtime-notices.py` 收集许可通知，再用 `scripts/deploy_linux.py --experimental-wayland` 生成运行目录。执行 `scripts/build-linux-snap.py --runtime <运行目录> --qt-prefix <SDK> --core24 <基础包.snap> --package-cache <缓存目录> --output <输出目录>`。配方使用锁定的 Ubuntu 软件包，核对应用提交、已修补的 Qt 模块、桌面入口，以及所有 ELF 是否能从包内和固定的 core24 基础包加载。生成的 Snap 随附清单和报告。商店候选传入 `--grade stable`，并提供 Qt 图像库修复回执。
+
+Snap 的关于页面由商店负责更新。`snapLeavesUpdatesToTheStore` 验证 Snap 更新请求会被拦截且不访问更新服务，同时核对普通 Linux 构建仍能发出请求。
+
+上游 Qt SDK 启用了 ICU、fontconfig、XCB、Wayland 和 AT-SPI 辅助功能桥接。在 Ubuntu 上使用锁定的图像库配方时，安装相应的开发头文件，包括 `libicu-dev`、`libfontconfig-dev`、`libdbus-1-dev`、`libatspi2.0-dev`、`libdrm-dev`、`libgbm-dev`、`libwayland-dev` 和 `libxcb-glx0-dev` 等 XCB 开发包。缺少功能时检查 QtGui 配置日志，重建模块的功能和符号必须与 SDK 匹配。
+
 准备实验性的 strict Snap 时，应将最终包的运行依赖与包内库及所声明的基础镜像（例如 `core24`）中实际提供的库逐一对照。独立 Linux 运行目录的 `share/deployment.json` 列出的是系统依赖，并不能证明 Snap 基础镜像已经包含它们。检查应用、工作进程、Qt 平台插件及其他随包原生插件，包括传递依赖。例如，应用可能需要 `libXext.so.6`，随包的 Nautilus 插件可能需要 `libnautilus-extension.so.4`；应以实际产物为准，不能把示例当作固定的完整依赖清单。对随包附带的系统库，记录软件包版本、哈希和许可证通知。
 
 宿主机上的 `ldd` 和 `--version` 可能借助 Snap 无法访问的宿主库而成功；`--version` 还会在初始化图形界面之前退出。应在不能回退到宿主库的环境中，使用声明的基础镜像检查最终包，并运行应用的离屏 `--smoke-test`，覆盖图形界面初始化。依赖检查不能证明所有运行时动态加载的库都可用。这些检查应与真实 strict Snap 桌面会话中的安装和交互分开记录；隔离加载检查和离屏启动均不能代替桌面验收。

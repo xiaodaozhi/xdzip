@@ -1,0 +1,18 @@
+name: xdzip
+title: XDZip
+version: '@VERSION@'
+summary: Browse, create, and extract archives
+description: |
+  XDZip is an open-source archive manager. Browse ZIP, 7z, RAR, TAR and other
+  archives, search their contents, preview supported files, and extract selected
+  entries to a folder you choose. Create archives and work with supported
+  password-protected and split formats. XDZip processes archives locally.
+license: Apache-2.0
+base: core24
+architectures: [amd64]
+grade: @GRADE@
+confinement: strict
+apps:
+  xdzip:
+    command: bin/launch
+    plugs: [desktop, desktop-legacy, wayland, x11, home]

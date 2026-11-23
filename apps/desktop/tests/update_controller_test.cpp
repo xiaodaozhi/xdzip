@@ -158,6 +158,30 @@ class UpdateControllerTest final : public QObject {
     }
 
   private slots:
+    void snapLeavesUpdatesToTheStore() {
+#ifdef Q_OS_LINUX
+        const auto previousName = qgetenv("SNAP_NAME");
+        const auto previousRoot = qgetenv("SNAP");
+        const auto restore = qScopeGuard([&] {
+            qputenv("SNAP_NAME", previousName);
+            qputenv("SNAP", previousRoot);
+        });
+        qputenv("SNAP_NAME", "xdzip");
+        qputenv("SNAP", "/snap/xdzip/x1");
+        Network network;
+        configure(network);
+        UpdateController updates(nullptr, &network);
+        updates.check();
+        QCOMPARE(updates.errorCode(), QStringLiteral("unsupported_channel"));
+        QVERIFY(network.requests.isEmpty());
+
+        qputenv("SNAP_NAME", "another-snap");
+        updates.check();
+        QTRY_COMPARE(network.requests.size(), 1);
+#else
+        QSKIP("Snap update policy is Linux-specific");
+#endif
+    }
     void cliHandoffChecksCandidateWithoutClaimingInstallation() {
         QTemporaryDir directory;
         const auto previous = qgetenv("XDZIP_SETTINGS_PATH");
