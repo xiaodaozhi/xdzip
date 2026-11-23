@@ -36,6 +36,8 @@
 
 在 Ubuntu 24.04 amd64 上使用 `scripts/desktop.py` 准备共享 Qt SDK，并从干净源码构建。使用 `scripts/collect-notices.py` 和 `scripts/prepare-runtime-notices.py` 收集许可通知，再用 `scripts/deploy_linux.py --experimental-wayland` 生成运行目录。执行 `scripts/build-linux-snap.py --runtime <运行目录> --qt-prefix <SDK> --core24 <基础包.snap> --package-cache <缓存目录> --output <输出目录>`。配方使用锁定的 Ubuntu 软件包，核对应用提交、已修补的 Qt 模块、桌面入口，以及所有 ELF 是否能从包内和固定的 core24 基础包加载。生成的 Snap 随附清单和报告。商店候选传入 `--grade stable`，并提供 Qt 图像库修复回执。
 
+在 Ubuntu 24.04 amd64 准备 C++ 编译器、`pkg-config`、`libnautilus-extension-dev` 和 `dpkg-dev` 后，运行 `python3 scripts/build-linux-snap-nautilus.py --output <目录>` 生成可选的 Files 配套包。确认缺少 Snap 菜单协议标记时隐藏菜单，触发右键创建 ZIP 和解压并核对输出字节，同时独立检查原生 DEB 扩展。受控启动器测试覆盖请求交接和操作结果，Ubuntu 安装验收另外检查 Files 加载配套扩展以及 `snap run` 跨隔离环境的交接。
+
 Snap 的关于页面由商店负责更新。`snapLeavesUpdatesToTheStore` 验证 Snap 更新请求会被拦截且不访问更新服务，同时核对普通 Linux 构建仍能发出请求。
 
 上游 Qt SDK 启用了 ICU、fontconfig、XCB、Wayland 和 AT-SPI 辅助功能桥接。在 Ubuntu 上使用锁定的图像库配方时，安装相应的开发头文件，包括 `libicu-dev`、`libfontconfig-dev`、`libdbus-1-dev`、`libatspi2.0-dev`、`libdrm-dev`、`libgbm-dev`、`libwayland-dev` 和 `libxcb-glx0-dev` 等 XCB 开发包。缺少功能时检查 QtGui 配置日志，重建模块的功能和符号必须与 SDK 匹配。

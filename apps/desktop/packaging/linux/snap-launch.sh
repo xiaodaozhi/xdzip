@@ -42,4 +42,19 @@ export QT_QUICK_BACKEND="${QT_QUICK_BACKEND:-software}"
 # The Wayland plugin creates its context directly through libxkbcommon.
 export XKB_CONFIG_ROOT="$SNAP/usr/share/X11/xkb"
 export FONTCONFIG_FILE="$SNAP/meta/fonts.conf"
+if [ "${1:-}" = --shell-request-stdin ]; then
+    [ "$#" -eq 1 ] || exit 2
+    # Host /tmp is different from Snap /tmp. Read one bounded manifest over
+    # stdin, then use the desktop's existing private request-file validation.
+    token=$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')
+    [ "${#token}" -eq 32 ] || exit 2
+    request_dir="${TMPDIR:-/tmp}/xdzip-shell-$token"
+    (umask 077; mkdir -- "$request_dir")
+    trap 'rm -f -- "$request_dir/request.json"; rmdir -- "$request_dir" 2>/dev/null || :' EXIT
+    (umask 077; timeout 10 head -c 262145 > "$request_dir/request.json")
+    size=$(wc -c < "$request_dir/request.json")
+    [ "$size" -gt 0 ] && [ "$size" -le 262144 ] || exit 2
+    "$SNAP/runtime/bin/xdzip" --shell-request "$request_dir/request.json" </dev/null
+    exit
+fi
 exec "$SNAP/runtime/bin/xdzip" "$@"

@@ -45,7 +45,7 @@ static void test_module_class_init(TestModuleClass *klass) {
     G_TYPE_MODULE_CLASS(klass)->unload = [](GTypeModule *) {};
 }
 int main(int argc, char **argv) {
-    if (argc != 2 && argc != 3)
+    if (argc < 2 || argc > 5 || argc == 4)
         return 2;
     auto *library = g_module_open(argv[1], G_MODULE_BIND_LOCAL);
     if (!library) {
@@ -69,8 +69,9 @@ int main(int argc, char **argv) {
     if (count != 1 || !g_type_is_a(types[0], NAUTILUS_TYPE_MENU_PROVIDER))
         return 1;
     auto *provider = NAUTILUS_MENU_PROVIDER(g_object_new(types[0], nullptr));
+    const std::string action = argc == 5 ? std::string("xdzip::") + argv[3] : "";
     int checks = 0;
-    const auto check = [&](const std::vector<std::string> &uris, int expected) {
+    const auto check = [&](const std::vector<std::string> &uris, int expected, bool activate = false) {
         GList *files = nullptr;
         for (const auto &uri : uris) {
             auto *file = reinterpret_cast<TestFile *>(g_object_new(test_file_get_type(), nullptr));
@@ -82,7 +83,7 @@ int main(int argc, char **argv) {
         if (items && !items->next) {
             char *title = nullptr;
             g_object_get(items->data, "label", &title, nullptr);
-            const bool expectedTitle = argc == 2 || g_strcmp0(title, argv[2]) == 0;
+            const bool expectedTitle = argc != 3 || g_strcmp0(title, argv[2]) == 0;
             g_free(title);
             NautilusMenu *submenu = nullptr;
             g_object_get(items->data, "menu", &submenu, nullptr);
@@ -94,6 +95,13 @@ int main(int argc, char **argv) {
                 if (!label || !g_utf8_validate(label, -1, nullptr))
                     found = -1;
                 g_free(label);
+                if (activate) {
+                    char *name = nullptr;
+                    g_object_get(it->data, "name", &name, nullptr);
+                    if (g_strcmp0(name, action.c_str()) == 0)
+                        nautilus_menu_item_activate(NAUTILUS_MENU_ITEM(it->data));
+                    g_free(name);
+                }
             }
             g_list_free_full(children, g_object_unref);
             g_object_unref(submenu);
@@ -103,7 +111,22 @@ int main(int argc, char **argv) {
         ++checks;
         return found == expected;
     };
-    if (!check({"file:///tmp/xdzip-test.txt"}, 3) || !check({"file:///tmp/xdzip-test.zip"}, 7) ||
+    if (argc == 5) {
+        const int commands = action == "xdzip::zip" ? 3 : 7;
+        if (!check({argv[2]}, commands, true))
+            return 1;
+        const auto deadline = g_get_monotonic_time() + 10 * G_TIME_SPAN_SECOND;
+        while (!g_file_test(argv[4], G_FILE_TEST_IS_REGULAR) && g_get_monotonic_time() < deadline) {
+            while (g_main_context_iteration(nullptr, FALSE)) {
+            }
+            g_usleep(10000);
+        }
+        if (!g_file_test(argv[4], G_FILE_TEST_IS_REGULAR))
+            return 1;
+    } else if (argc == 3 && std::string_view(argv[2]) == "--hidden") {
+        if (!check({"file:///tmp/xdzip-test.zip"}, 0))
+            return 1;
+    } else if (!check({"file:///tmp/xdzip-test.txt"}, 3) || !check({"file:///tmp/xdzip-test.zip"}, 7) ||
         !check({"file:///tmp/xdzip-test.zip", "file:///tmp/xdzip-test.7z"}, 8) ||
         !check({"file:///tmp/xdzip-test.zip", "file:///tmp/xdzip-test.txt"}, 4) ||
         !check({"file:///tmp/xdzip-test.opaque"}, 7) ||
