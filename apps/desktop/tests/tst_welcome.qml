@@ -127,9 +127,20 @@ Item {
             const [firstLabel, firstCount] = groups[0].contentItem.children;
             const labelBaseline = baseline(firstLabel);
             const countBaseline = baseline(firstCount);
-            for (const group of groups) {
+            for (const [index, group] of groups.entries()) {
                 compare(group.mapToItem(strip, 0, 0).y, groups[0].mapToItem(strip, 0, 0).y);
                 const [label, count] = group.contentItem.children;
+                const tag = findChild(count, "welcomeFormatCountTag");
+                verify(tag && tag.visible);
+                verify(tag.radius > 0 && tag.width > count.contentWidth && tag.height > 0);
+                compare(tag.color, index === 0 ? Ui.Theme.selection : Ui.Theme.canvas);
+                const leftGap = tag.mapToItem(strip, 0, 0).x - label.mapToItem(strip, label.width, 0).x;
+                fuzzyCompare(leftGap, Ui.Theme.welcomeFormatCountGap, 0.5);
+                if (index + 1 < groups.length) {
+                    const nextLabel = groups[index + 1].contentItem.children[0];
+                    const rightGap = nextLabel.mapToItem(strip, 0, 0).x - tag.mapToItem(strip, tag.width, 0).x;
+                    verify(rightGap > leftGap);
+                }
                 fuzzyCompare(baseline(label), labelBaseline, 0.01);
                 fuzzyCompare(baseline(count), countBaseline, 0.01);
                 const labelCenter = label.mapToItem(group, 0, label.referenceCenter).y;
@@ -151,9 +162,42 @@ Item {
             keyClick(Qt.Key_Space);
             tryCompare(page, "expandedFormatGroup", "text-envelopes");
             fuzzyCompare(baseline(textEnvelopes.contentItem.children[0]), labelBaseline, 0.01);
+            compare(findChild(textEnvelopes.contentItem.children[1], "welcomeFormatCountTag").color, Ui.Theme.selection);
             compare(preview.suffixes, Formats.formatGroups.find(group => group.id === "text-envelopes").suffixes);
             keyClick(Qt.Key_Space);
             tryCompare(preview, "visible", false);
+        }
+        function test_format_paging() {
+            const strip = findChild(page, "welcomeFormatGroups");
+            const previous = findChild(page, "welcomeFormatPrevious");
+            const next = findChild(page, "welcomeFormatNext");
+            tryVerify(() => !previous.visible && !next.visible);
+            surface.width = 320;
+            Ui.Theme.fontScale = 1.5;
+            tryVerify(() => previous.visible && next.visible && next.enabled);
+            verify(!previous.enabled);
+            compare(next.width, next.height);
+            verify(next.background.radius > 0 && next.background.radius < next.width / 2);
+            verify(previous.mapToItem(strip, 0, 0).x > strip.width);
+            verify(waitForRendering(page));
+            page.revealAction(next);
+            const center = next.mapToItem(page, next.width / 2, next.height / 2);
+            verify(center.x > 0 && center.x < page.width && center.y > 0 && center.y < page.height,
+                   "Next button center must be inside the view: " + JSON.stringify(center));
+            const firstPage = Math.min(strip.width, strip.maximumContentX);
+            mouseClick(page, center.x, center.y);
+            tryCompare(strip, "contentX", firstPage);
+            verify(previous.enabled);
+            previous.forceActiveFocus(Qt.TabFocusReason);
+            keyClick(Qt.Key_Space);
+            tryCompare(strip, "contentX", 0);
+            verify(!previous.enabled);
+            strip.contentX = strip.maximumContentX;
+            tryVerify(() => previous.enabled && !next.enabled);
+            surface.width = 1024;
+            Ui.Theme.fontScale = 1;
+            tryVerify(() => !previous.visible && !next.visible);
+            tryCompare(strip, "contentX", 0);
         }
         function test_feedback_preserves_top_anchors_data() {
             const cases=[];
