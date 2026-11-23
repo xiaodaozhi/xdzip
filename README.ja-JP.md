@@ -19,7 +19,7 @@
   <a href="#xdzip-download-and-install">ダウンロード</a> / <a href="#xdzip-using-xdzip">使い方</a> / <a href="#xdzip-format-support">対応形式</a> / <a href="#xdzip-build-from-source">ソースからビルド</a> / <a href="docs/ja-JP/README.md">ドキュメント</a> / <a href="https://github.com/xiaodaozhi/xdzip/issues">フィードバック</a>
 </p>
 
-![xdzip でアーカイブを閲覧](docs/images/main-window.png)
+![macOS の xdzip スタートページ](docs/ja-JP/images/main-window.png)
 
 <a name="xdzip-download-and-install"></a>
 

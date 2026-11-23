@@ -19,7 +19,7 @@
   <a href="#download-and-install">Download</a> / <a href="#using-xdzip">Using xdzip</a> / <a href="#format-support">Format support</a> / <a href="#build-from-source">Build from source</a> / <a href="docs/README.md">Documentation</a> / <a href="https://github.com/xiaodaozhi/xdzip/issues">Feedback</a>
 </p>
 
-![xdzip archive browsing](docs/images/main-window.png)
+![xdzip start page on macOS](docs/images/main-window.png)
 
 ## Download and install
 

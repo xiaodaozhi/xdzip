@@ -19,7 +19,7 @@
   <a href="#下载安装">下载安装</a> / <a href="#使用-xdzip">使用 xdzip</a> / <a href="#格式支持">格式支持</a> / <a href="#从源码构建">从源码构建</a> / <a href="docs/zh-CN/README.md">文档</a> / <a href="https://github.com/xiaodaozhi/xdzip/issues">反馈</a>
 </p>
 
-![xdzip 压缩包浏览界面](docs/zh-CN/images/main-window.png)
+![macOS 上的 xdzip 起始页](docs/zh-CN/images/main-window.png)
 
 ## 下载安装
 

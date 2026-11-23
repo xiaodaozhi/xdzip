@@ -5,9 +5,10 @@
   "reference": {
     "file": "docs/images/main-window.png",
     "logical_main_client": [1024, 622],
-    "native_main_client": [1536, 933],
-    "published_image": [1536, 932],
-    "processing": "The published Windows reference removes one top pixel row; the native client capture is 1536 by 933 at 144 DPI."
+    "native_scale": 2,
+    "native_main_client": [2048, 1244],
+    "published_image": [1536, 933],
+    "processing": "Downsample the macOS Retina start-page screenshot to 150% and retain the full frame."
   },
   "constraints": [
     "Measure client pixels against the actual Qt logical client dimensions, not native frame or shadow.",

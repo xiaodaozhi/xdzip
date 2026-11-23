@@ -4,7 +4,7 @@ English | [简体中文](../zh-CN/engineering/marketing-screenshot-scale.md)
 
 Use **150%**, or **1.5 physical pixels per Qt logical pixel**, for exported Windows, macOS and Linux application screenshots intended for Store or marketing artwork. Keep the application at its normal logical dimensions and use the native display density for capture.
 
-The current [README image](../../docs/images/main-window.png) is 1536 × 932 pixels. Its recorded Windows source was captured at 144 DPI, or 150%, with a 1536 × 933-pixel client area for the 1024 × 622 logical-pixel main window. The published image is one pixel shorter because its top edge was trimmed. The machine-readable target and reference dimensions are in [marketing-screenshot-scale.json](../../specs/capture/marketing-screenshot-scale.json).
+Each README uses the macOS start-page screenshot in its language. The 1024 × 622 logical-pixel window was captured at 200% Retina density as a 2048 × 1244 PNG and downsampled to 1536 × 933 at 150%. The full window is visible in the published image. [README reference image](../../docs/images/main-window.png) and [machine-readable dimensions](../../specs/capture/marketing-screenshot-scale.json).
 
 Before capture, measure the application client area's actual logical dimensions and its native physical pixels, excluding operating-system frames and shadows. Confirm the measured ratio in both dimensions, allowing integer rounding at a pixel edge. The default main client is exported at 1536 × 933 physical pixels before edge processing. Other windows use their own measured logical sizes. Record the measurements and actual capture environment; an image's dimensions alone do not prove which window was captured or its scale.
 

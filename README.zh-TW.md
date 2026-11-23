@@ -19,7 +19,7 @@
   <a href="#xdzip-%E4%B8%8B%E8%BD%BD%E5%AE%89%E8%A3%85">下載安裝</a> / <a href="#xdzip-%E4%BD%BF%E7%94%A8-xdzip">使用 xdzip</a> / <a href="#xdzip-%E6%A0%BC%E5%BC%8F%E6%94%AF%E6%8C%81">格式支援</a> / <a href="#xdzip-%E4%BB%8E%E6%BA%90%E7%A0%81%E6%9E%84%E5%BB%BA">從原始碼構建</a> / <a href="docs/zh-TW/README.md">文件</a> / <a href="https://github.com/xiaodaozhi/xdzip/issues">意見回饋</a>
 </p>
 
-![xdzip 壓縮檔瀏覽介面](docs/zh-CN/images/main-window.png)
+![macOS 上的 xdzip 起始頁](docs/zh-TW/images/main-window.png)
 
 <a name="xdzip-下载安装"></a>
 

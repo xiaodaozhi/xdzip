@@ -19,7 +19,7 @@
   <a href="#xdzip-download-and-install">다운로드</a> / <a href="#xdzip-using-xdzip">사용법</a> / <a href="#xdzip-format-support">지원 형식</a> / <a href="#xdzip-build-from-source">소스에서 빌드</a> / <a href="docs/ko-KR/README.md">문서</a> / <a href="https://github.com/xiaodaozhi/xdzip/issues">의견 보내기</a>
 </p>
 
-![xdzip으로 압축 파일 탐색](docs/images/main-window.png)
+![macOS의 xdzip 시작 페이지](docs/ko-KR/images/main-window.png)
 
 <a name="xdzip-download-and-install"></a>
 

@@ -19,7 +19,7 @@
   <a href="#xdzip-download-and-install">Descargar</a> / <a href="#xdzip-using-xdzip">Uso</a> / <a href="#xdzip-format-support">Formatos compatibles</a> / <a href="#xdzip-build-from-source">Compilar desde el código fuente</a> / <a href="docs/es-ES/README.md">Documentación</a> / <a href="https://github.com/xiaodaozhi/xdzip/issues">Comentarios</a>
 </p>
 
-![Exploración de un archivo comprimido con xdzip](docs/images/main-window.png)
+![Pantalla de inicio de xdzip en macOS](docs/es-ES/images/main-window.png)
 
 <a name="xdzip-download-and-install"></a>
 
