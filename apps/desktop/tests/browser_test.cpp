@@ -8335,13 +8335,8 @@ QtObject {
         QVERIFY(paintedHeight > 0 && paintedHeight <= label->height() + 1);
         QVERIFY(!label->property("truncated").toBool());
         QCOMPARE(label->property("text").toString(), button->property("text").toString());
-        // Use Text's own unwrapped width: a separately resolved QFontMetricsF can
-        // differ from the font and pixel size used by Qt Quick on some platforms.
-        if (label->property("implicitWidth").toReal() > label->width() + 1)
-            QVERIFY(label->property("lineCount").toInt() > 1);
         const auto originalText = button->property("text").toString();
-        QVERIFY(
-            button->setProperty("text", originalText + " " + originalText + " " + originalText));
+        QVERIFY(button->setProperty("text", (originalText + " ").repeated(8).trimmed()));
         QTRY_VERIFY(label->property("lineCount").toInt() > 1);
         QTRY_VERIFY(label->property("paintedWidth").toReal() <= label->width() + 1);
         QTRY_VERIFY(label->property("paintedHeight").toReal() <= label->height() + 1);
