@@ -2308,9 +2308,15 @@ QtObject {
         }
         operation->close();
     }
+    void waylandOperationWindowsUseFixedCloseOnlyFrame_data() {
+        QTest::addColumn<bool>("dark");
+        QTest::newRow("light") << false;
+        QTest::newRow("dark") << true;
+    }
     void waylandOperationWindowsUseFixedCloseOnlyFrame() {
         if (!LinuxFrame().wayland())
             QSKIP("Requires a Wayland compositor");
+        QFETCH(bool, dark);
         QQuickWindow::setDefaultAlphaBuffer(true);
         const auto restoreAlpha = qScopeGuard([] { QQuickWindow::setDefaultAlphaBuffer(false); });
         QQmlApplicationEngine engine;
@@ -2318,6 +2324,15 @@ QtObject {
         QVERIFY(!engine.rootObjects().isEmpty());
         auto *browser = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
         QVERIFY(browser && QTest::qWaitForWindowExposed(browser));
+        QQmlComponent appearance(&engine);
+        appearance.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\n"
+                           "QtObject { property var dark; onDarkChanged: Ui.Theme.dark = dark }",
+                           QUrl());
+        std::unique_ptr<QObject> theme(appearance.create());
+        QVERIFY(theme && theme->setProperty("dark", dark));
+        const QImage shadowAsset(dark ? ":/xdzip/assets/frame/linux-dark.png"
+                                      : ":/xdzip/assets/frame/linux-light.png");
+        QVERIFY(!shadowAsset.isNull());
 
         for (const auto *name :
              {"createWindow", "extractWindow", "settingsWindow", "taskWindow", "restartWindow"}) {
@@ -2359,11 +2374,36 @@ QtObject {
             QVERIFY(accessible && !accessible->text(QAccessible::Name).isEmpty());
             QTRY_VERIFY(visibleImagesReady(titlebar));
             const auto rendered = dialog->grabWindow();
-            const auto dpr = rendered.devicePixelRatio();
+            // The software capture has device pixels but can report an image DPR of 1.
+            const auto dpr = dialog->devicePixelRatio();
             const QPoint shadow(qRound((inset - 4) * dpr), rendered.height() / 2);
             QVERIFY(rendered.valid(shadow));
             QVERIFY(rendered.pixelColor(shadow).alpha() > 0);
             QVERIFY(rendered.pixelColor(shadow).alpha() < 255);
+            // The rounded cutouts must paint only the matching nine-slice shadow.
+            for (bool right : {false, true}) {
+                for (bool bottom : {false, true}) {
+                    for (const int offset : {-2, 0, 1}) {
+                        const int edge = inset + offset;
+                        const int pixel = qFloor((edge + 0.5) * dpr);
+                        const QPoint corner(right ? rendered.width() - 1 - pixel : pixel,
+                                            bottom ? rendered.height() - 1 - pixel : pixel);
+                        const auto expected =
+                            shadowAsset.pixelColor(right ? shadowAsset.width() - 1 - edge : edge,
+                                                   bottom ? shadowAsset.height() - 1 - edge : edge);
+                        const auto actual = rendered.pixelColor(corner);
+                        QVERIFY2(
+                            std::abs(expected.alpha() - actual.alpha()) <= 7 && actual.red() <= 8 &&
+                                actual.green() <= 8 && actual.blue() <= 8,
+                            qPrintable(QStringLiteral("%1 corner (%2, %3) alpha %4, expected %5")
+                                           .arg(QLatin1StringView(name))
+                                           .arg(corner.x())
+                                           .arg(corner.y())
+                                           .arg(actual.alpha())
+                                           .arg(expected.alpha())));
+                    }
+                }
+            }
             const auto center = close->mapToScene({close->width() / 2, close->height() / 2});
             const auto background = rendered.pixelColor((center + QPointF(10, 0)).toPoint() * dpr);
             bool glyphVisible = false;

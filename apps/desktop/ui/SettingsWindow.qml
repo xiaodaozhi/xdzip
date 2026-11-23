@@ -198,16 +198,27 @@ OperationWindow {
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: 0
-            Rectangle {
+            Item {
+                id: sidebar
                 objectName: "settingsSidebar"
                 Layout.preferredWidth: Math.max(Theme.settingsSidebarWidth,
                     Theme.settingsSidebarIconInset + Theme.settingsSidebarIconSize +
                     Theme.settingsSidebarIconGap + Theme.settingsSidebarLabelRightInset + root.sidebarWordWidth)
                 Layout.fillHeight: true
-                color: Theme.sidebar
+                // Extend the other rounded corners past the rectangular clip.
+                clip: true
+                Rectangle {
+                    y: -root.frameCornerRadius
+                    width: parent.width + root.frameCornerRadius
+                    height: parent.height + root.frameCornerRadius
+                    radius: root.frameCornerRadius
+                    color: Theme.sidebar
+                    antialiasing: radius > 0
+                }
                 Rectangle { anchors.right: parent.right; width: 1; height: parent.height; color: Theme.border }
                 ScrollView {
-                    anchors.fill: parent
+                    anchors.fill: sidebar
+                    anchors.bottomMargin: root.frameCornerRadius
                     clip: true
                     contentWidth: availableWidth
                     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff

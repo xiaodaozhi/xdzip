@@ -14,6 +14,7 @@ Window {
     property int requestedHeight: Math.min(720, Screen.desktopAvailableHeight - 80)
     readonly property bool waylandFrame: linuxFrame.wayland
     readonly property int shadowInset: waylandFrame ? Theme.mainLinuxShadowInset : 0
+    readonly property int frameCornerRadius: waylandFrame ? Theme.mainLinuxCornerRadius : 0
     readonly property int titlebarHeight: waylandFrame ? Theme.mainLinuxCaptionSize + 2 * Theme.mainLinuxCaptionRightInset : 0
     readonly property int frameHeight: 2 * shadowInset + titlebarHeight
     readonly property int surfaceWidth: clientWidth + 2 * shadowInset
@@ -107,12 +108,17 @@ Window {
                 border.right: border.left
                 border.bottom: border.left
             }
-            Rectangle {
+            Item {
                 anchors.fill: parent
                 anchors.margins: root.shadowInset
-                radius: root.waylandFrame ? Theme.mainLinuxCornerRadius : 0
-                color: root.waylandFrame ? Theme.surface : "transparent"
-                antialiasing: root.waylandFrame
+                Rectangle {
+                    anchors.fill: parent
+                    anchors.topMargin: root.titlebarHeight - root.frameCornerRadius
+                    visible: root.waylandFrame
+                    radius: root.frameCornerRadius
+                    color: Theme.surface
+                    antialiasing: true
+                }
                 Item {
                     id: body
                     objectName: "operationClientArea"
@@ -125,10 +131,16 @@ Window {
                     anchors.right: parent.right
                     height: root.titlebarHeight
                     visible: root.waylandFrame
-                    topLeftRadius: Theme.mainLinuxCornerRadius
-                    topRightRadius: Theme.mainLinuxCornerRadius
+                    radius: root.frameCornerRadius
                     color: Theme.canvas
                     antialiasing: true
+                    // Match the main window's rounded top and square join to the body.
+                    Rectangle {
+                        anchors.bottom: parent.bottom
+                        width: parent.width
+                        height: root.frameCornerRadius
+                        color: parent.color
+                    }
                     Text {
                         anchors.centerIn: parent
                         width: Math.max(0, parent.width - 2 * (closeButton.width + Theme.mainLinuxCaptionRightInset))
@@ -160,7 +172,7 @@ Window {
                 Rectangle {
                     anchors.fill: parent
                     visible: root.waylandFrame
-                    radius: parent.radius
+                    radius: root.frameCornerRadius
                     color: "transparent"
                     border.width: Theme.mainLinuxOutlineWidth
                     border.color: Theme.menuBorder

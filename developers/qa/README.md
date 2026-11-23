@@ -48,7 +48,7 @@ Snap applications use a private `XDG_RUNTIME_DIR`, while the compositor socket c
 
 The main window uses the same integrated titlebar, outline and shadow on X11 and native Wayland. On a Wayland compositor, run the `linuxMainFrameOutline` browser test with `QT_QPA_PLATFORM=wayland` to check caption visibility, restored content size, the shadow's input region and maximize and restore transitions. In the installed Snap, also verify titlebar movement, edge resizing and dragging an archive entry into Files in the same session.
 
-Run `waylandOperationWindowsUseFixedCloseOnlyFrame` with the same backend to check the shared operation-dialog titlebar, close glyph and action, shadow input region and fixed size hints. Measure each dialog's client area inside the frame and recheck content-driven height changes, scrolling and footer placement. In the installed Snap, try dragging a dialog border and double-clicking the titlebar.
+Run `waylandOperationWindowsUseFixedCloseOnlyFrame` with the same backend to check the shared operation-dialog titlebar, close glyph and action, shadow input region and fixed size hints. Compare the shadow pixels in all four rounded cutouts with the shadow asset in both themes. Inspect the outline and shadow over a contrasting desktop background. Measure each dialog's client area inside the frame and recheck content-driven height changes, scrolling and footer placement. In the installed Snap, try dragging a dialog border and double-clicking the titlebar.
 
 ## UI comparison regressions
 

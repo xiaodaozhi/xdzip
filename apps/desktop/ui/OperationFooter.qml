@@ -12,8 +12,9 @@ Rectangle {
     property real noteGap: 12
     property string note: ""
     readonly property alias hint: hint
+    readonly property OperationWindow operationWindow: root.Window.window as OperationWindow
     implicitHeight: Math.max(root.minimumFooterHeight, footer.implicitHeight + root.verticalInset * 2)
-    color: Theme.surface
+    color: operationWindow && operationWindow.frameCornerRadius > 0 ? "transparent" : Theme.surface
     Rectangle { width: parent.width; height: 1; color: Theme.taskBorder }
     GridLayout {
         id: footer
