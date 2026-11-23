@@ -98,7 +98,8 @@ Window {
             inset: root.shadowInset
         },
         Item {
-            anchors.fill: parent
+            width: root.width
+            height: root.height
             BorderImage {
                 anchors.fill: parent
                 visible: root.waylandFrame

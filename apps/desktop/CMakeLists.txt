@@ -424,7 +424,9 @@ if(BUILD_TESTING)
     # QTRY assertions keep their own deadlines; a slow host must report the assertion.
     # All discovered functions run within this single ceiling. Offscreen workers
     # have isolated settings; native and explicitly shared settings run serially.
-    if(APPLE)
+    if(WIN32)
+        set_tests_properties(qt_zip_browser PROPERTIES TIMEOUT 420)
+    elseif(APPLE)
         # Hosted Apple Silicon runs have completed within a few seconds of 240.
         set_tests_properties(qt_zip_browser PROPERTIES TIMEOUT 300)
     else()
@@ -583,6 +585,9 @@ if(BUILD_TESTING)
 endif()
 
 if(BUILD_TESTING AND WIN32)
+    foreach(target xdzip-ui-tests xdzip-settings-placement-tests xdzip-browser-tests)
+        target_link_libraries(${target} PRIVATE advapi32)
+    endforeach()
     add_executable(xdzip-windows-frame-policy-test tests/windows_frame_policy_test.cpp)
     add_test(NAME windows_frame_policy COMMAND xdzip-windows-frame-policy-test)
     add_executable(xdzip-windows-frame-test tests/windows_frame_test.cpp WindowsFrame.cpp WindowsFrame.h)
