@@ -146,7 +146,7 @@ Item {
             tryCompare(passwordWindow,"visible",true);
             verify(waitForRendering(passwordWindow.contentItem));
             const client = findChild(passwordWindow, "operationClientArea");
-            tryCompare(client, "height", 220);
+            compare(client.height,220);
             const flick = passwordWindow.bodyItem.contentItem;
             verify(flick.contentHeight > flick.height);
             const footer = passwordWindow.footerItem;
