@@ -12,6 +12,7 @@ const hash = data => crypto.createHash('sha256').update(data).digest('hex');
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 const languageNames = readJson(path.join(ROOT, 'resources/ui-languages.json')).languages.map(item => item.id);
 const scenes = ['01-welcome', '02-create', '03-preview', '04-workspace'];
+const outputScale = readJson(path.join(ROOT, 'specs/capture/marketing-screenshot-scale.json')).physical_pixels_per_qt_logical_pixel;
 
 function argumentsFor(platform, args) {
   const result = {platform, captures: null, output: null, include4k: false, createClientOnly: false, createWindow: false};
@@ -50,6 +51,10 @@ function capturesFor(options) {
   const manifestFile = path.join(options.captures, 'capture-session.json');
   if (fs.lstatSync(manifestFile).isSymbolicLink()) throw Error('Capture receipt cannot be a symlink');
   const session = readJson(manifestFile);
+  const sourceScale = session.reported_native_scale;
+  if (sourceScale !== undefined && (!Number.isFinite(sourceScale) || sourceScale < outputScale || sourceScale > 4)) {
+    throw Error('Invalid reported native capture scale');
+  }
   if (session.schema_version !== 1 || session.platform !== options.platform || session.complete !== true ||
       session.provenance !== 'operator-supplied' || !Array.isArray(session.images) || !session.images.length || session.images.length % scenes.length !== 0 ||
       !session.identity || typeof session.identity.version !== 'string' || !Number.isInteger(session.identity.build) ||
@@ -143,12 +148,23 @@ async function build(platform, args = process.argv.slice(2)) {
           if (info.format !== 'png' || info.width !== input.entry.width || info.height !== input.entry.height ||
               !info.width || !info.height) throw Error(`Invalid PNG dimensions: ${language}/${scene}`);
           let outWidth = info.width, outHeight = info.height;
+          const sourceScale = captures.session.reported_native_scale;
+          const file = `${language}/screenshots/${scene}.png`;
+          if (sourceScale > outputScale) {
+            const ratio = outputScale / sourceScale;
+            outWidth = Math.max(1, Math.round(info.width * ratio));
+            outHeight = Math.max(1, Math.round(info.height * ratio));
+            presentationBytes = await sharp(input.bytes).resize(outWidth, outHeight, {fit: 'fill', kernel: 'lanczos3'}).png().toBuffer();
+            transformations.push({method: 'native-capture-downsample', scene, file, source_scale: sourceScale,
+              output_scale: outputScale, source_width: info.width, source_height: info.height,
+              width: outWidth, height: outHeight, source_sha256: input.entry.sha256, sha256: hash(presentationBytes)});
+          }
           if (scene === '02-create' && options.createClientOnly) {
-            const framed = await frameClient(input.bytes, platform, language);
+            const framed = await frameClient(presentationBytes, platform, language);
             presentationBytes = framed.png;
             outWidth = framed.width; outHeight = framed.height;
             const {png, ...receipt} = framed;
-            transformations.push({...receipt, scene, file: `${language}/screenshots/${scene}.png`});
+            transformations.push({...receipt, scene, file});
           }
           capture = {cutout_width: outWidth, cutout_height: outHeight, corner_radius: 8};
           await save(`capture-source/${language}/${scene}.png`, input.bytes, 'original-capture', language, scene);
@@ -180,7 +196,7 @@ async function build(platform, args = process.argv.slice(2)) {
     }
     const manifest = {schema_version: 1, platform, purpose: config.purpose,
       captured_languages: captures ? [...new Set(captures.session.images.map(entry => entry.language))] : [],
-      status: captures ? (transformations.length ? 'operator-supplied-with-composites' : 'operator-supplied-captures') : 'backgrounds-only',
+      status: captures ? (options.createClientOnly ? 'operator-supplied-with-composites' : 'operator-supplied-captures') : 'backgrounds-only',
       provenance_note: 'Screenshot subject, scene and application identity require operator review; synthetic titlebars are composites, not native captures.',
       capture: captures?.session.identity ?? null, transformations,
       config_sha256: hash(fs.readFileSync(path.join(ROOT, 'specs', 'marketing', `${platform}-store.json`))),

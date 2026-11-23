@@ -18,6 +18,8 @@ from datetime import datetime, timezone
 ROOT = Path(__file__).resolve().parents[1]
 LANGUAGES = tuple(item['id'] for item in json.loads((ROOT / 'resources/ui-languages.json').read_text(encoding='utf-8'))['languages'])
 SCENES = ('01-welcome', '02-create', '03-preview', '04-workspace')
+OUTPUT_SCALE = json.loads((ROOT / 'specs/capture/marketing-screenshot-scale.json').read_text())[
+    'physical_pixels_per_qt_logical_pixel']
 
 
 def sha256(data):
@@ -69,6 +71,9 @@ def capture(args):
     host = {'darwin': 'macos', 'linux': 'linux'}.get(sys.platform)
     if host != args.platform:
         raise ValueError('Capture must be recorded on its native platform')
+    capture_scale = getattr(args, 'capture_scale', None)
+    if capture_scale is not None and not OUTPUT_SCALE <= capture_scale <= 4:
+        raise ValueError('Measured capture scale must be between the export target and 4')
     executable = args.executable.resolve(strict=True)
     if not executable.is_file() or not re.fullmatch(r'[a-f0-9]{64}', args.expected_sha256):
         raise ValueError('An executable and its expected lowercase SHA-256 are required')
@@ -137,6 +142,8 @@ def capture(args):
                                 'dirty': identity['dirty'], 'executable_sha256': actual_hash,
                                 'host_os': platform.system(), 'host_architecture': platform.machine()},
                    'images': records}
+        if capture_scale is not None:
+            session['reported_native_scale'] = capture_scale
         (stage / 'capture-session.json').write_text(json.dumps(session, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
         stage.rename(output)
     label = output.relative_to(ROOT).as_posix() if output.is_relative_to(ROOT) else 'operator-specified external directory'
@@ -149,6 +156,7 @@ def main():
     parser.add_argument('--executable', type=Path, required=True)
     parser.add_argument('--expected-sha256', required=True)
     parser.add_argument('--source-revision', help='optional full commit matching the executable identity')
+    parser.add_argument('--capture-scale', type=float, help='measured source device-pixel ratio, e.g. 2 for native Retina captures')
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument('--from-directory', type=Path, help='existing PNGs organized by language')
     source.add_argument('--interactive', action='store_true', help='select actual windows for the eight scenes')

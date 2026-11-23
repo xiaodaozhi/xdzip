@@ -10251,26 +10251,29 @@ QtObject {
         QVERIFY(viewport && viewport->property("contentY").isValid());
         QTRY_VERIFY(formats->width() > 0);
         QTRY_VERIFY(formats->width() <= 608);
+        auto *groupStrip = findVisual(window->contentItem(), "welcomeFormatGroups");
+        QVERIFY(groupStrip);
+        const auto *first = findVisual(window->contentItem(), "welcomeFormatGroup-archives");
+        QVERIFY(first);
         for (const auto &group : {"archives", "compressed-tar", "compressed-streams",
                                   "text-envelopes", "installer-metadata"}) {
             auto *badge = findVisual(window->contentItem(),
                                      "welcomeFormatGroup-" + QString::fromLatin1(group));
             QVERIFY(badge && badge->isVisible());
-            QTRY_VERIFY(badge->mapToScene(QPointF()).x() >= 0);
-            QTRY_VERIFY(badge->mapToScene(QPointF(badge->width(), 0)).x() <= window->width());
-            const auto top = badge->mapToItem(viewport, QPointF()).y();
-            const auto current = viewport->property("contentY").toDouble();
-            const auto maximum =
-                qMax(0.0, viewport->property("contentHeight").toDouble() - viewport->height());
-            if (top < 0)
-                viewport->setProperty("contentY", qBound(0.0, current + top, maximum));
-            else if (top + badge->height() > viewport->height())
-                viewport->setProperty(
-                    "contentY",
-                    qBound(0.0, current + top + badge->height() - viewport->height(), maximum));
-            QTRY_VERIFY(badge->mapToItem(viewport, QPointF()).y() >= -0.5);
-            QTRY_VERIFY(badge->mapToItem(viewport, QPointF(0, badge->height())).y() <=
-                        viewport->height() + 0.5);
+            QTRY_COMPARE(badge->mapToItem(groupStrip, QPointF()).y(),
+                         first->mapToItem(groupStrip, QPointF()).y());
+            auto *content = badge->property("contentItem").value<QQuickItem *>();
+            QVERIFY(content);
+            const auto labels = content->childItems();
+            QCOMPARE(labels.size(), 2);
+            const auto center = [badge](QQuickItem *item) {
+                return item->mapToItem(badge, QPointF(0, item->property("inkCenter").toReal())).y();
+            };
+            QTRY_VERIFY(qAbs(center(labels[0]) - center(labels[1])) <= 0.5);
+            badge->forceActiveFocus(Qt::TabFocusReason);
+            QTRY_VERIFY(badge->mapToItem(groupStrip, QPointF()).x() >= -0.5);
+            QTRY_VERIFY(badge->mapToItem(groupStrip, QPointF(badge->width(), 0)).x() <=
+                        groupStrip->width() + 0.5);
         }
         const auto formatAudit = qEnvironmentVariable("XDZIP_FORMAT_GROUPS_AUDIT");
         if (!formatAudit.isEmpty()) {

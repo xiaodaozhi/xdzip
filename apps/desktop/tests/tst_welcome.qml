@@ -121,11 +121,18 @@ Item {
             verify(formats.width <= formats.parent.width);
             console.log("Welcome format group geometry", JSON.stringify({scale: data.scale,
                 available: formats.parent.width, width: formats.width}));
+            const strip = findChild(page, "welcomeFormatGroups");
+            verify(strip);
             for (const group of groups) {
-                const point = group.mapToItem(page, 0, 0);
-                verify(point.x >= 0 && point.x + group.width <= page.width);
-                verify(group.width > 0 && group.height > 0);
+                compare(group.mapToItem(strip, 0, 0).y, groups[0].mapToItem(strip, 0, 0).y);
+                const [label, count] = group.contentItem.children;
+                const labelCenter = label.mapToItem(group, 0, label.inkCenter).y;
+                const countCenter = count.mapToItem(group, 0, count.inkCenter).y;
+                verify(Math.abs(labelCenter - countCenter) <= 0.5);
             }
+            const last = groups[groups.length - 1];
+            last.forceActiveFocus(Qt.TabFocusReason);
+            tryVerify(() => last.mapToItem(strip, last.width, 0).x <= strip.width + 0.5);
             const preview = findChild(page, "welcomeFormatPreview");
             verify(preview.visible);
             if (data.scale === 1.5) verify(preview.truncated);

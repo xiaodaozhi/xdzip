@@ -11,7 +11,7 @@
   },
   "constraints": [
     "Measure client pixels against the actual Qt logical client dimensions, not native frame or shadow.",
-    "Use native capture at the target scale; do not resize the screenshot to simulate the scale.",
+    "Capture at normal window geometry. If native density is higher than the export target, keep the original and downsample the exported image, recording both scales. Never upscale.",
     "Platform display settings and Qt scale factors are capture environment settings, not component dimensions.",
     "Record the actual measured scale and dimensions and do not claim a pass without evidence."
   ]

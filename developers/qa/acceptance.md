@@ -14,7 +14,7 @@ SORT-DIRECTORIES-FIRST: Every sort code (0–12), including archive order, keeps
 
 ## Built-in format registry
 
-FORMAT-STREAM-READ: BZip2/LZMA Alone/Lzip and their TAR compositions must prove known-content browsing, checking and extraction, including empty/multiple members and multiblock BZip2. Retain strict full-span 7z decoding while separately validating member-source recovery. Check memory admission, actual output limits, midstream cancellation, source changes with restored timestamps, and no damaged-file publication. Recognized damaged TAR cannot downgrade; weak LZMA discovery cannot displace valid TAR or ZIP SFX. Read-only profiles reject creation/rewrite without output. CLI and Qt must distinguish absent content checksums, unknown packed sizes and method names. Registry-driven candidates, reused icon receipts, wrapped welcome labels and bilingual multi-font layouts use automated checks.
+FORMAT-STREAM-READ: BZip2/LZMA Alone/Lzip and their TAR compositions must prove known-content browsing, checking and extraction, including empty/multiple members and multiblock BZip2. Retain strict full-span 7z decoding while separately validating member-source recovery. Check memory admission, actual output limits, midstream cancellation, source changes with restored timestamps, and no damaged-file publication. Recognized damaged TAR cannot downgrade; weak LZMA discovery cannot displace valid TAR or ZIP SFX. Read-only profiles reject creation/rewrite without output. CLI and Qt must distinguish absent content checksums, unknown packed sizes and method names. Registry-driven candidates, reused icon receipts, single-row welcome format categories and bilingual multi-font layouts use automated checks.
 
 FORMAT-STREAM: Validate ordinary GZIP against independent readers and writers at all admitted levels, including empty/concatenated members, header checksums, CRC/ISIZE failures, truncation, trailing garbage, cancellation, exact input/output budgets and changed sources. Require observed sizes and safe host-derived virtual names. Cover TAR.GZ classification and empty-TAR precedence without corruption downgrade, single-file creation/check/extraction, directory/multiple-input refusal without publication, ZIP alias content validation, actual CLI/Qt creation and stable capability selection. Check generated associations, native accessibility and bilingual layouts at 100/125/150% text scales using automation. See the [stream contract](../../docs/engineering/single-file-streams.md).
 
@@ -236,7 +236,7 @@ Historical desktop permission or device blockers are not current status. Manual 
 
 Automation records go only to build/review/welcome/ or CI artifacts. Select native drag-and-drop, system picker cancellation, screen-reader, IME and platform appearance checks according to changes; record unexecuted limits rather than marking offscreen screenshots passed.
 
-W01-07: welcome and opened-archive title bars, tabs and appearance buttons use the same component positions, dimensions, fonts and icons; welcome-specific rearrangement is forbidden. Automation compares actual Qt geometry.
+W01-07: welcome and opened-archive title bars, tabs and appearance buttons use the same component positions, dimensions, fonts and icons. The welcome format categories stay in one row at minimum width and 100%, 125% and 150% text sizes. Keyboard focus reveals any clipped category, and each label and count share a visible glyph center. Automation compares actual Qt geometry.
 
 ### Window-wide focus and title-bar revision
 

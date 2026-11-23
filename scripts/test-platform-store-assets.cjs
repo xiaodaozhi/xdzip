@@ -53,6 +53,13 @@ const run = (platform, args, success = true) => {
       assert.deepEqual(await sharp(framed).extract({left:0,top:48,width:800,height:500}).ensureAlpha().raw().toBuffer(),
                        await sharp(fixture).ensureAlpha().raw().toBuffer());
       assert.deepEqual(fs.readFileSync(path.join(framedOutput, 'capture-source/ja-JP/02-create.png')), fixture);
+      const scaledSession = {...framedSession, reported_native_scale: 2};
+      fs.writeFileSync(path.join(input, 'capture-session.json'), JSON.stringify(scaledSession));
+      const scaledOutput = path.join(base, `${platform}-scaled`);
+      run(platform, ['--captures', input, '--output', scaledOutput, '--create-window']);
+      const scaledMeta = await sharp(path.join(scaledOutput, 'ja-JP/screenshots/01-welcome.png')).metadata();
+      assert.deepEqual([scaledMeta.width, scaledMeta.height], [600, 375]);
+      assert.deepEqual(fs.readFileSync(path.join(scaledOutput, 'capture-source/ja-JP/01-welcome.png')), fixture);
       fs.writeFileSync(path.join(input, 'capture-session.json'), JSON.stringify(session));
       const output = path.join(base, `${platform}-export`);
       run(platform, ['--captures', input, '--output', output]);

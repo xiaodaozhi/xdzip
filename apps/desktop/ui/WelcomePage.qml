@@ -65,6 +65,18 @@ Rectangle {
             radius: control.cornerRadius
         }
     }
+    component FormatGroupText: Text {
+        id: inkText
+        readonly property real inkCenter: baselineOffset + metrics.tightBoundingRect.y + metrics.tightBoundingRect.height / 2
+        Layout.alignment: Qt.AlignVCenter
+        Accessible.ignored: true
+        transform: Translate { y: inkText.height / 2 - inkText.inkCenter }
+        TextMetrics {
+            id: metrics
+            text: inkText.text
+            font: inkText.font
+        }
+    }
     color: Theme.surface
     ScrollView {
         objectName: "welcomeContent"
@@ -258,40 +270,63 @@ Rectangle {
                             }
                         }
                     }
-                    Flow {
+                    Flickable {
+                        id: formatGroups
+                        objectName: "welcomeFormatGroups"
                         Layout.fillWidth: true
-                        spacing: Theme.welcomeFormatGroupGap
-                        Repeater {
-                            model: ArchiveFormats.formatGroups
-                            delegate: FormatTextButton {
-                                id: badge
-                                required property var modelData
-                                objectName: "welcomeFormatGroup-" + modelData.id
-                                readonly property bool expanded: root.expandedFormatGroup === modelData.id
-                                text: root.formatGroupLabel(modelData.id)
-                                Accessible.name: qsTrId("welcome.formatGroupCount", modelData.suffixes.length).arg(text)
-                                Accessible.checkable: true
-                                Accessible.checked: expanded
-                                Accessible.onPressAction: if (enabled) click()
-                                Accessible.onToggleAction: if (enabled) click()
-                                onClicked: root.toggleFormatGroup(modelData.id)
-                                onActiveFocusChanged: if (activeFocus) root.revealAction(badge)
-                                baseHeight: Theme.welcomeFormatGroupHeight
-                                labelSize: Theme.welcomeFormatTitleSize * Theme.fontScale
-                                contentItem: RowLayout {
-                                    spacing: Theme.welcomeFormatChipGap
-                                    Text {
-                                        text: badge.text
-                                        font.pixelSize: Math.round(badge.labelPixelSize)
-                                        font.weight: badge.expanded ? Font.DemiBold : Font.Normal
-                                        color: badge.expanded || badge.hovered ? Theme.accentInk : Theme.text
-                                        Accessible.ignored: true
+                        Layout.preferredHeight: formatGroupRow.height + (contentWidth > width ? groupScrollbar.height : 0)
+                        contentWidth: formatGroupRow.width
+                        contentHeight: height
+                        clip: true
+                        flickableDirection: Flickable.HorizontalFlick
+                        boundsBehavior: Flickable.StopAtBounds
+                        ScrollBar.horizontal: ScrollBar {
+                            id: groupScrollbar
+                            policy: formatGroups.contentWidth > formatGroups.width ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
+                        }
+                        function reveal(badge) {
+                            const left = badge.mapToItem(contentItem, 0, 0).x;
+                            const right = left + badge.width;
+                            const target = left < contentX || badge.width > width ? left
+                                : right > contentX + width ? right - width : contentX;
+                            contentX = Math.max(0, Math.min(target, contentWidth - width));
+                        }
+                        Row {
+                            id: formatGroupRow
+                            spacing: Theme.welcomeFormatGroupGap
+                            Repeater {
+                                model: ArchiveFormats.formatGroups
+                                delegate: FormatTextButton {
+                                    id: badge
+                                    required property var modelData
+                                    objectName: "welcomeFormatGroup-" + modelData.id
+                                    readonly property bool expanded: root.expandedFormatGroup === modelData.id
+                                    text: root.formatGroupLabel(modelData.id)
+                                    Accessible.name: qsTrId("welcome.formatGroupCount", modelData.suffixes.length).arg(text)
+                                    Accessible.checkable: true
+                                    Accessible.checked: expanded
+                                    Accessible.onPressAction: if (enabled) click()
+                                    Accessible.onToggleAction: if (enabled) click()
+                                    onClicked: root.toggleFormatGroup(modelData.id)
+                                    onActiveFocusChanged: if (activeFocus) {
+                                        formatGroups.reveal(badge);
+                                        root.revealAction(badge);
                                     }
-                                    Text {
-                                        text: String(badge.modelData.suffixes.length)
-                                        font.pixelSize: Math.round(Theme.welcomeFormatCountSize * Theme.fontScale)
-                                        color: badge.expanded ? Theme.accentInk : Theme.textSecondary
-                                        Accessible.ignored: true
+                                    baseHeight: Theme.welcomeFormatGroupHeight
+                                    labelSize: Theme.welcomeFormatTitleSize * Theme.fontScale
+                                    contentItem: RowLayout {
+                                        spacing: Theme.welcomeFormatChipGap
+                                        FormatGroupText {
+                                            text: badge.text
+                                            font.pixelSize: Math.round(badge.labelPixelSize)
+                                            font.weight: badge.expanded ? Font.DemiBold : Font.Normal
+                                            color: badge.expanded || badge.hovered ? Theme.accentInk : Theme.text
+                                        }
+                                        FormatGroupText {
+                                            text: String(badge.modelData.suffixes.length)
+                                            font.pixelSize: Math.round(Theme.welcomeFormatCountSize * Theme.fontScale)
+                                            color: badge.expanded ? Theme.accentInk : Theme.textSecondary
+                                        }
                                     }
                                 }
                             }

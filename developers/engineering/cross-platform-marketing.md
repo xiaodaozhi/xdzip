@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/cross-platform-marketing.md)
 
-The goal is to capture the real application once for all ten languages, then produce Windows-, macOS- and Ubuntu-styled promotional images for a website or other presentation. Cross-platform outputs are composites, not native screenshots of the target platform, and do not establish its functionality, visual acceptance or store compliance. All platforms use the same [150% capture scale](marketing-screenshot-scale.md); do not upscale captures from another scale and claim native 150% capture.
+The goal is to capture the real application once for all ten languages, then produce Windows-, macOS- and Ubuntu-styled promotional images for a website or other presentation. Cross-platform outputs are composites, not native screenshots of the target platform, and do not establish its functionality, visual acceptance or store compliance. All platforms use the same [150% capture scale](marketing-screenshot-scale.md); capture the normal window and preserve its source density. Higher-density captures may be downsampled at export.
 
 ## Capture once
 
