@@ -15979,17 +15979,15 @@ QtObject {
                     [&, control] { stable &= control->isEnabled(); });
         }
         bool sawBrowse = false;
-        connect(controller, &BrowserController::changed, &monitor, [&] {
-            sawBrowse |= controller->browsingBusy();
-        });
+        connect(controller, &BrowserController::changed, &monitor,
+                [&] { sawBrowse |= controller->browsingBusy(); });
         auto *archiveLink = findVisual(window->contentItem(), "breadcrumbSegment-0");
         QVERIFY(archiveLink);
         QTest::mouseClick(
             window, Qt::LeftButton, Qt::NoModifier,
             archiveLink->mapToScene(QPointF(archiveLink->width() / 2, archiveLink->height() / 2))
                 .toPoint());
-        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->directoryId().isEmpty(),
-                                 5000);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->directoryId().isEmpty(), 5000);
         QVERIFY(sawBrowse);
         QVERIFY(stable);
     }
