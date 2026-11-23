@@ -5,6 +5,7 @@ const path = require('node:path');
 const artwork = require('./build-windows-store-assets.cjs');
 const languages = require('../resources/ui-languages.json').languages.map(item => item.id).sort();
 const scenes = ['01-welcome', '02-create', '03-preview', '04-workspace'];
+const simplifiedChineseTemplateLocales = ['zh-TW', 'ja-JP', 'ko-KR'];
 for (const platform of ['windows', 'macos', 'linux']) {
   const config = require(`../specs/marketing/${platform}-store.json`);
   assert.deepEqual(Object.keys(config.locales).sort(), languages);
@@ -28,6 +29,16 @@ for (const platform of ['windows', 'macos', 'linux']) {
       assert.ok(!svg.includes('capture-shadow'), 'The base must exclude the screenshot silhouette');
       assert.ok(svg.includes(`font-family="${copy.font_family}"`), `${platform} ${language} font`);
       assert.ok(!svg.includes('undefined'), `${platform} ${language} missing artwork text`);
+      if (index > 0 && simplifiedChineseTemplateLocales.includes(language)) {
+        const context = `${platform} ${language} ${scenes[index]}`;
+        const template = config.locales['zh-CN'].promotions[index];
+        const promotion = copy.promotions[index];
+        assert.equal(promotion.headline.length, template.headline.length, `${context} headline lines`);
+        assert.equal(promotion.body.length, template.body.length, `${context} body lines`);
+        const renderedBody = [...svg.matchAll(/<text x="78" y="(\d+)"/g)]
+          .filter(([, y]) => Number(y) > 235);
+        assert.equal(renderedBody.length, template.body.length, `${context} rendered body lines`);
+      }
     }
   }
 }
