@@ -885,11 +885,11 @@ Item {
             objectName: "archiveToolbar"
             visible: !root.welcomeVisible
             Layout.fillWidth: true
-            canOpen: reader.runtimeAvailable && !reader.browsingBusy
-            canSelect: reader.ready && !reader.browsingBusy
+            canOpen: reader.runtimeAvailable && reader.browserQueryAvailable
+            canSelect: reader.ready && reader.browserQueryAvailable
             canSearch: reader.browserQueryAvailable
-            canTest: reader.ready && !reader.browsingBusy && !reader.taskStarting
-            canInspect: reader.ready && !reader.browsingBusy && reader.canPreflight
+            canTest: reader.ready && reader.browserQueryAvailable && !reader.taskStarting
+            canInspect: reader.ready && reader.browserQueryAvailable && reader.canPreflight
             hasSelection: reader.selectedCount > 0
             onNewRequested: root.dispatchDesktopCommand("new")
             onOpenRequested: root.dispatchDesktopCommand("open")

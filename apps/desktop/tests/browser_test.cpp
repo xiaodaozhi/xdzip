@@ -15922,6 +15922,51 @@ QtObject {
         QCOMPARE(loadingChanges.count(), 0);
         QVERIFY(findVisual(window->contentItem(), view == "grid" ? "grid-entry-0" : "entry-0-0"));
     }
+    void toolbarStaysStableWhenBreadcrumbReturnsToRoot() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/navigation.zip"));
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 5000);
+        controller->navigateDirectory(QStringLiteral("d2"));
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy() &&
+                                     controller->directoryId() == QStringLiteral("d2"),
+                                 5000);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        window->requestActivate();
+        QTRY_VERIFY(window->isActive());
+
+        const auto toolbarControls = {
+            QStringLiteral("archiveOpen"),   QStringLiteral("archiveNew"),
+            QStringLiteral("archiveTest"),   QStringLiteral("archiveMore"),
+            QStringLiteral("archiveSearch"), QStringLiteral("archiveExtract")};
+        QObject monitor;
+        bool stable = true;
+        for (const auto &name : toolbarControls) {
+            auto *control = findVisual(window->contentItem(), name);
+            QVERIFY2(control, qPrintable(name));
+            QVERIFY2(control->isEnabled(), qPrintable(name));
+            connect(control, &QQuickItem::enabledChanged, &monitor,
+                    [&, control] { stable &= control->isEnabled(); });
+        }
+        bool sawBrowse = false;
+        connect(controller, &BrowserController::changed, &monitor, [&] {
+            sawBrowse |= controller->browsingBusy();
+        });
+        auto *archiveLink = findVisual(window->contentItem(), "breadcrumbSegment-0");
+        QVERIFY(archiveLink);
+        QTest::mouseClick(
+            window, Qt::LeftButton, Qt::NoModifier,
+            archiveLink->mapToScene(QPointF(archiveLink->width() / 2, archiveLink->height() / 2))
+                .toPoint());
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->directoryId().isEmpty(),
+                                 5000);
+        QVERIFY(sawBrowse);
+        QVERIFY(stable);
+    }
     void treeExpansionAndColumnInteraction() {
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
