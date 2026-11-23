@@ -143,12 +143,15 @@ inline bool validRequestIdentity(const std::string &value) {
     }
     return nonzero;
 }
-inline std::string requestBytes(const std::string &action, const std::vector<fs::path> &paths,
-                                bool archiveCandidates, const std::string &requestIdentity,
-                                const std::string &token) {
-    if (paths.empty() || paths.size() > 128 || token.size() != 32)
+inline fs::path requestFile(const std::string &action, const std::vector<fs::path> &paths,
+                            bool archiveCandidates = false,
+                            const std::string &requestIdentity = {}) {
+    if (paths.empty() || paths.size() > 128)
         return {};
     if (!requestIdentity.empty() && !validRequestIdentity(requestIdentity))
+        return {};
+    const auto token = randomHex();
+    if (token.empty())
         return {};
     const auto id = requestIdentity.empty() ? token.substr(0, 8) + '-' + token.substr(8, 4) + '-' +
                                                   token.substr(12, 4) + '-' + token.substr(16, 4) +
@@ -166,15 +169,6 @@ inline std::string requestBytes(const std::string &action, const std::vector<fs:
     }
     bytes += "]}";
     if (bytes.size() > 256 * 1024)
-        return {};
-    return bytes;
-}
-inline fs::path requestFile(const std::string &action, const std::vector<fs::path> &paths,
-                            bool archiveCandidates = false,
-                            const std::string &requestIdentity = {}) {
-    const auto token = randomHex();
-    const auto bytes = requestBytes(action, paths, archiveCandidates, requestIdentity, token);
-    if (bytes.empty())
         return {};
     const auto directory = fs::temp_directory_path() / ("xdzip-shell-" + token);
 #ifdef _WIN32

@@ -11,26 +11,9 @@ struct ExtensionClass {
     GObjectClass parent;
 };
 GType extensionType = 0;
-#ifdef XDZIP_NAUTILUS_SNAP
-#ifndef XDZIP_SNAP_MARKER
-#define XDZIP_SNAP_MARKER "/snap/xdzip/current/meta/xdzip-shell-protocol"
-#endif
-#ifndef XDZIP_SNAP_COMMAND
-#define XDZIP_SNAP_COMMAND "/usr/bin/snap"
-#endif
-bool snapAvailable() {
-    return g_file_test(XDZIP_SNAP_COMMAND, G_FILE_TEST_IS_EXECUTABLE) &&
-           xdzip_shell::protocolMarker(XDZIP_SNAP_MARKER);
-}
-#endif
 std::pair<bool, std::string> preferences() {
     auto *settings = g_key_file_new();
-#ifdef XDZIP_NAUTILUS_SNAP
-    const std::string file =
-        std::string(g_get_home_dir()) + "/snap/xdzip/current/.config/xdzip/settings.ini";
-#else
     const std::string file = std::string(g_get_user_config_dir()) + "/xdzip/settings.ini";
-#endif
     g_key_file_load_from_file(settings, file.c_str(), G_KEY_FILE_NONE, nullptr);
     const bool enabled = !g_key_file_has_key(settings, "desktop", "shellEnabled", nullptr) ||
                          g_key_file_get_boolean(settings, "desktop", "shellEnabled", nullptr);
@@ -50,37 +33,9 @@ struct Invocation {
     std::string action;
     bool archiveCandidates;
 };
-#ifdef XDZIP_NAUTILUS_SNAP
-bool launchSnap(const Invocation &call) {
-    const auto bytes = xdzip_shell::requestBytes(call.action, call.paths, call.archiveCandidates,
-                                                 {}, xdzip_shell::randomHex());
-    if (bytes.empty() || !snapAvailable())
-        return false;
-    auto *process = g_subprocess_new(G_SUBPROCESS_FLAGS_STDIN_PIPE, nullptr, XDZIP_SNAP_COMMAND,
-                                     "run", "xdzip", "--shell-request-stdin", nullptr);
-    if (!process)
-        return false;
-    auto *buffer = g_bytes_new(bytes.data(), bytes.size());
-    auto *input = g_memory_input_stream_new_from_bytes(buffer);
-    g_bytes_unref(buffer);
-    // The asynchronous splice owns both streams. Closing the write end lets the
-    // confined launcher see EOF without pausing the Files UI or waiting for XDZip.
-    g_output_stream_splice_async(g_subprocess_get_stdin_pipe(process), input,
-                                 GOutputStreamSpliceFlags(G_OUTPUT_STREAM_SPLICE_CLOSE_SOURCE |
-                                                          G_OUTPUT_STREAM_SPLICE_CLOSE_TARGET),
-                                 G_PRIORITY_DEFAULT, nullptr, nullptr, nullptr);
-    g_object_unref(input);
-    g_object_unref(process);
-    return true;
-}
-#endif
 void activate(NautilusMenuItem *, gpointer data) {
     const auto *call = static_cast<Invocation *>(data);
     try {
-#ifdef XDZIP_NAUTILUS_SNAP
-        if (!launchSnap(*call))
-            g_warning("xdzip: could not hand off the selected operation to the Snap");
-#else
         if (!xdzip_shell::protocolMarker("/usr/share/xdzip/shell-protocol")) {
             g_warning("xdzip: installed application does not support shell actions");
             return;
@@ -88,17 +43,12 @@ void activate(NautilusMenuItem *, gpointer data) {
         if (!xdzip_shell::launch("/usr/bin/xdzip", call->action, call->paths,
                                  call->archiveCandidates))
             g_warning("xdzip: could not hand off the selected operation");
-#endif
     } catch (...) {
         g_warning("xdzip: invalid operation selection");
     }
 }
 GList *items(NautilusMenuProvider *, GList *files) {
     try {
-#ifdef XDZIP_NAUTILUS_SNAP
-        if (!snapAvailable())
-            return nullptr;
-#endif
         const auto [enabled, language] = preferences();
         if (!enabled)
             return nullptr;

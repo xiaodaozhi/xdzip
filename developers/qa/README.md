@@ -36,8 +36,6 @@ Record commit, environment, checks performed, results and limitations relevant t
 
 ## Snap candidate runtime dependencies
 
-On Ubuntu 24.04 amd64 with a C++ compiler, `pkg-config`, `libnautilus-extension-dev` and `dpkg-dev`, run `python3 scripts/build-linux-snap-nautilus.py --output <directory>` for the optional Files companion package. Verify that the menu is hidden without the Snap shell protocol marker. Activate a ZIP creation and an extraction, verify the destination bytes, and check the native DEB provider independently. A controlled launcher test establishes the request handoff and operation results. The installed Ubuntu desktop check covers Files loading the companion and `snap run` crossing confinement.
-
 Build a clean Ubuntu 24.04 amd64 runtime with the shared Qt SDK prepared by `scripts/desktop.py`. Collect notices with `scripts/collect-notices.py` and `scripts/prepare-runtime-notices.py`, then deploy the native runtime with `scripts/deploy_linux.py --experimental-wayland`. Run `scripts/build-linux-snap.py --runtime <runtime> --qt-prefix <sdk> --core24 <base.snap> --package-cache <cache> --output <directory>`. The recipe uses the locked Ubuntu packages and checks the application revision, patched Qt modules, desktop file and all ELF imports against the pinned core24 base. The manifest and report accompany the generated package. Pass `--grade stable` for a store candidate with the required Qt image-library receipt.
 
 The Snap's About page leaves upgrades to the Store. `snapLeavesUpdatesToTheStore` verifies that the updater rejects a Snap request without reaching the update service and that the regular Linux path can still issue a request.

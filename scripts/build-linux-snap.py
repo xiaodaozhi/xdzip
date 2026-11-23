@@ -195,7 +195,6 @@ def pack(args, scratch):
     launch = directory / 'launch'
     launch.write_bytes((PACKAGING / 'snap-launch.sh').read_bytes().replace(b'\r\n', b'\n'))
     launch.chmod(0o755)
-    (stage / 'meta/xdzip-shell-protocol').write_bytes(b'1\n')
     desktop = (PACKAGING / 'xdzip.desktop').read_text(encoding='utf-8')
     if desktop.count('\nIcon=xdzip\n') != 1:
         raise ValueError('The desktop entry no longer has its expected icon field')
@@ -224,8 +223,7 @@ def pack(args, scratch):
     args.output.mkdir(parents=True, exist_ok=True)
     command('snap', 'pack', stage, scratch)
     packed = scratch / outfile.name
-    for path in ('meta/snap.yaml', 'meta/gui/xdzip.desktop', 'meta/xdzip-shell-protocol',
-                 'bin/launch', 'runtime/bin/xdzip', 'runtime/cli/xdzip'):
+    for path in ('meta/snap.yaml', 'meta/gui/xdzip.desktop', 'runtime/bin/xdzip', 'runtime/cli/xdzip'):
         payload = subprocess.check_output(['unsquashfs', '-cat', packed, path])
         if hashlib.sha256(payload).hexdigest() != digest(stage / path):
             raise ValueError(f'Packed file differs from the staged input: {path}')
