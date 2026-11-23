@@ -10,6 +10,8 @@ This software is based in part on the work of the Independent JPEG Group.
 
 This software includes code derived from Imlib2.
 
+The Linux Qt SDK also supplies ICU 73.2 libraries. Their Unicode and third-party notices accompany the runtime in [ICU-73.2.txt](ICU-73.2.txt). See the [ICU 73.2 sources and release](https://github.com/unicode-org/icu/releases/tag/release-73-2).
+
 Qt's original source archive: https://download.qt.io/archive/qt/6.8/6.8.2/single/qt-everywhere-src-6.8.2.tar.xz
 
 The application source and version tags are available in the project repository: https://github.com/xiaodaozhi/xdzip
@@ -37,6 +39,8 @@ xdzip 动态链接 Qt 6.8.2 的 Core、Gui、Network、Qml、Quick、QuickContro
 本软件部分基于 Independent JPEG Group 的工作。
 
 本软件包含源自 Imlib2 的代码。
+
+Linux Qt SDK 还提供 ICU 73.2 动态库。其 Unicode 和第三方许可通知随运行时保存在 [ICU-73.2.txt](ICU-73.2.txt)，准确版本见 [ICU 73.2 源码和发行页](https://github.com/unicode-org/icu/releases/tag/release-73-2)。
 
 上方列出 Qt 原始源码、项目仓库和构建及 Qt 替换文档入口。用户可以构建并使用接口兼容的修改版 Qt；修改 macOS 应用副本后可能需要重新进行本地 ad-hoc 完整性签名，xdzip 不要求用户持有项目的私有签名密钥，也不限制为调试 Qt 修改而进行的逆向工程。本说明不能单独证明所有第三方源码及再分发义务已经完成。
 
