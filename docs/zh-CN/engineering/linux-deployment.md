@@ -39,7 +39,7 @@ python3 scripts/desktop.py verify --kind all
 
 ## 实验性 strict Snap
 
-采用 strict confinement 的 `core24` Snap 是单独的实验性交付。受限应用不会从宿主机继承 `$SNAP/usr/share/X11/xkb` 下的 XKB 配置。启动入口将 `QT_XKB_CONFIG_ROOT` 设为该路径时，Snap 必须从固定版本的 Ubuntu 构建环境完整纳入 XKB 目录。缺少这组数据时，Qt Wayland 插件仍可能加载并连接合成器，却会在创建键盘上下文时因 `xkbcommon` 包含路径错误失败。载荷须保留 `xkb-data` 版权通知，并在候选回执中记录软件包版本、确定性目录哈希、文件数和通知哈希。打包后先从最终 Snap 解包核对，再分别执行离屏和 Wayland 冒烟测试。这些检查不能代替真实 strict Snap 桌面会话中的安装和交互检查。
+采用 strict confinement 的 `core24` Snap 是单独的实验性交付。受限应用不会从宿主机继承 `$SNAP/usr/share/X11/xkb` 下的 XKB 配置。启动入口将 `XKB_CONFIG_ROOT` 设为该路径时，Snap 必须从固定版本的 Ubuntu 构建环境完整纳入 XKB 目录。缺少这组数据时，Qt Wayland 插件仍可能加载并连接合成器，却会在创建键盘上下文时因 `xkbcommon` 包含路径错误失败。载荷须保留 `xkb-data` 版权通知，并在候选回执中记录软件包版本、确定性目录哈希、文件数和通知哈希。打包后先从最终 Snap 解包核对，再分别执行离屏和 Wayland 冒烟测试。这些检查不能代替真实 strict Snap 桌面会话中的安装和交互检查。
 
 ## 脱离 SDK 的自动化证据
 

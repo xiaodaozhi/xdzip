@@ -39,6 +39,7 @@ if [ -z "${QT_QPA_PLATFORM:-}" ]; then
     export QT_QPA_PLATFORM
 fi
 export QT_QUICK_BACKEND="${QT_QUICK_BACKEND:-software}"
-export QT_XKB_CONFIG_ROOT="$SNAP/usr/share/X11/xkb"
+# The Wayland plugin creates its context directly through libxkbcommon.
+export XKB_CONFIG_ROOT="$SNAP/usr/share/X11/xkb"
 export FONTCONFIG_FILE="$SNAP/meta/fonts.conf"
 exec "$SNAP/runtime/bin/xdzip" "$@"

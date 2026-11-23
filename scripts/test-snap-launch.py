@@ -3,6 +3,7 @@
 import json
 import os
 from pathlib import Path
+import shutil
 import socket
 import subprocess
 import sys
@@ -11,6 +12,23 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 LAUNCH = ROOT / 'apps/desktop/packaging/linux/snap-launch.sh'
+
+
+@unittest.skipUnless(shutil.which('sh'), 'requires a POSIX shell')
+class SnapKeyboardTests(unittest.TestCase):
+    def test_launcher_sets_libxkbcommon_config_root(self):
+        with tempfile.TemporaryDirectory(prefix='xdzip-snap-keyboard-') as directory:
+            root = Path(directory)
+            snap = root / 'snap with spaces'
+            app = snap / 'runtime/bin/xdzip'
+            app.parent.mkdir(parents=True)
+            app.write_bytes(b'#!/bin/sh\nprintf "%s\\n" "${XKB_CONFIG_ROOT-unset}"\n')
+            app.chmod(0o755)
+            environment = dict(os.environ, SNAP=snap.name, QT_QPA_PLATFORM='wayland',
+                               WAYLAND_DISPLAY='', XKB_CONFIG_ROOT='/nonexistent')
+            result = subprocess.run(['sh', LAUNCH.as_posix()], cwd=root, env=environment,
+                                    text=True, capture_output=True, check=True, timeout=10)
+            self.assertEqual(result.stdout.strip(), f'{snap.name}/usr/share/X11/xkb')
 
 
 @unittest.skipUnless(os.name == 'posix' and hasattr(socket, 'AF_UNIX'), 'requires Unix sockets')
