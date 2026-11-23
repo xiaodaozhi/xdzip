@@ -10,7 +10,7 @@ Le design haute fidélité est confirmé. Qt implémente l’ouverture et la cr�
 
 ## Information et disposition
 
-Le titre de la page de démarrage est « 打包与解压，都简单一点。 » en chinois et « Pack and unpack, a little simpler » en anglais ; le catalogue français indique « Compresser et extraire en toute simplicité ». Le texte secondaire décrit la navigation préalable, l’extraction au besoin et la compression pour partager.
+Le titre de la page de démarrage est « 打包与解压，都简单一点。 » en chinois et « Pack and unpack, a little simpler. » en anglais ; le catalogue français indique « Compresser et extraire en toute simplicité. ». Le texte secondaire décrit la navigation préalable, l’extraction au besoin et la compression pour partager.
 
 La zone cliente par défaut mesure 1024×622, minimum 832×544 ; zone de titre 48, capsule 32 et barre inférieure 32. Le groupe de contenu, large de 608, est centré horizontalement seulement et commence à 28 pixels logiques sous le haut disponible du corps, sans centrage vertical. Le titre mesure 30, ou 28 dans une fenêtre étroite ; description 13, titre d’action 16 et description de carte 12. Deux cartes d’action mesurent 296 de large sur 124 de haut, avec écart 16, marge intérieure 20 et rayon 8. Ce sont des cartes d’entrée de la page d’accueil, pas des remplacements des boutons partagés de fenêtres d’opération.
 

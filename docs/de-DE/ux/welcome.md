@@ -10,7 +10,7 @@ Der hochauflösende Entwurf ist bestätigt. Qt implementiert tatsächliches Öff
 
 ## Informationen und Layout
 
-Die Überschrift der Startseite lautet auf Chinesisch „打包与解压，都简单一点。“ und auf Englisch „Pack and unpack, a little simpler“; der deutsche Katalog verwendet „Packen und Entpacken leicht gemacht“. Der Begleittext beschreibt zuerst Durchsuchen, Entpacken nach Bedarf und Packen zum Teilen.
+Die Überschrift der Startseite lautet auf Chinesisch „打包与解压，都简单一点。“ und auf Englisch „Pack and unpack, a little simpler.“; der deutsche Katalog verwendet „Packen und Entpacken leicht gemacht.“. Der Begleittext beschreibt zuerst Durchsuchen, Entpacken nach Bedarf und Packen zum Teilen.
 
 Der Clientbereich misst standardmäßig 1024×622, mindestens 832×544; Titelbereich 48, Kapsel 32 und untere Leiste 32. Die 608 breite Inhaltsgruppe ist nur horizontal zentriert und beginnt fest 28 logische Pixel unter dem verfügbaren oberen Inhaltsrand, nicht vertikal zentriert. Die Überschrift misst 30, bei schmalem Fenster 28; Beschreibung 13, Aktionstitel 16 und Kartenbeschreibung 12. Zwei Aktionskarten sind 296 breit und 124 hoch, mit Abstand 16, Innenabstand 20 und Radius 8. Dies sind Einstiegskarten der Willkommensseite und kein Ersatz für gemeinsame Schaltflächen von Vorgangsfenstern.
 

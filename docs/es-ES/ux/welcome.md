@@ -10,7 +10,7 @@ El diseño de alta fidelidad está confirmado. Qt implementa apertura y creació
 
 ## Información y disposición
 
-El titular de inicio es «打包与解压，都简单一点。» en chino y «Pack and unpack, a little simpler» en inglés; el catálogo español usa «Comprime y extrae con facilidad». El texto complementario describe navegar primero, extraer lo necesario y comprimir para compartir.
+El titular de inicio es «打包与解压，都简单一点。» en chino y «Pack and unpack, a little simpler.» en inglés; el catálogo español usa «Comprime y extrae con facilidad.». El texto complementario describe navegar primero, extraer lo necesario y comprimir para compartir.
 
 El área cliente predeterminada mide 1024×622, mínimo 832×544; área de título 48, cápsula 32 y barra inferior 32. El grupo de contenido de ancho 608 se centra solo horizontalmente y comienza 28 píxeles lógicos bajo el borde superior disponible, sin centrado vertical. El titular mide 30, o 28 en una ventana estrecha; descripción 13, título de acción 16 y descripción de tarjeta 12. Dos tarjetas de acción miden 296 de ancho por 124 de alto, con separación 16, relleno 20 y radio 8. Son tarjetas de entrada de bienvenida, no sustitutos de los botones compartidos de ventanas de operación.
 

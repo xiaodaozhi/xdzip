@@ -10,7 +10,7 @@ O design de alta fidelidade está confirmado. Qt implementa abertura e criação
 
 ## Informação e layout
 
-O título da página inicial é «打包与解压，都简单一点。» em chinês e «Pack and unpack, a little simpler» em inglês; o catálogo brasileiro usa «Compacte e extraia com facilidade». O texto de apoio descreve navegar primeiro, extrair quando necessário e compactar para compartilhar.
+O título da página inicial é «打包与解压，都简单一点。» em chinês e «Pack and unpack, a little simpler.» em inglês; o catálogo brasileiro usa «Compacte e extraia com facilidade.». O texto de apoio descreve navegar primeiro, extrair quando necessário e compactar para compartilhar.
 
 A área de cliente padrão é 1024×622, mínima 832×544; área de título 48, cápsula 32 e barra inferior 32. O grupo de conteúdo de largura 608 é centralizado apenas horizontalmente e começa a 28 pixels lógicos fixos abaixo do topo disponível do corpo, sem centralização vertical. O título mede 30, ou 28 em janela estreita; descrição 13, título de ação 16 e descrição de cartão 12. Dois cartões de ação medem 296 de largura por 124 de altura, com espaço 16, preenchimento 20 e raio 8. São cartões de entrada da página de boas-vindas, não substitutos dos botões compartilhados de janelas de operação.
 
