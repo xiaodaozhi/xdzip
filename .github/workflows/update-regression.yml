@@ -140,6 +140,10 @@ jobs:
         run: |
           python3 -m pip install -r design/assets/fonts/requirements.txt
           PYTHONPATH=scripts python3 -c 'from ui_fonts import tools; tools()'
+      - name: Check update fixture contracts before native dependencies
+        run: |
+          python3 scripts/test-macos-production-update.py
+          python3 scripts/test-system-proxy-fixture.py
       - name: Prepare pinned native Intel dependencies
         run: |
           test "$(uname -m)" = x86_64
@@ -149,8 +153,6 @@ jobs:
           python3 scripts/prepare-qt-network.py --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos'
       - name: Check Intel update and fixture admission contracts
         run: |
-          python3 scripts/test-macos-production-update.py
-          python3 scripts/test-system-proxy-fixture.py
           python3 scripts/test-release-updates.py
       - name: Verify Intel product update, installation and restart with test keys
         run: python3 scripts/check-macos-product-update.py --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos' --output build/update-regression/macos-intel-product

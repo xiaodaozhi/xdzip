@@ -37,7 +37,8 @@ class ProductionPreparationTests(unittest.TestCase):
             (app/'Contents/MacOS/xdzip').write_bytes(('private '+label).encode())
             commit=str(number)*40
             self.products[label]=dict(app=app,commit=commit,identity=dict(product='xdzip',version='0.2.0-alpha.'+str(number),
-                build=199+number,revision=commit[:12],dirty=False))
+                build=199+number,revision=commit[:12],dirty=False,packaged_update_policy=1,
+                packaged_shell_policy=1,packaged_association_policy=1))
         self.signer=self.root/'compiled-tool';self.signer.write_bytes(b'compiled without signing authority')
         self.root_patch=patch.object(mac,'ROOT',self.root);self.root_patch.start();self.addCleanup(self.root_patch.stop)
         self.env_patch=patch.dict(os.environ,{},clear=True);self.env_patch.start();self.addCleanup(self.env_patch.stop)
@@ -65,6 +66,17 @@ class ProductionPreparationTests(unittest.TestCase):
         mac_assets = [a for a in manifest['assets'] if a['platform'] == 'macos']
         self.assertEqual({a['architecture'] for a in mac_assets}, {'x86_64'})
         self.assertTrue(manifest['macos_appcast_url'].endswith('/appcast-intel.xml'))
+
+    def test_product_identity_accepts_additive_capabilities_but_rejects_changed_provenance(self):
+        identity = self.products['old']['identity']
+        expected = {key: identity[key] for key in ('product', 'version', 'build', 'revision', 'dirty')}
+        self.assertTrue(mac.identity_matches(identity, expected))
+        for key in expected:
+            changed = dict(identity)
+            changed.pop(key)
+            self.assertFalse(mac.identity_matches(changed, expected), key)
+            changed[key] = 'unexpected'
+            self.assertFalse(mac.identity_matches(changed, expected), key)
 
     def test_preparation_has_no_signing_command_and_preserves_exact_public_bytes(self):
         record=self.prepare()

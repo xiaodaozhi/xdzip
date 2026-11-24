@@ -139,6 +139,10 @@ def deploy(source, build, qt, sdk, destination, log):
     return json.loads(run([binary, '--version-json']))
 
 
+def identity_matches(identity, expected):
+    return isinstance(identity, dict) and all(identity.get(key) == value for key, value in expected.items())
+
+
 def prepare(output, qt, session, app_name, production_trust=False):
     source = private_source(output, production_trust)
     if (source/'scripts/ui-fonts.py').is_file():
@@ -168,7 +172,8 @@ def prepare(output, qt, session, app_name, production_trust=False):
         identity = deploy(source, build, qt, sdk, app, output/(label+'-deployment.log'))
         expected = {'product': 'xdzip', 'version': '0.2.0-alpha.'+str(number), 'build': build_number,
                     'revision': commit[:12], 'dirty': False}
-        if identity != expected: raise RuntimeError('Private product did not retain clean Release identity')
+        if not identity_matches(identity, expected):
+            raise RuntimeError('Private product did not retain clean Release identity: '+json.dumps(identity, sort_keys=True))
         if run(['git', '-C', source, 'status', '--porcelain']).strip():
             raise RuntimeError('Private build modified tracked source after committing identity')
         products[label] = dict(identity=identity, commit=commit, app=app)
@@ -312,8 +317,9 @@ def load_production_prepared(output):
         if (digest(plist)!=product.get('plist_sha256') or digest(binary)!=product.get('binary_sha256') or
                 info.get('SUPublicEDKey')!=expected_key or product.get('SUPublicEDKey')!=expected_key or
                 not re.fullmatch('[0-9a-f]{40}',product.get('commit','')) or
-                product.get('identity')!={'product':'xdzip','version':'0.2.0-alpha.'+str(number),'build':199+number,
-                                         'revision':product['commit'][:12],'dirty':False}):
+                not identity_matches(product.get('identity'),
+                    {'product':'xdzip','version':'0.2.0-alpha.'+str(number),'build':199+number,
+                     'revision':product['commit'][:12],'dirty':False})):
             raise RuntimeError('Prepared production application identity changed')
         products[label]=dict(identity=product['identity'],commit=product['commit'],app=output/expected_app)
     manifest=json.loads((output/'owned/release.json').read_bytes())
