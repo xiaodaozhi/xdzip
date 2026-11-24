@@ -202,7 +202,7 @@ def prepared_inputs(directory):
             record['schema_version'] == 1, 'invalid_prepared_record')
     require(record['source_commit'] == source_commit(), 'prepared_source_mismatch')
     platform = record['platform']
-    require(platform in ('windows', 'linux', 'macos'), 'unsupported_fixture_platform')
+    require(platform in ('windows', 'linux', 'macos', 'macos-intel'), 'unsupported_fixture_platform')
     expected_tool = 'signing/xdzip-update-tool' + ('.exe' if platform == 'windows' else '')
     require(isinstance(record['tool'], dict) and set(record['tool']) == {'path', 'sha256'} and
             record['tool']['path'] == expected_tool, 'unexpected_signing_tool')
@@ -218,11 +218,11 @@ def prepared_inputs(directory):
         path = artifact(directory, record, 'resources/' + name)
         require(path.read_bytes() == regular(ROOT / 'resources' / name, 65536).read_bytes(),
                 'prepared_public_resource_mismatch')
-    labels = {'old', 'new'} if platform == 'macos' else {'old', 'new', 'failure'}
+    labels = {'old', 'new'} if platform in ('macos', 'macos-intel') else {'old', 'new', 'failure'}
     require(isinstance(record['products'], dict) and set(record['products']) == labels,
             'prepared_products_mismatch')
     commits = {label: product_identity(value, label) for label, value in record['products'].items()}
-    if platform != 'macos':
+    if platform not in ('macos', 'macos-intel'):
         require(commits['new'] == commits['failure'], 'failure_product_identity_mismatch')
     require(commits['old'] != commits['new'], 'distinct_upgrade_identity_required')
     return record, Tool(tool_path, record['tool']['sha256'])
@@ -368,17 +368,19 @@ def mac_products(directory, record, package):
 
 def candidate(directory, record, folder):
     platform = record['platform']
-    manifest_path = artifact(directory, record, folder + '/release.json')
+    intel = platform == 'macos-intel'
+    is_mac = platform in ('macos', 'macos-intel')
+    manifest_path = artifact(directory, record, folder + ('/release-intel.json' if intel else '/release.json'))
     manifest = load(manifest_path)
-    validate(manifest)
+    validate(manifest, intel=intel)
     require(set(manifest) == {'schema_version', 'product', 'version', 'channel', 'build', 'tag',
                             'commit', 'repository', 'assets'} |
-            ({'macos_appcast_url'} if platform == 'macos' else set()), 'unexpected_manifest_fields')
+            ({'macos_appcast_url'} if is_mac else set()), 'unexpected_manifest_fields')
     require(manifest['version'] == VERSION and manifest['build'] == BUILD and
             manifest['commit'] == record['products']['new']['commit'] and
             manifest['repository'] == 'xiaodaozhi/xdzip', 'fixture_manifest_identity_mismatch')
-    kind = {'windows': 'exe', 'linux': 'deb', 'macos': 'app.zip'}[platform]
-    selected = next(asset for asset in manifest['assets'] if asset['platform'] == platform and
+    kind = {'windows': 'exe', 'linux': 'deb', 'macos': 'app.zip', 'macos-intel': 'app.zip'}[platform]
+    selected = next(asset for asset in manifest['assets'] if asset['platform'] == ('macos' if is_mac else platform) and
                     asset['package_type'] == kind)
     package = artifact(directory, record, folder + '/' + selected['filename'])
     require(selected['bytes'] == package.stat().st_size and selected['sha256'] == digest(package),
@@ -398,16 +400,21 @@ def sign_fixture(directory):
     prepared_sha256 = digest(regular(directory / PREPARED, 256 * 1024))
     record, tool = prepared_inputs(directory)
     platform = record['platform']
-    folders = ('owned',) if platform == 'macos' else ('new', 'failure')
+    intel = platform == 'macos-intel'
+    is_mac = platform in ('macos', 'macos-intel')
+    manifest_name = 'release-intel.json' if intel else 'release.json'
+    metadata_name = 'macos-update-intel.json' if intel else 'macos-update.json'
+    feed_name = 'appcast-intel.xml' if intel else 'appcast.xml'
+    folders = ('owned',) if is_mac else ('new', 'failure')
     candidates = [(folder, *candidate(directory, record, folder)) for folder in folders]
-    outputs = [directory / folder / 'release.json.sig' for folder in folders]
-    if platform == 'macos':
+    outputs = [directory / folder / (manifest_name + '.sig') for folder in folders]
+    if is_mac:
         outputs += [directory / 'owned' / name for name in
-                    ('macos-update.json', 'appcast.xml', 'appcast-unsigned.xml')]
+                    (metadata_name, feed_name, 'appcast-unsigned.xml')]
         outputs += [directory / 'production-archive-inspection.json']
     outputs += [directory / 'production-signing.json']
     require(all(not path.exists() and not path.is_symlink() for path in outputs), 'signing_output_exists')
-    if platform == 'macos':
+    if is_mac:
         mac_products(directory, record, candidates[0][3])
     matched = match_keys(tool, directory)
     ring = directory / 'resources/update-trust.json'
@@ -415,8 +422,8 @@ def sign_fixture(directory):
     signed = []
     for folder, manifest_path, manifest, package in candidates:
         destination = directory / folder
-        if platform == 'macos':
-            metadata_path = destination / 'macos-update.json'
+        if is_mac:
+            metadata_path = destination / metadata_name
             tool.run(['sign-archive', '--archive', package, '--public-key', sparkle,
                       '--version', VERSION, '--build', str(BUILD), '--output', metadata_path], PRIVATE[1])
             metadata = load(metadata_path, 4096)
@@ -424,18 +431,18 @@ def sign_fixture(directory):
                       '--signature', metadata['ed_signature']])
             unsigned = destination / 'appcast-unsigned.xml'
             with unsigned.open('xb') as stream:
-                stream.write(appcast_bytes(manifest, metadata))
-            feed = destination / 'appcast.xml'
+                stream.write(appcast_bytes(manifest, metadata, intel=intel))
+            feed = destination / feed_name
             tool.run(['sign-appcast', '--appcast', unsigned, '--public-key', sparkle,
                       '--output', feed], PRIVATE[1])
             tool.run(['verify-appcast', '--appcast', feed, '--public-key', sparkle])
             signed.extend([{'path': 'owned/' + name, 'sha256': digest(destination / name)}
-                           for name in ('macos-update.json', 'appcast.xml')])
-        signature = destination / 'release.json.sig'
+                           for name in (metadata_name, feed_name)])
+        signature = destination / (manifest_name + '.sig')
         tool.run(['sign', '--manifest', manifest_path, '--keyring', ring,
                   '--key-id', KEY_ID, '--output', signature], PRIVATE[0])
         tool.run(['verify', '--manifest', manifest_path, '--signature', signature, '--keyring', ring])
-        signed.append({'path': folder + '/release.json.sig', 'sha256': digest(signature),
+        signed.append({'path': folder + '/' + manifest_name + '.sig', 'sha256': digest(signature),
                        'manifest_sha256': digest(manifest_path), 'package_sha256': digest(package),
                        'signature_verified': True})
     # Recheck all input bytes after signing. A different preparer/runner process

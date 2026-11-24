@@ -140,6 +140,10 @@ class DesktopBundleTests(unittest.TestCase):
                        input=b'int main(void) { return 0; }\n', capture_output=True, check=True)
         for path in output.iterdir():
             shutil.copy2(executable, path)
+            # Intel linkers may leave helper binaries unsigned. Seal them before
+            # probing whether the misplaced resource breaks the outer bundle.
+            subprocess.run(['codesign', '--force', '--sign', '-', '--timestamp=none', path],
+                           capture_output=True, check=True)
         (app/'Contents/Info.plist').write_bytes(plistlib.dumps({
             'CFBundleIdentifier': 'org.xdzip.owned-cli-seal', 'CFBundleExecutable': 'xdzip',
             'CFBundlePackageType': 'APPL', 'CFBundleVersion': '1'}))

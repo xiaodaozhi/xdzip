@@ -67,6 +67,18 @@ class ProductionPreparationTests(unittest.TestCase):
         self.assertEqual({a['architecture'] for a in mac_assets}, {'x86_64'})
         self.assertTrue(manifest['macos_appcast_url'].endswith('/appcast-intel.xml'))
 
+    def test_intel_production_record_is_architecture_bound(self):
+        with patch.dict(os.environ, {'XDZIP_MACOS_INTEL_CI': '1'}):
+            record = self.prepare()
+            self.assertEqual(record['platform'], 'macos-intel')
+            self.assertIn('owned/release-intel.json', record['artifacts'])
+            self.assertIn('owned/xdzip-0.2.0-alpha.2-macos-x86_64.app.zip', record['artifacts'])
+            (_, _, _, archive), verifier = self.load()
+            self.assertEqual(archive.name, 'xdzip-0.2.0-alpha.2-macos-x86_64.app.zip')
+            self.assertTrue(verifier.call_args.kwargs['intel'])
+        with self.assertRaisesRegex(RuntimeError, 'source or trust identity'):
+            self.load()
+
     def test_product_identity_accepts_additive_capabilities_but_rejects_changed_provenance(self):
         identity = self.products['old']['identity']
         expected = {key: identity[key] for key in ('product', 'version', 'build', 'revision', 'dirty')}
@@ -100,7 +112,7 @@ class ProductionPreparationTests(unittest.TestCase):
         self.assertEqual(manifest['commit'],self.products['new']['commit'])
         self.assertEqual(archive.name,'xdzip-0.2.0-alpha.2-macos-arm64.app.zip')
         verifier.assert_called_once_with(self.output/'owned',manifest,tool=self.output/'signing/xdzip-update-tool',
-            keyring=self.output/'resources/update-trust.json',public_key=self.output/'resources/sparkle-update-key.json')
+            keyring=self.output/'resources/update-trust.json',public_key=self.output/'resources/sparkle-update-key.json',intel=False)
 
     def test_changed_archive_is_rejected_before_verification_or_native_execution(self):
         self.prepare()

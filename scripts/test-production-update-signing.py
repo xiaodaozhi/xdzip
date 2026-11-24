@@ -19,13 +19,16 @@ import warnings
 import zipfile
 import zlib
 
-from release_protocol import TARGETS
+from release_protocol import INTEL_TARGETS, TARGETS
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location('production_fixture_signer', ROOT / 'scripts/sign-production-update-fixtures.py')
 SIGN = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(SIGN)
+MAC_SPEC = importlib.util.spec_from_file_location('production_mac_fixture', ROOT / 'scripts/check-macos-product-update.py')
+MAC = importlib.util.module_from_spec(MAC_SPEC)
+MAC_SPEC.loader.exec_module(MAC)
 TEST_SECRETS = {'XDZIP_UPDATE_SIGNING_KEY_HEX': '2a' * 32,
                 'XDZIP_SPARKLE_SIGNING_KEY_HEX': '2b' * 32,
                 'XDZIP_UPDATE_KEY_ID': 'xdzip-release-1'}
@@ -84,12 +87,12 @@ class ProductionSigningTests(unittest.TestCase):
         shutil.copy2(self.tool, tool)
         products = {}
         for label, commit in (('old', 'a' * 40), ('new', 'b' * 40)):
-            products[label] = dict(commit=commit, identity=dict(version='0.2.0-alpha.' + ('1' if label == 'old' else '2'),
+            products[label] = dict(commit=commit, identity=dict(product='xdzip', version='0.2.0-alpha.' + ('1' if label == 'old' else '2'),
                                     build=200 if label == 'old' else 201, revision=commit[:12], dirty=False))
-        if platform != 'macos':
+        if platform not in ('macos', 'macos-intel'):
             products['failure'] = copy.deepcopy(products['new'])
         paths = [tool, *(directory / 'resources' / name for name in SIGN.PUBLIC_FILES)]
-        if platform == 'macos':
+        if platform in ('macos', 'macos-intel'):
             app_name = 'xdzip-owned-update-更新-' + 'd' * 32 + '.app'
             public = json.loads((self.root / 'resources/sparkle-update-key.json').read_bytes())['public_key']
             for label, value in products.items():
@@ -104,14 +107,14 @@ class ProductionSigningTests(unittest.TestCase):
                 value.update(app=app.relative_to(directory).as_posix(), SUPublicEDKey=base64.b64encode(bytes.fromhex(public)).decode(),
                              binary_sha256=SIGN.digest(binary), plist_sha256=SIGN.digest(plist))
             (directory / 'owned').mkdir()
-            package = directory / 'owned/xdzip-0.2.0-alpha.2-macos-arm64.app.zip'
+            package = directory / ('owned/xdzip-0.2.0-alpha.2-macos-' + ('x86_64' if platform == 'macos-intel' else 'arm64') + '.app.zip')
             with zipfile.ZipFile(package, 'w') as archive:
                 app = directory / products['new']['app']
                 for path in app.rglob('*'):
                     if path.is_file():
                         archive.write(path, app_name + '/' + path.relative_to(app).as_posix())
             self.manifest(package, platform)
-            paths += [package, package.parent / 'release.json']
+            paths += [package, package.parent / ('release-intel.json' if platform == 'macos-intel' else 'release.json')]
         else:
             for label in ('new', 'failure'):
                 folder = directory / label
@@ -131,16 +134,17 @@ class ProductionSigningTests(unittest.TestCase):
     def manifest(self, package, platform):
         value = dict(schema_version=1, product='xdzip', version=SIGN.VERSION, channel='alpha', build=SIGN.BUILD,
                      tag='v' + SIGN.VERSION, commit='b' * 40, repository='xiaodaozhi/xdzip', assets=[])
-        for (system, architecture, kind), (suffix, minimum) in TARGETS.items():
-            selected = system == platform and kind == {'windows': 'exe', 'linux': 'deb', 'macos': 'app.zip'}[platform]
+        intel = platform == 'macos-intel'
+        for (system, architecture, kind), (suffix, minimum) in (INTEL_TARGETS if intel else TARGETS).items():
+            selected = system == ('macos' if intel else platform) and kind == {'windows': 'exe', 'linux': 'deb', 'macos': 'app.zip', 'macos-intel': 'app.zip'}[platform]
             name = 'xdzip-' + SIGN.VERSION + '-' + suffix
             value['assets'].append(dict(filename=name, platform=system, architecture=architecture, package_type=kind,
                 minimum_system=minimum, bytes=package.stat().st_size if selected else 1,
                 sha256=SIGN.digest(package) if selected else SIGN.hashlib.sha256(b'x').hexdigest(),
                 url='https://github.com/xiaodaozhi/xdzip/releases/download/v' + SIGN.VERSION + '/' + name))
-        if platform == 'macos':
-            value['macos_appcast_url'] = 'https://github.com/xiaodaozhi/xdzip/releases/download/v' + SIGN.VERSION + '/appcast.xml'
-        dump(package.parent / 'release.json', value)
+        if platform in ('macos', 'macos-intel'):
+            value['macos_appcast_url'] = 'https://github.com/xiaodaozhi/xdzip/releases/download/v' + SIGN.VERSION + ('/appcast-intel.xml' if intel else '/appcast.xml')
+        dump(package.parent / ('release-intel.json' if intel else 'release.json'), value)
 
     def rewrite_record(self, directory, record):
         dump(directory / SIGN.PREPARED, record)
@@ -200,6 +204,39 @@ class ProductionSigningTests(unittest.TestCase):
         with self.assertRaisesRegex(SIGN.AdmissionError, 'compiled_signing_tool_failed'):
             tool.run(['verify', '--manifest', manifest, '--signature', directory / 'new/release.json.sig',
                       '--keyring', directory / 'resources/update-trust.json'])
+
+    def test_intel_archive_feed_and_manifest_are_bound_and_signed(self):
+        directory, _ = self.prepare('macos-intel')
+        report = SIGN.sign_fixture(directory)
+        self.assertEqual(report['status'], 'passed')
+        self.assertEqual(report['platform'], 'macos-intel')
+        for name in ('release-intel.json.sig', 'appcast-intel.xml', 'macos-update-intel.json'):
+            self.assertTrue((directory/'owned'/name).is_file(), name)
+        self.assertFalse((directory/'owned/release.json.sig').exists())
+        with patch.object(MAC, 'ROOT', self.root), patch.object(MAC, 'run', return_value=b'c'*40+b'\n'), \
+                patch.dict(os.environ, {'XDZIP_MACOS_INTEL_CI': '1'}, clear=True):
+            prepared, _, manifest, archive = MAC.load_production_prepared(directory)
+        self.assertEqual(prepared['platform'], 'macos-intel')
+        self.assertEqual(archive.name, 'xdzip-0.2.0-alpha.2-macos-x86_64.app.zip')
+        self.assertTrue(manifest['macos_appcast_url'].endswith('/appcast-intel.xml'))
+
+    def test_intel_signer_rejects_arm_manifest_even_if_inventory_is_refreshed(self):
+        directory, record = self.prepare('macos-intel')
+        path = directory/'owned/release-intel.json'
+        manifest = json.loads(path.read_bytes())
+        manifest['assets'] = [a for a in manifest['assets'] if a['platform'] != 'macos']
+        for (system, architecture, kind), (suffix, minimum) in TARGETS.items():
+            if system == 'macos':
+                name = 'xdzip-' + SIGN.VERSION + '-' + suffix
+                manifest['assets'].append(dict(filename=name, platform=system, architecture=architecture,
+                    package_type=kind, minimum_system=minimum, bytes=1,
+                    sha256=SIGN.hashlib.sha256(b'x').hexdigest(),
+                    url='https://github.com/xiaodaozhi/xdzip/releases/download/v' + SIGN.VERSION + '/' + name))
+        manifest['macos_appcast_url'] = manifest['macos_appcast_url'].replace('appcast-intel.xml', 'appcast.xml')
+        dump(path, manifest)
+        self.refresh_artifact(directory, record, 'owned/release-intel.json')
+        with self.assertRaises((ValueError, SIGN.AdmissionError)):
+            SIGN.sign_fixture(directory)
 
     def test_actual_mac_archive_feed_and_manifest_are_independently_signed(self):
         directory, _ = self.prepare('macos')

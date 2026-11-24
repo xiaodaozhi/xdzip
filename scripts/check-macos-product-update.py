@@ -182,7 +182,7 @@ def prepare(output, qt, session, app_name, production_trust=False):
     return products, source/'build/signer/debug/xdzip-update-tool', sdk
 
 
-def unsigned_candidate(output, new):
+def unsigned_candidate(output, new, production_trust=False):
     directory = output/'owned'; directory.mkdir()
     version = new['identity']['version']
     package = directory/('xdzip-'+version+'-macos-'+macos_arch()+'.app.zip')
@@ -203,7 +203,8 @@ def unsigned_candidate(output, new):
                            sha256=digest(package) if selected else hashlib.sha256(b'x').hexdigest(),url=base+filename))
     manifest=dict(schema_version=1,product='xdzip',version=version,channel='alpha',build=201,tag='v'+version,
                   commit=new['commit'],repository='xiaodaozhi/xdzip',assets=assets,macos_appcast_url=base+('appcast-intel.xml' if macos_arch()=='x86_64' else 'appcast.xml'))
-    dump(directory/'release.json',manifest)
+    name = 'release-intel.json' if production_trust and macos_arch() == 'x86_64' else 'release.json'
+    dump(directory/name,manifest)
     return manifest,package
 
 
@@ -252,7 +253,7 @@ def production_file(output, relative):
 def production_prepared(output, products, signing):
     """Freeze only public build inputs; final signatures are made in another step."""
     require_no_production_secrets()
-    manifest,package = unsigned_candidate(output, products['new'])
+    manifest,package = unsigned_candidate(output, products['new'], production_trust=True)
     resource_dir = output/'resources';resource_dir.mkdir()
     for resource in PUBLIC_RESOURCES:
         shutil.copyfile(ROOT/'resources'/resource, resource_dir/resource)
@@ -268,8 +269,10 @@ def production_prepared(output, products, signing):
         recorded_products[label]=dict(identity=product['identity'],commit=product['commit'],
             app=app.relative_to(output).as_posix(),SUPublicEDKey=info['SUPublicEDKey'],
             binary_sha256=digest(app/'Contents/MacOS/xdzip'),plist_sha256=digest(plist))
-    inputs=[output/'owned/release.json',package,tool]+[resource_dir/name for name in PUBLIC_RESOURCES]
-    record=dict(schema_version=1,platform='macos',source_commit=run(['git','-C',ROOT,'rev-parse','HEAD']).decode().strip(),
+    intel = macos_arch() == 'x86_64'
+    manifest_name = 'release-intel.json' if intel else 'release.json'
+    inputs=[output/'owned'/manifest_name,package,tool]+[resource_dir/name for name in PUBLIC_RESOURCES]
+    record=dict(schema_version=1,platform='macos-intel' if intel else 'macos',source_commit=run(['git','-C',ROOT,'rev-parse','HEAD']).decode().strip(),
         tool=dict(path='signing/xdzip-update-tool',sha256=digest(tool)),
         artifacts={path.relative_to(output).as_posix():dict(bytes=path.stat().st_size,sha256=digest(path)) for path in inputs},
         products=recorded_products)
@@ -283,10 +286,13 @@ def load_production_prepared(output):
     if record_path.stat().st_size>64*1024:raise RuntimeError('Prepared production record exceeds its bound')
     record=json.loads(record_path.read_bytes())
     source_commit=run(['git','-C',ROOT,'rev-parse','HEAD']).decode().strip()
+    intel = macos_arch() == 'x86_64'
+    manifest_name = 'release-intel.json' if intel else 'release.json'
+    package_name = 'xdzip-0.2.0-alpha.2-macos-'+macos_arch()+'.app.zip'
     if (set(record)!={'schema_version','platform','source_commit','tool','artifacts','products'} or
-            record.get('schema_version')!=1 or record.get('platform')!='macos' or record.get('source_commit')!=source_commit):
+            record.get('schema_version')!=1 or record.get('platform')!=('macos-intel' if intel else 'macos') or record.get('source_commit')!=source_commit):
         raise RuntimeError('Prepared production source or trust identity changed')
-    expected_paths={'owned/release.json','owned/xdzip-0.2.0-alpha.2-macos-arm64.app.zip',
+    expected_paths={'owned/'+manifest_name,'owned/'+package_name,
                     'signing/xdzip-update-tool','resources/update-trust.json','resources/sparkle-update-key.json'}
     if set(record.get('artifacts',{}))!=expected_paths:
         raise RuntimeError('Unexpected prepared production inputs')
@@ -322,15 +328,15 @@ def load_production_prepared(output):
                      'revision':product['commit'][:12],'dirty':False})):
             raise RuntimeError('Prepared production application identity changed')
         products[label]=dict(identity=product['identity'],commit=product['commit'],app=output/expected_app)
-    manifest=json.loads((output/'owned/release.json').read_bytes())
+    manifest=json.loads((output/'owned'/manifest_name).read_bytes())
     if (manifest.get('commit')!=products['new']['commit'] or manifest.get('version')!='0.2.0-alpha.2' or manifest.get('build')!=201):
         raise RuntimeError('Prepared manifest does not match the new product')
     # These checks execute with no production keys, before any application or
     # native installer is launched. The installer will independently verify again.
     verify_release_updates(output/'owned',manifest,tool=tool,keyring=output/'resources/update-trust.json',
-                           public_key=output/'resources/sparkle-update-key.json')
+                           public_key=output/'resources/sparkle-update-key.json',intel=intel)
     record.update(token=token,app_name=app_name)
-    return record,products,manifest,output/'owned/xdzip-0.2.0-alpha.2-macos-arm64.app.zip'
+    return record,products,manifest,output/'owned'/package_name
 
 
 class Associations:
@@ -578,7 +584,6 @@ def main():
         os.environ.get('GITHUB_ACTIONS')!='true' or os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted'):
         parser.error('Requires the selected native disposable GitHub-hosted macOS runner')
     output,qt=args.output.resolve(),args.qt_prefix.resolve()
-    if macos_arch()=='x86_64' and args.production_trust:parser.error('Intel production-key fixture admission is not implemented')
     if args.prepare and not args.production_trust:parser.error('--prepare requires --production-trust')
     if args.production_trust:require_no_production_secrets()
     executing_prepared=args.production_trust and not args.prepare
@@ -635,7 +640,10 @@ def main():
     thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
     address='http://127.0.0.1:'+str(server.server_port)
     base='https://github.com/xiaodaozhi/xdzip/releases/download/'+manifest['tag']+'/'
-    for filename in ('release.json','release.json.sig'):shutil.copy2(output/'owned'/filename,session/filename)
+    source_manifest = 'release-intel.json' if executing_prepared and macos_arch()=='x86_64' else 'release.json'
+    for suffix in ('','.sig'):shutil.copy2(output/'owned'/(source_manifest+suffix),session/('release.json'+suffix))
+    if executing_prepared and macos_arch()=='x86_64':
+        shutil.copy2(output/'owned/appcast-intel.xml',output/'owned/appcast.xml')
     assets=[dict(name=a['filename'],browser_download_url=a['url'],size=a['bytes']) for a in manifest['assets']]
     manifest_name='release-intel.json' if macos_arch()=='x86_64' else 'release.json'
     feed_name='appcast-intel.xml' if macos_arch()=='x86_64' else 'appcast.xml'
