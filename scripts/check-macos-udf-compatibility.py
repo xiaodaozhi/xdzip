@@ -19,13 +19,15 @@ def require(condition, message):
 
 
 def clear_owned_build_registration(app):
-    """Remove only this build's implicit registration on a disposable runner."""
+    """Remove only checkout build copies on a disposable hosted runner."""
     current = registered_apps()
     if not current:
         return
-    if len(current) != 1 or next(iter(current)).resolve() != app or not build_copy(app):
-        raise RuntimeError('The disposable runner has an unrelated xdzip registration')
-    unregister(app)
+    if not build_copy(app) or any(not build_copy(path) for path in current):
+        owned = sum(1 for path in current if build_copy(path))
+        raise RuntimeError(f'The disposable runner has an unrelated xdzip registration (owned={owned}, other={len(current)-owned})')
+    for path in sorted(current):
+        unregister(path)
     require(not registered_apps(), 'The owned build registration did not clear')
 
 
