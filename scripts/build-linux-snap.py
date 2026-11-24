@@ -54,41 +54,57 @@ def record_source_access(stage, revision, packages):
         instructions.replace('@SOURCE_URL@', source), encoding='utf-8')
 
 
-def fetch_deb(cache, pin):
+def fetch_deb(cache, pin, mirrors):
     destination = cache / pin['url'].rsplit('/', 1)[-1]
     if destination.is_file():
         if digest(destination) != pin['sha256']:
             raise ValueError(f'Cached Ubuntu package differs from its lock: {pin["package"]}')
         return destination
+    relative = pin['url'].split('/ubuntu/', 1)[1]
+    urls = [pin['url'], *(mirror + relative for mirror in mirrors)]
+    failures = []
     with tempfile.NamedTemporaryFile(dir=cache, suffix='.download', delete=False) as stream:
         partial = Path(stream.name)
-        try:
-            with urllib.request.urlopen(pin['url'], timeout=60) as response:
-                shutil.copyfileobj(response, stream)
-            stream.close()
+    try:
+        for url in urls:
+            try:
+                with urllib.request.urlopen(url, timeout=20) as response, partial.open('wb') as stream:
+                    shutil.copyfileobj(response, stream)
+            except OSError as error:
+                failures.append(f'{url}: {error}')
+                continue
             if digest(partial) != pin['sha256']:
-                raise ValueError(f'Downloaded Ubuntu package differs from its lock: {pin["package"]}')
+                raise ValueError(f'Downloaded Ubuntu package differs from its lock: {pin["package"]} ({url})')
             os.replace(partial, destination)
-        finally:
-            partial.unlink(missing_ok=True)
-    return destination
+            return destination
+        raise ValueError(f'Cannot download locked Ubuntu package {pin["package"]}: ' + ' | '.join(failures))
+    finally:
+        partial.unlink(missing_ok=True)
 
 
-def stage_ubuntu_packages(stage, scratch, cache):
+def prepare_ubuntu_packages(cache):
     lock = json.loads((PACKAGING / 'snap-system-packages.json').read_bytes())
     cache.mkdir(parents=True, exist_ok=True)
-    source = scratch / 'ubuntu-packages'
+    archives = []
     for pin in lock['packages']:
-        archive = fetch_deb(cache, pin)
+        archive = fetch_deb(cache, pin, lock['mirrors'])
         fields = dict(line.split(': ', 1) for line in command(
             'dpkg-deb', '-f', archive, 'Package', 'Version', 'Architecture').splitlines())
         if any(fields[key.capitalize()] != pin[key] for key in ('package', 'version', 'architecture')):
             raise ValueError(f'Ubuntu package metadata differs from its lock: {pin["package"]}')
+        archives.append((pin, archive))
+    return archives
+
+
+def stage_ubuntu_packages(stage, scratch, cache):
+    archives = prepare_ubuntu_packages(cache)
+    source = scratch / 'ubuntu-packages'
+    for _, archive in archives:
         command('dpkg-deb', '-x', archive, source)
 
     # Ubuntu multi-binary packages may share a copyright file by symlink.
     records = []
-    for pin in lock['packages']:
+    for pin, _ in archives:
         notice = Path('usr/share/doc') / pin['package'] / 'copyright'
         files = []
         for relative in [*map(Path, pin['paths']), notice]:
@@ -191,9 +207,13 @@ def save_candidate(packed, outfile, report, receipt, grade):
             raise
 
 
-def pack(args, scratch):
-    if digest(args.core24) != CORE24_SHA256:
+def verify_base(base):
+    if digest(base) != CORE24_SHA256:
         raise ValueError('core24 does not match the pinned amd64 base used for verification')
+
+
+def pack(args, scratch):
+    verify_base(args.core24)
     revision = command('git', '-C', ROOT, 'rev-parse', 'HEAD')
     inventory = json.loads((args.runtime / 'share/notices/build-inventory.json').read_bytes())
     if inventory.get('revision') != revision or inventory.get('dirty') is not False:
@@ -258,15 +278,27 @@ def pack(args, scratch):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ('runtime', 'qt-prefix', 'core24', 'package-cache', 'output'):
+    for name in ('core24', 'package-cache'):
         parser.add_argument('--' + name, type=Path, required=True)
+    pack_paths = ('runtime', 'qt-prefix', 'output')
+    for name in pack_paths:
+        parser.add_argument('--' + name, type=Path)
+    parser.add_argument('--prepare-inputs', action='store_true', help='Verify core24 and cache the locked Ubuntu packages')
     parser.add_argument('--grade', choices=('devel', 'stable'), default='devel')
     args = parser.parse_args()
     if platform.system() != 'Linux' or platform.machine() != 'x86_64':
         parser.error('Build and verify the Snap on native amd64 Linux')
-    for name in ('runtime', 'qt_prefix', 'core24', 'package_cache', 'output'):
-        setattr(args, name, getattr(args, name).resolve())
     try:
+        if args.prepare_inputs:
+            verify_base(args.core24)
+            archives = prepare_ubuntu_packages(args.package_cache)
+            print(f'Verified core24 and {len(archives)} pinned Ubuntu packages')
+            return
+        missing = [name for name in pack_paths if getattr(args, name.replace('-', '_')) is None]
+        if missing:
+            parser.error('packing requires ' + ', '.join('--' + name for name in missing))
+        for name in ('runtime', 'qt_prefix', 'core24', 'package_cache', 'output'):
+            setattr(args, name, getattr(args, name).resolve())
         with tempfile.TemporaryDirectory(prefix='xdzip-snap-') as directory:
             print(pack(args, Path(directory)))
     except (KeyError, ValueError, OSError, subprocess.CalledProcessError) as error:
