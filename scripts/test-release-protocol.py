@@ -78,7 +78,7 @@ class SingleRunReleaseWorkflowTests(unittest.TestCase):
 class NativeHandoffTests(unittest.TestCase):
     def test_handoff_carries_the_runtime_license_texts_separately_from_notices(self):
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
+            root = Path(temporary).resolve()
             build = root/'build'
             review = build/'review'
             packages = build/'release-package'
@@ -100,7 +100,7 @@ class NativeHandoffTests(unittest.TestCase):
 
     def test_intel_handoff_requires_matching_runner_architecture(self):
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
+            root = Path(temporary).resolve()
             build, review, work = root/'build', root/'build/review', root/'build/release-handoff'
             packages = build/'release-package'
             for directory in (packages/'notices', packages/'runtime-notices', review/'sbom-schemas'):
@@ -140,7 +140,7 @@ class NativeHandoffTests(unittest.TestCase):
         identity = {'schema_version': 1, 'repository': 'owner/repo', 'run_id': '5',
                     'revision': 'a' * 40, 'platform': 'linux'}
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
+            root = Path(temporary).resolve()
             build = root/'build'
             work = build/'release-handoff'
             work.mkdir(parents=True)
