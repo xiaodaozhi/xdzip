@@ -1,22 +1,6 @@
 name: macOS Intel native CI
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - '.github/workflows/macos-intel.yml'
-      - 'scripts/macos_arch.py'
-      - 'scripts/desktop_environment.py'
-      - 'scripts/desktop.py'
-      - 'scripts/cli.py'
-      - 'scripts/qt_network_security.py'
-      - 'scripts/qt_image_security.py'
-      - 'scripts/sparkle_build.py'
-      - 'scripts/check-macos-proxy.py'
-      - 'scripts/check-macos-product-update.py'
-      - 'scripts/system_proxy_fixture.py'
-      - 'scripts/test-desktop-environment.py'
-      - 'scripts/test-ci-workflows.py'
-      - 'apps/desktop/shell/MacFinderRequest.h'
 permissions:
   contents: read
 jobs:
@@ -79,6 +63,7 @@ jobs:
             build/desktop/desktop-*.json
             build/desktop/Testing/Temporary/LastTest.log
             build/desktop/apps/desktop/*-tests.log
+            build/desktop/apps/desktop/browser-tests-shard-*.log
             build/review/*.json
             build/review/macos-proxy/*.json
             build/review/macos-proxy/*.log

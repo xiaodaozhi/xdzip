@@ -23,6 +23,30 @@ IDENTITY = {'version': '0.1.0-dev.9', 'build': 9, 'revision': '0123456789ab', 'd
 
 
 class DmgVerificationTests(unittest.TestCase):
+    def test_signs_helpers_before_bundle_without_signing_main_executable_as_bundle(self):
+        with tempfile.TemporaryDirectory() as temp:
+            app = Path(temp)/'xdzip.app'
+            binaries = app/'Contents/MacOS'
+            binaries.mkdir(parents=True)
+            main, helper = binaries/'xdzip', binaries/'xdzip-image-preview'
+            main.write_bytes(b'main')
+            helper.write_bytes(b'helper')
+            (app/'Contents/Info.plist').write_bytes(plistlib.dumps({'CFBundleExecutable': 'xdzip'}))
+            (app/'Contents/Frameworks').mkdir()
+            calls = []
+            def checked(command):
+                calls.append(command)
+                if command[-1] == main.resolve():
+                    raise ValueError('main executable caused premature bundle signing')
+                return ''
+            with patch.object(verify.macdmg, 'native', side_effect=lambda path, _: path in (main, helper)), \
+                 patch.object(verify.macdmg, 'checked', side_effect=checked), \
+                 patch.object(verify.macdmg, 'sign_finder'):
+                verify.macdmg.sign_local(app)
+            signed = [c[-1] for c in calls if '--sign' in c]
+            self.assertEqual(signed, [helper.resolve(), app])
+            self.assertEqual(calls[-1], ['codesign', '--verify', '--deep', '--strict', app])
+
     def test_private_preview_has_offscreen_before_macdeploy_scans_libraries(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

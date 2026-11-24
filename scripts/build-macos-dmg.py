@@ -49,11 +49,13 @@ def validate_bundle(app, *, require_handler=False):
 
 
 def sign_local(app, sparkle_metadata=None, work=None):
-    # ARM64 modified Mach-O images require a valid code directory. Ad-hoc signing
-    # is local integrity only, never a Developer ID or Gatekeeper trust claim.
+    # Sign nested code first. Signing the main executable by path can make
+    # codesign inspect the entire bundle before its helper executables are signed.
+    # Ad-hoc signing is local integrity only, never a Developer ID claim.
     sparkle = app/'Contents/Frameworks/Sparkle.framework'
+    main_binary = (app/'Contents/MacOS'/plistlib.loads((app/'Contents/Info.plist').read_bytes())['CFBundleExecutable']).resolve()
     images = {p.resolve() for p in app.rglob('*') if p.is_file() and native(p, 'macos')
-              and not p.resolve().is_relative_to(sparkle.resolve())}
+              and p.resolve() != main_binary and not p.resolve().is_relative_to(sparkle.resolve())}
     for path in sorted(images):
         checked(['codesign', '--force', '--sign', '-', '--timestamp=none', path])
     for framework in sorted((app/'Contents/Frameworks').glob('*.framework')):
