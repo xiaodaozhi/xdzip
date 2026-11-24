@@ -22,7 +22,7 @@ class WorkflowTests(unittest.TestCase):
         self.addCleanup(patch.stopall)
         # Tests simulating a local Mac must not inherit the host runner's CI
         # policy. The explicit CI guard cases below set CI=true themselves.
-        patch.dict(os.environ, {'CI': ''}).start()
+        patch.dict(os.environ, {'CI': '', 'XDZIP_MACOS_INTEL_CI': '0'}).start()
         patch.object(desktop, 'ROOT', self.root).start()
         self.network_identity = {'variant': 'owned-fixture', 'inputs_sha256': '1'*64,
                                  'core_sha256': '2'*64, 'network_sha256': '3'*64}
@@ -232,6 +232,12 @@ class WorkflowTests(unittest.TestCase):
                 workflow.package()
             script.assert_not_called()
         self.assertFalse(workflow.runtime.exists())
+
+    def test_intel_package_requires_release_distribution(self):
+        workflow = self.workflow()
+        with patch.dict(os.environ, {'XDZIP_MACOS_INTEL_CI': '1'}):
+            with self.assertRaisesRegex(ValueError, 'dedicated release path'):
+                workflow.package_preflight()
 
     def test_macos_package_requires_explicit_alternate_build(self):
         workflow = self.workflow()

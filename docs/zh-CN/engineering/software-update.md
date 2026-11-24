@@ -2,6 +2,10 @@
 
 [English](../../engineering/software-update.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/software-update.md) | [日本語](../../ja-JP/engineering/software-update.md) | [한국어](../../ko-KR/engineering/software-update.md) | [Français](../../fr-FR/engineering/software-update.md) | [Deutsch](../../de-DE/engineering/software-update.md) | [Español](../../es-ES/engineering/software-update.md) | [Português (Brasil)](../../pt-BR/engineering/software-update.md) | [Русский](../../ru-RU/engineering/software-update.md)
 
+当发行版包含 Intel 包时，macOS Intel 客户端选择独立签名的 `release-intel.json` 和 `appcast-intel.xml`，独立 CLI 使用 `cli-release-intel.json`。Apple Silicon 继续使用现有清单和 feed。只有包含这些资产的版本发布后，Intel 更新才可用。
+
+
+
 Windows MSIX 包身份下关于页不显示应用内更新区域，更新控制器也拒绝发起现有 GitHub 更新检查。商店交付时由 Microsoft Store 管理更新；侧载包不获得本应用的自动更新承诺。身份查询异常按包身份处理，避免误用安装器更新。现有普通安装与其他平台行为不变。
 
 独立 CLI 和桌面包内的 CLI 按[命令行契约](command-line.md)更新当前安装。独立 CLI 使用单独签名清单和管理式版本目录，桌面 CLI 通过同用户单实例通道提交候选意图，桌面控制器再次验证。accepted 只表示 handed_off，实际成功仍要求回执及运行身份。Windows/Linux 安装占用扩展到 CLI 任务，macOS 通过共享使用锁、提交门和持久状态保护 CLI；已有任务不被隐式取消。命令行无 GUI 身份查询不创建 QApplication，也不读取后清除安装回执。
@@ -29,7 +33,7 @@ HTTP 429 表示限流。HTTP 403 只有在剩余额度为零、有效秒数的 R
 
 Windows/Linux 将最多 2 GiB 的包流式写入私有更新缓存，同时核对长度和 SHA-256，成功提交后才允许交给助手。取消或校验失败不产生可安装状态。便携包、dirty、开发/源码或身份不明的构建只提供检查与下载。自动覆盖还要求 Release 配置和有效提交身份，不把无 Git 身份的源码归档构建当作安装版。安装身份须同时匹配系统安装记录、运行路径及随包标记。
 
-macOS 使用固定 Sparkle 2.10.0 和 `xdzip-proxy.2` 受限代理扩展，通过薄 Objective-C++ 用户驱动把状态送入统一关于页。框架主库与 Ed25519 从锁定源码和补丁以 Apple Silicon 原生编译，资源、安装助手和签名工具保留锁定官方 SDK 来源；派生框架不声称与上游 SDK 字节相同。feed 和归档由 Sparkle 原生验证，feed 只包含已选定的同一个候选；不声称 Sparkle 执行了额外 SHA-256。只读 DMG、App Translocation、未登记的 .app 或缺少更新公钥均提供手动安装入口。普通 CI 不因引入 Sparkle 而部署、签名或上传 Mac 应用包。
+macOS 使用固定 Sparkle 2.10.0 和 `xdzip-proxy.2` 受限代理扩展，通过薄 Objective-C++ 用户驱动把状态送入统一关于页。框架主库与 Ed25519 从锁定源码和补丁以 Apple Silicon 或 Intel 原生编译，资源、安装助手和签名工具保留锁定官方 SDK 来源；派生框架不声称与上游 SDK 字节相同。feed 和归档由 Sparkle 原生验证，feed 只包含已选定的同一个候选；不声称 Sparkle 执行了额外 SHA-256。只读 DMG、App Translocation、未登记的 .app 或缺少更新公钥均提供手动安装入口。普通 CI 不因引入 Sparkle 而部署、签名或上传 Mac 应用包。
 
 手动回退展示当前首先未满足的条件：安装身份、会话、缺少自动更新源或无效的网络配置。安装身份不合格仅表示整组身份检查未通过，不推测具体是哪一项；多个条件同时不满足时仍可能需要依次处理。关于页提供同版本发布页和 DMG 指引，下载 app.zip 后说明解压、退出旧版及替换应用；下载成功不等于安装成功。
 
@@ -55,12 +59,12 @@ macOS 在释放 Sparkle 安装前保存目标版本/build 的本地尝试记录�
 
 Mac 单平台诊断可只运行完整产品链；全平台模式始终运行 Sparkle 六场景与完整产品链，不采纳跳过六场景的诊断选项。
 
-原生下载器的系统冲突检查只在带隔离标记的一次性 hosted Apple Silicon runner 暂时启用自有静态代理和 PAC。先要求系统模式的 feed／归档实际命中代理，再要求直连零命中；HTTPS 对照核对连接去向并保留不可信证书拒绝。受限助手保存和核验恢复该服务完整代理设置及固定测试域名的 hosts 内容，EOF 与超时也恢复。本机不修改代理、DNS 或证书信任。完整产品链另外执行受控 PAC 下直连安装、普通重启和活动更新配置快照；下载器检查不能代替安装证据。
+原生下载器的系统冲突检查只在带隔离标记的一次性 hosted Apple Silicon 或 Intel runner 暂时启用自有静态代理和 PAC。先要求系统模式的 feed／归档实际命中代理，再要求直连零命中；HTTPS 对照核对连接去向并保留不可信证书拒绝。受限助手保存和核验恢复该服务完整代理设置及固定测试域名的 hosts 内容，EOF 与超时也恢复。本机不修改代理、DNS 或证书信任。完整产品链另外执行受控 PAC 下直连安装、普通重启和活动更新配置快照；下载器检查不能代替安装证据。
 
 
 Mac 无 SDK HTTPS 验收使用同一个已部署探针及匿名真实更新请求。记录只保存状态码、Qt 错误和白名单限流响应头，不保存原始错误正文、源 IP 或凭据。确认限流后，验收驱动最多启动三次探针，按 Retry-After 与配额重置时间中较晚者等待；缺少可用主配额重置时间时拒绝提前重试，已确认的其他限流使用至少 60 秒的递增退避。累计等待最多 3700 秒，超预算明确失败，保留每轮结果和实际等待记录。每次请求原有超时、TLS、响应大小、成功状态和 SDK 隔离要求保持；失败重试不合并成一次通过。此退避只用于专用验收驱动，不能作为产品后台重试或最终专项跳过条件。
 
-核心夹具覆盖渠道、dev、乱序分页、缺包、错误签名、最低系统和身份冲突；网络夹具覆盖取消、重复点击、限流、TLS、响应上限、ETag 与损坏下载；会话回归核对任务保留和所有 join 后交接。真实三平台旧版到新版、授权取消、再次启动、安装失败/恢复、设置/关联保留以及无 SDK HTTPS 需要隔离平台实证，不能由单元测试或 CI 编译替代。Mac 完整更新必须在 Apple Silicon 原生环境执行。具体完成状态及证据由 issue 跟踪。
+核心夹具覆盖渠道、dev、乱序分页、缺包、错误签名、最低系统和身份冲突；网络夹具覆盖取消、重复点击、限流、TLS、响应上限、ETag 与损坏下载；会话回归核对任务保留和所有 join 后交接。真实三平台旧版到新版、授权取消、再次启动、安装失败/恢复、设置/关联保留以及无 SDK HTTPS 需要隔离平台实证，不能由单元测试或 CI 编译替代。Mac 完整更新必须在对应架构的原生环境执行。具体完成状态及证据由 issue 跟踪。
 
 [专用原生更新回归](../../../.github/workflows/update-regression.yml)仅手动调度，不携带生产秘密，不上传应用包。默认验证全部平台，也可选择单个平台定位故障，各选择使用独立队列；最终验收仍要求同提交的全平台结果。Windows 在一次性 GitHub runner、Linux 在专用容器先使用拥有的 C 协议产品和真实 Inno/APT 验证助手取消、失败及恢复。另一条私有 Qt 升级链路编译两个真实 `browser_main`/QML 版本，通过实际关于页鼠标输入，执行清单与包验证、退出 join、Inno/APT、普通用户单实例重启和回执恢复，并核对设置、未知设置键、现有默认关联及安装目录的无关文件保留。Linux 将构建 SDK 和运行容器分开，运行容器没有编译器或 Qt SDK，并使用自定义 XDG 目录；Windows Server CI 仅在私有宏下替换最低系统判断，不替代 Windows 11 原生验收。该链路替换公开 GitHub URL 的网络 transport，生产 HTTPS/TLS 则单独通过无 SDK 运行验证。
 

@@ -28,6 +28,11 @@ def image(content=b'owned code', dependency=b'@rpath/QtCore.framework/Versions/A
 
 
 class MacAttributionTests(unittest.TestCase):
+    def setUp(self):
+        environment = patch.dict(os.environ, {'XDZIP_MACOS_INTEL_CI': '0'})
+        environment.start()
+        self.addCleanup(environment.stop)
+
     def plugin_fixture(self, base):
         sdk = base/'sdk'; root = base/'app'
         sdk_relative = 'qml/QtQuick/Effects/libeffectsplugin.dylib'
@@ -60,6 +65,19 @@ class MacAttributionTests(unittest.TestCase):
         self.assertEqual(compare_images(source, target + b'owned-signature'), compare_images(source, source))
         universal = struct.pack('>II5I', 0xcafebabe, 1, 0x100000c, 0, 28, len(source), 0) + source
         self.assertEqual(compare_images(target, universal), compare_images(target, source))
+
+    def test_intel_slice_is_required_for_intel_attribution(self):
+        arm = image()
+        intel = bytearray(arm)
+        struct.pack_into('<I', intel, 4, 0x1000007)
+        with patch.dict(os.environ, {'XDZIP_MACOS_INTEL_CI': '1'}):
+            self.assertTrue(compare_images(bytes(intel), bytes(intel)))
+            altered = bytearray(intel)
+            altered[-1] ^= 1
+            with self.assertRaises(ValueError):
+                compare_images(bytes(intel), bytes(altered))
+            with self.assertRaises(ValueError):
+                image_identity(arm)
 
     def test_changed_code_uuid_import_or_bounds_are_rejected(self):
         for changed in [image(b'changed code'), image(uuid=b'v'*16), image(dependency=b'/usr/lib/other.dylib')]:

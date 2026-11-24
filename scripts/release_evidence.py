@@ -1,12 +1,13 @@
 """Bind compiled link inputs and actual deployed macOS application evidence."""
 import hashlib
 from macos_attribution import compare_images, image_identity
+from macos_arch import macos_arch
 
 
 def macho_sections(data):
     """Apply the established section/UUID/import parser to a bounded app image."""
     if len(data) < 32 or len(data) > 256 * 1024 * 1024 or data[:4] != b'\xcf\xfa\xed\xfe':
-        raise ValueError('Expected a bounded thin arm64 Mach-O image')
+        raise ValueError('Expected a bounded thin native Mach-O image')
     identity = image_identity(data)
     sections, seen = [], set()
     for segment, name, address, length, flags, checksum in identity['sections']:
@@ -34,7 +35,7 @@ def compare_macho_sections(compiled, deployed):
             'comparison': 'mach-o-sections-uuid-and-imports', 'fingerprint': fingerprint,
             'compiled_sha256': hashlib.sha256(compiled).hexdigest(),
             'deployed_sha256': hashlib.sha256(deployed).hexdigest(),
-            'scope': 'Established arm64 section/address/flag, UUID and normalized import comparison; load-command layout, LINKEDIT and signatures remain distinct.'}
+            'scope': 'Established '+macos_arch()+' section/address/flag, UUID and normalized import comparison; load-command layout, LINKEDIT and signatures remain distinct.'}
 
 
 def verify_bindings(revision, audit, resources, linkage, sdk, section_match):

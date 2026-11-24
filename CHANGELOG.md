@@ -4,6 +4,8 @@ English | [简体中文](CHANGELOG.zh-CN.md) | [繁體中文](CHANGELOG.zh-TW.md
 
 ## Unreleased
 
+- Prepare native macOS Intel builds and architecture-specific authenticated updates for future releases.
+
 - Add a standalone read-only SDK trial with bounded CBOR, controlled I/O, two independent protocol implementations and a sandbox gate that refuses unsafe execution. Third-party extensions remain disabled in the product.
 
 ## 0.3.1

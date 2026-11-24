@@ -6,6 +6,7 @@ import platform
 import selectors
 import subprocess
 import sys
+from macos_arch import macos_arch
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -13,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def require_hosted():
     expected = {'CI': 'true', 'GITHUB_ACTIONS': 'true',
                 'RUNNER_ENVIRONMENT': 'github-hosted', 'XDZIP_ISOLATED_UPDATE_FIXTURE': '1'}
-    if (sys.platform != 'darwin' or platform.machine() != 'arm64' or
+    if (sys.platform != 'darwin' or platform.machine() != macos_arch() or
             any(os.environ.get(key) != value for key, value in expected.items())):
         raise RuntimeError('System proxy conflicts require an explicitly disposable GitHub-hosted runner')
 

@@ -58,6 +58,14 @@ class ProductionPreparationTests(unittest.TestCase):
             result=mac.load_production_prepared(self.output)
         return result,verifier
 
+    def test_intel_test_candidate_binds_archive_and_feed_to_intel(self):
+        with patch.dict(os.environ, {'XDZIP_MACOS_INTEL_CI': '1'}):
+            manifest, archive = mac.unsigned_candidate(self.output, self.products['new'])
+        self.assertEqual(archive.name, 'xdzip-0.2.0-alpha.2-macos-x86_64.app.zip')
+        mac_assets = [a for a in manifest['assets'] if a['platform'] == 'macos']
+        self.assertEqual({a['architecture'] for a in mac_assets}, {'x86_64'})
+        self.assertTrue(manifest['macos_appcast_url'].endswith('/appcast-intel.xml'))
+
     def test_preparation_has_no_signing_command_and_preserves_exact_public_bytes(self):
         record=self.prepare()
         self.assertEqual(set(record),{'schema_version','platform','source_commit','tool','artifacts','products'})

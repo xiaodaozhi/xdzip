@@ -1,4 +1,4 @@
-"""Opt-in architecture for experimental Intel native CI; release remains arm64."""
+"""Opt-in architecture for native Intel CI and the dedicated release path."""
 import os
 
 def macos_arch(env=None):

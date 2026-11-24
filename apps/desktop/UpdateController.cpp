@@ -75,6 +75,13 @@ QUrl manifestUrl(const QJsonObject &release, const QString &name) {
     }
     return {};
 }
+QString updateManifestName() {
+#ifdef Q_OS_MACOS
+    if (QSysInfo::currentCpuArchitecture() == QStringLiteral("x86_64"))
+        return QStringLiteral("release-intel.json");
+#endif
+    return QStringLiteral("release.json");
+}
 QByteArray trustKeys() {
     QFile input(QStringLiteral(":/xdzip/update-trust.json"));
     return input.open(QIODevice::ReadOnly) ? input.read(16 * 1024) : QByteArray{};
@@ -458,10 +465,11 @@ void UpdateController::inspectNextRelease() {
         return;
     }
     const auto release = m_candidates.takeFirst();
-    const auto url = manifestUrl(release, "release.json");
+    const auto name = updateManifestName();
+    const auto url = manifestUrl(release, name);
     const auto tag = release.value("tag_name").toString();
     const auto expected =
-        "https://github.com/xiaodaozhi/xdzip/releases/download/" + tag + "/release.json";
+        "https://github.com/xiaodaozhi/xdzip/releases/download/" + tag + "/" + name;
     if (url.toString() != expected) {
         setState("error", "missing_manifest");
         return;
@@ -523,13 +531,14 @@ void UpdateController::acceptManifest(const QJsonObject &release, const QByteArr
                    {"sha256", fromRust(inspection.sha256)},
                    {"appcast_url", fromRust(inspection.appcast_url)}};
     m_manifest = manifest;
-    const auto signatureUrl = manifestUrl(release, "release.json.sig");
+    const auto name = updateManifestName() + ".sig";
+    const auto signatureUrl = manifestUrl(release, name);
     if (signatureUrl.isEmpty()) {
         setState("available");
         return;
     }
     const auto expected = "https://github.com/xiaodaozhi/xdzip/releases/download/" +
-                          release.value("tag_name").toString() + "/release.json.sig";
+                          release.value("tag_name").toString() + "/" + name;
     if (signatureUrl.toString() != expected) {
         setState("error", "invalid_signature_url");
         return;

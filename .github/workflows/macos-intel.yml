@@ -12,6 +12,8 @@ on:
       - 'scripts/qt_image_security.py'
       - 'scripts/sparkle_build.py'
       - 'scripts/check-macos-proxy.py'
+      - 'scripts/check-macos-product-update.py'
+      - 'scripts/system_proxy_fixture.py'
       - 'scripts/test-desktop-environment.py'
       - 'scripts/test-ci-workflows.py'
       - 'apps/desktop/shell/MacFinderRequest.h'
@@ -30,8 +32,19 @@ jobs:
           test "$(uname -m)" = x86_64
           translated="$(sysctl -n sysctl.proc_translated 2>/dev/null || true)"
           test "${translated:-0}" = 0
-      - name: Test architecture preflight
-        run: python3 scripts/test-desktop-environment.py
+      - name: Check architecture and update contracts before native dependencies
+        run: |
+          rustup toolchain install 1.99.0 --profile minimal --component rustfmt --component clippy
+          python3 scripts/test-desktop-environment.py
+          python3 scripts/test-desktop-workflow.py
+          python3 scripts/test-macos-attribution.py
+          python3 scripts/test-macos-bundle.py
+          python3 scripts/test-macos-dmg.py
+          python3 scripts/test-sparkle-bundle.py
+          python3 scripts/test-macos-production-update.py
+          python3 scripts/test-release-protocol.py
+          python3 scripts/test-release-updates.py
+          cargo test --locked -p xdzip-update --lib
       - name: Prepare pinned native dependencies
         run: python3 scripts/desktop.py prepare --install-qt --install-rust --output-dir build/review
       - name: Build native desktop and CLI
@@ -66,8 +79,9 @@ jobs:
             build/desktop/desktop-*.json
             build/desktop/Testing/Temporary/LastTest.log
             build/desktop/apps/desktop/*-tests.log
-            build/review/**/*.json
-            build/review/**/*.log
+            build/review/*.json
+            build/review/macos-proxy/*.json
+            build/review/macos-proxy/*.log
             build/toolchain/Sparkle/*-build.log
             build/toolchain/qt-network-security/**/*.log
             build/toolchain/qt-image-security/**/*.log

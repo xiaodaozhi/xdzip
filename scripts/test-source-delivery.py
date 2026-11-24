@@ -101,6 +101,7 @@ def psl_fixture(root, wrong_generated=None):
     return archive, destination
 
 
+@patch.dict(os.environ, {'XDZIP_MACOS_INTEL_CI': '0'})
 class DeliveryTests(unittest.TestCase):
     def test_convert_iana_loc_for_qt_preserves_codes_and_reports_omissions(self):
         iana, loc = iana_loc_fixture()
@@ -1448,6 +1449,7 @@ class VendorNoticeMaterialTests(unittest.TestCase):
             self.assertEqual([item['name'] for item in record['packages']], ['demo'])
 
 
+@patch.dict(os.environ, {'XDZIP_MACOS_INTEL_CI': '0'})
 class DisposableBundleTests(unittest.TestCase):
     """Simulated native tools, actual owned copies, hashes and disposal."""
     def bundle(self, root):

@@ -543,6 +543,7 @@ class InstallerTests(unittest.TestCase):
                     self.assertEqual(info['CFBundleAllowMixedLocalizations'],True)
                     self.assertTrue({'zh-Hans','en'}<=set(info['CFBundleLocalizations']))
 
+    @patch.dict(os.environ, {'XDZIP_MACOS_INTEL_CI': '0'})
     def test_macos_dmg_rejects_nonhandler_builds_without_modifying_them(self):
         with tempfile.TemporaryDirectory() as directory:
             app=Path(directory)/'xdzip.app';(app/'Contents/MacOS').mkdir(parents=True)

@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/ci-policy.md)
 
-The [macOS Intel native CI](../../.github/workflows/macos-intel.yml) is an experimental, independently dispatched build and test on `macos-15-intel`; changes to its own entry points also trigger it on pull requests. It verifies the native architecture of the product, Rust bridge and patched dependencies, and retains validation records only. It does not create Intel distribution packages or establish release or manual desktop acceptance. Apple Silicon remains the supported macOS release architecture.
+The [macOS Intel native CI](../../.github/workflows/macos-intel.yml) is an experimental, independently dispatched build and test on `macos-15-intel`; changes to its own entry points also trigger it on pull requests. It verifies the native architecture of the product, Rust bridge and patched dependencies, and retains validation records only. It does not create distribution packages or establish release or manual desktop acceptance. The dedicated update regression separately exercises the Intel product with test keys.
 
 ## Routine checks
 

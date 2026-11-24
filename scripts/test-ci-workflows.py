@@ -228,11 +228,19 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn('tag', workflow['on']['workflow_dispatch']['inputs'])
         self.assertNotIn('validate_only', workflow['on']['workflow_dispatch']['inputs'])
         native = workflow['jobs']['native']
-        self.assertEqual(set(native['strategy']['matrix']['os']), {'windows-2022', 'macos-15', 'ubuntu-24.04'})
+        self.assertEqual(set(native['strategy']['matrix']['os']), {'windows-2022', 'macos-15', 'macos-15-intel', 'ubuntu-24.04'})
         self.assertIn('scripts/ci-release.ps1 -Stage Build', '\n'.join(step.get('run', '') for step in native['steps']))
         jobs = workflow['jobs']
         verify = jobs['verify']
         self.assertEqual(verify['strategy']['matrix'], native['strategy']['matrix'])
+        for job in (native, verify):
+            self.assertIn('macos-15-intel', job['env']['XDZIP_MACOS_INTEL_CI'])
+        intel_update = self.workflows['update-regression.yml']['jobs']['macos_intel']
+        self.assertEqual(intel_update['runs-on'], 'macos-15-intel')
+        self.assertIn('check-macos-product-update.py', '\n'.join(step.get('run', '') for step in intel_update['steps']))
+        sign_steps = '\n'.join(step.get('run', '') for step in workflow['jobs']['sign']['steps'])
+        self.assertIn('sign-macos-update.py --directory build/packages --architecture x86_64', sign_steps)
+        self.assertIn('--require-update-signature --include-intel', sign_steps)
         self.assertEqual(verify['needs'], ['resolve', 'native'])
         self.assertIn('scripts/ci-release.ps1 -Stage Verify', '\n'.join(step.get('run', '') for step in verify['steps']))
         self.assertEqual(jobs['sign']['needs'], ['resolve', 'verify', 'contracts'])

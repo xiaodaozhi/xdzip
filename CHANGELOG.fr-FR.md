@@ -6,6 +6,8 @@
 
 ## Non publié
 
+- Préparation des compilations natives macOS Intel et des mises à jour authentifiées par architecture pour les prochaines versions.
+
 - Ajouter un SDK autonome expérimental en lecture seule avec un traitement CBOR borné, des entrées-sorties contrôlées, deux implémentations indépendantes du protocole et un contrôle de bac à sable qui refuse les exécutions dangereuses. Les extensions tierces restent désactivées dans le produit.
 
 ## 0.3.1

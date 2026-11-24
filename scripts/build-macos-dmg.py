@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Native Apple Silicon DMG and optional release app ZIP; ad-hoc integrity only."""
+"""Native macOS DMG and optional release app ZIP; ad-hoc integrity only."""
 import argparse
 import configparser
 import json
@@ -13,6 +13,7 @@ from deployment_audit import audit, digest, mac_rpaths, native, within
 from sbom import artifact_bom
 from macos_launch_services import temporary_bundle_path, transient_registrations
 from macos_bundle import optimize_bundle, validate_optimized_bundle
+from macos_arch import macos_arch
 from macos_finder import sign_finder
 from macos_attribution import deployment_record
 from sparkle_bundle import (attribute as attribute_sparkle, embed as embed_sparkle,
@@ -39,8 +40,8 @@ def validate_bundle(app, *, require_handler=False):
                     or item.get('CFBundleTypeRole') != 'Viewer' for item in documents)):
             raise ValueError('DMG requires an Alternate document handler; rebuild with XDZIP_MACOS_HANDLER_RANK=Alternate')
     binary = app/'Contents/MacOS'/info['CFBundleExecutable']
-    if 'arm64' not in checked(['lipo', '-archs', binary]).split():
-        raise ValueError('Native arm64 executable required')
+    if macos_arch() not in checked(['lipo', '-archs', binary]).split():
+        raise ValueError('Native selected-architecture executable required')
     for path in app.rglob('*'):
         if path.is_symlink() and not within(path, app):
             raise ValueError('Bundle symlink escapes application')

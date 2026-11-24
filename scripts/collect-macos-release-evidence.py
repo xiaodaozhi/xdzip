@@ -10,6 +10,7 @@ import subprocess
 import sys
 
 from deployment_audit import ROOT, digest, within
+from macos_arch import macos_arch
 from release_evidence import compare_macho_sections, verify_bindings
 
 
@@ -44,7 +45,7 @@ def collect(source, deployed, qt, output):
     if match['deployed_sha256'] != expected:
         raise ValueError('Deployment image changed before evidence collection')
     source_bom = deployed/'Contents/Resources/notices/source-build.cdx.json'
-    file_bom = output/f'xdzip-{audit["identity"]["version"]}-macos-arm64.cdx.json'
+    file_bom = output/f'xdzip-{audit["identity"]["version"]}-macos-{macos_arch()}.cdx.json'
     shutil.copy2(source_bom, output/'source-build.cdx.json')
     shutil.copy2(file_bom, output/'artifact-files.cdx.json')
     environment = os.environ.copy()

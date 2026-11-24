@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Arm64/Basic-only policy for an already deployed, disposable macOS app copy.
+"""Native single-architecture/Basic-only policy for an already deployed, disposable macOS app copy.
 
 Optimization runs before signing. It never locates or modifies the SDK or the
 source app; callers must supply their new staging copy. Validation is read-only.
@@ -12,10 +12,11 @@ import stat
 import tempfile
 
 from deployment_audit import mac_imports, run
+from macos_arch import macos_arch
 
 
 # Include 32-bit and FAT_MAGIC_64 variants too: unsupported images must fail
-# inspection, rather than silently evade the arm64-only contract.
+# inspection, rather than silently evade the single-architecture contract.
 MACH_O_MAGICS = {
     b'\xfe\xed\xfa\xce', b'\xce\xfa\xed\xfe',
     b'\xfe\xed\xfa\xcf', b'\xcf\xfa\xed\xfe',
@@ -233,7 +234,7 @@ def _native_closure(images, removals, runner):
     for image in images:
         if _under(image, removals):
             continue
-        for name in mac_imports(runner('otool', '-arch', 'arm64', '-L', str(image))):
+        for name in mac_imports(runner('otool', '-arch', macos_arch(), '-L', str(image))):
             frameworks = re.findall(r'(QtQuickControls2[^/]*?)\.framework(?:/|$)', name)
             if any(value not in RETAINED_FRAMEWORKS for value in frameworks):
                 raise ValueError('Retained native image requires an omitted or unknown Controls framework')
@@ -247,10 +248,10 @@ def _architectures(images, runner, *, optimized):
     result = {}
     for image in images:
         archs = runner('lipo', '-archs', str(image)).split()
-        if not archs or len(set(archs)) != len(archs) or 'arm64' not in archs:
-            raise ValueError('Every deployed Mach-O image must contain arm64')
-        if optimized and archs != ['arm64']:
-            raise ValueError('Deployed Mach-O image is not arm64-only')
+        if not archs or len(set(archs)) != len(archs) or macos_arch() not in archs:
+            raise ValueError('Every deployed Mach-O image must contain '+macos_arch())
+        if optimized and archs != [macos_arch()]:
+            raise ValueError('Deployed Mach-O image is not '+macos_arch()+'-only')
         result[image] = archs
     if not images:
         raise ValueError('Application contains no Mach-O images')
@@ -268,8 +269,8 @@ def validate_optimized_bundle(app, *, runner=None):
         raise ValueError('Unused Qt Quick Controls styles remain in the deployed application')
     modules, plugins = _qml_closure(app, paths, [])
     _native_closure(images, [], runner)
-    return {'status': 'passed', 'target_arch': 'arm64', 'control_style': 'Basic',
-            'native_binary_count': len(images), 'architectures': ['arm64'],
+    return {'status': 'passed', 'target_arch': macos_arch(), 'control_style': 'Basic',
+            'native_binary_count': len(images), 'architectures': [macos_arch()],
             'native_files': [path.relative_to(app).as_posix() for path in images],
             'style_modules': modules, 'style_plugins': plugins,
             'required_qml_modules': sorted(REQUIRED_MODULE_PLUGINS), 'bytes': _sizes(app)}
@@ -299,16 +300,16 @@ def optimize_bundle(app, *, runner=None):
     pruned = _sizes(app)
     thinned = []
     for path, archs in architectures.items():
-        if _under(path, removals) or archs == ['arm64']:
+        if _under(path, removals) or archs == [macos_arch()]:
             continue
         # New output + atomic replace preserves framework aliases and prevents
         # accidental in-place edits through a hard link to an SDK/source image.
         mode = stat.S_IMODE(path.stat().st_mode)
-        descriptor, temporary_name = tempfile.mkstemp(prefix='.arm64-', dir=path.parent)
+        descriptor, temporary_name = tempfile.mkstemp(prefix='.'+macos_arch()+'-', dir=path.parent)
         os.close(descriptor)
         temporary = Path(temporary_name)
         try:
-            runner('lipo', str(path), '-thin', 'arm64', '-output', str(temporary))
+            runner('lipo', str(path), '-thin', macos_arch(), '-output', str(temporary))
             _architectures([temporary], runner, optimized=True)
             temporary.chmod(mode)
             os.replace(temporary, path)
@@ -317,7 +318,7 @@ def optimize_bundle(app, *, runner=None):
         thinned.append(path.relative_to(app).as_posix())
     validation = validate_optimized_bundle(app, runner=runner)
     after = validation['bytes']
-    return {'status': 'passed', 'target_arch': 'arm64', 'control_style': 'Basic',
+    return {'status': 'passed', 'target_arch': macos_arch(), 'control_style': 'Basic',
             'before_bytes': before, 'after_bytes': after,
             'bytes_saved': before['total'] - after['total'],
             'style_bytes_saved': before['total'] - pruned['total'],

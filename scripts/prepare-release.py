@@ -46,16 +46,16 @@ def stage(source, output, platform, version):
     from qt_network_materials import verify_package
     verify_package(source)
     receipt = json.loads((source/'verify.json').read_text(encoding='utf-8'))
-    if receipt.get('status') != 'passed' or receipt.get('platform') != platform:
+    if receipt.get('status') != 'passed' or receipt.get('platform') != ('macos' if platform == 'macos-intel' else platform):
         raise ValueError('Native package verification did not pass')
     revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True, cwd=ROOT).strip()
-    build = json.loads((source/'build-version.json').read_text(encoding='utf-8')) if platform != 'macos' else None
+    build = json.loads((source/'build-version.json').read_text(encoding='utf-8')) if platform not in ('macos', 'macos-intel') else None
     if build and build['version'] != version:
         raise ValueError('Verified package version mismatch')
     package = json.loads((source/'package.json').read_text(encoding='utf-8'))
     if package.get('source', {}).get('revision') != revision or package['source']['dirty']:
         raise ValueError('Verified packages must match this clean commit')
-    artifact_receipts = [package] if platform == 'macos' else [json.loads((source/'package-installer.json').read_text())]
+    artifact_receipts = [package] if platform in ('macos', 'macos-intel') else [json.loads((source/'package-installer.json').read_text())]
     for artifact_receipt in artifact_receipts:
         if artifact_receipt.get('source') != package['source']:
             raise ValueError('Installer source identity mismatch')
@@ -63,7 +63,7 @@ def stage(source, output, platform, version):
             path = (source/artifact['file']).resolve()
             if not path.is_relative_to(source.resolve()) or path.stat().st_size != artifact['bytes'] or sha256(path) != artifact['sha256']:
                 raise ValueError('Verified package bytes changed before staging')
-    if platform != 'macos':
+    if platform not in ('macos', 'macos-intel'):
         from installer_payload import verify_payload
         verify_payload(source/platform, json.loads((source/'deployment-audit.json').read_text()))
     output.mkdir(parents=True, exist_ok=True)
@@ -71,13 +71,14 @@ def stage(source, output, platform, version):
         'windows': [('windows-x86_64-setup.exe', source/'xdzip-windows-x64-setup.exe')],
         'linux': [('linux-x86_64.tar.gz', source/'xdzip-linux-x86_64.tar.gz'), ('ubuntu24.04-x86_64.deb', source/'xdzip-ubuntu24.04-amd64.deb')],
         'macos': [('macos-arm64.dmg', source/f'xdzip-{version}-macos-arm64.dmg'), ('macos-arm64.app.zip', source/f'xdzip-{version}-macos-arm64.app.zip')],
+        'macos-intel': [('macos-x86_64.dmg', source/f'xdzip-{version}-macos-x86_64.dmg'), ('macos-x86_64.app.zip', source/f'xdzip-{version}-macos-x86_64.app.zip')],
     }[platform]
     for suffix, path in files:
         shutil.copy2(path, output/f'xdzip-{version}-{suffix}')
-    if platform == 'macos':
+    if platform in ('macos', 'macos-intel'):
         from sparkle_bundle import sign_staged_archive
         build_number = runpy.run_path(str(ROOT/'scripts/sync-version.py'))['version_info']()['build']
-        sign_staged_archive(output, version, build_number)
+        sign_staged_archive(output, version, build_number, architecture='x86_64' if platform == 'macos-intel' else 'arm64')
     if platform == 'windows':
         # The runtime was already audited byte-for-byte. Include its complete
         # relative tree, with no SDK tools or developer filesystem locations.
@@ -103,9 +104,10 @@ def stage(source, output, platform, version):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--include-intel', action='store_true')
     parser.add_argument('--packages', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--platform', choices=['windows', 'linux', 'macos'])
+    parser.add_argument('--platform', choices=['windows', 'linux', 'macos', 'macos-intel'])
     parser.add_argument('--repository', default='xiaodaozhi/xdzip')
     parser.add_argument('--update-key-id', default=os.environ.get('XDZIP_UPDATE_KEY_ID'))
     signing = parser.add_mutually_exclusive_group()
@@ -125,7 +127,7 @@ def main():
         return
     if args.validation_only:
         for directory in (args.packages, args.output):
-            for name in ('release.json.sig', 'cli-release.json.sig', 'appcast.xml', 'macos-update.json'):
+            for name in ('release.json.sig', 'cli-release.json.sig', 'appcast.xml', 'macos-update.json', 'release-intel.json.sig', 'cli-release-intel.json.sig', 'appcast-intel.xml', 'macos-update-intel.json'):
                 path = directory/name
                 if path.exists() or path.is_symlink():
                     raise ValueError('Validation-only candidate contains update signing material')
@@ -149,6 +151,20 @@ def main():
         from release_updates import sign_manifest
         manifest_signed = sign_manifest(args.output, key_id=args.update_key_id, required=args.require_update_signature)
         cli_signed = sign_manifest(args.output, key_id=args.update_key_id, required=args.require_update_signature, component="cli")
+    if args.include_intel:
+        intel_manifest = create(args.output, version, args.repository, revision, intel=True)
+        intel_cli = create_cli(args.output, version, args.repository, revision, intel=True)
+        intel_appcast = False if args.validation_only else prepare_appcast(
+            args.output, intel_manifest, required=args.require_update_signature, intel=True)
+        (args.output/'release-intel.json').write_text(json.dumps(intel_manifest, indent=2)+'\n', encoding='utf-8')
+        (args.output/'cli-release-intel.json').write_text(json.dumps(intel_cli, indent=2)+'\n', encoding='utf-8')
+        intel_signed = False if args.validation_only else sign_manifest(
+            args.output, key_id=args.update_key_id, required=args.require_update_signature, intel=True)
+        intel_cli_signed = False if args.validation_only else sign_manifest(
+            args.output, key_id=args.update_key_id, required=args.require_update_signature, component='cli', intel=True)
+        appcast_signed = appcast_signed and intel_appcast
+        manifest_signed = manifest_signed and intel_signed
+        cli_signed = cli_signed and intel_cli_signed
     (args.output/'update-readiness.json').write_text(json.dumps(dict(schema_version=1,
         signed_manifest=manifest_signed, signed_appcast=appcast_signed, signed_cli_manifest=cli_signed,
         status='authenticated' if manifest_signed and appcast_signed and cli_signed else 'signing_not_configured'), indent=2)+'\n', encoding='utf-8')

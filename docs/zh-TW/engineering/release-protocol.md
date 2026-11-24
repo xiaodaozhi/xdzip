@@ -6,7 +6,9 @@
 
 本流程負責 GitHub 下載包。[Microsoft Store MSIX 工作流](../../../.github/workflows/windows-store-msix.yml)可基於同一版本原始碼生成商店包，商店認證和釋出在微軟合作夥伴中心完成。
 
-專用 [Release 工作流](../../../.github/workflows/release.yml)透過 `workflow_dispatch` 手動執行。正式發行從 `main` 輸入已有版本標籤並凍結其提交。三個原生作業分別配置、建置、測試和打包一次。macOS 首次建置就使用發行所需的檔案關聯優先順序，部署 Qt 並進行 ad-hoc 完整性簽名，從同一應用生成 ZIP 和 DMG。普通 macOS Qt CI 使用 SDK 驗證。Developer ID、Apple 公證和 Windows 發行者證書不在目前發行政策範圍內。
+專用 [Release 工作流](../../../.github/workflows/release.yml)透過 `workflow_dispatch` 手動執行。正式發行從 `main` 輸入已有版本標籤並凍結其提交。四個原生作業分別配置、建置、測試和打包一次。macOS 首次建置就使用發行所需的檔案關聯優先順序，部署 Qt 並進行 ad-hoc 完整性簽名，從同一應用生成 ZIP 和 DMG。普通 macOS Qt CI 使用 SDK 驗證。Developer ID、Apple 公證和 Windows 發行者證書不在目前發行政策範圍內。
+
+Intel 建置另行產生 `macos-x86_64` 應用 ZIP、DMG 與 CLI 封存檔。Intel 桌面與 CLI 分別使用 `release-intel.json` 和 `cli-release-intel.json`，其簽章及 `appcast-intel.xml` 均獨立驗證。既有 ARM64 資訊清單和 feed 保持原格式，以相容舊版用戶端。發行前兩種架構皆須通過原生套件驗證。
 
 產品原始碼取自標籤指向的提交。草稿、公開發行及公開下載複核皆從觸發工作流程時的 `main` 提交讀取同一份已審閱的發行說明。
 

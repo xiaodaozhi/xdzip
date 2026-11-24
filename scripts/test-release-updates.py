@@ -140,6 +140,55 @@ class UpdatePublishingTests(unittest.TestCase):
                     self.assertNotEqual(stale.returncode, 0, name)
                     (directory/name).unlink()
 
+    def test_validation_candidate_requires_and_separates_all_intel_assets(self):
+        from release_protocol import INTEL_TARGETS, INTEL_CLI_TARGETS, validate, validate_cli
+        build = ROOT/'build'
+        build.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix='intel-release-test-', dir=build) as temporary:
+            root = Path(temporary)
+            packages, output = root/'packages', root/'output'
+            packages.mkdir()
+            version = runpy.run_path(str(ROOT/'scripts/sync-version.py'))['version_info']()['display_version']
+            for targets, prefix in ((TARGETS, 'xdzip'), (INTEL_TARGETS, 'xdzip'),
+                                    (CLI_TARGETS, 'xdzip-cli'), (INTEL_CLI_TARGETS, 'xdzip-cli')):
+                for suffix, _ in targets.values():
+                    (packages/f'{prefix}-{version}-{suffix}').write_bytes(b'fixture')
+            command = [sys.executable, str(ROOT/'scripts/prepare-release.py'), '--packages', str(packages),
+                       '--output', str(output), '--validation-only', '--include-intel']
+            result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            arm = validate(json.loads((output/'release.json').read_bytes()), output)
+            intel = validate(json.loads((output/'release-intel.json').read_bytes()), output, intel=True)
+            validate_cli(json.loads((output/'cli-release-intel.json').read_bytes()), output, intel=True)
+            self.assertEqual(arm['commit'], intel['commit'])
+            self.assertNotIn('x86_64', [a['architecture'] for a in arm['assets'] if a['platform'] == 'macos'])
+            (output/next(a['filename'] for a in intel['assets'] if a['platform'] == 'macos')).unlink()
+            with self.assertRaises(ValueError):
+                validate(intel, output, intel=True)
+
+    def test_intel_feed_and_manifest_are_signed_and_bound_to_intel_package(self):
+        from release_protocol import INTEL_TARGETS
+        for suffix, _ in INTEL_TARGETS.values():
+            (self.directory/('xdzip-0.1.0-alpha.7-'+suffix)).write_bytes(b'owned native package fixture')
+        manifest = create(self.directory, self.version, 'xiaodaozhi/xdzip', 'a'*40, intel=True)
+        archive = next(a for a in manifest['assets'] if a['package_type'] == 'app.zip')
+        keyring = self.directory/'trust.json'
+        sparkle_key = self.directory/'sparkle-key.json'
+        with patch.dict(os.environ, {'XDZIP_UPDATE_SIGNING_KEY_HEX': '2a'*32, 'XDZIP_SPARKLE_SIGNING_KEY_HEX': '2b'*32}):
+            run_tool(['public-key', '--key-id', 'fixture-only', '--output', str(keyring)], self.tool)
+            run_tool(['sparkle-public-key', '--output', str(sparkle_key)], self.tool)
+            run_tool(['sign-archive', '--archive', str(self.directory/archive['filename']),
+                      '--version', manifest['version'], '--build', str(manifest['build']),
+                      '--public-key', str(sparkle_key), '--output', str(self.directory/'macos-update-intel.json')], self.tool)
+            self.assertTrue(prepare_appcast(self.directory, manifest, required=True, tool=self.tool, public_key=sparkle_key, intel=True))
+            (self.directory/'release-intel.json').write_text(json.dumps(manifest)+'\n', encoding='utf-8')
+            self.assertTrue(sign_manifest(self.directory, key_id='fixture-only', required=True, tool=self.tool, keyring=keyring, intel=True))
+            verify_release_updates(self.directory, manifest, tool=self.tool, keyring=keyring, public_key=sparkle_key, intel=True)
+            self.assertIn(b'macos-x86_64.app.zip', (self.directory/'appcast-intel.xml').read_bytes())
+            (self.directory/archive['filename']).write_bytes(b'tampered')
+            with self.assertRaises(ValueError):
+                verify_release_updates(self.directory, manifest, tool=self.tool, keyring=keyring, public_key=sparkle_key, intel=True)
+
     def test_independent_keys_sign_archives_feeds_and_exact_manifest_bytes(self):
         # Deterministic disposable test keys are never written to production resources.
         environment = {'XDZIP_UPDATE_SIGNING_KEY_HEX': '2a'*32, 'XDZIP_SPARKLE_SIGNING_KEY_HEX': '2b'*32}

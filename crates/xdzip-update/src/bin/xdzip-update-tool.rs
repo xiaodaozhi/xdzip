@@ -183,8 +183,17 @@ fn run() -> Result<(), String> {
             {
                 return Err("invalid_release_identity".into());
             }
-            let expected = format!("xdzip-{version}-macos-arm64.app.zip");
-            if Path::new(archive).file_name().and_then(|v| v.to_str()) != Some(&expected) {
+            let expected = Path::new(archive)
+                .file_name()
+                .and_then(|v| v.to_str())
+                .ok_or("invalid_archive_name")?;
+            if ![
+                format!("xdzip-{version}-macos-arm64.app.zip"),
+                format!("xdzip-{version}-macos-x86_64.app.zip"),
+            ]
+            .iter()
+            .any(|name| name == expected)
+            {
                 return Err("invalid_archive_name".into());
             }
             let bytes = bounded_file(archive, 2 * 1024 * 1024 * 1024)?;

@@ -158,7 +158,7 @@ class DmgVerificationTests(unittest.TestCase):
             records = len(archive.infolist())
             size = sum(item.file_size for item in archive.infolist())
         events = [{'event': 'first_frame', **IDENTITY, 'runtime_available': True,
-                   'backend': 'metal', 'architecture': 'arm64'},
+                   'backend': 'metal', 'architecture': verify.macos_arch()},
                   {'event': 'open_ready', 'records': records},
                   {'event': 'search_frame', 'rows': 2}, {'event': 'sort_frame'},
                   {'event': 'browse_finished'}, {'event': 'extract_requested'},
@@ -167,7 +167,7 @@ class DmgVerificationTests(unittest.TestCase):
         return events, target
 
     def test_extraction_requires_native_frames_and_independently_correct_bytes(self):
-        for failure in [None, 'wrong-payload', 'extra-file', 'missing-directory', 'software', 'identity', 'missing-event']:
+        for failure in [None, 'wrong-payload', 'extra-file', 'missing-directory', 'software', 'architecture', 'identity', 'missing-event']:
             with self.subTest(failure=failure), tempfile.TemporaryDirectory() as temp:
                 output = Path(temp)
                 def product(*args, **kwargs):
@@ -176,6 +176,7 @@ class DmgVerificationTests(unittest.TestCase):
                     elif failure == 'extra-file': (target/'unexpected').write_bytes(b'')
                     elif failure == 'missing-directory': (target/'empty-directory').rmdir()
                     elif failure == 'software': events[0]['backend'] = 'software'
+                    elif failure == 'architecture': events[0]['architecture'] = 'arm64' if verify.macos_arch() == 'x86_64' else 'x86_64'
                     elif failure == 'identity': events[0]['revision'] = 'a'*12
                     elif failure == 'missing-event': events.pop()
                     return ''.join('XDZIP_PROBE '+json.dumps(event)+'\n' for event in events)

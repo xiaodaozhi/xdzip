@@ -12,6 +12,7 @@ import shutil
 import stat
 import subprocess
 import sys
+from macos_arch import macos_arch
 from macos_bundle import validate_optimized_bundle
 from macos_launch_services import temporary_bundle_path, transient_registrations
 
@@ -97,7 +98,7 @@ def verify_product_extraction(verifier, binary, archive, reference, output, env)
     by = {event['event']: event for event in events}
     required = {'first_frame', 'open_ready', 'browse_finished', 'extract_requested',
                 'extract_finished', 'quit_requested'}
-    if (not required.issubset(by) or by['first_frame'].get('architecture') != 'arm64'
+    if (not required.issubset(by) or by['first_frame'].get('architecture') != macos_arch()
             or by['first_frame'].get('backend') != 'metal'
             or by['first_frame'].get('runtime_available') is not True
             or by['extract_finished'].get('status') != 'succeeded'):

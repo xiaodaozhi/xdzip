@@ -4,7 +4,9 @@
 
 本流程负责 GitHub 下载包。[Microsoft Store MSIX 工作流](../../../.github/workflows/windows-store-msix.yml)可基于同一版本源码生成商店包，商店认证和发布在微软合作伙伴中心完成。
 
-专用 [Release 工作流](../../../.github/workflows/release.yml)通过 `workflow_dispatch` 手动运行。正式发行从 `main` 输入已有版本标签并冻结其提交。三个原生作业分别配置、构建、测试和打包一次。macOS 首次构建就使用发行所需的文件关联优先级，部署 Qt 并进行 ad-hoc 完整性签名，从同一应用生成 ZIP 和 DMG。普通 macOS Qt CI 使用 SDK 验证。Developer ID、Apple 公证和 Windows 发行者证书不在当前发行政策范围内。
+专用 [Release 工作流](../../../.github/workflows/release.yml)通过 `workflow_dispatch` 手动运行。正式发行从 `main` 输入已有版本标签并冻结其提交。四个原生作业分别配置、构建、测试和打包一次。macOS 首次构建就使用发行所需的文件关联优先级，部署 Qt 并进行 ad-hoc 完整性签名，从同一应用生成 ZIP 和 DMG。普通 macOS Qt CI 使用 SDK 验证。Developer ID、Apple 公证和 Windows 发行者证书不在当前发行政策范围内。
+
+Intel 构建单独生成 `macos-x86_64` 应用 ZIP、DMG 和 CLI 归档。Intel 桌面和 CLI 分别使用 `release-intel.json` 和 `cli-release-intel.json`，其签名及 `appcast-intel.xml` 均独立验证。既有 ARM64 清单和 feed 保持原格式，以兼容旧客户端。发行前，两种架构都必须通过原生包验证。
 
 产品源码取自标签指向的提交。草稿、公开发布及公开下载复核均从触发工作流时的 `main` 提交读取同一份已审阅的发布说明。
 

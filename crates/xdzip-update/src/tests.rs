@@ -382,3 +382,74 @@ fn cli_signature_targets_and_legacy_desktop_contract_remain_separate() {
         .valid
     );
 }
+
+#[test]
+fn intel_manifest_keeps_targets_and_feed_architecture_bound() {
+    let mut value = candidate();
+    for asset in value["assets"].as_array_mut().unwrap() {
+        if asset["platform"] == "macos" {
+            asset["architecture"] = json!("x86_64");
+            let kind = asset["package_type"].as_str().unwrap();
+            let name = format!("xdzip-0.1.0-alpha.7-macos-x86_64.{kind}");
+            asset["filename"] = json!(name);
+            asset["url"] = json!(format!(
+                "https://github.com/{REPOSITORY}/releases/download/v0.1.0-alpha.7/{name}"
+            ));
+        }
+    }
+    value["macos_appcast_url"] = json!(format!(
+        "https://github.com/{REPOSITORY}/releases/download/v0.1.0-alpha.7/appcast-intel.xml"
+    ));
+    let result = inspect_release(
+        &value.to_string(),
+        "0.1.0-alpha.6",
+        19,
+        "alpha",
+        "macos",
+        "x86_64",
+        "app.zip",
+    );
+    assert!(result.valid && result.newer, "{}", result.error);
+    assert_eq!(result.filename, "xdzip-0.1.0-alpha.7-macos-x86_64.app.zip");
+    let mut mixed = value.clone();
+    let arm_asset = candidate()["assets"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|a| a["platform"] == "macos" && a["package_type"] == "app.zip")
+        .unwrap()
+        .clone();
+    let assets = mixed["assets"].as_array_mut().unwrap();
+    let linux = assets
+        .iter()
+        .position(|a| a["platform"] == "linux")
+        .unwrap();
+    assets[linux] = arm_asset;
+    assert!(
+        !inspect_release(
+            &mixed.to_string(),
+            "0.1.0-alpha.6",
+            19,
+            "alpha",
+            "macos",
+            "x86_64",
+            "app.zip"
+        )
+        .valid
+    );
+    value["macos_appcast_url"] = json!(format!(
+        "https://github.com/{REPOSITORY}/releases/download/v0.1.0-alpha.7/appcast.xml"
+    ));
+    assert!(
+        !inspect_release(
+            &value.to_string(),
+            "0.1.0-alpha.6",
+            19,
+            "alpha",
+            "macos",
+            "x86_64",
+            "app.zip"
+        )
+        .valid
+    );
+}

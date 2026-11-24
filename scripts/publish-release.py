@@ -75,6 +75,19 @@ def checksums(directory):
     return expected
 
 
+def validate_intel_update(directory, desktop, *, authenticated):
+    intel = validate(json.loads((directory/'release-intel.json').read_bytes()), directory, intel=True)
+    cli = validate_cli(json.loads((directory/'cli-release-intel.json').read_bytes()), directory, intel=True)
+    for item in (intel, cli):
+        if any(item[key] != desktop[key] for key in ('commit', 'version', 'build', 'channel', 'tag', 'repository')):
+            raise ValueError('Intel and existing release identities disagree')
+    if authenticated:
+        from release_updates import verify_release_updates, verify_cli_updates
+        verify_release_updates(directory, intel, intel=True)
+        verify_cli_updates(directory, intel, intel=True)
+    return intel
+
+
 def download_checked(tag, repository, destination, directory, expected):
     destination.mkdir()
     gh('release', 'download', tag, '--repo', repository, '--dir', destination)
@@ -97,6 +110,7 @@ def public_check(args, prerelease, work, directory, expected):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--include-intel', action='store_true')
     parser.add_argument('--directory', type=Path)
     parser.add_argument('--tag')
     parser.add_argument('--repository')
@@ -117,8 +131,11 @@ def main():
         if (desktop['commit'] != commit or any(cli[key] != desktop[key]
                 for key in ('commit', 'version', 'build', 'channel', 'tag', 'repository'))):
             raise ValueError('Candidate changed source or product identity')
+        if args.include_intel:
+            validate_intel_update(directory, desktop, authenticated=False)
         if any((directory/name).exists() for name in ('release.json.sig', 'cli-release.json.sig',
-                                                       'appcast.xml', 'macos-update.json')):
+                                                       'appcast.xml', 'macos-update.json', 'release-intel.json.sig',
+                                                       'cli-release-intel.json.sig', 'appcast-intel.xml', 'macos-update-intel.json')):
             raise ValueError('Candidate download must contain unsigned assets')
         print('Downloaded unsigned candidate and verified all attachment hashes')
         return
@@ -144,6 +161,9 @@ def main():
         if not args.directory:
             parser.error('--verify-public requires a signed asset directory')
         directory = args.directory.resolve()
+        if args.include_intel:
+            desktop = validate(json.loads((directory/'release.json').read_bytes()), directory)
+            validate_intel_update(directory, desktop, authenticated=True)
         public_check(args, prerelease, work, directory, checksums(directory))
         return
     query = subprocess.run(['gh', 'release', 'view', args.tag, '--repo', args.repository, '--json',
@@ -171,6 +191,8 @@ def main():
     from release_updates import verify_release_updates, verify_cli_updates
     verify_release_updates(directory, manifest)
     verify_cli_updates(directory, manifest)
+    if args.include_intel:
+        validate_intel_update(directory, manifest, authenticated=True)
     if manifest['tag'] != args.tag or manifest['repository'] != args.repository:
         raise ValueError('Release identity mismatch')
     expected = checksums(directory)

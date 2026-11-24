@@ -2,7 +2,7 @@
 
 [English](../../engineering/ci-policy.md) | 简体中文
 
-[macOS Intel 原生 CI](../../../.github/workflows/macos-intel.yml) 是独立的实验性构建与测试，可手动触发，修改其入口时也会在拉取请求上运行。它在 `macos-15-intel` 核对产品、Rust 桥接和修补依赖的原生架构，只保留验证记录，不生成 Intel 发行包，也不代表发行或人工桌面验收通过。macOS 发行支持范围仍为 Apple Silicon。
+[macOS Intel 原生 CI](../../../.github/workflows/macos-intel.yml) 是独立的实验性构建与测试，可手动触发，修改其入口时也会在拉取请求上运行。它在 `macos-15-intel` 核对产品、Rust 桥接和修补依赖的原生架构，只保留验证记录，不生成发行包，也不代表发行或人工桌面验收通过。专用更新回归另行使用测试密钥验证 Intel 产品。
 
 ## 日常检查
 

@@ -32,6 +32,11 @@ class SystemProxyFixtureTests(unittest.TestCase):
                 with patch('system_proxy_fixture.sys.platform', 'linux'):
                     with self.assertRaises(RuntimeError):
                         require_hosted()
+            with patch.dict(os.environ, expected | {'XDZIP_MACOS_INTEL_CI': '1'}, clear=True):
+                with patch('system_proxy_fixture.platform.machine', return_value='x86_64'):
+                    require_hosted()
+                with self.assertRaises(RuntimeError):
+                    require_hosted()
 
     def setUp(self):
         self.origin_requests = []

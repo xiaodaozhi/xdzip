@@ -27,7 +27,16 @@ fn signed(bytes: &[u8]) -> (MetadataFixture, String) {
     let mut assets = vec![];
     for (platform, arch, kind, minimum) in [
         ("windows", "x86_64", "zip", json!({"windows":"11"})),
-        ("macos", "arm64", "tar.gz", json!({"macos":"14.0"})),
+        (
+            "macos",
+            if cfg!(all(target_os = "macos", target_arch = "x86_64")) {
+                "x86_64"
+            } else {
+                "arm64"
+            },
+            "tar.gz",
+            json!({"macos":"14.0"}),
+        ),
         (
             "linux",
             "x86_64",
@@ -44,7 +53,9 @@ fn signed(bytes: &[u8]) -> (MetadataFixture, String) {
     let trust = json!({"schema_version":1,"keys":[{"key_id":"private-cli-fixture","public_key":hex(key.verifying_key().as_bytes())}]}).to_string();
     let base = format!("https://github.com/{REPOSITORY}/releases/download/v{version}");
     let mut api_assets: Vec<Value> = manifest["assets"].as_array().unwrap().iter().map(|asset|json!({"name":asset["filename"],"size":asset["bytes"],"browser_download_url":asset["url"]})).collect();
-    for name in ["cli-release.json", "cli-release.json.sig"] {
+    let name = manifest_name(false, platform(), architecture());
+    let signature_name = format!("{name}.sig");
+    for name in [name, signature_name.as_str()] {
         api_assets.push(json!({"name":name,"browser_download_url":format!("{base}/{name}")}));
     }
     let api = serde_json::to_vec(
@@ -60,9 +71,9 @@ fn signed(bytes: &[u8]) -> (MetadataFixture, String) {
                     ),
                     api,
                 ),
-                (format!("{base}/cli-release.json"), original),
+                (format!("{base}/{name}"), original),
                 (
-                    format!("{base}/cli-release.json.sig"),
+                    format!("{base}/{signature_name}"),
                     serde_json::to_vec(&signature).unwrap(),
                 ),
             ]),
@@ -130,7 +141,12 @@ fn exact_signed_selection_network_errors_and_host_validation() {
     let manifest = fixture
         .files
         .iter_mut()
-        .find(|(name, _)| name.ends_with("/cli-release.json"))
+        .find(|(name, _)| {
+            name.ends_with(&format!(
+                "/{}",
+                manifest_name(false, platform(), architecture())
+            ))
+        })
         .unwrap()
         .1;
     manifest.push(b' ');
@@ -304,4 +320,15 @@ fn native_payload_install_switches_pointer_after_validation_and_keeps_old_runtim
         "recovery"
     );
     fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn intel_manifest_names_are_separate_from_existing_release_names() {
+    assert_eq!(manifest_name(true, "macos", "x86_64"), "release-intel.json");
+    assert_eq!(
+        manifest_name(false, "macos", "x86_64"),
+        "cli-release-intel.json"
+    );
+    assert_eq!(manifest_name(true, "macos", "arm64"), "release.json");
+    assert_eq!(manifest_name(false, "macos", "arm64"), "cli-release.json");
 }

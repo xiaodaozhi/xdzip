@@ -1,11 +1,15 @@
 //! Fixed host-system checks for native update targets, independent of Qt.
+#[cfg(any(target_os = "macos", test))]
+fn macos_arch_supported(architecture: &str) -> bool {
+    matches!(architecture, "x86_64" | "aarch64")
+}
 pub fn update_supported() -> bool {
     if !matches!(std::env::consts::ARCH, "x86_64" | "aarch64") {
         return false;
     }
     #[cfg(target_os = "macos")]
     {
-        if std::env::consts::ARCH != "aarch64" {
+        if !macos_arch_supported(std::env::consts::ARCH) {
             return false;
         }
         let output = std::process::Command::new("/usr/bin/sw_vers")
@@ -100,5 +104,15 @@ fn windows_supported() -> bool {
             && value.major >= 10
             && value.build >= 22000
             && value.product == 1
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn macos_update_accepts_only_supported_architectures() {
+        assert!(super::macos_arch_supported("x86_64"));
+        assert!(super::macos_arch_supported("aarch64"));
+        assert!(!super::macos_arch_supported("i686"));
     }
 }

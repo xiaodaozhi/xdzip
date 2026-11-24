@@ -6,7 +6,9 @@
 
 このワークフローは GitHub のダウンロードを提供します。[Microsoft Store MSIX ワークフロー](../../../.github/workflows/windows-store-msix.yml)は同じバージョンのソースを Microsoft Partner Center 向けにパッケージ化し、Store の認定と公開は Partner Center が扱います。
 
-専用の [Release ワークフロー](../../../.github/workflows/release.yml)は `workflow_dispatch` で手動実行します。正式な実行は `main` 上の既存バージョンタグから開始し、解決したコミットを固定します。3 つのネイティブジョブはそれぞれ設定、ビルド、テスト、パッケージ化を一度行います。macOS ジョブは初回ビルドから配布用の関連付け優先順位を使い、Qt をデプロイして ad-hoc の整合性署名を適用し、同じアプリから ZIP と DMG を作成します。通常の macOS Qt CI は SDK に対して検証します。Developer ID、Apple の公証、Windows 発行元証明書はこのリリース方針の対象外です。
+専用の [Release ワークフロー](../../../.github/workflows/release.yml)は `workflow_dispatch` で手動実行します。正式な実行は `main` 上の既存バージョンタグから開始し、解決したコミットを固定します。4 つのネイティブジョブはそれぞれ設定、ビルド、テスト、パッケージ化を一度行います。macOS ジョブは初回ビルドから配布用の関連付け優先順位を使い、Qt をデプロイして ad-hoc の整合性署名を適用し、同じアプリから ZIP と DMG を作成します。通常の macOS Qt CI は SDK に対して検証します。Developer ID、Apple の公証、Windows 発行元証明書はこのリリース方針の対象外です。
+
+Intel ビルドでは `macos-x86_64` のアプリ ZIP、DMG、CLI アーカイブを別途作成します。Intel デスクトップと CLI はそれぞれ `release-intel.json` と `cli-release-intel.json` を使い、署名と `appcast-intel.xml` を個別に検証します。旧クライアントとの互換性のため、既存の ARM64 マニフェストとフィードの形式は維持します。リリース前に両アーキテクチャのネイティブパッケージ検証が必要です。
 
 製品のソースはタグが指すコミットから取得します。ドラフト作成、公開、公開後のダウンロード検証では、ワークフローを起動したときの `main` のコミットから同じレビュー済みのリリースノートを読み込みます。
 

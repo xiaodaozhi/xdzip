@@ -23,6 +23,7 @@ import xml.etree.ElementTree as ET
 
 from deployment_audit import audit, mac_rpaths, native
 from desktop_environment import locked_rust_version
+from macos_arch import macos_arch
 from macos_bundle import optimize_bundle, validate_optimized_bundle
 from sparkle_bundle import configuration, embed, signing_metadata
 from update_fixture import ROOT, digest, dump
@@ -314,8 +315,8 @@ def main():
     parser.add_argument('--qt-prefix', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
-    if sys.platform != 'darwin' or platform.machine() != 'arm64':
-        parser.error('Requires a native Apple Silicon desktop runner')
+    if sys.platform != 'darwin' or platform.machine() != macos_arch():
+        parser.error('Requires the selected native macOS desktop architecture')
     output, qt = args.output.resolve(), args.qt_prefix.resolve()
     if not output.is_relative_to(ROOT/'build') or output == ROOT/'build' or output.exists():
         parser.error('Use a fresh dedicated output directory beneath build/')
@@ -348,7 +349,7 @@ def main():
     for label, build_number in [('old', OLD_BUILD), ('new', NEW_BUILD)]:
         build = output/('build-'+label)
         invoke(['cmake', '-S', source, '-B', build, '-DCMAKE_BUILD_TYPE=Release',
-                '-DCMAKE_PREFIX_PATH='+str(qt), '-DCMAKE_OSX_ARCHITECTURES=arm64',
+                '-DCMAKE_PREFIX_PATH='+str(qt), '-DCMAKE_OSX_ARCHITECTURES='+macos_arch(),
                 '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0', '-DXDZIP_BUILD_QT_PROBE=OFF',
                 '-DXDZIP_BUILD_DESKTOP_PREVIEW=ON', '-DBUILD_TESTING=ON',
                 '-DXDZIP_BUILD_MAC_UPDATE_REGRESSION=ON', '-DXDZIP_MAC_UPDATE_PROBE_BUILD='+str(build_number),
@@ -356,7 +357,7 @@ def main():
         invoke(['cmake', '--build', build, '--target', 'xdzip-mac-update-probe', '--parallel', '3'], output/(label+'-build.log'))
         apps.append(deploy(source, build, qt, sdk, output, label))
     https = https_probe(apps[0], output, source_sha)
-    archive = output/('xdzip-'+VERSION+'-macos-arm64.app.zip')
+    archive = output/('xdzip-'+VERSION+'-macos-'+macos_arch()+'.app.zip')
     invoke(['ditto', '-c', '-k', '--sequesterRsrc', '--keepParent', apps[1], archive])
     metadata = output/'archive.json'
     invoke([signing, 'sign-archive', '--archive', archive, '--public-key', public, '--version', VERSION,
@@ -385,7 +386,7 @@ def main():
             invoke(['/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister', '-u', app])
     if digest(production_key) != before:
         raise RuntimeError('Production Sparkle trust unexpectedly changed')
-    dump(output/'verification.json', dict(schema_version=1, platform='macos', architecture='arm64',
+    dump(output/'verification.json', dict(schema_version=1, platform='macos', architecture=macos_arch(),
          status='passed', sdk=configuration()['version'], production_trust_unchanged=True,
          scope='Real About controls, two managed sessions, Sparkle signed feed/archive, cancellation, replacement and relaunch; candidate discovery is independently tested.',
          https=https, scenarios=results))
