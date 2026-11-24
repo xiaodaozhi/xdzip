@@ -281,6 +281,21 @@ class WorkflowTests(unittest.TestCase):
         for path in diagnostics['with']['path'].splitlines():
             self.assertIn(Path(path).suffix, {'.log', '.json'})
 
+    def test_snap_store_protects_the_beta_to_stable_promotion(self):
+        workflow = self.workflows['snap-store.yml']
+        self.assertEqual(set(workflow['on']), {'workflow_dispatch'})
+        self.assertEqual(workflow['on']['workflow_dispatch']['inputs']['publish_beta']['default'], 'false')
+        package, beta, stable = (workflow['jobs'][name] for name in ('package', 'beta', 'stable'))
+        self.assertNotIn('environment', package)
+        self.assertTrue(all('secrets.' not in str(step) for step in package['steps']))
+        self.assertEqual(beta['needs'], 'package')
+        self.assertEqual(beta['if'], 'inputs.publish_beta')
+        self.assertEqual(beta['environment'], 'snap-beta')
+        self.assertEqual(stable['needs'], 'beta')
+        self.assertEqual(stable['environment'], 'snap-stable')
+        self.assertEqual(stable['steps'][-1]['env']['STORE_REVISION'], '${{ needs.beta.outputs.revision }}')
+        self.assertEqual(stable['steps'][-1]['env']['SNAP_SHA3'], '${{ needs.beta.outputs.sha3 }}')
+
     def test_workflows_do_not_start_web_browser_tests(self):
         browser_drivers = re.compile(r'playwright|chromium|webdriver|selenium', re.I)
         web_scripts = re.compile(

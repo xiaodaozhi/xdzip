@@ -1,0 +1,124 @@
+name: Snap Store
+run-name: Snap Store for ${{ inputs.source_revision }}
+on:
+  workflow_dispatch:
+    inputs:
+      source_revision:
+        description: Full 40-character commit SHA reachable from main
+        type: string
+        required: true
+      publish_beta:
+        description: Upload to Snap Store and publish beta after review
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: ${{ inputs.publish_beta && 'snap-store-publication' || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    if: github.repository == 'xiaodaozhi/xdzip' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 100
+    outputs:
+      artifact: ${{ steps.artifact.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Select the source commit from main
+        env:
+          SOURCE_REVISION: ${{ inputs.source_revision }}
+        run: |
+          [[ "$SOURCE_REVISION" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(git cat-file -t "$SOURCE_REVISION")" == commit ]]
+          git merge-base --is-ancestor "$SOURCE_REVISION" "$GITHUB_SHA"
+          git checkout --detach "$SOURCE_REVISION"
+      - uses: ./.github/actions/linux-release-dependencies
+      - name: Prepare and verify Snap inputs
+        run: |
+          sudo apt-get install -y --no-install-recommends desktop-file-utils squashfs-tools snapd
+          curl --fail --location --retry 3 --output "$RUNNER_TEMP/core24.snap" \
+            https://api.snapcraft.io/api/v1/snaps/download/dwTAh7MZZ01zyriOZErqd1JynQLiOGvM_2307.snap
+          python3 -B scripts/test-snap-launch.py
+      - name: Build and pack XDZip
+        run: |
+          python3 -B scripts/desktop.py prepare --install-qt --install-rust --packaging
+          python3 -B scripts/desktop.py build
+          qt_prefix="$PWD/build/toolchain/Qt/6.8.2/gcc_64"
+          tools_python="$PWD/build/toolchain/desktop-tools/bin/python"
+          "$tools_python" -B scripts/collect-notices.py build/snap-notices \
+            --qt-prefix "$qt_prefix" --font-dir build/desktop/generated/fonts
+          "$tools_python" -B scripts/prepare-runtime-notices.py \
+            --qt-prefix "$qt_prefix" --output build/snap-notices/Qt-runtime
+          "$tools_python" -B scripts/deploy_linux.py --experimental-wayland \
+            --app build/desktop/apps/desktop/xdzip --qt-prefix "$qt_prefix" \
+            --notices build/snap-notices --output build/snap-runtime
+          "$tools_python" -B scripts/build-linux-snap.py --grade stable \
+            --runtime build/snap-runtime --qt-prefix "$qt_prefix" \
+            --core24 "$RUNNER_TEMP/core24.snap" --package-cache "$RUNNER_TEMP/snap-debs" \
+            --output build/snap-store
+      - name: Smoke-test the packed desktop launcher
+        run: |
+          package=(build/snap-store/*.snap)
+          test "${#package[@]}" -eq 1
+          extracted="$RUNNER_TEMP/xdzip-snap"
+          unsquashfs -q -no-progress -d "$extracted" "${package[0]}"
+          SNAP="$extracted" QT_QPA_PLATFORM=offscreen "$extracted/bin/launch" --smoke-test
+      - name: Preserve the verified Snap and its build receipt
+        id: artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: xdzip-snap-${{ github.run_attempt }}
+          path: build/snap-store/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
+  beta:
+    if: inputs.publish_beta
+    needs: package
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: snap-beta
+    outputs:
+      revision: ${{ steps.publish.outputs.revision }}
+      sha3: ${{ steps.publish.outputs.sha3 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ needs.package.outputs.artifact }}
+          path: build/snap-store
+      - name: Install Snapcraft
+        run: sudo snap install snapcraft --classic --channel=9.x/stable
+      - name: Upload and verify latest/beta
+        id: publish
+        env:
+          SOURCE_REVISION: ${{ inputs.source_revision }}
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+        run: python3 -B scripts/snap_store.py beta build/snap-store "$SOURCE_REVISION"
+
+  stable:
+    name: Publish revision ${{ needs.beta.outputs.revision }} to stable after VMware acceptance
+    needs: beta
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: snap-stable
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Snapcraft
+        run: sudo snap install snapcraft --classic --channel=9.x/stable
+      - name: Publish and verify the accepted revision on latest/stable
+        env:
+          STORE_REVISION: ${{ needs.beta.outputs.revision }}
+          SNAP_SHA3: ${{ needs.beta.outputs.sha3 }}
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+        run: python3 -B scripts/snap_store.py stable "$STORE_REVISION" "$SNAP_SHA3"

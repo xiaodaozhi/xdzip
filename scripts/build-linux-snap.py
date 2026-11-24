@@ -31,6 +31,29 @@ def write_json(path, value):
     path.write_text(json.dumps(value, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
 
 
+def record_source_access(stage, revision, packages):
+    notices = stage / 'runtime/share/notices'
+    project = 'https://github.com/xiaodaozhi/xdzip'
+    source = f'{project}/tree/{revision}'
+    qt = json.loads((ROOT / 'scripts/corresponding-sources.json').read_bytes())
+    ubuntu_sources = {}
+    for package in packages:
+        name, version = package['source_package'], package['source_version']
+        directory = package['url'].rsplit('/', 1)[0]
+        ubuntu_sources[name, version] = f'{directory}/{name}_{version.split(":", 1)[-1]}.dsc'
+    write_json(notices / 'snap-source-access.json', {
+        'app_source': source,
+        'qt_module_pins': f'{project}/blob/{revision}/scripts/corresponding-sources.json',
+        'qt_source_archive': 'https://download.qt.io/archive/qt/6.8/6.8.2/single/qt-everywhere-src-6.8.2.tar.xz',
+        'qt': qt['archives'],
+        'ubuntu': [{'source': name, 'version': version, 'descriptor': url}
+                   for (name, version), url in sorted(ubuntu_sources.items())],
+    })
+    instructions = (PACKAGING / 'snap-qt-replacement.md').read_text(encoding='utf-8')
+    (notices / 'SNAP-LINUX-SOURCE.md').write_text(
+        instructions.replace('@SOURCE_URL@', source), encoding='utf-8')
+
+
 def fetch_deb(cache, pin):
     destination = cache / pin['url'].rsplit('/', 1)[-1]
     if destination.is_file():
@@ -181,6 +204,7 @@ def pack(args, scratch):
     command('unsquashfs', '-q', '-processors', '2', '-no-progress', '-no-xattrs',
             '-d', base, args.core24, LIBRARIES)
     packages = stage_ubuntu_packages(stage, scratch, args.package_cache)
+    record_source_access(stage, revision, packages)
 
     app, imports = verify_native(stage, base)
     if (app['dirty'] is not False or app['revision'] != revision[:12] or
@@ -223,7 +247,8 @@ def pack(args, scratch):
     args.output.mkdir(parents=True, exist_ok=True)
     command('snap', 'pack', stage, scratch)
     packed = scratch / outfile.name
-    for path in ('meta/snap.yaml', 'meta/gui/xdzip.desktop', 'runtime/bin/xdzip', 'runtime/cli/xdzip'):
+    for path in ('meta/snap.yaml', 'meta/gui/xdzip.desktop', 'runtime/bin/xdzip', 'runtime/cli/xdzip',
+                 'runtime/share/notices/snap-source-access.json', 'runtime/share/notices/SNAP-LINUX-SOURCE.md'):
         payload = subprocess.check_output(['unsquashfs', '-cat', packed, path])
         if hashlib.sha256(payload).hexdigest() != digest(stage / path):
             raise ValueError(f'Packed file differs from the staged input: {path}')

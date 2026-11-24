@@ -71,6 +71,8 @@ jobs:
           XDZIP_PUSH_BEFORE: ${{ github.event.before }}
         run: python3 scripts/check-rust-clippy.py
       - name: Check workflow contracts
-        run: build/ci-check-tools/bin/python scripts/test-ci-workflows.py
+        run: |
+          build/ci-check-tools/bin/python scripts/test-ci-workflows.py
+          python3 -B scripts/test-snap-store.py
       - name: Check whitespace
         run: git diff-tree --check --root --first-parent -m HEAD
