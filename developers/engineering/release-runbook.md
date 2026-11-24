@@ -35,6 +35,8 @@ gh workflow run release.yml --ref main -f tag=vX.Y.Z
 
 The workflow takes product code from the tag and reviewed notes from the dispatch revision. Record both SHAs and the run ID. Verify the draft, native builds and deployment receipts, and the release contract checks for that run. Confirm the six desktop assets and three standalone CLI packages before final assembly. The protected `release-signing` environment supplies the update-signing authority. Its signatures and macOS ad-hoc package integrity serve different purposes. See [candidate materials](release-candidate.md) and the [signing contract](../../docs/engineering/release-protocol.md#trusted-update-attachments).
 
+For a stable release, configure the [Snap Store publishing credential](../market/linux/snap-store.md#prepare-and-publish-a-revision) in `release-signing` before dispatch. The approved publication job also sends the verified same-run amd64 Snap to `latest/stable` and records the Store revision. If only the Snap step fails after GitHub publication, rerun the failed job in the same run. It verifies the public GitHub release before retrying the Snap upload.
+
 After publication, check the public release state, notes, asset inventory and verified re-downloads against `SHA256SUMS`. The workflow's `verify-public` job calls the [publisher](../../scripts/publish-release.py) to perform the separate download. Keep the original assets for each published version and use a new version for corrected packages. Record the published version in the [changelog](../../CHANGELOG.md), keep pending changes under [Unreleased](../../CHANGELOG.md#unreleased), and update all changelog languages together.
 
 ## Candidate review

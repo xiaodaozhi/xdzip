@@ -1,5 +1,6 @@
 {
   "origin": "Ubuntu 24.04 LTS",
+  "mirrors": ["https://mirrors.edge.kernel.org/ubuntu/"],
   "packages": [
     {
       "package": "fonts-dejavu-core",

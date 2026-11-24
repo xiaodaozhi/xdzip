@@ -50,10 +50,15 @@ Window {
     // Cocoa can deliver an older resize after the content limits have changed.
     onHeightChanged: if (visible) {
         if (height !== surfaceHeight) Qt.callLater(applyRequestedHeight);
-        if (centerOnScreen) Qt.callLater(() => { if (root.visible) BuildInfo.centerOnScreen(root, root.owner || root); });
     }
 
     function present() {
+        if (visible) {
+            applyRequestedHeight();
+            raise();
+            requestActivate();
+            return;
+        }
         // Reopening preserves view state and uses the owner's current display.
         if (owner) screen = owner.screen;
         // Select the display before constraining content to its actual work area.

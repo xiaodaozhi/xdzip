@@ -416,10 +416,10 @@ Rectangle {
                         implicitHeight: extensionRow.implicitHeight
                         visible: root.expandedFormatIndex >= 0
                         Accessible.role: Accessible.StaticText
-                        Accessible.name: suffixes.join(", ")
+                        Accessible.name: suffixes.map(value => value.toUpperCase()).join(", ")
                         TextMetrics {
-                            id: lowercaseMetrics
-                            text: "x"
+                            id: uppercaseMetrics
+                            text: "X"
                             font.family: Theme.uiFontFamily
                             font.weight: Font.Normal
                             font.pixelSize: Math.round(Theme.welcomeFormatFontSize * Theme.fontScale)
@@ -427,8 +427,8 @@ Rectangle {
                         Text {
                             id: chipTextSample
                             visible: false
-                            text: lowercaseMetrics.text
-                            font: lowercaseMetrics.font
+                            text: uppercaseMetrics.text
+                            font: uppercaseMetrics.font
                         }
                         Item {
                             id: extensionViewport
@@ -456,15 +456,21 @@ Rectangle {
                                         border.width: 1
                                         radius: Theme.welcomeFormatChipRadius
                                         antialiasing: true
+                                        TextMetrics {
+                                            id: suffixMetrics
+                                            text: suffix.text
+                                            font: suffix.font
+                                        }
                                         Text {
                                             id: suffix
+                                            objectName: chip.objectName + "Label"
                                             anchors.horizontalCenter: parent.horizontalCenter
-                                            // Center the lowercase body on a shared baseline.
-                                            y: (chip.height - lowercaseMetrics.tightBoundingRect.height) / 2
-                                                - baselineOffset - lowercaseMetrics.tightBoundingRect.y
-                                            text: chip.modelData
+                                            y: (chip.height - suffixMetrics.tightBoundingRect.height) / 2
+                                                - baselineOffset - suffixMetrics.tightBoundingRect.y
+                                            text: chip.modelData.toUpperCase()
+                                            readonly property rect inkBounds: suffixMetrics.tightBoundingRect
                                             color: Theme.textSecondary
-                                            font: lowercaseMetrics.font
+                                            font: uppercaseMetrics.font
                                             Accessible.ignored: true
                                         }
                                     }
@@ -484,7 +490,7 @@ Rectangle {
                         HoverHandler { id: formatHover }
                         CommandTooltip {
                             requested: formatHover.hovered && formatPreview.truncated
-                            text: formatPreview.suffixes.join(", ")
+                            text: formatPreview.suffixes.map(value => value.toUpperCase()).join(", ")
                         }
                     }
                 }

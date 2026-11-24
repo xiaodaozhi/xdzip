@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Test the publisher against local receipts and mocked Store channels."""
+"""Test Snap input integrity and publication without writing to the Store."""
 
 import hashlib
+import importlib
+import io
 import json
 from pathlib import Path
 import tempfile
@@ -9,6 +11,24 @@ import unittest
 from unittest.mock import patch
 
 import snap_store
+
+
+class SnapInputTests(unittest.TestCase):
+    def test_mirror_uses_the_original_package_hash(self):
+        pack = importlib.import_module('build-linux-snap')
+        url = 'https://archive.ubuntu.com/ubuntu/pool/main/package.deb'
+        mirror = 'https://mirror.example/ubuntu/'
+        data = b'locked Ubuntu package'
+        pin = {'package': 'package', 'url': url, 'sha256': hashlib.sha256(data).hexdigest()}
+        with tempfile.TemporaryDirectory() as temporary:
+            cache = Path(temporary)
+            with patch.object(pack.urllib.request, 'urlopen', side_effect=[OSError('HTTP 403'), io.BytesIO(b'bad')]):
+                with self.assertRaisesRegex(ValueError, 'differs from its lock'):
+                    pack.fetch_deb(cache, pin, [mirror])
+            self.assertEqual(list(cache.iterdir()), [])
+            with patch.object(pack.urllib.request, 'urlopen', side_effect=[OSError('HTTP 403'), io.BytesIO(data)]) as fetch:
+                self.assertEqual(pack.fetch_deb(cache, pin, [mirror]).read_bytes(), data)
+                fetch.assert_called_with(mirror + 'pool/main/package.deb', timeout=20)
 
 
 class SnapStoreTests(unittest.TestCase):
@@ -28,11 +48,8 @@ class SnapStoreTests(unittest.TestCase):
             'sha256': self.sha256, 'bytes': self.package.stat().st_size,
         }), encoding='utf-8')
         self.entry = {'revision': 9, 'version': '0.3.1', 'download': {'sha3-384': self.sha3}}
-        self.output = self.directory / 'output'
         self.summary = self.directory / 'summary'
-        environment = patch.dict(snap_store.os.environ, {
-            'GITHUB_OUTPUT': str(self.output), 'GITHUB_STEP_SUMMARY': str(self.summary),
-        })
+        environment = patch.dict(snap_store.os.environ, {'GITHUB_STEP_SUMMARY': str(self.summary)})
         environment.start()
         self.addCleanup(environment.stop)
 
@@ -43,34 +60,27 @@ class SnapStoreTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'bytes'):
             snap_store.read_candidate(self.directory, self.source)
 
-    def test_beta_upload_records_only_hash_matched_store_revision(self):
+    def test_direct_stable_upload_records_only_hash_matched_store_revision(self):
         previous = {**self.entry, 'revision': 8, 'download': {'sha3-384': 'b' * 96}}
-        with (patch.object(snap_store, 'channel_entry', side_effect=[previous, previous, self.entry]),
+        with (patch.object(snap_store, 'stable_entry', side_effect=[previous, previous, self.entry]),
               patch.object(snap_store.time, 'sleep'), patch.object(snap_store.subprocess, 'run') as run):
-            snap_store.publish_beta(self.directory, self.source)
-        run.assert_called_once_with(['snapcraft', 'upload', str(self.package), '--release=latest/beta'], check=True)
-        self.assertEqual(self.output.read_text(), f'revision=9\nsha3={self.sha3}\n')
+            snap_store.publish_stable(self.directory, self.source, 'v0.3.1')
+        run.assert_called_once_with(['snapcraft', 'upload', str(self.package), '--release=latest/stable'], check=True)
+        self.assertIn('Store revision: **9**', self.summary.read_text())
 
-    def test_beta_retry_reuses_published_bytes(self):
-        with (patch.object(snap_store, 'channel_entry', return_value=self.entry),
+    def test_stable_retry_reuses_published_bytes(self):
+        with (patch.object(snap_store, 'stable_entry', return_value=self.entry),
               patch.object(snap_store.subprocess, 'run') as run):
-            snap_store.publish_beta(self.directory, self.source)
+            snap_store.publish_stable(self.directory, self.source, 'v0.3.1')
         run.assert_not_called()
-        self.assertIn('revision=9', self.output.read_text())
+        self.assertIn('Store revision: **9**', self.summary.read_text())
 
-    def test_stable_promotes_the_same_revision_and_verifies_it(self):
-        with (patch.object(snap_store, 'channel_entry', side_effect=[self.entry, None, self.entry]),
-              patch.object(snap_store.subprocess, 'run') as run):
-            snap_store.publish_stable(9, self.sha3)
-        run.assert_called_once_with(['snapcraft', 'release', 'xdzip', '9', 'latest/stable'], check=True)
-        self.assertIn('revision 9 verified', self.summary.read_text())
-
-    def test_beta_moved_during_approval_blocks_stable_promotion(self):
-        with (patch.object(snap_store, 'channel_entry', return_value={**self.entry, 'revision': 10}),
-              patch.object(snap_store.subprocess, 'run') as run):
-            with self.assertRaisesRegex(ValueError, 'beta channel changed'):
-                snap_store.publish_stable(9, self.sha3)
-        run.assert_not_called()
+    def test_wrong_and_prerelease_tags_reject_upload(self):
+        with patch.object(snap_store, 'stable_entry') as store:
+            for tag in ('v0.3.2', 'v0.3.1-beta.1'):
+                with self.subTest(tag=tag), self.assertRaisesRegex(ValueError, 'stable release tag'):
+                    snap_store.publish_stable(self.directory, self.source, tag)
+        store.assert_not_called()
 
 
 if __name__ == '__main__':
