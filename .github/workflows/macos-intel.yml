@@ -47,11 +47,12 @@ jobs:
             "$qt/plugins/imageformats/libqtiff.dylib" \
             build/toolchain/Sparkle/2.10.0-xdzip-proxy.2/Sparkle.framework/Versions/B/Sparkle; do
             test -f "$binary"
-            lipo -verify_arch x86_64 "$binary"
+            echo "Checking $binary"
+            lipo "$binary" -verify_arch x86_64
           done
           find build/desktop -name 'libxdzip_qt_bridge.a' -print > build/review/intel-bridge-paths.txt
           test -s build/review/intel-bridge-paths.txt
-          while IFS= read -r archive; do lipo -verify_arch x86_64 "$archive"; done < build/review/intel-bridge-paths.txt
+          while IFS= read -r archive; do echo "Checking $archive"; lipo "$archive" -verify_arch x86_64; done < build/review/intel-bridge-paths.txt
       - name: Test native desktop, Rust and workers
         run: python3 scripts/desktop.py test --output-dir build/review
       - name: Test patched Sparkle proxy transport
