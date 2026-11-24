@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import platform
+from macos_arch import macos_arch
 import re
 import shutil
 import subprocess
@@ -320,7 +321,7 @@ class Workflow:
                    '-DBUILD_TESTING=ON',
                    '-DCMAKE_PREFIX_PATH='+str(self.qt), '-DPython3_EXECUTABLE='+self.python]
         if self.system == 'macos':
-            command += ['-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
+            command += ['-DCMAKE_OSX_ARCHITECTURES='+macos_arch(), '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
                         '-DXDZIP_MACOS_HANDLER_RANK='+self.args.macos_handler_rank]
         with utf8_console():
             check_dependencies(self.build)
@@ -364,6 +365,8 @@ class Workflow:
                 'rendering': 'offscreen/software, native desktop acceptance remains separate'}
 
     def package_preflight(self):
+        if self.system == 'macos' and macos_arch() != 'arm64' and not self.args.release_distribution:
+            raise ValueError('Intel packaging requires the dedicated release path')
         if self.system == 'macos' and os.environ.get('CI', '').lower() == 'true' and not self.args.release_distribution:
             raise ValueError('macOS CI must not deploy, sign or package an application')
         if self.system == 'windows' and self.args.configuration == 'Debug':
@@ -532,7 +535,7 @@ class Workflow:
             import runpy
             version = runpy.run_path(str(ROOT/'scripts/sync-version.py'))['version_info']()
             display = version['display_version']
-            dmg = self.output/('xdzip-'+display+'-macos-arm64.dmg')
+            dmg = self.output/('xdzip-'+display+'-macos-'+macos_arch()+'.dmg')
             self.script('build-macos-dmg.py', '--app', self.app.parents[2], '--qt-prefix', self.qt, '--output', dmg,
                         *(['--release-distribution'] if self.args.release_distribution else []))
             self.script('validate-sbom.py', dmg.with_suffix('.cdx.json'))
@@ -540,7 +543,7 @@ class Workflow:
                 raise ValueError('Source changed during packaging; use a new output directory and rebuild')
             files = [dmg, dmg.with_suffix('.json'), dmg.with_suffix('.cdx.json')]
             if self.args.release_distribution:
-                archive = self.output/('xdzip-'+display+'-macos-arm64.app.zip')
+                archive = self.output/('xdzip-'+display+'-macos-'+macos_arch()+'.app.zip')
                 if not archive.is_file():
                     raise ValueError('DMG builder did not preserve the signed application ZIP')
                 files.append(archive)

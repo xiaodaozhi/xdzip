@@ -36,7 +36,7 @@ class FakeTools:
                 return ' '.join(json.loads(Path(args[2]).read_bytes()[4:].split(b'\n')[0])['arches'])
             source, target = Path(args[1]), Path(args[-1])
             info = json.loads(source.read_bytes()[4:].split(b'\n')[0])
-            binary(target, ('arm64',), info['imports'])
+            binary(target, (args[3],), info['imports'])
             return ''
         if args[0] == 'otool':
             info = json.loads(Path(args[-1]).read_bytes()[4:].split(b'\n')[0])
@@ -83,6 +83,10 @@ def fixture(root):
 
 class BundlePolicyTests(unittest.TestCase):
     def setUp(self):
+        from unittest.mock import patch
+        environment = patch.dict(os.environ, {'XDZIP_MACOS_INTEL_CI': '0'})
+        environment.start()
+        self.addCleanup(environment.stop)
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
         self.root = Path(self.directory.name)
@@ -143,6 +147,16 @@ class BundlePolicyTests(unittest.TestCase):
             self.optimize()
         self.assertEqual(outside.read_bytes(), content)
         self.assertEqual(self.tools.commands, [])
+
+    def test_intel_policy_requires_and_thins_to_intel(self):
+        from unittest.mock import patch
+        with patch.dict(os.environ, {'XDZIP_MACOS_INTEL_CI': '1'}):
+            for image in mach_o_files(self.app):
+                info = json.loads(image.read_bytes()[4:].split(b'\n')[0])
+                binary(image, ('x86_64', 'arm64'), info['imports'])
+            report = optimize_bundle(self.app, runner=self.tools)
+            self.assertEqual(report['target_arch'], 'x86_64')
+            self.assertEqual(report['validation']['architectures'], ['x86_64'])
 
     def test_dangling_or_cyclic_symlinks_fail_closed(self):
         path = self.app/'Contents/dangling'

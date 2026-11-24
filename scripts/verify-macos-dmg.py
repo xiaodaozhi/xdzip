@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import zipfile
 from macos_launch_services import temporary_bundle_path, transient_registrations
+from macos_arch import macos_arch
 from macos_bundle import mach_o_files, validate_optimized_bundle
 from deployment_audit import audit, digest, within
 
@@ -96,7 +97,7 @@ def verify_extraction(binary, env, output, identity):
     if not required.issubset(by):
         raise ValueError('Deployed product did not complete its real open/query/extract/quit flow')
     frame = by['first_frame']
-    if (frame.get('backend') != 'metal' or frame.get('architecture') != 'arm64' or
+    if (frame.get('backend') != 'metal' or frame.get('architecture') != macos_arch() or
             frame.get('runtime_available') is not True or frame.get('dirty') is not False or
             any(frame.get(key) != identity[key] for key in ['version', 'build', 'revision'])):
         raise ValueError('Deployed product frame identity or native Metal backend mismatch')
@@ -164,11 +165,11 @@ def main():
         replacement_signatures = verify_signatures(app)
         run_product(binary, ['--smoke-test'], env, output, 'modified-qtcore-cocoa-metal')
     result = {'schema_version': 2, 'status': 'passed', 'dmg_sha256': digest(args.dmg),
-              'dmg_bytes': args.dmg.stat().st_size, 'platform': 'macos-arm64',
+              'dmg_bytes': args.dmg.stat().st_size, 'platform': 'macos-'+macos_arch(),
               'identity_text': identity_text, 'identity': identity,
               'optimization': optimization, 'signatures': signatures, 'extraction': extraction,
               'cases': ['read-only-mount', 'applications-link', 'unicode-space-relocation',
-                        'strict-arm64-native-images', 'basic-only-quick-controls',
+                        'strict-'+macos_arch()+'-native-images', 'basic-only-quick-controls',
                         'strict-nested-code-signatures', 'sdk-independent-native-imports',
                         'cocoa-metal-smoke', 'real-zip-open-query-extract-byte-check',
                         'modified-qtcore-ad-hoc-smoke'],
@@ -178,7 +179,7 @@ def main():
               'limits': ['Current host has SDK installed; clean search paths and recursive import audit, not a separate clean machine.',
                          'No Finder drag/drop, default selection, Gatekeeper trust or source-rebuilt Qt validation claimed.']}
     (output/'verification.json').write_text(json.dumps(result, indent=2)+'\n')
-    print('DMG arm64/Basic, strict signatures, native startup, real ZIP extraction and QtCore replacement passed')
+    print('DMG '+macos_arch()+'/Basic, strict signatures, native startup, real ZIP extraction and QtCore replacement passed')
 
 
 if __name__ == '__main__':

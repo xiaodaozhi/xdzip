@@ -168,6 +168,7 @@ fn target(
             match (platform, architecture, package_type) {
                 ("windows", "x86_64", "zip") => ("windows-x86_64.zip", &[("windows", "11")]),
                 ("macos", "arm64", "tar.gz") => ("macos-arm64.tar.gz", &[("macos", "14.0")]),
+                ("macos", "x86_64", "tar.gz") => ("macos-x86_64.tar.gz", &[("macos", "14.0")]),
                 ("linux", "x86_64", "tar.gz") => (
                     "linux-x86_64.tar.gz",
                     &[
@@ -192,6 +193,8 @@ fn target(
             ("windows", "x86_64", "exe") => ("windows-x86_64-setup.exe", &[("windows", "11")]),
             ("macos", "arm64", "app.zip") => ("macos-arm64.app.zip", &[("macos", "14.0")]),
             ("macos", "arm64", "dmg") => ("macos-arm64.dmg", &[("macos", "14.0")]),
+            ("macos", "x86_64", "app.zip") => ("macos-x86_64.app.zip", &[("macos", "14.0")]),
+            ("macos", "x86_64", "dmg") => ("macos-x86_64.dmg", &[("macos", "14.0")]),
             ("linux", "x86_64", "tar.gz") => (
                 "linux-x86_64.tar.gz",
                 &[
@@ -258,7 +261,11 @@ fn manifest_for(json: &str, cli: bool) -> Result<Manifest, &'static str> {
             cli,
         )
         .ok_or("unsupported_target")?;
-        if !seen.insert((&asset.platform, &asset.architecture, &asset.package_type)) {
+        if !seen.insert((
+            asset.platform.as_str(),
+            asset.architecture.as_str(),
+            asset.package_type.as_str(),
+        )) {
             return Err("duplicate_target");
         }
         let expected = format!(
@@ -279,13 +286,32 @@ fn manifest_for(json: &str, cli: bool) -> Result<Manifest, &'static str> {
             return Err("asset_identity_mismatch");
         }
     }
+    // A variant must retain the complete Windows and Linux set and exactly
+    // one architecture's complete macOS set; a six-item mixed set is invalid.
+    let arm = seen.contains(&("macos", "arm64", if cli { "tar.gz" } else { "app.zip" }));
+    let intel = seen.contains(&("macos", "x86_64", if cli { "tar.gz" } else { "app.zip" }));
+    if arm == intel
+        || !seen.contains(&("windows", "x86_64", "zip"))
+        || !seen.contains(&("linux", "x86_64", "tar.gz"))
+        || (!cli
+            && (!seen.contains(&("windows", "x86_64", "exe"))
+                || !seen.contains(&("linux", "x86_64", "deb"))
+                || !seen.contains(&("macos", if intel { "x86_64" } else { "arm64" }, "dmg"))))
+    {
+        return Err("incomplete_release");
+    }
     if cli && !manifest.macos_appcast_url.is_empty() {
         return Err("invalid_appcast_url");
     }
+    let feed = if seen.contains(&("macos", "x86_64", "app.zip")) {
+        "appcast-intel.xml"
+    } else {
+        "appcast.xml"
+    };
     if !manifest.macos_appcast_url.is_empty()
         && manifest.macos_appcast_url
             != format!(
-                "https://github.com/{REPOSITORY}/releases/download/{}/appcast.xml",
+                "https://github.com/{REPOSITORY}/releases/download/{}/{feed}",
                 manifest.tag
             )
     {

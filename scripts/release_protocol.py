@@ -19,6 +19,17 @@ CLI_TARGETS = {
     ('macos', 'arm64', 'tar.gz'): ('macos-arm64.tar.gz', {'macos': '14.0'}),
     ('linux', 'x86_64', 'tar.gz'): ('linux-x86_64.tar.gz', {'distribution': 'ubuntu', 'version': '24.04', 'glibc': '2.39'}),
 }
+
+# Separate manifests preserve the exact six-/three-target contract consumed by
+# already-released clients while binding Intel updates to Intel-only packages.
+INTEL_TARGETS = {key: value for key, value in TARGETS.items() if key[0] != 'macos'}
+INTEL_TARGETS.update({
+    ('macos', 'x86_64', 'app.zip'): ('macos-x86_64.app.zip', {'macos': '14.0'}),
+    ('macos', 'x86_64', 'dmg'): ('macos-x86_64.dmg', {'macos': '14.0'}),
+})
+INTEL_CLI_TARGETS = {key: value for key, value in CLI_TARGETS.items() if key[0] != 'macos'}
+INTEL_CLI_TARGETS[('macos', 'x86_64', 'tar.gz')] = ('macos-x86_64.tar.gz', {'macos': '14.0'})
+
 CHANNEL_ORDER = {'alpha': 0, 'beta': 1, 'rc': 2, 'stable': 3}
 
 
@@ -70,17 +81,17 @@ def release_tag_eligible(tag, current, current_channel):
         return False
 
 
-def validate(manifest, directory=None):
-    return _validate(manifest, directory, TARGETS, 'xdzip')
+def validate(manifest, directory=None, *, intel=False):
+    return _validate(manifest, directory, INTEL_TARGETS if intel else TARGETS, 'xdzip')
 
 
-def validate_cli(manifest, directory=None):
+def validate_cli(manifest, directory=None, *, intel=False):
     if manifest.get('component') != 'cli' or manifest.get('repository') != 'xiaodaozhi/xdzip':
         raise ValueError('Invalid CLI component or publisher')
     expected = {'schema_version','product','component','version','channel','build','tag','commit','repository','assets'}
     if set(manifest) != expected:
         raise ValueError('Unknown or missing CLI manifest field')
-    return _validate(manifest, directory, CLI_TARGETS, 'xdzip-cli')
+    return _validate(manifest, directory, INTEL_CLI_TARGETS if intel else CLI_TARGETS, 'xdzip-cli')
 
 
 def _validate(manifest, directory, targets, prefix):
@@ -122,26 +133,27 @@ def _validate(manifest, directory, targets, prefix):
     if seen != set(targets):
         raise ValueError('Incomplete cross-platform release')
     appcast = manifest.get('macos_appcast_url', '')
-    if appcast and appcast != f'https://github.com/{repository}/releases/download/v{version}/appcast.xml':
+    feed = 'appcast-intel.xml' if targets is INTEL_TARGETS else 'appcast.xml'
+    if appcast and appcast != f'https://github.com/{repository}/releases/download/v{version}/{feed}':
         raise ValueError('Unpinned macOS appcast URL')
     return manifest
 
 
-def create(directory, version, repository, commit):
-    return _create(directory, version, repository, commit, False)
+def create(directory, version, repository, commit, *, intel=False):
+    return _create(directory, version, repository, commit, False, intel)
 
 
-def create_cli(directory, version, repository, commit):
-    return _create(directory, version, repository, commit, True)
+def create_cli(directory, version, repository, commit, *, intel=False):
+    return _create(directory, version, repository, commit, True, intel)
 
 
-def _create(directory, version, repository, commit, cli):
+def _create(directory, version, repository, commit, cli, intel):
     display = version['display_version']
     result = dict(schema_version=1, product='xdzip', version=display, channel=version['channel'],
                   build=version['build'], tag='v'+display, commit=commit, repository=repository, assets=[])
     if cli:
         result['component'] = 'cli'
-    targets = CLI_TARGETS if cli else TARGETS
+    targets = (INTEL_CLI_TARGETS if intel else CLI_TARGETS) if cli else (INTEL_TARGETS if intel else TARGETS)
     prefix = 'xdzip-cli' if cli else 'xdzip'
     for (platform, architecture, package_type), (suffix, requirements) in targets.items():
         name = f'{prefix}-{display}-{suffix}'
@@ -149,7 +161,7 @@ def _create(directory, version, repository, commit, cli):
         result['assets'].append(dict(filename=name, platform=platform, architecture=architecture,
             package_type=package_type, minimum_system=requirements, bytes=path.stat().st_size,
             sha256=sha256(path), url=f'https://github.com/{repository}/releases/download/v{display}/{name}'))
-    return validate_cli(result, directory) if cli else validate(result, directory)
+    return validate_cli(result, directory, intel=intel) if cli else validate(result, directory, intel=intel)
 
 
 def select(manifest, current, allowed_channels, platform, architecture, package_type):

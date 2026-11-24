@@ -18,7 +18,8 @@ class FinderSigningTests(unittest.TestCase):
         app = root/'xdzip.app'
         contents = app/'Contents'
         contents.mkdir(parents=True)
-        (contents/'Info.plist').write_bytes(plistlib.dumps({'XdzipFinderSyncProtocol': 1}))
+        (contents/'Info.plist').write_bytes(plistlib.dumps({
+            'XdzipFinderSyncProtocol': 1, 'CFBundleExecutable': 'xdzip'}))
         extension = contents/'PlugIns/xdzip-finder-sync.appex'
         relay = contents/'Helpers/xdzip-shell-relay.app'
         for bundle, identity, executable in (

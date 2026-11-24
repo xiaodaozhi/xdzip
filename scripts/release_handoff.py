@@ -19,13 +19,13 @@ HANDOFF = BUILD / 'release-handoff'
 ARCHIVE = 'native-packages.tar.gz'
 RECEIPT = 'receipt.json'
 PLATFORMS = {'Windows': 'windows', 'Linux': 'linux', 'Darwin': 'macos'}
-HANDOFF_OS = {'windows': 'Windows', 'linux': 'Linux', 'macos': 'macOS'}
-ARCHITECTURES = {'windows': 'X64', 'linux': 'X64', 'macos': 'ARM64'}
+HANDOFF_OS = {'windows': 'Windows', 'linux': 'Linux', 'macos': 'macOS', 'macos-intel': 'macOS-X64'}
+ARCHITECTURES = {'windows': 'X64', 'linux': 'X64', 'macos': 'ARM64', 'macos-intel': 'X64'}
 QT_FILES = ('bin/Qt6Test.dll', 'bin/Qt6QuickTest.dll', 'plugins/platforms/qoffscreen.dll')
 
 
 def package_directory(system):
-    return BUILD / 'release-package' if system == 'macos' else REVIEW
+    return BUILD / 'release-package' if system in ('macos', 'macos-intel') else REVIEW
 
 
 def identity(system):
@@ -59,7 +59,7 @@ def paths_for(system):
     paths.extend(sorted(packages.glob('*.json')))
     for pattern in ('*.deb', '*.dmg', '*.tar.gz', '*.exe', '*.zip'):
         paths.extend(sorted(packages.glob(pattern)))
-    if system != 'macos':
+    if system not in ('macos', 'macos-intel'):
         paths += [REVIEW / system, BUILD / 'desktop/apps/desktop/m2-flat.zip',
                   BUILD / f'installer-tests/{system}-packages', BUILD / 'installer-tests/association-fixtures']
     if system == 'windows':
@@ -162,7 +162,10 @@ def main():
     if operation == 'collect':
         collect()
     else:
-        {'pack': pack, 'unpack': unpack, 'stage': stage}[operation](PLATFORMS[platform.system()])
+        system = PLATFORMS[platform.system()]
+        if system == 'macos' and os.environ.get('XDZIP_MACOS_INTEL_CI') == '1':
+            system = 'macos-intel'
+        {'pack': pack, 'unpack': unpack, 'stage': stage}[operation](system)
 
 
 if __name__ == '__main__':

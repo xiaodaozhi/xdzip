@@ -115,15 +115,17 @@ def collect_sources(output, cache):
     return result
 
 
-def sign_staged_archive(directory, version, build, *, tool=None):
+def sign_staged_archive(directory, version, build, *, tool=None, architecture="arm64"):
     """Sign only the final immutable asset name, after native package verification."""
     if not os.environ.get('XDZIP_SPARKLE_SIGNING_KEY_HEX'):
         return False  # Validation-only candidates may remain explicitly unsigned.
     from release_updates import run_tool
-    archive = directory/f'xdzip-{version}-macos-arm64.app.zip'
+    if architecture not in ('arm64', 'x86_64'):
+        raise ValueError('Unsupported macOS update architecture')
+    archive = directory/f'xdzip-{version}-macos-{architecture}.app.zip'
     if archive.is_symlink() or not archive.is_file():
         raise ValueError('Final macOS archive is missing')
-    output = directory/'macos-update.json'
+    output = directory/('macos-update-intel.json' if architecture == 'x86_64' else 'macos-update.json')
     key = ROOT/'resources/sparkle-update-key.json'
     run_tool(['sign-archive', '--archive', str(archive), '--public-key', str(key),
               '--version', version, '--build', str(build), '--output', str(output)], tool)
@@ -191,7 +193,7 @@ def sign_helpers(framework, metadata, checked, work):
 
 
 def attribute(report, app, sdk, audit):
-    """Supplement Qt attribution with exact Sparkle files and arm64 code evidence."""
+    """Supplement Qt attribution with exact Sparkle files and native code evidence."""
     from deployment_audit import native
     from macos_attribution import compare_images
     validate_sdk(sdk)

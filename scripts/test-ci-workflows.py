@@ -112,6 +112,12 @@ class WorkflowTests(unittest.TestCase):
         ordinary = {name for name, value in self.workflows.items()
                     if 'pull_request' in value.get('on', {})}
         self.assertEqual(ordinary, {'docs.yml'})
+        intel = self.workflows['macos-intel.yml']
+        self.assertEqual(set(intel['on']), {'workflow_dispatch'})
+        self.assertEqual(intel['jobs']['native-intel']['runs-on'], 'macos-15-intel')
+        evidence = next(step for step in intel['jobs']['native-intel']['steps']
+                        if step.get('name') == 'Retain validation records only')
+        self.assertIn('browser-tests-shard-*.log', evidence['with']['path'])
         push_workflows = {name for name, value in self.workflows.items() if 'push' in value.get('on', {})}
         self.assertEqual(push_workflows, {'docs.yml'})
         workflow = self.workflows['docs.yml']
@@ -224,11 +230,30 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn('tag', workflow['on']['workflow_dispatch']['inputs'])
         self.assertNotIn('validate_only', workflow['on']['workflow_dispatch']['inputs'])
         native = workflow['jobs']['native']
-        self.assertEqual(set(native['strategy']['matrix']['os']), {'windows-2022', 'macos-15', 'ubuntu-24.04'})
+        self.assertEqual(set(native['strategy']['matrix']['os']), {'windows-2022', 'macos-15', 'macos-15-intel', 'ubuntu-24.04'})
         self.assertIn('scripts/ci-release.ps1 -Stage Build', '\n'.join(step.get('run', '') for step in native['steps']))
         jobs = workflow['jobs']
         verify = jobs['verify']
         self.assertEqual(verify['strategy']['matrix'], native['strategy']['matrix'])
+        for job in (native, verify):
+            self.assertIn('macos-15-intel', job['env']['XDZIP_MACOS_INTEL_CI'])
+        intel_update = self.workflows['update-regression.yml']['jobs']['macos_intel']
+        self.assertEqual(intel_update['runs-on'], 'macos-15-intel')
+        self.assertIn('check-macos-product-update.py', '\n'.join(step.get('run', '') for step in intel_update['steps']))
+        font_step = next(i for i, step in enumerate(intel_update['steps'])
+                         if step.get('name') == 'Prepare and check product font tools')
+        dependency_step = next(i for i, step in enumerate(intel_update['steps'])
+                               if step.get('name') == 'Prepare pinned native Intel dependencies')
+        self.assertLess(font_step, dependency_step)
+        self.assertIn('design/assets/fonts/requirements.txt', intel_update['steps'][font_step]['run'])
+        self.assertIn('from ui_fonts import tools; tools()', intel_update['steps'][font_step]['run'])
+        preflight = next(i for i, step in enumerate(intel_update['steps'])
+                         if step.get('name') == 'Check update fixture contracts before native dependencies')
+        self.assertLess(preflight, dependency_step)
+        self.assertIn('scripts/check-system-proxy-fixture.py', intel_update['steps'][preflight]['run'])
+        sign_steps = '\n'.join(step.get('run', '') for step in workflow['jobs']['sign']['steps'])
+        self.assertIn('sign-macos-update.py --directory build/packages --architecture x86_64', sign_steps)
+        self.assertIn('--require-update-signature --include-intel', sign_steps)
         self.assertEqual(verify['needs'], ['resolve', 'native'])
         self.assertIn('scripts/ci-release.ps1 -Stage Verify', '\n'.join(step.get('run', '') for step in verify['steps']))
         self.assertEqual(jobs['sign']['needs'], ['resolve', 'verify', 'contracts'])

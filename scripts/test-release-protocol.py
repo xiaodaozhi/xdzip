@@ -31,6 +31,29 @@ PREPARE = importlib.util.module_from_spec(PREPARE_SPEC)
 PREPARE_SPEC.loader.exec_module(PREPARE)
 
 
+class IntelManifestTests(unittest.TestCase):
+    def test_separate_intel_manifests_preserve_legacy_and_reject_crossed_feeds(self):
+        import release_protocol as protocol
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            version = {'display_version': '1.0.0', 'channel': 'stable', 'build': 1}
+            for targets, prefix in ((protocol.TARGETS, 'xdzip'), (protocol.INTEL_TARGETS, 'xdzip'),
+                                    (protocol.CLI_TARGETS, 'xdzip-cli'), (protocol.INTEL_CLI_TARGETS, 'xdzip-cli')):
+                for suffix, _ in targets.values():
+                    (directory / f'{prefix}-1.0.0-{suffix}').write_bytes(b'fixture')
+            arm = protocol.create(directory, version, 'xiaodaozhi/xdzip', 'a' * 40)
+            intel = protocol.create(directory, version, 'xiaodaozhi/xdzip', 'a' * 40, intel=True)
+            cli = protocol.create_cli(directory, version, 'xiaodaozhi/xdzip', 'a' * 40, intel=True)
+            protocol.validate(arm, directory)
+            protocol.validate(intel, directory, intel=True)
+            protocol.validate_cli(cli, directory, intel=True)
+            with self.assertRaises(ValueError):
+                protocol.validate(intel, directory)
+            intel['macos_appcast_url'] = 'https://github.com/xiaodaozhi/xdzip/releases/download/v1.0.0/appcast.xml'
+            with self.assertRaises(ValueError):
+                protocol.validate(intel, directory, intel=True)
+
+
 class SingleRunReleaseWorkflowTests(unittest.TestCase):
     def test_release_workflow_has_one_manual_entry_and_reuses_native_artifacts(self):
         workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/release.yml').read_text(encoding='utf-8')
@@ -55,7 +78,7 @@ class SingleRunReleaseWorkflowTests(unittest.TestCase):
 class NativeHandoffTests(unittest.TestCase):
     def test_handoff_carries_the_runtime_license_texts_separately_from_notices(self):
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
+            root = Path(temporary).resolve()
             build = root/'build'
             review = build/'review'
             packages = build/'release-package'
@@ -74,6 +97,24 @@ class NativeHandoffTests(unittest.TestCase):
             with tarfile.open(work/handoff.ARCHIVE, 'r:gz') as archive:
                 with archive.extractfile(text.relative_to(root).as_posix()) as saved:
                     self.assertEqual(saved.read(), text.read_bytes())
+
+    def test_intel_handoff_requires_matching_runner_architecture(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            build, review, work = root/'build', root/'build/review', root/'build/release-handoff'
+            packages = build/'release-package'
+            for directory in (packages/'notices', packages/'runtime-notices', review/'sbom-schemas'):
+                directory.mkdir(parents=True)
+            (packages/'package.json').write_text('{}')
+            (packages/'cli-package.json').write_text('{}')
+            with patch.multiple(handoff, ROOT=root, BUILD=build, REVIEW=review, HANDOFF=work), \
+                    patch.object(handoff, 'identity', return_value={}):
+                with patch.dict(os.environ, RUNNER_ARCH='ARM64'):
+                    with self.assertRaisesRegex(ValueError, 'expected native architecture'):
+                        handoff.pack('macos-intel')
+                with patch.dict(os.environ, RUNNER_ARCH='X64'):
+                    handoff.pack('macos-intel')
+                self.assertTrue((work/handoff.ARCHIVE).is_file())
 
     def test_developer_rank_fixture_leaves_the_distribution_bundle_unchanged(self):
         spec = importlib.util.spec_from_file_location('registration', Path(__file__).with_name('check-macos-registration.py'))
@@ -99,7 +140,7 @@ class NativeHandoffTests(unittest.TestCase):
         identity = {'schema_version': 1, 'repository': 'owner/repo', 'run_id': '5',
                     'revision': 'a' * 40, 'platform': 'linux'}
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
+            root = Path(temporary).resolve()
             build = root/'build'
             work = build/'release-handoff'
             work.mkdir(parents=True)
@@ -165,6 +206,7 @@ class ProductionUpdateWorkflowTests(unittest.TestCase):
                 self.assertLess(macos.index('Prepare native Apple Silicon SDK'), macos.index(step))
 
 
+@patch.dict(os.environ, {'XDZIP_MACOS_INTEL_CI': '0'})
 class MacReleaseEvidenceTests(unittest.TestCase):
     @staticmethod
     def image(code=b'owned code', signature=b'first signature', zero_bytes=16,

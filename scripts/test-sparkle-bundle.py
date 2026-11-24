@@ -16,8 +16,14 @@ from unittest.mock import patch
 
 import sparkle_bundle as sparkle
 import sparkle_build
+from macos_arch import macos_arch
 
-image = runpy.run_path(str(Path(__file__).with_name('test-macos-attribution.py')))['image']
+fixture_image = runpy.run_path(str(Path(__file__).with_name('test-macos-attribution.py')))['image']
+def image(*args, **kwargs):
+    data = bytearray(fixture_image(*args, **kwargs))
+    if macos_arch() == 'x86_64':
+        data[4:8] = (0x1000007).to_bytes(4, 'little')
+    return bytes(data)
 
 
 class ProbeClock:

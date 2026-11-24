@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import platform
+from macos_arch import macos_arch
 import shutil
 import stat
 import subprocess
@@ -97,7 +98,7 @@ def build(args):
         configure = ['cmake', '-S', ROOT/'tools/native-codec', '-B', codec,
                      '-G', 'Ninja', '-DCMAKE_BUILD_TYPE='+configuration, '-DBUILD_TESTING=OFF']
         if platform.system() == 'Darwin':
-            configure += ['-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0']
+            configure += ['-DCMAKE_OSX_ARCHITECTURES='+macos_arch(), '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0']
         run(configure, env=environment)
         run(['cmake', '--build', codec, '--target', 'xdzip-native-codec', '--parallel', '2'], env=environment)
         worker = codec/exe('xdzip-native-codec')
@@ -180,6 +181,8 @@ def notices(output):
 
 
 def package(args):
+    if platform.system() == 'Darwin' and macos_arch() != 'arm64' and os.environ.get('XDZIP_CLI_RELEASE_BUILD') != '1':
+        raise ValueError('Intel packaging requires the dedicated release path')
     directory = generated(args.build_dir)
     output = generated(args.output)
     output.mkdir(parents=True, exist_ok=True)
@@ -216,7 +219,7 @@ def package(args):
         if path.is_file():
             files.append(dict(path=path.relative_to(payload).as_posix(), sha256=digest(path), executable=path.name in [exe(n) for n in ['xdzip','xdzip-launcher','xdzip-native-codec','xdzip-sfx']]))
     (payload/'cli-payload.json').write_text(json.dumps(dict(schema_version=1,product='xdzip',identity=identity,files=files), indent=2)+'\n')
-    target = {'Darwin':'macos-arm64.tar.gz','Windows':'windows-x86_64.zip','Linux':'linux-x86_64.tar.gz'}[platform.system()]
+    target = {'Darwin':'macos-'+macos_arch()+'.tar.gz','Windows':'windows-x86_64.zip','Linux':'linux-x86_64.tar.gz'}[platform.system()]
     archive = output/f'xdzip-cli-{identity["version"]}-{target}'
     if target.endswith('.zip'):
         with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, strict_timestamps=False) as writer:

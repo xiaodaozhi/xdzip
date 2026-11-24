@@ -31,6 +31,7 @@ from macos_bundle import optimize_bundle, validate_optimized_bundle
 from sparkle_bundle import embed, signing_metadata
 from update_fixture import ROOT, KEYRING, SEED, PUBLIC, digest, dump
 from release_updates import appcast_bytes, verify_release_updates
+from macos_arch import macos_arch
 from update_proxy_fixture import HOST as PROXY_HOST, DIRECT_HOST, OwnedUpdateProxy
 from system_proxy_fixture import OwnedSystemProxy, compile_helper
 from contextlib import nullcontext
@@ -138,6 +139,10 @@ def deploy(source, build, qt, sdk, destination, log):
     return json.loads(run([binary, '--version-json']))
 
 
+def identity_matches(identity, expected):
+    return isinstance(identity, dict) and all(identity.get(key) == value for key, value in expected.items())
+
+
 def prepare(output, qt, session, app_name, production_trust=False):
     source = private_source(output, production_trust)
     if (source/'scripts/ui-fonts.py').is_file():
@@ -157,7 +162,7 @@ def prepare(output, qt, session, app_name, production_trust=False):
         commit = run(['git', '-C', source, 'rev-parse', 'HEAD']).decode().strip()
         run(['cmake', '-S', source, '-B', build, '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release',
              '-DCMAKE_PREFIX_PATH='+str(qt), '-DPython3_EXECUTABLE='+sys.executable,
-             '-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
+             '-DCMAKE_OSX_ARCHITECTURES='+macos_arch(), '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
              '-DXDZIP_BUILD_QT_PROBE=OFF', '-DBUILD_TESTING=OFF', '-DXDZIP_BUILD_DESKTOP_PREVIEW=ON',
              '-DXDZIP_MACOS_HANDLER_RANK=Alternate', '-DXDZIP_NATIVE_MAC_UPDATE_FIXTURE=ON',
              '-DXDZIP_NATIVE_MAC_UPDATE_FIXTURE_DIRECTORY='+str(session), '-DXDZIP_SPARKLE_SDK='+str(sdk)], output/(label+'-build.log'))
@@ -167,7 +172,8 @@ def prepare(output, qt, session, app_name, production_trust=False):
         identity = deploy(source, build, qt, sdk, app, output/(label+'-deployment.log'))
         expected = {'product': 'xdzip', 'version': '0.2.0-alpha.'+str(number), 'build': build_number,
                     'revision': commit[:12], 'dirty': False}
-        if identity != expected: raise RuntimeError('Private product did not retain clean Release identity')
+        if not identity_matches(identity, expected):
+            raise RuntimeError('Private product did not retain clean Release identity: '+json.dumps(identity, sort_keys=True))
         if run(['git', '-C', source, 'status', '--porcelain']).strip():
             raise RuntimeError('Private build modified tracked source after committing identity')
         products[label] = dict(identity=identity, commit=commit, app=app)
@@ -179,13 +185,13 @@ def prepare(output, qt, session, app_name, production_trust=False):
 def unsigned_candidate(output, new):
     directory = output/'owned'; directory.mkdir()
     version = new['identity']['version']
-    package = directory/('xdzip-'+version+'-macos-arm64.app.zip')
+    package = directory/('xdzip-'+version+'-macos-'+macos_arch()+'.app.zip')
     run(['ditto', '-c', '-k', '--sequesterRsrc', '--keepParent', new['app'], package])
     base = 'https://github.com/xiaodaozhi/xdzip/releases/download/v'+version+'/'
     targets = [('windows','x86_64','zip','windows-x86_64.zip',{'windows':'11'}),
                ('windows','x86_64','exe','windows-x86_64-setup.exe',{'windows':'11'}),
-               ('macos','arm64','app.zip','macos-arm64.app.zip',{'macos':'14.0'}),
-               ('macos','arm64','dmg','macos-arm64.dmg',{'macos':'14.0'}),
+               ('macos',macos_arch(),'app.zip','macos-'+macos_arch()+'.app.zip',{'macos':'14.0'}),
+               ('macos',macos_arch(),'dmg','macos-'+macos_arch()+'.dmg',{'macos':'14.0'}),
                ('linux','x86_64','tar.gz','linux-x86_64.tar.gz',{'distribution':'ubuntu','version':'24.04','glibc':'2.39','display_server':'X11'}),
                ('linux','x86_64','deb','ubuntu24.04-x86_64.deb',{'distribution':'ubuntu','version':'24.04','glibc':'2.39','display_server':'X11'})]
     assets=[]
@@ -196,7 +202,7 @@ def unsigned_candidate(output, new):
                            bytes=package.stat().st_size if selected else 1,
                            sha256=digest(package) if selected else hashlib.sha256(b'x').hexdigest(),url=base+filename))
     manifest=dict(schema_version=1,product='xdzip',version=version,channel='alpha',build=201,tag='v'+version,
-                  commit=new['commit'],repository='xiaodaozhi/xdzip',assets=assets,macos_appcast_url=base+'appcast.xml')
+                  commit=new['commit'],repository='xiaodaozhi/xdzip',assets=assets,macos_appcast_url=base+('appcast-intel.xml' if macos_arch()=='x86_64' else 'appcast.xml'))
     dump(directory/'release.json',manifest)
     return manifest,package
 
@@ -214,7 +220,7 @@ def signed_candidate(output, new, signing, sdk):
          '--key-id','owned-fixture','--output',directory/'release.json.sig'],env=env)
     run([signing,'verify','--manifest',directory/'release.json','--keyring',output/'source/resources/update-trust.json',
          '--signature',directory/'release.json.sig'])
-    appcast=directory/'appcast.xml'; appcast.write_bytes(appcast_bytes(manifest,json.loads(metadata.read_bytes())))
+    appcast=directory/'appcast.xml'; appcast.write_bytes(appcast_bytes(manifest,json.loads(metadata.read_bytes()),intel=macos_arch()=='x86_64'))
     secret=base64.b64encode(bytes.fromhex(SEED))+b'\n'
     run([sdk/'bin/sign_update','--ed-key-file','-','--disable-signing-warning',appcast],input_data=secret)
     run([signing,'verify-appcast','--appcast',appcast,'--public-key',public])
@@ -311,8 +317,9 @@ def load_production_prepared(output):
         if (digest(plist)!=product.get('plist_sha256') or digest(binary)!=product.get('binary_sha256') or
                 info.get('SUPublicEDKey')!=expected_key or product.get('SUPublicEDKey')!=expected_key or
                 not re.fullmatch('[0-9a-f]{40}',product.get('commit','')) or
-                product.get('identity')!={'product':'xdzip','version':'0.2.0-alpha.'+str(number),'build':199+number,
-                                         'revision':product['commit'][:12],'dirty':False}):
+                not identity_matches(product.get('identity'),
+                    {'product':'xdzip','version':'0.2.0-alpha.'+str(number),'build':199+number,
+                     'revision':product['commit'][:12],'dirty':False})):
             raise RuntimeError('Prepared production application identity changed')
         products[label]=dict(identity=product['identity'],commit=product['commit'],app=output/expected_app)
     manifest=json.loads((output/'owned/release.json').read_bytes())
@@ -567,10 +574,11 @@ def main():
     parser.add_argument('--production-trust',action='store_true',help='Retain committed public trust and use separately signed inputs')
     parser.add_argument('--prepare',action='store_true',help='Build unsigned production fixtures without installing or signing')
     args=parser.parse_args()
-    if (sys.platform!='darwin' or platform.machine()!='arm64' or os.environ.get('CI')!='true' or
+    if (sys.platform!='darwin' or platform.machine()!=macos_arch() or os.environ.get('CI')!='true' or
         os.environ.get('GITHUB_ACTIONS')!='true' or os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted'):
-        parser.error('Requires an explicitly disposable GitHub-hosted Apple Silicon runner')
+        parser.error('Requires the selected native disposable GitHub-hosted macOS runner')
     output,qt=args.output.resolve(),args.qt_prefix.resolve()
+    if macos_arch()=='x86_64' and args.production_trust:parser.error('Intel production-key fixture admission is not implemented')
     if args.prepare and not args.production_trust:parser.error('--prepare requires --production-trust')
     if args.production_trust:require_no_production_secrets()
     executing_prepared=args.production_trust and not args.prepare
@@ -629,12 +637,14 @@ def main():
     base='https://github.com/xiaodaozhi/xdzip/releases/download/'+manifest['tag']+'/'
     for filename in ('release.json','release.json.sig'):shutil.copy2(output/'owned'/filename,session/filename)
     assets=[dict(name=a['filename'],browser_download_url=a['url'],size=a['bytes']) for a in manifest['assets']]
-    assets += [dict(name=f,browser_download_url=base+f) for f in ('release.json','release.json.sig')]
+    manifest_name='release-intel.json' if macos_arch()=='x86_64' else 'release.json'
+    feed_name='appcast-intel.xml' if macos_arch()=='x86_64' else 'appcast.xml'
+    assets += [dict(name=f,browser_download_url=base+f) for f in (manifest_name,manifest_name+'.sig')]
     dump(session/'releases.json',[dict(tag_name=manifest['tag'],draft=False,prerelease=True,
          html_url='https://github.com/xiaodaozhi/xdzip/releases/tag/'+manifest['tag'],assets=assets)])
     dump(session/'configuration.json',dict(marker='xdzip-owned-mac-product-update-v1',install_root=str(installed),scenario='interrupted-handoff',
-         fixed_asset_url=base+archive.name,fixed_appcast_url=base+'appcast.xml',loopback_appcast_url=address+'/owned/appcast.xml',
-         loopback_asset_url=address+'/owned/'+archive.name,routes={base+'release.json':'release.json',base+'release.json.sig':'release.json.sig',
+         fixed_asset_url=base+archive.name,fixed_appcast_url=base+feed_name,loopback_appcast_url=address+'/owned/appcast.xml',
+         loopback_asset_url=address+'/owned/'+archive.name,routes={base+manifest_name:'release.json',base+manifest_name+'.sig':'release.json.sig',
          'https://api.github.com/repos/xiaodaozhi/xdzip/releases?per_page=100&page=1':'releases.json'}))
     password_fixture=ROOT/'tests/fixtures/extract/password-retry.zip'
     if digest(password_fixture)!='cdb1a34b259be86e1670c58d26fb328e3e2dfe6b71defaa6f333393bb4156d41':

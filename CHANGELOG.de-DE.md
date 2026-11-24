@@ -6,6 +6,8 @@
 
 ## Unveröffentlicht
 
+- Native macOS-Intel-Builds und architekturspezifische authentifizierte Updates für künftige Releases vorbereitet.
+
 - Einen eigenständigen, schreibgeschützten SDK-Versuch mit begrenzter CBOR-Verarbeitung, kontrollierter Ein-/Ausgabe, zwei unabhängigen Protokollimplementierungen und einer Sandbox-Prüfung hinzufügen, die unsichere Ausführung ablehnt. Drittanbietererweiterungen bleiben im Produkt deaktiviert.
 
 ## 0.3.1

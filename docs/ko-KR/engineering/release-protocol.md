@@ -6,7 +6,9 @@
 
 이 흐름은 GitHub 다운로드를 제공합니다. [Microsoft Store MSIX 흐름](../../../.github/workflows/windows-store-msix.yml)은 같은 버전의 소스를 Microsoft Partner Center용으로 패키징하며, Store 인증과 게시는 Partner Center에서 처리합니다.
 
-전용 [Release 워크플로](../../../.github/workflows/release.yml)는 `workflow_dispatch`로 수동 실행합니다. 정식 실행은 `main`에서 기존 버전 태그로 시작하고 확인된 커밋을 고정합니다. 세 네이티브 작업은 각각 설정, 빌드, 테스트, 패키징을 한 번 수행합니다. macOS 작업은 첫 빌드부터 배포용 파일 연결 우선순위를 사용한 뒤 Qt를 배포하고 ad-hoc 무결성 서명을 적용하여 같은 앱에서 ZIP과 DMG를 만듭니다. 일반 macOS Qt CI는 SDK를 기준으로 검증합니다. Developer ID, Apple 공증 및 Windows 게시자 인증서는 이 릴리스 정책의 범위 밖입니다.
+전용 [Release 워크플로](../../../.github/workflows/release.yml)는 `workflow_dispatch`로 수동 실행합니다. 정식 실행은 `main`에서 기존 버전 태그로 시작하고 확인된 커밋을 고정합니다. 네 네이티브 작업은 각각 설정, 빌드, 테스트, 패키징을 한 번 수행합니다. macOS 작업은 첫 빌드부터 배포용 파일 연결 우선순위를 사용한 뒤 Qt를 배포하고 ad-hoc 무결성 서명을 적용하여 같은 앱에서 ZIP과 DMG를 만듭니다. 일반 macOS Qt CI는 SDK를 기준으로 검증합니다. Developer ID, Apple 공증 및 Windows 게시자 인증서는 이 릴리스 정책의 범위 밖입니다.
+
+Intel 빌드는 `macos-x86_64` 앱 ZIP, DMG 및 CLI 압축 파일을 별도로 만듭니다. Intel 데스크톱과 CLI는 각각 `release-intel.json`과 `cli-release-intel.json`을 사용하며 서명과 `appcast-intel.xml`을 독립적으로 검증합니다. 이전 클라이언트와의 호환성을 위해 기존 ARM64 매니페스트와 피드 형식은 유지합니다. 릴리스 전에 두 아키텍처의 네이티브 패키지 검증이 모두 통과해야 합니다.
 
 제품 소스는 태그가 가리키는 커밋에서 가져옵니다. 초안 작성, 공개 릴리스 및 공개 다운로드 검증은 모두 워크플로를 실행한 시점의 `main` 커밋에서 동일한 검토 완료 릴리스 노트를 읽습니다.
 

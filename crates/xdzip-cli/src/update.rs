@@ -236,6 +236,14 @@ fn architecture() -> &'static str {
         "x86_64"
     }
 }
+fn manifest_name(desktop: bool, platform: &str, architecture: &str) -> &'static str {
+    match (desktop, platform, architecture) {
+        (true, "macos", "x86_64") => "release-intel.json",
+        (false, "macos", "x86_64") => "cli-release-intel.json",
+        (true, _, _) => "release.json",
+        (false, _, _) => "cli-release.json",
+    }
+}
 trait Metadata {
     fn fetch(&self, address: &str, limit: u64) -> Result<Vec<u8>>;
 }
@@ -292,11 +300,7 @@ fn choose(
     });
     for release in releases {
         let assets = release["assets"].as_array().ok_or("invalid_response")?;
-        let name = if desktop {
-            "release.json"
-        } else {
-            "cli-release.json"
-        };
+        let name = manifest_name(desktop, platform(), architecture());
         let tag = release["tag_name"].as_str().ok_or("invalid_response")?;
         let base = format!("https://github.com/{REPOSITORY}/releases/download/{tag}");
         if !assets.iter().any(|a| a["name"] == name) {

@@ -9,9 +9,12 @@ import struct
 
 from deployment_audit import digest, native
 from runtime_attribution import bounded
+from macos_arch import macos_arch
 
 
-def arm64_image(data):
+def native_image(data):
+    architecture = macos_arch()
+    expected_cpu = {'arm64': 0x100000c, 'x86_64': 0x1000007}[architecture]
     if data[:4] == b'\xca\xfe\xba\xbe':
         if len(data) < 8:
             raise ValueError('Truncated universal Mach-O')
@@ -23,16 +26,16 @@ def arm64_image(data):
             cpu, _, offset, size, _ = struct.unpack_from('>IIIII', data, 8 + i * 20)
             if offset < 8 + count * 20 or offset + size > len(data):
                 raise ValueError('Unbounded universal Mach-O slice')
-            if cpu == 0x100000c:
+            if cpu == expected_cpu:
                 slices.append(data[offset:offset + size])
         if len(slices) != 1:
-            raise ValueError('Expected one arm64 SDK slice')
+            raise ValueError('Expected one '+architecture+' SDK slice')
         data = slices[0]
     if len(data) < 32 or data[:4] != b'\xcf\xfa\xed\xfe':
         raise ValueError('Expected little-endian 64-bit Mach-O')
     cpu = struct.unpack_from('<I', data, 4)[0]
-    if cpu != 0x100000c:
-        raise ValueError('Expected arm64 Mach-O')
+    if cpu != expected_cpu:
+        raise ValueError('Expected '+architecture+' Mach-O')
     return data
 
 
@@ -43,7 +46,7 @@ def image_identity(data):
     bytes. This is deliberately narrower than a whole-image or build-equivalence
     claim. Unexpected formats, bounds, imports or changed section bytes fail.
     """
-    data = arm64_image(data)
+    data = native_image(data)
     count, size = struct.unpack_from('<II', data, 16)
     end = 32 + size
     if count > 4096 or end > len(data):

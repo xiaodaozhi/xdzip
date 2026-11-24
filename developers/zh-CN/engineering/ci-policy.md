@@ -2,6 +2,8 @@
 
 [English](../../engineering/ci-policy.md) | 简体中文
 
+[macOS Intel 原生 CI](../../../.github/workflows/macos-intel.yml) 是独立的实验性构建与测试，按需手动触发。它在 `macos-15-intel` 核对产品、Rust 桥接和修补依赖的原生架构，只保留验证记录，不生成发行包，也不代表发行或人工桌面验收通过。专用更新回归另行使用测试密钥验证 Intel 产品。
+
 ## 日常检查
 
 [CI](../../../.github/workflows/docs.yml) 在 main 推送、pull request 和手动触发时执行一个 Linux 作业。它检查文档链接与 JSON、版本与界面文案、生成资源一致性、窗口与共享控件契约、Rust 和原生源码格式、工作流结构及空白错误。Rust 输入发生变更时，执行与发行验证相同的工作区严格 Clippy 命令，并核对 Linux 的生产依赖边界。CI 比较推送或 pull request 的完整差异，手动触发或无法获得对比基线时也执行这两项检查。作业不构建桌面产品，不执行完整 Rust、三平台 Qt、压缩格式互操作、打包或安装生命周期。目标是通常在五分钟内完成，排队和下载时间以实际运行记录为准。

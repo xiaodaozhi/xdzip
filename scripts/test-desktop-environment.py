@@ -183,6 +183,18 @@ class EnvironmentTests(unittest.TestCase):
         self.overrides[("lipo", ("-archs", str(self.qt / "lib/QtCore.framework/Versions/A/QtCore")))] = (0, "x86_64", "")
         self.assertTrue({"host.architecture", "compiler.target", "macos.sdk", "qt.architecture"} <= self.failed(self.check()))
 
+    def test_opt_in_intel_requires_matching_native_tools_and_qt(self):
+        self.qt_sdk()
+        self.variables["XDZIP_MACOS_INTEL_CI"] = "1"
+        self.machine = "x86_64"
+        self.overrides[("rustc", ("-vV",))] = (0, "release: 1.99.0\nhost: x86_64-apple-darwin", "")
+        self.overrides[("clang++", ("-dumpmachine",))] = (0, "x86_64-apple-darwin", "")
+        self.assertEqual(self.check()["status"], "passed")
+        self.overrides[("lipo", ("-archs", str(self.qt / "lib/QtCore.framework/Versions/A/QtCore")))] = (0, "arm64", "")
+        self.assertIn("qt.architecture", self.failed(self.check()))
+        self.overrides[("rustc", ("-vV",))] = (0, "release: 1.99.0\nhost: aarch64-apple-darwin", "")
+        self.assertIn("rust.host", self.failed(self.check()))
+
     def test_windows_wrong_shell_and_qt_architecture_are_rejected(self):
         self.system, self.machine = "windows", "AMD64"
         self.qt_sdk()

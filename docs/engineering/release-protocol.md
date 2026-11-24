@@ -4,7 +4,9 @@ English | [简体中文](../zh-CN/engineering/release-protocol.md) | [繁體中�
 
 This workflow serves GitHub downloads. The [Microsoft Store MSIX workflow](../../.github/workflows/windows-store-msix.yml) packages the same versioned source for Microsoft Partner Center, which handles Store certification and publication.
 
-The dedicated [Release workflow](../../.github/workflows/release.yml) runs by manual `workflow_dispatch`. A formal run starts from `main` with an existing version tag and freezes the resolved commit. The three native jobs each configure, build, test, and package once. The macOS job uses the distribution handler rank from the initial build, then deploys Qt and applies ad-hoc integrity signing to create the ZIP and DMG from the same app. Ordinary macOS Qt CI verifies against the SDK. Developer ID, Apple notarization, and Windows publisher certificates are outside this release policy.
+The dedicated [Release workflow](../../.github/workflows/release.yml) runs by manual `workflow_dispatch`. A formal run starts from `main` with an existing version tag and freezes the resolved commit. The four native jobs each configure, build, test, and package once. The macOS job uses the distribution handler rank from the initial build, then deploys Qt and applies ad-hoc integrity signing to create the ZIP and DMG from the same app. Ordinary macOS Qt CI verifies against the SDK. Developer ID, Apple notarization, and Windows publisher certificates are outside this release policy.
+
+Intel builds produce separate `macos-x86_64` app ZIP, DMG and CLI archives. The Intel desktop and CLI use `release-intel.json` and `cli-release-intel.json`; their signatures and `appcast-intel.xml` are independently verified. The existing ARM64 manifests and feed retain their original formats for older clients. Both architectures must pass their native package verification before a release.
 
 The tag supplies the product source. Drafting, publishing and public verification all read the same reviewed release notes from the revision of `main` that dispatched the workflow.
 

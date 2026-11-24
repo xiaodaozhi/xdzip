@@ -6,6 +6,8 @@
 
 ## Ainda não lançado
 
+- Preparação de compilações nativas para macOS Intel e atualizações autenticadas por arquitetura para versões futuras.
+
 - Adicionar um SDK experimental independente e somente para leitura, com processamento limitado de CBOR, E/S controlada, duas implementações independentes do protocolo e uma verificação de isolamento que recusa execuções inseguras. As extensões de terceiros continuam desativadas no produto.
 
 ## 0.3.1

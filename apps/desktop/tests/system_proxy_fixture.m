@@ -90,8 +90,12 @@ static BOOL profileVisible(NSString *profile, NSInteger port, NSString *pacURL) 
 
 int main(int argc, char **argv) {
     @autoreleasepool {
-#if !defined(__arm64__)
+#if !defined(__arm64__) && !defined(__x86_64__)
         return 2;
+#endif
+#if defined(__x86_64__)
+        if (![NSProcessInfo.processInfo.environment[@"XDZIP_MACOS_INTEL_CI"] isEqual:@"1"])
+            return 2;
 #endif
         if (argc != 3 || !hosted() || geteuid() != 0)
             return 2;

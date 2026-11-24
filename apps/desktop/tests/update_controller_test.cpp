@@ -38,8 +38,22 @@ const QString api =
     QStringLiteral("https://api.github.com/repos/xiaodaozhi/xdzip/releases?per_page=100&page=1");
 const QString base =
     QStringLiteral("https://github.com/xiaodaozhi/xdzip/releases/download/v9.0.0/");
+QString manifestName() {
+#if defined(Q_OS_MACOS) && defined(Q_PROCESSOR_X86_64)
+    return QStringLiteral("release-intel.json");
+#else
+    return QStringLiteral("release.json");
+#endif
+}
 QByteArray fixture(const QString &name) {
-    QFile file(QStringLiteral(XDZIP_UPDATE_FIXTURES "/") + name);
+    QString fileName = name;
+#if defined(Q_OS_MACOS) && defined(Q_PROCESSOR_X86_64)
+    if (name == "network-manifest.json")
+        fileName = "network-manifest-intel.json";
+    if (name == "network-manifest.json.sig")
+        fileName = "network-manifest-intel.json.sig";
+#endif
+    QFile file(QStringLiteral(XDZIP_UPDATE_FIXTURES "/") + fileName);
     return file.open(QIODevice::ReadOnly) ? file.readAll() : QByteArray{};
 }
 struct Response {
@@ -129,16 +143,17 @@ QJsonObject release(bool signedManifest) {
                                   {"browser_download_url", item.value("url")}});
     }
     assets.append(
-        QJsonObject{{"name", "release.json"}, {"browser_download_url", base + "release.json"}});
+        QJsonObject{{"name", manifestName()}, {"browser_download_url", base + manifestName()}});
     if (signedManifest)
-        assets.append(QJsonObject{{"name", "release.json.sig"},
-                                  {"browser_download_url", base + "release.json.sig"}});
+        assets.append(QJsonObject{{"name", manifestName() + ".sig"},
+                                  {"browser_download_url", base + manifestName() + ".sig"}});
     return {{"tag_name", "v9.0.0"}, {"draft", false}, {"assets", assets}};
 }
 void configure(Network &network, bool signedManifest = true) {
     network.responses.insert(api, {QJsonDocument(QJsonArray{release(signedManifest)}).toJson()});
-    network.responses.insert(base + "release.json", {fixture("network-manifest.json")});
-    network.responses.insert(base + "release.json.sig", {fixture("network-manifest.json.sig")});
+    network.responses.insert(base + manifestName(), {fixture("network-manifest.json")});
+    network.responses.insert(base + manifestName() + ".sig",
+                             {fixture("network-manifest.json.sig")});
     for (const auto &value : QJsonDocument::fromJson(fixture("network-manifest.json"))
                                  .object()
                                  .value("assets")
@@ -476,7 +491,7 @@ class UpdateControllerTest final : public QObject {
         Network network;
         configure(network);
         for (auto it = network.responses.begin(); it != network.responses.end(); ++it)
-            if (!it.key().endsWith("release.json") && !it.key().endsWith("release.json.sig") &&
+            if (!it.key().endsWith(manifestName()) && !it.key().endsWith(manifestName() + ".sig") &&
                 it.key() != api)
                 it->bytes = "evil";
         UpdateController updates(nullptr, &network, fixture("network-trust.json"), directory.path(),
@@ -491,7 +506,7 @@ class UpdateControllerTest final : public QObject {
     void modifiedManifestIsRejected() {
         Network network;
         configure(network);
-        network.responses[base + "release.json"].bytes.replace(QByteArray(40, 'a'),
+        network.responses[base + manifestName()].bytes.replace(QByteArray(40, 'a'),
                                                                QByteArray(40, 'b'));
         UpdateController updates(nullptr, &network, fixture("network-trust.json"), {},
                                  [] { return true; });
@@ -517,9 +532,9 @@ class UpdateControllerTest final : public QObject {
         configure(network);
         const auto invalid = QByteArray::fromHex("ff");
         if (source == "manifest")
-            network.responses[base + "release.json"].bytes = invalid;
+            network.responses[base + manifestName()].bytes = invalid;
         if (source == "signature")
-            network.responses[base + "release.json.sig"].bytes = invalid;
+            network.responses[base + manifestName() + ".sig"].bytes = invalid;
         UpdateController updates(nullptr, &network,
                                  source == "trust" ? invalid : fixture("network-trust.json"), {},
                                  [] { return true; });
@@ -742,7 +757,7 @@ class UpdateControllerTest final : public QObject {
         Network network;
         configure(network);
         for (auto it = network.responses.begin(); it != network.responses.end(); ++it)
-            if (!it.key().endsWith("release.json") && !it.key().endsWith("release.json.sig") &&
+            if (!it.key().endsWith(manifestName()) && !it.key().endsWith(manifestName() + ".sig") &&
                 it.key() != api)
                 it->bytes = "dat";
         UpdateController updates(nullptr, &network, fixture("network-trust.json"), directory.path(),
@@ -758,7 +773,7 @@ class UpdateControllerTest final : public QObject {
         Network network;
         configure(network);
         for (auto it = network.responses.begin(); it != network.responses.end(); ++it)
-            if (!it.key().endsWith("release.json") && !it.key().endsWith("release.json.sig") &&
+            if (!it.key().endsWith(manifestName()) && !it.key().endsWith(manifestName() + ".sig") &&
                 it.key() != api)
                 it->delay = 50;
         UpdateController updates(nullptr, &network, fixture("network-trust.json"), directory.path(),

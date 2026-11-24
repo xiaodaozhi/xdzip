@@ -6,6 +6,7 @@ import platform
 import selectors
 import subprocess
 import sys
+from macos_arch import macos_arch
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -13,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def require_hosted():
     expected = {'CI': 'true', 'GITHUB_ACTIONS': 'true',
                 'RUNNER_ENVIRONMENT': 'github-hosted', 'XDZIP_ISOLATED_UPDATE_FIXTURE': '1'}
-    if (sys.platform != 'darwin' or platform.machine() != 'arm64' or
+    if (sys.platform != 'darwin' or platform.machine() != macos_arch() or
             any(os.environ.get(key) != value for key, value in expected.items())):
         raise RuntimeError('System proxy conflicts require an explicitly disposable GitHub-hosted runner')
 
@@ -26,7 +27,7 @@ class OwnedSystemProxy:
             raise ValueError('Use the freshly compiled owned system proxy helper under build/')
         self.records = []
         self.process = subprocess.Popen([
-            'sudo', '-n', '--preserve-env=CI,GITHUB_ACTIONS,RUNNER_ENVIRONMENT,XDZIP_ISOLATED_UPDATE_FIXTURE',
+            'sudo', '-n', '--preserve-env=CI,GITHUB_ACTIONS,RUNNER_ENVIRONMENT,XDZIP_ISOLATED_UPDATE_FIXTURE,XDZIP_MACOS_INTEL_CI',
             str(helper), str(proxy_port), pac_url], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL, bufsize=0)
         self.pending = b''

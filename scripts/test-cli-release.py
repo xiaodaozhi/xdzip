@@ -34,6 +34,24 @@ class CliReleaseTests(unittest.TestCase):
         self.cli = create_cli(self.directory,self.version,'xiaodaozhi/xdzip','a'*40)
         (self.directory/'cli-release.json').write_text(json.dumps(self.cli)+'\n')
 
+    def test_intel_cli_manifest_is_signed_and_cannot_select_arm_package(self):
+        from release_protocol import INTEL_TARGETS, INTEL_CLI_TARGETS
+        for targets, prefix in ((INTEL_TARGETS, 'xdzip'), (INTEL_CLI_TARGETS, 'xdzip-cli')):
+            for suffix, _ in targets.values():
+                (self.directory/f'{prefix}-0.2.0-{suffix}').write_bytes(b'intel fixture')
+        desktop = create(self.directory, self.version, 'xiaodaozhi/xdzip', 'a'*40, intel=True)
+        cli = create_cli(self.directory, self.version, 'xiaodaozhi/xdzip', 'a'*40, intel=True)
+        (self.directory/'cli-release-intel.json').write_text(json.dumps(cli)+'\n')
+        keyring = self.directory/'intel-trust.json'
+        with patch.dict(os.environ, {'XDZIP_UPDATE_SIGNING_KEY_HEX': '2a'*32}):
+            run_tool(['public-key', '--key-id', 'intel-fixture', '--output', str(keyring)], self.tool)
+            sign_manifest(self.directory, key_id='intel-fixture', required=True, tool=self.tool, keyring=keyring, component='cli', intel=True)
+        verify_cli_updates(self.directory, desktop, tool=self.tool, keyring=keyring, intel=True)
+        self.assertEqual(next(a['architecture'] for a in cli['assets'] if a['platform']=='macos'), 'x86_64')
+        (self.directory/'cli-release-intel.json').write_bytes((self.directory/'cli-release-intel.json').read_bytes()+b' ')
+        with self.assertRaises(ValueError):
+            verify_cli_updates(self.directory, desktop, tool=self.tool, keyring=keyring, intel=True)
+
     def test_separate_complete_targets_and_minimum_systems(self):
         self.assertEqual(len(self.desktop['assets']),6)
         self.assertEqual(len(self.cli['assets']),3)

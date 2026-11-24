@@ -58,12 +58,12 @@ def run_tool(arguments: list[str], tool: Path | None = None) -> None:
         raise ValueError('Update signing or verification failed')
 
 
-def appcast_bytes(manifest: dict, metadata: dict) -> bytes:
+def appcast_bytes(manifest: dict, metadata: dict, *, intel: bool = False) -> bytes:
     """Embed a short version description, with no client fetch of external notes.
 
     Full release notes remain in the reviewed GitHub Release body.
     """
-    validate(manifest)
+    validate(manifest, intel=intel)
     asset = next(a for a in manifest['assets'] if a['platform'] == 'macos' and a['package_type'] == 'app.zip')
     expected_keys = {'schema_version', 'version', 'build', 'filename', 'bytes', 'sha256', 'ed_signature'}
     if set(metadata) != expected_keys or metadata['schema_version'] != 1:
@@ -97,9 +97,9 @@ def appcast_bytes(manifest: dict, metadata: dict) -> bytes:
 
 
 def prepare_appcast(directory: Path, manifest: dict, *, required: bool = False, tool: Path | None = None,
-                    public_key: Path | None = None) -> bool:
+                    public_key: Path | None = None, intel: bool = False) -> bool:
     """Bind and sign the native archive and complete feed with the Sparkle key."""
-    metadata_path = directory / 'macos-update.json'
+    metadata_path = directory / ('macos-update-intel.json' if intel else 'macos-update.json')
     configured = bool(os.environ.get('XDZIP_SPARKLE_SIGNING_KEY_HEX'))
     if not metadata_path.is_file() or not configured:
         if required:
@@ -108,7 +108,7 @@ def prepare_appcast(directory: Path, manifest: dict, *, required: bool = False, 
     if metadata_path.is_symlink() or metadata_path.stat().st_size > 4096:
         raise ValueError('Invalid macOS update metadata file')
     metadata = json.loads(metadata_path.read_bytes())
-    content = appcast_bytes(manifest, metadata)
+    content = appcast_bytes(manifest, metadata, intel=intel)
     archive = directory / metadata['filename']
     if archive.is_symlink() or not archive.is_file() or archive.stat().st_size != metadata['bytes'] or sha256(archive) != metadata['sha256']:
         raise ValueError('macOS update archive changed')
@@ -118,15 +118,16 @@ def prepare_appcast(directory: Path, manifest: dict, *, required: bool = False, 
     with tempfile.TemporaryDirectory(prefix='xdzip-appcast-', dir=directory.parent) as temporary:
         unsigned = Path(temporary) / 'appcast.xml'
         unsigned.write_bytes(content)
-        output = directory / 'appcast.xml'
+        output = directory / ('appcast-intel.xml' if intel else 'appcast.xml')
         run_tool(['sign-appcast', '--appcast', str(unsigned), '--public-key', str(public_key), '--output', str(output)], tool)
         run_tool(['verify-appcast', '--appcast', str(output), '--public-key', str(public_key)], tool)
-    manifest['macos_appcast_url'] = f'https://github.com/{manifest["repository"]}/releases/download/{manifest["tag"]}/appcast.xml'
+    feed = 'appcast-intel.xml' if intel else 'appcast.xml'
+    manifest['macos_appcast_url'] = f'https://github.com/{manifest["repository"]}/releases/download/{manifest["tag"]}/{feed}'
     return True
 
 
 def sign_manifest(directory: Path, *, key_id: str | None, required: bool = False,
-                  tool: Path | None = None, keyring: Path | None = None, component: str = "desktop") -> bool:
+                  tool: Path | None = None, keyring: Path | None = None, component: str = "desktop", intel: bool = False) -> bool:
     """Sign exact JSON bytes and independently reverify before creating checksums."""
     configured = bool(os.environ.get('XDZIP_UPDATE_SIGNING_KEY_HEX')) and bool(key_id)
     if not configured:
@@ -136,7 +137,7 @@ def sign_manifest(directory: Path, *, key_id: str | None, required: bool = False
     if not re.fullmatch('[A-Za-z0-9_-]{1,64}', key_id):
         raise ValueError('Invalid update key ID')
     keyring = keyring or ROOT / 'resources/update-trust.json'
-    name = 'cli-release.json' if component == 'cli' else 'release.json'
+    name = ('cli-release-intel.json' if intel else 'cli-release.json') if component == 'cli' else ('release-intel.json' if intel else 'release.json')
     suffix = '-cli' if component == 'cli' else ''
     arguments = ['--manifest', str(directory / name), '--keyring', str(keyring)]
     signature = directory / (name + '.sig')
@@ -146,23 +147,26 @@ def sign_manifest(directory: Path, *, key_id: str | None, required: bool = False
 
 
 def verify_release_updates(directory: Path, manifest: dict, *, tool: Path | None = None,
-                           keyring: Path | None = None, public_key: Path | None = None) -> None:
+                           keyring: Path | None = None, public_key: Path | None = None, intel: bool = False) -> None:
     """Publication gate; neither a caller flag nor readiness JSON grants trust."""
     keyring = keyring or ROOT / 'resources/update-trust.json'
     public_key = public_key or ROOT / 'resources/sparkle-update-key.json'
-    for name, limit in [('release.json.sig', 4096), ('appcast.xml', 256 * 1024 + 512), ('macos-update.json', 4096)]:
+    manifest_name = 'release-intel.json' if intel else 'release.json'
+    feed = 'appcast-intel.xml' if intel else 'appcast.xml'
+    metadata_name = 'macos-update-intel.json' if intel else 'macos-update.json'
+    for name, limit in [(manifest_name + '.sig', 4096), (feed, 256 * 1024 + 512), (metadata_name, 4096)]:
         path = directory / name
         if path.is_symlink() or not path.is_file() or path.stat().st_size > limit:
             raise ValueError('Authenticated update attachments are required')
-    expected_url = f'https://github.com/{manifest["repository"]}/releases/download/{manifest["tag"]}/appcast.xml'
+    expected_url = f'https://github.com/{manifest["repository"]}/releases/download/{manifest["tag"]}/{feed}'
     if manifest.get('macos_appcast_url') != expected_url:
         raise ValueError('Authenticated candidate feed is missing')
-    run_tool(['verify', '--manifest', str(directory/'release.json'), '--signature', str(directory/'release.json.sig'),
+    run_tool(['verify', '--manifest', str(directory/manifest_name), '--signature', str(directory/(manifest_name + '.sig')),
               '--keyring', str(keyring)], tool)
-    run_tool(['verify-appcast', '--appcast', str(directory/'appcast.xml'), '--public-key', str(public_key)], tool)
-    metadata = json.loads((directory/'macos-update.json').read_bytes())
-    unsigned = appcast_bytes(manifest, metadata)
-    signed = (directory/'appcast.xml').read_bytes()
+    run_tool(['verify-appcast', '--appcast', str(directory/feed), '--public-key', str(public_key)], tool)
+    metadata = json.loads((directory/metadata_name).read_bytes())
+    unsigned = appcast_bytes(manifest, metadata, intel=intel)
+    signed = (directory/feed).read_bytes()
     # The feed signed by the Sparkle key must describe this exact six-package
     # candidate, rather than another otherwise valid signed feed.
     if not signed.startswith(unsigned + b'<!-- sparkle-signatures:\n'):
@@ -173,12 +177,13 @@ def verify_release_updates(directory: Path, manifest: dict, *, tool: Path | None
 
 
 def verify_cli_updates(directory: Path, desktop_manifest: dict, *, tool: Path | None = None,
-                       keyring: Path | None = None) -> None:
+                       keyring: Path | None = None, intel: bool = False) -> None:
     from release_protocol import validate_cli
-    manifest = validate_cli(json.loads((directory/'cli-release.json').read_bytes()), directory)
+    name = 'cli-release-intel.json' if intel else 'cli-release.json'
+    manifest = validate_cli(json.loads((directory/name).read_bytes()), directory, intel=intel)
     for field in ('version','channel','build','tag','commit','repository'):
         if manifest[field] != desktop_manifest[field]:
             raise ValueError('CLI and desktop release identities disagree')
-    run_tool(['verify-cli','--manifest',str(directory/'cli-release.json'),
-              '--signature',str(directory/'cli-release.json.sig'),
+    run_tool(['verify-cli','--manifest',str(directory/name),
+              '--signature',str(directory/(name + '.sig')),
               '--keyring',str(keyring or ROOT/'resources/update-trust.json')], tool)

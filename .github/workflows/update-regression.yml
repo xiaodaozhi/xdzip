@@ -9,7 +9,7 @@ on:
         required: true
         default: all
         type: choice
-        options: [all, windows, macos, linux]
+        options: [all, windows, macos, macos-intel, linux]
       macos_product_only:
         description: Diagnose the macOS product chain only, ignored for all-platform verification
         required: false
@@ -123,6 +123,50 @@ jobs:
             build/update-regression/macos-proxy/*.log
             build/toolchain/Sparkle/*-build.log
           if-no-files-found: error
+          retention-days: 14
+  macos_intel:
+    if: ${{ inputs.platform == 'all' || inputs.platform == 'macos-intel' }}
+    runs-on: macos-15-intel
+    timeout-minutes: 180
+    env:
+      XDZIP_MACOS_INTEL_CI: '1'
+      XDZIP_ISOLATED_UPDATE_FIXTURE: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - name: Prepare and check product font tools
+        run: |
+          python3 -m pip install -r design/assets/fonts/requirements.txt
+          PYTHONPATH=scripts python3 -c 'from ui_fonts import tools; tools()'
+      - name: Check update fixture contracts before native dependencies
+        run: |
+          python3 scripts/test-macos-production-update.py
+          python3 scripts/test-system-proxy-fixture.py
+          python3 scripts/check-system-proxy-fixture.py
+      - name: Prepare pinned native Intel dependencies
+        run: |
+          test "$(uname -m)" = x86_64
+          rustup toolchain install 1.99.0 --profile minimal --component rustfmt --component clippy
+          python3 -m pip install aqtinstall==3.3.0
+          python3 -m aqt install-qt mac desktop 6.8.2 clang_64 --outputdir '${{ runner.temp }}/Qt'
+          python3 scripts/prepare-qt-network.py --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos'
+      - name: Check Intel update and fixture admission contracts
+        run: |
+          python3 scripts/test-release-updates.py
+      - name: Verify Intel product update, installation and restart with test keys
+        run: python3 scripts/check-macos-product-update.py --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos' --output build/update-regression/macos-intel-product
+      - name: Preserve updater records without application packages
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: update-regression-macos-intel
+          path: |
+            build/update-regression/macos-intel-product/*verification*.json
+            build/update-regression/macos-intel-product/*.log
+            build/toolchain/Sparkle/*-build.log
+          if-no-files-found: warn
           retention-days: 14
   linux:
     if: ${{ inputs.platform == 'all' || inputs.platform == 'linux' }}
