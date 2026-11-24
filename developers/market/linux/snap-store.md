@@ -12,6 +12,8 @@ In VMware on Ubuntu 24.04 amd64, run `sudo snap install xdzip --channel=latest/b
 
 Restrict both GitHub Environments to `main` and store `SNAPCRAFT_STORE_CREDENTIALS` in each environment. Require maintainer review on `snap-stable` and allow the maintainer who dispatched the run to approve after acceptance. Export credentials scoped to `--snaps=xdzip`. Limit `snap-beta` to `latest/beta` and `package_access,package_push,package_release`. Limit `snap-stable` to `latest/stable` and `package_access,package_release`. Load each credential with `gh secret set SNAPCRAFT_STORE_CREDENTIALS --env <environment> --repo xiaodaozhi/xdzip < <credentials-file>`. Set an expiry date and rotate as needed. [Credential export options](https://ubuntu.com/docs/snapcraft/latest/reference/commands/export-login/)
 
+If the terminal already has an exported credential, begin the export command with `env -u SNAPCRAFT_STORE_CREDENTIALS snapcraft export-login` so Snapcraft can authenticate again.
+
 ### Manual release
 
 1. Freeze the approved source revision and prepare the package using the [Snap verification procedure](../../qa/README.md#snap-candidate-runtime-dependencies). Use the existing Linux deployment and Snap assembly scripts. Check the installed entry point, base dependencies, manifest, notices and corresponding-source access for this exact package. [Release review](../../qa/release-review.md)

@@ -37,7 +37,17 @@ jobs:
           [[ "$(git cat-file -t "$SOURCE_REVISION")" == commit ]]
           git merge-base --is-ancestor "$SOURCE_REVISION" "$GITHUB_SHA"
           git checkout --detach "$SOURCE_REVISION"
+      - name: Use the upstream Ubuntu archive on the hosted runner
+        run: |
+          for sources in /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources; do
+            if [[ -f "$sources" ]]; then
+              sudo sed -i \
+                -e 's|https\?://azure\.archive\.ubuntu\.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' \
+                -e 's|mirror+file:/etc/apt/apt-mirrors\.txt|https://archive.ubuntu.com/ubuntu|g' "$sources"
+            fi
+          done
       - uses: ./.github/actions/linux-release-dependencies
+        timeout-minutes: 12
       - name: Prepare and verify Snap inputs
         run: |
           sudo apt-get install -y --no-install-recommends desktop-file-utils squashfs-tools snapd

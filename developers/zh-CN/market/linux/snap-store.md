@@ -12,6 +12,8 @@
 
 两个 GitHub Environment 都只对 `main` 开放，在各自环境中保存 `SNAPCRAFT_STORE_CREDENTIALS`。`snap-stable` 必须要求维护者审批，允许触发者由本人验收后批准。导出凭据时使用 `--snaps=xdzip`，将 `snap-beta` 限定到 `latest/beta` 和 `package_access,package_push,package_release`，将 `snap-stable` 限定到 `latest/stable` 和 `package_access,package_release`。通过 `gh secret set SNAPCRAFT_STORE_CREDENTIALS --env <环境名> --repo xiaodaozhi/xdzip < <凭据文件>` 写入对应环境。设置到期时间并按需轮换。 [凭据导出参数](https://ubuntu.com/docs/snapcraft/latest/reference/commands/export-login/)
 
+如果当前终端已导出旧凭据，请用 `env -u SNAPCRAFT_STORE_CREDENTIALS snapcraft export-login` 开始导出命令，避免旧变量阻止重新认证。
+
 ### 手动发布
 
 1. 冻结已批准的源码提交，按 [Snap 验证流程](../../qa/README.md#snap-候选包的运行库检查)使用现有 Linux 部署和 Snap 打包脚本生成候选。针对该包核对安装入口、基础包依赖、清单、许可证通知及对应源码入口。 [发行许可复核](../../qa/release-review.md)
