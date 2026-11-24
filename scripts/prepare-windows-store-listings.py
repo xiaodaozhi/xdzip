@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MARKETING = ROOT / 'specs/marketing/windows-store.json'
 LOCALES = ROOT / 'specs/marketing/windows-store-locales.json'
 SCENES = ('01-welcome', '02-create', '03-preview', '04-workspace')
+SCREENSHOT_FILES = tuple(f'{scene}-1920x1080.png' for scene in SCENES)
 SCREENSHOTS = tuple(f'DesktopScreenshot{i}' for i in range(1, 5))
 CAPTIONS = tuple(f'DesktopScreenshotCaption{i}' for i in range(1, 5))
 TEXT_FIELDS = {
@@ -116,8 +117,8 @@ def material_evidence(root, sources):
     result = {}
     for source in sorted(sources):
         result[source] = []
-        for scene in SCENES:
-            relative = f'{source}/promotional/{scene}-1920x1080.png'
+        for scene, filename in zip(SCENES, SCREENSHOT_FILES):
+            relative = f'{source}/promotional/{filename}'
             path = root / relative
             with path.open('rb') as stream:
                 header = stream.read(24)
@@ -136,13 +137,17 @@ def screenshot_url(value):
     return value
 
 
+def check_locale_inventory(columns, expected):
+    missing = sorted(set(expected) - set(columns))
+    unexpected = sorted(set(columns) - set(expected))
+    if missing or unexpected:
+        raise ValueError(f'Locale inventory differs from the map. Missing: {missing}. Unexpected: {unexpected}.')
+
+
 def generate(baseline, mapping, copy, *, only=(), notes=None, reuse=False, images_only=False):
     header, rows, columns = baseline
     fields = {row[0]: row for row in rows}
-    missing = sorted(set(mapping) - set(columns))
-    unexpected = sorted(set(columns) - set(mapping))
-    if missing or unexpected:
-        raise ValueError(f'Locale inventory differs from the map. Missing: {missing}. Unexpected: {unexpected}.')
+    check_locale_inventory(columns, mapping)
     targets = [code.lower() for code in only] if only else list(columns)
     if len(targets) != len(set(targets)) or set(targets) - set(columns):
         raise ValueError('Select unique locales in the baseline export')
@@ -218,6 +223,8 @@ def api_report(export, submission, expected_id):
     _, rows, columns = export
     fields = {row[0]: row for row in rows}
     listings = {code.lower(): entry['baseListing'] for code, entry in submission['listings'].items()}
+    if len(listings) != len(submission['listings']):
+        raise ValueError('API response contains duplicate locale codes')
     issues = [{'locale': c, 'problem': 'missing from API'} for c in sorted(columns.keys() - listings.keys())]
     issues.extend({'locale': c, 'problem': 'unexpected API locale'} for c in sorted(listings.keys() - columns.keys()))
     properties = {'Title': 'title', 'Description': 'description', 'ReleaseNotes': 'releaseNotes',
@@ -226,11 +233,19 @@ def api_report(export, submission, expected_id):
     for code in sorted(columns.keys() & listings.keys()):
         index = columns[code]
         listing = listings[code]
-        screenshots = [i for i in listing['images'] if i['imageType'] == 'Screenshot']
-        expected = [(fields[key][index] or fields[key][3]) for key in CAPTIONS]
-        actual = [(image.get('description') or '') for image in screenshots]
-        if expected != actual:
-            issues.append({'locale': code, 'problem': 'desktop screenshot count, order or caption differs'})
+        screenshots = [image for image in listing['images'] if image['imageType'] == 'Screenshot']
+        if len(screenshots) != len(SCREENSHOT_FILES):
+            issues.append({'locale': code, 'field': 'DesktopScreenshots',
+                           'problem': 'expected four desktop screenshots', 'actual_count': len(screenshots)})
+        for image, filename, screenshot, caption in zip(screenshots, SCREENSHOT_FILES, SCREENSHOTS, CAPTIONS):
+            actual_file = (image.get('fileName') or '').replace('\\', '/').rsplit('/', 1)[-1]
+            if actual_file != filename:
+                issues.append({'locale': code, 'field': screenshot, 'problem': 'wrong image or order',
+                               'expected_file': filename, 'actual_file': actual_file or None})
+            expected_caption = fields[caption][index] or fields[caption][3]
+            actual_caption = (image.get('description') or '').replace('\r\n', '\n')
+            if not expected_caption.strip() or expected_caption.replace('\r\n', '\n') != actual_caption:
+                issues.append({'locale': code, 'field': caption, 'problem': 'wrong or missing caption'})
         values = {field: listing.get(key) or '' for field, key in properties.items()}
         for slot, prefix, key in ((20, 'Feature', 'features'), (7, 'SearchTerm', 'keywords')):
             entries = listing.get(key) or []
@@ -268,7 +283,7 @@ def fetch_submission(product, submission):
     with opener.open(token_request, timeout=30) as response:
         token = json.load(response)['access_token']
     endpoint = f'{host}/v1.0/my/applications/{product}/submissions/{submission}'
-    with opener.open(Request(endpoint, headers={'Authorization': f'Bearer {token}'}), timeout=30) as response:
+    with opener.open(Request(endpoint, headers={'Authorization': f'Bearer {token}'}), timeout=90) as response:
         return json.load(response)
 
 
@@ -284,28 +299,34 @@ def main():
     prepare.add_argument('--materials', type=Path, help='Optional verified material export for the artwork inventory')
     prepare.add_argument('--reuse-source-urls', action='store_true')
     prepare.add_argument('--images-only', action='store_true', help='Change screenshot URLs and captions only')
-    verify = sub.add_parser('verify')
+    verify = sub.add_parser('verify', help='Verify a CSV import and the resulting submission readback')
     for name in ('baseline', 'intended', 'actual'):
         verify.add_argument(f'--{name}', required=True, type=Path)
     probe = sub.add_parser('api-report', help='Compare a read-only MSIX submission response with a Store export')
     probe.add_argument('--export', required=True, type=Path)
-    source = probe.add_mutually_exclusive_group(required=True)
-    source.add_argument('--submission-json', type=Path)
-    source.add_argument('--product-id', help='Read the specified submission from the official MSIX API')
-    probe.add_argument('--submission-id', required=True)
+    for command in (verify, probe):
+        source = command.add_mutually_exclusive_group(required=True)
+        source.add_argument('--submission-json', type=Path, help='Saved raw GET response for the specified submission')
+        source.add_argument('--product-id', help='Read the specified submission from the official MSIX API')
+        command.add_argument('--submission-id', required=True)
     args = parser.parse_args()
     try:
-        if args.command == 'api-report':
-            export = read_csv(args.export)
+        if args.command in ('verify', 'api-report'):
+            if args.command == 'verify':
+                baseline, intended, export = (read_csv(file) for file in (args.baseline, args.intended, args.actual))
+                csv_issues = compare(baseline, intended, export)
+            else:
+                export = read_csv(args.export)
+            expected_locales = {code for targets in read_json(LOCALES)['sources'].values() for code in targets}
+            check_locale_inventory(export[2], expected_locales)
             submission = (read_json(args.submission_json) if args.submission_json
                           else fetch_submission(args.product_id, args.submission_id))
             report = api_report(export, submission, args.submission_id)
+            if args.command == 'verify':
+                report = {'differences': len(csv_issues) + report['differences'],
+                          'csv': {'differences': len(csv_issues), 'sample': csv_issues[:30]}, 'submission': report}
             print(json.dumps(report, indent=2))
             return bool(report['differences'])
-        if args.command == 'verify':
-            issues = compare(*(read_csv(file) for file in (args.baseline, args.intended, args.actual)))
-            print(json.dumps({'differences': len(issues), 'sample': issues[:30]}, indent=2))
-            return bool(issues)
         data = read_json(MARKETING)['locales']
         package = package_info(args.package)
         sources = read_json(LOCALES)
