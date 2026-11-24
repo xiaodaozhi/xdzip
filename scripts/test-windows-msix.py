@@ -164,6 +164,16 @@ class MsixTests(unittest.TestCase):
             with patch.object(msix.subprocess, 'run', side_effect=run):
                 msix.build(runtime, audit_path, folder / 'app.msix', 'xdzip.Test',
                            'CN=test', folder / 'report.json', 'Test Publisher')
+                msix.build(runtime, audit_path, folder / 'store.msix', 'xdzip.StoreTest',
+                           'CN=test', folder / 'store.json', 'Test Publisher', channel='store')
+            store_report = json.loads((folder / 'store.json').read_text(encoding='utf-8'))
+            self.assertFalse(store_report['classic_context_menu'])
+            self.assertTrue(store_report['modern_context_menu_declaration'])
+            import zipfile
+            with zipfile.ZipFile(folder / 'store.msix') as package:
+                self.assertEqual(package.read('xdzip-msix-channel.txt'), b'xdzip-msix-v1\nstore\n')
+                msix.verify_manifest(ET.fromstring(package.read('AppxManifest.xml')), 'store',
+                                     store_report['shell_library'])
             report = json.loads((folder / 'report.json').read_text(encoding='utf-8'))
             self.assertFalse(report['signed'])
             self.assertEqual(report['sha256'], digest(folder / 'app.msix'))
@@ -173,7 +183,6 @@ class MsixTests(unittest.TestCase):
             self.assertEqual(report['languages'], list(msix.packaging_languages()))
             self.assertEqual(report['shell_library'], 'shell/' + library.name)
             self.assertEqual(report['version'], '1.0.27.0')
-            import zipfile
             with zipfile.ZipFile(folder / 'app.msix') as package:
                 self.assertEqual(package.read('xdzip-msix-channel.txt'), b'xdzip-msix-v1\nsideload\n')
                 self.assertGreater(package.getinfo('resources.pri').file_size, 1024)
