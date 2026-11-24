@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Test the publisher against local receipts and mocked Store channels."""
+"""Test Snap input integrity and publication without writing to the Store."""
 
 import hashlib
+import importlib
+import io
 import json
 from pathlib import Path
 import tempfile
@@ -9,6 +11,24 @@ import unittest
 from unittest.mock import patch
 
 import snap_store
+
+
+class SnapInputTests(unittest.TestCase):
+    def test_mirror_uses_the_original_package_hash(self):
+        pack = importlib.import_module('build-linux-snap')
+        url = 'https://archive.ubuntu.com/ubuntu/pool/main/package.deb'
+        mirror = 'https://mirror.example/ubuntu/'
+        data = b'locked Ubuntu package'
+        pin = {'package': 'package', 'url': url, 'sha256': hashlib.sha256(data).hexdigest()}
+        with tempfile.TemporaryDirectory() as temporary:
+            cache = Path(temporary)
+            with patch.object(pack.urllib.request, 'urlopen', side_effect=[OSError('HTTP 403'), io.BytesIO(b'bad')]):
+                with self.assertRaisesRegex(ValueError, 'differs from its lock'):
+                    pack.fetch_deb(cache, pin, [mirror])
+            self.assertEqual(list(cache.iterdir()), [])
+            with patch.object(pack.urllib.request, 'urlopen', side_effect=[OSError('HTTP 403'), io.BytesIO(data)]) as fetch:
+                self.assertEqual(pack.fetch_deb(cache, pin, [mirror]).read_bytes(), data)
+                fetch.assert_called_with(mirror + 'pool/main/package.deb', timeout=20)
 
 
 class SnapStoreTests(unittest.TestCase):
