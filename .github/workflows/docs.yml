@@ -46,6 +46,7 @@ jobs:
           python3 scripts/test-plan-marketing-sync.py
           python3 scripts/check-marketing-screenshot-scale.py
           python3 scripts/test-windows-store-languages.py
+          python3 scripts/test-windows-store-listings.py
           node --check scripts/import-windows-store-captures.cjs
           node --check scripts/build-platform-store-assets.cjs
           node --check scripts/marketing-window-frame.cjs

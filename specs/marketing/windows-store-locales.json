@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "sources": {
+    "de-DE": [
+      "de-at", "de-ch", "de-de", "de-li", "de-lu"
+    ],
+    "en-US": [
+      "en-us"
+    ],
+    "es-ES": [
+      "es-019", "es-419", "es-ad", "es-ag", "es-ai", "es-al", "es-ao", "es-aq", "es-ar",
+      "es-as", "es-aw", "es-ax", "es-az", "es-ba", "es-bb", "es-bf", "es-bi", "es-bj",
+      "es-bl", "es-bm", "es-bn", "es-bo", "es-bq", "es-bs", "es-bt", "es-bv", "es-bw",
+      "es-bz", "es-ca", "es-cc", "es-cd", "es-cf", "es-cg", "es-ci", "es-ck", "es-cl",
+      "es-cm", "es-co", "es-cr", "es-cu", "es-cv", "es-cw", "es-cx", "es-dj", "es-dm",
+      "es-do", "es-ec", "es-er", "es-es", "es-eu", "es-fj", "es-fk", "es-fm", "es-fo",
+      "es-ga", "es-gd", "es-ge", "es-gf", "es-gg", "es-gh", "es-gi", "es-gl", "es-gm",
+      "es-gn", "es-gp", "es-gq", "es-gs", "es-gt", "es-gu", "es-gw", "es-gy", "es-hm",
+      "es-hn", "es-ht", "es-io", "es-je", "es-jm", "es-kg", "es-ki", "es-km", "es-kn",
+      "es-ky", "es-la", "es-lc", "es-lr", "es-ls", "es-ly", "es-mc", "es-md", "es-mf",
+      "es-mg", "es-mh", "es-ml", "es-mm", "es-mn", "es-mo", "es-mp", "es-mq", "es-ms",
+      "es-mu", "es-mv", "es-mw", "es-mx", "es-mz", "es-na", "es-nc", "es-ne", "es-nf",
+      "es-ni", "es-nr", "es-nu", "es-pa", "es-pe", "es-pf", "es-pg", "es-pm", "es-pn",
+      "es-pr", "es-ps", "es-pw", "es-py", "es-re", "es-rw", "es-sb", "es-sc", "es-sh",
+      "es-sj", "es-sl", "es-sm", "es-sn", "es-so", "es-sr", "es-st", "es-sv", "es-sx",
+      "es-sz", "es-tc", "es-td", "es-tg", "es-tj", "es-tk", "es-tl", "es-to", "es-tv",
+      "es-tz", "es-ug", "es-um", "es-us", "es-uy", "es-va", "es-vc", "es-ve", "es-vg",
+      "es-vi", "es-vu", "es-wf", "es-ws", "es-yt", "es-zm", "es-zw"
+    ],
+    "fr-FR": [
+      "fr-011", "fr-015", "fr-021", "fr-029", "fr-155", "fr-ad", "fr-ag", "fr-ai", "fr-al",
+      "fr-ao", "fr-aq", "fr-as", "fr-aw", "fr-ax", "fr-az", "fr-ba", "fr-bb", "fr-be",
+      "fr-bf", "fr-bi", "fr-bj", "fr-bl", "fr-bm", "fr-bn", "fr-bo", "fr-bq", "fr-bs",
+      "fr-bt", "fr-bv", "fr-bw", "fr-bz", "fr-ca", "fr-cc", "fr-cd", "fr-cf", "fr-cg",
+      "fr-ch", "fr-ci", "fr-ck", "fr-cm", "fr-cv", "fr-cw", "fr-cx", "fr-dj", "fr-dm",
+      "fr-do", "fr-dz", "fr-er", "fr-fj", "fr-fk", "fr-fm", "fr-fo", "fr-fr", "fr-ga",
+      "fr-gd", "fr-ge", "fr-gf", "fr-gg", "fr-gh", "fr-gi", "fr-gl", "fr-gm", "fr-gn",
+      "fr-gp", "fr-gq", "fr-gs", "fr-gu", "fr-gw", "fr-gy", "fr-hm", "fr-hn", "fr-ht",
+      "fr-io", "fr-je", "fr-jm", "fr-kg", "fr-ki", "fr-km", "fr-kn", "fr-ky", "fr-la",
+      "fr-lc", "fr-lr", "fr-ls", "fr-lu", "fr-ly", "fr-ma", "fr-mc", "fr-md", "fr-mf",
+      "fr-mg", "fr-mh", "fr-ml", "fr-mm", "fr-mn", "fr-mo", "fr-mp", "fr-mq", "fr-ms",
+      "fr-mu", "fr-mv", "fr-mw", "fr-mz", "fr-na", "fr-nc", "fr-ne", "fr-nf", "fr-ni",
+      "fr-nr", "fr-nu", "fr-pf", "fr-pg", "fr-pm", "fr-pn", "fr-ps", "fr-pw", "fr-re",
+      "fr-rw", "fr-sb", "fr-sc", "fr-sh", "fr-sj", "fr-sl", "fr-sm", "fr-sn", "fr-so",
+      "fr-sr", "fr-st", "fr-sx", "fr-sz", "fr-tc", "fr-td", "fr-tg", "fr-tj", "fr-tk",
+      "fr-tl", "fr-tn", "fr-to", "fr-tv", "fr-tz", "fr-ug", "fr-um", "fr-va", "fr-vc",
+      "fr-vg", "fr-vi", "fr-vu", "fr-wf", "fr-ws", "fr-yt", "fr-zm", "fr-zw"
+    ],
+    "ja-JP": [
+      "ja-jp"
+    ],
+    "ko-KR": [
+      "ko-kr"
+    ],
+    "pt-BR": [
+      "pt-br", "pt-pt"
+    ],
+    "ru-RU": [
+      "ru-am", "ru-by", "ru-kz", "ru-ru", "ru-ua"
+    ],
+    "zh-CN": [
+      "zh-cn", "zh-hans-cn", "zh-hans-sg", "zh-sg"
+    ],
+    "zh-TW": [
+      "zh-hant-hk", "zh-hant-mo", "zh-hant-tw", "zh-hk", "zh-mo", "zh-tw"
+    ]
+  }
+}

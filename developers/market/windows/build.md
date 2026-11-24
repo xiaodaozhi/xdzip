@@ -21,3 +21,28 @@ When working in Partner Center, prefer the browser extension plugin for submissi
 5. Once all target locales have been reviewed, check the package version, validation status and publishing choice, then submit for certification. A listing marked Complete by the portal does not establish that the images, captions and other materials required for this submission have been reviewed. Confirm that the page enters certification after submission; report publishing progress according to its actual state after certification succeeds and publishing begins.
 
 For manual publishing, select **Publish now** after certification. Microsoft signs and distributes the package, and the installed Store build can then be checked on Windows.
+
+## Bulk listing updates
+
+The [locale map](../../../specs/marketing/windows-store-locales.json) records the 337 observed listings by source language. Reconcile any difference against the draft export and the Partner Center language selector before changing the map. The generator also checks the source languages against the MSIX manifest and the marketing specification.
+
+Export the entire draft to a UTF-8 CSV and keep that file for recovery. Use the [listing generator](../../../scripts/prepare-windows-store-listings.py) with the verified MSIX. It preserves all populated field rows, default values and properties it does not own. Confirm that the marketing specification has the intended release notes, or supply `--release-notes` with a JSON object keyed by the ten source locales. `--materials` optionally verifies the source artwork in a reviewed export against its manifest. The plan records the changes and input hashes under `build/`.
+
+```sh
+python scripts/prepare-windows-store-listings.py prepare --baseline build/store-before.csv --package build/xdzip-windows-x64.msix --output build/store-pilot --reuse-source-urls --images-only --only fr-ca zh-hant-hk zh-hans-sg
+python scripts/prepare-windows-store-listings.py verify --baseline build/store-before.csv --intended build/store-pilot/listing.csv --actual build/store-after.csv
+```
+
+Import the generated `listing.csv` into the draft. `--reuse-source-urls` copies the base language's four screenshot URLs from the draft itself. First upload or review the four source images for each affected language. Use `--images-only` to isolate screenshot URL and caption behavior. Remove `--only` and `--images-only` to generate the full listing update once the pilot is confirmed. Use a fresh export as the baseline for each operation. An export with mismatched locales or absent image URLs requires reconciliation before preparation. Keep the output CSV and JSON in the local work directory.
+
+Re-export after the import. The verification command compares all fields in the draft, including locales omitted from the upload. A discrepancy in image URL, caption, previously populated field, or locale blocks expansion and certification. Read the reported fields in Partner Center and restore affected values from the saved export if needed. [Microsoft's MSIX import and export guide](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/import-and-export-store-listings) explains how to reuse hosted assets and how empty cells affect existing content.
+
+## Evaluate the submission API
+
+Use an existing [Microsoft Entra application associated with Partner Center](https://learn.microsoft.com/en-us/windows/uwp/monetize/create-and-manage-submissions-using-windows-store-services#how-to-associate-an-azure-ad-application-with-your-partner-center-account) to read a known submission with the API. Load `PARTNER_CENTER_TENANT_ID`, `PARTNER_CENTER_CLIENT_ID` and `PARTNER_CENTER_CLIENT_SECRET` from protected storage. Compare the response with an export from the same submission. To check a response already obtained with the official CLI, use `--submission-json` instead of `--product-id`.
+
+```sh
+python scripts/prepare-windows-store-listings.py api-report --export build/store-published.csv --product-id STORE_PRODUCT_ID --submission-id SUBMISSION_ID
+```
+
+The report checks the region codes, texts and ordered screenshot descriptions and records whether the API reports the `runFullTrust` declaration. A declaration in the response does not verify that the API can submit its justification. In a separate API draft, verify that the same locale set, screenshot captions and restricted capability justification survive a write and a readback before adopting API publication. Use the API throughout that draft. Reuse the existing verified MSIX artifact. Microsoft documents that the top-level `msstore publish` command can replace a pending draft, so check for one before starting. [Microsoft's submission API guide](https://learn.microsoft.com/en-us/windows/uwp/monetize/manage-app-submissions) and [CLI commands](https://learn.microsoft.com/en-us/windows/apps/publish/msstore-dev-cli/commands) describe these behaviors.
