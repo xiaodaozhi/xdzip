@@ -35,6 +35,8 @@ gh workflow run release.yml --ref main -f tag=vX.Y.Z
 
 工作流从标签取产品源码，从触发工作流的提交取已审阅说明。记录两处提交 SHA 和运行 ID。核对本次运行的草稿、原生构建和部署回执，以及发行契约检查。在最终汇总前确认六项桌面资产和三平台独立 CLI 包齐全。受保护的 `release-signing` 环境提供更新签名权限，更新签名和 macOS 的 ad-hoc 包完整性验证分别有各自用途。见[候选材料](release-candidate.md)和[签名契约](../../../docs/zh-CN/engineering/release-protocol.md#可信更新附件)。
 
+稳定版触发前，在 `release-signing` 配置 [Snap Store 发布凭据](../market/linux/snap-store.md#准备并发布修订)。正式发布任务会将同一运行中已经核验的 amd64 Snap 发布到 `latest/stable` 并记录商店修订。如果 GitHub 已公开而 Snap 步骤失败，在原运行中重试失败的任务即可。重试先核对公开的 GitHub Release，再重试 Snap 上传。
+
 公开后核对发布状态、说明、资产清单及重新下载文件的 `SHA256SUMS`。工作流的 `verify-public` 作业调用[发布脚本](../../../scripts/publish-release.py)单独下载复验。已公开版本保留原资产，需要修正内容时使用新版本。在[变更日志](../../../CHANGELOG.zh-CN.md)登记已公开版本，将待发布的变更保留在[未发布章节](../../../CHANGELOG.zh-CN.md#unreleased)，并同步更新所有语言版本。
 
 ## 候选复核

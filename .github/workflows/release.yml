@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       revision: ${{ steps.source.outputs.revision }}
+      snap_stable: ${{ steps.source.outputs.snap_stable }}
     steps:
       - name: Check release or candidate inputs
         env:
@@ -55,6 +56,11 @@ jobs:
             [[ "$RELEASE_TAG" == "v$version" ]]
           fi
           echo "revision=$revision" >> "$GITHUB_OUTPUT"
+          snap_stable=false
+          if [[ "$CANDIDATE" == false && "$GITHUB_REPOSITORY" == xiaodaozhi/xdzip && "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            snap_stable=true
+          fi
+          echo "snap_stable=$snap_stable" >> "$GITHUB_OUTPUT"
 
   draft:
     if: ${{ !inputs.candidate }}
@@ -93,11 +99,30 @@ jobs:
         with:
           ref: ${{ needs.resolve.outputs.revision }}
           persist-credentials: false
+      - name: Select the upstream Ubuntu archive for Snap release
+        if: runner.os == 'Linux' && needs.resolve.outputs.snap_stable == 'true'
+        run: bash scripts/ci-release-snap.sh mirror
       - if: runner.os == 'Linux'
         uses: ./.github/actions/linux-release-dependencies
+      - name: Prepare locked Snap inputs before compiling
+        if: runner.os == 'Linux' && needs.resolve.outputs.snap_stable == 'true'
+        run: bash scripts/ci-release-snap.sh prepare
       - name: Build and package the native desktop and CLI candidate once
         shell: pwsh
         run: ./scripts/ci-release.ps1 -Stage Build
+      - name: Pack the stable Snap from the same Linux build
+        if: runner.os == 'Linux' && needs.resolve.outputs.snap_stable == 'true'
+        run: bash scripts/ci-release-snap.sh pack
+      - name: Preserve the verified Snap and its build receipt
+        if: runner.os == 'Linux' && needs.resolve.outputs.snap_stable == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-snap-amd64
+          path: build/snap-store/
+          if-no-files-found: error
+          compression-level: 0
+          overwrite: true
+          retention-days: 30
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-built-${{ runner.os }}
@@ -251,6 +276,15 @@ jobs:
     runs-on: ubuntu-24.04
     environment: release-signing
     steps:
+      - name: Check stable Snap Store configuration
+        if: needs.resolve.outputs.snap_stable == 'true'
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+        run: |
+          if [[ -z "$SNAPCRAFT_STORE_CREDENTIALS" ]]; then
+            echo 'Configure SNAPCRAFT_STORE_CREDENTIALS in the release-signing environment.' >&2
+            exit 1
+          fi
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.resolve.outputs.revision }}
@@ -300,10 +334,20 @@ jobs:
         with:
           name: release-signed
           path: build/assembled
+      - name: Download the same-run Snap build
+        if: needs.resolve.outputs.snap_stable == 'true'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-snap-amd64
+          path: build/snap-store
+      - name: Install Snapcraft
+        if: needs.resolve.outputs.snap_stable == 'true'
+        run: sudo snap install snapcraft --classic --channel=9.x/stable
       - name: Check the tag and publish the verified draft
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.tag }}
+          SNAP_STABLE: ${{ needs.resolve.outputs.snap_stable }}
         run: |
           set -euo pipefail
           name="refs/tags/$RELEASE_TAG"
@@ -311,7 +355,20 @@ jobs:
           if [[ -z "$revision" ]]; then revision=$(git ls-remote origin "$name" | cut -f1); fi
           [[ "$revision" == "$(git rev-parse HEAD)" ]]
           rustup toolchain install 1.99.0 --profile minimal
-          python3 scripts/publish-release.py --directory build/assembled --notes-file "release-policy/release-notes/${RELEASE_TAG#v}.md" --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY" --defer-public-check
+          publication=--defer-public-check
+          if [[ "$SNAP_STABLE" == true && "$GITHUB_RUN_ATTEMPT" != 1 ]]; then
+            if [[ "$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)" == false ]]; then
+              publication=--verify-public
+            fi
+          fi
+          python3 scripts/publish-release.py --directory build/assembled --notes-file "release-policy/release-notes/${RELEASE_TAG#v}.md" --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY" "$publication"
+      - name: Upload and verify the tagged Snap on latest/stable
+        if: needs.resolve.outputs.snap_stable == 'true'
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+          SOURCE_REVISION: ${{ needs.resolve.outputs.revision }}
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+        run: python3 -B release-policy/scripts/snap_store.py build/snap-store "$SOURCE_REVISION" "$RELEASE_TAG"
 
   verify-public:
     if: ${{ !inputs.candidate }}

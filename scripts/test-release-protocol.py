@@ -39,7 +39,7 @@ class SingleRunReleaseWorkflowTests(unittest.TestCase):
         self.assertEqual(workflow.count('      - name: Assemble complete immutable release\n'), 1)
         self.assertIn('environment: release-signing', workflow)
         self.assertIn('python3 scripts/prepare-release.py --packages build/packages --output build/assembled --repository "$GITHUB_REPOSITORY" --require-update-signature', workflow)
-        self.assertIn(' --defer-public-check', workflow)
+        self.assertIn('publication=--defer-public-check', workflow)
         self.assertIn(' --verify-public', workflow)
 
     def test_release_workflow_does_not_build_or_upload_corresponding_source_archives(self):
