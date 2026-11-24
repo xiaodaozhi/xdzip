@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import platform
+from macos_arch import macos_arch
 import plistlib
 import shutil
 import subprocess
@@ -29,7 +30,7 @@ def inputs(spec):
         raise ValueError('Sparkle proxy patch differs from its pinned identity')
     return {'variant': variant['variant'], 'source_sha256': spec['source']['sha256'],
             'sdk_sha256': spec['sdk']['sha256'], 'patch_sha256': digest(patch),
-            'builder_sha256': digest(__file__), 'architecture': 'arm64',
+            'builder_sha256': digest(__file__), 'architecture_selector_sha256': digest(ROOT/'scripts/macos_arch.py'), 'architecture': macos_arch(),
             'minimum_macos': '14.0'}
 
 
@@ -100,8 +101,8 @@ def definitions():
 
 
 def build(source, sdk, work, spec, log):
-    if platform.system() != 'Darwin' or platform.machine() != 'arm64':
-        raise ValueError('Sparkle library builds require native Apple Silicon macOS')
+    if platform.system() != 'Darwin' or platform.machine() != macos_arch():
+        raise ValueError('Sparkle library builds require the selected native macOS architecture')
     identity = inputs(spec)
     work.mkdir(parents=True, exist_ok=True)
     log.parent.mkdir(parents=True, exist_ok=True)
@@ -127,7 +128,7 @@ def build(source, sdk, work, spec, log):
     crypto_sources = source_files(project, 'ed25519', source)
     if len(framework_sources) != 67 or len(crypto_sources) != 10:
         raise ValueError('Sparkle build phases differ from the reviewed source set')
-    common = ['xcrun', 'clang', '-arch', 'arm64', '-mmacosx-version-min=14.0',
+    common = ['xcrun', 'clang', '-arch', macos_arch(), '-mmacosx-version-min=14.0',
               '-Os', '-fvisibility=hidden', '-fblocks', '-fmodules',
               '-fmodules-cache-path=' + str(work / 'modules'),
               '-Wall', '-Werror=implicit-function-declaration']
@@ -150,7 +151,7 @@ def build(source, sdk, work, spec, log):
     if any(code for _, code, _ in results):
         raise ValueError('Sparkle translation unit failed; see its local build log')
     library = sdk / 'Sparkle.framework/Versions/B/Sparkle'
-    arguments = ['xcrun', 'clang', '-arch', 'arm64', '-mmacosx-version-min=14.0',
+    arguments = ['xcrun', 'clang', '-arch', macos_arch(), '-mmacosx-version-min=14.0',
                  '-dynamiclib', '-install_name', '@rpath/Sparkle.framework/Versions/B/Sparkle',
                  '-compatibility_version', '1.6', '-current_version', '2.10.0',
                  '-o', library] + [target for target, _, _ in results]

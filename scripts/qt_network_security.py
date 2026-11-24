@@ -7,13 +7,14 @@ import re
 import shutil
 import subprocess
 import sys
+from macos_arch import macos_arch
 import tarfile
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
 RECEIPT = 'xdzip-network-security.json'
 MACOS_NETWORK_TOOLS = ('libexec/qmlimportscanner', 'libexec/qmlcachegen', 'bin/qmllint')
-BUILDER_FILES = ('scripts/qt_network_security.py', 'scripts/prepare-qt-network.py',
+BUILDER_FILES = ('scripts/macos_arch.py', 'scripts/qt_network_security.py', 'scripts/prepare-qt-network.py',
                  'scripts/check-qt-network.py', 'tools/qt-network-security/CMakeLists.txt',
                  'tools/qt-network-security/main.cpp', 'scripts/update_proxy_fixture.py',
                  'tools/qt-network-security/linux-abi-retain.cpp',
@@ -271,7 +272,7 @@ def openssl_headers(config, cache, work):
             temporary.unlink(missing_ok=True)
     if digest(archive) != item['sha256']:
         raise ValueError('OpenSSL declaration source checksum mismatch')
-    target = {'darwin': 'darwin64-arm64-cc', 'win32': 'VC-WIN64A', 'linux': 'linux-x86_64'}.get(sys.platform)
+    target = {'darwin': ('darwin64-x86_64-cc' if macos_arch() == 'x86_64' else 'darwin64-arm64-cc'), 'win32': 'VC-WIN64A', 'linux': 'linux-x86_64'}.get(sys.platform)
     if not target:
         raise ValueError('Unsupported native QtNetwork security build platform')
     directory = work/item['file'].removesuffix('.tar.gz')
@@ -321,7 +322,7 @@ def symbol_names(path, *, undefined=False):
         output = subprocess.check_output(['dumpbin', '/nologo', '/imports' if undefined else '/exports', str(path)], text=True)
         pattern = r'^\s+[0-9A-Fa-f]+\s+(\S+)\s*$' if undefined else r'^\s+\d+\s+[0-9A-Fa-f]+\s+[0-9A-Fa-f]+\s+(\S+)'
         return set(re.findall(pattern, output, re.M))
-    args = ['nm', '-arch', 'arm64', '-gu' if undefined else '-gU'] if sys.platform == 'darwin' else ['nm', '-D', '--undefined-only' if undefined else '--defined-only']
+    args = ['nm', '-arch', macos_arch(), '-gu' if undefined else '-gU'] if sys.platform == 'darwin' else ['nm', '-D', '--undefined-only' if undefined else '--defined-only']
     output = subprocess.check_output(args+[str(path)], text=True, stderr=subprocess.DEVNULL)
     return {line.split()[-1].replace('@@', '@') for line in output.splitlines() if line.split() and not line.endswith(':')}
 
@@ -362,7 +363,7 @@ def build(prefix, work, source, parallel, headers):
                   '-DCMAKE_PROJECT_INCLUDE:FILEPATH='+(ROOT/'tools/qt-network-security/retain-linux-abi.cmake').as_posix(),
                   '-DXDZIP_QT_NETWORK_ABI_SOURCE:FILEPATH='+(ROOT/'tools/qt-network-security/linux-abi-retain.cpp').as_posix()]
     if sys.platform == 'darwin':
-        flags += ['-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
+        flags += ['-DCMAKE_OSX_ARCHITECTURES='+macos_arch(), '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
                   '-DQT_FORCE_WARN_APPLE_SDK_AND_XCODE_CHECK=ON']
     run(['cmake', '--fresh', '-S', source, '-B', work/'obj', '-G', 'Ninja', *flags], work/'configure.log')
     run(['cmake', '--build', work/'obj', '--target', 'Network', '--parallel', parallel], work/'build.log')

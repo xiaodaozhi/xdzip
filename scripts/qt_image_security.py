@@ -7,6 +7,7 @@ from pathlib import Path
 import re
 import shutil
 import sys
+from macos_arch import macos_arch
 import tarfile
 import tempfile
 import urllib.request
@@ -40,7 +41,7 @@ def configuration():
 
 
 def recipe_digest():
-    files = [MANIFEST, QT_INPUTS, Path(__file__), ROOT/'scripts/qt_network_security.py']
+    files = [MANIFEST, QT_INPUTS, Path(__file__), ROOT/'scripts/qt_network_security.py', ROOT/'scripts/macos_arch.py']
     files.extend(ROOT/'scripts/qt-patches'/patch for patch in APPLE_PATCHES.values())
     if sys.platform == 'linux':
         files.extend((LINUX_ABI_CMAKE, LINUX_ABI_SOURCE))
@@ -142,7 +143,7 @@ def build(prefix, work, parallel):
         for relative, patch in APPLE_PATCHES.items():
             path = base/relative
             path.write_bytes(replay_patch(path.read_bytes(), (ROOT/'scripts/qt-patches'/patch).read_bytes()))
-        common += ['-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
+        common += ['-DCMAKE_OSX_ARCHITECTURES='+macos_arch(), '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
                    '-DQT_FORCE_WARN_APPLE_SDK_AND_XCODE_CHECK=ON']
 
     qt_version = config['qt_version']

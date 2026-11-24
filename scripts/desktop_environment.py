@@ -16,6 +16,8 @@ import shutil
 import subprocess
 import sys
 
+from macos_arch import macos_arch
+
 ROOT = Path(__file__).resolve().parents[1]
 QT_VERSION = "6.8.2"
 
@@ -132,11 +134,13 @@ def check_environment(qt_prefix: Path | None = None, *, stage: str,
     if not add("platform", system in RUST_HOSTS,
                "Use native macOS arm64, Windows x64 or Linux x86_64."):
         return {"status": "failed", "checks": checks}
+    mac_arch = macos_arch(environment)
+    rust_host = "x86_64-apple-darwin" if system == "macos" and mac_arch == "x86_64" else RUST_HOSTS[system]
     machine = platform.machine().lower()
-    expected = {"macos": {"arm64", "aarch64"}, "windows": {"amd64", "x86_64"},
+    expected = {"macos": ({"arm64", "aarch64"} if mac_arch == "arm64" else {"x86_64"}), "windows": {"amd64", "x86_64"},
                 "linux": {"x86_64", "amd64"}}[system]
     add("host.architecture", machine in expected,
-        "Run this stage natively on " + ("Apple Silicon arm64." if system == "macos" else "x86_64."))
+        "Run this stage natively on " + (mac_arch + "." if system == "macos" else "x86_64."))
 
     if stage != "verify":
         tool("git", ["--version"])
@@ -168,8 +172,8 @@ def check_environment(qt_prefix: Path | None = None, *, stage: str,
         if rustc:
             add("version.rustc", rust_version is not None and release is not None and release[1] == rust_version,
                 rust_hint, version=actual_rust, optional=stage == "prepare")
-            add("rust.host", host is not None and host[1] == RUST_HOSTS[system],
-                "Use the native " + RUST_HOSTS[system] + " Rust toolchain.", optional=stage == "prepare")
+            add("rust.host", host is not None and host[1] == rust_host,
+                "Use the native " + rust_host + " Rust toolchain.", optional=stage == "prepare")
         if cargo:
             add("version.cargo", rust_version is not None and actual_cargo == rust_version,
                 rust_hint, version=actual_cargo, optional=stage == "prepare")
@@ -180,8 +184,8 @@ def check_environment(qt_prefix: Path | None = None, *, stage: str,
         if system == "macos":
             compiler, output = tool("clang++", ["--version"], hint="Install or select Xcode Command Line Tools with a macOS 14+ SDK.")
             target = run([compiler, "-dumpmachine"]) if compiler else None
-            add("compiler.target", target is not None and re.search(r"\b(arm64|aarch64)-apple-", target) is not None,
-                "Use the native Apple Silicon clang++ compiler, not a Rosetta/x86_64 shell.")
+            add("compiler.target", target is not None and re.search(r"\b" + (r"(arm64|aarch64)" if mac_arch == "arm64" else "x86_64") + r"-apple-", target) is not None,
+                "Use the native " + mac_arch + " clang++ compiler.")
             sdk_tool, _ = tool("xcrun")
             sdk_version = _version(run([sdk_tool, "--sdk", "macosx", "--show-sdk-version"]) or "") if sdk_tool else None
             sdk_path = run([sdk_tool, "--sdk", "macosx", "--show-sdk-path"], include_stderr=False) if sdk_tool else None
@@ -225,12 +229,12 @@ def check_environment(qt_prefix: Path | None = None, *, stage: str,
                 "Install pkg-config libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev before configuring the Qt desktop build.")
 
         if stage != "prepare":
-            _check_qt(Path(qt_prefix) if qt_prefix is not None else None, system, stage, add, run, which)
+            _check_qt(Path(qt_prefix) if qt_prefix is not None else None, system, stage, add, run, which, mac_arch)
 
         if stage == "package":
-            if cargo and host and host[1] == RUST_HOSTS[system]:
+            if cargo and host and host[1] == rust_host:
                 metadata = run([cargo, "metadata", "--locked", "--offline", "--format-version", "1",
-                                 "--filter-platform", RUST_HOSTS[system]], timeout=120, include_stderr=False)
+                                 "--filter-platform", rust_host], timeout=120, include_stderr=False)
                 try:
                     parsed = json.loads(metadata or "")
                     valid_metadata = isinstance(parsed.get("packages"), list) and bool(parsed["packages"])
@@ -262,7 +266,7 @@ def check_environment(qt_prefix: Path | None = None, *, stage: str,
             "checks": checks}
 
 
-def _check_qt(qt: Path | None, system: str, stage: str, add, run, which) -> None:
+def _check_qt(qt: Path | None, system: str, stage: str, add, run, which, mac_arch="arm64") -> None:
     if not add("qt.prefix", qt is not None and qt.is_dir(),
                "Install Qt 6.8.2 desktop SDK and pass its platform directory with --qt-prefix."):
         return
@@ -302,8 +306,8 @@ def _check_qt(qt: Path | None, system: str, stage: str, add, run, which) -> None
     if system == "macos":
         lipo = which("lipo")
         archs = run([lipo, "-archs", str(qt / core)]) if lipo and (qt / core).is_file() else None
-        add("qt.architecture", archs is not None and "arm64" in archs.split(),
-            "Install a Qt SDK containing native arm64 QtCore and expose Xcode tools in PATH.")
+        add("qt.architecture", archs is not None and mac_arch in archs.split(),
+            "Install a Qt SDK containing native " + mac_arch + " QtCore and expose Xcode tools in PATH.")
     if stage == "package" and system in {"macos", "windows"}:
         deploy = "macdeployqt" if system == "macos" else "windeployqt.exe"
         add("qt." + deploy, (qt / "bin" / deploy).is_file(), "Install the Qt desktop deployment tool " + deploy + ".")

@@ -111,7 +111,11 @@ class WorkflowTests(unittest.TestCase):
     def test_only_lightweight_workflow_runs_on_pull_requests_and_main(self):
         ordinary = {name for name, value in self.workflows.items()
                     if 'pull_request' in value.get('on', {})}
-        self.assertEqual(ordinary, {'docs.yml'})
+        self.assertEqual(ordinary, {'docs.yml', 'macos-intel.yml'})
+        intel = self.workflows['macos-intel.yml']
+        self.assertEqual(set(intel['on']), {'pull_request', 'workflow_dispatch'})
+        self.assertIn('.github/workflows/macos-intel.yml', intel['on']['pull_request']['paths'])
+        self.assertEqual(intel['jobs']['native-intel']['runs-on'], 'macos-15-intel')
         push_workflows = {name for name, value in self.workflows.items() if 'push' in value.get('on', {})}
         self.assertEqual(push_workflows, {'docs.yml'})
         workflow = self.workflows['docs.yml']

@@ -2,6 +2,8 @@
 
 English | [简体中文](../zh-CN/engineering/ci-policy.md)
 
+The [macOS Intel native CI](../../.github/workflows/macos-intel.yml) is an experimental, independently dispatched build and test on `macos-15-intel`; changes to its own entry points also trigger it on pull requests. It verifies the native architecture of the product, Rust bridge and patched dependencies, and retains validation records only. It does not create Intel distribution packages or establish release or manual desktop acceptance. Apple Silicon remains the supported macOS release architecture.
+
 ## Routine checks
 
 [CI](../../.github/workflows/docs.yml) runs one Linux job on pushes to main, pull requests, and manual dispatch. It checks documentation links and JSON, versions and UI text, generated-resource consistency, window/shared-control contracts, Rust and native source formatting, workflow structure, and whitespace errors. Rust input changes run the same strict workspace Clippy command as release validation and check production dependency boundaries for Linux. CI compares the full push or pull request difference and runs both checks on manual dispatch or when the comparison base is unavailable. It does not build the desktop product or run complete Rust, three-platform Qt, archive-format interoperability, packaging, or installation lifecycle checks. The target is usually under five minutes, with queue and download times in the run records.

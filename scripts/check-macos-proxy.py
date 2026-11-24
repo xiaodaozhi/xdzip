@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import platform
+from macos_arch import macos_arch
 import plistlib
 import shutil
 import ssl
@@ -266,8 +267,8 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--system-conflicts', action='store_true', help='Disposable hosted runner only: verify real static system proxy and PAC overrides')
     args = parser.parse_args()
-    if platform.system() != 'Darwin' or platform.machine() != 'arm64':
-        parser.error('Native Apple Silicon macOS is required')
+    if platform.system() != 'Darwin' or platform.machine() != macos_arch():
+        parser.error('The selected native macOS architecture is required')
     if args.output.exists() or not args.output.resolve().is_relative_to(ROOT/'build'):
         parser.error('Use a fresh owned directory under build/')
     report = check(args.sdk.resolve(), args.output.resolve(), args.system_conflicts)

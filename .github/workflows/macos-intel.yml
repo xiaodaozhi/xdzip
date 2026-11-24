@@ -1,0 +1,72 @@
+name: macOS Intel native CI
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/macos-intel.yml'
+      - 'scripts/macos_arch.py'
+      - 'scripts/desktop_environment.py'
+      - 'scripts/desktop.py'
+      - 'scripts/cli.py'
+      - 'scripts/qt_network_security.py'
+      - 'scripts/qt_image_security.py'
+      - 'scripts/sparkle_build.py'
+      - 'scripts/check-macos-proxy.py'
+      - 'scripts/test-desktop-environment.py'
+      - 'scripts/test-ci-workflows.py'
+permissions:
+  contents: read
+jobs:
+  native-intel:
+    runs-on: macos-15-intel
+    timeout-minutes: 180
+    env:
+      XDZIP_MACOS_INTEL_CI: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Assert native Intel host
+        run: |
+          test "$(uname -m)" = x86_64
+          test "$(sysctl -in sysctl.proc_translated 2>/dev/null || echo 0)" = 0
+      - name: Test architecture preflight
+        run: python3 scripts/test-desktop-environment.py
+      - name: Prepare pinned native dependencies
+        run: python3 scripts/desktop.py prepare --install-qt --install-rust --output-dir build/review
+      - name: Build native desktop and CLI
+        run: python3 scripts/desktop.py build --output-dir build/review
+      - name: Check actual executable and dependency architectures
+        run: |
+          set -euo pipefail
+          app=build/desktop/apps/desktop/xdzip.app/Contents/MacOS
+          qt=build/toolchain/Qt/6.8.2/macos
+          for binary in "$app/xdzip" "$app/xdzip-native-codec" "$app/xdzip-image-preview" \
+            build/desktop/cli/bin/xdzip "$qt/lib/QtCore.framework/Versions/A/QtCore" \
+            "$qt/lib/QtNetwork.framework/Versions/A/QtNetwork" "$qt/lib/QtGui.framework/Versions/A/QtGui" \
+            "$qt/plugins/imageformats/libqtiff.dylib" \
+            build/toolchain/Sparkle/2.10.0-xdzip-proxy.2/Sparkle.framework/Versions/B/Sparkle; do
+            test -f "$binary"
+            lipo -verify_arch x86_64 "$binary"
+          done
+          find build/desktop -name 'libxdzip_qt_bridge.a' -print > build/review/intel-bridge-paths.txt
+          test -s build/review/intel-bridge-paths.txt
+          while IFS= read -r archive; do lipo -verify_arch x86_64 "$archive"; done < build/review/intel-bridge-paths.txt
+      - name: Test native desktop, Rust and workers
+        run: python3 scripts/desktop.py test --output-dir build/review
+      - name: Test patched Sparkle proxy transport
+        run: python3 scripts/check-macos-proxy.py --output build/review/macos-proxy
+      - name: Retain validation records only
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: macos-intel-validation-${{ github.run_attempt }}
+          path: |
+            build/desktop/desktop-*.json
+            build/desktop/Testing/Temporary/LastTest.log
+            build/desktop/apps/desktop/*-tests.log
+            build/review/**/*.json
+            build/review/**/*.log
+            build/toolchain/Sparkle/*-build.log
+            build/toolchain/qt-network-security/**/*.log
+            build/toolchain/qt-image-security/**/*.log
+          if-no-files-found: warn
+          retention-days: 14

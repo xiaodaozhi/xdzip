@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import platform
+from macos_arch import macos_arch
 import re
 import shutil
 import subprocess
@@ -320,7 +321,7 @@ class Workflow:
                    '-DBUILD_TESTING=ON',
                    '-DCMAKE_PREFIX_PATH='+str(self.qt), '-DPython3_EXECUTABLE='+self.python]
         if self.system == 'macos':
-            command += ['-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
+            command += ['-DCMAKE_OSX_ARCHITECTURES='+macos_arch(), '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
                         '-DXDZIP_MACOS_HANDLER_RANK='+self.args.macos_handler_rank]
         with utf8_console():
             check_dependencies(self.build)
@@ -364,6 +365,8 @@ class Workflow:
                 'rendering': 'offscreen/software, native desktop acceptance remains separate'}
 
     def package_preflight(self):
+        if self.system == 'macos' and macos_arch() != 'arm64':
+            raise ValueError('Intel CI builds are not eligible for packaging')
         if self.system == 'macos' and os.environ.get('CI', '').lower() == 'true' and not self.args.release_distribution:
             raise ValueError('macOS CI must not deploy, sign or package an application')
         if self.system == 'windows' and self.args.configuration == 'Debug':
