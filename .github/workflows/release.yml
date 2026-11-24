@@ -85,9 +85,25 @@ jobs:
         run: |
           python3 scripts/publish-release.py --draft-only --notes-file "release-policy/release-notes/${RELEASE_TAG#v}.md" --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
 
+  macos-signing-preflight:
+    needs: resolve
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve.outputs.revision }}
+          persist-credentials: false
+      - name: Check native CLI code and resource signing
+        run: python3 scripts/test-cli-bundle.py
+
   native:
-    needs: [resolve, draft]
-    if: always() && !cancelled() && needs.resolve.result == 'success' && (inputs.candidate || needs.draft.result == 'success')
+    needs: [resolve, draft, macos-signing-preflight]
+    if: always() && !cancelled() && needs.resolve.result == 'success' && needs.macos-signing-preflight.result == 'success' && (inputs.candidate || needs.draft.result == 'success')
     strategy:
       fail-fast: false
       matrix:

@@ -230,6 +230,11 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn('tag', workflow['on']['workflow_dispatch']['inputs'])
         self.assertNotIn('validate_only', workflow['on']['workflow_dispatch']['inputs'])
         native = workflow['jobs']['native']
+        preflight = workflow['jobs']['macos-signing-preflight']
+        self.assertEqual(set(preflight['strategy']['matrix']['os']), {'macos-15', 'macos-15-intel'})
+        self.assertIn('scripts/test-cli-bundle.py', '\n'.join(step.get('run', '') for step in preflight['steps']))
+        self.assertIn('macos-signing-preflight', native['needs'])
+        self.assertIn("needs.macos-signing-preflight.result == 'success'", native['if'])
         self.assertEqual(set(native['strategy']['matrix']['os']), {'windows-2022', 'macos-15', 'macos-15-intel', 'ubuntu-24.04'})
         self.assertIn('scripts/ci-release.ps1 -Stage Build', '\n'.join(step.get('run', '') for step in native['steps']))
         jobs = workflow['jobs']
