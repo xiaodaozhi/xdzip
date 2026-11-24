@@ -2,7 +2,7 @@
 
 English | [简体中文](../zh-CN/engineering/shell-actions.md) | [繁體中文](../zh-TW/engineering/shell-actions.md) | [日本語](../ja-JP/engineering/shell-actions.md) | [한국어](../ko-KR/engineering/shell-actions.md) | [Français](../fr-FR/engineering/shell-actions.md) | [Deutsch](../de-DE/engineering/shell-actions.md) | [Español](../es-ES/engineering/shell-actions.md) | [Português (Brasil)](../pt-BR/engineering/shell-actions.md) | [Русский](../ru-RU/engineering/shell-actions.md)
 
-System entry points pass selections and actions to the desktop process in the same login session. On Windows 11 the ordinary installed extension appears under “Show more options”. Its COM class exposes both `IContextMenu` and `IExplorerCommand`. MSIX declares a separate classic handler and adds the modern handler in the Store build, as described below. Ubuntu 24.04 Files uses a Nautilus 4.0 extension. macOS offers the Finder Sync submenu, the Services command and the standalone operation panel.
+System entry points pass selections and actions to the desktop process in the same login session. On Windows 11 the ordinary installed extension appears under “Show more options”. Its COM class exposes both `IContextMenu` and `IExplorerCommand`. The Store and sideload MSIX builds register different menu handlers, as described below. Ubuntu 24.04 Files uses a Nautilus 4.0 extension. macOS offers the Finder Sync submenu, the Services command and the standalone operation panel.
 
 Actual platform verification and remaining work are tracked in [#270](https://github.com/xiaodaozhi/xdzip/issues/270). Source capabilities are not retroactively added to existing release assets.
 
@@ -24,7 +24,7 @@ An update can be affected by Finder holding an old extension instance. If necess
 
 ## Windows package boundary
 
-MSIX builds declare a classic `IContextMenu` handler with `desktop9:Extension` for Windows 11's “Show more options”. Store builds additionally declare a separate `IExplorerCommand` class and `windows.fileExplorerContextMenus` for the modern menu. The classes have distinct identities and expose only their respective menu interfaces. Sideload builds declare only the classic class. Ordinary installers retain their existing classic menu. File actions and private request validation are shared across both menu styles.
+Store builds register `IExplorerCommand` through `windows.fileExplorerContextMenus` for files and directories. On the tested Windows 11 system this command also appears under “Show more options”; registering a separate classic handler duplicates it. Sideload builds register a classic `IContextMenu` handler through `desktop9:Extension` for files and directories. Ordinary installers retain their existing classic menu. The menu implementations share file actions and private request validation.
 
 `--msix-channel store|sideload` selects an immutable package marker and matching manifest declarations; the default is `sideload`. Modern commands require a registered Store build on Windows 11 whose own package has system signature kind `Store`. Signature lookup failures and Developer, Enterprise or None signatures hide the modern entry. A copied Store-signed Store build remains a Store build even if installed by sideloading. This is a build-channel policy, not a claim to identify the installation journey of identical signed bytes. See [Microsoft's discussion of this limitation](https://github.com/microsoft/WindowsAppSDK/issues/4993).
 

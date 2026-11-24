@@ -404,7 +404,7 @@ class WorkflowTests(unittest.TestCase):
         for channel in ('store', 'sideload'):
             shell_library = 'shell/xdzip-shell-' + 'a'*16 + '.dll'
             report = {'name': 'xdzip.Test', 'publisher': 'CN=test', 'version': '1.0.27.0',
-                      'publisher_display_name': 'xdzip', 'channel': channel, 'classic_context_menu': True,
+                      'publisher_display_name': 'xdzip', 'channel': channel, 'classic_context_menu': channel == 'sideload',
                       'modern_context_menu_declaration': channel == 'store', 'shell_library': shell_library}
             with zipfile.ZipFile(package, 'w') as output:
                 output.writestr('AppxManifest.xml', builder.manifest('xdzip.Test', 'CN=test', 27, 'xdzip', channel, shell_library))

@@ -2,7 +2,7 @@
 
 [English](../../engineering/shell-actions.md) | [简体中文](../../zh-CN/engineering/shell-actions.md) | [繁體中文](../../zh-TW/engineering/shell-actions.md) | [日本語](../../ja-JP/engineering/shell-actions.md) | 한국어 | [Français](../../fr-FR/engineering/shell-actions.md) | [Deutsch](../../de-DE/engineering/shell-actions.md) | [Español](../../es-ES/engineering/shell-actions.md) | [Português (Brasil)](../../pt-BR/engineering/shell-actions.md) | [Русский](../../ru-RU/engineering/shell-actions.md)
 
-시스템 진입점은 선택 항목과 작업을 같은 로그인 세션의 데스크톱 프로세스에 전달합니다. Windows 11에서 일반 설치 확장은 ‘추가 옵션 표시’ 아래에 나타납니다. 이 COM 클래스는 `IContextMenu`와 `IExplorerCommand`를 모두 제공합니다. MSIX는 별도의 클래식 처리기를 선언하며 Store 빌드는 아래 설명하는 최신 메뉴 처리기도 추가합니다. Ubuntu 24.04의 파일 관리자는 Nautilus 4.0 확장을 사용합니다. macOS는 Finder Sync 하위 메뉴, 서비스 명령과 독립 작업 패널을 제공합니다.
+시스템 진입점은 선택 항목과 작업을 같은 로그인 세션의 데스크톱 프로세스에 전달합니다. Windows 11에서 일반 설치 확장은 ‘추가 옵션 표시’ 아래에 나타납니다. 이 COM 클래스는 `IContextMenu`와 `IExplorerCommand`를 모두 제공합니다. Store와 사이드로드 MSIX 빌드는 아래 설명처럼 서로 다른 메뉴 처리기를 등록합니다. Ubuntu 24.04의 파일 관리자는 Nautilus 4.0 확장을 사용합니다. macOS는 Finder Sync 하위 메뉴, 서비스 명령과 독립 작업 패널을 제공합니다.
 
 실제 플랫폼 검증과 남은 작업은 [#270](https://github.com/xiaodaozhi/xdzip/issues/270)에서 추적합니다. 소스의 기능이 이미 출시된 파일에 소급 적용되지는 않습니다.
 
@@ -24,7 +24,7 @@ Finder가 메뉴 항목의 `representedObject`를 유지하지 않으므로 확�
 
 ## Windows 패키지 경계
 
-MSIX 빌드는 Windows 11의 ‘추가 옵션 표시’용 클래식 `IContextMenu` 처리기를 `desktop9:Extension`으로 선언합니다. Store 빌드는 최신 메뉴를 위해 별도의 `IExplorerCommand` 클래스와 `windows.fileExplorerContextMenus`도 선언합니다. 클래스는 서로 다른 ID를 가지며 각자의 메뉴 인터페이스만 제공합니다. 사이드로드 빌드는 클래식 클래스만 선언합니다. 일반 설치 프로그램은 기존 클래식 메뉴를 유지합니다. 파일 작업과 비공개 요청 검증은 두 메뉴 방식에서 공유합니다.
+Store 빌드는 `windows.fileExplorerContextMenus`를 통해 파일과 폴더에 `IExplorerCommand`를 등록합니다. 테스트한 Windows 11에서는 이 명령도 ‘추가 옵션 표시’에 나타나므로 클래식 처리기를 추가하면 항목이 중복됩니다. 사이드로드 빌드는 `desktop9:Extension`을 통해 파일과 폴더에 클래식 `IContextMenu` 처리기를 등록합니다. 일반 설치 버전은 기존 클래식 메뉴를 유지합니다. 파일 작업과 비공개 요청 검증은 공유됩니다.
 
 `--msix-channel store|sideload`는 변경 불가능한 패키지 표식과 일치하는 매니페스트 선언을 선택하며 기본값은 `sideload`입니다. 최신 명령에는 Windows 11에 등록된 Store 빌드와 해당 패키지 자체의 시스템 서명 종류 `Store`가 필요합니다. 서명 조회 실패 또는 Developer, Enterprise, None 서명이면 최신 항목을 숨깁니다. Store 서명된 Store 빌드의 복사본은 사이드로드로 설치해도 Store 빌드입니다. 이는 빌드 채널 정책이며 동일한 서명 바이트의 설치 경로를 알아낸다는 뜻이 아닙니다. [이 제약에 관한 Microsoft 논의](https://github.com/microsoft/WindowsAppSDK/issues/4993)를 참조하세요.
 

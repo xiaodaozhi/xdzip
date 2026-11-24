@@ -221,7 +221,7 @@ python scripts/desktop.py verify --kind msix
 
 应用图标包含缩放变体、精确目标尺寸，以及默认、深色背景无底板、浅色背景无底板三种资源形式。MakePRI 将这些资源编入 `resources.pri`，供 Windows 选择对应尺寸，避免自动添加系统底板。文件关联单独声明格式图标，逐字节复用现有 Windows ICO 中的 16–256 像素 PNG，不改变图案、可见尺寸、边距或位置。资源参数见 [msix-icons.json](../../../specs/visual/msix-icons.json)。这些资源随安装包交付，与 Partner Center 的商店一览徽标分开管理。`verify --kind msix` 会按新图标回执核对实际包中的尺寸、变体集合、格式图片及资源索引。已安装用户需要通过更新后的程序包获得这些修改。
 
-示例使用默认的 `--msix-channel sideload`，仅登记 Windows 11 传统菜单。商店上传时使用 `package --kind msix --msix-channel store` 及 Partner Center 中的准确身份，同时声明现代、传统菜单；现代入口在包实际获得 Store 系统签名前保持隐藏。渠道标记在打包时加入，无须因此重编已审计运行目录；两种输出须使用不同目录，参见[菜单渠道策略](shell-actions.md#windows-package-boundary)。许可、真实安装、文件关联、卸载、商店签名及目标系统实际验收独立于打包成功。
+示例使用默认的 `--msix-channel sideload`，仅登记 Windows 11 传统菜单。商店上传时使用 `package --kind msix --msix-channel store` 及 Partner Center 中的准确身份，仅声明文件和文件夹的现代命令；入口在包实际获得 Store 系统签名前保持隐藏。渠道标记在打包时加入，无须因此重编已审计运行目录；两种输出须使用不同目录，参见[菜单渠道策略](shell-actions.md#windows-package-boundary)。许可、真实安装、文件关联、卸载、商店签名及目标系统实际验收独立于打包成功。
 
 
 MSIX 清单声明共享语言清单中的十种语言，与应用内置目录对应，回执同时记录并校验语言列表。Qt 自有翻译资源不会由本项目的 MakeAppx 流程自动转换为包语言声明。Partner Center 的“软件包中支持的语言”以已上传包为准，修正源码后须重新构建并替换草稿中的包才会更新；“其他 Store 一览语言”可独立配置，不能代替包清单声明。参见 [Microsoft 清单语言说明](https://learn.microsoft.com/windows/apps/design/globalizing/manage-language-and-region)。

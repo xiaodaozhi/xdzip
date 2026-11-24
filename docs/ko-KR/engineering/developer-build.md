@@ -222,7 +222,7 @@ python scripts/desktop.py verify --kind msix
 
 앱 아이콘은 배율 변형과 정확한 대상 크기에 대해 기본, 어두운 배경용 무판, 밝은 배경용 무판 형식을 포함합니다. MakePRI는 이를 `resources.pri`에 인덱싱해 Windows가 시스템 바탕판을 추가하지 않고 원하는 크기를 선택할 수 있게 합니다. 파일 연결은 별도의 형식 로고를 선언하며 기존 Windows ICO의 16–256픽셀 PNG 프레임을 아트워크, 가시 크기, 여백이나 위치를 바꾸지 않고 재사용합니다. 리소스 정책은 [msix-icons.json](../../../specs/visual/msix-icons.json)에 있습니다. 이는 설치 패키지 리소스이며 Partner Center 스토어 목록 로고와 별개입니다. `verify --kind msix`는 크기, 전체 변형, 정규 형식 이미지와 리소스 인덱스 존재를 포함해 새 아이콘 회신을 실제 패키지와 대조합니다. 변경은 업데이트된 패키지를 빌드하고 제공한 뒤 설치 사용자에게 적용됩니다.
 
-예시는 기본 `--msix-channel sideload`를 사용해 Windows 11 클래식 메뉴만 등록합니다. Store 업로드에는 정확한 Partner Center 신원과 함께 `package --kind msix --msix-channel store`를 사용합니다. 이 경우 현대식과 클래식 메뉴를 모두 선언하지만 현대식 항목은 패키지에 실제 Store 시스템 서명이 생길 때까지 숨겨집니다. 채널 마커는 패키징 시 추가하며 감사된 런타임을 다시 빌드할 필요가 없습니다. 출력은 별도 디렉터리에 보관합니다. [메뉴 채널 정책](shell-actions.md#windows-패키지-경계)을 참조하세요. 라이선스, 실제 설치, 연결, 제거, Store 서명과 대상 시스템 실제 승인은 패키징 성공과 별개입니다.
+예시는 기본 `--msix-channel sideload`를 사용해 Windows 11 클래식 메뉴만 등록합니다. Store 업로드에는 정확한 Partner Center 신원과 함께 `package --kind msix --msix-channel store`를 사용합니다. 이 경우 파일과 폴더의 최신 명령만 선언하며 패키지에 실제 Store 시스템 서명이 생길 때까지 숨겨집니다. 채널 마커는 패키징 시 추가하며 감사된 런타임을 다시 빌드할 필요가 없습니다. 출력은 별도 디렉터리에 보관합니다. [메뉴 채널 정책](shell-actions.md#windows-패키지-경계)을 참조하세요. 라이선스, 실제 설치, 연결, 제거, Store 서명과 대상 시스템 실제 승인은 패키징 성공과 별개입니다.
 
 MSIX 매니페스트는 공통 언어 등록부의 열 가지 언어를 선언해 내장 카탈로그와 일치하며 회신은 언어 목록을 기록하고 검증합니다. 이 MakeAppx 흐름은 Qt 번역 리소스를 패키지 언어 선언으로 자동 변환하지 않습니다. Partner Center의 ‘패키지에서 지원하는 언어’는 업로드된 패키지를 반영합니다. 소스 수정 후 다시 빌드하고 초안의 패키지를 교체해야 갱신됩니다. ‘추가 Store 목록 언어’는 별도로 구성하며 매니페스트 선언을 대체할 수 없습니다. [Microsoft 매니페스트 언어 문서](https://learn.microsoft.com/windows/apps/design/globalizing/manage-language-and-region)를 참조하세요.
 

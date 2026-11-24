@@ -2,7 +2,7 @@
 
 [English](../../engineering/shell-actions.md) | 简体中文 | [繁體中文](../../zh-TW/engineering/shell-actions.md) | [日本語](../../ja-JP/engineering/shell-actions.md) | [한국어](../../ko-KR/engineering/shell-actions.md) | [Français](../../fr-FR/engineering/shell-actions.md) | [Deutsch](../../de-DE/engineering/shell-actions.md) | [Español](../../es-ES/engineering/shell-actions.md) | [Português (Brasil)](../../pt-BR/engineering/shell-actions.md) | [Русский](../../ru-RU/engineering/shell-actions.md)
 
-系统入口将选择和动作交给同一登录会话中的桌面进程。Windows 11 的普通安装版扩展位于“显示更多选项”，其 COM 类同时提供 `IContextMenu` 和 `IExplorerCommand`。MSIX 单独声明经典处理程序，商店构建另外声明现代菜单处理程序，详见下文。Ubuntu 24.04 的 Files 使用 Nautilus 4.0 扩展。macOS 提供 Finder Sync 子菜单、“服务”命令及独立操作面板。
+系统入口将选择和动作交给同一登录会话中的桌面进程。Windows 11 的普通安装版扩展位于“显示更多选项”，其 COM 类同时提供 `IContextMenu` 和 `IExplorerCommand`。商店与侧载 MSIX 构建分别登记不同的菜单处理程序，详见下文。Ubuntu 24.04 的 Files 使用 Nautilus 4.0 扩展。macOS 提供 Finder Sync 子菜单、“服务”命令及独立操作面板。
 
 各平台实际验证情况与剩余项见 [#270](https://github.com/xiaodaozhi/xdzip/issues/270)。源码能力不追溯加入既有发布附件。
 
@@ -26,7 +26,7 @@ Finder 不保留菜单项的 `representedObject`，因此扩展通过单调递�
 
 ## Windows 应用包边界
 
-MSIX 构建通过 `desktop9:Extension` 声明传统 `IContextMenu` 处理程序，用于 Windows 11 的“显示更多选项”。商店构建另行声明独立的 `IExplorerCommand` 类和 `windows.fileExplorerContextMenus`，用于现代菜单。两个类使用不同身份，分别只暴露各自菜单接口。侧载构建仅声明传统菜单类，普通安装版保留既有传统菜单。两种菜单复用文件操作及私有请求校验。
+商店构建通过 `windows.fileExplorerContextMenus` 为文件和文件夹登记 `IExplorerCommand`。在已测试的 Windows 11 系统中，该命令也出现在“显示更多选项”中，另外登记传统处理程序会产生重复项。侧载构建通过 `desktop9:Extension` 为文件和文件夹登记传统 `IContextMenu` 处理程序，普通安装版保留原有传统菜单。菜单实现共享文件操作及私有请求校验。
 
 `--msix-channel store|sideload` 选择包内不可变渠道标记和对应清单，默认为 `sideload`。现代菜单要求运行于 Windows 11、商店构建已注册，且扩展自身包的系统签名类型为 `Store`；签名查询失败及 Developer、Enterprise、None 均隐藏现代入口。商店签名的商店构建即使被复制侧载，仍视为商店构建。这是构建渠道策略，不声称能识别相同签名字节的安装途径，参见[微软对该限制的说明](https://github.com/microsoft/WindowsAppSDK/issues/4993)。
 

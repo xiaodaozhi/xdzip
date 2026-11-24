@@ -2,7 +2,7 @@
 
 [English](../../engineering/shell-actions.md) | [简体中文](../../zh-CN/engineering/shell-actions.md) | [繁體中文](../../zh-TW/engineering/shell-actions.md) | 日本語 | [한국어](../../ko-KR/engineering/shell-actions.md) | [Français](../../fr-FR/engineering/shell-actions.md) | [Deutsch](../../de-DE/engineering/shell-actions.md) | [Español](../../es-ES/engineering/shell-actions.md) | [Português (Brasil)](../../pt-BR/engineering/shell-actions.md) | [Русский](../../ru-RU/engineering/shell-actions.md)
 
-システムの入口は、選択内容と操作を同じログインセッションのデスクトッププロセスに渡します。Windows 11 の通常のインストール版では、拡張機能は「その他のオプションを表示」にあります。COM クラスは `IContextMenu` と `IExplorerCommand` の両方を公開します。MSIX は独立した従来メニューハンドラーを宣言し、Store ビルドは後述するモダンメニューハンドラーも追加します。Ubuntu 24.04 の「ファイル」は Nautilus 4.0 拡張機能を使います。macOS では Finder Sync のサブメニュー、サービスコマンド、独立した操作パネルを利用できます。
+システムの入口は、選択内容と操作を同じログインセッションのデスクトッププロセスに渡します。Windows 11 の通常のインストール版では、拡張機能は「その他のオプションを表示」にあります。COM クラスは `IContextMenu` と `IExplorerCommand` の両方を公開します。Store 版とサイドロード版の MSIX は、後述のとおり異なるメニューハンドラーを登録します。Ubuntu 24.04 の「ファイル」は Nautilus 4.0 拡張機能を使います。macOS では Finder Sync のサブメニュー、サービスコマンド、独立した操作パネルを利用できます。
 
 各プラットフォームの実際の検証と残作業は [#270](https://github.com/xiaodaozhi/xdzip/issues/270) で追跡します。ソースコードの機能は、既に公開されたリリースファイルへ遡って追加されません。
 
@@ -24,7 +24,7 @@ Finder はメニュー項目の `representedObject` を保持しないため、�
 
 ## Windows パッケージの境界
 
-MSIX ビルドは Windows 11 の「その他のオプションを表示」用に `desktop9:Extension` で従来の `IContextMenu` ハンドラーを宣言します。Store ビルドはさらにモダンメニュー用の独立した `IExplorerCommand` クラスと `windows.fileExplorerContextMenus` を宣言します。クラスは異なる識別情報を持ち、それぞれのメニューインターフェースだけを公開します。サイドロードビルドは従来クラスだけを宣言し、通常のインストーラーは既存の従来メニューを維持します。ファイル操作と非公開リクエストの検証は両メニューで共通です。
+Store ビルドは `windows.fileExplorerContextMenus` を通じてファイルとフォルダーに `IExplorerCommand` を登録します。テストした Windows 11 環境では、このコマンドは「その他のオプションを表示」にも現れるため、従来ハンドラーを追加すると重複します。サイドロードビルドは `desktop9:Extension` による従来の `IContextMenu` ハンドラーをファイルとフォルダーに登録します。通常のインストール版は従来メニューを維持します。ファイル操作と非公開リクエストの検証は共通です。
 
 `--msix-channel store|sideload` は不変のパッケージマーカーと対応するマニフェスト宣言を選択し、既定は `sideload` です。モダンコマンドには、Windows 11 に登録された Store ビルドで、そのパッケージ自身のシステム署名種別が `Store` であることが必要です。署名照会失敗や Developer、Enterprise、None の署名ではモダン項目を表示しません。Store 署名済み Store ビルドのコピーは、サイドロードでインストールしても Store ビルドのままです。これはビルドチャネルの方針であり、同一の署名済みバイトのインストール経路を識別したとの主張ではありません。[Microsoft による制約の議論](https://github.com/microsoft/WindowsAppSDK/issues/4993)を参照してください。
 
