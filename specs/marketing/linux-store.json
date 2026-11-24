@@ -3,6 +3,14 @@
   "platform": "linux",
   "purpose": "Reusable local website or product presentation assets; not a store submission.",
   "visual_source": "specs/marketing/windows-store.json",
+  "snap_store": {
+    "listing_locale": "en-US",
+    "featured_banner": {
+      "width": 1440,
+      "height": 480,
+      "max_bytes": 2000000
+    }
+  },
   "scenes": [
     "01-welcome",
     "02-create",

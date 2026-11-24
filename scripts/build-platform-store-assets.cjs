@@ -146,6 +146,14 @@ async function build(platform, args = process.argv.slice(2)) {
   async function renderSvg(svg) { return sharp(Buffer.from(svg)).png({compressionLevel: 9}).toBuffer(); }
   try {
     if (captures && !composition) await save('capture-source/capture-session.json', captures.manifest, 'capture-receipt');
+    if (platform === 'linux') {
+      const {listing_locale: listingLocale, featured_banner: {width, height, max_bytes: maxBytes}} = config.snap_store;
+      if (!Object.hasOwn(config.locales, listingLocale) || width !== 3 * height || height < 240 || height > 1440)
+        throw Error('Invalid Snap Store listing locale or featured banner dimensions');
+      const banner = await renderSvg(artwork.snapFeaturedBanner(width, height));
+      if (banner.length > maxBytes) throw Error('Snap Store featured banner exceeds the upload limit');
+      await save('snap-store/featured-banner.png', banner, 'featured-banner');
+    }
     for (const language of languageNames) {
       const locale = config.locales[language];
       if (!locale || locale.promotions.length !== scenes.length ||

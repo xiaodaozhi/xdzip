@@ -50,7 +50,7 @@ GitHub 安装包遵循项目的分发政策。Windows 安装器未签名，macOS
 7. 核对版本专属发布说明、已知限制、完整安装/下载体积及校验和，经发布负责人确认后上传。草稿与说明文件不一致时停止，先显式对齐已审阅输入；不会自动覆盖草稿中的人工修订。
 8. 发行后确认下载工件与已验证哈希一致；发生问题撤回问题渠道并说明影响，保留诊断证据。
 
-GitHub 桌面版从“关于”主动检查更新。符合条件的安装版下载并交接已校验的候选包。便携版和不满足安装身份或信任要求的构建手动安装。独立 CLI 与桌面附带 CLI 的更新对象各不相同，商店版通过 Microsoft Store 发布和更新。活动任务使安装等待时，用户可取消等待。回退前核对设置 schema 兼容性并保留可运行旧版。见[桌面更新契约](../../../docs/zh-CN/engineering/software-update.md)和[CLI 更新契约](../../../docs/zh-CN/engineering/command-line.md)。
+GitHub 桌面版从“关于”主动检查更新。符合条件的安装版下载并交接已校验的候选包。便携版和不满足安装身份或信任要求的构建手动安装。独立 CLI 与桌面附带 CLI 的更新对象各不相同。Windows 和 Linux 商店版通过各自的商店发布和更新，见 [Microsoft Store](../market/windows/build.md) 和 [Snap Store](../market/linux/snap-store.md) 流程。活动任务使安装等待时，用户可取消等待。回退前核对设置 schema 兼容性并保留可运行旧版。见[桌面更新契约](../../../docs/zh-CN/engineering/software-update.md)和[CLI 更新契约](../../../docs/zh-CN/engineering/command-line.md)。
 
 按[桌面验证方法](../qa/private-test-manual.md)为实际候选选择相关场景。只有身份和范围仍适用时才引用已有证据。用最终包核对[部署 SBOM 与文件清单](../../../docs/zh-CN/engineering/deployment-audit.md)，定位具体组件、通知和再分发缺口。按平台要求核对安装版及便携版行为。macOS 单独验证交付 app 和 DMG 的部署与 ad-hoc 完整性，SDK 模式验证另行记录。
 

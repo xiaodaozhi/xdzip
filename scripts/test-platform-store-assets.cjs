@@ -127,6 +127,16 @@ async function checkCrossPlatform(base) {
       const manifest = JSON.parse(fs.readFileSync(path.join(output, 'manifest.json')));
       assert.equal(manifest.platform, platform);
       assert.equal(manifest.status, 'operator-supplied-captures');
+      const banners = manifest.assets.filter(asset => asset.role === 'featured-banner');
+      assert.equal(banners.length, platform === 'linux' ? 1 : 0);
+      if (banners.length) {
+        const [banner] = banners;
+        assert.equal(banner.file, 'snap-store/featured-banner.png');
+        assert.equal(banner.language, 'shared');
+        const {format, width, height} = await sharp(path.join(output, banner.file)).metadata();
+        assert.deepEqual([format, width, height], ['png', 1440, 480]);
+        assert.ok(banner.bytes <= 2_000_000);
+      }
       for (const lang of languages) for (const scene of scenes) {
         assert.deepEqual(fs.readFileSync(path.join(output, lang, 'screenshots', `${scene}.png`)), fixture);
         assert.deepEqual(fs.readFileSync(path.join(output, 'capture-source', lang, `${scene}.png`)), fixture);

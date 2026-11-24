@@ -123,6 +123,15 @@ function hero(width, height) {
   body += '<ellipse cx="967" cy="850" rx="490" ry="45" fill="#031E75" opacity=".16"/>';
   return svg(width, height, body);
 }
+function snapFeaturedBanner(width, height) {
+  const body = rect(0, 0, 1440, 480, 0, 'url(#ocean)')
+    + '<circle cx="1270" cy="30" r="640" fill="#82E7FF" opacity=".12"/>'
+    + '<path d="M-80 492Q630 155 1510 405M-80 542Q630 205 1510 455" fill="none" stroke="#B7E6FF" stroke-opacity=".18" stroke-width="2"/>'
+    + sheet(846, 132, 224, 226, '#EDF6FF', -14)
+    + sheet(1253, 101, 148, 208, '#E9F8FF', 16)
+    + logo(971, 62, 344);
+  return svg(width, height, body, '0 0 1440 480');
+}
 function icon(size) {
   return brand.replace(/width="1024" height="1024"/, `width="${size}" height="${size}"`);
 }
@@ -285,7 +294,7 @@ async function main() {
   if (!check) fs.writeFileSync(indexFile,JSON.stringify({schema_version:1,brand_source:'design/assets/brand/xdzip.svg',assets:entries},null,2)+'\n');
   console.log(`${check?'Validated':'Rendered'} ${jobs.length} PNG assets; field limits and source hashes passed.`);
 }
-module.exports = {screenshotPromo, promo, poster, square, hero, icon};
+module.exports = {screenshotPromo, promo, poster, square, hero, snapFeaturedBanner, icon};
 if (require.main === module) {
   const standalone = process.argv.includes('--backgrounds-only') || process.argv.includes('--composite-from-macos');
   const work = standalone ? require('./build-platform-store-assets.cjs').build('windows', process.argv.slice(2).filter(arg => arg !== '--backgrounds-only')) : main();

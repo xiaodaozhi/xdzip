@@ -11,6 +11,7 @@ Use this handbook with [AGENTS.md](../AGENTS.md), the repository working agreeme
 | Maintain archive backends | [Review upstream fixes and advisories](engineering/archive-backend-maintenance.md) |
 | Prepare a release | [Release runbook](engineering/release-runbook.md), [candidate materials](engineering/release-candidate.md), [candidate verification](engineering/candidate-verification.md), [licensing review](qa/release-review.md) |
 | Prepare Microsoft Store materials | [Listing and artwork](market/windows/README.md), [local capture runbook](market/windows/capture.md), [reviewer notes](market/windows/reviewer-notes.md), [reusable capture tools](engineering/windows-screenshots.md) |
+| Publish to the Snap Store | [Revision review, channels and listing materials](market/linux/snap-store.md) |
 | Prepare macOS and Linux marketing materials | [macOS](market/macos/README.md), [Linux](market/linux/README.md), [capture and export](engineering/platform-marketing.md) |
 | Verify and synchronize marketing assets | [Cross-platform screenshot scale](engineering/marketing-screenshot-scale.md), [Latest-only Drive sync](engineering/marketing-archive.md) |
 
