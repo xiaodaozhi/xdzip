@@ -27,7 +27,7 @@ class OwnedSystemProxy:
             raise ValueError('Use the freshly compiled owned system proxy helper under build/')
         self.records = []
         self.process = subprocess.Popen([
-            'sudo', '-n', '--preserve-env=CI,GITHUB_ACTIONS,RUNNER_ENVIRONMENT,XDZIP_ISOLATED_UPDATE_FIXTURE',
+            'sudo', '-n', '--preserve-env=CI,GITHUB_ACTIONS,RUNNER_ENVIRONMENT,XDZIP_ISOLATED_UPDATE_FIXTURE,XDZIP_MACOS_INTEL_CI',
             str(helper), str(proxy_port), pac_url], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL, bufsize=0)
         self.pending = b''

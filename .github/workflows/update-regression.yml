@@ -144,6 +144,7 @@ jobs:
         run: |
           python3 scripts/test-macos-production-update.py
           python3 scripts/test-system-proxy-fixture.py
+          python3 scripts/check-system-proxy-fixture.py
       - name: Prepare pinned native Intel dependencies
         run: |
           test "$(uname -m)" = x86_64
