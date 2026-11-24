@@ -17,7 +17,7 @@ OperationWindow {
     readonly property real density: Theme.operationExtractDensity
     function unit(value: real): real { return value * density; }
     clientWidth: Theme.operationExtractWidth
-    requestedHeight: Math.min(Math.round(unit(Theme.operationExtractClientHeight)), Screen.desktopAvailableHeight - 80)
+    requestedHeight: Math.min(Math.ceil(extractContent.implicitHeight + footer.implicitHeight), Math.round(unit(Theme.operationExtractClientHeight)), Screen.desktopAvailableHeight - 80)
     title: qsTrId("extract.windowTitle")
     onVisibleChanged: if (!visible) controller.invalidateTarget()
     escapeClosesWindow: !target.activeFocus
@@ -69,6 +69,7 @@ OperationWindow {
             Layout.fillWidth: true; Layout.fillHeight: true
             contentWidth: availableWidth; clip: true
             ColumnLayout {
+                id: extractContent
                 width: body.availableWidth; spacing: Theme.operationHeaderBodyGap
                 OperationHeader {
                     Layout.fillWidth: true
@@ -171,6 +172,8 @@ OperationWindow {
                         Layout.fillWidth: true
                         Text { Layout.fillWidth: true; text: qsTrId("shell.selection").arg(root.shellArchiveCount); wrapMode: Text.Wrap; color: Theme.text; font.pixelSize: Theme.operationFooterFontSize }
                         OperationSelect {
+                            objectName: "extractShellLayout"
+                            density: root.density
                             Layout.fillWidth: true
                             model: [qsTrId("shell.layoutHere"), qsTrId("shell.layoutSmart"), qsTrId("shell.layoutSeparate")]
                             currentIndex: root.shellLayout
@@ -260,6 +263,7 @@ OperationWindow {
             }
         }
         OperationFooter {
+            id: footer
             Layout.fillWidth: true
             contentInset: root.unit(24); verticalInset: root.unit(13); minimumFooterHeight: root.unit(67)
             noteGap: 4; noteIcon: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "shield.png"

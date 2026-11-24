@@ -26,7 +26,7 @@
       "linux_frame_policy": "Ubuntu X11 and native Wayland integrate window controls in the titlebar. Normal windows have an antialiased outline and rounded corners. On Wayland the Qt platform plugin adds the client shadow margins outside the standard content geometry, and the input region excludes those margins. X11 reserves the same shadow margins when composition and input shaping are available. Maximized and fullscreen windows have square corners and no outline or shadow.",
       "linux_frame_design": "design/hifi/screens/main-capsule-light.png",
       "linux_initial_placement": "On X11 center each newly created main window on the available geometry of the screen containing the pointer before its first presentation. Restoring an existing window retains its position. On Wayland initial placement follows the compositor.",
-      "welcome_format_policy": "欢迎页按内置扩展名分组并计数，默认展开压缩包。分类始终单行，溢出时在右端显示两枚微圆角方形箭头按钮。按钮边长随字号匹配扩展名标签高度，圆角与标签一致。每次移动一个可视区域的宽度，边界按钮禁用。自动显示键盘聚焦的分类。整行分类名共享一条基线，计数共享另一条基线，参考数字的中心与参考大写字母的中心对齐。计数放在贴近所属分类名的无描边标签内，圆角沿用扩展名标签的 3 逻辑像素，展开时使用选中配色。词形和选中字重不改变基线。分类区沿用页面底色，选中分类用强调色与字重区分。扩展名使用常规界面字体和浅底细描边标签，圆角为 3 逻辑像素。小写主体居中，同一行共享文字基线。单行仅显示完整标签，超出时显示省略号。区域保留 608 逻辑像素内容宽度，依据 welcome-reference.json 排版。高保真入口为 design/hifi/screens/welcome-top-light.png。",
+      "welcome_format_policy": "欢迎页按内置扩展名分组并计数，默认展开压缩包。分类始终单行，溢出时在右端显示两枚微圆角方形箭头按钮。按钮边长随字号匹配扩展名标签高度，圆角与标签一致。每次移动一个可视区域的宽度，边界按钮禁用。自动显示键盘聚焦的分类。整行分类名共享一条基线，计数共享另一条基线，参考数字的中心与参考大写字母的中心对齐。计数放在贴近所属分类名的无描边标签内，圆角沿用扩展名标签的 3 逻辑像素，展开时使用选中配色。词形和选中字重不改变基线。分类区沿用页面底色，选中分类用强调色与字重区分。扩展名使用常规界面字体和浅底细描边标签，圆角为 3 逻辑像素。后缀显示大写，按各标签实际字形垂直居中。单行仅显示完整标签，超出时显示省略号。区域保留 608 逻辑像素内容宽度，依据 welcome-reference.json 排版。高保真入口为 design/hifi/screens/welcome-top-light.png。",
       "statusbar_policy": "Welcome and archive pages share a 32-unit minimum status bar, growing by the same task-control metrics for larger text. Both task buttons use the same 16-unit task-list icon from layout-scale.json main.interaction.taskIconSize.",
       "reopen_wait_policy": "A pending reopen during an archive modification reuses the welcome opening overlay and its existing dimensions; the message identifies the wait and cancellation affects only the new open request.",
       "owned_dialog_policy": "Closing the main window dismisses all its dialogs and releases their native surfaces; retained tasks reopen views only on explicit task activation.",
@@ -58,7 +58,7 @@
       "role": "operation",
       "width": "Theme.operationExtractWidth",
       "design": "design/hifi/screens/extract-macos.png",
-      "reason": "原生与正文标题均为解压文件，正文与共享 footer 沿用冻结尺寸；目标状态复用创建窗口的图标与提示，保留原有路径框及同名文件夹布局",
+      "reason": "原生与正文标题均为解压文件，高度随实际内容和共享 footer 自适应，上限沿用解压窗口及可用屏幕高度，正文可滚动；资源管理器入口的布局选项使用与冲突策略一致的共享下拉框密度；目标状态复用创建窗口的图标与提示，保留原有路径框及同名文件夹布局",
       "header_design": "design/hifi/screens/create.png",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
       "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."
@@ -111,7 +111,7 @@
     "SettingsWindow": {
       "parent": "OperationWindow",
       "role": "settings",
-      "placement_policy": "无 owner 的托盘设置和关于窗口按指针所在显示器的可用区域居中，原生窗口创建及高度确定后再次定位；高度按实际 QScreen 可用工作区限制，不取虚拟桌面合并高度，完整原生边框必须留在可用区域内。",
+      "placement_policy": "无 owner 的托盘设置和关于窗口首次显示时按指针所在显示器的可用区域居中；显示后尺寸变化或再次呈现不重设位置。高度按实际 QScreen 可用工作区限制，不取虚拟桌面合并高度。",
       "width": "Theme.settingsLogicalWidth",
       "reason": "设置与关于共用 612 宽窗口，六个左侧标签，首项贴齐顶部及右分隔线；侧栏基准宽 144，大字号按最长单词增宽；正文独立滚动，无固定 footer，变更即时提交。文件关联候选由统一格式能力表生成，新增候选沿用既有行组件和滚动区域。",
       "design": "design/hifi/screens/settings-appearance-light.png",
