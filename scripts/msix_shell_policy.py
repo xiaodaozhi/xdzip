@@ -20,16 +20,17 @@ def verify_manifest(root, channel, shell_library='xdzip-shell.dll'):
     marker(channel)
     if not re.fullmatch(r'(xdzip-shell\.dll|shell/xdzip-shell-[a-f0-9]{16}\.dll)', shell_library):
         raise ValueError('Invalid MSIX shell library path')
-    classic = CLASSIC_STORE if channel == 'store' else CLASSIC_SIDELOAD
-    expected = {classic, MODERN} if channel == 'store' else {classic}
+    expected = {MODERN} if channel == 'store' else {CLASSIC_SIDELOAD}
     classes = list(root.iter('{' + COM + '}Class'))
     if (len(classes) != len(expected) or {item.get('Id') for item in classes} != expected or
             any(item.get('Path') != shell_library.replace('/', '\\') or item.get('ThreadingModel') != 'STA' for item in classes)):
         raise ValueError('MSIX COM classes differ from channel policy')
     legacy = list(root.iter('{' + D9 + '}ExtensionHandler'))
-    if (len(legacy) != 2 or {item.get('Type') for item in legacy} != {'*', 'Directory'} or
-            any(item.get('Clsid') != classic for item in legacy)):
+    if channel == 'sideload' and (len(legacy) != 2 or {item.get('Type') for item in legacy} != {'*', 'Directory'} or
+            any(item.get('Clsid') != CLASSIC_SIDELOAD for item in legacy)):
         raise ValueError('MSIX classic context menu differs from channel policy')
+    if channel == 'store' and (legacy or any(item.get('Category') == 'windows.fileExplorerClassicContextMenuHandler' for item in root.iter())):
+        raise ValueError('Store MSIX must not register a classic handler')
     modern = list(root.iter('{' + D5 + '}Verb'))
     contexts = list(root.iter('{' + D5 + '}ItemType'))
     if channel == 'store':

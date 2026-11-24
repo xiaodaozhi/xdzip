@@ -4,7 +4,7 @@
 
 [English](../../engineering/shell-actions.md) | [简体中文](../../zh-CN/engineering/shell-actions.md) | 繁體中文 | [日本語](../../ja-JP/engineering/shell-actions.md) | [한국어](../../ko-KR/engineering/shell-actions.md) | [Français](../../fr-FR/engineering/shell-actions.md) | [Deutsch](../../de-DE/engineering/shell-actions.md) | [Español](../../es-ES/engineering/shell-actions.md) | [Português (Brasil)](../../pt-BR/engineering/shell-actions.md) | [Русский](../../ru-RU/engineering/shell-actions.md)
 
-系統入口將選擇和動作交給同一登入會話中的桌面程序。Windows 11 的普通安裝版擴充套件位於“顯示更多選項”，其 COM 類同時提供 `IContextMenu` 和 `IExplorerCommand`。MSIX 單獨宣告經典處理程式，商店構建另外宣告現代選單處理程式，詳見下文。Ubuntu 24.04 的 Files 使用 Nautilus 4.0 擴充套件。macOS 提供 Finder Sync 子選單、“服務”命令及獨立操作面板。
+系統入口將選擇和動作交給同一登入會話中的桌面程序。Windows 11 的普通安裝版擴充套件位於“顯示更多選項”，其 COM 類同時提供 `IContextMenu` 和 `IExplorerCommand`。商店與側載 MSIX 構建分別登記不同的選單處理程式，詳見下文。Ubuntu 24.04 的 Files 使用 Nautilus 4.0 擴充套件。macOS 提供 Finder Sync 子選單、“服務”命令及獨立操作面板。
 
 各平臺實際驗證情況與剩餘項見 [#270](https://github.com/xiaodaozhi/xdzip/issues/270)。原始碼能力不追溯加入既有釋出附件。
 
@@ -32,7 +32,7 @@ Finder 不保留選單項的 `representedObject`，因此擴充套件透過單�
 
 ## Windows 應用包邊界
 
-MSIX 構建透過 `desktop9:Extension` 宣告傳統 `IContextMenu` 處理程式，用於 Windows 11 的“顯示更多選項”。商店構建另行宣告獨立的 `IExplorerCommand` 類和 `windows.fileExplorerContextMenus`，用於現代選單。兩個類使用不同身份，分別只暴露各自選單介面。側載構建僅宣告傳統選單類，普通安裝版保留既有傳統選單。兩種選單複用檔案操作及私有請求校驗。
+商店構建透過 `windows.fileExplorerContextMenus` 為檔案和資料夾登記 `IExplorerCommand`。在已測試的 Windows 11 系統中，該命令也出現在「顯示更多選項」中，另外登記傳統處理程式會產生重複項。側載構建透過 `desktop9:Extension` 為檔案和資料夾登記傳統 `IContextMenu` 處理程式，一般安裝版保留原有傳統選單。選單實作共用檔案操作及私有請求驗證。
 
 `--msix-channel store|sideload` 選擇包內不可變渠道標記和對應清單，預設為 `sideload`。現代選單要求執行於 Windows 11、商店構建已註冊，且擴充套件自身包的系統簽名型別為 `Store`；簽名查詢失敗及 Developer、Enterprise、None 均隱藏現代入口。商店簽名的商店構建即使被複制側載，仍視為商店構建。這是構建渠道策略，不聲稱能識別相同簽名位元組的安裝途徑，參見[微軟對該限制的說明](https://github.com/microsoft/WindowsAppSDK/issues/4993)。
 

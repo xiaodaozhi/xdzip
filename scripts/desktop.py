@@ -74,7 +74,7 @@ def verify_msix_identity(path, report):
             if 'channel' in report:
                 msix_shell_policy.verify_manifest(root, report['channel'], report.get('shell_library', 'xdzip-shell.dll'))
                 if (package.read('xdzip-msix-channel.txt') != msix_shell_policy.marker(report['channel']) or
-                        report.get('shell_library', 'xdzip-shell.dll').casefold() not in names or report.get('classic_context_menu') is not True or
+                        report.get('shell_library', 'xdzip-shell.dll').casefold() not in names or report.get('classic_context_menu') is not (report['channel'] == 'sideload') or
                         report.get('modern_context_menu_declaration') is not (report['channel'] == 'store')):
                     raise ValueError('MSIX channel metadata differs from the receipt')
             if package.testzip() is not None:

@@ -128,9 +128,10 @@ void verify(const fs::path &root, const std::wstring &family, bool store) {
     // Real packaged COM activation runs the production DLL in the OS surrogate.
     // RAII releases every acquired interface. HRESULT failure rejects the check.
     ComPtr<IUnknown> remote;
-    check(CoCreateInstance(classic, nullptr, CLSCTX_LOCAL_SERVER,
-                           IID_PPV_ARGS(remote.GetAddressOf())),
-          "activate packaged classic COM");
+    const auto classicResult = CoCreateInstance(classic, nullptr, CLSCTX_LOCAL_SERVER,
+                                                IID_PPV_ARGS(remote.GetAddressOf()));
+    require(store ? FAILED(classicResult) : SUCCEEDED(classicResult),
+            "Classic COM registration differs from channel");
     remote = nullptr;
     ComPtr<IUnknown> modernRemote;
     const auto modernResult = CoCreateInstance(modern, nullptr, CLSCTX_LOCAL_SERVER,
@@ -138,6 +139,8 @@ void verify(const fs::path &root, const std::wstring &family, bool store) {
     require(store ? SUCCEEDED(modernResult) : FAILED(modernResult),
             "Modern COM registration differs from channel");
     modernRemote = nullptr;
+    // Exercise the shared classic implementation directly in both fixture
+    // channels; Store does not register this class with Windows.
     // Inspect native HMENU and invoke without cross-process HMENU marshalling.
     // The trusted input is the exact DLL installed by the OS for this fixture.
     const auto library = LoadLibraryW((root / L"xdzip-shell.dll").c_str());

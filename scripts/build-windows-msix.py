@@ -48,7 +48,7 @@ def manifest(name, publisher, build, publisher_display_name, channel='sideload',
         raise ValueError('Invalid publisher display name')
     if type(build) is not int or not 1 <= build <= 65535:
         raise ValueError('Product build must fit the MSIX version')
-    package = ET.Element(tag(NS, 'Package'), {'IgnorableNamespaces': 'uap rescap com desktop9' + (' desktop4 desktop5' if channel == 'store' else '')})
+    package = ET.Element(tag(NS, 'Package'), {'IgnorableNamespaces': 'uap rescap com' + (' desktop4 desktop5' if channel == 'store' else ' desktop9')})
     ET.SubElement(package, tag(NS, 'Identity'), Name=name, Publisher=publisher,
                   Version=f'1.0.{build}.0', ProcessorArchitecture='x64')
     props = ET.SubElement(package, tag(NS, 'Properties'))
@@ -70,13 +70,13 @@ def manifest(name, publisher, build, publisher_display_name, channel='sideload',
     extensions = ET.SubElement(app, tag(NS, 'Extensions'))
     server = ET.SubElement(extensions, tag(COM, 'Extension'), Category='windows.comServer')
     server = ET.SubElement(ET.SubElement(server, tag(COM, 'ComServer')), tag(COM, 'SurrogateServer'), DisplayName='xdzip')
-    classic = CLASSIC_STORE if channel == 'store' else CLASSIC_SIDELOAD
-    for clsid in ([classic, MODERN] if channel == 'store' else [classic]):
+    for clsid in ([MODERN] if channel == 'store' else [CLASSIC_SIDELOAD]):
         ET.SubElement(server, tag(COM, 'Class'), Id=clsid, Path=shell_library.replace('/', '\\'), ThreadingModel='STA')
-    legacy = ET.SubElement(extensions, tag(D9, 'Extension'), Category='windows.fileExplorerClassicContextMenuHandler')
-    legacy = ET.SubElement(legacy, tag(D9, 'FileExplorerClassicContextMenuHandler'))
-    for item in ('*', 'Directory'):
-        ET.SubElement(legacy, tag(D9, 'ExtensionHandler'), Type=item, Clsid=classic)
+    if channel == 'sideload':
+        legacy = ET.SubElement(extensions, tag(D9, 'Extension'), Category='windows.fileExplorerClassicContextMenuHandler')
+        legacy = ET.SubElement(legacy, tag(D9, 'FileExplorerClassicContextMenuHandler'))
+        for item in ('*', 'Directory'):
+            ET.SubElement(legacy, tag(D9, 'ExtensionHandler'), Type=item, Clsid=CLASSIC_SIDELOAD)
     if channel == 'store':
         modern = ET.SubElement(extensions, tag(D4, 'Extension'), Category='windows.fileExplorerContextMenus')
         modern = ET.SubElement(modern, tag(D4, 'FileExplorerContextMenus'))
@@ -235,7 +235,7 @@ def build(root, audit_path, output, name, publisher, report, publisher_display_n
         'publisher': publisher, 'publisher_display_name': publisher_display_name,
         'version': f"1.0.{identity['build']}.0",
         'signed': False, 'store_submission': False, 'modern_context_menu': False,
-        'channel': channel, 'classic_context_menu': True, 'modern_context_menu_declaration': channel == 'store',
+        'channel': channel, 'classic_context_menu': channel == 'sideload', 'modern_context_menu_declaration': channel == 'store',
         'shell_library': shell_library,
         'icon_assets': {'schema_version': 1, 'resource_index': POLICY['resource_index'],
                         'png_count': icon_count},
