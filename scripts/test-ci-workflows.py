@@ -238,6 +238,13 @@ class WorkflowTests(unittest.TestCase):
         intel_update = self.workflows['update-regression.yml']['jobs']['macos_intel']
         self.assertEqual(intel_update['runs-on'], 'macos-15-intel')
         self.assertIn('check-macos-product-update.py', '\n'.join(step.get('run', '') for step in intel_update['steps']))
+        font_step = next(i for i, step in enumerate(intel_update['steps'])
+                         if step.get('name') == 'Prepare and check product font tools')
+        dependency_step = next(i for i, step in enumerate(intel_update['steps'])
+                               if step.get('name') == 'Prepare pinned native Intel dependencies')
+        self.assertLess(font_step, dependency_step)
+        self.assertIn('design/assets/fonts/requirements.txt', intel_update['steps'][font_step]['run'])
+        self.assertIn('from ui_fonts import tools; tools()', intel_update['steps'][font_step]['run'])
         sign_steps = '\n'.join(step.get('run', '') for step in workflow['jobs']['sign']['steps'])
         self.assertIn('sign-macos-update.py --directory build/packages --architecture x86_64', sign_steps)
         self.assertIn('--require-update-signature --include-intel', sign_steps)
