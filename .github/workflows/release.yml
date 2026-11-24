@@ -99,7 +99,9 @@ jobs:
           ref: ${{ needs.resolve.outputs.revision }}
           persist-credentials: false
       - name: Check native CLI code and resource signing
-        run: python3 scripts/test-cli-bundle.py
+        run: |
+          python3 scripts/test-cli-bundle.py
+          python3 scripts/test-macos-udf-compatibility.py
 
   native:
     needs: [resolve, draft, macos-signing-preflight]

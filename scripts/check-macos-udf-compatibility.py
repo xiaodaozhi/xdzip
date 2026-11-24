@@ -10,12 +10,23 @@ import subprocess
 import sys
 import time
 
-from macos_launch_services import BUNDLE_ID, LSREGISTER, ROOT, registered_apps
+from macos_launch_services import BUNDLE_ID, LSREGISTER, ROOT, build_copy, registered_apps, unregister
 
 
 def require(condition, message):
     if not condition:
         raise RuntimeError(message)
+
+
+def clear_owned_build_registration(app):
+    """Remove only this build's implicit registration on a disposable runner."""
+    current = registered_apps()
+    if not current:
+        return
+    if len(current) != 1 or next(iter(current)).resolve() != app or not build_copy(app):
+        raise RuntimeError('The disposable runner has an unrelated xdzip registration')
+    unregister(app)
+    require(not registered_apps(), 'The owned build registration did not clear')
 
 
 def main():
@@ -44,7 +55,7 @@ def main():
     require(info.get('CFBundleIdentifier') == BUNDLE_ID and len(docs) == 1 and
             docs[0].get('CFBundleTypeExtensions') == ['udf'] and
             'LSItemContentTypes' not in docs[0], 'Unexpected product UDF declaration')
-    require(not registered_apps(), 'The disposable runner already has xdzip registrations')
+    clear_owned_build_registration(app)
     spec = importlib.util.spec_from_file_location('registration', ROOT/'scripts/check-macos-registration.py')
     registration = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(registration)
