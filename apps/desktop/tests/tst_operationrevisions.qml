@@ -34,6 +34,7 @@ Item {
         function invalidateTarget() {}
         function chooseTarget(path) { return path; }
     }
+    Ui.OperationWindow { id: positioningWindow; centerOnScreen: true; requestedHeight: 240 }
     Ui.ExtractWindow { id: extract; owner: ownerWindow; controller: controller }
     Ui.ConflictWindow {
         id: conflict; owner: ownerWindow
@@ -43,7 +44,30 @@ Item {
     TestCase {
         name: "OperationRevisions"; when: windowShown
         function init() { Ui.Theme.dark = false; Ui.Theme.fontScale = 1; primary.enabled = true; segments.width = 300; }
-        function cleanup() { extract.close(); conflict.close(); Ui.Theme.fontScale = 1; }
+        function cleanup() { positioningWindow.close(); positioningWindow.requestedHeight = 240; extract.close(); extract.shellMode = false; conflict.close(); Ui.Theme.fontScale = 1; }
+        function test_visible_window_keeps_position_when_resized() {
+            positioningWindow.present();
+            tryVerify(() => positioningWindow.visible);
+            wait(100);
+            positioningWindow.x += 30;
+            positioningWindow.y += 20;
+            const x = positioningWindow.x;
+            const y = positioningWindow.y;
+            positioningWindow.requestedHeight = 360;
+            tryCompare(positioningWindow, "height", 360);
+            wait(100);
+            compare(positioningWindow.x, x);
+            compare(positioningWindow.y, y);
+            positioningWindow.present();
+            wait(100);
+            compare(positioningWindow.x, x);
+            compare(positioningWindow.y, y);
+            positioningWindow.requestedHeight = 240;
+            tryCompare(positioningWindow, "height", 240);
+            wait(100);
+            compare(positioningWindow.x, x);
+            compare(positioningWindow.y, y);
+        }
         function test_extract_window_title_is_distinct_from_toolbar_action() {
             compare(extract.title, qsTrId("extract.windowTitle"));
             compare(extract.title, "解压文件");
@@ -128,6 +152,39 @@ Item {
             mousePress(action, action.width / 2, action.height / 2);
             compare(action.background.color, Ui.Theme.controlPressed);
             mouseRelease(action, action.width / 2, action.height / 2);
+        }
+        function test_shell_extract_layout_data() {
+            return [{tag: "normal", scale: 1}, {tag: "large", scale: 1.25}, {tag: "larger", scale: 1.5}];
+        }
+        function test_shell_extract_layout(data) {
+            Ui.Theme.fontScale = data.scale;
+            extract.shellMode = true;
+            extract.present();
+            verify(waitForRendering(extract.contentItem));
+            const layout = findChild(extract, "extractShellLayout");
+            const policy = findChild(extract, "extractConflictPolicy");
+            verify(layout && policy);
+            compare(layout.density, policy.density);
+            compare(layout.font.pixelSize, policy.font.pixelSize);
+            compare(layout.height, policy.height);
+            layout.popup.open();
+            tryCompare(layout.popup.contentItem, "count", 3);
+            tryVerify(() => findChild(layout.popup.contentItem, "extractShellLayoutOption-0") !== null);
+            for (let i = 0; i < layout.count; ++i) {
+                const option = findChild(layout.popup.contentItem, "extractShellLayoutOption-" + i);
+                verify(option !== null);
+                const label = findChild(option, option.objectName + "Label");
+                verify(label !== null);
+                compare(label.font.pixelSize, layout.font.pixelSize);
+            }
+            layout.popup.close();
+            const scroll = findChild(extract, "extractScrollView");
+            const lastControl = findChild(extract, "extractHighRatio");
+            tryCompare(extract, "height", extract.requestedHeight);
+            const gap = scroll.height - lastControl.mapToItem(scroll, 0, lastControl.height).y;
+            verify(gap <= extract.unit(20) + 1, "Unexpected space between the last control and footer: " + gap);
+
+            extract.shellMode = false;
         }
         function test_scope_counts() {
             extract.present();
