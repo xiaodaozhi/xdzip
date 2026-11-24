@@ -140,6 +140,60 @@ jobs:
           path: build/production-update/evidence-macos/*
           if-no-files-found: error
           retention-days: 14
+  macos_intel:
+    needs: keys
+    environment: release-signing
+    runs-on: macos-15-intel
+    timeout-minutes: 180
+    env:
+      XDZIP_MACOS_INTEL_CI: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - name: Check Intel product and signer admission before native dependencies
+        env:
+          XDZIP_ISOLATED_UPDATE_FIXTURE: '1'
+        run: |
+          test "$(uname -m)" = x86_64
+          python3 scripts/test-macos-production-update.py
+          python3 scripts/check-system-proxy-fixture.py
+          python3 scripts/test-production-update-signing.py
+      - name: Prepare native Intel SDK without signing authority
+        run: |
+          rustup toolchain install 1.99.0 --profile minimal --component rustfmt --component clippy
+          python3 -m pip install aqtinstall==3.3.0 -r design/assets/fonts/requirements.txt
+          python3 -m aqt install-qt mac desktop 6.8.2 clang_64 --outputdir '${{ runner.temp }}/Qt'
+          python3 scripts/prepare-qt-network.py --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos'
+      - name: Build private Intel products with production public roots
+        env:
+          XDZIP_ISOLATED_UPDATE_FIXTURE: '1'
+        run: python3 scripts/check-macos-product-update.py --prepare --production-trust --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos' --output build/production-update/macos-intel
+      - name: Sign only this run's bound Intel archive, feed and manifest
+        env:
+          XDZIP_UPDATE_KEY_ID: ${{ vars.XDZIP_UPDATE_KEY_ID }}
+          XDZIP_UPDATE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_UPDATE_SIGNING_KEY_HEX }}
+          XDZIP_SPARKLE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_SPARKLE_SIGNING_KEY_HEX }}
+        run: python3 scripts/sign-production-update-fixtures.py --directory build/production-update/macos-intel
+      - name: Complete native Intel update and restart
+        env:
+          XDZIP_ISOLATED_UPDATE_FIXTURE: '1'
+        run: python3 scripts/check-macos-product-update.py --production-trust --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos' --output build/production-update/macos-intel
+      - name: Collect bounded evidence without signed candidates or applications
+        if: always()
+        run: python3 scripts/collect-production-update-evidence.py --directory build/production-update/macos-intel --output build/production-update/evidence-macos-intel
+      - name: Preserve evidence only
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: production-update-macos-intel
+          path: build/production-update/evidence-macos-intel/*
+          if-no-files-found: error
+          retention-days: 14
   linux:
     needs: keys
     environment: release-signing

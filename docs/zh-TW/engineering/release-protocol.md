@@ -66,7 +66,7 @@ macOS 的應用 ZIP、DMG 與通知材料必須在同一已部署、簽名的臨
 
 macOS 在無秘密的工具鏈準備步驟中一次安裝 `rust-toolchain.toml` 宣告的 `rustfmt` 和 `clippy`，再執行歸檔准入測試。測試金鑰更新迴歸也覆蓋該準備和准入流程；它不使用或驗證生產私鑰。
 
-生產驗收的安裝包、原始清單、簽名、appcast 和應用僅留在一次性 runner 內，不上傳；有界收集器只上傳明確允許的日誌、狀態、身份及雜湊記錄，並拒絕簽名附件誤入結果槽。生產金鑰匹配、簽名驗證、實際安裝及人工桌面驗收分別記錄。macOS 使用原生 Apple Silicon 和實際 `SUPublicEDKey` 核對；Windows Server 的夾具仍不代替 Windows 11 人工驗收。此流程不會讀取 GitHub Secret 的值到本地，也不授權釋出。
+生產驗收的安裝包、原始清單、簽名、appcast 和應用僅留在一次性 runner 內，不上傳；有界收集器只上傳明確允許的日誌、狀態、身份及雜湊記錄，並拒絕簽名附件誤入結果槽。生產金鑰匹配、簽名驗證、實際安裝及人工桌面驗收分別記錄。macOS 使用原生 Apple Silicon 和 Intel 和實際 `SUPublicEDKey` 核對；Windows Server 的夾具仍不代替 Windows 11 人工驗收。此流程不會讀取 GitHub Secret 的值到本地，也不授權釋出。
 
 `prepare-release.py --require-update-signature` 在缺少任一金鑰、簽名或原生歸檔中繼資料時停止；`publish-release.py` 獨立複驗清單、同候選 feed 與歸檔後才上傳。簽名、appcast 和狀態附件均進入完整 SHA256SUMS。已有公開版本不補傳或替換這些新附件。
 

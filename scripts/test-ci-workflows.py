@@ -251,6 +251,20 @@ class WorkflowTests(unittest.TestCase):
                          if step.get('name') == 'Check update fixture contracts before native dependencies')
         self.assertLess(preflight, dependency_step)
         self.assertIn('scripts/check-system-proxy-fixture.py', intel_update['steps'][preflight]['run'])
+        production = self.workflows['production-update-acceptance.yml']
+        intel_production = production['jobs']['macos_intel']
+        self.assertEqual(production['jobs']['keys']['if'], "${{ github.ref == 'refs/heads/main' }}")
+        self.assertEqual(intel_production['runs-on'], 'macos-15-intel')
+        self.assertEqual(intel_production['needs'], 'keys')
+        self.assertEqual(intel_production['environment'], 'release-signing')
+        steps = intel_production['steps']
+        signers = [step for step in steps if 'sign-production-update-fixtures.py' in step.get('run', '')]
+        self.assertEqual(len(signers), 1)
+        self.assertIn('secrets.XDZIP_UPDATE_SIGNING_KEY_HEX', repr(signers[0]['env']))
+        for step in steps:
+            if step is not signers[0]:
+                self.assertNotIn('secrets.', repr(step))
+        self.assertIn('evidence-macos-intel/*', steps[-1]['with']['path'])
         sign_steps = '\n'.join(step.get('run', '') for step in workflow['jobs']['sign']['steps'])
         self.assertIn('sign-macos-update.py --directory build/packages --architecture x86_64', sign_steps)
         self.assertIn('--require-update-signature --include-intel', sign_steps)
