@@ -102,7 +102,7 @@ inline FinderPreferences finderPreferences(NSString *app,
         xdzip_i18n::storedLanguage(stringValue(@"language"), stringValue(@"extended_language"));
     const auto *language = xdzip_i18n::findLanguage(selected);
     const char *system = [NSLocale preferredLanguages].firstObject.UTF8String;
-    return {[value[@"enabled"] boolValue],
+    return {static_cast<bool>([value[@"enabled"] boolValue]),
             language ? language->id : xdzip_i18n::systemLanguage(system ? system : ""),
             true,
             value[@"handoff_token"]};
