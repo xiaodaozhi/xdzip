@@ -6,22 +6,17 @@
 
 ## 准备并发布修订
 
-在 GitHub Actions 的 [Snap Store](https://github.com/xiaodaozhi/xdzip/actions/workflows/snap-store.yml) 中，从 `main` 手动运行并填写发行提交的完整 SHA。默认只打包和验证。勾选 `publish_beta` 后，流程会上传并在商店审核通过后发布到 `latest/beta`，再从商店下载哈希反查修订。运行摘要会给出修订号、源码提交和包的 SHA-256。若上传要求人工审核，先在渠道后台处理；确认 `beta` 上的包后可以重试失败的任务。
+从 `main` 按[正式发行流程](../../engineering/release-runbook.md#触发并核验发行)运行 [Release](https://github.com/xiaodaozhi/xdzip/actions/workflows/release.yml)，选择稳定版标签。Linux 任务复用同一次原生构建的程序和 Qt SDK 生成 amd64 strict Snap，检查 `core24`、锁定依赖、成品加载和离屏启动。正式发布任务沿用 `release-signing` 的审批，在发布 GitHub Release 后直接上传成品到 `latest/stable`。商店审核通过后按下载哈希核对修订号，运行摘要记录源码提交和包的 SHA-256。候选或预发行运行跳过商店发布。
 
-在 VMware 的 Ubuntu 24.04 amd64 中执行 `sudo snap install xdzip --channel=latest/beta`。已安装时用 `sudo snap refresh xdzip --channel=latest/beta`。用 `snap list xdzip` 核对修订号。验收通过后，在同一次 Actions 运行中选择 **Review deployments**，批准 `snap-stable`。发布任务核对 `beta` 的修订及下载哈希，并发布该修订到 `latest/stable`。如果 `beta` 在等待期间被替换，任务会停止。 [GitHub 部署审批](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/review-deployments)
-
-两个 GitHub Environment 都只对 `main` 开放，在各自环境中保存 `SNAPCRAFT_STORE_CREDENTIALS`。`snap-stable` 必须要求维护者审批，允许触发者由本人验收后批准。导出凭据时使用 `--snaps=xdzip`，将 `snap-beta` 限定到 `latest/beta` 和 `package_access,package_push,package_release`，将 `snap-stable` 限定到 `latest/stable` 和 `package_access,package_release`。通过 `gh secret set SNAPCRAFT_STORE_CREDENTIALS --env <环境名> --repo xiaodaozhi/xdzip < <凭据文件>` 写入对应环境。设置到期时间并按需轮换。 [凭据导出参数](https://ubuntu.com/docs/snapcraft/latest/reference/commands/export-login/)
+把 `SNAPCRAFT_STORE_CREDENTIALS` 保存在 GitHub 的 `release-signing` 环境中。凭据限定为 `--snaps=xdzip --channels=latest/stable --acls=package_access,package_push,package_release`，并设置到期时间。可用 `gh secret set SNAPCRAFT_STORE_CREDENTIALS --env release-signing --repo xiaodaozhi/xdzip` 从标准输入写入凭据文件的内容。 [凭据导出参数](https://ubuntu.com/docs/snapcraft/latest/reference/commands/export-login/)
 
 如果当前终端已导出旧凭据，请用 `env -u SNAPCRAFT_STORE_CREDENTIALS snapcraft export-login` 开始导出命令，避免旧变量阻止重新认证。
 
 ### 手动发布
 
 1. 冻结已批准的源码提交，按 [Snap 验证流程](../../qa/README.md#snap-候选包的运行库检查)使用现有 Linux 部署和 Snap 打包脚本生成候选。针对该包核对安装入口、基础包依赖、清单、许可证通知及对应源码入口。 [发行许可复核](../../qa/release-review.md)
-2. 用 `snapcraft upload <安装包路径>` 上传已核验的 `.snap`，用 `snapcraft revisions xdzip` 记录修订号。查看上传结果或[渠道后台](https://snapcraft.io/xdzip/releases)，确认商店审核及发布资格。Canonical 要求人工审核时，等待审核结论。 [Canonical 上传命令](https://ubuntu.com/docs/snapcraft/9/reference/commands/upload/)
-3. 将审核通过的修订发布到 `latest/beta`。测试人员在 Ubuntu 24.04 amd64 上从商店安装，用 `snap list xdzip` 核对修订号。针对实际安装包选择桌面验收场景，按改动覆盖归档打开、分卷读取、解压、文件拖放和桌面集成。在议题中分别记录桌面环境和实际结果，以及打包检查。
-4. beta 验收通过并经维护者批准后，将同一商店修订发布到 `latest/stable`。在渠道后台先核对待保存的变更，也可以用 `snapcraft release xdzip <修订号> latest/stable`。用 `snap info xdzip` 核对公开渠道。需要撤回时，先核对渠道回退关系和对已安装用户的影响。 [Canonical 发布命令](https://ubuntu.com/docs/snapcraft/9/reference/commands/release/)
-
-自动化可以分别执行修订上传和渠道发布。导出凭据时限定到 `xdzip` 及实际需要的权限。上传使用 `package_push`，修改素材使用 `package_update`，发布渠道使用 `package_release`。通过已认证环境或 CI 的密钥配置提供 `SNAPCRAFT_STORE_CREDENTIALS`。 [Canonical 认证说明](https://ubuntu.com/docs/snapcraft/9/how-to/publishing/authenticate/)
+2. 用 `snapcraft upload <安装包路径> --release=latest/stable` 上传已核验的 `.snap`。如果 Canonical 要求人工审核，在[渠道后台](https://snapcraft.io/xdzip/releases)查看结果。审核通过后可重试失败的发布任务，流程会识别已经公开的同一成品。 [Canonical 上传命令](https://ubuntu.com/docs/snapcraft/9/reference/commands/upload/)
+3. 如果已上传但尚未发布，用 `snapcraft revisions xdzip` 核对修订，再用 `snapcraft release xdzip <修订号> latest/stable` 发布。用 `snap info xdzip` 核对公开渠道。需要撤回时，先核对渠道回退关系和对已安装用户的影响。 [Canonical 发布命令](https://ubuntu.com/docs/snapcraft/9/reference/commands/release/)
 
 ## 准备文案和图片
 

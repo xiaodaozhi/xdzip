@@ -281,20 +281,23 @@ class WorkflowTests(unittest.TestCase):
         for path in diagnostics['with']['path'].splitlines():
             self.assertIn(Path(path).suffix, {'.log', '.json'})
 
-    def test_snap_store_protects_the_beta_to_stable_promotion(self):
-        workflow = self.workflows['snap-store.yml']
-        self.assertEqual(set(workflow['on']), {'workflow_dispatch'})
-        self.assertEqual(workflow['on']['workflow_dispatch']['inputs']['publish_beta']['default'], 'false')
-        package, beta, stable = (workflow['jobs'][name] for name in ('package', 'beta', 'stable'))
-        self.assertNotIn('environment', package)
-        self.assertTrue(all('secrets.' not in str(step) for step in package['steps']))
-        self.assertEqual(beta['needs'], 'package')
-        self.assertEqual(beta['if'], 'inputs.publish_beta')
-        self.assertEqual(beta['environment'], 'snap-beta')
-        self.assertEqual(stable['needs'], 'beta')
-        self.assertEqual(stable['environment'], 'snap-stable')
-        self.assertEqual(stable['steps'][-1]['env']['STORE_REVISION'], '${{ needs.beta.outputs.revision }}')
-        self.assertEqual(stable['steps'][-1]['env']['SNAP_SHA3'], '${{ needs.beta.outputs.sha3 }}')
+    def test_stable_snap_uses_the_same_native_build_and_protected_release(self):
+        self.assertNotIn('snap-store.yml', self.workflows)
+        jobs = self.workflows['release.yml']['jobs']
+        self.assertIn('"$CANDIDATE" == false', jobs['resolve']['steps'][-1]['run'])
+        self.assertIn('^v[0-9]+\\.[0-9]+\\.[0-9]+$', jobs['resolve']['steps'][-1]['run'])
+        native = jobs['native']['steps']
+        build = next(i for i, step in enumerate(native) if 'ci-release.ps1 -Stage Build' in step.get('run', ''))
+        self.assertIn('ci-release-snap.sh prepare', native[build - 1]['run'])
+        self.assertIn('ci-release-snap.sh pack', native[build + 1]['run'])
+        self.assertEqual(native[build + 2]['with']['name'], 'release-snap-amd64')
+        publish = jobs['publish']
+        self.assertEqual(publish['environment'], 'release-signing')
+        upload = publish['steps'][-1]
+        self.assertEqual(upload['if'], "needs.resolve.outputs.snap_stable == 'true'")
+        self.assertEqual(upload['env']['SOURCE_REVISION'], '${{ needs.resolve.outputs.revision }}')
+        self.assertIn('release-policy/scripts/snap_store.py', upload['run'])
+        self.assertIn('--verify-public', publish['steps'][-2]['run'])
 
     def test_workflows_do_not_start_web_browser_tests(self):
         browser_drivers = re.compile(r'playwright|chromium|webdriver|selenium', re.I)
