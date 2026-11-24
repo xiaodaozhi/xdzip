@@ -21,3 +21,28 @@
 5. 所有目标地区的材料核对完成后，检查程序包版本、验证状态及认证后的发布方式，再提交认证。平台显示一览“完成”不代表本次要求的图片、标题和其他材料均已核对。提交后确认页面进入认证流程；认证通过并开始发布后，才能按实际状态报告发布进度。
 
 采用手动发布时，认证通过后选择 **立即发布**。微软签名并分发该包，随后可以在 Windows 上验证实际安装的商店版。
+
+## 批量更新商店一览
+
+[地区映射表](../../../../specs/marketing/windows-store-locales.json)按素材语言记录已观察到的 337 个地区一览。草稿导出和映射不一致时，先对照语言选择器，再更新映射。生成器同时核对 MSIX 清单中声明的语言和营销规格中的素材语言。
+
+将整个草稿导出为 UTF-8 CSV 并保留，便于恢复。使用已验证的 MSIX 运行[一览生成器](../../../../scripts/prepare-windows-store-listings.py)。生成器保留所有字段行、默认值和它不负责更新的属性。确认营销规格含本次新增功能文案，也可用 `--release-notes` 提供以十种素材语言为键的 JSON。`--materials` 可选，用来对照素材导出的清单校验宣传图。生成计划在 `build/` 下记录变更与输入摘要。
+
+```sh
+python scripts/prepare-windows-store-listings.py prepare --baseline build/store-before.csv --package build/xdzip-windows-x64.msix --output build/store-pilot --reuse-source-urls --images-only --only fr-ca zh-hant-hk zh-hans-sg
+python scripts/prepare-windows-store-listings.py verify --baseline build/store-before.csv --intended build/store-pilot/listing.csv --actual build/store-after.csv
+```
+
+将生成的 `listing.csv` 导入草稿。`--reuse-source-urls` 从草稿导出中复制基础语言的四张图的 URL。使用前先上传或确认对应的基础语言图片。`--images-only` 用于单独验证图片 URL 和标题。试验通过后，移除 `--only` 和 `--images-only` 可生成全量更新。每次操作使用最新导出作为基线。地区清单不符或缺少图片 URL 时，先核对再生成。生成的 CSV 和 JSON 保存在本地工作目录。
+
+导入后重新导出。核对命令会比较整个草稿，包括未上传的地区。发现图片 URL、标题、原有字段或地区有差异时，先在合作伙伴中心查看报告指出的字段，必要时用保存的导出恢复数据，再决定扩大更新范围和提交认证。[微软 MSIX 导入导出说明](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/import-and-export-store-listings)介绍了素材复用及空白单元格的处理方式。
+
+## 评估提交 API
+
+用[已关联到合作伙伴中心的 Microsoft Entra 应用](https://learn.microsoft.com/en-us/windows/uwp/monetize/create-and-manage-submissions-using-windows-store-services#how-to-associate-an-azure-ad-application-with-your-partner-center-account)通过 API 读取已知提交。从受保护的存储加载 `PARTNER_CENTER_TENANT_ID`、`PARTNER_CENTER_CLIENT_ID` 和 `PARTNER_CENTER_CLIENT_SECRET`，并使用同一提交的 CSV 导出做对照。若已用官方 CLI 保存响应，可用 `--submission-json` 代替 `--product-id`。
+
+```sh
+python scripts/prepare-windows-store-listings.py api-report --export build/store-published.csv --product-id STORE_PRODUCT_ID --submission-id SUBMISSION_ID
+```
+
+报告核对地区、文案和截图描述顺序，也记录 API 是否返回 `runFullTrust` 声明。返回该声明不能证明 API 可提交其用途说明。启用 API 发布前，在独立的 API 草稿中验证地区、图片标题和受限功能说明写入及回读结果，该草稿全程使用 API 编辑。复用现有已验证 MSIX。微软说明顶层 `msstore publish` 可能替换待处理草稿，执行前应确认是否已有草稿。[微软提交 API 指南](https://learn.microsoft.com/en-us/windows/uwp/monetize/manage-app-submissions)和 [CLI 命令](https://learn.microsoft.com/en-us/windows/apps/publish/msstore-dev-cli/commands)说明了这些行为。
