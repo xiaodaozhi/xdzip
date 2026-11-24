@@ -2,13 +2,17 @@
 """Exercise the Store import and export contract with synthetic listing data."""
 
 import csv
+import json
 import runpy
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 
-store = runpy.run_path(str(Path(__file__).with_name('prepare-windows-store-listings.py')))
+SCRIPT = Path(__file__).with_name('prepare-windows-store-listings.py')
+store = runpy.run_path(str(SCRIPT))
 
 
 class StoreListingsTests(unittest.TestCase):
@@ -82,8 +86,61 @@ class StoreListingsTests(unittest.TestCase):
         self.assertEqual(report['api_locales'], 1)
         self.assertTrue(report['run_full_trust_declared'])
         self.assertIn({'locale': 'fr-aw', 'problem': 'missing from API'}, report['sample'])
-        self.assertIn({'locale': 'en-us', 'problem': 'desktop screenshot count, order or caption differs'},
+        self.assertIn({'locale': 'en-us', 'field': 'DesktopScreenshots',
+                       'problem': 'expected four desktop screenshots', 'actual_count': 1},
                       report['sample'])
+        self.assertIn({'locale': 'en-us', 'field': self.captions[0], 'problem': 'wrong or missing caption'},
+                      report['sample'])
+
+    def test_csv_and_api_release_checks_require_ordered_image_and_caption_readback(self):
+        header, rows, columns = self.baseline
+        fields = {row[0]: row for row in rows}
+        properties = {'Title': 'title', 'Description': 'description', 'ReleaseNotes': 'releaseNotes',
+                      'ShortTitle': 'shortTitle', 'ShortDescription': 'shortDescription',
+                      'DevStudio': 'devStudio', 'CopyrightTrademarkInformation': 'copyrightAndTrademarkInfo'}
+        listings = {}
+        for code, index in columns.items():
+            listing = {name: fields[field][index] for field, name in properties.items()}
+            listing['features'] = [fields[f'Feature{i}'][index] for i in range(1, 21)]
+            listing['keywords'] = [fields[f'SearchTerm{i}'][index] for i in range(1, 8)]
+            listing['images'] = [{'imageType': 'Screenshot', 'fileName': f'{code}\\{filename}',
+                                  'description': fields[caption][index]}
+                                 for filename, caption in zip(store['SCREENSHOT_FILES'], self.captions)]
+            listing['images'].insert(1, {'imageType': 'StoreLogoSquare', 'fileName': 'logo.png'})
+            listings[code] = {'baseListing': listing}
+        submission = {'id': '9', 'listings': listings, 'applicationPackages': []}
+
+        with tempfile.TemporaryDirectory() as temporary:
+            csv_path = Path(temporary) / 'listing.csv'
+            submission_path = Path(temporary) / 'submission.json'
+            with csv_path.open('w', encoding='utf-8-sig', newline='') as output:
+                csv.writer(output).writerows([header, *rows])
+            readback = ['--submission-json', str(submission_path), '--submission-id', '9']
+            verify = [sys.executable, str(SCRIPT), 'verify',
+                      '--baseline', str(csv_path), '--intended', str(csv_path), '--actual', str(csv_path)]
+            api_report = [sys.executable, str(SCRIPT), 'api-report', '--export', str(csv_path)]
+            submission_path.write_text(json.dumps(submission), encoding='utf-8')
+            self.assertEqual(subprocess.run(verify, capture_output=True).returncode, 2)
+            for command in (verify, api_report):
+                valid = subprocess.run(command + readback, capture_output=True, text=True)
+                self.assertEqual(valid.returncode, 0, valid.stderr or valid.stdout)
+
+            sg_images = listings['zh-hans-sg']['baseListing']['images']
+            sg_images[0], sg_images[3] = sg_images[3], sg_images[0]
+            hk_images = listings['zh-hant-hk']['baseListing']['images']
+            hk_images[0]['fileName'], hk_images[3]['fileName'] = hk_images[3]['fileName'], hk_images[0]['fileName']
+            submission_path.write_text(json.dumps(submission), encoding='utf-8')
+            csv_result = subprocess.run(verify + readback, capture_output=True, text=True)
+            api_result = subprocess.run(api_report + readback, capture_output=True, text=True)
+            self.assertEqual(csv_result.returncode, 1, csv_result.stderr)
+            self.assertEqual(api_result.returncode, 1, api_result.stderr)
+            self.assertEqual(json.loads(csv_result.stdout)['csv']['differences'], 0)
+            for report in (json.loads(csv_result.stdout)['submission'], json.loads(api_result.stdout)):
+                self.assertEqual({(issue['locale'], issue['field']) for issue in report['sample']}, {
+                    ('zh-hans-sg', 'DesktopScreenshot1'), ('zh-hans-sg', 'DesktopScreenshot3'),
+                    ('zh-hans-sg', 'DesktopScreenshotCaption1'), ('zh-hans-sg', 'DesktopScreenshotCaption3'),
+                    ('zh-hant-hk', 'DesktopScreenshot1'), ('zh-hant-hk', 'DesktopScreenshot3'),
+                })
 
 
 if __name__ == '__main__':
