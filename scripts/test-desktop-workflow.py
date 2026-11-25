@@ -104,6 +104,39 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(events[0], install)
         self.assertLess(events.index(('doctor', 'prepare')), events.index(('doctor', 'build')))
 
+    def test_candidate_network_preparation_keeps_the_token_scoped_and_probe_stops(self):
+        for mode, probe, system in (('auto', True, 'windows'), ('auto', False, 'macos'),
+                                    ('cold', True, 'macos'), ('cold', False, 'windows'),
+                                    ('cold', False, 'linux')):
+            with self.subTest(mode=mode, probe=probe, system=system):
+                with patch.dict(os.environ, {'XDZIP_RELEASE_QT_NETWORK_TOKEN': 'test-token'}):
+                    workflow = self.workflow(system)
+                    self.assertNotIn('XDZIP_RELEASE_QT_NETWORK_TOKEN', os.environ)
+                workflow.args.qt_network_mode = mode
+                workflow.args.qt_network_only = probe
+                with patch.object(workflow, 'doctor'), patch.object(workflow, 'prepare_tools_and_qt'), \
+                        patch.object(workflow, 'script') as script, patch.object(workflow, 'run'), \
+                        patch.object(workflow, 'sdk_identity'):
+                    result = workflow.prepare()
+                calls = script.call_args_list
+                names = [call.args[0] for call in calls]
+                if mode == 'auto' or probe:
+                    self.assertEqual(names[:2], ['ui-fonts.py', 'ci-qt-network.py'])
+                    self.assertEqual(calls[1].args[-2:], ('--mode', mode))
+                    expected_token = 'test-token' if mode == 'auto' else workflow.env.get('GITHUB_TOKEN')
+                    self.assertEqual(calls[1].kwargs['env'].get('GITHUB_TOKEN'), expected_token)
+                else:
+                    self.assertEqual(names[:2], ['ui-fonts.py', 'prepare-qt-network.py'])
+                self.assertNotIn('XDZIP_RELEASE_QT_NETWORK_TOKEN', workflow.env)
+                for index, call in enumerate(calls):
+                    if index != 1 or mode != 'auto':
+                        self.assertNotEqual(call.kwargs.get('env', {}).get('GITHUB_TOKEN'), 'test-token')
+                if probe:
+                    self.assertEqual(len(calls), 2)
+                    self.assertEqual(result, {'qt_network_sha256': self.network_identity['network_sha256']})
+                else:
+                    self.assertEqual(names[2], 'qt_image_security.py')
+
     def test_existing_sdk_adds_image_formats_without_downloading_the_base_again(self):
         workflow = self.workflow('linux')
         workflow.qt = self.root/'build/toolchain/Qt/6.8.2/gcc_64'

@@ -1,11 +1,15 @@
-param([Parameter(Mandatory)][ValidateSet('Build', 'Verify')][string]$Stage)
+param([Parameter(Mandatory)][ValidateSet('Build', 'Verify', 'QtNetwork')][string]$Stage,
+    [ValidateSet('auto', 'cold')][string]$QtNetworkMode = 'cold')
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $true
 $packages = if ($IsMacOS) { 'build/release-package' } else { 'build/review' }
+$networkToken = $env:XDZIP_RELEASE_QT_NETWORK_TOKEN
+Remove-Item Env:XDZIP_RELEASE_QT_NETWORK_TOKEN -ErrorAction SilentlyContinue
 
-if ($Stage -eq 'Build') {
+if ($Stage -eq 'Build' -or $Stage -eq 'QtNetwork') {
     $env:XDZIP_CLI_RELEASE_BUILD = '1'
-    & ./scripts/ci-desktop.ps1 -ReleaseBuild
+    & ./scripts/ci-desktop.ps1 -ReleaseBuild -QtNetworkMode $QtNetworkMode -QtNetworkToken $networkToken -QtNetworkOnly:($Stage -eq 'QtNetwork')
+    if ($Stage -eq 'QtNetwork') { return }
     python scripts/cli.py package --build-dir build/desktop/cli --output build/release-cli
     $cli = Get-Content -Raw -LiteralPath 'build/release-cli/cli-package.json' | ConvertFrom-Json
     Copy-Item -LiteralPath "build/release-cli/$($cli.file)", 'build/release-cli/cli-package.json' -Destination $packages

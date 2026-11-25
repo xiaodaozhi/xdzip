@@ -60,6 +60,14 @@ A local Mac can produce a [development DMG](../../docs/engineering/macos-deploym
 
 ## Rehearse and resume the release workflow
 
+To check Qt Network preparation alone, dispatch the unsigned candidate probe from the branch being tested:
+
+```sh
+gh workflow run release.yml --ref BRANCH -f candidate=true -f qt_network_probe=true
+```
+
+The probe runs on Windows x64 and both native Mac architectures. It uses the candidate's SDK preparation and stops after Qt Network validation. `qt-network-prepare.json` records whether the matching dependency was restored or built from source. Windows and Mac candidates default to `dependencies=auto`, which accepts only an exact, verified artifact from the test-key update workflow on `main`. Use `-f dependencies=cold` to force a source build. Probe records cover SDK preparation only. Candidate packages use the independent same-run verification below.
+
 Only when the selection criteria above require a rehearsal, run the dedicated Release workflow from the branch containing the proposed workflow change or other candidate under investigation:
 
 ```sh

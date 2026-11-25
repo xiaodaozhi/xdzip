@@ -1,7 +1,12 @@
 # CI extension: shared local stages plus historical, visual and installer gates.
-param([string]$QtRoot, [string]$ToolsDirectory, [switch]$BrowserStability, [switch]$ReleaseBuild)
+param([string]$QtRoot, [string]$ToolsDirectory, [switch]$BrowserStability, [switch]$ReleaseBuild,
+    [ValidateSet('auto', 'cold')][string]$QtNetworkMode = 'cold', [switch]$QtNetworkOnly,
+    [string]$QtNetworkToken)
 $ErrorActionPreference = 'Stop'
 if ($BrowserStability -and $ReleaseBuild) { throw 'Select one validation entry point' }
+if (($QtNetworkOnly -or $QtNetworkMode -eq 'auto' -or $QtNetworkToken) -and (!$ReleaseBuild -or !($IsWindows -or $IsMacOS))) {
+    throw 'Candidate Qt Network preparation requires the Windows or macOS release build entry point'
+}
 . "$PSScriptRoot/ci-observability.ps1"
 Initialize-CiTiming -Scope qt -OutputPath 'build/review/ci-timings.json'
 function Invoke-Checked {
@@ -100,7 +105,17 @@ if ($ReleaseBuild -and $IsMacOS) {
 }
 # Fail on PATH/compiler/SDK issues before downloads, compilation or license collection.
 Set-CiPhase 'prepare'
-Invoke-Checked python (@('scripts/desktop.py', 'prepare', '--install-qt', '--install-rust', '--packaging') + $shared)
+$prepareArguments = @('scripts/desktop.py', 'prepare', '--install-qt', '--install-rust', '--packaging') + $shared
+if ($QtNetworkMode -eq 'auto') { $prepareArguments += @('--qt-network-mode', 'auto') }
+if ($QtNetworkOnly) { $prepareArguments += '--qt-network-only' }
+try {
+    if ($QtNetworkToken) { $env:XDZIP_RELEASE_QT_NETWORK_TOKEN = $QtNetworkToken }
+    Invoke-CiCommand -Program python -Arguments $prepareArguments
+} finally {
+    if ($QtNetworkToken) { Remove-Item Env:XDZIP_RELEASE_QT_NETWORK_TOKEN }
+}
+Assert-CleanSources
+if ($QtNetworkOnly) { return }
 $aqtPython = if ($IsWindows) { Join-Path $qtEnvironment 'Scripts/python.exe' } else { Join-Path $qtEnvironment 'bin/python' }
 Set-CiPhase 'source-contracts'
 Invoke-Checked python @('scripts/sync-version.py', '--check')

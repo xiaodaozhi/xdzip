@@ -60,6 +60,14 @@ GitHub 桌面版从“关于”主动检查更新。符合条件的安装版下�
 
 ## 候选演练与失败续跑
 
+只检查 Qt Network 准备时，对待验证分支运行无签名候选探针：
+
+```sh
+gh workflow run release.yml --ref BRANCH -f candidate=true -f qt_network_probe=true
+```
+
+探针在 Windows x64 和两种原生 Mac 架构上运行，使用候选构建的 SDK 准备入口，在 Qt Network 验证后结束。`qt-network-prepare.json` 记录命中或源码构建结果。Windows 和 Mac 候选默认使用 `dependencies=auto`，仅接收 `main` 上测试密钥更新工作流生成且验证完全匹配的依赖工件。传入 `-f dependencies=cold` 可强制源码编译。探针记录只覆盖 SDK 准备，候选包仍通过下述本轮独立验包流程验证。
+
 只有满足上述条件确需演练时，才在包含工作流变更的分支或其他待核查的候选上运行专用 Release 工作流：
 
 ```sh
