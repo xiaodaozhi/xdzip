@@ -6,9 +6,16 @@
 
 ## Unveröffentlicht
 
-- Native macOS-Intel-Builds und architekturspezifische authentifizierte Updates für künftige Releases vorbereitet.
-
 - Einen eigenständigen, schreibgeschützten SDK-Versuch mit begrenzter CBOR-Verarbeitung, kontrollierter Ein-/Ausgabe, zwei unabhängigen Protokollimplementierungen und einer Sandbox-Prüfung hinzufügen, die unsichere Ausführung ablehnt. Drittanbietererweiterungen bleiben im Produkt deaktiviert.
+
+## 0.3.2
+
+- Native Desktop- und eigenständige CLI-Pakete für Intel-Macs ab macOS 14 veröffentlichen. Beide Mac-Architekturen erhalten jeweils authentifizierte Updates.
+- Einen Fehler beheben, durch den Minimierungsanfragen bei Vollbildwechseln unter macOS verloren gehen konnten.
+- Die Dateiendungsangaben auf der Startseite ausrichten sowie die Größe des Entpackfensters und das Erscheinungsbild seiner Auswahllisten unter Windows korrigieren.
+- Das Snap-Paket für Ubuntu amd64 im stabilen Kanal veröffentlichen.
+
+Die [Versionshinweise](release-notes/0.3.2.md) und das [GitHub-Release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.3.2) beschreiben Plattformen, Prüfumfang und bekannte Einschränkungen.
 
 ## 0.3.1
 

@@ -4,9 +4,16 @@ English | [简体中文](CHANGELOG.zh-CN.md) | [繁體中文](CHANGELOG.zh-TW.md
 
 ## Unreleased
 
-- Prepare native macOS Intel builds and architecture-specific authenticated updates for future releases.
-
 - Add a standalone read-only SDK trial with bounded CBOR, controlled I/O, two independent protocol implementations and a sandbox gate that refuses unsafe execution. Third-party extensions remain disabled in the product.
+
+## 0.3.2
+
+- Publish native macOS Intel desktop and standalone CLI packages for macOS 14 or later, with authenticated updates for both Mac architectures.
+- Fix dropped minimize requests during macOS fullscreen transitions.
+- Align the format suffix labels on the start page and correct the size and dropdown styling of the Windows extraction window.
+- Publish the Ubuntu amd64 Snap to the stable channel.
+
+See the [release notes](release-notes/0.3.2.md) and [GitHub release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.3.2) for platform support, verification scope and known limitations.
 
 ## 0.3.1
 

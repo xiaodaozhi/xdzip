@@ -6,9 +6,16 @@
 
 ## 未发布
 
-- 为后续版本准备 macOS Intel 原生构建和按架构区分的认证更新。
-
 - 提供独立只读 SDK 试验，包含有界 CBOR、受控 I/O、两个独立协议实现与失败关闭的沙箱门禁；产品继续禁用第三方扩展。
+
+## 0.3.2
+
+- 发布适用于 macOS 14 及以上的原生 Intel 桌面包和独立 CLI，两种 Mac 架构分别提供认证更新。
+- 修复 macOS 在全屏转换过程中可能丢失最小化请求的问题。
+- 对齐起始页格式后缀标签，修复 Windows 解压窗口的尺寸和下拉样式。
+- 将 Ubuntu amd64 Snap 发布到稳定渠道。
+
+平台支持、验收范围和已知限制见[发布说明](release-notes/0.3.2.md)和 [GitHub Release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.3.2)。
 
 ## 0.3.1
 

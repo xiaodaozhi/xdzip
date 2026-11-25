@@ -6,9 +6,16 @@
 
 ## Non publié
 
-- Préparation des compilations natives macOS Intel et des mises à jour authentifiées par architecture pour les prochaines versions.
-
 - Ajouter un SDK autonome expérimental en lecture seule avec un traitement CBOR borné, des entrées-sorties contrôlées, deux implémentations indépendantes du protocole et un contrôle de bac à sable qui refuse les exécutions dangereuses. Les extensions tierces restent désactivées dans le produit.
+
+## 0.3.2
+
+- Publier les paquets natifs de bureau et de CLI autonome pour les Mac Intel sous macOS 14 ou ultérieur, avec des mises à jour authentifiées pour les deux architectures Mac.
+- Corriger la perte de certaines demandes de réduction de fenêtre lors des transitions en plein écran sur macOS.
+- Aligner les étiquettes d’extension de format sur la page d’accueil et corriger la taille de la fenêtre d’extraction Windows ainsi que le style de ses listes déroulantes.
+- Publier le Snap Ubuntu amd64 dans le canal stable.
+
+Consultez les [notes de version](release-notes/0.3.2.md) et la [version GitHub](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.3.2) pour les plateformes, les vérifications et les limites connues.
 
 ## 0.3.1
 
