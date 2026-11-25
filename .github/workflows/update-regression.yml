@@ -15,8 +15,14 @@ on:
         required: false
         default: false
         type: boolean
+      dependencies:
+        description: Use a verified Qt Network artifact when available, or force a source build
+        type: choice
+        default: auto
+        options: [auto, cold]
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: update-regression-${{ github.ref }}-${{ inputs.platform || 'all' }}
   cancel-in-progress: false
@@ -44,6 +50,25 @@ jobs:
           Import-Module "$vs/Common7/Tools/Microsoft.VisualStudio.DevShell.dll"
           Enter-VsDevShell -VsInstallPath $vs -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
           python scripts/check-windows-update.py --output build/update-regression/windows
+      - name: Install the base Qt SDK
+        shell: pwsh
+        run: |
+          python -m pip install aqtinstall==3.3.0 -r design/assets/fonts/requirements.txt
+          python -m aqt install-qt windows desktop 6.8.2 win64_msvc2022_64 --outputdir '${{ runner.temp }}/Qt'
+      - name: Prepare and validate native Qt Network
+        id: qt_network
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          XDZIP_DEPENDENCY_MODE: ${{ inputs.dependencies }}
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
+          $vs = & $vswhere -latest -products '*' -prerelease -property installationPath
+          Import-Module "$vs/Common7/Tools/Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $vs -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+          $publish = @()
+          if ($env:GITHUB_REF -eq 'refs/heads/main') { $publish += '--publish' }
+          python scripts/ci-qt-network.py prepare --qt-prefix '${{ runner.temp }}/Qt/6.8.2/msvc2022_64' --output build/update-qt-network --mode $env:XDZIP_DEPENDENCY_MODE @publish
       - name: Build two private real Qt products and complete their native upgrade
         shell: pwsh
         run: |
@@ -51,9 +76,6 @@ jobs:
           $vs = & $vswhere -latest -products '*' -prerelease -property installationPath
           Import-Module "$vs/Common7/Tools/Microsoft.VisualStudio.DevShell.dll"
           Enter-VsDevShell -VsInstallPath $vs -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
-          python -m pip install aqtinstall==3.3.0
-          python -m aqt install-qt windows desktop 6.8.2 win64_msvc2022_64 --outputdir '${{ runner.temp }}/Qt'
-          python scripts/prepare-qt-network.py --qt-prefix '${{ runner.temp }}/Qt/6.8.2/msvc2022_64'
           $env:XDZIP_ISOLATED_UPDATE_FIXTURE = '1'
           $env:PATH = "${env:USERPROFILE}/.cargo/bin;${env:PATH}"
           $session = Join-Path $PWD 'build/update-regression/windows-qt-session'
@@ -71,8 +93,19 @@ jobs:
             build/update-regression/windows-qt/*.log
             build/update-regression/windows-qt/failed-install-recovery/*.json
             build/update-regression/windows-qt/failed-install-recovery/*.log
+            build/update-qt-network/qt-network-prepare.json
           if-no-files-found: error
           retention-days: 14
+      - name: Preserve the verified Qt Network dependency
+        if: github.ref == 'refs/heads/main' && steps.qt_network.outputs.bundle != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.qt_network.outputs.bundle }}
+          path: build/update-qt-network/qt-network.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+          overwrite: true
   macos:
     if: ${{ inputs.platform == 'all' || inputs.platform == 'macos' }}
     runs-on: macos-15
@@ -85,9 +118,16 @@ jobs:
       - name: Prepare native Apple Silicon SDK and pinned toolchain
         run: |
           rustup toolchain install 1.99.0 --profile minimal --component rustfmt --component clippy
-          python3 -m pip install aqtinstall==3.3.0
+          python3 -m pip install aqtinstall==3.3.0 -r design/assets/fonts/requirements.txt
           python3 -m aqt install-qt mac desktop 6.8.2 clang_64 --outputdir '${{ runner.temp }}/Qt'
-          python3 scripts/prepare-qt-network.py --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos'
+      - name: Prepare and validate native Qt Network
+        id: qt_network
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          XDZIP_DEPENDENCY_MODE: ${{ inputs.dependencies }}
+        run: |
+          if [[ "$GITHUB_REF" == refs/heads/main ]]; then set -- --publish; else set --; fi
+          python3 scripts/ci-qt-network.py prepare --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos' --output build/update-qt-network --mode "$XDZIP_DEPENDENCY_MODE" "$@"
       - name: Check production-signing admission with test keys only
         run: python3 scripts/test-production-update-signing.py
       - name: Check native CLI code and resource sealing
@@ -122,8 +162,19 @@ jobs:
             build/update-regression/macos-proxy/*.json
             build/update-regression/macos-proxy/*.log
             build/toolchain/Sparkle/*-build.log
+            build/update-qt-network/qt-network-prepare.json
           if-no-files-found: error
           retention-days: 14
+      - name: Preserve the verified Qt Network dependency
+        if: github.ref == 'refs/heads/main' && steps.qt_network.outputs.bundle != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.qt_network.outputs.bundle }}
+          path: build/update-qt-network/qt-network.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+          overwrite: true
   macos_intel:
     if: ${{ inputs.platform == 'all' || inputs.platform == 'macos-intel' }}
     runs-on: macos-15-intel
@@ -151,7 +202,14 @@ jobs:
           rustup toolchain install 1.99.0 --profile minimal --component rustfmt --component clippy
           python3 -m pip install aqtinstall==3.3.0
           python3 -m aqt install-qt mac desktop 6.8.2 clang_64 --outputdir '${{ runner.temp }}/Qt'
-          python3 scripts/prepare-qt-network.py --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos'
+      - name: Prepare and validate native Qt Network
+        id: qt_network
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          XDZIP_DEPENDENCY_MODE: ${{ inputs.dependencies }}
+        run: |
+          if [[ "$GITHUB_REF" == refs/heads/main ]]; then set -- --publish; else set --; fi
+          python3 scripts/ci-qt-network.py prepare --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos' --output build/update-qt-network --mode "$XDZIP_DEPENDENCY_MODE" "$@"
       - name: Check Intel update and fixture admission contracts
         run: |
           python3 scripts/test-release-updates.py
@@ -166,8 +224,19 @@ jobs:
             build/update-regression/macos-intel-product/*verification*.json
             build/update-regression/macos-intel-product/*.log
             build/toolchain/Sparkle/*-build.log
+            build/update-qt-network/qt-network-prepare.json
           if-no-files-found: warn
           retention-days: 14
+      - name: Preserve the verified Qt Network dependency
+        if: github.ref == 'refs/heads/main' && steps.qt_network.outputs.bundle != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.qt_network.outputs.bundle }}
+          path: build/update-qt-network/qt-network.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+          overwrite: true
   linux:
     if: ${{ inputs.platform == 'all' || inputs.platform == 'linux' }}
     runs-on: ubuntu-24.04
@@ -181,9 +250,17 @@ jobs:
         run: |
           mkdir -p build/update-regression
           docker run --rm --network none --cap-add SYS_PTRACE --env XDZIP_ISOLATED_UPDATE_FIXTURE=1 --mount type=bind,source="$PWD",target=/repo,readonly --mount type=bind,source="$PWD/build/update-regression",target=/evidence xdzip-update-regression python3 scripts/check-linux-update.py --output /evidence/linux --offline
+      - name: Prepare the isolated Qt SDK image and validate Qt Network
+        id: qt_network
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          XDZIP_DEPENDENCY_MODE: ${{ inputs.dependencies }}
+        run: |
+          publish=0
+          if [[ "$GITHUB_REF" == refs/heads/main ]]; then publish=1; fi
+          bash scripts/ci-update-qt-linux.sh "$XDZIP_DEPENDENCY_MODE" build/update-qt-network "$publish"
       - name: Build two private real Qt products in a separate SDK image
         run: |
-          docker build -f tests/fixtures/native/update-qt-build.Dockerfile -t xdzip-update-qt-build .
           docker run --rm --env XDZIP_ISOLATED_UPDATE_FIXTURE=1 --mount type=bind,source="$PWD",target=/repo,readonly --mount type=bind,source="$PWD/build/update-regression",target=/evidence xdzip-update-qt-build python3 scripts/check-native-qt-update.py --prepare --qt-prefix /opt/Qt/6.8.2/gcc_64 --output /evidence/linux-qt --session-directory /home/xdzipfixture/qt-session
       - name: Complete the real Qt upgrade in an independent SDK-free runtime
         run: |
@@ -202,5 +279,16 @@ jobs:
             build/update-regression/linux-qt/*.log
             build/update-regression/linux-qt/failed-install-recovery/*.json
             build/update-regression/linux-qt/failed-install-recovery/*.log
+            build/update-qt-network/qt-network-prepare.json
           if-no-files-found: error
           retention-days: 14
+      - name: Preserve the verified Qt Network dependency
+        if: github.ref == 'refs/heads/main' && steps.qt_network.outputs.bundle != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.qt_network.outputs.bundle }}
+          path: build/update-qt-network/qt-network.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+          overwrite: true

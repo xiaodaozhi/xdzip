@@ -1,6 +1,6 @@
 # tests/fixtures/native/update-qt-build.Dockerfile
 
-FROM xdzip-update-regression
+FROM xdzip-update-regression AS sdk-base
 RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake ninja-build patchelf pkg-config libssl-dev python3-venv git \
     perl openssl zlib1g-dev libpcre2-dev libicu-dev libglib2.0-dev libnautilus-extension-dev libzstd-dev libkrb5-dev \
@@ -19,4 +19,14 @@ COPY design/assets/fonts/requirements.txt /opt/ui-font-requirements.txt
 RUN /opt/aqt/bin/python -m pip install -r /opt/ui-font-requirements.txt
 ENV PATH="/opt/aqt/bin:${PATH}"
 COPY patches/qt ./patches/qt
+
+FROM sdk-base AS workflow-prepared
+ARG XDZIP_QT_NETWORK_PUBLISH=0
+RUN --mount=type=bind,from=qt-network-incoming,target=/qt-network-incoming \
+    set -eu; \
+    if [ "$XDZIP_QT_NETWORK_PUBLISH" = 1 ]; then set -- --publish; else set --; fi; \
+    python3 scripts/ci-qt-network.py prepare --qt-prefix /opt/Qt/6.8.2/gcc_64 \
+        --incoming /qt-network-incoming --output /qt-network-result "$@"
+
+FROM sdk-base AS prepared
 RUN python3 scripts/prepare-qt-network.py --qt-prefix /opt/Qt/6.8.2/gcc_64

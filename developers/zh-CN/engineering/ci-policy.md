@@ -68,6 +68,8 @@ Foundation 的 `image_only=true` 在原生 macOS 用系统 sips／ImageIO 转换
 
 [原生更新回归](../../../.github/workflows/update-regression.yml)使用隔离夹具，可选单个平台排障，或以 `platform=all` 跑完整矩阵。[生产更新验收](../../../.github/workflows/production-update-acceptance.yml)是独立的手动工作流，在 `main` 上通过受保护的 `release-signing` 环境核对生产信任根并验证签名夹具。发布决定仍依据专用 Release 工作流和实际候选包。议题应记录运行、平台及覆盖范围。长时原生作业默认至少间隔五分钟查询，按需读取相关日志片段。
 
+原生更新回归支持 `dependencies=auto` 和 `dependencies=cold`。每个 runner 安装基础 Qt SDK。`auto` 可复用同一工作流在 `main` 上成功运行留下的匹配 Qt Network 依赖工件，省去源码编译。当前 runner 会核对工件摘要、SDK、工具链、原生架构与 ABI，并重新运行网络探针。工件缺失或校验失败时回退到源码构建。`main` 手动运行成功后可保留依赖库与清单 14 天。每轮独立构建并测试产品夹具，冷暖路径耗时可查看 `qt-network-prepare.json` 和 SDK 准备步骤。
+
 ## 视觉、桌面与发行
 
 根据改动先运行自动化并由执行者尽量检查实际应用或截图。输入法、真实读屏、系统对话框、窗口装饰、物理多显示器及真实 GPU 等场景按需检查；没有执行或没有对应环境时记录限制，不要求每次由维护者完成固定人工清单，也不把离屏、合成输入或虚拟显示器记为真人或物理设备通过。方法见[桌面验证](../qa/private-test-manual.md)。
