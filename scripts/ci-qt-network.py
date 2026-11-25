@@ -19,6 +19,8 @@ WORKFLOW = 'update-regression.yml'
 WORK = ROOT/'build/toolchain/qt-network-update-ci'
 SOURCE_CACHE = ROOT/'build/source-cache'
 MAX_ARCHIVE_BYTES = MAX_LIBRARY_BYTES + 2 * 1024 * 1024
+PRODUCER_JOBS = {('win32', 'x86_64'): 'windows', ('darwin', 'arm64'): 'macos',
+                 ('darwin', 'x86_64'): 'macos_intel', ('linux', 'x86_64'): 'linux'}
 FAILURES = (OSError, ValueError, KeyError, TypeError, AttributeError, zipfile.BadZipFile,
             subprocess.SubprocessError, URLError)
 
@@ -49,24 +51,37 @@ def api(path, *, redirect=False):
         return json.load(response)
 
 
-def trusted_artifact(artifact, name, workflow_id, repo_id):
+def trusted_artifact(artifact, name, workflow_id, repo_id, platform_job):
     if artifact['name'] != name or artifact['expired'] or not 0 < artifact['size_in_bytes'] <= MAX_ARCHIVE_BYTES:
         return False
     producer = artifact['workflow_run']
     if (producer['repository_id'] != repo_id or producer['head_repository_id'] != repo_id
             or producer['head_branch'] != 'main'):
         return False
-    run = api('/actions/runs/' + str(int(producer['id'])))
-    return (run['id'] == producer['id'] and run['workflow_id'] == workflow_id
+    run_url = '/actions/runs/' + str(int(producer['id']))
+    run = api(run_url)
+    if not (run['id'] == producer['id'] and run['workflow_id'] == workflow_id
             and run['path'] == '.github/workflows/' + WORKFLOW and run['head_sha'] == producer['head_sha']
             and run['repository']['id'] == repo_id and run['head_repository']['id'] == repo_id
             and run['head_branch'] == 'main' and run['event'] == 'workflow_dispatch'
-            and run['status'] == 'completed' and run['conclusion'] == 'success')
+            and run['status'] == 'completed'):
+        return False
+    if run['conclusion'] == 'success':
+        return True
+    if run['conclusion'] != 'failure':
+        return False
+    # A failure on another architecture does not invalidate this producer job.
+    attempt = str(int(run['run_attempt']))
+    jobs = api(run_url+'/attempts/'+attempt+'/jobs?per_page=20')['jobs']
+    return any(job['name'] == platform_job and job['conclusion'] == 'success'
+               and any(step['name'] == 'Preserve the verified Qt Network dependency' and step['conclusion'] == 'success'
+                       for step in job['steps']) for job in jobs)
 
 
 def fetch(identity, output):
     """GitHub authenticates the producer and archive digest before any extraction."""
     name = key(identity)
+    platform_job = PRODUCER_JOBS[identity['os'], identity['arch']]
     repo = api('')
     if repo['default_branch'] != 'main':
         raise ValueError('Qt Network producers require main as the default branch')
@@ -74,7 +89,7 @@ def fetch(identity, output):
     query = urlencode({'name': name, 'per_page': 10})
     artifacts = api('/actions/artifacts?' + query)['artifacts']
     for artifact in sorted(artifacts, key=lambda item: item['id'], reverse=True):
-        if not trusted_artifact(artifact, name, workflow['id'], repo['id']):
+        if not trusted_artifact(artifact, name, workflow['id'], repo['id'], platform_job):
             continue
         archive_path = output.with_suffix('.download')
         temporary = output.with_suffix('.partial')

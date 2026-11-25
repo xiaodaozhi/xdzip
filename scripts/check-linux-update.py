@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import pwd
+import shlex
 import shutil
 import subprocess
 import sys
@@ -26,7 +27,7 @@ def main():
         parser.error('Real installation is restricted to an explicitly marked disposable root container')
     if subprocess.run(['dpkg-query', '-W', 'xdzip'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
         parser.error('Refusing a container with an existing xdzip installation')
-    for tool in ('pkexec', 'apt-get', 'dbus-daemon', 'dpkg-deb', 'cc'):
+    for tool in ('pkexec', 'apt-get', 'dbus-daemon', 'dpkg-deb', 'cc', 'c++', 'pkg-config'):
         if not shutil.which(tool):
             parser.error('Missing container dependency: ' + tool)
     evidence = args.output.resolve()
@@ -45,6 +46,10 @@ def main():
                 target.chmod(0o644)
     atexit.register(export)
     helper, signing = build_helpers(output, args.offline)
+    shell_extension = output/'libxdzip-nautilus.so'
+    flags = shlex.split(subprocess.check_output(['pkg-config', '--cflags', '--libs', 'libnautilus-extension-4'], text=True))
+    run(['c++', '-std=c++17', '-shared', '-fPIC', '-Wall', '-Wextra', '-Werror',
+         ROOT/'apps/desktop/shell/NautilusMenu.cpp', '-o', shell_extension, *flags])
     try:
         pwd.getpwuid(UID)
         raise RuntimeError('Fixture UID already exists')
@@ -81,6 +86,9 @@ def main():
         (payload / 'share').mkdir()
         compile_product(payload / 'bin/xdzip', identity)
         shutil.copy2(helper, payload / 'bin/xdzip-update-helper')
+        shell = payload/'lib/nautilus'
+        shell.mkdir(parents=True)
+        shutil.copy2(shell_extension, shell/shell_extension.name)
         (payload / 'bin/xdzip').chmod(0o755)
         (payload / 'bin/xdzip-update-helper').chmod(0o755)
         launcher = payload / 'xdzip'
