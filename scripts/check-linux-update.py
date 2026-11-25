@@ -47,9 +47,11 @@ def main():
     atexit.register(export)
     helper, signing = build_helpers(output, args.offline)
     shell_extension = output/'libxdzip-nautilus.so'
+    generated = output/'generated'
+    run([sys.executable, ROOT/'scripts/ui_languages.py', '--cpp', generated/'UiLanguageData.h'])
     flags = shlex.split(subprocess.check_output(['pkg-config', '--cflags', '--libs', 'libnautilus-extension-4'], text=True))
     run(['c++', '-std=c++17', '-shared', '-fPIC', '-Wall', '-Wextra', '-Werror',
-         ROOT/'apps/desktop/shell/NautilusMenu.cpp', '-o', shell_extension, *flags])
+         '-I'+str(generated), ROOT/'apps/desktop/shell/NautilusMenu.cpp', '-o', shell_extension, *flags])
     try:
         pwd.getpwuid(UID)
         raise RuntimeError('Fixture UID already exists')
