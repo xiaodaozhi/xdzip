@@ -257,6 +257,21 @@ class WorkflowTests(unittest.TestCase):
         self.assertLess(preflight, dependency_step)
         self.assertIn('scripts/check-system-proxy-fixture.py', intel_update['steps'][preflight]['run'])
         production = self.workflows['production-update-acceptance.yml']
+        platforms = production['on']['workflow_dispatch']['inputs']['platform']
+        self.assertEqual(platforms['default'], 'all')
+        self.assertEqual(set(platforms['options']), {'all', 'windows-linux', 'windows', 'linux', 'macos', 'macos-intel'})
+        self.assertIn("inputs.platform == 'windows-linux'", production['jobs']['windows']['if'])
+        self.assertIn("inputs.platform == 'windows-linux'", production['jobs']['linux']['if'])
+        self.assertNotIn('windows-linux', production['jobs']['macos']['if'])
+        self.assertNotIn('windows-linux', production['jobs']['macos_intel']['if'])
+        windows_production = production['jobs']['windows']
+        preparation = next(step['run'] for step in windows_production['steps']
+                           if step.get('name') == 'Prepare native tools and Qt without signing authority')
+        self.assertLess(preparation.index('Enter-VsDevShell'), preparation.index('scripts/prepare-qt-network.py'))
+        for name in ('perl', 'nmake', 'cmake', 'ninja'):
+            self.assertIn("'" + name + "'", preparation)
+        image = (ROOT/'tests/fixtures/native/update-qt-build.Dockerfile').read_text(encoding='utf-8')
+        self.assertIn('libnautilus-extension-dev', image)
         intel_production = production['jobs']['macos_intel']
         self.assertEqual(production['jobs']['keys']['if'], "${{ github.ref == 'refs/heads/main' }}")
         self.assertEqual(intel_production['runs-on'], 'macos-15-intel')
