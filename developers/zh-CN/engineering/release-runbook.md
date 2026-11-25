@@ -66,7 +66,16 @@ GitHub 桌面版从“关于”主动检查更新。符合条件的安装版下�
 gh workflow run release.yml --ref BRANCH -f candidate=true -f qt_network_probe=true
 ```
 
-探针在 Windows x64 和两种原生 Mac 架构上运行，使用候选构建的 SDK 准备入口，在 Qt Network 验证后结束。`qt-network-prepare.json` 记录命中或源码构建结果。Windows 和 Mac 候选默认使用 `dependencies=auto`，仅接收 `main` 上测试密钥更新工作流生成且验证完全匹配的依赖工件。传入 `-f dependencies=cold` 可强制源码编译。探针记录只覆盖 SDK 准备，候选包仍通过下述本轮独立验包流程验证。
+探针在 Windows x64 和两种原生 Mac 架构上运行，使用更新回归工作流的 Qt Network 工件查找机制，在验证后结束。`qt-network-prepare.json` 记录命中或源码构建结果。传入 `-f dependencies=cold` 可强制源码编译。
+
+Windows x64、两种 Mac 架构和 Ubuntu x64 的候选与正式构建共用原生依赖准备入口。先生成 Qt Network、Qt ImageFormats 和 Mac 的 Sparkle SDK 工件，生产提交进入 `main` 后，在新 runner 上验证跨运行命中。
+
+```sh
+gh workflow run release.yml --ref BRANCH -f candidate=true -f native_dependencies=seed
+gh workflow run release.yml --ref main -f candidate=true -f native_dependencies=hit
+```
+
+默认 `dependencies=auto` 接收依赖键完全匹配的工件，工件的原生生产作业必须成功，且生产提交须已进入 `main`。使用前校验工件摘要、原始 Qt SDK、ABI 和原生架构。Sparkle 还要验证锁定的框架回执和严格代码签名。Ubuntu 使用宿主 runner 生成的工件。缺失或拒收时从锁定源码构建，`dependencies=cold` 可直接走源码。`dependencies.json` 记录每个依赖的结果。探针验证 PNG 和 TIFF 解码像素，常规候选和正式发行仍在当次运行构建、部署并验证应用和 CLI 包。
 
 在 Windows x64 和原生 macOS Intel 上测量 Qt ImageFormats 复用时，运行图片模块探针：
 

@@ -1,5 +1,5 @@
 name: Release
-run-name: ${{ inputs.qt_image_probe && 'Release candidate Qt ImageFormats probe' || inputs.qt_network_probe && 'Release candidate Qt Network probe' || 'Release' }}
+run-name: ${{ inputs.native_dependencies != 'off' && 'Native Release dependency probe' || inputs.qt_image_probe && 'Release candidate Qt ImageFormats probe' || inputs.qt_network_probe && 'Release candidate Qt Network probe' || 'Release' }}
 on:
   workflow_dispatch:
     inputs:
@@ -15,7 +15,7 @@ on:
         type: boolean
         default: false
       dependencies:
-        description: Qt Network mode for Windows and macOS candidates
+        description: Native dependency mode for Release and candidate builds
         type: choice
         default: auto
         options: [auto, cold]
@@ -27,6 +27,11 @@ on:
         description: In candidate mode, measure cold and reused Qt image modules on Windows and macOS Intel
         type: boolean
         default: false
+      native_dependencies:
+        description: Stop at native dependencies and export bundles or require a cross-run hit
+        type: choice
+        default: 'off'
+        options: ['off', seed, hit]
 permissions:
   contents: read
 concurrency:
@@ -45,6 +50,7 @@ jobs:
           RETRY_PROBE: ${{ inputs.retry_probe }}
           QT_NETWORK_PROBE: ${{ inputs.qt_network_probe }}
           QT_IMAGE_PROBE: ${{ inputs.qt_image_probe }}
+          NATIVE_DEPENDENCIES: ${{ inputs.native_dependencies }}
           RELEASE_TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
@@ -53,6 +59,9 @@ jobs:
           fi
           if [[ "$QT_IMAGE_PROBE" == true ]]; then
             [[ "$CANDIDATE" == true && "$RETRY_PROBE" == false && "$QT_NETWORK_PROBE" == false ]]
+          fi
+          if [[ "$NATIVE_DEPENDENCIES" != off ]]; then
+            [[ "$CANDIDATE" == true && "$RETRY_PROBE" == false && "$QT_NETWORK_PROBE" == false && "$QT_IMAGE_PROBE" == false ]]
           fi
           if [[ "$CANDIDATE" == true ]]; then
             [[ -z "$RELEASE_TAG" ]]
@@ -108,7 +117,7 @@ jobs:
           python3 scripts/publish-release.py --draft-only --notes-file "release-policy/release-notes/${RELEASE_TAG#v}.md" --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
 
   macos-signing-preflight:
-    if: ${{ !inputs.qt_network_probe && !inputs.qt_image_probe }}
+    if: ${{ !inputs.qt_network_probe && !inputs.qt_image_probe && inputs.native_dependencies == 'off' }}
     needs: resolve
     strategy:
       fail-fast: false
@@ -128,7 +137,7 @@ jobs:
 
   native:
     needs: [resolve, draft, macos-signing-preflight]
-    if: always() && !cancelled() && !inputs.qt_network_probe && !inputs.qt_image_probe && needs.resolve.result == 'success' && needs.macos-signing-preflight.result == 'success' && (inputs.candidate || needs.draft.result == 'success')
+    if: always() && !cancelled() && !inputs.qt_network_probe && !inputs.qt_image_probe && inputs.native_dependencies == 'off' && needs.resolve.result == 'success' && needs.macos-signing-preflight.result == 'success' && (inputs.candidate || needs.draft.result == 'success')
     permissions:
       contents: read
       actions: read
@@ -146,24 +155,19 @@ jobs:
           ref: ${{ needs.resolve.outputs.revision }}
           persist-credentials: false
       - name: Select the upstream Ubuntu archive for Snap release
-        if: runner.os == 'Linux' && needs.resolve.outputs.snap_stable == 'true'
+        if: runner.os == 'Linux'
         run: bash scripts/ci-release-snap.sh mirror
       - if: runner.os == 'Linux'
         uses: ./.github/actions/linux-release-dependencies
-      - name: Prepare locked Snap inputs before compiling
-        if: runner.os == 'Linux' && needs.resolve.outputs.snap_stable == 'true'
-        run: bash scripts/ci-release-snap.sh prepare
       - name: Build and package the native desktop and CLI candidate once
         shell: pwsh
         env:
-          QT_NETWORK_MODE: ${{ inputs.candidate && runner.os != 'Linux' && inputs.dependencies || 'cold' }}
-          XDZIP_RELEASE_QT_NETWORK_TOKEN: ${{ inputs.candidate && runner.os != 'Linux' && inputs.dependencies == 'auto' && github.token || '' }}
-        run: |
-          if ($env:QT_NETWORK_MODE -eq 'auto') {
-            ./scripts/ci-release.ps1 -Stage Build -QtNetworkMode auto
-          } else {
-            ./scripts/ci-release.ps1 -Stage Build
-          }
+          XDZIP_DEPENDENCY_MODE: ${{ inputs.dependencies }}
+          XDZIP_RELEASE_QT_NETWORK_TOKEN: ${{ inputs.dependencies == 'auto' && github.token || '' }}
+        run: ./scripts/ci-release.ps1 -Stage Build -DependencyMode $env:XDZIP_DEPENDENCY_MODE
+      - name: Prepare locked Snap inputs
+        if: runner.os == 'Linux' && needs.resolve.outputs.snap_stable == 'true'
+        run: bash scripts/ci-release-snap.sh prepare
       - name: Pack the stable Snap from the same Linux build
         if: runner.os == 'Linux' && needs.resolve.outputs.snap_stable == 'true'
         run: bash scripts/ci-release-snap.sh pack
@@ -191,6 +195,7 @@ jobs:
           name: release-build-evidence-${{ runner.os }}${{ matrix.os == 'macos-15-intel' && '-X64' || '' }}-${{ github.run_attempt }}
           path: |
             build/review/*.json
+            build/review/dependencies/dependencies.json
             build/release-package/*.json
             build/release-package/*.log
             build/review/native-sessions*.log
@@ -269,6 +274,88 @@ jobs:
       runner: ${{ matrix.os }}
       mode: hit
 
+  native-dependencies:
+    name: Native dependencies (${{ matrix.os }})
+    if: ${{ inputs.candidate && inputs.native_dependencies != 'off' }}
+    needs: resolve
+    permissions:
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, macos-15, macos-15-intel, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 95
+    env:
+      XDZIP_MACOS_INTEL_CI: ${{ matrix.os == 'macos-15-intel' && '1' || '' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve.outputs.revision }}
+          persist-credentials: false
+      - name: Select the upstream Ubuntu archive
+        if: runner.os == 'Linux'
+        run: bash scripts/ci-release-snap.sh mirror
+      - if: runner.os == 'Linux'
+        uses: ./.github/actions/linux-release-dependencies
+      - name: Prepare verified native dependencies and decode PNG and TIFF
+        id: dependencies
+        shell: pwsh
+        env:
+          XDZIP_DEPENDENCY_MODE: ${{ inputs.dependencies }}
+          XDZIP_DEPENDENCY_PROBE: ${{ inputs.native_dependencies }}
+          XDZIP_RELEASE_QT_NETWORK_TOKEN: ${{ inputs.dependencies == 'auto' && github.token || '' }}
+        run: |
+          ./scripts/ci-release.ps1 -Stage Dependencies -DependencyMode $env:XDZIP_DEPENDENCY_MODE -PublishDependencies:($env:XDZIP_DEPENDENCY_PROBE -eq 'seed')
+          if ($env:XDZIP_DEPENDENCY_PROBE -eq 'hit') {
+            $receipts = Get-Content -Raw build/review/dependencies/dependencies.json | ConvertFrom-Json
+            if ($receipts.network.status -ne 'hit' -or $receipts.images.status -ne 'hit' -or ($IsMacOS -and $receipts.sparkle.status -ne 'hit')) {
+              throw 'A matching, verified cross-run dependency was not restored'
+            }
+          }
+      - name: Preserve verified Qt Network
+        if: inputs.native_dependencies == 'seed'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.dependencies.outputs.network }}
+          path: build/review/dependencies/qt-network.zip
+          if-no-files-found: error
+          compression-level: 0
+          overwrite: true
+          retention-days: 30
+      - name: Preserve verified Qt ImageFormats
+        if: inputs.native_dependencies == 'seed'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.dependencies.outputs.images }}
+          path: build/review/dependencies/qt-image.zip
+          if-no-files-found: error
+          compression-level: 0
+          overwrite: true
+          retention-days: 30
+      - name: Preserve verified Sparkle
+        if: inputs.native_dependencies == 'seed' && runner.os == 'macOS'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.dependencies.outputs.sparkle }}
+          path: build/review/dependencies/sparkle-sdk.tar.gz
+          if-no-files-found: error
+          compression-level: 0
+          overwrite: true
+          retention-days: 30
+      - name: Preserve native dependency receipts
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-dependency-evidence-${{ matrix.os }}-${{ github.run_attempt }}
+          path: |
+            build/review/dependencies/dependencies.json
+            build/review/dependencies/images/decode.json
+            build/review/dependencies/**/*.log
+            build/review/ci-timings.json
+          retention-days: 30
+
   verify:
     needs: [resolve, native]
     if: always() && !cancelled() && needs.resolve.result == 'success' && needs.native.result == 'success'
@@ -328,7 +415,7 @@ jobs:
           retention-days: 30
 
   contracts:
-    if: ${{ !inputs.qt_network_probe && !inputs.qt_image_probe }}
+    if: ${{ !inputs.qt_network_probe && !inputs.qt_image_probe && inputs.native_dependencies == 'off' }}
     needs: resolve
     runs-on: ubuntu-24.04
     timeout-minutes: 30

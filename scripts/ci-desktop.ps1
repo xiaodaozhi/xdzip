@@ -1,11 +1,15 @@
 # CI extension: shared local stages plus historical, visual and installer gates.
 param([string]$QtRoot, [string]$ToolsDirectory, [switch]$BrowserStability, [switch]$ReleaseBuild,
     [ValidateSet('auto', 'cold')][string]$QtNetworkMode = 'cold', [switch]$QtNetworkOnly,
-    [string]$QtNetworkToken)
+    [string]$QtNetworkToken, [ValidateSet('auto', 'cold')][string]$ReleaseDependencies,
+    [switch]$DependenciesOnly, [switch]$PublishDependencies)
 $ErrorActionPreference = 'Stop'
 if ($BrowserStability -and $ReleaseBuild) { throw 'Select one validation entry point' }
-if (($QtNetworkOnly -or $QtNetworkMode -eq 'auto' -or $QtNetworkToken) -and (!$ReleaseBuild -or !($IsWindows -or $IsMacOS))) {
+if (($QtNetworkOnly -or $QtNetworkMode -eq 'auto') -and (!$ReleaseBuild -or !($IsWindows -or $IsMacOS))) {
     throw 'Candidate Qt Network preparation requires the Windows or macOS release build entry point'
+}
+if (($ReleaseDependencies -or $DependenciesOnly -or $PublishDependencies -or $QtNetworkToken) -and !$ReleaseBuild) {
+    throw 'Dependency reuse requires the release build entry point'
 }
 . "$PSScriptRoot/ci-observability.ps1"
 Initialize-CiTiming -Scope qt -OutputPath 'build/review/ci-timings.json'
@@ -108,6 +112,9 @@ Set-CiPhase 'prepare'
 $prepareArguments = @('scripts/desktop.py', 'prepare', '--install-qt', '--install-rust', '--packaging') + $shared
 if ($QtNetworkMode -eq 'auto') { $prepareArguments += @('--qt-network-mode', 'auto') }
 if ($QtNetworkOnly) { $prepareArguments += '--qt-network-only' }
+if ($ReleaseDependencies) { $prepareArguments += @('--release-dependencies', $ReleaseDependencies) }
+if ($DependenciesOnly) { $prepareArguments += '--dependencies-only' }
+if ($PublishDependencies) { $prepareArguments += '--publish-dependencies' }
 try {
     if ($QtNetworkToken) { $env:XDZIP_RELEASE_QT_NETWORK_TOKEN = $QtNetworkToken }
     Invoke-CiCommand -Program python -Arguments $prepareArguments
@@ -115,7 +122,7 @@ try {
     if ($QtNetworkToken) { Remove-Item Env:XDZIP_RELEASE_QT_NETWORK_TOKEN }
 }
 Assert-CleanSources
-if ($QtNetworkOnly) { return }
+if ($QtNetworkOnly -or $DependenciesOnly) { return }
 $aqtPython = if ($IsWindows) { Join-Path $qtEnvironment 'Scripts/python.exe' } else { Join-Path $qtEnvironment 'bin/python' }
 Set-CiPhase 'source-contracts'
 Invoke-Checked python @('scripts/sync-version.py', '--check')

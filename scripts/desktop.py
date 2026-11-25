@@ -283,7 +283,19 @@ class Workflow:
         self.doctor('prepare')
         self.prepare_tools_and_qt()
         self.script('ui-fonts.py', 'prepare')
-        if candidate_network:
+        if self.args.release_dependencies:
+            env = self.env.copy()
+            if self.args.release_dependencies == 'auto' and self.qt_network_token:
+                env['GITHUB_TOKEN'] = self.qt_network_token
+            options = ['--probe'] if self.args.dependencies_only else []
+            if self.args.publish_dependencies:
+                options += ['--publish']
+            self.script('ci-release-dependencies.py', '--qt-prefix', self.qt,
+                        '--output', self.output/'dependencies', '--mode', self.args.release_dependencies,
+                        *options, env=env)
+            if self.args.dependencies_only:
+                return {'qt_sdk': self.sdk_identity()}
+        elif candidate_network:
             env = self.env.copy()
             if self.args.qt_network_mode == 'auto' and self.qt_network_token:
                 env['GITHUB_TOKEN'] = self.qt_network_token
@@ -293,8 +305,9 @@ class Workflow:
             self.script('prepare-qt-network.py', '--qt-prefix', self.qt)
         if self.args.qt_network_only:
             return {'qt_network_sha256': qt_network_identity(self.qt)['network_sha256']}
-        self.script('qt_image_security.py', '--qt-prefix', self.qt,
-                    '--work-dir', self.toolchain/'qt-image-security'/self.system)
+        if not self.args.release_dependencies:
+            self.script('qt_image_security.py', '--qt-prefix', self.qt,
+                        '--work-dir', self.toolchain/'qt-image-security'/self.system)
         self.doctor('build')
         self.run(['cargo', 'fetch', '--locked'])
         self.script('prepare-native-codecs.py')
@@ -675,6 +688,9 @@ def parser():
     value.add_argument('--qt-network-mode', choices=['auto', 'cold'], default='cold',
                        help='Candidate preparation only: restore a verified Qt Network dependency or build from source')
     value.add_argument('--qt-network-only', action='store_true', help='Stop preparation after Qt Network validation')
+    value.add_argument('--release-dependencies', choices=['auto', 'cold'], help='Use the native Release dependency entry point')
+    value.add_argument('--dependencies-only', action='store_true', help='Check dependency restoration and image decoding')
+    value.add_argument('--publish-dependencies', action='store_true', help='Export the verified native dependency bundles')
     value.add_argument('--skip-rust', action='store_true', help='Test only, record Rust workspace tests as not run')
     value.add_argument('--macos-handler-rank', choices=['None', 'Alternate'], default='None')
     value.add_argument('--kind', choices=['runtime', 'installer', 'msix', 'all'], default='all')
@@ -692,6 +708,10 @@ def main(argv=None):
         raise SystemExit('--jobs must be positive')
     if args.stage != 'prepare' and (args.qt_network_only or args.qt_network_mode != 'cold'):
         raise SystemExit('Qt Network preparation options require the prepare stage')
+    if ((args.release_dependencies and (args.stage != 'prepare' or args.qt_network_only or args.qt_network_mode != 'cold'))
+            or (args.dependencies_only and not args.release_dependencies)
+            or (args.publish_dependencies and not args.dependencies_only)):
+        raise SystemExit('Select one Release dependency preparation path')
     try:
         workflow = Workflow(args)
         if args.stage == 'doctor':

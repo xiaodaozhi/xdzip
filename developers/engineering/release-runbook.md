@@ -66,7 +66,16 @@ To check Qt Network preparation alone, dispatch the unsigned candidate probe fro
 gh workflow run release.yml --ref BRANCH -f candidate=true -f qt_network_probe=true
 ```
 
-The probe runs on Windows x64 and both native Mac architectures. It uses the candidate's SDK preparation and stops after Qt Network validation. `qt-network-prepare.json` records whether the matching dependency was restored or built from source. Windows and Mac candidates default to `dependencies=auto`, which accepts only an exact, verified artifact from the test-key update workflow on `main`. Use `-f dependencies=cold` to force a source build. Probe records cover SDK preparation only. Candidate packages use the independent same-run verification below.
+The probe runs on Windows x64 and both native Mac architectures. It uses the update-regression Qt Network lookup and stops after Qt Network validation. `qt-network-prepare.json` records whether the matching dependency was restored or built from source. Use `-f dependencies=cold` to force a source build.
+
+Candidates and formal builds use the same native preparation on Windows x64, both Mac architectures and Ubuntu x64. Seed Qt Network, Qt ImageFormats and the Mac Sparkle SDK without building the application, then check cross-run hits on fresh runners after the producer commit is on `main`.
+
+```sh
+gh workflow run release.yml --ref BRANCH -f candidate=true -f native_dependencies=seed
+gh workflow run release.yml --ref main -f candidate=true -f native_dependencies=hit
+```
+
+The default `dependencies=auto` admits exact dependency keys from successful native producer jobs at a commit contained in `main`. The archive digest, stock Qt SDK, ABI and native architecture are checked before use. Sparkle also requires its pinned framework receipt and strict code signature. Ubuntu release jobs use a native-runner artifact. Missing or rejected bundles fall back to the pinned source build. `dependencies=cold` forces the source path. `dependencies.json` records each result. The probe runs the PNG and TIFF pixel checks, while normal candidates and formal packages still build, deploy and verify their own same-run application and CLI packages.
 
 To benchmark Qt ImageFormats reuse on Windows x64 and native macOS Intel, dispatch the image module probe:
 

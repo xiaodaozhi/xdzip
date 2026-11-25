@@ -4,30 +4,12 @@ import argparse
 import json
 import os
 from pathlib import Path
-import subprocess
-import sys
 from time import perf_counter
 
 import qt_image_bundle as bundle
 import qt_image_security as image
-from qt_network_security import ROOT, run
+from qt_network_security import ROOT
 from windows_ninja_safety import utf8_console
-
-
-def check_decode(prefix, work):
-    build = work/'worker'
-    flags = ['-DCMAKE_OSX_ARCHITECTURES=x86_64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
-             '-DCMAKE_BUILD_RPATH='+str(prefix/'lib')] if sys.platform == 'darwin' else []
-    run(['cmake', '-S', ROOT/'tools/image-preview', '-B', build, '-G', 'Ninja',
-         '-DCMAKE_BUILD_TYPE=Release', '-DQt6_DIR='+str(prefix/'lib/cmake/Qt6'), *flags],
-        work/'worker-configure.log')
-    run(['cmake', '--build', build, '--target', 'xdzip-image-preview'], work/'worker-build.log')
-    worker = build/'apps/desktop'/('xdzip-image-preview.exe' if os.name == 'nt' else 'xdzip-image-preview')
-    (worker.parent/'qt.conf').write_text(f'[Paths]\nPrefix = {prefix.as_posix()}\n', encoding='utf-8')
-    start = perf_counter()
-    subprocess.run([sys.executable, ROOT/'scripts/check-image-preview.py', '--worker', worker,
-                    '--output', work/'decode.json', '--qt-prefix', prefix], check=True)
-    return round(perf_counter()-start, 3)
 
 
 def main():
@@ -54,7 +36,7 @@ def main():
     for path in image.image_modules(prefix).values():
         bundle.validate_architecture(path, inputs['arch'])
     with utf8_console():
-        decode_seconds = check_decode(prefix, work)
+        decode_seconds = bundle.check_decode(prefix, work)
     if args.mode == 'cold':
         archive.parent.mkdir(parents=True, exist_ok=True)
         bundle.pack(archive, prefix, inputs)

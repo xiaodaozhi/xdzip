@@ -1,26 +1,27 @@
 """Exchange the verified QtGui and TIFF plugin between native probe runners."""
 import hashlib
 import json
+import os
 import shutil
+import subprocess
 import sys
+from time import perf_counter
 import zipfile
 
 import qt_image_security as image
-from qt_network_bundle import MAX_LIBRARY_BYTES, encode, inputs as sdk_inputs, native_arch, validate_architecture
-from qt_network_security import digest
+from qt_network_bundle import MAX_LIBRARY_BYTES, encode, inputs as sdk_inputs, validate_architecture
+from qt_network_security import ROOT, digest, run
 
 
 MEMBERS = {'libpng.module': MAX_LIBRARY_BYTES, 'libtiff.module': MAX_LIBRARY_BYTES,
            'libpng.license': 64 * 1024, 'libtiff.license': 64 * 1024}
 
 
-def inputs(prefix):
-    if sys.platform not in ('win32', 'darwin') or native_arch() != 'x86_64':
-        raise ValueError('Qt ImageFormats reuse probe requires Windows x64 or native macOS Intel')
+def inputs(prefix, sdk=None):
     if (prefix/image.RECEIPT).exists():
         raise ValueError('The probe requires a fresh SDK with stock QtGui and TIFF binaries')
     config, sources = image.configuration()
-    sdk = sdk_inputs(prefix)
+    sdk = sdk or sdk_inputs(prefix)
     return {**{key: sdk[key] for key in ('os', 'arch', 'runner', 'toolchain', 'cmake', 'ninja',
                                         'core_sha256', 'core_features')},
             'recipe_sha256': image.recipe_digest(),
@@ -84,3 +85,22 @@ def restore(bundle, prefix, directory, inputs):
             raise ValueError('Qt image module license differs from the pinned text: '+key)
     image.check_modules(prefix, modules, {'components': inputs['components']}, directory)
     return modules, licenses
+
+
+def check_decode(prefix, work):
+    build = work/'worker'
+    flags = []
+    if sys.platform == 'darwin':
+        from macos_arch import macos_arch
+        flags = ['-DCMAKE_OSX_ARCHITECTURES='+macos_arch(), '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
+                 '-DCMAKE_BUILD_RPATH='+str(prefix/'lib')]
+    run(['cmake', '-S', ROOT/'tools/image-preview', '-B', build, '-G', 'Ninja',
+         '-DCMAKE_BUILD_TYPE=Release', '-DQt6_DIR='+str(prefix/'lib/cmake/Qt6'), *flags],
+        work/'worker-configure.log')
+    run(['cmake', '--build', build, '--target', 'xdzip-image-preview'], work/'worker-build.log')
+    worker = build/'apps/desktop'/('xdzip-image-preview.exe' if os.name == 'nt' else 'xdzip-image-preview')
+    (worker.parent/'qt.conf').write_text(f'[Paths]\nPrefix = {prefix.as_posix()}\n', encoding='utf-8')
+    start = perf_counter()
+    subprocess.run([sys.executable, ROOT/'scripts/check-image-preview.py', '--worker', worker,
+                    '--output', work/'decode.json', '--qt-prefix', prefix], check=True)
+    return round(perf_counter()-start, 3)
