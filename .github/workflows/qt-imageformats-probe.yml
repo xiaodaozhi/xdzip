@@ -5,7 +5,7 @@ on:
       revision:
         required: true
         type: string
-      runner:
+      runner_image:
         required: true
         type: string
       mode:
@@ -18,12 +18,12 @@ permissions:
 
 jobs:
   probe:
-    name: ${{ inputs.runner }} / ${{ inputs.mode }}
-    if: ${{ (inputs.runner == 'windows-2022' || inputs.runner == 'macos-15-intel') && (inputs.mode == 'cold' || inputs.mode == 'hit') }}
-    runs-on: ${{ inputs.runner }}
+    name: ${{ inputs.runner_image }} / ${{ inputs.mode }}
+    if: ${{ (inputs.runner_image == 'windows-2022' || inputs.runner_image == 'macos-15-intel') && (inputs.mode == 'cold' || inputs.mode == 'hit') }}
+    runs-on: ${{ inputs.runner_image }}
     timeout-minutes: ${{ inputs.mode == 'cold' && 55 || 25 }}
     env:
-      XDZIP_MACOS_INTEL_CI: ${{ inputs.runner == 'macos-15-intel' && '1' || '' }}
+      XDZIP_MACOS_INTEL_CI: ${{ inputs.runner_image == 'macos-15-intel' && '1' || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -33,7 +33,7 @@ jobs:
         if: inputs.mode == 'hit'
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: candidate-qt-image-bundle-${{ inputs.runner }}
+          name: candidate-qt-image-bundle-${{ inputs.runner_image }}
           path: build/qt-image-probe
           digest-mismatch: error
       - name: Measure Qt image module preparation and verify PNG and TIFF pixels
@@ -46,7 +46,7 @@ jobs:
         if: inputs.mode == 'cold'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: candidate-qt-image-bundle-${{ inputs.runner }}
+          name: candidate-qt-image-bundle-${{ inputs.runner_image }}
           path: build/qt-image-probe/qt-image.zip
           if-no-files-found: error
           compression-level: 0
@@ -56,7 +56,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: candidate-qt-image-${{ inputs.runner }}-${{ inputs.mode }}-${{ github.run_attempt }}
+          name: candidate-qt-image-${{ inputs.runner_image }}-${{ inputs.mode }}-${{ github.run_attempt }}
           path: |
             build/qt-image-probe/evidence/*.json
             build/qt-image-probe/evidence/*.log

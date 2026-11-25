@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Validate lightweight CI and the separately dispatched desktop workflows."""
 import importlib.util
+import json
 from pathlib import Path
 import re
 import subprocess
@@ -342,10 +343,29 @@ class WorkflowTests(unittest.TestCase):
                          ['./scripts/ci-release.ps1 -Stage QtNetwork -QtNetworkMode $env:QT_NETWORK_MODE'])
         self.assertTrue(all(path.endswith('.json') for path in probe['steps'][-1]['with']['path'].splitlines()))
         build = next(step for step in jobs['native']['steps'] if 'ci-release.ps1 -Stage Build' in step.get('run', ''))
-        for name in ('QT_NETWORK_MODE', 'XDZIP_RELEASE_QT_NETWORK_TOKEN'):
-            self.assertIn("inputs.candidate && runner.os != 'Linux'", build['env'][name])
-        self.assertIn('./scripts/ci-release.ps1 -Stage Build', build['run'].split('} else {')[1].splitlines()[1].strip())
-        self.assertNotIn('-QtNetworkMode', build['run'].split('} else {')[1])
+        self.assertEqual(build['env']['XDZIP_DEPENDENCY_MODE'], '${{ inputs.dependencies }}')
+        self.assertEqual(build['env']['XDZIP_RELEASE_QT_NETWORK_TOKEN'],
+                         "${{ inputs.dependencies == 'auto' && github.token || '' }}")
+        self.assertIn('-DependencyMode $env:XDZIP_DEPENDENCY_MODE', build['run'])
+
+    def test_native_dependency_probe_uses_release_runner_and_excludes_packaging(self):
+        workflow = self.workflows['release.yml']
+        inputs = workflow['on']['workflow_dispatch']['inputs']
+        jobs = workflow['jobs']
+        self.assertEqual(inputs['native_dependencies']['options'], ['off', 'seed', 'hit'])
+        for name in ('native', 'macos-signing-preflight', 'contracts'):
+            self.assertIn("inputs.native_dependencies == 'off'", jobs[name]['if'])
+        probe = jobs['native-dependencies']
+        choices = inputs['native_dependency_runner']['options']
+        self.assertEqual(choices, ['all', *jobs['native']['strategy']['matrix']['os']])
+        default_matrix = json.dumps(choices[1:], separators=(',', ':'))
+        self.assertIn(default_matrix, probe['strategy']['matrix']['os'])
+        self.assertEqual(probe['permissions'], {'contents': 'read', 'actions': 'read'})
+        self.assertNotIn('environment', probe)
+        self.assertNotIn('secrets.', repr(probe))
+        step = next(step for step in probe['steps'] if step.get('id') == 'dependencies')
+        self.assertIn('-Stage Dependencies', step['run'])
+        self.assertIn("$receipts.sparkle.status -ne 'hit'", step['run'])
 
     def test_store_msix_is_manual_and_exports_verified_package_only(self):
         workflow = self.workflows['windows-store-msix.yml']

@@ -199,7 +199,8 @@ def main():
         report = incoming/'fetch.json'
         downloaded = json.loads(report.read_bytes()) if report.is_file() else {'status': 'miss'}
     preparing = time.monotonic()
-    status, record = use_bundle(args.qt_prefix, incoming/BUNDLE_NAME, args.output, manifest, publish=args.publish)
+    with utf8_console():
+        status, record = use_bundle(args.qt_prefix, incoming/BUNDLE_NAME, args.output, manifest, publish=args.publish)
     metrics = {'schema_version': 1, 'status': status, 'fetch': downloaded, 'key': key(manifest),
                'seconds': round(time.monotonic()-started, 2), 'prepare_seconds': round(time.monotonic()-preparing, 2),
                'network_sha256': record['network_sha256']}
@@ -212,5 +213,4 @@ def main():
 
 
 if __name__ == '__main__':
-    with utf8_console():
-        main()
+    main()

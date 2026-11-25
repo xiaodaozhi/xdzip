@@ -32,6 +32,11 @@ on:
         type: choice
         default: 'off'
         options: ['off', seed, hit]
+      native_dependency_runner:
+        description: Restrict a native dependency probe to one runner
+        type: choice
+        default: all
+        options: [all, windows-2022, macos-15, macos-15-intel, ubuntu-24.04]
 permissions:
   contents: read
 concurrency:
@@ -51,6 +56,7 @@ jobs:
           QT_NETWORK_PROBE: ${{ inputs.qt_network_probe }}
           QT_IMAGE_PROBE: ${{ inputs.qt_image_probe }}
           NATIVE_DEPENDENCIES: ${{ inputs.native_dependencies }}
+          NATIVE_DEPENDENCY_RUNNER: ${{ inputs.native_dependency_runner }}
           RELEASE_TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
@@ -62,6 +68,8 @@ jobs:
           fi
           if [[ "$NATIVE_DEPENDENCIES" != off ]]; then
             [[ "$CANDIDATE" == true && "$RETRY_PROBE" == false && "$QT_NETWORK_PROBE" == false && "$QT_IMAGE_PROBE" == false ]]
+          else
+            [[ "$NATIVE_DEPENDENCY_RUNNER" == all ]]
           fi
           if [[ "$CANDIDATE" == true ]]; then
             [[ -z "$RELEASE_TAG" ]]
@@ -159,15 +167,15 @@ jobs:
         run: bash scripts/ci-release-snap.sh mirror
       - if: runner.os == 'Linux'
         uses: ./.github/actions/linux-release-dependencies
+      - name: Prepare locked Snap inputs before compiling
+        if: runner.os == 'Linux' && needs.resolve.outputs.snap_stable == 'true'
+        run: bash scripts/ci-release-snap.sh prepare
       - name: Build and package the native desktop and CLI candidate once
         shell: pwsh
         env:
           XDZIP_DEPENDENCY_MODE: ${{ inputs.dependencies }}
           XDZIP_RELEASE_QT_NETWORK_TOKEN: ${{ inputs.dependencies == 'auto' && github.token || '' }}
         run: ./scripts/ci-release.ps1 -Stage Build -DependencyMode $env:XDZIP_DEPENDENCY_MODE
-      - name: Prepare locked Snap inputs
-        if: runner.os == 'Linux' && needs.resolve.outputs.snap_stable == 'true'
-        run: bash scripts/ci-release-snap.sh prepare
       - name: Pack the stable Snap from the same Linux build
         if: runner.os == 'Linux' && needs.resolve.outputs.snap_stable == 'true'
         run: bash scripts/ci-release-snap.sh pack
@@ -255,7 +263,7 @@ jobs:
     uses: ./.github/workflows/qt-imageformats-probe.yml
     with:
       revision: ${{ needs.resolve.outputs.revision }}
-      runner: ${{ matrix.os }}
+      runner_image: ${{ matrix.os }}
       mode: cold
 
   candidate-qt-image-hit:
@@ -271,7 +279,7 @@ jobs:
     uses: ./.github/workflows/qt-imageformats-probe.yml
     with:
       revision: ${{ needs.resolve.outputs.revision }}
-      runner: ${{ matrix.os }}
+      runner_image: ${{ matrix.os }}
       mode: hit
 
   native-dependencies:
@@ -284,7 +292,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2022, macos-15, macos-15-intel, ubuntu-24.04]
+        os: ${{ fromJSON(inputs.native_dependency_runner == 'all' && '["windows-2022","macos-15","macos-15-intel","ubuntu-24.04"]' || format('["{0}"]', inputs.native_dependency_runner)) }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 95
     env:

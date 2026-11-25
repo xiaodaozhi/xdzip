@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+snap_tools=(desktop-file-utils squashfs-tools snapd)
+apt_options=(-o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o Acquire::Retries=2)
+
 case "$1" in
   mirror)
     for sources in /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources; do
@@ -12,7 +15,8 @@ case "$1" in
     done
     ;;
   prepare)
-    sudo apt-get install -y --no-install-recommends desktop-file-utils squashfs-tools snapd
+    # Check and download packaging tools without changing the native Qt inputs.
+    sudo apt-get "${apt_options[@]}" install -y --download-only --no-install-recommends "${snap_tools[@]}"
     curl --fail --location --retry 3 --output "$RUNNER_TEMP/core24.snap" \
       https://api.snapcraft.io/api/v1/snaps/download/dwTAh7MZZ01zyriOZErqd1JynQLiOGvM_2307.snap
     python3 -B scripts/build-linux-snap.py --prepare-inputs \
@@ -20,6 +24,7 @@ case "$1" in
     python3 -B scripts/test-snap-launch.py
     ;;
   pack)
+    sudo apt-get "${apt_options[@]}" install -y --no-install-recommends "${snap_tools[@]}"
     qt_prefix="$RUNNER_TEMP/Qt/6.8.2/gcc_64"
     tools_python="$RUNNER_TEMP/desktop-tools/bin/python"
     "$tools_python" -B scripts/deploy_linux.py --experimental-wayland \
