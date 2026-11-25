@@ -12,9 +12,96 @@ import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
+import zipfile
 
 import qt_network_security as security
 import qt_network_materials as materials
+import qt_network_bundle as bundle
+
+
+spec = importlib.util.spec_from_file_location('ci_qt_network', security.ROOT/'scripts/ci-qt-network.py')
+ci = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(ci)
+
+
+class NetworkReuseTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        self.sdk = self.root/'sdk'; self.sdk.mkdir()
+        self.identity = {'os': 'linux', 'arch': 'x86_64', 'recipe_sha256': 'a'*64}
+        self.archive = self.root/bundle.BUNDLE_NAME
+        self.binary = self.root/'network.bin'
+        self.restored = self.root/'restored.bin'
+        self.binary.write_bytes(b'\x7fELF\x02\x01'+b'\0'*12+b'\x3e\0'+b'owned')
+
+    def test_bundle_round_trip_rejects_changed_dependency_and_bytes(self):
+        with patch.object(bundle.sys, 'platform', 'linux'):
+            bundle.export_bundle(self.archive, self.identity, self.binary, {}, [])
+            self.assertEqual(bundle.restore_bundle(self.archive, self.identity, self.restored)['bytes'],
+                             self.binary.stat().st_size)
+            self.assertEqual(self.restored.read_bytes(), self.binary.read_bytes())
+            self.assertRaisesRegex(ValueError, 'does not match', bundle.restore_bundle,
+                                   self.archive, dict(self.identity, recipe_sha256='b'*64), self.restored)
+            with zipfile.ZipFile(self.archive) as archive:
+                metadata = archive.read('manifest.json')
+            with zipfile.ZipFile(self.archive, 'w') as archive:
+                archive.writestr('manifest.json', metadata)
+                archive.writestr('network.bin', self.binary.read_bytes()[:-1]+b'X')
+            self.assertRaisesRegex(ValueError, 'digest differs', bundle.restore_bundle,
+                                   self.archive, self.identity, self.restored)
+
+    def test_wrong_native_architecture_and_extra_archive_member_are_rejected(self):
+        self.binary.write_bytes(b'\x7fELF\x02\x01'+b'\0'*12+b'\xb7\0'+b'owned')
+        with patch.object(bundle.sys, 'platform', 'linux'), self.assertRaisesRegex(ValueError, 'architecture'):
+            bundle.export_bundle(self.archive, self.identity, self.binary, {}, [])
+        with zipfile.ZipFile(self.archive, 'w') as archive:
+            archive.writestr('../extra', b'owned')
+        self.assertRaisesRegex(ValueError, 'inventory', bundle.restore_bundle,
+                               self.archive, self.identity, self.restored)
+
+    def test_artifact_requires_successful_main_run_of_the_designated_workflow(self):
+        producer = {'id': 4, 'head_sha': 'a'*40, 'head_branch': 'main',
+                    'repository_id': 8, 'head_repository_id': 8}
+        artifact = {'name': 'artifact', 'workflow_run': producer, 'expired': False, 'size_in_bytes': 9}
+        good = {'id': 4, 'workflow_id': 3, 'head_sha': 'a'*40, 'head_branch': 'main',
+                'path': '.github/workflows/update-regression.yml', 'event': 'workflow_dispatch',
+                'status': 'completed', 'conclusion': 'success', 'repository': {'id': 8}, 'head_repository': {'id': 8}}
+        with patch.object(ci, 'api', return_value=good) as api:
+            self.assertTrue(ci.trusted_artifact(artifact, 'artifact', 3, 8))
+            for field, bad in [('path', '.github/workflows/other.yml'), ('head_sha', 'b'*40),
+                               ('workflow_id', 1), ('event', 'pull_request'), ('conclusion', 'failure')]:
+                api.return_value = dict(good, **{field: bad})
+                self.assertFalse(ci.trusted_artifact(artifact, 'artifact', 3, 8))
+        with patch.object(ci, 'api') as api:
+            self.assertFalse(ci.trusted_artifact(dict(artifact, expired=True), 'artifact', 3, 8))
+            self.assertFalse(ci.trusted_artifact(dict(artifact, workflow_run=dict(producer, head_repository_id=9)),
+                                                 'artifact', 3, 8))
+            api.assert_not_called()
+
+    def test_force_cold_and_download_error_remove_stale_input(self):
+        for mode, status in [('cold', 'forced-cold'), ('auto', 'fetch-rejected')]:
+            self.archive.write_bytes(b'stale')
+            with patch.object(ci, 'fetch', side_effect=ValueError('bad archive digest')) as fetch:
+                self.assertEqual(ci.download(self.identity, self.archive, mode)['status'], status)
+                self.assertEqual(fetch.call_count, int(mode == 'auto'))
+            self.assertFalse(self.archive.exists())
+
+    def test_failed_bundle_retries_source_only_if_original_sdk_matches(self):
+        self.archive.touch()
+        with patch.object(ci, 'inputs', return_value=self.identity), \
+                patch.object(ci, 'prepare', side_effect=[ValueError('probe failed'), {'verification': 'fresh'}]) as prep:
+            self.assertEqual(ci.use_bundle(self.sdk, self.archive, self.root, self.identity),
+                             ('rejected-cold', {'verification': 'fresh'}))
+            self.assertEqual(prep.call_count, 2)
+            self.assertIs(prep.call_args_list[0].kwargs['bundle'], self.archive)
+            self.assertNotIn('bundle', prep.call_args_list[1].kwargs)
+        with patch.object(ci, 'inputs', return_value={}), \
+                patch.object(ci, 'prepare', side_effect=ValueError('probe failed')) as prep:
+            self.assertRaisesRegex(ValueError, 'rollback', ci.use_bundle,
+                                   self.sdk, self.archive, self.root, self.identity)
+            prep.assert_called_once()
 
 
 class SecurityBuildTests(unittest.TestCase):

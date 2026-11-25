@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 RECEIPT = 'xdzip-network-security.json'
 MACOS_NETWORK_TOOLS = ('libexec/qmlimportscanner', 'libexec/qmlcachegen', 'bin/qmllint')
 BUILDER_FILES = ('scripts/macos_arch.py', 'scripts/qt_network_security.py', 'scripts/prepare-qt-network.py',
+                 'scripts/qt_network_bundle.py',
                  'scripts/check-qt-network.py', 'tools/qt-network-security/CMakeLists.txt',
                  'tools/qt-network-security/main.cpp', 'scripts/update_proxy_fixture.py',
                  'tools/qt-network-security/linux-abi-retain.cpp',
@@ -327,17 +328,30 @@ def symbol_names(path, *, undefined=False):
     return {line.split()[-1].replace('@@', '@') for line in output.splitlines() if line.split() and not line.endswith(':')}
 
 
-def check_abi(prefix, built):
-    original = symbol_names(library(prefix, 'Network'))
-    candidate = symbol_names(library(built, 'Network'))
-    imports = symbol_names(library(built, 'Network'), undefined=True)
-    built_core = symbol_names(library(built, 'Core'))
-    sdk_core = symbol_names(library(prefix, 'Core'))
-    missing_exports = original-candidate
-    missing_core = (imports & built_core)-sdk_core
+def check_abi_symbols(original, candidate_exports, imports, sdk_core, core_imports):
+    missing_exports = original-candidate_exports
+    missing_core = set(core_imports)-sdk_core
     if missing_exports or missing_core:
         raise ValueError('QtNetwork ABI differs: '+json.dumps({'missing_network': sorted(missing_exports), 'missing_core': sorted(missing_core)}))
-    return {'network_exports_preserved': len(original), 'core_imports_confirmed': len(imports & built_core)}
+    if not original or not sdk_core or not set(core_imports) <= imports:
+        raise ValueError('QtNetwork ABI inventory is incomplete')
+    return {'network_exports_preserved': len(original), 'core_imports_confirmed': len(core_imports)}
+
+
+def check_candidate_abi(prefix, candidate, core_imports):
+    return check_abi_symbols(symbol_names(library(prefix, 'Network')), symbol_names(candidate),
+                             symbol_names(candidate, undefined=True), symbol_names(library(prefix, 'Core')), core_imports)
+
+
+def check_abi(prefix, built):
+    original = symbol_names(library(prefix, 'Network'))
+    candidate = library(built, 'Network')
+    candidate_exports = symbol_names(candidate)
+    imports = symbol_names(candidate, undefined=True)
+    built_core = symbol_names(library(built, 'Core'))
+    sdk_core = symbol_names(library(prefix, 'Core'))
+    core_imports = sorted(imports & built_core)
+    return check_abi_symbols(original, candidate_exports, imports, sdk_core, core_imports), core_imports
 
 
 def build(prefix, work, source, parallel, headers):
@@ -367,16 +381,16 @@ def build(prefix, work, source, parallel, headers):
                   '-DQT_FORCE_WARN_APPLE_SDK_AND_XCODE_CHECK=ON']
     run(['cmake', '--fresh', '-S', source, '-B', work/'obj', '-G', 'Ninja', *flags], work/'configure.log')
     run(['cmake', '--build', work/'obj', '--target', 'Network', '--parallel', parallel], work/'build.log')
-    abi = check_abi(prefix, work/'obj')
+    abi, core_imports = check_abi(prefix, work/'obj')
     if (work/'stage').exists():
         shutil.rmtree(work/'stage')
     run(['cmake', '--install', work/'obj/src/network', '--prefix', work/'stage'], work/'install.log')
     if features(work/'stage') != expected_features:
         raise ValueError('Source-built QtNetwork features differ from the installed SDK')
-    return flags, abi
+    return flags, abi, core_imports
 
 
-def prepare(prefix, work, cache, parallel=3):
+def prepare(prefix, work, cache, parallel=3, *, bundle=None, export=None, bundle_identity=None):
     prefix, work = Path(prefix).resolve(), Path(work).resolve()
     if not work.is_relative_to(ROOT/'build') or work == ROOT/'build' or not 1 <= parallel <= 12:
         raise ValueError('Use an owned build/ directory and 1–12 jobs')
@@ -393,8 +407,23 @@ def prepare(prefix, work, cache, parallel=3):
     os.close(descriptor)
     try:
         patched = prepare_source(config, source, Path(cache), work)
-        headers = openssl_headers(config, Path(cache), work)
-        flags, abi = build(prefix, work, patched, parallel, headers)
+        if bundle is None:
+            headers = openssl_headers(config, Path(cache), work)
+            flags, abi, core_imports = build(prefix, work, patched, parallel, headers)
+            candidate = library(work/'stage', 'Network')
+        else:
+            from qt_network_bundle import restore_bundle
+            candidate = work/'restored-network.bin'
+            manifest = restore_bundle(bundle, bundle_identity, candidate)
+            core_imports = manifest['core_imports']
+            if (not isinstance(core_imports, list) or any(not isinstance(name, str) for name in core_imports)
+                    or core_imports != sorted(set(core_imports))):
+                raise ValueError('Invalid cached QtCore imports')
+            abi = check_candidate_abi(prefix, candidate, core_imports)
+            if abi != manifest['abi']:
+                raise ValueError('Cached QtNetwork ABI inventory differs')
+            shutil.copymode(network, candidate)
+            flags = []
         previous = json.loads((prefix/RECEIPT).read_bytes()) if (prefix/RECEIPT).is_file() else None
         original_sha = previous.get('upstream_network_sha256') if previous else digest(network)
         backup = work/'rollback-network.bin'; shutil.copy2(network, backup)
@@ -417,7 +446,7 @@ def prepare(prefix, work, cache, parallel=3):
             # Atomic file commit occurs only after source, feature and ABI checks.
             # Exceptions restore the prior binary/seal/receipt. A killed process
             # cannot yield a valid receipt: all consumers verify actual hashes.
-            shutil.copy2(library(work/'stage', 'Network'), replacement)
+            shutil.copy2(candidate, replacement)
             os.replace(replacement, network)
             (prefix/RECEIPT).unlink(missing_ok=True)
             if sys.platform == 'darwin':
@@ -448,16 +477,24 @@ def prepare(prefix, work, cache, parallel=3):
                                    for tool, _, upstream in tools_before],
                         configure_flags=[scrub(x.replace(str(work), '<build>').encode()).decode() for x in flags],
                         verification=verification)
+            if bundle is not None:
+                data['dependency_source'] = 'verified-ci-bundle'
             temporary = prefix/(RECEIPT+'.new')
             temporary.write_text(json.dumps(data, indent=2)+'\n', encoding='utf-8')
             os.replace(temporary, prefix/RECEIPT)
-            return identity(prefix)
+            result = identity(prefix)
+            if export is not None:
+                from qt_network_bundle import export_bundle
+                export_bundle(export, bundle_identity, candidate, abi, core_imports)
+            return result
         except BaseException:
             shutil.copy2(backup, replacement); os.replace(replacement, network)
             for tool, saved, _ in tools_before:
                 shutil.copy2(saved, tool)
             if signature_before is not None:
                 signature.parent.mkdir(exist_ok=True); signature.write_bytes(signature_before)
+            elif sys.platform == 'darwin':
+                signature.unlink(missing_ok=True)
             if receipt_before is not None:
                 (prefix/RECEIPT).write_bytes(receipt_before)
             else:
@@ -466,4 +503,6 @@ def prepare(prefix, work, cache, parallel=3):
         finally:
             replacement.unlink(missing_ok=True)
     finally:
+        if bundle is not None:
+            (work/'restored-network.bin').unlink(missing_ok=True)
         lock.unlink(missing_ok=True)
