@@ -111,7 +111,7 @@ jobs:
             -DXDZIP_MACOS_HANDLER_RANK=Alternate
           cmake --build build/desktop --parallel 3 --target xdzip-browser-tests xdzip-shell-tests
           for target in xdzip-browser-tests xdzip-shell-tests; do
-            lipo -verify_arch x86_64 "build/desktop/apps/desktop/$target"
+            lipo "build/desktop/apps/desktop/$target" -verify_arch x86_64
           done
       - name: Verify the native sessions and both Cocoa fullscreen sequences
         run: |
