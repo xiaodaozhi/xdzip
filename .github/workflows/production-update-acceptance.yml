@@ -7,6 +7,11 @@ on:
         type: choice
         default: all
         options: [all, windows-linux, windows, linux, macos, macos-intel]
+      dependencies:
+        description: Use a verified Qt Network artifact when available, or force a source build
+        type: choice
+        default: auto
+        options: [auto, cold]
 permissions:
   contents: read
 concurrency:
@@ -46,6 +51,9 @@ jobs:
     needs: keys
     if: ${{ inputs.platform == 'all' || inputs.platform == 'windows-linux' || inputs.platform == 'windows' }}
     environment: release-signing
+    permissions:
+      contents: read
+      actions: read
     runs-on: windows-2022
     timeout-minutes: 100
     steps:
@@ -72,7 +80,17 @@ jobs:
           python scripts/prepare-windows-runtime.py --output build/windows-runtime
           python -m pip install aqtinstall==3.3.0 -r design/assets/fonts/requirements.txt
           python -m aqt install-qt windows desktop 6.8.2 win64_msvc2022_64 --outputdir '${{ runner.temp }}/Qt'
-          python scripts/prepare-qt-network.py --qt-prefix '${{ runner.temp }}/Qt/6.8.2/msvc2022_64'
+      - name: Prepare and validate native Qt Network without signing authority
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          XDZIP_DEPENDENCY_MODE: ${{ inputs.dependencies }}
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
+          $vs = & $vswhere -latest -products '*' -prerelease -property installationPath
+          Import-Module "$vs/Common7/Tools/Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $vs -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+          python scripts/ci-qt-network.py prepare --qt-prefix '${{ runner.temp }}/Qt/6.8.2/msvc2022_64' --output build/update-qt-network --mode $env:XDZIP_DEPENDENCY_MODE
       - name: Build private real old and new products with production public roots
         shell: pwsh
         env:
@@ -113,6 +131,9 @@ jobs:
     needs: keys
     if: ${{ inputs.platform == 'all' || inputs.platform == 'macos' }}
     environment: release-signing
+    permissions:
+      contents: read
+      actions: read
     runs-on: macos-15
     timeout-minutes: 120
     steps:
@@ -128,7 +149,11 @@ jobs:
           rustup toolchain install 1.99.0 --profile minimal --component rustfmt --component clippy
           python3 -m pip install aqtinstall==3.3.0 -r design/assets/fonts/requirements.txt
           python3 -m aqt install-qt mac desktop 6.8.2 clang_64 --outputdir '${{ runner.temp }}/Qt'
-          python3 scripts/prepare-qt-network.py --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos'
+      - name: Prepare and validate native Qt Network without signing authority
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          XDZIP_DEPENDENCY_MODE: ${{ inputs.dependencies }}
+        run: python3 scripts/ci-qt-network.py prepare --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos' --output build/update-qt-network --mode "$XDZIP_DEPENDENCY_MODE"
       - name: Check native archive admission without production secrets
         run: python3 scripts/test-production-update-signing.py
       - name: Build private real old and new apps with production public roots
@@ -160,6 +185,9 @@ jobs:
     needs: keys
     if: ${{ inputs.platform == 'all' || inputs.platform == 'macos-intel' }}
     environment: release-signing
+    permissions:
+      contents: read
+      actions: read
     runs-on: macos-15-intel
     timeout-minutes: 180
     env:
@@ -185,7 +213,11 @@ jobs:
           rustup toolchain install 1.99.0 --profile minimal --component rustfmt --component clippy
           python3 -m pip install aqtinstall==3.3.0 -r design/assets/fonts/requirements.txt
           python3 -m aqt install-qt mac desktop 6.8.2 clang_64 --outputdir '${{ runner.temp }}/Qt'
-          python3 scripts/prepare-qt-network.py --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos'
+      - name: Prepare and validate native Qt Network without signing authority
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          XDZIP_DEPENDENCY_MODE: ${{ inputs.dependencies }}
+        run: python3 scripts/ci-qt-network.py prepare --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos' --output build/update-qt-network --mode "$XDZIP_DEPENDENCY_MODE"
       - name: Build private Intel products with production public roots
         env:
           XDZIP_ISOLATED_UPDATE_FIXTURE: '1'
@@ -215,6 +247,9 @@ jobs:
     needs: keys
     if: ${{ inputs.platform == 'all' || inputs.platform == 'windows-linux' || inputs.platform == 'linux' }}
     environment: release-signing
+    permissions:
+      contents: read
+      actions: read
     runs-on: ubuntu-24.04
     timeout-minutes: 100
     steps:
@@ -222,10 +257,13 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - name: Build isolated SDK image without signing authority
-        run: |
-          docker build -f tests/fixtures/native/update-linux.Dockerfile -t xdzip-update-regression .
-          docker build -f tests/fixtures/native/update-qt-build.Dockerfile -t xdzip-update-qt-build .
+      - name: Build the disposable Ubuntu base image
+        run: docker build -f tests/fixtures/native/update-linux.Dockerfile -t xdzip-update-regression .
+      - name: Prepare and validate isolated Qt Network without signing authority
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          XDZIP_DEPENDENCY_MODE: ${{ inputs.dependencies }}
+        run: bash scripts/ci-update-qt-linux.sh "$XDZIP_DEPENDENCY_MODE" build/update-qt-network
       - name: Build private real old and new products with production public roots
         run: |
           mkdir -p build/production-update

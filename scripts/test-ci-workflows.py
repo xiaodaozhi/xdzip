@@ -264,12 +264,25 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("inputs.platform == 'windows-linux'", production['jobs']['linux']['if'])
         self.assertNotIn('windows-linux', production['jobs']['macos']['if'])
         self.assertNotIn('windows-linux', production['jobs']['macos_intel']['if'])
+        dependencies = production['on']['workflow_dispatch']['inputs']['dependencies']
+        self.assertEqual(dependencies['default'], 'auto')
+        self.assertEqual(dependencies['options'], ['auto', 'cold'])
         windows_production = production['jobs']['windows']
         preparation = next(step['run'] for step in windows_production['steps']
                            if step.get('name') == 'Prepare native tools and Qt without signing authority')
-        self.assertLess(preparation.index('Enter-VsDevShell'), preparation.index('scripts/prepare-qt-network.py'))
+        self.assertLess(preparation.index('Enter-VsDevShell'), preparation.index('aqt install-qt'))
         for name in ('perl', 'nmake', 'cmake', 'ninja'):
             self.assertIn("'" + name + "'", preparation)
+        for name in ('windows', 'macos', 'macos_intel', 'linux'):
+            job = production['jobs'][name]
+            self.assertEqual(job['permissions'], {'contents': 'read', 'actions': 'read'})
+            prepare_network = next(i for i, step in enumerate(job['steps']) if 'Qt Network without signing authority' in step.get('name', ''))
+            sign = next(i for i, step in enumerate(job['steps']) if 'sign-production-update-fixtures.py' in step.get('run', ''))
+            self.assertLess(prepare_network, sign)
+            self.assertEqual(job['steps'][prepare_network]['env']['GITHUB_TOKEN'], '${{ github.token }}')
+            self.assertNotIn('secrets.', repr(job['steps'][prepare_network]))
+            self.assertNotIn('--publish', repr(job))
+        self.assertNotIn('actions', production['permissions'])
         image = (ROOT/'tests/fixtures/native/update-qt-build.Dockerfile').read_text(encoding='utf-8')
         self.assertIn('libnautilus-extension-dev', image)
         intel_production = production['jobs']['macos_intel']
