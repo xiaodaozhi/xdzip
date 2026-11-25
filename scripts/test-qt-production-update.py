@@ -74,6 +74,24 @@ class ProductionQtAdmissionTests(unittest.TestCase):
         shared.dump(output/'production-update-prepared.json',record)
         return output,prepared,record
 
+    def test_windows_fixture_stages_product_workers_shell_and_cli(self):
+        build = self.root/'owned-build'
+        binary = build/'apps/desktop'
+        (binary/'cli').mkdir(parents=True)
+        names = ('xdzip.exe', 'xdzip-update-helper.exe', 'xdzip-native-codec.exe',
+                 'xdzip-image-preview.exe', 'xdzip-association.exe', 'xdzip-shell.dll')
+        for name in names:
+            (binary/name).write_bytes(name.encode())
+        (binary/'cli/xdzip.exe').write_bytes(b'cli')
+        runtime = self.root/'runtime';runtime.mkdir()
+        (runtime/'vcruntime140.dll').write_bytes(b'crt')
+        payload = self.root/'payload'
+        fixture.stage_windows_build(build,payload,runtime)
+        for name in names:
+            self.assertEqual((payload/name).read_bytes(), name.encode())
+        self.assertEqual((payload/'cli/xdzip.exe').read_bytes(), b'cli')
+        self.assertEqual((payload/'cli/vcruntime140.dll').read_bytes(), b'crt')
+
     def check(self,platform,output,prepared):
         with patch.object(fixture,'sys',SimpleNamespace(platform='win32' if platform=='windows' else 'linux')):
             return fixture.production_trust_check(output,prepared)
