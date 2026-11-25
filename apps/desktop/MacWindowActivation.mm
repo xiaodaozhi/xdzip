@@ -162,10 +162,14 @@ bool cocoaActivationIsVisible(QWindow *window) {
     return native && native.visible;
 }
 
-void cocoaRetryFullscreenState(QWindow *window, Qt::WindowState state) {
+bool cocoaFullscreenRetryReady(QWindow *window) {
     NSWindow *native = nativeWindow(window);
-    if (native && native.visible && !native.miniaturized &&
-        (native.styleMask & NSWindowStyleMaskFullScreen)) {
+    return native && native.visible && !native.miniaturized &&
+           (native.styleMask & NSWindowStyleMaskFullScreen);
+}
+
+void cocoaRetryFullscreenState(QWindow *window, Qt::WindowState state) {
+    if (cocoaFullscreenRetryReady(window)) {
         if (state != Qt::WindowMinimized) {
             window->setWindowState(state);
             return;

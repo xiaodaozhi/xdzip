@@ -5016,6 +5016,7 @@ QtObject {
         bool interrupted = false;
         bool nextTurn = false;
         QWindow window;
+        window.setProperty("xdzipTraceActivation", true);
         window.resize(480, 320);
         window.show();
         QVERIFY(QTest::qWaitForWindowExposed(&window));
@@ -5032,6 +5033,7 @@ QtObject {
         });
         QVERIFY(runOnNativeFullscreenEntry(&window, [&] {
             window.showMinimized();
+            traceNativeWindowState(&window);
             interruptArmed = intervention != QStringLiteral("none");
             requested = true;
         }));

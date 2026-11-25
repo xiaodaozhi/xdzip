@@ -15,6 +15,7 @@ void unwatchCocoaActivation(QWindow *window);
 bool cocoaActivationInFlight(QWindow *window);
 bool cocoaActivationIsMiniaturized(QWindow *window);
 bool cocoaActivationIsVisible(QWindow *window);
+bool cocoaFullscreenRetryReady(QWindow *window);
 void cocoaRetryFullscreenState(QWindow *window, Qt::WindowState state);
 #endif
 
@@ -194,10 +195,12 @@ class WindowActivation final : public QObject {
         if (QGuiApplication::platformName() != QStringLiteral("cocoa"))
             return;
         const bool entering = window->property("xdzipCocoaFullEntering").toBool();
-        if (!entering && !window->property("xdzipCocoaJustEnteredFullscreen").toBool())
-            return;
         const auto generation = window->property("xdzipCocoaSurfaceGeneration").toULongLong();
         if (!generation)
+            return;
+        const bool pending =
+            window->property("xdzipCocoaPendingMinimizeGeneration").toULongLong() == generation;
+        if (!entering && !window->property("xdzipCocoaJustEnteredFullscreen").toBool() && !pending)
             return;
         const auto state = window->windowState();
         if (state == Qt::WindowMinimized) {
@@ -206,8 +209,7 @@ class WindowActivation final : public QObject {
             window->setProperty("xdzipCocoaStateCandidateGeneration", QVariant());
             if (entering)
                 window->setProperty("xdzipRestoreState", int(Qt::WindowFullScreen));
-        } else if (window->property("xdzipCocoaPendingMinimizeGeneration").toULongLong() ==
-                   generation) {
+        } else if (pending) {
             // Direct Qt state setters emit a signal without a spontaneous
             // event. Defer the decision so later explicit intent wins over
             // the intermediate fullscreen notification from the platform.
@@ -225,19 +227,23 @@ class WindowActivation final : public QObject {
             });
         }
     }
-    // AppKit can ignore a minimize during or inside fullscreen entry. Retry
-    // on the next turn only while the same native surface and intent remain.
+    // AppKit can ignore a minimize during or inside fullscreen entry.
     static void queueCocoaMinimizeRetry(QWindow *window) {
         if (QGuiApplication::platformName() != QStringLiteral("cocoa") ||
             !window->property("xdzipCocoaJustEnteredFullscreen").toBool())
             return;
         const auto generation = window->property("xdzipCocoaSurfaceGeneration").toULongLong();
         if (!generation ||
-            window->property("xdzipCocoaPendingMinimizeGeneration").toULongLong() != generation ||
-            window->property("xdzipCocoaMinimizeRetryGeneration").toULongLong() == generation)
+            window->property("xdzipCocoaPendingMinimizeGeneration").toULongLong() != generation)
+            return;
+        awaitCocoaFullscreenRetry(window, generation, 20);
+    }
+    static void awaitCocoaFullscreenRetry(QWindow *window, qulonglong generation,
+                                          int remainingChecks) {
+        if (window->property("xdzipCocoaMinimizeRetryGeneration").toULongLong() == generation)
             return;
         window->setProperty("xdzipCocoaMinimizeRetryGeneration", generation);
-        QTimer::singleShot(0, window, [window, generation] {
+        QTimer::singleShot(50, window, [window, generation, remainingChecks] {
             if (window->property("xdzipCocoaMinimizeRetryGeneration").toULongLong() != generation)
                 return;
             window->setProperty("xdzipCocoaMinimizeRetryGeneration", QVariant());
@@ -249,13 +255,25 @@ class WindowActivation final : public QObject {
                                     window->property("xdzipCocoaStateCandidate"));
                 window->setProperty("xdzipCocoaStateCandidateGeneration", QVariant());
             }
-            window->setProperty("xdzipCocoaPendingMinimizeGeneration", QVariant());
             const auto state = Qt::WindowState(window->property("xdzipCocoaPendingState").toInt());
-            if (window->property("xdzipCocoaSurfaceGeneration").toULongLong() == generation &&
-                window->isVisible() && state != Qt::WindowFullScreen &&
-                !window->property("xdzipWakePending").toBool() &&
-                !cocoaActivationInFlight(window) && !cocoaActivationIsMiniaturized(window))
-                cocoaRetryFullscreenState(window, state);
+            if (window->property("xdzipCocoaSurfaceGeneration").toULongLong() != generation ||
+                !window->handle() || !window->isVisible() || state == Qt::WindowFullScreen ||
+                window->property("xdzipWakePending").toBool() ||
+                cocoaActivationIsMiniaturized(window)) {
+                window->setProperty("xdzipCocoaPendingMinimizeGeneration", QVariant());
+                return;
+            }
+            if (cocoaActivationInFlight(window) || !cocoaFullscreenRetryReady(window)) {
+                // A fullscreen completion notification can precede the next
+                // visible Space. Wait briefly for the observed native state.
+                if (remainingChecks > 1)
+                    awaitCocoaFullscreenRetry(window, generation, remainingChecks - 1);
+                else
+                    window->setProperty("xdzipCocoaPendingMinimizeGeneration", QVariant());
+                return;
+            }
+            window->setProperty("xdzipCocoaPendingMinimizeGeneration", QVariant());
+            cocoaRetryFullscreenState(window, state);
         });
     }
 #endif
