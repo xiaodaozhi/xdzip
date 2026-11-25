@@ -30,7 +30,7 @@ Windows 11 x64 使用者可以在 Microsoft Store 搜尋 **XDZip**。如需直�
 | 系統 | 支援範圍 | GitHub 下載包 |
 | --- | --- | --- |
 | Windows | 仍受維護的 Windows 11，x86_64 | 目前使用者安裝器 `setup.exe` 或便攜 `.zip` |
-| macOS | macOS 14 及以上，Apple Silicon | `.dmg`，或 `.app.zip` 應用包 |
+| macOS | macOS 14 及以上，Apple Silicon（arm64），v0.3.2 起支援 Intel（x86_64） | `.dmg`，或 `.app.zip` 應用包 |
 | Linux | Ubuntu 24.04 LTS，x86_64，X11，glibc 2.39 及以上 | `.deb` 安裝包，或 `.tar.gz` 執行目錄 |
 
 桌面包以 `xdzip-<版本>-` 開頭，獨立[命令列工具](#xdzip-%E5%91%BD%E4%BB%A4%E8%A1%8C)以 `xdzip-cli-<版本>-` 開頭。直接下載後可用釋出頁的 `SHA256SUMS` 核對檔案。GitHub 的 Windows 安裝器未簽名，macOS 包採用 ad-hoc 完整性簽名，未經過 Apple 公證。各安裝包的啟動方法和檔案關聯設定見[安裝指南](docs/zh-TW/user-guide/install.md)。

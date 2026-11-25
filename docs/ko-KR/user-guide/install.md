@@ -7,10 +7,10 @@
 | 데스크톱 시스템 | 설치 또는 실행 |
 | --- | --- |
 | Windows 11 x64 | Microsoft Store에서 **XDZip**을 검색하거나 GitHub의 `-setup.exe`를 실행하여 현재 사용자 계정에 설치하세요. GitHub 설치 프로그램은 서명되어 있지 않습니다. 포터블 ZIP의 경우 패키지 전체의 압축을 푼 뒤 해당 폴더에서 `xdzip.exe`를 실행하세요. |
-| macOS 14 이상, Apple Silicon | DMG를 열고 `xdzip.app`을 **응용 프로그램**으로 드래그하세요. `.app.zip` 파일은 먼저 압축을 풀고 앱을 응용 프로그램 폴더로 옮기세요. 응용 프로그램 폴더의 복사본을 실행하세요. GitHub 빌드는 무결성 확인을 위한 임시 서명으로 서명되어 있으며 공증되지 않았습니다. macOS에서 경고가 표시되면 다운로드 출처와 체크섬을 확인하세요. |
+| macOS 14 이상, Apple Silicon(arm64), v0.3.2부터 Intel(x86_64) | Apple Silicon은 `macos-arm64`, Intel은 `macos-x86_64`를 선택하세요. DMG를 열고 `xdzip.app`을 **응용 프로그램**으로 드래그하세요. `.app.zip` 파일은 먼저 압축을 풀고 앱을 응용 프로그램 폴더로 옮기세요. 응용 프로그램 폴더의 복사본을 실행하세요. GitHub 빌드는 무결성 확인을 위한 임시 서명으로 서명되어 있으며 공증되지 않았습니다. macOS에서 경고가 표시되면 다운로드 출처와 체크섬을 확인하세요. |
 | Ubuntu 24.04 LTS x64, X11, glibc 2.39 이상 | 패키지 관리자로 `.deb`를 설치하세요. 포터블 `.tar.gz`는 모든 파일의 압축을 푼 다음 해당 실행 환경 디렉터리에서 `./xdzip`을 실행하세요. 실행기는 실행 환경 파일과 함께 두세요. |
 
-데스크톱 버전은 Windows ARM64, Intel Mac, Linux ARM64 또는 Wayland를 지원하지 않습니다. Linux용 독립 CLI는 X11 없이 실행되며 시스템의 OpenSSL 3 및 인증서가 필요합니다. 파일 이름이 `xdzip-cli-`로 시작하는 항목을 선택하고 [CLI 빠른 시작](../integration/README.md)을 참조하세요.
+데스크톱 버전은 Windows ARM64, Linux ARM64 또는 Wayland를 지원하지 않습니다. Linux용 독립 CLI는 X11 없이 실행되며 시스템의 OpenSSL 3 및 인증서가 필요합니다. 파일 이름이 `xdzip-cli-`로 시작하는 항목을 선택하고 [CLI 빠른 시작](../integration/README.md)을 참조하세요.
 
 DEB 패키지로 설치한 XDZip은 Ubuntu 앱 센터의 설치됨 목록에서 찾아 제거할 수 있습니다.
 

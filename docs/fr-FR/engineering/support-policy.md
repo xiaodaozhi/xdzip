@@ -10,7 +10,7 @@ Cette page présente les systèmes pris en charge par XDZip et les modalités de
 
 | Plateforme | Périmètre initial | Vérifications et limites |
 | --- | --- | --- |
-| macOS | macOS 14 ou ultérieur, Apple Silicon arm64 | La cible de déploiement est 14.0. GitHub propose un DMG et un ZIP pour Apple Silicon. Tous deux contiennent la même application signée ad hoc pour vérifier son intégrité. |
+| macOS | macOS 14 ou ultérieur, Apple Silicon (arm64), Intel (x86_64) à partir de la version 0.3.2 | La cible de déploiement est 14.0. GitHub propose un DMG et un ZIP de l’application pour chaque architecture. Les deux paquets d’une même architecture contiennent la même application signée ad hoc pour en vérifier l’intégrité. |
 | Windows | Versions x86_64 de Windows 11 encore maintenues par Microsoft | Compilation MSVC, installation par utilisateur et scénarios réels d’installation, de mise à niveau, de retour arrière et de désinstallation en CI. Les tests sur Windows Server ne couvrent pas toutes les versions de Windows 11. Aucun paquet ARM64. |
 | Linux | Ubuntu 24.04 LTS x86_64, X11, glibc 2.39 ou ultérieure | Vérification du paquet .deb actuel et de l’environnement d’exécution isolé sans SDK Qt. Les autres distributions, les anciennes versions de glibc, Wayland et ARM64 ne font pas partie du périmètre. |
 

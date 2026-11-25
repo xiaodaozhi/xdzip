@@ -12,7 +12,7 @@
 
 | 平臺 | 首批支援範圍 | 目前工程依據與邊界 |
 | --- | --- | --- |
-| macOS | macOS 14 及以上，Apple Silicon arm64 | 部署目標為 14.0。GitHub 為 Apple Silicon 提供 DMG 與應用程式 ZIP，兩者包含同一份採用 ad-hoc 完整性簽署的應用程式。 |
+| macOS | macOS 14 及以上，Apple Silicon（arm64），v0.3.2 起支援 Intel（x86_64） | 部署目標為 14.0。GitHub 為每種架構分別提供 DMG 與應用程式 ZIP，兩種套件包含同一份採用 ad-hoc 完整性簽署的應用程式。 |
 | Windows | 仍受 Microsoft 維護的 Windows 11，x86_64 | MSVC 構建、目前使用者安裝器、實際安裝／升級／回退／解除安裝 CI；Server CI 不替代對所有 Windows 11 版本的支援宣告，不提供 ARM64 包 |
 | Linux | Ubuntu 24.04 LTS x86_64，X11，glibc 2.39 及以上 | 目前 .deb 和無 Qt SDK 的隔離執行驗證；不宣稱任意發行版、較舊 glibc、Wayland 或 ARM64 可用 |
 

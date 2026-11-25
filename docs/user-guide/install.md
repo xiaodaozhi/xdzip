@@ -7,10 +7,10 @@ Download the package for your system from the [latest stable GitHub release](htt
 | Desktop system | Install or launch |
 | --- | --- |
 | Windows 11 x64 | Search for **XDZip** in Microsoft Store or run the GitHub `-setup.exe` for a per-user install. The GitHub installer is unsigned. To use the portable ZIP, extract the entire package and start `xdzip.exe` from the extracted directory. |
-| macOS 14 or later, Apple Silicon | Open the DMG and drag `xdzip.app` to **Applications**. For an `.app.zip`, extract it first and move the app there. Start the Applications copy. GitHub builds use ad-hoc integrity signing and are unnotarized. If macOS displays a warning, verify the release source and checksum. |
+| macOS 14 or later, Apple Silicon (arm64), Intel (x86_64) from v0.3.2 | Select `macos-arm64` for Apple Silicon or `macos-x86_64` for Intel. Open the DMG and drag `xdzip.app` to **Applications**. For an `.app.zip`, extract it first and move the app there. Start the Applications copy. GitHub builds use ad-hoc integrity signing and are unnotarized. If macOS displays a warning, verify the release source and checksum. |
 | Ubuntu 24.04 LTS x64, X11, glibc 2.39 or later | Install the `.deb` through your package manager. For the portable `.tar.gz`, extract all files and run `./xdzip` from the extracted runtime directory. Keep the launcher with the runtime files. |
 
-The desktop support scope excludes Windows ARM64, Intel Macs, and Linux ARM64 and Wayland. The standalone Linux CLI works without X11 and requires system OpenSSL 3 and certificates. To use it, choose an asset starting with `xdzip-cli-` and follow the [CLI quick start](../integration/README.md).
+The desktop support scope excludes Windows ARM64, Linux ARM64 and Wayland. The standalone Linux CLI works without X11 and requires system OpenSSL 3 and certificates. To use it, choose an asset starting with `xdzip-cli-` and follow the [CLI quick start](../integration/README.md).
 
 After installing the DEB package, you can find and remove XDZip under Installed in Ubuntu App Center.
 

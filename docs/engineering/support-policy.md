@@ -8,7 +8,7 @@ This policy describes the systems XDZip supports and how the project is maintain
 
 | Platform | Initial support | Engineering evidence and limits |
 | --- | --- | --- |
-| macOS | macOS 14 or later, Apple Silicon arm64 | Deployment target 14.0. GitHub provides a DMG and app ZIP for Apple Silicon. Both contain the same ad hoc-signed app. |
+| macOS | macOS 14 or later, Apple Silicon (arm64), Intel (x86_64) from v0.3.2 | Deployment target 14.0. GitHub provides a DMG and app ZIP for each architecture. Both packages for a given architecture contain the same ad hoc-signed application. |
 | Windows | Windows 11 x86_64 versions still maintained by Microsoft | MSVC build, per-user installer, actual installation/upgrade/rollback/uninstall CI; Server CI does not establish support for every Windows 11 version; no ARM64 package |
 | Linux | Ubuntu 24.04 LTS x86_64, X11, glibc 2.39 or later | Current .deb and isolated runtime verification without the Qt SDK; no claim for arbitrary distributions, older glibc, Wayland or ARM64 |
 

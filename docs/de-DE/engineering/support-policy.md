@@ -10,7 +10,7 @@ Diese Richtlinie beschreibt, welche Systeme XDZip unterstützt und wie das Proje
 
 | Plattform | Ursprünglicher Umfang | Prüfungen und Grenzen |
 | --- | --- | --- |
-| macOS | macOS 14 oder neuer, Apple Silicon arm64 | Das Bereitstellungsziel ist 14.0. GitHub bietet ein DMG und ein App-ZIP für Apple Silicon an. Beide enthalten dieselbe App mit Ad-hoc-Signatur zur Integritätsprüfung. |
+| macOS | macOS 14 oder neuer, Apple Silicon (arm64), Intel (x86_64) ab Version 0.3.2 | Das Bereitstellungsziel ist 14.0. GitHub bietet für jede Architektur ein DMG und ein App-ZIP an. Beide Pakete einer Architektur enthalten dieselbe App mit Ad-hoc-Signatur zur Integritätsprüfung. |
 | Windows | Von Microsoft weiterhin gewartete x86_64-Versionen von Windows 11 | MSVC-Build, Installation pro Benutzer sowie tatsächliche Installation, Upgrade, Rückkehr zur Vorversion und Deinstallation in der CI. Tests auf Windows Server decken nicht jede Windows-11-Version ab. Kein ARM64-Paket. |
 | Linux | Ubuntu 24.04 LTS x86_64, X11, glibc 2.39 oder neuer | Prüfung des aktuellen .deb-Pakets und der isolierten Laufzeitumgebung ohne Qt-SDK. Andere Distributionen, ältere glibc-Versionen, Wayland und ARM64 gehören nicht zum Umfang. |
 

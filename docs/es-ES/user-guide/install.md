@@ -7,10 +7,10 @@ Descarga el paquete para tu sistema desde la [última versión estable en GitHub
 | Sistema de escritorio | Instalación o inicio |
 | --- | --- |
 | Windows 11 x64 | Busca **XDZip** en Microsoft Store o ejecuta el archivo `-setup.exe` de GitHub para instalarlo en tu cuenta de usuario. El instalador de GitHub no está firmado. Para usar el ZIP portátil, extrae todo el paquete e inicia `xdzip.exe` desde la carpeta extraída. |
-| macOS 14 o posterior, Apple Silicon | Abre el DMG y arrastra `xdzip.app` a **Aplicaciones**. Si descargas un `.app.zip`, primero extráelo y luego mueve la aplicación a esa carpeta. Ejecuta la copia de Aplicaciones. Las compilaciones de GitHub tienen firma de integridad ad hoc y carecen de notarización. Si macOS muestra un aviso, comprueba el origen de la descarga y la suma de verificación. |
+| macOS 14 o posterior, Apple Silicon (arm64), Intel (x86_64) a partir de la versión 0.3.2 | Elige `macos-arm64` para Apple Silicon o `macos-x86_64` para Intel. Abre el DMG y arrastra `xdzip.app` a **Aplicaciones**. Si descargas un `.app.zip`, primero extráelo y luego mueve la aplicación a esa carpeta. Ejecuta la copia de Aplicaciones. Las compilaciones de GitHub tienen firma de integridad ad hoc y carecen de notarización. Si macOS muestra un aviso, comprueba el origen de la descarga y la suma de verificación. |
 | Ubuntu 24.04 LTS x64, X11, glibc 2.39 o posterior | Instala el paquete `.deb` mediante el gestor de paquetes. Si usas el `.tar.gz` portátil, extrae todos los archivos y ejecuta `./xdzip` desde la carpeta de ejecución extraída. Mantén el lanzador junto a los archivos de ejecución. |
 
-La aplicación de escritorio no es compatible con Windows ARM64, los Mac con Intel, Linux ARM64 ni Wayland. La herramienta independiente de línea de comandos de Linux funciona sin X11 y requiere OpenSSL 3 y los certificados del sistema. Para usarla, elige un archivo cuyo nombre comience por `xdzip-cli-` y sigue la [guía rápida de la línea de comandos](../integration/README.md).
+La aplicación de escritorio no es compatible con Windows ARM64, Linux ARM64 ni Wayland. La herramienta independiente de línea de comandos de Linux funciona sin X11 y requiere OpenSSL 3 y los certificados del sistema. Para usarla, elige un archivo cuyo nombre comience por `xdzip-cli-` y sigue la [guía rápida de la línea de comandos](../integration/README.md).
 
 Tras instalar el paquete DEB, puedes buscar y desinstalar XDZip en la lista de aplicaciones instaladas del Centro de aplicaciones de Ubuntu.
 

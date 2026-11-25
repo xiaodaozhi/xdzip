@@ -10,7 +10,7 @@ XDZip이 지원하는 시스템과 유지보수 방침을 설명합니다. [최�
 
 | 플랫폼 | 초기 지원 범위 | 검증과 제한 |
 | --- | --- | --- |
-| macOS | macOS 14 이상, Apple Silicon arm64 | 배포 대상은 14.0입니다. GitHub에서 Apple Silicon용 DMG와 앱 ZIP을 제공합니다. 두 패키지에는 무결성을 위해 ad-hoc 서명한 동일한 앱이 들어 있습니다. |
+| macOS | macOS 14 이상, Apple Silicon(arm64), v0.3.2부터 Intel(x86_64) | 배포 대상은 14.0입니다. GitHub에서 아키텍처별로 DMG와 앱 ZIP을 제공합니다. 각 아키텍처의 두 패키지에는 무결성을 위해 ad-hoc 서명한 동일한 앱이 들어 있습니다. |
 | Windows | Microsoft에서 계속 유지보수하는 Windows 11 x86_64 버전 | MSVC 빌드, 사용자별 설치 프로그램, CI에서 실제 설치, 업그레이드, 롤백, 제거 검증. Windows Server CI가 모든 Windows 11 버전을 검증하지는 않습니다. ARM64 패키지는 제공하지 않습니다. |
 | Linux | Ubuntu 24.04 LTS x86_64, X11, glibc 2.39 이상 | 현재 .deb 패키지와 Qt SDK 없는 격리된 실행 환경을 검증합니다. 다른 배포판, 이전 glibc, Wayland, ARM64는 대상이 아닙니다. |
 

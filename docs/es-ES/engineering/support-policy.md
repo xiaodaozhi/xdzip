@@ -10,7 +10,7 @@ Esta página describe los sistemas compatibles con XDZip y cómo se mantiene el 
 
 | Plataforma | Alcance inicial | Comprobaciones y límites |
 | --- | --- | --- |
-| macOS | macOS 14 o posterior, Apple Silicon arm64 | El objetivo de despliegue es 14.0. GitHub ofrece un DMG y un ZIP para Apple Silicon. Ambos contienen la misma aplicación con firma ad hoc para comprobar su integridad. |
+| macOS | macOS 14 o posterior, Apple Silicon (arm64), Intel (x86_64) a partir de la versión 0.3.2 | El objetivo de despliegue es 14.0. GitHub ofrece un DMG y un ZIP de la aplicación para cada arquitectura. Los dos paquetes de cada arquitectura contienen la misma aplicación con una firma ad hoc para comprobar su integridad. |
 | Windows | Versiones x86_64 de Windows 11 que Microsoft sigue manteniendo | Compilación con MSVC, instalador por usuario y pruebas reales de instalación, actualización, reversión y desinstalación en CI. Las pruebas en Windows Server no cubren todas las versiones de Windows 11. Sin paquete ARM64. |
 | Linux | Ubuntu 24.04 LTS x86_64, X11, glibc 2.39 o posterior | Verificación del .deb actual y de la ejecución en un entorno aislado sin el SDK de Qt. Quedan fuera otras distribuciones, versiones anteriores de glibc, Wayland y ARM64. |
 

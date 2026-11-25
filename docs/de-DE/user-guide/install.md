@@ -7,10 +7,10 @@ Laden Sie das Paket für Ihr System von der [letzten stabilen Version auf GitHub
 | Betriebssystem | Installieren oder starten |
 | --- | --- |
 | Windows 11 x64 | Suchen Sie im Microsoft Store nach **XDZip**, oder führen Sie die GitHub-Datei `-setup.exe` für eine Installation im Benutzerkonto aus. Das GitHub-Installationsprogramm ist nicht signiert. Für die portable ZIP-Version entpacken Sie das gesamte Paket und starten `xdzip.exe` aus dem entpackten Ordner. |
-| macOS 14 oder neuer, Apple Silicon | Öffnen Sie die DMG-Datei und ziehen Sie `xdzip.app` in **Programme**. Entpacken Sie eine `.app.zip` zuerst und verschieben Sie die App dann dorthin. Starten Sie die Kopie aus dem Ordner Programme. GitHub-Builds haben eine Ad-hoc-Integritätssignatur und sind nicht notarisiert. Prüfen Sie bei einer macOS-Warnung die Downloadquelle und die Prüfsumme. |
+| macOS 14 oder neuer, Apple Silicon (arm64), Intel (x86_64) ab Version 0.3.2 | Wählen Sie `macos-arm64` für Apple Silicon oder `macos-x86_64` für Intel. Öffnen Sie die DMG-Datei und ziehen Sie `xdzip.app` in **Programme**. Entpacken Sie eine `.app.zip` zuerst und verschieben Sie die App dann dorthin. Starten Sie die Kopie aus dem Ordner Programme. GitHub-Builds haben eine Ad-hoc-Integritätssignatur und sind nicht notarisiert. Prüfen Sie bei einer macOS-Warnung die Downloadquelle und die Prüfsumme. |
 | Ubuntu 24.04 LTS x64, X11, glibc ab 2.39 | Installieren Sie das `.deb` über die Paketverwaltung. Bei der portablen `.tar.gz`-Version entpacken Sie alle Dateien und starten `./xdzip` aus dem entpackten Laufzeitordner. Lassen Sie die Startdatei bei den Laufzeitdateien. |
 
-Die Desktopversion unterstützt Windows ARM64, Intel-Macs, Linux ARM64 und Wayland nicht. Die eigenständige Befehlszeilenversion unter Linux funktioniert ohne X11 und benötigt OpenSSL 3 sowie die Systemzertifikate. Wählen Sie dazu eine Datei mit dem Namensanfang `xdzip-cli-` und folgen Sie der [Kurzanleitung für die Befehlszeile](../integration/README.md).
+Die Desktopversion unterstützt Windows ARM64, Linux ARM64 und Wayland nicht. Die eigenständige Befehlszeilenversion unter Linux funktioniert ohne X11 und benötigt OpenSSL 3 sowie die Systemzertifikate. Wählen Sie dazu eine Datei mit dem Namensanfang `xdzip-cli-` und folgen Sie der [Kurzanleitung für die Befehlszeile](../integration/README.md).
 
 Nach der Installation des DEB-Pakets können Sie XDZip im Ubuntu App Center unter den installierten Anwendungen finden und entfernen.
 

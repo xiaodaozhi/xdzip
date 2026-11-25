@@ -7,10 +7,10 @@ Téléchargez le paquet de votre système depuis la [dernière version stable su
 | Système | Installation ou lancement |
 | --- | --- |
 | Windows 11 x64 | Recherchez **XDZip** dans le Microsoft Store ou exécutez le fichier GitHub `-setup.exe` pour une installation par utilisateur. Cet installateur n’est pas signé. Pour la version ZIP portable, extrayez tout le paquet et lancez `xdzip.exe` depuis le dossier obtenu. |
-| macOS 14 ou ultérieur, Apple Silicon | Ouvrez le DMG et faites glisser `xdzip.app` dans **Applications**. Pour un fichier `.app.zip`, extrayez-le d’abord et déplacez-y l’application. Lancez la copie qui se trouve dans Applications. Les versions GitHub ont une signature d’intégrité ad hoc et ne sont pas notarisées. Si macOS affiche un avertissement, vérifiez la provenance du fichier et sa somme de contrôle. |
+| macOS 14 ou ultérieur, Apple Silicon (arm64), Intel (x86_64) à partir de la version 0.3.2 | Choisissez `macos-arm64` pour Apple Silicon ou `macos-x86_64` pour Intel. Ouvrez le DMG et faites glisser `xdzip.app` dans **Applications**. Pour un fichier `.app.zip`, extrayez-le d’abord et déplacez-y l’application. Lancez la copie qui se trouve dans Applications. Les versions GitHub ont une signature d’intégrité ad hoc et ne sont pas notarisées. Si macOS affiche un avertissement, vérifiez la provenance du fichier et sa somme de contrôle. |
 | Ubuntu 24.04 LTS x64, X11, glibc 2.39 ou ultérieur | Installez le paquet `.deb` avec votre gestionnaire de paquets. Pour la version portable `.tar.gz`, extrayez tous les fichiers et exécutez `./xdzip` depuis le dossier obtenu. Gardez le lanceur avec les fichiers d’exécution. |
 
-L’application de bureau ne prend pas en charge Windows ARM64, les Mac Intel, Linux ARM64 ni Wayland. L’interface en ligne de commande autonome sous Linux fonctionne sans X11 et nécessite OpenSSL 3 et les certificats du système. Choisissez un fichier dont le nom commence par `xdzip-cli-` et suivez le [guide de démarrage en ligne de commande](../integration/README.md).
+L’application de bureau ne prend pas en charge Windows ARM64, Linux ARM64 ni Wayland. L’interface en ligne de commande autonome sous Linux fonctionne sans X11 et nécessite OpenSSL 3 et les certificats du système. Choisissez un fichier dont le nom commence par `xdzip-cli-` et suivez le [guide de démarrage en ligne de commande](../integration/README.md).
 
 Après l’installation du paquet DEB, vous pouvez retrouver et désinstaller XDZip depuis la liste des applications installées dans le Centre d’applications d’Ubuntu.
 

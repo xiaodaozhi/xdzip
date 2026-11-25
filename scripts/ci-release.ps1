@@ -1,7 +1,7 @@
 param([Parameter(Mandatory)][ValidateSet('Build', 'Verify', 'QtNetwork', 'QtImage', 'Dependencies')][string]$Stage,
     [ValidateSet('auto', 'cold')][string]$QtNetworkMode = 'cold',
     [ValidateSet('cold', 'hit')][string]$QtImageMode,
-    [ValidateSet('auto', 'cold')][string]$DependencyMode = 'auto', [switch]$PublishDependencies)
+    [ValidateSet('auto', 'cold')][string]$DependencyMode, [switch]$PublishDependencies)
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $true
 $packages = if ($IsMacOS) { 'build/release-package' } else { 'build/review' }
@@ -28,7 +28,10 @@ if ($Stage -eq 'QtNetwork') {
 
 if ($Stage -eq 'Build' -or $Stage -eq 'Dependencies') {
     $env:XDZIP_CLI_RELEASE_BUILD = '1'
-    & ./scripts/ci-desktop.ps1 -ReleaseBuild -ReleaseDependencies $DependencyMode -QtNetworkToken $networkToken `
+    if ($Stage -eq 'Dependencies' -and !$DependencyMode) { $DependencyMode = 'auto' }
+    $releaseOptions = @{}
+    if ($DependencyMode) { $releaseOptions.ReleaseDependencies = $DependencyMode }
+    & ./scripts/ci-desktop.ps1 -ReleaseBuild -QtNetworkMode $QtNetworkMode -QtNetworkToken $networkToken @releaseOptions `
         -DependenciesOnly:($Stage -eq 'Dependencies') -PublishDependencies:$PublishDependencies
     if ($Stage -eq 'Dependencies') { return }
     python scripts/cli.py package --build-dir build/desktop/cli --output build/release-cli

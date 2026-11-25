@@ -30,7 +30,7 @@ Suchen Sie unter Windows 11 x64 im Microsoft Store nach **XDZip**. Für direkte 
 | System | Unterstützte Umgebung | GitHub-Download |
 | --- | --- | --- |
 | Windows | Weiterhin gewartete Windows-11-Versionen auf x86_64 | `setup.exe` für die Installation pro Benutzer oder portables `.zip` |
-| macOS | macOS 14 und neuer, Apple Silicon | `.dmg` oder Anwendungspaket im Format `.app.zip` |
+| macOS | macOS 14 und neuer, Apple Silicon (arm64), Intel (x86_64) ab Version 0.3.2 | `.dmg` oder Anwendungspaket im Format `.app.zip` |
 | Linux | Ubuntu 24.04 LTS, x86_64, X11, glibc 2.39 oder neuer | `.deb`-Paket oder Laufzeitverzeichnis im Format `.tar.gz` |
 
 Die Dateinamen für die Desktopanwendung beginnen mit `xdzip-<version>-`. Dateien für die eigenständige [CLI](#xdzip-command-line) beginnen mit `xdzip-cli-<version>-`. Prüfen Sie direkte Downloads mit `SHA256SUMS` auf der Veröffentlichungsseite. Das Windows-Installationsprogramm von GitHub ist unsigniert. Der macOS-Download ist zur Integritätsprüfung ad hoc signiert und wurde nicht notarisiert. Die [Installationsanleitung](docs/de-DE/user-guide/install.md) erklärt den Start aus den einzelnen Paketen und das Einrichten von Dateizuordnungen.

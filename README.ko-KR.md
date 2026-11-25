@@ -30,7 +30,7 @@ Windows 11 x64에서는 Microsoft Store에서 **XDZip**을 검색하세요. 직�
 | 시스템 | 지원 범위 | GitHub 다운로드 |
 | --- | --- | --- |
 | Windows | 유지보수 중인 Windows 11 x86_64 버전 | 사용자별 `setup.exe` 또는 포터블 `.zip` |
-| macOS | macOS 14 이상, Apple Silicon | `.dmg` 또는 `.app.zip` 앱 번들 |
+| macOS | macOS 14 이상, Apple Silicon(arm64), v0.3.2부터 Intel(x86_64) | `.dmg` 또는 `.app.zip` 앱 번들 |
 | Linux | Ubuntu 24.04 LTS, x86_64, X11, glibc 2.39 이상 | `.deb` 패키지 또는 `.tar.gz` 런타임 디렉터리 |
 
 데스크톱 배포 파일 이름은 `xdzip-<version>-`로 시작합니다. 독립 [CLI](#xdzip-command-line) 배포 파일은 `xdzip-cli-<version>-`로 시작합니다. 직접 내려받은 파일은 릴리스 페이지의 `SHA256SUMS`로 확인하세요. GitHub의 Windows 설치 프로그램은 서명되지 않았습니다. macOS 다운로드는 무결성 확인용 임시 서명을 사용하며 공증되지 않았습니다. 패키지별 실행 방법과 파일 연결 설정은 [설치 안내](docs/ko-KR/user-guide/install.md)를 참조하세요.

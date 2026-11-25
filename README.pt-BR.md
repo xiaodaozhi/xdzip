@@ -30,7 +30,7 @@ No Windows 11 x64, procure **XDZip** na Microsoft Store. Para baixar diretamente
 | Sistema | Ambiente compatível | Download no GitHub |
 | --- | --- | --- |
 | Windows | Versões do Windows 11 ainda mantidas, x86_64 | `setup.exe` por usuário ou `.zip` portátil |
-| macOS | macOS 14 ou posterior, Apple Silicon | `.dmg` ou pacote de aplicativo `.app.zip` |
+| macOS | macOS 14 ou posterior, Apple Silicon (arm64), Intel (x86_64) a partir da versão 0.3.2 | `.dmg` ou pacote de aplicativo `.app.zip` |
 | Linux | Ubuntu 24.04 LTS, x86_64, X11, glibc 2.39 ou posterior | Pacote `.deb` ou pasta de execução `.tar.gz` |
 
 Os arquivos de desktop começam com `xdzip-<version>-`. Os da [CLI](#xdzip-command-line) independente começam com `xdzip-cli-<version>-`. Use `SHA256SUMS` na página da versão para conferir a integridade de downloads diretos. O instalador do Windows no GitHub não é assinado. O download do macOS tem assinatura ad hoc de integridade e não é notarizado. Consulte o [guia de instalação](docs/pt-BR/user-guide/install.md) para saber como iniciar cada pacote e configurar associações de arquivos.

@@ -7,10 +7,10 @@
 | 桌面系统 | 安装或启动 |
 | --- | --- |
 | Windows 11 x64 | 在 Microsoft Store 搜索 **XDZip**，或运行 GitHub 的 `-setup.exe` 安装到当前用户。GitHub 安装器未签名。使用便携 ZIP 时，先解压整个包，再从解压目录运行 `xdzip.exe`。 |
-| macOS 14 或更新版本，Apple Silicon | 打开 DMG，将 `xdzip.app` 拖到“应用程序”。若下载的是 `.app.zip`，先解压，再将应用移到该位置。从“应用程序”启动副本。GitHub 版采用 ad-hoc 完整性签名，未经过 Apple 公证。系统出现提示时，先核对发布来源和校验和。 |
+| macOS 14 或更新版本，Apple Silicon（arm64），v0.3.2 起支持 Intel（x86_64） | Apple Silicon 请选择 `macos-arm64`，Intel 请选择 `macos-x86_64`。打开 DMG，将 `xdzip.app` 拖到“应用程序”。若下载的是 `.app.zip`，先解压，再将应用移到该位置。从“应用程序”启动副本。GitHub 版采用 ad-hoc 完整性签名，未经过 Apple 公证。系统出现提示时，先核对发布来源和校验和。 |
 | Ubuntu 24.04 LTS x64，X11，glibc 2.39 或更新版本 | 用包管理器安装 `.deb`。使用便携 `.tar.gz` 时，完整解压后在运行目录执行 `./xdzip`，保留启动器及配套运行文件。 |
 
-桌面支持范围不涵盖 Windows ARM64、Intel Mac、Linux ARM64 和 Wayland。Linux 独立 CLI 无需 X11，运行需要系统 OpenSSL 3 和证书。可选用以 `xdzip-cli-` 开头的下载包，并按[命令行入门](../integration/README.md)启动。
+桌面支持范围不涵盖 Windows ARM64、Linux ARM64 和 Wayland。Linux 独立 CLI 无需 X11，运行需要系统 OpenSSL 3 和证书。可选用以 `xdzip-cli-` 开头的下载包，并按[命令行入门](../integration/README.md)启动。
 
 通过 DEB 安装后，可在 Ubuntu 应用中心的“已安装”列表找到 XDZip 并卸载。
 

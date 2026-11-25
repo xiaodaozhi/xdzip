@@ -10,7 +10,7 @@ XDZip がサポートするシステムと保守方針を示します。対応�
 
 | プラットフォーム | 初期のサポート範囲 | 検証内容と制限 |
 | --- | --- | --- |
-| macOS | macOS 14 以降、Apple Silicon arm64 | デプロイメントターゲットは 14.0 です。GitHub で Apple Silicon 用の DMG と ZIP を配布します。どちらにも整合性のために ad-hoc 署名を施した同じアプリが含まれます。 |
+| macOS | macOS 14 以降、Apple Silicon（arm64）、v0.3.2 以降は Intel（x86_64） | デプロイメントターゲットは 14.0 です。GitHub ではアーキテクチャごとに DMG とアプリの ZIP を配布します。各アーキテクチャの両パッケージには、整合性のために ad-hoc 署名を施した同じアプリが含まれます。 |
 | Windows | Microsoft が引き続きメンテナンスしている Windows 11 x86_64 | MSVC ビルド、ユーザー単位のインストーラー、CI での実際のインストール、アップグレード、切り戻し、アンインストール。Windows Server の CI はすべての Windows 11 バージョンを対象にしていません。ARM64 パッケージはありません。 |
 | Linux | Ubuntu 24.04 LTS x86_64、X11、glibc 2.39 以降 | 現行の .deb と Qt SDK を備えていない隔離環境での実行を検証しています。他のディストリビューション、古い glibc、Wayland、ARM64 は対象外です。 |
 

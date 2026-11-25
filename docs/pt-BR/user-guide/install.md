@@ -7,10 +7,10 @@ Baixe o pacote para seu sistema na [última versão estável do GitHub](https://
 | Sistema | Instalação ou inicialização |
 | --- | --- |
 | Windows 11 x64 | Procure **XDZip** na Microsoft Store ou execute o arquivo `-setup.exe` do GitHub para instalar na sua conta de usuário. O instalador do GitHub não é assinado. Para usar o ZIP portátil, extraia todo o pacote e inicie `xdzip.exe` na pasta extraída. |
-| macOS 14 ou posterior, Apple Silicon | Abra o DMG e arraste `xdzip.app` para **Aplicativos**. No caso de um `.app.zip`, extraia-o primeiro e mova o aplicativo para Aplicativos. Abra a cópia em Aplicativos. As compilações do GitHub têm assinatura de integridade ad hoc e não são notarizadas. Se o macOS exibir um aviso, verifique a origem do download e a soma de verificação. |
+| macOS 14 ou posterior, Apple Silicon (arm64), Intel (x86_64) a partir da versão 0.3.2 | Escolha `macos-arm64` para Apple Silicon ou `macos-x86_64` para Intel. Abra o DMG e arraste `xdzip.app` para **Aplicativos**. No caso de um `.app.zip`, extraia-o primeiro e mova o aplicativo para Aplicativos. Abra a cópia em Aplicativos. As compilações do GitHub têm assinatura de integridade ad hoc e não são notarizadas. Se o macOS exibir um aviso, verifique a origem do download e a soma de verificação. |
 | Ubuntu 24.04 LTS x64, X11, glibc 2.39 ou posterior | Instale o pacote `.deb` pelo gerenciador de pacotes. Para usar o `.tar.gz` portátil, extraia todos os arquivos e execute `./xdzip` na pasta de execução extraída. Mantenha o inicializador junto aos arquivos de execução. |
 
-A versão para desktop não oferece suporte a Windows ARM64, Macs com Intel, Linux ARM64 ou Wayland. A ferramenta independente de linha de comando para Linux funciona sem X11 e exige OpenSSL 3 e os certificados do sistema. Escolha um arquivo cujo nome comece com `xdzip-cli-` e siga o [guia rápido da linha de comando](../integration/README.md).
+A versão para desktop não oferece suporte a Windows ARM64, Linux ARM64 ou Wayland. A ferramenta independente de linha de comando para Linux funciona sem X11 e exige OpenSSL 3 e os certificados do sistema. Escolha um arquivo cujo nome comece com `xdzip-cli-` e siga o [guia rápido da linha de comando](../integration/README.md).
 
 Depois de instalar o pacote DEB, você pode localizar e remover o XDZip na lista de aplicativos instalados da Central de Aplicativos do Ubuntu.
 

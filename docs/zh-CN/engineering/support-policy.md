@@ -8,7 +8,7 @@
 
 | 平台 | 首批支持范围 | 当前工程依据与边界 |
 | --- | --- | --- |
-| macOS | macOS 14 及以上，Apple Silicon arm64 | 部署目标为 14.0。GitHub 为 Apple Silicon 提供 DMG 和应用 ZIP，两者包含同一份采用 ad-hoc 完整性签名的应用。 |
+| macOS | macOS 14 及以上，Apple Silicon（arm64），v0.3.2 起支持 Intel（x86_64） | 部署目标为 14.0。GitHub 为每种架构分别提供 DMG 和应用 ZIP，两种包包含同一份采用 ad-hoc 完整性签名的应用。 |
 | Windows | 仍受 Microsoft 维护的 Windows 11，x86_64 | MSVC 构建、当前用户安装器、实际安装／升级／回退／卸载 CI；Server CI 不替代对所有 Windows 11 版本的支持声明，不提供 ARM64 包 |
 | Linux | Ubuntu 24.04 LTS x86_64，X11，glibc 2.39 及以上 | 当前 .deb 和无 Qt SDK 的隔离运行验证；不宣称任意发行版、较旧 glibc、Wayland 或 ARM64 可用 |
 
